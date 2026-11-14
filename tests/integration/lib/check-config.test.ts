@@ -5,8 +5,9 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, inject, test } from "vitest";
 import {
+  INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
-  JUDGEMENT_AUTO_TEXT,
+  REPLY_TIME_TEXT,
   WARNINGS_MARKDOWN,
 } from "../../unit/helpers/diagrams.ts";
 import { shopEr } from "../../unit/helpers/er.ts";
@@ -573,122 +574,63 @@ test("test_normal_when_files_missing", async () => {
   expect(existsSync(join(dir, "dist"))).toBe(false);
 });
 
-/** 座標の重なるノード `web` と `db`、`frame` の右端をまたぐノード `queue`、ノード `cache` の中を通る線 `w1`、名前が長いノード `batch` を持つフロー図の定義 */
-const BROKEN_FLOW = {
-  title: "配置のずれ",
-  scope: "点検",
-  updated: "2026-11-03",
-  width: 800,
-  height: 400,
-  frame: { title: "システム", x: 20, y: 20, w: 600, h: 360 },
-  nodes: [
-    { id: "web", kind: "script", x: 40, y: 40, w: 100, h: 50, name: "Web" },
-    { id: "db", kind: "data", x: 80, y: 60, w: 100, h: 50, name: "DB" },
-    { id: "cache", kind: "data", x: 300, y: 200, w: 100, h: 50, name: "Cache" },
-    {
-      id: "queue",
-      kind: "script",
-      x: 580,
-      y: 200,
-      w: 100,
-      h: 50,
-      name: "Queue",
-    },
-    {
-      id: "batch",
-      kind: "script",
-      x: 40,
-      y: 300,
-      w: 120,
-      h: 48,
-      name: "あ".repeat(30),
-    },
-  ],
-  wires: [
-    {
-      id: "w1",
-      from: "web",
-      to: "queue",
-      line: "flow",
-      points: [
-        [140, 225],
-        [580, 225],
-      ],
-    },
-  ],
-};
-
-/** ずれの無いフロー図の定義（ノード 2 つと線 1 本） */
-const CLEAN_FLOW = {
-  title: "整った図",
-  scope: "点検",
-  updated: "2026-11-03",
-  width: 400,
-  height: 200,
-  nodes: [
-    { id: "a", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "A" },
-    { id: "b", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "B" },
-  ],
-  wires: [
-    {
-      id: "w",
-      from: "a",
-      to: "b",
-      line: "flow",
-      points: [
-        [120, 50],
-        [220, 50],
-      ],
-    },
-  ],
-};
-
-/** フロー図の定義を `<!-- flow -->` の範囲の行にする */
-function flowLines(definition: unknown): string[] {
+/** 図の部品のマーカーの範囲の行にする */
+function diagramLines(directive: string, definition: unknown): string[] {
   return [
-    "<!-- flow -->",
+    `<!-- ${directive} -->`,
     "",
     "```json",
     JSON.stringify(definition),
     "```",
     "",
-    "<!-- /flow -->",
+    `<!-- /${directive} -->`,
   ];
 }
 
-// 図の定義の読み込めない箇所と配置のずれを、文書と行を指す行で出し、終了コード 1 で終わる（正常系（図の定義にずれがある））
+// 図の定義の読み込めない箇所を、文書と行を指す行で出し、終了コード 1 で終わる（正常系（図の定義にずれがある））
 test("test_normal_when_diagram_drift", async () => {
   // 準備
   const dir = await createTempDir();
   await runCli(["init", dir], dir);
-  const duplicated = {
-    ...CLEAN_FLOW,
-    nodes: [
-      { id: "api", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "API" },
-      { id: "api", kind: "script", x: 220, y: 20, w: 100, h: 60, name: "API" },
-    ],
-    wires: [],
+  const duplicated = shopEr();
+  const orders = duplicated.tables.find((table) => table.id === "orders");
+  if (orders === undefined) throw new Error("orders のテーブルが無い");
+  duplicated.tables.push({ ...orders, x: orders.x + 300 });
+  const chart = JSON.parse(REPLY_TIME_TEXT) as {
+    x: { ticks: string[] };
+    series: Array<{ points: number[] }>;
   };
-  const head = ["# A", "", ...flowLines(duplicated)];
+  chart.x.ticks = chart.x.ticks.slice(0, 4);
+  chart.series = chart.series.map((series) => ({
+    ...series,
+    points: series.points.slice(0, 3),
+  }));
   const missingTable = shopEr();
   missingTable.relations = missingTable.relations.map((relation) =>
     relation.label === "注文する" ? { ...relation, to: "payments" } : relation,
   );
-  const a = [
+  const head = ["# A", "", ...diagramLines("er", duplicated)];
+  const middle = [
     ...head,
     ...Array.from({ length: 19 - head.length }, () => ""),
-    ...flowLines(BROKEN_FLOW),
-    "",
-    "",
-    "",
-    ...flowLines(missingTable).map((line) =>
-      line.replace("flow -->", "er -->"),
-    ),
+    ...diagramLines("chart", chart),
+  ];
+  const a = [
+    ...middle,
+    ...Array.from({ length: 29 - middle.length }, () => ""),
+    ...diagramLines("er", missingTable),
     "",
   ];
   await writeFiles(dir, {
     "docs/a.mark.md": a.join("\n"),
-    "docs/b.mark.md": ["# B", "", ...flowLines(CLEAN_FLOW), ""].join("\n"),
+    "docs/b.mark.md": [
+      "# B",
+      "",
+      ...diagramLines("er", shopEr()),
+      "",
+      ...diagramLines("chart", JSON.parse(REPLY_TIME_TEXT)),
+      "",
+    ].join("\n"),
     "index.yaml": [
       "schema: 2",
       "docs:",
@@ -713,38 +655,65 @@ test("test_normal_when_diagram_drift", async () => {
   // 実行
   const result = await runCli(["check"], dir);
   // 検証
-  expect(a.indexOf("<!-- flow -->", 3) + 1).toBe(20);
-  expect(a.indexOf("<!-- er -->") + 1).toBe(30);
+  expect(a.indexOf("<!-- chart -->") + 1).toBe(20);
+  expect(a.indexOf("<!-- er -->", 4) + 1).toBe(30);
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
-  const invalid = lines.filter((line) =>
-    line.startsWith("docs/a.mark.md:3: diagram_invalid:"),
-  );
-  expect(invalid).toHaveLength(1);
-  expect(invalid[0]).toContain("api");
-  for (const [kind, ids] of [
-    ["diagram_node_overlap", ["web", "db"]],
-    ["diagram_node_overflow", ["queue"]],
-    ["diagram_wire_crosses_node", ["w1", "cache"]],
-    ["diagram_label_too_long", ["batch"]],
+  for (const [line, word] of [
+    [3, "orders"],
+    [20, "x.ticks"],
+    [30, "payments"],
   ] as const) {
-    const found = lines.filter((line) =>
-      line.startsWith(`docs/a.mark.md:20: ${kind}:`),
+    const found = lines.filter((text) =>
+      text.startsWith(`docs/a.mark.md:${line}: diagram_invalid:`),
     );
-    expect(found).toHaveLength(1);
-    for (const id of ids) {
-      expect(found[0]).toContain(id);
-    }
+    expect(found, String(line)).toHaveLength(1);
+    expect(found[0]).toContain(word);
   }
-  const erInvalid = lines.filter((line) =>
-    line.startsWith("docs/a.mark.md:30: diagram_invalid:"),
-  );
-  expect(erInvalid).toHaveLength(1);
-  expect(erInvalid[0]).toContain("payments");
   expect(lines.some((line) => line.includes("unknown_mark"))).toBe(false);
   expect(lines.some((line) => line.includes("docs/b.mark.md"))).toBe(false);
-  expect(lines.at(-1)).toBe("ずれ 6 件");
+  expect(lines.at(-1)).toBe("ずれ 3 件");
   expect(await read()).toEqual(before);
+});
+
+// 廃止した flow・sequence の範囲を retired_diagram のずれにし、範囲の中の定義は点検しない（正常系（廃止した図の範囲がある））
+test("test_normal_when_retired_diagram", async () => {
+  // 準備
+  const dir = await createCleanDir();
+  await writeFiles(dir, {
+    "a.mark.md": [
+      "# A",
+      "",
+      ...diagramLines("flow", JSON.parse(INQUIRY_TEXT)),
+      "",
+    ].join("\n"),
+    "b.mark.md": [
+      "# B",
+      "",
+      "本文",
+      "",
+      ...diagramLines("sequence", JSON.parse(INQUIRY_SEQ_TEXT)),
+      "",
+    ].join("\n"),
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  for (const prefix of [
+    "a.mark.md:3: retired_diagram:",
+    "b.mark.md:5: retired_diagram:",
+  ]) {
+    const found = lines.filter((line) => line.startsWith(prefix));
+    expect(found, prefix).toHaveLength(1);
+    expect(found[0]).toContain("map の範囲");
+    expect(found[0]).toContain("mdmark upgrade");
+  }
+  expect(lines.some((line) => line.includes("diagram_invalid"))).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 2 件");
+  expect(await snapshot(dir)).toEqual(before);
 });
 
 /** ビルドした `dist/cli.js` を `cwd` で実行し、`input` を標準入力に記載する。終了コードと出力を返却する */
@@ -791,6 +760,59 @@ async function folderSnapshot(dir: string, paths: string[]): Promise<string[]> {
   return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
 }
 
+/** `docs/*.md` を build の対象にした設定 */
+const DOCS_CONFIG = [
+  "build:",
+  '  include: ["docs/*.md"]',
+  "  out: dist/docs.html",
+  "",
+].join("\n");
+
+/** フォルダの中のファイルの中身を、名前の順に返却する（変わっていないことを確認する） */
+async function snapshotFiles(dir: string, paths: string[]): Promise<string[]> {
+  return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
+}
+
+/** map の範囲の行（3 行目から始まるよう `# A` と空行を前に置く） */
+const mapLines = (options: {
+  args?: string;
+  mermaid: string[];
+  data?: string;
+}): string[] => [
+  options.args === undefined ? "<!-- map -->" : `<!-- map: ${options.args} -->`,
+  "",
+  "```mermaid",
+  ...options.mermaid,
+  "```",
+  "",
+  ...(options.data === undefined
+    ? []
+    : [`<!-- map-data: ${options.data} -->`, ""]),
+  "<!-- /map -->",
+];
+
+/** `docs/a.mark.md` だけを索引に持つフォルダを作る */
+async function createMapDir(a: string[], config = ""): Promise<string> {
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const base = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${base}${config}`,
+    "docs/a.mark.md": a.join("\n"),
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: a",
+      "    path: docs/a.mark.md",
+      "    title: A",
+      "",
+    ].join("\n"),
+  });
+  return dir;
+}
+
+const MAP_FILES = ["mdmark.config.yaml", "index.yaml", "docs/a.mark.md"];
+
 // 記載の警告を持たない Markdown の文字列で 0 件を返却する（正常系（文字列の記法を点検する））
 test("test_normal_when_text", async () => {
   // 準備
@@ -799,7 +821,7 @@ test("test_normal_when_text", async () => {
   const paths = ["mdmark.config.yaml", "theme.css"];
   const before = await folderSnapshot(dir, paths);
   const markdown = [
-    ...flowLines(CLEAN_FLOW),
+    ...diagramLines("chart", JSON.parse(REPLY_TIME_TEXT)),
     "",
     '<!-- table: {"kind": "data"} -->',
     "",
@@ -832,7 +854,7 @@ test("test_normal_when_text_warnings", async () => {
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
   expect(lines).toHaveLength(4);
-  expect(lines[0]).toMatch(/^-:1: diagram_invalid: /);
+  expect(lines[0]).toMatch(/^-:1: retired_diagram: /);
   expect(lines[1]).toMatch(/^-:20: unknown_mark: /);
   expect(lines[2]).toMatch(/^-:22: syntax_warning: /);
   expect(lines.at(-1)).toBe("ずれ 3 件");
@@ -968,54 +990,6 @@ test("test_error_when_key_missing", async () => {
   expect(await readFile(join(dir, "records.yaml"), "utf8")).toBe(RECORDS_YAML);
 });
 
-// 座標を省いた判定フローチャートを配置の後の座標で点検し、座標を省けない定義を diagram_invalid にする（正常系（座標を省いた図の定義））
-test("test_normal_when_diagram_auto_layout", async () => {
-  // 準備
-  const dir = await createCleanDir();
-  const auto = JSON.parse(JUDGEMENT_AUTO_TEXT) as {
-    nodes: Array<Record<string, unknown>>;
-  };
-  const notJudgement = structuredClone(auto);
-  Object.assign(notJudgement.nodes[2] ?? {}, { kind: "llm" });
-  const head = ["# A", "", ...flowLines(auto)];
-  const a = [
-    ...head,
-    ...Array.from({ length: 29 - head.length }, () => ""),
-    ...flowLines(notJudgement),
-    "",
-  ];
-  await writeFiles(dir, { "a.mark.md": a.join("\n") });
-  const before = await snapshot(dir);
-  // 実行
-  const result = await runCli(["check"], dir);
-  // 検証
-  expect(result.code).toBe(1);
-  const lines = linesOf(result.stdout);
-  expect(lines.some((line) => line.startsWith("a.mark.md:3:"))).toBe(false);
-  const invalid = lines.filter((line) =>
-    line.startsWith("a.mark.md:30: diagram_invalid:"),
-  );
-  expect(invalid).toHaveLength(1);
-  expect(invalid[0]).toContain("llm");
-  expect(invalid[0]).toContain("判定フローチャート");
-  expect(invalid[0]).toContain("座標を記載するか");
-  expect(lines.at(-1)).toBe("ずれ 1 件");
-  expect(await snapshot(dir)).toEqual(before);
-});
-
-/** `docs/*.md` を build の対象にした設定 */
-const DOCS_CONFIG = [
-  "build:",
-  '  include: ["docs/*.md"]',
-  "  out: dist/docs.html",
-  "",
-].join("\n");
-
-/** フォルダの中のファイルの中身を、名前の順に返却する（変わっていないことを確認する） */
-async function snapshotFiles(dir: string, paths: string[]): Promise<string[]> {
-  return Promise.all(paths.map((path) => readFile(join(dir, path), "utf8")));
-}
-
 // include のマーカーが指すファイル・見出し・行の範囲が無いものを include_target_missing にする（正常系（取り込み先が無い））
 test("test_normal_when_include_targets_missing", async () => {
   // 準備
@@ -1148,86 +1122,6 @@ test("test_normal_when_diagram_placement_invalid", async () => {
   }
   expect(await snapshot(invalidDir)).toEqual(before);
 });
-
-// フロー図の frame.hint が文字でないことと stickyTitles が真偽値でないことを、1 件の diagram_invalid にまとめる（正常系（グループの項目に誤った値がある））
-test("test_normal_when_group_options_invalid", async () => {
-  // 準備
-  const dir = await createTempDir();
-  await runCli(["init", dir], dir);
-  const definition = JSON.parse(INQUIRY_TEXT) as Record<string, unknown> & {
-    frame: Record<string, unknown>;
-  };
-  definition.frame = { ...definition.frame, hint: 1 };
-  definition.stickyTitles = "no";
-  const a = ["# A", "", ...flowLines(definition), ""];
-  await writeFiles(dir, {
-    "docs/a.mark.md": a.join("\n"),
-    "index.yaml": [
-      "schema: 2",
-      "docs:",
-      "  - id: a",
-      "    path: docs/a.mark.md",
-      "    title: A",
-      "",
-    ].join("\n"),
-  });
-  const files = ["mdmark.config.yaml", "index.yaml", "docs/a.mark.md"];
-  const read = () =>
-    Promise.all(files.map((path) => readFile(join(dir, path), "utf8")));
-  const before = await read();
-  // 実行
-  const result = await runCli(["check"], dir);
-  // 検証
-  expect(a.indexOf("<!-- flow -->") + 1).toBe(3);
-  expect(result.code).toBe(1);
-  const invalid = linesOf(result.stdout).filter((line) =>
-    line.startsWith("docs/a.mark.md:3: diagram_invalid:"),
-  );
-  expect(invalid).toHaveLength(1);
-  expect(invalid[0]).toContain("frame.hint");
-  expect(invalid[0]).toContain("stickyTitles");
-  expect(await read()).toEqual(before);
-});
-
-/** map の範囲の行（3 行目から始まるよう `# A` と空行を前に置く） */
-const mapLines = (options: {
-  args?: string;
-  mermaid: string[];
-  data?: string;
-}): string[] => [
-  options.args === undefined ? "<!-- map -->" : `<!-- map: ${options.args} -->`,
-  "",
-  "```mermaid",
-  ...options.mermaid,
-  "```",
-  "",
-  ...(options.data === undefined
-    ? []
-    : [`<!-- map-data: ${options.data} -->`, ""]),
-  "<!-- /map -->",
-];
-
-/** `docs/a.mark.md` だけを索引に持つフォルダを作る */
-async function createMapDir(a: string[], config = ""): Promise<string> {
-  const dir = await createTempDir();
-  await runCli(["init", dir], dir);
-  const base = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
-  await writeFiles(dir, {
-    "mdmark.config.yaml": `${base}${config}`,
-    "docs/a.mark.md": a.join("\n"),
-    "index.yaml": [
-      "schema: 2",
-      "docs:",
-      "  - id: a",
-      "    path: docs/a.mark.md",
-      "    title: A",
-      "",
-    ].join("\n"),
-  });
-  return dir;
-}
-
-const MAP_FILES = ["mdmark.config.yaml", "index.yaml", "docs/a.mark.md"];
 
 // 文書の map の補足が指す無い ID・知らないキー・-- を含む値を、範囲の場所を指すずれにする（正常系（map の補足にずれがある））
 test("test_normal_when_map_data_drift", async () => {

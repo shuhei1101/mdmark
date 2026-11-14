@@ -1,0 +1,360 @@
+use_cases:
+  - kind: composite
+    scenario: docs/scenario/SC-472-93.yaml
+    impact: changed
+    detail: 見本の図の文書のフロー図を map の構成図に置き換え、描いた図を確かめる流れを map の見た目で確かめる形にする
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-89.yaml
+    impact: changed
+    detail: チャートと並べて置く `<!-- flow -->` のフロー図を map の構成図に置き換える
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-88.yaml
+    impact: changed
+    detail: プレビューと書き出した HTML で確かめるフロー図を map の構成図に置き換える
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: map の図を辿る流れは変えないが、map が使う今のフロー図・シーケンス図の見た目の部品を残す範囲を誤ると壊れる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-43.yaml
+    impact: changed
+    detail: 座標で記載するフロー図・シーケンス図を描く流れを削除し、`flow`・`sequence` の範囲には描かずに map へ変換できる旨の書き方の警告を出す流れにする。グラフ・操作できる部品・ER 図の流れは残す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: changed
+    detail: バージョンを上げると、文書の `flow`・`sequence` の定義が map の範囲（Mermaid と補足）へ書き換わり、設定に種類が加わる流れを追加する。座標の重なるフロー図を使う流れは map の図に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: フロー図の定義の誤り・配置のずれ・`frame.hint` の型の点検の流れを削除し、`flow`・`sequence` を記載した文書に map へ変換できる旨を知らせる流れにする
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: changed
+    detail: 文字列の中のフロー図の定義の点検を、map の範囲か `flow`・`sequence` の廃止の警告の点検に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: changed
+    detail: ツールチップを確かめる図をフロー図から map の構成図（補足の `notes` の線・ノード・グループの説明）に置き換える。グループの説明のマーカーを追加する。`features.hints` と `tooltips.diagramPlacement` を確かめる流れは ER 図と `data-hint` に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 拡大・縮小の正常シナリオとリサイズハンドルを map の構成図（等倍より縮めず、動かす矢印のボタンを持たない）に、ドラッグと文字の選択・矢印キーとボタンを ER 図に置き換える。グループのタイトルを留める・留めないと、リンク先を持つノードの上のドラッグのシナリオを削除する（リンク先を持つノードのドラッグは SC-472-8）
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-44.yaml
+    impact: changed
+    detail: 固有の部品と並べて置くフロー図を map の構成図に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-25.yaml
+    impact: changed
+    detail: テーマの上書きを確かめるフロー図を map の構成図に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-62.yaml
+    impact: changed
+    detail: リサイズハンドルの機能を解除して確かめるフロー図を map の構成図に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-13.yaml
+    impact: changed
+    detail: まとめた HTML でリンク先を持つフロー図のノードから文書を移る流れを、map のノードのリンクに置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-31.yaml
+    impact: changed
+    detail: プレビューでリンク先を持つフロー図のノードを開く流れを、map のノードのリンクに置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-60.yaml
+    impact: changed
+    detail: HTML の中の `<mdmark-flow>` と `flow` の図の `{{単語}}` の取り出しを削除し、map の範囲のノードの名前の用語を辞書の照合で参照にする流れにする
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: following
+    detail: プレビューに描く文書のフロー図を map の構成図に置き換える記述に追随する
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: following
+    detail: 書き出した HTML に描かれるフロー図を map の構成図に置き換える記述に追随する
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-77.yaml
+    impact: following
+    detail: プレビューに描かれるフロー図を map の構成図に置き換える記述に追随する
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: map の構成図のノードが Mermaid の `click` のリンク先を持ち、押すとリンク先へ移る流れ（正常シナリオ（リンク先を持つノード））と、許可しないリンク先を開かない流れ（異常シナリオ（ノードのリンク先を許可しない））を追加する。「今のフロー図と同じ部品で描く」の記述を、廃止の後に残す見た目の部品の呼び名に追随させる
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: map のシーケンスの再生は変えないが、今のシーケンス図の部品を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: map のシーケンス図の参加者の強調は変えないが、今のシーケンス図の部品を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: run_only
+    detail: map のグループとブロックの開閉は変えないが、今の図の部品を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-477-2.yaml
+    impact: new
+    detail: 座標で書いたフロー図とシーケンス図を、描いた文書の警告と点検の案内から移行の手順で map へ書き換え、移せなかった図を手で記載し直して map の図で描く
+    depends_on: []
+docs:
+  - page: docs/guide/記法.md
+    new: false
+    change: '`flow`・`sequence` の印の行を削除し、map へ変換できる旨と変換の方法を案内する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 座標で記載するフロー図・シーケンス図の手順を削除し、構成図・シーケンス図は map で描く案内にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/guide/図を描く-見本.md
+    new: false
+    change: 見本の文書のフロー図・シーケンス図を map の範囲に置き換える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/guide/図を描く-描いた図を確認する.md
+    new: false
+    change: 確かめる図の例をフロー図から map に置き換える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/図を描く-コードブロックのHTMLを描く.md
+    new: false
+    change: '`<mdmark-flow>` などのフロー図・シーケンス図の custom element の記述を削除する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 今のフロー図・シーケンス図と比べる記述を削除し、今の定義から変換する手順を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/guide/図を描く-固有の部品とCSSを適用する.md
+    new: false
+    change: 固有の部品と並べるフロー図の例を map に置き換える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 今のフロー図・シーケンス図と比べる記述を見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/カスタマイズ-拡張を登録する.md
+    new: false
+    change: フロー図・シーケンス図の部品を使う拡張の例を見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    new: false
+    change: 図の機能のキーの説明から `flow`・`sequence` を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/設定.md
+    new: false
+    change: 図の機能のキーの説明から `flow`・`sequence` を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/フローチャートの決まり.md
+    new: false
+    change: 判定フローチャートの描き方を `flow` から map へ置き換える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/guide/構成図の決まり.md
+    new: false
+    change: 今のフロー図の層・凡例の記述を削除し、map の決まりにそろえる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 今の図と併存する記述を、廃止の後の形にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/コアコンセプト-共通の定義と固有の定義.md
+    new: false
+    change: 基盤の部品の例からフロー図・シーケンス図を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/記載する-文書の記載方法.md
+    new: false
+    change: 図の選び方の記述から座標のフロー図・シーケンス図を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/HTMLの記載方法.md
+    new: false
+    change: フロー図・シーケンス図の custom element の記述を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/書き出す-点検する.md
+    new: false
+    change: フロー図の定義の点検の項目を削除し、`flow`・`sequence` の廃止の警告を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/API.md
+    new: false
+    change: フロー図・シーケンス図の部品を描く関数と CSS 変数を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/CLI.md
+    new: false
+    change: 点検の出力からフロー図の項目を削除し、変換の方法（移行の手順か CLI のコマンド）を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/用語集.md
+    new: false
+    change: フロー図・シーケンス図の用語を、廃止の後の意味（map の図）に直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/使用方法.md
+    new: false
+    change: 図を描く手順の案内から座標のフロー図・シーケンス図を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/はじめに.md
+    new: false
+    change: できることの一覧のフロー図・シーケンス図を map の図に直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/guide/README.md
+    new: false
+    change: 図の案内から座標のフロー図・シーケンス図を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: guide/index.yaml
+    new: false
+    change: 使い方集の索引の `when`・`summary` から座標のフロー図・シーケンス図を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+  - page: docs/mock/components/flow-diagram/index.html
+    new: false
+    change: 今のフロー図の部品のモックを削除する（map が使う見た目の部品を残す場合はその範囲に絞る）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/mock/components/sequence-diagram/index.html
+    new: false
+    change: 今のシーケンス図の部品のモックを削除する（map が使う見た目の部品を残す場合はその範囲に絞る）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/mock/components/index.md
+    new: false
+    change: フロー図・シーケンス図の部品のモックの行を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: docs/mock/files.yml
+    new: false
+    change: 削除したモックの行を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: src/files.yaml
+    new: false
+    change: '`parts/flow-diagram.stories.ts`・`parts/sequence-diagram.stories.ts` などの削除したファイルの行を削除し、変換のスクリプトの行を追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: tests/files.yaml
+    new: false
+    change: 削除・追加したテストの行を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
+  - page: schemas/mdmark.config.schema.json
+    new: false
+    change: 図の機能のキーの description から `flow`・`sequence` を削除する（`migrations/next/steps.yaml` に移行の手順を置くため、`no-steps.yaml` の行は要らない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
+scope_out:
+  - item: 既存の文書（mdmark の使い方集のほか、mdmark を使う各リポジトリ）の flow・sequence を、用意した変換で map へ書き換える移行
+    reason: 変換を使う側の作業で、この Issue では変換と廃止までを扱う。ただし、このリポジトリの使い方集・見本・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）
+    plan: '#290'
+  - item: 今の flow・sequence を純粋な Markdown の Mermaid へ書き出す機能
+    reason: 'この PR で flow・sequence を廃止するため、書き出す元が無くなる。map の書き出しは #313 で扱う'
+    plan: '#313'
+  - item: map 以外の部品に残る分野に寄った固定の語の洗い出しと、使う側の設定で作る形への置き換え
+    reason: flow・sequence（判定フローチャートを含む）の固定のノードの種類・線の名前は、変換で設定の `map.kinds`・`map.lines` に移り廃止で消える。残る部品の洗い出しは別の題材
+    plan: '#470'
+  - item: map が描く見た目に使っている今のフロー図・シーケンス図の部品（ノード・線の交差の飛び越え・ツールチップ）の削除
+    reason: map の描画が使い続けるため残す。部品設計でフロー図・シーケンス図の部品（CMP-472-28・19）を削除し、モジュール構成設計で `renderFlow` を map の構成図のノードと線を描く処理に絞った（枠・層・判定フローチャートの形・`renderSequence` は削除する）
+    plan: none
+  - item: 変換で座標（`x`・`y`・`col`・`row` など）を補足の `layout` の座標の固定へ写して元の配置を再現すること
+    reason: map は自動配置を既定にし、座標の固定は配置を上書きしたいときだけ使う。変換は座標と大きさを写さず、報告にも挙げない（単一ユースケース設計のレビューで合格）
+    plan: none
+  - item: 今のフロー図のグループのタイトルを留める機能（`stickyTitles`）を map に移すこと
+    reason: ユーザーの判断で map に移さず廃止する（確認ログ）。map は中へ入る・開閉でグループを辿る。変換では落として変換の報告に挙げる
+    plan: none
+  - item: 変換で、今の図の題の行の範囲・更新日を map へ写すこと
+    reason: '#445 の資料 A-38 で、map の図の題の行には題だけを出し、凡例は出さないと決めている。写す先が無い値として落とし、変換の報告に挙げる（凡例は定義の値ではなく、描くときに種類から作るため報告に挙げない）'
+    plan: none
+  - item: map の図の説明のツールチップに、設定の `features.hints`（まとめて削除する）と `tooltips.diagramPlacement`（上を先にする）を当てること
+    reason: ユーザーの判断で、この PR では適用せず別の Issue にする（確認ログ）。今の map はどちらの設定も参照せず、説明を常に下を先に出す
+    plan: '#557'
+  - item: 図の枠のリサイズハンドル（`src/parts/diagram.ts` の `.mdmark-diagram-resize`、`role="separator"`）に `aria-valuenow` が無い（axe の `aria-required-attr`。ストーリー `parts-mapflow--default` で検出）
+    reason: axe の `aria-required-attr` から外れているが、この PR は図の枠のリサイズハンドルを変えず、flow・sequence の廃止の要望に含まれない（レビューの対象外の逸脱の報告）
+    plan: '#514'
+  - item: map の構成図の説明を持つノード（`src/parts/map.ts` の `renderMapFlow`。`tabindex="0"`・`role="button"` のノードの中に説明のマーカーのボタン）の入れ子（axe の `nested-interactive`。ストーリー `parts-mapflow--default` の `data`・`layout` のノードで検出）
+    reason: axe の `nested-interactive` から外れているが、説明のマーカーをノードの中に置く作りはこの PR の前からあり、flow・sequence の廃止の要望に含まれない（レビューの対象外の逸脱の報告。この PR はリンク先を持つノードの入れ子だけを直した）
+    plan: '#558'

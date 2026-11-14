@@ -47,18 +47,7 @@
     --mdmark-color-avoided-underline: var(--mdmark-color-notice-border);
     --mdmark-tooltip-max-width: 22rem;
     --mdmark-tooltip-max-height: 18rem;
-    --mdmark-diagram-lane-tint: 8%;
     --mdmark-diagram-max-height: 36rem;
-    --mdmark-color-diagram-llm: #6d28d9;
-    --mdmark-color-diagram-dm: #1d4ed8;
-    --mdmark-color-diagram-script: #52525b;
-    --mdmark-color-diagram-mcp: #b45309;
-    --mdmark-color-diagram-data: #0f766e;
-    --mdmark-color-diagram-external: #15803d;
-    --mdmark-color-diagram-start: #52525b;
-    --mdmark-color-diagram-question: #1d4ed8;
-    --mdmark-color-diagram-action: #b45309;
-    --mdmark-color-diagram-result: #15803d;
     --mdmark-color-diagram-line: #71717a;
     --mdmark-color-series-1: #0f766e;
     --mdmark-color-series-2: #b45309;
@@ -133,16 +122,6 @@
       --mdmark-color-callout-warning: #fbbf24;
       --mdmark-color-callout-caution: #f87171;
       --mdmark-color-current-bg: #10302c;
-      --mdmark-color-diagram-llm: #c4a7ff;
-      --mdmark-color-diagram-dm: #7aa2ff;
-      --mdmark-color-diagram-script: #b4b4bc;
-      --mdmark-color-diagram-mcp: #fbbf24;
-      --mdmark-color-diagram-data: #2dd4bf;
-      --mdmark-color-diagram-external: #4ade80;
-      --mdmark-color-diagram-start: #b4b4bc;
-      --mdmark-color-diagram-question: #7aa2ff;
-      --mdmark-color-diagram-action: #fbbf24;
-      --mdmark-color-diagram-result: #4ade80;
       --mdmark-color-diagram-line: #8f8f99;
       --mdmark-color-series-1: #2dd4bf;
       --mdmark-color-series-2: #fbbf24;
@@ -257,16 +236,6 @@
       --mdmark-color-callout-warning: #fbbf24;
       --mdmark-color-callout-caution: #f87171;
       --mdmark-color-current-bg: #10302c;
-      --mdmark-color-diagram-llm: #c4a7ff;
-      --mdmark-color-diagram-dm: #7aa2ff;
-      --mdmark-color-diagram-script: #b4b4bc;
-      --mdmark-color-diagram-mcp: #fbbf24;
-      --mdmark-color-diagram-data: #2dd4bf;
-      --mdmark-color-diagram-external: #4ade80;
-      --mdmark-color-diagram-start: #b4b4bc;
-      --mdmark-color-diagram-question: #7aa2ff;
-      --mdmark-color-diagram-action: #fbbf24;
-      --mdmark-color-diagram-result: #4ade80;
       --mdmark-color-diagram-line: #8f8f99;
       --mdmark-color-series-1: #2dd4bf;
       --mdmark-color-series-2: #fbbf24;
@@ -371,16 +340,6 @@
       --mdmark-color-callout-warning: #b45309;
       --mdmark-color-callout-caution: #b91c1c;
       --mdmark-color-current-bg: #e6f3f1;
-      --mdmark-color-diagram-llm: #6d28d9;
-      --mdmark-color-diagram-dm: #1d4ed8;
-      --mdmark-color-diagram-script: #52525b;
-      --mdmark-color-diagram-mcp: #b45309;
-      --mdmark-color-diagram-data: #0f766e;
-      --mdmark-color-diagram-external: #15803d;
-      --mdmark-color-diagram-start: #52525b;
-      --mdmark-color-diagram-question: #1d4ed8;
-      --mdmark-color-diagram-action: #b45309;
-      --mdmark-color-diagram-result: #15803d;
       --mdmark-color-diagram-line: #71717a;
       --mdmark-color-series-1: #0f766e;
       --mdmark-color-series-2: #b45309;
@@ -454,16 +413,6 @@
     --mdmark-color-callout-important: #6b3fa0;
     --mdmark-color-callout-warning: #94540a;
     --mdmark-color-callout-caution: #a3261f;
-    --mdmark-color-diagram-llm: #6b3fa0;
-    --mdmark-color-diagram-dm: #1e4f8c;
-    --mdmark-color-diagram-script: #5c5247;
-    --mdmark-color-diagram-mcp: #94540a;
-    --mdmark-color-diagram-data: #9b2c2c;
-    --mdmark-color-diagram-external: #3f6b2a;
-    --mdmark-color-diagram-start: #5c5247;
-    --mdmark-color-diagram-question: #1e4f8c;
-    --mdmark-color-diagram-action: #94540a;
-    --mdmark-color-diagram-result: #3f6b2a;
     --mdmark-color-diagram-line: #857a6c;
     --mdmark-color-series-1: #9b2c2c;
     --mdmark-color-series-2: #1e4f8c;
@@ -527,16 +476,6 @@
     --mdmark-color-callout-important: #6d28d9;
     --mdmark-color-callout-warning: #a24a06;
     --mdmark-color-callout-caution: #b91c1c;
-    --mdmark-color-diagram-llm: #6d28d9;
-    --mdmark-color-diagram-dm: #1d4ed8;
-    --mdmark-color-diagram-script: #475569;
-    --mdmark-color-diagram-mcp: #a24a06;
-    --mdmark-color-diagram-data: #0e7490;
-    --mdmark-color-diagram-external: #047857;
-    --mdmark-color-diagram-start: #475569;
-    --mdmark-color-diagram-question: #1d4ed8;
-    --mdmark-color-diagram-action: #a24a06;
-    --mdmark-color-diagram-result: #047857;
     --mdmark-color-diagram-line: #64748b;
     --mdmark-color-series-1: #1d4ed8;
     --mdmark-color-series-2: #047857;
@@ -600,16 +539,6 @@
     --mdmark-color-callout-important: #5b21b6;
     --mdmark-color-callout-warning: #8a4b00;
     --mdmark-color-callout-caution: #a3001c;
-    --mdmark-color-diagram-llm: #5b21b6;
-    --mdmark-color-diagram-dm: #0037a8;
-    --mdmark-color-diagram-script: #333333;
-    --mdmark-color-diagram-mcp: #8a4b00;
-    --mdmark-color-diagram-data: #006a6a;
-    --mdmark-color-diagram-external: #1a5e1a;
-    --mdmark-color-diagram-start: #333333;
-    --mdmark-color-diagram-question: #0037a8;
-    --mdmark-color-diagram-action: #8a4b00;
-    --mdmark-color-diagram-result: #1a5e1a;
     --mdmark-color-diagram-line: #4d4d4d;
     --mdmark-color-series-1: #0037a8;
     --mdmark-color-series-2: #8a4b00;
@@ -675,16 +604,6 @@
       --mdmark-color-callout-important: #c9a8ec;
       --mdmark-color-callout-warning: #e8b04a;
       --mdmark-color-callout-caution: #f0928a;
-      --mdmark-color-diagram-llm: #c9a8ec;
-      --mdmark-color-diagram-dm: #8fb4e8;
-      --mdmark-color-diagram-script: #b8ad9c;
-      --mdmark-color-diagram-mcp: #e8b04a;
-      --mdmark-color-diagram-data: #f0a39a;
-      --mdmark-color-diagram-external: #a3c98a;
-      --mdmark-color-diagram-start: #b8ad9c;
-      --mdmark-color-diagram-question: #8fb4e8;
-      --mdmark-color-diagram-action: #e8b04a;
-      --mdmark-color-diagram-result: #a3c98a;
       --mdmark-color-diagram-line: #9a8f80;
       --mdmark-color-series-1: #f0a39a;
       --mdmark-color-series-2: #8fb4e8;
@@ -748,16 +667,6 @@
       --mdmark-color-callout-important: #c4b5fd;
       --mdmark-color-callout-warning: #fbbf24;
       --mdmark-color-callout-caution: #fca5a5;
-      --mdmark-color-diagram-llm: #c4b5fd;
-      --mdmark-color-diagram-dm: #f9a8d4;
-      --mdmark-color-diagram-script: #a3b1c6;
-      --mdmark-color-diagram-mcp: #fbbf24;
-      --mdmark-color-diagram-data: #7dd3fc;
-      --mdmark-color-diagram-external: #5eead4;
-      --mdmark-color-diagram-start: #a3b1c6;
-      --mdmark-color-diagram-question: #f9a8d4;
-      --mdmark-color-diagram-action: #fbbf24;
-      --mdmark-color-diagram-result: #5eead4;
       --mdmark-color-diagram-line: #8391a7;
       --mdmark-color-series-1: #7dd3fc;
       --mdmark-color-series-2: #6ee7b7;
@@ -821,16 +730,6 @@
       --mdmark-color-callout-important: #d0b3ff;
       --mdmark-color-callout-warning: #ffd23f;
       --mdmark-color-callout-caution: #ff9090;
-      --mdmark-color-diagram-llm: #d0b3ff;
-      --mdmark-color-diagram-dm: #9cc0ff;
-      --mdmark-color-diagram-script: #d6d6d6;
-      --mdmark-color-diagram-mcp: #ffd23f;
-      --mdmark-color-diagram-data: #4fd1c5;
-      --mdmark-color-diagram-external: #7ee07e;
-      --mdmark-color-diagram-start: #d6d6d6;
-      --mdmark-color-diagram-question: #9cc0ff;
-      --mdmark-color-diagram-action: #ffd23f;
-      --mdmark-color-diagram-result: #7ee07e;
       --mdmark-color-diagram-line: #a6a6a6;
       --mdmark-color-series-1: #9cc0ff;
       --mdmark-color-series-2: #ffd23f;
@@ -942,16 +841,6 @@
       --mdmark-color-callout-important: #c9a8ec;
       --mdmark-color-callout-warning: #e8b04a;
       --mdmark-color-callout-caution: #f0928a;
-      --mdmark-color-diagram-llm: #c9a8ec;
-      --mdmark-color-diagram-dm: #8fb4e8;
-      --mdmark-color-diagram-script: #b8ad9c;
-      --mdmark-color-diagram-mcp: #e8b04a;
-      --mdmark-color-diagram-data: #f0a39a;
-      --mdmark-color-diagram-external: #a3c98a;
-      --mdmark-color-diagram-start: #b8ad9c;
-      --mdmark-color-diagram-question: #8fb4e8;
-      --mdmark-color-diagram-action: #e8b04a;
-      --mdmark-color-diagram-result: #a3c98a;
       --mdmark-color-diagram-line: #9a8f80;
       --mdmark-color-series-1: #f0a39a;
       --mdmark-color-series-2: #8fb4e8;
@@ -1053,16 +942,6 @@
       --mdmark-color-callout-important: #6b3fa0;
       --mdmark-color-callout-warning: #94540a;
       --mdmark-color-callout-caution: #a3261f;
-      --mdmark-color-diagram-llm: #6b3fa0;
-      --mdmark-color-diagram-dm: #1e4f8c;
-      --mdmark-color-diagram-script: #5c5247;
-      --mdmark-color-diagram-mcp: #94540a;
-      --mdmark-color-diagram-data: #9b2c2c;
-      --mdmark-color-diagram-external: #3f6b2a;
-      --mdmark-color-diagram-start: #5c5247;
-      --mdmark-color-diagram-question: #1e4f8c;
-      --mdmark-color-diagram-action: #94540a;
-      --mdmark-color-diagram-result: #3f6b2a;
       --mdmark-color-diagram-line: #857a6c;
       --mdmark-color-series-1: #9b2c2c;
       --mdmark-color-series-2: #1e4f8c;
@@ -1171,16 +1050,6 @@
       --mdmark-color-callout-important: #c4b5fd;
       --mdmark-color-callout-warning: #fbbf24;
       --mdmark-color-callout-caution: #fca5a5;
-      --mdmark-color-diagram-llm: #c4b5fd;
-      --mdmark-color-diagram-dm: #f9a8d4;
-      --mdmark-color-diagram-script: #a3b1c6;
-      --mdmark-color-diagram-mcp: #fbbf24;
-      --mdmark-color-diagram-data: #7dd3fc;
-      --mdmark-color-diagram-external: #5eead4;
-      --mdmark-color-diagram-start: #a3b1c6;
-      --mdmark-color-diagram-question: #f9a8d4;
-      --mdmark-color-diagram-action: #fbbf24;
-      --mdmark-color-diagram-result: #5eead4;
       --mdmark-color-diagram-line: #8391a7;
       --mdmark-color-series-1: #7dd3fc;
       --mdmark-color-series-2: #6ee7b7;
@@ -1282,16 +1151,6 @@
       --mdmark-color-callout-important: #6d28d9;
       --mdmark-color-callout-warning: #a24a06;
       --mdmark-color-callout-caution: #b91c1c;
-      --mdmark-color-diagram-llm: #6d28d9;
-      --mdmark-color-diagram-dm: #1d4ed8;
-      --mdmark-color-diagram-script: #475569;
-      --mdmark-color-diagram-mcp: #a24a06;
-      --mdmark-color-diagram-data: #0e7490;
-      --mdmark-color-diagram-external: #047857;
-      --mdmark-color-diagram-start: #475569;
-      --mdmark-color-diagram-question: #1d4ed8;
-      --mdmark-color-diagram-action: #a24a06;
-      --mdmark-color-diagram-result: #047857;
       --mdmark-color-diagram-line: #64748b;
       --mdmark-color-series-1: #1d4ed8;
       --mdmark-color-series-2: #047857;
@@ -1400,16 +1259,6 @@
       --mdmark-color-callout-important: #d0b3ff;
       --mdmark-color-callout-warning: #ffd23f;
       --mdmark-color-callout-caution: #ff9090;
-      --mdmark-color-diagram-llm: #d0b3ff;
-      --mdmark-color-diagram-dm: #9cc0ff;
-      --mdmark-color-diagram-script: #d6d6d6;
-      --mdmark-color-diagram-mcp: #ffd23f;
-      --mdmark-color-diagram-data: #4fd1c5;
-      --mdmark-color-diagram-external: #7ee07e;
-      --mdmark-color-diagram-start: #d6d6d6;
-      --mdmark-color-diagram-question: #9cc0ff;
-      --mdmark-color-diagram-action: #ffd23f;
-      --mdmark-color-diagram-result: #7ee07e;
       --mdmark-color-diagram-line: #a6a6a6;
       --mdmark-color-series-1: #9cc0ff;
       --mdmark-color-series-2: #ffd23f;
@@ -1511,16 +1360,6 @@
       --mdmark-color-callout-important: #5b21b6;
       --mdmark-color-callout-warning: #8a4b00;
       --mdmark-color-callout-caution: #a3001c;
-      --mdmark-color-diagram-llm: #5b21b6;
-      --mdmark-color-diagram-dm: #0037a8;
-      --mdmark-color-diagram-script: #333333;
-      --mdmark-color-diagram-mcp: #8a4b00;
-      --mdmark-color-diagram-data: #006a6a;
-      --mdmark-color-diagram-external: #1a5e1a;
-      --mdmark-color-diagram-start: #333333;
-      --mdmark-color-diagram-question: #0037a8;
-      --mdmark-color-diagram-action: #8a4b00;
-      --mdmark-color-diagram-result: #1a5e1a;
       --mdmark-color-diagram-line: #4d4d4d;
       --mdmark-color-series-1: #0037a8;
       --mdmark-color-series-2: #8a4b00;
@@ -4965,40 +4804,6 @@
       overflow: visible;
     }
 
-    /* 凡例のノードの見本: 種類の色の線と地。データは下の角が丸い */
-    .mdmark-diagram-legend-sample[data-kind] {
-      fill: color-mix(
-        in srgb,
-        var(--node-color) 10%,
-        var(--mdmark-color-bg-opaque)
-      );
-      stroke: var(--node-color);
-      stroke-width: 1.5;
-    }
-
-    /* 凡例のシステムの枠の見本 */
-    .mdmark-diagram-legend-frame {
-      fill: none;
-      stroke: var(--mdmark-color-muted);
-      stroke-width: 1.5;
-    }
-
-    /* 凡例の層の背景の見本 */
-    .mdmark-diagram-legend-lane {
-      fill: color-mix(
-        in srgb,
-        var(--mdmark-color-diagram-llm) 14%,
-        var(--mdmark-color-bg-opaque)
-      );
-    }
-
-    /* 凡例の線の交差の見本: 縦の線を横の線が飛び越える */
-    .mdmark-diagram-legend-jump {
-      fill: none;
-      stroke: var(--mdmark-color-diagram-line);
-      stroke-width: 1.5;
-    }
-
     /* 凡例の入力・処理・出力が出るノードのマーカーの見本 */
     .mdmark-diagram-legend-info {
       display: inline-grid;
@@ -5008,11 +4813,6 @@
         width: 15px;
         height: 15px;
       }
-    }
-
-    /* 矢じりを定義する svg: 大きさを持たず、図の中に配置する */
-    .mdmark-diagram-defs {
-      position: absolute;
     }
 
     /* 凡例の用語の見本: 本文の用語と同じ破線の下線 */
@@ -5194,9 +4994,11 @@
         .mdmark-diagram-node-kind,
         .mdmark-diagram-node-name,
         .mdmark-diagram-node-sub,
+        .mdmark-diagram-er-physical,
+        .mdmark-diagram-er-logical,
+        .mdmark-diagram-er-name,
+        .mdmark-diagram-er-type,
         .mdmark-diagram-label,
-        .mdmark-diagram-frame-title,
-        .mdmark-diagram-lane-label,
         .mdmark-diagram-axis-text,
         .mdmark-diagram-value-text
       ) {
@@ -5204,104 +5006,7 @@
       user-select: text;
     }
 
-    /* ---------- フロー図 ---------- */
-
-    /* システムの枠: 内側を囲む太めの線。外部のシステムは枠の外に配置する */
-    .mdmark-diagram-frame {
-      position: absolute;
-      border: 1.5px solid var(--mdmark-color-muted);
-      border-radius: 12px;
-    }
-
-    /* システムの枠のタイトル: 枠の左上に、アイコンと名前 */
-    .mdmark-diagram-frame-title {
-      position: absolute;
-      display: flex;
-      gap: 0.375rem;
-      align-items: center;
-      color: var(--mdmark-color-heading);
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.4;
-      white-space: nowrap;
-    }
-
-    /* 層の背景: その層のノードの色をうっすら敷く */
-    .mdmark-diagram-lane {
-      position: absolute;
-      background: color-mix(
-        in srgb,
-        var(--lane-color) var(--mdmark-diagram-lane-tint),
-        var(--mdmark-color-bg-opaque)
-      );
-    }
-
-    /* 層の見出し: 層の左上に控えめな文字で。hint を持つ層は名前の右に説明のボタンを並べる */
-    .mdmark-diagram-lane-label {
-      position: absolute;
-      display: flex;
-      gap: 0.25rem;
-      align-items: center;
-      color: var(--mdmark-color-muted);
-      font-size: 12px;
-      font-weight: 600;
-      line-height: 1.4;
-      white-space: nowrap;
-    }
-
-    /* 種類ごとの色: ノードの線・種類の行・層の背景が読み込む */
-    :is(
-        .mdmark-diagram-node,
-        .mdmark-diagram-lane,
-        .mdmark-diagram-legend-sample
-      ) {
-      &[data-kind="llm"] {
-        --node-color: var(--mdmark-color-diagram-llm);
-        --lane-color: var(--mdmark-color-diagram-llm);
-      }
-
-      &[data-kind="dm"] {
-        --node-color: var(--mdmark-color-diagram-dm);
-        --lane-color: var(--mdmark-color-diagram-dm);
-      }
-
-      &[data-kind="script"] {
-        --node-color: var(--mdmark-color-diagram-script);
-        --lane-color: var(--mdmark-color-diagram-script);
-      }
-
-      &[data-kind="mcp"] {
-        --node-color: var(--mdmark-color-diagram-mcp);
-        --lane-color: var(--mdmark-color-diagram-mcp);
-      }
-
-      &[data-kind="data"] {
-        --node-color: var(--mdmark-color-diagram-data);
-        --lane-color: var(--mdmark-color-diagram-data);
-      }
-
-      &[data-kind="external"] {
-        --node-color: var(--mdmark-color-diagram-external);
-        --lane-color: var(--mdmark-color-diagram-external);
-      }
-
-      /* 判定フローチャートの種類: 層を持たないのでノードの色だけ */
-      &[data-kind="start"] {
-        --node-color: var(--mdmark-color-diagram-start);
-      }
-
-      &[data-kind="question"] {
-        --node-color: var(--mdmark-color-diagram-question);
-      }
-
-      &[data-kind="action"] {
-        --node-color: var(--mdmark-color-diagram-action);
-      }
-
-      &[data-kind="result"] {
-        --node-color: var(--mdmark-color-diagram-result);
-      }
-    }
+    /* ---------- 構成図のノードと線 ---------- */
 
     /* リンク先を持つノード: ノードの全体を押せる。名前は本文のリンクと同じ色と下線にし、文字の上も押せる構造のカーソルにする */
     .mdmark-diagram-node.has-link {
@@ -5367,92 +5072,10 @@
       background: var(--mdmark-color-bg-opaque);
       line-height: 1.35;
 
-      /* データのノード: 下の角を大きく丸めて入れ物に見せる */
-      &[data-kind="data"] {
-        border-radius: 8px 8px 20px 20px;
-      }
-
       /* ツールチップを持つノード: 種類の行を右上のマーカーと重ねない */
       &.has-tip .mdmark-diagram-node-kind {
         padding-inline-end: 22px;
       }
-
-      /* 判定フローチャートのノード: 種類の行と名前を中央に統一し、名前は文節で折り返す */
-      &:is(
-          [data-kind="start"],
-          [data-kind="question"],
-          [data-kind="action"],
-          [data-kind="result"]
-        ) {
-        align-items: center;
-        text-align: center;
-        word-break: auto-phrase;
-
-        & .mdmark-diagram-node-kind {
-          justify-content: center;
-        }
-
-        /* 説明のマーカー: 右上の角は構造の外になるので、右の端の中央に配置し、種類の行は空けない */
-        &.has-tip {
-          padding-inline-end: 30px;
-
-          & .mdmark-diagram-node-kind {
-            padding-inline-end: 0;
-          }
-
-          & .mdmark-diagram-info {
-            inset-block-start: 50%;
-            inset-inline-end: 6px;
-            translate: 0 -50%;
-          }
-        }
-      }
-
-      /* 開始: 円。名前は円に内接する正方形に配置する（余白は描く処理が直径から適用する） */
-      &[data-kind="start"] {
-        border-radius: 50%;
-      }
-
-      /* 質問: 菱形。枠は svg の菱形が持ち、名前は菱形の中央の四角に配置する（余白は描く処理が寸法から適用する） */
-      &[data-kind="question"] {
-        isolation: isolate;
-        border: 0;
-        background: transparent;
-
-        &.has-tip {
-          padding-inline-end: 0;
-
-          & .mdmark-diagram-info {
-            inset-inline-end: 12.5%;
-            translate: 50% -50%;
-          }
-        }
-      }
-
-      /* アクション: 角の丸くない四角 */
-      &[data-kind="action"] {
-        border-radius: 2px;
-      }
-
-      /* 結果: 両端の丸い形状 */
-      &[data-kind="result"] {
-        padding-inline: 20px;
-        border-radius: 999px;
-      }
-    }
-
-    /* 質問の菱形の枠: ノードいっぱいに引き、地は文書の地にして線から浮かせる */
-    .mdmark-diagram-node-shape {
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
-      fill: var(--mdmark-color-bg-opaque);
-      stroke: var(--node-color);
-      stroke-width: 1.5;
-      stroke-linejoin: round;
     }
 
     /* ノードの種類の行: アイコンと種類の名前を種類の色で */
@@ -5529,71 +5152,15 @@
       pointer-events: none;
     }
 
-    /* 線: 種類ごとに色と模様（破線の間隔・太さ・矢じり）の組で分ける */
+    /* 線: map の構成図の線は描く処理が色と模様を指定する。指定の無い線は線の既定の色 */
     .mdmark-diagram-wire {
       fill: none;
-      stroke: var(--wire-color);
+      stroke: var(--wire-color, var(--mdmark-color-diagram-line));
       stroke-linejoin: round;
-
-      /* 処理の流れ: 実線・塗った矢じり */
-      &[data-line="flow"] {
-        --wire-color: var(--mdmark-color-diagram-line);
-      }
-
-      /* 読み込む: データの色の短い破線・開いた矢じり */
-      &[data-line="read"] {
-        --wire-color: var(--mdmark-color-diagram-data);
-      }
-
-      /* 記載する: 処理（MCP）の色の太い実線・塗った矢じり */
-      &[data-line="write"] {
-        --wire-color: var(--mdmark-color-diagram-mcp);
-      }
-
-      /* 返却する（シーケンス図の返事）: 流れの色の短い破線・開いた矢じり */
-      &[data-line="reply"] {
-        --wire-color: var(--mdmark-color-diagram-line);
-      }
-
-      /* 戻る（ループの戻り）: 流れの色の長い破線・開いた矢じり */
-      &[data-line="loop"] {
-        --wire-color: var(--mdmark-color-diagram-line);
-      }
 
       /* ツールチップを開いている線: 太くしてどの線の詳細かを示す */
       &.is-active {
         stroke-width: 3;
-      }
-
-      &[data-line="write"].is-active {
-        stroke-width: 4.5;
-      }
-    }
-
-    /* 矢じり: 線の種類ごとの色。処理の流れと記載するは塗り、読み込むと戻るは線だけの開いた形状 */
-    .mdmark-diagram-arrowhead {
-      &[data-line="flow"] {
-        fill: var(--mdmark-color-diagram-line);
-      }
-
-      &[data-line="write"] {
-        fill: var(--mdmark-color-diagram-mcp);
-      }
-
-      &[data-line="read"] {
-        fill: none;
-        stroke: var(--mdmark-color-diagram-data);
-        stroke-width: 1.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      &:is([data-line="loop"], [data-line="reply"]) {
-        fill: none;
-        stroke: var(--mdmark-color-diagram-line);
-        stroke-width: 1.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
       }
     }
 
@@ -5605,7 +5172,7 @@
       pointer-events: stroke;
     }
 
-    /* 線のラベル（入力の要約）: 線の上に地の色の札で配置する */
+    /* 線のラベル: 線の上に地の色の札で配置する */
     .mdmark-diagram-label {
       position: absolute;
       transform: translate(-50%, -50%);
@@ -5630,13 +5197,6 @@
         outline: 2px solid var(--mdmark-color-link);
         outline-offset: 1px;
       }
-
-      /* 戻り先のラベル: 戻りの線と同じ破線の枠 */
-      &[data-line="loop"] {
-        border-style: dashed;
-        border-color: var(--mdmark-color-diagram-line);
-        color: var(--mdmark-color-text);
-      }
     }
 
     /* ---------- シーケンス図 ---------- */
@@ -5659,16 +5219,6 @@
       &.is-stuck {
         border-bottom: 1px solid var(--mdmark-color-border);
       }
-    }
-
-    /* 繰り返しの範囲: 戻りの線の帯を薄い面で示す */
-    .mdmark-diagram-loop-band {
-      fill: color-mix(
-        in srgb,
-        var(--mdmark-color-diagram-line) 6%,
-        transparent
-      );
-      stroke: none;
     }
 
     /* ---------- グラフ ---------- */
@@ -6127,11 +5677,11 @@
       text-decoration: none;
 
       &[data-key="pk"] {
-        color: var(--mdmark-color-diagram-mcp);
+        color: var(--mdmark-color-accent-orange-text);
       }
 
       &[data-key="fk"] {
-        color: var(--mdmark-color-diagram-dm);
+        color: var(--mdmark-color-accent-blue-text);
       }
 
       &[data-key="nn"] {
@@ -10440,22 +9990,12 @@
       }
     }
 
-    /* グループ（システムの枠・層）の説明のボタン: タイトルの文字の右に並べる */
+    /* map の構成図のグループの説明のボタン: タイトルの文字の右に並べる */
     .mdmark-diagram-info.mdmark-diagram-group-info {
       --node-color: var(--mdmark-color-muted);
       position: static;
       width: 18px;
       height: 18px;
-    }
-
-    /* 上端に留めたグループのタイトル: ノードと線より前に出し、地の色の札で読み込めるようにする */
-    :is(.mdmark-diagram-frame-title, .mdmark-diagram-lane-label).is-stuck {
-      z-index: 2;
-      margin-inline-start: -0.375rem;
-      padding: 0 0.375rem;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: 4px;
-      background: var(--mdmark-color-bg-opaque);
     }
   }
 

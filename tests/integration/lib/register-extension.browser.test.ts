@@ -447,13 +447,13 @@ test("test_normal_when_directive_is_diagram_name", async () => {
   // 準備
   const built = await loadBuilt();
   const el = createElement();
-  const { extension } = createGreet({ directive: "flow" });
+  const { extension } = createGreet({ directive: "chart" });
   // 実行・検証
   expect(() => built.registerExtension(extension)).not.toThrow();
   mountTracked(
     built,
     el,
-    '前の段落\n\n<!-- flow: {"target": "world"} -->\n\n後の段落\n',
+    '前の段落\n\n<!-- chart: {"target": "world"} -->\n\n後の段落\n',
   );
   await vi.waitFor(() => {
     expect(find(el, "[data-mdmark-slot]").textContent).toBe(

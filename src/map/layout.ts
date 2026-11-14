@@ -1,6 +1,15 @@
-import { LABEL_METRICS } from "../diagram/check.ts";
 import type { MapSide } from "./data.ts";
 import type { Direction, FlowArrow, Flowchart } from "./flowchart.ts";
+
+/** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。CSS を修正したときは合わせて修正する */
+export const LABEL_METRICS = {
+  kindSize: 11,
+  nameSize: 14,
+  subSize: 12,
+  lineHeight: 1.4,
+  padY: 6,
+  padX: 10,
+};
 
 /** 配置の寸法（px）と経路の重み */
 export const MAP_LAYOUT = {
@@ -138,7 +147,7 @@ const isWide = (char: string): boolean => {
   return !(code <= 0x7e || (code >= 0xff61 && code <= 0xff9f));
 };
 
-/** labelLineCount と同じ見積もりで、幅に収まるように行に分ける */
+/** 全角を文字の大きさ、半角を 0.6 倍の幅として、幅に収まるように行に分ける */
 const splitLines = (
   text: string,
   fontSize: number,

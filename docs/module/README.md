@@ -57,11 +57,9 @@
 | [ライブラリ本体 / ビューとコメント / spec.ts](./MOD-472-155.ts.yaml) | ライブラリ本体 / ビューとコメント / spec.ts |
 | [ライブラリ本体 / CLI / config-files.ts](./MOD-472-116.ts.yaml) | ライブラリ本体 / CLI / config-files.ts |
 | [ライブラリ本体 / 設定と機能 / config.ts](./MOD-472-304.ts.yaml) | ライブラリ本体 / 設定と機能 / config.ts |
-| [ライブラリ本体 / 図 / check.ts](./MOD-472-175.ts.yaml) | ライブラリ本体 / 図 / check.ts |
 | [ライブラリ本体 / 図 / definition.ts](./MOD-472-171.ts.yaml) | ライブラリ本体 / 図 / definition.ts |
 | [ライブラリ本体 / 図 / er.ts](./MOD-472-176.ts.yaml) | ライブラリ本体 / 図 / er.ts |
 | [ライブラリ本体 / 図 / geometry.ts](./MOD-472-173.ts.yaml) | ライブラリ本体 / 図 / geometry.ts |
-| [ライブラリ本体 / 図 / layout.ts](./MOD-472-178.ts.yaml) | ライブラリ本体 / 図 / layout.ts |
 | [ライブラリ本体 / 差分 / blocks.ts](./MOD-472-191.ts.yaml) | ライブラリ本体 / 差分 / blocks.ts |
 | [ライブラリ本体 / 差分 / compute.ts](./MOD-472-190.ts.yaml) | ライブラリ本体 / 差分 / compute.ts |
 | [ライブラリ本体 / 差分 / minimap.ts](./MOD-472-193.ts.yaml) | ライブラリ本体 / 差分 / minimap.ts |
@@ -343,7 +341,7 @@
 | [ライブラリ本体 / ビューとコメント](./MOD-472-31.yaml) | ビューとコメントの部品を `dist/index.js` と別の配布ファイル（`dist/view.js`・`dist/comments.js`）に分け、マーカーのある文書と `mountView`・`mountComments` を呼んだときにだけ読み込む処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と箇所の探し方は Node でも動く）。 |
 | [ライブラリ本体 / ビルド](./MOD-472-32.yaml) | `npm run build` が実行するビルドのスクリプト。バージョンを決めて検査し、esbuild で `dist/` を書き込み、配布ファイルのサイズを検査する。Node.js v24 が型を削除して `node scripts/build.ts` で直接実行する。 |
 | [ライブラリ本体 / 公開の入口](./MOD-472-33.yaml) | 配布物の入口の JavaScript と CSS。JavaScript は公開関数と公開の型を export し、CSS は描いた文書の外観を `@layer mdmark` に入れて持つ。 |
-| [ライブラリ本体 / 図](./MOD-472-34.yaml) | 図の部品（フロー図・シーケンス図・グラフ・ER 図・操作できる部品）の定義の型と確認し、線の形状の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使用せず Node でも動き、操作はブラウザでだけ動く。 |
+| [ライブラリ本体 / 図](./MOD-472-34.yaml) | 図の部品（グラフ・ER 図・操作できる部品）の定義の型と確認し、線の形状の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使用せず Node でも動き、操作はブラウザでだけ動く。 |
 | [ライブラリ本体 / 差分](./MOD-472-35.yaml) | `mount` に指定した取り出し元から 2 つのリビジョンの本文を受け、行と単語を比べて描き、ミニマップでスクロールする処理と、描いた文書のブロックを追加と削除の色で塗り分ける処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と比較は Node でも動く）。 |
 | [ライブラリ本体 / 拡張](./MOD-472-36.yaml) | 利用側が `registerExtension` で追加したマーカーの登録表と、引数を Standard Schema で検査して記載の警告の項目にする処理。登録表はページに 1 つで、`render` と `mount` が読み込む。 |
 | [ライブラリ本体 / 描く](./MOD-472-37.yaml) | 利用側のページの要素に文書を描き、再描画と片付けを受け持つ処理。記法の操作を付け、文書のマーカーにある外部ライブラリと拡張のモジュールを読み込んでマーカーの場所に描かせ、色分けの対象のコードブロックを色分けし、印刷の前後で折り畳みと記法を開いて戻す。ブラウザでだけ動く（色分けの HTML を行に分ける `src/highlight-lines.ts` だけは DOM を使用せず、部品の描画のインターフェースも使用する）。 |
@@ -361,5 +359,7 @@
 | [ライブラリ本体 / 描画 / mark-schema.ts](./MOD-477-2.ts.yaml) | ライブラリ本体 / 描画 / mark-schema.ts |
 | [ライブラリ本体 / 描画 / legacy-marks.ts](./MOD-477-3.ts.yaml) | ライブラリ本体 / 描画 / legacy-marks.ts |
 | [ライブラリ本体 / バージョンを上げる / marker-json.mjs](./MOD-477-4.mjs.yaml) | ライブラリ本体 / バージョンを上げる / marker-json.mjs |
+| [ライブラリ本体 / map / convert.ts](./MOD-477-5.ts.yaml) | ライブラリ本体 / map / convert.ts |
+| [ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs](./MOD-477-6.mjs.yaml) | ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs |
 
 <!-- /table -->

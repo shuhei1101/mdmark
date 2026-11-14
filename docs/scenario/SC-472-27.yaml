@@ -234,7 +234,7 @@ scenarios:
   - name: 異常シナリオ（適用した後の点検で図の定義にずれがある）
     setup:
       - name: 図の定義にずれを持つ手元のバージョンが古いフォルダ
-        description: 正常シナリオのフォルダの文書 1 つに、座標の重なる 2 つのノードを持つフロー図の部品の定義を記載したもの
+        description: 正常シナリオのフォルダの文書 1 つに、定義に無いテーブルを関係の先に指定した ER 図の部品の定義を記載したもの
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -250,7 +250,7 @@ scenarios:
     expected:
       - 設定・索引・文書が適用する前と同じ中身に戻っている
       - 設定の `version` が `v0.3.0` のまま
-      - 出力に、その文書の図の定義を指すノードの重なりのずれの行が出る
+      - 出力に、その文書の図の定義を指す定義の誤りのずれの行が出る
       - 終了コードが 0 以外
     test: test_error_when_diagram_drift
   - name: 正常シナリオ（上のフォルダにも設定ファイルがある）
@@ -331,12 +331,47 @@ scenarios:
       - 出力の移行の報告に、適用されていない `total=数量:sum` の記載が、文書のファイルと行と理由（`+total` が無い）つきで挙がる
       - 設定の `version` が目標のバージョンで、終了コードが 0
     test: test_normal_when_document_marks
+  - name: 正常シナリオ（座標で書いた図を map へ書き換える）
+    setup:
+      - name: 座標で書いた図を持つフォルダ
+        description: |-
+          手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 1 つを持つフォルダ。
+          文書は `<!-- flow -->` の範囲 2 つと `<!-- sequence -->` の範囲 1 つを持つ。
+          フロー図の 1 つは、`hint` を持つシステムの枠と層 2 つ・種類の異なるノード（`llm`・`script`・`data`・`external`）・種類の異なる線（`flow`・`read`・`write`）・`tip` を持つ線・`io` を持つノード・`https://example.com/spec` のリンク先を持つノード・題名・範囲・更新日を持ち、`stickyTitles` に `false` を記載する。
+          もう 1 つは判定フローチャートの種類のノード（開始・質問・アクション・結果）と `YES`・`NO` のラベルの線だけを持つ。
+          シーケンス図は参加者 3 つ・メッセージ 4 つ（`tip` を持つメッセージ 1 つ）・loop の範囲を持つ。
+          設定は `map.kinds`・`map.lines` を持たない
+      - name: Mock
+        description: 正常シナリオ（文書のマーカーを JSON の記載へ書き換える）と同じ
+        notes: '`--yes` を付ける'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 書き換えうるファイルをコピーのフォルダへ写す
+        C->>F: flow・sequence の範囲を、Mermaid のブロックと補足を持つ map の範囲へ書き換える
+        C->>F: 文書が使っていたノードと線の種類を、設定の map.kinds・map.lines へ書き足す
+        C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を目標のバージョンにする
+        C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
+    expected:
+      - '`flow`・`sequence` の範囲が、`<!-- map: {"title": "{元の題名}"} -->` 〜 `<!-- /map -->` の範囲（`mermaid` のブロック 1 つと補足 `<!-- map-data: {"version": 1, …} -->`）に 1 つずつ書き換わり、範囲の外の本文は変わっていない'
+      - フロー図の Mermaid が `flowchart` で、システムの枠と層が `subgraph` の入れ子、ノードと線とラベルが元の定義と同じ数と向きで、ノードの種類は Mermaid のクラス、`read`・`write` の線は補足の `layout` の `line` で指されている。リンク先を持つノードには `click` の行がある
+      - 判定フローチャートの Mermaid のノードが、開始・質問・アクション・結果ごとに異なる形とクラスで記載され、`YES`・`NO` が線のラベルになっている
+      - シーケンス図の Mermaid が `sequenceDiagram` で、参加者が元の順、メッセージが元の順と向きで、loop の範囲が `loop` 〜 `end` になっている
+      - 元の `hint`・`io`・`tip` の文が、補足の `notes` の、対応するノード・グループ・線・メッセージの説明になっている
+      - 設定の `map.kinds`・`map.lines` に、文書が使っていたノードの種類と線の種類の名前・アイコン・形・模様が書き足され、ほかの設定のキーは変わっていない
+      - 出力の移行の報告に、書き換えた範囲ごとの範囲・更新日と、`stickyTitles` を記載したフロー図の `stickyTitles` が、文書のファイルと行と項目つきで挙がる。座標と大きさは挙がらない
+      - 設定の `version` が目標のバージョンで、終了コードが 0
+    test: test_normal_when_retired_diagrams
   - name: 正常シナリオ（書き換えない記載を移行の報告に挙げる）
     setup:
       - name: 書き換えない記載を持つフォルダ
         description: |-
           手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 1 つを持つフォルダ。
-          文書は、拡張のマーカーの今の書き方の記載 `<!-- greet: world -->`、設定の `libraries` のマーカーの今の書き方の記載、読み込めない記載 `<!-- table: data filter=名前:range -->` 〜 `<!-- /table -->`、今の書き方の `<!-- section: closed -->` を持つ。設定の `extensions` と `libraries` にそれぞれのマーカーを記載する
+          文書は、拡張のマーカーの今の書き方の記載 `<!-- greet: world -->`、設定の `libraries` のマーカーの今の書き方の記載、読み込めない記載 `<!-- table: data filter=名前:range -->` 〜 `<!-- /table -->`、今の書き方の `<!-- section: closed -->`、JSON として読めない部品の定義を持つ `<!-- flow -->` の範囲を持つ。設定の `extensions` と `libraries` にそれぞれのマーカーを記載する
       - name: Mock
         description: 正常シナリオ（文書のマーカーを JSON の記載へ書き換える）と同じ
         notes: '`--yes` を付ける'
@@ -348,15 +383,15 @@ scenarios:
         W->>C: mdmark upgrade --yes
         C->>F: 書き換えうるファイルをコピーのフォルダへ写す
         C->>F: 書き換えられるマーカーだけを JSON のオブジェクトへ書き換える
-        C->>C: mdmark check と同じ点検を実行する（残った今の書き方のマーカーは移行の報告に挙げたもので、点検の失敗に数えない）
+        C->>C: mdmark check と同じ点検を実行する（残った今の書き方のマーカーと flow の範囲は移行の報告に挙げたもので、点検の失敗に数えない）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
     expected:
       - '`<!-- section: closed -->` が `<!-- section: {"open": false} -->` に書き換わっている'
       - '表のマーカーが `<!-- table: {"kind": "data"} -->` になり、読み込めない `filter=名前:range` を持たない'
-      - 拡張のマーカーと `libraries` のマーカーは書き換わっていない
-      - 出力の移行の報告に、拡張のマーカーと `libraries` のマーカーが引数をキーへ移す対応を持たない理由で、`filter=名前:range` が読み込めない理由で、それぞれ文書のファイルと行つきで挙がる
-      - 適用した後の点検は、移行の報告に挙げた今の書き方のマーカーを失敗に数えず、ほかのずれが 0 件で通る
+      - 拡張のマーカーと `libraries` のマーカーと、読めない定義の `flow` の範囲は書き換わっていない
+      - 出力の移行の報告に、拡張のマーカーと `libraries` のマーカーが引数をキーへ移す対応を持たない理由で、`filter=名前:range` と `flow` の範囲の定義が読み込めない理由で、それぞれ文書のファイルと行つきで挙がる
+      - 適用した後の点検は、移行の報告に挙げた今の書き方のマーカーと `flow` の範囲を失敗に数えず、ほかのずれが 0 件で通る
       - 設定の `version` が目標のバージョンで、終了コードが 0
     test: test_normal_when_unconverted_marks
   - name: 異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない）

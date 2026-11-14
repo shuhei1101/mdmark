@@ -13,7 +13,6 @@ import { resolveConfig } from "../config.ts";
 import { collectWarnings } from "../render/index.ts";
 import {
   type CheckIssue,
-  checkDiagrams,
   checkMaps,
   checkUnknownMarks,
   loadExtensionDirectives,
@@ -36,9 +35,13 @@ const KEY_PART_PATTERN = /([^.[\]]+)|\[(\d+)\]/g;
 /** 読み込めるキーのパス（`items[0].body`） */
 const KEY_PATH_PATTERN = /^[^.[\]]+(?:\[\d+\])*(?:\.[^.[\]]+(?:\[\d+\])*)*$/;
 
-/** 同じ行のずれを並べる順（警告・知らないマーカーとスキップした引数・配置のずれ） */
+/** 同じ行のずれを並べる順（警告・知らないマーカーとスキップした引数・map のずれ） */
 function issueRank(issue: CheckIssue): number {
-  if (issue.kind === "diagram_invalid" || issue.kind === "syntax_warning") {
+  if (
+    issue.kind === "diagram_invalid" ||
+    issue.kind === "retired_diagram" ||
+    issue.kind === "syntax_warning"
+  ) {
     return 0;
   }
   return issue.kind === "unknown_mark" || issue.kind === "unknown_mark_arg"
@@ -235,10 +238,7 @@ export async function checkMarkdownSource(options: {
   }
   const maps = checkMaps(document, resolveConfig({ config }));
   const unknownMarks = checkUnknownMarks(document, config, directives);
-  const layout = checkDiagrams(document).filter(
-    (issue) => issue.kind !== "diagram_invalid",
-  );
-  return [...warnings, ...unknownMarks, ...layout, ...maps]
+  return [...warnings, ...unknownMarks, ...maps]
     .map((issue, order) => ({ issue, order }))
     .sort(
       (a, b) =>

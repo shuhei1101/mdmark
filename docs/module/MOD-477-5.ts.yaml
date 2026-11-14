@@ -1,0 +1,308 @@
+id: MOD-477-5
+visibility: internal
+title: ライブラリ本体 / map / convert.ts
+test_files:
+  - tests/unit/src/map/convert.test.ts
+lead: 文書の廃止した `flow`・`sequence` の範囲を、map の範囲（Mermaid と補足）へ書き換える。廃止の前の定義の読み取りはこのモジュールだけが持ち、移行の手順のスクリプトがまとめて読み込む。
+data_models:
+  - name: RetiredFlowDefinition
+    title: 廃止したフロー図の定義
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: '`<!-- flow -->` の範囲の `json` のコードブロック。変換が参照する項目だけを持つ'
+    properties:
+      - name: title
+        type: string | undefined
+        description: 題名。map の印の `title` にする
+      - name: scope
+        type: string | undefined
+        description: 範囲。写す先が無く、変換の報告に挙げる
+      - name: updated
+        type: string | undefined
+        description: 更新日。写す先が無く、変換の報告に挙げる
+      - name: frame
+        type: '{ title: string; hint?: string } | undefined'
+        description: システムの枠。最上位の `subgraph` にし、`hint` を補足の `notes` のグループの説明にする
+      - name: lanes
+        type: '{ label: string; y: number; h: number; hint?: string }[] | undefined'
+        description: 層。枠の中の `subgraph` にし、`y` が層の `y` から `y + h` の中にあるノードを入れる。`hint` を補足の `notes` のグループの説明にする
+      - name: nodes
+        type: '{ id: string; kind: string; y?: number; name: string; tag?: string; sub?: string; io?: { in: string; do: string; out: string }; hint?: string; href?: string }[]'
+        description: ノード。座標は層の割り当てにだけ使用する
+      - name: wires
+        type: '{ from: string; to: string; line: string; label?: string; tip?: string }[]'
+        description: 線
+      - name: stickyTitles
+        type: boolean | undefined
+        description: 写す先が無く、記載したときだけ変換の報告に挙げる
+  - name: RetiredSequenceDefinition
+    title: 廃止したシーケンス図の定義
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: '`<!-- sequence -->` の範囲の `json` のコードブロック'
+    properties:
+      - name: title
+        type: string | undefined
+        description: 題名
+      - name: scope
+        type: string | undefined
+        description: 範囲
+      - name: updated
+        type: string | undefined
+        description: 更新日
+      - name: participants
+        type: '{ id: string; name: string }[]'
+        description: 相手（記載の順）。`kind` は参照しない
+      - name: steps
+        type: '{ from: string; to: string; label: string; reply?: boolean; tip?: string }[]'
+        description: メッセージ（時刻の順）
+      - name: loop
+        type: '{ label: string } | undefined'
+        description: 最後のメッセージから最初へ戻る繰り返し
+  - name: ConvertReportLine
+    title: 変換の報告の行
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: '`convertRetiredDiagrams` が返却する報告 1 行（`{ line, name, item, reason }`）。移行の手順のスクリプトが `{文書の相対パス}:{line}: {name}: {item}: {reason}` の行にする'
+  - name: ConvertResult
+    title: 変換した結果
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: '`convertRetiredDiagrams` の戻り値'
+    properties:
+      - name: markdown
+        type: string
+        description: 書き換えた本文（書き換える範囲が無ければ元のまま）
+      - name: report
+        type: ConvertReportLine[]
+        description: 写さない値と書き換えない範囲（行の順）
+      - name: kinds
+        type: Record<string, MapKind>
+        description: 文書が使用していたノードの種類（`RETIRED_KIND_STYLES` の値）
+      - name: lines
+        type: Record<string, MapLine>
+        description: 文書が使用していた `flow` 以外の線の種類（`RETIRED_LINE_STYLES` の値）
+constants:
+  - name: RETIRED_KIND_STYLES
+    title: 廃止した図のノードの種類の書き足す値
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: 廃止した図のノードの種類ごとに、設定の `map.kinds` へ書き足す値（名前とアイコンは今の図の種類の行と同じ。形と色は map の形と色の名前から選ぶ）と、Mermaid に記載するノードの形
+    entries:
+      - key: llm
+        value: '{ label: "LLM", icon: "bot", shape: "rounded", color: "purple", mermaid: "[]" }'
+      - key: dm
+        value: '{ label: "意思決定モデル", icon: "split", shape: "rounded", color: "orange", mermaid: "[]" }'
+      - key: script
+        value: '{ label: "スクリプト", icon: "code-xml", shape: "rect", color: "blue", mermaid: "[]" }'
+      - key: mcp
+        value: '{ label: "MCP", icon: "plug", shape: "rounded", color: "green", mermaid: "[]" }'
+      - key: data
+        value: '{ label: "データ", icon: "database", shape: "double", color: "yellow", mermaid: "[()]" }'
+      - key: external
+        value: '{ label: "外部", icon: "globe", shape: "rounded", color: "gray", mermaid: "[]" }'
+      - key: start
+        value: '{ label: "開始", icon: "play", shape: "pill", color: "green", mermaid: "([])" }'
+      - key: question
+        value: '{ label: "質問", icon: "circle-question-mark", shape: "double", color: "orange", mermaid: "{}" }'
+      - key: action
+        value: '{ label: "アクション", icon: "wrench", shape: "rect", color: "blue", mermaid: "[]" }'
+      - key: result
+        value: '{ label: "結果", icon: "flag", shape: "pill", color: "purple", mermaid: "([])" }'
+  - name: RETIRED_LINE_STYLES
+    title: 廃止した図の線の種類の書き足す値
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: '`flow` 以外の線の種類ごとに、設定の `map.lines` へ書き足す値（模様・太さ・矢じりは今の図の線と同じ）。`flow` は Mermaid の `-->` の既定のまま書き足さない'
+    entries:
+      - key: read
+        value: '{ dash: "dashed", width: "normal", head: "open" }'
+      - key: write
+        value: '{ dash: "solid", width: "thick", head: "filled" }'
+      - key: reply
+        value: '{ dash: "dotted", width: "normal", head: "open" }'
+      - key: loop
+        value: '{ dash: "long-dash", width: "normal", head: "open" }'
+  - name: SAFE_ID
+    title: 書き換えない ID の形
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: 元の `id` をそのまま Mermaid の ID にできる形。`flowchart` のノードの ID の読み取り（`ID_RE`）と `sequenceDiagram` の参加者の ID（`SEQ_ID`）の両方が読める文字だけで、`MERMAID_RESERVED` に無いもの
+    value: '`/^[A-Za-z0-9_\\u0080-\\uffff]+$/`'
+  - name: MERMAID_RESERVED
+    title: ID にできない Mermaid の予約語
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    summary: 行の頭に置くと Mermaid の文として読まれ、ノードと参加者の ID にできない単語（大文字と小文字を区別しない）
+    value: '`end`・`subgraph`・`direction`・`click`・`class`・`classDef`・`style`・`linkStyle`・`graph`・`flowchart`・`participant`・`actor`・`loop`・`alt`・`else`・`opt`・`par`・`and`・`critical`・`option`・`break`・`rect`・`note`・`activate`・`deactivate`・`autonumber`・`link`・`links`・`box`・`create`・`destroy`'
+functions:
+  - name: convertRetiredDiagrams
+    title: 廃止した図の範囲を map の範囲へ書き換える
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: public
+    summary: 本文の `<!-- flow -->`・`<!-- sequence -->` の範囲（コードブロックと行内のコードの中と、`skip` の名前の範囲を除く）ごとに、`json` のコードブロックを `readRetiredDefinition` で読み、読めた範囲を `flowToMap`・`sequenceToMap` の map の範囲に置き換える。読めない範囲は書き換えず、報告に挙げる
+    description: 範囲は `findDiagramBlocks` の `line`・`end` を使用する（閉じのマーカーの無い範囲は文書の終わりまで）。置き換えは範囲の開きのマーカーの行から閉じのマーカーの行までで、範囲の外の本文と改行の種類を変えない
+    args:
+      - name: options
+        type: '{ markdown: string; skip: Set<string> }'
+        required: true
+        description: 文書の本文と、書き換えない名前（拡張の `directive` のうち `flow`・`sequence`）
+    returns:
+      type: ConvertResult
+      description: 書き換えた本文・報告・書き足す種類
+    callees:
+      - '#functions[readRetiredDefinition]'
+      - '#functions[flowToMap]'
+      - '#functions[sequenceToMap]'
+      - MOD-472-182#functions[findDiagramBlocks]
+    refs:
+      - IF-472-28#constraints[廃止した図の範囲の移行]
+    unit_tests:
+      - name: test_convert_retired_diagrams
+        case: 正常
+        summary: フロー図 2 つとシーケンス図を map の範囲にし、写さない値を報告に挙げる
+        condition: シナリオ『バージョンを上げる』の「正常シナリオ（座標で書いた図を map へ書き換える）」の文書
+        mock: なし
+        expected: '`markdown` がシナリオの期待値のとおりで、範囲の外の行が変わらず、`report` が範囲ごとの `scope`・`updated` と `stickyTitles` の行で、`kinds` が文書のノードの種類だけ、`lines` が `read`・`write` だけ'
+      - name: test_convert_retired_diagrams_when_unreadable
+        case: 異常
+        summary: 読めない定義の範囲を書き換えずに報告に挙げる
+        condition: 閉じの `}` が無い `<!-- flow -->` の範囲と、正しい `<!-- sequence -->` の範囲
+        mock: なし
+        expected: '`flow` の範囲が元のままで、`report` にその範囲の行と JSON として読めない理由がある。`sequence` の範囲は書き換わる'
+      - name: test_convert_retired_diagrams_when_skipped
+        case: 正常
+        summary: 拡張の名前の範囲を書き換えない
+        condition: '`<!-- flow: {"target": "world"} -->` の範囲と、`skip` が `flow`'
+        mock: なし
+        expected: '`markdown` が元のままで、`report` が空'
+      - name: test_convert_retired_diagrams_when_in_code
+        case: 正常
+        summary: コードブロックの中の範囲を書き換えない
+        condition: '`markdown` のコードブロックの中に記載した `<!-- flow -->` の範囲'
+        mock: なし
+        expected: '`markdown` が元のまま'
+      - name: test_convert_retired_diagrams_when_rerun
+        case: 正常
+        summary: 書き換えた本文にもう一度適用しても変わらない
+        condition: 1 つ目のテストの戻り値の `markdown`
+        mock: なし
+        expected: '`markdown` が同じで、`report` が空'
+  - name: readRetiredDefinition
+    title: 廃止した図の定義を読む
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: internal
+    summary: 範囲の `json` のコードブロックが 1 つかを確かめ、`parseDefinitionJson` で読み、`RetiredFlowDefinition`・`RetiredSequenceDefinition` の必須の項目（ノード・線・相手・メッセージの `id`・`from`・`to`・`name`・`label`）と線の端の `id` を確かめる。読めないときは、廃止の前のバージョンの記載の警告と同じ文を返却する
+    args:
+      - name: directive
+        type: '"flow" | "sequence"'
+        required: true
+        description: マーカーの名前
+      - name: blocks
+        type: string[]
+        required: true
+        description: 範囲の `json` のコードブロックの中身
+    returns:
+      type: '{ ok: true; definition: RetiredFlowDefinition | RetiredSequenceDefinition } | { ok: false; reason: string }'
+      description: 読めた定義か、読めない理由
+    callees:
+      - MOD-472-171#functions[parseDefinitionJson]
+    unit_tests:
+      - name: test_read_retired_definition
+        case: 正常
+        summary: 今の図の見本の定義を読める
+        condition: '`docs/mock/refs/42/assets/samples.js` の `inquiry`・`inquiry-seq`・`judgement` と同じ定義'
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_retired_definition_when_wire_end_missing
+        case: 異常
+        summary: 線の端が無いノードを指す
+        condition: 線の `to` が無いノードの `id` `recieve`
+        mock: なし
+        expected: '`ok` が `false` で、`reason` が `recieve` を含む'
+  - name: flowToMap
+    title: フロー図を map の範囲にする
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: internal
+    summary: '`RetiredFlowDefinition` を、`<!-- map: {"title": "{題名}"} -->`・`flowchart TB` の `mermaid` のブロック・補足 `<!-- map-data: {"version": 1, …} -->`・`<!-- /map -->` の行にする'
+    process: |-
+      1. ノードの `id` のうち `SAFE_ID` に合わないものと `MERMAID_RESERVED` のものを、図の中のほかの `id` と重ならない `n{番号}`（1 から）に置き換える。線の `from`・`to`、補足の `notes`・`layout` のキー、`click` の行も置き換えた ID にし、元の `id` と置き換えた ID を写さない値の項目（`id {元の id} → {置き換えた ID}`）にする
+      2. `frame` を最上位の `subgraph frame["{タイトル}"]`、`lanes` を枠の中の `subgraph lane{番号}["{名前}"]`（記載の順。グループの ID がノードの ID と重なるときは、重ならない番号まで後ろに `_` を足す）にし、ノードを `y` で層へ入れる（層に入らないノードは枠の中、`external` のノードは枠の外）
+      3. ノードを `{id}{形}:::{種類}` にする（形は `RETIRED_KIND_STYLES` の `mermaid`、名前は `tag` があれば `{tag}<br>{name}`）
+      4. 線を `{from} -->|{label}| {to}`（線の ID は `{from}->{to}`）にし、`flow` 以外の種類は補足の `layout.{線の ID}.line` に種類の名前を記載する
+      5. `href` を `click {id} "{href}"` の行にする
+      6. 補足の `notes` に、ノードの `sub`・`io`（`入力: {in}`・`処理: {do}`・`出力: {out}` を改行でつなぐ）・`hint`（この順に改行でつなぐ）、線の `tip`、`frame`・`lanes` の `hint` を、その ID の説明として記載する。説明が無ければ補足を `{"version": 1}` だけにする
+      - ノードの名前・`tag`・線のラベル・グループのタイトルの `{{単語}}` は `単語` にし（map は用語を照合する）、`#`・`"`・`[`・`]`・`(`・`)`・`{`・`}`・`|`・`<`・`>`・`;` は、`decodeEntities` が戻す文字の参照（`"` は `#quot;`、ほかは `#{10 進の番号};`）にする
+    args:
+      - name: definition
+        type: RetiredFlowDefinition
+        required: true
+        description: 読めたフロー図の定義
+    returns:
+      type: '{ lines: string[]; kinds: string[]; lineKinds: string[]; dropped: string[] }'
+      description: 範囲の行・使用した種類・使用した `flow` 以外の線の種類・写さない値の項目（`scope`・`updated`・記載した `stickyTitles`・置き換えた `id`）
+    unit_tests:
+      - name: test_flow_to_map
+        case: 正常
+        summary: 枠と層を入れ子のグループにし、種類と説明とリンクを写す
+        condition: '`inquiry` と同じ定義に、`href` を持つノード 1 つを追加したもの'
+        mock: なし
+        expected: '`subgraph frame` の中に層の `subgraph` が 3 つあり、`external` のノードが枠の外。`read` の線が `layout` の `line` を持ち、`sub`・`io`・`hint`・`tip` が `notes` にあり、`tag` の `{{意思決定モデル}}` が `意思決定モデル` になり、`click` の行がある。`lines` を `parseFlowchart` と `parseMapData` で参照すると `problems` が空'
+      - name: test_flow_to_map_when_judgement
+        case: 正常
+        summary: 判定フローチャートのノードを種類ごとの形にする
+        condition: '`judgement` と同じ定義'
+        mock: なし
+        expected: 開始と結果が `([...])`、質問が `{...}`、アクションが `[...]` で、`YES`・`NO` が線のラベル。`kinds` が `start`・`question`・`action`・`result`
+      - name: test_flow_to_map_when_id_unreadable
+        case: 正常
+        summary: map で読めない id と予約語の id を置き換える
+        condition: '`id` が `web-api`・`end`・`n1` のノードと、`web-api` から `end` への `tip` を持つ線、`end` の `href`'
+        mock: なし
+        expected: '`web-api` が `n2`、`end` が `n3`（`n1` と重ならない）になり、線・`notes` のキー・`click` の行も同じ ID。`dropped` に `id web-api → n2`・`id end → n3` があり、`lines` を `parseFlowchart` と `parseMapData` で参照すると `problems` が空でノードが 3 つ'
+      - name: test_flow_to_map_when_name_has_symbols
+        case: 異常
+        summary: Mermaid の記号を持つ名前を文字の参照にする
+        condition: ノードの `name` が `"a" [b]`
+        mock: なし
+        expected: '`parseFlowchart` で参照したノードの `label` が `"a" [b]`'
+  - name: sequenceToMap
+    title: シーケンス図を map の範囲にする
+    container: src/map/convert.ts
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: internal
+    summary: '`RetiredSequenceDefinition` を、`sequenceDiagram` の `mermaid` のブロックと補足の map の範囲の行にする'
+    process: |-
+      1. 相手の `id` のうち `SAFE_ID` に合わないものと `MERMAID_RESERVED` のものを、ほかの `id` と重ならない `p{番号}`（1 から）に置き換え（メッセージの `from`・`to` も）、写さない値の項目にする
+      2. 相手を `participant {id} as {name}`（記載の順）にする。map のシーケンス図の参加者は種類を持たないため、相手の `kind` は写さない
+      3. メッセージを `{from}->>{to}: {label}`、`reply` は `{from}-->>{to}: {label}` にする（相手の名前・メッセージ・繰り返しのラベルの `#`・`;` は `#{10 進の番号};` の文字の参照にする）
+      4. `loop` があれば、全てのメッセージを `loop {label}` 〜 `end` で囲む
+      5. メッセージの `tip` を、補足の `notes` の記載の順のメッセージの番号の説明にする
+    args:
+      - name: definition
+        type: RetiredSequenceDefinition
+        required: true
+        description: 読めたシーケンス図の定義
+    returns:
+      type: '{ lines: string[]; dropped: string[] }'
+      description: 範囲の行・写さない値の項目（`scope`・`updated`・置き換えた `id`）
+    unit_tests:
+      - name: test_sequence_to_map
+        case: 正常
+        summary: 相手とメッセージと繰り返しを写す
+        condition: '`inquiry-seq` と同じ定義'
+        mock: なし
+        expected: 相手が記載の順で、`reply` のメッセージが `-->>`、全てのメッセージが `loop` 〜 `end` の中にあり、`tip` が `notes` の番号の説明。`parseSequence` で参照すると `problems` が空
+      - name: test_sequence_to_map_when_id_unreadable
+        case: 正常
+        summary: map で読めない相手の id を置き換える
+        condition: 相手の `id` が `web-api` と `end`、そのあいだのメッセージ 1 つ
+        mock: なし
+        expected: 相手の ID が `p1`・`p2` になり、メッセージも同じ ID。`dropped` に 2 つの置き換えがあり、`parseSequence` で参照すると `problems` が空

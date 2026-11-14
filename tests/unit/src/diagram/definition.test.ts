@@ -1,21 +1,12 @@
 import { expect, test } from "vitest";
-import type {
-  MdmarkChartDefinition,
-  MdmarkFlowDefinition,
-} from "../../../../src/diagram/definition.ts";
+import type { MdmarkChartDefinition } from "../../../../src/diagram/definition.ts";
 import {
   ADDED_CHART_DEFINITIONS,
   INQUIRY_COUNT_TEXT,
-  INQUIRY_HINT_TEXT,
   LENGTH_TIME_TEXT,
   REPLY_KIND_TEXT,
 } from "../../helpers/charts.ts";
 import {
-  INQUIRY_SEQ_TEXT,
-  INQUIRY_TEXT,
-  JUDGEMENT_AUTO_TEXT,
-  JUDGEMENT_TEXT,
-  LINKED_TEXT,
   parsed,
   REPLY_TIME_TEXT,
   STRENGTH_TEXT,
@@ -66,8 +57,6 @@ test("test_read_definition", async () => {
   const { readDefinition } = await loadDefinition();
   // 実行
   const results = [
-    readDefinition("flow", [INQUIRY_TEXT]),
-    readDefinition("sequence", [INQUIRY_SEQ_TEXT]),
     readDefinition("chart", [REPLY_TIME_TEXT]),
     readDefinition("param", [STRENGTH_TEXT]),
   ];
@@ -78,34 +67,22 @@ test("test_read_definition", async () => {
   }
 });
 
-// ノードの種類が使用できないときは使用できる種類を示す（異常系）
+// グラフの種類が使用できないときは使用できる種類を示す（異常系）
 test("test_read_definition_when_kind_unknown", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
-  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
-  const third = definition.nodes[2];
-  if (third === undefined) {
-    throw new Error("見本の 3 つ目のノードが無い");
-  }
-  Object.assign(third, { kind: "robot" });
+  const definition = {
+    ...parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT),
+    type: "robot",
+  };
   // 実行
-  const result = readDefinition("flow", [JSON.stringify(definition)]);
+  const result = readDefinition("chart", [JSON.stringify(definition)]);
   // 検証
   expect(result.ok).toBe(false);
-  expect(result.problems[0]).toBe(
-    "ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です",
+  expect(result.problems[0]).toContain("robot");
+  expect(result.problems[0]).toMatch(
+    /使用できる種類は [a-z-]+(・[a-z-]+)+ です/,
   );
-});
-
-// 判定フローチャートの種類のノードを読み込める（正常系）
-test("test_read_definition_when_judgement", async () => {
-  // 準備
-  const { readDefinition } = await loadDefinition();
-  // 実行
-  const result = readDefinition("flow", [JUDGEMENT_TEXT]);
-  // 検証
-  expect(result.problems).toEqual([]);
-  expect(result.ok).toBe(true);
 });
 
 // 系列の点の数が横の目盛りと合わないときは数を示す（異常系）
@@ -127,58 +104,13 @@ test("test_read_definition_when_points_mismatch", async () => {
   );
 });
 
-// 線の端が無いノードを指すときは線とノードの id を示す（異常系）
-test("test_read_definition_when_wire_end_missing", async () => {
-  // 準備
-  const { readDefinition } = await loadDefinition();
-  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
-  const wire = definition.wires.find((candidate) => candidate.id === "w-mail");
-  if (wire === undefined) {
-    throw new Error("見本の線 w-mail が無い");
-  }
-  wire.to = "recieve";
-  // 実行
-  const result = readDefinition("flow", [JSON.stringify(definition)]);
-  // 検証
-  expect(result.ok).toBe(false);
-  expect(result.problems[0]).toBe(
-    "線 w-mail の端のノード recieve がありません。ノードの id で記載してください",
-  );
-});
-
-// ノードの id が重なるときは重なった id を示す（異常系）
-test("test_read_definition_when_id_duplicated", async () => {
-  // 準備
-  const { readDefinition } = await loadDefinition();
-  const box = { kind: "script", x: 0, y: 0, w: 100, h: 60 };
-  const definition = {
-    title: "重なる id",
-    scope: "確認",
-    updated: "2026-10-18",
-    width: 300,
-    height: 120,
-    nodes: [
-      { id: "recv", name: "受け取り", ...box },
-      { id: "recv", name: "もう 1 つの受け取り", ...box },
-    ],
-    wires: [],
-  };
-  // 実行
-  const result = readDefinition("flow", [JSON.stringify(definition)]);
-  // 検証
-  expect(result.ok).toBe(false);
-  expect(result.problems[0]).toBe(
-    "ノードの id recv が 2 つあります。別の id にしてください",
-  );
-});
-
 // json のコードブロックが 0 つ・2 つのときは 1 つだけ配置するよう示す（異常系）
 test("test_read_definition_when_blocks_count", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
   // 実行
-  const none = readDefinition("flow", []);
-  const two = readDefinition("flow", [INQUIRY_TEXT, INQUIRY_TEXT]);
+  const none = readDefinition("chart", []);
+  const two = readDefinition("chart", [REPLY_TIME_TEXT, REPLY_TIME_TEXT]);
   // 検証
   for (const result of [none, two]) {
     expect(result.ok).toBe(false);
@@ -197,7 +129,6 @@ test("test_read_definition_when_chart_types", async () => {
     readDefinition("chart", [INQUIRY_COUNT_TEXT]),
     readDefinition("chart", [REPLY_KIND_TEXT]),
     readDefinition("chart", [LENGTH_TIME_TEXT]),
-    readDefinition("flow", [INQUIRY_HINT_TEXT]),
   ];
   // 検証
   for (const result of results) {
@@ -397,128 +328,4 @@ test("test_read_definition_when_er_invalid_values", async () => {
       expect(result.problems[0], String(i)).toContain(word);
     }
   });
-});
-
-// 座標を全て省いた判定フローチャートを配置した定義で返却する（正常系）
-test("test_read_definition_when_coordinates_omitted", async () => {
-  // 準備
-  const { readDefinition } = await loadDefinition();
-  // 実行
-  const result = readDefinition("flow", [JUDGEMENT_AUTO_TEXT]);
-  // 検証
-  expect(result.problems).toEqual([]);
-  expect(result.ok).toBe(true);
-  const definition = (result as { definition: MdmarkFlowDefinition })
-    .definition;
-  expect(definition.height).toBe(584);
-  for (const node of definition.nodes) {
-    expect(node).toEqual(
-      expect.objectContaining({
-        x: expect.any(Number),
-        y: expect.any(Number),
-        w: expect.any(Number),
-        h: expect.any(Number),
-      }),
-    );
-  }
-  for (const wire of definition.wires) {
-    expect(Array.isArray(wire.points)).toBe(true);
-  }
-});
-
-// 座標を記載したものと省いたものが混ざる（異常系）
-test("test_read_definition_when_coordinates_mixed", async () => {
-  // 準備
-  const { readDefinition } = await loadDefinition();
-  const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_AUTO_TEXT);
-  Object.assign(definition.nodes[1] as object, {
-    x: 60,
-    y: 156,
-    w: 280,
-    h: 136,
-  });
-  // 実行
-  const result = readDefinition("flow", [JSON.stringify(definition)]);
-  // 検証
-  expect(result.ok).toBe(false);
-  expect(result.problems[0]).toBe(
-    "座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください",
-  );
-});
-
-// 判定フローチャート以外の種類で座標を省く（異常系）
-test("test_read_definition_when_coordinates_omitted_not_judgement", async () => {
-  // 準備
-  const { readDefinition } = await loadDefinition();
-  const definition = {
-    title: "処理",
-    scope: "点検",
-    updated: "2026-11-05",
-    nodes: [
-      { id: "recv", kind: "start", name: "受け取る" },
-      { id: "classify", kind: "llm", name: "分類" },
-    ],
-    wires: [{ id: "w1", from: "recv", to: "classify", line: "flow" }],
-  };
-  // 実行
-  const result = readDefinition("flow", [JSON.stringify(definition)]);
-  // 検証
-  expect(result.ok).toBe(false);
-  expect(result.problems[0]).toMatch(
-    /^ノード「分類」の種類 llm では座標を省けません。/,
-  );
-});
-
-// 許さないリンク先だけを返却する（正常系）
-test("test_node_link_problems", async () => {
-  // 準備
-  const { nodeLinkProblems } = await loadDefinition();
-  const definition = parsed<MdmarkFlowDefinition>(LINKED_TEXT);
-  const base = definition.nodes[2];
-  if (base === undefined) {
-    throw new Error("見本の 3 つ目のノードが無い");
-  }
-  const hrefs = [
-    "mailto:a@example.com",
-    "javascript:alert(1)",
-    "id:spec#items",
-  ];
-  definition.nodes.push(
-    ...hrefs.map((href, index) => ({ ...base, id: `n${index}`, href })),
-  );
-  // 実行
-  const problems = nodeLinkProblems(definition);
-  // 検証
-  expect(problems).toEqual([
-    { id: "n1", href: "javascript:alert(1)" },
-    { id: "n2", href: "id:spec#items" },
-  ]);
-});
-
-// グループの hint と stickyTitles の型を確認する（異常系）
-test("test_read_definition_when_group_options_invalid", async () => {
-  // 準備
-  const { readDefinition } = await loadDefinition();
-  const wrong = parsed<Record<string, unknown>>(INQUIRY_TEXT);
-  wrong.frame = { ...(wrong.frame as Record<string, unknown>), hint: 1 };
-  wrong.stickyTitles = "no";
-  const right = parsed<
-    { lanes: Array<Record<string, unknown>> } & Record<string, unknown>
-  >(INQUIRY_TEXT);
-  right.lanes = right.lanes.map((lane, i) =>
-    i === 0 ? { ...lane, hint: "LLM の層" } : lane,
-  );
-  right.stickyTitles = false;
-  // 実行
-  const wrongResult = readDefinition("flow", [JSON.stringify(wrong)]);
-  const rightResult = readDefinition("flow", [JSON.stringify(right)]);
-  // 検証
-  expect(wrongResult.ok).toBe(false);
-  expect(wrongResult.problems).toHaveLength(2);
-  expect(wrongResult.problems.some((p) => p.includes("frame.hint"))).toBe(true);
-  expect(wrongResult.problems.some((p) => p.includes("stickyTitles"))).toBe(
-    true,
-  );
-  expect(rightResult.problems).toEqual([]);
-  expect(rightResult.ok).toBe(true);
 });

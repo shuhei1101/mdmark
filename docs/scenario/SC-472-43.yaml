@@ -6,9 +6,9 @@ scenarios:
     setup:
       - name: 図を描くページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、文書を描く HTML
-      - name: フロー図の定義を持つ Markdown
-        description: フロー図の部品の定義を 1 つ持つ文書
-        notes: システムの枠の内側に LLM の層・処理の層・データの層のノードを各 1〜2 行、枠の外に外部のシステムのノードを 1 つ配置する。ノードの並びでは削除できない交差を 1 か所、ループの戻りを 1 本、題名・範囲・更新日を持つ。システムの枠と LLM の層は `hint` を持つ。動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
+      - name: グラフの定義を持つ Markdown
+        description: 系列 2 つ・点 5 つずつの折れ線のグラフの部品の定義の文書
+        notes: 動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
@@ -18,70 +18,21 @@ scenarios:
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
         M->>M: 部品の定義を読み込んで構造を確認する
-        M->>M: フロー図の部品が grid にノードと線を配置する
-        M-->>P: 枠・層・凡例つきのフロー図と本文
-        P-->>U: 文書を表示
-    expected:
-      - システムの枠の中に 3 つの層が上から LLM・処理・データの順に並び、層ごとにノードの色の背景が敷かれている
-      - 外部のシステムのノードが枠の外にある
-      - 題名・範囲・更新日と凡例があり、凡例には図に 2 種類以上あるノードの種類と線の種類だけが載る
-      - 凡例に、システムの枠・層の背景・線の交差・ツールチップのマーカー・用語の下線の項目が無い
-      - システムの枠と LLM の層のタイトルの右にツールチップのマーカーがあり、`hint` を持たない層のタイトルには無い
-      - 線の種類が色と模様（破線の間隔・太さ・矢じり）の組で分かれている
-      - 残った交差は横の線が縦の線を飛び越える構造（line jump）で描かれている
-      - ループの戻りの線が上か下の帯を通る破線で、戻り先のラベルを持つ
-      - '`window.__mdmarkScriptRan` が `true` になっていない（文書に記載した `<script>` が動いていない）'
-      - 色分けのライブラリへの要求が 0 件（図の部品の定義の `json` のコードブロックは色分けの対象にならない）
-    test: test_normal
-  - name: 正常シナリオ（シーケンス図）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: シーケンス図の定義を持つ Markdown
-        description: 登場する相手 3 つとメッセージ 4 つ、ループの戻り 1 本を持つシーケンス図の部品の定義の文書
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: シーケンス図の部品が相手とメッセージを左から右へ配置する
-        M-->>P: タイトルと凡例つきのシーケンス図と本文
-        P-->>U: 文書を表示
-    expected:
-      - 相手が定義の順に左から右へ並び、メッセージが時刻の順に並ぶ
-      - ループの戻りが破線と戻り先のラベルで描かれている
-      - 題名・範囲・更新日と凡例があり、凡例には図に 2 種類以上ある相手の種類と線の種類だけが載る
-    test: test_normal_when_sequence
-  - name: 正常シナリオ（グラフ）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: グラフの定義を持つ Markdown
-        description: 系列 2 つ・点 5 つずつの折れ線のグラフの部品の定義の文書
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
         M->>M: グラフの部品が系列を描く
         M-->>P: タイトルと凡例つきのグラフと本文
         P-->>U: 文書を表示
     expected:
       - 2 つの系列が、色と線の模様の組で分かれて描かれている
       - 題名と、系列の名前を記載した凡例がある
-    test: test_normal_when_graph
+      - '`window.__mdmarkScriptRan` が `true` になっていない（文書に記載した `<script>` が動いていない）'
+      - 色分けのライブラリへの要求が 0 件（図の部品の定義の `json` のコードブロックは色分けの対象にならない）
+    test: test_normal
   - name: 異常シナリオ（定義を読み込めない）
     setup:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: 読み込めない定義を持つ Markdown
-        description: JSON として読み込めないフロー図の定義 1 つと、正しいフロー図の定義 1 つと段落を持つ文書
+        description: JSON として読み込めないグラフの定義 1 つと、正しいグラフの定義 1 つと段落を持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -95,7 +46,7 @@ scenarios:
         P-->>U: 警告と図と本文を表示
     expected:
       - 読み込めない定義の場所に記載の警告があり、読み込めない箇所が記載されている
-      - 正しい定義のフロー図が描かれている
+      - 正しい定義のグラフが描かれている
       - 段落が描かれている
     test: test_error_when_definition_invalid
   - name: 正常シナリオ（棒のグラフ）
@@ -163,31 +114,6 @@ scenarios:
       - 点 6 つが、横と縦の値の位置に系列の点のマーカーで配置されている
       - 横と縦の両方の軸に、数値の目盛りがある
     test: test_normal_when_scatter
-  - name: 正常シナリオ（判定フローチャート）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: 判定フローチャートの定義を持つ Markdown
-        description: フロー図の部品の定義に、判定フローチャートの種類のノードだけを配置した文書
-        notes: 開始のノード 1 つ・質問のノード 2 つ・アクションのノード 1 つ・結果のノード 2 つを上から下へ配置し、質問のノードから出る線に `YES`・`NO` のラベルを付ける。システムの枠と層を持たず、題名・範囲・更新日を持つ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 部品の定義を読み込んで構造を確認する
-        M->>M: フロー図の部品が開始・質問・アクション・結果のノードを種類ごとの構造で配置する
-        M-->>P: 凡例つきの判定フローチャートと本文
-        P-->>U: 文書を表示
-    expected:
-      - 記載の警告が出ず、開始のノード 1 つ・質問のノード 2 つ・アクションのノード 1 つ・結果のノード 2 つが描かれている
-      - 開始・質問・アクション・結果のノードが、色だけでなく互いに異なる構造・アイコン・種類の名前で見分けられる
-      - 質問のノードから出る線に `YES`・`NO` のラベルがある
-      - 凡例のノードの種類の項目が開始・質問・アクション・結果の 4 つだけで、「意思決定モデル」「データ」が出ていない
-    test: test_normal_when_flowchart
   - name: 正常シナリオ（追加したグラフの種類）
     setup:
       - name: 図を描くページ
@@ -279,13 +205,12 @@ scenarios:
       - 正しい定義の ER 図が描かれている
       - 段落が描かれている
     test: test_error_when_er_definition_invalid
-  - name: 正常シナリオ（座標を省いた判定フローチャート）
+  - name: 正常シナリオ（座標で書いた図の範囲）
     setup:
       - name: 図を描くページ
         description: 正常シナリオと同じ
-      - name: 座標を省いた判定フローチャートの定義を持つ Markdown
-        description: フロー図の部品の定義に、開始のノード 1 つ・質問のノード 2 つ・アクションのノード 1 つ・結果のノード 2 つを、`x`・`y`・`w`・`h` を記載せずに配置し、線の `points` と図の `width`・`height` を記載しない文書
-        notes: 線は開始 → 質問 1、質問 1 の YES → アクション、質問 1 の NO → 質問 2、アクション → 結果 1、質問 2 の YES → 結果 1、質問 2 の NO → 結果 2 の 6 本。質問から出る線に `YES`・`NO` のラベルを付ける
+      - name: 座標で書いた図を持つ Markdown
+        description: '`<!-- flow -->` の範囲 1 つと `<!-- sequence -->` の範囲 1 つに、廃止の前のバージョンで描けた部品の定義を記載し、その間と後に段落とグラフの定義 1 つを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -294,100 +219,26 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 部品の定義を読み込んで構造を確認する
-        M->>M: 開始から線をたどり、質問を上から下へ並べ、YES / NO の先へアクションと結果を配置する
-        M->>M: 線の点を縦と横の折れ線で求める
-        M-->>P: 凡例つきの判定フローチャートと本文
-        P-->>U: 文書を表示
+        M->>M: flow・sequence の範囲を図として読まずに、廃止した記載方法として扱う
+        M-->>P: 範囲ごとに、map へ変換できる旨の書き方の警告と、本文とグラフ
+        P-->>U: 警告と本文とグラフを表示
     expected:
-      - 記載の警告が出ず、6 つのノードと 6 本の線が描かれている
-      - 開始のノードが一番上にあり、質問 1・質問 2 のノードがその下に上から順に並ぶ
-      - 質問のノードから出る `YES`・`NO` の線の先に、アクションと結果のノードが配置され、ノードどうしが重ならない
-      - 線が縦と横だけの折れ線で、どのノードの中も通らない
-      - 図の全体が図の枠の中に収まっている
-      - 同じノードと線に座標を全て記載した定義は、記載した座標のとおりに描かれる（正常シナリオ（判定フローチャート）と同じ）
-    test: test_normal_when_flowchart_auto_layout
-  - name: 正常シナリオ（リンク先を持つノード）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: リンク先を持つノードの定義を持つ Markdown
-        description: フロー図の部品の定義のノード 3 つのうち、1 つに `https://example.com/spec`、1 つに相対パス `./other.md` のリンク先を持たせ、1 つは持たせない文書
-      - name: Mock
-        description: 正常シナリオと同じ。リンク先への遷移を手元の応答で受け、開いた URL を記録する
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: リンク先を持つノードをリンクにする
-        M-->>P: フロー図と本文
-        P-->>U: 文書を表示
-        U->>P: リンク先を持つノードを押す
-        P-->>U: ノードのリンク先を開く
-    expected:
-      - リンク先を持つ 2 つのノードがリンクになり、名前の文字の上を含めてポインターを乗せるとカーソルが押せる構造になる
-      - リンク先を持たないノードはリンクにならない
-      - '`https://example.com/spec` のノードを押すと、そのリンク先が開く。`./other.md` のノードを押すと、本文の相対パスのリンクと同じく、ページの URL を基準にした `other.md` が開く'
-      - キーボードでリンク先を持つノードにフォーカスでき、フォーカスの枠が見え、Enter で同じリンク先が開く
-    test: test_normal_when_node_link
-  - name: 異常シナリオ（ノードのリンク先を許可しない）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: 許可しないリンク先を持つ Markdown
-        description: フロー図の部品の定義のノード 2 つに、`javascript:alert(1)` と `id:spec#items` のリンク先を持たせ、図の後に段落を持つ文書
-        notes: 本文のリンクで許可しないスキームのリンク先を決定的に指定する
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: ノードのリンク先を本文のリンクと同じ許可で確認する
-        M-->>P: 許可しないリンク先の記載の警告と、リンクにしないノードのフロー図と本文
-        P-->>U: 警告と図と本文を表示
-    expected:
-      - 2 つのノードがリンクにならず、ノードの名前は描かれている
-      - 図の場所に、許可しないリンク先を記載したノードの id とリンク先を記載した記載の警告がある
-      - ノードを押しても `javascript:` のリンク先が動かない
-      - 段落が描かれている
-    test: test_error_when_node_link_not_allowed
-  - name: 正常シナリオ（種類が 1 つずつの図）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: 種類が 1 つずつのフロー図の定義を持つ Markdown
-        description: 同じ種類のノード 3 つを同じ種類の線 2 本でつなぎ、システムの枠と層を持たないフロー図の部品の定義の文書
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 図に 2 種類以上あるノードの種類と線の種類を数える
-        M-->>P: 凡例の項目を持たないフロー図と本文
-        P-->>U: 文書を表示
-    expected:
-      - ノード 3 つと線 2 本のフロー図と題名が描かれている
-      - 凡例にノードの種類と線の種類の項目が無い
-    test: test_normal_when_single_kinds
-lead: 文書の作成者が、文書に部品の定義（JSON）だけを記載し、mdmark の共通の図の部品にフロー図・シーケンス図・グラフ・ER 図を描かせる。部品は図の外観の決まり（枠と 3 層・時系列とループ・タイトルと凡例・線の交差）のとおりに描く。
+      - '`flow`・`sequence` の範囲ごとに書き方の警告が 1 つずつ出て、図は描かれない'
+      - 警告に、その記載方法を廃止したことと、`mdmark upgrade` で map の範囲へ変換できることが記載されている
+      - 範囲の中の部品の定義（JSON）は、コードブロックとしても本文としても出ない
+      - 段落とグラフは描かれている
+    test: test_normal_when_retired_diagram
+lead: 文書の作成者が、文書に部品の定義（JSON）だけを記載し、mdmark の共通の図の部品にグラフ・ER 図を描かせる。廃止した `flow`・`sequence` の範囲は描かずに、map へ変換できる旨の書き方の警告を出す。
 issue: 21
 primary_actor: 文書の作成者（AI を含む）
 stakeholders:
   - name: 文書の作成者
     interest: HTML と CSS を一から記載せずに、部品の定義だけで外観のそろった図を描ける
   - name: 読者
-    interest: どの文書の図も同じ決まりで描かれ、凡例で色・構造・線の意味を読み込める
+    interest: どの文書の図も同じ決まりで描かれ、凡例で色・構造・線の意味を読み込める。廃止した記載方法の図は、警告で変換の方法が分かる
 trigger: 利用側のページが、図の部品の定義を持つ文書を描かせる
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
 success_guarantee: 部品の定義の場所に、決まりのとおりの図が描かれる。文書に記載したスクリプトは動かない。
-minimal_guarantee: 定義を読み込めない図の場所には記載の警告が出て、ほかの本文と図は描かれる。
+minimal_guarantee: 定義を読み込めない図と、廃止した `flow`・`sequence` の範囲の場所には記載の警告が出て、ほかの本文と図は描かれる。
 test_file: tests/e2e/単一ユースケース/図を描く.spec.ts

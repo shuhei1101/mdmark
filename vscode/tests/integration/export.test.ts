@@ -261,7 +261,9 @@ suite("HTML に書き出す", () => {
       join(workspaceDir(), "docs", "guide.html"),
     );
     try {
-      await exported.page.waitForSelector(".mdmark-diagram-frame");
+      await exported.page.waitForSelector(
+        'figure.mdmark-diagram[data-diagram="map"]',
+      );
       assert.ok((await exported.page.locator("h1").count()) > 0);
       assert.ok((await exported.page.locator("table").count()) > 0);
       assert.ok((await exported.page.locator(".markdown-alert").count()) > 0);

@@ -28,7 +28,7 @@ flows:
         PV->>EX: rendered
     expected:
       - タグ一覧の代役が 1 回呼ばれる
-      - 描けない理由と「リロード」が消え、見出し・表・注意書き・フロー図が描かれる
+      - 描けない理由と「リロード」が消え、見出し・表・注意書き・map の構成図が描かれる
     test: test_normal
   - name: 正常系（コマンドパレットから）
     summary: '`mdmark.refreshPreview` で、新しく打たれたバージョンを読み込む'

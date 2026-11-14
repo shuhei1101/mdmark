@@ -289,6 +289,58 @@ test("test_narrow", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+// リンク先を持つノードは、名前を本文のリンクと同じ色と下線にし、ノードの全体をリンクにして、説明のマーカーをリンクの後ろに置く（LinkedNode）
+test("test_linked_node", async () => {
+  // 準備・実行
+  const page = await openMap("linked-node");
+  // 検証
+  const node = page.locator('[data-node="mount"]');
+  await expect(node.getAttribute("class")).resolves.toContain("has-link");
+  await expect(node.getAttribute("tabindex")).resolves.toBeNull();
+  const link = node.locator("a.mdmark-diagram-node-link");
+  await expect(link.getAttribute("href")).resolves.toBe(
+    "https://example.com/spec",
+  );
+  const decoration = await node
+    .locator(".mdmark-diagram-node-name")
+    .evaluate((element) => getComputedStyle(element).textDecorationLine);
+  expect(decoration).toContain("underline");
+  await expect(
+    page.locator("a.mdmark-diagram-node-link").count(),
+  ).resolves.toBe(1);
+  // フォーカスはリンクに 1 回だけ止まる
+  await link.focus();
+  await expect(
+    page.evaluate(() => document.activeElement?.className),
+  ).resolves.toBe("mdmark-diagram-node-link");
+});
+
+// 説明を持つグループは、タイトルの右にノードと同じマーカーを持ち、説明を持たないグループには無い（GroupNote）
+test("test_group_note", async () => {
+  // 準備・実行
+  const page = await openMap("group-note");
+  // 検証
+  const marker = page.locator(
+    '.map-group[data-group="lib"] .map-group-head button.mdmark-diagram-group-info',
+  );
+  await expect(marker.count()).resolves.toBe(1);
+  await expect(marker.getAttribute("aria-label")).resolves.toBe(
+    "「mdmark」の説明",
+  );
+  await expect(
+    page.locator("button.mdmark-diagram-group-info").count(),
+  ).resolves.toBe(1);
+  const title = await rectOf(
+    page,
+    '.map-group[data-group="lib"] .map-group-title',
+  );
+  const mark = await rectOf(
+    page,
+    '.map-group[data-group="lib"] button.mdmark-diagram-group-info',
+  );
+  expect(mark.left).toBeGreaterThanOrEqual(title.right - 1);
+});
+
 // 開閉・中へ入るボタン、ノード、線の押せる帯は、スクリーンリーダー向けの名前とキーを持ち、ノードの名前の文字だけを選べる（Default）
 test("test_accessibility", async () => {
   // 準備・実行

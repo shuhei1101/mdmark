@@ -1,0 +1,33 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 865 files in 6s. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/integration/lib/render.test.ts(8,3): error TS2724: '"../../../src/index.ts"' has no exported member named 'MdmarkFlowDefinition'. Did you mean 'MdmarkErDefinition'?
+tests/integration/lib/render.test.ts(1011,22): error TS7006: Parameter 'lane' implicitly has an 'any' type.
+tests/integration/lib/render.test.ts(1035,38): error TS7006: Parameter 'wire' implicitly has an 'any' type.
+tests/integration/lib/render.test.ts(1036,37): error TS7006: Parameter 'node' implicitly has an 'any' type.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit 1
+
+# Biome の警告 1 件（plugin/bin/setup.js）は develop と同じで、この PR は触れていない
+# 型検査の 4 件（tests/integration/lib/render.test.ts）は、廃止した MdmarkFlowDefinition と flow の定義を使う結合テストで、結合テスト作成の工程で書き直す

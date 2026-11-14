@@ -179,14 +179,14 @@ styles:
         target: コードブロックとファイルツリーの折り返し
         value: '折り返さない既定（`white-space: pre`・`nowrap` と `overflow-wrap: normal`）は `@layer mdmark` の外に `.mdmark .mdmark-code pre`・`.mdmark .mdmark-code pre code`・`.mdmark .mdmark-tree .mdmark-tree-list` で、印刷以外（`@media not print`。印刷は層の中の印刷の規則でコードを紙の幅に折り返す）に配置する（利用側の要素名だけ・クラス 1 つの `pre` への CSS より詳細度が高く、利用側が mdmark のクラスを指定すれば上書きできる）。`mdmark-code-wrap` と `mdmark-tree-wrap` の規則も同じく層の外に配置し、値はモック `docs/mock/refs/328/assets/wrap.css` から取る（ツリーの注釈の字下げは開閉のマーカーの幅とアイコンの幅と間隔の和）'
       - class_name: .mdmark .mdmark-diagram-node.has-link・.mdmark-diagram-node-link
-        target: リンク先を持つフロー図のノード
+        target: リンク先を持つ map の構成図のノード
         value: 'リンクはノードの全体を覆い（`position: absolute; inset: 0`）、名前を本文のリンクと同じ色と下線にし、ノードの上は文字の上も `cursor: pointer`・`user-select: none` にする。ホバーはノードの地に種類の色をうっすら敷き、フォーカスはノードの外側に枠を出す。右上のマーカーはリンクの上に重ねる。値はモック `docs/mock/refs/42/assets/diagram.css` の `.mdmark-diagram-node.has-link` の規則'
       - class_name: .mdmark .mdmark-table-scroll と .mdmark-table-tool.is-icon-only・.mdmark-table-tool-badge
         target: 表を横にスクロールさせる包みと、アイコンだけの帯のボタン
         value: '包みは本文の幅いっぱい（`width: 100%`）で横にスクロールし、外側の角丸の枠と続きがある側の端の影を持つ。中の `table` は `display: table`・`width: max-content` で列の幅の合計で描き、本文の幅まで広げない（列の最小幅と見出しを折り返さない指定は今のままにする）。印刷以外（`@media not print`）では、`data-auto-width` の表を `table-layout: fixed`・`width: var(--mdmark-auto-table-width)` にし、`is-resized` でない見出しのセルを `box-sizing: border-box`・`width: var(--mdmark-auto-width, auto)`（変数は外側の幅）、セルの `min-width` を `0` にする（読者がつまみで入れたインラインの `width` が優先される。値は `docs/mock/refs/505/assets/table-width.css`）。アイコンだけのボタンは帯のほかのボタンと同じ高さの正方形で、バッジはアイコンの右上に重ねる。印刷では包みのスクロールを削除する。値は `docs/mock/refs/308/assets/table.css`'
-      - class_name: .mdmark .mdmark-diagram-resize・.mdmark-diagram-item-hit・.mdmark-diagram-group-info・グループのタイトルの .is-stuck
-        target: 図のリサイズハンドル・グラフの項目の該当し・グループのタイトルのマーカーと留めたタイトル
-        value: 'リサイズハンドルは表示するノードの右下の角に `position: absolute` で配置し、`cursor: ns-resize`・`touch-action: none`、ホバーと `.is-resizing` で面の色、フォーカスの枠を持つ。クリックを受ける円は透明で `pointer-events: all`、フォーカスしたときにリンクの色の輪。グループのタイトルのマーカーはノードのマーカーと同じ外観をタイトルの行の中に配置し（`position: static`）、`.is-stuck` のタイトルは地の色と線の札でノードと線より手前（`z-index: 2`）に描く。印刷ではリサイズハンドルを隠す。値は `docs/mock/refs/42/assets/diagram.css`'
+      - class_name: .mdmark .mdmark-diagram-resize・.mdmark-diagram-item-hit・.mdmark-diagram-group-info
+        target: 図のリサイズハンドル・グラフの項目の該当し・map の構成図のグループのタイトルのマーカー
+        value: 'リサイズハンドルは表示するノードの右下の角に `position: absolute` で配置し、`cursor: ns-resize`・`touch-action: none`、ホバーと `.is-resizing` で面の色、フォーカスの枠を持つ。クリックを受ける円は透明で `pointer-events: all`、フォーカスしたときにリンクの色の輪。map の構成図のグループのタイトルのマーカーはノードのマーカーと同じ外観をタイトルの行（`.map-group-head`）の中に配置する（`position: static`）。廃止したフロー図の枠・層・判定フローチャートの形・シーケンス図の相手の行と、`.is-stuck`・ノードの種類ごとの色の CSS 変数（`--mdmark-color-diagram-llm` など）の規則は削除する。印刷ではリサイズハンドルを隠す。値は `docs/mock/refs/42/assets/diagram.css`'
     refs:
       - SCR-472-4#
       - CMP-472-65#

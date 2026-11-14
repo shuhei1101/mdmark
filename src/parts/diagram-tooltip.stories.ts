@@ -19,12 +19,6 @@ export const Wire: Story = {
   args: { kind: "wire", open: true },
 };
 
-export const Io: Story = {
-  name: "Io",
-  parameters: { server: { id: "diagram-tooltip" } },
-  args: { kind: "io", open: true },
-};
-
 export const Term: Story = {
   name: "Term",
   parameters: { server: { id: "diagram-tooltip" } },

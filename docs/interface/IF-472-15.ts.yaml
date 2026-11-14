@@ -9,7 +9,7 @@ flows:
     summary: Markdown と同じフォルダに書き出し、通知からブラウザで開く
     setup:
       - name: 見本のワークスペース
-        description: 見出し・表・注意書き・フロー図と `./images/figure.png` を持つ `docs/guide.md` を開いた状態。`mdmark.export.outputDir` は既定の空。`</script>` を含むコードブロックを持つ
+        description: 見出し・表・注意書き・map の構成図と `./images/figure.png` を持つ `docs/guide.md` を開いた状態。`mdmark.export.outputDir` は既定の空。`</script>` を含むコードブロックを持つ
       - name: Mock
         description: プレビューを開く.ts の正常系と同じ配信元とタグ一覧の代役。`showInformationMessage` は「ブラウザで開く」を返却する代役、`env.openExternal` は URL を記録する代役。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
@@ -27,7 +27,7 @@ flows:
       - '`docs/guide.html` が 1 つ記載され、戻り値がそのファイル'
       - 通知に `docs/guide.html` のパスと「ブラウザで開く」が出る
       - '`env.openExternal` の代役に `docs/guide.html` の `file:` の URL が渡る'
-      - HTML を開くと、見出し・表・注意書き・フロー図が描かれ、画像の `naturalWidth` が 0 より大きく、コードブロックの `</script>` が文字のまま出る
+      - HTML を開くと、見出し・表・注意書き・map の構成図が描かれ、画像の `naturalWidth` が 0 より大きく、コードブロックの `</script>` が文字のまま出る
     test: test_normal
   - name: 正常系（書き出す先を指定する）
     summary: '`mdmark.export.outputDir` のフォルダに書き込み、保存していない書き換えも入れる'

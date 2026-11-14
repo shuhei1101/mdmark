@@ -1,0 +1,48 @@
+confirmations:
+  - topic: 今の flow・sequence を map へ変換する方法
+    decision: 移行の手順にし、`mdmark upgrade` で当てる（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565384450
+  - topic: flow・sequence を描かなくする時期
+    decision: この PR のバージョンで描かなくし、範囲には map へ変換できる旨の警告だけを出す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565385661
+  - topic: map のノードのリンクをこの PR の要件に追加するか
+    decision: 追加する。許可しないリンク先は今のフロー図と同じ決まりで開かない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565387126
+  - topic: グループのタイトルを留める機能（stickyTitles）を map に移すか
+    decision: map に移さず廃止する。変換では落として変換の報告に挙げる（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565388377
+  - topic: map のグループの説明をこの PR の要件に追加するか
+    decision: 追加する。グループのタイトルの右のマーカーとツールチップで説明を出し、変換は枠と層の hint を写す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565777122
+  - topic: map の図のノードの名前の用語を参照にするか
+    decision: この PR の要件に追加する。描くときと同じ辞書の照合で参照にし、文書の別名は参照にしない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565781103
+  - topic: map のツールチップに features.hints・tooltips.diagramPlacement を適用するか
+    decision: この PR では適用せず、別の Issue にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565782040
+  - topic: 埋め込んだ HTML の <mdmark-flow>・<mdmark-sequence> の記載の警告の文言
+    decision: 「<{要素}> の要素は廃止しました。埋め込んだ HTML の外に <!-- map --> の範囲で記載し直してください。この図は描いていません。」のままにする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4570251694

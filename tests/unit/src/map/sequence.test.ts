@@ -97,3 +97,24 @@ test("test_parse_sequence_when_unreadable_line", async () => {
   expect(sequence.problems).toHaveLength(1);
   expect(sequence.problems[0]?.kind).toBe("map_invalid");
 });
+
+// 名前とラベルの文字の参照を文字に戻す（正常系）
+test("test_parse_sequence_when_entity", async () => {
+  // 準備
+  const { parseSequence } = await loadSequence();
+  // 実行
+  const sequence = parseSequence(
+    [
+      "sequenceDiagram",
+      "  participant A as #35;1#59; 受付",
+      "  loop #quot;x#quot;",
+      "    A->>A: a#59; b",
+      "  end",
+    ].join("\n"),
+  );
+  // 検証
+  expect(sequence.problems).toEqual([]);
+  expect(sequence.participants[0]?.label).toBe("#1; 受付");
+  expect(sequence.messages[0]?.text).toBe("a; b");
+  expect(sequence.fragments[0]?.label).toBe('"x"');
+});

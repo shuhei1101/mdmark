@@ -263,9 +263,9 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 拡張
-        description: '`directive` が `flow` のほかは正常系と同じ拡張'
+        description: '`directive` が `chart` のほかは正常系と同じ拡張'
       - name: マーカーを持つ Markdown
-        description: '段落の間に `<!-- flow: {"target": "world"} -->` を持つ文書'
+        description: '段落の間に `<!-- chart: {"target": "world"} -->` を持つ文書'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -273,7 +273,7 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         participant X as 拡張のモジュール
-        P->>M: registerExtension({ directive: "flow", ... })
+        P->>M: registerExtension({ directive: "chart", ... })
         P->>M: mount(el, { markdown })
         M->>X: load()
         M->>X: draw(マーカーの場所の要素, { options })
@@ -304,7 +304,7 @@ request:
     description: '拡張のマーカーの名前（`<!-- {directive}: {JSON のオブジェクト} -->`）'
     constraints: 英小文字で始まり、英小文字・数字・`-` だけ。`features` と記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と登録済みの拡張の `directive` は使用できない
     example: greet
-    notes: 設定の `libraries` や図の部品のマーカー（`flow`・`sequence`・`chart`・`param`）と同じ名前のときは、拡張を優先する。v0.4.0 までにこの 4 つの名前で登録した拡張はそのまま動き、そのページではその名前の図の部品を描かない
+    notes: 設定の `libraries` や図の部品のマーカー（`chart`・`param`・`er`）と、廃止した `flow`・`sequence` と同じ名前のときは、拡張を優先する。この名前で登録した拡張はそのまま動き、そのページではその名前の図の部品を描かず、廃止した図の範囲の警告も出さない
   - name: extension.load
     type: () => Promise<MdmarkExtensionModule>
     required: true

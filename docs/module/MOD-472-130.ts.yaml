@@ -44,6 +44,7 @@ functions:
     scope: public
     callees:
       - MOD-472-137#functions[parseFlowchart]
+      - MOD-472-137#functions[mapLinkProblems]
       - MOD-472-141#functions[layoutMap]
       - MOD-472-129#functions[readMapState]
       - MOD-472-129#functions[writeMapState]
@@ -72,7 +73,7 @@ functions:
       description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
     process: |-
       1. `parseFlowchart`・`parseMapData` で読み、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
-      2. 補足の `layout` に状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで `layoutMap` を配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
+      2. 補足の `layout` に状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで `layoutMap` を配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems` で確かめた `allowed`）で描く
       3. ノードの中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
       4. 補足の `walkthroughs` を `attachBand`（モード `walkthrough`）の手順にする。手順を進めるたびに `onWalk` を呼び、停止で案内を始めたときに中へ入っていたグループに戻す
       4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）
@@ -84,6 +85,12 @@ functions:
         condition: ノードに `pointerType` が `touch` の `pointerdown` と、下へ 40px の `pointermove` を発火し、`pointercancel` を発火した後に、さらに下へ 40px の `pointermove` を発火する
         mock: '`writeMapState`'
         expected: '`writeMapState` の最後の呼び出しの `positions` でノードの位置が押す前と同じで、最後の `pointermove` で描き直されない'
+      - name: test_attach_map_flow_when_node_link
+        case: 正常
+        summary: リンク先を持つノードを動かしたときは開かず、動かさずに押すと開く
+        condition: '`click mount "https://example.com/spec"` を持つ `FLOW` を描き、`mount` の種類の行を 40px ドラッグして離し、次に動かさずに押す'
+        mock: '`window` の `click` のキャプチャを記録する受け取り'
+        expected: ドラッグの後の `click` は `preventDefault` され、ノードの位置が変わる。動かさずに押したときの `click` は止められず、`a.mdmark-diagram-node-link` の `href` が `https://example.com/spec`
       - name: test_attach_map_flow_when_toggle
         case: 正常
         summary: グループを閉じる

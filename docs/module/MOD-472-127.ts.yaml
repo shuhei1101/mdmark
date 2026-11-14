@@ -12,7 +12,7 @@ functions:
     scope: public
     is_async: true
     summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの記載の警告・記法のマーカーの注記（知らないキー・今の書き方・適用しない列の設定）・知らないマーカー・図の配置のずれにして返却する。`runCheck` と MCP の `runCheckTool` が呼ぶ
-    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使用し、見つからなければ既定の設定で点検する（`config` を指定して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を適用する。include の取り込み先が無い警告（`includeTarget` を持つもの）と、種類が `map` の警告は除く）、`checkMaps`（map の範囲の項目ごとのずれ）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っているマーカーに入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返却するため）を合わせ、行の順（同じ行は警告・知らないマーカーと注記・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied` はそのままその種類のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使用し、見つからなければ既定の設定で点検する（`config` を指定して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を適用する。include の取り込み先が無い警告（`includeTarget` を持つもの）と、種類が `map` の警告は除く）、`checkMaps`（map の範囲の項目ごとのずれ）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っているマーカーに入れる）、を合わせ（図の定義の誤りと廃止した図の範囲は `collectWarnings` が返却するため、`checkDiagrams` は呼ばない）、行の順（同じ行は警告・知らないマーカーと注記・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied` はそのままその種類のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
     args:
       - name: options
         type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
@@ -29,7 +29,6 @@ functions:
       - '#functions[readYamlKey]'
       - 'MOD-472-110#functions[loadExtensionDirectives]'
       - 'MOD-472-110#functions[checkUnknownMarks]'
-      - 'MOD-472-110#functions[checkDiagrams]'
       - 'MOD-472-110#functions[checkMaps]'
       - MOD-472-212#functions[collectWarnings]
     refs:
@@ -37,10 +36,10 @@ functions:
     unit_tests:
       - name: test_check_markdown_source
         case: 正常
-        summary: 警告・知らないマーカーを行の順に返却し、図の定義の誤りを 1 件にする
+        summary: 警告・知らないマーカーを行の順に返却し、廃止した図の範囲を 1 件にする
         condition: 「正常系（文字列に記載の警告がある）」の文字列を `text` で指定する
         mock: 一時フォルダ
-        expected: '`kind` が `diagram_invalid`・`unknown_mark`・`syntax_warning` の 3 件で、`where` が `1`・`20`・`22`、`file` がどれも `-`'
+        expected: '`kind` が `retired_diagram`・`unknown_mark`・`syntax_warning` の 3 件で、`where` が `1`・`20`・`22`、`file` がどれも `-`'
       - name: test_check_markdown_source_when_yaml_key
         case: 正常
         summary: YAML のキーの値のずれを YAML のファイルの行で返却する
