@@ -515,9 +515,15 @@ docs:
     updated_by: planner
     updated_at: '2026-11-14T10:34:44.428273+00:00'
 scope_out:
-  - item: '`tests/` の TypeScript（418 ファイル）への複雑さの規則の適用'
-    reason: Issue の「やること」は `src/`・`scripts/`・`vscode/src/` の Webview 以外・`plugin/` に限り、テストコードを含めない。含めるかは判断が分かれるため、レビューで確定する
+  - item: '`tests/`・`vscode/tests/` の TypeScript への複雑さの規則の適用'
+    reason: Issue の「やること」は範囲を `src/`・`scripts/`・`vscode/src/` の Webview 以外・`plugin/` に限り、テストコードを含めない。規約『設計原則』の complexity-01 もテストコードに当てるかを定めていない
     plan: to_file
   - item: Webview 以外への React・アクセシビリティ・import の向き・Tailwind・記載方法（`func-style`・enum の禁止・`no-default-export`）・型の情報を使う規則の適用
     reason: Issue が広げるのは複雑さの 4 規則だけで、他の規則は Webview の React の規約に従うもの
+    plan: none
+  - item: '`vscode/scripts/` の TypeScript（VS Code 拡張機能のビルドのスクリプト）への複雑さの規則の適用'
+    reason: Issue の「やること」は VS Code 拡張機能を `vscode/src/` に限る
+    plan: to_file
+  - item: 設定ファイル（`.storybook/`・`vitest.config.ts`・`vscode/vite.config.ts`）・拡張の雛形（`templates/extensions/example.ts`）・移行の手順（`migrations/**/*.mts`）への複雑さの規則の適用
+    reason: Issue の「やること」の範囲に入らない。移行の手順は版ごとに固定し、版を出した後に書き換えない
     plan: none

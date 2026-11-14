@@ -102,15 +102,19 @@ functions:
         type: ResolvedConfig
         required: true
         description: 既定を当てた設定
-      - name: args
+      - name: options
+        type: '{ args: MapArgs; onWalk?: () => void; extension?: MapFlowExtension }'
+        required: true
+        description: 印の引数と、案内の手順の通知・図の種類の差し込み
+      - name: options.args
         type: MapArgs
         required: true
         description: 印の引数
-      - name: onWalk
+      - name: options.onWalk
         type: () => void
         required: false
         description: 案内の手順を進めたときに呼ぶ関数
-      - name: extension
+      - name: options.extension
         type: MapFlowExtension
         required: false
         description: ER 図・状態遷移図の差し込み。無ければ `flowchart` の構成図
