@@ -97,7 +97,7 @@ functions:
       - name: test_collect_side_toc_headings_when_changed
         case: 正常
         summary: 色分けしたブロックを持つセクションの見出しに changed を付ける
-        condition: '`# 手引き`・`## 導入`（段落）・`## 使用方法`（`data-kind="add"` の段落）の本文'
+        condition: '`# 手引き`・`## 導入`（段落）・`## 使用方法`（`renderDiffBlock` で `data-kind="add"` の `.mdmark-diff-block` に包んだ段落）の本文'
         mock: なし
         expected: '`手引き`・`使用方法` が `changed: true` を持ち、`導入` は `changed` を持たない'
     status: planned
@@ -121,19 +121,19 @@ functions:
       - name: test_find_changed_headings
         case: 正常
         summary: 色分けしたブロックを持つセクションと、その祖先の見出しを集める
-        condition: '`# 文書`・`## A`（段落）・`## B`（`data-kind="add"` の段落）・`### B1`（段落）の本文'
+        condition: '`# 文書`・`## A`（段落）・`## B`（`renderDiffBlock` で `data-kind="add"` の `.mdmark-diff-block` に包んだ段落）・`### B1`（段落）の本文'
         mock: なし
         expected: '`文書`・`B` だけを持つ'
       - name: test_find_changed_headings_when_section_deleted
         case: 正常
         summary: 見出しごと削除したセクションは祖先にだけ付け、前のセクションに付けない
-        condition: '`# 文書`・`## A`・`### A1`（段落）の後ろに、`id` を持たない `## E` と段落を包んだ `data-kind="del"` のブロック 2 つ、続けて `## C`（段落）を持つ本文'
+        condition: '`# 文書`・`## A`・`### A1`（段落）の後ろに、`renderDiffBlock` で `data-kind="del"` の `.mdmark-diff-block` に包んだ `id` を持たない `## E` と段落の 2 つ、続けて `## C`（段落）を持つ本文'
         mock: なし
         expected: '`文書` だけを持ち、`A`・`A1`・`C` を持たない'
       - name: test_find_changed_headings_when_heading_rewritten
         case: 正常
         summary: 見出しの文字を書き換えたときは新しい見出しに付ける
-        condition: '`# 文書` の後ろに、`id` を持たない `## 古い名前` の `data-kind="del"` のブロックと、`## 新しい名前` の `data-kind="add"` のブロックを持つ本文'
+        condition: '`# 文書` の後ろに、`renderDiffBlock` で包んだ、`id` を持たない `## 古い名前` の `data-kind="del"` の `.mdmark-diff-block` と、`## 新しい名前` の `data-kind="add"` の `.mdmark-diff-block`を持つ本文'
         mock: なし
         expected: '`文書`・`新しい名前` を持つ'
       - name: test_find_changed_headings_when_no_diff
