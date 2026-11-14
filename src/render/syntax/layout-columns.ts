@@ -21,35 +21,60 @@ type ColumnsRange = {
   nested: number[];
 };
 
+/** columns の範囲を集める途中の状態 */
+type RangeCollector = {
+  ranges: ColumnsRange[];
+  current: ColumnsRange | undefined;
+  depth: number;
+};
+
+/** columns の開きのマーカーを読む。外側の範囲の中なら入れ子の開きにする */
+const openRange = (collector: RangeCollector, index: number): void => {
+  if (collector.current === undefined) {
+    collector.current = { open: index, close: -1, separators: [], nested: [] };
+  } else {
+    collector.current.nested.push(index);
+  }
+  collector.depth += 1;
+};
+
+/** columns の閉じのマーカーを読む。外側の範囲の閉じなら範囲を集め終える */
+const closeRange = (collector: RangeCollector, index: number): void => {
+  const current = collector.current;
+  if (!current) {
+    return;
+  }
+  collector.depth -= 1;
+  if (collector.depth === 0) {
+    current.close = index;
+    collector.ranges.push(current);
+    collector.current = undefined;
+  }
+};
+
 /** 外側の columns の範囲を、区切りと入れ子の開きの位置とあわせて集める */
 const collectRanges = (tokens: Token[]): ColumnsRange[] => {
-  const ranges: ColumnsRange[] = [];
-  let current: ColumnsRange | undefined;
-  let depth = 0;
+  const collector: RangeCollector = {
+    ranges: [],
+    current: undefined,
+    depth: 0,
+  };
   for (const [index, token] of tokens.entries()) {
     const mark = markOf(token);
-    if (mark?.name === "columns" && !mark.closing) {
-      if (current === undefined) {
-        current = { open: index, close: -1, separators: [], nested: [] };
+    if (mark?.name === "columns") {
+      if (mark.closing) {
+        closeRange(collector, index);
       } else {
-        current.nested.push(index);
+        openRange(collector, index);
       }
-      depth += 1;
-    } else if (mark?.name === "columns" && mark.closing && current) {
-      depth -= 1;
-      if (depth === 0) {
-        current.close = index;
-        ranges.push(current);
-        current = undefined;
-      }
-    } else if (mark?.name === "column" && current && depth === 1) {
-      current.separators.push(index);
+    } else if (mark?.name === "column" && collector.depth === 1) {
+      collector.current?.separators.push(index);
     }
   }
-  if (current) {
-    ranges.push(current);
+  if (collector.current) {
+    collector.ranges.push(collector.current);
   }
-  return ranges;
+  return collector.ranges;
 };
 
 /** 列の数が 2〜3 でない範囲の警告 */
@@ -61,71 +86,93 @@ const countWarning = (mark: Mark, count: number): SyntaxWarning => ({
       : `の範囲が ${count} 列です。横に並べられるのは ${MIN_COLUMNS}〜${MAX_COLUMNS} 列です。\`<!-- column -->\` を減らしてください。中身を記載した順に表示しています。`,
 });
 
+/** 範囲が閉じていないか、列の数が 2〜3 でなければ、開きのマーカーに配置する警告を返却する */
+const rangeProblem = (
+  range: ColumnsRange,
+  mark: Mark,
+): SyntaxWarning | undefined => {
+  if (range.close < 0) {
+    return unclosedWarning(mark);
+  }
+  const count = range.separators.length + 1;
+  return count < MIN_COLUMNS || count > MAX_COLUMNS
+    ? countWarning(mark, count)
+    : undefined;
+};
+
+/** 段組みで囲む範囲の、開き・区切り・閉じのマーカーの代わりに配置する段組みの境界のトークン */
+const columnsBoundaries = (
+  state: StateCore,
+  range: ColumnsRange,
+): Array<[number, Token[]]> => {
+  const tokens = state.tokens;
+  const count = range.separators.length + 1;
+  const pieces = splitSlots(
+    renderLayoutColumns({ columns: Array(count).fill(SLOT_MARKER) }),
+  );
+  const boundary = (
+    index: number,
+    html: string,
+    kind: "start" | "between" | "end",
+  ): [number, Token[]] => [
+    index,
+    [
+      tabBoundaryBlock({
+        state,
+        html,
+        boundary: kind,
+        source: tokens[index],
+      }),
+    ],
+  ];
+  // 列の間は、前の列の終わりと次の列の始まり
+  const between = pieces[1] ?? "";
+  return [
+    boundary(range.open, pieces[0] ?? "", "start"),
+    ...range.separators.map((separator) =>
+      boundary(separator, between, "between"),
+    ),
+    boundary(range.close, pieces.at(-1) ?? "", "end"),
+  ];
+};
+
+/** 範囲 1 つの、マーカーの位置ごとに代わりに配置するトークン（空の配列はマーカーを取り除く） */
+const rangeReplacements = (
+  state: StateCore,
+  range: ColumnsRange,
+): Array<[number, Token[]]> => {
+  const tokens = state.tokens;
+  const mark = markOf(tokens[range.open]) as Mark;
+  const nested = range.nested.map((index): [number, Token[]] => [
+    index,
+    [
+      warningBlock(state, {
+        mark: (markOf(tokens[index]) as Mark).raw,
+        message:
+          "の columns の範囲は、columns の範囲の中に入れ子にできません。内側の範囲は横に並べずに、中身を記載した順に表示しています。",
+      }),
+    ],
+  ]);
+  const problem = rangeProblem(range, mark);
+  if (problem === undefined) {
+    return [...nested, ...columnsBoundaries(state, range)];
+  }
+  return [
+    ...nested,
+    [range.open, [warningBlock(state, problem)]],
+    ...range.separators.map((separator): [number, Token[]] => [separator, []]),
+  ];
+};
+
 /** `columns` がオンなら、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切り、2〜3 列なら段組みで囲む。列の数が合わない範囲と入れ子の内側は警告を差し込んで囲まない */
 export const buildLayoutColumns = (state: StateCore): void => {
   if (!featureOn(state, "columns")) {
     return;
   }
   const tokens = state.tokens;
-  // 位置ごとに、マーカーの代わりに配置するトークン（空の配列はマーカーを取り除く）
-  const replace = new Map<number, Token[]>();
-  for (const range of collectRanges(tokens)) {
-    const open = tokens[range.open] as Token;
-    const mark = markOf(open) as Mark;
-    for (const nested of range.nested) {
-      const nestedMark = markOf(tokens[nested]) as Mark;
-      replace.set(nested, [
-        warningBlock(state, {
-          mark: nestedMark.raw,
-          message:
-            "の columns の範囲は、columns の範囲の中に入れ子にできません。内側の範囲は横に並べずに、中身を記載した順に表示しています。",
-        }),
-      ]);
-    }
-    if (range.close < 0) {
-      replace.set(range.open, [warningBlock(state, unclosedWarning(mark))]);
-      for (const separator of range.separators) {
-        replace.set(separator, []);
-      }
-      continue;
-    }
-    const count = range.separators.length + 1;
-    if (count < MIN_COLUMNS || count > MAX_COLUMNS) {
-      replace.set(range.open, [warningBlock(state, countWarning(mark, count))]);
-      for (const separator of range.separators) {
-        replace.set(separator, []);
-      }
-      continue;
-    }
-    const pieces = splitSlots(
-      renderLayoutColumns({ columns: Array(count).fill(SLOT_MARKER) }),
-    );
-    const head = pieces[0] ?? "";
-    const tail = pieces.at(-1) ?? "";
-    // 列の間は、前の列の終わりと次の列の始まり
-    const between = pieces[1] ?? "";
-    replace.set(range.open, [
-      tabBoundaryBlock({ state, html: head, boundary: "start", source: open }),
-    ]);
-    for (const separator of range.separators) {
-      replace.set(separator, [
-        tabBoundaryBlock({
-          state,
-          html: between,
-          boundary: "between",
-          source: tokens[separator],
-        }),
-      ]);
-    }
-    replace.set(range.close, [
-      tabBoundaryBlock({
-        state,
-        html: tail,
-        boundary: "end",
-        source: tokens[range.close],
-      }),
-    ]);
-  }
+  const replace = new Map<number, Token[]>(
+    collectRanges(tokens).flatMap((range) => rangeReplacements(state, range)),
+  );
   state.tokens = tokens.flatMap(
     (token, index) => replace.get(index) ?? [token],
   );
