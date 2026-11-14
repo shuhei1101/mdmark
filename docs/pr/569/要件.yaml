@@ -493,19 +493,27 @@ docs:
   - page: docs/test-procedure/TP-472-1.yaml
     new: false
     change: TL-8（lint）の説明の「Webview（`vscode/src/webview/`）の ESLint」を、複雑さの規則を既存の TypeScript 全体に適用する範囲に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T10:34:44.428273+00:00'
   - page: docs/library/LIB-472-12.yaml
     new: false
     change: コマンドの `purpose`・`description`（Webview の TypeScript だけ・Webview の外を `ignores` で削除する）と導入の説明を、複雑さの規則を `src/`・`scripts/`・`vscode/src/` に適用する範囲に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T10:34:44.428273+00:00'
   - page: docs/library/README.md
     new: false
-    change: eslint の行の概要「Webview の React の規則」に、既存の TypeScript 全体の複雑さの規則を加える
-    status: todo
+    change: eslint の行の概要「Webview の React の規則」に、既存の TypeScript 全体の複雑さの規則を加える（正本の `docs/library/index.yaml` を直して生成し直す）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T10:34:44.428273+00:00'
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
-    change: 「Webview の ESLint の道具」の呼び名を、適用の範囲が広がった後の呼び名に合わせる
-    status: todo
+    change: 「Webview の ESLint の道具」「Webview の ESLint」の呼び名を、適用の範囲が広がった後の「ESLint の道具」「ESLint」に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T10:34:44.428273+00:00'
 scope_out:
   - item: '`tests/` の TypeScript（418 ファイル）への複雑さの規則の適用'
     reason: Issue の「やること」は `src/`・`scripts/`・`vscode/src/` の Webview 以外・`plugin/` に限り、テストコードを含めない。含めるかは判断が分かれるため、レビューで確定する

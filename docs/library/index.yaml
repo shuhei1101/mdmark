@@ -39,7 +39,7 @@ items:
 - page: LIB-472-1.yaml
   summary: プラグインの導入・PreToolUse のフック・プラグインの MCP サーバーの起動
 - page: LIB-472-12.yaml
-  summary: まとめた JS を構文木にして規則を適用する（対応ブラウザの下限の確認と、Webview の React の規則）
+  summary: まとめた JS を構文木にして規則を適用する（対応ブラウザの下限の確認と、既存の TypeScript の複雑さと Webview の React の規則）
 - page: LIB-472-13.yaml
   summary: 対応ブラウザの下限のバージョンに無い API の使用を報告する
 - page: LIB-472-14.yaml

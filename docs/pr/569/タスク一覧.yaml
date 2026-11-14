@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T10:15:41.572822+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: 違反した関数の分割で増える関数・変わる処理を docs/module/ の設計書へ反映し、eslintConfig と MOD-472-41 の適用の範囲を書き換える
+    updated_by: planner
+    updated_at: '2026-11-14T10:35:29.581248+00:00'
   - process: ドキュメント修正
     status: todo
     note: 要件.yaml の docs の行
