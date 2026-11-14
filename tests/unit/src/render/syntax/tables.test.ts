@@ -941,3 +941,26 @@ test("test_decorate_tables_when_no_sort", () => {
   expect(e).not.toContain("data-no-sort");
   expect(html).not.toContain("mdmark-syntax-warning");
 });
+
+// ビューの表は長文の列にも並べ替えを付けたまま描く（正常系）
+test("test_decorate_tables_when_view_long_column", () => {
+  // 準備: 説明の列が長文の列になるビューの表
+  const markdown = [
+    "<!-- view: {} -->",
+    "",
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    `| ${wide(6)} | ${wide(40)} |`,
+    `| ${wide(4)} | ${wide(40)} |`,
+    "",
+    "<!-- /view -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+  expect(wrapper).toMatch(/data-features="[^"]*\bsort\b/);
+  expect(wrapper).toContain('data-long="1"');
+  expect(wrapper).not.toContain("data-no-sort");
+});
