@@ -1209,7 +1209,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       relations,
       fanouts,
     });
-    return mapFrame("記録の構造", part, layout);
+    const frame = mapFrame("記録の構造", part, layout);
+    // 行が増える関連のマーカーにフォーカスしたストーリーは、図の操作を付けてから最初のマーカーにフォーカスする
+    return args.focusFanout === true
+      ? frame + storyMarker(args, "button.map-er-fanout")
+      : frame;
   },
   "map-state": (args) => {
     const diagram = parseStateDiagram(MAP_STATE);

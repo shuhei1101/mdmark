@@ -133,6 +133,8 @@ export type MapFlowArgs = {
   shapes?: Record<string, MapStateShape> | undefined;
   /** ノードの ID ごとに、種類の行の末尾とノードの末尾へ入れる HTML と、そのツールチップ */
   nodeParts?: Record<string, MapNodePart> | undefined;
+  /** 選択と強調の代わりに残すノードと線（ほかを薄くする） */
+  keep?: { nodes: string[]; wires: string[] } | undefined;
 };
 
 /** 状態遷移図のノードの形状 */
@@ -198,6 +200,8 @@ const groupTitle = (id: string, title: string, current: boolean): string =>
 const keptOf = (
   args: MapFlowArgs,
 ): { nodes: Set<string>; wires: Set<string> } | undefined => {
+  if (args.keep !== undefined)
+    return { nodes: new Set(args.keep.nodes), wires: new Set(args.keep.wires) };
   const selected = new Set(args.selected);
   if (selected.size > 0) {
     const wires = args.layout.wires.filter((wire) =>
@@ -987,6 +991,11 @@ export const MAP_ER = {
   /** 関連の端の、ノードの辺から外へ出す長さ（同じ辺から出る 2 本目からは step ずつ延ばす） */
   endOut: 14,
   step: MAP_LAYOUT.clearance,
+  /** 同じ列の行から同じ辺へ出る 2 本目からの端の縦のずれ */
+  shift: 6,
+  /** 多重度の文字の 1 文字の幅と、文字の高さ（重なりの見積もり） */
+  cardinalityChar: 7,
+  cardinalityLine: 13,
   /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
   crowd: 120,
   /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
@@ -1080,8 +1089,10 @@ const reanchor = (args: {
   outOf: (side: "left" | "right") => number;
   /** 辺ごとの、高さ y で隣のノードまでの空き */
   freeOf: (side: "left" | "right") => number;
+  /** 辺ごとに、同じ高さから出る端をずらす量を返す */
+  shiftOf: (side: "left" | "right") => number;
 }): Point[] => {
-  const { points, rect, y, side } = args;
+  const { points, rect, side } = args;
   const [p0, p1] = points;
   if (!p0 || !p1) return points;
   const original =
@@ -1097,6 +1108,7 @@ const reanchor = (args: {
         original ??
         (p1[0] >= rect.x + rect.w / 2 ? "right" : "left")));
   const sx = chosen === "right" ? rect.x + rect.w : rect.x;
+  const y = args.y + args.shiftOf(chosen);
   const out = args.outOf(chosen);
   const ox = sx + (chosen === "right" ? out : -out);
   if (original === undefined || side !== undefined)
@@ -1129,6 +1141,14 @@ export const rewireMapEr = (args: {
     value === "left" || value === "right" ? value : undefined;
   /** ノードの辺ごとの、つないだ端の数（同じ辺から出る端を縦の区間が重ならないようずらす） */
   const used = new Map<string, number>();
+  /** 辺と高さごとの、つないだ端の数（同じ列の行から同じ辺へ出る端を MAP_ER.shift ずつずらす） */
+  const rows = new Map<string, number>();
+  const shiftFor = (node: string, y: number) => (side: "left" | "right") => {
+    const key = `${node}:${side}:${y}`;
+    const count = rows.get(key) ?? 0;
+    rows.set(key, count + 1);
+    return count * MAP_ER.shift;
+  };
   const outFor = (node: string) => (side: "left" | "right") => {
     const key = `${node}:${side}`;
     const count = used.get(key) ?? 0;
@@ -1183,6 +1203,7 @@ export const rewireMapEr = (args: {
       side: sideOf(ends?.from),
       outOf: outFor(from.id),
       freeOf: freeOf(from, fromY),
+      shiftOf: shiftFor(from.id, fromY),
     });
     const toY = yOf(to, toColumn);
     points = reanchor({
@@ -1192,6 +1213,7 @@ export const rewireMapEr = (args: {
       side: sideOf(ends?.to),
       outOf: outFor(to.id),
       freeOf: freeOf(to, toY),
+      shiftOf: shiftFor(to.id, toY),
     }).reverse();
     return { ...wire, points };
   });
@@ -1275,6 +1297,8 @@ export const renderMapErMarks = (args: {
 }): string => {
   const relations = new Map(args.relations.map((item) => [item.id, item]));
   const texts: string[] = [];
+  /** 配置した多重度の左端・ベースライン・幅 */
+  const cardinalities: Array<{ x: number; y: number; w: number }> = [];
   /** 配置したラベルの左端・ベースライン・幅 */
   const labels: Array<{ x: number; y: number; w: number }> = [];
   const text = (options: {
@@ -1309,12 +1333,27 @@ export const renderMapErMarks = (args: {
     ];
     for (const [[x, y], [nx], value] of ends) {
       const right = nx >= x;
+      const width = value.length * MAP_ER.cardinalityChar;
+      const baseline = y - 5;
+      // 先に配置した多重度と重なるときは、ノードから離れる向きへずらす
+      let at = x + (right ? MAP_ER.cardinalityGap : -MAP_ER.cardinalityGap);
+      const leftOf = () => (right ? at : at - width);
+      const hits = (item: { x: number; y: number; w: number }, left: number) =>
+        left < item.x + item.w &&
+        item.x < left + width &&
+        Math.abs(item.y - baseline) < MAP_ER.cardinalityLine;
+      for (
+        let other = cardinalities.find((item) => hits(item, leftOf()));
+        other !== undefined;
+        other = cardinalities.find((item) => hits(item, leftOf()))
+      )
+        at = right
+          ? other.x + other.w + MAP_ER.cardinalityGap
+          : other.x - MAP_ER.cardinalityGap;
+      cardinalities.push({ x: leftOf(), y: baseline, w: width });
       text({
         wire: wire.id,
-        at: [
-          x + (right ? MAP_ER.cardinalityGap : -MAP_ER.cardinalityGap),
-          y - 5,
-        ],
+        at: [at, baseline],
         value,
         className: "map-er-cardinality",
         anchor: right ? "start" : "end",
@@ -1402,8 +1441,20 @@ export const renderMapErDiagram = (args: MapErArgs): MapPart => {
       tips: part.tips,
     };
   }
-  const flow = renderMapFlow({ ...args, nodeParts });
-  const kept = keptOf(args);
+  // テーブルを 1 つ選んだときは、その関連と相手のテーブルを残す
+  const only = args.selected.length === 1 ? args.selected[0] : undefined;
+  const near = args.relations.filter(
+    (relation) => relation.from === only || relation.to === only,
+  );
+  const keep =
+    only === undefined
+      ? args.keep
+      : {
+          nodes: [only, ...near.flatMap((item) => [item.from, item.to])],
+          wires: near.map((item) => item.id),
+        };
+  const flow = renderMapFlow({ ...args, nodeParts, keep });
+  const kept = keptOf({ ...args, keep });
   const dim = new Set(
     kept === undefined
       ? []

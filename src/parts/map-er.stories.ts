@@ -49,7 +49,7 @@ export const PathSelected: Story = {
 export const FanoutTip: Story = {
   name: "FanoutTip",
   parameters: { server: { id: "map-er" } },
-  args: { selected: '["顧客", "明細"]', fanouts: FANOUTS },
+  args: { selected: '["顧客", "明細"]', fanouts: FANOUTS, focusFanout: true },
 };
 
 export const Narrow: Story = {
