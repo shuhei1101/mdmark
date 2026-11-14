@@ -9,7 +9,7 @@ plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━
     Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
   
 
-Checked 870 files in 10s. No fixes applied.
+Checked 870 files in 12s. No fixes applied.
 Found 1 warning.
 
 > lint:eslint
@@ -19,7 +19,6 @@ Found 1 warning.
 > typecheck
 > tsc --noEmit
 
-tests/integration/lib/mount.browser.test.ts(633,36): error TS2339: Property 'dataset' does not exist on type 'Element'.
 
 > mdmark-vscode@0.1.0 typecheck
 > tsc --noEmit
