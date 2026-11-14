@@ -262,3 +262,102 @@ test("test_footnotes_long", async () => {
     await expect(pageOverflows(page)).resolves.toBe(false);
   }
 });
+
+// 注記の参照は、注記の色の「※」と番号の上付きのマーカーで、開くとタイトル `注記 1` と本文のツールチップを出す（Annotation）
+test("test_footnote_ref_annotation", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-footnoteref--annotation",
+    WIDE_VIEWPORT,
+  );
+  // 検証
+  await expect(linkText(page)).resolves.toEqual({
+    text: "注記 1",
+    before: '"※"',
+    after: "none",
+  });
+  const tip = page.locator(".mdmark-fn-tip");
+  await expect(tip.isVisible()).resolves.toBe(true);
+  await expect(page.locator(".mdmark-fn-tip-title").innerText()).resolves.toBe(
+    "注記 1",
+  );
+  await expect(tip.innerText()).resolves.toContain(
+    "条件を満たさないときは次の工程へ進む。",
+  );
+  const color = await page
+    .locator(".mdmark-fn-link")
+    .evaluate((element) => getComputedStyle(element).color);
+  const expected = await page.evaluate(() => {
+    const probe = document.createElement("span");
+    probe.style.color = "var(--mdmark-color-annotation-ref)";
+    document.querySelector(".mdmark")?.append(probe) ??
+      document.body.append(probe);
+    const value = getComputedStyle(probe).color;
+    probe.remove();
+    return value;
+  });
+  expect(color).toBe(expected);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 脚注の番号の直後に続く注記の参照は、押す範囲が重ならないよう 24px 以上空ける（AnnotationAfterRef）
+test("test_footnote_ref_annotation_after_ref", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-footnoteref--annotation-after-ref",
+    WIDE_VIEWPORT,
+  );
+  // 検証
+  const centers = await page
+    .locator(".mdmark-fn-link")
+    .evaluateAll((elements) =>
+      elements.map((element) => {
+        const box = element.getBoundingClientRect();
+        return box.left + box.width / 2;
+      }),
+    );
+  expect(centers).toHaveLength(2);
+  expect((centers[1] ?? 0) - (centers[0] ?? 0)).toBeGreaterThanOrEqual(24);
+  await expect(
+    page.locator(".mdmark-note-ref").getAttribute("class"),
+  ).resolves.toContain("is-after-ref");
+});
+
+// 注記の一覧は、見出し `注記（2 件）` と「※」と番号の頭、参照ごとの戻るリンクを並べる（Annotations）
+test("test_footnotes_annotations", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-footnotes--annotations",
+    WIDE_VIEWPORT,
+  );
+  // 検証
+  await expect(page.locator("summary").innerText()).resolves.toBe(
+    "注記（2 件）",
+  );
+  const items = await page.locator(".mdmark-fn-item").evaluateAll((elements) =>
+    elements.map((element) => ({
+      id: element.id,
+      head: getComputedStyle(element, "::before").content,
+      backs: [...element.querySelectorAll(".mdmark-fn-back")].map((back) => ({
+        href: back.getAttribute("href"),
+        text: back.textContent,
+      })),
+    })),
+  );
+  expect(items).toEqual([
+    {
+      id: "mdmark-note-1",
+      head: '"※" counter(mdmark-fn)',
+      backs: [
+        { href: "#mdmark-noteref-1-0", text: "a" },
+        { href: "#mdmark-note-owner-1-judge", text: "b" },
+      ],
+    },
+    {
+      id: "mdmark-note-2",
+      head: '"※" counter(mdmark-fn)',
+      backs: [{ href: "#mdmark-noteref-2-0", text: "" }],
+    },
+  ]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

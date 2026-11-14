@@ -3280,6 +3280,174 @@ test("test_normal_when_footnotes_disabled", async () => {
   expect(html).not.toContain("mdmark-footnotes");
 });
 
+/** 注記を本文と表のセルから参照し、脚注の直後にも参照する文書（インターフェース定義『文書をHTML文字列にする』の正常系（注記）） */
+const ANNOTATIONS_MARKDOWN = [
+  "入力の値を判定してから、次の処理へ進む※[cond]。",
+  "",
+  "| 判定 | 結果 |",
+  "| --- | --- |",
+  "| 満たす | 次へ進む |",
+  "| 満たさない | 処理しない※[cond] |",
+  "",
+  "画像を埋め込む[^1]※[img]。",
+  "",
+  "※[img]: 画像は data URL で埋める。",
+  "",
+  "※[cond]: 条件を満たさないときは次の工程へ進む。",
+  "",
+  "[^1]: 補足の文",
+  "",
+].join("\n");
+
+// 注記を本文と表のセルから参照し、番号・ツールチップ・末尾の閉じた注記の一覧にする（正常系）
+test("test_normal_when_annotations", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(ANNOTATIONS_MARKDOWN);
+  // 検証
+  const [paragraph = "", table = ""] =
+    html.split("</table>")[0]?.split("<table") ?? [];
+  for (const [part, id] of [
+    [paragraph, "mdmark-noteref-1-0"],
+    [table, "mdmark-noteref-1-1"],
+  ] as const) {
+    const link = findTag(part, `id="${id}"`);
+    expect(findTag(part, "mdmark-note-ref")).toContain("mdmark-fn-ref");
+    expect(link).toContain('class="mdmark-fn-link"');
+    expect(link).toContain('href="#mdmark-note-1"');
+    expect(plainText(innerHtml(part, `id="${id}"`))).toBe("注記 1");
+  }
+  const tip = findTag(html, 'id="mdmark-note-tip-1-0"');
+  expect(tip).toContain('role="tooltip"');
+  expect(findTag(html, 'id="mdmark-noteref-1-0"')).toContain(
+    'aria-describedby="mdmark-note-tip-1-0"',
+  );
+  expect(plainText(innerHtml(html, 'id="mdmark-note-tip-1-0"'))).toBe(
+    "注記 1条件を満たさないときは次の工程へ進む。",
+  );
+  const third = findTags(html, "mdmark-note-ref")[2] ?? "";
+  expect(third).toContain("is-after-ref");
+  expect(plainText(innerHtml(html, 'id="mdmark-noteref-2-0"'))).toBe("注記 2");
+  expect(html).toContain('id="mdmark-fnref-1-0"');
+  const footnotesAt = html.indexOf('<details class="mdmark-footnotes">');
+  const notesAt = html.indexOf(
+    '<details class="mdmark-footnotes mdmark-notes">',
+  );
+  expect(footnotesAt).toBeGreaterThan(-1);
+  expect(notesAt).toBeGreaterThan(footnotesAt);
+  const notes = html.slice(notesAt);
+  expect(innerHtml(notes, "<summary")).toBe("注記（2 件）");
+  const items = findTags(notes, "mdmark-fn-item").map(
+    (tag) => /id="([^"]*)"/.exec(tag)?.[1],
+  );
+  expect(items).toEqual(["mdmark-note-1", "mdmark-note-2"]);
+  expect(innerHtml(notes, 'id="mdmark-note-1"')).toContain(
+    "条件を満たさないときは次の工程へ進む。",
+  );
+  expect(
+    findTags(innerHtml(notes, 'id="mdmark-note-1"'), "mdmark-fn-back"),
+  ).toHaveLength(2);
+  expect(html).not.toContain("※[cond]");
+  expect(html).not.toContain("※[img]");
+});
+
+// 定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義に記載の警告を配置し、前の定義を使用する（異常系）
+test("test_error_when_annotations_mismatch", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "未定義の※[missing]と、既定の※[cond]。",
+    "",
+    "※[cond]: 前の定義",
+    "",
+    "※[cond]: 後の定義",
+    "",
+    "※[unused]: 使用しない",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const warnings = matches(
+    html,
+    /<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g,
+  ).map(plainText);
+  expect(warnings).toHaveLength(3);
+  expect(warnings[0]).toContain("※[missing]");
+  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
+    html.indexOf("未定義の"),
+  );
+  expect(html).toContain("未定義の※[missing]と");
+  expect(warnings[1]).toContain("※[cond]");
+  expect(warnings[1]).toContain("既に");
+  expect(plainText(innerHtml(html, 'id="mdmark-note-tip-1-0"'))).toBe(
+    "注記 1前の定義",
+  );
+  expect(html).not.toContain("後の定義");
+  expect(warnings[2]).toContain("※[unused]");
+  expect(warnings[2]).toContain("参照されていません");
+  expect(html).not.toContain("使用しない");
+  const items = findTags(html, "mdmark-fn-item").map(
+    (tag) => /id="([^"]*)"/.exec(tag)?.[1],
+  );
+  expect(items).toEqual(["mdmark-note-1"]);
+});
+
+// ※ の直後の [ID] がリンクになるときはリンクを優先し、注記の参照にしない（正常系）
+test("test_normal_when_annotations_and_link_references", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "注記の※[cond]と、省略形の※[site]と、簡略形の※[site][]と、インラインの※[cond](https://example.com/a)。",
+    "",
+    "[Site]: https://example.com/b",
+    "",
+    "※[cond]: 条件の補足",
+    "",
+    "※[site]: 使われない補足",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(findTags(html, "mdmark-note-ref")).toHaveLength(1);
+  expect(html).toContain('id="mdmark-noteref-1-0"');
+  expect(
+    matches(html, /※<a href="https:\/\/example\.com\/b">site<\/a>/g),
+  ).toHaveLength(2);
+  expect(html).toContain('※<a href="https://example.com/a">cond</a>');
+  const warnings = matches(
+    html,
+    /<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g,
+  ).map(plainText);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]).toContain("※[site]");
+  expect(warnings[0]).toContain("参照されていません");
+});
+
+// 文書のマーカーで `annotations` を削除し、参照と定義を記載した文字のまま記載した位置に残す（正常系）
+test("test_normal_when_annotations_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    '<!-- features: {"annotations": false} -->',
+    "",
+    "判定する※[cond]。",
+    "",
+    "※[cond]: 条件の補足",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  expect(html).toContain("<p>判定する※[cond]。</p>");
+  expect(html).toContain("<p>※[cond]: 条件の補足</p>");
+  expect(html).not.toContain("mdmark-note-ref");
+  expect(html).not.toContain("mdmark-notes");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
 // wrap を持つコードブロックとファイルツリーに折り返す class を付け、値を持つ wrap= を記載の警告にする（正常系）
 test("test_normal_when_wrap", async () => {
   // 準備

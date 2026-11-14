@@ -10794,6 +10794,85 @@ test("test_normal_when_footnotes_printed", async () => {
   expect(list.open).toBe(false);
 });
 
+/** 注記を本文と表のセルから参照し、脚注の直後にも参照する文書（インターフェース定義『文書をHTML文字列にする』の正常系（注記）と同じ） */
+const ANNOTATIONS_MARKDOWN = [
+  "入力の値を判定してから、次の処理へ進む※[cond]。",
+  "",
+  "| 判定 | 結果 |",
+  "| --- | --- |",
+  "| 満たす | 次へ進む |",
+  "| 満たさない | 処理しない※[cond] |",
+  "",
+  "画像を埋め込む[^1]※[img]。",
+  "",
+  "※[img]: 画像は data URL で埋める。",
+  "",
+  "※[cond]: 条件を満たさないときは次の工程へ進む。",
+  "",
+  "[^1]: 補足の文",
+  "",
+].join("\n");
+
+// 注記のマーカーにフォーカスでツールチップを出して Esc で消し、マーカーで注記の一覧へ移り、戻るリンクで表のセルのマーカーへ戻る（正常系）
+test("test_normal_when_annotation_tooltip_and_list", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: ANNOTATIONS_MARKDOWN });
+  const hash = location.hash;
+  const cell = find<HTMLElement>(el, "td .mdmark-note-ref");
+  const link = find<HTMLElement>(cell, ".mdmark-fn-link");
+  const tip = find<HTMLElement>(cell, ".mdmark-fn-tip");
+  const notes = find<HTMLDetailsElement>(el, "details.mdmark-notes");
+  const footnotes = find<HTMLDetailsElement>(
+    el,
+    "details.mdmark-footnotes:not(.mdmark-notes)",
+  );
+  // 実行・検証: フォーカスで出て、Esc で消え、フォーカスはマーカーに残る
+  link.focus();
+  expect(isOpen(tip)).toBe(true);
+  expect(find(tip, ".mdmark-fn-tip-title").textContent).toBe("注記 1");
+  await userEvent.keyboard("{Escape}");
+  expect(isOpen(tip)).toBe(false);
+  expect(document.activeElement).toBe(link);
+  // 実行・検証: マーカーを押すと注記の一覧だけを開き、注記 1 の項目へ移る
+  await userEvent.click(link);
+  expect(notes.open).toBe(true);
+  expect(footnotes.open).toBe(false);
+  const item = find<HTMLElement>(notes, ".mdmark-fn-item");
+  expect(document.activeElement).toBe(item);
+  // 実行・検証: 2 つ目の戻るリンクで表のセルのマーカーへ戻り、URL の # を変えない
+  const back = item.querySelectorAll<HTMLElement>(".mdmark-fn-back")[1];
+  if (!back) throw new Error("2 つ目の戻るリンクが無い");
+  await userEvent.click(back);
+  expect(document.activeElement).toBe(link);
+  expect(location.hash).toBe(hash);
+  // id はページの中で一意にもう一度振られ、脚注の id と重ならない
+  const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  expect(link.id).not.toMatch(/^mdmark-noteref-\d+-\d+$/);
+  expect(tip.id).not.toMatch(/^mdmark-note-tip-\d+-\d+$/);
+  expect(link.getAttribute("aria-describedby")).toBe(tip.id);
+  expect(link.getAttribute("href")).toBe(`#${item.id}`);
+});
+
+// 印刷の前に閉じた注記の一覧を開き、印刷の後にもう一度閉じる（正常系）
+test("test_normal_when_annotations_printed", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: ANNOTATIONS_MARKDOWN });
+  const notes = find<HTMLDetailsElement>(el, "details.mdmark-notes");
+  const link = find<HTMLElement>(el, ".mdmark-note-ref .mdmark-fn-link");
+  link.focus();
+  // 実行・検証
+  sendPrintEvent("beforeprint");
+  expect(notes.open).toBe(true);
+  expect(
+    find<HTMLElement>(el, ".mdmark-note-ref").classList.contains("is-open"),
+  ).toBe(false);
+  sendPrintEvent("afterprint");
+  expect(notes.open).toBe(false);
+});
+
 /** 表と重なる位置で右側の目次を出す Markdown: `## 導入` と `## 使用方法` の間に、集計の行とピン止めした列を持つ 10 列 30 行の表 */
 function sideTocTableMarkdown(): string {
   const columns = [
@@ -17557,4 +17636,66 @@ test("test_normal_when_side_toc_opens_own_section", async () => {
       ]);
     });
   });
+});
+
+// map のノードと線のツールチップに注記の区分を出し、注記の一覧の戻るリンクで持ち主へ戻る（正常系）
+test("test_normal_when_map_annotations", async () => {
+  // 準備
+  const markdown = `${mapRange({
+    mermaid: "flowchart LR\n  judge[判定] e1@--> next[次の工程]\n",
+    data: '{"version": 1, "notes": {"judge": {"text": "入力の値を判定の条件と比べる", "annotations": ["cond"]}, "e1": {"annotations": ["cond"]}}}',
+  })}\n※[cond]: 条件を満たさないときは次の工程へ進む。\n`;
+  // 実行
+  const { el, figures } = await mountMap(markdown);
+  const figure = figures()[0] as HTMLElement;
+  // 検証: ノードのツールチップは説明の区分の後に注記の区分を出す
+  const mark = find<HTMLElement>(
+    figure,
+    '[data-node="judge"] .mdmark-diagram-info',
+  );
+  await userEvent.hover(mark);
+  const nodeTip = find<HTMLElement>(
+    figure,
+    '.mdmark-diagram-tip[data-tip-for="node:judge"]',
+  );
+  await vi.waitFor(() => expect(nodeTip.hidden).toBe(false));
+  const sections = [
+    ...nodeTip.querySelectorAll<HTMLElement>(".mdmark-term-tip-section"),
+  ].map((section) => section.textContent);
+  expect(sections).toEqual([
+    "入力の値を判定の条件と比べる",
+    "注記 1条件を満たさないときは次の工程へ進む。",
+  ]);
+  await userEvent.unhover(mark);
+  // 検証: 説明を持たない線にも押せる帯があり、ツールチップは注記の区分だけ
+  const hit = find<HTMLElement>(figure, '.map-wire-hit[data-wire="e1"]');
+  await userEvent.hover(hit);
+  const wireTip = find<HTMLElement>(
+    figure,
+    '.mdmark-diagram-tip[data-tip-for="e1"]',
+  );
+  await vi.waitFor(() => expect(wireTip.hidden).toBe(false));
+  expect(
+    [...wireTip.querySelectorAll(".mdmark-term-tip-section")].map(
+      (section) => section.textContent,
+    ),
+  ).toEqual(["注記 1条件を満たさないときは次の工程へ進む。"]);
+  await userEvent.unhover(hit);
+  // 検証: 一覧の注記 1 はノードと線の 2 つへ戻るリンクを持ち、押すと持ち主にフォーカスが移ってツールチップが開く
+  const item = find<HTMLElement>(el, "details.mdmark-notes .mdmark-fn-item");
+  const backs = [...item.querySelectorAll<HTMLElement>(".mdmark-fn-back")];
+  expect(backs).toHaveLength(2);
+  find<HTMLDetailsElement>(el, "details.mdmark-notes").open = true;
+  await userEvent.click(backs[0] as HTMLElement);
+  expect(document.activeElement).toBe(
+    find(figure, '[data-node="judge"] .mdmark-diagram-info'),
+  );
+  await vi.waitFor(() =>
+    expect(
+      find<HTMLElement>(
+        figure,
+        '.mdmark-diagram-tip[data-tip-for="node:judge"]',
+      ).hidden,
+    ).toBe(false),
+  );
 });
