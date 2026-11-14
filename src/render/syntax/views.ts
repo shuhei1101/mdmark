@@ -33,53 +33,67 @@ type ViewReading = {
   warnings: SyntaxWarning[];
 };
 
-/** ビューのマーカーの設定（マーカーの JSON Schema に通した後のもの）と表の見出しとセルから、表の指定・`data-view` の指定・警告を作る */
-function readView(options: {
-  state: StateCore;
+/** ボードで分ける列の位置（列が表に無ければ、警告を足して `null`） */
+function readGroupColumn(
+  state: StateCore,
+  context: {
+    mark: Mark;
+    headers: string[];
+    groupName: unknown;
+    warnings: SyntaxWarning[];
+  },
+): { group: number | null; boardDisabled: string } {
+  const { mark, headers, groupName, warnings } = context;
+  if (typeof groupName !== "string") {
+    return { group: null, boardDisabled: "" };
+  }
+  const group = headers.indexOf(groupName);
+  if (group >= 0) {
+    return { group, boardDisabled: "" };
+  }
+  const env = envOf(state);
+  env.viewCount = (env.viewCount ?? 0) + 1;
+  const boardDisabled = `mdmark-view-warning-${env.nonce.slice(0, 8)}-${env.viewCount}`;
+  warnings.push({
+    mark: mark.raw,
+    message: `の列 \`${groupName}\` は表にありません。表の列は ${codes(headers)} です。ボードにせず、表で描いています。`,
+    id: boardDisabled,
+  });
+  return { group: null, boardDisabled };
+}
+
+/** ボードの列の見出しのアイコンの上書き（列に無い値は読み込めない項目にする） */
+function readIcons(context: {
+  column: number;
+  cells: string[][];
+  values: Record<string, unknown>;
+  groupName: unknown;
+  items: WarningItem[];
+}): Record<string, ViewIconName> {
+  const { column, cells, values, groupName, items } = context;
+  const icons: Record<string, ViewIconName> = {};
+  const present = [...new Set(cells.map((row) => (row[column] ?? "").trim()))];
+  for (const [value, settings] of Object.entries(values)) {
+    const icon = isObject(settings) ? settings.icon : undefined;
+    if (!present.includes(value)) {
+      items.push({
+        label: `board.values.${value}`,
+        message: `\`${value}\` は \`${String(groupName)}\` の列にありません。列の値は ${codes(present)} です。当てずに描いています。`,
+      });
+    } else if (typeof icon === "string") {
+      icons[value] = icon as ViewIconName;
+    }
+  }
+  return icons;
+}
+
+/** 表形式で絞り込みを付ける列（表に無い列名は読み込めない項目にする） */
+function readViewFilters(context: {
   mark: Mark;
   headers: string[];
-  cells: string[][];
-}): ViewReading {
-  const { state, mark, headers, cells } = options;
-  const env = envOf(state);
-  const items: WarningItem[] = [];
-  const warnings: SyntaxWarning[] = [];
-  const board = isObject(mark.options.board) ? mark.options.board : undefined;
-  const groupName = (board?.group as { column?: unknown } | undefined)?.column;
-  let group: number | null = null;
-  let boardDisabled = "";
-  if (typeof groupName === "string") {
-    group = headers.indexOf(groupName);
-    if (group < 0) {
-      group = null;
-      env.viewCount = (env.viewCount ?? 0) + 1;
-      boardDisabled = `mdmark-view-warning-${env.nonce.slice(0, 8)}-${env.viewCount}`;
-      warnings.push({
-        mark: mark.raw,
-        message: `の列 \`${groupName}\` は表にありません。表の列は ${codes(headers)} です。ボードにせず、表で描いています。`,
-        id: boardDisabled,
-      });
-    }
-  }
-  const icons: Record<string, ViewIconName> = {};
-  const values = isObject(board?.values) ? board.values : {};
-  if (group !== null) {
-    const column = group;
-    const present = [
-      ...new Set(cells.map((row) => (row[column] ?? "").trim())),
-    ];
-    for (const [value, settings] of Object.entries(values)) {
-      const icon = isObject(settings) ? settings.icon : undefined;
-      if (!present.includes(value)) {
-        items.push({
-          label: `board.values.${value}`,
-          message: `\`${value}\` は \`${String(groupName)}\` の列にありません。列の値は ${codes(present)} です。当てずに描いています。`,
-        });
-      } else if (typeof icon === "string") {
-        icons[value] = icon as ViewIconName;
-      }
-    }
-  }
+  items: WarningItem[];
+}): TableFilter[] {
+  const { mark, headers, items } = context;
   const filters: TableFilter[] = [];
   const columns = isObject(mark.options.columns) ? mark.options.columns : {};
   for (const [name, settings] of Object.entries(columns)) {
@@ -103,26 +117,62 @@ function readView(options: {
           : "select",
     });
   }
-  const requested = mark.options.initial;
-  const mode = group !== null && requested !== "table" ? "board" : "table";
+  return filters;
+}
+
+/** ビューの表の指定（件数・列の表示の切り替え・集計を付けない） */
+function viewTableSpec(filters: TableFilter[]): TableSpec {
+  return {
+    kind: "data",
+    features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
+    filters,
+    hide: [],
+    totals: [],
+    unpinned: [],
+    widths: [],
+    check: [],
+    sorts: [],
+    collapse: "none",
+    warnings: [],
+    headRows: 1,
+    rowHeader: 0,
+  };
+}
+
+/** ビューのマーカーの設定（マーカーの JSON Schema に通した後のもの）と表の見出しとセルから、表の指定・`data-view` の指定・警告を作る */
+function readView(options: {
+  state: StateCore;
+  mark: Mark;
+  headers: string[];
+  cells: string[][];
+}): ViewReading {
+  const { state, mark, headers, cells } = options;
+  const items: WarningItem[] = [];
+  const warnings: SyntaxWarning[] = [];
+  const board = isObject(mark.options.board) ? mark.options.board : undefined;
+  const groupName = (board?.group as { column?: unknown } | undefined)?.column;
+  const { group, boardDisabled } = readGroupColumn(state, {
+    mark,
+    headers,
+    groupName,
+    warnings,
+  });
+  const icons =
+    group === null
+      ? {}
+      : readIcons({
+          column: group,
+          cells,
+          values: isObject(board?.values) ? board.values : {},
+          groupName,
+          items,
+        });
+  const filters = readViewFilters({ mark, headers, items });
+  const mode =
+    group !== null && mark.options.initial !== "table" ? "board" : "table";
   warnings.push(...warningsOf(mark.raw, items));
   return {
-    tableSpec: {
-      kind: "data",
-      features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
-      filters,
-      // ビューの表には件数・列の表示の切り替え・集計を付けない
-      hide: [],
-      totals: [],
-      unpinned: [],
-      widths: [],
-      check: [],
-      sorts: [],
-      collapse: "none",
-      warnings: [],
-      headRows: 1,
-      rowHeader: 0,
-    },
+    tableSpec: viewTableSpec(filters),
     viewSpec: { group, mode, boardDisabled, icons },
     warnings,
   };
@@ -136,6 +186,37 @@ function firstTable(tokens: Token[], from: number, to: number): number {
     }
   }
   return -1;
+}
+
+/** 範囲の最初の表に表の部品の指定を当て、範囲を `div.mdmark-view` の囲みにし、警告を返却する（表が無ければ警告だけ） */
+function wrapView(
+  state: StateCore,
+  range: { open: number; end: number; mark: Mark },
+): SyntaxWarning[] {
+  const { open, end, mark } = range;
+  const tokens = state.tokens;
+  const table = firstTable(tokens, open + 1, end);
+  const tableOpen = tokens[table];
+  if (tableOpen === undefined) {
+    return [
+      {
+        mark: mark.raw,
+        message:
+          "の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。",
+      },
+    ];
+  }
+  const reading = readView({
+    state,
+    mark,
+    headers: headersOf(tokens, table),
+    cells: bodyCellsOf(tokens, table),
+  });
+  tableOpen.meta = { ...(tableOpen.meta ?? {}), tableSpec: reading.tableSpec };
+  const wrapper = `<div class="mdmark-view" data-view="${escapeHtml(JSON.stringify(reading.viewSpec))}">`;
+  tokens.splice(end, 0, ownBlock(state, "</div>"));
+  tokens.splice(open + 1, 0, ownBlock(state, wrapper));
+  return reading.warnings;
 }
 
 /** `views` がオンのとき、`<!-- view: {…} -->` の範囲を `div.mdmark-view` の囲みにし、範囲の最初の表に表の部品の指定を当て、記載方法の誤りを警告にする */
@@ -156,30 +237,7 @@ export function buildViews(state: StateCore): void {
     if (close < 0) {
       warnings.push(unclosedWarning(mark));
     }
-    const table = firstTable(tokens, open + 1, end);
-    const tableOpen = tokens[table];
-    if (tableOpen === undefined) {
-      warnings.push({
-        mark: mark.raw,
-        message:
-          "の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。",
-      });
-    } else {
-      const reading = readView({
-        state,
-        mark,
-        headers: headersOf(tokens, table),
-        cells: bodyCellsOf(tokens, table),
-      });
-      warnings.unshift(...reading.warnings);
-      tableOpen.meta = {
-        ...(tableOpen.meta ?? {}),
-        tableSpec: reading.tableSpec,
-      };
-      const wrapper = `<div class="mdmark-view" data-view="${escapeHtml(JSON.stringify(reading.viewSpec))}">`;
-      tokens.splice(end, 0, ownBlock(state, "</div>"));
-      tokens.splice(open + 1, 0, ownBlock(state, wrapper));
-    }
+    warnings.unshift(...wrapView(state, { open, end, mark }));
     // 警告は、範囲の前（マーカーの位置）に差し込む。閉じのマーカーが無い警告は、読み込めない指定の警告の後に並べる
     const source = tokens[open];
     for (const [offset, warning] of warnings.entries()) {
