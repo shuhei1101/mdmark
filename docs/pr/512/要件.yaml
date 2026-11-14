@@ -21,7 +21,7 @@ docs:
     status: todo
 scope_out:
   - item: E2E `tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts` の追従
-    reason: '#450 で develop から E2E を削除する。削除前にこの PR がマージされた場合は、ワークフローの YAML を読む検証に公開の工程が加わっても既存の期待は変わらない'
+    reason: '#450 で develop から E2E を削除した（この PR に取り込み済み）。シナリオの `test_file` が削除した spec を指すのは他のシナリオも同じで、#450 の扱いに従う'
     plan: '#450'
   - item: Open VSX への公開
     reason: ユーザーが VS Code だけを使用するため公開しないと決めた（確認ログ）
