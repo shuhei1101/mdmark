@@ -193,12 +193,22 @@ test("test_long_column_not_sortable", async () => {
     page.locator(".mdmark-table").getAttribute("data-no-sort"),
   ).resolves.toBe("2");
   await expect(
-    page.locator("thead th").nth(2).locator("button.mdmark-sort").count(),
+    page
+      .locator(".mdmark-table thead th")
+      .nth(2)
+      .locator("button.mdmark-sort")
+      .count(),
   ).resolves.toBe(0);
   await expect(
-    page.locator("thead th").nth(2).locator(".mdmark-th-label").innerText(),
+    page
+      .locator(".mdmark-table thead th")
+      .nth(2)
+      .locator(".mdmark-th-label")
+      .innerText(),
   ).resolves.toBe("説明");
-  await expect(page.locator("button.mdmark-sort").count()).resolves.toBe(2);
+  await expect(
+    page.locator(".mdmark-table button.mdmark-sort").count(),
+  ).resolves.toBe(2);
 });
 
 // 増分の列で降順に並べる（SortedDescending）

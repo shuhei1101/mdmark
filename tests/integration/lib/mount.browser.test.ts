@@ -9040,13 +9040,13 @@ test("test_normal_when_side_toc_marked", async () => {
   });
   await settle();
   // 検証: h1・B・C・D に付き、A・B1 と見出しごと削除した E の前の B1 には付かない
-  expect(changedTocIds(el).sort()).toEqual(["B", "C", "D", "文書"].sort());
+  expect(changedTocIds(el).sort()).toEqual(["b", "c", "d", "文書"].sort());
   expect(
-    el.querySelector('.mdmark-side-toc-list a[data-heading-id="E"]'),
+    el.querySelector('.mdmark-side-toc-list a[data-heading-id="e"]'),
   ).toBeNull();
   const link = find<HTMLAnchorElement>(
     el,
-    '.mdmark-side-toc-list a[data-heading-id="B"]',
+    '.mdmark-side-toc-list a[data-heading-id="b"]',
   );
   expect(link.getAttribute("aria-label")).toBe("B（変更）");
   const marker = find<HTMLElement>(link, "span.mdmark-side-toc-changed");
@@ -9062,7 +9062,7 @@ test("test_normal_when_side_toc_marked", async () => {
       .map((bar, index) => (bar.hasAttribute("data-changed") ? ids[index] : ""))
       .filter(Boolean)
       .sort(),
-  ).toEqual(["B", "C", "D", "文書"].sort());
+  ).toEqual(["b", "c", "d", "文書"].sort());
   // 検証: 目次を出すボタンの今いる見出しの文字に（変更）が無い
   expect(find(el, ".mdmark-side-toc-current").textContent).not.toContain(
     "（変更）",
@@ -9101,7 +9101,7 @@ test("test_normal_when_blocks_side_toc_marked", async () => {
     expect(changedTocIds(el).length).toBeGreaterThan(0);
   });
   // 検証
-  expect(changedTocIds(el)).toEqual(["B"]);
+  expect(changedTocIds(el)).toEqual(["b"]);
   const bars = el.querySelectorAll(".mdmark-side-toc-bar");
   expect(bars[0]?.hasAttribute("data-changed")).toBe(false);
   expect(bars[1]?.hasAttribute("data-changed")).toBe(true);
