@@ -11,7 +11,7 @@ args:
     required: false
     default: '`footnote`'
     choices: '`footnote`（脚注）・`annotation`（注記）'
-    description: 脚注の一覧か注記の一覧か。`annotation` は `details` に `mdmark-notes` を付け、見出しを `注記（{件数} 件）`、項目の頭を「※{番号}」、項目の `id` を `mdmark-note-{number}`、戻るリンクの `href` を `#mdmark-noteref-{number}-{i}`、読み上げの名前を `本文の注記 {番号} へ戻る` にする
+    description: 脚注の一覧か注記の一覧か。`annotation` は `details` に `mdmark-notes` を付け、見出しを `注記（{件数} 件）`、項目の頭を「※{番号}」、項目の `id` を `mdmark-note-{number}`、戻るリンクの行き先を `items[].refs`、読み上げの名前を `本文の注記 {番号} へ戻る`（参照が 2 つ以上なら `注記 {番号} の {n} つ目の参照へ戻る`）にする
   - name: items
     type: オブジェクトの配列
     required: true
@@ -30,6 +30,11 @@ args:
     required: true
     choices: 1 以上
     description: その脚注を本文で参照した回数。参照ごとに戻るリンク（`href="#mdmark-fnref-{number}-{0 からの通し番号}"`）を配置し、2 以上ならリンクに a・b… の文字を添える
+  - name: items[].refs
+    type: オブジェクトの配列
+    required: false
+    enabled_when: '`kind` が `annotation` のとき'
+    description: '参照ごとの戻り先（`{ href }`。参照の順）。指定したときは `refCount` の代わりに使用し、要素ごとに戻るリンク（`href` は要素の値。2 つ以上なら a・b… の文字を添える）を配置する。本文の参照は `#mdmark-noteref-{number}-{i}`、map の図の要素の参照は、部品設計『図のツールチップ』の持ち主の `id`（`#mdmark-note-owner-…`）を渡す'
   - name: open
     type: 真偽値
     required: false
@@ -63,12 +68,12 @@ states:
       - name: open
         value: 'true'
   - name: Annotations
-    description: 開いた注記の一覧。見出し `注記（2 件）` と、「※1」・「※2」の頭と本文、戻るリンクが並ぶ。1 つ目は 2 か所から参照され、戻るリンクが `a`・`b` の 2 つ
+    description: 開いた注記の一覧。見出し `注記（2 件）` と、「※1」・「※2」の頭と本文、戻るリンクが並ぶ。1 つ目は本文と map の図のノードの 2 か所から参照され、戻るリンクが `a`（本文の参照）・`b`（ノードの持ち主）の 2 つ
     args:
       - name: kind
         value: annotation
       - name: items
-        value: '[{"number":1,"html":"<p>条件を満たさないときは次の工程へ進む。</p>","refCount":2},{"number":2,"html":"<p>画像は data URL で埋める。</p>","refCount":1}]'
+        value: '[{"number":1,"html":"<p>条件を満たさないときは次の工程へ進む。</p>","refCount":2,"refs":[{"href":"#mdmark-noteref-1-0"},{"href":"#mdmark-note-owner-1-judge"}]},{"number":2,"html":"<p>画像は data URL で埋める。</p>","refCount":1,"refs":[{"href":"#mdmark-noteref-2-0"}]}]'
       - name: open
         value: 'true'
 css_properties:
