@@ -129,6 +129,59 @@ export type MapFlowArgs = {
   id?: string | undefined;
   /** 閉じたグループの名前の後ろの文字（無ければ「ノード {数} 件」） */
   collapsedTag?: ((groupId: string) => string | undefined) | undefined;
+  /** ノードの ID ごとの状態遷移図の形状（`start`・`end`・`choice` は名前と種類の行を出さずフォーカスを持たない。`note` は種類の行「注記」） */
+  shapes?: Record<string, MapStateShape> | undefined;
+  /** ノードの ID ごとに、種類の行の末尾とノードの末尾へ入れる HTML と、そのツールチップ */
+  nodeParts?: Record<string, MapNodePart> | undefined;
+};
+
+/** 状態遷移図のノードの形状 */
+export type MapStateShape = "start" | "end" | "choice" | "note";
+
+/** ノードの中へ入れる HTML（`head` は種類の行の末尾、`body` はノードの末尾） */
+export type MapNodePart = { head: string; body: string; tips: string };
+
+/** 形状ごとの読み上げる名前 */
+const STATE_SHAPE_NAMES = {
+  start: "開始",
+  end: "終了",
+  choice: "分岐",
+  note: "注記",
+} satisfies Record<MapStateShape, string>;
+
+/** html の index から始まる要素の、対応する閉じタグの位置（無ければ -1） */
+const closingOf = (html: string, index: number, tag: string): number => {
+  const pattern = new RegExp(`<(/?)${tag}\\b[^>]*>`, "g");
+  pattern.lastIndex = index;
+  let depth = 0;
+  for (let match = pattern.exec(html); match; match = pattern.exec(html)) {
+    depth += match[1] === "/" ? -1 : 1;
+    if (depth === 0) return match.index;
+  }
+  return -1;
+};
+
+/** ノードの種類の行の末尾と、ノードの末尾へ HTML を入れる */
+const insertNodePart = (
+  html: string,
+  id: string,
+  part: MapNodePart,
+): string => {
+  const at = html.indexOf(`data-node="${escapeHtml(id)}"`);
+  const start = at < 0 ? -1 : html.lastIndexOf("<div", at);
+  const end = start < 0 ? -1 : closingOf(html, start, "div");
+  if (end < 0) return html;
+  let node = html.slice(start, end);
+  const kindAt = node.indexOf('<span class="mdmark-diagram-node-kind');
+  if (kindAt >= 0 && part.head !== "") {
+    const kindEnd = closingOf(node, kindAt, "span");
+    node =
+      `${node.slice(0, kindEnd)}${part.head}${node.slice(kindEnd)}`.replace(
+        'class="mdmark-diagram-node-kind is-empty"',
+        'class="mdmark-diagram-node-kind"',
+      );
+  }
+  return `${html.slice(0, start)}${node}${part.body}${html.slice(end)}`;
 };
 
 /** 開閉の山形のボタン */
@@ -348,7 +401,10 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       h: node.h,
       name: node.label ?? node.lines.join(""),
       style: {
-        label: kind?.label,
+        label:
+          args.shapes?.[node.id] === "note"
+            ? STATE_SHAPE_NAMES.note
+            : kind?.label,
         icon: kind?.icon,
         shape: kind?.shape,
         color: args.colors?.[node.id] ?? kind?.color,
@@ -433,6 +489,17 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const selectedIds = new Set(args.selected);
   for (const node of layout.nodes) {
     const value = escapeHtml(node.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const shape = args.shapes?.[node.id];
+    // 開始・終了・分岐は形状だけを描き、選ばない
+    if (shape !== undefined && shape !== "note") {
+      html = html.replace(
+        new RegExp(
+          `(<div class="[^"]*map-kinded[^"]*"[^>]*?) data-shape="[^"]*"([^>]*\\sdata-node="${value}")`,
+        ),
+        `$1 data-shape="${shape}"$2 role="img" aria-label="${STATE_SHAPE_NAMES[shape]}"`,
+      );
+      continue;
+    }
     const selected = selectedIds.has(node.id);
     html = html.replace(
       new RegExp(
@@ -443,6 +510,11 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   }
   for (const node of layout.nodes) {
     if (node.faded) html = addClass(html, "data-node", node.id, "map-faded");
+  }
+  let partTips = "";
+  for (const [id, part] of Object.entries(args.nodeParts ?? {})) {
+    html = insertNodePart(html, id, part);
+    partTips += part.tips;
   }
   const kept = keptOf(args);
   if (kept) {
@@ -508,7 +580,7 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
   return {
     html: `${groups}${html}${hitLayer}${closedHtml}${packets}`,
-    tips: `${markTipTerms(`${part.tips}${wireTips.html()}`, args.terms)}${marker.tips.html()}`,
+    tips: `${markTipTerms(`${part.tips}${wireTips.html()}`, args.terms)}${marker.tips.html()}${partTips}`,
   };
 };
 
@@ -903,6 +975,36 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
   };
 };
 
+/** 部品『mapのER図』のテーブルのノードの寸法（px）。列の行は、テーブル名の行の下から同じ高さで並ぶ */
+export const MAP_ER = {
+  width: 240,
+  /** テーブル名の行（種類の行と名前）の高さ */
+  head: 56,
+  row: 28,
+  foot: 6,
+  /** ノードの左右に空ける幅（関連の端と多重度の置き場所） */
+  aside: 32,
+  /** 関連の端の、ノードの辺から外へ出す長さ（同じ辺から出る 2 本目からは step ずつ延ばす） */
+  endOut: 14,
+  step: 6,
+  /** 多重度の文字の、端からの離れ */
+  cardinalityGap: 4,
+  /** 行が増える関連のマーカーの、線からの離れ */
+  fanoutGap: 22,
+} as const;
+
+/** テーブルのノードの大きさ（列を閉じたテーブルはテーブル名の行だけ） */
+export const mapErNodeSize = (args: {
+  columns: number;
+  collapsed: boolean;
+}): { w: number; h: number } => ({
+  w: MAP_ER.width,
+  h:
+    args.collapsed || args.columns === 0
+      ? MAP_ER.head
+      : MAP_ER.head + args.columns * MAP_ER.row + MAP_ER.foot,
+});
+
 /** 部品『mapのER図』のテーブルの引数 */
 export type MapErTableArgs = {
   name: string;
@@ -919,7 +1021,7 @@ export const renderMapEr = (
   args: MapErTableArgs,
 ): { toggle: string; columns: string; tips: string } => {
   const label = `${args.name}の列を${args.collapsed ? "開く" : "閉じる"}`;
-  const toggle = `<button class="map-er-toggle" type="button" data-er-toggle="${escapeHtml(args.name)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${args.collapsed ? `列 ${args.columns.length}` : iconSvg("chevron-down")}</button>`;
+  const toggle = `<button class="map-er-toggle" type="button" data-node-toggle="${escapeHtml(args.name)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${args.collapsed ? `列 ${args.columns.length}` : iconSvg("chevron-down")}</button>`;
   if (args.collapsed) return { toggle, columns: "", tips: "" };
   const tips = createTips(args.id ?? `map-er-${args.name}`);
   const rows = args.columns
@@ -929,14 +1031,309 @@ export const renderMapEr = (
       const mark =
         note === undefined
           ? ""
-          : `<button class="map-er-note" type="button" aria-label="${escapeHtml(`${column.name}の説明`)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, tip: note, owner })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
+          : `<button class="map-er-note" type="button" aria-label="${escapeHtml(`${column.name}の説明`)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, hint: note, owner })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
       return `<div class="map-er-column" role="listitem" data-column="${escapeHtml(column.name)}"><span class="map-er-key">${escapeHtml(column.keys.join(","))}</span><span class="map-er-name">${escapeHtml(column.name)}</span><span class="map-er-type">${escapeHtml(column.type)}</span><span class="map-er-note-cell">${mark}</span></div>`;
     })
     .join("");
   return {
     toggle,
-    columns: `<div class="map-er-columns" role="list">${rows}</div>`,
+    columns: `<div class="map-er-columns" role="list" style="top:${MAP_ER.head}px;grid-auto-rows:${MAP_ER.row}px">${rows}</div>`,
     tips: tips.html(),
+  };
+};
+
+/** 部品『mapのER図』の関連。端をつなぐ列は、その端のテーブルの列の名前 */
+export type MapErRelation = {
+  id: string;
+  from: string;
+  to: string;
+  fromCardinality: string;
+  toCardinality: string;
+  label: string | undefined;
+  fromColumn: string | undefined;
+  toColumn: string | undefined;
+};
+
+/** 2 つのテーブルの経路を 1 の側から多の側へたどる関連（`wire` は関連の ID） */
+export type MapErFanout = { wire: string; from: string; to: string };
+
+type Point = [number, number];
+
+/**
+ * 自動配置の経路の元の端を、高さ y の左右の辺へ付け替える。経路の残りは自動配置のまま使い、ノードを横切らない。
+ * 上下の辺から出ていた端は、次の点がある側の辺から出して、ノードの外で元の経路へ戻す
+ */
+const reanchor = (
+  points: Point[],
+  rect: { x: number; y: number; w: number; h: number },
+  y: number,
+  side: "left" | "right" | undefined,
+  /** 辺ごとに、その辺から出す長さを返す */
+  outOf: (side: "left" | "right") => number,
+): Point[] => {
+  const [p0, p1] = points;
+  if (!p0 || !p1) return points;
+  const onSide = p0[0] === rect.x || p0[0] === rect.x + rect.w;
+  const chosen =
+    side ??
+    (onSide
+      ? p0[0] === rect.x
+        ? "left"
+        : "right"
+      : p1[0] >= rect.x + rect.w / 2
+        ? "right"
+        : "left");
+  const sx = chosen === "right" ? rect.x + rect.w : rect.x;
+  const out = outOf(chosen);
+  const ox = sx + (chosen === "right" ? out : -out);
+  const back = onSide && side === undefined ? p0[1] : p1[1];
+  return [[sx, y], [ox, y], [ox, back], ...points.slice(1)];
+};
+
+/**
+ * 関連の線の両端を、つなぐ列の行の縦の中ほどの左右の辺へ付け替えた線。
+ * 列を閉じたテーブルと列の無い端は、ノードの縦の中ほどにつなぐ。`ends` は補足の layout の `{関連}.ends`
+ */
+export const rewireMapEr = (args: {
+  layout: MapLayout;
+  tables: Array<{ name: string; columns: Array<{ name: string }> }>;
+  relations: MapErRelation[];
+  collapsed: string[];
+  ends?: Record<string, { from?: string | undefined; to?: string | undefined }>;
+}): MapLayout["wires"] => {
+  const relations = new Map(args.relations.map((item) => [item.id, item]));
+  const columnsOf = new Map(
+    args.tables.map((table) => [
+      table.name,
+      table.columns.map((column) => column.name),
+    ]),
+  );
+  const sideOf = (value: string | undefined) =>
+    value === "left" || value === "right" ? value : undefined;
+  /** ノードの辺ごとの、つないだ端の数（同じ辺から出る端を縦の区間が重ならないようずらす） */
+  const used = new Map<string, number>();
+  const outFor = (node: string) => (side: "left" | "right") => {
+    const key = `${node}:${side}`;
+    const count = used.get(key) ?? 0;
+    used.set(key, count + 1);
+    return MAP_ER.endOut + count * MAP_ER.step;
+  };
+  return args.layout.wires.map((wire) => {
+    const relation = relations.get(wire.id);
+    const from = args.layout.nodes.find((node) => node.id === wire.from);
+    const to = args.layout.nodes.find((node) => node.id === wire.to);
+    if (!relation || !from || !to || wire.points.length < 2) return wire;
+    const yOf = (
+      node: { id: string; y: number; h: number },
+      column: string | undefined,
+    ): number => {
+      const index =
+        column === undefined
+          ? -1
+          : (columnsOf.get(node.id) ?? []).indexOf(column);
+      return index < 0 || args.collapsed.includes(node.id)
+        ? node.y + node.h / 2
+        : node.y + MAP_ER.head + index * MAP_ER.row + MAP_ER.row / 2;
+    };
+    const fromColumn =
+      wire.from === relation.from ? relation.fromColumn : relation.toColumn;
+    const toColumn =
+      wire.to === relation.to ? relation.toColumn : relation.fromColumn;
+    const ends = args.ends?.[wire.id];
+    let points = reanchor(
+      wire.points as Point[],
+      from,
+      yOf(from, fromColumn),
+      sideOf(ends?.from),
+      outFor(from.id),
+    );
+    points = reanchor(
+      [...points].reverse(),
+      to,
+      yOf(to, toColumn),
+      sideOf(ends?.to),
+      outFor(to.id),
+    ).reverse();
+    return { ...wire, points };
+  });
+};
+
+/** 両端の区間を除いた最も長い区間（無ければ全体） */
+const longestInner = (points: Point[]): [Point, Point] => {
+  let best: [Point, Point] = [
+    points[0] as Point,
+    points[points.length - 1] as Point,
+  ];
+  let length = -1;
+  for (let at = 1; at < points.length - 2; at++) {
+    const a = points[at] as Point;
+    const b = points[at + 1] as Point;
+    const size = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (size > length) {
+      length = size;
+      best = [a, b];
+    }
+  }
+  return best;
+};
+
+/** 関連のラベルと行が増える関連のマーカーの置き場所（両端を除いた最も長い区間の中ほどの、線の両側） */
+const erMarkOf = (
+  points: Point[],
+): { label: Point; mark: Point; vertical: boolean } => {
+  const [a, b] = longestInner(points);
+  const vertical = a[0] === b[0];
+  const mid: Point = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  return {
+    label: vertical ? [mid[0] + 8, mid[1] + 4] : [mid[0], mid[1] - 8],
+    mark: vertical
+      ? [mid[0] - MAP_ER.fanoutGap, mid[1]]
+      : [mid[0], mid[1] + MAP_ER.fanoutGap],
+    vertical,
+  };
+};
+
+/** 関連の両端の多重度とラベルの SVG。文字は `data-wire-mark` に関連の ID を持ち、薄くする関連は `map-dim` */
+export const renderMapErMarks = (args: {
+  layout: MapLayout;
+  relations: MapErRelation[];
+  dim: ReadonlySet<string>;
+}): string => {
+  const relations = new Map(args.relations.map((item) => [item.id, item]));
+  const texts: string[] = [];
+  const text = (options: {
+    wire: string;
+    at: Point;
+    value: string;
+    className: string;
+    anchor: "start" | "middle" | "end";
+  }) =>
+    texts.push(
+      `<text class="${options.className}${args.dim.has(options.wire) ? " map-dim" : ""}" data-wire-mark="${escapeHtml(options.wire)}" x="${options.at[0]}" y="${options.at[1]}" text-anchor="${options.anchor}">${escapeHtml(options.value)}</text>`,
+    );
+  for (const wire of args.layout.wires) {
+    const relation = relations.get(wire.id);
+    const points = wire.points as Point[];
+    if (!relation || points.length < 2) continue;
+    const ends: Array<[Point, Point, string]> = [
+      [
+        points[0] as Point,
+        points[1] as Point,
+        wire.from === relation.from
+          ? relation.fromCardinality
+          : relation.toCardinality,
+      ],
+      [
+        points[points.length - 1] as Point,
+        points[points.length - 2] as Point,
+        wire.to === relation.to
+          ? relation.toCardinality
+          : relation.fromCardinality,
+      ],
+    ];
+    for (const [[x, y], [nx], value] of ends) {
+      const right = nx >= x;
+      text({
+        wire: wire.id,
+        at: [
+          x + (right ? MAP_ER.cardinalityGap : -MAP_ER.cardinalityGap),
+          y - 5,
+        ],
+        value,
+        className: "map-er-cardinality",
+        anchor: right ? "start" : "end",
+      });
+    }
+    if (relation.label === undefined) continue;
+    const place = erMarkOf(points);
+    text({
+      wire: wire.id,
+      at: place.label,
+      value: relation.label,
+      className: "map-er-label",
+      anchor: place.vertical ? "start" : "middle",
+    });
+  }
+  return `<svg class="map-er-marks" width="${args.layout.width}" height="${args.layout.height}" aria-hidden="true">${texts.join("")}</svg>`;
+};
+
+/** 行が増える関連のマーカー（`button.map-er-fanout`）と、その説明のツールチップ */
+export const renderMapErFanouts = (args: {
+  layout: MapLayout;
+  fanouts: MapErFanout[];
+  /** ツールチップの id の頭 */
+  id: string;
+}): MapPart => {
+  const tips = createTips(`${args.id}-fanout`);
+  const html = args.fanouts
+    .flatMap((fanout, index) => {
+      const wire = args.layout.wires.find((item) => item.id === fanout.wire);
+      if (!wire || wire.points.length < 2) return [];
+      const place = erMarkOf(wire.points as Point[]);
+      const owner = `fanout:${index}`;
+      const tip = tips.add({
+        kind: "wire",
+        label: "行が増える関連",
+        tip: `${fanout.from} から ${fanout.to} へたどると、${fanout.from} の 1 行に ${fanout.to} の行が複数つながり、行が増えます`,
+        owner,
+      });
+      return [
+        `<button class="map-er-fanout" type="button" style="left:${place.mark[0]}px;top:${place.mark[1]}px" aria-label="${escapeHtml(`${fanout.from} から ${fanout.to} で行が増える`)}" aria-describedby="${escapeHtml(tip)}" data-tip-owner="${escapeHtml(owner)}">×n</button>`,
+      ];
+    })
+    .join("");
+  return { html, tips: tips.html() };
+};
+
+/** 部品『mapのER図』の引数。`layout` の関連の線は rewireMapEr で付け替えた線 */
+export type MapErArgs = MapFlowArgs & {
+  tables: Array<Omit<MapErTableArgs, "collapsed" | "id">>;
+  relations: MapErRelation[];
+  fanouts: MapErFanout[];
+};
+
+/** 部品『mapのER図』の HTML。構成図の部品のテーブルのノードに列の行と開閉のボタンを入れ、関連の多重度・ラベルと行が増える関連のマーカーを重ねる */
+export const renderMapErDiagram = (args: MapErArgs): MapPart => {
+  const id = args.id ?? "map";
+  const shown = new Set(
+    args.layout.nodes.filter((node) => !node.faded).map((node) => node.id),
+  );
+  const nodeParts: Record<string, MapNodePart> = {};
+  for (const [index, table] of args.tables.entries()) {
+    if (!shown.has(table.name)) continue;
+    const part = renderMapEr({
+      ...table,
+      collapsed: args.collapsed.includes(table.name),
+      id: `${id}-er-${index}`,
+    });
+    nodeParts[table.name] = {
+      head: part.toggle,
+      body: part.columns,
+      tips: part.tips,
+    };
+  }
+  const flow = renderMapFlow({ ...args, nodeParts });
+  const kept = keptOf(args);
+  const dim = new Set(
+    kept === undefined
+      ? []
+      : args.layout.wires
+          .filter((wire) => !kept.wires.has(wire.id))
+          .map((wire) => wire.id),
+  );
+  const marks = renderMapErMarks({
+    layout: args.layout,
+    relations: args.relations,
+    dim,
+  });
+  const fanouts = renderMapErFanouts({
+    layout: args.layout,
+    fanouts: args.fanouts,
+    id,
+  });
+  return {
+    html: `${flow.html}${marks}${fanouts.html}`,
+    tips: `${flow.tips}${fanouts.tips}`,
   };
 };
 
@@ -976,4 +1373,82 @@ export const renderMapState = (args: MapStateLoopArgs): string => {
       ? ""
       : `<text class="map-state-loop-label${args.dim ? " map-dim" : ""}" x="${args.x + args.width / 2 + 8}" y="${args.y - 26}">${escapeHtml(args.label)}</text>`;
   return `<g data-loop="${escapeHtml(args.wire)}"><path class="${classes}" data-wire="${escapeHtml(args.wire)}" d="${d}"></path><path class="map-wire-hit" data-wire="${escapeHtml(args.wire)}" tabindex="0" role="button" aria-label="${escapeHtml(name)}" d="${d}"></path>${label}</g>`;
+};
+
+/** 部品『mapの状態遷移図』のノードの寸法（px）。`loopSpace` は同じ状態への遷移を持つ状態の上に空ける高さ */
+export const MAP_STATE = { point: 32, choice: 40, loopSpace: 40 } as const;
+
+/** 部品『mapの状態遷移図』の同じ状態への遷移（`node` は状態の ID） */
+export type MapStateLoop = {
+  wire: string;
+  node: string;
+  label: string | undefined;
+};
+
+/** 同じ状態への遷移の SVG。`active` は再生でその遷移の手順、`dim` は薄くする遷移の ID */
+export const renderMapStateLoops = (args: {
+  layout: MapLayout;
+  loops: MapStateLoop[];
+  active: ReadonlySet<string>;
+  dim: ReadonlySet<string>;
+}): string => {
+  const loops = args.loops
+    .flatMap((loop) => {
+      const node = args.layout.nodes.find((item) => item.id === loop.node);
+      return node
+        ? [
+            renderMapState({
+              wire: loop.wire,
+              x: node.x,
+              y: node.y,
+              width: node.w,
+              label: loop.label,
+              active: args.active.has(loop.wire),
+              dim: args.dim.has(loop.wire),
+            }),
+          ]
+        : [];
+    })
+    .join("");
+  return `<svg class="map-state-loops" width="${args.layout.width}" height="${args.layout.height}">${loops}</svg>`;
+};
+
+/** 部品『mapの状態遷移図』の引数 */
+export type MapStateArgs = MapFlowArgs & {
+  shapes: Record<string, MapStateShape>;
+  loops: MapStateLoop[];
+};
+
+/** 薄くする同じ状態への遷移（選んだ状態の遷移と、強調する遷移のほか） */
+export const mapStateLoopDim = (args: {
+  loops: MapStateLoop[];
+  selected: ReadonlySet<string>;
+  focus: ReadonlySet<string> | undefined;
+}): Set<string> =>
+  new Set(
+    args.loops
+      .filter((loop) =>
+        args.selected.size > 0
+          ? !args.selected.has(loop.node)
+          : args.focus !== undefined && !args.focus.has(loop.wire),
+      )
+      .map((loop) => loop.wire),
+  );
+
+/** 部品『mapの状態遷移図』の HTML。構成図の部品に開始・終了・分岐の形状と注記の種類の行を付け、同じ状態への遷移を重ねる */
+export const renderMapStateDiagram = (args: MapStateArgs): MapPart => {
+  const flow = renderMapFlow(args);
+  const focus =
+    args.focus === undefined ? undefined : new Set(args.focus.wires);
+  const loops = renderMapStateLoops({
+    layout: args.layout,
+    loops: args.loops,
+    active: focus ?? new Set(),
+    dim: mapStateLoopDim({
+      loops: args.loops,
+      selected: new Set(args.selected),
+      focus,
+    }),
+  });
+  return { html: `${flow.html}${loops}`, tips: flow.tips };
 };

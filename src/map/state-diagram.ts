@@ -1,3 +1,8 @@
+import {
+  MAP_STATE,
+  type MapStateLoop,
+  type MapStateShape,
+} from "../parts/map.ts";
 import type {
   Direction,
   Flowchart,
@@ -5,6 +10,7 @@ import type {
   FlowGroup,
   FlowNode,
 } from "./flowchart.ts";
+import type { MapOverride } from "./layout.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** 状態の種類（開始・終了は `[*]`、分岐は `<<choice>>`） */
@@ -270,5 +276,46 @@ export const stateToFlowchart = (
       problems: diagram.problems,
     },
     loops,
+  };
+};
+
+/** 部品『mapの状態遷移図』に指定する形状・同じ状態への遷移と、ノードの大きさ・上に空ける高さの上書き */
+export const statePartInputs = (
+  chart: Flowchart,
+  loops: StateTransition[],
+): {
+  shapes: Record<string, MapStateShape>;
+  loops: MapStateLoop[];
+  overrides: Record<string, MapOverride>;
+} => {
+  const shapes: Record<string, MapStateShape> = {};
+  const overrides: Record<string, MapOverride> = {};
+  for (const node of chart.nodes) {
+    const kind = node.classes[0];
+    if (kind === "start" || kind === "end") {
+      shapes[node.id] = kind;
+      overrides[node.id] = {
+        size: { w: MAP_STATE.point, h: MAP_STATE.point },
+      };
+    } else if (kind === "choice") {
+      shapes[node.id] = kind;
+      overrides[node.id] = {
+        size: { w: MAP_STATE.choice, h: MAP_STATE.choice },
+      };
+    } else if (kind === STATE_NOTE_CLASS) shapes[node.id] = "note";
+  }
+  for (const loop of loops)
+    overrides[loop.from] = {
+      ...overrides[loop.from],
+      above: MAP_STATE.loopSpace,
+    };
+  return {
+    shapes,
+    loops: loops.map((loop) => ({
+      wire: loop.id,
+      node: loop.from,
+      label: loop.label,
+    })),
+    overrides,
   };
 };

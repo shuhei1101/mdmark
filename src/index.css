@@ -10689,9 +10689,15 @@
   }
 
   /* map の ER 図: テーブルの列の行（キー・名前・型・説明のボタン）と列の開閉のボタン */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node:has(> .map-er-columns) {
+    justify-content: flex-start;
+  }
+  /* 列の行はテーブル名の行の下から同じ高さで並べる（top と行の高さは部品が指定する） */
   .map-er-columns {
+    position: absolute;
+    inset-inline: 0;
     display: grid;
-    margin-top: 4px;
     font-size: 12px;
   }
   .map-er-column {
@@ -10699,7 +10705,7 @@
     grid-template-columns: 4em 1fr auto 24px;
     gap: 4px;
     align-items: center;
-    padding: 2px 0;
+    padding: 0 10px;
     border-top: 1px solid var(--mdmark-color-border);
   }
   .map-er-key {
@@ -10738,6 +10744,13 @@
     align-items: center;
     gap: 4px;
   }
+  /* map の ER 図の多重度とラベル・状態遷移図の同じ状態への遷移の層 */
+  :is(.map-er-marks, .map-state-loops) {
+    position: absolute;
+    inset: 0 auto auto 0;
+    overflow: visible;
+    pointer-events: none;
+  }
   /* map の ER 図: 関連の端の多重度とラベル、2 つのテーブルの経路の行が増える関連のマーカー */
   .map-er-cardinality {
     font-size: 11px;
@@ -10769,20 +10782,25 @@
   }
 
   /* map の状態遷移図: 開始（黒丸）・終了（二重丸）・分岐（ひし形）。名前と種類の行は出さない */
+  /* ノードの中身の右の余白より後に当てる */
   .mdmark-diagram[data-diagram="map"]
-  .mdmark-diagram-node:is([data-shape="start"], [data-shape="end"]) {
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node:is([data-shape="start"], [data-shape="end"]) {
     min-height: 32px;
     padding: 0;
     border-radius: 50%;
     background: var(--mdmark-color-text);
     border-color: var(--mdmark-color-text);
   }
-  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-shape="end"] {
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node[data-shape="end"] {
     border: 6px double var(--mdmark-color-text);
     background: var(--mdmark-color-bg);
   }
   .mdmark-diagram[data-diagram="map"]
-    .mdmark-diagram-node[data-shape="choice"] {
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node[data-shape="choice"] {
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
     padding: 0;
     border-radius: 0;

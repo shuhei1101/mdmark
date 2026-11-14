@@ -1,5 +1,7 @@
+import { MAP_ER, type MapErRelation, mapErNodeSize } from "../parts/map.ts";
 import type { MapGroup } from "./data.ts";
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
+import type { MapOverride } from "./layout.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** 関連の片端の多重度 */
@@ -258,3 +260,49 @@ export const erToFlowchart = (
     problems: er.problems,
   };
 };
+
+/** 部品『mapのER図』の関連。端をつなぐ列は erColumnFor で選ぶ */
+export const erPartRelations = (er: ErDiagram): MapErRelation[] => {
+  const tables = new Map(er.tables.map((table) => [table.name, table]));
+  const columnOf = (name: string, other: string): string | undefined => {
+    const table = tables.get(name);
+    return table === undefined ? undefined : erColumnFor(table, other)?.name;
+  };
+  return er.relations.map((relation) => ({
+    ...relation,
+    fromColumn: columnOf(relation.from, relation.to),
+    toColumn: columnOf(relation.to, relation.from),
+  }));
+};
+
+/** テーブルの列の名前ごとの説明（補足の `{テーブル}.{列}` の説明、無ければ列のコメント） */
+export const erColumnNotes = (
+  table: ErTable,
+  notes: Record<string, { text: string }>,
+): Record<string, string> =>
+  Object.fromEntries(
+    table.columns.flatMap((column) => {
+      const text =
+        notes[`${table.name}.${column.name}`]?.text ?? column.comment;
+      return text === undefined ? [] : [[column.name, text]];
+    }),
+  );
+
+/** テーブルのノードの幅と大きさ（列を閉じたテーブルはテーブル名の行だけ） */
+export const erOverrides = (
+  er: ErDiagram,
+  collapsed: ReadonlySet<string>,
+): Record<string, MapOverride> =>
+  Object.fromEntries(
+    er.tables.map((table) => [
+      table.name,
+      {
+        width: MAP_ER.width,
+        aside: MAP_ER.aside,
+        size: mapErNodeSize({
+          columns: table.columns.length,
+          collapsed: collapsed.has(table.name),
+        }),
+      },
+    ]),
+  );
