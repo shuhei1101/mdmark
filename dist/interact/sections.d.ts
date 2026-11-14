@@ -1,3 +1,4 @@
+import { type PartStates } from "./part-states.ts";
 /** 読者が開閉したセクションの開閉を、セクションの中身の `id` から引く記録。`marker` は記録したときの中身の `data-section` の値 */
 export type SectionStates = Map<string, {
     open: boolean;
@@ -24,6 +25,8 @@ export declare function attachSections(options: {
     rowDetails: boolean;
     /** セクションの開閉の記録（省くと記録しない） */
     states?: SectionStates;
+    /** 部品の開閉の記録（省くと記録しない） */
+    partStates?: PartStates;
     /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
     revealHash?: boolean;
 }): () => void;

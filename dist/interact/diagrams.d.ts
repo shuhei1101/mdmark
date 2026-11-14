@@ -1,5 +1,6 @@
 import type { TooltipPlacement } from "../config.ts";
 import { ZOOM } from "../diagram/geometry.ts";
+import type { PartStates } from "./part-states.ts";
 export { ZOOM };
 /** 図の中身を再描画したときに `figure` へ送信するイベント（ツールチップをもう一度付ける） */
 export declare const DIAGRAM_REDRAW_EVENT = "mdmark-diagram-redraw";
@@ -24,4 +25,6 @@ export declare function attachDiagrams(options: {
     storage?: Storage | null;
     /** 付ける図（省くと `root` の中の全ての図。高さのキーの通し番号は `root` の中の順） */
     figures?: HTMLElement[];
+    /** 文書の中の ER 図に指定する部品の開閉の記録（省くと記録しない） */
+    partStates?: PartStates;
 }): () => void;
