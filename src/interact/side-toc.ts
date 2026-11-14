@@ -56,12 +56,70 @@ function headingElements(content: HTMLElement): HTMLElement[] {
   ].filter((heading) => heading.closest(EMBEDDED_HTML_SELECTOR) === null);
 }
 
-/** 本文の中の右側の目次に並べる見出しを文書の順に集める */
+/** 本文の中で色分けしたブロック */
+const DIFF_BLOCK_SELECTOR = ".mdmark-diff-block";
+
+/** 変わったセクションを数える見出し。削除のブロックの中の `id` を持たない見出しも含める */
+const ALL_HEADING_SELECTOR = "h1, h2, h3";
+
+/** 本文の中の色分けしたブロックごとに、そのブロックが含む見出しか前にある最後の見出しと、その祖先の見出しを集め、`id` を持つ見出しの ID を返却する */
+export function findChangedHeadings(content: HTMLElement): Set<string> {
+  const changed = new Set<string>();
+  if (content.querySelector(DIFF_BLOCK_SELECTOR) === null) {
+    return changed;
+  }
+  // 今の見出しと、その祖先の見出し（浅いレベルから順）
+  const ancestors: HTMLElement[] = [];
+  const levelOf = (heading: HTMLElement): number => Number(heading.tagName[1]);
+  // `id` を持たない見出し（削除のブロックの中）は目次の項目を持たないため、祖先だけを集める
+  const markAncestors = (): void => {
+    for (const heading of ancestors) {
+      if (heading.id !== "") {
+        changed.add(heading.id);
+      }
+    }
+  };
+  // 見出しと色分けしたブロックを文書の順に 1 回だけたどる
+  const elements = content.querySelectorAll<HTMLElement>(
+    `${ALL_HEADING_SELECTOR}, ${DIFF_BLOCK_SELECTOR}`,
+  );
+  for (const element of elements) {
+    if (element.closest(EMBEDDED_HTML_SELECTOR) !== null) {
+      continue;
+    }
+    if (element.matches(DIFF_BLOCK_SELECTOR)) {
+      // 埋め込んだ HTML の外の見出しを含むブロックは、その見出しに着いたときに集める
+      const ownHeading = [
+        ...element.querySelectorAll(ALL_HEADING_SELECTOR),
+      ].some((heading) => heading.closest(EMBEDDED_HTML_SELECTOR) === null);
+      if (!ownHeading) {
+        markAncestors();
+      }
+      continue;
+    }
+    const level = levelOf(element);
+    // 同じか浅いレベルの見出しは祖先にならない
+    let last = ancestors.at(-1);
+    while (last !== undefined && levelOf(last) >= level) {
+      ancestors.pop();
+      last = ancestors.at(-1);
+    }
+    ancestors.push(element);
+    if (element.closest(DIFF_BLOCK_SELECTOR) !== null) {
+      markAncestors();
+    }
+  }
+  return changed;
+}
+
+/** 本文の中の右側の目次に並べる見出しを文書の順に集め、変わったセクションの見出しに `changed` を付ける */
 export function collectSideTocHeadings(content: HTMLElement): SideTocHeading[] {
+  const changed = findChangedHeadings(content);
   return headingElements(content).map((heading) => ({
     level: Number(heading.tagName[1]) as SideTocHeading["level"],
     id: heading.id,
     text: visibleText(heading),
+    ...(changed.has(heading.id) ? { changed: true } : {}),
   }));
 }
 

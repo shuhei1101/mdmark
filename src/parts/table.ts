@@ -116,6 +116,8 @@ export type TableOptions = {
   rowLinkNotice?: "copied" | "failed";
   /** 長文の列の位置（`data-long`） */
   long?: number[] | undefined;
+  /** 並べ替えを付けない列の位置（`data-no-sort`） */
+  noSort?: number[] | undefined;
   /** `width.min`・`width.max` を記載した列（`data-width`。em の数） */
   widthRanges?:
     | Array<{ column: number; min?: number; max?: number }>
@@ -212,6 +214,8 @@ export type TableToolsOptions = {
   label: string;
   /** 機能 */
   features: string[];
+  /** 並べ替えのボタンにするか（既定 `true`。`false` なら `features` に `sort` があっても列名を文字のままにする） */
+  sortable?: boolean;
   /** 絞り込み（`select` は候補の値） */
   filter?: { kind: FilterKind; values: string[] } | undefined;
   /** 絞り込みを適用しているか */
@@ -292,6 +296,7 @@ export function renderTableTools(options: TableToolsOptions): {
     column,
     label,
     features,
+    sortable = true,
     filter,
     active = false,
     pinVisible = false,
@@ -303,9 +308,10 @@ export function renderTableTools(options: TableToolsOptions): {
   const escapedLabel = escapeHtml(label);
   const controls = drawerId(id, column);
   const filterable = features.includes("filter") && filter !== undefined;
-  const title = features.includes("sort")
-    ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>`
-    : `<span class="mdmark-th-label">${escapedLabel}</span>`;
+  const title =
+    features.includes("sort") && sortable
+      ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>`
+      : `<span class="mdmark-th-label">${escapedLabel}</span>`;
   const filterButton = filterable
     ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="「${escapedLabel}」で絞り込む" aria-expanded="${open}" aria-controls="${escapeHtml(controls)}"><span class="mdmark-visually-hidden">${active ? "（絞り込み中）" : ""}</span></button>`
     : "";
@@ -848,6 +854,7 @@ function renderTableBody(options: TableOptions, id: string): string {
       column: index,
       label: plainText(column),
       features: options.features,
+      sortable: !(options.noSort ?? []).includes(index),
       filter: filter && {
         kind: filter.kind,
         values: [...new Set(rows.map((row) => plainText(row[index] ?? "")))],
@@ -1329,6 +1336,10 @@ export function renderTable(options: TableOptions): string {
       : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml(title)}</summary>${content}</details>`;
   const long = options.long ?? [];
   const longAttribute = long.length ? ` data-long="${long.join(" ")}"` : "";
+  const noSort = options.noSort ?? [];
+  const noSortAttribute = noSort.length
+    ? ` data-no-sort="${noSort.join(" ")}"`
+    : "";
   const ranges = options.widthRanges ?? [];
   const widthAttribute = ranges.length
     ? ` data-width="${ranges.map((range) => `${range.column}:${range.min ?? ""}-${range.max ?? ""}`).join(" ")}"`
@@ -1338,7 +1349,7 @@ export function renderTable(options: TableOptions): string {
     ? ` data-merge-columns="${mergeColumns.join(" ")}"`
     : "";
   if (options.rawCsv === undefined) {
-    return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${widthAttribute}>${inner}</div>`;
+    return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${noSortAttribute}${widthAttribute}>${inner}</div>`;
   }
   // CSV の表: 表の後ろに元の CSV を配置する。帯の右端の RAW のボタンは、表を描いたとき（`body` を指定しないとき）だけ配置し、記法の表には `mount` が付ける
   const shown = options.rawShown ?? false;
@@ -1354,5 +1365,5 @@ export function renderTable(options: TableOptions): string {
         )
       : inner.replace(/^<table(?=[\s>])/, "<table hidden")
     : inner;
-  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${widthAttribute}>${bar}${shownInner}${raw}</div>`;
+  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${noSortAttribute}${widthAttribute}>${bar}${shownInner}${raw}</div>`;
 }

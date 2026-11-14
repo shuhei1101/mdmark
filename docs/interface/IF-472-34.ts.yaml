@@ -651,6 +651,34 @@ flows:
     refs:
       - SC-472-73#scenarios[正常シナリオ（長文の列を文字で絞り込む）]
       - SC-472-73#scenarios[正常シナリオ（列の幅の範囲を指定する）]
+  - name: 正常系（長文の列と並べ替えの指定）
+    summary: '`sort` の機能を持つ表で、並べ替えを付けない長文の列と `columns.{列名}.sort` が `false` の列を `data-no-sort` に写す'
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 並べ替えの指定が違う 5 つの表の Markdown
+        description: '名前（全角 6 文字以内）・更新日（`YYYY-MM-DD`）・説明（全角 40 文字の文）の 3 列 2 行の同じ表を、表 A `{"kind": "data"}`・表 B `{"kind": "data", "columns": {"説明": {"sort": true}, "名前": {"sort": false}}}`・表 C `{"kind": "plain", "features": {"sort": {}}}`・表 D `{"kind": "plain", "columns": {"名前": {"sort": true}}}`・表 E `{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"説明": {"sort": true}}}` のマーカーで囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 長文の列と columns.{列名}.sort から並べ替えを付けない列を決める
+        M-->>C: HTML 文字列
+    expected:
+      - 表 A が `data-no-sort="2"` を持つ
+      - 表 B が `data-no-sort="0"` を持つ
+      - 表 C が `data-features` に `sort` を持ち、`data-no-sort="2"` を持つ
+      - 表 D が `data-features` に `sort` を持ち、`data-no-sort="2"` を持つ
+      - 表 E が `data-features` に `sort` を持たず、`data-no-sort` を持たない
+      - 文字列に `mdmark-syntax-warning` が無い
+    test: test_normal_when_table_sort_columns
+    refs:
+      - SC-472-73#scenarios[正常シナリオ（長文の列に並べ替えを付けない）]
+      - SC-472-73#scenarios[正常シナリオ（列ごとに並べ替えを指定する）]
+      - SC-472-73#scenarios[正常シナリオ（並べ替えを記載した表の長文の列）]
   - name: 正常系（ビューのマーカー）
     summary: ビューのマーカーの範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする
     setup:
@@ -2432,7 +2460,7 @@ constraints:
   - item: 入力の大きさ
     constraint: 制限なし
   - item: 表
-    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。種類は引数の `kind`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`）を記載した機能（`filter`・`columns`・`pin`・`total`）を加えたものを空白で並べる。`enabled` を `false` にした機能の列の設定は適用しない。列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。`columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。`type` は `select`・`text`・`date`。`type` を省いたときは、長文の列なら `text`、ほかは `select` にする。見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。`collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。`features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。`columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。`columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。`columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
+    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。種類は引数の `kind`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`・`sort` の `true`）を記載した機能（`filter`・`columns`・`pin`・`total`・`sort`）を加えたものを空白で並べる。`enabled` を `false` にした機能の列の設定は適用しない。列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。`columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。`type` は `select`・`text`・`date`。`type` を省いたときは、長文の列なら `text`、ほかは `select` にする。見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。`sort` の機能を持つ表は、長文の列（`columns.{列名}.sort` が `true` の列を除く）と `columns.{列名}.sort` が `false` の列の位置を `data-no-sort="{位置} …"` に写す（表の種類と、`features.sort` を記載したかによらない）。`columns.{列名}.sort` の `true` は `sort` の機能を加える（`enabled` を `false` にしたときは適用しない）。`sort` の機能を持たない表と、ビューのマーカーの範囲の表（制約「ビューのマーカー」）には `data-no-sort` を付けない。`collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。`features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。`columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。`columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。`columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
   - item: 注意書き
     constraint: '1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` とタイトル `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から除外する。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にし、`+` を付けた種類は同じ `details` に `open` を付ける。種類（と `-`・`+`）の後ろに文字があれば、タイトルの文字をその文字にし、タイトルの頭に `<span class="mdmark-visually-hidden">{補足・ヒント・重要・警告・注意}: </span>` を配置する。注意書きの本文の中の引用も同じ規則で注意書きにする（入れ子）。知らない種類は `note` として出す'
   - item: タブ

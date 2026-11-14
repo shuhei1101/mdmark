@@ -1,0 +1,32 @@
+/* #550 の右側の目次の変更のマーカーの案（mdmark の層の外。実装では index.css の右側の目次の規則へ移す） */
+
+/* 変更のマーカー: 塗った円。色は注意書きの warning と同じ橙にし、追加・削除の緑・赤と今いるセクションの色から分ける */
+.mock-toc-changed {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--mdmark-color-callout-warning);
+}
+
+/* 項目のリンク: 文字とマーカーを 1 行に並べる */
+.mdmark-side-toc-list a[data-changed] {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* 案 A: 項目の右端にマーカーを配置する */
+[data-mock-marker="end"] .mdmark-side-toc-list a[data-changed] {
+  justify-content: space-between;
+}
+
+/* 案 B: 項目の文字の前にマーカーを配置する */
+[data-mock-marker="start"] .mdmark-side-toc-list a[data-changed] .mock-toc-changed {
+  order: -1;
+}
+
+/* hover の右端の線: 変わったセクションの線をマーカーの色にする（今いるセクションの色を優先する） */
+.mdmark-side-toc-bar[data-changed]:not([data-current]) {
+  background: var(--mdmark-color-callout-warning);
+}

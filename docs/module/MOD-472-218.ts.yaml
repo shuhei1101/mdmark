@@ -666,6 +666,36 @@ functions:
     status: planned
     introduced:
       pr: 505
+  - name: findNoSortColumns
+    title: 並べ替えを付けない列を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 長文の列のうち `sorts` で `true` を指定していない列と、`sorts` で `false` を指定した列の位置を、小さい順に重ねずに返却する
+    args:
+      - name: options
+        type: '{ long: number[]; sorts: Array<{ column: number; sort: boolean }> }'
+        required: true
+        description: 長文の列の位置（`findLongColumns` の結果）と、`columns.{列名}.sort` を記載した列と値
+    returns:
+      type: number[]
+      description: 並べ替えを付けない列の位置
+    unit_tests:
+      - name: test_find_no_sort_columns
+        case: 正常
+        summary: 長文の列に並べ替えを付けず、列ごとの指定で付け外しする
+        condition: '`long: [1, 3]`・`sorts: [{column: 1, sort: true}, {column: 0, sort: false}, {column: 2, sort: true}]`'
+        mock: なし
+        expected: '`[0, 3]`'
+      - name: test_find_no_sort_columns_when_empty
+        case: 正常
+        summary: 長文の列も指定も無ければ空
+        condition: '`long: []`・`sorts: []`'
+        mock: なし
+        expected: '`[]`'
+    status: planned
+    introduced:
+      pr: 550
   - name: defaultFilterKind
     title: 省いた絞り込みの種類を決める
     container: src/table-logic.ts

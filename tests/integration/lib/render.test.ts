@@ -743,6 +743,55 @@ test("test_normal_when_table_long_columns", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
+// sort の機能を持つ表で、並べ替えを付けない長文の列と columns.{列名}.sort が false の列を data-no-sort に写す（正常系）
+test("test_normal_when_table_sort_columns", async () => {
+  // 準備
+  const render = await loadRender();
+  const wide = (count: number): string => "あ".repeat(count);
+  const table = (mark: string): string =>
+    [
+      `<!-- table: ${mark} -->`,
+      "",
+      "| 名前 | 更新日 | 説明 |",
+      "| --- | --- | --- |",
+      `| ${wide(6)} | 2026-11-01 | ${wide(40)} |`,
+      `| ${wide(4)} | 2026-11-05 | ${wide(40)} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n");
+  const markdown = [
+    table('{"kind": "data"}'),
+    table(
+      '{"kind": "data", "columns": {"説明": {"sort": true}, "名前": {"sort": false}}}',
+    ),
+    table('{"kind": "plain", "features": {"sort": {}}}'),
+    table('{"kind": "plain", "columns": {"名前": {"sort": true}}}'),
+    table(
+      '{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"説明": {"sort": true}}}',
+    ),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const wrappers = [...html.matchAll(/<div class="mdmark-table"[^>]*>/g)].map(
+    (match) => match[0],
+  );
+  expect(wrappers).toHaveLength(5);
+  const [a = "", b = "", c = "", d = "", e = ""] = wrappers;
+  const hasSort = (tag: string): boolean =>
+    /data-features="[^"]*\bsort\b/.test(tag);
+  expect(a).toContain(' data-no-sort="2"');
+  expect(b).toContain(' data-no-sort="0"');
+  expect(hasSort(c)).toBe(true);
+  expect(c).toContain(' data-no-sort="2"');
+  expect(hasSort(d)).toBe(true);
+  expect(d).toContain(' data-no-sort="2"');
+  expect(hasSort(e)).toBe(false);
+  expect(e).not.toContain("data-no-sort");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
 // 見出しに無い列名の pin=・check= と、pin の機能の無い表の pin= を記載の警告にして適用しない（正常系）
 test("test_normal_when_table_column_errors", async () => {
   // 準備

@@ -81,3 +81,36 @@ export const LongHeading: Story = {
     open: true,
   },
 };
+
+export const HoverChanged: Story = {
+  name: "HoverChanged",
+  parameters: { server: { id: "side-toc" } },
+  args: {
+    headings:
+      '[{"level":1,"id":"doc","text":"文書","changed":true},{"level":2,"id":"premise","text":"前提"},{"level":2,"id":"steps","text":"手順","changed":true},{"level":3,"id":"steps-1","text":"準備"},{"level":2,"id":"added","text":"追加した節","changed":true}]',
+    open: true,
+    current: "steps",
+  },
+};
+
+export const FixedChanged: Story = {
+  name: "FixedChanged",
+  parameters: { server: { id: "side-toc" } },
+  args: {
+    headings:
+      '[{"level":1,"id":"doc","text":"文書","changed":true},{"level":2,"id":"premise","text":"前提"},{"level":2,"id":"steps","text":"手順","changed":true},{"level":3,"id":"steps-1","text":"準備"},{"level":2,"id":"added","text":"追加した節","changed":true}]',
+    mode: "fixed",
+    open: true,
+  },
+};
+
+export const LongHeadingChanged: Story = {
+  name: "LongHeadingChanged",
+  parameters: { server: { id: "side-toc" } },
+  args: {
+    headings:
+      '[{"level":2,"id":"long","text":"読み込みに失敗したときに通知ブロックが出る箇所と、ほかの本文の扱い","changed":true}]',
+    mode: "fixed",
+    open: true,
+  },
+};

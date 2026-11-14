@@ -1,0 +1,13 @@
+confirmations:
+  - topic: '`features.sort: {}` を記載した既存の表でも、長文の列から並べ替えを除外するか'
+    decision: '表の種類と `features.sort` の記載によらず長文の列には並べ替えを付けず、戻す指定は `columns.{列名}.sort: true` だけ（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/550#discussion_r4569138536
+  - topic: 右側の目次の変更のマーカーと、長文の列に並べ替えを付けない表のモック（マーカーの位置・親の見出しにも付けるか）
+    decision: モック a-dot-end のとおり。橙の塗った円を項目の右端に配置し（推奨案 A）、子のセクションが変わった親の見出しにも付ける（推奨案 A）。hover の右端の線も橙にする
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/550#discussion_r4569698755

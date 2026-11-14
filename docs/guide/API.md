@@ -122,7 +122,7 @@ handle.destroy();
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返却する取り出し元（`DiffSource`）。指定すると、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に指定する。省くと、差分の UI を付けない |
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を指定しないときは使用しない。知らない値は `button` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使用する。`opts.docId` と一緒に指定する。省くと、コメントを付けられない |
-| `opts.baseMarkdown` | 任意 | 比較元の Markdown（文字列か `null`）。指定すると、本文の中で比較元から追加・変更したブロックと削除したブロックを、`opts.diffMode` が `blocks` のときと同じ色で塗り分ける。`opts.diffSource` は要らない。`opts.diffSource` も指定したときは、色分けに比較元を使用し、取り出し元は「変更表示」の差分にだけ使用する（`blocks` では取り出し元を呼ばない）。`null` と省いたときは色分けしない。`update` の第 2 引数で差し替える |
+| `opts.baseMarkdown` | 任意 | 比較元の Markdown（文字列か `null`）。指定すると、本文の中で比較元から追加・変更したブロックと削除したブロックを、`opts.diffMode` が `blocks` のときと同じ色で塗り分ける。`opts.diffSource` は要らない。`opts.diffSource` も指定したときは、色分けに比較元を使用し、取り出し元は「変更表示」の差分にだけ使用する（`blocks` では取り出し元を呼ばない）。`null` と省いたときは色分けしない。色分けしているときは、右側の目次の変わったセクションの項目に変更のマーカーを出す。`update` の第 2 引数で差し替える |
 | `opts.onColumnsChange` | 任意 | `columns` の機能を持つ表で列の表示を切り替えるたびに呼ぶ関数。`{ tableIndex, hidden }`（`MdmarkColumnsChange`）を受け取る。`tableIndex` は本文の中の `columns` の機能を持つ表の出現順（0 から。削除したブロックの中の表は数えない）、`hidden` は隠している列の見出しの文字を列の順に並べた配列。描いたときの `hidden` の状態と、`update` で再描画したときは呼ばない |
 
 <!-- /table -->

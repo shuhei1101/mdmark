@@ -119,3 +119,33 @@ test("test_render_side_toc_when_text_has_html", async () => {
   expect(html).toContain('data-heading-id="a&quot;b"');
   expect(html).not.toContain("<b>");
 });
+
+// 変わったセクションの項目と右端の線に変更のマーカーを付ける（正常系）
+test("test_render_side_toc_when_changed", async () => {
+  // 準備
+  const { renderSideToc } = await loadSideToc();
+  // 実行
+  const html = renderSideToc({
+    headings: [
+      { level: 1, id: "手引き", text: "手引き", changed: true },
+      { level: 2, id: "導入", text: "導入" },
+      { level: 2, id: "使用方法", text: "使用方法", changed: true },
+    ],
+  });
+  // 検証
+  const marker =
+    '<span class="mdmark-side-toc-changed" aria-hidden="true"></span>';
+  expect(html).toContain(
+    `<a href="#手引き" data-heading-id="手引き" data-changed aria-label="手引き（変更）">手引き${marker}</a>`,
+  );
+  expect(html).toContain(
+    `<a href="#使用方法" data-heading-id="使用方法" data-changed aria-label="使用方法（変更）">使用方法${marker}</a>`,
+  );
+  expect(html).toContain('<a href="#導入" data-heading-id="導入">導入</a>');
+  const bars = findTags(html, '<span class="mdmark-side-toc-bar"');
+  expect(bars.map((bar) => hasBooleanAttribute(bar, "data-changed"))).toEqual([
+    true,
+    false,
+    true,
+  ]);
+});

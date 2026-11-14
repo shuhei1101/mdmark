@@ -74,7 +74,7 @@ functions:
   - name: collectSideTocHeadings
     title: 右側の目次の見出しを集める
     container: src/interact/side-toc.ts
-    summary: 本文の中の `SIDE_TOC_HEADING_SELECTOR` に該当する見出しを文書の順に集め、レベル・ID・表示する文字（`visibleText`。開閉のボタンとアンカーを除いた見出しの文字）を返却する。`.mdmark-html` の中の見出しは除く
+    summary: '本文の中の `SIDE_TOC_HEADING_SELECTOR` に該当する見出しを文書の順に集め、レベル・ID・表示する文字（`visibleText`。開閉のボタンとアンカーを除いた見出しの文字）と、`findChangedHeadings` が返却した ID の見出しに `changed: true` を返却する。`.mdmark-html` の中の見出しは除く'
     kind: 関数
     scope: internal
     args:
@@ -85,6 +85,8 @@ functions:
     returns:
       type: SideTocHeading[]
       description: 見出しの並び。無ければ空の配列
+    callees:
+      - '#functions[findChangedHeadings]'
     unit_tests:
       - name: test_collect_side_toc_headings
         case: 正常
@@ -92,9 +94,63 @@ functions:
         condition: '`# 手引き`・`## 導入`・`### 注意`・`#### 細目` と、`.mdmark-html` の中の `h2` を持つ本文を `attachSections` で開閉にしてから指定する'
         mock: なし
         expected: '`[{level: 1, id: "手引き", text: "手引き"}, {level: 2, id: "導入", text: "導入"}, {level: 3, id: "注意", text: "注意"}]`'
+      - name: test_collect_side_toc_headings_when_changed
+        case: 正常
+        summary: 色分けしたブロックを持つセクションの見出しに changed を付ける
+        condition: '`# 手引き`・`## 導入`（段落）・`## 使用方法`（`renderDiffBlock` で `data-kind="add"` の `.mdmark-diff-block` に包んだ段落）の本文'
+        mock: なし
+        expected: '`手引き`・`使用方法` が `changed: true` を持ち、`導入` は `changed` を持たない'
     status: planned
     introduced:
       pr: 166
+  - name: findChangedHeadings
+    title: 変わったセクションの見出しを集める
+    container: src/interact/side-toc.ts
+    summary: 本文の中の h1〜h3 と `.mdmark-diff-block` を文書の順に 1 回だけたどり、今の見出しとその祖先の見出しの並びを持ちながら、`.mdmark-diff-block` ごとに、そのブロックが含む h1〜h3 の見出しか、無ければ文書の順でそのブロックの前にある最後の h1〜h3 の見出しを起点にし、起点とそれより浅いレベルの前にある見出しを順に祖先として集めて、ID を持つ見出しの ID を返却する。数える見出しは本文の中の全ての h1〜h3（削除のブロックの中の `id` を持たない見出しを含む。`.mdmark-html` の中の見出しは除く）で、`id` を持たない見出しは ID を返却せず祖先だけを集める
+    kind: 関数
+    scope: internal
+    args:
+      - name: content
+        type: HTMLElement
+        required: true
+        description: 本文の列（`div.mdmark-content`）
+    returns:
+      type: Set<string>
+      description: 変わったセクションの見出しの ID。色分けしたブロックが無ければ空
+    unit_tests:
+      - name: test_find_changed_headings
+        case: 正常
+        summary: 色分けしたブロックを持つセクションと、その祖先の見出しを集める
+        condition: '`# 文書`・`## A`（段落）・`## B`（`renderDiffBlock` で `data-kind="add"` の `.mdmark-diff-block` に包んだ段落）・`### B1`（段落）の本文'
+        mock: なし
+        expected: '`文書`・`B` だけを持つ'
+      - name: test_find_changed_headings_when_section_deleted
+        case: 正常
+        summary: 見出しごと削除したセクションは祖先にだけ付け、前のセクションに付けない
+        condition: '`# 文書`・`## A`・`### A1`（段落）の後ろに、`renderDiffBlock` で `data-kind="del"` の `.mdmark-diff-block` に包んだ `id` を持たない `## E` と段落の 2 つ、続けて `## C`（段落）を持つ本文'
+        mock: なし
+        expected: '`文書` だけを持ち、`A`・`A1`・`C` を持たない'
+      - name: test_find_changed_headings_when_heading_rewritten
+        case: 正常
+        summary: 見出しの文字を書き換えたときは新しい見出しに付ける
+        condition: '`# 文書` の後ろに、`renderDiffBlock` で包んだ、`id` を持たない `## 古い名前` の `data-kind="del"` の `.mdmark-diff-block` と、`## 新しい名前` の `data-kind="add"` の `.mdmark-diff-block`を持つ本文'
+        mock: なし
+        expected: '`文書`・`新しい名前` を持つ'
+      - name: test_find_changed_headings_when_embedded_html
+        case: 正常
+        summary: 埋め込んだ HTML の中の見出しを数えず、前にある見出しのセクションに付ける
+        condition: '`# 文書`・`## A`（段落）・`## B` の後ろに、`.mdmark-html` の中に `h2` を持つ要素を `renderDiffBlock` で `data-kind="add"` の `.mdmark-diff-block` に包んだブロックを持つ本文'
+        mock: なし
+        expected: '`文書`・`B` だけを持ち、`embedded` を持たない'
+      - name: test_find_changed_headings_when_no_diff
+        case: 正常
+        summary: 色分けしたブロックが無ければ何も集めない
+        condition: '`.mdmark-diff-block` を持たない本文'
+        mock: なし
+        expected: 空の集まり
+    status: planned
+    introduced:
+      pr: 550
   - name: pickCurrentHeading
     title: 今いるセクションの見出しを決める
     container: src/interact/side-toc.ts

@@ -8197,6 +8197,11 @@
         width: 0.5rem;
       }
 
+      /* 比較元から変わったセクションの線: 変更のマーカーと同じ橙にする（今いるセクションの線は今いるセクションの色を優先する） */
+      &[data-changed]:not([data-current]) {
+        background: var(--mdmark-color-callout-warning);
+      }
+
       /* 今いるセクションの線: マーカーの色にする */
       &[data-current] {
         background: var(--mdmark-color-link);
@@ -8332,6 +8337,22 @@
           background: var(--mdmark-color-current-bg);
           color: var(--mdmark-color-link);
         }
+        /* 比較元から変わったセクションの項目: 文字と変更のマーカーを 1 行に並べ、マーカーを右端に配置する */
+        &[data-changed] {
+          display: flex;
+          gap: 0.5rem;
+          align-items: baseline;
+          justify-content: space-between;
+        }
+      }
+
+      /* 変更のマーカー: 橙の塗った円。長い見出しが折り返しても 1 行目の高さに置き、縮めない */
+      .mdmark-side-toc-changed {
+        flex: none;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: var(--mdmark-color-callout-warning);
       }
     }
 
