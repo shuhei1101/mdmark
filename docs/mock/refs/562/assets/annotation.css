@@ -18,6 +18,7 @@
 
       &::before {
         content: "※";
+        font-size: 1.2em;
       }
 
       &::after {
@@ -40,9 +41,9 @@
       }
     }
 
-    /* 同じ場所に注釈を 2 つ並べたとき: マーカーの間を少し空ける */
-    .mdmark-note-ref + .mdmark-note-ref {
-      margin-inline-start: 0.1em;
+    /* 同じ場所に脚注の番号か注釈のマーカーを並べたとき: 押す範囲が重ならないよう、マーカーの中心の間を 24px 以上空ける */
+    .mdmark-fn-ref + .mdmark-note-ref {
+      margin-inline-start: 1rem;
     }
 
     /* ---------- 末尾の注釈の一覧 ---------- */
