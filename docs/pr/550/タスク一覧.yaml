@@ -59,7 +59,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T00:05:47.014434+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: schemas/marks/table.schema.json は実装の工程で変える
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:46.722549+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
