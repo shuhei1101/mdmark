@@ -7,6 +7,7 @@ import { renderDoc } from "../../helpers/render.ts";
 const loadErView = () => import("../../../../src/map/er-view.ts");
 const loadSpec = () => import("../../../../src/map/spec.ts");
 const loadConfig = () => import("../../../../src/config.ts");
+const loadParts = () => import("../../../../src/parts/map.ts");
 
 const handles: Array<{ destroy: () => void }> = [];
 
@@ -58,17 +59,15 @@ test("test_attach_map_er", async () => {
   // 検証
   const order = tableOf(root, "注文");
   expect(order.querySelectorAll(".map-er-column")).toHaveLength(8);
-  const row = order.querySelector<HTMLElement>(
-    '[data-column="顧客ID"]',
-  ) as HTMLElement;
-  // ノードの位置は配置の結果を入れた style、行の位置はノードの中の位置で比べる
-  const rowRect = row.getBoundingClientRect();
-  const orderRect = order.getBoundingClientRect();
+  const { MAP_ER } = await loadParts();
+  const rows = [...order.querySelectorAll<HTMLElement>(".map-er-column")];
+  const index = rows.findIndex((row) => row.dataset.column === "顧客ID");
+  // 列の行の位置は部品の寸法で決まる（単体テストの環境では map の CSS が当たらないため、DOM の位置で比べない）
   const rowMiddle =
     Number.parseFloat(order.style.top) +
-    rowRect.top -
-    orderRect.top +
-    rowRect.height / 2;
+    MAP_ER.head +
+    index * MAP_ER.row +
+    MAP_ER.row / 2;
   const path = root.querySelector<SVGPathElement>(
     'path.mdmark-diagram-wire[data-wire="r1"]',
   );
@@ -117,4 +116,27 @@ test("test_attach_map_er_when_columns_collapsed", async () => {
     (path?.getAttribute("d") ?? "").match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
   const lastY = points.at(-1) ?? Number.NaN;
   expect(Math.abs(lastY - middle)).toBeLessThan(2);
+});
+
+// 配置し直した後の列の説明のツールチップ（正常系）
+test("test_attach_map_er_when_relayout_column_tip", async () => {
+  // 準備
+  const root = await setUp();
+  const toggleOf = () =>
+    tableOf(root, "注文").querySelector<HTMLButtonElement>(
+      "button.map-er-toggle",
+    );
+  toggleOf()?.click();
+  toggleOf()?.click();
+  // 実行
+  const note = tableOf(root, "注文").querySelector<HTMLButtonElement>(
+    '[data-column="状態"] button.map-er-note',
+  ) as HTMLButtonElement;
+  note.focus();
+  // 検証
+  const tip = root.querySelector<HTMLElement>(
+    `#${CSS.escape(note.getAttribute("aria-describedby") ?? "")}`,
+  );
+  expect(tip?.getAttribute("role")).toBe("tooltip");
+  expect(tip?.hidden).toBe(false);
 });
