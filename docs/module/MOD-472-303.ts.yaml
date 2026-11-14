@@ -11,7 +11,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 'コアルール。`map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapStructure` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む（Mermaid と補足の中身の警告は `dist/map.js` が足す）'
-    description: 印の引数は `parseMapArgs` で読み、`data-map-args` に `normalized` を入れる（知らないキーは警告にせず落とす）。`pre.mdmark-map-data` の中身は補足のマーカーの引数の文字（`map-data:` の後ろから `-->` の前まで）を JSON のまま入れる。`glossary` がオンのとき、`buildDictionary` の辞書で範囲の Mermaid と補足の文字を `findWords` で照合し、意味を持つ用語（エイリアスを除く）を、文字に出たままの用語から意味への JSON にして `data-map-terms` に入れる（該当が無ければ付けない）。図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする。補足の `notes.{ID}.annotations` が、`collectAnnotations` が番号を振った注記を参照する範囲は、参照する注記の ID から番号への JSON を `data-map-annotations` に入れる（該当が無ければ付けない）
+    description: 印の引数は `parseMapArgs` で読み、`data-map-args` に `normalized` を入れる（知らないキーは警告にせず落とす）。`pre.mdmark-map-data` の中身は補足のマーカーの引数の文字（`map-data:` の後ろから `-->` の前まで）を JSON のまま入れる。`glossary` がオンのとき、`buildDictionary` の辞書で範囲の Mermaid と補足の文字を `findWords` で照合し、意味を持つ用語（エイリアスを除く）を、文字に出たままの用語から意味への JSON にして `data-map-terms` に入れる（該当が無ければ付けない）。図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする。補足の `notes.{ID}.annotations` が、`collectAnnotations` が番号を振った注記を参照する範囲は、参照する注記のうち定義のある ID から番号への JSON を `data-map-annotations` に入れる（補足が注記を参照する範囲は、定義のある ID が無くても `{}` で付ける。注記の機能がオフの文書と、補足が注記を参照しない範囲には付けない）
     args:
       - name: state
         type: StateCore
@@ -58,4 +58,4 @@ functions:
         summary: 補足が参照する注記の番号を範囲に入れる
         condition: '本文で `※[img]` を参照し、補足の `notes.mount.annotations` が `["cond", "img", "missing"]` の範囲と、定義 `※[cond]`・`※[img]` を持つ文書'
         mock: なし
-        expected: '`data-map-annotations` が `{"cond":2,"img":1}`。`annotations` をオフにすると `data-map-annotations` が無い'
+        expected: '`data-map-annotations` が `{"cond":2,"img":1}`。`annotations` をオフにすると `data-map-annotations` が無い。補足の注記の参照が `missing` だけの範囲は `data-map-annotations` が `{}`'
