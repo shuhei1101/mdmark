@@ -618,8 +618,9 @@ test("test_render_map_er_diagram", async () => {
 // 状態遷移図の部品（正常系）
 test("test_render_map_state_diagram", async () => {
   // 準備
-  const { parseStateDiagram, stateToFlowchart, statePartInputs } =
-    await import("../../../../src/map/state-diagram.ts");
+  const { parseStateDiagram, stateToFlowchart, statePartInputs } = await import(
+    "../../../../src/map/state-diagram.ts"
+  );
   const { layoutMap } = await loadLayout();
   const { renderMapStateDiagram } = await loadParts();
   const { STATE } = await import("../../helpers/map.ts");
