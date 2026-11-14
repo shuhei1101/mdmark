@@ -1,6 +1,7 @@
 import type { StateCore, Token } from "markdown-it";
 import { renderFigure } from "../../parts/figure.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
+import type { Mark } from "../marks.ts";
 import { DIAGRAM_META } from "./diagrams.ts";
 import { imageAttributesOf, imageFigureHtml } from "./images.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
@@ -53,16 +54,65 @@ type FigureTarget = {
   gallery?: Token;
 };
 
+/** `images` がオンで、動画でも音声でもない画像なら、画像の図にする */
+function isStillImageFigure(state: StateCore, image: Token): boolean {
+  const kind = imageAttributesOf(image)?.kind;
+  return kind !== "video" && kind !== "audio" && featureOn(state, "images");
+}
+
+/** 画像だけの段落の範囲を読み込む。画像以外を含む段落は `undefined` */
+function imageParagraphTarget(
+  state: StateCore,
+  start: number,
+): FigureTarget | undefined {
+  const children = state.tokens[start + 1]?.children ?? [];
+  const image = children.find((child) => child.type === "image");
+  if (!image || !children.every((child) => child.type === "image")) {
+    return undefined;
+  }
+  return {
+    kind: "image",
+    end: start + 2,
+    caption: String(image.attrGet("title") ?? ""),
+    ...(children.length === 1 && isStillImageFigure(state, image)
+      ? { image }
+      : {}),
+  };
+}
+
+/** 表の囲みか囲まない表の範囲を、中の表を入れ子の数で数えて、自分の開きに対応する閉じまで読み込む */
+function tableTarget(tokens: Token[], start: number): FigureTarget | undefined {
+  const first = tokens[start];
+  const match =
+    first?.meta?.role === "table-open"
+      ? {
+          isOpen: (token: Token) => token.meta?.role === "table-open",
+          isClose: (token: Token) => token.meta?.role === "table-close",
+        }
+      : first?.type === "table_open"
+        ? {
+            isOpen: (token: Token) => token.type === "table_open",
+            isClose: (token: Token) => token.type === "table_close",
+          }
+        : undefined;
+  if (!match) {
+    return undefined;
+  }
+  const end = matchingClose(tokens, start, match);
+  return end < 0 ? undefined : { kind: "table", end, caption: "" };
+}
+
 /** マーカーの直後の図か表（画像だけの段落、ギャラリーの開きのマーカー、表の囲み、囲まない表）の範囲を読み込む */
 function figureTarget(
   state: StateCore,
   start: number,
 ): FigureTarget | undefined {
-  const tokens = state.tokens;
-  const first = tokens[start];
+  const first = state.tokens[start];
+  if (!first) {
+    return undefined;
+  }
   const firstMark = markOf(first);
   if (
-    first &&
     firstMark?.name === "gallery" &&
     !firstMark.closing &&
     featureOn(state, "gallery")
@@ -70,42 +120,13 @@ function figureTarget(
     return { kind: "image", end: start, caption: "", gallery: first };
   }
   // 図の部品は画像と同じ「図」の番号にする
-  if (first?.meta?.[DIAGRAM_META] === true) {
+  if (first.meta?.[DIAGRAM_META] === true) {
     return { kind: "image", end: start, caption: "" };
   }
-  if (first?.type === "paragraph_open") {
-    const children = tokens[start + 1]?.children ?? [];
-    const image = children.find((child) => child.type === "image");
-    if (image && children.every((child) => child.type === "image")) {
-      const kind = imageAttributesOf(image)?.kind;
-      const still = kind !== "video" && kind !== "audio";
-      return {
-        kind: "image",
-        end: start + 2,
-        caption: String(image.attrGet("title") ?? ""),
-        ...(still && children.length === 1 && featureOn(state, "images")
-          ? { image }
-          : {}),
-      };
-    }
-    return undefined;
+  if (first.type === "paragraph_open") {
+    return imageParagraphTarget(state, start);
   }
-  // 表の範囲は、中の表を入れ子の数で数えて、自分の開きに対応する閉じまでにする
-  if (first?.meta?.role === "table-open") {
-    const end = matchingClose(tokens, start, {
-      isOpen: (token) => token.meta?.role === "table-open",
-      isClose: (token) => token.meta?.role === "table-close",
-    });
-    return end < 0 ? undefined : { kind: "table", end, caption: "" };
-  }
-  if (first?.type === "table_open") {
-    const end = matchingClose(tokens, start, {
-      isOpen: (token) => token.type === "table_open",
-      isClose: (token) => token.type === "table_close",
-    });
-    return end < 0 ? undefined : { kind: "table", end, caption: "" };
-  }
-  return undefined;
+  return tableTarget(state.tokens, start);
 }
 
 /** `#fig-{ID}` のリンクの ID を取り出す */
@@ -156,90 +177,95 @@ function rewriteReferences(
   return broken;
 }
 
-/** `figures` がオンなら、`fig` のマーカーの直後の画像の段落と表を図表の番号の部品で囲み、`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID は警告を差し込む */
-export function numberFigures(state: StateCore): void {
-  if (!featureOn(state, "figures")) {
-    return;
+/** 番号を付けた図表の ID と、種類ごとに付けた番号の数 */
+type FigureRegistry = {
+  figures: Map<string, Numbered>;
+  counts: Record<FigureKind, number>;
+};
+
+/** 文字の ID を持つ開きの `fig` のマーカーなら、マーカーの ID と直後の図表の範囲を返却する。文字の ID を持たない fig のマーカーは記載の警告だけを出し、図表に番号を付けない */
+function figMarkTarget(
+  state: StateCore,
+  index: number,
+): { mark: Mark; id: string; target: FigureTarget } | undefined {
+  const mark = markOf(state.tokens[index]);
+  if (mark?.name !== "fig" || mark.closing) {
+    return undefined;
   }
-  const tokens = state.tokens;
-  const figures = new Map<string, Numbered>();
-  const counts: Record<FigureKind, number> = { image: 0, table: 0 };
-  const out: Token[] = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    // 文字の ID を持たない fig のマーカーは記載の警告だけを出し、図表に番号を付けない
-    const target =
-      mark?.name === "fig" &&
-      !mark.closing &&
-      typeof mark.options.id === "string" &&
-      mark.options.id !== ""
-        ? figureTarget(state, index + 1)
-        : undefined;
-    if (!token || !mark || !target) {
-      if (token) {
-        out.push(token);
-      }
-      continue;
-    }
-    const id = String(mark.options.id);
-    counts[target.kind] += 1;
-    const number = counts[target.kind];
-    const duplicated = figures.has(id);
-    if (duplicated) {
-      out.push(
-        warningBlock(
-          state,
-          {
-            mark: mark.raw,
-            message: `の ID \`${id}\` は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。`,
-          },
-          token,
-        ),
-      );
-    } else {
-      figures.set(id, { kind: target.kind, number });
-    }
-    const figureId = duplicated ? undefined : id;
-    // ギャラリーは番号だけを指定し、囲むのはギャラリーの処理に任せる
-    if (target.gallery) {
-      target.gallery.meta = {
-        ...target.gallery.meta,
-        figure: { id: figureId, number },
-      };
-      continue;
-    }
-    if (target.image) {
-      out.push(
-        ownBlock(
-          state,
-          imageFigureHtml(target.image, {
-            ...(figureId === undefined ? {} : { id: `fig-${figureId}` }),
-            label: `図 ${number}`,
-          }),
-          token,
-        ),
-      );
-      index = target.end;
-      continue;
-    }
-    const html = renderFigure({
-      kind: target.kind,
-      id: figureId,
-      number,
-      caption: target.caption,
-      body: SLOT_MARKER,
-    });
-    const [head = "", tail = ""] = html.split(SLOT_MARKER);
-    out.push(ownBlock(state, head, token));
-    out.push(...tokens.slice(index + 1, target.end + 1));
-    out.push(ownBlock(state, tail));
-    index = target.end;
+  const id = mark.options.id;
+  if (typeof id !== "string" || id === "") {
+    return undefined;
   }
-  // 参照は、後ろで定義した図表も指せるよう、全ての図表に番号を付けた後で修正する
+  const target = figureTarget(state, index + 1);
+  return target ? { mark, id, target } : undefined;
+}
+
+/** 図表に種類ごとの番号を付け、ID を登録する。前の図表と重なった ID は登録せず、`figureId` を `undefined` にする */
+function registerFigure(
+  registry: FigureRegistry,
+  figure: { id: string; kind: FigureKind },
+): { number: number; figureId: string | undefined } {
+  const { id, kind } = figure;
+  registry.counts[kind] += 1;
+  const number = registry.counts[kind];
+  if (registry.figures.has(id)) {
+    return { number, figureId: undefined };
+  }
+  registry.figures.set(id, { kind, number });
+  return { number, figureId: id };
+}
+
+/** 図表の範囲を番号の部品で囲んだトークンを返却する。ギャラリーは番号だけを指定し、囲むのはギャラリーの処理に任せる */
+function wrapFigure(
+  state: StateCore,
+  range: { index: number; token: Token; target: FigureTarget },
+  numbered: { number: number; figureId: string | undefined },
+): Token[] {
+  const { index, token, target } = range;
+  const { number, figureId } = numbered;
+  if (target.gallery) {
+    target.gallery.meta = {
+      ...target.gallery.meta,
+      figure: { id: figureId, number },
+    };
+    return [];
+  }
+  if (target.image) {
+    return [
+      ownBlock(
+        state,
+        imageFigureHtml(target.image, {
+          ...(figureId === undefined ? {} : { id: `fig-${figureId}` }),
+          label: `図 ${number}`,
+        }),
+        token,
+      ),
+    ];
+  }
+  const html = renderFigure({
+    kind: target.kind,
+    id: figureId,
+    number,
+    caption: target.caption,
+    body: SLOT_MARKER,
+  });
+  const [head = "", tail = ""] = html.split(SLOT_MARKER);
+  return [
+    ownBlock(state, head, token),
+    ...state.tokens.slice(index + 1, target.end + 1),
+    ownBlock(state, tail),
+  ];
+}
+
+/** 行内の `#fig-{ID}` へのリンクの文字を番号に替え、切れた参照の警告を、その行内を持つ最上位のブロックの前に差し込む */
+function rewriteAllReferences(
+  state: StateCore,
+  tokens: Token[],
+  figures: Map<string, Numbered>,
+): Token[] {
   const result: Token[] = [];
   let blockStart = 0;
-  for (const token of out) {
+  for (const token of tokens) {
     if (token.nesting === 1 && token.level === 0) {
       blockStart = result.length;
     }
@@ -260,5 +286,48 @@ export function numberFigures(state: StateCore): void {
     }
     result.push(token);
   }
-  state.tokens = result;
+  return result;
+}
+
+/** `figures` がオンなら、`fig` のマーカーの直後の画像の段落と表を図表の番号の部品で囲み、`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID は警告を差し込む */
+export function numberFigures(state: StateCore): void {
+  if (!featureOn(state, "figures")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const registry: FigureRegistry = {
+    figures: new Map(),
+    counts: { image: 0, table: 0 },
+  };
+  const out: Token[] = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const found = figMarkTarget(state, index);
+    if (!token || !found) {
+      if (token) {
+        out.push(token);
+      }
+      continue;
+    }
+    const { mark, id, target } = found;
+    const numbered = registerFigure(registry, { id, kind: target.kind });
+    if (numbered.figureId === undefined) {
+      out.push(
+        warningBlock(
+          state,
+          {
+            mark: mark.raw,
+            message: `の ID \`${id}\` は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。`,
+          },
+          token,
+        ),
+      );
+    }
+    out.push(...wrapFigure(state, { index, token, target }, numbered));
+    if (!target.gallery) {
+      index = target.end;
+    }
+  }
+  // 参照は、後ろで定義した図表も指せるよう、全ての図表に番号を付けた後で修正する
+  state.tokens = rewriteAllReferences(state, out, registry.figures);
 }
