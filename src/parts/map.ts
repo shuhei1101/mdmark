@@ -3,7 +3,7 @@ import type {
   MdmarkDiagramWire,
   MdmarkFlowDefinition,
 } from "../diagram/definition.ts";
-import type { MapLayout } from "../map/layout.ts";
+import { MAP_LAYOUT, type MapLayout } from "../map/layout.ts";
 import {
   SEQ_ARROW_STYLES,
   type Sequence,
@@ -986,7 +986,7 @@ export const MAP_ER = {
   aside: 32,
   /** 関連の端の、ノードの辺から外へ出す長さ（同じ辺から出る 2 本目からは step ずつ延ばす） */
   endOut: 14,
-  step: 6,
+  step: MAP_LAYOUT.clearance,
   /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
   crowd: 120,
   /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
@@ -996,6 +996,8 @@ export const MAP_ER = {
   cardinalityGap: 4,
   /** 行が増える関連のマーカーの、線からの離れ */
   fanoutGap: 22,
+  /** 行が増える関連のマーカーの一辺 */
+  fanoutSize: 24,
 } as const;
 
 /** テーブルのノードの大きさ（列を閉じたテーブルはテーブル名の行だけ） */
@@ -1214,20 +1216,54 @@ const longestInner = (points: Point[]): [Point, Point] => {
   return best;
 };
 
-/** 関連のラベルと行が増える関連のマーカーの置き場所（両端を除いた最も長い区間の中ほどの、線の両側） */
-const erMarkOf = (
-  points: Point[],
-): { label: Point; mark: Point; vertical: boolean } => {
+/** 関連のラベルの置き場所（両端を除いた最も長い区間の中ほどの、縦の区間なら右・横の区間なら上） */
+const erMarkOf = (points: Point[]): { label: Point; vertical: boolean } => {
   const [a, b] = longestInner(points);
   const vertical = a[0] === b[0];
   const mid: Point = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
   return {
     label: vertical ? [mid[0] + 8, mid[1] + 4] : [mid[0], mid[1] - 8],
-    mark: vertical
-      ? [mid[0] - MAP_ER.fanoutGap, mid[1]]
-      : [mid[0], mid[1] + MAP_ER.fanoutGap],
     vertical,
   };
+};
+
+/**
+ * 行が増える関連のマーカーの置き場所。両端を除いた区間を長い順に、ラベルの反対側 → ラベルの側の順に試し、
+ * どのノードの矩形（左右に空ける幅を含む）とも重ならない最初の置き場所にする。全て重なるときは最も長い区間のラベルの反対側
+ */
+const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
+  const inner = points.slice(1, -1);
+  const segments: Array<[Point, Point]> =
+    inner.length >= 2
+      ? inner.slice(0, -1).map((a, at) => [a, inner[at + 1] as Point])
+      : [[points[0] as Point, points[points.length - 1] as Point]];
+  segments.sort(
+    ([a, b], [c, d]) =>
+      Math.hypot(d[0] - c[0], d[1] - c[1]) -
+      Math.hypot(b[0] - a[0], b[1] - a[1]),
+  );
+  const half = MAP_ER.fanoutSize / 2;
+  const free = ([x, y]: Point) =>
+    nodes.every(
+      (node) =>
+        x + half <= node.x - MAP_ER.aside ||
+        node.x + node.w + MAP_ER.aside <= x - half ||
+        y + half <= node.y ||
+        node.y + node.h <= y - half,
+    );
+  const candidates = segments.flatMap(([a, b]): Point[] => {
+    const mid: Point = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    return a[0] === b[0]
+      ? [
+          [mid[0] - MAP_ER.fanoutGap, mid[1]],
+          [mid[0] + MAP_ER.fanoutGap, mid[1]],
+        ]
+      : [
+          [mid[0], mid[1] + MAP_ER.fanoutGap],
+          [mid[0], mid[1] - MAP_ER.fanoutGap],
+        ];
+  });
+  return candidates.find(free) ?? (candidates[0] as Point);
 };
 
 /** 関連の両端の多重度とラベルの SVG。文字は `data-wire-mark` に関連の ID を持ち、薄くする関連は `map-dim` */
@@ -1322,7 +1358,7 @@ export const renderMapErFanouts = (args: {
     .flatMap((fanout, index) => {
       const wire = args.layout.wires.find((item) => item.id === fanout.wire);
       if (!wire || wire.points.length < 2) return [];
-      const place = erMarkOf(wire.points as Point[]);
+      const mark = fanoutMarkOf(wire.points as Point[], args.layout.nodes);
       const owner = `fanout:${index}`;
       const tip = tips.add({
         kind: "wire",
@@ -1331,7 +1367,7 @@ export const renderMapErFanouts = (args: {
         owner,
       });
       return [
-        `<button class="map-er-fanout" type="button" style="left:${place.mark[0]}px;top:${place.mark[1]}px" aria-label="${escapeHtml(`${fanout.from} から ${fanout.to} で行が増える`)}" aria-describedby="${escapeHtml(tip)}" data-tip-owner="${escapeHtml(owner)}">×n</button>`,
+        `<button class="map-er-fanout" type="button" style="left:${mark[0]}px;top:${mark[1]}px" aria-label="${escapeHtml(`${fanout.from} から ${fanout.to} で行が増える`)}" aria-describedby="${escapeHtml(tip)}" data-tip-owner="${escapeHtml(owner)}">×n</button>`,
       ];
     })
     .join("");
