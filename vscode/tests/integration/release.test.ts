@@ -111,6 +111,14 @@ suite("拡張機能の配布物を作る", () => {
     );
     assert.ok(publish.includes("vscode/mdmark-"), publish);
     assert.ok(!publish.includes("--skip-duplicate"), publish);
+    // 拡張機能のビルドはリポジトリの直下の src/ を読み込むため、.vsix を作る前に直下の依存を入れる
+    const rootInstall = runs.findIndex((run) =>
+      run.split("\n").some((line) => line.trim() === "npm ci"),
+    );
+    const packaging = runs.findIndex((run) =>
+      run.includes("npm --prefix vscode run package"),
+    );
+    assert.ok(rootInstall !== -1 && rootInstall < packaging);
     const upload = runs.findIndex((run) => run.includes("gh release upload"));
     assert.ok(upload !== -1 && upload < runs.length - 1);
     assert.ok(!workflowText.includes("secrets."));
