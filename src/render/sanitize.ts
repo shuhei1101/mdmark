@@ -67,16 +67,24 @@ const SOURCE_LINE_PATTERN = /^\d+$/;
 const DATA_IMAGE_PATTERN =
   /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
 
+/** 画像の `data:` URL を持つ要素と属性 */
+const DATA_IMAGE_ATTRIBUTES: Readonly<Record<string, string>> = {
+  img: "src",
+  video: "poster",
+};
+
+/** 画像の構造でない `data:` URL か */
+const isForbiddenDataUrl = (url: string | undefined): boolean =>
+  url?.startsWith("data:") === true && !DATA_IMAGE_PATTERN.test(url);
+
 /** 許さない構造の `data:` URL を削除する: `img` の `src` と `video` の `poster` は画像の構造だけを残し、`video`・`audio` の `src` は削除する */
 function dropDataUrls(tagName: string, attribs: Record<string, string>): void {
-  const imageAttribute =
-    tagName === "img" ? "src" : tagName === "video" ? "poster" : undefined;
-  const imageUrl =
-    imageAttribute === undefined ? undefined : attribs[imageAttribute];
+  const imageAttribute = Object.hasOwn(DATA_IMAGE_ATTRIBUTES, tagName)
+    ? DATA_IMAGE_ATTRIBUTES[tagName]
+    : undefined;
   if (
     imageAttribute !== undefined &&
-    imageUrl?.startsWith("data:") &&
-    !DATA_IMAGE_PATTERN.test(imageUrl)
+    isForbiddenDataUrl(attribs[imageAttribute])
   ) {
     delete attribs[imageAttribute];
   }
@@ -97,6 +105,64 @@ function fixTabindex(
   return { tagName, attribs: next };
 }
 
+/** `pre`・`table` か（単語の `tabindex` と `aria-label` は mdmark が出した要素だけが持つ） */
+const isPreOrTable = (tagName: string): boolean =>
+  tagName === "pre" || tagName === "table";
+
+/** 名前ごとの、文書に記載した生の HTML に残す属性の判定 */
+const ATTRIBUTE_KEEPERS: Readonly<
+  Record<string, (tagName: string, value: string) => boolean>
+> = {
+  // 外部ライブラリのマーカーの場所の `status` だけを残す
+  role: (tagName, value) => tagName === "div" && value === "status",
+  "aria-label": isPreOrTable,
+  tabindex: isPreOrTable,
+  [SOURCE_LINE_ATTRIBUTE]: () => true,
+};
+
+/** 文書に記載した生の HTML から落とす、構造の属性 */
+const STRUCTURE_ATTRIBUTES = new Set([
+  "id",
+  "hidden",
+  "colspan",
+  "rowspan",
+  "scope",
+]);
+
+/** 文書に記載した生の HTML に残す `data-*` か */
+const keepsDataAttribute = (tagName: string, name: string): boolean =>
+  (tagName === "td" && name === "data-label") ||
+  (tagName === "div" &&
+    (name === "data-mdmark-slot" || name === "data-mdmark-args"));
+
+/** 文書に記載した生の HTML に残す、`data-*` でも名前ごとの判定でもない属性か */
+const keepsPlainAttribute = (tagName: string, name: string): boolean => {
+  if (tagName === "abbr" && name === "title") {
+    return false;
+  }
+  if (STRUCTURE_ATTRIBUTES.has(name) || name.startsWith("aria-")) {
+    return false;
+  }
+  // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときにもう一度付けた値）
+  return (
+    !DIAGRAM_ATTRIBUTE_SET.has(name) ||
+    (tagName === "input" && (name === "type" || name === "disabled"))
+  );
+};
+
+/** 文書に記載した生の HTML に残す属性か（class を除く） */
+function keepsAttribute(tagName: string, name: string, value: string): boolean {
+  const keeper = Object.hasOwn(ATTRIBUTE_KEEPERS, name)
+    ? ATTRIBUTE_KEEPERS[name]
+    : undefined;
+  if (keeper) {
+    return keeper(tagName, value);
+  }
+  return name.startsWith("data-")
+    ? keepsDataAttribute(tagName, name)
+    : keepsPlainAttribute(tagName, name);
+}
+
 /** 文書に記載した生の HTML から、記法の class・`data-*`・`id`・`role`・`aria-*` などを落とす */
 function dropSyntaxAttributes(
   tagName: string,
@@ -114,42 +180,7 @@ function dropSyntaxAttributes(
       if (classes.length) {
         next.class = classes.join(" ");
       }
-    } else if (name === "role") {
-      // 外部ライブラリのマーカーの場所の `status` だけを残す
-      if (tagName === "div" && value === "status") {
-        next[name] = value;
-      }
-    } else if (name === "aria-label") {
-      if (tagName === "pre" || tagName === "table") {
-        next[name] = value;
-      }
-    } else if (name === "tabindex") {
-      // 単語の `tabindex` は mdmark が出した要素だけが持つ
-      if (tagName === "pre" || tagName === "table") {
-        next[name] = value;
-      }
-    } else if (name === SOURCE_LINE_ATTRIBUTE) {
-      next[name] = value;
-    } else if (name.startsWith("data-")) {
-      const keep =
-        (tagName === "td" && name === "data-label") ||
-        (tagName === "div" &&
-          (name === "data-mdmark-slot" || name === "data-mdmark-args"));
-      if (keep) {
-        next[name] = value;
-      }
-    } else if (
-      !(tagName === "abbr" && name === "title") &&
-      name !== "id" &&
-      name !== "hidden" &&
-      name !== "colspan" &&
-      name !== "rowspan" &&
-      name !== "scope" &&
-      !name.startsWith("aria-") &&
-      // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときにもう一度付けた値）
-      (!DIAGRAM_ATTRIBUTE_SET.has(name) ||
-        (tagName === "input" && (name === "type" || name === "disabled")))
-    ) {
+    } else if (keepsAttribute(tagName, name, value)) {
       next[name] = value;
     }
   }
@@ -384,24 +415,40 @@ export function filterEmbeddedStyle(style: string): string {
   return kept.join(";");
 }
 
+/** mdmark が出した要素の、1 つの宣言だけを残す CSS 変数（画像の幅・ギャラリーの列の数・コードブロックの行番号の桁の数）。ほかの宣言を重ねたものと読み込めない値は、全て落とす */
+const OWN_STYLE_VARIABLES: ReadonlyArray<{
+  name: string;
+  pattern: RegExp;
+  format: (value: string) => string;
+}> = [
+  {
+    name: "--mdmark-image-width",
+    pattern: IMAGE_WIDTH_PATTERN,
+    format: (value) => `--mdmark-image-width: ${value}`,
+  },
+  {
+    name: "--mdmark-gallery-cols",
+    pattern: GALLERY_COLS_PATTERN,
+    format: (value) => `--mdmark-gallery-cols: ${value}`,
+  },
+  {
+    name: "--mdmark-code-digits",
+    pattern: CODE_DIGITS_PATTERN,
+    format: (value) => `--mdmark-code-digits:${value}`,
+  },
+];
+
 /** mdmark が出した要素の `style` に残す値: 図の部品の位置・大きさ・余白・倍率はそのまま、コードブロックの行番号の桁の数だけを持つものはその宣言、それ以外は埋め込んだ HTML の許した宣言だけ */
 function ownStyle(style: string): string {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
   }
-  // 画像の幅とギャラリーの列の数: ほかの宣言を重ねたものと読み込めない値は、全て落とす
-  if (style.includes("--mdmark-image-width")) {
-    const width = IMAGE_WIDTH_PATTERN.exec(style)?.[1];
-    return width === undefined ? "" : `--mdmark-image-width: ${width}`;
-  }
-  if (style.includes("--mdmark-gallery-cols")) {
-    const cols = GALLERY_COLS_PATTERN.exec(style)?.[1];
-    return cols === undefined ? "" : `--mdmark-gallery-cols: ${cols}`;
-  }
-  // コードブロックの行番号の桁の数: ほかの宣言を重ねたものは、全て落とす
-  if (style.includes("--mdmark-code-digits")) {
-    const digits = CODE_DIGITS_PATTERN.exec(style)?.[1];
-    return digits === undefined ? "" : `--mdmark-code-digits:${digits}`;
+  const variable = OWN_STYLE_VARIABLES.find((entry) =>
+    style.includes(entry.name),
+  );
+  if (variable) {
+    const value = variable.pattern.exec(style)?.[1];
+    return value === undefined ? "" : variable.format(value);
   }
   return filterEmbeddedStyle(style);
 }
@@ -482,15 +529,7 @@ export function sanitizeEmbedded(
     transformTags: {
       "*": (tagName, attribs) => {
         if (tagName === "input") {
-          // 入力欄は、無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ
-          const checkbox: Record<string, string> = {
-            type: "checkbox",
-            disabled: "",
-          };
-          if (attribs.checked !== undefined) {
-            checkbox.checked = "";
-          }
-          return { tagName, attribs: checkbox };
+          return { tagName, attribs: embeddedCheckbox(attribs) };
         }
         const next = { ...attribs };
         const style = filterEmbeddedStyle(attribs.style ?? "");
@@ -503,16 +542,8 @@ export function sanitizeEmbedded(
           next.type = "button";
         }
         delete next[KEEP_CLASS_ATTRIBUTE];
-        if (keepClasses && next.class !== undefined) {
-          const classes = next.class
-            .split(/\s+/)
-            .filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
-          if (classes.length > 0) {
-            next.class = classes.join(" ");
-            next[KEEP_CLASS_ATTRIBUTE] = "";
-          } else {
-            delete next.class;
-          }
+        if (keepClasses) {
+          keepAuthorClasses(next);
         }
         dropDataUrls(tagName, next);
         // 図の部品の要素は、記載したものを中身ごと落とす（`button` だけは残す）
@@ -525,6 +556,33 @@ export function sanitizeEmbedded(
   });
 }
 
+/** 入力欄は、無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ */
+function embeddedCheckbox(
+  attribs: Record<string, string>,
+): Record<string, string> {
+  const checkbox: Record<string, string> = { type: "checkbox", disabled: "" };
+  if (attribs.checked !== undefined) {
+    checkbox.checked = "";
+  }
+  return checkbox;
+}
+
+/** 記載した人の class を、記法の class を除いて残し、残したことを示す属性を付ける */
+function keepAuthorClasses(next: Record<string, string>): void {
+  if (next.class === undefined) {
+    return;
+  }
+  const classes = next.class
+    .split(/\s+/)
+    .filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
+  if (classes.length > 0) {
+    next.class = classes.join(" ");
+    next[KEEP_CLASS_ATTRIBUTE] = "";
+  } else {
+    delete next.class;
+  }
+}
+
 /** `SANITIZE_OPTIONS` の `allowedClasses` のとおり、要素 `tagName` が持ってよい class か */
 function isAllowedClass(tagName: string, name: string): boolean {
   const allowed = SANITIZE_OPTIONS.allowedClasses as Record<string, string[]>;
@@ -533,6 +591,48 @@ function isAllowedClass(tagName: string, name: string): boolean {
       pattern.endsWith("*")
         ? name.startsWith(pattern.slice(0, -1))
         : name === pattern,
+  );
+}
+
+/** class を `SANITIZE_OPTIONS` の `allowedClasses` のとおりに絞る（残らなければ class を削除する） */
+function filterClasses(next: Record<string, string>, tagName: string): void {
+  if (next.class === undefined) {
+    return;
+  }
+  const classes = next.class
+    .split(/\s+/)
+    .filter((name) => name !== "" && isAllowedClass(tagName, name));
+  if (classes.length > 0) {
+    next.class = classes.join(" ");
+  } else {
+    delete next.class;
+  }
+}
+
+/** 元の行番号は、誰が出した要素でも 0 以上の整数のときだけ残す */
+function dropInvalidSourceLine(next: Record<string, string>): void {
+  const line = next[SOURCE_LINE_ATTRIBUTE];
+  if (line !== undefined && !SOURCE_LINE_PATTERN.test(line)) {
+    delete next[SOURCE_LINE_ATTRIBUTE];
+  }
+}
+
+/** `style` の `text-align` の値を class に移す */
+function addAlignClass(next: Record<string, string>, style: string): void {
+  const align = TEXT_ALIGN_PATTERN.exec(style)?.[1];
+  if (align && ALIGN_VALUES.includes(align)) {
+    next.class = [next.class, `mdmark-align-${align}`]
+      .filter(Boolean)
+      .join(" ");
+  }
+}
+
+/** 図の部品・動画と音声・範囲の `style` と `template` の要素か（文書に記載したものは中身ごと取り除く） */
+function isDocumentOnlyTag(tagName: string): boolean {
+  return (
+    DIAGRAM_ONLY_TAGS.has(tagName) ||
+    MEDIA_TAGS.has(tagName) ||
+    RANGE_SCRIPT_TAGS.has(tagName)
   );
 }
 
@@ -552,46 +652,21 @@ export function sanitize(html: string, nonce: string): string {
         delete next[OWN_ATTRIBUTE];
         const keepClass = own && attribs[KEEP_CLASS_ATTRIBUTE] !== undefined;
         delete next[KEEP_CLASS_ATTRIBUTE];
-        if (!keepClass && next.class !== undefined) {
-          const classes = next.class
-            .split(/\s+/)
-            .filter((name) => name !== "" && isAllowedClass(tagName, name));
-          if (classes.length > 0) {
-            next.class = classes.join(" ");
-          } else {
-            delete next.class;
-          }
+        if (!keepClass) {
+          filterClasses(next, tagName);
         }
-        // 元の行番号は、誰が出した要素でも 0 以上の整数のときだけ残す
-        if (
-          next[SOURCE_LINE_ATTRIBUTE] !== undefined &&
-          !SOURCE_LINE_PATTERN.test(next[SOURCE_LINE_ATTRIBUTE])
-        ) {
-          delete next[SOURCE_LINE_ATTRIBUTE];
-        }
+        dropInvalidSourceLine(next);
         // `data:` URL は、画像の構造のものだけ残す
         dropDataUrls(tagName, next);
-        const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
-        if (align && ALIGN_VALUES.includes(align)) {
-          next.class = [next.class, `mdmark-align-${align}`]
-            .filter(Boolean)
-            .join(" ");
-        }
+        addAlignClass(next, attribs.style ?? "");
         // `style` は、mdmark が出した要素のものだけを残す: 図の部品の位置・大きさ・倍率か、埋め込んだ HTML の許した宣言
-        const style = attribs.style ?? "";
-        const kept = own ? ownStyle(style) : "";
+        const kept = own ? ownStyle(attribs.style ?? "") : "";
         if (kept === "") {
           delete next.style;
         } else {
           next.style = kept;
         }
-        // 図の部品・動画と音声・範囲の `style` と `template` の要素は、文書に記載したものを中身ごと取り除く
-        if (
-          !own &&
-          (DIAGRAM_ONLY_TAGS.has(tagName) ||
-            MEDIA_TAGS.has(tagName) ||
-            RANGE_SCRIPT_TAGS.has(tagName))
-        ) {
+        if (!own && isDocumentOnlyTag(tagName)) {
           next[DROP_ATTRIBUTE] = "1";
         }
         return { tagName, attribs: next };
