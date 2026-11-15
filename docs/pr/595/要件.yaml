@@ -134,3 +134,6 @@ scope_out:
   - item: '`docs/design-policy.md` と `docs/mock/` の記法を含む `index.md`（6 件）の拡張子の移行'
     reason: AI Monitor がこのパスを決め打ちで扱うため（判定フローチャート『モック要否』が `docs/design-policy.md` を名指しし、モックの配信がフォルダの索引として `index.html`・`index.md`・`README.md` だけを探す）。改名するとモックのフォルダの索引として配信されなくなる。#546 の扱いの判断は対象に含めたが、生成される `README.md` と同じく対象外にする
     plan: none
+  - item: '`docs/guide/README.md` と分類のトップのページの目次で、改名したページの表示名が `変更履歴.mark` のように `.mark` を含む'
+    reason: AI Monitor の `design_docs publish` が表示名を作るときに `.mark.md` の `.md` だけを落とす不具合。生成物のため手で修正せず、AI Monitor 側で修正した後に publish を実行し直す
+    plan: shuhei1101/ai-monitor#3498
