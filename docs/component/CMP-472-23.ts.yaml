@@ -80,3 +80,7 @@ refs:
 status: planned
 notes:
   HTML: '`<span class="mdmark-badge">{label}</span>`。色のバッジは `<span class="mdmark-badge" data-color="{color}">{label}</span>`。モックは `docs/mock/components/badge/`'
+tags:
+  - name: topic:バッジ
+    main: true
+  - name: topic:部品

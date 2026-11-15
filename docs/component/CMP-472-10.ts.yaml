@@ -84,3 +84,7 @@ refs:
 status: planned
 notes:
   HTML: '`<ul class="mdmark-card-grid"><li><a class="mdmark-card-grid-item" href="{href}">{icon}<span class="mdmark-card-grid-title">{title}</span><p class="mdmark-card-grid-desc">{description}</p></a></li>…</ul>`（リンクの無い項目は `a` の代わりに `div`）。列は `repeat(auto-fill, minmax(min(100%, 14rem), 1fr))`。モックは `docs/mock/components/card-grid/`（確認ログ）'
+tags:
+  - name: topic:カード
+    main: true
+  - name: topic:格子

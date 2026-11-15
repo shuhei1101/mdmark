@@ -120,3 +120,7 @@ status: planned
 notes:
   補足: 外観は確認ログの決定（面の色と左の余白の + / −、リストと表は項目・行の単位）。モックは `docs/mock/components/diff-blocks/` の案 A。対応テストファイルはテスト作成で `tests/integration/lib/diff-blocks.story.test.ts` を作った後に `test_file` へ記載する
 test_file: tests/integration/lib/diff-blocks.story.test.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:ブロック

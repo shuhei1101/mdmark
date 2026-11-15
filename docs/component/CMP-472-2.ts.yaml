@@ -74,3 +74,7 @@ refs:
 status: planned
 notes:
   HTML: '`<span class="mdmark-gif">{画像の図の拡大のボタンで包んだ img}<canvas aria-hidden="true" hidden></canvas><button class="mdmark-gif-toggle" type="button" aria-pressed="false" aria-label="GIF を停止" title="GIF を停止">{lucide の pause}</button></span>`。止め方は PoC 検証の案 A（止めると最初のフレームに戻る）。モックは `docs/mock/components/media/` の GIF の場面'
+tags:
+  - name: topic:gif
+    main: true
+  - name: topic:画像

@@ -74,3 +74,7 @@ refs:
 status: planned
 notes:
   HTML: '`<ol class="mdmark-steps" start="{start}"><li>{項目}</li></ol>`（`start` が 1 のときは属性を省く）。`collapse` が `closed`・`open` のときは `ol` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。モックは `docs/mock/components/steps/`'
+tags:
+  - name: topic:ステップ
+    main: true
+  - name: topic:部品

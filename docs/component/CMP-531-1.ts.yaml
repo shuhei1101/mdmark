@@ -135,3 +135,8 @@ refs:
   - IF-472-35#constraints[map の ER 図]
 status: planned
 test_file: tests/integration/lib/map-er.story.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:er図
+  - name: topic:図

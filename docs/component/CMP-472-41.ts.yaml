@@ -78,3 +78,7 @@ refs:
   - IF-472-34#constraints[範囲のスクリプトと CSS]
   - IF-472-35#constraints[範囲のスクリプト]
 test_file: tests/integration/lib/embedded-html.story.test.ts
+tags:
+  - name: tool:html
+    main: true
+  - name: action:埋め込み

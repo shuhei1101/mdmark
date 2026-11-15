@@ -70,3 +70,7 @@ notes:
   並べ方: フォルダの無い文書を先に `docs` の並びで配置し、続けてフォルダ（`path` の最後の `/` より前）ごとに、`docs` に最初に出た順で 1 階層の見出しにフォルダのパスを記載し、その下に `docs` の並びで文書を配置する。フォルダの入れ子はツリーにしない（確認ログの決定）
   書き出す HTML: '`<nav class="mdmark-doc-list" aria-label="文書の一覧"><div class="mdmark-doc-list-group"><p class="mdmark-doc-list-folder">{フォルダ}</p><ul><li><a href="#/{path}" data-doc-path="{path}">{title}</a></li></ul></div></nav>`。フォルダの無いまとまりは見出しを配置しない。モックは `docs/mock/components/doc-list/`'
 test_file: tests/integration/lib/doc-list.story.test.ts
+tags:
+  - name: topic:文書
+    main: true
+  - name: topic:一覧

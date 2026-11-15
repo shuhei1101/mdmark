@@ -128,3 +128,7 @@ refs:
 status: planned
 notes:
   HTML: '`<h{level} class="mdmark-heading" id="{id}"><button class="mdmark-section-toggle" type="button" aria-expanded="{open}" aria-controls="section-{id}">{title}</button><a class="mdmark-anchor" href="#{id}" aria-label="「{見出しの文字}」へのリンク"></a></h{level}><div class="mdmark-section-body" id="section-{id}" data-section="{open なら open、そうでなければ closed}">{中身}</div>`。`toggle` が `false` のときは `button` を配置せず見出しの文字をそのまま出す。モックは `docs/mock/components/section/`'
+tags:
+  - name: topic:セクション
+    main: true
+  - name: action:開閉

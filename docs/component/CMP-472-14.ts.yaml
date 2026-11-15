@@ -21,3 +21,7 @@ notes:
   HTML: '`<button class="mdmark-comment-add" type="button">{message-square-plus のアイコン}コメント</button>`。モックは `docs/mock/components/comment/`'
   印刷: 出さない
 test_file: tests/integration/lib/comment-button.story.test.ts
+tags:
+  - name: topic:コメント
+    main: true
+  - name: topic:ボタン

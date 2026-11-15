@@ -148,3 +148,7 @@ accessibility:
   - 注記だけを持つノード・グループのマーカーのボタンは `aria-label="「{名前}」の注記"`、説明と注記の両方を持つときは `aria-label="「{名前}」の説明と注記"` を持つ。注記だけを持つ線も、説明を持つ線と同じ押せる帯を持つ
 status: planned
 test_file: tests/integration/lib/diagram-tooltip.story.test.ts
+tags:
+  - name: topic:ツールチップ
+    main: true
+  - name: topic:図

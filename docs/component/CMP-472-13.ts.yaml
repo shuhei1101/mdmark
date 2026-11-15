@@ -114,3 +114,7 @@ css_properties:
     default: '#4d7c0f（ダーク #a3e635）'
     description: 6 つ目の系列の色（細かい破線 `3 2`・十字の点・横線の塗りの模様）。選べるテーマの値は `docs/mock/assets/themes/{テーマ名}.css`
 test_file: tests/integration/lib/chart.story.test.ts
+tags:
+  - name: topic:グラフ
+    main: true
+  - name: topic:図

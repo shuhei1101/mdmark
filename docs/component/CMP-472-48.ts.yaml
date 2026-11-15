@@ -60,3 +60,7 @@ refs:
 status: planned
 notes:
   HTML: '`<span class="mdmark-color" data-color="{color}">{text}</span>`。色と太字は確認ログの決定（案 A）。モックは `docs/mock/components/color-preset/`'
+tags:
+  - name: topic:色
+    main: true
+  - name: topic:文字

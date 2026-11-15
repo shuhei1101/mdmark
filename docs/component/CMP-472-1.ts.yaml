@@ -41,3 +41,7 @@ accessibility:
   - テーブル・列・関係のラベルの文字は選べ、スクリーンリーダーに出る。関係の線と多重度の記号の svg は `aria-hidden`
 status: planned
 test_file: tests/integration/lib/er-diagram.story.test.ts
+tags:
+  - name: topic:er図
+    main: true
+  - name: topic:図

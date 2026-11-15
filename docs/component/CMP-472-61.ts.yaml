@@ -1655,3 +1655,7 @@ notes:
     - 行の数が多い表は、先頭から 200 行（`MEASURE_ROWS`）までを測る
     - モックは `docs/mock/pages/document/505/a-auto-width/` と `docs/mock/refs/505/assets/table-width.js`
   階層の表: '`tree` の表は `<div class="mdmark-table" data-tree>` で、本文の行が `<tr class="mdmark-tree-row" data-path data-parent data-depth aria-selected>`（補った行は `is-virtual`、子を持つ行は `has-children`）。キーのセルは `<td class="mdmark-tree-key"><span class="mdmark-tree-cell">` に、深さの数の `mdmark-tree-guide`（選んだ範囲は `is-active`）・子を持つ行は `<button class="mdmark-tree-toggle" aria-expanded aria-label>`、持たない行は `mdmark-tree-spacer`・`<span class="mdmark-tree-name" tabindex="0">`・`mdmark-tree-array`・`mdmark-tree-required`・`<button class="mdmark-tree-copy" aria-label="全体のパスをコピー">` を並べる。型は `mdmark-type-badge`（`data-type`）か `mdmark-type-chip`、既定は `mdmark-tree-default`、絞り込みで該当した単語は `mark.mdmark-tree-hit`。見本を結んだ表は `<div class="mdmark-tree-bar"><button class="mdmark-tree-example-toggle" aria-expanded aria-controls>`と、`<div class="mdmark-tree-layout">`（隠したとき `is-example-hidden`）の中に表と `<aside class="mdmark-tree-example">` を配置し、見本の行は `<span class="mdmark-yaml-line" data-path>`（表で選んだ行と同じパスは `is-linked`）。モックは `docs/mock/components/table/` の `#state-303-*`。印刷では開閉・コピー・見本の表示の切り替えのボタンを出さない'
+tags:
+  - name: topic:テーブル
+    main: true
+  - name: topic:部品

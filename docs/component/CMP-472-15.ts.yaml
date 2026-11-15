@@ -65,3 +65,7 @@ notes:
   HTML: '`<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false" aria-describedby="mdmark-comment-hint">{text}</mark>`。モックは `docs/mock/components/comment/`'
   印刷: 地の色を削除し、下線だけを残す
 test_file: tests/integration/lib/comment-mark.story.test.ts
+tags:
+  - name: topic:コメント
+    main: true
+  - name: topic:マーカー

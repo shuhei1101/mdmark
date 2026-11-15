@@ -177,3 +177,7 @@ refs:
 status: planned
 notes:
   HTML: '`<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">記載の警告</p><p><code>{mark}</code>{message}</p><ul><li><code>{label}</code>: {message}</li></ul></div>`。呼び名は確認ログの決定（記載方法を誤った箇所に出す枠の呼び名）。モックは `docs/mock/components/syntax-warning/`'
+tags:
+  - name: topic:警告
+    main: true
+  - name: topic:構文

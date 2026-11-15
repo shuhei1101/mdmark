@@ -115,3 +115,8 @@ refs:
   - IF-472-35#constraints[map のアーキテクチャ図]
 status: planned
 test_file: tests/integration/lib/map-architecture.story.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:アーキテクチャ
+  - name: topic:図

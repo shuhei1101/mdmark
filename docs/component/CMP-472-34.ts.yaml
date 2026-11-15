@@ -77,3 +77,8 @@ aliases:
 notes:
   補足: '`<button class="mdmark-back-to-top" type="button" aria-label="先頭へ戻る" title="先頭へ戻る" hidden>{lucide の arrow-up-to-line のアイコン}</button>`。配置する位置（スクロールする場所の右下・ミニマップと余白の列を回避する位置）は `mount` がボタンの `--mdmark-back-to-top-right`・`--mdmark-back-to-top-bottom` に入れるため、ストーリーではなく `mount` の結合テストで確認する。ストーリーは配置場所を固定して描く。モックは `docs/mock/components/back-to-top/` と `docs/mock/refs/287/assets/back-to-top.js`'
 test_file: tests/integration/lib/back-to-top.story.test.ts
+tags:
+  - name: topic:先頭
+    main: true
+  - name: topic:ボタン
+  - name: topic:スクロール

@@ -42,3 +42,7 @@ refs:
 notes:
   出力: '`<div class="mdmark-embed" data-mdmark-slot="{name}" data-mdmark-args="{options の空白なしの JSON}" role="status">図を読み込んでいます</div>`。高さは 12rem。文言と高さは確認ログの決定（外部ライブラリを読み込んでいる間の見え方）。モックは `docs/mock/components/notice/` の「読み込み中」'
 test_file: tests/integration/lib/embed.story.test.ts
+tags:
+  - name: topic:読み込み
+    main: true
+  - name: topic:状態

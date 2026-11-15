@@ -186,3 +186,8 @@ refs:
   - IF-472-35#
 status: planned
 test_file: tests/integration/lib/map-flow.story.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:構成
+  - name: topic:図

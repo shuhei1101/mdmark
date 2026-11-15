@@ -43,3 +43,7 @@ refs:
 status: planned
 notes:
   HTML: '`<nav class="mdmark-toc" aria-label="目次"><p class="mdmark-toc-title">目次</p><ul><li><a href="#{id}">{text}</a><ul>…</ul></li></ul></nav>`。モックは `docs/mock/components/toc/`'
+tags:
+  - name: topic:目次
+    main: true
+  - name: topic:部品

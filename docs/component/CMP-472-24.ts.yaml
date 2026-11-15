@@ -68,3 +68,7 @@ status: planned
 refs:
   - IF-472-35#constraints[ヒントの操作]
 test_file: tests/integration/lib/hint.story.test.ts
+tags:
+  - name: topic:ヒント
+    main: true
+  - name: topic:ツールチップ

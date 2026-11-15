@@ -133,3 +133,7 @@ notes:
   番号の文字の大きさ: 本文の 0.75 倍の上付きにし、操作できる文字の下限の 11px を下回らない（`max(0.75em, 11px)`）
   狭い画面: 71rem 以下でスクリプトが位置を指していないときは、用語のツールチップと同じく、上下とも描く先の要素の左端から番号の直後に出す
   注記の出力: '`kind` が `annotation` のとき `<sup class="mdmark-fn-ref mdmark-note-ref[ is-after-ref]"><a class="mdmark-fn-link" id="mdmark-noteref-{number}-{refIndex}" href="#mdmark-note-{number}" …><span class="mdmark-visually-hidden">注記 </span>{number}</a><span class="mdmark-fn-tip" id="mdmark-note-tip-{number}-{refIndex}" …><span class="mdmark-fn-tip-title">注記 {number}</span>…</span></sup>`。「※」はリンクの `::before` で付け、タイトルには付けない。モックは `docs/mock/components/annotation/` の案 C（[確認ログ](../pr/562/確認ログ.yaml)）'
+tags:
+  - name: topic:脚注
+    main: true
+  - name: topic:番号

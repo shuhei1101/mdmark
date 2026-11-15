@@ -224,3 +224,7 @@ refs:
 status: planned
 notes:
   HTML: '`<figure class="mdmark-figure mdmark-image" data-align="{align}" style="--mdmark-image-width: {width}"><button class="mdmark-image-open" type="button" aria-label="画像を拡大: {alt}"><img src="{src}" alt="{alt}"><span class="mdmark-image-open-icon" aria-hidden="true">{lucide の maximize-2}</span></button><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。拡大のボタンは `mount` が付ける（`render` は `img` だけを出す）。モックは `docs/mock/components/figure/`'
+tags:
+  - name: topic:画像
+    main: true
+  - name: topic:図

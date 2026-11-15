@@ -294,3 +294,7 @@ notes:
   印刷: 印刷の CSS で破線・波線の下線とツールチップを削除し、単語を本文の文字として出す
   エイリアスの出力の構造: 区分 `mdmark-term-tip-section` に見出し `mdmark-term-tip-heading`、名前 `mdmark-term-tip-name`、説明 `mdmark-term-tip-meaning`（`id` は `{id}-meaning`）を配置する。`command` は `mdmark-term-tip-command` の中に `code` とコピーのボタン `button.mdmark-term-tip-copy`（`type="button"`・`data-state`）を並べ、`cwd` は `mdmark-term-tip-fields` にラベル `mdmark-term-tip-label`（「実行場所」）と値 `mdmark-term-tip-value` を配置し、スクリーンリーダーの `mdmark-visually-hidden mdmark-term-tip-status`（`role="status"`）を配置する。`url` は http・https なら `a.mdmark-term-tip-link`、ほかは `span.mdmark-term-tip-link` で URL の文字を 1 行に収め、あふれる分を「...」で省略する。`skill`・`tool`・`path` は値を `code.mdmark-term-tip-code` の 1 行で出す
 test_file: tests/integration/lib/term-tip.story.test.ts
+tags:
+  - name: topic:用語
+    main: true
+  - name: topic:ツールチップ

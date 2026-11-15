@@ -50,3 +50,7 @@ refs:
 status: planned
 notes:
   HTML: '`<span class="mdmark-inline-icon" data-icon="{name}" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24">…</svg></span>`（`node` が無いときは中を空にする）。モックは `docs/mock/components/icon/`'
+tags:
+  - name: topic:アイコン
+    main: true
+  - name: topic:部品

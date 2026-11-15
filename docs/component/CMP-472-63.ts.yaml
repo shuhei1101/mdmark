@@ -97,3 +97,8 @@ notes:
   使用する部品: shadcn/ui の `Alert`（`warning` の variant）・`Button`（`outline`）
   配置場所: プレビューの状態の表示と同じく `shared/components/` に配置し、ストーリーの `title` は `VSCode/ConfigBand` のまま。描いた文書の要素は React の外の DOM のため、帯は文書を子に持たず、画面が帯と文書の要素を並べる
 test_file: tests/integration/vscode/config-band.story.test.ts
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:警告
+  - name: tool:vscode

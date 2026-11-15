@@ -58,3 +58,7 @@ notes:
   帯の本数: スクロール先のスクロールごとに 1 本だけ配置し、同じスクロール先で開いている差分が 2 つ以上あれば、そのマーカーをまとめて写す。最後の差分を閉じたら帯を削除する（計画書のミニマップの行・レビューの引き継ぎ）
   モック: '`docs/mock/components/diff-lines/` の「ミニマップ（長い文書）」'
 test_file: tests/integration/lib/diff-minimap.story.test.ts
+tags:
+  - name: topic:ミニマップ
+    main: true
+  - name: topic:差分

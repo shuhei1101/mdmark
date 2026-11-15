@@ -56,3 +56,7 @@ status: planned
 notes:
   モック: '`docs/mock/components/diff-lines/`。色の値は `docs/mock/assets/style.css` の `--mdmark-color-diff-*`'
 test_file: tests/integration/lib/diff-lines.story.test.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:行

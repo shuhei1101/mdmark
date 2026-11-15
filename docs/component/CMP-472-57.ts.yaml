@@ -102,3 +102,7 @@ notes:
   出力の構造: '`<details class="mdmark-footnotes"><summary>脚注（{件数} 件）</summary><ol class="mdmark-footnotes-list"><li class="mdmark-fn-item" id="mdmark-fn-{number}">{html の最後の p の末尾に <a class="mdmark-fn-back" href="#mdmark-fnref-{number}-{i}" aria-label="…">{lucide の corner-up-left}{a・b}</a>}</li>…</ol></details>`。見出しの文言と配置場所は確認ログの決定。モックは `docs/mock/components/footnote/`'
   印刷: 印刷では `mount` が一覧を開き、戻るリンクと `summary` の開閉のマーカーを出さない
   注記の一覧: '`kind` が `annotation` のとき `<details class="mdmark-footnotes mdmark-notes"><summary>注記（{件数} 件）</summary><ol class="mdmark-footnotes-list"><li class="mdmark-fn-item" id="mdmark-note-{number}">…</li>…</ol></details>`。脚注の一覧と分けて並べることは確認ログの決定（案 A）。モックは `docs/mock/components/annotation/`'
+tags:
+  - name: topic:脚注
+    main: true
+  - name: topic:一覧

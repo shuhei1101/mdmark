@@ -70,3 +70,8 @@ status: planned
 notes:
   モック: '`docs/mock/components/diff-html-switch/`'
 test_file: tests/integration/lib/diff-html.story.test.ts
+tags:
+  - name: tool:html
+    main: true
+  - name: action:埋め込み
+  - name: topic:差分
