@@ -3,23 +3,52 @@ docs:
   - page: docs/layout/LAY-472-1.yaml
     new: true
     change: テンプレート『フォルダ構成』（knowledge の template-layout）の書式で、リポジトリの直下からの全てのフォルダとファイルを entries[] の入れ子で記載し、生成物・複製は generated_from、Git で管理しないものは gitignore[]、中身の種類は content_types で記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T02:48:27.499816+00:00'
   - page: docs/layout/index.yaml
     new: true
     change: フォルダ構成の目次を新設し、LAY-472-1.yaml の行を置く
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T02:48:27.499816+00:00'
   - page: dev-docs.yaml
     new: false
     change: 'documents に layout の行（paths: docs/layout/*.yaml・schema は knowledge の schemas/design/layout.schema.yaml）を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T02:48:27.499816+00:00'
   - page: docs/index.yaml
     new: false
     change: items に layout/ の行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T02:48:27.499816+00:00'
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: ビルド・生成の分類に、目次の原本（index.yaml）から README.md を生成するコマンドを追加する（フォルダ構成の設計書の README.md の generated_from.command で指す）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T02:48:27.499816+00:00'
 scope_out:
-  - item: レビューの観点で見つかった問題への対処（ファイルの移動・削除・.gitignore の変更）
-    reason: Issue の「やりたいこと」で別の Issue で対処すると決まっている。問題ごとに起票する
-    plan: to_file
   - item: Issue に挙がった plugin/guide/docs/（docs/ の複製）と tmp/screenshots/ の除去
     reason: develop では既に Git から消えている（tmp/ は中身が * の .gitignore だけ。#454 で対処済み）ため、設計書の gitignore[] への記載だけにとどめる
     plan: none
+  - item: src/ が層で分かれ、同じ機能のコードが複数のフォルダに散る（観点「機能で分ける」「同じ種類が散る」）
+    reason: レビューの観点で見つかった問題への対処は、Issue の「やりたいこと」で別の Issue で対処すると決まっている
+    plan: '#583'
+  - item: VS Code 拡張機能のテストが 3 か所に散る（観点「同じ種類が散る」）
+    reason: レビューの観点で見つかった問題への対処は、Issue の「やりたいこと」で別の Issue で対処すると決まっている
+    plan: '#581'
+  - item: schemas/ に利用者が記載する JSON Schema と設計書の検査のスキーマの複製が混ざる（観点「種類が混ざる」「管理しないもの」）
+    reason: レビューの観点で見つかった問題への対処は、Issue の「やりたいこと」で別の Issue で対処すると決まっている
+    plan: '#584'
+  - item: docs/_theme/ の取り込み元のバージョンの記録と中身が食い違う（観点「管理しないもの」）
+    reason: レビューの観点で見つかった問題への対処は、Issue の「やりたいこと」で別の Issue で対処すると決まっている
+    plan: '#586'
+  - item: リポジトリ直下の guide/ が中身 1 つだけのフォルダ（観点「切りすぎない」）
+    reason: レビューの観点で見つかった問題への対処は、Issue の「やりたいこと」で別の Issue で対処すると決まっている
+    plan: '#582'
+  - item: CHANGELOG.md の変更履歴へのリンクが存在しない docs/はじめに/変更履歴.md を指す
+    reason: リンク切れ（対象外の不具合）で、今回の要望に含まれない
+    plan: '#585'

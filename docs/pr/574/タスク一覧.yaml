@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T23:09:37.973929+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/layout/ にフォルダ構成の設計書と目次を新設し、dev-docs.yaml の documents に layout の行、docs/index.yaml に目次の行を追加する。レビューの観点で見つかった問題は別の Issue に起票する
+    updated_by: planner
+    updated_at: '2026-11-15T02:48:31.710923+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えないため対象外
