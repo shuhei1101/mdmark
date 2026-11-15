@@ -9,6 +9,7 @@ import {
 import {
   attachMapFlow,
   type MapFlowHandle,
+  neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
 import type { MapArgs } from "./spec.ts";
@@ -50,19 +51,8 @@ export const attachMapClass = (
       selectable: (id) => classIds.has(id),
       selectionOf: (selected) => {
         const picked = [...selected].filter((id) => classIds.has(id));
-        if (picked.length === 1) {
-          const only = picked[0] as string;
-          const near = relations.filter(
-            (edge) => edge.from === only || edge.to === only,
-          );
-          return {
-            nodes: new Set([
-              only,
-              ...near.flatMap((edge) => [edge.from, edge.to]),
-            ]),
-            wires: new Set(near.map((edge) => edge.id)),
-          };
-        }
+        if (picked.length === 1)
+          return neighborKept(relations, picked[0] as string);
         if (picked.length !== 2) return undefined;
         return shortestPathKept(relations, [
           picked[0] as string,

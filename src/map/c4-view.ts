@@ -4,6 +4,7 @@ import { c4ToFlowchart, MAP_C4_KINDS, parseC4Context } from "./c4.ts";
 import {
   attachMapFlow,
   type MapFlowHandle,
+  neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
 import type { MapArgs } from "./spec.ts";
@@ -57,6 +58,8 @@ export const attachMapC4 = (
         }),
       selectionOf: (selected) => {
         const picked = [...selected];
+        if (picked.length === 1)
+          return neighborKept(chart.edges, picked[0] as string);
         if (picked.length !== 2) return undefined;
         return shortestPathKept(chart.edges, [
           picked[0] as string,

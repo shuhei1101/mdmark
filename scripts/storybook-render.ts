@@ -40,7 +40,7 @@ import {
   erToFlowchart,
   parseErDiagram,
 } from "../src/map/er.ts";
-import { shortestPathKept } from "../src/map/flow-view.ts";
+import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap } from "../src/map/layout.ts";
 import { parseSequence } from "../src/map/sequence.ts";
@@ -1229,6 +1229,12 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         entry.ends === undefined ? [] : [[id, entry.ends]],
       ),
     );
+    const selected = jsonList(args.selected);
+    // 1 つの service を選んだときは、線と相手を残す（mount の attachMapArchitecture の選び方）
+    const near =
+      selected.length === 1
+        ? neighborKept(chart.edges, selected[0] as string)
+        : undefined;
     const layout = {
       ...placed,
       wires: rewireMapArchitecture({
@@ -1245,11 +1251,15 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       notes: noteTexts(data.notes),
       collapsed,
       entered,
-      selected: jsonList(args.selected),
+      selected,
       focus: undefined,
       packets: [],
       dragging: undefined,
       id: "story-map-architecture",
+      keep:
+        near === undefined
+          ? undefined
+          : { nodes: [...near.nodes], wires: [...near.wires] },
       collapsedTag: (group) =>
         `service ${diagram.services.filter((item) => item.parent === group && !item.junction).length} 件`,
       groupIcons: Object.fromEntries(

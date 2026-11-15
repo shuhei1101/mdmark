@@ -10,6 +10,7 @@ import { parseMapData } from "./data.ts";
 import {
   attachMapFlow,
   type MapFlowHandle,
+  neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
 import type { MapArgs } from "./spec.ts";
@@ -93,6 +94,8 @@ export const attachMapArchitecture = (
       selectable: (id) => services.has(id),
       selectionOf: (selected) => {
         const picked = [...selected].filter((id) => services.has(id));
+        if (picked.length === 1)
+          return neighborKept(chart.edges, picked[0] as string);
         if (picked.length !== 2) return undefined;
         return shortestPathKept(chart.edges, [
           picked[0] as string,

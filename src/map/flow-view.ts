@@ -102,6 +102,18 @@ export type MapFlowExtension = {
   selectable?: ((id: string) => boolean) | undefined;
 };
 
+/** 1 つのノードと、そのノードの線と相手のノード */
+export const neighborKept = (
+  edges: Array<{ id: string; from: string; to: string }>,
+  id: string,
+): { nodes: Set<string>; wires: Set<string> } => {
+  const near = edges.filter((edge) => edge.from === id || edge.to === id);
+  return {
+    nodes: new Set([id, ...near.flatMap((edge) => [edge.from, edge.to])]),
+    wires: new Set(near.map((edge) => edge.id)),
+  };
+};
+
 /** 2 つのノードをつなぐ最短の経路に乗る全てのノードと線（つながらなければ 2 つのノードだけ） */
 export const shortestPathKept = (
   edges: Array<{ id: string; from: string; to: string }>,
@@ -411,7 +423,9 @@ const dragStartOf = (
   const target = event.target instanceof Element ? event.target : undefined;
   if (
     !target ||
-    target.closest("button, .mdmark-diagram-node-name, .map-er-columns")
+    target.closest(
+      "button, .mdmark-diagram-node-name, .map-er-columns, .map-class-members",
+    )
   )
     return undefined;
   const node = target.closest("[data-node]")?.getAttribute("data-node");
