@@ -122,6 +122,25 @@ export default defineConfig({
           },
         },
       },
+      {
+        // タッチの操作を確かめるテストだけを、タッチの点があるブラウザのコンテキストで動かす（CDP のタッチの代役は、外した後も同じページに (hover: none)・(pointer: none) を残す）
+        server: { fs: { allow: [tmpdir(), "."] } },
+        plugins: [fixturesPlugin()],
+        test: {
+          name: "integration-browser-touch",
+          include: ["tests/integration/lib/mount.browser.test.ts"],
+          globalSetup: ["tests/integration/global-setup.ts"],
+          setupFiles: ["tests/integration/touch-setup.ts"],
+          maxWorkers: INTEGRATION_MAX_WORKERS,
+          sequence: { groupOrder: INTEGRATION_GROUP_ORDER },
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright({ contextOptions: { hasTouch: true } }),
+            instances: [{ browser: "chromium" }],
+          },
+        },
+      },
     ],
   },
 });
