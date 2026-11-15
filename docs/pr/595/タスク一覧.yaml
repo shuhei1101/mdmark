@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T09:16:32.605218+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: SC-472-15・SC-472-85 の `guide/index.yaml`・`docs/guide/*.md` のパスを移した後のパスへ合わせる。移す範囲・ガイドの索引の移し先・公開 URL が変わる扱いをこの工程で決める
+    updated_by: planner
+    updated_at: '2026-11-15T09:28:38.740341+00:00'
   - process: モック作成
     status: skipped
     reason: 画面を変えないため対象外（判定フローチャート『モック要否』）

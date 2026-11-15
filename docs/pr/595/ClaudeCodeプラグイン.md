@@ -18,10 +18,16 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| ガイドの索引の置き場所 | `guide/index.yaml` と `guide/files.yaml` を `要件.md` の `未確定` で決めた移し先へ移し、直下の `guide/` を削除する | `未確定` |
+| ガイドの索引の置き場所 | `guide/index.yaml` を `plugin/guide-index.yaml` へ移し、`guide/files.yaml` の行を `plugin/files.yaml` へ移して、直下の `guide/` を削除する | 案と判定は `要件.md` |
 | ガイドの索引の `page` | 改名したガイドのページの `page` を `.mark.md` へ合わせる。ビルドの検査（指すページの有無）が通ることを確認する | - |
 | ビルドの読み込み先 | `GUIDE_SOURCE` を移し先のパスにし、テストの一時フォルダの配置とエラーの文のパスを合わせる | - |
-| 配信元の行 | `dev-docs.yaml` の `id: guide` の `paths` を移し先の管理用の YAML にし、`description` が指すガイドのページのパスを合わせる | - |
+| 配信元の行 | `dev-docs.yaml` の `id: guide` の行を削除し（`id: plugin` の行が `plugin/files.yaml` を配信する）、`description` が指すガイドのページのパスを合わせる | - |
+
+## 設計書の確定コミット
+
+| 工程 | 範囲 | 補足 |
+| --- | --- | --- |
+| 単一ユースケース設計 | `ab346d56..c9f7be6b` | - |
 
 ## テスト結果
 

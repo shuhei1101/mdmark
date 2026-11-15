@@ -34,15 +34,15 @@ docs:
     status: todo
   - page: guide/index.yaml
     new: false
-    change: 各行の `page` を改名したページへ合わせ、索引を設計で決めた置き場所へ移す（`guide/` を削除する）
+    change: '`plugin/guide-index.yaml` へ移し、各行の `page` を改名したページへ合わせる（直下の `guide/` を削除する）'
     status: todo
   - page: guide/files.yaml
     new: false
-    change: 索引の移し先の管理用の YAML へ行を移す
+    change: '`index.yaml` の行を `plugin/files.yaml` へ `guide-index.yaml` の行として移し、ファイルを削除する'
     status: todo
   - page: dev-docs.yaml
     new: false
-    change: '`id: guide` の `paths` を索引の移し先の管理用の YAML へ合わせ、`description` が指すガイドのページのパスを改名したパスへ合わせる'
+    change: '`id: guide` の行を削除し（`id: plugin` の行が `plugin/files.yaml` を配信する）、`description` が指すガイドのページのパスを合わせる'
     status: todo
   - page: docs/er/ER-472-4.yaml
     new: false
@@ -67,6 +67,10 @@ docs:
   - page: docs/guide/index.yaml
     new: false
     change: 改名したガイドのページの `items[].page` を `.mark.md` へ合わせる
+    status: todo
+  - page: plugin/files.yaml
+    new: false
+    change: '`guide-index.yaml` の行を足す（`guide/files.yaml` の `index.yaml` の行を移す）'
     status: todo
 scope_out:
   - item: AI Monitor の設計書の Markdown の生成が出力する `docs/README.md`・設計書のフォルダの `README.md`・`docs/guide/README.md` の拡張子の移行
