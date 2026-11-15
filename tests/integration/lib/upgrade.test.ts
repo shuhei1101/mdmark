@@ -724,7 +724,10 @@ test("test_normal_when_retired_diagrams_migrated", async () => {
       "utf8",
     );
   }
-  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.mark.md": CHANGELOG });
+  await setMigrations(pkg, {
+    ...files,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
+  });
   const dir = await createWork();
   const unreadable = [
     "# B",
@@ -865,7 +868,10 @@ test("test_normal_when_document_marks_migrated", async () => {
       "utf8",
     );
   }
-  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.mark.md": CHANGELOG });
+  await setMigrations(pkg, {
+    ...files,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
+  });
   const dir = await createWork(
     `${OLD_CONFIG}extensions: [extensions/greet.js]\nlibraries:\n  test-lib: lib/test-lib.js\n`,
   );
