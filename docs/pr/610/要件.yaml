@@ -142,5 +142,5 @@ scope_out:
     reason: 'map は click のリンク先を http・https・mailto と相対パスに限り、id: を受け付けない（ノードはリンクにせずに描く）。knowledge の Schema は click で単一ユースケースへリンクするよう求めるため、直すのは map の側で、今回の変更がマージされなくても成り立つ'
     plan: '#611'
   - item: ブラウザの単体テストのファイルを持つモジュール構成 5 件の test_files
-    reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が 3 件のモジュールで『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
+    reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が 4 件のモジュール（MOD-472-161・162・203・246）で『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
     plan: to_file
