@@ -10580,6 +10580,9 @@
     font-size: 12px;
     overflow-wrap: anywhere;
   }
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-c4-external {
+    background: var(--mdmark-color-accent-gray-bg);
+  }
   .mdmark-diagram[data-diagram="map"] .map-group.map-c4-boundary {
     border-style: dashed;
     background: transparent;

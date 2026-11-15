@@ -1,3 +1,4 @@
+import { mapC4BoundaryTitle, mapClosedGroupSize } from "../parts/map.ts";
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
@@ -27,7 +28,7 @@ export type C4Element = {
 };
 
 /** 関係の向きの指定 */
-export type C4Direction = "up" | "down" | "left" | "right";
+export type C4Direction = "up" | "down" | "left" | "right" | "back";
 
 /** 関係（`id` は記載順の `r{番号}`） */
 export type C4Relation = {
@@ -139,6 +140,7 @@ const DIRECTIONS: Record<string, C4Direction> = {
   Left: "left",
   R: "right",
   Right: "right",
+  Back: "back",
 };
 
 const CALL_RE = /^(\w+)\((.*)\)\s*(\{)?$/;
@@ -274,7 +276,11 @@ export const parseC4Context = (source: string): C4Diagram => {
 /** 要素をノード、境界をグループ、関係を線にした上から下の構成図の入力と、段と並びの上書き */
 export const c4ToFlowchart = (
   diagram: C4Diagram,
-): { chart: Flowchart; overrides: Record<string, MapOverride> } => {
+): {
+  chart: Flowchart;
+  overrides: Record<string, MapOverride>;
+  reversed: string[];
+} => {
   const nodes: FlowNode[] = diagram.elements.map((element) => ({
     id: element.id,
     label: element.label,
@@ -294,6 +300,21 @@ export const c4ToFlowchart = (
       { size: elementSize(element) },
     ]),
   );
+  // 閉じた境界のノードは、種類を含むタイトルと「{数} 件」が収まる大きさにする
+  for (const boundary of diagram.boundaries)
+    overrides[boundary.id] = {
+      size: mapClosedGroupSize(
+        mapC4BoundaryTitle(boundary.label, boundary.kind),
+      ),
+    };
+  // 矢じりを線の元の側に描く線（`Rel_U` は段のために元と先を入れ替え、`Rel_Back` は元へ向ける）
+  const reversed = diagram.relations
+    .filter(
+      (relation) =>
+        !relation.both &&
+        (relation.direction === "up" || relation.direction === "back"),
+    )
+    .map((relation) => relation.id);
   let order = 0;
   const edges: FlowEdge[] = diagram.relations.map((relation) => {
     const sideways =
@@ -343,5 +364,6 @@ export const c4ToFlowchart = (
       problems: diagram.problems,
     },
     overrides,
+    reversed,
   };
 };

@@ -1,4 +1,8 @@
-import { MAP_ARCH, type MapArchEdge } from "../parts/map.ts";
+import {
+  MAP_ARCH,
+  type MapArchEdge,
+  mapClosedGroupSize,
+} from "../parts/map.ts";
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
@@ -224,7 +228,13 @@ export const architectureToFlowchart = (
     parent: group.parent,
     direction: undefined,
   }));
-  const overrides: Record<string, MapOverride> = {};
+  // 閉じた group のノードは、アイコン・タイトル・「service {数} 件」が収まる大きさにする
+  const overrides: Record<string, MapOverride> = Object.fromEntries(
+    diagram.groups.map((group) => [
+      group.id,
+      { size: mapClosedGroupSize(`${group.title}　`) },
+    ]),
+  );
   for (const service of diagram.services)
     if (service.junction)
       overrides[service.id] = {

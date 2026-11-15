@@ -2,6 +2,7 @@ import {
   type MapClassEnd,
   type MapClassNode,
   mapClassNodeSize,
+  mapClosedGroupSize,
 } from "../parts/map.ts";
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
@@ -384,6 +385,9 @@ export const classPartInputs = (
       }),
     };
   }
+  // 閉じた namespace のノードは、タイトルと「クラス {数} 件」が収まる大きさにする
+  for (const space of diagram.namespaces)
+    overrides[space] = { size: mapClosedGroupSize(space) };
   const ends: MapClassEnd[] = diagram.relations.flatMap((relation) =>
     (
       [

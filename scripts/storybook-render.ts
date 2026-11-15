@@ -1258,7 +1258,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const { data } = parseMapData(MAP_C4_DATA);
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
-    const { chart, overrides } = c4ToFlowchart(diagram);
+    const { chart, overrides, reversed } = c4ToFlowchart(diagram);
     const placed = layoutMap(
       chart,
       { collapsed, entered },
@@ -1285,6 +1285,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       boundaries: Object.fromEntries(
         diagram.boundaries.map((item) => [item.id, item.kind]),
       ),
+      externals: diagram.elements
+        .filter((item) => item.external)
+        .map((item) => item.id),
+      reversed,
     });
     return mapFrame(diagram.title ?? "", part, layout);
   },

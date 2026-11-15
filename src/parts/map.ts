@@ -2727,8 +2727,8 @@ const sideAnchor = (
 
 /** 辺から外へ出た 2 点を直角につなぐ点（左右どうしは中ほどの縦、上下どうしは中ほどの横、組なら 1 回だけ折れる） */
 const elbow = (
-  a: { out: Point; side: MapSide },
-  b: { out: Point; side: MapSide },
+  a: { out: Point; side: MapSide; rect: Rect },
+  b: { out: Point; side: MapSide; rect: Rect },
 ): Point[] => {
   const horizontal = (side: MapSide) => side === "left" || side === "right";
   const [ax, ay] = a.out;
@@ -2748,8 +2748,39 @@ const elbow = (
       [bx, my],
     ];
   }
-  return horizontal(a.side) ? [[bx, ay]] : [[ax, by]];
+  // 左右と上下の組は、折れる点の 2 つの候補のうち、両端の矩形の中を通らない方にする
+  const candidates: Point[] = horizontal(a.side)
+    ? [
+        [bx, ay],
+        [ax, by],
+      ]
+    : [
+        [ax, by],
+        [bx, ay],
+      ];
+  const clear = (corner: Point) =>
+    [a.rect, b.rect].every(
+      (rect) =>
+        !segmentInside([a.out, corner], rect) &&
+        !segmentInside([corner, b.out], rect),
+    );
+  return [candidates.find(clear) ?? (candidates[0] as Point)];
 };
+
+/** 縦か横の区間が、矩形の内側（辺を除く）を通るか */
+const segmentInside = ([p, q]: [Point, Point], rect: Rect): boolean => {
+  const [left, right] = [Math.min(p[0], q[0]), Math.max(p[0], q[0])];
+  const [top, bottom] = [Math.min(p[1], q[1]), Math.max(p[1], q[1])];
+  return (
+    left < rect.x + rect.w &&
+    right > rect.x &&
+    top < rect.y + rect.h &&
+    bottom > rect.y
+  );
+};
+
+/** 矩形 */
+type Rect = { x: number; y: number; w: number; h: number };
 
 /** 線の元と先の辺と、group の枠を端にするか（補足の `ends` を Mermaid の辺の指定より優先する）。元の線が無ければ `undefined` */
 const archWireSides = (
@@ -2815,8 +2846,8 @@ export const rewireMapArchitecture = (args: {
         a.at,
         a.out,
         ...elbow(
-          { out: a.out, side: sides.from.side },
-          { out: b.out, side: sides.to.side },
+          { out: a.out, side: sides.from.side, rect: fromRect },
+          { out: b.out, side: sides.to.side, rect: toRect },
         ),
         b.out,
         b.at,
@@ -2886,6 +2917,20 @@ export const renderMapArchitecture = (args: MapArchArgs): MapPart => {
   return { html, tips: flow.tips };
 };
 
+/** 閉じたグループのノードの大きさの見積もり（開閉のボタン・タイトル・「{数} 件」の 2 行が収まる大きさ） */
+export const mapClosedGroupSize = (
+  title: string,
+): { w: number; h: number } => ({
+  w: Math.min(360, Math.max(160, title.length * 14 + 72)),
+  h: 76,
+});
+
+/** C4 図の境界のタイトル（名前の後ろに種類） */
+export const mapC4BoundaryTitle = (
+  title: string,
+  kind: keyof typeof C4_BOUNDARY_NAMES,
+): string => `${title}${C4_BOUNDARY_NAMES[kind]}`;
+
 /** 境界の種類ごとの、タイトルの後ろの文字 */
 const C4_BOUNDARY_NAMES = {
   enterprise: "［Enterprise］",
@@ -2899,25 +2944,41 @@ export type MapC4Args = MapFlowArgs & {
   descriptions: Record<string, string>;
   /** 境界の ID ごとの種類 */
   boundaries: Record<string, keyof typeof C4_BOUNDARY_NAMES>;
+  /** 外部の要素（`_Ext`）の ID。灰色の面で描く */
+  externals: string[];
+  /** 矢じりを線の元の側に描く線の ID（`Rel_U`・`Rel_Back`） */
+  reversed: string[];
 };
 
 /** 部品『mapのC4図』の HTML。要素の名前の下に説明を入れ、境界を破線の枠にしてタイトルの後ろに種類を付ける */
 export const renderMapC4Diagram = (args: MapC4Args): MapPart => {
+  // 説明の中の用語は、名前と同じ下線とツールチップにする
+  const marker = termMarker(args.terms, `${args.id ?? "map"}-c4`);
   const nodeParts: Record<string, MapNodePart> = {};
   for (const [id, text] of Object.entries(args.descriptions)) {
     if (text === "") continue;
     nodeParts[id] = {
       head: "",
-      body: `<p class="map-c4-description">${escapeHtml(text)}</p>`,
+      body: `<p class="map-c4-description">${marker.render(text)}</p>`,
       tips: "",
     };
   }
+  const reversed = new Set(args.reversed);
   const layout = {
     ...args.layout,
     groups: args.layout.groups.map((group) => ({
       ...group,
-      title: `${group.title}${C4_BOUNDARY_NAMES[args.boundaries[group.id] ?? "boundary"]}`,
+      title: mapC4BoundaryTitle(
+        group.title,
+        args.boundaries[group.id] ?? "boundary",
+      ),
     })),
+    // 矢じりを元の側に描く線は、点の並びを逆にして終点の矢じりで描く
+    wires: args.layout.wires.map((wire) =>
+      reversed.has(wire.id)
+        ? { ...wire, points: [...wire.points].reverse() }
+        : wire,
+    ),
   };
   const flow = renderMapFlow({ ...args, layout, nodeParts });
   let html = flow.html;
@@ -2926,5 +2987,11 @@ export const renderMapC4Diagram = (args: MapC4Args): MapPart => {
       new RegExp(`class="(map-group[^"]*)"( data-group="${regExpValue(id)}")`),
       'class="$1 map-c4-boundary"$2',
     );
-  return { html, tips: flow.tips };
+  for (const id of args.externals)
+    html = addClass(html, {
+      attribute: "data-node",
+      id,
+      name: "map-c4-external",
+    });
+  return { html, tips: `${flow.tips}${marker.tips.html()}` };
 };

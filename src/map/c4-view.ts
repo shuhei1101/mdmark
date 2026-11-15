@@ -17,7 +17,10 @@ export const attachMapC4 = (
   const diagram = parseC4Context(
     range.querySelector("code")?.textContent ?? "",
   );
-  const { chart, overrides } = c4ToFlowchart(diagram);
+  const { chart, overrides, reversed } = c4ToFlowchart(diagram);
+  const externals = diagram.elements
+    .filter((element) => element.external)
+    .map((element) => element.id);
   const descriptions = Object.fromEntries(
     diagram.elements.map((element) => [element.id, element.description ?? ""]),
   );
@@ -45,7 +48,13 @@ export const attachMapC4 = (
       collapsedTag: (boundary) => `要素 ${elementsUnder(boundary)} 件`,
       rewire: (layout) => spreadMapEnds(layout),
       render: (flowArgs) =>
-        renderMapC4Diagram({ ...flowArgs, descriptions, boundaries }),
+        renderMapC4Diagram({
+          ...flowArgs,
+          descriptions,
+          boundaries,
+          externals,
+          reversed,
+        }),
       selectionOf: (selected) => {
         const picked = [...selected];
         if (picked.length !== 2) return undefined;
