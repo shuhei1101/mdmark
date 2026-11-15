@@ -1,0 +1,112 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: map の範囲に classDiagram・architecture-beta・C4Context の Mermaid と補足を記載すると、入れ子の自動配置で描き、補足の説明・layout とドラッグを構成図と同じ規則で当てる。種類ごとの選択と強調を足し、読めない行を書き方の警告にし、描けない種類の案内の文言を変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: クラス図のメンバーと namespace、アーキテクチャ図の group、C4 図の境界を、構成図のグループと同じ操作で開閉し、中へ入る
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: クラス図・アーキテクチャ図でも補足の巡回の手順を前へ・次へで進め、namespace・group の中へ入る
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: シーケンス図の参加者の選択の記述は変わらないが、選択と強調の処理を種類で共通にするため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: map の範囲外の classDiagram・architecture-beta・C4Context のコードブロックは、今までどおり mermaid で描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: シーケンス図の再生の操作は変わらないが、案内の帯を追加した種類と共通にするため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図の種類に依らない流れで記述は変わらないが、map の読み取り・配置・操作を広げるため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: クラス図・アーキテクチャ図・C4 図の map の補足が無い項目を指すとき、点検のずれにする
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 追加した種類の記載方法と、種類に固有の操作の手順を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: map の節の描ける Mermaid の種類に、追加した種類を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 追加した種類ごとの読み取り・配置・固有の機能を、種類に依らない部分との分け方に沿って追記する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 追加した種類で増える操作の用語を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 追加した種類を map で操作つきに描く場合の参照を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
+  - page: docs/er/ER-472-2.yaml
+    new: false
+    change: notes のキーに、クラス名・`{クラス名}.{メンバー名}`・service と group の ID・要素と境界の別名・関係と線の記載順の `r{番号}` を追加し、layout の collapsed の対象に namespace・group・境界とクラス名を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
+  - page: docs/er/ER-477-18.yaml
+    new: false
+    change: 引数 focus の説明に、namespace・group・境界も最初に入るグループになることを追加するかを確認する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
+scope_out:
+  - item: pie・xychart-beta・quadrantChart・sankey-beta を map で描く
+    reason: 今の部品 chart と重なる（#531 のスコープ外の判断と Issue の補足のとおり）
+    plan: none
+  - item: map を Markdown へ書き出すときの種類ごとの扱い
+    reason: '#313 は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
+    plan: '#313'
+  - item: C4Container・C4Component・C4Dynamic・C4Deployment を map で描く
+    reason: Issue の対象は C4Context だけ。書き方は C4Context と共通で、この PR で作る C4 図の読み取りと描画を前提に要素の種類を足す後続になる
+    plan: '#607'
+  - item: mindmap を map で描く（木の配置）
+    reason: 今の入れ子の自動配置に無い木の配置を新規作成するため、配置の処理ごとに切り出した（単一ユースケース設計のレビュー）
+    plan: '#597'
+  - item: gantt・timeline・gitGraph・journey を map で描く（軸に沿った配置と再生）
+    reason: 今の入れ子の自動配置に無い軸に沿った配置と再生を新規作成するため、配置の処理ごとに切り出した（単一ユースケース設計のレビュー）
+    plan: '#598'
+  - item: block-beta を map で描く（columns の格子の配置）
+    reason: 今の入れ子の自動配置に無い格子の配置を新規作成するため、配置の処理ごとに切り出した（単一ユースケース設計のレビュー）
+    plan: '#599'
+  - item: map のノードの説明のマーカー（`src/parts/map.ts` の `.mdmark-diagram-info`）が、axe の `target-size`（serious。押せる要素は 24px 以上か、間を空ける）に当たる
+    reason: この PR が触る前からある事象（base の `Parts/MapState` の Collapsed でも同じ検出が出る）で、今回の要望（3 種類の図を描く）に含まれない
+    plan: '#609'
+  - item: map の閉じたグループのノードで、「{数} 件」（`.map-closed-count`）が絶対位置のタイトルの行（`.map-group-head`）に重なる（`src/index.css`）
+    reason: この PR が触る前からある事象（base のストーリー `Parts/MapFlow` の Collapsed でも「ノード 3 件」がタイトルに重なる）で、今回の要望（3 種類の図を描く）に含まれない
+    plan: '#608'

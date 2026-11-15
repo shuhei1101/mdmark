@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds
+
+
+ Test Files  301 passed (301)
+      Tests  2270 passed (2270)
+   Start at  06:15:23
+   Duration  107.53s (worker 69%, tests 19%, import 11%, transform 1%)
+

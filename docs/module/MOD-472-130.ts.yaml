@@ -31,7 +31,7 @@ data_models:
     container: src/map/flow-view.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
-    summary: ER 図・状態遷移図が構成図の描画と操作に追加する処理（`attachMapFlow` の `extension`）
+    summary: ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図が構成図の描画と操作に追加する処理（`attachMapFlow` の `extension`）
     properties:
       - name: chart
         type: Flowchart
@@ -66,6 +66,18 @@ data_models:
       - name: collapsedTag
         type: '(groupId: string) => string'
         description: 閉じたグループの名前の後ろの文字（既定は「ノード {数} 件」）
+      - name: kinds
+        type: Record<string, MapKind> | undefined
+        description: 設定の `map.kinds` に重ねるノードの種類（クラス図・アーキテクチャ図・C4 図の種類の行・アイコン・形状・色）
+      - name: lines
+        type: Record<string, MapLine> | undefined
+        description: 設定の `map.lines` に重ねる線の種類（クラス図の矢じりを持たない線）
+      - name: title
+        type: string | undefined
+        description: 印に `title` が無いときの図の枠のタイトル（C4 図の `title` の行）
+      - name: selectable
+        type: '((id: string) => boolean) | undefined'
+        description: 選べるノードか（クラス図のノート・アーキテクチャ図の junction を選ばない）。無ければ全てのノードを選べる。選べないノードを押しても選択を変えない
 constants:
   - name: DIM_SELECTOR
     title: 薄くする対象
@@ -74,6 +86,46 @@ constants:
     role: 定数
     summary: 強調するときに `map-dim` を付ける要素のセレクター（ノード・線・ラベル・ライフライン）
 functions:
+  - name: neighborKept
+    title: 1つのノードの線と相手
+    kind: 関数
+    container: src/map/flow-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 1 つのノードと、そのノードの線と相手のノードを返す。クラス図・アーキテクチャ図・C4 図の `extension.selectionOf` が 1 つ選んだときに使う
+    scope: public
+    args:
+      - name: edges
+        type: 'Array<{ id: string; from: string; to: string }>'
+        required: true
+        description: 線（向きは見ない）
+      - name: id
+        type: string
+        required: true
+        description: 選んだノードの ID
+    returns:
+      type: '{ nodes: Set<string>; wires: Set<string> }'
+      description: 残すノードと線
+  - name: shortestPathKept
+    title: 2つのノードの最短の経路
+    kind: 関数
+    container: src/map/flow-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 2 つのノードをつなぐ最短の経路に乗る全てのノードと線を返す（つながらなければ 2 つのノードだけ）。クラス図・アーキテクチャ図・C4 図の `extension.selectionOf` が 2 つ選んだときに使う
+    scope: public
+    args:
+      - name: edges
+        type: 'Array<{ id: string; from: string; to: string }>'
+        required: true
+        description: 線（向きは見ない）
+      - name: ends
+        type: '[string, string]'
+        required: true
+        description: 選んだ 2 つのノードの ID
+    returns:
+      type: '{ nodes: Set<string>; wires: Set<string> }'
+      description: 残すノードと線
   - name: attachMapFlow
     title: 構成図を付ける
     kind: 関数
@@ -117,12 +169,12 @@ functions:
       - name: options.extension
         type: MapFlowExtension
         required: false
-        description: ER 図・状態遷移図の差し込み。無ければ `flowchart` の構成図
+        description: ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図の差し込み。無ければ `flowchart` の構成図
     returns:
       type: MapFlowHandle
       description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
     process: |-
-      1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
+      1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み、`extension.kinds`・`extension.lines` を設定の `map.kinds`・`map.lines` に重ね、印に `title` が無ければ `extension.title` を図の枠のタイトルにし、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
       2. `extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで `layoutMap` を配置し、`extension.rewire` があれば線を引き直す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems` で確かめた `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
       3. ノードの中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
       4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順を進めるたびに `onWalk` を呼び、停止で案内を始めたときに中へ入っていたグループに戻す

@@ -1,0 +1,98 @@
+# テストを追加した commit df3444fd の状態（実装の修正 ce4d4a5c の前）で、追加・変更したテストのファイルを流した Red のログ
+$ npx vitest run --project 'unit*' tests/unit/src/map/c4.test.ts tests/unit/src/map/c4-view.browser.test.ts tests/unit/src/parts/map.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/red-596
+
+ ❯ |unit| tests/unit/src/map/c4.test.ts (4 tests | 1 failed) 267ms
+   × test_c4_to_flowchart_when_up_and_back 5ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (39 tests | 2 failed) 11024ms
+   × test_rewire_map_architecture 65ms
+   × test_render_map_c4_diagram 13ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts (3 tests | 1 failed) 454ms
+   × test_attach_map_c4_when_up 135ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/c4.test.ts > test_c4_to_flowchart_when_up_and_back
+AssertionError: expected undefined to deeply equal [ 'r1', 'r2' ]
+
+- Expected:
+[
+  "r1",
+  "r2",
+]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/c4.test.ts:83:20
+     81|   const edge = (id: string) => chart.edges.find((item) => item.id === …
+     82|   expect([edge("r1")?.from, edge("r1")?.to]).toEqual(["b", "a"]);
+     83|   expect(reversed).toEqual(["r1", "r2"]);
+       |                    ^
+     84|   expect([edge("r2")?.from, edge("r2")?.to]).toEqual(["a", "c"]);
+     85|   expect(diagram.relations[1]?.direction).toBe("back");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_rewire_map_architecture
+AssertionError: r2 の 2 本目の区間: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/parts/map.test.ts:1289:47
+    1287|       top < api.y + api.h &&
+    1288|       bottom > api.y;
+    1289|     expect(inside, `r2 の ${index + 1} 本目の区間`).toBe(false);
+       |                                               ^
+    1290|   }
+    1291| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_c4_diagram
+AssertionError: expected '<div class="mdmark-diagram-node map-k…' to match /class="map-c4-description"[^>]*>[\s\S…/
+
+- Expected:
+/class="map-c4-description"[^>]*>[\s\S]*?<span class="mdmark-term[^"]*"[^>]*>支払い</
+
++ Received:
+"<div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rect\" data-node=\"store\" style=\"left:72px;top:293px;width:220px;height:85px\"><span class=\"mdmark-diagram-node-hit\" role=\"button\" tabindex=\"0\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"注文のシステム\"></span><span class=\"mdmark-diagram-node-kind\"><span>[Software System]</span></span><span class=\"mdmark-diagram-node-name\">注文のシステム</span><p class=\"map-c4-description\">注文と支払いを受け付ける</p></div>"
+
+ ❯ tests/unit/src/parts/map.test.ts:1382:17
+    1380|   );
+    1381|   // 説明の中の用語に下線を付ける
+    1382|   expect(store).toMatch(
+       |                 ^
+    1383|     /class="map-c4-description"[^>]*>[\s\S]*?<span class="mdmark-term[…
+    1384|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts > test_attach_map_c4_when_up
+AssertionError: expected 64 to be less than 3
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/c4-view.browser.test.ts/test_attach_map_c4_when_up.png
+
+ ❯ tests/unit/src/map/c4-view.browser.test.ts:97:53
+     95|       ?.map(Number) ?? [];
+     96|   const endY = numbers.at(-1) ?? Number.NaN;
+     97|   expect(Math.abs(endY - (top("b") + height("b")))).toBeLessThan(3);
+       |                                                     ^
+     98| });
+     99|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-EpgaQWov.js?v=d18292b8:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  4 failed | 42 passed (46)
+   Start at  06:26:50
+   Duration  25.51s (worker 54%, tests 30%, transform 11%, import 5%)
+

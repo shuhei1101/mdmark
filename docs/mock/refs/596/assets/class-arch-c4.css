@@ -1,0 +1,29 @@
+/* map のクラス図・アーキテクチャ図・C4 図のモックの規則（#596）。列の行・開閉のボタン・説明のマーカーは #531 の er-state.css を使用する */
+
+/* クラス図: 属性とメソッドの区画（区切り線で分ける）と、メンバーの行 */
+.map-figure .cac-members { display: grid; margin-top: 4px; padding-top: 2px; border-top: 1px solid var(--mdmark-color-border); font-size: 12px; }
+.map-figure .cac-members:empty { min-height: 8px; }
+.map-figure .cac-member { display: grid; grid-template-columns: 1em 1fr 20px; gap: 4px; align-items: center; padding: 1px 0; }
+.map-figure .cac-visibility { color: var(--mdmark-color-muted); font-family: var(--mdmark-font-mono, monospace); }
+.map-figure .cac-text { overflow-wrap: anywhere; user-select: text; font-family: var(--mdmark-font-mono, monospace); }
+.map-figure .cac-member.is-static .cac-text { text-decoration: underline; }
+.map-figure .cac-member.is-abstract .cac-text { font-style: italic; }
+.map-figure .cac-annotation { color: var(--mdmark-color-muted); font-size: 11px; }
+
+/* クラス図: 関係の端の形 */
+.map-figure .cac-end { stroke: var(--mdmark-color-muted); stroke-width: 1.5; fill: var(--mdmark-color-bg); }
+.map-figure .cac-end-diamond-filled { fill: var(--mdmark-color-muted); }
+.map-figure .cac-end-arrow { fill: none; }
+.map-figure .cac-end.map-dim { opacity: 0.25; }
+
+/* アーキテクチャ図: junction は小さい点。中の名前と種類の行は出さない */
+.map-figure .mdmark-diagram-node[data-shape="junction"] {
+  border-radius: 50%; padding: 0; min-height: 16px; height: 16px !important; background: var(--mdmark-color-muted); border-color: var(--mdmark-color-muted);
+}
+.map-figure .mdmark-diagram-node[data-shape="junction"] :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name) { visibility: hidden; height: 0; min-height: 0; overflow: hidden; }
+.map-figure .map-group-title .mdmark-diagram-icon { width: 14px; height: 14px; margin-right: 4px; vertical-align: -2px; }
+
+/* C4 図: 要素の説明と、境界の破線の枠 */
+.map-figure .cac-description { margin: 4px 0 0; color: var(--mdmark-color-muted); font-size: 12px; overflow-wrap: anywhere; }
+.map-figure .map-group.cac-boundary { border-style: dashed; background: transparent; }
+.map-figure .mdmark-diagram-node.cac-external { background: var(--mdmark-color-accent-gray-bg); border-color: var(--mdmark-color-accent-gray-text); }

@@ -1,0 +1,90 @@
+id: MOD-596-2
+visibility: internal
+title: ライブラリ本体 / map / 読み取り / architecture.ts
+test_files:
+  - tests/unit/src/map/architecture.test.ts
+data_models:
+  - name: ArchitectureDiagram
+    title: アーキテクチャ図の読み取り結果
+    container: src/map/architecture.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseArchitecture` の戻り値'
+    properties:
+      - name: groups
+        type: ArchGroup[]
+        description: group（`id`・`icon`・`title`・`parent`）
+      - name: services
+        type: ArchService[]
+        description: service と junction（`id`・`icon`・`label`・`parent`・`junction`）
+      - name: edges
+        type: ArchEdge[]
+        description: 線（`id`・`from`・`fromSide`・`fromGroup`・`to`・`toSide`・`toGroup`・`head`）。`id` は記載順の `r{番号}`（1 から）。辺は `top`・`right`・`bottom`・`left`、`head` は `none`・`end`・`start`・`both`
+      - name: problems
+        type: MapProblem[]
+        description: 読めない行と、知らないアイコン・`in` が指す無い group
+constants:
+  - name: MAP_ARCH_KINDS
+    title: アーキテクチャ図のノードの種類
+    container: src/map/architecture.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: アイコンごとの service（`cloud`・`database`・`disk`・`internet`・`server` を Lucide の `cloud`・`database`・`hard-drive`・`globe`・`server` にする。種類の行は空）とアイコンの無い service の `MapKind`。キーは `mdmark-arch-{アイコン}`・`mdmark-arch-service`
+functions:
+  - name: parseArchitecture
+    title: architecture-betaを読む
+    kind: 関数
+    container: src/map/architecture.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`architecture-beta` の Mermaid を、group・service・junction・線と読めない行の項目に読む'
+    scope: public
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のブロックの中身
+    returns:
+      type: ArchitectureDiagram
+      description: 読み取り結果
+    process: |-
+      1. 行ごとに、`group {ID}[({アイコン})][{名前}] [in {ID}]`・`service {ID}[({アイコン})][{名前}] [in {ID}]`・`junction {ID} [in {ID}]`・線の行（`{ID}[{group}]:{辺} [<]--[>] {辺}:{ID}[{group}]`）・`%%`・空の行に分けて読む
+         - 読めない行と、5 つのほかのアイコン・無い group を指す `in` は `map_invalid` の項目にする
+    unit_tests:
+      - name: test_parse_architecture
+        case: 正常
+        summary: モックのアーキテクチャ図
+        condition: モックの `ARCH`
+        mock: なし
+        expected: group 2（`app` の親が `cloud`）・service 6・junction 1・線 6（`r1`〜`r6`）で、`r1` の `head` が `end`、`r3` の辺が `bottom`・`top`、`r4` の `fromGroup` が `true`
+      - name: test_parse_architecture_when_unreadable
+        case: 異常
+        summary: 読めない行
+        condition: 線の行 `web:X --> L:cdn`
+        mock: なし
+        expected: '`map_invalid` が 1 件で行番号を含む'
+  - name: architectureToFlowchart
+    title: アーキテクチャ図を構成図の入力にする
+    kind: 関数
+    container: src/map/architecture.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: service と junction をノード、group をグループ、線を構成図の線にした、左から右の `Flowchart` と、段と並びの上書きを作る
+    scope: public
+    args:
+      - name: diagram
+        type: ArchitectureDiagram
+        required: true
+        description: 読み取り結果
+    returns:
+      type: '{ chart: Flowchart; overrides: Record<string, MapOverride> }'
+      description: 線の ID は `r{番号}`。左右の辺でつなぐ線は右の辺を持つ側を元にする。上下の辺でつなぐ線は `rankless` にし、下の辺を持つ側の相手に `align`（同じ段）と `order`（上の側を先）を指定する。junction は幅と高さを `MAP_ARCH.junction` にし、閉じた group のノードはアイコンとタイトルが収まる `mapClosedGroupSize` の大きさにする
+    unit_tests:
+      - name: test_architecture_to_flowchart
+        case: 正常
+        summary: 段と並び
+        condition: モックの `ARCH`
+        mock: なし
+        expected: '`r3` が `rankless` で、`worker` の上書きが `align: api` と `api` より大きい `order`、`r1` の元が `web`、`hub` の幅と高さが 16'
+refs:
+  - IF-472-35#constraints[map のアーキテクチャ図]

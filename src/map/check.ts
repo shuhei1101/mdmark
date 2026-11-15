@@ -1,3 +1,6 @@
+import { parseArchitecture } from "./architecture.ts";
+import { parseC4Context } from "./c4.ts";
+import { parseClassDiagram } from "./class-diagram.ts";
 import { type MapData, parseMapData } from "./data.ts";
 import { parseErDiagram } from "./er.ts";
 import { mapLinkProblems, parseFlowchart } from "./flowchart.ts";
@@ -30,7 +33,13 @@ const REF_HINTS = {
   erDiagram:
     "テーブル名・`{テーブル}.{列}`・関連の記載順の `r{番号}`・分類の ID にしてください。",
   stateDiagram: "状態の ID か、遷移の ID を記載順の `t{番号}` にしてください。",
-} as const;
+  classDiagram:
+    "クラス名・`{クラス名}.{メンバー名}`・`namespace` の ID・関係の記載順の `r{番号}` にしてください。",
+  architecture:
+    "service・group・junction の ID か、線の記載順の `r{番号}` にしてください。",
+  C4Context:
+    "要素・境界の別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
+} as const satisfies Record<MapKindName, string>;
 
 /** ER 図の補足の groups の、無いテーブル・無い親・2 つの分類に入るテーブル・テーブル名と同じ分類の ID の項目 */
 const groupProblems = (
@@ -163,6 +172,60 @@ const stateIds = (mermaid: string, line: number | undefined): MermaidIds => {
   return found;
 };
 
+/** 線の ID を `found` に加える */
+const addEdgeIds = (found: MermaidIds, ids: Iterable<string>): void => {
+  for (const id of ids) {
+    found.ids.add(id);
+    found.edgeIds.add(id);
+  }
+};
+
+/** クラス図の ID（クラス名・`{クラス名}.{メンバー名}`・namespace・関係） */
+const classIds = (mermaid: string, line: number | undefined): MermaidIds => {
+  const diagram = parseClassDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of diagram.classes) {
+    found.ids.add(item.id);
+    for (const member of item.members)
+      found.ids.add(`${item.id}.${member.name}`);
+  }
+  for (const space of diagram.namespaces) found.ids.add(space);
+  addEdgeIds(
+    found,
+    diagram.relations.map((relation) => relation.id),
+  );
+  return found;
+};
+
+/** アーキテクチャ図の ID（service・group・junction・線） */
+const architectureIds = (
+  mermaid: string,
+  line: number | undefined,
+): MermaidIds => {
+  const diagram = parseArchitecture(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of [...diagram.services, ...diagram.groups])
+    found.ids.add(item.id);
+  addEdgeIds(
+    found,
+    diagram.edges.map((edge) => edge.id),
+  );
+  return found;
+};
+
+/** C4 図の ID（要素・境界の別名・関係） */
+const c4Ids = (mermaid: string, line: number | undefined): MermaidIds => {
+  const diagram = parseC4Context(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of [...diagram.elements, ...diagram.boundaries])
+    found.ids.add(item.id);
+  addEdgeIds(
+    found,
+    diagram.relations.map((relation) => relation.id),
+  );
+  return found;
+};
+
 /** シーケンス図の ID（参加者の ID と、メッセージ・ブロックの番号） */
 const sequenceIds = (mermaid: string, line: number | undefined): MermaidIds => {
   const sequence = parseSequence(mermaid);
@@ -188,6 +251,12 @@ const mermaidIdsOf = (
       return erIds(mermaid, line, data);
     case "stateDiagram":
       return stateIds(mermaid, line);
+    case "classDiagram":
+      return classIds(mermaid, line);
+    case "architecture":
+      return architectureIds(mermaid, line);
+    case "C4Context":
+      return c4Ids(mermaid, line);
     default:
       return sequenceIds(mermaid, line);
   }

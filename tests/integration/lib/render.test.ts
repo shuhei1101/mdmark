@@ -32,6 +32,9 @@ import {
   plainText,
 } from "../../unit/helpers/html.ts";
 import {
+  ARCH as MAP_ARCH,
+  C4 as MAP_C4,
+  CLASS as MAP_CLASS,
   DATA as MAP_DATA,
   ER as MAP_ER,
   ER_DATA as MAP_ER_DATA,
@@ -4601,12 +4604,15 @@ test("test_normal_when_map_range", async () => {
     mapRange({ mermaid: MAP_ER, data: MAP_ER_DATA }),
     mapRange({ mermaid: MAP_STATE }),
     mapRange({ mermaid: MAP_STATE.replace("stateDiagram-v2", "stateDiagram") }),
+    mapRange({ mermaid: MAP_CLASS }),
+    mapRange({ mermaid: MAP_ARCH }),
+    mapRange({ mermaid: MAP_C4 }),
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const ranges = findTags(html, 'class="mdmark-map"');
-  expect(ranges).toHaveLength(5);
+  expect(ranges).toHaveLength(8);
   expect(ranges[0]).toContain('data-map="1"');
   expect(ranges[0]).toContain('data-map-kind="flowchart"');
   expect(ranges[0]).toContain(
@@ -4619,10 +4625,14 @@ test("test_normal_when_map_range", async () => {
   expect(ranges[2]).toContain('data-map-kind="erDiagram"');
   expect(ranges[3]).toContain('data-map-kind="stateDiagram"');
   expect(ranges[4]).toContain('data-map-kind="stateDiagram"');
+  // クラス図・アーキテクチャ図・C4 図の範囲
+  expect(ranges[5]).toContain('data-map-kind="classDiagram"');
+  expect(ranges[6]).toContain('data-map-kind="architecture"');
+  expect(ranges[7]).toContain('data-map-kind="C4Context"');
   const codes = findTags(html, 'class="mdmark-code"');
-  expect(codes).toHaveLength(5);
+  expect(codes).toHaveLength(8);
   for (const code of codes) expect(code).not.toContain("data-mdmark-mermaid");
-  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(5);
+  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(8);
   const data = findTags(html, 'class="mdmark-map-data"');
   expect(data).toHaveLength(2);
   expect(data[0]).toMatch(/^<pre /);
@@ -4677,6 +4687,9 @@ test("test_normal_when_map_written_wrongly", async () => {
   expect(plainText(pieces[2] ?? "")).toContain("sequenceDiagram");
   expect(plainText(pieces[2] ?? "")).toContain("erDiagram");
   expect(plainText(pieces[2] ?? "")).toContain("stateDiagram-v2");
+  expect(plainText(pieces[2] ?? "")).toContain("classDiagram");
+  expect(plainText(pieces[2] ?? "")).toContain("architecture-beta");
+  expect(plainText(pieces[2] ?? "")).toContain("C4Context");
   expect(findTags(pieces[2] ?? "", 'class="mdmark-map"')).toHaveLength(0);
   expect(findTags(pieces[2] ?? "", "language-mermaid")).toHaveLength(1);
   // 4・5 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲

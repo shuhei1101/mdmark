@@ -1236,6 +1236,103 @@ test("test_normal_when_map_er_state_data_drift", async () => {
   expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
 });
 
+// クラス図・アーキテクチャ図・C4 図の map の補足が指す無い ID をずれにする（正常系（クラス図・アーキテクチャ図・C4 図の map の補足にずれがある））
+test("test_normal_when_map_class_arch_c4_data_drift", async () => {
+  // 準備: 範囲の開きのマーカーを 3・20・35・50 行目、補足を 10・27・42・57 行目に置く
+  const range = (mermaid: string[], data: string) => [
+    "<!-- map -->",
+    "```mermaid",
+    ...mermaid,
+    "```",
+    ...Array.from({ length: 4 - mermaid.length }, () => ""),
+    data,
+    "",
+    "<!-- /map -->",
+  ];
+  const pad = (lines: string[], length: number) => [
+    ...lines,
+    ...Array.from({ length: length - lines.length }, () => ""),
+  ];
+  const a = [
+    ...pad(["# A", ""], 2),
+    ...pad(
+      range(
+        [
+          "classDiagram",
+          "  class 図形",
+          "  図面 : +名前 string",
+          "  図面 --> 図形",
+        ],
+        '<!-- map-data: {"version": 1, "notes": {"図面.幽霊": {"text": "無いメンバー"}}} -->',
+      ),
+      17,
+    ),
+    ...pad(
+      range(
+        [
+          "architecture-beta",
+          "  service api(server)[API]",
+          "  service db(database)[DB]",
+          "  api:R --> L:db",
+        ],
+        '<!-- map-data: {"version": 1, "notes": {"r2": {"text": "無い線"}}} -->',
+      ),
+      15,
+    ),
+    ...pad(
+      range(
+        [
+          "C4Context",
+          '  System(store, "注文")',
+          '  System_Ext(pay, "決済")',
+          '  Rel(store, pay, "決済する")',
+        ],
+        '<!-- map-data: {"version": 1, "layout": {"ghost": {"color": "blue"}}} -->',
+      ),
+      15,
+    ),
+    ...range(
+      ["classDiagram", "  class 紙", "  class 印刷", "  紙 --> 印刷"],
+      '<!-- map-data: {"version": 1, "notes": {"紙": {"text": "紙"}, "r1": {"text": "印刷する"}}} -->',
+    ),
+    "",
+  ];
+  const opens = a.flatMap((line, index) =>
+    line === "<!-- map -->" ? [index + 1] : [],
+  );
+  expect(opens).toEqual([3, 20, 35, 50]);
+  const data = a.flatMap((line, index) =>
+    line.startsWith("<!-- map-data") ? [index + 1] : [],
+  );
+  expect(data).toEqual([10, 27, 42, 57]);
+  const dir = await createMapDir(a);
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const at = (line: number, kind: string) =>
+    lines.filter((item) => item.startsWith(`docs/a.mark.md:${line}: ${kind}:`));
+  const classRefs = at(10, "map_unknown_ref");
+  expect(classRefs).toHaveLength(1);
+  expect(classRefs[0]).toContain("notes.図面.幽霊");
+  const archRefs = at(27, "map_unknown_ref");
+  expect(archRefs).toHaveLength(1);
+  expect(archRefs[0]).toContain("notes.r2");
+  expect(archRefs[0]).toContain("r{番号}");
+  const c4Refs = at(42, "map_unknown_ref");
+  expect(c4Refs).toHaveLength(1);
+  expect(c4Refs[0]).toContain("layout.ghost");
+  for (const line of [50, 51, 52, 53, 54, 55, 56, 57])
+    expect(
+      lines.some((item) => item.startsWith(`docs/a.mark.md:${line}:`)),
+      `${line} 行目`,
+    ).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});
+
 // --text の Markdown の map の範囲の書き方の警告を、警告の項目ごとのずれにする（正常系（文字列の map の書き方の警告））
 test("test_normal_when_text_map_warnings", async () => {
   // 準備

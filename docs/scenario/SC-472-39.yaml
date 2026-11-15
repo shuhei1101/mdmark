@@ -235,3 +235,43 @@ scenarios:
       - 描き直した後、ほかのグループとブロックは開いたまま描かれる
       - 描き直した後、図の外の書き換えた段落が表示されている
     test: test_normal_when_updated_after_toggle
+  - name: 正常シナリオ（クラス図のメンバーと namespace を開閉する）
+    setup:
+      - name: 図を描いたページ
+        description: 『Mermaidと補足で図を描く』の正常シナリオ（クラス図）のクラス図を描いたページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as クラス図
+        U->>D: クラスの開閉のボタンを押す
+        D-->>U: メンバーを閉じ、詰めた分を配置し直す
+        U->>D: namespace のタイトルを押す
+        D-->>U: namespace の中だけを配置し直す
+        U->>D: 戻るボタンを押してから namespace の開閉のボタンを押す
+        D-->>U: namespace を 1 つのノードに閉じ、中への関係をまとめる
+    expected:
+      - メンバーを閉じたクラスは、クラス名とメンバーの数の 1 行で描かれ、関係の線はその箱の辺につながる
+      - namespace の中へ入る・戻る・閉じる・まとめた線のツールチップは、構成図のグループと同じに動く（正常シナリオ・正常シナリオ（グループを閉じる））
+      - 全て開く・全て閉じるが、クラスのメンバーと namespace の両方に当たる
+      - 開閉と中へ入った状態は、構成図と同じく同じタブで読み込み直しても保ち、クエリ文字列に `map-{図の番号}={namespace の名前}` が入る
+    test: test_normal_when_class_toggled
+  - name: 正常シナリオ（アーキテクチャ図・C4 図の入れ子に入る・開閉する）
+    setup:
+      - name: 図を描いたページ
+        description: 『Mermaidと補足で図を描く』の正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）の図を描いたページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        U->>D: 入れ子の group・境界のタイトルを押す
+        D-->>U: その中だけを配置し直し、外を薄く残す
+        U->>D: Esc を押してから開閉のボタンを押す
+        D-->>U: 1 つのノードに閉じ、中への線をまとめる
+    expected:
+      - 2 つの種類とも、中へ入る・戻る・閉じる・まとめた線のツールチップ・全て開く・全て閉じる・状態の保持が、構成図のグループと同じに動く
+      - アーキテクチャ図の group を閉じると、group の辺から出る線は閉じたノードの同じ辺から出る
+    test: test_normal_when_nested_kinds_toggled

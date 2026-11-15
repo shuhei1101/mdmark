@@ -91,3 +91,21 @@ scenarios:
       - ER 図と状態遷移図の案内の帯・手順の強調・中へ入る・停止で戻る動きが、構成図の案内と同じになる
       - 案内を持つ状態遷移図では、帯が案内の手順を進め、遷移の再生は出さない
     test: test_normal_when_er_and_state_walked
+  - name: 正常シナリオ（追加した種類を案内する）
+    setup:
+      - name: 図を描いたページ
+        description: 補足の `walkthroughs` に手順 2 つの案内を持つクラス図と、手順 2 つの案内を持つアーキテクチャ図を描いたページ
+        notes: クラス図の手順 2 は namespace の中へ入ってクラス 2 つを強調する。アーキテクチャ図の手順 2 は group の中へ入って service 1 つを強調する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        U->>D: クラス図の案内の帯の次へを 2 回押す
+        D-->>U: 手順 2 の namespace の中へ入り、2 つのクラスを強調する
+        U->>D: アーキテクチャ図の案内の帯の次へを 2 回押す
+        D-->>U: 手順 2 の group の中へ入り、service を強調する
+    expected:
+      - クラス図とアーキテクチャ図の案内の帯・手順の強調・中へ入る・停止で戻る動きが、構成図の案内と同じになる
+    test: test_normal_when_added_kinds_walked

@@ -52,7 +52,7 @@ tables:
         default: '`{}`'
         description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを当てたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
         example: '{"mount": {"text": "文書を描く公開関数", "annotations": ["cond"]}}'
-        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`。`annotations` の定義の無い注記の ID は `annotation_undefined`
+        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`、クラス図はクラス名・`{クラス名}.{メンバー名}`・`namespace` の ID・関係の記載順の `r{番号}`、アーキテクチャ図は service・group・junction の ID・線の記載順の `r{番号}`、C4 図は要素・境界の別名・関係の記載順の `r{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`。`annotations` の定義の無い注記の ID は `annotation_undefined`
       - name: plays_over
         title: 再生を重ねる構成図
         type: integer
@@ -187,7 +187,7 @@ tables:
         title: 最初に閉じる
         type: boolean
         default: '`false`'
-        description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態）の ID と、ER 図のテーブル名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を閉じて描く
+        description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界）の ID と、ER 図のテーブル名・クラス図のクラス名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを閉じて描く
         example: 'true'
 refs:
   - IF-472-34#constraints[map の範囲]

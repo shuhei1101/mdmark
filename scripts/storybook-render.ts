@@ -18,6 +18,19 @@ import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
 import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
+import {
+  ARCH_LUCIDE_ICONS,
+  architectureToFlowchart,
+  MAP_ARCH_KINDS,
+  parseArchitecture,
+} from "../src/map/architecture.ts";
+import { c4ToFlowchart, MAP_C4_KINDS, parseC4Context } from "../src/map/c4.ts";
+import {
+  classPartInputs,
+  classToFlowchart,
+  MAP_CLASS_KINDS,
+  parseClassDiagram,
+} from "../src/map/class-diagram.ts";
 import { noteTexts, parseMapData } from "../src/map/data.ts";
 import {
   erColumnNotes,
@@ -27,6 +40,7 @@ import {
   erToFlowchart,
   parseErDiagram,
 } from "../src/map/er.ts";
+import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap } from "../src/map/layout.ts";
 import { parseSequence } from "../src/map/sequence.ts";
@@ -91,12 +105,17 @@ import { renderLayoutColumns } from "../src/parts/layout-columns.ts";
 import { renderLightbox } from "../src/parts/lightbox.ts";
 import {
   type MapErFanout,
+  renderMapArchitecture,
   renderMapBand,
+  renderMapC4Diagram,
+  renderMapClassDiagram,
   renderMapErDiagram,
   renderMapFlow,
   renderMapSequence,
   renderMapStateDiagram,
+  rewireMapArchitecture,
   rewireMapEr,
+  spreadMapEnds,
 } from "../src/parts/map.ts";
 import { renderMedia } from "../src/parts/media.ts";
 import { renderMermaidDiagram } from "../src/parts/mermaid.ts";
@@ -126,6 +145,12 @@ import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
 import { planCellMerges } from "../src/render/syntax/table-cells.ts";
 import { warningsOf } from "../src/render/syntax/tables.ts";
 import {
+  ARCH as MAP_ARCH,
+  ARCH_DATA as MAP_ARCH_DATA,
+  C4 as MAP_C4,
+  C4_DATA as MAP_C4_DATA,
+  CLASS as MAP_CLASS,
+  CLASS_DATA as MAP_CLASS_DATA,
   CONFIG as MAP_CONFIG,
   DATA as MAP_DATA,
   ER as MAP_ER,
@@ -1141,6 +1166,156 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       loops,
     });
     return mapFrame("作業の状態", part, layout);
+  },
+  "map-class": (args) => {
+    const diagram = parseClassDiagram(MAP_CLASS);
+    const { data } = parseMapData(MAP_CLASS_DATA);
+    const collapsed = jsonList(args.collapsed);
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const inputs = classPartInputs(diagram, new Set(collapsed));
+    const chart = classToFlowchart(diagram);
+    const selected = jsonList(args.selected);
+    // 2 つのクラスを選んだときは、つなぐ最短の経路を残す（mount の attachMapClass の選び方）
+    const path =
+      selected.length === 2
+        ? shortestPathKept(
+            chart.edges.filter((edge) => !edge.to.startsWith("note_")),
+            [selected[0] as string, selected[1] as string],
+          )
+        : undefined;
+    const placed = layoutMap(
+      chart,
+      { collapsed, entered },
+      { overrides: inputs.overrides, nodeFit: "height" },
+    );
+    const layout = { ...placed, wires: spreadMapEnds(placed) };
+    const part = renderMapClassDiagram({
+      layout,
+      kinds: MAP_CLASS_KINDS,
+      lines: {},
+      notes: noteTexts(data.notes),
+      hints: args.hints !== false,
+      collapsed,
+      entered,
+      selected,
+      focus: undefined,
+      packets: [],
+      dragging: undefined,
+      id: "story-map-class",
+      keep:
+        path === undefined
+          ? undefined
+          : { nodes: [...path.nodes], wires: [...path.wires] },
+      collapsedTag: (space) =>
+        `クラス ${diagram.classes.filter((item) => item.namespace === space).length} 件`,
+      classes: inputs.classes,
+      ends: inputs.ends,
+    });
+    return mapFrame("型の構成", part, layout);
+  },
+  "map-architecture": (args) => {
+    const diagram = parseArchitecture(MAP_ARCH);
+    const { data } = parseMapData(MAP_ARCH_DATA);
+    const collapsed = jsonList(args.collapsed);
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const { chart, overrides } = architectureToFlowchart(diagram);
+    const placed = layoutMap(
+      chart,
+      { collapsed, entered },
+      { overrides, nodeFit: "height" },
+    );
+    const ends = Object.fromEntries(
+      Object.entries(data.layout).flatMap(([id, entry]) =>
+        entry.ends === undefined ? [] : [[id, entry.ends]],
+      ),
+    );
+    const selected = jsonList(args.selected);
+    // 1 つの service を選んだときは、線と相手を残す（mount の attachMapArchitecture の選び方）
+    const near =
+      selected.length === 1
+        ? neighborKept(chart.edges, selected[0] as string)
+        : undefined;
+    const layout = {
+      ...placed,
+      wires: rewireMapArchitecture({
+        layout: placed,
+        edges: diagram.edges,
+        collapsed,
+        ends,
+      }),
+    };
+    const part = renderMapArchitecture({
+      layout,
+      kinds: MAP_ARCH_KINDS,
+      lines: {},
+      notes: noteTexts(data.notes),
+      collapsed,
+      entered,
+      selected,
+      focus: undefined,
+      packets: [],
+      dragging: undefined,
+      id: "story-map-architecture",
+      keep:
+        near === undefined
+          ? undefined
+          : { nodes: [...near.nodes], wires: [...near.wires] },
+      collapsedTag: (group) =>
+        `service ${diagram.services.filter((item) => item.parent === group && !item.junction).length} 件`,
+      groupIcons: Object.fromEntries(
+        diagram.groups.flatMap((group) =>
+          group.icon === undefined
+            ? []
+            : [[group.id, ARCH_LUCIDE_ICONS[group.icon]]],
+        ),
+      ),
+      junctions: diagram.services
+        .filter((item) => item.junction)
+        .map((item) => item.id),
+      heads: Object.fromEntries(
+        diagram.edges.map((edge) => [edge.id, edge.head]),
+      ),
+    });
+    return mapFrame("配置の構成", part, layout);
+  },
+  "map-c4": (args) => {
+    const diagram = parseC4Context(MAP_C4);
+    const { data } = parseMapData(MAP_C4_DATA);
+    const collapsed = jsonList(args.collapsed);
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const { chart, overrides, reversed } = c4ToFlowchart(diagram);
+    const placed = layoutMap(
+      chart,
+      { collapsed, entered },
+      { overrides, nodeFit: "height" },
+    );
+    const layout = { ...placed, wires: spreadMapEnds(placed) };
+    const part = renderMapC4Diagram({
+      layout,
+      kinds: MAP_C4_KINDS,
+      lines: {},
+      notes: noteTexts(data.notes),
+      collapsed,
+      entered,
+      selected: jsonList(args.selected),
+      focus: undefined,
+      packets: [],
+      dragging: undefined,
+      id: "story-map-c4",
+      collapsedTag: (boundary) =>
+        `要素 ${diagram.elements.filter((item) => item.parent === boundary).length} 件`,
+      descriptions: Object.fromEntries(
+        diagram.elements.map((item) => [item.id, item.description ?? ""]),
+      ),
+      boundaries: Object.fromEntries(
+        diagram.boundaries.map((item) => [item.id, item.kind]),
+      ),
+      externals: diagram.elements
+        .filter((item) => item.external)
+        .map((item) => item.id),
+      reversed,
+    });
+    return mapFrame(diagram.title ?? "", part, layout);
   },
   "map-sequence": (args) => {
     const sequence = parseSequence(

@@ -46,7 +46,7 @@ data_models:
         description: 動かしている要素
       - name: shapes
         type: Record<string, MapStateShape> | undefined
-        description: ノードの ID ごとの状態遷移図の形状。`start`・`end`・`choice` は `data-shape` をその値にし、名前と種類の行を出さず、`role="img"` と `aria-label`（開始・終了・分岐）を持ちフォーカスを持たない。`note` は種類の行「ノート」
+        description: ノードの ID ごとの状態遷移図の形状と、アーキテクチャ図の junction。`start`・`end`・`choice`・`junction` は `data-shape` をその値にし、名前と種類の行を出さず、`role="img"` と `aria-label`（開始・終了・分岐・分岐点）を持ちフォーカスを持たない。`note` は種類の行「ノート」
       - name: keep
         type: '{ nodes: string[]; wires: string[] } | undefined'
         description: 選択と強調の代わりに残すノードと線（ほかを薄くする）
@@ -115,6 +115,41 @@ data_models:
       - name: label
         type: string
         description: 帯の名前
+  - name: MapClassNode
+    title: クラス図のクラスの中身
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapのクラス図』の `layout.nodes[].classMembers`・`annotation` をクラスごとにまとめた値
+    properties:
+      - name: id
+        type: string
+        description: クラスの ID
+      - name: annotation
+        type: string | undefined
+        description: '`<<…>>` の中身'
+      - name: members
+        type: 'Array<{ visibility: string; name: string; text: string; method: boolean; isStatic: boolean; isAbstract: boolean }>'
+        description: メンバー（記載の順）
+  - name: MapClassEnd
+    title: クラス図の関係の端
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapのクラス図』の `layout.ends` の 1 件
+    properties:
+      - name: wire
+        type: string
+        description: 関係の ID（`r{番号}`）
+      - name: at
+        type: '"from" | "to"'
+        description: 線の元と先のどちらの端か
+      - name: shape
+        type: '"triangle" | "diamond-filled" | "diamond-open" | "arrow" | undefined'
+        description: 端の形
+      - name: card
+        type: string | undefined
+        description: 多重度
 functions:
   - name: renderMapFlow
     title: mapの構成図のHTML
@@ -457,6 +492,181 @@ functions:
         condition: '`x: 100`・`y: 50`・`width: 120`・ラベル `保存する`'
         mock: なし
         expected: '`path` の始点が `(220, 64)`、終点が `(160, 50)` で、ラベル `保存する` と `aria-label` を持つ押せる帯がある'
+  - name: renderMapClassDiagram
+    title: mapのクラス図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのクラス図』。`renderMapFlow` のクラスのノードに、種類の行の注釈（`«…»`）と `renderMapClassMembers` の開閉のボタンとメンバーの区画を入れ、`renderMapClassEnds` の端の形・多重度・ラベルを重ねる。関係の線は矢じりを持たず（`..` は破線）、関係のラベルは `layout` の線から取って線の中ほどに描き、ノートのノード（`note_{番号}`）は種類の行「ノート」を持つ。クラスの大きさは `MAP_CLASS`（幅・名前の行・メンバーの行・区切り線）で決める
+    scope: public
+    callees:
+      - MOD-472-133#functions[renderMapFlow]
+    args:
+      - name: args
+        type: 'MapFlowArgs & { classes: MapClassNode[]; ends: MapClassEnd[]; terms?: Record<string, string> }'
+        required: true
+        description: '構成図の部品の引数（`layout` の線は `spreadMapEnds` でずらした線）と、クラスの中身・関係の端。`notes` の `{クラス}.{メンバー}` の説明と `annotations` の注記は、そのクラスの `renderMapClassMembers` にメンバーの名前ごとに渡す（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）'
+    returns:
+      type: MapPart
+      description: 図の中身とツールチップの HTML
+    unit_tests:
+      - name: test_render_map_class_diagram
+        case: 正常
+        summary: クラス図の部品
+        condition: モックの `CLASS` を `classPartInputs` の上書きで配置し、「基本図形」の `描く` に説明を指定する
+        mock: なし
+        expected: 「図形」の種類の行に `«interface»` があり、「基本図形」のノードに開閉のボタンと区画 2 つがあり、`描く` の行に説明のボタンがある。端の形の `path` が 6、多重度の文字が 2、ラベル `描く` が 1 つで、ノートのノードの種類の行が「ノート」
+      - name: test_render_map_class_diagram_when_hints_off
+        case: 正常
+        summary: ヒントがオフなら、メンバーの説明のボタンとツールチップを作らない
+        condition: test_render_map_class_diagram と同じ引数で、`hints` が `false`
+        mock: なし
+        expected: '`button.map-class-note` が無く、ツールチップに `描く` の説明が無い。メンバーの行は描かれる'
+  - name: renderMapClassMembers
+    title: mapのクラス図のメンバーのHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのクラス図』のクラスのノードの中身。属性とメソッドの区画（`role="list"`。区切り線で分ける）に、可視性・名前と型・説明のボタンの行（`role="listitem"`。静的は下線、抽象は斜体）を `MAP_CLASS.row` の高さで並べ、名前の行にメンバーの開閉のボタン（`data-node-toggle`）を描く
+    scope: public
+    args:
+      - name: item
+        type: '{ node: MapClassNode; notes: Record<string, string>; collapsed: boolean; annotations?: Record<string, Array<{ number: number; html: string }>>; ownerPrefix?: string; hints?: boolean }'
+        required: true
+        description: クラスと、メンバーの名前ごとの説明・注記と、メンバーを閉じているか。説明のボタンは `aria-label="{メンバー名}の説明"` を持ち、注記の扱いは `renderMapEr` の列と同じ
+    returns:
+      type: '{ toggle: string; members: string; tips: string }'
+      description: 開閉のボタン・メンバーの区画・説明のツールチップの HTML
+    unit_tests:
+      - name: test_render_map_class_members
+        case: 正常
+        summary: メンバーの区画
+        condition: モックの「基本図形」
+        mock: なし
+        expected: 区画が 2 つ（属性 2 行・メソッド 1 行）で、`数` の行が静的の class、`描く` の行が抽象の class を持ち、開閉のボタンが `aria-expanded="true"` と `aria-label="基本図形のメンバーを閉じる"`
+      - name: test_render_map_class_members_when_collapsed
+        case: 正常
+        summary: メンバーを閉じた
+        condition: '`collapsed: true`'
+        mock: なし
+        expected: 区画が無く、開閉のボタンの文字が `メンバー 3`
+  - name: renderMapClassEnds
+    title: クラス図の端の形と多重度のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 関係の端の形（白抜きの三角・黒と白のひし形・開いた矢じり）と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの `svg.map-class-ends`。形と文字は `aria-hidden` で、`data-wire-mark` に関係の ID を持つ。多重度とラベルの重なりは `renderMapErMarks` と同じくずらす
+    scope: public
+    args:
+      - name: args
+        type: '{ layout: MapLayout; ends: MapClassEnd[]; dim: ReadonlySet<string> }'
+        required: true
+        description: 配置の結果・関係の端・薄くする関係の ID
+    returns:
+      type: string
+      description: SVG の HTML
+  - name: spreadMapEnds
+    title: 同じ点の線の端をずらす
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 同じ点から出る・入る線の端を、辺に沿って `MAP_CLASS.endGap`（16px）ずつ、ずらした幅の中ほどが元の点になるようにずらし、端から次の点までの区間を辺と直角に保つ（クラス図・C4 図）
+    scope: public
+    args:
+      - name: layout
+        type: MapLayout
+        required: true
+        description: 配置の結果
+    returns:
+      type: MapLayout["wires"]
+      description: ずらした線
+    unit_tests:
+      - name: test_spread_map_ends
+        case: 正常
+        summary: 同じ点に入る 3 本
+        condition: ノードの上の辺の中ほどに先の端を持つ線 3 本
+        mock: なし
+        expected: 3 本の先の端の x が 16px ずつ違い、中ほどの端が元の点で、端から次の点までの区間が縦
+  - name: renderMapArchitecture
+    title: mapのアーキテクチャ図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのアーキテクチャ図』。`renderMapFlow` に、group のタイトル（閉じた group のタイトルを含む）のアイコンと、junction の点（`shapes` の `junction`。`data-shape="junction"`・`role="img"`・`aria-label="分岐点"`。フォーカスを持たない）を加え、線の矢じりを `head` のとおりに描く（`start` は点の並びを逆にして終点の矢じりで描く）。アイコンは Lucide の `cloud`・`database`・`hard-drive`・`globe`・`server` を配布物にまとめて描く
+    scope: public
+    callees:
+      - MOD-472-133#functions[renderMapFlow]
+    args:
+      - name: args
+        type: 'MapFlowArgs & { groupIcons: Record<string, string>; junctions: string[]; heads: Record<string, "none" | "end" | "start" | "both">; terms?: Record<string, string> }'
+        required: true
+        description: 構成図の部品の引数（`layout` の線は `rewireMapArchitecture` で引き直した線）と、group ごとのアイコン・junction の ID・線ごとの矢じり
+    returns:
+      type: MapPart
+      description: 図の中身とツールチップの HTML
+    unit_tests:
+      - name: test_render_map_architecture
+        case: 正常
+        summary: アーキテクチャ図の部品
+        condition: モックの `ARCH` を配置して `rewireMapArchitecture` で引き直す
+        mock: なし
+        expected: '`cloud`・`app` のタイトルにアイコンの `svg` があり、`hub` が `data-shape="junction"` と `aria-label="分岐点"` を持ち `tabindex` を持たない。`r3` の線が矢じりを持たず、`r1` が先の側に矢じりを持つ'
+  - name: rewireMapArchitecture
+    title: アーキテクチャ図の線の引き直し
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 線を、指定の辺の中ほどから `MAP_ARCH.endOut`（16px）外へ出た 2 点を直角につなぐ経路に引き直す。2 点は、出る辺と入る辺がどちらも左右なら中ほどの縦の区間で、どちらも上下なら中ほどの横の区間で、左右と上下の組なら 1 回だけ折れてつなぐ（折れる点の 2 つの候補のうち、両端の矩形の中を通らない方）
+    scope: public
+    args:
+      - name: args
+        type: '{ layout: MapLayout; edges: ArchEdge[]; collapsed: string[]; ends?: Record<string, { from?: string; to?: string }> }'
+        required: true
+        description: 配置の結果・線の辺の指定・閉じた group・補足の `layout` の `{線}.ends`
+    returns:
+      type: MapLayout["wires"]
+      description: 引き直した線
+    process: |-
+      1. 辺を、補足の `ends` → Mermaid の辺の指定の順に選ぶ
+      2. `{group}` を持つ端は、その service を含む group の枠を、閉じた group の中の service の端と閉じた group を指す端は、閉じたノードを端の矩形にする
+    unit_tests:
+      - name: test_rewire_map_architecture
+        case: 正常
+        summary: 辺の指定と group の端
+        condition: モックの `ARCH` を配置する
+        mock: なし
+        expected: '`r3` の始点が `api` の下の辺の中ほど、終点が `worker` の上の辺の中ほどで、点が全て縦か横の区間でつながる。`r4` の始点が `app` の枠の右の辺の中ほどで、`ends` で上の辺へ入る `r2` の終点が `api` の上の辺の中ほどで、`r2` のどの区間も `api` の矩形の中を通らない'
+  - name: renderMapC4Diagram
+    title: mapのC4図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのC4図』。`renderMapFlow` の要素のノードの名前の下に説明（`p.map-c4-description`。中の用語は名前と同じ下線とツールチップ）を入れ、外部の要素のノードに `map-c4-external`（灰色の面）を付け、境界のグループを破線の枠（`.map-c4-boundary`）にしてタイトルの後ろに種類（`［Enterprise］`・`［Software System］`）を付ける。`reversed` の線は点の並びを逆にして、矢じりを線の元の側に描く
+    scope: public
+    callees:
+      - MOD-472-133#functions[renderMapFlow]
+    args:
+      - name: args
+        type: 'MapFlowArgs & { descriptions: Record<string, string>; boundaries: Record<string, "enterprise" | "system" | "boundary">; externals: string[]; reversed: string[]; terms?: Record<string, string> }'
+        required: true
+        description: 構成図の部品の引数（`layout` の線は `spreadMapEnds` でずらした線）と、要素ごとの説明・境界ごとの種類
+    returns:
+      type: MapPart
+      description: 図の中身とツールチップの HTML
+    unit_tests:
+      - name: test_render_map_c4_diagram
+        case: 正常
+        summary: C4 図の部品
+        condition: モックの `C4` を `c4ToFlowchart` の上書きで配置する
+        mock: なし
+        expected: '`store` のノードに説明 `注文と支払いを受け付ける` があり、`terms` の `支払い` が説明の中で `span.mdmark-term` になる。`pay` の種類の行が `[External Software System]` で `map-c4-external` を持ち、`store` は持たない。`company` と `shop` のグループが `.map-c4-boundary` で、タイトルが `自社［Enterprise］`・`通販［Software System］`'
   - name: renderMapBand
     title: 案内の帯のHTML
     kind: 関数

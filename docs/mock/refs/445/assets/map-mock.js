@@ -1,7 +1,8 @@
 // map の図のモック: Mermaid と補足を PoC の自動配置で配置し、今のフロー図・シーケンス図の部品（配布物の mount）で描く。
 // 入れ子のグループ・中へ入る・開閉・案内・再生は、描いた図の上に足す。実装の mount が描く構造の案
 
-import { mount } from "../../../../../dist/index.js";
+// フロー図の部品（<!-- flow -->）を描ける版（v0.12.0）の配布物で描く
+import { mount } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.12.0/dist/index.js";
 import { layoutMap, parseFlowchart, parseSequence } from "./map-layout.js";
 
 /** 自動で進める間隔の既定（秒）。文書ではマーカーの引数 `interval` で指定し、画面からは変えない */

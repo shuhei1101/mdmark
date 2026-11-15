@@ -192,7 +192,7 @@ scenarios:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: 書き方を誤った map の Markdown
-        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印の JSON のオブジェクトに知らないキーを 1 つ足したもの
+        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印の JSON のオブジェクトに知らないキーを 1 つ足したものと、正常シナリオ（クラス図）・正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）の文書の mermaid のブロックに、それぞれ読めない行を 1 行ずつ足したもの
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -206,7 +206,7 @@ scenarios:
         P-->>U: 文書を表示
     expected:
       - 図の枠の上に書き方の警告があり、読めない行と補足の知らないキーの 2 つを指す。印の知らないキーは警告に出さない（点検が通知する）
-      - 読めた部分のノードと線で図が描かれている
+      - 読めた部分のノードと線で図が描かれている。クラス図・アーキテクチャ図・C4 図の文書でも、図の枠の上に読めない行を指す書き方の警告があり、読めた部分の図が描かれている
       - 図の後ろの本文が描かれている
     test: test_normal_when_unreadable
   - name: 正常シナリオ（描かない図の種類）
@@ -214,7 +214,7 @@ scenarios:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: 描かない種類の map を持つ Markdown
-        description: map の範囲の中の mermaid のブロックの 1 行目が `classDiagram` の文書と、範囲の中に mermaid のブロックが無い文書
+        description: map の範囲の中の mermaid のブロックの 1 行目が `pie` の文書と、範囲の中に mermaid のブロックが無い文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -227,7 +227,7 @@ scenarios:
         M-->>P: 書き方の警告と、範囲の中身
         P-->>U: 文書を表示
     expected:
-      - '`classDiagram` の範囲に、描かない図の種類である旨と、描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`）の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
+      - '`pie` の範囲に、描かない図の種類である旨と、描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`）の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
       - mermaid のブロックが無い範囲に、mermaid のブロックが無い旨の書き方の警告がある
       - どちらの範囲でも、補足の文字が出ていない
     test: test_normal_when_unsupported_kind
@@ -432,3 +432,130 @@ scenarios:
       - ノードを押しても `javascript:` のリンク先が動かない
       - 段落が描かれている
     test: test_error_when_node_link_not_allowed
+  - name: 正常シナリオ（クラス図）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: クラス図の map を持つ Markdown
+        description: 'classDiagram の mermaid のブロック（クラス 6 つ・関係 7 本）と補足を持つ map の範囲の文書。印に `{"title": "型の構成"}` を持つ'
+        notes: クラスは「図面」「図形」「基本図形」「円」「一覧」「描画器」の 6 つ。「図形」は `<<interface>>`、「一覧」は型の引数 `~T~` を持ち、「基本図形」は抽象のメソッド `描く()*` を持つ。メンバーは可視性（`+`・`-`・`#`・`~`）・型・メソッドの引数と戻り値・静的（`$`）・抽象（`*`）を含む。関係 7 本は記載順に「基本図形 `..|>` 図形」「基本図形 `<|--` 円」「図面 `*--` 基本図形」「図面 `o--` 一覧」「描画器 `-->` 図面（ラベル「描く」）」「描画器 `..>` 図形」「一覧 `"1" -- "*"` 円」。「図形」「基本図形」「円」を `namespace 形状` に入れる。`note for 描画器` を持つ。補足の `notes` はキー「基本図形」（クラス名）・「基本図形.描く」（`{クラス名}.{メンバー名}`）・「r5」（関係の記載順の `r{番号}`）で説明を持ち、補足の `layout` で「一覧」の色と「描画器」の座標を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: クラス・メンバー・関係・namespace と補足を読み込む
+        M->>M: namespace の内側から配置し、関係の経路を決める
+        M-->>P: 図の枠に入れたクラス図
+        P-->>U: 文書を表示
+    expected:
+      - クラスごとに、クラス名の行・属性の行・メソッドの行を区切り線で分けた箱が描かれ、`<<interface>>` はクラス名の上に、型の引数は `<T>` の形でクラス名に出る
+      - メンバーの行に可視性の記号・名前・型が出て、静的なメンバーは下線、抽象のメンバーは斜体で描かれる
+      - namespace の 3 つのクラスが namespace の名前のタイトルを持つ箱の中に描かれる
+      - 関係の線が記号に合った端の形（継承と実現は白抜きの三角、合成は黒のひし形、集約は白のひし形、関連は矢じり、依存は点線の矢じり）で描かれ、`..` の線は点線で、多重度は両端の近くに、ラベルは線の上に出る
+      - クラスと namespace の箱が重ならず、関係の線が両端とその祖先以外を横切らない
+      - '`note for` のノートがクラスの近くに置かれ、クラスと点線でつながる'
+      - 説明を持つクラス・メンバー・関係にツールチップのマーカーがあり、フォーカスかポインターで説明が出る。補足の `layout` の色・座標・並び順の指定と、正常シナリオ（ノードと線を動かす）のドラッグが、構成図と同じ規則でクラス・namespace・関係に当たる
+      - mermaid のライブラリへの要求が 0 件
+    test: test_normal_when_class
+  - name: 正常シナリオ（アーキテクチャ図）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: アーキテクチャ図の map を持つ Markdown
+        description: architecture-beta の mermaid のブロック（group 2 つ・service 6 つ・junction 1 つ・線 6 本）と補足を持つ map の範囲の文書
+        notes: group の 1 つは別の group の中（`in {ID}`）にある。service のアイコンに `cloud`・`database`・`disk`・`internet`・`server` を含む。線は辺の指定（`:R -- L:`・`:B --> T:`）を持ち、1 本は矢じり、1 本は group の辺から出る（`{ID}{group}`）。補足の `notes` はキーに service の ID と線の記載順の `r{番号}` を使用して 1 つの service と 1 本の線に説明を持ち、補足の `layout` で 1 つの service の座標と、辺の指定を持つ線 1 本の端の辺（`ends`）を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: group・service・junction・線の辺を読み込む
+        M->>M: group の内側から配置し、線の辺の指定に合わせて並べる
+        M-->>P: 図の枠に入れたアーキテクチャ図
+        P-->>U: 文書を表示
+    expected:
+      - service がアイコンと名前で描かれ、`cloud`・`database`・`disk`・`internet`・`server` がそれぞれ別のアイコンになる
+      - group が名前とアイコンのタイトルを持つ枠で中の service を囲み、入れ子の group は外の group の中に描かれる
+      - 線が指定した辺から出て指定した辺に入り、`R -- L` の 2 つの service は左右に、`B --> T` の 2 つは上下に並ぶ
+      - junction は小さい点で描かれ、そこで線が分かれる
+      - service と group が重ならず、線が両端とその祖先以外を横切らない
+      - 説明を持つ service と線にツールチップのマーカーがあり、フォーカスかポインターで説明が出る。補足の `layout` の指定とドラッグは構成図と同じ規則で当たり、`layout` の `ends` を持つ線は Mermaid の辺の指定より `ends` の辺を優先する
+      - mermaid のライブラリへの要求が 0 件
+    test: test_normal_when_architecture
+  - name: 正常シナリオ（C4 図）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: C4 図の map を持つ Markdown
+        description: C4Context の mermaid のブロック（境界 2 つ・要素 7 つ・関係 6 本）と補足を持つ map の範囲の文書
+        notes: 要素は `Person`・`Person_Ext`・`System`・`System_Ext`・`SystemDb`・`SystemQueue` を含み、どれも説明の引数を持つ。境界は `Enterprise_Boundary` の中に `System_Boundary` を持つ。関係は `Rel`・`BiRel`・`Rel_D`・`Rel_R` を含み（`Rel_D` と `Rel_R` の両端はどれも `System_Boundary` の中にある）、1 本は技術の引数を持つ。補足の `notes` はキーに要素・境界の別名（第 1 引数）と関係の記載順の `r{番号}` を使用して 1 つの要素に説明を持ち、補足の `layout` で `Rel_D` の相手の要素の座標を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 境界・要素・関係を読み込む
+        M->>M: 境界の内側から配置し、関係の向きの指定に合わせて並べる
+        M-->>P: 図の枠に入れた C4 図
+        P-->>U: 文書を表示
+    expected:
+      - 要素が種類の行（`[Person]`・`[Software System]` など）・名前・説明を持つ箱で描かれ、人は人のアイコン、`SystemDb` はデータベースのアイコン、`SystemQueue` は角の丸い横長の形、`_Ext` の要素は種類の行が `[External Person]`・`[External Software System]` で灰色の面で描かれる
+      - 境界が名前と種類のタイトルを持つ破線の枠で中の要素を囲み、入れ子の境界は外の境界の中に描かれる
+      - 関係の線がラベルと技術（`[HTTPS]` など）を持ち、`BiRel` は両向きの矢じり、`Rel_D` の相手は下に、`Rel_R` の相手は右に置かれる
+      - 要素と境界が重ならず、関係の線が両端とその祖先以外を横切らない
+      - 説明を持つ要素にツールチップのマーカーがあり、フォーカスかポインターで補足の説明が出る。補足の `layout` の指定とドラッグは構成図と同じ規則で当たり、`layout` の座標を持つ要素は `Rel_D`・`Rel_R` の向きの指定より座標を優先する
+      - mermaid のライブラリへの要求が 0 件
+    test: test_normal_when_c4
+  - name: 正常シナリオ（クラス図のクラスを選んで強調する）
+    setup:
+      - name: 図を描いたページ
+        description: 正常シナリオ（クラス図）のクラス図を描いたページ
+        notes: 選ぶ 1 つ目のクラスは「基本図形」で、関係の相手は「図形」「円」「図面」の 3 つ。2 つ選ぶ組は、最短の経路が「図面」を通る 1 本だけの「描画器」と「一覧」と、最短の経路が「基本図形」を通る 1 本と「一覧」を通る 1 本の 2 本の「図面」と「円」
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as クラス図
+        U->>D: 「基本図形」のクラス名の行を押す
+        D-->>U: そのクラスと関係の線と相手のクラスのほかを薄くする
+        U->>D: Esc を押してから「描画器」と「一覧」を押す
+        D-->>U: 2 つをつなぐ経路のクラスと関係だけを残す
+        U->>D: Esc を押してから「図面」と「円」を押す
+        D-->>U: 2 本の最短の経路のクラスと関係を全て残す
+        U->>D: Esc を押す
+        D-->>U: 選択を解く
+    expected:
+      - 「基本図形」を選ぶと、「基本図形」・3 本の関係の線・「図形」「円」「図面」の表示は変わらず、「一覧」「描画器」とほかの関係が薄くなる
+      - 「描画器」と「一覧」を選ぶと、「図面」を通る経路の 3 つのクラスと 2 本の関係だけが残る
+      - 「図面」と「円」を選ぶと、「基本図形」を通る経路と「一覧」を通る経路の両方のクラスと関係が残る
+      - メンバーの行を押しても選択は変わらず、メンバーの文字を選んでコピーできる
+      - Esc か「配置と選択を元に戻す」で選択が解け、クラスの箱はキーボードで選べ、選んでいるかの状態をスクリーンリーダー向けに持つ
+    test: test_normal_when_class_selected
+  - name: 正常シナリオ（アーキテクチャ図・C4 図の項目を選んで強調する）
+    setup:
+      - name: 図を描いたページ
+        description: 正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）の図を描いたページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        U->>D: アーキテクチャ図の service・C4 図の要素を押す
+        D-->>U: その項目とつながる線と相手のほかを薄くする
+        U->>D: 相手の項目の 1 つも押す
+        D-->>U: 選んだ 2 つの間の線と両端のほかを薄くする
+    expected:
+      - 2 つの種類とも、項目の選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる
+    test: test_normal_when_architecture_c4_selected

@@ -1,0 +1,72 @@
+id: MOD-596-4
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / class-view.ts
+test_files:
+  - tests/unit/src/map/class-view.browser.test.ts
+functions:
+  - name: attachMapClass
+    title: クラス図を付ける
+    kind: 関数
+    container: src/map/class-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`classDiagram` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・選択・案内・強調を付けたうえで、メンバーの区画・注釈・関係の端の形と多重度・メンバーの開閉を追加する'
+    scope: public
+    callees:
+      - MOD-596-1#functions[parseClassDiagram]
+      - MOD-596-1#functions[classToFlowchart]
+      - MOD-596-1#functions[classPartInputs]
+      - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-130#functions[neighborKept]
+      - MOD-472-130#functions[shortestPathKept]
+      - MOD-472-133#functions[spreadMapEnds]
+      - MOD-472-133#functions[renderMapClassDiagram]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`（`data-map-kind="classDiagram"`）'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: '`parseMapArgs` の結果'
+    returns:
+      type: MapFlowHandle
+      description: 構成図と同じ操作の口
+    process: |-
+      1. `parseClassDiagram` と `classToFlowchart` で `Flowchart` を作り、`attachMapFlow` に `extension` と一緒に指定する
+      2. `extension.kinds` に `MAP_CLASS_KINDS`、`extension.lines` に矢じりを持たない線の種類を指定する
+      3. `extension.overrides` に `classPartInputs` の上書き、`extension.collapsibles` にクラスの ID（メンバーを閉じた状態は `collapsed` に持つ）、`extension.rewire` に `spreadMapEnds`、`extension.render` に `classPartInputs` のメンバー・注釈・端を指定した `renderMapClassDiagram` を指定する
+      4. `extension.selectable` で、ノート（`note_{番号}`）を選ばない。`extension.selectionOf` で、クラスを 1 つ選べば `neighborKept` の関係と相手、2 つ選べば `shortestPathKept` の経路を残す。メンバーの区画（`.map-class-members`）を押しても選ばない
+      5. `extension.collapsedTag` で、閉じた `namespace` に「クラス {数} 件」を返却する
+    unit_tests:
+      - name: test_attach_map_class
+        case: 正常
+        summary: メンバーと関係の端
+        condition: モックの `CLASS`・`CLASS_DATA` の範囲
+        mock: なし
+        expected: 「基本図形」のノードにメンバーの行が 3 つ（属性 2・メソッド 1 の区画）あり、`描く` の行が斜体の class を持ち説明のボタンがある。`r1` の線の「図形」の側の端に白抜きの三角、`r7` の両端に多重度の文字がある
+      - name: test_attach_map_class_when_members_collapsed
+        case: 正常
+        summary: メンバーを閉じる
+        condition: 「基本図形」の開閉のボタンを押す
+        mock: なし
+        expected: 「基本図形」にメンバーの行が無く、ボタンの文字が `メンバー 3` で `aria-expanded="false"`
+      - name: test_attach_map_class_when_shared_ends
+        case: 正常
+        summary: 同じ点から出る端
+        condition: モックの `CLASS` で、「基本図形」に入る `r1`・`r2`・`r3` の端が同じ点になる配置
+        mock: なし
+        expected: 3 本の端が辺に沿って 16px ずつずれ、端の形が重ならない
+      - name: test_attach_map_class_when_note_pressed
+        case: 正常
+        summary: ノートは選ばない
+        condition: モックの `CLASS` で、ノート `note_1` を押す
+        mock: なし
+        expected: どのノードも `data-selected` を持たず、`map-dim` を持つノードが無い
+refs:
+  - IF-472-35#constraints[map のクラス図]

@@ -38,7 +38,7 @@ flowchart LR
 
 `<!-- map -->` 〜 `<!-- /map -->` の範囲の `mermaid` のブロックが、座標を記載しなくても自動で配置した図になる。
 `subgraph` はグループになり、入れ子の内側から配置する。
-描くのは Mermaid の 1 行目が `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`（`stateDiagram`）の図。
+描くのは Mermaid の 1 行目が `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`（`stateDiagram`）・`classDiagram`・`architecture-beta`・`C4Context` の図。
 グループの分け方は [構成図の決まり](./構成図の決まり.mark.md#グループにするかの判定) の判定フローチャートで決める。
 マーカーの引数（`title`・`focus`・`play`・`interval`・`collapse`）は [map の引数](./記法.mark.md#map)。
 
@@ -200,6 +200,102 @@ stateDiagram-v2
 補足に `walkthroughs` が無いときは、図の下の帯で遷移を記載順に 1 本ずつ再生する。
 補足の ID は、状態の ID・遷移の記載順の `t{番号}`。
 
+### クラス図を描く
+
+````markdown
+<!-- map: {"title": "型の構成"} -->
+
+```mermaid
+classDiagram
+  namespace 形状 {
+    class 図形 {
+      <<interface>>
+      +面積() float
+    }
+    class 円 {
+      -半径 float
+      +面積() float
+    }
+  }
+  class 図面 {
+    +追加(図形 g) void
+  }
+  円 ..|> 図形
+  図面 "1" o-- "*" 図形 : 持つ
+```
+
+<!-- map-data: {"version": 1, "notes": {"図形.面積": {"text": "単位は平方ピクセル"}, "r2": {"text": "図面は図形を並べる"}}} -->
+
+<!-- /map -->
+````
+
+クラスは、名前の行と、区切り線で分けた属性とメソッドの区画を持つノードになる。
+`<<…>>` は名前の上の `«…»`、`~T~` は名前の `<T>`、静的（`$`）は下線、抽象（`*`）は斜体で描く。
+関係の線は矢じりを持たず、記号の側の端に形（継承と実現は白抜きの三角、合成は黒のひし形、集約は白のひし形、関連と依存は開いた矢じり）を、端の近くに多重度を出す。
+`namespace` はグループ、`note for` は破線でつないだノートのノードになる。
+補足の ID は、クラス名・`{クラス名}.{メンバー名}`・`namespace` の ID・関係の記載順の `r{番号}`。
+
+### アーキテクチャ図を描く
+
+````markdown
+<!-- map: {"title": "配置の構成"} -->
+
+```mermaid
+architecture-beta
+  group app(server)[アプリ]
+  service web(internet)[利用者のブラウザ]
+  service api(server)[API サーバー] in app
+  service worker(server)[ジョブ] in app
+  service db(database)[データベース]
+  web:R --> L:api
+  api:B -- T:worker
+  api{group}:R -- L:db
+```
+
+<!-- map-data: {"version": 1, "notes": {"r2": {"text": "時間の掛かる処理をジョブへ渡す"}}} -->
+
+<!-- /map -->
+````
+
+service はアイコン（`cloud`・`database`・`disk`・`internet`・`server`）と名前のノード、group はアイコンと名前のタイトルを持つグループ、`junction` は小さい点になる。
+左から右へ配置し、上下の辺（`T`・`B`）でつなぐ 2 つは同じ段に縦に並べる。別の group にある 2 つは、同じ段に並ばない場合がある。
+線は指定の辺の中ほどから出て、指定の辺の中ほどへ入る。`{group}` を付けた端は、その service を含む group の枠の辺から出る。
+補足の `layout` の `ends` は、Mermaid の辺の指定より優先する。
+補足の ID は、service・group・junction の ID・線の記載順の `r{番号}`。
+
+### C4 図を描く
+
+````markdown
+<!-- map -->
+
+```mermaid
+C4Context
+  title 注文のシステムの全体
+  Person(customer, "顧客", "商品を注文する人")
+  System_Boundary(shop, "通販") {
+    System(store, "注文のシステム", "注文と支払いを受け付ける")
+    System(stock, "在庫のシステム", "在庫の数を持つ")
+    SystemDb(orders, "注文のデータベース", "注文と明細を保存する")
+  }
+  System_Ext(pay, "決済代行", "カードの決済")
+  Rel(customer, store, "注文する", "HTTPS")
+  Rel_D(store, orders, "保存する")
+  Rel_R(store, stock, "在庫を引き当てる")
+  Rel(store, pay, "決済する")
+```
+
+<!-- map-data: {"version": 1, "notes": {"store": {"text": "注文の受付から通知までを持つ"}}} -->
+
+<!-- /map -->
+````
+
+要素（`Person`・`System`・`SystemDb`・`SystemQueue` とその `_Ext`）は、種類の行・名前・説明を持つノードになる。
+`SystemDb` はデータベースのアイコン、`SystemQueue` は角の丸い横長の形、`_Ext` は灰色の面と種類の行の `External` で描き分ける。
+境界（`Enterprise_Boundary`・`System_Boundary`・`Boundary`）は、名前と種類のタイトルを持つ破線のグループになる。
+上から下へ配置し、`Rel_R`・`Rel_L` の相手は同じ段の右・左、`Rel_D`・`Rel_U` の相手は下・上の段に置く。別の境界にある 2 つは、同じ段に並ばない場合がある。関係のラベルの後ろに `[{技術}]` を出す。
+`title` の行は、マーカーに `title` が無いときの図の枠のタイトルになる。
+補足の ID は、要素・境界の別名（第 1 引数）・関係の記載順の `r{番号}`。描くのは `C4Context` だけ。
+
 ### 読者ができること
 
 | 操作 | 結果 |
@@ -212,6 +308,8 @@ stateDiagram-v2
 | ER 図のテーブルの開閉のボタンを押す | 列を閉じて、テーブル名と列の数の 1 行にする |
 | ER 図のテーブルを 2 つ押す | 2 つをつなぐ最短の経路を全て残し、1 の側から多の側へたどる関連に「×n」のマーカーを付ける。マーカーにフォーカスすると、行が増える理由を出す |
 | 状態遷移図の状態を押す | その状態に入る遷移と出る遷移のほかを薄くする |
+| クラス図のクラスの開閉のボタンを押す | メンバーを閉じて、クラス名とメンバーの数の 1 行にする |
+| クラス図のクラス・アーキテクチャ図の service・C4 図の要素を押す | 1 つならつながる線と相手、2 つならつなぐ最短の経路のほかを薄くする |
 
 中へ入った状態と開閉は同じタブの中で描き直しても保ち、中へ入ったグループは URL のクエリ文字列 `map-{図の番号}` にも保つ。
 拡大・縮小・全画面・リサイズハンドルは [図を描く](./図を描く-図を描く.md#読者ができること) と同じ。

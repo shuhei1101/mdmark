@@ -1,0 +1,65 @@
+id: MOD-596-5
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / architecture-view.ts
+test_files:
+  - tests/unit/src/map/architecture-view.browser.test.ts
+functions:
+  - name: attachMapArchitecture
+    title: アーキテクチャ図を付ける
+    kind: 関数
+    container: src/map/architecture-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`architecture-beta` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・選択・案内・強調を付けたうえで、service と group のアイコン・junction の点・辺の指定どおりの線を追加する'
+    scope: public
+    callees:
+      - MOD-596-2#functions[parseArchitecture]
+      - MOD-596-2#functions[architectureToFlowchart]
+      - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-130#functions[neighborKept]
+      - MOD-472-130#functions[shortestPathKept]
+      - MOD-472-133#functions[rewireMapArchitecture]
+      - MOD-472-133#functions[renderMapArchitecture]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`（`data-map-kind="architecture"`）'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: '`parseMapArgs` の結果'
+    returns:
+      type: MapFlowHandle
+      description: 構成図と同じ操作の口
+    process: |-
+      1. `parseArchitecture` と `architectureToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
+      2. `extension.kinds` に `MAP_ARCH_KINDS`、`extension.overrides` に `architectureToFlowchart` の上書きを指定する
+      3. `extension.rewire` に `rewireMapArchitecture`（線の辺の指定・`{group}`・補足の `layout` の `r{番号}.ends`・閉じた group を指定する）、`extension.render` に group のアイコン・junction・線の矢じり（構成図の線の元と先を入れ替えた線は、始点と終点を入れ替えた矢じり）を指定した `renderMapArchitecture` を指定する
+      4. `extension.selectable` で、junction を選ばない。`extension.selectionOf` で、service を 1 つ選べば `neighborKept` の線と相手、2 つ選べば `shortestPathKept` の経路を残す
+      5. `extension.collapsedTag` で、閉じた group に「service {数} 件」を返却する
+    unit_tests:
+      - name: test_attach_map_architecture
+        case: 正常
+        summary: アイコンと辺
+        condition: モックの `ARCH`・`ARCH_DATA` の範囲
+        mock: なし
+        expected: '`db` のノードにデータベースのアイコン、`app` のタイトルにサーバーのアイコンがあり、`hub` が `data-shape="junction"` を持つ。`r3` の線の始点が `api` の下の辺の中ほど、終点が `worker` の上の辺の中ほどで、`r2` の終点が `api` の上の辺の中ほど'
+      - name: test_attach_map_architecture_when_group_end
+        case: 正常
+        summary: group の辺から出る線
+        condition: モックの `ARCH` で、group「アプリ」を閉じる
+        mock: なし
+        expected: '`r4` をまとめた線 `app->hub` の始点が閉じた `app` のノードの右の辺の中ほどで、`app` のノードに「service 2 件」がある'
+      - name: test_attach_map_architecture_when_junction_pressed
+        case: 正常
+        summary: junction は選ばない
+        condition: モックの `ARCH` で、`hub` を押す
+        mock: なし
+        expected: どのノードも `data-selected` を持たず、`map-dim` を持つノードが無い
+refs:
+  - IF-472-35#constraints[map のアーキテクチャ図]

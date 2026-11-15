@@ -1,0 +1,861 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds
+
+ ❯ |unit| tests/unit/src/parts/map.test.ts (39 tests | 8 failed) 10509ms
+   × test_render_map_class_diagram 82ms
+   × test_render_map_class_diagram_when_hints_off 4ms
+   × test_render_map_class_members 0ms
+   × test_render_map_class_members_when_collapsed 0ms
+   × test_spread_map_ends 0ms
+   × test_rewire_map_architecture 310ms
+   × test_render_map_architecture 108ms
+   × test_render_map_c4_diagram 244ms
+ ❯ |unit| tests/unit/src/map/check.test.ts (20 tests | 3 failed) 1801ms
+   × test_collect_map_problems_when_unsupported_kind 8ms
+   × test_collect_map_structure_when_class_architecture_c4 5ms
+   × test_collect_map_problems_when_class_architecture_c4 1ms
+5:02:19 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/class-view.ts" from "tests/unit/src/map/class-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-view.browser.test.ts:7:35
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** クラス図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadClassView = () => import("../../../../src/map/class-view.ts");
+     |                                     ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/class-view.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/map/layout.test.ts (15 tests | 1 failed) 1593ms
+   × test_layout_map_when_rankless 3ms
+5:02:21 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/architecture-view.ts" from "tests/unit/src/map/architecture-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/architecture-view.browser.test.ts:7:34
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** アーキテクチャ図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadArchView = () => import("../../../../src/map/architecture-view.ts");
+     |                                    ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/architecture-view.browser.test.ts (0 test)
+5:02:23 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/c4-view.ts" from "tests/unit/src/map/c4-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/c4-view.browser.test.ts:7:32
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** C4 図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadC4View = () => import("../../../../src/map/c4-view.ts");
+     |                                  ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx (5 tests | 1 failed) 15214ms
+   × test_preview_status_when_reload_clicked 15074ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests | 1 failed) 15538ms
+   × test_config_band_when_clicked 15394ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test | 1 failed) 15178ms
+   × test_app_when_render_error 15178ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts (3 tests | 2 failed) 30119ms
+   × test_attach_er_folds 15073ms
+   × test_attach_er_folds_when_states 15022ms
+ ❯ |unit| tests/unit/src/map/class-diagram.test.ts (5 tests | 5 failed) 18ms
+   × test_parse_class_diagram 6ms
+   × test_parse_class_diagram_when_unreadable 2ms
+   × test_parse_class_diagram_when_unclosed 2ms
+   × test_class_to_flowchart 2ms
+   × test_class_part_inputs 5ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx (3 tests | 3 failed) 45163ms
+   × test_use_link_clicks 15065ms
+   × test_use_link_clicks_when_side_toc 15033ms
+   × test_use_link_clicks_when_open_asset 15065ms
+ ❯ |unit| tests/unit/vscode/scripts/build.test.ts (2 tests | 2 failed) 11559ms
+   × test_build_extension 7147ms
+   × test_build_extension_when_tests 4410ms
+ ❯ |unit| tests/unit/vscode/src/extensions-bundle.test.ts (2 tests | 2 skipped) 18ms
+ ❯ |unit| tests/unit/src/map/c4.test.ts (3 tests | 3 failed) 16ms
+   × test_parse_c4_context 8ms
+   × test_parse_c4_context_when_unclosed 3ms
+   × test_c4_to_flowchart 4ms
+ ❯ |unit| tests/unit/src/map/architecture.test.ts (3 tests | 3 failed) 22ms
+   × test_parse_architecture 11ms
+   × test_parse_architecture_when_unreadable 5ms
+   × test_architecture_to_flowchart 5ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/vscode/src/extensions-bundle.test.ts [ tests/unit/vscode/src/extensions-bundle.test.ts ]
+Error: Cannot find module 'esbuild-wasm/esbuild.wasm'
+Require stack:
+- /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/vscode/package.json
+ ❯ tests/unit/vscode/src/extensions-bundle.test.ts:24:13
+     22|   );
+     23|   await copyFile(
+     24|     require.resolve("esbuild-wasm/esbuild.wasm"),
+       |             ^
+     25|     join(extensionPath, "dist", "esbuild.wasm"),
+     26|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/architecture-view.browser.test.ts [ tests/unit/src/map/architecture-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/architecture-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/architecture-view.browser.test.ts?import&browserv=1794772940915
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts [ tests/unit/src/map/c4-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/c4-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/c4-view.browser.test.ts?import&browserv=1794772943024
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/class-view.browser.test.ts [ tests/unit/src/map/class-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-view.browser.test.ts?import&browserv=1794772937828
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/37]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 33 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/architecture.test.ts > test_parse_architecture
+Error: Cannot find module '/src/map/architecture.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/architecture.test.ts
+ ❯ tests/unit/src/map/architecture.test.ts:10:33
+      8| test("test_parse_architecture", async () => {
+      9|   // 準備
+     10|   const { parseArchitecture } = await loadArch();
+       |                                 ^
+     11|   // 実行
+     12|   const diagram = parseArchitecture(ARCH);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/architecture.test.ts > test_parse_architecture_when_unreadable
+Error: Cannot find module '/src/map/architecture.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/architecture.test.ts
+ ❯ tests/unit/src/map/architecture.test.ts:38:33
+     36| test("test_parse_architecture_when_unreadable", async () => {
+     37|   // 準備
+     38|   const { parseArchitecture } = await loadArch();
+       |                                 ^
+     39|   // 実行
+     40|   const diagram = parseArchitecture(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/architecture.test.ts > test_architecture_to_flowchart
+Error: Cannot find module '/src/map/architecture.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/architecture.test.ts
+ ❯ tests/unit/src/map/architecture.test.ts:52:58
+     50| test("test_architecture_to_flowchart", async () => {
+     51|   // 準備
+     52|   const { parseArchitecture, architectureToFlowchart } = await loadArc…
+       |                                                          ^
+     53|   // 実行
+     54|   const { chart, overrides } = architectureToFlowchart(parseArchitectu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/c4.test.ts > test_parse_c4_context
+Error: Cannot find module '/src/map/c4.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/c4.test.ts
+ ❯ tests/unit/src/map/c4.test.ts:10:30
+      8| test("test_parse_c4_context", async () => {
+      9|   // 準備
+     10|   const { parseC4Context } = await loadC4();
+       |                              ^
+     11|   // 実行
+     12|   const diagram = parseC4Context(C4);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/c4.test.ts > test_parse_c4_context_when_unclosed
+Error: Cannot find module '/src/map/c4.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/c4.test.ts
+ ❯ tests/unit/src/map/c4.test.ts:43:30
+     41| test("test_parse_c4_context_when_unclosed", async () => {
+     42|   // 準備
+     43|   const { parseC4Context } = await loadC4();
+       |                              ^
+     44|   // 実行
+     45|   const diagram = parseC4Context(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/c4.test.ts > test_c4_to_flowchart
+Error: Cannot find module '/src/map/c4.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/c4.test.ts
+ ❯ tests/unit/src/map/c4.test.ts:56:45
+     54| test("test_c4_to_flowchart", async () => {
+     55|   // 準備
+     56|   const { parseC4Context, c4ToFlowchart } = await loadC4();
+       |                                             ^
+     57|   // 実行
+     58|   const { chart, overrides } = c4ToFlowchart(parseC4Context(C4));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unsupported_kind
+AssertionError: expected 'この版の map で描ける図の種類は `flowchart`・`seque…' to contain 'classDiagram'
+
+Expected: "classDiagram"
+Received: "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` です。`pie` の図はコードブロックのまま表示しています。"
+
+ ❯ tests/unit/src/map/check.test.ts:210:32
+    208|   expect(problems[0]?.message).toContain("erDiagram");
+    209|   expect(problems[0]?.message).toContain("stateDiagram-v2");
+    210|   expect(problems[0]?.message).toContain("classDiagram");
+       |                                ^
+    211|   expect(problems[0]?.message).toContain("architecture-beta");
+    212|   expect(problems[0]?.message).toContain("C4Context");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_structure_when_class_architecture_c4
+AssertionError: expected [ …(3) ] to deeply equal [ [], [], [] ]
+
+- Expected
++ Received
+
+  [
+-   [],
+-   [],
+-   [],
++   [
++     {
++       "kind": "map_invalid",
++       "message": "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` です。`classDiagram` の図はコードブロックのまま表示しています。",
++     },
++   ],
++   [
++     {
++       "kind": "map_invalid",
++       "message": "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` です。`architecture-beta` の図はコードブロックのまま表示しています。",
++     },
++   ],
++   [
++     {
++       "kind": "map_invalid",
++       "message": "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` です。`C4Context` の図はコードブロックのまま表示しています。",
++     },
++   ],
+  ]
+
+ ❯ tests/unit/src/map/check.test.ts:336:52
+    334|   const container = kindOf('C4Container\n  Person(a, "A")\n');
+    335|   // 検証
+    336|   expect(results.map((result) => result.problems)).toEqual([[], [], []…
+       |                                                    ^
+    337|   expect(results.map((result) => result.kind)).toEqual([
+    338|     "classDiagram",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_class_architecture_c4
+AssertionError: expected [ 'map_invalid', 'map_invalid', …(1) ] to deeply equal [ 'map_unknown_ref', …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "map_unknown_ref",
+-   "map_unknown_ref",
+-   "map_unknown_ref",
++   "map_invalid",
++   "map_invalid",
++   "map_invalid",
+  ]
+
+ ❯ tests/unit/src/map/check.test.ts:373:51
+    371|   ];
+    372|   // 検証
+    373|   expect(problems.map((problem) => problem.kind)).toEqual([
+       |                                                   ^
+    374|     "map_unknown_ref",
+    375|     "map_unknown_ref",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_parse_class_diagram
+Error: Cannot find module '/src/map/class-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-diagram.test.ts
+ ❯ tests/unit/src/map/class-diagram.test.ts:10:33
+      8| test("test_parse_class_diagram", async () => {
+      9|   // 準備
+     10|   const { parseClassDiagram } = await loadClass();
+       |                                 ^
+     11|   // 実行
+     12|   const diagram = parseClassDiagram(CLASS);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_parse_class_diagram_when_unreadable
+Error: Cannot find module '/src/map/class-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-diagram.test.ts
+ ❯ tests/unit/src/map/class-diagram.test.ts:44:33
+     42| test("test_parse_class_diagram_when_unreadable", async () => {
+     43|   // 準備
+     44|   const { parseClassDiagram } = await loadClass();
+       |                                 ^
+     45|   // 実行
+     46|   const diagram = parseClassDiagram(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_parse_class_diagram_when_unclosed
+Error: Cannot find module '/src/map/class-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-diagram.test.ts
+ ❯ tests/unit/src/map/class-diagram.test.ts:60:33
+     58| test("test_parse_class_diagram_when_unclosed", async () => {
+     59|   // 準備
+     60|   const { parseClassDiagram } = await loadClass();
+       |                                 ^
+     61|   // 実行
+     62|   const diagram = parseClassDiagram(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_class_to_flowchart
+Error: Cannot find module '/src/map/class-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-diagram.test.ts
+ ❯ tests/unit/src/map/class-diagram.test.ts:73:51
+     71| test("test_class_to_flowchart", async () => {
+     72|   // 準備
+     73|   const { parseClassDiagram, classToFlowchart } = await loadClass();
+       |                                                   ^
+     74|   // 実行
+     75|   const chart = classToFlowchart(parseClassDiagram(CLASS));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_class_part_inputs
+Error: Cannot find module '/src/map/class-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/map/class-diagram.test.ts
+ ❯ tests/unit/src/map/class-diagram.test.ts:93:50
+     91| test("test_class_part_inputs", async () => {
+     92|   // 準備
+     93|   const { parseClassDiagram, classPartInputs } = await loadClass();
+       |                                                  ^
+     94|   const diagram = parseClassDiagram(CLASS);
+     95|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/37]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_rankless
+AssertionError: expected 24 to be greater than 135
+ ❯ tests/unit/src/map/layout.test.ts:328:15
+    326|   // 左から右の図の同じ段は、縦に並ぶ（x が同じで、b が a の後）
+    327|   expect(b.x + b.w / 2).toBeCloseTo(a.x + a.w / 2, 0);
+    328|   expect(b.y).toBeGreaterThan(a.y);
+       |               ^
+    329|   const wire = layout.wires.find((item) => item.id === "a->b");
+    330|   expect(wire?.points.length ?? 0).toBeGreaterThanOrEqual(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_class_diagram
+Error: Cannot find module '/src/map/class-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/parts/map.test.ts
+ ❯ classArgs tests/unit/src/parts/map.test.ts:1030:68
+    1028| /** クラス図を配置した部品の引数（`hints` だけ変えられる） */
+    1029| async function classArgs(hints?: boolean) {
+    1030|   const { parseClassDiagram, classToFlowchart, classPartInputs } = awa…
+       |                                                                    ^
+    1031|     "../../../../src/map/class-diagram.ts"
+    1032|   );
+ ❯ tests/unit/src/parts/map.test.ts:1065:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_class_diagram_when_hints_off
+Error: Cannot find module '/src/map/class-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/parts/map.test.ts
+ ❯ classArgs tests/unit/src/parts/map.test.ts:1030:68
+    1028| /** クラス図を配置した部品の引数（`hints` だけ変えられる） */
+    1029| async function classArgs(hints?: boolean) {
+    1030|   const { parseClassDiagram, classToFlowchart, classPartInputs } = awa…
+       |                                                                    ^
+    1031|     "../../../../src/map/class-diagram.ts"
+    1032|   );
+ ❯ tests/unit/src/parts/map.test.ts:1091:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_class_members
+TypeError: renderMapClassMembers is not a function
+ ❯ tests/unit/src/parts/map.test.ts:1137:16
+    1135|   const { renderMapClassMembers } = await loadParts();
+    1136|   // 実行
+    1137|   const part = renderMapClassMembers({
+       |                ^
+    1138|     node: BASE_SHAPE,
+    1139|     notes: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_class_members_when_collapsed
+TypeError: renderMapClassMembers is not a function
+ ❯ tests/unit/src/parts/map.test.ts:1163:16
+    1161|   const { renderMapClassMembers } = await loadParts();
+    1162|   // 実行
+    1163|   const part = renderMapClassMembers({
+       |                ^
+    1164|     node: BASE_SHAPE,
+    1165|     notes: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_spread_map_ends
+TypeError: spreadMapEnds is not a function
+ ❯ tests/unit/src/parts/map.test.ts:1199:17
+    1197|   };
+    1198|   // 実行
+    1199|   const wires = spreadMapEnds(layout as never);
+       |                 ^
+    1200|   // 検証
+    1201|   const ends = wires.map((item) => item.points.at(-1) as [number, numb…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_rewire_map_architecture
+Error: Cannot find module '/src/map/architecture.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/parts/map.test.ts
+ ❯ archLayout tests/unit/src/parts/map.test.ts:1212:58
+    1210| /** アーキテクチャ図を配置して引き直した結果 */
+    1211| async function archLayout() {
+    1212|   const { parseArchitecture, architectureToFlowchart } = await import(
+       |                                                          ^
+    1213|     "../../../../src/map/architecture.ts"
+    1214|   );
+ ❯ tests/unit/src/parts/map.test.ts:1254:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_architecture
+Error: Cannot find module '/src/map/architecture.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/parts/map.test.ts
+ ❯ archLayout tests/unit/src/parts/map.test.ts:1212:58
+    1210| /** アーキテクチャ図を配置して引き直した結果 */
+    1211| async function archLayout() {
+    1212|   const { parseArchitecture, architectureToFlowchart } = await import(
+       |                                                          ^
+    1213|     "../../../../src/map/architecture.ts"
+    1214|   );
+ ❯ tests/unit/src/parts/map.test.ts:1275:31
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/37]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_c4_diagram
+Error: Cannot find module '/src/map/c4.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/tests/unit/src/parts/map.test.ts
+ ❯ tests/unit/src/parts/map.test.ts:1317:45
+    1315| test("test_render_map_c4_diagram", async () => {
+    1316|   // 準備
+    1317|   const { parseC4Context, c4ToFlowchart } = await import(
+       |                                             ^
+    1318|     "../../../../src/map/c4.ts"
+    1319|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/37]⎯
+
+ FAIL  |unit| tests/unit/vscode/scripts/build.test.ts > test_build_extension
+ FAIL  |unit| tests/unit/vscode/scripts/build.test.ts > test_build_extension_when_tests
+Error: Build failed with 1 error:
+src/extensions-bundle.ts:3:25: ERROR: Could not resolve "esbuild-wasm/lib/browser.js"
+ ❯ failureErrorWithLog node_modules/esbuild/lib/main.js:1752:15
+ ❯ node_modules/esbuild/lib/main.js:1211:25
+ ❯ runOnEndCallbacks node_modules/esbuild/lib/main.js:1592:45
+ ❯ buildResponseToResult node_modules/esbuild/lib/main.js:1209:7
+ ❯ node_modules/esbuild/lib/main.js:1236:16
+ ❯ responseCallbacks.<computed> node_modules/esbuild/lib/main.js:886:9
+ ❯ handleIncomingPacket node_modules/esbuild/lib/main.js:941:12
+ ❯ Socket.readFromStdout node_modules/esbuild/lib/main.js:864:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts > test_attach_er_folds
+TimeoutError: locator.click: Timeout 14872ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('「注文」の主キーと外部キー以外の列')
+    - locator resolved to <button type="button" aria-expanded="true" data-er-fold="orders" class="mdmark-diagram-er-fold" aria-label="「注文」の主キーと外部キー以外の列">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    27 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/er-folds.browser.test.ts/test_attach_er_folds.png
+
+ ❯ tests/unit/src/interact/er-folds.browser.test.ts:84:19
+     82|   const before = endY(figure);
+     83|   // 実行
+     84|   await userEvent.click(button);
+       |                   ^
+     85|   const folded = endY(figure);
+     86|   const foldedRows = otherRows(orders).map((row) => row.hidden);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts > test_attach_er_folds_when_states
+TimeoutError: locator.click: Timeout 14892ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('「注文」の主キーと外部キー以外の列')
+    - locator resolved to <button type="button" aria-expanded="true" data-er-fold="orders" class="mdmark-diagram-er-fold" aria-label="「注文」の主キーと外部キー以外の列">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    26 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/er-folds.browser.test.ts/test_attach_er_folds_when_states.png
+
+ ❯ tests/unit/src/interact/er-folds.browser.test.ts:144:19
+    142|     throw new Error("開閉のボタンが無い");
+    143|   }
+    144|   await userEvent.click(firstButton);
+       |                   ^
+    145|   detachFirst();
+    146|   first.remove();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx > test_app_when_render_error
+TimeoutError: locator.click: Timeout 14722ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })
+    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    27 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/app.browser.test.tsx/test_app_when_render_error.png
+
+ ❯ tests/unit/vscode/src/webview/app/app.browser.test.tsx:44:19
+     42|   // 実行
+     43|   render(<App boot={boot} api={api} />);
+     44|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+     45|   // 検証
+     46|   const status = screen.getByRole("status");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band_when_clicked
+TimeoutError: locator.click: Timeout 14893ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })
+    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    27 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/config-band.browser.test.tsx/test_config_band_when_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx:52:19
+     50|   );
+     51|   // 実行
+     52|   await userEvent.click(
+       |                   ^
+     53|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+     54|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx > test_preview_status_when_reload_clicked
+TimeoutError: locator.click: Timeout 14894ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })
+    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    27 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/preview-status.browser.test.tsx/test_preview_status_when_reload_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx:110:19
+    108|   );
+    109|   // 実行
+    110|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+    111|   // 検証
+    112|   expect(onReload).toHaveBeenCalledTimes(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks
+TimeoutError: locator.click: Timeout 14861ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '外部' })
+    - locator resolved to <a href="https://example.com/">外部</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    27 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:45:23
+     43|     // 実行: 本物のクリック（isTrusted が true）で押す
+     44|     for (const link of holder.querySelectorAll("a")) {
+     45|       await userEvent.click(link);
+       |                       ^
+     46|     }
+     47|   } finally {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_side_toc
+TimeoutError: locator.click: Timeout 14896ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '注意' })
+    - locator resolved to <a href="#注意" data-heading-id="注意">注意</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    27 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks_when_side_toc.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:74:21
+     72|   try {
+     73|     // 実行
+     74|     await userEvent.click(holder.querySelector("a") as HTMLElement);
+       |                     ^
+     75|   } finally {
+     76|     window.removeEventListener("click", reachedWindow);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/37]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_open_asset
+TimeoutError: locator.click: Timeout 14897ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '既定のアプリで開く' })
+    - locator resolved to <a href="#" data-action="openAsset" data-path="media/a.webm">既定のアプリで開く</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    28 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks_when_open_asset.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:96:19
+     94|   renderHook(() => useLinkClicks(api));
+     95|   // 実行
+     96|   await userEvent.click(holder.querySelector("a") as HTMLElement);
+       |                   ^
+     97|   // 検証
+     98|   expect(api.posted).toEqual([{ type: "openAsset", path: "media/a.webm…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ccec5db5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/37]⎯
+
+
+ Test Files  16 failed | 285 passed (301)
+      Tests  33 failed | 2224 passed | 2 skipped (2259)
+   Start at  05:01:21
+   Duration  161.94s (worker 79%, tests 12%, import 6%, transform 3%)
+
+
+# 依存の不足（vscode/ の依存）と時間切れで fail した、この PR が触らない 7 ファイルを、npm --prefix vscode ci の後に個別に流し直した結果
+$ npx vitest run --project 'unit*' tests/unit/src/interact/er-folds.browser.test.ts tests/unit/vscode/src/webview/app/app.browser.test.tsx tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx tests/unit/vscode/scripts/build.test.ts tests/unit/vscode/src/extensions-bundle.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds
+
+
+ Test Files  7 passed (7)
+      Tests  19 passed (19)
+   Start at  05:05:49
+   Duration  37.37s (tests 85%, import 11%, worker 2%, transform 2%)
+

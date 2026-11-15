@@ -18,17 +18,31 @@ export type MapKindName =
   | "flowchart"
   | "sequenceDiagram"
   | "erDiagram"
-  | "stateDiagram";
+  | "stateDiagram"
+  | "classDiagram"
+  | "architecture"
+  | "C4Context";
+
+/** Mermaid の 1 行目の最初の単語ごとの、描く図の種類 */
+const KIND_OF_FIRST_WORD: Record<string, MapKindName> = {
+  flowchart: "flowchart",
+  graph: "flowchart",
+  sequenceDiagram: "sequenceDiagram",
+  erDiagram: "erDiagram",
+  "stateDiagram-v2": "stateDiagram",
+  stateDiagram: "stateDiagram",
+  classDiagram: "classDiagram",
+  "classDiagram-v2": "classDiagram",
+  "architecture-beta": "architecture",
+  C4Context: "C4Context",
+};
 
 /** Mermaid の 1 行目の最初の単語から図の種類を決める */
 export const mapKindOf = (mermaid: string): MapKindName | undefined => {
   const first = mermaid.trimStart().split(/\s/, 1)[0] ?? "";
-  if (first === "flowchart" || first === "graph") return "flowchart";
-  if (first === "sequenceDiagram") return "sequenceDiagram";
-  if (first === "erDiagram") return "erDiagram";
-  if (first === "stateDiagram-v2" || first === "stateDiagram")
-    return "stateDiagram";
-  return undefined;
+  return Object.hasOwn(KIND_OF_FIRST_WORD, first)
+    ? KIND_OF_FIRST_WORD[first]
+    : undefined;
 };
 
 /** 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめる（Mermaid と補足の中身は読まない） */
@@ -58,7 +72,7 @@ export const collectMapStructure = (range: MapRangeSource) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `この版の map で描ける図の種類は \`flowchart\`・\`sequenceDiagram\`・\`erDiagram\`・\`stateDiagram-v2\` です。\`${first}\` の図はコードブロックのまま表示しています。`,
+      message: `この版の map で描ける図の種類は \`flowchart\`・\`sequenceDiagram\`・\`erDiagram\`・\`stateDiagram-v2\`・\`classDiagram\`・\`architecture-beta\`・\`C4Context\` です。\`${first}\` の図はコードブロックのまま表示しています。`,
     });
   }
   return { problems, kind, args: parsedArgs };

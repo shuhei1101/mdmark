@@ -10448,6 +10448,146 @@
     opacity: var(--mdmark-map-dim-opacity, 0.25);
   }
 
+  /* map のクラス図: 属性とメソッドの区画（区切り線で分ける）・メンバーの行・開閉のボタン・注釈 */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node:has(> .map-class-members) {
+    justify-content: flex-start;
+  }
+  /* 区画はクラス名の行の下から同じ高さで並べる（top と行の高さは部品が指定する） */
+  .map-class-members {
+    position: absolute;
+    inset-inline: 0;
+    display: grid;
+    padding-top: 3px;
+    border-top: 1px solid var(--mdmark-color-border);
+    font-size: 12px;
+  }
+  .map-class-member {
+    display: grid;
+    grid-template-columns: 1em 1fr 24px;
+    gap: 4px;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .map-class-visibility {
+    color: var(--mdmark-color-muted);
+    font-family: var(--mdmark-font-mono, monospace);
+  }
+  .map-class-text {
+    overflow-wrap: anywhere;
+    user-select: text;
+    font-family: var(--mdmark-font-mono, monospace);
+  }
+  .map-class-member.is-static .map-class-text {
+    text-decoration: underline;
+  }
+  .map-class-member.is-abstract .map-class-text {
+    font-style: italic;
+  }
+  .map-class-annotation {
+    color: var(--mdmark-color-muted);
+    font-size: 11px;
+  }
+  .map-class-note,
+  .map-class-toggle {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0 6px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .map-class-note {
+    border-radius: 50%;
+    padding: 0;
+    cursor: help;
+  }
+  .map-class-toggle {
+    margin-left: auto;
+  }
+  .mdmark-diagram-node-kind:has(:is(.map-class-toggle, .map-class-annotation)) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  /* map のクラス図: 関係の端の形（三角・ひし形・開いた矢じり）と多重度とラベル */
+  .map-class-ends {
+    position: absolute;
+    inset: 0 auto auto 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .map-class-end {
+    fill: var(--mdmark-color-bg);
+    stroke: var(--mdmark-color-diagram-line);
+    stroke-width: 1.5;
+  }
+  .map-class-end-diamond-filled {
+    fill: var(--mdmark-color-diagram-line);
+  }
+  .map-class-end-arrow {
+    fill: none;
+  }
+  .map-class-card {
+    font-size: 11px;
+    fill: var(--mdmark-color-muted);
+  }
+  .map-class-label {
+    font-size: 12px;
+    fill: var(--mdmark-color-text);
+    paint-order: stroke;
+    stroke: var(--mdmark-color-bg);
+    stroke-width: 4px;
+  }
+  :is(.map-class-end, .map-class-card, .map-class-label).map-dim {
+    opacity: var(--mdmark-map-dim-opacity, 0.25);
+  }
+
+  /* map のアーキテクチャ図: junction は小さい点にし、名前と種類の行を出さない。group のタイトルのアイコン */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node[data-shape="junction"] {
+    min-height: 16px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--mdmark-color-muted);
+    border-color: var(--mdmark-color-muted);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="junction"]
+    > * {
+    display: none;
+  }
+  .map-group-icon {
+    display: inline-flex;
+    align-items: center;
+  }
+  .map-group-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+
+  /* map の C4 図: 要素の説明と、境界の破線の枠 */
+  .map-c4-description {
+    margin: 4px 0 0;
+    color: var(--mdmark-color-muted);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-c4-external {
+    background: var(--mdmark-color-accent-gray-bg);
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group.map-c4-boundary {
+    border-style: dashed;
+    background: transparent;
+  }
+
   /* 書き方の警告: 今の記載の警告と同じ破線の枠 */
   .map-warning {
     margin: 1em 0 0;

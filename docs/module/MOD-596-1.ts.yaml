@@ -1,0 +1,128 @@
+id: MOD-596-1
+visibility: internal
+title: ライブラリ本体 / map / 読み取り / class-diagram.ts
+test_files:
+  - tests/unit/src/map/class-diagram.test.ts
+data_models:
+  - name: ClassDiagram
+    title: クラス図の読み取り結果
+    container: src/map/class-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseClassDiagram` の戻り値'
+    properties:
+      - name: classes
+        type: ClassItem[]
+        description: クラス（`id`・`generic`・`annotation`・`namespace`・`members`）。記載の順で、関係で初めて出たクラスはメンバーを持たない。`~T~` は `generic` に分け、`id` に含めない。メンバーは `{ visibility, name, text, method, isStatic, isAbstract }`
+      - name: namespaces
+        type: string[]
+        description: '`namespace` の ID（記載の順）'
+      - name: relations
+        type: ClassRelation[]
+        description: 関係（`id`・`from`・`to`・`fromCardinality`・`toCardinality`・`fromEnd`・`toEnd`・`dashed`・`label`）。`id` は記載順の `r{番号}`（1 から）。`fromEnd`・`toEnd` は記号の側の端の形（`triangle`・`diamond-filled`・`diamond-open`・`arrow`）で、記号の無い側は無い
+      - name: notes
+        type: ClassNote[]
+        description: '`note for` のノート（`id`・`of`・`text`）。`id` は記載順の `note_{番号}`（1 から）'
+      - name: problems
+        type: MapProblem[]
+        description: 読めない行と閉じの無いクラス・`namespace`
+constants:
+  - name: MAP_CLASS_KINDS
+    title: クラス図のノードの種類
+    container: src/map/class-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: クラス（種類の行「クラス」）・注釈を持つクラス（種類の行は空。注釈は `renderMapClassDiagram` が出す）・ノート（種類の行「ノート」）の `MapKind`。キーは設定の `map.kinds` と重ならない `mdmark-class`・`mdmark-class-annotated`・`mdmark-memo`
+functions:
+  - name: parseClassDiagram
+    title: classDiagramを読む
+    kind: 関数
+    container: src/map/class-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`classDiagram` の Mermaid を、クラス・メンバー・関係・`namespace`・ノートと読めない行の項目に読む'
+    scope: public
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のブロックの中身
+    returns:
+      type: ClassDiagram
+      description: 読み取り結果
+    process: |-
+      1. 行ごとに、`namespace {ID} {`・`class {ID}[~T~] {`（`}` までをメンバーの区間）・`class {ID}`・`<<{注釈}>> {ID}`・区間の中の `<<{注釈}>>`・`{ID} : {メンバー}`・`note for {ID} "{文}"`・関係の行（`{元} ["{多重度}"] {記号} ["{多重度}"] {先} [: {ラベル}]`）・`}`・`%%`・空の行に分けて読む
+      2. メンバーは、先頭の `+`・`-`・`#`・`~` を可視性、末尾の `$` を静的、`*` を抽象、`(` を持てばメソッドにする
+      3. 関係の記号（`<|--`・`--|>`・`*--`・`--*`・`o--`・`--o`・`-->`・`<--`・`..>`・`<..`・`..|>`・`<|..`・`--`・`..`）を、記号の側の端の形と `..` の破線にする
+         - 読めない行・閉じの無いクラスと `namespace` は `map_invalid` の項目（行番号・行の文字・直し方）にする
+    unit_tests:
+      - name: test_parse_class_diagram
+        case: 正常
+        summary: モックのクラス図
+        condition: モックの `CLASS`
+        mock: なし
+        expected: クラス 6・関係 7（`r1`〜`r7`）・`namespace` 1・ノート 1 で、「図形」の注釈が `interface`、「一覧」の `generic` が `T`、「基本図形」のメンバー `描く` が抽象・`数` が静的、`r1` の `toEnd` が `triangle` で破線、`r7` の多重度が `1`・`*`、「円」の `namespace` が `形状`
+      - name: test_parse_class_diagram_when_unreadable
+        case: 異常
+        summary: 読めない行
+        condition: 関係の行 `図面 -x- 円`
+        mock: なし
+        expected: '`map_invalid` が 1 件で行番号を含み、ほかのクラスと関係は読める'
+      - name: test_parse_class_diagram_when_unclosed
+        case: 異常
+        summary: 閉じの無いクラス
+        condition: '`class 図面 {` の後に `}` が無い'
+        mock: なし
+        expected: '`map_invalid` が 1 件'
+  - name: classToFlowchart
+    title: クラス図を構成図の入力にする
+    kind: 関数
+    container: src/map/class-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: クラスをノード、`namespace` をグループ、関係を線、ノートを破線でつないだノードにした、左から右の `Flowchart` を作る
+    scope: public
+    args:
+      - name: diagram
+        type: ClassDiagram
+        required: true
+        description: 読み取り結果
+    returns:
+      type: Flowchart
+      description: ノードの名前は `generic` があれば `{ID}<{T}>`、クラスは `MAP_CLASS_KINDS` のキーを持つ。線の ID は関係の ID（`r{番号}`）とノートの線（`n{番号}`）で、関係の線は記載の左のクラスから右のクラスへ引き、関係のラベルを持つ（部品が線の中ほどに描く）
+    unit_tests:
+      - name: test_class_to_flowchart
+        case: 正常
+        summary: ノード・グループ・線
+        condition: モックの `CLASS`
+        mock: なし
+        expected: ノード 7（クラス 6・ノート 1）・グループ 1（`形状` の中に 3）・線 8 で、「一覧」の名前が `一覧<T>`、`r1` の元が「基本図形」、`n1` が「描画器」と `note_1` をつなぐ破線
+  - name: classPartInputs
+    title: クラス図の部品の入力
+    kind: 関数
+    container: src/map/class-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの幅を `MAP_CLASS.width` にし、メンバーの行の数と開閉で決まる大きさを指定する配置の上書きを作る。閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
+    scope: public
+    args:
+      - name: diagram
+        type: ClassDiagram
+        required: true
+        description: 読み取り結果
+      - name: collapsed
+        type: ReadonlySet<string>
+        required: true
+        description: 閉じたグループとメンバーを閉じたクラス
+    returns:
+      type: '{ classes: MapClassNode[]; ends: MapClassEnd[]; overrides: Record<string, MapOverride> }'
+      description: クラスごとのメンバーと注釈、関係の端（`{ wire, at, shape, card }`）、配置の上書き
+    unit_tests:
+      - name: test_class_part_inputs
+        case: 正常
+        summary: 端と大きさ
+        condition: モックの `CLASS` と、`collapsed` に「基本図形」
+        mock: なし
+        expected: 端の形が 6（`--` の `r7` は形を持たない）・多重度が 2 で、「基本図形」の上書きの高さが名前の行と開閉のボタンの 1 行、「描画器」の高さがメンバー 2 行と区切り線 2 本の分
+refs:
+  - IF-472-35#constraints[map のクラス図]
