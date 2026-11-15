@@ -107,3 +107,6 @@ scope_out:
   - item: map のノードの説明のマーカー（`src/parts/map.ts` の `.mdmark-diagram-info`）が、axe の `target-size`（serious。押せる要素は 24px 以上か、間を空ける）に当たる
     reason: この PR が触る前からある事象（base の `Parts/MapState` の Collapsed でも同じ検出が出る）で、今回の要望（3 種類の図を描く）に含まれない
     plan: to_file
+  - item: map の閉じたグループのノードで、「{数} 件」（`.map-closed-count`）が絶対位置のタイトルの行（`.map-group-head`）に重なる（`src/index.css`）
+    reason: この PR が触る前からある事象（base のストーリー `Parts/MapFlow` の Collapsed でも「ノード 3 件」がタイトルに重なる）で、今回の要望（3 種類の図を描く）に含まれない
+    plan: to_file
