@@ -1,0 +1,123 @@
+docs:
+  - page: docs/scenario
+    new: false
+    change: flow の Mermaid（```mermaid で囲まれていない flow を含む）を map のマーカーで囲んで補足を付ける。文を表へ・削れる文を削る・タグ・エイリアス・description・関連を付け直す・本文の ID と Issue 番号とパスをリンクへ移す
+    status: todo
+  - page: docs/interface
+    new: false
+    change: Mermaid の図を map で描く。文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/module
+    new: false
+    change: クラス図の Mermaid を map で描く。文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/component
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/screen
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/er
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/library
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/config
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/architecture
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/nonfunctional
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/dev-command
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/external-api
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/test-procedure
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/layout
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/design-policy.md
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: todo
+  - page: docs/guide
+    new: false
+    change: 公開ドキュメントの Mermaid を map で描く（Mermaid の記法そのものを説明するページの見本は残す）。文を表へ・削れる文を削る・files.yml の行のタグ・エイリアス・description・関連の付け直し
+    status: todo
+  - page: docs/pr
+    new: false
+    change: PR ドキュメントの Mermaid を map で描き、文を表へ・削れる文を削る（起点 Issue の『フォルダの移動』の節で範囲に含めた）
+    status: todo
+  - page: schemas/common.schema.yaml
+    new: false
+    change: $defs.mermaid の説明を、map のマーカーで囲んだ Mermaid と補足で描く記載方法に合わせる
+    status: todo
+  - page: schemas/scenario.schema.yaml
+    new: false
+    change: flow の説明と見本を map で描く記載方法に合わせる
+    status: todo
+  - page: schemas/interface.schema.yaml
+    new: false
+    change: 図のキーの説明と見本を map で描く記載方法に合わせる
+    status: todo
+  - page: schemas/module.schema.yaml
+    new: false
+    change: クラス図のキーの説明を map で描く記載方法に合わせる
+    status: todo
+  - page: src/files.yaml
+    new: false
+    change: コードの行に、設計書への related（implements）を張る
+    status: todo
+  - page: tests/files.yaml
+    new: false
+    change: テストの行に、設計書への related（tests）を張る。指すファイルが無い行（integration/lib/flow-diagram.story.test.ts・integration/lib/sequence-diagram.story.test.ts）を直す
+    status: todo
+  - page: vscode/files.yaml
+    new: false
+    change: コード・テストの行に、設計書への related（implements・tests）を張る
+    status: todo
+  - page: plugin/files.yaml
+    new: false
+    change: コードの行に、設計書への related（implements）を張る
+    status: todo
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: ガイドのタグ・description を付け直すと、Claude Code がタグ topic:ガイド で絞って参照するガイドの一覧が変わりうる
+    depends_on: []
+scope_out:
+  - item: docs/mock/ のモック HTML
+    reason: 画面のモックで、人が読む文書ではない
+    plan: none
+  - item: src/・tests/・vscode/ のコードのコメントと UI の文言の避ける単語
+    reason: '#289 の範囲（ユーザーが案 C で決めた）。この作業では文書だけを扱う'
+    plan: none
+  - item: migrations/ の移行の手順の Mermaid（v0.13.0/retired-diagrams.js）
+    reason: 利用側の文書を書き換えるスクリプトの文字列で、文書ではない
+    plan: none
+  - item: Mermaid の記法そのものを説明するガイド（図を描く-mermaidの図を描く・図を描く-Mermaidと補足で図を描く・記法）の Mermaid の見本
+    reason: mdmark が Mermaid を描く機能の使い方で、見本の Mermaid は説明の対象そのもの。判断はレビューで確定する
+    plan: none
+  - item: docs/rules.yaml から古い規約（『markdown マーメイド』『判定フローチャート』）の ID を除く
+    reason: 'origin/develop の rules.yaml は rules: [] で、古い規約を指していない'
+    plan: none
