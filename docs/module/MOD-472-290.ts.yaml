@@ -63,9 +63,9 @@ functions:
       - name: test_build_views_when_sort_columns
         case: 正常
         summary: columns.{列名}.sort の列を表の指定の sorts に入れる
-        condition: '`{"board": {"group": {"column": "状態"}}, "columns": {"説明": {"sort": true}, "タイトル": {"sort": false}}}` とタイトル・状態・説明の表'
+        condition: '`{"board": {"group": {"column": "状態"}}, "columns": {"説明": {"sort": true}, "タイトル": {"sort": false}, "優先度": {"sort": true}}}` とタイトル・状態・説明の表（優先度の列は表に無い）'
         mock: なし
-        expected: '記載の警告が無く、表の `TableSpec` の `sorts` が `[{ column: 2, sort: true }, { column: 0, sort: false }]` で、それを写した表の囲みが `data-no-sort="0"` を持つ（`render` の HTML で確かめる）'
+        expected: '表に無い `優先度` の列の記載の警告だけがあり、表の `TableSpec` の `sorts` が `[{ column: 2, sort: true }, { column: 0, sort: false }]` で、それを写した表の囲みが `data-no-sort="0"` を持つ（`render` の HTML で確かめる）'
     refs:
       - IF-472-34#
       - MOD-472-154#data_models[ViewSpec]
