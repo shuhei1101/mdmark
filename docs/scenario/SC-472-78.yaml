@@ -455,6 +455,30 @@ scenarios:
       - 終了コードが 0
       - 設定・索引・文書が変わっていない
     test: test_normal_when_extension_hint_disabled
+  - name: 正常シナリオ（クラス図・アーキテクチャ図・C4 図の map の補足にずれがある）
+    setup:
+      - name: map の補足にずれを持つフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つクラス図・アーキテクチャ図・C4 図の map の範囲を 1 つずつと、ずれの無いクラス図の map の範囲 1 つを記載したもの
+        notes: ずれは、クラス図で無いメンバーを指す `notes` のキー `{クラス名}.{無いメンバー名}`、アーキテクチャ図で線の本数を超える `r{番号}` のキー、C4 図で無い別名を指す `layout` のキーの 3 つ
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書の map の範囲の Mermaid と補足を種類ごとに読み込み、補足の ID の参照を点検する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれを持つ 3 つの map の範囲の場所をそれぞれ指す行が 1 つずつあり、どれも種類が `map_unknown_ref` で、内容に対象のキーと修正の方法が記載されている
+      - ずれの無いクラス図の map の範囲を指す行が無い
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_added_kinds_map_data_drift
 lead: 文書の作成者が `mdmark check` を実行し、設定ファイルと索引の構造・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らないマーカー・図の部品の定義のずれ・廃止した `flow`・`sequence` の範囲を、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書の作成者

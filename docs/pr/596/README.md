@@ -1,8 +1,8 @@
-# map で classDiagram・mindmap・gantt などの残りの Mermaid の種類を、ER 図・状態遷移図と同じ記載方法と操作で描く
+# map で classDiagram・architecture-beta・C4Context の Mermaid を、ER 図・状態遷移図と同じ記載方法と操作で描く
 
 ## 概要
 
-文書の作成者が、map の範囲に classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context の Mermaid と補足を記載し、flowchart・シーケンス図・ER 図・状態遷移図と同じマーカー・補足・操作で描ける。
+文書の作成者が、map の範囲に classDiagram・architecture-beta・C4Context の Mermaid と補足を記載し、flowchart・シーケンス図・ER 図・状態遷移図と同じマーカー・補足・操作で描ける。
 
 ## 背景
 

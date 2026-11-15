@@ -2,18 +2,18 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
     impact: changed
-    detail: map の範囲に classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context の Mermaid と補足を記載すると、自動配置した図として描き、補足の説明・layout を当てる。種類ごとの選択と強調を足し、描けない種類の案内の文言を変える
+    detail: map の範囲に classDiagram・architecture-beta・C4Context の Mermaid と補足を記載すると、入れ子の自動配置で描き、補足の説明・layout とドラッグを構成図と同じ規則で当てる。種類ごとの選択と強調を足し、読めない行を書き方の警告にし、描けない種類の案内の文言を変える
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-39.yaml
     impact: changed
-    detail: クラス図の namespace とクラスのメンバー、マインドマップの枝、ガントチャートの section、ブロック図・アーキテクチャ図・C4 図の入れ子の枠を、構成図のグループと同じ操作で開閉し、中へ入る
+    detail: クラス図のメンバーと namespace、アーキテクチャ図の group、C4 図の境界を、構成図のグループと同じ操作で開閉し、中へ入る
     depends_on:
       - docs/scenario/SC-472-8.yaml
   - kind: single
     scenario: docs/scenario/SC-472-41.yaml
     impact: changed
-    detail: 追加した種類でも補足の巡回の手順を前へ・次へで進める。時系列を持つ種類（ガントチャート・タイムライン・Git グラフ・ジャーニー）は記載順に 1 歩ずつ進める再生を持つかを設計で決める
+    detail: クラス図・アーキテクチャ図でも補足の巡回の手順を前へ・次へで進め、namespace・group の中へ入る
     depends_on:
       - docs/scenario/SC-472-8.yaml
   - kind: single
@@ -24,18 +24,24 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-11.yaml
     impact: run_only
-    detail: map の範囲の外の classDiagram・mindmap・gantt などのコードブロックは、今までどおり mermaid で描く
+    detail: map の範囲外の classDiagram・architecture-beta・C4Context のコードブロックは、今までどおり mermaid で描く
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-18.yaml
     impact: run_only
-    detail: シーケンス図の再生の操作は変わらないが、再生と巡回の帯を追加した種類と共通にするため壊しうる
+    detail: シーケンス図の再生の操作は変わらないが、案内の帯を追加した種類と共通にするため壊しうる
     depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
     impact: run_only
     detail: 図の種類に依らない流れで記述は変わらないが、map の読み取り・配置・操作を広げるため壊しうる
     depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: クラス図・アーキテクチャ図・C4 図の map の補足が無い項目を指すとき、点検のずれにする
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
@@ -59,22 +65,28 @@ docs:
     status: todo
   - page: docs/er/ER-472-2.yaml
     new: false
-    change: notes のキーに、追加した種類の項目（クラス・メンバー・枝・タスク・イベント・コミット・ブロック・サービス・要素 等）の ID を追加する
+    change: notes のキーに、クラス名・`{クラス名}.{メンバー名}`・service と group の ID・要素と境界の別名・関係と線の記載順の `r{番号}` を追加し、layout の collapsed の対象に namespace・group・境界とクラス名を追加する
     status: todo
   - page: docs/er/ER-477-18.yaml
     new: false
-    change: 引数 focus の説明に、追加した種類の入れ子の枠も最初に入るグループになることを追加するかを確認する
+    change: 引数 focus の説明に、namespace・group・境界も最初に入るグループになることを追加するかを確認する
     status: todo
 scope_out:
   - item: pie・xychart-beta・quadrantChart・sankey-beta を map で描く
     reason: 今の部品 chart と重なる（#531 のスコープ外の判断と Issue の補足のとおり）
     plan: none
-  - item: 9 種類を種類ごとに子の Issue に分けて、別の作業 PR で作るか
-    reason: 判断が分かれる。今の判断は、#531 で種類に依らない共通の部分ができているため、この PR で 9 種類を作り、作る順番は classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context とする。単一ユースケース設計で種類ごとの固有の機能を決めた後、PR の規模がレビューで追えないと分かった種類を子の Issue に切り出す。単一ユースケース設計のレビューで確定する
-    plan: to_file
   - item: map を Markdown へ書き出すときの種類ごとの扱い
     reason: '#313 は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
     plan: '#313'
   - item: C4Container・C4Component・C4Dynamic・C4Deployment を map で描く
     reason: Issue の対象は C4Context だけ。書き方は C4Context と共通で、この PR で作る C4 図の読み取りと描画を前提に要素の種類を足す後続になる
     plan: to_file
+  - item: mindmap を map で描く（木の配置）
+    reason: 今の入れ子の自動配置に無い木の配置を新規作成するため、配置の処理ごとに切り出した（単一ユースケース設計のレビュー）
+    plan: '#597'
+  - item: gantt・timeline・gitGraph・journey を map で描く（軸に沿った配置と再生）
+    reason: 今の入れ子の自動配置に無い軸に沿った配置と再生を新規作成するため、配置の処理ごとに切り出した（単一ユースケース設計のレビュー）
+    plan: '#598'
+  - item: block-beta を map で描く（columns の格子の配置）
+    reason: 今の入れ子の自動配置に無い格子の配置を新規作成するため、配置の処理ごとに切り出した（単一ユースケース設計のレビュー）
+    plan: '#599'

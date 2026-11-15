@@ -192,7 +192,7 @@ scenarios:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: 書き方を誤った map の Markdown
-        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印の JSON のオブジェクトに知らないキーを 1 つ足したもの
+        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印の JSON のオブジェクトに知らないキーを 1 つ足したものと、正常シナリオ（クラス図）・正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）の文書の mermaid のブロックに、それぞれ読めない行を 1 行ずつ足したもの
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -206,7 +206,7 @@ scenarios:
         P-->>U: 文書を表示
     expected:
       - 図の枠の上に書き方の警告があり、読めない行と補足の知らないキーの 2 つを指す。印の知らないキーは警告に出さない（点検が通知する）
-      - 読めた部分のノードと線で図が描かれている
+      - 読めた部分のノードと線で図が描かれている。クラス図・アーキテクチャ図・C4 図の文書でも、図の枠の上に読めない行を指す書き方の警告があり、読めた部分の図が描かれている
       - 図の後ろの本文が描かれている
     test: test_normal_when_unreadable
   - name: 正常シナリオ（描かない図の種類）
@@ -227,7 +227,7 @@ scenarios:
         M-->>P: 書き方の警告と、範囲の中身
         P-->>U: 文書を表示
     expected:
-      - '`pie` の範囲に、描かない図の種類である旨と、描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta`・`architecture-beta`・`C4Context`）の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
+      - '`pie` の範囲に、描かない図の種類である旨と、描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`）の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
       - mermaid のブロックが無い範囲に、mermaid のブロックが無い旨の書き方の警告がある
       - どちらの範囲でも、補足の文字が出ていない
     test: test_normal_when_unsupported_kind
@@ -438,7 +438,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: クラス図の map を持つ Markdown
         description: 'classDiagram の mermaid のブロック（クラス 6 つ・関係 7 本）と補足を持つ map の範囲の文書。印に `{"title": "型の構成"}` を持つ'
-        notes: クラスの 1 つは `<<interface>>` を持ち、1 つは型の引数 `~T~` を持つ。メンバーは可視性（`+`・`-`・`#`・`~`）・型・メソッドの引数と戻り値・静的（`$`）・抽象（`*`）を含む。関係 7 本の記号は `<|--`・`*--`・`o--`・`-->`・`..>`・`..|>`・`--` で、1 本は両端の多重度（`"1" --> "*"`）、1 本はラベルを持つ。クラス 3 つを `namespace` 1 つに入れる。`note for` を 1 つ持つ。補足の `notes` で 1 つのクラス・1 つのメンバー・1 本の関係に説明を持つ
+        notes: クラスは「図面」「図形」「基本図形」「円」「一覧」「描画器」の 6 つ。「図形」は `<<interface>>`、「一覧」は型の引数 `~T~` を持ち、「基本図形」は抽象のメソッド `描く()*` を持つ。メンバーは可視性（`+`・`-`・`#`・`~`）・型・メソッドの引数と戻り値・静的（`$`）・抽象（`*`）を含む。関係 7 本は記載順に「基本図形 `..|>` 図形」「基本図形 `<|--` 円」「図面 `*--` 基本図形」「図面 `o--` 一覧」「描画器 `-->` 図面（ラベル「描く」）」「描画器 `..>` 図形」「一覧 `"1" -- "*"` 円」。「図形」「基本図形」「円」を `namespace 形状` に入れる。`note for 描画器` を持つ。補足の `notes` はキー「基本図形」（クラス名）・「基本図形.描く」（`{クラス名}.{メンバー名}`）・「r5」（関係の記載順の `r{番号}`）で説明を持ち、補足の `layout` で「一覧」の色と「描画器」の座標を持つ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -458,178 +458,16 @@ scenarios:
       - 関係の線が記号に合った端の形（継承と実現は白抜きの三角、合成は黒のひし形、集約は白のひし形、関連は矢じり、依存は点線の矢じり）で描かれ、`..` の線は点線で、多重度は両端の近くに、ラベルは線の上に出る
       - クラスと namespace の箱が重ならず、関係の線が両端とその祖先以外を横切らない
       - '`note for` のノートがクラスの近くに置かれ、クラスと点線でつながる'
-      - 説明を持つクラス・メンバー・関係にツールチップのマーカーがあり、フォーカスかポインターで説明が出る
+      - 説明を持つクラス・メンバー・関係にツールチップのマーカーがあり、フォーカスかポインターで説明が出る。補足の `layout` の色・座標・並び順の指定と、正常シナリオ（ノードと線を動かす）のドラッグが、構成図と同じ規則でクラス・namespace・関係に当たる
       - mermaid のライブラリへの要求が 0 件
     test: test_normal_when_class
-  - name: 正常シナリオ（マインドマップ）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: マインドマップの map を持つ Markdown
-        description: mindmap の mermaid のブロック（根 1 つ・1 レイヤー目の枝 4 つ・全体で 3 レイヤー・項目 14 個）と補足を持つ map の範囲の文書
-        notes: 項目の形に `[ ]`・`( )`・`(( ))`・`)) ((`・`{{ }}` と形の指定の無いものを含み、1 つの項目は `::icon(fa fa-book)`、1 つは日本語 30 文字の名前を持つ。補足の `notes` で 1 つの項目に説明を持つ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 字下げから項目の親子を読み込む
-        M->>M: 根から外へ木の形に配置する
-        M-->>P: 図の枠に入れたマインドマップ
-        P-->>U: 文書を表示
-    expected:
-      - 根が中央に置かれ、1 レイヤー目の枝が根の左右に分かれ、深いレイヤーほど根から外へ並ぶ
-      - 親と子が曲線でつながり、枝ごとに線と項目の縁の色が分かれる
-      - 項目が記載した形（四角・角の丸い四角・丸・雲・六角形）で描かれ、形の指定の無い項目は枠の無い文字で描かれる。アイコンを指定した項目は名前の前にアイコンが出る
-      - 項目どうしが重ならず、30 文字の名前は折り返して項目の中に収まる
-      - 説明を持つ項目にツールチップのマーカーがあり、フォーカスかポインターで説明が出る
-      - mermaid のライブラリへの要求が 0 件
-    test: test_normal_when_mindmap
-  - name: 正常シナリオ（ガントチャート）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ。ページの今日の日付を、チャートの期間の中の 1 日に固定する
-      - name: ガントチャートの map を持つ Markdown
-        description: gantt の mermaid のブロック（`dateFormat YYYY-MM-DD`・`axisFormat %m/%d`・`excludes weekends`・section 3 つ・タスク 8 つ）と補足を持つ map の範囲の文書と、同じブロックに `todayMarker off` を足した文書
-        notes: タスクは開始日と期間・終了日・`after {ID}` の開始を含み、`done`・`active`・`crit`・`milestone` を 1 つずつ持つ。補足の `notes` で 1 つのタスクに説明を持つ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: section とタスクを読み込み、開始と終了の日を決める
-        M->>M: 日付の軸に沿ってタスクを 1 行ずつ配置する
-        M-->>P: 図の枠に入れたガントチャート
-        P-->>U: 文書を表示
-    expected:
-      - 上に `axisFormat` の書式の日付の軸があり、タスクが記載の順に 1 行ずつ、開始日から終了日までの横の棒で描かれる
-      - '`after {ID}` のタスクは前のタスクの終了日から始まり、`excludes weekends` の土日は期間に数えない'
-      - section ごとに行が名前のタイトルを持つ帯にまとまり、section ごとに棒の色が分かれる
-      - '`done` は薄い色、`active` は濃い色、`crit` は強調の色の縁、`milestone` はひし形で描かれる'
-      - 今日の日付に縦の線が出て、`todayMarker off` を書いた文書では出ない
-      - 説明を持つタスクにツールチップのマーカーがあり、フォーカスかポインターで説明と開始日・終了日が出る
-      - mermaid のライブラリへの要求が 0 件
-    test: test_normal_when_gantt
-  - name: 正常シナリオ（タイムライン）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: タイムラインの map を持つ Markdown
-        description: timeline の mermaid のブロック（`title`・section 2 つ・期間 5 つ・出来事 9 つ）と補足を持ち、印に `title` を持たない map の範囲の文書
-        notes: '1 つの期間は出来事を 3 つ（`: 出来事` を続けて）持ち、1 つの期間は section の前に置く。補足の `notes` で 1 つの出来事に説明を持つ'
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: section・期間・出来事を読み込む
-        M->>M: 期間を記載の順に横の軸に沿って配置する
-        M-->>P: 図の枠に入れたタイムライン
-        P-->>U: 文書を表示
-    expected:
-      - 期間が記載の順に左から右へ横の軸の上に並び、期間の下に出来事が記載の順に縦に並ぶ
-      - section の期間が section の名前のタイトルを持つ箱にまとまり、section ごとに色が分かれる。section の前の期間は箱の外にある
-      - Mermaid の `title` が図の枠のタイトルに出る
-      - 期間と出来事の箱が重ならない
-      - 説明を持つ出来事にツールチップのマーカーがあり、フォーカスかポインターで説明が出る
-      - mermaid のライブラリへの要求が 0 件
-    test: test_normal_when_timeline
-  - name: 正常シナリオ（Git グラフ）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: Git グラフの map を持つ Markdown
-        description: gitGraph の mermaid のブロック（ブランチ 3 つ・commit 9 つ・merge 2 つ・cherry-pick 1 つ）と補足を持つ map の範囲の文書
-        notes: 'commit は `id:`・`tag:`・`type: REVERSE`・`type: HIGHLIGHT` を 1 つずつ持つ。補足の `notes` で 1 つの commit と 1 つのブランチに説明を持つ'
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: ブランチ・commit・merge を記載の順に読み込む
-        M->>M: ブランチごとの横の線に commit を記載の順に配置する
-        M-->>P: 図の枠に入れた Git グラフ
-        P-->>U: 文書を表示
-    expected:
-      - ブランチごとに横の線が上から作った順に並び、左端にブランチ名が出て、ブランチごとに色が分かれる
-      - commit が記載の順に左から右へ、そのブランチの線の上の丸で描かれ、`id:` は丸の下に、`tag:` は丸の上の札に出る
-      - '`type: REVERSE` は × の入った丸、`type: HIGHLIGHT` は四角で描かれる'
-      - merge は 2 本の線が合流する丸、cherry-pick は元の commit の ID を持つ丸で描かれ、ブランチを作った点から線が分かれる
-      - 説明を持つ commit とブランチにツールチップのマーカーがあり、フォーカスかポインターで説明が出る
-      - mermaid のライブラリへの要求が 0 件
-    test: test_normal_when_git_graph
-  - name: 正常シナリオ（ジャーニー）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: ジャーニーの map を持つ Markdown
-        description: journey の mermaid のブロック（`title`・section 3 つ・タスク 7 つ・人 3 人）と補足を持つ map の範囲の文書
-        notes: タスクの点数は 1 から 5 を全て含み、1 つのタスクは人を 3 人持つ。補足の `notes` で 1 つのタスクに説明を持つ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: section・タスク・点数・人を読み込む
-        M->>M: タスクを記載の順に横に、点数の高さに配置する
-        M-->>P: 図の枠に入れたジャーニー
-        P-->>U: 文書を表示
-    expected:
-      - タスクが記載の順に左から右へ並び、点数が高いほど上に置かれ、点数に合った表情の顔の印が出る。隣のタスクの印が線でつながる
-      - section のタスクが section の名前のタイトルを持つ帯にまとまり、section ごとに色が分かれる
-      - タスクの下に、そのタスクの人の色の丸が並び、人の名前と色の凡例が出る
-      - 説明を持つタスクにツールチップのマーカーがあり、フォーカスかポインターで説明と点数が出る
-      - mermaid のライブラリへの要求が 0 件
-    test: test_normal_when_journey
-  - name: 正常シナリオ（ブロック図）
-    setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
-      - name: ブロック図の map を持つ Markdown
-        description: block-beta の mermaid のブロック（`columns 3`・ブロック 7 つ・入れ子のブロック 1 つ・`space` 1 つ・線 3 本）と補足を持つ map の範囲の文書
-        notes: 1 つのブロックは幅 `:2` を持ち、入れ子のブロック（`block:{ID} … end`）は `columns 2` と中のブロック 2 つを持つ。ブロックの形に `[ ]`・`( )`・`(( ))`・`[( )]` を含み、線の 1 本はラベルを持つ。補足の `notes` で 1 つのブロックに説明を持つ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: 設定と Markdown を指定して描かせる
-        M->>M: columns・ブロック・幅・入れ子を読み込む
-        M->>M: columns の列の数の格子に記載の順に配置する
-        M-->>P: 図の枠に入れたブロック図
-        P-->>U: 文書を表示
-    expected:
-      - ブロックが記載の順に、`columns` の列の数で左から右へ並び、列の数を超えると次の行へ移る
-      - 幅 `:2` のブロックが 2 列分の幅で描かれ、`space` の場所は空く
-      - 入れ子のブロックが中のブロック 2 つを囲む枠で描かれ、中は `columns 2` で並ぶ
-      - ブロックが記載した形（四角・角の丸い四角・丸・円柱）で描かれ、線は矢じりとラベルを持ち、ほかのブロックを横切らない
-      - 説明を持つブロックにツールチップのマーカーがあり、フォーカスかポインターで説明が出る
-      - mermaid のライブラリへの要求が 0 件
-    test: test_normal_when_block
   - name: 正常シナリオ（アーキテクチャ図）
     setup:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: アーキテクチャ図の map を持つ Markdown
         description: architecture-beta の mermaid のブロック（group 2 つ・service 6 つ・junction 1 つ・線 6 本）と補足を持つ map の範囲の文書
-        notes: group の 1 つは別の group の中（`in {ID}`）にある。service のアイコンに `cloud`・`database`・`disk`・`internet`・`server` を含む。線は辺の指定（`:R -- L:`・`:B --> T:`）を持ち、1 本は矢じり、1 本は group の辺から出る（`{ID}{group}`）。補足の `notes` で 1 つの service と 1 本の線に説明を持つ
+        notes: group の 1 つは別の group の中（`in {ID}`）にある。service のアイコンに `cloud`・`database`・`disk`・`internet`・`server` を含む。線は辺の指定（`:R -- L:`・`:B --> T:`）を持ち、1 本は矢じり、1 本は group の辺から出る（`{ID}{group}`）。補足の `notes` はキーに service の ID と線の記載順の `r{番号}` を使用して 1 つの service と 1 本の線に説明を持ち、補足の `layout` で 1 つの service の座標と、辺の指定を持つ線 1 本の端の辺（`ends`）を持つ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -648,7 +486,7 @@ scenarios:
       - 線が指定した辺から出て指定した辺に入り、`R -- L` の 2 つの service は左右に、`B --> T` の 2 つは上下に並ぶ
       - junction は小さい点で描かれ、そこで線が分かれる
       - service と group が重ならず、線が両端とその祖先以外を横切らない
-      - 説明を持つ service と線にツールチップのマーカーがあり、フォーカスかポインターで説明が出る
+      - 説明を持つ service と線にツールチップのマーカーがあり、フォーカスかポインターで説明が出る。補足の `layout` の指定とドラッグは構成図と同じ規則で当たり、`layout` の `ends` を持つ線は Mermaid の辺の指定より `ends` の辺を優先する
       - mermaid のライブラリへの要求が 0 件
     test: test_normal_when_architecture
   - name: 正常シナリオ（C4 図）
@@ -657,7 +495,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: C4 図の map を持つ Markdown
         description: C4Context の mermaid のブロック（境界 2 つ・要素 7 つ・関係 6 本）と補足を持つ map の範囲の文書
-        notes: 要素は `Person`・`Person_Ext`・`System`・`System_Ext`・`SystemDb`・`SystemQueue` を含み、どれも説明の引数を持つ。境界は `Enterprise_Boundary` の中に `System_Boundary` を持つ。関係は `Rel`・`BiRel`・`Rel_D`・`Rel_R` を含み、1 本は技術の引数を持つ。補足の `notes` で 1 つの要素に説明を持つ
+        notes: 要素は `Person`・`Person_Ext`・`System`・`System_Ext`・`SystemDb`・`SystemQueue` を含み、どれも説明の引数を持つ。境界は `Enterprise_Boundary` の中に `System_Boundary` を持つ。関係は `Rel`・`BiRel`・`Rel_D`・`Rel_R` を含み、1 本は技術の引数を持つ。補足の `notes` はキーに要素・境界の別名（第 1 引数）と関係の記載順の `r{番号}` を使用して 1 つの要素に説明を持ち、補足の `layout` で `Rel_D` の相手の要素の座標を持つ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -675,124 +513,49 @@ scenarios:
       - 境界が名前と種類のタイトルを持つ破線の枠で中の要素を囲み、入れ子の境界は外の境界の中に描かれる
       - 関係の線がラベルと技術（`[HTTPS]` など）を持ち、`BiRel` は両向きの矢じり、`Rel_D` の相手は下に、`Rel_R` の相手は右に置かれる
       - 要素と境界が重ならず、関係の線が両端とその祖先以外を横切らない
-      - 説明を持つ要素にツールチップのマーカーがあり、フォーカスかポインターで補足の説明が出る
+      - 説明を持つ要素にツールチップのマーカーがあり、フォーカスかポインターで補足の説明が出る。補足の `layout` の指定とドラッグは構成図と同じ規則で当たり、`layout` の座標を持つ要素は `Rel_D`・`Rel_R` の向きの指定より座標を優先する
       - mermaid のライブラリへの要求が 0 件
     test: test_normal_when_c4
   - name: 正常シナリオ（クラス図のクラスを選んで強調する）
     setup:
       - name: 図を描いたページ
         description: 正常シナリオ（クラス図）のクラス図を描いたページ
-        notes: 選ぶクラスは、継承の親 1 つ・子 2 つと、関連の相手 1 つを持つ
+        notes: 選ぶ 1 つ目のクラスは「基本図形」で、関係の相手は「図形」「円」「図面」の 3 つ。2 つ選ぶ組は、最短の経路が「図面」を通る 1 本だけの「描画器」と「一覧」と、最短の経路が「基本図形」を通る 1 本と「一覧」を通る 1 本の 2 本の「図面」と「円」
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 読者
         participant D as クラス図
-        U->>D: クラス名の行を押す
+        U->>D: 「基本図形」のクラス名の行を押す
         D-->>U: そのクラスと関係の線と相手のクラスのほかを薄くする
+        U->>D: Esc を押してから「描画器」と「一覧」を押す
+        D-->>U: 2 つをつなぐ経路のクラスと関係だけを残す
+        U->>D: Esc を押してから「図面」と「円」を押す
+        D-->>U: 2 本の最短の経路のクラスと関係を全て残す
         U->>D: Esc を押す
         D-->>U: 選択を解く
     expected:
-      - クラスを選ぶと、そのクラス・関係の線・相手のクラスの表示は変わらず、ほかのクラスと関係が薄くなる
-      - 2 つのクラスを選ぶと、2 つをつなぐ最短の経路のクラスと関係だけが残る
+      - 「基本図形」を選ぶと、「基本図形」・3 本の関係の線・「図形」「円」「図面」の表示は変わらず、「一覧」「描画器」とほかの関係が薄くなる
+      - 「描画器」と「一覧」を選ぶと、「図面」を通る経路の 3 つのクラスと 2 本の関係だけが残る
+      - 「図面」と「円」を選ぶと、「基本図形」を通る経路と「一覧」を通る経路の両方のクラスと関係が残る
       - メンバーの行を押しても選択は変わらず、メンバーの文字を選んでコピーできる
       - Esc か「配置と選択を元に戻す」で選択が解け、クラスの箱はキーボードで選べ、選んでいるかの状態をスクリーンリーダー向けに持つ
     test: test_normal_when_class_selected
-  - name: 正常シナリオ（マインドマップの項目を選んで強調する）
+  - name: 正常シナリオ（アーキテクチャ図・C4 図の項目を選んで強調する）
     setup:
       - name: 図を描いたページ
-        description: 正常シナリオ（マインドマップ）のマインドマップを描いたページ
-        notes: 選ぶ項目は 2 レイヤー目にあり、子を 2 つ持つ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant D as マインドマップ
-        U->>D: 項目を押す
-        D-->>U: 根からその項目までの道筋と、その項目の子孫のほかを薄くする
-        U->>D: Esc を押す
-        D-->>U: 選択を解く
-    expected:
-      - 項目を選ぶと、根からその項目までの項目と線、その項目の子孫の表示は変わらず、ほかの項目と線が薄くなる
-      - Esc か、選んだ項目をもう一度押すと選択が解ける
-      - 項目はキーボードで選べ、選んでいるかの状態をスクリーンリーダー向けに持つ
-    test: test_normal_when_mindmap_selected
-  - name: 正常シナリオ（ガントチャートのタスクを選んで強調する）
-    setup:
-      - name: 図を描いたページ
-        description: 正常シナリオ（ガントチャート）のガントチャートを描いたページ
-        notes: 選ぶタスクは `after` で前のタスク 1 つにつながり、後ろのタスク 1 つから `after` で指される
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant D as ガントチャート
-        U->>D: タスクの棒を押す
-        D-->>U: そのタスクと前後のつながりのタスクのほかを薄くし、つながりの線を出す
-        U->>D: Esc を押す
-        D-->>U: 選択を解く
-    expected:
-      - タスクを選ぶと、そのタスクと `after` でつながる前と後ろのタスクの表示は変わらず、ほかのタスクが薄くなり、前のタスクの終わりから選んだタスクの始まり、選んだタスクの終わりから後ろのタスクの始まりへ矢じりの線が出る
-      - Esc か、選んだタスクをもう一度押すと選択が解け、つながりの線が消える
-      - タスクの棒はキーボードで選べ、選んでいるかの状態をスクリーンリーダー向けに持つ
-    test: test_normal_when_gantt_selected
-  - name: 正常シナリオ（Git グラフのブランチを選んで強調する）
-    setup:
-      - name: 図を描いたページ
-        description: 正常シナリオ（Git グラフ）の Git グラフを描いたページ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant D as Git グラフ
-        U->>D: ブランチ名を押す
-        D-->>U: そのブランチの commit と、そのブランチへ入った commit のほかを薄くする
-        U->>D: commit の丸を押す
-        D-->>U: その commit と祖先の commit のほかを薄くする
-        U->>D: Esc を押す
-        D-->>U: 選択を解く
-    expected:
-      - ブランチを選ぶと、そのブランチの線と commit、merge と cherry-pick でそのブランチへ入った commit の表示は変わらず、ほかが薄くなる
-      - commit を選ぶと、その commit から親をたどった全ての祖先の commit と線の表示は変わらず、ほかが薄くなる
-      - Esc で選択が解け、ブランチ名と commit はキーボードで選べ、選んでいるかの状態をスクリーンリーダー向けに持つ
-    test: test_normal_when_git_graph_selected
-  - name: 正常シナリオ（ジャーニーの人を選んで強調する）
-    setup:
-      - name: 図を描いたページ
-        description: 正常シナリオ（ジャーニー）のジャーニーを描いたページ
-      - name: Mock
-        description: 正常シナリオと同じ
-    flow: |-
-      sequenceDiagram
-        actor U as 読者
-        participant D as ジャーニー
-        U->>D: 凡例の人の名前を押す
-        D-->>U: その人が関わるタスクのほかを薄くし、その人のタスクの印を線でつなぐ
-        U->>D: Esc を押す
-        D-->>U: 選択を解く
-    expected:
-      - 人を選ぶと、その人を持つタスクの表示は変わらず、ほかのタスクが薄くなり、その人のタスクの印だけが記載の順に線でつながる
-      - Esc か、選んだ人をもう一度押すと選択が解ける
-      - 凡例の人はキーボードで選べ、選んでいるかの状態をスクリーンリーダー向けに持つ
-    test: test_normal_when_journey_actor_selected
-  - name: 正常シナリオ（ブロック図・アーキテクチャ図・C4 図の項目を選んで強調する）
-    setup:
-      - name: 図を描いたページ
-        description: 正常シナリオ（ブロック図）・正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）の図を描いたページ
+        description: 正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）の図を描いたページ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
       sequenceDiagram
         actor U as 読者
         participant D as 図
-        U->>D: ブロック図のブロック・アーキテクチャ図の service・C4 図の要素を押す
+        U->>D: アーキテクチャ図の service・C4 図の要素を押す
         D-->>U: その項目とつながる線と相手のほかを薄くする
         U->>D: 相手の項目の 1 つも押す
         D-->>U: 選んだ 2 つの間の線と両端のほかを薄くする
     expected:
-      - 3 つの種類とも、項目の選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる
-    test: test_normal_when_block_architecture_c4_selected
+      - 2 つの種類とも、項目の選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる
+    test: test_normal_when_architecture_c4_selected
