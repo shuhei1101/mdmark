@@ -47,7 +47,7 @@ docs:
     new: false
     change: 追加した種類の記載方法と、種類に固有の操作の手順を追加する
     status: todo
-  - page: docs/guide/記法.md
+  - page: docs/guide/記法.mark.md
     new: false
     change: map の節の描ける Mermaid の種類に、追加した種類を加える
     status: todo
@@ -55,7 +55,7 @@ docs:
     new: false
     change: 追加した種類ごとの読み取り・配置・固有の機能を、種類に依らない部分との分け方に沿って追記する
     status: todo
-  - page: docs/guide/用語集.md
+  - page: docs/guide/用語集.mark.md
     new: false
     change: 追加した種類で増える操作の用語を追加する
     status: todo
