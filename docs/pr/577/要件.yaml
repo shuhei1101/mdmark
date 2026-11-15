@@ -1,0 +1,16 @@
+docs: []
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: 図の高さを変える区切りが、描いた直後から高さの値を読み上げられるようになる。高さの変え方と読み上げる名前は変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: 説明を持つノードの中に押せる要素を入れ子にしない形に変える。ノードの選択・Alt と矢印キーでの移動と、説明のツールチップの開閉は変わらない
+    depends_on: []
+scope_out:
+  - item: map のシーケンス図の参加者・ER 図・状態遷移図のノードで、説明のマーカーが入れ子になる箇所の横展開
+    reason: '#558 の対象は構成図の説明を持つノード（renderMapFlow）。他の図に同じ入れ子があるかは部品設計の段で確かめ、あればスコープに含めるか起票するかをレビューで確定する'
+    plan: to_file
