@@ -1,0 +1,1 @@
+# map の図の説明のツールチップに features.hints と tooltips.diagramPlacement を適用し、ビューの表の長文の列の並べ替えの既定を決める
