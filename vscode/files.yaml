@@ -437,6 +437,12 @@ files:
     related:
       - to: docs/module/MOD-472-73.ts
         type: implements
+  - path: src/webview/vite-env.d.ts
+    description: モジュール構成『VS Code 拡張機能 / Webview / vite-env.d.ts』の、Webview の TypeScript に vite/client の型を読み込ませる型の参照を受け持つ。Webview の型の参照を変えるときに参照する。
+    tags: [tool:vscode, topic:webview, tool:vite]
+    related:
+      - to: docs/module/MOD-589-4.ts
+        type: implements
   - path: vite.config.ts
     description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「Webview の Vite の設定」を受け持つ。プレビューのパネルの中の描き方を変えるときに参照する。
     tags: [tool:vscode, topic:バンドル]

@@ -220,6 +220,8 @@ items:
   summary: ライブラリ本体 / map / 描画と操作 / band.ts
 - page: MOD-472-135.ts.yaml
   summary: ライブラリ本体 / map / 点検 / check.ts
+- page: MOD-589-1.ts.yaml
+  summary: ライブラリ本体 / map / 点検 / structure.ts
 - page: MOD-472-139.ts.yaml
   summary: ライブラリ本体 / map / 読み取り / data.ts
 - page: MOD-472-134.ts.yaml
@@ -308,6 +310,10 @@ items:
   summary: ライブラリ本体 / 図 / er.ts
 - page: MOD-472-313.ts.yaml
   summary: ライブラリ本体 / 部品 / escape.ts
+- page: MOD-589-2.ts.yaml
+  summary: ライブラリ本体 / 部品 / embedded-html.ts
+- page: MOD-589-3.ts.yaml
+  summary: ライブラリ本体 / 部品 / icon-node.ts
 - page: MOD-472-322.ts.yaml
   summary: ライブラリ本体 / 部品 / figure.ts
 - page: MOD-472-333.ts.yaml
@@ -562,6 +568,8 @@ items:
   summary: VS Code 拡張機能 / 拡張機能の入口 / log.ts
 - page: MOD-472-52.ts.yaml
   summary: VS Code 拡張機能 / Webview / messages.ts
+- page: MOD-589-4.ts.yaml
+  summary: VS Code 拡張機能 / Webview / vite-env.d.ts
 - page: MOD-472-94.ts.yaml
   summary: VS Code 拡張機能 / プレビュー / assets.ts
 - page: MOD-472-93.ts.yaml
