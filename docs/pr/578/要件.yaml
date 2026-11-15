@@ -1,0 +1,70 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: none
+    detail: リポジトリの文書にバージョンを上げる手順を当てるだけで、手順の流れは変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: none
+    detail: 書き換えた後の文書を点検で確かめるだけで、点検の流れは変わらない
+    depends_on: []
+docs:
+  - page: docs/mock/components/index.md
+    new: false
+    change: 表のマーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
+    status: todo
+  - page: docs/mock/pages/document/index.md
+    new: false
+    change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
+    status: todo
+  - page: docs/mock/refs/index.md
+    new: false
+    change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
+    status: todo
+  - page: docs/mock/refs/19/index.md
+    new: false
+    change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
+    status: todo
+  - page: docs/mock/refs/42/index.md
+    new: false
+    change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
+    status: todo
+  - page: docs/mock/styles/index.md
+    new: false
+    change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
+    status: todo
+  - page: docs/mock/pages/document/19/modern/index.html
+    new: false
+    change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
+    status: todo
+  - page: docs/mock/pages/document/27/backlinks-end/index.html
+    new: false
+    change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
+    status: todo
+  - page: docs/mock/pages/document/32/export/index.html
+    new: false
+    change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
+    status: todo
+  - page: docs/mock/pages/ui-canvas/80/side-by-side/index.html
+    new: false
+    change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
+    status: todo
+  - page: docs/design-policy.md
+    new: false
+    change: 表のマーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
+    status: todo
+  - page: docs/pr
+    new: false
+    change: 過去の PR ドキュメントの本文のマーカーの引数を JSON の記載へ書き換える（mdmark upgrade。今の書き方のマーカーを持つファイルを持つ PR のフォルダの一覧は 要件.md）
+    status: todo
+scope_out:
+  - item: AI Monitor の設計書の Markdown の生成が出力する docs/README.md と設計書のフォルダの README.md（component・er・interface・library・module・scenario）の表のマーカー
+    reason: 生成し直すと今の書き方に戻る。生成を JSON の記載にする対応は shuhei1101/ai-monitor#3418 が持ち、終わりの条件の範囲から除く（#481 の task-planner の扱いの判断）
+    plan: shuhei1101/ai-monitor#3418
+  - item: 'この PR のマージ後に他の作業 PR が足す PR ドキュメントの今の書き方のマーカー（AI Monitor のテンプレートの <!-- table: data --> を写した記載）'
+    reason: テンプレートは AI Monitor の文書で、JSON の記載への移行は shuhei1101/ai-monitor#3418 が持つ
+    plan: shuhei1101/ai-monitor#3418
+  - item: tests/ のテストの入力に使う今の書き方のマーカー
+    reason: '今の書き方を読む処理・移行の手順を確かめる入力で、文書ではない。読む処理の削除に合わせて #479 が扱う'
+    plan: '#479'
