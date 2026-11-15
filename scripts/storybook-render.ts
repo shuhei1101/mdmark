@@ -833,6 +833,10 @@ const jsonList = (value: unknown): string[] =>
       : [];
 
 /** ストーリーの args のオブジェクト（JSON の文字でも、Storybook がオブジェクトにした値でもよい） */
+/** ストーリーの引数 `hints`（問い合わせの値は文字か真偽値で届く）。`false` のときだけオフ */
+const hintsOf = (value: unknown): boolean =>
+  value !== false && value !== "false";
+
 const jsonObject = <T>(value: unknown): T | undefined =>
   typeof value === "object" && value !== null
     ? (value as T)
@@ -1018,8 +1022,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           ...jsonObject<Record<string, string>>(args.notes),
         },
         links: jsonObject<Record<string, string>>(args.links),
-        // 問い合わせの値は文字か真偽値で届く
-        hints: args.hints !== false && args.hints !== "false",
+        hints: hintsOf(args.hints),
         collapsed,
         entered,
         selected,
@@ -1171,7 +1174,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       focus: jsonObject<{ message: number }>(args.focus),
       id: "story-map-seq",
       notes: jsonObject<Record<string, string>>(args.notes),
-      hints: args.hints !== false && args.hints !== "false",
+      hints: hintsOf(args.hints),
     });
     const width = Number(
       /<svg[^>]*\swidth="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
