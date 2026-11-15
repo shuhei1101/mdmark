@@ -110,3 +110,10 @@ exit=0
 $ grep -c '<!-- param' docs/guide/図を描く-見本.mark.md; grep -c '<!-- map' docs/guide/図を描く-見本.mark.md
 1
 4
+
+## 索引の検査に使ったスクリプト（/tmp/mm594/check-guide.mjs。node {スクリプト} {作業ツリーの直下} で実行）
+const { checkGuideSource } = await import(process.argv[2] + "/scripts/build-plugin.ts");
+const r = await checkGuideSource({ root: process.argv[2] });
+console.log(`entries=${r.entries.length} problems=${r.problems.length}`);
+for (const p of r.problems) console.log(p);
+process.exit(r.problems.length ? 1 : 0);
