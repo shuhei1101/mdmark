@@ -258,7 +258,7 @@ architecture-beta
 ````
 
 service はアイコン（`cloud`・`database`・`disk`・`internet`・`server`）と名前のノード、group はアイコンと名前のタイトルを持つグループ、`junction` は小さい点になる。
-左から右へ配置し、上下の辺（`T`・`B`）でつなぐ 2 つは同じ段に縦に並べる。
+左から右へ配置し、上下の辺（`T`・`B`）でつなぐ 2 つは同じ段に縦に並べる。別の group にある 2 つは、同じ段に並ばない場合がある。
 線は指定の辺の中ほどから出て、指定の辺の中ほどへ入る。`{group}` を付けた端は、その service を含む group の枠の辺から出る。
 補足の `layout` の `ends` は、Mermaid の辺の指定より優先する。
 補足の ID は、service・group・junction の ID・線の記載順の `r{番号}`。
@@ -274,12 +274,14 @@ C4Context
   Person(customer, "顧客", "商品を注文する人")
   System_Boundary(shop, "通販") {
     System(store, "注文のシステム", "注文と支払いを受け付ける")
+    System(stock, "在庫のシステム", "在庫の数を持つ")
     SystemDb(orders, "注文のデータベース", "注文と明細を保存する")
   }
   System_Ext(pay, "決済代行", "カードの決済")
   Rel(customer, store, "注文する", "HTTPS")
   Rel_D(store, orders, "保存する")
-  Rel_R(store, pay, "決済する")
+  Rel_R(store, stock, "在庫を引き当てる")
+  Rel(store, pay, "決済する")
 ```
 
 <!-- map-data: {"version": 1, "notes": {"store": {"text": "注文の受付から通知までを持つ"}}} -->
@@ -290,7 +292,7 @@ C4Context
 要素（`Person`・`System`・`SystemDb`・`SystemQueue` とその `_Ext`）は、種類の行・名前・説明を持つノードになる。
 `SystemDb` はデータベースのアイコン、`SystemQueue` は角の丸い横長の形、`_Ext` は灰色の面と種類の行の `External` で描き分ける。
 境界（`Enterprise_Boundary`・`System_Boundary`・`Boundary`）は、名前と種類のタイトルを持つ破線のグループになる。
-上から下へ配置し、`Rel_R`・`Rel_L` の相手は同じ段の右・左、`Rel_D`・`Rel_U` の相手は下・上の段に置く。関係のラベルの後ろに `[{技術}]` を出す。
+上から下へ配置し、`Rel_R`・`Rel_L` の相手は同じ段の右・左、`Rel_D`・`Rel_U` の相手は下・上の段に置く。別の境界にある 2 つは、同じ段に並ばない場合がある。関係のラベルの後ろに `[{技術}]` を出す。
 `title` の行は、マーカーに `title` が無いときの図の枠のタイトルになる。
 補足の ID は、要素・境界の別名（第 1 引数）・関係の記載順の `r{番号}`。描くのは `C4Context` だけ。
 
