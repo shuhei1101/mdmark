@@ -16,6 +16,7 @@ functions:
       - MOD-596-3#functions[parseC4Context]
       - MOD-596-3#functions[c4ToFlowchart]
       - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-130#functions[shortestPathKept]
       - MOD-472-133#functions[spreadMapEnds]
       - MOD-472-133#functions[renderMapC4Diagram]
     args:
@@ -38,7 +39,8 @@ functions:
       1. `parseC4Context` と `c4ToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
       2. `extension.title` に `title` の行、`extension.kinds` に `MAP_C4_KINDS`、`extension.overrides` に `c4ToFlowchart` の上書きを指定する
       3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類を指定した `renderMapC4Diagram` を指定する
-      4. `extension.collapsedTag` で、閉じた境界に「要素 {数} 件」を返却する
+      4. `extension.selectionOf` で、要素を 2 つ選べば `shortestPathKept` の経路を残す（1 つは構成図の選び方）
+      5. `extension.collapsedTag` で、閉じた境界に「要素 {数} 件」を返却する
     unit_tests:
       - name: test_attach_map_c4
         case: 正常

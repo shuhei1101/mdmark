@@ -17,6 +17,7 @@ functions:
       - MOD-596-1#functions[classToFlowchart]
       - MOD-596-1#functions[classPartInputs]
       - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-130#functions[shortestPathKept]
       - MOD-472-133#functions[spreadMapEnds]
       - MOD-472-133#functions[renderMapClassDiagram]
     args:
@@ -39,7 +40,7 @@ functions:
       1. `parseClassDiagram` と `classToFlowchart` で `Flowchart` を作り、`attachMapFlow` に `extension` と一緒に指定する
       2. `extension.kinds` に `MAP_CLASS_KINDS`、`extension.lines` に矢じりを持たない線の種類を指定する
       3. `extension.overrides` に `classPartInputs` の上書き、`extension.collapsibles` にクラスの ID（メンバーを閉じた状態は `collapsed` に持つ）、`extension.rewire` に `spreadMapEnds`、`extension.render` に `classPartInputs` のメンバー・注釈・端を指定した `renderMapClassDiagram` を指定する
-      4. `extension.selectionOf` で、ノート（`note_{番号}`）を選んだ ID から除き、残りのクラスを構成図の選び方で残す（ノートは選ばない）
+      4. `extension.selectable` で、ノート（`note_{番号}`）を選ばない。`extension.selectionOf` で、クラスを 1 つ選べばその関係と相手、2 つ選べば `shortestPathKept` の経路を残す
       5. `extension.collapsedTag` で、閉じた `namespace` に「クラス {数} 件」を返却する
     unit_tests:
       - name: test_attach_map_class

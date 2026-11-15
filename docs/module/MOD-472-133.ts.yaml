@@ -46,7 +46,7 @@ data_models:
         description: 動かしている要素
       - name: shapes
         type: Record<string, MapStateShape> | undefined
-        description: ノードの ID ごとの状態遷移図の形状。`start`・`end`・`choice` は `data-shape` をその値にし、名前と種類の行を出さず、`role="img"` と `aria-label`（開始・終了・分岐）を持ちフォーカスを持たない。`note` は種類の行「ノート」
+        description: ノードの ID ごとの状態遷移図の形状と、アーキテクチャ図の junction。`start`・`end`・`choice`・`junction` は `data-shape` をその値にし、名前と種類の行を出さず、`role="img"` と `aria-label`（開始・終了・分岐・分岐点）を持ちフォーカスを持たない。`note` は種類の行「ノート」
       - name: keep
         type: '{ nodes: string[]; wires: string[] } | undefined'
         description: 選択と強調の代わりに残すノードと線（ほかを薄くする）
@@ -498,7 +498,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのクラス図』。`renderMapFlow` のクラスのノードに、種類の行の注釈（`«…»`）と `renderMapClassMembers` の開閉のボタンとメンバーの区画を入れ、`renderMapClassEnds` の端の形・多重度・ラベルを重ねる。関係の線は矢じりを持たず（`..` は破線）、ノートのノードは種類の行「ノート」を持つ
+    summary: 部品設計『mapのクラス図』。`renderMapFlow` のクラスのノードに、種類の行の注釈（`«…»`）と `renderMapClassMembers` の開閉のボタンとメンバーの区画を入れ、`renderMapClassEnds` の端の形・多重度・ラベルを重ねる。関係の線は矢じりを持たず（`..` は破線）、関係のラベルは `layout` の線から取って線の中ほどに描き、ノートのノード（`note_{番号}`）は種類の行「ノート」を持つ。クラスの大きさは `MAP_CLASS`（幅・名前の行・メンバーの行・区切り線）で決める
     scope: public
     callees:
       - MOD-472-133#functions[renderMapFlow]
@@ -597,7 +597,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのアーキテクチャ図』。`renderMapFlow` に、group のタイトル（閉じた group はノードの種類の行）のアイコンと、junction の点（`data-shape="junction"`・`role="img"`・`aria-label="分岐点"`。フォーカスを持たない）を加え、線の矢じりを `head` のとおりに描く
+    summary: 部品設計『mapのアーキテクチャ図』。`renderMapFlow` に、group のタイトル（閉じた group のタイトルを含む）のアイコンと、junction の点（`shapes` の `junction`。`data-shape="junction"`・`role="img"`・`aria-label="分岐点"`。フォーカスを持たない）を加え、線の矢じりを `head` のとおりに描く（`start` は点の並びを逆にして終点の矢じりで描く）。アイコンは Lucide の `cloud`・`database`・`hard-drive`・`globe`・`server` を配布物にまとめて描く
     scope: public
     callees:
       - MOD-472-133#functions[renderMapFlow]

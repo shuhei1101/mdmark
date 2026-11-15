@@ -16,6 +16,7 @@ functions:
       - MOD-596-2#functions[parseArchitecture]
       - MOD-596-2#functions[architectureToFlowchart]
       - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-130#functions[shortestPathKept]
       - MOD-472-133#functions[rewireMapArchitecture]
       - MOD-472-133#functions[renderMapArchitecture]
     args:
@@ -37,8 +38,8 @@ functions:
     process: |-
       1. `parseArchitecture` と `architectureToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
       2. `extension.kinds` に `MAP_ARCH_KINDS`、`extension.overrides` に `architectureToFlowchart` の上書きを指定する
-      3. `extension.rewire` に `rewireMapArchitecture`（線の辺の指定・`{group}`・補足の `layout` の `r{番号}.ends`・閉じた group を指定する）、`extension.render` に group のアイコン・junction・線の矢じりを指定した `renderMapArchitecture` を指定する
-      4. `extension.selectionOf` で、junction を選んだ ID から除き、残りの service を構成図の選び方で残す（junction は選ばない）
+      3. `extension.rewire` に `rewireMapArchitecture`（線の辺の指定・`{group}`・補足の `layout` の `r{番号}.ends`・閉じた group を指定する）、`extension.render` に group のアイコン・junction・線の矢じり（構成図の線の元と先を入れ替えた線は、始点と終点を入れ替えた矢じり）を指定した `renderMapArchitecture` を指定する
+      4. `extension.selectable` で、junction を選ばない。`extension.selectionOf` で、service を 2 つ選べば `shortestPathKept` の経路を残す（1 つは構成図の選び方）
       5. `extension.collapsedTag` で、閉じた group に「service {数} 件」を返却する
     unit_tests:
       - name: test_attach_map_architecture

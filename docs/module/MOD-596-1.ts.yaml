@@ -32,7 +32,7 @@ constants:
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 定数
-    summary: クラス（種類の行「クラス」）・注釈を持つクラス（種類の行は空。注釈は `renderMapClassDiagram` が出す）・ノート（種類の行「ノート」）の `MapKind`。キーは設定の `map.kinds` と重ならない `mdmark-class`・`mdmark-class-annotated`・`mdmark-class-note`
+    summary: クラス（種類の行「クラス」）・注釈を持つクラス（種類の行は空。注釈は `renderMapClassDiagram` が出す）・ノート（種類の行「ノート」）の `MapKind`。キーは設定の `map.kinds` と重ならない `mdmark-class`・`mdmark-class-annotated`・`mdmark-memo`
 functions:
   - name: parseClassDiagram
     title: classDiagramを読む
@@ -89,7 +89,7 @@ functions:
         description: 読み取り結果
     returns:
       type: Flowchart
-      description: ノードの名前は `generic` があれば `{ID}<{T}>`、クラスは `MAP_CLASS_KINDS` のキーを持つ。線の ID は関係の ID（`r{番号}`）とノートの線（`n{番号}`）で、関係の線は記載の左のクラスから右のクラスへ引く
+      description: ノードの名前は `generic` があれば `{ID}<{T}>`、クラスは `MAP_CLASS_KINDS` のキーを持つ。線の ID は関係の ID（`r{番号}`）とノートの線（`n{番号}`）で、関係の線は記載の左のクラスから右のクラスへ引き、関係のラベルを持つ（部品が線の中ほどに描く）
     unit_tests:
       - name: test_class_to_flowchart
         case: 正常

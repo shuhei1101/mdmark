@@ -82,7 +82,7 @@ functions:
         description: 読み取り結果
     returns:
       type: '{ chart: Flowchart; overrides: Record<string, MapOverride> }'
-      description: 線の ID は `r{番号}`、ラベルは「{ラベル} [{技術}]」、`BiRel` は両向きの矢じり。`Rel_U` は先を元にして引き、`Rel_L`・`Rel_R` は `rankless` にして先に `align`（同じ段）と、`Rel_R` なら元より後・`Rel_L` なら前の `order` を指定する。要素の幅は `MAP_C4.width`
+      description: 線の ID は `r{番号}`、ラベルは「{ラベル} [{技術}]」、`BiRel` は両向きの矢じり。`Rel_U` は先を元にして引き、`Rel_L`・`Rel_R` は `rankless` にして先に `align`（同じ段）と、`Rel_R` なら元より後・`Rel_L` なら前の `order` を指定する。要素の大きさは、幅 `MAP_C4.width` と、名前の行に説明の行の数（`MAP_C4.descriptionChars` 文字ごとに 1 行）を足した高さの見積もり（描いた後に測り直す）
     unit_tests:
       - name: test_c4_to_flowchart
         case: 正常
