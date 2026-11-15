@@ -100,19 +100,26 @@ const unreadable = (line: number, raw: string): MapProblem => ({
   message: `${line + 1} 行目 \`${raw.trim()}\` を読めません。Mermaid の classDiagram の記法（\`{クラス} <|-- {クラス}\` など）で記載してください。`,
 });
 
+/** 静的の `$` と抽象の `*` を外す。行の末尾か、名前（メソッドは `)`）の直後に付く */
+const splitSign = (
+  text: string,
+): { body: string; sign: string | undefined } => {
+  const marker = /([$*])$|^([^\s(]+|[^)]*\))([$*])(?=\s|$)/.exec(text);
+  if (!marker) return { body: text, sign: undefined };
+  if (marker[1]) return { body: text.slice(0, -1).trimEnd(), sign: marker[1] };
+  return {
+    body: `${marker[2] ?? ""}${text.slice(marker[0].length)}`,
+    sign: marker[3],
+  };
+};
+
 /** メンバーの 1 行を、可視性・名前・型・静的・抽象・メソッドに読む */
 const parseMember = (text: string): ClassMember => {
-  let body = text.trim();
-  const visibility = /^[+\-#~]/.test(body) ? body.slice(0, 1) : "";
-  if (visibility !== "") body = body.slice(1);
-  // 静的の `$` と抽象の `*` は、行の末尾か、名前（メソッドは `)`）の直後に付く
-  const marker = /([$*])$|^([^\s(]+|[^)]*\))([$*])(?=\s|$)/.exec(body);
-  const sign = marker?.[1] ?? marker?.[3];
+  const trimmed = text.trim();
+  const visibility = /^[+\-#~]/.test(trimmed) ? trimmed.slice(0, 1) : "";
+  const { body, sign } = splitSign(trimmed.slice(visibility.length));
   const isStatic = sign === "$";
   const isAbstract = sign === "*";
-  if (marker?.[1]) body = body.slice(0, -1).trimEnd();
-  else if (marker?.[2] !== undefined)
-    body = `${marker[2]}${body.slice(marker[0].length)}`;
   const method = /^([^(]+)\(([^)]*)\)\s*(.*)$/.exec(body);
   if (method) {
     const name = (method[1] ?? "").trim();

@@ -166,49 +166,65 @@ type C4Reading = {
   stack: Array<{ boundary: C4Boundary; line: number }>;
 };
 
-/** 関数の行 1 つを読む。読めた行なら `true` */
-const readCall = (
-  reading: C4Reading,
-  call: { name: string; values: string[]; open: boolean; line: number },
-): boolean => {
-  const { diagram, stack } = reading;
-  const { name, values, open, line } = call;
-  const parent = stack.at(-1)?.boundary.id;
-  const [id, label] = values;
-  if (id === undefined) return false;
-  const boundary = BOUNDARIES[name];
-  if (boundary !== undefined) {
-    const item = { id, label: label ?? id, kind: boundary, parent };
-    diagram.boundaries.push(item);
-    if (open) stack.push({ boundary: item, line });
-    return true;
-  }
-  const external = name.endsWith("_Ext");
-  const element = ELEMENTS[external ? name.slice(0, -4) : name];
-  if (element !== undefined) {
-    diagram.elements.push({
-      id,
-      label: label ?? id,
-      description: values[2],
-      kind: element,
-      external,
-      parent,
-    });
-    return true;
-  }
-  const relation = RELATION_RE.exec(name);
-  if (!relation || values[1] === undefined) return false;
-  diagram.relations.push({
-    id: `r${diagram.relations.length + 1}`,
-    from: id,
-    to: values[1],
-    label: values[2],
-    technology: values[3],
+/** 関数の行 1 つ */
+type C4Call = { name: string; values: string[]; open: boolean; line: number };
+
+/** 境界の関数なら境界を足し、`{` で開いていれば境界の中に入る。読めた行なら `true` */
+const readBoundary = (reading: C4Reading, call: C4Call): boolean => {
+  const kind = BOUNDARIES[call.name];
+  const [id, label] = call.values;
+  if (kind === undefined || id === undefined) return false;
+  const boundary = {
+    id,
+    label: label ?? id,
+    kind,
+    parent: reading.stack.at(-1)?.boundary.id,
+  };
+  reading.diagram.boundaries.push(boundary);
+  if (call.open) reading.stack.push({ boundary, line: call.line });
+  return true;
+};
+
+/** 要素の関数なら要素を足す。読めた行なら `true` */
+const readElement = (reading: C4Reading, call: C4Call): boolean => {
+  const external = call.name.endsWith("_Ext");
+  const kind = ELEMENTS[external ? call.name.slice(0, -4) : call.name];
+  const [id, label, description] = call.values;
+  if (kind === undefined || id === undefined) return false;
+  reading.diagram.elements.push({
+    id,
+    label: label ?? id,
+    description,
+    kind,
+    external,
+    parent: reading.stack.at(-1)?.boundary.id,
+  });
+  return true;
+};
+
+/** 関係の関数なら関係を足す。読めた行なら `true` */
+const readRelation = (reading: C4Reading, call: C4Call): boolean => {
+  const relation = RELATION_RE.exec(call.name);
+  const [from, to, label, technology] = call.values;
+  if (!relation || from === undefined || to === undefined) return false;
+  const { relations } = reading.diagram;
+  relations.push({
+    id: `r${relations.length + 1}`,
+    from,
+    to,
+    label,
+    technology,
     both: relation[1] !== undefined,
     direction: relation[2] === undefined ? undefined : DIRECTIONS[relation[2]],
   });
   return true;
 };
+
+/** 関数の行 1 つを読む。読めた行なら `true` */
+const readCall = (reading: C4Reading, call: C4Call): boolean =>
+  readBoundary(reading, call) ||
+  readElement(reading, call) ||
+  readRelation(reading, call);
 
 /** 行 1 つを読む。読めた行なら `true` */
 const readLine = (reading: C4Reading, text: string, line: number): boolean => {

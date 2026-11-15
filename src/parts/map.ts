@@ -2318,33 +2318,64 @@ export type MapClassMembersArgs = {
   id?: string | undefined;
 };
 
+/** 注記を持つメンバーの持ち主の `id` の属性（注記が無いか `ownerPrefix` が無ければ空） */
+const classMemberOwnerId = (args: MapClassMembersArgs, name: string): string =>
+  (args.annotations?.[name]?.length ?? 0) > 0 && args.ownerPrefix !== undefined
+    ? ` id="${escapeHtml(noteOwnerId(args.ownerPrefix, `${args.node.id}.${name}`))}"`
+    : "";
+
+/** クラス図のメンバーの説明のボタンと、そのツールチップ */
+const classMemberNote = (
+  args: MapClassMembersArgs,
+  context: {
+    member: MapClassNode["members"][number];
+    tips: TipList;
+    ownerId: string;
+  },
+): string => {
+  const { member, tips, ownerId } = context;
+  const note = args.notes[member.name];
+  const notes = args.annotations?.[member.name];
+  const owner = `member:${args.node.id}.${member.name}`;
+  const label = infoLabel({
+    name: member.name,
+    described: note !== undefined,
+    annotated: (notes?.length ?? 0) > 0,
+  }).replace(/^「(.*)」/, "$1");
+  return `<button class="map-class-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: member.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
+};
+
+/** メンバーが説明か注記を持つか */
+const classMemberDescribed = (
+  args: MapClassMembersArgs,
+  name: string,
+): boolean =>
+  args.notes[name] !== undefined || (args.annotations?.[name]?.length ?? 0) > 0;
+
+/** メンバーの行の class（静的は is-static、抽象は is-abstract） */
+const classMemberClasses = (member: MapClassNode["members"][number]): string =>
+  [
+    "map-class-member",
+    member.isStatic ? "is-static" : "",
+    member.isAbstract ? "is-abstract" : "",
+  ]
+    .filter((name) => name !== "")
+    .join(" ");
+
 /** クラス図のメンバーの行 1 つ。説明か注記を持つメンバーは、説明のボタンとツールチップを持つ */
 const renderMapClassMember = (
   args: MapClassMembersArgs,
   context: { member: MapClassNode["members"][number]; tips: TipList },
 ): string => {
   const { member, tips } = context;
-  const note = args.notes[member.name];
-  const notes = args.annotations?.[member.name];
-  const annotated = (notes?.length ?? 0) > 0;
-  const ownerId =
-    annotated && args.ownerPrefix !== undefined
-      ? ` id="${escapeHtml(noteOwnerId(args.ownerPrefix, `${args.node.id}.${member.name}`))}"`
-      : "";
+  const ownerId = classMemberOwnerId(args, member.name);
   const plain = args.hints === false;
   const row = plain && ownerId !== "" ? `${ownerId} tabindex="-1"` : "";
-  const owner = `member:${args.node.id}.${member.name}`;
-  const label = infoLabel({
-    name: member.name,
-    described: note !== undefined,
-    annotated,
-  }).replace(/^「(.*)」/, "$1");
   const mark =
-    plain || (note === undefined && !annotated)
+    plain || !classMemberDescribed(args, member.name)
       ? ""
-      : `<button class="map-class-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: member.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
-  const classes = `map-class-member${member.isStatic ? " is-static" : ""}${member.isAbstract ? " is-abstract" : ""}`;
-  return `<div class="${classes}"${row} role="listitem" data-member="${escapeHtml(member.name)}"><span class="map-class-visibility">${escapeHtml(member.visibility)}</span><span class="map-class-text">${escapeHtml(member.text)}</span><span class="map-class-info-cell">${mark}</span></div>`;
+      : classMemberNote(args, { member, tips, ownerId });
+  return `<div class="${classMemberClasses(member)}"${row} role="listitem" data-member="${escapeHtml(member.name)}"><span class="map-class-visibility">${escapeHtml(member.visibility)}</span><span class="map-class-text">${escapeHtml(member.text)}</span><span class="map-class-info-cell">${mark}</span></div>`;
 };
 
 /** 部品『mapのクラス図』のクラスの中身。メンバーを開閉するボタン・属性とメソッドの区画・メンバーの説明のツールチップ */
@@ -2416,6 +2447,43 @@ const classEndPath = (
   return `M${fmt(tip)}L${fmt(side(middle, half * 0.8))}L${fmt(along(length * 1.2))}L${fmt(side(middle, -half * 0.8))}Z`;
 };
 
+/** 関係の端 1 つの形と多重度の SVG の要素 */
+const classEndMarks = (
+  dim: ReadonlySet<string>,
+  context: { end: MapClassEnd; points: Point[]; cardinalities: PlacedText[] },
+): string[] => {
+  const { end, points, cardinalities } = context;
+  const at = wireEndOf(points, end.at);
+  const dimmed = dim.has(end.wire) ? " map-dim" : "";
+  const shape =
+    end.shape === undefined
+      ? []
+      : [
+          `<path class="map-class-end map-class-end-${end.shape}${dimmed}" data-wire-mark="${escapeHtml(end.wire)}" data-end-shape="${end.shape}" d="${classEndPath(end.shape, at)}"></path>`,
+        ];
+  if (end.card === undefined) return shape;
+  const near: Point = [
+    at.tip[0] + at.dir[0] * (MAP_CLASS.endLength + 4),
+    at.tip[1] + at.dir[1] * (MAP_CLASS.endLength + 4),
+  ];
+  const placed = placeCardinality(cardinalities, {
+    x: near[0],
+    y: near[1],
+    nx: near[0] + (at.dir[0] < 0 ? -1 : 1),
+    value: end.card,
+  });
+  return [
+    ...shape,
+    erMarkText(dim, {
+      wire: end.wire,
+      at: placed.at,
+      value: end.card,
+      className: "map-class-card",
+      anchor: placed.right ? "start" : "end",
+    }),
+  ];
+};
+
 /** 関係の端の形と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの SVG */
 export const renderMapClassEnds = (args: {
   layout: MapLayout;
@@ -2423,60 +2491,37 @@ export const renderMapClassEnds = (args: {
   labels?: Record<string, string> | undefined;
   dim: ReadonlySet<string>;
 }): string => {
-  const parts: string[] = [];
+  const pointsOf = (id: string): Point[] =>
+    (args.layout.wires.find((item) => item.id === id)?.points ?? []) as Point[];
   const cardinalities: PlacedText[] = [];
   const labels: PlacedText[] = [];
-  for (const end of args.ends) {
-    const wire = args.layout.wires.find((item) => item.id === end.wire);
-    const points = (wire?.points ?? []) as Point[];
-    if (points.length < 2) continue;
-    const dimmed = args.dim.has(end.wire) ? " map-dim" : "";
-    const at = wireEndOf(points, end.at);
-    if (end.shape !== undefined)
-      parts.push(
-        `<path class="map-class-end map-class-end-${end.shape}${dimmed}" data-wire-mark="${escapeHtml(end.wire)}" data-end-shape="${end.shape}" d="${classEndPath(end.shape, at)}"></path>`,
-      );
-    if (end.card === undefined) continue;
-    const near: Point = [
-      at.tip[0] + at.dir[0] * (MAP_CLASS.endLength + 4),
-      at.tip[1] + at.dir[1] * (MAP_CLASS.endLength + 4),
-    ];
-    const placed = placeCardinality(cardinalities, {
-      x: near[0],
-      y: near[1],
-      nx: near[0] + (at.dir[0] < 0 ? -1 : 1),
-      value: end.card,
-    });
-    parts.push(
-      erMarkText(args.dim, {
-        wire: end.wire,
-        at: placed.at,
-        value: end.card,
-        className: "map-class-card",
-        anchor: placed.right ? "start" : "end",
-      }),
-    );
-  }
-  for (const [id, label] of Object.entries(args.labels ?? {})) {
-    const wire = args.layout.wires.find((item) => item.id === id);
-    const points = (wire?.points ?? []) as Point[];
-    if (points.length < 2) continue;
-    const place = erMarkOf(points);
-    const at = placeLabel(labels, {
-      at: place.label,
-      vertical: place.vertical,
-      width: label.length * MAP_ER.labelChar,
-    });
-    parts.push(
-      erMarkText(args.dim, {
-        wire: id,
-        at,
-        value: label,
-        className: "map-class-label",
-        anchor: place.vertical ? "start" : "middle",
-      }),
-    );
-  }
+  const parts = [
+    ...args.ends.flatMap((end) => {
+      const points = pointsOf(end.wire);
+      return points.length < 2
+        ? []
+        : classEndMarks(args.dim, { end, points, cardinalities });
+    }),
+    ...Object.entries(args.labels ?? {}).flatMap(([id, label]) => {
+      const points = pointsOf(id);
+      if (points.length < 2) return [];
+      const place = erMarkOf(points);
+      const at = placeLabel(labels, {
+        at: place.label,
+        vertical: place.vertical,
+        width: label.length * MAP_ER.labelChar,
+      });
+      return [
+        erMarkText(args.dim, {
+          wire: id,
+          at,
+          value: label,
+          className: "map-class-label",
+          anchor: place.vertical ? "start" : "middle",
+        }),
+      ];
+    }),
+  ];
   return `<svg class="map-class-ends" width="${args.layout.width}" height="${args.layout.height}" aria-hidden="true">${parts.join("")}</svg>`;
 };
 
@@ -2706,6 +2751,37 @@ const elbow = (
   return horizontal(a.side) ? [[bx, ay]] : [[ax, by]];
 };
 
+/** 線の元と先の辺と、group の枠を端にするか（補足の `ends` を Mermaid の辺の指定より優先する）。元の線が無ければ `undefined` */
+const archWireSides = (
+  wire: MapLayout["wires"][number],
+  args: {
+    edges: MapArchEdge[];
+    ends?: Record<string, { from?: MapSide; to?: MapSide }> | undefined;
+  },
+):
+  | {
+      from: { side: MapSide; group: boolean };
+      to: { side: MapSide; group: boolean };
+    }
+  | undefined => {
+  const original = wire.merged?.[0] ?? { from: wire.from, to: wire.to };
+  const edge = args.edges.find(
+    (item) =>
+      (item.from === original.from && item.to === original.to) ||
+      (item.from === original.to && item.to === original.from),
+  );
+  if (!edge) return undefined;
+  const override = args.ends?.[edge.id];
+  const head = {
+    side: override?.from ?? edge.fromSide,
+    group: edge.fromGroup,
+  };
+  const tail = { side: override?.to ?? edge.toSide, group: edge.toGroup };
+  return edge.from === original.from
+    ? { from: head, to: tail }
+    : { from: tail, to: head };
+};
+
 /** アーキテクチャ図の線を、指定の辺の中ほどから外へ出た 2 点を直角につなぐ経路に引き直す */
 export const rewireMapArchitecture = (args: {
   layout: MapLayout;
@@ -2726,34 +2802,22 @@ export const rewireMapArchitecture = (args: {
     return layout.groups.find((item) => item.id === id);
   };
   return layout.wires.map((wire) => {
-    const original = wire.merged?.[0] ?? { from: wire.from, to: wire.to };
-    const edge = args.edges.find(
-      (item) =>
-        (item.from === original.from && item.to === original.to) ||
-        (item.from === original.to && item.to === original.from),
-    );
-    if (!edge) return wire;
-    const forward = edge.from === original.from;
-    const override = args.ends?.[edge.id];
-    const fromSide = forward
-      ? (override?.from ?? edge.fromSide)
-      : (override?.to ?? edge.toSide);
-    const toSide = forward
-      ? (override?.to ?? edge.toSide)
-      : (override?.from ?? edge.fromSide);
-    const fromGroup = forward ? edge.fromGroup : edge.toGroup;
-    const toGroup = forward ? edge.toGroup : edge.fromGroup;
-    const fromRect = rectOf(wire.from, fromGroup);
-    const toRect = rectOf(wire.to, toGroup);
+    const sides = archWireSides(wire, args);
+    if (!sides) return wire;
+    const fromRect = rectOf(wire.from, sides.from.group);
+    const toRect = rectOf(wire.to, sides.to.group);
     if (!fromRect || !toRect) return wire;
-    const a = sideAnchor(fromRect, fromSide);
-    const b = sideAnchor(toRect, toSide);
+    const a = sideAnchor(fromRect, sides.from.side);
+    const b = sideAnchor(toRect, sides.to.side);
     return {
       ...wire,
       points: [
         a.at,
         a.out,
-        ...elbow({ out: a.out, side: fromSide }, { out: b.out, side: toSide }),
+        ...elbow(
+          { out: a.out, side: sides.from.side },
+          { out: b.out, side: sides.to.side },
+        ),
         b.out,
         b.at,
       ],
