@@ -206,11 +206,11 @@ const disclosure = (id: string, title: string, expanded: boolean): string =>
 
 /** グループのタイトル。今入っているグループは押せない文字にする。`ownerId` は `hints` がオフのときの注記の持ち主の `id` */
 const groupTitle = (
-  id: string,
-  title: string,
+  group: { id: string; title: string },
   current: boolean,
   ownerId?: string,
 ): string => {
+  const { id, title } = group;
   const owner = ownerId === undefined ? "" : ` id="${escapeHtml(ownerId)}"`;
   return current
     ? `<span class="map-group-title is-current"${owner}${ownerId === undefined ? "" : ' tabindex="-1"'}>${escapeHtml(title)}</span>`
@@ -756,7 +756,7 @@ const renderOpenGroup = (context: {
   const bar = movable
     ? `<div class="map-group-bar" tabindex="0" role="button" aria-label="${escapeHtml(`${group.title}を動かす`)}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight" title="ドラッグでグループを動かす"></div>`
     : "";
-  return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(args, group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div></div>`;
+  return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(args, group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group, current, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div></div>`;
 };
 
 /** 閉じたグループの名前の後ろの文字（無ければ「ノード {数} 件」） */
@@ -775,7 +775,7 @@ const renderClosedGroups = (args: MapFlowArgs, groupMark: GroupMark): string =>
     .filter((group) => group.collapsed)
     .map(
       (group) =>
-        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div>${closedCount(args, group)}</div>`,
+        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group, false, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div>${closedCount(args, group)}</div>`,
     )
     .join("");
 
