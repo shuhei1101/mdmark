@@ -2,7 +2,7 @@ id: ER-472-4
 visibility: internal
 title: "ER 図: ガイド"
 lead: ガイドにする `docs/` のページの索引。行ごとに名前・参照するとき・概要と、本文にする `docs/` のページを持つ。
-overview: 原本はリポジトリの直下の `guide/index.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `guides`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。本文は別に記載せず、`docs/` の使用方法・リファレンスのページを指す。指したページは `docs/files.yaml` の行にタグ `topic:ガイド` を持ち、Claude Code は dev-docs の配信元 `mdmark` の `docs` の行からタグで絞って参照する。配布物のビルドが索引の構造と指すページの有無を検査し、プラグインには写さない
+overview: 原本は Claude Code プラグインのフォルダの `plugin/guide-index.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `guides`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。本文は別に記載せず、`docs/` の使用方法・リファレンスのページを指す。指したページは `docs/files.yaml` の行にタグ `topic:ガイド` を持ち、Claude Code は dev-docs の配信元 `mdmark` の `docs` の行からタグで絞って参照する。配布物のビルドが索引の構造と指すページの有無を検査する。プラグインを git から入れると索引も入るが、プラグインは索引を参照しない
 tables:
   - name: guides
     title: ガイドの行
@@ -41,7 +41,7 @@ tables:
         not_null: true
         check: '`docs/` で始まり `.md` で終わる。区切りは `/`'
         description: 本文にするページ。リポジトリの直下からの相対パス。`docs/files.yaml` のこのページの行にタグ `topic:ガイド` を付ける
-        example: docs/guide/記法.md
+        example: docs/guide/記法.mark.md
         notes: 無いページを指すと配布物のビルドが止まる
     status: planned
     introduced:

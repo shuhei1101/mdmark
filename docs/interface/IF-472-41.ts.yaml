@@ -209,7 +209,7 @@ exceptions:
   - name: 移行の手順の構造の誤り（終了コード 1）
     condition: '`migrations/` のどれかの `steps.yaml` が `schemas/mdmark.steps.schema.json` に合わないか（`call` のスクリプトの拡張子が `.js`・`.mjs` でないものを含む）、`call` のスクリプトが無いか、`migrations/no-steps.yaml` が ER 図『移行の手順』の構造に合わない'
   - name: ガイドの索引の誤り（終了コード 1）
-    condition: '`guide/index.yaml` が ER 図『ガイド』の構造に合わないか、無いページを指す'
+    condition: '`plugin/guide-index.yaml` が ER 図『ガイド』の構造に合わないか、無いページを指す'
   - name: 対応ブラウザの下限に無い API（終了コード 1）
     condition: 利用側のブラウザが読み込む JS（`dist/index.js`・`dist/view.js`・`dist/comments.js`・`dist/viewer.js`）のどれかが、下限のバージョンに無い API を、同じ API の `typeof` で確認する `if` のブロックの外で使用する
 constraints:
@@ -231,7 +231,7 @@ constraints:
     constraint: 'スプリントの区切りに develop（release を切るときは release）で `version.ini` を上げる commit で、`migrations/next/` を `migrations/v{バージョン}/` へ移し、`migrations/no-steps.yaml` の `version: next` を `v{バージョン}` に書き換える。hotfix のビルドも同じように打つタグのバージョンへ移す'
     decided_by: CMD-472-1#
   - item: 移行の手順の配布
-    constraint: '`migrations/`・`schemas/mdmark.steps.schema.json`・`docs/guide/変更履歴.md` は `dist/` に写さず、バージョンのタグのパッケージから `dist/cli.js` がパッケージの直下を基準に読み込む'
+    constraint: '`migrations/`・`schemas/mdmark.steps.schema.json`・`docs/guide/変更履歴.mark.md` は `dist/` に写さず、バージョンのタグのパッケージから `dist/cli.js` がパッケージの直下を基準に読み込む'
     notes: '`package.json` は `files` を持たず、パッケージには `.gitignore` に該当しないファイルが入る。入ることは E2E（バージョンを上げる）で確認する'
   - item: Claude Code プラグインの配布物
     constraint: '`dist/` を書き込んだ後に、まとめたフック `plugin/scripts/pre-tool-use.js`（Node 24）とまとめた依存の `plugin/THIRD_PARTY_LICENSES.txt` を書き込む。`plugin/.claude-plugin/plugin.json` には `version` を記載せず、Claude Code が commit の短縮 SHA をプラグインのバージョンにする。MCP サーバーとガイドは `plugin/` にまとめない。失敗したときは `dist/` と同じくプラグインの生成物も残さない'
