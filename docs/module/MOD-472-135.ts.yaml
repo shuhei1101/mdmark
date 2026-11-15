@@ -4,53 +4,6 @@ title: ライブラリ本体 / map / 点検 / check.ts
 test_files:
   - tests/unit/src/map/check.test.ts
 functions:
-  - name: collectMapStructure
-    title: 範囲の形を確かめる
-    kind: 関数
-    container: src/map/check.ts
-    usecase: Mermaidと補足で図を描く
-    role: 処理
-    scope: public
-    summary: 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめ、`MapProblem` を返す。Mermaid と補足の中身は読まない（`dist/index.js` に Mermaid と補足の読み取りを入れない）
-    args:
-      - name: range
-        type: '{ args: string; mermaid: string | undefined; mermaidCount: number; dataCount: number }'
-        required: true
-        description: 範囲のマーカーの引数・mermaid のブロック・数
-    returns:
-      type: '{ problems: MapProblem[]; kind: "flowchart" | "sequenceDiagram" | "erDiagram" | "stateDiagram" | undefined; args: ParsedMapArgs }'
-      description: 項目・描く図の種類（描かないときは無い）・`parseMapArgs` の結果
-    process: |-
-      1. mermaid のブロックが 0 か 2 つ以上、補足が 2 つ以上なら `map_invalid` を 1 件返し、`kind` を無しにする
-      2. Mermaid の 1 行目の最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram`。ほかは `map_invalid`（描ける種類の一覧を含む）にし、`kind` を無しにする
-      3. `parseMapArgs` の `problems` を合わせる
-    callees:
-      - MOD-472-140#functions[parseMapArgs]
-    unit_tests:
-      - name: test_collect_map_structure
-        case: 正常
-        summary: 形の正しい範囲
-        condition: mermaid のブロック 1 つ（`flowchart LR`）・補足 1 つ・空の引数
-        mock: なし
-        expected: 項目が空で、`kind` が `flowchart`
-      - name: test_collect_map_structure_when_er_and_state
-        case: 正常
-        summary: ER 図と状態遷移図
-        condition: 1 行目が `erDiagram`・`stateDiagram-v2`・`stateDiagram` の範囲
-        mock: なし
-        expected: 項目が空で、`kind` が `erDiagram`・`stateDiagram`・`stateDiagram`
-      - name: test_collect_map_structure_when_two_blocks
-        case: 異常
-        summary: mermaid のブロックが 2 つ
-        condition: '`mermaidCount: 2`'
-        mock: なし
-        expected: '`map_invalid` が 1 件で、`kind` が無い'
-      - name: test_collect_map_structure_when_bad_args
-        case: 異常
-        summary: 読めない引数
-        condition: '引数 `{title: 全体}`'
-        mock: なし
-        expected: '`map_invalid_value` が 1 件で、`kind` が `flowchart`'
   - name: collectMapProblems
     title: 書き方の誤りを集める
     kind: 関数
@@ -60,7 +13,7 @@ functions:
     summary: map の範囲の Mermaid と補足と設定から、`collectMapStructure` の項目に Mermaid と補足の中身の項目を加えた `MapProblem` を全て集める（`dist/map.js` と CLI が呼ぶ）
     scope: public
     callees:
-      - MOD-472-135#functions[collectMapStructure]
+      - MOD-589-1#functions[collectMapStructure]
       - MOD-472-137#functions[parseFlowchart]
       - MOD-472-138#functions[parseSequence]
       - MOD-531-1#functions[parseErDiagram]
