@@ -81,5 +81,7 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T05:37:30.857631+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
     note: 'tests/integration/lib/mount.browser.test.ts のタッチの代役の後始末を直すか、テストを移し、後のテストで (hover: hover)・(pointer: fine) が当たることを確かめる'
+    updated_by: planner
+    updated_at: '2026-11-15T10:57:23.608073+00:00'
