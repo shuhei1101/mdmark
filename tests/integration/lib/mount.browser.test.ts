@@ -17309,11 +17309,16 @@ test("test_normal_when_map_class_drawn", async () => {
   const shapeBefore = (
     endShape("r2") as SVGGraphicsElement
   ).getBoundingClientRect();
-  const leftBefore = Number.parseFloat(mapNode(figure, "円").style.left);
-  pressMap(find(mapNode(figure, "円"), ".mdmark-diagram-node-kind"), 40, 0);
-  expect(Number.parseFloat(mapNode(figure, "円").style.left)).toBeGreaterThan(
-    leftBefore,
+  // 白抜きの三角は「基本図形」の側の端に付くため、「基本図形」を動かす
+  const leftBefore = Number.parseFloat(mapNode(figure, "基本図形").style.left);
+  pressMap(
+    find(mapNode(figure, "基本図形"), ".mdmark-diagram-node-kind"),
+    40,
+    0,
   );
+  expect(
+    Number.parseFloat(mapNode(figure, "基本図形").style.left),
+  ).toBeGreaterThan(leftBefore);
   const shapeAfter = (
     endShape("r2") as SVGGraphicsElement
   ).getBoundingClientRect();
