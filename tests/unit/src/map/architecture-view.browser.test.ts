@@ -125,7 +125,7 @@ test("test_attach_map_architecture_when_group_end", async () => {
     '.map-closed-group[data-group="app"]',
   );
   expect(closed?.textContent).toContain("service 2 件");
-  expect(atMiddleOf(endsOf(root, "r4").start, rectOf(closed), "right")).toBe(
+  expect(atMiddleOf(endsOf(root, "app->hub").start, rectOf(closed), "right")).toBe(
     true,
   );
 });
