@@ -35,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T10:31:10.549694+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T10:44:48.234199+00:00'
   - process: モック作成
     status: skipped
     reason: 見た目の新しい要素を作らず、既存の要素を出す・出さない・出す場所の条件だけが変わるため（モック要否）
