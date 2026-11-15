@@ -80,5 +80,7 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T11:52:36.414534+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
     note: '`tests/integration/lib/upgrade.test.ts` のパスと `vscode/tests/integration/helpers.ts` のコメントのパス'
+    updated_by: planner
+    updated_at: '2026-11-15T13:52:24.010764+00:00'
