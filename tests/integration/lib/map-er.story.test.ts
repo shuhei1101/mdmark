@@ -408,8 +408,14 @@ test("test_accessibility", async () => {
   const page = await openEr("default");
   // 検証
   const order = page.locator('.mdmark-diagram-node[data-node="注文"]');
-  await expect(order.getAttribute("tabindex")).resolves.toBe("0");
-  await expect(order.getAttribute("aria-label")).resolves.toBe("注文");
+  await expect(order.getAttribute("tabindex")).resolves.toBeNull();
+  const orderHit = order.locator(":scope > .mdmark-diagram-node-hit");
+  await expect(orderHit.getAttribute("tabindex")).resolves.toBe("0");
+  await expect(orderHit.getAttribute("aria-label")).resolves.toBe("注文");
+  // 列の開閉・列の行・列の説明のボタンは押せる要素の中に無い
+  await expect(
+    orderHit.locator("button, .map-er-columns").count(),
+  ).resolves.toBe(0);
   const toggle = order.locator("button.map-er-toggle");
   await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("true");
   await expect(toggle.getAttribute("aria-label")).resolves.toBe(

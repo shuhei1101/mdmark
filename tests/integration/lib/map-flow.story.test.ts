@@ -357,15 +357,41 @@ test("test_accessibility", async () => {
     read.locator("button.map-group-title").getAttribute("aria-label"),
   ).resolves.toBe("記法の読み取りの中へ入る");
   const node = page.locator('.mdmark-diagram-node[data-node="mount"]');
-  await expect(node.getAttribute("tabindex")).resolves.toBe("0");
-  await expect(node.getAttribute("aria-roledescription")).resolves.toBe(
+  await expect(node.getAttribute("tabindex")).resolves.toBeNull();
+  await expect(node.getAttribute("role")).resolves.toBeNull();
+  const nodeHit = node.locator(":scope > .mdmark-diagram-node-hit");
+  await expect(nodeHit.getAttribute("tabindex")).resolves.toBe("0");
+  await expect(nodeHit.getAttribute("role")).resolves.toBe("button");
+  await expect(nodeHit.getAttribute("aria-roledescription")).resolves.toBe(
     "ノード",
   );
-  await expect(node.getAttribute("aria-keyshortcuts")).resolves.toBe(
+  await expect(nodeHit.getAttribute("aria-keyshortcuts")).resolves.toBe(
     "Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight",
   );
-  await expect(node.getAttribute("aria-pressed")).resolves.toBeNull();
-  await expect(node.getAttribute("aria-label")).resolves.toBe("mount");
+  await expect(nodeHit.getAttribute("aria-pressed")).resolves.toBeNull();
+  await expect(nodeHit.getAttribute("aria-label")).resolves.toBe("mount");
+  // 押せる要素（role="button"）の中にフォーカスできる要素を入れ子にしない（説明を持つ data・layout のノードを含む）
+  const nested = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('[role="button"], button, a[href]')].filter(
+        (element) =>
+          element.querySelector(
+            'button, a[href], [tabindex]:not([tabindex="-1"]), [role="button"]',
+          ) !== null,
+      ).length,
+  );
+  expect(nested).toBe(0);
+  for (const id of ["data", "layout"]) {
+    const described = page.locator(`.mdmark-diagram-node[data-node="${id}"]`);
+    await expect(
+      described.locator("button.mdmark-diagram-info").count(),
+    ).resolves.toBe(1);
+    await expect(
+      described
+        .locator(".mdmark-diagram-node-hit button.mdmark-diagram-info")
+        .count(),
+    ).resolves.toBe(0);
+  }
   const styles = await node.evaluate((element) => ({
     node: getComputedStyle(element).cursor,
     name: getComputedStyle(

@@ -289,7 +289,9 @@ test("test_accessibility", async () => {
   // 準備・実行
   const page = await openState("default");
   // 検証
-  const node = page.locator('.mdmark-diagram-node[data-node="確認待ち"]');
+  const node = page.locator(
+    '.mdmark-diagram-node[data-node="確認待ち"] > .mdmark-diagram-node-hit',
+  );
   await expect(node.getAttribute("tabindex")).resolves.toBe("0");
   await expect(node.getAttribute("aria-label")).resolves.toBe("確認待ち");
   const hit = page.locator('[data-loop="t2"] .map-wire-hit');

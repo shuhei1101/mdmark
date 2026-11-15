@@ -16800,7 +16800,10 @@ test("test_normal_when_map_state_selected", async () => {
   expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
   expect(getComputedStyle(name).userSelect).not.toBe("none");
   // 検証: 状態のノードはキーボードで選べる
-  const node = mapNode(figure(), "下書き");
+  const node = find<HTMLElement>(
+    mapNode(figure(), "下書き"),
+    ":scope > .mdmark-diagram-node-hit",
+  );
   expect(node.getAttribute("tabindex")).toBe("0");
   node.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
