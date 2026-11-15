@@ -15054,48 +15054,49 @@ test("test_normal_when_pinned_through_exceed_visible_width", async () => {
 });
 
 // タッチのドラッグで幅を変え、ダブルタップで描いた直後の幅に戻し、ポインターが粗い画面ではつまみを常に出す（正常系（タッチで列の幅を変える））
-test("test_normal_when_column_resized_by_touch", async () => {
-  // 準備: 幅 390px のポインターが粗い画面
-  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
-  const original = { width: window.innerWidth, height: window.innerHeight };
-  await page.viewport(390, 844);
-  await cdp().send("Emulation.setTouchEmulationEnabled", {
-    enabled: true,
-    maxTouchPoints: 1,
-  });
-  try {
-    expect(matchMedia("(pointer: coarse)").matches).toBe(true);
-    const el = createElement();
-    await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
-    const table = find<HTMLElement>(el, ".mdmark-table");
-    const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
-    const { heads, handles } = resizeParts(table);
-    const handle = handles[0] as HTMLElement;
-    // 検証: つまみを常に出し、押せる幅を 24px にする
-    expect(Number(getComputedStyle(handle, "::after").opacity)).toBeGreaterThan(
-      0,
+// タッチの点がある結合テストのプロジェクト（integration-browser-touch）だけで動かす
+test.runIf(navigator.maxTouchPoints > 0)(
+  "test_normal_when_column_resized_by_touch",
+  async () => {
+    // 準備: 幅 390px のポインターが粗い画面
+    vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(
+      () => {},
     );
-    expect(handle.offsetWidth).toBe(24);
-    expect(getComputedStyle(handle).touchAction).toBe("none");
-    const opened = headWidths(heads);
-    const scrollLeft = scroller.scrollLeft;
-    // 実行: タッチで右へ 60px 動かす
-    dragResizeHandle(handle, 60, "touch");
-    // 検証
-    const dragged = headWidths(heads);
-    expect(dragged[0]).toBe((opened[0] ?? 0) + 60);
-    expect(dragged.slice(1)).toEqual(opened.slice(1));
-    expect(scroller.scrollLeft).toBe(scrollLeft);
-    // 実行: 2 回タップする
-    dragResizeHandle(handle, 0, "touch");
-    dragResizeHandle(handle, 0, "touch");
-    // 検証
-    expect(heads[0]?.offsetWidth).toBe(opened[0]);
-  } finally {
-    await cdp().send("Emulation.setTouchEmulationEnabled", { enabled: false });
-    await page.viewport(original.width, original.height);
-  }
-});
+    const original = { width: window.innerWidth, height: window.innerHeight };
+    await page.viewport(390, 844);
+    try {
+      expect(matchMedia("(pointer: coarse)").matches).toBe(true);
+      const el = createElement();
+      await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
+      const table = find<HTMLElement>(el, ".mdmark-table");
+      const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+      const { heads, handles } = resizeParts(table);
+      const handle = handles[0] as HTMLElement;
+      // 検証: つまみを常に出し、押せる幅を 24px にする
+      expect(
+        Number(getComputedStyle(handle, "::after").opacity),
+      ).toBeGreaterThan(0);
+      expect(handle.offsetWidth).toBe(24);
+      expect(getComputedStyle(handle).touchAction).toBe("none");
+      const opened = headWidths(heads);
+      const scrollLeft = scroller.scrollLeft;
+      // 実行: タッチで右へ 60px 動かす
+      dragResizeHandle(handle, 60, "touch");
+      // 検証
+      const dragged = headWidths(heads);
+      expect(dragged[0]).toBe((opened[0] ?? 0) + 60);
+      expect(dragged.slice(1)).toEqual(opened.slice(1));
+      expect(scroller.scrollLeft).toBe(scrollLeft);
+      // 実行: 2 回タップする
+      dragResizeHandle(handle, 0, "touch");
+      dragResizeHandle(handle, 0, "touch");
+      // 検証
+      expect(heads[0]?.offsetWidth).toBe(opened[0]);
+    } finally {
+      await page.viewport(original.width, original.height);
+    }
+  },
+);
 
 // 列の幅を変えても、最終列を畳むかは決め直さない（正常系（狭い幅で列の幅を変える））
 test("test_normal_when_column_resized_in_narrow_width", async () => {

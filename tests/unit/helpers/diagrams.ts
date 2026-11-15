@@ -1,4 +1,4 @@
-import sample from "../../../docs/guide/図を描く-見本.md?raw";
+import sample from "../../../docs/guide/図を描く-見本.mark.md?raw";
 import { INQUIRY_TEXT } from "./retired-diagrams.ts";
 
 export {

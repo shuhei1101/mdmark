@@ -12,7 +12,7 @@ flows:
         description: '`version: v0.3.0`・`legacy: 1`・`index`・`build` を記載したコメントつきの設定と、索引と、マーカー `<!-- note -->` を持つ文書 2 つの一時フォルダ'
         notes: '`legacy` は点検が拒まない最上位の知らないキーで、名前を変えても点検が通る'
       - name: Mock
-        description: 作業ツリーをコピーした一時フォルダ（テスト用のパッケージ）の `migrations/` と `docs/guide/変更履歴.md` をテスト用のものに差し替え、`npm run build -- --version v0.5.0` でバージョンを埋めた `dist/cli.js` を子プロセスで実行する
+        description: 作業ツリーをコピーした一時フォルダ（テスト用のパッケージ）の `migrations/` と `docs/guide/変更履歴.mark.md` をテスト用のものに差し替え、`npm run build -- --version v0.5.0` でバージョンを埋めた `dist/cli.js` を子プロセスで実行する
         notes: '`v0.4.0` は `rename_key`（`file: config`・`legacy` → `renamed`）、`v0.5.0` は `replace_mark`（`<!-- note -->` → `<!-- callout -->`）。変更履歴は v0.3.0・v0.4.0・v0.5.0 の行を持つ'
     flow: |-
       sequenceDiagram
@@ -611,7 +611,7 @@ constraints:
   - item: バージョンの書き換え
     constraint: 設定の `version` を目標のバージョンにする。無ければ最上位の先頭に追加する
   - item: 変更履歴
-    constraint: パッケージの `docs/guide/変更履歴.md` の表のうち、バージョンの列が手元のバージョンより新しく目標のバージョン以下の行を、表の並びで出す。PR の列はリンクの文字（`#40`）だけを出す
+    constraint: パッケージの `docs/guide/変更履歴.mark.md` の表のうち、バージョンの列が手元のバージョンより新しく目標のバージョン以下の行を、表の並びで出す。PR の列はリンクの文字（`#40`）だけを出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]

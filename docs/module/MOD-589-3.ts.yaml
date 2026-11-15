@@ -1,0 +1,38 @@
+id: MOD-589-3
+visibility: internal
+title: ライブラリ本体 / 部品 / icon-node.ts
+lead: lucide のアイコンの形状（要素の並び）を、24 の格子の svg の文字列にする処理。
+functions:
+  - name: iconNodeBody
+    title: アイコンの形状をsvgの中身にする
+    kind: 関数
+    container: src/parts/icon-node.ts
+    role: 変換
+    scope: public
+    summary: lucide のアイコンの形状（要素の並び）を、24 の格子の svg の中身の文字列にする
+    args:
+      - name: node
+        type: IconNode
+        required: true
+        description: lucide のアイコンの形状（要素名と属性の組の並び）
+    returns:
+      type: string
+      description: svg の中身の文字列
+    process: |-
+      1. 要素ごとに、値が `undefined` でない属性を ` {名前}="{値}"` で並べ、`<{要素名}{属性}></{要素名}>` にする
+      2. 要素の順につないで返却する
+  - name: iconSvgOf
+    title: svgの中身をsvgにする
+    kind: 関数
+    container: src/parts/icon-node.ts
+    role: 変換
+    scope: public
+    summary: svg の中身を、class `mdmark-icon`・`viewBox="0 0 24 24"`・`aria-hidden="true"` の svg の文字列にする
+    args:
+      - name: body
+        type: string
+        required: true
+        description: svg の中身の文字列（`iconNodeBody` の結果）
+    returns:
+      type: string
+      description: svg の文字列
