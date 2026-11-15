@@ -141,6 +141,12 @@ functions:
         condition: '`click mount "https://example.com/spec"` を持つ `FLOW` を描き、`mount` の種類の行を 40px ドラッグして離し、次に動かさずに押す'
         mock: '`window` の `click` のキャプチャを記録する受け取り'
         expected: ドラッグの後の `click` は `preventDefault` され、ノードの位置が変わる。動かさずに押したときの `click` は止められず、`a.mdmark-diagram-node-link` の `href` が `https://example.com/spec`
+      - name: test_attach_map_flow_when_node_hit_keys
+        case: 正常
+        summary: リンク先を持たないノードは、ノードを覆う押せる要素でキー操作を受ける
+        condition: '`notes` で `data` に説明を持つ `FLOW` を描き、`data` の `span.mdmark-diagram-node-hit` にフォーカスして Enter、Alt + ArrowRight の順に押す'
+        mock: '`writeMapState`'
+        expected: 'Enter で `data` のノードが `data-selected` を持ち、押せる要素の `aria-label` の末尾が `（選択中）` になる。Alt + ArrowRight で `data` のノードが右へ 8px 動き、描き直した後もフォーカスが `data` の `span.mdmark-diagram-node-hit` にある。説明のマーカーにフォーカスしたときは押せる要素とは別の要素で、ツールチップが開く'
       - name: test_attach_map_flow_when_toggle
         case: 正常
         summary: グループを閉じる
