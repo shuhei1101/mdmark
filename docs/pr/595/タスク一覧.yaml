@@ -70,8 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T11:07:38.947262+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
     note: '`tests/unit/helpers/diagrams.ts`・`tests/unit/src/cli/upgrade.test.ts`・`tests/unit/scripts/build-plugin.test.ts`・`build.test.ts` のパス'
+    updated_by: planner
+    updated_at: '2026-11-15T11:43:35.646732+00:00'
   - process: 実装
     status: todo
     note: '`src/cli/changelog.ts` の `CHANGELOG_FILE`・`scripts/build-plugin.ts` の `GUIDE_SOURCE`'
