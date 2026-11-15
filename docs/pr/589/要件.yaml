@@ -1,0 +1,25 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: map の範囲の形の確認の設計書の置き場所が変わるだけで、図を描く流れは変わらない
+    depends_on: []
+docs:
+  - page: src/files.yaml
+    new: false
+    change: map/structure.ts・parts/embedded-html.ts・parts/icon-node.ts の行の implements を、新しく作る物理ファイルごとのモジュール構成へ向ける（map/structure.ts の description の受け持ちも合わせる）
+    status: todo
+  - page: vscode/files.yaml
+    new: false
+    change: src/webview/vite-env.d.ts の行を追加し、新しく作るモジュール構成を implements で指す
+    status: todo
+scope_out:
+  - item: collectMapStructure の単体テスト（tests/unit/src/map/check.test.ts の test_collect_map_structure*）を src/map/structure.ts の単体テストのファイルへ移し、新しく作るモジュール構成の test_files に記入する
+    reason: この PR は実装とテストを変えない設計書だけの変更（type:docs）。テストの移動は、この PR で collectMapStructure を structure.ts のモジュール構成へ移すことを前提にする。この PR に含めるかはモジュール構成設計のレビューで確定する
+    plan: to_file
+  - item: vscode/files.yaml の package-lock.json の行と、src/ 以外の管理用の YAML の行の無いファイルの行の追加
+    reason: 要望に含まれない（この PR は vite-env.d.ts の行だけを追加する。#491 は先にこの PR が入れば vite-env.d.ts を対象から外す）
+    plan: '#491'
+  - item: 同じく物理ファイルごとのモジュール構成を持たない src/render/syntax/blocks.ts・src/render/syntax/tokens.ts・src/viewer/includes.ts・src/viewer/viewer.css・vscode/src/escape.ts・vscode/src/workspace.ts のモジュール構成の作成
+    reason: 要望に含まれない横展開の残り（Issue は 4 ファイルだけを対象にする）
+    plan: '#590'
