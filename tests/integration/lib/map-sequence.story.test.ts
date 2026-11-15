@@ -306,6 +306,20 @@ test("test_reordering", async () => {
   ]);
 });
 
+// hints が false なら、説明を持つメッセージの線の押せる帯がツールチップを持たず、メッセージのラベルは描く（HintsOff）
+test("test_hints_off", async () => {
+  // 準備・実行
+  const page = await openSequence("hints-off");
+  // 検証
+  const hit = page.locator('.map-wire-hit[data-message="0"]');
+  await expect(hit.getAttribute("data-tip-owner")).resolves.toBeNull();
+  await expect(hit.getAttribute("aria-describedby")).resolves.toBeNull();
+  await expect(page.locator('[role="tooltip"]').count()).resolves.toBe(0);
+  await expect(
+    page.locator('.mdmark-diagram-label[data-message="0"]').count(),
+  ).resolves.toBe(1);
+});
+
 // ブロックのボタン・参加者の箱は名前とキーを持ち、ブロックの枠線とライフラインは 1px で背景とのコントラスト比 3:1 以上（Default）
 test("test_accessibility", async () => {
   // 準備・実行
