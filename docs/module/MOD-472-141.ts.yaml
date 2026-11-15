@@ -208,7 +208,7 @@ functions:
       - name: test_layout_map_when_rankless
         case: 正常
         summary: 段を決める処理で使わない線
-        condition: 'ノード `a`・`b` を結ぶ線に `rankless: true`、`b` に `align: a` と `order: 1`'
+        condition: 'ノード `a`・`b` を結ぶ線に `rankless: true`、`a` に `order: 0`、`b` に `align: a` と `order: 1`'
         mock: なし
         expected: '`a` と `b` が同じ段で `b` が `a` の後に並び、線の経路が引かれる'
       - name: test_layout_map_when_justify
