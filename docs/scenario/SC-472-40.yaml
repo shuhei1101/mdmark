@@ -131,7 +131,7 @@ scenarios:
   - name: 正常シナリオ（ヒントを削除する）
     setup:
       - name: ヒントを削除して描いたページ
-        description: 正常シナリオ（ER 図のテーブル）の ER 図と、`data-hint` を付けたノードを持つ HTML を、設定の `features.hints` を `false` にして描いたページ
+        description: 正常シナリオ（ER 図のテーブル）の ER 図と、`data-hint` を付けたノードを持つ HTML と、正常シナリオの map の構成図と、補足の `notes` で説明を持つメッセージ 1 つを含む map のシーケンス図を、設定の `features.hints` を `false` にして描いたページ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -140,10 +140,15 @@ scenarios:
         participant D as 図と埋め込んだ HTML
         U->>D: ER 図のテーブル・data-hint のノードにポインターを乗せる
         D-->>U: ツールチップを出さない
+        U->>D: map の図の説明を持つ線・ノード・グループのタイトル・メッセージにポインターを乗せる
+        D-->>U: ツールチップを出さない
     expected:
       - ER 図のテーブルと `data-hint` のノードのどれに乗せても、ツールチップが出ない
       - テーブルの説明のボタンと `data-hint` のノードのマーカーが無い
       - テーブルと列の名前・`data-hint` のノードの文字は描かれている
+      - map の構成図の説明を持つ線・ノード・グループと、シーケンス図の説明を持つメッセージのどれに乗せても、ツールチップが出ない
+      - map の構成図のノードとグループのタイトルの右上に、説明のマーカーが無い
+      - map の構成図の線のラベル・ノードの名前・グループのタイトルと、シーケンス図のメッセージのラベルは描かれている
     test: test_normal_when_hints_off
   - name: 正常シナリオ（下に収まらないノード）
     setup:
@@ -166,7 +171,7 @@ scenarios:
   - name: 正常シナリオ（設定で上に出す）
     setup:
       - name: 上に出す設定で描いたページ
-        description: 正常シナリオ（ER 図のテーブル）の ER 図と、`data-hint` を付けたノードを持つ HTML と、索引に記載した用語を持つ段落を、設定の `tooltips.diagramPlacement` を `top`、`tooltips.placement` を `bottom` にして描いたページ
+        description: 正常シナリオ（ER 図のテーブル）の ER 図と、`data-hint` を付けたノードを持つ HTML と、正常シナリオの map の構成図と、索引に記載した用語を持つ段落を、設定の `tooltips.diagramPlacement` を `top`、`tooltips.placement` を `bottom` にして描いたページ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -178,11 +183,14 @@ scenarios:
         D-->>U: テーブルの上にテーブルの概要のツールチップ
         U->>D: data-hint のノードのマーカーにポインターを乗せる
         D-->>U: マーカーの上に data-hint の文のツールチップ
+        U->>D: map の構成図の説明を持つノードのマーカーにポインターを乗せる
+        D-->>U: ノードの上に説明のツールチップ
         U->>B: 段落の用語にポインターを乗せる
         B-->>U: 単語の下に用語の意味のツールチップ
     expected:
       - テーブルのツールチップがテーブルの上に出る（ツールチップの下端がテーブルの上端より上にある）
       - '`data-hint` のツールチップがマーカーの上に出る（ツールチップの下端がマーカーの上端より上にある）'
+      - map の構成図のノードのツールチップがノードの上に出る（ツールチップの下端がノードの上端より上にある）
       - 段落の用語のツールチップは `tooltips.placement` のとおり単語の下に出る（図の位置の設定に影響されない）
     test: test_normal_when_diagram_placement_top
   - name: 正常シナリオ（ノードの中の表記の違う用語）
@@ -320,6 +328,6 @@ trigger: 読者が、図の線やノードに記載した要約より詳しく�
 preconditions:
   - 文書に図が描かれている（『図を描く』）
   - 用語のツールチップを出すときは、索引か用語集の表に用語がある
-success_guarantee: ツールチップはホバーとフォーカスの両方で出て、Esc で消え、ツールチップの上に乗っても消えない（WCAG 1.4.13）。タッチの端末では、タップで出て、ツールチップと持ち主の外のタップか、同じ持ち主のもう一度のタップで消える。図のツールチップは既定で持ち主の下に出て、下に収まらないときだけ上に出る。設定の `tooltips.diagramPlacement` で上を先にでき（map の図を除く）、本文の用語のツールチップの位置（`tooltips.placement`）とは別に決まる。
+success_guarantee: ツールチップはホバーとフォーカスの両方で出て、Esc で消え、ツールチップの上に乗っても消えない（WCAG 1.4.13）。タッチの端末では、タップで出て、ツールチップと持ち主の外のタップか、同じ持ち主のもう一度のタップで消える。図のツールチップは既定で持ち主の下に出て、下に収まらないときだけ上に出る。設定の `tooltips.diagramPlacement` で上を先にでき、本文の用語のツールチップの位置（`tooltips.placement`）とは別に決まる。
 minimal_guarantee: ツールチップを出せない環境（印刷）でも、ノードと線の要約と図の外の用語集で図を読み込める。
 test_file: tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts

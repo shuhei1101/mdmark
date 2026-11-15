@@ -6,13 +6,13 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-74.yaml
-    impact: changed
-    detail: ビューの表の長文の列に並べ替えを既定で付けないことにした場合、表形式のビューの長文の列で並べ替えが付かず、列の指定で付け外しできる（適用するかはユーザーが決める）
+    impact: run_only
+    detail: ビューの表の並べ替えの既定を変えた場合に、表形式のビューの列の絞り込みが壊れていないかを確かめる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-29.yaml
-    impact: run_only
-    detail: ビューの表の並べ替えの既定を変えた場合に、ボードと表形式の切り替えが壊れていないかを確かめる
+    impact: changed
+    detail: ビューの表形式で、長文の列に並べ替えが付かず、列の指定で付け外しできる（適用するかはユーザーが決める）
     depends_on: []
 docs:
   - page: docs/config/CFG-472-3.yaml
