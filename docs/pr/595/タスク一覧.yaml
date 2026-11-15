@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T09:16:32.605218+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-14（`GUIDE_SOURCE`）・MOD-472-147（`CHANGELOG_FILE`）・MOD-472-166 のパス
+    updated_by: planner
+    updated_at: '2026-11-15T10:38:26.227325+00:00'
   - process: ドキュメント修正
     status: todo
     note: '`要件.md` の対象の文書の表（記法を含む `docs/guide/` の 27 件）の `.mark.md` への改名と、文書間のリンク・`files.yml`・`dev-docs.yaml`・README.md・CLAUDE.md・ER-472-4・CMD-472-1・LAY-472-1 の追従'
