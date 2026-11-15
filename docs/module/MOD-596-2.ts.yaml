@@ -78,7 +78,7 @@ functions:
         description: 読み取り結果
     returns:
       type: '{ chart: Flowchart; overrides: Record<string, MapOverride> }'
-      description: 線の ID は `r{番号}`。左右の辺でつなぐ線は右の辺を持つ側を元にする。上下の辺でつなぐ線は `rankless` にし、下の辺を持つ側の相手に `align`（同じ段）と `order`（上の側を先）を指定する。junction は幅と高さを `MAP_ARCH.junction` にする
+      description: 線の ID は `r{番号}`。左右の辺でつなぐ線は右の辺を持つ側を元にする。上下の辺でつなぐ線は `rankless` にし、下の辺を持つ側の相手に `align`（同じ段）と `order`（上の側を先）を指定する。junction は幅と高さを `MAP_ARCH.junction` にし、閉じた group のノードはアイコンとタイトルが収まる `mapClosedGroupSize` の大きさにする
     unit_tests:
       - name: test_architecture_to_flowchart
         case: 正常

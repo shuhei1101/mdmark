@@ -103,7 +103,7 @@ functions:
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの幅を `MAP_CLASS.width` にし、メンバーの行の数と開閉で決まる大きさを指定する配置の上書きを作る
+    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの幅を `MAP_CLASS.width` にし、メンバーの行の数と開閉で決まる大きさを指定する配置の上書きを作る。閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
     scope: public
     args:
       - name: diagram

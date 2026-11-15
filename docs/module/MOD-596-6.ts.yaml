@@ -38,7 +38,7 @@ functions:
     process: |-
       1. `parseC4Context` と `c4ToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
       2. `extension.title` に `title` の行、`extension.kinds` に `MAP_C4_KINDS`、`extension.overrides` に `c4ToFlowchart` の上書きを指定する
-      3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類を指定した `renderMapC4Diagram` を指定する
+      3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類・`reversed` を指定した `renderMapC4Diagram` を指定する
       4. `extension.selectionOf` で、要素を 2 つ選べば `shortestPathKept` の経路を残す（1 つは構成図の選び方）
       5. `extension.collapsedTag` で、閉じた境界に「要素 {数} 件」を返却する
     unit_tests:
@@ -54,5 +54,11 @@ functions:
         condition: マーカーの `title` が `全体`
         mock: なし
         expected: 図の枠のタイトルが `全体`
+      - name: test_attach_map_c4_when_up
+        case: 正常
+        summary: 上向きの関係
+        condition: '`Rel_U(a, b)` だけの範囲'
+        mock: なし
+        expected: '`b` が `a` より上にあり、`r1` の線の終点（矢じり）が `b` の下の辺'
 refs:
   - IF-472-35#constraints[map の C4 図]

@@ -622,7 +622,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 線を、指定の辺の中ほどから `MAP_ARCH.endOut`（16px）外へ出た 2 点を直角につなぐ経路に引き直す。2 点は、出る辺と入る辺がどちらも左右なら中ほどの縦の区間で、どちらも上下なら中ほどの横の区間で、左右と上下の組なら 1 回だけ折れてつなぐ
+    summary: 線を、指定の辺の中ほどから `MAP_ARCH.endOut`（16px）外へ出た 2 点を直角につなぐ経路に引き直す。2 点は、出る辺と入る辺がどちらも左右なら中ほどの縦の区間で、どちらも上下なら中ほどの横の区間で、左右と上下の組なら 1 回だけ折れてつなぐ（折れる点の 2 つの候補のうち、両端の矩形の中を通らない方）
     scope: public
     args:
       - name: args
@@ -641,20 +641,20 @@ functions:
         summary: 辺の指定と group の端
         condition: モックの `ARCH` を配置する
         mock: なし
-        expected: '`r3` の始点が `api` の下の辺の中ほど、終点が `worker` の上の辺の中ほどで、点が全て縦か横の区間でつながる。`r4` の始点が `app` の枠の右の辺の中ほどで、`r2` の終点が `api` の上の辺の中ほど'
+        expected: '`r3` の始点が `api` の下の辺の中ほど、終点が `worker` の上の辺の中ほどで、点が全て縦か横の区間でつながる。`r4` の始点が `app` の枠の右の辺の中ほどで、`ends` で上の辺へ入る `r2` の終点が `api` の上の辺の中ほどで、`r2` のどの区間も `api` の矩形の中を通らない'
   - name: renderMapC4Diagram
     title: mapのC4図のHTML
     kind: 関数
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのC4図』。`renderMapFlow` の要素のノードの名前の下に説明（`p.map-c4-description`）を入れ、外部の要素の種類の行を `[External …]` にし、境界のグループを破線の枠（`.map-c4-boundary`）にしてタイトルの後ろに種類（`［Enterprise］`・`［Software System］`）を付ける
+    summary: 部品設計『mapのC4図』。`renderMapFlow` の要素のノードの名前の下に説明（`p.map-c4-description`。中の用語は名前と同じ下線とツールチップ）を入れ、外部の要素のノードに `map-c4-external`（灰色の面）を付け、境界のグループを破線の枠（`.map-c4-boundary`）にしてタイトルの後ろに種類（`［Enterprise］`・`［Software System］`）を付ける。`reversed` の線は点の並びを逆にして、矢じりを線の元の側に描く
     scope: public
     callees:
       - MOD-472-133#functions[renderMapFlow]
     args:
       - name: args
-        type: 'MapFlowArgs & { descriptions: Record<string, string>; boundaries: Record<string, "enterprise" | "system" | "boundary">; terms?: Record<string, string> }'
+        type: 'MapFlowArgs & { descriptions: Record<string, string>; boundaries: Record<string, "enterprise" | "system" | "boundary">; externals: string[]; reversed: string[]; terms?: Record<string, string> }'
         required: true
         description: 構成図の部品の引数（`layout` の線は `spreadMapEnds` でずらした線）と、要素ごとの説明・境界ごとの種類
     returns:
@@ -666,7 +666,7 @@ functions:
         summary: C4 図の部品
         condition: モックの `C4` を `c4ToFlowchart` の上書きで配置する
         mock: なし
-        expected: '`store` のノードに説明 `注文と支払いを受け付ける` があり、`pay` の種類の行が `[External Software System]`、`company` と `shop` のグループが `.map-c4-boundary` で、タイトルが `自社［Enterprise］`・`通販［Software System］`'
+        expected: '`store` のノードに説明 `注文と支払いを受け付ける` があり、`terms` の `支払い` が説明の中で `span.mdmark-term` になる。`pay` の種類の行が `[External Software System]` で `map-c4-external` を持ち、`store` は持たない。`company` と `shop` のグループが `.map-c4-boundary` で、タイトルが `自社［Enterprise］`・`通販［Software System］`'
   - name: renderMapBand
     title: 案内の帯のHTML
     kind: 関数

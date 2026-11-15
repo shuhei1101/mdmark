@@ -22,7 +22,7 @@ data_models:
         description: 要素（`id`・`label`・`description`・`kind`・`external`・`parent`）。`kind` は `person`・`system`・`system_db`・`system_queue`
       - name: relations
         type: C4Relation[]
-        description: 関係（`id`・`from`・`to`・`label`・`technology`・`both`・`direction`）。`id` は記載順の `r{番号}`（1 から）。`direction` は `Rel_U`・`Rel_D`・`Rel_L`・`Rel_R`（`Rel_Up` などの長い名前を含む）の `up`・`down`・`left`・`right`
+        description: 関係（`id`・`from`・`to`・`label`・`technology`・`both`・`direction`）。`id` は記載順の `r{番号}`（1 から）。`direction` は `Rel_U`・`Rel_D`・`Rel_L`・`Rel_R`（`Rel_Up` などの長い名前を含む）・`Rel_Back` の `up`・`down`・`left`・`right`・`back`
       - name: problems
         type: MapProblem[]
         description: 読めない行と閉じの無い境界
@@ -81,8 +81,8 @@ functions:
         required: true
         description: 読み取り結果
     returns:
-      type: '{ chart: Flowchart; overrides: Record<string, MapOverride> }'
-      description: 線の ID は `r{番号}`、ラベルは「{ラベル} [{技術}]」、`BiRel` は両向きの矢じり。`Rel_U` は先を元にして引き、`Rel_L`・`Rel_R` は `rankless` にして先に `align`（同じ段）と、`Rel_R` なら元より後・`Rel_L` なら前の `order` を指定する。要素の大きさは、幅 `MAP_C4.width` と、名前の行に説明の行の数（`MAP_C4.descriptionChars` 文字ごとに 1 行）を足した高さの見積もり（描いた後に測り直す）
+      type: '{ chart: Flowchart; overrides: Record<string, MapOverride>; reversed: string[] }'
+      description: 線の ID は `r{番号}`、ラベルは「{ラベル} [{技術}]」、`BiRel` は両向きの矢じり。`reversed` は矢じりを線の元の側に描く線（`Rel_U` と `Rel_Back`。`BiRel` を除く）。`Rel_U` は先を元にして引き、`Rel_L`・`Rel_R` は `rankless` にして先に `align`（同じ段）と、`Rel_R` なら元より後・`Rel_L` なら前の `order` を指定する。要素の大きさは、幅 `MAP_C4.width` と、名前の行に説明の行の数（`MAP_C4.descriptionChars` 文字ごとに 1 行）を足した高さの見積もり（描いた後に測り直す）。閉じた境界のノードは、種類を含むタイトルが収まる `mapClosedGroupSize` の大きさ
     unit_tests:
       - name: test_c4_to_flowchart
         case: 正常
@@ -90,5 +90,11 @@ functions:
         condition: モックの `C4`
         mock: なし
         expected: '`r3` が `rankless` で、`stock` の上書きが `align: store` と `store` より大きい `order`、`r1` のラベルが `注文する [HTTPS]`、`r4` が両向き、境界 `shop` のタイトルが `通販`'
+      - name: test_c4_to_flowchart_when_up_and_back
+        case: 正常
+        summary: 上向きと逆向きの関係の矢じり
+        condition: '`Rel_U(a, b)` と `Rel_Back(a, c)`'
+        mock: なし
+        expected: '`r1` が `b` から `a` への線で、`reversed` が `r1`・`r2`、`r2` は `a` から `c` への線で `direction` が `back`'
 refs:
   - IF-472-35#constraints[map の C4 図]

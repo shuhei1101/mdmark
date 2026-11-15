@@ -85,7 +85,7 @@ args:
     type: オブジェクト
     required: false
     default: なし（下線を付けない）
-    description: 用語から意味への対応。要素の名前・説明と境界の名前の中の用語を `span.mdmark-term` にする
+    description: 用語から意味への対応。要素の名前・説明の中の用語を `span.mdmark-term` にする（境界のタイトルは押せる要素のため付けない）
 events:
   - name: 開閉する・中へ入る
     when: 境界の山形・タイトルのボタンを押す
