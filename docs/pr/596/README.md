@@ -1,0 +1,1 @@
+# map で classDiagram・mindmap・gantt などの残りの Mermaid の種類を、ER 図・状態遷移図と同じ記載方法と操作で描く
