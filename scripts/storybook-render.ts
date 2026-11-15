@@ -40,6 +40,7 @@ import {
   erToFlowchart,
   parseErDiagram,
 } from "../src/map/er.ts";
+import { shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap } from "../src/map/layout.ts";
 import { parseSequence } from "../src/map/sequence.ts";
@@ -1172,8 +1173,18 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
     const inputs = classPartInputs(diagram, new Set(collapsed));
+    const chart = classToFlowchart(diagram);
+    const selected = jsonList(args.selected);
+    // 2 つのクラスを選んだときは、つなぐ最短の経路を残す（mount の attachMapClass の選び方）
+    const path =
+      selected.length === 2
+        ? shortestPathKept(
+            chart.edges.filter((edge) => !edge.to.startsWith("note_")),
+            [selected[0] as string, selected[1] as string],
+          )
+        : undefined;
     const placed = layoutMap(
-      classToFlowchart(diagram),
+      chart,
       { collapsed, entered },
       { overrides: inputs.overrides, nodeFit: "height" },
     );
@@ -1186,11 +1197,15 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       hints: args.hints !== false,
       collapsed,
       entered,
-      selected: jsonList(args.selected),
+      selected,
       focus: undefined,
       packets: [],
       dragging: undefined,
       id: "story-map-class",
+      keep:
+        path === undefined
+          ? undefined
+          : { nodes: [...path.nodes], wires: [...path.wires] },
       collapsedTag: (space) =>
         `クラス ${diagram.classes.filter((item) => item.namespace === space).length} 件`,
       classes: inputs.classes,
