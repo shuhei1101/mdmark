@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-class-arch-c4（map のクラス図・アーキテクチャ図・C4 図の状態） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.12.0/dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <!-- 列の行・開閉のボタン・説明のマーカー（#531 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/531/assets/er-state.css">
+  <!-- クラス図・アーキテクチャ図・C4 図に固有の規則（#596 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/596/assets/class-arch-c4.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-class-arch-c4
+  </nav>
+  <main class="map-catalog" id="catalog"><h1>map-class-arch-c4</h1></main>
+  <script type="module">
+    import { createArchMap, createC4Map, createClassMap } from "../../refs/596/assets/class-arch-c4.js";
+    import { ARCH, ARCH_DATA, C4, C4_DATA, CLASS, CLASS_DATA } from "../../refs/596/assets/samples.js";
+
+    /** 状態の見出し・補足・描く関数・初期状態 */
+    const STATES = [
+      ["クラス図（通常）", "クラスは名前の行・属性の区画・メソッドの区画を持つ。namespace はグループ。関係の端に記号の形と多重度を出す", "class", {}],
+      ["クラス図（メンバーを閉じる）", "メンバーを閉じたクラスは、クラス名とメンバーの数の 1 行になる", "class", { collapsed: ["基本図形"] }],
+      ["クラス図（namespace の中）", "namespace の中だけを配置し直し、外を薄く残す", "class", { enter: "形状" }],
+      ["クラス図（namespace を閉じる）", "namespace を 1 つのノードに閉じ、中への関係をまとめる", "class", { collapsed: ["形状"] }],
+      ["アーキテクチャ図（通常）", "service はアイコンと名前、group はアイコンと名前のタイトルを持つ枠、junction は小さい点。線は指定の辺から出て指定の辺へ入る", "arch", {}],
+      ["アーキテクチャ図（group の中）", "group の中だけを配置し直す", "arch", { enter: "app" }],
+      ["アーキテクチャ図（group を閉じる）", "group を 1 つのノードに閉じる", "arch", { collapsed: ["app"] }],
+      ["C4 図（通常）", "要素は種類の行・名前・説明を持つ。境界は破線の枠。外部の要素は灰色", "c4", {}],
+      ["C4 図（境界を閉じる）", "境界を 1 つのノードに閉じ、中への関係をまとめる", "c4", { collapsed: ["shop"] }],
+    ];
+    const catalog = document.getElementById("catalog");
+    const create = { class: [createClassMap, "型の構成", CLASS, CLASS_DATA], arch: [createArchMap, "配置の構成", ARCH, ARCH_DATA], c4: [createC4Map, undefined, C4, C4_DATA] };
+    const add = (index, title, note, kind, initial, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      const [fn, heading, source, data] = create[kind];
+      fn(host, { id: `${kind}-${index}`, title: heading ? `${heading}（${title}）` : undefined, source, data }, initial);
+    };
+    STATES.forEach(([title, note, kind, initial], index) => add(index, title, note, kind, initial));
+    add(STATES.length, "狭い幅（390px）", "クラス図は表示する枠の中で横にスクロールする", "class", {}, true);
+    // 選んだ状態はモックの初期状態では持たないため、図の操作で再現する
+    const hint = Object.assign(document.createElement("p"), { className: "state-note", textContent: "選択: クラス・service・要素を押すと、つながる相手と線だけを残す。2 つ押すと、つなぐ最短の経路だけを残す（クラス図は「図面」と「円」で 2 本の経路が残る）" });
+    catalog.insertBefore(hint, catalog.children[1]);
+  </script>
+</body>
+</html>
