@@ -51,5 +51,3 @@ functions:
         mock: なし
         expected: 先頭から 3 行で、`pr` が `#45` のようなリンクの文字
     status: planned
-    introduced:
-      pr: 39

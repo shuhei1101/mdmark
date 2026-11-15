@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -22,6 +25,9 @@ scenarios:
         M->>M: スクリプトを落とす
         M-->>P: 要素の中に本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の中に、見出し・段落・リスト・表・コードブロック・リンクの要素がある
       - リンクの要素の `href` が Markdown に記載した URL
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -43,6 +52,9 @@ scenarios:
         M->>M: 本文だけを再描画する
         M-->>P: 要素の中を新しい本文にする
         P-->>U: 新しい文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた文書の本文（右側の目次とそのボタンを除く）が、差し替えた Markdown の見出しだけになる
       - 前の本文の段落・表が残っていない
@@ -55,12 +67,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 片付けさせる
         M->>M: 描いたものとイベントを片付ける
         M-->>P: 要素の中を空にする
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の中が空になる
       - ページに右側の目次と目次を出すボタンが残っていない
@@ -75,6 +93,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -83,6 +104,9 @@ scenarios:
         M->>M: 未知のマーカーを無視する
         M-->>P: 要素の中に本文を描く
         P-->>U: マーカーの前後の段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの前後の段落が描かれている
       - 本文にマーカーの文字（`<!--`・`unknown`）が出ていない
@@ -97,6 +121,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -107,6 +134,9 @@ scenarios:
         P->>M: 別の要素と JSON の記載の Markdown を指定して描かせる
         M-->>P: 要素の中に本文を描く
         P-->>U: 2 つの文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの文書の表が、どちらも数量の合計の行を持つ同じ表で描かれている
       - 2 つの文書の details の範囲が、どちらも見出し `実行の例` の開いた状態で描かれている
@@ -121,6 +151,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -131,6 +164,9 @@ scenarios:
         P->>M: 別の要素と 1 行で記載した Markdown を指定して描かせる
         M-->>P: 要素の中に本文を描く
         P-->>U: 2 つの文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの文書の表が、どちらも見出し `明細` の閉じた折り畳みに入り、開くと数量の合計の行を持つ同じ表で描かれている
       - どちらの文書にも記載の警告が無い
@@ -145,6 +181,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -153,6 +192,9 @@ scenarios:
         M->>M: マーカーの引数が JSON として読めない・JSON Schema の型に合わない
         M-->>P: マーカーの場所に記載の警告と、設定を適用しない範囲と画像を描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - details のマーカーの場所に、引数を JSON として読めない位置と理由を記載した記載の警告があり、範囲は既定の見出し `詳細` の閉じた折り畳みで描かれている
       - fig のマーカーの場所に、`id` には文字列を記載することを記載した記載の警告があり、画像に番号が付いていない
@@ -168,6 +210,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -177,6 +222,9 @@ scenarios:
         M-->>P: 要素の中に本文を描く
         U->>P: リンクを押す
         P-->>U: スクリプトは実行されない
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた本文に `script` 要素・`onclick` 属性・`javascript:` の URL が無い
       - リンクを押しても `window` の旗が立たない
@@ -193,6 +241,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -202,6 +253,9 @@ scenarios:
         P->>M: 本文を差し替える
         M-->>P: 同じ索引で再描画する
         P-->>U: 差し替えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、`ワークスペース` に下線が付き、被参照の一覧がある
       - 本文を `ワークスペース` が出る別の段落に差し替えた後も、下線と被参照の一覧がある
@@ -215,6 +269,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -223,6 +280,9 @@ scenarios:
         M->>M: ブロックごとに元の行番号を付けて描く
         M-->>P: 元の行番号の属性を持つ本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 見出し・段落・表・コードブロックの要素が、それぞれ Markdown で始まる行の番号を元の行番号の属性に持つ
       - 外観（要素の位置と色の計算値）は、元の行番号の属性が無いときと同じ
@@ -238,6 +298,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -247,6 +310,9 @@ scenarios:
         P->>M: 本文を差し替える
         M-->>P: 同じエイリアスで再描画する
         P-->>U: 差し替えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、`ワークスペース` に下線が付き、ツールチップに `話し合いの記録を配置するフォルダ` が出る
       - 本文を `ワークスペース` が出る別の段落に差し替えた後も、下線が付いている
@@ -261,6 +327,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -270,6 +339,9 @@ scenarios:
         P->>M: 本文を差し替える
         M-->>P: 同じテーマのままの本文
         P-->>U: theme-paper の配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、描く先の要素の地の色の計算値が theme-paper の明るい配色の `--mdmark-color-bg` の値
       - 本文を差し替えた後も、地の色の計算値が同じ値
@@ -287,6 +359,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -295,6 +370,9 @@ scenarios:
         M->>M: 先頭のフロントマターを本文から除外する
         M-->>P: フロントマターを除いた本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '描く先の要素の中に `title: テスト` と `tags: [a, b]` の文字が無い'
       - 見出しの要素は `見出し` の h1 だけで、h2 の要素が無い
@@ -310,6 +388,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -318,6 +399,9 @@ scenarios:
         M->>M: フロントマターが無いものとして解析する
         M-->>P: 1 行目を区切り線にした本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 本文の先頭に区切り線（`hr`）の要素がある
       - 段落と `見出し` の h2 の要素が描かれている
@@ -334,6 +418,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -345,13 +432,15 @@ scenarios:
         P->>M: 書き換えた Markdown で描き直させる
         M-->>P: 手で開いたまま、フロントマターの表示を描く
         P-->>U: 書き換えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '描き直した後、フロントマターの表示の `details` が `open` を持ち、`title: テスト` の文字が表示されている'
       - 描き直した後、書き換えた段落が表示されている
       - '`destroy` して同じ文書をもう一度 `mount` すると、フロントマターの表示が閉じて描かれる'
     test: test_normal_when_updated_after_frontmatter_opened
 lead: 利用側のページが、要素と Markdown と設定を mdmark に指定し、ブラウザで文書を描く。描いた後に本文だけを差し替えたり、片付けたりできる。
-issue: 3
 primary_actor: mdmark を使用するアプリのページ
 stakeholders:
   - name: 読者

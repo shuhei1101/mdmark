@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
@@ -21,6 +24,9 @@ flows:
         P->>P: Schema で検める
         P->>F: 雛形に値と version を入れて書き込み、env に MDMARK_CONFIG を書き込む
         P-->>K: 書き込んだパスとキー・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`MDMARK_CONFIG` のパスの端末の設定が `version`（プラグインのビルドで埋めた mdmark のバージョン）と `features.table: false` を持つ'
@@ -37,6 +43,9 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
@@ -44,6 +53,9 @@ flows:
         K->>P: write-settings --set serve.tmuxSession=mdmark-test
         P->>F: serve.tmuxSession だけを書き換える
         P-->>K: 書き込んだキー・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`serve.tmuxSession` が `mdmark-test`'
       - 'コメントの行と `features.callout: false` が残っている'
@@ -56,11 +68,17 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: write-settings
         P-->>K: 書き込んだパス・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`${XDG_CONFIG_HOME}/mdmark/settings.yaml` がある'
       - '`CLAUDE_CONFIG_DIR` に `settings.json` が無い'
@@ -73,12 +91,18 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: write-settings --set config.cascade=yes
         P->>P: Schema で検める（合わない）
         P-->>K: キーと許す値・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `config.cascade` と真偽値を記載することが出る

@@ -39,5 +39,3 @@ functions:
         mock: なし
         expected: '`files` が空'
     status: planned
-    introduced:
-      pr: 263

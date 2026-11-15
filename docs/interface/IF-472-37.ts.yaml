@@ -15,12 +15,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: checkIndex({ index, documents })
         M->>M: 索引の構造・文書の対応・related・用語を確認する
         M-->>C: []
+      ```
+
+      <!-- /map -->
     expected:
       - 戻り値が `[]`
     test: test_normal
@@ -34,12 +40,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: checkIndex({ index, documents, indexFile })
         M->>M: 文書の対応・related・用語を確認する
         M-->>C: ずれの一覧
+      ```
+
+      <!-- /map -->
     expected:
       - '`{ file: "docs/index.yaml", where: "docs[1].path", kind: "missing_doc" }` の行がある'
       - '`{ file: "new.md", where: "", kind: "orphan_doc" }` の行がある'
@@ -57,12 +69,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: checkIndex({ index, documents })
         M->>M: 索引の構造を確認する
         M-->>C: schema のずれを持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - 例外を投げない
       - '`{ file: "index.yaml", where: "schema", kind: "schema" }` と `{ file: "index.yaml", where: "docs[1].path", kind: "schema" }` の行がある'
@@ -79,12 +97,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: checkIndex({ index, documents })
         M->>M: 索引の文書の本文から、用語のやめた言い方を探す
         M-->>C: avoided_term のずれを持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - '戻り値が `{ file: "guide.md", where: "3 行目", kind: "avoided_term" }`・`{ file: "guide.md", where: "8 行目", kind: "avoided_term" }`・`{ file: "guide.md", where: "12 行目", kind: "avoided_term" }` の 3 つだけで、この順に並ぶ'
       - どの `message` にも `作業場` と `ワークスペース` がある
@@ -101,6 +125,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -108,6 +135,9 @@ flows:
         M->>M: 索引の文書の用語集の表から、やめた言い方を読み込む
         M->>M: 索引の全ての文書の本文から、やめた言い方を探す
         M-->>C: avoided_term のずれを持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - '戻り値が `{ file: "guide.md", where: "1 行目", kind: "avoided_term" }`・`{ file: "guide.md", where: "3 行目", kind: "avoided_term" }` の 2 つだけで、この順に並ぶ'
       - 1 行目の `message` に `作業場` と `ワークスペース`、3 行目の `message` に `ワーク場` と `ワークスペース` がある
@@ -124,12 +154,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: checkIndex({ index, documents, indexFile })
         M->>M: 用語の単語・別名とやめた言い方を正規化して、重なりと本文のやめた言い方を探す
         M-->>C: duplicate_term と avoided_term のずれを持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - '戻り値が `{ file: indexFile, where: "terms[1].aliases[0]", kind: "duplicate_term" }`・`{ file: "guide.md", where: "1 行目", kind: "avoided_term" }` の 2 つだけで、この順に並ぶ'
       - '`duplicate_term` の `message` に、記載した表記 `ｍｃｐ` と先の側の場所 `terms[0].term` がある'
@@ -146,6 +182,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -154,6 +192,8 @@ flows:
         M->>M: 関連の要素の構造・change_together の両側・本文のリンクとの重なりを確認する
         M-->>C: 関連のずれを持つ一覧
       ```
+
+      <!-- /map -->
     expected:
       - 例外を投げない
       - '戻り値が `{ where: "docs[2].related[0]", kind: "untyped_related" }`・`{ where: "docs[0].related[0]", kind: "one_sided_change_together" }`・`{ where: "docs[0].related[1]", kind: "related_link_overlap" }` の 3 つだけで、この順に並び、どれも `file` が `index.yaml`'
@@ -173,6 +213,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -185,6 +227,8 @@ flows:
         C->>M: checkIndex({ index, documents, changedPaths: [a.md, b.md] })
         M-->>C: []
       ```
+
+      <!-- /map -->
     expected:
       - 1 回目の戻り値が `[]`
       - '2 回目の戻り値が `{ file: "b.md", where: "", kind: "missed_change_together" }` の 1 つだけで、`message` に `a.md` がある'
@@ -200,12 +244,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: checkIndex({ index, documents })
         M->>M: 索引の構造を確認する
         M-->>C: schema のずれを持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - 例外を投げない
       - '戻り値が `{ file: "index.yaml", where: "schema", kind: "schema" }`・`{ file: "index.yaml", where: "tags", kind: "schema" }` の 2 つだけで、この順に並ぶ'

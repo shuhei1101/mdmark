@@ -53,5 +53,3 @@ functions:
         mock: なし
         expected: ずれが 1 件で `where` が `aliases[0].metadata.name`、`message` が文字列にするよう求める
     status: planned
-    introduced:
-      pr: 176

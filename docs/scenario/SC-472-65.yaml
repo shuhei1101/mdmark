@@ -14,6 +14,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -23,6 +26,9 @@ scenarios:
         M-->>P: セクションごとに用語を最初に出たところだけに下線を描く
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 用語の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のセクションでは、最初の `ワークスペース` だけに破線の下線が付き、2 回目の `ワークスペース` と同じ用語の別名 `WS` には付いていない
       - 2 つ目のセクションでは `WS` に破線の下線が付いている
@@ -42,6 +48,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -52,6 +61,9 @@ scenarios:
         P-->>U: 用語の意味のツールチップを表示
         U->>P: Esc を押す
         P-->>U: ツールチップを削除する
+      ```
+
+      <!-- /map -->
     expected:
       - Tab で下線の付いた単語にフォーカスが移る
       - フォーカスした単語の `aria-describedby` が、`role="tooltip"` を持つ意味の要素を指す
@@ -68,6 +80,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -76,6 +91,9 @@ scenarios:
         M->>M: 見出し・コード・リンクの中を照合から除外する
         M-->>P: 下線を付けずに描く
         P-->>U: 本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 見出し・行内のコード・コードブロック・リンクの中の `ワークスペース` に下線が付いていない
       - 本文の文字は Markdown のとおり
@@ -89,6 +107,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -96,6 +117,9 @@ scenarios:
         P->>M: Markdown だけを指定して描かせる
         M-->>P: 下線を付けずに描く
         P-->>U: 本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`ワークスペース` と `WS` に下線が付いていない'
       - 段落が描かれている
@@ -111,6 +135,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -119,6 +146,9 @@ scenarios:
         M->>M: 構造の合わない用語を除く
         M-->>P: 読み込めた用語だけに下線を描く
         P-->>U: 本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落が描かれている
       - '`ワークスペース` に下線が付き、意味のツールチップが出る'
@@ -135,6 +165,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -144,6 +177,9 @@ scenarios:
         M-->>P: HTML の中の用語にも下線を描く
         U->>P: HTML の中の下線の単語にフォーカスする
         P-->>U: 用語の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - HTML の中の段落の `ワークスペース` に、本文の用語と同じ破線の下線が参照されている
       - その単語にフォーカスすると `話し合いの記録を配置するフォルダ` のツールチップが出る
@@ -162,6 +198,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -173,6 +212,9 @@ scenarios:
         P-->>U: 代わりの用語と意味のツールチップを表示
         U->>P: Tab でマーカーの付いた単語へフォーカスを移し、Esc を押す
         P-->>U: ツールチップを削除する
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のセクションでは、最初の `作業場` だけにマーカーが付き、2 回目の `作業場` には付いていない
       - 1 つ目のセクションの `ワークスペース` には、やめた言い方のマーカーではなく用語の破線の下線が付いている
@@ -195,6 +237,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -204,6 +249,9 @@ scenarios:
         U->>P: 1 行目の下線の付いた単語にポインターを乗せる
         M->>M: 単語の上にツールチップが収まらないことを確認する
         P-->>U: 単語の下に用語の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`ワークスペース` のツールチップが単語の下に出る（ツールチップの上端が単語の下端より下にある）'
       - ツールチップの全体が画面の中に収まっている
@@ -219,6 +267,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -227,6 +278,9 @@ scenarios:
         M-->>P: 用語に下線を描く
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 単語の下に用語の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`WS` にポインターを乗せると、`話し合いの記録を配置するフォルダ` のツールチップが単語の下に出る（ツールチップの上端が単語の下端より下にある）'
     test: test_normal_when_placement_bottom
@@ -242,6 +296,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -251,6 +308,9 @@ scenarios:
         M-->>P: 本文の表記のまま、用語に下線を、やめた言い方にマーカーを付けて描く
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 用語の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のセクションの `ＷＳ` と 2 つ目のセクションの `ws` に破線の下線が付いている
       - 下線の付いた単語の文字は本文の表記のまま（`ＷＳ`・`ws`）
@@ -271,6 +331,9 @@ scenarios:
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -280,6 +343,9 @@ scenarios:
         M-->>P: セクションごとに最初に出たところだけに下線を描く
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: エイリアスの種類ごとの内容のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`開発サーバー` を除く 6 つのエイリアスの名前と別名 `査読` に、用語と同じ破線の下線が付いている'
       - '`査読` のツールチップに名前 `レビュー` と説明 `変更を別の人が確認すること` が出る'
@@ -300,6 +366,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。クリップボードの読み込みと保存を許可したブラウザで開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -308,6 +377,9 @@ scenarios:
         M-->>P: コマンドのエイリアスに下線を描く
         U->>P: 下線の付いた単語にフォーカスし、ツールチップのコピーのボタンを押す
         P-->>U: コマンドをクリップボードへコピーし、コピーしたことを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`単体テスト` のツールチップに、説明 `ライブラリ本体の単体テストを実行する`・コマンド `npm run test:unit`（コードとして出る）・実行場所 `リポジトリの直下` が出る'
       - コピーのボタンを押すと、クリップボードの文字が `npm run test:unit` になる
@@ -325,6 +397,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -334,6 +409,9 @@ scenarios:
         M-->>P: やめた言い方にマーカーを付けて描く
         U->>P: マーカーの付いた単語にポインターを乗せる
         P-->>U: 置き換え先のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`作業場` と `枝` に、索引のやめた言い方と同じマーカーが付いている（用語の破線の下線と構造で見分けられる）'
       - '`作業場` のツールチップに置き換え先 `ワークスペース` が出る'
@@ -351,6 +429,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -360,6 +441,9 @@ scenarios:
         M-->>P: 使用できるエイリアスだけに下線を描く
         U->>P: 危ないリンクの下線の単語にポインターを乗せる
         P-->>U: URL をリンクにせず文字で出したツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落が描かれている
       - '`レビュー` に下線が付き、ツールチップが出る'
@@ -379,6 +463,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（コマンドをコピーする）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -395,6 +482,9 @@ scenarios:
         P-->>U: コマンドとコピーのボタンのツールチップを表示
         U->>P: 用語を含まない段落をタップする
         P-->>U: ツールチップを削除する
+      ```
+
+      <!-- /map -->
     expected:
       - '`単体テスト` のタップで、コマンド `npm run test:unit` とコピーのボタンを持つツールチップが出る'
       - コピーのボタンのタップで、クリップボードの文字が `npm run test:unit` になり、ツールチップは消えない
@@ -402,7 +492,6 @@ scenarios:
       - ツールチップと単語の外（用語を含まない段落）をタップすると、ツールチップが消える
     test: test_normal_when_touch
 lead: 利用側が索引に記載した用語の単語・別名か、読み込んで指定したエイリアスの単語が本文に出ると、mdmark が破線の下線を付け、読者がポインターを乗せるかフォーカスすると意味のツールチップが出る。
-issue: 5
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者

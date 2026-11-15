@@ -34,8 +34,6 @@ catalogs:
             description: 読み込んだ値。空の文字列は `null`
             notes: 構造は検査しない。設定と索引の Schema の検査で確認する
         status: planned
-        introduced:
-          pr: 32
       - name: YAMLParseError
         kind: クラス
         purpose: '`parse` が YAML を読み込めないときに投げる誤り'
@@ -50,8 +48,6 @@ catalogs:
             type: string
             description: 誤りの内容、行と列、該当行の抜き出し
         status: planned
-        introduced:
-          pr: 32
       - name: parseDocument
         kind: 関数
         purpose: 'YAML をコメントとキーの並びを保った Document として読み込む。読み込んだ Document を書き換えて `doc.toString({ flowCollectionPadding: false })` で文字に戻す'
@@ -66,8 +62,6 @@ catalogs:
             description: 読み込んだ Document。読み込めないところは投げずに `doc.errors` に入る。`hasIn`・`getIn`・`setIn`・`deleteIn`・`has`・`set`・`createPair` で読み込みと保存し、`isMap`・`isSeq`・`isScalar` でセクションを判定する
             notes: '値を同じ型のスカラーで書き換えると、コメントと記載方法が残る。`String(doc)` はフロー形式の並びの内側に空白を入れる（`["**/*.md"]` が `[ "**/*.md" ]` になる）ため、書き込んで戻しは `toString({ flowCollectionPadding: false })` で行う（2.9.1 で確認した）'
         status: planned
-        introduced:
-          pr: 39
       - name: LineCounter
         kind: クラス
         purpose: '`parseDocument` の `lineCounter` に指定し、読み込んだセクションの `range` の位置を行と列にする'
@@ -76,8 +70,6 @@ catalogs:
             type: '(offset: number) => { line: number; col: number }'
             description: 文字の位置の行と列（1 始まり）。ブロックスカラー（`Scalar.BLOCK_LITERAL`・`Scalar.BLOCK_FOLDED`）のセクションの `range[0]` はインジケータ（`|`・`>`）の位置で、値の 1 行目はその次の行
         status: planned
-        introduced:
-          pr: 328
 lead: YAML 1.2 を読み込みと保存をするライブラリ。既定で core スキーマで読み込み、読み込めないときは行と列を持つ誤りを投げる。
 purl: pkg:npm/yaml@2.9.1
 dependency_scope: 必須

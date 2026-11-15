@@ -31,8 +31,6 @@ functions:
         mock: なし
         expected: '`{"chart"}`'
     status: planned
-    introduced:
-      pr: 32
     description: esbuild を import しないファイルに配置し、CLI の書き出しと VS Code 拡張機能の書き出し（`embedLocalLibraries`）が使用する
   - name: usesMermaid
     title: 文書が mermaid を使用するかを確認する
@@ -61,8 +59,6 @@ functions:
         mock: なし
         expected: 順に `true`・`false`・`false`
     status: planned
-    introduced:
-      pr: 382
   - name: usedSyntaxLanguages
     title: 文書が使用する色分けの言語を取得する
     container: src/render/used.ts
@@ -100,8 +96,6 @@ functions:
         mock: なし
         expected: '`["diff", "dockerfile", "typescript"]`'
     status: planned
-    introduced:
-      pr: 97
   - name: collectRangeScripts
     title: 範囲のスクリプトを集める
     container: src/render/used.ts

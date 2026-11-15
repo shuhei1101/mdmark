@@ -138,8 +138,6 @@ catalogs:
             type: '(request: Request) => Promise<Response>'
             description: 組み込みの `Request` を受けて `Response` を返却する（`McpHttpHandler`）
         status: planned
-        introduced:
-          pr: 141
       - name: hostHeaderValidationResponse
         kind: 関数
         purpose: Host が許すホスト名でなければ 403 の応答を返却する
@@ -157,8 +155,6 @@ catalogs:
             type: Response | undefined
             description: 拒むときの応答。許すときは `undefined`
         status: planned
-        introduced:
-          pr: 141
       - name: originValidationResponse
         kind: 関数
         purpose: Origin があり許すホスト名でなければ 403 の応答を返却する
@@ -176,20 +172,14 @@ catalogs:
             type: Response | undefined
             description: 拒むときの応答。許すときは `undefined`
         status: planned
-        introduced:
-          pr: 141
       - name: localhostAllowedHostnames
         kind: 関数
         purpose: '`hostHeaderValidationResponse` に指定する localhost のホスト名の並びを返却する'
         status: planned
-        introduced:
-          pr: 141
       - name: localhostAllowedOrigins
         kind: 関数
         purpose: '`originValidationResponse` に指定する localhost のホスト名の並びを返却する'
         status: planned
-        introduced:
-          pr: 141
       - name: StreamableHTTPClientTransport
         kind: クラス
         purpose: テストから常駐サーバーの URL へ Streamable HTTP で繋ぐ
@@ -199,8 +189,6 @@ catalogs:
             required: true
             description: サーバーの URL（`http://127.0.0.1:{port}/mcp`）
         status: planned
-        introduced:
-          pr: 141
 lead: Model Context Protocol の公式 TypeScript SDK。サーバーの `@modelcontextprotocol/server` とクライアントの `@modelcontextprotocol/client` に分かれ、ツールの登録・Streamable HTTP の通信・プロトコルのバージョンの取り決めを持つ。
 purl: pkg:npm/%40modelcontextprotocol/server@2.3.1
 supplier: Model Context Protocol（Anthropic）

@@ -101,26 +101,6 @@ repository:
   style: モノレポ
   repositories:
     - name: shuhei1101/mdmark
-  layout: |-
-    | 場所 | 役割 | 利用側への届き方 | 作る Issue |
-    | --- | --- | --- | --- |
-    | `src/` | TypeScript と CSS の本体 | ビルドして `dist/` | この土台 |
-    | `dist/` | 配布物の JavaScript と CSS、CLI の `cli.js`（スプリントの区切りの develop・release・hotfix でだけ commit する） | jsDelivr からバージョンのタグを固定した URL で読み込む。CLI は `npx github:shuhei1101/mdmark#v{バージョン}` で入れる | この土台・#9 |
-    | `scripts/` | 開発のスクリプト（ビルド） | 届けない | この土台 |
-    | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
-    | `templates/` | 利用側へ配置する雛形（設定・`theme.css`・索引・拡張の雛形。差分のアダプターのサンプルは #7） | CLI の `init` が配置する | #9 |
-    | `schemas/` | 設定・索引・部品の JSON Schema と、設計書の種類ごとの Schema（`{種類}.schema.yaml`。AI Monitor の配布物） | JSON Schema は CDN と CLI。設計書の Schema は届けない | #3・#5・#6・#454 |
-    | `docs/` | 設計書（種類ごとのフォルダに `{ID}.yaml`）・公開ドキュメント（`guide/`）・PR ドキュメント（`pr/`）・モック（`mock/`）。公開範囲は各文書の `visibility` | `visibility` が `public` の文書を GitHub Pages で公開する（`_config.yml` の `exclude` で `internal` を除く） | #454 |
-    | `migrations/` | バージョンごとの移行の手順とスクリプト（`v{バージョン}/`）、出していないバージョンの手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{バージョン}/` を読み込む（`next/` と `no-steps.yaml` は配布物のビルドだけが読み込む） | #10 |
-    | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する | #11 |
-    | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
-    | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じ時期にだけ commit する。`hooks.json` に行を追加する PR では、その行が起動するまとめたフックも入れる） | プラグインのマーケットプレイスから Claude Code が入れる。`plugin.json` は `version` を持たず、develop の commit がプラグインの更新で届く | #11 |
-    | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは develop の commit に打つ `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、タグのワークフローが公開する Visual Studio Marketplace（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
-    | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添え、Marketplace へ公開するワークフロー | 届けない | #22 |
-    | `dev-docs.yaml` | dev-docs の配信元の設定（設計書の種類ごとの行と、各フォルダの `files.yaml` の行） | 届けない | #178 |
-    | 各フォルダの `files.yaml`（`docs/` の下は `files.yml`） | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `schemas/files.schema.yaml`） | 届けない | #178 |
-
-    この土台で実体を作るのは `src/`・`dist/`・`scripts/`・`tests/` だけで、他は中身を持つ Issue が作る。
 subsystems:
   - name: ライブラリ本体
     scope: lib
@@ -136,8 +116,6 @@ subsystems:
     refs:
       - IF-472-22#
     status: planned
-    introduced:
-      pr: 69
   - name: Claude Code プラグイン
     scope: claude-code-plugin
     role: Claude Code に、記載する前に dev-docs でガイドを参照し記載した後に点検する順序を MCP の instructions で示し、書き出し・まとめ・点検を MCP のツールで呼ばせる。`.mark.md` の記載と mdmark で記載する指示では、フックが記法のルールの参照をセッションに 1 回案内する。MCP のツールは、ライブラリ本体の CLI の `mdmark serve` が常駐の HTTP サーバーとして返却する
@@ -145,8 +123,6 @@ subsystems:
     runs_on: 文書の作成者の手元の Claude Code が、プラグインのキャッシュの `plugin/` から `node` で起動するフックと、`.mcp.json` の URL へ HTTP でつなぐ `mdmark serve` の MCP サーバー（文書の作成者が `npx github:shuhei1101/mdmark#v{バージョン} serve` で起動しておく）
     reason: Claude Code のバージョンと仕様に依る部分を、ブラウザと Node で動くライブラリ本体と分けて確認する
     status: planned
-    introduced:
-      pr: 72
 lead: mdmark の配布物が、開発者のビルドから利用側のページへ届くまでの全体構成。
 external_systems:
   - name: jsDelivr
@@ -177,8 +153,6 @@ external_systems:
     refs:
       - IF-472-22#constraints[バージョンの決め方]
     status: planned
-    introduced:
-      pr: 69
   - name: GitHub Actions と GitHub Releases
     purpose: '`vscode-v*` のタグで拡張機能の .vsix を作り、そのタグの Release に添える'
     direction: 送信のみ
@@ -188,8 +162,6 @@ external_systems:
     refs:
       - IF-472-23#
     status: planned
-    introduced:
-      pr: 69
   - name: Visual Studio Marketplace
     purpose: '`vscode-v*` のタグのワークフローが、Release に添えた .vsix を拡張機能 `ShuheiNishikawa.mdmark-vscode` の新しいバージョンとして公開し、文書の作成者の VS Code へ更新を届ける'
     direction: 送信のみ
@@ -199,8 +171,6 @@ external_systems:
     refs:
       - IF-472-23#
     status: planned
-    introduced:
-      pr: 512
     notes:
       事前確認: 済。PoC（#555）で、ブランチへの push で動かした `vscode-release.yml` が vsce 4.1.1 の `getOIDCCredential` でトークンを交換できることを 2026-11-14 に確認した。公開は最初のタグで確認する
   - name: VS Code
@@ -212,8 +182,6 @@ external_systems:
     refs:
       - NFR-472-1#requirements[対応する VS Code のバージョン]
     status: planned
-    introduced:
-      pr: 69
   - name: Claude Code
     purpose: マーケットプレイスからプラグインを入れ、常駐の MCP サーバーへ HTTP でつないで instructions を受け取り、ツールを呼ぶ。ツールの呼び出しの前に PreToolUse のフックを、利用者の発言の処理の前と会話の圧縮の前に UserPromptSubmit・PreCompact のフックを実行する
     direction: 双方向
@@ -223,8 +191,6 @@ external_systems:
     refs:
       - IF-472-4#
     status: planned
-    introduced:
-      pr: 72
   - name: dev-docs
     purpose: Claude Code が、mdmark のクローンを登録した配信元 `mdmark` から、ガイドのページを `search_docs` で参照する。mdmark のプラグインと MCP サーバーは dev-docs を呼ばず、端末の設定も書き換えない
     direction: 受信のみ
@@ -234,7 +200,26 @@ external_systems:
     refs:
       - SC-472-15#
     status: planned
-    introduced:
-      pr: 293
     notes:
       事前確認: 否。mdmark の処理は dev-docs を呼ばない。E2E は一時フォルダの端末の設定で起動した dev-docs で確認する
+notes:
+  フォルダの役割: |-
+    | 場所 | 役割 | 利用側への届き方 | 作る Issue |
+    | --- | --- | --- | --- |
+    | `src/` | TypeScript と CSS の本体 | ビルドして `dist/` | この土台 |
+    | `dist/` | 配布物の JavaScript と CSS、CLI の `cli.js`（スプリントの区切りの develop・release・hotfix でだけ commit する） | jsDelivr からバージョンのタグを固定した URL で読み込む。CLI は `npx github:shuhei1101/mdmark#v{バージョン}` で入れる | この土台・#9 |
+    | `scripts/` | 開発のスクリプト（ビルド） | 届けない | この土台 |
+    | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
+    | `templates/` | 利用側へ配置する雛形（設定・`theme.css`・索引・拡張の雛形。差分のアダプターのサンプルは #7） | CLI の `init` が配置する | #9 |
+    | `schemas/` | 設定・索引・部品の JSON Schema と、設計書の種類ごとの Schema（`{種類}.schema.yaml`。AI Monitor の配布物） | JSON Schema は CDN と CLI。設計書の Schema は届けない | #3・#5・#6・#454 |
+    | `docs/` | 設計書（種類ごとのフォルダに `{ID}.yaml`）・公開ドキュメント（`guide/`）・PR ドキュメント（`pr/`）・モック（`mock/`）。公開範囲は各文書の `visibility` | `visibility` が `public` の文書を GitHub Pages で公開する（`_config.yml` の `exclude` で `internal` を除く） | #454 |
+    | `migrations/` | バージョンごとの移行の手順とスクリプト（`v{バージョン}/`）、出していないバージョンの手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{バージョン}/` を読み込む（`next/` と `no-steps.yaml` は配布物のビルドだけが読み込む） | #10 |
+    | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する | #11 |
+    | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
+    | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じ時期にだけ commit する。`hooks.json` に行を追加する PR では、その行が起動するまとめたフックも入れる） | プラグインのマーケットプレイスから Claude Code が入れる。`plugin.json` は `version` を持たず、develop の commit がプラグインの更新で届く | #11 |
+    | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは develop の commit に打つ `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、タグのワークフローが公開する Visual Studio Marketplace（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
+    | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添え、Marketplace へ公開するワークフロー | 届けない | #22 |
+    | `dev-docs.yaml` | dev-docs の配信元の設定（設計書の種類ごとの行と、各フォルダの `files.yaml` の行） | 届けない | #178 |
+    | 各フォルダの `files.yaml`（`docs/` の下は `files.yml`） | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `schemas/files.schema.yaml`） | 届けない | #178 |
+
+    この土台で実体を作るのは `src/`・`dist/`・`scripts/`・`tests/` だけで、他は中身を持つ Issue が作る。

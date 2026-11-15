@@ -25,7 +25,8 @@ settings:
     description: '機能ごとのオン・オフの既定。文書の `<!-- features: {"機能": true} -->`（`false` でオフ）がその文書だけ上書きする'
     allowed: 値は真偽値。知らない機能名と真偽値でない値は無視する
     reload: reload
-    implementation: src/config.ts#resolveConfig
+    notes:
+      実装: src/config.ts#resolveConfig
   - key: features.print
     title: 印刷の機能
     file: mdmark.config.yaml
@@ -34,7 +35,8 @@ settings:
     default: 'true'
     description: 印刷の前に閉じた折り畳みと、タブ・閉じたセクション・行の詳細を開き、印刷の後に戻す
     reload: reload
-    implementation: src/print.ts#attachPrint
+    notes:
+      実装: src/print.ts#attachPrint
   - key: libraries
     title: 外部ライブラリの対応表
     file: mdmark.config.yaml
@@ -44,9 +46,10 @@ settings:
     description: マーカーの名前から外部ライブラリのモジュールの URL を参照する。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は追加する。モジュールの `draw(slot, options)` には、マーカーの名前の後ろの JSON のオブジェクト（引数の無いマーカーは `{}`）を渡す
     allowed: キーは英小文字で始まり英小文字・数字・`-` だけを持つマーカーの名前。値は URL（相対 URL はページの `document.baseURI` を基準に解決する）。文字列でない値は無視する
     reload: reload
-    implementation: src/config.ts#resolveConfig
     refs:
       - IF-472-35#request[opts.config.libraries]
+    notes:
+      実装: src/config.ts#resolveConfig
   - key: features.table
     title: 表の機能
     file: mdmark.config.yaml
@@ -265,8 +268,6 @@ settings:
     reload: reload
     allowed: ファイルのパス。読み込めないときは書き出しを止めず警告に出す
     status: planned
-    introduced:
-      pr: 32
     refs:
       - IF-472-33#
   - key: extensions
@@ -281,8 +282,6 @@ settings:
     refs:
       - IF-472-32#
     status: planned
-    introduced:
-      pr: 32
   - key: build
     title: まとめる設定
     file: mdmark.config.yaml
@@ -291,8 +290,6 @@ settings:
     missing: '`mdmark build` が設定に `build` が無いことを出して終了コード 1 で終わる'
     reload: reload
     status: planned
-    introduced:
-      pr: 32
     refs:
       - IF-472-38#
   - key: build.include
@@ -305,8 +302,6 @@ settings:
     reload: reload
     allowed: 1 つ以上。`**`・`*`・`?` を使用できる。該当するのは拡張子 `.md` のファイル（mdmark の記法で記載する `.mark.md` を含む）だけ
     status: planned
-    introduced:
-      pr: 32
   - key: build.exclude
     title: 削除する文書
     file: mdmark.config.yaml
@@ -316,8 +311,6 @@ settings:
     reload: reload
     allowed: '`include` と同じ記載方法'
     status: planned
-    introduced:
-      pr: 32
   - key: build.glossary
     title: 用語集の文書
     file: mdmark.config.yaml
@@ -328,8 +321,6 @@ settings:
     reload: reload
     allowed: '`include` に該当する文書のパス。該当しないパスは `mdmark check` で `schema` のずれにし、`mdmark build` では警告に出す'
     status: planned
-    introduced:
-      pr: 32
   - key: build.entry
     title: 最初に開く文書
     file: mdmark.config.yaml
@@ -339,8 +330,6 @@ settings:
     reload: reload
     allowed: まとめる文書のパス。該当しないときは `mdmark check` で `schema` のずれにし、`mdmark build` では既定を適用して警告に出す
     status: planned
-    introduced:
-      pr: 32
   - key: build.out
     title: 書き出す先
     file: mdmark.config.yaml
@@ -351,8 +340,6 @@ settings:
     reload: reload
     allowed: 拡張子 `.html` のパス。親のフォルダが無ければ作る
     status: planned
-    introduced:
-      pr: 32
   - key: version
     title: 手元のバージョン
     file: mdmark.config.yaml
@@ -365,8 +352,6 @@ settings:
     refs:
       - IF-472-28#
     status: planned
-    introduced:
-      pr: 39
   - key: features.diagrams
     title: 図の部品の機能
     file: mdmark.config.yaml
@@ -376,8 +361,6 @@ settings:
     description: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` の範囲の部品の定義から図と操作できる部品を描く。オフのときはマーカーを取り除き、定義を JSON のコードブロックのまま描く'
     reload: reload
     status: planned
-    introduced:
-      pr: 42
   - key: features.html
     title: 埋め込んだ HTML の機能
     file: mdmark.config.yaml
@@ -387,8 +370,6 @@ settings:
     description: '`<!-- html -->` の範囲の `html` のコードブロックの中身を HTML として描き、中の図の部品の custom element を図にする。オフのときはマーカーを取り除き、コードブロックのまま描く'
     reload: reload
     status: planned
-    introduced:
-      pr: 45
   - key: features.hints
     title: ヒントの機能
     file: mdmark.config.yaml
@@ -398,8 +379,6 @@ settings:
     description: 埋め込んだ HTML の `data-hint`、図のノードの `hint`・`io`、線の `tip`、map の図の補足の `notes` の説明と注記のツールチップを出す。オフのときはマーカーとツールチップの中身を出さず、線のラベルとノードの名前は出す
     reload: reload
     status: planned
-    introduced:
-      pr: 45
   - key: check.ignore
     title: 知らないマーカーから除外する名前
     file: mdmark.config.yaml
@@ -413,8 +392,6 @@ settings:
     refs:
       - IF-472-39#
     status: planned
-    introduced:
-      pr: 64
   - key: check.suggestMarkExtension
     title: 記法を含む純粋な .md の拡張子の提案
     file: mdmark.config.yaml
@@ -428,8 +405,6 @@ settings:
     refs:
       - IF-472-39#constraints[拡張子の提案]
     status: planned
-    introduced:
-      pr: 541
   - key: features.views
     title: ビューの機能
     file: mdmark.config.yaml
@@ -439,8 +414,6 @@ settings:
     description: '`<!-- view -->` の範囲の表を、ボード表示と表形式を切り替えるビューにする。オフのときはマーカーを取り除き、表のまま描く'
     reload: reload
     status: planned
-    introduced:
-      pr: 55
   - key: features.comments
     title: コメントの機能
     file: mdmark.config.yaml
@@ -451,8 +424,6 @@ settings:
     reason: コメントは利用側の保存先が要り、使用しない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする
     reload: reload
     status: planned
-    introduced:
-      pr: 55
   - key: features.code
     title: コードブロックを飾る機能
     file: mdmark.config.yaml
@@ -462,8 +433,6 @@ settings:
     description: 'コードブロックに、直前の `<!-- code: -->` のタイトル・行番号・行の強調と、行末のコードの行のマーカー（`[!code ++]`・`[!code --]`・`[!code highlight]`）を適用する。オフのときはタイトル・行番号・行の強調を付けず、コードの行のマーカーは記載した文字のまま描く'
     reload: reload
     status: planned
-    introduced:
-      pr: 65
   - key: tooltips.placement
     title: ツールチップを出す場所
     file: mdmark.config.yaml
@@ -475,9 +444,8 @@ settings:
     allowed: '`top` / `bottom`。`mount` は他の値を無視して `top` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
       - IF-472-35#request[opts.config.tooltips.placement]
-    implementation: src/config.ts#resolveConfig
-    introduced:
-      pr: 83
+    notes:
+      実装: src/config.ts#resolveConfig
   - key: features.syntax
     title: 色分けの機能
     file: mdmark.config.yaml
@@ -488,8 +456,6 @@ settings:
     refs:
       - IF-472-35#constraints[色分けの対象]
     status: planned
-    introduced:
-      pr: 97
   - key: syntax.url
     title: 色分けのライブラリの読み込み先
     file: mdmark.config.yaml
@@ -504,8 +470,6 @@ settings:
       - LIB-472-14#
     reason: マーカーの名前の対応表 `libraries` と分け、文書に色分けのマーカーを記載させない。本体と言語のモジュールは同じフォルダに並ぶため、URL は 1 つで足りる
     status: planned
-    introduced:
-      pr: 97
   - key: features.side-toc
     title: 右側の目次の機能
     file: mdmark.config.yaml
@@ -516,10 +480,9 @@ settings:
     reload: reload
     refs:
       - IF-472-35#constraints[右側の目次]
-    implementation: src/config.ts#DEFAULT_FEATURES
     status: planned
-    introduced:
-      pr: 166
+    notes:
+      実装: src/config.ts#DEFAULT_FEATURES
   - key: features.back-to-top
     title: 先頭へ戻るボタンの機能
     file: mdmark.config.yaml
@@ -530,10 +493,9 @@ settings:
     reload: reload
     refs:
       - IF-472-35#constraints[先頭へ戻るボタン]
-    implementation: src/config.ts#DEFAULT_FEATURES
     status: planned
-    introduced:
-      pr: 287
+    notes:
+      実装: src/config.ts#DEFAULT_FEATURES
   - key: side-toc.mode
     title: 右側の目次の出し方
     file: mdmark.config.yaml
@@ -545,10 +507,9 @@ settings:
     allowed: '`hover` / `fixed`。`mount` は他の値を無視して `hover` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
       - IF-472-35#constraints[右側の目次の出し方]
-    implementation: src/config.ts#resolveConfig
     status: planned
-    introduced:
-      pr: 166
+    notes:
+      実装: src/config.ts#resolveConfig
   - key: aliases
     title: エイリアスの元の行
     file: mdmark.config.yaml
@@ -560,8 +521,6 @@ settings:
     reload: reload
     allowed: 読み込めない行・使用できない行は書き出しを止めず警告に出す。`mdmark check` がスキーマのずれとエイリアスのずれを返却する
     status: planned
-    introduced:
-      pr: 176
     refs:
       - ER-472-3#tables[aliases]
       - IF-472-26#
@@ -578,8 +537,6 @@ settings:
     refs:
       - IF-472-35#request[opts.config.colorTheme]
     status: planned
-    introduced:
-      pr: 181
   - key: colorScheme
     title: 配色の明暗
     file: mdmark.config.yaml
@@ -616,8 +573,9 @@ settings:
     allowed: 空でない文字列。`mount` は空文字と文字列でない値を無視して既定の文言にし、CLI は設定ファイルの誤りにする
     refs:
       - IF-472-35#request[opts.config.labels.paramCopy]
-    implementation: src/config.ts#resolveConfig
     status: implemented
+    notes:
+      実装: src/config.ts#resolveConfig
   - key: assets
     title: アセットの設定
     file: mdmark.config.yaml
@@ -652,8 +610,6 @@ settings:
     description: '`[^ラベル]` と `[^ラベル]: 中身`、行内の `^[中身]` を、本文の番号・番号のツールチップ・文書の末尾の閉じた脚注の一覧にする。オフのときは、参照・定義・行内の脚注を記載した文字のまま描く'
     reload: reload
     status: planned
-    introduced:
-      pr: 311
   - key: features.annotations
     title: 注記の機能
     file: mdmark.config.yaml
@@ -663,8 +619,6 @@ settings:
     description: '行頭の `※[ID]: 本文` で定義した注記を、本文・表のセルの `※[ID]` と map の補足の `notes.{ID}.annotations` から参照し、`※` と番号のマーカー・マーカーのツールチップ・文書の末尾の閉じた注記の一覧にする。オフのときは、参照と定義を記載した文字のまま描く'
     reload: reload
     status: planned
-    introduced:
-      pr: 562
   - key: features.html-scripts
     title: 範囲のスクリプトの機能
     file: mdmark.config.yaml
@@ -677,8 +631,6 @@ settings:
     refs:
       - IF-472-35#constraints[範囲のスクリプト]
     status: planned
-    introduced:
-      pr: 303
   - key: features.mermaid
     title: mermaid のコードブロックの機能
     file: mdmark.config.yaml
@@ -690,8 +642,6 @@ settings:
     refs:
       - IF-472-35#constraints[mermaid の対象]
     status: planned
-    introduced:
-      pr: 382
   - key: mermaid.url
     title: mermaid の読み込み先
     file: mdmark.config.yaml
@@ -706,8 +656,6 @@ settings:
       - LIB-472-17#
     reason: '`syntax.url`・`html-scripts.url` と同じく、マーカーの名前の対応表 `libraries` と分ける'
     status: planned
-    introduced:
-      pr: 382
   - key: mermaid.theme
     title: mermaid の図のテーマ
     file: mdmark.config.yaml
@@ -720,8 +668,6 @@ settings:
     refs:
       - IF-472-35#request[opts.config.mermaid.theme]
     status: planned
-    introduced:
-      pr: 382
   - key: mermaid.themeVariables
     title: mermaid のテーマの変数の上書き
     file: mdmark.config.yaml
@@ -734,8 +680,6 @@ settings:
     refs:
       - IF-472-35#request[opts.config.mermaid.themeVariables]
     status: planned
-    introduced:
-      pr: 382
   - key: html-scripts.url
     title: 範囲の TypeScript の変換のライブラリの読み込み先
     file: mdmark.config.yaml
@@ -750,8 +694,6 @@ settings:
       - LIB-472-6#
     reason: '`syntax.url` と同じく、マーカーの名前の対応表 `libraries` と分ける（`libraries` はマーカーの名前から `draw` を持つモジュールを参照する表）'
     status: planned
-    introduced:
-      pr: 303
   - key: features.icon
     title: アイコンの機能
     type: boolean
@@ -760,8 +702,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: 頭に `icon:` を付けた行内のコードを Lucide のアイコンにし、配布物にまとめていない名前は使用する文書でだけ jsDelivr から読み込む。オフのときは行内のコードのまま描く
     refs:
       - IF-472-34#constraints[アイコン]
@@ -773,8 +713,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: '`<!-- columns -->` の範囲を `<!-- column -->` で区切った中身を 2〜3 列に横に並べる。オフのときはマーカーを取り除き、中身を順に描く'
     refs:
       - IF-472-34#constraints[段組み]
@@ -786,8 +724,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: '`==文字==` を蛍光ペンのマーカーにし、直後の `{color=色}` でその色にする。オフのときは記載した文字のまま描く'
     refs:
       - IF-472-34#constraints[蛍光ペン]
@@ -799,8 +735,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: 頭に `kbd:` を付けた行内のコードを、`+` で区切ったキーの外観にする。オフのときは行内のコードのまま描く
     refs:
       - IF-472-34#constraints[キー]
@@ -812,8 +746,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: '`<!-- details: タイトル -->` の範囲を、タイトルから開閉する折りたたみにする。オフのときはマーカーを取り除き、中身を順に描く'
     refs:
       - IF-472-34#constraints[details の範囲]
@@ -825,8 +757,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: '`<!-- pagebreak -->` の場所で、印刷のときに改ページする。オフのときはマーカーを取り除く'
     refs:
       - IF-472-34#constraints[改ページ]
@@ -838,8 +768,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: '`<!-- include: パス -->` の場所に、利用側が指定した取り込む文書の全体・見出しの中・行の範囲を描く。オフのときはマーカーを取り除き、取り込まない'
     refs:
       - IF-472-34#constraints[取り込み]
@@ -851,8 +779,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: '`<!-- wide -->` の範囲を本文の幅を越えて広げ、範囲の上のボタンで本文の幅と切り替える。オフのときはマーカーを取り除き、本文の幅で描く'
     refs:
       - IF-472-34#constraints[wide の範囲]
@@ -864,8 +790,6 @@ settings:
     file: mdmark.config.yaml
     reload: reload
     status: planned
-    introduced:
-      pr: 307
     description: 言語 `csv` のコードブロックを表にし、表の右端のボタンで元の CSV と切り替える。オフのときはコードブロックのまま描く
     refs:
       - IF-472-34#constraints[CSV の表]
@@ -880,8 +804,6 @@ settings:
     refs:
       - IF-472-35#constraints[図の高さのリサイズハンドル]
     status: planned
-    introduced:
-      pr: 308
   - key: tooltips.diagramPlacement
     title: 図のツールチップを出す場所
     file: mdmark.config.yaml
@@ -894,8 +816,6 @@ settings:
     refs:
       - IF-472-35#request[opts.config.tooltips.diagramPlacement]
     status: planned
-    introduced:
-      pr: 308
   - key: MDMARK_CONFIG
     title: 端末の設定の場所
     file: 環境変数
@@ -905,9 +825,10 @@ settings:
     description: 端末の設定のファイルのパス。CLI・`mdmark serve`・VS Code 拡張機能が、それぞれのプロセスの環境変数から読み込む
     allowed: 絶対パス
     reload: reload
-    implementation: src/config-files.ts#loadLayeredConfig
     refs:
       - IF-472-40#
+    notes:
+      実装: src/config-files.ts#loadLayeredConfig
   - key: config.cascade
     title: 上のフォルダの設定を重ねるか
     file: settings.yaml
@@ -917,7 +838,8 @@ settings:
     description: '`true` のとき、起点のフォルダから上のフォルダの `mdmark.config.yaml` を全て重ねる。`false` のときは最初に見つかった 1 つだけを端末の設定に重ねる'
     allowed: 真偽値。端末の設定だけが持ち、`mdmark.config.yaml` に書き込んでも読み込まない
     reload: reload
-    implementation: src/config-files.ts#loadLayeredConfig
+    notes:
+      実装: src/config-files.ts#loadLayeredConfig
   - key: config.applyToExport
     title: 書き出しに端末の設定を重ねるか
     file: settings.yaml
@@ -927,7 +849,8 @@ settings:
     description: '`false` のとき、`mdmark export`・`mdmark build`（MCP のツールと VS Code 拡張機能の書き出しも同じ）で端末の設定を重ねない。プレビューは常に重ねる。`mdmark check` は重ねる設定をこの値で決めつつ、端末の設定の構造は常に検める'
     allowed: 真偽値。端末の設定だけが持ち、`mdmark.config.yaml` に書き込んでも読み込まない
     reload: reload
-    implementation: src/config-files.ts#loadLayeredConfig
+    notes:
+      実装: src/config-files.ts#loadLayeredConfig
   - key: serve.tmuxSession
     title: 常駐サーバーの tmux のセッション名
     file: settings.yaml
@@ -940,8 +863,6 @@ settings:
     status: planned
     refs:
       - IF-472-7#
-    introduced:
-      pr: 354
   - key: serve.launcher
     title: 常駐サーバーの起動の方法
     file: settings.yaml
@@ -954,8 +875,6 @@ settings:
     status: planned
     refs:
       - IF-472-7#
-    introduced:
-      pr: 444
   - key: serve.systemdUnit
     title: 常駐サーバーの systemd --user の unit の名前
     file: settings.yaml
@@ -968,8 +887,6 @@ settings:
     status: planned
     refs:
       - IF-472-7#
-    introduced:
-      pr: 444
   - key: table.pin
     title: 表のピン止めの動き
     file: mdmark.config.yaml
@@ -981,10 +898,9 @@ settings:
     allowed: '`each` / `through`。`mount` は他の値を無視して `each` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
       - IF-472-35#constraints[表の操作]
-    implementation: src/config.ts#resolveConfig
     status: planned
-    introduced:
-      pr: 438
+    notes:
+      実装: src/config.ts#resolveConfig
   - key: table.long_column_min
     title: 長文の列の最小の幅
     file: mdmark.config.yaml
@@ -996,10 +912,9 @@ settings:
     allowed: 0 より大きい数。`mount` は他の値を無視して `45` にし、CLI は他の値を設定ファイルの誤りにする
     refs:
       - IF-472-35#request[opts.config.table.long_column_min]
-    implementation: src/config.ts#resolveConfig
     status: planned
-    introduced:
-      pr: 505
+    notes:
+      実装: src/config.ts#resolveConfig
   - key: features.frontmatter
     title: フロントマターの表示の機能
     file: mdmark.config.yaml
@@ -1023,8 +938,6 @@ settings:
     refs:
       - IF-472-34#constraints[map の範囲]
     status: planned
-    introduced:
-      pr: 445
   - key: map.node_fit
     title: map の名前の長いノードの広げ方
     type: '"height" | "width"'
@@ -1032,28 +945,26 @@ settings:
     allowed: '`height` / `width`。`mount` は他の値を無視して `height` にし、CLI は他の値を設定ファイルの誤りにする'
     description: '`height` は幅を上限 220px のまま折り返して高さを増やし、`width` は幅を上限 360px まで広げてから折り返す'
     file: mdmark.config.yaml
-    implementation: src/config.ts#resolveMapConfig
     required: false
     reload: reload
     refs:
       - IF-472-35#request[opts.config.map.node_fit]
     status: planned
-    introduced:
-      pr: 445
+    notes:
+      実装: src/config.ts#resolveMapConfig
   - key: map.url_state
     title: map の状態をクエリ文字列に保つか
     type: boolean
     default: 'true'
     description: 中へ入ったグループと中だけを描くブロックを、URL のクエリ文字列 `map-{図の番号}` にも保つか
     file: mdmark.config.yaml
-    implementation: src/config.ts#resolveMapConfig
     required: false
     reload: reload
     refs:
       - IF-472-35#request[opts.config.map.url_state]
     status: planned
-    introduced:
-      pr: 445
+    notes:
+      実装: src/config.ts#resolveMapConfig
   - key: map.kinds
     title: map のノードの種類
     type: 'Record<string, { label?: string; icon?: string; shape?: "rounded" | "rect" | "pill" | "double"; color?: string }>'
@@ -1061,14 +972,13 @@ settings:
     allowed: キーは Mermaid のクラス名。`shape` と `color` は記載の値と色の名前だけ（CLI は他の値を設定ファイルの誤りにする）。`icon` は Lucide のアイコンの名前（無い名前は `mdmark check` が `map_unknown_icon` にし、描くときは無視する）
     description: Mermaid のクラス名ごとのノードの種類の行の名前・アイコン・形状・色
     file: mdmark.config.yaml
-    implementation: src/config.ts#resolveMapConfig
     required: false
     reload: reload
     refs:
       - IF-472-35#request[opts.config.map.kinds]
     status: planned
-    introduced:
-      pr: 445
+    notes:
+      実装: src/config.ts#resolveMapConfig
   - key: map.lines
     title: map の線の種類
     type: 'Record<string, { dash?: "solid" | "dashed" | "dotted" | "dash-dot" | "long-dash"; width?: "thin" | "normal" | "thick"; head?: "filled" | "open" | "none"; color?: string }>'
@@ -1076,13 +986,12 @@ settings:
     allowed: キーは Mermaid の矢印（`-->`・`-.->`・`==>`）か、補足の `layout` の `line` の名前。値は記載の値と色の名前だけ（CLI は他の値を設定ファイルの誤りにする）
     description: 矢印ごと・名前ごとの線の模様・太さ・矢じり・色
     file: mdmark.config.yaml
-    implementation: src/config.ts#resolveMapConfig
     required: false
     reload: reload
     refs:
       - IF-472-35#request[opts.config.map.lines]
     status: planned
-    introduced:
-      pr: 445
+    notes:
+      実装: src/config.ts#resolveMapConfig
 refs:
   - IF-472-35#

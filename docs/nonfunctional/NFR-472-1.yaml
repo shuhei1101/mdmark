@@ -49,8 +49,6 @@ requirements:
     measurement: E2E で書き出した HTML と隣の `_files/` だけを空のフォルダへコピーして file:// で開き、描き終えるまでの要求を数える
     overflow: 読み込めない画像とモジュールは埋めずに書き出しの警告に出し、開いたときはそのマーカーの場所に通知ブロックを出す（要求はしない）
     status: planned
-    introduced:
-      pr: 32
     verification:
       device: WSL2 上の Playwright 同梱の Chromium・Firefox
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
@@ -66,8 +64,6 @@ requirements:
     rationale: '利用側の利用者が file:// で開くたびに読み込む大きさ。PoC #384 で、mermaid 12.3.0 の本体と全ての chunk をまとめた script は 5,489,182 バイトだった。文書が使用する図の種類の chunk だけをまとめ、ほかを空のモジュールに差し替えると、flowchart だけで 4,342,441 バイト、flowchart と sequenceDiagram で 4,462,681 バイト、種類なし（本体と共通の chunk だけ）で 4,276,727 バイト（2026-11-08、作業ツリーの外で実測）。図の種類を絞っても本体と共通の chunk の約 4.3MB は残り、減るのは最大で約 1.2MB'
     overflow: mermaid のコードブロックを持たない文書の書き出しには埋めない（インターフェース定義『文書をHTMLに書き出す』の制約「埋める mermaid」）
     status: planned
-    introduced:
-      pr: 382
   - id: NFR-6
     name: CLI が動く Node のバージョン
     english_name: cli_node_version
@@ -79,8 +75,6 @@ requirements:
     rationale: 今の Active LTS のバージョンを下限にし、標準の `fs.glob` と `fetch` を使用する。開発の `package.json` の `engines.node` も `>=24` で、開発のスクリプトを Node 24 の型の剥ぎ取りで動かしている
     measurement: 結合テストを Node 24 で実行する
     status: planned
-    introduced:
-      pr: 32
     verification:
       device: WSL2 上の Node
       version: Node v24.14.0
@@ -98,8 +92,6 @@ requirements:
     measurement: 拡張機能の結合テストを VS Code 1.141.0 とその時点の stable の 2 つで実行する
     overflow: 下限より古い VS Code には Marketplace が入れさせない
     status: planned
-    introduced:
-      pr: 69
     verification:
       device: WSL2 上の VS Code（xvfb-run）
       version: VS Code 1.141.0・1.145.1（stable）。React（Vite でビルドした `media/preview.js`）にした Webview で、CSP・動的 `import()`・`ready` を受けた再送信の結合テストが 69 件 pass した
@@ -117,8 +109,6 @@ requirements:
     rationale: 取れないときは前回のバージョンで描けるため、長く待たずに描き始める。プレビューは開いてから 1 秒経っても描けないときだけ読み込み中を出し、PoC（#70）の配布物の読み込みは 641〜1,400 ms だった。タグ一覧の待ちを追加しても、前回のバージョンで描き始めるまでを 5 秒前後に収める
     overflow: 上限を超えたら要求を打ち切り、取れなかったときと同じく前回のバージョンを使用する。前回のバージョンも無ければ、プレビューにバージョンを決められない理由を出す（書き出しは書き出せない通知を出す）
     status: planned
-    introduced:
-      pr: 69
   - id: NFR-9
     name: 再描画するまでの待ち
     english_name: preview_update_delay
@@ -130,8 +120,6 @@ requirements:
     rationale: '打つたびに再描画すると、図と外部ライブラリのマーカーを持つ文書でちらつく。続けて打つ間は再描画せず、手を止めてから待ちが目立たない長さにする。上限の 5000 は、保存したときだけ再描画する設定（`mdmark.preview.liveUpdate: false`）が別にあるため、それより長い待ちを許さない'
     overflow: 範囲の外の値は VS Code の設定の画面が受け付けない（`package.json` の `minimum`・`maximum`）。`settings.json` に直に書き込んだ範囲の外の値は既定の 300 として扱う
     status: planned
-    introduced:
-      pr: 69
   - id: NFR-10
     name: 印刷のダイアログを出すまでの待ちの上限
     english_name: print_wait_limit
@@ -143,8 +131,6 @@ requirements:
     rationale: 書き出した HTML は jsDelivr から配布物と外部ライブラリを読み込むため、描き終えるまで待ってから印刷する。PoC（#70）の jsDelivr のキャッシュが冷えた初回の読み込みは 5,045 ms だったため、その倍に近い値を上限にする
     overflow: 上限までに外部ライブラリのマーカーの読み込みが終わらなければ、そのまま印刷のダイアログを出す（読み込み中のマーカーの場所は読み込み中のブロックのまま印刷される）
     status: planned
-    introduced:
-      pr: 69
   - id: NFR-11
     name: 確認した Claude Code のバージョン
     english_name: claude_code_version
@@ -156,8 +142,6 @@ requirements:
     rationale: PoC（#73）でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確認したバージョン。これより新しいバージョンと古いバージョンは確認していない
     measurement: Claude Code の実機で、プラグインを入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確認する
     status: planned
-    introduced:
-      pr: 72
     verification:
       device: ユーザーの手元の Claude Code（WSL2）
       version: Claude Code 2.1.316
@@ -176,8 +160,6 @@ requirements:
     measurement: 起動済みの `mdmark serve` へ Streamable HTTP でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
     overflow: Claude Code が接続を諦め、プラグインの MCP のツールが使用できない。起動で外へ要求する処理を追加しない
     status: planned
-    introduced:
-      pr: 72
     verification:
       device: WSL2 上の Node
       version: Node v24.14.0（tools/list まで 7〜117ms）

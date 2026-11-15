@@ -55,6 +55,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -62,6 +65,9 @@ flows:
         C->>S: list_templates
         S->>T: 索引を読み込む
         S-->>C: templates
+      ```
+
+      <!-- /map -->
     expected:
       - '`templates` が索引の順の 2 行で、各行の `name`・`description`・`tags` が索引と同じ'
       - 各行の `path` が、テンプレートのフォルダの CSS の絶対パス
@@ -74,12 +80,18 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
         C->>S: list_templates
         S->>S: テンプレートのフォルダが無い
         S-->>C: 空の templates
+      ```
+
+      <!-- /map -->
     expected:
       - '`templates` が空の並び'
       - テンプレートのフォルダが作られていない
@@ -92,6 +104,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -99,6 +114,9 @@ flows:
         C->>S: list_templates
         S->>T: 索引を読み込む
         S-->>C: isError（索引のパスと templates[0].file）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容の文に、索引のパスと `templates[0].file` が出る

@@ -56,8 +56,6 @@ functions:
         mock: 一時フォルダ
         expected: '`CliError` を投げ、`.mdmark/backup/` にファイルが無い'
     status: planned
-    introduced:
-      pr: 39
   - name: restoreBackup
     title: コピーから戻す
     container: src/cli/backup.ts
@@ -83,5 +81,3 @@ functions:
         mock: 一時フォルダ
         expected: 設定と文書がコピーを取る前の中身
     status: planned
-    introduced:
-      pr: 39

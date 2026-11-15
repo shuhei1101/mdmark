@@ -43,5 +43,3 @@ functions:
       - IF-472-35#constraints[図の移動]
       - CMP-472-39#
     status: planned
-    introduced:
-      pr: 508

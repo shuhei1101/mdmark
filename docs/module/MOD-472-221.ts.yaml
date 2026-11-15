@@ -10,8 +10,6 @@ constants:
     summary: '`attachStickyRows` が表の `table` に付ける属性。値は `timeline`（`animation-timeline` でずらす）か `script`（JS でずらす量を入れる）で、CSS はこの属性で適用する規則を分ける'
     value: '"data-mdmark-sticky"'
     status: planned
-    introduced:
-      pr: 151
 functions:
   - name: attachStickyRows
     title: 表の見出し行と集計の行を留める
@@ -51,5 +49,3 @@ functions:
       - 'MOD-472-218#functions[stickyShift]'
       - 'MOD-472-218#functions[stickyRange]'
     status: planned
-    introduced:
-      pr: 151

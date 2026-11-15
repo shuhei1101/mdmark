@@ -11,8 +11,6 @@ elements:
     visible_when: '`editorLangId == markdown`'
     action_ref: IF-472-22#
     status: planned
-    introduced:
-      pr: 69
   - name: コマンドの表示名
     id: command-titles
     kind: label
@@ -24,8 +22,6 @@ elements:
       - IF-472-22#exceptions[なし（Markdown でない）]
     reason: 「プレビューをリロード」は確認ログの決定。「プレビューを開く」「HTML に書き出す」「ブラウザで開く」「PDF に印刷」は単一ユースケースのシナリオの表記
     status: planned
-    introduced:
-      pr: 69
   - name: 雛形を作るかの確認
     id: confirm-create-config
     kind: dialog
@@ -35,8 +31,6 @@ elements:
     visible_when: '`mdmark.openConfig` を呼び、設定ファイルが無いとき'
     action_ref: IF-472-25#
     status: planned
-    introduced:
-      pr: 69
   - name: 雛形の中身
     id: config-template
     kind: label
@@ -74,8 +68,6 @@ elements:
       - CFG-472-3#settings[libraries]
       - CFG-472-3#settings[colorTheme]
     status: planned
-    introduced:
-      pr: 69
   - name: 書き出した通知
     id: notify-exported
     kind: notification
@@ -86,8 +78,6 @@ elements:
     action: 「ブラウザで開く」を押すと、書き出した HTML を `env.openExternal` で開く
     action_ref: IF-472-15#constraints[通知]
     status: planned
-    introduced:
-      pr: 69
   - name: 書き出せない通知
     id: notify-export-failed
     kind: notification
@@ -96,8 +86,6 @@ elements:
     label: '`HTML を書き出せませんでした: {書き出す先のパス}（{理由}）。設定 mdmark.export.outputDir を書き込めるフォルダに修正してください。`'
     visible_when: 書き出す先に書き込めないとき
     status: planned
-    introduced:
-      pr: 69
   - name: バージョンを決められない通知
     id: notify-version-undecidable
     kind: notification
@@ -106,8 +94,6 @@ elements:
     label: '`HTML を書き出せませんでした。読み込む mdmark のバージョンを決められません。ネットワークにつながっているかを確認してから、もう一度実行してください。`'
     visible_when: '`mdmark.version` が `latest` で、タグ一覧を取れず前回のバージョンも無いとき'
     status: planned
-    introduced:
-      pr: 69
   - name: 設定を開くボタン
     id: editor-title-open-settings
     kind: button

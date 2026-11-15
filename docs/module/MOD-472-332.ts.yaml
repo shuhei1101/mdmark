@@ -42,5 +42,3 @@ functions:
         mock: なし
         expected: '`&lt;b&gt;資料&lt;/b&gt;` と `href="https://example.com/?a=1&amp;b=2"`'
     status: planned
-    introduced:
-      pr: 263

@@ -38,7 +38,5 @@ functions:
         mock: なし
         expected: '`<details class="mdmark-collapsible" open><summary>準備</summary>` で始まる'
     status: planned
-    introduced:
-      pr: 225
     callees:
       - 'MOD-472-313#functions[escapeHtml]'

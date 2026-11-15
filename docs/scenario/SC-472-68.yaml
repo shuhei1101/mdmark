@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -19,6 +22,9 @@ scenarios:
         M-->>P: 見出しに ID とリンクを付け、マーカーの場所に目次を描く
         U->>P: 目次の「使用方法」を押す
         P-->>U: 「使用方法」の見出しへ移る
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に、`導入`・`前提`・`使用方法` を見出しの階層どおりに入れ子にした目次があり、各項目が `#導入`・`#前提`・`#使い方` を指す
       - 目次の `使用方法` を押した後、URL の末尾が `#使い方` で、`使用方法` の見出しが画面に入っている
@@ -33,6 +39,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -40,6 +49,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: GitHub と同じ規則で見出しに ID を付けて描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 見出しの ID が上から `hello-world`・`使用方法`・`使用方法-1`
     test: test_normal_when_github_ids
@@ -53,6 +65,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -61,6 +76,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 描いた後に URL の ID の見出しへ移る
         P-->>U: 「使用方法」の見出しを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた後、`使用方法` の見出しが画面に入っている
     test: test_normal_when_opened_with_fragment
@@ -76,6 +94,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -88,6 +109,9 @@ scenarios:
         U->>P: URL の #ID を #macos-の注意 に変える
         M-->>P: macOS のタブを選んでから見出しへ移る
         P-->>U: 「macOS の注意」の見出しを表示
+      ```
+
+      <!-- /map -->
     expected:
       - ページを開いた後、`導入` のセクションが開き、`Windows` のタブの `aria-selected` が `true` で、`Windows の注意` の見出しが画面に入っている
       - URL の `#ID` を `#macos-の注意` に変えた後（`hashchange`）、`macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている
@@ -102,6 +126,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -109,6 +136,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 右側の目次を配置せずに描く
         P-->>U: 段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 右側の目次と目次を出すボタンが無い
       - 段落が描かれている
@@ -124,6 +154,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -136,6 +169,9 @@ scenarios:
         P-->>U: 「使用方法」の見出しへ移る
         U->>P: ポインターを本文へ動かす
         P-->>U: 右側の目次を隠す
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、右側の目次が表示されていない
       - 右端にポインターを配置した後、右側の目次が表示され、`手引き`・`導入`・`前提`・`使用方法` を見出しの階層どおりに入れ子にした項目が `#手引き`・`#導入`・`#前提`・`#使い方` を指す
@@ -152,6 +188,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -164,6 +203,9 @@ scenarios:
         P-->>U: 右側の目次を出し続ける
         U->>P: ピン止めのボタンをもう一度押し、ポインターを本文へ動かす
         P-->>U: 右側の目次を隠す
+      ```
+
+      <!-- /map -->
     expected:
       - ピン止めのボタンを押した後、ボタンの `aria-pressed` が `true`
       - ピン止めした後にポインターを本文へ動かしても、右側の目次が表示されている
@@ -179,6 +221,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -191,6 +236,9 @@ scenarios:
         P-->>U: 右側の目次をサイドバーとして表示
         U->>P: 目次を出すボタンをもう一度押す
         P-->>U: 右側の目次を隠す
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、目次を出すボタンがあり、`aria-expanded` が `false` で、右側の目次が表示されていない
       - 右端にポインターを配置しても、右側の目次が表示されていない
@@ -206,6 +254,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -217,6 +268,9 @@ scenarios:
         P-->>U: 「使用方法」の見出しへ移る
         U->>P: フォーカスを右側の目次の外へ移す
         P-->>U: 右側の目次を隠す
+      ```
+
+      <!-- /map -->
     expected:
       - フォーカスが右側の目次の項目に入った後、右側の目次が表示されている
       - Enter キーで `使用方法` を押した後、URL の末尾が `#使い方` で、`使用方法` の見出しが画面に入っている
@@ -233,6 +287,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -243,6 +300,9 @@ scenarios:
         M-->>P: 「使用方法」の項目をハイライトする
         U->>P: 「前提」のセクションまで戻る
         M-->>P: 「前提」の項目をハイライトする
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、右側の目次の `手引き` の項目だけが `aria-current` を持つ
       - '`使用方法` のセクションまでスクロールした後、`使用方法` の項目だけが `aria-current` を持つ'
@@ -257,6 +317,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -267,6 +330,9 @@ scenarios:
         U->>P: 右側の目次の「注意」を押す
         M-->>P: 補足のセクションを開いてから見出しへ移る
         P-->>U: 「注意」の見出しを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 右側の目次に、閉じたセクションの中の `注意` の項目がある
       - '`注意` を押した後、`補足` のセクションが開き、見出しのボタンの `aria-expanded` が `true` で、`注意` の見出しが画面に入っている'
@@ -282,6 +348,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -298,6 +367,9 @@ scenarios:
         P->>M: 段落の文字を書き換えた Markdown で描き直させる
         M-->>P: 目次で開いた開閉のまま描き直す
         P-->>U: 書き換えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`注意` を押した後、`補足` と `注意` のセクションが開き、2 つの見出しのボタンの `aria-expanded` が `true` で、`注意` の段落が表示されている'
       - '`付録` を押した後、`付録` のセクションが開き、見出しのボタンの `aria-expanded` が `true` で、`付録` の段落が表示されている'
@@ -315,6 +387,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -323,6 +398,9 @@ scenarios:
         M->>M: 知らない出し方を hover にする
         U->>P: 右端にポインターを配置する
         P-->>U: 右側の目次を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、右側の目次が表示されておらず、目次を出すボタンが無い
       - 右端にポインターを配置した後、右側の目次が表示されている
@@ -338,6 +416,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -347,6 +428,9 @@ scenarios:
         P-->>U: 右側の目次を表示
         U->>P: 右側の目次の「使用方法」を押す
         P-->>U: 「使用方法」の見出しへ移り、右側の目次を隠す
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、本文の段落が右側の目次に覆われておらず、ページに横スクロールが出ていない
       - 目次を出すボタンを押した後、右側の目次が表示され、その項目が画面の幅に収まっている
@@ -363,6 +447,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -373,6 +460,9 @@ scenarios:
         P-->>U: 画面の上端寄りに右側の目次を表示
         U->>P: ポインターを本文へ動かし、文書の先頭まで戻って右端にポインターを配置する
         P-->>U: 同じ位置に右側の目次を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 右側の目次の上部に「目次」の文字が無く、すべて展開・すべて折りたたむ・目次をピン止めの 3 つのボタンだけがある
       - '`使用方法` のセクションまでスクロールして右端にポインターを配置した後、右側の目次が表示され、その上端が右端の線の位置によらず、画面の上端から `--mdmark-sticky-top` に目次の上の余白を加算した位置にある'
@@ -388,6 +478,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -398,6 +491,9 @@ scenarios:
         P-->>U: 右側の目次を表の上に重ねて表示
         U->>P: 右側の目次の「使用方法」を押す
         P-->>U: 「使用方法」の見出しへ移る
+      ```
+
+      <!-- /map -->
     expected:
       - 右端にポインターを配置した後、右側の目次の枠の中のどの位置でも、最も手前にある要素が右側の目次の中の要素で、表の見出し行・集計の行・ピン止めした列のセルではない
       - '`使用方法` を押した後、URL の末尾が `#使い方` で、`使用方法` の見出しが画面に入っている'
@@ -414,6 +510,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -425,6 +524,9 @@ scenarios:
         P-->>U: 右端の線を同じ位置に留める
         U->>P: 右端にポインターを配置する
         P-->>U: 右側の目次を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 文書の途中と末尾のどちらまでスクロールした後も、右端の線の上端が、見えている枠（スクロールする場所）の上端から `--mdmark-sticky-top` と `--mdmark-space` を加算した位置にあり、見えている枠の上端より上に出ていない
       - 文書の途中と末尾のどちらまでスクロールした後も、右端の線の下端が見えている枠の下端より上にある
@@ -441,6 +543,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -451,6 +556,9 @@ scenarios:
         P-->>U: 画面の右端に右側の目次を表示
         U->>P: ピン止めのボタンを押す
         P-->>U: 右側の目次を本文の右の列に出し続ける
+      ```
+
+      <!-- /map -->
     expected:
       - 2 通りの配置方法のどちらでも、描いた直後と「使用方法」のセクションまでスクロールした後のどちらも、右端の線の右端が描く先の要素の右端より右にある。右端の線の右端から、見えている枠のスクロールバーを除いた右端（ページ全体でスクロールする場合は `document.documentElement.clientWidth`、スクロールする要素の中に配置する場合はその要素の左端に `clientLeft` と `clientWidth` を加算した位置）までの距離が、4 つ（2 通りの配置方法 × 描いた直後とスクロールした後）のどれも等しい
       - 画面の右端にポインターを配置した後、右側の目次の枠が表示され、その右端が右端の線の右端と同じ位置にある
@@ -458,7 +566,6 @@ scenarios:
       - ピン止めのボタンを押した後、右側の目次の枠の右端が描く先の要素の右端より左にあり、本文の列の右端が枠の左端より左にある
     test: test_normal_when_side_toc_at_viewport_edge
 lead: mdmark が見出しに GitHub と同じ規則の ID とその ID へのリンクを付け、文書の `<!-- toc -->` の場所と描いた文書の右側に見出しの目次を配置する。読者は目次や見出しのリンクからセクションへ移り、右側の目次で今いるセクションを確認し、セクションの URL を人へ指定する。
-issue: 4
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者

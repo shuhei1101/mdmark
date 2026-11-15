@@ -42,5 +42,3 @@ functions:
         mock: なし
         expected: '`audio` が `controls` を持ち、`playsinline` と `img.mdmark-media-print` を持たない'
     status: planned
-    introduced:
-      pr: 263

@@ -115,6 +115,9 @@ flows:
       - name: Mock
         description: なし（一時フォルダの実ファイルを読み込む）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
@@ -124,6 +127,9 @@ flows:
         IF->>F: /work/docs から上へ mdmark.config.yaml を探して読み込む
         IF->>IF: 相対パスを絶対パスにして、端末 → 上 → 近いの順に重ねる
         IF-->>C: config・files・nearest・issues
+      ```
+
+      <!-- /map -->
     expected:
       - '`config.features` が `{ callout: false, table: false }`'
       - '`config.theme` が `/work/theme.css`'
@@ -140,12 +146,18 @@ flows:
       - name: Mock
         description: なし
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
         C->>IF: cwd・purpose・env・home
         IF->>IF: 端末の設定と最初に見つかった 1 つを重ねる
         IF-->>C: config・files
+      ```
+
+      <!-- /map -->
     expected:
       - '`config.theme` が無い'
       - '`files` が端末の設定と `/work/docs/mdmark.config.yaml` の 2 つ'
@@ -161,12 +173,18 @@ flows:
       - name: Mock
         description: なし
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
         C->>IF: purpose=export
         IF->>IF: 端末の設定を除いて上と近いを重ねる
         IF-->>C: config・files
+      ```
+
+      <!-- /map -->
     expected:
       - '`config.features` が `{ table: false }`（`callout` を持たない）'
       - '`files` に端末の設定が無い'
@@ -181,12 +199,18 @@ flows:
       - name: Mock
         description: なし
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
         C->>IF: cwd・purpose・env・home
         IF->>IF: 端末の設定を空の設定として扱う
         IF-->>C: config・files
+      ```
+
+      <!-- /map -->
     expected:
       - '`files` が `/work/docs/mdmark.config.yaml` の 1 つ（`config.cascade` は既定の `false`）'
       - '`issues` が空'
@@ -201,12 +225,18 @@ flows:
       - name: Mock
         description: なし
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
         C->>IF: cwd・purpose・env・home
         IF->>IF: 端末の設定を読み込めない
         IF-->>C: 端末の設定を除いた config・issues
+      ```
+
+      <!-- /map -->
     expected:
       - '`unreadable.path` が端末の設定の絶対パスで、`unreadable.line` が `3`、`issues` が空'
       - '`files` に端末の設定が無く、`config.features` が `{ table: false }`'
@@ -219,11 +249,17 @@ flows:
       - name: Mock
         description: なし
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as loadLayeredConfig
         C->>IF: explicit=missing.yaml
         IF-->>C: ConfigNotFoundError
+      ```
+
+      <!-- /map -->
     expected:
       - '`ConfigNotFoundError` の文に `missing.yaml` が入る'
     test: test_error_when_explicit_missing

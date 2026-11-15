@@ -149,8 +149,6 @@ functions:
         mock: なし
         expected: '`problems` が 1 つで `steps[0].script` を含む'
     status: planned
-    introduced:
-      pr: 39
   - name: loadMigrationVersions
     title: 適用するバージョンを読み込む
     container: src/cli/migrations.ts
@@ -195,8 +193,6 @@ functions:
       - '#functions[validateSteps]'
       - 'MOD-472-148#functions[compareVersions]'
     status: planned
-    introduced:
-      pr: 39
   - name: renameKey
     title: キーの名前を変える
     container: src/cli/migrations.ts
@@ -237,8 +233,6 @@ functions:
         mock: なし
         expected: '`false` を返却し、文字列が変わらない'
     status: planned
-    introduced:
-      pr: 39
   - name: setDefault
     title: 無いキーを追加する
     container: src/cli/migrations.ts
@@ -278,8 +272,6 @@ functions:
         mock: なし
         expected: '`false` を返却し、値が `false` のまま'
     status: planned
-    introduced:
-      pr: 39
   - name: mapValues
     title: 値を解釈する
     container: src/cli/migrations.ts
@@ -320,8 +312,6 @@ functions:
         mock: なし
         expected: '`false` を返却する'
     status: planned
-    introduced:
-      pr: 39
   - name: replaceMark
     title: マーカーを書き換える
     container: src/cli/migrations.ts
@@ -355,8 +345,6 @@ functions:
         mock: なし
         expected: 2 つとも `<!-- callout -->` になり、他の文字が変わらない
     status: planned
-    introduced:
-      pr: 39
   - name: stepFiles
     title: 手順が書き換えうるファイル
     container: src/cli/migrations.ts
@@ -392,8 +380,6 @@ functions:
         mock: なし
         expected: 設定だけ
     status: planned
-    introduced:
-      pr: 39
   - name: applyStep
     title: 手順を適用する
     container: src/cli/migrations.ts
@@ -465,5 +451,3 @@ functions:
       - '#functions[mapValues]'
       - '#functions[replaceMark]'
     status: planned
-    introduced:
-      pr: 39

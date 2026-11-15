@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant VS as VS Code
@@ -17,6 +20,9 @@ scenarios:
         VS->>PV: body の class を vscode-dark にする
         PV->>PV: mdmark がダークの配色の値を適用する
         PV-->>W: ダークの配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューをもう一度開かずに、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値になる
       - 本文とスクロールの位置は切り替える前と同じ
@@ -30,6 +36,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -37,6 +46,9 @@ scenarios:
         W->>EX: プレビューを横に開く
         EX->>PV: ライトの配色に固定して描かせる
         PV-->>W: ライトの配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - VS Code のテーマがダークでも、描く先の要素の地の色の計算値がライトの `--mdmark-color-bg` の値
     test: test_normal_when_theme_fixed
@@ -50,6 +62,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -58,6 +73,9 @@ scenarios:
         EX->>EX: VS Code の設定が空なので設定ファイルのテーマを使用する
         EX->>PV: theme-paper で描かせる
         PV-->>W: theme-paper の暗い配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
     test: test_normal_when_config_theme
@@ -72,6 +90,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant VS as VS Code
@@ -81,6 +102,9 @@ scenarios:
         VS->>EX: 設定の変更を通知する
         EX->>PV: theme-slate で再描画させる
         PV-->>W: theme-slate の明るい配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューをもう一度開かずリロードもせずに、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値になる（VS Code の設定が設定ファイルに勝ち、明暗は `mdmark.preview.theme` のまま）
       - 本文とスクロールの位置は切り替える前と同じ
@@ -92,6 +116,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -99,6 +126,9 @@ scenarios:
         W->>EX: mdmark.config.yaml のテーマを theme-contrast に書き換えて保存する
         EX->>PV: theme-contrast で再描画させる
         PV-->>W: theme-contrast の暗い配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - リロードせずに、描く先の要素の地の色の計算値が theme-contrast の暗い配色の `--mdmark-color-bg` の値になる
     test: test_normal_when_config_theme_changed
@@ -113,6 +143,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -121,6 +154,9 @@ scenarios:
         EX->>PV: ライトの配色の指定と文書を指定して描かせる
         PV->>PV: mdmark が文書のマーカーの明暗を優先する
         PV-->>W: ダークの配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.preview.theme` が `light` でも、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値'
     test: test_normal_when_document_marker
@@ -136,6 +172,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -144,12 +183,14 @@ scenarios:
         EX->>EX: VS Code の設定が auto なので設定ファイルの明暗を使用する
         EX->>PV: ライトの配色で描かせる
         PV-->>W: ライトの配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - VS Code のテーマがダークでも、描く先の要素の地の色の計算値がライトの `--mdmark-color-bg` の値
       - '`mdmark.preview.theme` を `dark` にすると、設定ファイルの明暗より VS Code の設定が勝ち、リロードせずにダークの `--mdmark-color-bg` の値になる'
     test: test_normal_when_config_scheme
 lead: プレビューの配色が、VS Code のライト・ダークのテーマに合わせて切り替わる。設定で配色を固定もできる。
-issue: 22
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者

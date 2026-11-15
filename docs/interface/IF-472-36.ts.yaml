@@ -16,6 +16,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -24,6 +26,8 @@ flows:
         M->>M: 文書ごとに辞書を作り、地の文を照合して本文の位置へ戻す
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - '`byDocument.guide` が、段落の `ワークスペース` 2 回・`WS`・`公開関数` の 4 件を本文の頭からの順に持つ'
       - '`ワークスペース` と `WS` の要素の `kind` が `term`、`id` が `ws`、`title` が `ワークスペース`、`description` が `話し合いの記録を配置するフォルダ`'
@@ -46,6 +50,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -54,6 +60,8 @@ flows:
         M->>M: 各文書の用語集の表を読み込み、辞書に入れて照合する
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - '`byDocument.guide` が `マーカー` の 1 件を持ち、`kind` が `glossary`、`id` が `glossary:glossary:マーカー`、`title` が `マーカー`、`description` が `HTML コメントで記載する指定`'
       - '`印刷` の `マーカー` は `byDocument.guide` に無い'
@@ -72,6 +80,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -80,6 +90,8 @@ flows:
         M->>M: 埋め込んだ HTML の文字と map の範囲のノードの名前を照合して本文の位置へ戻す
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - '`byDocument.guide` が、HTML の段落と `<!-- map -->` のノードの名前の `ワークスペース` の 2 件を `ws` の要素として持つ'
       - HTML の中のリンクの文字と map のノードの名前の `公開関数` は `byDocument.guide` に無い
@@ -98,6 +110,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -106,6 +120,8 @@ flows:
         M->>M: 行内のトークンを頭から本文へ当て、エスケープと実体参照を数えて位置を戻す
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - 全ての要素で、`line`・`start`・`end` で本文の行を切り出した文字が `text` と同じか、実体参照を戻すと `text` になる
       - '`A&B` の要素の範囲が、本文の `A&amp;B` を指す'
@@ -121,6 +137,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -129,6 +147,8 @@ flows:
         M->>M: 文書のマーカーで決まった機能のオン・オフで照合する単語を選ぶ
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - '`byDocument.guide` が `kind` が `term` の要素を持たず、`api` の要素を持つ'
       - '`byDocument.memo` が空の並び'
@@ -147,6 +167,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -155,6 +177,8 @@ flows:
         M->>M: 構造の合わない用語と文書を除いて照合する
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - 例外を投げない
       - '`byDocument.guide` が `WS` の 1 件だけを持つ'
@@ -171,6 +195,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -180,6 +206,8 @@ flows:
         M->>M: やめた言い方を加えた照合で、やめた言い方の一致だけを avoided に取る
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - '`avoided.guide` が、段落の `作業場` 3 件と埋め込んだ HTML の段落の `作業場` 1 件の 4 件を本文の頭からの順に持つ'
       - '`avoided.guide` の各要素の `text` が `作業場`、`kind` が `term`、`id` が `ws`、`title` が `ワークスペース`、`description` が `話し合いの記録を配置するフォルダ`'
@@ -202,6 +230,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -210,6 +240,8 @@ flows:
         M->>M: 単語と地の文を正規化して照合し、一致した範囲を正規化する前の本文の位置へ戻す
         M-->>C: { byDocument, avoided, targets }
       ```
+
+      <!-- /map -->
     expected:
       - '`byDocument.guide` が `ﾜｰｸｽﾍﾟｰｽ`・`ＷＳ`・`ws` の 3 件を本文の頭からの順に持ち、どれも `kind` が `term`、`id` が `ws`'
       - '`ﾜｰｸｽﾍﾟｰｽ` の要素が `line` 1・`start` 0・`end` 8 で、`ＷＳ` の要素が `line` 1・`start` 9・`end` 11'
@@ -232,12 +264,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectMatches({ index, documents, aliases })
         M->>M: 用語・文書の別名・エイリアスを単語の区切りに統一して照合する
         M-->>C: { byDocument, avoided, targets }
+      ```
+
+      <!-- /map -->
     expected:
       - '`byDocument.guide` が `単体テスト` の 2 件を持ち、どちらも `kind` が `alias`、`aliasType` が `command`、`id` が `unit-test`、`title` が `単体テスト`、`description` が `ライブラリ本体の単体テストを実行する`'
       - '`targets` が `unit-test` を 1 回だけ持ち、`dev-server` と `workplace` を持たない'

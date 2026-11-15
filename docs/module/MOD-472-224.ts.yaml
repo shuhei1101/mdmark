@@ -12,8 +12,6 @@ constants:
     refs:
       - IF-472-35#constraints[ライトボックス]
     status: planned
-    introduced:
-      pr: 263
 functions:
   - name: collectLightboxImages
     title: 切り替えの並びを集める
@@ -37,8 +35,6 @@ functions:
         mock: なし
         expected: '`#only-light` 以外の 2 つのボタンを文書の順に返却する'
     status: planned
-    introduced:
-      pr: 263
   - name: attachLightbox
     title: 画像を拡大できるようにする
     container: src/interact/lightbox.ts
@@ -99,5 +95,3 @@ functions:
         mock: なし
         expected: '`img[data-gif]` を包む `button.mdmark-image-open` があり、その中に `mdmark-image-open-icon` が無い'
     status: planned
-    introduced:
-      pr: 263

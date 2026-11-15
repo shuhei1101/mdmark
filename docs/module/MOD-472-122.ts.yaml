@@ -62,5 +62,3 @@ functions:
     refs:
       - IF-472-39#constraints[変わった文書]
     status: planned
-    introduced:
-      pr: 127

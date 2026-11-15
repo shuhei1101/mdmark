@@ -32,8 +32,6 @@ functions:
         mock: なし
         expected: '`[0, 1, 2, 0]`'
     status: planned
-    introduced:
-      pr: 275
   - name: foldLinesOf
     title: 畳む行の数を決める
     container: src/code-fold-logic.ts
@@ -62,8 +60,6 @@ functions:
         mock: なし
         expected: '`[1, undefined, undefined, undefined]`'
     status: planned
-    introduced:
-      pr: 275
   - name: hiddenLinesOf
     title: 隠す行を決める
     container: src/code-fold-logic.ts
@@ -92,8 +88,6 @@ functions:
         mock: なし
         expected: '`{1, 2, 3}`'
     status: planned
-    introduced:
-      pr: 275
   - name: guideRangeOf
     title: 縦線を濃くする範囲を決める
     container: src/code-fold-logic.ts
@@ -128,5 +122,3 @@ functions:
         mock: なし
         expected: '`undefined`'
     status: planned
-    introduced:
-      pr: 275

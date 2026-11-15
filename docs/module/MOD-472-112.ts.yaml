@@ -31,8 +31,6 @@ data_models:
     refs:
       - IF-472-33#constraints[まとめるスクリプト]
     status: planned
-    introduced:
-      pr: 296
 functions:
   - name: hasDynamicImport
     title: 動的 import が残るかを確認する
@@ -58,8 +56,6 @@ functions:
         mock: なし
         expected: 順に `true`・`true`・`false`
     status: planned
-    introduced:
-      pr: 296
   - name: createViewerEntry
     title: 起動の処理の入口を作る
     container: src/cli/embed.ts
@@ -108,8 +104,6 @@ functions:
         mock: なし
         expected: ソースに `"@@html-script-key-0@@"` があり、`window.__mdmarkOpened` が無い
     status: planned
-    introduced:
-      pr: 296
   - name: bundleViewer
     title: 起動の処理と埋めるモジュールをまとめる
     container: src/cli/embed.ts
@@ -159,8 +153,6 @@ functions:
       - IF-472-33#constraints[まとめるスクリプト]
       - IF-472-33#constraints[mdmark の痕跡]
     status: planned
-    introduced:
-      pr: 296
   - name: inlineImages
     title: 画像を埋める
     container: src/cli/embed.ts
@@ -218,8 +210,6 @@ functions:
         mock: 一時フォルダ
         expected: どちらの `markdown` も同じ `mdmark-asset:{キー}` を持ち、`assets` が 1 件
     status: planned
-    introduced:
-      pr: 32
     callees:
       - 'MOD-472-113#functions[resolveAssetFile]'
       - 'MOD-472-113#functions[collectAssetRefs]'
@@ -255,8 +245,6 @@ functions:
         mock: なし
         expected: '`["下書き/メモ.md"]`'
     status: planned
-    introduced:
-      pr: 32
   - name: usedParts
     title: 埋める部品を選ぶ
     container: src/cli/embed.ts
@@ -317,8 +305,6 @@ functions:
         mock: なし
         expected: '`scripts` が空で、`warnings` に文書のパスを含む 1 行'
     status: planned
-    introduced:
-      pr: 303
     callees:
       - 'MOD-472-118#functions[collectRangeScripts]'
   - name: usesMap

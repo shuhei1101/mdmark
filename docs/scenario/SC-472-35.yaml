@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。`example.com` への要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -20,6 +23,9 @@ scenarios:
         M->>M: 囲んだリストの項目からリンク・説明・アイコンを読み込む
         M-->>P: カードを格子に並べた文書
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 4 つのカードが、2 列以上で横に等しい幅で並んでいる
       - 1 つ目のカードに book のアイコン・タイトル `使用方法`・説明 `導入と使用方法の手順` が出ている
@@ -42,6 +48,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -49,6 +58,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: カードを記載した順に 1 列に追加して描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 4 つのカードが記載した順に 1 列に追加され、各カードの幅が本文の幅と等しい
       - 文書に横のスクロールが出ていない
@@ -62,6 +74,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -69,6 +84,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: リンクを持たないカードとリンクのカードを並べて描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のカードに clock のアイコン・タイトル `準備中`・説明が出ていて、リンクではなく Tab でフォーカスされない
       - 2 つ目のカードはリンクで、Tab でフォーカスできる
@@ -83,6 +101,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -91,6 +112,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 囲んだリストを今のままのリストで描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 囲んだ範囲が格子にならず、4 つの項目のリストで出ている
       - 3 つ目の項目は今と同じく、リストの中でリンクと添付のカードとして出ている（リンクと添付のカードの機能はオンのまま）
@@ -107,6 +131,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -115,12 +142,14 @@ scenarios:
         M->>M: 範囲の中身がリスト 1 つでない
         M-->>P: 記載の警告と、中身を記載したとおりに描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の上に、cards のマーカーで囲めるのはリスト 1 つであることを記載した記載の警告がある
       - 段落とリストが格子にならず、記載したとおりに出ている
     test: test_error_when_not_list
 lead: 文書の作成者が `<!-- cards -->` 〜 `<!-- /cards -->` でリストを囲み、mdmark が項目ごとのリンク・説明・アイコンをカードにして格子に並べる。狭い画面では列を減らす。
-issue: 218
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者

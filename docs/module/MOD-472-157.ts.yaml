@@ -29,8 +29,6 @@ data_models:
         type: '(id: string) => void'
         description: その `id` のコメントのマーカーへ移って強調する
     status: planned
-    introduced:
-      pr: 280
 constants:
   - name: COMMENT_BLOCKS
     title: コメントを付けられるブロック

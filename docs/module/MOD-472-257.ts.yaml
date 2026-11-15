@@ -3,7 +3,6 @@ visibility: internal
 title: ライブラリ本体 / 索引と用語 / dictionary.ts
 test_files:
   - tests/unit/src/knowledge/dictionary.test.ts
-  - tests/unit/src/knowledge/dictionary.browser.test.ts
 data_models:
   - name: Dictionary
     title: 照合の辞書
@@ -211,3 +210,6 @@ functions:
         condition: '`　Ｗｏｒｋ Place `・`ﾜｰｸｽﾍﾟｰｽ`・`㍻`'
         mock: なし
         expected: '`work place`・`ワークスペース`・`平成`'
+notes:
+  ブラウザのテストファイル: |-
+    - `tests/unit/src/knowledge/dictionary.browser.test.ts`

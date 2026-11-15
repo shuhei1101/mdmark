@@ -101,8 +101,6 @@ data_models:
         type: string
         description: 誤りの文（ログに出す）
     status: planned
-    introduced:
-      pr: 347
 constants:
   - name: CONFIG_TEMPLATE
     title: 設定ファイルの雛形
@@ -333,8 +331,6 @@ functions:
       - IF-472-21#constraints[libraries の URL]
       - IF-472-15#constraints[設定と相対パス]
     status: planned
-    introduced:
-      pr: 303
   - name: resolveMermaid
     title: mermaid の URL を修正する
     kind: 関数
@@ -361,8 +357,6 @@ functions:
       - IF-472-21#constraints[libraries の URL]
       - IF-472-15#constraints[設定と相対パス]
     status: planned
-    introduced:
-      pr: 382
   - name: libraryOrigins
     title: libraries の配信元を取得する
     kind: 関数
@@ -449,8 +443,6 @@ functions:
       - IF-472-21#constraints[送信する中身]
       - IF-472-15#constraints[設定と相対パス]
     status: planned
-    introduced:
-      pr: 181
   - name: applyPreviewTheme
     title: プレビューの配色の固定で明暗を解除する
     container: vscode/src/config.ts
@@ -504,8 +496,6 @@ functions:
     refs:
       - IF-472-21#constraints[libraries の URL]
     status: planned
-    introduced:
-      pr: 484
 function_types:
   - name: ReadTextFile
     title: テキストのファイルを読み込む関数

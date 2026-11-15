@@ -77,8 +77,6 @@ functions:
         mock: なし
         expected: '`<title>mdmark の紹介</title>` があり、それ以外の HTML の文字列（埋め込みの JSON の利用者が記載した値を除く）に `mdmark`・`v0.12.0`・`<!--` が無く、`id="zq-payload"`・`.zq-bundle` と、`/*! lucide` で始まるスクリプトがある'
     status: planned
-    introduced:
-      pr: 32
     callees:
       - MOD-472-350#functions[hidePayload]
       - MOD-472-350#functions[hideCss]

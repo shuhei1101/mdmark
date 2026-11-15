@@ -10,8 +10,6 @@ constants:
     summary: '`partKey` の種類ごとに、同じセクションの中の何番目かを数える部品の要素のセレクタ。`details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ）。`frontmatter` は class に `mdmark-frontmatter` を加えたフロントマターの折りたたみで、`details` には当たらない'
     value: '`{ "row-detail": "table:has(tr.mdmark-row-detail)", details: "details[class=\"mdmark-collapsible\"]", callout: "details.markdown-alert", frontmatter: "details.mdmark-frontmatter", er: "figure.mdmark-diagram[data-diagram=\"er\"]", tree: "div.mdmark-tree", code: "pre:has([data-fold-lines])", "table-tree": "div.mdmark-table[data-tree]" }`'
     status: planned
-    introduced:
-      pr: 540
 functions:
   - name: partKey
     title: 部品の記録の鍵を作る
@@ -41,8 +39,6 @@ functions:
         mock: なし
         expected: '`tree|section-a|1`'
     status: planned
-    introduced:
-      pr: 540
   - name: startOpen
     title: 部品の要素を始める開閉を決める
     container: src/interact/part-states.ts
@@ -71,8 +67,6 @@ functions:
         mock: なし
         expected: '`true`、`false`'
     status: planned
-    introduced:
-      pr: 540
   - name: recordOpen
     title: 読者が変えた開閉を記録する
     container: src/interact/part-states.ts
@@ -95,8 +89,6 @@ functions:
         mock: なし
         expected: '`states` の `k` が `{ open: false, marker: ... }`'
     status: planned
-    introduced:
-      pr: 540
   - name: attachDetailsStates
     title: details の範囲・折りたたみの注意書き・フロントマターの開閉を記録する
     container: src/interact/part-states.ts
@@ -142,8 +134,6 @@ functions:
         mock: なし
         expected: '2 回目に付けた後、フロントマターが `open` を持ち、`details.mdmark-collapsible` が `open` を持たない。`states` の鍵が `frontmatter||0` だけ'
     status: planned
-    introduced:
-      pr: 540
 data_models:
   - name: PartStates
     title: 部品の開閉の記録
@@ -158,5 +148,3 @@ data_models:
         type: string
         description: 記録したときのマーカーの値（details・注意書き・フロントマターは `open`・`closed`、ER 図は `folded` の有無、ファイルツリーは `data-open`、コードの折りたたみは `data-folded` の有無。マーカーを持たない部品は空の文字列）
     status: planned
-    introduced:
-      pr: 540

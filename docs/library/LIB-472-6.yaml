@@ -62,14 +62,10 @@ catalogs:
             type: string
             description: 変換後のコード
         status: planned
-        introduced:
-          pr: 303
       - name: disableScriptTags
         kind: 関数
         purpose: ページの `type="text/babel"` の `script` 要素を自動で変換して実行する処理を止める
         status: planned
-        introduced:
-          pr: 303
   - name: ファイル
     version: 8.1.1
     entries:
@@ -77,8 +73,6 @@ catalogs:
         kind: ES モジュール
         purpose: jsDelivr が `babel.js` を 1 ファイルにまとめた ES モジュール（2,349,009 バイト、gzip 後 572,476 バイト）。他の URL を読み込まない
         status: planned
-        introduced:
-          pr: 303
 lead: Babel のコンパイラと既定のプラグイン・プリセットを 1 ファイルにまとめ、ブラウザなど Node 以外の環境で `transform` を呼べるようにしたパッケージ。
 purl: pkg:npm/%40babel/standalone@8.1.1
 supplier: Babel の保守者

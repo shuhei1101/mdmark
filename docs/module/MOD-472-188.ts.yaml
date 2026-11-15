@@ -41,8 +41,6 @@ functions:
         mock: なし
         expected: 2 回目に付けた後、`orders` の列の行が主キーと外部キーの 2 つと `非表示 10 列` の行で、ボタンの `aria-expanded` が `false`
     status: planned
-    introduced:
-      pr: 298
   - name: setErTableFolded
     title: ER 図のテーブルの列を畳む・開く
     container: src/interact/er-folds.ts
@@ -69,5 +67,3 @@ functions:
         mock: なし（Chromium）
         expected: '`false` の後に全ての列の行が `hidden` を持たず `非表示 {数} 列` の行が無い。`true` の後に描いた直後と同じ HTML'
     status: planned
-    introduced:
-      pr: 298

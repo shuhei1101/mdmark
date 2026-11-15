@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -20,6 +23,9 @@ scenarios:
         P-->>U: 1 つ目のタブの中身を表示
         U->>P: Windows のタブを押す
         P-->>U: 2 つ目のタブの中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、`macOS` のタブの `aria-selected` が `true` で、`macOS` の段落だけが表示されている
       - '`Windows` のタブを押した後、`Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている'
@@ -34,6 +40,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -42,6 +51,9 @@ scenarios:
         M-->>P: タブを描く
         U->>P: 1 つ目のタブにフォーカスして右矢印キーを押す
         P-->>U: 2 つ目のタブを選んで中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`Windows` のタブにフォーカスがあり、`aria-selected` が `true`'
       - '`Windows` の段落だけが表示されている'
@@ -55,6 +67,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -63,6 +78,9 @@ scenarios:
         M->>M: タブ名にする見出しが無い
         M-->>P: 記載の警告と、範囲の中身をそのまま描く
         P-->>U: 記載の警告と段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の上に、タブ名にする見出しが無いことを記載した記載の警告がある
       - 範囲の中の段落が表示されている
@@ -78,6 +96,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -88,6 +109,9 @@ scenarios:
         P->>M: 押したタブ群を Windows に切り替える
         M->>M: 同じ group で Windows を持つタブ群を Windows に切り替える
         P-->>U: 1 つ目と 2 つ目のタブ群で Windows の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目と 2 つ目のタブ群で、`Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
       - '`Windows` のタブ名を持たない 3 つ目のタブ群は、`macOS` を選んだまま'
@@ -103,6 +127,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -121,6 +148,9 @@ scenarios:
         P->>M: 同じ Markdown を指定して描かせる
         M-->>P: URL の ID を優先して macOS のタブを選び、見出しへ移る
         P-->>U: macOS の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 再読み込みした後、`group` が `os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
       - '`group` の無いタブ群は、再読み込みした後に `macOS` を選んでいる'
@@ -138,6 +168,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -152,6 +185,9 @@ scenarios:
         S-->>M: 例外
         M-->>P: 2 つのタブ群を Windows に切り替える
         P-->>U: Windows の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、2 つのタブ群とも `macOS` を選んでいる
       - 押した後、2 つのタブ群とも `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
@@ -166,6 +202,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -175,6 +214,9 @@ scenarios:
         M-->>P: 記載の警告と、group を持たないタブを描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のタブ群の上に、`group` には 1 文字以上の文字を記載することを記載した記載の警告がある
       - 1 つ目のタブ群は `Windows` を選び、2 つ目のタブ群は `macOS` を選んだまま
@@ -189,6 +231,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -198,6 +243,9 @@ scenarios:
         M-->>P: 読み込めた指定だけを適用したタブ群を描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - どちらのタブ群の上にも記載の警告が無い
       - どちらのタブ群もタブに描かれている
@@ -212,6 +260,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -222,6 +273,9 @@ scenarios:
         P-->>U: 開いたタブ群
         U->>P: pip のタブを押す
         P-->>U: pip の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の折りたたみの見出しが `タブ（uv・pip）` で、描いた直後はタブの並びと中身が表示されていない
       - 2 つ目の折りたたみの見出しが `collapse.title` の「入れ方」で、描いた直後から `macOS` の中身が表示されている
@@ -237,6 +291,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -245,6 +302,9 @@ scenarios:
         M->>M: collapse がオブジェクトでないため適用しない
         M-->>P: 記載の警告と、折りたたみに入れないタブ群を描く
         P-->>U: 記載の警告とタブ群を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の上に、`collapse` には `open`・`title` を持つオブジェクトを記載することを記載した記載の警告がある
       - タブ群は折りたたみに入らずに描かれ、`macOS` の中身が表示されている
@@ -258,6 +318,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -269,6 +332,9 @@ scenarios:
         P-->>U: bash の中身を表示
         U->>P: 外側の Windows のタブを押す
         P-->>U: Windows の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 外側のタブが `macOS`・`Windows` の 2 つで、`macOS` の中に `zsh`・`bash` の 2 つのタブがある
       - 内側の `bash` を押した後も、外側の `macOS` の `aria-selected` が `true` のまま
@@ -284,6 +350,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -291,6 +360,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 見出しの太字を保ったタブ名のタブを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`案 A` のタブのボタンの中のタブ名が `strong` で強調され、`案 B` のタブ名は強調されていない'
       - タブ名に `**` の文字が出ていない
@@ -305,6 +377,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -313,6 +388,9 @@ scenarios:
         M->>M: 入れ子を数え、閉じの無い外側の開きを見つける
         M-->>P: 記載の警告と、外側の範囲の中身をタブにせずそのまま描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 外側のタブの開きの位置に記載の警告があり、閉じが無いことが記載されている
       - 外側の範囲の中のタブのマーカーは全てタブにならず、4 つの見出しと中身の段落が全て表示されている
@@ -327,6 +405,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -337,6 +418,9 @@ scenarios:
         P-->>U: 押したタブの見出しを同じ位置に残し、短文の中身を表示（末尾では文書が縮んだ分、スクロール位置の上限まで戻す）
         U->>P: 同じタブの部品の長文のタブを押す
         P-->>U: 押したタブの見出しを同じ位置に残し、長文の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 先頭と中ほどのタブの部品では、`短文` を押した前後で、押したタブの見出しの画面の上端からの位置の差が 1px 以内
       - 末尾のタブの部品では、`短文` を押した後、スクロール位置が上限（文書の高さ − 画面の高さ）にあり、押したタブの見出しが画面の中に表示されている
@@ -353,6 +437,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -361,12 +448,14 @@ scenarios:
         M-->>P: 長文のタブを選んだ 2 つのタブの部品を描く
         U->>P: 2 つ目のタブの部品の短文のタブを押す
         P-->>U: 2 つのタブの部品の短文を選び、押したタブの見出しを同じ位置に残して表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目と 2 つ目のタブの部品の `短文` のタブの `aria-selected` が `true`
       - '`短文` を押した前後で、2 つ目のタブの部品の押したタブの見出しの画面の上端からの位置の差が 1px 以内'
     test: test_normal_when_group_tab_above_shrinks
 lead: '文書の作成者が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとのセクションを囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読者がタブを切り替えて 1 つの中身を読み込む。`<!-- tabs: {"group": "名前"} -->` で同じ組にしたタブは選択が一致し、選んだタブ名を覚えて再読み込みしても同じタブで開く。`collapse` を記載したタブは、見出し付きの折りたたみに入る。'
-issue: 4
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者

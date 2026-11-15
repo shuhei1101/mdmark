@@ -39,8 +39,6 @@ data_models:
     refs:
       - IF-472-34#constraints[画像の属性]
     status: planned
-    introduced:
-      pr: 263
 constants:
   - name: MEDIA_EXTENSIONS
     title: 動画と音声の拡張子
@@ -54,16 +52,12 @@ constants:
     refs:
       - IF-472-34#constraints[動画と音声]
     status: planned
-    introduced:
-      pr: 263
   - name: IMAGE_ATTRIBUTE_NAMES
     title: 画像の属性の名前
     container: src/render/syntax/images.ts
     summary: '`{…}` に記載できる属性の名前。記載の警告の本文に並べる。後ろの 4 つは動画・音声だけ'
     value: '["width", "align", "nolightbox", "autoplay", "muted", "loop", "poster"]'
     status: planned
-    introduced:
-      pr: 263
 functions:
   - name: mediaKindOf
     title: 画像の種類を見分ける
@@ -87,8 +81,6 @@ functions:
         mock: なし
         expected: '`video`・`audio`・`gif`・`image`・`image`'
     status: planned
-    introduced:
-      pr: 263
   - name: readImageAttributes
     title: 画像の属性を読み込む
     container: src/render/syntax/images.ts
@@ -131,8 +123,6 @@ functions:
         mock: なし
         expected: 1 つ目の `width` が無く、`items` の項目が `width=big`・`width=0%`・`width=101%`・`foo`・`autoplay` の 5 つ。2 つ目の `align` が無く、`items` の項目が `align` の 1 つ
     status: planned
-    introduced:
-      pr: 263
   - name: readImages
     title: 画像の属性を読み込んで種類を見分ける
     container: src/render/syntax/images.ts
@@ -179,8 +169,6 @@ functions:
         mock: なし
         expected: 段落の文字に `{width=300}` が残る
     status: planned
-    introduced:
-      pr: 263
   - name: buildImageFigures
     title: 画像と動画と音声を図にする
     container: src/render/syntax/images.ts
@@ -227,5 +215,3 @@ functions:
         mock: なし
         expected: '`video` が無く、`figure.mdmark-image` の `img` の `src` が `demo.mp4`'
     status: planned
-    introduced:
-      pr: 263

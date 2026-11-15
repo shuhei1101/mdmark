@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: ビルドした `plugin/scripts/session-start.js` を子プロセスで実行し、標準入力に SessionStart の入力の JSON を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as session-start.js
@@ -21,6 +24,9 @@ flows:
         H->>S: TCP でつなぐ
         S-->>H: 接続を受けた
         H-->>C: 何も出さない・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力が空
@@ -33,12 +39,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as session-start.js
         C->>H: SessionStart の入力
         H->>H: 接続を拒否された
         H-->>C: additionalContext の 1 行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力の JSON の `hookSpecificOutput.hookEventName` が `SessionStart`

@@ -11,12 +11,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
         M->>M: 索引の構造と、索引と文書の対応を確認する
         M-->>C: 空のずれの一覧
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの一覧が空
     test: test_normal
@@ -29,12 +35,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
         M->>M: 索引と文書の対応・related・用語を確認する
         M-->>C: ずれの一覧
+      ```
+
+      <!-- /map -->
     expected:
       - 索引にあって消えた文書 `old` の行が、索引のファイルと `old` の場所を持つ
       - 索引に無い文書 `new.md` の行が、`new.md` のファイルを持つ
@@ -52,12 +64,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
         M->>M: 索引の構造を Schema と確認する
         M-->>C: Schema のずれの行を持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - 例外で止まらずに一覧が返る
       - '`schema` の欠けと、2 つ目の文書の `path` の欠けが、それぞれの場所を持つ Schema のずれの行で返る'
@@ -72,12 +90,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
         M->>M: 索引の文書の本文から、用語のやめた言い方を探す
         M-->>C: やめた言い方のずれの行を持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - やめた言い方のずれが、`作業場` を記載した 2 つの行それぞれに 1 件ずつ、計 2 件返る
       - 各行が `guide` のファイルと、やめた言い方の出た行を持つ
@@ -95,6 +119,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -102,6 +129,9 @@ scenarios:
         M->>M: 索引の文書の用語集の表から、用語のやめた言い方を読み込む
         M->>M: 索引の全ての文書の本文から、やめた言い方を探す
         M-->>C: やめた言い方のずれの行を持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - やめた言い方のずれが、`guide` の `作業場` を記載した行に 1 件返る
       - その行の内容が、やめた言い方 `作業場` と、代わりに使用する用語 `ワークスペース` を示す
@@ -118,12 +148,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
         M->>M: 用語の単語・別名とやめた言い方を正規化して、重なりと本文のやめた言い方を探す
         M-->>C: 用語の重複とやめた言い方のずれの行を持つ一覧
+      ```
+
+      <!-- /map -->
     expected:
       - 用語の重複のずれが、`エムシーピー` の別名 `ｍｃｐ` の場所を指す 1 件で返り、内容が、記載した表記 `ｍｃｐ` と、重なった先の `MCP` の場所（`terms[0].term`）を示す
       - やめた言い方のずれが、`guide` の `WorkPlace` を記載した行を指す 1 件で返り、内容が代わりに使用する用語 `ワークスペース` を示す
@@ -139,6 +175,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -148,6 +186,8 @@ scenarios:
         M->>M: 関連の相手を本文のリンクと突き合わせる
         M-->>C: 関連のずれの行を持つ一覧
       ```
+
+      <!-- /map -->
     expected:
       - 例外で止まらずに一覧が返る
       - '`a` の `change_together` の行が、`a` のその関連の場所を持ち、`b` にも `a` への `change_together` を記載する修正方法を示す'
@@ -167,6 +207,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -179,6 +221,8 @@ scenarios:
         C->>M: 同じ索引・一覧・本文と、変わった文書のパス a.md・b.md を指定して点検させる
         M-->>C: 空のずれの一覧
       ```
+
+      <!-- /map -->
     expected:
       - 変わった文書のパスを指定しない点検では、ずれの一覧が空
       - 変わった文書のパスに `a.md` だけを指定した点検で、修正漏れの行が 1 件だけ返る
@@ -187,7 +231,6 @@ scenarios:
       - 変わった文書のパスに `a.md` と `b.md` を指定した点検では、ずれの一覧が空
     test: test_normal_when_change_together_missed
 lead: 利用側の処理（CLI・MCP・サーバー）が、索引と文書のパスの一覧・本文を mdmark の点検の処理に指定し、索引と文書のずれの一覧を受け取る。
-issue: 5
 primary_actor: 利用側の処理
 stakeholders:
   - name: 文書の作成者

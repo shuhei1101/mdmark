@@ -14,8 +14,6 @@ constants:
       - IF-472-39#constraints[拡張子の提案]
       - IF-472-43#constraints[案内する条件]
     status: planned
-    introduced:
-      pr: 541
 functions:
   - name: isMarkMarkdown
     title: mdmark の文書のパスか
@@ -41,8 +39,6 @@ functions:
         mock: なし
         expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
-    introduced:
-      pr: 541
   - name: resolveLink
     title: 本文のリンクを索引のパスにする
     container: src/knowledge/paths.ts

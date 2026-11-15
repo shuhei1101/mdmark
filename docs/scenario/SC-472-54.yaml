@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -23,6 +26,9 @@ scenarios:
         M->>B: 描いた文書の先頭へスクロールする
         M->>M: 文書の先頭へフォーカスを移す
         M-->>U: 先頭へ戻るボタンを隠す
+      ```
+
+      <!-- /map -->
     expected:
       - 末尾までスクロールした後、先頭へ戻るボタンが画面の右下に表示されている
       - ボタンを押した後、描いた文書の先頭（`## 導入` の見出し）が画面に表示されている
@@ -38,6 +44,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -46,6 +55,9 @@ scenarios:
         M-->>U: 先頭へ戻るボタンを出さない
         U->>B: 出し始める量より少なくスクロールする
         M-->>U: 先頭へ戻るボタンを出さない
+      ```
+
+      <!-- /map -->
     expected:
       - 文書を開いた直後、先頭へ戻るボタンが表示されておらず、Tab でも届かない
       - 出し始める量より少なくスクロールした後も、先頭へ戻るボタンが表示されていない
@@ -61,6 +73,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -75,6 +90,9 @@ scenarios:
         U->>M: Tab でボタンへフォーカスを移し、Space を押す
         M->>B: 描いた文書の先頭へスクロールする
         M-->>U: 文書の先頭を表示
+      ```
+
+      <!-- /map -->
     expected:
       - ボタンが、スクリーンリーダー向けの名前「先頭へ戻る」を持つ `button` の役割でスクリーンリーダーに伝えられる
       - ボタンにフォーカスの輪郭が表示されている
@@ -91,6 +109,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -100,6 +121,9 @@ scenarios:
         U->>M: ボタンを押す
         M->>P: スクロールする要素を描いた文書の先頭へスクロールする
         M-->>U: 文書の先頭を表示
+      ```
+
+      <!-- /map -->
     expected:
       - スクロールする要素の中で末尾までスクロールした後、先頭へ戻るボタンが表示されている
       - ボタンを押した後、スクロールする要素の `scrollTop` が描いた文書の先頭の位置になっている
@@ -116,6 +140,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -124,6 +151,9 @@ scenarios:
         M-->>U: 先頭へ戻るボタンを出す
         U->>M: 右側の目次の最後の項目を押す
         M-->>U: 項目のセクションへ移る
+      ```
+
+      <!-- /map -->
     expected:
       - 先頭へ戻るボタンの矩形が、右側の目次のパネルと目次を出すボタンの矩形と重なっていない
       - 右側の目次の最後の項目を押せて、そのセクションの見出しが画面に表示されている
@@ -138,6 +168,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -146,6 +179,9 @@ scenarios:
         M-->>U: 先頭へ戻るボタンを出す
         U->>M: ミニマップの末尾の近くのマーカーを押す
         M-->>U: マーカーの行へ移る
+      ```
+
+      <!-- /map -->
     expected:
       - 先頭へ戻るボタンの矩形が、ミニマップの帯の矩形と重なっていない
       - ミニマップの末尾の近くのマーカーを押せて、そのマーカーの変えた行が画面に表示されている
@@ -164,6 +200,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。コメントの読み込みと保存の関数はページの中の配列を読み込みと保存をする
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -172,6 +211,9 @@ scenarios:
         M-->>U: 先頭へ戻るボタンと余白のマーカーを出す
         U->>M: 余白のマーカーを押す
         M-->>U: コメントの吹き出しを開く
+      ```
+
+      <!-- /map -->
     expected:
       - 先頭へ戻るボタンの矩形が、余白のマーカーの矩形と重なっていない
       - 余白のマーカーを押せて、コメントの吹き出しが開いている
@@ -187,6 +229,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。`chart.png` は手元の応答で返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -197,6 +242,9 @@ scenarios:
         M-->>U: ライトボックスを開く
         U->>M: Esc を押す
         M-->>U: ライトボックスを閉じる
+      ```
+
+      <!-- /map -->
     expected:
       - ライトボックスを開いている間、先頭へ戻るボタンがライトボックスの前に出ておらず、Tab でも届かない
       - ライトボックスを閉じた後、先頭へ戻るボタンが画面の右下に表示されている
@@ -213,6 +261,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -222,13 +273,15 @@ scenarios:
         U->>M: ボタンをタップする
         M->>B: 描いた文書の先頭へスクロールする
         M-->>U: 文書の先頭を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 先頭へ戻るボタンが画面の中に収まり、横のスクロールが生じていない
       - ボタンのタップできる領域が 44×44px 以上ある
       - ボタンを押した後、描いた文書の先頭が画面に表示されている
     test: test_normal_when_narrow_width
 lead: 読者が描いた文書を一定量スクロールすると、画面の右下に先頭へ戻るボタンが出る。押すと描いた文書の先頭へ戻り、先頭の近くにいる間はボタンを出さない。
-issue: 162
 primary_actor: 読者
 stakeholders:
   - name: キーボードとスクリーンリーダーで読者

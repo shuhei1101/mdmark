@@ -68,8 +68,6 @@ functions:
     refs:
       - IF-472-38#
     status: planned
-    introduced:
-      pr: 32
   - name: buildSite
     title: 複数の文書を 1 枚にまとめて結果を返却する
     kind: 関数
@@ -146,5 +144,3 @@ functions:
       - IF-472-38#
       - IF-472-13#
     status: planned
-    introduced:
-      pr: 72

@@ -15,6 +15,9 @@ flows:
         description: 作業ツリーをコピーした一時フォルダ（テスト用のパッケージ）の `migrations/` と `docs/guide/変更履歴.mark.md` をテスト用のものに差し替え、`npm run build -- --version v0.5.0` でバージョンを埋めた `dist/cli.js` を子プロセスで実行する
         notes: '`v0.4.0` は `rename_key`（`file: config`・`legacy` → `renamed`）、`v0.5.0` は `replace_mark`（`<!-- note -->` → `<!-- callout -->`）。変更履歴は v0.3.0・v0.4.0・v0.5.0 の行を持つ'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -27,6 +30,9 @@ flows:
         C->>C: mdmark check と同じ点検（ずれ 0 件）
         C->>F: 設定の version を v0.5.0 にする
         C-->>W: 手順・変更履歴・コピーの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 設定の `legacy` が `renamed` になり、値と他のキーの並びとコメントが残っている
@@ -43,6 +49,9 @@ flows:
       - name: Mock
         description: 正常系と同じテスト用のパッケージ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -53,6 +62,9 @@ flows:
         C->>C: 端末の設定の構造を点検する
         C->>F: version を v0.5.0 にする
         C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 端末の設定の `legacy` が `renamed` になり、コメントが残り、`version` が `v0.5.0`
@@ -66,12 +78,18 @@ flows:
       - name: Mock
         description: '正常系と同じ。`v0.5.0` の手順に `destructive: true` を付ける'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark upgrade --plan
         C->>C: 設定と v0.4.0・v0.5.0 の手順を参照する
         C-->>W: 手順・変更履歴・壊す手順のマーカー・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力に `replace_mark（壊す手順）:` の行と `--plan のため書き換えていません` がある
@@ -86,6 +104,9 @@ flows:
         description: 'テスト用のパッケージを `--version v0.4.0` でビルドし、`v0.4.0` の手順を `set_default`（`file: config`・`key: title`・`ask`）に差し替える'
         notes: 標準入力に `設計の文書` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -97,6 +118,9 @@ flows:
         C->>C: 点検（ずれ 0 件）
         C->>F: version を v0.4.0 にする
         C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準エラーに `ask` の質問の文が出る
@@ -111,6 +135,9 @@ flows:
         description: 正常系と同じ
         notes: 標準入力に `v0.3.0` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -122,6 +149,9 @@ flows:
         C->>C: 点検（ずれ 0 件）
         C->>F: 設定の先頭に version: v0.5.0 を追加する
         C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '設定の最上位の先頭のキーが `version: v0.5.0`'
@@ -135,12 +165,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark upgrade
         C->>C: 手元のバージョンと目標のバージョンが同じ
         C-->>W: 適用する手順が無いこと・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力に `手元のバージョンが目標のバージョンと同じです。適用する手順はありません` がある
@@ -155,6 +191,9 @@ flows:
         description: '正常系と同じ。`v0.5.0` の手順に `destructive: true` を付ける'
         notes: 標準入力には何も指定しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -164,6 +203,9 @@ flows:
         C->>C: 点検（ずれ 0 件）
         C->>F: version を v0.5.0 にする
         C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準エラーに確認の質問が出ない
@@ -177,6 +219,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -186,6 +231,9 @@ flows:
         C->>C: 点検（ずれ 0 件）
         C->>F: version を v0.5.0 にする
         C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 設定・文書の中身が正常系を実行した後と同じ
@@ -199,6 +247,9 @@ flows:
         description: '正常系と同じ。`v0.5.0` の手順に `destructive: true` を付ける'
         notes: 標準入力に `n` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -206,6 +257,9 @@ flows:
         C-->>W: 壊す手順を示して確認する（標準エラー）
         W->>C: n
         C-->>W: 何も適用しなかったことと --yes・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `--yes` が出る
@@ -219,6 +273,9 @@ flows:
       - name: Mock
         description: '正常系と同じ。`v0.5.0` の手順を、終了コード 1 で終わるスクリプトを実行する `call`（`files: [config]`）に差し替える'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -230,6 +287,9 @@ flows:
         S-->>C: 終了コード 1
         C->>F: コピーから戻す
         C-->>W: 失敗したバージョン・手順・理由・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 設定の中身が適用する前と同じ（`legacy` が残り、`version` が `v0.3.0`）
@@ -243,6 +303,9 @@ flows:
       - name: Mock
         description: '正常系と同じ。`v0.5.0` の手順を `map_values`（`file: config`・`key: build.out`・`dist/docs.html` → `dist/docs.txt`）に差し替える'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -252,6 +315,9 @@ flows:
         C->>C: 点検（build.out の schema のずれ）
         C->>F: コピーから戻す
         C-->>W: ずれの行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '標準エラーに `mdmark.config.yaml:build.out: schema:` で始まる行がある'
@@ -265,6 +331,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -274,6 +343,9 @@ flows:
         C->>C: 点検（図の定義のずれ）
         C->>F: コピーから戻す
         C-->>W: ずれの行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに、その文書の 5 行目を指す `diagram_invalid` の行があり、内容に `payments` を含む
@@ -289,12 +361,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark upgrade
         C->>C: 手元のバージョン v0.6.0 が目標のバージョン v0.5.0 より新しい
         C-->>W: もう一度呼ぶ方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `v0.6.0`・`v0.5.0`・`npx github:shuhei1101/mdmark#v0.6.0 upgrade` が出る
@@ -309,6 +387,9 @@ flows:
         description: 正常系と同じ
         notes: 標準入力に `0.3` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -316,6 +397,9 @@ flows:
         C-->>W: 手元のバージョンの質問
         W->>C: 0.3
         C-->>W: 書式 v{MAJOR}.{MINOR}.{PATCH}・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `v{MAJOR}.{MINOR}.{PATCH}` が出る
@@ -330,6 +414,9 @@ flows:
         description: 正常系と同じ
         notes: 標準入力を何も書き込まずに閉じる
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -337,6 +424,9 @@ flows:
         C-->>W: 手元のバージョンの質問
         C->>C: 標準入力が終わる
         C-->>W: 回答する質問・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに手元のバージョンの質問に回答が無いことが出る
@@ -350,12 +440,18 @@ flows:
       - name: Mock
         description: 正常系と同じ。`v0.5.0` の `steps.yaml` の手順から `to` を削除する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark upgrade
         C->>C: v0.5.0 の steps.yaml が Schema に合わない
         C-->>W: バージョンと合わないところと再インストール・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `v0.5.0` と `to` が出る
@@ -369,12 +465,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark upgrade
         C->>C: 今のフォルダから上へ設定ファイルを探す
         C-->>W: 設定ファイルが無いことと mdmark init・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `mdmark.config.yaml` が無いことと `mdmark init` が出る
@@ -388,6 +490,9 @@ flows:
         description: 正常系と同じテスト用のパッケージ。`migrations/v0.5.0/` に、`drop-tag-vocabulary.mjs` を持つ移行の手順のフォルダの `steps.yaml` と全てのスクリプトを配置する
         notes: '`steps.yaml` の手順が `destructive: true` のため `--yes` を指定する'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -400,6 +505,9 @@ flows:
         C->>C: mdmark check と同じ点検（ずれ 0 件）
         C->>F: 設定の version を v0.5.0 にする
         C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 索引の `schema` が `2` で、最上位に `tags` が無い
@@ -415,6 +523,9 @@ flows:
         description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
         notes: '`--yes` を指定する'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -428,6 +539,9 @@ flows:
         C->>C: mdmark check と同じ点検（unknown_mark・legacy_mark を除いてずれ 0 件）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 手順の行の下の移行の報告の行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 文書のマーカーがシナリオの期待値のとおりの JSON のオブジェクトになり、マーカーの外の本文・閉じのマーカー・引数の無いマーカー・コードブロックの中が変わっていない
@@ -447,6 +561,9 @@ flows:
         description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
         notes: '`--yes` を指定する'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -460,6 +577,9 @@ flows:
         C->>C: mdmark check と同じ点検（移行の報告に挙げた retired_diagram を除いてずれ 0 件）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 手順の行の下の移行の報告の行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '読める定義の `flow`・`sequence` の範囲が、シナリオの期待値のとおりの `<!-- map: {…} -->` 〜 `<!-- /map -->` の範囲（`mermaid` のブロック 1 つと補足 `<!-- map-data: {"version": 1, …} -->`）になり、範囲の外の本文とコードブロックの中が変わっていない'

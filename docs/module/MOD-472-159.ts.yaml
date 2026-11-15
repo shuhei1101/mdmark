@@ -15,8 +15,6 @@ constants:
     summary: 書き出した HTML の起動の処理が、同じスクリプトにまとめた部品のモジュールを返却する関数を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む
     value: 'new Map<PartName, () => Promise<Record<string, unknown>>>()'
     status: planned
-    introduced:
-      pr: 296
   - name: partModules
     title: 読み込んだ部品のモジュール
     container: src/part-modules.ts
@@ -97,5 +95,3 @@ functions:
     process: 1. `partModuleLoaders` に `name` → `loader` を入れる
     unit_tests: []
     status: planned
-    introduced:
-      pr: 296

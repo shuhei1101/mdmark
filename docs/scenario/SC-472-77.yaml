@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -20,6 +23,9 @@ scenarios:
         EX->>PV: 最後の全文を送信する
         PV->>PV: update で再描画する
         PV-->>W: 書き換えた見出しを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 保存しないまま、プレビューの見出しが書き換えた文字になる
       - 最後に打ってから updateDelayMs より前には再描画しない（続けて打った間の途中の全文は描かない）
@@ -31,6 +37,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -41,6 +50,9 @@ scenarios:
         ED->>EX: 保存の通知
         EX->>PV: 全文を送信する
         PV-->>W: 書き換えた見出しを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 保存する前は、プレビューの見出しが変わらない
       - 保存すると、プレビューの見出しが書き換えた文字になる
@@ -52,6 +64,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -62,6 +77,9 @@ scenarios:
         EX->>EX: 重ねた設定を再読み込みする
         EX->>PV: 新しい設定で再描画させる
         PV-->>W: 注意書きを枠にしない文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューの注意書きが、注意書きの枠ではなく引用として描かれる
     test: test_normal_when_config_saved
@@ -73,6 +91,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -83,6 +104,9 @@ scenarios:
         PV-->>EX: ready
         EX->>PV: 最後の全文を送信する
         PV-->>W: 最後に書き換えた見出し B を、背面に回す前のスクロールの位置で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表に戻したプレビューに、3 回目に書き換えた見出し B が描かれる
       - 表に戻したプレビューの見えている先頭の見出しが見出し A
@@ -95,6 +119,9 @@ scenarios:
       - name: Mock
         description: 配布物を配る手元のサーバーを、配布物を配る状態へ戻す
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -108,6 +135,9 @@ scenarios:
         PV-->>EX: ready
         EX->>PV: 全文と設定を送信する
         PV-->>W: 描いた文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描けない理由と「リロード」のボタンが消え、見出し・表・注意書き・map の構成図が描かれる
       - 'コマンドパレットの「mdmark: プレビューをリロード」でも同じになる'
@@ -121,6 +151,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -134,6 +167,9 @@ scenarios:
         W->>PV: 「設定ファイルを開く」を押す
         PV-->>EX: 設定ファイルを開く依頼
         EX->>ED: mdmark.config.yaml を開く
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューの文書は描いたまま残る
       - パネルの上部に、設定ファイルを読み込めないことを示す帯と「設定ファイルを開く」のボタンが出る
@@ -146,6 +182,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -155,6 +194,9 @@ scenarios:
         ED->>EX: theme の CSS の変更の通知
         EX->>PV: theme の CSS を再読み込みさせる
         PV-->>W: 書き換えた色を適用した文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - リロードせずに、描く先の要素の計算値が書き換えた後の `theme.css` の色になる
       - Markdown の本文とスクロールの位置は保存する前と同じ
@@ -167,6 +209,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -181,6 +226,9 @@ scenarios:
         ED->>EX: extensions のファイルの変更の通知
         EX->>PV: パネルを再読み込みして描かせる
         PV-->>W: 書き換えた固有の部品で描いた文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 端末の設定を保存した後、リロードせずにプレビューの注意書きが引用として描かれる
       - '`extensions` のモジュールを保存した後、固有の部品の場所に書き換えた後の部品が描いた要素がある'
@@ -193,6 +241,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -203,6 +254,9 @@ scenarios:
         EX->>EX: エイリアスを再作成する
         EX->>PV: 再作成したエイリアスで再描画させる
         PV-->>W: 書き換えた意味のツールチップを持つ文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - リロードせずに、下線の単語のツールチップに書き換えた後の意味が出る
       - Markdown の本文とスクロールの位置は保存する前と同じ
@@ -216,6 +270,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -227,12 +284,14 @@ scenarios:
         W->>ED: mdmark.config.yaml に features.frontmatter: true を記載して保存する
         EX->>PV: 新しい設定で再描画させる
         PV-->>W: 先頭にフロントマターの表示を置いた文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '設定ファイルを保存する前は、プレビューに `title: テスト` の文字と h2 の要素が無い'
       - 設定ファイルを保存した後は、プレビューの `見出し` の要素より前にフロントマターの表示の要素があり、その中に `title`・`テスト` の文字がある
     test: test_normal_when_frontmatter
 lead: 文書の作成者が Markdown や設定ファイルを書き換えると、開いているプレビューが再描画される。背面から表に戻したときと、「リロード」を押したときも最後の内容で描く。
-issue: 22
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者

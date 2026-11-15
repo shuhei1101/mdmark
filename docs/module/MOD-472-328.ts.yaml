@@ -28,5 +28,3 @@ functions:
         mock: なし
         expected: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3"><div class="mdmark-gallery-grid">` の中に `SLOT_MARKER`'
     status: planned
-    introduced:
-      pr: 263

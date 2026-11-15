@@ -16,6 +16,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
@@ -27,6 +30,9 @@ flows:
         M->>P: 表形式のビュー
         P->>M: destroy()
         M->>P: el を空にする
+      ```
+
+      <!-- /map -->
     expected:
       - '`el` の中に class `mdmark` の要素が 1 つあり、その中にビューがある'
       - ボードの列が `未着手`・`進行中`・`完了` の順で、見出しの件数が `2`・`2`・`1`
@@ -45,6 +51,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
@@ -54,6 +63,9 @@ flows:
         M->>P: 2 行の表
         P->>M: ボードに切り替え、表に戻す
         M->>P: ボードは 5 件、表は 2 行
+      ```
+
+      <!-- /map -->
     expected:
       - 絞り込みのボタンが担当の列の見出しにだけある
       - 佐藤を選ぶと、担当が `佐藤` の 2 行だけが表示される
@@ -71,11 +83,17 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mountView(el, { columns, items, group, icons })
         M->>P: 列の見出しにアイコンを持つボード表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`未着手` の列の見出しが `inbox`、`完了` が `archive` のアイコンを持つ'
       - '`進行中` の列の見出しは既定の `circle-dot`、対応に無い `受付` は `circle` のアイコンを持つ'
@@ -91,6 +109,9 @@ flows:
       - name: Mock
         description: 拡張の `load` はページの中のモジュールを返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
@@ -101,6 +122,9 @@ flows:
         M->>P: マーカーの場所にビューを描く
         P->>M: destroy()
         M->>P: マーカーの場所のビューも片付ける
+      ```
+
+      <!-- /map -->
     expected:
       - '`tasks` のマーカーの場所に、定義の 3 件を並べたビューがある'
       - 表形式に切り替え、列の絞り込みで値を選ぶと合う行だけが残る
@@ -116,11 +140,17 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mountView(el, 誤った引数)
         M-->>P: TypeError
+      ```
+
+      <!-- /map -->
     expected:
       - 2 通りとも `mountView` が同期で `TypeError` を投げ、メッセージに `items`、`group` を含む
       - '`el` の中身が `前の中身` のまま'
@@ -136,6 +166,9 @@ flows:
         description: ビューの部品のモジュールの要求を、配信で 404 に差し替える
         notes: 部品のモジュールを別の配布ファイルに分けないと決まったら、このフローはモジュール構成設計で削除する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
@@ -143,6 +176,9 @@ flows:
         M->>M: 部品のモジュールを読み込めない
         M->>P: el に通知ブロックを配置する
         M-->>P: reject
+      ```
+
+      <!-- /map -->
     expected:
       - '`el` の中に class `mdmark-notice`・`role="status"` の要素があり、タイトルが `この箇所を表示できません`'
       - 戻り値の Promise が読み込みのエラーで reject する

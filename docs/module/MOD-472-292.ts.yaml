@@ -38,8 +38,6 @@ functions:
         mock: なし
         expected: '`mdmark-type-badge` の `data-type="bool"`、`ref`・`custom` の `mdmark-type-chip` があり、`必須` の `th` が無く、`features.table` の行だけに `mdmark-tree-required`、`<span class="mdmark-tree-default">true</span>` がある'
     status: planned
-    introduced:
-      pr: 303
   - name: linkTreeExamples
     title: 見本を表の下へ移す
     container: src/render/syntax/table-tree.ts
@@ -73,5 +71,3 @@ functions:
         mock: なし
         expected: 表の前に `mdmark-syntax-warning` があり、`mdmark-tree-example` が無い
     status: planned
-    introduced:
-      pr: 303

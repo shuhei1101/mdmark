@@ -11,8 +11,6 @@ constants:
     summary: MCP サーバーの名前（`serverInfo.name`）
     value: mdmark
     status: planned
-    introduced:
-      pr: 72
   - name: INSTRUCTIONS
     title: サーバーの使用方法の説明
     container: src/plugin/mcp.ts
@@ -32,8 +30,6 @@ constants:
     refs:
       - IF-472-4#constraints[instructions]
     status: planned
-    introduced:
-      pr: 72
 functions:
   - name: describeServerLocation
     title: 常駐サーバーが動いている場所の文を作る
@@ -63,8 +59,6 @@ functions:
     refs:
       - IF-472-4#constraints[instructions]
     status: planned
-    introduced:
-      pr: 444
   - name: createMcpServer
     title: MCP サーバーを作る
     kind: 関数
@@ -104,5 +98,3 @@ functions:
     refs:
       - LIB-472-2#catalogs[API].entries[McpServer]
     status: planned
-    introduced:
-      pr: 72

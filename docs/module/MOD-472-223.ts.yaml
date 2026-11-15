@@ -12,8 +12,6 @@ constants:
     refs:
       - IF-472-35#constraints[先頭へ戻るボタン]
     status: planned
-    introduced:
-      pr: 287
 functions:
   - name: attachBackToTop
     title: 先頭へ戻るボタンを付ける
@@ -73,5 +71,3 @@ functions:
         mock: なし
         expected: '`el` にボタンが無く、`content` が `tabindex` を持たず、例外が出ない'
     status: planned
-    introduced:
-      pr: 287

@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -21,6 +24,9 @@ scenarios:
         M-->>P: 表を描き、本文の用語に下線を付ける
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 表の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 用語集の表が表として描かれ、表の中の単語には下線が付いていない
       - 段落の `マーク` に破線の下線が付き、ポインターを乗せると `HTML コメントで記載する指定` のツールチップが出る
@@ -38,6 +44,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -47,6 +56,9 @@ scenarios:
         M-->>P: 本文の用語に下線を付ける
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 索引の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落の `マーカー` のツールチップが `索引に記載した意味`
       - 表の意味の列の文字はツールチップに出ていない
@@ -61,6 +73,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -69,6 +84,9 @@ scenarios:
         M->>M: 列名が表に無いマーカーの表から用語を入れない
         M-->>P: 表と記載の警告を描く
         P-->>U: 表と警告を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表が描かれている
       - 表のあたりに、表に無い列名 `説明` と修正方法を記載した記載の警告がある
@@ -87,6 +105,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -96,6 +117,9 @@ scenarios:
         M-->>P: 本文の用語に下線を付ける
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 表の意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`guide` の段落の `マーク` に破線の下線が付き、ポインターを乗せると `HTML コメントで記載する指定` のツールチップが出る'
     test: test_normal_when_other_document
@@ -109,6 +133,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -118,6 +145,9 @@ scenarios:
         M-->>P: 表を描き、本文の用語に下線を、やめた言い方にマーカーを付ける
         U->>P: マーカーの付いた単語にポインターを乗せる
         P-->>U: 代わりの用語と意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 用語集の表が、やめた言い方の列を含めて表として描かれ、表の中の `作業場`・`ワーク場` にはマーカーが付いていない
       - 段落の `ワークスペース` に破線の下線が付き、ポインターを乗せると `作業の配置場所` のツールチップが出る
@@ -137,6 +167,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -146,6 +179,9 @@ scenarios:
         M-->>P: 本文のやめた言い方にマーカーを付ける
         U->>P: マーカーの付いた単語にポインターを乗せる
         P-->>U: 代わりの用語と意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`guide` の段落の `作業場` にマーカーが付き、ポインターを乗せると代わりの用語 `ワークスペース` と意味 `作業の配置場所` のツールチップが出る'
     test: test_normal_when_other_document_avoid_column
@@ -163,6 +199,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -172,13 +211,15 @@ scenarios:
         M-->>P: 本文の用語に下線を付ける
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 選んだ意味のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落の `マーカー` のツールチップが `索引に記載した意味`
       - 段落の `マーク` のツールチップが `エイリアスに記載したマークの意味`
       - 段落の `オン・オフのマーカー` のツールチップが表の意味 `HTML コメントで記載する指定`
     test: test_normal_when_aliases_have_same_term
 lead: '文書の作成者が本文の表を `<!-- glossary: {"term": {"column": "列名"}, "meaning": {"column": "列名"}, "aliases": {"column": "列名"}} -->` 〜 `<!-- /glossary -->` で囲むと、mdmark がその表の用語・意味・別名の列から用語を入れ、本文に出たその単語に意味のツールチップを付ける。'
-issue: 5
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者

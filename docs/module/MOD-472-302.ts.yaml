@@ -41,5 +41,3 @@ functions:
         mock: なし
         expected: '`state.tokens` が変わらない'
     status: planned
-    introduced:
-      pr: 422

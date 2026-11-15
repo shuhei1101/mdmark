@@ -27,5 +27,3 @@ functions:
         mock: なし（Chromium）
         expected: 付けた直後は前者だけが `is-wide` と `tabindex="0"` を持ち、幅を広げた後はどちらも持たない。削除する関数の後はどちらも持たない
     status: planned
-    introduced:
-      pr: 45

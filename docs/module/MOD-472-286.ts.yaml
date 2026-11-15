@@ -68,5 +68,3 @@ functions:
         mock: なし
         expected: どちらも `color` が `red` で、`label` が空白だけ
     status: planned
-    introduced:
-      pr: 263

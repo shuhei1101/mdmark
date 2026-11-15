@@ -64,5 +64,3 @@ functions:
         mock: なし
         expected: 2 回目に付けた後、`aliases[]` の子孫の行が `hidden` を持ち、ボタンの `aria-expanded` が `false`
     status: planned
-    introduced:
-      pr: 303

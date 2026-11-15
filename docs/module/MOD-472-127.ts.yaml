@@ -77,8 +77,6 @@ functions:
         mock: 一時フォルダ
         expected: '`kind` が `legacy_mark` の 2 件で、`where` が `1`・`7`、`syntax_warning` が無い'
     status: planned
-    introduced:
-      pr: 328
   - name: readYamlKey
     title: YAML のキーの値を読み込む
     container: src/cli/markdown-check.ts
@@ -122,5 +120,3 @@ functions:
         mock: 一時フォルダ
         expected: 1 つ目の文に `items[5].body` と要素が 2 つであること、2 つ目の文に値が文字列でないことがある
     status: planned
-    introduced:
-      pr: 328

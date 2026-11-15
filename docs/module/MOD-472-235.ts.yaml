@@ -83,8 +83,6 @@ functions:
       - MOD-472-348#functions[recordOpen]
       - MOD-472-269#functions[renderTreeCopyContent]
     status: planned
-    introduced:
-      pr: 225
   - name: setFolderOpen
     title: フォルダを開閉する
     container: src/interact/trees.ts
@@ -105,8 +103,6 @@ functions:
       type: void
       description: なし
     status: planned
-    introduced:
-      pr: 225
   - name: alignFileTreeNotes
     title: ファイルツリーの注釈の列を統一する
     container: src/interact/trees.ts
@@ -123,5 +119,3 @@ functions:
       type: void
       description: なし
     status: planned
-    introduced:
-      pr: 225

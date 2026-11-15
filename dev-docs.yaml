@@ -10,7 +10,7 @@ instructions: |-
   mdmark で文書を記載するときは、filter に {"and": [{"field": "tags", "op": "eq", "values": ["topic:ガイド"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]} を指定して一覧を検索し、description の「〜ときに参照する」が作業に該当するページを view: "full" で読み込む。
   人が読み込む資料を記載するときは、最初に『文書の記載方法』（docs/guide/記載する-文書の記載方法.md）を読み込む。
   記法の記載方法を確認するときは『記法』（docs/guide/記法.mark.md）を読み込む。
-  設計書は `docs/` の種類ごとのフォルダの YAML（`{ID}.yaml`）で、書式は `schemas/{種類}.schema.yaml` が持つ。各文書の公開範囲は `visibility`（`public` / `internal`）で、YAML の文書はキー、Markdown は `files.yml` の行が持つ。
+  設計書は `docs/` の種類ごとのフォルダの YAML（`{ID}.yaml`）で、書式は knowledge の `schemas/design/{種類}.schema.yaml`（`documents[].schema` の `ref` のタグ）が持つ。各文書の公開範囲は `visibility`（`public` / `internal`）で、YAML の文書はキー、Markdown は `files.yml` の行が持つ。
 when:
   - mdmark の記法・部品・図の描き方を確認するとき
   - mdmark の CLI・公開関数・設定・索引のキーを確認するとき
@@ -21,58 +21,100 @@ documents:
     title: アーキテクチャ図
     paths: ["docs/architecture/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/architecture.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/architecture.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: scenario
     title: シナリオ
     paths: ["docs/scenario/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/scenario.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/scenario.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: interface
     title: インターフェース定義
     paths: ["docs/interface/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/interface.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/interface.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: module
     title: モジュール構成
     paths: ["docs/module/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/module.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/module.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: component
     title: 部品設計
     paths: ["docs/component/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/component.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/component.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: screen
     title: 画面設計
     paths: ["docs/screen/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/screen.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/screen.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: config
     title: 設定
     paths: ["docs/config/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/config.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/config.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: er
     title: ER 図
     paths: ["docs/er/*.yaml"]
@@ -85,42 +127,72 @@ documents:
     title: 外部 API
     paths: ["docs/external-api/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/external-api.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/external_api.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: library
     title: 外部ライブラリ
     paths: ["docs/library/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/library.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/library.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: test_procedure
     title: テスト実行方法
     paths: ["docs/test-procedure/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/test-procedure.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/test_procedure.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: dev_command
     title: 開発コマンド
     paths: ["docs/dev-command/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/dev-command.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/dev_command.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: nonfunctional
     title: 非機能要件
     paths: ["docs/nonfunctional/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/nonfunctional.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/nonfunctional.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   - id: layout
     title: フォルダ構成
     paths: ["docs/layout/*.yaml"]
@@ -128,11 +200,13 @@ documents:
     schema:
       source: knowledge
       path: schemas/design/layout.schema.yaml
-      ref: design-schemas/v8.3.0
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
       description: lead
       visibility: visibility
+      tags: tags[].name
+      main_tags: tags[main].name
   # YAML の設計書でないファイルは、フォルダごとの管理用の YAML が 1 ファイル 1 行で持つ
   - id: files_root
     title: docs の直下の Markdown と Pages の共通レイアウト

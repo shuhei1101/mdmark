@@ -203,8 +203,6 @@ functions:
       - 'MOD-472-210#constants[MARK_PATTERN]'
       - '#functions[createParser]'
     status: planned
-    introduced:
-      pr: 64
   - name: findMarkTexts
     title: 文書のマーカーを引数の文字と一緒に取得する
     container: src/render/parser.ts
@@ -260,10 +258,6 @@ functions:
         condition: 1 行目 `<div class="x">地</div>`
         mock: なし
         expected: '`div` が `data-source-line` を持たない'
-    callers:
-      - '#functions[createParser]'
     refs:
       - IF-472-34#constraints[元の行番号]
     status: planned
-    introduced:
-      pr: 69

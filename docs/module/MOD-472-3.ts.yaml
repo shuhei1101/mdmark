@@ -14,8 +14,6 @@ constants:
     refs:
       - IF-472-6#constraints[出す文]
     status: planned
-    introduced:
-      pr: 354
   - name: PORT_INVALID_CONTEXT
     title: ポートが使用できない値のときの文
     container: src/plugin/session-start.ts
@@ -25,8 +23,6 @@ constants:
     refs:
       - IF-472-6#constraints[終了コード]
     status: planned
-    introduced:
-      pr: 354
 functions:
   - name: runSessionStart
     title: 常駐サーバーの状態を伝える
@@ -81,5 +77,3 @@ functions:
     refs:
       - IF-472-6#
     status: planned
-    introduced:
-      pr: 354

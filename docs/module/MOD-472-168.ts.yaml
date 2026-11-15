@@ -42,8 +42,6 @@ functions:
     refs:
       - MOD-472-148#functions[compareVersions]
     status: planned
-    introduced:
-      pr: 39
   - name: checkMigrations
     title: 移行の手順を点検する
     container: scripts/migrations.ts
@@ -96,5 +94,3 @@ functions:
       - MOD-472-146#functions[validateSteps]
       - ER-472-5#
     status: planned
-    introduced:
-      pr: 39

@@ -14,6 +14,9 @@ scenarios:
       - name: Mock
         description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。unit の名前にはテスト専用の名前を回答する。Claude Code のセッションの代わりに、SessionStart のフックを実行し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使用する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で常駐サーバーの状態を受け取る:異常シナリオ（起動していない）]
         B --> C[端末にmdmarkをセットアップする:正常シナリオ]
@@ -26,6 +29,9 @@ scenarios:
         click D "id:SC-472-22#scenarios[正常シナリオ]"
         click E "id:SC-472-53#scenarios[正常シナリオ]"
         click F "id:SC-472-3#scenarios[正常シナリオ（1 文書を書き出す）]"
+      ```
+
+      <!-- /map -->
     expected:
       - プラグインを入れた直後のセッションの開始で、常駐サーバーが起動していないことと `global-setup` で起動できることが伝わる
       - '`global-setup` の後、端末の設定のパスに確認で回答した値の端末の設定があり、回答した名前の unit が `enabled` で `active` で、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
@@ -53,6 +59,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーの確認には、今の値のままにする回答を返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で常駐サーバーの状態を受け取る:正常シナリオ]
         B --> C[端末にmdmarkをセットアップする:正常シナリオ（セットアップ済み）]
@@ -61,6 +70,9 @@ scenarios:
         click B "id:SC-472-22#scenarios[正常シナリオ]"
         click C "id:SC-472-69#scenarios[正常シナリオ（セットアップ済み）]"
         click D "id:SC-472-3#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`global-setup` が unit を起動し直さず、常駐サーバーのプロセスがもう一度入れる前と同じ'
       - 端末の設定の中身がもう一度入れる前と同じ
@@ -82,12 +94,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[セッションの開始で常駐サーバーの状態を受け取る:異常シナリオ（起動していない）] --> B[端末にmdmarkをセットアップする:正常シナリオ（常駐サーバーが止まっている）]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
         click A "id:SC-472-22#scenarios[異常シナリオ（起動していない）]"
         click B "id:SC-472-69#scenarios[正常シナリオ（常駐サーバーが止まっている）]"
         click C "id:SC-472-3#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - セッションの開始で、常駐サーバーが起動していないことと `global-setup` で起動できることが伝わる
       - '`global-setup` の後、unit の `is-active` が `active` を返却し、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
@@ -99,7 +117,6 @@ scenarios:
       - SC-472-69#scenarios[正常シナリオ（常駐サーバーが止まっている）]
       - SC-472-3#scenarios[正常シナリオ]
 lead: 文書の作成者が mdmark のプラグインを入れ、`global-setup` で端末の設定と常駐サーバーを、`setup` で文書のフォルダの `mdmark.config.yaml` を用意して、MCP のツールで点検と書き出しを呼ぶ。
-issue: 165
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者

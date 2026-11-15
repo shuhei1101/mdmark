@@ -63,5 +63,3 @@ functions:
         mock: 一時フォルダ
         expected: 例外を投げず、`problems` が 1 件で `broken` とファイルのパスを含み、`changed` が `false`
     status: planned
-    introduced:
-      pr: 360

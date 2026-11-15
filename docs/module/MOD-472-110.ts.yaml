@@ -113,8 +113,6 @@ functions:
       - IF-472-39#
       - 'MOD-472-122#functions[changedPathsSince]'
     status: planned
-    introduced:
-      pr: 32
   - name: collectCheckIssues
     title: 点検のずれを集める
     container: src/cli/check.ts
@@ -210,8 +208,6 @@ functions:
       - '#functions[checkPlainMarkdown]'
       - 'MOD-472-122#functions[changedPathsSince]'
     status: planned
-    introduced:
-      pr: 39
     callees:
       - 'MOD-472-113#functions[checkMissingFiles]'
       - '#functions[checkDiagrams]'
@@ -276,8 +272,6 @@ functions:
     refs:
       - 'MOD-472-119#functions[bundleModule]'
     status: planned
-    introduced:
-      pr: 64
   - name: collectCheckDocuments
     title: 知らないマーカーを点検する文書を集める
     container: src/cli/check.ts
@@ -312,8 +306,6 @@ functions:
       - 'MOD-472-117#functions[readIndexWithDocuments]'
       - 'MOD-472-117#functions[collectBuildDocuments]'
     status: planned
-    introduced:
-      pr: 64
   - name: checkUnknownMarks
     title: 知らないマーカーをずれにする
     container: src/cli/check.ts
@@ -355,8 +347,6 @@ functions:
       - MOD-472-211#functions[findMarks]
       - IF-472-39#constraints[知っているマーカー]
     status: planned
-    introduced:
-      pr: 64
   - name: checkPlainMarkdown
     title: 記法を含む純粋な .md に拡張子の提案を出す
     container: src/cli/check.ts
@@ -390,8 +380,6 @@ functions:
     refs:
       - IF-472-39#constraints[拡張子の提案]
     status: planned
-    introduced:
-      pr: 541
   - name: knownMarkNames
     title: 知っているマーカーの名前を集める
     container: src/cli/check.ts
@@ -409,8 +397,6 @@ functions:
       type: Set<string>
       description: 知っているマーカーの名前
     status: planned
-    introduced:
-      pr: 541
   - name: collectMarkNames
     title: 描画が参照するマーカーの名前を集める
     container: src/cli/check.ts
@@ -439,8 +425,6 @@ functions:
       - MOD-472-110#functions[knownMarkNames]
       - MOD-472-110#functions[loadExtensionDirectives]
     status: planned
-    introduced:
-      pr: 554
   - name: checkDiagrams
     title: 図の定義と廃止した図の範囲を点検する
     container: src/cli/check.ts
@@ -487,8 +471,6 @@ functions:
       - IF-472-39#constraints[図の定義の点検]
       - IF-472-39#constraints[廃止した図の範囲の点検]
     status: planned
-    introduced:
-      pr: 275
   - name: checkIncludes
     title: 取り込み先を点検する
     container: src/cli/check.ts

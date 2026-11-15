@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は、そのバージョンを最新の `vX.Y.Z` として返却する代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[VSCodeでプレビューを開く:正常シナリオ（設定を重ねる）] --> B[記載した内容をプレビューに映す:正常シナリオ（theme の CSS を書き換える）]
         B --> C[文書をHTMLに書き出す:正常シナリオ（設定を重ねる）]
@@ -19,6 +22,9 @@ scenarios:
         click B "id:SC-472-77#scenarios[正常シナリオ（theme の CSS を書き換える）]"
         click C "id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]"
         click D "id:SC-472-3#scenarios[正常シナリオ（設定を重ねる）]"
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューで、注意書きと表の機能がオフで描かれ、固有の部品が描かれ、`theme.css` の規則が該当する
       - '`theme.css` を書き換えて保存すると、エディタの Markdown を書き換えずに、プレビューに書き換えた規則が該当する'
@@ -40,10 +46,16 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[VSCodeでプレビューを開く:正常シナリオ（最初の 1 つだけを読み込む）] --> B[文書をHTMLに書き出す:正常シナリオ（最初の 1 つだけを読み込む）]
         click A "id:SC-472-10#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]"
         click B "id:SC-472-56#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]"
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューと書き出した HTML の両方で、注意書きと表の機能がオフで描かれる（端末の設定と下のフォルダの設定だけが有効になる）
       - 上のフォルダの設定の `theme.css` の規則と固有の部品は、両方とも該当しない
@@ -62,12 +74,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[VSCodeでプレビューを開く:異常シナリオ（設定ファイルを読み込めない）] --> B[文書をHTMLに書き出す:異常シナリオ（設定ファイルを読み込めない）]
         B --> C[文書をHTMLに書き出す:正常シナリオ（設定を重ねる）]
         click A "id:SC-472-10#scenarios[異常シナリオ（設定ファイルを読み込めない）]"
         click B "id:SC-472-56#scenarios[異常シナリオ（設定ファイルを読み込めない）]"
         click C "id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]"
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューの先頭に、端末の設定を読み込めないことを示す帯が出る
       - '`mdmark export` が端末の設定のパスと読み込めない行と修正方法を標準エラーに出し、終了コード 1 で HTML を書き込まない'
@@ -79,7 +97,6 @@ scenarios:
       - SC-472-56#scenarios[異常シナリオ（設定ファイルを読み込めない）]
       - SC-472-56#scenarios[正常シナリオ（設定を重ねる）]
 lead: 文書の作成者が、端末の設定と、文書のフォルダから上のフォルダの `mdmark.config.yaml` を重ねた設定で、VS Code のプレビュー・CLI の書き出し・Claude Code から呼んだ書き出しを同じ外観にそろえる。
-issue: 163
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者

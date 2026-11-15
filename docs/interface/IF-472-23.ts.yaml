@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: GitHub と Marketplace へは送信しない。`release:check` と `package` を手元で実行し、ワークフローの YAML を読む
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant D as 開発者
         participant GA as ワークフロー
@@ -20,6 +23,9 @@ flows:
         GA-->>D: 終了コード 0
         D->>GA: package
         GA-->>D: mdmark-0.1.3.vsix
+      ```
+
+      <!-- /map -->
     expected:
       - '`release:check` が終了コード 0'
       - '`mdmark-0.1.3.vsix` が記載され、中の `extension/package.json` の `version` が `0.1.3`、`extension/dist/` にまとめた拡張機能があり `node_modules/` が無い'
@@ -35,11 +41,17 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant D as 開発者
         participant GA as ワークフロー
         D->>GA: release:check vscode-v0.2.0
         GA-->>D: 終了コード 1 と 2 つのバージョン
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1 で、標準エラーに `0.2.0` と `0.1.3` が出る
       - '`release:check vscode-0.1.3`（構造に合わないタグ）も終了コード 1'

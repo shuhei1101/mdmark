@@ -20,8 +20,6 @@ data_models:
         type: '(id: string) => void'
         description: 付けたコメントの `focus` を呼ぶ。コメントを付けていないときは何もしない
     status: planned
-    introduced:
-      pr: 280
 functions:
   - name: mountView
     title: ビューを描く公開関数

@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant ED as エディタ（VS Code）
@@ -22,6 +25,9 @@ scenarios:
         W->>EX: 通知の「ブラウザで開く」を押す
         EX->>BR: 書き出した HTML を開く
         BR-->>W: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - Markdown と同じフォルダに、Markdown と同じ名前の `.html` が 1 つ記載される
       - 通知に書き出したパスと「ブラウザで開く」が出る
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -43,6 +52,9 @@ scenarios:
         EX->>EX: 開いている Markdown をもう一度書き出す
         EX->>BR: 書き出した HTML を開く
         BR-->>W: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML が無くても、1 回のコマンドで HTML が記載されてブラウザで開く代役に URL が渡る
       - 保存していない書き換えも、書き出した HTML に出る
@@ -54,12 +66,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
         W->>EX: mdmark: HTML に書き出す
         EX->>EX: 書き出し先に書き込めない
         EX-->>W: 書き出せない理由の通知
+      ```
+
+      <!-- /map -->
     expected:
       - 通知に、書き出し先のパスと書き込めない理由が出る
       - 書き出し先に `.html` が残らない
@@ -73,6 +91,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -81,6 +102,9 @@ scenarios:
         EX->>EX: プレビューと同じ優先の順でテーマを決めて HTML に書き込む
         W->>B: 書き出した HTML を開く
         B-->>W: theme-slate の明るい配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML をブラウザで開くと、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値（プレビューと同じテーマ）
     test: test_normal_when_theme_selected
@@ -93,6 +117,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -101,6 +128,9 @@ scenarios:
         EX->>EX: 重ねた設定の theme の CSS と extensions を入れた HTML を書き込む
         W->>B: 書き出した HTML を開く
         B-->>W: 固有の部品と固有の CSS を適用した文書
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML をブラウザで開くと、固有の部品の場所に定義のタイトルが描かれ、固有の CSS が変えた色が計算値に出ている
       - プレビューの同じ要素の計算値と同じ
@@ -113,6 +143,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -121,6 +154,9 @@ scenarios:
         EX->>EX: 相対パスのライブラリをまとめて HTML に埋める
         W->>B: 書き出した HTML を file:// で開く
         B-->>W: 外部ライブラリのマーカーと範囲のスクリプトを描いた文書
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML を Chromium で開くと、外部ライブラリのマーカーの場所がそのライブラリで描かれ、通知ブロックが出ない
       - 範囲の `ts` が動き、範囲の要素にスクリプトが記載した結果が出る
@@ -134,6 +170,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -142,6 +181,9 @@ scenarios:
         EX->>EX: 相対パスの mermaid をまとめて HTML に埋める
         W->>B: 書き出した HTML を file:// で開く
         B-->>W: 図の枠に入った mermaid の図
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML を Chromium で開くと、mermaid のコードブロックの場所に図の枠と SVG の図があり、通知ブロックが出ない
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
@@ -154,6 +196,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -164,6 +209,9 @@ scenarios:
         B-->>W: 色分けしたコードブロック
         W->>B: 脚注の参照にフォーカスを移す
         B-->>W: 参照の下に出たツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML を Chromium で開くと、`ts` のコードブロックが色分けされ、通知ブロックが出ない
       - 脚注の参照にフォーカスを移すと、ツールチップが参照の下に出る
@@ -177,6 +225,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -190,6 +241,9 @@ scenarios:
         B-->>W: 別名に下線を付けた文書
         W->>B: 下線の単語にポインターを乗せる
         B-->>W: 用語の種類と意味のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML を Chromium で開くと、本文の `レンダリング` に用語の下線が付く
       - 下線の単語にポインターを乗せると、ツールチップの「用語」の区分に、名前 `描画` と `glossary.yaml` の意味が出る
@@ -204,6 +258,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（設定の aliases のエイリアス）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -217,6 +274,9 @@ scenarios:
         EX-->>W: 書き出したパスと「ブラウザで開く」の通知
         W->>B: 書き出した HTML を file:// で開く
         B-->>W: 読み込めた行のエイリアスに下線を付けた文書
+      ```
+
+      <!-- /map -->
     expected:
       - Markdown と同じフォルダに `.html` が 1 つ記載され、通知に書き出したパスと「ブラウザで開く」が出る
       - 書き出した HTML を Chromium で開くと、本文の `レンダリング` に用語の下線が付く
@@ -225,7 +285,6 @@ scenarios:
     refs:
       - SC-472-10#scenarios[異常シナリオ（aliases の YAML が無い）]
 lead: 文書の作成者が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
-issue: 22
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者

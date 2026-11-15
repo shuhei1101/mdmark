@@ -12,8 +12,6 @@ constants:
     refs:
       - CMP-472-53#args[alias]
     status: planned
-    introduced:
-      pr: 176
   - name: COMMAND_COPY_STATES
     title: コマンドのコピーのボタンの状態
     container: src/parts/term-tip.ts
@@ -22,8 +20,6 @@ constants:
     refs:
       - CMP-472-53#args[copy]
     status: planned
-    introduced:
-      pr: 176
 functions:
   - name: renderTermTip
     title: 用語のツールチップの HTML を返却する
@@ -122,5 +118,3 @@ functions:
         mock: なし
         expected: 文言が順に `コピー`・`コピーしました`・`コピーできませんでした` で、それぞれ `svg` を持つ
     status: planned
-    introduced:
-      pr: 176

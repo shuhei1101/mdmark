@@ -16,8 +16,6 @@ data_models:
         type: 'Record<string, { default?: unknown }>'
         description: 言語のモジュール名からモジュールを参照する表。埋めなかった言語は持たない
     status: planned
-    introduced:
-      pr: 97
 constants:
   - name: embeddedSyntax
     title: 埋めた色分けのモジュールの記録
@@ -25,8 +23,6 @@ constants:
     summary: '`setEmbeddedSyntax` が入れる `EmbeddedSyntax`。無ければ `syntax.url` から読み込む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に有効になる'
     value: undefined
     status: planned
-    introduced:
-      pr: 97
 functions:
   - name: highlightCodeBlocks
     title: 色分けの対象を色分けする
@@ -116,8 +112,6 @@ functions:
       - IF-472-35#constraints[色分けの読み込み]
       - LIB-472-14#
     status: planned
-    introduced:
-      pr: 97
   - name: setEmbeddedSyntax
     title: 埋めた色分けのモジュールを入れる
     container: src/highlight.ts
@@ -134,8 +128,6 @@ functions:
       type: void
       description: なし
     status: planned
-    introduced:
-      pr: 97
 function_types:
   - name: SyntaxImport
     title: 色分けのモジュールを読み込む
@@ -149,5 +141,3 @@ function_types:
       type: 'Promise<{ default?: unknown }>'
       description: 読み込んだモジュール。本体の `default` は `HLJSApi`、言語の `default` は `LanguageFn`
     status: planned
-    introduced:
-      pr: 97

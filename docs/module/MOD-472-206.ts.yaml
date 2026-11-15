@@ -10,16 +10,12 @@ constants:
     summary: 書き出した HTML の起動の処理が入れる、範囲のコードの文字から既定のエクスポートを返却する関数を参照する表。既定は `undefined`
     value: undefined
     status: planned
-    introduced:
-      pr: 303
   - name: HTML_SCRIPTS_REGISTRY
     title: 範囲の関数の受け取りの鍵
     container: src/html-scripts.ts
     summary: '`script` 要素が包んだ関数を指定する、`window` の鍵の名前。動かす間だけ配置し、終えたら削除する'
     value: '"__mdmarkHtmlScript"'
     status: planned
-    introduced:
-      pr: 303
   - name: TRANSPILE_OPTIONS
     title: 範囲のコードの変換の設定
     container: src/html-scripts.ts
@@ -28,8 +24,6 @@ constants:
     refs:
       - LIB-472-6#catalogs[API].entries[transform]
     status: planned
-    introduced:
-      pr: 303
 functions:
   - name: runHtmlScripts
     title: 範囲のスクリプトを動かす
@@ -103,8 +97,6 @@ functions:
         mock: 同上
         expected: 関数が呼ばれない
     status: planned
-    introduced:
-      pr: 303
   - name: loadTranspiler
     title: 変換のライブラリを読み込む
     container: src/html-scripts.ts
@@ -134,8 +126,6 @@ functions:
         mock: '`importModule` が `{}` を返却する'
         expected: '`Error` で拒否する'
     status: planned
-    introduced:
-      pr: 303
   - name: wrapRangeScript
     title: 範囲のコードを包む
     container: src/html-scripts.ts
@@ -159,8 +149,6 @@ functions:
         mock: なし
         expected: 戻りを `new Function` なしに評価できる構造で、`HTML_SCRIPTS_REGISTRY` の鍵と `2` を含み、`</script` を含まない
     status: planned
-    introduced:
-      pr: 303
   - name: setEmbeddedHtmlScripts
     title: 埋めた範囲の関数を入れる
     container: src/html-scripts.ts
@@ -177,5 +165,3 @@ functions:
       type: void
       description: なし
     status: planned
-    introduced:
-      pr: 303

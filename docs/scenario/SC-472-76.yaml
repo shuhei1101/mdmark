@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -22,6 +25,9 @@ scenarios:
         M-->>C: 参照の表
         C->>F: 配布物・CSS・モジュール・画像・文書・参照の表を埋めた HTML を書き込む
         C-->>W: 出力のパス・入れた文書の数・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - 出力に入れた文書の数として 3 が出る
@@ -37,6 +43,9 @@ scenarios:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -45,6 +54,9 @@ scenarios:
         C->>C: exclude に該当する文書を除外する
         C->>F: 3 つの文書を埋めた HTML を書き込む
         C-->>W: 1 枚に含まれない文書へのリンクの警告・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、入れた文書の数が 3
       - 出力の警告に、入口の文書と 1 枚に含まれないリンク先が出る
@@ -58,12 +70,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
         C->>C: include に該当する文書が 0 件
         C-->>W: 対象が 0 件であることと include の修正方法・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 以外
       - 出力に対象が 0 件であることと、設定の `build.include` を修正することが出る
@@ -78,6 +96,9 @@ scenarios:
       - name: Mock
         description: mermaid は、設定の `mermaid` の読み込み先を、mermaid の本体と chunk を配置した手元のフォルダの相対パスにする
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -88,6 +109,9 @@ scenarios:
         C->>F: mermaid を埋めた HTML を書き込む
         R->>F: file:// で開き、入口から mermaid の文書へ移る
         F-->>R: 図の枠に入った mermaid の図
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - 入口から mermaid の文書へ移ると、mermaid のコードブロックの場所に図の枠と SVG の図がある
@@ -103,6 +127,9 @@ scenarios:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -114,6 +141,9 @@ scenarios:
         C-->>W: 出力のパス・入れた文書の数・終了コード 0
         R->>F: file:// で開き、文書を行き来する
         F-->>R: どの文書でもエイリアスの単語に下線を描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - file:// で開くと、入口の文書と、一覧から開いたほかの文書のどちらでも `単体テスト` に下線が付く
@@ -129,6 +159,9 @@ scenarios:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark build
@@ -138,6 +171,9 @@ scenarios:
         C-->>W: build.out に HTML を書き込む
         W->>B: file:// で開き、一覧から別の文書を開く
         B-->>W: どの文書も theme-paper の暗い配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - 入口の文書と、一覧から開いたほかの文書のどちらでも、描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
@@ -154,6 +190,9 @@ scenarios:
       - name: Mock
         description: なし（実ファイルを使用する）。外へのネットワークの要求を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 文書の作成者
         participant C as mdmark CLI
@@ -163,6 +202,9 @@ scenarios:
         C->>C: 画像を 1 回だけ data URL で埋め、動画・音声を出力先のフォルダへコピーする
         C->>F: 1 枚の HTML と、コピーしたファイルを書き込む
         C-->>U: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 2 つの文書が指す同じ画像が、HTML の中に 1 回だけ埋まっている
@@ -177,6 +219,9 @@ scenarios:
       - name: Mock
         description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -188,6 +233,9 @@ scenarios:
         C-->>W: 出力のパス・入れた文書の数・終了コード 0
         R->>F: blob: と動的 import を許さない環境で開き、リンクでもう 1 つの文書へ移る
         F-->>R: どちらの文書も拡張のマーカー・ビュー・図・色分けを描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - 入口の文書で、拡張のマーカーの場所に拡張が描いた要素があり、`ts` のコードブロックが色分けされている
@@ -202,6 +250,9 @@ scenarios:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -213,6 +264,9 @@ scenarios:
         R->>F: file:// で開き、リンクで別の文書へ移る
         R->>F: 末尾の脚注の一覧を開き、脚注 1 の戻るリンクを押す
         F-->>R: 同じ文書の番号 1 の場所
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - リンクで移った文書の番号 `1` にポインターを乗せると `別の文書の補足` のツールチップが出る
@@ -229,6 +283,9 @@ scenarios:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -240,6 +297,9 @@ scenarios:
         R->>F: file:// で開き、リンクで別の文書へ移る
         R->>F: 注記のマーカーにポインターを乗せ、末尾の注記の一覧を開いて cond の戻るリンクを押す
         F-->>R: 同じ文書の注記のマーカーの場所
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - リンクで移った文書の注記のマーカーにポインターを乗せると `別の文書の注記` のツールチップが出る
@@ -256,6 +316,9 @@ scenarios:
       - name: Mock
         description: '正常シナリオ（blob: と動的 import を許さない環境で開く）と同じ'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -269,6 +332,9 @@ scenarios:
         F-->>R: 範囲の css と ts を適用した文書
         R->>F: 文書の一覧で範囲を持たない文書へ移る
         F-->>R: 範囲を持たない文書
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
       - 範囲を持つ文書で、範囲のノードの背景が `css` の色で描かれ、押すと根の要素に class `is-open` が付く
@@ -282,6 +348,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じく、書き出しがネットワークを読み込まない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -293,6 +362,9 @@ scenarios:
         C-->>W: 出力のパス・終了コード 0
         R->>F: HTML だけを空のフォルダへコピーして file:// で開き、取り込む側の文書へ移る
         F-->>R: 取り込んだ中身とアイコンを持つ文書
+      ```
+
+      <!-- /map -->
     expected:
       - 取り込む側の文書の 2 つのマーカーの場所に、もう 1 つの文書の見出しの下の中身と、`共通/手順.md` の中身が描かれている
       - '`共通/手順.md` は文書の一覧に出ていない'
@@ -308,6 +380,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -316,6 +391,9 @@ scenarios:
         C->>C: 端末の設定と docs/ から上の mdmark.config.yaml を重ね、build の glob は docs/ から適用する
         C->>F: 2 つの文書と theme の CSS を埋めた 1 枚の HTML を docs/site.html に書き込む
         C-->>W: 出力のパス・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`docs/site.html` に 1 枚の HTML がある
       - file:// で開くと、2 つの文書の注意書きが引用として描かれ、`theme.css` の規則が該当する
@@ -329,6 +407,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -340,6 +421,9 @@ scenarios:
         C-->>W: 出力のパス・入れた文書の数・終了コード 0
         R->>F: file:// で開き、本文のリンクで guide.md へ移って戻る
         F-->>R: 隠さないまとめと同じ表示の文書
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - HTML の文字列と、埋め込みの JSON を復号した中身に、`mdmark`（大文字・小文字を区別しない）が、第三者のライブラリのライセンスの表記と、利用者が記載した値（本文の地の文・文書のタイトル・索引・参照の表・エイリアス・文書のパス・`includes` のキー）を除いて 0 件
@@ -361,6 +445,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -368,13 +455,15 @@ scenarios:
         W->>C: mdmark build（隠さない書き出しを指定する）
         C->>F: 名前を置き換えず、コメントとバージョンを残した 1 枚の HTML を書き込む
         C-->>W: 出力のパス・入れた文書の数・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - HTML に、class `mdmark`・`--mdmark-version`・`#mdmark-payload` の要素が残る
       - file:// で開くと、正常シナリオ（mdmark を使用していることを隠す）と同じ表示の文書と文書の一覧が描かれる
     test: test_normal_when_traces_kept
 lead: 文書の作成者が設定の `build` で対象を決めて `mdmark build` を実行し、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる。
-issue: 9
 primary_actor: 文書の作成者
 trigger: 文書の作成者が、複数の文書を行き来できる構造でサーバー無しで配りたくなる
 preconditions:

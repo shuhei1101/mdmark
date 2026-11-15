@@ -12,8 +12,6 @@ constants:
     refs:
       - IF-472-34#constraints[色の名前]
     status: planned
-    introduced:
-      pr: 263
 functions:
   - name: isColorName
     title: 色の名前か
@@ -37,5 +35,3 @@ functions:
         mock: なし
         expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
-    introduced:
-      pr: 263

@@ -35,8 +35,6 @@ functions:
         mock: '`Readable.from([])`'
         expected: '`undefined`'
     status: planned
-    introduced:
-      pr: 39
 function_types:
   - name: Prompter
     title: 質問

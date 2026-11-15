@@ -107,8 +107,6 @@ accessibility:
 refs:
   - IF-472-22#constraints[描けない理由の見分け方]
 status: planned
-introduced:
-  pr: 69
 notes:
   出典: '文言は確認ログの決定（描けないとき・読み込み中の文言、ボタンは「リロード」）。外観と配色は #342 の確認ログ（モックへの合意・描けない理由と帯の配色を VS Code のテーマの色にする）。モックは `docs/mock/pages/vscode-preview/342/shadcn/` と `docs/mock/components/panel-alert/`'
   使用する部品: shadcn/ui の `Alert`（`warning` の variant を追加する）・`Button`（`default`）・`Spinner`（`shared/components/ui/`）

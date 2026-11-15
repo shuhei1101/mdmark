@@ -42,5 +42,3 @@ functions:
     refs:
       - IF-472-14#
     status: planned
-    introduced:
-      pr: 354

@@ -29,5 +29,3 @@ functions:
         mock: なし
         expected: 本文に `<code>m4a</code>` と `<code>media/&lt;voice&gt;.m4a</code>`、`data-action="openAsset"`・`data-path="media/&lt;voice&gt;.m4a"` の `a`
     status: planned
-    introduced:
-      pr: 263

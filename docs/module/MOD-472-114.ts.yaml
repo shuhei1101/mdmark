@@ -64,5 +64,3 @@ functions:
         mock: 作業ツリーの `templates/`
         expected: 配置した `mdmark.config.yaml` の `version` が `v0.5.0` で、コメントは雛形のまま
     status: planned
-    introduced:
-      pr: 32

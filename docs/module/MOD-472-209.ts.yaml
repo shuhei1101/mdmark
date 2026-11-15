@@ -29,8 +29,6 @@ functions:
         mock: なし
         expected: 3 要素で、2・3 要素目が `<span class="hljs-string">` で始まり `</span>` で終わる。各要素のタグを削除してエスケープを戻した文字が元の行と同じ
     status: planned
-    introduced:
-      pr: 97
   - name: splitHighlightedLines
     title: 色分けしたHTMLを行に分ける
     container: src/highlight-lines.ts
@@ -66,5 +64,3 @@ functions:
         mock: なし
         expected: '`["<span class=\"hljs-number\">1</span> &lt; 2"]`'
     status: planned
-    introduced:
-      pr: 97

@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -18,6 +21,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 手順・ファイルツリー・バッジを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 番号付きリストが手順になり、3 つの項目に 1〜3 の番号が出ている
       - コードブロックが入れ子のツリーになり、`src/` と `parts/` がフォルダ、`index.ts` がファイルとして出ている
@@ -33,6 +39,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -40,6 +49,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 打ち消しの \ を削除した行内のコードを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 行内のコードが `badge:v0.1.0` の文字のまま出ていて、札になっていない
     test: test_normal_when_badge_escaped
@@ -52,6 +64,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -60,6 +75,9 @@ scenarios:
         M->>M: 罫線の階層を読み込めない行がある
         M-->>P: 記載の警告と、元のコードブロックを描く
         P-->>U: 記載の警告とコードブロックを表示
+      ```
+
+      <!-- /map -->
     expected:
       - コードブロックの上に、読み込めない行の行番号を記載した記載の警告がある
       - コードブロックが元の罫線の文字のまま出ている
@@ -73,6 +91,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -81,6 +102,9 @@ scenarios:
         M->>M: 手順にする番号付きリストが無い
         M-->>P: 記載の警告と、範囲の中身をそのまま描く
         P-->>U: 記載の警告とリストを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の上に、手順にする番号付きリストが無いことを記載した記載の警告がある
       - 範囲の中のリストが、記載したとおりの番号の無いリストで表示されている
@@ -94,6 +118,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -102,6 +129,9 @@ scenarios:
         M->>M: badge: の後ろが空か空白だけのためバッジにしない
         M-->>P: 行内のコードをそのまま描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの行内のコードが札にならず、記載したとおりの文字（`badge:` とその後ろの空白）の行内のコードで出ている
       - 中身の無い札が無く、記載の警告も出ていない
@@ -115,6 +145,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -123,6 +156,9 @@ scenarios:
         M-->>P: 1 つ目の手順を閉じた折りたたみ、2 つ目を開いた折りたたみに入れて描く
         U->>P: 1 つ目の折りたたみの見出しを押す
         P-->>U: 開いた手順
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の折りたたみの見出しが `手順（2 ステップ）` で、描いた直後は手順が表示されていない
       - 2 つ目の折りたたみの見出しが `collapse.title` の「準備」で、描いた直後から 3 つの手順が表示されている
@@ -138,6 +174,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -146,6 +185,9 @@ scenarios:
         M->>M: collapse.open の型が合わない指定を適用せず、知らないキーを無視する
         M-->>P: 記載の警告と、読み込めた指定だけを適用した手順を描く
         P-->>U: 記載の警告と手順を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の範囲の上に、`collapse.open` には真偽（`true`・`false`）を記載することを記載した記載の警告がある
       - 2 つ目と 3 つ目の範囲の上に記載の警告が無い
@@ -161,6 +203,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -169,6 +214,9 @@ scenarios:
         M->>M: 項目の名前と注釈を分ける
         M-->>P: 注釈を列に統一し、拡張子ごとのアイコンを付けたツリーを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`src/`・`index.ts`・`README.md` の項目の名前に `#` とその後ろが含まれず、注釈が項目の右に出ている'
       - 3 つの注釈の左端が、階層の深さによらず同じ位置に一致している
@@ -186,6 +234,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -198,6 +249,9 @@ scenarios:
         P-->>U: app/ と入れ子を全て閉じたツリー
         U->>P: もう一度 Shift を押しながら app/ のアイコンを押す
         P-->>U: 入れ子を全て開いたツリー
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、1 つ目のツリーは `app/`・`src/`・`parts/` が開き、`tree.ts` が表示されている
       - 描いた直後、2 つ目のツリーは `app/` と `src/` が開き、`parts/` が閉じて `tree.ts` が表示されていない
@@ -215,6 +269,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -223,6 +280,9 @@ scenarios:
         M->>M: ASCII の罫線を今の罫線と同じ階層で読み込む
         M-->>P: 入れ子のツリーを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - コードブロックが入れ子のツリーになり、`src/` と `parts/` がフォルダ、`index.ts` がファイルとして出ている
       - 項目の名前に `|`・`` ` ``・`--` が含まれていない
@@ -239,6 +299,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -248,6 +311,9 @@ scenarios:
         U->>P: コピーボタンを押す
         M->>M: 元の罫線のテキストをクリップボードへ書き込む
         P-->>U: コピーしたことを通知する
+      ```
+
+      <!-- /map -->
     expected:
       - クリップボードの中身が、コードブロックに書き込んだ罫線・注釈を含むテキストと一致する（閉じたフォルダの中の行も含む）
       - コピーしたことがボタンの表示とスクリーンリーダーで知らされる
@@ -263,6 +329,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -272,6 +341,9 @@ scenarios:
         U->>P: コピーボタンを押す
         M->>M: クリップボードへの書き込みが拒まれる
         P-->>U: コピーする中身を選択したパネル
+      ```
+
+      <!-- /map -->
     expected:
       - コピーできなかったことと手でコピーできることが知らされ、スクリーンリーダーでも知らされる
       - パネルの中に、元の罫線のテキストが全て選択された状態で出ている
@@ -286,6 +358,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -294,6 +369,9 @@ scenarios:
         M->>M: depth の値が型と選べる値に合わない
         M-->>P: 記載の警告と、既定の開閉のツリーを描く
         P-->>U: 記載の警告とツリーを表示
+      ```
+
+      <!-- /map -->
     expected:
       - ツリーの上に、`depth` には `"all"` か 1 以上の整数を記載することを記載した記載の警告がある
       - ツリーは既定のとおり全てのフォルダを開いて描かれ、`tree.ts` が表示されている
@@ -308,6 +386,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。Lucide のアイコンへの要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -315,6 +396,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: アイコン・キー・ルビを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 見出しの `はじめに` の前と段落に、`flag`・`check` のアイコンが描かれ、`icon:` の文字は出ていない
       - アイコンはスクリーンリーダーの対象から削除され、見出しのスクリーンリーダー向けの名前が `はじめに` になっている
@@ -332,6 +416,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -339,6 +426,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 打ち消しの \ を削除した行内のコードを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 行内のコードが `icon:check`・`kbd:Ctrl+C` の文字のまま出ていて、アイコンとキーの外観になっていない
     test: test_normal_when_icon_kbd_escaped
@@ -352,6 +442,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -360,6 +453,9 @@ scenarios:
         M->>M: icon: の後ろが Lucide の名前の記載方法に合わない
         M-->>P: 記載の警告と、元の行内のコードを描く
         P-->>U: 記載の警告と行内のコードを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`icon:Rocket!` の段落の上に、名前が Lucide の名前の記載方法に合わないことを記載した記載の警告がある'
       - '`icon:Rocket!` が記載したとおりの文字の行内のコードで出ている'
@@ -376,6 +472,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -383,6 +482,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: wrap を持つツリーだけを折り返して描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`wrap` のツリーの長い名前が項目の中で折り返され、ツリーに横スクロールが出ない'
       - 折り返した名前の続きが、その項目のアイコンの右の名前の頭に一致し、罫線と入れ子の位置が `wrap` の無いツリーと同じ
@@ -397,6 +499,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -405,6 +510,9 @@ scenarios:
         M->>M: 言語が tree でないコードブロックに、罫線の行が 2 行以上ある
         M-->>P: 記載の警告と、元のコードブロックを描く
         P-->>U: 記載の警告とコードブロックを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 罫線の行を 2 行以上持つ 2 つのコードブロックの上に、言語を `tree` にするとファイルツリーに描かれることと、警告を止める指定を記載した記載の警告がある
       - 2 つのコードブロックは、記載したとおりの言語のコードブロックのまま描かれ、ファイルツリーにならない
@@ -419,6 +527,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -426,6 +537,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 警告を止めたコードブロックを、記載の警告を付けずに描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 警告を止めたコードブロックの上に記載の警告が無く、罫線の文字のまま言語 `text` のコードブロックで描かれている
       - 警告を止めていない言語の無いコードブロックの上には、記載の警告が残っている
@@ -442,6 +556,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -453,13 +570,15 @@ scenarios:
         P->>M: 書き換えた Markdown で描き直させる
         M-->>P: 手で変えた開閉のまま描き、追加したツリーは全てのフォルダを開いて描く
         P-->>U: 書き換えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描き直した後、1 つ目のツリーの `src/` が閉じ、開閉のボタンの `aria-expanded` が `false`
       - 描き直した後、3 つ目のツリーの `src/` が開き、`parts/` が表示されている
       - 描き直した後、追加したツリーは全てのフォルダが開き、`tree-view.ts` が表示されている
     test: test_normal_when_tree_folders_updated_after_toggle
 lead: 文書の作成者が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを記載すると、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に統一し、読者がフォルダを開閉して元の罫線のテキストをコピーできる。
-issue: 4
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者

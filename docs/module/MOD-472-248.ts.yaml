@@ -43,5 +43,3 @@ functions:
       - 'MOD-472-244#functions[prepareModules]'
       - 'MOD-472-247#functions[startBundle]'
     status: planned
-    introduced:
-      pr: 32

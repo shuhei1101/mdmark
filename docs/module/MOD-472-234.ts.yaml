@@ -32,5 +32,3 @@ functions:
         mock: なし
         expected: '`target` が `document.scrollingElement`、`page` が `true`'
     status: planned
-    introduced:
-      pr: 287

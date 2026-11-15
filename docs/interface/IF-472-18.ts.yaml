@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: HTMLに書き出す.ts の正常系と同じ。`showInformationMessage` は呼ばれた回数を数える代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -20,6 +23,9 @@ flows:
         U->>EX: mdmark.openInBrowser
         EX->>EX: docs/guide.html をもう一度書き出す
         EX->>BR: env.openExternal
+      ```
+
+      <!-- /map -->
     expected:
       - '`docs/guide.html` が記載され、`env.openExternal` の代役にその `file:` の URL が 1 回渡る'
       - HTML を開くと保存していない見出しが描かれる
@@ -33,12 +39,18 @@ flows:
       - name: Mock
         description: HTMLに書き出す.ts の異常系（書き出せない・通知）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.openInBrowser
         EX->>EX: 書き出す先に書き込めない
         EX->>U: 書き出せない理由の通知
+      ```
+
+      <!-- /map -->
     expected:
       - '`showErrorMessage` に書き出す先のパスと理由が入り、`env.openExternal` の代役は呼ばれない'
     test: test_error_when_output_unwritable

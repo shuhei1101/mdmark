@@ -98,6 +98,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -107,6 +110,9 @@ flows:
         S->>T: 索引と brand.css を読み込む
         S->>F: 上へ mdmark.config.yaml を探し、/work/brand.css を書き込む
         S-->>C: path・theme・replaced
+      ```
+
+      <!-- /map -->
     expected:
       - '`/work/brand.css` がテンプレートと同じ中身'
       - '`path` が `/work/brand.css`、`theme` が `./brand.css`、`replaced` が `false`'
@@ -122,6 +128,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -129,6 +138,9 @@ flows:
         C->>S: apply_template（name: brand・overwrite: true）
         S->>F: /work/brand.css を置き換える
         S-->>C: replaced: true
+      ```
+
+      <!-- /map -->
     expected:
       - '`/work/brand.css` がテンプレートと同じ中身'
       - '`replaced` が `true`'
@@ -143,6 +155,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -150,6 +165,9 @@ flows:
         C->>S: apply_template（name: brand・dir: ../styles）
         S->>F: /work/styles から上へ mdmark.config.yaml を探し、/work/styles/brand.css を書き込む
         S-->>C: path・theme・replaced
+      ```
+
+      <!-- /map -->
     expected:
       - '`/work/styles/brand.css` がテンプレートと同じ中身'
       - '`path` が `/work/styles/brand.css`、`theme` が `./styles/brand.css`'
@@ -165,6 +183,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -172,6 +193,9 @@ flows:
         C->>S: apply_template（name: brand）
         S->>F: /work/brand.css の中身が違う
         S-->>C: isError（配置先のパスと overwrite）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容の文に `/work/brand.css` と `overwrite` が出る
@@ -187,12 +211,18 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
         C->>S: apply_template（name: brand）
         S->>S: mdmark.config.yaml が見つからない
         S-->>C: isError（dir と mdmark init）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容の文に `dir` と `mdmark init` が出る
@@ -208,12 +238,18 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
         C->>S: apply_template（name: missing）
         S->>S: 索引に missing が無い
         S-->>C: isError（名前と list_templates）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容の文に `missing` と `list_templates` が出る

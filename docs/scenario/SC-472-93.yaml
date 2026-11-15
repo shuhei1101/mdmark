@@ -13,6 +13,9 @@ scenarios:
       - name: Mock
         description: 差し替えない。外部ライブラリを使用しない部品だけで組む
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[雛形を配置する:正常シナリオ（JavaScript の雛形を配置する）] --> B[追加するJavaScriptを型で点検する:正常シナリオ]
         B --> C[固有の部品とCSSを適用する:正常シナリオ]
@@ -29,6 +32,9 @@ scenarios:
         click E "id:SC-472-40#scenarios[正常シナリオ]"
         click F "id:SC-472-42#scenarios[正常シナリオ]"
         click I "id:SC-472-42#scenarios[正常シナリオ（リサイズハンドルで高さを変える）]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark init` が JavaScript の雛形と、JavaScript も点検する tsconfig を配置する'
       - 固有の部品を追記した後の `tsc --noEmit` が誤り 0 件で終了コード 0 を返却する
@@ -56,12 +62,18 @@ scenarios:
       - name: Mock
         description: クリップボードの書き込みを許したブラウザのコンテキストで開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[雛形を配置する:正常シナリオ] --> B[図を描く:正常シナリオ]
         B --> C[操作できる部品で値を変えて写す:正常シナリオ]
         click A "id:SC-472-83#scenarios[正常シナリオ]"
         click B "id:SC-472-43#scenarios[正常シナリオ]"
         click C "id:SC-472-51#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - 見本の操作の文書を描くと、スライダー・グラフ・今の値を写すボタンが描かれる
       - スライダーを動かすとグラフが新しい値で再描画される
@@ -82,6 +94,9 @@ scenarios:
       - name: Mock
         description: 差し替えない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[雛形を配置する:正常シナリオ（JavaScript の雛形を配置する）] --> B[追加するJavaScriptを型で点検する:異常シナリオ（型が合わない）]
         B --> C[追加するJavaScriptを型で点検する:正常シナリオ]
@@ -90,6 +105,9 @@ scenarios:
         click B "id:SC-472-79#scenarios[異常シナリオ（型が合わない）]"
         click C "id:SC-472-79#scenarios[正常シナリオ]"
         click D "id:SC-472-44#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - 1 回目の `tsc --noEmit` が誤りのファイルと行を出し、終了コード 0 以外を返却する
       - 修正した後の 2 回目の `tsc --noEmit` が誤り 0 件で終了コード 0 を返却する
@@ -111,6 +129,9 @@ scenarios:
       - name: Mock
         description: 差し替えない。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（map の補足にずれがある）]
         B --> C[設定と索引を点検する:正常シナリオ]
@@ -119,6 +140,9 @@ scenarios:
         click B "id:SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]"
         click C "id:SC-472-78#scenarios[正常シナリオ]"
         click D "id:SC-472-8#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - 1 回目の `mdmark check` が、ずれを持つ図の文書と map の範囲の場所を指す、無いノードへの参照と補足の知らないキーのずれを出し、終了コード 0 以外を返却する
       - 修正した後の 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返却する
@@ -131,7 +155,6 @@ scenarios:
       - SC-472-78#scenarios[正常シナリオ]
       - SC-472-8#scenarios[正常シナリオ]
 lead: 利用側（ワークスペースの持ち主と、その場所で HTML を作る AI）が、雛形に固有の部品と CSS を追加して型で点検し、共通の図の部品と固有の部品で文書を描き、読者の操作で確認する。
-issue: 21
 primary_actor: 利用側
 stakeholders:
   - name: 利用側

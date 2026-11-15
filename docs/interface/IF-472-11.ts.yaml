@@ -15,12 +15,18 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: status
         P->>P: 端末の設定のパス・tmux・ポートを確認する
         P-->>K: JSON の 1 行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`settings.path` が `MDMARK_CONFIG`、`settings.exists` が `false`、`settings.default_path` が `false`'
@@ -39,11 +45,17 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: status
         P-->>K: JSON の 1 行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`settings.exists` が `true`、`settings.version` が端末の設定の `version`、`settings.target_version` がプラグインのビルドで埋めた mdmark のバージョン'
       - '`server.session` が `mdmark-test`、`server.session_exists` と `server.listening` が `true`'
@@ -58,11 +70,17 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: status
         P-->>K: systemd.available: false・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`systemd.available` が `false`、`launcher.resolved` が `tmux`、`server.unit_active` と `server.unit_enabled` が `false`'
@@ -77,11 +95,17 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: status
         P-->>K: tmux.available: false・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`tmux.available` が `false`、`server.session_exists` が `false`'
@@ -96,11 +120,17 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: status
         P-->>K: パスと行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに端末の設定のパスと 3 行目が出る

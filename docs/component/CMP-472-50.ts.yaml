@@ -120,6 +120,4 @@ accessibility:
 refs:
   - IF-472-35#
 status: planned
-introduced:
-  pr: 445
 test_file: tests/integration/lib/map-band.story.test.ts

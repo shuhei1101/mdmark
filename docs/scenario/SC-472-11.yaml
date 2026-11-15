@@ -2,7 +2,6 @@ id: SC-472-11
 visibility: internal
 title: mermaidの図を描く
 lead: mdmark が、言語 `mermaid` のコードブロックを、mdmark の外観のテーマで図にして図の枠に入れて描く。mermaid のライブラリは、mermaid のコードブロックがある文書のときだけ読み込む。
-issue: 190
 test_file: tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts
 primary_actor: mdmark を使用するアプリのページ
 stakeholders:
@@ -29,6 +28,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を jsDelivr と同じパスで返却する手元の応答に差し替える。mermaid への要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -41,6 +43,9 @@ scenarios:
         M->>M: 描く先の要素の CSS 変数からテーマを作る
         M-->>P: コードブロックの場所に、図の枠に入れた図を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - mermaid の本体への要求が 1 件（コードブロックが 2 つでも 1 回だけ読み込む）
       - 2 つのコードブロックの場所に、それぞれ図の枠と SVG の図があり、コードブロックの文字が出ていない
@@ -59,6 +64,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -66,6 +74,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: mermaid を読み込まずに本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - mermaid への要求が 0 件
       - '`ts` のコードブロックと段落が描かれている'
@@ -80,6 +91,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -92,6 +106,9 @@ scenarios:
         P->>M: 配色の変化
         M-->>P: 明るい配色の CSS 変数で図を再描画する
         P-->>U: 明るい配色の図を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 開いたとき、flowchart のノードの塗りと文字の色が、暗い配色の CSS 変数の値と一致する
       - OS の配色を明るいに切り替えると、ノードの塗りと文字の色が明るい配色の CSS 変数の値になる
@@ -107,6 +124,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -114,6 +134,9 @@ scenarios:
         P->>M: テーマを変えた設定と Markdown を指定して描かせる
         M-->>P: 設定のテーマと上書きした変数で図を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - flowchart のノードの塗りが、設定で上書きした `mainBkg` の色
       - ノードの枠線の色が、mermaid の `neutral` テーマの値で、描く先の要素の CSS 変数の値ではない
@@ -127,6 +150,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -135,6 +161,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: mermaid を読み込まず、コードブロックのまま描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - mermaid への要求が 0 件
       - mermaid のソースが、ほかの言語と同じコードブロックとして出ている
@@ -149,6 +178,9 @@ scenarios:
       - name: Mock
         description: mermaid の本体への要求が 404 を返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -159,6 +191,9 @@ scenarios:
         X-->>M: 404
         M-->>P: コードブロックの前に通知ブロックを配置し、コードブロックのまま描く
         P-->>U: 通知ブロックと本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つのコードブロックの前に、mermaid を読み込めないことを記載した通知ブロックがある
       - mermaid のソースが、コードブロックのまま出ている
@@ -173,6 +208,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -187,6 +225,9 @@ scenarios:
         X-->>M: SVG
         M-->>P: 1 つ目は記載の警告とコードブロック、2 つ目は図を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のコードブロックの前に、mermaid が解釈できなかった理由を記載した記載の警告があり、ソースがコードブロックのまま出ている
       - 2 つ目のコードブロックの場所に、図の枠と SVG の図がある
@@ -202,6 +243,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -212,6 +256,9 @@ scenarios:
         M->>X: 本体を要求（範囲の外にコードブロックがあるときだけ）
         M-->>P: 範囲の外は mermaid の図、範囲の中は map の図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の外のコードブロックを持つ文書では、mermaid の本体への要求が 1 件で、範囲の外の場所に mermaid の図が描かれる
       - 範囲の中の mermaid のブロックは、mermaid の図ではなく map の図として描かれる

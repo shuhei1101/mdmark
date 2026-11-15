@@ -14,6 +14,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -22,6 +25,9 @@ scenarios:
         M->>M: include のマーカーの取り込み先を表から引き、全体・見出しの中・行の範囲を取り出す
         M-->>P: 取り込んだ中身を持つ文書を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のマーカーの場所に、`準備`・`実行`・`片付け` の見出しと段落が描かれている
       - 2 つ目のマーカーの場所に、`実行` の見出しと、その下から次の同じ階層の見出しの前までが描かれ、`準備`・`片付け` の段落は出ていない
@@ -42,6 +48,9 @@ scenarios:
         name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -50,6 +59,9 @@ scenarios:
         M->>M: 取り込み先が表に無い・見出しが無い・行が無い
         M-->>P: マーカーの場所に記載の警告、ほかは本文を描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 3 つのマーカーの場所にそれぞれ、取り込み先と、無いもの（ファイル・見出し・行）を記載した記載の警告がある
       - 行の範囲の警告に、`src/app.ts` が 12 行であることが記載されている
@@ -66,6 +78,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -74,6 +89,9 @@ scenarios:
         M->>M: Markdown のファイルへの lines と、heading と lines の両方を見つける
         M-->>P: マーカーの場所に記載の警告、取り込まずにほかの本文を描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のマーカーの場所に、`lines` は Markdown 以外のファイルにだけ記載できることを記載した記載の警告がある
       - 2 つ目のマーカーの場所に、`heading` と `lines` は同時に記載できないことを記載した記載の警告がある
@@ -89,6 +107,9 @@ scenarios:
         description: '`<!-- include: {"path": "a.md"} -->` だけを持つ文書'
       - *id001
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -97,6 +118,9 @@ scenarios:
         M->>M: a.md → b.md → a.md と取り込みが循環する
         M-->>P: 循環したマーカーの場所に記載の警告、ほかは本文を描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`a.md` と `b.md` の段落が 1 回ずつ描かれている'
       - '`b.md` の中の `a.md` を指すマーカーの場所に、取り込みが循環することと循環の順（`a.md` → `b.md` → `a.md`）を記載した記載の警告がある'
@@ -114,6 +138,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -122,12 +149,14 @@ scenarios:
         M->>M: 取り込む文書の先頭のフロントマターを除外して取り込む
         M-->>P: 取り込んだ中身を持つ文書を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に `実行` の見出しと段落が描かれている
       - '描いた文書に `title: 手順` の文字とフロントマターの表示の要素が無い'
     test: test_normal_when_included_has_frontmatter
 lead: '文書の作成者が `<!-- include: {"path": "パス", "heading": "見出し"} -->` を記載し、mdmark がその場所にほかの文書の全体・見出しの中・コードの行の範囲を取り込んで描く。'
-issue: 219
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者

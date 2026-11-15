@@ -128,8 +128,6 @@ catalogs:
             required: false
             description: PreCompact のときの圧縮の契機
         status: planned
-        introduced:
-          pr: 541
   - name: フックの出力
     version: 2.1.309
     entries:
@@ -146,8 +144,6 @@ catalogs:
             required: true
             description: 文脈に加える文
         status: planned
-        introduced:
-          pr: 541
       - name: hookSpecificOutput.updatedInput
         kind: JSON のキー
         purpose: PreToolUse のフックが標準出力に書き込む JSON で、ツールに指定する引数を置き換える。auto モードは書き換える前の入力を確認しているため、`permissionDecision` を記載しないと書き換えた呼び出しを拒否しうる
@@ -169,8 +165,6 @@ catalogs:
             required: true
             description: ツールに指定する引数の全体
         status: planned
-        introduced:
-          pr: 141
 lead: Anthropic のコーディングエージェントの CLI。マーケットプレイスからプラグインを入れ、プラグインのフックと MCP サーバーを起動する。
 supplier: Anthropic
 dependency_scope: 任意

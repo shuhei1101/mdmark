@@ -14,8 +14,6 @@ data_models:
     refs:
       - CFG-472-3#settings[serve.launcher]
     status: planned
-    introduced:
-      pr: 444
   - name: LauncherSetting
     title: 起動の方法の設定
     container: src/plugin/setup/paths.ts
@@ -25,8 +23,6 @@ data_models:
     refs:
       - CFG-472-3#settings[serve.launcher]
     status: planned
-    introduced:
-      pr: 444
 classes:
   - name: SetupError
     title: setup.js の誤り
@@ -36,8 +32,6 @@ classes:
     usecase: 端末の状態を調べる
     summary: '`setup.js` のサブコマンドの誤り。`exitCode`（1・2・3）を `setup.js` の終了コードにする'
     status: planned
-    introduced:
-      pr: 354
 constants:
   - name: DEFAULT_SESSION_NAME
     title: 既定の tmux のセッション名
@@ -48,8 +42,6 @@ constants:
     refs:
       - CFG-472-3#settings[serve.tmuxSession]
     status: planned
-    introduced:
-      pr: 354
   - name: DEFAULT_UNIT_NAME
     title: 既定の unit の名前
     container: src/plugin/setup/paths.ts
@@ -59,8 +51,6 @@ constants:
     refs:
       - CFG-472-3#settings[serve.systemdUnit]
     status: planned
-    introduced:
-      pr: 444
   - name: SERVE_LOG_FILE
     title: 常駐サーバーのログのファイル名
     container: src/plugin/setup/paths.ts
@@ -68,8 +58,6 @@ constants:
     summary: 状態の配置場所の下のログのファイル名
     value: serve.log
     status: planned
-    introduced:
-      pr: 354
 functions:
   - name: resolveSetupPaths
     title: 端末のパスを決める
@@ -113,8 +101,6 @@ functions:
       - IF-472-11#request
       - CFG-472-1#settings
     status: planned
-    introduced:
-      pr: 354
   - name: readSessionName
     title: セッション名を読み込む
     kind: 関数
@@ -149,8 +135,6 @@ functions:
     refs:
       - CFG-472-3#settings[serve.tmuxSession]
     status: planned
-    introduced:
-      pr: 354
   - name: readUnitName
     title: unit の名前を読み込む
     kind: 関数
@@ -179,8 +163,6 @@ functions:
     refs:
       - CFG-472-3#settings[serve.systemdUnit]
     status: planned
-    introduced:
-      pr: 444
   - name: readLauncherSetting
     title: 起動の方法の設定を読み込む
     kind: 関数
@@ -209,8 +191,6 @@ functions:
     refs:
       - CFG-472-3#settings[serve.launcher]
     status: planned
-    introduced:
-      pr: 444
   - name: resolveUnitPath
     title: unit のファイルのパスを決める
     kind: 関数
@@ -240,8 +220,6 @@ functions:
       - IF-472-7#constraints[unit のファイル]
       - LIB-472-25#limitations
     status: planned
-    introduced:
-      pr: 444
   - name: readYamlFile
     title: YAML のファイルを読み込む
     kind: 関数
@@ -267,5 +245,3 @@ functions:
     refs:
       - IF-472-11#exceptions
     status: planned
-    introduced:
-      pr: 354

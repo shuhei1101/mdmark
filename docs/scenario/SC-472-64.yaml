@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -19,6 +22,9 @@ scenarios:
         M->>M: 引用の 1 行目の種類を読み込む
         M-->>P: 種類ごとの注意書きの枠を描く
         P-->>U: 注意書きを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 5 つの引用が、class `markdown-alert` と種類ごとの class（`markdown-alert-note` など）を持つ枠になっている
       - 各枠に種類ごとのタイトルとアイコンがあり、タイトルの文字で種類が分かる
@@ -33,6 +39,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -41,6 +50,9 @@ scenarios:
         M-->>P: 閉じた折り畳みの注意書きを描く
         U->>P: 注意書きのタイトルを押す
         P-->>U: 開いた注意書き
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、注意書きは閉じていて、タイトルに `WARNING` の種類のタイトルが出ている
       - タイトルを押した後、本文の段落が表示されている
@@ -54,6 +66,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -62,6 +77,9 @@ scenarios:
         M->>M: 知らない種類を NOTE として解釈する
         M-->>P: NOTE の注意書きの枠を描く
         P-->>U: 注意書きを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 引用が class `markdown-alert-note` の枠になっている
       - 枠に本文の段落がある
@@ -75,6 +93,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -83,6 +104,9 @@ scenarios:
         M->>M: 種類の後ろの文字をタイトルとして読み込む
         M-->>P: タイトルを持つ TIP の注意書きの枠を描く
         P-->>U: 注意書きを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 引用が class `markdown-alert-tip` の枠になり、TIP のアイコンがある
       - 枠のタイトルが `設定を先に確認する` で、スクリーンリーダーで種類が TIP であることが分かる
@@ -97,6 +121,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -105,6 +132,9 @@ scenarios:
         M-->>P: 開いた折りたたみの注意書きを描く
         U->>P: 注意書きのタイトルを押す
         P-->>U: 閉じた注意書き
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、注意書きは開いていて、タイトル `詳細` と本文の段落が表示されている
       - タイトルを押した後、本文の段落が表示されていない
@@ -118,6 +148,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -126,6 +159,9 @@ scenarios:
         M->>M: 引用の入れ子ごとに種類を読み込む
         M-->>P: WARNING の枠の中に TIP の枠を描く
         P-->>U: 注意書きを表示
+      ```
+
+      <!-- /map -->
     expected:
       - class `markdown-alert-warning` の枠の中に、class `markdown-alert-tip` の枠がある
       - 2 つの枠のそれぞれに本文の段落があり、`[!WARNING]`・`[!TIP]` の文字が出ていない
@@ -142,6 +178,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -153,13 +192,15 @@ scenarios:
         P->>M: 書き換えた Markdown で描き直させる
         M-->>P: 手で変えた開閉のまま描き、追加した付録は閉じて描く
         P-->>U: 書き換えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描き直した後、`詳細` の本文の段落が表示されていない
       - 描き直した後、`補足` の書き換えた本文の段落が表示されている
       - 描き直した後、追加した `付録` の本文の段落が表示されていない
     test: test_normal_when_updated_after_toggle
 lead: 文書の作成者が GitHub と同じ `> [!NOTE]` などの引用で注意書きを記載すると、mdmark が種類ごとのタイトル・色・アイコンを持つ枠に描く。種類の後ろの文字はタイトルにし、末尾に `-` を付けた注意書きは閉じた、`+` を付けた注意書きは開いた折り畳みにする。注意書きは入れ子にできる。
-issue: 4
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者

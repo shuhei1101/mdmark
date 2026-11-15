@@ -15,6 +15,9 @@ flows:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -26,6 +29,9 @@ flows:
         M-->>C: 参照の表
         C->>H: 3 つの文書と参照の表を埋めた HTML を書き込む
         C-->>W: 書き出した: dist/docs.html（文書 3 件）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '終了コードが 0 で、標準出力が `書き出した: dist/docs.html（文書 3 件）`、標準エラーが空'
       - '`dist/docs.html` を file:// で開くと `README.md` が描かれ、文書の一覧に 3 つが並ぶ'
@@ -41,6 +47,9 @@ flows:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -49,6 +58,9 @@ flows:
         C->>C: exclude に該当する文書を除外する
         C->>H: 3 つの文書を埋めた HTML を書き込む
         C-->>W: リンクの警告・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、標準出力の文書の件数が 3
       - 標準エラーに `README.md` と `下書き/メモ.md` を含む警告の行がある
@@ -63,12 +75,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
         C->>C: 設定に build が無い
         C-->>W: build の記載方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `build` が無いことと `build.include`・`build.out` を記載することが出る
@@ -82,12 +100,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
         C->>C: include に該当する文書が 0 件
         C-->>W: 対象が 0 件と include の修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに対象が 0 件であることと `build.include` が出る
@@ -101,11 +125,17 @@ flows:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
         C-->>W: 書き込めないパスと修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `dist/docs.html` と修正方法が出る
@@ -119,12 +149,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark build
         C->>C: 動画・音声を docs_files/ へコピーする（作れない）
         C-->>W: 書き込めないパスと修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `dist/docs_files` と修正方法が出る
@@ -138,6 +174,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -149,6 +188,9 @@ flows:
         B-->>C: エイリアス
         C->>H: エイリアスを埋めた 1 枚の HTML を書き込む
         C-->>W: 書き出した・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - まとめた 2 つの文書のどちらでも、`テストを実行する` に下線が付き、ツールチップに `npm test` が出る
@@ -163,6 +205,9 @@ flows:
       - name: Mock
         description: '差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、OS の配色はライト（`prefers-color-scheme: light`）にする'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -171,6 +216,9 @@ flows:
         C->>H: colorTheme をコピーした設定を埋めて 1 枚の HTML を書き込む
         C-->>W: 書き出した・終了コード 0
         W->>H: 開いて 2 つ目の文書へ移る
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 最初に開いた文書と、文書の一覧から移った 2 つ目の文書のどちらでも、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
@@ -184,6 +232,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（記載した HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant W as 文書の作成者
         participant C as mdmark build
@@ -192,6 +243,9 @@ flows:
         C->>H: マーカーを本文に残した文書を埋めて記載する
         W->>H: file:// で開き、もう 1 つの文書を選ぶ
         H-->>W: 開いた文書の明暗で再描画する
+      ```
+
+      <!-- /map -->
     expected:
       - 開いたとき、描く先の要素が class `mdmark-theme-dark` と属性 `data-mdmark-color-theme="theme-slate"` を持つ
       - もう 1 つの文書を選ぶと、描く先の要素が class `mdmark-theme-dark`・`mdmark-theme-light` を持たず、属性 `data-mdmark-color-theme` が `dev-swiss`
@@ -207,6 +261,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。まとめた HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -215,6 +272,9 @@ flows:
         C->>C: 画像を 1 回だけ data URL に替え、動画・音声を docs_files/ へコピーする
         C->>H: docs.html と docs_files/ を書き込む
         C-->>W: 書き出した: dist/docs.html（文書 2 件）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`chart.png` の `data:` URL が HTML の中に 1 回だけある'
@@ -233,6 +293,9 @@ flows:
       - name: Mock
         description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -243,6 +306,9 @@ flows:
         C-->>W: 書き出した: dist/docs.html（文書 2 件）・終了コード 0
         W->>H: blob: と動的 import を許さない環境で開き、リンクで guide.md へ移る
         H-->>W: どちらの文書もマーカー・ビュー・色分けを描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、標準エラーが空
       - '`README.md` で、`greet` のマーカーの場所に拡張が描いた要素があり、`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
@@ -260,6 +326,9 @@ flows:
       - name: Mock
         description: '正常系（blob: と動的 import を許さない環境で開く）と同じ'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -269,6 +338,9 @@ flows:
         C->>H: 1 枚の HTML を書き込む
         W->>H: 範囲を持つ文書を開き、範囲を持たない文書へ移る
         H-->>W: 範囲の destroy を呼んでから移った文書を描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、範囲を持つ文書の範囲のノードの背景が `css` の色で、押すと根の要素が class `is-open` を持つ
       - 範囲を持たない文書へ移ると `window.__mdmarkDestroyed` が 1 で、移った先に `style.mdmark-html-style` が無い
@@ -284,6 +356,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -292,6 +367,9 @@ flows:
         C->>C: 文書ごとに取り込み先を読み込み、アイコンの形状を lucide から取り出す
         C->>H: 文書ごとの includes と icons を埋めて記載する
         C-->>W: 書き出した: {build.out}・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 開いた HTML の `a.md` の 2 つのマーカーの場所に、`b.md` の `使用方法` の中身と `共通/手順.md` の中身が描かれている
@@ -309,6 +387,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -316,6 +397,9 @@ flows:
         W->>C: mdmark build
         C->>C: mermaid のコードブロックがある文書があるので、mermaid を 1 つのスクリプトにまとめる
         C->>H: mermaid を埋めて記載する
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、まとめた HTML を file:// で開いて mermaid の文書へ移ると、`figure.mdmark-diagram[data-diagram="mermaid"]` があり、外への要求が 0 件
       - mermaid のコードブロックを持たない文書だけを `include` にしたときは、mermaid が埋められていない
@@ -329,6 +413,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（記載した HTML だけを空のフォルダへコピーして Playwright の Chromium で file:// で開く）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant H as まとめた HTML
@@ -345,6 +432,9 @@ flows:
         H-->>U: b.md を保存した位置で描く
         U->>H: b.md の末尾の a.md へのリンクを押す
         H-->>U: 新しい項目として a.md の頭
+      ```
+
+      <!-- /map -->
     expected:
       - 開いた後、`history.scrollRestoration` が `manual`
       - リンクで b.md へ移ると `scrollY` が 0
@@ -364,6 +454,9 @@ flows:
       - name: Mock
         description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant H as まとめた HTML
@@ -372,6 +465,9 @@ flows:
         H->>S: pagehide で a.md の項目の位置を保存する
         S-->>H: a.md の項目の位置
         H-->>U: a.md を保存した位置で描く
+      ```
+
+      <!-- /map -->
     expected:
       - 再読み込みの後、a.md が描かれ、`scrollY` が 3000（±1px）
     test: test_normal_when_reload_restore_scroll
@@ -385,6 +481,9 @@ flows:
       - name: Mock
         description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant H as まとめた HTML
@@ -396,6 +495,9 @@ flows:
         U->>H: 戻る
         S-->>H: a.md の項目の開閉・タブ・位置
         H-->>U: 開閉とタブを戻し、保存した位置で a.md を描く
+      ```
+
+      <!-- /map -->
     expected:
       - 戻るで a.md に戻ると、セクションのボタンの `aria-expanded` が `true` で中身が `hidden` を持たない
       - 閉じた表の `details` が `open` を持つ
@@ -414,6 +516,9 @@ flows:
       - name: Mock
         description: 開く前に `addInitScript` で `window.sessionStorage` を読むと `SecurityError` を投げるように差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant H as まとめた HTML
@@ -423,6 +528,9 @@ flows:
         H-->>U: b.md の頭
         U->>H: 戻る
         H-->>U: a.md の頭
+      ```
+
+      <!-- /map -->
     expected:
       - 戻るで a.md が描かれ、`scrollY` が 0
       - '`pageerror` が 0 件で、`console.warn` に表示の状態を保存できなかった旨が出る'
@@ -437,6 +545,9 @@ flows:
       - name: Mock
         description: 正常系と同じ。sessionStorage は開く前に空にする
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant H as まとめた HTML
@@ -446,6 +557,9 @@ flows:
         H-->>U: クエリ文字列の map-1 を消し、b.md の図を全体から描く
         U->>H: 戻る
         H-->>U: a.md の図を「配置」の中から描く
+      ```
+
+      <!-- /map -->
     expected:
       - b.md へ移った後の `location.search` に `map-` で始まるキーが無く、b.md の図の戻るボタンが押せない
       - 戻るで a.md に戻ると、a.md の図が「配置」の中から描かれる
@@ -460,7 +574,21 @@ flows:
         description: '`map.kinds` に `store`（`label: 保存先`・`icon: database`・`shape: rect`・`color: purple`）、`map.lines` に `-.->`（`dash: dashed`）、`map.node_fit: width` を持つ設定と、`entry` の `a.md` と `b.md` がそれぞれ `:::store` のノードを持つ map の範囲を 1 つ持つフォルダ'
       - name: Mock
         description: 正常系と同じ
-    flow: "sequenceDiagram\n  actor W as 文書の作成者\n  participant C as mdmark CLI\n  participant H as まとめた HTML\n  W->>C: mdmark build\n  C->>H: map をコピーした設定を埋めて 1 枚の HTML を書き込む\n  W->>H: a.md を開き、文書の一覧で b.md へ移る\n  H-->>W: どちらの文書も設定の種類と線で map の図を描く"
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant H as まとめた HTML
+        W->>C: mdmark build
+        C->>H: map をコピーした設定を埋めて 1 枚の HTML を書き込む
+        W->>H: a.md を開き、文書の一覧で b.md へ移る
+        H-->>W: どちらの文書も設定の種類と線で map の図を描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - a.md と b.md のどちらでも、`:::store` のノードの種類の行に `database` のアイコンと「保存先」がある
@@ -473,6 +601,9 @@ flows:
       - name: Mock
         description: 同じ流れの Mock と同じ。比べる HTML は、同じフォルダを `--keep-traces` でまとめたもの
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -481,6 +612,9 @@ flows:
         C->>C: 隠さない HTML を組み立て、名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除する
         C->>H: build.out を書き込む
         C-->>W: 書き出した: build.out（文書 2 件）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - インターフェース定義『文書をHTMLに書き出す』の正常系（mdmark を使用していることを隠す）の、HTML の文字列・埋め込みの JSON・埋め込みの Markdown・バージョン・ライセンスの表記の期待値を満たす
@@ -496,6 +630,9 @@ flows:
       - name: Mock
         description: 正常系（mdmark を使用していることを隠す）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -503,6 +640,9 @@ flows:
         W->>C: mdmark build --keep-traces
         C->>H: 隠さない HTML を書き込む
         C-->>W: 書き出した: build.out（文書 2 件）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - HTML に `class="mdmark"`・`:root{--mdmark-version:`・`id="mdmark-payload"` が残る

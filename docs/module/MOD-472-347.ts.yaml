@@ -13,8 +13,6 @@ constants:
     refs:
       - CMP-472-61#notes
     status: planned
-    introduced:
-      pr: 505
 functions:
   - name: measureColumns
     title: 列の中身の幅を測る
@@ -49,8 +47,6 @@ functions:
         mock: なし
         expected: その列の `longest` が、201 行目の文の幅より狭い
     status: planned
-    introduced:
-      pr: 505
   - name: attachAutoColumnWidths
     title: 表の列の幅を自動で決める
     container: src/interact/table-width.ts
@@ -112,8 +108,6 @@ functions:
         mock: なし
         expected: 表と見出しのセルに `--mdmark-auto-width`・`--mdmark-auto-table-width`・`data-auto-width` が無く、幅を変えても入らない
     status: planned
-    introduced:
-      pr: 505
 refs:
   - IF-472-35#constraints[列の幅]
   - CMP-472-61#notes

@@ -171,8 +171,6 @@ functions:
     refs:
       - CMP-472-17#
     status: planned
-    introduced:
-      pr: 280
   - name: renderCommentOrphans
     title: 箇所が見つからないコメントの一覧の HTML
     container: src/parts/comment.ts

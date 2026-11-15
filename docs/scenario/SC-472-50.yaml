@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: なし（GitHub Actions で実際に実行する）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant GH as GitHub
@@ -25,6 +28,9 @@ scenarios:
         MP-->>GA: 公開を受け付ける
         GH-->>D: Release に mdmark-0.1.3.vsix
         MP-->>D: Marketplace に 0.1.3
+      ```
+
+      <!-- /map -->
     expected:
       - '`vscode-v0.1.3` の GitHub Release に `mdmark-0.1.3.vsix` が添えられる'
       - Marketplace の `ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.3` になる
@@ -38,6 +44,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant GH as GitHub
@@ -46,6 +55,9 @@ scenarios:
         GH->>GA: タグのワークフローを発生させる
         GA->>GA: バージョンが合わないので止める
         GA-->>D: ワークフローの失敗と、ずれた 2 つのバージョン
+      ```
+
+      <!-- /map -->
     expected:
       - ワークフローが失敗し、ログにタグのバージョン `0.2.0` と `vscode/package.json` のバージョン `0.1.3` が出る
       - '`vscode-v0.2.0` の Release に .vsix が添えられない'
@@ -58,6 +70,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant GH as GitHub
@@ -72,13 +87,15 @@ scenarios:
         GA->>MP: 公開済みのバージョンを問い合わせる
         MP-->>GA: 0.1.2 が公開済み
         GA-->>D: .vsix をアップロードせずにワークフローが失敗する
+      ```
+
+      <!-- /map -->
     expected:
       - ワークフローが失敗し、ログに `ShuheiNishikawa.mdmark-vscode v0.1.2 already exists.` が出る
       - '`vscode-v0.1.2` の Release に添えた `mdmark-0.1.2.vsix` は残る'
       - Marketplace の `0.1.2` は書き換わらない
     test: test_error_when_version_already_published
 lead: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が拡張機能の .vsix を作り、そのタグの GitHub Release に添えて、Visual Studio Marketplace へ公開する。
-issue: 22
 primary_actor: mdmark の開発者
 stakeholders:
   - name: mdmark の開発者

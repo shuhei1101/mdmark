@@ -16,6 +16,9 @@ scenarios:
         description: 読者が入力欄に記載する本文
         notes: '`ここは <b>太字</b> にしたい`'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -33,6 +36,9 @@ scenarios:
         M-->>P: 選んだ文字にマーカーを付ける
         U->>P: マーカーにフォーカスして Enter を押す
         P-->>U: 記載したコメントの吹き出し
+      ```
+
+      <!-- /map -->
     expected:
       - 文字を選ぶと、選んだ文字のそばにコメントのボタンが出る。選択を解除するとボタンが消える
       - 保存を押すと、読み込みと保存の関数の保存に、選んだ文字 `テーマの変数`・前後の文字・コメントの本文が渡る
@@ -51,6 +57,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -62,6 +71,9 @@ scenarios:
         M-->>P: 選んだ文字にマーカーを付けた文書
         U->>P: マーカーを押す
         P-->>U: コメントの吹き出し
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた時点で `テーマの変数` にマーカーが付いている
       - マーカーを押すと、読み込んだコメントの本文の吹き出しが出る
@@ -80,6 +92,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -90,6 +105,9 @@ scenarios:
         M-->>P: 箇所が見つからないコメントを末尾に並べた文書
         U->>P: 末尾の一覧のコメントを開く
         P-->>U: コメントの本文
+      ```
+
+      <!-- /map -->
     expected:
       - 段落を追加して再描画した後も、`テーマの変数` にマーカーが付いている
       - 選んだ文字を書き換えて再描画した後、本文にマーカーは無く、文書の末尾の `箇所が見つからないコメント` の一覧に、選んだ文字とコメントの本文が出る
@@ -105,6 +123,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -120,6 +141,9 @@ scenarios:
         P-->>U: もう一度折り返したマーカーの行の高さへもう一度配置した余白のマーカー
         U->>P: 2 つ目のタブに切り替える
         P-->>U: 2 つ目のタブのマーカーの行の高さに配置した余白のマーカー
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた時点で、本文の右の余白に `テーマの変数` の余白のマーカーが出て、縦の中ほどが `テーマの変数` のマーカーのある行の縦の中ほどと同じ高さにある
       - 箇所が見つからない `無い文字` のコメントには余白のマーカーが出ない
@@ -139,6 +163,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -148,6 +175,9 @@ scenarios:
         M-->>P: 描いた文書
         U->>P: 本文の文字を選ぶ
         P-->>U: コメントのボタンの無い選び
+      ```
+
+      <!-- /map -->
     expected:
       - 文字を選んでもコメントのボタンが出ない
       - 読み込みと保存の関数の読み込みが呼ばれない
@@ -163,6 +193,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -172,6 +205,9 @@ scenarios:
         M->>S: 保存する
         S-->>M: 失敗
         M-->>P: 保存できなかったことの通知
+      ```
+
+      <!-- /map -->
     expected:
       - コメントの入力欄が閉じずに、記載した本文が残っている
       - 入力欄のそばに、保存できなかったことの通知が `role="alert"` で出る
@@ -187,6 +223,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -195,6 +234,9 @@ scenarios:
         M-->>P: 描いた文書
         U->>P: 本文の文字を選ぶ
         P-->>U: コメントのボタンの無い選び
+      ```
+
+      <!-- /map -->
     expected:
       - 文字を選んでもコメントのボタンが出ない
       - コメントの機能に読み込みと保存の関数が要ることが `console.error` に 1 回だけ出る
@@ -211,6 +253,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -228,6 +273,9 @@ scenarios:
         M->>S: remove({docId, id: c2})
         S-->>M: 削除した
         M-->>P: CSS のマーカーを削除した文書
+      ```
+
+      <!-- /map -->
     expected:
       - 吹き出しのコメントの本文の右上に、「編集」「削除」のアイコンのボタンがあり、`aria-label` と `title` に「編集」「削除」が入っている
       - 「編集」を押すと、吹き出しの中にコメントの本文を入れた入力欄が開く
@@ -248,6 +296,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -262,6 +313,9 @@ scenarios:
         M->>S: コメントを読み込む
         S-->>M: コメント 2 件
         M-->>P: テーマの変数と CSS にマーカーを付けた文書
+      ```
+
+      <!-- /map -->
     expected:
       - '`reloadComments()` の Promise が解決した時点で、`テーマの変数` と `CSS` の両方にマーカーが付いている'
       - 読み込みが 2 回呼ばれる
@@ -279,6 +333,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -290,6 +347,9 @@ scenarios:
         P-->>U: 強調したマーカー
         P->>M: focusComment(無い id)
         M-->>P: 変わらない文書
+      ```
+
+      <!-- /map -->
     expected:
       - '`focusComment("c9")` の後、`末尾の単語` のマーカーが画面に入っている'
       - '`focusComment("c1")` の後、`先頭の単語` のマーカーが強調の状態になる'
@@ -308,6 +368,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -317,6 +380,9 @@ scenarios:
         M->>S: update
         S-->>M: 失敗
         M-->>P: 保存できなかったことの通知
+      ```
+
+      <!-- /map -->
     expected:
       - 入力欄が閉じずに、書き換えた本文が残っている
       - 入力欄のそばに、保存できなかったことの通知が `role="alert"` で出る
@@ -334,6 +400,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -343,6 +412,9 @@ scenarios:
         M->>S: remove
         S-->>M: 失敗
         M-->>P: 削除できなかったことの通知
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーが付いたままで、吹き出しにコメントの本文が残っている
       - 吹き出しの中に、`コメントを削除できませんでした。もう一度「削除」を押してください。` の通知が `role="alert"` で出て、削除の確認は開いたまま
@@ -359,6 +431,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
@@ -367,13 +442,15 @@ scenarios:
         M->>S: コメントを読み込む
         S-->>M: 失敗
         M-->>P: reject
+      ```
+
+      <!-- /map -->
     expected:
       - '`reloadComments()` の Promise が、読み込みの失敗の理由で reject される'
       - '`テーマの変数` のマーカーは付いたまま'
       - 失敗の理由が `console.error` に出る
     test: test_error_when_reload_failed
 lead: 読者が、描いた文書の本文の文字を選んでコメントを付け、付いた箇所のマーカーからコメントを開く。コメントは利用側が `mount` に指定した読み込みと保存の関数で残る。
-issue: 8
 primary_actor: 読者
 stakeholders:
   - name: 読者

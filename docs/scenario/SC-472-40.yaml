@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -20,6 +23,9 @@ scenarios:
         D-->>U: ノードの説明のツールチップ
         U->>D: システムの枠のグループのタイトルのマーカーにポインターを乗せる
         D-->>U: グループの説明のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - 説明を持つ線の上で、`notes` の説明を記載した `role="tooltip"` の要素が出る。説明を持たない線では出ない
       - ツールチップの上へポインターを動かしても消えない
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -44,6 +53,9 @@ scenarios:
         D-->>U: ツールチップを削除し、フォーカスは線の帯に残す
         U->>D: Tab で説明を持つノードのマーカーにフォーカスする
         D-->>U: ノードの説明のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - フォーカスした線の押せる帯にツールチップが出て、帯の `aria-describedby` がそのツールチップを指す
       - Esc でツールチップが消え、フォーカスは線の帯に残る
@@ -56,11 +68,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
         U->>D: ノードの中の用語にポインターを乗せる
         D-->>U: 用語集の意味のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - ノードの中の用語に本文の用語と同じ破線の下線が参照されている
       - 用語の上で、本文の用語と同じ外観のツールチップに用語集の意味が出る
@@ -73,6 +91,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 埋め込んだ HTML
@@ -84,6 +105,9 @@ scenarios:
         D-->>U: 同じツールチップ
         U->>D: Esc を押す
         D-->>U: ツールチップを削除し、フォーカスはマーカーに残す
+      ```
+
+      <!-- /map -->
     expected:
       - '`data-hint` のノードの右上のマーカーの上で、`data-hint` の文を記載した `role="tooltip"` の要素が、図のツールチップと同じ外観で出る'
       - ツールチップはマーカーの下に出る（ツールチップの上端がマーカーの下端より下にある）
@@ -99,11 +123,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
         U->>D: 説明を持つノードのマーカーにポインターを乗せる
         D-->>U: 説明のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - 説明を持つノードの右上のマーカーの上で、`notes` の説明を記載したツールチップが出る
       - 説明を持つノードには、ツールチップを持つノードのマーカーがある
@@ -116,6 +146,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -123,6 +156,9 @@ scenarios:
         D-->>U: 説明と注記を持つツールチップ
         U->>D: 注記を参照する線にポインターを乗せる
         D-->>U: 注記を持つツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - ノードのツールチップに、`notes` の説明と、注記であることを示すタイトルの付いた `条件を満たさないときは次の工程へ進む` の両方が出て、説明と注記が分かれて表示されている
       - 線のツールチップに、注記であることを示すタイトルの付いた `条件を満たさないときは次の工程へ進む` が出ている
@@ -135,6 +171,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図と埋め込んだ HTML
@@ -142,6 +181,9 @@ scenarios:
         D-->>U: ツールチップを出さない
         U->>D: map の図の説明を持つ線・ノード・グループのタイトル・メッセージと、注記を参照する線にポインターを乗せる
         D-->>U: ツールチップを出さない
+      ```
+
+      <!-- /map -->
     expected:
       - ER 図のテーブルと `data-hint` のノードのどれに乗せても、ツールチップが出ない
       - テーブルの説明のボタンと `data-hint` のノードのマーカーが無い
@@ -160,12 +202,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
         U->>D: ノードの下端が画面の下端に一致するまでスクロールする
         U->>D: 説明を持つノードのマーカーにポインターを乗せる
         D-->>U: ノードの上に説明のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - 説明を持つノードのツールチップがノードの上に出る（ツールチップの下端がノードの上端より上にある）
       - ツールチップの全体が画面の中に収まっている
@@ -177,6 +225,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図と埋め込んだ HTML
@@ -191,6 +242,9 @@ scenarios:
         D-->>U: メッセージの上に説明のツールチップ
         U->>B: 段落の用語にポインターを乗せる
         B-->>U: 単語の下に用語の意味のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - テーブルのツールチップがテーブルの上に出る（ツールチップの下端がテーブルの上端より上にある）
       - '`data-hint` のツールチップがマーカーの上に出る（ツールチップの下端がマーカーの上端より上にある）'
@@ -206,11 +260,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
         U->>D: ノードの中の用語にポインターを乗せる
         D-->>U: 用語の意味のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - ノードの中の `ｍｃｐ` に本文の用語と同じ破線の下線が参照され、文字はノードに記載した表記のまま
       - 用語の上で、索引の用語 `MCP` の意味のツールチップが出る
@@ -223,6 +283,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -236,6 +299,9 @@ scenarios:
         D-->>U: ツールチップを出したままにする
         U->>D: 図の外の本文をタップする
         D-->>U: ツールチップを削除する
+      ```
+
+      <!-- /map -->
     expected:
       - 説明を持つノードのマーカーのタップで、説明を記載したツールチップが出る
       - 同じマーカーをもう一度タップすると、ツールチップが消える
@@ -250,6 +316,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -261,6 +330,9 @@ scenarios:
         D-->>U: ツールチップを閉じる
         U->>D: Tab で説明のボタンにフォーカスを移す
         D-->>U: テーブルの概要と列の説明のツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - 説明のボタンの上で、テーブルの概要と、説明を持つ 2 つの列の名前と説明を記載した `role="tooltip"` の要素が出る
       - ツールチップはテーブルの下に出る
@@ -274,6 +346,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。リンク先への遷移を手元の応答で受け、開いた URL を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -285,6 +360,9 @@ scenarios:
         D-->>U: マーカーにフォーカスしたときだけツールチップ
         U->>D: マーカーの外のノードを押す
         D-->>U: ノードのリンク先を開く
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの上で、説明を記載したツールチップが出る
       - マーカーを押してもリンク先が開かない
@@ -301,6 +379,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as グラフ
@@ -316,6 +397,9 @@ scenarios:
         D-->>U: 同じツールチップ
         U->>D: Esc を押す
         D-->>U: ツールチップを削除し、フォーカスは点に残す
+      ```
+
+      <!-- /map -->
     expected:
       - 折れ線の点の上で、系列の名前・横の目盛り（`2月` など）・値を記載した `role="tooltip"` の要素が出る
       - 点の外観の外の、点の周りのクリックを受ける範囲にポインターを乗せても、同じツールチップが出る
@@ -327,7 +411,6 @@ scenarios:
       - 項目はキーボードでフォーカスでき、フォーカスした項目の `aria-describedby` がツールチップを指す。Esc でツールチップが消え、フォーカスは項目に残る
     test: test_normal_when_chart_items
 lead: 読者が、図の線・ノード・グループ・ノードの中の用語・グラフの項目・ER 図のテーブルにポインターを乗せるかフォーカスして、詳細をツールチップで読み込む。map の図の線・ノード・グループは補足の `notes` の説明、用語は用語集の意味、グラフの項目は系列の名前と値を出す。埋め込んだ HTML の要素の `data-hint` も同じツールチップで出し、設定の `features.hints` でまとめて削除できる。
-issue: 21
 primary_actor: 読者
 trigger: 読者が、図の線やノードに記載した要約より詳しく知りたくなる
 preconditions:

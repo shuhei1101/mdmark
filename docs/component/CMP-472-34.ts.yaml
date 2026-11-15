@@ -72,8 +72,6 @@ accessibility:
 refs:
   - IF-472-35#constraints[先頭へ戻るボタン]
 status: planned
-introduced:
-  pr: 287
 aliases:
   - back-to-top
 notes:

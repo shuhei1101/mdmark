@@ -2,7 +2,6 @@ id: SC-472-87
 visibility: internal
 title: Mermaidと補足で書いた図を辿って読む
 lead: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が自動配置で描いた図を、グループの中へ入る・開閉・巡回・シーケンスの再生で辿って読む。
-issue: 324
 test_file: tests/e2e/複合ユースケース/Mermaidと補足で書いた図を辿って読む.spec.ts
 primary_actor: 文書の作成者
 stakeholders:
@@ -27,6 +26,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。mermaid のライブラリへの要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ]
         B --> C[Mermaidと補足で図を描く:正常シナリオ]
@@ -43,6 +45,9 @@ scenarios:
         click H "id:SC-472-41#scenarios[正常シナリオ]"
         click I "id:SC-472-18#scenarios[正常シナリオ]"
         click J "id:SC-472-19#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark check` が map の補足のずれを含めてずれ 0 件で、終了コード 0 を返却する'
       - 構成図が、入れ子のグループを自動配置した図に描かれ、ノードとグループが重ならず、線が端点とその祖先以外のノード・グループを横切らない。クラスのノードが、使う側の設定の種類の名前・アイコン・形・色で描かれる
@@ -73,6 +78,9 @@ scenarios:
       - name: Mock
         description: なし。書き出した HTML を開くブラウザのコンテキストで、外への要求を全て止める
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[雛形を配置する:正常シナリオ] --> B[文書をHTMLに書き出す:正常シナリオ]
         B --> C[Mermaidと補足で図を描く:正常シナリオ]
@@ -83,6 +91,9 @@ scenarios:
         click C "id:SC-472-8#scenarios[正常シナリオ]"
         click D "id:SC-472-39#scenarios[正常シナリオ]"
         click F "id:SC-472-18#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark export` が終了コード 0 を返却し、1 枚の HTML を書き出す'
       - 書き出した HTML を開いてから操作を終えるまで、外への要求が 0 件
@@ -108,6 +119,9 @@ scenarios:
       - name: Mock
         description: 差し替えない。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（map の補足にずれがある）]
         B --> C[設定と索引を点検する:正常シナリオ]
@@ -116,6 +130,9 @@ scenarios:
         click B "id:SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]"
         click C "id:SC-472-78#scenarios[正常シナリオ]"
         click D "id:SC-472-8#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - 1 回目の `mdmark check` が、ずれを持つ図の文書と図の場所を指す 3 件のずれ（無いノード・線への参照・知らないキー・`--` を含む値）を出し、終了コード 0 以外を返却する
       - 修正した後の 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返却する

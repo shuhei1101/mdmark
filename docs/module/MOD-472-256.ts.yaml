@@ -201,8 +201,6 @@ functions:
     refs:
       - IF-472-37#constraints[関連の点検]
     status: planned
-    introduced:
-      pr: 127
   - name: findMissedChangeTogether
     title: change_together の修正漏れを取得する
     kind: 関数
@@ -249,5 +247,3 @@ functions:
     refs:
       - IF-472-37#constraints[修正漏れ]
     status: planned
-    introduced:
-      pr: 127

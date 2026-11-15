@@ -39,8 +39,6 @@ functions:
     refs:
       - IF-472-12#request
     status: planned
-    introduced:
-      pr: 354
   - name: writeSettings
     title: 端末の設定を書き込む
     kind: 関数
@@ -91,8 +89,6 @@ functions:
     refs:
       - IF-472-12#
     status: planned
-    introduced:
-      pr: 354
   - name: writeClaudeEnv
     title: settings.json の env に書き込む
     kind: 関数
@@ -130,8 +126,6 @@ functions:
     refs:
       - IF-472-12#constraints[settings.json]
     status: planned
-    introduced:
-      pr: 354
   - name: writeConfig
     title: 文書のフォルダの設定を書き込む
     kind: 関数
@@ -174,5 +168,3 @@ functions:
     refs:
       - IF-472-8#
     status: planned
-    introduced:
-      pr: 354

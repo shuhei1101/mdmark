@@ -64,8 +64,6 @@ accessibility:
   - ノード・ラベルの文字は SVG の文字のまま選べ、スクリーンリーダーに出る
   - 色だけで意味を伝える図（円グラフ）は、mermaid が描く凡例とラベルに名前と値を出す
 status: planned
-introduced:
-  pr: 382
 refs:
   - IF-472-35#constraints[mermaid の描き方]
   - IF-472-35#constraints[mermaid のテーマ]

@@ -15,8 +15,6 @@ constants:
       - IF-472-11#constraints[ポートの確認]
       - IF-472-6#constraints[待ち]
     status: planned
-    introduced:
-      pr: 354
   - name: PORT_ENV
     title: ポートの環境変数
     container: src/plugin/port.ts
@@ -26,8 +24,6 @@ constants:
     refs:
       - IF-472-4#request[MDMARK_PORT]
     status: planned
-    introduced:
-      pr: 141
   - name: DEFAULT_PORT
     title: 既定のポート
     container: src/plugin/port.ts
@@ -37,8 +33,6 @@ constants:
     refs:
       - IF-472-4#request[MDMARK_PORT]
     status: planned
-    introduced:
-      pr: 141
   - name: INVALID_PORT_MESSAGE
     title: ポートに使用できない値の文
     container: src/plugin/port.ts
@@ -48,8 +42,6 @@ constants:
     refs:
       - IF-472-4#exceptions[なし（MDMARK_PORT が使用できない値・終了コード 1）]
     status: planned
-    introduced:
-      pr: 141
 functions:
   - name: isPortListening
     title: ポートが待ち受けているかを確認する
@@ -85,8 +77,6 @@ functions:
     refs:
       - IF-472-6#constraints[待ち]
     status: planned
-    introduced:
-      pr: 354
   - name: readPort
     title: ポートを読み込む
     kind: 関数
@@ -129,5 +119,3 @@ functions:
     refs:
       - IF-472-4#request[MDMARK_PORT]
     status: planned
-    introduced:
-      pr: 141

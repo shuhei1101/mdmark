@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -19,6 +22,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで記載の警告を集める
         R-->>C: 空の警告の一覧
         C-->>W: ずれ 0 件・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 出力がずれ 0 件を示す
       - 終了コードが 0
@@ -34,6 +40,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -42,6 +51,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで記載の警告を集める
         R-->>C: 記載の警告の一覧
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 'ずれの行が 3 つあり、それぞれが文字列の中の `<!-- flow -->`・`<!-- tabz -->`・`<!-- code: {"highlight": [9]} -->` の行を指す'
       - 各行の内容が、同じ文字列を `render` で描いたときの記載の警告の文言と同じ
@@ -56,6 +68,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -66,6 +81,9 @@ scenarios:
         C->>R: キーの値を描くときと同じ読み取りで記載の警告を集める
         R-->>C: 記載の警告の一覧
         C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 'ずれの行が 1 つだけで、`records.yaml` と、`<!-- tabz -->` を記載した YAML のファイルの行を指す'
       - 内容にマーカーの名前 `tabz` と修正の方法が記載されている
@@ -82,6 +100,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -91,6 +112,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで記載の警告を集める
         R-->>C: 記載の警告の一覧
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 'ずれの行が `<!-- tabz -->` を指す 1 つだけで、`<!-- note-card -->` を指す行が無い'
       - 終了コードが 0 以外
@@ -104,6 +128,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -111,6 +138,9 @@ scenarios:
         W->>C: mdmark check（records.yaml・items[5].body）
         C->>F: YAML のファイルを読み込み、キーを探す
         C-->>W: キーが無いことと修正の方法の 1 文・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - '出力に、指定したキーが `records.yaml` に無いことと修正の方法が出る'
       - 終了コードが 0 以外
@@ -126,6 +156,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -134,6 +167,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りとマーカーの JSON Schema の検証で、記載の警告と無視したキーを集める
         R-->>C: 空の警告の一覧と、無視したキーの一覧
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの行が 3 つあり、`features.unknown`・`widht` の 2 つが表のマーカーの行を、`grop` がタブのマーカーの行を指す
       - 各行の種類が記載の警告でも知らないマーカーでもない、知らないキーの種類
@@ -150,6 +186,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -158,6 +197,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告と今の書き方のマーカーを集める
         R-->>C: 空の警告の一覧と、今の書き方のマーカーの一覧
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの行が 2 つあり、表のマーカーの行と details のマーカーの行を指す
       - 各行の種類が今の書き方のマーカーの種類
@@ -173,6 +215,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -181,6 +226,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
         R-->>C: code のマーカーの JSON として読めない引数の記載の警告
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの行が 1 つだけで、code のマーカーの行を指し、種類が記載の警告、内容が JSON として読めない位置と理由を挙げる
       - details のマーカーを指す行が無い（`\u003e` で記載した `>` は値の `-->` として読む）
@@ -196,6 +244,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -204,6 +255,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
         R-->>C: details のマーカーの JSON として読めない引数の記載の警告
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの行が details のマーカーの行を指し、種類が記載の警告
       - 行の内容が、JSON として読めない位置と理由に加えて、値に `-->` を記載するとコメントがそこで閉じることと、`>` を `\u003e` にした `--\u003e` で記載する方法を挙げる
@@ -218,6 +272,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -226,6 +283,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
         R-->>C: map の書き方の警告 2 件
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの行が 2 つあり、読めない行と知らないキーをそれぞれ指す
       - 各行の内容が、同じ文字列を描いたときの書き方の警告と同じ
@@ -240,6 +300,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -248,6 +311,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
         R-->>C: 注記の記載の警告 4 件
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの行が 4 つあり、`missing` の参照・`unused` の定義・`cond` の 2 つ目の定義・補足の `gone` の参照をそれぞれ指す
       - '`missing` と `gone` の行は定義の無い注記の参照、`unused` の行は参照されていない注記の定義、`cond` の行は重複した注記の定義の種類を持つ'
@@ -263,6 +329,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -271,6 +340,9 @@ scenarios:
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
         R-->>C: 罫線のコードブロックの警告 1 件
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの行が 1 つあり、コードブロックの開始の行を指す
       - 行の内容が、同じ文字列を描いたときの記載の警告と同じで、言語を `tree` にすることと警告を止める指定を案内している
@@ -279,7 +351,6 @@ scenarios:
 lead: |-
   文書の作成者が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを指定し、描いたときの記載の警告と同じ内容をずれの一覧で受け取る。
   YAML のキーの中に Markdown を書き込むツール（dev-docs・MindStella）も、書き込みのたびに同じ点検を呼ぶ。
-issue: 288
 primary_actor: 文書の作成者（AI と、書き込みのたびに点検を呼ぶツールを含む）
 stakeholders:
   - name: 文書の作成者

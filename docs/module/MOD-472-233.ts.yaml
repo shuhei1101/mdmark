@@ -54,5 +54,3 @@ functions:
       - 'MOD-472-232#functions[copyText]'
       - MOD-472-306#functions[renderCodeCopy]
     status: planned
-    introduced:
-      pr: 151

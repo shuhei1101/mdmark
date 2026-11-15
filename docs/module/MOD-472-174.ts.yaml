@@ -10,16 +10,12 @@ constants:
     summary: 系列と項目の位置ごとの、色・線の模様・点の形状・塗りの模様の組。5・6 つ目を追加する
     value: 6 つの組。5 つ目は `stroke-dasharray` `9 3 1 3 1 3`・逆三角形・縦線の模様、6 つ目は `3 2`・十字・横線の模様
     status: planned
-    introduced:
-      pr: 275
   - name: ITEM_HIT_RADIUS
     title: グラフの点のクリックを受ける半径
     container: src/parts/chart.ts
     summary: 点の形状より広い、ツールチップを取得する透明の円の半径（px）
     value: '12'
     status: planned
-    introduced:
-      pr: 308
 functions:
   - name: renderChart
     title: グラフを描く
@@ -149,5 +145,3 @@ functions:
         mock: なし
         expected: '`2月: 38`・`文字数 3・分 40`・`文字数 3・分 40・件数 16`・`50 件（50%）`'
     status: planned
-    introduced:
-      pr: 308

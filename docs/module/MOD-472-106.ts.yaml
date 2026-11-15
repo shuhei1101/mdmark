@@ -45,5 +45,3 @@ functions:
     refs:
       - LIB-472-11#
     status: planned
-    introduced:
-      pr: 347

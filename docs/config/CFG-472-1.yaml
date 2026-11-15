@@ -22,8 +22,6 @@ settings:
       - IF-472-43#constraints[記録]
     status: planned
     visibility: developer
-    introduced:
-      pr: 541
   - key: MDMARK_PORT
     title: MCP サーバーのポート
     file: 環境変数
@@ -37,9 +35,8 @@ settings:
       - MOD-472-15#constants[DEFAULT_PORT]
     status: planned
     visibility: user
-    implementation: src/plugin/http.ts#readPort
-    introduced:
-      pr: 141
+    notes:
+      実装: src/plugin/http.ts#readPort
   - key: mcpServers.mdmark.type
     title: MCP サーバーの種類
     file: plugin/.mcp.json
@@ -50,8 +47,6 @@ settings:
     reload: restart
     status: planned
     visibility: developer
-    introduced:
-      pr: 141
   - key: mcpServers.mdmark.url
     title: MCP サーバーの URL
     file: plugin/.mcp.json
@@ -65,8 +60,6 @@ settings:
       - LIB-472-1#
     status: planned
     visibility: developer
-    introduced:
-      pr: 141
   - key: MDMARK_STATE_DIR
     title: 状態の配置場所
     file: 環境変数
@@ -79,8 +72,6 @@ settings:
     visibility: user
     refs:
       - IF-472-7#
-    introduced:
-      pr: 354
   - key: MDMARK_LAUNCHER
     title: 常駐サーバーを動かしている方法
     file: 環境変数
@@ -93,8 +84,6 @@ settings:
     visibility: developer
     refs:
       - IF-472-7#
-    introduced:
-      pr: 444
   - key: MDMARK_CONFIG
     title: 端末の設定のパス
     file: 環境変数
@@ -107,8 +96,6 @@ settings:
     visibility: user
     refs:
       - CFG-472-3#files
-    introduced:
-      pr: 354
   - key: CLAUDE_CONFIG_DIR
     title: Claude Code の設定のフォルダ
     file: 環境変数
@@ -121,8 +108,6 @@ settings:
     visibility: developer
     refs:
       - LIB-472-1#
-    introduced:
-      pr: 354
   - key: MDMARK_SERVE_COMMAND
     title: 常駐サーバーを起動するコマンド
     file: 環境変数
@@ -135,8 +120,6 @@ settings:
     visibility: developer
     refs:
       - IF-472-7#
-    introduced:
-      pr: 354
   - key: MDMARK_START_TIMEOUT_SEC
     title: 常駐サーバーの待ち受けを待つ上限
     file: 環境変数
@@ -149,5 +132,3 @@ settings:
     visibility: developer
     refs:
       - IF-472-7#constraints[待ち]
-    introduced:
-      pr: 354

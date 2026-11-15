@@ -2,7 +2,6 @@ id: SC-472-71
 visibility: internal
 title: 脚注を確認する
 lead: '文書の作成者が GitHub と同じ `[^1]` と `[^1]: 中身`、行内の `^[中身]` で脚注を記載すると、mdmark が本文の参照の場所に番号を出し、文書の末尾に閉じた脚注の一覧をまとめる。読者は番号のツールチップか末尾の一覧で脚注の中身を確認する。'
-issue: 215
 test_file: tests/e2e/単一ユースケース/脚注を確認する.spec.ts
 primary_actor: 読者
 stakeholders:
@@ -27,6 +26,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -36,6 +38,9 @@ scenarios:
         M-->>P: 参照の場所に番号を配置し、末尾に閉じた脚注の一覧を配置して描く
         U->>P: 番号 1 にポインターを乗せる
         P-->>U: 脚注 1 の中身のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の段落の参照の場所に上付きの番号 `1`、2 つ目の段落の参照の場所に `2` が出ている
       - '本文に `[^src]`・`^[`・定義の行 `[^src]: 出典の説明` の文字が出ていない'
@@ -52,6 +57,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -62,6 +70,9 @@ scenarios:
         P-->>U: 脚注 1 の中身のツールチップを表示
         U->>P: Esc を押す
         P-->>U: ツールチップを削除する
+      ```
+
+      <!-- /map -->
     expected:
       - Tab で番号 `1` にフォーカスが移る
       - フォーカスした番号の `aria-describedby` が、`role="tooltip"` を持つ脚注の中身の要素を指す
@@ -76,6 +87,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -86,6 +100,9 @@ scenarios:
         P-->>U: 開いた脚注の一覧
         U->>P: 脚注 1 の戻るリンクを押す
         P-->>U: 本文の番号 1 の場所を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 見出しを押した後、一覧に `1` と `出典の説明`、`2` と `行内の補足` の 2 つの項目が出た順に並んでいる
       - 脚注 1 の戻るリンクを押すと、1 つ目の段落の番号 `1` が画面の中に入り、番号にフォーカスが移る
@@ -99,6 +116,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -108,6 +128,9 @@ scenarios:
         M-->>P: 2 つの参照の場所に同じ番号を配置して描く
         U->>P: 脚注の一覧を開く
         P-->>U: 戻るリンクを 2 つ持つ脚注 1
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの参照の場所の番号がどちらも `1` で、どちらにポインターを乗せても `共通の補足` のツールチップが出る
       - 一覧の項目は `1` の 1 つだけで、本文の 2 つの参照の場所へそれぞれ戻るリンクを持つ
@@ -123,6 +146,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -131,6 +157,9 @@ scenarios:
         M-->>P: 用語に下線を付け、参照の場所に番号を配置して描く
         U->>P: 番号と下線の付いた単語に順にポインターを乗せる
         P-->>U: 脚注のツールチップと用語のツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 番号は上付きの数字で、用語の破線の下線が付いていない（構造で見分けられ、色だけで分けない）
       - 番号のツールチップに脚注であることと番号 `1` を示すタイトルがあり、用語のツールチップの「用語」の区分が無い
@@ -145,6 +174,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -153,6 +185,9 @@ scenarios:
         M->>M: 定義の無い参照を脚注にしない
         M-->>P: 参照を記載した文字のまま描く
         P-->>U: 段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落に `[^missing]` が記載した文字のまま出ている
       - 番号と文書の末尾の脚注の一覧が無い
@@ -166,6 +201,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -176,6 +214,9 @@ scenarios:
         P-->>U: 一覧を開き、脚注 2 の項目を表示
         U->>P: 一覧を閉じ、Tab で番号 1 へフォーカスを移して Enter を押す
         P-->>U: 一覧を開き、脚注 1 の項目を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 番号 `2` を押すと、末尾の脚注の一覧が開き、`行内の補足` の項目が画面の中に入り、その項目にフォーカスが移る
       - 番号 `1` にフォーカスして Enter を押すと、閉じていた一覧が開き、`出典の説明` の項目が画面の中に入り、その項目にフォーカスが移る
@@ -190,6 +231,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -204,6 +248,9 @@ scenarios:
         P-->>U: 脚注 1 の中身のツールチップを表示
         U->>P: 番号 1 をもう一度タップする
         P-->>U: 一覧を開き、脚注 1 の項目を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 閉じた番号 `1` のタップで `出典の説明` のツールチップが出て、末尾の脚注の一覧は閉じたまま
       - ツールチップと番号の外（脚注を含まない段落）をタップすると、ツールチップが消える

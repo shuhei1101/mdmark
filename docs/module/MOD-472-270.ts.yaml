@@ -16,8 +16,6 @@ data_models:
         type: string | undefined
         description: '折り畳みの見出し（`collapse.title`）。`collapse` が `none` のときと空の文字では入れない'
     status: planned
-    introduced:
-      pr: 225
 functions:
   - name: readCollapse
     title: 折り畳みの指定を読み込む
@@ -53,8 +51,6 @@ functions:
         mock: なし
         expected: '`collapse` が `open`、`title` が無い'
     status: planned
-    introduced:
-      pr: 225
   - name: titleTailOf
     title: title= の後ろの単語を参照する
     container: src/render/syntax/collapse.ts

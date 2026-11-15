@@ -13,6 +13,9 @@ scenarios:
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。外部ライブラリの代役は、`draw(slot, options)` が受けた `options` の `label` をマーカーの場所に記載するモジュールを返却し、受けた要求を数える
         notes: テスト用のマーカーは、設定の `libraries` で対応表に追加する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -25,6 +28,9 @@ scenarios:
         M->>X: draw(slot, {label: "売上"})
         M-->>P: マーカーの場所に外部ライブラリが描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 外部ライブラリの代役への要求が 1 件
       - マーカーの場所に、代役のモジュールが描いた `売上` がある
@@ -39,6 +45,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -47,6 +56,9 @@ scenarios:
         M->>M: 外部ライブラリのマーカーの引数が JSON のオブジェクトでない
         M-->>P: マーカーの場所に移行を案内する記載の警告、ほかは本文を描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に、外部ライブラリのマーカーの引数は JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられることを記載した記載の警告がある
       - 外部ライブラリの代役への要求が 0 件
@@ -61,6 +73,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -68,6 +83,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 外部ライブラリを読み込まずに本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 外部ライブラリの代役への要求が 0 件
       - 段落が描かれている
@@ -83,6 +101,9 @@ scenarios:
       - name: Mock
         description: 外部ライブラリの代役が 404 を返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -93,6 +114,9 @@ scenarios:
         X-->>M: 404
         M-->>P: マーカーの場所に通知ブロック、ほかは本文を描く
         P-->>U: 通知ブロックと本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に通知ブロックがある
       - マーカーの前後の段落が描かれている
@@ -106,6 +130,8 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` と、色分けのライブラリの本体と言語のモジュールを jsDelivr と同じパスで返却する手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 利用者
@@ -119,6 +145,8 @@ scenarios:
         M-->>P: コードブロックを色分けする
         P-->>U: 文書を表示
       ```
+
+      <!-- /map -->
     expected:
       - 色分けのライブラリへの要求が、本体 1 件と `typescript`・`yaml` の言語のモジュール 1 件ずつの計 3 件で、文書が使用しない言語のモジュールへの要求が無い
       - 2 つのコードブロックが色分けされている
@@ -135,6 +163,9 @@ scenarios:
         description: jsDelivr を、ビルドした `dist/` と Lucide のアイコンを同じパスで返却する手元の応答に差し替える。Lucide への要求を数える
         notes: 読み込む URL の構造はライブラリ選定で決める
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -146,6 +177,9 @@ scenarios:
         X-->>M: アイコンの形状
         M-->>P: アイコンの場所に描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`sailboat` と `anchor` のアイコンが描かれている'
       - Lucide への要求が、文書が使用するまとめていないアイコンを得る分だけで、文書が使用しないアイコンの要求が無い
@@ -161,6 +195,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（まとめていない名前のアイコン）と同じ。`no-such-icon` は Lucide に無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -171,6 +208,9 @@ scenarios:
         X-->>M: anchor の構造と、no-such-icon が無いこと
         M-->>P: no-such-icon の場所に記載の警告、anchor はアイコンで描く
         P-->>U: 記載の警告と文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`no-such-icon` の場所に、Lucide に無い名前であることを記載した記載の警告と、記載したとおりの行内のコードがある'
       - '`anchor` のアイコンが描かれている'
@@ -185,6 +225,9 @@ scenarios:
       - name: Mock
         description: Lucide への要求が全て失敗する（応答しない）。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -195,13 +238,15 @@ scenarios:
         X-->>M: 失敗
         M-->>P: 通知ブロックを 1 つ配置し、アイコンの場所を行内のコードのまま残し、ほかは本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - アイコンの場所に、記載したとおりの行内のコードが出ている
       - 見出しと段落のほかの本文が描かれている
       - 文書に、Lucide のアイコンを読み込めないことを記載した通知ブロックが 1 つだけある（アイコンの数だけ並べない）
     test: test_error_when_lucide_unavailable
 lead: mdmark が、文書に外部ライブラリを使用するマーカーがあるときだけ、バージョンを固定した URL からそのモジュールを読み込む。読み込めない箇所には通知ブロックを出し、ほかの本文は描く。
-issue: 3
 primary_actor: mdmark を使用するアプリのページ
 stakeholders:
   - name: 読者

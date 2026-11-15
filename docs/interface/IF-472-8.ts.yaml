@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
@@ -21,6 +24,9 @@ flows:
         P->>P: Schema で検める
         P->>F: 雛形に値と version を入れて書き込む
         P-->>K: 書き込んだパスとキー・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`mdmark.config.yaml` が `version`（プラグインのビルドで埋めた mdmark のバージョン）と `features.callout: false` を持ち、ほかのキーは雛形のまま'
@@ -33,6 +39,9 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
@@ -40,6 +49,9 @@ flows:
         K->>P: write-config --dir {フォルダ} --set features.callout=false
         P->>F: features.callout だけを書き換える
         P-->>K: 書き込んだキー・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`features.callout: false` と `features.table: false` を持つ'
       - コメントの行が残り、`version` が呼ぶ前と同じ
@@ -52,11 +64,17 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: write-config --dir {フォルダ} --set config.cascade=true
         P-->>K: 端末の設定だけのキーであること・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `config.cascade` は端末の設定だけが持つことが出る

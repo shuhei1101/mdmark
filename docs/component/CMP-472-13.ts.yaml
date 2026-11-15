@@ -82,8 +82,6 @@ accessibility:
   - バブルの `aria-label` は点ごとに `({x}, {y}, {size.label} {値})` を並べ、組み合わせの凡例は系列の対応する軸を文字でも示す
   - 点・棒・扇形・バブルの項目は `tabindex="0"` と、その項目のツールチップを指す `aria-describedby` を持つ。点は半径 12px の透明のクリックを受ける円（`.mdmark-diagram-item-hit`）にこれを持たせる
 status: planned
-introduced:
-  pr: 42
 notes:
   塗りの模様の地: '塗りの模様の地（`.mdmark-diagram-pattern-tint`）は、`color-mix()` に対応していないブラウザ（Chrome 111・Firefox 113 より前）向けに、先に `fill: var(--series-color); fill-opacity: 0.22` を記載し、`@supports (color: color-mix(in srgb, red, blue))` の中で `fill: color-mix(in srgb, var(--series-color) 22%, var(--mdmark-color-bg-opaque)); fill-opacity: 1` に置き換える。面とレーダーの薄い塗りも同じ 2 段階にする'
 css_properties:

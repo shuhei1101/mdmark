@@ -29,8 +29,6 @@ constants:
     refs:
       - IF-472-41#constraints[配布ファイル 1 つのサイズ]
     status: planned
-    introduced:
-      pr: 32
 functions:
   - name: main
     title: ビルドを実行する

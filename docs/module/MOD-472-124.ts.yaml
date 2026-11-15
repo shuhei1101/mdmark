@@ -57,5 +57,3 @@ functions:
         mock: なし
         expected: '`aliases` が `undefined`、`issues` と `files` が空'
     status: planned
-    introduced:
-      pr: 176

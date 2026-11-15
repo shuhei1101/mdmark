@@ -113,5 +113,3 @@ functions:
         mock: なし
         expected: '`open` が無く、`wrap` が `false`'
     status: planned
-    introduced:
-      pr: 225

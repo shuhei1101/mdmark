@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系と同じ。Webview へ送信したメッセージを時刻つきで記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -21,6 +24,9 @@ flows:
         EX->>EX: 最後の変更から 300 ms 待つ
         EX->>PV: render（3 回目の全文）
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - 3 回の書き換えの後に送信した `render` が 1 回だけで、中身が 3 回目の全文
       - '`render` を送信した時刻が、最後の書き換えから 300 ms より後'
@@ -34,6 +40,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -41,6 +50,9 @@ flows:
         U->>EX: 見出しを書き換える
         U->>EX: 保存する
         EX->>PV: render（保存した全文）
+      ```
+
+      <!-- /map -->
     expected:
       - 保存する前は、`updateDelayMs` の 2 倍待っても `render` が送信されない
       - 保存すると `render` が 1 回送られ、Webview の見出しが書き換えた文字
@@ -53,6 +65,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -62,6 +77,9 @@ flows:
         EX->>PV: render（新しい config）
         PV->>PV: destroy して mount
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - '`render` の `config.features` が `{ callout: false }`'
       - Webview の注意書きが `markdown-alert` の枠でなく `blockquote` で描かれる
@@ -74,6 +92,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -83,6 +104,9 @@ flows:
         EX->>PV: render（新しい config）
         PV->>PV: destroy して mount
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - '`render` の `config.labels` が `{ paramCopy: "コピー" }`'
       - Webview の `button.mdmark-param-copy` の `textContent` が `コピー`
@@ -95,6 +119,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -102,6 +129,9 @@ flows:
         U->>EX: プレビューを開く
         PV->>EX: ready
         EX->>PV: render（config は空）
+      ```
+
+      <!-- /map -->
     expected:
       - '`render` の `config` が `{}` で、`configError` が送信されない'
       - Webview に設定ファイルを読み込めない帯が無い
@@ -115,6 +145,9 @@ flows:
       - name: Mock
         description: 正常系と同じ。Webview から届いたメッセージも記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -124,6 +157,9 @@ flows:
         PV->>EX: ready
         EX->>PV: render（3 回目の全文）
         PV->>PV: 保存した元の行番号を先頭に配置する
+      ```
+
+      <!-- /map -->
     expected:
       - 背面の間に送信した `render` が 0 回
       - 表に戻した後の `ready` を受けて送信した `render` が 3 回目の全文で、Webview の見出し B が 3 回目の文字
@@ -138,6 +174,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -146,6 +185,9 @@ flows:
         EX->>EX: ./libs/my-lib.js を config/ から解決し asWebviewUri にする
         EX->>PV: render（libraries は Webview の URL）
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - '`render` の `config.libraries.my-lib` が `config/libs/my-lib.js` の `asWebviewUri` の URL'
       - Webview のマーカーの場所が `data-mdmark-drawn` を持ち、通知ブロックが無い
@@ -158,6 +200,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -165,6 +210,9 @@ flows:
         U->>EX: 括弧を閉じて features.callout: false で保存
         EX->>PV: render（新しい config）
         EX->>PV: configOk
+      ```
+
+      <!-- /map -->
     expected:
       - '`render` の `config.features` が `{ callout: false }` で、続けて `configOk` が送信される'
       - Webview の設定ファイルを読み込めない帯が消える
@@ -179,6 +227,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -186,6 +237,9 @@ flows:
         U->>EX: 壊れた mdmark.config.yaml を保存
         EX->>EX: YAMLParseError
         EX->>PV: configError（path: mdmark.config.yaml, line: 4）
+      ```
+
+      <!-- /map -->
     expected:
       - '`configError` の `path` が `mdmark.config.yaml`・`line` が `4` で、`render` は送信されない'
       - Webview の文書は描いたまま（注意書きは `blockquote` のまま）で、文書の先頭に設定ファイルを読み込めない帯と「設定ファイルを開く」がある
@@ -199,6 +253,9 @@ flows:
       - name: Mock
         description: 配布物とタグ一覧の代役の配信とは別の origin（別のポート）で、`draw` がマーカーの場所に `data-drawn` を付けるモジュール `my-chart.js` を配る手元のサーバー
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -211,6 +268,9 @@ flows:
         EX->>PV: render（全文・新しい設定）
         PV-->>LIB: my-chart.js
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - Webview の HTML の CSP の `script-src` が別の配信元の origin を含む
       - 別の配信元が `my-chart.js` の要求を受ける
@@ -225,6 +285,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -236,6 +299,9 @@ flows:
         U->>EX: mdmark.colorTheme を空に戻す
         EX->>PV: render（colorTheme: theme-paper）
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.colorTheme` を `theme-slate` にした後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-slate`（地の色の計算値はライブラリ本体の『文書を描く』の結合テストが確認する）'
       - 空に戻した後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-paper`
@@ -249,6 +315,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系（差分ビューから開く）と同じ。Webview へ送信したメッセージを時刻つきで記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -258,6 +327,9 @@ flows:
         EX->>PV: render（変更後の全文・previous）
         PV->>PV: update
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - 送信した `render` が 1 回で、`markdown` が追記した後の全文、`previous` が変更前の全文
       - 追記した段落が `data-kind="add"` のブロックで出、前に色を適用したブロックが同じ `data-kind` のまま出ている
@@ -273,6 +345,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系（差分ビューから開く）と同じ。Webview から届いたメッセージも記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -281,6 +356,9 @@ flows:
         PV->>EX: ready
         EX->>PV: render（変更後の全文と previous）
         PV->>PV: 保存した元の行番号を先頭に配置する
+      ```
+
+      <!-- /map -->
     expected:
       - 表に戻した後の `ready` を受けて送信した `render` が `previous` を持つ
       - 表に戻した後の Webview で、見出し A の見えている範囲の先頭からの位置が、背面に回す前に記録した値と 1 px 以内で同じ
@@ -293,6 +371,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系と同じ。Webview へ送信したメッセージを記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -301,6 +382,9 @@ flows:
         EX->>EX: includes を再読み込みする
         EX->>PV: render（guide.md の全文・includes）
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - 保存の後に送信した `render` が 1 回で、`includes` の `共通/手順.md` が書き換えた後の中身
       - Webview の取り込んだ段落が書き換えた後の文
@@ -316,6 +400,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系と同じ。Webview へ送信したメッセージを記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -325,6 +412,9 @@ flows:
         EX->>PV: render（guide.md の全文・新しい aliases）
         PV->>PV: destroy して mount
         PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - 保存の後に送信した `render` が 1 回で、`aliases` の `描画` の `description` が書き換えた後の意味
       - Webview のツールチップの「用語」の区分に書き換えた後の意味が出る
@@ -339,7 +429,22 @@ flows:
         description: 正常系と同じ。`mdmark.config.yaml` は `map` を持たず、`guide.md` は `:::store` のノードと `-.->` の線を持つ map の範囲を 1 つ持つ
       - name: Mock
         description: 正常系と同じ
-    flow: "sequenceDiagram\n  participant U as 文書の作成者\n  participant EX as 拡張機能\n  participant PV as Webview\n  U->>EX: mdmark.config.yaml に map.kinds.store と map.lines の -.-> を記載して保存\n  EX->>EX: features・libraries・map などを取り出す\n  EX->>PV: render（新しい config）\n  PV->>PV: destroy して mount\n  PV->>EX: rendered"
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant U as 文書の作成者
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.config.yaml に map.kinds.store と map.lines の -.-> を記載して保存
+        EX->>EX: features・libraries・map などを取り出す
+        EX->>PV: render（新しい config）
+        PV->>PV: destroy して mount
+        PV->>EX: rendered
+      ```
+
+      <!-- /map -->
     expected:
       - '`render` の `config.map` が設定ファイルの `map` と同じ値'
       - Webview の `:::store` のノードの種類の行に `database` のアイコンと「保存先」があり、`-.->` の線が破線

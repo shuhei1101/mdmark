@@ -135,48 +135,32 @@ catalogs:
         kind: アイコン
         purpose: 画像の拡大のボタンの右上のアイコン
         status: planned
-        introduced:
-          pr: 263
       - name: pause
         kind: アイコン
         purpose: GIF を止めるボタン
         status: planned
-        introduced:
-          pr: 263
       - name: play
         kind: アイコン
         purpose: GIF を再生するボタンと、図のノードの種類（判定フローチャートの開始）
         status: planned
-        introduced:
-          pr: 263
       - name: file-text
         kind: アイコン
         purpose: PDF・文書・テキストの添付のカード（CSS）
         status: planned
-        introduced:
-          pr: 263
       - name: file-spreadsheet
         kind: アイコン
         purpose: 表の添付のカード（CSS）
         status: planned
-        introduced:
-          pr: 263
       - name: file-archive
         kind: アイコン
         purpose: アーカイブの添付のカード（CSS）
         status: planned
-        introduced:
-          pr: 263
       - name: panel-right-dashed
         kind: アイコン
         purpose: 右側の目次のピン止め（押す前）
-        introduced:
-          pr: 320
       - name: panel-right
         kind: アイコン
         purpose: 右側の目次のピン止め（押した後）
-        introduced:
-          pr: 320
 lead: 線で描く 24 の格子の SVG アイコン集。アイコンごとに `path` などの要素の並びを持つ。
 purl: pkg:npm/lucide@1.59.0
 upstream: lucide-icons/lucide

@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する。ツールの引数には、プラグインの PreToolUse のフックを経由して作業のフォルダの絶対パスを入れる
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -23,6 +26,9 @@ scenarios:
         C->>S: list_templates
         S->>T: 索引を読み込む
         S-->>C: 名前・説明・タグの一覧
+      ```
+
+      <!-- /map -->
     expected:
       - テンプレートのフォルダに `brand.css` と同じ中身の CSS があり、索引に指定した名前・説明・タグの行が 1 つある
       - '`list_templates` が、登録した名前・説明・タグを返却する'
@@ -37,6 +43,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（登録する）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -44,6 +53,9 @@ scenarios:
         C->>S: add_template（同じ名前・上書きする）
         S->>T: CSS を置き換え、索引の行を書き換える
         S-->>C: 登録した名前と CSS のパス
+      ```
+
+      <!-- /map -->
     expected:
       - テンプレートのフォルダの CSS が書き換えた `brand.css` と同じ中身になる
       - 索引の同じ名前の行は 1 つのままで、説明とタグが指定した値になる
@@ -57,6 +69,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（登録する）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -64,13 +79,15 @@ scenarios:
         C->>S: add_template（同じ名前・上書きしない）
         S->>T: 索引を読み込み、同じ名前の行を見つける
         S-->>C: エラー（同じ名前があることと、上書きの指定で置き換えられること）
+      ```
+
+      <!-- /map -->
     expected:
       - ツールの結果がエラーになる
       - エラーの文に、同じ名前のテンプレートがあることと、上書きを指定すれば置き換えられることが出る
       - テンプレートのフォルダの CSS と索引は書き換わらない
     test: test_error_when_template_name_exists
 lead: Claude Code が MCP のツールで、作業のフォルダの CSS を、名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する。
-issue: 164
 primary_actor: Claude Code
 stakeholders:
   - name: 文書の作成者

@@ -155,5 +155,3 @@ functions:
         mock: なし
         expected: 空の配列
     status: planned
-    introduced:
-      pr: 328

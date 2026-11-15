@@ -22,9 +22,6 @@ data_models:
         type: boolean | undefined
         description: 比較元から変わったセクションか。`true` なら項目と右端の線に変更のマーカーを付ける（省くと付けない）
     status: planned
-    introduced:
-      pr: 166
-
 functions:
   - name: renderSideToc
     title: 右側の目次を描く
@@ -82,5 +79,3 @@ functions:
     refs:
       - CMP-472-37#
     status: planned
-    introduced:
-      pr: 166

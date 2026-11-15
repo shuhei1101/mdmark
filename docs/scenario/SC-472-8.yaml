@@ -2,7 +2,6 @@ id: SC-472-8
 visibility: internal
 title: Mermaidと補足で図を描く
 lead: 文書の map の範囲の Mermaid と補足を、mdmark が入れ子のグループを自動配置した図にして図の枠に描く。補足の layout で、配置と見た目を必要な箇所だけ上書きする。
-issue: 324
 test_file: tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts
 primary_actor: 文書の作成者（AI を含む）
 stakeholders:
@@ -26,6 +25,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。mermaid のライブラリへの要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -35,6 +37,9 @@ scenarios:
         M->>M: 内側のグループから配置し、線の経路を決める
         M-->>P: 図の枠に入れた map の図と本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - map の範囲の場所に図の枠と SVG の図があり、mermaid のブロックの文字と補足の文字が出ていない
       - 図の枠のタイトルが印の `title` の「全体の構成」で、題の行に範囲と更新日が無い
@@ -62,6 +67,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -70,6 +78,9 @@ scenarios:
         M->>M: 自動配置に layout の指定を当てる
         M-->>P: 上書きを当てた map の図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 揃える指定の 2 つのノードが同じ段に並ぶ
       - 並び順を指定したノードが、同じ段の中で指定の順に並ぶ
@@ -89,6 +100,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -97,6 +111,9 @@ scenarios:
         M->>M: 入れ子のグループの内側から自動配置する
         M-->>P: 層を持つ map の図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - システムのグループの中に 3 つの層のグループが上から並び、それぞれのタイトルが出て、色を指定した層のグループだけその色の面になる
       - 外部のシステムのノードがシステムのグループの外にある
@@ -111,6 +128,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -119,6 +139,9 @@ scenarios:
         M->>M: 相手とメッセージを読み込む
         M-->>P: 図の枠に入れたシーケンス図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 相手が記載の順に左から右へ並び、メッセージが記載の順に上から下へ並ぶ
       - 名前が 3 行に折り返して高くなった参加者の箱も、メッセージ・ブロックのタブと枠・ノートと重ならず、最初の行が一番高い箱の下から始まる
@@ -139,6 +162,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -148,6 +174,9 @@ scenarios:
         M->>M: 分類の箱の内側から配置し、関連の経路を決める
         M-->>P: 図の枠に入れた ER 図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 図の枠に、テーブルごとにテーブル名の行と列の行（キー・名前・型）を持つ箱が描かれ、mermaid のブロックと補足の文字が出ていない
       - 補足の `groups` の 3 つのテーブルが「記録」のタイトルを持つ分類の箱の中に描かれ、ほかの 2 つのテーブルは箱の外にある
@@ -168,6 +197,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -177,6 +209,9 @@ scenarios:
         M->>M: 入れ子の状態の内側から配置し、遷移の経路を決める
         M-->>P: 図の枠に入れた状態遷移図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 状態が角の丸い箱、開始が黒丸、終了が二重丸、`<<choice>>` がひし形で描かれ、`as` で付けた名前が箱に出る
       - 入れ子の状態が、名前のタイトルを持つグループとして中の状態と中の開始・終了を囲み、`direction LR` の向きに並ぶ
@@ -196,6 +231,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -204,6 +242,9 @@ scenarios:
         M->>M: 読めない行・補足の知らないキー・印の知らないキーを飛ばして読み込む
         M-->>P: 書き方の警告と、読めた部分の map の図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 図の枠の上に書き方の警告があり、読めない行と補足の知らないキーの 2 つを指す。印の知らないキーは警告に出さない（点検が通知する）
       - 読めた部分のノードと線で図が描かれている。クラス図・アーキテクチャ図・C4 図の文書でも、図の枠の上に読めない行を指す書き方の警告があり、読めた部分の図が描かれている
@@ -218,6 +259,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -226,6 +270,9 @@ scenarios:
         M->>M: 図の種類を確かめる
         M-->>P: 書き方の警告と、範囲の中身
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`pie` の範囲に、描かない図の種類である旨と、描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`）の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
       - mermaid のブロックが無い範囲に、mermaid のブロックが無い旨の書き方の警告がある
@@ -240,6 +287,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -249,6 +299,9 @@ scenarios:
         P-->>U: 文書を表示
         U->>P: 折りたたみの見出しを押す
         P-->>U: 図を開く
+      ```
+
+      <!-- /map -->
     expected:
       - 開いたとき、図が閉じた折りたたみに入り、見出しに印の `title` が出る
       - 折りたたみを開くと、正常シナリオと同じ配置の図が出る
@@ -262,6 +315,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 構成図
@@ -271,6 +327,9 @@ scenarios:
         D-->>U: 選んだ 2 つのノードの間の線と両端のほかを薄くする
         U->>D: 右上の「配置と選択を元に戻す」を押す
         D-->>U: 選択を解く
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ選ぶと、そのノードとつながる 2 本の線とラベルの表示は変わらず、線の相手のノードを含むほかのノード・線・ラベルが薄くなり、2 本の線の上をデータの印が流れ続ける
       - 2 つ選ぶと、選んだ 2 つのノードとその間の線だけが残る
@@ -288,6 +347,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 構成図
@@ -301,6 +363,9 @@ scenarios:
         D-->>U: 動かした配置のまま描く
         U->>D: 右上の「配置と選択を元に戻す」を押す
         D-->>U: 自動配置に戻す
+      ```
+
+      <!-- /map -->
     expected:
       - どの深さのグループの中のノードも、ポインターの動いた分だけ動き、ノードを含むグループの枠がノードを囲むまで右と下へ広がる。動かしたノードと、それを含むグループの大きさのほかは位置が変わらない。押しただけ（4px 未満）のときは選択が切り替わる
       - ノードはグループの左端・上端より外へは動かない
@@ -322,6 +387,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 構成図
@@ -329,6 +397,9 @@ scenarios:
         D-->>U: 表示する枠を高くする
         U->>D: リサイズハンドルをダブルクリックする
         D-->>U: 表示する枠の高さを図の高さに合わせる
+      ```
+
+      <!-- /map -->
     expected:
       - 図の高さを越えても、ドラッグした分だけ表示する枠が高くなる
       - ダブルクリックで、表示する枠の高さが図の高さに合い、図の倍率は変わらない
@@ -342,6 +413,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as ER 図
@@ -353,6 +427,9 @@ scenarios:
         D-->>U: 2 本の最短の経路のテーブルと関連を全て残し、経路ごとに 1 対多の向きにたどる関連に印を付ける
         U->>D: 右上の「配置と選択を元に戻す」を押す
         D-->>U: 選択を解く
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ選ぶと、そのテーブル・関連の線・線の相手のテーブルの表示は変わらず、ほかのテーブルと関連が薄くなる
       - 「注文」と「商品」を選ぶと、間の「明細」を通る経路のテーブルと関連だけが残る
@@ -370,6 +447,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 状態遷移図
@@ -377,6 +457,9 @@ scenarios:
         D-->>U: その状態に入る遷移と出る遷移と、その相手のほかを薄くする
         U->>D: Esc を押す
         D-->>U: 選択を解く
+      ```
+
+      <!-- /map -->
     expected:
       - 状態を選ぶと、入る 2 本と出る 2 本の遷移・そのラベル・遷移の相手の状態の表示は変わらず、ほかの状態と遷移が薄くなり、選んだ状態に入る遷移と出る遷移の上をデータの印が向きに沿って流れる
       - 入れ子の状態のグループのタイトルを押すと、構成図のグループと同じく中へ入る（『図のグループの中へ入る・開閉する』）
@@ -392,6 +475,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。リンク先への遷移を手元の応答で受け、開いた URL を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -402,6 +488,9 @@ scenarios:
         P-->>U: 文書を表示
         U->>P: リンク先を持つノードを押す
         P-->>U: ノードのリンク先を開く
+      ```
+
+      <!-- /map -->
     expected:
       - リンク先を持つ 2 つのノードがリンクになり、リンク先を持たないノードはリンクにならない
       - '`https://example.com/spec` のノードを押すと、そのリンク先が開く。`./other.md` のノードを押すと、本文の相対パスのリンクと同じく、ページの URL を基準にした `other.md` が開く'
@@ -418,6 +507,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -426,6 +518,9 @@ scenarios:
         M->>M: ノードのリンク先を本文のリンクと同じ許可で確認する
         M-->>P: 許可しないリンク先の書き方の警告と、リンクにしないノードの map の図と本文
         P-->>U: 警告と図と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つのノードがリンクにならず、ノードの名前は描かれている
       - 図の場所に、許可しないリンク先を記載したノードの ID とリンク先を記載した書き方の警告がある
@@ -442,6 +537,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -451,6 +549,9 @@ scenarios:
         M->>M: namespace の内側から配置し、関係の経路を決める
         M-->>P: 図の枠に入れたクラス図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - クラスごとに、クラス名の行・属性の行・メソッドの行を区切り線で分けた箱が描かれ、`<<interface>>` はクラス名の上に、型の引数は `<T>` の形でクラス名に出る
       - メンバーの行に可視性の記号・名前・型が出て、静的なメンバーは下線、抽象のメンバーは斜体で描かれる
@@ -471,6 +572,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -480,6 +584,9 @@ scenarios:
         M->>M: group の内側から配置し、線の辺の指定に合わせて並べる
         M-->>P: 図の枠に入れたアーキテクチャ図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - service がアイコンと名前で描かれ、`cloud`・`database`・`disk`・`internet`・`server` がそれぞれ別のアイコンになる
       - group が名前とアイコンのタイトルを持つ枠で中の service を囲み、入れ子の group は外の group の中に描かれる
@@ -499,6 +606,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -508,6 +618,9 @@ scenarios:
         M->>M: 境界の内側から配置し、関係の向きの指定に合わせて並べる
         M-->>P: 図の枠に入れた C4 図
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 要素が種類の行（`[Person]`・`[Software System]` など）・名前・説明を持つ箱で描かれ、人は人のアイコン、`SystemDb` はデータベースのアイコン、`SystemQueue` は角の丸い横長の形、`_Ext` の要素は種類の行が `[External Person]`・`[External Software System]` で灰色の面で描かれる
       - 境界が名前と種類のタイトルを持つ破線の枠で中の要素を囲み、入れ子の境界は外の境界の中に描かれる
@@ -524,6 +637,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as クラス図
@@ -535,6 +651,9 @@ scenarios:
         D-->>U: 2 本の最短の経路のクラスと関係を全て残す
         U->>D: Esc を押す
         D-->>U: 選択を解く
+      ```
+
+      <!-- /map -->
     expected:
       - 「基本図形」を選ぶと、「基本図形」・3 本の関係の線・「図形」「円」「図面」の表示は変わらず、「一覧」「描画器」とほかの関係が薄くなる
       - 「描画器」と「一覧」を選ぶと、「図面」を通る経路の 3 つのクラスと 2 本の関係だけが残る
@@ -549,6 +668,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -556,6 +678,9 @@ scenarios:
         D-->>U: その項目とつながる線と相手のほかを薄くする
         U->>D: 相手の項目の 1 つも押す
         D-->>U: 選んだ 2 つの間の線と両端のほかを薄くする
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの種類とも、項目の選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる
     test: test_normal_when_architecture_c4_selected

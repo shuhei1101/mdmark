@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: '`env.openExternal` を、指定された URL を記録する代役に差し替える'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant PV as Webview
@@ -21,6 +24,9 @@ flows:
         U->>PV: https://example.com/ を押す
         PV->>EX: openLink
         EX->>BR: env.openExternal
+      ```
+
+      <!-- /map -->
     expected:
       - 代役に `https://example.com/` が 1 回渡る
       - Webview の文書が再描画されず、スクロールの位置が変わらない
@@ -33,6 +39,9 @@ flows:
       - name: Mock
         description: 正常系（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant PV as Webview
@@ -40,6 +49,9 @@ flows:
         U->>PV: other.md を押す
         PV->>EX: openLink
         EX->>EX: showTextDocument（other.md）
+      ```
+
+      <!-- /map -->
     expected:
       - アクティブなエディタの文書が `other.md` で、`guide.md` のエディタと同じ列にある
       - '`env.openExternal` の代役は呼ばれない'
@@ -52,11 +64,17 @@ flows:
       - name: Mock
         description: 正常系（外部の URL）と同じ。拡張機能が受けたメッセージを記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant PV as Webview
         U->>PV: # で始まるリンクを押す
         PV->>PV: 見出しへ scrollIntoView
+      ```
+
+      <!-- /map -->
     expected:
       - Webview の見えている範囲にリンク先の見出しが入る
       - 拡張機能が `openLink` を受けず、エディタがもう一度開かれない
@@ -69,6 +87,9 @@ flows:
       - name: Mock
         description: 正常系（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant PV as Webview
@@ -76,6 +97,9 @@ flows:
         U->>PV: ./missing.md を押す
         PV->>EX: openLink
         EX->>EX: ファイルが無いので何もしない
+      ```
+
+      <!-- /map -->
     expected:
       - エディタの数が変わらず、`env.openExternal` の代役も呼ばれない
       - 拡張機能が例外を投げない
@@ -87,12 +111,18 @@ flows:
         description: '`## 導入` を閉じた状態で描き、その中に閉じた状態の `### 注意` と段落を持つ `guide.md` のプレビューを開いた状態。右側の目次は既定の出し方'
       - name: Mock
         description: 正常系（外部の URL）と同じ。拡張機能が受けたメッセージを記録する
-    flow: |
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant PV as Webview
         U->>PV: 右側の目次の「注意」を押す
         PV->>PV: 「導入」と「注意」のセクションを開いて見出しへ scrollIntoView
+      ```
+
+      <!-- /map -->
     expected:
       - '`導入` と `注意` のセクションが開き、Webview の見えている範囲に `注意` の見出しが入り、`注意` の段落が表示されている'
       - 拡張機能が `openLink` を受けず、エディタがもう一度開かれない
@@ -105,6 +135,9 @@ flows:
       - name: Mock
         description: 正常系（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant PV as プレビュー（Webview）
         participant EX as 拡張機能
@@ -113,6 +146,9 @@ flows:
         EX->>ED: other.md を開く
         PV-->>EX: openLink（https://aka.ms/mdmark）
         EX->>EX: env.openExternal
+      ```
+
+      <!-- /map -->
     expected:
       - '`other.md` を指すノードを押すと、`other.md` がエディタで開く'
       - '`https://aka.ms/mdmark` を指すノードを押すと、`env.openExternal` の代役にその URL が 1 回だけ渡る'

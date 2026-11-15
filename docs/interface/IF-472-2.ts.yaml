@@ -104,6 +104,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -113,6 +116,9 @@ flows:
         S->>F: brand.css を読み込む
         S->>T: brand.css を書き込み、索引を書き込む
         S-->>C: name・path・replaced
+      ```
+
+      <!-- /map -->
     expected:
       - テンプレートのフォルダに作業のフォルダの `brand.css` と同じ中身の `brand.css` がある
       - '索引が `schema: 1` と、指定した `name`・`description`・`tags` と `file: brand.css` の行 1 つを持つ'
@@ -128,6 +134,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -135,6 +144,9 @@ flows:
         C->>S: add_template（同じ name・overwrite: true）
         S->>T: CSS と索引の行を置き換える
         S-->>C: replaced: true
+      ```
+
+      <!-- /map -->
     expected:
       - テンプレートのフォルダの `brand.css` が書き換えた中身になる
       - 索引の行は 1 つのままで、`description`・`tags` が指定した値になる
@@ -150,6 +162,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -157,6 +172,9 @@ flows:
         C->>S: add_template（同じ name）
         S->>T: 索引を読み込む
         S-->>C: isError（同じ名前があることと overwrite）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容の文に `brand` と `overwrite` が出る
@@ -172,12 +190,18 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
         C->>S: add_template（file: missing.css）
         S->>S: missing.css が無い
         S-->>C: isError（無いパス）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容の文に `missing.css` が出る

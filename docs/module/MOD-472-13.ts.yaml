@@ -4,11 +4,6 @@ title: ClaudeCodeプラグイン / フック / pre-tool-use.ts
 lead: プラグインの `hooks/hooks.json` が `node` で起動する処理。PreToolUse で作業のフォルダを MCP のツールの引数 `project_dir` に入れる。
 test_files:
   - tests/unit/src/plugin/pre-tool-use.test.ts
-directory: |-
-  ```tree
-  src/plugin/
-  └── pre-tool-use.ts   # PreToolUse のフックの入口
-  ```
 constants:
   - name: PROJECT_DIR_ENV
     title: 作業のフォルダの環境変数
@@ -19,8 +14,6 @@ constants:
     refs:
       - IF-472-5#
     status: planned
-    introduced:
-      pr: 72
   - name: TOOL_NAME_PREFIX
     title: ツールの完全名の頭
     container: src/plugin/pre-tool-use.ts
@@ -28,8 +21,6 @@ constants:
     summary: Claude Code がプラグイン mdmark の MCP サーバー mdmark のツール名の前に付ける頭
     value: mcp__plugin_mdmark_mdmark__
     status: planned
-    introduced:
-      pr: 141
   - name: PROJECT_DIR_TOOLS
     title: 作業のフォルダを使用するツール
     container: src/plugin/pre-tool-use.ts
@@ -39,8 +30,6 @@ constants:
     refs:
       - IF-472-5#constraints
     status: planned
-    introduced:
-      pr: 141
   - name: PERMISSION_DECISION_REASON
     title: 許可した理由
     container: src/plugin/pre-tool-use.ts
@@ -50,8 +39,6 @@ constants:
     refs:
       - IF-472-5#response
     status: planned
-    introduced:
-      pr: 517
 functions:
   - name: runPreToolUse
     title: 作業のフォルダを引数に入れる
@@ -103,5 +90,9 @@ functions:
     refs:
       - IF-472-5#
     status: planned
-    introduced:
-      pr: 141
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/plugin/
+    └── pre-tool-use.ts   # PreToolUse のフックの入口
+    ```

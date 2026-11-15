@@ -17,8 +17,6 @@ data_models:
     refs:
       - IF-472-21#constraints[背面のパネル]
     status: planned
-    introduced:
-      pr: 243
   - name: VsCodeApi
     title: VS Code の Webview の API
     container: vscode/src/webview/shared/adapters/vscode-api.ts

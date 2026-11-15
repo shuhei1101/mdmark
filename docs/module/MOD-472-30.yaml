@@ -2,26 +2,27 @@ id: MOD-472-30
 visibility: internal
 title: ライブラリ本体 / バージョンを上げる
 lead: '`mdmark upgrade` の処理。バージョンの読み取りと比較、移行の手順の読み取り・検め・適用、コピーと戻し、変更履歴の行の抽き出し、標準入力での質問を持ち、`runUpgrade` がこれらと CLI の点検をつなぐ。'
-directory: |-
-  ```tree
-  src/cli/
-  ├── versions.ts    # バージョンの書式・比較・呼んだ CLI のバージョン
-  ├── migrations.ts  # 移行の手順の読み取り・構造の検め・適用
-  ├── backup.ts      # 適用する前のコピーとコピーからの戻し
-  ├── changelog.ts   # 変更履歴の表から範囲の行を抽き出す
-  ├── prompt.ts      # 標準入力の 1 行を回答にする質問
-  └── upgrade.ts     # mdmark upgrade
-  schemas/
-  └── mdmark.steps.schema.json  # steps.yaml の JSON Schema
-  migrations/
-  ├── v{バージョン}/        # 出したバージョンの steps.yaml とスクリプト
-  ├── next/          # 出していないバージョンの steps.yaml とスクリプト
-  │   ├── steps.yaml
-  │   ├── retired-diagrams.mjs  # 文書の廃止した flow・sequence の範囲を map の範囲へ書き換え、設定に map.kinds・map.lines を書き足す
-  │   ├── retired-diagrams.js   # retired-diagrams.mjs が読み込む書き換えの処理と拡張の読み込み（ビルドがまとめて commit する）
-  │   └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（ビルドが書き込んで commit する）
-  └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
-  ```
 refs:
   - IF-472-28#
   - ER-472-5#
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/cli/
+    ├── versions.ts    # バージョンの書式・比較・呼んだ CLI のバージョン
+    ├── migrations.ts  # 移行の手順の読み取り・構造の検め・適用
+    ├── backup.ts      # 適用する前のコピーとコピーからの戻し
+    ├── changelog.ts   # 変更履歴の表から範囲の行を抽き出す
+    ├── prompt.ts      # 標準入力の 1 行を回答にする質問
+    └── upgrade.ts     # mdmark upgrade
+    schemas/
+    └── mdmark.steps.schema.json  # steps.yaml の JSON Schema
+    migrations/
+    ├── v{バージョン}/        # 出したバージョンの steps.yaml とスクリプト
+    ├── next/          # 出していないバージョンの steps.yaml とスクリプト
+    │   ├── steps.yaml
+    │   ├── retired-diagrams.mjs  # 文書の廃止した flow・sequence の範囲を map の範囲へ書き換え、設定に map.kinds・map.lines を書き足す
+    │   ├── retired-diagrams.js   # retired-diagrams.mjs が読み込む書き換えの処理と拡張の読み込み（ビルドがまとめて commit する）
+    │   └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（ビルドが書き込んで commit する）
+    └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
+    ```

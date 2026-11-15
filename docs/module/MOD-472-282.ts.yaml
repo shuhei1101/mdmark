@@ -137,5 +137,3 @@ functions:
         mock: なし
         expected: '`close` が `-1`、`nested` が `true`'
     status: planned
-    introduced:
-      pr: 275

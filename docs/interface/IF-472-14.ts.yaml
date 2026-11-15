@@ -15,12 +15,18 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: keys --target settings
         P->>P: Schema と端末の設定を読み込む
         P-->>K: キーごとの今の値・既定・説明・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`keys[]` に `features.table`（`current` が `false`）・`config.cascade`・`serve.tmuxSession`・`serve.launcher`・`serve.systemdUnit` があり、それぞれ `default` と `description` を持つ'
@@ -35,11 +41,17 @@ flows:
       - name: Mock
         description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant K as スキル（global-setup・setup）
         participant P as setup.js
         K->>P: keys --target config --dir {フォルダ}
         P-->>K: キーごとの今の値・端末の設定の値・既定・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`features.table` の `current` が `null`、`inherited` が `false`'
       - '`config.cascade`・`serve.tmuxSession`・`serve.launcher`・`serve.systemdUnit` が無い'

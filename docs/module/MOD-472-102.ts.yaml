@@ -106,5 +106,3 @@ functions:
     refs:
       - IF-472-15#constraints[埋める色分けのライブラリ]
     status: planned
-    introduced:
-      pr: 484

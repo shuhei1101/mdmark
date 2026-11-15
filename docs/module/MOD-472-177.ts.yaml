@@ -84,5 +84,3 @@ functions:
         mock: なし
         expected: '`dragstart` が `defaultPrevented`'
     status: planned
-    introduced:
-      pr: 263

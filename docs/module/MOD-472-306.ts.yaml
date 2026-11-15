@@ -31,8 +31,6 @@ constants:
     summary: 色分けするコードブロックの `code` に付け、値に言語のモジュール名を持つ属性。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に記載した生の HTML の `code` は色分けの対象にならない
     value: '"data-mdmark-syntax"'
     status: planned
-    introduced:
-      pr: 97
   - name: MERMAID_ATTRIBUTE
     title: mermaid の対象の属性
     container: src/parts/code-block.ts
@@ -41,8 +39,6 @@ constants:
     refs:
       - IF-472-34#constraints[mermaid のコードブロック]
     status: planned
-    introduced:
-      pr: 382
 functions:
   - name: renderCodeBlock
     title: コードブロックを描く
@@ -165,8 +161,6 @@ functions:
         mock: なし
         expected: '`idle` は `コピー` で `role="status"` が空、`copied` は `コピーしました` と `コードをコピーしました`、`failed` は `コピーできませんでした` と `コードをコピーできませんでした`。どれも `type="button"` と `data-state` を持つ'
     status: planned
-    introduced:
-      pr: 151
   - name: renderCodeFoldToggle
     title: 行の開閉のボタンを描く
     container: src/parts/code-block.ts
@@ -191,8 +185,6 @@ functions:
         mock: なし
         expected: '`aria-expanded="false"`・`aria-label="4 行目から 7 行目"` と `chevron-right` の svg を持つ'
     status: planned
-    introduced:
-      pr: 275
   - name: renderCodeFoldMore
     title: 畳んだ行の ⋯ のボタンを描く
     container: src/parts/code-block.ts
@@ -215,5 +207,3 @@ functions:
         mock: なし
         expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
     status: planned
-    introduced:
-      pr: 275

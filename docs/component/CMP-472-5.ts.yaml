@@ -185,6 +185,4 @@ accessibility:
 refs:
   - IF-472-35#
 status: planned
-introduced:
-  pr: 445
 test_file: tests/integration/lib/map-flow.story.test.ts

@@ -71,8 +71,6 @@ functions:
         expected: '`CliError` を投げ、メッセージに `mdmark init` が入る'
         exception: CliError
     status: planned
-    introduced:
-      pr: 32
   - name: loadConfig
     title: 設定ファイルを読み込む
     container: src/cli/config.ts
@@ -108,8 +106,6 @@ functions:
         expected: '`CliError` を投げ、メッセージに `3 行目` が入る'
         exception: CliError
     status: planned
-    introduced:
-      pr: 32
   - name: requireConfig
     title: 書き出しに使用する設定を読み込む
     container: src/cli/config.ts
@@ -146,8 +142,6 @@ functions:
       - MOD-472-116#functions[loadLayeredConfig]
       - MOD-472-116#functions[displayConfigPath]
     status: planned
-    introduced:
-      pr: 32
     process: |-
       1. 設定を重ねて読み込む（設定を重ねて読み込む。`purpose: export`、`env` は `process.env`、`home` は `os.homedir()`）
          - `ConfigNotFoundError` の場合、その文で `CliError` を投げる

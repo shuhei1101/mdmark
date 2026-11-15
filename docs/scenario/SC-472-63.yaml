@@ -14,6 +14,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -22,6 +25,9 @@ scenarios:
         M->>M: 比較元と本文をブロックで比べる
         M-->>P: 変わったブロックを強調した文書
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落 A と段落 D が追加・変更のブロックとして強調され、段落 C は強調されていない
       - 段落 B が、段落 A の前（本文の先頭）に削除のブロックとして出る（直前の段落 A は書き換えたブロックで、変えていないブロックではないため）
@@ -41,6 +47,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -54,6 +63,9 @@ scenarios:
         P->>M: update(描く Markdown, {baseMarkdown: null})
         M-->>P: 強調の無い文書
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 次の比較元に差し替えた後、段落 D だけが追加のブロックとして強調され、削除のブロックが無い
       - 第 2 引数を省いて `update` を呼んだ後も、前の比較元（次の比較元）との強調のまま
@@ -70,6 +82,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -79,6 +94,9 @@ scenarios:
         P->>M: update(描く Markdown, {baseMarkdown: 比較元})
         M-->>P: 段落 A・B・D を強調した文書
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、追加・変更・削除のブロックが無く、比較元を省いたときと同じ HTML になる
       - 比較元を `update` で指定した後、正常シナリオと同じブロックが強調される
@@ -92,6 +110,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -99,6 +120,9 @@ scenarios:
         P->>M: 比較元と同じ Markdown を指定して描かせる
         M-->>P: 強調の無い文書
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 追加・変更・削除のブロックが無い
     test: test_normal_when_unchanged
@@ -109,11 +133,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 比較元に 1 を指定して描かせる
         M-->>P: TypeError
+      ```
+
+      <!-- /map -->
     expected:
       - '`mount` が、`baseMarkdown` を文字列か `null` で指定するよう伝える `TypeError` を投げる'
       - 描く先の要素の中は空のまま
@@ -130,6 +160,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -141,6 +174,9 @@ scenarios:
         P->>M: update(描く Markdown, {baseMarkdown: null})
         M-->>P: 強調と変更のマーカーの無い文書
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 右側の目次の見出し B・C・D の項目に変更のマーカーがあり、見出し A の項目には無い
       - 変更のマーカーの付いた項目は、読み上げで項目の名前に続けて `変更` と読まれる（視覚に出さない文言を持つ）
@@ -158,6 +194,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -166,12 +205,14 @@ scenarios:
         M-->>P: 変わったセクションの目次の項目に変更のマーカーを付けた文書
         U->>P: 目次を出すボタンを押す
         P-->>U: 見出し B・C・D の項目に変更のマーカーがある目次
+      ```
+
+      <!-- /map -->
     expected:
       - 右側の目次の見出し B・C・D の項目に変更のマーカーがあり、見出し A の項目には無い
       - 変更のマーカーの付いた項目は、読み上げで項目の名前に続けて `変更` と読まれる
     test: test_normal_when_fixed_side_toc_marked
 lead: 利用側のページが、描く Markdown と一緒に比較元の Markdown を文字列で `mount` に指定し、本文の中で比較元から追加・変更したブロックと削除したブロックの位置を差分のブロックで強調する。`update` で本文と比較元を差し替える。
-issue: 222
 primary_actor: mdmark を使用するアプリのページ
 stakeholders:
   - name: 利用側のアプリの開発者

@@ -35,8 +35,6 @@ constants:
       - key: min
         value: '120'
     status: planned
-    introduced:
-      pr: 308
 functions:
   - name: fitScale
     title: 全体が収まる倍率
@@ -124,8 +122,6 @@ functions:
         mock: なし
         expected: '`max` が `min` より大きく、`step` が 0 より大きい'
     status: planned
-    introduced:
-      pr: 45
   - name: stackSeries
     title: 系列を積み上げる
     container: src/diagram/geometry.ts
@@ -148,8 +144,6 @@ functions:
         mock: なし
         expected: '`[[{0, 3}, {0, 1}], [{3, 7}, {0, -2}], [{0, -1}, {1, 3}]]`'
     status: planned
-    introduced:
-      pr: 275
   - name: clampDiagramHeight
     title: 表示する枠の高さを範囲に収める
     container: src/diagram/geometry.ts
@@ -172,5 +166,3 @@ functions:
         mock: なし
         expected: '`120`・`401`・`3000`'
     status: planned
-    introduced:
-      pr: 308

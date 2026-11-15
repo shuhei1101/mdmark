@@ -50,5 +50,3 @@ functions:
         mock: '`onColumnsChange` を見張る'
         expected: '説明のセルが `hidden`、ボタンのバッジが `1`・`aria-label` が `テーブル設定（1 列を非表示）`、`onColumnsChange` が `{ hidden: ["説明"] }` で 1 回'
     status: planned
-    introduced:
-      pr: 303

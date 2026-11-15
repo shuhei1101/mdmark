@@ -40,6 +40,4 @@ accessibility:
   - 列の開閉のボタンはスクリーンリーダー向けの名前 `「{論理名}」の主キーと外部キー以外の列` と `aria-expanded` を持つ
   - テーブル・列・関係のラベルの文字は選べ、スクリーンリーダーに出る。関係の線と多重度の記号の svg は `aria-hidden`
 status: planned
-introduced:
-  pr: 298
 test_file: tests/integration/lib/er-diagram.story.test.ts

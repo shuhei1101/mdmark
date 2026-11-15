@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -24,6 +27,9 @@ scenarios:
         P-->>U: 昇順に並べ替えた表
         U->>P: もう一度押す
         P-->>U: 元の並びに戻した表
+      ```
+
+      <!-- /map -->
     expected:
       - 1 回押した後、数値の列が上から `33`・`10`・`2` の順（数値として比べる）で、見出しの `aria-sort` が `descending`
       - 2 回押した後、数値の列が上から `2`・`10`・`33` の順で、見出しの `aria-sort` が `ascending`
@@ -41,6 +47,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -53,6 +62,9 @@ scenarios:
         P-->>U: 「りんご」を含む候補だけのドロワー
         U->>P: 「りんご」のチェックボックスを選ぶ
         P-->>U: 選んだ値の行だけの表
+      ```
+
+      <!-- /map -->
     expected:
       - 絞り込みのボタンは名前の列の見出しにだけあり、ほかの列の見出しには無い
       - ドロワーに `りんご`・`みかん`・`りんご飴` のチェックボックスが並ぶ
@@ -71,6 +83,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -81,6 +96,9 @@ scenarios:
         P-->>U: 文字の入力欄
         U->>P: 入力欄に「描画」を入れる
         P-->>U: 説明に「描画」を含む行だけの表
+      ```
+
+      <!-- /map -->
     expected:
       - 絞り込みのボタンを押すと、チェックボックスではなく文字の入力欄が出る
       - '`描画` を入れた後、`描画を速くする`・`描画の崩れを修正する` の行が表示され、`印刷を修正する` の行が表示されていない'
@@ -94,6 +112,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -104,6 +125,9 @@ scenarios:
         P-->>U: 開始日と終了日の入力欄
         U->>P: 開始日に 2026-10-05、終了日に 2026-10-15 を入れる
         P-->>U: 期間に入る行だけの表
+      ```
+
+      <!-- /map -->
     expected:
       - 絞り込みのボタンを押すと、開始日と終了日の日付の入力欄が出る
       - 期間を入れた後、`2026-10-10` の行だけが表示されている
@@ -121,6 +145,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -135,6 +162,9 @@ scenarios:
         P-->>U: 8 列目と 9 列目が右端に留まった表
         U->>P: 3 列目のピン止めをもう一度押す
         P-->>U: 3 列目だけを解除した表
+      ```
+
+      <!-- /map -->
     expected:
       - 表がはみ出しているため、各列の見出しにピン止めのボタンがある
       - 3 列目のピン止めを押して右へスクロールした後、1 列目と 3 列目が表の左端に重ならずに並んで見えていて、2 列目は見えていない
@@ -152,6 +182,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -160,6 +193,9 @@ scenarios:
         M-->>P: 1 つ目の表を閉じた折りたたみ、2 つ目の表を開いた折りたたみに入れて描く
         U->>P: 1 つ目の折りたたみの見出しを押す
         P-->>U: 開いた表
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、1 つ目の表が閉じた折りたたみの中にあり、表の行が表示されていない
       - 1 つ目の折りたたみの見出しが「表（3 行）」で、2 つ目の折りたたみの見出しが `collapse.title` の「リリースの一覧」
@@ -176,6 +212,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -183,6 +222,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 並べ替えを削除した表を描く
         P-->>U: 表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の見出しに並べ替えのボタンが無い
       - 表の見出しにピン止めのボタンがある
@@ -197,6 +239,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -205,6 +250,9 @@ scenarios:
         M->>M: kind の値が選べる値に無いため kind を適用せず、既定の種類にする
         M-->>P: 記載の警告と、既定の種類に features の sort を適用した表を描く
         P-->>U: 記載の警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上に、`kind` の `unknown` が選べる値に無いことと、選べる値（`data`・`plain`）を記載した記載の警告がある
       - 表にピン止めと並べ替えのボタンがある
@@ -219,6 +267,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -227,6 +278,9 @@ scenarios:
         M->>M: マーカーから文書の終わりまでを範囲にする
         M-->>P: 記載の警告と、2 つの表に data の機能を付けて描く
         P-->>U: 記載の警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の始まりに、`<!-- /table -->` が無いことを記載した記載の警告がある
       - 2 つの表の両方に並べ替えのボタンがある
@@ -241,6 +295,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -249,6 +306,9 @@ scenarios:
         M->>M: 知らない機能とキーをスキップする
         M-->>P: data の機能を付けた表を描く
         P-->>U: 表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上に記載の警告が無い
       - 表にピン止めと並べ替えのボタンがある
@@ -262,6 +322,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -270,6 +333,9 @@ scenarios:
         M->>M: 知らない絞り込みの種類を適用しない
         M-->>P: 記載の警告と、説明の列だけに絞り込みのボタンを付けた表を描く
         P-->>U: 記載の警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上に、`columns.名前.filter.type` の `range` が選べる値に無いことと、選べる値（`select`・`text`・`date`）を記載した記載の警告がある
       - 説明の列の見出しに絞り込みのボタンがあり、名前の列の見出しには無い
@@ -283,6 +349,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -291,6 +360,9 @@ scenarios:
         M-->>P: 表の上に件数を出した表を描く
         U->>P: 説明の列を「描画」で絞り込む
         P-->>U: 件数を書き換えた表
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、表の上の件数が、表示している行の数 3 と全ての行の数 3 を示す
       - 「描画」で絞り込んだ後、件数が、表示している行の数 2 と全ての行の数 3 を示す
@@ -306,6 +378,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -318,6 +393,9 @@ scenarios:
         P-->>U: 名前と説明の列を出した表
         U->>P: Esc を押す
         P-->>U: パネルを閉じた表
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、説明の列の見出しとセルが表示されておらず、名前と更新日の列が表示されている
       - テーブル設定のボタンは文字を持たないアイコンだけのボタンで、ツールチップが「テーブル設定」
@@ -338,6 +416,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -352,6 +433,9 @@ scenarios:
         M->>P: onColumnsChange({tableIndex: 1, hidden: []})
         U->>P: 2 つ目の表のテーブル設定で備考をもう一度隠す
         M->>P: onColumnsChange({tableIndex: 1, hidden: [備考]})
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後には `onColumnsChange` が呼ばれていない
       - '説明を目のアイコンで隠した後、`onColumnsChange` が `{tableIndex: 0, hidden: ["説明"]}` を受けて呼ばれる'
@@ -371,6 +455,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -381,6 +468,9 @@ scenarios:
         P-->>U: 集計をもう一度計算した表
         U->>P: 数量の列の並べ替えを押す
         P-->>U: 集計の行が末尾に残った表
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、集計の行が 3 行あり、先頭のセルが上から `合計`・`平均`・`件数`
       - 描いた直後、合計の行の数量が `45`（空のセルを除いた合計）、平均の行の単価が `250`、件数の行の産地が `3`（空でないセルの数）で、各行のほかの列のセルは空
@@ -400,6 +490,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -409,6 +502,9 @@ scenarios:
         U->>P: 名前の列を「りんご」で絞り込む
         U->>P: コピーのボタンを押し、形式に TSV を選ぶ
         P-->>U: コピーしたことを通知するボタン
+      ```
+
+      <!-- /map -->
     expected:
       - コピーのボタンから、Markdown の表と TSV の 2 つの形式を選べる
       - クリップボードの中身が `名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20`（見出しの行と「りんご」を含む 2 行の、隠した説明の列を除く 2 列を、セルをタブで、行を改行で区切ったテキスト）
@@ -428,6 +524,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -441,6 +540,9 @@ scenarios:
         M->>M: 閉じたセクションを開き、表 B の絞り込みを解除する
         M-->>P: もも の行へ移り、行を強調した表
         P-->>U: もも の行が見えている表
+      ```
+
+      <!-- /map -->
     expected:
       - 各行の先頭のセルに、その行の `id` を指す `#ID` のリンクがある
       - ページを開いた後、閉じていた表 A が開き、`みかん` の行が画面の中に見えていて、`みかん` の行だけが強調されている
@@ -457,6 +559,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -465,6 +570,9 @@ scenarios:
         M->>M: 選べる値に無い計算・表に無い列・削除した機能の列の設定を適用しない
         M-->>P: 記載の警告と、読み込めた指定だけを適用した表を描く
         P-->>U: 記載の警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表 A の上に、読み込めない指定ごとに 1 つずつ、`calc` の `max` が選べる値に無いことと選べる値（`sum`・`avg`・`count`）、`価格` が表に無い列名であること、`備考` が表に無い列名であること、`名前` は先頭の列で隠せないことを記載した記載の警告が 4 つある
       - 表 A の集計の行は平均の 1 行だけで、単価の列にだけ値を持ち、数量の列は空で、表 A の名前の列を含む全ての列が表示されている
@@ -482,6 +590,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -493,6 +604,9 @@ scenarios:
         P-->>U: コピーする中身を選択したパネル
         U->>P: パネルを閉じる
         P-->>U: コピーのボタンへフォーカスを戻した表
+      ```
+
+      <!-- /map -->
     expected:
       - コピーできなかったことと手でコピーできることが知らされ、スクリーンリーダーでも知らされる
       - パネルの中に、コピーする中身（見出しの行と 3 行の TSV）が全て選択された状態で出ている
@@ -511,6 +625,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -526,6 +643,9 @@ scenarios:
         P-->>U: 並べ替えた表
         U->>P: 表の後の段落までページをスクロールする
         P-->>U: 見出し行と集計の行も画面の外に出た表
+      ```
+
+      <!-- /map -->
     expected:
       - 表が表の中で縦にスクロールせず、表の全ての行がページの中に並ぶ
       - 表の途中を出したとき、見出し行が画面の上端に見えていて、集計の行が画面の下端に見えている
@@ -546,6 +666,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -555,6 +678,9 @@ scenarios:
         M-->>P: 最小の幅で描き、表の中で横にスクロールする表を描く
         U->>P: 表を横にスクロールする
         P-->>U: 説明の列が見える表
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、名前・状態・説明の 3 列の見出しとセルが表に出ていて、行に開閉のボタンが無い
       - 表の外側の枠線の幅が本文の幅と同じで、表の中で横にスクロールでき、スクロールした後に説明の列のセルが見える
@@ -569,6 +695,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -581,6 +710,9 @@ scenarios:
         P-->>U: 平均の行を出さない表
         U->>P: 平均にチェックを入れる
         P-->>U: 平均の行を戻した表
+      ```
+
+      <!-- /map -->
     expected:
       - メニューに `合計`・`平均`・`件数` のチェックボックスが並び、全てチェックが入っている（既定は `columns.{列名}.total` に記載した全ての計算）
       - 平均のチェックを解除した後、集計の行が `合計`・`件数` の 2 行だけになる
@@ -599,6 +731,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -607,6 +742,9 @@ scenarios:
         M->>M: 数量の列に数として読み込めないセルがある
         M-->>P: 警告と、数量の合計を出さない集計の行を持つ表を描く
         P-->>U: 警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 合計の行の数量のセルが空で、読み込めたセルだけの合計 `12` を出していない
       - 数量の列に数として読み込めないセル `-` があるため合計を出さないことを記載した警告がある
@@ -624,6 +762,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -634,6 +775,9 @@ scenarios:
         U->>P: 名前の列を「りんご」で絞り込む
         U->>P: コピーのボタンを押し、形式に Markdown を選ぶ
         P-->>U: コピーしたことを通知するボタン
+      ```
+
+      <!-- /map -->
     expected:
       - クリップボードの中身が `| 名前 | 説明 |\n| --- | --- |\n| りんご | 描画を速くする |\n| りんご飴 | 描画の崩れを修正する |`（見えている 2 列と「りんご」を含む 2 行の Markdown の表）
       - ボタンの中でコピーしたことが知らされ、スクリーンリーダーでも知らされる
@@ -653,6 +797,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -662,6 +809,9 @@ scenarios:
         U->>P: みかん の行のアンカーを押す
         M->>M: アンカーの href を絶対 URL にしてクリップボードへ書き込む
         P-->>U: コピーしたことの通知と、強調した みかん の行
+      ```
+
+      <!-- /map -->
     expected:
       - クリップボードの中身が、`みかん` の行のアンカーの `href` をページの URL で解決した絶対 URL（`{ページの URL}#{行の ID}`）
       - コピーしたことが短く知らされ、スクリーンリーダーでも知らされる
@@ -677,6 +827,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -685,6 +838,9 @@ scenarios:
         M->>M: 見出しの行の数・行見出しの列の数とセルの結合のマークを読み込む
         M-->>P: 見出しを 2 行にし、セルを結合した表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 囲んだ表の見出しが 2 行で、1 行目の 2 列目のセルが 3 列目と結合して 2 列にまたがっている
       - 囲んだ表の各行の 1 列目が行見出し（`th` の `scope="row"`）で、1 行目から 3 行目の 1 列目が 1 つのセルとして縦に結合して表示されている
@@ -701,6 +857,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -712,6 +871,9 @@ scenarios:
         P-->>U: 並べ替えた表
         U->>P: 分類の列で A だけに絞り込む
         P-->>U: 絞り込んだ表
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、分類の `A` の 2 行と `B` の 2 行がそれぞれ縦に結合して表示されている
       - 数値で降順に並べ替えた後、行は数値の `4`・`3`・`2`・`1` の順で、分類は `B`・`A`・`B`・`A` と隣り合う同じ値が無いため結合していない
@@ -726,6 +888,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -734,6 +899,9 @@ scenarios:
         M->>M: 読み込めない引数とマークをスキップする
         M-->>P: 記載の警告と、読み込めた指定だけを適用した表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上に記載の警告があり、表の行数を超える `header.rows` の `5`、上に結合するセルの無い `^^`、左に結合するセルの無い `<<` が記載されている
       - 表は描かれ、読み込めなかった `^^` と `<<` は記載したとおりの文字で出ている
@@ -749,6 +917,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -757,6 +928,9 @@ scenarios:
         M-->>P: はみ出す表の先頭の列を留めて描く
         U->>P: 2 つの表を横にスクロールする
         P-->>U: 留めた列が左端に残った表
+      ```
+
+      <!-- /map -->
     expected:
       - 囲まない表は、ボタンを押さなくても 1 列目が左端に見えていて、1 列目のピン止めのボタンの `aria-pressed` が `true`
       - '`features.pin.enabled` を `false` にした表には、ピン止めのボタンが無く、横にスクロールすると 1 列目が見えなくなる'
@@ -772,6 +946,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -780,6 +957,9 @@ scenarios:
         M-->>P: 1 つ目は物理名の列だけ、2 つ目は No と物理名の列を留め、説明の列を広く取った表を描く
         U->>P: 2 つの表を横にスクロールする
         P-->>U: 留めた列が左端に残った表
+      ```
+
+      <!-- /map -->
     expected:
       - 横にスクロールした後、1 つ目の表は `物理名` の列だけが左端に見えていて、`No` の列は見えていない
       - 横にスクロールした後、2 つ目の表は `No` と `物理名` の列が左端に見えていて、両方の列のピン止めのボタンの `aria-pressed` が `true`
@@ -795,6 +975,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -803,6 +986,9 @@ scenarios:
         M-->>P: 必須の列の真偽値を ✓ と空欄にした表を描く
         U->>P: 必須の列で true に絞り込む
         P-->>U: 絞り込んだ表
+      ```
+
+      <!-- /map -->
     expected:
       - '`必須` の列の `true` のセルに ✓ が出て、スクリーンリーダーで「はい」に該当する名前を持ち、`false` のセルは空欄'
       - '`format` を指定しない `既定` の列は、`true`・`false` の文字のまま出ている'
@@ -818,6 +1004,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -826,6 +1015,9 @@ scenarios:
         M->>M: 見出しに無い列名の指定をスキップする
         M-->>P: 記載の警告と、読み込めた指定だけを適用した表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上に記載の警告があり、`columns` の列名 `無い列` が見出しに無いことが記載されている
       - "`説明` の列は広く取られている"
@@ -842,6 +1034,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -850,6 +1045,9 @@ scenarios:
         M-->>P: はみ出す表の行見出しの列までを留めて描く
         U->>P: 表を横にスクロールする
         P-->>U: 行見出しの列が左端に残った表
+      ```
+
+      <!-- /map -->
     expected:
       - 行見出しの 1 列目と 2 列目が左端に見えていて、1 列目と 2 列目のピン止めのボタンの `aria-pressed` が `true`
     test: test_normal_when_row_header_pinned
@@ -863,6 +1061,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -880,6 +1081,9 @@ scenarios:
         P-->>U: 説明の列を隠した表
         U->>P: 名前の列の見出しの並べ替えのボタンを押す
         P-->>U: 行を並べ替えた表（列の順は変わらない）
+      ```
+
+      <!-- /map -->
     expected:
       - 見出しには行の並べ替えのボタンと、`columns.名前.filter` で指定した `名前` の絞り込みのボタンだけがあり、列を動かすつまみと列のメニューが無い
       - 表の上の帯に、アイコンだけで `aria-label` とツールチップが「テーブル設定」のボタンがあり、押すと列の一覧が開き、`aria-expanded` が `true` になる
@@ -902,6 +1106,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -914,6 +1121,9 @@ scenarios:
         P-->>U: 設定の見出しの下で列が入れ替わった表
         U->>P: 型を備考の下へドラッグする
         P-->>U: 列の順が変わらない表
+      ```
+
+      <!-- /map -->
     expected:
       - 列の一覧が、ピン止めの列（名前）・「設定」の範囲（型・既定・必須）・範囲の外の列（備考）に分かれて並んでいる
       - 既定のドラッグの後、2 行目が `名前`・`既定`・`型`・`必須`・`備考` の順で、1 行目の `設定` は 3 列にまたがったまま
@@ -931,6 +1141,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -942,6 +1155,9 @@ scenarios:
         P-->>U: 全体のパスのツールチップ
         U->>P: ⧉ を押す
         P-->>U: 全体のパスをコピーした通知し
+      ```
+
+      <!-- /map -->
     expected:
       - キーの列に、表に無い親（`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type`）の行が薄い斜体のキーだけで補われ、補った行の他の列は空
       - 各行のキーの列は末尾の名前（`table`・`type` など）だけを出し、階層の深さのインデントと縦線で親子を示す
@@ -963,6 +1179,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -977,6 +1196,9 @@ scenarios:
         P-->>U: aliases[] と入れ子を全て畳んだ表
         U->>P: Shift を押しながら aliases[] の ▸ を押す
         P-->>U: aliases[] と入れ子を全て開いた表
+      ```
+
+      <!-- /map -->
     expected:
       - 子を持つ行だけに、縦線の後ろ・キーのすぐ左に ▾ があり、描いた直後は全ての行が見えている
       - ▾ を押すと子孫の行が隠れ、ボタンが ▸ になり `aria-expanded` が `false`
@@ -993,6 +1215,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1004,6 +1229,9 @@ scenarios:
         U->>P: 絞り込みを metadata に変える
         M->>M: 補った親の行の末尾の名前に該当する
         P-->>U: 絞り込んだ表
+      ```
+
+      <!-- /map -->
     expected:
       - 絞り込みは各行のキーの末尾の名前で照合し、`id` では `aliases[].id` の行と、その親の `aliases[]` の行だけが出ている
       - 該当した単語 `id` の部分に色が付き、残した親の行 `aliases[]` の文字には付かない
@@ -1020,6 +1248,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1029,6 +1260,9 @@ scenarios:
         P-->>U: 同じ親の範囲の縦線を濃くした表
         U->>P: features.html の行をもう一度押す
         P-->>U: 選ぶ前の表
+      ```
+
+      <!-- /map -->
     expected:
       - 行を押すと、その行が `aria-selected="true"` になり、同じ親（`features`）を持つ行の範囲のその階層の縦線が濃く参照される
       - 別の行を押すと、前の行の選択が解除され、新しい行の範囲の縦線が濃くなる
@@ -1045,6 +1279,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1057,6 +1294,9 @@ scenarios:
         P-->>U: aliases[].id の行を選んだ表
         U->>P: 見本を隠すのボタンを押す
         P-->>U: 見本を隠した表
+      ```
+
+      <!-- /map -->
     expected:
       - 表の下に、見出し `設定の見本` の下のタブが見本として出ており、既定で表示されている
       - 表の `features.table` の行を押すと、`最小` の見本の `table:` の行に色が付く
@@ -1074,6 +1314,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1082,6 +1325,9 @@ scenarios:
         M->>M: 表に無い列名・必須の tree.key の欠け・無い見出しを見つける
         M-->>P: 表の上に記載の警告、表は読み込めた指定だけで描く
         P-->>U: 警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 3 つの表の上に、それぞれ読み込めなかった指定を挙げた記載の警告がある
       - '`tree.key.column` に表に無い列名を指定した表は、階層にせず普通の表で描かれている'
@@ -1098,6 +1344,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1107,6 +1356,9 @@ scenarios:
         M-->>P: 並べ替え・絞り込みを付けた表を描く
         U->>P: 金額の列の見出しで並べ替える
         P-->>U: 並べ替えた表
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のコードブロックが、`名前`・`拠点`・`金額` の見出しと 3 行の表になり、`data` の種類の並べ替え・絞り込み・ピン止めのボタンと、列の幅を変えるつまみがある
       - 引用符で囲んだ値が 1 つのセルになり、区切りと改行を含んだ値がそのまま出ている（引用符は出ていない）
@@ -1124,6 +1376,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（CSV の表）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1132,6 +1387,9 @@ scenarios:
         M->>M: 見出しの行と列の数が違う行がある
         M-->>P: 記載の警告と、見出しの列の数にそろえた表を描く
         P-->>U: 記載の警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上に、列の数が見出しの行と違う行の行番号を記載した記載の警告がある
       - 表は 3 列で、2 行目の 3 列目が空のセル、3 行目は 3 列目までの値が出ている
@@ -1145,6 +1403,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（CSV の表）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1155,6 +1416,9 @@ scenarios:
         P-->>U: 元の CSV のコードブロック
         U->>P: もう一度 RAW のボタンを押す
         P-->>U: 描いた表
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、表の右端に RAW のボタンがあり、押していない状態（`aria-pressed` が `false`）で薄く表示されている
       - RAW のボタンを押した後、表の代わりに、記載したとおりの CSV のコードブロックが出ていて、ボタンの `aria-pressed` が `true`
@@ -1172,6 +1436,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1180,6 +1447,9 @@ scenarios:
         M->>M: 列ごとに、改行で分けた 1 行の文字数から長文の列かを決め、長文の列だけを折り返す
         M-->>P: 短い列を折り返さず、長文の説明の列を本文の幅いっぱいまで広げて折り返した表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`No`・`状態`・`更新日`・`名前` の列のセルと見出しが折り返さず 1 行で出ている'
       - '`手順` の列のセルは `<br>` で区切った行ごとに 1 行で出て、`手順` の列の幅は 3 行のうち最も長い行の幅に合っている（3 行の全体の文字数の幅より狭い）'
@@ -1198,6 +1468,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1206,6 +1479,9 @@ scenarios:
         M->>M: 長文の列が折り返さずに収まるので、最も長い行の幅で止める
         M-->>P: 本文の幅まで広げず、列の中身の幅で表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`説明` の列のセルが折り返さず 1 行で出ている'
       - 表の外側の枠線の幅が本文の幅より狭く、列の幅の合計と同じ（差が 1px 以内）
@@ -1221,6 +1497,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1229,6 +1508,9 @@ scenarios:
         M->>M: 最小の幅を下回る備考の列を最小の幅で止め、残りの幅を説明の列へ分け直す
         M-->>P: 本文の幅に収めた表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`備考` の列の幅が最も長い行の幅と同じ（差が 1px 以内）で、`備考` のセルが折り返さず 1 行で出ている'
       - '`説明` の列が残りの幅を全て使い、表の外側の枠線の幅が本文の幅と同じ（差が 1px 以内）'
@@ -1244,6 +1526,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1251,6 +1536,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 本文の幅まで広げず、列の中身の幅で 2 つの表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの表とも、外側の枠線の幅が本文の幅より狭く、列の幅の合計と同じ（差が 1px 以内）で、列どうしの間に中身の幅を超える余白が無い
       - 2 つの表とも、見出しとセルが折り返していない
@@ -1267,6 +1555,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1276,6 +1567,9 @@ scenarios:
         M-->>P: 長文の列を最小の幅で折り返し、表の中で横にスクロールする表を描く
         U->>P: 1 つ目の表を横にスクロールする
         P-->>U: 表の中で横に動いた表
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の表の `説明`・`備考` の列の幅が部品設計『表』の長文の列の最小の幅と同じ（差が 1px 以内）で、セルが折り返して出ている
       - 2 つの表とも外側の枠線の幅が本文の幅と同じで、表の中で横にスクロールできる
@@ -1292,6 +1586,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1300,6 +1597,9 @@ scenarios:
         M->>M: 記載した列の幅の範囲と mode を、自動の判定より優先する
         M-->>P: 説明の列を記載した範囲の幅で折り返し、名前の列を折り返さずに描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`説明` の列の幅が 20em 以上 30em 以下で、セルが折り返して出ている'
       - '`名前` の列のセルが、全角 30 文字でも折り返さず 1 行で出ている'
@@ -1316,6 +1616,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1331,6 +1634,9 @@ scenarios:
         U->>P: 描く先の要素の幅を 900px へ狭める
         M->>M: 表の見える幅が変わったので、列ごとに判定し直す
         M-->>P: 900px の幅で列の幅を決め直した表を描く
+      ```
+
+      <!-- /map -->
     expected:
       - 並べ替え・絞り込みの後、各列の幅が操作の前と同じ（差が 1px 以内）
       - '`手順` の列を隠した後、残った各列の幅が隠す前と同じ（差が 1px 以内）'
@@ -1348,6 +1654,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1356,6 +1665,9 @@ scenarios:
         M->>M: 長文の列の最小の幅を、設定の em の数にする
         M-->>P: 長文の列を 30em で折り返した表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`説明`・`備考` の列の幅が `30em`（差が 1px 以内）で、セルが折り返して出ている'
       - 設定の `table.long_column_min` を省くと、`説明`・`備考` の列の幅が既定の `45em`（差が 1px 以内）
@@ -1369,6 +1681,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1380,6 +1695,9 @@ scenarios:
         P-->>U: 文字の入力欄
         U->>P: 名前の列の絞り込みのボタンを押す
         P-->>U: 値のチェックボックス
+      ```
+
+      <!-- /map -->
     expected:
       - 説明の列の絞り込みのボタンを押すと、チェックボックスではなく文字の入力欄が出る
       - 名前の列の絞り込みのボタンを押すと、名前の値のチェックボックスが出る
@@ -1394,6 +1712,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1405,6 +1726,9 @@ scenarios:
         P-->>U: 1 列目から 3 列目が左端に留まった表
         U->>P: 3 列目のピン止めをもう一度押す
         P-->>U: 留めた列を全て解除した表
+      ```
+
+      <!-- /map -->
     expected:
       - 3 列目のピン止めを押して右へスクロールした後、1 列目から 3 列目が表の左端に並んで見えている
       - 3 列目のピン止めのボタンだけの `aria-pressed` が `true` で、1 列目と 2 列目は `false`
@@ -1421,6 +1745,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1433,6 +1760,9 @@ scenarios:
         P-->>U: 名前の列が 2 列目に動いた表
         U->>P: 表を右へスクロールする
         P-->>U: 名前の列が左端に留まった表
+      ```
+
+      <!-- /map -->
     expected:
       - 列の一覧が、留めた列と留めていない列に分かれず、表の列の順に 1 つに並んでいる
       - ドラッグの後、列が `型`・`名前` の順になり、`名前` の列のピン止めのボタンの `aria-pressed` が `true` のまま
@@ -1449,6 +1779,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1458,6 +1791,9 @@ scenarios:
         U->>P: 2 行目の既定のピン止めを押す
         U->>P: 表を備考の列まで右へスクロールする
         P-->>U: 名前と既定の列が左端に留まった表
+      ```
+
+      <!-- /map -->
     expected:
       - 既定のピン止めを押して右へスクロールした後、`名前` と `既定` の列の 2 行目の見出しと本文のセルが、表の左端に重ならずに並んで見えている
       - 1 行目の `設定` のセルは、またがる 3 列のうち `既定` だけを留めているので留まらず、`型`・`必須` の列と一緒に見えなくなっている
@@ -1473,6 +1809,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1487,6 +1826,9 @@ scenarios:
         P-->>U: 説明の列が列の最小幅で止まった表
         U->>P: 名前の列と説明の列のつまみをダブルクリックする
         P-->>U: 2 つの列が元の幅に戻った表
+      ```
+
+      <!-- /map -->
     expected:
       - 名前の列の見出しの右端にポインターを乗せるとつまみが出て、ポインターが列の幅を変えるカーソル（`col-resize`）になる
       - つまみを右へ 80px ドラッグした後、名前の列の幅がドラッグの前より 80px 広く、説明・更新日の列の幅はドラッグの前と同じ
@@ -1505,6 +1847,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1519,6 +1864,9 @@ scenarios:
         P-->>U: 留めた列の幅の合計が見える幅に収まる幅で止まった表
         U->>P: 1 列目のつまみをダブルクリックし、表を左端までスクロールして、9 列目のつまみを右へ 40px ドラッグする
         P-->>U: 広げた 9 列目が右端に留まった表
+      ```
+
+      <!-- /map -->
     expected:
       - 1 列目を広げて右へスクロールした後、1 列目と 3 列目が表の左端に重ならず、間に隙間を空けずに並んで見えていて、3 列目の左端が広げた後の 1 列目の右端に揃う
       - 1 列目を見える幅を超えるまでドラッグした後、1 列目の幅は、表の見える幅から留まっているほかの列（3 列目・9 列目）の幅の合計を引いた幅で止まり、つまみの `aria-valuenow` が `aria-valuemax` と同じ値になる
@@ -1537,6 +1885,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1556,6 +1907,9 @@ scenarios:
         P-->>U: 留まっている列の幅の合計が見える幅に収まる幅で止まった表
         U->>P: 3 列目のピン止めをもう一度押す
         P-->>U: 3 列目を解除し、9 列目が留まった表
+      ```
+
+      <!-- /map -->
     expected:
       - 3 列目と 9 列目を押した後、選んだ列のうち左から順に見える幅に収まる 1 列目と 3 列目だけが留まり、収まらない 9 列目は留まらない
       - 9 列目のピン止めのボタンの `aria-pressed` は `true` のままで、ボタンの見た目とアクセシブルな名前で、見える幅に収まらず留まっていないことが分かる
@@ -1576,6 +1930,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1585,6 +1942,9 @@ scenarios:
         U->>P: 3 列目のピン止めを押す
         U->>P: 表を右端までスクロールする
         P-->>U: 1 列目と 2 列目が左端に並び、3 列目がスクロールで流れた表
+      ```
+
+      <!-- /map -->
     expected:
       - 3 列目のピン止めを押した後、1 列目から 3 列目のうち左から順に見える幅に収まる 1 列目と 2 列目だけが留まり、3 列目は留まらない
       - 3 列目のピン止めのボタンの `aria-pressed` は `true` のままで、ボタンの見た目とアクセシブルな名前で、押した列まで留まっていないことが分かる
@@ -1600,6 +1960,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1610,6 +1973,9 @@ scenarios:
         P-->>U: 名前の列だけが広がった表
         U->>P: 名前の列のつまみをダブルタップする
         P-->>U: 名前の列が元の幅に戻った表
+      ```
+
+      <!-- /map -->
     expected:
       - 'ポインターが粗い画面（`(pointer: coarse)`）なので、描いた直後から各列の見出しの右端につまみが出ている'
       - タッチで動かした後、名前の列の幅が動かす前より 60px 広く、説明・更新日の列の幅は動かす前と同じ
@@ -1626,6 +1992,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1639,6 +2008,9 @@ scenarios:
         P-->>U: 名前の列が狭まった表
         U->>P: Enter を押す
         P-->>U: 名前の列が元の幅に戻った表
+      ```
+
+      <!-- /map -->
     expected:
       - つまみにフォーカスが移るとつまみが出る
       - つまみが `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` と、`名前` を含む `aria-label` を持ち、`aria-valuenow` が名前の列の今の幅（px）、`aria-valuemin` が列の最小幅（px）、`aria-valuemax` が名前の列を広げられる上限の幅（px。表の見える幅から、ほかの留めた列の幅の合計を引いた幅）、`aria-valuetext` が「{今の幅}px」
@@ -1659,6 +2031,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1669,6 +2044,9 @@ scenarios:
         P-->>U: 横にスクロールする表
         U->>P: 説明の列のつまみを、説明のセルが折り返すまで左へドラッグして離す
         P-->>U: 説明の列を折り返して出した表
+      ```
+
+      <!-- /map -->
     expected:
       - 名前の列を広げて離した後、説明の列の幅は広げる前と同じ
       - 名前の列を広げて離した後、表が横にスクロールでき、ページ全体は横にスクロールしない
@@ -1686,6 +2064,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1697,6 +2078,9 @@ scenarios:
         P->>M: 書き換えた Markdown で描き直させる
         M-->>P: 手で変えた開閉のまま描き、追加した表は全て開いて描く
         P-->>U: 書き換えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描き直した後、1 つ目の表の `aliases[]` の子孫の行が隠れ、`aliases[]` の開閉のボタンの `aria-expanded` が `false`
       - 描き直した後、`aliases[]` を開くと書き換えた説明が表示される
@@ -1712,6 +2096,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1720,6 +2107,9 @@ scenarios:
         M-->>P: 説明の列にだけ並べ替えを付けない表を描く
         U->>P: 日付の列の見出しの並べ替えを押す
         P-->>U: 日付の降順に並べ替えた表
+      ```
+
+      <!-- /map -->
     expected:
       - 説明の列の見出しに並べ替えのボタンが無い
       - 名前の列と日付の列の見出しに並べ替えのボタンがある
@@ -1735,6 +2125,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1743,6 +2136,9 @@ scenarios:
         M-->>P: 説明の列に並べ替えを付け、名前の列から並べ替えを外した表を描く
         U->>P: 説明の列の見出しの並べ替えを押す
         P-->>U: 説明の列で並べ替えた表
+      ```
+
+      <!-- /map -->
     expected:
       - 説明の列と日付の列の見出しに並べ替えのボタンがあり、名前の列の見出しには無い
       - 説明の列の並べ替えを押した後、見出しの `aria-sort` が `descending` で、説明の列の文字の降順に並ぶ
@@ -1757,6 +2153,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -1764,12 +2163,14 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 説明の列にだけ並べ替えを付けない表を描く
         P-->>U: 表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 説明の列の見出しに並べ替えのボタンが無い（`features.sort` を記載した表でも、表の種類によらず長文の列には付けない）
       - 名前の列と日付の列の見出しに並べ替えのボタンがある
     test: test_normal_when_sort_feature_with_long_column
 lead: '文書の作成者が `<!-- table: {JSON のオブジェクト} -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
-issue: 4
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者

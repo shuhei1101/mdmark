@@ -42,5 +42,3 @@ functions:
         mock: なし
         expected: '`span.mdmark-gif` と `button.mdmark-gif-toggle` が無い'
     status: planned
-    introduced:
-      pr: 263

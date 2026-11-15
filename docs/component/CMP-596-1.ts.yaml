@@ -117,6 +117,4 @@ accessibility:
 refs:
   - IF-472-35#constraints[map のクラス図]
 status: planned
-introduced:
-  pr: 596
 test_file: tests/integration/lib/map-class.story.test.ts

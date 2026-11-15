@@ -2,71 +2,76 @@ id: MOD-472-24
 visibility: internal
 title: ライブラリ本体 / map / 全体
 lead: map の範囲の Mermaid と補足の読み取り・入れ子の自動配置・点検と、`dist/map.js` に分けた描画と操作。
-directory: |-
-  ```tree
-  src/
-  ├── render/syntax/map.ts   # map のマーカーの範囲を div.mdmark-map にするコアルール（dist/index.js。モジュール構成『記法』）
-  ├── map/
-  │   ├── spec.ts            # 設定の map と補足の型・既定・検査（dist/index.js と CLI）
-  │   ├── structure.ts       # 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数の確認（dist/index.js・dist/map.js と CLI）
-  │   ├── flowchart.ts       # flowchart の読み取りと click のリンク先の確認（dist/map.js と CLI）
-  │   ├── sequence.ts        # sequenceDiagram の読み取り（dist/map.js と CLI）
-  │   ├── er.ts              # erDiagram の読み取りと構成図の入力への読み替え・経路（dist/map.js と CLI）
-  │   ├── state-diagram.ts   # stateDiagram-v2 の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
-  │   ├── class-diagram.ts   # classDiagram の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
-  │   ├── architecture.ts    # architecture-beta の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
-  │   ├── c4.ts              # C4Context の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
-  │   ├── data.ts            # 補足の JSON の読み取り（dist/map.js と CLI）
-  │   ├── check.ts           # 書き方の誤りの項目を集める（dist/index.js・dist/map.js と CLI）
-  │   ├── lucide-names.ts    # 点検が照らす lucide のアイコンの名前（点検で呼んだときだけ作る）
-  │   ├── layout.ts          # 入れ子の自動配置と線の経路（dist/map.js と CLI）
-  │   ├── sequence-rows.ts   # シーケンス図の表示する行（dist/map.js）
-  │   ├── state.ts           # sessionStorage とクエリ文字列の状態（dist/map.js）
-  │   ├── flow-view.ts       # 構成図を描いて操作を付ける（dist/map.js）
-  │   ├── sequence-view.ts   # シーケンス図を描いて操作を付ける（dist/map.js）
-  │   ├── er-view.ts         # ER 図を構成図の上に描いて固有の操作を足す（dist/map.js）
-  │   ├── state-view.ts      # 状態遷移図を構成図の上に描いて固有の操作を足す（dist/map.js）
-  │   ├── class-view.ts      # クラス図を構成図の上に描いて固有の操作を足す（dist/map.js）
-  │   ├── architecture-view.ts # アーキテクチャ図を構成図の上に描いて固有の操作を足す（dist/map.js）
-  │   ├── c4-view.ts         # C4 図を構成図の上に描いて固有の操作を足す（dist/map.js）
-  │   ├── drag.ts            # ノード・グループ・線の区間のドラッグ（dist/map.js）
-  │   ├── band.ts            # 案内と再生の進め方（dist/map.js）
-  │   ├── index.ts           # dist/map.js の入口。attachMap
-  │   └── convert.ts         # 廃止した flow・sequence の範囲を map の範囲へ書き換える（移行の手順のスクリプトがまとめて読み込む）
-  └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『mapのER図』『mapの状態遷移図』『mapのクラス図』『mapのアーキテクチャ図』『mapのC4図』『案内の帯』の HTML（dist/map.js）
-  ```
 diagrams:
   - name: 全体
     diagram: |-
-      classDiagram
-        direction LR
-        class mapのマーカーのコアルール
-        class 書き方の誤りを集める
-        class flowchartを読む
-        class sequenceDiagramを読む
-        class 補足を読む
-        class 入れ子を配置する
-        class mapを付ける
-        class 構成図を付ける
-        class シーケンス図を付ける
-        class 案内と再生を進める
-        class 状態を読み書きする
-        class 点検のずれにする
-        mapのマーカーのコアルール --> 書き方の誤りを集める
-        書き方の誤りを集める --> flowchartを読む
-        書き方の誤りを集める --> sequenceDiagramを読む
-        書き方の誤りを集める --> 補足を読む
-        mapを付ける --> 構成図を付ける
-        mapを付ける --> シーケンス図を付ける
-        構成図を付ける --> 入れ子を配置する
-        構成図を付ける --> 案内と再生を進める
-        シーケンス図を付ける --> 案内と再生を進める
-        構成図を付ける --> 状態を読み書きする
-        シーケンス図を付ける --> 状態を読み書きする
-        点検のずれにする --> 書き方の誤りを集める
+      <!-- map -->
+
+      ```mermaid
+      flowchart LR
+        n1["mapのマーカーのコアルール"]
+        n2["書き方の誤りを集める"]
+        n3["flowchartを読む"]
+        n4["sequenceDiagramを読む"]
+        n5["補足を読む"]
+        n6["mapを付ける"]
+        n7["構成図を付ける"]
+        n8["シーケンス図を付ける"]
+        n9["入れ子を配置する"]
+        n10["案内と再生を進める"]
+        n11["状態を読み書きする"]
+        n12["点検のずれにする"]
+        n1 -.-> n2
+        n2 -.-> n3
+        n2 -.-> n4
+        n2 -.-> n5
+        n6 -.-> n7
+        n6 -.-> n8
+        n7 -.-> n9
+        n7 -.-> n10
+        n8 -.-> n10
+        n7 -.-> n11
+        n8 -.-> n11
+        n12 -.-> n2
+      ```
+
+      <!-- /map -->
 notes:
   配布ファイルの分け方: '`src/map/index.ts` は別の esbuild の入口で、`dist/map.js` にまとめる（`dist/index.js` を `import` しない）。`dist/index.js` はコアルール・`spec.ts`・`check.ts` の `collectMapStructure` だけを持ち、Mermaid と補足の読み取り・配置・描画・操作を持たない（配布ファイル 1 つのサイズの上限のため）。Mermaid と補足の中身の書き方の警告は `dist/map.js` が `mount` の後に足す。`mount` は `attachParts` が `div.mdmark-map` を見つけたときだけ `loadPartModule("map")` で読み込む。部品の CSS は `src/index.css` に入れる'
   配置の方式: 計画書の `## PoC 結果` の方式（内側からの配置・段と重心の掃引・格子の A* の線の経路）。PoC の `poc/map/layout.ts` を元にする
+  ディレクトリ: |-
+    ```tree
+    src/
+    ├── render/syntax/map.ts   # map のマーカーの範囲を div.mdmark-map にするコアルール（dist/index.js。モジュール構成『記法』）
+    ├── map/
+    │   ├── spec.ts            # 設定の map と補足の型・既定・検査（dist/index.js と CLI）
+    │   ├── structure.ts       # 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数の確認（dist/index.js・dist/map.js と CLI）
+    │   ├── flowchart.ts       # flowchart の読み取りと click のリンク先の確認（dist/map.js と CLI）
+    │   ├── sequence.ts        # sequenceDiagram の読み取り（dist/map.js と CLI）
+    │   ├── er.ts              # erDiagram の読み取りと構成図の入力への読み替え・経路（dist/map.js と CLI）
+    │   ├── state-diagram.ts   # stateDiagram-v2 の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
+    │   ├── class-diagram.ts   # classDiagram の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
+    │   ├── architecture.ts    # architecture-beta の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
+    │   ├── c4.ts              # C4Context の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
+    │   ├── data.ts            # 補足の JSON の読み取り（dist/map.js と CLI）
+    │   ├── check.ts           # 書き方の誤りの項目を集める（dist/index.js・dist/map.js と CLI）
+    │   ├── lucide-names.ts    # 点検が照らす lucide のアイコンの名前（点検で呼んだときだけ作る）
+    │   ├── layout.ts          # 入れ子の自動配置と線の経路（dist/map.js と CLI）
+    │   ├── sequence-rows.ts   # シーケンス図の表示する行（dist/map.js）
+    │   ├── state.ts           # sessionStorage とクエリ文字列の状態（dist/map.js）
+    │   ├── flow-view.ts       # 構成図を描いて操作を付ける（dist/map.js）
+    │   ├── sequence-view.ts   # シーケンス図を描いて操作を付ける（dist/map.js）
+    │   ├── er-view.ts         # ER 図を構成図の上に描いて固有の操作を足す（dist/map.js）
+    │   ├── state-view.ts      # 状態遷移図を構成図の上に描いて固有の操作を足す（dist/map.js）
+    │   ├── class-view.ts      # クラス図を構成図の上に描いて固有の操作を足す（dist/map.js）
+    │   ├── architecture-view.ts # アーキテクチャ図を構成図の上に描いて固有の操作を足す（dist/map.js）
+    │   ├── c4-view.ts         # C4 図を構成図の上に描いて固有の操作を足す（dist/map.js）
+    │   ├── drag.ts            # ノード・グループ・線の区間のドラッグ（dist/map.js）
+    │   ├── band.ts            # 案内と再生の進め方（dist/map.js）
+    │   ├── index.ts           # dist/map.js の入口。attachMap
+    │   └── convert.ts         # 廃止した flow・sequence の範囲を map の範囲へ書き換える（移行の手順のスクリプトがまとめて読み込む）
+    └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『mapのER図』『mapの状態遷移図』『mapのクラス図』『mapのアーキテクチャ図』『mapのC4図』『案内の帯』の HTML（dist/map.js）
+    ```
 refs:
   - IF-472-35#
   - IF-472-34#

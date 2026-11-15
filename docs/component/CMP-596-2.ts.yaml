@@ -114,6 +114,4 @@ accessibility:
 refs:
   - IF-472-35#constraints[map のアーキテクチャ図]
 status: planned
-introduced:
-  pr: 596
 test_file: tests/integration/lib/map-architecture.story.test.ts

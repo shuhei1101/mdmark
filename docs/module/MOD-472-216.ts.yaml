@@ -59,5 +59,3 @@ functions:
         mock: なし
         expected: 戻りに `</style` が無く、`<\/style` がある
     status: planned
-    introduced:
-      pr: 303

@@ -44,8 +44,6 @@ data_models:
     summary: '`mount` の `opts.diffMode` の値（公開の型）'
     description: '`(typeof diffModes)[number]`（`"button" | "open" | "blocks"`）'
     status: planned
-    introduced:
-      pr: 196
 constants:
   - name: diffModes
     title: 対応する差分の出し方
@@ -53,8 +51,6 @@ constants:
     summary: 配布物が対応する `opts.diffMode` の値の並び。`src/index.ts` が名前付きで公開し、利用側が差分の出し方に対応するバージョンかを見分ける
     value: '["button", "open", "blocks"] as const'
     status: planned
-    introduced:
-      pr: 196
 functions:
   - name: checkRevisions
     title: 取り出し元の一覧を検める
@@ -132,5 +128,3 @@ functions:
     refs:
       - IF-472-35#constraints[差分の出し方]
     status: planned
-    introduced:
-      pr: 196

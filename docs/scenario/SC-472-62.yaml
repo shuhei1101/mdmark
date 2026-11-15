@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。印刷は、媒体を `print` にして印刷の前のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -21,6 +24,9 @@ scenarios:
         M-->>P: 印刷の機能をオフにして本文を描く
         U->>P: 印刷する
         P-->>U: 折り畳みは閉じたまま
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後も、折り畳み（`details`）が閉じている
     test: test_normal
@@ -34,6 +40,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -43,6 +52,9 @@ scenarios:
         M-->>P: 印刷の機能をオンにして本文を描く
         U->>P: 印刷する
         P-->>U: 折り畳みを開いて出す
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、折り畳み（`details`）が開いている
     test: test_normal_when_enabled_by_mark
@@ -56,6 +68,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -64,6 +79,9 @@ scenarios:
         M-->>P: 設定のとおり印刷の機能をオフにして本文を描く
         U->>P: 印刷する
         P-->>U: 折り畳みは閉じたまま
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後も、折り畳み（`details`）が閉じている
     test: test_normal_when_no_mark
@@ -77,6 +95,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -85,6 +106,9 @@ scenarios:
         M->>M: 知らない機能名を無視する
         M-->>P: 要素の中に本文を描く
         P-->>U: 段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落が描かれている
       - 本文にマーカーの文字が出ていない
@@ -99,6 +123,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -107,6 +134,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 表と注意書きを普通の Markdown として描く
         P-->>U: 表と引用を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表に並べ替え・ピン止めのボタンが無い
       - 引用が注意書きの枠（class `markdown-alert`）にならず、引用として描かれている
@@ -130,6 +160,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -138,6 +171,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 下線と被参照の一覧を付けずに描く
         P-->>U: 本文と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`ワークスペース` に下線が付いていない'
       - やめた言い方 `作業場` にマーカーが付いていない
@@ -157,6 +193,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -166,6 +205,9 @@ scenarios:
         M-->>P: 用語にだけ下線を付け、関連文書を出さずに描く
         U->>P: 下線の付いた単語にポインターを乗せる
         P-->>U: 用語の意味だけのツールチップを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`索引` に下線が付き、ツールチップに「用語」の意味だけがあり、「関連文書」の区分が無い'
       - 文書の別名だけに一致する `公開関数` に下線が付いていない
@@ -181,6 +223,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -190,6 +235,9 @@ scenarios:
         M-->>P: 右側の目次を配置せずに本文を描く
         U->>P: 画面の右端にポインターを配置する
         P-->>U: 右側の目次を出さない
+      ```
+
+      <!-- /map -->
     expected:
       - 右側の目次と、目次を出すボタン・ピン止めのボタンが無い
       - 見出しのアンカーとセクションの開閉のボタンはある
@@ -205,6 +253,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -214,6 +265,9 @@ scenarios:
         M-->>P: 右側の目次を配置して本文を描く
         U->>P: 画面の右端にポインターを配置する
         P-->>U: 右側の目次を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 右端にポインターを配置した後、`導入`・`使用方法` の項目を持つ右側の目次が表示されている
     test: test_normal_when_side_toc_enabled_by_mark
@@ -228,6 +282,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -237,6 +294,9 @@ scenarios:
         M-->>P: 先頭へ戻るボタンを配置せずに本文を描く
         U->>P: 文書の末尾までスクロールする
         P-->>U: 先頭へ戻るボタンを出さない
+      ```
+
+      <!-- /map -->
     expected:
       - 末尾までスクロールした後も、先頭へ戻るボタンが無い
       - 本文にマーカーの文字が出ていない
@@ -254,6 +314,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -262,6 +325,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 削除した記法を普通の Markdown として描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 本文の文字に色が付いていない
       - 本文に `[決め手の 1 文]{color=blue}` が記載したとおりの文字で出ている
@@ -279,6 +345,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -287,6 +356,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 脚注を読み込まずに本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 本文に脚注の番号が無く、文書の末尾に脚注の一覧が無い
       - 段落に `[^src]` が記載した文字のまま出ている
@@ -304,6 +376,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。加えて、範囲の `ts` の型を削除する変換のライブラリを手元のモジュールに差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -312,6 +387,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 範囲の css と ts を適用した HTML
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲のノードの背景が `css` の色で描かれている
       - 範囲の `ts` の既定のエクスポートの関数が、範囲の根の要素で 1 回呼ばれている
@@ -328,6 +406,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -336,6 +417,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 削除した記法を普通の Markdown として描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`icon:`・`kbd:` が記載したとおりの行内のコードで出ている'
       - '`==` で囲んだ文字が `==` を含む記載したとおりの文字で出ている'
@@ -356,6 +440,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -364,6 +451,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: リサイズハンドルを配置せずに図を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 図の表示する枠の右下にリサイズハンドルが無い
       - 図の右上の拡大・縮小のボタンはある
@@ -380,6 +470,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -388,6 +481,9 @@ scenarios:
         M->>M: 先頭のフロントマターを本文から除外する
         M-->>P: 本文の先頭にフロントマターの表示を置いて描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`見出し` の要素より前に、フロントマターの表示の要素がある'
       - フロントマターの表示の中に `title`・`テスト`・`tags` の文字がある
@@ -403,6 +499,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -411,6 +510,9 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: 本文の先頭にフロントマターの表示を置いて描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`見出し` の要素より前に、フロントマターの表示の要素がある'
       - 'マーカーを `<!-- features: {"frontmatter": false} -->` にして設定の `features.frontmatter` を `true` にすると、フロントマターの表示の要素も `title: テスト` の文字も無い'
@@ -426,6 +528,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。mermaid の本体と chunk も jsDelivr と同じパスで返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -434,13 +539,15 @@ scenarios:
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>P: map の範囲を普通の Markdown として描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - map の図が描かれず、範囲の中の mermaid のブロックが、mermaid のコードブロックと同じく mermaid の図で描かれる
       - 補足の文字とマーカーの文字が出ていない
       - 記載の警告が出ていない
     test: test_normal_when_map_disabled
 lead: '利用側が設定の `features` で機能のオン・オフの既定を決め、文書の作成者が文書の `<!-- features: {"機能": true か false} -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確認する。'
-issue: 3
 primary_actor: 文書の作成者
 stakeholders:
   - name: 利用側のアプリの開発者

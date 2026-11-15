@@ -22,8 +22,6 @@ constants:
     summary: '`attachTabs` が操作を付けた `mdmark-tabs` から、中身（`mdmark-tab-panel`）を指定してそのタブを選ぶ関数を参照する。選んだタブ名を残さず、同じ `group` のほかのタブ群も切り替えない。削除する関数が取り除く'
     value: 'new WeakMap<HTMLElement, (panel: HTMLElement) => void>()'
     status: planned
-    introduced:
-      pr: 151
 functions:
   - name: attachTabs
     title: タブに操作を付ける
@@ -195,5 +193,3 @@ functions:
         mock: なし
         expected: 例外が出ず、タブの選択が変わらない
     status: planned
-    introduced:
-      pr: 151

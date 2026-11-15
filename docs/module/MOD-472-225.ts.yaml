@@ -10,8 +10,6 @@ constants:
     summary: '`attachCodeFolds` が開閉のボタンごとに登録する、行を開くか畳む関数。削除する関数が取り除く'
     value: '`new WeakMap<Element, (open: boolean) => void>()`'
     status: planned
-    introduced:
-      pr: 275
 functions:
   - name: attachCodeFolds
     title: コードの行に畳む・開くを付ける
@@ -78,8 +76,6 @@ functions:
         mock: なし
         expected: 2 回目に付けた後、2 行目のボタンが `aria-expanded="true"` で後ろの行が `hidden` を持たず、6 行目は `false` のまま。`setCodeFoldOpen` で開閉した行は `states` に書き込まれない
     status: planned
-    introduced:
-      pr: 275
   - name: setCodeFoldOpen
     title: コードの行の開閉を切り替える
     container: src/interact/code-folds.ts
@@ -106,5 +102,3 @@ functions:
         mock: なし
         expected: '`true` の後に後ろの行が `hidden` を持たず `⋯` が無い。`false` の後に `hidden` と `⋯` が戻る'
     status: planned
-    introduced:
-      pr: 275

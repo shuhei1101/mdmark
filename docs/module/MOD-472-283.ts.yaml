@@ -73,7 +73,5 @@ functions:
         mock: なし
         expected: '`collapse` が `none` で、`title` が無い'
     status: planned
-    introduced:
-      pr: 225
     callees:
       - 'MOD-472-270#functions[readCollapse]'

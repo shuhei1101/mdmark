@@ -150,8 +150,6 @@ functions:
       - 'MOD-472-113#functions[copyMedia]'
       - 'MOD-472-112#functions[inlineImages]'
     status: planned
-    introduced:
-      pr: 32
   - name: runExport
     title: 文書を HTML に書き出す
     container: src/cli/export.ts
@@ -203,8 +201,6 @@ functions:
     refs:
       - IF-472-33#
     status: planned
-    introduced:
-      pr: 32
   - name: readDistAssets
     title: 配布物を読み込む
     container: src/cli/export.ts
@@ -227,8 +223,6 @@ functions:
         condition: '`index.css` を読み込めないか、`viewer.js`・`view.js` が無い'
         message: 配布物を読み込めません（{理由}）。mdmark をもう一度入れてください。
     status: planned
-    introduced:
-      pr: 32
   - name: writeHtml
     title: HTML を書き込む
     container: src/cli/export.ts
@@ -251,8 +245,6 @@ functions:
         condition: 記載する先に記載できない
         message: '書き込めない: {出力} に書き込めません（{理由}）。出力先のフォルダを確認してください。'
     status: planned
-    introduced:
-      pr: 32
   - name: exportDocument
     title: 文書を HTML に書き出して結果を返却する
     kind: 関数
@@ -321,5 +313,3 @@ functions:
       - IF-472-33#
       - IF-472-9#
     status: planned
-    introduced:
-      pr: 72

@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -16,6 +19,9 @@ scenarios:
         W->>C: mdmark init
         C->>F: 設定・theme.css・索引・TypeScript の拡張のビルドの雛形を書き込む
         C-->>W: 配置したファイルの一覧・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.config.yaml`・`theme.css`・索引の雛形・拡張のビルドの雛形（tsconfig とビルドのコマンド）がある'
       - 配置した `mdmark.config.yaml` と索引が、設定と索引の JSON Schema に合う
@@ -29,6 +35,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -36,6 +45,9 @@ scenarios:
         W->>C: mdmark init（JavaScript を指定）
         C->>F: 設定・theme.css・索引・JavaScript の拡張の雛形と、JavaScript を点検する tsconfig を記載する
         C-->>W: 配置したファイルの一覧・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 拡張の雛形が `// @ts-check` と JSDoc で型を付けた JavaScript で、TypeScript の雛形が無い
       - JavaScript を変換せずに配布物の型定義で点検する tsconfig を配置する
@@ -49,6 +61,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -56,13 +71,15 @@ scenarios:
         W->>C: mdmark init
         C->>F: 無いファイルだけを記載する
         C-->>W: 配置したファイルと配置しなかったファイルの一覧・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.config.yaml` の中身が変わっていない'
       - '`theme.css`・索引の雛形・拡張のビルドの雛形がある'
       - 出力に配置しなかったファイルとして `mdmark.config.yaml` が出て、終了コードが 0
     test: test_normal_when_file_exists
 lead: 文書の作成者が `mdmark init` を実行し、設定・利用側の CSS・索引・拡張のビルドの雛形をフォルダに配置する。
-issue: 9
 primary_actor: 文書の作成者
 trigger: 文書の作成者が、mdmark で文書を書き出すフォルダを用意する
 preconditions:

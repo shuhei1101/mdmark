@@ -16,12 +16,18 @@ flows:
         description: '`check` の呼び出しで、`tool_input` が `{"config": "docs/mdmark.config.yaml", "project_dir": "/tmp/other"}`'
         notes: エージェントが記載した `project_dir` を置き換えることを確認する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as PreToolUse のフック
         C->>H: tool_name・tool_input
         H->>H: tool_input に project_dir を入れる
         H-->>C: hookSpecificOutput（permissionDecision・updatedInput）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力が JSON で、`hookSpecificOutput.hookEventName` が `PreToolUse`
       - '`updatedInput.project_dir` が `CLAUDE_PROJECT_DIR` の値で、`updatedInput.config` が指定した値のまま'
@@ -34,12 +40,18 @@ flows:
       - name: Mock
         description: 正常系と同じで、`CLAUDE_PROJECT_DIR` を指定しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as PreToolUse のフック
         C->>H: tool_name・tool_input
         H->>H: CLAUDE_PROJECT_DIR が無い
         H-->>C: 空の標準出力・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力が空
       - 終了コードが 0

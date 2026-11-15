@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系と同じ配信元とタグ一覧の代役。`showInformationMessage` は「ブラウザで開く」を返却する代役、`env.openExternal` は URL を記録する代役。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -23,6 +26,9 @@ flows:
         EX->>U: 書き出したパスと「ブラウザで開く」
         U->>EX: ブラウザで開く
         EX->>BR: env.openExternal（docs/guide.html）
+      ```
+
+      <!-- /map -->
     expected:
       - '`docs/guide.html` が 1 つ記載され、戻り値がそのファイル'
       - 通知に `docs/guide.html` のパスと「ブラウザで開く」が出る
@@ -37,11 +43,17 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.exportHtml
         EX->>EX: out/ を作り out/guide.html を書き込む
+      ```
+
+      <!-- /map -->
     expected:
       - ワークスペースの直下の `out/guide.html` が記載され、`docs/guide.html` は記載されない
       - HTML を開くと、保存していない見出しが描かれ、`docs/images/figure.png` の画像が読み込めている
@@ -54,12 +66,18 @@ flows:
       - name: Mock
         description: 正常系と同じ。`showErrorMessage` は文字を記録する代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.exportHtml
         EX->>EX: 書き出す先に書き込めない
         EX->>U: 書き出せない理由の通知
+      ```
+
+      <!-- /map -->
     expected:
       - 戻り値が `undefined`
       - '`showErrorMessage` の文字に書き出す先のパスと記載できない理由が入る'
@@ -73,12 +91,18 @@ flows:
       - name: Mock
         description: タグ一覧の代役は応えない。`showErrorMessage` は文字を記録する代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.exportHtml
         EX->>EX: タグ一覧を取れず前回のバージョンも無い
         EX->>U: 理由の通知
+      ```
+
+      <!-- /map -->
     expected:
       - 戻り値が `undefined` で、`.html` が記載されない
       - '`showErrorMessage` が 1 回呼ばれる'
@@ -91,6 +115,9 @@ flows:
       - name: Mock
         description: '正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開き、配色はライト（`prefers-color-scheme: light`）にする'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -100,6 +127,9 @@ flows:
         EX->>H: docs/guide.html を書き込む
         U->>H: 開く
         H-->>U: theme-slate で描く
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML に埋めた `config` の `colorTheme` が `theme-slate`
       - 開いた HTML で、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
@@ -112,6 +142,9 @@ flows:
       - name: Mock
         description: 正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -121,6 +154,9 @@ flows:
         EX->>EX: data: の URL を config に配置した docs/guide.html を書き込む
         U->>BR: docs/guide.html を file:// で開く
         BR-->>U: test-lib のマーカーと範囲のスクリプトを描いた文書
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML に埋めた `config.libraries["test-lib"]` と `config["html-scripts"].url` が `data:text/javascript` で始まり、`config.libraries` に `unused-lib` が無い
       - 書き出した HTML の `data:` の URL を復号した中に、`unused-lib` の目印の文字列が無い
@@ -136,6 +172,9 @@ flows:
       - name: Mock
         description: '正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開き、配色はライト（`prefers-color-scheme: light`）にする'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -145,6 +184,9 @@ flows:
         EX->>H: docs/guide.html を書き込む
         U->>H: 開く
         H-->>U: ダークの配色で描く
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML に埋めた `config` の `colorScheme` が `dark`
       - 開いた HTML で、描く先の要素が class `mdmark-theme-dark` を持ち、地の色の計算値がダークの `--mdmark-color-bg` の値
@@ -159,6 +201,9 @@ flows:
       - name: Mock
         description: 正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -168,6 +213,9 @@ flows:
         EX->>H: docs/guide.html を書き込む
         U->>H: 開く
         H-->>U: ボタンを「コピー」で描く
+      ```
+
+      <!-- /map -->
     expected:
       - '書き出した HTML に埋めた `config` の `labels` が `{ paramCopy: "コピー" }`'
       - 開いた HTML で、`button.mdmark-param-copy` の `textContent` が `コピー`
@@ -182,6 +230,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -190,6 +241,9 @@ flows:
         EX->>EX: 相対パスの mermaid をまとめて data: の URL で埋める
         W->>B: 書き出した HTML を file:// で開く
         B-->>W: 図の枠に入った mermaid の図
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML に埋めた `config.mermaid.url` が `data:text/javascript` で始まる
       - Chromium で開くと、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、通知ブロックが出ない
@@ -203,6 +257,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -213,6 +270,9 @@ flows:
         B-->>W: 色分けしたコードブロック
         W->>B: 脚注の参照にフォーカスを移す
         B-->>W: 参照の下に出たツールチップ
+      ```
+
+      <!-- /map -->
     expected:
       - '書き出した HTML に埋めた `config.tooltips` が `{ placement: "bottom" }` で、`config.syntax.url` が `hljs/` フォルダの `file:` の URL で `/` で終わる'
       - 書き出した HTML の `<script type="importmap">` の `imports` が、`{config.syntax.url}core.min.js` と `{config.syntax.url}languages/typescript.min.js` の 2 つだけを `data:text/javascript` で始まる URL に割り当てる
@@ -230,6 +290,9 @@ flows:
       - name: Mock
         description: 正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -239,6 +302,9 @@ flows:
         EX->>EX: エイリアスを埋め、mount に aliases を指定する guide.html を書き込む
         U->>BR: guide.html を file:// で開く
         BR-->>U: 別名に下線を付けた文書
+      ```
+
+      <!-- /map -->
     expected:
       - '書き出した HTML に埋めた `aliases` が 1 件で、その要素の `alias_type` が `term`・`name` が `描画`・`aliases` が `["レンダリング"]`'
       - 開いた HTML の本文の `レンダリング` が用語の下線の要素に包まれている
@@ -255,6 +321,9 @@ flows:
       - name: Mock
         description: 正常系と同じ。出力チャネルへ書き込んだ行を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -263,6 +332,9 @@ flows:
         EX->>EX: 出力チャネルに警告を記載する
         EX->>EX: 1 行目のエイリアスを埋めた guide.html を書き込む
         EX->>U: 書き出したパスと「ブラウザで開く」
+      ```
+
+      <!-- /map -->
     expected:
       - '`docs/guide.html` が 1 つ記載され、戻り値がそのファイル'
       - 書き出した HTML に埋めた `aliases` が 1 行目の用語だけを持つ

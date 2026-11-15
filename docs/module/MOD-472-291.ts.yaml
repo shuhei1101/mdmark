@@ -55,5 +55,3 @@ functions:
         mock: なし
         expected: 段落の文字が `[決め手]{color=blue}`
     status: planned
-    introduced:
-      pr: 263

@@ -181,8 +181,6 @@ refs:
   - IF-472-35#constraints[右側の目次の重なりと留める位置]
   - IF-472-35#constraints[右側の目次の変更のマーカー]
 status: planned
-introduced:
-  pr: 166
 aliases:
   - サイドの目次
   - side-toc

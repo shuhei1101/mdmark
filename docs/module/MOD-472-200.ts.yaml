@@ -40,5 +40,3 @@ functions:
     refs:
       - CMP-472-43#
     status: planned
-    introduced:
-      pr: 196

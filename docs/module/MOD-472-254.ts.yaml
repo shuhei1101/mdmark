@@ -32,8 +32,6 @@ data_models:
         type: boolean | undefined
         description: 主題のタグか。無いときは `false` として扱う
     status: planned
-    introduced:
-      pr: 114
   - name: MdmarkIndexRelated
     title: 文書の関連
     container: src/knowledge/index-shape.ts
@@ -55,8 +53,6 @@ data_models:
     refs:
       - ER-472-6#tables[docs].columns[related]
     status: planned
-    introduced:
-      pr: 127
 enums:
   - name: MdmarkRelationType
     title: 関係の種類
@@ -82,8 +78,6 @@ enums:
     refs:
       - ER-472-6#tables[docs].columns[related]
     status: planned
-    introduced:
-      pr: 127
 constants:
   - name: INDEX_SHAPE
     title: 索引の構造
@@ -108,8 +102,6 @@ constants:
       - key: '4'
         value: change_together
     status: planned
-    introduced:
-      pr: 127
 functions:
   - name: normalizeIndex
     title: 索引の構造を検査する
@@ -222,5 +214,3 @@ functions:
     refs:
       - ER-472-6#tables[docs].columns[related]
     status: planned
-    introduced:
-      pr: 127

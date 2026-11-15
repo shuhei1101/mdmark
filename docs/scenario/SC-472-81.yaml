@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -22,6 +25,9 @@ scenarios:
         P-->>U: 表形式のビュー
         P->>M: 片付けの関数を呼ぶ
         M-->>P: 空になった要素
+      ```
+
+      <!-- /map -->
     expected:
       - 要素の中に、『ビューで項目を確認する』 の正常シナリオと同じボード表示（3 つの列と項目の数）と、ビューの切り替えが描かれる
       - 表形式を選ぶと、5 行の項目が列名の順で並ぶ
@@ -37,6 +43,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -49,6 +58,9 @@ scenarios:
         M-->>P: マーカーの場所に描いたビュー
         U->>P: 表形式に切り替え、列の絞り込みで値を選ぶ
         P-->>U: 絞り込んだ項目
+      ```
+
+      <!-- /map -->
     expected:
       - '`tasks` のマーカーの場所に、定義の 3 件の項目を並べたビューが描かれる'
       - 表形式に切り替えて列の絞り込みで値を選ぶと、合う項目だけが残る
@@ -63,11 +75,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 誤った引数でビューを描かせる
         M-->>P: TypeError
+      ```
+
+      <!-- /map -->
     expected:
       - 2 通りとも `TypeError` が投げられ、メッセージに誤った引数の名前が入る
       - 要素の中は呼ぶ前のまま変わらない
@@ -84,6 +102,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -99,6 +120,9 @@ scenarios:
         M-->>P: 選んだ文字にマーカーを付ける
         P->>M: 片付けの関数を呼ぶ
         M-->>P: マーカーとボタンを削除した要素
+      ```
+
+      <!-- /map -->
     expected:
       - 要素の中の文字を選ぶとコメントのボタンが出て、要素の外の文字を選んでも出ない
       - 保存を押すと、読み込みと保存の関数の保存に、選んだ文字 `導入の手順`・前後の文字・コメントの本文が渡り、`導入の手順` にマーカーが付く
@@ -106,7 +130,6 @@ scenarios:
       - 片付けの関数を呼ぶと、マーカーとコメントのボタンが削除され、要素の文字は呼ぶ前のまま残る
     test: test_normal_when_comments_attached
 lead: 利用側が、配布物から出したビューを描く関数とコメントを付ける関数を、自分のページの JavaScript・TypeScript と、`registerExtension` の拡張のモジュールから呼び、要素の中にビューを描き、要素の中の選んだ箇所にコメントを付ける。
-issue: 8
 primary_actor: 利用側
 stakeholders:
   - name: 利用側

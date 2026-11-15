@@ -16,6 +16,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -23,6 +26,9 @@ flows:
         M->>M: Markdown を解析し、マーカーを取得する
         M->>M: 許可していない要素・属性・URL を落とす
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`id` を持つ `<h1>`（class `mdmark-heading` も持つ）・`<p>`・`<ul>`・`<table>`・`<pre><code class="language-ts">`・`<a href="…">` を持つ文字列が返る'
       - '`<td>` が同じ列の見出しの文言を `data-label`（`列A`・`列B`）に持つ'
@@ -39,12 +45,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: タスクリスト・取り消し線・www の自動リンクの規則を適用する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`済み` の項目に `<input type="checkbox" disabled checked>` があり、`未` の項目の `input` は `checked` を持たない'
       - タスクの `<li>` が class `task-list-item` を持つ
@@ -61,6 +73,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -68,6 +83,9 @@ flows:
         M->>M: マーカーを取得して取り除く
         M->>M: script 要素・on で始まる属性・javascript: の URL・style 属性を落とす
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列に `<!--`・`features`・`unknown` が無い
       - 文字列に `<script`・`onclick`・`javascript:`・`style=` が無い
@@ -87,12 +105,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（`render` は URL を読み込まないため、存在しないホストを指定する）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { config })
         M->>M: 対応表にあるマーカーをマーカーの場所の要素に置き換える
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 'マーカーの位置に `<div class="mdmark-embed" data-mdmark-slot="test-lib" data-mdmark-args="{&quot;label&quot;:&quot;a b&quot;,&quot;size&quot;:2}" role="status">図を読み込んでいます</div>` がある（`data-mdmark-args` は引数を空白なしの JSON にした文字）'
       - マーカーの前後の段落がある
@@ -110,12 +134,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { config })
         M->>M: 対応表と拡張のマーカーの引数が JSON のオブジェクトでない
         M-->>C: マーカーの場所に記載の警告を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列に `mdmark-embed` が無い
       - 2 つのマーカーの場所にそれぞれ記載の警告があり、本文に、引数を JSON のオブジェクトで記載することと `mdmark upgrade` がある
@@ -132,6 +162,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -140,6 +173,9 @@ flows:
         M->>M: 記法ごとの HTML にする
         M->>M: 許可していない要素・属性・URL を落とす
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<nav class="mdmark-toc" aria-label="目次">` の中に `#補足` へのリンクがある'
       - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
@@ -164,12 +200,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 見出しの文字から ID を作り、重なりに番号を付ける
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 見出しの `id` が上から `hello-world`・`使用方法`・`使用方法-1`
       - 各見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` がある
@@ -184,6 +226,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -191,6 +236,9 @@ flows:
         M->>M: 設定の features に文書のマーカーを重ねる
         M->>M: オフの記法のマーカーを取り除き、普通の Markdown として描く
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<table` があり、文字列に `mdmark-table` が無い'
       - '`<blockquote>` があり、文字列に `markdown-alert` が無い'
@@ -207,6 +255,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -214,6 +265,9 @@ flows:
         M->>M: 読み込めた指定だけを適用する
         M->>M: 読み込めない指定の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 5 つあり、それぞれにタイトル `記載の警告` がある'
       - 1 つ目の表が `data-kind="default"` と `data-features="sort pin resize"` を持ち、その前の警告の本文に `kind` の `unknown` と選べる値（`data`・`plain`）がある
@@ -232,12 +286,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 生の HTML から記法の class・data-*・id を落とす
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`偽り` の段落がある'
       - 文字列に `mdmark-tabs`・`data-kind`・`fig-x`・`markdown-alert` が無い
@@ -252,6 +312,9 @@ flows:
       - name: Mock
         description: 拡張の `load` と `schema` の `validate` は、呼ばれた回数を数える関数に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -259,6 +322,9 @@ flows:
         C->>M: render(markdown)
         M->>M: 拡張のマーカーをマーカーの場所の要素に置き換える
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 'マーカーの位置に `<div class="mdmark-embed" data-mdmark-slot="greet" data-mdmark-args="{&quot;target&quot;:&quot;world&quot;,&quot;lang&quot;:&quot;ja&quot;}" role="status">図を読み込んでいます</div>` がある'
       - '`load` と `validate` が 1 回も呼ばれていない'
@@ -276,11 +342,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { index, docId, references })
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`ワークスペース` と `公開関数` が class `mdmark-term` の要素で、その隣に意味 `話し合いの記録を配置するフォルダ` と関連文書 `API` を持つ要素がある'
       - 文字列の末尾に、タイトル `関連文書` の一覧がある
@@ -298,6 +370,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -305,6 +380,9 @@ flows:
         M->>M: 図の部品の範囲から定義を読み込み、構造を確認する
         M->>M: タイトル・図・凡例を描く
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`figure.mdmark-diagram` が 2 つあり、`data-diagram` がどちらも `chart`（2 つ目は `div.mdmark-param` の中のグラフ）'
       - 各図に題名のタイトルと凡例がある
@@ -322,12 +400,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 読み込めない定義の場所を記載の警告に替える
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の図の場所に記載の警告があり、`グラフの部品の定義を JSON として読み込めません` で始まり、読み込めなかった行と足りない記号が記載されている
       - 2 つ目の図の場所に記載の警告があり、`type` の `robot` と使用できる種類が記載されている
@@ -343,12 +427,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: flow・sequence の範囲を、廃止した記載方法として扱う
         M-->>C: 範囲ごとに記載の警告を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`flow`・`sequence` の範囲の場所に `div.mdmark-syntax-warning` が 1 つずつあり、本文に廃止した記載方法であることと、`mdmark upgrade` で map の範囲へ変換できることが記載されている'
       - '`figure.mdmark-diagram` が無く、出力に範囲の中の定義の JSON の文字（`"nodes"`）が無い'
@@ -368,6 +458,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -375,6 +468,9 @@ flows:
         M->>M: ER 図の範囲から定義を読み込み、構造を確認する
         M->>M: タイトル・テーブルと関係・凡例を描く
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`figure.mdmark-diagram` が 1 つあり、`data-diagram` が `er` で、題名・範囲・更新日のタイトルと凡例がある'
       - 4 つのテーブルが定義の座標に配置され、見出しに物理名と論理名がある
@@ -396,12 +492,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 読み込めない定義の場所を記載の警告に替える
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の図の場所に記載の警告があり、`ER 図の部品の定義を読み込めません` で始まり、関係 `注文する` の先の列 `orders.customer` がテーブル `orders` に無いことが記載されている
       - 2 つ目の図の場所に記載の警告があり、関係 `注文する` の先のテーブル `payments` が定義に無いことが記載されている
@@ -417,6 +519,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -424,6 +529,9 @@ flows:
         M->>M: html の範囲のコードブロックを生の HTML として読み込む
         M->>M: 許可していない要素・属性・宣言を落とし、図の部品とヒントを配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲のコードブロックの中身が `<div class="mdmark-html">` の中に要素として出て、`<pre>` にならない
       - 範囲の外の `html` のコードブロックは `<pre><code class="language-html">` のまま出る
@@ -443,6 +551,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -450,6 +561,9 @@ flows:
         M-->>C: コードブロックのままの HTML 文字列
         C->>M: render(-hints の文書)
         M-->>C: ツールチップの無い HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`html` を `false` にした文書で、範囲のコードブロックが `<pre><code class="language-html">` で出て、文字列に `mdmark-html` と `<!--` が無い'
       - '`hints` を `false` にした文書で、埋め込んだ HTML が描かれ、文字列に `data-hint`・`mdmark-hint-` が無く、`role="tooltip"` はグラフの項目のツールチップ（`data-tip-for="item:{n}"`。設定の `features.hints` が受け持たない）だけ'
@@ -465,12 +579,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 読み込めない範囲と要素の場所を記載の警告に替える
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 3 つあり、それぞれにタイトル `記載の警告` がある'
       - コードブロックの無い範囲と 2 つある範囲の警告の本文に、範囲に配置できる `html` のコードブロックが 1 つであることが記載され、2 つある範囲のコードブロックはコードのまま出る
@@ -488,12 +608,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 種類ごとにグラフを描く
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 棒のグラフが系列ごとに異なる塗りの模様の `rect` を持ち、縦の軸の目盛りが `0`・`50`・`100`・`150`
       - 円のグラフが 3 つの扇形の `path` を持ち、扇形の外に整数の割合（合計 100%）、凡例に項目の名前と値がある
@@ -515,12 +641,18 @@ flows:
         description: '`Intl.Segmenter` を取り除く（`Intl.Segmenter` を持たないブラウザの代わり）'
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 配布物の入口を読み込む
         C->>M: render(markdown, { index })
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 配布物の入口の読み込みが例外を出さない
       - '`ワークスペース` が class `mdmark-term` の要素になる'
@@ -537,6 +669,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -544,6 +679,9 @@ flows:
         M->>M: 表のマーカーの機能とキーを読み込む
         M->>M: 見出しの ID を決め、行の ID を作る
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表が `data-features="sort pin filter resize count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
       - 見出しが `id="みかん"` を持ち、3 行の `tr` が上から `id="りんご"`・`id="みかん-1"`・`id="みかん-2"` を持つ
@@ -561,6 +699,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -568,6 +709,9 @@ flows:
         M->>M: 読み込めた指定だけを適用する
         M->>M: 読み込めない指定の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表 A が `data-total="2:avg"` を持ち、`data-hide` を持たない。表 A の前には読み込めない指定ごとに 1 つずつ、記載の警告が 4 つある。それぞれの本文に、`calc` の `max` と選べる値 `sum`・`avg`・`count`、表に無い列名 `価格`、表に無い列名 `備考`、先頭の列で隠せない `名前` がある（`名前` はマーカーの文字とは別に、本文の中にある）
       - 表 B が `data-total`・`data-hide` を持たず、`data-features` に `total`・`columns` を持たず、表 B の前に記載の警告が無い（`enabled` を `false` にした機能の列の設定は点検が通知する）
@@ -585,12 +729,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 表のマーカーの列名を見出しの位置として解釈する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の表が `data-pin="1"`・`data-check="3"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
       - '`説明` の列の `th` と 2 つの `td` が class `mdmark-wide` を持つ'
@@ -612,6 +762,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -619,6 +772,9 @@ flows:
         M->>M: 読み込めた指定だけを適用する
         M->>M: 読み込めない指定の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表 A の `説明` の列の `th`・`td` が class `mdmark-wide` を持ち、表 A が `data-pin`・`data-check` を持たない。表 A の前に記載の警告が 1 つあり、本文に表に無い列名 `無い列` がある
       - 表 B の `data-features` に `pin` が無く、表 B が `data-pin` を持たず、表 B の前に記載の警告が無い
@@ -636,12 +792,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 列ごとに、見出しとセルを改行で分けた 1 行の文字数から長文の列を決める
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表が `data-long="1 3"` を持つ（`<br>` で区切った手順の列は長文の列にしない）
       - 表が `data-width="1:20-30 3:-12"` を持つ
@@ -661,12 +823,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 長文の列と columns.{列名}.sort から並べ替えを付けない列を決める
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表 A が `data-no-sort="2"` を持つ
       - 表 B が `data-no-sort="0"` を持つ
@@ -689,12 +857,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 長文の列とビューのマーカーの columns.{列名}.sort から並べ替えを付けない列を決める
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - ビュー A の表が `data-no-sort="2"` を持つ
       - ビュー B の表が `data-no-sort="0"` を持つ
@@ -713,11 +887,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - class `mdmark-view` の `div` があり、その `data-view` を JSON として読み込むと `{"group":1,"mode":"table","boardDisabled":"","icons":{"未着手":"inbox"}}` で、その中に担当の列を `data-filter` に持つ表がある
       - 文字列にボードと切り替えのボタンが無く、マーカーの文字が残らない
@@ -734,6 +914,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -743,6 +925,8 @@ flows:
         M->>M: タイトル・行番号・行の種類を付けた HTML にする
         M-->>C: HTML 文字列
       ```
+
+      <!-- /map -->
     expected:
       - '1 つ目のコードブロックが `<figure class="mdmark-code">` に入り、`<figcaption class="mdmark-code-title mdmark-code-bar">` の中に言語 `ts` の `mdmark-code-lang` とタイトルの文字 `app.ts` がこの順にあり、`aria-label="コード: app.ts"` と class `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` を持つ `pre` がある'
       - 1 つ目の `code` が `style="--mdmark-code-digits:1"` を持ち、`data-line` が 1〜3 の `mdmark-code-line` が 3 つあり、1 行目が `data-kind="highlight"`・2 行目が `data-kind="add"`・3 行目が `data-kind="del"` を持つ
@@ -761,6 +945,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -770,6 +956,8 @@ flows:
         M->>M: 読み込めない指定の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
       ```
+
+      <!-- /map -->
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 4 つあり、それぞれにタイトル `記載の警告` がある'
       - 1 つ目のコードブロックがタイトル `app.ts` の `figure` に入り、その前に記載の警告が無い（知らないキー `color` は無視する）
@@ -788,6 +976,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -797,6 +987,8 @@ flows:
         M->>M: コードブロックのマーカーを取り除き、今のとおり描く
         M-->>C: HTML 文字列
       ```
+
+      <!-- /map -->
     expected:
       - '`<pre tabindex="0" aria-label="コード: ts">` があり、文字列に `mdmark-code` が無い'
       - コードブロックに `// [!code ++]` の文字が残っている
@@ -812,12 +1004,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: ブロックのトークンの開始の行を属性にする
         M-->>C: data-source-line を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<h1>` が `data-source-line="0"`、`<p>` が `"2"`、表を囲む要素が `"4"`、本文の `<tr>` が `"6"`、コードブロックの `<pre>` が `"8"`、`<ul>` と 1 つ目の `<li>` が `"12"`、2 つ目の `<li>` が `"13"`'
       - コードブロックの行の `span` は今のとおり `data-line`（`1` から）を持ち、`data-source-line` を持たない
@@ -836,11 +1034,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { index, docId })
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`ワークスペース` が class `mdmark-term` の要素で、その隣に「用語」の意味 `話し合いの記録を配置するフォルダ` を持つ要素がある'
       - '`作業場` が class `mdmark-term mdmark-term-avoided` の要素で、その隣に「代わりの用語」の `ワークスペース` と意味を持つ要素がある'
@@ -858,6 +1062,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -865,6 +1072,9 @@ flows:
         M->>M: 情報文字列を言語とファイル名に分ける
         M->>M: コードブロックを帯で囲み、ラベルを配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`python:hoge.py` のコードブロックが `<div class="mdmark-code">` に入り、`<div class="mdmark-code-bar">` の中に `mdmark-code-lang` があり、`aria-hidden="true"` を持つ `mdmark-code-lang-name` が `python`、`mdmark-code-file` が `hoge.py`。`code` の class が `language-python`、`pre` の `aria-label` が `コード: hoge.py`'
       - '`ts` のコードブロックの帯に `mdmark-code-lang-name` `ts` があり `mdmark-code-file` が無く、`pre` の `aria-label` が `コード: ts`'
@@ -884,12 +1094,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 行内のコードの頭を読み込む
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<code>badge:</code>` と `<code>badge: </code>` があり、中身の空な `mdmark-badge` が無い'
       - '`<span class="mdmark-badge">v1</span>` が 1 つある'
@@ -905,12 +1121,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 集計する列のセルを数として読み込む
         M-->>C: 表の前に記載の警告を配置した HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表の `mdmark-table` の直前に `mdmark-syntax-warning` が 1 つだけあり、本文に列名 `数量` と値 `約 3` と `合計` がある
       - 単価の空のセルと、`count` の名前の列の `-` は警告にならない
@@ -926,12 +1148,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: h1〜h4 の見出しの後ろをセクションの中身で囲む
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`手引き`・`付録` の `h1` が class `mdmark-heading` を持つ'
       - '`手引き` の後ろが `<div class="mdmark-section-body" id="section-手引き" data-section="open">` に入り、その中に `概要` の `h2` と `id="section-概要"` のセクションの中身がある'
@@ -950,11 +1178,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { aliases })
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`ワークスペース` が class `mdmark-term` の要素で、その隣に「用語」と `話し合いの記録を配置するフォルダ` を持つ `role="tooltip"` の要素がある'
       - '`単体テスト` が class `mdmark-term` の要素で、その隣のツールチップに「コマンド」と `code` 要素の `npm run test:unit` と `type="button"` の `コピー` のボタンがある'
@@ -973,6 +1207,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -980,6 +1217,9 @@ flows:
         M->>M: collapse の open と title を読み込む
         M->>M: 範囲を details に入れ、見出しを collapse.title か中身から作る
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の表が `<details class="mdmark-table-details">` に入り、`open` を持たず、`<summary>表（3 行）</summary>` を持つ
       - 2 つ目の表の `details` が `open` を持ち、`<summary>リリースの一覧</summary>` を持つ
@@ -1000,6 +1240,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1007,6 +1250,9 @@ flows:
         M->>M: 罫線から階層を数え、名前と注釈を分ける
         M->>M: 項目の種類と拡張子ごとのアイコンの種類を決める
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目のツリーの `<div class="mdmark-tree">` が `data-open="all"` を持ち、2 つ目は `data-open` を持たない
       - どちらの `<div class="mdmark-tree">` も、コードブロックに記載した罫線のテキストそのものを `data-source` に持つ
@@ -1028,6 +1274,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1035,6 +1284,9 @@ flows:
         M->>M: 読み込めた指定だけを適用する
         M->>M: 読み込めない指定の範囲の前に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 3 つある'
       - タブの範囲の前の警告の本文に、`collapse` には `open`・`title` を持つオブジェクトを記載することがあり、タブが `details` に入らない
@@ -1054,6 +1306,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1061,6 +1316,9 @@ flows:
         M->>M: 表のマーカーの columns の highlight と rows.colors を読み込む
         M->>M: バッジの頭と本文の属性の色の名前を色の名前の一覧と照らす
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 金額の列の `th` と 3 つの `td` が class `mdmark-col-highlight` と `data-color="blue"` を持つ
       - 本文の行の `tr` が上から `data-color="green"`・`data-color="yellow"`・`data-color="red"` を持つ
@@ -1080,12 +1338,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: pink が色の名前の一覧に無い
         M-->>C: 表と段落の前に記載の警告を配置した HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表の `mdmark-table` の直前と段落の直前に `mdmark-syntax-warning` が 1 つずつあり、それぞれの本文に `pink` と `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray` がある
       - 表の `tr` が `data-color` を持たない
@@ -1103,6 +1367,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1110,6 +1377,9 @@ flows:
         M->>M: 画像の後ろの属性を読み込む
         M->>M: 画像だけの段落の画像を図にする
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '1 つ目が `<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">` に入り、`<figcaption class="mdmark-figure-caption">売上の推移</figcaption>` を持つ'
       - '2 つ目の `figure` が `data-align="left"` と `--mdmark-image-width: 40%` を持ち、`figcaption` を持たない。`img` が `data-nolightbox` を持つ'
@@ -1130,12 +1400,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: width の値と foo、文の中の画像の align を読み込めない
         M-->>C: 記載の警告と、読み込めた属性だけを適用した画像の HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の `figure` の直前に `mdmark-syntax-warning` が 1 つあり、本文に `width=big`・`foo` と記載できる属性の名前がある
       - 1 つ目の `figure` が `data-align="center"` を持ち、`style` を持たない
@@ -1154,6 +1430,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1161,6 +1440,9 @@ flows:
         M->>M: ギャラリーの範囲の画像を格子に入れる
         M->>M: fig のマーカーの番号と、範囲の中の順のサブ図の番号を付ける
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '1 つ目のギャラリーが `<figure class="mdmark-figure" id="fig-shots">` の中の `<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3">` と `<div class="mdmark-gallery-grid">` に入り、外の `figure` が `<b>図 1</b>` のキャプションを持つ'
       - 1 つ目のギャラリーの 2 つの `figure` が `id="fig-shots-a"`・`id="fig-shots-b"` と、`<b>図 1a</b>開く`・`<b>図 1b</b>記載する` のキャプションを持つ
@@ -1180,12 +1462,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: src の拡張子で動画・音声・GIF を分ける
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '1 つ目が `<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: 480px">` に入り、`src="demo.mp4"`・`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload="metadata"`・`poster="demo.png"`・`aria-label="操作の様子"` を持つ `video` と、`<img class="mdmark-media-print" src="demo.png" alt="">` と、`保存までの操作` のキャプションを持つ'
       - 2 つ目が `figure.mdmark-media` の中の、`src="voice.mp3"`・`controls`・`preload="metadata"`・`aria-label="スクリーンリーダー"` を持つ `audio` で、`figcaption` を持たない
@@ -1204,12 +1492,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: リンク 1 つだけの段落を拡張子でリンクと添付に分ける
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目が `<a class="mdmark-card" data-card="link" href="https://example.com/docs/guide">` で、`mdmark-card-title` が `example.com/docs/guide`、`mdmark-card-domain` が `example.com`、`mdmark-card-url` が `https://example.com/docs/guide`
       - 2 つ目の `mdmark-card-title` が `設計の資料`
@@ -1230,12 +1524,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 設定の features に文書のマーカーを重ねる
         M-->>C: 削除した記法を普通の Markdown として描いた HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark-color` が無く、段落の文字が `[決め手の 1 文]{color=blue}`'
       - '`img` が `figure` に入らず、段落の文字に `{width=300}` が残る'
@@ -1254,6 +1554,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1261,6 +1564,9 @@ flows:
         M->>M: 見出しの行の数と行見出しの列の数を読み込む
         M->>M: ^^ と << を結合し、本文の結合したセルに値を入れる
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 囲んだ表の `thead` に `tr` が 2 つあり、1 行目の 2 列目の `th` が `colspan="2"` を持ち、1 行目に `<<` のセルが無い
       - 本文の各行の 1 列目が `<th scope="row">` で、1 行目の 1 列目が `rowspan="3"` を持ち、2 行目と 3 行目の 1 列目が `A` を持ち、`data-merge="up"` と `hidden` を持つ
@@ -1280,6 +1586,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1287,6 +1596,9 @@ flows:
         M->>M: 読み込めた指定だけを適用する
         M->>M: 読み込めない指定の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表の前に記載の警告があり、本文に `header.rows` の `5` と表の行の数、見出しの行と本文の行をまたぐ `^^`、左に結合するセルの無い `<<` がある
       - '`thead` の `tr` が 1 つで、`^^` と `<<` のセルが記載した文字のまま出ていて、`rowspan`・`colspan` を持たない'
@@ -1304,12 +1616,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 種類・+ とタイトルを読み込み、中の引用も注意書きにする
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '1 つ目が `<div class="markdown-alert markdown-alert-tip">` で、タイトルの `p.markdown-alert-title` が `<span class="mdmark-visually-hidden">ヒント: </span>` と `設定を先に確認する` を持つ'
       - 2 つ目が `open` を持つ `<details class="markdown-alert markdown-alert-note">` で、`summary` が `詳細` を持つ
@@ -1330,12 +1648,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: タブの開きと閉じを内側から対応させる
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 外側の `div.mdmark-tabs` の直下の `mdmark-tab-panel` が 2 つで、`macOS` の `mdmark-tab-panel` の中に `zsh`・`bash` の `mdmark-tab-panel` を持つ `div.mdmark-tabs` がある
       - '`Windows` の `p.mdmark-tab-title` が `<strong>Windows</strong>` を持ち、文字列に `**` が無い'
@@ -1354,12 +1678,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 閉じの無い外側の開きに記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 外側の開きの位置に記載の警告が 1 つあり、本文に閉じが無いことがある
       - '`div.mdmark-tabs` が無く、`<h3` の `macOS`・`Windows` と `<h4` の `zsh`・`bash` と、中身の段落が全てある'
@@ -1377,12 +1707,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 種類ごとにグラフを描く
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 9 つの `<figure class="mdmark-diagram" data-diagram="chart">` があり、どれもタイトルと凡例を持ち、記載の警告が無い
       - '`stacked-bar` の 1 つ目の項目で、2 つ目の系列の `rect` の下端が 1 つ目の系列の `rect` の上端と同じ高さで、2 つの高さの和が値 `7` の高さ'
@@ -1404,12 +1740,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 系列の多すぎる定義の場所を記載の警告に替える
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目と 2 つ目の図の場所に記載の警告があり、系列（`donut` は項目）の数と上限の 6 つが記載されている
       - '`figure.mdmark-diagram` が 1 つだけあり、段落がある'
@@ -1426,12 +1768,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: custom element の定義を図の部品として読み込む
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの `<mdmark-chart>` の場所に、`<!-- chart -->` で描いた同じ定義の `figure.mdmark-diagram` と同じ `svg` の中身と凡例がある
       - 記載の警告が無く、文字列に `<mdmark-chart` が無い
@@ -1448,12 +1796,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 行のマーカーを行の種類にする
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`pre` が class `mdmark-code-lines` と `mdmark-code-has-focus` を持つ'
       - 1〜3 行目の `mdmark-code-line` がそれぞれ `data-kind="focus"`・`data-kind="error"`・`data-kind="warning"` を持ち、4 行目は `data-kind` を持たない
@@ -1471,12 +1825,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 行のインデントのレベルと畳む範囲を決める
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - yaml の 1 行目が `data-fold-lines="3"`、2 行目が `data-indent="1"`・`data-fold-lines="1"`・`data-folded`、3 行目が `data-indent="2"`、4 行目が `data-indent="1"` を持ち、4 行目は `data-fold-lines` を持たない
       - json のオブジェクトを開く行の `data-fold-lines` が、閉じ括弧の行を含まない数
@@ -1496,6 +1856,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1503,6 +1866,9 @@ flows:
         M->>M: 読み込めた指定だけを適用する
         M->>M: 読み込めない指定の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - コードブロックの前に記載の警告が 1 つあり、本文に畳めない `3` 行目と、コードブロックに無い `99` 行目がある
       - 1 行目だけが `data-folded` を持つ
@@ -1520,12 +1886,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 脚注の定義と参照を読み込み、参照した順に番号を振る
         M-->>C: 番号・ツールチップ・末尾の一覧を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の段落に `a.mdmark-fn-link`（`id="mdmark-fnref-1-0"`・`href="#mdmark-fn-1"`・文字 `1`）、2 つ目の段落に同じ構造の `2` がある
       - 番号 1 のツールチップが `role="group"`・`aria-label="脚注 1"` で、タイトル `脚注 1` と `出典の説明`・`詳しく` のリンクを持ち、番号のリンクの `aria-details` がその `id` を指す
@@ -1546,12 +1918,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: ラベルを正規化して照合し、最初の定義を採る
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`[^Note]` と `[^note]` がどちらも番号 `1` で、参照の `id` が `mdmark-fnref-1-0`・`mdmark-fnref-1-1`'
       - 脚注 1 の中身が `1 つ目` で、`2 つ目` が文字列のどこにも無い
@@ -1573,12 +1951,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 文書のマーカーで脚注の機能を解除し、脚注のトークンを文字に戻す
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 段落に `[^src]` と `^[補足]` が記載した文字のままあり、`[^src]` がリンクになっていない
       - '定義が `<p>[^src]: 出典の説明</p>` として `終わり` の段落の前にある'
@@ -1597,12 +1981,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 注記の定義と参照を読み込み、最初に参照した順に番号を振る
         M-->>C: 注記のマーカー・ツールチップ・末尾の注記の一覧を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の段落と表のセルに `sup.mdmark-fn-ref.mdmark-note-ref` があり、どちらもリンク `a.mdmark-fn-link` の文字が `1` で `href="#mdmark-note-1"`、`id` が `mdmark-noteref-1-0`・`mdmark-noteref-1-1`
       - 注記 1 のツールチップが `role="tooltip"` で、タイトル `注記 1` と `条件を満たさないときは次の工程へ進む。` を持ち、リンクの `aria-describedby` がその `id` を指す
@@ -1623,12 +2013,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 定義の無い参照・参照されていない定義・2 つ目の定義を見つける
         M-->>C: 記載の警告を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`※[missing]` が記載した文字のまま残り、その段落の前に `※[missing]` の定義が無いことを示す記載の警告がある'
       - '`※[cond]` のツールチップの中身が `前の定義` で、`後の定義` の位置に同じ ID の定義が既にあることを示す記載の警告がある'
@@ -1648,12 +2044,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: リンクになる [ID] を先に決め、残りの ※[ID] を注記の参照にする
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の `※[cond]` が注記 1 の参照になる
       - '`※[site]` と `※[site][]` が、どちらも文字 `※` と、文字 `site` の `https://example.com/b` へのリンクになる（リンクの参照の定義のラベル `Site` と大文字小文字によらず照合する）'
@@ -1672,12 +2074,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 文書のマーカーで注記の機能を解除する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 段落に `※[cond]` が記載した文字のままある
       - '定義が `<p>※[cond]: 条件の補足</p>` として記載した位置にある'
@@ -1695,12 +2103,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 表のマーカーの reorder と見出しの結合を読み込む
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 表が `reorder` を含む `data-features` を持つ `div.mdmark-table` に入る
       - 2 行目の `型`・`既定`・`必須` の `th` が同じ `data-group` を持ち、`名前`・`備考` の `th` が `data-group` を持たない
@@ -1718,12 +2132,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 種類の機能に +機能・-機能を当てる
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 囲まない表の `data-features` が `pin` と `resize` を含み、`data` の表の `data-features` が `sort`・`pin`・`filter`・`resize` を含む
       - '`resize` を削除した表の `data-features` が `resize` を含まず、`plain` の表の `data-features` が空'
@@ -1742,12 +2162,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: キーを . と [] で分け、表に無い親の行を補う
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`tr.mdmark-tree-row` が 8 つあり、`data-path` が上から `features`・`features.table`・`features.html`・`aliases[]`・`aliases[].id`・`aliases[].metadata`・`aliases[].metadata.alias_type`・`aliases[].metadata.alias_type.type`'
       - '`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行が class `is-virtual` と `has-children` を持ち、キーの列のほかのセルが空'
@@ -1769,12 +2195,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 見出しの下のタブを表の下へ移し、見本の行のパスを求める
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '表の直後に `aside.mdmark-tree-example` があり、`aria-label` が `見本: 設定の見本` で、2 つのタブを持つ'
       - 表と見本が `div.mdmark-tree-layout` に入り、見出し `設定の見本` は元の場所にある
@@ -1792,12 +2224,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 読み込めない指定を見つけ、読み込めた指定だけを適用する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 3 つあり、それぞれの本文に読み込めなかった指定（`tree.key.column` の `キー名`・必須の `tree.key` の欠け・`tree.example.heading` の `見本`）が記載されている'
       - '`キー名` の表に `mdmark-tree-row` が無く、`tree.key` の無い表の型のセルに `mdmark-type-badge` が無い'
@@ -1815,12 +2253,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { config })
         M->>M: 範囲の html を読み込み、css を根の要素に限り、ts を template に入れる
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`div.mdmark-html` が `data-html-scope="0"` を持ち、先頭に `style.mdmark-html-style`、末尾に `template.mdmark-html-script` の `data-lang="ts"` がある'
       - '`style` の規則のセレクタがどれも範囲の根の要素の中に限られ、`.box` だけのセレクタが無い'
@@ -1839,12 +2283,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 範囲の html だけを HTML として読み込む
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の `div.mdmark-html` があり、中に `style` と `template` が無い
       - 範囲の後ろに `<pre><code class="language-css">` と `<pre><code class="language-ts">` がある
@@ -1862,12 +2312,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { config })
         M->>M: 範囲に ts と js が両方あることを見つける
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の前に記載の警告が 1 つあり、本文に `ts` か `js` のどちらか 1 つにすることが記載されている
       - 範囲の `html` は描かれ、`template.mdmark-html-script` が無い
@@ -1886,12 +2342,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: icon:・kbd:・== を記法の要素にする
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 見出しの中に `<span class="mdmark-inline-icon" data-icon="flag" aria-hidden="true">` があり、中に `svg` がある
       - '`<span class="mdmark-inline-icon" data-icon="sailboat" aria-hidden="true"></span>` があり、中が空'
@@ -1916,12 +2378,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { icons })
         M->>M: 表の構造で svg を作る
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`data-icon="sailboat"` の要素の中に `svg` と 2 つの `path` がある'
       - 文字列に `onclick` が無い
@@ -1936,12 +2404,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 範囲のマーカーを読み込み、記法ごとの要素で囲む
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<div class="mdmark-layout-columns" data-count="2">` の中に `<div class="mdmark-layout-column">` が 2 つある'
       - '`<details class="mdmark-collapsible"><summary>補足の手順</summary>` があり `open` を持たず、`実行の例` の `details` が `open` を持つ。`summary` の文字に `open` が無い'
@@ -1966,6 +2440,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -1973,6 +2450,9 @@ flows:
         M->>M: マーカーのパスを解き、表から本文を参照する
         M->>M: 全体・見出しの中・行の範囲を描く
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の `<div class="mdmark-include" data-include="共通/手順.md">` の中に `準備`・`実行`・`片付け` の見出しと段落がある
       - 2 つ目の `mdmark-include` の中に `実行` の見出しと表があり、`準備`・`片付け` が無い。表が `data-kind="data"` を持つ
@@ -1996,6 +2476,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2003,6 +2486,9 @@ flows:
         M->>M: 取り込めないマーカーに記載の警告を配置する
         M->>M: 取り込みの途中の同じファイルを取り込まない
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`missing.md`・`無い見出し`・`src/app.ts` のマーカーの場所に `<div class="mdmark-syntax-warning" role="note">` があり、本文にそれぞれ `missing.md`、`無い見出し`、`20〜22 行目` と `12 行` がある'
       - 段落 `A` と `B` が 1 回ずつあり、`b.md` の中の `a.md` のマーカーの場所の警告の本文に `a.md → b.md → a.md` がある
@@ -2022,6 +2508,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2029,6 +2518,9 @@ flows:
         M->>M: csv のコードブロックを行と値に読み込む
         M->>M: 表にし、元の CSV を隠して添える
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
       - '`東京, 本社` が 1 つの `td` で引用符を持たず、改行を持つ値が 1 つの `td` にあり、`""` が `"` になる'
@@ -2052,12 +2544,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: page のマーカーを取り除き、cards の範囲をカードにする
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の文書の HTML に `page:` の文字と記載の警告が無い
       - '`<ul class="mdmark-card-grid">` の中に `li` が 3 つある'
@@ -2079,6 +2577,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2086,6 +2587,9 @@ flows:
         M->>M: 読み込めた指定だけを適用する
         M->>M: 読み込めない指定の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<code>icon:Rocket!</code>` と `<code>icon:</code>` があり、`Rocket!` の段落の前にだけ警告がある'
       - '`決め手` が `data-color` を持たない `mark.mdmark-highlight` で、警告の本文に `pink` と色の名前の一覧がある'
@@ -2113,6 +2617,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2120,6 +2627,9 @@ flows:
         M->>M: 設定の features に文書のマーカーを重ねる
         M->>M: オフの記法のマーカーを取り除き、普通の Markdown として描く
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<code>icon:check</code>`・`<code>kbd:Ctrl+C</code>` がある'
       - '`==決め手==` が記載した文字のまま出て、`<mark` が無い'
@@ -2140,12 +2650,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: code と tree のマーカーの wrap を読み込む
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の `pre` が class `mdmark-code-lines mdmark-code-numbered mdmark-code-wrap` を持ち、`data-line` が 1〜3 の行が 3 つある
       - 2 つ目の `pre` が `mdmark-code-lines` と `mdmark-code-wrap` を持ち、`mdmark-code-numbered` を持たない
@@ -2163,12 +2679,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 言語が tree でないコードブロックの罫線の行を数える
         M-->>C: 罫線の行が 2 行以上のコードブロックの前に記載の警告を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '1 つ目のコードブロックの前に記載の警告があり、本文が `言語 text のコードブロックに、罫線のフォルダ構成があります。` で始まり、言語を `tree` にすることと `<!-- code: {"tree_warning": false} -->` の記載方法がある。コードブロックは `language-text` の `pre` のまま'
       - '2 つ目のコードブロックの前に記載の警告があり、本文が `言語の無いコードブロックに、罫線のフォルダ構成があります。` で始まる'
@@ -2186,11 +2708,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M-->>C: data-mdmark-mermaid を付けたコードブロックの HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の文書の `div.mdmark-code` が属性 `data-mdmark-mermaid` を持ち、`code` が `language-mermaid` でソースの文字を持つ
       - 2 つ目の文書の `div.mdmark-code` が属性 `data-mdmark-mermaid` を持たない
@@ -2207,6 +2735,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2214,6 +2745,9 @@ flows:
         M->>M: 先頭のフロントマターの範囲を取り出し、本文から除外する
         M->>M: 残りを解析し、ブロックに元の Markdown の行番号を付ける
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '文字列に `title: テスト`・`tags: [a, b]`・`<hr` が無い'
       - 文字列に `<h2` が無く、`<h1` が `data-source-line="5"`、`<p>` が `data-source-line="7"` を持つ
@@ -2231,6 +2765,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2238,6 +2775,9 @@ flows:
         M->>M: 先頭のフロントマターを本文から除外する
         M->>M: 本文の先頭に、フロントマターの中身を持つ閉じた折りたたみを配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列の先頭のブロックが `<details class="mdmark-collapsible mdmark-frontmatter"` で、`open` を持たず、`<summary>` の文字が `フロントマター`
       - '折りたたみの中に言語 `yaml` のコードブロックがあり、その行が `title: テスト` と `tags: [a, b]`'
@@ -2255,12 +2795,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { config })
         M->>M: 閉じる行が無いため、フロントマターが無いものとして解析する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列の先頭のブロックが `<hr`
       - '`<p>` と `<h2` があり、文字列に `mdmark-frontmatter` が無い'
@@ -2278,12 +2824,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { config, includes })
         M->>M: 取り込む文書の先頭のフロントマターを除外して、マーカーの場所に入れる
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark-include` の要素の中に `実行` の `<h2` と段落がある'
       - '文字列に `title: 手順` と `mdmark-frontmatter` が無い'
@@ -2299,12 +2851,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: map の範囲の mermaid のブロックと補足を読み込み、補足をスキーマで検査する
         M-->>C: map の場所の要素とソースのコードブロックの HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`div.mdmark-map` が 2 つあり、1 つ目は `data-map="1"`・`data-map-kind="flowchart"`・`data-map-args` が `{"title":"全体の構成","interval":3}`（知っているキーだけを空白なしの JSON にしたもの）、2 つ目は `data-map="2"`・`data-map-kind="sequenceDiagram"` を持つ'
       - それぞれの `div.mdmark-map` の中に、Mermaid のソースを持つ `div.mdmark-code`（`code` が `language-mermaid`。属性 `data-mdmark-mermaid` を持たない）と、補足の JSON の文字を持つ `pre.mdmark-map-data`（`hidden`）がある
@@ -2323,12 +2881,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M->>M: 範囲の形（印の引数・図の種類・ブロックと補足の数）を確かめる
         M-->>C: 書き方の警告と map の場所の HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の範囲の場所に書き方の警告が無く（読めない行・閉じの無い `subgraph`・補足の知らないキーは `mount` が警告にする）、`div.mdmark-map` があり、その `data-map-args` に `mdoe` が無い
       - 印の引数が JSON として読めない範囲の場所に、印の引数を JSON のオブジェクトで記載する直し方の書き方の警告があり、引数なしとして `div.mdmark-map` がある
@@ -2346,11 +2910,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M-->>C: map の範囲を普通の Markdown として描いた HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`div.mdmark-map` が無い'
       - 範囲の中の mermaid のブロックが、属性 `data-mdmark-mermaid` を付けた `div.mdmark-code` になる
@@ -2366,6 +2936,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2374,6 +2947,9 @@ flows:
         M-->>C: HTML 文字列
         C->>M: render(JSON の記載の markdown)
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの文字列が同じ
       - どちらの文字列にも `mdmark-syntax-warning` が無い
@@ -2390,6 +2966,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2398,6 +2977,9 @@ flows:
         M-->>C: HTML 文字列
         C->>M: render(1 行の markdown)
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの文字列が同じで、表が `data-total="1:sum"` を持ち、`<summary>明細</summary>` の `details` に入る
       - 文字列に `"kind"`・`<!--` が無い
@@ -2414,6 +2996,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -2421,6 +3006,9 @@ flows:
         M->>M: 引数を JSON として読み、マーカーの JSON Schema で確かめる
         M->>M: 読めない引数・型の合わない値の箇所に記載の警告を配置する
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 3 つある'
       - 1 つ目の details の前の警告の本文に読めない位置と理由があり、範囲が `<summary>詳細</summary>` の `open` を持たない `details` に入る
@@ -2440,11 +3028,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`figcaption` にタイトル `src/app.ts の抜粋` がある'
       - '`mdmark-code-line` の `data-line` が `10`・`11`・`12` で、`11`・`12` の行が `data-kind="highlight"` を持つ'
@@ -2464,11 +3058,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown, { includes })
         M-->>C: マーカーの場所に記載の警告を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列に `mdmark-include` が無い
       - 2 つの記載の警告があり、それぞれの本文に `lines` は Markdown 以外のファイルにだけ記載できること・`heading` と `lines` は同時に記載できないことがある
@@ -2485,11 +3085,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - '`data-view` の `icons` が `未着手` → `inbox` だけを持つ'
       - 範囲の前の記載の警告の本文に、状態の列に無い値 `保留` と列の値がある

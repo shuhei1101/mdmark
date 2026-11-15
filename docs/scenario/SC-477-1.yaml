@@ -14,6 +14,9 @@ scenarios:
       - name: Mock
         description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[設定と索引を点検する:正常シナリオ（今の書き方のマーカーがある）] --> B[バージョンを上げる:正常シナリオ（文書のマーカーを JSON の記載へ書き換える）]
         B --> C[設定と索引を点検する:正常シナリオ]
@@ -22,6 +25,9 @@ scenarios:
         click B "id:SC-472-27#scenarios[正常シナリオ（文書のマーカーを JSON の記載へ書き換える）]"
         click C "id:SC-472-78#scenarios[正常シナリオ]"
         click D "id:SC-472-56#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - 1 回目の `mdmark check` が、今の書き方のマーカーごとにファイルと行を指し、`mdmark upgrade` での移行を案内する行を出す
       - '`mdmark upgrade` の後、文書の引数を持つ全てのマーカーが名前の後ろの JSON のオブジェクトで記載され、引数の無いマーカー・閉じのマーカーとマーカーの外の本文は変わっていない'
@@ -44,6 +50,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[バージョンを上げる:正常シナリオ（書き換えない記載を移行の報告に挙げる）] --> B[設定と索引を点検する:正常シナリオ（今の書き方のマーカーがある）]
         B --> C[設定と索引を点検する:正常シナリオ]
@@ -52,6 +61,9 @@ scenarios:
         click B "id:SC-472-78#scenarios[正常シナリオ（今の書き方のマーカーがある）]"
         click C "id:SC-472-78#scenarios[正常シナリオ]"
         click D "id:SC-472-49#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark upgrade` の出力の移行の報告に、適用されていない `total=` の記載と、拡張のマーカーの記載が、ファイルと行と理由つきで挙がる。表のマーカーは適用している設定だけの JSON のオブジェクトに書き換わって `total` を持たず、拡張のマーカーは今の書き方のまま残る'
       - 手で修正する前の `mdmark check` が、拡張のマーカーの 1 か所だけを今の書き方のマーカーとして指す
@@ -64,7 +76,6 @@ scenarios:
       - SC-472-78#scenarios[正常シナリオ]
       - SC-472-49#scenarios[正常シナリオ]
 lead: 文書の作成者が、今の書き方（`キー=値`・`+機能`・位置の値）でマーカーを記載した文書を、点検の案内に従って移行の手順で JSON の記載へ書き換え、移行の報告に挙がった記載を手で修正し、書き換える前と同じ描画のまま点検に合格して書き出す。
-issue: 451
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者

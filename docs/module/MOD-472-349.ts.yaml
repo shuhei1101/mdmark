@@ -4,11 +4,6 @@ title: ClaudeCodeプラグイン / フック / guide-notice.ts
 lead: プラグインの `hooks/hooks.json` の `Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内し、圧縮でその記録を削除する。
 test_files:
   - tests/unit/src/plugin/guide-notice.test.ts
-directory: |-
-  ```tree
-  src/plugin/
-  └── guide-notice.ts   # 記法のルールの参照の案内のフックの入口
-  ```
 constants:
   - name: NOTICE_DIR_ENV
     title: 記録のフォルダの環境変数
@@ -19,8 +14,6 @@ constants:
     refs:
       - CFG-472-1#settings[MDMARK_GUIDE_NOTICE_DIR]
     status: planned
-    introduced:
-      pr: 541
   - name: DEFAULT_NOTICE_DIR_NAME
     title: 既定の記録のフォルダの名前
     container: src/plugin/guide-notice.ts
@@ -28,8 +21,6 @@ constants:
     summary: '`NOTICE_DIR_ENV` が無いときに `os.tmpdir()` の下に作るフォルダの名前'
     value: mdmark-guide-notice
     status: planned
-    introduced:
-      pr: 541
   - name: SESSION_ID_PATTERN
     title: 記録に使用できるセッションの ID
     container: src/plugin/guide-notice.ts
@@ -39,8 +30,6 @@ constants:
     refs:
       - IF-472-43#exceptions
     status: planned
-    introduced:
-      pr: 541
   - name: PROMPT_KEYWORD
     title: 案内する発言の語
     container: src/plugin/guide-notice.ts
@@ -50,8 +39,6 @@ constants:
     refs:
       - IF-472-43#constraints[案内する条件]
     status: planned
-    introduced:
-      pr: 541
   - name: NOTICE_BODY
     title: 案内の文の本体
     container: src/plugin/guide-notice.ts
@@ -61,8 +48,6 @@ constants:
     refs:
       - IF-472-43#constraints[案内の文]
     status: planned
-    introduced:
-      pr: 541
 functions:
   - name: runGuideNotice
     title: 記法のルールの参照を案内する
@@ -144,8 +129,6 @@ functions:
     refs:
       - IF-472-43#
     status: planned
-    introduced:
-      pr: 541
   - name: noticeHead
     title: 案内の文の頭を作る
     kind: 関数
@@ -171,5 +154,9 @@ functions:
         mock: なし
         expected: どちらも `null`
     status: planned
-    introduced:
-      pr: 541
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/plugin/
+    └── guide-notice.ts   # 記法のルールの参照の案内のフックの入口
+    ```

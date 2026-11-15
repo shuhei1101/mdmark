@@ -66,5 +66,3 @@ functions:
         mock: なし
         expected: どちらも `undefined`
     status: planned
-    introduced:
-      pr: 275

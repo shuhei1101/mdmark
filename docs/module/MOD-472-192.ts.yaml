@@ -20,8 +20,6 @@ constants:
     summary: '差分を開いている間に隠す本文の要素と右側の目次に付ける属性。`index.css` が `display: none !important` で隠す'
     value: '"data-mdmark-diff-hidden"'
     status: planned
-    introduced:
-      pr: 166
 functions:
   - name: attachDiff
     title: 差分を付ける

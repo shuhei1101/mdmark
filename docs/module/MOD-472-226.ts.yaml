@@ -12,8 +12,6 @@ constants:
     refs:
       - IF-472-35#constraints[列の幅]
     status: planned
-    introduced:
-      pr: 449
   - name: DOUBLE_TAP_MS
     title: ダブルタップの間隔
     container: src/interact/table-resize.ts
@@ -22,8 +20,6 @@ constants:
     refs:
       - IF-472-35#constraints[列の幅]
     status: planned
-    introduced:
-      pr: 449
   - name: TAP_MOVE_TOLERANCE_PX
     title: タップとみなす移動の上限
     container: src/interact/table-resize.ts
@@ -32,8 +28,6 @@ constants:
     refs:
       - IF-472-35#constraints[列の幅]
     status: planned
-    introduced:
-      pr: 449
 functions:
   - name: attachColumnResize
     title: 列の幅のつまみに操作を付ける
@@ -98,5 +92,3 @@ functions:
         mock: なし
         expected: 見出しのセルの `width`・`min-width` が空で、→ の後も幅が変わらない
     status: planned
-    introduced:
-      pr: 449

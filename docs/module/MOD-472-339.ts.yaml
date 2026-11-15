@@ -30,5 +30,3 @@ functions:
         mock: なし
         expected: '`<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>`（`open` を持たない）'
     status: planned
-    introduced:
-      pr: 422

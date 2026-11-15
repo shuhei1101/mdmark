@@ -165,8 +165,6 @@ functions:
     refs:
       - IF-472-21#constraints[背面のパネル]
     status: planned
-    introduced:
-      pr: 252
   - name: topInset
     title: 上端の帯の高さを測る
     kind: 関数

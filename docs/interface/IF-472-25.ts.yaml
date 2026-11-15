@@ -13,11 +13,17 @@ flows:
       - name: Mock
         description: '`window.showInformationMessage` を、呼ばれた回数を数える代役に差し替える'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.openConfig
         EX->>EX: showTextDocument（mdmark.config.yaml）
+      ```
+
+      <!-- /map -->
     expected:
       - アクティブなエディタの文書が `mdmark.config.yaml`
       - 確認のダイアログの代役が呼ばれず、ファイルの中身が変わらない
@@ -30,6 +36,9 @@ flows:
       - name: Mock
         description: 確認のダイアログの代役が「作成」を返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -37,6 +46,9 @@ flows:
         EX->>U: 雛形を作るかの確認
         U->>EX: 作る
         EX->>EX: 雛形を書き込んで開く
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.config.yaml` が雛形の中身で記載され、エディタで開いている'
       - 雛形を YAML として読み込むと、`features`・`libraries` のキーを持たない
@@ -49,6 +61,9 @@ flows:
       - name: Mock
         description: 確認のダイアログの代役が `undefined`（閉じた）を返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -56,6 +71,9 @@ flows:
         EX->>U: 雛形を作るかの確認
         U->>EX: 閉じる
         EX->>EX: 何もしない
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.config.yaml` が無いまま'
       - エディタの数が変わらない

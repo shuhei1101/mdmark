@@ -28,8 +28,6 @@ data_models:
     refs:
       - IF-472-38#constraints[戻る・進む・再読み込みの表示の状態]
     status: planned
-    introduced:
-      pr: 428
 constants:
   - name: VIEW_STATE_KEY_PREFIX
     title: 表示の状態を保存するキーの頭
@@ -80,8 +78,6 @@ functions:
         mock: Chromium の `window`（`.browser.test.ts` で実行する）
         expected: '2 回とも同じ空でない文字を返し、`history.state` が `{ other: 1, mdmarkEntry: その文字 }`'
     status: planned
-    introduced:
-      pr: 428
   - name: captureViewState
     title: 表示の状態を取り出す
     container: src/viewer/view-state.ts
@@ -105,8 +101,6 @@ functions:
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
         expected: '`folds` が `[false, true]`、`tabs` が `[1]`（`group` が `os` のタブ群を含まない）、`path` が指定したパス'
     status: planned
-    introduced:
-      pr: 428
   - name: applyViewState
     title: 表示の状態を戻す
     container: src/viewer/view-state.ts
@@ -144,8 +138,6 @@ functions:
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
         expected: 畳みのボタンの `aria-expanded` が `true` で、`document.activeElement` が `body`
     status: planned
-    introduced:
-      pr: 428
   - name: readViewState
     title: 保存した表示の状態を読み込む
     container: src/viewer/view-state.ts
@@ -176,8 +168,6 @@ functions:
         mock: '`window` の `sessionStorage` の getter を差し替える'
         expected: '`undefined` を返し、`console.warn` が 1 回呼ばれる'
     status: planned
-    introduced:
-      pr: 428
   - name: writeViewState
     title: 表示の状態を保存する
     container: src/viewer/view-state.ts
@@ -208,5 +198,3 @@ functions:
         mock: '`Storage.prototype.setItem` を差し替える'
         expected: 例外が出ず、`console.warn` が 1 回呼ばれる
     status: planned
-    introduced:
-      pr: 428

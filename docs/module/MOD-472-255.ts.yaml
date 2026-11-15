@@ -120,5 +120,3 @@ functions:
         mock: なし
         expected: トークンに `../設計/arch.md` の `link_open` が無く、用語集の表の用語の行が元の本文の行
     status: planned
-    introduced:
-      pr: 422

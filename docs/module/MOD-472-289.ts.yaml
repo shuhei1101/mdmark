@@ -98,8 +98,6 @@ functions:
       - MOD-472-257#functions[findWords]
       - 'MOD-472-213#functions[pushWarning]'
     status: planned
-    introduced:
-      pr: 45
   - name: readRangeScripts
     title: 範囲の css・ts・js を読み込む
     container: src/render/syntax/html.ts
@@ -135,5 +133,3 @@ functions:
         mock: なし
         expected: '`warnings` に 1 件'
     status: planned
-    introduced:
-      pr: 303

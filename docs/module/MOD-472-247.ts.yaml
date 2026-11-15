@@ -103,8 +103,6 @@ functions:
     refs:
       - SCR-472-3#
     status: planned
-    introduced:
-      pr: 32
   - name: restoreAssets
     title: 埋めた画像を戻す
     container: src/viewer/bundle.ts
@@ -138,5 +136,3 @@ functions:
         mock: なし
         expected: 元のまま
     status: planned
-    introduced:
-      pr: 263

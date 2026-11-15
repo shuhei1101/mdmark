@@ -37,8 +37,6 @@ functions:
         mock: なし
         expected: '`button.mdmark-image-open` の中に `img` だけがあり、`mdmark-image-open-icon` が無い'
     status: planned
-    introduced:
-      pr: 263
   - name: renderImageFigure
     title: 画像の図を描く
     container: src/parts/image.ts
@@ -84,5 +82,3 @@ functions:
         mock: なし
         expected: '`figure` が `id="fig-schemes-b"`、`figcaption` が `<b>図 2b</b>暗い配色`'
     status: planned
-    introduced:
-      pr: 263

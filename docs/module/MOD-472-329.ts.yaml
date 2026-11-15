@@ -49,5 +49,3 @@ functions:
         mock: なし
         expected: 拡大が `disabled`、倍率の文字が `300%`、移動のまとまりが `hidden` を持たない
     status: planned
-    introduced:
-      pr: 263

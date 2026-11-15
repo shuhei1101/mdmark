@@ -15,12 +15,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 各文書の related・本文のリンク・別名の出現を取得する
         M-->>C: { backlinks, glossary }
+      ```
+
+      <!-- /map -->
     expected:
       - '`backlinks.arch` が `["api", "guide"]`'
       - '`backlinks.api` が `["arch"]`（`arch` の本文の `公開関数`）'
@@ -38,12 +44,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: glossary のマーカーで囲んだ表の列を読み込む
         M-->>C: { backlinks, glossary }
+      ```
+
+      <!-- /map -->
     expected:
       - '`glossary` が `[{ "term": "マーカー", "aliases": ["マーク", "オン・オフのマーカー"], "meaning": "HTML コメントで記載する指定", "docId": "glossary", "avoid": ["しるし"] }]`'
     test: test_normal_when_glossary_table
@@ -57,12 +69,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 構造の合わない文書を除く
         M-->>C: { backlinks, glossary }
+      ```
+
+      <!-- /map -->
     expected:
       - 例外を投げない
       - '`backlinks.arch` が `["api", "guide"]` で、`broken` を含まない'
@@ -78,12 +96,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: href の ? と # 以降を除き、符号化を戻して解決する
         M-->>C: { backlinks, glossary }
+      ```
+
+      <!-- /map -->
     expected:
       - '`backlinks.arch` が `["api", "guide"]`（正常系と同じ）'
     test: test_normal_when_encoded_link
@@ -98,12 +122,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 別名と本文の文字を正規化して照合する
         M-->>C: { backlinks, glossary }
+      ```
+
+      <!-- /map -->
     expected:
       - '`backlinks.api` が `["arch", "guide"]`'
     test: test_normal_when_alias_notation_differs
@@ -117,12 +147,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 各文書の本文の先頭のフロントマターを除外してから、リンクと別名の出現を取得する
         M-->>C: { backlinks, glossary }
+      ```
+
+      <!-- /map -->
     expected:
       - '`backlinks.api` に `guide` が無い（フロントマターの `公開関数`）'
       - '`backlinks.arch` が `["api"]`（フロントマターの `[設計](../設計/arch.md)` のリンクを数えない）'

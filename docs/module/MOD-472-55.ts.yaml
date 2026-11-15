@@ -103,8 +103,6 @@ functions:
       - IF-472-22#constraints[差分に対応しないバージョン]
       - IF-472-35#constraints[対応する差分の出し方]
     status: planned
-    introduced:
-      pr: 196
   - name: registerExtensions
     title: 拡張を登録する
     kind: 関数
@@ -135,5 +133,3 @@ functions:
     refs:
       - IF-472-21#constraints[theme と extensions]
     status: planned
-    introduced:
-      pr: 347

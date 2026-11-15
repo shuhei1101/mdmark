@@ -4,11 +4,6 @@ title: VS Code 拡張機能 / 読み込むバージョン / version.ts
 lead: プレビューと書き出しが読み込む mdmark のバージョンを、設定 `mdmark.version` と GitHub のタグ一覧と前回のバージョンから決める。`vscode` を import しない。
 test_files:
   - tests/unit/vscode/src/version.test.ts
-directory: |-
-  ```tree
-  vscode/src/
-  └── version.ts  # タグ一覧の取得・最新のバージョンの選び方・読み込むバージョンの決め方
-  ```
 data_models:
   - name: VersionDecision
     title: 読み込むバージョンの決まり方
@@ -236,3 +231,9 @@ function_types:
     implementations:
       - target: fetchLatestVersion
     status: planned
+notes:
+  ディレクトリ: |-
+    ```tree
+    vscode/src/
+    └── version.ts  # タグ一覧の取得・最新のバージョンの選び方・読み込むバージョンの決め方
+    ```

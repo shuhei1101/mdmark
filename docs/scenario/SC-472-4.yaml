@@ -15,6 +15,9 @@ scenarios:
         description: ビルドしたこのリポジトリの `mdmark serve` を `MDMARK_PORT` に空いたポートを指定して起動し、そのポートで待ち受けている
         notes: '`.mcp.json` の接続先の `${MDMARK_PORT:-8782}` を同じポートで展開する。手元の `mdmark serve` が使用する 8782 を回避する'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as Claude Code
@@ -26,6 +29,9 @@ scenarios:
         W->>C: claude plugin install mdmark@mdmark
         C->>C: plugin/ をキャッシュへ写す
         C-->>W: プラグインを入れた・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`claude plugin marketplace add` と `claude plugin install mdmark@mdmark` がどちらも終了コード 0 で終わる'
       - '`claude plugin list --json` に `mdmark@mdmark` が有効として出、その `installPath` が設定のフォルダのプラグインのキャッシュの下で、バージョンがブランチの commit の短縮 SHA（`plugin.json` が `version` を持たない）'
@@ -46,6 +52,9 @@ scenarios:
       - name: Mock
         description: Claude Code の接続の代わりに、`installPath` の `.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使用する。モデルは使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as Claude Code
@@ -58,6 +67,9 @@ scenarios:
         C-->>W: プラグインを入れた・終了コード 0
         M->>M: .mcp.json の接続先へつなぐ
         M-->>W: 接続を拒否されたエラー
+      ```
+
+      <!-- /map -->
     expected:
       - '`claude plugin install mdmark@mdmark` が終了コード 0 で終わり、`claude plugin list --json` に `mdmark@mdmark` が有効として出る'
       - '`.mcp.json` の接続先へのクライアントの接続が、接続を拒否されたエラー（`ECONNREFUSED`）で失敗する'
@@ -73,6 +85,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as Claude Code
@@ -82,13 +97,15 @@ scenarios:
         W->>C: claude plugin update mdmark@mdmark
         C->>C: 新しい commit の plugin/ をキャッシュへ写す
         C-->>W: 短縮 SHA の前後と、再起動で反映すること
+      ```
+
+      <!-- /map -->
     expected:
       - '`claude plugin update mdmark@mdmark` が終了コード 0 で終わり、`claude plugin list --json` の `mdmark@mdmark` のバージョンが追加した commit の短縮 SHA になる'
       - 新しい `installPath` のスキルが、追加した commit の内容になる
       - '`claude plugin marketplace update mdmark` だけでは、入れたプラグインのバージョンは変わらない'
     test: test_normal_when_commit_added
 lead: 文書の作成者が、mdmark のリポジトリを Claude Code のマーケットプレイスとして追加し、mdmark のプラグインを入れる。
-issue: 11
 primary_actor: 文書の作成者
 trigger: Claude Code で mdmark の文書を記載し始める前
 preconditions:

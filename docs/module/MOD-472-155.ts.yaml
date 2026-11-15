@@ -129,8 +129,6 @@ functions:
       - IF-472-35#exceptions[TypeError（コメント）]
       - IF-472-27#exceptions[TypeError]
     status: planned
-    introduced:
-      pr: 280
   - name: isComment
     title: コメントの構造か
     container: src/comments/spec.ts

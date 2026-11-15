@@ -16,6 +16,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -23,6 +26,9 @@ flows:
         M->>M: 読み込む行ごとにレコードを取り出し、metadata を適用する
         M->>M: 種類と必須のキーを確認し、env を除く
         M-->>C: { aliases, problems }
+      ```
+
+      <!-- /map -->
     expected:
       - '`aliases` が `ws`・`unit-test` の 2 件をこの順に持つ'
       - '`ws` の `alias_type` が `term`、`name` が `ワークスペース`、`aliases` が `["WS"]`、`description` が `話し合いの記録を配置するフォルダ`'
@@ -42,12 +48,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: buildAliases({ rows, sources })
         M->>M: 使用できない行・レコードを除いてずれにする
         M-->>C: { aliases, problems }
+      ```
+
+      <!-- /map -->
     expected:
       - 例外を投げない
       - '`aliases` が `terms` の行のエイリアスだけを持つ'

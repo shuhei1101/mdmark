@@ -31,8 +31,6 @@ data_models:
     refs:
       - IF-472-33#constraints[まとめるスクリプト]
     status: planned
-    introduced:
-      pr: 296
 functions:
   - name: prepareModules
     title: 埋めたモジュールを用意する
@@ -89,5 +87,3 @@ functions:
       - MOD-472-143#functions[setEmbeddedMermaid]
       - MOD-472-159#functions[setPartModuleLoader]
     status: planned
-    introduced:
-      pr: 32

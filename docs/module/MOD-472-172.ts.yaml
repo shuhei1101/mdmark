@@ -258,5 +258,3 @@ functions:
         mock: なし
         expected: 論理名とラベルの `{{顧客}}`・`{{注文}}` が `mdmark-term` の下線になり、`{{`・`}}` が文字に残らず、`tips` に `顧客` の意味があり、`tips` に `{{` が残らず、`terms` が `true`。説明のボタン・開閉のボタンのスクリーンリーダー向けの名前が `「顧客」の…`
     status: planned
-    introduced:
-      pr: 298

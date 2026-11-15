@@ -13,6 +13,9 @@ flows:
       - name: 空いているポート
         description: '`MDMARK_PORT` に空きポートを指定する。手元の `mdmark serve` が使用する 8782 はテストで使用しない（既定のポートの値は単体テスト `test_read_port` で確認する）'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant S as mdmark serve
@@ -23,6 +26,9 @@ flows:
         S-->>C: instructions
         C->>S: POST /mcp（tools/list）
         S-->>C: 6 つのツール
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力に `http://127.0.0.1:{指定したポート}/mcp` を含む 1 行が出る
       - '`initialize` の `instructions` が制約『instructions』の文で、4,096 文字以下で、`MDMARK_LAUNCHER` を指定しないとき tmux のセッション名 `mdmark-mcp` を含む'
@@ -35,11 +41,17 @@ flows:
       - name: Mock
         description: 正常系と同じで、`MDMARK_LAUNCHER=systemd` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant S as mdmark serve
         participant C as MCP のクライアント
         C->>S: POST /mcp（initialize）
         S-->>C: instructions
+      ```
+
+      <!-- /map -->
     expected:
       - '`instructions` が 4,096 文字以下で、unit の名前 `mdmark-mcp` と `journalctl --user -u mdmark-mcp` を含み、tmux のセッションを含まない'
     test: test_normal_when_launched_by_systemd
@@ -49,6 +61,9 @@ flows:
       - name: Mock
         description: 正常系と同じで、`MDMARK_PORT=18782` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant S as mdmark serve
@@ -57,6 +72,9 @@ flows:
         S-->>W: 待ち受ける URL
         C->>S: POST :18782/mcp（tools/list）
         S-->>C: 6 つのツール
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力に `http://127.0.0.1:18782/mcp` を含む 1 行が出る
       - 18782 の `/mcp` への `tools/list` が 6 つのツールを返却する
@@ -67,12 +85,18 @@ flows:
       - name: Mock
         description: 正常系と同じで起動した後、子プロセスへ SIGINT を送信する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant S as mdmark serve
         W->>S: Ctrl+C（SIGINT）
         S->>S: 待ち受けを閉じる
         S-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - ポートへつなぐと接続を拒まれる
@@ -85,12 +109,18 @@ flows:
       - name: 使用されているポート
         description: テストが同じポートで待ち受けるサーバーを先に起動する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant S as mdmark serve
         W->>S: mdmark serve
         S->>S: 待ち受けに失敗（EADDRINUSE）
         S-->>W: 対処・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラー出力にポートの番号・`MDMARK_PORT` を `~/.claude/settings.json` の `env` と `mdmark serve` の環境の両方に設定すること・`mdmark serve` が既に起動しているならそのまま使用できることが出る
@@ -101,12 +131,18 @@ flows:
       - name: Mock
         description: 正常系と同じで、`MDMARK_PORT=abc` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant S as mdmark serve
         W->>S: MDMARK_PORT=abc mdmark serve
         S->>S: 値を確認する
         S-->>W: 対処・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラー出力に `abc` と、1〜65535 の整数を設定することが出る

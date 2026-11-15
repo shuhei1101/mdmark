@@ -16,8 +16,6 @@ elements:
     visible_when: 画面の幅が 60rem 以上で、印刷でないとき
     action: 文書を選ぶと URL の `#` がその文書を指し（履歴に追加する）、開いている文書が替わる
     status: planned
-    introduced:
-      pr: 32
   - name: 狭い幅の帯
     id: bundle-bar
     kind: container
@@ -25,8 +23,6 @@ elements:
     description: 文書の一覧を開くボタンと開いている文書のタイトルを並べ、文書をスクロールしても画面の上に留める
     visible_when: 画面の幅が 60rem 未満で、印刷でないとき
     status: planned
-    introduced:
-      pr: 32
   - name: 文書の一覧を開くボタン
     id: bundle-panel-open
     kind: button
@@ -37,8 +33,6 @@ elements:
     tab_order: 1
     action: 文書の一覧のパネルを開き、開いている文書の行へフォーカスを配置する（履歴に追加しない）
     status: planned
-    introduced:
-      pr: 32
   - name: 帯のタイトル
     id: bundle-bar-title
     kind: label
@@ -49,8 +43,6 @@ elements:
     visible_when: 狭い幅の帯と同じ
     source: 開いている文書のタイトル
     status: planned
-    introduced:
-      pr: 32
   - name: 開いている文書
     id: bundle-document
     kind: container
@@ -64,8 +56,6 @@ elements:
       - IF-472-38#
     reason: '`#/` で始まる `#` だけを文書の指定として扱い、文書のパスと GitHub と同じ見出しの ID をそのまま読み込めるようにする'
     status: planned
-    introduced:
-      pr: 32
   - name: 文書の一覧のパネル
     id: bundle-panel
     kind: dialog
@@ -76,8 +66,6 @@ elements:
     action: 文書を選ぶ・背景を押す・Esc・閉じるボタンで閉じ、フォーカスを開くボタンへ戻す。幅が 60rem 以上になったら閉じる。開閉は履歴に追加しない
     reason: 確認ログの決定（狭い幅は帯のボタンで一覧のパネルを重ねて開く、`<dialog>` のため Firefox の下限を 98 に上げる）
     status: planned
-    introduced:
-      pr: 32
   - name: パネルを閉じるボタン
     id: bundle-panel-close
     kind: button
@@ -86,8 +74,6 @@ elements:
     visible_when: パネルを開いているとき
     action: パネルを閉じる
     status: planned
-    introduced:
-      pr: 32
   - name: パネルの文書の一覧
     id: bundle-panel-list
     kind: nav
@@ -102,8 +88,6 @@ elements:
     visible_when: パネルを開いているとき
     action: 文書を選ぶとパネルを閉じ、その文書へ移る（履歴に追加する）
     status: planned
-    introduced:
-      pr: 32
 mock: docs/mock/pages/bundle/32/side-list/
 lead: '`mdmark build` が書き出す 1 枚の HTML。文書の一覧と、開いている文書（画面設計『文書』）を並べ、URL の `#` で開く文書と見出しを指す。'
 notes:
