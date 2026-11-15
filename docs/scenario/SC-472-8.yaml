@@ -495,7 +495,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: C4 図の map を持つ Markdown
         description: C4Context の mermaid のブロック（境界 2 つ・要素 7 つ・関係 6 本）と補足を持つ map の範囲の文書
-        notes: 要素は `Person`・`Person_Ext`・`System`・`System_Ext`・`SystemDb`・`SystemQueue` を含み、どれも説明の引数を持つ。境界は `Enterprise_Boundary` の中に `System_Boundary` を持つ。関係は `Rel`・`BiRel`・`Rel_D`・`Rel_R` を含み、1 本は技術の引数を持つ。補足の `notes` はキーに要素・境界の別名（第 1 引数）と関係の記載順の `r{番号}` を使用して 1 つの要素に説明を持ち、補足の `layout` で `Rel_D` の相手の要素の座標を持つ
+        notes: 要素は `Person`・`Person_Ext`・`System`・`System_Ext`・`SystemDb`・`SystemQueue` を含み、どれも説明の引数を持つ。境界は `Enterprise_Boundary` の中に `System_Boundary` を持つ。関係は `Rel`・`BiRel`・`Rel_D`・`Rel_R` を含み（`Rel_D` と `Rel_R` の両端はどれも `System_Boundary` の中にある）、1 本は技術の引数を持つ。補足の `notes` はキーに要素・境界の別名（第 1 引数）と関係の記載順の `r{番号}` を使用して 1 つの要素に説明を持ち、補足の `layout` で `Rel_D` の相手の要素の座標を持つ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
