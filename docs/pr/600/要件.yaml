@@ -7,12 +7,12 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-74.yaml
     impact: run_only
-    detail: ビューの表の並べ替えの既定を変えた場合に、表形式のビューの列の絞り込みが壊れていないかを確かめる
+    detail: ビューの表の並べ替えの既定を変えるため、表形式のビューの列の絞り込みが壊れていないかを確かめる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-29.yaml
     impact: changed
-    detail: ビューの表形式で、長文の列に並べ替えが付かず、列の指定で付け外しできる（適用するかはユーザーが決める）
+    detail: ビューの表形式で、長文の列に並べ替えが付かず、列の指定で付け外しできる
     depends_on: []
 docs:
   - page: docs/config/CFG-472-3.yaml
@@ -29,9 +29,9 @@ docs:
     status: todo
   - page: docs/guide/記載する-ビューとコメントを使用する.md
     new: false
-    change: 適用する場合、ビューの表の長文の列に並べ替えを既定で付けないことと columns.{列名}.sort を記載する
+    change: ビューの表の長文の列に並べ替えを既定で付けないことと columns.{列名}.sort を記載する
     status: todo
   - page: docs/guide/記法.md
     new: false
-    change: 適用する場合、ビューのマーカーの引数に columns.{列名}.sort を加える
+    change: ビューのマーカーの引数に columns.{列名}.sort を加える
     status: todo

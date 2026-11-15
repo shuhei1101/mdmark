@@ -1,0 +1,7 @@
+confirmations:
+  - topic: ビューの表形式の長文の列に並べ替えを既定で付けないか（#561）
+    decision: 適用する。長文の列には並べ替えを付けず、columns.{列名}.sort で列ごとに付け外しできる（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 4403214df2f0e3a37eb492b58b584b9588eb5206
+    thread: https://github.com/shuhei1101/mdmark/pull/600#discussion_r4578100564
