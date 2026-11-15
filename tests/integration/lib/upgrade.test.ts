@@ -216,7 +216,7 @@ function migrationFiles(options?: {
   return {
     "migrations/v0.4.0/steps.yaml": STEPS_V040,
     "migrations/v0.5.0/steps.yaml": options?.stepsV050 ?? stepsV050(),
-    "docs/guide/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
     ...options?.extra,
   };
 }
@@ -363,7 +363,7 @@ test("test_normal_when_value_asked", async () => {
       "    ask: 書き出す HTML のタイトルを入れてください",
       "",
     ].join("\n"),
-    "docs/guide/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
   });
   const dir = await createWork();
   // 実行
@@ -473,7 +473,7 @@ test("test_normal_when_tag_vocabulary_dropped", async () => {
       "utf8",
     ),
     ...scripts,
-    "docs/guide/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
   });
   const dir = await createWork();
   await writeFile(
@@ -724,7 +724,7 @@ test("test_normal_when_retired_diagrams_migrated", async () => {
       "utf8",
     );
   }
-  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.md": CHANGELOG });
+  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.mark.md": CHANGELOG });
   const dir = await createWork();
   const unreadable = [
     "# B",
@@ -865,7 +865,7 @@ test("test_normal_when_document_marks_migrated", async () => {
       "utf8",
     );
   }
-  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.md": CHANGELOG });
+  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.mark.md": CHANGELOG });
   const dir = await createWork(
     `${OLD_CONFIG}extensions: [extensions/greet.js]\nlibraries:\n  test-lib: lib/test-lib.js\n`,
   );
