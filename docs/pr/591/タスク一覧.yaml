@@ -62,7 +62,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T07:53:19.762556+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: 設計の段で docs/guide/導入-文書を描く.md・docs/guide/API.md を修正済み
+    updated_by: planner
+    updated_at: '2026-11-15T08:07:41.365998+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
