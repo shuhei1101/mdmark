@@ -999,8 +999,6 @@ files:
         type: implements
       - to: docs/module/MOD-589-2.ts
         type: implements
-      - to: docs/module/MOD-472-34
-        type: implements
   - path: parts/escape.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「HTML の特別な文字をエスケープする escapeHtml」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
