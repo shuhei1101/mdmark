@@ -316,7 +316,11 @@ test("test_layout_map_when_rankless", async () => {
   // 実行
   const layout = await laid(
     {},
-    { "a->b": { rankless: true }, b: { align: "a", order: 1 } },
+    {
+      "a->b": { rankless: true },
+      a: { order: 0 },
+      b: { align: "a", order: 1 },
+    },
     "height",
     source,
   );
