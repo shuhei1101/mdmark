@@ -61,9 +61,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T03:08:58.694868+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-15T02:48:22.274448+00:00'
+    updated_at: '2026-11-15T03:16:02.444408+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えない
