@@ -114,7 +114,9 @@ test("test_render_map_flow_when_note_node", async () => {
     html,
     /<span class="mdmark-diagram-node-hit"[^>]*>[\s\S]*?<\/span>/g,
   ))
-    expect(each).toMatch(/^<span class="mdmark-diagram-node-hit"[^>]*><\/span>$/);
+    expect(each).toMatch(
+      /^<span class="mdmark-diagram-node-hit"[^>]*><\/span>$/,
+    );
 });
 
 // 中へ入った（正常系）
