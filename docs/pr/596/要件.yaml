@@ -75,3 +75,6 @@ scope_out:
   - item: map を Markdown へ書き出すときの種類ごとの扱い
     reason: '#313 は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
     plan: '#313'
+  - item: C4Container・C4Component・C4Dynamic・C4Deployment を map で描く
+    reason: Issue の対象は C4Context だけ。書き方は C4Context と共通で、この PR で作る C4 図の読み取りと描画を前提に要素の種類を足す後続になる
+    plan: to_file
