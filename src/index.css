@@ -5097,6 +5097,17 @@
       }
     }
 
+    /* ノードを覆う押せる要素: ノードと同じ大きさで、ノードの地の上・中身の下に重ねる（名前の文字は上で選べる） */
+    .mdmark-diagram-node:has(> .mdmark-diagram-node-hit) {
+      isolation: isolate;
+    }
+    .mdmark-diagram-node-hit {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+    }
+
     /* ノード: 種類の色の線で囲み、地は文書の地にして層の背景から浮かせる */
     .mdmark-diagram-node {
       position: absolute;
@@ -10210,7 +10221,12 @@
     cursor: pointer;
   }
   .mdmark-diagram[data-diagram="map"]
-    :is(.map-participant, .mdmark-diagram-node, .map-group-bar):focus-visible {
+    :is(
+      .map-participant,
+      .mdmark-diagram-node,
+      .mdmark-diagram-node-hit,
+      .map-group-bar
+    ):focus-visible {
     outline: 2px solid var(--mdmark-color-link);
     outline-offset: 2px;
   }
