@@ -81,10 +81,10 @@ export const C4 = `C4Context
   Enterprise_Boundary(company, "自社") {
     System_Boundary(shop, "通販") {
       System(store, "注文のシステム", "注文と支払いを受け付ける")
+      System(stock, "在庫のシステム", "在庫の数を持つ")
       SystemDb(orders, "注文のデータベース", "注文と明細を保存する")
-      SystemQueue(events, "通知の待ち行列", "発送の通知を順に送る")
     }
-    System(stock, "在庫のシステム", "在庫の数を持つ")
+    SystemQueue(events, "通知の待ち行列", "発送の通知を順に送る")
   }
   System_Ext(pay, "決済代行", "カードの決済")
   Rel(customer, store, "注文する", "HTTPS")

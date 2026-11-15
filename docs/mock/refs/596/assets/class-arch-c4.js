@@ -128,6 +128,45 @@ const drawEnd = (svg, points, atStart, kind, dimmed) => {
   svg.append(shape);
 };
 
+/** 線の d を差し替え、同じ d を持つ当たり判定の線も差し替える */
+const replacePath = (svg, edge, points) => {
+  const wire = svg.querySelector(`[data-wire="${CSS.escape(edge.id)}"]`);
+  const path = wire?.matches("path") ? wire : wire?.querySelector("path");
+  if (!path) return;
+  const oldD = path.getAttribute("d");
+  path.setAttribute("d", pathD(points));
+  for (const hit of svg.querySelectorAll(".map-wire-hit")) if (hit.getAttribute("d") === oldD) hit.setAttribute("d", pathD(points));
+  edge.points = points;
+};
+
+/** 同じ点から出る・入る線の端を、辺に沿って 16px ずつずらし、端の形がどちらも見えるようにする */
+const SHARED_END_GAP = 16;
+const spreadSharedEnds = (svg, edges) => {
+  const groups = new Map();
+  for (const edge of edges) {
+    if (edge.points.length < 2) continue;
+    for (const atStart of [true, false]) {
+      const point = atStart ? edge.points[0] : edge.points.at(-1);
+      const key = `${Math.round(point[0])},${Math.round(point[1])}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ edge, atStart });
+    }
+  }
+  for (const ends of groups.values()) {
+    if (ends.length < 2) continue;
+    ends.forEach(({ edge, atStart }, index) => {
+      const shift = (index - (ends.length - 1) / 2) * SHARED_END_GAP;
+      const points = edge.points.map((point) => [...point]);
+      const [i, j] = atStart ? [0, 1] : [points.length - 1, points.length - 2];
+      // 端の区間が横なら縦に、縦なら横にずらす（隣の点も同じだけずらして直角を保つ）
+      const axis = points[i][1] === points[j][1] ? 1 : 0;
+      points[i][axis] += shift;
+      points[j][axis] += shift;
+      replacePath(svg, edge, points);
+    });
+  }
+};
+
 /** 両端の区間を除いた最も長い区間の中ほど（ラベルの置き場所）。区間が 1 つなら、その中ほど */
 const middleOf = (points) => {
   const all = points.slice(1).map((point, at) => [points[at], point]);
@@ -339,6 +378,7 @@ export const createClassMap = (host, { id, title, source, data = {} }, initial =
         const svg = figure.querySelector(".mdmark-diagram-wires");
         if (!svg) return;
         for (const noteId of noteEdges) svg.querySelector(`[data-wire="${noteId}"]`)?.classList.add("er-note-line");
+        spreadSharedEnds(svg, layout.edges.filter((edge) => chart.relations[Number(edge.id.slice(1))]));
         for (const edge of layout.edges) {
           const rel = chart.relations[Number(edge.id.slice(1))];
           if (!rel || edge.points.length < 2) continue;
@@ -413,9 +453,14 @@ export const createArchMap = (host, { id, title, source, data = {} }, initial = 
     for (const item of chart.items.filter((entry) => entry.parent === parent)) lines.push(`${indent}${item.id}[${quote(item.label || " ")}]:::${item.kind}`);
   };
   emit(undefined, "  ");
-  for (const edge of chart.edges) lines.push(`  ${edge.from} ${edge.head || edge.tail ? (edge.head && edge.tail ? "<-->" : "-->") : "---"} ${edge.to}`);
+  // 上下の辺でつなぐ線は、同じ段に並べるため逆向きに書いて段の数を増やさない（描く経路は afterRender で辺の指定から引き直す）
+  const sameRank = (edge) => edge.fromSide === "bottom" || edge.fromSide === "top";
+  for (const edge of chart.edges) {
+    const [a, b] = sameRank(edge) ? [edge.to, edge.from] : [edge.from, edge.to];
+    lines.push(`  ${a} ${edge.head || edge.tail ? (edge.head && edge.tail ? "<-->" : "-->") : "---"} ${b}`);
+  }
   // 上下の辺でつなぐ 2 つは同じ段（左から右の図では縦）に並べる。補足の layout の指定があればそちらを優先する
-  const hints = Object.fromEntries(chart.edges.filter((edge) => edge.fromSide === "bottom" || edge.fromSide === "top").map((edge) => [edge.to, { align: edge.from }]));
+  const hints = Object.fromEntries(chart.edges.filter(sameRank).map((edge) => [edge.to, { align: edge.from }]));
   const small = Object.fromEntries(chart.items.filter((item) => item.kind === "junction").map((item) => [item.id, { width: 16 }]));
   const servicesUnder = (groupId) => chart.items.filter((item) => item.parent === groupId && item.kind === "service").length;
   return createMap(
@@ -472,10 +517,9 @@ export const createArchMap = (host, { id, title, source, data = {} }, initial = 
           const s1 = out(start, ends?.from?.side ?? spec.fromSide);
           const e1 = out(end, ends?.to?.side ?? spec.toSide);
           const points = [start, s1, [s1[0], (s1[1] + e1[1]) / 2], [e1[0], (s1[1] + e1[1]) / 2], e1, end];
-          const oldD = path.getAttribute("d");
-          path.setAttribute("d", pathD(points));
-          for (const hit of svg.querySelectorAll(".map-wire-hit")) if (hit.getAttribute("d") === oldD) hit.setAttribute("d", pathD(points));
-          edge.points = points;
+          replacePath(svg, edge, points);
+          // `--` の線は矢じりを持たない
+          if (!spec.head && !spec.tail) path.removeAttribute("marker-end");
         });
       },
     },
@@ -557,19 +601,26 @@ export const createC4Map = (host, { id, title, source, data = {} }, initial = {}
   const lines = ["flowchart TB"];
   const emit = (parent, indent) => {
     for (const boundary of chart.boundaries.filter((entry) => entry.parent === parent)) {
-      lines.push(`${indent}subgraph ${boundary.id} [${boundary.label}${boundary.type ? ` ［${boundary.type}］` : ""}]`);
+      lines.push(`${indent}subgraph ${boundary.id} [${boundary.label}${boundary.type ? ` ［${boundary.type}］` : ""}]`, `${indent}  direction TB`);
       emit(boundary.id, `${indent}  `);
       lines.push(`${indent}end`);
     }
     for (const element of chart.elements.filter((entry) => entry.parent === parent)) lines.push(`${indent}${element.id}[${quote(element.label)}]:::${element.kind}`);
   };
   emit(undefined, "  ");
+  // Rel_R・Rel_L は、同じ段に並べるため逆向きに書いて段の数を増やさない（描いた線は afterRender で向きを戻す）
+  const isSideways = (rel) => rel.direction === "R" || rel.direction === "L";
   for (const rel of chart.rels) {
     const label = [rel.label, rel.tech ? `[${rel.tech}]` : ""].filter(Boolean).join(" ");
-    lines.push(`  ${rel.from} ${rel.both ? "<-->" : "-->"}${label ? `|${label}|` : ""} ${rel.to}`);
+    const [a, b] = isSideways(rel) ? [rel.to, rel.from] : [rel.from, rel.to];
+    lines.push(`  ${a} ${rel.both ? "<-->" : "-->"}${label ? `|${label}|` : ""} ${b}`);
   }
   // Rel_R・Rel_L の相手は同じ段（上から下の図では横）に並べる。補足の layout の座標・並び順があればそちらを優先する
-  const hints = Object.fromEntries(chart.rels.filter((rel) => rel.direction === "R" || rel.direction === "L").map((rel) => [rel.to, { align: rel.from }]));
+  const sideways = chart.rels.filter(isSideways);
+  const hints = mergeLayout(
+    Object.fromEntries(sideways.map((rel) => [rel.to, { align: rel.from, order: rel.direction === "R" ? 2 : 0 }])),
+    Object.fromEntries(sideways.map((rel) => [rel.from, { order: 1 }])),
+  );
   const elementsUnder = (boundaryId) => chart.elements.filter((element) => element.parent === boundaryId).length;
   return createMap(
     host,
@@ -589,7 +640,13 @@ export const createC4Map = (host, { id, title, source, data = {} }, initial = {}
         element.append(Object.assign(document.createElement("p"), { className: "cac-description", textContent: item.description }));
       },
       selectionOf: selectionOver(chart.rels),
-      afterRender: (figure) => {
+      afterRender: (figure, layout) => {
+        const svg = figure.querySelector(".mdmark-diagram-wires");
+        chart.rels.forEach((rel, index) => {
+          const edge = layout.edges.find((item) => item.id === `L${index}`);
+          if (svg && edge && isSideways(rel) && !rel.both) replacePath(svg, edge, edge.points.slice().reverse());
+        });
+        if (svg) spreadSharedEnds(svg, layout.edges);
         for (const boundary of chart.boundaries) figure.querySelector(`[data-group="${CSS.escape(boundary.id)}"], [data-box="${CSS.escape(boundary.id)}"]`)?.classList.add("cac-boundary");
       },
     },
