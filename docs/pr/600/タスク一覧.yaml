@@ -1,0 +1,78 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が揃っているため対象外
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めの依頼ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 既存の設定と既存の並べ替えの判定を map の図・ビューの表へ当てる変更で、未検証の技術機構に依存しないため
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の作業の流れは変わらず、単一ユースケースの期待値だけが変わるため
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 新しい画面を作らず、既存のツールチップと表の振る舞いを設定に合わせる変更のため（モック要否）
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・遷移の変更が無いため（モック要否）
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T10:44:48.234199+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 見た目の新しい要素を作らず、既存の要素を出す・出さない・出す場所の条件だけが変わるため（モック要否）
+    updated_by: planner
+    updated_at: '2026-11-15T10:31:10.549694+00:00'
+  - process: インターフェース定義設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:12:51.762115+00:00'
+  - process: 部品設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:29:58.659518+00:00'
+  - process: 画面設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:29:58.659518+00:00'
+  - process: モジュール構成設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:41:07.283032+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: docs/guide/ の 4 ページ（設定・図を描く・ビューとコメント・記法）
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:35.979436+00:00'
+  - process: 単体テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:42:32.125583+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T13:22:12.857156+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T14:40:51.532562+00:00'

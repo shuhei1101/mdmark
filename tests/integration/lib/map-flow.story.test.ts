@@ -343,6 +343,25 @@ test("test_group_note", async () => {
   expect(mark.left).toBeGreaterThanOrEqual(title.right - 1);
 });
 
+// hints が false なら、説明を持つノード・グループ・線にマーカーとツールチップが無く、線のラベル・ノードの名前・グループのタイトルは描く（HintsOff）
+test("test_hints_off", async () => {
+  // 準備・実行
+  const page = await openMap("hints-off");
+  // 検証
+  await expect(page.locator(".mdmark-diagram-info").count()).resolves.toBe(0);
+  await expect(page.locator("[data-tip-owner]").count()).resolves.toBe(0);
+  await expect(page.locator('[role="tooltip"]').count()).resolves.toBe(0);
+  await expect(
+    page.locator('.map-group[data-group="lib"] .map-group-title').textContent(),
+  ).resolves.toBe("mdmark");
+  await expect(
+    page.locator('[data-node="mount"] .mdmark-diagram-node-name').textContent(),
+  ).resolves.toBe("mount");
+  await expect(
+    page.locator('.mdmark-diagram-label[data-wire="user->mount"]').count(),
+  ).resolves.toBe(1);
+});
+
 // 開閉・中へ入るボタン、ノード、線の押せる帯は、スクリーンリーダー向けの名前とキーを持ち、ノードの名前の文字だけを選べる（Default）
 test("test_accessibility", async () => {
   // 準備・実行

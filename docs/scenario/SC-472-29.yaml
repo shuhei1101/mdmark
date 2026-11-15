@@ -150,6 +150,48 @@ scenarios:
       - 範囲の上に、範囲に表が無いことを記載した記載の警告がある
       - 範囲の段落がそのまま描かれ、ビューの切り替えが出ない
     test: test_error_when_no_table
+  - name: 正常シナリオ（長文の列に並べ替えを付けない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 長文の列を持つ Markdown
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table"} -->` 〜 `<!-- /view -->` で、タイトル・状態・説明の列と 5 行を持つ表を囲んだ文書'
+        notes: 説明の列のセルは、どれも 20 文字以上の文。タイトルと状態の列は 10 文字未満の値
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 説明の列にだけ並べ替えを付けない表形式のビュー
+        U->>P: タイトルの列の見出しの並べ替えを押す
+        P-->>U: タイトルの降順に並べ替えた表形式のビュー
+    expected:
+      - 表形式のビューの説明の列の見出しに並べ替えのボタンが無い
+      - タイトルの列と状態の列の見出しに並べ替えのボタンがある
+      - タイトルの列の並べ替えを押した後、見出しの `aria-sort` が `descending` で、タイトルの列の文字の降順に並ぶ
+    test: test_normal_when_long_column_not_sortable
+  - name: 正常シナリオ（列ごとに並べ替えを指定する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 列ごとに並べ替えを指定した Markdown
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"説明": {"sort": true}, "タイトル": {"sort": false}}} -->` 〜 `<!-- /view -->` で、正常シナリオ（長文の列に並べ替えを付けない）と同じ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 説明の列に並べ替えを付け、タイトルの列から並べ替えを外した表形式のビュー
+    expected:
+      - 説明の列と状態の列の見出しに並べ替えのボタンがあり、タイトルの列の見出しには無い
+      - '`columns.{列名}.sort` を記載したビューの範囲の上に記載の警告が出ない'
+    test: test_normal_when_column_sort_specified
 lead: '文書の作成者が `<!-- view: {"board": {"group": {"column": "列名"}}} -->` 〜 `<!-- /view -->` で項目の表を囲み、読者が描かれた項目をボード表示と表形式のビューで切り替えて確認する。'
 issue: 8
 primary_actor: 読者

@@ -248,6 +248,7 @@ export const attachMapSequence = (
       terms,
       notes,
       annotations,
+      hints: config.features.hints === true,
     });
     return { html: part.html, tips: part.tips, rows };
   };
@@ -290,7 +291,7 @@ export const attachMapSequence = (
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
   const detachDiagrams = attachDiagrams({
     root: range,
-    placement: "bottom",
+    placement: config.tooltips.diagramPlacement,
     figures: [figure],
   });
   const save = () =>

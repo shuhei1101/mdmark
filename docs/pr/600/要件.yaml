@@ -1,0 +1,47 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: changed
+    detail: map の構成図・シーケンス図の説明のツールチップとマーカーが、ヒントをオフにした設定では出ず、図のツールチップを上に出す設定では持ち主の上に先に出る
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-74.yaml
+    impact: run_only
+    detail: ビューの表の並べ替えの既定を変えるため、表形式のビューの列の絞り込みが壊れていないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-29.yaml
+    impact: changed
+    detail: ビューの表形式で、長文の列に並べ替えが付かず、列の指定で付け外しできる
+    depends_on: []
+docs:
+  - page: docs/config/CFG-472-3.yaml
+    new: false
+    change: features.hints と tooltips.diagramPlacement の対象に map の図の補足の notes の説明のツールチップとマーカーを加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:12:46.288977+00:00'
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: features.hints の行と図のツールチップを出す場所の節に map の図の説明を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: map の図の説明のツールチップにも tooltips.diagramPlacement と features.hints が効くことを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'
+  - page: docs/guide/記載する-ビューとコメントを使用する.mark.md
+    new: false
+    change: ビューの表の長文の列に並べ替えを既定で付けないことと columns.{列名}.sort を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: ビューのマーカーの引数に columns.{列名}.sort を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'

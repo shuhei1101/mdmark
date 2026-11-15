@@ -55,3 +55,9 @@ export const Reordering: Story = {
   parameters: { server: { id: "map-sequence" } },
   args: { order: '["user", "layout", "mount", "marker", "mermaid"]' },
 };
+
+export const HintsOff: Story = {
+  name: "HintsOff",
+  parameters: { server: { id: "map-sequence" } },
+  args: { notes: '{"1": "文書を描く要求"}', hints: "false" },
+};

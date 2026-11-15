@@ -46,6 +46,13 @@ states:
     args:
       - name: notes
         value: '{"lib": "記法を読み取る部分"}'
+  - name: HintsOff
+    description: '`hints` が `false`。説明を持つノード・グループ・線にマーカーとツールチップが無く、線のラベル・ノードの名前・グループのタイトルは描かれる'
+    args:
+      - name: notes
+        value: '{"lib": "記法を読み取る部分", "mount": "文書を描く入口"}'
+      - name: hints
+        value: 'false'
   - name: Narrow
     description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
 lead: map の `flowchart` を自動配置した結果のノードと線（線の交差の飛び越えを含む）を描き、その上に入れ子のグループの面を重ねる。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
@@ -86,6 +93,11 @@ args:
     required: false
     default: '{}'
     description: 補足の `notes` の ID ごとの説明。ノードとグループの説明は右上（グループはタイトルの右）のマーカーと `hint` のツールチップ、線の説明は線の押せる帯の `wire` のツールチップにする
+  - name: hints
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`false` のとき、`notes` の説明と注記のツールチップと、ノード・グループのマーカーを作らず、線の押せる帯に `aria-describedby` を付けない。注記の持ち主の `id` はノード・グループのタイトル・線の押せる帯に付ける。ER 図・状態遷移図の map（ER 図の列の説明のボタンを含む）も同じ'
   - name: links
     type: オブジェクト
     required: false

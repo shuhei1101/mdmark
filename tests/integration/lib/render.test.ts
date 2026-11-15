@@ -795,6 +795,42 @@ test("test_normal_when_table_sort_columns", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
+// ビューのマーカーの範囲の表も、並べ替えを付けない長文の列と columns.{列名}.sort が false の列を data-no-sort に写す（正常系（ビューの表の長文の列と並べ替えの指定））
+test("test_normal_when_view_sort_columns", async () => {
+  // 準備
+  const render = await loadRender();
+  const wide = (count: number): string => "あ".repeat(count);
+  const view = (options: string): string =>
+    [
+      `<!-- view: ${options} -->`,
+      "",
+      "| タイトル | 状態 | 説明 |",
+      "| --- | --- | --- |",
+      `| ${wide(6)} | 未着手 | ${wide(40)} |`,
+      `| ${wide(4)} | 完了 | ${wide(40)} |`,
+      "",
+      "<!-- /view -->",
+      "",
+    ].join("\n");
+  const markdown = [
+    view('{"board": {"group": {"column": "状態"}}}'),
+    view(
+      '{"board": {"group": {"column": "状態"}}, "columns": {"説明": {"sort": true}, "タイトル": {"sort": false}}}',
+    ),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const wrappers = [...html.matchAll(/<div class="mdmark-table"[^>]*>/g)].map(
+    (match) => match[0],
+  );
+  expect(wrappers).toHaveLength(2);
+  const [a = "", b = ""] = wrappers;
+  expect(a).toContain(' data-no-sort="2"');
+  expect(b).toContain(' data-no-sort="0"');
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
 // 見出しに無い列名の pin=・check= と、pin の機能の無い表の pin= を記載の警告にして適用しない（正常系）
 test("test_normal_when_table_column_errors", async () => {
   // 準備
