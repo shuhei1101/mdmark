@@ -45,8 +45,11 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T05:37:30.857631+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: skipped
     note: 直し方（後始末の修正か、別のファイルへ移すか）を決める。案 B ならテストのファイルを直す。案 A なら設計書は変えずに skipped にする
+    reason: hasTouch のコンテキストの結合テストのプロジェクトで同じテストを動かす直し方にし、インターフェース定義『文書を描く』のテストのファイルとテストの名前を変えないため（試した結果は要件.md）
+    updated_by: planner
+    updated_at: '2026-11-15T06:41:13.577434+00:00'
   - process: 部品設計
     status: skipped
     reason: 部品を変えない
