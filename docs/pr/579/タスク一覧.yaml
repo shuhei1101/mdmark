@@ -1,0 +1,74 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書がそろっているため対象外
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 設計書の記述を今の CSS に合わせるだけで、未検証の技術機構に依らない
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: ユースケースの連鎖は変わらない
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針があり、見た目の方向を変える Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更が無い
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 'シナリオは表の端の影を期待値に持たない（SC-472-25 は横スクロールしない表に影が出ないことだけを確認し、SC-472-73 からは #505 で外した）'
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: モック作成
+    status: skipped
+    reason: '表の見た目を変えない（端の影を出さない見た目は #275 のモックへの合意でユーザーが決めた）'
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: インターフェース定義設計
+    status: todo
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: todo
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: skipped
+    reason: 公開ドキュメント（使い方・リファレンス・はじめに）に表の端の影の記述が無い
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: コードを変えない
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: 実装
+    status: skipped
+    reason: src/index.css の表の規則（端の影を出さない）が正で、コードを変えない
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    reason: コードを変えず、横スクロールしない表に影が出ないことは既存の結合テストが確認している
+    updated_by: planner
+    updated_at: '2026-11-15T02:27:59.720621+00:00'

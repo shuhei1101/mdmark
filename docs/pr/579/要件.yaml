@@ -1,0 +1,13 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-25.yaml
+    impact: none
+    detail: 横スクロールしない表の端に影が出ないことを確認するだけで、表の見た目は変わらない
+    depends_on: []
+scope_out:
+  - item: '部品のモック docs/mock/components/table/index.html の #308 の場面の見出しと見本の文にある「続きがある側の端に影を出す」と、その値を持つ docs/mock/refs/308/assets/table.css の包みの端の影'
+    reason: refs/{PR 番号}/ はその PR で合意した時点の見た目の記録で、今の見た目はモジュール構成『css』に「端の影を除く」と書いて示す。モックを直すかはレビューで確定する
+    plan: none
+  - item: '#16 の画面のモック（docs/mock/pages/document/16・19・27・32 の style.css と docs/mock/files.yml・docs/mock/pages/document/16/index.md の説明）の横スクロールする表の端の影'
+    reason: それぞれの PR で合意した時点の文書の画面の案の記録で、今の表の見た目の根拠には使われていない
+    plan: none
