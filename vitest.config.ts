@@ -18,7 +18,7 @@ const WEBVIEW_DEPENDENCIES = [
   "class-variance-authority",
 ];
 
-/** 結合テストが同時に実行するファイルの数（CPU 数の半分。ほかの作業と重なってもメモリを使い切らない）。Vitest は同じ groupOrder のプロジェクトに同じ maxWorkers を求め、Node のプール（integration-node・integration-storybook）とブラウザのプール（integration-browser）のそれぞれの上限にする */
+/** 結合テストが同時に実行するファイルの数（CPU 数の半分。ほかの作業と重なってもメモリを使い切らない）。Vitest は同じ groupOrder のプロジェクトに同じ maxWorkers を求め、Node のプール（integration-node・integration-storybook）とブラウザのプール（integration-browser・integration-browser-touch）のそれぞれの上限にする */
 const INTEGRATION_MAX_WORKERS = Math.max(
   1,
   Math.floor(availableParallelism() / 2),
