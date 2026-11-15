@@ -258,7 +258,9 @@ const emphasizeNodes = (
     const id = element.getAttribute("data-node") ?? "";
     element.classList.toggle("is-selected", selected.has(id));
     // 選べるノードは、ノードの div に選んだかを付け、名前をノードを覆う押せる要素に付ける
-    const focusable = element.querySelector(":scope > .mdmark-diagram-node-hit");
+    const focusable = element.querySelector(
+      ":scope > .mdmark-diagram-node-hit",
+    );
     if (focusable) {
       element.toggleAttribute("data-selected", selected.has(id));
       const name =
