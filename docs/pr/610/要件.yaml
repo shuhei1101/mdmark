@@ -136,11 +136,11 @@ scope_out:
     reason: 'origin/develop の rules.yaml は rules: [] で、古い規約を指していない'
     plan: none
   - item: ER 図（docs/er/）を knowledge の Schema へ切り替える
-    reason: knowledge の er.schema.yaml はテーブルごとにデータの設計書（source）を求めるが、mdmark にはデータの設計書が無い。作ると設計の追加になり、表し方の移行の範囲を超える
-    plan: to_file
+    reason: '#587 の反映作業『配布先のデータの設計書の作成』が docs/data/ を作り、ER 図の source を埋めて切り替える。管理用の YAML の Schema・index.schema.yaml・フォルダ構成の設計書の schemas/ のエントリも #587 に残す'
+    plan: '#587'
   - item: '複合ユースケースの flow の click が持つ id: のリンク先（151 件）を map でリンクにする'
     reason: 'map は click のリンク先を http・https・mailto と相対パスに限り、id: を受け付けない（ノードはリンクにせずに描く）。knowledge の Schema は click で単一ユースケースへリンクするよう求めるため、直すのは map の側で、今回の変更がマージされなくても成り立つ'
     plan: '#611'
   - item: ブラウザの単体テストのファイルを持つモジュール構成 5 件の test_files
-    reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
+    reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が 3 件のモジュールで『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
     plan: to_file

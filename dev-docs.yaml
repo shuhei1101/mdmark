@@ -10,7 +10,7 @@ instructions: |-
   mdmark で文書を記載するときは、filter に {"and": [{"field": "tags", "op": "eq", "values": ["topic:ガイド"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]} を指定して一覧を検索し、description の「〜ときに参照する」が作業に該当するページを view: "full" で読み込む。
   人が読み込む資料を記載するときは、最初に『文書の記載方法』（docs/guide/記載する-文書の記載方法.md）を読み込む。
   記法の記載方法を確認するときは『記法』（docs/guide/記法.mark.md）を読み込む。
-  設計書は `docs/` の種類ごとのフォルダの YAML（`{ID}.yaml`）で、書式は knowledge の `schemas/design/{種類}.schema.yaml`（`documents[].schema` の `ref` のタグ）が持つ。各文書の公開範囲は `visibility`（`public` / `internal`）で、YAML の文書はキー、Markdown は `files.yml` の行が持つ。
+  設計書は `docs/` の種類ごとのフォルダの YAML（`{ID}.yaml`）で、書式は `documents[].schema` が指す Schema が持つ。各文書の公開範囲は `visibility`（`public` / `internal`）で、YAML の文書はキー、Markdown は `files.yml` の行が持つ。
 when:
   - mdmark の記法・部品・図の描き方を確認するとき
   - mdmark の CLI・公開関数・設定・索引のキーを確認するとき
