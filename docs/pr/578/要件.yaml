@@ -64,12 +64,6 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-15T03:15:46.944607+00:00'
-  - page: docs/mock/pages/ui-canvas/80/side-by-side/index.html
-    new: false
-    change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
-    status: done
-    updated_by: planner
-    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/design-policy.md
     new: false
     change: 表のマーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
@@ -92,3 +86,6 @@ scope_out:
   - item: tests/ のテストの入力に使う今の書き方のマーカー
     reason: '今の書き方を読む処理・移行の手順を確かめる入力で、文書ではない。読む処理の削除に合わせて #479 が扱う'
     plan: '#479'
+  - item: docs/mock/pages/ui-canvas/80/side-by-side/index.html の <script type="text/markdown"> の中のマーカー（16 箇所）
+    reason: '#80 の当時の版に固定した docs/mock/refs/80/assets/mdmark/ の mount で描くモックで、その版は JSON のマーカーを読めない。今の書き方のまま残すと、#479 で今の書き方を参照する処理を削除した後も固定した版で描けるため、終わりの条件の範囲から除く'
+    plan: none

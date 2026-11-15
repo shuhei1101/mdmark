@@ -134,7 +134,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 | `--mdmark-color-bg` | 地の色 | #ffffff |
 | `--mdmark-color-link` | リンクの色 | #0f766e |
 
-<!-- table: {"kind": "data", "features": {"count": {}, "columns": {}, "copy": {}, "rowlink": {}}, "columns": {"状態": {"filter": {}}, "件数": {"total": [{"calc": "sum"}]}}} -->
+<!-- table: data filter=状態 +count +columns +total +copy +rowlink total=件数:sum -->
 
 | 部品 | 状態 | 件数 |
 | --- | --- | ---: |
@@ -144,7 +144,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 <!-- /table -->
 
-<!-- table: {"kind": "plain"} -->
+<!-- table: plain -->
 
 | 項目 | 内容 |
 | --- | --- |
@@ -152,7 +152,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 <!-- /table -->
 
-<!-- table: {"collapse": {"open": false}} -->
+<!-- table: closed -->
 
 | 項目 | 内容 |
 | --- | --- |
@@ -174,7 +174,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 | `--mdmark-color-link` | リンクの色 | #0f766e |
 | `--mdmark-radius` | 角丸 | 4px |
 
-<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"状態": {"filter": {}}, "件数": {"total": [{"calc": "sum"}]}}} -->
+<!-- table: data filter=状態 +count +total total=件数:sum -->
 
 | 部品 | 状態 | 件数 |
 | --- | --- | ---: |
@@ -184,7 +184,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 <!-- /table -->
 
-<!-- table: {"kind": "plain"} -->
+<!-- table: plain -->
 
 | 項目 | 内容 |
 | --- | --- |
@@ -193,7 +193,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 <!-- /table -->
 
-<!-- table: {"collapse": {"open": true}} -->
+<!-- table: open -->
 
 | 項目 | 内容 |
 | --- | --- |
@@ -201,7 +201,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 <!-- /table -->
 
-<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->
+<!-- glossary: term=用語 meaning=意味 -->
 
 | 用語 | 意味 |
 | --- | --- |
@@ -209,7 +209,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 
 <!-- /glossary -->
 
-<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table"} -->
+<!-- view: group=状態 default=table -->
 
 | タイトル | 状態 | 担当 |
 | --- | --- | --- |
@@ -230,7 +230,7 @@ const view = mount(document.querySelector("#doc"), { markdown });
 | 表 | 済 |
 | 注意書き | 未 |
 
-<!-- row-detail: {"at": 2} -->
+<!-- row-detail: 2 -->
 
 面と線の混ぜ方を決める。
 
@@ -327,7 +327,7 @@ mdmark/
       <h2>コードブロックの飾り</h2>
       <p>タイトル・行番号・行の強調と、追加した行・削除した行</p>
       <script type="text/markdown" data-canvas-source>
-<!-- code: {"title": "theme.css", "lines": {}, "highlight": [2]} -->
+<!-- code: title=theme.css lines highlight=2 -->
 
 ```css
 :root {
@@ -361,7 +361,7 @@ mount(el, { markdown }); // [!code highlight]
 
 ## 補足
 
-<!-- section: {"open": false} -->
+<!-- section: closed -->
 
 閉じたセクションの本文。
 </script>
@@ -372,11 +372,11 @@ mount(el, { markdown }); // [!code highlight]
       <h2>図と表の番号</h2>
       <p>図と表に付ける通し番号と、番号にした参照のリンク</p>
       <script type="text/markdown" data-canvas-source>
-<!-- fig: {"id": "flow"} -->
+<!-- fig: flow -->
 
 ![受け取りから送信まで](../../../../refs/80/assets/figure.svg "受け取りから送信まで")
 
-<!-- fig: {"id": "values"} -->
+<!-- fig: values -->
 
 | 変数 | 値 |
 | --- | --- |
@@ -393,7 +393,7 @@ mount(el, { markdown }); // [!code highlight]
       <script type="text/markdown" data-canvas-source>
 本文のマーカーは、HTML コメントで記載する。
 
-<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}} -->
+<!-- glossary: term=用語 aliases=別名 meaning=意味 -->
 
 | 用語 | 別名 | 意味 |
 | --- | --- | --- |
@@ -419,7 +419,7 @@ mount(el, { markdown }); // [!code highlight]
       <h2>ビュー</h2>
       <p>ボード表示（状態ごとの列）と表形式の切り替え</p>
       <script type="text/markdown" data-canvas-source>
-<!-- view: {"board": {"group": {"column": "状態"}}, "columns": {"担当": {"filter": {}}}} -->
+<!-- view: group=状態 filter=担当 -->
 
 | タイトル | 状態 | 担当 |
 | --- | --- | --- |
@@ -641,7 +641,7 @@ mount(el, { markdown }); // [!code highlight]
       <h2>記載の警告</h2>
       <p>記法のマーカーに読み込めない指定がある箇所に配置する枠</p>
       <script type="text/markdown" data-canvas-source>
-<!-- table: {"kind": "data", "columns": {"名前": {"hidden": true}}} -->
+<!-- table: data hide=名前 -->
 
 | 名前 | 値 |
 | --- | --- |
