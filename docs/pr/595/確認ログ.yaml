@@ -1,0 +1,6 @@
+confirmations:
+  - topic: 記法を含むガイドのページを `.mark.md` へ改名したときの、GitHub 上の旧 URL の扱い
+    decision: 改名し、旧パスは残さない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/595#discussion_r4577872822

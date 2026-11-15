@@ -1,0 +1,11 @@
+$ npx vitest run --project 'unit*' tests/unit/src/render/syntax/views.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-map-tooltip-settings-view-sort
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  23:30:17
+   Duration  10.82s (transform 78%, import 21%, tests 1%)
+
+exit=0

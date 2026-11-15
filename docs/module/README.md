@@ -45,6 +45,7 @@
 | [ライブラリ本体 / CLI / issues.ts](./MOD-472-125.ts.yaml) | ライブラリ本体 / CLI / issues.ts |
 | [ライブラリ本体 / CLI / main.ts](./MOD-472-115.ts.yaml) | ライブラリ本体 / CLI / main.ts |
 | [ライブラリ本体 / CLI / markdown-check.ts](./MOD-472-127.ts.yaml) | ライブラリ本体 / CLI / markdown-check.ts |
+| [ライブラリ本体 / CLI / traces.ts](./MOD-472-350.ts.yaml) | ライブラリ本体 / CLI / traces.ts |
 | [ライブラリ本体 / バージョンを上げる / migrations.ts](./MOD-472-146.ts.yaml) | ライブラリ本体 / バージョンを上げる / migrations.ts |
 | [ライブラリ本体 / バージョンを上げる / prompt.ts](./MOD-472-151.ts.yaml) | ライブラリ本体 / バージョンを上げる / prompt.ts |
 | [ライブラリ本体 / バージョンを上げる / upgrade.ts](./MOD-472-150.ts.yaml) | ライブラリ本体 / バージョンを上げる / upgrade.ts |
@@ -117,6 +118,7 @@
 | [ライブラリ本体 / 描く / libraries.ts](./MOD-472-204.ts.yaml) | ライブラリ本体 / 描く / libraries.ts |
 | [ライブラリ本体 / map / 描画と操作 / band.ts](./MOD-472-132.ts.yaml) | ライブラリ本体 / map / 描画と操作 / band.ts |
 | [ライブラリ本体 / map / 点検 / check.ts](./MOD-472-135.ts.yaml) | ライブラリ本体 / map / 点検 / check.ts |
+| [ライブラリ本体 / map / 点検 / structure.ts](./MOD-589-1.ts.yaml) | ライブラリ本体 / map / 点検 / structure.ts |
 | [ライブラリ本体 / map / 読み取り / data.ts](./MOD-472-139.ts.yaml) | ライブラリ本体 / map / 読み取り / data.ts |
 | [ライブラリ本体 / map / 描画と操作 / drag.ts](./MOD-472-134.ts.yaml) | ライブラリ本体 / map / 描画と操作 / drag.ts |
 | [ライブラリ本体 / map / 描画と操作 / annotations.ts](./MOD-562-2.ts.yaml) | ライブラリ本体 / map / 描画と操作 / annotations.ts |
@@ -161,6 +163,8 @@
 | [ライブラリ本体 / 部品 / embed.ts](./MOD-472-309.ts.yaml) | ライブラリ本体 / 部品 / embed.ts |
 | [ライブラリ本体 / 図 / er.ts](./MOD-472-187.ts.yaml) | ライブラリ本体 / 図 / er.ts |
 | [ライブラリ本体 / 部品 / escape.ts](./MOD-472-313.ts.yaml) | ライブラリ本体 / 部品 / escape.ts |
+| [ライブラリ本体 / 部品 / embedded-html.ts](./MOD-589-2.ts.yaml) | ライブラリ本体 / 部品 / embedded-html.ts |
+| [ライブラリ本体 / 部品 / icon-node.ts](./MOD-589-3.ts.yaml) | ライブラリ本体 / 部品 / icon-node.ts |
 | [ライブラリ本体 / 部品 / figure.ts](./MOD-472-322.ts.yaml) | ライブラリ本体 / 部品 / figure.ts |
 | [ライブラリ本体 / 部品 / footnote.ts](./MOD-472-333.ts.yaml) | ライブラリ本体 / 部品 / footnote.ts |
 | [ライブラリ本体 / 部品 / frontmatter.ts](./MOD-472-339.ts.yaml) | ライブラリ本体 / 部品 / frontmatter.ts |
@@ -288,6 +292,7 @@
 | [VS Code 拡張機能 / 設定 / extensions-bundle.ts](./MOD-472-106.ts.yaml) | VS Code 拡張機能 / 設定 / extensions-bundle.ts |
 | [VS Code 拡張機能 / 拡張機能の入口 / log.ts](./MOD-472-97.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / log.ts |
 | [VS Code 拡張機能 / Webview / messages.ts](./MOD-472-52.ts.yaml) | VS Code 拡張機能 / Webview / messages.ts |
+| [VS Code 拡張機能 / Webview / vite-env.d.ts](./MOD-589-4.ts.yaml) | VS Code 拡張機能 / Webview / vite-env.d.ts |
 | [VS Code 拡張機能 / プレビュー / assets.ts](./MOD-472-94.ts.yaml) | VS Code 拡張機能 / プレビュー / assets.ts |
 | [VS Code 拡張機能 / プレビュー / diff-target.ts](./MOD-472-93.ts.yaml) | VS Code 拡張機能 / プレビュー / diff-target.ts |
 | [VS Code 拡張機能 / プレビュー / html.ts](./MOD-472-92.ts.yaml) | VS Code 拡張機能 / プレビュー / html.ts |

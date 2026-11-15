@@ -449,10 +449,10 @@ export async function tagRequestCount(): Promise<number> {
   return (await stub.requests()).filter((path) => path === "/tags").length;
 }
 
-/** 見本の map の構成図の範囲（`docs/guide/図を描く-見本.md` の最初の `<!-- map -->` から `<!-- /map -->` まで） */
+/** 見本の map の構成図の範囲（`docs/guide/図を描く-見本.mark.md` の最初の `<!-- map -->` から `<!-- /map -->` まで） */
 export async function sampleMapRange(): Promise<string> {
   const sample = await readFile(
-    join(REPO_ROOT, "docs", "guide", "図を描く-見本.md"),
+    join(REPO_ROOT, "docs", "guide", "図を描く-見本.mark.md"),
     "utf8",
   );
   const range = /<!-- map: [\s\S]*?<!-- \/map -->/.exec(sample)?.[0];
@@ -460,10 +460,10 @@ export async function sampleMapRange(): Promise<string> {
   return range;
 }
 
-/** 見本の操作できる部品の範囲（`docs/guide/図を描く-見本.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
+/** 見本の操作できる部品の範囲（`docs/guide/図を描く-見本.mark.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
 export async function paramMarkdown(): Promise<string> {
   const sample = await readFile(
-    join(REPO_ROOT, "docs", "guide", "図を描く-見本.md"),
+    join(REPO_ROOT, "docs", "guide", "図を描く-見本.mark.md"),
     "utf8",
   );
   const range = /<!-- param -->[\s\S]*?<!-- \/param -->/.exec(sample)?.[0];

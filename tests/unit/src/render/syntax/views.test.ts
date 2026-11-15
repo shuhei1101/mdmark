@@ -134,3 +134,27 @@ test("test_build_views_when_disabled", () => {
   expect(html).not.toContain("<!--");
   expect(plainText(html)).not.toContain("board");
 });
+
+// columns.{列名}.sort の列を表の指定の sorts に入れる（正常系）
+test("test_build_views_when_sort_columns", () => {
+  // 準備: タイトル・状態・説明（長文の列）の表
+  const long = "画面の幅に合わせて列の幅を決め直す処理を追加する";
+  const markdown = [
+    `<!-- view: ${JSON.stringify({ board: BOARD, columns: { 説明: { sort: true }, タイトル: { sort: false }, 優先度: { sort: true } } })} -->`,
+    "",
+    "| タイトル | 状態 | 説明 |",
+    "| --- | --- | --- |",
+    `| 配色 | 未着手 | ${long} |`,
+    `| 余白 | 進行中 | ${long} |`,
+    "",
+    "<!-- /view -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証: sorts の true の列（説明）は並べ替えを付け、false の列（タイトル）は付けない。表に無い列（優先度）は filter を持たなくても警告にし、sorts に入れない
+  expect(html.match(/mdmark-syntax-warning"/g) ?? []).toHaveLength(1);
+  expect(plainText(html)).toContain("優先度");
+  const table = findTag(html, 'class="mdmark-table"');
+  expect(table).toContain('data-no-sort="0"');
+});

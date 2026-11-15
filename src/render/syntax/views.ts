@@ -97,16 +97,16 @@ function readViewFilters(context: {
   const filters: TableFilter[] = [];
   const columns = isObject(mark.options.columns) ? mark.options.columns : {};
   for (const [name, settings] of Object.entries(columns)) {
-    const filter = isObject(settings) ? settings.filter : undefined;
-    if (!isObject(filter)) {
-      continue;
-    }
     const column = headers.indexOf(name);
     if (column < 0) {
       items.push({
         label: `columns.${name}`,
         message: `の列 \`${name}\` は表にありません。表の列は ${codes(headers)} です。列名を修正してください。当てずに描いています。`,
       });
+      continue;
+    }
+    const filter = isObject(settings) ? settings.filter : undefined;
+    if (!isObject(filter)) {
       continue;
     }
     filters.push({
@@ -120,8 +120,29 @@ function readViewFilters(context: {
   return filters;
 }
 
+/** 表形式で並べ替えを付け外しする列（`columns.{列名}.sort`。表に無い列名は `readViewFilters` が警告にする） */
+function readViewSorts(context: {
+  mark: Mark;
+  headers: string[];
+}): TableSpec["sorts"] {
+  const { mark, headers } = context;
+  const sorts: TableSpec["sorts"] = [];
+  const columns = isObject(mark.options.columns) ? mark.options.columns : {};
+  for (const [name, settings] of Object.entries(columns)) {
+    const sort = isObject(settings) ? settings.sort : undefined;
+    const column = headers.indexOf(name);
+    if (typeof sort === "boolean" && column >= 0) {
+      sorts.push({ column, sort });
+    }
+  }
+  return sorts;
+}
+
 /** ビューの表の指定（件数・列の表示の切り替え・集計を付けない） */
-function viewTableSpec(filters: TableFilter[]): TableSpec {
+function viewTableSpec(
+  filters: TableFilter[],
+  sorts: TableSpec["sorts"],
+): TableSpec {
   return {
     kind: "data",
     features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
@@ -131,7 +152,7 @@ function viewTableSpec(filters: TableFilter[]): TableSpec {
     unpinned: [],
     widths: [],
     check: [],
-    sorts: [],
+    sorts,
     collapse: "none",
     warnings: [],
     headRows: 1,
@@ -168,11 +189,12 @@ function readView(options: {
           items,
         });
   const filters = readViewFilters({ mark, headers, items });
+  const sorts = readViewSorts({ mark, headers });
   const mode =
     group !== null && mark.options.initial !== "table" ? "board" : "table";
   warnings.push(...warningsOf(mark.raw, items));
   return {
-    tableSpec: viewTableSpec(filters),
+    tableSpec: viewTableSpec(filters, sorts),
     viewSpec: { group, mode, boardDisabled, icons },
     warnings,
   };

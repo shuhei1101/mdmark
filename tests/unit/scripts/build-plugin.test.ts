@@ -20,7 +20,7 @@ function createEntry(name: string, page = `docs/${name}.md`) {
   };
 }
 
-/** 行を `guide/index.yaml` の中身にする */
+/** 行を `plugin/guide-index.yaml` の中身にする */
 function guideYaml(entries: ReturnType<typeof createEntry>[]): string {
   return [
     "schema: 1",
@@ -52,7 +52,7 @@ test("test_check_guide_source", async () => {
   const root = await createTempDir();
   const entries = [createEntry("a"), createEntry("b")];
   await writeFiles(root, {
-    "guide/index.yaml": guideYaml(entries),
+    "plugin/guide-index.yaml": guideYaml(entries),
     "docs/a.md": "# A\n",
     "docs/b.md": "# B\n",
   });
@@ -69,7 +69,7 @@ test("test_check_guide_source_when_page_missing", async () => {
   const { checkGuideSource } = await loadBuildPlugin();
   const root = await createTempDir();
   await writeFiles(root, {
-    "guide/index.yaml": guideYaml([createEntry("a"), createEntry("b")]),
+    "plugin/guide-index.yaml": guideYaml([createEntry("a"), createEntry("b")]),
     "docs/a.md": "# A\n",
   });
   // 実行
@@ -86,7 +86,7 @@ test("test_check_guide_source_when_invalid", async () => {
   const { checkGuideSource } = await loadBuildPlugin();
   const root = await createTempDir();
   await writeFiles(root, {
-    "guide/index.yaml": [
+    "plugin/guide-index.yaml": [
       "schema: 1",
       "guides:",
       "  - name: a",
@@ -101,7 +101,7 @@ test("test_check_guide_source_when_invalid", async () => {
   // 検証
   expect(
     result.problems.some((line) =>
-      line.startsWith("guide/index.yaml:guides[0].when"),
+      line.startsWith("plugin/guide-index.yaml:guides[0].when"),
     ),
   ).toBe(true);
 });
@@ -115,7 +115,7 @@ test("test_check_guide_source_when_unreadable", async () => {
   const result = await checkGuideSource({ root });
   // 検証
   expect(
-    result.problems.some((line) => line.includes("guide/index.yaml")),
+    result.problems.some((line) => line.includes("plugin/guide-index.yaml")),
   ).toBe(true);
 });
 
@@ -251,7 +251,7 @@ test("test_build_plugin_when_guide_invalid", async () => {
   const root = await createTempDir();
   await writeFiles(root, {
     "src/plugin/pre-tool-use.ts": "export {};\n",
-    "guide/index.yaml": guideYaml([createEntry("a")]),
+    "plugin/guide-index.yaml": guideYaml([createEntry("a")]),
   });
   // 実行
   const problems = await buildPlugin({

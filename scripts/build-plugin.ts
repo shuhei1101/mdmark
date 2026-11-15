@@ -35,7 +35,7 @@ const CONFIG_TEMPLATE = {
   to: "plugin/templates/mdmark.config.yaml",
 };
 /** リポジトリの直下からのガイドの索引のパス */
-const GUIDE_SOURCE = "guide/index.yaml";
+const GUIDE_SOURCE = "plugin/guide-index.yaml";
 /** まとめたプラグインのライセンスを記載する、プラグインの直下のファイル名 */
 const PLUGIN_LICENSES_FILE = "plugin/THIRD_PARTY_LICENSES.txt";
 

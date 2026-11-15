@@ -47,7 +47,7 @@ tables:
   - name: columns
     title: 表形式のビューの列ごとの設定
     type: object
-    description: 表形式のビューの列ごとの設定。キーは表の見出しの文字。記載できるのは `filter` だけ
+    description: 表形式のビューの列ごとの設定。キーは表の見出しの文字。記載できるのは `filter` と `sort`
     example: '{"担当": {"filter": {}}}'
   - name: columns.{列名}.filter
     title: この列に絞り込みを付ける
@@ -61,6 +61,11 @@ tables:
     default: '`"select"`'
     enum_values: '`select` / `text` / `date`'
     example: '"text"'
+  - name: columns.{列名}.sort
+    title: この列に並べ替えを付けるか
+    type: boolean
+    description: '`true` で長文の列にも並べ替えを付け、`false` で並べ替えを付けない。省くと、長文の列には付けず、ほかの列には付ける（表のマーカーの `columns.{列名}.sort` と同じ）'
+    example: 'false'
 notes:
   見本: |-
     ```html

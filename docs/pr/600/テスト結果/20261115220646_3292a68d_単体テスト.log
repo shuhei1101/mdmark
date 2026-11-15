@@ -1,0 +1,104 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-map-tooltip-settings-view-sort
+
+ ❯ |unit| tests/unit/src/cli/backup.test.ts (4 tests | 1 failed) 31954ms
+   × test_take_backup_when_outside 30004ms
+ ❯ |unit| tests/unit/src/cli/config.test.ts (6 tests | 1 failed) 41433ms
+   × test_find_config_file_when_missing 30004ms
+ ❯ |unit| tests/unit/src/cli/build.test.ts (10 tests | 1 failed) 44421ms
+   × test_run_build 30006ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (26 tests | 1 failed) 46842ms
+   × test_prepare_embeds 30008ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/backup.test.ts:59:1
+     57|
+     58| // 設定ファイルのフォルダの外のファイルは拒む（異常系）
+     59| test("test_take_backup_when_outside", async () => {
+       | ^
+     60|   // 準備
+     61|   const { takeBackup } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/build.test.ts > test_run_build
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/build.test.ts:27:1
+     25|
+     26| // 3 つの文書をまとめて build.out に記載する（正常系）
+     27| test("test_run_build", async () => {
+       | ^
+     28|   // 準備
+     29|   const { runBuild } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_find_config_file_when_missing
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/config.test.ts:44:1
+     42|
+     43| // 見つからないと CliError を投げる（異常系）
+     44| test("test_find_config_file_when_missing", async () => {
+       | ^
+     45|   // 準備
+     46|   const { findConfigFile } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  4 failed | 291 passed (295)
+      Tests  4 failed | 2233 passed (2237)
+   Start at  22:02:52
+   Duration  192.04s (worker 67%, tests 21%, import 11%, transform 1%)
+
+exit=1
+
+# 全件の実行で 30 秒の時間切れになった 4 件（CLI のバックアップ・まとめ・設定ファイル・書き出し。今回の変更が触らない処理）を、同じ commit でファイルごとに実行し直した
+$ npx vitest run --project 'unit*' tests/unit/src/cli/backup.test.ts tests/unit/src/cli/build.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/cli/config.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-map-tooltip-settings-view-sort
+
+
+ Test Files  4 passed (4)
+      Tests  46 passed (46)
+   Start at  22:06:16
+   Duration  23.44s (tests 94%, import 3%, transform 3%, worker 1%)
+
+exit=0
+
+# lint の違反を直した 1b77a959（scripts/storybook-render.ts だけを変更）で、そのファイルの単体テストを実行し直した
+$ npx vitest run --project 'unit*' tests/unit/scripts/storybook-render.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-map-tooltip-settings-view-sort
+
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  22:15:36
+   Duration  10.11s (tests 94%, transform 3%, import 3%, worker 1%)
+
+exit=0

@@ -1,7 +1,7 @@
 id: MOD-472-14
 visibility: internal
 title: ClaudeCodeプラグイン / プラグインのビルド / build-plugin.ts
-lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、ガイドの索引を検査してから、フックをまとめ、まとめた依存のライセンスを `plugin/` に書き込む。MCP サーバーとガイドはまとめない。
+lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、ガイドの索引を検査してから、フックをまとめ、まとめた依存のライセンスを `plugin/` に書き込む。MCP サーバーとガイドのページはまとめない。
 test_files:
   - tests/unit/scripts/build-plugin.test.ts
 directory: |-
@@ -9,12 +9,11 @@ directory: |-
   scripts/
   ├── build-plugin.ts   # プラグインのビルド
   └── licenses/         # まとめた依存の中に取り込まれたパッケージのライセンスの本文（{名前}.txt）
-  guide/
-  └── index.yaml        # ガイドの索引の原本
   .claude-plugin/
   └── marketplace.json  # マーケットプレイスの定義（plugin/ を記載する）
   plugin/
   ├── .claude-plugin/plugin.json  # 名前・説明（`version` を持たず、Claude Code が commit の短縮 SHA をバージョンにする）
+  ├── guide-index.yaml  # ガイドの索引の原本（プラグインは参照しない）
   ├── .mcp.json         # type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ
   ├── hooks/hooks.json  # `project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js、`Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact で scripts/guide-notice.js を実行する
   ├── scripts/          # まとめたフック（pre-tool-use.js・session-start.js・guide-notice.js。生成）
@@ -56,7 +55,7 @@ constants:
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
     summary: リポジトリの直下からのガイドの索引のパス
-    value: guide/index.yaml
+    value: plugin/guide-index.yaml
     refs:
       - ER-472-4#
     status: planned
@@ -98,7 +97,7 @@ functions:
     kind: 関数
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
-    summary: '`guide/index.yaml` を読み込み、構造と指すページの有無を検査する'
+    summary: '`plugin/guide-index.yaml` を読み込み、構造と指すページの有無を検査する'
     scope: public
     is_async: true
     args:
@@ -110,9 +109,9 @@ functions:
       type: 'Promise<{ entries: GuideEntry[]; problems: string[] }>'
       description: 合う行と、標準エラーに出す問題の行
     process: |-
-      1. `GUIDE_SOURCE` を YAML として読み込む。読み込めなければ「ガイドの索引を読み込めない: guide/index.yaml（{理由}）」を問題にして返却する
-      2. ガイドの索引を検査し、合わないところを `guide/index.yaml:{場所}: {内容}` の行にする（ガイドの索引を検査する）
-      3. 行ごとに `page` が作業ツリーにあるかを確認し、無ければ `guide/index.yaml:guides[{n}].page: {ページ} が無い` を問題にする
+      1. `GUIDE_SOURCE` を YAML として読み込む。読み込めなければ「ガイドの索引を読み込めない: plugin/guide-index.yaml（{理由}）」を問題にして返却する
+      2. ガイドの索引を検査し、合わないところを `plugin/guide-index.yaml:{場所}: {内容}` の行にする（ガイドの索引を検査する）
+      3. 行ごとに `page` が作業ツリーにあるかを確認し、無ければ `plugin/guide-index.yaml:guides[{n}].page: {ページ} が無い` を問題にする
     unit_tests:
       - name: test_check_guide_source
         case: 正常
@@ -131,13 +130,13 @@ functions:
         summary: 構造に合わない索引
         condition: 行に `when` が無い
         mock: なし（一時フォルダ）
-        expected: '`problems` に `guide/index.yaml:guides[0].when` で始まる行'
+        expected: '`problems` に `plugin/guide-index.yaml:guides[0].when` で始まる行'
       - name: test_check_guide_source_when_unreadable
         case: 正常
         summary: 索引が無い
-        condition: '`guide/index.yaml` が無い'
+        condition: '`plugin/guide-index.yaml` が無い'
         mock: なし（一時フォルダ）
-        expected: '`problems` に `guide/index.yaml` を含む行'
+        expected: '`problems` に `plugin/guide-index.yaml` を含む行'
     callees:
       - MOD-472-4#functions[parseGuideIndex]
     status: planned
@@ -313,7 +312,7 @@ functions:
       - name: test_build_plugin_when_guide_invalid
         case: 正常
         summary: 索引に問題があれば記載せずに問題を返却する
-        condition: '`src/plugin/pre-tool-use.ts` があり、`guide/index.yaml` のページが無い'
+        condition: '`src/plugin/pre-tool-use.ts` があり、`plugin/guide-index.yaml` のページが無い'
         mock: なし（一時フォルダ）
         expected: 問題の行を返却し、`plugin/scripts` が無い
     callees:

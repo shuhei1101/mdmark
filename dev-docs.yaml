@@ -8,8 +8,8 @@ github:
 instructions: |-
   mdmark のガイドは、公開ドキュメントの行（kind が docs）のうちタグ topic:ガイド の文書。
   mdmark で文書を記載するときは、filter に {"and": [{"field": "tags", "op": "eq", "values": ["topic:ガイド"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]} を指定して一覧を検索し、description の「〜ときに参照する」が作業に該当するページを view: "full" で読み込む。
-  人が読み込む資料を記載するときは、最初に『文書の記載方法』（guide/記載する-文書の記載方法.md）を読み込む。
-  記法の記載方法を確認するときは『記法』（guide/記法.md）を読み込む。
+  人が読み込む資料を記載するときは、最初に『文書の記載方法』（docs/guide/記載する-文書の記載方法.md）を読み込む。
+  記法の記載方法を確認するときは『記法』（docs/guide/記法.mark.md）を読み込む。
   設計書は `docs/` の種類ごとのフォルダの YAML（`{ID}.yaml`）で、書式は `schemas/{種類}.schema.yaml` が持つ。各文書の公開範囲は `visibility`（`public` / `internal`）で、YAML の文書はキー、Markdown は `files.yml` の行が持つ。
 when:
   - mdmark の記法・部品・図の描き方を確認するとき
@@ -196,12 +196,6 @@ documents:
   - id: migrations
     title: 移行の手順
     paths: [migrations/files.yaml]
-    records: files
-    body_file: path
-    schema: schemas/files.schema.yaml
-  - id: guide
-    title: ガイドの索引
-    paths: [guide/files.yaml]
     records: files
     body_file: path
     schema: schemas/files.schema.yaml

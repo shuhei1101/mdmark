@@ -642,10 +642,10 @@ files:
       - to: docs/module/MOD-472-129.ts
         type: implements
   - path: map/structure.ts
-    description: モジュール構成『ライブラリ本体 / map / 点検』のうち「範囲の形の collectMapStructure」を受け持つ。範囲の形の誤りを変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / map / 点検 / structure.ts』の範囲の中身の型と、範囲の形の collectMapStructure を受け持つ。範囲の形の誤りを変えるときに参照する。
     tags: [topic:図, topic:map]
     related:
-      - to: docs/module/MOD-472-26
+      - to: docs/module/MOD-589-1.ts
         type: implements
   - path: mermaid-source.ts
     description: モジュール構成『ライブラリ本体 / mermaid』のうち「ソースのタイトルの取り出し・図の種類の名前・テーマの変数と CSS 変数の対応表（DOM を使用しない）」を受け持つ。mermaid の図のタイトルやテーマを変えるときに参照する。
@@ -997,7 +997,7 @@ files:
     related:
       - to: docs/component/CMP-472-41.ts
         type: implements
-      - to: docs/module/MOD-472-34
+      - to: docs/module/MOD-589-2.ts
         type: implements
   - path: parts/escape.ts
     description: モジュール構成『ライブラリ本体 / 部品』のうち「HTML の特別な文字をエスケープする escapeHtml」を受け持つ。部品が返却する HTML を変えるときに参照する。
@@ -1127,7 +1127,7 @@ files:
     description: lucide のアイコンの形状を、24 の格子の svg の文字にする処理を受け持つ。アイコンの描き方を変えるときに参照する。
     tags: [topic:部品, tool:lucide, tool:svg]
     related:
-      - to: docs/module/MOD-472-34
+      - to: docs/module/MOD-589-3.ts
         type: implements
   - path: parts/icons.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「lucide のアイコンの svg」を受け持つ。図の部品の描き方や操作を変えるときに参照する。

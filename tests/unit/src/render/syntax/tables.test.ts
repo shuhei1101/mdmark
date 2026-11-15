@@ -942,25 +942,32 @@ test("test_decorate_tables_when_no_sort", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// ビューの表は長文の列にも並べ替えを付けたまま描く（正常系）
+// ビューの表も、長文の列と columns.{列名}.sort が false の列を data-no-sort に写す（正常系）
 test("test_decorate_tables_when_view_long_column", () => {
-  // 準備: 説明の列が長文の列になるビューの表
+  // 準備: インターフェース定義『文書をHTML文字列にする』の「正常系（ビューの表の長文の列と並べ替えの指定）」の文書
+  const table = [
+    "| タイトル | 状態 | 説明 |",
+    "| --- | --- | --- |",
+    `| ${wide(6)} | 未着手 | ${wide(40)} |`,
+    `| ${wide(4)} | 完了 | ${wide(40)} |`,
+    "",
+  ].join("\n");
+  const view = (options: unknown) =>
+    `<!-- view: ${JSON.stringify(options)} -->\n\n${table}\n<!-- /view -->\n`;
   const markdown = [
-    "<!-- view: {} -->",
-    "",
-    "| 名前 | 説明 |",
-    "| --- | --- |",
-    `| ${wide(6)} | ${wide(40)} |`,
-    `| ${wide(4)} | ${wide(40)} |`,
-    "",
-    "<!-- /view -->",
-    "",
+    view({ board: { group: { column: "状態" } } }),
+    view({
+      board: { group: { column: "状態" } },
+      columns: { 説明: { sort: true }, タイトル: { sort: false } },
+    }),
   ].join("\n");
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
-  expect(wrapper).toMatch(/data-features="[^"]*\bsort\b/);
-  expect(wrapper).toContain('data-long="1"');
-  expect(wrapper).not.toContain("data-no-sort");
+  const [viewA = "", viewB = ""] = findTags(html, 'class="mdmark-table"');
+  expect(viewA).toMatch(/data-features="[^"]*\bsort\b/);
+  expect(viewA).toContain('data-long="2"');
+  expect(viewA).toContain('data-no-sort="2"');
+  expect(viewB).toContain('data-no-sort="0"');
+  expect(html).not.toContain("mdmark-syntax-warning");
 });

@@ -24,7 +24,7 @@ constants:
     title: 変更履歴のファイル
     container: src/cli/changelog.ts
     summary: パッケージの直下からの変更履歴のパス
-    value: '`docs/guide/変更履歴.md`'
+    value: '`docs/guide/変更履歴.mark.md`'
 functions:
   - name: changelogRows
     title: 範囲の変更履歴を抽き出す

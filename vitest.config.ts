@@ -18,7 +18,7 @@ const WEBVIEW_DEPENDENCIES = [
   "class-variance-authority",
 ];
 
-/** 結合テストが同時に実行するファイルの数（CPU 数の半分。ほかの作業と重なってもメモリを使い切らない）。Vitest は同じ groupOrder のプロジェクトに同じ maxWorkers を求め、Node のプール（integration-node・integration-storybook）とブラウザのプール（integration-browser）のそれぞれの上限にする */
+/** 結合テストが同時に実行するファイルの数（CPU 数の半分。ほかの作業と重なってもメモリを使い切らない）。Vitest は同じ groupOrder のプロジェクトに同じ maxWorkers を求め、Node のプール（integration-node・integration-storybook）とブラウザのプール（integration-browser・integration-browser-touch）のそれぞれの上限にする */
 const INTEGRATION_MAX_WORKERS = Math.max(
   1,
   Math.floor(availableParallelism() / 2),
@@ -118,6 +118,25 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright(),
+            instances: [{ browser: "chromium" }],
+          },
+        },
+      },
+      {
+        // タッチの操作を確かめるテストだけを、タッチの点があるブラウザのコンテキストで動かす（CDP のタッチの代役は、外した後も同じページに (hover: none)・(pointer: none) を残す）
+        server: { fs: { allow: [tmpdir(), "."] } },
+        plugins: [fixturesPlugin()],
+        test: {
+          name: "integration-browser-touch",
+          include: ["tests/integration/lib/mount.browser.test.ts"],
+          globalSetup: ["tests/integration/global-setup.ts"],
+          setupFiles: ["tests/integration/touch-setup.ts"],
+          maxWorkers: INTEGRATION_MAX_WORKERS,
+          sequence: { groupOrder: INTEGRATION_GROUP_ORDER },
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright({ contextOptions: { hasTouch: true } }),
             instances: [{ browser: "chromium" }],
           },
         },

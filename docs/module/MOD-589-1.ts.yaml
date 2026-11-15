@@ -1,0 +1,121 @@
+id: MOD-589-1
+visibility: internal
+title: ライブラリ本体 / map / 点検 / structure.ts
+lead: map の範囲の中身の型と、Mermaid と補足の中身を参照せずに範囲の構造（ブロックの数・図の種類・マーカーの引数）を確認する処理。`dist/index.js`・`dist/map.js` と CLI が使用する。
+data_models:
+  - name: MapRangeSource
+    title: mapの範囲の中身
+    container: src/map/structure.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 範囲のマーカーの引数・mermaid のブロック・補足とその数。行は範囲の開きのマーカーからの行
+    properties:
+      - name: args
+        type: string
+        description: 範囲の開きのマーカーの引数
+      - name: mermaid
+        type: string | undefined
+        description: mermaid のコードブロックの中身（無いときは無い）
+      - name: mermaidCount
+        type: number
+        description: 範囲の中の mermaid のコードブロックの数
+      - name: data
+        type: string | undefined
+        description: 補足の中身（省略できる）
+      - name: dataCount
+        type: number
+        description: 範囲の中の補足の数
+      - name: mermaidLine
+        type: number | undefined
+        description: mermaid のブロックの中身の 1 行目の、範囲の開きのマーカーからの行（省略できる）
+      - name: dataLine
+        type: number | undefined
+        description: 補足の YAML の 1 行目の、範囲の開きのマーカーからの行（省略できる）
+enums:
+  - name: MapKindName
+    title: 描ける図の種類
+    container: src/map/structure.ts
+    usecase: Mermaidと補足で図を描く
+    role: 型
+    summary: map で描ける図の種類
+    values:
+      - value: flowchart
+        title: 構成図
+        description: Mermaid の 1 行目が `flowchart`・`graph`
+      - value: sequenceDiagram
+        title: シーケンス図
+        description: Mermaid の 1 行目が `sequenceDiagram`
+      - value: erDiagram
+        title: ER 図
+        description: Mermaid の 1 行目が `erDiagram`
+      - value: stateDiagram
+        title: 状態遷移図
+        description: Mermaid の 1 行目が `stateDiagram-v2`・`stateDiagram`
+functions:
+  - name: mapKindOf
+    title: 図の種類を決める
+    kind: 関数
+    container: src/map/structure.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    scope: public
+    summary: Mermaid の 1 行目の最初の単語から、描く図の種類を決める
+    args:
+      - name: mermaid
+        type: string
+        required: true
+        description: mermaid のコードブロックの中身
+    returns:
+      type: MapKindName | undefined
+      description: 図の種類。描けない種類のときは無い
+    process: |-
+      1. 先頭の空白を除いた最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram` を返却する
+      2. ほかは無しを返却する
+  - name: collectMapStructure
+    title: 範囲の形を確かめる
+    kind: 関数
+    container: src/map/structure.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    scope: public
+    summary: 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめ、`MapProblem` を返す。Mermaid と補足の中身は読まない（`dist/index.js` に Mermaid と補足の読み取りを入れない）
+    args:
+      - name: range
+        type: MapRangeSource
+        required: true
+        description: 範囲のマーカーの引数・mermaid のブロック・数
+    returns:
+      type: '{ problems: MapProblem[]; kind: MapKindName | undefined; args: ParsedMapArgs }'
+      description: 項目・描く図の種類（描かないときは無い）・`parseMapArgs` の結果
+    process: |-
+      1. mermaid のブロックが 0 か 2 つ以上、補足が 2 つ以上なら `map_invalid` を 1 件返し、`kind` を無しにする
+      2. `mapKindOf` で図の種類を決める。無ければ `map_invalid`（描ける種類の一覧を含む）にし、`kind` を無しにする（図の種類を決める）
+      3. `parseMapArgs` の `problems` を合わせる
+    callees:
+      - '#functions[mapKindOf]'
+      - MOD-472-140#functions[parseMapArgs]
+    unit_tests:
+      - name: test_collect_map_structure
+        case: 正常
+        summary: 形の正しい範囲
+        condition: mermaid のブロック 1 つ（`flowchart LR`）・補足 1 つ・空の引数
+        mock: なし
+        expected: 項目が空で、`kind` が `flowchart`
+      - name: test_collect_map_structure_when_er_and_state
+        case: 正常
+        summary: ER 図と状態遷移図
+        condition: 1 行目が `erDiagram`・`stateDiagram-v2`・`stateDiagram` の範囲
+        mock: なし
+        expected: 項目が空で、`kind` が `erDiagram`・`stateDiagram`・`stateDiagram`
+      - name: test_collect_map_structure_when_two_blocks
+        case: 異常
+        summary: mermaid のブロックが 2 つ
+        condition: '`mermaidCount: 2`'
+        mock: なし
+        expected: '`map_invalid` が 1 件で、`kind` が無い'
+      - name: test_collect_map_structure_when_bad_args
+        case: 異常
+        summary: 読めない引数
+        condition: '引数 `{title: 全体}`'
+        mock: なし
+        expected: '`map_invalid_value` が 1 件で、`kind` が `flowchart`'
