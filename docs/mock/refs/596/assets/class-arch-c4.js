@@ -586,13 +586,13 @@ export const parseC4 = (source) => {
 
 const C4_KINDS = {
   person: { label: "[Person]", icon: "user", shape: "rounded" },
-  person_ext: { label: "[Person]", icon: "user", shape: "rounded", color: "gray" },
+  person_ext: { label: "[External Person]", icon: "user", shape: "rounded", color: "gray" },
   system: { label: "[Software System]", shape: "rect" },
-  system_ext: { label: "[Software System]", shape: "rect", color: "gray" },
+  system_ext: { label: "[External Software System]", shape: "rect", color: "gray" },
   system_db: { label: "[Software System]", icon: "database", shape: "rect" },
-  system_db_ext: { label: "[Software System]", icon: "database", shape: "rect", color: "gray" },
+  system_db_ext: { label: "[External Software System]", icon: "database", shape: "rect", color: "gray" },
   system_queue: { label: "[Software System]", shape: "pill" },
-  system_queue_ext: { label: "[Software System]", shape: "pill", color: "gray" },
+  system_queue_ext: { label: "[External Software System]", shape: "pill", color: "gray" },
 };
 
 /** C4 図の map: 境界を破線のグループ、要素を種類の行と説明を持つノード、関係をラベルと技術を持つ線にする */
