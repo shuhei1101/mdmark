@@ -862,7 +862,7 @@ handle.destroy();
 | 変数 | 明るい配色 | ダークの配色 | 使用する場所 |
 | --- | --- | --- | --- |
 | `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素とまとめた HTML の地 |
-| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行と横スクロールの影を隠す覆い・留める見出し・選んだタブの地、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
+| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行・留める見出し・選んだタブの地、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
 | `--mdmark-color-text` | `#18181b` | `#ededef` | 本文の文字と、コメントの入力欄の「コメントを保存」のボタンの地と線 |
 | `--mdmark-color-heading` | `#18181b` | `#ededef` | 見出しの文字 |
 | `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中のブロックの文字 |
@@ -870,7 +870,7 @@ handle.destroy();
 | `--mdmark-color-border` | `#e4e4e7` | `#26262b` | 枠・罫線・読み込み中のブロックの破線 |
 | `--mdmark-color-border-muted` | `color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg))` | 同じ | 見出し 1・見出し 2 の下の線。テーマの `--mdmark-color-border` と `--mdmark-color-bg` から作るため、テーマごとの値を持たない。`.mdmark` で宣言するため、上書きは `:root` ではなく `.mdmark` に記載する |
 | `--mdmark-color-surface` | `#f4f4f5` | `#1b1b1f` | コード・引用の面 |
-| `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | 表とコードブロックに横の続きがあることを示す影 |
+| `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | コードブロックに横の続きがあることを示す影 |
 | `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 通知ブロックの地 |
 | `--mdmark-color-notice-border` | `#b45309` | `#fbbf24` | 通知ブロックの線・記載の警告の枠の破線 |
 | `--mdmark-color-notice-text` | `#18181b` | `#ededef` | 通知ブロックの文字・記載の警告の文字 |
