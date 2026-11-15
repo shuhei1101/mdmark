@@ -99,9 +99,9 @@ functions:
       - name: test_main_when_guide_index_invalid
         case: 異常
         summary: ガイドの索引が無いページを指すと dist/ とプラグインの生成物を残さずに終わる
-        condition: '`guide/index.yaml` の行が無いページを指す'
-        mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`guide/index.yaml`・`plugin/` の定義を配置し、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を配置する
-        expected: 1 を返却し、`dist/` と `plugin/scripts` が無く、標準エラーに `guide/index.yaml:guides[0].page` が出る
+        condition: '`plugin/guide-index.yaml` の行が無いページを指す'
+        mock: 一時フォルダに `src/`（`src/plugin/` を含む）・`version.ini`・`plugin/guide-index.yaml`・`plugin/` の定義を配置し、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を配置する
+        expected: 1 を返却し、`dist/` と `plugin/scripts` が無く、標準エラーに `plugin/guide-index.yaml:guides[0].page` が出る
       - name: test_main_when_api_missing_in_baseline_browser
         case: 異常
         summary: 対応ブラウザの下限に無い API を確認せずに使用すると dist/ を削除して終わる

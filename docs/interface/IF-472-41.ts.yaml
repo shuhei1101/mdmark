@@ -234,7 +234,7 @@ constraints:
     constraint: '`migrations/`・`schemas/mdmark.steps.schema.json`・`docs/guide/変更履歴.mark.md` は `dist/` に写さず、バージョンのタグのパッケージから `dist/cli.js` がパッケージの直下を基準に読み込む'
     notes: '`package.json` は `files` を持たず、パッケージには `.gitignore` に該当しないファイルが入る。入ることは E2E（バージョンを上げる）で確認する'
   - item: Claude Code プラグインの配布物
-    constraint: '`dist/` を書き込んだ後に、まとめたフック `plugin/scripts/pre-tool-use.js`（Node 24）とまとめた依存の `plugin/THIRD_PARTY_LICENSES.txt` を書き込む。`plugin/.claude-plugin/plugin.json` には `version` を記載せず、Claude Code が commit の短縮 SHA をプラグインのバージョンにする。MCP サーバーとガイドは `plugin/` にまとめない。失敗したときは `dist/` と同じくプラグインの生成物も残さない'
+    constraint: '`dist/` を書き込んだ後に、まとめたフック `plugin/scripts/pre-tool-use.js`（Node 24）とまとめた依存の `plugin/THIRD_PARTY_LICENSES.txt` を書き込む。`plugin/.claude-plugin/plugin.json` には `version` を記載せず、Claude Code が commit の短縮 SHA をプラグインのバージョンにする。MCP サーバーとガイドのページは `plugin/` にまとめない。失敗したときは `dist/` と同じくプラグインの生成物も残さない'
     notes: '`plugin/` の定義（`.mcp.json`・`hooks/hooks.json`・`plugin.json`）は書き換えない'
   - item: 対応ブラウザの下限の確認
     constraint: 配布物を書き込んだ後に、配布ファイルのサイズの検査と並べて実行する。利用側のブラウザが読み込む JS と同じ入口・同じ target で minify せずにまとめた JS を、MDN の browser-compat-data で対応ブラウザの下限のバージョンと照らす。確認の束は一時フォルダに書き込み、`dist/` には配置しない。`if` のブロックの中の使用も数え、同じ API の `typeof` で確認する `if` のブロックの中と、その `typeof` の式の中の参照だけを数えない。ネットワークには接続しない

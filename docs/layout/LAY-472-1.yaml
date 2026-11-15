@@ -437,6 +437,8 @@ entries:
         naming:
           - '{page}.md'
           - '{category}-{page}.md'
+          - '{page}.mark.md'
+          - '{category}-{page}.mark.md'
           - index.yaml
           - README.md
           - files.yml
@@ -652,21 +654,6 @@ entries:
                 naming:
                   - '{timestamp}_{name}.log'
   - type: folder
-    name: guide
-    contents: Claude Code プラグインが案内するガイドの索引の原本
-    content_types:
-      - guide_index
-      - claude_plugin
-    children:
-      - type: file
-        name: index.yaml
-        contents: ガイドの名前・案内する場面・指す `docs/guide/` のページの索引
-      - type: file
-        name: files.yaml
-        contents: '`guide/` のファイルの一覧（project-index の files の行）'
-        content_types:
-          - file_list
-  - type: folder
     name: migrations
     contents: mdmark upgrade が適用する、バージョンごとの移行の手順
     content_types:
@@ -722,6 +709,12 @@ entries:
           - type: file
             name: plugin.json
             contents: 名前・説明・バージョン（バージョンはビルドが書き込む）
+      - type: file
+        name: guide-index.yaml
+        contents: ガイドの名前・案内する場面・指す `docs/guide/` のページの索引（ビルドが検査し、プラグインは参照しない）
+        content_types:
+          - guide_index
+          - claude_plugin
       - type: file
         name: .mcp.json
         contents: MCP の常駐サーバーへのつなぎ方
