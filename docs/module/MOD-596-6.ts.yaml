@@ -1,0 +1,56 @@
+id: MOD-596-6
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / c4-view.ts
+test_files:
+  - tests/unit/src/map/c4-view.browser.test.ts
+functions:
+  - name: attachMapC4
+    title: C4図を付ける
+    kind: 関数
+    container: src/map/c4-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`C4Context` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・選択・案内・強調を付けたうえで、要素の説明・境界の破線の枠と種類・外部の要素の描き分けを追加する'
+    scope: public
+    callees:
+      - MOD-596-3#functions[parseC4Context]
+      - MOD-596-3#functions[c4ToFlowchart]
+      - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-133#functions[spreadMapEnds]
+      - MOD-472-133#functions[renderMapC4Diagram]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`（`data-map-kind="C4Context"`）'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: '`parseMapArgs` の結果'
+    returns:
+      type: MapFlowHandle
+      description: 構成図と同じ操作の口
+    process: |-
+      1. `parseC4Context` と `c4ToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
+      2. `extension.title` に `title` の行、`extension.kinds` に `MAP_C4_KINDS`、`extension.overrides` に `c4ToFlowchart` の上書きを指定する
+      3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類を指定した `renderMapC4Diagram` を指定する
+      4. `extension.collapsedTag` で、閉じた境界に「要素 {数} 件」を返却する
+    unit_tests:
+      - name: test_attach_map_c4
+        case: 正常
+        summary: 要素と境界
+        condition: モックの `C4`・`C4_DATA` の範囲を、引数なしのマーカーで描く
+        mock: なし
+        expected: 図の枠のタイトルが `注文のシステムの全体` で、`support` のノードの種類の行が `[External Person]`、`shop` のタイトルが `通販［Software System］`、`company` のタイトルが `自社［Enterprise］`、`stock` のノードが `store` と同じ段の右にあり、`r1` のラベルが `注文する [HTTPS]`
+      - name: test_attach_map_c4_when_title
+        case: 正常
+        summary: マーカーのタイトルを優先する
+        condition: マーカーの `title` が `全体`
+        mock: なし
+        expected: 図の枠のタイトルが `全体`
+refs:
+  - IF-472-35#constraints[map の C4 図]

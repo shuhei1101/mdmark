@@ -18,6 +18,9 @@ functions:
       - MOD-472-138#functions[parseSequence]
       - MOD-531-1#functions[parseErDiagram]
       - MOD-531-2#functions[parseStateDiagram]
+      - MOD-596-1#functions[parseClassDiagram]
+      - MOD-596-2#functions[parseArchitecture]
+      - MOD-596-3#functions[parseC4Context]
       - MOD-472-139#functions[parseMapData]
       - MOD-472-140#functions[parseMapArgs]
       - MOD-472-137#functions[mapLinkProblems]
@@ -40,9 +43,9 @@ functions:
     process: |-
       1. `collectMapStructure` で範囲の形を確かめ、`kind` が無ければその項目を返して終える
       2. 印の引数の`unknownKeys` は `includeUnknownKeys` が `true` のとき（点検）だけ `map_unknown_key` にする（描くときは警告にしない）
-      3. 種類ごとに `parseFlowchart`・`parseSequence`・`parseErDiagram`・`parseStateDiagram` のどれかと `parseMapData` の項目を合わせる
+      3. 種類ごとに `parseFlowchart`・`parseSequence`・`parseErDiagram`・`parseStateDiagram`・`parseClassDiagram`・`parseArchitecture`・`parseC4Context` のどれかと `parseMapData` の項目を合わせる
       4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする。`notes.{ID}.annotations` が指す注記の ID のうち、文書に定義が無いもの（呼び出し元が指定する、文書の注記の定義の ID の集合に無いもの）を `annotation_undefined` にする。`ends`・`via` を持つノード・グループの ID は `map_invalid_value` にする（`notes` はノード・線・`subgraph` の ID を指せる）
-      5. ER 図は、補足の `notes` のキーのうちテーブル名・`{テーブル}.{列}`・関連の `r{番号}`・分類の ID に無いものと、`groups` の `tables` に無いテーブルと `parent` に無い分類を `map_unknown_ref`、2 つの分類に入るテーブル・テーブル名と同じ分類の ID・`r{番号}` と同じテーブル名を `map_invalid_value` にする。状態遷移図は、`notes` のキーのうち状態の ID・遷移の `t{番号}` に無いものを `map_unknown_ref`、`t{番号}` と同じ状態の ID を `map_invalid_value` にする
+      5. ER 図は、補足の `notes` のキーのうちテーブル名・`{テーブル}.{列}`・関連の `r{番号}`・分類の ID に無いものと、`groups` の `tables` に無いテーブルと `parent` に無い分類を `map_unknown_ref`、2 つの分類に入るテーブル・テーブル名と同じ分類の ID・`r{番号}` と同じテーブル名を `map_invalid_value` にする。状態遷移図は、`notes` のキーのうち状態の ID・遷移の `t{番号}` に無いものを `map_unknown_ref`、`t{番号}` と同じ状態の ID を `map_invalid_value` にする。クラス図は、`notes` のキーのうちクラス名・`{クラス名}.{メンバー名}`・関係の `r{番号}`・`namespace` の ID に無いものを、アーキテクチャ図は service・group・junction の ID・線の `r{番号}` に無いものを、C4 図は要素・境界の別名・関係の `r{番号}` に無いものを `map_unknown_ref` にする
       6. `flowchart` の `links` を `mapLinkProblems` で確かめ、許さないリンク先を `map_invalid_value` にする
       7. ノードのクラスが `config.kinds` に無いものを `map_unknown_class`、`layout` の `line` が `config.lines` に無いものを `map_unknown_line` にする（同じ名前は 1 件）
     unit_tests:
@@ -99,7 +102,7 @@ functions:
         summary: 描けない種類
         condition: '`pie` のブロック'
         mock: なし
-        expected: '`map_invalid` が 1 件で、`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` を含む'
+        expected: '`map_invalid` が 1 件で、`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context` を含む'
       - name: test_collect_map_problems_when_unknown_arg
         case: 異常
         summary: 印の知らないキー
@@ -118,6 +121,12 @@ functions:
         condition: 遷移 1 本と、補足の `notes` の `t2`
         mock: なし
         expected: '`map_unknown_ref` が 1 件で `notes.t2` を含む'
+      - name: test_collect_map_problems_when_class_architecture_c4
+        case: 異常
+        summary: クラス図・アーキテクチャ図・C4 図の補足のずれ
+        condition: クラス図の補足の `notes` の `図面.幽霊`、アーキテクチャ図の `notes` の `r9`、C4 図の `layout` の `ghost`
+        mock: なし
+        expected: '`map_unknown_ref` が 3 件で、`notes.図面.幽霊`・`notes.r9`・`layout.ghost` を含む'
   - name: checkMapConfig
     title: map の設定を点検する
     kind: 関数

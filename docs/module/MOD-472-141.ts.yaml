@@ -54,6 +54,9 @@ data_models:
       - name: aside
         type: number | undefined
         description: ノードの左右それぞれに空ける幅（ER 図の関連の端と多重度の置き場所）。ほかのノードを重ねず、線は通す
+      - name: rankless
+        type: boolean | undefined
+        description: 線の ID に指定すると、段を決める処理でその線を使わない（アーキテクチャ図の上下の辺でつなぐ線・C4 図の `Rel_L`・`Rel_R`）。経路は引く
   - name: MapLayout
     title: 配置の結果
     container: src/map/layout.ts
@@ -163,7 +166,7 @@ functions:
       description: 配置の結果
     process: |-
       1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ（表示する木を作る）
-      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める（グループの中を配置する）
+      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める（グループの中を配置する）
       3. 外側から座標を足して図の座標にし、線の経路を引く（線の経路を引く）
     unit_tests:
       - name: test_layout_map
@@ -202,6 +205,12 @@ functions:
         condition: 'ノード `mount` に `above: 40`'
         mock: なし
         expected: '`mount` の高さは空けないときと同じで、`mount` の上 40px を含めた矩形にほかのノードが重ならない'
+      - name: test_layout_map_when_rankless
+        case: 正常
+        summary: 段を決める処理で使わない線
+        condition: 'ノード `a`・`b` を結ぶ線に `rankless: true`、`b` に `align: a` と `order: 1`'
+        mock: なし
+        expected: '`a` と `b` が同じ段で `b` が `a` の後に並び、線の経路が引かれる'
       - name: test_layout_map_when_justify
         case: 正常
         summary: 寄せる

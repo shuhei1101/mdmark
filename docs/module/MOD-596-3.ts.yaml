@@ -1,0 +1,94 @@
+id: MOD-596-3
+visibility: internal
+title: ライブラリ本体 / map / 読み取り / c4.ts
+test_files:
+  - tests/unit/src/map/c4.test.ts
+data_models:
+  - name: C4Diagram
+    title: C4図の読み取り結果
+    container: src/map/c4.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseC4Context` の戻り値'
+    properties:
+      - name: title
+        type: string | undefined
+        description: '`title` の行'
+      - name: boundaries
+        type: C4Boundary[]
+        description: 境界（`id`・`label`・`kind`・`parent`）。`kind` は `enterprise`・`system`・`boundary`
+      - name: elements
+        type: C4Element[]
+        description: 要素（`id`・`label`・`description`・`kind`・`external`・`parent`）。`kind` は `person`・`system`・`system_db`・`system_queue`
+      - name: relations
+        type: C4Relation[]
+        description: 関係（`id`・`from`・`to`・`label`・`technology`・`both`・`direction`）。`id` は記載順の `r{番号}`（1 から）。`direction` は `Rel_U`・`Rel_D`・`Rel_L`・`Rel_R`（`Rel_Up` などの長い名前を含む）の `up`・`down`・`left`・`right`
+      - name: problems
+        type: MapProblem[]
+        description: 読めない行と閉じの無い境界
+constants:
+  - name: MAP_C4_KINDS
+    title: C4図のノードの種類
+    container: src/map/c4.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: 要素の種類と `_Ext` ごとの `MapKind`（種類の行 `[Person]`・`[Software System]`・`[External Person]`・`[External Software System]`、人は `user`・`SystemDb` は `database` のアイコン、`SystemQueue` は形状 `pill`、`_Ext` は色 `gray`）。キーは `mdmark-c4-{種類}`・`mdmark-c4-{種類}-ext`
+functions:
+  - name: parseC4Context
+    title: C4Contextを読む
+    kind: 関数
+    container: src/map/c4.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`C4Context` の Mermaid を、タイトル・境界・要素・関係と読めない行の項目に読む'
+    scope: public
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のブロックの中身
+    returns:
+      type: C4Diagram
+      description: 読み取り結果
+    process: |-
+      1. 行ごとに、`title {文}`・境界の関数（`Enterprise_Boundary`・`System_Boundary`・`Boundary`）と `{`・要素の関数（`Person`・`System`・`SystemDb`・`SystemQueue` とその `_Ext`）・関係の関数（`Rel`・`BiRel`・`Rel_U`・`Rel_D`・`Rel_L`・`Rel_R` と長い名前）・`}`・`%%`・空の行に分けて読む
+      2. 関数の引数は `"…"` と識別子をカンマで分けて読み、要素は別名・名前・説明、関係は元・先・ラベル・技術の順にする
+         - 読めない行・閉じの無い境界・`C4Container` などの描かない関数は `map_invalid` の項目にする
+    unit_tests:
+      - name: test_parse_c4_context
+        case: 正常
+        summary: モックの C4 図
+        condition: モックの `C4`
+        mock: なし
+        expected: タイトル `注文のシステムの全体`・境界 2（`shop` の親が `company`、`kind` が `system`）・要素 7・関係 6（`r1`〜`r6`）で、`support` が外部の `person`、`events` が `system_queue`、`r1` の技術が `HTTPS`、`r3` の `direction` が `right`、`r4` の `both` が `true`
+      - name: test_parse_c4_context_when_unclosed
+        case: 異常
+        summary: 閉じの無い境界
+        condition: '`System_Boundary(shop, "通販") {` の後に `}` が無い'
+        mock: なし
+        expected: '`map_invalid` が 1 件'
+  - name: c4ToFlowchart
+    title: C4図を構成図の入力にする
+    kind: 関数
+    container: src/map/c4.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 要素をノード、境界をグループ、関係を線にした、上から下の `Flowchart` と、段と並びの上書きを作る
+    scope: public
+    args:
+      - name: diagram
+        type: C4Diagram
+        required: true
+        description: 読み取り結果
+    returns:
+      type: '{ chart: Flowchart; overrides: Record<string, MapOverride> }'
+      description: 線の ID は `r{番号}`、ラベルは「{ラベル} [{技術}]」、`BiRel` は両向きの矢じり。`Rel_U` は先を元にして引き、`Rel_L`・`Rel_R` は `rankless` にして先に `align`（同じ段）と、`Rel_R` なら元より後・`Rel_L` なら前の `order` を指定する。要素の幅は `MAP_C4.width`
+    unit_tests:
+      - name: test_c4_to_flowchart
+        case: 正常
+        summary: 段と並び
+        condition: モックの `C4`
+        mock: なし
+        expected: '`r3` が `rankless` で、`stock` の上書きが `align: store` と `store` より大きい `order`、`r1` のラベルが `注文する [HTTPS]`、`r4` が両向き、境界 `shop` のタイトルが `通販`'
+refs:
+  - IF-472-35#constraints[map の C4 図]

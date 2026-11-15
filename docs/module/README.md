@@ -134,6 +134,12 @@
 | [ライブラリ本体 / map / 読み取り / sequence.ts](./MOD-472-138.ts.yaml) | ライブラリ本体 / map / 読み取り / sequence.ts |
 | [ライブラリ本体 / map / 読み取り / er.ts](./MOD-531-1.ts.yaml) | ライブラリ本体 / map / 読み取り / er.ts |
 | [ライブラリ本体 / map / 読み取り / state-diagram.ts](./MOD-531-2.ts.yaml) | ライブラリ本体 / map / 読み取り / state-diagram.ts |
+| [ライブラリ本体 / map / 読み取り / class-diagram.ts](./MOD-596-1.ts.yaml) | ライブラリ本体 / map / 読み取り / class-diagram.ts |
+| [ライブラリ本体 / map / 読み取り / architecture.ts](./MOD-596-2.ts.yaml) | ライブラリ本体 / map / 読み取り / architecture.ts |
+| [ライブラリ本体 / map / 読み取り / c4.ts](./MOD-596-3.ts.yaml) | ライブラリ本体 / map / 読み取り / c4.ts |
+| [ライブラリ本体 / map / 描画と操作 / class-view.ts](./MOD-596-4.ts.yaml) | ライブラリ本体 / map / 描画と操作 / class-view.ts |
+| [ライブラリ本体 / map / 描画と操作 / architecture-view.ts](./MOD-596-5.ts.yaml) | ライブラリ本体 / map / 描画と操作 / architecture-view.ts |
+| [ライブラリ本体 / map / 描画と操作 / c4-view.ts](./MOD-596-6.ts.yaml) | ライブラリ本体 / map / 描画と操作 / c4-view.ts |
 | [ライブラリ本体 / map / 読み取り / spec.ts](./MOD-472-140.ts.yaml) | ライブラリ本体 / map / 読み取り / spec.ts |
 | [ライブラリ本体 / map / 描画と操作 / state.ts](./MOD-472-129.ts.yaml) | ライブラリ本体 / map / 描画と操作 / state.ts |
 | [ライブラリ本体 / mermaid / mermaid-source.ts](./MOD-472-144.ts.yaml) | ライブラリ本体 / mermaid / mermaid-source.ts |
@@ -345,7 +351,7 @@
 | [ライブラリ本体 / map / 全体](./MOD-472-24.yaml) | map の範囲の Mermaid と補足の読み取り・入れ子の自動配置・点検と、`dist/map.js` に分けた描画と操作。 |
 | [ライブラリ本体 / map / 描画と操作](./MOD-472-25.yaml) | `dist/map.js` の入口と、構成図・シーケンス図を描いて開閉・中へ入る・選択・移動・案内・再生の操作を付け、状態を sessionStorage とクエリ文字列に保つ処理と、部品の HTML。ブラウザでだけ動く（部品の HTML は Node でも動く）。 |
 | [ライブラリ本体 / map / 点検](./MOD-472-26.yaml) | map の範囲の読み取りの項目に、補足が指す ID と設定の `map` の種類・線・アイコンの照合を加え、書き方の警告と点検のずれにする項目を集める。 |
-| [ライブラリ本体 / map / 読み取り](./MOD-472-27.yaml) | map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。 |
+| [ライブラリ本体 / map / 読み取り](./MOD-472-27.yaml) | map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。 |
 | [ライブラリ本体 / map / 配置](./MOD-472-28.yaml) | 構成図を、表示するノードとグループの集合を決めてから入れ子の内側から配置し、線の経路を引く。シーケンス図の表示する行を決める。 |
 | [ライブラリ本体 / mermaid](./MOD-472-29.yaml) | `mount` が描いた mermaid のコードブロックを、mermaid で描いた SVG の図の枠に置き換える処理。描く先の CSS 変数から mermaid のテーマの変数を作り、配色の明暗が変わったら再描画する。ソースの読み取りと図の部品の HTML は DOM を使用せず、読み込みと描画はブラウザでだけ動く。 |
 | [ライブラリ本体 / バージョンを上げる](./MOD-472-30.yaml) | `mdmark upgrade` の処理。バージョンの読み取りと比較、移行の手順の読み取り・検め・適用、コピーと戻し、変更履歴の行の抽き出し、標準入力での質問を持ち、`runUpgrade` がこれらと CLI の点検をつなぐ。 |
