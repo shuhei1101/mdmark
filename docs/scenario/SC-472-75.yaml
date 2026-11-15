@@ -145,3 +145,7 @@ refs:
   - SC-472-65#
   - SC-472-59#
 test_file: tests/e2e/単一ユースケース/被参照を確認する.spec.ts
+tags:
+  - name: topic:被参照
+    main: true
+  - name: topic:索引

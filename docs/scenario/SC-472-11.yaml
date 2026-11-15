@@ -264,3 +264,8 @@ scenarios:
       - 範囲の中の mermaid のブロックは、mermaid の図ではなく map の図として描かれる
       - map の範囲の中にだけ mermaid のブロックを持つ文書では、mermaid の本体への要求が 0 件
     test: test_normal_when_inside_map
+tags:
+  - name: tool:mermaid
+    main: true
+  - name: topic:図
+  - name: action:描画

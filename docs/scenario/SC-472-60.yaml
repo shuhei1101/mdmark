@@ -269,3 +269,8 @@ refs:
   - SC-472-65#
   - SC-472-75#
 test_file: tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts
+tags:
+  - name: topic:用語
+    main: true
+  - name: topic:参照
+  - name: topic:api

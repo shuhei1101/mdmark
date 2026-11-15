@@ -296,3 +296,8 @@ preconditions:
 success_guarantee: 書き出し先に HTML が 1 つ書き込まれ、ブラウザで開くとプレビューと同じ文書が描かれる。
 minimal_guarantee: 書き出せないときは理由を通知に出し、書き込みかけのファイルを残さない。Markdown は書き換えない。
 test_file: tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: tool:vscode

@@ -611,3 +611,9 @@ minimal_guarantee: 点検は設定・索引・文書を書き換えない。設�
 refs:
   - SC-472-70#
 test_file: tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts
+tags:
+  - name: action:点検
+    main: true
+  - name: topic:設定
+  - name: topic:索引
+  - name: topic:cli

@@ -230,3 +230,8 @@ preconditions:
 success_guarantee: マーカーで囲んだコードブロックの HTML が、今の生の HTML と同じサニタイズを経由してその場に描かれる。マーカーの無い `html` のコードブロックはコードのまま出る。
 minimal_guarantee: 埋め込んだ HTML に書き込んだスクリプトとイベントの属性は動かない。マーカーの記載方法を読み込めない範囲には記載の警告を出し、範囲のコードブロックと文書の残りは描く。
 test_file: tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts
+tags:
+  - name: topic:コードブロック
+    main: true
+  - name: tool:html
+  - name: action:描画

@@ -454,3 +454,8 @@ preconditions:
 success_guarantee: 描く先の要素の中に、Markdown を HTML にした本文が出る。文書に記載したスクリプトは実行されない。
 minimal_guarantee: 未知のマーカーや描けない箇所があっても、ほかの本文は描かれる。
 test_file: tests/e2e/単一ユースケース/文書を描く.spec.ts
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:api
+  - name: topic:文書

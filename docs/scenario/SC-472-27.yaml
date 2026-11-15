@@ -529,3 +529,8 @@ frequency: バージョンが上がるたびに 1 回
 refs:
   - SC-472-78#
 test_file: tests/e2e/単一ユースケース/バージョンを上げる.spec.ts
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:cli

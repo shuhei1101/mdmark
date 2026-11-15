@@ -260,3 +260,7 @@ preconditions:
 success_guarantee: マーカーで囲んだ表の行が項目になり、`board.group` の列の値ごとの列に並んだボード表示で描かれる。ビューの上の切り替えで表形式のビューと行き来できる。
 minimal_guarantee: マーカーに読み込めない指定があっても、表は描かれる。表に無い列などの知っているキーの誤った値には範囲の上に記載の警告が出て、知らないキーは警告を出さずにスキップする。
 test_file: tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: action:確認

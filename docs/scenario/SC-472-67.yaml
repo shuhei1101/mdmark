@@ -213,3 +213,8 @@ preconditions:
 success_guarantee: 属性のとおりの幅と配置で画像が描かれ、title がキャプションになる。ギャラリーは指定した列の格子に並ぶ。動画と音声は再生バー付きで描かれ、GIF は止める・再生するボタンを持つ。GitHub では画像とリンクとして読み込める。
 minimal_guarantee: 読み込めない属性は記載の警告で通知し、読み込めた属性だけを適用して描く。
 test_file: tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts
+tags:
+  - name: topic:画像
+    main: true
+  - name: topic:動画
+  - name: topic:音声

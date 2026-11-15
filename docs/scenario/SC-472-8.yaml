@@ -684,3 +684,8 @@ scenarios:
     expected:
       - 2 つの種類とも、項目の選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる
     test: test_normal_when_architecture_c4_selected
+tags:
+  - name: topic:map
+    main: true
+  - name: tool:mermaid
+  - name: topic:図

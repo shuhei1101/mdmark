@@ -340,3 +340,8 @@ scenarios:
       - 2 つの種類とも、中へ入る・戻る・閉じる・まとめた線のツールチップ・全て開く・全て閉じる・状態の保持が、構成図のグループと同じに動く
       - アーキテクチャ図の group を閉じると、group の辺から出る線は閉じたノードの同じ辺から出る
     test: test_normal_when_nested_kinds_toggled
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:グループ
+  - name: action:開閉

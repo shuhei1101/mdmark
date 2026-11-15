@@ -115,3 +115,8 @@ preconditions:
 success_guarantee: プラグインが有効になり、次に開くセッションで SessionStart・PreToolUse・UserPromptSubmit・PreCompact のフック・`global-setup` と `setup` のスキル・MCP サーバー `plugin:mdmark:mdmark` が読み込まれる。プラグインの配置場所にはまとめたフックだけがあり、依存を入れない。
 minimal_guarantee: マーケットプレイスの定義が読み込めないときは、Claude Code が理由を出してプラグインを入れない。手元の他のプラグインの設定は変わらない。常駐サーバーが起動していなくてもプラグインは入り、MCP サーバー `plugin:mdmark:mdmark` だけが接続の失敗になる。
 test_file: tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts
+tags:
+  - name: topic:プラグイン
+    main: true
+  - name: tool:claude-code
+  - name: action:インストール

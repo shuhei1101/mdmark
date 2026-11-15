@@ -493,3 +493,8 @@ preconditions:
 success_guarantee: Markdown の横の列（`mdmark.openPreview` のときは同じ列）にプレビューのパネルが開き、決めたバージョンの mdmark で文書が描かれる。設定に `aliases` があるときは、作ったエイリアスに下線とツールチップが付く。
 minimal_guarantee: 配布物を読み込めないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と設定ファイルは書き換えない。
 test_file: tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode
+  - name: action:表示

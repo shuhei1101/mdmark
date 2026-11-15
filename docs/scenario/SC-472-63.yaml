@@ -228,3 +228,8 @@ minimal_guarantee: 比較元が文字列でも `null` でもないときは、�
 notes:
   取り出し元との関係: '`diffSource` と比較元を両方渡したときは、本文の中の強調に比較元を使用し、取り出し元はリビジョンを選ぶ差分の UI だけに使用する。`diffMode: blocks` と比較元を両方渡したときも、取り出し元からリビジョンを読み込まずに比較元で強調する。'
 test_file: tests/e2e/単一ユースケース/比較元のMarkdownを指定して変更を強調する.spec.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:比較元
+  - name: action:強調

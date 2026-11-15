@@ -257,3 +257,7 @@ scenarios:
       - 消えた後に番号 `1` をタップすると、ツールチップがもう一度出る
       - 開いた番号 `1` をもう一度タップすると、ツールチップが消え、末尾の脚注の一覧が開き、`出典の説明` の項目が画面の中に入り、その項目にフォーカスが移る
     test: test_normal_when_touch
+tags:
+  - name: topic:脚注
+    main: true
+  - name: action:確認

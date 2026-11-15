@@ -78,3 +78,8 @@ preconditions:
 success_guarantee: 記載した内容がプレビューに mdmark で描かれ、エディタの位置とプレビューの位置が合い、書き出した HTML をブラウザで開くとプレビューと同じ文書が描かれて印刷のダイアログが出る。
 minimal_guarantee: 配布物を読み込めないときは、プレビューに描けない理由を出し、Markdown と設定ファイルを書き換えない。
 test_file: tests/e2e/複合ユースケース/VSCodeで記載しながら確認してPDFにする.spec.ts
+tags:
+  - name: tool:vscode
+    main: true
+  - name: topic:プレビュー
+  - name: topic:pdf

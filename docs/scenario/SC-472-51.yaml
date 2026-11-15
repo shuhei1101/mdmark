@@ -94,3 +94,7 @@ preconditions:
 success_guarantee: スライダーの今の値がグラフに該当し、コピーした JSON が画面の値と一致する。
 minimal_guarantee: クリップボードへ書き込めないときは、ボタンのそばに書き込めなかったことを出し、写すはずだった JSON を選んで写せる構造で見せる。
 test_file: tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:操作

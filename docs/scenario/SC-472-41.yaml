@@ -132,3 +132,7 @@ scenarios:
     expected:
       - クラス図とアーキテクチャ図の案内の帯・手順の強調・中へ入る・停止で戻る動きが、構成図の案内と同じになる
     test: test_normal_when_added_kinds_walked
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:案内

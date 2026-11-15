@@ -129,3 +129,8 @@ preconditions:
 success_guarantee: マーカーを付けた図と表に、文書の頭から種類ごとに数えた番号が付き、参照のリンクがその番号と図表への移動を持つ。
 minimal_guarantee: 切れた参照や重なった ID があっても、本文は描かれ、記載の警告が出る。
 test_file: tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts
+tags:
+  - name: topic:図表
+    main: true
+  - name: topic:番号
+  - name: action:参照

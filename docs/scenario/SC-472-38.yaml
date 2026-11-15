@@ -186,3 +186,8 @@ preconditions:
 success_guarantee: wide の範囲が本文の幅を越えて描く先の要素の幅まで広がり、右の目次とまとめた HTML の文書の一覧に重ならない。読者は範囲の上の本文の幅の右端のボタンで、広げた幅と本文の幅を切り替えられる。狭い画面では本文の幅に収まり、収まらない中身は範囲の中で横にスクロールする。
 minimal_guarantee: 閉じのマーカーが無い範囲は、記載の警告を出して本文の幅で描く。
 test_file: tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts
+tags:
+  - name: topic:wide
+    main: true
+  - name: topic:図
+  - name: topic:テーブル

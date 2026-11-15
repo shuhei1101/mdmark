@@ -198,3 +198,8 @@ preconditions:
 success_guarantee: 文書に拡張のマーカーがあるときだけモジュールが 1 回読まれ、マーカーの場所に描かれる。
 minimal_guarantee: モジュールを読み込めない、または引数が Schema に合わないマーカーの場所には枠が出て、引数が JSON のオブジェクトでないマーカーの場所には移行を案内する記載の警告が出て、ほかの本文は描かれる。
 test_file: tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts
+tags:
+  - name: topic:拡張
+    main: true
+  - name: topic:マーカー
+  - name: action:登録

@@ -100,3 +100,8 @@ preconditions:
 success_guarantee: 登録した CSS と名前・説明・タグが端末の設定のフォルダに残り、一覧に出る。
 minimal_guarantee: エラーのときは、テンプレートのフォルダの CSS と索引を書き換えない。
 test_file: tests/e2e/単一ユースケース/CSSのテンプレートを登録する.spec.ts
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: action:登録

@@ -92,3 +92,8 @@ preconditions:
 success_guarantee: VS Code の設定画面が mdmark の拡張機能の項目に絞って開き、そこで変えた設定がリロードせずにプレビューに映る。
 minimal_guarantee: 設定画面を開いてもプレビューは閉じず、本文とスクロールの位置は変わらない。
 test_file: tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

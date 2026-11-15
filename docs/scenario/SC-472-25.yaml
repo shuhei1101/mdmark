@@ -390,3 +390,8 @@ preconditions:
 success_guarantee: 利用側が mdmark の層の外に記載した CSS は、詳細度によらず mdmark の CSS に勝つ。ただし、コードブロックとファイルツリーの折り返しは記法の `wrap` で決まり、利用側の要素名だけの `pre` への汎用の CSS で変わらない。
 minimal_guarantee: 利用側が CSS を書き込まなくても、既定の外観で文書が描かれる。
 test_file: tests/e2e/単一ユースケース/テーマを上書きする.spec.ts
+tags:
+  - name: topic:テーマ
+    main: true
+  - name: topic:css
+  - name: action:上書き

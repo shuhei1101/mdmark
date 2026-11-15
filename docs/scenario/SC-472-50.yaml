@@ -109,3 +109,8 @@ preconditions:
 success_guarantee: タグの GitHub Release に `mdmark-{バージョン}.vsix` が添えられ、同じ .vsix が Marketplace の `ShuheiNishikawa.mdmark-vscode` に公開される。
 minimal_guarantee: タグと `vscode/package.json` のバージョンが合わないときは .vsix を作らず、Release に何も添えず、Marketplace へ公開しない。Marketplace に同じバージョンが公開済みのときは .vsix をアップロードせずにワークフローを失敗させ、公開済みのバージョンを書き換えない。
 test_file: tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts
+tags:
+  - name: topic:配布物
+    main: true
+  - name: tool:vscode
+  - name: action:ビルド

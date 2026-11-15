@@ -560,3 +560,7 @@ preconditions:
 success_guarantee: 文書のマーカーで `true` にした機能はオン、`false` にした機能はオフになり、マーカーに記載しない機能は設定のとおりになる。
 minimal_guarantee: 知らない機能名をマーカーに記載しても、本文は描かれる。
 test_file: tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts
+tags:
+  - name: action:切り替え
+    main: true
+  - name: topic:設定

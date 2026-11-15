@@ -142,3 +142,8 @@ preconditions:
 success_guarantee: 要素の中に、文書のマーカーで描いたものと同じビューが描かれる。返った片付けの関数で、要素の中とイベントが片付く。
 minimal_guarantee: 引数に誤りがあるときは、要素を書き換えずに `TypeError` を投げる。
 test_file: tests/e2e/単一ユースケース/部品をJavaScriptから使用する.spec.ts
+tags:
+  - name: topic:部品
+    main: true
+  - name: topic:api
+  - name: tool:javascript

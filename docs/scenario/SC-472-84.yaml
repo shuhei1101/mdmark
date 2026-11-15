@@ -82,3 +82,8 @@ preconditions:
 success_guarantee: 登録した CSS がテンプレートの一覧に説明とタグつきで出て、別のリポジトリへ配置した CSS を `theme` に記載すると、書き出した HTML にその CSS の規則が適用される。
 minimal_guarantee: 同じ名前のテンプレートを上書きを指定せずに登録しようとしたときは、テンプレートのフォルダの CSS と索引を書き換えない。
 test_file: tests/e2e/複合ユースケース/CSSのテンプレートを別のリポジトリに配置して書き出す.spec.ts
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: topic:書き出し

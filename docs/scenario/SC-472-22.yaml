@@ -96,3 +96,9 @@ preconditions:
 success_guarantee: 常駐サーバーが待ち受けているときは SessionStart のフックが何も出さず、`instructions` から常駐サーバーが動いている unit か tmux のセッションとログの確認方法が分かる。待ち受けていないときは、待ち受けていないことと `global-setup` での起動の仕方が 1 行で伝わる。
 minimal_guarantee: SessionStart のフックはどの場合も終了コード 0 で終わり、セッションの開始を止めない。
 test_file: tests/e2e/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.spec.ts
+tags:
+  - name: topic:サーバー
+    main: true
+  - name: topic:常駐
+  - name: topic:フック
+  - name: tool:claude-code

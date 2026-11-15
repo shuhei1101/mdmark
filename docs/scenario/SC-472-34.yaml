@@ -70,3 +70,8 @@ preconditions:
 success_guarantee: リンク 1 つだけの段落がカードになり、押すとそのリンク先へ移る。文の中のリンクは今のまま。GitHub ではリンクとして読み込める。
 minimal_guarantee: カードにできないリンクは、記載したとおりのリンクで描く。
 test_file: tests/e2e/単一ユースケース/リンクと添付のカードを配置する.spec.ts
+tags:
+  - name: topic:カード
+    main: true
+  - name: topic:リンク
+  - name: topic:添付

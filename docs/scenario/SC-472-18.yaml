@@ -146,3 +146,8 @@ scenarios:
       - '`{"interval": 1}` の図は、1 秒ごとに次のメッセージへ進む'
       - '`{"interval": "abc"}` の図の枠の上に、`interval` の値を読めない旨の書き方の警告があり、既定の 2 秒ごとに次のメッセージへ進む'
     test: test_normal_when_interval
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:シーケンス
+  - name: action:再生

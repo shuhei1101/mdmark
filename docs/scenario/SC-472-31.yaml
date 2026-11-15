@@ -247,3 +247,9 @@ preconditions:
 success_guarantee: リンクの種類ごとに決めた先が開き、相対パスの画像が描かれる。
 minimal_guarantee: ワークスペースの外のファイルはプレビューに読み込まない。
 test_file: tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts
+tags:
+  - name: topic:リンク
+    main: true
+  - name: topic:画像
+  - name: topic:プレビュー
+  - name: tool:vscode

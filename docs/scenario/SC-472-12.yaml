@@ -170,3 +170,7 @@ preconditions:
 success_guarantee: マーカーの場所に、取り込み先の文書の全体か見出しの下の中身が描いた文書の一部として描かれ、コードは指した行の範囲が拡張子の言語のコードブロックで描かれる。
 minimal_guarantee: 取り込み先が無いマーカー・記載できない組み合わせのマーカーと循環するマーカーは、その場所に記載の警告を出し、ほかの本文は描く。
 test_file: tests/e2e/単一ユースケース/ほかの文書を取り込む.spec.ts
+tags:
+  - name: topic:取り込み
+    main: true
+  - name: topic:文書

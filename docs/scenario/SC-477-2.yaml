@@ -101,3 +101,8 @@ preconditions:
 success_guarantee: 文書の `flow`・`sequence` の範囲が全て map の範囲で記載され、点検がずれ 0 件で通り、描いた文書に元の図と同じノード・線・ラベル・参加者・メッセージと説明が map の図で描かれる。
 minimal_guarantee: 移行の手順は、書き換えない範囲（読めない部品の定義）をファイルと行と理由つきで移行の報告に挙げ、その範囲を書き換えない。移行の前の文書と設定は、移行のコピーのフォルダに残る。書き換えていない `flow`・`sequence` の範囲は、描くと書き方の警告になり、文書の残りは描かれる。
 test_file: tests/e2e/複合ユースケース/座標で書いたフロー図とシーケンス図をmapへ移して描く.spec.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:移行
+  - name: topic:図

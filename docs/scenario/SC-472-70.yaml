@@ -246,3 +246,7 @@ minimal_guarantee: Schema に合わない索引でも例外で止まらず、読
 refs:
   - SC-472-57#
 test_file: tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts
+tags:
+  - name: topic:索引
+    main: true
+  - name: action:点検

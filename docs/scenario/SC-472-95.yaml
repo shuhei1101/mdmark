@@ -115,3 +115,9 @@ minimal_guarantee: 点検でずれが見つかったときは、ずれの一覧�
 refs:
   - SC-472-70#
 test_file: tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts
+tags:
+  - name: topic:雛形
+    main: true
+  - name: tool:html
+  - name: action:まとめ
+  - name: action:配布

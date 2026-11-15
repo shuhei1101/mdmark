@@ -125,3 +125,7 @@ preconditions:
 success_guarantee: 区切った 2〜3 の中身が、広い画面では横に等しい幅で並び、狭い画面では記載した順に縦に追加される。
 minimal_guarantee: 列の数が 2〜3 でない範囲と入れ子の範囲は、記載の警告を出して中身を記載した順に描く。
 test_file: tests/e2e/単一ユースケース/本文を横に並べる.spec.ts
+tags:
+  - name: topic:段組み
+    main: true
+  - name: topic:レイアウト

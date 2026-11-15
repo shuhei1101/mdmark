@@ -509,3 +509,7 @@ minimal_guarantee: 索引を指定しないときも、索引の一部が Schema
 refs:
   - SC-472-59#
 test_file: tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts
+tags:
+  - name: topic:用語
+    main: true
+  - name: topic:ツールチップ

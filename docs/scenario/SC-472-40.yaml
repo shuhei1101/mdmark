@@ -419,3 +419,7 @@ preconditions:
 success_guarantee: ツールチップはホバーとフォーカスの両方で出て、Esc で消え、ツールチップの上に乗っても消えない（WCAG 1.4.13）。タッチの端末では、タップで出て、ツールチップと持ち主の外のタップか、同じ持ち主のもう一度のタップで消える。図のツールチップは既定で持ち主の下に出て、下に収まらないときだけ上に出る。設定の `tooltips.diagramPlacement` で上を先にでき、本文の用語のツールチップの位置（`tooltips.placement`）とは別に決まる。
 minimal_guarantee: ツールチップを出せない環境（印刷）でも、ノードと線の要約と図の外の用語集で図を読み込める。
 test_file: tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts
+tags:
+  - name: topic:ツールチップ
+    main: true
+  - name: topic:図

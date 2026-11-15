@@ -301,3 +301,7 @@ preconditions:
 success_guarantee: 部品の定義の場所に、決まりのとおりの図が描かれる。文書に記載したスクリプトは動かない。
 minimal_guarantee: 定義を読み込めない図と、廃止した `flow`・`sequence` の範囲の場所には記載の警告が出て、ほかの本文と図は描かれる。
 test_file: tests/e2e/単一ユースケース/図を描く.spec.ts
+tags:
+  - name: topic:図
+    main: true
+  - name: action:描画

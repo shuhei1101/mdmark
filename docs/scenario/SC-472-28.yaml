@@ -65,3 +65,8 @@ preconditions:
 success_guarantee: ページに CSS が該当し、JavaScript の公開関数がページに記載したタグと同じバージョンを返却する。
 minimal_guarantee: 配布物を読み込めなかったときも、ページの本文はそのまま表示され、読み込めなかったことがブラウザのコンソールに出る。
 test_file: tests/e2e/単一ユースケース/バージョンを固定して配布物を読み込む.spec.ts
+tags:
+  - name: topic:配布物
+    main: true
+  - name: topic:バージョン
+  - name: tool:jsdelivr

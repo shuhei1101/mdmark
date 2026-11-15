@@ -93,3 +93,8 @@ preconditions:
 success_guarantee: 書き出した HTML がブラウザで開き、文書を描き終えた後に印刷のダイアログが出る。
 minimal_guarantee: 書き出せないときはブラウザを開かず、理由を通知に出す。Markdown は書き換えない。
 test_file: tests/e2e/単一ユースケース/PDFに印刷する.spec.ts
+tags:
+  - name: topic:印刷
+    main: true
+  - name: topic:pdf
+  - name: tool:vscode

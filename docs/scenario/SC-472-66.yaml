@@ -104,3 +104,8 @@ preconditions:
 success_guarantee: 押した画像が全画面で拡大され、前後の画像へ送信できて、閉じると押した画像へフォーカスが戻る。
 minimal_guarantee: 拡大を閉じた後の文書は、押す前と同じスクロールの位置にある。
 test_file: tests/e2e/単一ユースケース/画像をライトボックスで拡大する.spec.ts
+tags:
+  - name: topic:ライトボックス
+    main: true
+  - name: topic:画像
+  - name: action:拡大

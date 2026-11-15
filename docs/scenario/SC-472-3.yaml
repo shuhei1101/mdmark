@@ -288,3 +288,9 @@ refs:
   - SC-472-56#
   - SC-472-76#
 test_file: tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts
+tags:
+  - name: tool:mcp
+    main: true
+  - name: action:点検
+  - name: topic:書き出し
+  - name: tool:claude-code

@@ -119,3 +119,9 @@ preconditions:
 success_guarantee: 固有の部品と CSS を読み込んだ場所の文書でだけ、固有の部品が描かれ、固有の CSS が該当する。文書に記載したスクリプトは動かない。
 minimal_guarantee: 固有の部品を読み込んでいない場所の文書では、その部品のマーカーは知らないマーカーとして取り除かれ、ほかの本文は描かれる。
 test_file: tests/e2e/単一ユースケース/固有の部品とCSSを適用する.spec.ts
+tags:
+  - name: topic:固有
+    main: true
+  - name: topic:定義
+  - name: topic:部品
+  - name: topic:css

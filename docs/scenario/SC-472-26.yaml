@@ -187,3 +187,7 @@ minimal_guarantee: テーマを選ばないときと、知らないテーマの�
 test_file: tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts
 refs:
   - SC-472-33#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]
+tags:
+  - name: topic:テーマ
+    main: true
+  - name: action:選択

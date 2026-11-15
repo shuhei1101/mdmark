@@ -295,3 +295,8 @@ preconditions:
 success_guarantee: ボタンを押した後、描いた文書の先頭が画面に出ていて、フォーカスが文書の先頭にある。
 minimal_guarantee: ボタンを出している間も、本文・右側の目次・余白のマーカー・ミニマップ・ライトボックス・図の全画面の操作は変わらない。
 test_file: tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts
+tags:
+  - name: topic:スクロール
+    main: true
+  - name: topic:ボタン
+  - name: topic:先頭

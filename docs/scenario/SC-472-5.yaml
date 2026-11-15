@@ -59,3 +59,8 @@ preconditions:
 success_guarantee: npm がバージョンのタグの中身を取り出して `dependencies` を入れ、開発用の処理（`tools/eslint/` の依存の導入）を実行せずに CLI を起動する。
 minimal_guarantee: 入れる途中で失敗したときは CLI を起動せず、npm が 0 以外の終了コードで終わる。
 test_file: tests/e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts
+tags:
+  - name: topic:cli
+    main: true
+  - name: action:インストール
+  - name: tool:github

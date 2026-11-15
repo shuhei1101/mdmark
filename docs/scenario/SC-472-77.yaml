@@ -302,3 +302,8 @@ preconditions:
 success_guarantee: プレビューに、最後に記載した Markdown の全文が、重ねた設定（拡張機能が `mount` に指定するキーと `theme`・`extensions`・`aliases`）を適用して描かれる。
 minimal_guarantee: 設定ファイルを読み込めないときも文書は描いたままにし、読み込めないことを通知する。
 test_file: tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode
+  - name: action:更新

@@ -579,3 +579,8 @@ success_guarantee: |-
 
   右側の目次は設定の `side-toc.mode` の出し方で出し、今いるセクションの項目だけをハイライトする。
 test_file: tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts
+tags:
+  - name: topic:目次
+    main: true
+  - name: topic:アンカー
+  - name: topic:見出し

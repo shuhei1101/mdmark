@@ -236,3 +236,8 @@ refs:
   - SC-472-65#
   - SC-472-73#
 test_file: tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts
+tags:
+  - name: topic:用語集
+    main: true
+  - name: topic:テーブル
+  - name: topic:用語

@@ -138,3 +138,8 @@ preconditions:
 success_guarantee: 差分ビューの横の列にプレビューのパネルが開き、変更後の文書が mdmark で描かれる。追加・変更したブロックは追加の色とマーカー、削除したブロックは削除の色とマーカーで、変更前の文書での位置に出る。
 minimal_guarantee: 差分を描けないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と差分ビューは変えない。
 test_file: tests/e2e/単一ユースケース/差分ビューの変更をプレビューで確認する.spec.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

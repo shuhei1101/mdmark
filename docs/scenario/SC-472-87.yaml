@@ -144,3 +144,8 @@ scenarios:
       - SC-472-78#scenarios[正常シナリオ]
       - SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]
       - SC-472-8#scenarios[正常シナリオ]
+tags:
+  - name: topic:map
+    main: true
+  - name: tool:mermaid
+  - name: topic:案内

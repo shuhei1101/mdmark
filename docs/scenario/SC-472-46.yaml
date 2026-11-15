@@ -259,3 +259,7 @@ preconditions:
 success_guarantee: 文書が使用する外部ライブラリだけが読み込まれ、マーカーの場所に描かれる。
 minimal_guarantee: 外部ライブラリを読み込めなくても、その場所に通知ブロックが出て、ほかの本文は描かれる。引数が JSON のオブジェクトでないマーカーの場所には、移行を案内する記載の警告が出る。
 test_file: tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts
+tags:
+  - name: topic:ライブラリ
+    main: true
+  - name: action:読み込み

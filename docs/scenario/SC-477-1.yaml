@@ -91,3 +91,8 @@ decisions:
   - D-312
   - D-335
 test_file: tests/e2e/複合ユースケース/今の書き方のマーカーをJSONの記載へ移して書き出す.spec.ts
+tags:
+  - name: topic:マーカー
+    main: true
+  - name: topic:移行
+  - name: tool:json

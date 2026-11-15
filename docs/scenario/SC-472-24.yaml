@@ -101,3 +101,7 @@ preconditions:
 success_guarantee: custom element の場所に、マーカーで描いたときと同じ図の部品が図の枠に載って描かれる。定義の JSON は描いた文書に残らない。
 minimal_guarantee: 定義を読み込めないチャートの場所には記載の警告が出て、HTML の残りと文書の残りは描かれる。
 test_file: tests/e2e/単一ユースケース/チャートを描く.spec.ts
+tags:
+  - name: topic:グラフ
+    main: true
+  - name: action:描画

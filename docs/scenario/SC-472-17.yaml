@@ -861,3 +861,7 @@ minimal_guarantee: |-
 
   色分けのライブラリか言語のモジュールを読み込めないときは、そのコードブロックを色分けせずに記載したとおりに出す。
 test_file: tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts
+tags:
+  - name: topic:コードブロック
+    main: true
+  - name: topic:装飾

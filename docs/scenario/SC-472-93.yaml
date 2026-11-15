@@ -168,3 +168,9 @@ preconditions:
 success_guarantee: 利用側の場所の文書に、共通の図の部品と固有の部品が固有の CSS で描かれ、読者が図を拡大・縮小・移動でき、ツールチップで詳細を読み込める。追加した JavaScript は `tsc --noEmit` を通っている。
 minimal_guarantee: 型の点検で誤りが見つかったときは、誤りのファイルと行を出して終了コードを 0 以外にする。map の補足の点検でずれが見つかったときは、文書と map の範囲の場所を指すずれの一覧を出して終了コードを 0 以外にする。点検は利用側のファイルを書き換えない。
 test_file: tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts
+tags:
+  - name: topic:固有
+    main: true
+  - name: topic:定義
+  - name: topic:図
+  - name: topic:部品

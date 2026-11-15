@@ -65,3 +65,8 @@ preconditions:
 success_guarantee: 型に合う JavaScript は誤り 0 件で通り、合わない JavaScript はファイルと行を出して落ちる。
 minimal_guarantee: 点検は利用側のファイルを書き換えず、JavaScript のファイルも出さない。
 test_file: tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts
+tags:
+  - name: topic:型
+    main: true
+  - name: action:点検
+  - name: tool:typescript

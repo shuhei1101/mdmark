@@ -480,3 +480,7 @@ preconditions:
 success_guarantee: 印刷の出力で、折り畳みの中身・リンクの URL が読み込め、配色は明るい配色になる。
 minimal_guarantee: 印刷を終えた後、画面の折り畳みは印刷の前の開閉に戻る。
 test_file: tests/e2e/単一ユースケース/文書を印刷する.spec.ts
+tags:
+  - name: topic:印刷
+    main: true
+  - name: topic:pdf

@@ -87,3 +87,8 @@ preconditions:
 success_guarantee: 配置先のフォルダに `mdmark.config.yaml`・`theme.css`・索引の雛形・拡張のビルドの雛形があり、配置したファイルの一覧が出る。
 minimal_guarantee: 既にあるファイルは上書きせず、配置しなかったファイルの一覧を出す。
 test_file: tests/e2e/単一ユースケース/雛形を配置する.spec.ts
+tags:
+  - name: topic:雛形
+    main: true
+  - name: action:配置
+  - name: topic:cli

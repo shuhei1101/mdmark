@@ -165,3 +165,9 @@ test_file: tests/e2e/単一ユースケース/ガイドを参照する.spec.ts
 refs:
   - SC-472-36#
   - SC-472-67#
+tags:
+  - name: topic:ガイド
+    main: true
+  - name: action:参照
+  - name: tool:claude-code
+  - name: tool:dev-docs

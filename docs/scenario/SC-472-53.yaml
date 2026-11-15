@@ -106,3 +106,8 @@ preconditions:
 success_guarantee: 文書のフォルダの `mdmark.config.yaml` が、文書の作成者が回答した値を持ち、設定の構造のずれが無い。
 minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、`mdmark.config.yaml` を作らず、書き換えない。
 test_file: tests/e2e/単一ユースケース/文書のフォルダに設定を作る.spec.ts
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:セットアップ
+  - name: tool:claude-code

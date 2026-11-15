@@ -152,3 +152,8 @@ preconditions:
 success_guarantee: 選んだテンプレートの CSS が作業のフォルダの設定ファイルの隣にあり、`theme` に記載する値が返る。
 minimal_guarantee: エラーのときは、作業のフォルダの設定ファイルと CSS、テンプレートのフォルダを書き換えない。
 test_file: tests/e2e/単一ユースケース/CSSのテンプレートを配置する.spec.ts
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: action:配置

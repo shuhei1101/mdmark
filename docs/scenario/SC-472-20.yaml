@@ -592,3 +592,9 @@ minimal_guarantee: 読み込めない記載方法の部品は、記載したと�
 test_file: tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts
 refs:
   - SC-472-36#
+tags:
+  - name: topic:部品
+    main: true
+  - name: topic:ステップ
+  - name: topic:ファイルツリー
+  - name: topic:バッジ

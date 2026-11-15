@@ -212,3 +212,7 @@ preconditions:
 success_guarantee: 注意書きが種類ごとのタイトル・色・アイコンを持つ枠になり、GitHub で読み込んでも同じ種類の注意書きとして読み込める。利用側のページが本文を描き直しても、読者が手で開閉した折りたたみの注意書きは保たれる。
 minimal_guarantee: 知らない種類を記載しても、注意書きは `NOTE` の枠で描かれ、中身は読み込める。
 test_file: tests/e2e/単一ユースケース/注意書きを記載する.spec.ts
+tags:
+  - name: topic:注意書き
+    main: true
+  - name: topic:部品

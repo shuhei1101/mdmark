@@ -204,3 +204,7 @@ scenarios:
       - ツールチップとマーカーの外をタップすると、ツールチップが消える
       - 開いたマーカーをもう一度タップすると、ツールチップが消え、末尾の注記の一覧が開き、`cond` の項目にフォーカスが移る
     test: test_normal_when_touch
+tags:
+  - name: topic:注記
+    main: true
+  - name: action:確認

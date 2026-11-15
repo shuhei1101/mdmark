@@ -111,3 +111,8 @@ preconditions:
 success_guarantee: 端末の設定・上のフォルダの設定・近いフォルダの設定を重ねた設定が、プレビュー・`mdmark export`・`export_html` の全てで同じに有効になり、`theme` の CSS と `extensions` の部品がプレビューにも書き出した HTML にも該当する。
 minimal_guarantee: 重ねる設定ファイルのどれかを読み込めないときは、読み込めないファイルと修正方法を出し、設定ファイルと文書を書き換えない。
 test_file: tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts
+tags:
+  - name: topic:端末
+    main: true
+  - name: topic:設定
+  - name: topic:プレビュー

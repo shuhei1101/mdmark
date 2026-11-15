@@ -242,3 +242,7 @@ test_file: tests/e2e/単一ユースケース/ページの設定を文書で指�
 notes:
   文書の先頭: '最初の見出し・段落・表・リスト・コードブロックより前。空の行と、ほかのマーカー（`<!-- features: {…} -->` など）は前にあってよい'
   記載できるキー: '`scheme`（`light`・`dark`・`auto`。`auto` は設定の明暗だけを解除し、描く先の祖先の class → OS の設定の順で決める。VS Code のプレビューでは `mdmark.preview.theme` → VS Code のテーマの順）・`theme`（`colorTheme` と同じ名前）・`toc.mode`（`hover`・`fixed`）。右側の目次と先頭へ戻るボタンのオン・オフは、同じ文書の先頭の `<!-- features: {"side-toc": false, "back-to-top": false} -->` で記載する'
+tags:
+  - name: topic:ページ
+    main: true
+  - name: topic:設定

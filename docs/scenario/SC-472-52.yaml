@@ -368,3 +368,8 @@ refs:
   - SC-472-78#
   - SC-472-57#
 test_file: tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts
+tags:
+  - name: topic:構文
+    main: true
+  - name: action:点検
+  - name: tool:yaml
