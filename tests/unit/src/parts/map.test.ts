@@ -1,5 +1,11 @@
 import { expect, test } from "vitest";
-import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
+import {
+  findTag,
+  innerHtml,
+  matches,
+  outerHtml,
+  plainText,
+} from "../../helpers/html.ts";
 import { CONFIG, FLOW, SEQUENCE } from "../../helpers/map.ts";
 
 /** map の部品の HTML を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -1017,4 +1023,342 @@ test("test_render_map_flow_when_hints_off", async () => {
   expect(plainText(html)).toContain("map のマーカーの読み取り");
   expect(plainText(html)).toContain("mdmark");
   expect(plainText(html)).toContain("設定と Markdown");
+});
+
+/** クラス図を配置した部品の引数（`hints` だけ変えられる） */
+async function classArgs(hints?: boolean) {
+  const { parseClassDiagram, classToFlowchart, classPartInputs } = await import(
+    "../../../../src/map/class-diagram.ts"
+  );
+  const { layoutMap } = await loadLayout();
+  const { spreadMapEnds } = await loadParts();
+  const { CLASS } = await import("../../helpers/map.ts");
+  const diagram = parseClassDiagram(CLASS);
+  const chart = classToFlowchart(diagram);
+  const { classes, ends, overrides } = classPartInputs(diagram, new Set());
+  const layout = layoutMap(
+    chart,
+    { collapsed: [] },
+    { overrides, nodeFit: "height" },
+  );
+  return {
+    layout: { ...layout, wires: spreadMapEnds(layout) },
+    kinds: {},
+    lines: {},
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+    notes: { "基本図形.描く": "子のクラスで描き方を決める" },
+    hints,
+    classes,
+    ends,
+  };
+}
+
+// クラス図の部品（正常系）
+test("test_render_map_class_diagram", async () => {
+  // 準備
+  const { renderMapClassDiagram } = await loadParts();
+  const args = await classArgs();
+  // 実行
+  const part = renderMapClassDiagram(args);
+  // 検証
+  expect(part.html).toMatch(
+    /data-node="図形"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?«interface»/,
+  );
+  const base = outerHtml(part.html, 'data-node="基本図形"');
+  expect(base).toContain("map-class-toggle");
+  expect(matches(base, /class="map-class-members"/g)).toHaveLength(2);
+  expect(base).toMatch(/描く[\s\S]*?map-class-note/);
+  expect(matches(part.html, /data-end-shape="/g)).toHaveLength(6);
+  expect(matches(part.html, /class="map-class-card"/g)).toHaveLength(2);
+  expect(
+    matches(part.html, /class="map-class-label"[^>]*>描く</g),
+  ).toHaveLength(1);
+  expect(part.html).toMatch(
+    /data-node="note_1"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?ノート/,
+  );
+  expect(part.tips).toContain("子のクラスで描き方を決める");
+});
+
+// ヒントがオフなら、メンバーの説明のボタンとツールチップを作らない（正常系）
+test("test_render_map_class_diagram_when_hints_off", async () => {
+  // 準備
+  const { renderMapClassDiagram } = await loadParts();
+  const args = await classArgs(false);
+  // 実行
+  const part = renderMapClassDiagram(args);
+  // 検証
+  expect(part.html).not.toContain("map-class-note");
+  expect(part.tips).not.toContain("子のクラスで描き方を決める");
+  expect(part.html).toMatch(/class="map-class-member[^"]*"[^>]*>[\s\S]*?描く/);
+});
+
+/** モックの「基本図形」 */
+const BASE_SHAPE = {
+  id: "基本図形",
+  annotation: undefined,
+  members: [
+    {
+      visibility: "#",
+      name: "色",
+      text: "色 string",
+      method: false,
+      isStatic: false,
+      isAbstract: false,
+    },
+    {
+      visibility: "+",
+      name: "描く",
+      text: "描く()",
+      method: true,
+      isStatic: false,
+      isAbstract: true,
+    },
+    {
+      visibility: "+",
+      name: "数",
+      text: "数 int",
+      method: false,
+      isStatic: true,
+      isAbstract: false,
+    },
+  ],
+};
+
+// メンバーの区画（正常系）
+test("test_render_map_class_members", async () => {
+  // 準備
+  const { renderMapClassMembers } = await loadParts();
+  // 実行
+  const part = renderMapClassMembers({
+    node: BASE_SHAPE,
+    notes: {},
+    collapsed: false,
+  });
+  // 検証
+  const lists = part.members.split('role="list"').slice(1);
+  expect(lists).toHaveLength(2);
+  expect(matches(lists[0] ?? "", /role="listitem"/g)).toHaveLength(2);
+  expect(matches(lists[1] ?? "", /role="listitem"/g)).toHaveLength(1);
+  expect(part.members).toMatch(
+    /class="map-class-member[^"]*is-static[^"]*"[^>]*>[\s\S]*?数/,
+  );
+  expect(part.members).toMatch(
+    /class="map-class-member[^"]*is-abstract[^"]*"[^>]*>[\s\S]*?描く/,
+  );
+  const toggle = findTag(part.toggle, "<button");
+  expect(toggle).toContain('aria-expanded="true"');
+  expect(toggle).toContain('aria-label="基本図形のメンバーを閉じる"');
+});
+
+// メンバーを閉じた（正常系）
+test("test_render_map_class_members_when_collapsed", async () => {
+  // 準備
+  const { renderMapClassMembers } = await loadParts();
+  // 実行
+  const part = renderMapClassMembers({
+    node: BASE_SHAPE,
+    notes: {},
+    collapsed: true,
+  });
+  // 検証
+  expect(part.members).not.toContain('role="list"');
+  expect(plainText(part.toggle)).toContain("メンバー 3");
+});
+
+// 同じ点に入る 3 本（正常系）
+test("test_spread_map_ends", async () => {
+  // 準備
+  const { spreadMapEnds } = await loadParts();
+  const node = { id: "親", x: 100, y: 0, w: 120, h: 40 };
+  const wire = (id: string, x: number) => ({
+    id,
+    from: id,
+    to: "親",
+    label: undefined,
+    merged: undefined,
+    points: [
+      [x, 200],
+      [x, 120],
+      [160, 120],
+      [160, 40],
+    ] as Array<[number, number]>,
+  });
+  const layout = {
+    width: 400,
+    height: 300,
+    nodes: [{ ...node, lines: [], faded: false, ancestors: [] }],
+    groups: [],
+    wires: [wire("a", 40), wire("b", 160), wire("c", 280)],
+  };
+  // 実行
+  const wires = spreadMapEnds(layout as never);
+  // 検証
+  const ends = wires.map((item) => item.points.at(-1) as [number, number]);
+  const xs = ends.map((point) => point[0]).sort((p, q) => p - q);
+  expect(xs).toEqual([144, 160, 176]);
+  for (const item of wires) {
+    const [last, before] = [item.points.at(-1), item.points.at(-2)];
+    expect(last?.[0]).toBe(before?.[0]);
+  }
+});
+
+/** アーキテクチャ図を配置して引き直した結果 */
+async function archLayout() {
+  const { parseArchitecture, architectureToFlowchart } = await import(
+    "../../../../src/map/architecture.ts"
+  );
+  const { layoutMap } = await loadLayout();
+  const { rewireMapArchitecture } = await loadParts();
+  const { ARCH } = await import("../../helpers/map.ts");
+  const diagram = parseArchitecture(ARCH);
+  const { chart, overrides } = architectureToFlowchart(diagram);
+  const layout = layoutMap(
+    chart,
+    { collapsed: [] },
+    { overrides, nodeFit: "height" },
+  );
+  const wires = rewireMapArchitecture({
+    layout,
+    edges: diagram.edges,
+    collapsed: [],
+  });
+  return { diagram, layout: { ...layout, wires } };
+}
+
+/** 点が矩形の辺の中ほどにあるか */
+const atSide = (
+  point: [number, number] | undefined,
+  rect: { x: number; y: number; w: number; h: number } | undefined,
+  side: "top" | "right" | "bottom" | "left",
+) => {
+  if (!point || !rect) return false;
+  const expected = {
+    top: [rect.x + rect.w / 2, rect.y],
+    right: [rect.x + rect.w, rect.y + rect.h / 2],
+    bottom: [rect.x + rect.w / 2, rect.y + rect.h],
+    left: [rect.x, rect.y + rect.h / 2],
+  }[side] as [number, number];
+  return (
+    Math.abs(point[0] - expected[0]) < 1 && Math.abs(point[1] - expected[1]) < 1
+  );
+};
+
+// 辺の指定と group の端（正常系）
+test("test_rewire_map_architecture", async () => {
+  // 準備・実行
+  const { layout } = await archLayout();
+  // 検証
+  const node = (id: string) => layout.nodes.find((item) => item.id === id);
+  const wire = (id: string) => layout.wires.find((item) => item.id === id);
+  const r3 = wire("r3")?.points ?? [];
+  expect(atSide(r3[0], node("api"), "bottom")).toBe(true);
+  expect(atSide(r3.at(-1), node("worker"), "top")).toBe(true);
+  for (const item of layout.wires) {
+    for (const [index, point] of item.points.slice(1).entries()) {
+      const previous = item.points[index] as [number, number];
+      expect(point[0] === previous[0] || point[1] === previous[1]).toBe(true);
+    }
+  }
+  const app = layout.groups.find((item) => item.id === "app");
+  expect(atSide(wire("r4")?.points[0], app, "right")).toBe(true);
+});
+
+// アーキテクチャ図の部品（正常系）
+test("test_render_map_architecture", async () => {
+  // 準備
+  const { renderMapArchitecture } = await loadParts();
+  const { diagram, layout } = await archLayout();
+  // 実行
+  const part = renderMapArchitecture({
+    layout,
+    kinds: {},
+    lines: {},
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+    groupIcons: Object.fromEntries(
+      diagram.groups.map((group) => [group.id, group.icon ?? ""]),
+    ),
+    junctions: ["hub"],
+    heads: Object.fromEntries(
+      diagram.edges.map((edge) => [edge.id, edge.head]),
+    ),
+  });
+  // 検証
+  for (const id of ["cloud", "app"]) {
+    // 開閉の山形のほかに、タイトルのアイコンの svg を持つ
+    const head = innerHtml(
+      outerHtml(part.html, `data-group="${id}"`),
+      'class="map-group-head"',
+    );
+    expect(matches(head, /<svg/g).length).toBeGreaterThanOrEqual(2);
+  }
+  const hub = /<div[^>]*data-node="hub"[^>]*>/.exec(part.html)?.[0] ?? "";
+  expect(hub).toContain('data-shape="junction"');
+  expect(hub).toContain('aria-label="分岐点"');
+  expect(hub).not.toContain("tabindex");
+  expect(part.html).not.toMatch(/data-wire="r3"[^>]*marker-end/);
+  expect(part.html).toMatch(
+    /data-wire="r1"[^>]*marker-end|marker-end[^>]*data-wire="r1"/,
+  );
+});
+
+// C4 図の部品（正常系）
+test("test_render_map_c4_diagram", async () => {
+  // 準備
+  const { parseC4Context, c4ToFlowchart } = await import(
+    "../../../../src/map/c4.ts"
+  );
+  const { layoutMap } = await loadLayout();
+  const { renderMapC4Diagram, spreadMapEnds } = await loadParts();
+  const { C4 } = await import("../../helpers/map.ts");
+  const { MAP_C4_KINDS } = await import("../../../../src/map/c4.ts");
+  const diagram = parseC4Context(C4);
+  const { chart, overrides } = c4ToFlowchart(diagram);
+  const layout = layoutMap(
+    chart,
+    { collapsed: [] },
+    { overrides, nodeFit: "height" },
+  );
+  // 実行
+  const part = renderMapC4Diagram({
+    layout: { ...layout, wires: spreadMapEnds(layout) },
+    kinds: MAP_C4_KINDS,
+    lines: {},
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+    descriptions: Object.fromEntries(
+      diagram.elements.map((item) => [item.id, item.description ?? ""]),
+    ),
+    boundaries: Object.fromEntries(
+      diagram.boundaries.map((item) => [item.id, item.kind]),
+    ),
+  });
+  // 検証
+  const store = outerHtml(part.html, 'data-node="store"');
+  expect(store).toMatch(
+    /class="map-c4-description"[^>]*>注文と支払いを受け付ける/,
+  );
+  const pay = outerHtml(part.html, 'data-node="pay"');
+  expect(plainText(pay)).toContain("[External Software System]");
+  for (const [id, title] of [
+    ["company", "自社［Enterprise］"],
+    ["shop", "通販［Software System］"],
+  ]) {
+    const group = outerHtml(part.html, `data-group="${id}"`);
+    expect(group).toMatch(/class="map-group[^"]*map-c4-boundary/);
+    expect(plainText(group)).toContain(title);
+  }
 });

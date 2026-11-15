@@ -207,6 +207,9 @@ test("test_collect_map_problems_when_unsupported_kind", async () => {
   expect(problems[0]?.message).toContain("sequenceDiagram");
   expect(problems[0]?.message).toContain("erDiagram");
   expect(problems[0]?.message).toContain("stateDiagram-v2");
+  expect(problems[0]?.message).toContain("classDiagram");
+  expect(problems[0]?.message).toContain("architecture-beta");
+  expect(problems[0]?.message).toContain("C4Context");
 });
 
 // 知らない印の引数（異常系）
@@ -314,4 +317,66 @@ test("test_collect_map_problems_when_state", async () => {
   expect(problems).toHaveLength(1);
   expect(problems[0]?.kind).toBe("map_unknown_ref");
   expect(problems[0]?.message).toContain("notes.t2");
+});
+
+// クラス図・アーキテクチャ図・C4 図（正常系）
+test("test_collect_map_structure_when_class_architecture_c4", async () => {
+  // 準備
+  const { collectMapStructure } = await loadCheck();
+  const kindOf = (mermaid: string) =>
+    collectMapStructure({ args: "", mermaid, mermaidCount: 1, dataCount: 0 });
+  // 実行
+  const results = [
+    kindOf("classDiagram\n  class A\n"),
+    kindOf("architecture-beta\n  service a(server)[A]\n"),
+    kindOf('C4Context\n  Person(a, "A")\n'),
+  ];
+  const container = kindOf('C4Container\n  Person(a, "A")\n');
+  // 検証
+  expect(results.map((result) => result.problems)).toEqual([[], [], []]);
+  expect(results.map((result) => result.kind)).toEqual([
+    "classDiagram",
+    "architecture",
+    "C4Context",
+  ]);
+  expect(container.problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid",
+  ]);
+  expect(container.kind).toBeUndefined();
+});
+
+// クラス図・アーキテクチャ図・C4 図の補足のずれ（異常系）
+test("test_collect_map_problems_when_class_architecture_c4", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const { CLASS, ARCH, C4 } = await import("../../helpers/map.ts");
+  const data = (value: object) => JSON.stringify({ version: 1, ...value });
+  // 実行
+  const problems = [
+    ...collectMapProblems(
+      range(CLASS, data({ notes: { "図面.幽霊": { text: "a" } } })),
+      CONFIG,
+      true,
+    ),
+    ...collectMapProblems(
+      range(ARCH, data({ notes: { r9: { text: "a" } } })),
+      CONFIG,
+      true,
+    ),
+    ...collectMapProblems(
+      range(C4, data({ layout: { ghost: { color: "blue" } } })),
+      CONFIG,
+      true,
+    ),
+  ];
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_unknown_ref",
+    "map_unknown_ref",
+    "map_unknown_ref",
+  ]);
+  const messages = problems.map((problem) => problem.message).join("\n");
+  expect(messages).toContain("notes.図面.幽霊");
+  expect(messages).toContain("notes.r9");
+  expect(messages).toContain("layout.ghost");
 });

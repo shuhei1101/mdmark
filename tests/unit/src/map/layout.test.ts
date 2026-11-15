@@ -308,3 +308,24 @@ test("test_layout_map_when_above", async () => {
     );
   }
 });
+
+// 段を決める処理で使わない線（正常系）
+test("test_layout_map_when_rankless", async () => {
+  // 準備
+  const source = "flowchart LR\n  a[a]\n  b[b]\n  a --- b\n";
+  // 実行
+  const layout = await laid(
+    {},
+    { "a->b": { rankless: true }, b: { align: "a", order: 1 } },
+    "height",
+    source,
+  );
+  // 検証
+  const a = layout.nodes.find((node) => node.id === "a") as Rect;
+  const b = layout.nodes.find((node) => node.id === "b") as Rect;
+  // 左から右の図の同じ段は、縦に並ぶ（x が同じで、b が a の後）
+  expect(b.x + b.w / 2).toBeCloseTo(a.x + a.w / 2, 0);
+  expect(b.y).toBeGreaterThan(a.y);
+  const wire = layout.wires.find((item) => item.id === "a->b");
+  expect(wire?.points.length ?? 0).toBeGreaterThanOrEqual(2);
+});
