@@ -7,8 +7,8 @@ constants:
   - name: PART_SELECTORS
     title: 開閉を記録する部品のセレクタ
     container: src/interact/part-states.ts
-    summary: '`partKey` の種類ごとに、同じセクションの中の何番目かを数える部品の要素のセレクタ。`details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ。class を加える前付けは当たらない）'
-    value: '`{ "row-detail": "table:has(tr.mdmark-row-detail)", details: "details[class=\"mdmark-collapsible\"]", callout: "details.markdown-alert", er: "figure.mdmark-diagram[data-diagram=\"er\"]", tree: "div.mdmark-tree", code: "pre:has([data-fold-lines])", "table-tree": "div.mdmark-table[data-tree]" }`'
+    summary: '`partKey` の種類ごとに、同じセクションの中の何番目かを数える部品の要素のセレクタ。`details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ）。`frontmatter` は class に `mdmark-frontmatter` を加えたフロントマターの折りたたみで、`details` には当たらない'
+    value: '`{ "row-detail": "table:has(tr.mdmark-row-detail)", details: "details[class=\"mdmark-collapsible\"]", callout: "details.markdown-alert", frontmatter: "details.mdmark-frontmatter", er: "figure.mdmark-diagram[data-diagram=\"er\"]", tree: "div.mdmark-tree", code: "pre:has([data-fold-lines])", "table-tree": "div.mdmark-table[data-tree]" }`'
     status: planned
     introduced:
       pr: 540
@@ -98,11 +98,11 @@ functions:
     introduced:
       pr: 540
   - name: attachDetailsStates
-    title: details の範囲と折りたたみの注意書きの開閉を記録する
+    title: details の範囲・折りたたみの注意書き・フロントマターの開閉を記録する
     container: src/interact/part-states.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `PART_SELECTORS` の `details`・`callout` に当たる `details` ごとに、`partKey`（`inner` 無し）の鍵で `startOpen`（マーカーは `open` 属性の有無を `open`・`closed` にしたもの）の開閉にする。`summary` の `click`（Enter・Space を含む）で押した `details` を控え、その `details` の次の `toggle` で `recordOpen` に書き込む（印刷の前後など、`summary` を押さずに変わった開閉は書き込まない）。マーカーは付けたときの `open` 属性の有無で決め、記録の照合と書き込みに使用する'
+    summary: '`root` の中の `PART_SELECTORS` の `details`・`callout`・`frontmatter` に当たる `details` ごとに、`partKey`（`inner` 無し）の鍵で `startOpen`（マーカーは `open` 属性の有無を `open`・`closed` にしたもの）の開閉にする。`summary` の `click`（Enter・Space を含む）で押した `details` を控え、その `details` の次の `toggle` で `recordOpen` に書き込む（印刷の前後など、`summary` を押さずに変わった開閉は書き込まない）。マーカーは付けたときの `open` 属性の有無で決め、記録の照合と書き込みに使用する'
     args:
       - name: options
         type: '{ root: HTMLElement; states: PartStates }'
@@ -137,10 +137,10 @@ functions:
         expected: '`details` が `open` を持つ'
       - name: test_attach_details_states_when_frontmatter
         case: 正常
-        summary: 前付けの折りたたみは記録しない
-        condition: '`details.mdmark-collapsible.mdmark-frontmatter` に空の `states` で付け、`summary` を押す'
+        summary: フロントマターの折りたたみを別の種類として記録し、details の範囲の順番に数えない
+        condition: '見出しより前に閉じた `details.mdmark-collapsible.mdmark-frontmatter`、その後ろに閉じた `details.mdmark-collapsible` を置いて空の `states` で付け、フロントマターの `summary` を押してから削除し、同じ HTML を描き直した要素に同じ `states` でもう一度付ける'
         mock: なし
-        expected: '`states` が空'
+        expected: '2 回目に付けた後、フロントマターが `open` を持ち、`details.mdmark-collapsible` が `open` を持たない。`states` の鍵が `frontmatter||0` だけ'
     status: planned
     introduced:
       pr: 540
@@ -149,14 +149,14 @@ data_models:
     title: 部品の開閉の記録
     container: src/interact/part-states.ts
     usecase: 利用側のページが文書を描く
-    summary: '読者が開閉した行の詳細・details の範囲・折りたたみの注意書き・ER 図の列・ファイルツリーのフォルダ・コードの折りたたみ・階層の表の行の開閉を、`partKey` の鍵から引く `Map<string, { open: boolean; marker: string }>`。`mount` ごとに 1 つ作り、各部品の操作が読み書きする'
+    summary: '読者が開閉した行の詳細・details の範囲・折りたたみの注意書き・フロントマターの折りたたみ・ER 図の列・ファイルツリーのフォルダ・コードの折りたたみ・階層の表の行の開閉を、`partKey` の鍵から引く `Map<string, { open: boolean; marker: string }>`。`mount` ごとに 1 つ作り、各部品の操作が読み書きする'
     properties:
       - name: open
         type: boolean
         description: 開いているか（ER 図は全ての列を出しているか、コードの折りたたみは畳んでいないか）
       - name: marker
         type: string
-        description: 記録したときのマーカーの値（details・注意書きは `open`・`closed`、ER 図は `folded` の有無、ファイルツリーは `data-open`、コードの折りたたみは `data-folded` の有無。マーカーを持たない部品は空の文字列）
+        description: 記録したときのマーカーの値（details・注意書き・フロントマターは `open`・`closed`、ER 図は `folded` の有無、ファイルツリーは `data-open`、コードの折りたたみは `data-folded` の有無。マーカーを持たない部品は空の文字列）
     status: planned
     introduced:
       pr: 540
