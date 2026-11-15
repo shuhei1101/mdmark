@@ -430,7 +430,8 @@ export const parseArch = (source) => {
       continue;
     }
     const edge = /^(\w+)(\{group\})?:([LRTB])\s*(<?)--(>?)\s*([LRTB]):(\w+)(\{group\})?$/.exec(text);
-    if (edge) edges.push({ from: edge[1], fromSide: SIDES[edge[3]], to: edge[7], toSide: SIDES[edge[6]], tail: edge[4] === "<", head: edge[5] === ">" });
+    if (edge)
+      edges.push({ from: edge[1], fromSide: SIDES[edge[3]], to: edge[7], toSide: SIDES[edge[6]], tail: edge[4] === "<", head: edge[5] === ">", fromGroup: Boolean(edge[2]), toGroup: Boolean(edge[8]) });
   }
   return { groups, items, edges };
 };
@@ -514,21 +515,37 @@ export const createArchMap = (host, { id, title, source, data = {} }, initial = 
           const path = wire?.matches("path") ? wire : wire?.querySelector("path");
           if (!edge || !path || edge.points.length < 2 || !from || !to || from === to) return;
           const ends = data.layout?.[`r${index + 1}`]?.ends;
-          const rect = (nodeId) => {
-            const element = stage?.querySelector(`[data-node="${CSS.escape(visible(nodeId))}"]`);
+          // `{group}` の端は、その service を含む group の枠の辺から引く（group を閉じていれば閉じたノード）
+          const rect = (nodeId, ofGroup) => {
+            const groupId = ofGroup ? chart.items.find((item) => item.id === nodeId)?.parent : undefined;
+            const box = groupId ? stage?.querySelector(`[data-group="${CSS.escape(groupId)}"]`) : null;
+            const element = box ?? stage?.querySelector(`[data-node="${CSS.escape(visible(nodeId))}"]`);
             return element ? { x: element.offsetLeft, y: element.offsetTop, w: element.offsetWidth, h: element.offsetHeight } : undefined;
           };
           const anchor = (box, side) =>
             ({ left: [box.x, box.y + box.h / 2], right: [box.x + box.w, box.y + box.h / 2], top: [box.x + box.w / 2, box.y], bottom: [box.x + box.w / 2, box.y + box.h] })[side];
-          const a = rect(spec.from);
-          const b = rect(spec.to);
+          const a = rect(spec.from, spec.fromGroup);
+          const b = rect(spec.to, spec.toGroup);
           if (!a || !b) return;
           const start = anchor(a, ends?.from?.side ?? spec.fromSide);
           const end = anchor(b, ends?.to?.side ?? spec.toSide);
           const out = (point, side) => [point[0] + (side === "right" ? 16 : side === "left" ? -16 : 0), point[1] + (side === "bottom" ? 16 : side === "top" ? -16 : 0)];
           const s1 = out(start, ends?.from?.side ?? spec.fromSide);
           const e1 = out(end, ends?.to?.side ?? spec.toSide);
-          const points = [start, s1, [s1[0], (s1[1] + e1[1]) / 2], [e1[0], (s1[1] + e1[1]) / 2], e1, end];
+          // 出る辺と入る辺の向き（横・縦）の組で、直角の折れ方を決める
+          const horizontal = (side) => side === "left" || side === "right";
+          const fromH = horizontal(ends?.from?.side ?? spec.fromSide);
+          const toH = horizontal(ends?.to?.side ?? spec.toSide);
+          const mx = (s1[0] + e1[0]) / 2;
+          const my = (s1[1] + e1[1]) / 2;
+          const points =
+            fromH && toH
+              ? [start, s1, [mx, s1[1]], [mx, e1[1]], e1, end]
+              : !fromH && !toH
+                ? [start, s1, [s1[0], my], [e1[0], my], e1, end]
+                : fromH
+                  ? [start, s1, [s1[0], e1[1]], e1, end]
+                  : [start, s1, [e1[0], s1[1]], e1, end];
           replacePath(svg, edge, points);
           // `--` の線は矢じりを持たない
           if (!spec.head && !spec.tail) path.removeAttribute("marker-end");

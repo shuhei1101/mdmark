@@ -45,7 +45,7 @@ export const CLASS_DATA = {
     "基本図形.描く": { text: "子のクラスで描き方を決める" },
     r5: { text: "描画器は図面を 1 つずつ描く" },
   },
-  layout: { 一覧: { color: "green" } },
+  layout: { 一覧: { color: "green" }, 描画器: { pos: { x: 0, y: 0 } } },
 };
 
 export const ARCH = `architecture-beta
@@ -61,7 +61,7 @@ export const ARCH = `architecture-beta
   web:R --> L:cdn
   cdn:R --> L:api
   api:B -- T:worker
-  api:R -- L:hub
+  api{group}:R -- L:hub
   hub:R -- L:db
   hub:B -- T:files
 `;
@@ -71,6 +71,10 @@ export const ARCH_DATA = {
   notes: {
     api: { text: "利用者の要求を受ける" },
     r3: { text: "時間の掛かる処理をジョブへ渡す" },
+  },
+  layout: {
+    web: { pos: { x: 0, y: 120 } },
+    r2: { ends: { to: { side: "top" } } },
   },
 };
 
@@ -100,4 +104,5 @@ export const C4_DATA = {
   notes: {
     store: { text: "注文の受付から通知までを持つ" },
   },
+  layout: { orders: { pos: { x: 0, y: 200 } } },
 };
