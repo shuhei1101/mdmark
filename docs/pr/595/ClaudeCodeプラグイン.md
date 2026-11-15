@@ -33,5 +33,12 @@
 
 ## テスト結果
 
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build-plugin.test.ts) | 全実行 | 変更 | ✅ | 索引のパスを `plugin/guide-index.yaml` に合わせた<br>`テスト結果/20261115205202_ee84d144_単体テスト.log` |
+| [tests/unit/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build.test.ts) | 全実行 | 変更 | ✅ | 索引のパスを `plugin/guide-index.yaml` に合わせた |
+
 ドキュメント修正の工程では、単体・結合テストを実行していない。
 改名したページを参照するテスト（`tests/unit/helpers/diagrams.ts`・`tests/unit/scripts/build-plugin.test.ts`・`tests/unit/scripts/build.test.ts`・`upgrade` の単体と結合のテスト）は、この時点で旧パスを参照して fail する。単体テスト作成・実装・結合テスト作成の工程で新しいパスに合わせ、そこで実行する。
