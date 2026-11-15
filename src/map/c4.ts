@@ -49,8 +49,26 @@ export type C4Diagram = {
   problems: MapProblem[];
 };
 
-/** 要素の幅（px） */
-export const MAP_C4 = { width: 220 } as const;
+/** 要素の寸法（px）。高さは名前の行に説明の行の数を足して見積もる（描いた後に測り直す） */
+export const MAP_C4 = {
+  width: 220,
+  head: 60,
+  descriptionLine: 17,
+  /** 説明の 1 行に入る文字の数の見積もり */
+  descriptionChars: 16,
+  foot: 8,
+} as const;
+
+/** 要素の大きさの見積もり */
+const elementSize = (element: C4Element): { w: number; h: number } => {
+  const lines = Math.ceil(
+    (element.description?.length ?? 0) / MAP_C4.descriptionChars,
+  );
+  return {
+    w: MAP_C4.width,
+    h: MAP_C4.head + lines * MAP_C4.descriptionLine + MAP_C4.foot,
+  };
+};
 
 /** 種類の行 */
 const C4_LABELS = {
@@ -255,7 +273,10 @@ export const c4ToFlowchart = (
     direction: "TB",
   }));
   const overrides: Record<string, MapOverride> = Object.fromEntries(
-    diagram.elements.map((element) => [element.id, { width: MAP_C4.width }]),
+    diagram.elements.map((element) => [
+      element.id,
+      { size: elementSize(element) },
+    ]),
   );
   let order = 0;
   const edges: FlowEdge[] = diagram.relations.map((relation) => {
