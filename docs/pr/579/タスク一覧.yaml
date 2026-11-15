@@ -55,10 +55,9 @@ tasks:
   - process: モジュール構成設計
     status: todo
   - process: ドキュメント修正
-    status: skipped
-    reason: 公開ドキュメント（使い方・リファレンス・はじめに）に表の端の影の記述が無い
+    status: todo
     updated_by: planner
-    updated_at: '2026-11-15T02:27:59.720621+00:00'
+    updated_at: '2026-11-15T02:48:22.274448+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えない

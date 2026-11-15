@@ -11,3 +11,16 @@ scope_out:
   - item: '#16 の画面のモック（docs/mock/pages/document/16・19・27・32 の style.css と docs/mock/files.yml・docs/mock/pages/document/16/index.md の説明）の横スクロールする表の端の影'
     reason: それぞれの PR で合意した時点の文書の画面の案の記録で、今の表の見た目の根拠には使われていない
     plan: none
+docs:
+  - page: docs/guide/API.md
+    new: false
+    change: CSS 変数の表の --mdmark-color-bg-opaque の使用する場所から「横スクロールの影を隠す覆い」を削除し、--mdmark-color-scroll-shadow の使用する場所をコードブロックだけにする
+    status: todo
+  - page: docs/guide/カスタマイズ-テーマを上書きする.md
+    new: false
+    change: --mdmark-color-bg-opaque で塗るものから「表の横スクロールの影を隠す覆い」を削除する
+    status: todo
+  - page: docs/guide/カスタマイズ-印刷する.md
+    new: false
+    change: 横スクロールの行の続きの影をコードブロックだけにする
+    status: todo
