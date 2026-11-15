@@ -1,0 +1,77 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: map の範囲に classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context の Mermaid と補足を記載すると、自動配置した図として描き、補足の説明・layout を当てる。種類ごとの選択と強調を足し、描けない種類の案内の文言を変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: クラス図の namespace とクラスのメンバー、マインドマップの枝、ガントチャートの section、ブロック図・アーキテクチャ図・C4 図の入れ子の枠を、構成図のグループと同じ操作で開閉し、中へ入る
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: 追加した種類でも補足の巡回の手順を前へ・次へで進める。時系列を持つ種類（ガントチャート・タイムライン・Git グラフ・ジャーニー）は記載順に 1 歩ずつ進める再生を持つかを設計で決める
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: シーケンス図の参加者の選択の記述は変わらないが、選択と強調の処理を種類で共通にするため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: map の範囲の外の classDiagram・mindmap・gantt などのコードブロックは、今までどおり mermaid で描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: シーケンス図の再生の操作は変わらないが、再生と巡回の帯を追加した種類と共通にするため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図の種類に依らない流れで記述は変わらないが、map の読み取り・配置・操作を広げるため壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 追加した種類の記載方法と、種類に固有の操作の手順を追加する
+    status: todo
+  - page: docs/guide/記法.md
+    new: false
+    change: map の節の描ける Mermaid の種類に、追加した種類を加える
+    status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 追加した種類ごとの読み取り・配置・固有の機能を、種類に依らない部分との分け方に沿って追記する
+    status: todo
+  - page: docs/guide/用語集.md
+    new: false
+    change: 追加した種類で増える操作の用語を追加する
+    status: todo
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 追加した種類を map で操作つきに描く場合の参照を追加する
+    status: todo
+  - page: docs/er/ER-472-2.yaml
+    new: false
+    change: notes のキーに、追加した種類の項目（クラス・メンバー・枝・タスク・イベント・コミット・ブロック・サービス・要素 等）の ID を追加する
+    status: todo
+  - page: docs/er/ER-477-18.yaml
+    new: false
+    change: 引数 focus の説明に、追加した種類の入れ子の枠も最初に入るグループになることを追加するかを確認する
+    status: todo
+scope_out:
+  - item: pie・xychart-beta・quadrantChart・sankey-beta を map で描く
+    reason: 今の部品 chart と重なる（#531 のスコープ外の判断と Issue の補足のとおり）
+    plan: none
+  - item: 9 種類を種類ごとに子の Issue に分けて、別の作業 PR で作るか
+    reason: 判断が分かれる。今の判断は、#531 で種類に依らない共通の部分ができているため、この PR で 9 種類を作り、作る順番は classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context とする。単一ユースケース設計で種類ごとの固有の機能を決めた後、PR の規模がレビューで追えないと分かった種類を子の Issue に切り出す。単一ユースケース設計のレビューで確定する
+    plan: to_file
+  - item: map を Markdown へ書き出すときの種類ごとの扱い
+    reason: '#313 は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
+    plan: '#313'
