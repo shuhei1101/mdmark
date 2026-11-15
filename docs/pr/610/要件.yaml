@@ -69,20 +69,28 @@ docs:
     status: todo
   - page: schemas/common.schema.yaml
     new: false
-    change: $defs.mermaid の説明を、map のマーカーで囲んだ Mermaid と補足で描く記載方法に合わせる
-    status: todo
+    change: ER 図・目次の Schema が参照するため残し、使う設計書が無くなる $defs.mermaid を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
   - page: schemas/scenario.schema.yaml
     new: false
-    change: flow の説明と見本を map で描く記載方法に合わせる
-    status: todo
+    change: 削除する（シナリオは knowledge の schemas/design/scenario.schema.yaml を design-schemas/v8.4.0 で参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
   - page: schemas/interface.schema.yaml
     new: false
-    change: 図のキーの説明と見本を map で描く記載方法に合わせる
-    status: todo
+    change: 削除する（knowledge の Schema を参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
   - page: schemas/module.schema.yaml
     new: false
-    change: クラス図のキーの説明を map で描く記載方法に合わせる
-    status: todo
+    change: 削除する（knowledge の Schema を参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
   - page: src/files.yaml
     new: false
     change: コードの行に、設計書への related（implements）を張る
@@ -99,6 +107,12 @@ docs:
     new: false
     change: コードの行に、設計書への related（implements）を張る
     status: todo
+  - page: dev-docs.yaml
+    new: false
+    change: ER 図を除く設計書の行の schema を knowledge の design-schemas/v8.4.0 へ切り替え、metadata に description（lead）・tags・main_tags を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:09:03.693643+00:00'
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-15.yaml
@@ -121,3 +135,12 @@ scope_out:
   - item: docs/rules.yaml から古い規約（『markdown マーメイド』『判定フローチャート』）の ID を除く
     reason: 'origin/develop の rules.yaml は rules: [] で、古い規約を指していない'
     plan: none
+  - item: ER 図（docs/er/）を knowledge の Schema へ切り替える
+    reason: knowledge の er.schema.yaml はテーブルごとにデータの設計書（source）を求めるが、mdmark にはデータの設計書が無い。作ると設計の追加になり、表し方の移行の範囲を超える
+    plan: to_file
+  - item: '複合ユースケースの flow の click が持つ id: のリンク先（151 件）を map でリンクにする'
+    reason: 'map は click のリンク先を http・https・mailto と相対パスに限り、id: を受け付けない（ノードはリンクにせずに描く）。knowledge の Schema は click で単一ユースケースへリンクするよう求めるため、直すのは map の側で、今回の変更がマージされなくても成り立つ'
+    plan: '#611'
+  - item: ブラウザの単体テストのファイルを持つモジュール構成 5 件の test_files
+    reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
+    plan: to_file

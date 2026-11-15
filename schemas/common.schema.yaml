@@ -106,12 +106,6 @@ $defs:
       同じ名前の節が多くの設計書に出たら、標準の項目へ格上げする候補になる。
     additionalProperties:
       $ref: "#/$defs/markdown"
-  mermaid:
-    $ref: "#/$defs/markdown"
-    title: 図
-    description: |-
-      手で書く Mermaid の図。```mermaid のコードブロックで書く。
-      図の構文は検証で `mermaid.parse()` に通す。
   glossary:
     type: array
     title: 用語
