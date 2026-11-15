@@ -1,0 +1,28 @@
+# ClaudeCodeプラグイン
+
+## 現状
+
+| 分類 | ページ / ファイル | 概要 | 補足 |
+| --- | --- | --- | --- |
+| ドキュメント | [guide/index.yaml](https://github.com/shuhei1101/mdmark/blob/develop/guide/index.yaml)・[guide/files.yaml](https://github.com/shuhei1101/mdmark/blob/develop/guide/files.yaml) | ガイドの索引の原本と管理用の YAML（直下の `guide/` の中身はこの 2 つだけ） | 移す |
+| ドキュメント | [docs/er/ER-472-4.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/er/ER-472-4.yaml) | ER 図『ガイド』。原本の置き場所と `page` の例 | 更新対象 |
+| ドキュメント | [docs/module/MOD-472-14.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/module/MOD-472-14.ts.yaml)・[docs/module/MOD-472-166.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/module/MOD-472-166.ts.yaml) | プラグインのビルドのモジュール構成（`GUIDE_SOURCE`）とテスト | 更新対象 |
+| ドキュメント | [docs/scenario/SC-472-15.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/scenario/SC-472-15.yaml)・[docs/scenario/SC-472-85.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/scenario/SC-472-85.yaml) | ガイドを参照する・Claude Code でガイドを参照して記載し点検する | 更新対象 |
+| ドキュメント | [docs/dev-command/CMD-472-1.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/dev-command/CMD-472-1.yaml) | ビルドの開発コマンド | 更新対象 |
+| ドキュメント | [docs/layout/LAY-472-1.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/layout/LAY-472-1.yaml) | フォルダ構成の設計書 | 更新対象 |
+| 設定 | [dev-docs.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev-docs.yaml) | 配信元の `id: guide` の行（`paths: [guide/files.yaml]`） | 更新対象 |
+| 実装 | [scripts/build-plugin.ts](https://github.com/shuhei1101/mdmark/blob/develop/scripts/build-plugin.ts) | `GUIDE_SOURCE`（`guide/index.yaml`） | 移し先のパスへ |
+| テスト | [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build-plugin.test.ts)・[tests/unit/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build.test.ts) | 一時フォルダに `guide/index.yaml` を配置する | 移し先のパスへ |
+
+## 変更方針
+
+| 対象 | 方針 | 補足 |
+| --- | --- | --- |
+| ガイドの索引の置き場所 | `guide/index.yaml` と `guide/files.yaml` を `要件.md` の `未確定` で決めた移し先へ移し、直下の `guide/` を削除する | `未確定` |
+| ガイドの索引の `page` | 改名したガイドのページの `page` を `.mark.md` へ合わせる。ビルドの検査（指すページの有無）が通ることを確認する | - |
+| ビルドの読み込み先 | `GUIDE_SOURCE` を移し先のパスにし、テストの一時フォルダの配置とエラーの文のパスを合わせる | - |
+| 配信元の行 | `dev-docs.yaml` の `id: guide` の `paths` を移し先の管理用の YAML にし、`description` が指すガイドのページのパスを合わせる | - |
+
+## テスト結果
+
+なし
