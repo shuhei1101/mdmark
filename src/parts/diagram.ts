@@ -18,7 +18,7 @@ import {
   erRelationRoute,
   erTableHeight,
 } from "../diagram/er.ts";
-import { jumpPaths, ZOOM } from "../diagram/geometry.ts";
+import { jumpPaths, RESIZE, ZOOM } from "../diagram/geometry.ts";
 import { pointSvg, renderChart, SCATTER_POINT_SIZE } from "./chart.ts";
 import { isColorName } from "./colors.ts";
 import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
@@ -900,11 +900,11 @@ function renderTools(frame: DiagramFrame): string {
   return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "縮小", icon: "minus" }, zoom <= fit)}${zoomButton}${tool("in", { label: "拡大", icon: "plus" }, zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
 }
 
-/** 図の枠の高さを変えるつまみ（変えられないかモーダルの中なら空） */
-function resizeHandle(frame: DiagramFrame): string {
-  return frame.resizable !== false && frame.modal !== true
-    ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする">${iconSvg("equal")}</div>`
-    : "";
+/** 図の枠の高さを変えるつまみ（変えられないかモーダルの中なら空）。高さの値は `mount` が測って書き換えるまでの初めの値 */
+function resizeHandle(frame: DiagramFrame, fitHeight: number): string {
+  if (frame.resizable === false || frame.modal === true) return "";
+  const height = Math.round(Math.max(RESIZE.min, fitHeight));
+  return `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="${height}" aria-valuemin="${RESIZE.min}" aria-valuemax="${height}" aria-valuetext="${height}px" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする">${iconSvg("equal")}</div>`;
 }
 
 /** タイトルの横の範囲と更新日（どちらかが無ければ空） */
@@ -933,7 +933,7 @@ export function renderDiagramFrame(
   const stage = `width:${num(body.width)}px;height:${num(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
   const touchActive = frame.touchActive === true ? " data-touch-active" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 
 /** 図の種類 */

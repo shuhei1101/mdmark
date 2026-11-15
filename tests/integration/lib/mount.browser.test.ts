@@ -16780,9 +16780,12 @@ test("test_normal_when_map_state_selected", async () => {
   expect(
     figure().querySelectorAll('.map-packet[data-wire="t4"]').length,
   ).toBeGreaterThan(0);
-  expect(mapNode(figure(), "確認待ち").getAttribute("aria-label")).toBe(
-    "確認待ち（選択中）",
-  );
+  expect(
+    find<HTMLElement>(
+      mapNode(figure(), "確認待ち"),
+      ":scope > .mdmark-diagram-node-hit",
+    ).getAttribute("aria-label"),
+  ).toBe("確認待ち（選択中）");
   // 実行・検証: もう一度押すと選択が解ける。Esc でも解ける
   pressKind(figure(), "確認待ち");
   expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
@@ -16800,7 +16803,10 @@ test("test_normal_when_map_state_selected", async () => {
   expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
   expect(getComputedStyle(name).userSelect).not.toBe("none");
   // 検証: 状態のノードはキーボードで選べる
-  const node = mapNode(figure(), "下書き");
+  const node = find<HTMLElement>(
+    mapNode(figure(), "下書き"),
+    ":scope > .mdmark-diagram-node-hit",
+  );
   expect(node.getAttribute("tabindex")).toBe("0");
   node.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),

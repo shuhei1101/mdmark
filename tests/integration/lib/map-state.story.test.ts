@@ -234,7 +234,9 @@ test("test_state_selected", async () => {
     expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(true);
   await expect(
     page
-      .locator('.mdmark-diagram-node[data-node="確認待ち"]')
+      .locator(
+        '.mdmark-diagram-node[data-node="確認待ち"] > .mdmark-diagram-node-hit',
+      )
       .getAttribute("aria-label"),
   ).resolves.toBe("確認待ち（選択中）");
 });
@@ -289,7 +291,9 @@ test("test_accessibility", async () => {
   // 準備・実行
   const page = await openState("default");
   // 検証
-  const node = page.locator('.mdmark-diagram-node[data-node="確認待ち"]');
+  const node = page.locator(
+    '.mdmark-diagram-node[data-node="確認待ち"] > .mdmark-diagram-node-hit',
+  );
   await expect(node.getAttribute("tabindex")).resolves.toBe("0");
   await expect(node.getAttribute("aria-label")).resolves.toBe("確認待ち");
   const hit = page.locator('[data-loop="t2"] .map-wire-hit');

@@ -1,0 +1,155 @@
+# 単体テスト（Red）: テストコードの末尾の commit d4e2fd8c
+# 今回のテスト 5 件は実装が無いことによる fail。CLI の 3 件（test_run_check・test_prepare_embeds・test_prepare_embeds_when_unreadable）は全件実行の負荷による時間切れで、個別に実行すると pass する（末尾）
+
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-a11y-resize-handle-and-node-info
+
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (22 tests | 1 failed) 3873ms
+   × test_render_diagram_frame_when_resizable 6ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (27 tests | 3 failed) 6512ms
+   × test_render_map_flow_when_keyboard 9ms
+   × test_render_map_flow_when_note_node 23ms
+   × test_render_map_er_diagram_when_node_hit 4ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (37 tests | 1 failed) 33409ms
+   × test_run_check 30007ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (9 tests | 1 failed) 5160ms
+   × test_attach_map_flow_when_node_hit_keys 550ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (26 tests | 2 failed) 47759ms
+   × test_prepare_embeds 30007ms
+   × test_prepare_embeds_when_unreadable 13084ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/check.test.ts:51:1
+     49|
+     50| // ずれの無いフォルダで 0 件（正常系）
+     51| test("test_run_check", async () => {
+       | ^
+     52|   // 準備
+     53|   const { runCheck } = await loadCheck();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_unreadable
+Error: ENOTEMPTY: directory not empty, rmdir '/tmp/mdmark-cli-ghFoRg'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_resizable
+AssertionError: expected '<div class="mdmark-diagram-resize" ro…' to contain 'aria-valuenow="560"'
+
+Expected: "aria-valuenow="560""
+Received: "<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「問い合わせの流れ」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする">"
+
+ ❯ tests/unit/src/parts/diagram.test.ts:628:18
+    626|   expect(handle).toContain('tabindex="0"');
+    627|   expect(handle).toContain('aria-label="「問い合わせの流れ」の表示の高さ"');
+    628|   expect(handle).toContain('aria-valuenow="560"');
+       |                  ^
+    629|   expect(handle).toContain('aria-valuemin="120"');
+    630|   expect(handle).toContain('aria-valuemax="560"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow_when_keyboard
+AssertionError: expected '<div class="mdmark-diagram-node map-k…' not to contain 'tabindex'
+
+Expected: "tabindex"
+Received: "<div class="mdmark-diagram-node map-kinded map-faded" data-kind="map" data-shape="rounded" data-node="mount" tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight" aria-label="mount" style="left:24px;top:74px;width:120px;height:63px">"
+
+ ❯ tests/unit/src/parts/map.test.ts:58:22
+     56|   expect(nodes).toHaveLength(args.layout.nodes.length);
+     57|   for (const node of nodes) {
+     58|     expect(node).not.toContain("tabindex");
+       |                      ^
+     59|     expect(node).not.toContain("role=");
+     60|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow_when_note_node
+AssertionError: expected '<div class="mdmark-diagram-node has-t…' not to contain 'tabindex'
+
+Expected: "tabindex"
+Received: "<div class="mdmark-diagram-node has-tip map-kinded" data-kind="map" data-shape="rounded" data-node="data" tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight" aria-label="補足の検査" style="left:922px;top:271px;width:120px;height:63px">"
+
+ ❯ tests/unit/src/parts/map.test.ts:100:19
+     98|   const node = outerHtml(html, 'data-node="data"');
+     99|   const div = findTag(node, 'data-node="data"');
+    100|   expect(div).not.toContain("tabindex");
+       |                   ^
+    101|   expect(div).not.toContain("role=");
+    102|   expect(node).toMatch(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_er_diagram_when_node_hit
+AssertionError: expected '<div class="mdmark-diagram-node map-k…' not to contain 'tabindex'
+
+Expected: "tabindex"
+Received: "<div class="mdmark-diagram-node map-kinded" data-kind="map" data-shape="rounded" data-node="注文" tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight" aria-label="注文" style="left:424px;top:65px;width:240px;height:286px">"
+
+ ❯ tests/unit/src/parts/map.test.ts:773:19
+    771|   const node = outerHtml(part.html, 'data-node="注文"');
+    772|   const div = findTag(node, 'data-node="注文"');
+    773|   expect(div).not.toContain("tabindex");
+       |                   ^
+    774|   expect(div).not.toContain("role=");
+    775|   const hit = findTag(node, "mdmark-diagram-node-hit");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_node_hit_keys
+TypeError: Cannot read properties of null (reading 'focus')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_node_hit_keys.png
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:295:8
+    293|   const before = left();
+    294|   // 実行: 押せる要素にフォーカスして Enter、続けて Alt + →
+    295|   hit().focus();
+       |        ^
+    296|   hit().dispatchEvent(
+    297|     new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7f06874c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+
+ Test Files  5 failed | 290 passed (295)
+      Tests  8 failed | 2224 passed (2232)
+   Start at  12:32:09
+   Duration  179.34s (worker 70%, tests 18%, import 11%, transform 1%)
+
+
+$ npx vitest run --project 'unit*' tests/unit/src/cli/check.test.ts tests/unit/src/cli/export.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diagram-a11y-resize-handle-and-node-info
+
+
+ Test Files  2 passed (2)
+      Tests  63 passed (63)
+   Start at  12:35:21
+   Duration  19.14s (tests 95%, transform 3%, import 2%)
+

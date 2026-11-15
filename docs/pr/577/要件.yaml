@@ -1,0 +1,16 @@
+docs: []
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: 図の高さを変える区切りが、描いた直後から高さの値を読み上げられるようになる。高さの変え方と読み上げる名前は変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: 構成図・ER 図・状態遷移図のノードの中に押せる要素を入れ子にしない構造に変える。ノードの選択・Alt と矢印キーでの移動・名前の文字の選択と、説明のツールチップ・ER 図の列の開閉は変わらない
+    depends_on: []
+scope_out:
+  - item: map のシーケンス図の参加者の箱の中に、名前の用語（フォーカスできる span.mdmark-term）が入れ子になる箇所
+    reason: 参加者の箱は構成図のノードと別の関数（renderSeqHead）で描き、#558 の対象（説明のマーカー）を持たない。この作業 PR がマージされなくても同じ内容で成り立つため起票した。ER 図・状態遷移図のノードは構成図と同じ markFlowNode を通るため、この作業 PR に含める
+    plan: '#580'

@@ -618,12 +618,21 @@ test("test_render_diagram_frame_when_resizable", async () => {
   const omitted = renderDiagramFrame(base, BODY);
   const off = renderDiagramFrame({ ...base, resizable: false }, BODY);
   const modal = renderDiagramFrame({ ...base, modal: true }, BODY);
+  const low = renderDiagramFrame(base, { ...BODY, height: 80 });
   // 検証
   const handle = findTag(omitted, 'class="mdmark-diagram-resize"');
   expect(handle).toContain('role="separator"');
   expect(handle).toContain('aria-orientation="horizontal"');
   expect(handle).toContain('tabindex="0"');
   expect(handle).toContain('aria-label="「問い合わせの流れ」の表示の高さ"');
+  expect(handle).toContain('aria-valuenow="560"');
+  expect(handle).toContain('aria-valuemin="120"');
+  expect(handle).toContain('aria-valuemax="560"');
+  expect(handle).toContain('aria-valuetext="560px"');
+  const lowHandle = findTag(low, 'class="mdmark-diagram-resize"');
+  expect(lowHandle).toContain('aria-valuenow="120"');
+  expect(lowHandle).toContain('aria-valuemax="120"');
+  expect(lowHandle).toContain('aria-valuetext="120px"');
   expect(outerHtml(omitted, 'class="mdmark-diagram-resize"')).toContain(
     iconSvg("equal"),
   );
