@@ -21,7 +21,7 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-15T11:12:46.288977+00:00'
-  - page: docs/guide/設定.md
+  - page: docs/guide/設定.mark.md
     new: false
     change: features.hints の行と図のツールチップを出す場所の節に map の図の説明を加える
     status: done
@@ -33,13 +33,13 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-15T12:22:32.314896+00:00'
-  - page: docs/guide/記載する-ビューとコメントを使用する.md
+  - page: docs/guide/記載する-ビューとコメントを使用する.mark.md
     new: false
     change: ビューの表の長文の列に並べ替えを既定で付けないことと columns.{列名}.sort を記載する
     status: done
     updated_by: planner
     updated_at: '2026-11-15T12:22:32.314896+00:00'
-  - page: docs/guide/記法.md
+  - page: docs/guide/記法.mark.md
     new: false
     change: ビューのマーカーの引数に columns.{列名}.sort を加える
     status: done
