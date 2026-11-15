@@ -19,31 +19,45 @@ docs:
   - page: docs/guide/files.yml
     new: false
     change: 改名したガイドのページの行の `path` を `.mark.md` へ合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/guide/README.md
     new: false
     change: '`docs/guide/index.yaml` から生成し直し、目次のリンクを改名したページへ合わせる（生成されるページのため拡張子は変えない）'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/guide/変更履歴.md
     new: false
     change: 記法を含むため `.mark.md` へ改名する（`CHANGELOG_FILE` が読み込む先）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/guide/記法.md
     new: false
     change: 記法を含むため `.mark.md` へ改名する。他の記法を含むガイドのページ（`要件.md` の対象の文書の表）も同じく改名し、ガイドのページ間のリンクを合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: guide/index.yaml
     new: false
     change: '`plugin/guide-index.yaml` へ移し、各行の `page` を改名したページへ合わせる（直下の `guide/` を削除する）'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: guide/files.yaml
     new: false
     change: '`index.yaml` の行を `plugin/files.yaml` へ `guide-index.yaml` の行として移し、ファイルを削除する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: dev-docs.yaml
     new: false
     change: '`id: guide` の行を削除し（`id: plugin` の行が `plugin/files.yaml` を配信する）、`description` が指すガイドのページのパスを合わせる'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/er/ER-472-4.yaml
     new: false
     change: ガイドの索引の原本の置き場所と `page` の例を移した後のパスへ合わせる
@@ -53,7 +67,9 @@ docs:
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
     change: ビルドが検査するガイドの索引のパスを移した後のパスへ合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: 直下の `guide/` を削除し、ガイドの索引の移し先と、`docs/guide/` の記法を含む文書の拡張子を記載する
@@ -62,28 +78,46 @@ docs:
     updated_at: '2026-11-15T10:38:19.133158+00:00'
   - page: README.md
     new: false
-    change: 改名したガイドのページへのリンクを合わせる
-    status: todo
+    change: 改名したガイドのページへのリンクを合わせる（指しているのは改名しない『使用方法』『導入-バージョンを上げる』『記載する-文書の記載方法』だけで、修正は無い）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: CLAUDE.md
     new: false
-    change: 改名したガイドのページへのリンクを合わせる
-    status: todo
+    change: 改名したガイドのページへのリンクを合わせる（指しているのは改名しない『使用方法』だけで、修正は無い）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/guide/index.yaml
     new: false
     change: 改名したガイドのページの `items[].page` を `.mark.md` へ合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: plugin/files.yaml
     new: false
     change: '`guide-index.yaml` の行を足す（`guide/files.yaml` の `index.yaml` の行を移す）'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
     new: false
     change: 本文の `guide/index.yaml` を `plugin/guide-index.yaml` へ合わせる（記法を含まないため改名しない）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
   - page: docs/guide/用語集.md
     new: false
     change: 記法を含むため `.mark.md` へ改名し、用語「ガイド」の本文の `guide/index.yaml` を `plugin/guide-index.yaml` へ合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:28.547107+00:00'
+  - page: docs/_theme/_data/nav.project.yml
+    new: false
+    change: AI Monitor の `design_docs publish` で生成し直し、改名したガイドのページの行を `.mark.md` へ合わせる（分類のトップのページ 3 件と `docs/guide/README.md` も同じ生成で合わせる）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T11:07:53.956448+00:00'
 scope_out:
   - item: AI Monitor の設計書の Markdown の生成が出力する `docs/README.md`・設計書のフォルダの `README.md`・`docs/guide/README.md`・`docs/guide/` の分類のトップのページ（`はじめに.md`・`使用方法.md`・`リファレンス.md`）の拡張子の移行
     reason: '生成し直すと `.md` に戻るため（#546 の扱いの判断と #481 と同じ扱い）。分類のトップのページは AI Monitor の `design_docs publish` が `docs/guide/{分類}.md` の名前で書き出す'
