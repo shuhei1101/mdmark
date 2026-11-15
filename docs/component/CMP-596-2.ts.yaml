@@ -36,7 +36,13 @@ args:
     required: false
     default: なし（アイコンを出さない）
     choices: cloud・database・disk・internet・server
-    description: service と group のアイコン。Lucide の cloud・database・hard-drive・globe・server で描く
+    description: service のアイコン。Lucide の cloud・database・hard-drive・globe・server で描く
+  - name: layout.groups[].archIcon
+    type: 列挙
+    required: false
+    default: なし（アイコンを出さない）
+    choices: cloud・database・disk・internet・server
+    description: group のタイトルのアイコン。閉じた group のノードにも出す。描き方は `layout.nodes[].archIcon` と同じ
   - name: layout.nodes[].junction
     type: 真偽値
     required: false
@@ -68,11 +74,21 @@ args:
     required: false
     default: なし（薄くしない）
     description: 案内・線のホバーで強調する service と線。構成図の部品と同じ
+  - name: packets
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: データの印を流す関係（線）。構成図の部品と同じ
   - name: hints
     type: 真偽値
     required: false
     default: 'true'
     description: '`false` のとき、service・group・junction の説明のマーカーを配置せず、線の押せる帯に `aria-describedby` を付けない'
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応。service・group の名前の中の用語を `span.mdmark-term` にする
 events:
   - name: 開閉する・中へ入る
     when: group の山形・タイトルのボタンを押す

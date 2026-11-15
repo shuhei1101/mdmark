@@ -76,6 +76,11 @@ args:
     required: false
     default: なし（薄くしない）
     description: 案内・線のホバーで強調するクラスと関係。構成図の部品と同じ
+  - name: packets
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: データの印を流す関係（線）。構成図の部品と同じ
   - name: hints
     type: 真偽値
     required: false
