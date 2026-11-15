@@ -66,6 +66,15 @@ export const GroupNote: Story = {
   args: { notes: '{"lib": "記法を読み取る部分"}' },
 };
 
+export const HintsOff: Story = {
+  name: "HintsOff",
+  parameters: { server: { id: "map-flow" } },
+  args: {
+    notes: '{"lib": "記法を読み取る部分", "mount": "文書を描く入口"}',
+    hints: "false",
+  },
+};
+
 export const Narrow: Story = {
   name: "Narrow",
   parameters: { server: { id: "map-flow" } },

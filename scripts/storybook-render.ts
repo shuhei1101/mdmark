@@ -1018,6 +1018,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           ...jsonObject<Record<string, string>>(args.notes),
         },
         links: jsonObject<Record<string, string>>(args.links),
+        // 問い合わせの値は文字か真偽値で届く
+        hints: args.hints !== false && args.hints !== "false",
         collapsed,
         entered,
         selected,
@@ -1168,6 +1170,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       selected: jsonList(args.selected),
       focus: jsonObject<{ message: number }>(args.focus),
       id: "story-map-seq",
+      notes: jsonObject<Record<string, string>>(args.notes),
+      hints: args.hints !== false && args.hints !== "false",
     });
     const width = Number(
       /<svg[^>]*\swidth="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
