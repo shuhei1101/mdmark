@@ -1,0 +1,99 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+# 型検査の違反は全て、まだ無い実装（src/map/class-diagram.ts・architecture.ts・c4.ts・*-view.ts と、src/parts/map.ts の追加の関数）を参照することによるもの。Biome の警告 1 件は、この PR が触らない plugin/bin/setup.js の大きさ
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 894 files in 5s. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 52s
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/map/architecture-view.browser.test.ts(7,35): error TS2307: Cannot find module '../../../../src/map/architecture-view.ts' or its corresponding type declarations.
+tests/unit/src/map/architecture.test.ts(5,31): error TS2307: Cannot find module '../../../../src/map/architecture.ts' or its corresponding type declarations.
+tests/unit/src/map/architecture.test.ts(15,31): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/architecture.test.ts(18,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/architecture.test.ts(19,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/architecture.test.ts(20,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/architecture.test.ts(28,52): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/architecture.test.ts(61,28): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/c4-view.browser.test.ts(7,33): error TS2307: Cannot find module '../../../../src/map/c4-view.ts' or its corresponding type declarations.
+tests/unit/src/map/c4.test.ts(5,29): error TS2307: Cannot find module '../../../../src/map/c4.ts' or its corresponding type declarations.
+tests/unit/src/map/c4.test.ts(16,41): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/c4.test.ts(20,28): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/c4.test.ts(26,33): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/c4.test.ts(65,50): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/c4.test.ts(68,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(5,32): error TS2307: Cannot find module '../../../../src/map/class-diagram.ts' or its corresponding type declarations.
+tests/unit/src/map/class-diagram.test.ts(15,33): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(26,45): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(27,26): error TS2339: Property 'annotation' does not exist on type '{}'.
+tests/unit/src/map/class-diagram.test.ts(28,26): error TS2339: Property 'generic' does not exist on type '{}'.
+tests/unit/src/map/class-diagram.test.ts(29,37): error TS2339: Property 'members' does not exist on type '{}'.
+tests/unit/src/map/class-diagram.test.ts(30,24): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(31,24): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(32,25): error TS2339: Property 'namespace' does not exist on type '{}'.
+tests/unit/src/map/class-diagram.test.ts(53,31): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(78,28): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(79,30): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(81,50): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(83,50): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(99,30): error TS7006: Parameter 'end' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(100,30): error TS7006: Parameter 'end' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(101,28): error TS7006: Parameter 'end' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(109,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/class-view.browser.test.ts(7,36): error TS2307: Cannot find module '../../../../src/map/class-view.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1031,5): error TS2307: Cannot find module '../../../../src/map/class-diagram.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1034,11): error TS2339: Property 'spreadMapEnds' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1064,11): error TS2339: Property 'renderMapClassDiagram' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1090,11): error TS2339: Property 'renderMapClassDiagram' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1135,11): error TS2339: Property 'renderMapClassMembers' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1161,11): error TS2339: Property 'renderMapClassMembers' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1176,11): error TS2339: Property 'spreadMapEnds' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1201,27): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1202,24): error TS7006: Parameter 'point' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1202,50): error TS7006: Parameter 'p' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1202,53): error TS7006: Parameter 'q' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1213,5): error TS2307: Cannot find module '../../../../src/map/architecture.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1216,11): error TS2339: Property 'rewireMapArchitecture' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1257,51): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1274,11): error TS2339: Property 'renderMapArchitecture' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1288,27): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1292,26): error TS7006: Parameter 'edge' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1318,5): error TS2307: Cannot find module '../../../../src/map/c4.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1321,11): error TS2339: Property 'renderMapC4Diagram' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1321,31): error TS2339: Property 'spreadMapEnds' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-remaining-mermaid-kinds/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1323,41): error TS2307: Cannot find module '../../../../src/map/c4.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1343,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1346,31): error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+> mdmark-vscode@0.1.3 typecheck
+> tsc --noEmit
+
