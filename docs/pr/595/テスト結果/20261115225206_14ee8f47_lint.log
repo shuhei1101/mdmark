@@ -1,0 +1,87 @@
+# 結合テスト作成の lint。1 回目は upgrade.test.ts の整形の違反（下）、整形した後の 2 回目は exit=0
+
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+tests/integration/lib/upgrade.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    725 725 │       );
+    726 726 │     }
+    727     │ - ··await·setMigrations(pkg,·{·...files,·"docs/guide/変更履歴.mark.md":·CHANGELOG·});
+        727 │ + ··await·setMigrations(pkg,·{
+        728 │ + ····...files,
+        729 │ + ····"docs/guide/変更履歴.mark.md":·CHANGELOG,
+        730 │ + ··});
+    728 731 │     const dir = await createWork();
+    729 732 │     const unreadable = [
+    ······· │ 
+    866 869 │       );
+    867 870 │     }
+    868     │ - ··await·setMigrations(pkg,·{·...files,·"docs/guide/変更履歴.mark.md":·CHANGELOG·});
+        871 │ + ··await·setMigrations(pkg,·{
+        872 │ + ····...files,
+        873 │ + ····"docs/guide/変更履歴.mark.md":·CHANGELOG,
+        874 │ + ··});
+    869 875 │     const dir = await createWork(
+    870 876 │       `${OLD_CONFIG}extensions: [extensions/greet.js]\nlibraries:\n  test-lib: lib/test-lib.js\n`,
+  
+
+Checked 887 files in 8s. No fixes applied.
+Found 1 error.
+Found 1 warning.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.3 typecheck
+> tsc --noEmit
+
+exit=1
+
+## 整形の後
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 887 files in 9s. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.3 typecheck
+> tsc --noEmit
+
+exit=0
