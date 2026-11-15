@@ -496,14 +496,26 @@ export const createArchMap = (host, { id, title, source, data = {} }, initial = 
           if (titleRow && group.icon && !titleRow.querySelector(".mdmark-diagram-icon")) titleRow.insertAdjacentHTML("afterbegin", iconSvg(group.icon));
         }
         // 線の両端を、Mermaid の辺の指定（補足の layout の ends が無いとき）の辺の中ほどへ付け替える
+        // 閉じた group の中のノードは、描いている一番近い外の group（閉じたノード）に読み替える
+        const visible = (nodeId) => {
+          for (let id = nodeId; id; id = chart.items.find((item) => item.id === id)?.parent ?? chart.groups.find((group) => group.id === id)?.parent) {
+            if (stage?.querySelector(`[data-node="${CSS.escape(id)}"]`)) return id;
+          }
+          return undefined;
+        };
         chart.edges.forEach((spec, index) => {
-          const edge = layout.edges.find((item) => item.id === `L${index}`);
-          const wire = svg?.querySelector(`[data-wire="L${index}"]`);
+          const from = visible(spec.from);
+          const to = visible(spec.to);
+          // まとめた線は ID が変わるため、両端で探す
+          const edge =
+            layout.edges.find((item) => item.id === `L${index}`) ??
+            layout.edges.find((item) => [item.from, item.to].sort().join(" ") === [from, to].sort().join(" "));
+          const wire = edge && svg?.querySelector(`[data-wire="${CSS.escape(edge.id)}"]`);
           const path = wire?.matches("path") ? wire : wire?.querySelector("path");
-          if (!edge || !path || edge.points.length < 2) return;
+          if (!edge || !path || edge.points.length < 2 || !from || !to || from === to) return;
           const ends = data.layout?.[`r${index + 1}`]?.ends;
           const rect = (nodeId) => {
-            const element = stage?.querySelector(`[data-node="${CSS.escape(nodeId)}"]`);
+            const element = stage?.querySelector(`[data-node="${CSS.escape(visible(nodeId))}"]`);
             return element ? { x: element.offsetLeft, y: element.offsetTop, w: element.offsetWidth, h: element.offsetHeight } : undefined;
           };
           const anchor = (box, side) =>
