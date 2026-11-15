@@ -46,31 +46,45 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 追加した種類の記載方法と、種類に固有の操作の手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: map の節の描ける Mermaid の種類に、追加した種類を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: 追加した種類ごとの読み取り・配置・固有の機能を、種類に依らない部分との分け方に沿って追記する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: 追加した種類で増える操作の用語を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: 追加した種類を map で操作つきに描く場合の参照を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
   - page: docs/er/ER-472-2.yaml
     new: false
     change: notes のキーに、クラス名・`{クラス名}.{メンバー名}`・service と group の ID・要素と境界の別名・関係と線の記載順の `r{番号}` を追加し、layout の collapsed の対象に namespace・group・境界とクラス名を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
   - page: docs/er/ER-477-18.yaml
     new: false
     change: 引数 focus の説明に、namespace・group・境界も最初に入るグループになることを追加するかを確認する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T19:46:32.605928+00:00'
 scope_out:
   - item: pie・xychart-beta・quadrantChart・sankey-beta を map で描く
     reason: 今の部品 chart と重なる（#531 のスコープ外の判断と Issue の補足のとおり）
