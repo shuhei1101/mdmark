@@ -1,0 +1,38 @@
+$ npx vitest run --project 'unit*' tests/unit/src/interact/part-states.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-diagram-and-frontmatter-open-on-update
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts (9 tests | 1 failed) 178ms
+   × test_attach_details_states_when_frontmatter 146ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_attach_details_states_when_frontmatter
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_attach_details_states_when_frontmatter.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/unit/src/interact/part-states.browser.test.ts:241:29
+    239|   const [frontmatter, collapsible] =
+    240|     root.querySelectorAll<HTMLDetailsElement>("details");
+    241|   expect(frontmatter?.open).toBe(true);
+       |                             ^
+    242|   expect(collapsible?.open).toBe(false);
+    243|   expect([...states.keys()]).toEqual(["frontmatter||0"]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3ab9b384:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed (9)
+   Start at  17:12:10
+   Duration  32.99s (worker 89%, import 11%, tests 1%)
+

@@ -1,0 +1,27 @@
+$ npx biome check dev-docs.yaml docs/README.md docs/dev-command/CMD-472-1.yaml docs/index.yaml docs/layout/LAY-472-1.yaml docs/layout/README.md docs/layout/index.yaml docs/pr/574/README.md docs/pr/574/タスク一覧.yaml docs/pr/574/リポジトリ全体.md docs/pr/574/要件.md docs/pr/574/要件.yaml 
+Checked 0 files in 396ms. No fixes applied.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × No files were processed in the specified paths.
+  
+  i Check your biome.json or biome.jsonc to ensure the paths are not ignored by the configuration.
+  
+  i These paths were provided but ignored:
+  
+  - dev-docs.yaml
+  - docs/README.md
+  - docs/dev-command/CMD-472-1.yaml
+  - docs/index.yaml
+  - docs/layout/LAY-472-1.yaml
+  - docs/layout/README.md
+  - docs/layout/index.yaml
+  - docs/pr/574/README.md
+  - docs/pr/574/タスク一覧.yaml
+  - docs/pr/574/リポジトリ全体.md
+  - docs/pr/574/要件.md
+  - docs/pr/574/要件.yaml
+  
+
+exit=1
+
+# 作業 PR の変更ファイルは YAML と Markdown だけで、Biome の check の対象外（違反なし）。TypeScript を変えていないため、ESLint と tsc の型検査の結果は base と変わらない。

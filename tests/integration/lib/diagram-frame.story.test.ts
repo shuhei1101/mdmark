@@ -34,6 +34,22 @@ function boxShadow(page: Page, selector = ".mdmark-diagram-box") {
     .evaluate((box) => getComputedStyle(box).boxShadow);
 }
 
+/** リサイズハンドル（フォーカスできる separator）が、描いた直後から高さの値（aria-valuenow・aria-valuemin・aria-valuemax）を持つ */
+async function expectResizeValues(page: Page): Promise<void> {
+  const values = await page
+    .locator(".mdmark-diagram-resize")
+    .evaluate((handle) => ({
+      now: Number(handle.getAttribute("aria-valuenow")),
+      min: Number(handle.getAttribute("aria-valuemin")),
+      max: Number(handle.getAttribute("aria-valuemax")),
+      text: handle.getAttribute("aria-valuetext"),
+    }));
+  expect(values.min).toBeGreaterThan(0);
+  expect(values.now).toBeGreaterThanOrEqual(values.min);
+  expect(values.max).toBeGreaterThanOrEqual(values.now);
+  expect(values.text).toBe(`${values.now}px`);
+}
+
 /** スクリーンリーダー向けの名前を持つボタンの状態 */
 function tool(page: Page, name: string) {
   return page.locator(`button[aria-label="${name}"]`);
@@ -83,6 +99,7 @@ test("test_zoomed", async () => {
   await expect(page.locator('[data-group="pan"]').isVisible()).resolves.toBe(
     true,
   );
+  await expectResizeValues(page);
 });
 
 // 上限（定義の大きさの 3 倍）では、拡大を押せない（Max）
@@ -317,4 +334,5 @@ test("test_touch_active", async () => {
   await expect(
     page.locator(".mdmark-diagram-box").getAttribute("data-touch-active"),
   ).resolves.toBe("");
+  await expectResizeValues(page);
 });

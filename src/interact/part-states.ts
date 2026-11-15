@@ -6,6 +6,7 @@ export const PART_SELECTORS = {
   "row-detail": "table:has(tr.mdmark-row-detail)",
   details: 'details[class="mdmark-collapsible"]',
   callout: "details.markdown-alert",
+  frontmatter: "details.mdmark-frontmatter",
   er: 'figure.mdmark-diagram[data-diagram="er"]',
   tree: "div.mdmark-tree",
   code: "pre:has([data-fold-lines])",
@@ -76,7 +77,7 @@ export const recordOpen = (options: {
   states?.set(key, { open, marker });
 };
 
-/** details の範囲と折りたたみの注意書きを記録の開閉で始め、`summary` を押して変えた開閉を記録する。受け取りを取り除く関数を返却する */
+/** details の範囲・折りたたみの注意書き・フロントマターを記録の開閉で始め、`summary` を押して変えた開閉を記録する。受け取りを取り除く関数を返却する */
 export const attachDetailsStates = (options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -85,7 +86,7 @@ export const attachDetailsStates = (options: {
 }): (() => void) => {
   const { root, states } = options;
   const cleanups: Array<() => void> = [];
-  const kinds = ["details", "callout"] as const;
+  const kinds = ["details", "callout", "frontmatter"] as const;
   for (const kind of kinds) {
     for (const details of root.querySelectorAll<HTMLDetailsElement>(
       PART_SELECTORS[kind],

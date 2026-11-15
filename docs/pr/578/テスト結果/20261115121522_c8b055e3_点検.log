@@ -1,0 +1,17 @@
+$ find docs -type f \( -name "*.md" -o -name "*.html" \) | grep -v "^docs/_" | while read f; do n=$(node dist/cli.js check --text - < "$f" | grep -c legacy_mark); [ "$n" -gt 0 ] && echo "$n $f"; done
+# CLI: develop 8659c279 の dist/cli.js（v0.13.0）。対象: c8b055e3 の作業ツリー
+1 docs/README.md
+1 docs/library/README.md
+1 docs/component/README.md
+1 docs/er/README.md
+1 docs/interface/README.md
+1 docs/module/README.md
+1 docs/scenario/README.md
+# 残る 7 件は要件.yaml のスコープ外（AI Monitor の生成する README.md）。対象（docs/mock・docs/pr・docs/design-policy.md）の legacy_mark は 0 件
+
+$ 変更したファイルごとに、変更前と変更後の check --text の legacy_mark 以外の出力を比べる
+== docs/mock/pages/ui-canvas/80/side-by-side/index.html
+3c3
+< syntax_warning: <!-- table: data hide=名前 -->の読み込めない指定を当てずに描いています。 hide=名前: +columns を記載した表でだけ使用できるため、今の実装は適用していません
+---
+> syntax_warning: <!-- table: {"kind": "data", "columns": {"名前": {"hidden": true}}} -->の列 名前 は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの配置場所なので、隠さずに描いています。

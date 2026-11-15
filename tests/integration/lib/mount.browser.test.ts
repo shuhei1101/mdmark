@@ -16022,6 +16022,72 @@ test("test_normal_when_map_sequence_blocks_toggled", async () => {
   ).toBe("false");
 });
 
+/** フロントマターの表示をオンにした文書の後ろに、構成図とシーケンス図の map を並べた Markdown（`paragraph` は図の外の段落の文字） */
+const frontmatterWithMaps = (paragraph: string): string => {
+  const lines = [...FRONTMATTER_MARKDOWN_LINES];
+  lines.splice(4, 0, '<!-- features: {"frontmatter": true} -->');
+  return [...lines, paragraph, "", MAP_BOTH].join("\n");
+};
+
+/** 開閉のボタンの `aria-expanded` */
+const toggleExpandedOf = (root: Element, selector: string): string | null =>
+  find<HTMLButtonElement>(root, selector).getAttribute("aria-expanded");
+
+// 読者が開閉した map の構成図のグループ・シーケンス図のブロックとフロントマターの折りたたみを、update の後も同じ開閉で描き、もう一度 mount するとフロントマターを閉じて描く（正常系（描き直しても図のグループ・ブロックとフロントマターの開閉を保つ））
+test("test_normal_when_diagram_and_frontmatter_kept_on_update", async () => {
+  // 準備
+  const markdown = frontmatterWithMaps("図の外の段落");
+  const { el, figures } = await mountMap(markdown);
+  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+    timeout: MAP_WAIT_MS,
+  });
+  const flow = () => figures()[0] as HTMLElement;
+  const seq = () => figures()[1] as HTMLElement;
+  const frontmatter = () =>
+    find<HTMLDetailsElement>(el, "details.mdmark-frontmatter");
+  expect(frontmatter().open).toBe(false);
+  expect(toggleExpandedOf(flow(), '[data-group-toggle="lib"]')).toBe("true");
+  expect(toggleExpandedOf(seq(), '[data-fragment-toggle="2"]')).toBe("true");
+  // 実行: フロントマター・外のグループ・alt を押す
+  await userEvent.click(find<HTMLElement>(frontmatter(), "summary"));
+  find<HTMLButtonElement>(flow(), '[data-group-toggle="lib"]').click();
+  find<HTMLButtonElement>(seq(), '[data-fragment-toggle="2"]').click();
+  expect(frontmatter().open).toBe(true);
+  // 実行: 描き直す
+  handles[handles.length - 1]?.update(frontmatterWithMaps("書き換えた段落"));
+  await vi.waitFor(
+    () => {
+      expect(el.textContent).toContain("書き換えた段落");
+      expect(figures()).toHaveLength(2);
+      expect(seq().querySelector('[data-fragment-toggle="2"]')).not.toBeNull();
+    },
+    { timeout: MAP_WAIT_MS },
+  );
+  // 検証: 押した開閉のまま描く
+  expect(frontmatter().open).toBe(true);
+  expect(toggleExpandedOf(flow(), '[data-group-toggle="lib"]')).toBe("false");
+  expect(
+    flow().querySelector('.map-closed-group[data-group="lib"]'),
+  ).not.toBeNull();
+  expect(flow().querySelector('[data-node="mount"]')).toBeNull();
+  expect(toggleExpandedOf(seq(), '[data-fragment-toggle="2"]')).toBe("false");
+  expect(
+    find<HTMLElement>(
+      seq(),
+      '.map-seq-fragment-tab[data-fragment="2"]',
+    ).querySelector(".map-seq-fragment-count")?.textContent,
+  ).toBe("メッセージ 4 件");
+  expect(toggleExpandedOf(flow(), '[data-group-toggle="store"]')).toBe("true");
+  for (const fragment of ["0", "1"])
+    expect(
+      toggleExpandedOf(seq(), `[data-fragment-toggle="${fragment}"]`),
+    ).toBe("true");
+  // 実行: 片付けて同じ文書をもう一度描く
+  await remountMap(el, markdown);
+  // 検証: フロントマターはマーカーのとおり閉じて描く
+  expect(frontmatter().open).toBe(false);
+});
+
 // map の状態をクエリ文字列に保たない（正常系）
 test("test_normal_when_map_url_state_disabled", async () => {
   // 準備
@@ -16781,9 +16847,12 @@ test("test_normal_when_map_state_selected", async () => {
   expect(
     figure().querySelectorAll('.map-packet[data-wire="t4"]').length,
   ).toBeGreaterThan(0);
-  expect(mapNode(figure(), "確認待ち").getAttribute("aria-label")).toBe(
-    "確認待ち（選択中）",
-  );
+  expect(
+    find<HTMLElement>(
+      mapNode(figure(), "確認待ち"),
+      ":scope > .mdmark-diagram-node-hit",
+    ).getAttribute("aria-label"),
+  ).toBe("確認待ち（選択中）");
   // 実行・検証: もう一度押すと選択が解ける。Esc でも解ける
   pressKind(figure(), "確認待ち");
   expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
@@ -16801,7 +16870,10 @@ test("test_normal_when_map_state_selected", async () => {
   expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
   expect(getComputedStyle(name).userSelect).not.toBe("none");
   // 検証: 状態のノードはキーボードで選べる
-  const node = mapNode(figure(), "下書き");
+  const node = find<HTMLElement>(
+    mapNode(figure(), "下書き"),
+    ":scope > .mdmark-diagram-node-hit",
+  );
   expect(node.getAttribute("tabindex")).toBe("0");
   node.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),

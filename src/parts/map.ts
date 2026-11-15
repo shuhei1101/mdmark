@@ -622,12 +622,14 @@ const markFlowNode = (
     );
     return selected ? markSelected(linked, value) : linked;
   }
-  return html.replace(
+  // ノードの div はフォーカスを受けず、ノードを覆う押せる要素を先頭に入れて、中身をその兄弟にする
+  const hit = html.replace(
     new RegExp(
-      `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}")`,
+      `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}"[^>]*>)`,
     ),
-    `$1 tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${name}"${selected ? " data-selected" : ""}`,
+    `$1<span class="mdmark-diagram-node-hit" role="button" tabindex="0" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${name}"></span>`,
   );
+  return selected ? markSelected(hit, value) : hit;
 };
 
 /** 薄く残したノードに `map-faded` を付ける */

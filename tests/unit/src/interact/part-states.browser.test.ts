@@ -217,17 +217,28 @@ test("test_attach_details_states_when_marker_changed", async () => {
   expect(firstDetails(root).open).toBe(true);
 });
 
-// 前付けの折りたたみは記録しない（正常系）
+/** 見出しより前の閉じたフロントマターの折りたたみと、その後ろの閉じた details の範囲を並べた HTML */
+const FRONTMATTER_HTML =
+  '<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><p>値</p></details>' +
+  '<details class="mdmark-collapsible"><summary>手順</summary><p>手順の段落</p></details>';
+
+// フロントマターの折りたたみを別の種類として記録し、details の範囲の順番に数えない（正常系）
 test("test_attach_details_states_when_frontmatter", async () => {
   // 準備
   const { attachDetailsStates } = await loadPartStates();
   const states: PartStates = new Map();
-  const root = createRootFromHtml(
-    '<details class="mdmark-collapsible mdmark-frontmatter"><summary>前付け</summary><p>値</p></details>',
-  );
-  detachers.push(attachDetailsStates({ root, states }));
+  const first = createRootFromHtml(FRONTMATTER_HTML);
+  const detachFirst = attachDetailsStates({ root: first, states });
+  await clickSummary(firstDetails(first));
+  detachFirst();
+  first.remove();
+  const root = createRootFromHtml(FRONTMATTER_HTML);
   // 実行
-  await clickSummary(firstDetails(root));
+  detachers.push(attachDetailsStates({ root, states }));
   // 検証
-  expect(states.size).toBe(0);
+  const [frontmatter, collapsible] =
+    root.querySelectorAll<HTMLDetailsElement>("details");
+  expect(frontmatter?.open).toBe(true);
+  expect(collapsible?.open).toBe(false);
+  expect([...states.keys()]).toEqual(["frontmatter||0"]);
 });

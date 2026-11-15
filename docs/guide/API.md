@@ -184,7 +184,7 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null; includes?: Record<string, string> }) => void` | 本文だけを再描画し、記法の操作をもう一度付ける。読者が開閉したセクションは、見出しと開閉のマーカーが変わっていなければその開閉のまま描き、読者が開閉した表の行の詳細・details の範囲・折りたたみの注意書き・ER 図の列・ファイルツリーのフォルダ・コードの折りたたみ・表のキーの階層も開閉のマーカーが変わっていなければその開閉のまま描き、URL の `#ID` のセクションを開き直さない。設定は `mount` に指定したものを使用する。`options.baseMarkdown` を指定すると比較元を差し替え、`null` で比較元を解除する。省くと前の比較元のまま描く。`options.includes` を指定すると取り込む文書の表を差し替え、省くと前の表のまま描く。`destroy` の後は何もしない |
+| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null; includes?: Record<string, string> }) => void` | 本文だけを再描画し、記法の操作をもう一度付ける。読者が開閉したセクションは、見出しと開閉のマーカーが変わっていなければその開閉のまま描き、読者が開閉した表の行の詳細・details の範囲・折りたたみの注意書き・フロントマターの折りたたみ・ER 図の列・ファイルツリーのフォルダ・コードの折りたたみ・表のキーの階層も開閉のマーカーが変わっていなければその開閉のまま描き、読者が開閉した図のグループ・シーケンス図のブロックもその開閉のまま描き、URL の `#ID` のセクションを開き直さない。設定は `mount` に指定したものを使用する。`options.baseMarkdown` を指定すると比較元を差し替え、`null` で比較元を解除する。省くと前の比較元のまま描く。`options.includes` を指定すると取り込む文書の表を差し替え、省くと前の表のまま描く。`destroy` の後は何もしない |
 | `reloadComments` | `() => Promise<void>` | 本文を再描画せずに `opts.commentStore.load` をもう一度呼び、コメントのマーカーと「箇所が見つからないコメント」の一覧をもう一度付けてから解決する。記法の操作の状態（並べ替え・絞り込み・開閉）は変えない。開いている吹き出しは閉じ、記載している入力欄は残す。コメントを付けていないとき（`comments` がオフ・`opts.commentStore` が無い・コメントの部品のモジュールを読み込めない）と `destroy` の後は、`load` を呼ばずに解決する |
 | `focusComment` | `(id: string) => void` | その `id` のコメントのマーカーを、閉じたセクション・行の詳細の中なら開いてから画面に入れ、フォーカスを移して強調する（背景を濃くし、線で囲む）。強調は次の `focusComment` と、マーカーをもう一度付ける（再描画し・再読み込み）まで残す。吹き出しは開かない。マーカーが無い `id` と `destroy` の後は何もしない |
 | `destroy` | `() => void` | `el` の中を空にして class `mdmark` を削除し、記法の操作と、印刷・`hashchange`・`document` の受け取りを解除する。コメントのボタン・入力欄・吹き出しも削除する。2 回目以降は何もしない |
@@ -862,7 +862,7 @@ handle.destroy();
 | 変数 | 明るい配色 | ダークの配色 | 使用する場所 |
 | --- | --- | --- | --- |
 | `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素とまとめた HTML の地 |
-| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行と横スクロールの影を隠す覆い・留める見出し・選んだタブの地、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
+| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行・留める見出し・選んだタブの地、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
 | `--mdmark-color-text` | `#18181b` | `#ededef` | 本文の文字と、コメントの入力欄の「コメントを保存」のボタンの地と線 |
 | `--mdmark-color-heading` | `#18181b` | `#ededef` | 見出しの文字 |
 | `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中のブロックの文字 |
@@ -870,7 +870,7 @@ handle.destroy();
 | `--mdmark-color-border` | `#e4e4e7` | `#26262b` | 枠・罫線・読み込み中のブロックの破線 |
 | `--mdmark-color-border-muted` | `color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg))` | 同じ | 見出し 1・見出し 2 の下の線。テーマの `--mdmark-color-border` と `--mdmark-color-bg` から作るため、テーマごとの値を持たない。`.mdmark` で宣言するため、上書きは `:root` ではなく `.mdmark` に記載する |
 | `--mdmark-color-surface` | `#f4f4f5` | `#1b1b1f` | コード・引用の面 |
-| `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | 表とコードブロックに横の続きがあることを示す影 |
+| `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | コードブロックに横の続きがあることを示す影 |
 | `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 通知ブロックの地 |
 | `--mdmark-color-notice-border` | `#b45309` | `#fbbf24` | 通知ブロックの線・記載の警告の枠の破線 |
 | `--mdmark-color-notice-text` | `#18181b` | `#ededef` | 通知ブロックの文字・記載の警告の文字 |

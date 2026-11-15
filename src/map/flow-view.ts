@@ -257,11 +257,15 @@ const emphasizeNodes = (
   )) {
     const id = element.getAttribute("data-node") ?? "";
     element.classList.toggle("is-selected", selected.has(id));
-    if (element.hasAttribute("aria-roledescription")) {
+    // 選べるノードは、ノードの div に選んだかを付け、名前をノードを覆う押せる要素に付ける
+    const focusable = element.querySelector(
+      ":scope > .mdmark-diagram-node-hit",
+    );
+    if (focusable) {
       element.toggleAttribute("data-selected", selected.has(id));
       const name =
         element.querySelector(".mdmark-diagram-node-name")?.textContent ?? "";
-      element.setAttribute(
+      focusable.setAttribute(
         "aria-label",
         selectableName(name, selected.has(id)),
       );
@@ -299,17 +303,23 @@ type KeyTarget = {
   selector: string;
 };
 
-/** キーで操作するノード。リンク先を持つノードは、ノードの代わりにリンクがフォーカスを受ける */
+/** キーで操作するノード。ノードの代わりに、リンク先を持つノードはリンク、持たないノードはノードを覆う押せる要素がフォーカスを受ける */
 const nodeKeyTarget = (element: Element | undefined): KeyTarget | undefined => {
   const nodeElement = element?.closest(".mdmark-diagram-node[data-node]");
   const node = nodeElement?.getAttribute("data-node");
   if (!node) return undefined;
   const linked = nodeElement?.querySelector(".mdmark-diagram-node-link");
+  const hit = nodeElement?.querySelector(":scope > .mdmark-diagram-node-hit");
   const selector = `[data-node="${CSS.escape(node)}"]`;
+  const focusable = linked
+    ? " .mdmark-diagram-node-link"
+    : hit
+      ? " > .mdmark-diagram-node-hit"
+      : "";
   return {
     node,
     linked: linked !== null && linked !== undefined,
-    selector: linked ? `${selector} .mdmark-diagram-node-link` : selector,
+    selector: `${selector}${focusable}`,
   };
 };
 

@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-diagram-and-frontmatter-open-on-update
+
+
+ Test Files  295 passed (295)
+      Tests  2232 passed (2232)
+   Start at  17:18:18
+   Duration  134.92s (worker 69%, tests 19%, import 10%, transform 1%)
+

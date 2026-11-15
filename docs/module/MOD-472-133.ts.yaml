@@ -116,7 +116,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。`notes` に説明を持つグループ（閉じたグループのノードを含む）は、タイトルの右にノードと同じマーカー（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`。タイトルのボタンの外）とツールチップの中身を配置する。ノードと線を押す場所はフォーカスできるボタンにし、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
+    summary: 部品設計『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。`notes` に説明を持つグループ（閉じたグループのノードを含む）は、タイトルの右にノードと同じマーカー（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`。タイトルのボタンの外）とツールチップの中身を配置する。ノードと線を押す場所はフォーカスできるボタンにし（リンク先を持たず形状が開始・終了・分岐でないノードは、ノードの `div` に `tabindex`・`role` を付けず、ノードの `div` の先頭にノードの全体を覆う `span.mdmark-diagram-node-hit` を入れて `role="button"`・`tabindex="0"`・`aria-roledescription="ノード"`・`aria-keyshortcuts`・`aria-label`（ノードの名前。選んでいれば末尾に `（選択中）`）を付ける。種類の行・名前・説明のマーカー・`nodeParts` の中身はその後ろの兄弟として重ね、押せる要素の中に入れない。選んだノードの `div` には今と同じく `data-selected` を付ける）、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
     scope: public
     callees:
       - MOD-472-172#functions[renderFlow]
@@ -140,7 +140,13 @@ functions:
         summary: キーで操作する場所
         condition: '`entered: read` と、`entered` なし'
         mock: なし
-        expected: '配置した全てのノードと線を押す場所が `tabindex="0"`・`role="button"` を持ち、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある'
+        expected: '配置した全てのノードの `span.mdmark-diagram-node-hit` と線の押せる帯が `tabindex="0"`・`role="button"` を持ち、ノードの `div` は `tabindex`・`role` を持たず、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある'
+      - name: test_render_map_flow_when_note_node
+        case: 正常
+        summary: 説明と用語を持つノードの中に、フォーカスできる要素を入れ子にしない
+        condition: '`notes` が `{ data: "検査した補足" }`、`terms` が `{ 補足: "意味" }` の Default'
+        mock: なし
+        expected: '`data` のノードの `div` が `tabindex`・`role` を持たず、先頭の子の `span.mdmark-diagram-node-hit` が `role="button"`・`tabindex="0"`・`aria-roledescription="ノード"`・`aria-label` を持つ。`button.mdmark-diagram-info` と名前の中の `span.mdmark-term` は `span.mdmark-diagram-node-hit` の中に無い。どの `span.mdmark-diagram-node-hit` も、中に `button`・`a`・`[tabindex]` の要素を持たない'
       - name: test_render_map_flow_when_entered
         case: 正常
         summary: 中へ入った
@@ -260,6 +266,12 @@ functions:
         condition: モックの `ER` を配置して `rewireMapEr` で付け替え、「注文」の列 `状態` に説明、`fanouts` に `r1`・`r2`・`r3` を指定する
         mock: なし
         expected: 「注文」のノードに開閉のボタンと列の行があり、`map-er-cardinality` が関連の数の 2 倍、`map-er-label` がラベルを持つ関連の数だけあり、`map-er-fanout` のボタンが 3 つあり、どのボタンの矩形もノードの矩形（`MAP_ER.aside` を含む）と重ならず、ツールチップに列の説明と「行が増える関連」がある
+      - name: test_render_map_er_diagram_when_node_hit
+        case: 正常
+        summary: テーブルのノードの列の行とボタンを、押せる要素の中に入れない
+        condition: モックの `ER` を配置して `rewireMapEr` で付け替え、「注文」の列 `状態` に説明を指定する
+        mock: なし
+        expected: '「注文」のノードの `div` が `tabindex`・`role` を持たず、`span.mdmark-diagram-node-hit` が `role="button"`・`tabindex="0"` を持つ。開閉のボタン・列の行（`.map-er-columns`）・列の説明のボタンは `span.mdmark-diagram-node-hit` の中に無い'
   - name: rewireMapEr
     title: ER図の関連の端の付け替え
     kind: 関数
