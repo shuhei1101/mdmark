@@ -1226,6 +1226,7 @@ async function archLayout() {
     layout,
     edges: diagram.edges,
     collapsed: [],
+    ends: { r2: { to: "top" } },
   });
   return { diagram, layout: { ...layout, wires } };
 }
@@ -1266,6 +1267,27 @@ test("test_rewire_map_architecture", async () => {
   }
   const app = layout.groups.find((item) => item.id === "app");
   expect(atSide(wire("r4")?.points[0], app, "right")).toBe(true);
+  // 補足の ends で上の辺へ入る r2 は、どの区間も「API サーバー」の矩形の中を通らない
+  const r2 = wire("r2")?.points ?? [];
+  const api = node("api") as { x: number; y: number; w: number; h: number };
+  expect(atSide(r2.at(-1), api, "top")).toBe(true);
+  for (const [index, point] of r2.slice(1).entries()) {
+    const previous = r2[index] as [number, number];
+    const [left, right] = [
+      Math.min(point[0], previous[0]),
+      Math.max(point[0], previous[0]),
+    ];
+    const [top, bottom] = [
+      Math.min(point[1], previous[1]),
+      Math.max(point[1], previous[1]),
+    ];
+    const inside =
+      left < api.x + api.w &&
+      right > api.x &&
+      top < api.y + api.h &&
+      bottom > api.y;
+    expect(inside, `r2 の ${index + 1} 本目の区間`).toBe(false);
+  }
 });
 
 // アーキテクチャ図の部品（正常系）
@@ -1322,7 +1344,7 @@ test("test_render_map_c4_diagram", async () => {
   const { C4 } = await import("../../helpers/map.ts");
   const { MAP_C4_KINDS } = await import("../../../../src/map/c4.ts");
   const diagram = parseC4Context(C4);
-  const { chart, overrides } = c4ToFlowchart(diagram);
+  const { chart, overrides, reversed } = c4ToFlowchart(diagram);
   const layout = layoutMap(
     chart,
     { collapsed: [] },
@@ -1330,6 +1352,11 @@ test("test_render_map_c4_diagram", async () => {
   );
   // 実行
   const part = renderMapC4Diagram({
+    terms: { 支払い: "注文の代金の受け取り" },
+    externals: diagram.elements
+      .filter((item) => item.external)
+      .map((item) => item.id),
+    reversed,
     layout: { ...layout, wires: spreadMapEnds(layout) },
     kinds: MAP_C4_KINDS,
     lines: {},
@@ -1348,11 +1375,20 @@ test("test_render_map_c4_diagram", async () => {
   });
   // 検証
   const store = outerHtml(part.html, 'data-node="store"');
+  expect(plainText(innerHtml(store, 'class="map-c4-description"'))).toContain(
+    "注文と支払いを受け付ける",
+  );
+  // 説明の中の用語に下線を付ける
   expect(store).toMatch(
-    /class="map-c4-description"[^>]*>注文と支払いを受け付ける/,
+    /class="map-c4-description"[^>]*>[\s\S]*?<span class="mdmark-term[^"]*"[^>]*>支払い</,
   );
   const pay = outerHtml(part.html, 'data-node="pay"');
   expect(plainText(pay)).toContain("[External Software System]");
+  // 外部の要素は灰色の面で描く class を持つ
+  expect(findTag(part.html, 'data-node="pay"')).toContain("map-c4-external");
+  expect(findTag(part.html, 'data-node="store"')).not.toContain(
+    "map-c4-external",
+  );
   for (const [id, title] of [
     ["company", "自社［Enterprise］"],
     ["shop", "通販［Software System］"],

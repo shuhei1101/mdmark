@@ -18,12 +18,12 @@ afterEach(() => {
 });
 
 /** C4 図を描いて付ける */
-async function setUp(args?: string) {
+async function setUp(args?: string, mermaid = C4) {
   const { attachMapC4 } = await loadC4View();
   const { parseMapArgs } = await loadSpec();
   const { resolveConfig } = await loadConfig();
   const root = createRootFromHtml(
-    renderDoc(mapRange({ args, mermaid: C4, data: C4_DATA })).html,
+    renderDoc(mapRange({ args, mermaid, data: C4_DATA })).html,
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
   handles.push(
@@ -70,4 +70,29 @@ test("test_attach_map_c4_when_title", async () => {
   // 検証
   expect(titleOf(root)).toContain("全体");
   expect(titleOf(root)).not.toContain("注文のシステムの全体");
+});
+
+// 上向きの関係（正常系）
+test("test_attach_map_c4_when_up", async () => {
+  // 準備・実行
+  const root = await setUp(
+    undefined,
+    'C4Context\n  System(a, "A")\n  System(b, "B")\n  Rel_U(a, b, "上へ")\n',
+  );
+  // 検証: b が a より上にあり、線の終点（矢じり）が b の側にある
+  const node = (id: string) =>
+    root.querySelector<HTMLElement>(`[data-node="${id}"]`);
+  const top = (id: string) =>
+    Number.parseFloat(node(id)?.style.getPropertyValue("top") ?? "");
+  const height = (id: string) =>
+    Number.parseFloat(node(id)?.style.getPropertyValue("height") ?? "");
+  expect(top("b")).toBeLessThan(top("a"));
+  const numbers =
+    root
+      .querySelector('path.mdmark-diagram-wire[data-wire="r1"]')
+      ?.getAttribute("d")
+      ?.match(/-?\d+(\.\d+)?/g)
+      ?.map(Number) ?? [];
+  const endY = numbers.at(-1) ?? Number.NaN;
+  expect(Math.abs(endY - (top("b") + height("b")))).toBeLessThan(3);
 });

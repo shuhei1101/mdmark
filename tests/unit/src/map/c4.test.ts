@@ -67,3 +67,20 @@ test("test_c4_to_flowchart", async () => {
   expect(edge("r4")?.both).toBe(true);
   expect(chart.groups.find((item) => item.id === "shop")?.title).toBe("通販");
 });
+
+// 上向きと逆向きの関係の矢じり（正常系）
+test("test_c4_to_flowchart_when_up_and_back", async () => {
+  // 準備
+  const { parseC4Context, c4ToFlowchart } = await loadC4();
+  const diagram = parseC4Context(
+    'C4Context\n  System(a, "A")\n  System(b, "B")\n  System(c, "C")\n  Rel_U(a, b, "上へ")\n  Rel_Back(a, c, "戻す")\n',
+  );
+  // 実行
+  const { chart, reversed } = c4ToFlowchart(diagram);
+  // 検証: Rel_U は段のために元と先を入れ替え、矢じりを b の側（入れ替えた線の元の側）に描く
+  const edge = (id: string) => chart.edges.find((item) => item.id === id);
+  expect([edge("r1")?.from, edge("r1")?.to]).toEqual(["b", "a"]);
+  expect(reversed).toEqual(["r1", "r2"]);
+  expect([edge("r2")?.from, edge("r2")?.to]).toEqual(["a", "c"]);
+  expect(diagram.relations[1]?.direction).toBe("back");
+});
