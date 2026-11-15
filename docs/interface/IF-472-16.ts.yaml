@@ -136,3 +136,8 @@ constraints:
     constraint: '`mount` を呼んだ後、外部ライブラリのマーカーの場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。待ちの上限を超えたらそのまま呼ぶ'
     decided_by: NFR-472-1#requirements[印刷のダイアログを出すまでの待ちの上限]
     notes: マーカーの場所の要素は文書を描く.ts の制約「外部ライブラリのマーカーの場所」。折り畳みを開くのは mdmark の印刷の機能（`beforeprint`）
+tags:
+  - name: topic:印刷
+    main: true
+  - name: topic:pdf
+  - name: tool:vscode

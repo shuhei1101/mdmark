@@ -87,3 +87,8 @@ constraints:
     decided_by: SC-472-22#
   - item: 終了コード
     constraint: '`MDMARK_PORT` が使用できない値でも 0 で終わり、使用できない値であることを 1 行で出す'
+tags:
+  - name: topic:サーバー
+    main: true
+  - name: topic:状態
+  - name: topic:フック

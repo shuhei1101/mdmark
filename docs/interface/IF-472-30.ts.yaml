@@ -283,3 +283,8 @@ constraints:
   - item: 型の配布
     constraint: '`mountView`・`MdmarkViewOptions`・`MdmarkViewHandle` を `dist/index.d.ts` に書き出す'
 test_file: tests/integration/lib/mount-view.browser.test.ts
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:api
+  - name: action:描画

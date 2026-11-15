@@ -1870,3 +1870,7 @@ elements:
     status: planned
 mock: docs/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が追加する UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張のマーカーの場所・拡張記法の部品・記載の警告）を持つ。
+tags:
+  - name: topic:文書
+    main: true
+  - name: topic:画面

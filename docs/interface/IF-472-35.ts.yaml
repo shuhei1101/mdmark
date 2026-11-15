@@ -9847,3 +9847,8 @@ constraints:
     constraint: '`C4Context` の要素（`Person`・`System`・`SystemDb`・`SystemQueue` とその `_Ext`）を、種類の行（`[Person]`・`[Software System]`。`_Ext` は `[External Person]`・`[External Software System]`）・名前・説明を持つノード（人は人のアイコン、`SystemDb` はデータベースのアイコン、`SystemQueue` は角の丸い横長の形。`_Ext` は灰色の面）、境界（`Enterprise_Boundary`・`System_Boundary`・`Boundary`）を名前と種類のタイトルを持つ破線の入れ子のグループにして、構成図と同じ自動配置で上から下へ配置する。`title` は印に `title` が無いときの図の枠のタイトルにする。関係はラベルと「[{技術}]」を持つ線（`BiRel` は両向きの矢じり）にし、`Rel_R`・`Rel_L` は段を決める処理から外して相手を同じ段の右（左）に置き、`Rel_D`・`Rel_U` は相手を下（上）の段に置く。同じ点から出る・入る線の端は、辺に沿って 16px ずつずらす。補足の `layout` と要素・境界のドラッグは構成図と同じ規則で当たり、`layout` の座標・並び順を持つ要素は `Rel_*` の向きの指定よりそちらを優先する。要素を 1 つ選ぶとつながる関係と相手を、 2 つ選ぶとつなぐ最短の経路を、構成図のノードと同じく残す。別の境界にある 2 つを並べることは保証しない。補足の `notes` のキーは要素・境界の別名（第 1 引数）と関係の記載順の `r{番号}`'
     notes: 外観はモック `docs/mock/components/map-class-arch-c4/`（確認ログ『C4 図の外部の要素の種類の行』）
 test_file: tests/integration/lib/mount.browser.test.ts
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:api
+  - name: topic:文書

@@ -80,3 +80,8 @@ constraints:
   - item: 書き出し
     constraint: 呼ぶたびに HTMLに書き出す.ts と同じものをもう一度書き出す。既にある HTML をそのまま開かない
     notes: 確認ログ「ブラウザで開く・PDF に印刷で開く HTML」
+tags:
+  - name: topic:ブラウザ
+    main: true
+  - name: tool:html
+  - name: tool:vscode

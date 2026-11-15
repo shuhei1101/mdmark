@@ -736,3 +736,8 @@ constraints:
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
 test_file: tests/integration/lib/upgrade.test.ts
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:cli

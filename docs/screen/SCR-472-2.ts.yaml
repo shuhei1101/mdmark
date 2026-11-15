@@ -105,3 +105,8 @@ lead: VS Code 拡張機能が開くプレビューのパネル（Webview）。md
 refs:
   - IF-472-22#
   - IF-472-21#
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode
+  - name: topic:画面

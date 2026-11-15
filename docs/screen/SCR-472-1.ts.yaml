@@ -110,3 +110,8 @@ lead: VS Code 拡張機能が VS Code の画面に追加する入口（エディ
 refs:
   - IF-472-15#
   - IF-472-25#
+tags:
+  - name: tool:vscode
+    main: true
+  - name: topic:コマンド
+  - name: topic:通知

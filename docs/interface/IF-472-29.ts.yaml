@@ -43,3 +43,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 常に埋めたバージョンを返却する
 test_file: tests/integration/lib/version.browser.test.ts
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:api

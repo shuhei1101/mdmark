@@ -476,3 +476,8 @@ refs:
   - SC-472-60#
   - IF-472-31#
 test_file: tests/integration/lib/collect-matches.test.ts
+tags:
+  - name: topic:参照
+    main: true
+  - name: topic:用語
+  - name: topic:api

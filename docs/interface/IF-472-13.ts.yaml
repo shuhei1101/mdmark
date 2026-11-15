@@ -164,3 +164,8 @@ constraints:
 refs:
   - IF-472-38#
 test_file: tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+tags:
+  - name: tool:html
+    main: true
+  - name: action:まとめ
+  - name: tool:mcp

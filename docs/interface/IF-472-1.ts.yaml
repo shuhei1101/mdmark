@@ -122,3 +122,8 @@ flows:
       - 内容の文に、索引のパスと `templates[0].file` が出る
     test: test_error_when_index_invalid
 test_file: tests/integration/ClaudeCodeプラグイン/list-templates.test.ts
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: tool:mcp

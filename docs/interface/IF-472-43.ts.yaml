@@ -272,3 +272,8 @@ constraints:
 refs:
   - SC-472-15#
 test_file: tests/integration/ClaudeCodeプラグイン/guide-notice.test.ts
+tags:
+  - name: topic:構文
+    main: true
+  - name: topic:フック
+  - name: tool:claude-code

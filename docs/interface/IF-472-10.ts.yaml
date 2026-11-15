@@ -304,3 +304,7 @@ constraints:
 refs:
   - IF-472-39#
 test_file: tests/integration/ClaudeCodeプラグイン/check.test.ts
+tags:
+  - name: action:点検
+    main: true
+  - name: tool:mcp

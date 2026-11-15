@@ -171,3 +171,8 @@ constraints:
 refs:
   - IF-472-33#
 test_file: tests/integration/ClaudeCodeプラグイン/export-html.test.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: tool:mcp

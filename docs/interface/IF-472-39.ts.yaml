@@ -1203,3 +1203,9 @@ constraints:
     constraint: 設定の `map.node_fit`・`map.url_state`・`map.kinds`・`map.lines` は、制約「設定の点検」の Schema で検査し、`node_fit` の知らない値・`url_state` が真偽値でない値・知らない形・模様・太さ・矢じり・色の名前を `schema` のずれにする。`map.kinds` の `icon` が Lucide に無い名前のものは、1 つにつき 1 件の `map_unknown_icon` のずれにする。ファイルは設定ファイル、場所はキーのパス（`map.kinds.store.icon`）、内容は記載した名前と、Lucide のアイコンの名前にする修正方法の 1 文。Lucide の名前の一覧は、外部ライブラリ『lucide』の採用バージョンのパッケージのアイコンの名前を使用する
     decided_by: IF-472-35#request[opts.config.map.kinds]
 test_file: tests/integration/lib/check-config.test.ts
+tags:
+  - name: action:点検
+    main: true
+  - name: topic:設定
+  - name: topic:索引
+  - name: topic:cli

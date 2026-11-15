@@ -94,3 +94,8 @@ notes:
   印刷: 横の文書の一覧・狭い幅の帯・パネルを出さず、開いている文書だけを印刷する。関連文書のリンクには、`#/...` ではなく文書のパス（`使い方/guide.md`）を併記する
   開いている文書の示し方: 文書の一覧の開いている行は、新しい CSS 変数 `--mdmark-color-current-bg`（明るい配色 `#e6f3f1`・ダーク `#10302c`）の背景と `--mdmark-color-link` の文字で示す。ポインターを乗せた行の `--mdmark-color-surface` と見分け、太さは変えない
   書き出す HTML: '`<div class="mdmark-bundle"><aside class="mdmark-bundle-side">{文書の一覧}</aside><main class="mdmark-bundle-main"><div class="mdmark-bundle-bar">…</div><article class="mdmark"></article></main></div><dialog class="mdmark-bundle-panel">…</dialog>`。規則は層 `mdmark` の中に配置し、利用側の `theme` の CSS が勝つ'
+tags:
+  - name: tool:html
+    main: true
+  - name: action:まとめ
+  - name: topic:画面

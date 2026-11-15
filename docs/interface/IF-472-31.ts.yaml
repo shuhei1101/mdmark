@@ -262,3 +262,8 @@ refs:
   - SC-472-75#
   - SC-472-72#
 test_file: tests/integration/lib/collect-references.test.ts
+tags:
+  - name: topic:参照
+    main: true
+  - name: tool:html
+  - name: action:まとめ

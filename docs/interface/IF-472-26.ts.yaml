@@ -208,3 +208,7 @@ constraints:
 refs:
   - ER-472-3#
   - CFG-472-3#settings[aliases]
+tags:
+  - name: topic:エイリアス
+    main: true
+  - name: topic:cli

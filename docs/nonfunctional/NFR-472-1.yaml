@@ -165,3 +165,6 @@ requirements:
       version: Node v24.14.0（tools/list まで 7〜117ms）
       date: '2026-10-31'
       result: 合格
+tags:
+  - name: topic:要件
+    main: true

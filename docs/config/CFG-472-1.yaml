@@ -132,3 +132,8 @@ settings:
     visibility: developer
     refs:
       - IF-472-7#constraints[待ち]
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン

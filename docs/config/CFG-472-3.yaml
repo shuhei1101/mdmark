@@ -995,3 +995,7 @@ settings:
       実装: src/config.ts#resolveMapConfig
 refs:
   - IF-472-35#
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:ライブラリ

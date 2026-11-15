@@ -309,3 +309,7 @@ settings:
       - IF-472-15#constraints[埋める色分けのライブラリ]
     status: planned
     visibility: user
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode

@@ -263,3 +263,8 @@ flows:
     expected:
       - '`ConfigNotFoundError` の文に `missing.yaml` が入る'
     test: test_error_when_explicit_missing
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:端末
+  - name: action:読み込み

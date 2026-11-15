@@ -108,3 +108,8 @@ constraints:
   - item: 雛形の中身
     constraint: '`features`・`libraries`・`theme`・`extensions` の記載方法と、上のフォルダの設定・端末の設定と重ねて読み込むことをコメントで示し、キーは記載しない YAML（中身は画面設計で決める）。フォルダが無ければ作る'
     notes: キーを記載しないため、作った直後のプレビューは雛形を作る前と同じに描く
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:ファイル
+  - name: tool:vscode

@@ -752,3 +752,8 @@ constraints:
     constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の本文・取り込む文書の表に同じ規則を当て、文書のパスと文書間のリンクの `href` は置き換えない
     decided_by: IF-472-33#constraints[mdmark の痕跡]
 test_file: tests/integration/lib/bundle.test.ts
+tags:
+  - name: tool:html
+    main: true
+  - name: action:まとめ
+  - name: topic:cli

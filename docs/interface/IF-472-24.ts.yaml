@@ -75,3 +75,7 @@ constraints:
     notes: モックの合意で、歯車はプレビューの中でなくエディタのタイトルの帯に配置することに決めた（docs/pr/181/確認ログ.md）
   - item: プレビューへの影響
     constraint: プレビューのパネルを閉じず、Webview へメッセージを送信しない
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode

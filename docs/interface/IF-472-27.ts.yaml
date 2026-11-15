@@ -242,3 +242,7 @@ constraints:
   - item: 型の配布
     constraint: '`mountComments`・`MdmarkCommentStore`（省略可能な `update`・`remove` を含む）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'
 test_file: tests/integration/lib/mount-comments.browser.test.ts
+tags:
+  - name: topic:コメント
+    main: true
+  - name: topic:api

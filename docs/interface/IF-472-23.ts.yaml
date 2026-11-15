@@ -85,3 +85,8 @@ constraints:
     constraint: '`vscode/package.json` の devDependencies の `@vscode/vsce`（4.1.0 以上。4.0.0 の OIDC の交換は Marketplace の仕様と合わない）を `npm --prefix vscode ci` で入れて使用する'
   - item: タグの構造
     constraint: '`vscode-v{X}.{Y}.{Z}`。構造に合わないタグはバージョンの比較でバージョンが合わないときと同じく止める'
+tags:
+  - name: topic:配布物
+    main: true
+  - name: action:ビルド
+  - name: tool:vscode

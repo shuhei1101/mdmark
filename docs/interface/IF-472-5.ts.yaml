@@ -111,3 +111,8 @@ constraints:
 refs:
   - SC-472-3#
 test_file: tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts
+tags:
+  - name: topic:フォルダ
+    main: true
+  - name: topic:フック
+  - name: tool:claude-code

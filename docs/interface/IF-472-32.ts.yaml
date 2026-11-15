@@ -440,3 +440,8 @@ constraints:
   - item: 拡張のモジュールから使用する部品
     constraint: 拡張の `draw` は、配布物が出す `mountView`・`mountComments` を `slot` に対して呼んで、マーカーの場所に mdmark の部品を描ける。`draw` が部品の Promise を待つと、`mount` はその後にマーカーの場所を描き終えたものとして扱う。`update`・`destroy` でマーカーの場所を片付けるとき、その中の部品の `destroy` も行う
     notes: docs/interface/IF-472-30.ts・docs/interface/IF-472-27.ts
+tags:
+  - name: topic:拡張
+    main: true
+  - name: topic:api
+  - name: action:登録

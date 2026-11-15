@@ -223,3 +223,7 @@ notes:
     | 各フォルダの `files.yaml`（`docs/` の下は `files.yml`） | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `schemas/files.schema.yaml`） | 届けない | #178 |
 
     この土台で実体を作るのは `src/`・`dist/`・`scripts/`・`tests/` だけで、他は中身を持つ Issue が作る。
+tags:
+  - name: topic:アーキテクチャ
+    main: true
+  - name: topic:構成

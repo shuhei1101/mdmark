@@ -208,3 +208,8 @@ flows:
       - テンプレートのフォルダが作られていない
     test: test_error_when_file_missing
 test_file: tests/integration/ClaudeCodeプラグイン/add-template.test.ts
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: action:登録

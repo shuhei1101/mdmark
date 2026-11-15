@@ -255,3 +255,8 @@ flows:
       - 内容の文に `missing` と `list_templates` が出る
     test: test_error_when_template_missing
 test_file: tests/integration/ClaudeCodeプラグイン/apply-template.test.ts
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: action:配置

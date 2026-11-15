@@ -289,3 +289,7 @@ constraints:
     decided_by: NFR-472-1#requirements[対応ブラウザ]
     notes: 照らすバージョンは制約『出力の対象のブラウザ』と同じ値から取る。minify した配布ファイルは `if` のブロックが式に畳まれ、有無を確認した箇所も報告に出るため照らさない。`dist/cli.js` は対象外
 test_file: tests/integration/lib/build.test.ts
+tags:
+  - name: topic:配布物
+    main: true
+  - name: action:ビルド

@@ -172,3 +172,8 @@ constraints:
     constraint: 配置する `mdmark.config.yaml` の `version` は、ビルドが呼んだ CLI に埋めたバージョン。`templates/mdmark.config.yaml` の `version` の値を配置するときに置き換える
     decided_by: CFG-472-3#settings[version]
 test_file: tests/integration/lib/init.test.ts
+tags:
+  - name: topic:雛形
+    main: true
+  - name: action:配置
+  - name: topic:cli

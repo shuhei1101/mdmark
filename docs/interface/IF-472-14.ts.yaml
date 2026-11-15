@@ -104,3 +104,8 @@ constraints:
   - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:キー
+  - name: tool:mcp

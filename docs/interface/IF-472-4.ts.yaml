@@ -195,3 +195,8 @@ refs:
   - SC-472-7#
   - SC-472-15#
 test_file: tests/integration/ClaudeCodeプラグイン/serve.test.ts
+tags:
+  - name: topic:サーバー
+    main: true
+  - name: topic:常駐
+  - name: tool:mcp

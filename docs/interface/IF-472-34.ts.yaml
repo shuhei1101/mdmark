@@ -3353,3 +3353,8 @@ constraints:
     constraint: map の範囲で、JSON のオブジェクトとして読めない印の引数と型の合わない印の引数の値を集め、範囲の場所の前に書き方の警告を 1 つ配置する。印の知らないキーは警告にせず無視する（点検が `map_unknown_key` で通知する）。Mermaid の読めない行・閉じの無い `subgraph` と複合フラグメント・補足の JSON の誤り（JSON のオブジェクトとして読めない・スキーマに合わない）・補足が指す Mermaid に無い ID・`--` を含む補足の文字は `render` では確かめず、`mount` が図の前の書き方の警告にする（文書を描く.ts の制約『map の書き方の警告』。Mermaid と補足を読む処理を `dist/index.js` に入れず、配布物の大きさの上限に収めるため）。mermaid のブロックが無い・2 つ以上ある・補足が 2 つ以上ある範囲と、描かない図の種類の範囲は図にせず、警告とソースのコードブロックだけを配置する
     notes: 警告の部品は部品設計『書き方の警告』。文言は画面設計『文書』
 test_file: tests/integration/lib/render.test.ts
+tags:
+  - name: topic:api
+    main: true
+  - name: tool:html
+  - name: action:描画
