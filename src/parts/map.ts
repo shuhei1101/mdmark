@@ -29,7 +29,8 @@ import {
 } from "./diagram.ts";
 import { escapeHtml } from "./escape.ts";
 import { NOTE_OWNER_PREFIX, noteOwnerId } from "./footnote.ts";
-import { iconSvg } from "./icons.ts";
+import { bundledIconNode, iconSvg } from "./icons.ts";
+import { iconNodeSvg, type MdmarkIconNode } from "./inline-icon.ts";
 
 /** 線の上を流れるデータの印。color は色の名前か line・source・target（省く・知らない値は線の色） */
 export type MapPacketMark = {
@@ -151,8 +152,8 @@ export type MapFlowArgs = {
   keep?: { nodes: string[]; wires: string[] } | undefined;
 };
 
-/** 状態遷移図のノードの形状 */
-export type MapStateShape = "start" | "end" | "choice" | "note";
+/** 状態遷移図のノードの形状（`junction` はアーキテクチャ図の分岐点） */
+export type MapStateShape = "start" | "end" | "choice" | "note" | "junction";
 
 /** ノードの中へ入れる HTML（`head` は種類の行の末尾、`body` はノードの末尾） */
 export type MapNodePart = { head: string; body: string; tips: string };
@@ -163,6 +164,7 @@ const STATE_SHAPE_NAMES = {
   end: "終了",
   choice: "分岐",
   note: "ノート",
+  junction: "分岐点",
 } satisfies Record<MapStateShape, string>;
 
 /** html の index から始まる要素の、対応する閉じタグの位置（無ければ -1） */
@@ -2244,4 +2246,621 @@ export const renderMapStateDiagram = (args: MapStateArgs): MapPart => {
     }),
   });
   return { html: `${flow.html}${loops}`, tips: flow.tips };
+};
+
+/** 部品『mapのクラス図』のクラスのノードの寸法（px）。メンバーの行は、名前の行の下から同じ高さで並ぶ */
+export const MAP_CLASS = {
+  width: 220,
+  /** 名前の行（種類の行と名前）の高さ */
+  head: 56,
+  row: 22,
+  /** 属性とメソッドの区画を分ける区切り線の分の高さ */
+  divider: 6,
+  foot: 6,
+  /** 同じ点から出る・入る線の端をずらす間隔 */
+  endGap: 16,
+  /** 端の形の長さと、幅の半分 */
+  endLength: 14,
+  endHalf: 6,
+} as const;
+
+/** クラスのノードの大きさ（メンバーを閉じたクラスと、メンバーを持たないクラスは名前の行だけ） */
+export const mapClassNodeSize = (args: {
+  attributes: number;
+  methods: number;
+  collapsed: boolean;
+}): { w: number; h: number } => ({
+  w: MAP_CLASS.width,
+  h:
+    args.collapsed || args.attributes + args.methods === 0
+      ? MAP_CLASS.head
+      : MAP_CLASS.head +
+        (args.attributes + args.methods) * MAP_CLASS.row +
+        MAP_CLASS.divider * 2 +
+        MAP_CLASS.foot,
+});
+
+/** 部品『mapのクラス図』のクラスの中身 */
+export type MapClassNode = {
+  id: string;
+  annotation: string | undefined;
+  members: Array<{
+    visibility: string;
+    name: string;
+    text: string;
+    method: boolean;
+    isStatic: boolean;
+    isAbstract: boolean;
+  }>;
+};
+
+/** 部品『mapのクラス図』の関係の端（`wire` は関係の ID） */
+export type MapClassEnd = {
+  wire: string;
+  at: "from" | "to";
+  shape: "triangle" | "diamond-filled" | "diamond-open" | "arrow" | undefined;
+  card: string | undefined;
+};
+
+/** 部品『mapのクラス図』のクラスの中身の引数 */
+export type MapClassMembersArgs = {
+  node: MapClassNode;
+  /** メンバーの名前ごとの説明 */
+  notes: Record<string, string>;
+  collapsed: boolean;
+  /** メンバーの名前ごとの注記（番号の順） */
+  annotations?: Record<string, DiagramAnnotation[]> | undefined;
+  /** 注記を持つメンバーの説明のボタンの `id` の頭 */
+  ownerPrefix?: string | undefined;
+  /** 機能 `hints` がオンか（既定 `true`） */
+  hints?: boolean | undefined;
+  /** ツールチップの id の頭 */
+  id?: string | undefined;
+};
+
+/** クラス図のメンバーの行 1 つ。説明か注記を持つメンバーは、説明のボタンとツールチップを持つ */
+const renderMapClassMember = (
+  args: MapClassMembersArgs,
+  context: { member: MapClassNode["members"][number]; tips: TipList },
+): string => {
+  const { member, tips } = context;
+  const note = args.notes[member.name];
+  const notes = args.annotations?.[member.name];
+  const annotated = (notes?.length ?? 0) > 0;
+  const ownerId =
+    annotated && args.ownerPrefix !== undefined
+      ? ` id="${escapeHtml(noteOwnerId(args.ownerPrefix, `${args.node.id}.${member.name}`))}"`
+      : "";
+  const plain = args.hints === false;
+  const row = plain && ownerId !== "" ? `${ownerId} tabindex="-1"` : "";
+  const owner = `member:${args.node.id}.${member.name}`;
+  const label = infoLabel({
+    name: member.name,
+    described: note !== undefined,
+    annotated,
+  }).replace(/^「(.*)」/, "$1");
+  const mark =
+    plain || (note === undefined && !annotated)
+      ? ""
+      : `<button class="map-class-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: member.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
+  const classes = `map-class-member${member.isStatic ? " is-static" : ""}${member.isAbstract ? " is-abstract" : ""}`;
+  return `<div class="${classes}"${row} role="listitem" data-member="${escapeHtml(member.name)}"><span class="map-class-visibility">${escapeHtml(member.visibility)}</span><span class="map-class-text">${escapeHtml(member.text)}</span><span class="map-class-info-cell">${mark}</span></div>`;
+};
+
+/** 部品『mapのクラス図』のクラスの中身。メンバーを開閉するボタン・属性とメソッドの区画・メンバーの説明のツールチップ */
+export const renderMapClassMembers = (
+  args: MapClassMembersArgs,
+): { toggle: string; members: string; tips: string } => {
+  const { node } = args;
+  const count = node.members.length;
+  const label = `${node.id}のメンバーを${args.collapsed ? "開く" : "閉じる"}`;
+  const toggle =
+    count === 0
+      ? ""
+      : `<button class="map-class-toggle" type="button" data-node-toggle="${escapeHtml(node.id)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${args.collapsed ? `メンバー ${count}` : iconSvg("chevron-down")}</button>`;
+  if (args.collapsed || count === 0) return { toggle, members: "", tips: "" };
+  const tips = createTips(args.id ?? `map-class-${node.id}`);
+  const attributes = node.members.filter((member) => !member.method);
+  const methods = node.members.filter((member) => member.method);
+  const list = (items: MapClassNode["members"], top: number): string =>
+    `<div class="map-class-members" role="list" style="top:${top}px;grid-auto-rows:${MAP_CLASS.row}px">${items.map((member) => renderMapClassMember(args, { member, tips })).join("")}</div>`;
+  const second =
+    MAP_CLASS.head + attributes.length * MAP_CLASS.row + MAP_CLASS.divider;
+  return {
+    toggle,
+    members: `${list(attributes, MAP_CLASS.head)}${list(methods, second)}`,
+    tips: tips.html(),
+  };
+};
+
+/** 線の端の点と、端から線の内側へ向かう単位の向き */
+const wireEndOf = (
+  points: Point[],
+  at: "from" | "to",
+): { tip: Point; dir: Point } => {
+  const tip = (at === "from" ? points[0] : points.at(-1)) as Point;
+  const next = (at === "from" ? points[1] : points.at(-2)) as Point;
+  const length = Math.hypot(next[0] - tip[0], next[1] - tip[1]) || 1;
+  return {
+    tip,
+    dir: [(next[0] - tip[0]) / length, (next[1] - tip[1]) / length],
+  };
+};
+
+/** 関係の端の形の `d`（三角とひし形は閉じた形、矢じりは開いた形） */
+const classEndPath = (
+  shape: NonNullable<MapClassEnd["shape"]>,
+  end: { tip: Point; dir: Point },
+): string => {
+  const { tip, dir } = end;
+  const along = (k: number): Point => [
+    tip[0] + dir[0] * k,
+    tip[1] + dir[1] * k,
+  ];
+  const side = (base: Point, k: number): Point => [
+    base[0] - dir[1] * k,
+    base[1] + dir[0] * k,
+  ];
+  const { endLength: length, endHalf: half } = MAP_CLASS;
+  const fmt = ([x, y]: Point) =>
+    `${Math.round(x * 10) / 10} ${Math.round(y * 10) / 10}`;
+  if (shape === "triangle") {
+    const base = along(length);
+    return `M${fmt(tip)}L${fmt(side(base, half))}L${fmt(side(base, -half))}Z`;
+  }
+  if (shape === "arrow") {
+    const base = along(length * 0.8);
+    return `M${fmt(side(base, half))}L${fmt(tip)}L${fmt(side(base, -half))}`;
+  }
+  const middle = along(length * 0.6);
+  return `M${fmt(tip)}L${fmt(side(middle, half * 0.8))}L${fmt(along(length * 1.2))}L${fmt(side(middle, -half * 0.8))}Z`;
+};
+
+/** 関係の端の形と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの SVG */
+export const renderMapClassEnds = (args: {
+  layout: MapLayout;
+  ends: MapClassEnd[];
+  labels?: Record<string, string> | undefined;
+  dim: ReadonlySet<string>;
+}): string => {
+  const parts: string[] = [];
+  const cardinalities: PlacedText[] = [];
+  const labels: PlacedText[] = [];
+  for (const end of args.ends) {
+    const wire = args.layout.wires.find((item) => item.id === end.wire);
+    const points = (wire?.points ?? []) as Point[];
+    if (points.length < 2) continue;
+    const dimmed = args.dim.has(end.wire) ? " map-dim" : "";
+    const at = wireEndOf(points, end.at);
+    if (end.shape !== undefined)
+      parts.push(
+        `<path class="map-class-end map-class-end-${end.shape}${dimmed}" data-wire-mark="${escapeHtml(end.wire)}" data-end-shape="${end.shape}" d="${classEndPath(end.shape, at)}"></path>`,
+      );
+    if (end.card === undefined) continue;
+    const near: Point = [
+      at.tip[0] + at.dir[0] * (MAP_CLASS.endLength + 4),
+      at.tip[1] + at.dir[1] * (MAP_CLASS.endLength + 4),
+    ];
+    const placed = placeCardinality(cardinalities, {
+      x: near[0],
+      y: near[1],
+      nx: near[0] + (at.dir[0] < 0 ? -1 : 1),
+      value: end.card,
+    });
+    parts.push(
+      erMarkText(args.dim, {
+        wire: end.wire,
+        at: placed.at,
+        value: end.card,
+        className: "map-class-card",
+        anchor: placed.right ? "start" : "end",
+      }),
+    );
+  }
+  for (const [id, label] of Object.entries(args.labels ?? {})) {
+    const wire = args.layout.wires.find((item) => item.id === id);
+    const points = (wire?.points ?? []) as Point[];
+    if (points.length < 2) continue;
+    const place = erMarkOf(points);
+    const at = placeLabel(labels, {
+      at: place.label,
+      vertical: place.vertical,
+      width: label.length * MAP_ER.labelChar,
+    });
+    parts.push(
+      erMarkText(args.dim, {
+        wire: id,
+        at,
+        value: label,
+        className: "map-class-label",
+        anchor: place.vertical ? "start" : "middle",
+      }),
+    );
+  }
+  return `<svg class="map-class-ends" width="${args.layout.width}" height="${args.layout.height}" aria-hidden="true">${parts.join("")}</svg>`;
+};
+
+/** 線の端 1 つ（線の番号と、始点か終点か） */
+type WireEndRef = { index: number; at: "from" | "to" };
+
+/** 端の点を、端から次の点までの区間と一緒に `offset` だけずらす（区間が縦なら横へ、横なら縦へ） */
+const shiftWireEnd = (
+  points: Point[],
+  at: "from" | "to",
+  offset: number,
+): Point[] => {
+  const out = points.map((point) => [...point] as Point);
+  if (at === "to") out.reverse();
+  const [tip, next] = out as [Point, Point];
+  const vertical = Math.abs(tip[0] - next[0]) < 0.5;
+  if (out.length === 2) {
+    // 2 点だけの線は、中ほどで折って端の側だけをずらす
+    const middle: Point = [(tip[0] + next[0]) / 2, (tip[1] + next[1]) / 2];
+    out.splice(1, 0, [...middle] as Point, [...middle] as Point);
+  }
+  const axis = vertical ? 0 : 1;
+  (out[0] as Point)[axis] += offset;
+  (out[1] as Point)[axis] += offset;
+  if (at === "to") out.reverse();
+  return out;
+};
+
+/** 同じ点から出る・入る線の端を、辺に沿って `MAP_CLASS.endGap` ずつ、ずらした幅の中ほどが元の点になるようにずらす */
+export const spreadMapEnds = (layout: MapLayout): MapLayout["wires"] => {
+  const wires = layout.wires.map((wire) => ({
+    ...wire,
+    points: wire.points.map((point) => [...point] as Point),
+  }));
+  const groups = new Map<string, WireEndRef[]>();
+  wires.forEach((wire, index) => {
+    if (wire.points.length < 2) return;
+    for (const at of ["from", "to"] as const) {
+      const [x, y] = wireEndOf(wire.points as Point[], at).tip;
+      const key = `${Math.round(x)},${Math.round(y)}`;
+      groups.set(key, [...(groups.get(key) ?? []), { index, at }]);
+    }
+  });
+  for (const ends of groups.values()) {
+    if (ends.length < 2) continue;
+    // 線の向こう側の点の位置の順に並べ、線どうしが交わらないようにする
+    const farOf = (end: WireEndRef): number => {
+      const points = (wires[end.index]?.points ?? []) as Point[];
+      const { tip, dir } = wireEndOf(points, end.at);
+      const ordered = end.at === "from" ? points : [...points].reverse();
+      const far = (ordered[2] ?? ordered[1] ?? tip) as Point;
+      return Math.abs(dir[0]) < 0.5 ? far[0] : far[1];
+    };
+    ends.sort((a, b) => farOf(a) - farOf(b));
+    ends.forEach((end, order) => {
+      const wire = wires[end.index];
+      if (!wire) return;
+      const offset = (order - (ends.length - 1) / 2) * MAP_CLASS.endGap;
+      wire.points = shiftWireEnd(wire.points as Point[], end.at, offset);
+    });
+  }
+  return wires;
+};
+
+/** 部品『mapのクラス図』の引数。`layout` の線は spreadMapEnds でずらした線 */
+export type MapClassArgs = MapFlowArgs & {
+  classes: MapClassNode[];
+  ends: MapClassEnd[];
+};
+
+/** 部品『mapのクラス図』の HTML。クラスのノードに注釈・メンバーの区画・開閉のボタンを入れ、関係の端の形・多重度・ラベルを重ねる */
+export const renderMapClassDiagram = (args: MapClassArgs): MapPart => {
+  const id = args.id ?? "map";
+  const shown = new Set(
+    args.layout.nodes.filter((node) => !node.faded).map((node) => node.id),
+  );
+  const nodeParts: Record<string, MapNodePart> = {};
+  for (const [index, node] of args.classes.entries()) {
+    if (!shown.has(node.id)) continue;
+    const memberNotes = (source: Record<string, unknown> | undefined) =>
+      Object.fromEntries(
+        Object.entries(source ?? {}).flatMap(([key, value]) =>
+          key.startsWith(`${node.id}.`)
+            ? [[key.slice(node.id.length + 1), value]]
+            : [],
+        ),
+      );
+    const part = renderMapClassMembers({
+      node,
+      notes: memberNotes(args.notes) as Record<string, string>,
+      collapsed: args.collapsed.includes(node.id),
+      annotations: memberNotes(args.annotations) as Record<
+        string,
+        DiagramAnnotation[]
+      >,
+      ownerPrefix: noteOwnerPrefix(args.id),
+      hints: args.hints,
+      id: `${id}-class-${index}`,
+    });
+    const annotation =
+      node.annotation === undefined
+        ? ""
+        : `<span class="map-class-annotation">«${escapeHtml(node.annotation)}»</span>`;
+    nodeParts[node.id] = {
+      head: `${annotation}${part.toggle}`,
+      body: part.members,
+      tips: part.tips,
+    };
+  }
+  const classIds = new Set(args.classes.map((node) => node.id));
+  const shapes: Record<string, MapStateShape> = { ...args.shapes };
+  for (const node of args.layout.nodes)
+    if (!classIds.has(node.id) && node.id.startsWith("note_"))
+      shapes[node.id] = "note";
+  // 関係の線は矢じりを持たず、`..` の関係は破線
+  const lines = {
+    ...args.lines,
+    "---": { ...args.lines["---"], head: "none" as const },
+    "-.->": {
+      ...args.lines["-.->"],
+      dash: "dashed" as const,
+      head: "none" as const,
+    },
+  };
+  // メンバーの説明はクラスの中のボタンに出し、クラスのマーカーには出さない
+  const notes = Object.fromEntries(
+    Object.entries(args.notes ?? {}).filter(([key]) => !key.includes(".")),
+  );
+  // 関係のラベルは線の中ほどに描くため、構成図の部品には渡さない
+  const labels: Record<string, string> = {};
+  const wires = args.layout.wires.map((wire) => {
+    if (wire.label === undefined || wire.merged !== undefined) return wire;
+    labels[wire.id] = wire.label;
+    return { ...wire, label: undefined };
+  });
+  const flow = renderMapFlow({
+    ...args,
+    layout: { ...args.layout, wires },
+    notes,
+    lines,
+    nodeParts,
+    shapes,
+  });
+  const kept = keptOf(args);
+  const dim = new Set(
+    kept === undefined
+      ? []
+      : args.layout.wires
+          .filter((wire) => !kept.wires.has(wire.id))
+          .map((wire) => wire.id),
+  );
+  const ends = renderMapClassEnds({
+    layout: args.layout,
+    ends: args.ends,
+    labels,
+    dim,
+  });
+  return { html: `${flow.html}${ends}`, tips: flow.tips };
+};
+
+/** アーキテクチャ図の線の辺の指定（部品が引く値。`fromGroup`・`toGroup` は group の枠の辺を端にする） */
+export type MapArchEdge = {
+  id: string;
+  from: string;
+  fromSide: MapSide;
+  fromGroup: boolean;
+  to: string;
+  toSide: MapSide;
+  toGroup: boolean;
+};
+
+/** ノードの辺 */
+type MapSide = "top" | "right" | "bottom" | "left";
+
+/** 部品『mapのアーキテクチャ図』の寸法（px） */
+export const MAP_ARCH = {
+  /** junction の点の一辺 */
+  junction: 16,
+  /** 線の端の、辺から外へ出す長さ */
+  endOut: 16,
+} as const;
+
+/** 矩形の辺の中ほどの点と、辺から外へ出た点 */
+const sideAnchor = (
+  rect: { x: number; y: number; w: number; h: number },
+  side: MapSide,
+): { at: Point; out: Point } => {
+  const { x, y, w, h } = rect;
+  const at: Point = {
+    top: [x + w / 2, y] as Point,
+    right: [x + w, y + h / 2] as Point,
+    bottom: [x + w / 2, y + h] as Point,
+    left: [x, y + h / 2] as Point,
+  }[side];
+  const out: Point = {
+    top: [at[0], at[1] - MAP_ARCH.endOut] as Point,
+    right: [at[0] + MAP_ARCH.endOut, at[1]] as Point,
+    bottom: [at[0], at[1] + MAP_ARCH.endOut] as Point,
+    left: [at[0] - MAP_ARCH.endOut, at[1]] as Point,
+  }[side];
+  return { at, out };
+};
+
+/** 辺から外へ出た 2 点を直角につなぐ点（左右どうしは中ほどの縦、上下どうしは中ほどの横、組なら 1 回だけ折れる） */
+const elbow = (
+  a: { out: Point; side: MapSide },
+  b: { out: Point; side: MapSide },
+): Point[] => {
+  const horizontal = (side: MapSide) => side === "left" || side === "right";
+  const [ax, ay] = a.out;
+  const [bx, by] = b.out;
+  if (ax === bx || ay === by) return [];
+  if (horizontal(a.side) && horizontal(b.side)) {
+    const mx = (ax + bx) / 2;
+    return [
+      [mx, ay],
+      [mx, by],
+    ];
+  }
+  if (!horizontal(a.side) && !horizontal(b.side)) {
+    const my = (ay + by) / 2;
+    return [
+      [ax, my],
+      [bx, my],
+    ];
+  }
+  return horizontal(a.side) ? [[bx, ay]] : [[ax, by]];
+};
+
+/** アーキテクチャ図の線を、指定の辺の中ほどから外へ出た 2 点を直角につなぐ経路に引き直す */
+export const rewireMapArchitecture = (args: {
+  layout: MapLayout;
+  edges: MapArchEdge[];
+  collapsed: string[];
+  ends?: Record<string, { from?: MapSide; to?: MapSide }> | undefined;
+}): MapLayout["wires"] => {
+  const { layout } = args;
+  const rectOf = (id: string, group: boolean) => {
+    const node = layout.nodes.find((item) => item.id === id);
+    if (node) {
+      const owner = group ? node.ancestors[0] : undefined;
+      return (
+        layout.groups.find((item) => item.id === owner) ??
+        (node as { x: number; y: number; w: number; h: number })
+      );
+    }
+    return layout.groups.find((item) => item.id === id);
+  };
+  return layout.wires.map((wire) => {
+    const original = wire.merged?.[0] ?? { from: wire.from, to: wire.to };
+    const edge = args.edges.find(
+      (item) =>
+        (item.from === original.from && item.to === original.to) ||
+        (item.from === original.to && item.to === original.from),
+    );
+    if (!edge) return wire;
+    const forward = edge.from === original.from;
+    const override = args.ends?.[edge.id];
+    const fromSide = forward
+      ? (override?.from ?? edge.fromSide)
+      : (override?.to ?? edge.toSide);
+    const toSide = forward
+      ? (override?.to ?? edge.toSide)
+      : (override?.from ?? edge.fromSide);
+    const fromGroup = forward ? edge.fromGroup : edge.toGroup;
+    const toGroup = forward ? edge.toGroup : edge.fromGroup;
+    const fromRect = rectOf(wire.from, fromGroup);
+    const toRect = rectOf(wire.to, toGroup);
+    if (!fromRect || !toRect) return wire;
+    const a = sideAnchor(fromRect, fromSide);
+    const b = sideAnchor(toRect, toSide);
+    return {
+      ...wire,
+      points: [
+        a.at,
+        a.out,
+        ...elbow({ out: a.out, side: fromSide }, { out: b.out, side: toSide }),
+        b.out,
+        b.at,
+      ],
+    };
+  });
+};
+
+/** アイコンの名前の svg（まとめたアイコンだけ。無ければ空） */
+const archIconHtml = (name: string | undefined): string => {
+  const node = name === undefined ? undefined : bundledIconNode(name);
+  return node ? iconNodeSvg(node as unknown as MdmarkIconNode) : "";
+};
+
+/** 部品『mapのアーキテクチャ図』の引数。`layout` の線は rewireMapArchitecture で引き直した線 */
+export type MapArchArgs = MapFlowArgs & {
+  /** group の ID ごとの Lucide のアイコンの名前 */
+  groupIcons: Record<string, string>;
+  junctions: string[];
+  /** 線の ID ごとの矢じり（線の点の並びの向きで、`end` は終点） */
+  heads: Record<string, "none" | "end" | "start" | "both">;
+};
+
+/** 部品『mapのアーキテクチャ図』の HTML。group のタイトルにアイコンを、junction を点にし、線の矢じりを `heads` のとおりに描く */
+export const renderMapArchitecture = (args: MapArchArgs): MapPart => {
+  const shapes: Record<string, MapStateShape> = { ...args.shapes };
+  for (const id of args.junctions) shapes[id] = "junction";
+  const lines = {
+    ...args.lines,
+    "mdmark-arch-plain": { ...args.lines["---"], head: "none" as const },
+    "mdmark-arch-head": {
+      ...args.lines["-->"],
+      head: args.lines["-->"]?.head ?? ("filled" as const),
+    },
+  };
+  const wireLines: Record<string, string> = { ...args.wireLines };
+  const wires = args.layout.wires.map((wire) => {
+    const head = args.heads[wire.id] ?? "none";
+    wireLines[wire.id] ??=
+      head === "none" ? "mdmark-arch-plain" : "mdmark-arch-head";
+    return {
+      ...wire,
+      both: head === "both",
+      // 始点の側だけに矢じりを持つ線は、点の並びを逆にして終点の矢じりで描く
+      points: head === "start" ? [...wire.points].reverse() : wire.points,
+    };
+  });
+  const flow = renderMapFlow({
+    ...args,
+    layout: { ...args.layout, wires },
+    lines,
+    wireLines,
+    shapes,
+  });
+  let html = flow.html;
+  for (const [id, icon] of Object.entries(args.groupIcons)) {
+    const svg = archIconHtml(icon);
+    if (svg === "") continue;
+    html = html.replace(
+      new RegExp(
+        `(data-group="${regExpValue(id)}"[^>]*>(?:<div class="map-group-bar"[^>]*></div>)?<div class="map-group-head"><button class="map-disclosure"[\\s\\S]*?</button>)`,
+        "g",
+      ),
+      `$1<span class="map-group-icon">${svg}</span>`,
+    );
+  }
+  return { html, tips: flow.tips };
+};
+
+/** 境界の種類ごとの、タイトルの後ろの文字 */
+const C4_BOUNDARY_NAMES = {
+  enterprise: "［Enterprise］",
+  system: "［Software System］",
+  boundary: "",
+} as const;
+
+/** 部品『mapのC4図』の引数 */
+export type MapC4Args = MapFlowArgs & {
+  /** 要素の ID ごとの説明 */
+  descriptions: Record<string, string>;
+  /** 境界の ID ごとの種類 */
+  boundaries: Record<string, keyof typeof C4_BOUNDARY_NAMES>;
+};
+
+/** 部品『mapのC4図』の HTML。要素の名前の下に説明を入れ、境界を破線の枠にしてタイトルの後ろに種類を付ける */
+export const renderMapC4Diagram = (args: MapC4Args): MapPart => {
+  const nodeParts: Record<string, MapNodePart> = {};
+  for (const [id, text] of Object.entries(args.descriptions)) {
+    if (text === "") continue;
+    nodeParts[id] = {
+      head: "",
+      body: `<p class="map-c4-description">${escapeHtml(text)}</p>`,
+      tips: "",
+    };
+  }
+  const layout = {
+    ...args.layout,
+    groups: args.layout.groups.map((group) => ({
+      ...group,
+      title: `${group.title}${C4_BOUNDARY_NAMES[args.boundaries[group.id] ?? "boundary"]}`,
+    })),
+  };
+  const flow = renderMapFlow({ ...args, layout, nodeParts });
+  let html = flow.html;
+  for (const id of Object.keys(args.boundaries))
+    html = html.replace(
+      new RegExp(`class="(map-group[^"]*)"( data-group="${regExpValue(id)}")`),
+      'class="$1 map-c4-boundary"$2',
+    );
+  return { html, tips: flow.tips };
 };

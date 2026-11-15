@@ -1,6 +1,9 @@
 import type { ResolvedConfig } from "../config.ts";
 import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
+import { attachMapArchitecture } from "./architecture-view.ts";
+import { attachMapC4 } from "./c4-view.ts";
 import { collectMapProblems } from "./check.ts";
+import { attachMapClass } from "./class-view.ts";
 import { attachMapEr } from "./er-view.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
 import { parseFlowchart } from "./flowchart.ts";
@@ -120,6 +123,18 @@ const collapseRange = (range: HTMLElement, args: MapArgs): void => {
   details.append(summary, range);
 };
 
+/** 構成図の上に描く種類ごとの、図を付ける関数 */
+const FLOW_BASED: Record<
+  string,
+  (range: HTMLElement, config: ResolvedConfig, args: MapArgs) => MapFlowHandle
+> = {
+  erDiagram: attachMapEr,
+  stateDiagram: attachMapState,
+  classDiagram: attachMapClass,
+  architecture: attachMapArchitecture,
+  C4Context: attachMapC4,
+};
+
 /** 範囲 1 つに、種類の図を付ける。シーケンス図は構成図を付け終えた後に付ける */
 const attachRange = (context: AttachContext, range: HTMLElement): void => {
   const { config, destroyers } = context;
@@ -127,13 +142,12 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
   warnRange(range, { source, config });
   const { args } = parseMapArgs(range.dataset.mapArgs ?? "");
   collapseRange(range, args);
-  const kind = range.dataset.mapKind;
+  const kind = range.dataset.mapKind ?? "";
+  const attach = FLOW_BASED[kind];
   if (kind === "sequenceDiagram") {
     context.sequences.push(sequenceEntry(context, { range, args, source }));
-  } else if (kind === "erDiagram") {
-    destroyers.push(attachMapEr(range, config, args).destroy);
-  } else if (kind === "stateDiagram") {
-    destroyers.push(attachMapState(range, config, args).destroy);
+  } else if (attach) {
+    destroyers.push(attach(range, config, args).destroy);
   } else {
     attachFlowRange(context, { range, args, source });
   }

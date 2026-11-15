@@ -31,7 +31,7 @@ import {
   parseFlowchart,
 } from "./flowchart.ts";
 import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
-import type { MapArgs } from "./spec.ts";
+import type { MapArgs, MapKind, MapLine } from "./spec.ts";
 import {
   emptyMapState,
   type MapState,
@@ -92,6 +92,59 @@ export type MapFlowExtension = {
   ) => { nodes: Set<string>; wires: Set<string> } | undefined;
   /** 閉じたグループの名前の後ろの文字 */
   collapsedTag?: (groupId: string) => string | undefined;
+  /** 設定の map.kinds に重ねるノードの種類 */
+  kinds?: Record<string, MapKind> | undefined;
+  /** 設定の map.lines に重ねる線の種類 */
+  lines?: Record<string, MapLine> | undefined;
+  /** 印に title が無いときの図の枠のタイトル */
+  title?: string | undefined;
+  /** 選べるノードか（undefined なら全てのノードを選べる） */
+  selectable?: ((id: string) => boolean) | undefined;
+};
+
+/** 2 つのノードをつなぐ最短の経路に乗る全てのノードと線（つながらなければ 2 つのノードだけ） */
+export const shortestPathKept = (
+  edges: Array<{ id: string; from: string; to: string }>,
+  ends: [string, string],
+): { nodes: Set<string>; wires: Set<string> } => {
+  const distances = (start: string): Map<string, number> => {
+    const dist = new Map([[start, 0]]);
+    const queue = [start];
+    for (let at = queue.shift(); at !== undefined; at = queue.shift()) {
+      const base = dist.get(at) ?? 0;
+      for (const edge of edges) {
+        const next =
+          edge.from === at ? edge.to : edge.to === at ? edge.from : undefined;
+        if (next !== undefined && !dist.has(next)) {
+          dist.set(next, base + 1);
+          queue.push(next);
+        }
+      }
+    }
+    return dist;
+  };
+  const [a, b] = ends;
+  const fromA = distances(a);
+  const fromB = distances(b);
+  const total = fromA.get(b);
+  const nodes = new Set([a, b]);
+  const wires = new Set<string>();
+  if (total === undefined) return { nodes, wires };
+  for (const edge of edges) {
+    for (const [u, v] of [
+      [edge.from, edge.to],
+      [edge.to, edge.from],
+    ] as const) {
+      const du = fromA.get(u);
+      const dv = fromB.get(v);
+      if (du === undefined || dv === undefined || du + 1 + dv !== total)
+        continue;
+      nodes.add(u);
+      nodes.add(v);
+      wires.add(edge.id);
+    }
+  }
+  return { nodes, wires };
 };
 
 /** 補足の layout と状態から、ID ごとの配置の上書きを作る */
@@ -432,6 +485,8 @@ export const attachMapFlow = (
 ): MapFlowHandle => {
   const { args, onWalk, extension } = options;
   const { index, chart, data } = readFlowRange(range, extension);
+  const kinds = { ...config.map.kinds, ...extension?.kinds };
+  const lines = { ...config.map.lines, ...extension?.lines };
   const ids = new Set([
     ...chart.nodes.map((node) => node.id),
     ...chart.groups.map((group) => group.id),
@@ -505,8 +560,8 @@ export const attachMapFlow = (
     const packets: MapPacketMark[] = [];
     const part = (extension?.render ?? renderMapFlow)({
       layout: shown,
-      kinds: config.map.kinds,
-      lines: config.map.lines,
+      kinds,
+      lines,
       wireLines,
       notes,
       annotations,
@@ -533,7 +588,7 @@ export const attachMapFlow = (
   range.innerHTML = renderDiagramFrame(
     {
       kind: "map",
-      title: args.title ?? "",
+      title: args.title ?? extension?.title ?? "",
       legend: [],
       wide: true,
       // 等倍より縮めず、収まらない分は図の枠の中で横にスクロールする
@@ -641,8 +696,8 @@ export const attachMapFlow = (
       layer.innerHTML = renderMapPackets(
         {
           layout: { ...layout, wires: applyWireShifts(layout, state).wires },
-          kinds: config.map.kinds,
-          lines: config.map.lines,
+          kinds,
+          lines,
           wireLines,
           colors,
         },
@@ -707,7 +762,9 @@ export const attachMapFlow = (
     }
     change({ ...state, collapsed: [...set] });
   };
-  const select = (ids: string[]) => {
+  const select = (candidates: string[]) => {
+    const ids = candidates.filter((id) => extension?.selectable?.(id) ?? true);
+    if (ids.length === 0) return;
     const all = ids.every((id) => state.selected.includes(id));
     const next = all
       ? state.selected.filter((id) => !ids.includes(id))

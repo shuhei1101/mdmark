@@ -18,7 +18,10 @@ export type MapKindName =
   | "flowchart"
   | "sequenceDiagram"
   | "erDiagram"
-  | "stateDiagram";
+  | "stateDiagram"
+  | "classDiagram"
+  | "architecture"
+  | "C4Context";
 
 /** Mermaid の 1 行目の最初の単語から図の種類を決める */
 export const mapKindOf = (mermaid: string): MapKindName | undefined => {
@@ -28,6 +31,10 @@ export const mapKindOf = (mermaid: string): MapKindName | undefined => {
   if (first === "erDiagram") return "erDiagram";
   if (first === "stateDiagram-v2" || first === "stateDiagram")
     return "stateDiagram";
+  if (first === "classDiagram" || first === "classDiagram-v2")
+    return "classDiagram";
+  if (first === "architecture-beta") return "architecture";
+  if (first === "C4Context") return "C4Context";
   return undefined;
 };
 
@@ -58,7 +65,7 @@ export const collectMapStructure = (range: MapRangeSource) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `この版の map で描ける図の種類は \`flowchart\`・\`sequenceDiagram\`・\`erDiagram\`・\`stateDiagram-v2\` です。\`${first}\` の図はコードブロックのまま表示しています。`,
+      message: `この版の map で描ける図の種類は \`flowchart\`・\`sequenceDiagram\`・\`erDiagram\`・\`stateDiagram-v2\`・\`classDiagram\`・\`architecture-beta\`・\`C4Context\` です。\`${first}\` の図はコードブロックのまま表示しています。`,
     });
   }
   return { problems, kind, args: parsedArgs };

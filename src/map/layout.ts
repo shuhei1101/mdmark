@@ -1402,7 +1402,9 @@ export const layoutMap = (
   const { root, edges } = buildView(chart, view, { overrides, maxWidth });
   // 段を決める処理で使わない線（閉じたグループへまとめた線は使う）を除く
   const links = edges
-    .filter((edge) => edge.merged !== undefined || !overrides[edge.id]?.rankless)
+    .filter(
+      (edge) => edge.merged !== undefined || !overrides[edge.id]?.rankless,
+    )
     .map((edge): [string, string] => [edge.from, edge.to]);
   const placed = new Map<string, Local[]>();
   layoutBox(root, { links, overrides, placed });
