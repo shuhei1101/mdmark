@@ -1,0 +1,10 @@
+$ npx biome check vitest.config.ts tests/integration/touch-setup.ts tests/integration/lib/mount.browser.test.ts
+Checked 3 files in 751ms. No fixes applied.
+exit=0
+
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0
