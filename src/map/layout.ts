@@ -50,6 +50,8 @@ export type MapOverride = {
   above?: number | undefined;
   /** ノードの左右に空ける幅（ER 図の関連の端と多重度の置き場所。線は通す） */
   aside?: number | undefined;
+  /** 線の ID に指定すると、段を決める処理でその線を使わない（経路は引く） */
+  rankless?: boolean | undefined;
 };
 
 /** 辺ごとの、線が辺から出ていく向き（routeEdges の向きの番号） */
@@ -1398,7 +1400,10 @@ export const layoutMap = (
   const maxWidth =
     nodeFit === "width" ? MAP_LAYOUT.maxWidthWide : MAP_LAYOUT.maxWidth;
   const { root, edges } = buildView(chart, view, { overrides, maxWidth });
-  const links = edges.map((edge): [string, string] => [edge.from, edge.to]);
+  // 段を決める処理で使わない線（閉じたグループへまとめた線は使う）を除く
+  const links = edges
+    .filter((edge) => edge.merged !== undefined || !overrides[edge.id]?.rankless)
+    .map((edge): [string, string] => [edge.from, edge.to]);
   const placed = new Map<string, Local[]>();
   layoutBox(root, { links, overrides, placed });
   const leaves: InnerLeaf[] = [];
