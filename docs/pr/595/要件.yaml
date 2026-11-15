@@ -85,8 +85,8 @@ docs:
     change: 記法を含むため `.mark.md` へ改名し、用語「ガイド」の本文の `guide/index.yaml` を `plugin/guide-index.yaml` へ合わせる
     status: todo
 scope_out:
-  - item: AI Monitor の設計書の Markdown の生成が出力する `docs/README.md`・設計書のフォルダの `README.md`・`docs/guide/README.md` の拡張子の移行
-    reason: '生成し直すと `README.md` に戻るため（#546 の扱いの判断と #481 と同じ扱い）'
+  - item: AI Monitor の設計書の Markdown の生成が出力する `docs/README.md`・設計書のフォルダの `README.md`・`docs/guide/README.md`・`docs/guide/` の分類のトップのページ（`はじめに.md`・`使用方法.md`・`リファレンス.md`）の拡張子の移行
+    reason: '生成し直すと `.md` に戻るため（#546 の扱いの判断と #481 と同じ扱い）。分類のトップのページは AI Monitor の `design_docs publish` が `docs/guide/{分類}.md` の名前で書き出す'
     plan: none
   - item: 過去の PR ドキュメント（`docs/pr/`）の記法を含む `.md` の拡張子の移行と、そこから改名したガイドのページへのリンクの修正
     reason: '#546 の終わりの条件の対象は利用者が読む既存のガイドなどの文書で、PR ドキュメントはその作業 PR の時点の記録のため。過去の記録を書き換えると当時の差分と食い違う'
