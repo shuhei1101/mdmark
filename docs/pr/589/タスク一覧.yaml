@@ -60,7 +60,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T06:10:39.846038+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T06:39:09.505709+00:00'
   - process: ドキュメント修正
     status: todo
     note: src/files.yaml・vscode/files.yaml の 4 ファイルの行の implements を、新しく作るモジュール構成へ向ける
