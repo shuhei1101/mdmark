@@ -15,12 +15,18 @@ docs:
   - page: docs/guide/API.md
     new: false
     change: CSS 変数の表の --mdmark-color-bg-opaque の使用する場所から「横スクロールの影を隠す覆い」を削除し、--mdmark-color-scroll-shadow の使用する場所をコードブロックだけにする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:01:41.780901+00:00'
   - page: docs/guide/カスタマイズ-テーマを上書きする.md
     new: false
     change: --mdmark-color-bg-opaque で塗るものから「表の横スクロールの影を隠す覆い」を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:01:41.780901+00:00'
   - page: docs/guide/カスタマイズ-印刷する.md
     new: false
     change: 横スクロールの行の続きの影をコードブロックだけにする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:01:41.780901+00:00'
