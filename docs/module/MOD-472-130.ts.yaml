@@ -86,6 +86,26 @@ constants:
     role: 定数
     summary: 強調するときに `map-dim` を付ける要素のセレクター（ノード・線・ラベル・ライフライン）
 functions:
+  - name: neighborKept
+    title: 1つのノードの線と相手
+    kind: 関数
+    container: src/map/flow-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 1 つのノードと、そのノードの線と相手のノードを返す。クラス図・アーキテクチャ図・C4 図の `extension.selectionOf` が 1 つ選んだときに使う
+    scope: public
+    args:
+      - name: edges
+        type: 'Array<{ id: string; from: string; to: string }>'
+        required: true
+        description: 線（向きは見ない）
+      - name: id
+        type: string
+        required: true
+        description: 選んだノードの ID
+    returns:
+      type: '{ nodes: Set<string>; wires: Set<string> }'
+      description: 残すノードと線
   - name: shortestPathKept
     title: 2つのノードの最短の経路
     kind: 関数
