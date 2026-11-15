@@ -52,7 +52,7 @@ functions:
         summary: group の辺から出る線
         condition: モックの `ARCH` で、group「アプリ」を閉じる
         mock: なし
-        expected: '`r4` の始点が閉じた `app` のノードの右の辺の中ほどで、`app` のノードに「service 2 件」がある'
+        expected: '`r4` をまとめた線 `app->hub` の始点が閉じた `app` のノードの右の辺の中ほどで、`app` のノードに「service 2 件」がある'
       - name: test_attach_map_architecture_when_junction_pressed
         case: 正常
         summary: junction は選ばない
