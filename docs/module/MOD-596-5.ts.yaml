@@ -38,7 +38,8 @@ functions:
       1. `parseArchitecture` と `architectureToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
       2. `extension.kinds` に `MAP_ARCH_KINDS`、`extension.overrides` に `architectureToFlowchart` の上書きを指定する
       3. `extension.rewire` に `rewireMapArchitecture`（線の辺の指定・`{group}`・補足の `layout` の `r{番号}.ends`・閉じた group を指定する）、`extension.render` に group のアイコン・junction・線の矢じりを指定した `renderMapArchitecture` を指定する
-      4. `extension.collapsedTag` で、閉じた group に「service {数} 件」を返却する
+      4. `extension.selectionOf` で、junction を選んだ ID から除き、残りの service を構成図の選び方で残す（junction は選ばない）
+      5. `extension.collapsedTag` で、閉じた group に「service {数} 件」を返却する
     unit_tests:
       - name: test_attach_map_architecture
         case: 正常
@@ -52,5 +53,11 @@ functions:
         condition: モックの `ARCH` で、group「アプリ」を閉じる
         mock: なし
         expected: '`r4` の始点が閉じた `app` のノードの右の辺の中ほどで、`app` のノードに「service 2 件」がある'
+      - name: test_attach_map_architecture_when_junction_pressed
+        case: 正常
+        summary: junction は選ばない
+        condition: モックの `ARCH` で、`hub` を押す
+        mock: なし
+        expected: どのノードも `data-selected` を持たず、`map-dim` を持つノードが無い
 refs:
   - IF-472-35#constraints[map のアーキテクチャ図]
