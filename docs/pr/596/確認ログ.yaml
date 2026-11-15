@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 'Issue #564 の 9 種類の分け方（この PR で作る種類）'
+    decision: '配置の処理ごとに分け、この PR は classDiagram・architecture-beta・C4Context、残りは #597・#598・#599（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 9bdf3cea
+    thread: https://github.com/shuhei1101/mdmark/pull/596#discussion_r4577949265
