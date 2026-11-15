@@ -273,7 +273,7 @@ functions:
       - name: args
         type: 'MapFlowArgs & { tables: Array<{ name: string; columns: ErColumn[]; notes: Record<string, string> }>; relations: MapErRelation[]; fanouts: MapErFanout[] }'
         required: true
-        description: '構成図の部品の引数（`layout` の関連の線は `rewireMapEr` で付け替えた線）と、テーブル・関連・行が増える関連（`{ wire, from, to }`）。`annotations` の `{テーブル}.{列}` のキーの注記は、そのテーブルの `renderMapEr` に列の名前ごとの注記として渡す（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）'
+        description: '構成図の部品の引数（`layout` の関連の線は `rewireMapEr` で付け替えた線）と、テーブル・関連・行が増える関連（`{ wire, from, to }`）。`annotations` の `{テーブル}.{列}` のキーの注記は、そのテーブルの `renderMapEr` に列の名前ごとの注記として渡す（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）。`hints` はそのまま各テーブルの `renderMapEr` に指定する'
     returns:
       type: MapPart
       description: 図の中身とツールチップの HTML
@@ -290,6 +290,12 @@ functions:
         condition: モックの `ER` を配置して `rewireMapEr` で付け替え、「注文」の列 `状態` に説明を指定する
         mock: なし
         expected: '「注文」のノードの `div` が `tabindex`・`role` を持たず、`span.mdmark-diagram-node-hit` が `role="button"`・`tabindex="0"` を持つ。開閉のボタン・列の行（`.map-er-columns`）・列の説明のボタンは `span.mdmark-diagram-node-hit` の中に無い'
+      - name: test_render_map_er_diagram_when_hints_off
+        case: 正常
+        summary: ヒントがオフなら、各テーブルの列の説明のボタンとツールチップを作らない
+        condition: モックの `ER` を配置して `rewireMapEr` で付け替え、「注文」の列 `状態` に説明を指定し、`hints` を `false` にする
+        mock: なし
+        expected: 「注文」のノードに `button.map-er-note` が無く、ツールチップに列 `状態` の説明が無い。列の行（`div.map-er-column`）は描かれる
   - name: rewireMapEr
     title: ER図の関連の端の付け替え
     kind: 関数
