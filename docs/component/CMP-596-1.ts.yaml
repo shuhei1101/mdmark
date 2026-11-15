@@ -1,0 +1,117 @@
+id: CMP-596-1
+visibility: internal
+title: mapのクラス図
+implementation: src/parts/map.ts#renderMapClassDiagram
+story: Parts/MapClass
+states:
+  - name: Default
+    description: クラス 6 つ（`«interface»` と型の引数を含む）・関係 7 本（7 種類の記号と多重度とラベル）・namespace「形状」・`note for` のノート
+    notes:
+      定義: モックの `CLASS`・`CLASS_DATA`（`docs/mock/refs/596/assets/samples.js`）
+  - name: MembersCollapsed
+    description: 「基本図形」のメンバーを閉じた。名前と「メンバー 3」の 1 行になる
+    args:
+      - name: collapsed
+        value: '["基本図形"]'
+  - name: Entered
+    description: namespace「形状」の中へ入った
+    args:
+      - name: entered
+        value: 形状
+  - name: NamespaceCollapsed
+    description: namespace「形状」を閉じた。「クラス 3 件」を持つ 1 つのノードになる
+    args:
+      - name: collapsed
+        value: '["形状"]'
+  - name: PathSelected
+    description: 「図面」と「円」を選んだ。2 本の最短の経路のクラスと関係のほかが薄い
+    args:
+      - name: selected
+        value: '["図面", "円"]'
+  - name: HintsOff
+    description: ヒントをオフにした。説明のマーカーとメンバーの説明のボタンが無い
+    args:
+      - name: hints
+        value: 'false'
+  - name: Narrow
+    description: 幅 390px の置き場所
+lead: map の `classDiagram` を、クラスを属性とメソッドの区画を持つノード、namespace をグループにして構成図の部品の上に描き、関係の端の形状・多重度・ラベルとメンバーの開閉を持つ。
+args:
+  - name: layout
+    type: オブジェクト
+    required: true
+    description: 自動配置の結果（`MapLayout`）。クラスとノートはノード、namespace はグループ。関係は矢じりの無い線（`..` は破線）で描く
+  - name: layout.nodes[].classMembers
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: クラスのメンバー（`{ visibility, text, method, isStatic, isAbstract, note }`）。属性とメソッドを区切り線で分けた 2 つの区画に並べ、静的は下線、抽象は斜体。`note` を持つ行に説明のボタンを配置する
+  - name: layout.nodes[].annotation
+    type: 文字列
+    required: false
+    default: なし（出さない）
+    description: '`<<…>>` の中身。名前の上に `«…»` で出し、種類の行「クラス」に代える'
+  - name: layout.ends
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: 関係の端（`{ wire, at, shape, card }`。`at` は `from`・`to`、`shape` は `triangle`・`diamond-filled`・`diamond-open`・`arrow`）。線の端に形状を、端の近くに多重度を描く。同じ点から出る・入る端は辺に沿って 16px ずつずらす
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じた namespace とメンバーを閉じたクラスの ID。閉じた namespace は「クラス {数} 件」、閉じたクラスは名前と「メンバー {数}」の開閉のボタンの 1 行
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入った namespace の ID。構成図の部品と同じ
+  - name: selected
+    type: 配列
+    required: false
+    default: '[]'
+    description: 選んだクラスの ID。1 つなら関係と相手、2 つならつなぐ最短の経路を残す
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内・線のホバーで強調するクラスと関係。構成図の部品と同じ
+  - name: hints
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`false` のとき、クラス・namespace の説明のマーカーとメンバーの説明のボタンを配置せず、関係の押せる帯に `aria-describedby` を付けない'
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応。クラスの名前とノートの文の中の用語を `span.mdmark-term` にする
+events:
+  - name: 開閉する・中へ入る
+    when: namespace の山形・タイトルのボタン、クラスの開閉のボタンを押す
+    value: namespace かクラスの ID
+    description: 構成図の部品の「開閉する」「中へ入る」と同じ。クラスの開閉はメンバーを開閉する
+  - name: 選ぶ
+    when: クラスの名前の行の文字の外を押す。クラスにフォーカスして Enter か Space を押す
+    value: クラスの ID
+    description: '`mount` が `selected` を切り替える。メンバーの行とノートは選ばない'
+  - name: 線を指す
+    when: 関係の線にポインターを乗せるかフォーカスする。離す
+    value: 線の ID
+    description: 構成図の部品と同じ
+uses:
+  - component: CMP-472-5#
+    how: ノード・グループ・線の描き方と、開閉・中へ入る・選択・強調・データの印・移動
+  - component: CMP-472-38#
+    how: クラス・メンバー・関係の説明
+accessibility:
+  - クラスのノードは構成図のノードと同じく、ノードの全体を覆う押せる要素が `tabindex="0"` を持ってフォーカスを受け、選んだかを `（選択中）` で伝える
+  - メンバーの区画は `role="list"`、行は `role="listitem"` を持ち、可視性の記号も読み上げの対象にする。メンバーの説明のボタンは `aria-label="{メンバー名}の説明"` を持つ
+  - クラスの開閉のボタンは `aria-expanded` と、「{クラス名}のメンバーを開く」「…を閉じる」の名前を持つ
+  - 関係の端の形状と多重度は飾りとして `aria-hidden`、関係の押せる帯は `aria-label="{元}から{先}への{関係の種類}"`（継承・実現・合成・集約・関連・依存・リンク）を持つ
+refs:
+  - IF-472-35#constraints[map のクラス図]
+status: planned
+introduced:
+  pr: 596
+test_file: tests/integration/lib/map-class.story.test.ts

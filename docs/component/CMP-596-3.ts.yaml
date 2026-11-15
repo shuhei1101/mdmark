@@ -1,0 +1,101 @@
+id: CMP-596-3
+visibility: internal
+title: mapのC4図
+implementation: src/parts/map.ts#renderMapC4Diagram
+story: Parts/MapC4
+states:
+  - name: Default
+    description: 要素 7 つ（人・外部の人・システム・外部のシステム・データベース・待ち行列）・入れ子の境界 2 つ・関係 6 本（`Rel_D`・`Rel_R`・`BiRel`・技術の引数）
+    notes:
+      定義: モックの `C4`・`C4_DATA`（`docs/mock/refs/596/assets/samples.js`）
+  - name: BoundaryCollapsed
+    description: 境界「通販」を閉じた。「要素 3 件」を持つ 1 つのノードになり、中への関係が相手ごとに 1 本にまとまる
+    args:
+      - name: collapsed
+        value: '["shop"]'
+  - name: Entered
+    description: 境界「通販」の中へ入った
+    args:
+      - name: entered
+        value: shop
+  - name: ElementSelected
+    description: 「注文のシステム」と「在庫のシステム」を選んだ。`Rel_R` の線と両端のほかが薄い
+    args:
+      - name: selected
+        value: '["store", "stock"]'
+  - name: Narrow
+    description: 幅 390px の置き場所
+lead: map の `C4Context` を、要素を種類の行・名前・説明を持つノード、境界を破線のグループにして構成図の部品の上に描き、外部の要素を灰色の面と種類の行で描き分ける。
+args:
+  - name: layout
+    type: オブジェクト
+    required: true
+    description: 自動配置の結果（`MapLayout`）。要素はノード、境界はグループ。関係のラベルは「{ラベル} [{技術}]」
+  - name: layout.nodes[].c4Kind
+    type: 列挙
+    required: true
+    choices: person・system・system_db・system_queue
+    description: 要素の種類。`person` は人のアイコン、`system_db` はデータベースのアイコン、`system_queue` は角の丸い横長の形状
+  - name: layout.nodes[].external
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: '`_Ext` の要素。灰色の面で描き、種類の行を `[External Person]`・`[External Software System]` にする'
+  - name: layout.nodes[].description
+    type: 文字列
+    required: false
+    default: なし（出さない）
+    description: 要素の説明の引数。名前の下に小さい文字で出す
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じた境界の ID。名前の後ろに「要素 {数} 件」を出す
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入った境界の ID。構成図の部品と同じ
+  - name: selected
+    type: 配列
+    required: false
+    default: '[]'
+    description: 選んだ要素の ID。構成図のノードと同じく、つながる関係と相手・最短の経路を残す
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内・線のホバーで強調する要素と関係。構成図の部品と同じ
+  - name: hints
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`false` のとき、要素・境界の説明のマーカーを配置せず、関係の押せる帯に `aria-describedby` を付けない（要素の説明の引数は描く）'
+events:
+  - name: 開閉する・中へ入る
+    when: 境界の山形・タイトルのボタンを押す
+    value: 境界の ID
+    description: 構成図の部品と同じ
+  - name: 選ぶ
+    when: 要素の名前と説明の文字の外を押す。要素にフォーカスして Enter か Space を押す
+    value: 要素の ID（別名）
+    description: '`mount` が `selected` を切り替える'
+  - name: 線を指す
+    when: 関係の線にポインターを乗せるかフォーカスする。離す
+    value: 線の ID
+    description: 構成図の部品と同じ
+uses:
+  - component: CMP-472-5#
+    how: ノード・グループ・線の描き方と、開閉・中へ入る・選択・強調・データの印・移動
+  - component: CMP-472-38#
+    how: 要素・境界・関係の説明
+accessibility:
+  - 要素のノードは構成図のノードと同じく押せる要素がフォーカスを受け、種類の行・名前・説明を読み上げの対象にする。外部の要素を灰色だけでなく種類の行の `External` でも伝える
+  - 境界の破線の枠は種類をタイトルの「［{種類}］」で伝える
+  - 関係の押せる帯は `aria-label="{元}から{先}への線"`（`BiRel` は「{元}と{先}の間の線」）を持つ
+refs:
+  - IF-472-35#constraints[map の C4 図]
+status: planned
+introduced:
+  pr: 596
+test_file: tests/integration/lib/map-c4.story.test.ts

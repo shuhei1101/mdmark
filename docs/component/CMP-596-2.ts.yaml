@@ -1,0 +1,103 @@
+id: CMP-596-2
+visibility: internal
+title: mapのアーキテクチャ図
+implementation: src/parts/map.ts#renderMapArchitecture
+story: Parts/MapArchitecture
+states:
+  - name: Default
+    description: group 2 つ（入れ子）・service 6 つ（5 種類のアイコン）・junction 1 つ・線 6 本（矢じりの有無・上下の辺・group の辺から出る線・`ends` で入る辺を変えた線）
+    notes:
+      定義: モックの `ARCH`・`ARCH_DATA`（`docs/mock/refs/596/assets/samples.js`）
+  - name: Entered
+    description: group「アプリ」の中へ入った
+    args:
+      - name: entered
+        value: app
+  - name: GroupCollapsed
+    description: group「アプリ」を閉じた。「service 2 件」を持ち、group の辺から出ていた線は閉じたノードの同じ辺から出る
+    args:
+      - name: collapsed
+        value: '["app"]'
+  - name: ServiceSelected
+    description: 「API サーバー」を選んだ。つながる 3 本の線と相手のほかが薄い
+    args:
+      - name: selected
+        value: '["api"]'
+  - name: Narrow
+    description: 幅 390px の置き場所
+lead: map の `architecture-beta` を、service をアイコンを持つノード、group をアイコンつきのタイトルを持つグループ、junction を小さい点にして構成図の部品の上に描き、線を指定の辺から引く。
+args:
+  - name: layout
+    type: オブジェクト
+    required: true
+    description: 自動配置の結果（`MapLayout`）。service と junction はノード、group はグループ。線の経路は辺の指定から引き直した点の並び
+  - name: layout.nodes[].archIcon
+    type: 列挙
+    required: false
+    default: なし（アイコンを出さない）
+    choices: cloud・database・disk・internet・server
+    description: service と group のアイコン。Lucide の cloud・database・hard-drive・globe・server で描く
+  - name: layout.nodes[].junction
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: '`true` のノードは 16px の点で描き、名前と種類の行を出さない'
+  - name: layout.wires[].head
+    type: 列挙
+    required: false
+    default: none
+    choices: none・end・start・both
+    description: 矢じりを付ける端。`--` は `none`、`-->` は `end`、`<--` は `start`、`<-->` は `both`
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じた group の ID。名前の後ろに「service {数} 件」を出し、中の service の線は閉じたノードの同じ辺から引く
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入った group の ID。構成図の部品と同じ
+  - name: selected
+    type: 配列
+    required: false
+    default: '[]'
+    description: 選んだ service の ID。構成図のノードと同じく、つながる線と相手・最短の経路を残す
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内・線のホバーで強調する service と線。構成図の部品と同じ
+  - name: hints
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`false` のとき、service・group・junction の説明のマーカーを配置せず、線の押せる帯に `aria-describedby` を付けない'
+events:
+  - name: 開閉する・中へ入る
+    when: group の山形・タイトルのボタンを押す
+    value: group の ID
+    description: 構成図の部品と同じ
+  - name: 選ぶ
+    when: service の名前の文字の外を押す。service にフォーカスして Enter か Space を押す
+    value: service の ID
+    description: '`mount` が `selected` を切り替える。junction は選ばない'
+  - name: 線を指す
+    when: 線にポインターを乗せるかフォーカスする。離す
+    value: 線の ID
+    description: 構成図の部品と同じ
+uses:
+  - component: CMP-472-5#
+    how: ノード・グループ・線の描き方と、開閉・中へ入る・選択・強調・データの印・移動
+  - component: CMP-472-38#
+    how: service・group・junction・線の説明
+accessibility:
+  - service のノードは構成図のノードと同じく押せる要素がフォーカスを受ける。アイコンは `aria-hidden` で、名前を読み上げの対象にする
+  - junction は `aria-label="分岐点"` を持ち、フォーカスを持たない
+  - 線の押せる帯は `aria-label="{元}から{先}への線"` を持つ
+refs:
+  - IF-472-35#constraints[map のアーキテクチャ図]
+status: planned
+introduced:
+  pr: 596
+test_file: tests/integration/lib/map-architecture.story.test.ts
