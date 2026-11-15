@@ -121,6 +121,18 @@ documents:
     metadata:
       name: title
       visibility: visibility
+  - id: layout
+    title: フォルダ構成
+    paths: ["docs/layout/*.yaml"]
+    exclude: [index.yaml]
+    schema:
+      source: knowledge
+      path: schemas/design/layout.schema.yaml
+      ref: design-schemas/v8.3.0
+    metadata:
+      name: title
+      description: lead
+      visibility: visibility
   # YAML の設計書でないファイルは、フォルダごとの管理用の YAML が 1 ファイル 1 行で持つ
   - id: files_root
     title: docs の直下の Markdown と Pages の共通レイアウト

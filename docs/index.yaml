@@ -27,6 +27,8 @@ items:
   summary: 開発で使用するコマンドの分類ごとの前提・順序・コマンド・料金や副作用・確認した記録
 - page: test-procedure/
   summary: プロジェクト固有のテスト起動コマンドと前提条件
+- page: layout/
+  summary: リポジトリのフォルダとファイルの配置と、Git で管理しないもの
 - page: design-policy.md
   summary: mdmark が描く文書の既定の外観に経由するデザインの方向性
 - page: guide/

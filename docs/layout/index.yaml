@@ -1,0 +1,4 @@
+summary: リポジトリのフォルダとファイルの配置と、Git で管理しないもの
+items:
+- page: LAY-472-1.yaml
+  summary: ライブラリ本体・CLI・VS Code 拡張機能・Claude Code プラグインのコードとテスト、docs の種類のフォルダ、配布物の配置
