@@ -21,7 +21,7 @@ functions:
       type: void
       description: なし
     callees:
-      - MOD-472-135#functions[collectMapStructure]
+      - MOD-589-1#functions[collectMapStructure]
     unit_tests:
       - name: test_build_map_ranges
         case: 正常

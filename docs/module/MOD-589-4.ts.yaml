@@ -1,0 +1,4 @@
+id: MOD-589-4
+visibility: internal
+title: VS Code 拡張機能 / Webview / vite-env.d.ts
+lead: Webview の TypeScript に `vite/client` の型（`import.meta.env` とアセットの import）を読み込ませる型の参照だけを持つファイル。要素を持たない。
