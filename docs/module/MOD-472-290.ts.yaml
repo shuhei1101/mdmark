@@ -18,10 +18,10 @@ functions:
         description: markdown-it の状態
     process: |-
       1. `view` のマーカーごとに閉じのマーカーを探す。無ければ文書の終わりまでを範囲にし、閉じのマーカーが無い警告を `pushWarning` で差し込む
-      2. マーカーの設定（`validateMarkOptions` を経た値。キーは `board.group.column`・`board.values.{値}.icon`・`initial`・`columns.{列名}.filter.type`）を読み込む
+      2. マーカーの設定（`validateMarkOptions` を経た値。キーは `board.group.column`・`board.values.{値}.icon`・`initial`・`columns.{列名}.filter.type`・`columns.{列名}.sort`）を読み込む
       3. 範囲に表が無ければ、範囲に表が無い警告を差し込み、中身はそのまま残す
       4. 最初の表の見出しの行の文字を列名にして、`board.group.column`・`columns` のキーの列名を位置にする（絞り込みの種類は `FILTER_KINDS`、アイコンの名前は `VIEW_ICON_NAMES` に `validateMarkOptions` が照らしてある）。表に無い `board.group.column` の列は `boardDisabled` に警告の `id` を入れ、表に無い `columns` の列と、`board.group.column` の列に無い `board.values` の値は、その設定だけを当てずに警告にする（文言は画面設計『文書』の記載の警告）
-      5. 表の `table_open` に、`data` の種類・`sort` と読み込めた `columns.{列名}.filter` の列を持ち、`hide`・`totals` を空にした `TableSpec` を適用する（ビューの表に件数・テーブル設定・集計は付けない）（`decorateTables` が表の部品にする）
+      5. 表の `table_open` に、`data` の種類・`sort` と読み込めた `columns.{列名}.filter` の列と、`columns.{列名}.sort` の列と真偽値の `sorts` を持ち、`hide`・`totals` を空にした `TableSpec` を適用する（ビューの表に件数・テーブル設定・集計は付けない）（`decorateTables` が表の部品にする）
       6. 範囲を `<div class="mdmark-view" data-view="{ViewSpec の JSON}">` の開きと閉じの `html_block`（`markOwn`）で挟む。`mode` は `initial`、無ければ `board.group.column` が該当すれば `board`、それ以外は `table`。`initial` の `board` で `board.group.column` が該当しないときは `table`
     unit_tests:
       - name: test_build_views
@@ -60,6 +60,12 @@ functions:
         condition: '`<!-- view: {"board": {"group": {"column": "状態"}}, "size": 2} -->` とタイトル・状態の表と `<!-- /view -->`'
         mock: なし
         expected: 記載の警告が無く、`data-view` の `mode` が `board`、`env.warnings` が `size` を含む `unknown_mark_arg` の 1 件
+      - name: test_build_views_when_sort_columns
+        case: 正常
+        summary: columns.{列名}.sort の列を表の指定の sorts に入れる
+        condition: '`{"board": {"group": {"column": "状態"}}, "columns": {"説明": {"sort": true}, "タイトル": {"sort": false}}}` とタイトル・状態・説明の表'
+        mock: なし
+        expected: '記載の警告が無く、表の `table_open` の `TableSpec` の `sorts` が `[{ column: 2, sort: true }, { column: 0, sort: false }]`'
     refs:
       - IF-472-34#
       - MOD-472-154#data_models[ViewSpec]
