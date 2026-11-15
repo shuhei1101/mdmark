@@ -1,0 +1,1 @@
+# mdmark のリポジトリの文書（docs/mock・docs/pr・docs/design-policy.md）のマーカーを JSON の記載へ移す
