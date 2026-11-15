@@ -13,51 +13,75 @@ docs:
   - page: docs/mock/components/index.md
     new: false
     change: 表のマーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/pages/document/index.md
     new: false
     change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/refs/index.md
     new: false
     change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/refs/19/index.md
     new: false
     change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/refs/42/index.md
     new: false
     change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/styles/index.md
     new: false
     change: マーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/pages/document/19/modern/index.html
     new: false
     change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/pages/document/27/backlinks-end/index.html
     new: false
     change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/pages/document/32/export/index.html
     new: false
     change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/mock/pages/ui-canvas/80/side-by-side/index.html
     new: false
     change: HTML の中の Markdown のマーカーの引数を JSON の記載へ手で書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/design-policy.md
     new: false
     change: 表のマーカーの引数を JSON の記載へ書き換える（mdmark upgrade）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
   - page: docs/pr
     new: false
     change: 過去の PR ドキュメントの本文のマーカーの引数を JSON の記載へ書き換える（mdmark upgrade。今の書き方のマーカーを持つファイルを持つ PR のフォルダの一覧は 要件.md）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:46.944607+00:00'
 scope_out:
   - item: AI Monitor の設計書の Markdown の生成が出力する docs/README.md と設計書のフォルダの README.md（component・er・interface・library・module・scenario）の表のマーカー
     reason: 生成し直すと今の書き方に戻る。生成を JSON の記載にする対応は shuhei1101/ai-monitor#3418 が持ち、終わりの条件の範囲から除く（#481 の task-planner の扱いの判断）

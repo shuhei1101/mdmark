@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T02:23:52.341437+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/mock・docs/pr・docs/design-policy.md のマーカーを mdmark upgrade と手の書き換えで JSON の記載へ移す
+    updated_by: planner
+    updated_at: '2026-11-15T03:15:53.826475+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えない
