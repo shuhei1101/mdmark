@@ -7196,6 +7196,134 @@ flows:
     refs:
       - SC-472-39#scenarios[正常シナリオ（描き直しても手で変えたグループとブロックの開閉を保つ）]
       - SC-472-59#scenarios[正常シナリオ（描き直しても手で開いたフロントマターを保つ）]
+  - name: 正常系（map のクラス図を描く）
+    summary: map の場所の `classDiagram` を、クラスをメンバーの区画を持つノード、namespace をグループにして自動配置し、関係の端に形と多重度を描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: クラス図の map を持つ Markdown
+        description: 'モック `docs/mock/refs/596/assets/samples.js` の `CLASS` と `CLASS_DATA` を、印 `{"title": "型の構成"}` の map の範囲に記載した文書'
+        notes: 単一ユースケース『Mermaidと補足で図を描く』の正常シナリオ（クラス図）の setup と同じクラス 6 つ・関係 7 本・`namespace 形状`・`note for 描画器`。補足の `notes` は「基本図形」・`基本図形.描く`・`r5`
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: クラス・メンバー・関係・namespace と補足を読み込み、namespace の内側から配置する
+        M-->>U: 図の枠に入れた map のクラス図
+    expected:
+      - map の場所が `figure.mdmark-diagram[data-diagram="map"]` で、タイトルが「型の構成」になり、mermaid のライブラリへの要求が 0 件
+      - 「図形」のノードの名前の上に `«interface»`、「一覧」のノードの名前に `一覧<T>` が出て、どのクラスのノードも属性の区画とメソッドの区画を持ち、`数$` の行は下線、`描く()*` の行は斜体
+      - 「図形」「基本図形」「円」がタイトル「形状」のグループの中にあり、どの 2 つのノード・グループも重ならない
+      - 関係の線は矢じりを持たず、「基本図形 `<|--` 円」は「基本図形」の側に白抜きの三角、「図面 `*--` 基本図形」は「図面」の側に黒のひし形、「図面 `o--` 一覧」は「図面」の側に白のひし形、「描画器 `..>` 図形」は破線で「図形」の側に開いた矢じりを持つ。「図面」の同じ辺から出る 2 つのひし形は重ならない
+      - 「一覧」と「円」の関係の両端に `1` と `*`、「描画器」→「図面」の線にラベル「描く」が出る
+      - '`基本図形.描く` の行の説明のボタンにフォーカスすると、図の枠のツールチップに補足の説明が出る。クラス「基本図形」と関係 `r5` の説明は、構成図のノード・線の説明と同じツールチップで出る'
+      - '`note for 描画器` が種類の行「ノート」のノードとして描かれ、「描画器」と破線でつながる'
+    test: test_normal_when_map_class_drawn
+  - name: 正常系（map のクラス図のクラスを選んで経路を強調する）
+    summary: クラスを 1 つ押して関係するクラスだけを残し、2 つ押してつなぐ最短の経路を全て残す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: クラス図の map を持つ Markdown
+        description: 正常系（map のクラス図を描く）と同じ
+        notes: 「描画器」と「一覧」の最短の経路は「図面」を通る 1 本、「図面」と「円」の最短の経路は「基本図形」を通る 1 本と「一覧」を通る 1 本の 2 本
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 「基本図形」の名前の行の余白を押す
+        M-->>U: 「基本図形」と関係するクラス・関係のほかを薄くする
+        U->>M: Esc を押してから「図面」と「円」を押す
+        M-->>U: 2 本の最短の経路のクラスと関係を残す
+    expected:
+      - 「基本図形」を選ぶと、「基本図形」・3 本の関係・「図形」「円」「図面」の表示は変わらず、ほかが `opacity` 0.25 になる
+      - 「図面」と「円」を選ぶと、「基本図形」「一覧」を含む 4 つのクラスと 4 本の関係が残り、「描画器」「図形」とその関係が薄くなる
+      - 「描画器」と「一覧」を選ぶと、「図面」を含む 3 つのクラスと 2 本の関係だけが残る
+      - メンバーの行を押しても選択は変わらず、メンバーの文字を選んでコピーできる
+      - 「配置と選択を元に戻す」か Esc で選択が解ける
+    test: test_normal_when_map_class_path_selected
+  - name: 正常系（map のアーキテクチャ図を描く）
+    summary: map の場所の `architecture-beta` を、service をアイコンを持つノード、group をグループにして自動配置し、線を指定の辺から引く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: アーキテクチャ図の map を持つ Markdown
+        description: 'モック `docs/mock/refs/596/assets/samples.js` の `ARCH` と `ARCH_DATA` を、印 `{"title": "配置の構成"}` の map の範囲に記載した文書'
+        notes: group 2 つ（「アプリ」は「クラウド」の中）・service 6 つ（アイコン `cloud`・`database`・`disk`・`internet`・`server`）・junction 1 つ・線 6 本（`-->` 2 本・`--` 4 本。`api:B -- T:worker` と `hub:B -- T:files` は上下の辺）
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: group・service・junction・線の辺を読み込み、group の内側から配置する
+        M->>M: 線を指定の辺の中ほどから引き直す
+        M-->>U: 図の枠に入れた map のアーキテクチャ図
+    expected:
+      - map の場所が `figure.mdmark-diagram[data-diagram="map"]` で、mermaid のライブラリへの要求が 0 件
+      - service のノードが 5 種類のアイコンをそれぞれ持ち、group のタイトルがアイコンと名前を持ち、「アプリ」は「クラウド」の中にある
+      - junction のノードが 16px の点で、名前と種類の行を出さない
+      - どの線も、元の端が指定の辺の中ほど、先の端が指定の辺の中ほどにある。「API サーバー」の下に「ジョブ」、junction の下に「ファイル置き場」、junction の右の段に「データベース」がある
+      - '`-->` の 2 本だけが矢じりを持ち、`--` の 4 本は矢じりを持たない'
+      - service `api` と線 `r3` の説明は、構成図のノード・線の説明と同じツールチップで出る
+    test: test_normal_when_map_architecture_drawn
+  - name: 正常系（map の C4 図を描く）
+    summary: map の場所の `C4Context` を、要素を種類の行と説明を持つノード、境界を破線のグループにして自動配置し、関係の向きの指定に合わせて並べる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: C4 図の map を持つ Markdown
+        description: モック `docs/mock/refs/596/assets/samples.js` の `C4` と `C4_DATA` を、印を引数なし（`<!-- map -->`）の map の範囲に記載した文書
+        notes: '`title 注文のシステムの全体`・要素 7 つ（`Person_Ext` と `System_Ext` を含む）・`Enterprise_Boundary` の中の `System_Boundary`・関係 6 本（`Rel_D(store, orders)`・`Rel_R(store, stock)` の両端はどれも `System_Boundary` の中。`BiRel` 1 本・技術の引数を持つ関係 1 本）'
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: 境界・要素・関係を読み込み、境界の内側から配置する
+        M-->>U: 図の枠に入れた map の C4 図
+    expected:
+      - 図の枠のタイトルが Mermaid の `title` の「注文のシステムの全体」で、mermaid のライブラリへの要求が 0 件
+      - 要素のノードが種類の行・名前・説明を持ち、「サポートの担当」は `[External Person]`、「決済代行」は `[External Software System]` の種類の行と灰色の面を持つ
+      - 境界が「自社［Enterprise］」「通販［Software System］」のタイトルを持つ破線のグループで、「通販」は「自社」の中にある
+      - 「在庫のシステム」は「注文のシステム」と同じ段の右、「注文のデータベース」は下の段にあり、`Rel_R` の線は「在庫のシステム」の側に矢じりを持つ
+      - 「注文する [HTTPS]」のラベルが線に出て、`BiRel` の線は両端に矢じりを持つ。同じ点から出る・入る線の端は重ならない
+      - 要素 `store` の説明は、構成図のノードの説明と同じツールチップで出る
+    test: test_normal_when_map_c4_drawn
+  - name: 正常系（map のクラス図・アーキテクチャ図・C4 図を開閉する・中へ入る）
+    summary: クラスのメンバーと namespace、group、境界を、構成図のグループと同じ操作で開閉し、中へ入る
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 3 種類の map を持つ Markdown
+        description: '正常系（map のクラス図を描く）・正常系（map のアーキテクチャ図を描く）・正常系（map の C4 図を描く）の 3 つの範囲を持つ文書。クラス図の補足の `layout` で「基本図形」に `collapsed: true` を持つ'
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: 「基本図形」のメンバーを閉じたクラス図
+        U->>M: 「基本図形」の開閉のボタンを押し、namespace「形状」のタイトルを押す
+        M-->>U: メンバーを開き、namespace の中だけを配置し直す
+        U->>M: アーキテクチャ図の group「アプリ」と C4 図の境界「通販」の開閉のボタンを押す
+        M-->>U: group と境界を 1 つのノードに閉じる
+    expected:
+      - メンバーを閉じた「基本図形」が、名前と「メンバー 3」の開閉のボタンの 1 行で描かれ、ボタンは `aria-expanded` と、開く・閉じるのスクリーンリーダー向けの名前を持つ
+      - 「形状」の中へ入ると、中の 3 つのクラスだけが配置し直され、外のクラスが薄く描かれ、クエリ文字列に `map-1=形状` が入る
+      - 閉じた group「アプリ」のノードに「service 2 件」が出て、`api:R -- L:hub` をまとめた線は閉じたノードの右の辺から junction の左の辺へ、矢じりを持たずに入る
+      - 閉じた境界「通販」のノードに「要素 3 件」が出て、中への関係が相手ごとに 1 本にまとまる
+      - 全て開く・全て閉じるが、クラス図ではクラスのメンバーと namespace の両方に適用される
+    test: test_normal_when_map_class_arch_c4_toggled
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。map の構成図のリンク先を持つノードを動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む）。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。読者がタブを選ぶと、押したタブのボタンの画面の位置を保つようにスクロールする場所のスクロール位置を書き換える。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する。map の部品のモジュール（`dist/map.js`）を読み込む。印の引数が `{"play": "autoplay"}` の図は、画面に入ったかを `IntersectionObserver` で確認し、自動で進めている間は印の `interval` 秒ごとの時計を持つ'
@@ -7892,7 +8020,7 @@ constraints:
   - item: フロントマター
     constraint: インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じく、文書の先頭のフロントマターを除外して描き、機能 `frontmatter` がオンのときだけ本文の先頭に閉じた折りたたみを描く。右側の目次・目次・セクションの開閉はフロントマターとその表示を対象にしない。折りたたみの開閉は、印刷の前に開く折り畳みに含める。`update` は差し替えた本文のフロントマターでもう一度決め、折りたたみの開閉は制約「描き直しで部品の開閉を保つ」のとおりに描く
   - item: map の図
-    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図、`erDiagram` はテーブルを列の行を持つノードにした ER 図（制約『map の ER 図』）、`stateDiagram-v2`・`stateDiagram` は状態をノードにした状態遷移図（制約『map の状態遷移図』）にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す'
+    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図、`erDiagram` はテーブルを列の行を持つノードにした ER 図（制約『map の ER 図』）、`stateDiagram-v2`・`stateDiagram` は状態をノードにした状態遷移図（制約『map の状態遷移図』）、`classDiagram` はクラスをメンバーの行を持つノードにしたクラス図（制約『map のクラス図』）、`architecture-beta` は service をアイコンを持つノードにしたアーキテクチャ図（制約『map のアーキテクチャ図』）、`C4Context` は要素を種類の行と説明を持つノードにした C4 図（制約『map の C4 図』）にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す'
     notes: 外観はモック `docs/mock/pages/document/445/a-map/` と `docs/mock/components/map-kinds/`（確認ログ）。配置の方式はライブラリ本体.md の `## PoC 結果`
   - item: map の強調
     constraint: 線のホバー・案内・再生・ノードと参加者の選択では、強調する要素の表示は変えず、ほかのノード・線・ラベル・ライフラインを `opacity` 0.25 にし、強調する線の上をデータの印が流れ続ける（両向きの線は両方へ）。選択の強調は案内・再生の強調より優先する。読者が始めたデータの印は `prefers-reduced-motion` でも流し、自動で始める再生は動きを減らす設定では止めて始める
@@ -7921,7 +8049,7 @@ constraints:
   - item: map のシーケンス図の説明のツールチップ
     constraint: シーケンス図の補足の `notes`（キーは記載の順に 1 からのメッセージの番号）に説明があるメッセージは、線の押せる帯（`.map-wire-hit[data-message]`）を持ち主にした図のツールチップを持ち、線にポインターを当てると「{送り手の名前} → {受け手の名前}」の見出しと説明を出す。説明の文の中の用語は、構成図の説明のツールチップと同じく、フォーカスを持たない下線と末尾の「{用語}：{意味}」の行にする。説明を持たないメッセージの線にはツールチップを付けない
   - item: map の閉じたグループのノードの数
-    constraint: 閉じたグループのノードは、グループの名前の後ろに、そのグループの中（入れ子のグループの中を含む）の Mermaid のノードの数を「ノード {数} 件」で出す（シーケンス図の閉じたブロックの「メッセージ {数} 件」と同じ書き方）。ER 図の閉じた分類のグループは中のテーブルの数を「テーブル {数} 件」、状態遷移図の閉じた入れ子の状態は中の状態（開始・終了・分岐・ノートを除く）の数を「状態 {数} 件」で出す
+    constraint: 閉じたグループのノードは、グループの名前の後ろに、そのグループの中（入れ子のグループの中を含む）の Mermaid のノードの数を「ノード {数} 件」で出す（シーケンス図の閉じたブロックの「メッセージ {数} 件」と同じ書き方）。ER 図の閉じた分類のグループは中のテーブルの数を「テーブル {数} 件」、状態遷移図の閉じた入れ子の状態は中の状態（開始・終了・分岐・ノートを除く）の数を「状態 {数} 件」、クラス図の閉じた namespace は中のクラスの数を「クラス {数} 件」、アーキテクチャ図の閉じた group は中の service の数を「service {数} 件」、C4 図の閉じた境界は中の要素の数を「要素 {数} 件」で出す
   - item: map の構成図に無い再生の相手
     constraint: 補足の `plays_over` で構成図を指すシーケンス図に、その構成図のノードに無い ID の参加者があるとき、シーケンス図の図の枠の前の書き方の警告に、構成図に無い参加者の ID を並べた項目を 1 つ足す。その参加者が送り手か受け手のメッセージを再生するときは、構成図の強調を解き、構成図の図の枠の中をスクロールしない。帯はほかのメッセージと同じく出す
   - item: map の再生で構成図の枠の中をスクロールする
@@ -7933,4 +8061,13 @@ constraints:
   - item: map の状態遷移図
     constraint: '`stateDiagram-v2`・`stateDiagram` の状態を角の丸いノード、`[*]` を入れ子の状態ごとの開始（黒丸）・終了（二重丸）、`<<choice>>` をひし形のノード、入れ子の状態（`state {ID} { … }`）をグループ、`note left of`・`note right of` を破線でつないだ種類の行「ノート」のノードにして、構成図と同じ自動配置で配置する。入れ子の状態そのものへの遷移は中の開始へ、入れ子の状態からの遷移は中の終了からつなぎ、中に `[*]` を持たない入れ子の状態は、そうした遷移を持つときだけ中の開始・終了を補う。同じ状態への遷移は、状態の右の辺から出て上を回り、上の辺へ戻る線にする。補足の `walkthroughs` が無いときは、遷移を記載順の手順にした再生を、構成図の案内と同じ帯（帯の 1 行目は「{遷移元} → {遷移先}：{ラベル}」、本文は補足の `t{番号}` の説明）で進める。状態を選ぶと、入る遷移・出る遷移と相手の状態を残す'
     notes: 外観はモック `docs/mock/components/map-er-state/`（確認ログ『入れ子の状態への遷移のつなぎ先』）
+  - item: map のクラス図
+    constraint: '`classDiagram` のクラスを、名前の行（`<<…>>` は名前の上の `«…»`、型の引数 `~T~` は名前の `<T>`）と、属性の区画・メソッドの区画（区切り線で分け、行ごとに可視性・名前と型・説明のボタン。静的は下線、抽象は斜体）を持つノードにし、`namespace` を入れ子のグループ、`note for` を破線でつないだ種類の行「ノート」のノードにして、構成図と同じ自動配置で配置する。関係は矢じりの無い線（`..` は破線）にし、記号の側の端に形（`<|` と `|>` は白抜きの三角、`*` は黒のひし形、`o` は白のひし形、`<`・`>` は開いた矢じり）を描き、両端の多重度を端の近くに、ラベルを両端の区間を除いた最も長い区間の中ほどに配置する。同じ点から出る・入る線の端は、辺に沿って 16px ずつずらす。クラスの開閉のボタンはメンバーを閉じ（「メンバー {数}」）、閉じた状態は構成図のグループの開閉と同じく保つ。クラスを 1 つ選ぶとその関係と相手を、 2 つ選ぶと 2 つをつなぐ最短の経路に乗る全ての関係とクラスを残す。補足の `notes` のキーはクラス名・`{クラス名}.{メンバー名}`・関係の記載順の `r{番号}`'
+    notes: 外観はモック `docs/mock/components/map-class-arch-c4/`（確認ログ『map のクラス図・アーキテクチャ図・C4 図のモック（map-class-arch-c4）の描き方と操作への合意』）
+  - item: map のアーキテクチャ図
+    constraint: '`architecture-beta` の service を、アイコン（`cloud`・`database`・`disk`・`internet`・`server` を Lucide のアイコンにする）と名前のノード、`group` をアイコンと名前のタイトルを持つ入れ子のグループ、`junction` を小さい点のノードにして、構成図と同じ自動配置で左から右へ配置する。上下の辺（`T`・`B`）でつなぐ線は段を決める処理から外して 2 つを同じ段に並べ、左右の辺（`L`・`R`）でつなぐ 2 つは隣の段に置く。線は自動配置の経路に代えて、指定の辺の中ほどから出て指定の辺の中ほどへ入る直角の経路で引き、閉じた group の中の service の線は閉じたノードの同じ辺から引く。`--` の線は矢じりを持たず、`-->`・`<--` は `>`・`<` の側に矢じりを持つ。補足の `layout` の `r{番号}.ends` は Mermaid の辺の指定より優先する。同じ高さ・同じ列にそろえることと、別の group にある 2 つを並べることは保証しない。補足の `notes` のキーは service・group・junction の ID と線の記載順の `r{番号}`'
+    notes: 外観はモック `docs/mock/components/map-class-arch-c4/`
+  - item: map の C4 図
+    constraint: '`C4Context` の要素（`Person`・`System`・`SystemDb`・`SystemQueue` とその `_Ext`）を、種類の行（`[Person]`・`[Software System]`。`_Ext` は `[External Person]`・`[External Software System]`）・名前・説明を持つノード（人は人のアイコン、`SystemDb` はデータベースのアイコン、`SystemQueue` は角の丸い横長の形。`_Ext` は灰色の面）、境界（`Enterprise_Boundary`・`System_Boundary`・`Boundary`）を名前と種類のタイトルを持つ破線の入れ子のグループにして、構成図と同じ自動配置で上から下へ配置する。`title` は印に `title` が無いときの図の枠のタイトルにする。関係はラベルと「[{技術}]」を持つ線（`BiRel` は両向きの矢じり）にし、`Rel_R`・`Rel_L` は段を決める処理から外して相手を同じ段の右（左）に置き、`Rel_D`・`Rel_U` は相手を下（上）の段に置く。同じ点から出る・入る線の端は、辺に沿って 16px ずつずらす。別の境界にある 2 つを並べることは保証しない。補足の `notes` のキーは要素・境界の別名（第 1 引数）と関係の記載順の `r{番号}`'
+    notes: 外観はモック `docs/mock/components/map-class-arch-c4/`（確認ログ『C4 図の外部の要素の種類の行』）
 test_file: tests/integration/lib/mount.browser.test.ts

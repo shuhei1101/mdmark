@@ -811,6 +811,31 @@ flows:
       - 終了コードが 0
       - 標準出力が `ずれ 0 件` の 1 行
     test: test_normal_when_extension_hint_disabled
+  - name: 正常系（クラス図・アーキテクチャ図・C4 図の map の補足にずれがある）
+    summary: '`classDiagram`・`architecture-beta`・`C4Context` の map の補足が指す無いクラス・メンバー・関係・service・線・要素の ID をずれにする'
+    setup:
+      - name: 3 種類の補足にずれを持つフォルダ
+        description: '`build.include` が該当する `docs/a.mark.md` だけを持つフォルダ。`docs/a.mark.md` は 3 行目からクラス「図面」（メンバー `名前`）・「図形」・関係 1 本の `classDiagram` と、10 行目の 1 行の補足（`notes` のキー `図面.幽霊`・`r2`）を持ち、20 行目から service `api`・`db` と線 1 本の `architecture-beta` と、27 行目の 1 行の補足（`notes` のキー `cache`）を持ち、35 行目から要素 `store`・`pay` と関係 1 本の `C4Context` と、42 行目の 1 行の補足（`layout` のキー `ghost`）を持つ'
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: map の範囲の classDiagram・architecture-beta・C4Context と補足を読み込む
+        C->>C: 補足が指すクラス・メンバー・関係・service・線・要素の ID を確認する
+        C-->>W: map のずれの 4 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`docs/a.mark.md:10:` で始まる行に、`map_unknown_ref` が 2 つ（内容に `notes.図面.幽霊` と、`notes.r2` と関係の ID を記載順の `r{番号}` にする修正の方法）ある'
+      - '`docs/a.mark.md:27:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `notes.cache`）ある'
+      - '`docs/a.mark.md:42:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `layout.ghost`）ある'
+      - 最後の行が `ずれ 4 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_map_class_arch_c4_data_drift
+    refs:
+      - SC-472-78#scenarios[正常シナリオ（クラス図・アーキテクチャ図・C4 図の map の補足にずれがある）]
 lead: 文書の作成者が、設定ファイルの構造・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らないマーカー・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を指定したときは、設定と索引の点検の代わりに、指定した Markdown を描いたときの記載の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
