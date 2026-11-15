@@ -55,8 +55,17 @@ test("test_render_map_flow_when_keyboard", async () => {
   const nodes = matches(html, /<div class="[^"]*map-kinded[^"]*"[^>]*>/g);
   expect(nodes).toHaveLength(args.layout.nodes.length);
   for (const node of nodes) {
-    expect(node).toContain('tabindex="0"');
-    expect(node).toContain('role="button"');
+    expect(node).not.toContain("tabindex");
+    expect(node).not.toContain("role=");
+  }
+  const nodeHits = matches(
+    html,
+    /<div class="[^"]*map-kinded[^"]*"[^>]*><span class="mdmark-diagram-node-hit"[^>]*>/g,
+  );
+  expect(nodeHits).toHaveLength(args.layout.nodes.length);
+  for (const hit of nodeHits) {
+    expect(hit).toContain('tabindex="0"');
+    expect(hit).toContain('role="button"');
   }
   const hits = matches(html, /<path class="map-wire-hit"[^>]*>/g);
   expect(hits.length).toBeGreaterThan(0);
@@ -65,6 +74,47 @@ test("test_render_map_flow_when_keyboard", async () => {
   expect(renderMapFlow(await flowArgs()).html).toMatch(
     /data-group="read"[^>]*><div class="map-group-bar"/,
   );
+});
+
+// 説明と用語を持つノードの中に、フォーカスできる要素を入れ子にしない（正常系）
+test("test_render_map_flow_when_note_node", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap } = await loadLayout();
+  const layout = layoutMap(
+    parseFlowchart(FLOW),
+    { collapsed: [], entered: undefined },
+    { overrides: {}, nodeFit: "height" },
+  );
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    layout,
+    notes: { data: "検査した補足" },
+    terms: { 補足: "意味" },
+  });
+  // 検証
+  const node = outerHtml(html, 'data-node="data"');
+  const div = findTag(node, 'data-node="data"');
+  expect(div).not.toContain("tabindex");
+  expect(div).not.toContain("role=");
+  expect(node).toMatch(
+    /^<div[^>]*data-node="data"[^>]*><span class="mdmark-diagram-node-hit"[^>]*><\/span>/,
+  );
+  const hit = findTag(node, "mdmark-diagram-node-hit");
+  expect(hit).toContain('role="button"');
+  expect(hit).toContain('tabindex="0"');
+  expect(hit).toContain('aria-roledescription="ノード"');
+  expect(hit).toMatch(/aria-label="[^"]+"/);
+  expect(node).toContain('<button class="mdmark-diagram-info');
+  expect(node).toMatch(/<span class="mdmark-term"[^>]*>補足<\/span>/);
+  // 押せる要素は空で、中にボタン・リンク・フォーカスできる要素を持たない
+  for (const each of matches(
+    html,
+    /<span class="mdmark-diagram-node-hit"[^>]*>[\s\S]*?<\/span>/g,
+  ))
+    expect(each).toMatch(/^<span class="mdmark-diagram-node-hit"[^>]*><\/span>$/);
 });
 
 // 中へ入った（正常系）
@@ -690,6 +740,45 @@ test("test_render_map_er_diagram", async () => {
       ).toBe(true);
   expect(part.tips).toContain("下書き・確定・発送済み・取り消し");
   expect(part.tips).toContain("行が増える関連");
+});
+
+// テーブルのノードの列の行とボタンを、押せる要素の中に入れない（正常系）
+test("test_render_map_er_diagram_when_node_hit", async () => {
+  // 準備
+  const { renderMapErDiagram } = await loadParts();
+  const { relations, tables, layout } = await erArgs([]);
+  // 実行
+  const part = renderMapErDiagram({
+    layout,
+    kinds: {},
+    lines: {},
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+    id: "er",
+    tables: tables.map((table) =>
+      table.name === "注文"
+        ? { ...table, notes: { 状態: "下書き・確定・発送済み・取り消し" } }
+        : table,
+    ),
+    relations,
+    fanouts: [],
+  });
+  // 検証
+  const node = outerHtml(part.html, 'data-node="注文"');
+  const div = findTag(node, 'data-node="注文"');
+  expect(div).not.toContain("tabindex");
+  expect(div).not.toContain("role=");
+  const hit = findTag(node, "mdmark-diagram-node-hit");
+  expect(hit).toContain('role="button"');
+  expect(hit).toContain('tabindex="0"');
+  expect(node).toMatch(/<span class="mdmark-diagram-node-hit"[^>]*><\/span>/);
+  expect(node).toContain("map-er-toggle");
+  expect(node).toContain("map-er-columns");
+  expect(node).toContain('class="map-er-note"');
 });
 
 // 状態遷移図の部品（正常系）

@@ -278,3 +278,46 @@ test("test_attach_map_flow_when_node_link", async () => {
     document.removeEventListener("click", check);
   }
 });
+
+// リンク先を持たないノードは、ノードを覆う押せる要素でキー操作を受ける（正常系）
+test("test_attach_map_flow_when_node_hit_keys", async () => {
+  // 準備
+  const root = await setUp();
+  const node = () =>
+    root.querySelector<HTMLElement>('[data-node="data"]') as HTMLElement;
+  const hit = () =>
+    node().querySelector<HTMLElement>(
+      ":scope > .mdmark-diagram-node-hit",
+    ) as HTMLElement;
+  const left = () => Number.parseFloat(node().style.left);
+  const before = left();
+  // 実行: 押せる要素にフォーカスして Enter、続けて Alt + →
+  hit().focus();
+  hit().dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  const selected = node().hasAttribute("data-selected");
+  const label = hit().getAttribute("aria-label");
+  hit().dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key: "ArrowRight",
+      altKey: true,
+      bubbles: true,
+    }),
+  );
+  // 検証
+  expect(selected).toBe(true);
+  expect(label?.endsWith("（選択中）")).toBe(true);
+  expect(left()).toBe(before + 8);
+  expect(document.activeElement).toBe(hit());
+  // 説明のマーカーは押せる要素とは別の要素で、フォーカスするとツールチップが開く
+  const info = node().querySelector<HTMLButtonElement>(
+    "button.mdmark-diagram-info",
+  ) as HTMLButtonElement;
+  expect(hit().contains(info)).toBe(false);
+  info.focus();
+  const tip = root.querySelector<HTMLElement>(
+    `#${CSS.escape(info.getAttribute("aria-describedby") ?? "")}`,
+  );
+  expect(tip?.hidden).toBe(false);
+});
