@@ -35,6 +35,13 @@ states:
   - name: Reordering
     description: 5 人目の参加者を 2 人目の位置へドラッグしている。移す先に縦の線が出る
     screenshot: false
+  - name: HintsOff
+    description: '`hints` が `false`。説明を持つメッセージの線の押せる帯が `aria-describedby` を持たず、メッセージのラベルは描かれる'
+    args:
+      - name: notes
+        value: '{"1": "文書を描く要求"}'
+      - name: hints
+        value: 'false'
 lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・ノート・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
   - name: sequence
@@ -76,6 +83,11 @@ args:
     required: false
     default: なし（ツールチップを付けない）
     description: 補足の `notes`（記載の順に 1 からのメッセージの番号から説明）。説明を持つメッセージの線の押せる帯を持ち主にした図のツールチップを作る
+  - name: hints
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`false` のとき、`notes` の説明と注記のツールチップを作らず、メッセージの線の押せる帯に `aria-describedby` を付けない。注記の持ち主の `id` はメッセージの線の押せる帯に付ける'
 events:
   - name: ブロックを開閉する
     when: ブロックのタブの山形のボタンを押す（Shift を押しながら押すと中のブロックも）
