@@ -9,8 +9,8 @@
 
 ## 前提
 
-- [プラグインを入れる](./ClaudeCodeで使用する-プラグインを入れる.md)
-- 手元に Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある。どちらも無い端末は [MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.md) の手順で起動する
+- [プラグインを入れる](./ClaudeCodeで使用する-プラグインを入れる.mark.md)
+- 手元に Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある。どちらも無い端末は [MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md) の手順で起動する
 - 手元から GitHub と npm のレジストリへ届く
 
 ## 手順

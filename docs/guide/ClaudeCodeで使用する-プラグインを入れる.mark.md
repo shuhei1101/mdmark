@@ -8,7 +8,7 @@ Claude Code で mdmark の文書を記載し始める前に実行する。
 
 - 手元に Claude Code・git・Node 24 以降がある
 - 手元から GitHub と npm のレジストリへ届く
-- MCP の常駐サーバーは、入れた後に `/mdmark:global-setup` で起動する（[セットアップする](./ClaudeCodeで使用する-セットアップする.md)）。起動していなくてもプラグインは入るが、MCP サーバーだけが接続に失敗する
+- MCP の常駐サーバーは、入れた後に `/mdmark:global-setup` で起動する（[セットアップする](./ClaudeCodeで使用する-セットアップする.mark.md)）。起動していなくてもプラグインは入るが、MCP サーバーだけが接続に失敗する
 - ガイドを参照させるときは、mdmark のクローンを dev-docs の配信元 `mdmark` として登録している（`/dev-docs:setup`）。登録していなくてもツールは使用できるが、ガイドは見つからない
 
 ## 手順
@@ -46,7 +46,7 @@ Claude Code が `plugin/` をキャッシュへ写す。
 
 ### 端末をセットアップする
 
-次のセッションで `/mdmark:global-setup` を呼び、端末の設定と常駐サーバーを用意する（[セットアップする](./ClaudeCodeで使用する-セットアップする.md)）。
+次のセッションで `/mdmark:global-setup` を呼び、端末の設定と常駐サーバーを用意する（[セットアップする](./ClaudeCodeで使用する-セットアップする.mark.md)）。
 
 ## 反映
 
@@ -66,8 +66,8 @@ claude plugin list
 #### MCP サーバーがつながっている
 
 新しいセッションで `/mcp` を開く。
-`plugin:mdmark:mdmark` がつながっていて、ツールが並ぶ（[MCP](./MCP.md)）。
-接続に失敗しているときは、`/mdmark:global-setup` で常駐サーバーを起動してから、`/mcp` でもう一度接続する（[MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.md)）。
+`plugin:mdmark:mdmark` がつながっていて、ツールが並ぶ（[MCP](./MCP.mark.md)）。
+接続に失敗しているときは、`/mdmark:global-setup` で常駐サーバーを起動してから、`/mcp` でもう一度接続する（[MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md)）。
 
 #### ガイドを参照できる
 
@@ -95,7 +95,7 @@ MCP サーバーを子プロセス（stdio）で起動していたバージョ�
 <!-- steps -->
 
 1. 新しいバージョンのプラグインへ更新する
-2. 常駐サーバーを起動する（[MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.md)）
+2. 常駐サーバーを起動する（[MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md)）
 3. セッションをもう一度開く
 
 <!-- /steps -->

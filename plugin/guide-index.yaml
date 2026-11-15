@@ -3,7 +3,7 @@ guides:
   - name: notation
     when: マーカーと記法を文書に記載するとき・拡張子が `.mark.md` の文書を記載するとき
     summary: マーカーの引数を JSON のオブジェクトで記載する決まりと、表・注意書き・タブ・ステップ・ファイルツリー・バッジ・脚注・注記・セクションの開閉・行の詳細などのマーカーと記法の一覧
-    page: docs/guide/記法.md
+    page: docs/guide/記法.mark.md
   - name: tables
     when: 表に並べ替え・絞り込み・ピン止めなどの機能を付けるとき
     summary: 表をマーカーで囲み、種類・機能・列の設定を JSON のキーで選ぶ手順
@@ -11,11 +11,11 @@ guides:
   - name: components
     when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・脚注・注記・目次などで本文を組むとき・フォルダ構成を記載するとき
     summary: 本文の部品を記載する手順
-    page: docs/guide/記載する-本文を部品で組む.md
+    page: docs/guide/記載する-本文を部品で組む.mark.md
   - name: glossary
     when: 索引や用語集を記載するとき
     summary: 索引に文書と用語を記載し、表から用語集に用語を入れる手順
-    page: docs/guide/記載する-索引と用語集を記載する.md
+    page: docs/guide/記載する-索引と用語集を記載する.mark.md
   - name: figure-numbers
     when: 図や表に番号を付けて参照するとき
     summary: fig のマーカーと、番号を出すリンクの記載
@@ -31,7 +31,7 @@ guides:
   - name: view-comments
     when: ビュー（ボード表示と表形式）やコメントを使用するとき
     summary: ビューのマーカー、列の絞り込み、コメントを付ける手順
-    page: docs/guide/記載する-ビューとコメントを使用する.md
+    page: docs/guide/記載する-ビューとコメントを使用する.mark.md
   - name: map
     when: 構成図・シーケンス図を新しく描くとき
     summary: map のマーカー・Mermaid のブロック・補足の記載方法と、注記の参照・配置と色の上書き・案内・再生の書き方
@@ -55,15 +55,15 @@ guides:
   - name: html-rules
     when: AI が HTML を作るとき
     summary: HTML の記載の決まり
-    page: docs/guide/HTMLの記載方法.md
+    page: docs/guide/HTMLの記載方法.mark.md
   - name: diagram-check
     when: 描いた図を確認するとき
     summary: 配置した部品を Playwright で動かし、スクリーンショットを撮って確認する手順
-    page: docs/guide/図を描く-描いた図を確認する.md
+    page: docs/guide/図を描く-描いた図を確認する.mark.md
   - name: diagram-sample
     when: 図や操作できる部品の記載の見本を確認したいとき
     summary: map の図・グラフ・操作できる部品を組み合わせた見本の文書
-    page: docs/guide/図を描く-見本.md
+    page: docs/guide/図を描く-見本.mark.md
   - name: custom-parts
     when: 利用側に固有の部品や CSS を、その場所の文書にだけ適用するとき
     summary: registerExtension と CSS で固有の部品と外観を追加する手順
@@ -71,7 +71,7 @@ guides:
   - name: architecture-style
     when: 構成図を描くとき
     summary: 入れ子と層・タイトル・ノード・線・交差・ツールチップ・操作の外観の決まりと、map の図をグループにするかの判定フローチャート
-    page: docs/guide/構成図の決まり.md
+    page: docs/guide/構成図の決まり.mark.md
   - name: flowchart-style
     when: 処理の順番を描くフローチャートを描くとき
     summary: 時系列・ループの帯・分岐の外観の決まり
@@ -83,7 +83,7 @@ guides:
   - name: index-schema
     when: 索引のキーや点検が返却するずれの種類を確認するとき
     summary: 索引のキー・型・必須・既定と、点検のずれの種類の一覧
-    page: docs/guide/索引.md
+    page: docs/guide/索引.mark.md
   - name: writing
     when: 人が読み込む資料を mdmark で記載するとき
     summary: 表し方の優先順位・確認すれば分かることを記載しない・裏返しを記載しない・参考は末尾にまとめる、の決まり

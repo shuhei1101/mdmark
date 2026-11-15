@@ -75,25 +75,25 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 
 要素の中に Markdown を HTML として描く。
 描いた本文は `render` が返却する HTML 文字列と同じ。
-表の並べ替え・タブの切り替えなど、記法の操作を付ける（記載方法は [記法](./記法.md)）。
+表の並べ替え・タブの切り替えなど、記法の操作を付ける（記載方法は [記法](./記法.mark.md)）。
 文書に記載したスクリプト（`script` 要素・`on` で始まる属性・`javascript:` の URL）は落とし、実行しない。
 索引を指定すると、本文に出た用語と文書の別名に破線の下線を付け、ポインターを乗せたときとフォーカスしたときに意味と関連文書のツールチップを出し、文書の末尾に被参照の一覧を配置する。
 索引の用語の `avoid` と用語集の表の `avoid.column` の列に並べたやめた言い方が本文に出ると、波線のマーカーを引き、代わりの用語の単語と意味のツールチップを出す（`glossary` がオンのときだけ）。
 `opts.aliases` に指定したエイリアス（[`buildAliases`](#エイリアスを作る) が作る）の名前と別名にも同じ下線を付け、種類ごとのツールチップを出す（`glossary` がオンのときだけ）。
 コマンドのエイリアスのツールチップには、コマンドをコピーするボタンを付ける。
 ツールチップの操作は `mount` が付け、`update` でもう一度付け、`destroy` で削除する。
-記載方法は [索引と用語集を記載する](./記載する-索引と用語集を記載する.md)。
-図の部品の定義（[図の部品](./記法.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
+記載方法は [索引と用語集を記載する](./記載する-索引と用語集を記載する.mark.md)。
+図の部品の定義（[図の部品](./記法.mark.md#図の部品)）があると、図の拡大・縮小・移動・全画面とツールチップ、操作できる部品の値の変更と写す操作も付ける。
 `opts.diffSource` を指定すると、文書のタイトルの後ろに「変更表示」のボタンを付け、押すと 2 つのリビジョンの差分を出す。
 `opts.diffMode` で差分の出し方を選べる。`open` はボタンを押した状態で描き、`blocks` はボタンを付けず、描いた文書のブロックを追加と削除の色で塗り分ける。
 差分の操作は `mount` が付け、`update` で閉じ、`destroy` で削除する。
 `opts.baseMarkdown` に比較元の Markdown を指定すると、取り出し元なしで、本文の中の比較元から変えたブロックを `blocks` と同じ色で塗り分ける。
 仕組みは [差分を表示する仕組み](./コアコンセプト-差分を表示する仕組み.md)、記載方法は [差分を表示する](./導入-差分を表示する.md)。
-ビューのマーカー（[ビュー](./記法.md#ビュー)）があると、ボード表示と表形式の切り替えと、表形式の列の絞り込みも付ける。
+ビューのマーカー（[ビュー](./記法.mark.md#ビュー)）があると、ボード表示と表形式の切り替えと、表形式の列の絞り込みも付ける。
 `opts.commentStore` と `opts.docId` を指定して機能 `comments` をオンにすると、本文の選んだ箇所にコメントを付けられる。
 コメントのボタン・入力欄・マーカー・吹き出しの操作は `mount` が付け、`update` でもう一度付け、`destroy` で削除する。
 読み込みと保存の関数が `update`・`remove` を持つと、吹き出しのコメントごとに「編集」「削除」のボタンを出す。
-記載方法は [ビューとコメントを使用する](./記載する-ビューとコメントを使用する.md)。
+記載方法は [ビューとコメントを使用する](./記載する-ビューとコメントを使用する.mark.md)。
 ビューとコメントの部品のモジュール（`dist/view.js`・`dist/comments.js`）は、ビューのマーカーのある文書とコメントの機能がオンのときにだけ、`dist/index.js` の隣から読み込む。
 
 ### リクエスト
@@ -112,12 +112,12 @@ handle.destroy();
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素。class `mdmark` が付く |
 | `opts.markdown` | 必須 | 描く Markdown |
-| `opts.config` | 任意 | 利用側のサーバーが `mdmark.config.yaml` を読み込んだオブジェクト。省いたキーには既定を適用する。キーは [設定](./設定.md) |
-| `opts.index` | 任意 | 利用側のサーバーが、設定の `index` のパスの索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて使用する。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
+| `opts.config` | 任意 | 利用側のサーバーが `mdmark.config.yaml` を読み込んだオブジェクト。省いたキーには既定を適用する。キーは [設定](./設定.mark.md) |
+| `opts.index` | 任意 | 利用側のサーバーが、設定の `index` のパスの索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.mark.md)。Schema に合わない文書・用語の項目は除いて使用する。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使用する。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を指定するときは必須で、コメントの読み込みと保存の関数に指定する対象の ID にもなる |
 | `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返却した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語とそのやめた言い方に使用する。用語の `avoid` は任意で、無い用語はやめた言い方を持たないものとして扱う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
 | `opts.aliases` | 任意 | [`buildAliases`](#エイリアスを作る) が作ったエイリアスの並び（`MdmarkAlias[]`）。使用できないエイリアス（必須のキーが空・知らない種類・重なった `id`）は除いて使用し、`env` の種類は直接渡されても照合しない。`update` は描いたときのエイリアスを使用する。省くと、エイリアスを照合しない |
-| `opts.includes` | 任意 | 取り込む文書の表（`Record<string, string>`）。キーは描く文書のフォルダからのパス（区切りは `/`。`./`・`../` を解いた構造）、値はそのファイルの本文。[取り込み](./記法.md#取り込み) のマーカーはこの表から参照する。mdmark はファイルを読み込まない。省くと、取り込みのマーカーの場所に記載の警告を出す |
+| `opts.includes` | 任意 | 取り込む文書の表（`Record<string, string>`）。キーは描く文書のフォルダからのパス（区切りは `/`。`./`・`../` を解いた構造）、値はそのファイルの本文。[取り込み](./記法.mark.md#取り込み) のマーカーはこの表から参照する。mdmark はファイルを読み込まない。省くと、取り込みのマーカーの場所に記載の警告を出す |
 | `opts.icons` | 任意 | 配布物に入っていない名前の Lucide のアイコンの形状の表（`Record<string, IconNode>`）。表にある名前は jsDelivr から読み込まずにこの構造で描く。省くと、使用する名前だけを jsDelivr から読み込む |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返却する取り出し元（`DiffSource`）。指定すると、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に指定する。省くと、差分の UI を付けない |
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を指定しないときは使用しない。知らない値は `button` として扱う |
@@ -195,9 +195,9 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 メッセージに `docId`・`commentStore`・`baseMarkdown`・`onColumnsChange` のどれかを含める。
 `update` の `options.baseMarkdown` が文字列でも `null` でもないときは、前の本文を残して `TypeError` を投げる。
 それ以外は例外を投げない。
-取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したときは、差分の場所を [通知ブロック](./用語集.md) に替え、文書の本文は描いたまま残す。
+取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したときは、差分の場所を [通知ブロック](./用語集.mark.md) に替え、文書の本文は描いたまま残す。
 取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーが `console.error` に出る。
-`opts.diffMode` が `blocks` のときに取り出し元が同じように失敗したときは、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に `変更を表示できません` の [通知ブロック](./用語集.md) を配置する。
+`opts.diffMode` が `blocks` のときに取り出し元が同じように失敗したときは、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に `変更を表示できません` の [通知ブロック](./用語集.mark.md) を配置する。
 `console.error` に出す内容は同じ。
 コメントの `save` が reject するか、構造に合わない値を返却したときは、入力欄に記載した本文を残して `role="alert"` の通知を出し、マーカーを付けない。
 `load` が reject するか、構造に合わない値を返却したときは、マーカーを付けずに続け、新しいコメントは付けられる。
@@ -208,9 +208,9 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 `comments` がオンで `opts.commentStore` を指定しないときは、コメントのボタンを出さず、読み込みと保存の関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す。
 ビューかコメントの部品のモジュールを読み込めないときは、ビューのマーカーの場所を `render` が出した表のまま残し、コメントはボタンを出さず `load` も呼ばない。
 読み込めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーが `console.error` に出る。
-外部ライブラリを読み込めないマーカーの場所は、その場所だけを [通知ブロック](./用語集.md) に替え、ほかは描く。
+外部ライブラリを読み込めないマーカーの場所は、その場所だけを [通知ブロック](./用語集.mark.md) に替え、ほかは描く。
 読み込めなかったマーカーの名前・URL・元のエラーが `console.error` に出る。
-記法のマーカーに読み込めない指定がある箇所は、読み込めた指定で描き、その箇所の前に [記載の警告](./記法.md#記載の警告) を配置する。
+記法のマーカーに読み込めない指定がある箇所は、読み込めた指定で描き、その箇所の前に [記載の警告](./記法.mark.md#記載の警告) を配置する。
 索引が Schema に合わないときも、用語集の表の列名が表に無いときも、本文の描画を止めない。
 合わない文書・用語の項目は除いて使用し、用語集の表の誤りは、その箇所の記載の警告で通知する。
 1 つのページに文書を 2 つ以上描いても、ツールチップと被参照の一覧の `id` はページの中で重ならない。
@@ -297,7 +297,7 @@ VS Code のエディタの行番号（0 始まり）とそのまま比べられ�
 なし。常に文字列を返却する。
 未知のマーカーと、許可していない要素・属性は落とす。
 外部ライブラリは読み込まず、対応表にあるマーカーと登録した拡張のマーカーは読み込み中のブロックに置き換えて返却する。
-記法のマーカーに読み込めない指定がある箇所には、[記載の警告](./記法.md#記載の警告) を配置する。
+記法のマーカーに読み込めない指定がある箇所には、[記載の警告](./記法.mark.md#記載の警告) を配置する。
 索引が Schema に合わないときも、合わない文書・用語の項目を除いて文字列を返却する。
 
 ## 参照の表を作る
@@ -320,7 +320,7 @@ const references = collectReferences({
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `input.index` | 必須 | 利用側が索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて作る |
+| `input.index` | 必須 | 利用側が索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.mark.md)。Schema に合わない文書・用語の項目は除いて作る |
 | `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。索引に無いパスの文書は無視する。索引にあって表に無い文書は、`related` だけで参照に入る |
 | `input.config` | 任意 | `mount` の `opts.config` と同じ。読み込むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`backlinks` がオフの文書を参照元にも参照先にもせず、`glossary` がオフの文書の表の用語を入れない |
 
@@ -373,7 +373,7 @@ const { byDocument, avoided, targets } = collectMatches({
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `input.index` | 必須 | 利用側が索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.md)。Schema に合わない文書・用語の項目は除いて照合する |
+| `input.index` | 必須 | 利用側が索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.mark.md)。Schema に合わない文書・用語の項目は除いて照合する |
 | `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。複数の文書を指定できる。索引に無いパスの文書は無視する。ほかの文書の用語集の表の用語も、この表にある本文から読み込む |
 | `input.config` | 任意 | `mount` の `opts.config` と同じ。読み込むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める |
 | `input.aliases` | 任意 | `mount` の `opts.aliases` と同じ。使用できないエイリアス（`env` を含む）は `mount` と同じく除いて照合する。省くと、エイリアスを照合しない |
@@ -507,7 +507,7 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | `paths` | `string[]` | 任意 | 関連が該当するファイルの glob の並び |
 
 型 `MdmarkIndexRelated`・`MdmarkRelationType` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
-キーの意味は [索引](./索引.md#関連の要素)。
+キーの意味は [索引](./索引.mark.md#関連の要素)。
 
 ### レスポンス
 
@@ -517,7 +517,7 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
 | `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
-| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.md#点検が返却するずれ) |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.mark.md#点検が返却するずれ) |
 | `message` | `string` | ずれの内容と修正方法を記載した日本語の 1 文 |
 
 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` の順で、同じ種類の中は索引の並びとパスの順。
@@ -559,7 +559,7 @@ const { aliases, problems } = buildAliases({
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
-| `input.rows` | 必須 | 利用側が設定の `aliases` を読み込んだ配列。行の構造は [設定](./設定.md#エイリアスの元の行)。`id`・`paths`・`alias_type` を持たない行は使用せず、ずれにもしない（構造は `mdmark check` が `schema` のずれで返却する）。`enabled` が `false` の行は読み込まない |
+| `input.rows` | 必須 | 利用側が設定の `aliases` を読み込んだ配列。行の構造は [設定](./設定.mark.md#エイリアスの元の行)。`id`・`paths`・`alias_type` を持たない行は使用せず、ずれにもしない（構造は `mdmark check` が `schema` のずれで返却する）。`enabled` が `false` の行は読み込まない |
 | `input.sources` | 必須 | 行の `paths` に該当したファイルを YAML として読み込んだ中身（`MdmarkAliasSource`）の並び。行ごとに `paths` に記載した順、glob の中はパスの順に並べる。読み込めなかったファイルと、どのファイルにも該当しなかった `paths` は呼ぶ側が扱い、ここには入れない |
 | `input.configFile` | 任意 | 行のずれの `file` に出す設定ファイルの名前。既定は `mdmark.config.yaml` |
 
@@ -572,7 +572,7 @@ const { aliases, problems } = buildAliases({
 | `data` | `unknown` | ファイルを YAML として読み込んだ値 |
 
 行の `records` を記載した行はファイルのそのキーの配列の要素ごとに、記載しない行はファイルの値を 1 件にして、レコード 1 つからエイリアスを 1 つ作る。
-値の取り方と種類ごとの必須のキーは [設定](./設定.md#エイリアスの元の行)。
+値の取り方と種類ごとの必須のキーは [設定](./設定.mark.md#エイリアスの元の行)。
 
 ### レスポンス
 
@@ -610,7 +610,7 @@ const { aliases, problems } = buildAliases({
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。行のずれは `configFile`、レコードのずれはそのレコードのファイルの `path` |
 | `where` | `string` | 行のずれは設定のキーのパス（`aliases[1].id`）。レコードのずれはファイルの中のパス（`records` を記載した行は `terms[2].command`、記載しない行は `command`）。ファイル全体のずれは空文字 |
-| `kind` | `'duplicate_alias_row_id' \| 'alias_records_missing' \| 'alias_field_missing' \| 'alias_unknown_type' \| 'alias_required_empty' \| 'duplicate_alias_id'` | ずれの種類。意味は [CLI](./CLI.md#設定と索引を点検する) |
+| `kind` | `'duplicate_alias_row_id' \| 'alias_records_missing' \| 'alias_field_missing' \| 'alias_unknown_type' \| 'alias_required_empty' \| 'duplicate_alias_id'` | ずれの種類。意味は [CLI](./CLI.mark.md#設定と索引を点検する) |
 | `message` | `string` | ずれの内容と修正方法を記載した日本語の 1 文 |
 
 ずれの並びは `aliases` と同じ順で、同じ行・レコードの中は `metadata` のキーの順。
@@ -665,7 +665,7 @@ registerExtension({
 `draw` の中で、配布物が出す [`mountView`](#ビューを描く) と [`mountComments`](#コメントを付ける) を `slot` に対して呼んで、マーカーの場所に mdmark の部品を描ける。
 `draw` が部品の `Promise` を待つと、`mount` はその後にマーカーの場所を描き終えたものとして扱う。
 `update`・`destroy` でマーカーの場所を片付けるとき、その中の部品の `destroy` も行う。
-手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.md)。
+手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.mark.md)。
 
 `registerExtension` と、型 `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` と、図の部品の定義の型 `MdmarkChartDefinition`・`MdmarkParamDefinition` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit` で点検できる（[固有の部品とCSSを適用する](./図を描く-固有の部品とCSSを適用する.md)）。
@@ -690,17 +690,17 @@ JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit`
 
 | 起きたこと | マーカーの場所 |
 | --- | --- |
-| 引数が `schema` に合わない | [記載の警告](./記法.md#記載の警告)。モジュールを読み込まない。issue ごとに項目を並べる。引数の位置まで届く指摘は `{位置} つ目の {値}: {message}`、キーまで届く指摘は `{キー}=: {message}`、届かない指摘は `{message}` だけの項目にする |
-| `load` が拒否される、または `draw` が例外を投げる | [通知ブロック](./用語集.md)。拡張の名前と元のエラーが `console.error` に出る |
-| `schema` の `validate` が例外を投げるか拒否される | [通知ブロック](./用語集.md)。`load` を呼ばない。拡張の名前と元のエラーが `console.error` に出る |
+| 引数が `schema` に合わない | [記載の警告](./記法.mark.md#記載の警告)。モジュールを読み込まない。issue ごとに項目を並べる。引数の位置まで届く指摘は `{位置} つ目の {値}: {message}`、キーまで届く指摘は `{キー}=: {message}`、届かない指摘は `{message}` だけの項目にする |
+| `load` が拒否される、または `draw` が例外を投げる | [通知ブロック](./用語集.mark.md)。拡張の名前と元のエラーが `console.error` に出る |
+| `schema` の `validate` が例外を投げるか拒否される | [通知ブロック](./用語集.mark.md)。`load` を呼ばない。拡張の名前と元のエラーが `console.error` に出る |
 
 `render` は拡張のマーカーを読み込み中のブロックに置き換えるだけで、`load` も検査も呼ばない。
 
 ## ビューを描く
 
 利用側のページと拡張のモジュールが、列名と項目の値を指定し、要素の中にボード表示と表形式のビューを描く。
-文書のビューのマーカー（[ビュー](./記法.md#ビュー)）で描くものと同じ外観と操作になる。
-手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.md)。
+文書のビューのマーカー（[ビュー](./記法.mark.md#ビュー)）で描くものと同じ外観と操作になる。
+手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.mark.md)。
 
 ### リクエスト
 
@@ -726,7 +726,7 @@ handle.destroy();
 | `opts.group` | 任意 | ボード表示で列に分ける列名。`opts.columns` のどれか。省くと、ボード表示を持たず表形式のビューだけを描く。マーカーの `board.group.column` に該当する |
 | `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`opts.group` があれば `"board"`、無ければ `"table"`。`opts.group` が無いときは `"table"` だけ。マーカーの `initial` に該当する |
 | `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列と種類（`select`・`text`・`date`）のオブジェクト。キーは `opts.columns` のどれか。省くと、どの列にも付けない。マーカーの `columns.{列名}.filter.type` に該当する |
-| `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を参照するオブジェクト。既定のアイコンに重ね、同じ値は上書きする。使用できるアイコンは [ビュー](./記法.md#ビュー) のとおり。マーカーの `board.values.{値}.icon` に該当する |
+| `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を参照するオブジェクト。既定のアイコンに重ね、同じ値は上書きする。使用できるアイコンは [ビュー](./記法.mark.md#ビュー) のとおり。マーカーの `board.values.{値}.icon` に該当する |
 
 <!-- /table -->
 
@@ -746,13 +746,13 @@ handle.destroy();
 | 起きたこと | 動き |
 | --- | --- |
 | `el` が要素でない、`opts.columns` が空か文字列の配列でないか重なりを持つ、`opts.items` が配列でないか要素がオブジェクトでない、`opts.group`・`opts.filter` の列名が `opts.columns` に無い、`opts.filter` の種類が `select`・`text`・`date` でない、`opts.default` が `board`・`table` でないか `opts.group` が無いのに `board`、`opts.icons` に使用できないアイコンの名前がある | `TypeError` を同期で投げる（`Promise` は返却しない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
-| ビューの部品のモジュールを読み込めない | `el` の中にタイトル `この箇所を表示できません` の [通知ブロック](./用語集.md) を配置し、`Promise` を元のエラーで reject する |
+| ビューの部品のモジュールを読み込めない | `el` の中にタイトル `この箇所を表示できません` の [通知ブロック](./用語集.mark.md) を配置し、`Promise` を元のエラーで reject する |
 
 ## コメントを付ける
 
 利用側のページが、自分で記載した要素とコメントの読み込みと保存の関数を指定し、要素の中の選んだ箇所にコメントを付けられるようにする。
 `mount` で描いた文書のコメントと同じ外観と操作になる。
-手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.md)。
+手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.mark.md)。
 
 ### リクエスト
 
@@ -880,7 +880,7 @@ handle.destroy();
 | `--mdmark-color-callout-important` | `#6d28d9` | `#c4a7ff` | 重要の注意書きのタイトル・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きのタイトル・アイコンの色と、面・枠の線のもとの色。コードブロックの警告の行の左端の線と行頭の `!` の色 |
 | `--mdmark-color-callout-caution` | `#b91c1c` | `#f87171` | 注意の注意書きのタイトル・アイコンの色と、面・枠の線のもとの色 |
-| `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景。右側の目次の、今いるセクションの項目と、目次を出しているときの目次を出すボタンの背景 |
+| `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.mark.md) の文書の一覧の、開いている文書の行の背景。右側の目次の、今いるセクションの項目と、目次を出しているときの目次を出すボタンの背景 |
 | `--mdmark-color-diagram-line` | `#71717a` | `#8f8f99` | map の図の、色を指定しない線の色 |
 | `--mdmark-color-series-1` | `#0f766e` | `#2dd4bf` | グラフの 1 つ目の系列の色（実線・丸の点） |
 | `--mdmark-color-series-2` | `#b45309` | `#fbbf24` | グラフの 2 つ目の系列の色 |
@@ -931,7 +931,7 @@ handle.destroy();
 
 注意書きの面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色で、混ぜる割合の変数は持たない。
 色のプリセット（`--mdmark-color-accent-*`）は、どの組も文字と面のコントラストを 4.5:1 以上にしている。
-色の名前の記載方法は [記法](./記法.md#色の名前)。
+色の名前の記載方法は [記法](./記法.mark.md#色の名前)。
 
 #### 配色を切り替える class
 
@@ -942,7 +942,7 @@ handle.destroy();
 
 | 優先 | class | 配色 | 付けるもの |
 | --- | --- | --- | --- |
-| 1 | `mdmark-theme-dark` | ダーク | 利用側が、OS やホストの配色によらず固定するとき。VS Code 拡張機能は `mdmark.preview.theme` が `dark` のときに付ける。`mount` は、文書の [ページの設定](./記法.md#ページの設定) の `scheme` か設定の [配色の明暗](./設定.md#配色の明暗) が `dark` のとき、描く先の要素に付ける（最も近い class なので祖先の class に勝つ） |
+| 1 | `mdmark-theme-dark` | ダーク | 利用側が、OS やホストの配色によらず固定するとき。VS Code 拡張機能は `mdmark.preview.theme` が `dark` のときに付ける。`mount` は、文書の [ページの設定](./記法.mark.md#ページの設定) の `scheme` か設定の [配色の明暗](./設定.mark.md#配色の明暗) が `dark` のとき、描く先の要素に付ける（最も近い class なので祖先の class に勝つ） |
 | 1 | `mdmark-theme-light` | ライト | 同上。`mdmark.preview.theme` が `light` のとき。`mount` は `scheme` か配色の明暗が `light` のとき |
 | 2 | `vscode-high-contrast-light`・`vscode-light` | ライト | VS Code が Webview の `body` に付ける |
 | 2 | `vscode-dark`・`vscode-high-contrast`（`vscode-high-contrast-light` を一緒に持たないとき） | ダーク | 同上 |
@@ -957,7 +957,7 @@ handle.destroy();
 #### 選べるテーマ
 
 配色の変数の値の組を、mdmark に入れたテーマから選べる。
-テーマは設定の `colorTheme`（[選ぶテーマ](./設定.md#選ぶテーマ)）で選ぶ。
+テーマは設定の `colorTheme`（[選ぶテーマ](./設定.mark.md#選ぶテーマ)）で選ぶ。
 `mount` は選んだテーマの名前を、描く先の要素の属性 `data-mdmark-color-theme` に付ける。
 利用側がこの属性を付ける必要はない。
 

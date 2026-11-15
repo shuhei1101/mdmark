@@ -222,7 +222,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 | `mdmark.preview.updateDelayMs` | 整数 | `300` | 0〜5000 | 最後に打ってから再描画するまでのミリ秒。範囲の外の値は既定の値として扱う | 即時 |
 | `mdmark.preview.scrollPreviewWithEditor` | 真偽値 | `true` | `true`・`false` | エディタをスクロールしたときに、プレビューを同じ箇所まで動かす | 即時 |
 | `mdmark.preview.scrollEditorWithPreview` | 真偽値 | `true` | `true`・`false` | プレビューをスクロールしたときに、エディタを同じ箇所まで動かす | 即時 |
-| `mdmark.preview.theme` | 文字列 | `auto` | `auto`・`light`・`dark` | `auto` は設定ファイルの `colorScheme`、無ければ VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する。文書の先頭の [ページの設定](./記法.md#ページの設定) の `scheme` はこの設定より優先する。書き出す HTML には使用しない | 即時 |
+| `mdmark.preview.theme` | 文字列 | `auto` | `auto`・`light`・`dark` | `auto` は設定ファイルの `colorScheme`、無ければ VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する。文書の先頭の [ページの設定](./記法.mark.md#ページの設定) の `scheme` はこの設定より優先する。書き出す HTML には使用しない | 即時 |
 | `mdmark.colorTheme` | 文字列 | 空 | 空・`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` | プレビューと、`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が書き出す HTML の配色のテーマ。空のときは設定ファイルの `colorTheme` に従い、そこにも無ければ `dev-swiss`。設定画面の表示は「Mdmark: Color Theme」で、空の選択肢は「（設定ファイルに従う）」。明暗は `mdmark.preview.theme` が決める | 即時 |
 | `mdmark.export.outputDir` | 文字列 | 空 | 空・相対パス・絶対パス | `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` が HTML を書き込むフォルダ。空のときは Markdown と同じフォルダ。相対パスは Markdown を含むワークスペースのフォルダから解決する | 即時 |
 
@@ -239,8 +239,8 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 
 ## 設定ファイルのキー
 
-拡張機能が、端末の設定と上のフォルダの設定ファイルを重ねた設定から読み込むキー（[設定を重ねて読み込む仕組み](./コアコンセプト-設定を重ねて読み込む仕組み.md)）。
-キーの意味は [設定](./設定.md)。
+拡張機能が、端末の設定と上のフォルダの設定ファイルを重ねた設定から読み込むキー（[設定を重ねて読み込む仕組み](./コアコンセプト-設定を重ねて読み込む仕組み.mark.md)）。
+キーの意味は [設定](./設定.mark.md)。
 
 ### リクエスト
 
@@ -259,7 +259,7 @@ colorTheme: theme-slate
 | `html-scripts.url` | 範囲のスクリプトの変換のライブラリ。`http:`・`https:` の URL はそのまま、相対 URL はその値を記載した設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.html-scripts.url` に指定する。書き出す HTML には、文書に `ts`・`js` の範囲があるとき相対 URL のモジュールを埋める |
 | `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、記載した値をそのまま `mount` の `opts.config.colorTheme` に指定する。空でないときは `mdmark.colorTheme` の値に置き換える |
 | `side-toc` | 右側の目次の出し方。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config["side-toc"]` に指定する |
-| `table` | 表の設定。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.table` に指定する（`pin` は[表のピン止めの動き](./設定.md#表のピン止めの動き)） |
+| `table` | 表の設定。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.table` に指定する（`pin` は[表のピン止めの動き](./設定.mark.md#表のピン止めの動き)） |
 | `labels` | 部品の文言。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.labels` に指定する |
 | `tooltips` | ツールチップを出す場所。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.tooltips` に指定する |
 | `syntax.url` | 色分けのライブラリの読み込み先。`http:`・`https:` の URL はそのまま、相対 URL はその値を記載した設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.syntax.url` に指定する。書き出す HTML には、文書が使用する言語があるとき本体とその言語のモジュールを埋める |
