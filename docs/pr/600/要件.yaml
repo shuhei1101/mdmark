@@ -24,16 +24,24 @@ docs:
   - page: docs/guide/設定.md
     new: false
     change: features.hints の行と図のツールチップを出す場所の節に map の図の説明を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'
   - page: docs/guide/図を描く-図を描く.md
     new: false
     change: map の図の説明のツールチップにも tooltips.diagramPlacement と features.hints が効くことを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'
   - page: docs/guide/記載する-ビューとコメントを使用する.md
     new: false
     change: ビューの表の長文の列に並べ替えを既定で付けないことと columns.{列名}.sort を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'
   - page: docs/guide/記法.md
     new: false
     change: ビューのマーカーの引数に columns.{列名}.sort を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T12:22:32.314896+00:00'
