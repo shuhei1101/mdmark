@@ -127,6 +127,8 @@ export type MapFlowArgs = {
   notes?: Record<string, string> | undefined;
   /** 補足の notes の annotations（要素の ID ごとの注記。番号の順） */
   annotations?: Record<string, DiagramAnnotation[]> | undefined;
+  /** 機能 `hints` がオンか（既定 `true`）。オフなら説明と注記のツールチップとマーカーを作らず、注記の持ち主の `id` を要素そのものに付ける */
+  hints?: boolean | undefined;
   /** `mapLinkProblems` が許したノードのリンク先 */
   links?: Record<string, string> | undefined;
   /** 補足の layout の color（グループの ID ごとの色の名前） */
@@ -202,11 +204,31 @@ const insertNodePart = (
 const disclosure = (id: string, title: string, expanded: boolean): string =>
   `<button class="map-disclosure" type="button" data-group-toggle="${escapeHtml(id)}" aria-expanded="${expanded}" aria-label="${escapeHtml(`${title}を${expanded ? "閉じる" : "開く"}`)}" title="${expanded ? "閉じる" : "開く"}">${iconSvg(expanded ? "chevron-down" : "chevron-right")}</button>`;
 
-/** グループのタイトル。今入っているグループは押せない文字にする */
-const groupTitle = (id: string, title: string, current: boolean): string =>
-  current
-    ? `<span class="map-group-title is-current">${escapeHtml(title)}</span>`
-    : `<button class="map-group-title" type="button" data-group-enter="${escapeHtml(id)}" aria-label="${escapeHtml(`${title}の中へ入る`)}" title="中へ入る">${escapeHtml(title)}</button>`;
+/** グループのタイトル。今入っているグループは押せない文字にする。`ownerId` は `hints` がオフのときの注記の持ち主の `id` */
+const groupTitle = (
+  id: string,
+  title: string,
+  current: boolean,
+  ownerId?: string,
+): string => {
+  const owner = ownerId === undefined ? "" : ` id="${escapeHtml(ownerId)}"`;
+  return current
+    ? `<span class="map-group-title is-current"${owner}${ownerId === undefined ? "" : ' tabindex="-1"'}>${escapeHtml(title)}</span>`
+    : `<button class="map-group-title" type="button"${owner} data-group-enter="${escapeHtml(id)}" aria-label="${escapeHtml(`${title}の中へ入る`)}" title="中へ入る">${escapeHtml(title)}</button>`;
+};
+
+/** `hints` がオフのとき、注記を持つ要素の持ち主の `id`（オンか注記を持たなければ `undefined`） */
+const plainOwnerId = (
+  args: {
+    hints?: boolean | undefined;
+    annotations?: Record<string, DiagramAnnotation[]> | undefined;
+    id?: string | undefined;
+  },
+  elementId: string,
+): string | undefined =>
+  args.hints === false && (args.annotations?.[elementId]?.length ?? 0) > 0
+    ? noteOwnerId(noteOwnerPrefix(args.id), elementId)
+    : undefined;
 
 /** 強調するノードと線（選択が強調より優先する） */
 const keptOf = (
@@ -618,7 +640,7 @@ const markFlowNode = (
       new RegExp(
         `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}"[^>]*>[\\s\\S]*?<a class="mdmark-diagram-node-link" href="[^"]*") aria-label="[^"]*"`,
       ),
-      `$1 aria-roledescription="ノード" aria-keyshortcuts="${MAP_LINK_KEYS}" aria-label="${name}"`,
+      `$1${ownerAttribute(plainOwnerId(args, node.id))} aria-roledescription="ノード" aria-keyshortcuts="${MAP_LINK_KEYS}" aria-label="${name}"`,
     );
     return selected ? markSelected(linked, value) : linked;
   }
@@ -627,10 +649,14 @@ const markFlowNode = (
     new RegExp(
       `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}"[^>]*>)`,
     ),
-    `$1<span class="mdmark-diagram-node-hit" role="button" tabindex="0" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${name}"></span>`,
+    `$1<span class="mdmark-diagram-node-hit"${ownerAttribute(plainOwnerId(args, node.id))} role="button" tabindex="0" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${name}"></span>`,
   );
   return selected ? markSelected(hit, value) : hit;
 };
+
+/** 持ち主の `id` の属性（無ければ空） */
+const ownerAttribute = (ownerId: string | undefined): string =>
+  ownerId === undefined ? "" : ` id="${escapeHtml(ownerId)}"`;
 
 /** 薄く残したノードに `map-faded` を付ける */
 const fadeNodes = (html: string, nodes: MapNode[]): string =>
@@ -730,7 +756,7 @@ const renderOpenGroup = (context: {
   const bar = movable
     ? `<div class="map-group-bar" tabindex="0" role="button" aria-label="${escapeHtml(`${group.title}を動かす`)}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight" title="ドラッグでグループを動かす"></div>`
     : "";
-  return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(args, group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}${groupMark(group.id, group.title)}</div></div>`;
+  return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(args, group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div></div>`;
 };
 
 /** 閉じたグループの名前の後ろの文字（無ければ「ノード {数} 件」） */
@@ -749,7 +775,7 @@ const renderClosedGroups = (args: MapFlowArgs, groupMark: GroupMark): string =>
     .filter((group) => group.collapsed)
     .map(
       (group) =>
-        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}${groupMark(group.id, group.title)}</div>${closedCount(args, group)}</div>`,
+        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div>${closedCount(args, group)}</div>`,
     )
     .join("");
 
@@ -774,8 +800,13 @@ const renderWireHits = (context: {
 export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const { layout } = args;
   const mapId = args.id ?? "map";
+  const hints = args.hints !== false;
+  // `hints` がオフなら、説明と注記のツールチップとマーカーの元を渡さない（注記の持ち主の `id` は要素そのものに付ける）
+  const tipArgs: MapFlowArgs = hints
+    ? args
+    : { ...args, notes: undefined, annotations: undefined };
   const names = flowNamesOf(layout);
-  const wires = layout.wires.map((wire) => flowWire(args, wire));
+  const wires = layout.wires.map((wire) => flowWire(tipArgs, wire));
   const definition: MdmarkFlowDefinition = {
     width: layout.width,
     height: layout.height,
@@ -787,9 +818,12 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     args.annotations === undefined
       ? undefined
       : { items: args.annotations, ownerPrefix };
-  const part = renderFlow(definition, mapId, { hints: true, annotations });
+  const part = renderFlow(definition, mapId, {
+    hints,
+    annotations: hints ? annotations : undefined,
+  });
   const wireTips = flowWireTips({
-    args,
+    args: tipArgs,
     mapId,
     wires,
     wireName: names.wireName,
@@ -806,11 +840,11 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const groupTips = createTips(`${mapId}-group`);
   const groupMark: GroupMark = (id, title) =>
     groupInfo({
-      hint: args.notes?.[id],
+      hint: tipArgs.notes?.[id],
       label: title,
       owner: `group:${id}`,
       tips: groupTips,
-      annotations: args.annotations?.[id],
+      annotations: tipArgs.annotations?.[id],
       ownerId: noteOwnerId(ownerPrefix, id),
     });
   const groups = renderOpenGroups(args, groupMark);
@@ -904,6 +938,8 @@ export type MapSequenceArgs = {
   notes?: Record<string, string> | undefined;
   /** 補足の notes の annotations（メッセージの番号ごとの注記。番号の順）。注記を持つメッセージの線にもツールチップを付ける */
   annotations?: Record<string, DiagramAnnotation[]> | undefined;
+  /** 機能 `hints` がオンか（既定 `true`）。オフなら説明と注記のツールチップを作らず、注記の持ち主の `id` だけをメッセージの線に付ける */
+  hints?: boolean | undefined;
   rows: SequenceRow[];
   participants: string[];
   collapsed: number[];
@@ -1343,6 +1379,11 @@ const seqNoteOwner = (
   const notes = args.annotations?.[key];
   const annotated = (notes?.length ?? 0) > 0;
   if ((note === undefined || note === "") && !annotated) return "";
+  const ownerId = annotated
+    ? ` id="${escapeHtml(noteOwnerId(noteOwnerPrefix(args.id), key))}" tabindex="0"`
+    : "";
+  // `hints` がオフなら、ツールチップを作らず注記の持ち主の `id` だけを残す
+  if (args.hints === false) return ownerId;
   noteTips.add({
     kind: "wire",
     label: `${seqLabelOf(args.sequence, item.from)} → ${seqLabelOf(args.sequence, item.to)}`,
@@ -1350,7 +1391,7 @@ const seqNoteOwner = (
     owner: `message:${message}`,
     annotations: notes,
   });
-  return `${annotated ? ` id="${escapeHtml(noteOwnerId(noteOwnerPrefix(args.id), key))}" tabindex="0"` : ""} data-tip-owner="${escapeHtml(`message:${message}`)}"`;
+  return `${ownerId} data-tip-owner="${escapeHtml(`message:${message}`)}"`;
 };
 
 /** メッセージ 1 つの線・ラベル・データの印を返却する（描けなければ `undefined`） */
@@ -1522,6 +1563,8 @@ export type MapErTableArgs = {
   annotations?: Record<string, DiagramAnnotation[]> | undefined;
   /** 注記を持つ列の説明のボタンの `id` の頭 */
   ownerPrefix?: string | undefined;
+  /** 機能 `hints` がオンか（既定 `true`）。オフなら説明のボタンとツールチップを作らず、注記の持ち主の `id` を列の行に付ける */
+  hints?: boolean | undefined;
   /** ツールチップの id の頭 */
   id?: string | undefined;
 };
@@ -1550,6 +1593,11 @@ export const renderMapEr = (
         annotated && args.ownerPrefix !== undefined
           ? ` id="${escapeHtml(noteOwnerId(args.ownerPrefix, `${args.name}.${column.name}`))}"`
           : "";
+      // `hints` がオフなら、説明のボタンを作らず、注記の持ち主の `id` を列の行に付ける
+      if (args.hints === false) {
+        const row = ownerId === "" ? "" : `${ownerId} tabindex="-1"`;
+        return `<div class="map-er-column"${row} role="listitem" data-column="${escapeHtml(column.name)}"><span class="map-er-key">${escapeHtml(column.keys.join(","))}</span><span class="map-er-name">${escapeHtml(column.name)}</span><span class="map-er-type">${escapeHtml(column.type)}</span><span class="map-er-note-cell"></span></div>`;
+      }
       const mark =
         note === undefined && !annotated
           ? ""
@@ -2006,6 +2054,7 @@ export const renderMapErDiagram = (args: MapErArgs): MapPart => {
       id: `${id}-er-${index}`,
       annotations: columnNotes,
       ownerPrefix: noteOwnerPrefix(args.id),
+      hints: args.hints,
     });
     nodeParts[table.name] = {
       head: part.toggle,

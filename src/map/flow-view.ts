@@ -510,6 +510,7 @@ export const attachMapFlow = (
       wireLines,
       notes,
       annotations,
+      hints: config.features.hints === true,
       links,
       colors,
       collapsed: state.collapsed,
@@ -546,7 +547,7 @@ export const attachMapFlow = (
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
   const detachDiagrams = attachDiagrams({
     root: range,
-    placement: "bottom",
+    placement: config.tooltips.diagramPlacement,
     figures: [figure],
   });
   // シーケンス図の再生を自動で進めている間に、送り手と受け手のノードへ表示する枠をスクロールする

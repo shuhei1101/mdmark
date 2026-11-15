@@ -1437,12 +1437,12 @@ function rangeOf(
 function tableSpecOf(
   context: DecorateContext,
   table: { token: Token; index: number; range: TableRange | undefined },
-): { spec: TableSpec; mergeColumns: number[]; fromView: boolean } {
+): { spec: TableSpec; mergeColumns: number[] } {
   const { state, tokens, dropped } = context;
   const { token, index, range } = table;
   const viewSpec = (token.meta as { tableSpec?: TableSpec } | null)?.tableSpec;
   if (viewSpec) {
-    return { spec: viewSpec, mergeColumns: [], fromView: true };
+    return { spec: viewSpec, mergeColumns: [] };
   }
   const rowCount = bodyRowCount(tokens, index) + 1;
   let spec = readTableSpec(
@@ -1451,7 +1451,7 @@ function tableSpecOf(
     rowCount,
   );
   if (!range) {
-    return { spec, mergeColumns: [], fromView: false };
+    return { spec, mergeColumns: [] };
   }
   if (spec.headRows > 1) {
     // 列名は見出しの最下段の行から読み込む（上と結合した `^^` は上のセルの文字）
@@ -1463,7 +1463,7 @@ function tableSpecOf(
   }
   const merged = mergeTableCells({ state, tableOpen: index, spec, dropped });
   spec.warnings.push(...merged.warnings);
-  return { spec, mergeColumns: merged.mergeColumns, fromView: false };
+  return { spec, mergeColumns: merged.mergeColumns };
 }
 
 /** 幅の範囲を指定した列の、下限と上限 */
@@ -1491,16 +1491,13 @@ function tableOptionsOf(
     index: number;
     spec: TableSpec;
     mergeColumns: number[];
-    fromView: boolean;
   },
 ): Parameters<typeof renderTable>[0] {
-  const { token, index, spec, mergeColumns, fromView } = table;
+  const { token, index, spec, mergeColumns } = table;
   const long = findLongColumns(columnLinesOf(tokens, index));
-  // ビューの表は長文の列の並べ替えを戻す指定を持たないため、並べ替えを外さない
-  const noSort =
-    spec.features.includes("sort") && !fromView
-      ? findNoSortColumns({ long, sorts: spec.sorts })
-      : [];
+  const noSort = spec.features.includes("sort")
+    ? findNoSortColumns({ long, sorts: spec.sorts })
+    : [];
   const filters: TableFilter[] = spec.filters.map((filter) => ({
     column: filter.column,
     kind: filter.kind ?? defaultFilterKind(long.includes(filter.column)),
@@ -1596,13 +1593,13 @@ function openTable(
   const { state, tokens, out } = context;
   const { token, index } = table;
   const range = rangeOf(context.ranges, table);
-  const { spec, mergeColumns, fromView } = tableSpecOf(context, {
+  const { spec, mergeColumns } = tableSpecOf(context, {
     token,
     index,
     range,
   });
   const html = renderTable(
-    tableOptionsOf(tokens, { token, index, spec, mergeColumns, fromView }),
+    tableOptionsOf(tokens, { token, index, spec, mergeColumns }),
   );
   if (spec.features.includes("rowlink")) {
     linkRows(state, { tokens, tableOpen: index, taken: context.taken });
