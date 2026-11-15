@@ -8,7 +8,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
     impact: run_only
-    detail: 説明を持つノードの中に押せる要素を入れ子にしない形に変える。ノードの選択・Alt と矢印キーでの移動と、説明のツールチップの開閉は変わらない
+    detail: 構成図・ER 図・状態遷移図のノードの中に押せる要素を入れ子にしない構造に変える。ノードの選択・Alt と矢印キーでの移動・名前の文字の選択と、説明のツールチップ・ER 図の列の開閉は変わらない
     depends_on: []
 scope_out:
   - item: map のシーケンス図の参加者の箱の中に、名前の用語（フォーカスできる span.mdmark-term）が入れ子になる箇所
