@@ -1569,6 +1569,52 @@ export type MapErTableArgs = {
   id?: string | undefined;
 };
 
+/** 注記を持つ列の持ち主の `id` の属性（`ownerPrefix` が無ければ空） */
+const erOwnerId = (args: MapErTableArgs, column: string): string =>
+  args.ownerPrefix === undefined
+    ? ""
+    : ` id="${escapeHtml(noteOwnerId(args.ownerPrefix, `${args.name}.${column}`))}"`;
+
+/** ER 図の列の説明のボタンと、そのツールチップ */
+const erNoteButton = (
+  args: MapErTableArgs,
+  context: {
+    column: MapErTableArgs["columns"][number];
+    tips: TipList;
+    ownerId: string;
+  },
+): string => {
+  const { column, tips, ownerId } = context;
+  const note = args.notes[column.name];
+  const notes = args.annotations?.[column.name];
+  const owner = `column:${args.name}.${column.name}`;
+  const label = infoLabel({
+    name: column.name,
+    described: note !== undefined,
+    annotated: (notes?.length ?? 0) > 0,
+  }).replace(/^「(.*)」/, "$1");
+  return `<button class="map-er-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
+};
+
+/** ER 図の列の行 1 つ。説明か注記を持つ列は、説明のボタンとツールチップを持つ。`hints` がオフなら説明のボタンを作らず、注記の持ち主の `id` を列の行に付ける */
+const renderMapErColumn = (
+  args: MapErTableArgs,
+  context: { column: MapErTableArgs["columns"][number]; tips: TipList },
+): string => {
+  const { column, tips } = context;
+  const note = args.notes[column.name];
+  const notes = args.annotations?.[column.name];
+  const annotated = (notes?.length ?? 0) > 0;
+  const ownerId = annotated ? erOwnerId(args, column.name) : "";
+  const plain = args.hints === false;
+  const row = plain && ownerId !== "" ? `${ownerId} tabindex="-1"` : "";
+  const mark =
+    plain || (note === undefined && !annotated)
+      ? ""
+      : erNoteButton(args, { column, tips, ownerId });
+  return `<div class="map-er-column"${row} role="listitem" data-column="${escapeHtml(column.name)}"><span class="map-er-key">${escapeHtml(column.keys.join(","))}</span><span class="map-er-name">${escapeHtml(column.name)}</span><span class="map-er-type">${escapeHtml(column.type)}</span><span class="map-er-note-cell">${mark}</span></div>`;
+};
+
 /** 部品『mapのER図』のテーブルの中身。列を開閉するボタン・列の行・列の説明のツールチップ */
 export const renderMapEr = (
   args: MapErTableArgs,
@@ -1578,32 +1624,7 @@ export const renderMapEr = (
   if (args.collapsed) return { toggle, columns: "", tips: "" };
   const tips = createTips(args.id ?? `map-er-${args.name}`);
   const rows = args.columns
-    .map((column) => {
-      const note = args.notes[column.name];
-      const notes = args.annotations?.[column.name];
-      const annotated = (notes?.length ?? 0) > 0;
-      const owner = `column:${args.name}.${column.name}`;
-      // 説明か注記を持つ列は、説明のボタンとツールチップを持つ
-      const label = infoLabel({
-        name: column.name,
-        described: note !== undefined,
-        annotated,
-      }).replace(/^「(.*)」/, "$1");
-      const ownerId =
-        annotated && args.ownerPrefix !== undefined
-          ? ` id="${escapeHtml(noteOwnerId(args.ownerPrefix, `${args.name}.${column.name}`))}"`
-          : "";
-      // `hints` がオフなら、説明のボタンを作らず、注記の持ち主の `id` を列の行に付ける
-      if (args.hints === false) {
-        const row = ownerId === "" ? "" : `${ownerId} tabindex="-1"`;
-        return `<div class="map-er-column"${row} role="listitem" data-column="${escapeHtml(column.name)}"><span class="map-er-key">${escapeHtml(column.keys.join(","))}</span><span class="map-er-name">${escapeHtml(column.name)}</span><span class="map-er-type">${escapeHtml(column.type)}</span><span class="map-er-note-cell"></span></div>`;
-      }
-      const mark =
-        note === undefined && !annotated
-          ? ""
-          : `<button class="map-er-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
-      return `<div class="map-er-column" role="listitem" data-column="${escapeHtml(column.name)}"><span class="map-er-key">${escapeHtml(column.keys.join(","))}</span><span class="map-er-name">${escapeHtml(column.name)}</span><span class="map-er-type">${escapeHtml(column.type)}</span><span class="map-er-note-cell">${mark}</span></div>`;
-    })
+    .map((column) => renderMapErColumn(args, { column, tips }))
     .join("");
   return {
     toggle,

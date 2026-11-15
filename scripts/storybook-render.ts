@@ -832,11 +832,11 @@ const jsonList = (value: unknown): string[] =>
       ? (JSON.parse(value) as string[])
       : [];
 
-/** ストーリーの args のオブジェクト（JSON の文字でも、Storybook がオブジェクトにした値でもよい） */
 /** ストーリーの引数 `hints`（問い合わせの値は文字か真偽値で届く）。`false` のときだけオフ */
 const hintsOf = (value: unknown): boolean =>
   value !== false && value !== "false";
 
+/** ストーリーの args のオブジェクト（JSON の文字でも、Storybook がオブジェクトにした値でもよい） */
 const jsonObject = <T>(value: unknown): T | undefined =>
   typeof value === "object" && value !== null
     ? (value as T)
