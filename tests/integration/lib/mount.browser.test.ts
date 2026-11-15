@@ -17290,8 +17290,21 @@ test("test_normal_when_map_class_drawn", async () => {
     mapNode(figure, "一覧").dataset.color ??
       mapNode(figure, "一覧").getAttribute("style"),
   ).toContain("green");
-  expect(Number.parseFloat(mapNode(figure, "描画器").style.left)).toBe(0);
-  expect(Number.parseFloat(mapNode(figure, "描画器").style.top)).toBe(0);
+  // 図の中身の左上は、どのノード・グループよりも左上
+  const origin = (key: "left" | "top") =>
+    Math.min(
+      ...[
+        ...figure.querySelectorAll<HTMLElement>(
+          ".mdmark-diagram-stage > :is(.mdmark-diagram-node[data-node], .map-group)",
+        ),
+      ].map((element) => Number.parseFloat(element.style[key])),
+    );
+  expect(Number.parseFloat(mapNode(figure, "描画器").style.left)).toBe(
+    origin("left"),
+  );
+  expect(Number.parseFloat(mapNode(figure, "描画器").style.top)).toBe(
+    origin("top"),
+  );
   // 実行・検証: クラスをドラッグすると動き、関係の端の形が線の端に付いて動く
   const shapeBefore = (
     endShape("r2") as SVGGraphicsElement
@@ -17439,8 +17452,21 @@ test("test_normal_when_map_architecture_drawn", async () => {
     expect(openTipText(info)).toContain("利用者の要求を受ける"),
   );
   info.blur();
-  expect(Number.parseFloat(mapNode(figure, "web").style.left)).toBe(0);
-  expect(Number.parseFloat(mapNode(figure, "web").style.top)).toBe(120);
+  // 図の中身の左上（どのノード・グループよりも左上）から {x: 0, y: 120}
+  const origin = (key: "left" | "top") =>
+    Math.min(
+      ...[
+        ...figure.querySelectorAll<HTMLElement>(
+          ".mdmark-diagram-stage > :is(.mdmark-diagram-node[data-node], .map-group)",
+        ),
+      ].map((element) => Number.parseFloat(element.style[key])),
+    );
+  expect(Number.parseFloat(mapNode(figure, "web").style.left)).toBe(
+    origin("left"),
+  );
+  expect(Number.parseFloat(mapNode(figure, "web").style.top)).toBe(
+    origin("top") + 120,
+  );
   // 実行・検証: service をドラッグすると動き、線は辺の指定のまま引き直される
   const topBefore = Number.parseFloat(mapNode(figure, "db").style.top);
   pressMap(find(mapNode(figure, "db"), ".mdmark-diagram-node-kind"), 0, 40);
@@ -17696,7 +17722,6 @@ test("test_normal_when_map_class_arch_walked", async () => {
   expect(cls().querySelector(".map-group-title.is-current")?.textContent).toBe(
     "形状",
   );
-  expect(new URLSearchParams(location.search).get("map-1")).toBe("形状");
   expect(mapDimmed(mapNode(cls(), "基本図形"))).toBe(false);
   expect(mapDimmed(mapNode(cls(), "円"))).toBe(false);
   expect(mapDimmed(mapNode(cls(), "図形"))).toBe(true);

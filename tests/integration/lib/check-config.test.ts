@@ -1244,7 +1244,7 @@ test("test_normal_when_map_class_arch_c4_data_drift", async () => {
     "```mermaid",
     ...mermaid,
     "```",
-    ...Array.from({ length: 5 - mermaid.length }, () => ""),
+    ...Array.from({ length: 4 - mermaid.length }, () => ""),
     data,
     "",
     "<!-- /map -->",
@@ -1259,9 +1259,8 @@ test("test_normal_when_map_class_arch_c4_data_drift", async () => {
       range(
         [
           "classDiagram",
-          "  class 図面 {",
-          "    +名前 string",
-          "  }",
+          "  class 図形",
+          "  図面 : +名前 string",
           "  図面 --> 図形",
         ],
         '<!-- map-data: {"version": 1, "notes": {"図面.幽霊": {"text": "無いメンバー"}}} -->',
