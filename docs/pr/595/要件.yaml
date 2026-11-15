@@ -72,12 +72,20 @@ docs:
     new: false
     change: '`guide-index.yaml` の行を足す（`guide/files.yaml` の `index.yaml` の行を移す）'
     status: todo
+  - page: docs/guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
+    new: false
+    change: 本文の `guide/index.yaml` を `plugin/guide-index.yaml` へ合わせる（記法を含まないため改名しない）
+    status: todo
+  - page: docs/guide/用語集.md
+    new: false
+    change: 記法を含むため `.mark.md` へ改名し、用語「ガイド」の本文の `guide/index.yaml` を `plugin/guide-index.yaml` へ合わせる
+    status: todo
 scope_out:
   - item: AI Monitor の設計書の Markdown の生成が出力する `docs/README.md`・設計書のフォルダの `README.md`・`docs/guide/README.md` の拡張子の移行
     reason: '生成し直すと `README.md` に戻るため（#546 の扱いの判断と #481 と同じ扱い）'
     plan: none
   - item: 過去の PR ドキュメント（`docs/pr/`）の記法を含む `.md` の拡張子の移行と、そこから改名したガイドのページへのリンクの修正
-    reason: '#546 の扱いの判断が移す範囲を `docs/guide/`・`docs/mock/`・`docs/design-policy.md` とした。PR ドキュメントはその当時の記録で、作業 PR ごとに作られ続ける。リンクが切れることの扱いを含め、対象に含めるかは単一ユースケース設計のレビューで確定する'
+    reason: '#546 の終わりの条件の対象は利用者が読む既存のガイドなどの文書で、PR ドキュメントはその作業 PR の時点の記録のため。過去の記録を書き換えると当時の差分と食い違う'
     plan: none
   - item: 記法を含まない `.md`（`docs/guide/` の 33 件など）の拡張子の移行
     reason: '`.mark.md` は mdmark の記法で記載する文書の拡張子で、記法を含まない文書は純粋な Markdown のままにする（#546 の終わりの条件）'
@@ -86,5 +94,5 @@ scope_out:
     reason: '#290 はこの作業の後に着手し、改名後のパスで書き換える（#546 の扱いの判断）'
     plan: '#290'
   - item: '`docs/design-policy.md` と `docs/mock/` の記法を含む `index.md`（6 件）の拡張子の移行'
-    reason: '#546 の扱いの判断は対象に含めたが、AI Monitor の手順（デザインスタイル選定・モック作成・モックの索引の生成）がこのパスを決め打ちで読み書きするため、改名すると生成で `.md` が作り直されるか手順が読めなくなる。今の判断は対象外（生成される `README.md` と同じ扱い）で、単一ユースケース設計のレビューで確定する'
+    reason: AI Monitor がこのパスを決め打ちで扱うため（判定フローチャート『モック要否』が `docs/design-policy.md` を名指しし、モックの配信がフォルダの索引として `index.html`・`index.md`・`README.md` だけを探す）。改名するとモックのフォルダの索引として配信されなくなる。#546 の扱いの判断は対象に含めたが、生成される `README.md` と同じく対象外にする
     plan: none
