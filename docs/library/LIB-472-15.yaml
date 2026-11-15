@@ -174,3 +174,7 @@ verification:
 used_in:
   - src/parts/icons.ts
   - src/index.css
+tags:
+  - name: tool:lucide
+    main: true
+  - name: topic:アイコン

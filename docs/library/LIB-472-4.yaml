@@ -111,3 +111,8 @@ install: |-
   ```bash
   npm i -E ajv@8.20.0
   ```
+tags:
+  - name: tool:ajv
+    main: true
+  - name: topic:検査
+  - name: tool:jsonschema

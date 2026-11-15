@@ -42,3 +42,7 @@ install: '```bash
   ```'
 notes:
   ESLint との受け持ち: 整形とリポジトリ全体の lint は Biome が受け持つ。Webview の React・アクセシビリティ・import の向き・Tailwind・複雑さの規則は ESLint が受け持つ（`.tsx` も整形は Biome）
+tags:
+  - name: tool:biome
+    main: true
+  - name: topic:lint

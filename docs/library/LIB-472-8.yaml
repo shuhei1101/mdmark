@@ -109,3 +109,7 @@ docs_url: https://github.com/shuhei1101/dev-docs/blob/develop/docs/リファレ�
 limitations:
   - item: 作業範囲の外の読み取り
     content: '作業場所が配信元の `scope.read` に該当しないときは、`search_docs` に `source` の ID を 1 つと `outside_scope: true` を指定したときだけ読み込める。`source` に配列・`*` を指定すると読み込めない'
+tags:
+  - name: tool:dev-docs
+    main: true
+  - name: topic:ガイド

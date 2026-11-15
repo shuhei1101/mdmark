@@ -46,3 +46,8 @@ install: |-
   ```bash
   npm i -D -E eslint-plugin-compat@7.0.2
   ```
+tags:
+  - name: tool:eslint
+    main: true
+  - name: topic:ブラウザ
+  - name: topic:lint

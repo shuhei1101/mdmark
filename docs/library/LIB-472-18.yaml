@@ -79,3 +79,7 @@ install: |-
   ```bash
   npm --prefix vscode i -D -E mocha@12.0.3
   ```
+tags:
+  - name: tool:mocha
+    main: true
+  - name: topic:テスト

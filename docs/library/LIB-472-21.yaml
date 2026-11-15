@@ -58,3 +58,7 @@ install: '```bash
 
 
   拡張機能は Webview の JS をまとめて配るため、`dependencies` ではなく `devDependencies` に入れる。'
+tags:
+  - name: tool:react
+    main: true
+  - name: topic:webview

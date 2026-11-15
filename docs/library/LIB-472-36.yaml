@@ -92,3 +92,7 @@ install: |-
 used_in:
   - src/cli/
   - vscode/src/
+tags:
+  - name: tool:yaml
+    main: true
+  - name: topic:設定

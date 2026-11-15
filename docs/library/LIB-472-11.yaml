@@ -77,3 +77,8 @@ install: |-
   ```bash
   cd vscode && npm i -D -E esbuild-wasm@0.28.2
   ```
+tags:
+  - name: tool:esbuild
+    main: true
+  - name: tool:wasm
+  - name: action:ビルド

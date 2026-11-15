@@ -96,3 +96,8 @@ limitations:
     content: macOS、systemd を有効にしていない WSL、コンテナの中などでは user のマネージャーが動いていない
   - item: unit のファイルの配置場所
     content: user のマネージャー自身の `XDG_CONFIG_HOME`（既定 `~/.config`）の `systemd/user/` を読む。呼んだ側の環境変数で別のフォルダには切り替えられない
+tags:
+  - name: tool:systemd
+    main: true
+  - name: topic:常駐
+  - name: topic:サーバー

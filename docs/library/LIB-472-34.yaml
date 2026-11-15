@@ -66,3 +66,8 @@ install: |-
   ```bash
   npm --prefix vscode i -D -E @vscode/vsce@4.1.1
   ```
+tags:
+  - name: tool:vsce
+    main: true
+  - name: tool:vscode
+  - name: action:配布

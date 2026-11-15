@@ -55,3 +55,7 @@ install: |-
   ```bash
   npm install --save-dev --save-exact valibot@1.5.0
   ```
+tags:
+  - name: tool:valibot
+    main: true
+  - name: topic:検査

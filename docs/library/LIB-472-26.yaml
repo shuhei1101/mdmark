@@ -48,3 +48,8 @@ install: '```bash
   npm i -D -E tailwindcss@4.3.4 @tailwindcss/vite@4.3.4
 
   ```'
+tags:
+  - name: tool:tailwindcss
+    main: true
+  - name: topic:css
+  - name: topic:webview

@@ -51,3 +51,7 @@ selection:
   candidates: 要望が「言語 `mermaid` のコードブロックを描く」ため、mermaid 本体の 1 つ
   decision: 話し合いの決定（mermaid のコードブロックを描く）で採用が決まっている
   consequences: 配布物にまとめず、使用する文書のときだけ jsDelivr から読み込む。書き出しでは本体と chunk をまとめて埋める。テーマは `base` に CSS 変数から作った値を指定し、グラデーションと影を止める
+tags:
+  - name: tool:mermaid
+    main: true
+  - name: topic:図

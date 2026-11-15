@@ -204,3 +204,7 @@ limitations:
     content: 先に `server/discover`（2026-07-28）を送信し、エラーなら `initialize`（2025-11-25）へ落ちる
   - item: HTTP の MCP サーバーが起動していない
     content: その MCP サーバーだけが `failed`（`ECONNREFUSED`）になる。サーバーを起動してから `/mcp` の Reconnect でつなぎ修正できる
+tags:
+  - name: tool:claude-code
+    main: true
+  - name: topic:フック

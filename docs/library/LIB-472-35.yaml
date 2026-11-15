@@ -135,3 +135,7 @@ limitations:
   - item: AtTop で見せたときの先頭の行
     content: '`revealRange` を `TextEditorRevealType.AtTop` で呼ぶと、見えている範囲の先頭は指定した行の数行前になる。位置が変わらないときは `onDidChangeTextEditorVisibleRanges` が届かない'
     notes: 2026-10-23 に VS Code 1.141.0・1.143.1 で 5 行前だった
+tags:
+  - name: tool:vscode
+    main: true
+  - name: topic:api

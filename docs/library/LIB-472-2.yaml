@@ -232,3 +232,7 @@ issues:
         result: リスナーが残らない
         recommended: true
     upstream_issue: https://github.com/modelcontextprotocol/typescript-sdk/issues/3070
+tags:
+  - name: tool:mcp
+    main: true
+  - name: topic:sdk

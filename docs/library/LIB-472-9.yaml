@@ -82,3 +82,7 @@ install: |-
   ```bash
   npm i -E diff@8.0.4
   ```
+tags:
+  - name: tool:diff
+    main: true
+  - name: topic:差分

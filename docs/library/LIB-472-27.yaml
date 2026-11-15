@@ -79,3 +79,7 @@ install: |-
   ```bash
   npm --prefix vscode i -D -E @vscode/test-electron@3.1.0
   ```
+tags:
+  - name: tool:vscode
+    main: true
+  - name: topic:テスト

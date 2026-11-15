@@ -75,3 +75,7 @@ notes:
     - 許可する要素名は完全一致の列挙で、前方一致や正規表現は記載できない
     - postcss を差し替えたまま `allowedStyles` を指定すると例外になる
     - CommonJS で配布され、ESM 専用の htmlparser2 を `require` する。esbuild でまとめた配布物では問題にならない
+tags:
+  - name: tool:sanitize-html
+    main: true
+  - name: tool:html

@@ -107,3 +107,7 @@ install: |-
   ```bash
   npm i -E markdown-it@15.0.3
   ```
+tags:
+  - name: tool:markdown-it
+    main: true
+  - name: topic:markdown

@@ -43,3 +43,7 @@ install: |-
   npm i -D -E playwright@1.64.0
   npx playwright install chromium
   ```
+tags:
+  - name: tool:playwright
+    main: true
+  - name: topic:テスト
