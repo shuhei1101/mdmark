@@ -234,7 +234,9 @@ test("test_state_selected", async () => {
     expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(true);
   await expect(
     page
-      .locator('.mdmark-diagram-node[data-node="確認待ち"]')
+      .locator(
+        '.mdmark-diagram-node[data-node="確認待ち"] > .mdmark-diagram-node-hit',
+      )
       .getAttribute("aria-label"),
   ).resolves.toBe("確認待ち（選択中）");
 });

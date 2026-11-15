@@ -189,7 +189,9 @@ test("test_selected_one", async () => {
   );
   await expect(
     page
-      .locator('.mdmark-diagram-node[data-node="mount"]')
+      .locator(
+        '.mdmark-diagram-node[data-node="mount"] > .mdmark-diagram-node-hit',
+      )
       .getAttribute("aria-label"),
   ).resolves.toBe("mount（選択中）");
   await expect(pageOverflows(page)).resolves.toBe(false);
