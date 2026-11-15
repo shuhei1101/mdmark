@@ -19,7 +19,7 @@ docs:
     updated_at: '2026-11-15T06:38:59.571498+00:00'
 scope_out:
   - item: collectMapStructure の単体テスト（tests/unit/src/map/check.test.ts の test_collect_map_structure*）を src/map/structure.ts の単体テストのファイルへ移し、新しく作るモジュール構成の test_files に記入する
-    reason: この PR は実装とテストを変えない設計書だけの変更（type:docs）。テストの移動は、この PR で collectMapStructure を structure.ts のモジュール構成へ移すことを前提にする。この PR に含めるかはモジュール構成設計のレビューで確定する
+    reason: この PR は実装とテストを変えない設計書だけの変更（type:docs）。テストの移動は、この PR で collectMapStructure を structure.ts のモジュール構成へ移すことを前提にする。モジュール構成設計のレビューでスコープ外に決まった
     plan: '#592'
   - item: vscode/files.yaml の package-lock.json の行と、src/ 以外の管理用の YAML の行の無いファイルの行の追加
     reason: 要望に含まれない（この PR は vite-env.d.ts の行だけを追加する。#491 は先にこの PR が入れば vite-env.d.ts を対象から外す）
