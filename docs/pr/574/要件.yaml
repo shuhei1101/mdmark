@@ -32,7 +32,7 @@ docs:
     updated_at: '2026-11-15T02:48:27.499816+00:00'
 scope_out:
   - item: Issue に挙がった plugin/guide/docs/（docs/ の複製）と tmp/screenshots/ の除去
-    reason: develop では既に Git から消えている（tmp/ は中身が * の .gitignore だけ。#454 で対処済み）ため、設計書の gitignore[] への記載だけにとどめる
+    reason: develop には無い（#454 で対処済み）。plugin/guide/docs/ は今のビルド（scripts/build-plugin.ts）も作らない。tmp/ は tmp/.gitignore が中身を無視し、設計書の entries[] の tmp に記載した
     plan: none
   - item: src/ が層で分かれ、同じ機能のコードが複数のフォルダに散る（観点「機能で分ける」「同じ種類が散る」）
     reason: レビューの観点で見つかった問題への対処は、Issue の「やりたいこと」で別の Issue で対処すると決まっている
@@ -52,3 +52,6 @@ scope_out:
   - item: CHANGELOG.md の変更履歴へのリンクが存在しない docs/はじめに/変更履歴.md を指す
     reason: リンク切れ（対象外の不具合）で、今回の要望に含まれない
     plan: '#585'
+  - item: Issue に挙がった dist/ が Git に入っていること
+    reason: dist/ は jsDelivr の @v{バージョン} と npx github:shuhei1101/mdmark#v{バージョン} がタグの commit から配る配布物で、意図して git で管理する。設計書の dist/ のエントリの generated_from.tracked に理由を記載した
+    plan: none
