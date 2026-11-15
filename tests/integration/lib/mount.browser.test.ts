@@ -24,6 +24,12 @@ import {
 } from "../../unit/helpers/diagrams.ts";
 import { erText, foldEr, shopEr, shopErFolded } from "../../unit/helpers/er.ts";
 import {
+  ARCH as MAP_ARCH,
+  ARCH_DATA as MAP_ARCH_DATA,
+  C4 as MAP_C4,
+  C4_DATA as MAP_C4_DATA,
+  CLASS as MAP_CLASS,
+  CLASS_DATA as MAP_CLASS_DATA,
   CONFIG as MAP_CONFIG,
   DATA as MAP_DATA,
   ER as MAP_ER,
@@ -17109,6 +17115,605 @@ test("test_normal_when_map_er_state_toggled", async () => {
     find<HTMLElement>(state(), '.map-closed-group[data-group="実行中"]')
       .textContent,
   ).toContain("状態 2 件");
+});
+
+/** クラス図の map を持つ Markdown */
+const MAP_CLASS_MARKDOWN = mapRange({
+  args: '{"title": "型の構成"}',
+  mermaid: MAP_CLASS,
+  data: MAP_CLASS_DATA,
+});
+
+/** アーキテクチャ図の map を持つ Markdown */
+const MAP_ARCH_MARKDOWN = mapRange({
+  args: '{"title": "配置の構成"}',
+  mermaid: MAP_ARCH,
+  data: MAP_ARCH_DATA,
+});
+
+/** C4 図の map を持つ Markdown（印は引数なし） */
+const MAP_C4_MARKDOWN = mapRange({ mermaid: MAP_C4, data: MAP_C4_DATA });
+
+/** mermaid のライブラリを読み込んだ要求の数 */
+const mermaidLoads = (): number =>
+  performance
+    .getEntriesByType("resource")
+    .filter((entry) => entry.name.includes("mermaid.esm")).length;
+
+/** 線の始まりの点（画面の座標） */
+function mapWireStart(figure: Element, wire: string): { x: number; y: number } {
+  const path = find<SVGPathElement>(
+    figure,
+    `.mdmark-diagram-wire[data-wire="${wire}"]`,
+  );
+  const point = path.getPointAtLength(0);
+  const ctm = path.getScreenCTM();
+  const at = ctm ? new DOMPoint(point.x, point.y).matrixTransform(ctm) : point;
+  return { x: at.x, y: at.y };
+}
+
+/** 点が矩形の辺の中ほどにあるか（画面の座標。誤差 2px） */
+function atSideMiddle(
+  point: { x: number; y: number },
+  box: DOMRect,
+  side: "top" | "right" | "bottom" | "left",
+): boolean {
+  const expected = {
+    top: [box.left + box.width / 2, box.top],
+    right: [box.right, box.top + box.height / 2],
+    bottom: [box.left + box.width / 2, box.bottom],
+    left: [box.left, box.top + box.height / 2],
+  }[side] as [number, number];
+  return (
+    Math.abs(point.x - expected[0]) <= 2 && Math.abs(point.y - expected[1]) <= 2
+  );
+}
+
+/** 図の中の線の矢じりの属性（marker-end・marker-start のどちらかを持つか） */
+const hasHead = (figure: Element, wire: string): boolean => {
+  const path = find(figure, `.mdmark-diagram-wire[data-wire="${wire}"]`);
+  return Boolean(
+    path.getAttribute("marker-end") || path.getAttribute("marker-start"),
+  );
+};
+
+// map のクラス図を描く（正常系）
+test("test_normal_when_map_class_drawn", async () => {
+  // 準備・実行
+  const before = mermaidLoads();
+  const { figures } = await mountMap(MAP_CLASS_MARKDOWN);
+  const figure = figures()[0] as HTMLElement;
+  // 検証: タイトルと、mermaid のライブラリを読み込まない
+  expect(figure.querySelector(".mdmark-diagram-title")?.textContent).toBe(
+    "型の構成",
+  );
+  expect(mermaidLoads()).toBe(before);
+  // 検証: 注釈・型の引数・区画・静的と抽象
+  expect(
+    mapNode(figure, "図形").querySelector(".map-class-annotation")?.textContent,
+  ).toBe("«interface»");
+  expect(
+    mapNode(figure, "一覧").querySelector(".mdmark-diagram-node-name")
+      ?.textContent,
+  ).toBe("一覧<T>");
+  for (const id of ["図形", "基本図形", "円", "図面", "一覧", "描画器"])
+    expect(
+      mapNode(figure, id).querySelectorAll('.map-class-members[role="list"]'),
+      id,
+    ).toHaveLength(2);
+  const base = mapNode(figure, "基本図形");
+  const row = (name: string) =>
+    find<HTMLElement>(base, `.map-class-member[data-member="${name}"]`);
+  expect(
+    getComputedStyle(find(row("数"), ".map-class-text")).textDecorationLine,
+  ).toContain("underline");
+  expect(getComputedStyle(find(row("描く"), ".map-class-text")).fontStyle).toBe(
+    "italic",
+  );
+  // 検証: namespace のグループと、重なりが無い
+  const group = find<HTMLElement>(figure, '.map-group[data-group="形状"]');
+  const box = group.getBoundingClientRect();
+  for (const id of ["図形", "基本図形", "円"]) {
+    const rect = mapNode(figure, id).getBoundingClientRect();
+    expect(
+      rect.left >= box.left && rect.right <= box.right,
+      `${id} が 形状 の中`,
+    ).toBe(true);
+  }
+  const nodes = [
+    ...figure.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+    ),
+  ];
+  for (const [i, a] of nodes.entries())
+    for (const b of nodes.slice(i + 1))
+      expect(
+        mapOverlaps(a.getBoundingClientRect(), b.getBoundingClientRect()),
+        `${a.dataset.node} と ${b.dataset.node}`,
+      ).toBe(false);
+  // 検証: 関係の線は矢じりを持たず、端の形・破線・多重度・ラベル
+  for (const id of ["r1", "r2", "r3", "r4", "r5", "r6", "r7"])
+    expect(hasHead(figure, id), id).toBe(false);
+  const endShape = (wire: string) =>
+    figure.querySelector(
+      `.map-class-ends [data-wire-mark="${wire}"][data-end-shape]`,
+    );
+  expect(endShape("r2")?.getAttribute("data-end-shape")).toBe("triangle");
+  expect(endShape("r3")?.getAttribute("data-end-shape")).toBe("diamond-filled");
+  expect(endShape("r4")?.getAttribute("data-end-shape")).toBe("diamond-open");
+  expect(endShape("r6")?.getAttribute("data-end-shape")).toBe("arrow");
+  expect(
+    find(figure, '.mdmark-diagram-wire[data-wire="r6"]').getAttribute(
+      "stroke-dasharray",
+    ),
+  ).toBeTruthy();
+  const diamonds = ["r3", "r4"].map((wire) =>
+    (endShape(wire) as SVGGraphicsElement).getBoundingClientRect(),
+  );
+  expect(mapOverlaps(diamonds[0] as DOMRect, diamonds[1] as DOMRect)).toBe(
+    false,
+  );
+  const cards = [
+    ...figure.querySelectorAll('.map-class-card[data-wire-mark="r7"]'),
+  ].map((text) => text.textContent);
+  expect(cards.sort()).toEqual(["*", "1"]);
+  expect(
+    find(figure, '.map-class-label[data-wire-mark="r5"]').textContent,
+  ).toBe("描く");
+  // 検証: メンバーの説明と、クラス・関係の説明のツールチップ
+  const memberNote = find<HTMLButtonElement>(
+    row("描く"),
+    "button.map-class-note",
+  );
+  memberNote.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(memberNote)).toContain("子のクラスで描き方を決める"),
+  );
+  memberNote.blur();
+  const classInfo = find<HTMLButtonElement>(base, "button.mdmark-diagram-info");
+  classInfo.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(classInfo)).toContain("色を持つ図形の共通の親"),
+  );
+  classInfo.blur();
+  // 検証: ノートと、補足の layout
+  const note = mapNode(figure, "note_1");
+  expect(
+    note.querySelector(".mdmark-diagram-node-kind")?.textContent,
+  ).toContain("ノート");
+  expect(
+    find(figure, '.mdmark-diagram-wire[data-wire="n1"]').getAttribute(
+      "stroke-dasharray",
+    ),
+  ).toBeTruthy();
+  expect(
+    mapNode(figure, "一覧").dataset.color ??
+      mapNode(figure, "一覧").getAttribute("style"),
+  ).toContain("green");
+  expect(Number.parseFloat(mapNode(figure, "描画器").style.left)).toBe(0);
+  expect(Number.parseFloat(mapNode(figure, "描画器").style.top)).toBe(0);
+  // 実行・検証: クラスをドラッグすると動き、関係の端の形が線の端に付いて動く
+  const shapeBefore = (
+    endShape("r2") as SVGGraphicsElement
+  ).getBoundingClientRect();
+  const leftBefore = Number.parseFloat(mapNode(figure, "円").style.left);
+  pressMap(find(mapNode(figure, "円"), ".mdmark-diagram-node-kind"), 40, 0);
+  expect(Number.parseFloat(mapNode(figure, "円").style.left)).toBeGreaterThan(
+    leftBefore,
+  );
+  const shapeAfter = (
+    endShape("r2") as SVGGraphicsElement
+  ).getBoundingClientRect();
+  const end = mapWireEnd(figure, "r2");
+  const start = mapWireStart(figure, "r2");
+  const near = (rect: DOMRect, p: { x: number; y: number }) =>
+    p.x >= rect.left - 2 &&
+    p.x <= rect.right + 2 &&
+    p.y >= rect.top - 2 &&
+    p.y <= rect.bottom + 2;
+  expect(near(shapeAfter, start) || near(shapeAfter, end)).toBe(true);
+  expect(shapeAfter.x === shapeBefore.x && shapeAfter.y === shapeBefore.y).toBe(
+    false,
+  );
+});
+
+// map のクラス図のクラスを選んで経路を強調する（正常系）
+test("test_normal_when_map_class_path_selected", async () => {
+  // 準備
+  const { figures } = await mountMap(MAP_CLASS_MARKDOWN);
+  const figure = () => figures()[0] as HTMLElement;
+  const dimmed = (id: string) => mapDimmed(mapNode(figure(), id));
+  // 実行・検証: 1 つ選ぶと関係と相手が残る
+  pressKind(figure(), "基本図形");
+  for (const id of ["基本図形", "図形", "円", "図面"])
+    expect(dimmed(id), id).toBe(false);
+  for (const id of ["一覧", "描画器"]) expect(dimmed(id), id).toBe(true);
+  for (const wire of ["r1", "r2", "r3"])
+    expect(wireDimmed(figure(), wire), wire).toBe(false);
+  // 実行・検証: 「図面」と「円」の 2 本の最短の経路
+  pressKind(figure(), "基本図形");
+  pressKind(figure(), "図面");
+  pressKind(figure(), "円");
+  for (const id of ["図面", "円", "基本図形", "一覧"])
+    expect(dimmed(id), id).toBe(false);
+  for (const id of ["描画器", "図形"]) expect(dimmed(id), id).toBe(true);
+  for (const wire of ["r2", "r3", "r4", "r7"])
+    expect(wireDimmed(figure(), wire), wire).toBe(false);
+  // 実行・検証: 「描画器」と「一覧」
+  find<HTMLButtonElement>(figure(), '[data-tool="reset"]').click();
+  pressKind(figure(), "描画器");
+  pressKind(figure(), "一覧");
+  for (const id of ["描画器", "図面", "一覧"])
+    expect(dimmed(id), id).toBe(false);
+  for (const id of ["基本図形", "円", "図形"])
+    expect(dimmed(id), id).toBe(true);
+  expect(wireDimmed(figure(), "r5")).toBe(false);
+  expect(wireDimmed(figure(), "r4")).toBe(false);
+  // 実行・検証: メンバーの行を押しても選択は変わらない
+  const selectedBefore = figure().querySelectorAll("[data-selected]").length;
+  pressMap(find(mapNode(figure(), "図面"), ".map-class-member"));
+  expect(figure().querySelectorAll("[data-selected]")).toHaveLength(
+    selectedBefore,
+  );
+  expect(
+    getComputedStyle(find(mapNode(figure(), "図面"), ".map-class-text"))
+      .userSelect,
+  ).toBe("text");
+  // 実行・検証: Esc で選択が解ける
+  find<HTMLElement>(figure(), ".mdmark-diagram-viewport").dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
+  expect(figure().querySelectorAll(".map-dim")).toHaveLength(0);
+});
+
+// map のアーキテクチャ図を描く（正常系）
+test("test_normal_when_map_architecture_drawn", async () => {
+  // 準備・実行
+  const before = mermaidLoads();
+  const { figures } = await mountMap(MAP_ARCH_MARKDOWN);
+  const figure = figures()[0] as HTMLElement;
+  expect(mermaidLoads()).toBe(before);
+  // 検証: service のアイコン・group のタイトルのアイコン・入れ子
+  for (const id of ["web", "api", "worker", "db", "files", "cdn"])
+    expect(
+      mapNode(figure, id).querySelector(".mdmark-diagram-node-kind svg"),
+      id,
+    ).not.toBeNull();
+  for (const id of ["cloud", "app"])
+    expect(
+      figure.querySelector(
+        `.map-group[data-group="${id}"] .map-group-icon svg`,
+      ),
+      id,
+    ).not.toBeNull();
+  const cloud = find(
+    figure,
+    '.map-group[data-group="cloud"]',
+  ).getBoundingClientRect();
+  const app = find(
+    figure,
+    '.map-group[data-group="app"]',
+  ).getBoundingClientRect();
+  expect(app.left >= cloud.left && app.right <= cloud.right).toBe(true);
+  // 検証: junction は 16px の点で、名前と種類の行を出さない
+  const hub = mapNode(figure, "hub");
+  expect(hub.getAttribute("data-shape")).toBe("junction");
+  expect(Math.round(hub.getBoundingClientRect().width)).toBe(16);
+  expect(getComputedStyle(find(hub, ".mdmark-diagram-node-name")).display).toBe(
+    "none",
+  );
+  // 検証: 線の端が指定の辺の中ほどにある
+  const rect = (id: string) => mapNode(figure, id).getBoundingClientRect();
+  expect(atSideMiddle(mapWireStart(figure, "r1"), rect("web"), "right")).toBe(
+    true,
+  );
+  expect(atSideMiddle(mapWireEnd(figure, "r1"), rect("cdn"), "left")).toBe(
+    true,
+  );
+  expect(atSideMiddle(mapWireEnd(figure, "r2"), rect("api"), "top")).toBe(true);
+  expect(atSideMiddle(mapWireStart(figure, "r3"), rect("api"), "bottom")).toBe(
+    true,
+  );
+  expect(atSideMiddle(mapWireEnd(figure, "r3"), rect("worker"), "top")).toBe(
+    true,
+  );
+  expect(atSideMiddle(mapWireStart(figure, "r4"), app, "right")).toBe(true);
+  expect(rect("worker").top).toBeGreaterThan(rect("api").bottom);
+  expect(rect("files").top).toBeGreaterThan(rect("hub").bottom);
+  expect(rect("db").left).toBeGreaterThan(rect("hub").right);
+  // 検証: `-->` の 2 本だけが矢じりを持つ
+  expect(["r1", "r2"].map((id) => hasHead(figure, id))).toEqual([true, true]);
+  expect(["r3", "r4", "r5", "r6"].map((id) => hasHead(figure, id))).toEqual([
+    false,
+    false,
+    false,
+    false,
+  ]);
+  // 検証: 説明のツールチップと、補足の layout の座標
+  const info = find<HTMLButtonElement>(
+    mapNode(figure, "api"),
+    "button.mdmark-diagram-info",
+  );
+  info.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(info)).toContain("利用者の要求を受ける"),
+  );
+  info.blur();
+  expect(Number.parseFloat(mapNode(figure, "web").style.left)).toBe(0);
+  expect(Number.parseFloat(mapNode(figure, "web").style.top)).toBe(120);
+  // 実行・検証: service をドラッグすると動き、線は辺の指定のまま引き直される
+  const topBefore = Number.parseFloat(mapNode(figure, "db").style.top);
+  pressMap(find(mapNode(figure, "db"), ".mdmark-diagram-node-kind"), 0, 40);
+  expect(Number.parseFloat(mapNode(figure, "db").style.top)).toBeGreaterThan(
+    topBefore,
+  );
+  expect(atSideMiddle(mapWireEnd(figure, "r5"), rect("db"), "left")).toBe(true);
+});
+
+// map の C4 図を描く（正常系）
+test("test_normal_when_map_c4_drawn", async () => {
+  // 準備・実行
+  const before = mermaidLoads();
+  const { figures } = await mountMap(MAP_C4_MARKDOWN);
+  const figure = figures()[0] as HTMLElement;
+  // 検証: タイトルは Mermaid の title
+  expect(figure.querySelector(".mdmark-diagram-title")?.textContent).toBe(
+    "注文のシステムの全体",
+  );
+  expect(mermaidLoads()).toBe(before);
+  // 検証: 種類の行・説明・外部の要素の面・アイコン・形状
+  const kind = (id: string) =>
+    mapNode(figure, id).querySelector(".mdmark-diagram-node-kind")?.textContent;
+  expect(kind("support")).toContain("[External Person]");
+  expect(kind("pay")).toContain("[External Software System]");
+  expect(kind("store")).toContain("[Software System]");
+  expect(
+    mapNode(figure, "store").querySelector(".map-c4-description")?.textContent,
+  ).toBe("注文と支払いを受け付ける");
+  expect(getComputedStyle(mapNode(figure, "pay")).backgroundColor).not.toBe(
+    getComputedStyle(mapNode(figure, "store")).backgroundColor,
+  );
+  for (const id of ["orders", "customer", "support"])
+    expect(
+      mapNode(figure, id).querySelector(".mdmark-diagram-node-kind svg"),
+      id,
+    ).not.toBeNull();
+  expect(mapNode(figure, "events").getAttribute("data-shape")).toBe("pill");
+  // 検証: 境界のタイトルと破線、入れ子
+  const boundary = (id: string) =>
+    find<HTMLElement>(figure, `.map-group[data-group="${id}"]`);
+  expect(boundary("company").textContent).toContain("自社［Enterprise］");
+  expect(boundary("shop").textContent).toContain("通販［Software System］");
+  expect(getComputedStyle(boundary("shop")).borderTopStyle).toBe("dashed");
+  const company = boundary("company").getBoundingClientRect();
+  const shop = boundary("shop").getBoundingClientRect();
+  expect(shop.left >= company.left && shop.right <= company.right).toBe(true);
+  // 検証: Rel_R は同じ段の右、矢じりは「在庫のシステム」の側
+  const rect = (id: string) => mapNode(figure, id).getBoundingClientRect();
+  expect(Math.abs(rect("stock").top - rect("store").top)).toBeLessThanOrEqual(
+    2,
+  );
+  expect(rect("stock").left).toBeGreaterThan(rect("store").right);
+  const r3End = mapWireEnd(figure, "r3");
+  expect(Math.abs(r3End.x - rect("stock").left)).toBeLessThanOrEqual(2);
+  expect(hasHead(figure, "r3")).toBe(true);
+  // 検証: ラベルと、BiRel の両向きの矢じり
+  expect(
+    find(figure, '.mdmark-diagram-label[data-wire="r1"]').textContent,
+  ).toBe("注文する [HTTPS]");
+  const r4 = find(figure, '.mdmark-diagram-wire[data-wire="r4"]');
+  expect(r4.getAttribute("marker-start")).toBeTruthy();
+  expect(r4.getAttribute("marker-end")).toBeTruthy();
+  // 検証: 説明のツールチップと、補足の layout の座標
+  const info = find<HTMLButtonElement>(
+    mapNode(figure, "store"),
+    "button.mdmark-diagram-info",
+  );
+  info.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(info)).toContain("注文の受付から通知までを持つ"),
+  );
+  info.blur();
+  const shopBox = boundary("shop").getBoundingClientRect();
+  expect(rect("orders").left).toBeGreaterThanOrEqual(shopBox.left);
+  expect(rect("orders").bottom).toBeLessThanOrEqual(shopBox.bottom);
+  // 実行・検証: 要素をドラッグすると動く
+  const leftBefore = Number.parseFloat(mapNode(figure, "pay").style.left);
+  pressMap(find(mapNode(figure, "pay"), ".mdmark-diagram-node-kind"), 40, 0);
+  expect(Number.parseFloat(mapNode(figure, "pay").style.left)).toBeGreaterThan(
+    leftBefore,
+  );
+});
+
+// map のクラス図・アーキテクチャ図・C4 図を開閉する・中へ入る（正常系）
+test("test_normal_when_map_class_arch_c4_toggled", async () => {
+  // 準備
+  const classData = JSON.stringify({
+    ...JSON.parse(MAP_CLASS_DATA),
+    layout: {
+      ...JSON.parse(MAP_CLASS_DATA).layout,
+      基本図形: { collapsed: true },
+    },
+  });
+  const { figures } = await mountMap(
+    `${mapRange({ args: '{"title": "型の構成"}', mermaid: MAP_CLASS, data: classData })}\n${MAP_ARCH_MARKDOWN}\n${MAP_C4_MARKDOWN}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(3), {
+    timeout: MAP_WAIT_MS,
+  });
+  const cls = () => figures()[0] as HTMLElement;
+  const arch = () => figures()[1] as HTMLElement;
+  const c4 = () => figures()[2] as HTMLElement;
+  // 検証: メンバーを閉じた「基本図形」
+  const toggle = () =>
+    find<HTMLButtonElement>(
+      mapNode(cls(), "基本図形"),
+      "button.map-class-toggle",
+    );
+  expect(
+    mapNode(cls(), "基本図形").querySelectorAll(".map-class-member"),
+  ).toHaveLength(0);
+  expect(toggle().textContent).toBe("メンバー 3");
+  expect(toggle().getAttribute("aria-expanded")).toBe("false");
+  expect(toggle().getAttribute("aria-label")).toBe("基本図形のメンバーを開く");
+  toggle().click();
+  expect(toggle().getAttribute("aria-label")).toBe(
+    "基本図形のメンバーを閉じる",
+  );
+  // 実行・検証: 「形状」の中へ入る
+  find<HTMLButtonElement>(cls(), '[data-group-enter="形状"]').click();
+  expect(new URLSearchParams(location.search).get("map-1")).toBe("形状");
+  expect(mapNode(cls(), "描画器").classList.contains("map-faded")).toBe(true);
+  expect(mapNode(cls(), "円").classList.contains("map-faded")).toBe(false);
+  find<HTMLButtonElement>(cls(), '[data-tool="back"]').click();
+  // 実行・検証: group「アプリ」を閉じる
+  find<HTMLButtonElement>(arch(), 'button[data-group-toggle="app"]').click();
+  const closedApp = find<HTMLElement>(
+    arch(),
+    '.map-closed-group[data-group="app"]',
+  );
+  expect(closedApp.textContent).toContain("service 2 件");
+  expect(
+    atSideMiddle(
+      mapWireStart(arch(), "app->hub"),
+      closedApp.getBoundingClientRect(),
+      "right",
+    ),
+  ).toBe(true);
+  expect(
+    atSideMiddle(
+      mapWireEnd(arch(), "app->hub"),
+      mapNode(arch(), "hub").getBoundingClientRect(),
+      "left",
+    ),
+  ).toBe(true);
+  expect(hasHead(arch(), "app->hub")).toBe(false);
+  // 実行・検証: 境界「通販」を閉じる
+  find<HTMLButtonElement>(c4(), 'button[data-group-toggle="shop"]').click();
+  expect(
+    find<HTMLElement>(c4(), '.map-closed-group[data-group="shop"]').textContent,
+  ).toContain("要素 3 件");
+  const into = [
+    ...c4().querySelectorAll<SVGPathElement>(".mdmark-diagram-wire[data-wire]"),
+  ]
+    .map((path) => path.dataset.wire ?? "")
+    .filter((id) => id.includes("shop"));
+  expect(new Set(into).size).toBe(into.length);
+  expect(into.length).toBeGreaterThan(0);
+  // 実行・検証: 全て開く・全て閉じるはクラスのメンバーと namespace の両方
+  find<HTMLButtonElement>(cls(), '[data-tool="collapseAll"]').click();
+  expect(
+    cls().querySelector('.map-closed-group[data-group="形状"]'),
+  ).not.toBeNull();
+  expect(
+    find<HTMLButtonElement>(mapNode(cls(), "図面"), "button.map-class-toggle")
+      .textContent,
+  ).toBe("メンバー 2");
+  find<HTMLButtonElement>(cls(), '[data-tool="expandAll"]').click();
+  expect(cls().querySelector(".map-closed-group")).toBeNull();
+  expect(
+    mapNode(cls(), "図面").querySelectorAll(".map-class-member"),
+  ).toHaveLength(2);
+});
+
+// map のアーキテクチャ図・C4 図の項目を選ぶ（正常系）
+test("test_normal_when_map_architecture_c4_selected", async () => {
+  // 準備
+  const { figures } = await mountMap(
+    `${MAP_ARCH_MARKDOWN}\n${MAP_C4_MARKDOWN}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+    timeout: MAP_WAIT_MS,
+  });
+  const arch = () => figures()[0] as HTMLElement;
+  const c4 = () => figures()[1] as HTMLElement;
+  // 実行・検証: 「API サーバー」を選ぶ
+  pressKind(arch(), "api");
+  for (const id of ["api", "cdn", "worker", "hub"])
+    expect(mapDimmed(mapNode(arch(), id)), id).toBe(false);
+  for (const id of ["web", "db", "files"])
+    expect(mapDimmed(mapNode(arch(), id)), id).toBe(true);
+  for (const wire of ["r2", "r3", "r4"])
+    expect(wireDimmed(arch(), wire), wire).toBe(false);
+  // 実行・検証: 「注文のシステム」と「在庫のシステム」を選ぶ
+  pressKind(c4(), "store");
+  pressKind(c4(), "stock");
+  for (const id of ["store", "stock"])
+    expect(mapDimmed(mapNode(c4(), id)), id).toBe(false);
+  for (const id of ["customer", "support", "orders", "events", "pay"])
+    expect(mapDimmed(mapNode(c4(), id)), id).toBe(true);
+  expect(wireDimmed(c4(), "r3")).toBe(false);
+  // 実行・検証: 線を押すと両端が選ばれ、配置と選択を元に戻すで解ける
+  find<HTMLButtonElement>(c4(), '[data-tool="reset"]').click();
+  pressMap(find(c4(), '.map-wire-hit[data-wire="r2"]'));
+  expect(
+    [...c4().querySelectorAll<HTMLElement>("[data-node][data-selected]")]
+      .map((node) => node.dataset.node)
+      .sort(),
+  ).toEqual(["orders", "store"].sort());
+  find<HTMLButtonElement>(c4(), '[data-tool="reset"]').click();
+  expect(c4().querySelectorAll(".map-dim")).toHaveLength(0);
+});
+
+// map のクラス図・アーキテクチャ図を案内する（正常系）
+test("test_normal_when_map_class_arch_walked", async () => {
+  // 準備
+  const classData = JSON.stringify({
+    ...JSON.parse(MAP_CLASS_DATA),
+    walkthroughs: [
+      { title: "図面", text: "図面から始める", nodes: ["図面"] },
+      {
+        title: "形状",
+        text: "形状の中",
+        nodes: ["基本図形", "円"],
+        enter: "形状",
+      },
+    ],
+  });
+  const archData = JSON.stringify({
+    ...JSON.parse(MAP_ARCH_DATA),
+    walkthroughs: [
+      { title: "入口", text: "ブラウザから", nodes: ["web"] },
+      { title: "アプリ", text: "ジョブ", nodes: ["worker"], enter: "app" },
+    ],
+  });
+  const { figures } = await mountMap(
+    `${mapRange({ mermaid: MAP_CLASS, data: classData })}\n${mapRange({ mermaid: MAP_ARCH, data: archData })}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+    timeout: MAP_WAIT_MS,
+  });
+  const cls = () => figures()[0] as HTMLElement;
+  const arch = () => figures()[1] as HTMLElement;
+  const press = (figure: HTMLElement, action: string) =>
+    find<HTMLButtonElement>(figure, `[data-band="${action}"]`).click();
+  // 検証: 帯は案内の手順の数
+  expect(cls().querySelector(".map-band-count")?.textContent).toBe("–/2");
+  expect(arch().querySelector(".map-band-count")?.textContent).toBe("–/2");
+  // 実行・検証: クラス図の手順 2
+  press(cls(), "next");
+  press(cls(), "next");
+  expect(cls().querySelector(".map-group-title.is-current")?.textContent).toBe(
+    "形状",
+  );
+  expect(new URLSearchParams(location.search).get("map-1")).toBe("形状");
+  expect(mapDimmed(mapNode(cls(), "基本図形"))).toBe(false);
+  expect(mapDimmed(mapNode(cls(), "円"))).toBe(false);
+  expect(mapDimmed(mapNode(cls(), "図形"))).toBe(true);
+  press(cls(), "stop");
+  expect(cls().querySelectorAll(".map-dim")).toHaveLength(0);
+  expect(cls().querySelector(".map-group-title.is-current")).toBeNull();
+  // 実行・検証: アーキテクチャ図の手順 2
+  press(arch(), "next");
+  press(arch(), "next");
+  expect(
+    arch().querySelector(".map-group-title.is-current")?.textContent,
+  ).toContain("アプリ");
+  expect(mapDimmed(mapNode(arch(), "worker"))).toBe(false);
+  expect(mapDimmed(mapNode(arch(), "api"))).toBe(true);
+  press(arch(), "stop");
+  expect(arch().querySelectorAll(".map-dim")).toHaveLength(0);
+  expect(arch().querySelector(".map-group-title.is-current")).toBeNull();
 });
 
 /** 全角の文字を `count` 文字並べる */
