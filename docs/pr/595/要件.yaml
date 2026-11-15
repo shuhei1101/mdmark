@@ -137,3 +137,6 @@ scope_out:
   - item: '`docs/guide/README.md` と分類のトップのページの目次で、改名したページの表示名が `変更履歴.mark` のように `.mark` を含む'
     reason: AI Monitor の `design_docs publish` が表示名を作るときに `.mark.md` の `.md` だけを落とす不具合。生成物のため手で修正せず、AI Monitor 側で修正した後に publish を実行し直す
     plan: shuhei1101/ai-monitor#3498
+  - item: '`tests/integration/lib/build.test.ts` の 3 件（`test_normal`・`test_normal_when_version_given`・`test_error_when_api_missing_in_baseline_browser`）が、`dist/index.js` が配布ファイルの上限（688128 バイト）を超えて fail する'
+    reason: この PR の変更を含まない develop（f79ed7d7）でも同じ 3 件が同じ原因で fail する不具合で、今回の要望に含まれない
+    plan: '#601'

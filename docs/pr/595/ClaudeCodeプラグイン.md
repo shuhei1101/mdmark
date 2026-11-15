@@ -37,6 +37,13 @@
 
 [ライブラリ本体](./ライブラリ本体.md) の「結合テストの実行範囲」の表にまとめた（`tests/integration/lib/build.test.ts` の行）。
 
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/integration/lib/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/lib/build.test.ts) | 全実行 | 実行のみ | ❌ | 5 pass・3 fail。fail は `dist/index.js` の上限超えで、develop でも同じ 3 件が fail する（#601）。実際の `plugin/guide-index.yaml` は `checkGuideSource` の検査を通った（22 行・問題 0）<br>`テスト結果/20261115223312_5801dc20_結合テスト.log` |
+| [tests/integration/plugin-inputs.ts](https://github.com/shuhei1101/mdmark/blob/docs/guide/mark-md-extension-and-index-placement/tests/integration/plugin-inputs.ts) | - | 変更 | ✅ | 結合テストの準備（`global-setup.ts`）と `build.test.ts` の準備で通った |
+
 ### 単体
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
