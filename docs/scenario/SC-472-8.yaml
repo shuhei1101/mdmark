@@ -509,7 +509,7 @@ scenarios:
         M-->>P: 図の枠に入れた C4 図
         P-->>U: 文書を表示
     expected:
-      - 要素が種類の行（`[Person]`・`[Software System]` など）・名前・説明を持つ箱で描かれ、人は人のアイコン、`SystemDb` は円柱、`SystemQueue` は横の円柱の形、`_Ext` の要素は灰色で描かれる
+      - 要素が種類の行（`[Person]`・`[Software System]` など）・名前・説明を持つ箱で描かれ、人は人のアイコン、`SystemDb` はデータベースのアイコン、`SystemQueue` は角の丸い横長の形、`_Ext` の要素は種類の行が `[External Person]`・`[External Software System]` で灰色の面で描かれる
       - 境界が名前と種類のタイトルを持つ破線の枠で中の要素を囲み、入れ子の境界は外の境界の中に描かれる
       - 関係の線がラベルと技術（`[HTTPS]` など）を持ち、`BiRel` は両向きの矢じり、`Rel_D` の相手は下に、`Rel_R` の相手は右に置かれる
       - 要素と境界が重ならず、関係の線が両端とその祖先以外を横切らない
