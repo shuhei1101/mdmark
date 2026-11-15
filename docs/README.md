@@ -21,6 +21,7 @@ mdmark のドキュメント全体の目次
 | [nonfunctional](./nonfunctional/) | 外部の制約から逆算したアプリ側の決定値（非機能要件テストの元） |
 | [dev-command](./dev-command/) | 開発で使用するコマンドの分類ごとの前提・順序・コマンド・料金や副作用・確認した記録 |
 | [test-procedure](./test-procedure/) | プロジェクト固有のテスト起動コマンドと前提条件 |
+| [layout](./layout/) | リポジトリのフォルダとファイルの配置と、Git で管理しないもの |
 | [design-policy](./design-policy.md) | mdmark が描く文書の既定の外観に経由するデザインの方向性 |
 | [guide](./guide/) | mdmark の使い方（はじめに・使用方法・リファレンス） |
 | [mock](./mock/) | モック HTML（部品・画面・スタイル・案） |

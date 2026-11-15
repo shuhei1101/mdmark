@@ -1,0 +1,1515 @@
+id: LAY-472-1
+visibility: internal
+title: mdmark
+repository: shuhei1101/mdmark
+lead: |-
+  ライブラリ本体・CLI・Claude Code プラグインのフックのコードは `src/`、VS Code 拡張機能は `vscode/`、テストは `tests/`、文書の原本は `docs/` の種類のフォルダに分ける。
+  配布物は `dist/`（ライブラリ本体・CLI）と `plugin/`（Claude Code プラグイン）にビルドして、git で管理する。
+tags:
+  - name: topic:フォルダ
+    main: true
+  - name: topic:構成
+  - name: topic:リポジトリ
+  - name: topic:gitignore
+content_types:
+  - name: code
+    group: role
+    summary: TypeScript のコードと、コードが読み込む CSS
+  - name: story
+    group: role
+    summary: 部品の状態ごとの Storybook のストーリー
+  - name: test
+    group: role
+    summary: 単体・結合のテストと、テストが使用する補助のコード
+  - name: test_fixture
+    group: role
+    summary: テストが比べる見本のファイル
+  - name: design_doc
+    group: role
+    summary: AI Monitor の設計書（YAML）
+  - name: public_doc
+    group: role
+    summary: 利用者が参照する公開ドキュメント（Markdown）
+  - name: mock
+    group: role
+    summary: 部品・画面・スタイルのモック HTML と、その外観と動き
+  - name: pr_doc
+    group: role
+    summary: 作業 PR ごとの計画書・テスト結果・反映作業
+  - name: index
+    group: role
+    summary: フォルダの目次の原本と、そこから生成した README.md
+  - name: schema
+    group: role
+    summary: 設定・索引・マーカー・設計書を検査する JSON Schema
+  - name: distribution
+    group: role
+    summary: ビルドした配布物と、まとめた依存のライセンス
+  - name: migration
+    group: role
+    summary: mdmark upgrade がバージョンの順に適用する移行の手順とスクリプト
+  - name: init_template
+    group: role
+    summary: mdmark init とセットアップのスキルが配置する雛形
+  - name: script
+    group: role
+    summary: ビルド・検査・描画の開発のスクリプト
+  - name: tool_config
+    group: role
+    summary: lint・型検査・テスト・ビルド・Storybook・配信の道具の設定
+  - name: ci
+    group: role
+    summary: GitHub Actions のワークフロー
+  - name: plugin_manifest
+    group: role
+    summary: Claude Code のプラグインとマーケットプレイスの定義
+  - name: hook
+    group: role
+    summary: Claude Code のフックの登録と本体
+  - name: skill
+    group: role
+    summary: Claude Code のスキルの本体
+  - name: guide_index
+    group: role
+    summary: Claude Code プラグインが案内するガイドの索引
+  - name: file_list
+    group: role
+    summary: YAML の設計書でないファイルの概要文・タグ・関連の一覧（files.yaml・files.yml）
+  - name: theme
+    group: role
+    summary: 公開ドキュメントの GitHub Pages のレイアウト・外観・スクリプト
+  - name: library
+    group: feature
+    summary: ライブラリ本体（文書を描く公開関数・部品・記法）
+  - name: cli
+    group: feature
+    summary: CLI（書き出し・まとめ・点検・雛形・バージョンの更新・MCP の常駐サーバー）
+  - name: vscode
+    group: feature
+    summary: VS Code 拡張機能
+  - name: claude_plugin
+    group: feature
+    summary: Claude Code プラグイン
+  - name: storybook
+    group: feature
+    summary: 部品を Storybook で確認する仕組み
+  - name: pages
+    group: feature
+    summary: 公開ドキュメントの GitHub Pages への配信
+entries:
+  - type: folder
+    name: .claude-plugin
+    contents: リポジトリを Claude Code のマーケットプレイスにする定義（プラグインの本体は `plugin/`）
+    content_types:
+      - plugin_manifest
+      - claude_plugin
+    children:
+      - type: file
+        name: marketplace.json
+        contents: プラグイン mdmark を `plugin/` から配るマーケットプレイスの定義
+  - type: folder
+    name: .github
+    contents: GitHub の設定と、その管理用の YAML
+    children:
+      - type: file
+        name: files.yaml
+        contents: '`.github/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: folder
+        name: workflows
+        contents: CI のワークフロー
+        content_types:
+          - ci
+          - vscode
+        children:
+          - type: file
+            name: vscode-release.yml
+            contents: '`vscode-v*` のタグで .vsix を作り Release に添えるワークフロー'
+  - type: folder
+    name: .storybook
+    contents: 部品を確認する Storybook の設定と、ストーリーに適用するデコレータ
+    content_types:
+      - tool_config
+      - storybook
+    children:
+      - type: file
+        name: files.yaml
+        contents: '`.storybook/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: file
+        name: main.ts
+        contents: Storybook の設定（フレームワーク・アドオン・ストーリーの場所・描画のインターフェースへの中継）
+      - type: file
+        name: preview.tsx
+        contents: 全てのストーリーに適用するデコレータと、MSW の読み込み・a11y の検査の水準
+      - type: file
+        name: preview-head.html
+        contents: 描画のインターフェースの CSS を読み込む link
+      - type: file
+        name: server-html.tsx
+        contents: 描画のインターフェースが返却する部品の HTML をストーリーに出すデコレータ
+      - type: file
+        name: vscode-theme.tsx
+        contents: VS Code の色をストーリーに適用するデコレータ
+      - type: folder
+        name: public
+        contents: Storybook が配信する静的なファイル
+        content_types:
+          - tool_config
+          - storybook
+        children:
+          - type: file
+            name: mockServiceWorker.js
+            contents: MSW の Service Worker
+            generated_from:
+              source: npm:msw@3.0.4
+              tracked: Storybook と Vitest のブラウザが配信する
+  - type: folder
+    name: dist
+    contents: ライブラリ本体・CLI の配布物（`index.js`・`index.css`・部品のモジュール・`cli.js`・`viewer.js`・型定義）
+    content_types:
+      - distribution
+      - library
+    generated_from:
+      path: src/
+      command: CMD-472-1#categories[ビルド・生成]
+      tracked: jsDelivr の `@v{バージョン}` と `npx github:shuhei1101/mdmark#v{バージョン}` が、タグの commit の `dist/` を配る
+  - type: folder
+    name: docs
+    contents: 文書の原本。設計書の種類のフォルダ・公開ドキュメント・モック・作業 PR の計画と、公開ドキュメントの GitHub Pages の設定に分ける
+    children:
+      - type: file
+        name: index.yaml
+        contents: '`docs/` の目次の原本'
+        content_types:
+          - index
+      - type: file
+        name: README.md
+        contents: '`index.yaml` から生成した `docs/` の目次'
+        content_types:
+          - index
+        generated_from:
+          path: docs/index.yaml
+          command: CMD-472-1#categories[ビルド・生成]
+          tracked: GitHub でフォルダを開いたときに表示する目次
+      - type: file
+        name: index.md
+        contents: 公開ドキュメントのサイトのトップページ
+        content_types:
+          - public_doc
+          - pages
+      - type: file
+        name: _config.yml
+        contents: GitHub Pages の Jekyll の設定
+        content_types:
+          - tool_config
+          - pages
+      - type: file
+        name: rules.yaml
+        contents: 公開ドキュメントに適用する rule-inject のルールの設定
+        content_types:
+          - tool_config
+      - type: file
+        name: design-policy.md
+        contents: mdmark が描く文書の既定の外観のデザインの方向性
+        content_types:
+          - design_doc
+      - type: folder
+        name: _root
+        contents: '`docs/` の直下の Markdown と Pages の共通レイアウトの管理用の YAML'
+        content_types:
+          - file_list
+        children:
+          - type: file
+            name: files.yml
+            contents: '`docs/` の直下と `_theme/` のファイルの一覧（project-index の files の行）'
+      - type: folder
+        name: _theme
+        contents: 公開ドキュメントの GitHub Pages のレイアウト・外観・スクリプト（AI Monitor から取り込む）
+        content_types:
+          - theme
+          - pages
+        children:
+          - type: folder
+            name: _data
+            contents: サイトのナビゲーションのデータ
+            content_types:
+              - theme
+              - pages
+            children:
+              - type: file
+                name: nav.yml
+                contents: AI Monitor の共通のナビゲーション
+                generated_from:
+                  source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/_data/nav.yml
+                  tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
+              - type: file
+                name: nav.project.yml
+                contents: mdmark の公開ドキュメントの分類のナビゲーション
+          - type: folder
+            name: _includes
+            contents: サイドバーとタブの Jekyll の部品
+            content_types:
+              - theme
+              - pages
+            generated_from:
+              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/_includes/
+              tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
+          - type: folder
+            name: _layouts
+            contents: 全ページに共通のレイアウト
+            content_types:
+              - theme
+              - pages
+            generated_from:
+              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/_layouts/
+              tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
+          - type: folder
+            name: assets
+            contents: 全ページで読み込むスクリプト・CSS と、取り込んだ mdmark・mermaid の配布物
+            content_types:
+              - theme
+              - pages
+            generated_from:
+              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/assets/
+              tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
+          - type: file
+            name: llms.txt
+            contents: LLM 向けのページの一覧を出す Jekyll のテンプレート
+            generated_from:
+              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/llms.txt
+              tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
+          - type: file
+            name: search.json
+            contents: サイト内の検索の索引を出す Jekyll のテンプレート
+            generated_from:
+              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/search.json
+              tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
+      - type: folder
+        name: architecture
+        contents: アーキテクチャ図
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - ARCH-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: nonfunctional
+        contents: 非機能要件
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - NFR-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: scenario
+        contents: 複合・単一ユースケースのシナリオ
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - SC-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: interface
+        contents: インターフェース定義
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - IF-{issue}-{n}.{lang}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: module
+        contents: モジュール構成と、分類ごとのまとめの設計書
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - MOD-{issue}-{n}.yaml
+          - MOD-{issue}-{n}.{lang}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: component
+        contents: 部品設計
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - CMP-{issue}-{n}.{lang}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: screen
+        contents: 画面設計
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - SCR-{issue}-{n}.{lang}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: config
+        contents: 設定
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - CFG-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: er
+        contents: ER 図
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - ER-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: external-api
+        contents: 外部 API
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - API-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: library
+        contents: 外部ライブラリ・外部ツール
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - LIB-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: test-procedure
+        contents: テスト実行方法
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - TP-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: dev-command
+        contents: 開発コマンド
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - CMD-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: layout
+        contents: フォルダ構成
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - LAY-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: guide
+        contents: 利用者が参照する公開ドキュメント（はじめに・使用方法・リファレンス）と、その目次と管理用の YAML
+        content_types:
+          - public_doc
+          - pages
+        naming:
+          - '{page}.md'
+          - '{category}-{page}.md'
+          - index.yaml
+          - README.md
+          - files.yml
+      - type: folder
+        name: mock
+        contents: モック HTML。部品・画面・スタイル・参考の種類のフォルダに分ける
+        content_types:
+          - mock
+        children:
+          - type: file
+            name: index.md
+            contents: モックの目次
+          - type: file
+            name: files.yml
+            contents: '`docs/mock/` のファイルの一覧（project-index の files の行）'
+            content_types:
+              - file_list
+          - type: folder
+            name: assets
+            contents: 全てのモックが読み込む採用スタイルの外観と、テーマの配色
+            content_types:
+              - mock
+            children:
+              - type: file
+                name: style.css
+                contents: 採用スタイルの変数の値
+              - type: folder
+                name: themes
+                contents: テーマごとの配色の値
+                content_types:
+                  - mock
+                naming:
+                  - theme-{theme}.css
+          - type: folder
+            name: components
+            contents: 部品ごとのモック
+            content_types:
+              - mock
+            naming:
+              - index.md
+            children:
+              - type: folder
+                name: '{component}'
+                contents: 1 つの部品のモックと、その部品のカタログだけの外観
+                content_types:
+                  - mock
+                naming:
+                  - index.html
+                  - style.css
+          - type: folder
+            name: pages
+            contents: 画面の種類ごとの、作業 PR の案のモック
+            content_types:
+              - mock
+            naming:
+              - index.md
+            children:
+              - type: folder
+                name: '{screen}'
+                contents: 1 つの画面の種類のモック（document・bundle・vscode-preview・ui-canvas）
+                content_types:
+                  - mock
+                naming:
+                  - index.md
+                children:
+                  - type: folder
+                    name: '{pr}'
+                    contents: 1 つの作業 PR で作った案の一覧
+                    content_types:
+                      - mock
+                    naming:
+                      - index.md
+                    children:
+                      - type: folder
+                        name: '{variant}'
+                        contents: 1 つの案のモック HTML と、その外観と動き
+                        content_types:
+                          - mock
+                        naming:
+                          - index.html
+                          - index.md
+                          - style.css
+                          - print.css
+                          - app.js
+                          - '{name}.css'
+                        children:
+                          - type: folder
+                            name: images
+                            contents: 案のモックが表示する画像
+                            content_types:
+                              - mock
+                            naming:
+                              - '{name}.svg'
+          - type: folder
+            name: refs
+            contents: 作業 PR ごとの、案を比べる参考のモック
+            content_types:
+              - mock
+            naming:
+              - index.md
+            children:
+              - type: folder
+                name: '{pr}'
+                contents: 1 つの作業 PR の参考のモック
+                content_types:
+                  - mock
+                naming:
+                  - index.md
+                children:
+                  - type: folder
+                    name: assets
+                    contents: 参考のモックが読み込む見本のデータ・外観・動き
+                    content_types:
+                      - mock
+                    naming:
+                      - '{name}.js'
+                      - '{name}.css'
+                      - '{name}.svg'
+                    children:
+                      - type: folder
+                        name: media
+                        contents: 参考のモックが表示する画像・動画・音声
+                        content_types:
+                          - mock
+                        naming:
+                          - '{name}.{ext}'
+                      - type: folder
+                        name: mdmark
+                        contents: 参考のモックが読み込む mdmark の配布物
+                        content_types:
+                          - mock
+                        generated_from:
+                          path: dist/
+                          command: CMD-472-1#categories[ビルド・生成]
+                          tracked: 参考のモックが、作った時点の mdmark の配布物を読み込む
+          - type: folder
+            name: styles
+            contents: デザインスタイルの候補とテーマの見本
+            content_types:
+              - mock
+            naming:
+              - index.md
+            children:
+              - type: folder
+                name: '{style}'
+                contents: 1 つのスタイルかテーマの見本の画面
+                content_types:
+                  - mock
+                naming:
+                  - index.html
+                  - style.css
+      - type: folder
+        name: pr
+        contents: 作業 PR ごとの計画書と記録
+        content_types:
+          - pr_doc
+        children:
+          - type: folder
+            name: '{pr}'
+            contents: 1 つの作業 PR の計画書と記録
+            content_types:
+              - pr_doc
+            naming:
+              - README.md
+              - 要件.md
+              - 要件.yaml
+              - タスク一覧.yaml
+              - 確認ログ.yaml
+              - '{subsystem}.md'
+            children:
+              - type: folder
+                name: テスト結果
+                contents: テストと検査の実行結果のログ
+                content_types:
+                  - pr_doc
+                naming:
+                  - '{timestamp}_{commit}_{test}.log'
+                  - '{timestamp}_{commit}_{test}.{ext}'
+                  - '{test}.log'
+              - type: folder
+                name: 反映作業
+                contents: マージの前後の反映作業の一覧と、作業ごとのスクリプト
+                content_types:
+                  - pr_doc
+                children:
+                  - type: file
+                    name: index.yaml
+                    contents: 反映作業の一覧
+                  - type: folder
+                    name: '{work}'
+                    contents: 1 つの反映作業のスクリプトと dry-run のログ
+                    content_types:
+                      - pr_doc
+                    naming:
+                      - 疎通確認.{ext}
+                      - 実行.{ext}
+                      - 確認.{ext}
+                      - 切り戻し.{ext}
+                      - dry-run.log
+                      - '{module}.py'
+              - type: folder
+                name: 作業
+                contents: 作業 PR の中で使用したスクリプトとログ
+                content_types:
+                  - pr_doc
+                naming:
+                  - '{name}.{ext}'
+              - type: folder
+                name: 実測
+                contents: 作業 PR の中で測った値のログ
+                content_types:
+                  - pr_doc
+                naming:
+                  - '{timestamp}_{name}.log'
+  - type: folder
+    name: guide
+    contents: Claude Code プラグインが案内するガイドの索引の原本
+    content_types:
+      - guide_index
+      - claude_plugin
+    children:
+      - type: file
+        name: index.yaml
+        contents: ガイドの名前・案内する場面・指す `docs/guide/` のページの索引
+      - type: file
+        name: files.yaml
+        contents: '`guide/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+  - type: folder
+    name: migrations
+    contents: mdmark upgrade が適用する、バージョンごとの移行の手順
+    content_types:
+      - migration
+      - cli
+    children:
+      - type: file
+        name: no-steps.yaml
+        contents: 移行の手順が要らない設定・索引のスキーマの変更の一覧
+      - type: file
+        name: files.yaml
+        contents: '`migrations/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: folder
+        name: '{version}'
+        contents: 1 つのバージョンの移行の手順と移行のスクリプト（出していないバージョンは `next`）
+        content_types:
+          - migration
+          - cli
+        naming:
+          - steps.yaml
+          - '{step}.mjs'
+          - '{step}.d.mts'
+        children:
+          - type: file
+            name: '{step}.js'
+            contents: 移行のスクリプトが読み込む、`src/` の処理と依存をまとめたファイル
+            generated_from:
+              path: src/
+              command: CMD-472-1#categories[ビルド・生成]
+              tracked: mdmark upgrade が、入れたパッケージの移行の手順のフォルダから読み込む
+          - type: file
+            name: THIRD_PARTY_LICENSES.txt
+            contents: '`{step}.js` にまとめた依存のライセンス'
+            generated_from:
+              path: src/
+              command: CMD-472-1#categories[ビルド・生成]
+              tracked: まとめた依存のライセンスを `{step}.js` と一緒に配る
+  - type: folder
+    name: plugin
+    contents: Claude Code プラグインの本体。手で記載する定義・スキルと、ビルドが書き込むフックの本体を配置する
+    content_types:
+      - claude_plugin
+    children:
+      - type: folder
+        name: .claude-plugin
+        contents: プラグインの定義
+        content_types:
+          - plugin_manifest
+          - claude_plugin
+        children:
+          - type: file
+            name: plugin.json
+            contents: 名前・説明・バージョン（バージョンはビルドが書き込む）
+      - type: file
+        name: .mcp.json
+        contents: MCP の常駐サーバーへのつなぎ方
+        content_types:
+          - plugin_manifest
+          - claude_plugin
+      - type: file
+        name: settings.sample.yaml
+        contents: 端末の設定の雛形
+        content_types:
+          - init_template
+          - claude_plugin
+      - type: file
+        name: files.yaml
+        contents: '`plugin/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: folder
+        name: hooks
+        contents: フックの登録
+        content_types:
+          - hook
+          - claude_plugin
+        children:
+          - type: file
+            name: hooks.json
+            contents: フックの matcher と、呼ぶ `scripts/` のスクリプト
+      - type: folder
+        name: skills
+        contents: プラグインのスキル
+        content_types:
+          - skill
+          - claude_plugin
+        children:
+          - type: folder
+            name: '{skill}'
+            contents: 1 つのスキルの本体
+            content_types:
+              - skill
+              - claude_plugin
+            naming:
+              - SKILL.md
+      - type: folder
+        name: scripts
+        contents: フックの本体
+        content_types:
+          - hook
+          - claude_plugin
+        generated_from:
+          path: src/plugin/
+          command: CMD-472-1#categories[ビルド・生成]
+          tracked: プラグインを git から入れたときに Claude Code がフックを呼ぶ
+      - type: folder
+        name: bin
+        contents: セットアップのスキルが呼ぶ CLI
+        content_types:
+          - distribution
+          - claude_plugin
+        generated_from:
+          path: src/plugin/setup/
+          command: CMD-472-1#categories[ビルド・生成]
+          tracked: プラグインを git から入れたときにスキルが呼ぶ
+      - type: folder
+        name: templates
+        contents: セットアップのスキルが配置する設定の雛形
+        content_types:
+          - init_template
+          - claude_plugin
+        generated_from:
+          path: templates/mdmark.config.yaml
+          command: CMD-472-1#categories[ビルド・生成]
+          tracked: プラグインを git から入れたときにスキルが配置する
+      - type: file
+        name: THIRD_PARTY_LICENSES.txt
+        contents: フックにまとめた依存のライセンス
+        content_types:
+          - distribution
+          - claude_plugin
+        generated_from:
+          path: src/plugin/
+          command: CMD-472-1#categories[ビルド・生成]
+          tracked: まとめた依存のライセンスをフックと一緒に配る
+  - type: folder
+    name: schemas
+    contents: JSON Schema。利用者が記載する設定・索引・移行の手順・マーカーのスキーマと、設計書と管理用の YAML の検査のスキーマ
+    content_types:
+      - schema
+    naming:
+      - mdmark.{name}.schema.json
+      - '{kind}.schema.yaml'
+      - files.yaml
+    children:
+      - type: folder
+        name: marks
+        contents: マーカーの引数の JSON Schema
+        content_types:
+          - schema
+          - library
+        naming:
+          - '{mark}.schema.json'
+      - type: folder
+        name: alias-inject
+        contents: CLI が検める alias-inject の行の JSON Schema の複製
+        content_types:
+          - schema
+          - cli
+        children:
+          - type: folder
+            name: '{version}'
+            contents: 1 つのバージョンの alias-inject の行の JSON Schema
+            content_types:
+              - schema
+              - cli
+            children:
+              - type: file
+                name: aliases.schema.json
+                contents: alias-inject の行の JSON Schema
+                generated_from:
+                  source: shuhei1101/alias-inject@v0.3.0:schemas/aliases.schema.yaml
+                  tracked: CLI が設定の aliases の行を検める
+  - type: folder
+    name: scripts
+    contents: ビルド・検査・描画の開発のスクリプト
+    content_types:
+      - script
+    children:
+      - type: file
+        name: build.ts
+        contents: 配布物のビルド（バージョンの決定と検査・まとめ・ライセンスの書き出し・サイズの検査）
+        content_types:
+          - script
+          - library
+      - type: file
+        name: build-plugin.ts
+        contents: Claude Code プラグインの配布物のビルド
+        content_types:
+          - script
+          - claude_plugin
+      - type: file
+        name: bundle.ts
+        contents: '`build.ts` と `build-plugin.ts` が使用するまとめの設定'
+      - type: file
+        name: baseline.ts
+        contents: 利用側のブラウザが読み込む JS から、対応ブラウザの下限に無い API を取得する
+        content_types:
+          - script
+          - library
+      - type: file
+        name: migrations.ts
+        contents: スキーマを変えたバージョンに移行の手順があるかの点検
+        content_types:
+          - script
+          - cli
+      - type: file
+        name: eslint.ts
+        contents: '`tools/eslint/` の ESLint が無ければ入れてから起動する'
+      - type: file
+        name: storybook-render.ts
+        contents: 部品の HTML と CSS を返却する描画のインターフェース
+        content_types:
+          - script
+          - storybook
+      - type: file
+        name: mermaid-fixtures.ts
+        contents: mermaid の見本の SVG の書き込み
+      - type: file
+        name: files.yaml
+        contents: '`scripts/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: folder
+        name: licenses
+        contents: ライセンスのファイルを持たないパッケージの、配布物に添えるライセンスの本文
+        content_types:
+          - distribution
+        naming:
+          - '{package}.txt'
+  - type: folder
+    name: src
+    contents: ライブラリ本体・CLI・Claude Code プラグインのフックのコード。直下は公開関数の起点と、複数のフォルダが使用する処理
+    content_types:
+      - code
+      - library
+    naming:
+      - '{module}.ts'
+      - index.css
+      - files.yaml
+    children:
+      - type: folder
+        name: cli
+        contents: CLI のコマンド
+        content_types:
+          - code
+          - cli
+        naming:
+          - '{module}.ts'
+      - type: folder
+        name: comments
+        contents: コメントの部品
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+      - type: folder
+        name: diagram
+        contents: 図の部品の定義と幾何の計算
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+      - type: folder
+        name: diff
+        contents: 差分の計算と表示
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+      - type: folder
+        name: interact
+        contents: 描いた文書での読者の操作
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+      - type: folder
+        name: knowledge
+        contents: 索引・用語・参照の読み込みと点検
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+      - type: folder
+        name: map
+        contents: map の図（構成図・フローチャート・シーケンス図・状態遷移図・ER 図）
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+      - type: folder
+        name: parts
+        contents: 文書の中に配置する部品と、部品ごとのストーリー
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{part}.ts'
+          - '{part}.stories.ts'
+      - type: folder
+        name: plugin
+        contents: Claude Code プラグインのフックと MCP のツール
+        content_types:
+          - code
+          - claude_plugin
+        naming:
+          - '{module}.ts'
+        children:
+          - type: folder
+            name: setup
+            contents: セットアップのスキルが呼ぶ CLI
+            content_types:
+              - code
+              - claude_plugin
+            naming:
+              - '{module}.ts'
+      - type: folder
+        name: render
+        contents: Markdown を HTML に変換する流れと、マーカーの解釈
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+        children:
+          - type: folder
+            name: syntax
+            contents: 記法ごとの変換
+            content_types:
+              - code
+              - library
+            naming:
+              - '{module}.ts'
+      - type: folder
+        name: viewer
+        contents: 書き出した HTML に埋める文書の一覧と行き来
+        content_types:
+          - code
+          - cli
+        naming:
+          - '{module}.ts'
+          - viewer.css
+      - type: folder
+        name: views
+        contents: ビューの部品
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+  - type: folder
+    name: templates
+    contents: mdmark init が配置する雛形
+    content_types:
+      - init_template
+      - cli
+    children:
+      - type: file
+        name: mdmark.config.yaml
+        contents: 設定の雛形
+      - type: file
+        name: index.yaml
+        contents: 文書が空の索引の雛形
+      - type: file
+        name: theme.css
+        contents: 利用側の CSS の雛形
+      - type: file
+        name: package.json
+        contents: 拡張の型の検査とビルドのスクリプトを持つ package.json の雛形
+      - type: file
+        name: tsconfig.json
+        contents: TypeScript の拡張を型で検査する tsconfig の雛形
+      - type: file
+        name: files.yaml
+        contents: '`templates/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: folder
+        name: extensions
+        contents: 拡張の見本
+        content_types:
+          - init_template
+          - cli
+        naming:
+          - example.ts
+          - example.js
+      - type: folder
+        name: js
+        contents: '`--js` のときに配置する雛形'
+        content_types:
+          - init_template
+          - cli
+        children:
+          - type: file
+            name: tsconfig.json
+            contents: JavaScript の拡張を JSDoc の型で検査する tsconfig の雛形
+  - type: folder
+    name: tests
+    contents: ライブラリ本体・CLI・プラグインのテスト。層のフォルダの下を、テストする対象ごとに分ける
+    content_types:
+      - test
+    children:
+      - type: file
+        name: git-env.ts
+        contents: テストが実行する git の環境変数
+      - type: file
+        name: migrations-dir.ts
+        contents: テストが使用する移行の手順のフォルダの場所
+      - type: file
+        name: files.yaml
+        contents: '`tests/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: folder
+        name: fixtures
+        contents: テストが比べる見本
+        content_types:
+          - test_fixture
+        children:
+          - type: folder
+            name: mermaid-svg
+            contents: mermaid の図の見本の SVG
+            content_types:
+              - test_fixture
+              - library
+            naming:
+              - '{diagram}.svg'
+            generated_from:
+              path: scripts/mermaid-fixtures.ts
+              command: CMD-472-1#categories[ビルド・生成]
+              tracked: mermaid の図のストーリーの結合テストが、描いた SVG と比べる
+      - type: folder
+        name: unit
+        contents: 単体テスト
+        content_types:
+          - test
+        naming:
+          - '{module}.test.ts'
+        children:
+          - type: folder
+            name: helpers
+            contents: 単体テストが共有する補助のコードと、見本のメディア
+            content_types:
+              - test
+            naming:
+              - '{helper}.ts'
+              - '{helper}.d.ts'
+            children:
+              - type: folder
+                name: media
+                contents: メディアの部品の単体テストが読み込む見本の動画
+                content_types:
+                  - test_fixture
+                  - library
+                naming:
+                  - '{name}.webm'
+          - type: folder
+            name: src
+            contents: '`src/` の単体テスト。`src/` と同じフォルダに、1 物理ファイル = 1 テストファイルで配置する'
+            content_types:
+              - test
+              - library
+            naming:
+              - '{module}.test.ts'
+              - '{module}.browser.test.ts'
+            children:
+              - type: folder
+                name: '{folder}'
+                contents: '`src/` の同じ名前のフォルダの単体テスト'
+                content_types:
+                  - test
+                naming:
+                  - '{module}.test.ts'
+                  - '{module}.browser.test.ts'
+                children:
+                  - type: folder
+                    name: '{folder}'
+                    contents: '`src/` の同じ名前のフォルダの下のフォルダの単体テスト'
+                    content_types:
+                      - test
+                    naming:
+                      - '{module}.test.ts'
+          - type: folder
+            name: scripts
+            contents: '`scripts/` の単体テスト'
+            content_types:
+              - test
+            naming:
+              - '{script}.test.ts'
+          - type: folder
+            name: migrations
+            contents: '`migrations/` の移行のスクリプトの単体テスト'
+            content_types:
+              - test
+              - cli
+            naming:
+              - '{step}.test.ts'
+          - type: folder
+            name: vscode
+            contents: '`vscode/` の単体テスト。`vscode/` と同じフォルダに配置する'
+            content_types:
+              - test
+              - vscode
+            children:
+              - type: folder
+                name: scripts
+                contents: '`vscode/scripts/` の単体テスト'
+                content_types:
+                  - test
+                  - vscode
+                naming:
+                  - '{script}.test.ts'
+              - type: folder
+                name: src
+                contents: '`vscode/src/` の単体テスト'
+                content_types:
+                  - test
+                  - vscode
+                naming:
+                  - '{module}.test.ts'
+                children:
+                  - type: folder
+                    name: '{folder}'
+                    contents: '`vscode/src/` の同じ名前のフォルダの単体テスト'
+                    content_types:
+                      - test
+                      - vscode
+                    naming:
+                      - '{module}.test.ts'
+                  - type: folder
+                    name: webview
+                    contents: '`vscode/src/webview/` の単体テストと、テストが読み込む見本・補助のコード'
+                    content_types:
+                      - test
+                      - vscode
+                    convention: react-core-folder-structure
+      - type: folder
+        name: integration
+        contents: 結合テストと、結合テストが共有する起動・後片付けの補助のコード
+        content_types:
+          - test
+        naming:
+          - '{helper}.ts'
+        children:
+          - type: folder
+            name: lib
+            contents: ライブラリ本体・CLI の結合テスト。1 インターフェース定義・1 部品 = 1 テストファイル
+            content_types:
+              - test
+              - library
+            naming:
+              - '{interface}.test.ts'
+              - '{interface}.browser.test.ts'
+              - '{part}.story.test.ts'
+              - '{helper}.ts'
+          - type: folder
+            name: ClaudeCodeプラグイン
+            contents: Claude Code プラグインの結合テスト
+            content_types:
+              - test
+              - claude_plugin
+            naming:
+              - '{interface}.test.ts'
+          - type: folder
+            name: vscode
+            contents: VS Code 拡張機能の Webview の部品のストーリーの結合テスト
+            content_types:
+              - test
+              - vscode
+            naming:
+              - '{part}.story.test.ts'
+  - type: folder
+    name: tmp
+    contents: 手元の一時ファイル。中身を無視する `.gitignore` だけを git で管理する
+    children:
+      - type: file
+        name: .gitignore
+        contents: '`tmp/` の中身を全て無視するパターン'
+  - type: folder
+    name: tools
+    contents: ルートの依存と分けて入れる開発の道具
+    children:
+      - type: folder
+        name: eslint
+        contents: Webview の ESLint の設定と npm の依存
+        content_types:
+          - tool_config
+          - vscode
+        children:
+          - type: file
+            name: eslint.config.js
+            contents: ESLint の設定
+          - type: file
+            name: package.json
+            contents: ESLint とルールの npm の依存
+          - type: file
+            name: package-lock.json
+            contents: npm の依存のロック
+            generated_from:
+              path: tools/eslint/package.json
+              command: CMD-472-1#categories[依存の追加・更新・削除]
+              tracked: '`npm ci` がロックのバージョンで依存を入れる'
+  - type: folder
+    name: vscode
+    contents: VS Code 拡張機能のパッケージ（拡張機能の本体・Webview・ビルド・結合テスト）
+    content_types:
+      - vscode
+    children:
+      - type: file
+        name: package.json
+        contents: 拡張機能の定義（main・engines・contributes・scripts・依存）
+        content_types:
+          - tool_config
+          - vscode
+      - type: file
+        name: package-lock.json
+        contents: npm の依存のロック
+        content_types:
+          - tool_config
+          - vscode
+        generated_from:
+          path: vscode/package.json
+          command: CMD-472-1#categories[依存の追加・更新・削除]
+          tracked: '`npm ci` がロックのバージョンで依存を入れる'
+      - type: file
+        name: tsconfig.json
+        contents: 拡張機能の型の検査の設定
+        content_types:
+          - tool_config
+          - vscode
+      - type: file
+        name: vite.config.ts
+        contents: Webview の Vite の設定
+        content_types:
+          - tool_config
+          - vscode
+      - type: file
+        name: components.json
+        contents: shadcn/ui の CLI の設定
+        content_types:
+          - tool_config
+          - vscode
+      - type: file
+        name: .vscodeignore
+        contents: .vsix に入れないもの
+        content_types:
+          - tool_config
+          - vscode
+      - type: file
+        name: README.md
+        contents: マーケットプレイスと .vsix に載る拡張機能の説明
+      - type: file
+        name: LICENSE
+        contents: .vsix に入れるライセンスの本文
+      - type: file
+        name: files.yaml
+        contents: '`vscode/` のファイルの一覧（project-index の files の行）'
+        content_types:
+          - file_list
+      - type: folder
+        name: scripts
+        contents: 拡張機能のビルドとタグの照合
+        content_types:
+          - script
+          - vscode
+        naming:
+          - build.ts
+          - release-check.ts
+      - type: folder
+        name: src
+        contents: 拡張機能の本体。直下は起点・設定・共通の処理
+        content_types:
+          - code
+          - vscode
+        naming:
+          - '{module}.ts'
+        children:
+          - type: folder
+            name: export
+            contents: HTML への書き出し
+            content_types:
+              - code
+              - vscode
+            naming:
+              - '{module}.ts'
+          - type: folder
+            name: preview
+            contents: プレビューのパネルの管理
+            content_types:
+              - code
+              - vscode
+            naming:
+              - '{module}.ts'
+          - type: folder
+            name: webview
+            contents: プレビューのパネルの中の画面（React）
+            content_types:
+              - code
+              - story
+              - vscode
+            convention: react-core-folder-structure
+      - type: folder
+        name: tests
+        contents: VS Code の上で動かすテスト
+        content_types:
+          - test
+          - vscode
+        children:
+          - type: folder
+            name: integration
+            contents: 拡張機能の結合テストと、VS Code を起動する補助のコード
+            content_types:
+              - test
+              - vscode
+            naming:
+              - '{interface}.test.ts'
+              - '{helper}.ts'
+      - type: folder
+        name: dist
+        contents: 拡張機能の本体をまとめたファイル
+        content_types:
+          - distribution
+          - vscode
+        generated_from:
+          path: vscode/src/
+          command: CMD-472-1#categories[ビルド・生成]
+      - type: folder
+        name: media
+        contents: Webview が読み込むスクリプトと CSS
+        content_types:
+          - distribution
+          - vscode
+        generated_from:
+          path: vscode/src/webview/
+          command: CMD-472-1#categories[ビルド・生成]
+      - type: folder
+        name: node_modules
+        contents: 拡張機能の npm の依存
+        generated_from:
+          path: vscode/package-lock.json
+          command: CMD-472-1#categories[環境構築（クローン直後）]
+  - type: folder
+    name: node_modules
+    contents: npm の依存
+    generated_from:
+      path: package-lock.json
+      command: CMD-472-1#categories[環境構築（クローン直後）]
+  - type: file
+    name: package.json
+    contents: ライブラリ本体・CLI の npm の定義（bin・scripts・開発の依存）
+    content_types:
+      - tool_config
+  - type: file
+    name: package-lock.json
+    contents: npm の依存のロック
+    content_types:
+      - tool_config
+    generated_from:
+      path: package.json
+      command: CMD-472-1#categories[依存の追加・更新・削除]
+      tracked: '`npm ci` がロックのバージョンで依存を入れる'
+  - type: file
+    name: tsconfig.json
+    contents: ルートの型の検査の設定
+    content_types:
+      - tool_config
+  - type: file
+    name: tsconfig.dist.json
+    contents: 配布物の型定義を書き出す設定
+    content_types:
+      - tool_config
+  - type: file
+    name: vitest.config.ts
+    contents: Vitest のプロジェクト（単体・結合・ブラウザ）の設定
+    content_types:
+      - tool_config
+  - type: file
+    name: biome.json
+    contents: Biome の lint と書式の設定
+    content_types:
+      - tool_config
+  - type: file
+    name: dev-docs.yaml
+    contents: dev-docs と project-index の配信元の設定（文書の種類ごとのパス・スキーマ）
+    content_types:
+      - tool_config
+  - type: file
+    name: ai-monitor-theme.yaml
+    contents: '`docs/_theme/` を AI Monitor から取り込む方法とバージョン'
+  - type: file
+    name: ai-monitor-version.ini
+    contents: 取り込んだ AI Monitor の配布物のバージョン
+  - type: file
+    name: version.ini
+    contents: mdmark のバージョン
+  - type: file
+    name: CLAUDE.md
+    contents: mdmark で作業するエージェントへの案内
+  - type: file
+    name: README.md
+    contents: mdmark の説明と導入方法
+  - type: file
+    name: CHANGELOG.md
+    contents: 変更履歴のページへの案内
+  - type: file
+    name: LICENSE
+    contents: ライセンスの本文
+  - type: file
+    name: .gitignore
+    contents: Git で管理しないもののパターン
+gitignore:
+  - pattern: docs/generated/
+    reason: AI Monitor が YAML の設計書から生成する Markdown（生成物）
+  - pattern: node_modules/
+    reason: npm の依存（ロックから入れ直せる）
+  - pattern: .vitest/
+    reason: Vitest のキャッシュ
+  - pattern: debug-storybook.log
+    reason: Storybook のデバッグのログ
+  - pattern: vscode/node_modules/
+    reason: VS Code 拡張機能の npm の依存（ロックから入れ直せる）
+  - pattern: vscode/dist/
+    reason: VS Code 拡張機能の本体をまとめたファイル（生成物）
+  - pattern: vscode/media/
+    reason: Webview が読み込むスクリプトと CSS（生成物）
+  - pattern: vscode/out/
+    reason: VS Code 拡張機能の結合テストをビルドしたファイル（生成物）
+  - pattern: vscode/.vscode-test/
+    reason: 結合テストが取得した VS Code
+  - pattern: '*.vsix'
+    reason: VS Code 拡張機能のパッケージ（生成物。Release に添える）
+  - pattern: plugin/node_modules/
+    reason: プラグインの npm の依存
+refs:
+  - ARCH-472-1#
+  - CMD-472-1#
