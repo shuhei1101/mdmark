@@ -46,6 +46,11 @@ args:
     required: false
     default: なし（出さない）
     description: 要素の説明の引数。名前の下に小さい文字で出す
+  - name: layout.groups[].c4Boundary
+    type: 列挙
+    required: true
+    choices: enterprise・system・boundary
+    description: 境界の種類。破線の枠で描き、タイトルの後ろに `enterprise` は `［Enterprise］`、`system` は `［Software System］` を付ける。`boundary` は種類を付けない
   - name: collapsed
     type: 配列
     required: false
@@ -66,11 +71,21 @@ args:
     required: false
     default: なし（薄くしない）
     description: 案内・線のホバーで強調する要素と関係。構成図の部品と同じ
+  - name: packets
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: データの印を流す関係（線）。構成図の部品と同じ
   - name: hints
     type: 真偽値
     required: false
     default: 'true'
     description: '`false` のとき、要素・境界の説明のマーカーを配置せず、関係の押せる帯に `aria-describedby` を付けない（要素の説明の引数は描く）'
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応。要素の名前・説明と境界の名前の中の用語を `span.mdmark-term` にする
 events:
   - name: 開閉する・中へ入る
     when: 境界の山形・タイトルのボタンを押す

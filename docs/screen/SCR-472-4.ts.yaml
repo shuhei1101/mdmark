@@ -680,7 +680,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`
+        value: map のマーカーの `title`。無ければ Mermaid の `title` の行
       - name: legend
         value: '`[]`'
       - name: wide
