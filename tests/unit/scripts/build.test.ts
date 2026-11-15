@@ -279,7 +279,7 @@ test("test_main_when_guide_index_invalid", {
   const root = await createBuildRoot("v0.0.0\n");
   const files: Record<string, string> = {
     "src/plugin/pre-tool-use.ts": "export {};\n",
-    "guide/index.yaml": [
+    "plugin/guide-index.yaml": [
       "schema: 1",
       "guides:",
       "  - name: a",
@@ -301,7 +301,7 @@ test("test_main_when_guide_index_invalid", {
   expect(code).toBe(1);
   expect(existsSync(join(root, "dist"))).toBe(false);
   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
-  expect(stderr()).toContain("guide/index.yaml:guides[0].page");
+  expect(stderr()).toContain("plugin/guide-index.yaml:guides[0].page");
 });
 
 // 対応ブラウザの下限に無い API を確認せずに使用すると dist/ を削除して終わる（異常系）

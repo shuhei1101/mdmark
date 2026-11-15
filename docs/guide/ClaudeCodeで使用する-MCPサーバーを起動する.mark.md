@@ -4,12 +4,12 @@ MCP の常駐サーバーを起動・停止し、待ち受けているポート�
 
 プラグインの MCP サーバー `plugin:mdmark:mdmark` は、`mdmark serve` が常駐させるサーバーへ HTTP でつなぐ。
 プラグインを入れた後、MCP のツールを使用する前に、端末で 1 回起動する。
-[セットアップする](./ClaudeCodeで使用する-セットアップする.md) の `/mdmark:global-setup` は、systemd --user の unit か tmux のセッションでこの起動をする。
+[セットアップする](./ClaudeCodeで使用する-セットアップする.mark.md) の `/mdmark:global-setup` は、systemd --user の unit か tmux のセッションでこの起動をする。
 並行して開いたセッションは、同じプロセスのツールを呼ぶ。
 
 ## 前提
 
-- [プラグインを入れる](./ClaudeCodeで使用する-プラグインを入れる.md)
+- [プラグインを入れる](./ClaudeCodeで使用する-プラグインを入れる.mark.md)
 - 手元に Node 24 以降がある
 - 手元から GitHub と npm のレジストリへ届く
 
@@ -156,10 +156,10 @@ tmux kill-session -t =mdmark-mcp
 #### MCP サーバーがつながっている
 
 セッションで `/mcp` を開く。
-`plugin:mdmark:mdmark` がつながっていて、ツールが並ぶ（[MCP](./MCP.md)）。
+`plugin:mdmark:mdmark` がつながっていて、ツールが並ぶ（[MCP](./MCP.mark.md)）。
 
 ## 元に戻す
 
 `systemctl --user disable --now mdmark-mcp`・`tmux kill-session -t =mdmark-mcp`・`Ctrl+C` のどれかで常駐サーバーを止める。
 プラグインは入ったまま残る。
-削除するには [プラグインを入れる](./ClaudeCodeで使用する-プラグインを入れる.md) の「元に戻す」。
+削除するには [プラグインを入れる](./ClaudeCodeで使用する-プラグインを入れる.mark.md) の「元に戻す」。

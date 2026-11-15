@@ -1,0 +1,314 @@
+# 単体テスト作成の Red（テストコードの末尾 1d6cedc8）
+# fail は実装（GUIDE_SOURCE・CHANGELOG_FILE）が無いことによる build-plugin.test.ts 5 件・build.test.ts 1 件・upgrade.test.ts 9 件。export.test.ts の 1 件は全件実行の負荷による時間切れで、単独の実行（末尾）では pass する
+
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/docs-guide-mark-md-extension-and-index-placement
+
+ ❯ |unit| tests/unit/scripts/build-plugin.test.ts (11 tests | 5 failed) 2497ms
+   × test_check_guide_source 2450ms
+   × test_check_guide_source_when_page_missing 4ms
+   × test_check_guide_source_when_invalid 5ms
+   × test_check_guide_source_when_unreadable 2ms
+   × test_build_plugin_when_guide_invalid 4ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (15 tests | 9 failed) 35783ms
+   × test_run_upgrade 104ms
+   × test_run_upgrade_when_plan 81ms
+   × test_run_upgrade_when_version_missing 52ms
+   × test_run_upgrade_when_declined 56ms
+   × test_run_upgrade_when_check_fails 101ms
+   × test_run_upgrade_when_plan_with_ask 91ms
+   × test_run_upgrade_when_script_prints 106ms
+   × test_run_upgrade_when_settings 6ms
+   × test_run_upgrade_when_settings_with_config_call 10ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (26 tests | 1 failed) 42802ms
+   × test_prepare_embeds 30032ms
+ ❯ |unit| tests/unit/scripts/build.test.ts (29 tests | 1 failed) 59115ms
+   × test_main_when_guide_index_invalid 1594ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build-plugin.test.ts > test_check_guide_source
+AssertionError: expected [] to deeply equal [ { name: 'a', …(3) }, …(1) ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "name": "a",
+-     "page": "docs/a.md",
+-     "summary": "a の概要",
+-     "when": "a を記載するとき",
+-   },
+-   {
+-     "name": "b",
+-     "page": "docs/b.md",
+-     "summary": "b の概要",
+-     "when": "b を記載するとき",
+-   },
+- ]
++ []
+
+ ❯ tests/unit/scripts/build-plugin.test.ts:62:26
+     60|   const result = await checkGuideSource({ root });
+     61|   // 検証
+     62|   expect(result.entries).toEqual(entries);
+       |                          ^
+     63|   expect(result.problems).toEqual([]);
+     64| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  |unit| tests/unit/scripts/build-plugin.test.ts > test_check_guide_source_when_page_missing
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/scripts/build-plugin.test.ts:78:75
+     76|   const result = await checkGuideSource({ root });
+     77|   // 検証
+     78|   expect(result.problems.some((line) => line.includes("guides[1].page"…
+       |                                                                           ^
+     79|     true,
+     80|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  |unit| tests/unit/scripts/build-plugin.test.ts > test_check_guide_source_when_invalid
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/scripts/build-plugin.test.ts:106:5
+    104|       line.startsWith("plugin/guide-index.yaml:guides[0].when"),
+    105|     ),
+    106|   ).toBe(true);
+       |     ^
+    107| });
+    108|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  |unit| tests/unit/scripts/build-plugin.test.ts > test_check_guide_source_when_unreadable
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/scripts/build-plugin.test.ts:119:5
+    117|   expect(
+    118|     result.problems.some((line) => line.includes("plugin/guide-index.y…
+    119|   ).toBe(true);
+       |     ^
+    120| });
+    121|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  |unit| tests/unit/scripts/build-plugin.test.ts > test_build_plugin_when_guide_invalid
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/scripts/build-plugin.test.ts:262:68
+    260|   });
+    261|   // 検証
+    262|   expect(problems.some((line) => line.includes("guides[0].page"))).toB…
+       |                                                                    ^
+    263|   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
+    264| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_main_when_guide_index_invalid
+AssertionError: expected 'ガイドの索引を読み込めない: guide/index.yaml（ENOEN…' to contain 'plugin/guide-index.yaml:guides[0].page'
+
+Expected: "plugin/guide-index.yaml:guides[0].page"
+Received: "ガイドの索引を読み込めない: guide/index.yaml（ENOENT: no such file or directory, open '/tmp/mdmark-build-rzAZLv/guide/index.yaml'）"
+
+ ❯ tests/unit/scripts/build.test.ts:304:20
+    302|   expect(existsSync(join(root, "dist"))).toBe(false);
+    303|   expect(existsSync(join(root, "plugin", "scripts"))).toBe(false);
+    304|   expect(stderr()).toContain("plugin/guide-index.yaml:guides[0].page");
+       |                    ^
+    305| });
+    306|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-FcnDJ5/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:151:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_plan
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-Fbamwm/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:180:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_version_missing
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-bROBJY/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:233:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_declined
+AssertionError: expected [Function] to throw error including '--yes' but got '変更履歴を読み込めません（ENOENT: no such file or …'
+
+Expected: "--yes"
+Received: "変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-0FV02S/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。"
+
+ ❯ tests/unit/src/cli/upgrade.test.ts:308:23
+    306|   // 検証
+    307|   await expect(result).rejects.toBeInstanceOf(CliError);
+    308|   await expect(result).rejects.toThrow("--yes");
+       |                       ^
+    309|   expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
+    310|   expect(existsSync(join(fixture.work, ".mdmark"))).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_check_fails
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-6EEUkx/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:368:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_plan_with_ask
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-9EtXss/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:433:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_script_prints
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-qn744m/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:469:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_settings
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-0T0vxe/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:507:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_settings_with_config_call
+Error: 変更履歴を読み込めません（ENOENT: no such file or directory, open '/tmp/mdmark-cli-Xeohd0/docs/guide/変更履歴.md'）。mdmark をもう一度入れてください。
+ ❯ printPlan src/cli/upgrade.ts:174:11
+    172|     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
+    173|   } catch (error) {
+    174|     throw new CliError(
+       |           ^
+    175|       `変更履歴を読み込めません（${error instanceof Error ? error.message : String(…
+    176|     );
+ ❯ runUpgrade src/cli/upgrade.ts:396:3
+ ❯ tests/unit/src/cli/upgrade.test.ts:563:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+
+
+ Test Files  4 failed | 291 passed (295)
+      Tests  16 failed | 2216 passed (2232)
+   Start at  20:33:21
+   Duration  185.06s (worker 68%, tests 20%, import 11%, transform 1%)
+
+exit=1
+
+$ npx vitest run --project 'unit*' tests/unit/src/cli/export.test.ts
+
+ Test Files  1 passed (1)
+      Tests  26 passed (26)
+   Start at  20:36:41
+   Duration  23.42s (tests 97%, import 1%, transform 1%)
+
