@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-15T02:21:52.706988+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-172（diagram.ts）のリサイズハンドルの属性、MOD-472-133（map.ts）のノードの属性、MOD-472-130（flow-view.ts）のキー操作の対象
+    updated_by: planner
+    updated_at: '2026-11-15T03:06:00.317679+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 公開ドキュメント（docs/使い方・docs/リファレンス）に該当する記載が無く、更新ドキュメントが無いため
