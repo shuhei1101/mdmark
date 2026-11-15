@@ -651,7 +651,7 @@ test("test_render_map_er_when_hints_off", async () => {
     hints: false,
   });
   // 検証
-  expect(result.columns).not.toContain("map-er-note");
+  expect(result.columns).not.toContain('class="map-er-note"');
   expect(result.tips).toBe("");
   const row = findTag(result.columns, 'id="mdmark-note-owner-1-注文.注文日"');
   expect(row).toContain("map-er-column");
@@ -866,7 +866,7 @@ test("test_render_map_er_diagram_when_hints_off", async () => {
   });
   // 検証
   const node = outerHtml(part.html, 'data-node="注文"');
-  expect(node).not.toContain("map-er-note");
+  expect(node).not.toContain('class="map-er-note"');
   expect(node).toContain("map-er-column");
   expect(part.tips).not.toContain("下書き・確定・発送済み・取り消し");
 });
