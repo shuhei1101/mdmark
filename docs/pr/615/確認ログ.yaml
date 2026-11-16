@@ -1,0 +1,7 @@
+confirmations:
+  - topic: VS Code 拡張機能のアイコンの図案
+    decision: md markup（Markdown に HTML コメントで markup する）を表す「M↑」の下に、マーカーで引いた線を重ねる（案 A・B・C のどれも採らず、B の矢印を上向きにした案 D）。原本は docs/pr/615/アイコンの案/D.svg
+    decided_by: reply
+    approver: shuhei1101
+    commit: 605eb2a1722d4b5a180d63ec90bb60edbb185b54
+    thread: https://github.com/shuhei1101/mdmark/pull/615#discussion_r4587781534
