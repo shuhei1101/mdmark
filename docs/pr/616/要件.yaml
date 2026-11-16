@@ -19,7 +19,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 正常シナリオ（ER 図）・（列の多いテーブルを畳む）・（描き直しても手で畳んだ列を保つ）を削除し、ドラッグと文字の選択・矢印キーとボタンを mermaid の図で確かめる形にする。map の ER 図の列の開閉は SC-472-39 が受け持つ
+    detail: 正常シナリオ（ER 図）・（列の多いテーブルを畳む）・（描き直しても手で畳んだ列を保つ）を削除し、ドラッグと文字の選択・矢印キーとボタンをグラフで確かめる形にする。map の ER 図の列の開閉は SC-472-39 が受け持つ
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single
