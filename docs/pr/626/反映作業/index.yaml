@@ -5,10 +5,10 @@ dev-docsの端末の設定の付け替え:
   時期: マージの後
   回数: 1 回限り
   可逆: true
-  疎通確認: null
-  実行: null
-  確認: null
-  切り戻し: null
+  疎通確認: dev-docsの端末の設定の付け替え/疎通確認.py
+  実行: dev-docsの端末の設定の付け替え/実行.py
+  確認: dev-docsの端末の設定の付け替え/確認.py
+  切り戻し: dev-docsの端末の設定の付け替え/切り戻し.py
   失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
   確認方法: dev-docs の MCP の describe（source が mdmark）が、警告なしで mdmark の種類の一覧を返す
   状態: "-"
@@ -19,10 +19,10 @@ project-indexの端末の設定の付け替え:
   時期: マージの後
   回数: 1 回限り
   可逆: true
-  疎通確認: null
-  実行: null
-  確認: null
-  切り戻し: null
+  疎通確認: project-indexの端末の設定の付け替え/疎通確認.py
+  実行: project-indexの端末の設定の付け替え/実行.py
+  確認: project-indexの端末の設定の付け替え/確認.py
+  切り戻し: project-indexの端末の設定の付け替え/切り戻し.py
   失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
   確認方法: project-index の MCP の describe（source が mdmark）が、警告なしで mdmark の種類の一覧を返す
   状態: "-"

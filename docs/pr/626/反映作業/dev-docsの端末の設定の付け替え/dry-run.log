@@ -1,0 +1,13 @@
+前提確認: ok
+--- /home/shuhei2441/.config/dev-docs/settings.yaml
++++ /home/shuhei2441/.config/dev-docs/settings.yaml
+@@ -25,7 +25,7 @@
+       write: ["/home/shuhei2441/repo/knowledge"]
+       read: ["/mnt/c/Users/shuhe/repo/**", "/home/shuhei2441/repo/**"]
+   - id: mdmark
+-    config: /home/shuhei2441/repo/mdmark/.claude/worktrees/develop/dev-docs.yaml
++    config: /home/shuhei2441/repo/mdmark/.claude/worktrees/develop/project-index.yaml
+     scope:
+       write: ["/home/shuhei2441/repo/mdmark", "/home/shuhei2441/repo/mdmark/.claude/worktrees/**"]
+       read: ["/home/shuhei2441/repo/mdmark/**"]
+config の書き換え: changed
