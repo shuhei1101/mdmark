@@ -852,7 +852,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px
       - name: 横に広い図を持つ Markdown
-        description: ノード 12 個を横につなぎ、描くと幅が 1100px を超える `flowchart LR` の mermaid のコードブロックを配置した文書
+        description: ノード 12 個を横につなぎ、描くと幅が 1100px を超える `flowchart LR` の mermaid のコードブロックを配置した文書。描いた後に、描く先の `div` の幅を図の幅の 0.85 倍にする
       - name: Mock
         description: 差し替える依存は無い。ホイールは図の表示する枠へ `wheel` のイベントを送信することで代える
     flow: |-
@@ -888,6 +888,8 @@ flows:
     setup:
       - name: 拡大した図
         description: 正常系（図を拡大・縮小する）の図を、拡大のボタンで 2 回拡大した状態
+      - name: 文字を持つ図
+        description: 描く先の `div` の幅が 600px で、ノード 12 個を横につないだ map の `flowchart LR` を、拡大のボタンで 1 回拡大した状態
       - name: Mock
         description: 差し替える依存は無い。ドラッグは Playwright のマウス操作で行う
     flow: |-
@@ -899,7 +901,7 @@ flows:
         participant M as mdmark
         P->>M: 余白を 100px 左へドラッグする
         M->>P: 図を動かす
-        P->>M: テーブルの名前の上でドラッグする
+        P->>M: ノードの名前の上でドラッグする
         M-->>P: 図を動かさない
         P->>M: → を押す・下の移動のボタンを押す
         M->>P: 図を動かす
@@ -908,8 +910,9 @@ flows:
       <!-- /map -->
     expected:
       - 余白のドラッグの後、表示する枠の `scrollLeft` が 100 増え、`getSelection()` が空
-      - 余白の `cursor` の計算値が `grab`、テーブルの名前の `cursor` が `text`
-      - テーブルの名前の上のドラッグの後、`scrollLeft` が変わらず、`getSelection()` が名前の文字を含む
+      - 余白の `cursor` の計算値が `grab`
+      - 文字を持つ図のノードの名前の `cursor` が `text`
+      - 文字を持つ図のノードの名前の上のドラッグの後、その図の `scrollLeft` が変わらず、`getSelection()` が名前の文字を含む
       - '`→` の後に `scrollLeft` が 80 増え、下の移動のボタンの後に `scrollTop` が 80 増える'
       - 収まる倍率に戻した後、移動のボタンが出ていない
     test: test_normal_when_diagram_panned
@@ -1032,7 +1035,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。画面の幅は 390px
       - name: 図を持つ Markdown
-        description: 表示する枠より広い mermaid の flowchart と、その下に文書が縦にスクロールできるだけの段落を持つ文書
+        description: 表示する枠より広い map の `flowchart LR` と、その下に文書が縦にスクロールできるだけの段落を持つ文書
       - name: Mock
         description: 差し替える依存は無い。タップとドラッグは、`pointerType` が `touch` の `pointerdown`・`pointermove`・`pointerup` を発火して発生させる
     flow: |-
@@ -7034,7 +7037,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px
       - name: 縦に長い図を持つ Markdown
-        description: ノード 12 個を縦につなぎ、描くと幅が 600px より狭く高さが 1600px を超える map の `flowchart TD` を配置した文書
+        description: ノード 20 個を縦につなぎ、描くと幅が 600px より狭く高さが 1600px を超える `flowchart TD` の mermaid のコードブロック（front matter の `title` が `縦に長いデータ`）を配置した文書
         notes: 描いたとき、表示する枠の高さは `--mdmark-diagram-max-height` で切られ、倍率は幅だけで決まる（幅が描く先より狭いため 1）
       - name: Mock
         description: 差し替える依存は無い。sessionStorage は描く前に空にする。ページの再読み込みは、同じ要素へ `destroy` の後に もう一度 `mount` することで代える
@@ -7065,7 +7068,7 @@ flows:
     expected:
       - リサイズハンドルが `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前を持ち、`aria-valuenow` が表示する枠の高さ
       - 200px のドラッグの後、表示する枠の高さが 200 増え、幅と倍率が変わらず、`aria-valuenow` が新しい高さ
-      - '`0` の後の倍率が「表示する枠の幅 ÷ 図の幅」「表示する枠の高さ ÷ 図の高さ」、1 の最小で、図の全体が表示する枠に収まる'
+      - '`0` の後の倍率が「表示する枠の幅 ÷ 図の幅」「表示する枠の高さ ÷ 図の高さ」、1 の最小（mermaid の図の収まる倍率の下限 0.75 を下回らない）'
       - '`↑` の後に表示する枠の高さが 32 減り、`↓` の後に 32 増える。高さは図の全体が今の倍率で収まる高さを超えない'
       - もう一度 mount した後、表示する枠の高さが変えた高さ
       - ダブルクリックの後、倍率が変わらず、表示する枠の中の高さが図の高さ × 今の倍率（図の全体が収まる高さ）で、もう一度 mount しても同じ
