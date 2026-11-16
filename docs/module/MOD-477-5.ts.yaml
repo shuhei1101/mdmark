@@ -211,6 +211,12 @@ functions:
         condition: 1 つ目のテストの戻り値の `markdown`
         mock: なし
         expected: '`markdown` が同じで、`report` が空'
+      - name: test_convert_retired_diagrams_when_er
+        case: 正常
+        summary: ER 図の部品の範囲を書き換えず、報告にも挙げない
+        condition: '`<!-- er -->` の範囲だけを持つ文書'
+        mock: なし
+        expected: '`markdown` が元のままで、`report` が空'
   - name: readRetiredDefinition
     title: 廃止した図の定義を読む
     container: src/map/convert.ts
