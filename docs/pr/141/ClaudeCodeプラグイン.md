@@ -51,7 +51,8 @@ PoC 検証で確かめること:
 
 ## PoC 結果
 
-結論: 成立。PoC PR は [PoC: MCP の常駐サーバーへの HTTP の接続と PreToolUse のフックでの作業フォルダの受け渡し](https://github.com/shuhei1101/mdmark/pull/142)（検証コードの commit: [0b22e50](https://github.com/shuhei1101/mdmark/commit/0b22e50)）。
+結論: 成立。
+PoC PR は [PoC: MCP の常駐サーバーへの HTTP の接続と PreToolUse のフックでの作業フォルダの受け渡し](https://github.com/shuhei1101/mdmark/pull/142)（検証コードの commit: [0b22e50](https://github.com/shuhei1101/mdmark/commit/0b22e50)）。
 
 確かめた環境: Claude Code 2.1.310・Node v24.14.0・`@modelcontextprotocol/server` 2.3.1（WSL2）。
 
@@ -68,10 +69,13 @@ PoC 検証で確かめること:
 
 所感:
 
-- フックが `permissionDecision` を返さず `updatedInput` だけを返しても、許可の判定は変わらない。拒否の記録の `tool_input` にはフックが入れた `project_dir` が載るので、許可のダイアログにも作業のフォルダが出ると見込む
-- Claude Code は `updatedInput` を `tools/list` の Schema で検査し直さない（`additionalProperties: false` の Schema に `project_dir` を入れても通った）。案 B（公開の Schema にも引数を載せる）へ切り替える必要は無い
+- フックが `permissionDecision` を返さず `updatedInput` だけを返しても、許可の判定は変わらない。
+  拒否の記録の `tool_input` にはフックが入れた `project_dir` が載るので、許可のダイアログにも作業のフォルダが出ると見込む
+- Claude Code は `updatedInput` を `tools/list` の Schema で検査し直さない（`additionalProperties: false` の Schema に `project_dir` を入れても通った）。
+  案 B（公開の Schema にも引数を載せる）へ切り替える必要は無い
 - 1 つの `McpServer` を呼び出しごとに作る `createMcpHandler` の形で、セッションごとの状態を持たずに動いた
-- 計画との違い: マーケットプレイスの追加ではなく `--plugin-dir` でプラグインを読み込んだ。読み込んだ後の `.mcp.json`・`hooks.json` の扱いは同じ
+- 計画との違い: マーケットプレイスの追加ではなく `--plugin-dir` でプラグインを読み込んだ。
+  読み込んだ後の `.mcp.json`・`hooks.json` の扱いは同じ
 - この手元の設定は `permissions.defaultMode` が `bypassPermissions` のため、許可の確かめは `--permission-mode default` で上書きして行った
 
 検証コードの要点（`poc/mcp-http/server.ts` と `add-project-dir.mjs` の核心部）:
@@ -115,9 +119,11 @@ process.stdout.write(JSON.stringify({
 
 PoC PR の diff の見どころ:
 
-- `poc/mcp-http/server.ts`: `toRequest` で `node:http` の要求を組み込みの `Request` にし、`createMcpHandler` の `fetch` へ渡す。本番の待ち受けもこの形にする
+- `poc/mcp-http/server.ts`: `toRequest` で `node:http` の要求を組み込みの `Request` にし、`createMcpHandler` の `fetch` へ渡す。
+  本番の待ち受けもこの形にする
 - `poc/mcp-http/marketplace/plugin/.mcp.json`: `type: http` と `${MDMARK_PORT:-8782}` の `url`
-- `poc/mcp-http/marketplace/plugin/hooks/hooks.json`: PreToolUse の `matcher` をツール名で絞る。本番は `mcp__plugin_mdmark_mdmark__.*` にする
+- `poc/mcp-http/marketplace/plugin/hooks/hooks.json`: PreToolUse の `matcher` をツール名で絞る。
+  本番は `mcp__plugin_mdmark_mdmark__.*` にする
 
 ## テスト結果
 

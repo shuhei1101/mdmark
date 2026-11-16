@@ -8,7 +8,8 @@
 
 [VS Code 拡張機能の Marketplace と Open VSX への公開を GitHub Actions で自動化する](https://github.com/shuhei1101/mdmark/issues/84) の要望。
 今の `.github/workflows/vscode-release.yml` は、`vscode-v*` のタグで .vsix を作って GitHub Release に添えるまでで、Marketplace へは手で公開している。
-Marketplace は trusted publishing（GitHub Actions の OIDC。`vsce publish --oidc`）に対応し、ユーザーが publisher `ShuheiNishikawa` にポリシーを登録した。Open VSX には公開しない（[ユーザーの回答](https://github.com/shuhei1101/mdmark/pull/512#discussion_r4570559008)）。
+Marketplace は trusted publishing（GitHub Actions の OIDC。`vsce publish --oidc`）に対応し、ユーザーが publisher `ShuheiNishikawa` にポリシーを登録した。
+Open VSX には公開しない（[ユーザーの回答](https://github.com/shuhei1101/mdmark/pull/512#discussion_r4570559008)）。
 [VS Code 拡張機能の ID を ShuheiNishikawa.mdmark-vscode・表示名を mdmark for VS Code に固定する](https://github.com/shuhei1101/mdmark/pull/261) で拡張機能の ID を `ShuheiNishikawa.mdmark-vscode` に固定し、[プラグインの plugin.json から version を外し、develop に打ったタグで jsDelivr と VS Code 拡張機能を配る](https://github.com/shuhei1101/mdmark/pull/492)（[プラグインの plugin.json から version を外し、develop に打ったタグで jsDelivr と VS Code 拡張機能を配る](https://github.com/shuhei1101/mdmark/issues/434)）でタグを develop に打つ運用にした。
 ユーザーから、修正が自動で利用者に届く配布を最優先にする依頼がある（[コメント](https://github.com/shuhei1101/mdmark/issues/84#issuecomment-6832944413)）。
 

@@ -9,8 +9,11 @@
 [描いた文書の表示の改善 2 件（見出し 1・2 の下の区切り線・右側の目次の上端とピン止めと hover の位置）](https://github.com/shuhei1101/mdmark/issues/319) の要望。
 同じ kind（描いた文書の表示の改善）で `src/index.css`・`dev/mock` を変更する子 Issue の束で、子ごとの範囲と決定事項は子の Issue の本文とコメントが正。
 
-- [見出し 1・見出し 2 の下に区切り線を既定で引く](https://github.com/shuhei1101/mdmark/issues/269): `--mdmark-heading-rule-width` の既定値が `0px` のため、見出し 1・見出し 2 の下に線が出ず、文書の区切りが分かりづらい。区切り線（`hr`）は 1px で、見出しの線と区切り線は同じ `--mdmark-color-border` を使う
-- [右側の目次の「目次」のラベルを削除し、ピン止めのアイコンと hover で開く位置を見直す](https://github.com/shuhei1101/mdmark/issues/286): 右側の目次（`.mdmark-side-toc`）の上端に「目次」のラベルがあり、場所を取る。ピン止めのボタンのアイコンの見た目が良くない。hover で開く目次が目次の線の右上に合わせて出るため、表示位置が下寄りになる
+- [見出し 1・見出し 2 の下に区切り線を既定で引く](https://github.com/shuhei1101/mdmark/issues/269): `--mdmark-heading-rule-width` の既定値が `0px` のため、見出し 1・見出し 2 の下に線が出ず、文書の区切りが分かりづらい。
+  区切り線（`hr`）は 1px で、見出しの線と区切り線は同じ `--mdmark-color-border` を使う
+- [右側の目次の「目次」のラベルを削除し、ピン止めのアイコンと hover で開く位置を見直す](https://github.com/shuhei1101/mdmark/issues/286): 右側の目次（`.mdmark-side-toc`）の上端に「目次」のラベルがあり、場所を取る。
+  ピン止めのボタンのアイコンの見た目が良くない。
+  hover で開く目次が目次の線の右上に合わせて出るため、表示位置が下寄りになる
 
 ## 計画書
 

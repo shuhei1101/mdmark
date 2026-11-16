@@ -6,8 +6,10 @@
 
 ## 背景
 
-[書き出した HTML・Markdown から、mdmark を使用していることが読み取れないようにする（名前・コメント・バージョン・元の Markdown）](https://github.com/shuhei1101/mdmark/issues/527) の要望。今の `mdmark export`・`mdmark build`（MCP の `export_html`・`build_site`）で書き出した HTML には、`mdmark-` で始まるクラス名・CSS 変数・`#mdmark-payload` の要素、HTML のコメント・マーカーのコメント、`--mdmark-version` のバージョンの情報が残り、mdmark で作ったことが読み取れる。
-隠す範囲と既定の動作は [Issue #527 の追記（D-453）](https://github.com/shuhei1101/mdmark/issues/527#issuecomment-6850621695) で決まった。元の Markdown を埋め込まない範囲は [書き出した HTML に元の Markdown を埋め込まず、書き出すときに描画した HTML から起動する](https://github.com/shuhei1101/mdmark/issues/532)、純粋な Markdown への書き出しは [mdmark の文書を、MCP と CLI で純粋な Markdown（GFM と Mermaid）に書き出す](https://github.com/shuhei1101/mdmark/issues/313) が扱う。
+[書き出した HTML・Markdown から、mdmark を使用していることが読み取れないようにする（名前・コメント・バージョン・元の Markdown）](https://github.com/shuhei1101/mdmark/issues/527) の要望。
+今の `mdmark export`・`mdmark build`（MCP の `export_html`・`build_site`）で書き出した HTML には、`mdmark-` で始まるクラス名・CSS 変数・`#mdmark-payload` の要素、HTML のコメント・マーカーのコメント、`--mdmark-version` のバージョンの情報が残り、mdmark で作ったことが読み取れる。
+隠す範囲と既定の動作は [Issue #527 の追記（D-453）](https://github.com/shuhei1101/mdmark/issues/527#issuecomment-6850621695) で決まった。
+元の Markdown を埋め込まない範囲は [書き出した HTML に元の Markdown を埋め込まず、書き出すときに描画した HTML から起動する](https://github.com/shuhei1101/mdmark/issues/532)、純粋な Markdown への書き出しは [mdmark の文書を、MCP と CLI で純粋な Markdown（GFM と Mermaid）に書き出す](https://github.com/shuhei1101/mdmark/issues/313) が扱う。
 
 ## 計画書
 

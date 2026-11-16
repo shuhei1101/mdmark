@@ -6,7 +6,8 @@ mdmark の使い方集を読む AI と人が、比喩の語・一字の語の無
 
 ## 背景
 
-[使い方集の文を規約『文章の書き方』に合わせて直し、『文書の書き方』のページを追加する](https://github.com/shuhei1101/mdmark/issues/185) の要望。使い方集（`guide/index.yaml` が指す 17 ページと索引の文）は SessionStart と `read_guide` で毎回 AI に渡るが、比喩の語（箱・層）と一字の語（印・題・節・形）が多い。
+[使い方集の文を規約『文章の書き方』に合わせて直し、『文書の書き方』のページを追加する](https://github.com/shuhei1101/mdmark/issues/185) の要望。
+使い方集（`guide/index.yaml` が指す 17 ページと索引の文）は SessionStart と `read_guide` で毎回 AI に渡るが、比喩の語（箱・層）と一字の語（印・題・節・形）が多い。
 [文書と UI 文言の語を、knowledge の語の選び方の規約に合わせて直す](https://github.com/shuhei1101/mdmark/issues/105) は全文書の語を直す Issue で、使い方集だけを先に直すために切り出した（D-4）。
 『文書の書き方』のページを SessionStart の動線から案内するのは後続の [使い方集を dev-docs の配信元として配り、SessionStart を動線だけにして read_guide を外す](https://github.com/shuhei1101/mdmark/issues/186)。
 

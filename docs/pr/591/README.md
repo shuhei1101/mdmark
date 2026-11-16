@@ -6,11 +6,13 @@
 
 ## 背景
 
-[図のグループ・シーケンス図のブロックの開閉と前付けの折りたたみが、update で描き直すたびに初期の開閉へ戻る](https://github.com/shuhei1101/mdmark/issues/543) の不具合。[描き直しで手で変えた部品の開閉を保ち、タブの切り替えで押したタブの見出しの位置を保つ](https://github.com/shuhei1101/mdmark/pull/540) のスコープ外の行から切り出した。
+[図のグループ・シーケンス図のブロックの開閉と前付けの折りたたみが、update で描き直すたびに初期の開閉へ戻る](https://github.com/shuhei1101/mdmark/issues/543) の不具合。
+[描き直しで手で変えた部品の開閉を保ち、タブの切り替えで押したタブの見出しの位置を保つ](https://github.com/shuhei1101/mdmark/pull/540) のスコープ外の行から切り出した。
 
 - PR [描き直しで手で変えた部品の開閉を保ち、タブの切り替えで押したタブの見出しの位置を保つ](https://github.com/shuhei1101/mdmark/pull/540) は、行の詳細・details の範囲・折りたたみの注意書き・ER 図の列・ファイルツリー・コードの折りたたみ・表のキーの階層の開閉を、描き直しをまたいで保つ記録（`src/interact/part-states.ts`）を入れた
 - フロントマターの `<details>` は class に `mdmark-frontmatter` を加えるため、記録の対象のセレクタ（class が `mdmark-collapsible` だけの `details`）に当たらず、描き直すたびに閉じる
-- 図のグループ・シーケンス図のブロックの開閉は、Issue ではコードを読んだ見込みで戻るとしている。開閉は図ごとの sessionStorage の記録（`src/map/state.ts`）が持ち、描き直しで図を付け直すときに読み直すため、戻るかを先に確認する
+- 図のグループ・シーケンス図のブロックの開閉は、Issue ではコードを読んだ見込みで戻るとしている。
+  開閉は図ごとの sessionStorage の記録（`src/map/state.ts`）が持ち、描き直しで図を付け直すときに読み直すため、戻るかを先に確認する
 
 ## 計画書
 

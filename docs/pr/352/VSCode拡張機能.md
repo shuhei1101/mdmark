@@ -51,7 +51,9 @@
 
 ### lint
 
-`npm run check`（biome・eslint・tsc・tsc -p vscode）が終了コード 0。残る biome の警告 2 件（`src/cli/embed.ts`）は base にもあり、この PR は触っていない。`テスト結果/20261108012300_9c25dc18_lint.log`
+`npm run check`（biome・eslint・tsc・tsc -p vscode）が終了コード 0。
+残る biome の警告 2 件（`src/cli/embed.ts`）は base にもあり、この PR は触っていない。
+`テスト結果/20261108012300_9c25dc18_lint.log`
 
 ### ドキュメント修正
 

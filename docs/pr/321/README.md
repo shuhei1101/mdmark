@@ -7,7 +7,8 @@
 ## 背景
 
 [sanitize-html を 2.18.1 以上に上げ、2.18.0 の勧告 GHSA-c9rx-x947-fp3h を解消する](https://github.com/shuhei1101/mdmark/issues/317) の要望。
-`package.json` の `sanitize-html` は 2.18.0 で、勧告 GHSA-c9rx-x947-fp3h（moderate）がある。2.18.1 で解消している。
+`package.json` の `sanitize-html` は 2.18.0 で、勧告 GHSA-c9rx-x947-fp3h（moderate）がある。
+2.18.1 で解消している。
 markdown-it を上げる作業 PR [markdown-it を 15.0.3 に上げ、15.0.2 の勧告 2 件を解消する](https://github.com/shuhei1101/mdmark/pull/316) で `npm audit` を実行して検出し、別の変更として切り出した。
 
 ## 計画書

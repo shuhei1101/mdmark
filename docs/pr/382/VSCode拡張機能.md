@@ -48,7 +48,8 @@
 
 所感:
 
-- mermaid が SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受けられた。jsDelivr の origin は配布物の origin と同じで、既定の `mermaid.url` なら CSP の `script-src` は今のままで足りる
+- mermaid が SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受けられた。
+  jsDelivr の origin は配布物の origin と同じで、既定の `mermaid.url` なら CSP の `script-src` は今のままで足りる
 - 本番の Webview（`vscode-webview://` の origin）での CSP 違反は、実装の工程の結合テスト（VS Code を起動するテスト）で数えて確定する
 
 スクリーンショット: [CSP のページ（ライト）](https://github.com/shuhei1101/mdmark/blob/ff34427e99f18bfff63b68bb30998b369725f260/poc/mermaid/out/csp-light.png)・[CSP のページ（ダーク）](https://github.com/shuhei1101/mdmark/blob/ff34427e99f18bfff63b68bb30998b369725f260/poc/mermaid/out/csp-dark.png)

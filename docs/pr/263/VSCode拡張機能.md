@@ -48,10 +48,12 @@
 
 VS Code 1.141.0（Electron 43.7.7）と stable の 1.144.0（Electron 43.8.3）で、結果は同じだった（どちらも Chrome 150）。
 
-結論: 不成立。プレビューの Webview は AAC の音声を再生できず、webm を開けない。
+結論: 不成立。
+プレビューの Webview は AAC の音声を再生できず、webm を開けない。
 
 - CSP に `media-src` を追加し、`asWebviewUri` の URI を `src` に入れれば、対応する形式は再生できる
-- ユーザーの操作なしの `play()` は、自動再生の制限で `NotAllowedError` になる。画面を 1 回クリックした後は再生できた
+- ユーザーの操作なしの `play()` は、自動再生の制限で `NotAllowedError` になる。
+  画面を 1 回クリックした後は再生できた
 
 最小再現コードの要点（`poc/webview/test.cjs`）:
 

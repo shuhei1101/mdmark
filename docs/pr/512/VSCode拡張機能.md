@@ -46,7 +46,9 @@
 | 同上 | workflow が `secrets.*` を参照しない | ✅ 参照なし | 同上 | - |
 | 同上 | PoC の後も Marketplace のバージョンが 0.1.0・0.1.1 のまま | ✅ 0.1.0・0.1.1 | 同上 | - |
 
-成立。登録したポリシー（Workflow `vscode-release.yml`・Environment なし）は、タグではなくブランチへの push の実行でも交換を許した。本番の `vsce publish --oidc` は同じ `getOIDCCredential` で得たトークンで公開する。
+成立。
+登録したポリシー（Workflow `vscode-release.yml`・Environment なし）は、タグではなくブランチへの push の実行でも交換を許した。
+本番の `vsce publish --oidc` は同じ `getOIDCCredential` で得たトークンで公開する。
 
 最小再現コードの要点（PoC PR の `.github/workflows/vscode-release.yml`）:
 
@@ -80,7 +82,8 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 
 ### 単体
 
-なし。実装（`bb11edbe`）はワークフローの YAML と `vscode/package.json`・`package-lock.json` だけを変え、規約『V字モデル』の対応表で対応する単体テストが無い。
+なし。
+実装（`bb11edbe`）はワークフローの YAML と `vscode/package.json`・`package-lock.json` だけを変え、規約『V字モデル』の対応表で対応する単体テストが無い。
 
 ### lint
 
@@ -99,6 +102,8 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 
 | `vscode/tests/integration/*.test.ts` | 全実行 | 実行のみ | ✅ | develop の取り込み（`a8655737`。[map で erDiagram・stateDiagram-v2 の Mermaid を、flowchart・シーケンス図と同じ記載方法と操作で描く](https://github.com/shuhei1101/mdmark/pull/531) の `src/map/` を拡張機能が読み込む）の後、VS Code 1.141.0 と stable の両方で 83 passing・終了コード 0<br>`テスト結果/20261114135109_a8655737_VSCode拡張機能の結合テスト.log` |
 
-37ca2837 の 2 回の実行では、この PR が触れていない既知の不安定なテストが 1 件ずつ fail した（1 回目は stable の `preview-rerender.test.ts` の `test_normal_when_map_configured`（[VS Code 拡張機能の結合テスト test_normal_when_map_configured が、余分な再描画を数えてときどき fail する](https://github.com/shuhei1101/mdmark/issues/535)）、2 回目は stable の `preview-open.test.ts` の `test_normal_when_version_pinned`（[VS Code 拡張機能の結合テスト test_normal_when_version_pinned が map.js の要求の記録より先に検証して fail することがある](https://github.com/shuhei1101/mdmark/issues/563)））。`拡張機能の配布物を作る` の 2 件は全ての実行で pass し、その他の fail はどちらもこの PR の変更（ワークフロー・`vscode/package.json`・`release.test.ts`）に関わらないため、実行し直しを止めた。
+37ca2837 の 2 回の実行では、この PR が触れていない既知の不安定なテストが 1 件ずつ fail した（1 回目は stable の `preview-rerender.test.ts` の `test_normal_when_map_configured`（[VS Code 拡張機能の結合テスト test_normal_when_map_configured が、余分な再描画を数えてときどき fail する](https://github.com/shuhei1101/mdmark/issues/535)）、2 回目は stable の `preview-open.test.ts` の `test_normal_when_version_pinned`（[VS Code 拡張機能の結合テスト test_normal_when_version_pinned が map.js の要求の記録より先に検証して fail することがある](https://github.com/shuhei1101/mdmark/issues/563)））。
+`拡張機能の配布物を作る` の 2 件は全ての実行で pass し、その他の fail はどちらもこの PR の変更（ワークフロー・`vscode/package.json`・`release.test.ts`）に関わらないため、実行し直しを止めた。
 
-d79a9dfb の 1 回目の実行では、この PR が触れていない `preview-open.test.ts` の `test_normal_when_version_pinned` が 1 件 fail した（`map.js` の要求が検証の時点で記録されていなかった）。テストコードも実装も変えずに実行し直して全 pass したため、`map.js` の読み込みと検証のタイミングによる不安定な fail と判断した。
+d79a9dfb の 1 回目の実行では、この PR が触れていない `preview-open.test.ts` の `test_normal_when_version_pinned` が 1 件 fail した（`map.js` の要求が検証の時点で記録されていなかった）。
+テストコードも実装も変えずに実行し直して全 pass したため、`map.js` の読み込みと検証のタイミングによる不安定な fail と判断した。

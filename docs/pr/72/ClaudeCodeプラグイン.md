@@ -55,7 +55,8 @@ MCP サーバーは CLI を `npx` で取得すると初回が 30 秒を超える
 
 - `src/cli/mcp.ts`: `@modelcontextprotocol/sdk` の `Server` に `instructions` と `ListTools`・`CallTool` の処理を渡し、`check` は `collectCheckIssues` の一覧をそのまま返す
 - `poc/build-plugin-server.mjs`: esbuild で `runMcp` を `plugin/server/mcp.js` に束ね、esbuild だけを外に出す
-- `plugin/package.json`・`plugin/package-lock.json`: esbuild だけを依存に持つ。プラグインを入れたときに Claude Code が `node_modules` を作った
+- `plugin/package.json`・`plugin/package-lock.json`: esbuild だけを依存に持つ。
+  プラグインを入れたときに Claude Code が `node_modules` を作った
 
 ## テスト結果
 

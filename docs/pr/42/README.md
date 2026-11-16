@@ -10,7 +10,8 @@
 [図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/issues/21) の要望で、[shuhei1101/mindstella#213](https://github.com/shuhei1101/mindstella/issues/213) から引き継いだ。
 今は HTML の図を AI が毎回一から書くため、見た目と作法が文書ごとにずれ、壊れやすい。
 aituber のワークスペース `tmp/261004_設計` の `html資料/_shared/`（`flow.js`・`flow.css`・`terms.js`・`param-sim.js`・`param-sim.css`）が仮の基盤で、それで描いている資料がある。
-今の mdmark は、使う側が `registerExtension` で印とその印を描くモジュールを足せ、CLI の設定の `theme`・`extensions` で使う側の CSS と拡張を書き出しに埋められる。図の部品と図の見た目の決まりは持たない。
+今の mdmark は、使う側が `registerExtension` で印とその印を描くモジュールを足せ、CLI の設定の `theme`・`extensions` で使う側の CSS と拡張を書き出しに埋められる。
+図の部品と図の見た目の決まりは持たない。
 [コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) は図の部品・`registerComponent()`・`data-hint` のツールチップを持ち、計画で [図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/issues/21) の後ろへ回った。
 [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11) から D-44（HTML の使いどころ）・D-49（Playwright のスクリーンショットでの確かめ）がこの Issue へ移った。
 

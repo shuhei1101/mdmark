@@ -52,4 +52,5 @@
 | [tests/unit/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build.test.ts) | 全実行 | 変更 | ✅ | 索引のパスを `plugin/guide-index.yaml` に合わせた |
 
 ドキュメント修正の工程では、単体・結合テストを実行していない。
-改名したページを参照するテスト（`tests/unit/helpers/diagrams.ts`・`tests/unit/scripts/build-plugin.test.ts`・`tests/unit/scripts/build.test.ts`・`upgrade` の単体と結合のテスト）は、この時点で旧パスを参照して fail する。単体テスト作成・実装・結合テスト作成の工程で新しいパスに合わせ、そこで実行する。
+改名したページを参照するテスト（`tests/unit/helpers/diagrams.ts`・`tests/unit/scripts/build-plugin.test.ts`・`tests/unit/scripts/build.test.ts`・`upgrade` の単体と結合のテスト）は、この時点で旧パスを参照して fail する。
+単体テスト作成・実装・結合テスト作成の工程で新しいパスに合わせ、そこで実行する。

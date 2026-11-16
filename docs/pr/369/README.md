@@ -8,9 +8,11 @@
 
 [VS Code 拡張機能の書き出した HTML で、相対パスの libraries と html-scripts.url が Chromium 系のブラウザで読めない](https://github.com/shuhei1101/mdmark/issues/348) の不具合。
 「HTML に書き出す」（`vscode/src/export/export.ts` の `readExportConfig`）は、相対パスの `libraries` と `html-scripts.url` を `file:` の URL にして HTML に入れる。
-file:// で開いたページの origin は `null` になり、Chromium 系のブラウザは `file:` のモジュールの動的 `import()` を CORS で止めるため、そのマーカーと範囲に知らせの枠が出る。「ブラウザで開く」「PDF に印刷する」も同じ HTML を開く。
+file:// で開いたページの origin は `null` になり、Chromium 系のブラウザは `file:` のモジュールの動的 `import()` を CORS で止めるため、そのマーカーと範囲に知らせの枠が出る。
+「ブラウザで開く」「PDF に印刷する」も同じ HTML を開く。
 
-[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) で `extensions` は esbuild-wasm でまとめて `data:` の URL で HTML に埋める構造に修正した。`libraries`・`html-scripts.url` は PR [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) の前からある挙動のため、この Issue に切り出した。
+[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) で `extensions` は esbuild-wasm でまとめて `data:` の URL で HTML に埋める構造に修正した。
+`libraries`・`html-scripts.url` は PR [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) の前からある挙動のため、この Issue に切り出した。
 [mermaid のコードブロックを VS Code 拡張機能と HTML の書き出しで描く](https://github.com/shuhei1101/mdmark/issues/190)（mermaid の描画）は、この PR の埋め方の後に進める。
 
 ## 計画書

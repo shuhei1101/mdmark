@@ -40,7 +40,8 @@
 | `tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts` | 全実行 | 変更 | ✅ | 12 テスト pass（`test_collect_anchors_when_closed_section`・`test_collect_anchors_when_closed_section_in_diff_block`・`test_top_for_line_when_collapsed` を追加）<br>`テスト結果/20261109065729_467bb5e5_単体テスト.log` |
 | `npm run test:unit` のほかのファイル | 全実行 | 実行のみ | ✅ | 258 ファイル・1818 テスト pass<br>`テスト結果/20261109041538_a0b71529_単体テスト.log` |
 
-lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファイル）。`テスト結果/20261109041538_a0b71529_lint.log`
+lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファイル）。
+`テスト結果/20261109041538_a0b71529_lint.log`
 
 ### 結合
 
@@ -49,4 +50,5 @@ lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファ�
 | `vscode/tests/integration/scroll-sync.test.ts` | `test_normal_when_in_closed_section` | 変更 | ✅ | VS Code 1.141.0・1.145.2 の両方で pass<br>`テスト結果/20261109065321_467bb5e5_結合テスト.log` |
 | `npm --prefix vscode run test:integration` のほかのテスト | 全実行 | 実行のみ | ✅ | 80 テスト pass（両方の版）<br>`テスト結果/20261109065321_467bb5e5_結合テスト.log` |
 
-lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファイル）。`テスト結果/20261109065545_467bb5e5_lint.log`
+lint: 全 pass（Biome の警告 2 件は作業 PR が触っていないファイル）。
+`テスト結果/20261109065545_467bb5e5_lint.log`
