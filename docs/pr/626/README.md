@@ -1,0 +1,1 @@
+# src/ 以外の管理用の YAML に行の無いファイルの行を追加し、配信元の設定を project-index.yaml へ改名して $schema を差し替える
