@@ -14,7 +14,9 @@ docs:
   - page: tests/files.yaml
     new: false
     change: 行の無い integration/・unit/ のテストと補助のファイルの行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:10:24.762464+00:00'
   - page: docs/mock/files.yml
     new: false
     change: 行の無い components/・pages/・refs/ のモックの行を追加する
