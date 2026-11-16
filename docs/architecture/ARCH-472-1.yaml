@@ -172,7 +172,7 @@ external_systems:
       - IF-472-23#
     status: planned
     notes:
-      事前確認: '済。PoC（[PoC: GitHub Actions の OIDC トークンを Marketplace のトークンに交換する](https://github.com/shuhei1101/mdmark/pull/555)）で、ブランチへの push で動かした `vscode-release.yml` が vsce 4.1.1 の `getOIDCCredential` でトークンを交換できることを 2026-11-14 に確認した。公開は最初のタグで確認する'
+      事前確認: '済。[PoC: GitHub Actions の OIDC トークンを Marketplace のトークンに交換する](https://github.com/shuhei1101/mdmark/pull/555) で、ブランチへの push で動かした `vscode-release.yml` が vsce 4.1.1 の `getOIDCCredential` でトークンを交換できることを 2026-11-14 に確認した。公開は最初のタグで確認する'
   - name: VS Code
     purpose: 拡張機能を動かし、コマンド・設定・エディタ・Webview の API を指定する
     direction: 双方向
