@@ -152,3 +152,6 @@ scope_out:
   - item: ブラウザの単体テストのファイルを持つモジュール構成 5 件の test_files
     reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が 4 件のモジュール（MOD-472-161・162・203・246）で『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
     plan: to_file
+  - item: モジュール構成の functions[].summary のうち、1 行の概要に詳細が入った 28 項目の書き分け
+    reason: Schema の summary は 1 行の決まりで改行を入れられない。詳細を description などへ移すかは項目ごとに書き分けが要り、文の表し方の移行（改行と表）の範囲を超える
+    plan: to_file
