@@ -15,16 +15,16 @@ use_cases:
     detail: 設定の手元のバージョンに develop の最新を表す値を書けるようにし、そのときのバージョンを上げる扱いを足す
     depends_on: []
   - kind: single
-    scenario: docs/scenario/SC-472-53.yaml
-    impact: following
-    detail: 文書のフォルダに設定を作るときの手元のバージョンの値が、設定に書ける値の変更に追随する
-    depends_on:
-      - docs/scenario/SC-472-27.yaml
-  - kind: single
     scenario: docs/scenario/SC-472-69.yaml
     impact: run_only
     detail: 端末のセットアップが起動する常駐サーバーの取り出し元の書き方が変わりうるため、壊れていないことを確かめる
     depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-83.yaml
+    impact: changed
+    detail: develop のビルドの CLI で雛形を配置したとき、設定の手元のバージョンを develop の最新を表す値にし、点検が通ることを追加する
+    depends_on:
+      - docs/scenario/SC-472-27.yaml
 docs:
   - page: docs/guide/導入-配布物を読み込む.md
     new: false
