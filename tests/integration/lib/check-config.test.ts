@@ -592,10 +592,6 @@ test("test_normal_when_diagram_drift", async () => {
   // 準備
   const dir = await createTempDir();
   await runCli(["init", dir], dir);
-  const duplicated = shopEr();
-  const orders = duplicated.tables.find((table) => table.id === "orders");
-  if (orders === undefined) throw new Error("orders のテーブルが無い");
-  duplicated.tables.push({ ...orders, x: orders.x + 300 });
   const chart = JSON.parse(REPLY_TIME_TEXT) as {
     x: { ticks: string[] };
     series: Array<{ points: number[] }>;
@@ -605,28 +601,17 @@ test("test_normal_when_diagram_drift", async () => {
     ...series,
     points: series.points.slice(0, 3),
   }));
-  const missingTable = shopEr();
-  missingTable.relations = missingTable.relations.map((relation) =>
-    relation.label === "注文する" ? { ...relation, to: "payments" } : relation,
-  );
-  const head = ["# A", "", ...diagramLines("er", duplicated)];
-  const middle = [
+  const head = ["# A", "", "本文"];
+  const a = [
     ...head,
     ...Array.from({ length: 19 - head.length }, () => ""),
     ...diagramLines("chart", chart),
-  ];
-  const a = [
-    ...middle,
-    ...Array.from({ length: 29 - middle.length }, () => ""),
-    ...diagramLines("er", missingTable),
     "",
   ];
   await writeFiles(dir, {
     "docs/a.mark.md": a.join("\n"),
     "docs/b.mark.md": [
       "# B",
-      "",
-      ...diagramLines("er", shopEr()),
       "",
       ...diagramLines("chart", JSON.parse(REPLY_TIME_TEXT)),
       "",
@@ -656,35 +641,34 @@ test("test_normal_when_diagram_drift", async () => {
   const result = await runCli(["check"], dir);
   // 検証
   expect(a.indexOf("<!-- chart -->") + 1).toBe(20);
-  expect(a.indexOf("<!-- er -->", 4) + 1).toBe(30);
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
-  for (const [line, word] of [
-    [3, "orders"],
-    [20, "x.ticks"],
-    [30, "payments"],
-  ] as const) {
-    const found = lines.filter((text) =>
-      text.startsWith(`docs/a.mark.md:${line}: diagram_invalid:`),
-    );
-    expect(found, String(line)).toHaveLength(1);
-    expect(found[0]).toContain(word);
-  }
+  const found = lines.filter((text) =>
+    text.startsWith("docs/a.mark.md:20: diagram_invalid:"),
+  );
+  expect(found).toHaveLength(1);
+  expect(found[0]).toContain("x.ticks");
   expect(lines.some((line) => line.includes("unknown_mark"))).toBe(false);
   expect(lines.some((line) => line.includes("docs/b.mark.md"))).toBe(false);
-  expect(lines.at(-1)).toBe("ずれ 3 件");
+  expect(lines.at(-1)).toBe("ずれ 1 件");
   expect(await read()).toEqual(before);
 });
 
-// 廃止した flow・sequence の範囲を retired_diagram のずれにし、範囲の中の定義は点検しない（正常系（廃止した図の範囲がある））
+// 廃止した flow・sequence・er の範囲を retired_diagram のずれにし、範囲の中の定義は点検しない（正常系（廃止した図の範囲がある））
 test("test_normal_when_retired_diagram", async () => {
   // 準備
   const dir = await createCleanDir();
+  const retiredHead = [
+    "# A",
+    "",
+    ...diagramLines("flow", JSON.parse(INQUIRY_TEXT)),
+    "",
+  ];
   await writeFiles(dir, {
     "a.mark.md": [
-      "# A",
-      "",
-      ...diagramLines("flow", JSON.parse(INQUIRY_TEXT)),
+      ...retiredHead,
+      ...Array.from({ length: 19 - retiredHead.length }, () => ""),
+      ...diagramLines("er", shopEr()),
       "",
     ].join("\n"),
     "b.mark.md": [
@@ -704,6 +688,7 @@ test("test_normal_when_retired_diagram", async () => {
   const lines = linesOf(result.stdout);
   for (const prefix of [
     "a.mark.md:3: retired_diagram:",
+    "a.mark.md:20: retired_diagram:",
     "b.mark.md:5: retired_diagram:",
   ]) {
     const found = lines.filter((line) => line.startsWith(prefix));
@@ -712,7 +697,7 @@ test("test_normal_when_retired_diagram", async () => {
     expect(found[0]).toContain("mdmark upgrade");
   }
   expect(lines.some((line) => line.includes("diagram_invalid"))).toBe(false);
-  expect(lines.at(-1)).toBe("ずれ 2 件");
+  expect(lines.at(-1)).toBe("ずれ 3 件");
   expect(await snapshot(dir)).toEqual(before);
 });
 
