@@ -1,0 +1,76 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があるため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: テストの移動と設定のパスの変更で、未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れを変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れを変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: インターフェースを変えない。docs/interface/ に VS Code 拡張機能のテストのパスは無い
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品の設計は変えない。CMP-472-29・35・63 のテストのパスの置き換えはドキュメント修正で扱う
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: モジュール構成設計
+    status: todo
+    note: VS Code の上で動かす結合テストの置き場所を決め、MOD-589-1 の test_files と、VS Code 拡張機能のテストのパスを持つモジュール構成を移した後のパスに合わせる
+  - process: ドキュメント修正
+    status: todo
+    note: LAY-472-1・TP-472-1・CMP-472-29・35・63・LIB-472-18・19・21・22・27・28 のテストのパスと置き場所の理由
+  - process: 単体テスト作成
+    status: todo
+    note: collectMapStructure の単体テスト 5 件を tests/unit/src/map/structure.test.ts へ移す。tests/unit/vscode/ は置き場所が変わる場合だけ移す
+  - process: 実装
+    status: todo
+    note: vitest.config.ts・vscode/package.json・vscode/scripts/build.ts・tests/files.yaml・vscode/files.yaml を移した後のパスに合わせる
+  - process: 結合テスト作成
+    status: todo
+    note: VS Code の上で動かす結合テストを決めた置き場所へ移し、移す前と同じ件数で pass することを確かめる
