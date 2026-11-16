@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { parseMapData } from "../../../../src/map/data.ts";
+import { parseErDiagram } from "../../../../src/map/er.ts";
 import { parseFlowchart } from "../../../../src/map/flowchart.ts";
 import { parseSequence } from "../../../../src/map/sequence.ts";
 import {
@@ -7,6 +8,14 @@ import {
   INQUIRY_TEXT,
   JUDGEMENT_TEXT,
 } from "../../helpers/retired-diagrams.ts";
+import { erText, shopEr, shopErColors, shopErFolded } from "../../helpers/er.ts";
+import {
+  RETIRED_ER_DEFINITION,
+  RETIRED_ER_DOCUMENT,
+  RETIRED_ER_DOCUMENT_CONVERTED,
+  RETIRED_ER_LINE,
+  RETIRED_ER_REPORT_ITEMS,
+} from "../../helpers/retired-er-document.ts";
 import {
   RETIRED_DOCUMENT,
   RETIRED_DOCUMENT_CONVERTED,
@@ -380,4 +389,261 @@ test("test_sequence_to_map_when_id_unreadable", async () => {
   expect(result.dropped.filter((item) => item.startsWith("id "))).toHaveLength(
     2,
   );
+});
+
+// ER 図の部品の範囲を書き換えず、報告にも挙げない（正常系）
+test("test_convert_retired_diagrams_when_er", async () => {
+  // 準備
+  const { convertRetiredDiagrams } = await loadConvert();
+  // 実行
+  const result = convertRetiredDiagrams({
+    markdown: RETIRED_ER_DOCUMENT,
+    skip: new Set(),
+  });
+  // 検証
+  expect(result.markdown).toBe(RETIRED_ER_DOCUMENT);
+  expect(result.report).toEqual([]);
+});
+
+// ER 図の部品の範囲を map の範囲にし、写さない値を報告に挙げる（正常系）
+test("test_convert_retired_er", async () => {
+  // 準備
+  const { convertRetiredEr } = await loadConvert();
+  // 実行
+  const result = convertRetiredEr({
+    markdown: RETIRED_ER_DOCUMENT,
+    skip: new Set(),
+  });
+  // 検証
+  expect(result.markdown).toBe(RETIRED_ER_DOCUMENT_CONVERTED);
+  expect(result.report.map((line) => [line.line, line.name, line.item])).toEqual(
+    RETIRED_ER_REPORT_ITEMS.map((item) => [RETIRED_ER_LINE, "er", item]),
+  );
+  for (const line of result.report) {
+    expect(line.reason).not.toBe("");
+    expect(line.item).not.toMatch(/^(x|y|w|width|midX)\b|\.(x|y|w):/);
+  }
+});
+
+// 読めない・記法で記載できない・物理名が重なる範囲を書き換えずに報告に挙げる（異常系）
+test("test_convert_retired_er_when_unconvertible", async () => {
+  // 準備
+  const { convertRetiredEr } = await loadConvert();
+  const base = RETIRED_ER_DEFINITION;
+  const missing = {
+    ...base,
+    relations: [
+      ...base.relations,
+      {
+        from: "o",
+        fromColumn: "id",
+        fromCard: "1",
+        to: "payments",
+        toColumn: "order_id",
+        toCard: "0..n",
+      },
+    ],
+  };
+  const spaced = {
+    ...base,
+    tables: base.tables.map((table) =>
+      table.id === "o"
+        ? {
+            ...table,
+            columns: [
+              ...table.columns,
+              { name: "paid_at", type: "timestamp with time zone" },
+            ],
+          }
+        : table,
+    ),
+  };
+  const duplicated = {
+    ...base,
+    tables: base.tables.map((table) =>
+      table.id === "i" ? { ...table, name: "orders" } : table,
+    ),
+  };
+  const ranges = [missing, spaced, duplicated, base].map((definition) =>
+    retiredRange("er", JSON.stringify(definition, null, 2)),
+  );
+  const markdown = `${ranges.join("\n\n")}\n`;
+  const lines = markdown.split("\n");
+  const starts = lines.flatMap((line, index) =>
+    line === "<!-- er -->" ? [index + 1] : [],
+  );
+  // 実行
+  const result = convertRetiredEr({ markdown, skip: new Set() });
+  // 検証
+  for (const range of ranges.slice(0, 3)) {
+    expect(result.markdown).toContain(range);
+  }
+  expect(result.markdown).not.toContain(ranges[3]);
+  expect(result.markdown).toContain('<!-- map: {"title": "注文のデータ"} -->');
+  const skipped = starts.slice(0, 3).map((start) =>
+    result.report.filter((line) => line.line === start && line.item === "範囲"),
+  );
+  expect(skipped.map((items) => items.length)).toEqual([1, 1, 1]);
+  expect(skipped[0]?.[0]?.reason).toContain("payments");
+  expect(skipped[1]?.[0]?.reason).toContain("timestamp with time zone");
+  expect(skipped[2]?.[0]?.reason).toContain("orders");
+});
+
+// 拡張の名前の範囲と、flow・sequence の範囲を書き換えない（正常系）
+test("test_convert_retired_er_when_skipped", async () => {
+  // 準備
+  const { convertRetiredEr } = await loadConvert();
+  const markdown = [
+    retiredRange("er", erText(shopEr())),
+    "",
+    retiredRange("flow", INQUIRY_TEXT),
+    "",
+  ].join("\n");
+  // 実行
+  const result = convertRetiredEr({ markdown, skip: new Set(["er"]) });
+  // 検証
+  expect(result.markdown).toBe(markdown);
+  expect(result.report).toEqual([]);
+});
+
+// 書き換えた本文にもう一度適用しても変わらない（正常系）
+test("test_convert_retired_er_when_rerun", async () => {
+  // 準備
+  const { convertRetiredEr } = await loadConvert();
+  const first = convertRetiredEr({
+    markdown: RETIRED_ER_DOCUMENT,
+    skip: new Set(),
+  });
+  // 実行
+  const result = convertRetiredEr({
+    markdown: first.markdown,
+    skip: new Set(),
+  });
+  // 検証
+  expect(result.markdown).toBe(first.markdown);
+  expect(result.report).toEqual([]);
+});
+
+// 今の ER 図の見本の定義を読める（正常系）
+test("test_read_retired_er_definition", async () => {
+  // 準備
+  const { readRetiredErDefinition } = await loadConvert();
+  // 実行
+  const results = [shopEr(), shopErColors(), shopErFolded()].map(
+    (definition) => readRetiredErDefinition([erText(definition)]),
+  );
+  // 検証
+  for (const result of results) {
+    expect(result.ok).toBe(true);
+  }
+});
+
+// 関係がテーブルに無い列を指す（異常系）
+test("test_read_retired_er_definition_when_column_missing", async () => {
+  // 準備
+  const { readRetiredErDefinition } = await loadConvert();
+  const definition = shopEr();
+  definition.relations = definition.relations.map((relation) =>
+    relation.label === "注文する"
+      ? { ...relation, toColumn: "customer" }
+      : relation,
+  );
+  // 実行
+  const result = readRetiredErDefinition([erText(definition)]);
+  // 検証
+  expect(result.ok).toBe(false);
+  expect(result.ok ? "" : result.reason).toContain("orders.customer");
+});
+
+// テーブル・列・関係・説明・畳んだテーブルを写す（正常系）
+test("test_er_to_map", async () => {
+  // 準備
+  const { erToMap, readRetiredErDefinition } = await loadConvert();
+  const read = readRetiredErDefinition([erText(shopErFolded())]);
+  if (!read.ok) throw new Error(read.reason);
+  // 実行
+  const result = erToMap(read.definition, 1);
+  // 検証
+  if (!result.ok) throw new Error(result.reason);
+  expect(result.lines[0]).toBe('<!-- map: {"title": "注文のデータ"} -->');
+  const { mermaid, data } = rangeParts(result.lines);
+  const diagram = parseErDiagram(mermaid);
+  const parsed = parseMapData(data);
+  expect(diagram.problems).toEqual([]);
+  expect(parsed.problems).toEqual([]);
+  expect(diagram.tables.map((table) => table.name)).toEqual([
+    "customers",
+    "orders",
+    "order_items",
+    "products",
+  ]);
+  expect(
+    diagram.tables
+      .find((table) => table.name === "order_items")
+      ?.columns.map((column) => [column.type, column.name, column.keys]),
+  ).toEqual([
+    ["bigint", "order_id", ["PK", "FK"]],
+    ["bigint", "product_id", ["PK", "FK"]],
+    ["integer", "quantity", []],
+    ["integer", "unit_price", []],
+  ]);
+  expect(
+    diagram.relations.map((relation) => [
+      relation.from,
+      relation.fromCardinality,
+      relation.to,
+      relation.toCardinality,
+      relation.label,
+    ]),
+  ).toEqual([
+    ["customers", "1", "orders", "0..n", "注文する"],
+    ["orders", "1", "order_items", "1..n", "含む"],
+    ["products", "1", "order_items", "0..n", "注文される"],
+  ]);
+  expect(parsed.data.notes.customers?.text).toBe(
+    "顧客\n注文する人。メールアドレスで一意にする",
+  );
+  expect(parsed.data.notes.order_items?.text).toBe("注文の明細");
+  expect(parsed.data.notes["orders.customer_id"]?.text).toBe("注文した顧客");
+  expect(parsed.data.layout.orders?.collapsed).toBe(true);
+  expect(parsed.data.layout.customers?.collapsed).toBe(undefined);
+});
+
+// 記法で記載できない値と物理名の重なり（異常系）
+test("test_er_to_map_when_unwritable", async () => {
+  // 準備
+  const { erToMap, readRetiredErDefinition } = await loadConvert();
+  const spacedName = shopEr();
+  spacedName.tables = spacedName.tables.map((table) =>
+    table.id === "products" ? { ...table, name: "sale items" } : table,
+  );
+  const quotedDesc = shopEr();
+  quotedDesc.tables = quotedDesc.tables.map((table) =>
+    table.id === "orders"
+      ? {
+          ...table,
+          columns: table.columns.map((column) =>
+            column.name === "note"
+              ? { ...column, desc: '"自由記入" の欄' }
+              : column,
+          ),
+        }
+      : table,
+  );
+  const duplicated = shopEr();
+  duplicated.tables = duplicated.tables.map((table) =>
+    table.id === "products" ? { ...table, name: "orders" } : table,
+  );
+  // 実行
+  const results = [spacedName, quotedDesc, duplicated].map((definition) => {
+    const read = readRetiredErDefinition([erText(definition)]);
+    if (!read.ok) throw new Error(read.reason);
+    return erToMap(read.definition, 1);
+  });
+  // 検証
+  const reasons = results.map((result) => (result.ok ? "" : result.reason));
+  expect(results.map((result) => result.ok)).toEqual([false, false, false]);
+  expect(reasons[0]).toContain("sale items");
+  expect(reasons[1]).toContain('"自由記入" の欄');
+  expect(reasons[2]).toContain("orders");
 });

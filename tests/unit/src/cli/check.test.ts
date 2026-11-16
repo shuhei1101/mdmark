@@ -8,8 +8,7 @@ import {
   useTempDirs,
   writeFiles,
 } from "../../helpers/cli.ts";
-import { wrapDirective } from "../../helpers/diagrams.ts";
-import { erText, shopEr } from "../../helpers/er.ts";
+import { REPLY_TIME_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
 import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
 import {
   INQUIRY_SEQ_TEXT,
@@ -814,7 +813,7 @@ test("test_check_diagrams_when_clean", async () => {
   const documents = [
     {
       path: "a.md",
-      markdown: `# A\n\n${wrapDirective("er", erText(shopEr()))}`,
+      markdown: `# A\n\n${wrapDirective("chart", REPLY_TIME_TEXT)}`,
     },
     { path: "b.md", markdown: "# B\n\n本文\n" },
   ];
