@@ -28,3 +28,5 @@ functions:
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:検査
