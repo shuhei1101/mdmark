@@ -250,7 +250,12 @@ const SAMPLE_TABLE =
   "<table><thead><tr><th>列A</th><th>列B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
 
 // 図の見本の定義を記載した文書と、見本の名前ごとの `json` のコードブロックが持つキー
-const SAMPLE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-見本.mark.md");
+const SAMPLE_DOCUMENT = join(
+  REPO_ROOT,
+  "docs",
+  "guide",
+  "図を描く-見本.mark.md",
+);
 const SAMPLE_KEYS: Record<string, string> = {
   "reply-time": '"series"',
   strength: '"knob"',
