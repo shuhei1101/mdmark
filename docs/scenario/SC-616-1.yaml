@@ -26,14 +26,14 @@ scenarios:
       ```mermaid
       flowchart TD
         A[図を描く:正常シナリオ（座標で書いた図の範囲）] --> B[設定と索引を点検する:正常シナリオ（座標で書いた図がある）]
-        B --> C[バージョンを上げる:正常シナリオ（座標で書いた図を map へ書き換える）]
+        B --> C[バージョンを上げる:正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]
         C --> D[設定と索引を点検する:正常シナリオ]
         D --> E[Mermaidと補足で図を描く:正常シナリオ（ER 図）]
         E --> F[図のグループの中へ入る・開閉する:正常シナリオ（ER 図の列と分類の箱を開閉する）]
         F --> G[図の要素のツールチップを確認する:正常シナリオ（ER 図のテーブル）]
         click A "id:SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]"
         click B "id:SC-472-78#scenarios[正常シナリオ（座標で書いた図がある）]"
-        click C "id:SC-472-27#scenarios[正常シナリオ（座標で書いた図を map へ書き換える）]"
+        click C "id:SC-472-27#scenarios[正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]"
         click D "id:SC-472-78#scenarios[正常シナリオ]"
         click E "id:SC-472-8#scenarios[正常シナリオ（ER 図）]"
         click F "id:SC-472-39#scenarios[正常シナリオ（ER 図の列と分類の箱を開閉する）]"
@@ -54,7 +54,7 @@ scenarios:
     uses:
       - SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
       - SC-472-78#scenarios[正常シナリオ（座標で書いた図がある）]
-      - SC-472-27#scenarios[正常シナリオ（座標で書いた図を map へ書き換える）]
+      - SC-472-27#scenarios[正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]
       - SC-472-78#scenarios[正常シナリオ]
       - SC-472-8#scenarios[正常シナリオ（ER 図）]
       - SC-472-39#scenarios[正常シナリオ（ER 図の列と分類の箱を開閉する）]
