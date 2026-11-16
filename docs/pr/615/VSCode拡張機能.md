@@ -35,3 +35,25 @@
 | 単一ユースケース設計 | `98f0c34c..e6c7bb64` | レビューの任意の指摘の修正（アイコンの期待値を読み取れる値にする） |
 | インターフェース定義設計 | `537120ae..b4834038` | 拡張機能の配布物を作る |
 | モジュール構成設計 | `6e0728ab..b4938155` | package.json・ビルドと配布・フォルダ構成・開発コマンド |
+
+## テスト結果
+
+### 単体
+
+なし（変更したファイルは `vscode/package.json`・`package-lock.json`・`.vscodeignore`・`files.yaml` とアイコンの画像で、規約『V字モデル』の対応表で対応する単体テストが無い。`release-check.ts`・拡張機能のコードは変えない）
+
+### lint
+
+| コマンド | 結果 | 補足 |
+| --- | --- | --- |
+| テスト実行方法の `lint` 層の全件実行 | ✅ | 終了コード 0。biome の warning 1 件（`plugin/bin/setup.js` のファイルの大きさ）は develop と同じ<br>`テスト結果/20261117005000_72652306_lint.log` |
+
+### 結合（実行範囲）
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無い入口 |
+| --- | --- | --- | --- |
+| `vscode/package.json`・`vscode/package-lock.json`・`vscode/.vscodeignore`・`vscode/icon.png`・`vscode/icon.svg` | R7（.vsix の中身とバージョンの照合を変える） | `vscode/tests/integration/release.test.ts`（IF-472-23 の `test_file`。バージョンを `0.1.4` にし、.vsix のアイコンの PNG と `extension.vsixmanifest` のアイコンの資産、原本の SVG が無いことを確かめる） | - |
+| `vscode/files.yaml` | R7（project-index の管理用の YAML で、拡張機能の実行に関係しない） | なし | - |
+| `docs/` の設計書・PR ドキュメント | R7（文書で、拡張機能の実行に関係しない） | なし | - |
+
+拡張機能のコマンド・プレビュー・書き出しは変えないため、他の結合テスト（`preview-*.test.ts`・`commands.test.ts` 等）は実行しない。
