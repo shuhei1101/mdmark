@@ -10,7 +10,8 @@
 ## 前提
 
 - [プラグインを入れる](./ClaudeCodeで使用する-プラグインを入れる.mark.md)
-- 手元に Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある。どちらも無い端末は [MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md) の手順で起動する
+- 手元に Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある。
+  どちらも無い端末は [MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md) の手順で起動する
 - 手元から GitHub と npm のレジストリへ届く
 
 ## 手順
@@ -27,11 +28,15 @@ Claude Code が次の順に進め、書き換える前に内容を示して確�
 
 <!-- steps -->
 
-1. 端末の設定のパスを示す。`MDMARK_CONFIG` が無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`
-2. 端末の設定があり `version` が古ければ、`mdmark upgrade --settings` と同じ手順で移行する。無ければ雛形から作る
+1. 端末の設定のパスを示す。
+   `MDMARK_CONFIG` が無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`
+2. 端末の設定があり `version` が古ければ、`mdmark upgrade --settings` と同じ手順で移行する。
+   無ければ雛形から作る
 3. 設定のキーを 1 つずつ、今の値と既定を示して聞く
-4. 回答した値で端末の設定を書き込む。パスが既定と違うときは、`~/.claude/settings.json` の `env` に `MDMARK_CONFIG` を書き込む
-5. 常駐サーバーを起動し、`tools/list` でつながることを確認する。既に待ち受けていればもう一度起動しない
+4. 回答した値で端末の設定を書き込む。
+   パスが既定と違うときは、`~/.claude/settings.json` の `env` に `MDMARK_CONFIG` を書き込む
+5. 常駐サーバーを起動し、`tools/list` でつながることを確認する。
+   既に待ち受けていればもう一度起動しない
 6. 作ったもの・書き込んだキー・常駐サーバーが動いている unit かセッション・ログの確認方法・止め方を示す
 
 <!-- /steps -->
@@ -44,7 +49,8 @@ Claude Code が次の順に進め、書き換える前に内容を示して確�
 | systemd --user が使えない（macOS など）か、`serve.launcher` を `tmux` にした | tmux のセッション `mdmark-mcp`（`serve.tmuxSession` で変える） | `${XDG_STATE_HOME:-~/.local/state}/mdmark/serve.log`（`MDMARK_STATE_DIR` で変える） | `tmux kill-session -t =mdmark-mcp` |
 
 起動の方法を変えると、前の方法で動いている常駐サーバーを止めてから起動する。
-書き込むことを断ると、端末の設定と `settings.json` は書き換えない。端末の設定が無いまま断ったときは、unit のファイルも作らずに tmux のセッションで起動する。
+書き込むことを断ると、端末の設定と `settings.json` は書き換えない。
+端末の設定が無いまま断ったときは、unit のファイルも作らずに tmux のセッションで起動する。
 既に unit で常駐サーバーが動いている端末では、その unit をそのまま使用する。
 
 ### 文書のフォルダをセットアップする
