@@ -29,6 +29,13 @@ if ! git show "$COMMIT:vscode/package.json" | grep -q '"icon": "icon.png"' || ! 
   echo "origin/develop ($COMMIT) に vscode/icon.png か package.json の icon が無い"
   exit 1
 fi
+# タグがあれば公開済みとして飛ばす（公開の確認は確認.sh が行う）
+REMOTE=$(git ls-remote origin "refs/tags/$TAG" | cut -f1)
+if [ -n "$REMOTE" ]; then
+  echo "前提確認: ok"
+  echo "タグ $TAG: skipped（origin に $REMOTE で存在する）"
+  exit 0
+fi
 PUBLISHED=$(curl -fsS -X POST 'https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery' \
   -H 'Content-Type: application/json' -H 'Accept: application/json;api-version=7.2-preview.1' \
   -d '{"filters":[{"criteria":[{"filterType":7,"value":"ShuheiNishikawa.mdmark-vscode"}]}],"flags":1}' \
@@ -37,18 +44,13 @@ echo "Marketplace の公開済みのバージョン: $PUBLISHED"
 for v in $PUBLISHED; do
   if [ "$v" = "$VERSION" ]; then
     echo "前提確認: failed"
-    echo "Marketplace に $VERSION が公開済み"
+    echo "タグ $TAG が無いのに、Marketplace に $VERSION が公開済み"
     exit 1
   fi
 done
 echo "前提確認: ok"
 
 # 計画（--dry-run もここを通る）
-REMOTE=$(git ls-remote origin "refs/tags/$TAG" | cut -f1)
-if [ -n "$REMOTE" ]; then
-  echo "タグ $TAG: skipped（origin に $REMOTE で存在する）"
-  exit 0
-fi
 echo "タグ $TAG を $COMMIT に打って origin へ push する"
 if [ "${1:-}" = "--dry-run" ]; then
   echo "タグの push: changed"
