@@ -112,11 +112,15 @@ docs:
   - page: src/files.yaml
     new: false
     change: 統合する場合、`diagram/er.ts`・`parts/er.ts`・`parts/er-diagram.stories.ts`・`interact/er-folds.ts` の行を削除し、変換のスクリプトの行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
   - page: tests/files.yaml
     new: false
     change: 統合する場合、削除・追加したテストの行を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
   - page: schemas/mdmark.config.schema.json
     new: false
     change: 統合する場合、図の機能のキーの description から `er` を削除する（`migrations/next/steps.yaml` に移行の手順を配置するため、`no-steps.yaml` の行は要らない）
@@ -177,6 +181,16 @@ docs:
     updated_by: planner
     updated_at: '2026-11-16T17:14:49.662732+00:00'
     change: tooltips.diagramPlacement の説明から ER 図のテーブルを削除する
+  - page: migrations/files.yaml
+    change: 移行の手順のフォルダ next の steps.yaml・retired-er.mjs・retired-diagrams.js・THIRD_PARTY_LICENSES.txt の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
+  - page: docs/module/MOD-472-110.ts.yaml
+    change: test_check_diagrams_when_clean の題材を ER 図の部品からグラフに直す（ER 図の部品は廃止の警告になるため）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
 scope_out:
   - item: mdmark を使用する各リポジトリ（dev-docs など）の `er` の図を、用意した変換で map へ書き換える移行
     reason: 変換を使用する側の作業で、この Issue では変換と廃止までを扱う。このリポジトリの使い方集・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）。dev-docs の map への移行は dev-docs#201 で扱う
