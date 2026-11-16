@@ -68,7 +68,7 @@ scenarios:
   - name: 正常シナリオ（ドラッグと文字の選択）
     setup:
       - name: 拡大した図
-        description: 正常シナリオ（mermaid の図）の図を拡大のボタンで 2 回拡大した状態
+        description: 『図を描く』の正常シナリオの折れ線のグラフを拡大のボタンで 2 回拡大した状態
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -78,9 +78,9 @@ scenarios:
       sequenceDiagram
         actor U as 読者
         participant D as 図
-        U->>D: ノードの外の余白を押したまま動かす
+        U->>D: 軸の文字と項目の外の余白を押したまま動かす
         D-->>U: 図を動かしただけ動かし、文字を選ばない
-        U->>D: ノードの文字の上で押したまま動かす
+        U->>D: 軸の文字の上で押したまま動かす
         D-->>U: 図を動かさず、文字を選ぶ
       ```
 
