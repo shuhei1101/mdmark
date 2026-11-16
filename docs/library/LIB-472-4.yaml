@@ -101,18 +101,17 @@ verification:
   date: '2026-11-07'
   detail: '[PoC: 取り込んだ alias-inject のスキーマで設定の aliases を検証し、ずれの文にする](https://github.com/shuhei1101/mdmark/pull/177) で、Node の ESM から 8.20.0 の `Ajv2020`（`allErrors: true`・`strict: true`・`verbose: true`）に、`yaml` で読み込んだ alias-inject v0.2.0 の `aliases.schema.yaml` を `addSchema(schema, id)` で登録し、設定のスキーマの `properties.aliases` を `{ $ref: id }` にして strict のエラー無しで `compile` できることを確認した。
 
+    正しい行はエラー 0 件、`alias_type` 欠け・`paths` が空・`alias_type` が `memo` の 3 行はそれぞれ `required`・`minItems`・`enum` のエラーになり、`instancePath` が `/aliases/{行の番号}/...` だった。
 
-    - 正しい行はエラー 0 件、`alias_type` 欠け・`paths` が空・`alias_type` が `memo` の 3 行はそれぞれ `required`・`minItems`・`enum` のエラーになり、`instancePath` が `/aliases/{行の番号}/...` だった。
+    `anyOf` の枝のエラーは `schemaPath` で判別子の `const` が合わない枝を落として 7 件から 3 件に絞れた。
 
-    - `anyOf` の枝のエラーは `schemaPath` で判別子の `const` が合わない枝を落として 7 件から 3 件に絞れた。
+    `parentSchema.title` と `params` から日本語の 1 文を組めた。
 
-    - `parentSchema.title` と `params` から日本語の 1 文を組めた。
+    esbuild で 1 ファイルにまとめた実行でも出力が一致し、検証の間の外への要求は 0 件だった。
 
-    - esbuild で 1 ファイルにまとめた実行でも出力が一致し、検証の間の外への要求は 0 件だった。
+    2026-11-07 に [alias-inject v0.3.0 のエイリアスの元の行のスキーマ（行の alias_type・列名の metadata）を取り込む](https://github.com/shuhei1101/mdmark/pull/360) で、同じ設定の `Ajv2020` が alias-inject v0.3.0 の `aliases.schema.yaml` を JSON にした `schemas/alias-inject/v0.3.0/aliases.schema.json` を strict のエラー無しで `compile` でき、`alias_type` 欠け・`alias_type` が `memo`・`metadata.name` がオブジェクトの行がそれぞれ `required`・`enum`・`type` のエラーになることを、単体テスト `tests/unit/src/cli/alias-schema.test.ts` で確認した。
 
-    - 2026-11-07 に [alias-inject v0.3.0 のエイリアスの元の行のスキーマ（行の alias_type・列名の metadata）を取り込む](https://github.com/shuhei1101/mdmark/pull/360) で、同じ設定の `Ajv2020` が alias-inject v0.3.0 の `aliases.schema.yaml` を JSON にした `schemas/alias-inject/v0.3.0/aliases.schema.json` を strict のエラー無しで `compile` でき、`alias_type` 欠け・`alias_type` が `memo`・`metadata.name` がオブジェクトの行がそれぞれ `required`・`enum`・`type` のエラーになることを、単体テスト `tests/unit/src/cli/alias-schema.test.ts` で確認した。
-
-    - v0.3.0 の Schema は `anyOf` の枝を持たないため、枝を落とす処理は使用しない'
+    v0.3.0 の Schema は `anyOf` の枝を持たないため、枝を落とす処理は使用しない'
 license: MIT（商用利用可）。推移の依存は fast-deep-equal（MIT）・fast-uri（BSD-3-Clause）・json-schema-traverse（MIT）・require-from-string（MIT）
 official_url: https://ajv.js.org/
 docs_url: https://ajv.js.org/api.html

@@ -120,20 +120,19 @@ functions:
     summary: '設定を重ねて読み込み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の構造のずれを先に、続けて `mdmark check` と同じ並びのずれを返却する。ずれの `file` は設定ファイルのパスを表示の構造にしたパス（`base` は今のフォルダ）'
     description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ マーカーの設定のずれ（`checkMarkOptions`。`unknownMarks` が `false` のときは拡張のマーカーを点検しない）→ 図の点検のずれ（`checkDiagrams` に `loadExtensionDirectives` の `directive` を指定する。`diagram_invalid` は `unknownMarks` によらず点検し、`unknownMarks` が `false` のとき（`runUpgrade`）は拡張を読み込まないため `retired_diagram` を除く。移行の手順が書き換えずに残す廃止した図の範囲は、移行の報告に挙げた読めない定義と、拡張のマーカーだけ）→ map のずれ（`checkMaps`）→ `plain_md_with_marks`（`checkPlainMarkdown`。`unknownMarks` が `false` のときと、設定の `check.suggestMarkExtension` が `false` のときは点検しない）。
 
+      設定の `map` の値のうち `schemas/mdmark.config.schema.json` の記載できる値に無いもの（`node_fit`・`url_state`・`kinds` の `shape`・`lines` の `dash`・`width`・`head`）は、`where` が値のキー（`map.kinds.store.shape` など）で、記載できる値を「・」で結んで並べた `schema` のずれにし、`map_unknown_icon`（`checkMapConfig`）と合わせて設定の `schema` の並びの後ろに配置する。
 
-      - 設定の `map` の値のうち `schemas/mdmark.config.schema.json` の記載できる値に無いもの（`node_fit`・`url_state`・`kinds` の `shape`・`lines` の `dash`・`width`・`head`）は、`where` が値のキー（`map.kinds.store.shape` など）で、記載できる値を「・」で結んで並べた `schema` のずれにし、`map_unknown_icon`（`checkMapConfig`）と合わせて設定の `schema` の並びの後ろに配置する。
+      知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。
 
-      - 知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。
+      索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。
 
-      - 索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。
+      索引を読み込めないときは索引を指す `schema` のずれにする。
 
-      - 索引を読み込めないときは索引を指す `schema` のずれにする。
+      `base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。
 
-      - `base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。
+      `runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。
 
-      - `runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。
-
-      - 設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
+      設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true

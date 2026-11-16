@@ -12,18 +12,17 @@ functions:
     summary: 本文のテキストのトークンを `findWords` で辞書と照合し、該当した単語を単語とツールチップの組（`renderTermTip`）に置き換える
     description: |-
       辞書は `buildDictionary` で、索引の `terms`・エイリアス（`env.aliases`）・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。
-
-      - 同じ用語の `id` はセクション（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。
-      - コード・リンク・見出し・用語集の表・脚注の定義の囲み（`outsideFootnoteDefinitions` で除く）の中は照合しない。
-      - テキストのトークンを単語の前後のテキストと、単語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。
-      - 下線の単語は辞書の単語ではなく、テキストの一致した範囲の本文の表記のまま出す。
-      - ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。
-      - やめた言い方は、`words` の後ろに `avoided` の単語を追加した並びで照合する（同じ長さなら用語の単語・別名と文書の別名が先に該当する）。
-      - 該当した単語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を指定する（文書の別名と同じ単語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と統一する）。
-      - やめた言い方はセクションごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。
-      - 辞書の用語が `alias` を持つ単語は `renderTermTip` に `alias` を指定し（`meaning`・`docs` は指定しない。文書の別名と同じ単語でも関連文書を出さない）、辞書の `id`（`alias:{id}`）ごとにセクションごとの最初の 1 回だけ下線を付ける。
-      - 代わりの用語が `alias` を持つやめた言い方は、`replacement` を `{ term, meaning }`（`avoid` の種類は `meaning` を指定しない）にする。
-      - `glossary` と `backlinks` が両方オフのときは何もしない
+      同じ用語の `id` はセクション（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。
+      コード・リンク・見出し・用語集の表・脚注の定義の囲み（`outsideFootnoteDefinitions` で除く）の中は照合しない。
+      テキストのトークンを単語の前後のテキストと、単語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。
+      下線の単語は辞書の単語ではなく、テキストの一致した範囲の本文の表記のまま出す。
+      ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。
+      やめた言い方は、`words` の後ろに `avoided` の単語を追加した並びで照合する（同じ長さなら用語の単語・別名と文書の別名が先に該当する）。
+      該当した単語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を指定する（文書の別名と同じ単語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と統一する）。
+      やめた言い方はセクションごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。
+      辞書の用語が `alias` を持つ単語は `renderTermTip` に `alias` を指定し（`meaning`・`docs` は指定しない。文書の別名と同じ単語でも関連文書を出さない）、辞書の `id`（`alias:{id}`）ごとにセクションごとの最初の 1 回だけ下線を付ける。
+      代わりの用語が `alias` を持つやめた言い方は、`replacement` を `{ term, meaning }`（`avoid` の種類は `meaning` を指定しない）にする。
+      `glossary` と `backlinks` が両方オフのときは何もしない
     args:
       - name: state
         type: StateCore

@@ -101,20 +101,19 @@ functions:
     summary: 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返却する
     description: '`normalizeIndex` で合う文書・用語だけを使用する。
 
+      本文のある索引の文書を `parseDocument` で 1 回ずつ読み込み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`aliases` に `input.aliases`、`features` に文書のマーカーを重ねた機能）で辞書を作る。
 
-      - 本文のある索引の文書を `parseDocument` で 1 回ずつ読み込み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`aliases` に `input.aliases`、`features` に文書のマーカーを重ねた機能）で辞書を作る。
+      辞書の用語が `alias` を持つ一致は、参照先を `kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に `name`・`description` に `description`（無ければキーを持たない）にする。
 
-      - 辞書の用語が `alias` を持つ一致は、参照先を `kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に `name`・`description` に `description`（無ければキーを持たない）にする。
+      `avoided` の代わりの用語が `alias` を持つときは、`kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に代わりの用語の単語・`description` に意味（`avoid` の種類はキーを持たない）にする。
 
-      - `avoided` の代わりの用語が `alias` を持つときは、`kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に代わりの用語の単語・`description` に意味（`avoid` の種類はキーを持たない）にする。
+      地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches`、`map` がオンなら `mapTermMatches` の一致を追加する。
 
-      - 地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches`、`map` がオンなら `mapTermMatches` の一致を追加する。
+      辞書の `avoided` が空でない文書は、`words` に `avoided` の単語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の単語の一致だけを、`avoided` の用語の `id` で参照した参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。
 
-      - 辞書の `avoided` が空でない文書は、`words` に `avoided` の単語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の単語の一致だけを、`avoided` の用語の `id` で参照した参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。
+      `collectReferences` を呼ばず、本文を 2 回解析しない。
 
-      - `collectReferences` を呼ばず、本文を 2 回解析しない。
-
-      - 一致の `text` は、一致した単語を辞書の `written` で参照した索引・用語集の表に記載した表記'
+      一致の `text` は、一致した単語を辞書の `written` で参照した索引・用語集の表に記載した表記'
     args:
       - name: input
         type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig; aliases?: MdmarkAlias[] }'

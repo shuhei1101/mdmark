@@ -111,16 +111,15 @@ functions:
     summary: '`createViewerEntry` のソースを入口に、esbuild で分割せずに 1 つの ES モジュールのスクリプトにまとめ、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返却する'
     description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。
 
+      リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。
 
-      - リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。
+      `</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。
 
-      - `</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。
+      esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。
 
-      - esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。
+      `prepareEmbeds` が確認したモジュールだけを指定するため、まとめる失敗は例外のまま投げる。
 
-      - `prepareEmbeds` が確認したモジュールだけを指定するため、まとめる失敗は例外のまま投げる。
-
-      - `hideTraces` があれば、替える前のまとめたコードを `hideScript` に通す'
+      `hideTraces` があれば、替える前のまとめたコードを `hideScript` に通す'
     kind: 関数
     scope: internal
     is_async: true

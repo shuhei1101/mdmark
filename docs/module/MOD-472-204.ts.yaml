@@ -35,18 +35,17 @@ functions:
     summary: 要素の中のマーカーの場所ごとに、登録した拡張なら引数を検査して `load` で、対応表なら URL でモジュールを読み込んで `draw` を呼ぶ。引数が合わない場所は記載の警告に、読み込めない・描けない・検査が失敗する場所は通知ブロックに替える
     description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読み込む（2 回目からは同じ Promise を待つ）。
 
+      拡張は対応表より優先し、`draw` に `{ options, definition }`（`options` は `data-mdmark-args` の JSON を読み込んだオブジェクト）を指定する（対応表のモジュールには `options` を指定する）。
 
-      - 拡張は対応表より優先し、`draw` に `{ options, definition }`（`options` は `data-mdmark-args` の JSON を読み込んだオブジェクト）を指定する（対応表のモジュールには `options` を指定する）。
+      拡張の通知ブロックは `source: "extension"` で、名前は拡張の `name`。
 
-      - 拡張の通知ブロックは `source: "extension"` で、名前は拡張の `name`。
+      記載の警告は `renderSyntaxWarning` にマーカーの文字・拡張の名前・`validateMarkArgs` の項目を指定する。
 
-      - 記載の警告は `renderSyntaxWarning` にマーカーの文字・拡張の名前・`validateMarkArgs` の項目を指定する。
+      マーカーの場所が無ければ何も読み込まない。
 
-      - マーカーの場所が無ければ何も読み込まない。
+      `embeddedLibraries` があるときは、URL を読み込まずに表の関数でモジュールを読み込み、表に無い名前は読み込めないものとして通知ブロックにする（ページの隣のファイルや CDN へ要求しない）。
 
-      - `embeddedLibraries` があるときは、URL を読み込まずに表の関数でモジュールを読み込み、表に無い名前は読み込めないものとして通知ブロックにする（ページの隣のファイルや CDN へ要求しない）。
-
-      - 読み込みと `draw` に時間の上限は配置しない'
+      読み込みと `draw` に時間の上限は配置しない'
     side_effects: マーカーの場所の要素の属性を書き換え、失敗した場所を通知ブロックに置き換える。失敗を `console.error` に出す
     args:
       - name: options

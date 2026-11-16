@@ -52,14 +52,13 @@ functions:
         required: true
         description: |-
           部品設計の引数。
-
-          - `language`・`title`・`fileName` は無ければ空。
-          - `syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、指定すると `code` に `SYNTAX_ATTRIBUTE` を付ける。
-          - `mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。
-          - `bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。
-          - `copyState` は省くとコピーのボタンを配置しない（`render` は指定せず、Storybook が指定する）。
-          - `foldButtons` は行の開閉のボタンを配置するか（既定 `false`。`render` は指定せず、Storybook が指定する）。
-          - `foldColumnHovered` が `true` なら `pre` に `data-fold-hover` を付ける（既定 `false`。Storybook が開閉のボタンの列にポインターが乗った状態を見せるために指定する）
+          `language`・`title`・`fileName` は無ければ空。
+          `syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、指定すると `code` に `SYNTAX_ATTRIBUTE` を付ける。
+          `mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。
+          `bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。
+          `copyState` は省くとコピーのボタンを配置しない（`render` は指定せず、Storybook が指定する）。
+          `foldButtons` は行の開閉のボタンを配置するか（既定 `false`。`render` は指定せず、Storybook が指定する）。
+          `foldColumnHovered` が `true` なら `pre` に `data-fold-hover` を付ける（既定 `false`。Storybook が開閉のボタンの列にポインターが乗った状態を見せるために指定する）
     returns:
       type: string
       description: '`bar` が `true` なら `<figure class="mdmark-code">` か `<div class="mdmark-code">`、`false` なら `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'

@@ -29,18 +29,17 @@ functions:
     summary: 単語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の単語とツールチップの組の HTML（`mdmark-term-wrap` の中に単語と、その直後のツールチップ）を返却する
     description: |-
       意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。
-
-      - 区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `docs/mock/components/term-tooltip/` のとおり）。
-      - `hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。
-      - `replacement` があるときは `meaning`・`docs` を使用せず、単語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを配置して `mdmark-term-tip-replacement`（代わりの用語の単語）と `mdmark-term-tip-meaning`（意味）を出し（`meaning` が無ければ意味を配置しない）、単語の `aria-describedby` でツールチップを指す。
-      - `alias` があるときは `meaning`・`docs` を使用せず、`ALIAS_HEADINGS` の見出しの区分 1 つに `mdmark-term-tip-name`（`name`）と、あれば `mdmark-term-tip-meaning`（`description`、`id` は `{id}-meaning`）を出す。
-      - `command` は `mdmark-term-tip-command` の中に `code` とコピーのボタン（`button.mdmark-term-tip-copy`、`type="button"`・`data-state` は `copy`（既定 `idle`）、中身は `renderTermTipCopy`）を並べ、`cwd` があれば `mdmark-term-tip-fields` にラベル `実行場所` と値を配置し、`role="status"` の `mdmark-visually-hidden mdmark-term-tip-status`（`copied`・`failed` のとき `コマンドを{文言}`、`idle` は空）を配置する。
-      - `url` は http・https の URL だけを `a.mdmark-term-tip-link`（`href` に URL）にし、ほかは `span.mdmark-term-tip-link` の文字にする。
-      - `skill`・`tool`・`path` は値を `code.mdmark-term-tip-code` に出す。
-      - コマンドとリンクにした URL を持つツールチップは `role="group"` と `aria-label`（`「{text}」のコマンド`・`「{text}」の URL`）にして単語の `aria-details` で指し、説明があれば単語の `aria-describedby` で説明の要素を指す。
-      - ほかの種類は `role="tooltip"` で単語の `aria-describedby` がツールチップを指す。
-      - `below` が `true` のときは `mdmark-term-wrap` に `is-below` を付ける（ストーリーが下に開いた外観を出すため。`render` は指定しない）。
-      - 文字はエスケープする
+      区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `docs/mock/components/term-tooltip/` のとおり）。
+      `hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。
+      `replacement` があるときは `meaning`・`docs` を使用せず、単語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを配置して `mdmark-term-tip-replacement`（代わりの用語の単語）と `mdmark-term-tip-meaning`（意味）を出し（`meaning` が無ければ意味を配置しない）、単語の `aria-describedby` でツールチップを指す。
+      `alias` があるときは `meaning`・`docs` を使用せず、`ALIAS_HEADINGS` の見出しの区分 1 つに `mdmark-term-tip-name`（`name`）と、あれば `mdmark-term-tip-meaning`（`description`、`id` は `{id}-meaning`）を出す。
+      `command` は `mdmark-term-tip-command` の中に `code` とコピーのボタン（`button.mdmark-term-tip-copy`、`type="button"`・`data-state` は `copy`（既定 `idle`）、中身は `renderTermTipCopy`）を並べ、`cwd` があれば `mdmark-term-tip-fields` にラベル `実行場所` と値を配置し、`role="status"` の `mdmark-visually-hidden mdmark-term-tip-status`（`copied`・`failed` のとき `コマンドを{文言}`、`idle` は空）を配置する。
+      `url` は http・https の URL だけを `a.mdmark-term-tip-link`（`href` に URL）にし、ほかは `span.mdmark-term-tip-link` の文字にする。
+      `skill`・`tool`・`path` は値を `code.mdmark-term-tip-code` に出す。
+      コマンドとリンクにした URL を持つツールチップは `role="group"` と `aria-label`（`「{text}」のコマンド`・`「{text}」の URL`）にして単語の `aria-details` で指し、説明があれば単語の `aria-describedby` で説明の要素を指す。
+      ほかの種類は `role="tooltip"` で単語の `aria-describedby` がツールチップを指す。
+      `below` が `true` のときは `mdmark-term-wrap` に `is-below` を付ける（ストーリーが下に開いた外観を出すため。`render` は指定しない）。
+      文字はエスケープする
     args:
       - name: props
         type: '{ text: string; id: string; meaning?: string; docs?: { title: string; href: string; description?: string }[]; replacement?: { term: string; meaning?: string }; alias?: MdmarkAlias; copy?: "idle" | "copied" | "failed"; below?: boolean }'

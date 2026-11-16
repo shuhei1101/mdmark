@@ -11,38 +11,37 @@ functions:
     summary: 文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を指定する）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を指定し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
     description: '`export` と `build` に共通の処理。
 
+      `usesMap` が `true` なら `embeds.map` を `true` にする。
 
-      - `usesMap` が `true` なら `embeds.map` を `true` にする。
+      埋める設定には、設定の `features`・`tooltips`・`side-toc`・`table`・`colorTheme`・`colorScheme`・`labels`・`map` をあるときだけ写す（`map` の Schema に合わない値は `validateConfig` が設定の誤りにする）。
 
-      - 埋める設定には、設定の `features`・`tooltips`・`side-toc`・`table`・`colorTheme`・`colorScheme`・`labels`・`map` をあるときだけ写す（`map` の Schema に合わない値は `validateConfig` が設定の誤りにする）。
+      `colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。
 
-      - `colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。
+      外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。
 
-      - 外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。
+      同じ URL のモジュールは 1 回だけまとめる。
 
-      - 同じ URL のモジュールは 1 回だけまとめる。
+      外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。
 
-      - 外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。
+      文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。
 
-      - 文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。
+      本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。
 
-      - 本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。
+      言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。
 
-      - 言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。
+      埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。
 
-      - 埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。
+      文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。
 
-      - 文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。
+      まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。
 
-      - まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。
+      埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。
 
-      - 埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。
+      設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。
 
-      - 設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。
+      警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す。
 
-      - 警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す。
-
-      - `hideTraces` が `true` のときは、`collectMarkNames` の名前で `payload.docs[].markdown` と `payload.includes` の値に `hideMarkdown` を適用し、`compileHtmlScripts` には元の文書に `hideMarkdown` を適用した Markdown を指定する（`usedParts`・`usesMap` は元の文書で判定する）'
+      `hideTraces` が `true` のときは、`collectMarkNames` の名前で `payload.docs[].markdown` と `payload.includes` の値に `hideMarkdown` を適用し、`compileHtmlScripts` には元の文書に `hideMarkdown` を適用した Markdown を指定する（`usedParts`・`usesMap` は元の文書で判定する）'
     kind: 関数
     scope: internal
     is_async: true

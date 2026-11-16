@@ -423,29 +423,27 @@ constraints:
   - item: マーカーの引数の構造
     constraint: '`MdmarkMarkArgs` は `{ options: Record<string, unknown>; definition?: unknown }`。
 
+      `options` はマーカーの名前の後ろの JSON のオブジェクト（真偽・数・配列・オブジェクトの型を保つ。引数の無いマーカーは `{}`）。
 
-      - `options` はマーカーの名前の後ろの JSON のオブジェクト（真偽・数・配列・オブジェクトの型を保つ。引数の無いマーカーは `{}`）。
+      引数が `{` で始まらない（今の書き方の）拡張のマーカーは `MdmarkMarkArgs` を作らず、記載の警告に替える（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの場所の要素」）。
 
-      - 引数が `{` で始まらない（今の書き方の）拡張のマーカーは `MdmarkMarkArgs` を作らず、記載の警告に替える（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの場所の要素」）。
+      マーカーを範囲（`<!-- {directive}: {JSON のオブジェクト} -->` 〜 `<!-- /{directive} -->`）で記載し、範囲に言語 `json` のコードブロックを 1 つ配置したときは、その JSON を読み込んだ値を `definition` に入れる（範囲が無いマーカーでは持たない）。
 
-      - マーカーを範囲（`<!-- {directive}: {JSON のオブジェクト} -->` 〜 `<!-- /{directive} -->`）で記載し、範囲に言語 `json` のコードブロックを 1 つ配置したときは、その JSON を読み込んだ値を `definition` に入れる（範囲が無いマーカーでは持たない）。
-
-      - `schema` の検査と `draw` は同じ値を受け取る'
+      `schema` の検査と `draw` は同じ値を受け取る'
   - item: 拡張のモジュールの構造
     constraint: '`draw(slot: HTMLElement, value: MdmarkMarkArgs): void | Promise<void>` を名前付きで export する。`slot` はマーカーの場所の要素'
   - item: 引数の検査
     constraint: '`schema` を持つ拡張のマーカーは、`mount`・`update` が `load` の前に `schema["~standard"].validate(value)` を呼んで待つ。
 
+      結果が `issues` を持つときは `load` を呼ばず、マーカーの場所を記載の警告に替える。
 
-      - 結果が `issues` を持つときは `load` を呼ばず、マーカーの場所を記載の警告に替える。
+      警告の項目は issue ごとに 1 つで、`path` の要素は `{ key }` のオブジェクトなら `key` を読み込む。
 
-      - 警告の項目は issue ごとに 1 つで、`path` の要素は `{ key }` のオブジェクトなら `key` を読み込む。
+      `path` が `options` とキーまで届く issue は `options` の後ろのキーを `.`（配列の要素は `[位置]`）でつないだ `{キーのパス}: {message}`、`definition` の中まで届く issue は `definition.{キーのパス}: {message}`、`path` が無いか `options`・`definition` で止まる issue は `{message}` だけの項目にする。
 
-      - `path` が `options` とキーまで届く issue は `options` の後ろのキーを `.`（配列の要素は `[位置]`）でつないだ `{キーのパス}: {message}`、`definition` の中まで届く issue は `definition.{キーのパス}: {message}`、`path` が無いか `options`・`definition` で止まる issue は `{message}` だけの項目にする。
+      `validate` が例外を投げるか拒否されるときは、`load` を呼ばず、`load` の失敗と同じ通知ブロックに替え、`name` と元のエラーを `console.error` に出す。
 
-      - `validate` が例外を投げるか拒否されるときは、`load` を呼ばず、`load` の失敗と同じ通知ブロックに替え、`name` と元のエラーを `console.error` に出す。
-
-      - `render` は検査しない'
+      `render` は検査しない'
     notes: 警告の文言は画面設計『文書』
   - item: Standard Schema の確認
     constraint: zod 4.6.7 と valibot 1.5.0 の schema の `~standard.validate` が、合わない値に `issues`（`message` と `path`）を、合う値に `value` を返却することを確認した（2026-10-14）

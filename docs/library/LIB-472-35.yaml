@@ -116,28 +116,27 @@ verification:
   date: '2026-10-31'
   detail: '[PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)で Webview の API（`window.createWebviewPanel`・`Webview.asWebviewUri`・`Webview.cspSource`・`Webview.postMessage`・`Webview.onDidReceiveMessage`）を動かした。
 
+    この PR で `@vscode/test-electron` 3.1.0 + `xvfb-run` を使用し、VS Code 1.141.0 と 1.143.1（stable）で次を確認した。
 
-    - この PR で `@vscode/test-electron` 3.1.0 + `xvfb-run` を使用し、VS Code 1.141.0 と 1.143.1（stable）で次を確認した。
+    `ExtensionContext.extensionMode` が `ExtensionMode.Test`（`3`）。
 
-    - `ExtensionContext.extensionMode` が `ExtensionMode.Test`（`3`）。
+    `globalState.update` した値を `get` で読み込める。
 
-    - `globalState.update` した値を `get` で読み込める。
+    `TextEditor.revealRange`（`AtTop`、行 150）の後に `onDidChangeTextEditorVisibleRanges` が 1 回届き、先頭の行は 145（行 40 は 35、行 200 は 195。指定した行の 5 行前）。
 
-    - `TextEditor.revealRange`（`AtTop`、行 150）の後に `onDidChangeTextEditorVisibleRanges` が 1 回届き、先頭の行は 145（行 40 は 35、行 200 は 195。指定した行の 5 行前）。
+    `revealRange` を呼んだ直後の `visibleRanges` はまだ前の値で、同じ位置へもう一度動かすと通知が届かない。
 
-    - `revealRange` を呼んだ直後の `visibleRanges` はまだ前の値で、同じ位置へもう一度動かすと通知が届かない。
+    `TextEditor.edit` で `onDidChangeTextDocument`（`isDirty` が `true`）、`save` で `onDidSaveTextDocument` が届く。
 
-    - `TextEditor.edit` で `onDidChangeTextDocument`（`isDirty` が `true`）、`save` で `onDidSaveTextDocument` が届く。
+    `createFileSystemWatcher` は VS Code の外から `fs.writeFileSync` で書き換えた設定ファイルの `onDidChange` を通知する。
 
-    - `createFileSystemWatcher` は VS Code の外から `fs.writeFileSync` で書き換えた設定ファイルの `onDidChange` を通知する。
+    `showInformationMessage` を `{ modal: true }` で呼ぶと、テストの中では `DialogService: refused to show dialog in tests` で失敗する。
 
-    - `showInformationMessage` を `{ modal: true }` で呼ぶと、テストの中では `DialogService: refused to show dialog in tests` で失敗する。
+    `env.openExternal` は既定のブラウザを開くため呼ばず、関数があることだけを確認した（結合テストでは代役に差し替える）。
 
-    - `env.openExternal` は既定のブラウザを開くため呼ばず、関数があることだけを確認した（結合テストでは代役に差し替える）。
+    2026-10-23 に VS Code 1.141.0 で、`window.createOutputChannel("mdmark", { log: true })` が `name` が `mdmark` で `trace`・`debug`・`info`・`warn`・`error` と数の `logLevel` を持ち、文字列と引数の `warn`・`Error` の `error` を例外なく受けることを確認した。
 
-    - 2026-10-23 に VS Code 1.141.0 で、`window.createOutputChannel("mdmark", { log: true })` が `name` が `mdmark` で `trace`・`debug`・`info`・`warn`・`error` と数の `logLevel` を持ち、文字列と引数の `warn`・`Error` の `error` を例外なく受けることを確認した。
-
-    - 2026-10-31 に VS Code 1.141.0 と 1.144.0（stable）で、`retainContextWhenHidden: false` の Webview の中で `acquireVsCodeApi().setState({ line: 42 })` した値を、同じ列で別の文書を開いて背面に回し（`visible` が `false`）`reveal` で再作成した Webview と、`html` をもう一度入れた Webview の `getState()` が `{ line: 42 }` で返却することを確認した（最初に開いた Webview の `getState()` は `undefined`）'
+    2026-10-31 に VS Code 1.141.0 と 1.144.0（stable）で、`retainContextWhenHidden: false` の Webview の中で `acquireVsCodeApi().setState({ line: 42 })` した値を、同じ列で別の文書を開いて背面に回し（`visible` が `false`）`reveal` で再作成した Webview と、`html` をもう一度入れた Webview の `getState()` が `{ line: 42 }` で返却することを確認した（最初に開いた Webview の `getState()` は `undefined`）'
 license: MIT（`@types/vscode`。商用利用可）
 official_url: https://code.visualstudio.com/api
 docs_url: https://code.visualstudio.com/api/references/vscode-api

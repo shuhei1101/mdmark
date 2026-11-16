@@ -11,38 +11,37 @@ functions:
     summary: 設定の `aliases` の配列に、取り込んだ alias-inject の `aliases.schema.json` を ajv で当て、ずれを日本語の 1 文の `schema` のずれにする
     description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.3.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使用しない）。
 
+      この Schema は alias-inject v0.3.0 の `aliases.schema.yaml` を内容を変えず JSON にして配置し（他の `schemas/` と同じく JSON で持ち、esbuild がそのまままとめる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。
 
-      - この Schema は alias-inject v0.3.0 の `aliases.schema.yaml` を内容を変えず JSON にして配置し（他の `schemas/` と同じく JSON で持ち、esbuild がそのまままとめる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。
+      Schema を変えるので `migrations/next/` に移行の手順を配置する。
 
-      - Schema を変えるので `migrations/next/` に移行の手順を配置する。
+      `instancePath` の `/1/alias_type` を `aliases[1].alias_type` の構造にして `where` にする。
 
-      - `instancePath` の `/1/alias_type` を `aliases[1].alias_type` の構造にして `where` にする。
+      `message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。
 
-      - `message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。
+      記載してください。
 
-      - 記載してください。
+      ``、`type` は ``\`{where}\`（{title}）は{型}にしてください。
 
-      - ``、`type` は ``\`{where}\`（{title}）は{型}にしてください。
+      ``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。
 
-      - ``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。
+      記載してください。
 
-      - 記載してください。
+      ``、`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。
 
-      - ``、`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。
+      ``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。
 
-      - ``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。
+      削除してください。
 
-      - 削除してください。
+      ``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。
 
-      - ``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。
+      ``（`where` が空なら `aliases`）。
 
-      - ``（`where` が空なら `aliases`）。
+      1 つの場所に同じ文が重なるときは 1 件にする。
 
-      - 1 つの場所に同じ文が重なるときは 1 件にする。
+      ずれのある行は返却する行で `null` に置き換え、行の位置を保つ。
 
-      - ずれのある行は返却する行で `null` に置き換え、行の位置を保つ。
-
-      - 引数を書き換えない'
+      引数を書き換えない'
     kind: 関数
     scope: public
     args:
