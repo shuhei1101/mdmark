@@ -128,9 +128,10 @@ functions:
     refs:
       - LIB-472-2#limitations[入力の検査のエラーの文]
     status: planned
-lead: '`arguments.ts` の型（引数の構造）と関数（引数を検査する）と定数（素通しの検証器）。'
+lead: 'MCP のツールの引数の検査を受け持ち、MCP のツールの引数を変えるときに参照する。'
 tags:
   - name: tool:mcp
     main: true
-  - name: topic:サーバー
   - name: tool:claude-code
+  - name: topic:サーバー
+  - name: action:検査

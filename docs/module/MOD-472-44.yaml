@@ -13,5 +13,6 @@ notes:
     └── mdmark.config.schema.json  # 設定の JSON Schema
     ```
 tags:
-  - name: topic:設定
+  - name: topic:機能フラグ
     main: true
+  - name: topic:設定

@@ -87,9 +87,10 @@ functions:
         mock: なし
         expected: '`video` の場所に `mdmark-notice` の枠があり本文に `webm` と `media/clip.webm`、リンクが `data-path="media/clip.webm"`'
     status: planned
-lead: '`assets.ts` の関数（相対パスの画像・動画・音声を集める・Webview の URL に替える・再生できない動画・音声を通知に替える）。'
+lead: '相対パスの画像・動画・音声の Webview の URL への置き換えを受け持ち、プレビューのアセットの扱いを変えるときに参照する。'
 tags:
   - name: topic:webview
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:置き換え

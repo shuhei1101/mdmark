@@ -98,9 +98,10 @@ functions:
     refs:
       - LIB-472-2#catalogs[API].entries[McpServer]
     status: planned
-lead: '`mcp.ts` の関数（常駐サーバーが動いている場所の文を作る・MCP サーバーを作る）と定数（サーバーの名前・サーバーの使用方法の説明）。'
+lead: 'MCP サーバーの組み立て・ツールの登録・instructions を受け持ち、MCP サーバーが示す使用方法を変えるときに参照する。'
 tags:
   - name: tool:mcp
     main: true
-  - name: topic:サーバー
   - name: tool:claude-code
+  - name: topic:サーバー
+  - name: action:登録

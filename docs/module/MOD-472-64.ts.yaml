@@ -29,9 +29,10 @@ functions:
     callees:
       - 'MOD-472-59#classes[DocumentView]'
     status: planned
-lead: '`use-document-view.ts` の関数（描いた文書を持つ）。'
+lead: '描いた文書の保持を受け持ち、Webview の中の描いた文書の扱いを変えるときに参照する。'
 tags:
-  - name: topic:webview
+  - name: tool:react
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

@@ -188,9 +188,13 @@ functions:
     refs:
       - IF-472-4#
     status: planned
-lead: '`http.ts` の関数（要求を振り分ける・要求を変換する・応答を記載する・常駐サーバーを動かす）と定数（待ち受けるアドレス・MCP のパス・ポートが使用されているときの文）。'
+lead: '常駐サーバーの HTTP の待ち受け・ポートの読み取り・要求と応答の変換を受け持ち、常駐サーバーの待ち受けを変えるときに参照する。'
 tags:
-  - name: tool:mcp
+  - name: topic:http
     main: true
-  - name: topic:サーバー
+  - name: tool:mcp
   - name: tool:claude-code
+  - name: topic:サーバー
+  - name: action:読み取り
+  - name: action:変換
+  - name: action:待ち受け

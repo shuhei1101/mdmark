@@ -340,9 +340,10 @@ functions:
       type: DocumentView
       description: 描いた文書
     status: planned
-lead: '`document-view.ts` のクラス（描いた文書）と関数（描いた文書を作る）と定数（再生してから調べるまでの待ち）。'
+lead: 'Webview の中の描いた文書の作成と更新を受け持ち、プレビューの中の描き方を変えるときに参照する。'
 tags:
   - name: topic:webview
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:作成

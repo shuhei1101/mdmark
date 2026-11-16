@@ -446,9 +446,10 @@ functions:
     refs:
       - IF-472-3#
     status: planned
-lead: '`tools.ts` の型（ツールの前提・ツールの定義・ツールの処理の結果・サーバーの読み込む場所）と関数（ツールを呼ぶ・文書を HTML に書き出す（export_html）・複数の文書を 1 枚にまとめる（build_site）・点検する（check）など）と定数（ツールの一覧・作業のフォルダの引数・作業のフォルダが無いときの文）。'
+lead: 'MCP のツールの定義と処理・結果への変換を受け持ち、MCP のツールの振る舞いを変えるときに参照する。'
 tags:
   - name: tool:mcp
     main: true
-  - name: topic:サーバー
   - name: tool:claude-code
+  - name: topic:サーバー
+  - name: action:変換

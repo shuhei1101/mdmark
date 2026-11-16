@@ -14,7 +14,11 @@ notes:
     └── viewer.css # まとめた HTML の画面と印刷の規則（層 mdmark）。画面全体の地は --mdmark-color-bg、上の帯・ボタン・一覧のパネルの地は --mdmark-color-bg-opaque。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を指定し、右側の目次の帯と表の見出し行を上の帯の下に留める
     ```
 tags:
-  - name: topic:書き出し
+  - name: topic:ナビゲーション
     main: true
   - name: tool:html
+  - name: topic:書き出し
   - name: action:起動
+  - name: action:読み込み
+  - name: action:書き出し
+  - name: action:まとめ

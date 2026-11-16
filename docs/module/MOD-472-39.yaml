@@ -40,3 +40,6 @@ tags:
   - name: action:操作
     main: true
   - name: topic:部品
+  - name: action:開閉
+  - name: action:コピー
+  - name: action:並べ替え

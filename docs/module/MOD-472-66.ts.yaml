@@ -30,9 +30,10 @@ functions:
     refs:
       - IF-472-17#constraints[通知の間引き]
     status: planned
-lead: '`use-scroll-sync.ts` の関数（スクロールを通知する）。'
+lead: 'プレビューのスクロールの通知を受け持ち、エディタとプレビューのスクロールの合わせ方を変えるときに参照する。'
 tags:
-  - name: topic:webview
+  - name: tool:react
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

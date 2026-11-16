@@ -103,9 +103,10 @@ components:
     refs:
       - CMP-472-29#
     status: planned
-lead: '`preview-status.tsx` の型（プレビューの状態の表示の props）と列挙（プレビューの状態）とコンポーネント（プレビューの状態の表示）。'
+lead: 'プレビューの状態の表示のコンポーネントを受け持ち、プレビューの状態の表示を変えるときに参照する。'
 tags:
-  - name: topic:webview
+  - name: tool:react
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

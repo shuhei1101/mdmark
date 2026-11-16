@@ -205,9 +205,10 @@ functions:
     refs:
       - IF-472-17#constraints[プレビューから合わせる]
     status: planned
-lead: '`scroll.ts` の型（行のマーカー）と関数（行のマーカーを集める・行を位置にする・位置を行にする・位置を切り捨てない行にするなど）。'
+lead: '行のマーカーの収集と、行と位置の変換を受け持ち、エディタとプレビューのスクロールの合わせ方を変えるときに参照する。'
 tags:
   - name: topic:webview
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:変換

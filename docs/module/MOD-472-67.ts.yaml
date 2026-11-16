@@ -46,9 +46,10 @@ functions:
     refs:
       - IF-472-19#constraints[リンクの見分け方]
     status: planned
-lead: '`use-link-clicks.ts` の関数（リンクの押下を受ける）。'
+lead: 'プレビューのリンクの押下の受け取りを受け持ち、プレビューのリンクの開き方を変えるときに参照する。'
 tags:
-  - name: topic:webview
+  - name: tool:react
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

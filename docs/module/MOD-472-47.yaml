@@ -24,3 +24,4 @@ tags:
   - name: topic:部品
     main: true
   - name: action:描画
+  - name: action:配布

@@ -47,3 +47,5 @@ notes:
 tags:
   - name: topic:構文
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it

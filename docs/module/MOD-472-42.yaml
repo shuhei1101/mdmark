@@ -29,3 +29,6 @@ tags:
   - name: topic:索引
     main: true
   - name: topic:用語
+  - name: action:読み取り
+  - name: action:点検
+  - name: action:検査
