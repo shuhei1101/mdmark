@@ -547,7 +547,7 @@ scenarios:
       - name: 手元のバージョンが古いフォルダ
         description: 正常シナリオと同じ
       - name: Mock
-        description: 呼んだ CLI のバージョンを develop のビルドの `v0.5.0-develop.abc1234` に差し替える。移行の手順のフォルダと変更履歴は正常シナリオと同じ
+        description: 呼んだ CLI のバージョンを develop のビルドの `v0.5.0+develop.abc1234` に差し替える。移行の手順のフォルダと変更履歴は正常シナリオと同じ
     flow: |-
       <!-- map -->
 

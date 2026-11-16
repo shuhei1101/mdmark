@@ -49,7 +49,7 @@ scenarios:
     setup:
       - name: develop のブランチを持つ Git のリポジトリ
         description: develop のビルドをした作業ツリー（`dist/` を含む）を一時の Git のリポジトリの `develop` のブランチに commit する
-        notes: develop への push のワークフローが commit した状態と同じく、`dist/` と `plugin/` の生成物を commit に含める
+        notes: develop への push のワークフローが commit した状態と同じく、`dist/` と `plugin/` の生成物を commit に含める。ビルドで埋めるバージョンは `v0.0.1+develop.abc1234`
       - name: 空の npm のキャッシュ
         description: 正常シナリオと同じ
       - name: 空いたポート
@@ -83,20 +83,20 @@ scenarios:
       - '`npm exec` のプロセスが終わらずに残り、出力に接続先 `http://127.0.0.1:{ポート}/mcp` が出る'
       - 出力に、`npm ci --prefix tools/eslint` が出す導入の集計の行（`added {数} packages`）が出ない
       - クライアントの `tools/list` が返却するツールに `export_html`・`build_site`・`check` がある
-      - '`npm exec --yes {develop の参照} --version` の出力が `v{バージョン}-develop.{短縮 SHA}` で、短縮 SHA が develop の先頭の commit と一致する'
+      - '`npm exec --yes {develop の参照} --version` の出力が `v0.0.1+develop.abc1234`'
     test: test_normal_when_develop
-lead: 文書の作成者が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路でバージョンのタグから mdmark を入れ、CLI を起動する。
+lead: 文書の作成者が `npx github:shuhei1101/mdmark#{タグか develop}` と同じ経路で、タグか develop を指定した GitHub の参照から mdmark を入れ、CLI を起動する。
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
-    interest: バージョンのタグを指定するだけで、開発の道具を入れずに CLI を起動できる
+    interest: タグか develop を指定するだけで、開発の道具を入れずに CLI を起動できる
   - name: Claude Code
     interest: プラグインの手順が起動する `npx -y github:shuhei1101/mdmark#v{バージョン} serve` の常駐サーバーにつながる
-trigger: 文書の作成者が、バージョンのタグを指定して mdmark の CLI を初めて呼ぶ
+trigger: 文書の作成者が、タグか develop を指定して mdmark の CLI を初めて呼ぶ
 preconditions:
   - 文書の作成者の手元に Node 24 以降と Git がある
   - npm レジストリへつながる
-success_guarantee: npm がバージョンのタグの中身を取り出して `dependencies` を入れ、開発用の処理（`tools/eslint/` の依存の導入）を実行せずに CLI を起動する。
+success_guarantee: npm がタグか develop が指す commit の中身を取り出して `dependencies` を入れ、開発用の処理（`tools/eslint/` の依存の導入）を実行せずに CLI を起動する。
 minimal_guarantee: 入れる途中で失敗したときは CLI を起動せず、npm が 0 以外の終了コードで終わる。
 test_file: tests/e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts
 tags:

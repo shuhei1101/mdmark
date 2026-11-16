@@ -84,7 +84,7 @@ scenarios:
       - name: 空のフォルダ
         description: 正常シナリオと同じ
       - name: Mock
-        description: 呼んだ CLI のバージョンを develop のビルドの `v0.5.0-develop.abc1234` に差し替える
+        description: 呼んだ CLI のバージョンを develop のビルドの `v0.5.0+develop.abc1234` に差し替える
     flow: |-
       <!-- map -->
 

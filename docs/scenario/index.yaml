@@ -3,7 +3,7 @@ items:
 - page: SC-472-82.yaml
   summary: 開発者が依存の導入・lint・型検査・ビルド・テストを実行し、バージョンを埋めた配布物を得る
 - page: SC-472-28.yaml
-  summary: 利用側のページがバージョンのタグを固定した URL で配布物を読み込み、公開関数を呼ぶ
+  summary: 利用側のページがタグか develop を指定した URL で配布物を読み込み、公開関数を呼ぶ
 - page: SC-472-59.yaml
   summary: 利用側のページが要素と Markdown を指定して文書を描き、本文の差し替えと片付けをする
 - page: SC-472-57.yaml
