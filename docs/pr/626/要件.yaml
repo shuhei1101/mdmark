@@ -7,8 +7,10 @@ use_cases:
 docs:
   - page: dev-docs.yaml
     new: false
-    change: project-index.yaml へ改名し、1 行目の $schema の注釈を project-index の schemas/project-index.schema.json へ差し替える。files の行の exclude に、まとめた配布物・lock ファイル・バイナリを足す
-    status: todo
+    change: project-index.yaml へ改名し、1 行目の $schema の注釈を project-index の schemas/project-index.schema.json へ差し替える。files の行の exclude に、まとめた配布物・テンプレートのコピー・lock ファイル・バイナリを足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T15:59:44.598225+00:00'
   - page: tests/files.yaml
     new: false
     change: 行の無い integration/・unit/ のテストと補助のファイルの行を追加する
@@ -16,10 +18,6 @@ docs:
   - page: docs/mock/files.yml
     new: false
     change: 行の無い components/・pages/・refs/ のモックの行を追加する
-    status: todo
-  - page: plugin/files.yaml
-    new: false
-    change: templates/mdmark.config.yaml の行を追加する
     status: todo
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
