@@ -49,7 +49,7 @@ args:
 css_properties:
   - name: --mdmark-color-accent-blue-text
     syntax: <color>
-    default: 値は docs/design-policy.md
+    default: 値は [デザイン方針](../design-policy.md)
     description: 文字の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ
 accessibility:
   - '文字の色に加えて太字（`font-weight: 700`）にし、色だけで意味を伝えない'

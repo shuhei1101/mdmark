@@ -123,7 +123,7 @@ styles:
         value: '部品設計（差分のブロック）の HTML に適用する規則。`docs/mock/refs/196/assets/diff-preview.css` の `@layer mdmark` の中身（`.mdmark-diff-block`・`.mdmark-diff-block-sign`・`.mdmark-diff-block-label`）から取る。`data-kind` ごとに地を `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`、左の余白の記号を `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` にする。削除した `li` は番号を出さず後ろの項目の番号を進めない（`list-style-type: none`・`counter-increment: list-item 0`）'
       - class_name: :root（色のプリセット）
         target: 色の名前ごとの面と文字の色
-        value: '`--mdmark-color-accent-{blue,red,green,yellow,orange,purple,gray}-{bg,text}` の明るい配色とダークの値。選んだテーマの配色の規則にも、そのテーマの値を配置する。値は `docs/design-policy.md` と `docs/mock/components/color-preset/index.html` の `<style>`'
+        value: '`--mdmark-color-accent-{blue,red,green,yellow,orange,purple,gray}-{bg,text}` の明るい配色とダークの値。選んだテーマの配色の規則にも、そのテーマの値を配置する。値は [デザイン方針](../design-policy.md) と `docs/mock/components/color-preset/index.html` の `<style>`'
       - class_name: .mdmark .mdmark-col-highlight[data-color]・.mdmark tr[data-color]・.mdmark-badge[data-color]・.mdmark-color[data-color]
         target: 列と行の色・バッジの色・本文の文字の色
         value: '強調した列のセルと色を付けた行のセルの地を `--mdmark-color-accent-{色}-bg` にし、強調した列の見出しのセルに下端の線、色を付けた行に上下の線（`-text`）を付ける。バッジは地と文字、`mdmark-color` は文字の色と `font-weight: 700`。`docs/mock/components/table/`・`docs/mock/components/badge/`・`docs/mock/components/color-preset/` の `<style>` から取る'

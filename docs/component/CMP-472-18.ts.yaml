@@ -327,7 +327,7 @@ css_properties:
     description: 削除した行の行頭の `-` と左端の線の色（差分の表示と共通）
   - name: --mdmark-color-error
     syntax: <color>
-    default: 値は docs/design-policy.md
+    default: 値は [デザイン方針](../design-policy.md)
     description: エラーの行の左端の線と行頭の `×` の色。地はこの色を `--mdmark-color-bg` に 12% 混ぜた色
   - name: --mdmark-color-callout-warning
     syntax: <color>

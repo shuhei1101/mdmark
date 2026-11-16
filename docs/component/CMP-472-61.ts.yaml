@@ -1542,11 +1542,11 @@ css_properties:
     description: 見出し行を留める位置の、画面の上端からのずれ。ページの上端に固定したヘッダーを持つ利用側は、その高さを指定する
   - name: --mdmark-color-accent-blue-bg
     syntax: <color>
-    default: 値は docs/design-policy.md
+    default: 値は [デザイン方針](../design-policy.md)
     description: 強調した列のセルと色を付けた行の面の薄い色。ほかの色の名前も `--mdmark-color-accent-{色}-bg` で同じ
   - name: --mdmark-color-accent-blue-text
     syntax: <color>
-    default: 値は docs/design-policy.md
+    default: 値は [デザイン方針](../design-policy.md)
     description: 強調した列の見出しの下端の線と、色を付けた行の上下の線の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ
 accessibility:
   - 列の強調と行の色は、見出しの下端の線と行の上下の線でも示し、色だけに頼らない。セルの文字と面の色のコントラストを 4.5:1 以上にする

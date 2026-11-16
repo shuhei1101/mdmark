@@ -66,11 +66,11 @@ css_properties:
     description: 札の線の色
   - name: --mdmark-color-accent-blue-bg
     syntax: <color>
-    default: 値は docs/design-policy.md
+    default: 値は [デザイン方針](../design-policy.md)
     description: 色のバッジの地の色。ほかの色の名前も `--mdmark-color-accent-{色}-bg` で同じ
   - name: --mdmark-color-accent-blue-text
     syntax: <color>
-    default: 値は docs/design-policy.md
+    default: 値は [デザイン方針](../design-policy.md)
     description: 色のバッジの文字の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ。地の色とのコントラストを 4.5:1 以上にする
 accessibility:
   - 札は文言をそのままスクリーンリーダーに伝える `span` で、色だけで意味を持たせない
