@@ -35,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T17:37:32.437787+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:22:30.087917+00:00'
   - process: モック作成
     status: todo
     note: 'Mermaid の図の部品のモック（docs/mock/components/mermaid-diagram/）に、固定した参加者の行など見た目が変わる場面だけを足す（モック要否 Q3: 固定した行の見た目を Issue が決めていない）'
