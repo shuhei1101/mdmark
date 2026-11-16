@@ -1,0 +1,14 @@
+拡張機能のアイコンの公開:
+  説明: 作業 PR のマージの後、develop の HEAD（vscode/package.json の version が 0.1.4）に vscode-v0.1.4 のタグを打って push し、vscode-release.yml に .vsix を GitHub Release へ添えさせ、Visual Studio Marketplace へ ShuheiNishikawa.mdmark-vscode の 0.1.4 として公開させる。Marketplace に公開したバージョンは上書き・取り消しができず利用者へ届くため戻せない（公開の前に Marketplace の公開済みのバージョンに 0.1.4 が無いことを疎通確認で確かめる）
+  タグ: [タグ, 公開]
+  実行者: tester
+  時期: マージの後
+  回数: 1 回限り
+  可逆: false
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 実行・確認のどちらも再試行せず、ワークフローのログを添えて依頼元へ返す
+  確認方法: タグ vscode-v0.1.4 の vscode-release.yml の実行が success で、GitHub Release vscode-v0.1.4 に mdmark-0.1.4.vsix があり、Marketplace の ShuheiNishikawa.mdmark-vscode の公開済みのバージョンに 0.1.4 があり、Marketplace の拡張機能のページに作ったアイコンが表示される
+  状態: "-"

@@ -1,0 +1,19 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-50.yaml
+    impact: changed
+    detail: 公開する .vsix にアイコンが入り、Marketplace の拡張機能のページにアイコンが表示される。例のバージョンを 0.1.4 にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: none
+    detail: 拡張機能の入れ方・起動・プレビューは変わらない（アイコンは拡張機能のビューの表示だけ）
+    depends_on: []
+scope_out:
+  - item: Open VSX へのアイコンの表示
+    reason: Open VSX へは公開しない（規約『VS Code 拡張機能の配布』）
+    plan: none
+  - item: ライブラリ本体・Claude Code プラグインのアイコン
+    reason: 要望は VS Code 拡張機能のアイコンに限る
+    plan: none
+docs: []
