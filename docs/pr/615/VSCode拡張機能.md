@@ -19,7 +19,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 図案 | 案ごとに SVG を作って配信し、ユーザーに確認して 1 つに決める | `未確定`（要件.md の `## 要望`） |
+| 図案 | md markup を表す「M↑」の下にマーカーの線を重ねる（`docs/pr/615/アイコンの案/D.svg`） | 要件.md の `## 要望` |
 | 原本 | 決まった SVG を `vscode/icon.svg` に配置し、`.vscodeignore` で .vsix から除く | `vscode/media/` は git の管理の外のため使用しない |
 | PNG | 原本から 256×256px の PNG を `vscode/icon.png` に書き出し、`vscode/package.json` の最上位の `icon` に `icon.png` を記載する | 書き出しは開発コマンドの `npx playwright screenshot`（ルートの devDependencies の Playwright） |
 | 拡張機能のバージョン | `vscode/package.json` の `version` を `0.1.3` から `0.1.4` に上げる | 公開済みのバージョンは上書きできないため |
