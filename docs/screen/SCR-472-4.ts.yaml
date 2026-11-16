@@ -1769,7 +1769,7 @@ elements:
     name: アイコン
     kind: label
     label: なし（`aria-hidden`）
-    description: '`icon:名前` の場所に配置する Lucide のアイコン'
+    description: '`icon\:名前` の場所に配置する Lucide のアイコン'
     position: 描く先の要素 > 本文の見出し・段落の中
     component: CMP-472-8#
     args:

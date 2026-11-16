@@ -21,7 +21,7 @@ args:
   - name: items[].icon
     type: 文字列
     required: false
-    description: アイコンの名前（Lucide の名前。記法の `icon:名前` の `名前`）。部品が記法のアイコンと同じ要素に class `mdmark-card-grid-icon` を追加して組み立てる。無いときはアイコンを配置せず、タイトルを左端から始める
+    description: アイコンの名前（Lucide の名前。記法の `icon\:名前` の `名前`）。部品が記法のアイコンと同じ要素に class `mdmark-card-grid-icon` を追加して組み立てる。無いときはアイコンを配置せず、タイトルを左端から始める
   - name: items[].description
     type: 文字列（HTML）
     required: false
