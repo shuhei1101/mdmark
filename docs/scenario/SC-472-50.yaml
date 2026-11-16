@@ -27,13 +27,14 @@ scenarios:
         GA->>MP: GitHub Actions の OIDC トークンで同じ .vsix を公開する
         MP-->>GA: 公開を受け付ける
         GH-->>D: Release に mdmark-0.1.4.vsix
+        MP->>MP: 数分〜十数分後に一覧へ 0.1.4 を表示する
         MP-->>D: Marketplace に 0.1.4 とアイコン
       ```
 
       <!-- /map -->
     expected:
       - '`vscode-v0.1.4` の GitHub Release に `mdmark-0.1.4.vsix` が添えられる'
-      - Marketplace の `ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.4` になる
+      - ワークフローの完了の後、Marketplace の一覧に `0.1.4` が出るまで条件で待つと、`ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.4` になる
       - Marketplace のギャラリー API で引いた `ShuheiNishikawa.mdmark-vscode` の `0.1.4` の `files` に、`assetType` が `Microsoft.VisualStudio.Services.Icons.Default` の資産がある
       - ワークフローはリポジトリのシークレットを参照しない
       - '`v{バージョン}` の構造の mdmark のタグを push しても、このワークフローは起きない'
