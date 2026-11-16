@@ -7,7 +7,7 @@
 ## 背景
 
 [索引のタグにマスターと主題の印を持たせ、find_docs のタグを AND / OR にして返す量を選べるようにする](https://github.com/shuhei1101/mdmark/issues/101) の要望。
-knowledge のワークスペース `tmp/mcpベストプラクティス検討` の話し合いで決めた、knowledge の規約『タグと用語の登録』と『MCP サーバー作成ルール』の `## 読み取りのツール`（[shuhei1101/knowledge#42](https://github.com/shuhei1101/knowledge/issues/42) で入った）に mdmark を合わせる。
+knowledge のワークスペース `tmp/mcpベストプラクティス検討` の話し合いで決めた、knowledge の規約『タグと用語の登録』と『MCP サーバー作成ルール』の `## 読み取りのツール`（[AI エージェント向けの文書管理と MCP の方針を規約に入れ、mcp.md・YAML.md の食い違いを直す](https://github.com/shuhei1101/knowledge/issues/42) で入った）に mdmark を合わせる。
 今の索引のタグは文字列の並びで、語彙の定義が無く、描画にも点検にも使っていない。
 `find_docs` のタグは全てを持つ文書（AND）に絞るだけで、引数を省くと全ての文書を JSON で返す。
 

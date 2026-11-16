@@ -78,10 +78,10 @@ docs:
     updated_at: '2026-11-15T03:15:46.944607+00:00'
 scope_out:
   - item: AI Monitor の設計書の Markdown の生成が出力する docs/README.md と設計書のフォルダの README.md（component・er・interface・library・module・scenario）の表のマーカー
-    reason: '生成し直すと今の書き方に戻る。生成を JSON の記載にする対応は shuhei1101/ai-monitor#3418 が持ち、終わりの条件の範囲から除く（[mdmark のリポジトリのほかの文書（docs/mock など）のマーカーを JSON の記載へ移す](https://github.com/shuhei1101/mdmark/issues/481) の task-planner の扱いの判断）'
+    reason: '生成し直すと今の書き方に戻る。生成を JSON の記載にする対応は [文書のマーカーを mdmark の JSON の記載へ移す](https://github.com/shuhei1101/ai-monitor/issues/3418) が持ち、終わりの条件の範囲から除く（[mdmark のリポジトリのほかの文書（docs/mock など）のマーカーを JSON の記載へ移す](https://github.com/shuhei1101/mdmark/issues/481) の task-planner の扱いの判断）'
     plan: shuhei1101/ai-monitor#3418
   - item: 'この PR のマージ後に他の作業 PR が足す PR ドキュメントの今の書き方のマーカー（AI Monitor のテンプレートの <!-- table: data --> を写した記載）'
-    reason: テンプレートは AI Monitor の文書で、JSON の記載への移行は shuhei1101/ai-monitor#3418 が持つ
+    reason: 'テンプレートは AI Monitor の文書で、JSON の記載への移行は [文書のマーカーを mdmark の JSON の記載へ移す](https://github.com/shuhei1101/ai-monitor/issues/3418) が持つ'
     plan: shuhei1101/ai-monitor#3418
   - item: tests/ のテストの入力に使う今の書き方のマーカー
     reason: '今の書き方を読む処理・移行の手順を確かめる入力で、文書ではない。読む処理の削除に合わせて [マーカーの今の書き方を読む処理を削除する（次のマイナーバージョンの破壊的変更）](https://github.com/shuhei1101/mdmark/issues/479) が扱う'

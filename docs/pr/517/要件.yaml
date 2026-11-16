@@ -18,5 +18,5 @@ docs:
     updated_at: '2026-11-12T23:47:43.579760+00:00'
 scope_out:
   - item: 規約『フック』への permissionDecision の決まりの追加
-    reason: 別のリポジトリの規約で、shuhei1101/knowledge#244 が扱う
+    reason: '別のリポジトリの規約で、[規約『フック』に、PreToolUse のフックの permissionDecision の決まりを追加する](https://github.com/shuhei1101/knowledge/issues/244) が扱う'
     plan: none

@@ -7,7 +7,7 @@
 ## 背景
 
 [用語・別名の一致の前に NFKC・大文字小文字を正規化する](https://github.com/shuhei1101/mdmark/issues/102) の要望。
-knowledge のワークスペース `tmp/mcpベストプラクティス検討` の話し合い（D-48）で決めた、knowledge の規約『タグと用語の登録』の「一致のさせ方」（[shuhei1101/knowledge#42](https://github.com/shuhei1101/knowledge/issues/42) で入った）に mdmark を合わせる。
+knowledge のワークスペース `tmp/mcpベストプラクティス検討` の話し合い（D-48）で決めた、knowledge の規約『タグと用語の登録』の「一致のさせ方」（[AI エージェント向けの文書管理と MCP の方針を規約に入れ、mcp.md・YAML.md の食い違いを直す](https://github.com/shuhei1101/knowledge/issues/42) で入った）に mdmark を合わせる。
 今の用語・別名の照合は完全一致で、全角と半角・英字の大文字と小文字の違いだけで外れる。
 
 ## 計画書

@@ -8,7 +8,7 @@
 
 [行の詳細（row-detail）の中に表を置くと、後ろの親の表の行が表の外へ出る](https://github.com/shuhei1101/mdmark/issues/143) の不具合。
 `<!-- row-detail: N -->` の中身に表を置き、親の表の最後以外の行に付けると、付けた行より後ろの親の行が `</table></div>` の外へ出て、その行の `data-label` が中の表の列名になる。
-[shuhei1101/ai-monitor#2990](https://github.com/shuhei1101/ai-monitor/pull/2990) は設計書の入れ子の表を行の詳細に出す設計で、この修正を含むバージョンを待っている。
+[開発ドキュメントサーバーと Pages の Markdown の描画を mdmark に置き換える](https://github.com/shuhei1101/ai-monitor/pull/2990) は設計書の入れ子の表を行の詳細に出す設計で、この修正を含むバージョンを待っている。
 
 ## 計画書
 

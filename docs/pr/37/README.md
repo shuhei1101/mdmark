@@ -7,7 +7,7 @@ E2E『文書を描く』の `test_normal_when_index` が、本文を差し替え
 ## 背景
 
 [E2E『文書を描く』の test_normal_when_index が被参照の題の段落にも当たって fail する](https://github.com/shuhei1101/mdmark/issues/33) の不具合。
-release/v0.3.0 の E2E（[release PR #31](https://github.com/shuhei1101/mdmark/pull/31)）で、`test_normal_when_index` が Chromium・Firefox の両方で fail した。
+release/v0.3.0 の E2E（[release/v0.3.0](https://github.com/shuhei1101/mdmark/pull/31)）で、`test_normal_when_index` が Chromium・Firefox の両方で fail した。
 [文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27) で入った被参照の一覧は題を `p` で描き、テストの `doc.locator("p")` が本文の段落と題の 2 つに当たって Playwright の strict mode で落ちる。
 描いた本文と被参照の一覧は要件どおりで、製品の挙動は正しい。
 

@@ -108,7 +108,7 @@ React の Webview は今の CSP・配布物の参照のまま動き、Preflight 
 | axe の `color-contrast`（描けない理由の文）と `label-content-name-mismatch`（描いた文書） | 実装で原因の要素を特定して修正する。描いた文書の側なら mdmark 本体の問題として切り出す |
 | `media/test/axe.js` が `.gitignore` に無い | 実装で `vscode/media/` を丸ごと管理の外にする |
 
-最小再現コードの要点（[#343 の diff](https://github.com/shuhei1101/mdmark/pull/343/files)）:
+最小再現コードの要点（[PoC: React の Webview の CSP・Storybook react-vite・拡張機能ホストの axe の diff](https://github.com/shuhei1101/mdmark/pull/343/files)）:
 
 ```tsx
 // vscode/src/webview/react/main.tsx（要点）
@@ -148,7 +148,7 @@ diff の見どころ: `vscode/vite.config.ts`（ライブラリの出力と Reac
 | --- | --- |
 | Web の実装ガイド | `search_web_guidance` で状態の表示・読み込み中を引き、`spinner` を読んだ。ガイドは `<progress>` を推すが、Spinner は部品設計『プレビューの状態の表示』のとおり `role="img"` の SVG にし、動きを減らす設定ではガイドと同じく 6 秒で回す |
 | 足した・直したストーリー | `vscode-panelscreen--document`・`--loading`・`--offline`・`--version-missing`・`--version-undecidable`・`--diff-unsupported`・`--config-error`・`--media-error`、`vscode-configband--default`・`--narrow-long-path`、`vscode-previewstatus--loading`・`--offline`・`--version-missing`・`--version-missing-long`・`--version-undecidable`・`--diff-unsupported`・`--unexpected`、`vscode-mediaerror--audio`・`--video`・`--long-path`。部品の HTML のストーリー（`parts-*`）は YAML から CSF に書き換えた |
-| ストーリーの確認 | `start_storybook_serve` は `.venv` を求めて起動しない（[ai-monitor#2432](https://github.com/shuhei1101/ai-monitor/issues/2432)）ため、描画の口と `storybook dev` を手で起動した。446 個のストーリーを Playwright で開き、エラーの表示・`pageerror`・空の描画・描画の失敗の表示が無いことを確かめた（描画の失敗の表示は、それを見せる `vscode-previewstatus--unexpected` だけ） |
+| ストーリーの確認 | `start_storybook_serve` は `.venv` を求めて起動しない（[start_storybook_serve が Python の .venv を要求し、npm だけのプロジェクトの worktree で使えない](https://github.com/shuhei1101/ai-monitor/issues/2432)）ため、描画の口と `storybook dev` を手で起動した。446 個のストーリーを Playwright で開き、エラーの表示・`pageerror`・空の描画・描画の失敗の表示が無いことを確かめた（描画の失敗の表示は、それを見せる `vscode-previewstatus--unexpected` だけ） |
 | 開発コマンド | 『取り込み後の追従（pull 後）』の `effects`（`prepare` の Git フックと `tools/eslint/`）、『起動・停止』の Storybook の確認、『取り込み前の検査』（`npm run check`・lefthook） |
 | テスト実行方法 | `lint` 層に `npm run lint:eslint` を加えた |
 

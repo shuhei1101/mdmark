@@ -8,7 +8,7 @@ develop の `docs/pr/*/スクリーンショット/` と `docs/pr/*/ストーリ
 
 [develop に入っている作業 PR のスクリーンショットと tmp/screenshots/ の画像を削除する](https://github.com/shuhei1101/mdmark/issues/475) の要望。
 作業 PR のスクリーンショットが squash マージで develop に入り、リポジトリが重くなっている。
-[shuhei1101/ai-monitor#3373](https://github.com/shuhei1101/ai-monitor/pull/3373) でこれからのスクリーンショットは Git 管理外に置くと決まり、既に入った画像は削除の commit を入れるとユーザーが判断した（[確認ログ](https://github.com/shuhei1101/ai-monitor/pull/3373#discussion_r4536950116)）。
+[planner の手順・規約の修正 6 件（layout の工程・スクリーンショットの管理外・実装の節・fail の並行調査・デザイン方針の参照・反映作業の対象の読み方）](https://github.com/shuhei1101/ai-monitor/pull/3373) でこれからのスクリーンショットは Git 管理外に置くと決まり、既に入った画像は削除の commit を入れるとユーザーが判断した（[確認ログ](https://github.com/shuhei1101/ai-monitor/pull/3373#discussion_r4536950116)）。
 本文の `tmp/screenshots/` の画像の削除と `tmp/` の Git 管理外の確認は、[dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す](https://github.com/shuhei1101/mdmark/pull/472) で解消済み。
 
 ## 計画書

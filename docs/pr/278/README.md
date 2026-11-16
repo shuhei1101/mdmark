@@ -9,7 +9,7 @@
 [フロー図の部品で、判定フローチャートの質問・開始のノードの位置が落ちて左上に重なる](https://github.com/shuhei1101/mdmark/issues/276) の不具合。
 [フロー図の部品に、判定フローチャートの「質問」「結果」のノードの種類を追加する](https://github.com/shuhei1101/mdmark/pull/268) で追加した質問・開始のノードは、名前を形に内接させるため `style` の末尾に `padding` を追加する。
 sanitize の図の部品向けの `style` の許可（`DIAGRAM_STYLE_PATTERN`）が `padding` を許さないため、埋め込んだ HTML 向けの許可へ回って `left`・`top` が落ち、ノードが図の左上に重なる。
-[shuhei1101/knowledge#134](https://github.com/shuhei1101/knowledge/pull/134) の判定フローチャートの描き直しが、この修正と [フロー図の部品に、判定フローチャートの「質問」「結果」のノードの種類を追加する](https://github.com/shuhei1101/mdmark/pull/268) を含むバージョンのリリースを待っている。
+[規約『表し方の優先順位』と判定フローチャート『表し方の選び方』を追加し、判定フローチャートを mdmark の部品で描く書き方へ改める](https://github.com/shuhei1101/knowledge/pull/134) の判定フローチャートの描き直しが、この修正と [フロー図の部品に、判定フローチャートの「質問」「結果」のノードの種類を追加する](https://github.com/shuhei1101/mdmark/pull/268) を含むバージョンのリリースを待っている。
 
 ## 計画書
 

@@ -7,7 +7,7 @@ release/v0.9.0 の E2E で fail した 2 つの spec を、設計どおりの描
 ## 背景
 
 [Sprint v0.9.0 の E2E の 2 件のテスト不備（ファイルツリーのロケーターと文言・印刷のタブ名の期待値）を修正する](https://github.com/shuhei1101/mdmark/issues/236) の束の修正（子 Issue は [E2E『ステップ・ファイルツリー・バッジで本文を組む』のファイルツリーの 3 件が、ロケーターと期待する文言の誤りで fail する](https://github.com/shuhei1101/mdmark/issues/231)・[E2E『文書を印刷する』の test_normal_when_syntax_expanded が、閉じたタブの範囲のタブ名も数えて fail する](https://github.com/shuhei1101/mdmark/issues/232)）。
-[release PR #229](https://github.com/shuhei1101/mdmark/pull/229) の E2E（[E2E 実行 Issue #153](https://github.com/shuhei1101/mdmark/issues/153)）で次の 2 つが fail し、tester がどちらもテスト不備と切り分けた。
+[release/v0.9.0](https://github.com/shuhei1101/mdmark/pull/229) の E2E（[Sprint v0.9.0 の E2E 実行](https://github.com/shuhei1101/mdmark/issues/153)）で次の 2 つが fail し、tester がどちらもテスト不備と切り分けた。
 製品の挙動は設計どおり。
 
 - 単一ユースケース『ステップ・ファイルツリー・バッジで本文を組む』のファイルツリーの 3 件: `has` に `#doc` から始まるロケーターを渡している・閉じた `ul` の中のボタンを `getByRole` の既定で探している・コピーのパネルに部品設計に無い文言を期待している

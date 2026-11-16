@@ -11,7 +11,7 @@ release PR [release/v0.9.0](https://github.com/shuhei1101/mdmark/pull/229) の E
 [VS Code のプレビューを背面から表に戻したとき、作り直した Webview を前のスクロールの位置へ戻す](https://github.com/shuhei1101/mdmark/pull/243) は、背面に回す前の位置を `currentLine()` の行番号で `setState` に保存して戻す。
 その行番号は `lineForTop` が整数に切り捨てた値のため、見えている先頭が行の途中にあると、最大 1 行分（前後の `data-source-line` の要素の間の高さ）上にずれる。
 シナリオ『プレビューから設定を開く』の期待値「本文とスクロールの位置は押す前と同じ」と、インターフェース定義『プレビューを描き直す』の正常系（背面から戻る）の「1 px 以内で同じ」を満たさない。
-計画の扱いの判断（[#248 のコメント](https://github.com/shuhei1101/mdmark/issues/248#issuecomment-6540729877)）で、Sprint v0.9.0 の release の E2E の fail の修正とした。
+計画の扱いの判断（[VS Code のプレビューを設定画面から表に戻すと、スクロールの位置が押す前より最大 1 行分上にずれる（保存した行が整数に切り捨てられる） のコメント](https://github.com/shuhei1101/mdmark/issues/248#issuecomment-6540729877)）で、Sprint v0.9.0 の release の E2E の fail の修正とした。
 
 ## 計画書
 

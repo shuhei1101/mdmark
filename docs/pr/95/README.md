@@ -7,7 +7,7 @@ E2E の VS Code のケースが、並列のワーカーから同じキャッシ�
 ## 背景
 
 [E2E の VS Code のケースが、並列のワーカーが同じキャッシュへ VS Code を同時に展開して壊し、起動できずに落ちる](https://github.com/shuhei1101/mdmark/issues/88) の報告。
-release/v0.7.0 の E2E（[E2E 実行 Issue #56](https://github.com/shuhei1101/mdmark/issues/56)・[release PR #85](https://github.com/shuhei1101/mdmark/pull/85)）で、VS Code を起動する 8 ケースの 30 テストが全て fail した。
+release/v0.7.0 の E2E（[Sprint v0.7.0 の E2E 実行](https://github.com/shuhei1101/mdmark/issues/56)・[release/v0.7.0](https://github.com/shuhei1101/mdmark/pull/85)）で、VS Code を起動する 8 ケースの 30 テストが全て fail した。
 tester はテスト不備と切り分けた。
 `tests/e2e/vscode.ts` がテストごとに `downloadAndUnzipVSCode` を呼ぶため、キャッシュが無い状態から流すと複数のワーカーが同じ `vscode/.vscode-test/vscode-linux-x64-1.141.0` へ同時に展開し、壊れた展開が完了扱いのまま残る。
 キャッシュを消して 1 回だけ取り直すと、同じ 8 ファイルの 30 テストは全て pass した。

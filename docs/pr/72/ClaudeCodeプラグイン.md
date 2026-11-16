@@ -41,7 +41,7 @@
 SessionStart のフックで索引を渡すこと、MCP サーバーの `instructions`、ツールの呼び出しは、対話のセッションの起動の直後の依頼にも間に合った。
 MCP サーバーは CLI を `npx` で取得すると初回が 30 秒を超えるため、束ねた JavaScript をプラグインに置く。
 
-最小再現コードの要点（[#73 の diff](https://github.com/shuhei1101/mdmark/pull/73/files)）:
+最小再現コードの要点（[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー の diff](https://github.com/shuhei1101/mdmark/pull/73/files)）:
 
 ```jsonc
 // plugin/.mcp.json

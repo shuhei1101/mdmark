@@ -7,7 +7,7 @@ E2E『用語の意味をツールチップで見る』の `test_normal_when_keyb
 ## 背景
 
 [E2E『用語の意味をツールチップで見る』の test_normal_when_keyboard が最初の Tab で見出しのボタンに当たって fail する](https://github.com/shuhei1101/mdmark/issues/34) の不具合。
-release/v0.3.0 の E2E（[release PR #31](https://github.com/shuhei1101/mdmark/pull/31)）で、`test_normal_when_keyboard` が Chromium・Firefox の両方で fail した。
+release/v0.3.0 の E2E（[release/v0.3.0](https://github.com/shuhei1101/mdmark/pull/31)）で、`test_normal_when_keyboard` が Chromium・Firefox の両方で fail した。
 テストは `## 一つ目` の見出しで始まる文書で Tab を 1 回だけ押すが、見出しには節の開閉のボタンとアンカーのリンクが付き、用語は 3 回目の Tab でフォーカスされる。
 用語はキーボードでフォーカスでき、ツールチップも付くため、製品の挙動は要件どおりで、テストは [文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27) で足したもの。
 

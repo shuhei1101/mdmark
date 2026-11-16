@@ -8,7 +8,7 @@ jsDelivr の配布物と VS Code 拡張機能は、スプリントの区切り�
 ## 背景
 
 [プラグインの plugin.json から version を外し、develop に打ったタグで jsDelivr と VS Code 拡張機能を配る](https://github.com/shuhei1101/mdmark/issues/434) の要望。
-0.x の間は release を切らず develop だけで開発する運用（[shuhei1101/ai-monitor#3317](https://github.com/shuhei1101/ai-monitor/issues/3317)）に合わせる。
+0.x の間は release を切らず develop だけで開発する運用（[0.x の間は release を切らずに develop だけで開発し、E2E は master へ入れて v1.0.0 にするときだけ回す](https://github.com/shuhei1101/ai-monitor/issues/3317)）に合わせる。
 
 `plugin/.claude-plugin/plugin.json` が version（v0.10.0）を持つため、version を上げない限りプラグインが配布先に届かない。
 jsDelivr の配布物と VS Code 拡張機能は master のタグで配っている。

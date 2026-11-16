@@ -95,8 +95,8 @@ scope_out:
     reason: 公開の工程の追加で、この作業の契機の変更の後ろへ回した（task-planner の扱いの判断）
     plan: '#84'
   - item: dev-docs の画面と MindStella のプレビューが読む mdmark を develop に打ったタグへ切り替える
-    reason: 別のリポジトリの後続で、shuhei1101/dev-docs#127・shuhei1101/mindstella#475 として起票済み。この作業の完了後、起点 Issue で着手できる旨を知らせる
+    reason: '別のリポジトリの後続で、[画面が読む mdmark を mdmark@master から develop に打ったタグへ切り替える](https://github.com/shuhei1101/dev-docs/issues/127)・[プレビューが読む mdmark を mdmark@v0.8.0 から mdmark@v0.10.0 へ上げる](https://github.com/shuhei1101/mindstella/issues/475) として起票済み。この作業の完了後、起点 Issue で着手できる旨を知らせる'
     plan: none
   - item: テストの精査の工程（D-299）
-    reason: メジャーのリリースの前の工程で、AI Monitor の運用（shuhei1101/ai-monitor#3061）が持つ
+    reason: 'メジャーのリリースの前の工程で、AI Monitor の運用（[大規模改修の後に E2E の基準とケースを作り直し、E2E を回せる状態にする](https://github.com/shuhei1101/ai-monitor/issues/3061)）が持つ'
     plan: none

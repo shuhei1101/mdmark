@@ -12,7 +12,7 @@ CLI（`export`・`build`・`check`・`upgrade`）と MCP は、`--config`（MCP 
 VS Code 拡張機能は `mdmark.configPath` をワークスペースのフォルダから解決するだけで上へ探さず、設定ファイルから `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`assets.root` だけを取り出す。
 そのため `theme` の CSS と `extensions` の拡張が書き出した HTML には当たるがプレビューには当たらず、設定を読む処理も CLI（`src/cli/config.ts`）と拡張機能（`vscode/src/config.ts`）に別々にある。
 
-端末の設定の場所と環境変数 `MDMARK_CONFIG` は、[#165 のユーザーのコメント](https://github.com/shuhei1101/mdmark/issues/165#issuecomment-6652543567) で決まった。
+端末の設定の場所と環境変数 `MDMARK_CONFIG` は、[プラグインにセットアップのスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る のユーザーのコメント](https://github.com/shuhei1101/mdmark/issues/165#issuecomment-6652543567) で決まった。
 文書ごとのページの設定（[配色（ライト・ダーク）などのページの設定を、文書の先頭の印で指定できるようにする](https://github.com/shuhei1101/mdmark/issues/161)）と CSS のテンプレート（[グローバルの設定のフォルダに CSS のテンプレートを置き、MCP で一覧・登録・配置できるようにする](https://github.com/shuhei1101/mdmark/issues/164)）は、この PR の設定の読み方を前提にする。
 
 ## 計画書

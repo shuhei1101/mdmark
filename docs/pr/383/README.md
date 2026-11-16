@@ -9,7 +9,7 @@
 [Git フック（lefthook）から lint・型検査・テストを外し、生成のジョブだけを残す](https://github.com/shuhei1101/mdmark/issues/377) の要望。
 lefthook の pre-commit（Biome・Webview の ESLint・型検査）と pre-push（`npm run test:unit`）が、planner が lint とテストを実行してログを残し、reviewer がログを確認する手順と同じ検査を重ねて実行している。
 2026-11-07 は pre-push の単体テストが端末の負荷でタイムアウトし、`git push --no-verify` で push した（[配布物のビルドの期待値で、plugin/scripts/session-start.js を生成物として扱う](https://github.com/shuhei1101/mdmark/pull/374)）。
-ユーザーが手元のクローンのフックを削除しても、`npm ci` がフックを入れ直す（[Issue #377 のコメント](https://github.com/shuhei1101/mdmark/issues/377#issuecomment-6712018509)）。
+ユーザーが手元のクローンのフックを削除しても、`npm ci` がフックを入れ直す（[Git フック（lefthook）から lint・型検査・テストを外し、生成のジョブだけを残す のコメント](https://github.com/shuhei1101/mdmark/issues/377#issuecomment-6712018509)）。
 lefthook は [VS Code の webview の画面を React（Vite + shadcn/ui）へ移す](https://github.com/shuhei1101/mdmark/pull/342) で導入し、[GitHub の参照から入れたときに prepare の開発用の処理を飛ばし、利用者と同じ入れ方で起動する e2e を追加する](https://github.com/shuhei1101/mdmark/pull/370) でフックの導入を `prepare` から lefthook の package の postinstall に移した。
 
 ## 計画書

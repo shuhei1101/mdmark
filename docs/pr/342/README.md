@@ -8,8 +8,8 @@ viewer・書き出す HTML の部品・CDN で配る `dist/index.js` と公開�
 ## 背景
 
 [VS Code の webview の画面を React（Vite + shadcn/ui）へ移す](https://github.com/shuhei1101/mdmark/issues/173) の要望。
-knowledge の規約をバニラ TS から React 前提に改めたのに合わせて（[shuhei1101/knowledge#79](https://github.com/shuhei1101/knowledge/issues/79)・[shuhei1101/knowledge#80](https://github.com/shuhei1101/knowledge/issues/80)）、バニラ TS で実装した Webview の画面（`vscode/src/webview/`）を React へ移す。
-モックの手順は [shuhei1101/ai-monitor#3065](https://github.com/shuhei1101/ai-monitor/issues/3065) で Storybook + MSW に切り替わった。
+knowledge の規約をバニラ TS から React 前提に改めたのに合わせて（[React の規約を新設し、next/ の規約を rules.yaml から外す](https://github.com/shuhei1101/knowledge/issues/79)・[html・ui の規約を React 前提に見直し、キーボード操作とタグの絞り込みの規約を ui に新設する](https://github.com/shuhei1101/knowledge/issues/80)）、バニラ TS で実装した Webview の画面（`vscode/src/webview/`）を React へ移す。
+モックの手順は [designer のモックの手順と規約『モック画面構成』を Storybook + MSW に切り替え、knowledge の規約・テンプレートの参照を見直す](https://github.com/shuhei1101/ai-monitor/issues/3065) で Storybook + MSW に切り替わった。
 
 viewer（`src/viewer/`）は `mdmark build` が書き出す全ての HTML に埋め込まれるため、React にすると書き出す HTML ごとに React のランタイムが入る。
 表など書き出す HTML の部品も同じ理由で今のまま残す（[確認事項の回答](https://github.com/shuhei1101/mdmark/issues/173#issuecomment-6454379370)）。
