@@ -30,7 +30,10 @@ functions:
         mock: なし
         expected: '`<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>`（`open` を持たない）'
     status: planned
-lead: '`frontmatter.ts` の関数（フロントマターの表示を描く）。'
+lead: 'フロントマターの表示の折り畳みの HTML を受け持ち、フロントマターの表示の HTML を変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: topic:フロントマター
     main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

@@ -27,7 +27,7 @@ functions:
     returns:
       type: ReactElement
       description: 描く要素
-lead: '`vscode-theme.tsx` の関数（VS Code の配色を与える）と定数（VS Code の配色の仮の値）。'
+lead: 'ストーリーへの VS Code の配色の適用を受け持ち、Storybook で VS Code の配色を確認する仕組みを変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true

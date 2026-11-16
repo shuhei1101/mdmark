@@ -34,7 +34,9 @@ functions:
     refs:
       - CMP-472-34#
     status: planned
-lead: '`back-to-top.ts` の関数（先頭へ戻るボタンを描く）。'
+lead: '先頭へ戻るボタンの HTML を受け持ち、先頭へ戻るボタンの外観を変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:描画

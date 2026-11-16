@@ -25,7 +25,9 @@ functions:
         expected: 1 つ目は `div.mdmark-wide-bar` の `button.mdmark-wide-toggle[aria-pressed="true"][aria-label="広げて表示"]` と `<div class="mdmark-wide-range" data-state="wide">`、2 つ目は帯が無い `data-state="narrow"` の範囲
         mock: なし
         summary: ボタンの有無と状態を描く
-lead: '`wide.ts` の関数（wide の範囲を描く）。'
+lead: 'wide の範囲の HTML を受け持ち、wide の範囲の外観を変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:描画

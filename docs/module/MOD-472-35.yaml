@@ -54,3 +54,5 @@ notes:
 tags:
   - name: topic:差分
     main: true
+  - name: action:削除
+  - name: action:取り出し

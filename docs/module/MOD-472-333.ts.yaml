@@ -88,7 +88,10 @@ functions:
         condition: '`items: []`'
         mock: なし
         expected: 空文字
-lead: '`footnote.ts` の関数（脚注の番号を描く・脚注の一覧を描く）。'
+lead: '脚注の番号と脚注の一覧の HTML を受け持ち、脚注の外観を変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: topic:脚注
     main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

@@ -21,8 +21,12 @@ functions:
     refs:
       - CMP-472-6#
     status: planned
-lead: '`mermaid-fixtures.ts` の関数（mermaid の見本の SVG を記載する）。'
+lead: 'mermaid の見本の SVG の書き出しを受け持ち、mermaid のバージョンや mermaid の図のストーリーの見本を変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: tool:storybook
     main: true
+  - name: tool:playwright
+  - name: topic:図
+  - name: topic:部品
   - name: action:描画
+  - name: action:書き出し

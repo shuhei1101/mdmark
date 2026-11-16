@@ -13,4 +13,5 @@ notes:
 tags:
   - name: topic:api
     main: true
-  - name: topic:エントリーポイント
+  - name: topic:エントリポイント
+  - name: action:配布

@@ -25,7 +25,9 @@ functions:
         condition: '`row: 1`、`columns: 3`、`label: table`'
         mock: なし
         expected: '`row` が `<tr class="mdmark-row-detail" data-row="1" … hidden><td colspan="3">`、`toggle` が `aria-expanded="false"` と `aria-label="「table」の詳細"`'
-lead: '`row-detail.ts` の関数（行の詳細を描く）。'
+lead: '行の詳細の部品が返却する HTML を受け持ち、行の詳細の外観を変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:描画

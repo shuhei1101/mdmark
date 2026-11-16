@@ -43,7 +43,8 @@ functions:
       - IF-472-35#constraints[図の移動]
       - CMP-472-39#
     status: planned
-lead: '`diagram-touch.ts` の関数（指で図を動かす操作中を付ける）。'
+lead: '指で図を動かしている間の状態の付与を受け持ち、スマホでの図の操作を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: action:付与

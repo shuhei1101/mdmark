@@ -15,3 +15,5 @@ tags:
   - name: action:ビルド
     main: true
   - name: topic:配布物
+  - name: action:検査
+  - name: action:削除

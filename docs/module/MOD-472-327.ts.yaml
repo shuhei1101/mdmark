@@ -82,7 +82,11 @@ functions:
         mock: なし
         expected: '`figure` が `id="fig-schemes-b"`、`figcaption` が `<b>図 2b</b>暗い配色`'
     status: planned
-lead: '`image.ts` の関数（画像の拡大のボタンを描く・画像の図を描く）。'
+lead: '画像の図と拡大のボタンの HTML を受け持ち、画像の図の外観を変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: topic:画像
     main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画
+  - name: action:拡大

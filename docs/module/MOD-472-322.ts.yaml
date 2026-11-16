@@ -27,7 +27,10 @@ functions:
         condition: '`kind: image`、`number: 1`、`caption: 全体の構成` と、`kind: table`、`number: 1`'
         mock: なし
         expected: 1 つ目は中身の後に `<figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>`、2 つ目は中身の前に `<b>表 1</b>`
-lead: '`figure.ts` の関数（図表の番号を描く）。'
+lead: '図表の番号の部品が返却する HTML を受け持ち、図表の番号の外観を変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: topic:図表の番号
     main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

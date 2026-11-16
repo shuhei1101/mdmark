@@ -13,3 +13,5 @@ notes:
 tags:
   - name: topic:拡張
     main: true
+  - name: action:検査
+  - name: action:登録

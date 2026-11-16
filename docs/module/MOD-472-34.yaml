@@ -33,3 +33,6 @@ notes:
 tags:
   - name: topic:図
     main: true
+  - name: action:計算
+  - name: action:移動
+  - name: action:拡大

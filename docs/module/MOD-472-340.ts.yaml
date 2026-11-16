@@ -179,8 +179,10 @@ functions:
         condition: '`RENDER_PORT` が無い'
         mock: '`process.env` から `RENDER_PORT` を削除する'
         expected: '`process.exitCode` が 1、標準エラーに `RENDER_PORT` が出る'
-lead: '`storybook-render.ts` の関数（部品の HTML を返却する・描画のインターフェースを作る・描画のインターフェースを起動する）と定数（描画のインターフェースの待受アドレス）。'
+lead: '部品の HTML と CSS を返却する HTTP サーバーを受け持ち、Storybook で部品を確認する仕組みを変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: topic:ストーリー
     main: true
+  - name: tool:storybook
+  - name: topic:部品
   - name: action:描画

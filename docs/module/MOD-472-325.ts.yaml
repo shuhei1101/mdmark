@@ -40,7 +40,9 @@ functions:
     status: planned
     callees:
       - 'MOD-472-313#functions[escapeHtml]'
-lead: '`collapsible.ts` の関数（折り畳みを描く）。'
+lead: 'タブとステップの折り畳みの HTML を受け持ち、折り畳みの外観を変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:描画
