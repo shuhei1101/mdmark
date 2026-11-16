@@ -8085,13 +8085,16 @@
       display: block;
     }
 
-    /* ノードのリンク: 文字を本文のリンクの色と下線にし、文字を選ばせない。mermaid が SVG の中に置く層の外の style の文字色に勝つため !important を付ける */
+    /* ノードのリンク: 文字を本文のリンクの色と下線にし、文字を選ばせない */
     a.mdmark-diagram-node-link {
       cursor: pointer;
 
       :is(text, tspan, span, p, div) {
+        /* biome-ignore lint/complexity/noImportantStyles: mermaid が SVG の中に置く層の外の style より強くする */
         color: var(--mdmark-color-link) !important;
+        /* biome-ignore lint/complexity/noImportantStyles: mermaid が SVG の中に置く層の外の style より強くする */
         fill: var(--mdmark-color-link) !important;
+        /* biome-ignore lint/complexity/noImportantStyles: mermaid が SVG の中に置く層の外の style より強くする */
         text-decoration: underline !important;
         cursor: pointer;
         user-select: none;

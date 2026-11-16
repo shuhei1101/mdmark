@@ -13,8 +13,8 @@ import { renderEmbed } from "./parts/embed.ts";
 import { bundledIconNode } from "./parts/icons.ts";
 import { renderMermaidDiagram } from "./parts/mermaid.ts";
 import { renderNotice } from "./parts/notice.ts";
-import { isAllowedUrl } from "./render/sanitize.ts";
 import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
+import { isAllowedUrl } from "./render/sanitize.ts";
 
 /** `import()` で読み込んだ mermaid の ES モジュールが既定のエクスポートで持つ構造 */
 export type MermaidModule = {
