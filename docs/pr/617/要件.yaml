@@ -1,0 +1,22 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-50.yaml
+    impact: changed
+    detail: 正常シナリオで、Marketplace の最新のバージョンが変わるのはワークフローの完了から一覧に出るまで待った後になる
+    depends_on: []
+docs:
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: 拡張機能のタグの手順に、公開から Marketplace の一覧に出るまでの待ちと、一覧に出るまで条件で待つ公開の確認（上限と間隔の導出つき）と、回し直すときの判定を記載する
+    status: todo
+  - page: docs/library/LIB-472-34.yaml
+    new: false
+    change: '`vsce publish` の説明に、公開が終わっても Marketplace の一覧に出るまで数分〜十数分かかることを記載する'
+    status: todo
+scope_out:
+  - item: '#512 の反映作業のスクリプト（docs/pr/512/反映作業/拡張機能の最初のタグ/実行.sh）の修正'
+    reason: マージ済みの PR の記録で、#84 の反映作業は決着している。次に公開の反映作業を書くときの判定は開発コマンドへ記載する
+    plan: none
+  - item: knowledge の規約『VS Code 拡張機能の配布』への待ちの記載
+    reason: 要望は mdmark の開発コマンドと設計書への記載で、別のリポジトリの規約は含まれない
+    plan: none
