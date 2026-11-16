@@ -57,3 +57,7 @@ functions:
         mock: なし
         expected: '`aliases` が `undefined`、`issues` と `files` が空'
     status: planned
+lead: '`aliases.ts` の関数（エイリアスを読み込む）。'
+tags:
+  - name: topic:cli
+    main: true

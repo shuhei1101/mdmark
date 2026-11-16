@@ -114,3 +114,8 @@ functions:
     refs:
       - IF-472-21#constraints[再描画するまでの待ち]
     status: planned
+lead: '`settings.ts` の型（拡張機能の設定）と関数（設定を読み込む）と定数（設定の既定・再描画するまでの待ちの範囲）。'
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode

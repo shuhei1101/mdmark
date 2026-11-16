@@ -27,3 +27,7 @@ functions:
         expected: 前の欄で `r2`、後の欄で `r3` が選ばれ、前の欄の `r3` と後の欄の `r2`・`r1` が `disabled`。項目の文字が `2026/10/19 16:40 件数を修正する（鈴木）`。数の文が `削除した行 1・追加した行 8`
     refs:
       - CMP-472-32#
+lead: '`revision-picker.ts` の関数（リビジョンの選択を描く）。'
+tags:
+  - name: topic:差分
+    main: true

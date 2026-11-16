@@ -322,3 +322,7 @@ functions:
         mock: なし
         expected: どれも `ok` が `false` で、`problems[0]` が重なった `id`・列の名前、使用できる種類 `master・transaction`・色の名前・多重度 `1・0..1・1..n・0..n` をそれぞれ含む
     status: planned
+lead: '`definition.ts` の型（map の構成図のノードと線・グラフの定義・操作できる部品の定義・ER 図の定義など）と関数（定義の JSON を読み込む・定義を読み込んで構造を確認する）と定数（図の部品のマーカー・廃止した図の部品のマーカー）。'
+tags:
+  - name: topic:図
+    main: true

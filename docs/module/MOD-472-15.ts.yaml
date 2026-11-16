@@ -119,3 +119,8 @@ functions:
     refs:
       - IF-472-4#request[MDMARK_PORT]
     status: planned
+tags:
+  - name: topic:ポート
+    main: true
+  - name: topic:サーバー
+  - name: tool:claude-code

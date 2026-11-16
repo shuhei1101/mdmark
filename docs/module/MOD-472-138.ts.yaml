@@ -92,3 +92,8 @@ functions:
         condition: '`A => B: x`'
         mock: なし
         expected: '`problems` に `map_invalid` が 1 件'
+lead: '`sequence.ts` の型（シーケンス図の読み取り結果）と関数（sequenceDiagramを読む）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

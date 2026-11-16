@@ -51,3 +51,8 @@ functions:
         mock: なし
         expected: 先頭から 3 行で、`pr` が `#45` のようなリンクの文字
     status: planned
+lead: '`changelog.ts` の型（変更履歴の行）と関数（範囲の変更履歴を抽き出す）と定数（変更履歴のファイル）。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行

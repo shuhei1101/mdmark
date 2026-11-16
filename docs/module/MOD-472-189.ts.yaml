@@ -128,3 +128,7 @@ functions:
     refs:
       - IF-472-35#constraints[差分の出し方]
     status: planned
+lead: '`source.ts` の型（差分の取り出し元・リビジョン・差分の出し方）と関数（取り出し元の一覧を検める・差分の出し方を決める）と定数（対応する差分の出し方）。'
+tags:
+  - name: topic:差分
+    main: true

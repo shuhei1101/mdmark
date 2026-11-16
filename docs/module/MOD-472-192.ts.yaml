@@ -164,3 +164,7 @@ function_types:
     returns:
       type: '{ html: string; attach: (root: HTMLElement) => () => void }'
       description: '`html` は描いた範囲の中身。`attach` は、配置した要素に図の拡大・ツールチップ・操作できる部品などの操作を付け、削除する関数を返却する'
+lead: '`panel.ts` の関数（差分を付ける・id に頭を付ける）と関数型（埋め込んだ HTML を描く関数型）と定数（読み込み中を出すまでの待ち・回る表示を追加するまでの待ち・差分で隠した要素の属性）。'
+tags:
+  - name: topic:差分
+    main: true

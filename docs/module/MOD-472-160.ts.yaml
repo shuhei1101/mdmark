@@ -101,3 +101,8 @@ functions:
         condition: 担当が空の項目
         mock: なし
         expected: その項目の `dl` に `担当` の `dt` が無い
+lead: '`view.ts` の関数（ビューの HTML・切り替えの HTML・ボードの HTML）と定数（アイコンの形状）。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

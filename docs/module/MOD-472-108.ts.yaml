@@ -59,3 +59,7 @@ functions:
         expected: '`missing`・`heading`・`lines`（行の数 5）・`outside`・`circular`（順 `a.md → b.md → a.md`）の問題が 1 件ずつで、`outside.md` を読み込んでいない'
         mock: 一時フォルダに文書を配置する
         summary: 取り込めないものを種類ごとの問題にする
+lead: '`includes.ts` の型（取り込みの問題）と関数（取り込む文書を集める）。'
+tags:
+  - name: topic:cli
+    main: true

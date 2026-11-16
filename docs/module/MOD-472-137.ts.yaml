@@ -152,3 +152,8 @@ functions:
         condition: '`https://example.com/spec`・`./other.md`・`mailto:a@example.com`・`javascript:alert(1)`・`id:spec#items` のリンク先を持つ 5 つのノード'
         mock: なし
         expected: '`allowed` が前の 3 つで、`problems` が `javascript:alert(1)` と `id:spec#items` の 2 件。本文が画面設計『文書』の map のノードの許さないリンク先の文言と、ノードの ID とリンク先を含む'
+lead: '`flowchart.ts` の型（構成図の読み取り結果）と関数（flowchartを読む・文字の参照を文字に戻す・ノードのリンク先を確かめる）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

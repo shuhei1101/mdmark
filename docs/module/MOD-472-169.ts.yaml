@@ -23,3 +23,8 @@ functions:
         expected: '`v9.9.9` を返却する'
     refs:
       - IF-472-29#
+lead: '`index.ts` の関数（バージョンを返却する）。'
+tags:
+  - name: topic:api
+    main: true
+  - name: topic:エントリーポイント

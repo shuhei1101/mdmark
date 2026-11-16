@@ -14,3 +14,8 @@ functions:
     returns:
       type: ReadonlySet<string>
       description: アイコンの名前の集合
+lead: '`lucide-names.ts` の関数（Lucideのアイコンの名前）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

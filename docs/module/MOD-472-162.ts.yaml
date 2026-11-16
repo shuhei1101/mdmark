@@ -121,3 +121,8 @@ functions:
 notes:
   ブラウザのテストファイル: |-
     - `tests/unit/src/comments/margin.browser.test.ts`
+lead: '`margin.ts` の関数（余白のマーカーを付ける・マーカーの縦の位置を決める）と定数（同じ行とみなす差・マーカーの間の幅・開く処理の上限）。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

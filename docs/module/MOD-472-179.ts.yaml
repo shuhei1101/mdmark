@@ -75,3 +75,7 @@ functions:
         mock: なし
         expected: '`mdmark-diagram-height:/docs/a.html#1:問い合わせの流れ`'
     status: planned
+lead: '`diagram-resize.ts` の関数（リサイズハンドルを付ける・図の高さのキー）と定数（図の高さのキーの頭）。'
+tags:
+  - name: topic:図
+    main: true

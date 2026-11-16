@@ -451,3 +451,8 @@ functions:
       - '#functions[mapValues]'
       - '#functions[replaceMark]'
     status: planned
+lead: '`migrations.ts` の型（移行の手順・適用するバージョン・手順の当て先）と関数（移行の手順の構造を検める・適用するバージョンを読み込む・キーの名前を変える・無いキーを追加するなど）と定数（移行の手順のフォルダ・スクリプトの拡張子）。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行

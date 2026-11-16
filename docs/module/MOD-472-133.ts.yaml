@@ -702,3 +702,8 @@ functions:
         condition: '`mode: playback`・`unit: transition`'
         mock: なし
         expected: ボタンの名前が `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`
+lead: '`map.ts` の型（mapの構成図の引数・mapのシーケンス図の引数・案内の帯の引数・クラス図のクラスの中身など）と関数（mapの構成図のHTML・mapのシーケンス図のHTML・mapのER図のHTML・ER図の関連の端の付け替えなど）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

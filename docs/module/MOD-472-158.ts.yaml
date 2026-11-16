@@ -201,3 +201,8 @@ functions:
     refs:
       - IF-472-35#exceptions[なし（ビュー・コメントの部品のモジュールを読み込めない）]
       - IF-472-35#constraints[コメントの再読み込み]
+lead: '`mount-parts.ts` の型（描いた文書に付けた部品の操作）と関数（ビューを描く公開関数・コメントを付ける公開関数・描いた文書に部品を付ける）。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

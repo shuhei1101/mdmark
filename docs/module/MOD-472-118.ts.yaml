@@ -128,3 +128,7 @@ functions:
     callees:
       - MOD-472-212#functions[renderDocument]
     status: planned
+lead: '`used.ts` の関数（文書が使用するマーカーの名前を取得する・文書が mermaid を使用するかを確認する・文書が使用する色分けの言語を取得する・範囲のスクリプトを集める）。'
+tags:
+  - name: topic:cli
+    main: true

@@ -84,3 +84,7 @@ functions:
         mock: なし
         expected: '`dragstart` が `defaultPrevented`'
     status: planned
+lead: '`zoom.ts` の関数（拡大・縮小・移動を付ける）と定数（ドラッグとみなす距離）。'
+tags:
+  - name: topic:図
+    main: true

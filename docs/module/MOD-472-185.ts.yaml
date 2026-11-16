@@ -37,3 +37,7 @@ functions:
         condition: 写すボタンを押す
         mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒まれる関数に差し替える'
         expected: '`pre` が `hidden` を持たず、文字が写すはずだった JSON で、例外が外に出ない'
+lead: '`params.ts` の関数（操作できる部品の操作を付ける）。'
+tags:
+  - name: topic:図
+    main: true

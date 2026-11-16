@@ -83,3 +83,7 @@ functions:
         mock: なし
         expected: 2 つの範囲を返却し、1 つ目が `flow`・行 3・閉じのマーカーの行・`json` 1 つ（廃止した図の範囲も返却し、点検が `retired_diagram` にする）
     status: planned
+lead: '`diagrams.ts` の関数（図の部品のマーカーを部品にする・図の部品の範囲を探す）。'
+tags:
+  - name: topic:図
+    main: true

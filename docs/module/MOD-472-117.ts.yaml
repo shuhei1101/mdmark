@@ -115,3 +115,7 @@ functions:
         mock: なし
         expected: '`guide`'
     status: planned
+lead: '`documents.ts` の関数（まとめる文書を集める・索引と索引の文書を読み込む・文書のタイトルを決める）。'
+tags:
+  - name: topic:cli
+    main: true

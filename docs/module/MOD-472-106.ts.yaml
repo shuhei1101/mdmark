@@ -45,3 +45,8 @@ functions:
     refs:
       - LIB-472-11#
     status: planned
+lead: '`extensions-bundle.ts` の関数（拡張をまとめる）。'
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode

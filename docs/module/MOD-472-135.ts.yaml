@@ -156,3 +156,8 @@ functions:
         condition: '`icon: no-such-icon`'
         mock: なし
         expected: 1 件で、キーが `map.kinds.store.icon`
+lead: '`check.ts` の関数（書き方の誤りを集める・map の設定を点検する）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

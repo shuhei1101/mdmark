@@ -85,3 +85,7 @@ functions:
     refs:
       - IF-472-35#constraints[ミニマップ]
       - CMP-472-30#
+lead: '`minimap.ts` の関数（ミニマップを付ける）と定数（スクロール先ごとのミニマップ・帯に写す変数）。'
+tags:
+  - name: topic:差分
+    main: true

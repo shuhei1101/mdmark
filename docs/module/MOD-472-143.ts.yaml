@@ -313,3 +313,8 @@ functions:
     returns:
       type: void
       description: なし
+lead: '`mermaid.ts` の型（mermaid のモジュール）と関数（mermaid の図を付ける・mermaid の図を描く・テーマの変数を作る・色を hex にするなど）と定数（埋めた mermaid のモジュールの記録・mermaid の描画の順番・ガントチャートを描く幅の下限・開いたときの倍率の下限）。'
+tags:
+  - name: tool:mermaid
+    main: true
+  - name: topic:図

@@ -92,3 +92,8 @@ functions:
         mock: '`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`'
         expected: '`v0.5.0`'
     status: planned
+lead: '`versions.ts` の関数（バージョンを読み込む・バージョンを比べる・呼んだ CLI のバージョン）と定数（バージョンの書式）。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行

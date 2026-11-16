@@ -63,3 +63,8 @@ functions:
         mock: 一時フォルダ
         expected: 例外を投げず、`problems` が 1 件で `broken` とファイルのパスを含み、`changed` が `false`
     status: planned
+lead: '`alias-rows.mjs` の関数（エイリアスの元の行を新しい構造へ書き換える）。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行

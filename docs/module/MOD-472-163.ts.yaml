@@ -227,3 +227,8 @@ functions:
         expected: '`aria-label` が `コメント 2 件、「担当者」（選ばれていないタブの中）`、`span` が `2`、`data-closed="tab"`・`data-current` を持つ'
     refs:
       - CMP-472-33#
+lead: '`comment.ts` の関数（コメントのボタンの HTML・コメントの入力欄の HTML・コメントのマーカーの HTML・コメントの吹き出しの HTMLなど）と定数（閉じた中の種類の文言・入力欄の通知）。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

@@ -144,3 +144,7 @@ functions:
       - IF-472-38#
       - IF-472-13#
     status: planned
+lead: '`build.ts` の関数（複数の文書を 1 枚にまとめる・複数の文書を 1 枚にまとめて結果を返却する）。'
+tags:
+  - name: topic:cli
+    main: true

@@ -87,3 +87,7 @@ functions:
         mock: 呼ばれた URL を記録する `fetchText`
         expected: '`fetchText` が 2 回呼ばれ、同じ URL の 2 回は同じ本文'
     status: planned
+lead: '`bundle-module.ts` の関数（モジュールを 1 つにまとめる・URL を読み込む関数を記録付きにする）。'
+tags:
+  - name: topic:cli
+    main: true

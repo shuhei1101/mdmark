@@ -82,3 +82,8 @@ functions:
       - IF-472-35#exceptions[なし（コメントを修正・削除できない）]
       - CMP-472-17#
     status: planned
+lead: '`bubble.ts` の関数（コメントを修正・削除する）。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

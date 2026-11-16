@@ -152,3 +152,8 @@ functions:
         condition: '`entered: undefined`'
         mock: '`history`'
         expected: URL から `map-1` が消える
+lead: '`state.ts` の型（図の状態）と関数（状態を読む・状態を保つ）と定数（状態のキーの頭・クエリ文字列のキーの頭）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

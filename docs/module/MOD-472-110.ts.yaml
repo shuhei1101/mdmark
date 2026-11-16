@@ -567,3 +567,7 @@ functions:
         mock: なし
         expected: '`greet` の行の `legacy_mark` の 1 件だけ'
     status: planned
+lead: '`check.ts` の型（点検のずれ）と関数（設定と索引を点検する・点検のずれを集める・拡張のマーカーの名前を読み込む・知らないマーカーを点検する文書を集めるなど）。'
+tags:
+  - name: topic:cli
+    main: true

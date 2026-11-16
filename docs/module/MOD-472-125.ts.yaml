@@ -34,3 +34,7 @@ functions:
         mock: なし
         expected: '`aliases/a.yaml: alias_unreadable: m`'
     status: planned
+lead: '`issues.ts` の関数（ずれを 1 行にする）。'
+tags:
+  - name: topic:cli
+    main: true

@@ -39,3 +39,9 @@ functions:
         expected: 例外を投げ、フォルダに `.tmp` のファイルが無い
         exception: 置き換えられない
     status: planned
+lead: '`write.ts` の関数（一時ファイルから置き換える）。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: tool:vscode

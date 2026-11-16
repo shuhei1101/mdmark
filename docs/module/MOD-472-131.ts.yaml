@@ -93,3 +93,8 @@ functions:
         condition: '`mount` の参加者の箱の名前の外を押す'
         mock: なし
         expected: '`mount` が送る・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'
+lead: '`sequence-view.ts` の型（シーケンス図の操作の口）と関数（シーケンス図を付ける）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

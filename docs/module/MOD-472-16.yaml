@@ -59,3 +59,8 @@ notes:
     ```
 
     `main.tsx` と `panel.css` は Vite が `vscode/media/preview.js`（ES モジュール 1 ファイル）と `vscode/media/preview.css` に書き込む。mdmark の配布物はまとめず、実行時に `import()` で読み込む。`vscode/media/` は丸ごと git の管理の外にする。
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

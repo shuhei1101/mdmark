@@ -94,3 +94,8 @@ functions:
       - MOD-472-146#functions[validateSteps]
       - ER-472-5#
     status: planned
+lead: '`migrations.ts` の関数（最新のバージョンのタグを参照する・移行の手順を点検する）と定数（点検する Schema）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: topic:配布物

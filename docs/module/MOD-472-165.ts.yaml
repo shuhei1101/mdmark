@@ -266,3 +266,8 @@ functions:
     callees:
       - '#functions[toBrowserslist]'
       - '#functions[isGuardedByTypeof]'
+lead: '`baseline.ts` の型（下限に無い API の使用）と関数（対応ブラウザの下限に無い API を取得する・有無を確認した中かを判定する・ブラウザのバージョンを browserslist の記載方法に修正する・まとめた JS を下限のバージョンと照らす）と定数（下限と照らす入口）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: topic:配布物

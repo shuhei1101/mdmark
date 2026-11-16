@@ -96,3 +96,7 @@ notes:
     src/plugin/
     └── pre-tool-use.ts   # PreToolUse のフックの入口
     ```
+tags:
+  - name: topic:フック
+    main: true
+  - name: tool:claude-code

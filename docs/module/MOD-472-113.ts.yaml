@@ -164,3 +164,7 @@ functions:
         mock: 一時フォルダ
         expected: '`missing_file` が 2 件で、`where` が `3`・`5`、`message` に `none.png` と `画像`、`none.pdf` と `添付` が入る'
     status: planned
+lead: '`assets.ts` の型（ファイルの参照）と関数（ファイルの参照を取得する・アセットのルートでファイルを探す・動画と音声をコピーする・見つからないファイルを点検する）。'
+tags:
+  - name: topic:cli
+    main: true

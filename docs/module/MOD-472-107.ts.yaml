@@ -27,3 +27,7 @@ data_models:
       - name: message
         type: string
         description: 原因と修正方法の日本語の 1 文
+lead: '`errors.ts` の型（CLI の入出力・CLI の誤り）。'
+tags:
+  - name: topic:cli
+    main: true

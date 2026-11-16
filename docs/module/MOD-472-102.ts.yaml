@@ -106,3 +106,9 @@ functions:
     refs:
       - IF-472-15#constraints[埋める色分けのライブラリ]
     status: planned
+lead: '`embed.ts` の関数（相対パスのライブラリを埋める・相対パスの色分けのライブラリを埋める）。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: tool:vscode

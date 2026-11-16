@@ -61,3 +61,7 @@ functions:
         mock: 出力を配列に貯める `CliIo`、呼ばれたら失敗にする `Prompter`
         expected: 0 を返却し、標準出力に `適用する手順はありません` が出る
     status: planned
+lead: '`main.ts` の関数（CLI を実行する）。'
+tags:
+  - name: topic:cli
+    main: true

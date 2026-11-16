@@ -300,3 +300,8 @@ notes:
     ├── scripts/          # まとめたフック（pre-tool-use.js・session-start.js・guide-notice.js。生成）
     └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（生成）
     ```
+tags:
+  - name: topic:プラグイン
+    main: true
+  - name: action:ビルド
+  - name: tool:claude-code

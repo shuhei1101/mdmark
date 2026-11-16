@@ -235,3 +235,8 @@ functions:
         condition: '`follow([mount, marker])` を呼ぶ。表示する枠でホイールを回してからもう一度呼ぶ。`resumeFollow` の後にもう一度呼ぶ'
         mock: 表示する枠の `scrollTo`
         expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
+lead: '`flow-view.ts` の型（構成図の操作の口・構成図の種類ごとの差し込み）と関数（1つのノードの線と相手・2つのノードの最短の経路・構成図を付ける）と定数（薄くする対象）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

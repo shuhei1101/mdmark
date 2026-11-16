@@ -313,3 +313,7 @@ functions:
       - IF-472-33#
       - IF-472-9#
     status: planned
+lead: '`export.ts` の関数（埋めるものを用意する・文書を HTML に書き出す・配布物を読み込む・HTML を書き込むなど）。'
+tags:
+  - name: topic:cli
+    main: true

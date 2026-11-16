@@ -30,3 +30,7 @@ notes:
     ├── assets.ts        # 画像・動画・音声の探す場所の候補（vscode を import しない）
     └── includes.ts      # 取り込む文書の読み取り
     ```
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

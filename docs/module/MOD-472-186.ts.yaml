@@ -28,3 +28,7 @@ functions:
     refs:
       - 'MOD-472-172#functions[renderDiagramTip]'
     status: planned
+lead: '`hint.ts` の関数（ヒントのマーカーと中身を付ける）。'
+tags:
+  - name: topic:図
+    main: true

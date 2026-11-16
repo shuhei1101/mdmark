@@ -53,3 +53,7 @@ functions:
         mock: なし
         expected: ずれが 1 件で `where` が `aliases[0].metadata.name`、`message` が文字列にするよう求める
     status: planned
+lead: '`alias-schema.ts` の関数（エイリアスの行を Schema で検める）。'
+tags:
+  - name: topic:cli
+    main: true

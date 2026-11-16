@@ -145,3 +145,7 @@ functions:
         mock: なし
         expected: '`2月: 38`・`文字数 3・分 40`・`文字数 3・分 40・件数 16`・`50 件（50%）`'
     status: planned
+lead: '`chart.ts` の関数（グラフを描く・グラフの項目の値の文）と定数（系列の外観の組・グラフの点のクリックを受ける半径）。'
+tags:
+  - name: topic:図
+    main: true

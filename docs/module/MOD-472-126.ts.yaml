@@ -25,3 +25,7 @@ functions:
         expected: '`icons` が `sailboat` だけを持ち、`missing` が `["no-such-icon"]`'
         mock: なし
         summary: まとめていない名前の構造だけを取り出す
+lead: '`icons.ts` の関数（埋めるアイコンの形状を集める）。'
+tags:
+  - name: topic:cli
+    main: true

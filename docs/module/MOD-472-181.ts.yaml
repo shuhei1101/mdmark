@@ -60,3 +60,7 @@ functions:
         condition: '`strength` の `knob` と 8'
         mock: なし
         expected: '`JSON.parse` すると `{"strength": {"name": "反応の強さ", "value": 8}}`'
+lead: '`param.ts` の関数（操作できる部品を描く・今の値の JSON）。'
+tags:
+  - name: topic:図
+    main: true

@@ -196,3 +196,8 @@ styles:
       - CMP-472-64#
       - CMP-472-58#
       - CMP-472-57#
+lead: '`index.css` のスタイル（入口の CSS）。'
+tags:
+  - name: topic:api
+    main: true
+  - name: topic:エントリーポイント

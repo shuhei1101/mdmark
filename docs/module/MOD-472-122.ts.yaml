@@ -62,3 +62,7 @@ functions:
     refs:
       - IF-472-39#constraints[変わった文書]
     status: planned
+lead: '`git.ts` の関数（比べる基準から変わったファイルを参照する）。'
+tags:
+  - name: topic:cli
+    main: true

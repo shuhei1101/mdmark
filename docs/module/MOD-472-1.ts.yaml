@@ -502,3 +502,8 @@ notes:
     schemas/
     └── mdmark.templates.schema.json  # テンプレートの索引の JSON Schema
     ```
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: tool:claude-code

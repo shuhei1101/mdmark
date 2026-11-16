@@ -39,3 +39,8 @@ functions:
       - IF-472-25#
       - SCR-472-1#elements[雛形を作るかの確認]
     status: planned
+lead: '`config-file.ts` の関数（設定ファイルを開く）。'
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode

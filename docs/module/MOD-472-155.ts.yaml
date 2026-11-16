@@ -151,3 +151,8 @@ functions:
         condition: 一致した値・`id` の無い値・`body` が数の値
         mock: なし
         expected: '`true`・`false`・`false`'
+lead: '`spec.ts` の型（コメントの下書き・コメント・コメントの読み込みと保存の関数・コメントの片付け）と関数（コメントの引数を検める・コメントの読み込みと保存の関数を検める・コメントの構造か）。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

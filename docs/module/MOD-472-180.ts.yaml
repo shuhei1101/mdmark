@@ -31,3 +31,7 @@ functions:
         condition: 外部ライブラリ『lucide』の一覧の全てのアイコンを `data-mdmark-own` を付けて描画の sanitize に経由する
         mock: なし
         expected: どのアイコンも経由する前と後で要素と属性が同じ（`database` の `ellipse` と `copy` の `ry` が残る）
+lead: '`icons.ts` の関数（アイコンの svg）。'
+tags:
+  - name: topic:図
+    main: true
