@@ -2104,3 +2104,562 @@ files:
     related:
       - to: src/render/syntax/map.ts
         type: tests
+  - path: integration/ClaudeCodeプラグイン/add-template.test.ts
+    description: 'インターフェース定義『CSSのテンプレートを登録する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code, topic:テンプレート]
+    related:
+      - to: IF-472-2
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/apply-template.test.ts
+    description: 'インターフェース定義『CSSのテンプレートを配置する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code, topic:テンプレート]
+    related:
+      - to: IF-472-3
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/list-templates.test.ts
+    description: 'インターフェース定義『CSSのテンプレートの一覧を返却する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code, topic:テンプレート]
+    related:
+      - to: IF-472-1
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/session-start.test.ts
+    description: 'インターフェース定義『常駐サーバーの状態を伝える』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code, topic:フック]
+    related:
+      - to: IF-472-6
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/setup-keys.test.ts
+    description: 'インターフェース定義『設定のキーの一覧を返却する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: IF-472-14
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/setup-start-server.test.ts
+    description: 'インターフェース定義『常駐サーバーを起動する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: IF-472-7
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/setup-status.test.ts
+    description: 'インターフェース定義『端末の状態を調べる』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: IF-472-11
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/setup-write-config.test.ts
+    description: 'インターフェース定義『文書のフォルダの設定を書き込む』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: IF-472-8
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/setup-write-settings.test.ts
+    description: 'インターフェース定義『端末の設定を書き込む』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: IF-472-12
+        type: see_also
+  - path: integration/lib/back-to-top.story.test.ts
+    description: '部品設計『先頭へ戻るボタン』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/back-to-top.ts
+        type: tests
+      - to: CMP-472-34
+        type: see_also
+  - path: integration/lib/card-grid.story.test.ts
+    description: '部品設計『カードの格子』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/card-grid.ts
+        type: tests
+      - to: CMP-472-10
+        type: see_also
+  - path: integration/lib/card.story.test.ts
+    description: '部品設計『カード』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/card.ts
+        type: tests
+      - to: CMP-472-9
+        type: see_also
+  - path: integration/lib/comment-marker.story.test.ts
+    description: '部品設計『余白のマーカー』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/comment.ts
+        type: tests
+      - to: CMP-472-33
+        type: see_also
+  - path: integration/lib/config-cascade.test.ts
+    description: 'インターフェース定義『設定を重ねて読み込む』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, topic:設定]
+    related:
+      - to: IF-472-40
+        type: see_also
+  - path: integration/lib/details-range.story.test.ts
+    description: '部品設計『details の範囲』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/collapsible.ts
+        type: tests
+      - to: CMP-472-3
+        type: see_also
+  - path: integration/lib/gallery.story.test.ts
+    description: '部品設計『ギャラリー』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/gallery.ts
+        type: tests
+      - to: CMP-472-12
+        type: see_also
+  - path: integration/lib/gif.story.test.ts
+    description: '部品設計『GIF』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/gif.ts
+        type: tests
+      - to: CMP-472-2
+        type: see_also
+  - path: integration/lib/highlight.story.test.ts
+    description: '部品設計『蛍光ペン』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/highlight.ts
+        type: tests
+      - to: CMP-472-59
+        type: see_also
+  - path: integration/lib/image-figure.story.test.ts
+    description: '部品設計『画像の図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/image.ts
+        type: tests
+      - to: CMP-472-54
+        type: see_also
+  - path: integration/lib/inline-icon.story.test.ts
+    description: '部品設計『アイコン』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/inline-icon.ts
+        type: tests
+      - to: CMP-472-8
+        type: see_also
+  - path: integration/lib/kbd.story.test.ts
+    description: '部品設計『キー』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/kbd.ts
+        type: tests
+      - to: CMP-472-11
+        type: see_also
+  - path: integration/lib/layout-columns.story.test.ts
+    description: '部品設計『段組み』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/layout-columns.ts
+        type: tests
+      - to: CMP-472-51
+        type: see_also
+  - path: integration/lib/lightbox.story.test.ts
+    description: '部品設計『ライトボックス』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/lightbox.ts
+        type: tests
+      - to: CMP-472-31
+        type: see_also
+  - path: integration/lib/map-architecture.story.test.ts
+    description: '部品設計『mapのアーキテクチャ図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-596-2
+        type: see_also
+  - path: integration/lib/map-band.story.test.ts
+    description: '部品設計『案内の帯』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-472-50
+        type: see_also
+  - path: integration/lib/map-c4.story.test.ts
+    description: '部品設計『mapのC4図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-596-3
+        type: see_also
+  - path: integration/lib/map-class.story.test.ts
+    description: '部品設計『mapのクラス図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-596-1
+        type: see_also
+  - path: integration/lib/map-er.story.test.ts
+    description: '部品設計『mapのER図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-531-1
+        type: see_also
+  - path: integration/lib/map-flow.story.test.ts
+    description: '部品設計『mapの構成図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-472-5
+        type: see_also
+  - path: integration/lib/map-sequence.story.test.ts
+    description: '部品設計『mapのシーケンス図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-472-4
+        type: see_also
+  - path: integration/lib/map-state.story.test.ts
+    description: '部品設計『mapの状態遷移図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map.ts
+        type: tests
+      - to: CMP-531-2
+        type: see_also
+  - path: integration/lib/media.story.test.ts
+    description: '部品設計『動画と音声』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/media.ts
+        type: tests
+      - to: CMP-472-36
+        type: see_also
+  - path: integration/lib/mermaid-diagram.story.test.ts
+    description: '部品設計『mermaid の図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/parts/mermaid.ts
+        type: tests
+      - to: CMP-472-6
+        type: see_also
+  - path: integration/lib/text-color.story.test.ts
+    description: '部品設計『文字の色』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/text-color.ts
+        type: tests
+      - to: CMP-472-48
+        type: see_also
+  - path: integration/lib/wide.story.test.ts
+    description: '部品設計『wide の範囲』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest]
+    related:
+      - to: src/parts/wide.ts
+        type: tests
+      - to: CMP-472-7
+        type: see_also
+  - path: integration/terminal.ts
+    description: '結合テストが使用する一時の端末（環境変数・端末の設定と状態の配置場所・settings.json のパス）と、tmux・systemd --user が使用できるかの確認を受け持つ。結合テストの準備や確認方法を変えるときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code]
+  - path: integration/vscode/media-error.story.test.ts
+    description: '部品設計『再生できない動画・音声の通知』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, tool:vscode]
+    related:
+      - to: vscode/src/webview/shared/lib/media-error.ts
+        type: tests
+      - to: CMP-472-35
+        type: see_also
+  - path: unit/helpers/marks.ts
+    description: '単体テストで、名前と JSON のオブジェクトの設定から開きのマーカーを作る処理を受け持つ。単体テストの準備や比べ方を変えるときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown]
+  - path: unit/helpers/storage.ts
+    description: '単体テストで sessionStorage の代わりに指定する Storage の構造のオブジェクト（Map で包んだもの・読み込みと保存のたびに例外を投げるもの）を受け持つ。単体テストの準備や比べ方を変えるときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:モック]
+  - path: unit/migrations/marker-json.test.ts
+    description: 'migrations/v0.11.0/marker-json.mjs（「文書のマーカーの今の書き方を JSON のオブジェクトに書き換える移行のスクリプト」）を確認する単体テスト。marker-json.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:markdown]
+    related:
+      - to: migrations/v0.11.0/marker-json.mjs
+        type: tests
+  - path: unit/src/cli/markdown-check.test.ts
+    description: 'src/cli/markdown-check.ts（「指定した Markdown の文字列とファイルの YAML のキーの値の記法の点検 checkMarkdownSource」）を確認する単体テスト。markdown-check.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:検査]
+    related:
+      - to: src/cli/markdown-check.ts
+        type: tests
+  - path: unit/src/code-fold-logic.test.ts
+    description: 'src/code-fold-logic.ts（「コードの行のインデントのレベル・畳む行の数・隠す行・縦線の範囲の計算（記法と操作が使用する）」）を確認する単体テスト。code-fold-logic.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/code-fold-logic.ts
+        type: tests
+  - path: unit/src/comments/margin.browser.test.ts
+    description: 'src/comments/margin.ts（「本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを配置する（dist/comments.js）」）を確認するブラウザで実行する単体テスト。margin.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/comments/margin.ts
+        type: tests
+  - path: unit/src/comments/margin.test.ts
+    description: 'src/comments/margin.ts（「本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを配置する（dist/comments.js）」）を確認する単体テスト。margin.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:ビュー, topic:コメント]
+    related:
+      - to: src/comments/margin.ts
+        type: tests
+  - path: unit/src/config-files.test.ts
+    description: 'src/config-files.ts を確認する単体テスト。config-files.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:設定]
+    related:
+      - to: src/config-files.ts
+        type: tests
+  - path: unit/src/html-scripts.browser.test.ts
+    description: 'src/html-scripts.ts（「埋め込んだ HTML の範囲の ts・js を変換して動かす runHtmlScripts と、変換のライブラリの読み込み・埋めた関数の記録」）を確認するブラウザで実行する単体テスト。html-scripts.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:markdown]
+    related:
+      - to: src/html-scripts.ts
+        type: tests
+  - path: unit/src/interact/back-to-top.browser.test.ts
+    description: 'src/interact/back-to-top.ts（「先頭へ戻るボタンを配置し、出し分け・配置する位置・押したときの移動を付ける」）を確認するブラウザで実行する単体テスト。back-to-top.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/back-to-top.ts
+        type: tests
+  - path: unit/src/interact/code-folds.browser.test.ts
+    description: 'src/interact/code-folds.ts（「コードの行の開閉とインデントの縦線の範囲」）を確認するブラウザで実行する単体テスト。code-folds.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/code-folds.ts
+        type: tests
+  - path: unit/src/interact/diagram-resize.browser.test.ts
+    description: 'src/interact/diagram-resize.ts（「表示する枠の高さを変えるリサイズハンドルと高さの保持」）を確認するブラウザで実行する単体テスト。diagram-resize.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/interact/diagram-resize.ts
+        type: tests
+  - path: unit/src/interact/diagram-touch.browser.test.ts
+    description: 'src/interact/diagram-touch.ts（「指で図を動かす操作中」）を確認するブラウザで実行する単体テスト。diagram-touch.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/interact/diagram-touch.ts
+        type: tests
+  - path: unit/src/interact/part-states.browser.test.ts
+    description: 'src/interact/part-states.ts を確認するブラウザで実行する単体テスト。part-states.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/interact/scroller.browser.test.ts
+    description: 'src/interact/scroller.ts（「要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使用する）」）を確認するブラウザで実行する単体テスト。scroller.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
+    related:
+      - to: src/interact/scroller.ts
+        type: tests
+  - path: unit/src/interact/table-resize.browser.test.ts
+    description: 'src/interact/table-resize.ts（「列の幅のつまみのドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す」）を確認するブラウザで実行する単体テスト。table-resize.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: src/interact/table-resize.ts
+        type: tests
+  - path: unit/src/interact/table-settings.browser.test.ts
+    description: 'src/interact/table-settings.ts（「テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）」）を確認するブラウザで実行する単体テスト。table-settings.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: src/interact/table-settings.ts
+        type: tests
+  - path: unit/src/interact/table-tree.browser.test.ts
+    description: 'src/interact/table-tree.ts（「階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動」）を確認するブラウザで実行する単体テスト。table-tree.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: src/interact/table-tree.ts
+        type: tests
+  - path: unit/src/interact/table-width.browser.test.ts
+    description: 'src/interact/table-width.ts を確認するブラウザで実行する単体テスト。table-width.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/annotations.browser.test.ts
+    description: 'src/map/annotations.ts（「図の要素ごとの注記の readMapAnnotations と、持ち主の id を一覧の戻るリンクに合わせる linkAnnotationOwners」）を確認するブラウザで実行する単体テスト。annotations.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:map, topic:注記]
+    related:
+      - to: src/map/annotations.ts
+        type: tests
+  - path: unit/src/map/architecture-view.browser.test.ts
+    description: 'src/map/architecture-view.ts を確認するブラウザで実行する単体テスト。architecture-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/architecture.test.ts
+    description: 'src/map/architecture.ts を確認する単体テスト。architecture.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/c4-view.browser.test.ts
+    description: 'src/map/c4-view.ts を確認するブラウザで実行する単体テスト。c4-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/c4.test.ts
+    description: 'src/map/c4.ts を確認する単体テスト。c4.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/class-diagram.test.ts
+    description: 'src/map/class-diagram.ts を確認する単体テスト。class-diagram.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/class-view.browser.test.ts
+    description: 'src/map/class-view.ts を確認するブラウザで実行する単体テスト。class-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/er-view.browser.test.ts
+    description: 'src/map/er-view.ts を確認するブラウザで実行する単体テスト。er-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/er.test.ts
+    description: 'src/map/er.ts を確認する単体テスト。er.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/state-diagram.test.ts
+    description: 'src/map/state-diagram.ts を確認する単体テスト。state-diagram.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/state-view.browser.test.ts
+    description: 'src/map/state-view.ts を確認するブラウザで実行する単体テスト。state-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/parts/back-to-top.test.ts
+    description: 'src/parts/back-to-top.ts（「先頭へ戻るボタンの renderBackToTop」）を確認する単体テスト。back-to-top.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
+    related:
+      - to: src/parts/back-to-top.ts
+        type: tests
+  - path: unit/src/parts/card-grid.test.ts
+    description: 'src/parts/card-grid.ts（「カードの格子の renderCardGrid」）を確認する単体テスト。card-grid.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:カード]
+    related:
+      - to: src/parts/card-grid.ts
+        type: tests
+  - path: unit/src/parts/chart.test.ts
+    description: 'src/parts/chart.ts（「グラフの種類ごとの描き方と系列の外観の組」）を確認する単体テスト。chart.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
+    related:
+      - to: src/parts/chart.ts
+        type: tests
+  - path: unit/src/plugin/port.test.ts
+    description: 'src/plugin/port.ts（「`127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り」）を確認する単体テスト。port.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: src/plugin/port.ts
+        type: tests
+  - path: unit/src/plugin/session-start.test.ts
+    description: 'src/plugin/session-start.ts（「常駐サーバーが待ち受けていないときだけ、そのことを 1 行で指定する SessionStart のフックの入口」）を確認する単体テスト。session-start.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
+    related:
+      - to: src/plugin/session-start.ts
+        type: tests
+  - path: unit/src/plugin/setup/keys.test.ts
+    description: 'src/plugin/setup/keys.ts（「`keys` の結果」）を確認する単体テスト。keys.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: src/plugin/setup/keys.ts
+        type: tests
+  - path: unit/src/plugin/setup/main.test.ts
+    description: 'src/plugin/setup/main.ts（「`setup.js` の入口とサブコマンドの振り分け」）を確認する単体テスト。main.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定, topic:cli]
+    related:
+      - to: src/plugin/setup/main.ts
+        type: tests
+  - path: unit/src/plugin/setup/paths.test.ts
+    description: 'src/plugin/setup/paths.ts（「端末の設定・状態の配置場所・`settings.json`・unit のファイルのパスと、起動の方法・unit の名前・tmux のセッション名の読み取り」）を確認する単体テスト。paths.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: src/plugin/setup/paths.ts
+        type: tests
+  - path: unit/src/plugin/setup/server.test.ts
+    description: 'src/plugin/setup/server.ts（「`start-server` の起動の方法の決定・systemd --user の unit と tmux のセッションでの起動・待ち受けの確認」）を確認する単体テスト。server.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: src/plugin/setup/server.ts
+        type: tests
+  - path: unit/src/plugin/setup/status.test.ts
+    description: 'src/plugin/setup/status.ts（「`status` の結果」）を確認する単体テスト。status.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: src/plugin/setup/status.ts
+        type: tests
+  - path: unit/src/plugin/setup/systemd.test.ts
+    description: 'src/plugin/setup/systemd.ts（「systemd --user の確認・unit のファイルの組み立て・unit の状態の読み取り」）を確認する単体テスト。systemd.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: src/plugin/setup/systemd.ts
+        type: tests
+  - path: unit/src/plugin/setup/write.test.ts
+    description: 'src/plugin/setup/write.ts（「`write-settings`・`write-config` と `settings.json` の `env` の書き換え」）を確認する単体テスト。write.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code, topic:設定]
+    related:
+      - to: src/plugin/setup/write.ts
+        type: tests
+  - path: unit/src/render/legacy-marks.test.ts
+    description: 'src/render/legacy-marks.ts（「今の書き方の引数の JSON のオブジェクトへの変換と、文書の書き換え」）を確認する単体テスト。legacy-marks.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:マーカー, topic:移行]
+    related:
+      - to: src/render/legacy-marks.ts
+        type: tests
+  - path: unit/src/render/mark-options.test.ts
+    description: 'src/render/mark-options.ts（「マーカーの引数の JSON の読み取りと、読めない JSON の警告の文」）を確認する単体テスト。mark-options.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:マーカー, topic:json]
+    related:
+      - to: src/render/mark-options.ts
+        type: tests
+  - path: unit/src/render/mark-schema.test.ts
+    description: 'src/render/mark-schema.ts（「マーカーごとの JSON Schema での設定の検証と、点検だけが通知する注記」）を確認する単体テスト。mark-schema.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:マーカー, topic:スキーマ, action:検証]
+    related:
+      - to: src/render/mark-schema.ts
+        type: tests
+  - path: unit/src/render/page.test.ts
+    description: 'src/render/page.ts（「page のマーカーの設定を記載した順に重ねる readPageSettings」）を確認する単体テスト。page.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:マーカー, topic:設定]
+    related:
+      - to: src/render/page.ts
+        type: tests
+  - path: unit/src/render/scope-css.test.ts
+    description: 'src/render/scope-css.ts（「埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）」）を確認する単体テスト。scope-css.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:css]
+    related:
+      - to: src/render/scope-css.ts
+        type: tests
+  - path: unit/src/render/syntax/annotations.test.ts
+    description: 'src/render/syntax/annotations.ts（「注記の定義・参照の読み取りと番号・記載の警告・末尾の一覧・機能のオフの文字への戻し」）を確認する単体テスト。annotations.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:注記]
+    related:
+      - to: src/render/syntax/annotations.ts
+        type: tests
+  - path: unit/src/render/syntax/card-grid.test.ts
+    description: 'src/render/syntax/card-grid.ts（「カードの格子のマーカーの中のリストを部品『カードの格子』にするコアルールの buildCardGrid」）を確認する単体テスト。card-grid.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:カード]
+    related:
+      - to: src/render/syntax/card-grid.ts
+        type: tests
+  - path: unit/src/render/syntax/table-cells.test.ts
+    description: 'src/render/syntax/table-cells.ts（「表のセルの `^^`・`<<` の結合の計画」）を確認する単体テスト。table-cells.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, topic:テーブル]
+    related:
+      - to: src/render/syntax/table-cells.ts
+        type: tests
+  - path: unit/src/render/syntax/table-tree.test.ts
+    description: 'src/render/syntax/table-tree.ts（「`tree=` の表の階層の行・型・必須・既定のセルと、`example=` の見本を表の下へ移す処理」）を確認する単体テスト。table-tree.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it, topic:テーブル]
+    related:
+      - to: src/render/syntax/table-tree.ts
+        type: tests
+  - path: unit/src/render/syntax/warnings.test.ts
+    description: 'src/render/syntax/warnings.ts（「記載の警告を差し込む助け」）を確認する単体テスト。warnings.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: src/render/syntax/warnings.ts
+        type: tests
+  - path: unit/src/tree-logic.test.ts
+    description: 'src/tree-logic.ts（「キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使用する。DOM もトークンも使用しない）」）を確認する単体テスト。tree-logic.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: src/tree-logic.ts
+        type: tests
+  - path: unit/src/viewer/view-state.browser.test.ts
+    description: 'src/viewer/view-state.ts（「まとめた HTML の履歴の項目ごとの表示の状態（位置・開閉・タブ）の取り出し・保存・復元」）を確認するブラウザで実行する単体テスト。view-state.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:ナビゲーション, tool:html]
+    related:
+      - to: src/viewer/view-state.ts
+        type: tests
+  - path: unit/vscode/src/extensions-bundle.test.ts
+    description: 'vscode/src/extensions-bundle.ts（「設定の extensions を esbuild-wasm で ES モジュールにまとめる処理」）を確認する単体テスト。extensions-bundle.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, tool:esbuild]
+    related:
+      - to: vscode/src/extensions-bundle.ts
+        type: tests

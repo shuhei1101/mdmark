@@ -1,0 +1,13 @@
+前提確認: ok
+--- /home/shuhei2441/.config/project-index/settings.yaml
++++ /home/shuhei2441/.config/project-index/settings.yaml
+@@ -97,7 +97,7 @@
+         - /home/shuhei2441/repo/aituber/.claude/worktrees/develop
+   - id: mdmark
+     config:
+-      - /home/shuhei2441/repo/mdmark/.claude/worktrees/develop/dev-docs.yaml
++      - /home/shuhei2441/repo/mdmark/.claude/worktrees/develop/project-index.yaml
+     scope:
+       read:
+         - /home/shuhei2441/repo/mdmark/**
+config の書き換え: changed

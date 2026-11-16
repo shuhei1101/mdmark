@@ -5,7 +5,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: バージョンを合わせたリポジトリ
-        description: '`vscode/package.json` の `version` が `0.1.3` の commit。Marketplace の `ShuheiNishikawa.mdmark-vscode` の最新は `0.1.2`'
+        description: '`vscode/package.json` の `version` が `0.1.4` で、最上位の `icon` に拡張機能のアイコンの PNG を記載した commit。Marketplace の `ShuheiNishikawa.mdmark-vscode` の最新は `0.1.3`'
       - name: Marketplace の trusted publishing のポリシー
         description: publisher `ShuheiNishikawa` に、リポジトリ `shuhei1101/mdmark`・ワークフロー `vscode-release.yml` のポリシーが登録されている
       - name: Mock
@@ -19,28 +19,30 @@ scenarios:
         participant GH as GitHub
         participant GA as GitHub Actions
         participant MP as Marketplace
-        D->>GH: vscode-v0.1.3 のタグを push する
+        D->>GH: vscode-v0.1.4 のタグを push する
         GH->>GA: タグのワークフローを発生させる
         GA->>GA: タグのバージョンと vscode/package.json のバージョンを比べる
         GA->>GA: 依存を入れてビルドし .vsix を作る
-        GA->>GH: vscode-v0.1.3 の Release に .vsix を添える
+        GA->>GH: vscode-v0.1.4 の Release に .vsix を添える
         GA->>MP: GitHub Actions の OIDC トークンで同じ .vsix を公開する
         MP-->>GA: 公開を受け付ける
-        GH-->>D: Release に mdmark-0.1.3.vsix
-        MP-->>D: Marketplace に 0.1.3
+        GH-->>D: Release に mdmark-0.1.4.vsix
+        MP->>MP: 数分〜十数分後に一覧へ 0.1.4 を表示する
+        MP-->>D: Marketplace に 0.1.4 とアイコン
       ```
 
       <!-- /map -->
     expected:
-      - '`vscode-v0.1.3` の GitHub Release に `mdmark-0.1.3.vsix` が添えられる'
-      - Marketplace の `ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.3` になる
+      - '`vscode-v0.1.4` の GitHub Release に `mdmark-0.1.4.vsix` が添えられる'
+      - ワークフローの完了の後、Marketplace の一覧に `0.1.4` が出るまで条件で待つと、`ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.4` になる
+      - Marketplace のギャラリー API で引いた `ShuheiNishikawa.mdmark-vscode` の `0.1.4` の `files` に、`assetType` が `Microsoft.VisualStudio.Services.Icons.Default` の資産がある
       - ワークフローはリポジトリのシークレットを参照しない
       - '`v{バージョン}` の構造の mdmark のタグを push しても、このワークフローは起きない'
     test: test_normal
   - name: 異常シナリオ（バージョンが合わない）
     setup:
       - name: バージョンがずれたリポジトリ
-        description: '`vscode/package.json` の `version` が `0.1.3` のまま、`vscode-v0.2.0` のタグを打つ'
+        description: '`vscode/package.json` の `version` が `0.1.4` のまま、`vscode-v0.2.0` のタグを打つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -59,7 +61,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - ワークフローが失敗し、ログにタグのバージョン `0.2.0` と `vscode/package.json` のバージョン `0.1.3` が出る
+      - ワークフローが失敗し、ログにタグのバージョン `0.2.0` と `vscode/package.json` のバージョン `0.1.4` が出る
       - '`vscode-v0.2.0` の Release に .vsix が添えられない'
       - Marketplace へ公開しない
     test: test_error_when_version_mismatch
@@ -106,7 +108,7 @@ trigger: 開発者がスプリントの区切りに、develop の commit に `vs
 preconditions:
   - '`vscode/package.json` の `version` を、Marketplace に公開済みのバージョンより上の配るバージョンにした commit が develop に入っている'
   - Marketplace の publisher `ShuheiNishikawa` に、リポジトリ `shuhei1101/mdmark`・ワークフロー `vscode-release.yml` の trusted publishing のポリシーが登録されている
-success_guarantee: タグの GitHub Release に `mdmark-{バージョン}.vsix` が添えられ、同じ .vsix が Marketplace の `ShuheiNishikawa.mdmark-vscode` に公開される。
+success_guarantee: タグの GitHub Release に `mdmark-{バージョン}.vsix` が添えられ、同じ .vsix が Marketplace の `ShuheiNishikawa.mdmark-vscode` に公開される。公開したバージョンは、.vsix に入れたアイコンを Marketplace のアイコンの資産として持つ。
 minimal_guarantee: タグと `vscode/package.json` のバージョンが合わないときは .vsix を作らず、Release に何も添えず、Marketplace へ公開しない。Marketplace に同じバージョンが公開済みのときは .vsix をアップロードせずにワークフローを失敗させ、公開済みのバージョンを書き換えない。
 test_file: tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts
 tags:

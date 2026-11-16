@@ -1225,3 +1225,60 @@ files:
   - path: refs/531/assets/samples.js
     description: '#531 のモックの見本: ER 図・状態遷移図の Mermaid と補足（説明・分類）。このモックの図の中身を変えるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: components/back-to-top/index.html
+    description: '部品『back-to-top』のモック: 描いた文書を一定量スクロールしたら画面の右下に出す先頭へ戻るボタン。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック]
+  - path: components/diagram-frame-touch/index.html
+    description: '部品『diagram-frame-touch』のモック: 図の余白をタップして操作中にし、指のドラッグで図の枠を動かす状態と、図の外をタップして解いた状態。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/panel-alert/index.html
+    description: '部品『panel-alert』のモック: VS Code のプレビューのパネルの部品（shadcn/ui の Alert・Button・Spinner）の、読み込み中と描けない理由の状態。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, tool:vscode]
+  - path: components/panel-alert/style.css
+    description: 'モック『panel-alert』の外観: パネルの部品のカタログだけの、状態の見本の余白の調整。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, tool:vscode, tool:css]
+  - path: components/tree-lines-warning/index.html
+    description: '部品『tree-lines-warning』のモック: 罫線でフォルダ構成を記載したコードブロックの言語が tree でないときの記載の警告。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:検査]
+  - path: pages/document/287/back-to-top/index.html
+    description: '#287 の画面のモックの案『back-to-top』: 配布物の mount で描いた長い文書をスクロールすると、スクロールする場所の右下に先頭へ戻るボタンを出し、押すと文書の先頭へ戻る。出し始める量・余白の列と重なるときの案と、重ねる部品・描く場所を切り替える。画面の外観や振る舞いを決めるときに参照する。'
+    tags: [topic:モック]
+  - path: pages/document/287/index.md
+    description: '#287（描いた文書を一定量スクロールしたら、画面の右下に先頭へ戻るボタンを出す）の画面のモックの案の一覧。案ごとの違いを見比べるときに参照する。'
+    tags: [topic:モック]
+  - path: pages/vscode-preview/342/index.md
+    description: '#342（VS Code の webview の画面を React（Vite + shadcn/ui）へ移す）の画面のモックの案の一覧。案ごとの違いを見比べるときに参照する。'
+    tags: [topic:モック, tool:vscode]
+  - path: pages/vscode-preview/342/shadcn/index.html
+    description: '#342 の画面のモックの案『shadcn』: React（shadcn/ui）で作り直すプレビューのパネル。読み込み中を Spinner、描けない理由と設定ファイルを読み込めない帯を Alert と Button にし、VS Code のライトとダークで見比べる。画面の外観や振る舞いを決めるときに参照する。'
+    tags: [topic:モック, tool:vscode]
+  - path: refs/287/assets/back-to-top.css
+    description: '#287 のモックが共通で読み込む素材: 先頭へ戻るボタンの、src/index.css の mdmark の層へ追加する規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/287/assets/back-to-top.js
+    description: '#287 のモックが共通で読み込む素材: mount が描いた文書に、スクロールの位置で出し分ける先頭へ戻るボタンを付ける処理。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/287/assets/scene.css
+    description: '#287 のモックが共通で読み込む素材: 先頭へ戻るボタンを見る場面の、使う側のページの外観（mdmark の層の外）。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/287/assets/scene.js
+    description: '#287 のモックが共通で読み込む素材: 配布物の mount で長い文書を描き、URL の引数で未確定の案と重ねる部品・描く場所を選ぶ場面の処理。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/287/index.md
+    description: '#287（描いた文書を一定量スクロールしたら、画面の右下に先頭へ戻るボタンを出す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/342/assets/panel.css
+    description: '#342 のモックが共通で読み込む素材: VS Code のプレビューのパネルの部品（shadcn/ui の Alert・Button・Spinner）の外観を、実装の Tailwind のクラスと同じ値の CSS で表した規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:vscode, tool:css]
+  - path: refs/342/index.md
+    description: '#342（VS Code の webview の画面を React（Vite + shadcn/ui）へ移す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック, tool:vscode]
+  - path: refs/508/assets/touch.css
+    description: '#508 のモックが共通で読み込む素材: 図の枠を指で動かすときの、操作中の枠線と縦のドラッグの規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, topic:図, tool:css]
+  - path: refs/508/assets/touch.js
+    description: '#508 のモックが共通で読み込む素材: 図の余白をタップして操作中にし、図の外をタップして解く処理。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, topic:図, tool:javascript]
+  - path: refs/508/index.md
+    description: '#508（map の図のタッチでのドラッグと、罫線のコードブロックの点検の警告を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック, topic:図]

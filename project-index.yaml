@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/dev-docs/0c27b6525b43c781d4c258c433eebcf432190023/schemas/dev-docs.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/project-index/006a49034a210dfb1eb2f8b998abad760c002f5b/schemas/project-index.schema.json
 version: "3"
 name: mdmark
 worktrees: [".claude/worktrees/*"]
@@ -220,7 +220,7 @@ documents:
   - id: mock
     title: モック
     paths: [docs/mock/files.yml]
-    exclude: [comments.js, index.css, index.js, view.js, viewer.css, viewer.js]
+    exclude: [comments.js, index.css, index.js, view.js, viewer.css, viewer.js, "*.gif", "*.png", "*.mp4", "*.mp3"]
     records: files
     body_file: path
     schema: schemas/files.schema.yaml
@@ -245,6 +245,7 @@ documents:
   - id: tests
     title: テスト
     paths: [tests/files.yaml]
+    exclude: ["*.webm"]
     records: files
     body_file: path
     schema: schemas/files.schema.yaml
@@ -276,13 +277,14 @@ documents:
   - id: vscode
     title: VS Code 拡張機能
     paths: [vscode/files.yaml]
+    exclude: [package-lock.json]
     records: files
     body_file: path
     schema: schemas/files.schema.yaml
   - id: plugin
     title: Claude Code プラグインの定義
     paths: [plugin/files.yaml]
-    exclude: [THIRD_PARTY_LICENSES.txt, pre-tool-use.js]
+    exclude: [THIRD_PARTY_LICENSES.txt, "*.js", mdmark.config.yaml]
     records: files
     body_file: path
     schema: schemas/files.schema.yaml

@@ -30,7 +30,7 @@ catalogs:
       - name: vsce publish
         kind: コマンド
         purpose: .vsix を Visual Studio Marketplace へ公開する
-        description: '公開済みのバージョンを問い合わせ、同じバージョンがあれば `{publisher}.{name} v{version} already exists.` でアップロードせずに止める。`--oidc` は GitHub Actions の OIDC トークン（audience `marketplace.visualstudio.com`）を `POST /_apis/gallery/token?api-version=7.2-preview.1`（`Authorization: FederatedToken`）で公開用のトークンに交換し、失敗すると `Marketplace OIDC token exchange failed with {status}: {message}` で止める（PAT へは切り替えない）'
+        description: '公開済みのバージョンを問い合わせ、同じバージョンがあれば `{publisher}.{name} v{version} already exists.` でアップロードせずに止める。`--oidc` は GitHub Actions の OIDC トークン（audience `marketplace.visualstudio.com`）を `POST /_apis/gallery/token?api-version=7.2-preview.1`（`Authorization: FederatedToken`）で公開用のトークンに交換し、失敗すると `Marketplace OIDC token exchange failed with {status}: {message}` で止める（PAT へは切り替えない）。公開が終わっても、Marketplace の一覧に出るまで数分〜十数分かかる（`Extension URL (might take a few minutes)` を出して終わる。2026-11-14 の `0.1.3` は約 11 分）'
         params:
           - name: --oidc
             type: boolean
