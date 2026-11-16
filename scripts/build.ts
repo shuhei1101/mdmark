@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import {
   chmodSync,
   existsSync,
@@ -11,6 +11,7 @@ import {
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { build, type Metafile } from "esbuild";
+import { releaseVersionOf } from "../src/cli/versions.ts";
 import { findBaselineViolations } from "./baseline.ts";
 import {
   buildPlugin,
@@ -53,6 +54,8 @@ const RETIRED_DIAGRAMS_ENTRY = [
 const CLI_EXTERNALS = ["yaml", "esbuild"];
 // バージョンを指定する引数の名前
 const VERSION_OPTION = "--version";
+// develop のビルドとしてビルドメタデータを添える引数の名前
+const DEVELOP_OPTION = "--develop";
 // 型定義を記載する tsc の設定
 const DECLARATION_TSCONFIG = "tsconfig.dist.json";
 
@@ -61,7 +64,22 @@ const execFileAsync = promisify(execFile);
 /** バージョンの書式が違うときに投げる */
 export class VersionFormatError extends Error {}
 
-/** `--version` があればその値、無ければ `version.ini` の先頭行を返却し、書式を検査する */
+/** ビルドした作業ツリーの HEAD の短縮 SHA を返却する。参照できなければ投げる */
+function headShortSha(root: string): string {
+  try {
+    return execFileSync("git", ["rev-parse", "--short=7", "HEAD"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    throw new Error(
+      `--develop のビルドで HEAD の commit を参照できない: ${root}（git の作業ツリーでビルドする）`,
+    );
+  }
+}
+
+/** `--version` があればその値、無ければ `version.ini` の先頭行を返却し、書式を検査する。`--develop` があれば `+develop.{短縮 SHA}` を添える */
 export function resolveVersion(argv: string[], root: string): string {
   const index = argv.indexOf(VERSION_OPTION);
   const version =
@@ -75,7 +93,9 @@ export function resolveVersion(argv: string[], root: string): string {
       `バージョンの書式が違う: ${version}（v{MAJOR}.{MINOR}.{PATCH}）`,
     );
   }
-  return version;
+  return argv.includes(DEVELOP_OPTION)
+    ? `${version}+develop.${headShortSha(root)}`
+    : version;
 }
 
 /** まとめたパッケージと、その中に取り込まれたパッケージの名前・バージョン・ライセンス・ライセンスの本文を、名前の順に `outfile` に書き込む。複数の `metafile` で同じパッケージは 1 回だけ記載する */
@@ -445,7 +465,9 @@ export async function main(
   try {
     const version = resolveVersion(argv, root);
     // 移行の手順の配置漏れは、配布物を書き込む前に止める
-    const migrated = reportProblems(await checkMigrations({ root, version }));
+    const migrated = reportProblems(
+      await checkMigrations({ root, version: releaseVersionOf(version) }),
+    );
     if (migrated && (await buildAndCheck(version, root, maxBytes))) {
       return 0;
     }

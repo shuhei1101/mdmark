@@ -6,9 +6,9 @@
   "properties": {
     "version": {
       "title": "手元のバージョン",
-      "description": "この設定・索引・文書が合わせてある mdmark のバージョン。`mdmark init` が呼んだ CLI のバージョンを記載し、`mdmark upgrade` が移行の手順を適用して点検が通った後に呼んだ CLI のバージョンへ書き換える。",
+      "description": "この設定・索引・文書が合わせてある mdmark のバージョン。`mdmark init` が呼んだ CLI のバージョン（develop のビルドの CLI は `develop`）を記載し、`mdmark upgrade` が移行の手順を適用して点検が通った後に呼んだ CLI のバージョンへ書き換える。develop の最新を参照しているときは `develop`。",
       "type": "string",
-      "pattern": "^v\\d+\\.\\d+\\.\\d+$"
+      "pattern": "^(v\\d+\\.\\d+\\.\\d+|develop)$"
     },
     "features": {
       "title": "機能のオン・オフ",

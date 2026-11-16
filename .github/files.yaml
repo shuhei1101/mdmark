@@ -6,3 +6,9 @@ files:
     related:
       - to: docs/module/MOD-472-83.yml
         type: implements
+  - path: workflows/develop-dist.yml
+    description: develop への push で配布物（`dist/`・`plugin/` の生成物）を `--develop` でビルドし、差分があれば develop へ commit する。develop の配布物の作り方を変えるときに参照する。
+    tags: [topic:ci, topic:配布物, action:ビルド]
+    related:
+      - to: docs/interface/IF-472-41.ts.yaml
+        type: implements
