@@ -4,37 +4,37 @@ files:
     description: モジュール構成『ライブラリ本体 / CLI』のうち「取り込んだ alias-inject の行の Schema」を受け持つ。CLI のコマンドの振る舞いを変えるときに参照する。
     tags: [topic:cli, topic:エイリアス, tool:ajv]
     related:
-      - to: docs/module/MOD-472-23
+      - to: MOD-472-23
         type: implements
   - path: mdmark.config.schema.json
     description: モジュール構成『ライブラリ本体 / 設定と機能』のうち「設定の JSON Schema」を受け持つ。設定のキーや機能のオン・オフの決め方を変えるときに参照する。
     tags: [topic:設定, topic:機能フラグ]
     related:
-      - to: docs/module/MOD-472-44
+      - to: MOD-472-44
         type: implements
   - path: mdmark.settings.schema.json
     description: 設定『ライブラリ本体』のうち「端末の設定の JSON Schema（mdmark.config.yaml のキーと config.cascade・config.applyToExport）」を受け持つ。端末の設定のキーを変えるときに参照する。
     tags: [topic:設定]
     related:
-      - to: docs/module/MOD-472-45
+      - to: MOD-472-45
         type: implements
   - path: mdmark.templates.schema.json
     description: ER 図『CSSのテンプレート』の「端末の設定のフォルダの templates/css/templates.yaml の JSON Schema」を受け持つ。テンプレートの索引のキーを変えるときに参照する。
     tags: [topic:テンプレート, topic:スキーマ, tool:jsonschema]
     related:
-      - to: docs/er/ER-472-1
+      - to: ER-472-1
         type: implements
   - path: mdmark.index.schema.json
     description: 利用側が文書のメタデータ・用語を記載する索引の JSON Schema。索引のキーを追加・変更するときに参照する。
     tags: [topic:索引, topic:スキーマ, tool:jsonschema]
     related:
-      - to: docs/er/ER-472-6
+      - to: ER-472-6
         type: implements
   - path: mdmark.steps.schema.json
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「steps.yaml の JSON Schema」を受け持つ。mdmark upgrade の移行の流れを変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: er.schema.yaml
     description: ER 図の設計書のスキーマ。データストアの構造（DB・JSON・YAML）を分類ごとに記載する。ER 図の設計書を記載するときや項目を確認するときに参照する。
@@ -52,101 +52,101 @@ files:
     description: コードブロックの飾りのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-6
+      - to: ER-477-6
         type: implements
   - path: marks/common.schema.json
     description: マーカーの設定の共通のオブジェクト（折り畳み・行の範囲・列を指す値）の JSON Schema。ER 図『マーカーの設定の共通の決まり』と同じ内容にする
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-1
+      - to: ER-477-1
         type: implements
   - path: marks/details.schema.json
     description: details の範囲のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-8
+      - to: ER-477-8
         type: implements
   - path: marks/features.schema.json
     description: 機能のオン・オフのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-15
+      - to: ER-477-15
         type: implements
   - path: marks/fig.schema.json
     description: 図と表の番号のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-11
+      - to: ER-477-11
         type: implements
   - path: marks/gallery.schema.json
     description: ギャラリーのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-12
+      - to: ER-477-12
         type: implements
   - path: marks/glossary.schema.json
     description: 用語集の表のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-16
+      - to: ER-477-16
         type: implements
   - path: marks/include.schema.json
     description: 取り込みのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-13
+      - to: ER-477-13
         type: implements
   - path: marks/page.schema.json
     description: ページの設定のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-14
+      - to: ER-477-14
         type: implements
   - path: marks/row-detail.schema.json
     description: 行の詳細のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-10
+      - to: ER-477-10
         type: implements
   - path: marks/section.schema.json
     description: セクションの開閉のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-7
+      - to: ER-477-7
         type: implements
   - path: marks/steps.schema.json
     description: ステップのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-4
+      - to: ER-477-4
         type: implements
   - path: marks/table.schema.json
     description: 表のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-2
+      - to: ER-477-2
         type: implements
   - path: marks/tabs.schema.json
     description: タブのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-3
+      - to: ER-477-3
         type: implements
   - path: marks/tree.schema.json
     description: ファイルツリーのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-5
+      - to: ER-477-5
         type: implements
   - path: marks/view.schema.json
     description: ビューのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-17
+      - to: ER-477-17
         type: implements
   - path: marks/wide.schema.json
     description: wide の範囲のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]
     related:
-      - to: docs/er/ER-477-9
+      - to: ER-477-9
         type: implements
