@@ -23,3 +23,6 @@ lead: 'ESLint の道具の package の定義を受け持ち、Webview の ESLint
 tags:
   - name: topic:検査
     main: true
+  - name: tool:eslint
+  - name: topic:webview
+  - name: topic:依存

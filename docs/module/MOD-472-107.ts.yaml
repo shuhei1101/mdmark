@@ -31,3 +31,6 @@ lead: 'CLI の誤りと入出力の型を受け持ち、CLI のコマンドの�
 tags:
   - name: topic:cli
     main: true
+  - name: topic:エラー
+  - name: topic:入出力
+  - name: action:処理
