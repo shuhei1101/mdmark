@@ -35,8 +35,7 @@ type MigrateRetiredEr = (options: {
 /** 移行のスクリプトを、それを持つ移行の手順のフォルダから読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadMigrateRetiredEr = async (): Promise<MigrateRetiredEr> => {
   const module = (await import(
-    /* @vite-ignore */ pathToFileURL(join(migrationsDirOf(SCRIPT), SCRIPT))
-      .href
+    /* @vite-ignore */ pathToFileURL(join(migrationsDirOf(SCRIPT), SCRIPT)).href
   )) as { migrateRetiredEr: MigrateRetiredEr };
   return module.migrateRetiredEr;
 };
@@ -185,7 +184,11 @@ test("test_migrate_retired_er_when_bundled", async () => {
   });
   // 検証
   expect(result).toEqual(expected);
-  for (const path of ["mdmark.config.yaml", "docs/orders.md", "notes/extra.md"]) {
+  for (const path of [
+    "mdmark.config.yaml",
+    "docs/orders.md",
+    "notes/extra.md",
+  ]) {
     expect(await readFile(join(fromBundle.configDir, path), "utf8")).toBe(
       await readFile(join(fromSource.configDir, path), "utf8"),
     );

@@ -118,9 +118,7 @@ test("test_build_diagrams_when_retired", () => {
     expect(warnings[1]).toContain(
       "<!-- sequence --> の図の記載方法は廃止しました。",
     );
-    expect(warnings[2]).toContain(
-      "<!-- er --> の図の記載方法は廃止しました。",
-    );
+    expect(warnings[2]).toContain("<!-- er --> の図の記載方法は廃止しました。");
     for (const warning of warnings) {
       expect(warning).toContain("mdmark upgrade");
     }

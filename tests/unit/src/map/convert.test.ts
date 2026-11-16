@@ -4,11 +4,22 @@ import { parseErDiagram } from "../../../../src/map/er.ts";
 import { parseFlowchart } from "../../../../src/map/flowchart.ts";
 import { parseSequence } from "../../../../src/map/sequence.ts";
 import {
+  erText,
+  shopEr,
+  shopErColors,
+  shopErFolded,
+} from "../../helpers/er.ts";
+import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
   JUDGEMENT_TEXT,
 } from "../../helpers/retired-diagrams.ts";
-import { erText, shopEr, shopErColors, shopErFolded } from "../../helpers/er.ts";
+import {
+  RETIRED_DOCUMENT,
+  RETIRED_DOCUMENT_CONVERTED,
+  RETIRED_KINDS,
+  RETIRED_LINES,
+} from "../../helpers/retired-document.ts";
 import {
   RETIRED_ER_DEFINITION,
   RETIRED_ER_DOCUMENT,
@@ -16,12 +27,6 @@ import {
   RETIRED_ER_LINE,
   RETIRED_ER_REPORT_ITEMS,
 } from "../../helpers/retired-er-document.ts";
-import {
-  RETIRED_DOCUMENT,
-  RETIRED_DOCUMENT_CONVERTED,
-  RETIRED_KINDS,
-  RETIRED_LINES,
-} from "../../helpers/retired-document.ts";
 
 /** 廃止した図の書き換えを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadConvert = () => import("../../../../src/map/convert.ts");
@@ -416,7 +421,9 @@ test("test_convert_retired_er", async () => {
   });
   // 検証
   expect(result.markdown).toBe(RETIRED_ER_DOCUMENT_CONVERTED);
-  expect(result.report.map((line) => [line.line, line.name, line.item])).toEqual(
+  expect(
+    result.report.map((line) => [line.line, line.name, line.item]),
+  ).toEqual(
     RETIRED_ER_REPORT_ITEMS.map((item) => [RETIRED_ER_LINE, "er", item]),
   );
   for (const line of result.report) {
@@ -480,9 +487,13 @@ test("test_convert_retired_er_when_unconvertible", async () => {
   }
   expect(result.markdown).not.toContain(ranges[3]);
   expect(result.markdown).toContain('<!-- map: {"title": "注文のデータ"} -->');
-  const skipped = starts.slice(0, 3).map((start) =>
-    result.report.filter((line) => line.line === start && line.item === "範囲"),
-  );
+  const skipped = starts
+    .slice(0, 3)
+    .map((start) =>
+      result.report.filter(
+        (line) => line.line === start && line.item === "範囲",
+      ),
+    );
   expect(skipped.map((items) => items.length)).toEqual([1, 1, 1]);
   expect(skipped[0]?.[0]?.reason).toContain("payments");
   expect(skipped[1]?.[0]?.reason).toContain("timestamp with time zone");
@@ -529,8 +540,8 @@ test("test_read_retired_er_definition", async () => {
   // 準備
   const { readRetiredErDefinition } = await loadConvert();
   // 実行
-  const results = [shopEr(), shopErColors(), shopErFolded()].map(
-    (definition) => readRetiredErDefinition([erText(definition)]),
+  const results = [shopEr(), shopErColors(), shopErFolded()].map((definition) =>
+    readRetiredErDefinition([erText(definition)]),
   );
   // 検証
   for (const result of results) {

@@ -1,5 +1,4 @@
 import { afterEach, expect, test } from "vitest";
-import { wrapDirective } from "../helpers/diagrams.ts";
 import {
   createRoot as createDocumentRoot,
   removeRoots,
