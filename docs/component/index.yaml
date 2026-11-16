@@ -40,8 +40,6 @@ items:
   summary: 図のタイトル・右上のボタンの帯・表示する枠・凡例と、拡大・縮小・移動・全画面
 - page: CMP-472-13.ts.yaml
   summary: 系列を色と模様の組で分ける折れ線・棒・円・散布図のグラフ
-- page: CMP-472-1.ts.yaml
-  summary: テーブル・列・関係を定義の座標に配置し、多重度の記号で結ぶ ER 図
 - page: CMP-472-6.ts.yaml
   summary: 図の枠の表示する枠に入れる、mermaid で mdmark の外観のテーマで描いた SVG
 - page: CMP-472-5.ts.yaml
@@ -61,7 +59,7 @@ items:
 - page: CMP-472-50.ts.yaml
   summary: 図の枠の下に常に出し、番号・タイトル・説明の文と、前へ・停止・自動で進める・次へのボタンで案内と再生を進める帯
 - page: CMP-472-38.ts.yaml
-  summary: 図の線の入力の詳細と、ノードの入力・処理・出力・ヒントと、ER 図のテーブルの概要と列の説明を出すツールチップ
+  summary: 図の線の入力の詳細と、ノードの入力・処理・出力・ヒントと、グラフの項目の名前と値を出すツールチップ
 - page: CMP-472-47.ts.yaml
   summary: スライダー・今の値を写すボタン・グラフを組み合わせた部品
 - page: CMP-472-41.ts.yaml

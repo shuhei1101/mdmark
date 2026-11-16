@@ -867,8 +867,6 @@ files:
         type: implements
       - to: CMP-472-13
         type: implements
-      - to: CMP-472-1
-        type: implements
       - to: CMP-472-38
         type: implements
       - to: CMP-472-39
@@ -1022,16 +1020,12 @@ files:
   - path: parts/er-diagram.stories.ts
     description: 部品設計『ER 図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
-    related:
-      - to: CMP-472-1
-        type: implements
+    related: []
   - path: parts/er.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「ER 図のテーブルと多重度の記号」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: MOD-472-187
-        type: implements
-      - to: CMP-472-1
         type: implements
   - path: parts/footnote-ref.stories.ts
     description: 部品設計『脚注の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
