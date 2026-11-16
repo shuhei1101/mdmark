@@ -34,7 +34,7 @@ scenarios:
     expected:
       - '`vscode-v0.1.4` の GitHub Release に `mdmark-0.1.4.vsix` が添えられる'
       - Marketplace の `ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.4` になる
-      - Marketplace の `ShuheiNishikawa.mdmark-vscode` のページに、`vscode/package.json` の `icon` に記載したアイコンが表示される
+      - Marketplace のギャラリー API で引いた `ShuheiNishikawa.mdmark-vscode` の `0.1.4` の `files` に、`assetType` が `Microsoft.VisualStudio.Services.Icons.Default` の資産がある
       - ワークフローはリポジトリのシークレットを参照しない
       - '`v{バージョン}` の構造の mdmark のタグを push しても、このワークフローは起きない'
     test: test_normal
@@ -107,7 +107,7 @@ trigger: 開発者がスプリントの区切りに、develop の commit に `vs
 preconditions:
   - '`vscode/package.json` の `version` を、Marketplace に公開済みのバージョンより上の配るバージョンにした commit が develop に入っている'
   - Marketplace の publisher `ShuheiNishikawa` に、リポジトリ `shuhei1101/mdmark`・ワークフロー `vscode-release.yml` の trusted publishing のポリシーが登録されている
-success_guarantee: タグの GitHub Release に `mdmark-{バージョン}.vsix` が添えられ、同じ .vsix が Marketplace の `ShuheiNishikawa.mdmark-vscode` に公開される。Marketplace の拡張機能のページに、.vsix に入れたアイコンが表示される。
+success_guarantee: タグの GitHub Release に `mdmark-{バージョン}.vsix` が添えられ、同じ .vsix が Marketplace の `ShuheiNishikawa.mdmark-vscode` に公開される。公開したバージョンは、.vsix に入れたアイコンを Marketplace のアイコンの資産として持つ。
 minimal_guarantee: タグと `vscode/package.json` のバージョンが合わないときは .vsix を作らず、Release に何も添えず、Marketplace へ公開しない。Marketplace に同じバージョンが公開済みのときは .vsix をアップロードせずにワークフローを失敗させ、公開済みのバージョンを書き換えない。
 test_file: tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts
 tags:
