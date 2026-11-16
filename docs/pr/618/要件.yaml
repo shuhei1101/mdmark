@@ -13,11 +13,15 @@ docs:
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: click の行で URL を指すノードがリンクになることと、リンクにならない形（スクリプトの URL・コールバック）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:03:09.492274+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: mermaid のコードブロックの行に、click の URL の行がノードのリンクになることを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:03:09.492274+00:00'
 scope_out:
   - item: 'map の構成図の click の行で id: のリンク先をノードのリンクにする'
     reason: map の範囲の図が対象で、部品にしない Mermaid の図とは別の処理

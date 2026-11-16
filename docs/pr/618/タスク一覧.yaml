@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T15:59:24.148389+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/guide/ の図を描く-mermaidの図を描く.md・記法.mark.md
+    updated_by: planner
+    updated_at: '2026-11-16T16:03:12.281855+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
