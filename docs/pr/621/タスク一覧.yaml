@@ -62,7 +62,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T16:30:54.952612+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: ARCH-472-1・CMD-472-1 は develop のワークフローを実装してから実装の工程で修正する
+    updated_by: planner
+    updated_at: '2026-11-16T16:39:51.176723+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
