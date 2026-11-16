@@ -189,3 +189,6 @@ scope_out:
   - item: モジュール構成の functions[].summary のうち、1 行の概要に詳細が入った 28 項目の書き分け
     reason: Schema の summary は 1 行の決まりで改行を入れられない。詳細を description などへ移すかは項目ごとに書き分けが要り、文の表し方の移行（改行と表）の範囲を超える
     plan: to_file
+  - item: 工程 4「文を削り、AI slop を修正する」と改善「エイリアスと用語」
+    reason: 文書ごとに文を読んで判断する作業で、レビューも文書ごとになるため、ユーザーの判断（推奨案 B）で別の Issue に切り出した
+    plan: '#612'

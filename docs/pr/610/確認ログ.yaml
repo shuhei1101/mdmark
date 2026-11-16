@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 工程 4「文を削り、AI slop を修正する」と改善「エイリアスと用語」をこの PR で行うか
+    decision: 別の Issue に切り出し、この PR は決まった規則で移せる作業と検査（画面での図の確認を含む）で終える（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/610#discussion_r4583826062
