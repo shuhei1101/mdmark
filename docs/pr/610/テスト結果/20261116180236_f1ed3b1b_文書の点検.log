@@ -1,0 +1,228 @@
+# 全文書の mdmark の点検
+
+## 1 回目（43fca9e0）
+
+コマンド: 設計書（docs/*/*.yaml。index.yaml・files.yaml を除く）は 21 字以上の文字列の項目を空行でつないで 1 文書ずつ、Markdown（docs/**/*.md）はファイルごとに node dist/cli.js check --text - にかけた
+
+docs/component/CMP-472-10.ts.yaml -:11: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/component/CMP-472-61.ts.yaml -:924: retired_diagram: <!-- flow --> の図の記載方法は廃止しました。mdmark upgrade を実行すると、map の範囲（Mermaid と補足）へ書き換えます。この図は描いていません。
+docs/component/CMP-472-61.ts.yaml -:961: retired_diagram: <!-- flow --> の図の記載方法は廃止しました。mdmark upgrade を実行すると、map の範囲（Mermaid と補足）へ書き換えます。この図は描いていません。
+docs/component/CMP-472-62.ts.yaml -:7: syntax_warning: <!-- tabs: {"collapse": "closed"} -->の collapse には open・title を持つオブジェクト を記載してください（例 {"open":false}）。この設定を当てずに描いています。
+docs/component/CMP-472-62.ts.yaml -:7: syntax_warning: <!-- tabs: {"collapse": "closed"} -->の閉じのマーカー <!-- /tabs --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。
+docs/component/CMP-472-62.ts.yaml -:7: syntax_warning: <!-- tabs --> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（### macOS など）を記載してください。範囲の中身はそのまま描いています。
+docs/component/CMP-472-62.ts.yaml -:13: syntax_warning: <!-- details: {"title": 補足} -->の引数を JSON として読めません（11 文字目の 補 で、値の文字を " で囲んでいません）。値の文字は " で囲んでください。既定の設定で描いています。
+docs/component/CMP-472-62.ts.yaml -:15: syntax_warning: <!-- details: {"title": 補足} -->の閉じのマーカー <!-- /details --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。
+docs/component/CMP-472-62.ts.yaml -:19: syntax_warning: <!-- details: {"title": "a -->の引数を JSON として読めません（文字の値が閉じていません）。値に --> を記載すると、コメントがそこで閉じます。> を \u003e にした --\u003e で記載してください。既定の設定で描いています。
+docs/component/CMP-472-62.ts.yaml -:21: syntax_warning: <!-- details: {"title": "a -->の閉じのマーカー <!-- /details --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。
+docs/component/CMP-472-62.ts.yaml -:25: unknown_mark: マーカー `greet` は知らないマーカーで、描くときに取り除かれます。名前を修正するか、拡張・`libraries`・`check.ignore` に追加してください。
+docs/component/CMP-472-62.ts.yaml -:31: syntax_warning: <!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "max"}]}, "名前": {"hidden": true}}} -->の columns.数量.total[0].calc の max は選べる値にありません。選べる値は sum・avg・count です。この設定を当てずに描いています。
+docs/component/CMP-472-62.ts.yaml -:43: unknown_mark: マーカー `greet` は知らないマーカーで、描くときに取り除かれます。名前を修正するか、拡張・`libraries`・`check.ignore` に追加してください。
+docs/component/CMP-472-62.ts.yaml -:51: syntax_warning: <!-- table: {"kind": "data", "columns": {"とても長い列の名前": {"filter": {"type": "range"}}, "もう一つの長い列の名前": {"filter": {"type": "text"}}, "更新日": {"filter": {"type": "date"}}}} -->の columns.とても長い列の名前.filter.type の range は選べる値にありません。選べる値は select・text・date です。この設定を当てずに描いています。
+docs/component/CMP-472-62.ts.yaml -:57: syntax_warning: <!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "説明"}} -->の閉じのマーカー <!-- /glossary --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。
+docs/component/CMP-472-62.ts.yaml -:63: syntax_warning: <!-- glossary: {"term": {"column": "用語"}} -->に必須の meaning がありません。 {"meaning":{"column":"文字"}} のように記載してください。この設定を当てずに描いています。
+docs/component/CMP-472-62.ts.yaml -:69: syntax_warning: <!-- view: {"board": {"group": {"column": "優先度"}}} -->の閉じのマーカー <!-- /view --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。
+docs/component/CMP-472-62.ts.yaml -:69: syntax_warning: <!-- view: {"board": {"group": {"column": "優先度"}}} -->の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。
+docs/component/CMP-472-62.ts.yaml -:73: syntax_warning: <!-- view: {"board": {"group": {"column": "状態"}}} -->の閉じのマーカー <!-- /view --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。
+docs/component/CMP-472-62.ts.yaml -:73: syntax_warning: <!-- view: {"board": {"group": {"column": "状態"}}} -->の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。
+docs/component/CMP-472-62.ts.yaml -:79: syntax_warning: <!-- view: {"board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "rocket"}}}} -->の board.values.完了.icon の rocket は選べる値にありません。選べる値は circle-dashed・circle-dot・circle-pause・circle-check・circle-x・circle・inbox・archive・clock・flag・star・bug・eye・lock・zap・ban です。この設定を当てずに描いています。
+docs/component/CMP-472-62.ts.yaml -:79: syntax_warning: <!-- view: {"board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "rocket"}}}} -->の閉じのマーカー <!-- /view --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。
+docs/component/CMP-472-62.ts.yaml -:79: syntax_warning: <!-- view: {"board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "rocket"}}}} -->の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。
+docs/module/MOD-472-296.ts.yaml -:7: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/scenario/SC-472-20.yaml -:459: syntax_warning: icon:Rocket!の Rocket! は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/scenario/SC-472-20.yaml -:461: syntax_warning: icon:Rocket!の Rocket! は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/scenario/SC-472-84.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-1#scenarios[正常シナリオ（登録する）]
+docs/scenario/SC-472-84.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-2#scenarios[正常シナリオ（一覧から選んで配置する）]
+docs/scenario/SC-472-84.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-3#scenarios[正常シナリオ（1 文書を書き出す）]
+docs/scenario/SC-472-84.yaml -:46: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-1#scenarios[異常シナリオ（同じ名前のテンプレートがある）]
+docs/scenario/SC-472-84.yaml -:46: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-1#scenarios[正常シナリオ（上書きして登録する）]
+docs/scenario/SC-472-84.yaml -:46: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-2#scenarios[正常シナリオ（一覧から選んで配置する）]
+docs/scenario/SC-472-85.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-4#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-15#scenarios[正常シナリオ（.mark.md を記載するときに案内を受ける）]
+docs/scenario/SC-472-85.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-15#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-3#scenarios[正常シナリオ（ずれがある）]
+docs/scenario/SC-472-85.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-3#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:52: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-4#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:52: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-15#scenarios[正常シナリオ（mdmark で記載するよう指示する）]
+docs/scenario/SC-472-85.yaml -:52: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-15#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:52: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-3#scenarios[正常シナリオ（ずれがある）]
+docs/scenario/SC-472-85.yaml -:89: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-4#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:89: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-3#scenarios[正常シナリオ（記法を含む純粋な .md がある）]
+docs/scenario/SC-472-85.yaml -:89: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-3#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:118: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-4#scenarios[正常シナリオ]
+docs/scenario/SC-472-85.yaml -:118: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-15#scenarios[異常シナリオ（dev-docs が無い）]
+docs/scenario/SC-472-85.yaml -:118: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-3#scenarios[正常シナリオ（ずれがある）]
+docs/scenario/SC-472-86.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-7#scenarios[正常シナリオ（起動する）]
+docs/scenario/SC-472-86.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-4#scenarios[正常シナリオ]
+docs/scenario/SC-472-86.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-3#scenarios[正常シナリオ]
+docs/scenario/SC-472-86.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-3#scenarios[正常シナリオ（ずれがある）]
+docs/scenario/SC-472-86.yaml -:52: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-4#scenarios[異常シナリオ（常駐サーバーが起動していない）]
+docs/scenario/SC-472-86.yaml -:52: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-7#scenarios[正常シナリオ（起動する）]
+docs/scenario/SC-472-86.yaml -:52: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-3#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-8#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-39#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-39#scenarios[正常シナリオ（グループを閉じる）]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 H: id:SC-472-41#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 I: id:SC-472-18#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:27: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 J: id:SC-472-19#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:90: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:90: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-56#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:90: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-8#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:90: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-39#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:90: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 F: id:SC-472-18#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:135: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:135: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]
+docs/scenario/SC-472-87.yaml -:135: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-472-87.yaml -:135: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-8#scenarios[正常シナリオ]
+docs/scenario/SC-472-88.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-10#scenarios[正常シナリオ]
+docs/scenario/SC-472-88.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-77#scenarios[正常シナリオ]
+docs/scenario/SC-472-88.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-14#scenarios[正常シナリオ]
+docs/scenario/SC-472-88.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-6#scenarios[正常シナリオ]
+docs/scenario/SC-472-88.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-9#scenarios[正常シナリオ]
+docs/scenario/SC-472-88.yaml -:48: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-10#scenarios[異常シナリオ（配布物を読み込めない）]
+docs/scenario/SC-472-88.yaml -:48: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-77#scenarios[正常シナリオ（リロードする）]
+docs/scenario/SC-472-89.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-16#scenarios[正常シナリオ]
+docs/scenario/SC-472-89.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-24#scenarios[正常シナリオ]
+docs/scenario/SC-472-89.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
+docs/scenario/SC-472-89.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 G: id:SC-472-40#scenarios[正常シナリオ（グラフの項目）]
+docs/scenario/SC-472-89.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
+docs/scenario/SC-472-89.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+docs/scenario/SC-472-89.yaml -:62: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-56#scenarios[正常シナリオ]
+docs/scenario/SC-472-89.yaml -:62: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
+docs/scenario/SC-472-89.yaml -:62: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 G: id:SC-472-40#scenarios[正常シナリオ（グラフの項目）]
+docs/scenario/SC-472-89.yaml -:62: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
+docs/scenario/SC-472-89.yaml -:62: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-40#scenarios[正常シナリオ（ノードの hint）]
+docs/scenario/SC-472-89.yaml -:62: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+docs/scenario/SC-472-89.yaml -:113: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-16#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+docs/scenario/SC-472-89.yaml -:113: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-24#scenarios[正常シナリオ]
+docs/scenario/SC-472-89.yaml -:113: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+docs/scenario/SC-472-89.yaml -:113: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-56#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+docs/scenario/SC-472-90.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-29#scenarios[正常シナリオ]
+docs/scenario/SC-472-90.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-74#scenarios[正常シナリオ]
+docs/scenario/SC-472-90.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-80#scenarios[正常シナリオ]
+docs/scenario/SC-472-90.yaml -:44: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-56#scenarios[正常シナリオ]
+docs/scenario/SC-472-90.yaml -:44: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-29#scenarios[正常シナリオ]
+docs/scenario/SC-472-90.yaml -:44: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-74#scenarios[正常シナリオ]
+docs/scenario/SC-472-90.yaml -:77: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-81#scenarios[正常シナリオ]
+docs/scenario/SC-472-90.yaml -:77: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-74#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-4#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-22#scenarios[異常シナリオ（起動していない）]
+docs/scenario/SC-472-91.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-69#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-22#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-53#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:15: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 F: id:SC-472-3#scenarios[正常シナリオ（1 文書を書き出す）]
+docs/scenario/SC-472-91.yaml -:70: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-4#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:70: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-22#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:70: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-69#scenarios[正常シナリオ（セットアップ済み）]
+docs/scenario/SC-472-91.yaml -:70: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-3#scenarios[正常シナリオ]
+docs/scenario/SC-472-91.yaml -:107: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-22#scenarios[異常シナリオ（起動していない）]
+docs/scenario/SC-472-91.yaml -:107: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-69#scenarios[正常シナリオ（常駐サーバーが止まっている）]
+docs/scenario/SC-472-91.yaml -:107: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-3#scenarios[正常シナリオ]
+docs/scenario/SC-472-92.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-47#scenarios[正常シナリオ]
+docs/scenario/SC-472-92.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-55#scenarios[正常シナリオ（リビジョンをもう一度選ぶ）]
+docs/scenario/SC-472-92.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-45#scenarios[正常シナリオ]
+docs/scenario/SC-472-92.yaml -:38: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-47#scenarios[異常シナリオ（本文を取り出せない）]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ（JavaScript の雛形を配置する）]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-79#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-44#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 G: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-8#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-40#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 F: id:SC-472-42#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 I: id:SC-472-42#scenarios[正常シナリオ（リサイズハンドルで高さを変える）]
+docs/scenario/SC-472-93.yaml -:64: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:64: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-43#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:64: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-51#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:97: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ（JavaScript の雛形を配置する）]
+docs/scenario/SC-472-93.yaml -:97: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-79#scenarios[異常シナリオ（型が合わない）]
+docs/scenario/SC-472-93.yaml -:97: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-79#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:97: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-44#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:134: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:134: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]
+docs/scenario/SC-472-93.yaml -:134: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-472-93.yaml -:134: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-8#scenarios[正常シナリオ]
+docs/scenario/SC-472-94.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-10#scenarios[正常シナリオ（設定を重ねる）]
+docs/scenario/SC-472-94.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-77#scenarios[正常シナリオ（theme の CSS を書き換える）]
+docs/scenario/SC-472-94.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]
+docs/scenario/SC-472-94.yaml -:9: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-3#scenarios[正常シナリオ（設定を重ねる）]
+docs/scenario/SC-472-94.yaml -:46: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-10#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
+docs/scenario/SC-472-94.yaml -:46: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-56#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
+docs/scenario/SC-472-94.yaml -:71: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-10#scenarios[異常シナリオ（設定ファイルを読み込めない）]
+docs/scenario/SC-472-94.yaml -:71: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-56#scenarios[異常シナリオ（設定ファイルを読み込めない）]
+docs/scenario/SC-472-94.yaml -:71: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]
+docs/scenario/SC-472-95.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-76#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:7: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-13#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:48: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:48: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-56#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:75: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-83#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:75: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ（ずれがある）]
+docs/scenario/SC-472-95.yaml -:75: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-472-95.yaml -:75: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-76#scenarios[正常シナリオ]
+docs/scenario/SC-477-1.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-78#scenarios[正常シナリオ（今の書き方のマーカーがある）]
+docs/scenario/SC-477-1.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-27#scenarios[正常シナリオ（文書のマーカーを JSON の記載へ書き換える）]
+docs/scenario/SC-477-1.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-477-1.yaml -:11: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-56#scenarios[正常シナリオ]
+docs/scenario/SC-477-1.yaml -:47: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-27#scenarios[正常シナリオ（書き換えない記載を移行の報告に挙げる）]
+docs/scenario/SC-477-1.yaml -:47: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ（今の書き方のマーカーがある）]
+docs/scenario/SC-477-1.yaml -:47: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-477-1.yaml -:47: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-49#scenarios[正常シナリオ]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ（座標で書いた図がある）]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-27#scenarios[正常シナリオ（座標で書いた図を map へ書き換える）]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 E: id:SC-472-8#scenarios[正常シナリオ]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 H: id:SC-472-8#scenarios[正常シナリオ（リンク先を持つノード）]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 F: id:SC-472-8#scenarios[正常シナリオ（シーケンス図）]
+docs/scenario/SC-477-2.yaml -:10: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 G: id:SC-472-40#scenarios[正常シナリオ]
+docs/scenario/SC-477-2.yaml -:69: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 A: id:SC-472-27#scenarios[正常シナリオ（書き換えない記載を移行の報告に挙げる）]
+docs/scenario/SC-477-2.yaml -:69: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 B: id:SC-472-78#scenarios[正常シナリオ（座標で書いた図がある）]
+docs/scenario/SC-477-2.yaml -:69: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 C: id:SC-472-78#scenarios[正常シナリオ]
+docs/scenario/SC-477-2.yaml -:69: map_invalid_value: ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。 D: id:SC-472-8#scenarios[正常シナリオ]
+docs/screen/SCR-472-4.ts.yaml -:1189: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/README.md -:7: legacy_mark: table のマーカーの引数が今の書き方です。引数を JSON のオブジェクトで記載してください。mdmark upgrade で書き換えられます。
+docs/component/README.md -:7: legacy_mark: table のマーカーの引数が今の書き方です。引数を JSON のオブジェクトで記載してください。mdmark upgrade で書き換えられます。
+docs/er/README.md -:7: legacy_mark: table のマーカーの引数が今の書き方です。引数を JSON のオブジェクトで記載してください。mdmark upgrade で書き換えられます。
+docs/interface/README.md -:7: legacy_mark: table のマーカーの引数が今の書き方です。引数を JSON のオブジェクトで記載してください。mdmark upgrade で書き換えられます。
+docs/library/README.md -:7: legacy_mark: table のマーカーの引数が今の書き方です。引数を JSON のオブジェクトで記載してください。mdmark upgrade で書き換えられます。
+docs/mock/components/index.md -:5: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/mock/refs/307/index.md -:5: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/module/README.md -:7: legacy_mark: table のマーカーの引数が今の書き方です。引数を JSON のオブジェクトで記載してください。mdmark upgrade で書き換えられます。
+docs/pr/307/要件.md -:9: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/pr/352/要件.md -:34: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/pr/506/要件.md -:8: syntax_warning: icon:名前の 名前 は Lucide のアイコンの名前になりません。名前は英小文字・数字・- で記載します（例: rocket）。記載した文字のまま表示しています。
+docs/scenario/README.md -:7: legacy_mark: table のマーカーの引数が今の書き方です。引数を JSON のオブジェクトで記載してください。mdmark upgrade で書き換えられます。
+---
+1 README.md legacy_mark
+1 component legacy_mark
+2 component retired_diagram
+19 component syntax_warning
+2 component unknown_mark
+1 er legacy_mark
+1 interface legacy_mark
+1 library legacy_mark
+2 mock syntax_warning
+1 module legacy_mark
+1 module syntax_warning
+3 pr syntax_warning
+1 scenario legacy_mark
+151 scenario map_invalid_value
+2 scenario syntax_warning
+1 screen syntax_warning
+
+## 2 回目（f1ed3b1b）: 1 回目の icon:名前 の警告 6 件を icon\:名前 で打ち消した後
+
+$ node dist/cli.js check --file docs/component/CMP-472-10.ts.yaml --key 'args[3].description'
+ずれ 0 件
+$ node dist/cli.js check --file docs/module/MOD-472-296.ts.yaml --key 'functions[0].summary'
+ずれ 0 件
+$ node dist/cli.js check --file docs/screen/SCR-472-4.ts.yaml --key 'elements[93].description'
+ずれ 0 件
+$ node dist/cli.js check --text - < docs/pr/307/要件.md
+ずれ 0 件
+$ node dist/cli.js check --text - < docs/pr/352/要件.md
+ずれ 0 件
+$ node dist/cli.js check --text - < docs/pr/506/要件.md
+ずれ 0 件
