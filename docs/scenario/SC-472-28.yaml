@@ -56,12 +56,40 @@ scenarios:
       - ページの本文の段落が表示されている
       - ブラウザのコンソールに `index.js` を読み込めなかったエラーが出る
     test: test_error_when_dist_not_found
+  - name: 正常シナリオ（develop を指定する）
+    setup:
+      - name: develop を読み込むページ
+        description: 正常シナリオと同じ HTML で、URL のバージョンの位置に `develop` を記載したもの
+        notes: ビルドで埋めるバージョンは、develop のビルドの `v0.0.1-develop.{短縮 SHA}`
+      - name: Mock
+        description: jsDelivr を、develop のビルドの `dist/` を同じパスで返却する手元の配信に差し替える
+        notes: '`/gh/shuhei1101/mdmark@develop/dist/{ファイル}` への要求に、develop のビルドの `dist/{ファイル}` を返却する'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant C as jsDelivr
+        U->>P: ページを開く
+        P->>C: @develop/dist/index.css と index.js を要求
+        C-->>P: develop の先頭の commit の CSS と JavaScript
+        P->>P: 公開関数を呼ぶ
+        P-->>U: develop のビルドのバージョンを表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - 公開関数が `v0.0.1-develop.{短縮 SHA}` を返却し、短縮 SHA が develop のビルドの commit と一致する
+      - ページのルート要素の CSS 変数 `--mdmark-version` の計算値が、公開関数の返却値を引用符で囲んだ文字列
+    test: test_normal_when_develop
 lead: 利用側のページが、バージョンのタグを固定した URL で mdmark の JavaScript と CSS を読み込み、公開関数を呼ぶ。サーバーの言語によらず、ページに記載したタグだけで使用できる。
 primary_actor: mdmark を使用するアプリのページ
 trigger: 利用者が、mdmark を読み込むページをブラウザで開く
 preconditions:
-  - 読み込むバージョンのタグが指す commit に `dist/` が入っている
   - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js` と `index.css` を読み込む記述を持つ
+  - 読み込むバージョンのタグか develop が指す commit に `dist/` が入っている
 success_guarantee: ページに CSS が該当し、JavaScript の公開関数がページに記載したタグと同じバージョンを返却する。
 minimal_guarantee: 配布物を読み込めなかったときも、ページの本文はそのまま表示され、読み込めなかったことがブラウザのコンソールに出る。
 test_file: tests/e2e/単一ユースケース/バージョンを固定して配布物を読み込む.spec.ts

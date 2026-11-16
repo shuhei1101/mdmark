@@ -45,6 +45,46 @@ scenarios:
       - 出力に、`npm ci --prefix tools/eslint` が出す導入の集計の行（`added {数} packages`）が出ない
       - クライアントの `tools/list` が返却するツールに `export_html`・`build_site`・`check` がある
     test: test_normal
+  - name: 正常シナリオ（develop を指定する）
+    setup:
+      - name: develop のブランチを持つ Git のリポジトリ
+        description: develop のビルドをした作業ツリー（`dist/` を含む）を一時の Git のリポジトリの `develop` のブランチに commit する
+        notes: develop への push のワークフローが commit した状態と同じく、`dist/` と `plugin/` の生成物を commit に含める
+      - name: 空の npm のキャッシュ
+        description: 正常シナリオと同じ
+      - name: 空いたポート
+        description: 正常シナリオと同じ
+      - name: lifecycle の出力を表示する
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: GitHub の代わりに `git+file://{リポジトリ}#develop` を指定する。それ以外は正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant N as npm
+        participant G as Git のリポジトリ
+        participant C as mdmark CLI
+        participant M as MCP のクライアント
+        W->>N: MDMARK_PORT={ポート} npm exec --yes {develop の参照} serve
+        N->>G: develop の先頭の commit を取り出す
+        G-->>N: develop の先頭の commit の中身
+        N->>N: dependencies を入れる
+        N->>C: mdmark serve
+        C-->>W: 接続先の URL
+        M->>C: tools/list
+        C-->>M: mdmark のツールの一覧
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`npm exec` のプロセスが終わらずに残り、出力に接続先 `http://127.0.0.1:{ポート}/mcp` が出る'
+      - 出力に、`npm ci --prefix tools/eslint` が出す導入の集計の行（`added {数} packages`）が出ない
+      - クライアントの `tools/list` が返却するツールに `export_html`・`build_site`・`check` がある
+      - '`npm exec --yes {develop の参照} --version` の出力が `v{バージョン}-develop.{短縮 SHA}` で、短縮 SHA が develop の先頭の commit と一致する'
+    test: test_normal_when_develop
 lead: 文書の作成者が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路でバージョンのタグから mdmark を入れ、CLI を起動する。
 primary_actor: 文書の作成者
 stakeholders:

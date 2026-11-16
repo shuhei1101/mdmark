@@ -517,6 +517,60 @@ scenarios:
       - 設定の `version` が `v0.9.0` のまま
       - 終了コードが 0 以外
     test: test_error_when_aliases_row_mixed_types
+  - name: 異常シナリオ（手元のバージョンが develop）
+    setup:
+      - name: develop を追うフォルダ
+        description: '`version: develop` の設定・索引・文書を持つフォルダ'
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.5.0` に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読み込む（develop）
+        C-->>W: 手元のバージョンが develop で比べられないことと、v{MAJOR}.{MINOR}.{PATCH} を記載してから呼ぶこと・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - 出力に、手元のバージョンが `develop` で移行の手順を選べないことと、設定の `version` に今の文書が合わせてあるバージョンを `v{MAJOR}.{MINOR}.{PATCH}` で記載してからもう一度呼ぶことが出る
+      - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
+      - 終了コードが 0 以外
+    test: test_error_when_local_version_develop
+  - name: 正常シナリオ（develop のビルドの CLI で呼ぶ）
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを develop のビルドの `v0.5.0-develop.abc1234` に差し替える。移行の手順のフォルダと変更履歴は正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読み込む
+        C->>C: 目標のバージョンをビルドの元のバージョン v0.5.0 にし、v0.4.0・v0.5.0 の手順を参照する
+        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順をバージョンの順に適用する
+        C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 設定のキーと文書のマーカーが、正常シナリオと同じに書き換わっている
+      - 設定の `version` が `v0.5.0`
+      - 終了コードが 0
+    test: test_normal_when_cli_built_from_develop
 lead: 文書の作成者が `mdmark upgrade` を実行し、設定の手元のバージョンから目標のバージョンまでの移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換え、その範囲の変更履歴を受け取る。
 primary_actor: 文書の作成者
 trigger: 新しいバージョンが出て、文書の作成者がそのバージョンの CLI と配布物を使用したくなった
