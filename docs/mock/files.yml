@@ -75,9 +75,6 @@ files:
   - path: components/embedded-html/index.html
     description: '部品『embedded-html』のモック: マーカーの範囲のコードブロックの HTML を本文に溶け込ませて描いた場所と、チャートを含む・列より広い・機能がオフ・記載の警告の場面。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック]
-  - path: components/er-diagram/index.html
-    description: '部品『er-diagram』のモック: テーブル・テーブルの種類（マスター・トランザクション）と色・列の PK・FK・NN のマーカー・多重度とラベルを持つ関係の線の ER 図と、列を畳んだテーブル・テーブルのツールチップ・定義を読み込めない記載の警告。部品の外観や状態を決めるときに参照する。'
-    tags: [topic:モック, topic:図]
   - path: components/card-grid/index.html
     description: '部品『card-grid』のモック: cards のマーカーで囲んだリストの項目を並べるカードの格子と、狭い画面・リンクを持たない項目・長い説明・機能を解除したとき・リスト以外の中身の記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:記法]

@@ -1,0 +1,11 @@
+$ npx biome check .
+  × Some errors were emitted while running checks.
+  
+
+（警告 1 件は plugin/bin/setup.js の既存のもので、この PR の変更ファイルではない）
+
+$ node scripts/eslint.ts
+exit=0（違反なし）
+
+$ npx tsc --noEmit（src・scripts・migrations・tests/unit）
+（残る違反は tests/integration の ER 図の部品のテストだけで、結合テスト作成の工程で直す）

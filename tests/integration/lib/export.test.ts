@@ -279,13 +279,7 @@ test("test_normal_when_tooltip_placement", async () => {
       "索引を読み込む。",
       "",
       ...filler,
-      "<!-- er -->",
-      "",
-      "```json",
-      JSON.stringify(TOOLTIP_ER),
-      "```",
-      "",
-      "<!-- /er -->",
+      ...TOOLTIP_MAP_ER,
       "",
       ...filler,
     ].join("\n"),
@@ -309,7 +303,8 @@ test("test_normal_when_tooltip_placement", async () => {
     };
   });
   expect(rects.tipTop).toBeGreaterThanOrEqual(rects.termBottom);
-  // ER 図のテーブルの説明のボタンにポインターを乗せると、ツールチップをテーブルの上に出す
+  // map の ER 図のテーブルの説明のマーカーにポインターを乗せると、ツールチップをテーブルの上に出す
+  await page.waitForSelector(".zq-diagram .zq-diagram-info");
   const info = page.locator(".zq-diagram .zq-diagram-info");
   await info.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await info.hover();
@@ -317,7 +312,7 @@ test("test_normal_when_tooltip_placement", async () => {
     const tip = document.getElementById(
       element.getAttribute("aria-describedby") ?? "",
     );
-    const table = element.closest(".zq-diagram-er-table") ?? element;
+    const table = element.closest(".zq-diagram-node") ?? element;
     return {
       tableTop: table.getBoundingClientRect().top,
       tipBottom: tip?.getBoundingClientRect().bottom ?? Number.NaN,
@@ -327,26 +322,21 @@ test("test_normal_when_tooltip_placement", async () => {
   await page.close();
 });
 
-/** 概要を持つテーブル 1 つの ER 図の定義 */
-const TOOLTIP_ER = {
-  title: "問い合わせのデータ",
-  scope: "問い合わせの DB",
-  updated: "2026-11-14",
-  width: 320,
-  tables: [
-    {
-      id: "inquiries",
-      name: "inquiries",
-      label: "問い合わせ",
-      desc: "受け取った問い合わせ",
-      x: 24,
-      y: 24,
-      w: 240,
-      columns: [{ name: "id", type: "bigint", pk: true }],
-    },
-  ],
-  relations: [],
-};
+/** 補足の `notes` で説明を持つテーブル 1 つの map の ER 図の範囲の行 */
+const TOOLTIP_MAP_ER = [
+  '<!-- map: {"title": "問い合わせのデータ"} -->',
+  "",
+  "```mermaid",
+  "erDiagram",
+  "  inquiries {",
+  "    bigint id PK",
+  "  }",
+  "```",
+  "",
+  '<!-- map-data: {"version": 1, "notes": {"inquiries": {"text": "問い合わせ\\n受け取った問い合わせ"}}} -->',
+  "",
+  "<!-- /map -->",
+];
 
 // 文書が使用する言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする（正常系（色分けするコードブロック））
 test("test_normal_when_syntax_highlighted", async () => {

@@ -1,0 +1,5 @@
+$ npm run test:unit
+ Test Files  299 passed (299)
+      Tests  2266 passed (2266)
+   Duration  18.51s (worker 82%, tests 12%, import 5%, transform 1%)
+（ecacdb73 で全件を実行。その後の 7163d330 は scripts/storybook-render.ts の見本の文書のパスだけの修正で、単体テストの対象に無い）

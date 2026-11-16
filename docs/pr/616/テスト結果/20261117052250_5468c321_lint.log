@@ -1,0 +1,8 @@
+$ npx biome check tests
+Checked 441 files in 525ms. No fixes applied.
+
+$ node scripts/eslint.ts
+(違反なし)
+
+$ npx tsc --noEmit
+単体テスト作成の工程のため、実装が無いことによる型の違反（convertRetiredEr などが無い）と、結合テストの工程で直す tests/integration の違反は残している

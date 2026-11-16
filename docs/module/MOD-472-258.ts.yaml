@@ -170,7 +170,7 @@ functions:
       - name: test_collect_matches_when_diagram_term_is_alias
         case: 正常
         summary: 図の部品の `{{単語}}` は、単語が文書の別名でもあるときも用語の参照先だけを返却する
-        condition: 索引に用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`。`guide` の `<!-- er -->` の定義のテーブルの `label` に `{{公開関数}}`
+        condition: 索引に用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`。`guide` の `<!-- chart -->` の定義の系列の `name` に `{{公開関数}}`
         mock: なし
         expected: '`{{公開関数}}` の位置は `term` の `fn` の 1 件だけで、`targets` に `api` が入らない'
       - name: test_collect_matches_ignores_avoided_terms
@@ -212,7 +212,7 @@ functions:
       - name: test_collect_matches_when_diagram_term_is_alias_word
         case: 正常
         summary: 図の部品の `{{単語}}` はエイリアスを参照しない
-        condition: '`aliases` に `term` の `公開関数`（`fn`）だけを指定し、索引に用語が無い。`guide` の `<!-- er -->` の定義のテーブルの `label` に `{{公開関数}}`、段落に `公開関数`'
+        condition: '`aliases` に `term` の `公開関数`（`fn`）だけを指定し、索引に用語が無い。`guide` の `<!-- chart -->` の定義の系列の `name` に `{{公開関数}}`、段落に `公開関数`'
         mock: なし
         expected: '`byDocument.guide` が段落の `公開関数` の 1 件だけで、`{{公開関数}}` の位置が無い'
     refs:
@@ -248,7 +248,7 @@ functions:
     container: src/knowledge/matches.ts
     kind: 関数
     scope: internal
-    summary: 図の部品（`chart`・`param`・`er`）の範囲の定義と、埋め込んだ HTML の中の custom element（`<mdmark-chart>`・`<mdmark-param>`）の定義の `{{単語}}` のうち、意味のある用語の位置を返却する。廃止した `flow`・`sequence` の範囲と `<mdmark-flow>`・`<mdmark-sequence>` は照合しない
+    summary: 図の部品（`chart`・`param`）の範囲の定義と、埋め込んだ HTML の中の custom element（`<mdmark-chart>`・`<mdmark-param>`）の定義の `{{単語}}` のうち、意味のある用語の位置を返却する。廃止した `flow`・`sequence`・`er` の範囲と `<mdmark-flow>`・`<mdmark-sequence>` は照合しない
     description: 範囲の見つけ方は `buildDiagrams`（マーカーの範囲の `json` のコードブロック）と `takeParts`（`PART_PATTERN`）と同じ。定義の JSON の文字列を戻して `{{単語}}` を探し、単語を `dictionary.term` で正規化して参照した用語の意味が空でないものだけを返却する（`lookup` と同じ。文書の別名は参照しない）。位置は JSON のエスケープ（`\"`・`ア`）を数えて本文の位置へ戻す
     args:
       - name: options
@@ -262,13 +262,13 @@ functions:
       - name: test_diagram_term_matches
         case: 正常
         summary: 定義の `{{単語}}` の用語の位置を返却し、用語でない単語は返却しない
-        condition: '`<!-- er -->` の定義のテーブルの `label` に JSON のエスケープの後ろの `{{ワークスペース}}` と `{{公開関数}}`、`<!-- html -->` の中の `<mdmark-chart>` の系列の名前に `{{ワークスペース}}`、`<!-- flow -->` の範囲のノードの `name` に `{{ワークスペース}}`'
+        condition: '`<!-- chart -->` の定義の系列の `name` に JSON のエスケープの後ろの `{{ワークスペース}}` と `{{公開関数}}`、`<!-- html -->` の中の `<mdmark-chart>` の系列の名前に `{{ワークスペース}}`、`<!-- flow -->` の範囲のノードの `name` に `{{ワークスペース}}`'
         mock: なし
         expected: '`ワークスペース` の 2 件だけ（`flow` の範囲の 1 件は入らない）で、本文の行を切り出した文字が `ワークスペース`'
       - name: test_diagram_term_matches_when_notation_differs
         case: 正常
         summary: 表記の違う `{{単語}}` も用語の位置として返却する
-        condition: 索引の用語 `MCP`。`<!-- er -->` の定義のテーブルの `label` に `{{ｍｃｐ}}`
+        condition: 索引の用語 `MCP`。`<!-- chart -->` の定義の系列の `name` に `{{ｍｃｐ}}`
         mock: なし
         expected: 1 件で、本文の行を切り出した文字が `ｍｃｐ`
   - name: mapTermMatches

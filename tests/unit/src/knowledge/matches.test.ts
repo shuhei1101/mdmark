@@ -51,22 +51,6 @@ const API_TARGET = {
 /** JSON の `\u` の 4 桁のエスケープ（`ア`）。ソースに記載すると整形で文字に戻るため、組み立てる */
 const UNICODE_ESCAPE = ["\\", "u30a2"].join("");
 
-/** テーブル 1 つの ER 図の定義の行（テーブルの論理名を `label` にする） */
-function erDefinition(label: string): string[] {
-  return [
-    "{",
-    '  "title": "受け取り",',
-    '  "scope": "範囲",',
-    '  "updated": "2026-10-23",',
-    '  "width": 520,',
-    '  "tables": [',
-    `    { "id": "recv", "name": "recv", "label": "${label}", "x": 20, "y": 48, "w": 140, "columns": [{ "name": "id", "type": "bigint", "pk": true }] }`,
-    "  ],",
-    '  "relations": []',
-    "}",
-  ];
-}
-
 /** 系列 1 つのグラフの定義の行（系列の名前を `name` にする） */
 function chartDefinition(name: string): string[] {
   return [
@@ -460,13 +444,13 @@ test("test_collect_matches_when_diagram_term_is_alias", async () => {
     terms: [{ id: "fn", term: "公開関数", meaning: "配布物から呼べる関数" }],
   };
   const body = [
-    "<!-- er -->",
+    "<!-- chart -->",
     "",
     "```json",
-    ...erDefinition("{{公開関数}}"),
+    ...chartDefinition("{{公開関数}}"),
     "```",
     "",
-    "<!-- /er -->",
+    "<!-- /chart -->",
     "",
   ].join("\n");
   // 実行
@@ -475,7 +459,7 @@ test("test_collect_matches_when_diagram_term_is_alias", async () => {
     documents: { "使い方/guide.md": body },
   });
   // 検証
-  // テーブルの `{{公開関数}}` は用語の 1 件だけで、文書 `api` は返らない
+  // 系列の `{{公開関数}}` は用語の 1 件だけで、文書 `api` は返らない
   const guide = matches.byDocument.guide ?? [];
   expect(
     guide.map((match) => [match.kind, match.id, cut(body, match)]),
@@ -537,16 +521,16 @@ test("test_diagram_term_matches", async () => {
   // 準備
   const { diagramTermMatches } = await loadMatches();
   const body = [
-    "<!-- er -->",
+    "<!-- chart -->",
     "",
     "```json",
     // JSON のエスケープ（\" と \u の 4 桁）の後ろの単語
-    ...erDefinition(
+    ...chartDefinition(
       `\\"鍵\\" ${UNICODE_ESCAPE} {{ワークスペース}} と {{公開関数}}`,
     ),
     "```",
     "",
-    "<!-- /er -->",
+    "<!-- /chart -->",
     "",
     "<!-- html -->",
     "",
@@ -594,13 +578,13 @@ test("test_diagram_term_matches_when_notation_differs", async () => {
     terms: [{ id: "mcp", term: "MCP", meaning: "Model Context Protocol" }],
   };
   const body = [
-    "<!-- er -->",
+    "<!-- chart -->",
     "",
     "```json",
-    ...erDefinition("{{ｍｃｐ}}"),
+    ...chartDefinition("{{ｍｃｐ}}"),
     "```",
     "",
-    "<!-- /er -->",
+    "<!-- /chart -->",
     "",
   ].join("\n");
   const { tokens, dictionary } = prepare(body, index);
@@ -765,13 +749,13 @@ test("test_collect_matches_when_diagram_term_is_alias_word", async () => {
     },
   ];
   const body = [
-    "<!-- er -->",
+    "<!-- chart -->",
     "",
     "```json",
-    ...erDefinition("{{公開関数}}"),
+    ...chartDefinition("{{公開関数}}"),
     "```",
     "",
-    "<!-- /er -->",
+    "<!-- /chart -->",
     "",
     "公開関数を呼ぶ。",
     "",

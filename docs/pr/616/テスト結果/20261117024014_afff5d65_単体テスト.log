@@ -1,0 +1,2 @@
+$ npx vitest run --project 'unit*' {変更した 11 ファイル}
+結果: Red（15 failed | 162 passed）。fail は convertRetiredEr・readRetiredErDefinition・erToMap・migrations/next/retired-er.mjs・buildRetiredDiagrams の ER 対応・RETIRED_DIAGRAM_DIRECTIVES の er が未実装のことによるものだけ
