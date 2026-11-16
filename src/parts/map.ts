@@ -1503,13 +1503,14 @@ const seqHeadKind = (kind: MapKind | undefined): string => {
 const seqHeadLook = (kind: MapKind | undefined): string =>
   ` data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`}`;
 
-/** 参加者 1 人の頭（選べるノード） */
+/** 参加者 1 人の頭（選べるノード）。箱の `div` はフォーカスを受けず、箱を覆う押せる要素を先頭に入れて、種類の行と名前をその兄弟にする */
 const renderSeqHead = (context: SeqContext, name: string): string => {
   const { args, selected, marker } = context;
   const kind = args.kinds?.[name];
   const isSelected = selected.has(name);
   const label = seqLabelOf(args.sequence, name);
-  return `<div class="mdmark-diagram-node map-participant map-kinded${seqParticipantDim(context, name)}${isSelected ? " is-selected" : ""}" data-kind="map"${seqHeadLook(kind)} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="${escapeHtml(selectableName(label, isSelected))}"${isSelected ? " data-selected" : ""} style="left:${(context.x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px">${seqHeadKind(kind)}<span class="mdmark-diagram-node-name">${marker.render(label)}</span></div>`;
+  const hit = `<span class="mdmark-diagram-node-hit" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="${escapeHtml(selectableName(label, isSelected))}"></span>`;
+  return `<div class="mdmark-diagram-node map-participant map-kinded${seqParticipantDim(context, name)}${isSelected ? " is-selected" : ""}" data-kind="map"${seqHeadLook(kind)} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}"${isSelected ? " data-selected" : ""} style="left:${(context.x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px">${hit}${seqHeadKind(kind)}<span class="mdmark-diagram-node-name">${marker.render(label)}</span></div>`;
 };
 
 /** 部品『mapのER図』のテーブルのノードの寸法（px）。列の行は、テーブル名の行の下から同じ高さで並ぶ */

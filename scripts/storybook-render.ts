@@ -1294,6 +1294,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       focus: jsonObject<{ message: number }>(args.focus),
       id: "story-map-seq",
       notes: jsonObject<Record<string, string>>(args.notes),
+      terms: jsonObject<Record<string, string>>(args.terms),
       hints: hintsOf(args.hints),
     });
     const width = Number(

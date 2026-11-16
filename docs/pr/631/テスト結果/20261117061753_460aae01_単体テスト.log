@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-sequence-participant-nested-interactive
+
+
+ Test Files  301 passed (301)
+      Tests  2274 passed (2274)
+   Start at  06:17:03
+   Duration  25.71s (worker 82%, tests 11%, import 6%, transform 1%)
+
