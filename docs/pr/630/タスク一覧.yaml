@@ -20,7 +20,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T17:37:32.437787+00:00'
   - process: 複合ユースケース設計
-    status: todo
+    status: skipped
+    reason: 文書の作成者が mermaid のコードブロックを記載し、読者が描いた図を操作する流れ（単一 UC の連鎖）は変わらず、変わるのは単一 UC『mermaidの図を描く』『図を拡大・縮小・移動する』の中の操作だけのため。複合 UC『Mermaidと補足で書いた図を辿って読む』は記載方法が map の範囲のままで影響しない
+    updated_by: planner
+    updated_at: '2026-11-16T20:21:11.281186+00:00'
   - process: デザインスタイル選定
     status: skipped
     reason: docs/design-policy.md があり、Issue は見た目の方向を変えないため（モック要否 Q4）

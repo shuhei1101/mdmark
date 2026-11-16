@@ -300,6 +300,38 @@ scenarios:
       - リンクのノードは Tab でフォーカスでき、Enter で URL を開く
       - click の行を持たないノードはリンクの中に無い
     test: test_normal_when_click_url
+  - name: 正常シナリオ（シーケンス図の参加者の行を留める）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 縦に長いシーケンス図の mermaid のコードブロックを持つ Markdown
+        description: map の範囲の外に、言語 `mermaid` の sequenceDiagram のコードブロックを 1 つ持つ文書
+        notes: 参加者は actor 1 つと participant 3 つ。メッセージは 30 本で、図の高さが表示する枠の高さより大きい
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant D as シーケンス図
+        P->>D: 設定と Markdown を指定して描かせる
+        D-->>U: 図の枠に入れたシーケンス図を表示
+        U->>D: 表示する枠の中を下へスクロールする
+        D-->>U: 参加者の行を表示する枠の上端に留めたまま、メッセージを動かす
+        U->>D: 一番上までスクロールして戻す
+        D-->>U: 参加者の行を図の中の元の位置に戻す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表示する枠の中を下へスクロールしても、4 つの参加者の名前が表示する枠の上端に見えている
+      - 留まった参加者の行の下を、メッセージとライフラインが通り過ぎ、留まった行の後ろのメッセージの文字が透けて見えない
+      - 一番上へ戻すと、参加者の行が図の中の元の位置に戻る
+      - 留まった参加者の行の文字も、スクロールする前と同じくスクリーンリーダーが読み上げる
+    test: test_normal_when_sequence_heads_stuck
 tags:
   - name: tool:mermaid
     main: true
