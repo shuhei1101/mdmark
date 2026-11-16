@@ -1,0 +1,1 @@
+# VS Code 拡張機能のテストを 1 つの置き場所にまとめ、collectMapStructure の単体テストを structure.ts のテストへ移す
