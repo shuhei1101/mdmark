@@ -33,7 +33,7 @@ PR [索引の用語にやめた言い方（avoid）を書けるようにし、�
 - [x] ~~部品設計~~（部品の引数・状態が変わらない）
 - [x] ~~画面設計~~（変更が画面に及ばない）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/記法.md・docs/リファレンス/索引.md・docs/リファレンス/用語集.md・docs/使い方/書く/索引と用語集を書く.md・docs/使い方/書き出す/点検する.md）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/リファレンス/記法.md)・[索引](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/リファレンス/索引.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/リファレンス/用語集.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/使い方/書く/索引と用語集を書く.md)・[点検する](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/使い方/書き出す/点検する.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

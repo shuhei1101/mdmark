@@ -36,7 +36,7 @@ iOS の Safari はタップした番号に `:hover` を残すため、`click` �
 - [x] ~~部品設計~~（影響なし: 部品『脚注の番号』は開閉の条件を持たず、開閉は `mount` の操作が付ける。状態 `Open` の見た目は変わらない）
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/使い方/書く/本文を部品で組む.md・docs/リファレンス/記法.md）
+- [x] ドキュメント修正（[本文を部品で組む](https://github.com/shuhei1101/mdmark/blob/faa617d552489798fb7447cabf2a8b49d18034f0/docs/使い方/書く/本文を部品で組む.md)・[記法](https://github.com/shuhei1101/mdmark/blob/faa617d552489798fb7447cabf2a8b49d18034f0/docs/リファレンス/記法.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

@@ -39,7 +39,7 @@
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/使い方/図を描く/図を描く.md・docs/リファレンス/構成図の決まり.md・docs/使い方/図を描く/コードブロックのHTMLを描く.md・docs/リファレンス/記法.md）
+- [x] ドキュメント修正（[図を描く](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/使い方/図を描く/図を描く.md)・[構成図の決まり](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/リファレンス/構成図の決まり.md)・[コードブロックのHTMLを描く](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/使い方/図を描く/コードブロックのHTMLを描く.md)・[記法](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/リファレンス/記法.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

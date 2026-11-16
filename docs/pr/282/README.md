@@ -32,7 +32,7 @@ mdmark は `--mdmark-color-bg` を本文の地だけでなく、浮く部品・�
 - [x] 部品設計
 - [x] ~~画面設計~~（画面設計は要素ごとの地の色の変数を持たず、要素・操作も変わらない。地の参照先は部品設計とインターフェース定義の制約「不透明な地」で決まる）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/API.md・docs/使い方/カスタマイズ/テーマを上書きする.md・dev/設計書/デザイン方針.md）
+- [x] ドキュメント修正（[API](https://github.com/shuhei1101/mdmark/blob/48d192fc265a151286c6e8321f5b6f7d37aa55a0/docs/リファレンス/API.md)・[テーマを上書きする](https://github.com/shuhei1101/mdmark/blob/48d192fc265a151286c6e8321f5b6f7d37aa55a0/docs/使い方/カスタマイズ/テーマを上書きする.md)・[デザイン方針](https://github.com/shuhei1101/mdmark/blob/48d192fc265a151286c6e8321f5b6f7d37aa55a0/dev/設計書/デザイン方針.md)）
 - [x] ~~単体テスト作成~~（CSS の変数と参照先の変更だけで、単体テストの対象の関数が変わらない）
 - [x] 実装
 - [x] 結合テスト作成

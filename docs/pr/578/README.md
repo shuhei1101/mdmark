@@ -1,8 +1,8 @@
-# mdmark のリポジトリの文書（docs/mock・docs/pr・docs/design-policy.md）のマーカーを JSON の記載へ移す
+# mdmark のリポジトリの文書（docs/mock・docs/pr・[デザイン方針](https://github.com/shuhei1101/mdmark/blob/ab346d56692ece829564805e7de747b14505ed36/docs/design-policy.md)）のマーカーを JSON の記載へ移す
 
 ## 概要
 
-mdmark のリポジトリの文書（`docs/mock/`・`docs/pr/`・`docs/design-policy.md`）の今の書き方のマーカーを JSON の記載へ書き換え、`mdmark check` が `legacy_mark` を出さない状態にする。
+mdmark のリポジトリの文書（`docs/mock/`・`docs/pr/`・[デザイン方針](https://github.com/shuhei1101/mdmark/blob/ab346d56692ece829564805e7de747b14505ed36/docs/design-policy.md)）の今の書き方のマーカーを JSON の記載へ書き換え、`mdmark check` が `legacy_mark` を出さない状態にする。
 
 ## 背景
 

@@ -33,7 +33,7 @@ PR [文書の索引・用語のツールチップ・被参照を表示する](ht
 - [x] ~~部品設計~~（部品の引数・状態が変わらない）
 - [x] ~~画面設計~~（変更が画面に及ばない）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/索引.md・docs/リファレンス/API.md・docs/リファレンス/CLI.md・docs/リファレンス/用語集.md・docs/使い方/書く/索引と用語集を書く.md・docs/使い方/書き出す/点検する.md・docs/はじめに/コアコンセプト/索引と被参照.md）
+- [x] ドキュメント修正（[索引](https://github.com/shuhei1101/mdmark/blob/2eea98f0856a88b9e789182b338f0c5a87743eea/docs/リファレンス/索引.md)・[API](https://github.com/shuhei1101/mdmark/blob/2eea98f0856a88b9e789182b338f0c5a87743eea/docs/リファレンス/API.md)・[CLI](https://github.com/shuhei1101/mdmark/blob/2eea98f0856a88b9e789182b338f0c5a87743eea/docs/リファレンス/CLI.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/2eea98f0856a88b9e789182b338f0c5a87743eea/docs/リファレンス/用語集.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/2eea98f0856a88b9e789182b338f0c5a87743eea/docs/使い方/書く/索引と用語集を書く.md)・[点検する](https://github.com/shuhei1101/mdmark/blob/2eea98f0856a88b9e789182b338f0c5a87743eea/docs/使い方/書き出す/点検する.md)・[索引と被参照](https://github.com/shuhei1101/mdmark/blob/2eea98f0856a88b9e789182b338f0c5a87743eea/docs/はじめに/コアコンセプト/索引と被参照.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

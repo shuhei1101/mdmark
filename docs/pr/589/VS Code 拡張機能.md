@@ -13,7 +13,7 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | `vscode/src/webview/vite-env.d.ts` のモジュール構成 | 要素を持たないモジュール構成を新規作成し、`lead` に `vite/client` の型の参照だけを持つファイルだと記載する | `未確定`（[要件](./要件.md) の `## 要望`） |
-| `docs/module/index.yaml` | 新規作成した 1 件の行を追加する | - |
+| [docs/module/index.yaml](https://github.com/shuhei1101/mdmark/blob/d203f638f6f48f2029fe36558efbfd8eede8b4a2/docs/module/index.yaml) | 新規作成した 1 件の行を追加する | - |
 | `vscode/files.yaml` | `src/webview/vite-env.d.ts` の行を追加し、implements で新規作成したモジュール構成を指す | ドキュメント修正の工程 |
 
 ## 設計書の確定コミット

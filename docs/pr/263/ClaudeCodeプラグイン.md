@@ -17,7 +17,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 使い方集 | `guide/index.yaml` に、`docs/使い方/書く/色で強調する.md` と `docs/使い方/書く/画像と動画を置く.md` を指す行を足す | 使い方集の索引の文字数は非機能要件『使い方集の索引の文字数』の内に収める |
+| 使い方集 | `guide/index.yaml` に、[色で強調する](https://github.com/shuhei1101/mdmark/blob/1a8e22d03b9a55a7c72933c45fa0a4a8a0f21fb8/docs/使い方/書く/色で強調する.md) と [画像と動画を置く](https://github.com/shuhei1101/mdmark/blob/1a8e22d03b9a55a7c72933c45fa0a4a8a0f21fb8/docs/使い方/書く/画像と動画を置く.md) を指す行を足す | 使い方集の索引の文字数は非機能要件『使い方集の索引の文字数』の内に収める |
 | 既存機能への影響 | `check`・`export_html`・`build_site` は CLI と同じ処理を使い、ツールの引数は変えない | |
 
 <!-- /table -->

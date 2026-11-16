@@ -14,7 +14,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 索引 | `docs/guide/files.yml` の『本文を部品で組む』の description と、`guide/index.yaml` の `components` の `when` に「フォルダ構成・ファイルツリーを記載するとき」を加える | dev-docs のガイドの検索は description で選ぶ |
+| 索引 | [docs/guide/files.yml](https://github.com/shuhei1101/mdmark/blob/a16591d62eb685f7a3350ed7d4d919385fb4eb82/docs/guide/files.yml) の『本文を部品で組む』の description と、`guide/index.yaml` の `components` の `when` に「フォルダ構成・ファイルツリーを記載するとき」を加える | dev-docs のガイドの検索は description で選ぶ |
 | SessionStart | 変えない | dev-docs の instructions がガイドの検索へ導き、記載した後の点検で警告が出るため |
 
 ## 設計書の確定コミット
@@ -27,4 +27,4 @@
 
 ### ドキュメント修正
 
-なし（ガイドの Markdown・`guide/index.yaml`・`docs/guide/files.yml` の文言の修正で、規約『V字モデル』の対応表で対応する単体・結合テストが無い。ガイドの索引の検査は配布物のビルドが行い、実装の工程で回す）
+なし（ガイドの Markdown・`guide/index.yaml`・[docs/guide/files.yml](https://github.com/shuhei1101/mdmark/blob/a16591d62eb685f7a3350ed7d4d919385fb4eb82/docs/guide/files.yml) の文言の修正で、規約『V字モデル』の対応表で対応する単体・結合テストが無い。ガイドの索引の検査は配布物のビルドが行い、実装の工程で回す）

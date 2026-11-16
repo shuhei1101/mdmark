@@ -33,7 +33,7 @@ PR [HTML コメントの印で表・注意書き・タブなどの表示を付�
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/記法.md・docs/使い方/書く/本文を部品で組む.md・docs/リファレンス/用語集.md・docs/リファレンス/設定.md・docs/リファレンス/API.md・docs/使い方/カスタマイズ/印刷する.md）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/736680379902052131bd549eba520b861e24c55a/docs/リファレンス/記法.md)・[本文を部品で組む](https://github.com/shuhei1101/mdmark/blob/736680379902052131bd549eba520b861e24c55a/docs/使い方/書く/本文を部品で組む.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/736680379902052131bd549eba520b861e24c55a/docs/リファレンス/用語集.md)・[設定](https://github.com/shuhei1101/mdmark/blob/736680379902052131bd549eba520b861e24c55a/docs/リファレンス/設定.md)・[API](https://github.com/shuhei1101/mdmark/blob/736680379902052131bd549eba520b861e24c55a/docs/リファレンス/API.md)・[印刷する](https://github.com/shuhei1101/mdmark/blob/736680379902052131bd549eba520b861e24c55a/docs/使い方/カスタマイズ/印刷する.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

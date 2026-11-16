@@ -33,7 +33,7 @@ mindstella のプレビューは UI の文言を「コピー」で揃えるた�
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/設定.md・docs/使い方/図を描く/操作できる部品を作る.md）
+- [x] ドキュメント修正（[設定](https://github.com/shuhei1101/mdmark/blob/83d3f1f14e0e4a775d79f8a7f910cdc566da2021/docs/リファレンス/設定.md)・[操作できる部品を作る](https://github.com/shuhei1101/mdmark/blob/83d3f1f14e0e4a775d79f8a7f910cdc566da2021/docs/使い方/図を描く/操作できる部品を作る.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

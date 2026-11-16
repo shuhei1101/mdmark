@@ -33,7 +33,7 @@ PR [HTML コメントの印で表・注意書き・タブなどの表示を付�
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/記法.md・docs/使い方/書く/表に機能を付ける.md・docs/リファレンス/用語集.md・docs/使い方/カスタマイズ/印刷する.md）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/ff95a0a995f4dbce82983dfa6fa7fda2c9f00f73/docs/リファレンス/記法.md)・[表に機能を付ける](https://github.com/shuhei1101/mdmark/blob/ff95a0a995f4dbce82983dfa6fa7fda2c9f00f73/docs/使い方/書く/表に機能を付ける.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/ff95a0a995f4dbce82983dfa6fa7fda2c9f00f73/docs/リファレンス/用語集.md)・[印刷する](https://github.com/shuhei1101/mdmark/blob/ff95a0a995f4dbce82983dfa6fa7fda2c9f00f73/docs/使い方/カスタマイズ/印刷する.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

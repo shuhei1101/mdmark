@@ -35,7 +35,7 @@ aituber の設計のワークスペースで利用者から提案された。
 - [x] ~~部品設計~~（部品の引数・状態が変わらない）
 - [x] ~~画面設計~~（変更が画面に及ばない）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/API.md・docs/リファレンス/用語集.md・docs/使い方/書く/索引と用語集を書く.md・docs/はじめに/コアコンセプト/索引と被参照.md）
+- [x] ドキュメント修正（[API](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/リファレンス/API.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/リファレンス/用語集.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/使い方/書く/索引と用語集を書く.md)・[索引と被参照](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/はじめに/コアコンセプト/索引と被参照.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

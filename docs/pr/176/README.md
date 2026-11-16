@@ -35,7 +35,7 @@ mdmark は文書の中身を YAML から描かない（D-85）が、エイリア
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/設定.md・docs/リファレンス/API.md・docs/リファレンス/CLI.md・docs/リファレンス/用語集.md・docs/使い方/書く/索引と用語集を書く.md・docs/使い方/書き出す/点検する.md・docs/はじめに/コアコンセプト/索引と被参照.md）
+- [x] ドキュメント修正（[設定](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/リファレンス/設定.md)・[API](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/リファレンス/API.md)・[CLI](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/リファレンス/CLI.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/リファレンス/用語集.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/使い方/書く/索引と用語集を書く.md)・[点検する](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/使い方/書き出す/点検する.md)・[索引と被参照](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/はじめに/コアコンセプト/索引と被参照.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

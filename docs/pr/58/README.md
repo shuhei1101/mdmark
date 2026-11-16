@@ -34,7 +34,7 @@ PR [HTML コメントの印で表・注意書き・タブなどの表示を付�
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/記法.md・docs/使い方/書く/本文を部品で組む.md・docs/リファレンス/用語集.md）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/a3621282b41cd78ce2621fb7e466ab16b6be963a/docs/リファレンス/記法.md)・[本文を部品で組む](https://github.com/shuhei1101/mdmark/blob/a3621282b41cd78ce2621fb7e466ab16b6be963a/docs/使い方/書く/本文を部品で組む.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/a3621282b41cd78ce2621fb7e466ab16b6be963a/docs/リファレンス/用語集.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成
