@@ -63,7 +63,9 @@ docs:
   - page: docs/external-api/API-472-2.yaml
     new: false
     change: version の例と説明に develop のブランチ指定を足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:38:41.997412+00:00'
   - page: docs/config/CFG-472-3.yaml
     new: false
     change: version のキーに develop の最新を表す値を足す
