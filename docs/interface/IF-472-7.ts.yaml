@@ -463,7 +463,7 @@ request:
   - name: MDMARK_SERVE_COMMAND
     type: string
     required: false
-    default: なし（`npx -y github:shuhei1101/mdmark#{プラグインのビルドで埋めた mdmark のバージョン} serve`）
+    default: なし（`npx -y github:shuhei1101/mdmark#{プラグインのビルドで埋めた mdmark のバージョン} serve`。埋めたバージョンが `+develop.` を含む develop のビルドは `npx -y github:shuhei1101/mdmark#develop serve`）
     location: argument
     description: 起動するコマンド（環境変数）。テストでビルドした CLI に差し替える
   - name: MDMARK_START_TIMEOUT_SEC

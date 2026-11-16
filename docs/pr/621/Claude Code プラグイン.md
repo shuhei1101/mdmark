@@ -13,7 +13,7 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | `plugin/` の生成物 | develop への push のワークフローで `dist/` と一緒に再作成して commit する | プラグインは develop の commit で届くため、フックと `dist/` が同じ commit の生成物になる |
-| 常駐サーバーの取り出し元 | セットアップが起動する `npx` の参照を、develop のビルドから呼んだときに develop にするかを決める | 要件.md の「develop のビルドに埋めるバージョン」と合わせて、インターフェース定義設計で決める |
+| 常駐サーバーの取り出し元 | 埋めたバージョンが `+develop.` を含む develop のビルドは、起動コマンドを `npx -y github:shuhei1101/mdmark#develop serve` にし、端末の設定を作るときの `version` と状態の `target_version` を `develop` にする | `init` と同じ判定。起動コマンドを短縮 SHA にすると、生成物を含まない commit を取り出すため採らない |
 
 ## テスト結果
 

@@ -667,7 +667,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - 標準エラーに `npx github:shuhei1101/mdmark#v` で始まる呼び方が出る
+      - 標準エラーに `npx github:shuhei1101/mdmark#v0.5.0 upgrade` が出る
       - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
     test: test_error_when_develop_build_has_unreleased_steps
 lead: 文書の作成者が、設定の手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI のバージョンにする。適用する前にコピーを取り、失敗したらコピーから戻す。
@@ -769,7 +769,7 @@ exceptions:
     notes: 何も書き換えず、コピーも取らない。設定の `version` に今の文書が合わせてあるバージョンを `v{MAJOR}.{MINOR}.{PATCH}` で記載してからもう一度呼ぶことを出す
   - name: develop のビルドで出していない手順がある（終了コード 1）
     condition: develop のビルドの CLI で呼び、パッケージの `migrations/next/steps.yaml` が手順を 1 つ以上持つ
-    notes: 何も書き換えない。タグを指定した CLI（`npx github:shuhei1101/mdmark#v{MAJOR}.{MINOR}.{PATCH} upgrade`）で呼ぶことを出す
+    notes: 何も書き換えない。ビルドの元のバージョン（`+` より前）のタグの CLI（`npx github:shuhei1101/mdmark#v{ビルドの元のバージョン} upgrade`）で呼ぶことを出す
 constraints:
   - item: 目標のバージョン
     constraint: ビルドが呼んだ CLI（`dist/cli.js`）に埋めたバージョン（ライブラリ本体の `version()` と同じ出所）。`version.ini` は読み込まない。引数では受けない。develop のビルド（埋めたバージョンが `+develop.` を含む）は、`+` より前のビルドの元のバージョンを目標にする
