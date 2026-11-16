@@ -1,0 +1,27 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: run_only
+    detail: 配布ファイルの上限の値か配布ファイルの中身が変わり、ビルドと上限超えの検査の通り方が変わりうる
+    depends_on: []
+docs:
+  - page: docs/nonfunctional/NFR-472-1.yaml
+    new: false
+    change: 配布ファイル 1 つのサイズ（NFR-1）の上限の値・根拠・上限を見直した経緯の表を、設計で決めた直し方に合わせる
+    status: todo
+  - page: docs/interface/IF-472-41.ts.yaml
+    new: false
+    change: 配布物をビルドする の制約（672KB 以下）を、設計で決めた上限に合わせる
+    status: todo
+  - page: docs/module/MOD-472-166.ts.yaml
+    new: false
+    change: 定数 MAX_DIST_FILE_BYTES の値と概要を、設計で決めた上限に合わせる
+    status: todo
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: ビルドが終了コード 1 で終わる条件の「index.js・index.css が 672KB を超える」を、設計で決めた上限に合わせる
+    status: todo
+scope_out:
+  - item: 利用側が dist/index.js を 1 枚の HTML に入れて Blob の URL から読むときに、map・view・comments の部品を読み込めるようにする
+    reason: 配布ファイルの大きさの上限とは別の要望（部品の読み込み方）
+    plan: '#624'
