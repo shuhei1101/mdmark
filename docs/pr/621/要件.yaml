@@ -39,7 +39,9 @@ docs:
   - page: docs/guide/設定.mark.md
     new: false
     change: version に書ける値に develop の最新を表す値を足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:39:02.236659+00:00'
   - page: docs/guide/CLI.mark.md
     new: false
     change: npx github:shuhei1101/mdmark#develop の呼び方と、手元のバージョンが develop の最新のときの upgrade の出力・終了コードを足す
@@ -51,7 +53,9 @@ docs:
   - page: docs/guide/用語集.mark.md
     new: false
     change: 手元の版の説明に develop の最新を表す値を足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:39:02.236659+00:00'
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: dist/・plugin/ を commit する時期に develop への push の CI を足し、利用側への届き方を develop の最新と固定の 2 つにする。GitHub Actions の外部システムの行に develop の配布物の commit を足す
