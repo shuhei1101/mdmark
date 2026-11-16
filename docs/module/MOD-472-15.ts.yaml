@@ -122,5 +122,8 @@ functions:
 tags:
   - name: topic:ポート
     main: true
-  - name: topic:サーバー
   - name: tool:claude-code
+  - name: topic:設定
+  - name: topic:サーバー
+  - name: action:読み取り
+  - name: action:待ち受け

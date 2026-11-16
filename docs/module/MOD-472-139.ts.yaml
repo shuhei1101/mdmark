@@ -93,8 +93,9 @@ functions:
         condition: '`{"version": 1, "notes": {"mount": "公開関数"}}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、`notes` に `mount` が無い'
-lead: '`data.ts` の型（補足）と関数（補足を読む）。'
+lead: 'map の補足の JSON の読み取りを受け持ち、補足のキーと読み取り方を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true
   - name: topic:図
+  - name: action:読み取り

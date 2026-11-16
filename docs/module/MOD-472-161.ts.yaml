@@ -117,8 +117,9 @@ functions:
 notes:
   ブラウザのテストファイル: |-
     - `tests/unit/src/comments/anchor.browser.test.ts`
-lead: '`anchor.ts` の関数（選んだ範囲から下書きを作る・本文の文字を集める・コメントの箇所を探す）と定数（前後の文字の数）。'
+lead: '選んだ範囲からのコメントの下書きの作成と、本文の文字からの箇所の探索を受け持ち、コメントの箇所の決め方を変えるときに参照する。'
 tags:
   - name: topic:ビュー
     main: true
   - name: topic:コメント
+  - name: action:作成

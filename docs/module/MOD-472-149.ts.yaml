@@ -81,8 +81,10 @@ functions:
         mock: 一時フォルダ
         expected: 設定と文書がコピーを取る前の中身
     status: planned
-lead: '`backup.ts` の関数（コピーを取る・コピーから戻す）と定数（コピーのフォルダ）。'
+lead: '移行を適用する前のコピーとコピーからの戻しを受け持ち、移行の失敗時の戻し方を変えるときに参照する。'
 tags:
   - name: topic:バージョン
     main: true
   - name: topic:移行
+  - name: topic:cli
+  - name: action:コピー

@@ -23,8 +23,9 @@ functions:
         expected: '`v9.9.9` を返却する'
     refs:
       - IF-472-29#
-lead: '`index.ts` の関数（バージョンを返却する）。'
+lead: '公開関数・定数・公開の型のエクスポートを受け持ち、公開関数や配布物のエントリーポイントを変えるときに参照する。'
 tags:
   - name: topic:api
     main: true
-  - name: topic:エントリーポイント
+  - name: topic:エントリポイント
+  - name: action:配布

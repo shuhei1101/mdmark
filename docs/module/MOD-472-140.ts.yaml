@@ -146,8 +146,9 @@ functions:
         condition: '`{"interval": "abc"}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、`interval` が 2'
-lead: '`spec.ts` の型（書き方の誤りの項目・ノードの種類・線の種類・印の引数）と関数（印の引数を読む）と定数（印の引数のキー・自動で進める間隔の既定）。'
+lead: 'map のマーカーの引数の読み取りと map の型を受け持ち、マーカーの引数を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true
   - name: topic:図
+  - name: action:読み取り

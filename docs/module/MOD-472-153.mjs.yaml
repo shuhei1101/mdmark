@@ -78,8 +78,9 @@ functions:
         expected: 例外を投げる
     callees:
       - '#functions[dropTagVocabulary]'
-lead: '`drop-tag-vocabulary.mjs` の関数（索引からタグの語彙を削除する・設定の索引からタグの語彙を削除する）。'
+lead: '索引と設定の索引からタグの語彙を削除する移行のスクリプトを受け持ち、タグの語彙の移行を変えるときに参照する。'
 tags:
   - name: topic:バージョン
     main: true
   - name: topic:移行
+  - name: action:削除

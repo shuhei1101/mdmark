@@ -53,7 +53,7 @@ functions:
         condition: '`order` で 5 人目を 2 人目にした'
         mock: なし
         expected: '`participants` がその順'
-lead: '`sequence-rows.ts` の関数（シーケンス図の行を決める）。'
+lead: 'シーケンス図に表示する行の決定を受け持ち、シーケンス図の行の決め方を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true

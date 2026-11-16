@@ -15,8 +15,12 @@ constants:
     value: '["chrome99", "firefox98", "safari16.4"]'
     refs:
       - NFR-472-1#requirements[対応ブラウザ]
-lead: '`bundle.ts` の定数（postcss の差し替え・出力の対象のブラウザ）。'
+lead: 'Node とブラウザのまとめの設定・postcss の差し替え・ライセンスの抽出を受け持ち、配布物のまとめ方を変えるときに参照する。'
 tags:
-  - name: action:ビルド
+  - name: topic:バンドル
     main: true
+  - name: tool:esbuild
+  - name: action:ビルド
   - name: topic:配布物
+  - name: action:まとめ
+  - name: action:配布

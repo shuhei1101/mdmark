@@ -184,8 +184,9 @@ functions:
       - MOD-472-109#functions[findConfigFile]
       - MOD-472-117#functions[collectBuildDocuments]
     status: planned
-lead: '`upgrade.ts` の関数（設定のバージョンを書き換える・バージョンを上げる）と定数（承諾の回答）。'
+lead: 'バージョンを上げるコマンドを受け持ち、バージョンを上げるときの移行の流れを変えるときに参照する。'
 tags:
   - name: topic:バージョン
     main: true
   - name: topic:移行
+  - name: topic:cli

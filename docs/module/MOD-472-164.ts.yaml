@@ -82,8 +82,9 @@ functions:
       - IF-472-35#exceptions[なし（コメントを修正・削除できない）]
       - CMP-472-17#
     status: planned
-lead: '`bubble.ts` の関数（コメントを修正・削除する）。'
+lead: '吹き出しのコメントの修正と削除の操作を受け持ち、コメントの修正・削除の操作を変えるときに参照する。'
 tags:
   - name: topic:ビュー
     main: true
   - name: topic:コメント
+  - name: action:削除

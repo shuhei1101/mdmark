@@ -309,8 +309,9 @@ functions:
         condition: 220px
         mock: なし
         expected: 2 行以上で、各行の見積もりの幅が 220 - 20 以下
-lead: '`layout.ts` の型（見せ方・配置の上書き・配置の結果）と関数（入れ子を配置する・線の経路を引く・名前を折り返す）と定数（ノードの文字の大きさと余白・配置の寸法）。'
+lead: '入れ子のグループの自動配置と線の経路を受け持ち、構成図の配置を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true
   - name: topic:図
+  - name: action:配置

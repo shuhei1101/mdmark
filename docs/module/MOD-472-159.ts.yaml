@@ -95,8 +95,9 @@ functions:
     process: 1. `partModuleLoaders` に `name` → `loader` を入れる
     unit_tests: []
     status: planned
-lead: '`part-modules.ts` の関数（部品のモジュールを読み込む・部品のモジュールの読み込みを差し替える）と定数（部品のモジュールのファイル名・部品のモジュールの読み込みの差し替え・読み込んだ部品のモジュール）。'
+lead: '部品のモジュールのファイル名・URL の差し替え・読み込みを受け持ち、部品のモジュールの読み込み方を変えるときに参照する。'
 tags:
   - name: topic:ビュー
     main: true
   - name: topic:コメント
+  - name: action:読み込み

@@ -301,7 +301,11 @@ notes:
     └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（生成）
     ```
 tags:
-  - name: topic:プラグイン
+  - name: topic:バンドル
     main: true
-  - name: action:ビルド
+  - name: topic:プラグイン
   - name: tool:claude-code
+  - name: tool:esbuild
+  - name: tool:mcp
+  - name: topic:ガイド
+  - name: action:ビルド

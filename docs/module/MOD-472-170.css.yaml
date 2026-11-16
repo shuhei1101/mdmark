@@ -196,8 +196,9 @@ styles:
       - CMP-472-64#
       - CMP-472-58#
       - CMP-472-57#
-lead: '`index.css` のスタイル（入口の CSS）。'
+lead: '描いた文書と記法の CSS を受け持ち、配布物の CSS のエントリーポイントを変えるときに参照する。'
 tags:
   - name: topic:api
     main: true
-  - name: topic:エントリーポイント
+  - name: topic:エントリポイント
+  - name: action:配布

@@ -397,8 +397,13 @@ functions:
         mock: なし
         expected: メッセージに `tsc` のエラーを含む例外
 
-lead: '`build.ts` の関数（ビルドを実行する・埋めるバージョンを決める・配布物を書き込む・移行の手順のフォルダに書き換えの処理をまとめるなど）と定数（バージョンの書式・配布ファイル 1 つの上限・ライセンスの書き出し先・サイズを検めない配布ファイル）。'
+lead: '配布物のビルドと、移行のスクリプトが読み込む書き換えの処理のまとめを受け持ち、配布物のビルドの流れを変えるときに参照する。'
 tags:
-  - name: action:ビルド
+  - name: topic:バンドル
     main: true
-  - name: topic:配布物
+  - name: topic:バージョン
+  - name: topic:移行
+  - name: topic:マーカー
+  - name: topic:ライセンス
+  - name: topic:図
+  - name: tool:esbuild

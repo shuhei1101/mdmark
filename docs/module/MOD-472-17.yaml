@@ -22,7 +22,11 @@ notes:
 
     `dist/`・`media/`（丸ごと）・`out/`・`.vscode-test/` は git の管理の外（`.gitignore`）にする。Webview の Vite の設定（`vite.config.ts`）は設計書『VS Code 拡張機能 / Webview』にある。
 tags:
-  - name: action:ビルド
+  - name: topic:ci
     main: true
-  - name: action:配布
   - name: tool:vscode
+  - name: action:ビルド
+  - name: action:配布
+  - name: action:書き出し
+  - name: action:照合
+  - name: action:起動
