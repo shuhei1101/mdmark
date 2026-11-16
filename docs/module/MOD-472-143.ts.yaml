@@ -168,18 +168,20 @@ functions:
       3. 描く先が暗い配色か（`--mdmark-color-bg` の明るさが 0.5 未満か）を確認する。暗い配色なら、同じタスクの中で `scope` の `mdmark-theme-dark` を削除して `mdmark-theme-light` を付け、明るい配色のテーマの変数を作り、`scope` の class を元に戻す（`:root` に該当する配色の値は描く先の明暗の class で決まり、描画を挟まないため画面は変わらない）
       4. `renderQueue` につないで、`initialize({ startOnLoad: false, securityLevel: "strict", theme, themeVariables, gantt: { useWidth: max(root.clientWidth, MERMAID_GANTT_MIN_WIDTH) } })` と `render(id, body)` を順に呼ぶ。`theme` は設定の `theme` が `mdmark` なら `base`、それ以外はその名前。暗い配色なら明るい配色のテーマの変数でも `initialize` と `render(id + "-print", body)` を呼ぶ
          - `render` が例外を投げた場合、`document.getElementById("d" + id)` を削除し、`{ error }` を返却する
-      5. SVG を要素にして、actor のアイコンを替え（actor のアイコンを替える）、`width`・`height` の属性を `viewBox` の幅と高さにし、`style` を削除する
+      5. SVG を要素にして、actor のアイコンを替え（actor のアイコンを替える）、ノードのリンクを整え（ノードのリンクを整える）、`width`・`height` の属性を `viewBox` の幅と高さにし、`style` を削除する。画面用と印刷用の SVG の両方に適用する
       6. 図の部品の HTML（mermaid の図を描く部品。`svg`・`printSvg`・`width`）を中身に、図の枠の HTML（図の枠を描く。`kind: "mermaid"`・`title`・`legend: []`・`fitMin: MERMAID_MIN_FIT`・`resizable` は機能 `diagram-resize`）を返却する
     callees:
       - 'MOD-472-144#functions[splitMermaidTitle]'
       - 'MOD-472-144#functions[mermaidKindName]'
       - '#functions[mermaidThemeVariables]'
       - '#functions[replaceMermaidActors]'
+      - '#functions[finishMermaidNodeLinks]'
       - 'MOD-472-145#functions[renderMermaidDiagram]'
       - MOD-472-172#functions[renderDiagramFrame]
     refs:
       - IF-472-35#constraints[mermaid の描き方]
       - IF-472-35#constraints[mermaid のテーマ]
+      - IF-472-35#constraints[mermaid のノードのリンク]
     unit_tests:
       - name: test_draw_mermaid_diagram
         case: 正常
@@ -298,6 +300,40 @@ functions:
         condition: '`circle cx="75" cy="20" r="10"` と `line` 4 本（x 60〜90・y 30〜60）と `text` を持つ `g.actor-man`'
         mock: なし
         expected: '`g.actor-man` の子が `svg.mdmark-mermaid-actor` と `text` だけで、`svg` の `width`・`height` が `30`・`x` が `60`・`y` が `10`'
+  - name: finishMermaidNodeLinks
+    title: ノードのリンクを整える
+    container: src/mermaid.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: 'SVG の `a` ごとに、`xlink:href` の値が許す URL（許す URL かを確認する）なら同じ文字の `href` と class `mdmark-diagram-node-link` を付けて `target` を削除し、`xlink:href` を持たないか許さない URL なら、子を `a` の位置へ移して `a` を削除する'
+    description: '`securityLevel: "strict"` の mermaid は、`click`・`link` の URL の行のノードを `xlink:href` だけを持つ `a` で囲み、`javascript:` などは `xlink:href` を除外した `a` にする（作業 PR #618 の計画書の実測）。図のドラッグとリンクのクリックの押し分けは、`zoom.ts` が class `mdmark-diagram-node-link` の要素の上で始めたドラッグを扱う既存の処理に任せる'
+    side_effects: '`svg` を書き換える'
+    args:
+      - name: svg
+        type: SVGSVGElement
+        required: true
+        description: mermaid が描いた SVG
+    returns:
+      type: void
+      description: なし
+    callees:
+      - MOD-472-214#functions[isAllowedUrl]
+    refs:
+      - IF-472-35#constraints[mermaid のノードのリンク]
+    unit_tests:
+      - name: test_finish_mermaid_node_links
+        case: 正常
+        summary: 許す URL の a に href と class を付け、target を削除する
+        condition: '`xlink:href="./a.md"`・`xlink:href="../b.md#c"`・`xlink:href="https://example.com/"` と `target="_blank"` の `a` で `g.node` を囲んだ SVG'
+        mock: なし
+        expected: 3 つの `a` が `xlink:href` と同じ文字の `href` と class `mdmark-diagram-node-link` を持ち、`target` を持たない
+      - name: test_finish_mermaid_node_links_when_not_allowed
+        case: 異常
+        summary: xlink:href を持たない a と許さない URL の a を削除し、ノードを残す
+        condition: '`xlink:href` を持たない `a` と、`xlink:href="data:text/html,x"` の `a` で、それぞれ `g.node` を囲んだ SVG'
+        mock: なし
+        expected: SVG に `a` が無く、2 つの `g.node` が元の `a` の位置（同じ親・同じ順）にある
   - name: setEmbeddedMermaid
     title: 埋めた mermaid のモジュールを入れる
     container: src/mermaid.ts

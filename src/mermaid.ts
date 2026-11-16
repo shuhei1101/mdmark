@@ -14,6 +14,7 @@ import { bundledIconNode } from "./parts/icons.ts";
 import { renderMermaidDiagram } from "./parts/mermaid.ts";
 import { renderNotice } from "./parts/notice.ts";
 import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
+import { isAllowedUrl } from "./render/sanitize.ts";
 
 /** `import()` で読み込んだ mermaid の ES モジュールが既定のエクスポートで持つ構造 */
 export type MermaidModule = {
@@ -265,7 +266,24 @@ export const replaceMermaidActors = (svg: SVGSVGElement): void => {
   }
 };
 
-/** mermaid が返却した SVG の文字を、actor のアイコンを替え、大きさを `viewBox` にそろえた SVG の文字にする */
+/** `xlink:href` の名前空間 */
+const XLINK_NAMESPACE = "http://www.w3.org/1999/xlink";
+
+/** mermaid が `click`・`link` の URL の行のノードを囲んだ `a` に、許す URL なら `href` と class を付けて `target` を削除し、`xlink:href` を持たないか許さない URL なら `a` だけを削除する */
+export const finishMermaidNodeLinks = (svg: SVGSVGElement): void => {
+  for (const anchor of [...svg.querySelectorAll("a")]) {
+    const link = anchor.getAttributeNS(XLINK_NAMESPACE, "href");
+    if (link !== null && isAllowedUrl(link)) {
+      anchor.setAttribute("href", link);
+      anchor.classList.add("mdmark-diagram-node-link");
+      anchor.removeAttribute("target");
+      continue;
+    }
+    anchor.replaceWith(...anchor.childNodes);
+  }
+};
+
+/** mermaid が返却した SVG の文字を、actor のアイコンを替え、ノードのリンクを整え、大きさを `viewBox` にそろえた SVG の文字にする */
 const finishSvg = (
   svg: string,
 ): { svg: string; width: number; height: number } => {
@@ -276,6 +294,7 @@ const finishSvg = (
     throw new Error("mermaid が SVG を返却しませんでした");
   }
   replaceMermaidActors(element);
+  finishMermaidNodeLinks(element);
   const box = element.viewBox.baseVal;
   const width = box?.width || numberAttribute(element, "width") || 0;
   const height = box?.height || numberAttribute(element, "height") || 0;

@@ -712,3 +712,63 @@ test("test_replace_mermaid_actors", async () => {
   expect(icon?.getAttribute("y")).toBe("10");
   expect(children[1]?.textContent).toBe("読者");
 });
+
+/** mermaid が `click`・`link` の URL の行から出力する構造の SVG（`a` で `g.node` を囲む） */
+const linkedSvg = (links: readonly string[]): string =>
+  [
+    '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 100">',
+    '<g class="nodes">',
+    ...links.map(
+      (link, index) =>
+        `${link}<g class="node" id="n${index}"><text>N${index}</text></g></a>`,
+    ),
+    "</g>",
+    "</svg>",
+  ].join("");
+
+test("test_finish_mermaid_node_links", async () => {
+  // 準備
+  const { finishMermaidNodeLinks } = await loadMermaid();
+  const host = createRootFromHtml(
+    linkedSvg([
+      '<a xlink:href="./a.md">',
+      '<a xlink:href="../b.md#c">',
+      '<a xlink:href="https://example.com/" target="_blank">',
+    ]),
+  );
+  const svg = host.querySelector("svg") as SVGSVGElement;
+  // 実行
+  finishMermaidNodeLinks(svg);
+  // 検証
+  const anchors = [...svg.querySelectorAll("a")];
+  expect(
+    anchors.map((anchor) => [
+      anchor.getAttribute("href"),
+      anchor.getAttributeNS("http://www.w3.org/1999/xlink", "href"),
+      anchor.classList.contains("mdmark-diagram-node-link"),
+      anchor.hasAttribute("target"),
+    ]),
+  ).toEqual([
+    ["./a.md", "./a.md", true, false],
+    ["../b.md#c", "../b.md#c", true, false],
+    ["https://example.com/", "https://example.com/", true, false],
+  ]);
+});
+
+test("test_finish_mermaid_node_links_when_not_allowed", async () => {
+  // 準備
+  const { finishMermaidNodeLinks } = await loadMermaid();
+  const host = createRootFromHtml(
+    linkedSvg(["<a>", '<a xlink:href="data:text/html,x">']),
+  );
+  const svg = host.querySelector("svg") as SVGSVGElement;
+  // 実行
+  finishMermaidNodeLinks(svg);
+  // 検証
+  expect(svg.querySelectorAll("a")).toHaveLength(0);
+  const nodes = svg.querySelector("g.nodes");
+  expect([...(nodes?.children ?? [])].map((child) => child.id)).toEqual([
+    "n0",
+    "n1",
+  ]);
+});

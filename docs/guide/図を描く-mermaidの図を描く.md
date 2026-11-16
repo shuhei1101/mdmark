@@ -33,6 +33,23 @@ front matter の `title` が図の枠のタイトルになり、図の中には�
 シーケンス図の `actor` は、mdmark のほかの図と同じ人のアイコンで描く。
 記載方法の一覧は [mermaid のコードブロック](./記法.mark.md#mermaid-のコードブロック)。
 
+### ノードをリンクにする
+
+````markdown
+```mermaid
+flowchart LR
+  A[設計書] --> B[実装]
+  click A href "./設計書.md"
+  click B "https://example.com/"
+```
+````
+
+`flowchart` の `click {ノード} href "{URL}"`・`click {ノード} "{URL}"` と、`classDiagram` の `click {クラス} href "{URL}"`・`link {クラス} "{URL}"` の行を記載すると、そのノードが記載した URL のリンクになる。
+リンクは本文のリンクと同じ色と下線で、押すか Tab でフォーカスして Enter を押すと同じタブで開く。
+後ろに記載した `_blank` などの開く先とツールチップは使用しない。
+URL は本文のリンクと同じく `http`・`https`・`mailto` と相対パスだけをリンクにし、`javascript:` などはリンクにしない。
+`click {ノード} call {関数}()` などの関数を呼ぶ行は動かさない。
+
 ### テーマを変える
 
 ```yaml
@@ -80,6 +97,14 @@ mermaid:
 
 記載した順に `mermaid` が出る。
 図の枠のタイトルが front matter の `title` の文字になっている。
+
+#### ノードがリンクになっている
+
+```js
+[...document.querySelectorAll(".mdmark-mermaid a.mdmark-diagram-node-link")].map((a) => a.getAttribute("href"))
+```
+
+`click`・`link` の行に記載した URL が、記載した文字のまま出る。
 
 #### 読み込めないとき・記載方法を誤ったとき
 

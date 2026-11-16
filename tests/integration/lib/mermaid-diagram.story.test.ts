@@ -209,3 +209,49 @@ test("test_dark_with_print", async () => {
   );
   expect(printed).toEqual([false, true]);
 });
+
+// click の URL の行のノードを href と class を持つ a にし、文字を本文のリンクの色と下線にして、フォーカスで 2px の枠を出す（NodeLink）
+test("test_node_link", async () => {
+  // 準備・実行
+  const page = await openMermaid("node-link");
+  // 検証
+  const link = page.locator(".mdmark-mermaid > svg a.mdmark-diagram-node-link");
+  await expect(link.count()).resolves.toBe(1);
+  await expect(link.getAttribute("href")).resolves.toBe("./設計書.md");
+  await expect(link.getAttribute("target")).resolves.toBeNull();
+  const linkColor = await resolvedColor(page, "var(--mdmark-color-link)");
+  const label = await page.evaluate(() => {
+    const text = document.querySelector(
+      ".mdmark-mermaid > svg a.mdmark-diagram-node-link :is(span, p, text)",
+    );
+    if (!text) {
+      return null;
+    }
+    const style = getComputedStyle(text);
+    return {
+      color: style.color,
+      decoration: style.textDecorationLine,
+      cursor: style.cursor,
+    };
+  });
+  expect(label).toEqual({
+    color: linkColor,
+    decoration: "underline",
+    cursor: "pointer",
+  });
+  // リンクを持たないノード B の文字は本文の色のまま
+  const plain = await page.evaluate(() => {
+    const text = [...document.querySelectorAll(".mdmark-mermaid > svg g.node")]
+      .find((node) => !node.closest("a"))
+      ?.querySelector(":is(span, p, text)");
+    return text ? getComputedStyle(text).textDecorationLine : null;
+  });
+  expect(plain).toBe("none");
+  await link.focus();
+  const outline = await link.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { width: style.outlineWidth, color: style.outlineColor };
+  });
+  expect(outline).toEqual({ width: "2px", color: linkColor });
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

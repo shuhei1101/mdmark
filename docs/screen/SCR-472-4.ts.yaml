@@ -515,10 +515,13 @@ elements:
     position: 描く先の要素
     description: 言語 `mermaid` のコードブロックを mermaid で描いた図。コードブロックの場所に置き換え、描いたときは全体が収まる倍率（0.75 を下限）で出す
     visible_when: '`mermaid` がオンで、mermaid のコードブロックを mermaid が描けたとき'
-    action: 要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドル
+    action: |-
+      要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドル。
+      mermaid の `click`・`link` の行で許可する URL を持つノードを動かさずに押すか、フォーカスして Enter で、リンク先を同じタブで開く（押したまま動かして図を動かしたときは開かない）
     refs:
       - IF-472-35#constraints[mermaid の描き方]
       - IF-472-35#constraints[mermaid のテーマ]
+      - IF-472-35#constraints[mermaid のノードのリンク]
     status: planned
   - name: map の構成図
     id: map-flow
