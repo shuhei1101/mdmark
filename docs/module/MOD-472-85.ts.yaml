@@ -44,9 +44,11 @@ functions:
       - LIB-472-5#
       - MOD-472-61#constants[viteConfig]
     status: planned
-lead: '`build.ts` の関数（拡張機能をビルドする）。'
+lead: '拡張機能と Webview のビルドとテストの出力を受け持ち、拡張機能のビルドを変えるときに参照する。'
 tags:
-  - name: action:ビルド
+  - name: topic:バンドル
     main: true
-  - name: action:配布
   - name: tool:vscode
+  - name: topic:ci
+  - name: action:ビルド
+  - name: action:配布

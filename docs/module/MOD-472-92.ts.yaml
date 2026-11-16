@@ -129,8 +129,9 @@ functions:
         mock: なし
         expected: どちらも `^[A-Za-z0-9_-]{22}$` に合い、等しくない
     status: planned
-lead: '`html.ts` の関数（配布物の URL を組む・CSP を組む・Webview の HTML を組む・nonce を作る）と定数（配布物の配信元）。'
+lead: 'Webview の HTML と CSP の組み立てを受け持ち、プレビューの HTML とセキュリティの設定を変えるときに参照する。'
 tags:
   - name: topic:プレビュー
     main: true
   - name: tool:vscode
+  - name: tool:html

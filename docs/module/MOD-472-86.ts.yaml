@@ -20,9 +20,11 @@ functions:
     refs:
       - LIB-472-18#
     status: planned
-lead: '`index.ts` の関数（拡張機能ホストの中でテストを走らせる）。'
+lead: '拡張機能ホストの中のテストの実行を受け持ち、拡張機能のテストの実行を変えるときに参照する。'
 tags:
-  - name: action:ビルド
+  - name: topic:ci
     main: true
-  - name: action:配布
   - name: tool:vscode
+  - name: action:ビルド
+  - name: action:配布
+  - name: action:実行

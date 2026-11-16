@@ -31,9 +31,12 @@ functions:
     refs:
       - LIB-472-27#
     status: planned
-lead: '`run.ts` の関数（結合テストを実行する）と定数（結合テストを実行する VS Code）。'
+lead: '代役の配信を起動して VS Code で結合テストを実行する処理を受け持ち、拡張機能の結合テストの実行を変えるときに参照する。'
 tags:
-  - name: action:ビルド
+  - name: topic:ci
     main: true
-  - name: action:配布
   - name: tool:vscode
+  - name: action:ビルド
+  - name: action:配布
+  - name: action:起動
+  - name: action:実行

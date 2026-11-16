@@ -307,6 +307,9 @@ functions:
         mock: なし
         expected: 相手の ID が `p1`・`p2` になり、メッセージも同じ ID。`dropped` に 2 つの置き換えがあり、`parseSequence` で参照すると `problems` が空
 tags:
-  - name: topic:map
+  - name: topic:移行
     main: true
   - name: topic:図
+  - name: topic:map
+  - name: action:読み取り
+  - name: action:まとめ

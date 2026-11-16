@@ -24,7 +24,9 @@ notes:
         └── setup/SKILL.md
     ```
 tags:
-  - name: topic:セットアップ
+  - name: topic:スキル
     main: true
-  - name: topic:設定
+  - name: topic:プラグイン
   - name: tool:claude-code
+  - name: topic:セットアップ
+  - name: topic:設定

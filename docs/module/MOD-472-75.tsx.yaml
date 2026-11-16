@@ -152,9 +152,10 @@ components:
       - SCR-472-2#
       - IF-472-22#constraints[Webview とのメッセージ]
     status: planned
-lead: '`panel-screen.tsx` のコンポーネント（プレビューのパネル）。'
+lead: 'プレビューのパネルの画面のコンポーネントを受け持ち、プレビューのパネルの画面を変えるときに参照する。'
 tags:
-  - name: topic:webview
+  - name: tool:react
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

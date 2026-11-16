@@ -21,8 +21,8 @@ data_models:
     refs:
       - LIB-472-35#
     status: planned
-lead: '`log.ts` の型（ログの出力先）。'
+lead: '拡張機能のログの出力先の型を受け持ち、拡張機能のログの出し方や出力先を変えるときに参照する。'
 tags:
-  - name: topic:エントリーポイント
+  - name: topic:エントリポイント
     main: true
   - name: tool:vscode

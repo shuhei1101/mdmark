@@ -55,9 +55,12 @@ constants:
       - NFR-472-1#requirements[対応する VS Code のバージョン]
       - MOD-472-103#constants[SETTING_DEFAULTS]
     status: planned
-lead: '`package.json` の定数（拡張機能の npm のスクリプト・拡張機能が追加するもの）。'
+lead: '拡張機能の定義（エントリーポイント・対応する VS Code・コマンド・依存）を受け持ち、拡張機能の起動やコマンドの登録を変えるときに参照する。'
 tags:
-  - name: action:ビルド
+  - name: topic:エントリポイント
     main: true
-  - name: action:配布
   - name: tool:vscode
+  - name: action:ビルド
+  - name: action:配布
+  - name: action:登録
+  - name: action:起動

@@ -21,9 +21,10 @@ components:
         default: '`alert`'
         description: 状態の表示と帯は `status` を指定する
     status: planned
-lead: '`alert.tsx` のコンポーネント（Alert）。'
+lead: 'Alert のコンポーネントを受け持ち、Webview の通知の表示を変えるときに参照する。'
 tags:
-  - name: topic:webview
+  - name: tool:react
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

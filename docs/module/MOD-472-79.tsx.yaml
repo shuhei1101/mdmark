@@ -10,9 +10,11 @@ components:
     summary: shadcn/ui の `Spinner`（lucide-react の `LoaderCircle` を回す）。`role="img"`・`aria-label="読み込み中"` を持ち、`motion-reduce` で 6 秒に 1 回転
     kind: コンポーネント
     status: planned
-lead: '`spinner.tsx` のコンポーネント（Spinner）。'
+lead: 'Spinner のコンポーネントを受け持ち、Webview の読み込み中の表示を変えるときに参照する。'
 tags:
-  - name: topic:webview
+  - name: tool:react
     main: true
-  - name: topic:プレビュー
   - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー
+  - name: action:読み込み

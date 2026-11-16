@@ -24,9 +24,10 @@ functions:
       type: Server
       description: 待ち受けを始めていない `node:http` のサーバー
     status: planned
-lead: '`stub-server.ts` の関数（代役の配信を作る）。'
+lead: '配布物とタグ一覧の代役の配信を受け持ち、拡張機能の結合テストの代役を変えるときに参照する。'
 tags:
-  - name: action:ビルド
+  - name: topic:ci
     main: true
-  - name: action:配布
   - name: tool:vscode
+  - name: action:ビルド
+  - name: action:配布

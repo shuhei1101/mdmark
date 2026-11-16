@@ -26,8 +26,10 @@ functions:
         expected: 表が `共通/手順.md` だけをキーに持ち、パスの一覧が `docs/共通/手順.md` だけで、根の外を読み込んでいない
         mock: '`readFile` に本文の表を参照する関数を指定する'
         summary: 根の中の読み込めるファイルだけを読み込む
-lead: '`includes.ts` の関数（取り込む文書を読み込む）。'
+lead: 'プレビューの取り込む文書の読み取りを受け持ち、プレビューの取り込みを変えるときに参照する。'
 tags:
-  - name: topic:プレビュー
+  - name: topic:ファイル
     main: true
   - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:読み取り
