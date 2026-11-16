@@ -97,9 +97,12 @@ functions:
 notes:
   ブラウザのテストファイル: |-
     - `tests/unit/src/viewer/route.browser.test.ts`
-lead: '`route.ts` の関数（URL の # から開く文書を決める・描いた文書のリンクを 1 枚の中へ向ける）と定数（文書を指す # の頭）。'
+lead: 'URL のアンカーの読み取りと描いた文書のリンクの書き換えを受け持ち、まとめた HTML の中のリンクの扱いを変えるときに参照する。'
 tags:
-  - name: topic:書き出し
+  - name: topic:ナビゲーション
     main: true
   - name: tool:html
+  - name: topic:書き出し
   - name: action:起動
+  - name: action:読み取り
+  - name: action:まとめ

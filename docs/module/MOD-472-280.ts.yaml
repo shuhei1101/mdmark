@@ -50,7 +50,10 @@ functions:
         condition: '`# 手引き`・段落・`## 導入`・段落・`# 付録`'
         mock: なし
         expected: '`h1` が `mdmark-heading` を持ち、`section-手引き` の中に `section-導入` があり、`section-付録` は `section-手引き` の外'
-lead: '`sections.ts` の関数（セクションを囲む）。'
+lead: 'セクションの囲みを受け持ち、セクションの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:セクション
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

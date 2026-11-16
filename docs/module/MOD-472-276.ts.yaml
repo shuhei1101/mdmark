@@ -397,7 +397,9 @@ functions:
         mock: なし
         expected: どの行も `folded` を持たず、`warnings` に `2`・`3` の項目がある
     status: planned
-lead: '`code-blocks.ts` の関数（コードブロックのマーカーを読み込む・罫線のフォルダ構成の行を数える・コードの行のマーカーを読み込む・コードブロックを飾るなど）と定数（行コメントの頭・色分けの言語の対応表・罫線のフォルダ構成の行・罫線の記載の警告を出す行の数）。'
+lead: 'コードブロックのタイトル・行番号・行の強調・行のマーカーと色分けの言語を受け持ち、コードブロックの記法を変えるときに参照する。'
 tags:
   - name: topic:構文
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it

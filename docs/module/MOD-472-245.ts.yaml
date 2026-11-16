@@ -198,9 +198,13 @@ functions:
         mock: '`Storage.prototype.setItem` を差し替える'
         expected: 例外が出ず、`console.warn` が 1 回呼ばれる
     status: planned
-lead: '`view-state.ts` の型（表示の状態）と関数（履歴の項目の ID を取る・表示の状態を取り出す・表示の状態を戻す・保存した表示の状態を読み込むなど）と定数（表示の状態を保存するキーの頭・履歴の項目の ID を持つフィールド・戻す開閉のセレクタ・スクロール中の保存の間隔）。'
+lead: 'まとめた HTML の履歴の項目ごとの表示の状態の保存と復元を受け持ち、文書を行き来したときの表示の戻し方を変えるときに参照する。'
 tags:
-  - name: topic:書き出し
+  - name: topic:ナビゲーション
     main: true
   - name: tool:html
+  - name: topic:書き出し
   - name: action:起動
+  - name: action:まとめ
+  - name: action:保存
+  - name: action:復元

@@ -277,7 +277,11 @@ functions:
     returns:
       type: Token[]
       description: 定義の囲みの外のトークン（同じトークンを指す）
-lead: '`footnotes.ts` の型（脚注の状態）と関数（脚注のルールを登録する・脚注の定義を読み込む・脚注の参照を読み込む・行内の脚注を読み込むなど）。'
+lead: '脚注の定義・参照・行内の脚注の読み取りと末尾の一覧を受け持ち、脚注の記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:脚注
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

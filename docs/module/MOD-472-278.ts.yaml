@@ -43,7 +43,11 @@ functions:
         expected: '`sailboat` の `span` の中にその構造の `svg` がある'
         mock: なし
         summary: 指定した構造の表を使用する
-lead: '`inline-icons.ts` の関数（行内のアイコンにする）と定数（アイコンの名前の記載方法）。'
+lead: '行内のアイコンの記法の読み取りを受け持ち、行内のアイコンの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:アイコン
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

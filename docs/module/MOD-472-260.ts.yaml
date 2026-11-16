@@ -308,8 +308,10 @@ functions:
         mock: なし
         expected: 1 つ目の `unit-test` だけを返却する
     status: planned
-lead: '`aliases.ts` の型（エイリアス・エイリアスの元のファイル・エイリアスのずれ）と関数（エイリアスを作る・レコードから値を取る・種類と必須のキーを確認する・使用できるエイリアスに絞る）と列挙（エイリアスの種類）と定数（エイリアスの種類・エイリアスのキー・種類ごとの必須のキー・必須のキーのラベル）。'
+lead: 'エイリアスの型と、設定の行と YAML の中身からのエイリアスの作成を受け持ち、エイリアスの作り方を変えるときに参照する。'
 tags:
-  - name: topic:索引
+  - name: topic:エイリアス
     main: true
+  - name: topic:索引
   - name: topic:用語
+  - name: action:作成

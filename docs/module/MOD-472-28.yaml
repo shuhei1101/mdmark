@@ -6,3 +6,4 @@ tags:
   - name: topic:map
     main: true
   - name: topic:図
+  - name: action:配置

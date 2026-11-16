@@ -119,7 +119,10 @@ functions:
         mock: なし
         expected: '`mdmark-card` が無く、`a` がある'
     status: planned
-lead: '`cards.ts` の型（カードの指定）と関数（リンクからカードの指定を作る・リンクと添付のカードにする）と定数（添付の拡張子と種類）。'
+lead: 'リンクと添付のカードを受け持ち、カードの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:カード
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

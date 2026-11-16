@@ -33,8 +33,10 @@ functions:
         expected: '`""`'
     refs:
       - CMP-472-66#
-lead: '`backlinks.ts` の関数（関連文書の一覧の HTML を返却する）。'
+lead: '関連文書の一覧の HTML を受け持ち、関連文書の一覧の外観を変えるときに参照する。'
 tags:
-  - name: topic:索引
+  - name: topic:被参照
     main: true
+  - name: topic:索引
   - name: topic:用語
+  - name: action:描画

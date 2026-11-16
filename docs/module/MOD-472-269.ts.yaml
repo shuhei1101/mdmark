@@ -155,7 +155,10 @@ functions:
       type: string
       description: アイコンの SVG と文言の HTML
     status: planned
-lead: '`tree.ts` の型（ツリーの項目）と関数（ファイルツリーを描く・ファイルのアイコンの種類を決める・ファイルツリーの帯を描く・フォルダを既定で開くかを決めるなど）。'
+lead: 'ファイルツリーの HTML とファイルのアイコンの種類の決定を受け持ち、ファイルツリーの外観を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:ツリー
     main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: topic:構文

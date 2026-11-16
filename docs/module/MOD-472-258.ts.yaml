@@ -289,8 +289,9 @@ functions:
         condition: 'map の範囲の sequenceDiagram に `participant W as ワークスペース`・`W->>M: ワークスペースを読む`・`Note over W: ワークスペース`'
         mock: なし
         expected: 3 件で、どれも本文の行を切り出した文字が `ワークスペース`
-lead: '`matches.ts` の型（参照先・本文の一致・本文の参照・やめた言い方の一致）と関数（本文の参照を取り出す・埋め込んだ HTML の文字を照合する・図の部品の用語を照合する・map の範囲の用語を照合する）。'
+lead: '本文に出た用語と文書の参照の取り出しを受け持ち、本文の参照の取り出し方を変えるときに参照する。'
 tags:
   - name: topic:索引
     main: true
   - name: topic:用語
+  - name: action:取り出し

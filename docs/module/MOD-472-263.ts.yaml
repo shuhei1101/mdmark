@@ -110,7 +110,7 @@ functions:
         condition: '`test_terms_rule_aliases` と同じ入力に `<!-- features: {"glossary": false} -->`'
         mock: なし
         expected: '`mdmark-term-wrap` の要素が無い'
-lead: '`terms.ts` の関数（用語の下線のコアルール）。'
+lead: '本文の用語と文書の別名に下線を付けるコアルールを受け持ち、用語の下線の付け方を変えるときに参照する。'
 tags:
   - name: topic:索引
     main: true

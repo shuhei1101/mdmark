@@ -120,8 +120,9 @@ functions:
         condition: '`{"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "旧称"}}`、列が `用語`・`意味`'
         mock: なし
         expected: '`rows` が空、`warning` に `avoid.column` と `旧称` と列の並び `用語`・`意味`'
-lead: '`glossary.ts` の型（用語集の表の行）と関数（用語集の表を読み込む・用語集の表のコアルール・用語集の表の行を読み込む）。'
+lead: '用語集の表の読み取りを受け持ち、表から用語集に入れる用語の扱いを変えるときに参照する。'
 tags:
   - name: topic:索引
     main: true
   - name: topic:用語
+  - name: action:読み取り

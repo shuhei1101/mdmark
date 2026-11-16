@@ -6,3 +6,5 @@ tags:
   - name: topic:map
     main: true
   - name: topic:図
+  - name: action:開閉
+  - name: action:移動

@@ -96,8 +96,9 @@ functions:
         condition: '`設計/arch.md` から `api.md`・`使い方/guide.md`・`設計/b.md`、`undefined` から `api.md`'
         mock: なし
         expected: '`../api.md`・`../使い方/guide.md`・`b.md`・`api.md`'
-lead: '`paths.ts` の関数（mdmark の文書のパスか・本文のリンクを索引のパスにする・描く文書からの相対パスを作る）と定数（mdmark の文書の拡張子）。'
+lead: '索引のパスの正規化・リンクの解決・相対パスの作成を受け持ち、索引のパスの扱いを変えるときに参照する。'
 tags:
   - name: topic:索引
     main: true
   - name: topic:用語
+  - name: action:作成
