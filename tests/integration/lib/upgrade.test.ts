@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import {
   copyFile,
@@ -49,7 +49,10 @@ const createTempDir = useTempDirs();
 const packages = new Map<string, string>();
 
 /** 作業ツリーの `src`・`templates` と依存を一時フォルダへコピーし、`--version` でバージョンを埋めた `dist/cli.js` をビルドする */
-async function buildPackage(version: string): Promise<string> {
+async function buildPackage(
+  version: string,
+  options?: { develop?: boolean },
+): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), "mdmark-integration-upgrade-"));
   await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
   await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
@@ -69,21 +72,41 @@ async function buildPackage(version: string): Promise<string> {
     join(root, "node_modules"),
     "dir",
   );
-  const code = await buildMain(["--version", version], {
-    root,
-    maxBytes: MAX_BYTES,
-  });
+  if (options?.develop) {
+    // `--develop` は HEAD の短縮 SHA を読むため、git の作業ツリーにして commit する
+    const git = (args: string[]) =>
+      execFileSync("git", args, { cwd: root, stdio: "ignore" });
+    git(["init", "-q"]);
+    git(["add", "--all", ":!node_modules"]);
+    git([
+      "-c",
+      "user.name=test",
+      "-c",
+      "user.email=test@example.com",
+      "commit",
+      "-q",
+      "-m",
+      "develop",
+    ]);
+  }
+  const args = [
+    "--version",
+    version,
+    ...(options?.develop ? ["--develop"] : []),
+  ];
+  const code = await buildMain(args, { root, maxBytes: MAX_BYTES });
   if (code !== 0) {
     throw new Error(`${version} を埋めたパッケージをビルドできなかった`);
   }
-  packages.set(version, root);
+  packages.set(options?.develop ? `${version}+develop` : version, root);
   return root;
 }
 
 beforeAll(async () => {
   await buildPackage("v0.5.0");
   await buildPackage("v0.4.0");
-}, BUILD_TIMEOUT_MS * 2);
+  await buildPackage("v0.5.0", { develop: true });
+}, BUILD_TIMEOUT_MS * 3);
 
 afterAll(async () => {
   await Promise.all(
@@ -960,4 +983,53 @@ test("test_normal_when_document_marks_migrated", async () => {
     );
   }
   expect(parse(await read("mdmark.config.yaml")).version).toBe("v0.5.0");
+});
+
+// 手元が develop なら手順を選ばずに止める（異常系（手元のバージョンが develop））
+test("test_error_when_local_version_develop", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  await setMigrations(pkg, migrationFiles());
+  const config = OLD_CONFIG.replace("v0.3.0", "develop");
+  const dir = await createWork(config);
+  // 実行
+  const result = await runUpgrade(pkg, { cwd: dir });
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("develop");
+  expect(result.stderr).toContain("v{MAJOR}.{MINOR}.{PATCH}");
+  await expectUntouched(dir, config);
+});
+
+// develop のビルドはビルドの元のバージョンを目標にする（正常系（develop のビルドの CLI））
+test("test_normal_when_cli_built_from_develop", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0+develop");
+  await setMigrations(pkg, migrationFiles());
+  const dir = await createWork();
+  // 実行
+  const result = await runUpgrade(pkg, { cwd: dir, args: ["--yes"] });
+  // 検証
+  expect(result.code).toBe(0);
+  const config = parse((await readWork(dir)).config);
+  expect(config.version).toBe("v0.5.0");
+});
+
+// develop のビルドは migrations/next/ に手順があれば止める（異常系（develop のビルドで出していない手順がある））
+test("test_error_when_develop_build_has_unreleased_steps", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0+develop");
+  await setMigrations(
+    pkg,
+    migrationFiles({ extra: { "migrations/next/steps.yaml": STEPS_V040 } }),
+  );
+  const dir = await createWork();
+  // 実行
+  const result = await runUpgrade(pkg, { cwd: dir });
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain(
+    "npx github:shuhei1101/mdmark#v0.5.0 upgrade",
+  );
+  await expectUntouched(dir);
 });

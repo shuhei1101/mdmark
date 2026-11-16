@@ -1,11 +1,24 @@
+import { execFile, execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import {
+  copyFile,
+  cp,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { promisify } from "node:util";
 import { expect, inject, test } from "vitest";
 import { parse } from "yaml";
+import { main as buildMain } from "../../../scripts/build.ts";
 import { validateConfig } from "../../../src/cli/config.ts";
 import { normalizeIndex } from "../../../src/knowledge/index-shape.ts";
 import { linesOf, runCli, useTempDirs, writeFiles } from "../cli.ts";
+import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
 const createTempDir = useTempDirs();
 
@@ -106,4 +119,75 @@ test("test_error_when_unwritable", async () => {
   expect(result.stderr).toContain(target);
   expect(result.stderr).toContain("確認して");
   expect(await readFile(target, "utf8")).toBe("ファイル\n");
+});
+
+// リポジトリの直下
+const REPO_ROOT = resolve(import.meta.dirname, "../../..");
+
+// develop のビルドを待つ上限（ミリ秒。upgrade の結合テストのビルドの上限と同じ）
+const DEVELOP_BUILD_TIMEOUT_MS = 180_000;
+
+/** 作業ツリーを git の一時フォルダへ写して commit し、`--develop` でビルドしたパッケージの直下を返却する */
+async function buildDevelopPackage(): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), "mdmark-integration-init-"));
+  for (const name of ["src", "schemas", "templates"]) {
+    await cp(join(REPO_ROOT, name), join(root, name), { recursive: true });
+  }
+  await writeRootPackageJson(root);
+  await copyPluginInputs(root);
+  await writeFile(join(root, "version.ini"), "v0.5.0\n");
+  for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
+    await copyFile(join(REPO_ROOT, name), join(root, name));
+  }
+  await symlink(
+    join(REPO_ROOT, "node_modules"),
+    join(root, "node_modules"),
+    "dir",
+  );
+  const git = (args: string[]) =>
+    execFileSync("git", args, { cwd: root, stdio: "ignore" });
+  git(["init", "-q"]);
+  git(["add", "--all", ":!node_modules"]);
+  git([
+    "-c",
+    "user.name=test",
+    "-c",
+    "user.email=test@example.com",
+    "commit",
+    "-q",
+    "-m",
+    "develop",
+  ]);
+  if (
+    (await buildMain(["--develop"], { root, maxBytes: 20 * 1024 * 1024 })) !== 0
+  ) {
+    throw new Error("develop のビルドができなかった");
+  }
+  return root;
+}
+
+// develop のビルドの CLI は、設定の version を develop にして配置する（正常系（develop のビルドの CLI））
+test("test_normal_when_cli_built_from_develop", {
+  timeout: DEVELOP_BUILD_TIMEOUT_MS,
+}, async () => {
+  // 準備
+  const pkg = await buildDevelopPackage();
+  const dir = await createTempDir();
+  try {
+    // 実行
+    const { stdout } = await promisify(execFile)(
+      process.execPath,
+      [join(pkg, "dist", "cli.js"), "init", dir],
+      { cwd: dir },
+    );
+    // 検証
+    expect(linesOf(stdout)).toHaveLength(6);
+    const config = parse(
+      await readFile(join(dir, "mdmark.config.yaml"), "utf8"),
+    );
+    expect(config.version).toBe("develop");
+    await expectShapes(dir);
+  } finally {
+    await rm(pkg, { recursive: true, force: true });
+  }
 });
