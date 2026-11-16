@@ -401,10 +401,16 @@ test("test_participant_terms", async () => {
   await expect(
     page.evaluate(() => document.activeElement?.className),
   ).resolves.toBe("mdmark-term");
-  // 検証: 用語のフォーカスで意味のツールチップを開く
+  // 検証: 用語のフォーカスで意味のツールチップを開く（プレビューが図の操作を付け終えるまで、フォーカスを移し直す）
   const tipId = await term.getAttribute("aria-describedby");
   const tip = page.locator(`[id="${tipId}"]`);
-  await expect(tip.isVisible()).resolves.toBe(true);
+  await expect
+    .poll(async () => {
+      await hit.focus();
+      await term.focus();
+      return tip.isVisible();
+    })
+    .toBe(true);
   await expect(tip.innerText()).resolves.toContain("文書を要素の中に描く関数");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
