@@ -22,23 +22,33 @@ docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: フォルダの役割の dev-docs.yaml の行を project-index.yaml へ直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:01:42.996086+00:00'
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: 直下の dev-docs.yaml の行を project-index.yaml へ直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:01:42.996086+00:00'
   - page: docs/interface/IF-472-4.ts.yaml
     new: false
     change: 配信元の説明書の場所（dev-docs.yaml の instructions）を project-index.yaml へ直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:01:42.996086+00:00'
   - page: docs/library/LIB-472-8.yaml
     new: false
     change: 配信元の設定のファイル名と $schema の参照先の記述を project-index.yaml と project-index のスキーマへ直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:01:42.996086+00:00'
   - page: docs/guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
     new: false
     change: 配信元の説明書の場所を project-index.yaml へ直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:01:42.996086+00:00'
 scope_out:
   - item: src/files.yaml の行の無い 17 ファイル（map/・interact/・parts/）の行の追加
     reason: '#491 は対象を src/ 以外の管理用の YAML に限っている'

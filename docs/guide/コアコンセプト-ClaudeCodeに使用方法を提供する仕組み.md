@@ -10,7 +10,7 @@ Claude Code のプラグインが、mdmark の使用方法と操作を Claude Co
 ガイドは、mdmark のリポジトリの `docs/` の使用方法・リファレンスのページで、dev-docs の配信元 `mdmark` の公開ドキュメントの行（`docs`）でタグ `topic:ガイド` を付けて配る。
 Claude Code は、dev-docs の `search_docs` で `docs` の行の文書をタグ `topic:ガイド` で絞って一覧を検索し、作業に要るページだけを本文まで参照する。
 セッションの開始では何も入れないため、ガイドを参照しない作業では文脈が増えない。
-ページの選び方は、配信元の説明書（`dev-docs.yaml` の `instructions`）にある。
+ページの選び方は、配信元の説明書（`project-index.yaml` の `instructions`）にある。
 
 参照するのは、dev-docs の配信元に登録した mdmark のクローンのページで、プラグインはガイドを持たない。
 dev-docs が無い、または配信元 `mdmark` が登録されていないときは、ガイドは参照できない。
