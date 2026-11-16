@@ -10401,6 +10401,16 @@ constraints:
 
       明るい配色で描くときは SVG を 1 つだけ配置する（制約「配色の切り替え」の印刷で明るい配色にするのと統一する。`render` は非同期で、`beforeprint` の中で再描画しても印刷のレイアウトに間に合わないため、印刷のきっかけを待たない）'
     notes: '[PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384) で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ指定できることを確認した。デザイン方針の「使用しないもの」（影・グラデーション）'
+  - item: mermaid のノードのリンク
+    constraint: 'mermaid が `click {ノード} href "{リンク先}"`・`click {ノード} "{リンク先}"`・`link {クラス} "{リンク先}"` の行（flowchart・classDiagram）から出力した SVG の `<a>` を、返った SVG ごと（暗い配色のときは印刷の SVG も）次のとおりにする。
+
+      `xlink:href` の値を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許可する `<a>` には `xlink:href` と同じ文字の `href` と class `mdmark-diagram-node-link` を付け、`target` を除外する。開く先は本文のリンクと同じく同じタブで、クリックのイベントは止めず本文の要素まで伝わる。
+
+      `xlink:href` を持たない `<a>`（mermaid が `javascript:` などを除外したもの）と許可しない `<a>` は、子を残して `<a>` だけを除外する。
+
+      コールバックの `click` の行には mermaid が `<a>` を出力しないため、何もしない。記載の警告は出さない'
+    decided_by: SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
+    notes: '`securityLevel: "strict"` の mermaid 12.3.0 は、URL の行のノードを `xlink:href` だけを持つ `<a>` で囲み、`target` を除外する（作業 PR #618 の計画書の実測）。`href` を持たないため、本文の `a[href]` のクリックを拾う利用側が受け取れない。許可しない URL に警告を出さないのは作業 PR #618 のレビューの回答'
   - item: mermaid を読み込めないとき
     constraint: mermaid を読み込めないときは、各 mermaid の対象の読み込み中のブロックを通知ブロック（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中のブロックを記載の警告に替え、コードブロックを出して残す
   - item: フロントマター
