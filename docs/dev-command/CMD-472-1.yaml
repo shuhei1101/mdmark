@@ -145,6 +145,12 @@ categories:
       npm --prefix vscode run package
       ```
 
+      VS Code 拡張機能のアイコンの原本 `vscode/icon.svg` を変えたら、256×256px の `vscode/icon.png` に書き出し、両方を commit する（`npx playwright install chromium` で Chromium を入れてある）。
+
+      ```bash
+      npx playwright screenshot --viewport-size "256, 256" "file://$PWD/vscode/icon.svg" vscode/icon.png
+      ```
+
       mermaid の図のストーリーの見本の SVG を `tests/fixtures/mermaid-svg/` に書き込む（mermaid のバージョンを変えたときに実行し、書き込んだファイルを commit する。`npx playwright install chromium` で Chromium を入れてある）。
 
       ```bash
@@ -157,6 +163,8 @@ categories:
       cd {AI Monitor のクローン} && PYTHONPATH=src uv run python -m ai_monitor.design_docs publish --only docs/{フォルダ}/index --root {mdmark の作業ツリー}
       ```
     effects: '`npm run fixtures:mermaid` は `tests/fixtures/mermaid-svg/` の 9 つの SVG を上書きする。
+
+      アイコンの書き出しのコマンドは `vscode/icon.png` を上書きする。
 
       README の生成のコマンドは、`--only` で指定した `index.yaml` と同じフォルダの `README.md` を上書きする。
 
@@ -196,7 +204,9 @@ categories:
 
         2026-11-08 に、`npm run fixtures:mermaid` が終了コード 0 で `tests/fixtures/mermaid-svg/` に 9 つの SVG（暗い配色の flowchart は明るい配色と塗りの色が違い、sequence は actor が `svg.mdmark-mermaid-actor`）を書き込み、書き込んだパスを標準出力に出すことを確認した。
 
-        2026-11-15 に、README の生成のコマンドを `--only docs/layout/index` と `--only docs/index` で実行し、終了コード 0 でそれぞれの `README.md` を書き込み、書き込んだパスを標準出力に出すことを確認した'
+        2026-11-15 に、README の生成のコマンドを `--only docs/layout/index` と `--only docs/index` で実行し、終了コード 0 でそれぞれの `README.md` を書き込み、書き込んだパスを標準出力に出すことを確認した
+
+        2026-11-16 に、アイコンの書き出しのコマンドを Playwright 1.64.0 で実行し、終了コード 0 で 256×256px の PNG を書き込むことを確認した'
   - name: 取り込み前の検査
     commands: |-
       手で全件を検査する（Biome・ESLint・ルートと `vscode/` の型検査を順に実行し、最初の失敗で止まる）。
