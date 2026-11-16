@@ -27,6 +27,11 @@ notes:
     └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
     ```
 tags:
-  - name: topic:バージョン
+  - name: topic:エイリアス
     main: true
+  - name: topic:バージョン
   - name: topic:移行
+  - name: topic:cli
+  - name: topic:ステップ
+  - name: topic:索引
+  - name: topic:タグ

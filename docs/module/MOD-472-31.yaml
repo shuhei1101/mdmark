@@ -64,3 +64,4 @@ tags:
   - name: topic:ビュー
     main: true
   - name: topic:コメント
+  - name: action:配布

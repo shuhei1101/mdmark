@@ -23,7 +23,10 @@ functions:
         expected: オンは `div.mdmark-pagebreak` が 1 つ、オフは無く、どちらも `<!--` が無い
         mock: なし
         summary: オンなら要素、オフなら取り除く
-lead: '`pagebreak.ts` の関数（改ページにする）。'
+lead: '印刷の改ページのマーカーを受け持ち、印刷の改ページの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:印刷
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

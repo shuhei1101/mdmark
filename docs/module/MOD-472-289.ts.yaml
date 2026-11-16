@@ -133,7 +133,12 @@ functions:
         mock: なし
         expected: '`warnings` に 1 件'
     status: planned
-lead: '`html.ts` の関数（埋め込んだ HTML を描く・範囲の css・ts・js を読み込む）。'
+lead: '埋め込んだ HTML の描画と範囲の CSS・スクリプトの読み取りを受け持ち、埋め込んだ HTML の記法を変えるときに参照する。'
 tags:
   - name: topic:構文
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
+  - name: tool:html
+  - name: action:読み取り
+  - name: action:描画

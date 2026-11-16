@@ -68,7 +68,11 @@ functions:
         mock: なし
         expected: どちらも `color` が `red` で、`label` が空白だけ
     status: planned
-lead: '`badges.ts` の関数（バッジにする・バッジの色とラベルを分ける）。'
+lead: 'バッジの色とラベルの読み取りを受け持ち、バッジの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:バッジ
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

@@ -59,7 +59,9 @@ functions:
         condition: '本文で `※[img]` を参照し、補足の `notes.mount.annotations` が `["cond", "img", "missing"]` の範囲と、定義 `※[cond]`・`※[img]` を持つ文書'
         mock: なし
         expected: '`data-map-annotations` が `{"cond":2,"img":1}`。`annotations` をオフにすると `data-map-annotations` が無い。補足の注記の参照が `missing` だけの範囲は `data-map-annotations` が `{}`'
-lead: '`map.ts` の関数（mapの範囲を組み立てる）。'
+lead: 'map の範囲の組み立てを受け持ち、map の範囲の出力を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:map
     main: true
+  - name: topic:記法
+  - name: topic:構文

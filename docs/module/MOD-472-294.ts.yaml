@@ -31,7 +31,9 @@ functions:
         expected: '`data-color` を持たない `mark.mdmark-highlight` と、段落の前の `pink` を含む記載の警告'
         mock: なし
         summary: 知らない色は既定の色で警告する
-lead: '`highlight.ts` の関数（蛍光ペンのルールを追加する）。'
+lead: '蛍光ペンの記法を受け持ち、蛍光ペンの記法や出力する HTML を変えるときに参照する。'
 tags:
   - name: topic:構文
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it

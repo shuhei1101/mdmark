@@ -66,7 +66,11 @@ functions:
         mock: なし
         expected: どちらも `undefined`
     status: planned
-lead: '`callouts.ts` の関数（注意書きにする・注意書きの 1 行目を読み取る）。'
+lead: '注意書きの記法の読み取りを受け持ち、注意書きの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:注意書き
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

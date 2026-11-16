@@ -207,7 +207,10 @@ functions:
         mock: なし
         expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
     status: planned
-lead: '`code-block.ts` の型（コードの行）と関数（コードブロックを描く・コードのコピーのボタンを描く・行の開閉のボタンを描く・畳んだ行の ⋯ のボタンを描く）と定数（色分けの対象の属性・mermaid の対象の属性）。'
+lead: 'コードブロックとコードのコピーのボタンの HTML を受け持ち、コードブロックの外観を変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:描画
+  - name: action:コピー

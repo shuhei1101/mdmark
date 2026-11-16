@@ -35,7 +35,9 @@ functions:
         mock: なし
         expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
-lead: '`colors.ts` の関数（色の名前か）と定数（色の名前）。'
+lead: '色の名前の一覧と見分けを受け持ち、記法で使用できる色の名前を変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: topic:色
     main: true
+  - name: topic:部品
+  - name: tool:html

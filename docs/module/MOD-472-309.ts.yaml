@@ -41,7 +41,10 @@ functions:
         condition: '`{ name: "chart", options: { title: "\"><script>" } }`'
         mock: なし
         expected: '`data-mdmark-args` の値に `<` と `"` が無く、`&quot;&gt;&lt;script&gt;` を含む'
-lead: '`embed.ts` の関数（読み込み中のブロックを描く）と定数（読み込み中の文言）。'
+lead: '読み込み中のブロックの HTML を受け持ち、読み込み中の表示を変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:描画
+  - name: action:読み込み

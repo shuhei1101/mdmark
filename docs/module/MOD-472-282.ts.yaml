@@ -137,7 +137,11 @@ functions:
         mock: なし
         expected: '`close` が `-1`、`nested` が `true`'
     status: planned
-lead: '`tabs.ts` の関数（タブの範囲を区切る・タブのマーカーの指定を読み込む・タブの閉じを探す）。'
+lead: 'タブの範囲の区切りとマーカーの読み取りを受け持ち、タブの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:タブ
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

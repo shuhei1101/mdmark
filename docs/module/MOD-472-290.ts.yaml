@@ -69,7 +69,10 @@ functions:
     refs:
       - IF-472-34#
       - MOD-472-154#data_models[ViewSpec]
-lead: '`views.ts` の関数（ビューのマーカーを囲みにする）。'
+lead: 'ビューのマーカーの囲みを受け持ち、ビューの記法や出力する HTML を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:ビュー
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

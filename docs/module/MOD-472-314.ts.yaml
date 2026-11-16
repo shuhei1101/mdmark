@@ -33,7 +33,9 @@ functions:
         condition: '`message` だけ'
         mock: なし
         expected: '`<code>` で始まらず、`<ul>` が無い'
-lead: '`syntax-warning.ts` の関数（記載の警告を描く）。'
+lead: '記載の警告の部品が返却する HTML を受け持ち、記載の警告の外観を変えるときに参照する。'
 tags:
   - name: topic:部品
     main: true
+  - name: tool:html
+  - name: action:描画

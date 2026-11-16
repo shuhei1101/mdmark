@@ -37,7 +37,9 @@ functions:
         condition: '`<!-- wide: {"state": "narrow", "size": 2} -->` で表を囲んだ範囲'
         mock: なし
         expected: 記載の警告が無く、`data-state="wide"` の `div.mdmark-wide-range` があり、`env.warnings` が `state`・`size` の `unknown_mark_arg` の 2 件
-lead: '`wide.ts` の関数（wide の範囲にする）。'
+lead: 'wide の範囲の記法を受け持ち、wide の範囲の記法や出力する HTML を変えるときに参照する。'
 tags:
   - name: topic:構文
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it

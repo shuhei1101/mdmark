@@ -80,5 +80,7 @@ functions:
 tags:
   - name: topic:フック
     main: true
-  - name: topic:サーバー
   - name: tool:claude-code
+  - name: topic:サーバー
+  - name: action:起動
+  - name: action:待ち受け

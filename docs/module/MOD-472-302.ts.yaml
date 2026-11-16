@@ -41,7 +41,10 @@ functions:
         mock: なし
         expected: '`state.tokens` が変わらない'
     status: planned
-lead: '`frontmatter.ts` の関数（フロントマターの表示を差し込む）。'
+lead: 'フロントマターの表示を差し込むコアルールを受け持ち、フロントマターの表示の差し込みを変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:フロントマター
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

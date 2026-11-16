@@ -53,7 +53,10 @@ functions:
     refs:
       - IF-472-34#constraints[カードの格子]
     status: planned
-lead: '`card-grid.ts` の関数（カードの格子にする）。'
+lead: 'カードの格子のマーカーの中のリストを部品にするコアルールを受け持ち、カードの格子の記法を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:カード
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

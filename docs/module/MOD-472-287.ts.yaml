@@ -45,7 +45,11 @@ functions:
         condition: '`fig: arch` の後ろの `![構成](arch.png "全体"){width=300}` だけの段落と、`fig: shots` の後ろのギャラリーの開きのマーカー、本文の `[図](#fig-shots)`'
         mock: なし
         expected: '1 つ目が `<figure class="mdmark-figure mdmark-image" id="fig-arch" style="--mdmark-image-width: 300px">` と `<b>図 1</b>全体`、ギャラリーの開きのマーカーの `meta.figure` が `{ id: "shots", number: 2 }`、リンクの文字が `図 2`'
-lead: '`figures.ts` の関数（図表に番号を付ける）。'
+lead: '図表の番号の付与と参照のリンクを受け持ち、図表の番号の記法を変えるときに参照する。'
 tags:
-  - name: topic:構文
+  - name: topic:図表の番号
     main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:付与

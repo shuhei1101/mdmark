@@ -41,3 +41,6 @@ tags:
   - name: tool:mermaid
     main: true
   - name: topic:図
+  - name: action:読み取り
+  - name: action:読み込み
+  - name: action:描画

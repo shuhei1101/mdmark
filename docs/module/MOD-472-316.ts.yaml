@@ -51,7 +51,10 @@ functions:
         expected: 1 つ目のタブのボタンとタブ名の `p` が `<strong>案 A</strong>` を持ち、折り畳みの見出しが `タブ（案 A SVG のまま・案 B）`
     callees:
       - 'MOD-472-325#functions[renderCollapsible]'
-lead: '`tabs.ts` の関数（タブを描く）。'
+lead: 'タブの部品が返却する HTML を受け持ち、タブの外観や構造を変えるときに参照する。'
 tags:
-  - name: topic:部品
+  - name: topic:タブ
     main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画
