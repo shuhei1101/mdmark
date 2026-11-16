@@ -10,7 +10,6 @@ import {
   type DiagramDirective,
   definitionWarning,
   type MdmarkChartDefinition,
-  type MdmarkErDefinition,
   type MdmarkParamDefinition,
   readDefinition,
 } from "../src/diagram/definition.ts";
@@ -251,7 +250,12 @@ const SAMPLE_TABLE =
   "<table><thead><tr><th>列A</th><th>列B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
 
 // 図の見本の定義を記載した文書と、見本の名前ごとの `json` のコードブロックが持つキー
-const SAMPLE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-見本.md");
+const SAMPLE_DOCUMENT = join(
+  REPO_ROOT,
+  "docs",
+  "guide",
+  "図を描く-見本.mark.md",
+);
 const SAMPLE_KEYS: Record<string, string> = {
   "reply-time": '"series"',
   strength: '"knob"',
@@ -386,33 +390,6 @@ function mockChart(name: string): MdmarkChartDefinition {
   return JSON.parse(JSON.stringify(definition)) as MdmarkChartDefinition;
 }
 
-// #298 の ER 図の見本（モックと同じ定義）
-const ER_SAMPLES_FILE = join(
-  REPO_ROOT,
-  "docs",
-  "mock",
-  "refs",
-  "298",
-  "assets",
-  "er-samples.js",
-);
-
-/** モックの ER 図の見本のスクリプトから、名前 `name` の定義を取り出す（モックの表の `kind` は定義に含めない） */
-function mockEr(name: string): MdmarkErDefinition {
-  const window: { mdmarkMockDiagrams: Record<string, unknown> } = {
-    mdmarkMockDiagrams: {},
-  };
-  runInNewContext(readFileSync(ER_SAMPLES_FILE, "utf8"), { window });
-  const found = window.mdmarkMockDiagrams[name] as
-    | (MdmarkErDefinition & { kind?: string })
-    | undefined;
-  if (found === undefined) {
-    throw new Error(`モックの見本の定義が無い: ${name}`);
-  }
-  const { kind: _kind, ...definition } = found;
-  return JSON.parse(JSON.stringify(definition)) as MdmarkErDefinition;
-}
-
 /** 図のストーリーの操作の指定: 保った高さ（`height`）と、付けた後にフォーカスする要素（`focus`）をマーカーに持たせる */
 function storyMarker(args: PartArgs, focus?: string): string {
   const height =
@@ -421,21 +398,6 @@ function storyMarker(args: PartArgs, focus?: string): string {
       : "";
   const target = focus === undefined ? "" : ` data-story-focus="${focus}"`;
   return `<span hidden data-story-fit${height}${target}></span>`;
-}
-
-/** 関係が無い列を指す ER 図の記載の警告 */
-function invalidErDefinition(): string {
-  const definition = mockEr("shop-er");
-  definition.relations = definition.relations.map((relation) =>
-    relation.label === "注文する"
-      ? { ...relation, toColumn: "customer" }
-      : relation,
-  );
-  const { message, items } = definitionWarning(
-    "er",
-    readDefinition("er", [JSON.stringify(definition)]).problems,
-  );
-  return renderSyntaxWarning({ message, items });
 }
 
 /** 系列が上限より多いストーリーの記載の警告: 見本の 6 つの系列に 1 つ追加して読み込ませる */
@@ -933,23 +895,6 @@ function annotatedTipStory(args: PartArgs, open: boolean): string {
     ? '<button class="mdmark-diagram-info" type="button" aria-label="「判定」の説明と注記" aria-describedby="story-tip">i</button>'
     : '<svg width="160" height="40" aria-hidden="true"><path class="mdmark-diagram-wire" d="M0 20 L160 20" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path></svg>';
   return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
-}
-
-/** ER 図のテーブルの説明のツールチップのストーリー */
-function tableTipStory(open: boolean): string {
-  // ER 図の注文のテーブルの説明のボタンで開いた状態: テーブルの上に出す
-  const orders = mockEr("shop-er").tables.find((t) => t.id === "orders");
-  const table = renderDiagramTip({
-    id: "story-tip",
-    kind: "table",
-    label: orders?.label ?? "",
-    ...(orders ? { table: orders } : {}),
-    open,
-  }).replace(
-    'role="tooltip"',
-    'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
-  );
-  return `<div style="padding-block-start:16rem"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="story-tip">i</button>${table}</div></div>`;
 }
 
 /** 折れ線の点・map の構成図のグループのタイトルのマーカーのツールチップのストーリー */
@@ -1777,10 +1722,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       );
     }
     const html = renderDiagram({
-      kind: "er",
-      definition: mockEr("shop-er"),
+      kind: "chart",
+      definition: chartStoryDefinition({ sample: "reply-time-6" }),
       id: "story-frame",
-      lookup: (word) => SAMPLE_TERMS[word],
       ...diagramArgs(args),
     });
     const frame =
@@ -1800,21 +1744,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         ? `<dialog class="mdmark-diagram-dialog" open="open" style="position:fixed;inset:0">${frame}</dialog>`
         : frame;
     return `<div class="story-framed-surface" style="${FRAMED_SURFACE_STYLE}">${body}</div>`;
-  },
-  "er-diagram": (args) => {
-    if (args.invalid === true) {
-      return invalidErDefinition();
-    }
-    const name =
-      args.sample === "colors"
-        ? "shop-er-colors"
-        : args.sample === "folded"
-          ? "shop-er-folded"
-          : "shop-er";
-    return fitted(
-      renderDiagram({ kind: "er", definition: mockEr(name), id: "story-er" }),
-      args,
-    );
   },
   chart: (args) => {
     if (args.invalid === true) {
@@ -1836,9 +1765,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const open = args.open === true;
     if (args.annotations !== undefined) {
       return annotatedTipStory(args, open);
-    }
-    if (args.kind === "table") {
-      return tableTipStory(open);
     }
     if (args.kind === "item" || args.group === true) {
       return itemOrGroupTipStory(args, open);

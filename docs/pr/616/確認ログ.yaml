@@ -1,0 +1,7 @@
+confirmations:
+  - topic: ER 図の部品を map の ER 図へ統合して廃止するか
+    decision: 統合して廃止する。`er` の範囲には変換できる旨の警告だけを出し、`mdmark upgrade` の移行の手順で map の ER 図へ書き換える。`破壊的変更` を付ける（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: '53e16344'
+    thread: https://github.com/shuhei1101/mdmark/pull/616#discussion_r4585658786

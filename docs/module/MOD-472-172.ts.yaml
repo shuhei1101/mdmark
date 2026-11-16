@@ -26,7 +26,7 @@ functions:
       - name: test_render_diagram_frame
         case: 正常
         summary: タイトル・ボタンの帯・凡例をこの順に出す
-        condition: '`kind` が `er`、`legend` が 2 項目'
+        condition: '`kind` が `chart`、`legend` が 2 項目'
         mock: なし
         expected: '`figcaption`・`role="toolbar"`・`role="group"` の表示する枠・`aria-label="凡例"` の `ul` がこの順にあり、移動のボタンのまとまりが `hidden`'
       - name: test_render_diagram_frame_when_modal
@@ -135,10 +135,10 @@ functions:
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 'グラフは系列（円とドーナツは項目）を並べる。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。ER 図は図にあるテーブルの種類の札（名前は `{札}のテーブル`）・列のマーカー（`ER_COLUMN_KEYS` の `title`）・多重度の記号（`ER_CARDINALITIES` の名前）だけを並べる'
+    summary: 'グラフは系列（円とドーナツは項目）を並べる。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる'
     args:
       - name: definition
-        type: MdmarkChartDefinition | MdmarkErDefinition
+        type: MdmarkChartDefinition
         required: true
         description: 読み込めた定義
     returns:
@@ -151,12 +151,6 @@ functions:
         condition: '`y2` を持つ `combo`、`size.label` が `件数` の `bubble`、`unit` が ` 件` の `donut`'
         mock: なし
         expected: '`combo` の項目が `{系列名}（左の軸）`・`{系列名}（右の軸）`、`bubble` に `円の面積: 件数` の項目、`donut` の項目が `{名前}: {値} 件`'
-      - name: test_legend_for_when_er
-        case: 正常
-        summary: ER 図は図にある種類・マーカー・多重度だけを凡例に出す
-        condition: マスターのテーブルだけを持ち、列が `pk`・`nn` だけで、多重度が `1` と `0..n` だけの定義
-        mock: なし
-        expected: 項目が `マスターのテーブル`・`主キー`・`NOT NULL`・`1 つ`・`0 以上` の 5 つで、説明のボタンと用語の下線の項目が無い
   - name: renderDiagramTip
     title: 図のツールチップを描く
     container: src/parts/diagram.ts
@@ -165,9 +159,9 @@ functions:
     summary: 部品設計『図のツールチップ』の中身。`role="tooltip"` と `hidden` を持つ
     args:
       - name: tip
-        type: '{ id: string; kind: "wire" | "hint" | "table" | "item" | "merged"; label: string; value?: string; tip?: string; hint?: string; table?: MdmarkErTable; annotations?: Array<{ number: number; html: string }> }'
+        type: '{ id: string; kind: "wire" | "hint" | "item" | "merged"; label: string; value?: string; tip?: string; hint?: string; annotations?: Array<{ number: number; html: string }> }'
         required: true
-        description: 部品設計の引数。`item` は見出しに `label`、本文に `value` を出す。`table` はタイトルを `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる。`annotations` があれば、どの `kind` でも末尾に注記ごとの `span.mdmark-term-tip-section`（見出し `span.mdmark-term-tip-heading.mdmark-note-tip-heading` の `注記 {number}` と本文。`html` は描いた HTML なのでエスケープしない）を追加する
+        description: 部品設計の引数。`item` は見出しに `label`、本文に `value` を出す。`annotations` があれば、どの `kind` でも末尾に注記ごとの `span.mdmark-term-tip-section`（見出し `span.mdmark-term-tip-heading.mdmark-note-tip-heading` の `注記 {number}` と本文。`html` は描いた HTML なのでエスケープしない）を追加する
     returns:
       type: string
       description: ツールチップの HTML
@@ -190,75 +184,13 @@ functions:
         condition: 部品設計『図のツールチップ』の `Annotation`
         mock: なし
         expected: 区分が 2 つで、2 つ目の見出しが class `mdmark-note-tip-heading` の `注記 1`、本文が `条件を満たさないときは次の工程へ進む。`
-      - name: test_render_diagram_tip_when_table
-        case: 正常
-        summary: テーブルの概要と列の説明を出す
-        condition: '`kind` が `table`、`desc` を持つ列が 2 つと持たない列が 1 つのテーブル'
-        mock: なし
-        expected: タイトルが `{論理名}（{物理名}）`、概要の後に `desc` を持つ 2 つの列の名前と説明だけが並び、`hidden` を持つ
       - name: test_render_diagram_tip_when_item
         case: 正常
         summary: グラフの項目の名前と値を出す
         condition: '`kind` が `item`、`label` が `担当者`、`value` が `2月: 38`'
         mock: なし
         expected: '見出しが `担当者`、本文が `2月: 38` で `hidden` を持つ'
-  - name: renderEr
-    title: ER 図を描く
-    container: src/parts/diagram.ts
-    kind: 関数
-    scope: internal
-    summary: '`renderErTable` でテーブルを配置し（定義の文字は `renderText` に経由し、`{{単語}}` を意味のある用語なら下線とツールチップの持ち主にする）、`erRelationRoute` の経路で関係の線（`data-line="er"`）と `erEndSvg` の両端の記号を svg に描き、ラベルを縦の線の中ほどに配置する。関係ごとの `g` は `data-er-from`・`data-er-from-column`・`data-er-to`・`data-er-to-column` を持ち、ラベル（`renderText` に経由する）は同じ関係の番号の `data-er-relation` を持つ（`attachErFolds` がもう一度結ぶ）。図の高さは `erTableHeight` で求めたテーブルの下端の最大に下の余白を加算する。`hints` がオンなら、`desc` を持つテーブルと `desc` を持つ列のあるテーブルの `renderDiagramTip` の `kind: table` の中身を返却する'
-    args:
-      - name: definition
-        type: MdmarkErDefinition
-        required: true
-        description: 読み込めた定義
-      - name: id
-        type: string
-        required: true
-        description: '`id` の頭'
-      - name: options
-        type: '{ hints: boolean; lookup?: TermLookup }'
-        required: true
-        description: 機能のオン・オフと、定義の中の用語を描く値（`renderFlow` と同じ形の `annotations` を除いたもの）
-      - name: options.hints
-        type: boolean
-        required: true
-        description: '`hints` がオンか'
-      - name: options.lookup
-        type: TermLookup | undefined
-        required: false
-        description: 用語から意味を参照する関数（`renderFlow` と同じ）
-    returns:
-      type: '{ html: string; width: number; height: number; tips: string; jumps: boolean; terms: boolean }'
-      description: 図の中身と、用語の下線を付けた文字があるか（`terms`。`jumps` は常に `false`）
-    callees:
-      - 'MOD-472-187#functions[renderErTable]'
-      - 'MOD-472-176#functions[erRelationRoute]'
-      - 'MOD-472-187#functions[erEndSvg]'
-      - 'MOD-472-176#functions[erTableHeight]'
-      - '#functions[renderDiagramTip]'
-    unit_tests:
-      - name: test_render_er
-        case: 正常
-        summary: テーブル・関係の線・多重度・ラベルを描く
-        condition: モックの `shop-er` の定義、`hints` がオン
-        mock: なし
-        expected: テーブルが定義の数だけ、関係の `path[data-line="er"]` が関係の数だけあり、両端に多重度の記号とラベルがあり、`tips` に注文のテーブルの `{論理名}（orders）` がある
-      - name: test_render_er_when_hints_off
-        case: 正常
-        summary: '`hints` がオフなら説明のボタンとツールチップを配置しない'
-        condition: モックの `shop-er` の定義、`hints` がオフ
-        mock: なし
-        expected: '`button.mdmark-diagram-info` が無く、`tips` が空'
-      - name: test_render_er_when_terms
-        case: 正常
-        summary: 定義の文字の `{{単語}}` を用語の下線にする
-        condition: テーブルの論理名が `{{顧客}}`、関係のラベルが `{{注文}}する` の定義と、`顧客`・`注文` の意味を返却する `lookup`。`hints` がオン
-        mock: なし
-        expected: 論理名とラベルの `{{顧客}}`・`{{注文}}` が `mdmark-term` の下線になり、`{{`・`}}` が文字に残らず、`tips` に `顧客` の意味があり、`tips` に `{{` が残らず、`terms` が `true`。説明のボタン・開閉のボタンのスクリーンリーダー向けの名前が `「顧客」の…`
-    status: planned
-lead: '図の表示ブロック・構成図のノードと線・グラフ・ER 図・図のツールチップ・凡例の描画を受け持ち、図の部品の描き方を変えるときに参照する。'
+lead: '図の表示ブロック・構成図のノードと線・グラフ・図のツールチップ・凡例の描画を受け持ち、図の部品の描き方を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true

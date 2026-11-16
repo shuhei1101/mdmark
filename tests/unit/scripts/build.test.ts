@@ -555,18 +555,26 @@ test("test_build_legacy_marks_when_source_removed", async () => {
   ).toBe("書き込み済みのライセンス\n");
 });
 
+/** 廃止した図の書き換えの処理と、拡張・設定の読み込みのソース（`convertRetiredDiagrams` は `!`、`convertRetiredEr` は `?` を付ける） */
+const retiredSources = (): Record<string, string> => ({
+  "src/map/convert.ts": [
+    'export const convertRetiredDiagrams = (options: { markdown: string }) => ({ markdown: options.markdown + "!" });',
+    'export const convertRetiredEr = (options: { markdown: string }) => ({ markdown: options.markdown + "?" });',
+    "",
+  ].join("\n"),
+  "src/cli/check.ts":
+    'export const loadExtensionDirectives = async () => ({ directives: new Set(["flow"]), issues: [] });\n',
+  "src/cli/config.ts":
+    "export const loadConfig = async (file: string) => ({ file, config: {} });\n",
+});
+
 // 書き換えの処理を、廃止した図の移行のスクリプトを持つフォルダにだけまとめる（正常系）
 test("test_build_retired_diagrams", async () => {
   // 準備
   const { buildRetiredDiagrams } = await loadBuild();
   const root = await createRoot("v0.0.0\n");
   const sources: Record<string, string> = {
-    "src/map/convert.ts":
-      'export const convertRetiredDiagrams = (options: { markdown: string }) => ({ markdown: options.markdown + "!" });\n',
-    "src/cli/check.ts":
-      'export const loadExtensionDirectives = async () => ({ directives: new Set(["flow"]), issues: [] });\n',
-    "src/cli/config.ts":
-      "export const loadConfig = async (file: string) => ({ file, config: {} });\n",
+    ...retiredSources(),
     "migrations/next/retired-diagrams.mjs": "\n",
     "migrations/v0.11.0/marker-json.mjs": "\n",
   };
@@ -586,10 +594,12 @@ test("test_build_retired_diagrams", async () => {
     convertRetiredDiagrams: (options: { markdown: string }) => {
       markdown: string;
     };
+    convertRetiredEr: (options: { markdown: string }) => { markdown: string };
     loadExtensionDirectives: () => Promise<{ directives: Set<string> }>;
     loadConfig: (file: string) => Promise<{ file: string }>;
   };
   expect(module.convertRetiredDiagrams({ markdown: "a" }).markdown).toBe("a!");
+  expect(module.convertRetiredEr({ markdown: "a" }).markdown).toBe("a?");
   expect([...(await module.loadExtensionDirectives()).directives]).toEqual([
     "flow",
   ]);
@@ -597,6 +607,39 @@ test("test_build_retired_diagrams", async () => {
   expect(
     existsSync(join(root, "migrations", "v0.11.0", "retired-diagrams.js")),
   ).toBe(false);
+});
+
+// ER 図の部品の移行のスクリプトだけを持つフォルダにも書き換えの処理をまとめる（正常系）
+test("test_build_retired_diagrams_when_er", async () => {
+  // 準備
+  const { buildRetiredDiagrams } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  const sources: Record<string, string> = {
+    ...retiredSources(),
+    "migrations/next/retired-er.mjs": "\n",
+    "migrations/v0.13.0/retired-diagrams.mjs": "\n",
+  };
+  for (const [path, text] of Object.entries(sources)) {
+    await mkdir(join(root, path, ".."), { recursive: true });
+    await writeFile(join(root, path), text);
+  }
+  // 実行
+  const written = await buildRetiredDiagrams("v0.0.1", root);
+  // 検証
+  expect(written).toEqual([
+    "migrations/next/retired-diagrams.js",
+    "migrations/v0.13.0/retired-diagrams.js",
+  ]);
+  for (const folder of ["next", "v0.13.0"]) {
+    const module = (await import(
+      /* @vite-ignore */ pathToFileURL(
+        join(root, "migrations", folder, "retired-diagrams.js"),
+      ).href
+    )) as {
+      convertRetiredEr: (options: { markdown: string }) => { markdown: string };
+    };
+    expect(module.convertRetiredEr({ markdown: "a" }).markdown).toBe("a?");
+  }
 });
 
 // CLI にまとめたパッケージのライセンスも記載する（正常系）
