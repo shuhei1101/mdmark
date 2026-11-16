@@ -1,0 +1,13 @@
+前提確認: ok
+--- /home/shuhei2441/.config/alias-inject/settings.yaml
++++ /home/shuhei2441/.config/alias-inject/settings.yaml
+@@ -19,7 +19,7 @@
+     - config: /home/shuhei2441/repo/alias-inject/.claude/worktrees/develop/project-index.yaml  # alias-inject
+     - config: /home/shuhei2441/repo/dev-docs/.claude/worktrees/develop/dev-docs.yaml  # dev-docs
+     - config: /home/shuhei2441/repo/shuhdev-gateway/.claude/worktrees/develop/dev-docs.yaml  # shuhdev-gateway
+-    - config: /home/shuhei2441/repo/mdmark/.claude/worktrees/develop/dev-docs.yaml  # mdmark
++    - config: /home/shuhei2441/repo/mdmark/.claude/worktrees/develop/project-index.yaml  # mdmark
+     - config: /home/shuhei2441/repo/knowledge/.claude/worktrees/develop/project-index.yaml  # knowledge
+   # MindStella の話し合いの用語集（terms.yaml の items の 1 要素を 1 件の用語にする）
+   aliases:
+config の書き換え: changed

@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 端末の設定（dev-docs・project-index・alias-inject）の mdmark の行の書き換え
+    decision: マージの後、planner が反映作業のスクリプトで 3 つとも config を project-index.yaml へ書き換える（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 0c47f466
+    thread: https://github.com/shuhei1101/mdmark/pull/626#discussion_r4588490326

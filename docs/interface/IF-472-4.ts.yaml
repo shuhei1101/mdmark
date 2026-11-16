@@ -204,7 +204,7 @@ constraints:
 
       常駐サーバーが動いている場所（`MDMARK_LAUNCHER` が `systemd` なら systemd --user の unit の名前（端末の設定の `serve.systemdUnit`、無ければ `mdmark-mcp`）とログを確認する `journalctl --user -u {unit の名前}`、ほかは tmux のセッション名（端末の設定の `serve.tmuxSession`、無ければ `mdmark-mcp`））と、止まったときは `/mdmark:global-setup` でもう一度起動できること'
     decided_by: LIB-472-1#limitations[MCP の instructions の文字数]
-    notes: 4,096 文字以下。ガイドの選び方（最初に『文書の記載方法』を参照する等）は配信元の説明書（`dev-docs.yaml` の `instructions`）に配置し、同じ文を instructions に配置しない
+    notes: 4,096 文字以下。ガイドの選び方（最初に『文書の記載方法』を参照する等）は配信元の説明書（`project-index.yaml` の `instructions`）に配置し、同じ文を instructions に配置しない
   - item: ツールのログ
     constraint: ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを書き込み、その呼び出しを `isError` にして例外のメッセージを返却する。サーバーは止めない
   - item: ログ
