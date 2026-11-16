@@ -1,0 +1,14 @@
+v0.14.0 のタグ打ち:
+  説明: 作業 PR を develop へ squash マージした commit に、注釈なしのタグ v0.14.0 を打って origin へ push する
+  タグ: [タグ打ち]
+  実行者: planner
+  時期: マージの後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: git ls-remote --tags origin v0.14.0 の commit が、develop の作業 PR のマージの commit と一致する
+  状態: "-"
