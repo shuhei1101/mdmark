@@ -65,7 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T12:04:56.940966+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: 設計の工程で更新ドキュメントを全て反映した
+    updated_by: planner
+    updated_at: '2026-11-16T12:14:54.430652+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: 今の vscode/scripts/ の 2 ファイルに違反が無く、関数を分けないため、テストを追加・変更しない

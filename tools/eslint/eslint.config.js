@@ -17,6 +17,7 @@ const COMPLEXITY_FILES = [
   "src/**/*.ts",
   "scripts/**/*.ts",
   "vscode/src/**/*.{ts,tsx}",
+  "vscode/scripts/**/*.ts",
   "plugin/**/*.ts",
 ];
 
