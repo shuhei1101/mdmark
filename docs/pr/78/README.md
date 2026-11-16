@@ -33,7 +33,7 @@ PR [索引の用語にやめた言い方（avoid）を書けるようにし、�
 - [x] ~~部品設計~~（部品の引数・状態が変わらない）
 - [x] ~~画面設計~~（変更が画面に及ばない）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/リファレンス/記法.md)・[索引](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/リファレンス/索引.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/リファレンス/用語集.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/使い方/書く/索引と用語集を書く.md)・[点検する](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/使い方/書き出す/点検する.md)）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E8%A8%98%E6%B3%95.md)・[索引](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%B4%A2%E5%BC%95.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%94%A8%E8%AA%9E%E9%9B%86.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E7%B4%A2%E5%BC%95%E3%81%A8%E7%94%A8%E8%AA%9E%E9%9B%86%E3%82%92%E6%9B%B8%E3%81%8F.md)・[点検する](https://github.com/shuhei1101/mdmark/blob/7cfc27741227e612e19e18cda2cf4617806beb73/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8D%E5%87%BA%E3%81%99/%E7%82%B9%E6%A4%9C%E3%81%99%E3%82%8B.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

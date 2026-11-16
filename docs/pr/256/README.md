@@ -34,7 +34,7 @@ mdmark の使い方集を読む AI と人が、比喩の語・一字の語の無
 - [x] ~~部品設計~~（UI の部品を変えない）
 - [x] ~~画面設計~~（画面を変えない）
 - [x] ~~モジュール構成設計~~（影響なし: `scripts/build-plugin.ts` と `src/plugin/` を変えない）
-- [x] ドキュメント修正（使い方集の 17 ページ・[文書の書き方](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/使い方/書く/文書の書き方.md)（新規）・[docs/使い方/書く/index.yaml](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/使い方/書く/index.yaml)・[用語集](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/リファレンス/用語集.md)）
+- [x] ドキュメント修正（使い方集の 17 ページ・[文書の書き方](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E6%96%87%E6%9B%B8%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9.md)（新規）・[docs/使い方/書く/index.yaml](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/index.yaml)・[用語集](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%94%A8%E8%AA%9E%E9%9B%86.md)）
 - [x] ~~単体テスト作成~~（コードを変えない）
 - [x] 実装（`guide/index.yaml` の writing の行の追加と、`plugin/guide/` の生成物の再生成）
 - [x] ~~結合テスト作成~~（コードを変えない。既存の結合テストは実行のみ）

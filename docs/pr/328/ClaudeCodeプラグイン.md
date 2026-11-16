@@ -29,7 +29,7 @@
 
 ## テスト結果
 
-ドキュメント修正（`docs/` の 13 ページと [要件](https://github.com/shuhei1101/mdmark/blob/7d1c51af29af2fbcd438a94244633a8edd8d5d18/dev/pr/328/要件.md)）は公開ドキュメントの文だけを変え、対応する単体・結合テストが無いため実行していない。
+ドキュメント修正（`docs/` の 13 ページと [要件](https://github.com/shuhei1101/mdmark/blob/7d1c51af29af2fbcd438a94244633a8edd8d5d18/dev/pr/328/%E8%A6%81%E4%BB%B6.md)）は公開ドキュメントの文だけを変え、対応する単体・結合テストが無いため実行していない。
 
 ### 単体
 

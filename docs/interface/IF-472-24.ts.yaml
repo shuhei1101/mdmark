@@ -72,7 +72,7 @@ constraints:
     decided_by: CFG-472-2#
   - item: 歯車のボタン
     constraint: '`contributes.menus` の `editor/title` に `mdmark.openSettings` を配置し、mdmark のプレビューのパネルがアクティブなときだけ出す（`when` はプレビューの Webview の `activeWebviewPanelId`）。アイコンは `$(gear)`。表示名・ツールチップの文言は画面設計で決める'
-    notes: モックの合意で、歯車はプレビューの中でなくエディタのタイトルの帯に配置することに決めた（[確認ログ（見た目のテーマを選べるようにし、プレビューから設定を開けるようにする）](../pr/181/確認ログ.md)）
+    notes: モックの合意で、歯車はプレビューの中でなくエディタのタイトルの帯に配置することに決めた（[確認ログ（見た目のテーマを選べるようにし、プレビューから設定を開けるようにする）](../pr/181/%E7%A2%BA%E8%AA%8D%E3%83%AD%E3%82%B0.md)）
   - item: プレビューへの影響
     constraint: プレビューのパネルを閉じず、Webview へメッセージを送信しない
 tags:

@@ -13,7 +13,7 @@
 | 実装 | [plugin/scripts/pre-tool-use.js](https://github.com/shuhei1101/mdmark/blob/2f65b61c8ca95c6223f34504bc9654b118d844f9/plugin/scripts/pre-tool-use.js) | まとめた PreToolUse のフック | ビルドで作り直す |
 | 実装 | [plugin/hooks/hooks.json](https://github.com/shuhei1101/mdmark/blob/2f65b61c8ca95c6223f34504bc9654b118d844f9/plugin/hooks/hooks.json) | フックの定義 | `matcher` は作業のフォルダを使用する 6 つのツールの完全名。変えない |
 | テスト | [tests/unit/src/plugin/pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/2f65b61c8ca95c6223f34504bc9654b118d844f9/tests/unit/src/plugin/pre-tool-use.test.ts) | フックの単体テスト | `permissionDecision` が無いことを確認している |
-| テスト | [tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/2f65b61c8ca95c6223f34504bc9654b118d844f9/tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts) | フックの結合テスト | `permissionDecision` が無いことを確認している |
+| テスト | [tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/2f65b61c8ca95c6223f34504bc9654b118d844f9/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/pre-tool-use.test.ts) | フックの結合テスト | `permissionDecision` が無いことを確認している |
 
 <!-- /table -->
 

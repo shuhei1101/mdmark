@@ -31,7 +31,7 @@
 - [x] ~~部品設計~~（影響なし: 部品を変えない）
 - [x] ~~画面設計~~（影響なし: 画面を変えない）
 - [x] ~~モジュール構成設計~~（影響なし: コードを変えない）
-- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/c90b3f5f1a0217b166ba06a6922d4b2ff660d5ef/docs/リファレンス/記法.md)・[本文を部品で組む](https://github.com/shuhei1101/mdmark/blob/c90b3f5f1a0217b166ba06a6922d4b2ff660d5ef/docs/使い方/書く/本文を部品で組む.md)）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/c90b3f5f1a0217b166ba06a6922d4b2ff660d5ef/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E8%A8%98%E6%B3%95.md)・[本文を部品で組む](https://github.com/shuhei1101/mdmark/blob/c90b3f5f1a0217b166ba06a6922d4b2ff660d5ef/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E6%9C%AC%E6%96%87%E3%82%92%E9%83%A8%E5%93%81%E3%81%A7%E7%B5%84%E3%82%80.md)）
 - [x] ~~単体テスト作成~~（コードを変えない）
 - [x] ~~実装~~（コードを変えない）
 - [x] ~~結合テスト作成~~（コードを変えない）

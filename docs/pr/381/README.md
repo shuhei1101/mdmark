@@ -32,7 +32,7 @@
 - [x] ~~部品設計~~（部品の引数・状態は変わらない）
 - [x] ~~画面設計~~（画面の要素は変わらない）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（設計書/設定/VSCode拡張機能.yaml・[VS Code 拡張機能](https://github.com/shuhei1101/mdmark/blob/a2731a2c351c085e61ef715542fd92b4616e9eb6/docs/リファレンス/VSCode拡張機能.md)）
+- [x] ドキュメント修正（設計書/設定/VSCode拡張機能.yaml・[VS Code 拡張機能](https://github.com/shuhei1101/mdmark/blob/a2731a2c351c085e61ef715542fd92b4616e9eb6/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/VSCode%E6%8B%A1%E5%BC%B5%E6%A9%9F%E8%83%BD.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

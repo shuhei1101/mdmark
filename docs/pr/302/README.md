@@ -35,7 +35,7 @@ mdmark の MCP の `list_tags` は [MCP から索引の検索・編集のツー�
 - [x] ~~部品設計~~（UI の部品を変えない）
 - [x] ~~画面設計~~（画面を変えない）
 - [x] ~~モジュール構成設計~~（影響なし: `guide/index.yaml`・`scripts/build-plugin.ts`・`src/plugin/` を変えない）
-- [x] ドキュメント修正（[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/79f60e82e694fc5a32fc7f4ef8aecb48d16172a9/docs/使い方/書く/索引と用語集を書く.md)）
+- [x] ドキュメント修正（[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/79f60e82e694fc5a32fc7f4ef8aecb48d16172a9/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E7%B4%A2%E5%BC%95%E3%81%A8%E7%94%A8%E8%AA%9E%E9%9B%86%E3%82%92%E6%9B%B8%E3%81%8F.md)）
 - [x] ~~単体テスト作成~~（コードを変えない）
 - [x] ~~実装~~（コードと使い方集の索引を変えない）
 - [x] ~~結合テスト作成~~（コードを変えない）

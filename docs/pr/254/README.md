@@ -32,7 +32,7 @@ mdmark の直下に `dev-docs.yaml` が無く、既存の文書は dev-docs で�
 - [x] ~~部品設計~~（部品を変えない）
 - [x] ~~画面設計~~（画面を変えない）
 - [x] ~~モジュール構成設計~~（コードを変えない）
-- [x] ドキュメント修正（dev-docs.yaml・files.yaml・[管理用の YAML](https://github.com/shuhei1101/mdmark/blob/34c559a469bd974001050722b2b255e860ccfd9a/dev/テンプレート/files.schema.yaml)・設計書/アーキテクチャ図）
+- [x] ドキュメント修正（dev-docs.yaml・files.yaml・[管理用の YAML](https://github.com/shuhei1101/mdmark/blob/34c559a469bd974001050722b2b255e860ccfd9a/dev/%E3%83%86%E3%83%B3%E3%83%97%E3%83%AC%E3%83%BC%E3%83%88/files.schema.yaml)・設計書/アーキテクチャ図）
 - [x] ~~単体テスト作成~~（コードを変えない）
 - [x] ~~実装~~（コードを変えない）
 - [x] ~~結合テスト作成~~（コードを変えない）

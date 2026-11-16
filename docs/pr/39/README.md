@@ -9,7 +9,7 @@ mdmark の版が上がったとき、使う側が `mdmark upgrade` で手元の�
 [版を上げるときに移行の手順を当てる upgrade を作る](https://github.com/shuhei1101/mdmark/issues/10) の要望。
 今の mdmark は、[サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9)（[サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/pull/32)）が作った CLI の `init`・`check`・`export`・`build` を持ち、版を上げる口を持たない。
 設定ファイル `mdmark.config.yaml` は使う側の版を持たず、索引は `schema: 1` だけを持つ。
-版ごとの移行の手順を置く `migrations/` は無く、変更履歴は版ごとの PR を 1 行ずつ並べた [変更履歴](https://github.com/shuhei1101/mdmark/blob/93797a60fac9b8ef79b214d875e6ea35dd513a5c/docs/はじめに/変更履歴.md) にある。
+版ごとの移行の手順を置く `migrations/` は無く、変更履歴は版ごとの PR を 1 行ずつ並べた [変更履歴](https://github.com/shuhei1101/mdmark/blob/93797a60fac9b8ef79b214d875e6ea35dd513a5c/docs/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/%E5%A4%89%E6%9B%B4%E5%B1%A5%E6%AD%B4.md) にある。
 GitHub Actions などの CI は無く、開発側の検査は `npm run build`・`npm test` などの開発コマンドで流している。
 
 ## 計画書
