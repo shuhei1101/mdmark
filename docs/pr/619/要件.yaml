@@ -1,0 +1,19 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: run_only
+    detail: lint の検査の範囲に VS Code 拡張機能のビルドのスクリプトが加わる。シナリオの「lint の違反が 0 件」の記述は変わらない
+    depends_on: []
+docs:
+  - page: docs/library/LIB-472-12.yaml
+    new: false
+    change: コマンドの `purpose` の複雑さの規則を適用する範囲に `vscode/scripts/` を加える
+    status: todo
+  - page: docs/test-procedure/TP-472-1.yaml
+    new: false
+    change: TL-8（lint）の説明の、複雑さの規則を適用する範囲に `vscode/scripts/` を加える
+    status: todo
+scope_out:
+  - item: '`tests/`・`vscode/tests/` の TypeScript への複雑さの規則の適用'
+    reason: Issue の要望は `vscode/scripts/` だけで、テストコードを含まない
+    plan: '#573'
