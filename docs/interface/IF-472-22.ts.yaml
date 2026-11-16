@@ -781,7 +781,7 @@ constraints:
     notes: 背面に回したパネルは Webview が再作成され、`ready` を受けて最後の全文をもう一度送信し、背面に回す前のスクロールの位置へ戻す（プレビューを再描画する.ts）
   - item: CSP
     constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {html-scripts.url の origin} {mermaid.url の origin} {syntax.url の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに再作成する。`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ（`html-scripts.url`・`mermaid.url`・`syntax.url` を記載しないときは既定の jsDelivr の origin）。mermaid が図の SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受ける。範囲の `ts`・`js` は、`mount` がページの `script[nonce]` の nonce を付けた `script` 要素で動かすため、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` を追加しない。まとめていない名前のアイコンを読み込む `https://cdn.jsdelivr.net` を `script-src` と `connect-src` に含める"
-    notes: "図とヒントの部品が HTML に `style` 属性を記載するため `style-src` に `'unsafe-inline'` が要る（PoC #70）。スクリプトは nonce で絞る"
+    notes: "図とヒントの部品が HTML に `style` 属性を記載するため `style-src` に `'unsafe-inline'` が要る（PoC [PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)）。スクリプトは nonce で絞る"
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を配置し、本文の相対パスの画像を Markdown のフォルダから読み込む。`localResourceRoots` の外の画像は Webview が読み込まず、`alt` が出る
   - item: Webview とのメッセージ

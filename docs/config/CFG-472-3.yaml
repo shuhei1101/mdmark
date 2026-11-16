@@ -594,7 +594,7 @@ settings:
     missing: 文書のフォルダからの相対パスだけで探す
     reload: reload
     allowed: フォルダのパス。無いフォルダは `mdmark check` が `schema` のずれにし、書き出しは警告に出して文書のフォルダだけで探す
-    reason: 画像・動画を文書ごとのフォルダに配置せず、リポジトリの 1 か所にまとめて配置する使用方法に合わせるため（#199）
+    reason: 画像・動画を文書ごとのフォルダに配置せず、リポジトリの 1 か所にまとめて配置する使用方法に合わせるため（[画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/issues/199)）
     refs:
       - IF-472-33#constraints[アセットのルート]
       - IF-472-39#constraints[見つからないファイルの点検]
