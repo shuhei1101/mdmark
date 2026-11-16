@@ -9,3 +9,4 @@ vite.config.ts
 components.json
 tsconfig.json
 *.vsix
+icon.svg

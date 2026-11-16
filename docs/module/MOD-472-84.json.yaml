@@ -55,6 +55,15 @@ constants:
       - NFR-472-1#requirements[対応する VS Code のバージョン]
       - MOD-472-103#constants[SETTING_DEFAULTS]
     status: planned
+  - name: marketplace
+    title: Marketplace に表示するもの
+    container: vscode/package.json
+    summary: '`package.json` の最上位の、Marketplace と拡張機能のビューに表示するキー'
+    entries:
+      - key: icon
+        value: '`icon.png`'
+        description: '`icon.svg` から書き出した 256×256px の PNG。`icon` に SVG は指定できない'
+    status: planned
 lead: '拡張機能の定義（エントリーポイント・対応する VS Code・コマンド・依存）を受け持ち、拡張機能の起動やコマンドの登録を変えるときに参照する。'
 tags:
   - name: topic:エントリポイント
