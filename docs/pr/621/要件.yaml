@@ -29,7 +29,9 @@ docs:
   - page: docs/guide/導入-配布物を読み込む.md
     new: false
     change: 既定を develop の最新の参照にし、タグ・commit で固定するときの書き方と、ブランチのキャッシュで切り替わるまでの時間を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:37:10.512592+00:00'
   - page: docs/guide/導入-バージョンを上げる.md
     new: false
     change: develop の最新を参照しているときの upgrade の呼び方と、設定の version の扱いを記載する
@@ -65,7 +67,9 @@ docs:
   - page: docs/config/CFG-472-3.yaml
     new: false
     change: version のキーに develop の最新を表す値を足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:37:10.512592+00:00'
 scope_out:
   - item: mdmark を参照するほかのリポジトリの参照の切り替え（ai-monitor・dev-docs・knowledge・gui-support・rule-inject・project-index・mindstella）
     reason: 各リポジトリで起票済みの後続（shuhei1101/ai-monitor#3531 など）で、本件は mdmark の側だけを整える

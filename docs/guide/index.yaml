@@ -21,7 +21,7 @@ items:
 - page: 変更履歴.mark.md
   summary: バージョンごとの変更の一覧
 - page: 導入-配布物を読み込む.md
-  summary: バージョンを固定した URL で JavaScript と CSS を読み込む
+  summary: develop かバージョンのタグを指定した URL で JavaScript と CSS を読み込む
 - page: 導入-文書を描く.md
   summary: 配布物を読み込んだページで `mount` を呼び、要素の中に Markdown を描く
 - page: 導入-バージョンを上げる.md
