@@ -127,7 +127,7 @@ functions:
     container: scripts/build.ts
     kind: 関数
     scope: public
-    summary: '`--version` があればその値、無ければ `version.ini` の先頭行を返却し、書式を検査する'
+    summary: '`--develop` があれば、決めたバージョンに `git rev-parse --short=7 HEAD` の短縮 SHA を `+develop.{短縮 SHA}` で添える（HEAD を参照できなければ失敗）。バージョンは、`--version` があればその値、無ければ `version.ini` の先頭行を返却し、書式を検査する'
     args:
       - name: argv
         type: string[]
