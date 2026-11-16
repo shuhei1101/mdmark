@@ -50,8 +50,12 @@ functions:
         condition: '`<td data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>` と `<td>未定</td>`'
         mock: なし（Chromium）
         expected: '`false` と `未定`'
-lead: '`text.ts` の関数（要素の見える文字を読み込む・表のセルの値を読み込む）。'
+lead: '要素の見える文字と表のセルの値の取り出しを受け持ち、コピーや見出しの文字の取り出し方を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:用語
     main: true
+  - name: topic:dom
+  - name: action:操作
   - name: topic:部品
+  - name: action:コピー
+  - name: action:取り出し

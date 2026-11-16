@@ -102,8 +102,11 @@ functions:
         mock: なし
         expected: '`true` の後に後ろの行が `hidden` を持たず `⋯` が無い。`false` の後に `hidden` と `⋯` が戻る'
     status: planned
-lead: '`code-folds.ts` の関数（コードの行に畳む・開くを付ける・コードの行の開閉を切り替える）と定数（コードの行の開閉の関数の記録）。'
+lead: 'コードの行の開閉とインデントの縦線の範囲を受け持ち、コードの行の開閉の操作を変えるときに参照する。'
 tags:
   - name: action:操作
     main: true
+  - name: topic:dom
+  - name: topic:イベント
   - name: topic:部品
+  - name: action:開閉

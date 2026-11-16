@@ -270,8 +270,11 @@ functions:
         condition: '`<!-- features: {"tabs": false} -->` と、段落を囲んだ `<!-- tabs -->` 〜 `<!-- /tabs -->`'
         mock: なし
         expected: 段落があり、マーカーのトークンと `<!--` が無い
-lead: '`marks.ts` の型（マーカー）と関数（マーカーを取得して置き換える・今の書き方の引数を判別する・文書の機能を決める・文書のページの設定を決めるなど）と定数（マーカーの書式・機能のマーカーの名前・ページの設定のマーカーの名前・記法のマーカーと機能）。'
+lead: 'マーカーを読み取って置き換えるコアルールと文書の機能の決定を受け持ち、Markdown から HTML 文字列にする流れを変えるときに参照する。'
 tags:
   - name: action:描画
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
   - name: topic:部品
+  - name: action:置き換え

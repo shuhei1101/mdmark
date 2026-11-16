@@ -119,8 +119,13 @@ functions:
       type: void
       description: なし
     status: planned
-lead: '`trees.ts` の関数（ファイルツリーに開閉とコピーを付ける・フォルダを開閉する・ファイルツリーの注釈の列を統一する）。'
+lead: 'ファイルツリーのフォルダの開閉とコピーの操作を受け持ち、ファイルツリーの操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:ツリー
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:開閉
+  - name: action:コピー

@@ -59,8 +59,10 @@ functions:
         mock: なし
         expected: '`content` が `""`（空白だけ）、`body` の 1〜3 行目が空白だけ'
     status: planned
-lead: '`frontmatter.ts` の関数（フロントマターを分ける）。'
+lead: '文書の先頭のフロントマターの判定と本文からの除外を受け持ち、フロントマターの判定を変えるときに参照する。'
 tags:
-  - name: action:描画
+  - name: topic:フロントマター
     main: true
+  - name: topic:markdown
+  - name: action:描画
   - name: topic:部品

@@ -15,3 +15,6 @@ tags:
   - name: topic:設定
     main: true
   - name: tool:vscode
+  - name: action:読み取り
+  - name: action:作成
+  - name: action:取り出し

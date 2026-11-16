@@ -80,3 +80,6 @@ tags:
   - name: topic:map
     main: true
   - name: topic:図
+  - name: action:読み取り
+  - name: action:描画
+  - name: action:点検

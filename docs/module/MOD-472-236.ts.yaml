@@ -42,8 +42,11 @@ functions:
         mock: なし
         expected: '`span.mdmark-gif` と `button.mdmark-gif-toggle` が無い'
     status: planned
-lead: '`gif.ts` の関数（GIF を止める・再生するボタンを付ける）。'
+lead: 'GIF を止める・再生するボタンの操作を受け持ち、GIF の再生の操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:gif
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品

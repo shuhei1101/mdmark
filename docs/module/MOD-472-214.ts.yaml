@@ -255,8 +255,11 @@ functions:
         mock: なし
         expected: 前の 4 つが `true`、後ろの 3 つが `false`
     status: planned
-lead: '`sanitize.ts` の関数（許可していないものを落とす・埋め込んだ HTML を落とす・埋め込んだ HTML の style を絞る・許す URL かを確認する）と定数（列の配置の値・落とす設定・埋め込んだ HTML の残す宣言）。'
+lead: 'sanitize-html の設定と許可していない要素の除去を受け持ち、描いた文書に残す要素と属性を変えるときに参照する。'
 tags:
-  - name: action:描画
+  - name: tool:sanitize-html
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
+  - name: action:描画
   - name: topic:部品

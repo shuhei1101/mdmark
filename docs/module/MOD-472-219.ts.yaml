@@ -292,8 +292,12 @@ functions:
         mock: なし
         expected: '`--mdmark-side-toc-panel-end` が `SIDE_TOC_EDGE_GAP_REM`（rem）を px にした値（スクロールする要素の右端ではなく `document.documentElement.clientWidth` を右端にする）'
     status: planned
-lead: '`side-toc.ts` の型（右側の目次の状態）と関数（右側の目次の見出しを集める・変わったセクションの見出しを集める・今いるセクションの見出しを決める・右側の目次を付ける）と定数（今いるセクションを決める線の位置・狭い幅の境目・右側の目次に並べる見出し・右端の線を枠で覆う高さなど）。'
+lead: '右側の目次の配置・ピン止め・項目から移る操作・今いるセクションの表示を受け持ち、右側の目次の操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:目次
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:配置

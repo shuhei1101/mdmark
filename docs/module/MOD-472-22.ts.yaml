@@ -241,3 +241,4 @@ tags:
   - name: topic:バージョン
     main: true
   - name: tool:vscode
+  - name: action:書き出し

@@ -740,8 +740,13 @@ functions:
         mock: なし
         expected: '`{[118, 1027], false}`'
     status: planned
-lead: '`table-logic.ts` の型（適用した絞り込み）と関数（セルを比べる・セルが絞り込みに合うか・列を集計する・表を TSV にするなど）と定数（絞り込みの種類・集計の計算・長文の列とみなす文字数・長文の列の最小の幅の既定）。'
+lead: '表の並べ替え・絞り込み・集計・コピーの計算を受け持ち、表の操作の計算を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:テーブル
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:計算
+  - name: action:コピー

@@ -92,8 +92,11 @@ functions:
         mock: なし
         expected: 見出しのセルの `width`・`min-width` が空で、→ の後も幅が変わらない
     status: planned
-lead: '`table-resize.ts` の関数（列の幅のつまみに操作を付ける）と定数（キーで変える列の幅・ダブルタップの間隔・タップとみなす移動の上限）。'
+lead: '列の幅のつまみのドラッグ・キーでの変更・既定への戻しを受け持ち、表の列の幅の操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:テーブル
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品

@@ -230,8 +230,13 @@ data_models:
         type: string
         description: 記録したときの中身の `data-section` の値（`open`・`closed`）
     status: planned
-lead: '`sections.ts` の型（セクションの開閉の記録）と関数（セクションと行の詳細に開閉を付ける・要素を囲む閉じたものを開く・要素へ移る・すべてのセクションを開閉する）と定数（セクションの開閉の関数の記録）。'
+lead: 'セクションと行の詳細の開閉・入れ子のまとめた開閉・URL のアンカーでの展開を受け持ち、セクションの開閉の操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:セクション
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:まとめ
+  - name: action:開閉

@@ -32,8 +32,10 @@ functions:
         mock: なし
         expected: '`target` が `document.scrollingElement`、`page` が `true`'
     status: planned
-lead: '`scroller.ts` の関数（スクロールする場所を見つける）。'
+lead: '要素をスクロールする一番近い祖先の要素の探索を受け持ち、スクロールする場所の決め方を変えるときに参照する。'
 tags:
   - name: action:操作
     main: true
+  - name: topic:dom
+  - name: topic:イベント
   - name: topic:部品

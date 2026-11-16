@@ -34,8 +34,11 @@ functions:
         expected: 帯が `hidden` を持つ
         mock: なし（ブラウザ）
         summary: 狭い幅では帯を隠す
-lead: '`wide.ts` の関数（wide の範囲の切り替えを付ける）。'
+lead: 'wide の範囲の幅の切り替えのボタンを受け持ち、wide の範囲の操作を変えるときに参照する。'
 tags:
   - name: action:操作
     main: true
+  - name: topic:dom
+  - name: topic:イベント
   - name: topic:部品
+  - name: action:切り替え

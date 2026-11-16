@@ -193,8 +193,12 @@ functions:
         mock: なし
         expected: 例外が出ず、タブの選択が変わらない
     status: planned
-lead: '`tabs.ts` の関数（タブに操作を付ける・残したタブ名を読み込む・選んだタブ名を残す・要素を含むタブを選ぶ）と定数（残したタブ名のキーの頭・タブを名前で選ぶ関数の記録・タブの中身を選ぶ関数の記録）。'
+lead: 'タブの切り替えと、URL のアンカーが指すタブの選択を受け持ち、タブの操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:タブ
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:切り替え

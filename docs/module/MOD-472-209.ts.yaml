@@ -64,8 +64,11 @@ functions:
         mock: なし
         expected: '`["<span class=\"hljs-number\">1</span> &lt; 2"]`'
     status: planned
-lead: '`highlight-lines.ts` の関数（色分けした行を作る・色分けしたHTMLを行に分ける）。'
+lead: '色分けした HTML を行に分ける処理を受け持ち、コードブロックの行の分け方を変えるときに参照する。'
 tags:
-  - name: action:描画
+  - name: tool:highlight.js
     main: true
+  - name: topic:dom
+  - name: topic:markdown
+  - name: action:描画
   - name: topic:文書

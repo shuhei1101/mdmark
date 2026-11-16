@@ -29,5 +29,10 @@ notes:
     src/bundle-module.ts # URL かファイルのモジュールを、指定した esbuild の build で 1 つの ES モジュールにまとめる（CLI と VS Code 拡張機能が使用する）
     ```
 tags:
-  - name: topic:cli
+  - name: topic:エイリアス
     main: true
+  - name: topic:cli
+  - name: tool:ajv
+  - name: action:読み込み
+  - name: action:点検
+  - name: action:書き出し

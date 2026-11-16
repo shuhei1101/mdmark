@@ -95,8 +95,13 @@ functions:
         mock: なし
         expected: '`img[data-gif]` を包む `button.mdmark-image-open` があり、その中に `mdmark-image-open-icon` が無い'
     status: planned
-lead: '`lightbox.ts` の関数（切り替えの並びを集める・画像を拡大できるようにする）と定数（拡大できる画像）。'
+lead: '画像の拡大のボタンとライトボックスの切り替え・拡大・縮小・移動を受け持ち、画像の拡大の操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:ライトボックス
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:移動
+  - name: action:拡大

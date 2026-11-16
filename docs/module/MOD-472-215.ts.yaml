@@ -35,8 +35,12 @@ functions:
     refs:
       - IF-472-35#constraints[ページの設定のマーカー]
     status: planned
-lead: '`page.ts` の関数（ページの設定のマーカーを読み込む）。'
+lead: 'ページの設定のマーカーを記載した順に重ねる処理を受け持ち、ページの設定のマーカーの読み取り方を変えるときに参照する。'
 tags:
-  - name: action:描画
+  - name: topic:マーカー
     main: true
+  - name: topic:markdown
+  - name: topic:設定
+  - name: action:描画
   - name: topic:部品
+  - name: action:読み取り

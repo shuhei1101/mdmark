@@ -40,8 +40,12 @@ functions:
         mock: '`navigator.clipboard` を `undefined` に差し替える'
         expected: '`false`'
     status: planned
-lead: '`clipboard.ts` の関数（クリップボードへ書き込む）。'
+lead: 'クリップボードへの書き込みを受け持ち、表・コードブロック・ファイルツリーのコピーの処理を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:クリップボード
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:コピー

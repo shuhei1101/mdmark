@@ -64,8 +64,13 @@ functions:
         mock: なし
         expected: 2 回目に付けた後、`aliases[]` の子孫の行が `hidden` を持ち、ボタンの `aria-expanded` が `false`
     status: planned
-lead: '`table-tree.ts` の関数（階層の表の操作を付ける）。'
+lead: '階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込みを受け持ち、階層の表の操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:テーブル
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:開閉
+  - name: action:コピー

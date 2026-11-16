@@ -261,8 +261,10 @@ functions:
     refs:
       - IF-472-34#constraints[元の行番号]
     status: planned
-lead: '`parser.ts` の型（解析の環境・取得したマーカー）と関数（解析器を作る・文書のマーカーを取得する・文書のマーカーを引数の文字と一緒に取得する・元の行番号を付ける）。'
+lead: 'markdown-it の解析器と追加するコアルールを受け持ち、Markdown の解析を変えるときに参照する。'
 tags:
   - name: action:描画
     main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
   - name: topic:部品

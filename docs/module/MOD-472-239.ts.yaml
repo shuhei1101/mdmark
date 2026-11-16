@@ -107,8 +107,12 @@ functions:
         mock: なし
         expected: '`id` は `keep` が `aliases[]`・`aliases[].id`、`count` が 1。`metadata` は `keep` が `aliases[]`・`aliases[].metadata`、`count` が 0'
     status: planned
-lead: '`tree-logic.ts` の関数（キーのパスを分ける・階層の行を計画する・YAML の行のパスを求める・階層の行を絞り込む）。'
+lead: 'キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込みを受け持ち、キーの階層の表の操作を変えるときに参照する。'
 tags:
-  - name: action:操作
+  - name: topic:テーブル
     main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
   - name: topic:部品
+  - name: action:絞り込み
