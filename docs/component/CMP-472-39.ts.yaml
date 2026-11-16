@@ -7,7 +7,7 @@ states:
   - name: Fit
     description: 開いたとき。全体が収まる倍率（倍率のボタンは 100%）で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない
     notes:
-      定義: 部品設計『グラフ』の TwoSeries と同じグラフの定義
+      定義: 部品設計『グラフ』の SixSeries と同じグラフの定義
   - name: Zoomed
     description: 1 段拡大して位置を動かした。移動のボタンが出る
     args:

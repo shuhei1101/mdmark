@@ -1723,7 +1723,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     }
     const html = renderDiagram({
       kind: "chart",
-      definition: chartStoryDefinition({}),
+      definition: chartStoryDefinition({ sample: "reply-time-6" }),
       id: "story-frame",
       ...diagramArgs(args),
     });
