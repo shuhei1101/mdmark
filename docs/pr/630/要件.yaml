@@ -1,0 +1,52 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: map の範囲の外の言語 mermaid のコードブロックにも、記法が無くても付けられる操作（シーケンス図の参加者の行の固定・図の中の文字の選択とコピー など）を付ける
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 図の中の文字の上で押してドラッグしたときに、図の移動ではなく文字の選択にする（ドラッグで図を動かす操作との分け方を決める）
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: map のシーケンス図が既に持つ参加者の行の固定・選択・並べ替えが、純粋な Mermaid への操作の追加で変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: map の描画と操作の処理を純粋な Mermaid と共有するため、map の図の描画が変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: 図の中の文字の選択を足しても、ノードの上のツールチップが今のとおり出ることを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: map の図を辿って読む流れが、純粋な Mermaid への操作の追加で変わらないことを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 記法を記載しなくても純粋な Mermaid の図に付く操作（参加者の行の固定・文字の選択とコピー など）を追記する
+    status: todo
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: map の操作のうち、補足や map の範囲が無くても付くものと、map の範囲で囲むと増えるものの違いを追記する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: '`## mermaid のコードブロック` の節と一覧の行に、map の範囲が無くても付く操作を足す'
+    status: todo
+scope_out:
+  - item: mermaid の図の要素への用語の下線・ツールチップ
+    reason: 別の要望で、本 PR で描き方を揃えた後に着手する計画のため
+    plan: '#391'
+  - item: map の操作のうち、補足（map-data）か map の引数を記載しないと成り立たないもの（案内の手順・ノードの説明・種類の表示名 など）
+    reason: 記法を記載した文書だけが持つ情報を元にする操作で、純粋な Mermaid には元になる情報が無いため
+    plan: none
