@@ -60,7 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T20:25:18.843237+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    note: MOD-472-133（map.ts）の参加者の箱の押せる要素の単体テスト、MOD-472-131（sequence-view.ts）のキー操作とフォーカスを戻す先
+    updated_by: planner
+    updated_at: '2026-11-16T21:03:23.485401+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 公開ドキュメント（docs/使い方・docs/リファレンス）に参加者の箱のフォーカスの記載が無く、更新ドキュメントが無いため
