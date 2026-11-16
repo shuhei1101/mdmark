@@ -5,6 +5,7 @@
 どのコマンドも `npx github:shuhei1101/mdmark#v{バージョン} {コマンド}` で呼ぶ。
 `{バージョン}` は使用するバージョンの `{MAJOR}.{MINOR}.{PATCH}`。
 develop の最新を使用するときは、`v{バージョン}` の代わりに `develop` を指定する（`npx github:shuhei1101/mdmark#develop {コマンド}`）。
+`npx github:shuhei1101/mdmark#{参照} --version` は、呼んだ CLI に埋めたバージョンを出す（develop のビルドは `v{MAJOR}.{MINOR}.{PATCH}+develop.{短縮 SHA}`）。
 npm のレジストリには公開しない。
 Node 24 以降で動く。
 `export`・`build`・`check` は、端末の設定と、`--config` で指した設定ファイルか今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねて読み込む（[設定を重ねて読み込む仕組み](./コアコンセプト-設定を重ねて読み込む仕組み.mark.md)）。
