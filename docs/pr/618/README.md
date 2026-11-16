@@ -1,0 +1,1 @@
+# Mermaid の図を securityLevel: "strict" のまま描くときに、click の URL のリンクをノードのリンクにする
