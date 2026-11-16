@@ -101,10 +101,6 @@ docs:
     new: false
     change: 統合する場合、図の機能のキーの description から `er` を削除する（`migrations/next/steps.yaml` に移行の手順を配置するため、`no-steps.yaml` の行は要らない）
     status: todo
-  - page: schemas/er.schema.yaml
-    new: false
-    change: 統合する場合、ER 図の部品の定義の Schema を削除する（`schemas/files.yaml` の行も削除する）
-    status: todo
 scope_out:
   - item: mdmark を使用する各リポジトリ（dev-docs など）の `er` の図を、用意した変換で map へ書き換える移行
     reason: 変換を使用する側の作業で、この Issue では変換と廃止までを扱う。このリポジトリの使い方集・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）。dev-docs の map への移行は dev-docs#201 で扱う
