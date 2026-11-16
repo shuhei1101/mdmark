@@ -35,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T11:38:01.838723+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T11:46:13.807803+00:00'
   - process: モック作成
     status: skipped
     reason: モック要否の※1が NO（拡張機能の画面は変わらない）。図案の案はモジュール構成設計で SVG を配信して確認する
