@@ -35,7 +35,9 @@ docs:
   - page: docs/guide/導入-バージョンを上げる.md
     new: false
     change: develop の最新を参照しているときの upgrade の呼び方と、設定の version の扱いを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:39:36.441621+00:00'
   - page: docs/guide/設定.mark.md
     new: false
     change: version に書ける値に develop の最新を表す値を足す
@@ -45,11 +47,15 @@ docs:
   - page: docs/guide/CLI.mark.md
     new: false
     change: npx github:shuhei1101/mdmark#develop の呼び方と、手元のバージョンが develop の最新のときの upgrade の出力・終了コードを足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:39:36.441621+00:00'
   - page: docs/guide/ClaudeCodeで使用する-セットアップする.mark.md
     new: false
-    change: 常駐サーバーを起動する npx の参照の既定が変わる場合に書き換える
-    status: todo
+    change: 常駐サーバーを起動する npx の参照を本文に持たないため変更なし（develop の参照の書き方は CLI のページの冒頭に記載）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T16:39:36.441621+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: 手元の版の説明に develop の最新を表す値を足す
