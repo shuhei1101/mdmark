@@ -740,3 +740,8 @@ functions:
         mock: なし
         expected: '`{[118, 1027], false}`'
     status: planned
+lead: '`table-logic.ts` の型（適用した絞り込み）と関数（セルを比べる・セルが絞り込みに合うか・列を集計する・表を TSV にするなど）と定数（絞り込みの種類・集計の計算・長文の列とみなす文字数・長文の列の最小の幅の既定）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

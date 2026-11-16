@@ -71,3 +71,8 @@ functions:
         mock: なし
         expected: '`el` にボタンが無く、`content` が `tabindex` を持たず、例外が出ない'
     status: planned
+lead: '`back-to-top.ts` の関数（先頭へ戻るボタンを付ける）と定数（回避する部品と先頭へ戻るボタンの間）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

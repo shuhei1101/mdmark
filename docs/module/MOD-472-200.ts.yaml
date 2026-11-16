@@ -40,3 +40,7 @@ functions:
     refs:
       - CMP-472-43#
     status: planned
+lead: '`diff-blocks.ts` の関数（差分のブロックを描く）。'
+tags:
+  - name: topic:差分
+    main: true

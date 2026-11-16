@@ -50,3 +50,8 @@ functions:
         condition: '`<td data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>` と `<td>未定</td>`'
         mock: なし（Chromium）
         expected: '`false` と `未定`'
+lead: '`text.ts` の関数（要素の見える文字を読み込む・表のセルの値を読み込む）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

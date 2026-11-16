@@ -87,3 +87,9 @@ functions:
       - MOD-472-143#functions[setEmbeddedMermaid]
       - MOD-472-159#functions[setPartModuleLoader]
     status: planned
+lead: '`modules.ts` の型（埋めたモジュール）と関数（埋めたモジュールを用意する）。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: action:起動

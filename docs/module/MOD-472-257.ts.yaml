@@ -213,3 +213,8 @@ functions:
 notes:
   ブラウザのテストファイル: |-
     - `tests/unit/src/knowledge/dictionary.browser.test.ts`
+lead: '`dictionary.ts` の型（照合の辞書）と関数（照合の辞書を作る・単語の区切りで単語を照合する・単語の区切りの位置を返却する・単語を正規化する）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

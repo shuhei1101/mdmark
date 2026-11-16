@@ -50,3 +50,8 @@ functions:
         mock: '`onColumnsChange` を見張る'
         expected: '説明のセルが `hidden`、ボタンのバッジが `1`・`aria-label` が `テーブル設定（1 列を非表示）`、`onColumnsChange` が `{ hidden: ["説明"] }` で 1 回'
     status: planned
+lead: '`table-settings.ts` の関数（テーブル設定を付ける）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

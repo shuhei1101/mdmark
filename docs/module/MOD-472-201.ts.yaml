@@ -204,3 +204,7 @@ functions:
         condition: '`path` が `["options"]` と、`path` が無い issue'
         mock: なし
         expected: どちらもラベルが空で、本文が `message`
+lead: '`extensions.ts` の型（マーカーの引数・拡張のモジュール・拡張・警告の項目）と関数（拡張を登録する・拡張を参照する・登録表を空にする・引数を検査するなど）と定数（拡張に使用できないマーカーの名前・拡張の登録表）。'
+tags:
+  - name: topic:拡張
+    main: true

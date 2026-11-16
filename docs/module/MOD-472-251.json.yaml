@@ -14,3 +14,7 @@ constants:
       - key: check
         value: '`npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode`'
     status: planned
+lead: '`package.json` の定数（検査の npm scripts）。'
+tags:
+  - name: topic:検査
+    main: true

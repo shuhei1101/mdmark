@@ -247,3 +247,8 @@ functions:
     refs:
       - IF-472-37#constraints[修正漏れ]
     status: planned
+lead: '`check.ts` の型（索引のずれ）と関数（索引を点検する・やめた言い方を探す・関連のずれを取得する・change_together の修正漏れを取得する）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

@@ -34,3 +34,8 @@ notes:
     ├── templates.ts  # CSS のテンプレートの索引・一覧・登録・配置（別の設計書）
     └── arguments.ts  # ツールの引数の検査・SDK に指定する素通しの検証器
     ```
+tags:
+  - name: tool:mcp
+    main: true
+  - name: topic:サーバー
+  - name: tool:claude-code

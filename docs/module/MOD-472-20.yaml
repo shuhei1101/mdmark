@@ -11,3 +11,8 @@ notes:
     ├── embed.ts   # 相対パスの libraries と html-scripts.url・mermaid.url を埋める処理（vscode を import しない）
     └── export.ts  # mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体
     ```
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: tool:vscode

@@ -237,3 +237,7 @@ notes:
     vscode/src/
     └── version.ts  # タグ一覧の取得・最新のバージョンの選び方・読み込むバージョンの決め方
     ```
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: tool:vscode

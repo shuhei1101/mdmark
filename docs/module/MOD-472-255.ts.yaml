@@ -120,3 +120,8 @@ functions:
         mock: なし
         expected: トークンに `../設計/arch.md` の `link_open` が無く、用語集の表の用語の行が元の本文の行
     status: planned
+lead: '`references.ts` の型（参照の表・用語集の表の用語）と関数（参照の表を作る・文書の本文を読む）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

@@ -122,3 +122,8 @@ functions:
         mock: なし
         expected: '`undefined`'
     status: planned
+lead: '`code-fold-logic.ts` の関数（行のインデントのレベルを決める・畳む行の数を決める・隠す行を決める・縦線を濃くする範囲を決める）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

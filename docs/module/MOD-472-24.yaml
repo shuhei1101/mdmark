@@ -76,3 +76,7 @@ refs:
   - IF-472-35#
   - IF-472-34#
   - IF-472-39#
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

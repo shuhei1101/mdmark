@@ -40,3 +40,8 @@ functions:
         mock: '`navigator.clipboard` を `undefined` に差し替える'
         expected: '`false`'
     status: planned
+lead: '`clipboard.ts` の関数（クリップボードへ書き込む）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

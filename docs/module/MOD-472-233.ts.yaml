@@ -54,3 +54,8 @@ functions:
       - 'MOD-472-232#functions[copyText]'
       - MOD-472-306#functions[renderCodeCopy]
     status: planned
+lead: '`code-blocks.ts` の関数（コードブロックにコピーを付ける）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

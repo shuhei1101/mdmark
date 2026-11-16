@@ -214,3 +214,8 @@ functions:
     refs:
       - ER-472-6#tables[docs].columns[related]
     status: planned
+lead: '`index-shape.ts` の型（索引・文書のタグ・文書の関連）と関数（索引の構造を検査する・文書の関連を読み込む）と列挙（関係の種類）と定数（索引の構造・関係の種類の並び）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

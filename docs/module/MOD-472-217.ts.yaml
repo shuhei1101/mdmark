@@ -59,3 +59,8 @@ functions:
         mock: なし
         expected: '`content` が `""`（空白だけ）、`body` の 1〜3 行目が空白だけ'
     status: planned
+lead: '`frontmatter.ts` の関数（フロントマターを分ける）。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:部品

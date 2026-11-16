@@ -155,3 +155,8 @@ functions:
         mock: なし
         expected: 空の配列
     status: planned
+lead: '`index.ts` の型（描いた文書）と関数（Markdown を HTML 文字列にする・文書を描く・記載の警告を取り出す）。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:部品

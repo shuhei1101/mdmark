@@ -119,3 +119,8 @@ functions:
       type: void
       description: なし
     status: planned
+lead: '`trees.ts` の関数（ファイルツリーに開閉とコピーを付ける・フォルダを開閉する・ファイルツリーの注釈の列を統一する）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

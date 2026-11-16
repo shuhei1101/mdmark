@@ -136,3 +136,9 @@ functions:
         mock: なし
         expected: 元のまま
     status: planned
+lead: '`bundle.ts` の関数（まとめた HTML を起動する・埋めた画像を戻す）と定数（横の一覧を出す幅）。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: action:起動

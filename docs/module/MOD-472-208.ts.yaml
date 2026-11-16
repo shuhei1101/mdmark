@@ -75,3 +75,8 @@ functions:
       - MOD-472-235#functions[setFolderOpen]
       - MOD-472-225#functions[setCodeFoldOpen]
       - MOD-472-188#functions[setErTableFolded]
+lead: '`print.ts` の関数（印刷の前後で折り畳みと記法を開く）。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:文書

@@ -27,3 +27,7 @@ constants:
       - LIB-472-12#
       - LIB-472-7#
     status: planned
+lead: '`eslint.config.js` の定数（ESLint の設定）。'
+tags:
+  - name: topic:検査
+    main: true

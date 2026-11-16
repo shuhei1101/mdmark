@@ -121,3 +121,8 @@ functions:
     refs:
       - IF-472-39#constraints[マーカーの設定の点検]
     status: planned
+lead: '`warnings.ts` の型（集めた記載の警告・マーカーの注記）と関数（記載の警告を差し込む・記載の警告を集める・マーカーの注記を記録する）。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:部品

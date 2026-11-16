@@ -26,3 +26,8 @@ functions:
         expected: 1 回目の後は表を包む要素（`.mdmark-table-scroll`）が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
         mock: なし（ブラウザ）
         summary: 押すたびに表と元の CSV を入れ替える
+lead: '`csv-raw.ts` の関数（CSV の表と元の CSV の切り替えを付ける）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

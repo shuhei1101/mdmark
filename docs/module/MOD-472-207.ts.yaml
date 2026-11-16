@@ -74,3 +74,8 @@ functions:
         expected: '`https://cdn.jsdelivr.net/npm/lucide@{LUCIDE_VERSION}/dist/esm/icons/sailboat.mjs`'
         mock: なし
         summary: まとめたバージョンの URL にする
+lead: '`inline-icons.ts` の関数（まとめていないアイコンを読み込む・アイコンの URL を作る）と定数（まとめた lucide のバージョン）。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:文書

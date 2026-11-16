@@ -19,3 +19,7 @@ constants:
       - LIB-472-12#
       - LIB-472-30#
     status: planned
+lead: '`package.json` の定数（ESLint の道具の package）。'
+tags:
+  - name: topic:検査
+    main: true

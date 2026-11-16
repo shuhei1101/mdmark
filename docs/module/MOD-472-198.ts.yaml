@@ -27,3 +27,7 @@ functions:
         expected: 'マーカーが 6 つで 1 つ目が `data-kind="del"`・`top: 2%`。枠が `top: 0%`・`height: 18%`'
     refs:
       - CMP-472-30#
+lead: '`diff-minimap.ts` の関数（ミニマップを描く）。'
+tags:
+  - name: topic:差分
+    main: true

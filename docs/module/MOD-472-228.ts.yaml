@@ -289,3 +289,8 @@ functions:
       - 'MOD-472-218#functions[rowIdFromHash]'
       - MOD-472-315#functions[renderTableBar]
       - MOD-472-315#functions[renderTotalRows]
+lead: '`tables.ts` の関数（表に操作を付ける）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

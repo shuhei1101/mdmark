@@ -198,3 +198,9 @@ functions:
         mock: '`Storage.prototype.setItem` を差し替える'
         expected: 例外が出ず、`console.warn` が 1 回呼ばれる
     status: planned
+lead: '`view-state.ts` の型（表示の状態）と関数（履歴の項目の ID を取る・表示の状態を取り出す・表示の状態を戻す・保存した表示の状態を読み込むなど）と定数（表示の状態を保存するキーの頭・履歴の項目の ID を持つフィールド・戻す開閉のセレクタ・スクロール中の保存の間隔）。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: action:起動

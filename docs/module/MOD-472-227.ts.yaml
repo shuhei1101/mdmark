@@ -74,3 +74,8 @@ functions:
         condition: 行の詳細を持つ表・ファイルツリー・閉じた details の範囲を描いた要素に空の `partStates` を指定して付け、行の詳細・フォルダ・details の開閉を押してから削除し、同じ HTML を描き直した要素に同じ `partStates` でもう一度付ける
         mock: なし
         expected: 2 回目に付けた後、行の詳細・フォルダ・details が押した後の開閉になっている
+lead: '`index.ts` の関数（記法の操作を付ける）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

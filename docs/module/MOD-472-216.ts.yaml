@@ -59,3 +59,8 @@ functions:
         mock: なし
         expected: 戻りに `</style` が無く、`<\/style` がある
     status: planned
+lead: '`scope-css.ts` の関数（範囲の css を根の要素の中に限る）。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:部品

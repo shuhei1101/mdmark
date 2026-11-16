@@ -43,3 +43,9 @@ functions:
       - 'MOD-472-244#functions[prepareModules]'
       - 'MOD-472-247#functions[startBundle]'
     status: planned
+lead: '`index.ts` の関数（書き出した HTML を起動する）。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: action:起動

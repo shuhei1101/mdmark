@@ -90,3 +90,8 @@ functions:
         condition: 脚注 1 つの番号と閉じた一覧を描いた要素に、`defaultPrevented` でなければ `history.replaceState` でリンクの `href` へ URL を置き換えるバブリングフェーズの `click` を先に付け、次に `attachFootnotes` を付けて、番号を押し、次に戻るリンクを押す
         mock: なし（Chromium）
         expected: どちらの後も `location.hash` が変わらず、番号の後は項目が、戻るリンクの後は番号のリンクがフォーカスを持つ
+lead: '`footnotes.ts` の関数（脚注の操作を付ける）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

@@ -12,3 +12,7 @@ data_models:
       - name: ~standard
         type: StandardSchemaV1.Props<Input, Output>
         description: '`version: 1`・`vendor`・`validate(value) => Result | Promise<Result>`'
+lead: '`standard-schema.ts` の型（Standard Schema）。'
+tags:
+  - name: topic:拡張
+    main: true

@@ -38,3 +38,8 @@ functions:
         condition: '`placement: "bottom"` で、`anchorBottom: 320`（下に収まる）と `anchorTop: 740`・`anchorBottom: 760`（下に収まらず上に収まる）と、`viewportHeight: 120`・`anchorTop: 50`・`anchorBottom: 70`（どちらにも収まらない）'
         mock: なし
         expected: 順に `bottom`・`top`・`bottom`
+lead: '`placement.ts` の関数（ツールチップを配置する側を決める）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

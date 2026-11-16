@@ -49,3 +49,8 @@ functions:
       - 'MOD-472-218#functions[stickyShift]'
       - 'MOD-472-218#functions[stickyRange]'
     status: planned
+lead: '`sticky.ts` の関数（表の見出し行と集計の行を留める）と定数（行の留め方の属性）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

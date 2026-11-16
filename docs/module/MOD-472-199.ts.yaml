@@ -27,3 +27,7 @@ functions:
         expected: 部品設計の文を出し、`loading` は `role` を持たず回る表示が `aria-hidden`
     refs:
       - CMP-472-44#
+lead: '`diff-message.ts` の関数（差分の状態の文を描く）。'
+tags:
+  - name: topic:差分
+    main: true

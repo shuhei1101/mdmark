@@ -27,3 +27,8 @@ functions:
         mock: なし（Chromium）
         expected: 付けた直後は前者だけが `is-wide` と `tabindex="0"` を持ち、幅を広げた後はどちらも持たない。削除する関数の後はどちらも持たない
     status: planned
+lead: '`embedded-html.ts` の関数（埋め込んだ HTML の幅を確認する）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品
