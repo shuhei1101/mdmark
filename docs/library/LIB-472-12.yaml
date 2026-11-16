@@ -63,7 +63,7 @@ used_in:
 verification:
   state: 済
   date: '2026-11-06'
-  detail: 'PoC #87 で `ESLint` に eslint-plugin-compat を指定してまとめた JS を照らし、`Linter` の `getSourceCode()` の `getIndexFromLoc`・`getNodeByRangeIndex`・`getAncestors`・`getText` で報告の位置を囲む `IfStatement` を辿れることを確認した。`linterOptions.noInlineConfig: true` で、まとめた依存が持つ他のプラグインの `eslint-disable` のコメントを読み込まない（その通知は `ruleId` が `null`）。`tools/eslint/` の 9.39.5 で `npm run lint:eslint` が Webview の 30 ファイルだけを検査し、指摘を修正した後に 0 件になった'
+  detail: '[PoC: minify せずに束ねた JS を eslint-plugin-compat で対応ブラウザの下限と照らす](https://github.com/shuhei1101/mdmark/pull/87) で `ESLint` に eslint-plugin-compat を指定してまとめた JS を照らし、`Linter` の `getSourceCode()` の `getIndexFromLoc`・`getNodeByRangeIndex`・`getAncestors`・`getText` で報告の位置を囲む `IfStatement` を辿れることを確認した。`linterOptions.noInlineConfig: true` で、まとめた依存が持つ他のプラグインの `eslint-disable` のコメントを読み込まない（その通知は `ruleId` が `null`）。`tools/eslint/` の 9.39.5 で `npm run lint:eslint` が Webview の 30 ファイルだけを検査し、指摘を修正した後に 0 件になった'
 license: MIT（商用利用可）
 official_url: https://eslint.org/
 docs_url: https://eslint.org/docs/latest/integrate/nodejs-api

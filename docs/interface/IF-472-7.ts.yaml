@@ -545,7 +545,7 @@ constraints:
   - item: 待ち
     constraint: 1 秒ごとにポートへもう一度つなぎ、上限は 120 秒（`MDMARK_START_TIMEOUT_SEC` で変えられる）
     decided_by: NFR-472-1#requirements[MCP サーバーの接続の待ち]
-    notes: '空の npm のキャッシュから CLI を取得すると 53 秒かかった（PoC #73）。新しい端末とプラグインの更新の後は空のキャッシュからの取得になるため、その 2 倍強を上限にする'
+    notes: '空の npm のキャッシュから CLI を取得すると 53 秒かかった（[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)）。新しい端末とプラグインの更新の後は空のキャッシュからの取得になるため、その 2 倍強を上限にする'
   - item: unit の名前・セッション名
     constraint: 端末の設定の `serve.systemdUnit`・`serve.tmuxSession`、無ければどちらも `mdmark-mcp`
     decided_by: CFG-472-3#settings[serve.systemdUnit]

@@ -716,7 +716,7 @@ constraints:
     constraint: 文書に記載したスクリプトは `mount` のサニタイズで落とし、実行しない（`html-scripts` がオンの文書の範囲の `ts`・`js` は制約「範囲のスクリプト」のとおり動かす）。埋める文字列は `</script>` を含んでも HTML の `script` 要素を閉じないように記載する
   - item: 書き出した HTML のサイズ
     constraint: 制限なし
-    notes: 'PoC #35 の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には適用しない'
+    notes: '[PoC: file:// で開く 1 枚の HTML に配布物と外部ライブラリのモジュールを埋めて描く](https://github.com/shuhei1101/mdmark/pull/35) の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には適用しない'
   - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
@@ -728,7 +728,7 @@ constraints:
     decided_by: CFG-472-3#settings[tooltips.placement]
   - item: 埋める色分け
     constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を取得し（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: {"syntax": false} -->` の文書は取得しない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使用する言語のモジュールだけを制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読み込みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
-    notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確認した（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
+    notes: '[PoC: 色分けのライブラリを使うときだけ読み込み、行に分けたコードブロックを色分けする](https://github.com/shuhei1101/mdmark/pull/98) で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確認した（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
   - item: 埋める mermaid
     constraint: 機能 `mermaid` がオンで、文書に mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）があるときだけ、設定の `mermaid.url`（無ければ既定の jsDelivr の URL）のモジュールを、それが読み込む chunk ごと制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールで図にし、URL を読み込まない。相対パスの `mermaid.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないときは埋めず警告に出す（書き出しは止めない）。設定の `mermaid.theme`・`mermaid.themeVariables` は `features` と同じく埋める設定に写す
     decided_by: NFR-472-1#requirements[mermaid を埋めた書き出しの HTML のサイズ]
@@ -754,7 +754,7 @@ constraints:
     constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
   - item: 範囲のスクリプト
     constraint: 設定と文書のマーカーで `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を削除する）、範囲のコードの文字から既定のエクスポートの関数を参照する表として制約「まとめるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に指定し、変換のライブラリ（`html-scripts.url`）を読み込まずに動かす。esbuild が変換できない範囲はまとめずに警告に出し、開いたときその範囲の前に記載の警告を出す。`blob:` URL と動的 `import()` は使用しない
-    notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）でまとめた 1 つのスクリプトから呼ぶ経路を確認した
+    notes: '変換は CLI の今の依存の esbuild。PoC 検証（[PoC: コードブロックの HTML の範囲の ts・js を CSP の下で動かす](https://github.com/shuhei1101/mdmark/pull/306)）でまとめた 1 つのスクリプトから呼ぶ経路を確認した'
   - item: 埋める取り込み
     constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: {"include": false} -->` の文書は読み込まない'
   - item: 埋めるアイコン
@@ -765,7 +765,7 @@ constraints:
     decided_by: IF-472-35#request[opts.config.map.kinds]
   - item: mdmark の痕跡
     constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を当ててから書き込む。(1) 埋め込みの JSON を除く HTML・CSS（配布物と `theme`）・まとめたスクリプト（拡張・範囲のスクリプトを含む）から、HTML のコメントと `:root{--mdmark-version:…}` の宣言を削除する。まとめたスクリプトの `/*! … */` のライセンスの注釈は残す。(2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`・画像の `data:` URL の `assets`）を除く値で、語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。(3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読むマーカーの名前でない HTML のコメントを削除する。範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を当てた後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を当てる。開いた文書の DOM にコメントのノードを残さない。同梱する第三者のライブラリのライセンスの表記は、HTML のコメントでない形で残す'
-    notes: 'まとめたスクリプトのライセンスの注釈は第三者のライブラリと利用者の拡張のものだけで、mdmark 自身のものは無い（計画書『ライブラリ本体』の実測）。PoC #556 で、この規則の HTML が隠さない HTML と同じ表示と操作になることを確認した。マーカーのコメントは #532 で埋め込みと一緒に消える。本文のコードの例の `<mdmark-*>` も別名で表示される。`--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
+    notes: 'まとめたスクリプトのライセンスの注釈は第三者のライブラリと利用者の拡張のものだけで、mdmark 自身のものは無い（計画書『ライブラリ本体』の実測）。[PoC: 書き出した HTML の mdmark を 1 つの規則で別名へ置き換えても動くか](https://github.com/shuhei1101/mdmark/pull/556) で、この規則の HTML が隠さない HTML と同じ表示と操作になることを確認した。マーカーのコメントは [書き出した HTML に元の Markdown を埋め込まず、書き出すときに描画した HTML から起動する](https://github.com/shuhei1101/mdmark/issues/532) で埋め込みと一緒に消える。本文のコードの例の `<mdmark-*>` も別名で表示される。`--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
 test_file: tests/integration/lib/export.test.ts
 tags:
   - name: topic:書き出し
