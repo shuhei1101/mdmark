@@ -32,7 +32,7 @@ upstream: biomejs/biome
 verification:
   state: 済
   date: '2026-11-06'
-  detail: 'PoC #14 で `biome check .` が整形の違反を出し、`biome check --write .` の後に 0 件になった。`css.parser.tailwindDirectives: true` で `panel.css` の `@theme inline`・`@utility` の parse の違反が 0 件になった'
+  detail: '[PoC: TypeScript 7 上で esbuild・Vitest・Playwright・Biome が揃って動くか](https://github.com/shuhei1101/mdmark/pull/14) で `biome check .` が整形の違反を出し、`biome check --write .` の後に 0 件になった。`css.parser.tailwindDirectives: true` で `panel.css` の `@theme inline`・`@utility` の parse の違反が 0 件になった'
 license: MIT または Apache-2.0（商用利用可）
 docs_url: https://biomejs.dev/reference/cli/
 install: '```bash

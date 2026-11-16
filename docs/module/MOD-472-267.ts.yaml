@@ -59,7 +59,7 @@ functions:
       - name: test_inline_offsets_in_blocks
         case: 正常
         summary: 複数行の段落・リストの入れ子・引用・表のセル・参照形式のリンク・画像の後ろでも、本文の行と行の中の位置が合う
-        condition: PoC（#75）の見本のうち地の文のものと、`[文字][ref]`・`![画像の文字](a.png)` の後ろに用語を記載した行
+        condition: '[PoC: 照合した語を本文の Markdown の行と行の中の位置へ戻す](https://github.com/shuhei1101/mdmark/pull/75)の見本のうち地の文のものと、`[文字][ref]`・`![画像の文字](a.png)` の後ろに用語を記載した行'
         mock: なし
         expected: 全ての一致で、本文の行を切り出した文字が一致した文字と同じ（実体参照は戻して同じ）
   - name: maskEmbeddedHtml

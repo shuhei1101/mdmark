@@ -11,7 +11,58 @@ requirements:
     source: https://github.com/jsdelivr/jsdelivr#restrictions
     value: '672'
     unit: KB 以下（688128 バイト）
-    rationale: '外部の上限は 20MB。利用側のページが開くたびに読み込むため、まとめた後の実測から目標を配置する。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target でまとめて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が追加する機能の余地を確認して 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを追加した #42 で、まとめた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を確認して 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を追加した #49 で、まとめた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を確認して 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後のまとめた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を確認して 368KB に上げた。元の行番号と配色の class を追加した #69 で、#72・#74・#78 を取り込んだ後のまとめた dist/index.js が 376,991 バイトになった（2026-10-24）ため、余地を確認して 384KB に上げた。コードブロックの色分け（色分けのライブラリの本体と言語のモジュールは配布物にまとめず、使用するときだけ読み込む）を追加した #97 で、#109 を取り込んだ後のまとめた dist/index.js が 382,101 バイトになった（2026-10-24）。上限の内に収まるため変えていない。表の見出し行と集計の行を留める処理・集計とコピーの形式のメニュー・最終列を畳む処理・コードブロックのラベルとコピーを追加した #150 で、まとめた dist/index.js が 408,445 バイトになった（2026-10-27、develop は 391,395 バイト）ため、余地を確認して 416KB に上げた。右側の目次と、H1 のセクション・すべて展開・すべて折りたたむ・Shift でのまとめての開閉を追加した #166 で、#151 を取り込んだ後のまとめた dist/index.js が 415,123 バイトになった（2026-10-28、develop は 391,395 バイト）。上限の内に収まるため変えていない。エイリアスの作成（`buildAliases`）と、種類ごとのツールチップ・コマンドのコピーを追加した #176 で、まとめた dist/index.js が 425,127 バイトになった（2026-10-28、#166 を取り込んだ develop は 415,123 バイト）。上限（425,984 バイト）の内に収まるため変えていない。描いた文書のブロックの色分け（ブロックの分け方・書き換えと入れ替えの見分け・削除したブロックの差し込みと、差分のブロックの部品・スタイル）を追加した #196 で、まとめた dist/index.js が 433,348 バイトになった（2026-10-30、develop は 425,336 バイト）ため、余地を確認して 440KB に上げた。検証に使用する ajv は dist/cli.js とプラグインにだけまとめ、dist/index.js には入れない。名前の色・画像の図・ギャラリー・ライトボックス・動画と音声・GIF・リンクと添付のカードを追加した #263 で、まとめた dist/index.js が 472,675 バイトになった（2026-11-02、develop は 446,474 バイト）ため、余地を確認して 480KB に上げた。表のセルの結合と行見出し・コードブロックの行の種類と開閉・グラフの種類を追加した #275 で、まとめた dist/index.js が 503,918 バイト（#287 を取り込んだ後は 506,704 バイト）になった（2026-11-03、develop は 478,882 バイト）ため、余地を確認して 512KB に上げた。脚注（定義・参照・行内の脚注の読み取り、番号と一覧の部品、ツールチップと一覧への移動の操作）を追加した #215 で、まとめた dist/index.js が 532,216 バイトになった（2026-11-04、develop は 520,634 バイト）ため、余地を確認して 544KB に上げた。表の列の並べ替え（テーブル設定のパネルと操作）・キーの列の階層と YAML の見本・埋め込んだ HTML の範囲の css・ts・js（変換のライブラリは配布物にまとめず、使用するときだけ読み込む）を追加した #303 で、#329 を取り込んだ後のまとめた dist/index.js が 580,912 バイトになった（2026-11-05、develop は 542,773 バイト）ため、余地を確認して 592KB に上げた。新しい記法 8 件（アイコン・キー・蛍光ペン・段組み・details・改ページ・取り込み・wide・CSV の表）とまとめていないアイコンの読み込みを追加した #307 で、#328 を取り込んだ後のまとめた dist/index.js が 565,186 バイトになった（2026-11-05、develop は 542,267 バイト）ため、余地を確認して 576KB に上げた。#303 に #307 を取り込んだ後のまとめた dist/index.js が 604,146 バイトになった（2026-11-05）ため、余地を確認して 624KB に上げた。map の記法の読み取り・マーカーの引数の検査・部品の読み込みを追加した #445 で、まとめた dist/index.js が 646,957 バイトになった（2026-11-11、develop は 638,287 バイト。Mermaid と補足の読み取り・配置・描画・操作は dist/map.js に分けている）ため、余地を確認して 656KB に上げた。罫線のフォルダ構成の記載の警告と、指で図を動かす操作中の切り替えを追加した #508 で、まとめた dist/index.js が 673,526 バイトになった（2026-11-13、develop は 671,198 バイト）ため、余地を確認して 672KB に上げた'
+    rationale: '外部の上限は 20MB。利用側のページが開くたびに読み込むため、まとめた後の実測から目標を配置する。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target でまとめて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が追加する機能の余地を確認して 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。
+
+
+      上限を見直した経緯は次のとおり。
+
+
+      <!-- table: {"kind": "data"} -->
+
+
+      | 機能を追加した PR | 追加した機能 | 取り込んだ PR | まとめた dist/index.js（バイト） | 上限 |
+
+      | --- | --- | --- | --- | --- |
+
+      | [図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/pull/42) | 図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコン | - | 293,909（2026-10-20） | 320KB に上げた |
+
+      | [文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/pull/49) | 差分の表示（jsdiff の 3 つの関数と差分の処理・部品） | - | 336,305（2026-10-22。[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/pull/45) を入れた develop は 312,423） | 352KB に上げた |
+
+      | [ビュー・検索・コメントの部品を文書と使う側の JavaScript・TypeScript から使えるようにする](https://github.com/shuhei1101/mdmark/pull/55) | ビュー・コメントの部品（本体は dist/view.js・dist/comments.js に分ける） | [拡張記法の表に件数の表示・列の表示の切り替え・集計の行・表のコピー・行へのリンクを追加する](https://github.com/shuhei1101/mdmark/pull/57) | 360,299（2026-10-23） | 368KB に上げた |
+
+      | [VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/pull/69) | 元の行番号と配色の class | [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/pull/72)・[本文の用語・文書の別名に一致した参照を、画面なしで取り出す公開関数を出す](https://github.com/shuhei1101/mdmark/pull/74)・[用語集の表にやめた言い方の列を指定し、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/pull/78) | 376,991（2026-10-24） | 384KB に上げた |
+
+      | [コードブロックを言語に応じてシンタックスハイライトする](https://github.com/shuhei1101/mdmark/pull/97) | コードブロックの色分け（ライブラリの本体と言語のモジュールは配布物にまとめず、使用するときだけ読み込む） | [collectMatches が本文に出たやめた言い方の位置と代わりの用語を返すかを決める](https://github.com/shuhei1101/mdmark/pull/109) | 382,101（2026-10-24） | 上限の内のため変えない |
+
+      | [描いた文書の表示の改善 6 件（表の見出し行と幅・表のコピーと集計・コードブロックのラベルとコピー・タブの中の見出しへの移動・空の badge:）](https://github.com/shuhei1101/mdmark/issues/150) | 表の見出し行と集計の行を留める処理・集計とコピーの形式のメニュー・最終列を畳む処理・コードブロックのラベルとコピー | - | 408,445（2026-10-27、develop は 391,395） | 416KB に上げた |
+
+      | [描いた文書の右側に目次を出し、節の開閉を H1 とまとめての操作に広げる](https://github.com/shuhei1101/mdmark/pull/166) | 右側の目次と、H1 のセクション・すべて展開・すべて折りたたむ・Shift でのまとめての開閉 | [描いた文書の表示を改善する（表の見出し行と幅・表のコピーと集計・コードブロックのラベルとコピー・タブの中の見出しへの移動・空の badge:）](https://github.com/shuhei1101/mdmark/pull/151) | 415,123（2026-10-28、develop は 391,395） | 上限の内のため変えない |
+
+      | [エイリアス（用語・文書・コマンド・URL など）を Markdown の用語集に加えて設定の aliases で YAML からも登録できるようにする](https://github.com/shuhei1101/mdmark/pull/176) | エイリアスの作成（`buildAliases`）と、種類ごとのツールチップ・コマンドのコピー | - | 425,127（2026-10-28、[描いた文書の右側に目次を出し、節の開閉を H1 とまとめての操作に広げる](https://github.com/shuhei1101/mdmark/pull/166) を取り込んだ develop は 415,123） | 上限（425,984 バイト）の内のため変えない |
+
+      | [VS Code の差分ビューで開いた Markdown の変更を、mdmark のプレビューに色分けで表示する](https://github.com/shuhei1101/mdmark/pull/196) | 描いた文書のブロックの色分け（ブロックの分け方・書き換えと入れ替えの見分け・削除したブロックの差し込みと、差分のブロックの部品・スタイル） | - | 433,348（2026-10-30、develop は 425,336） | 440KB に上げた |
+
+      | [表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/pull/263) | 名前の色・画像の図・ギャラリー・ライトボックス・動画と音声・GIF・リンクと添付のカード | - | 472,675（2026-11-02、develop は 446,474） | 480KB に上げた |
+
+      | [既存の記法・点検への項目の追加 6 件（グラフの種類・表のセルの結合・図の定義の点検・タブの入れ子・注意書きのタイトル・コードの折りたたみ）](https://github.com/shuhei1101/mdmark/pull/275) | 表のセルの結合と行見出し・コードブロックの行の種類と開閉・グラフの種類 | [描いた文書を一定量スクロールしたら、画面の右下に先頭へ戻るボタンを出す](https://github.com/shuhei1101/mdmark/pull/287) | 503,918（取り込んだ後は 506,704。2026-11-03、develop は 478,882） | 512KB に上げた |
+
+      | [脚注（［^1］ と行内の ^［…］）をツールチップと末尾のまとめで描く](https://github.com/shuhei1101/mdmark/issues/215) | 脚注（定義・参照・行内の脚注の読み取り、番号と一覧の部品、ツールチップと一覧への移動の操作） | - | 532,216（2026-11-04、develop は 520,634） | 544KB に上げた |
+
+      | [既存の記法への項目の追加 3 件（表の列の並べ替え・コードブロックの HTML の TypeScript と CSS・表のキーの階層）](https://github.com/shuhei1101/mdmark/pull/303) | 表の列の並べ替え（テーブル設定のパネルと操作）・キーの列の階層と YAML の見本・埋め込んだ HTML の範囲の css・ts・js（変換のライブラリは配布物にまとめず、使用するときだけ読み込む） | [タッチ端末で用語のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/pull/329) | 580,912（2026-11-05、develop は 542,773） | 592KB に上げた |
+
+      | [記法の新設 8 件（icon:・columns・蛍光ペン・kbd: と ruby・details と pagebreak・include・wide・csv の表）](https://github.com/shuhei1101/mdmark/pull/307) | 新しい記法 8 件（アイコン・キー・蛍光ペン・段組み・details・改ページ・取り込み・wide・CSV の表）とまとめていないアイコンの読み込み | [既存の記法・点検への項目の追加 4 件（フロー図の自動配置・記法の点検・コードブロックの折り返し・フロー図のノードのリンク）](https://github.com/shuhei1101/mdmark/pull/328) | 565,186（2026-11-05、develop は 542,267） | 576KB に上げた |
+
+      | [既存の記法への項目の追加 3 件（表の列の並べ替え・コードブロックの HTML の TypeScript と CSS・表のキーの階層）](https://github.com/shuhei1101/mdmark/pull/303) | - | [記法の新設 8 件（icon:・columns・蛍光ペン・kbd: と ruby・details と pagebreak・include・wide・csv の表）](https://github.com/shuhei1101/mdmark/pull/307) | 604,146（2026-11-05） | 624KB に上げた |
+
+      | [Mermaid と補足で書き、自動配置で描いて階層を辿れる新しい図（map）を追加する](https://github.com/shuhei1101/mdmark/pull/445) | map の記法の読み取り・マーカーの引数の検査・部品の読み込み（Mermaid と補足の読み取り・配置・描画・操作は dist/map.js に分ける） | - | 646,957（2026-11-11、develop は 638,287） | 656KB に上げた |
+
+      | [map の図のタッチでのドラッグと、罫線のコードブロックの点検の警告を追加する](https://github.com/shuhei1101/mdmark/pull/508) | 罫線のフォルダ構成の記載の警告と、指で図を動かす操作中の切り替え | - | 673,526（2026-11-13、develop は 671,198） | 672KB に上げた |
+
+
+      <!-- /table -->
+
+
+      検証に使用する ajv は dist/cli.js とプラグインにだけまとめ、dist/index.js には入れない。'
     overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確認する時点はビルドの直後で、バージョンのタグを打つ前。
   - id: NFR-2
     name: 対応ブラウザ
@@ -34,7 +85,7 @@ requirements:
     external_constraint: 配布物を jsDelivr から HTTPS で読み込む
     source_kind: 実行基盤の制限
     value: 利用側のページでは jsDelivr へ HTTPS で届くことを前提にする。CLI が書き出した HTML は外へ要求せず、オフラインでも開ける（『書き出した HTML の外部への要求』）
-    rationale: 利用側のページへは配布物を CDN から読み込む構造で配る。CDN を読み込めない環境へは CLI で書き出した 1 枚の HTML を配る（#9）
+    rationale: 利用側のページへは配布物を CDN から読み込む構造で配る。CDN を読み込めない環境へは CLI で書き出した 1 枚の HTML を配る（[サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9)）
     overflow: 読み込めないときはページの本文だけを表示し、ブラウザが読み込めなかった旨をコンソールに出す
   - id: NFR-4
     name: 書き出した HTML の外部への要求
@@ -61,7 +112,7 @@ requirements:
     external_constraint: 制限なし（書き出した HTML は 1 枚のファイルとして配り、jsDelivr の 1 ファイル 20MB の上限は該当しない）
     source_kind: 制限なし
     value: mermaid の本体と全ての図の種類の chunk を埋める（mermaid 12.3.0 で約 5.3MB 増える）
-    rationale: '利用側の利用者が file:// で開くたびに読み込む大きさ。PoC #384 で、mermaid 12.3.0 の本体と全ての chunk をまとめた script は 5,489,182 バイトだった。文書が使用する図の種類の chunk だけをまとめ、ほかを空のモジュールに差し替えると、flowchart だけで 4,342,441 バイト、flowchart と sequenceDiagram で 4,462,681 バイト、種類なし（本体と共通の chunk だけ）で 4,276,727 バイト（2026-11-08、作業ツリーの外で実測）。図の種類を絞っても本体と共通の chunk の約 4.3MB は残り、減るのは最大で約 1.2MB'
+    rationale: '利用側の利用者が file:// で開くたびに読み込む大きさ。[PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384) で、mermaid 12.3.0 の本体と全ての chunk をまとめた script は 5,489,182 バイトだった。文書が使用する図の種類の chunk だけをまとめ、ほかを空のモジュールに差し替えると、flowchart だけで 4,342,441 バイト、flowchart と sequenceDiagram で 4,462,681 バイト、種類なし（本体と共通の chunk だけ）で 4,276,727 バイト（2026-11-08、作業ツリーの外で実測）。図の種類を絞っても本体と共通の chunk の約 4.3MB は残り、減るのは最大で約 1.2MB'
     overflow: mermaid のコードブロックを持たない文書の書き出しには埋めない（インターフェース定義『文書をHTMLに書き出す』の制約「埋める mermaid」）
     status: planned
   - id: NFR-6
@@ -88,7 +139,7 @@ requirements:
     source_kind: 実行基盤の制限
     source: https://code.visualstudio.com/api/working-with-extensions/publishing-extension#visual-studio-code-compatibility
     value: VS Code 1.141.0 以降（`vscode/package.json` の `engines.vscode` に `^1.141.0` を記載する）
-    rationale: PoC（#70）で Webview の CSP・動的 `import()`・`ready` を受けた再送信を確認した最も古いバージョン（Windows の 1.141.0。Linux バージョンは 1.143.1）を下限にする。それより古いバージョンは確認していない
+    rationale: '[PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)で Webview の CSP・動的 `import()`・`ready` を受けた再送信を確認した最も古いバージョン（Windows の 1.141.0。Linux バージョンは 1.143.1）を下限にする。それより古いバージョンは確認していない'
     measurement: 拡張機能の結合テストを VS Code 1.141.0 とその時点の stable の 2 つで実行する
     overflow: 下限より古い VS Code には Marketplace が入れさせない
     status: planned
@@ -106,7 +157,7 @@ requirements:
     source: API-472-1#
     value: '3'
     unit: 秒
-    rationale: 取れないときは前回のバージョンで描けるため、長く待たずに描き始める。プレビューは開いてから 1 秒経っても描けないときだけ読み込み中を出し、PoC（#70）の配布物の読み込みは 641〜1,400 ms だった。タグ一覧の待ちを追加しても、前回のバージョンで描き始めるまでを 5 秒前後に収める
+    rationale: '取れないときは前回のバージョンで描けるため、長く待たずに描き始める。プレビューは開いてから 1 秒経っても描けないときだけ読み込み中を出し、[PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)の配布物の読み込みは 641〜1,400 ms だった。タグ一覧の待ちを追加しても、前回のバージョンで描き始めるまでを 5 秒前後に収める'
     overflow: 上限を超えたら要求を打ち切り、取れなかったときと同じく前回のバージョンを使用する。前回のバージョンも無ければ、プレビューにバージョンを決められない理由を出す（書き出しは書き出せない通知を出す）
     status: planned
   - id: NFR-9
@@ -128,7 +179,7 @@ requirements:
     source_kind: 制限なし
     value: '10'
     unit: 秒
-    rationale: 書き出した HTML は jsDelivr から配布物と外部ライブラリを読み込むため、描き終えるまで待ってから印刷する。PoC（#70）の jsDelivr のキャッシュが冷えた初回の読み込みは 5,045 ms だったため、その倍に近い値を上限にする
+    rationale: '書き出した HTML は jsDelivr から配布物と外部ライブラリを読み込むため、描き終えるまで待ってから印刷する。[PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)の jsDelivr のキャッシュが冷えた初回の読み込みは 5,045 ms だったため、その倍に近い値を上限にする'
     overflow: 上限までに外部ライブラリのマーカーの読み込みが終わらなければ、そのまま印刷のダイアログを出す（読み込み中のマーカーの場所は読み込み中のブロックのまま印刷される）
     status: planned
   - id: NFR-11
@@ -139,7 +190,7 @@ requirements:
     source_kind: 外部ライブラリの制限
     source: LIB-472-1#version
     value: 2.1.309
-    rationale: PoC（#73）でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確認したバージョン。これより新しいバージョンと古いバージョンは確認していない
+    rationale: '[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確認したバージョン。これより新しいバージョンと古いバージョンは確認していない'
     measurement: Claude Code の実機で、プラグインを入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確認する
     status: planned
     verification:
@@ -156,7 +207,7 @@ requirements:
     source: LIB-472-1#limitations[MCP サーバーの接続の待ち]
     value: '30'
     unit: 秒 以内
-    rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。`mdmark serve` を先に常駐させ、Claude Code は起動済みのサーバーへ HTTP でつなぐだけにする'
+    rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)）。`mdmark serve` を先に常駐させ、Claude Code は起動済みのサーバーへ HTTP でつなぐだけにする'
     measurement: 起動済みの `mdmark serve` へ Streamable HTTP でつないだ MCP のクライアントが tools/list を受け取るまでの時間を測る
     overflow: Claude Code が接続を諦め、プラグインの MCP のツールが使用できない。起動で外へ要求する処理を追加しない
     status: planned

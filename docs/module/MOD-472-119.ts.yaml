@@ -7,7 +7,7 @@ functions:
     container: src/bundle-module.ts
     usecase: 共通
     summary: URL かファイルのモジュールを、import する先も含めて指定した esbuild の `build` で 1 つの ES モジュールのコードにまとめる
-    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み込み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確認した jsDelivr の `+esm` の構造）。ファイルは名前空間 `local` のプラグインで `node:fs/promises` の `readFile` で読み込み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読み込む。届かない・まとめられないときは例外を投げずに理由を返却する。esbuild を import しないファイルに配置し、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を指定する'
+    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み込み、相対・ルート相対の import はその URL を基準に解く（[PoC: file:// で開く 1 枚の HTML に配布物と外部ライブラリのモジュールを埋めて描く](https://github.com/shuhei1101/mdmark/pull/35) で確認した jsDelivr の `+esm` の構造）。ファイルは名前空間 `local` のプラグインで `node:fs/promises` の `readFile` で読み込み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読み込む。届かない・まとめられないときは例外を投げずに理由を返却する。esbuild を import しないファイルに配置し、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を指定する'
     kind: 関数
     scope: public
     is_async: true
