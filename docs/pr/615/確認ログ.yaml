@@ -5,3 +5,9 @@ confirmations:
     approver: shuhei1101
     commit: 605eb2a1722d4b5a180d63ec90bb60edbb185b54
     thread: https://github.com/shuhei1101/mdmark/pull/615#discussion_r4587781534
+  - topic: 反映作業『拡張機能のアイコンの公開』の実行
+    decision: マージの後に実行する（推奨案 A）。tester が develop の HEAD に vscode-v0.1.4 のタグを打ち、Marketplace へ 0.1.4 をアイコン付きで公開させる
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: a6f0d8f6
+    thread: https://github.com/shuhei1101/mdmark/pull/615#discussion_r4588104902
