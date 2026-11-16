@@ -43,7 +43,7 @@ upstream: mermaid-js/mermaid
 verification:
   state: 済
   date: '2026-11-08'
-  detail: PoC（#384）で、jsDelivr の `mermaid.esm.min.mjs` と chunk を CLI の `bundleViewer` で動的 `import()` を残さずに 1 つのスクリプトにまとめ、file:// で開いて外への要求 0 件で 7 種類の図を描いた。CSS 変数から作った hex を `base` テーマの `themeVariables` に指定し、ライトとダークで SVG の色が一致した。VS Code のプレビューと同じ規則の CSP のページで、CSP 違反 0 件で描いた（Chromium）
+  detail: '[PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384)で、jsDelivr の `mermaid.esm.min.mjs` と chunk を CLI の `bundleViewer` で動的 `import()` を残さずに 1 つのスクリプトにまとめ、file:// で開いて外への要求 0 件で 7 種類の図を描いた。CSS 変数から作った hex を `base` テーマの `themeVariables` に指定し、ライトとダークで SVG の色が一致した。VS Code のプレビューと同じ規則の CSP のページで、CSP 違反 0 件で描いた（Chromium）'
 license: MIT。商用利用できる。書き出した HTML に埋めるときは、モジュールの頭の著作権表示を残す
 official_url: https://mermaid.js.org/
 docs_url: https://mermaid.js.org/intro/
