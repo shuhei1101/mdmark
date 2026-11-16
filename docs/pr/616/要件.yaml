@@ -2,30 +2,30 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-43.yaml
     impact: changed
-    detail: 統合する場合、ER 図の部品を描く流れ（正常シナリオ（ER 図））を削除し、`er` の範囲には描かずに map へ変換できる旨の書き方の警告を出す流れにする
+    detail: 正常シナリオ（ER 図）と異常シナリオ（ER 図の定義を読み込めない）を削除し、正常シナリオ（座標で書いた図の範囲）で `er` の範囲にも map へ変換できる旨の書き方の警告を出す
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-27.yaml
     impact: changed
-    detail: 統合する場合、バージョンを上げると文書の `er` の定義が map の範囲へ書き換わる流れを追加する。定義に無いテーブルを関係の先に指定した ER 図の部品の定義の扱いを、変換の報告に挙げる流れにする
+    detail: 正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）を追加する。正常シナリオ（書き換えない記載を移行の報告に挙げる）に定義に無いテーブルを指す `er` の範囲を加える。異常シナリオ（適用した後の点検で図の定義にずれがある）のずれをグラフの定義に置き換える
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single
     scenario: docs/scenario/SC-472-78.yaml
     impact: changed
-    detail: 統合する場合、ER 図の部品の定義の誤りの点検を削除し、`er` を記載した文書に map へ変換できる旨を知らせる流れにする
+    detail: 正常シナリオ（座標で書いた図がある）で `er` の範囲も map へ変換できる旨を知らせる。正常シナリオ（図の定義にずれがある）から ER 図の部品の定義を除き、グラフだけにする
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 統合する場合、拡大・縮小・移動を確かめる ER 図の部品を map の ER 図に置き換える
+    detail: 正常シナリオ（ER 図）・（列の多いテーブルを畳む）・（描き直しても手で畳んだ列を保つ）を削除し、ドラッグと文字の選択・矢印キーとボタンを mermaid の図で確かめる形にする。map の ER 図の列の開閉は SC-472-39 が受け持つ
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single
     scenario: docs/scenario/SC-472-40.yaml
     impact: changed
-    detail: 統合する場合、ツールチップと `features.hints`・`tooltips.diagramPlacement` を確かめる ER 図のテーブルを map の ER 図に置き換える
+    detail: 正常シナリオ（ER 図のテーブル）を map の ER 図の補足の `notes` のテーブルと列の説明のツールチップに置き換える。`features.hints`・`tooltips.diagramPlacement` のシナリオはこの ER 図を使う
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single

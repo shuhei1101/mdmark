@@ -34,7 +34,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T11:40:18.922173+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T12:39:38.820570+00:00'
   - process: モック作成
     status: skipped
     reason: 'モック要否: 変換した図は既存の map の ER 図の見た目で描き、廃止の警告は既存の書き方の警告の帯で出すため、作り手が見た目を決める余地が無い。ER 図の部品のモックの削除は更新ドキュメントで扱う'
