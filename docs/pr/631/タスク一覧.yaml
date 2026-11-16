@@ -1,0 +1,71 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 変更箇所の設計書（CMP-472-4・MOD-472-133・MOD-472-131）が develop にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue でないため
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: develop の構成図のノードにある、ノードを覆う押せる要素を名前の下に重ねる構造を参加者の箱へ当てる修正で、未検証の機構に依存しないため
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 部品の HTML のアクセシビリティの修正で、複合ユースケースの流れは変わらないため
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 利用者に見える画面の見た目が変わらないため（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 利用者に見える画面の見た目が変わらないため（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 参加者の選択・Alt + 左右の矢印キーでの並べ替え・用語のツールチップの開閉を保つ修正で、シナリオの手順と結果は変わらないため
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 利用者に見える画面の見た目が変わらないため（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: IF-472-35（文書を描く）の参加者の箱の記載（名前の行数に合わせた高さ）は修正後も成り立ち、入出力は変わらないため
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: skipped
+    reason: UI 項目と操作は増えず・変わらず・消えないため（判定フローチャート『画面設計要否』）
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: skipped
+    reason: 公開ドキュメント（docs/使い方・docs/リファレンス）に参加者の箱のフォーカスの記載が無く、更新ドキュメントが無いため
+    updated_by: planner
+    updated_at: '2026-11-16T20:25:18.843237+00:00'
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo
