@@ -1,0 +1,78 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-28.yaml
+    impact: changed
+    detail: タグに加えて develop を指定した配布物の読み込みと、develop の最新の変更が届くことを足す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-5.yaml
+    impact: changed
+    detail: タグに加えて develop を指定して入れた CLI が develop の最新で起動することを足す（開発用の処理を実行しない保証は保つ）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: changed
+    detail: 設定の手元のバージョンに develop の最新を表す値を書けるようにし、そのときのバージョンを上げる扱いを足す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-53.yaml
+    impact: following
+    detail: 文書のフォルダに設定を作るときの手元のバージョンの値が、設定に書ける値の変更に追随する
+    depends_on:
+      - docs/scenario/SC-472-27.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-69.yaml
+    impact: run_only
+    detail: 端末のセットアップが起動する常駐サーバーの取り出し元の書き方が変わりうるため、壊れていないことを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/導入-配布物を読み込む.md
+    new: false
+    change: 既定を develop の最新の参照にし、タグ・commit で固定するときの書き方と、ブランチのキャッシュで切り替わるまでの時間を記載する
+    status: todo
+  - page: docs/guide/導入-バージョンを上げる.md
+    new: false
+    change: develop の最新を参照しているときの upgrade の呼び方と、設定の version の扱いを記載する
+    status: todo
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: version に書ける値に develop の最新を表す値を足す
+    status: todo
+  - page: docs/guide/CLI.mark.md
+    new: false
+    change: npx github:shuhei1101/mdmark#develop の呼び方と、手元のバージョンが develop の最新のときの upgrade の出力・終了コードを足す
+    status: todo
+  - page: docs/guide/ClaudeCodeで使用する-セットアップする.mark.md
+    new: false
+    change: 常駐サーバーを起動する npx の参照の既定が変わる場合に書き換える
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 手元の版の説明に develop の最新を表す値を足す
+    status: todo
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: dist/・plugin/ を commit する時期に develop への push の CI を足し、利用側への届き方を develop の最新と固定の 2 つにする。GitHub Actions の外部システムの行に develop の配布物の commit を足す
+    status: todo
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: 管理作業の配布物の commit と、develop で CI が配布物を commit するときの取り込み後の追従を合わせる
+    status: todo
+  - page: docs/external-api/API-472-2.yaml
+    new: false
+    change: version の例と説明に develop のブランチ指定を足す
+    status: todo
+  - page: docs/config/CFG-472-3.yaml
+    new: false
+    change: version のキーに develop の最新を表す値を足す
+    status: todo
+scope_out:
+  - item: mdmark を参照するほかのリポジトリの参照の切り替え（ai-monitor・dev-docs・knowledge・gui-support・rule-inject・project-index・mindstella）
+    reason: 各リポジトリで起票済みの後続（shuhei1101/ai-monitor#3531 など）で、本件は mdmark の側だけを整える
+    plan: none
+  - item: VS Code 拡張機能の設定 mdmark.version（既定 latest はタグ一覧の最新）で develop の最新を選べるようにするか
+    reason: Issue が挙げる参照のしかた（jsDelivr・npx・mdmark.config.yaml の version）に含まれない。ただし拡張機能も jsDelivr から配布物を読むため、含めるかを単一 UC 設計のレビューで確定する。今の判断は含めない
+    plan: to_file
+  - item: '#571（develop に次のタグを打つ）を打つか'
+    reason: '本件で develop を参照できても #571 の報告そのものは直らず、打つかは本件の後にユーザーが決める'
+    plan: '#571'
