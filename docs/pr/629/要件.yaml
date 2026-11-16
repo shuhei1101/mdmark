@@ -14,9 +14,6 @@ scope_out:
   - item: 変更履歴（docs/guide/変更履歴.mark.md）への v0.14.0 の PR の追加
     reason: develop へ打つタグでは変更履歴を足さない（v0.11.0〜v0.13.0 と同じ）。release を master へ入れるときに足す
     plan: none
-  - item: ビルドの結合テスト 3 件が dist/index.js の配布ファイルの上限を超えて fail する件
-    reason: 版上げとは別の不具合で、既に Issue がある
-    plan: '#601'
   - item: 計画の Sprint のバージョンを 0.15.0 へ繰り上げる
     reason: 計画は task-planner が持つ（案 A の回答で、次の繰り上げで 0.15.0 にすると決まっている）
     plan: none
