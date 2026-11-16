@@ -27,13 +27,14 @@ scenarios:
         GA->>MP: GitHub Actions の OIDC トークンで同じ .vsix を公開する
         MP-->>GA: 公開を受け付ける
         GH-->>D: Release に mdmark-0.1.3.vsix
+        MP->>MP: 数分〜十数分後に一覧へ 0.1.3 を表示する
         MP-->>D: Marketplace に 0.1.3
       ```
 
       <!-- /map -->
     expected:
       - '`vscode-v0.1.3` の GitHub Release に `mdmark-0.1.3.vsix` が添えられる'
-      - Marketplace の `ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.3` になる
+      - ワークフローの完了の後、Marketplace の一覧に `0.1.3` が出るまで条件で待つと、`ShuheiNishikawa.mdmark-vscode` の最新のバージョンが `0.1.3` になる
       - ワークフローはリポジトリのシークレットを参照しない
       - '`v{バージョン}` の構造の mdmark のタグを push しても、このワークフローは起きない'
     test: test_normal
