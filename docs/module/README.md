@@ -48,6 +48,7 @@
 | [ライブラリ本体 / CLI / traces.ts](./MOD-472-350.ts.yaml) | ライブラリ本体 / CLI / traces.ts |
 | [ライブラリ本体 / バージョンを上げる / migrations.ts](./MOD-472-146.ts.yaml) | ライブラリ本体 / バージョンを上げる / migrations.ts |
 | [ライブラリ本体 / バージョンを上げる / prompt.ts](./MOD-472-151.ts.yaml) | ライブラリ本体 / バージョンを上げる / prompt.ts |
+| [ライブラリ本体 / バージョンを上げる / retired-er.mjs](./MOD-616-1.yaml) | ライブラリ本体 / バージョンを上げる / retired-er.mjs |
 | [ライブラリ本体 / バージョンを上げる / upgrade.ts](./MOD-472-150.ts.yaml) | ライブラリ本体 / バージョンを上げる / upgrade.ts |
 | [ライブラリ本体 / バージョンを上げる / versions.ts](./MOD-472-148.ts.yaml) | ライブラリ本体 / バージョンを上げる / versions.ts |
 | [ライブラリ本体 / 操作 / code-fold-logic.ts](./MOD-472-237.ts.yaml) | ライブラリ本体 / 操作 / code-fold-logic.ts |
@@ -59,7 +60,6 @@
 | [ライブラリ本体 / CLI / config-files.ts](./MOD-472-116.ts.yaml) | ライブラリ本体 / CLI / config-files.ts |
 | [ライブラリ本体 / 設定と機能 / config.ts](./MOD-472-304.ts.yaml) | ライブラリ本体 / 設定と機能 / config.ts |
 | [ライブラリ本体 / 図 / definition.ts](./MOD-472-171.ts.yaml) | ライブラリ本体 / 図 / definition.ts |
-| [ライブラリ本体 / 図 / er.ts](./MOD-472-176.ts.yaml) | ライブラリ本体 / 図 / er.ts |
 | [ライブラリ本体 / 図 / geometry.ts](./MOD-472-173.ts.yaml) | ライブラリ本体 / 図 / geometry.ts |
 | [ライブラリ本体 / 差分 / blocks.ts](./MOD-472-191.ts.yaml) | ライブラリ本体 / 差分 / blocks.ts |
 | [ライブラリ本体 / 差分 / compute.ts](./MOD-472-190.ts.yaml) | ライブラリ本体 / 差分 / compute.ts |
@@ -84,7 +84,6 @@
 | [ライブラリ本体 / 図 / diagram-tips.ts](./MOD-472-184.ts.yaml) | ライブラリ本体 / 図 / diagram-tips.ts |
 | [ライブラリ本体 / 図 / diagrams.ts](./MOD-472-183.ts.yaml) | ライブラリ本体 / 図 / diagrams.ts |
 | [ライブラリ本体 / 操作 / embedded-html.ts](./MOD-472-230.ts.yaml) | ライブラリ本体 / 操作 / embedded-html.ts |
-| [ライブラリ本体 / 図 / er-folds.ts](./MOD-472-188.ts.yaml) | ライブラリ本体 / 図 / er-folds.ts |
 | [ライブラリ本体 / 操作 / footnotes.ts](./MOD-472-238.ts.yaml) | ライブラリ本体 / 操作 / footnotes.ts |
 | [ライブラリ本体 / 操作 / gif.ts](./MOD-472-236.ts.yaml) | ライブラリ本体 / 操作 / gif.ts |
 | [ライブラリ本体 / 操作 / index.ts](./MOD-472-227.ts.yaml) | ライブラリ本体 / 操作 / index.ts |
@@ -167,7 +166,6 @@
 | [ライブラリ本体 / 差分 / diff-toggle.ts](./MOD-472-194.ts.yaml) | ライブラリ本体 / 差分 / diff-toggle.ts |
 | [ライブラリ本体 / 部品 / doc-list.ts](./MOD-472-323.ts.yaml) | ライブラリ本体 / 部品 / doc-list.ts |
 | [ライブラリ本体 / 部品 / embed.ts](./MOD-472-309.ts.yaml) | ライブラリ本体 / 部品 / embed.ts |
-| [ライブラリ本体 / 図 / er.ts](./MOD-472-187.ts.yaml) | ライブラリ本体 / 図 / er.ts |
 | [ライブラリ本体 / 部品 / escape.ts](./MOD-472-313.ts.yaml) | ライブラリ本体 / 部品 / escape.ts |
 | [ライブラリ本体 / 部品 / embedded-html.ts](./MOD-589-2.ts.yaml) | ライブラリ本体 / 部品 / embedded-html.ts |
 | [ライブラリ本体 / 部品 / icon-node.ts](./MOD-589-3.ts.yaml) | ライブラリ本体 / 部品 / icon-node.ts |

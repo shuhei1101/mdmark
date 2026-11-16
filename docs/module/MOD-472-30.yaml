@@ -22,7 +22,8 @@ notes:
     ├── next/          # 出していないバージョンの steps.yaml とスクリプト
     │   ├── steps.yaml
     │   ├── retired-diagrams.mjs  # 文書の廃止した flow・sequence の範囲を map の範囲へ書き換え、設定に map.kinds・map.lines を書き足す
-    │   ├── retired-diagrams.js   # retired-diagrams.mjs が読み込む書き換えの処理と拡張の読み込み（ビルドがまとめて commit する）
+    │   ├── retired-er.mjs        # 文書の廃止した er の範囲を map の ER 図の範囲へ書き換える
+    │   ├── retired-diagrams.js   # retired-diagrams.mjs・retired-er.mjs が読み込む書き換えの処理と拡張の読み込み（ビルドがまとめて commit する）
     │   └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（ビルドが書き込んで commit する）
     └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
     ```
