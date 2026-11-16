@@ -28,6 +28,16 @@ const FIXTURE_NAMES: Record<number, string> = {
   7: "pie",
 };
 
+/** モックに場面を持たない見本: `click` の URL の行でノードをリンクにした flowchart（部品設計『mermaid の図』の状態 `NodeLink`） */
+const LINKED_FIXTURE = {
+  name: "flowchart-link",
+  source: [
+    "flowchart LR",
+    "  A[設計書] --> B[実装]",
+    '  click A href "./設計書.md"',
+  ].join("\n"),
+};
+
 /** 暗い配色で描き、印刷のための明るい配色の SVG も記載する見本の名前 */
 const DARK_FIXTURE = "flowchart";
 
@@ -160,6 +170,10 @@ export const writeMermaidFixtures = async (options: {
         await write(`${name}-print`, darkDrawn.print);
       }
     }
+    await write(
+      LINKED_FIXTURE.name,
+      (await draw(LINKED_FIXTURE.source, false)).screen,
+    );
   } finally {
     await browser.close();
   }

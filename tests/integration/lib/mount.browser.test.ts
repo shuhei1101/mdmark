@@ -14618,6 +14618,144 @@ test(
   MERMAID_WAIT_MS + 30_000,
 );
 
+/** click・link の URL の行・関数を呼ぶ行を持つ flowchart と classDiagram の mermaid のコードブロックを持つ文書 */
+const MERMAID_LINKED = [
+  "```mermaid",
+  "flowchart LR",
+  "  A[設計] --> B[実装] --> C[外部] --> D[危険] --> E[関数] --> F[無し]",
+  '  click A href "./a.md"',
+  '  click B "../b.md#c"',
+  '  click C href "https://example.com/" _blank',
+  '  click D href "javascript:alert(1)"',
+  "  click E call show()",
+  "```",
+  "",
+  "```mermaid",
+  "classDiagram",
+  "  class A",
+  "  class B",
+  "  class C",
+  "  class D",
+  "  class E",
+  '  click A href "./a.md"',
+  '  link B "../b.md#c"',
+  '  click C href "https://example.com/" _blank',
+  '  click D href "javascript:alert(1)"',
+  "  click E call show()",
+  "```",
+  "",
+].join("\n");
+
+/** SVG の中で、mermaid のノードの ID が `id` のノード（`g.node`） */
+function mermaidNode(svg: Element, id: string): Element {
+  const node = [...svg.querySelectorAll("g.node")].find((g) =>
+    new RegExp(`-(?:flowchart|classId)-${id}-\\d+$`).test(g.id),
+  );
+  if (!node) {
+    throw new Error(`mermaid のノード ${id} が無い`);
+  }
+  return node;
+}
+
+// mermaid が click・link の URL の行から出力した a のうち、許可するものに href を付けて開けるようにし、許可しないものを除外する（正常系（mermaid のノードのリンクを開く））
+test(
+  "test_normal_when_mermaid_node_link",
+  async () => {
+    // 準備
+    await loadStylesheet();
+    await emulateMermaidMedia("dark");
+    const el = createElement();
+    // 本文の要素のクリックの処理: 押したリンクの href を記録し、ページを移らせない
+    const opened: string[] = [];
+    const record = (event: MouseEvent) => {
+      const anchor = (event.target as Element).closest("a[href]");
+      if (anchor && !event.defaultPrevented) {
+        opened.push(anchor.getAttribute("href") ?? "");
+      }
+      event.preventDefault();
+    };
+    el.addEventListener("click", record);
+    try {
+      // 実行
+      await mountTracked(el, {
+        markdown: MERMAID_LINKED,
+        config: { mermaid: { url: mermaidUrl("node-link") } },
+      });
+      await vi.waitFor(() => expect(mermaidFigures(el)).toHaveLength(2), {
+        timeout: MERMAID_WAIT_MS,
+      });
+      // 検証: 許可する a は href と class を持ち、target を持たない。許可しない a と関数の行・click の無いノードは a の中に無い
+      const expected = [
+        ["A", "./a.md"],
+        ["B", "../b.md#c"],
+        ["C", "https://example.com/"],
+      ] as const;
+      for (const figure of mermaidFigures(el)) {
+        const svgs = [
+          ...figure.querySelectorAll<SVGSVGElement>(".mdmark-mermaid svg[id]"),
+        ];
+        // 画面用と印刷用（暗い配色のときだけ）の SVG
+        expect(svgs).toHaveLength(2);
+        for (const svg of svgs) {
+          for (const [id, href] of expected) {
+            const anchor = mermaidNode(svg, id).closest("a");
+            expect(anchor?.getAttribute("href")).toBe(href);
+            expect(anchor?.classList.contains("mdmark-diagram-node-link")).toBe(
+              true,
+            );
+            expect(anchor?.hasAttribute("target")).toBe(false);
+          }
+          for (const id of ["D", "E"]) {
+            expect(mermaidNode(svg, id).closest("a")).toBeNull();
+          }
+        }
+      }
+      const flowchart = mermaidFigures(el)[0] as HTMLElement;
+      const svg = visibleMermaidSvgs(flowchart)[0] as SVGSVGElement;
+      expect(mermaidNode(svg, "F").closest("a")).toBeNull();
+      expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+      // 実行・検証: A のノードを押すと、本文の要素のクリックの処理が href を受け取る
+      const link = mermaidNode(svg, "A").closest("a") as SVGAElement;
+      await userEvent.click(link);
+      expect(opened).toEqual(["./a.md"]);
+      // 実行・検証: A のノードの上で押したまま 100px 動かして離すと、図が動き、記録が増えない
+      const viewport = find<HTMLElement>(flowchart, ".mdmark-diagram-viewport");
+      for (let index = 0; index < 4; index++) {
+        await userEvent.click(
+          find<HTMLButtonElement>(flowchart, 'button[aria-label="拡大"]'),
+        );
+      }
+      const zoomed = visibleMermaidSvgs(flowchart)[0] as SVGSVGElement;
+      const target = mermaidNode(zoomed, "A").closest("a") as SVGAElement;
+      target.scrollIntoView({ block: "center", inline: "center" });
+      const before = viewport.scrollLeft;
+      const box = target.getBoundingClientRect();
+      const viewportBox = viewport.getBoundingClientRect();
+      await userEvent.dragAndDrop(target, viewport, {
+        sourcePosition: { x: box.width / 2, y: box.height / 2 },
+        targetPosition: {
+          x: box.left - viewportBox.left + box.width / 2 - 100,
+          y: box.top - viewportBox.top + box.height / 2,
+        },
+      });
+      expect(viewport.scrollLeft).not.toBe(before);
+      expect(opened).toEqual(["./a.md"]);
+      // 実行・検証: Tab で A のリンクにフォーカスが移る
+      (document.activeElement as HTMLElement | null)?.blur();
+      viewport.focus();
+      await userEvent.tab();
+      expect(document.activeElement).toBe(target);
+    } finally {
+      el.removeEventListener("click", record);
+      await cdp().send("Emulation.setEmulatedMedia", {
+        media: "",
+        features: [],
+      });
+    }
+  },
+  MERMAID_WAIT_MS + 30_000,
+);
+
 /** 1〜4 行目にフロントマター、6 行目に見出し、8 行目に段落、10 行目に節を持つ文書 */
 const FRONTMATTER_MARKDOWN_LINES = [
   "---",
