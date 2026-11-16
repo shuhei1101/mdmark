@@ -65,11 +65,15 @@ docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: dist/・plugin/ を commit する時期に develop への push の CI を足し、利用側への届き方を develop の最新と固定の 2 つにする。GitHub Actions の外部システムの行に develop の配布物の commit を足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:08:58.445971+00:00'
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
     change: 管理作業の配布物の commit と、develop で CI が配布物を commit するときの取り込み後の追従を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:08:58.445971+00:00'
   - page: docs/external-api/API-472-2.yaml
     new: false
     change: version の例と説明に develop のブランチ指定を足す
