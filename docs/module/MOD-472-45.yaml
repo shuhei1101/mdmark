@@ -30,3 +30,7 @@ notes:
     src/
     └── config-files.ts   # loadLayeredConfig・resolveSettingsPath・findConfigChain・mergeConfigs・absolutizeConfigPaths・displayConfigPath
     ```
+tags:
+  - name: topic:設定
+    main: true
+  - name: action:読み込み

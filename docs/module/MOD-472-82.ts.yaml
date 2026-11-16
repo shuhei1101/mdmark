@@ -49,3 +49,9 @@ functions:
     refs:
       - IF-472-23#constraints[タグの構造]
     status: planned
+lead: '`release-check.ts` の関数（タグとバージョンを照合する）と定数（拡張機能のタグの構造）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: action:配布
+  - name: tool:vscode

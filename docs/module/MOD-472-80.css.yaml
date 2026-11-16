@@ -19,3 +19,9 @@ styles:
       - CMP-472-63#
       - LIB-472-26#
     status: planned
+lead: '`panel.css` のスタイル（パネルの CSS）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

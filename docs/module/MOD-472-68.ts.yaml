@@ -20,3 +20,9 @@ functions:
     callees:
       - 'MOD-472-70#functions[attachMediaErrors]'
     status: planned
+lead: '`use-media-errors.ts` の関数（再生できない動画・音声を受ける）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

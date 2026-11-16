@@ -35,3 +35,9 @@ functions:
     refs:
       - IF-472-22#constraints[Webview とのメッセージ]
     status: planned
+lead: '`use-host-messages.ts` の関数（拡張機能のメッセージを受ける）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

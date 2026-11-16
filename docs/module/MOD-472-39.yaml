@@ -36,3 +36,7 @@ notes:
         ├── embedded-html.ts # 埋め込んだ HTML が列より広い間だけ、中で横にスクロールさせる
         └── csv-raw.ts     # CSV の表と元の CSV の切り替え
     ```
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

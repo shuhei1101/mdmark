@@ -27,3 +27,6 @@ notes:
 
     整形とリポジトリ全体の lint は今と同じ Biome（`biome check .`）が受け持ち、ESLint は Biome に無い複雑さの規則を `src/`・`scripts/`・`vscode/src/`・`plugin/` の TypeScript に、React・アクセシビリティ・import の向き・Tailwind の規則を Webview に適用する。
     配布物の対応ブラウザの下限の確認（`eslint-plugin-compat`）は今と同じく `scripts/baseline.ts` が ESLint の `Linter` を直接呼ぶ（この設定を読み込まない）。
+tags:
+  - name: topic:検査
+    main: true

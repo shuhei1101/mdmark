@@ -21,3 +21,9 @@ constants:
       - IF-472-23#
       - LIB-472-34#
     status: planned
+lead: '`vscode-release.yml` の定数（リリースのワークフロー）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: action:配布
+  - name: tool:vscode

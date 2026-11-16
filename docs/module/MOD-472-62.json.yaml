@@ -22,3 +22,9 @@ constants:
     refs:
       - LIB-472-24#
     status: planned
+lead: '`components.json` の定数（shadcn/ui の CLI の設定）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

@@ -29,3 +29,9 @@ functions:
         mock: なし
         expected: 本文に `<code>m4a</code>` と `<code>media/&lt;voice&gt;.m4a</code>`、`data-action="openAsset"`・`data-path="media/&lt;voice&gt;.m4a"` の `a`
     status: planned
+lead: '`media-error.ts` の関数（再生できない動画・音声の通知を描く）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

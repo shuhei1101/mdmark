@@ -245,3 +245,8 @@ functions:
     refs:
       - IF-472-11#exceptions
     status: planned
+tags:
+  - name: topic:セットアップ
+    main: true
+  - name: topic:設定
+  - name: tool:claude-code

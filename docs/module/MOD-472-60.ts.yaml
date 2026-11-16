@@ -60,3 +60,9 @@ functions:
     refs:
       - SCR-472-2#elements[読み込み中の表示]
     status: planned
+lead: '`use-load-mdmark.ts` の関数（配布物を読み込む）と定数（読み込み中を出すまでの待ち）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

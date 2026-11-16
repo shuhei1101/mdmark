@@ -34,3 +34,9 @@ components:
     refs:
       - CMP-472-29#
     status: planned
+lead: '`app.tsx` のコンポーネント（Webview のアプリ）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

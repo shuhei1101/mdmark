@@ -39,3 +39,8 @@ functions:
         mock: なし
         expected: '`files` が空'
     status: planned
+lead: '`assets.ts` の関数（探す場所の候補を返却する）。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

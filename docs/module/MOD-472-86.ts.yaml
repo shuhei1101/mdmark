@@ -20,3 +20,9 @@ functions:
     refs:
       - LIB-472-18#
     status: planned
+lead: '`index.ts` の関数（拡張機能ホストの中でテストを走らせる）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: action:配布
+  - name: tool:vscode

@@ -79,3 +79,9 @@ functions:
         mock: なし
         expected: '`20.5`・`undefined`・`undefined`・`undefined`'
     status: planned
+lead: '`boot.ts` の型（パネルの始め方）と関数（始め方を読み込む・保存した行を読み込む）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

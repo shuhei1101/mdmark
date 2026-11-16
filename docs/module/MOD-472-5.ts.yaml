@@ -240,3 +240,8 @@ functions:
     refs:
       - IF-472-7#constraints[終わったことの判定]
     status: planned
+tags:
+  - name: topic:セットアップ
+    main: true
+  - name: topic:設定
+  - name: tool:claude-code

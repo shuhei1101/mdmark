@@ -24,3 +24,9 @@ functions:
       type: Server
       description: 待ち受けを始めていない `node:http` のサーバー
     status: planned
+lead: '`stub-server.ts` の関数（代役の配信を作る）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: action:配布
+  - name: tool:vscode

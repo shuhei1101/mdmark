@@ -55,3 +55,9 @@ constants:
       - NFR-472-1#requirements[対応する VS Code のバージョン]
       - MOD-472-103#constants[SETTING_DEFAULTS]
     status: planned
+lead: '`package.json` の定数（拡張機能の npm のスクリプト・拡張機能が追加するもの）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: action:配布
+  - name: tool:vscode

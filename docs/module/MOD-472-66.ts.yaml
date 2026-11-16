@@ -30,3 +30,9 @@ functions:
     refs:
       - IF-472-17#constraints[通知の間引き]
     status: planned
+lead: '`use-scroll-sync.ts` の関数（スクロールを通知する）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

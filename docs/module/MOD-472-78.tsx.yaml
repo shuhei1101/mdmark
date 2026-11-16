@@ -16,3 +16,9 @@ components:
         default: '`default`'
         description: '`outline` の線は `--warning-border`'
     status: planned
+lead: '`button.tsx` のコンポーネント（Button）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

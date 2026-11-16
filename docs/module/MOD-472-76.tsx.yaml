@@ -50,3 +50,9 @@ components:
     refs:
       - CMP-472-63#
     status: planned
+lead: '`config-band.tsx` のコンポーネント（設定ファイルを読み込めない帯）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

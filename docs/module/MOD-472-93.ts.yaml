@@ -60,3 +60,8 @@ functions:
     refs:
       - IF-472-22#constraints[差分のパネル]
     status: planned
+lead: '`diff-target.ts` の関数（差分ビューの対象を決める・パネルのキーを組む）。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

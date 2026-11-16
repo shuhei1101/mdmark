@@ -268,3 +268,8 @@ classes:
           - IF-472-22#constraints[テストのときの差し替え]
           - MOD-472-52#data_models[AxeViolation]
     status: planned
+lead: '`panel.ts` のクラス（プレビューのパネル）。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

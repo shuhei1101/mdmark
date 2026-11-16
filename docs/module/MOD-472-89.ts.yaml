@@ -164,3 +164,8 @@ constants:
     summary: '`window.createWebviewPanel` に指定する viewType'
     value: '"mdmark.preview"'
     status: planned
+lead: '`manager.ts` のクラス（プレビューの管理）と定数（パネルの種類）。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

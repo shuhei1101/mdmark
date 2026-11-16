@@ -88,3 +88,9 @@ data_models:
         type: string[]
         description: 違反した要素のセレクタ
     status: planned
+lead: '`messages.ts` の型（拡張機能から Webview へのメッセージ・Webview から拡張機能へのメッセージ・調べた要素・axe の違反）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

@@ -152,3 +152,9 @@ components:
       - SCR-472-2#
       - IF-472-22#constraints[Webview とのメッセージ]
     status: planned
+lead: '`panel-screen.tsx` のコンポーネント（プレビューのパネル）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

@@ -29,3 +29,9 @@ functions:
         mock: '`acquireVsCodeApi` を呼ばれたかを記録する代役にする'
         expected: 例外を投げず、`acquireVsCodeApi` が呼ばれない
     status: planned
+lead: '`main.tsx` の関数（パネルを始める）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

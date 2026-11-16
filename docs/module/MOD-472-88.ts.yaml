@@ -46,3 +46,8 @@ functions:
     refs:
       - IF-472-19#constraints[リンクの見分け方]
     status: planned
+lead: '`links.ts` の型（リンクの開き先）と関数（リンクの開き先を見分ける）。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

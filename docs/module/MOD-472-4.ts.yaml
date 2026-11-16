@@ -90,3 +90,7 @@ notes:
     src/plugin/
     └── guide.ts  # ガイドの索引の検査
     ```
+tags:
+  - name: topic:ガイド
+    main: true
+  - name: tool:claude-code

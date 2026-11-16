@@ -18,3 +18,9 @@ functions:
       type: string
       description: 結んだ class
     status: planned
+lead: '`cn.ts` の関数（class を結ぶ）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

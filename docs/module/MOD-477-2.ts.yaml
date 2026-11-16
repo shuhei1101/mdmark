@@ -115,3 +115,7 @@ refs:
   - ER-477-1#
 decisions:
   - D-312
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:部品

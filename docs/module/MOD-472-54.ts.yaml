@@ -53,3 +53,9 @@ functions:
         mock: '`acquireVsCodeApi` を呼ばれた数を記録する代役にする'
         expected: 同じ値で、`acquireVsCodeApi` が 1 回
     status: planned
+lead: '`vscode-api.ts` の型（Webview の状態・VS Code の Webview の API）と関数（VS Code の API を取る）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

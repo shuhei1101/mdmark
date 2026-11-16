@@ -21,3 +21,8 @@ data_models:
     refs:
       - LIB-472-35#
     status: planned
+lead: '`log.ts` の型（ログの出力先）。'
+tags:
+  - name: topic:エントリーポイント
+    main: true
+  - name: tool:vscode

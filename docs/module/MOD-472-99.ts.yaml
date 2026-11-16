@@ -71,3 +71,9 @@ functions:
       - SCR-472-1#elements[書き出せない通知]
       - SCR-472-1#elements[バージョンを決められない通知]
     status: planned
+lead: '`export.ts` の関数（Markdown を書き出す）と列挙（書き出しの使用方法）。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: tool:vscode

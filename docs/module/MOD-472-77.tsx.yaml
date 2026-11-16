@@ -21,3 +21,9 @@ components:
         default: '`alert`'
         description: 状態の表示と帯は `status` を指定する
     status: planned
+lead: '`alert.tsx` のコンポーネント（Alert）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

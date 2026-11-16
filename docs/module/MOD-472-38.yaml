@@ -19,3 +19,7 @@ notes:
     ├── scope-css.ts # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）
     └── syntax/      # 記法ごとのコアルール（『記法』）
     ```
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:部品

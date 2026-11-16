@@ -29,3 +29,9 @@ functions:
     callees:
       - 'MOD-472-59#classes[DocumentView]'
     status: planned
+lead: '`use-document-view.ts` の関数（描いた文書を持つ）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

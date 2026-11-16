@@ -70,3 +70,8 @@ functions:
       - IF-472-11#
       - IF-472-7#
     status: planned
+tags:
+  - name: topic:セットアップ
+    main: true
+  - name: topic:設定
+  - name: tool:claude-code

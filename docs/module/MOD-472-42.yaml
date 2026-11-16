@@ -25,3 +25,7 @@ notes:
     └── interact/
         └── terms.ts         # ツールチップの開閉・配置場所・id の再割り当て
     ```
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

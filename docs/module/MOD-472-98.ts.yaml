@@ -24,3 +24,8 @@ data_models:
         type: Logger
         description: ログの出力先
     status: planned
+lead: '`deps.ts` の型（拡張機能の共通の依存）。'
+tags:
+  - name: topic:エントリーポイント
+    main: true
+  - name: tool:vscode

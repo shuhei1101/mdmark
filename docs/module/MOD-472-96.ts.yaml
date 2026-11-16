@@ -53,3 +53,8 @@ functions:
       - IF-472-22#constraints[テストのときの差し替え]
       - IF-472-21#
     status: planned
+lead: '`extension.ts` の型（テストのときの戻り値）と関数（拡張機能を動かし始める）。'
+tags:
+  - name: topic:エントリーポイント
+    main: true
+  - name: tool:vscode

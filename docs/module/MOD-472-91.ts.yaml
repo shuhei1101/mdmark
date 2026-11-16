@@ -77,3 +77,8 @@ constants:
     refs:
       - IF-472-17#constraints[往復の止め方]
     status: planned
+lead: '`scroll-guard.ts` のクラス（エディタのスクロールの見張り）と定数（動かさない行の幅）。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

@@ -22,3 +22,9 @@ functions:
       - LIB-472-19#
       - API-472-2#
     status: planned
+lead: '`handlers.ts` の関数（MSW のハンドラ）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

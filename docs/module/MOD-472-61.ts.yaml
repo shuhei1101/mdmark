@@ -25,3 +25,9 @@ constants:
       - LIB-472-32#
       - LIB-472-21#
     status: planned
+lead: '`vite.config.ts` の定数（Webview の Vite の設定）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

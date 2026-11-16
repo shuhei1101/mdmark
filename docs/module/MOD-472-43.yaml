@@ -44,3 +44,6 @@ notes:
     ├── warnings.ts     # 記載の警告を差し込む助け
     └── tokens.ts       # 記法のコアルールが共有するトークンの助け（マーカーの読み取り・閉じのマーカーの探索・機能の判定）
     ```
+tags:
+  - name: topic:構文
+    main: true

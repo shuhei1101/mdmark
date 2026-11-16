@@ -49,3 +49,9 @@ functions:
         mock: なし
         expected: '`revisions("diff")` の `id` が `modified`・`original` の順。`content` が `modified` で `A3`、`original` で `A1`、`other` で reject'
     status: planned
+lead: '`diff-source.ts` の型（差分の全文）と関数（差分の取り出し元を作る）と定数（差分の取り出し元の docId）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

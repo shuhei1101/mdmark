@@ -111,3 +111,7 @@ refs:
 decisions:
   - D-312
   - D-338
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:部品

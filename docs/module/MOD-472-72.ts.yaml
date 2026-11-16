@@ -19,3 +19,9 @@ functions:
       type: 'VsCodeApi & { posted: WebviewMessage[] }'
       description: 代役
     status: planned
+lead: '`fake-vscode-api.ts` の関数（VS Code の API の代役を作る）。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

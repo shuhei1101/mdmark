@@ -20,3 +20,7 @@ notes:
     └── public/
         └── mockServiceWorker.js  # MSW の Service Worker（`msw init` が記載する）
     ```
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:描画

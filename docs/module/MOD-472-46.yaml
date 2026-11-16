@@ -49,3 +49,6 @@ notes:
     ├── card.ts                      # カードの renderCard
     └── {部品}.stories.yaml         # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
     ```
+tags:
+  - name: topic:部品
+    main: true

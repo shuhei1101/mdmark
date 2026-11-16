@@ -31,3 +31,9 @@ functions:
     refs:
       - LIB-472-27#
     status: planned
+lead: '`run.ts` の関数（結合テストを実行する）と定数（結合テストを実行する VS Code）。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: action:配布
+  - name: tool:vscode
