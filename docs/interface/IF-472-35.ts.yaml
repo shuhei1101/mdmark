@@ -7728,7 +7728,7 @@ flows:
       - 'flowchart・classDiagram の `A`〜`C` のノードが、`xlink:href` と同じ文字の `href`（`./a.md`・`../b.md#c`・`https://example.com/`）と class `mdmark-diagram-node-link` を持つ `a` の中にあり、`a` は `target` を持たない'
       - '`D`・`E` と flowchart の `F` のノードは `a` の中に無く、ノードとして描かれている'
       - 印刷用の SVG（`@media print` で出す明るい配色の SVG）にも、画面用の SVG と同じ `a` がある
-      - flowchart の `A` のノードを押すと、本文の要素のクリックの処理が `./a.md` を記録する
+      - flowchart の `A` のノードを押すと、本文の要素のクリックの処理が `./a.md` を記録する。`A` のノードの上で押したまま 100px 動かして離すと、図が動き、記録が増えない
       - Tab で flowchart の `A` のリンクにフォーカスが移る
       - 記載の警告が無い
     test: test_normal_when_mermaid_node_link
@@ -10448,6 +10448,8 @@ constraints:
       `xlink:href` の値を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許可する `<a>` には `xlink:href` と同じ文字の `href` と class `mdmark-diagram-node-link` を付け、`target` を除外する。開く先は本文のリンクと同じく同じタブで、クリックのイベントは止めず本文の要素まで伝わる。
 
       `xlink:href` を持たない `<a>`（mermaid が `javascript:` などを除外したもの）と許可しない `<a>` は、子を残して `<a>` だけを除外する。
+
+      リンクの上は文字の上も含めてカーソルを `pointer` にし、文字を選ばせない。リンクの上で押したまま 4px を超えて動かしたときは図を動かし、離した後の `click` を制約「図の移動」の map のノードのリンクと同じく止める。
 
       コールバックの `click` の行には mermaid が `<a>` を出力しないため、何もしない。記載の警告は出さない'
     decided_by: SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
