@@ -215,9 +215,7 @@ files:
   - path: diagram/er.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「ER 図のテーブルの種類・多重度・寸法と、テーブルの高さ・関係の線の経路」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
-    related:
-      - to: MOD-472-176
-        type: implements
+    related: []
   - path: diagram/geometry.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「収まる倍率・line jump・重なる線のずらし・軸の刻み」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
@@ -362,9 +360,7 @@ files:
   - path: interact/er-folds.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「ER 図の列の開閉」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
-    related:
-      - to: MOD-472-188
-        type: implements
+    related: []
   - path: interact/embedded-html.ts
     description: 埋め込んだ HTML が列より広い間だけ、その中で横にスクロールさせる処理を受け持つ。埋め込んだ HTML の幅の扱いを変えるときに参照する。
     tags: [topic:dom, topic:横スクロール, tool:html]
@@ -1024,9 +1020,7 @@ files:
   - path: parts/er.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「ER 図のテーブルと多重度の記号」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
-    related:
-      - to: MOD-472-187
-        type: implements
+    related: []
   - path: parts/footnote-ref.stories.ts
     description: 部品設計『脚注の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:脚注]
