@@ -732,7 +732,7 @@ constraints:
   - item: 埋める mermaid
     constraint: 機能 `mermaid` がオンで、文書に mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）があるときだけ、設定の `mermaid.url`（無ければ既定の jsDelivr の URL）のモジュールを、それが読み込む chunk ごと制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールで図にし、URL を読み込まない。相対パスの `mermaid.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないときは埋めず警告に出す（書き出しは止めない）。設定の `mermaid.theme`・`mermaid.themeVariables` は `features` と同じく埋める設定に写す
     decided_by: NFR-472-1#requirements[mermaid を埋めた書き出しの HTML のサイズ]
-    notes: PoC #384 で、CLI の `bundleViewer` が mermaid 12.3.0 の本体と chunk を動的 `import()` を残さずにまとめられることを確認した
+    notes: '[PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384) で、CLI の `bundleViewer` が mermaid 12.3.0 の本体と chunk を動的 `import()` を残さずにまとめられることを確認した'
   - item: 右側の目次の出し方
     constraint: 設定の `side-toc` を、`features` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: CFG-472-3#settings[side-toc.mode]

@@ -9778,7 +9778,7 @@ constraints:
     notes: '上限は [図のリサイズハンドルで、表示の範囲の max-height（36rem）より高くできない](https://github.com/shuhei1101/mdmark/issues/198) の修正（今の倍率の図の高さ）のまま。図ごとのキーの決め方はモジュール構成設計。1 回の量と下限はモックの値'
   - item: ブロックの間隔
     constraint: 本文の直下・セクションの中身（`.mdmark-section-body`）・タブの中身（`.mdmark-tab-panel`）のブロック同士の縦の間を `--mdmark-space`、リストの項目・引用・`details`・行の詳細（`.mdmark-row-detail > td`）の中のブロック同士の間を `calc(var(--mdmark-space) / 2)` にする。後のブロックがコードブロック（`.mdmark-code`）・ファイルツリー（`.mdmark-tree`）・記法の部品のときも同じ間を空ける。見出しは上の余白に、区切り線は上下の余白に、自分の規則の値を使用する。先頭のブロックの上には間を空けない
-    notes: '#326'
+    notes: '[コードブロックとファイルツリーの直前の要素との間隔が 0px になり、くっついて表示される](https://github.com/shuhei1101/mdmark/issues/326)'
   - item: mermaid の対象
     constraint: 機能 `mermaid` がオンの文書で、`render` が属性 `data-mdmark-mermaid` を付けた mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）
     notes: 文書に記載した生の HTML のこの属性は sanitize が落とす
@@ -9790,7 +9790,7 @@ constraints:
     notes: 外観はモック `docs/mock/components/mermaid-diagram/`（確認ログ）。倍率の下限とガントチャートの幅はモックで描いて決めた
   - item: mermaid のテーマ
     constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み込み、ほかの記載方法は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も削除する。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で再描画する。印刷では明るい配色の図を出す。暗い配色で描くときは、明るい配色の CSS 変数（同じタスクの中で描く先の要素の明暗の class を一時的に `mdmark-theme-light` に替えて解決し、元に戻す。配色の値は描く先の明暗の class から `:root` に該当するため、描く先の中の要素の class では変わらない）から作ったテーマでも先に `render` し、2 つの SVG を表示する枠に並べて、画面では今の配色の SVG、`@media print` では明るい配色の SVG だけを出す。明るい配色で描くときは SVG を 1 つだけ配置する（制約「配色の切り替え」の印刷で明るい配色にするのと統一する。`render` は非同期で、`beforeprint` の中で再描画しても印刷のレイアウトに間に合わないため、印刷のきっかけを待たない）'
-    notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ指定できることを確認した。デザイン方針の「使用しないもの」（影・グラデーション）
+    notes: '[PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384) で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ指定できることを確認した。デザイン方針の「使用しないもの」（影・グラデーション）'
   - item: mermaid を読み込めないとき
     constraint: mermaid を読み込めないときは、各 mermaid の対象の読み込み中のブロックを通知ブロック（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中のブロックを記載の警告に替え、コードブロックを出して残す
   - item: フロントマター

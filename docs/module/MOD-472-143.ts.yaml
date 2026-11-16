@@ -263,7 +263,7 @@ functions:
     returns:
       type: string
       description: hex の色
-    reason: PoC #384 で、canvas で `#rrggbbaa` にすると透明度の低い色の RGB が丸めでずれたため、`rgb()`・`rgba()` は canvas を経由しない
+    reason: '[PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384) で、canvas で `#rrggbbaa` にすると透明度の低い色の RGB が丸めでずれたため、`rgb()`・`rgba()` は canvas を経由しない'
     unit_tests:
       - name: test_css_color_to_hex
         case: 正常
