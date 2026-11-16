@@ -579,3 +579,91 @@ test("test_run_upgrade_when_settings_with_config_call", async () => {
   expect(settings.version).toBe("v0.5.0");
   expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
 });
+
+// 手元が develop なら書き換えずに止める（異常系）
+test("test_run_upgrade_when_local_version_develop", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const { CliError } = await loadMain();
+  const config = OLD_CONFIG.replace("v0.3.0", "develop");
+  const fixture = await createFixture({ config });
+  const { io } = createIo(fixture.work);
+  // 実行
+  const result = runUpgrade(
+    {
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  await expect(result).rejects.toBeInstanceOf(CliError);
+  await expect(result).rejects.toThrow("develop");
+  await expect(result).rejects.toThrow("v{MAJOR}.{MINOR}.{PATCH}");
+  expect(await fixture.read("mdmark.config.yaml")).toBe(config);
+  expect(existsSync(join(fixture.work, ".mdmark"))).toBe(false);
+});
+
+// develop のビルドはビルドの元のバージョンを目標にする（正常系）
+test("test_run_upgrade_when_develop_build", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture();
+  const { io } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0+develop.abc1234",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  const config = parse(await fixture.read("mdmark.config.yaml"));
+  expect(config.version).toBe("v0.5.0");
+});
+
+// develop のビルドで next/ に手順があれば止める（異常系）
+test("test_run_upgrade_when_develop_build_has_unreleased_steps", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const { CliError } = await loadMain();
+  const fixture = await createFixture({
+    packageFiles: {
+      "migrations/next/steps.yaml": STEPS_V040.replace(
+        "legacy を renamed",
+        "renamed を legacy",
+      )
+        .replace("from: legacy", "from: renamed")
+        .replace("to: renamed", "to: legacy"),
+    },
+  });
+  const { io } = createIo(fixture.work);
+  // 実行
+  const result = runUpgrade(
+    {
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0+develop.abc1234",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  await expect(result).rejects.toBeInstanceOf(CliError);
+  await expect(result).rejects.toThrow(
+    "npx github:shuhei1101/mdmark#v0.5.0 upgrade",
+  );
+  expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
+});
