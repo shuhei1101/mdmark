@@ -14715,7 +14715,9 @@ test(
       expect(mermaidNode(svg, "F").closest("a")).toBeNull();
       expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
       // 実行・検証: A のノードを押すと、本文の要素のクリックの処理が href を受け取る
-      const link = mermaidNode(svg, "A").closest("a") as SVGAElement;
+      const link = mermaidNode(svg, "A").closest<SVGAElement>(
+        "a",
+      ) as SVGAElement;
       await userEvent.click(link);
       expect(opened).toEqual(["./a.md"]);
       // 実行・検証: A のノードの上で押したまま 100px 動かして離すと、図が動き、記録が増えない
@@ -14726,7 +14728,9 @@ test(
         );
       }
       const zoomed = visibleMermaidSvgs(flowchart)[0] as SVGSVGElement;
-      const target = mermaidNode(zoomed, "A").closest("a") as SVGAElement;
+      const target = mermaidNode(zoomed, "A").closest<SVGAElement>(
+        "a",
+      ) as SVGAElement;
       target.scrollIntoView({ block: "center", inline: "center" });
       const before = viewport.scrollLeft;
       const box = target.getBoundingClientRect();
