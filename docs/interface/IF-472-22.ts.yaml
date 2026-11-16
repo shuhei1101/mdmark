@@ -780,7 +780,7 @@ constraints:
     constraint: 'viewType `mdmark.preview`、タブのタイトル `プレビュー {ファイル名}`。`openPreviewToSide` は `ViewColumn.Beside`、`openPreview` は `ViewColumn.Active` に開く。`enableScripts: true`・`retainContextWhenHidden: false`。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と、拡張機能の `media/`'
     notes: 背面に回したパネルは Webview が再作成され、`ready` を受けて最後の全文をもう一度送信し、背面に回す前のスクロールの位置へ戻す（プレビューを再描画する.ts）
   - item: CSP
-    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {html-scripts.url の origin} {mermaid.url の origin} {syntax.url の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに再作成する。`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ（`html-scripts.url`・`mermaid.url`・`syntax.url` を記載しないときは既定の jsDelivr の origin）。mermaid が図の SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受ける。範囲の `ts`・`js` は、`mount` がページの `script[nonce]` の nonce を付けた `script` 要素で動かすため、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` を追加しない。まとめていない名前のアイコンを読み込む `https://cdn.jsdelivr.net` を `script-src` と `connect-src` に含める"
+    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {html-scripts.url の origin} {mermaid.url の origin} {syntax.url の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。\n\n- `{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに再作成する。\n- `libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ（`html-scripts.url`・`mermaid.url`・`syntax.url` を記載しないときは既定の jsDelivr の origin）。\n- mermaid が図の SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受ける。\n- 範囲の `ts`・`js` は、`mount` がページの `script[nonce]` の nonce を付けた `script` 要素で動かすため、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` を追加しない。\n- まとめていない名前のアイコンを読み込む `https://cdn.jsdelivr.net` を `script-src` と `connect-src` に含める"
     notes: "図とヒントの部品が HTML に `style` 属性を記載するため `style-src` に `'unsafe-inline'` が要る（[PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)）。スクリプトは nonce で絞る"
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を配置し、本文の相対パスの画像を Markdown のフォルダから読み込む。`localResourceRoots` の外の画像は Webview が読み込まず、`alt` が出る
@@ -793,7 +793,22 @@ constraints:
     constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、設定ファイルの `colorScheme` を `config` で指定し、無ければ VS Code が `body` に付ける class に任せる。`light`・`dark` のときは `config` から `colorScheme` を除く。明暗は、文書の page のマーカー → `mdmark.preview.theme`（`auto` 以外）→ 設定ファイルの `colorScheme` → VS Code のテーマの順に決まる（確認ログ）。設定を変えると開いているパネルへ `render` をもう一度送信する'
     notes: docs/interface/IF-472-35.ts の制約「配色の切り替え」
   - item: テストのときの差し替え
-    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読み込む。CSP の配布物の origin も差し替えた配信元の origin にする。それ以外のモードでは読み込まない。`ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送信して `inspected` の `elements` を返却する `inspectPreview(selector)` を戻り値で返却する。同じく `axe` を送信して `axed` の `violations` を返却する `auditPreview()` も返却する。Webview はテストのビルドが配置した axe-core を `axe` を受けたときだけ読み込む。Webview はテストのときだけ `document` の `securitypolicyviolation` を数え、`html` 要素の `data-mdmark-csp-violations` に件数を持つ。結合テストは Webview の DOM の期待値・アクセシビリティの違反・CSP の違反の件数（`inspectPreview("html")` の属性）をこの戻り値で確認する'
+    constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読み込む。
+
+
+      - CSP の配布物の origin も差し替えた配信元の origin にする。
+
+      - それ以外のモードでは読み込まない。
+
+      - `ExtensionMode.Test` のときだけ、Webview の HTML に `inspect` を受ける処理を入れ、`activate` は開いているパネルへ `inspect` を送信して `inspected` の `elements` を返却する `inspectPreview(selector)` を戻り値で返却する。
+
+      - 同じく `axe` を送信して `axed` の `violations` を返却する `auditPreview()` も返却する。
+
+      - Webview はテストのビルドが配置した axe-core を `axe` を受けたときだけ読み込む。
+
+      - Webview はテストのときだけ `document` の `securitypolicyviolation` を数え、`html` 要素の `data-mdmark-csp-violations` に件数を持つ。
+
+      - 結合テストは Webview の DOM の期待値・アクセシビリティの違反・CSP の違反の件数（`inspectPreview("html")` の属性）をこの戻り値で確認する'
     notes: docs/config/CFG-472-2
   - item: 対応する VS Code
     constraint: '`engines.vscode` の下限より古い VS Code には入らない'
