@@ -7,7 +7,6 @@ export const PART_SELECTORS = {
   details: 'details[class="mdmark-collapsible"]',
   callout: "details.markdown-alert",
   frontmatter: "details.mdmark-frontmatter",
-  er: 'figure.mdmark-diagram[data-diagram="er"]',
   tree: "div.mdmark-tree",
   code: "pre:has([data-fold-lines])",
   "table-tree": "div.mdmark-table[data-tree]",
