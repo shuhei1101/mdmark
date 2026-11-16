@@ -1,0 +1,50 @@
+$ npx vitest run --project 'unit*' tests/unit/src/mermaid.browser.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mermaid-click-url-node-link
+
+ ❯ |unit-browser (chromium)| tests/unit/src/mermaid.browser.test.ts (22 tests | 2 failed) 2929ms
+   × test_finish_mermaid_node_links 216ms
+   × test_finish_mermaid_node_links_when_not_allowed 122ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mermaid.browser.test.ts > test_finish_mermaid_node_links
+TypeError: finishMermaidNodeLinks is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mermaid.browser.test.ts/test_finish_mermaid_node_links.png
+
+ ❯ tests/unit/src/mermaid.browser.test.ts:741:3
+    739|   const svg = host.querySelector("svg") as SVGSVGElement;
+    740|   // 実行
+    741|   finishMermaidNodeLinks(svg);
+       |   ^
+    742|   // 検証
+    743|   const anchors = [...svg.querySelectorAll("a")];
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=e5715b2a:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mermaid.browser.test.ts > test_finish_mermaid_node_links_when_not_allowed
+TypeError: finishMermaidNodeLinks is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mermaid.browser.test.ts/test_finish_mermaid_node_links_when_not_allowed.png
+
+ ❯ tests/unit/src/mermaid.browser.test.ts:766:3
+    764|   const svg = host.querySelector("svg") as SVGSVGElement;
+    765|   // 実行
+    766|   finishMermaidNodeLinks(svg);
+       |   ^
+    767|   // 検証
+    768|   expect(svg.querySelectorAll("a")).toHaveLength(0);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=e5715b2a:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 20 passed (22)
+   Start at  01:21:19
+   Duration  6.96s (tests 63%, worker 28%, import 10%)
+
