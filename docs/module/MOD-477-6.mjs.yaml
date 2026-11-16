@@ -13,7 +13,24 @@ functions:
     scope: public
     is_async: true
     summary: 廃止した図の範囲を map の範囲へ書き換え、設定に種類を書き足す移行の手順のスクリプトの処理
-    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config, documents]`。`description` は ``文書の廃止した `flow`・`sequence` の範囲を map の範囲へ書き換え、使用していた種類を設定の `map.kinds`・`map.lines` へ書き足す（写さない値と読めない範囲は移行の報告に挙げる）``）が実行する。スクリプトとして呼ばれると、同じフォルダの `retired-diagrams.js`（`buildRetiredDiagrams` がまとめて commit したファイル）を動的に import し、その `loadConfig` で `--config` の設定を読み、`loadExtensionDirectives` で拡張の `directive` を取り、`convertRetiredDiagrams` を `convert` に渡してこの関数を呼ぶ。廃止の前の定義を読む処理を本体から消した後も、このフォルダだけで動く。文書は `migrateDocumentMarks` と同じく、設定の `build` の対象と索引の文書を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに `convert` で書き換え、変わった文書だけを書き込む。全ての文書の `kinds`・`lines` を合わせ、設定に同じ名前の行が無いものだけを `yaml` の `parseDocument` で読んだ設定の `map.kinds`・`map.lines` に書き足して書き込む（コメント・キーの並び・ほかのキーの記載方法を残す。書き足すものが無ければ設定を書き込まない）。`report` を `{文書の相対パス}:{行}: {名前}: {項目}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書の廃止した図を map の範囲へ書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。単体テストは `migrations/*/retired-diagrams.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config, documents]`。`description` は ``文書の廃止した `flow`・`sequence` の範囲を map の範囲へ書き換え、使用していた種類を設定の `map.kinds`・`map.lines` へ書き足す（写さない値と読めない範囲は移行の報告に挙げる）``）が実行する。
+
+
+      - スクリプトとして呼ばれると、同じフォルダの `retired-diagrams.js`（`buildRetiredDiagrams` がまとめて commit したファイル）を動的に import し、その `loadConfig` で `--config` の設定を読み、`loadExtensionDirectives` で拡張の `directive` を取り、`convertRetiredDiagrams` を `convert` に渡してこの関数を呼ぶ。
+
+      - 廃止の前の定義を読む処理を本体から消した後も、このフォルダだけで動く。
+
+      - 文書は `migrateDocumentMarks` と同じく、設定の `build` の対象と索引の文書を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。
+
+      - 文書ごとに `convert` で書き換え、変わった文書だけを書き込む。
+
+      - 全ての文書の `kinds`・`lines` を合わせ、設定に同じ名前の行が無いものだけを `yaml` の `parseDocument` で読んだ設定の `map.kinds`・`map.lines` に書き足して書き込む（コメント・キーの並び・ほかのキーの記載方法を残す。書き足すものが無ければ設定を書き込まない）。
+
+      - `report` を `{文書の相対パス}:{行}: {名前}: {項目}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書の廃止した図を map の範囲へ書き換えました。` を書き込んで 0 で終わる。
+
+      - 読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。
+
+      - 単体テストは `migrations/*/retired-diagrams.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
     args:
       - name: options
         type: '{ config: unknown; configPath: string; configDir: string; directives: Set<string>; convert: (options: { markdown: string; skip: Set<string> }) => ConvertResult }'

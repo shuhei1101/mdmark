@@ -3172,13 +3172,52 @@ exceptions:
     condition: 常に HTML 文字列を返却する。未知のマーカーと許可していない要素・属性は落とす
 constraints:
   - item: マーカーの書式
-    constraint: '1 か所に付けるマーカーは `<!-- {名前}: {引数} -->`、範囲を持つマーカーは `<!-- {名前}: {引数} -->` 〜 `<!-- /{名前} -->`。引数の無いマーカーは `<!-- {名前} -->` と記載できる。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は、名前の後ろの空白から `-->` の前までの、最上位の波括弧を含む JSON のオブジェクト 1 つ（複数の行にわたってよい）。マーカーごとのキー・型・必須・既定と共通のオブジェクトは、ER 図『マーカーの設定の共通の決まり』と、そこから辿るマーカーごとの ER 図に従う。名前の後ろが `{` で始まらない引数は今の書き方（空白で区切った種類・`+機能`・`-機能`・`キー=値`・`closed`・`open`・位置の値）として、ER 図『マーカーの設定の共通の決まり』の「今の引数との対応」の表で同じ JSON のオブジェクトにしてから読む（この記載方法を入れたマイナーバージョンの間だけ。拡張と設定の `libraries` のマーカーは今の書き方を読まない。制約「マーカーの場所の要素」）。コードブロックと行内のコードの中はマーカーとして扱わない'
+    constraint: '1 か所に付けるマーカーは `<!-- {名前}: {引数} -->`、範囲を持つマーカーは `<!-- {名前}: {引数} -->` 〜 `<!-- /{名前} -->`。
+
+
+      - 引数の無いマーカーは `<!-- {名前} -->` と記載できる。
+
+      - 名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。
+
+      - 引数は、名前の後ろの空白から `-->` の前までの、最上位の波括弧を含む JSON のオブジェクト 1 つ（複数の行にわたってよい）。
+
+      - マーカーごとのキー・型・必須・既定と共通のオブジェクトは、ER 図『マーカーの設定の共通の決まり』と、そこから辿るマーカーごとの ER 図に従う。
+
+      - 名前の後ろが `{` で始まらない引数は今の書き方（空白で区切った種類・`+機能`・`-機能`・`キー=値`・`closed`・`open`・位置の値）として、ER 図『マーカーの設定の共通の決まり』の「今の引数との対応」の表で同じ JSON のオブジェクトにしてから読む（この記載方法を入れたマイナーバージョンの間だけ。拡張と設定の `libraries` のマーカーは今の書き方を読まない。制約「マーカーの場所の要素」）。
+
+      - コードブロックと行内のコードの中はマーカーとして扱わない'
   - item: マーカーの扱い
-    constraint: '`features` のマーカーは機能のオン・オフとして取得する。記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`・`gallery`・`columns`・`column`・`details`・`pagebreak`・`include`・`wide`）と図の部品のマーカー（`chart`・`param`）は、その記法の機能がオンなら記法にし、オフならマーカーだけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` のマーカーは、マーカーの場所の要素に置き換える。図の部品のマーカーと同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どのマーカーも出力にコメントとして残さない'
+    constraint: '`features` のマーカーは機能のオン・オフとして取得する。
+
+
+      - 記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`・`gallery`・`columns`・`column`・`details`・`pagebreak`・`include`・`wide`）と図の部品のマーカー（`chart`・`param`）は、その記法の機能がオンなら記法にし、オフならマーカーだけを取り除いて囲んだ Markdown を普通の Markdown として描く。
+
+      - 対応表にある名前と、`registerExtension` で登録した拡張の `directive` のマーカーは、マーカーの場所の要素に置き換える。
+
+      - 図の部品のマーカーと同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。
+
+      - それ以外は取り除く。
+
+      - どのマーカーも出力にコメントとして残さない'
   - item: マーカーの場所の要素
     constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`。`{引数}` は引数の JSON のオブジェクトを空白なしの JSON にした文字（引数の無いマーカーは `{}`）。登録した拡張のマーカーも同じ要素にする。引数が JSON のオブジェクトでない（今の書き方の）拡張と設定の `libraries` のマーカーは、要素に置き換えず、その場所に制約「作成者の誤り」の記載の警告（引数を JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられること）を配置する。`render` は拡張の `load` も `schema` の検査も呼ばない'
   - item: 残す要素・属性
-    constraint: 'sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` と、記法が使用する `nav`・`figure`・`figcaption` を追加する。文書に記載した `input` は `transformTags` で常に `type="checkbox"` と `disabled` をもう一度付け、元の属性からは `checked` だけを引き継ぐ。文書に記載した生の HTML の class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけを残す。記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`）・`data-*`・`id` は、mdmark が記法から出した要素だけが持つ（埋め込んだ HTML の中の `data-hint` は制約の「ヒント」のとおり残す）。`style` 属性は残さず（埋め込んだ HTML の中は制約の「埋め込んだ HTML」のとおり）、図の部品が出した要素の位置と大きさ（`left`・`top`・`width`・`height` の px）と名前を内接させる余白（`padding` の 0 以上の px の値 1 つか 2 つ）と拡大の倍率（`transform: scale()`）、行番号を持つコードブロックの `code` の桁の数（`--mdmark-code-digits`）だけを残す。`pre` と `table` には、描くときに `tabindex="0"` とスクリーンリーダー向けの名前（`aria-label`。記載方法は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で記載した `pre`・`table` は、記載した `aria-label` を残し、`tabindex` は `0` にする）。文書に記載した `svg`・`button`・`output`・`label` は残さない。図の部品が定義から出した要素だけに、`svg` とその中の `defs`・`marker`・`pattern`・`g`・`path`・`rect`・`circle`・`ellipse`・`line`・`polyline`・`polygon`・`text`、`button`・`output`・`label`・`input type="range"`、属性の `role`・`hidden`・`tabindex`・`aria-describedby`・`aria-label`・`aria-labelledby`・`aria-hidden`・`type`・`min`・`max`・`step`・`value`・`for`・`abbr` の `title` と svg の描画の属性（`d`・`viewBox`・`marker-end`・塗りの模様の `patternUnits` など。一覧はモジュール構成設計）を許し、記法の class・`data-*` と同じ見分けで出力の全体を sanitize-html に経由する（記法のアイコンは CSS で付ける）'
+    constraint: 'sanitize-html の既定の要素に `img`・`del`・`details`・`summary`・`input` と、記法が使用する `nav`・`figure`・`figcaption` を追加する。
+
+
+      - 文書に記載した `input` は `transformTags` で常に `type="checkbox"` と `disabled` をもう一度付け、元の属性からは `checked` だけを引き継ぐ。
+
+      - 文書に記載した生の HTML の class は `language-*`・`mdmark-align-*`・`task-list-item`・`mdmark-embed` だけを残す。
+
+      - 記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`）・`data-*`・`id` は、mdmark が記法から出した要素だけが持つ（埋め込んだ HTML の中の `data-hint` は制約の「ヒント」のとおり残す）。
+
+      - `style` 属性は残さず（埋め込んだ HTML の中は制約の「埋め込んだ HTML」のとおり）、図の部品が出した要素の位置と大きさ（`left`・`top`・`width`・`height` の px）と名前を内接させる余白（`padding` の 0 以上の px の値 1 つか 2 つ）と拡大の倍率（`transform: scale()`）、行番号を持つコードブロックの `code` の桁の数（`--mdmark-code-digits`）だけを残す。
+
+      - `pre` と `table` には、描くときに `tabindex="0"` とスクリーンリーダー向けの名前（`aria-label`。記載方法は画面設計『文書』）を付ける（Markdown の表とコードブロックが対象。文書に生の HTML で記載した `pre`・`table` は、記載した `aria-label` を残し、`tabindex` は `0` にする）。
+
+      - 文書に記載した `svg`・`button`・`output`・`label` は残さない。
+
+      - 図の部品が定義から出した要素だけに、`svg` とその中の `defs`・`marker`・`pattern`・`g`・`path`・`rect`・`circle`・`ellipse`・`line`・`polyline`・`polygon`・`text`、`button`・`output`・`label`・`input type="range"`、属性の `role`・`hidden`・`tabindex`・`aria-describedby`・`aria-label`・`aria-labelledby`・`aria-hidden`・`type`・`min`・`max`・`step`・`value`・`for`・`abbr` の `title` と svg の描画の属性（`d`・`viewBox`・`marker-end`・塗りの模様の `patternUnits` など。一覧はモジュール構成設計）を許し、記法の class・`data-*` と同じ見分けで出力の全体を sanitize-html に経由する（記法のアイコンは CSS で付ける）'
     notes: docs/library/LIB-472-23
   - item: URL のスキーム
     constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す'
@@ -3190,11 +3229,57 @@ constraints:
   - item: 入力の大きさ
     constraint: 制限なし
   - item: 表
-    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。種類は引数の `kind`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`・`sort` の `true`）を記載した機能（`filter`・`columns`・`pin`・`total`・`sort`）を加えたものを空白で並べる。`enabled` を `false` にした機能の列の設定は適用しない。列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。`columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。`type` は `select`・`text`・`date`。`type` を省いたときは、長文の列なら `text`、ほかは `select` にする。見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。`sort` の機能を持つ表は、長文の列（`columns.{列名}.sort` が `true` の列を除く）と `columns.{列名}.sort` が `false` の列の位置を `data-no-sort="{位置} …"` に写す（表の種類と、`features.sort` を記載したかによらない）。`columns.{列名}.sort` の `true` は `sort` の機能を加える（`enabled` を `false` にしたときは適用しない）。`sort` の機能を持たない表には `data-no-sort` を付けない。ビューのマーカーの範囲の表も同じ規則で写す（`columns.{列名}.sort` はビューのマーカーの引数から読む。制約「ビューのマーカー」）。`collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。`features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。`columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。`columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。`columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
+    constraint: |-
+      表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。
+
+      - 種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。
+      - 種類は引数の `kind`。
+      - 機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`・`sort` の `true`）を記載した機能（`filter`・`columns`・`pin`・`total`・`sort`）を加えたものを空白で並べる。
+      - `enabled` を `false` にした機能の列の設定は適用しない。
+      - 列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。
+      - `columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。
+      - `type` は `select`・`text`・`date`。
+      - `type` を省いたときは、長文の列なら `text`、ほかは `select` にする。
+      - 見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。
+      - `sort` の機能を持つ表は、長文の列（`columns.{列名}.sort` が `true` の列を除く）と `columns.{列名}.sort` が `false` の列の位置を `data-no-sort="{位置} …"` に写す（表の種類と、`features.sort` を記載したかによらない）。
+      - `columns.{列名}.sort` の `true` は `sort` の機能を加える（`enabled` を `false` にしたときは適用しない）。
+      - `sort` の機能を持たない表には `data-no-sort` を付けない。
+      - ビューのマーカーの範囲の表も同じ規則で写す（`columns.{列名}.sort` はビューのマーカーの引数から読む。制約「ビューのマーカー」）。
+      - `collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。
+      - `features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。
+      - `columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。
+      - `columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。
+      - `columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。
+      - `columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。
+      - `columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。
+      - `columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。
+      - 見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。
+      - 並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。
+      - 表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。
+      - 表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。
+      - 見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。
+      - 本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。
+      - `^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。
+      - 見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。
+      - 表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。
+      - セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
   - item: 注意書き
     constraint: '1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` とタイトル `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から除外する。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にし、`+` を付けた種類は同じ `details` に `open` を付ける。種類（と `-`・`+`）の後ろに文字があれば、タイトルの文字をその文字にし、タイトルの頭に `<span class="mdmark-visually-hidden">{補足・ヒント・重要・警告・注意}: </span>` を配置する。注意書きの本文の中の引用も同じ規則で注意書きにする（入れ子）。知らない種類は `note` として出す'
   - item: タブ
-    constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。区切りの見出しは `<p class="mdmark-tab-title">{見出しの行内の HTML}</p>` に替え（`**` の強調は `strong` のまま残す）、本文の見出しとして残さない。全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。`<!-- tabs: {"group": "名前"} -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない。範囲の中の `<!-- tabs -->` は入れ子として数え、開きと閉じを内側から対応させる。内側のタブは、内側の範囲で最初に出る見出しの階層で区切り、`mdmark-tab-panel` の中に `mdmark-tabs` を入れる。閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きから文書の終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま出す'
+    constraint: '`<!-- tabs -->` の範囲を `<div class="mdmark-tabs">` で囲み、範囲で最初に出る見出しの階層で区切った中身ごとに `<div class="mdmark-tab-panel">` に入れる。
+
+
+      - 区切りの見出しは `<p class="mdmark-tab-title">{見出しの行内の HTML}</p>` に替え（`**` の強調は `strong` のまま残す）、本文の見出しとして残さない。
+
+      - 全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。
+
+      - `<!-- tabs: {"group": "名前"} -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない。
+
+      - 範囲の中の `<!-- tabs -->` は入れ子として数え、開きと閉じを内側から対応させる。
+
+      - 内側のタブは、内側の範囲で最初に出る見出しの階層で区切り、`mdmark-tab-panel` の中に `mdmark-tabs` を入れる。
+
+      - 閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きから文書の終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま出す'
   - item: ステップ・ファイルツリー・バッジ
     constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {JSON のオブジェクト} -->` の `wrap` の `true` は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける（`depth` と同じオブジェクトに記載できる）。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を削除した文言}</span>` にし、`badge\:` の行内のコードは `\` を削除した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
   - item: 罫線のフォルダ構成の記載の警告
@@ -3214,7 +3299,26 @@ constraints:
     constraint: 記法のマーカーの、名前の後ろが `{` で始まるのに JSON のオブジェクトとして読めない引数（読めない位置と理由。値に `-->` を記載するとコメントがそこで閉じるため、`>` を `\u003e` にした `--\u003e` での記載方法も）、マーカーごとの JSON Schema（制約「マーカーの書式」の ER 図）の型・選べる値・必須に合わない値（その値を持つ設定だけを適用しない。必須の `tree.key` の無い `tree` は `tree` を適用しない）、表に無い列名の `columns.{列名}`・`tree.key.column` などの列を指す値、列に無い値の `board.values.{値}`、先頭の列の `columns.{列名}.hidden`、文書に無い見出しか直下にタブの範囲を持たない見出しの `tree.example.heading`、`ts` と `js` のコードブロックを両方置いた埋め込んだ HTML の範囲・同じ言語のコードブロックを 2 つ配置した範囲、閉じのマーカーの無い範囲（マーカーから文書の終わりまでを範囲にする）、見出しの無いタブの範囲、空の文字の `group`（組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読み込めない行を持つファイルツリー、コードブロックに無い行の番号、直後にコードブロックの無いコードブロックのマーカー、知らないコードの行のマーカー（`[!code blink]` など。その行には当てず、記載した文字のまま出す）、`fold` の畳めない行（コードブロックに無い行と、次の空でない行が深くない行）の番号、表の行の数以上の `header.rows`、表の列の数以上の `header.columns`（行見出しを持たない表として描く）、結合するセルの無い `^^`・`<<`（制約「表」）、閉じの無い入れ子のタブの開き（場所は外側の開き）、`total` の表の `sum`・`avg` の列にある空でなく数として読み込めないセル（読み込み方は docs/interface/IF-472-35.ts の制約『表の操作』。その列のその集計のセルは `mount` が空にする）では、読み込めた指定だけを適用して描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` とタイトル `<p class="mdmark-syntax-warning-title">記載の警告</p>` と、読み込めない指定と修正方法の本文を配置する。記法のマーカーの知らないキー（`features` のマーカーと表の `features` の知らない機能名を含む）と、`enabled` を `false` にした機能の列の設定は、記載の警告を配置せずに無視し、残りの指定で描く（点検が通知する）。今の書き方の記法のマーカーは、記載の警告を配置せずに制約「マーカーの書式」のとおり描く（点検が通知する）。今の書き方の中の読めない単語は、今の実装のとおり扱う
     notes: 本文の文言は画面設計『文書』
   - item: 図の部品
-    constraint: '`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` 〜 閉じのマーカーの範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み込み、構造（`dist/index.d.ts` の `MdmarkChartDefinition`・`MdmarkParamDefinition`・`MdmarkErDefinition`）を確認して、`<figure class="mdmark-diagram" data-diagram="{種類}">` にタイトル（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（テーブルと列の名前と型・関係のラベル・ツールチップの中身）は文字として出し、`{{単語}}` はその単語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に配置する。グラフの項目（点・棒・扇形など）は、フォーカスできる要素と、系列か項目の名前と値を持つツールチップの中身にし、点には外観の点より広い透明のクリックを受ける範囲を重ねる（要素の構造と種類ごとの中身は部品設計）。拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`donut`・`radar`・`bubble`・`combo` で、系列（円とドーナツは項目）は 1〜6 つ。`stacked-bar`・`stacked-area` は同じ項目の系列の値を積み上げた高さ（負の値は 0 の下へ追加する。`stacked-bar` は棒の上に合計を出す）、`horizontal-bar` は項目を縦・値を横の軸、`donut` は中を空けた扇形と、中央の合計と `合計{unit}`、`radar` は `ticks` を軸にした多角形、`bubble` は点の 3 つ目の値に面積が比例する円（凡例に `円の面積: {size.label}`）、`combo` は系列ごとの `as`（`line`・`bar`）で折れ線と棒を同じ横の軸に描き、`axis` が `y2` の系列は `y2` の右の縦の軸で示す（`y2` を持つときは凡例の系列の名前に `（左の軸）`・`（右の軸）` を添える）。棒・面・円・ドーナツは系列を色と塗りの模様の組、折れ線・散布図・バブル・レーダーは色と点の形状の組で描き分け、円とドーナツは扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。値の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
+    constraint: '`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` 〜 閉じのマーカーの範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み込み、構造（`dist/index.d.ts` の `MdmarkChartDefinition`・`MdmarkParamDefinition`・`MdmarkErDefinition`）を確認して、`<figure class="mdmark-diagram" data-diagram="{種類}">` にタイトル（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。
+
+
+      - 範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。
+
+      - 定義の文字（テーブルと列の名前と型・関係のラベル・ツールチップの中身）は文字として出し、`{{単語}}` はその単語を用語の照合に回す。
+
+      - ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に配置する。
+
+      - グラフの項目（点・棒・扇形など）は、フォーカスできる要素と、系列か項目の名前と値を持つツールチップの中身にし、点には外観の点より広い透明のクリックを受ける範囲を重ねる（要素の構造と種類ごとの中身は部品設計）。
+
+      - 拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。
+
+      - グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`donut`・`radar`・`bubble`・`combo` で、系列（円とドーナツは項目）は 1〜6 つ。
+
+      - `stacked-bar`・`stacked-area` は同じ項目の系列の値を積み上げた高さ（負の値は 0 の下へ追加する。`stacked-bar` は棒の上に合計を出す）、`horizontal-bar` は項目を縦・値を横の軸、`donut` は中を空けた扇形と、中央の合計と `合計{unit}`、`radar` は `ticks` を軸にした多角形、`bubble` は点の 3 つ目の値に面積が比例する円（凡例に `円の面積: {size.label}`）、`combo` は系列ごとの `as`（`line`・`bar`）で折れ線と棒を同じ横の軸に描き、`axis` が `y2` の系列は `y2` の右の縦の軸で示す（`y2` を持つときは凡例の系列の名前に `（左の軸）`・`（右の軸）` を添える）。
+
+      - 棒・面・円・ドーナツは系列を色と塗りの模様の組、折れ線・散布図・バブル・レーダーは色と点の形状の組で描き分け、円とドーナツは扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。
+
+      - 値の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
     notes: 定義の構造の項目はモジュール構成設計で型に記載する。見本は `docs/mock/refs/42/assets/samples.js`
   - item: 廃止した図の範囲
     constraint: '`<!-- flow -->`・`<!-- sequence -->` 〜 閉じのマーカーの範囲は図にせず、範囲の中の Markdown と定義の JSON を出力に残さずに、範囲の場所へ記載の警告を 1 つ配置する。本文は、その記載方法を廃止したことと、`mdmark upgrade` で map の範囲（Mermaid と補足）へ変換できることを記載する。閉じのマーカーの無い範囲は、マーカーから文書の終わりまでを範囲にする。機能 `diagrams` がオフでも同じ警告を配置する。`registerExtension` で `flow`・`sequence` と同じ `directive` の拡張を登録したページでは、その名前の範囲を廃止した図として扱わず、制約「マーカーの扱い」のとおり拡張のマーカーにする（インターフェース定義『拡張を登録する』の `directive`）'
@@ -3224,7 +3328,28 @@ constraints:
     constraint: グラフは系列を色と線の模様と点の形状の組で描き分ける。グラフの凡例には系列（円とドーナツは項目）を記載する
     notes: 色と模様の値はデザイン方針と CSS 変数（モジュール構成設計）
   - item: ER 図
-    constraint: '`er` の定義は、テーブル（`id`・物理名 `name`・論理名 `label`・種類 `kind`・色 `color`・概要 `desc`・座標 `x`・`y`・幅 `w`・畳んだ状態で開く `folded`・列 `columns`）と関係（元 `from`・`fromColumn`・`fromCard`、先 `to`・`toColumn`・`toCard`、ラベル `label`、縦の線の位置 `midX`）を持つ。テーブルは定義の座標のとおりに配置し、自動配置はしない。テーブルの見出しに lucide の `table` のアイコンと物理名、論理名と種類の札（`master` は `マスター`、`transaction` は `トランザクション`。`kind` の無いテーブルは札を出さない）を出し、列（`name`・`type`・主キー `pk`・外部キー `fk`・NOT NULL `nn`・説明 `desc`）を定義の順に 1 行ずつ、`PK`・`FK`・`NN` のマーカー（`abbr`。`title` が `主キー`・`外部キー`・`NOT NULL`）・名前・型で並べる。テーブルの `data-color` は `color`、無ければ種類の既定の色（`master` は `blue`、`transaction` は `orange`）にし、どちらも無いテーブルは `data-color` を持たない。関係は、元の列の行から先の列の行へ横・縦・横の直角の線で結び（縦の線は `midX`、省いたときは両端の中間）、両端に多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）を配置し、`label` を縦の線の中ほどに出す。同じ `x` のテーブルどうしの関係は両方の右の辺から出す。主キーでも外部キーでもない列を持つテーブルの見出しに、列の開閉のボタン（スクリーンリーダー向けの名前 `「{論理名}」の主キーと外部キー以外の列`、`aria-expanded` は `folded` が `true` のとき `false`）を配置する。`folded` が `true` のテーブルは主キーと外部キーの列だけを出し、`非表示 {数} 列` の行を配置する。関係の列が畳まれて見えないときは、線を見出しの縦の中ほどへ結ぶ。`desc` を持つテーブルと、`desc` を持つ列のあるテーブルは、見出しに説明のボタン（スクリーンリーダー向けの名前 `「{論理名}」の説明`）を配置し、`role="tooltip"` と `hidden` を持つ中身に `{論理名}（{物理名}）`・概要・`desc` を持つ列の名前と説明を入れる（`hints` がオフのときは配置しない）。凡例には、図にあるテーブルの種類の札・列のマーカー・多重度の記号だけを記載する（説明のボタンと用語の下線は記載しない。制約「図の外観の決まり」の凡例の決まりより優先する）'
+    constraint: '`er` の定義は、テーブル（`id`・物理名 `name`・論理名 `label`・種類 `kind`・色 `color`・概要 `desc`・座標 `x`・`y`・幅 `w`・畳んだ状態で開く `folded`・列 `columns`）と関係（元 `from`・`fromColumn`・`fromCard`、先 `to`・`toColumn`・`toCard`、ラベル `label`、縦の線の位置 `midX`）を持つ。
+
+
+      - テーブルは定義の座標のとおりに配置し、自動配置はしない。
+
+      - テーブルの見出しに lucide の `table` のアイコンと物理名、論理名と種類の札（`master` は `マスター`、`transaction` は `トランザクション`。`kind` の無いテーブルは札を出さない）を出し、列（`name`・`type`・主キー `pk`・外部キー `fk`・NOT NULL `nn`・説明 `desc`）を定義の順に 1 行ずつ、`PK`・`FK`・`NN` のマーカー（`abbr`。`title` が `主キー`・`外部キー`・`NOT NULL`）・名前・型で並べる。
+
+      - テーブルの `data-color` は `color`、無ければ種類の既定の色（`master` は `blue`、`transaction` は `orange`）にし、どちらも無いテーブルは `data-color` を持たない。
+
+      - 関係は、元の列の行から先の列の行へ横・縦・横の直角の線で結び（縦の線は `midX`、省いたときは両端の中間）、両端に多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）を配置し、`label` を縦の線の中ほどに出す。
+
+      - 同じ `x` のテーブルどうしの関係は両方の右の辺から出す。
+
+      - 主キーでも外部キーでもない列を持つテーブルの見出しに、列の開閉のボタン（スクリーンリーダー向けの名前 `「{論理名}」の主キーと外部キー以外の列`、`aria-expanded` は `folded` が `true` のとき `false`）を配置する。
+
+      - `folded` が `true` のテーブルは主キーと外部キーの列だけを出し、`非表示 {数} 列` の行を配置する。
+
+      - 関係の列が畳まれて見えないときは、線を見出しの縦の中ほどへ結ぶ。
+
+      - `desc` を持つテーブルと、`desc` を持つ列のあるテーブルは、見出しに説明のボタン（スクリーンリーダー向けの名前 `「{論理名}」の説明`）を配置し、`role="tooltip"` と `hidden` を持つ中身に `{論理名}（{物理名}）`・概要・`desc` を持つ列の名前と説明を入れる（`hints` がオフのときは配置しない）。
+
+      - 凡例には、図にあるテーブルの種類の札・列のマーカー・多重度の記号だけを記載する（説明のボタンと用語の下線は記載しない。制約「図の外観の決まり」の凡例の決まりより優先する）'
     notes: 外観はモック `docs/mock/components/er-diagram/`（確認ログ）。見本は `docs/mock/refs/298/assets/er-samples.js`。色の名前は制約「色の名前」
   - item: 操作できる部品
     constraint: '`param` はタイトル・スライダー（`input type="range"`。`min`・`max`・`step` と既定の値を定義から写す）と今の値の `output`・今の値を写すボタン・既定の値の系列で描いたグラフを出す。グラフの系列は、定義の `table`（スライダーの値ごとの点の並び）から参照する。値を変えて再描画する操作と写す操作は `mount` が付ける'
@@ -3236,10 +3361,32 @@ constraints:
     constraint: 登録した拡張のマーカーを範囲で記載し、範囲に `json` のコードブロックを配置したときも、マーカーの場所の要素だけを出し、範囲の中身と定義の JSON は出力に残さない。登録していないマーカーの範囲のうち、中身が `json` のコードブロックだけのものは中身ごと取り除く（それ以外の範囲は今のとおりマーカーだけを取り除く）
     notes: 定義を `draw` へ指定するのは `mount`（インターフェース定義『拡張を登録する』）
   - item: 埋め込んだ HTML
-    constraint: '`html` がオンのとき、`<!-- html -->` 〜 `<!-- /html -->` の範囲にある言語 `html` のコードブロック 1 つの中身を、コードでなく生の HTML として `<div class="mdmark-html">` の中に描く。範囲の中のコードブロック以外の Markdown は出力に残さない。中身は文書に記載した生の HTML と同じ許可の検査（制約の「残す要素・属性」「URL のスキーム」）を経由し、`script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。埋め込んだ HTML の中に限り `button` を残し、`type` を `button` に固定して `form` で始まる属性を落とす（押しても何も起きない）。中身の要素の `style` 属性は、レイアウト・余白・枠・色・文字の宣言（`display`・`flex*`・`align-items`・`align-self`・`justify-content`・`grid*`・`gap`・`row-gap`・`column-gap`・`margin*`・`padding*`・`border*`・`width`・`max-width`・`min-width`・`height`・`color`・`background-color`・`font-size`・`font-weight`・`text-align`）だけを残し、`url(` を含む値・単位 `vw`・`vh` を含む値・負の `margin`・`padding` と `position` を落とす。列より広い HTML は `mount` が中で横にスクロールさせる。範囲の外の `html` のコードブロックは今のとおりコードとして出す。`html` がオフのときはマーカーだけを取り除き、コードブロックをコードとして出す'
+    constraint: '`html` がオンのとき、`<!-- html -->` 〜 `<!-- /html -->` の範囲にある言語 `html` のコードブロック 1 つの中身を、コードでなく生の HTML として `<div class="mdmark-html">` の中に描く。
+
+
+      - 範囲の中のコードブロック以外の Markdown は出力に残さない。
+
+      - 中身は文書に記載した生の HTML と同じ許可の検査（制約の「残す要素・属性」「URL のスキーム」）を経由し、`script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。
+
+      - 埋め込んだ HTML の中に限り `button` を残し、`type` を `button` に固定して `form` で始まる属性を落とす（押しても何も起きない）。
+
+      - 中身の要素の `style` 属性は、レイアウト・余白・枠・色・文字の宣言（`display`・`flex*`・`align-items`・`align-self`・`justify-content`・`grid*`・`gap`・`row-gap`・`column-gap`・`margin*`・`padding*`・`border*`・`width`・`max-width`・`min-width`・`height`・`color`・`background-color`・`font-size`・`font-weight`・`text-align`）だけを残し、`url(` を含む値・単位 `vw`・`vh` を含む値・負の `margin`・`padding` と `position` を落とす。
+
+      - 列より広い HTML は `mount` が中で横にスクロールさせる。
+
+      - 範囲の外の `html` のコードブロックは今のとおりコードとして出す。
+
+      - `html` がオフのときはマーカーだけを取り除き、コードブロックをコードとして出す'
     notes: '`style` の残し方は [コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログの決定。宣言の一覧はモジュール構成『描画』の `EMBED_STYLES`。`button` を残すのはシナリオ『コードブロックのHTMLを描く』とモックに合わせるため'
   - item: 埋め込んだ HTML の中の図の部品
-    constraint: 埋め込んだ HTML の中の custom element `<mdmark-chart>`・`<mdmark-param>` の中身の文字を、同じ名前の図の部品のマーカーの範囲の `json` のコードブロックと同じ定義として読み込み、制約の「図の部品」と同じ図に置き換える。読み込めない定義は制約の「図の定義の誤り」と同じく、その要素の場所を記載の警告にする。`diagrams` がオフのときは要素を中身ごと落とす。custom element の属性は読み込まない。`<mdmark-flow>`・`<mdmark-sequence>` は、要素を中身ごと落とし、要素を廃止したことと、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すことを記載した記載の警告を配置する（移行の手順と点検はこの要素を扱わないため、`mdmark upgrade` は記載しない）。埋め込んだ HTML の中の文字は用語の照合に回す
+    constraint: |-
+      埋め込んだ HTML の中の custom element `<mdmark-chart>`・`<mdmark-param>` の中身の文字を、同じ名前の図の部品のマーカーの範囲の `json` のコードブロックと同じ定義として読み込み、制約の「図の部品」と同じ図に置き換える。
+
+      - 読み込めない定義は制約の「図の定義の誤り」と同じく、その要素の場所を記載の警告にする。
+      - `diagrams` がオフのときは要素を中身ごと落とす。
+      - custom element の属性は読み込まない。
+      - `<mdmark-flow>`・`<mdmark-sequence>` は、要素を中身ごと落とし、要素を廃止したことと、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すことを記載した記載の警告を配置する（移行の手順と点検はこの要素を扱わないため、`mdmark upgrade` は記載しない）。
+      - 埋め込んだ HTML の中の文字は用語の照合に回す
     notes: 文書に式やスクリプトを記載させない（D-22）
   - item: ヒント
     constraint: '`hints` がオンのとき、埋め込んだ HTML の中の `data-hint` を持つ要素に、ツールチップの中身を `<span class="mdmark-hint-tip" role="tooltip" id="mdmark-hint-{n}" hidden>` で配置する（`{n}` は文書の頭からの通し番号）。`data-hint` の要素は、行内の要素（`span`・`a`・`abbr`・`b`・`strong`・`em`・`i`・`code`・`small`・`mark`・`sub`・`sup`・`time`・`kbd`・`q`・`s`・`u`）なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を付け、それ以外のブロックの要素は class `mdmark-hint-block` を付けて最後の子に `<button type="button" class="mdmark-hint-mark" aria-label="説明" aria-describedby="mdmark-hint-{n}">` を追加する。`hints` がオフのときは、`data-hint` の属性と ER 図のテーブルと列の説明のツールチップの中身とマーカーを出さない（テーブルと列の名前は出す）。`data-hint` の値は Markdown として解析せず、文字として出す'
@@ -3251,7 +3398,46 @@ constraints:
     constraint: '`<!-- view: {JSON のオブジェクト} -->` 〜 `<!-- /view -->` の範囲を class `mdmark-view` の `div` にし、マーカーの引数を読み込んだ指定を `data-view` に JSON（`group` は `board.group.column` の列の位置か `null`、`mode` は `initial` の `board`・`table`、`boardDisabled` は `board.group.column` の列が表に無いときの記載の警告の `id` か空、`icons` は読み込めた `board.values.{値}.icon` の対応）で持たせ、中に範囲の表を記法の表と同じ構造（`columns.{列名}.filter` は表の `data-filter`、長文の列と `columns.{列名}.sort` は表のマーカーと同じく表の `data-no-sort`）で残す。ボードと切り替えは `mount` が作るため、`render` の出力だけを読み込む表示では表のまま読み込める。記載方法の誤りは記載の警告にし、`views` がオフのときは `mdmark-view` を作らず表だけを出す'
     notes: 引数と警告の種類はインターフェース定義『文書を描く』の制約の「ビューのマーカー」
   - item: コードブロック
-    constraint: 'コードブロックの情報文字列の最初の単語を最初の `:` で分け、前を言語、後ろをファイル名として読み込み、`code` の class を `language-{言語}` にする（`code` のオン・オフによらない。`:` の前が空のときは言語もファイル名も持たないものとして扱う）。言語 `tree`・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html` は、最初の単語がその言語とちょうど一致するときだけ当て、`:ファイル名` を付けたものは普通のコードブロックとして描く（埋め込んだ HTML の範囲では、`html` のコードブロックが無いときの警告を配置する）。`code` がオンのとき、コードブロックの直前の `<!-- code: {JSON のオブジェクト} -->` を次のコードブロックへの指定として読み込む。キーは `title`（タイトル。空白を含められる）・`lines`（行番号。`lines.start` は最初の行の番号で、省くと 1）・`highlight`（強調する行。行の番号か行の範囲 `{"from": 4, "to": 6}` の配列）・`fold`（最初から畳む行。`highlight` と同じ記載方法）・`wrap`（`true` で長い行を枠の幅で折り返す）・`tree_warning`（`false` で罫線のフォルダ構成の記載の警告を止める。既定は `true`）。`highlight`・`fold` の行の番号と、コードブロックに無い行の判定は、1 行目を `lines.start` の番号として数える。コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）として読み込んでマーカーを削除し、行コメントがマーカーだけならマーカーの直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も削除し、削除した後の行末の空白も削除する。`[\!code …]` は `\` を削除した文字のまま出す。行番号・強調・行の種類・インデントのある行・`wrap` のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`wrap` を持てば `mdmark-code-wrap`、`add`・`del` の行を持てば `mdmark-code-signs`、`focus` の行を持てば `mdmark-code-has-focus` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。インデントのある行は `data-indent="{レベル}"` を持つ（コードブロックの中の最も小さいインデントの幅を 1 レベル、タブを 1 レベルとする）。次の空でない行がより深い行は畳める行とし、`data-fold-lines="{畳む行の数}"`（次の同じ深さ以下の行の手前まで。範囲の末尾の空行は含めない）を持つ。`fold` の畳める行は `data-folded` も持つ。行番号を持つときは `code` の `style` に `--mdmark-code-digits: {最後の行の番号の桁の数}` を配置する。コードブロックを `<div class="mdmark-code">`（タイトルを持てば `<figure class="mdmark-code">`）で囲み、`pre` の前にラベルの帯 `<div class="mdmark-code-bar">`（タイトルを持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を配置する。帯の左端には、言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）を配置し、タイトルを持つときはその後ろにタイトルの文字を配置する。`pre` のスクリーンリーダー向けの名前は、タイトルを持てば `コード: {タイトル}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。コピーのボタンは `mount` が帯の右端に付ける。行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには適用しない。マーカーも行のマーカーもインデントのある行も持たないコードブロックは、帯で囲むほかは今のとおり描く。`code` がオフのときはマーカーを取り除き、コードブロックを今のとおり描く（行のマーカーは記載した文字のまま出す）'
+    constraint: 'コードブロックの情報文字列の最初の単語を最初の `:` で分け、前を言語、後ろをファイル名として読み込み、`code` の class を `language-{言語}` にする（`code` のオン・オフによらない。`:` の前が空のときは言語もファイル名も持たないものとして扱う）。
+
+
+      - 言語 `tree`・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html` は、最初の単語がその言語とちょうど一致するときだけ当て、`:ファイル名` を付けたものは普通のコードブロックとして描く（埋め込んだ HTML の範囲では、`html` のコードブロックが無いときの警告を配置する）。
+
+      - `code` がオンのとき、コードブロックの直前の `<!-- code: {JSON のオブジェクト} -->` を次のコードブロックへの指定として読み込む。
+
+      - キーは `title`（タイトル。空白を含められる）・`lines`（行番号。`lines.start` は最初の行の番号で、省くと 1）・`highlight`（強調する行。行の番号か行の範囲 `{"from": 4, "to": 6}` の配列）・`fold`（最初から畳む行。`highlight` と同じ記載方法）・`wrap`（`true` で長い行を枠の幅で折り返す）・`tree_warning`（`false` で罫線のフォルダ構成の記載の警告を止める。既定は `true`）。
+
+      - `highlight`・`fold` の行の番号と、コードブロックに無い行の判定は、1 行目を `lines.start` の番号として数える。
+
+      - コードブロックの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）として読み込んでマーカーを削除し、行コメントがマーカーだけならマーカーの直前の行コメントの頭（`//`・`#`・`--`・`;`・`<!--` 〜 `-->`・`/*` 〜 `*/`）も削除し、削除した後の行末の空白も削除する。
+
+      - `[\!code …]` は `\` を削除した文字のまま出す。
+
+      - 行番号・強調・行の種類・インデントのある行・`wrap` のどれかを持つコードブロックは、`pre` に class `mdmark-code-lines`（行番号を持てば `mdmark-code-numbered`、`wrap` を持てば `mdmark-code-wrap`、`add`・`del` の行を持てば `mdmark-code-signs`、`focus` の行を持てば `mdmark-code-has-focus` も）を付け、`code` の中身を行ごとに `<span class="mdmark-code-line" data-line="{行番号}" data-kind="{種類}"><span class="mdmark-code-text">{行の文字}</span></span>` に分けて改行でつなぐ（`data-line` は行番号を持つときだけ、`data-kind` は種類を持つ行だけ）。
+
+      - インデントのある行は `data-indent="{レベル}"` を持つ（コードブロックの中の最も小さいインデントの幅を 1 レベル、タブを 1 レベルとする）。
+
+      - 次の空でない行がより深い行は畳める行とし、`data-fold-lines="{畳む行の数}"`（次の同じ深さ以下の行の手前まで。範囲の末尾の空行は含めない）を持つ。
+
+      - `fold` の畳める行は `data-folded` も持つ。
+
+      - 行番号を持つときは `code` の `style` に `--mdmark-code-digits: {最後の行の番号の桁の数}` を配置する。
+
+      - コードブロックを `<div class="mdmark-code">`（タイトルを持てば `<figure class="mdmark-code">`）で囲み、`pre` の前にラベルの帯 `<div class="mdmark-code-bar">`（タイトルを持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を配置する。
+
+      - 帯の左端には、言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）を配置し、タイトルを持つときはその後ろにタイトルの文字を配置する。
+
+      - `pre` のスクリーンリーダー向けの名前は、タイトルを持てば `コード: {タイトル}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。
+
+      - コピーのボタンは `mount` が帯の右端に付ける。
+
+      - 行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。
+
+      - 言語 `tree` のコードブロックと、図の部品・埋め込んだ HTML の範囲のコードブロックには適用しない。
+
+      - マーカーも行のマーカーもインデントのある行も持たないコードブロックは、帯で囲むほかは今のとおり描く。
+
+      - `code` がオフのときはマーカーを取り除き、コードブロックを今のとおり描く（行のマーカーは記載した文字のまま出す）'
     notes: 外観はモック `docs/mock/components/code-block/`。タイトルの前のファイルのアイコンは CSS で付ける。`mdmark-code-text` の中身は、`mount` が描いた後に色分けした HTML に置き換える（制約『コードブロックの色分け』）
   - item: 元の行番号
     constraint: 本文のブロック（見出し・段落・リスト・リストの項目・表・表の行・コードブロック・引用・水平線・注意書き・マーカーの範囲を囲む要素）の開始の要素に、そのブロックが Markdown で始まる行の番号を `data-source-line` で出す。番号は 0 始まり（Markdown の 1 行目が `0`）。入れ子のブロックはそれぞれの開始の行を持つ。sanitize は `data-source-line` を全ての要素で残す
@@ -3266,7 +3452,16 @@ constraints:
     constraint: 色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に記載した色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を当てずに制約「作成者の誤り」と同じ記載の警告を配置し、本文に記載した名前と色の名前の一覧を出す
     notes: 色の名前の一覧は確認ログの決定。色の値は CSS 変数（インターフェース定義『文書を描く』の制約「色のプリセット」）
   - item: 表の列と行の色
-    constraint: '表のマーカーの `columns.{列名}.highlight` は、その列の `th` と `td` に class `mdmark-col-highlight` と `data-color="{highlight.color}"`（省いたときは `blue`）を付ける。`rows.colors` の要素は、`column` と `value` の組なら、その列のセルの文字（タグを除いたもの）が `value` と一致する本文の行、`at` なら本文の行の位置（見出し行を除いて 1 から。行の範囲 `{"from": 2, "to": 4}` で範囲）の行で、両方を記載した要素は両方に該当する行の `tr` に `data-color="{color}"` を付ける。1 つの行に複数の要素が該当するときは、後ろの要素の色にする。どの種類の表でも記載できる。表に無い列名・表に無い行の位置、`column` と `value` の片方だけの要素・`column` と `at` のどちらも無い要素は、制約「作成者の誤り」と同じく当てずに記載の警告にする'
+    constraint: '表のマーカーの `columns.{列名}.highlight` は、その列の `th` と `td` に class `mdmark-col-highlight` と `data-color="{highlight.color}"`（省いたときは `blue`）を付ける。
+
+
+      - `rows.colors` の要素は、`column` と `value` の組なら、その列のセルの文字（タグを除いたもの）が `value` と一致する本文の行、`at` なら本文の行の位置（見出し行を除いて 1 から。行の範囲 `{"from": 2, "to": 4}` で範囲）の行で、両方を記載した要素は両方に該当する行の `tr` に `data-color="{color}"` を付ける。
+
+      - 1 つの行に複数の要素が該当するときは、後ろの要素の色にする。
+
+      - どの種類の表でも記載できる。
+
+      - 表に無い列名・表に無い行の位置、`column` と `value` の片方だけの要素・`column` と `at` のどちらも無い要素は、制約「作成者の誤り」と同じく当てずに記載の警告にする'
     notes: 色以外の見分け（見出しの下端の線・行の上下の線）は CSS で付ける。行の色は `tr` に付くので、並べ替え・絞り込みの後も行に付いたまま動く
   - item: バッジの色
     constraint: 頭が `badge:` の行内のコードで、`badge:` の後ろの最初の `:` の前が色の名前のときだけ、`<span class="mdmark-badge" data-color="{色}">{2 つ目の `:` の後ろ}</span>` にする。最初の `:` の前が色の名前でないときと `:` が無いときは、今のとおり `badge:` の後ろを全てラベルにする。色の名前の後ろが空か空白だけのときはバッジにせず、`<code>` のまま出す
@@ -3275,7 +3470,20 @@ constraints:
     constraint: '`text-color` がオンのとき、角括弧で囲んだ文字の直後の `{color=色}`（リンクの `[文字](URL)` を除く）を、`<span class="mdmark-color" data-color="{色}">{角括弧の中の文字}</span>` にする。角括弧の中は行内の Markdown として描く。知らない色の名前は、角括弧と属性を削除した文字を色を付けずに出し、段落の前に記載の警告を配置する。`text-color` がオフのときは、記載した文字のまま出す'
     notes: 色だけで意味を伝えないよう、太字は CSS で付ける（確認ログ）
   - item: 画像の属性
-    constraint: '`images` がオンのとき、画像（動画・音声を含む）の直後の `{属性 …}` を空白で区切って読み込み、画像に適用して出力から除外する。属性は `width=値`（`300` か `300px` の px と、`1`〜`100` の `%`）・`align=left|center|right`・`nolightbox`、動画・音声だけの `autoplay`・`muted`・`loop`・`poster=パス`。`width` は `--mdmark-image-width: {値}` を、画像だけの段落なら `figure` の `style`、文の中の画像なら `img` の `style` に配置する。`align` は画像だけの段落の `figure` の `data-align` にする。`nolightbox` は `img` に `data-nolightbox` を付ける。知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性は当てずに、画像の前（文の中の画像は段落の前）に記載の警告を配置し、本文に読み込めない属性と記載できる属性を出す。`images` がオフのときは `{…}` を記載した文字のまま出す'
+    constraint: '`images` がオンのとき、画像（動画・音声を含む）の直後の `{属性 …}` を空白で区切って読み込み、画像に適用して出力から除外する。
+
+
+      - 属性は `width=値`（`300` か `300px` の px と、`1`〜`100` の `%`）・`align=left|center|right`・`nolightbox`、動画・音声だけの `autoplay`・`muted`・`loop`・`poster=パス`。
+
+      - `width` は `--mdmark-image-width: {値}` を、画像だけの段落なら `figure` の `style`、文の中の画像なら `img` の `style` に配置する。
+
+      - `align` は画像だけの段落の `figure` の `data-align` にする。
+
+      - `nolightbox` は `img` に `data-nolightbox` を付ける。
+
+      - 知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性は当てずに、画像の前（文の中の画像は段落の前）に記載の警告を配置し、本文に読み込めない属性と記載できる属性を出す。
+
+      - `images` がオフのときは `{…}` を記載した文字のまま出す'
   - item: 画像の図とキャプション
     constraint: '`images` がオンのとき、画像 1 つだけの段落（前後の空白を除く）を `<figure class="mdmark-figure mdmark-image">` にし、title があれば `<figcaption class="mdmark-figure-caption">{title}</figcaption>` を画像の後ろに配置する。`fig` のマーカーの直後の画像は制約「図と表の番号」のとおり番号を付ける（class `mdmark-image` も付ける）。リンクで囲んだ画像は図にしない'
   - item: テーマごとの画像
@@ -3285,33 +3493,140 @@ constraints:
     constraint: '`gallery` がオンのとき、`<!-- gallery: {"columns": 列の数} -->` 〜 `<!-- /gallery -->` の範囲を `<div class="mdmark-gallery" style="--mdmark-gallery-cols: {列の数}">` と `<div class="mdmark-gallery-grid">` で囲み、範囲の中の画像をそれぞれ制約「画像の図とキャプション」の `figure` にする（範囲の中の画像以外の Markdown は出力に残さない）。列の数は `1`〜`6` で、省いたときは `2`。`fig` のマーカーの直後のギャラリーは、`<figure class="mdmark-figure" id="fig-{ID}">` で囲んで `図 {番号}` のキャプションを外の `figure` の下に配置し、中の画像の `figure` に範囲の中の順に `id="fig-{ID}-{a, b, …}"` とキャプションの頭の `<b>図 {番号}{a, b, …}</b>` を付ける（画像の数は 26 まで）。範囲の中の画像が 0 件・27 件以上、1〜6 の整数でない `columns` は記載の警告にする（27 件目からはサブ図の番号を付けない）。`gallery` がオフのときはマーカーだけを取り除く'
     notes: 狭い幅で列を減らす幅は部品設計
   - item: 動画と音声
-    constraint: '`media` がオンのとき、`src` の拡張子（クエリとフラグメントを除き、大文字と小文字を区別しない）が `mp4`・`m4v`・`webm`・`mov`・`ogv` の画像を `video`、`mp3`・`m4a`・`aac`・`ogg`・`oga`・`opus`・`wav`・`flac` の画像を `audio` にし、`<figure class="mdmark-figure mdmark-media">` に入れる（文の中でも段落を分けず、`figure` を段落の後ろに出す）。要素は `src`・`controls`・`preload="metadata"`・`aria-label="{alt}"` を持ち、`video` は `playsinline` も持つ。属性の `autoplay`・`muted`・`loop`・`poster` をコピーし、`autoplay` に `muted` が無いときは `muted` を追加する。`poster` を持つ `video` の後ろに `<img class="mdmark-media-print" src="{poster}" alt="">` を配置する。title は `figcaption` にする。`media` がオフのときは、今のとおり画像として描く'
+    constraint: '`media` がオンのとき、`src` の拡張子（クエリとフラグメントを除き、大文字と小文字を区別しない）が `mp4`・`m4v`・`webm`・`mov`・`ogv` の画像を `video`、`mp3`・`m4a`・`aac`・`ogg`・`oga`・`opus`・`wav`・`flac` の画像を `audio` にし、`<figure class="mdmark-figure mdmark-media">` に入れる（文の中でも段落を分けず、`figure` を段落の後ろに出す）。
+
+
+      - 要素は `src`・`controls`・`preload="metadata"`・`aria-label="{alt}"` を持ち、`video` は `playsinline` も持つ。
+
+      - 属性の `autoplay`・`muted`・`loop`・`poster` をコピーし、`autoplay` に `muted` が無いときは `muted` を追加する。
+
+      - `poster` を持つ `video` の後ろに `<img class="mdmark-media-print" src="{poster}" alt="">` を配置する。
+
+      - title は `figcaption` にする。
+
+      - `media` がオフのときは、今のとおり画像として描く'
     notes: '`mdmark-media-print` は印刷のときだけ CSS で出す。プレビューで再生できない形式は VS Code 拡張機能が通知する'
   - item: GIF
     constraint: '`src` の拡張子が `gif` の画像の `img` に `data-gif` を付ける。止める・再生するボタンは `mount` が付ける'
   - item: リンクと添付のカード
-    constraint: '`cards` がオンのとき、リンク 1 つだけの段落（前後の空白を除く。リンクの自動検出の URL を含む）を `<a class="mdmark-card" data-card="{link か file}" href="{リンク先}">` にし、中に `<span class="mdmark-card-icon" aria-hidden="true">`・`<span class="mdmark-card-title">`・`<span class="mdmark-card-meta">` の `<span class="mdmark-card-domain">` と `<span class="mdmark-card-url">` を配置する。リンク先のパスの拡張子が添付の拡張子の一覧にあるものは `file`、それ以外の `http`・`https` の URL は `link` にする（`#` で始まるリンク・`mailto`・拡張子 `md` のリンクはカードにしない）。`link` のタイトルは記載した文字（URL をそのまま記載したときはスキームを除いた URL）、ドメインは URL のホスト、URL は記載した URL。`file` のタイトルは記載した文字、ドメインは拡張子の大文字、URL はファイル名で、`data-file-kind` に種類を写す。添付の拡張子と種類は `pdf`（`pdf`）・`doc`・`docx`・`odt`・`rtf`（`doc`）・`xls`・`xlsx`・`ods`・`csv`・`tsv`（`sheet`）・`ppt`・`pptx`・`odp`・`key`（`slide`）・`zip`・`gz`・`tar`・`7z`（`archive`）・`txt`（`text`）。外へは要求しない。`cards` がオフのときは今のとおりリンクとして描く'
+    constraint: '`cards` がオンのとき、リンク 1 つだけの段落（前後の空白を除く。リンクの自動検出の URL を含む）を `<a class="mdmark-card" data-card="{link か file}" href="{リンク先}">` にし、中に `<span class="mdmark-card-icon" aria-hidden="true">`・`<span class="mdmark-card-title">`・`<span class="mdmark-card-meta">` の `<span class="mdmark-card-domain">` と `<span class="mdmark-card-url">` を配置する。
+
+
+      - リンク先のパスの拡張子が添付の拡張子の一覧にあるものは `file`、それ以外の `http`・`https` の URL は `link` にする（`#` で始まるリンク・`mailto`・拡張子 `md` のリンクはカードにしない）。
+
+      - `link` のタイトルは記載した文字（URL をそのまま記載したときはスキームを除いた URL）、ドメインは URL のホスト、URL は記載した URL。
+
+      - `file` のタイトルは記載した文字、ドメインは拡張子の大文字、URL はファイル名で、`data-file-kind` に種類を写す。
+
+      - 添付の拡張子と種類は `pdf`（`pdf`）・`doc`・`docx`・`odt`・`rtf`（`doc`）・`xls`・`xlsx`・`ods`・`csv`・`tsv`（`sheet`）・`ppt`・`pptx`・`odp`・`key`（`slide`）・`zip`・`gz`・`tar`・`7z`（`archive`）・`txt`（`text`）。
+
+      - 外へは要求しない。
+
+      - `cards` がオフのときは今のとおりリンクとして描く'
     notes: 種類のアイコンは CSS で付ける（lucide）。`iframe` の埋め込みとタイトルの取得はしない（D-39）
   - item: 新しい記法の要素と属性
     constraint: 制約「残す要素・属性」の記法が出した要素だけに、`video`・`audio` と属性の `controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`、`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind`、`style` の `--mdmark-image-width`・`--mdmark-gallery-cols` を許す。`poster` の URL は制約「URL のスキーム」と同じ見分けで残す。文書に記載した生の HTML の `video`・`audio`・`source` は残さない
   - item: 脚注
-    constraint: '`footnotes` がオンのとき、`[^ラベル]`（ラベルは空白を含まない）、行頭の `[^ラベル]: 中身`（4 文字の字下げで続く段落を含む）、行内の `^[中身]` を脚注として読み込む。ラベルは markdown-it の `normalizeReference`（大文字小文字と空白の正規化）で照合し、同じラベルの定義が複数あるときは最初の定義を採る。番号は本文で最初に参照した順に 1 から振り、同じ脚注の 2 回目以降の参照も同じ番号にする。定義の無い参照は記載した文字のまま出し、参照されない定義は出さない。`[^ラベル](URL)` はリンクを優先する。参照の場所には `sup.mdmark-fn-ref` を配置し、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-fnref-{番号}-{その脚注の参照の通し番号}"`・`href="#mdmark-fn-{番号}"`）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-fn-tip-{番号}-{参照の通し番号}"`。タイトル `脚注 {番号}` と、定義の段落ごとの中身）を配置する。ツールチップの中身がリンクを持つときは `role="group"`・`aria-label="脚注 {番号}"` と番号のリンクの `aria-details`、持たないときは `role="tooltip"` と `aria-describedby` にする。脚注が 1 つ以上ある文書は、本文のセクションの後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes`（`summary` は `脚注（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を配置し、脚注ごとの項目 `li.mdmark-fn-item`（`id="mdmark-fn-{番号}"`）に、定義の中身と参照ごとの戻るリンク `a.mdmark-fn-back`（`href="#mdmark-fnref-{番号}-{参照の通し番号}"`。参照が 2 つ以上のときは a・b の文字を添える）を配置する。ツールチップと一覧の中の脚注の中身には、用語の下線とやめた言い方のマーカーを付けない。`footnotes` がオフのとき（設定か文書の `features` のマーカー）、参照・定義・行内の脚注は記載した文字のまま出し、定義は記載した位置に段落として残す'
+    constraint: '`footnotes` がオンのとき、`[^ラベル]`（ラベルは空白を含まない）、行頭の `[^ラベル]: 中身`（4 文字の字下げで続く段落を含む）、行内の `^[中身]` を脚注として読み込む。
+
+
+      - ラベルは markdown-it の `normalizeReference`（大文字小文字と空白の正規化）で照合し、同じラベルの定義が複数あるときは最初の定義を採る。
+
+      - 番号は本文で最初に参照した順に 1 から振り、同じ脚注の 2 回目以降の参照も同じ番号にする。
+
+      - 定義の無い参照は記載した文字のまま出し、参照されない定義は出さない。
+
+      - `[^ラベル](URL)` はリンクを優先する。
+
+      - 参照の場所には `sup.mdmark-fn-ref` を配置し、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-fnref-{番号}-{その脚注の参照の通し番号}"`・`href="#mdmark-fn-{番号}"`）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-fn-tip-{番号}-{参照の通し番号}"`。タイトル `脚注 {番号}` と、定義の段落ごとの中身）を配置する。
+
+      - ツールチップの中身がリンクを持つときは `role="group"`・`aria-label="脚注 {番号}"` と番号のリンクの `aria-details`、持たないときは `role="tooltip"` と `aria-describedby` にする。
+
+      - 脚注が 1 つ以上ある文書は、本文のセクションの後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes`（`summary` は `脚注（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を配置し、脚注ごとの項目 `li.mdmark-fn-item`（`id="mdmark-fn-{番号}"`）に、定義の中身と参照ごとの戻るリンク `a.mdmark-fn-back`（`href="#mdmark-fnref-{番号}-{参照の通し番号}"`。参照が 2 つ以上のときは a・b の文字を添える）を配置する。
+
+      - ツールチップと一覧の中の脚注の中身には、用語の下線とやめた言い方のマーカーを付けない。
+
+      - `footnotes` がオフのとき（設定か文書の `features` のマーカー）、参照・定義・行内の脚注は記載した文字のまま出し、定義は記載した位置に段落として残す'
     notes: 部品の要素の構造とアイコンは部品設計で決める。読み取りは自前の block・inline・core のルール（ライブラリ選定で決定）
   - item: 注記
-    constraint: '`annotations` がオンのとき、行頭の `※[ID]: 本文`（ID は英数字・`-`・`_`。4 文字の字下げで続く段落を含む）を注記の定義、本文・表のセル・見出しの行内の `※[ID]` を注記の参照として読み込む。ID は大文字小文字を区別して照合する。`※` の直後の `[ID]` が Markdown のリンクになるとき（インラインの `※[ID](URL)`、文書にリンクの参照の定義 `[ID]: URL` があるときの省略形 `※[ID]`・完全形 `※[ID][ラベル]`・簡略形 `※[ID][]`）は、リンクを優先して注記の参照にしない（リンクの参照の定義のラベルの照合は markdown-it の `normalizeReference`）。番号は文書の中で最初に参照した順に 1 から振り、脚注の番号とは別に数え、同じ注記の 2 回目以降の参照も同じ番号にする。参照の場所には `sup.mdmark-fn-ref.mdmark-note-ref` を配置し、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-noteref-{番号}-{その注記の参照の通し番号}"`・`href="#mdmark-note-{番号}"`。文字は番号）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-note-tip-{番号}-{参照の通し番号}"`。タイトル `注記 {番号}` と、定義の段落ごとの本文）を配置する。直前の兄弟が文字を挟まない `sup.mdmark-fn-ref` の参照には class `is-after-ref` を付ける。`role`・`aria-describedby`・`aria-details` は脚注と同じにする。注記が 1 つ以上参照された文書は、脚注の一覧の後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes.mdmark-notes`（`summary` は `注記（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を配置し、注記ごとの項目 `li.mdmark-fn-item`（`id="mdmark-note-{番号}"`。番号の順）に、定義の本文と参照ごとの戻るリンク `a.mdmark-fn-back`（脚注と同じ）を配置する。定義は記載した位置に出力しない。定義の無い参照は記載した文字のまま出し、参照の段落の前に記載の警告を配置する。参照されていない定義と、同じ ID の 2 つ目以降の定義は出力せず、記載した位置に記載の警告を配置する（同じ ID の注記は最初の定義を使用する）。map の補足の `notes.{ID}.annotations` が指す注記も参照として数え、番号を振る。ツールチップと一覧の中の注記の本文には、用語の下線とやめた言い方のマーカーを付けない。`annotations` がオフのとき（設定か文書の `features` のマーカー）、参照と定義は記載した文字のまま出し、定義は記載した位置に段落として残す'
+    constraint: '`annotations` がオンのとき、行頭の `※[ID]: 本文`（ID は英数字・`-`・`_`。4 文字の字下げで続く段落を含む）を注記の定義、本文・表のセル・見出しの行内の `※[ID]` を注記の参照として読み込む。
+
+
+      - ID は大文字小文字を区別して照合する。
+
+      - `※` の直後の `[ID]` が Markdown のリンクになるとき（インラインの `※[ID](URL)`、文書にリンクの参照の定義 `[ID]: URL` があるときの省略形 `※[ID]`・完全形 `※[ID][ラベル]`・簡略形 `※[ID][]`）は、リンクを優先して注記の参照にしない（リンクの参照の定義のラベルの照合は markdown-it の `normalizeReference`）。
+
+      - 番号は文書の中で最初に参照した順に 1 から振り、脚注の番号とは別に数え、同じ注記の 2 回目以降の参照も同じ番号にする。
+
+      - 参照の場所には `sup.mdmark-fn-ref.mdmark-note-ref` を配置し、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-noteref-{番号}-{その注記の参照の通し番号}"`・`href="#mdmark-note-{番号}"`。文字は番号）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-note-tip-{番号}-{参照の通し番号}"`。タイトル `注記 {番号}` と、定義の段落ごとの本文）を配置する。
+
+      - 直前の兄弟が文字を挟まない `sup.mdmark-fn-ref` の参照には class `is-after-ref` を付ける。
+
+      - `role`・`aria-describedby`・`aria-details` は脚注と同じにする。
+
+      - 注記が 1 つ以上参照された文書は、脚注の一覧の後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes.mdmark-notes`（`summary` は `注記（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を配置し、注記ごとの項目 `li.mdmark-fn-item`（`id="mdmark-note-{番号}"`。番号の順）に、定義の本文と参照ごとの戻るリンク `a.mdmark-fn-back`（脚注と同じ）を配置する。
+
+      - 定義は記載した位置に出力しない。
+
+      - 定義の無い参照は記載した文字のまま出し、参照の段落の前に記載の警告を配置する。
+
+      - 参照されていない定義と、同じ ID の 2 つ目以降の定義は出力せず、記載した位置に記載の警告を配置する（同じ ID の注記は最初の定義を使用する）。
+
+      - map の補足の `notes.{ID}.annotations` が指す注記も参照として数え、番号を振る。
+
+      - ツールチップと一覧の中の注記の本文には、用語の下線とやめた言い方のマーカーを付けない。
+
+      - `annotations` がオフのとき（設定か文書の `features` のマーカー）、参照と定義は記載した文字のまま出し、定義は記載した位置に段落として残す'
     notes: 記載方法は確認ログ（マーカーは案 C・一覧は分ける案 A）とインターフェース定義設計の判断。行頭の `※[ID]:` は一般的な Markdown でも本文の `※[ID]` と並べて読める。部品の要素は脚注の部品を拡張する（部品設計で決める）
   - item: 列の並べ替えのマーカー
     constraint: '`features.reorder` を記載した表は `data-features` に `reorder` を持つ。列の順は Markdown に記載した順のまま出し、列の一覧・つまみ・目のアイコンは `mount` が付ける。`thead` が複数の行を持つ表は、最下段の各列の見出しに、その列を覆う上の行の結合した見出しの位置（上の行の結合が無ければ無し）を `data-group="{行}:{位置}"` に写す'
   - item: 階層の表
-    constraint: 表のマーカーの `tree.key.column` は、その列の位置を `data-tree="{位置}"` に設定し、その列の文字を `.` と `[]` で区切ったキーのパスとして読み込む。各行の `tr` に class `mdmark-tree-row` と `data-path`（全体のパス）・`data-parent`（親のパス。最上位は空）・`data-depth`（0 から）を付け、子を持つ行に class `has-children` を付ける。表に無い親のパスは、その子の最初の行の前に class `is-virtual` の行として補い、キーの列のほかのセルを空にする。行の順は Markdown に記載した順に補った行を差し込んだ順。キーのセルは class `mdmark-tree-key` を持ち、中に深さの数の `<span class="mdmark-tree-guide" aria-hidden="true">` と、末尾の名前の `<span class="mdmark-tree-name">`（配列の `[]` はその後ろの `<span class="mdmark-tree-array">`）を配置する。`tree` を持つ表は、種類の機能から `sort` を除く。`tree.type.column` の列のセルは、`a \| b` の構造なら値ごとの `<span class="mdmark-type-chip">`、それ以外は `<span class="mdmark-type-badge" data-type="{文字}">` に替える。`tree.required.column` の列は見出しとセルを出さず、その列の文字が `✓`・`true` の行のキーの名前の後ろに `<span class="mdmark-tree-required" aria-label="必須">*</span>` を配置する。`tree.default.column` の列の空でないセルは中身を `<span class="mdmark-tree-default">` で囲む。開閉のボタン・コピーのボタン・全体のパスのツールチップは `mount` が付ける
+    constraint: |-
+      表のマーカーの `tree.key.column` は、その列の位置を `data-tree="{位置}"` に設定し、その列の文字を `.` と `[]` で区切ったキーのパスとして読み込む。
+
+      - 各行の `tr` に class `mdmark-tree-row` と `data-path`（全体のパス）・`data-parent`（親のパス。最上位は空）・`data-depth`（0 から）を付け、子を持つ行に class `has-children` を付ける。
+      - 表に無い親のパスは、その子の最初の行の前に class `is-virtual` の行として補い、キーの列のほかのセルを空にする。
+      - 行の順は Markdown に記載した順に補った行を差し込んだ順。
+      - キーのセルは class `mdmark-tree-key` を持ち、中に深さの数の `<span class="mdmark-tree-guide" aria-hidden="true">` と、末尾の名前の `<span class="mdmark-tree-name">`（配列の `[]` はその後ろの `<span class="mdmark-tree-array">`）を配置する。
+      - `tree` を持つ表は、種類の機能から `sort` を除く。
+      - `tree.type.column` の列のセルは、`a \| b` の構造なら値ごとの `<span class="mdmark-type-chip">`、それ以外は `<span class="mdmark-type-badge" data-type="{文字}">` に替える。
+      - `tree.required.column` の列は見出しとセルを出さず、その列の文字が `✓`・`true` の行のキーの名前の後ろに `<span class="mdmark-tree-required" aria-label="必須">*</span>` を配置する。
+      - `tree.default.column` の列の空でないセルは中身を `<span class="mdmark-tree-default">` で囲む。
+      - 開閉のボタン・コピーのボタン・全体のパスのツールチップは `mount` が付ける
     notes: 表示の決まりはシナリオ『表を操作する』とモック（`docs/mock/components/table/` の `#state-303-tree`）
   - item: YAML の見本
     constraint: '表のマーカーの `tree.example.heading` は、文字が一致する見出しの直下のタブの範囲を、表の直後の `<aside class="mdmark-tree-example" id="{表の ID}-example" aria-label="見本: {見出し}">` に移し、表と見本を `<div class="mdmark-tree-layout">` で囲む。見出しは元の場所に残す。見本の言語 `yaml` のコードブロックの行は、インデントと `- ` から求めたキーのパス（表の `data-path` と同じ記載方法）を、キーを持つ行の `data-path` に持たせる。見本の表示の切り替えのボタンは `mount` が付ける'
   - item: 範囲のスクリプトと CSS
-    constraint: '`html` と `html-scripts` がどちらもオンのとき、`<!-- html -->` の範囲に言語 `html`（必須・1 つ）・`css`・`ts`・`js`（それぞれ 1 つまで。`ts` と `js` はどちらか 1 つ）のコードブロックを配置できる。範囲の根の `<div class="mdmark-html">` に、文書の中の範囲の通し番号（0 から）を `data-html-scope` に付ける。`css` は、各規則をその根の要素の中だけに該当するようにした `<style class="mdmark-html-style">` を根の要素の先頭に配置する（当て方はモジュール構成『描画』）。`ts`・`js` は、コードを文字として入れた `<template class="mdmark-html-script" data-lang="{ts|js}">` を根の要素の末尾に配置し、実行しない（動かすのは `mount`）。範囲の `html` は機能がオンでも制約「埋め込んだ HTML」のとおり `script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。範囲の `html` の要素に記載した class は、記法の class（制約「残す要素・属性」）を除いて残す。`html-scripts` がオフのときは、範囲の `css`・`ts`・`js` をコードの `pre` のまま範囲の HTML の後ろに出す。`ts` と `js` を両方置いた範囲は、範囲の `html`・`css` を描き、どちらの `template` も配置しない'
+    constraint: '`html` と `html-scripts` がどちらもオンのとき、`<!-- html -->` の範囲に言語 `html`（必須・1 つ）・`css`・`ts`・`js`（それぞれ 1 つまで。`ts` と `js` はどちらか 1 つ）のコードブロックを配置できる。
+
+
+      - 範囲の根の `<div class="mdmark-html">` に、文書の中の範囲の通し番号（0 から）を `data-html-scope` に付ける。
+
+      - `css` は、各規則をその根の要素の中だけに該当するようにした `<style class="mdmark-html-style">` を根の要素の先頭に配置する（当て方はモジュール構成『描画』）。
+
+      - `ts`・`js` は、コードを文字として入れた `<template class="mdmark-html-script" data-lang="{ts|js}">` を根の要素の末尾に配置し、実行しない（動かすのは `mount`）。
+
+      - 範囲の `html` は機能がオンでも制約「埋め込んだ HTML」のとおり `script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。
+
+      - 範囲の `html` の要素に記載した class は、記法の class（制約「残す要素・属性」）を除いて残す。
+
+      - `html-scripts` がオフのときは、範囲の `css`・`ts`・`js` をコードの `pre` のまま範囲の HTML の後ろに出す。
+
+      - `ts` と `js` を両方置いた範囲は、範囲の `html`・`css` を描き、どちらの `template` も配置しない'
     notes: 機能の既定はオフ。範囲ごとには許さない（シナリオ『コードブロックのHTMLを描く』）
   - item: アイコン
-    constraint: '`icon` がオンのとき、頭が `icon:` の行内のコードで、後ろが Lucide の名前の記載方法（英小文字か数字で始まり、英小文字・数字・`-` だけ）のものを `<span class="mdmark-inline-icon" data-icon="{名前}" aria-hidden="true">` にする。配布物にまとめた名前と `opts.icons` にある名前は、中に `<svg class="mdmark-icon" viewBox="0 0 24 24">` とその構造の要素を配置し、それ以外の名前は中を空にする（`mount` が読み込んで入れる。`render` はアイコンを読み込まない）。制約「残す要素・属性」の図の部品と同じ見分けで、アイコンの `svg` と `path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` と描画の属性を許す。`icon\:` は `\` を削除した `<code>` にし、後ろが空か空白だけのものは `<code>` のまま出す。名前の記載方法に合わないものは `<code>` のまま出し、段落の前に制約「作成者の誤り」と同じ記載の警告（記載した名前と名前の記載方法）を配置する。`icon` がオフのときは記載した文字のまま出す'
+    constraint: '`icon` がオンのとき、頭が `icon:` の行内のコードで、後ろが Lucide の名前の記載方法（英小文字か数字で始まり、英小文字・数字・`-` だけ）のものを `<span class="mdmark-inline-icon" data-icon="{名前}" aria-hidden="true">` にする。
+
+
+      - 配布物にまとめた名前と `opts.icons` にある名前は、中に `<svg class="mdmark-icon" viewBox="0 0 24 24">` とその構造の要素を配置し、それ以外の名前は中を空にする（`mount` が読み込んで入れる。`render` はアイコンを読み込まない）。
+
+      - 制約「残す要素・属性」の図の部品と同じ見分けで、アイコンの `svg` と `path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` と描画の属性を許す。
+
+      - `icon\:` は `\` を削除した `<code>` にし、後ろが空か空白だけのものは `<code>` のまま出す。
+
+      - 名前の記載方法に合わないものは `<code>` のまま出し、段落の前に制約「作成者の誤り」と同じ記載の警告（記載した名前と名前の記載方法）を配置する。
+
+      - `icon` がオフのときは記載した文字のまま出す'
     notes: 外観はモック `docs/mock/components/icon/`。まとめる名前の一覧は外部ライブラリ『lucide』
   - item: キー
     constraint: '`kbd` がオンのとき、頭が `kbd:` の行内のコードを `+` で区切り、キーごとの `<kbd class="mdmark-kbd">{キー}</kbd>` を `<span class="mdmark-kbd-join">+</span>` でつないで `<span class="mdmark-kbd-group">` で囲む。キーの前後の空白は削除する。`+` のキーは `++` と記載する（`kbd:Ctrl++` は `Ctrl` と `+`）。`kbd\:` と、後ろが空か空白だけのものの扱いはバッジと同じ。`kbd` がオフのときは記載した文字のまま出す'
@@ -3323,31 +3638,123 @@ constraints:
     constraint: '`highlight` がオンのとき、`==文字==`（開きの `==` の直後と閉じの `==` の直前が空白でない）を `<mark class="mdmark-highlight">` にし、中を行内の Markdown として描く。閉じの `==` の直後の `{color=色}` は、色の名前（制約「色の名前」）を `data-color` に設定して削除する。知らない色の名前は属性を削除して `data-color` を持たない既定の色で描き、段落の前に制約「本文の文字の色」と同じ記載の警告を配置する。`\=\=` は記載した文字のまま出す。コメントの `mark.mdmark-comment-mark` とは class で分け、蛍光ペンの `mark` はコメントの操作の対象にしない。`highlight` がオフのときは `==` を含む記載した文字のまま出す'
     notes: 外観はモック `docs/mock/components/highlighter/`
   - item: 段組み
-    constraint: '`columns` がオンのとき、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切った中身を、`<div class="mdmark-layout-columns" data-count="{列の数}">` の中の `<div class="mdmark-layout-column">` に記載した順に入れる。列の数は 2〜3。`<!-- column -->` を持たない範囲と 4 列以上の範囲は、範囲の前に記載の警告（列の数と、並べられるのは 2〜3 列であること）を配置し、区切りのマーカーを取り除いて中身を囲まずに順に出す。columns の範囲の中の columns の範囲は、内側の前に記載の警告（入れ子にできないこと）を配置し、内側を囲まずに中身を順に出す。範囲の外の `<!-- column -->` は取り除く。`columns` がオフのときはマーカーを取り除き、中身を順に出す'
+    constraint: '`columns` がオンのとき、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切った中身を、`<div class="mdmark-layout-columns" data-count="{列の数}">` の中の `<div class="mdmark-layout-column">` に記載した順に入れる。
+
+
+      - 列の数は 2〜3。
+
+      - `<!-- column -->` を持たない範囲と 4 列以上の範囲は、範囲の前に記載の警告（列の数と、並べられるのは 2〜3 列であること）を配置し、区切りのマーカーを取り除いて中身を囲まずに順に出す。
+
+      - columns の範囲の中の columns の範囲は、内側の前に記載の警告（入れ子にできないこと）を配置し、内側を囲まずに中身を順に出す。
+
+      - 範囲の外の `<!-- column -->` は取り除く。
+
+      - `columns` がオフのときはマーカーを取り除き、中身を順に出す'
     notes: class は表の列のメニューの `.mdmark-columns-*` と分ける。外観はモック `docs/mock/components/columns/`
   - item: details の範囲
-    constraint: '`details` がオンのとき、`<!-- details: {"title": "タイトル"} -->` 〜 `<!-- /details -->` を `<details class="mdmark-collapsible">` と `<summary>{タイトル}</summary>` にし、中身を `summary` の後ろに配置する。`open` が `true` のときは `details` に `open` を付ける（`<!-- details: {"title": "実行の例", "open": true} -->`）。タイトルは行内の Markdown として描き、空のときは `詳細` にする。`summary` は見出しにせず、制約「セクション」と「目次」の対象にしない。閉じのマーカーの無い範囲は、マーカーの場所に記載の警告（閉じのマーカー `<!-- /details -->` が無いこと）を配置し、中身を折りたたまずに出す。`details` がオフのときはマーカーを取り除き、中身を順に出す'
+    constraint: '`details` がオンのとき、`<!-- details: {"title": "タイトル"} -->` 〜 `<!-- /details -->` を `<details class="mdmark-collapsible">` と `<summary>{タイトル}</summary>` にし、中身を `summary` の後ろに配置する。
+
+
+      - `open` が `true` のときは `details` に `open` を付ける（`<!-- details: {"title": "実行の例", "open": true} -->`）。
+
+      - タイトルは行内の Markdown として描き、空のときは `詳細` にする。
+
+      - `summary` は見出しにせず、制約「セクション」と「目次」の対象にしない。
+
+      - 閉じのマーカーの無い範囲は、マーカーの場所に記載の警告（閉じのマーカー `<!-- /details -->` が無いこと）を配置し、中身を折りたたまずに出す。
+
+      - `details` がオフのときはマーカーを取り除き、中身を順に出す'
     notes: 印刷の前に開くのは `mount` の印刷の機能（`print`）。外観はモック `docs/mock/components/details-range/`
   - item: 改ページ
     constraint: '`pagebreak` がオンのとき、`<!-- pagebreak -->` を `<div class="mdmark-pagebreak" aria-hidden="true"></div>` にする。画面では高さを持たず、印刷のときだけ `break-before: page` を適用する（CSS）。`pagebreak` がオフのときはマーカーを取り除く'
   - item: 取り込み
-    constraint: '`include` がオンのとき、`<!-- include: {"path": "パス"} -->`・`<!-- include: {"path": "パス", "heading": "見出しの ID"} -->`・`<!-- include: {"path": "パス", "lines": {"from": 開始, "to": 終了}} -->`（`to` を省くと `from` の 1 行）を、`opts.includes` から参照した中身に置き換え、`<div class="mdmark-include" data-include="{path}">` で囲む（`heading` を持てば `{path}#{heading}`、`lines` を持てば `{path}#L{from}-L{to}`）。パスはマーカーを記載した文書のあるフォルダを基準に解き、表のキーと照合する（取り込んだ文書の中のマーカーは、取り込んだ文書のパスのフォルダを基準にする）。拡張子が `.md`・`.markdown` のファイルは Markdown として、本文と同じ設定と機能で描く（取り込んだ文書の `features` のマーカーは使用しない）。`heading` は、取り込む文書の見出しから制約「見出しの ID とアンカー」と同じ規則で作った ID と一致する最初の見出しから、次の同じか上の階層の見出しの前までを取り込む（見出しを含む）。見出しの ID・図表の番号は、取り込んだ中身も含めて文書全体で振る。Markdown 以外のファイルは、全体か `lines` の行（1 から数える）を、拡張子を言語にしたコードブロックとして描く。Markdown のファイルの `lines` と、`heading` と `lines` の両方を記載したマーカーは、取り込まずにその場所に記載の警告（`lines` は Markdown 以外のファイルにだけ記載できること・`heading` と `lines` は同時に記載できないこと）を配置する。表に無いパス・無い見出しの ID・ファイルの行の数を越える行の範囲は、マーカーの場所に記載の警告（取り込み先と、無いもの。行の範囲はファイルの行の数も）を配置する。取り込みの途中で同じファイルをもう一度取り込むマーカーは、その場所に記載の警告（循環することと、`a.md → b.md → a.md` の循環の順）を配置して取り込まない。`include` がオフのときはマーカーを取り除き、中身を取り込まない'
+    constraint: '`include` がオンのとき、`<!-- include: {"path": "パス"} -->`・`<!-- include: {"path": "パス", "heading": "見出しの ID"} -->`・`<!-- include: {"path": "パス", "lines": {"from": 開始, "to": 終了}} -->`（`to` を省くと `from` の 1 行）を、`opts.includes` から参照した中身に置き換え、`<div class="mdmark-include" data-include="{path}">` で囲む（`heading` を持てば `{path}#{heading}`、`lines` を持てば `{path}#L{from}-L{to}`）。
+
+
+      - パスはマーカーを記載した文書のあるフォルダを基準に解き、表のキーと照合する（取り込んだ文書の中のマーカーは、取り込んだ文書のパスのフォルダを基準にする）。
+
+      - 拡張子が `.md`・`.markdown` のファイルは Markdown として、本文と同じ設定と機能で描く（取り込んだ文書の `features` のマーカーは使用しない）。
+
+      - `heading` は、取り込む文書の見出しから制約「見出しの ID とアンカー」と同じ規則で作った ID と一致する最初の見出しから、次の同じか上の階層の見出しの前までを取り込む（見出しを含む）。
+
+      - 見出しの ID・図表の番号は、取り込んだ中身も含めて文書全体で振る。
+
+      - Markdown 以外のファイルは、全体か `lines` の行（1 から数える）を、拡張子を言語にしたコードブロックとして描く。
+
+      - Markdown のファイルの `lines` と、`heading` と `lines` の両方を記載したマーカーは、取り込まずにその場所に記載の警告（`lines` は Markdown 以外のファイルにだけ記載できること・`heading` と `lines` は同時に記載できないこと）を配置する。
+
+      - 表に無いパス・無い見出しの ID・ファイルの行の数を越える行の範囲は、マーカーの場所に記載の警告（取り込み先と、無いもの。行の範囲はファイルの行の数も）を配置する。
+
+      - 取り込みの途中で同じファイルをもう一度取り込むマーカーは、その場所に記載の警告（循環することと、`a.md → b.md → a.md` の循環の順）を配置して取り込まない。
+
+      - `include` がオフのときはマーカーを取り除き、中身を取り込まない'
     notes: 取り込む文書の指定方法は要件.md の未確定の推奨案 A。行の範囲の記載方法と、Markdown 以外のファイルでだけ行の範囲として読み込むことは確認ログの決定
   - item: wide の範囲
     constraint: '`wide` がオンのとき、`<!-- wide -->` 〜 `<!-- /wide -->` を `<div class="mdmark-wide-range" data-state="wide">` で囲み、`<!-- wide: {"open": false} -->` で始めた範囲は `data-state="narrow"` にする。幅の切り替えのボタンは `mount` が付ける。閉じのマーカーの無い範囲は、マーカーの場所に記載の警告（閉じのマーカー `<!-- /wide -->` が無いこと）を配置し、中身を囲まずに本文の幅で出す。知らないキーは警告を配置せずに無視し、`data-state="wide"` で描く。wide の範囲の中の wide のマーカーは取り除く。`wide` がオフのときはマーカーを取り除き、中身を順に出す'
     notes: class は埋め込んだ HTML の `.is-wide` と、表の `width.mode` が `nowrap` の列の `mdmark-wide` と分ける。最初に狭い幅にする指定は確認ログの決定。外観はモック `docs/mock/components/wide/`
   - item: CSV の表
-    constraint: '`csv` がオンのとき、情報文字列の最初の単語がちょうど `csv` のコードブロックを、RFC 4180 の決まり（区切りは `,`、`"` で囲んだ値の中の `,` と改行は値、`""` は `"`、改行は LF か CRLF）で行と値に読み込み、1 行目を見出しの行とした表にして制約「表」のとおり描く（表のマーカーで囲めばその種類と機能、囲まなければ `default`）。値は文字として描き、Markdown として読み込まない。列の数が見出しの行と違う行は、足りない列を空のセルにし、多い値を捨て、表の前に記載の警告（その行の行番号）を配置する。表の後ろに、記載したとおりの CSV を `<pre class="mdmark-raw" hidden><code class="language-csv">` で配置し、`.mdmark-table` に `data-source="csv"` を付ける（元の CSV への切り替えは `mount` が付ける）。中身が空のコードブロックは表にせず、制約「コードブロック」のとおり描く。表にしたコードブロックには、直前の `<!-- code: {…} -->` の飾りを適用しない。`csv` がオフのときは制約「コードブロック」のとおり描く'
+    constraint: '`csv` がオンのとき、情報文字列の最初の単語がちょうど `csv` のコードブロックを、RFC 4180 の決まり（区切りは `,`、`"` で囲んだ値の中の `,` と改行は値、`""` は `"`、改行は LF か CRLF）で行と値に読み込み、1 行目を見出しの行とした表にして制約「表」のとおり描く（表のマーカーで囲めばその種類と機能、囲まなければ `default`）。
+
+
+      - 値は文字として描き、Markdown として読み込まない。
+
+      - 列の数が見出しの行と違う行は、足りない列を空のセルにし、多い値を捨て、表の前に記載の警告（その行の行番号）を配置する。
+
+      - 表の後ろに、記載したとおりの CSV を `<pre class="mdmark-raw" hidden><code class="language-csv">` で配置し、`.mdmark-table` に `data-source="csv"` を付ける（元の CSV への切り替えは `mount` が付ける）。
+
+      - 中身が空のコードブロックは表にせず、制約「コードブロック」のとおり描く。
+
+      - 表にしたコードブロックには、直前の `<!-- code: {…} -->` の飾りを適用しない。
+
+      - `csv` がオフのときは制約「コードブロック」のとおり描く'
     notes: 読み取りは自前の同期の処理（ライブラリ選定で決定）。外観はモック `docs/mock/components/csv-table/`
   - item: ページの設定のマーカー
     constraint: '文書の先頭の `<!-- page: {JSON のオブジェクト} -->` は本文に出さない。記載できるキーの知らない値があるときは文書の先頭に、先頭に無い page のマーカーはその場所に、インターフェース定義『文書を描く』の制約「ページの設定のマーカー」と同じ記載の警告を出す。知らないキーは警告を出さずに無視する。明暗・テーマ・右側の目次の出し方は描く先の要素とページに適用するもので、`render` の文字列には含めない'
   - item: カードの格子
-    constraint: '`card-grid` がオンのとき、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを `<ul class="mdmark-card-grid">` にし、項目ごとの `<li>` に、リンクを持つ項目は `<a class="mdmark-card-grid-item" href="{最初のリンク先}">`、持たない項目は `<div class="mdmark-card-grid-item">` を配置する。中に、項目の最初のリンクの前の行内の `icon:名前` のアイコン（制約「アイコン」と同じ要素に class `mdmark-card-grid-icon` を追加したもの）、`<span class="mdmark-card-grid-title">`（リンクの文字。URL をそのまま記載したリンクはスキームを除いた URL、リンクの無い項目は項目の最初の行の文字）、残りの文字があれば `<p class="mdmark-card-grid-desc">` を配置する。範囲の中のリンクは制約「リンクと添付のカード」にしない。中身がリスト 1 つでないときは範囲の前に記載の警告（囲めるのはリスト 1 つであること）を配置し、マーカーを取り除いて中身を順に出す。`card-grid` がオフのときはマーカーを取り除き、中身を順に出す'
+    constraint: '`card-grid` がオンのとき、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを `<ul class="mdmark-card-grid">` にし、項目ごとの `<li>` に、リンクを持つ項目は `<a class="mdmark-card-grid-item" href="{最初のリンク先}">`、持たない項目は `<div class="mdmark-card-grid-item">` を配置する。
+
+
+      - 中に、項目の最初のリンクの前の行内の `icon:名前` のアイコン（制約「アイコン」と同じ要素に class `mdmark-card-grid-icon` を追加したもの）、`<span class="mdmark-card-grid-title">`（リンクの文字。URL をそのまま記載したリンクはスキームを除いた URL、リンクの無い項目は項目の最初の行の文字）、残りの文字があれば `<p class="mdmark-card-grid-desc">` を配置する。
+
+      - 範囲の中のリンクは制約「リンクと添付のカード」にしない。
+
+      - 中身がリスト 1 つでないときは範囲の前に記載の警告（囲めるのはリスト 1 つであること）を配置し、マーカーを取り除いて中身を順に出す。
+
+      - `card-grid` がオフのときはマーカーを取り除き、中身を順に出す'
     notes: class はリンクと添付のカードの `.mdmark-card` とビューのボードの `.mdmark-view-cards` と分ける。外観はモック `docs/mock/components/card-grid/`
   - item: フロントマター
-    constraint: Markdown の 1 行目が `---` だけの行で、2 行目以降に `---` か `...` だけの行があるとき、1 行目からその最初の行までをフロントマターとし、解析の前に本文から除外する。開く行と閉じる行は、行末の空白と CR（改行が CRLF の文書）を許す。先頭の BOM（U+FEFF）は判定の前に除く。閉じる行が無ければフロントマターとして扱わない。除外した範囲は、段落・見出し・目次・用語の下線・記載の警告の対象にしない。後ろのブロックの `data-source-line` は、元の Markdown の行番号のままにする。機能 `frontmatter`（既定 `false`）がオンのときだけ、本文の先頭に `<details class="mdmark-collapsible mdmark-frontmatter">`（`open` を持たない。制約「details の範囲」と同じ折りたたみ）を配置し、`<summary>` の文字を `フロントマター` にし、中にフロントマターの中身（開く行と閉じる行を除いた行）を制約「コードブロック」と同じ言語 `yaml` のコードブロックとして描く（コードブロックの `data-source-line` はフロントマターの 2 行目の行番号）。中身が空の行だけのフロントマターは、オンでも表示を配置しない。機能のオン・オフは、フロントマターの後ろの `features` のマーカーでも上書きできる。取り込む Markdown（制約「取り込み」）の先頭のフロントマターは、機能によらず除外して表示を配置しない。フロントマターとその表示は、制約「ページの設定のマーカー」の文書の先頭の判定に数えない
+    constraint: |-
+      Markdown の 1 行目が `---` だけの行で、2 行目以降に `---` か `...` だけの行があるとき、1 行目からその最初の行までをフロントマターとし、解析の前に本文から除外する。
+
+      - 開く行と閉じる行は、行末の空白と CR（改行が CRLF の文書）を許す。
+      - 先頭の BOM（U+FEFF）は判定の前に除く。
+      - 閉じる行が無ければフロントマターとして扱わない。
+      - 除外した範囲は、段落・見出し・目次・用語の下線・記載の警告の対象にしない。
+      - 後ろのブロックの `data-source-line` は、元の Markdown の行番号のままにする。
+      - 機能 `frontmatter`（既定 `false`）がオンのときだけ、本文の先頭に `<details class="mdmark-collapsible mdmark-frontmatter">`（`open` を持たない。制約「details の範囲」と同じ折りたたみ）を配置し、`<summary>` の文字を `フロントマター` にし、中にフロントマターの中身（開く行と閉じる行を除いた行）を制約「コードブロック」と同じ言語 `yaml` のコードブロックとして描く（コードブロックの `data-source-line` はフロントマターの 2 行目の行番号）。
+      - 中身が空の行だけのフロントマターは、オンでも表示を配置しない。
+      - 機能のオン・オフは、フロントマターの後ろの `features` のマーカーでも上書きできる。
+      - 取り込む Markdown（制約「取り込み」）の先頭のフロントマターは、機能によらず除外して表示を配置しない。
+      - フロントマターとその表示は、制約「ページの設定のマーカー」の文書の先頭の判定に数えない
   - item: map の範囲
-    constraint: '機能 `map` がオンの文書で、`<!-- map: {JSON のオブジェクト} -->`（引数が無ければ `<!-- map -->`）〜 `<!-- /map -->` の範囲にある、情報文字列の最初の単語が `mermaid` のコードブロック 1 つと、補足の HTML コメント（`<!-- map-data: {JSON のオブジェクト} -->`。JSON は複数の行にわたってよい）0〜1 つを 1 つの図にする。範囲は `<div class="mdmark-map" data-map="{図の番号}" data-map-kind="{図の種類}" data-map-args="{引数}">` にし（`{引数}` は印の JSON のオブジェクトから知っているキーだけを残し、空白なしの JSON にした文字）、中に Mermaid のソースのコードブロック（制約『コードブロック』のとおり。`data-mdmark-mermaid` と色分けの属性を付けない）と、補足の JSON の文字（マーカーの名前の後ろから `-->` の前まで）を持つ `<pre class="mdmark-map-data" hidden>` を配置する。機能 `glossary` がオンで、範囲の Mermaid と補足の文字に索引か用語集の表の用語（意味を持つもの。エイリアスと文書の別名は除く）があれば、`div.mdmark-map` に `data-map-terms`（文字に出たままの用語から意味への JSON のオブジェクト）を付ける。図の番号は文書の中の map の範囲の順で 1 から。図の種類は Mermaid の 1 行目の最初の単語で、この版で描くのは `flowchart`（`graph` を含む）・`sequenceDiagram`・`erDiagram`・`stateDiagram`（`stateDiagram-v2` を含む。`data-map-kind` は `stateDiagram`）・`classDiagram`・`architecture`（`architecture-beta`。`data-map-kind` は `architecture`）・`C4Context`。範囲の中のほかの Markdown とマーカーの文字は出力に残さない。`render` は配置と図を描かない（図にするのは `mount`。文書を描く.ts の制約『map の図』）。範囲の中の mermaid のブロックは、制約『mermaid のコードブロック』の対象にしない。機能 `map` は文書の `<!-- features: {"map": false} -->` を受け、返却する `features` に含める'
+    constraint: '機能 `map` がオンの文書で、`<!-- map: {JSON のオブジェクト} -->`（引数が無ければ `<!-- map -->`）〜 `<!-- /map -->` の範囲にある、情報文字列の最初の単語が `mermaid` のコードブロック 1 つと、補足の HTML コメント（`<!-- map-data: {JSON のオブジェクト} -->`。JSON は複数の行にわたってよい）0〜1 つを 1 つの図にする。
+
+
+      - 範囲は `<div class="mdmark-map" data-map="{図の番号}" data-map-kind="{図の種類}" data-map-args="{引数}">` にし（`{引数}` は印の JSON のオブジェクトから知っているキーだけを残し、空白なしの JSON にした文字）、中に Mermaid のソースのコードブロック（制約『コードブロック』のとおり。`data-mdmark-mermaid` と色分けの属性を付けない）と、補足の JSON の文字（マーカーの名前の後ろから `-->` の前まで）を持つ `<pre class="mdmark-map-data" hidden>` を配置する。
+
+      - 機能 `glossary` がオンで、範囲の Mermaid と補足の文字に索引か用語集の表の用語（意味を持つもの。エイリアスと文書の別名は除く）があれば、`div.mdmark-map` に `data-map-terms`（文字に出たままの用語から意味への JSON のオブジェクト）を付ける。
+
+      - 図の番号は文書の中の map の範囲の順で 1 から。
+
+      - 図の種類は Mermaid の 1 行目の最初の単語で、この版で描くのは `flowchart`（`graph` を含む）・`sequenceDiagram`・`erDiagram`・`stateDiagram`（`stateDiagram-v2` を含む。`data-map-kind` は `stateDiagram`）・`classDiagram`・`architecture`（`architecture-beta`。`data-map-kind` は `architecture`）・`C4Context`。
+
+      - 範囲の中のほかの Markdown とマーカーの文字は出力に残さない。
+
+      - `render` は配置と図を描かない（図にするのは `mount`。文書を描く.ts の制約『map の図』）。
+
+      - 範囲の中の mermaid のブロックは、制約『mermaid のコードブロック』の対象にしない。
+
+      - 機能 `map` は文書の `<!-- features: {"map": false} -->` を受け、返却する `features` に含める'
     notes: 印の引数（`title`・`focus`・`play`・`interval`・`collapse`）の構成は shuhei1101/mdmark#451 の資料 A-128 のとおりで、意味は文書を描く.ts の制約『map の印の引数』。補足の構造は ER 図『mapの補足』
   - item: map の書き方の誤り
     constraint: map の範囲で、JSON のオブジェクトとして読めない印の引数と型の合わない印の引数の値を集め、範囲の場所の前に書き方の警告を 1 つ配置する。印の知らないキーは警告にせず無視する（点検が `map_unknown_key` で通知する）。Mermaid の読めない行・閉じの無い `subgraph` と複合フラグメント・補足の JSON の誤り（JSON のオブジェクトとして読めない・スキーマに合わない）・補足が指す Mermaid に無い ID・`--` を含む補足の文字は `render` では確かめず、`mount` が図の前の書き方の警告にする（文書を描く.ts の制約『map の書き方の警告』。Mermaid と補足を読む処理を `dist/index.js` に入れず、配布物の大きさの上限に収めるため）。mermaid のブロックが無い・2 つ以上ある・補足が 2 つ以上ある範囲と、描かない図の種類の範囲は図にせず、警告とソースのコードブロックだけを配置する

@@ -20,7 +20,13 @@ data_models:
         description: 正規化した単語から、その単語を `aliases` に持つ文書（索引の `docs` の順）
       - name: avoided
         type: 'Map<string, { id: string; term: string; meaning?: string; alias?: MdmarkAlias }>'
-        description: 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid`、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、エイリアスの並び、索引の `docs` の順の文書の表の順で先の用語）。`avoid` の種類は `term` を `replacement` にして `meaning` を持たず、`term` の種類は `term` を名前、`meaning` を `description` にする。エイリアスの代わりの用語は `id` を `alias:{エイリアスの id}` にし、`alias` にそのエイリアスを持つ。用語の単語・別名と同じ単語は入れない。`words` には入れず、照合でやめた言い方を利用側だけが `words` に追加する
+        description: |-
+          正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid`、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、エイリアスの並び、索引の `docs` の順の文書の表の順で先の用語）。
+
+          - `avoid` の種類は `term` を `replacement` にして `meaning` を持たず、`term` の種類は `term` を名前、`meaning` を `description` にする。
+          - エイリアスの代わりの用語は `id` を `alias:{エイリアスの id}` にし、`alias` にそのエイリアスを持つ。
+          - 用語の単語・別名と同じ単語は入れない。
+          - `words` には入れず、照合でやめた言い方を利用側だけが `words` に追加する
       - name: written
         type: Map<string, string>
         description: 正規化した単語から、索引・用語集の表・文書の `aliases` に記載した表記。`words` と `avoided` の単語を持ち、同じ正規化の単語は `terms`・`avoided` と同じ優先の順で先の表記
@@ -34,7 +40,20 @@ functions:
     kind: 関数
     scope: internal
     summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
-    description: 単語は `normalizeWord` で正規化してから入れ、正規化した後に同じになる単語は同じ単語として扱う。同じ単語が複数の用語に該当するときは、索引の `terms`・`aliases`（並びの順）・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{単語}`。`aliases` は `usableAliases` で使用できるものだけにし、`avoid` でない種類の `name`・`aliases` を単語にして、`id` を `alias:{エイリアスの id}`、`meaning` を `description`（無ければ空文字）、`alias` をそのエイリアスにする。`term` はエイリアスを入れずに同じ優先の順で用語を参照する。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語・エイリアス・やめた言い方を入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・単語・意味、用語集の表の用語なら `glossary:{docId}:{単語}`・用語・意味にする。エイリアスのやめた言い方は、`avoid` の種類の `name`・`aliases`（代わりの用語は `alias:{id}`・`replacement` で、意味を持たない）と `term` の種類の `avoid`（代わりの用語は `alias:{id}`・`name`・`description`）から入れ、どちらも `alias` にそのエイリアスを持つ。同じやめた言い方は、索引の `terms`、`aliases` の並び、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使用する。やめた言い方が用語の単語・別名と同じかも正規化した単語で比べる。やめた言い方は `avoided` にだけ入れて `words` に追加しないので、`words` を使用する `collectMatches`・図のノードの `{{単語}}` の照合はやめた言い方に該当しない
+    description: |-
+      単語は `normalizeWord` で正規化してから入れ、正規化した後に同じになる単語は同じ単語として扱う。
+
+      - 同じ単語が複数の用語に該当するときは、索引の `terms`・`aliases`（並びの順）・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。
+      - 用語集の表の用語の `id` は `glossary:{docId}:{単語}`。
+      - `aliases` は `usableAliases` で使用できるものだけにし、`avoid` でない種類の `name`・`aliases` を単語にして、`id` を `alias:{エイリアスの id}`、`meaning` を `description`（無ければ空文字）、`alias` をそのエイリアスにする。
+      - `term` はエイリアスを入れずに同じ優先の順で用語を参照する。
+      - 描く文書自身の別名は入れない。
+      - `backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語・エイリアス・やめた言い方を入れない。
+      - やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・単語・意味、用語集の表の用語なら `glossary:{docId}:{単語}`・用語・意味にする。
+      - エイリアスのやめた言い方は、`avoid` の種類の `name`・`aliases`（代わりの用語は `alias:{id}`・`replacement` で、意味を持たない）と `term` の種類の `avoid`（代わりの用語は `alias:{id}`・`name`・`description`）から入れ、どちらも `alias` にそのエイリアスを持つ。
+      - 同じやめた言い方は、索引の `terms`、`aliases` の並び、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使用する。
+      - やめた言い方が用語の単語・別名と同じかも正規化した単語で比べる。
+      - やめた言い方は `avoided` にだけ入れて `words` に追加しないので、`words` を使用する `collectMatches`・図のノードの `{{単語}}` の照合はやめた言い方に該当しない
     args:
       - name: options
         type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; aliases?: readonly unknown[]; features: Record<string, boolean> }'

@@ -385,7 +385,20 @@ functions:
     container: src/cli/migrations.ts
     usecase: バージョンを上げる
     summary: 手順 1 つを当て先へ適用する
-    description: '`rename_key`・`set_default`・`map_values` は対象の YAML を `parseDocument` で読み込み、`renameKey`・`setDefault`・`mapValues` が書き換えたときだけ `doc.toString({ flowCollectionPadding: false })` で書き込んで戻す。`file: index` で索引が無ければ何もしない。`set_default` の `ask` は `target.answers` の値を YAML の値として読み込んで追加する。`replace_mark` は各文書の本文を `replaceMark` で書き換え、変わった文書だけ書き込んで戻す。`call` は `process.execPath` で `[{スクリプト}, "--config", {設定ファイル}]` を設定ファイルのフォルダで実行し（シェルを経由しない）、標準出力を行に分けて空行を除いた並びを返却する。0 以外で終わったときは、標準エラーの空でない行を `CliError` のメッセージの後ろに改行で続ける。`call` 以外は空の並びを返却する'
+    description: '`rename_key`・`set_default`・`map_values` は対象の YAML を `parseDocument` で読み込み、`renameKey`・`setDefault`・`mapValues` が書き換えたときだけ `doc.toString({ flowCollectionPadding: false })` で書き込んで戻す。
+
+
+      - `file: index` で索引が無ければ何もしない。
+
+      - `set_default` の `ask` は `target.answers` の値を YAML の値として読み込んで追加する。
+
+      - `replace_mark` は各文書の本文を `replaceMark` で書き換え、変わった文書だけ書き込んで戻す。
+
+      - `call` は `process.execPath` で `[{スクリプト}, "--config", {設定ファイル}]` を設定ファイルのフォルダで実行し（シェルを経由しない）、標準出力を行に分けて空行を除いた並びを返却する。
+
+      - 0 以外で終わったときは、標準エラーの空でない行を `CliError` のメッセージの後ろに改行で続ける。
+
+      - `call` 以外は空の並びを返却する'
     kind: 関数
     scope: public
     is_async: true

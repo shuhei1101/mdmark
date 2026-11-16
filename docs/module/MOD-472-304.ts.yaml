@@ -276,7 +276,36 @@ functions:
     kind: 関数
     scope: public
     summary: 利用側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返却する
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`table.pin` は `through` のときだけ `through` にし、無い値・他の値は `each` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。`mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。`mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。`mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。指定されたオブジェクトは書き換えない'
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。
+
+
+      - `libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。
+
+      - `tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。
+
+      - `tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。
+
+      - `syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。
+
+      - `html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。
+
+      - `side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。
+
+      - `table.pin` は `through` のときだけ `through` にし、無い値・他の値は `each` にする。
+
+      - `colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。
+
+      - `colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。
+
+      - `labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。
+
+      - `mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。
+
+      - `mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。
+
+      - `mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。
+
+      - 指定されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'

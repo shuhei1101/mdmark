@@ -81,7 +81,14 @@ upstream: systemd/systemd
 verification:
   state: 済
   date: '2026-11-09'
-  detail: WSL2 の Ubuntu（systemd 255、`/etc/wsl.conf` の `[boot] systemd=true`）で、`is-system-running` が `degraded` を出して終了コード 1 だった。無い unit の `is-active` は `inactive`（終了コード 4）、`is-enabled` は `not-found`（終了コード 4）。`~/.config/systemd/user/` に `Environment="A=x %% y"` と `ExecStart=/bin/sh -c '…'` の unit を配置して `daemon-reload`・`enable --now` すると `active`・`enabled` になり、`journalctl --user -u {名前} -o cat` に `x % y` を含む標準出力の行が出た。user のマネージャーの `PATH` には nvm の node・npx が無かった。`Restart=on-failure` と、2 秒後に `exit 1` する `ExecStart` の unit では、14 秒の間 `ActiveState` が `active` と `activating`（`SubState` が `auto-restart`）を繰り返して `failed` にならず、`NRestarts` が 1 秒前後ごとに増えて 5 になった。`stop` の後の `start`・`restart` で `NRestarts` は 0 に戻った
+  detail: |-
+    WSL2 の Ubuntu（systemd 255、`/etc/wsl.conf` の `[boot] systemd=true`）で、`is-system-running` が `degraded` を出して終了コード 1 だった。
+
+    - 無い unit の `is-active` は `inactive`（終了コード 4）、`is-enabled` は `not-found`（終了コード 4）。
+    - `~/.config/systemd/user/` に `Environment="A=x %% y"` と `ExecStart=/bin/sh -c '…'` の unit を配置して `daemon-reload`・`enable --now` すると `active`・`enabled` になり、`journalctl --user -u {名前} -o cat` に `x % y` を含む標準出力の行が出た。
+    - user のマネージャーの `PATH` には nvm の node・npx が無かった。
+    - `Restart=on-failure` と、2 秒後に `exit 1` する `ExecStart` の unit では、14 秒の間 `ActiveState` が `active` と `activating`（`SubState` が `auto-restart`）を繰り返して `failed` にならず、`NRestarts` が 1 秒前後ごとに増えて 5 になった。
+    - `stop` の後の `start`・`restart` で `NRestarts` は 0 に戻った
 license: LGPL-2.1-or-later
 official_url: https://systemd.io/
 docs_url: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html

@@ -51,7 +51,20 @@ upstream: evanw/esbuild
 verification:
   state: 済
   date: '2026-11-06'
-  detail: '[PoC: esbuild-wasm](https://github.com/shuhei1101/mdmark/pull/349)（`206ff67d`）。`esbuild-wasm/lib/browser.js` を、そのファイルの先頭に `var self = globalThis;` を追加する esbuild のプラグインつきで `dist/extension.cjs` にまとめ、`esbuild.wasm` を `dist/` にコピーした。`vsce package --no-dependencies` の .vsix は 3.99MB で `node_modules` を含まない。VS Code 1.141.0 の拡張機能ホストで `initialize({ wasmModule, worker: false })` が通り、`globalThis.self` は増えない。`build`（`bundle`・`format: esm`・`platform: browser`・`minify`・`target`・`write: false`）で、型注釈・相対パスの `.ts`・jsDelivr の URL の import を持つ拡張を 1 つの ES モジュールにした。初期化と 1 回目 801ms、2 回目以降 189〜555ms（URL の取得を含む）。20 回で RSS が 12.1MB 増え、`stop()` では戻らない'
+  detail: '[PoC: esbuild-wasm](https://github.com/shuhei1101/mdmark/pull/349)（`206ff67d`）。
+
+
+    - `esbuild-wasm/lib/browser.js` を、そのファイルの先頭に `var self = globalThis;` を追加する esbuild のプラグインつきで `dist/extension.cjs` にまとめ、`esbuild.wasm` を `dist/` にコピーした。
+
+    - `vsce package --no-dependencies` の .vsix は 3.99MB で `node_modules` を含まない。
+
+    - VS Code 1.141.0 の拡張機能ホストで `initialize({ wasmModule, worker: false })` が通り、`globalThis.self` は増えない。
+
+    - `build`（`bundle`・`format: esm`・`platform: browser`・`minify`・`target`・`write: false`）で、型注釈・相対パスの `.ts`・jsDelivr の URL の import を持つ拡張を 1 つの ES モジュールにした。
+
+    - 初期化と 1 回目 801ms、2 回目以降 189〜555ms（URL の取得を含む）。
+
+    - 20 回で RSS が 12.1MB 増え、`stop()` では戻らない'
 limitations:
   - item: 入口
     content: '`main` の `lib/main.js` はまとめると例外を投げ、PATH の `node` を子プロセスで起動するため、拡張機能ホストでは使用できない。`lib/browser.js` を読み込む'
