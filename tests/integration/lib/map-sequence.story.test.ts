@@ -374,7 +374,7 @@ test("test_accessibility", async () => {
   }
 });
 
-// 参加者の名前の用語は押せる要素の外にあり、押せる要素と別々にフォーカスを受け、用語のフォーカスで意味のツールチップを開く（ParticipantTerms）
+// 参加者の名前の用語は押せる要素の外にあり、押せる要素と別々にフォーカスを受け、意味のツールチップを指す（ParticipantTerms）
 test("test_participant_terms", async () => {
   // 準備
   const page = await openSequence("participant-terms");
@@ -401,16 +401,14 @@ test("test_participant_terms", async () => {
   await expect(
     page.evaluate(() => document.activeElement?.className),
   ).resolves.toBe("mdmark-term");
-  // 検証: 用語のフォーカスで意味のツールチップを開く（プレビューが図の操作を付け終えるまで、フォーカスを移し直す）
+  // 検証: 用語は持ち主（data-tip-owner）として意味のツールチップを指す
+  await expect(term.getAttribute("data-tip-owner")).resolves.toBe("term:mount");
   const tipId = await term.getAttribute("aria-describedby");
   const tip = page.locator(`[id="${tipId}"]`);
-  await expect
-    .poll(async () => {
-      await hit.focus();
-      await term.focus();
-      return tip.isVisible();
-    })
-    .toBe(true);
-  await expect(tip.innerText()).resolves.toContain("文書を要素の中に描く関数");
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(tip.getAttribute("data-tip-for")).resolves.toBe("term:mount");
+  await expect(tip.textContent()).resolves.toContain(
+    "文書を要素の中に描く関数",
+  );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
