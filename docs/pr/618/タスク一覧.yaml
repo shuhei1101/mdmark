@@ -35,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T11:42:24.117550+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T11:53:30.812326+00:00'
   - process: モック作成
     status: skipped
     reason: ノードのリンクの見た目は map のノードのリンク（部品設計『mapの構成図』の mdmark-diagram-node-link）に揃え、新しい見た目の要素を作らないため（モック要否）
