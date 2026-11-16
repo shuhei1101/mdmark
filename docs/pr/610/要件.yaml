@@ -93,20 +93,28 @@ docs:
     updated_at: '2026-11-15T23:08:54.261214+00:00'
   - page: src/files.yaml
     new: false
-    change: コードの行に、設計書への related（implements）を張る
-    status: todo
+    change: コードの行の related の指し先（`docs/module/MOD-472-119.ts` などのパス）を設計書の ID に直し、implements で設計書から辿れるようにする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
   - page: tests/files.yaml
     new: false
-    change: テストの行に、設計書への related（tests）を張る。指すファイルが無い行（integration/lib/flow-diagram.story.test.ts・integration/lib/sequence-diagram.story.test.ts）を直す
-    status: todo
+    change: テストの行の related の指し先を設計書・コードの ID（拡張子つき）に直す。指すファイルが無い行（integration/lib/flow-diagram.story.test.ts・integration/lib/sequence-diagram.story.test.ts）を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
   - page: vscode/files.yaml
     new: false
-    change: コード・テストの行に、設計書への related（implements・tests）を張る
-    status: todo
+    change: コード・テストの行の related の指し先を設計書・コードの ID に直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
   - page: plugin/files.yaml
     new: false
-    change: コードの行に、設計書への related（implements）を張る
-    status: todo
+    change: コードの行の related の指し先を設計書の ID に直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
   - page: dev-docs.yaml
     new: false
     change: ER 図を除く設計書の行の schema を knowledge の design-schemas/v8.4.0 へ切り替え、metadata に description（lead）・tags・main_tags を加える
