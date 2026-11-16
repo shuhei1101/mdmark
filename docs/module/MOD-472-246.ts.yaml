@@ -3,7 +3,6 @@ visibility: internal
 title: ライブラリ本体 / 書き出したHTMLの起動 / route.ts
 test_files:
   - tests/unit/src/viewer/route.test.ts
-  - tests/unit/src/viewer/route.browser.test.ts
 constants:
   - name: DOC_HASH_PREFIX
     title: '文書を指す # の頭'
@@ -62,8 +61,6 @@ functions:
         mock: なし
         expected: '`{ path: entry, heading: null, missing: true }`'
     status: planned
-    introduced:
-      pr: 32
   - name: rewriteLinks
     title: 描いた文書のリンクを 1 枚の中へ向ける
     container: src/viewer/route.ts
@@ -97,5 +94,15 @@ functions:
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に作った要素
         expected: '`href` が順に `#/リファレンス/api.md#mount`・`#/使い方/guide.md#描く`・`../下書き/メモ.md`・`https://example.com/`、`data-doc-path` は 1 つ目だけが `リファレンス/api.md`'
     status: planned
-    introduced:
-      pr: 32
+notes:
+  ブラウザのテストファイル: |-
+    - `tests/unit/src/viewer/route.browser.test.ts`
+lead: 'URL のアンカーの読み取りと描いた文書のリンクの書き換えを受け持ち、まとめた HTML の中のリンクの扱いを変えるときに参照する。'
+tags:
+  - name: topic:ナビゲーション
+    main: true
+  - name: tool:html
+  - name: topic:書き出し
+  - name: action:起動
+  - name: action:読み取り
+  - name: action:まとめ

@@ -1,5 +1,5 @@
 confirmations:
-  - topic: ビューの表形式の長文の列に並べ替えを既定で付けないか（#561）
+  - topic: 'ビューの表形式の長文の列に並べ替えを既定で付けないか（[ビューのマーカーの表でも、長文の列に並べ替えを既定で付けず、columns.{列名}.sort で付け外しできるようにするかを決める](https://github.com/shuhei1101/mdmark/issues/561)）'
     decision: 適用する。長文の列には並べ替えを付けず、columns.{列名}.sort で列ごとに付け外しできる（推奨案 A）
     decided_by: thumbs_up
     approver: shuhei1101

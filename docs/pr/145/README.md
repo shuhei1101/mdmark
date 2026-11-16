@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #122](https://github.com/shuhei1101/mdmark/issues/122) の要望。
-結合テスト `tests/integration/lib/build.test.ts` の `test_normal_when_api_checked_before_use` は、待つ上限 120 秒（`BUILD_TIMEOUT_MS`）の近くで所要時間がばらつき、WSL の `/mnt/c` 上の全件実行でタイムアウトした（[PR #97](https://github.com/shuhei1101/mdmark/pull/97) の implementer の[報告](https://github.com/shuhei1101/mdmark/pull/97#discussion_r4367075915)）。
-単体テスト `tests/unit/scripts/build.test.ts` の `test_main` も、WSL2 で約 30 秒掛かり、`unit` プロジェクトの `testTimeout: 30_000` を超えて fail した（[PR #114](https://github.com/shuhei1101/mdmark/pull/114) の implementer の[報告](https://github.com/shuhei1101/mdmark/pull/114#discussion_r4367615319)。#114 の変更とは関係しない）。
+[ビルドのテスト（結合 build.test.ts・単体 scripts/build.test.ts）が上限の近くで時々タイムアウトする](https://github.com/shuhei1101/mdmark/issues/122) の要望。
+結合テスト `tests/integration/lib/build.test.ts` の `test_normal_when_api_checked_before_use` は、待つ上限 120 秒（`BUILD_TIMEOUT_MS`）の近くで所要時間がばらつき、WSL の `/mnt/c` 上の全件実行でタイムアウトした（[コードブロックを言語に応じてシンタックスハイライトする](https://github.com/shuhei1101/mdmark/pull/97) の implementer の[報告](https://github.com/shuhei1101/mdmark/pull/97#discussion_r4367075915)）。
+単体テスト `tests/unit/scripts/build.test.ts` の `test_main` も、WSL2 で約 30 秒掛かり、`unit` プロジェクトの `testTimeout: 30_000` を超えて fail した（[索引のタグにマスターと主題のマーカーを持たせ、find_docs のタグを AND / OR にして返す量を選べるようにする](https://github.com/shuhei1101/mdmark/pull/114) の implementer の[報告](https://github.com/shuhei1101/mdmark/pull/114#discussion_r4367615319)。[索引のタグにマスターと主題のマーカーを持たせ、find_docs のタグを AND / OR にして返す量を選べるようにする](https://github.com/shuhei1101/mdmark/pull/114) の変更とは関係しない）。
 
 ## 計画書
 

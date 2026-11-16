@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。`example.com` への要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -19,6 +22,9 @@ scenarios:
         M->>M: リンク 1 つだけの段落を拡張子でリンクと添付に分ける
         M-->>P: リンクのカードと添付のカードを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目がリンクのカードで、ドメイン `example.com` と URL `https://example.com/docs/guide` が出ている
       - 2 つ目がリンクのカードで、記載した文字 `設計の資料`・ドメイン `example.com`・URL が出ている
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -43,11 +52,13 @@ scenarios:
         M->>M: リンク 1 つだけの段落でないためカードにしない
         M-->>P: 今のままのリンクを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの段落にカードが無く、リンクは文の中のリンクとして描かれている
     test: test_normal_when_link_in_sentence
 lead: 文書の作成者が URL だけの行とファイルへのリンクだけの行を記載すると、mdmark がそれぞれ記載した文字・ドメイン・URL のリンクのカードと、種類のアイコン・ファイル名の添付のカードに描く。カードを描くために外へは要求しない。
-issue: 199
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
@@ -59,3 +70,8 @@ preconditions:
 success_guarantee: リンク 1 つだけの段落がカードになり、押すとそのリンク先へ移る。文の中のリンクは今のまま。GitHub ではリンクとして読み込める。
 minimal_guarantee: カードにできないリンクは、記載したとおりのリンクで描く。
 test_file: tests/e2e/単一ユースケース/リンクと添付のカードを配置する.spec.ts
+tags:
+  - name: topic:カード
+    main: true
+  - name: topic:リンク
+  - name: topic:添付

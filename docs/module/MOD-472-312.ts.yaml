@@ -12,8 +12,6 @@ constants:
     refs:
       - IF-472-34#constraints[色の名前]
     status: planned
-    introduced:
-      pr: 263
 functions:
   - name: isColorName
     title: 色の名前か
@@ -37,5 +35,9 @@ functions:
         mock: なし
         expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
-    introduced:
-      pr: 263
+lead: '色の名前の一覧と見分けを受け持ち、記法で使用できる色の名前を変えるときに参照する。'
+tags:
+  - name: topic:色
+    main: true
+  - name: topic:部品
+  - name: tool:html

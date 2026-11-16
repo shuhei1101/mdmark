@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` にそのフォルダの絶対パスを入れて呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -20,6 +23,9 @@ flows:
         C->>S: check
         S->>F: 設定・索引・文書を読み込む
         S-->>C: issues（0 件）
+      ```
+
+      <!-- /map -->
     expected:
       - '`issues` が空で、`isError` が立たない'
       - 設定・索引・文書が変わっていない
@@ -32,6 +38,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -39,6 +48,9 @@ flows:
         C->>S: check
         S->>F: 設定・索引・文書を読み込む
         S-->>C: issues（schema・missing_doc）
+      ```
+
+      <!-- /map -->
     expected:
       - '`issues` が `schema`（`mdmark.config.yaml`・`build`）と `missing_doc`（`index.yaml`・`docs[1].path`）の 2 件'
       - '`isError` が立たない'
@@ -52,12 +64,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
         C->>S: check
         S->>S: 作業のフォルダから上へ設定ファイルを探す
         S-->>C: isError（無いことと mdmark init）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容に `mdmark.config.yaml` が無いことと `mdmark init` が出る
@@ -70,6 +88,8 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as Claude Code
@@ -79,6 +99,8 @@ flows:
         S->>F: 設定・索引・文書と、merge-base から変わったファイルを読み込む
         S-->>C: issues（missed_change_together）
       ```
+
+      <!-- /map -->
     expected:
       - '`issues` が `missed_change_together`（`b.md`・空の `where`）の 1 件で、`isError` が立たない'
       - 同じフォルダで実行した `mdmark check --base base` の出力の行と一致する
@@ -89,12 +111,18 @@ flows:
       - name: Mock
         description: 起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` を入れずに呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
         C->>S: check（project_dir なし）
         S->>S: 引数を検査する
         S-->>C: isError（project_dir が無いこととプラグインから呼ぶこと）
+      ```
+
+      <!-- /map -->
     expected:
       - '`isError` が立つ'
       - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
@@ -107,6 +135,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -116,6 +147,9 @@ flows:
         C->>S: check
         S->>F: 設定・索引・文書・取り込み先を読み込む
         S-->>C: issues（include_target_missing × 3）
+      ```
+
+      <!-- /map -->
     expected:
       - '`issues` に `include_target_missing` が 3 件あり、同じフォルダで実行した `mdmark check` の出力の行と一致する'
       - '`tools/list` の `check` の説明文に、include の取り込み先を点検することがある'
@@ -133,6 +167,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -142,6 +179,9 @@ flows:
         C->>S: check（file: records.yaml・key: items[0].body）
         S->>F: YAML を読み込み、キーの値を取り出す
         S-->>C: issues（unknown_mark）
+      ```
+
+      <!-- /map -->
     expected:
       - '`text` の `issues` が `unknown_mark`（`-`・`3`）の 1 件で、`isError` が立たない'
       - '`file`・`key` の `issues` が `unknown_mark`（`records.yaml`・`8`）の 1 件で、`isError` が立たない'
@@ -156,6 +196,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -163,6 +206,9 @@ flows:
         C->>S: check
         S->>F: 設定・索引・文書を読み込む
         S-->>C: issues（plain_md_with_marks）
+      ```
+
+      <!-- /map -->
     expected:
       - '`issues` が `plain_md_with_marks`（`b.md`・`5`）の 1 件で、`message` に `b.mark.md` を含む'
       - '`isError` が立たない'
@@ -258,3 +304,7 @@ constraints:
 refs:
   - IF-472-39#
 test_file: tests/integration/ClaudeCodeプラグイン/check.test.ts
+tags:
+  - name: action:点検
+    main: true
+  - name: tool:mcp

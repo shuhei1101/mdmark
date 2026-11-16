@@ -6,7 +6,8 @@
 
 ## 背景
 
-[Issue #542](https://github.com/shuhei1101/mdmark/issues/542) の事象。[c13cb8f3](https://github.com/shuhei1101/mdmark/commit/c13cb8f3) が `migrations/next` を `migrations/v0.11.0` へ移した後、`test_normal` がリポジトリの `migrations/next` をコピーしようとして `ENOENT` で fail する。
+[結合テスト tests/integration/lib/build.test.ts の test_normal が、無くなった migrations/next を写そうとして fail する](https://github.com/shuhei1101/mdmark/issues/542) の事象。
+[c13cb8f3](https://github.com/shuhei1101/mdmark/commit/c13cb8f3) が `migrations/next` を `migrations/v0.11.0` へ移した後、`test_normal` がリポジトリの `migrations/next` をコピーしようとして `ENOENT` で fail する。
 
 ## 計画書
 

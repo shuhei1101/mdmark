@@ -73,7 +73,7 @@ upstream: kpdecker/jsdiff
 verification:
   state: 済
   date: '2026-10-22'
-  detail: 'PR #49 のレビューで、`diffLines`・`diffWords` の 2 つだけを esbuild でまとめて minify すると 7,072 バイトで、`diffWords` の `intlSegmenter` に `Intl.Segmenter`（`ja`・`word`）を指定すると日本語を単語の単位で比べることを Node 24 で確認した（https://github.com/shuhei1101/mdmark/pull/49#discussion_r4330919999）。2026-10-22 に、`diffChars` も加えた 3 つをまとめると 7,158 バイトで、`diffChars("読者が差分を確認する。", "読者が変更表示。")` が削除した切れ `差分`・追加した切れ `変更` を、`diffChars("the color red", "the colour red")` が追加した切れ `u` だけを返却することを確認した（https://github.com/shuhei1101/mdmark/pull/49#discussion_r4344534133）'
+  detail: 'PR [文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/pull/49) のレビューで、`diffLines`・`diffWords` の 2 つだけを esbuild でまとめて minify すると 7,072 バイトで、`diffWords` の `intlSegmenter` に `Intl.Segmenter`（`ja`・`word`）を指定すると日本語を単語の単位で比べることを Node 24 で確認した（https://github.com/shuhei1101/mdmark/pull/49#discussion_r4330919999）。2026-10-22 に、`diffChars` も加えた 3 つをまとめると 7,158 バイトで、`diffChars("読者が差分を確認する。", "読者が変更表示。")` が削除した切れ `差分`・追加した切れ `変更` を、`diffChars("the color red", "the colour red")` が追加した切れ `u` だけを返却することを確認した（https://github.com/shuhei1101/mdmark/pull/49#discussion_r4344534133）'
 license: BSD-3-Clause（商用利用可）。まとめた配布物に著作権表示を残す
 docs_url: https://github.com/kpdecker/jsdiff#readme
 selection:
@@ -82,3 +82,7 @@ install: |-
   ```bash
   npm i -E diff@8.0.4
   ```
+tags:
+  - name: tool:diff
+    main: true
+  - name: topic:差分

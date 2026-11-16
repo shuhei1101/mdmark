@@ -24,8 +24,6 @@ constants:
         value: '3'
         description: 待ち受けを待つ上限を超えた
     status: planned
-    introduced:
-      pr: 354
 functions:
   - name: runSetup
     title: setup.js を動かす
@@ -72,5 +70,9 @@ functions:
       - IF-472-11#
       - IF-472-7#
     status: planned
-    introduced:
-      pr: 354
+tags:
+  - name: topic:セットアップ
+    main: true
+  - name: tool:claude-code
+  - name: topic:設定
+  - name: topic:cli

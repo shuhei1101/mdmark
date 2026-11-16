@@ -86,8 +86,6 @@ data_models:
     refs:
       - IF-472-34#constraints[表の列と行の色]
     status: planned
-    introduced:
-      pr: 263
 constants:
   - name: TABLE_KINDS
     title: 表の種類と機能
@@ -399,8 +397,6 @@ functions:
         mock: なし
         expected: '`highlight` が空、`rows` が `[null, null]`、`warnings` の項目が `無い列`・`9` の 2 つ'
     status: planned
-    introduced:
-      pr: 263
   - name: bodyCellsOf
     title: 表の本文のセルの文字を集める
     container: src/render/syntax/tables.ts
@@ -449,5 +445,11 @@ functions:
         mock: なし
         expected: '`手順` の `cells[0].lines` が `["測る", "分ける"]`・`compact` が `false`、`状態` が `["対応中"]`・`true`、`コード` が `["npm run build"]`・`true`、`説明` が `["描画を速くする"]`・`false`'
     status: planned
-    introduced:
-      pr: 505
+lead: '表のマーカーの種類・機能・絞り込みと表の属性を受け持ち、表の記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:テーブル
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:絞り込み

@@ -16,3 +16,10 @@ components:
         default: '`default`'
         description: '`outline` の線は `--warning-border`'
     status: planned
+lead: 'Button のコンポーネントを受け持ち、Webview のボタンの表示を変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

@@ -56,8 +56,6 @@ data_models:
     refs:
       - ER-472-3#tables[MdmarkAlias]
     status: planned
-    introduced:
-      pr: 176
   - name: MdmarkAliasSource
     title: エイリアスの元のファイル
     container: src/knowledge/aliases.ts
@@ -76,8 +74,6 @@ data_models:
     refs:
       - IF-472-26#request[input.sources]
     status: planned
-    introduced:
-      pr: 176
   - name: MdmarkAliasProblem
     title: エイリアスのずれ
     container: src/knowledge/aliases.ts
@@ -99,8 +95,6 @@ data_models:
     refs:
       - IF-472-26#response[problems]
     status: planned
-    introduced:
-      pr: 176
 enums:
   - name: MdmarkAliasType
     title: エイリアスの種類
@@ -135,8 +129,6 @@ enums:
     refs:
       - ER-472-3#tables[MdmarkAlias].columns[alias_type]
     status: planned
-    introduced:
-      pr: 176
 constants:
   - name: ALIAS_TYPES
     title: エイリアスの種類
@@ -144,8 +136,6 @@ constants:
     summary: '`buildAliases` が受け付ける `alias_type` の値。`env` を含む'
     value: '`["term", "doc", "command", "url", "skill", "tool", "path", "env", "avoid"]`'
     status: planned
-    introduced:
-      pr: 176
   - name: ALIAS_KEYS
     title: エイリアスのキー
     container: src/knowledge/aliases.ts
@@ -154,8 +144,6 @@ constants:
     refs:
       - ER-472-3#tables[aliases].columns[metadata]
     status: planned
-    introduced:
-      pr: 176
   - name: ALIAS_REQUIRED_KEYS
     title: 種類ごとの必須のキー
     container: src/knowledge/aliases.ts
@@ -164,16 +152,12 @@ constants:
     refs:
       - ER-472-3#tables[MdmarkAlias]
     status: planned
-    introduced:
-      pr: 176
   - name: ALIAS_KEY_LABELS
     title: 必須のキーのラベル
     container: src/knowledge/aliases.ts
     summary: '`alias_required_empty` の `message` の修正方法に出すキーの名前'
     value: '`{ id: "ID", name: "名前", description: "説明", command: "コマンド", url: "URL", skill: "スキル名", tool: "ツール名", path: "パス", replacement: "置き換え先" }`'
     status: planned
-    introduced:
-      pr: 176
 functions:
   - name: buildAliases
     title: エイリアスを作る
@@ -249,8 +233,6 @@ functions:
         mock: なし
         expected: '`problems` が `duplicate_alias_id` の 1 件で、`aliases` が空'
     status: planned
-    introduced:
-      pr: 176
   - name: readAliasRecord
     title: レコードから値を取る
     container: src/knowledge/aliases.ts
@@ -280,8 +262,6 @@ functions:
         mock: なし
         expected: '`missing` が `{key: description, field: meta.summary}` の 1 件で、`values` が `description` を持たない'
     status: planned
-    introduced:
-      pr: 176
   - name: checkAliasFields
     title: 種類と必須のキーを確認する
     container: src/knowledge/aliases.ts
@@ -305,8 +285,6 @@ functions:
         mock: なし
         expected: 順に `keys` が `["description"]`・`["command"]`・`["replacement"]`、`undefined`
     status: planned
-    introduced:
-      pr: 176
   - name: usableAliases
     title: 使用できるエイリアスに絞る
     container: src/knowledge/aliases.ts
@@ -330,5 +308,10 @@ functions:
         mock: なし
         expected: 1 つ目の `unit-test` だけを返却する
     status: planned
-    introduced:
-      pr: 176
+lead: 'エイリアスの型と、設定の行と YAML の中身からのエイリアスの作成を受け持ち、エイリアスの作り方を変えるときに参照する。'
+tags:
+  - name: topic:エイリアス
+    main: true
+  - name: topic:索引
+  - name: topic:用語
+  - name: action:作成

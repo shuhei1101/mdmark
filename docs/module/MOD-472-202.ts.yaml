@@ -12,3 +12,9 @@ data_models:
       - name: ~standard
         type: StandardSchemaV1.Props<Input, Output>
         description: '`version: 1`・`vendor`・`validate(value) => Result | Promise<Result>`'
+lead: 'Standard Schema の仕様の型を受け持ち、拡張の引数の検査に使用する型を変えるときに参照する。'
+tags:
+  - name: topic:スキーマ
+    main: true
+  - name: topic:拡張
+  - name: action:検査

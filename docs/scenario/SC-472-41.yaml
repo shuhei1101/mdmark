@@ -2,7 +2,6 @@ id: SC-472-41
 visibility: internal
 title: 図を巡回する
 lead: 読者が、map の構成図の補足に記載された案内の手順を、前へ・次へで進め、手順ごとの入るグループ・強調するノードと説明の文を読む。
-issue: 324
 test_file: tests/e2e/単一ユースケース/図を巡回する.spec.ts
 primary_actor: 読者
 trigger: 読者が、文書の作成者が用意した順番で構成図を読みたくなる
@@ -19,6 +18,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as map の図
@@ -34,6 +36,9 @@ scenarios:
         D-->>U: 印の引数 interval の間隔ごとに手順 3・手順 1 の順に進める
         U->>D: 停止を押す
         D-->>U: 強調を外し、始めた段の図に戻す
+      ```
+
+      <!-- /map -->
     expected:
       - 図を開いたときから図の枠の下に案内の帯があり、手順の数（– / 3）と、右端に前へ・停止・自動で進める・次への 4 つのアイコンのボタンが出る（始める前は停止が押せない）。始めると番号（1 / 3）と説明の文が出て、4 つのボタンは同じ位置のまま。画面に間隔を変える部品は無い。ボタンはスクリーンリーダー向けの名前を持つ
       - 手順 1 で、指定のノードが強調され、ほかのノードが薄くなる
@@ -56,6 +61,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 状態遷移図
@@ -65,6 +73,9 @@ scenarios:
         D-->>U: 記載の順の 3 本目の遷移と遷移先を強調し、説明を出す
         U->>D: 停止を押す
         D-->>U: 強調を外す
+      ```
+
+      <!-- /map -->
     expected:
       - 図を開いたときから図の枠の下に、シーケンス図の再生と同じ帯があり、遷移の数（– / 13）と、前へ・停止・自動で進める・次への 4 つのボタンが出る
       - 手順ごとに、Mermaid に記載した順の遷移 1 本と遷移元・遷移先の状態が強調され、ほかが薄くなり、その遷移の上をデータの印が遷移元から遷移先へ流れる
@@ -80,6 +91,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -87,6 +101,9 @@ scenarios:
         D-->>U: 手順 2 の分類の箱の中へ入り、2 つのテーブルを強調する
         U->>D: 状態遷移図の案内の帯の次へを 2 回押す
         D-->>U: 手順 2 の入れ子の状態の中へ入り、状態を強調する
+      ```
+
+      <!-- /map -->
     expected:
       - ER 図と状態遷移図の案内の帯・手順の強調・中へ入る・停止で戻る動きが、構成図の案内と同じになる
       - 案内を持つ状態遷移図では、帯が案内の手順を進め、遷移の再生は出さない
@@ -99,6 +116,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 図
@@ -106,6 +126,13 @@ scenarios:
         D-->>U: 手順 2 の namespace の中へ入り、2 つのクラスを強調する
         U->>D: アーキテクチャ図の案内の帯の次へを 2 回押す
         D-->>U: 手順 2 の group の中へ入り、service を強調する
+      ```
+
+      <!-- /map -->
     expected:
       - クラス図とアーキテクチャ図の案内の帯・手順の強調・中へ入る・停止で戻る動きが、構成図の案内と同じになる
     test: test_normal_when_added_kinds_walked
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:案内

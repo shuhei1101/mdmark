@@ -144,7 +144,7 @@ docs:
     updated_at: '2026-11-13T19:34:27.844618+00:00'
 scope_out:
   - item: 既存の文書（mdmark・knowledge・ai-monitor・MindStella の資料）の拡張子の `.mark.md` への移行
-    reason: '起点 Issue の後続で、リポジトリごとに移行の時機を決める。この PR は提案を止める設定を持たせる。mdmark の分は #546 に起票した。knowledge・ai-monitor・MindStella の分は、起点 Issue の完了の後に task-planner がリポジトリごとに起票する'
+    reason: '起点 Issue の後続で、リポジトリごとに移行の時機を決める。この PR は提案を止める設定を持たせる。mdmark の分は [mdmark のリポジトリの既存の文書のうち、mdmark の記法を含む .md の拡張子を .mark.md へ移す](https://github.com/shuhei1101/mdmark/issues/546) に起票した。knowledge・ai-monitor・MindStella の分は、起点 Issue の完了の後に task-planner がリポジトリごとに起票する'
     plan: '#546'
   - item: VS Code 拡張機能の有効になる対象の変更
     reason: '`.mark.md` は末尾が `.md` で、言語が `markdown` のまま拡張機能が有効になるため変更しない'

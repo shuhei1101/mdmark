@@ -332,7 +332,7 @@ scope_out:
     reason: 変換を使う側の作業で、この Issue では変換と廃止までを扱う。ただし、このリポジトリの使い方集・見本・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）
     plan: '#290'
   - item: 今の flow・sequence を純粋な Markdown の Mermaid へ書き出す機能
-    reason: 'この PR で flow・sequence を廃止するため、書き出す元が無くなる。map の書き出しは #313 で扱う'
+    reason: 'この PR で flow・sequence を廃止するため、書き出す元が無くなる。map の書き出しは [mdmark の文書を、MCP と CLI で純粋な Markdown（GFM と Mermaid）に書き出す](https://github.com/shuhei1101/mdmark/issues/313) で扱う'
     plan: '#313'
   - item: map 以外の部品に残る分野に寄った固定の語の洗い出しと、使う側の設定で作る形への置き換え
     reason: flow・sequence（判定フローチャートを含む）の固定のノードの種類・線の名前は、変換で設定の `map.kinds`・`map.lines` に移り廃止で消える。残る部品の洗い出しは別の題材
@@ -347,7 +347,7 @@ scope_out:
     reason: ユーザーの判断で map に移さず廃止する（確認ログ）。map は中へ入る・開閉でグループを辿る。変換では落として変換の報告に挙げる
     plan: none
   - item: 変換で、今の図の題の行の範囲・更新日を map へ写すこと
-    reason: '#445 の資料 A-38 で、map の図の題の行には題だけを出し、凡例は出さないと決めている。写す先が無い値として落とし、変換の報告に挙げる（凡例は定義の値ではなく、描くときに種類から作るため報告に挙げない）'
+    reason: '[Mermaid と補足で書き、自動配置で描いて階層を辿れる新しい図（map）を追加する](https://github.com/shuhei1101/mdmark/pull/445) の資料 A-38 で、map の図の題の行には題だけを出し、凡例は出さないと決めている。写す先が無い値として落とし、変換の報告に挙げる（凡例は定義の値ではなく、描くときに種類から作るため報告に挙げない）'
     plan: none
   - item: map の図の説明のツールチップに、設定の `features.hints`（まとめて削除する）と `tooltips.diagramPlacement`（上を先にする）を当てること
     reason: ユーザーの判断で、この PR では適用せず別の Issue にする（確認ログ）。今の map はどちらの設定も参照せず、説明を常に下を先に出す

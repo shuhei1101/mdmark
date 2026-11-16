@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #240](https://github.com/shuhei1101/mdmark/issues/240) の要望。
+[本文の右の余白に、コメントのある箇所のマーカーを出す](https://github.com/shuhei1101/mdmark/issues/240) の要望。
 今のコメントは、本文の中でコメントした文字列を `mark.mdmark-comment-mark` で包み、下線と地の色を付けるだけで、本文の右の余白に出すマーカーは無い。
-[shuhei1101/dev-docs PR #36](https://github.com/shuhei1101/dev-docs/pull/36) の要望「本文の右側にコメントのある箇所のマーカーを出す」を、本文の描画とコメントの位置を持つ mdmark の機能として作ると決めた（[確認事項のスレッド](https://github.com/shuhei1101/dev-docs/pull/36#discussion_r4429198071)）。
-[#222](https://github.com/shuhei1101/mdmark/issues/222) の `reloadComments()` は、この PR で作るマーカーを描き直す前提にしている。
+[画面（文書・設定・見つからない画面）を React（Vite + shadcn/ui）の SPA で作る](https://github.com/shuhei1101/dev-docs/pull/36) の要望「本文の右側にコメントのある箇所のマーカーを出す」を、本文の描画とコメントの位置を持つ mdmark の機能として作ると決めた（[確認事項のスレッド](https://github.com/shuhei1101/dev-docs/pull/36#discussion_r4429198071)）。
+[mount に差分の強調・列の表示の通知・コメントの修正と削除と移動を追加する](https://github.com/shuhei1101/mdmark/issues/222) の `reloadComments()` は、この PR で作るマーカーを描き直す前提にしている。
 
 ## 計画書
 

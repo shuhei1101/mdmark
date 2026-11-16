@@ -129,8 +129,6 @@ functions:
       - IF-472-35#exceptions[TypeError（コメント）]
       - IF-472-27#exceptions[TypeError]
     status: planned
-    introduced:
-      pr: 280
   - name: isComment
     title: コメントの構造か
     container: src/comments/spec.ts
@@ -153,3 +151,10 @@ functions:
         condition: 一致した値・`id` の無い値・`body` が数の値
         mock: なし
         expected: '`true`・`false`・`false`'
+lead: 'コメントの公開の型と、引数とコメントの構造の検査を受け持ち、コメントの部品の引数や保存の形式を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント
+  - name: action:検査
+  - name: action:保存

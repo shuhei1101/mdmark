@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #111](https://github.com/shuhei1101/mdmark/issues/111) の要望。
+[MCP サーバーを stdio から HTTP の常駐サーバーに移す（既定のポート 8782・MDMARK_PORT）](https://github.com/shuhei1101/mdmark/issues/111) の要望。
 knowledge のワークスペース `tmp/mcpベストプラクティス検討` の話し合いで、全リポジトリの MCP サーバーを HTTP（Streamable HTTP）の常駐サーバーにし、stdio を禁止すると決めた（D-60・D-61）。
-この決まりは knowledge の規約『MCP サーバー作成ルール』に入った（[shuhei1101/knowledge#50](https://github.com/shuhei1101/knowledge/issues/50)）。
+この決まりは knowledge の規約『MCP サーバー作成ルール』に入った（[MCP サーバーを HTTP の常駐サーバーに統一して stdio を禁止し、既定のポートの台帳と環境変数での上書きを規約に書く](https://github.com/shuhei1101/knowledge/issues/50)）。
 今の `plugin/.mcp.json` は `node ${CLAUDE_PLUGIN_ROOT}/server/mcp.js` を起動するので、セッションごとに MCP サーバーのプロセスが立つ。
 
 ## 計画書

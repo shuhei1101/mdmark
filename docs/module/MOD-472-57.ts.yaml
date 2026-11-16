@@ -18,8 +18,6 @@ data_models:
         type: string
         description: 変更前の全文（`render` の `previous`）
     status: planned
-    introduced:
-      pr: 196
 constants:
   - name: DIFF_DOC_ID
     title: 差分の取り出し元の docId
@@ -51,5 +49,11 @@ functions:
         mock: なし
         expected: '`revisions("diff")` の `id` が `modified`・`original` の順。`content` が `modified` で `A3`、`original` で `A1`、`other` で reject'
     status: planned
-    introduced:
-      pr: 196
+lead: '差分の取り出し元の作成を受け持ち、プレビューで差分を出す処理を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:作成
+  - name: action:取り出し

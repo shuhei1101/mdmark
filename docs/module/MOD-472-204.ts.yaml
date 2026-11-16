@@ -25,8 +25,6 @@ constants:
     summary: '`setEmbeddedLibraries` が入れる、マーカーの名前から外部ライブラリのモジュールを返却する関数を参照する表。無ければ対応表の URL から読み込む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に有効になる'
     value: undefined
     status: planned
-    introduced:
-      pr: 296
 functions:
   - name: loadLibraries
     title: マーカーの場所に外部ライブラリを描かせる
@@ -35,7 +33,19 @@ functions:
     scope: internal
     is_async: true
     summary: 要素の中のマーカーの場所ごとに、登録した拡張なら引数を検査して `load` で、対応表なら URL でモジュールを読み込んで `draw` を呼ぶ。引数が合わない場所は記載の警告に、読み込めない・描けない・検査が失敗する場所は通知ブロックに替える
-    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読み込む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `{ options, definition }`（`options` は `data-mdmark-args` の JSON を読み込んだオブジェクト）を指定する（対応表のモジュールには `options` を指定する）。拡張の通知ブロックは `source: "extension"` で、名前は拡張の `name`。記載の警告は `renderSyntaxWarning` にマーカーの文字・拡張の名前・`validateMarkArgs` の項目を指定する。マーカーの場所が無ければ何も読み込まない。`embeddedLibraries` があるときは、URL を読み込まずに表の関数でモジュールを読み込み、表に無い名前は読み込めないものとして通知ブロックにする（ページの隣のファイルや CDN へ要求しない）。読み込みと `draw` に時間の上限は配置しない'
+    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読み込む（2 回目からは同じ Promise を待つ）。
+
+      拡張は対応表より優先し、`draw` に `{ options, definition }`（`options` は `data-mdmark-args` の JSON を読み込んだオブジェクト）を指定する（対応表のモジュールには `options` を指定する）。
+
+      拡張の通知ブロックは `source: "extension"` で、名前は拡張の `name`。
+
+      記載の警告は `renderSyntaxWarning` にマーカーの文字・拡張の名前・`validateMarkArgs` の項目を指定する。
+
+      マーカーの場所が無ければ何も読み込まない。
+
+      `embeddedLibraries` があるときは、URL を読み込まずに表の関数でモジュールを読み込み、表に無い名前は読み込めないものとして通知ブロックにする（ページの隣のファイルや CDN へ要求しない）。
+
+      読み込みと `draw` に時間の上限は配置しない'
     side_effects: マーカーの場所の要素の属性を書き換え、失敗した場所を通知ブロックに置き換える。失敗を `console.error` に出す
     args:
       - name: options
@@ -150,8 +160,6 @@ functions:
       type: void
       description: なし
     status: planned
-    introduced:
-      pr: 296
 function_types:
   - name: ImportModule
     title: モジュールを読み込む
@@ -164,3 +172,11 @@ function_types:
     returns:
       type: Promise<LibraryModule>
       description: 読み込んだモジュール
+lead: 'マーカーの場所への外部ライブラリの描画を受け持ち、外部ライブラリの読み込みを変えるときに参照する。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:dom
+  - name: topic:markdown
+  - name: topic:文書
+  - name: action:読み込み

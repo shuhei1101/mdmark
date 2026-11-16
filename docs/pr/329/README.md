@@ -6,11 +6,12 @@
 
 ## 背景
 
-[Issue #284](https://github.com/shuhei1101/mdmark/issues/284) の要望。
+[タッチ端末で用語のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/issues/284) の要望。
 
-[PR #281](https://github.com/shuhei1101/mdmark/pull/281)（[#279](https://github.com/shuhei1101/mdmark/issues/279)。子 Issue [#170](https://github.com/shuhei1101/mdmark/issues/170)）で、図のツールチップと埋め込んだ HTML のヒントに、タッチのタップでの開閉の切り替えと、外の `pointerdown` で閉じる処理を追加した。
-用語のツールチップ（`src/interact/terms.ts`）も同じ作りで、`:hover, :focus-within` の間は閉じない。iOS の Safari はタップした語に `:hover` を残すため、閉じる手段が Esc と `beforeprint` だけになる。
-PR #281 では #170 が図のツールチップだけを報告していたため、スコープ外とした。
+[部品の操作の不具合を修正する（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/pull/281)（[部品の操作の不具合の修正 3 件（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/issues/279)。子 Issue [タッチ端末で、図のツールチップを開いた後に閉じられない](https://github.com/shuhei1101/mdmark/issues/170)）で、図のツールチップと埋め込んだ HTML のヒントに、タッチのタップでの開閉の切り替えと、外の `pointerdown` で閉じる処理を追加した。
+用語のツールチップ（`src/interact/terms.ts`）も同じ作りで、`:hover, :focus-within` の間は閉じない。
+iOS の Safari はタップした語に `:hover` を残すため、閉じる手段が Esc と `beforeprint` だけになる。
+PR [部品の操作の不具合を修正する（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/pull/281) では [タッチ端末で、図のツールチップを開いた後に閉じられない](https://github.com/shuhei1101/mdmark/issues/170) が図のツールチップだけを報告していたため、スコープ外とした。
 
 ## 計画書
 
@@ -24,7 +25,7 @@ PR #281 では #170 が図のツールチップだけを報告していたため
 - [x] ~~初期構築~~（既存リポジトリのため対象外）
 - [x] ~~リバースエンジニアリング~~（現状設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（未検証の技術機構に依存しない。同じ開閉の処理を PR #281 で図のツールチップに入れ済み）
+- [x] ~~PoC 検証~~（未検証の技術機構に依存しない。同じ開閉の処理を PR [部品の操作の不具合を修正する（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/pull/281) で図のツールチップに入れ済み）
 - [x] ~~複合ユースケース設計~~（影響なし: 複合ユースケースの流れを変えない）
 - [x] ~~デザインスタイル選定~~（利用者に見える画面の見た目が変わらない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）
@@ -34,7 +35,7 @@ PR #281 では #170 が図のツールチップだけを報告していたため
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/使い方/書く/索引と用語集を書く.md）
+- [x] ドキュメント修正（[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/71d95e72891bf2d46a7b1c4757e23203c358625c/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E7%B4%A2%E5%BC%95%E3%81%A8%E7%94%A8%E8%AA%9E%E9%9B%86%E3%82%92%E6%9B%B8%E3%81%8F.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

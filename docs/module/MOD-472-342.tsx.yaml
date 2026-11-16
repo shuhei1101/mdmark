@@ -16,3 +16,8 @@ constants:
         value: '`light`・`dark`（既定 `light`。`VSCode/*` のストーリーの配色）'
       - key: parameters.a11y
         value: '`{ test: "error" }`（addon-a11y の違反をストーリーの失敗にする）'
+lead: 'ストーリーの既定の設定を受け持ち、Storybook のストーリーの既定を変えるときに参照する。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:描画

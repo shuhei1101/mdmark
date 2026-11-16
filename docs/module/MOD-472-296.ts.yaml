@@ -9,7 +9,7 @@ functions:
     container: src/render/syntax/card-grid.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`card-grid` がオンなら、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを、項目ごとの最初のリンク・その前の `icon:名前` の行内のコード・残りの文字から部品『カードの格子』の HTML のトークンに置き換える。中身がリスト 1 つでないときは記載の警告を差し込んでマーカーだけを取り除く。オフのときはマーカーを取り除く
+    summary: コアルール。`card-grid` がオンなら、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを、項目ごとの最初のリンク・その前の `icon\:名前` の行内のコード・残りの文字から部品『カードの格子』の HTML のトークンに置き換える。中身がリスト 1 つでないときは記載の警告を差し込んでマーカーだけを取り除く。オフのときはマーカーを取り除く
     description: 脚注の機能のオン・オフ（`collectFootnotes`）の後、行内のアイコン（`buildInlineIcons`）の直前に登録し、項目の `icon:` を行内のコードのまま読み込み、置き換えた範囲の中を行内のアイコンとリンクと添付のカード（`buildCards`）が触らないようにする。項目の最初のリンクが URL をそのまま記載したもの（`linkify`・`autolink`）なら、タイトルはスキームを除いた URL にする。リンクを持たない項目のタイトルは項目の最初の行の文字、説明は 2 行目以降の文字。リンクのカードの説明の中のリンクは文字だけにする。タイトルと説明は `SLOT_MARKER` で枠を作って `markOwn` を掛けた後に差し込む（notes「部品の差し込み方」）
     args:
       - name: state
@@ -53,3 +53,10 @@ functions:
     refs:
       - IF-472-34#constraints[カードの格子]
     status: planned
+lead: 'カードの格子のマーカーの中のリストを部品にするコアルールを受け持ち、カードの格子の記法を変えるときに参照する。'
+tags:
+  - name: topic:カード
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

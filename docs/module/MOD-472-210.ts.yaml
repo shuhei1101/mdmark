@@ -270,3 +270,11 @@ functions:
         condition: '`<!-- features: {"tabs": false} -->` と、段落を囲んだ `<!-- tabs -->` 〜 `<!-- /tabs -->`'
         mock: なし
         expected: 段落があり、マーカーのトークンと `<!--` が無い
+lead: 'マーカーを読み取って置き換えるコアルールと文書の機能の決定を受け持ち、Markdown から HTML 文字列にする流れを変えるときに参照する。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
+  - name: topic:部品
+  - name: action:置き換え

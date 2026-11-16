@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #223](https://github.com/shuhei1101/mdmark/issues/223) の要望（[#196](https://github.com/shuhei1101/mdmark/pull/196) の作業中に見つけたスコープ外の食い違いの切り出し）。
+[docs/リファレンス/用語集.md のリードを index.yaml の summary と揃える（「選べるテーマ」の有無）](https://github.com/shuhei1101/mdmark/issues/223) の要望（[VS Code の差分ビューで開いた Markdown の変更を、mdmark のプレビューに色分けで表示する](https://github.com/shuhei1101/mdmark/pull/196) の作業中に見つけたスコープ外の食い違いの切り出し）。
 `docs/リファレンス/用語集.md` のリードには「選べるテーマ」があり、`docs/リファレンス/index.yaml` の `summary` には無い。
 規約『ドキュメント管理』の「タイトル直下に、同階層 `index.yaml` の行の `summary` と同じ 1 行を置く」から外れている。
 

@@ -98,3 +98,10 @@ functions:
         expected: '`r1` が `b` から `a` への線で、`reversed` が `r1`・`r2`、`r2` は `a` から `c` への線で `direction` が `back`'
 refs:
   - IF-472-35#constraints[map の C4 図]
+lead: 'Mermaid の C4Context の読み取りと構成図の入力への変換を受け持ち、map の C4 図の読み取りを変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:読み取り
+  - name: action:変換

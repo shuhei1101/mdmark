@@ -6,13 +6,13 @@
 
 ## 背景
 
-[Issue #189](https://github.com/shuhei1101/mdmark/issues/189) の不具合。
+[書き出した HTML で blob: URL と動的 import をやめ、1 つの script に束ねる](https://github.com/shuhei1101/mdmark/issues/189) の不具合。
 OneDrive 経由で開いた書き出しの HTML で、拡張（ファイルツリーの注釈）が動かず、フォルダの開閉ができなかった。
 書き出した HTML は CDN を読まないが、起動の処理（[src/viewer/modules.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/viewer/modules.ts)）が、埋めた外部ライブラリ・部品（ビュー）・色分け・拡張のコードを `URL.createObjectURL` で `blob:` URL にし、動的 `import()` で読んでいる。
 埋めなかった外部ライブラリ・部品も、読むと例外を投げる `data:` URL を動的 `import()` で読む。
 そのため、`blob:` や動的 `import()` を許さない環境では、拡張だけでなく色分け・ビューも動かない。
-計画の扱いの判断（[#189 のコメント](https://github.com/shuhei1101/mdmark/issues/189#issuecomment-6501842182)）で、部品・色分け・外部ライブラリの読み込みに URL でなく読み込み済みのモジュールを指定する経路を加える範囲とした。
-後続の [#190](https://github.com/shuhei1101/mdmark/issues/190)（mermaid のコードブロック）はこの修正を前提にする。
+計画の扱いの判断（[書き出した HTML で blob: URL と動的 import をやめ、1 つの script に束ねる のコメント](https://github.com/shuhei1101/mdmark/issues/189#issuecomment-6501842182)）で、部品・色分け・外部ライブラリの読み込みに URL でなく読み込み済みのモジュールを指定する経路を加える範囲とした。
+後続の [mermaid のコードブロックを VS Code 拡張機能と HTML の書き出しで描く](https://github.com/shuhei1101/mdmark/issues/190)（mermaid のコードブロック）はこの修正を前提にする。
 
 ## 計画書
 

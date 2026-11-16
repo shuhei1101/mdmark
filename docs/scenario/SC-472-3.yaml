@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する。ツールの引数には、プラグインの PreToolUse のフックを経由して作業のフォルダの絶対パスを入れる
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -19,6 +22,9 @@ scenarios:
         C->>S: build_site
         S->>F: build.out に 1 枚の HTML を書き込む
         S-->>C: 書き出したパス・入れた文書の数・警告
+      ```
+
+      <!-- /map -->
     expected:
       - '`check` が空のずれの一覧を返却する'
       - '`build_site` が `build.out` に 1 枚の HTML を書き込み、書き出したパスと入れた文書の数 2 を返却する'
@@ -31,6 +37,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -38,6 +47,9 @@ scenarios:
         C->>S: check
         S->>F: 設定・索引・文書を読み込む
         S-->>C: ずれの一覧（ファイル・場所・種類・内容）
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの一覧に、消えた文書の行を指す `missing_doc` が 1 件ある
       - 各行がファイル・場所・種類・内容を持ち、内容に修正方法が記載されている
@@ -51,6 +63,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -59,6 +74,9 @@ scenarios:
         S->>F: 文書と設定を読み込む
         S->>F: 1 枚の HTML を書き込む
         S-->>C: 書き出したパス
+      ```
+
+      <!-- /map -->
     expected:
       - '`export_html` が 1 枚の HTML を書き込み、書き出したパスを返却する'
       - 書き出した HTML が、同じ文書で `mdmark export` を実行して記載した HTML と同じ
@@ -70,12 +88,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
         C->>S: check
         S->>S: 設定ファイルを探す
         S-->>C: エラー（設定ファイルが無いことと、mdmark init で配置できること）
+      ```
+
+      <!-- /map -->
     expected:
       - ツールの結果がエラーになる
       - エラーの文に、設定ファイルが無いことと `mdmark init` で配置できることが出る
@@ -88,6 +112,8 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as Claude Code
@@ -97,6 +123,8 @@ scenarios:
         S->>F: 設定・索引・文書と、基準から変わったファイルを読み込む
         S-->>C: 修正漏れの行を持つずれの一覧
       ```
+
+      <!-- /map -->
     expected:
       - ずれの一覧に、2 つ目の文書を指す修正漏れの行が 1 件ある
       - 同じフォルダで同じ基準を指定して `mdmark check` を実行したときと同じずれが返る
@@ -109,6 +137,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い。MCP のテストのクライアントからツールを呼ぶ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant CC as Claude Code
@@ -118,6 +149,9 @@ scenarios:
         S->>S: mdmark check と同じ処理でずれを集める
         S-->>CC: ずれの一覧
         CC-->>W: 取り込み先が無いずれを伝える
+      ```
+
+      <!-- /map -->
     expected:
       - check が返却するずれの一覧に、`mdmark check` と同じ取り込み先が無いずれが同じ数だけある
       - ツールの一覧で得た check の説明文に、取り込み先が無いことも点検すると記載されている
@@ -132,6 +166,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -141,6 +178,9 @@ scenarios:
         C->>S: check（records.yaml・items[0].body）
         S->>F: YAML のファイルを読み込み、キーの値を取り出す
         S-->>C: 記載の警告のずれの一覧
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列を指定した `check` が、知らないマーカーのずれを 1 件返す
       - ファイルとキーを指定した `check` が、`records.yaml` を指す同じ種類のずれを 1 件返す
@@ -156,6 +196,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -164,6 +207,9 @@ scenarios:
         S->>F: 端末の設定と、作業のフォルダから上の mdmark.config.yaml を読み込んで重ねる
         S->>F: 1 枚の HTML を書き込む
         S-->>C: 書き出したパス
+      ```
+
+      <!-- /map -->
     expected:
       - '`export_html` が 1 枚の HTML を書き込み、書き出したパスを返却する'
       - 書き出した HTML が、同じ文書と同じ端末の設定で `mdmark export` を実行して記載した HTML と同じ
@@ -175,6 +221,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -182,6 +231,9 @@ scenarios:
         C->>S: check
         S->>F: 設定・索引・文書を読み込む
         S-->>C: ずれの一覧（ファイル・場所・種類・内容）
+      ```
+
+      <!-- /map -->
     expected:
       - ずれの一覧に、`b.md` の表のマーカーの行を指す拡張子の提案が 1 件あり、内容に拡張子を `.mark.md` に変えることが記載されている
       - 同じフォルダで `mdmark check` を実行したときと同じずれが返る
@@ -194,6 +246,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -210,6 +265,9 @@ scenarios:
         C->>S: build_site（隠さない書き出しを指定する）
         S->>F: 名前を置き換えない 1 枚の HTML を書き込む
         S-->>C: 書き出したパス・入れた文書の数・警告
+      ```
+
+      <!-- /map -->
     expected:
       - 引数を指定しない `export_html` が書き出した HTML が、同じ文書で `mdmark export` を実行して書き出した HTML と同じで、class `mdmark` と `--mdmark-version` を持たない
       - 引数を指定しない `build_site` が書き出した HTML が、同じフォルダで `mdmark build` を実行して書き出した HTML と同じで、class `mdmark` と `--mdmark-version` を持たない
@@ -219,7 +277,6 @@ scenarios:
       - SC-472-56#scenarios[正常シナリオ（隠さない書き出しを指定する）]
       - SC-472-76#scenarios[正常シナリオ（隠さない書き出しを指定する）]
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
-issue: 11
 primary_actor: Claude Code
 trigger: Claude Code が文書と索引を書き込み終え、点検してから配れる構造にしたくなる
 preconditions:
@@ -231,3 +288,9 @@ refs:
   - SC-472-56#
   - SC-472-76#
 test_file: tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts
+tags:
+  - name: tool:mcp
+    main: true
+  - name: action:点検
+  - name: topic:書き出し
+  - name: tool:claude-code

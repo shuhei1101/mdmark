@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #285](https://github.com/shuhei1101/mdmark/issues/285) の報告。
+[右側の目次で、hover で開いた目次に表のヘッダーが重なり、追従する目次の上端が見切れる](https://github.com/shuhei1101/mdmark/issues/285) の報告。
 MindStella のプレビューで描いた表を含む文書で、ピン止めしていない右側の目次を hover で開くと表の見出し行が目次の上に重なり、文書をスクロールすると目次の上端が見切れた状態で追従する。
 
-右側の目次は [#166](https://github.com/shuhei1101/mdmark/pull/166) で新設し、hover で開く枠を画面に固定する位置は [#320](https://github.com/shuhei1101/mdmark/pull/320)（[#286](https://github.com/shuhei1101/mdmark/issues/286)）で変更した。
-表の見出し行を本文の行より手前に描く規則は [#151](https://github.com/shuhei1101/mdmark/pull/151) で入った。
-ピン止めしていない目次を画面の右端に置く [#270](https://github.com/shuhei1101/mdmark/issues/270) は、この PR の後に入れる順序が計画で決まっている。
+右側の目次は [描いた文書の右側に目次を出し、節の開閉を H1 とまとめての操作に広げる](https://github.com/shuhei1101/mdmark/pull/166) で新設し、hover で開く枠を画面に固定する位置は [描いた文書の表示の改善 2 件（見出し 1・2 の下の区切り線・右側の目次の上端とピン止めと hover の位置）](https://github.com/shuhei1101/mdmark/pull/320)（[右側の目次の「目次」のラベルを削除し、ピン止めのアイコンと hover で開く位置を見直す](https://github.com/shuhei1101/mdmark/issues/286)）で変更した。
+表の見出し行を本文の行より手前に描く規則は [描いた文書の表示を改善する（表の見出し行と幅・表のコピーと集計・コードブロックのラベルとコピー・タブの中の見出しへの移動・空の badge:）](https://github.com/shuhei1101/mdmark/pull/151) で入った。
+ピン止めしていない目次を画面の右端に置く [右側の目次を、ピン止めしていないときも画面の右端に置く](https://github.com/shuhei1101/mdmark/issues/270) は、この PR の後に入れる順序が計画で決まっている。
 
 ## 計画書
 

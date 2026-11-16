@@ -45,5 +45,11 @@ functions:
     refs:
       - LIB-472-11#
     status: planned
-    introduced:
-      pr: 347
+lead: '設定の拡張を ES モジュールにまとめる処理を受け持ち、プレビューと書き出しへの拡張の適用方法を変えるときに参照する。'
+tags:
+  - name: tool:esbuild
+    main: true
+  - name: tool:vscode
+  - name: topic:設定
+  - name: action:書き出し
+  - name: action:まとめ

@@ -28,5 +28,10 @@ functions:
         mock: なし
         expected: '`<span class="mdmark-color" data-color="blue"><strong>重要</strong></span>`'
     status: planned
-    introduced:
-      pr: 263
+lead: '本文の文字の色の部品が返却する HTML を受け持ち、文字の色の外観を変えるときに参照する。'
+tags:
+  - name: topic:色
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

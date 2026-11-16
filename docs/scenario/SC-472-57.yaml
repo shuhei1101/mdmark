@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（手元の `dist/` を読み込む）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -18,6 +21,9 @@ scenarios:
         M->>M: Markdown を解析し、マーカーを取得する
         M->>M: スクリプトを落とす
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 見出し・段落・リスト・表・コードブロック・リンク・折り畳みの要素を持つ HTML 文字列が返る
       - 文字列に `script` 要素とマーカーの文字（`<!--`）が無い
@@ -31,11 +37,17 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: Markdown を指定して HTML 文字列にさせる
         M-->>P: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - ブラウザで返った HTML 文字列が、正常シナリオで Node が返却した文字列と一致する
       - ページの描く先の要素は変わらない（画面に描かない）
@@ -49,6 +61,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
@@ -56,6 +71,9 @@ scenarios:
         M->>M: マーカーと記法を読み込んで HTML にする
         M->>M: スクリプトを落とす
         M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列にタブの 2 つの中身と、閉じたセクションの中身がともにある
       - 注意書きが class `markdown-alert markdown-alert-warning` の要素になっている
@@ -73,11 +91,17 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 索引・文書の id・参照・Markdown を指定して HTML 文字列にさせる
         M-->>C: 用語の意味と被参照の一覧を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列に、`ワークスペース` の下線の要素と、意味 `話し合いの記録を配置するフォルダ` を持つ要素がある
       - 文字列に、`API` へのリンクを持つ被参照の一覧がある
@@ -94,11 +118,17 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: 読み込んだエイリアスと Markdown を指定して HTML 文字列にさせる
         M-->>C: エイリアスの下線とツールチップを持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列に、`ワークスペース` の下線の要素と、説明 `話し合いの記録を配置するフォルダ` を持つ要素がある
       - 文字列に、`単体テスト` の下線の要素と、コード `npm run test:unit` とコピーのボタンを持つ要素がある
@@ -113,12 +143,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: Markdown を指定して HTML 文字列にさせる
         M->>M: 脚注の参照と定義を読み込み、番号を振る
         M-->>C: 脚注の番号と末尾の一覧を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 文字列に、番号 `1`・`2` の上付きの要素と、それぞれの脚注の中身 `出典の説明`・`行内の補足` を持つ要素がある
       - 文字列の末尾に、閉じた脚注の一覧の要素がある
@@ -136,12 +172,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（画面を持たない）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant A as 利用側の処理
         participant M as mdmark
         A->>M: Markdown と取り込む文書の表を指定して HTML 文字列にさせる
         M->>M: include のマーカーの場所に、取り込み先の見出しの中を入れる
         M-->>A: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - HTML 文字列のマーカーの場所に、`実行` の見出しとその下の段落があり、`準備` の段落が無い
       - 表を指定せずに呼ぶと、マーカーの場所に取り込み先が無い記載の警告が入る
@@ -154,18 +196,23 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（画面を持たない）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant A as 利用側の処理
         participant M as mdmark
         A->>M: フロントマターを持つ Markdown を HTML 文字列にさせる
         M->>M: 先頭のフロントマターを本文から除外する
         M-->>A: HTML 文字列
+      ```
+
+      <!-- /map -->
     expected:
       - 'HTML 文字列に `title: テスト` と `tags: [a, b]` の文字が無い'
       - HTML 文字列に h2 の要素が無く、`見出し` の h1 の要素と段落がある
     test: test_normal_when_frontmatter
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を mdmark で HTML 文字列にする。ブラウザでも Node でも同じ文字列を返却する。
-issue: 3
 primary_actor: mdmark で HTML を書き出す利用側の処理
 stakeholders:
   - name: 書き出し・ビルドの CLI の開発者
@@ -175,3 +222,8 @@ preconditions:
   - 利用側の処理が mdmark の配布物の JavaScript を読み込んでいる
 success_guarantee: ページで描くのと同じ本文の HTML 文字列が返る。文字列にスクリプトは含まれない。
 test_file: tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts
+tags:
+  - name: topic:api
+    main: true
+  - name: tool:html
+  - name: action:描画

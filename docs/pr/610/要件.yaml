@@ -1,0 +1,197 @@
+docs:
+  - page: docs/scenario
+    new: false
+    change: flow の Mermaid（```mermaid で囲まれていない flow を含む）を map のマーカーで囲んで補足を付ける。文を表へ・削れる文を削る・タグ・エイリアス・description・関連を付け直す・本文の ID と Issue 番号とパスをリンクへ移す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/interface
+    new: false
+    change: Mermaid の図を map で描く。文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/module
+    new: false
+    change: クラス図の Mermaid を map で描く。文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/component
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/screen
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/er
+    new: false
+    change: '文の書き換えはしない。ER 図は今の Schema の検査に通らず書き込めないため、knowledge の Schema への切り替えと一緒に #587 で移行する（スコープ外の表）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:36.823563+00:00'
+  - page: docs/library
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/config
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/architecture
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/nonfunctional
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/dev-command
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/external-api
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/test-procedure
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/layout
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/design-policy.md
+    new: false
+    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/guide
+    new: false
+    change: 公開ドキュメントの Mermaid を map で描く（Mermaid の記法そのものを説明するページの見本は残す）。文を表へ・削れる文を削る・files.yml の行のタグ・エイリアス・description・関連の付け直し
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: docs/pr
+    new: false
+    change: PR ドキュメントの Mermaid を map で描き、文を表へ・削れる文を削る（起点 Issue の『フォルダの移動』の節で範囲に含めた）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
+  - page: schemas/common.schema.yaml
+    new: false
+    change: ER 図・目次の Schema が参照するため残し、使う設計書が無くなる $defs.mermaid を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
+  - page: schemas/scenario.schema.yaml
+    new: false
+    change: 削除する（シナリオは knowledge の schemas/design/scenario.schema.yaml を design-schemas/v8.4.0 で参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
+  - page: schemas/interface.schema.yaml
+    new: false
+    change: 削除する（knowledge の Schema を参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
+  - page: schemas/module.schema.yaml
+    new: false
+    change: 削除する（knowledge の Schema を参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:08:54.261214+00:00'
+  - page: src/files.yaml
+    new: false
+    change: コードの行の related の指し先（`docs/module/MOD-472-119.ts` などのパス）を設計書の ID に直し、implements で設計書から辿れるようにする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
+  - page: tests/files.yaml
+    new: false
+    change: テストの行の related の指し先を設計書・コードの ID（拡張子つき）に直す。指すファイルが無い行（integration/lib/flow-diagram.story.test.ts・integration/lib/sequence-diagram.story.test.ts）を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
+  - page: vscode/files.yaml
+    new: false
+    change: コード・テストの行の related の指し先を設計書・コードの ID に直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
+  - page: plugin/files.yaml
+    new: false
+    change: コードの行の related の指し先を設計書の ID に直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T00:25:20.618681+00:00'
+  - page: dev-docs.yaml
+    new: false
+    change: ER 図を除く設計書の行の schema を knowledge の design-schemas/v8.4.0 へ切り替え、metadata に description（lead）・tags・main_tags を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-15T23:09:03.693643+00:00'
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: ガイドのタグ・description を付け直すと、Claude Code がタグ topic:ガイド で絞って参照するガイドの一覧が変わりうる
+    depends_on: []
+scope_out:
+  - item: docs/mock/ のモック HTML
+    reason: 画面のモックで、人が読む文書ではない
+    plan: none
+  - item: src/・tests/・vscode/ のコードのコメントと UI の文言の避ける単語
+    reason: '#289 の範囲（ユーザーが案 C で決めた）。この作業では文書だけを扱う'
+    plan: none
+  - item: migrations/ の移行の手順の Mermaid（v0.13.0/retired-diagrams.js）
+    reason: 利用側の文書を書き換えるスクリプトの文字列で、文書ではない
+    plan: none
+  - item: Mermaid の記法そのものを説明するガイド（図を描く-mermaidの図を描く・図を描く-Mermaidと補足で図を描く・記法）の Mermaid の見本
+    reason: mdmark が Mermaid を描く機能の使い方で、見本の Mermaid は説明の対象そのもの。判断はレビューで確定する
+    plan: none
+  - item: docs/rules.yaml から古い規約（『markdown マーメイド』『判定フローチャート』）の ID を除く
+    reason: 'origin/develop の rules.yaml は rules: [] で、古い規約を指していない'
+    plan: none
+  - item: ER 図（docs/er/）を knowledge の Schema へ切り替える
+    reason: '#587 の反映作業『配布先のデータの設計書の作成』が docs/data/ を作り、ER 図の source を埋めて切り替える。管理用の YAML の Schema・index.schema.yaml・フォルダ構成の設計書の schemas/ のエントリも #587 に残す'
+    plan: '#587'
+  - item: '複合ユースケースの flow の click が持つ id: のリンク先（151 件）を map でリンクにする'
+    reason: 'map は click のリンク先を http・https・mailto と相対パスに限り、id: を受け付けない（ノードはリンクにせずに描く）。knowledge の Schema は click で単一ユースケースへリンクするよう求めるため、直すのは map の側で、今回の変更がマージされなくても成り立つ'
+    plan: '#611'
+  - item: ブラウザの単体テストのファイルを持つモジュール構成 5 件の test_files
+    reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が 4 件のモジュール（MOD-472-161・162・203・246）で『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
+    plan: shuhei1101/knowledge#426
+  - item: モジュール構成の functions[].summary のうち、1 行の概要に詳細が入った 28 項目の書き分け
+    reason: Schema の summary は 1 行の決まりで改行を入れられない。詳細を description などへ移すかは項目ごとに書き分けが要り、文の表し方の移行（改行と表）の範囲を超える
+    plan: '#614'
+  - item: 工程 4「文を削り、AI slop を修正する」と改善「エイリアスと用語」
+    reason: 文書ごとに文を読んで判断する作業で、レビューも文書ごとになるため、ユーザーの判断（推奨案 B）で別の Issue に切り出した
+    plan: '#612'
+  - item: map の構成図で、複数のノードから出る線が同じ通り道に重なる（MOD-472-1 の図の確認で見つかった）
+    reason: 図の中身ではなく map の線の経路の決め方の問題で、この PR はコードを変えない
+    plan: '#613'

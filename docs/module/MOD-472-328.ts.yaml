@@ -28,5 +28,10 @@ functions:
         mock: なし
         expected: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3"><div class="mdmark-gallery-grid">` の中に `SLOT_MARKER`'
     status: planned
-    introduced:
-      pr: 263
+lead: 'ギャラリーの部品が返却する HTML を受け持ち、ギャラリーの外観を変えるときに参照する。'
+tags:
+  - name: topic:ギャラリー
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

@@ -74,5 +74,5 @@ scope_out:
     reason: 要望は規約『ローカルサーバーの立て方』の systemd --user に合わせることで、systemd の無い端末は今の tmux で起動できる
     plan: none
   - item: Claude Code のセッションの開始で、止まった常駐サーバーを SessionStart のフックから起動し直す
-    reason: 要望に含まれない。#293 で mdmark を使わないセッションにも毎回入るため外し、今は待ち受けていないときだけ global-setup を案内する形にしている
+    reason: '要望に含まれない。[使い方集を dev-docs の配信元として配り、read_guide を削除して書く前の参照と書いた後の点検の動線を置く](https://github.com/shuhei1101/mdmark/pull/293) で mdmark を使わないセッションにも毎回入るため外し、今は待ち受けていないときだけ global-setup を案内する形にしている'
     plan: none

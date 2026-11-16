@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -26,6 +29,9 @@ scenarios:
         P-->>R: A
         R->>P: ブラウザの進む
         P-->>R: B
+      ```
+
+      <!-- /map -->
     expected:
       - 開いたとき A が出て、文書の一覧で A が開いている文書として示される（`aria-current`）
       - 一覧で B を選ぶと B が出て、URL が B を指す
@@ -41,11 +47,17 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
         R->>P: URL の # で B の 2 つ目の見出しを指して開く
         P-->>R: B の 2 つ目の見出し
+      ```
+
+      <!-- /map -->
     expected:
       - B が出て、2 つ目の見出しが画面に入っている
       - 文書の一覧で B が開いている文書として示される
@@ -59,6 +71,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -70,6 +85,9 @@ scenarios:
         P-->>R: パネルを閉じ、B
         R->>P: ブラウザの戻る
         P-->>R: A
+      ```
+
+      <!-- /map -->
     expected:
       - 開いたとき A が出て、文書の一覧は閉じている
       - 一覧を開く操作でパネルが開き、B を選ぶとパネルが閉じて B が出る
@@ -83,11 +101,17 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
         R->>P: URL の # で 1 枚に無い文書を指して開く
         P-->>R: A
+      ```
+
+      <!-- /map -->
     expected:
       - A が出て、文書の一覧で A が開いている文書として示される
       - ページに例外が出ない
@@ -100,6 +124,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -107,6 +134,9 @@ scenarios:
         P-->>R: A と文書の一覧。wide の範囲を本文の列の中で広げる
         R->>P: 文書の一覧で B を選ぶ
         P-->>R: B
+      ```
+
+      <!-- /map -->
     expected:
       - wide の範囲が本文の段落より広く描かれ、左の文書の一覧の列に重なっていない
       - 文書の一覧で B を選べ、B が出る
@@ -118,6 +148,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -127,6 +160,9 @@ scenarios:
         P-->>R: C
         R->>P: ブラウザの戻る
         P-->>R: B
+      ```
+
+      <!-- /map -->
     expected:
       - ノードを押すと C が出て、URL が C を指す
       - 戻るで B が出る
@@ -140,6 +176,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -149,6 +188,9 @@ scenarios:
         P-->>R: 明るい配色の B
         R->>P: ブラウザの戻る
         P-->>R: ダークの配色の A
+      ```
+
+      <!-- /map -->
     expected:
       - 開いたとき、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値
       - B を選ぶと、地の色の計算値が明るい配色の `--mdmark-color-bg` の値になる
@@ -164,6 +206,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -178,6 +223,9 @@ scenarios:
         P-->>R: B の戻るを押したときの位置
         R->>P: B の末尾の A へのリンクを押す
         P-->>R: A の頭
+      ```
+
+      <!-- /map -->
     expected:
       - リンクで B へ移ると、B の頭（縦のスクロール位置が 0）が出る
       - 戻るで A に戻ると、縦のスクロール位置が A のリンクを押したときの値になり、B へのリンクが画面に入っている
@@ -192,12 +240,18 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
         R->>P: 開いて A を中ほどまでスクロールする
         R->>P: ブラウザの再読み込み
         P-->>R: 再読み込みの前の位置の A
+      ```
+
+      <!-- /map -->
     expected:
       - 再読み込みの後、A が出て、縦のスクロール位置が再読み込みの前の値になる
     test: test_normal_when_reload_restore_scroll
@@ -209,6 +263,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -219,6 +276,9 @@ scenarios:
         P-->>R: B
         R->>P: ブラウザの戻る
         P-->>R: セクションを開き、2 つ目のタブを選んだ A のリンクを押したときの位置
+      ```
+
+      <!-- /map -->
     expected:
       - 戻るで A に戻ると、セクションのボタンの `aria-expanded` が `true` で、中身が `hidden` を持たない
       - 2 つ目のタブの `aria-selected` が `true`
@@ -233,6 +293,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor R as 読者
         participant P as まとめた HTML
@@ -240,12 +303,14 @@ scenarios:
         P-->>R: B の頭
         R->>P: ブラウザの戻る
         P-->>R: A の頭
+      ```
+
+      <!-- /map -->
     expected:
       - 戻るで A が出て、縦のスクロール位置が 0
       - ページに例外が出ない
     test: test_error_when_session_storage_unavailable
 lead: 読者が `mdmark build` の 1 枚の HTML を file:// で開き、文書の一覧・文書間のリンク・ブラウザの戻ると進むで文書を行き来し、見出しのアンカーと目次でセクションへ移る。
-issue: 9
 primary_actor: 読者
 trigger: 読者が、受け取った 1 枚の HTML を開く
 preconditions:
@@ -253,3 +318,8 @@ preconditions:
 success_guarantee: 開くと URL が指す文書（指していなければ `entry` の文書）が出る。文書を移るたびに履歴に追加し、戻る・進むで確認してきた順に行き来できる。一覧のパネルの開閉は履歴に追加しない。戻る・進む・再読み込みで履歴の項目へ戻ったときは、その項目を離れたときの開閉・選んだタブ・スクロール位置から表示し、文書の一覧・文書間のリンクで移ったときは見出しか文書の頭から表示する。外への要求は 0 件。
 minimal_guarantee: URL が 1 枚に無い文書を指していても、`entry` の文書を出して読み込める状態にする。離れたときの状態を残せない・読めないときも、見出しか文書の頭から文書を出す。
 test_file: tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:リンク
+  - name: tool:html

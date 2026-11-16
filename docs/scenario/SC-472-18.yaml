@@ -2,7 +2,6 @@ id: SC-472-18
 visibility: internal
 title: シーケンスを構成図の上で再生する
 lead: 読者が、map のシーケンス図を、同じノードを持つ構成図の上で 1 通ずつ、手で、または印の引数 `interval` の間隔で自動で進め、メッセージがどのノードからどのノードへ流れるかを読む。
-issue: 324
 test_file: tests/e2e/単一ユースケース/シーケンスを構成図の上で再生する.spec.ts
 primary_actor: 読者
 trigger: 読者が、処理の流れを構成図のどこを通るかで追いたくなる
@@ -18,6 +17,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant S as シーケンス図
@@ -32,6 +34,9 @@ scenarios:
         D-->>U: メッセージ 2 へ進める
         U->>D: 停止を押す
         D-->>U: 帯を閉じ、強調を外す
+      ```
+
+      <!-- /map -->
     expected:
       - シーケンス図の下に、開いたときから再生の帯（メッセージの数（– / 4）と前へ・停止・自動で進める・次へ）がある。帯の文は今のメッセージの文と、補足の `notes` の説明を改行のまま出す
       - 帯で進めたメッセージが、シーケンス図と構成図の両方で強調され、構成図の案内を始めるとシーケンス図の強調が解ける
@@ -52,11 +57,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 構成図
         U->>D: 再生を始める
         D-->>U: 送り手と受け手を強調し、線の上にデータの印を流す
+      ```
+
+      <!-- /map -->
     expected:
       - 動きを減らす設定でも、データの印が送り手から受け手へ線の上を流れ、送り手と受け手のノードとその間の線が強調される
       - 停止を押すと、データの印が止まって消える
@@ -69,11 +80,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 構成図
         U->>D: 再生を始めて、無い相手のメッセージまで進める
         D-->>U: 強調も動きも出さずに、メッセージの文を出す
+      ```
+
+      <!-- /map -->
     expected:
       - シーケンス図の図の枠の上に、構成図に無い相手である旨の書き方の警告がある
       - 無い相手のメッセージでは、構成図のノードが強調されず、帯にメッセージの文が出る
@@ -86,6 +103,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant S as シーケンス図
@@ -93,10 +113,13 @@ scenarios:
         U->>S: 文書をスクロールしてシーケンス図を画面に入れる
         S->>D: 自動で進めるを始める
         D-->>U: メッセージ 1 から順に動かす
+      ```
+
+      <!-- /map -->
     expected:
       - シーケンス図が画面に入るまで、再生が始まらない
       - シーケンス図が画面に入ると、押さずに再生が始まり、再生の帯が出る
-      - 動きを減らす設定（`prefers-reduced-motion: reduce`）では、シーケンス図が画面に入っても自動で始めず、再生の帯を止めた状態で出し、再生を押すとデータの印が流れる
+      - '動きを減らす設定（`prefers-reduced-motion: reduce`）では、シーケンス図が画面に入っても自動で始めず、再生の帯を止めた状態で出し、再生を押すとデータの印が流れる'
       - '`play` を持たない正常シナリオの図は、押すまで再生しない'
     test: test_normal_when_autoplay
   - name: 正常シナリオ（印の引数で間隔を指定する）
@@ -106,6 +129,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant D as 構成図
@@ -113,7 +139,15 @@ scenarios:
         D-->>U: 1 秒ごとに次のメッセージへ進める
         U->>D: 2 つ目のシーケンス図の再生を自動で進める
         D-->>U: 既定の 2 秒ごとに次のメッセージへ進める
+      ```
+
+      <!-- /map -->
     expected:
       - '`{"interval": 1}` の図は、1 秒ごとに次のメッセージへ進む'
       - '`{"interval": "abc"}` の図の枠の上に、`interval` の値を読めない旨の書き方の警告があり、既定の 2 秒ごとに次のメッセージへ進む'
     test: test_normal_when_interval
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:シーケンス
+  - name: action:再生

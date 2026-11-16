@@ -6,8 +6,8 @@ Sprint v0.10.0 の E2E で fail した 9 件のケースを、後の PR が変�
 
 ## 背景
 
-[Issue #397](https://github.com/shuhei1101/mdmark/issues/397) の要望。
-Sprint v0.10.0 の E2E（[#255](https://github.com/shuhei1101/mdmark/issues/255)、release PR [#393](https://github.com/shuhei1101/mdmark/pull/393)）で 9 件が fail した。
+[E2E の期待値が後の PR の出力の変化に追従していない 9 件（リンクのカード・CSP・属性の並び・警告の code・先頭へ戻るボタン 等）](https://github.com/shuhei1101/mdmark/issues/397) の要望。
+Sprint v0.10.0 の E2E（[Sprint v0.10.0 の E2E 実行](https://github.com/shuhei1101/mdmark/issues/255)、release PR [release/v0.10.0](https://github.com/shuhei1101/mdmark/pull/393)）で 9 件が fail した。
 9 件とも描いた結果はシナリオどおりで、後から入った PR が出力を変えたのにテストの期待値が追従していないか、テストを足した PR の準備が足りない。
 
 ## 計画書

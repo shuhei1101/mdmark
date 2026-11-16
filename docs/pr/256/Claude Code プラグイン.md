@@ -27,7 +27,8 @@
 | [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build-plugin.test.ts) | 全実行 | 実行のみ | ✅ | `テスト結果/20261101022208_481a1a4_単体テスト.log` |
 | [tests/unit/src/plugin/guide.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/guide.test.ts) | 全実行 | 実行のみ | ✅ | 2 ファイル 34 テスト pass<br>`テスト結果/20261101022208_481a1a4_単体テスト.log` |
 
-lint（Biome の check と tsc の型検査）は違反 0 件。`テスト結果/20261101022509_481a1a4_lint.log`
+lint（Biome の check と tsc の型検査）は違反 0 件。
+`テスト結果/20261101022509_481a1a4_lint.log`
 
 ### 結合
 

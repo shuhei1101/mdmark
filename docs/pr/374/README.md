@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #372](https://github.com/shuhei1101/mdmark/issues/372) の要望。
-[PR #354](https://github.com/shuhei1101/mdmark/pull/354) が `scripts/build-plugin.ts` に `plugin/scripts/session-start.js` の生成を加え、`plugin/hooks/hooks.json` の SessionStart からそのファイルを呼ぶようにした。
-インターフェース定義『配布物をビルドする』・シナリオ『配布物をビルドして検査する』・結合テスト `build.test.ts`・E2E `配布物をビルドして検査する.spec.ts` は、[PR #293](https://github.com/shuhei1101/mdmark/pull/293) で SessionStart のフックを除外したときの「無い」の期待値のままで、develop の結合テストと E2E の `test_normal` が fail する。
+[build.test.ts の test_normal が、#354 で生成するようになった plugin/scripts/session-start.js を「無い」と期待して失敗する](https://github.com/shuhei1101/mdmark/issues/372) の要望。
+[プラグインに global-setup・setup のスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/pull/354) が `scripts/build-plugin.ts` に `plugin/scripts/session-start.js` の生成を加え、`plugin/hooks/hooks.json` の SessionStart からそのファイルを呼ぶようにした。
+インターフェース定義『配布物をビルドする』・シナリオ『配布物をビルドして検査する』・結合テスト `build.test.ts`・E2E `配布物をビルドして検査する.spec.ts` は、[使い方集を dev-docs の配信元として配り、read_guide を削除して書く前の参照と書いた後の点検の動線を置く](https://github.com/shuhei1101/mdmark/pull/293) で SessionStart のフックを除外したときの「無い」の期待値のままで、develop の結合テストと E2E の `test_normal` が fail する。
 
 ## 計画書
 

@@ -49,3 +49,13 @@ functions:
     refs:
       - IF-472-23#constraints[タグの構造]
     status: planned
+lead: 'タグと package.json のバージョンの照合を受け持ち、拡張機能のリリースの点検を変えるときに参照する。'
+tags:
+  - name: topic:検査
+    main: true
+  - name: tool:vscode
+  - name: topic:ci
+  - name: action:ビルド
+  - name: action:配布
+  - name: action:点検
+  - name: action:照合

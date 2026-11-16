@@ -101,3 +101,10 @@ refs:
 decisions:
   - D-312
   - D-335
+tags:
+  - name: topic:移行
+    main: true
+  - name: topic:markdown
+  - name: topic:マーカー
+  - name: action:描画
+  - name: topic:部品

@@ -11,6 +11,8 @@ scenarios:
       - name: Mock
         description: jsDelivr の代わりに、このブランチでビルドした配布物をバージョン付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は差分に対応するバージョンを最新として返却する代役
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
@@ -30,6 +32,8 @@ scenarios:
         PV->>PV: 変更後の文書を描き、ブロックごとに変更前と比べて色を適用する
         PV-->>W: 変更を色分けした文書を表示
       ```
+
+      <!-- /map -->
     expected:
       - 差分ビューの横の列にプレビューのパネルが開き、変更後の文書が mdmark で描かれる（見出し・表は Markdown のソースではなく描いた構造で出る）
       - 単語を書き換えた段落と追加した段落が、追加の色とマーカーで出て、スクリーンリーダー向けの名前で追加と分かる
@@ -46,6 +50,8 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
@@ -58,6 +64,8 @@ scenarios:
         EX->>PV: 横の列にパネルを開き、2 つの Markdown を送信する
         PV-->>W: 変更を色分けした文書を表示
       ```
+
+      <!-- /map -->
     expected:
       - 正常シナリオと同じブロックが、同じ色とマーカーで出る
     test: test_normal_when_commit_diff
@@ -68,6 +76,8 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
@@ -80,6 +90,8 @@ scenarios:
         EX->>PV: 書き換えた変更後と変更前の Markdown を送信する
         PV-->>W: 再描画した文書を表示
       ```
+
+      <!-- /map -->
     expected:
       - 追記した段落が、追加の色とマーカーで出る
       - 正常シナリオで色を適用したブロックは、同じ色とマーカーのまま出る
@@ -92,6 +104,8 @@ scenarios:
       - name: Mock
         description: 配布物を配る手元のサーバーは、`v0.8.0` のタグの配布物を返却する
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
@@ -105,13 +119,14 @@ scenarios:
         PV->>PV: 差分で描く指定を持たないことを確認する
         PV-->>W: 描けない理由と「リロード」のボタンを表示
       ```
+
+      <!-- /map -->
     expected:
       - パネルに、読み込んだバージョン `v0.8.0` が差分の表示に対応しないことを示す理由と「リロード」のボタンが出る
       - 変更後の文書だけを描いた表示は出ない
       - '`a.md` と差分ビューは書き換わらない'
     test: test_error_when_version_without_diff
 lead: 文書の作成者が、VS Code の差分ビューで確認している Markdown の変更を、mdmark で描いたプレビューで読み込む。変更後の文書を描き、追加・変更したブロックを追加の色、削除したブロックを削除の色でその位置に出す。
-issue: 121
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
@@ -123,3 +138,8 @@ preconditions:
 success_guarantee: 差分ビューの横の列にプレビューのパネルが開き、変更後の文書が mdmark で描かれる。追加・変更したブロックは追加の色とマーカー、削除したブロックは削除の色とマーカーで、変更前の文書での位置に出る。
 minimal_guarantee: 差分を描けないときは、パネルに描けない理由と「リロード」のボタンを出す。Markdown と差分ビューは変えない。
 test_file: tests/e2e/単一ユースケース/差分ビューの変更をプレビューで確認する.spec.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。チャートは配布物が描くため、外部ライブラリは読み込まない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[コードブロックのHTMLを描く:正常シナリオ] --> B[チャートを描く:正常シナリオ]
         B --> C[図を拡大・縮小・移動する:正常シナリオ（埋め込んだ HTML の中のチャート）]
@@ -23,6 +26,9 @@ scenarios:
         click G "id:SC-472-40#scenarios[正常シナリオ（グラフの項目）]"
         click D "id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]"
         click E "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーを付けたコードブロックの HTML が、コードではなくその場の HTML として描かれる
       - マーカーの無い `html` のコードブロックは、コードのまま出る
@@ -48,6 +54,9 @@ scenarios:
       - name: Mock
         description: なし（チャートは配布物が描くため、書き出しは外部ライブラリを読み込まない）。書き出した HTML を開くブラウザのコンテキストで、外への要求を全て止める
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[文書をHTMLに書き出す:正常シナリオ] --> B[図を拡大・縮小・移動する:正常シナリオ（埋め込んだ HTML の中のチャート）]
         B --> G[図の要素のツールチップを確認する:正常シナリオ（グラフの項目）]
@@ -60,6 +69,9 @@ scenarios:
         click C "id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]"
         click D "id:SC-472-40#scenarios[正常シナリオ（ノードの hint）]"
         click E "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出す'
       - 書き出した HTML を外への要求を止めて開いても、埋め込んだ HTML とチャートが描かれる
@@ -85,6 +97,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。加えて、`mount` の経路で範囲の `ts` の型を削除する変換のライブラリを、手元のモジュールに差し替える（書き出した HTML は CLI の esbuild で変換するため対象外）。書き出した HTML を開くブラウザのコンテキストでは、外への要求を全て止める
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[コードブロックのHTMLを描く:正常シナリオ（範囲のスクリプトと CSS）] --> B[チャートを描く:正常シナリオ]
         B --> C[用語の意味をツールチップで確認する:正常シナリオ（埋め込んだ HTML の中の用語）]
@@ -93,6 +108,9 @@ scenarios:
         click B "id:SC-472-24#scenarios[正常シナリオ]"
         click C "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
         click D "id:SC-472-56#scenarios[正常シナリオ（範囲のスクリプトと CSS）]"
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲のノードの背景が `css` の色で描かれ、範囲の外のノードの背景は変わらない
       - 範囲のノードを押すと根の要素に class `is-open` が付き、もう一度押すと削除される
@@ -107,7 +125,6 @@ scenarios:
       - SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
       - SC-472-56#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
 lead: 文書の作成者が、マーカーを付けたコードブロックの HTML にチャートとヒントを記載して描かせ、読者がチャートを拡大・縮小・移動し、ヒントと用語をツールチップで読み込む。書き出した 1 枚の HTML でも同じように読み込める。
-issue: 6
 primary_actor: 文書の作成者（AI を含む）
 stakeholders:
   - name: 文書の作成者
@@ -121,3 +138,8 @@ preconditions:
 success_guarantee: マーカーを付けたコードブロックの HTML がその場に描かれ、その中のチャートは拡大・縮小・移動でき、`data-hint` を付けた要素と HTML の中の用語にツールチップが出る。書き出した 1 枚の HTML でも外を読み込まずに同じように動く。
 minimal_guarantee: 埋め込んだ HTML に書き込んだスクリプトとイベントの属性は動かない。チャートを描けないときは、その場所に記載の警告を出し、文書の残りは描く。
 test_file: tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る.spec.ts
+tags:
+  - name: topic:コードブロック
+    main: true
+  - name: topic:グラフ
+  - name: topic:ヒント

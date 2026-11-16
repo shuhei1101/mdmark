@@ -146,3 +146,9 @@ functions:
         condition: '`{"interval": "abc"}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、`interval` が 2'
+lead: 'map のマーカーの引数の読み取りと map の型を受け持ち、マーカーの引数を変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:読み取り

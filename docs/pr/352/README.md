@@ -6,14 +6,15 @@
 
 ## 背景
 
-[#351](https://github.com/shuhei1101/mdmark/issues/351) の要望。
-記法を新設する子 Issue の束で、子ごとの範囲と決まったことは子の Issue の本文（#218 は本文の `## 必読` に挙げた話し合いの記録）が正。
+[記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/issues/351) の要望。
+記法を新設する子 Issue の束で、子ごとの範囲と決まったことは子の Issue の本文（[cards のマーカーで囲んだリストをカードの格子で描く](https://github.com/shuhei1101/mdmark/issues/218) は本文の `## 必読` に挙げた話し合いの記録）が正。
 
-- [#161](https://github.com/shuhei1101/mdmark/issues/161): 配色のライト・ダークは OS の設定・描画先の class・VS Code の `mdmark.preview.theme` で決まり、文書に記載できない。文書に記載できる設定は `<!-- features: … -->` だけで、書き出した HTML の配色を文書ごとに固定できない
-- [#218](https://github.com/shuhei1101/mdmark/issues/218): 目次や入口のページが、リンクの箇条書きになる
+- [配色（ライト・ダーク）などのページの設定を、文書の先頭の印で指定できるようにする](https://github.com/shuhei1101/mdmark/issues/161): 配色のライト・ダークは OS の設定・描画先の class・VS Code の `mdmark.preview.theme` で決まり、文書に記載できない。
+  文書に記載できる設定は `<!-- features: … -->` だけで、書き出した HTML の配色を文書ごとに固定できない
+- [cards のマーカーで囲んだリストをカードの格子で描く](https://github.com/shuhei1101/mdmark/issues/218): 目次や入口のページが、リンクの箇条書きになる
 
-依存の [#118](https://github.com/shuhei1101/mdmark/issues/118)（右側の目次）・[#120](https://github.com/shuhei1101/mdmark/issues/120)（テーマを選ぶ）・[#163](https://github.com/shuhei1101/mdmark/issues/163)（設定ファイルを重ねて読む）・[#192](https://github.com/shuhei1101/mdmark/issues/192)（`icon:`）は develop へ入っている。
-#163 で、優先の順番は文書のマーカー → 近いフォルダの設定 → 上のフォルダの設定 → 端末の設定（近い層ほど優先）と決まっている。
+依存の [プレビューの右側に目次を出し、見出しの節の折りたたみを H1 と入れ子のまとめての操作に広げる](https://github.com/shuhei1101/mdmark/issues/118)（右側の目次）・[見た目のテーマを選べるようにし、プレビューから設定を開けるようにする](https://github.com/shuhei1101/mdmark/issues/120)（テーマを選ぶ）・[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする（プレビューにも theme の CSS を当てる）](https://github.com/shuhei1101/mdmark/issues/163)（設定ファイルを重ねて読む）・[インラインコード `icon\:名前` で Lucide のアイコンを見出しと本文に出す](https://github.com/shuhei1101/mdmark/issues/192)（`icon:`）は develop へ入っている。
+[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする（プレビューにも theme の CSS を当てる）](https://github.com/shuhei1101/mdmark/issues/163) で、優先の順番は文書のマーカー → 近いフォルダの設定 → 上のフォルダの設定 → 端末の設定（近い層ほど優先）と決まっている。
 
 ## 計画書
 

@@ -27,3 +27,8 @@ constants:
       - LIB-472-12#
       - LIB-472-7#
     status: planned
+lead: 'ESLint の設定を受け持ち、ESLint で検査する規則を変えるときに参照する。'
+tags:
+  - name: topic:検査
+    main: true
+  - name: action:検査

@@ -12,8 +12,6 @@ data_models:
     summary: ブロックの色分けのために取り出した結果
     description: '`{ kind: "pair"; before: string; after: string } | { kind: "single" } | { kind: "failed" }`。`pair` は 2 番目（前）と 1 番目（後）のリビジョンの Markdown、`single` はリビジョンが 1 つ以下、`failed` は一覧か本文を取り出せなかった'
     status: planned
-    introduced:
-      pr: 196
   - name: BlockRange
     title: ブロックの行の範囲
     container: src/diff/blocks.ts
@@ -34,8 +32,6 @@ data_models:
         type: number
         description: 次のブロックの `data-source-line` の 1 つ前。最後のブロックは文書の最後の行
     status: planned
-    introduced:
-      pr: 196
 functions:
   - name: loadDiffPair
     title: 比べる 2 つの本文を取り出す
@@ -91,8 +87,6 @@ functions:
       - IF-472-35#constraints[差分の出し方]
       - IF-472-35#constraints[差分の取り出し元]
     status: planned
-    introduced:
-      pr: 196
   - name: collectBlockRanges
     title: ブロックに分ける
     container: src/diff/blocks.ts
@@ -121,8 +115,6 @@ functions:
     refs:
       - IF-472-35#constraints[描いた文書のブロックの色分け]
     status: planned
-    introduced:
-      pr: 196
   - name: colorDiffBlocks
     title: ブロックを色分けする
     container: src/diff/blocks.ts
@@ -214,8 +206,6 @@ functions:
       - IF-472-35#constraints[描いた文書のブロックの色分け]
       - IF-472-35#constraints[色を適用したブロックの要素]
     status: planned
-    introduced:
-      pr: 196
   - name: isRewrite
     title: 書き換えかを見分ける
     container: src/diff/blocks.ts
@@ -252,5 +242,8 @@ functions:
     refs:
       - IF-472-35#constraints[書き換えと入れ替えの見分け]
     status: planned
-    introduced:
-      pr: 196
+lead: '比べる 2 つの本文の取り出しと、描いた文書のブロックの色分けを受け持ち、差分のブロックの色分けを変えるときに参照する。'
+tags:
+  - name: topic:差分
+    main: true
+  - name: action:取り出し

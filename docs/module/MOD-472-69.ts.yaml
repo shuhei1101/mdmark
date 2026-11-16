@@ -18,3 +18,9 @@ functions:
       type: string
       description: 結んだ class
     status: planned
+lead: 'class の結合を受け持ち、Webview の部品の class の組み立てを変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

@@ -53,3 +53,10 @@ functions:
     refs:
       - CMP-472-10#
     status: planned
+lead: 'カードの格子の HTML を受け持ち、カードの格子の外観を変えるときに参照する。'
+tags:
+  - name: topic:カード
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

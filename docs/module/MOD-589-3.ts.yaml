@@ -36,3 +36,8 @@ functions:
     returns:
       type: string
       description: svg の文字列
+tags:
+  - name: tool:lucide
+    main: true
+  - name: topic:部品
+  - name: tool:svg

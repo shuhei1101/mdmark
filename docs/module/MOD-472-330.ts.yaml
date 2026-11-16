@@ -42,5 +42,11 @@ functions:
         mock: なし
         expected: '`audio` が `controls` を持ち、`playsinline` と `img.mdmark-media-print` を持たない'
     status: planned
-    introduced:
-      pr: 263
+lead: '動画と音声の部品が返却する HTML を受け持ち、動画と音声の外観を変えるときに参照する。'
+tags:
+  - name: topic:音声
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: topic:動画
+  - name: action:描画

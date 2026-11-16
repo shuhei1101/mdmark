@@ -42,8 +42,6 @@ functions:
     refs:
       - MOD-472-148#functions[compareVersions]
     status: planned
-    introduced:
-      pr: 39
   - name: checkMigrations
     title: 移行の手順を点検する
     container: scripts/migrations.ts
@@ -96,5 +94,11 @@ functions:
       - MOD-472-146#functions[validateSteps]
       - ER-472-5#
     status: planned
-    introduced:
-      pr: 39
+lead: 'スキーマを変えたバージョンに移行の手順があるかの点検を受け持ち、移行の手順の点検を変えるときに参照する。'
+tags:
+  - name: topic:バンドル
+    main: true
+  - name: tool:esbuild
+  - name: action:ビルド
+  - name: topic:配布物
+  - name: action:点検

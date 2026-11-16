@@ -34,3 +34,10 @@ components:
     refs:
       - CMP-472-29#
     status: planned
+lead: 'Webview のアプリのコンポーネントを受け持ち、プレビューのパネルの組み立てを変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

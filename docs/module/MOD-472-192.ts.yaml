@@ -20,8 +20,6 @@ constants:
     summary: '差分を開いている間に隠す本文の要素と右側の目次に付ける属性。`index.css` が `display: none !important` で隠す'
     value: '"data-mdmark-diff-hidden"'
     status: planned
-    introduced:
-      pr: 166
 functions:
   - name: attachDiff
     title: 差分を付ける
@@ -166,3 +164,9 @@ function_types:
     returns:
       type: '{ html: string; attach: (root: HTMLElement) => () => void }'
       description: '`html` は描いた範囲の中身。`attach` は、配置した要素に図の拡大・ツールチップ・操作できる部品などの操作を付け、削除する関数を返却する'
+lead: '差分を開く UI・読み込み中の待ち・リビジョンの再選択・通知ブロックの付与を受け持ち、差分のパネルの振る舞いを変えるときに参照する。'
+tags:
+  - name: topic:差分
+    main: true
+  - name: action:読み込み
+  - name: action:付与

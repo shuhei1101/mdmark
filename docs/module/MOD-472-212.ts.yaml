@@ -155,5 +155,11 @@ functions:
         mock: なし
         expected: 空の配列
     status: planned
-    introduced:
-      pr: 328
+lead: 'Markdown を HTML 文字列にする関数と記載の警告の取り出しを受け持ち、Markdown から HTML 文字列にする流れを変えるときに参照する。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
+  - name: topic:部品
+  - name: action:取り出し

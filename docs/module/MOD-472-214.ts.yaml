@@ -54,8 +54,6 @@ constants:
     refs:
       - IF-472-34#constraints[埋め込んだ HTML]
     status: planned
-    introduced:
-      pr: 45
 functions:
   - name: sanitize
     title: 許可していないものを落とす
@@ -205,8 +203,6 @@ functions:
       - '#constants[EMBED_STYLES]'
       - '#constants[SANITIZE_OPTIONS]'
     status: planned
-    introduced:
-      pr: 45
   - name: filterEmbeddedStyle
     title: 埋め込んだ HTML の style を絞る
     container: src/render/sanitize.ts
@@ -237,8 +233,6 @@ functions:
     refs:
       - '#constants[EMBED_STYLES]'
     status: planned
-    introduced:
-      pr: 45
   - name: isAllowedUrl
     title: 許す URL かを確認する
     container: src/render/sanitize.ts
@@ -261,5 +255,11 @@ functions:
         mock: なし
         expected: 前の 4 つが `true`、後ろの 3 つが `false`
     status: planned
-    introduced:
-      pr: 328
+lead: 'sanitize-html の設定と許可していない要素の除去を受け持ち、描いた文書に残す要素と属性を変えるときに参照する。'
+tags:
+  - name: tool:sanitize-html
+    main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
+  - name: action:描画
+  - name: topic:部品

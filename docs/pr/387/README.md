@@ -7,10 +7,10 @@
 
 ## 背景
 
-[Issue #295](https://github.com/shuhei1101/mdmark/issues/295) の要望。
+[マーカーの知らないキーは描画の警告にせず無視し、知っているキーの値が誤っているときだけ警告にする](https://github.com/shuhei1101/mdmark/issues/295) の要望。
 マーカーに知らないキー（`キー=値`）を記載すると、描画が `使えないキーです。使えるキーは … です` の書き方の警告を本文に出す。
-develop で表に追加した `wide=`（[#283](https://github.com/shuhei1101/mdmark/pull/283)）を利用側が先に使用すると、配信中の v0.9.0 を参照する画面では全ての表に警告が並ぶ（依頼元: [shuhei1101/dev-docs#90 のスレッド](https://github.com/shuhei1101/dev-docs/pull/90#discussion_r4452965050)）。
-受付の判断（[#295 の会話欄](https://github.com/shuhei1101/mdmark/issues/295#issuecomment-6600371991)）で、知らない機能（`+名前`）・知らない指定の単語も同じ扱いにする範囲に含めた。
+develop で表に追加した `wide=`（[はみ出す表は既定で先頭の列をピン止めし、pin=・wide= と真偽値の ✓ 表示を追加する](https://github.com/shuhei1101/mdmark/pull/283)）を利用側が先に使用すると、配信中の v0.9.0 を参照する画面では全ての表に警告が並ぶ（依頼元: [汎用の描画を表し方の規約に沿って修正する（図を mdmark の部品で描く・キーの羅列を表にする・コードブロックのずれ） のスレッド](https://github.com/shuhei1101/dev-docs/pull/90#discussion_r4452965050)）。
+受付の判断（[マーカーの知らないキーは描画の警告にせず無視し、知っているキーの値が誤っているときだけ警告にする の会話欄](https://github.com/shuhei1101/mdmark/issues/295#issuecomment-6600371991)）で、知らない機能（`+名前`）・知らない指定の単語も同じ扱いにする範囲に含めた。
 `features` のマーカーの知らない機能名と、注意書きの知らない種類は、既に通知せずに無視・読み替えをしている。
 
 ## 計画書

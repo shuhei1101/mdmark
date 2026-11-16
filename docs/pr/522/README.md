@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #490](https://github.com/shuhei1101/mdmark/issues/490) の要望。
-[#472](https://github.com/shuhei1101/mdmark/pull/472) で設計書を ID に移したとき、`設定を重ねて読み込む.ts` と `CLI.ts` を指していた 2 つの関連が、どちらも `MOD-472-116.ts` に置き換わって重なった。
+[src/files.yaml の config-files.ts の行で、同じ MOD-472-116 への implements が 2 つ並んでいるのを修正する](https://github.com/shuhei1101/mdmark/issues/490) の要望。
+[dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す](https://github.com/shuhei1101/mdmark/pull/472) で設計書を ID に移したとき、`設定を重ねて読み込む.ts` と `CLI.ts` を指していた 2 つの関連が、どちらも `MOD-472-116.ts` に置き換わって重なった。
 
 ## 計画書
 

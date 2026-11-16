@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。クリップボードの読み込みと保存を許したブラウザのコンテキストで開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant C as 操作できる部品
@@ -20,6 +23,9 @@ scenarios:
         U->>C: 今の値を写すボタンを押す
         C->>B: 今の値を JSON で記載する
         C-->>U: コピーしたことを通知する
+      ```
+
+      <!-- /map -->
     expected:
       - スライダーを動かすと、グラフが新しい値で再描画される
       - クリップボードの中身が、スライダーの名前と今の値 8 を持つ JSON として読み込める
@@ -33,6 +39,9 @@ scenarios:
       - name: Mock
         description: クリップボードの書き込みを許さないブラウザのコンテキストで開く。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant C as 操作できる部品
@@ -41,6 +50,9 @@ scenarios:
         C->>B: 今の値を JSON で記載する
         B-->>C: 書き込みを拒む
         C-->>U: 書き込めなかったことと、選んで写せる JSON を出す
+      ```
+
+      <!-- /map -->
     expected:
       - ボタンのそばに、クリップボードへ書き込めなかったことが出る
       - 写すはずだった JSON が、選んで写せる文字として出る
@@ -54,6 +66,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant C as 操作できる部品
@@ -63,13 +78,15 @@ scenarios:
         U->>C: 「コピー」のボタンを押す
         C->>B: 今の値を JSON で記載する
         C-->>U: コピーしたことを通知する
+      ```
+
+      <!-- /map -->
     expected:
       - 今の値をコピーするボタンの文字とスクリーンリーダー向けの名前が、設定で指定した `コピー` になる
       - スライダーで部品を再描画した後も、ボタンの文字とスクリーンリーダー向けの名前は `コピー` のまま
       - クリップボードの中身が、スライダーの名前と今の値 7 を持つ JSON として読み込める
     test: test_normal_when_label_configured
 lead: 読者が、文書のスライダーで値を変えてグラフの変わり方を見、「今の値をコピーする」ボタンで値を JSON にしてクリップボードへ写す。
-issue: 21
 primary_actor: 読者
 trigger: 読者が、パラメーターを変えたときの動きを確認し、決めた値を他の場所へ貼りたくなる
 preconditions:
@@ -77,3 +94,7 @@ preconditions:
 success_guarantee: スライダーの今の値がグラフに該当し、コピーした JSON が画面の値と一致する。
 minimal_guarantee: クリップボードへ書き込めないときは、ボタンのそばに書き込めなかったことを出し、写すはずだった JSON を選んで写せる構造で見せる。
 test_file: tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:操作

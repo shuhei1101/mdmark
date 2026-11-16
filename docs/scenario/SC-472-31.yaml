@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant PV as プレビュー（Webview）
@@ -18,6 +21,9 @@ scenarios:
         PV-->>EX: リンクの押下
         EX->>BR: URL を開く
         BR-->>W: ページを表示
+      ```
+
+      <!-- /map -->
     expected:
       - ブラウザで開く代役に `https://aka.ms/mdmark` が渡る
       - プレビューの文書とスクロールの位置は変わらない
@@ -29,6 +35,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant PV as プレビュー（Webview）
@@ -38,6 +47,9 @@ scenarios:
         PV-->>EX: リンクの押下
         EX->>ED: other.md を開く
         ED-->>W: other.md のエディタを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`other.md` が VS Code のエディタで開く'
       - ブラウザで開く代役は呼ばれない
@@ -49,12 +61,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant PV as プレビュー（Webview）
         W->>PV: # で始まるリンクを押す
         PV->>PV: リンク先の見出しまで移る
         PV-->>W: 見出しを表示
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューの見えている範囲にリンク先の見出しが入る
       - エディタはもう一度開かれず、ブラウザで開く代役も呼ばれない
@@ -66,12 +84,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
         participant PV as プレビュー（Webview）
         EX->>PV: 画像のパスを Webview で読み込める URL に修正して描かせる
         PV-->>W: 画像を表示
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューの画像が読み込まれ、幅と高さが 0 より大きい
     test: test_normal_when_relative_image
@@ -82,11 +106,17 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant PV as プレビュー（Webview）
         PV->>PV: ワークスペースの外は読み込まない
         PV-->>W: 画像の代わりの文字を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 画像は読み込まれず、代わりの文字（`alt`）が出る
       - 他の本文は描かれる
@@ -98,6 +128,9 @@ scenarios:
       - name: Mock
         description: なし（実ファイルを使用する）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 文書の作成者
         participant W as プレビュー
@@ -107,6 +140,9 @@ scenarios:
         E-->>W: 変えた URL
         U->>W: 音声と動画の再生ボタンを押す
         W-->>U: 再生する
+      ```
+
+      <!-- /map -->
     expected:
       - 音声と動画の要素の src が Webview から読み込める URL になっている
       - 再生ボタンを押すと、音声と動画の再生位置が進む
@@ -118,6 +154,9 @@ scenarios:
       - name: Mock
         description: なし（実ファイルを使用する）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 文書の作成者
         participant W as プレビュー
@@ -129,6 +168,9 @@ scenarios:
         U->>W: リンクを押す
         W->>E: ファイルを開く要求
         E->>O: 既定のアプリでファイルを開く
+      ```
+
+      <!-- /map -->
     expected:
       - 音声と動画の場所に、プレビューで再生できないことを示す通知ブロックが出る
       - 通知ブロックに「既定のアプリで開く」のリンクがある
@@ -144,6 +186,9 @@ scenarios:
       - name: Mock
         description: なし（実ファイルを使用する）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 文書の作成者
         participant W as プレビュー
@@ -154,6 +199,9 @@ scenarios:
         E-->>W: アセットのルートのファイルの URL
         U->>W: 音声と動画の再生ボタンを押す
         W-->>U: 再生する
+      ```
+
+      <!-- /map -->
     expected:
       - 音声と動画の要素の src が、`assets/media/intro.mp3`・`assets/media/intro.mp4` を指す Webview から読み込める URL になっている
       - 再生ボタンを押すと、音声と動画の再生位置が進む
@@ -165,6 +213,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（外部の URL）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant PV as プレビュー（Webview）
@@ -177,13 +228,15 @@ scenarios:
         W->>PV: https://aka.ms/mdmark を指すノードを押す
         PV-->>EX: リンクの押下
         EX->>BR: URL を開く
+      ```
+
+      <!-- /map -->
     expected:
       - '`other.md` を指すノードで、`other.md` が VS Code のエディタで開く'
       - '`https://aka.ms/mdmark` を指すノードで、ブラウザで開く代役に `https://aka.ms/mdmark` が渡る'
       - ノードを押しても、プレビューの文書は変わらない
     test: test_normal_when_map_node_link
 lead: 文書の作成者がプレビューのリンクを押すと、外部の URL は既定のブラウザで、Markdown へのリンクは VS Code で開き、`#` で始まるリンクはプレビューの中で移る。Markdown からの相対パスの画像もプレビューに出る。
-issue: 22
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
@@ -194,3 +247,9 @@ preconditions:
 success_guarantee: リンクの種類ごとに決めた先が開き、相対パスの画像が描かれる。
 minimal_guarantee: ワークスペースの外のファイルはプレビューに読み込まない。
 test_file: tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts
+tags:
+  - name: topic:リンク
+    main: true
+  - name: topic:画像
+  - name: topic:プレビュー
+  - name: tool:vscode

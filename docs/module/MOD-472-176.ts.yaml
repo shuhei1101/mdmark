@@ -14,8 +14,6 @@ constants:
       - key: transaction
         value: '{ label: "トランザクション", color: "orange" }'
     status: planned
-    introduced:
-      pr: 298
   - name: ER_CARDINALITIES
     title: ER 図の多重度
     container: src/diagram/er.ts
@@ -30,8 +28,6 @@ constants:
       - key: 0..n
         value: '"0 以上"'
     status: planned
-    introduced:
-      pr: 298
   - name: ER_COLUMN_KEYS
     title: ER 図の列のマーカー
     container: src/diagram/er.ts
@@ -44,16 +40,12 @@ constants:
       - key: nn
         value: '{ text: "NN", title: "NOT NULL" }'
     status: planned
-    introduced:
-      pr: 298
   - name: ER_METRICS
     title: ER 図の寸法
     container: src/diagram/er.ts
     summary: テーブルの高さと列の行の位置を求める寸法。描いた文書の CSS の `.mdmark-diagram-er-*` と同じ値。CSS を修正したときは合わせて修正する
     value: 見出しの高さ 44px・列の行の高さ 26px・`非表示 {数} 列` の行の高さ 24px・枠と余白 4px・図の下の余白 32px
     status: planned
-    introduced:
-      pr: 298
 functions:
   - name: erTableHeight
     title: ER 図のテーブルの高さ
@@ -77,8 +69,6 @@ functions:
         mock: なし
         expected: '`false` は `44 + 26 × 5 + 4`、`true` は `44 + 26 × 2 + 24 + 4`'
     status: planned
-    introduced:
-      pr: 298
   - name: erRelationRoute
     title: ER 図の関係の線の経路
     container: src/diagram/er.ts
@@ -113,5 +103,8 @@ functions:
         mock: なし
         expected: '`end.y` が先のテーブルの `y + 22`'
     status: planned
-    introduced:
-      pr: 298
+lead: 'ER 図のテーブルの種類・多重度・寸法と関係の線の経路を受け持ち、ER 図の描き方を変えるときに参照する。'
+tags:
+  - name: topic:図
+    main: true
+  - name: tool:svg

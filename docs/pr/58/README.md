@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #24](https://github.com/shuhei1101/mdmark/issues/24) の要望。
-[PR #19](https://github.com/shuhei1101/mdmark/pull/19)（起点 [Issue #4](https://github.com/shuhei1101/mdmark/issues/4)）で入れたタブは、見出しで区切った範囲をタブで切り替えるまでを持ち、描いた直後は常に最初のタブを選ぶ。
-上の 2 つの機能は PR #19 の要件.md の `## スコープ外` に切り出した。
-PR #19 はマージ済みで、タブの実装（`src/render/syntax/tabs.ts`・`src/parts/tabs.ts`・`src/interact/tabs.ts`）は develop にある。
+[拡張記法のタブで同じ組のタブの選択を揃え、選んだタブを覚える](https://github.com/shuhei1101/mdmark/issues/24) の要望。
+[HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19)（起点 [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/issues/4)）で入れたタブは、見出しで区切った範囲をタブで切り替えるまでを持ち、描いた直後は常に最初のタブを選ぶ。
+上の 2 つの機能は PR [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) の要件.md の `## スコープ外` に切り出した。
+PR [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) はマージ済みで、タブの実装（`src/render/syntax/tabs.ts`・`src/parts/tabs.ts`・`src/interact/tabs.ts`）は develop にある。
 
 ## 計画書
 
@@ -34,7 +34,7 @@ PR #19 はマージ済みで、タブの実装（`src/render/syntax/tabs.ts`・`
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/記法.md・docs/使い方/書く/本文を部品で組む.md・docs/リファレンス/用語集.md）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/a3621282b41cd78ce2621fb7e466ab16b6be963a/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E8%A8%98%E6%B3%95.md)・[本文を部品で組む](https://github.com/shuhei1101/mdmark/blob/a3621282b41cd78ce2621fb7e466ab16b6be963a/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E6%9C%AC%E6%96%87%E3%82%92%E9%83%A8%E5%93%81%E3%81%A7%E7%B5%84%E3%82%80.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/a3621282b41cd78ce2621fb7e466ab16b6be963a/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%94%A8%E8%AA%9E%E9%9B%86.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

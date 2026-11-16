@@ -159,3 +159,8 @@ functions:
         condition: '`reveal` を呼び、表示する枠でホイールを回して `reveal`、`resume` の後に `reveal` を呼ぶ'
         mock: 表示する枠の `scrollTo`
         expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
+lead: '案内と再生のバーの手順の進め方と、表示ブロックのスクロールを受け持ち、案内と再生のバーの操作を変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

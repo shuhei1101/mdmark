@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #402](https://github.com/shuhei1101/mdmark/issues/402) の報告。
-Sprint v0.10.0 の E2E（[release PR #393](https://github.com/shuhei1101/mdmark/pull/393)）で、『脚注を見る』の 3 件・『複数の文書を1枚のHTMLにまとめる』の 1 件・『文書の先頭へ戻る』の 1 件が fail した。
+[脚注と先頭へ戻るボタンの E2E 5 件が fail する（ポインターの操作の時間切れ・戻ったときのフォーカス）](https://github.com/shuhei1101/mdmark/issues/402) の報告。
+Sprint v0.10.0 の E2E（[release/v0.10.0](https://github.com/shuhei1101/mdmark/pull/393)）で、『脚注を見る』の 3 件・『複数の文書を1枚のHTMLにまとめる』の 1 件・『文書の先頭へ戻る』の 1 件が fail した。
 3 件は番号の `hover()` やボタンへの Tab の繰り返しから先へ進まずテストの上限の 300 秒で時間切れになり、2 件は元の場所へ戻った後のフォーカスが期待した要素に無い。
-原因の候補は [PR #287](https://github.com/shuhei1101/mdmark/pull/287)（先頭へ戻るボタン）・[PR #311](https://github.com/shuhei1101/mdmark/pull/311)（脚注）・[PR #385](https://github.com/shuhei1101/mdmark/pull/385)（タッチ端末で脚注のツールチップを外のタップで閉じる）で、実装の誤りかテストの不備かは未確定。
+原因の候補は [描いた文書を一定量スクロールしたら、画面の右下に先頭へ戻るボタンを出す](https://github.com/shuhei1101/mdmark/pull/287)（先頭へ戻るボタン）・[脚注（［^1］ と行内の ^［…］）をツールチップと末尾の一覧で描く](https://github.com/shuhei1101/mdmark/pull/311)（脚注）・[タッチ端末で脚注の番号のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/pull/385)（タッチ端末で脚注のツールチップを外のタップで閉じる）で、実装の誤りかテストの不備かは未確定。
 
 ## 計画書
 

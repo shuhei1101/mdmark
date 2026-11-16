@@ -138,8 +138,6 @@ catalogs:
             type: '(request: Request) => Promise<Response>'
             description: 組み込みの `Request` を受けて `Response` を返却する（`McpHttpHandler`）
         status: planned
-        introduced:
-          pr: 141
       - name: hostHeaderValidationResponse
         kind: 関数
         purpose: Host が許すホスト名でなければ 403 の応答を返却する
@@ -157,8 +155,6 @@ catalogs:
             type: Response | undefined
             description: 拒むときの応答。許すときは `undefined`
         status: planned
-        introduced:
-          pr: 141
       - name: originValidationResponse
         kind: 関数
         purpose: Origin があり許すホスト名でなければ 403 の応答を返却する
@@ -176,20 +172,14 @@ catalogs:
             type: Response | undefined
             description: 拒むときの応答。許すときは `undefined`
         status: planned
-        introduced:
-          pr: 141
       - name: localhostAllowedHostnames
         kind: 関数
         purpose: '`hostHeaderValidationResponse` に指定する localhost のホスト名の並びを返却する'
         status: planned
-        introduced:
-          pr: 141
       - name: localhostAllowedOrigins
         kind: 関数
         purpose: '`originValidationResponse` に指定する localhost のホスト名の並びを返却する'
         status: planned
-        introduced:
-          pr: 141
       - name: StreamableHTTPClientTransport
         kind: クラス
         purpose: テストから常駐サーバーの URL へ Streamable HTTP で繋ぐ
@@ -199,8 +189,6 @@ catalogs:
             required: true
             description: サーバーの URL（`http://127.0.0.1:{port}/mcp`）
         status: planned
-        introduced:
-          pr: 141
 lead: Model Context Protocol の公式 TypeScript SDK。サーバーの `@modelcontextprotocol/server` とクライアントの `@modelcontextprotocol/client` に分かれ、ツールの登録・Streamable HTTP の通信・プロトコルのバージョンの取り決めを持つ。
 purl: pkg:npm/%40modelcontextprotocol/server@2.3.1
 supplier: Model Context Protocol（Anthropic）
@@ -210,7 +198,19 @@ upstream: modelcontextprotocol/typescript-sdk
 verification:
   state: 済
   date: '2026-10-26'
-  detail: '`McpServer`・`registerTool`（`fromJsonSchema` の入力）・`serveStdio` で最小のサーバーを記載した。Claude Code 2.1.309 を `claude -p --mcp-config --strict-mcp-config` で繋ぐと、`_meta` に `io.modelcontextprotocol/protocolVersion: 2026-07-28` を付けた `server/discover` → `subscriptions/listen` → `server/discover` → `tools/list` の順に新方式で決まり、`server/discover` の結果に `instructions` と `resultType: complete` が返った。モデルからの `tools/call` は Claude Code の認証切れで確認していない。`@modelcontextprotocol/client` 2.3.1 の `Client` と `StdioClientTransport` で `versionNegotiation.mode` を `legacy`・`auto` にして繋ぐと、両方とも `getInstructions()` が `instructions` を返却し、`callTool` はハンドラーの戻り値・ハンドラーが返却した `isError: true`・Schema に合わない入力の `isError: true`（`Input validation error: Invalid arguments for tool read_guide: data/names must be array`）を返却した。2026-10-26 に、`createMcpHandler` と `hostHeaderValidationResponse`・`originValidationResponse`・`localhostAllowedHostnames`・`localhostAllowedOrigins` を `node:http` のサーバーに記載した常駐サーバー（`MDMARK_PORT=18799 node dist/cli.js serve`）で、`curl` の `tools/list` が 7 つのツールを返却し、`/mcp` 以外が 404、Host が `evil.example` の要求が 403 になることを確認した。`@modelcontextprotocol/client` の `Client` と `StreamableHTTPClientTransport` で `listTools` が 7 つを返却し、`abort()` の後に同じポートへの接続が拒まれることを単体テストで確認した。Claude Code の `claude mcp list` が `http://127.0.0.1:18801/mcp` を `✔ Connected` と報告した'
+  detail: '`McpServer`・`registerTool`（`fromJsonSchema` の入力）・`serveStdio` で最小のサーバーを記載した。
+
+    Claude Code 2.1.309 を `claude -p --mcp-config --strict-mcp-config` で繋ぐと、`_meta` に `io.modelcontextprotocol/protocolVersion: 2026-07-28` を付けた `server/discover` → `subscriptions/listen` → `server/discover` → `tools/list` の順に新方式で決まり、`server/discover` の結果に `instructions` と `resultType: complete` が返った。
+
+    モデルからの `tools/call` は Claude Code の認証切れで確認していない。
+
+    `@modelcontextprotocol/client` 2.3.1 の `Client` と `StdioClientTransport` で `versionNegotiation.mode` を `legacy`・`auto` にして繋ぐと、両方とも `getInstructions()` が `instructions` を返却し、`callTool` はハンドラーの戻り値・ハンドラーが返却した `isError: true`・Schema に合わない入力の `isError: true`（`Input validation error: Invalid arguments for tool read_guide: data/names must be array`）を返却した。
+
+    2026-10-26 に、`createMcpHandler` と `hostHeaderValidationResponse`・`originValidationResponse`・`localhostAllowedHostnames`・`localhostAllowedOrigins` を `node:http` のサーバーに記載した常駐サーバー（`MDMARK_PORT=18799 node dist/cli.js serve`）で、`curl` の `tools/list` が 7 つのツールを返却し、`/mcp` 以外が 404、Host が `evil.example` の要求が 403 になることを確認した。
+
+    `@modelcontextprotocol/client` の `Client` と `StreamableHTTPClientTransport` で `listTools` が 7 つを返却し、`abort()` の後に同じポートへの接続が拒まれることを単体テストで確認した。
+
+    Claude Code の `claude mcp list` が `http://127.0.0.1:18801/mcp` を `✔ Connected` と報告した'
 license: Apache-2.0（商用利用可）。リポジトリは MIT から移行中で、再許諾の同意が無い分は MIT のまま
 official_url: https://github.com/modelcontextprotocol/typescript-sdk
 docs_url: https://ts.sdk.modelcontextprotocol.io/v2/
@@ -244,3 +244,7 @@ issues:
         result: リスナーが残らない
         recommended: true
     upstream_issue: https://github.com/modelcontextprotocol/typescript-sdk/issues/3070
+tags:
+  - name: tool:mcp
+    main: true
+  - name: topic:sdk

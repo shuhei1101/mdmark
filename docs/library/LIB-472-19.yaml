@@ -52,3 +52,8 @@ install: '```bash
   npx msw@3.0.4 init .storybook/public --no-save
 
   ```'
+tags:
+  - name: tool:msw
+    main: true
+  - name: topic:モック
+  - name: topic:テスト

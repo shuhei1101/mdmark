@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール（書き出しがネットワークを読み込まない）。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -25,6 +28,9 @@ flows:
         C->>C: test-lib と greet をまとめ、画像を data: URL に替える
         C->>H: guide.html を書き込む
         C-->>W: 書き出した: guide.html・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '終了コードが 0 で、標準出力が `書き出した: guide.html`、標準エラーが空'
       - '`guide.html` だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件'
@@ -43,6 +49,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -51,6 +60,9 @@ flows:
         C->>C: test-lib と画像を読み込めない
         C->>H: 読み込めたものだけを埋めて記載する
         C-->>W: 警告 2 行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で HTML が記載されている
       - 標準エラーに `img/missing.png` と `test-lib` の警告の行が出る
@@ -65,12 +77,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export {文書}
         C->>C: 設定が Schema に合わない
         C-->>W: 原因と mdmark check・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `libraries` と `mdmark check` が出る
@@ -85,11 +103,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export missing.md
         C-->>W: 文書が無いこと・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `missing.md` が出る
@@ -104,11 +128,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export guide.md --out blocked/guide.html
         C-->>W: 書き込めないパスと修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `blocked/guide.html` と修正方法が出る
@@ -122,12 +152,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark export guide.md
         C->>C: 動画・音声を guide_files/ へコピーする（作れない）
         C-->>W: 書き込めないパスと修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `guide_files` と修正方法が出る
@@ -141,6 +177,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -151,6 +190,9 @@ flows:
         H-->>W: 単語の下にツールチップを出す
         W->>H: テーブルの説明のボタンにポインターを乗せる
         H-->>W: テーブルの上にツールチップを出す
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 開いた HTML で、用語のツールチップの `top` が単語の `bottom` 以上
@@ -165,6 +207,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（`syntax.url` を手元のフォルダに向け、書き出しがネットワークを読み込まない）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -173,6 +218,9 @@ flows:
         C->>C: コードブロックの言語から typescript と python を取得し、本体と 2 言語のモジュールを読み込む
         C->>H: 色分けのモジュールを埋めて記載する
         C-->>W: 出力のパス・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、標準エラーに警告が無い
       - HTML だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
@@ -187,6 +235,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -198,6 +249,9 @@ flows:
         B-->>C: エイリアス・alias_required_empty のずれ
         C->>H: エイリアスを埋めた guide.html を書き込む
         C-->>W: 書き出した: guide.html・警告 1 行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、標準エラーに `alias_required_empty` の警告が 1 行ある
       - 開いた文書の `テストを実行する` に下線が付き、ツールチップに `npm test` とコピーのボタンが出る
@@ -212,6 +266,9 @@ flows:
       - name: Mock
         description: '差し替える依存は無い。書き出した HTML は Playwright で file:// として開き、OS の配色はライト（`prefers-color-scheme: light`）にする'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -220,6 +277,9 @@ flows:
         C->>H: colorTheme をコピーした設定を埋めて記載する
         W->>H: 開く
         H-->>W: theme-slate で描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 開いた HTML で、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
@@ -232,6 +292,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -240,6 +303,9 @@ flows:
         C->>H: labels をコピーした設定を埋めて記載する
         W->>H: 開く
         H-->>W: ボタンを「コピー」で描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 開いた HTML で、`button.mdmark-param-copy` の `textContent` が `コピー`
@@ -255,6 +321,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -264,6 +333,9 @@ flows:
         C->>C: 画像を data URL に替え、動画・音声のパスを guide_files/ の相対パスに替える
         C->>H: guide.html と guide_files/ を書き込む
         C-->>W: 書き出した: docs/guide.html・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、標準エラーが空
       - '`chart.png`・`dark.png`・`build.gif`・`poster.png`・`logo.png` が `data:` URL で埋まり、`dark.png` の `src` が `#only-dark` を持つ'
@@ -282,6 +354,9 @@ flows:
       - name: Mock
         description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -292,6 +367,9 @@ flows:
         C-->>W: missing-lib の警告・終了コード 0
         W->>H: blob: と動的 import を許さない環境で開く
         H-->>W: broken を飛ばしてマーカー・ビュー・色分けを描き、missing-lib のマーカーの場所に通知ブロックを出す
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、標準エラーに `missing-lib` の警告の行が出る
       - HTML の中の `script` 要素が `src` を持たない
@@ -313,6 +391,9 @@ flows:
       - name: Mock
         description: '正常系（blob: と動的 import を許さない環境で開く）と同じ。外への要求を全て止める'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -323,6 +404,9 @@ flows:
         C-->>W: 終了コード 0
         W->>H: blob: と動的 import を許さない環境で開く
         H-->>W: 範囲の css と ts を適用した文書
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、HTML の中の `script` 要素が `src` を持たない
       - 範囲のノードの背景が `css` の色で、押すと根の要素が class `is-open` を持つ
@@ -339,6 +423,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -347,6 +434,9 @@ flows:
         C->>C: include の取り込み先を読み込み、使用する名前のアイコンの形状を lucide から取り出す
         C->>H: includes と icons を埋めて記載する
         C-->>W: 書き出した: guide.html・警告 2 行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、標準エラーに `missing.md` と `no-such-icon` の警告の行が出る
       - '`guide.html` だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件'
@@ -368,6 +458,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -379,6 +472,9 @@ flows:
         C->>C: 上のフォルダの theme.css と ext/greet.js を読み込む
         C->>H: guide.html を書き込む
         C-->>W: 書き出した: guide.html・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 開いた HTML で、注意書きが引用として、表が機能を付けない表として描かれる
@@ -395,6 +491,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -403,6 +502,9 @@ flows:
         C->>L: cwd・purpose=export
         L-->>C: 端末の設定の yaml のずれ
         C-->>W: 端末の設定のパスと 3 行目・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに端末の設定のパスと `3` 行目と修正方法が出る
@@ -416,6 +518,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（`mermaid.url` を手元のフォルダに向け、書き出しがネットワークを読み込まない）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -424,6 +529,9 @@ flows:
         C->>C: mermaid のコードブロックがあるので、mermaid を起動の処理と 1 つのスクリプトにまとめる
         C->>H: mermaid を埋めて記載する
         C-->>W: 出力のパス・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0 で、書き出した HTML を file:// で開くと外への要求が 0 件で、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
       - 書き出した HTML のスクリプトの動的 `import()` の数が、段落だけの文書を書き出した HTML と同じ（mermaid の chunk を動的 `import()` で読み込まない）
@@ -436,7 +544,21 @@ flows:
         description: '`map.kinds` に `store`（`label: 保存先`・`icon: database`・`shape: rect`・`color: purple`）、`map.lines` に `-.->`（`dash: dashed`）、`map.node_fit: width` を持つ設定と、`:::store` のノードと `-.->` の線を持つ map の範囲の文書を持つフォルダ'
       - name: Mock
         description: 正常系（テーマを選ぶ設定）と同じ
-    flow: "sequenceDiagram\n  actor W as 文書の作成者\n  participant C as mdmark CLI\n  participant H as 書き出した HTML\n  W->>C: mdmark export {文書}\n  C->>H: map をコピーした設定を埋めて記載する\n  W->>H: 開く\n  H-->>W: 設定の種類と線で map の図を描く"
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant H as 書き出した HTML
+        W->>C: mdmark export {文書}
+        C->>H: map をコピーした設定を埋めて記載する
+        W->>H: 開く
+        H-->>W: 設定の種類と線で map の図を描く
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 開いた HTML で、`:::store` のノードの種類の行に `database` のアイコンと「保存先」があり、ノードが角の四角で紫
@@ -451,6 +573,9 @@ flows:
       - name: Mock
         description: 正常系（mermaid のコードブロック）と同じく `mermaid.url` を手元のフォルダに向ける。比べる HTML は、同じフォルダを `--keep-traces` で書き出したもの
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -460,6 +585,9 @@ flows:
         C->>C: 名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除する
         C->>H: mdmark-intro.html を書き込む
         C-->>W: 書き出した: mdmark-intro.html・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '終了コードが 0 で、標準出力が `書き出した: mdmark-intro.html`'
       - 'HTML の文字列（`<title>` の中身と、範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値の項目を除いた値に、`mdmark`（大文字・小文字を区別しない）が 0 件'
@@ -480,6 +608,9 @@ flows:
       - name: Mock
         description: 正常系（mdmark を使用していることを隠す）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -487,6 +618,9 @@ flows:
         W->>C: mdmark export mdmark-intro.md --keep-traces
         C->>H: 隠さない HTML を書き込む
         C-->>W: 書き出した: mdmark-intro.html・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - HTML に `class="mdmark"`・`:root{--mdmark-version:`・`id="mdmark-payload"`・`<!-- lucide` が残る
@@ -582,7 +716,7 @@ constraints:
     constraint: 文書に記載したスクリプトは `mount` のサニタイズで落とし、実行しない（`html-scripts` がオンの文書の範囲の `ts`・`js` は制約「範囲のスクリプト」のとおり動かす）。埋める文字列は `</script>` を含んでも HTML の `script` 要素を閉じないように記載する
   - item: 書き出した HTML のサイズ
     constraint: 制限なし
-    notes: 'PoC #35 の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には適用しない'
+    notes: '[PoC: file:// で開く 1 枚の HTML に配布物と外部ライブラリのモジュールを埋めて描く](https://github.com/shuhei1101/mdmark/pull/35) の見本（Chart.js を 1 つ埋めた文書）で 548,910 バイト。配布ファイル 1 つのサイズの上限は jsDelivr が配る `dist/` が対象で、書き出した HTML には適用しない'
   - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
@@ -594,11 +728,11 @@ constraints:
     decided_by: CFG-472-3#settings[tooltips.placement]
   - item: 埋める色分け
     constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を取得し（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: {"syntax": false} -->` の文書は取得しない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使用する言語のモジュールだけを制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読み込みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
-    notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確認した（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
+    notes: '[PoC: 色分けのライブラリを使うときだけ読み込み、行に分けたコードブロックを色分けする](https://github.com/shuhei1101/mdmark/pull/98) で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確認した（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
   - item: 埋める mermaid
     constraint: 機能 `mermaid` がオンで、文書に mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）があるときだけ、設定の `mermaid.url`（無ければ既定の jsDelivr の URL）のモジュールを、それが読み込む chunk ごと制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールで図にし、URL を読み込まない。相対パスの `mermaid.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないときは埋めず警告に出す（書き出しは止めない）。設定の `mermaid.theme`・`mermaid.themeVariables` は `features` と同じく埋める設定に写す
     decided_by: NFR-472-1#requirements[mermaid を埋めた書き出しの HTML のサイズ]
-    notes: PoC #384 で、CLI の `bundleViewer` が mermaid 12.3.0 の本体と chunk を動的 `import()` を残さずにまとめられることを確認した
+    notes: '[PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384) で、CLI の `bundleViewer` が mermaid 12.3.0 の本体と chunk を動的 `import()` を残さずにまとめられることを確認した'
   - item: 右側の目次の出し方
     constraint: 設定の `side-toc` を、`features` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定（`hover`）に任せる。`mode` が `hover`・`fixed` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: CFG-472-3#settings[side-toc.mode]
@@ -615,12 +749,26 @@ constraints:
     constraint: '文書が相対パスで指す画像・動画・音声・`poster` は、文書のフォルダを基準に探し、無ければ設定の `assets.root` を基準に同じ相対パスで探す。`src` のクエリとフラグメントは探すときに除外し、書き出す値に残す'
     decided_by: CFG-472-3#settings[assets.root]
   - item: コピーする動画と音声
-    constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。同じファイルは 1 回だけコピーする。コピーは HTML を書き込む前に行い、`_files/` を作れない・記載できないときは「出力先へ書き込めない」で終え、HTML を書き込まない。前の書き出しが残した `_files/` の中の、今回コピーしないファイルは削除しない。読み込めない動画・音声は記載したまま残して警告に出す。添付のファイルはコピーせず、記載したままのリンクで残す'
+    constraint: '文書が相対パスで指す動画・音声（拡張子の一覧はインターフェース定義『文書をHTML文字列にする』の制約「動画と音声」）を、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、文書の Markdown の `src` をそのコピーへの HTML からの相対パスに替える。
+
+      コピー先の中のパスは、設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）からの相対パスにする。
+
+      そのフォルダの外にあるファイルは `_files/external/{ファイル名}` にし、名前が重なれば `-1`・`-2` を付ける。
+
+      同じファイルは 1 回だけコピーする。
+
+      コピーは HTML を書き込む前に行い、`_files/` を作れない・記載できないときは「出力先へ書き込めない」で終え、HTML を書き込まない。
+
+      前の書き出しが残した `_files/` の中の、今回コピーしないファイルは削除しない。
+
+      読み込めない動画・音声は記載したまま残して警告に出す。
+
+      添付のファイルはコピーせず、記載したままのリンクで残す'
   - item: 書き出しの機能のオン・オフ
     constraint: 設定の `features` で `images` か `media` をオフにした文書も、画像の埋め込みと動画・音声のコピーは同じく行う
   - item: 範囲のスクリプト
     constraint: 設定と文書のマーカーで `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を削除する）、範囲のコードの文字から既定のエクスポートの関数を参照する表として制約「まとめるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に指定し、変換のライブラリ（`html-scripts.url`）を読み込まずに動かす。esbuild が変換できない範囲はまとめずに警告に出し、開いたときその範囲の前に記載の警告を出す。`blob:` URL と動的 `import()` は使用しない
-    notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）でまとめた 1 つのスクリプトから呼ぶ経路を確認した
+    notes: '変換は CLI の今の依存の esbuild。PoC 検証（[PoC: コードブロックの HTML の範囲の ts・js を CSP の下で動かす](https://github.com/shuhei1101/mdmark/pull/306)）でまとめた 1 つのスクリプトから呼ぶ経路を確認した'
   - item: 埋める取り込み
     constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: {"include": false} -->` の文書は読み込まない'
   - item: 埋めるアイコン
@@ -630,6 +778,33 @@ constraints:
     constraint: 設定の `map` を、`tooltips.placement` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定に任せる。`map` がマップでないときは設定ファイルの誤り（終了コード 1）にする。記載できる値に無い値（`node_fit` の知らない値・`url_state` が真偽値でない・知らない形・模様・太さ・矢じり・色の名前）は書き出しを止めずにコピーし、`mount` が無視して既定にする（`mdmark check` が `schema` のずれにする）。Lucide に無いアイコンの名前はコピーし、`mount` が無視する（`mdmark check` が `map_unknown_icon` にする）
     decided_by: IF-472-35#request[opts.config.map.kinds]
   - item: mdmark の痕跡
-    constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を当ててから書き込む。(1) 埋め込みの JSON を除く HTML・CSS（配布物と `theme`）・まとめたスクリプト（拡張・範囲のスクリプトを含む）から、HTML のコメントと `:root{--mdmark-version:…}` の宣言を削除する。まとめたスクリプトの `/*! … */` のライセンスの注釈は残す。(2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`・画像の `data:` URL の `assets`）を除く値で、語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。(3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読むマーカーの名前でない HTML のコメントを削除する。範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を当てた後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を当てる。開いた文書の DOM にコメントのノードを残さない。同梱する第三者のライブラリのライセンスの表記は、HTML のコメントでない形で残す'
-    notes: 'まとめたスクリプトのライセンスの注釈は第三者のライブラリと利用者の拡張のものだけで、mdmark 自身のものは無い（計画書『ライブラリ本体』の実測）。PoC #556 で、この規則の HTML が隠さない HTML と同じ表示と操作になることを確認した。マーカーのコメントは #532 で埋め込みと一緒に消える。本文のコードの例の `<mdmark-*>` も別名で表示される。`--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
+    constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を当ててから書き込む。
+
+      (1) 埋め込みの JSON を除く HTML・CSS（配布物と `theme`）・まとめたスクリプト（拡張・範囲のスクリプトを含む）から、HTML のコメントと `:root{--mdmark-version:…}` の宣言を削除する。
+
+      まとめたスクリプトの `/*! … */` のライセンスの注釈は残す。
+
+      (2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`・画像の `data:` URL の `assets`）を除く値で、語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。
+
+      (3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読むマーカーの名前でない HTML のコメントを削除する。
+
+      範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を当てた後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を当てる。
+
+      開いた文書の DOM にコメントのノードを残さない。
+
+      同梱する第三者のライブラリのライセンスの表記は、HTML のコメントでない形で残す'
+    notes: 'まとめたスクリプトのライセンスの注釈は第三者のライブラリと利用者の拡張のものだけで、mdmark 自身のものは無い（計画書『ライブラリ本体』の実測）。
+
+      [PoC: 書き出した HTML の mdmark を 1 つの規則で別名へ置き換えても動くか](https://github.com/shuhei1101/mdmark/pull/556) で、この規則の HTML が隠さない HTML と同じ表示と操作になることを確認した。
+
+      マーカーのコメントは [書き出した HTML に元の Markdown を埋め込まず、書き出すときに描画した HTML から起動する](https://github.com/shuhei1101/mdmark/issues/532) で埋め込みと一緒に消える。
+
+      本文のコードの例の `<mdmark-*>` も別名で表示される。
+
+      `--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
 test_file: tests/integration/lib/export.test.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:html
+  - name: topic:cli

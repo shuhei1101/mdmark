@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #3](https://github.com/shuhei1101/mdmark/issues/3) の要望。
-[#12](https://github.com/shuhei1101/mdmark/pull/12) で入った土台は版を返す公開関数だけを持ち、Markdown を描く機能が無い。
+[Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/issues/3) の要望。
+[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で入った土台は版を返す公開関数だけを持ち、Markdown を描く機能が無い。
 
 ## 計画書
 
@@ -19,7 +19,7 @@
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
 - [x] PoC 検証

@@ -35,8 +35,6 @@ functions:
     refs:
       - IF-472-22#constraints[差分ビューの判定]
     status: planned
-    introduced:
-      pr: 196
   - name: panelKey
     title: パネルのキーを組む
     kind: 関数
@@ -62,5 +60,9 @@ functions:
     refs:
       - IF-472-22#constraints[差分のパネル]
     status: planned
-    introduced:
-      pr: 196
+lead: '差分ビューの対象とパネルのキーの決定を受け持ち、差分ビューのプレビューを変えるときに参照する。'
+tags:
+  - name: topic:差分
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

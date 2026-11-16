@@ -19,3 +19,9 @@ styles:
       - CMP-472-63#
       - LIB-472-26#
     status: planned
+lead: 'プレビューのパネルの CSS を受け持ち、プレビューのパネルの外観を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

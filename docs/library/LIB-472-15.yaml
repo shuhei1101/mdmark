@@ -22,7 +22,7 @@ catalogs:
         kind: アイコン
         purpose: 図を全体が収まる倍率に戻すボタン
         status: removed
-        reason: 図の枠の戻すのボタンを倍率のボタンにまとめ、使用しなくなった（#6 の確認ログ）
+        reason: 図の枠の戻すのボタンを倍率のボタンにまとめ、使用しなくなった（[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログ）
       - name: expand
         kind: アイコン
         purpose: 図を全画面のモーダルで開くボタン
@@ -135,48 +135,32 @@ catalogs:
         kind: アイコン
         purpose: 画像の拡大のボタンの右上のアイコン
         status: planned
-        introduced:
-          pr: 263
       - name: pause
         kind: アイコン
         purpose: GIF を止めるボタン
         status: planned
-        introduced:
-          pr: 263
       - name: play
         kind: アイコン
         purpose: GIF を再生するボタンと、図のノードの種類（判定フローチャートの開始）
         status: planned
-        introduced:
-          pr: 263
       - name: file-text
         kind: アイコン
         purpose: PDF・文書・テキストの添付のカード（CSS）
         status: planned
-        introduced:
-          pr: 263
       - name: file-spreadsheet
         kind: アイコン
         purpose: 表の添付のカード（CSS）
         status: planned
-        introduced:
-          pr: 263
       - name: file-archive
         kind: アイコン
         purpose: アーカイブの添付のカード（CSS）
         status: planned
-        introduced:
-          pr: 263
       - name: panel-right-dashed
         kind: アイコン
         purpose: 右側の目次のピン止め（押す前）
-        introduced:
-          pr: 320
       - name: panel-right
         kind: アイコン
         purpose: 右側の目次のピン止め（押した後）
-        introduced:
-          pr: 320
 lead: 線で描く 24 の格子の SVG アイコン集。アイコンごとに `path` などの要素の並びを持つ。
 purl: pkg:npm/lucide@1.59.0
 upstream: lucide-icons/lucide
@@ -186,7 +170,11 @@ docs_url: https://lucide.dev/icons/
 verification:
   state: 済
   date: '2026-11-05'
-  detail: 'lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確認し、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、構造をコピーした `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確認した。`circle-question-mark`・`wrench`・`flag` も lucide 1.59.0 の名前付きの import（`CircleQuestionMark`・`Wrench`・`Flag`）で取り出せることを確認し、`src/parts/icons.ts` から描いた判定フローチャートのノードを Storybook のストーリー `parts-flowdiagram--judgement` で描いて確認した。2026-11-05: まとめていない名前を読み込む `https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/{名前}.mjs` が、`rocket` で 200（646 バイト・`access-control-allow-origin: *`・IconNode を `export default` する ES モジュール）、無い名前（`no-such-icon-x`）で 404 を返却することを確認した（#307 のライブラリ選定）'
+  detail: 'lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確認し、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、構造をコピーした `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確認した。`circle-question-mark`・`wrench`・`flag` も lucide 1.59.0 の名前付きの import（`CircleQuestionMark`・`Wrench`・`Flag`）で取り出せることを確認し、`src/parts/icons.ts` から描いた判定フローチャートのノードを Storybook のストーリー `parts-flowdiagram--judgement` で描いて確認した。2026-11-05: まとめていない名前を読み込む `https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/{名前}.mjs` が、`rocket` で 200（646 バイト・`access-control-allow-origin: *`・IconNode を `export default` する ES モジュール）、無い名前（`no-such-icon-x`）で 404 を返却することを確認した（[記法の新設 8 件（icon:・columns・蛍光ペン・kbd: と ruby・details と pagebreak・include・wide・csv の表）](https://github.com/shuhei1101/mdmark/pull/307) のライブラリ選定）'
 used_in:
   - src/parts/icons.ts
   - src/index.css
+tags:
+  - name: tool:lucide
+    main: true
+  - name: topic:アイコン

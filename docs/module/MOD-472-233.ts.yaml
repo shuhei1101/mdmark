@@ -54,5 +54,11 @@ functions:
       - 'MOD-472-232#functions[copyText]'
       - MOD-472-306#functions[renderCodeCopy]
     status: planned
-    introduced:
-      pr: 151
+lead: 'コードブロックのコピーの操作を受け持ち、コードブロックのコピーを変えるときに参照する。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: topic:部品
+  - name: action:コピー

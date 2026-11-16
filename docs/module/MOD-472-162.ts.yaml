@@ -3,7 +3,6 @@ visibility: internal
 title: ライブラリ本体 / ビューとコメント / margin.ts
 test_files:
   - tests/unit/src/comments/margin.test.ts
-  - tests/unit/src/comments/margin.browser.test.ts
 constants:
   - name: SAME_LINE_PX
     title: 同じ行とみなす差
@@ -119,3 +118,12 @@ functions:
         expected: 2 つ目の `center` が `38`（10 + 24 + 4）
     refs:
       - IF-472-35#constraints[余白のマーカー]
+notes:
+  ブラウザのテストファイル: |-
+    - `tests/unit/src/comments/margin.browser.test.ts`
+lead: '本文の右の余白に、箇所の行の高さで余白のマーカーを配置する処理を受け持ち、余白のマーカーの配置を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント
+  - name: action:配置

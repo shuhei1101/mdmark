@@ -16,6 +16,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -25,6 +28,9 @@ scenarios:
         M-->>P: 本文と被参照の一覧を描く
         U->>P: 一覧の文書のタイトルを押す
         P-->>U: その文書へのリンクを開く
+      ```
+
+      <!-- /map -->
     expected:
       - 文書の末尾にタイトル「関連文書」の被参照の一覧があり、`API` と `使用方法` が並び、自分へのリンクを持つ `アーキテクチャ` 自身は並ばない
       - '`API` のリンクの `href` が `../api.md`、`使用方法` のリンクの `href` が `../使い方/guide.md`（描いた文書 `設計/arch.md` からの相対パス）'
@@ -41,6 +47,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -48,6 +57,9 @@ scenarios:
         P->>M: 索引・文書の id・参照・Markdown を指定して描かせる
         M-->>P: 被参照の一覧を配置せずに本文を描く
         P-->>U: 本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 被参照の一覧が無い
       - 本文が描かれている
@@ -63,6 +75,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -72,6 +87,9 @@ scenarios:
         M-->>P: 一致した単語に下線を描く
         U->>P: 下線の付いた単語にフォーカスし、Tab でツールチップの中へ移る
         P-->>U: 用語と関連文書を表示し、関連文書のリンクへフォーカスを移す
+      ```
+
+      <!-- /map -->
     expected:
       - '`公開関数` に破線の下線が付き、ツールチップの「関連文書」に `API` のタイトル、`../api.md` へのリンク、`mount と render の引数` がある'
       - '`ワークスペース` のツールチップに、「用語」の意味と「関連文書」の `使用方法` がこの順で並ぶ'
@@ -92,6 +110,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -100,12 +121,14 @@ scenarios:
         M->>M: ほかの文書の本文の単語と api の別名を正規化して照合した参照から、api を参照している文書を参照する
         M-->>P: 本文と被参照の一覧を描く
         P-->>U: 被参照の一覧を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 文書の末尾の「関連文書」に `使用方法` と `アーキテクチャ` が並ぶ
       - 本文が描かれている
     test: test_normal_when_alias_width_and_case_differ
 lead: 読者が、描いた文書を参照している文書の一覧と、本文の単語に別名が一致した文書を確認する。被参照は保存せず、索引の `related`・本文の文書間のリンク・文書の別名の出現から描くときに算出する。
-issue: 5
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者
@@ -122,3 +145,7 @@ refs:
   - SC-472-65#
   - SC-472-59#
 test_file: tests/e2e/単一ユースケース/被参照を確認する.spec.ts
+tags:
+  - name: topic:被参照
+    main: true
+  - name: topic:索引

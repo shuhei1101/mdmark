@@ -4,21 +4,6 @@ title: ClaudeCodeプラグイン / プラグインのビルド / build-plugin.ts
 lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、ガイドの索引を検査してから、フックをまとめ、まとめた依存のライセンスを `plugin/` に書き込む。MCP サーバーとガイドのページはまとめない。
 test_files:
   - tests/unit/scripts/build-plugin.test.ts
-directory: |-
-  ```tree
-  scripts/
-  ├── build-plugin.ts   # プラグインのビルド
-  └── licenses/         # まとめた依存の中に取り込まれたパッケージのライセンスの本文（{名前}.txt）
-  .claude-plugin/
-  └── marketplace.json  # マーケットプレイスの定義（plugin/ を記載する）
-  plugin/
-  ├── .claude-plugin/plugin.json  # 名前・説明（`version` を持たず、Claude Code が commit の短縮 SHA をバージョンにする）
-  ├── guide-index.yaml  # ガイドの索引の原本（プラグインは参照しない）
-  ├── .mcp.json         # type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ
-  ├── hooks/hooks.json  # `project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js、`Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact で scripts/guide-notice.js を実行する
-  ├── scripts/          # まとめたフック（pre-tool-use.js・session-start.js・guide-notice.js。生成）
-  └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（生成）
-  ```
 constants:
   - name: PLUGIN_ENTRY_POINTS
     title: プラグインにまとめる入口
@@ -39,8 +24,6 @@ constants:
         value: plugin/bin/setup.js
         description: '`global-setup`・`setup` のスキルが呼ぶスクリプト'
     status: planned
-    introduced:
-      pr: 72
   - name: PLUGIN_OUTPUTS
     title: ビルドが記載するプラグインの生成物
     container: scripts/build-plugin.ts
@@ -48,8 +31,6 @@ constants:
     summary: ビルドの最初と失敗したときに削除する、`plugin/` の中の生成物
     value: '["plugin/scripts", "plugin/bin", "plugin/templates", "plugin/THIRD_PARTY_LICENSES.txt"]'
     status: planned
-    introduced:
-      pr: 72
   - name: GUIDE_SOURCE
     title: ガイドの索引の原本
     container: scripts/build-plugin.ts
@@ -59,8 +40,6 @@ constants:
     refs:
       - ER-472-4#
     status: planned
-    introduced:
-      pr: 72
   - name: PLUGIN_MANIFEST
     title: プラグインの定義
     container: scripts/build-plugin.ts
@@ -68,8 +47,6 @@ constants:
     summary: バージョンを記載するプラグインの定義のパス
     value: plugin/.claude-plugin/plugin.json
     status: removed
-    introduced:
-      pr: 72
   - name: EMBEDDED_LICENSES_DIR
     title: 取り込まれたパッケージのライセンスの配置場所
     container: scripts/build-plugin.ts
@@ -80,8 +57,6 @@ constants:
     refs:
       - LIB-472-2#limitations[まとめたときのライセンスの表示]
     status: planned
-    introduced:
-      pr: 72
   - name: CONFIG_TEMPLATE
     title: プラグインに写す mdmark.config.yaml の雛形
     container: scripts/build-plugin.ts
@@ -89,8 +64,6 @@ constants:
     summary: '`setup` のスキルが使用する `templates/mdmark.config.yaml` を `plugin/templates/mdmark.config.yaml` へ写す'
     value: '{ from: "templates/mdmark.config.yaml", to: "plugin/templates/mdmark.config.yaml" }'
     status: planned
-    introduced:
-      pr: 354
 functions:
   - name: checkGuideSource
     title: ガイドの索引を検査する
@@ -140,8 +113,6 @@ functions:
     callees:
       - MOD-472-4#functions[parseGuideIndex]
     status: planned
-    introduced:
-      pr: 72
   - name: listEmbeddedPackages
     title: 取り込まれたパッケージを参照する
     kind: 関数
@@ -176,8 +147,6 @@ functions:
         mock: なし（一時フォルダ）
         expected: 空
     status: planned
-    introduced:
-      pr: 72
   - name: writePluginLicenses
     title: プラグインの依存のライセンスを記載する
     kind: 関数
@@ -225,8 +194,6 @@ functions:
     refs:
       - MOD-472-166#functions[writeThirdPartyLicenses]
     status: planned
-    introduced:
-      pr: 72
   - name: writePluginManifest
     title: プラグインのバージョンを記載する
     kind: 関数
@@ -249,8 +216,6 @@ functions:
       1. `PLUGIN_MANIFEST` を JSON として読み込み、`version` を置き換える
       2. 2 字下げと末尾の改行で記載する
     status: removed
-    introduced:
-      pr: 72
   - name: removePluginOutputs
     title: プラグインの生成物を削除する
     kind: 関数
@@ -277,8 +242,6 @@ functions:
         mock: なし（一時フォルダ）
         expected: '`plugin/scripts` が無く、`plugin/.mcp.json` が残る'
     status: planned
-    introduced:
-      pr: 72
   - name: buildPlugin
     title: プラグインをビルドする
     kind: 関数
@@ -321,5 +284,28 @@ functions:
     refs:
       - IF-472-41#
     status: planned
-    introduced:
-      pr: 72
+notes:
+  ディレクトリ: |-
+    ```tree
+    scripts/
+    ├── build-plugin.ts   # プラグインのビルド
+    └── licenses/         # まとめた依存の中に取り込まれたパッケージのライセンスの本文（{名前}.txt）
+    .claude-plugin/
+    └── marketplace.json  # マーケットプレイスの定義（plugin/ を記載する）
+    plugin/
+    ├── .claude-plugin/plugin.json  # 名前・説明（`version` を持たず、Claude Code が commit の短縮 SHA をバージョンにする）
+    ├── guide-index.yaml  # ガイドの索引の原本（プラグインは参照しない）
+    ├── .mcp.json         # type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ
+    ├── hooks/hooks.json  # `project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js、`Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact で scripts/guide-notice.js を実行する
+    ├── scripts/          # まとめたフック（pre-tool-use.js・session-start.js・guide-notice.js。生成）
+    └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（生成）
+    ```
+tags:
+  - name: topic:バンドル
+    main: true
+  - name: topic:プラグイン
+  - name: tool:claude-code
+  - name: tool:esbuild
+  - name: tool:mcp
+  - name: topic:ガイド
+  - name: action:ビルド

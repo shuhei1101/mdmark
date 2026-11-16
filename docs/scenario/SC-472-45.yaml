@@ -11,6 +11,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、見本の 2 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -22,6 +24,8 @@ scenarios:
         U->>M: ソースに戻す
         M-->>U: ソースの色分けに戻す
       ```
+
+      <!-- /map -->
     expected:
       - 開いた時点では、範囲のソースの行が色分けで出て、変えたセルの行の `120` が濃い赤、`150` が濃い緑で出る
       - 切り替えると、前と後の表が描いた表として並び、それぞれが前・後のどちらかをタイトルとスクリーンリーダー向けの名前で示す
@@ -38,6 +42,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、範囲を追加した 2 つのリビジョンを返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -46,6 +52,8 @@ scenarios:
         U->>M: 範囲を描いた結果に切り替える
         M-->>U: 後の描いた結果だけを出し、前には範囲が無いことを示す
       ```
+
+      <!-- /map -->
     expected:
       - 開いた時点では、追加した範囲のソースの行が全て緑と行頭の `+` で出る
       - 切り替えると、後の描いた結果だけが出て、前の側には範囲が無いことを示す文がある
@@ -59,12 +67,16 @@ scenarios:
       - name: Mock
         description: 取り出し元は、範囲の外だけを変えた 2 つのリビジョンを返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
         participant M as mdmark
         M-->>U: 範囲の行を色なしで出し、切り替えを付けない
       ```
+
+      <!-- /map -->
     expected:
       - 範囲のソースの行が色とマーカーを持たずに出る
       - その範囲には、描いた結果への切り替えが無い
@@ -78,6 +90,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、スクリプトを記載した 2 つのリビジョンを返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -86,13 +100,14 @@ scenarios:
         M->>M: スクリプトとイベントの属性を落として描く
         M-->>U: 前と後の描いた結果を並べる
       ```
+
+      <!-- /map -->
     expected:
       - 前と後の描いた結果に `script` 要素と `onclick` 属性が無い
       - ページの値は書き換わっていない
       - ソースの色分けでは、`script` 要素の行も文字として出る
     test: test_normal_when_script_in_range
 lead: 読者が、差分の中の `<!-- html -->` 〜 `<!-- /html -->` の範囲を、既定のソースの行と文字の色分けから、描いた結果の前と後に切り替えて確認する。
-issue: 7
 primary_actor: 読者
 stakeholders:
   - name: 読者
@@ -104,3 +119,8 @@ preconditions:
 success_guarantee: 変えた範囲を切り替えると、前と後のリビジョンのその範囲が、文書に描くときと同じ埋め込んだ HTML の描き方（スクリプトを落とす）で並ぶ。戻すとソースの色分けに戻る。
 minimal_guarantee: 描いた結果に切り替えても、埋め込んだ HTML に書き込んだスクリプトは動かない。
 test_file: tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: tool:html
+  - name: action:埋め込み

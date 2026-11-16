@@ -79,3 +79,7 @@ layers:
       ```bash
       (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
       ```
+tags:
+  - name: topic:テスト
+    main: true
+  - name: action:実行

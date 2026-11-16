@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #325](https://github.com/shuhei1101/mdmark/issues/325) の要望。
+[文書の先頭の YAML のフロントマターを、既定で表示せず、設定で表示に切り替えられるようにする](https://github.com/shuhei1101/mdmark/issues/325) の要望。
 今の描く処理は、文書の先頭の `---` で囲んだ YAML のフロントマターを本文の Markdown として解析する。
 キーと値が段落として出て、閉じる `---` の直前の行が setext の見出し（h2）になり、右側の目次にもその行が出る。
-設定の読み方は [#163](https://github.com/shuhei1101/mdmark/issues/163)（[PR #347](https://github.com/shuhei1101/mdmark/pull/347)）で CLI・MCP・VS Code 拡張機能に共通になった。
+設定の読み方は [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする（プレビューにも theme の CSS を当てる）](https://github.com/shuhei1101/mdmark/issues/163)（[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347)）で CLI・MCP・VS Code 拡張機能に共通になった。
 
 ## 計画書
 

@@ -3,7 +3,6 @@ visibility: internal
 title: ライブラリ本体 / 描く / mount.ts
 test_files:
   - tests/unit/src/mount.browser.test.ts
-  - tests/unit/src/mount-view.browser.test.ts
 data_models:
   - name: MountOptions
     title: 描く設定
@@ -77,8 +76,6 @@ data_models:
         type: string[]
         description: 隠している列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた新しい配列
     status: planned
-    introduced:
-      pr: 280
 constants:
   - name: mounted
     title: 描いた要素の記録
@@ -99,8 +96,6 @@ constants:
     refs:
       - IF-472-35#constraints[選んだテーマ]
     status: planned
-    introduced:
-      pr: 181
   - name: COLOR_SCHEME_CLASSES
     title: 明暗の class
     container: src/mount.ts
@@ -471,5 +466,13 @@ functions:
     refs:
       - IF-472-35#exceptions[TypeError（比較元）]
     status: planned
-    introduced:
-      pr: 280
+notes:
+  ブラウザのテストファイル: |-
+    - `tests/unit/src/mount-view.browser.test.ts`
+lead: '文書を要素に描く公開関数と描いた要素の記録を受け持ち、mount の描く流れを変えるときに参照する。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:dom
+  - name: topic:markdown
+  - name: topic:文書

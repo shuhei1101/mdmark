@@ -56,3 +56,7 @@ refs:
 status: planned
 notes:
   HTML: '`<mark class="mdmark-highlight" data-color="{color}">{html}</mark>`（`color` が無いときは `data-color` を付けない）。コメントの `mark.mdmark-comment-mark` とは class で分ける。モックは `docs/mock/components/highlighter/`'
+tags:
+  - name: topic:蛍光ペン
+    main: true
+  - name: action:強調

@@ -25,3 +25,11 @@ functions:
         expected: '`icons` が `sailboat` だけを持ち、`missing` が `["no-such-icon"]`'
         mock: なし
         summary: まとめていない名前の構造だけを取り出す
+lead: 'まとめていない名前のアイコンの形状の取り出しを受け持ち、書き出しに埋めるアイコンを変えるときに参照する。'
+tags:
+  - name: topic:アイコン
+    main: true
+  - name: topic:cli
+  - name: action:書き出し
+  - name: action:まとめ
+  - name: action:取り出し

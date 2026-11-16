@@ -71,8 +71,6 @@ functions:
         expected: '`CliError` を投げ、メッセージに `mdmark init` が入る'
         exception: CliError
     status: planned
-    introduced:
-      pr: 32
   - name: loadConfig
     title: 設定ファイルを読み込む
     container: src/cli/config.ts
@@ -108,8 +106,6 @@ functions:
         expected: '`CliError` を投げ、メッセージに `3 行目` が入る'
         exception: CliError
     status: planned
-    introduced:
-      pr: 32
   - name: requireConfig
     title: 書き出しに使用する設定を読み込む
     container: src/cli/config.ts
@@ -146,8 +142,6 @@ functions:
       - MOD-472-116#functions[loadLayeredConfig]
       - MOD-472-116#functions[displayConfigPath]
     status: planned
-    introduced:
-      pr: 32
     process: |-
       1. 設定を重ねて読み込む（設定を重ねて読み込む。`purpose: export`、`env` は `process.env`、`home` は `os.homedir()`）
          - `ConfigNotFoundError` の場合、その文で `CliError` を投げる
@@ -155,3 +149,10 @@ functions:
       3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の構造にする。`base` は `cwd`）と行で、今の「YAML として読み込めません」の `CliError` を投げる
       4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の構造にして、今の「設定の構造に合いません」の `CliError` を投げる
       5. `{ path: nearest, dir: nearest のフォルダ, config }` を返却する。`config` は重ねた設定のパスを相対パスに戻したもの（パスを相対パスに戻す。`dir` は nearest のフォルダ）
+lead: '設定ファイルの探索と、重ねて読み込んだ設定を書き出しに使用する構造にする処理を受け持ち、CLI の設定の読み込みを変えるときに参照する。'
+tags:
+  - name: topic:cli
+    main: true
+  - name: topic:設定
+  - name: action:読み込み
+  - name: action:書き出し

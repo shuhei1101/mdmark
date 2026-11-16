@@ -43,8 +43,6 @@ constants:
     refs:
       - CMP-472-61#notes
     status: planned
-    introduced:
-      pr: 505
   - name: DEFAULT_LONG_COLUMN_MIN_EM
     title: 長文の列の最小の幅の既定
     container: src/table-logic.ts
@@ -53,8 +51,6 @@ constants:
     refs:
       - IF-472-35#request[opts.config.table.long_column_min]
     status: planned
-    introduced:
-      pr: 505
 functions:
   - name: compareCells
     title: セルを比べる
@@ -231,8 +227,6 @@ functions:
         mock: なし
         expected: '`1000`・`2.5`・`-3`・`undefined`・`undefined`・`undefined`'
     status: planned
-    introduced:
-      pr: 151
   - name: findUnreadableTotals
     title: 集計できない列を探す
     container: src/table-logic.ts
@@ -261,8 +255,6 @@ functions:
         mock: なし
         expected: '`[]`'
     status: planned
-    introduced:
-      pr: 151
   - name: tableToMarkdown
     title: 表を Markdown の表にする
     container: src/table-logic.ts
@@ -285,8 +277,6 @@ functions:
         mock: なし
         expected: '`| 名前 | 式 |\n| --- | --- |\n| a | x \| y |\n| b | 1 2 |`'
     status: planned
-    introduced:
-      pr: 151
   - name: stickyShift
     title: 行をずらす量を求める
     container: src/table-logic.ts
@@ -321,8 +311,6 @@ functions:
         mock: なし
         expected: '`{ head: 300, foot: 0 }`'
     status: planned
-    introduced:
-      pr: 151
   - name: stickyRange
     title: 行をずらせる範囲を求める
     container: src/table-logic.ts
@@ -345,8 +333,6 @@ functions:
         mock: なし
         expected: '`{ headStart: 1, headMax: 1160, footMax: 1160, footEnd: 1 }` と `{ headStart: 1, headMax: 1160, footMax: 0, footEnd: 0 }`'
     status: planned
-    introduced:
-      pr: 151
   - name: bottomHeadCells
     title: 列ごとの最下段の見出しのセルを決める
     container: src/table-logic.ts
@@ -375,8 +361,6 @@ functions:
         mock: なし
         expected: '`[{0, 0}, undefined, undefined]`'
     status: planned
-    introduced:
-      pr: 275
   - name: mergeSpans
     title: 隣り合う同じ値の結合を決める
     container: src/table-logic.ts
@@ -405,8 +389,6 @@ functions:
         mock: なし
         expected: '`[[2, 2], [0, 0], [1, 1]]`'
     status: planned
-    introduced:
-      pr: 275
   - name: canMoveColumn
     title: 列を動かせるかを決める
     container: src/table-logic.ts
@@ -429,8 +411,6 @@ functions:
         mock: なし
         expected: '`true`・`false`・`false`'
     status: planned
-    introduced:
-      pr: 303
   - name: moveColumn
     title: 列の順を入れ替える
     container: src/table-logic.ts
@@ -453,8 +433,6 @@ functions:
         mock: なし
         expected: '`[3,0,1,2]` と `[0,2,1,3]`'
     status: planned
-    introduced:
-      pr: 303
   - name: initialPinnedColumns
     title: 描いた直後に留める列を決める
     container: src/table-logic.ts
@@ -478,8 +456,6 @@ functions:
         mock: なし
         expected: '`[0, 2]`・`[0, 1]`・`[0]`・`[0, 1, 2]`'
     status: planned
-    introduced:
-      pr: 438
   - name: togglePinnedColumn
     title: 押した列で留める列を切り替える
     container: src/table-logic.ts
@@ -503,8 +479,6 @@ functions:
         mock: なし
         expected: '`[0, 2]`・`[0]`・`[0, 1, 2]`・`[]`'
     status: planned
-    introduced:
-      pr: 438
   - name: pinOffsets
     title: 留める列の左右の位置を求める
     container: src/table-logic.ts
@@ -528,8 +502,6 @@ functions:
         mock: なし
         expected: '0 が `{ start: 0, end: 90 }`、2 が `{ start: 100, end: 30 }`、4 が `{ start: 160, end: 0 }`、1・3 は値を持たない'
     status: planned
-    introduced:
-      pr: 438
   - name: fitPinnedColumns
     title: 見えている幅に収まる留める列を選ぶ
     container: src/table-logic.ts
@@ -559,8 +531,6 @@ functions:
         mock: なし
         expected: '`fitted` が `[0]`、`unpinned` が `[1, 2]`'
     status: planned
-    introduced:
-      pr: 533
   - name: clampColumnWidth
     title: 列の幅を範囲に収める
     container: src/table-logic.ts
@@ -584,8 +554,6 @@ functions:
         mock: なし
         expected: '`100`・`200`・`300`・`100`'
     status: planned
-    introduced:
-      pr: 449
   - name: columnWidthLimit
     title: 列の幅の上限を求める
     container: src/table-logic.ts
@@ -609,8 +577,6 @@ functions:
         mock: なし
         expected: 'はみ出しているとき、`column: 0` は `240`（2 列目の 60 を引く）、`column: 1` は `140`。はみ出していないときはどちらも `300`'
     status: planned
-    introduced:
-      pr: 449
   - name: isCompactCellText
     title: 短い値だけのセルか
     container: src/table-logic.ts
@@ -633,8 +599,6 @@ functions:
         mock: なし
         expected: '`true`・`true`・`true`・`true`・`true`・`true`・`false`・`false`'
     status: planned
-    introduced:
-      pr: 505
   - name: findLongColumns
     title: 長文の列を決める
     container: src/table-logic.ts
@@ -664,8 +628,6 @@ functions:
         mock: なし
         expected: '`[0]`'
     status: planned
-    introduced:
-      pr: 505
   - name: findNoSortColumns
     title: 並べ替えを付けない列を決める
     container: src/table-logic.ts
@@ -694,8 +656,6 @@ functions:
         mock: なし
         expected: '`[]`'
     status: planned
-    introduced:
-      pr: 550
   - name: defaultFilterKind
     title: 省いた絞り込みの種類を決める
     container: src/table-logic.ts
@@ -718,8 +678,6 @@ functions:
         mock: なし
         expected: '`text`・`select`'
     status: planned
-    introduced:
-      pr: 505
   - name: columnBounds
     title: 列の最小の幅と望む幅を決める
     container: src/table-logic.ts
@@ -749,8 +707,6 @@ functions:
         mock: なし
         expected: (a) `{true, 280, 420}`、(b) `{true, 168, 168}`、(c) `{true, 280, 280}`、(d) `{true, 140, 140}`
     status: planned
-    introduced:
-      pr: 505
   - name: distributeColumnWidths
     title: 表の列の幅を決める
     container: src/table-logic.ts
@@ -784,5 +740,13 @@ functions:
         mock: なし
         expected: '`{[118, 1027], false}`'
     status: planned
-    introduced:
-      pr: 505
+lead: '表の並べ替え・絞り込み・集計・コピーの計算を受け持ち、表の操作の計算を変えるときに参照する。'
+tags:
+  - name: topic:テーブル
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
+  - name: topic:部品
+  - name: action:計算
+  - name: action:コピー

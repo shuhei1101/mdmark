@@ -6,7 +6,7 @@ mdmark の土台を作り、機能の Issue に着手できる状態にする。
 
 ## 背景
 
-[Issue #2](https://github.com/shuhei1101/mdmark/issues/2) の要望。
+[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/issues/2) の要望。
 リポジトリは最初の commit の README.md だけを持ち、設計書・実装・ビルドとテストの仕組みが無い。
 
 ## 計画書

@@ -13,8 +13,6 @@ constants:
     refs:
       - IF-472-33#constraints[mdmark の痕跡]
     status: planned
-    introduced:
-      pr: 554
   - name: HTML_SCRIPT_KEY_PREFIX
     title: 範囲のスクリプトの表の鍵の仮の文字列の頭
     container: src/cli/traces.ts
@@ -22,8 +20,6 @@ constants:
     summary: '`createViewerEntry` が範囲のスクリプトの表の鍵の代わりに記載する文字列リテラルの頭。後ろに鍵の番号と `@@` を付ける'
     value: '@@html-script-key-'
     status: planned
-    introduced:
-      pr: 554
 functions:
   - name: hideNames
     title: mdmark の名前を別名へ置き換える
@@ -49,8 +45,6 @@ functions:
         mock: なし
         expected: '`.zq-table{} __zqHtmlScript ZQ Zq @layer zq`'
     status: planned
-    introduced:
-      pr: 554
   - name: hideMarkdown
     title: 埋め込みの Markdown の名前とコメントを隠す
     container: src/cli/traces.ts
@@ -81,8 +75,6 @@ functions:
         mock: なし
         expected: 'コードブロックの外の `<!-- todo -->` と `<!-- 補足: あとで -->` が消え、`<!-- table: data -->`・`<!-- /table -->`・`<!-- greet -->` とコードブロックの中の `<!-- todo -->` が残る'
     status: planned
-    introduced:
-      pr: 554
   - name: hidePayload
     title: 書き出しの中身の名前を隠す
     container: src/cli/traces.ts
@@ -107,8 +99,6 @@ functions:
         mock: なし
         expected: '`config.mermaid.theme` が `zq` で、`title`・`path`・`index` の用語は `mdmark` のまま'
     status: planned
-    introduced:
-      pr: 554
   - name: hideCss
     title: CSS の痕跡を隠す
     container: src/cli/traces.ts
@@ -132,8 +122,6 @@ functions:
         mock: なし
         expected: '`v0.12.0` と `mdmark` が無く、`@layer zq{.zq{--zq-radius:3px}}` がある'
     status: planned
-    introduced:
-      pr: 554
   - name: hideScript
     title: まとめたスクリプトの痕跡を隠す
     container: src/cli/traces.ts
@@ -164,7 +152,11 @@ functions:
         mock: なし
         expected: 2 つの `/*!` の注釈が元の文字のまま残る
     status: planned
-    introduced:
-      pr: 554
 refs:
   - IF-472-33#constraints[mdmark の痕跡]
+lead: '書き出した HTML の mdmark の痕跡を隠す処理を受け持ち、書き出しで隠す範囲を変えるときに参照する。'
+tags:
+  - name: topic:cli
+    main: true
+  - name: tool:html
+  - name: action:書き出し

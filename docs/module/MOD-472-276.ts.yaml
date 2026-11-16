@@ -29,8 +29,6 @@ constants:
     refs:
       - IF-472-35#constraints[色分けの対象]
     status: planned
-    introduced:
-      pr: 97
   - name: TREE_LINE_PATTERN
     title: 罫線のフォルダ構成の行
     container: src/render/syntax/code-blocks.ts
@@ -39,8 +37,6 @@ constants:
     refs:
       - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
     status: planned
-    introduced:
-      pr: 508
   - name: TREE_WARNING_MIN_LINES
     title: 罫線の記載の警告を出す行の数
     container: src/render/syntax/code-blocks.ts
@@ -49,8 +45,6 @@ constants:
     refs:
       - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
     status: planned
-    introduced:
-      pr: 508
 functions:
   - name: readCodeSpec
     title: コードブロックのマーカーを読み込む
@@ -133,8 +127,6 @@ functions:
     refs:
       - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
     status: planned
-    introduced:
-      pr: 508
   - name: readLineMarks
     title: コードの行のマーカーを読み込む
     container: src/render/syntax/code-blocks.ts
@@ -346,8 +338,6 @@ functions:
         mock: なし
         expected: '`dockerfile`・`dockerfile`・`diff`・`diff`'
     status: planned
-    introduced:
-      pr: 97
   - name: splitInfoString
     title: 情報文字列を言語とファイル名に分ける
     container: src/render/syntax/code-blocks.ts
@@ -376,8 +366,6 @@ functions:
         mock: なし
         expected: 'どちらも `{ language: "", fileName: "" }`'
     status: planned
-    introduced:
-      pr: 151
   - name: readFolds
     title: 行のインデントと畳む行を決める
     container: src/render/syntax/code-blocks.ts
@@ -409,5 +397,9 @@ functions:
         mock: なし
         expected: どの行も `folded` を持たず、`warnings` に `2`・`3` の項目がある
     status: planned
-    introduced:
-      pr: 275
+lead: 'コードブロックのタイトル・行番号・行の強調・行のマーカーと色分けの言語を受け持ち、コードブロックの記法を変えるときに参照する。'
+tags:
+  - name: topic:構文
+    main: true
+  - name: topic:markdown
+  - name: tool:markdown-it

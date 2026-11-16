@@ -7,11 +7,11 @@
 
 ## 背景
 
-[Issue #7](https://github.com/shuhei1101/mdmark/issues/7) の要望。
+[文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/issues/7) の要望。
 今の mdmark は差分を表示する機能を持たない。
 使う側の ai-monitor と mindstella は差分表示をそれぞれ別に持ち、取り出し元も違う（ai-monitor はコミット間の Git、mindstella は Git の管理外の YAML の変更履歴）。
 行の中で変わった文字の濃い色は mindstella だけが持つ。
-埋め込んだ HTML の表示は [#6](https://github.com/shuhei1101/mdmark/issues/6)（[#45](https://github.com/shuhei1101/mdmark/pull/45)）で入っており、その変更もこの Issue で差分に出す。
+埋め込んだ HTML の表示は [コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6)（[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/pull/45)）で入っており、その変更もこの Issue で差分に出す。
 
 ## 計画書
 
@@ -22,10 +22,10 @@
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（行と文字の差分は jsdiff で取れることを確かめ（[レビューの実測](https://github.com/shuhei1101/mdmark/pull/49#discussion_r4330919999)）、埋め込んだ HTML の描画は #45 で入っており、未検証の技術機構に依存しない）
+- [x] ~~PoC 検証~~（行と文字の差分は jsdiff で取れることを確かめ（[レビューの実測](https://github.com/shuhei1101/mdmark/pull/49#discussion_r4330919999)）、埋め込んだ HTML の描画は [コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/pull/45) で入っており、未検証の技術機構に依存しない）
 - [x] 複合ユースケース設計
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、見た目の方向を変えない）
 - [x] ~~画面一覧・画面遷移~~（差分は描く先の要素の中に出し、画面の追加・削除と画面遷移の変更を含まない）

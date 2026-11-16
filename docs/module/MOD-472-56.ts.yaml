@@ -165,8 +165,6 @@ functions:
     refs:
       - IF-472-21#constraints[背面のパネル]
     status: planned
-    introduced:
-      pr: 252
   - name: topInset
     title: 上端の帯の高さを測る
     kind: 関数
@@ -207,3 +205,10 @@ functions:
     refs:
       - IF-472-17#constraints[プレビューから合わせる]
     status: planned
+lead: '行のマーカーの収集と、行と位置の変換を受け持ち、エディタとプレビューのスクロールの合わせ方を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:変換

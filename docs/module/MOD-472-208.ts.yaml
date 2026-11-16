@@ -75,3 +75,11 @@ functions:
       - MOD-472-235#functions[setFolderOpen]
       - MOD-472-225#functions[setCodeFoldOpen]
       - MOD-472-188#functions[setErTableFolded]
+lead: '印刷の前後で折り畳みを開いて戻す処理を受け持ち、印刷のときの描き方を変えるときに参照する。'
+tags:
+  - name: topic:印刷
+    main: true
+  - name: topic:dom
+  - name: topic:markdown
+  - name: action:描画
+  - name: topic:文書

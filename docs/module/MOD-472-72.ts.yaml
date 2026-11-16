@@ -19,3 +19,10 @@ functions:
       type: 'VsCodeApi & { posted: WebviewMessage[] }'
       description: 代役
     status: planned
+lead: 'VS Code の API の代役の作成を受け持ち、Webview のストーリーとテストの代役を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:作成

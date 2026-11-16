@@ -49,5 +49,10 @@ functions:
         mock: なし
         expected: 拡大が `disabled`、倍率の文字が `300%`、移動のまとまりが `hidden` を持たない
     status: planned
-    introduced:
-      pr: 263
+lead: 'ライトボックスの HTML を受け持ち、ライトボックスの外観を変えるときに参照する。'
+tags:
+  - name: topic:ライトボックス
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

@@ -27,3 +27,10 @@ functions:
         condition: '`導入`（h2）・`前提`（h3）・`使用方法`（h2）'
         mock: なし
         expected: '`導入` の `li` の中の `ul` に `#前提` のリンク'
+lead: '目次の部品が返却する HTML を受け持ち、目次の外観や構造を変えるときに参照する。'
+tags:
+  - name: topic:目次
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

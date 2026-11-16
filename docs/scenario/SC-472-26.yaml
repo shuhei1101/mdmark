@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -20,6 +23,9 @@ scenarios:
         P->>M: テーマを選んだ設定を指定して文書を描かせる
         M-->>P: 選んだテーマの値が該当した本文
         P-->>U: theme-slate の明るい配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の地の色の計算値が、デザイン方針の theme-slate の明るい配色の `--mdmark-color-bg` の値
       - リンクの色の計算値が、theme-slate の明るい配色の `--mdmark-color-link` の値
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -42,6 +51,9 @@ scenarios:
         P->>M: テーマを選んだ設定を指定して文書を描かせる
         M-->>P: 選んだテーマの暗い配色の値が該当した本文
         P-->>U: theme-slate の暗い配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の地の色の計算値が、theme-slate の暗い配色の `--mdmark-color-bg` の値
       - mermaid の図のノードの塗りと文字の色が、theme-slate の暗い配色の CSS 変数の値と一致する
@@ -58,6 +70,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -66,6 +81,9 @@ scenarios:
         P->>M: テーマを選んだ設定を指定して文書を描かせる
         M-->>P: 選んだテーマの明るい配色の値が該当した本文
         P-->>U: theme-slate の明るい配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - OS の配色がダークでも、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
       - OS の配色がダークでも、mermaid の図のノードの塗りと文字の色が theme-slate の明るい配色の CSS 変数の値と一致する
@@ -82,6 +100,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -89,6 +110,9 @@ scenarios:
         P->>M: テーマを選ばない設定を指定して文書を描かせる
         M-->>P: 既定のテーマの値が該当した本文
         P-->>U: dev-swiss の明るい配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の地の色とリンクの色の計算値が、デザイン方針の dev-swiss の明るい配色の値（テーマを選ぶ前の mdmark と同じ）
     test: test_normal_when_not_selected
@@ -102,6 +126,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -109,6 +136,9 @@ scenarios:
         P->>M: 知らないテーマの名前の設定を指定して文書を描かせる
         M-->>P: 既定のテーマの値が該当した本文
         P-->>U: dev-swiss の明るい配色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の地の色の計算値が、dev-swiss の明るい配色の `--mdmark-color-bg` の値
       - 本文の段落とリンクが描かれ、例外が出ない
@@ -124,6 +154,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -132,12 +165,14 @@ scenarios:
         P->>M: テーマを選んだ設定を指定して文書を描かせる
         M-->>P: 選んだテーマの色のプリセットで色を付けた本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - バッジと本文の文字の色の計算値が、デザイン方針の theme-slate の明るい配色の green・red の文字の色の値
       - 色を付けた文字と、その面の色のコントラストが 4.5:1 以上
     test: test_normal_when_color_preset_in_theme
 lead: 文書の作成者が設定で mdmark に入れたテーマを選び、描いた文書の配色をそのテーマの値の組にする。明暗は今の決め方のまま、選んだテーマの中で明るい配色と暗い配色を選ぶ。
-issue: 120
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
@@ -152,3 +187,7 @@ minimal_guarantee: テーマを選ばないときと、知らないテーマの�
 test_file: tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts
 refs:
   - SC-472-33#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]
+tags:
+  - name: topic:テーマ
+    main: true
+  - name: action:選択

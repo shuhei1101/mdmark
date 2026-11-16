@@ -27,3 +27,10 @@ data_models:
       - name: message
         type: string
         description: 原因と修正方法の日本語の 1 文
+lead: 'CLI の誤りと入出力の型を受け持ち、CLI のコマンドの振る舞いを変えるときに参照する。'
+tags:
+  - name: topic:cli
+    main: true
+  - name: topic:エラー
+  - name: topic:入出力
+  - name: action:処理

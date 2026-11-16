@@ -17,8 +17,6 @@ data_models:
     refs:
       - IF-472-21#constraints[背面のパネル]
     status: planned
-    introduced:
-      pr: 243
   - name: VsCodeApi
     title: VS Code の Webview の API
     container: vscode/src/webview/shared/adapters/vscode-api.ts
@@ -55,3 +53,9 @@ functions:
         mock: '`acquireVsCodeApi` を呼ばれた数を記録する代役にする'
         expected: 同じ値で、`acquireVsCodeApi` が 1 回
     status: planned
+lead: 'Webview の状態と VS Code の Webview の API の取得を受け持ち、Webview から VS Code の API を呼ぶ処理を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

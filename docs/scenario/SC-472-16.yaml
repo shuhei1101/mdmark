@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` と、色分けのライブラリの本体と言語のモジュールを jsDelivr と同じパスで返却する手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -21,6 +24,9 @@ scenarios:
         M->>M: スクリプトとイベントの属性を落とす
         M-->>P: その場の HTML と、範囲の外のコードブロックと本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲のコードブロックの場所に、色を付けたノード 2 つが横に並んで描かれ、コードの `pre` は無い
       - 範囲の外の `html` のコードブロックは、コードの `pre` のまま出る
@@ -39,6 +45,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -47,6 +56,9 @@ scenarios:
         M->>M: マーカーを取り除く
         M-->>P: 範囲のコードブロックもコードのまま描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲のコードブロックも、コードの `pre` のまま出る
       - マーカーのコメントは描いた文書に残らない
@@ -60,6 +72,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -68,6 +83,9 @@ scenarios:
         M->>M: マーカーの範囲のコードブロックを数える
         M-->>P: 範囲の上に記載の警告、範囲のコードブロックはコードのまま、本文を描く
         P-->>U: 警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の上に、HTML のコードブロックを 1 つだけ配置するように促す記載の警告がある
       - 範囲の 2 つのコードブロックは、コードの `pre` のまま出る
@@ -83,6 +101,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。加えて、範囲の `ts` の型を削除する変換のライブラリを手元のモジュールに差し替え、要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -97,6 +118,9 @@ scenarios:
         P-->>U: 根の要素に class が付いた表示
         P->>M: 本文を差し替える
         M->>M: 前の範囲の destroy を呼んでから再描画する
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲のノードの背景が `css` の色で描かれ、範囲の外の同じ class のノードの背景は変わらない
       - 範囲のノードを押すと根の要素に class `is-open` が付き、もう一度押すと削除される
@@ -114,6 +138,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（範囲のスクリプトと CSS）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -122,6 +149,9 @@ scenarios:
         M->>M: 範囲の html だけを HTML として読み込む
         M-->>P: 範囲の html と、css・ts のコードブロック
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 範囲の `html` のノードが描かれ、背景は `css` の色になっていない
       - 範囲の `css`・`ts` のコードブロックが、コードの `pre` のまま出る
@@ -137,6 +167,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（範囲のスクリプトと CSS）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -145,6 +178,9 @@ scenarios:
         M->>M: 範囲ごとに既定のエクスポートを呼ぶ
         M-->>P: 動かせない範囲の上に記載の警告、範囲の HTML と本文を描く
         P-->>U: 警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 既定のエクスポートが関数でない範囲の上に、関数を既定のエクスポートにするように促す記載の警告がある
       - 例外を投げる範囲の上に、スクリプトが例外を投げた旨の記載の警告があり、範囲の `html` は描かれている
@@ -160,6 +196,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。範囲の `ts` の型を削除する変換のライブラリへの要求を 404 で失敗させる
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -168,6 +207,9 @@ scenarios:
         M->>M: 変換のライブラリを読み込むが失敗する
         M-->>P: ts と js の範囲に通知ブロック、範囲の html と css、本文を描く
         P-->>U: 通知ブロックと本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`ts` と `js` の範囲に、変換のライブラリを読み込めずスクリプトを動かせない旨の通知ブロックが出る'
       - '`ts` の範囲の `html` は描かれ、`css` の色が該当している'
@@ -175,7 +217,6 @@ scenarios:
       - 範囲の後ろの段落が描かれている
     test: test_error_when_transpiler_unavailable
 lead: 文書の作成者が `<!-- html -->` で囲んだ `html` のコードブロックを、mdmark がコードではなくその場の HTML として描く。スクリプトとイベントの属性は落とし、動くのは mdmark の部品だけにする。
-issue: 6
 primary_actor: 文書の作成者（AI を含む）
 stakeholders:
   - name: 文書の作成者
@@ -189,3 +230,8 @@ preconditions:
 success_guarantee: マーカーで囲んだコードブロックの HTML が、今の生の HTML と同じサニタイズを経由してその場に描かれる。マーカーの無い `html` のコードブロックはコードのまま出る。
 minimal_guarantee: 埋め込んだ HTML に書き込んだスクリプトとイベントの属性は動かない。マーカーの記載方法を読み込めない範囲には記載の警告を出し、範囲のコードブロックと文書の残りは描く。
 test_file: tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts
+tags:
+  - name: topic:コードブロック
+    main: true
+  - name: tool:html
+  - name: action:描画

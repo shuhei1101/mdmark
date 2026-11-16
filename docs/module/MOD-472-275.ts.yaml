@@ -49,3 +49,11 @@ functions:
         condition: '`kind` が `warning`、`collapsed` と `open` が `true`'
         mock: なし
         expected: '`<details class="markdown-alert markdown-alert-warning" open>`'
+lead: '注意書きの部品が返却する HTML を受け持ち、注意書きの外観を変えるときに参照する。'
+tags:
+  - name: topic:注意書き
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: topic:構文
+  - name: action:描画

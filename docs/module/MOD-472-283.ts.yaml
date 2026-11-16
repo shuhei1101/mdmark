@@ -73,7 +73,13 @@ functions:
         mock: なし
         expected: '`collapse` が `none` で、`title` が無い'
     status: planned
-    introduced:
-      pr: 225
     callees:
       - 'MOD-472-270#functions[readCollapse]'
+lead: 'ステップのマーカーの読み取りを受け持ち、ステップの記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:ステップ
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

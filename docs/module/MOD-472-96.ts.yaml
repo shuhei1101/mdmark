@@ -53,3 +53,10 @@ functions:
       - IF-472-22#constraints[テストのときの差し替え]
       - IF-472-21#
     status: planned
+lead: '拡張機能の起動とコマンドと通知の登録を受け持ち、拡張機能の起動やコマンドの登録を変えるときに参照する。'
+tags:
+  - name: topic:エントリポイント
+    main: true
+  - name: tool:vscode
+  - name: action:登録
+  - name: action:起動

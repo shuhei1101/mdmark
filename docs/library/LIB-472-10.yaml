@@ -66,3 +66,7 @@ install: |-
   ```bash
   npm i -D -E esbuild@0.28.2
   ```
+tags:
+  - name: tool:esbuild
+    main: true
+  - name: action:ビルド

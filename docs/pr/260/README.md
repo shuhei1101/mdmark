@@ -7,10 +7,10 @@ mdmark の MCP サーバーから `find_docs`・`list_tags`・`update_index` の
 
 ## 背景
 
-[Issue #156](https://github.com/shuhei1101/mdmark/issues/156) の要望。
+[MCP から索引の検索・編集のツール（find_docs・list_tags・update_index）を外す](https://github.com/shuhei1101/mdmark/issues/156) の要望。
 索引の検索・編集の 3 つのツールは、mdmark の MCP では今後提供しない。
-3 つのツールは [#11](https://github.com/shuhei1101/mdmark/issues/11)・[#101](https://github.com/shuhei1101/mdmark/issues/101) などで追加・拡張した。
-後続の [#186](https://github.com/shuhei1101/mdmark/issues/186)（`read_guide` を外す）は同じ MCP のファイルを触るため、この PR の後に入れる。
+3 つのツールは [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11)・[索引のタグにマスターと主題の印を持たせ、find_docs のタグを AND / OR にして返す量を選べるようにする](https://github.com/shuhei1101/mdmark/issues/101) などで追加・拡張した。
+後続の [使い方集を dev-docs の配信元として配り、SessionStart を動線だけにして read_guide を外す](https://github.com/shuhei1101/mdmark/issues/186)（`read_guide` を外す）は同じ MCP のファイルを触るため、この PR の後に入れる。
 
 ## 計画書
 

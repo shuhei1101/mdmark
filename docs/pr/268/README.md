@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #251](https://github.com/shuhei1101/mdmark/issues/251) の要望。
-[shuhei1101/knowledge#132](https://github.com/shuhei1101/knowledge/issues/132) で、判定フローチャートを Mermaid でなく mdmark の部品で描くと決めた。
+[フロー図の部品に、判定フローチャートの「質問」「結果」の箱の種類を追加する](https://github.com/shuhei1101/mdmark/issues/251) の要望。
+[規約『表し方の優先順位』と判定フローチャート『表し方の選び方』を追加する（図 → 表 → 箇条書き → 文）](https://github.com/shuhei1101/knowledge/issues/132) で、判定フローチャートを Mermaid でなく mdmark の部品で描くと決めた。
 フロー図のノードの種類は `llm`・`dm`・`script`・`mcp`・`data`・`external` だけで、質問を `dm`、結果を `data` で描くと凡例に「意思決定モデル」「データ」と出て、システムの部品の図として読まれる。
-後続の [shuhei1101/knowledge#134](https://github.com/shuhei1101/knowledge/pull/134)（template-flowchart の改訂と判定フローチャート 8 枚の描き直し）がこの種類を待っている。
+後続の [規約『表し方の優先順位』と判定フローチャート『表し方の選び方』を追加し、判定フローチャートを mdmark の部品で描く書き方へ改める](https://github.com/shuhei1101/knowledge/pull/134)（template-flowchart の改訂と判定フローチャート 8 枚の描き直し）がこの種類を待っている。
 
 ## 計画書
 

@@ -13,12 +13,18 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[ビューで項目を確認する:正常シナリオ] --> B[表形式のビューを列で絞り込む:正常シナリオ]
         B --> C[選んだ箇所にコメントする:正常シナリオ]
         click A "id:SC-472-29#scenarios[正常シナリオ]"
         click B "id:SC-472-74#scenarios[正常シナリオ]"
         click C "id:SC-472-80#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - ビューのマーカーで囲んだ表が、状態の列の値ごとの 3 つの列に項目を並べたボード表示で描かれる
       - ビューの切り替えで表形式のビューに変わり、5 件の項目が行で並ぶ
@@ -39,12 +45,18 @@ scenarios:
       - name: Mock
         description: なし。書き出した HTML を開くブラウザのコンテキストで、外への要求を全て止める
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[文書をHTMLに書き出す:正常シナリオ] --> B[ビューで項目を確認する:正常シナリオ]
         B --> C[表形式のビューを列で絞り込む:正常シナリオ]
         click A "id:SC-472-56#scenarios[正常シナリオ]"
         click B "id:SC-472-29#scenarios[正常シナリオ]"
         click C "id:SC-472-74#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出す'
       - 書き出した HTML を外への要求を止めて開いても、ボード表示のビューが描かれ、表形式に切り替えられる
@@ -61,10 +73,16 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[部品をJavaScriptから使用する:正常シナリオ] --> B[表形式のビューを列で絞り込む:正常シナリオ]
         click A "id:SC-472-81#scenarios[正常シナリオ]"
         click B "id:SC-472-74#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - 利用側のページの要素に、文書のマーカーで描いたものと同じボード表示のビューが描かれる
       - 表形式のビューで担当の列の絞り込みから名前を選ぶと、その人の項目だけが残る
@@ -74,7 +92,6 @@ scenarios:
       - SC-472-81#scenarios[正常シナリオ]
       - SC-472-74#scenarios[正常シナリオ]
 lead: 文書の作成者が項目の表をビューのマーカーで囲み、読者がボード表示と表形式のビューを切り替え、表形式のビューを列で絞り込み、本文の選んだ箇所にコメントを付ける。書き出した 1 枚の HTML と、利用側の JavaScript から描いたビューでも同じように探せる。
-issue: 8
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者
@@ -90,3 +107,7 @@ preconditions:
 success_guarantee: ビューのマーカーで囲んだ表が、ボード表示と表形式のビューで描かれて切り替えられ、表形式のビューが列の絞り込みで絞られる。本文の選んだ箇所にコメントが付き、利用側の読み込みと保存の関数へ渡る。書き出した 1 枚の HTML と、利用側の JavaScript から描いたビューでも、外を読み込まずにビューと列の絞り込みが動く。
 minimal_guarantee: 文書に記載したスクリプトは動かない。コメントを保存できないときは、記載したコメントを削除せずに通知し、文書の残りは今のとおり読み込める。
 test_file: tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

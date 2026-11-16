@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #175](https://github.com/shuhei1101/mdmark/issues/175) の要望。
+[索引のタグの付け方の案内を、規約『タグと用語の登録』の取りこぼさない付け方に合わせる](https://github.com/shuhei1101/mdmark/issues/175) の要望。
 使い方集の `glossary` は、索引の `tags` と `main` の記載方法は説明しているが、どのタグを付与するかの判定は説明していない。
-タグの付与の判定は knowledge の規約『タグと用語の登録』（[shuhei1101/knowledge#85](https://github.com/shuhei1101/knowledge/issues/85) で改訂済み）を正本にする（D-109）。
+タグの付与の判定は knowledge の規約『タグと用語の登録』（[規約『タグと用語の登録』を、取りこぼさないタグの付け方（既存のタグの全件取得・判定フローチャート・観点と命名）に改める](https://github.com/shuhei1101/knowledge/issues/85) で改訂済み）を正本にする（D-109）。
 タグのマスター（語彙）は持たないと決め直した（D-169）ため、追加する工程は語彙に依らない。
-語彙そのものの削除は [#179](https://github.com/shuhei1101/mdmark/issues/179) で行う。
-mdmark の MCP の `list_tags` は [#156](https://github.com/shuhei1101/mdmark/issues/156) で削除済み。
+語彙そのものの削除は [索引のタグの語彙（マスター）と、語彙に無いタグの点検をやめる](https://github.com/shuhei1101/mdmark/issues/179) で行う。
+mdmark の MCP の `list_tags` は [MCP から索引の検索・編集のツール（find_docs・list_tags・update_index）を外す](https://github.com/shuhei1101/mdmark/issues/156) で削除済み。
 
 ## 計画書
 
@@ -35,7 +35,7 @@ mdmark の MCP の `list_tags` は [#156](https://github.com/shuhei1101/mdmark/i
 - [x] ~~部品設計~~（UI の部品を変えない）
 - [x] ~~画面設計~~（画面を変えない）
 - [x] ~~モジュール構成設計~~（影響なし: `guide/index.yaml`・`scripts/build-plugin.ts`・`src/plugin/` を変えない）
-- [x] ドキュメント修正（`docs/使い方/書く/索引と用語集を書く.md`）
+- [x] ドキュメント修正（[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/79f60e82e694fc5a32fc7f4ef8aecb48d16172a9/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E7%B4%A2%E5%BC%95%E3%81%A8%E7%94%A8%E8%AA%9E%E9%9B%86%E3%82%92%E6%9B%B8%E3%81%8F.md)）
 - [x] ~~単体テスト作成~~（コードを変えない）
 - [x] ~~実装~~（コードと使い方集の索引を変えない）
 - [x] ~~結合テスト作成~~（コードを変えない）

@@ -46,3 +46,8 @@ functions:
     refs:
       - IF-472-19#constraints[リンクの見分け方]
     status: planned
+lead: '押したリンクの開き先の見分けを受け持ち、プレビューのリンクの開き方を変えるときに参照する。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

@@ -32,7 +32,7 @@ docs:
     updated_at: '2026-11-15T02:48:27.499816+00:00'
 scope_out:
   - item: Issue に挙がった plugin/guide/docs/（docs/ の複製）と tmp/screenshots/ の除去
-    reason: develop には無い（#454 で対処済み）。plugin/guide/docs/ は今のビルド（scripts/build-plugin.ts）も作らない。tmp/ は tmp/.gitignore が中身を無視し、設計書の entries[] の tmp に記載した
+    reason: 'develop には無い（[dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す](https://github.com/shuhei1101/mdmark/issues/454) で対処済み）。plugin/guide/docs/ は今のビルド（scripts/build-plugin.ts）も作らない。tmp/ は tmp/.gitignore が中身を無視し、設計書の entries[] の tmp に記載した'
     plan: none
   - item: src/ が層で分かれ、同じ機能のコードが複数のフォルダに散る（観点「機能で分ける」「同じ種類が散る」）
     reason: レビューの観点で見つかった問題への対処は、Issue の「やりたいこと」で別の Issue で対処すると決まっている

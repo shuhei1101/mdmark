@@ -77,3 +77,9 @@ constants:
     refs:
       - IF-472-17#constraints[往復の止め方]
     status: planned
+lead: 'エディタを動かした直後の通知を捨てる判定を受け持ち、エディタとプレビューのスクロールの合わせ方を変えるときに参照する。'
+tags:
+  - name: topic:スクロール
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

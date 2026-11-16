@@ -92,3 +92,9 @@ functions:
         condition: '`A => B: x`'
         mock: なし
         expected: '`problems` に `map_invalid` が 1 件'
+lead: 'Mermaid の sequenceDiagram の読み取りを受け持ち、シーケンス図の記法の読み取りを変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:読み取り

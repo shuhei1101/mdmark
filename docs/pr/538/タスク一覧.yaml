@@ -76,7 +76,7 @@ tasks:
     updated_at: '2026-11-13T17:27:41.818515+00:00'
   - process: 実装
     status: skipped
-    reason: '#477 の実装（libraries のマーカーの今の書き方は描かずに記載の警告を出す）は設計書どおりで、テストの文書だけが古いため実装は変えない'
+    reason: '[マーカーの設定を JSON で記載できるようにし、マーカーごとに設定の設計書を置く](https://github.com/shuhei1101/mdmark/pull/477) の実装（libraries のマーカーの今の書き方は描かずに記載の警告を出す）は設計書どおりで、テストの文書だけが古いため実装は変えない'
     updated_by: planner
     updated_at: '2026-11-13T17:27:41.818515+00:00'
   - process: 結合テスト作成

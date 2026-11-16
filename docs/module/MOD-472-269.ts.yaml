@@ -92,8 +92,6 @@ functions:
         mock: なし
         expected: 順に `file-text`・`file-code`・`file-json`・`file-image`・`file-spreadsheet`・`file-archive`・`file-terminal`・`file-terminal`・`file-text`・`file`・`file`
     status: planned
-    introduced:
-      pr: 225
   - name: renderTreeBar
     title: ファイルツリーの帯を描く
     container: src/parts/tree.ts
@@ -116,8 +114,6 @@ functions:
         mock: なし
         expected: 1 つ目は `<button class="mdmark-tree-copy" type="button" data-state="idle">` と `コピー`、2 つ目は `data-state="copied"` と `コピーしました`。どちらも `aria-hidden="true"` の `tree` と `role="status"` の要素を持つ
     status: planned
-    introduced:
-      pr: 225
   - name: folderOpenByDefault
     title: フォルダを既定で開くかを決める
     container: src/parts/tree.ts
@@ -144,8 +140,6 @@ functions:
         mock: なし
         expected: 無いときと `all` は全て `true`、`2` は `true`・`true`・`false`
     status: planned
-    introduced:
-      pr: 225
   - name: renderTreeCopyContent
     title: ツリーのコピーボタンの中身を描く
     container: src/parts/tree.ts
@@ -161,5 +155,10 @@ functions:
       type: string
       description: アイコンの SVG と文言の HTML
     status: planned
-    introduced:
-      pr: 225
+lead: 'ファイルツリーの HTML とファイルのアイコンの種類の決定を受け持ち、ファイルツリーの外観を変えるときに参照する。'
+tags:
+  - name: topic:ツリー
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: topic:構文

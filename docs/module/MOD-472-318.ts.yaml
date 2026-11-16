@@ -33,3 +33,10 @@ functions:
         condition: '`label: "要確認"`、`color: red`'
         mock: なし
         expected: '`<span class="mdmark-badge" data-color="red">要確認</span>`'
+lead: 'バッジの部品が返却する HTML を受け持ち、バッジの外観を変えるときに参照する。'
+tags:
+  - name: topic:バッジ
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

@@ -109,3 +109,9 @@ functions:
         expected: それぞれ `TypeError` を投げ、メッセージに `opts.columns`・`opts.items`・`opts.group`・`opts.filter`・`opts.default`・`opts.icons` のうちの該当する名前を含む
     refs:
       - IF-472-30#exceptions[TypeError]
+lead: 'ビューの公開の型・使用できるアイコン・引数の検査を受け持ち、ビューの部品の引数を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント
+  - name: action:検査

@@ -61,3 +61,8 @@ install: '```bash
 
 
   テストのビルドのときだけ `axe.min.js` を `media/test/axe.js` にコピーし、.vsix には入れない。'
+tags:
+  - name: tool:axe-core
+    main: true
+  - name: topic:アクセシビリティ
+  - name: topic:テスト

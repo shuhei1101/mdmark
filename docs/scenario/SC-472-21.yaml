@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -21,6 +24,9 @@ scenarios:
         P-->>U: 補足のセクションを開いて表示
         U->>P: 「概要」の見出しの開閉を押す
         P-->>U: 概要のセクションを閉じる
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、`概要` の段落が表示され、`補足` の段落が表示されていない
       - '`補足` の開閉を押した後、`補足` の段落が表示され、ボタンの `aria-expanded` が `true`'
@@ -37,6 +43,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -45,6 +54,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 移る先を含む補足のセクションと、移る先の注意のセクションを開いて移る
         P-->>U: 「注意」の見出しと段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`補足` と `注意` のセクションが開いていて、`注意` の見出しが画面に入り、`注意` の段落が表示されている'
     test: test_normal_when_fragment_in_closed_section
@@ -58,6 +70,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -66,6 +81,9 @@ scenarios:
         M-->>P: 2 行目に開閉のボタンを付け、詳細を閉じて描く
         U->>P: 2 行目の開閉を押す
         P-->>U: 2 行目の下に詳細を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、詳細の段落が表示されていない。開閉のボタンは 2 行目にだけある
       - 開閉を押した後、表の 2 行目の直後に詳細の段落とリストを持つ行があり、ボタンの `aria-expanded` が `true`
@@ -80,6 +98,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -88,6 +109,9 @@ scenarios:
         M->>M: open の型が合わない指定を適用しない
         M-->>P: 記載の警告と、開いたセクションを描く
         P-->>U: 記載の警告とセクションを表示
+      ```
+
+      <!-- /map -->
     expected:
       - 見出しの下に、`open` には真偽（`true`・`false`）を記載することを記載した記載の警告がある
       - '`補足` の段落が表示されている'
@@ -101,6 +125,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -109,6 +136,9 @@ scenarios:
         M->>M: 5 行目が表に無い
         M-->>P: 記載の警告と、表の後に詳細を本文として描く
         P-->>U: 記載の警告と表と段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の後に、表が 3 行で 5 行目が無いことを記載した記載の警告がある
       - 表の後に詳細の段落が表示されている
@@ -126,6 +156,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -134,6 +167,9 @@ scenarios:
         M-->>P: 最終列を畳まず、行の詳細を持つ 2 行目にだけ開閉を付けた表を描く
         U->>P: 2 行目の開閉を押す
         P-->>U: 2 行目の下に行の詳細を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、説明の列が表に出ていて、開閉のボタンは 2 行目に 1 つだけ
       - 2 行目の開閉を押した後、2 行目の直後に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
@@ -148,6 +184,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -156,6 +195,9 @@ scenarios:
         M-->>P: 手引きのセクションを開き、付録のセクションを閉じて描く
         U->>P: 「付録」の見出しの開閉を押す
         P-->>U: 付録のセクションを開いて表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、`手引き` の段落が表示され、`付録` の段落が表示されていない
       - '`手引き`・`付録` の見出しに開閉のボタンがある'
@@ -171,6 +213,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -181,6 +226,9 @@ scenarios:
         P-->>U: 全てのセクションを開いて表示
         U->>P: すべて折りたたむを押す
         P-->>U: H1 のセクションを開いたまま、H2 以下の全てのセクションを閉じる
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、すべて展開のボタンとすべて折りたたむのボタンがあり、どちらも文字を持たずアイコンとスクリーンリーダー向けの名前だけを持つ
       - すべて展開を押した後、`手引き`・`概要`・`補足`・`注意` の全ての開閉のボタンの `aria-expanded` が `true` で、`注意` の段落が表示されている
@@ -195,6 +243,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -204,6 +255,9 @@ scenarios:
         P-->>U: 補足・注意・例のセクションを開いて表示
         U->>P: 「補足」の開閉ボタンにフォーカスし、Shift を押しながら Enter キーを押す
         P-->>U: 補足・注意・例のセクションを閉じる
+      ```
+
+      <!-- /map -->
     expected:
       - Shift を押しながら `補足` の開閉を押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `true` で、`例` の段落が表示されている
       - Shift を押しながら Enter キーを押した後、`補足`・`注意`・`例` の開閉のボタンの `aria-expanded` が `false`
@@ -218,6 +272,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -226,6 +283,9 @@ scenarios:
         M-->>P: 1 つ目を閉じ、2 つ目を開いた折りたたみで描く
         U->>P: 「補足の手順」を押す
         P-->>U: 補足の手順の中身を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、`補足の手順` の見出しだけが表示され、中の段落とリストが表示されていない
       - 描いた直後、`実行の例` の中の段落が表示されている
@@ -242,6 +302,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -250,6 +313,9 @@ scenarios:
         M->>M: details の閉じのマーカーが無い
         M-->>P: 記載の警告と、段落を折りたたまずに描く
         P-->>U: 記載の警告と段落を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に、閉じのマーカー `<!-- /details -->` が無いことを記載した記載の警告がある
       - 段落が折りたたまれずに表示されている
@@ -266,6 +332,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -279,6 +348,9 @@ scenarios:
         P->>M: 書き換えた Markdown で描き直させる
         M-->>P: 手で変えた開閉のまま、概要を閉じ、補足を開いて描く
         P-->>U: 書き換えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描き直した後、`概要` の段落が表示されず、開閉のボタンの `aria-expanded` が `false`
       - 描き直した後、`補足` の書き換えた段落が表示され、開閉のボタンの `aria-expanded` が `true`
@@ -296,6 +368,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -307,6 +382,9 @@ scenarios:
         P->>M: 書き換えた Markdown で描き直させる
         M-->>P: 手で変えた開閉のまま描き、マーカーを変えた注意はマーカーのとおり開き、追加した付録はマーカーのとおり閉じて描く
         P-->>U: 書き換えた本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描き直した後、2 行目の直後に書き換えた詳細の段落が表示され、2 行目の開閉のボタンの `aria-expanded` が `true`
       - 描き直した後、`補足の手順` の書き換えた段落が表示され、`実行の例` の段落が表示されていない
@@ -314,7 +392,6 @@ scenarios:
       - 描き直した後、追加した `付録` の段落が表示されていない
     test: test_normal_when_parts_updated_after_toggle
 lead: '読者が、見出し（h1〜h4）のセクションと、表の行の下に出す行の詳細を開閉し、全てのセクションや入れ子のセクションをまとめて開閉する。文書の作成者は見出しの直後の `<!-- section: {"open": false} -->` でセクションを閉じた状態で始め、表の後の `<!-- row-detail: {"at": 行の位置} -->` 〜 `<!-- /row-detail -->` で行の詳細を記載する。'
-issue: 4
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者
@@ -330,3 +407,8 @@ success_guarantee: |-
   すべて展開・すべて折りたたむは文書の全てのセクションを、Shift を押しながらの開閉はそのセクションと中の入れ子のセクションを同じ状態にする。
 minimal_guarantee: 読み込めないマーカーを記載しても、セクションは開いた状態、行の詳細は記載した場所の本文として描かれる。行の位置が表に無い行の詳細、型の合わない開閉の指定と、閉じのマーカーが無い details には記載の警告が出る。知らないキーには警告を出さない。
 test_file: tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts
+tags:
+  - name: topic:セクション
+    main: true
+  - name: topic:行
+  - name: action:開閉

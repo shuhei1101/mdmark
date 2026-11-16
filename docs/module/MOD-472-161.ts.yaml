@@ -3,7 +3,6 @@ visibility: internal
 title: ライブラリ本体 / ビューとコメント / anchor.ts
 test_files:
   - tests/unit/src/comments/anchor.test.ts
-  - tests/unit/src/comments/anchor.browser.test.ts
 constants:
   - name: CONTEXT_CHARS
     title: 前後の文字の数
@@ -115,3 +114,12 @@ functions:
         expected: 箇所が 1 つで `comments` が 2 つ
     refs:
       - IF-472-35#constraints[コメントの箇所]
+notes:
+  ブラウザのテストファイル: |-
+    - `tests/unit/src/comments/anchor.browser.test.ts`
+lead: '選んだ範囲からのコメントの下書きの作成と、本文の文字からの箇所の探索を受け持ち、コメントの箇所の決め方を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント
+  - name: action:作成

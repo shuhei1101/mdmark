@@ -6,8 +6,8 @@ project-index の `describe` と文書の MCP の instructions で、mdmark の�
 
 ## 背景
 
-[#519](https://github.com/shuhei1101/mdmark/issues/519) の要望。
-[shuhei1101/project-index#39](https://github.com/shuhei1101/project-index/issues/39)（作業 PR [shuhei1101/project-index#55](https://github.com/shuhei1101/project-index/pull/55)）で、配信元の設定に省略できるキー `when` が追加された。
+[配信元の設定に使う場面（when）を記載する](https://github.com/shuhei1101/mdmark/issues/519) の要望。
+[配信元の設定に「使う場面」（when）を持たせ、describe と MCP の instructions で案内する](https://github.com/shuhei1101/project-index/issues/39)（作業 PR [配信元の設定に「使う場面」（when）を持たせ、describe と MCP の instructions で案内する](https://github.com/shuhei1101/project-index/pull/55)）で、配信元の設定に省略できるキー `when` が追加された。
 直下の配信元の設定 `dev-docs.yaml` には `when` が無い。
 
 ## 計画書

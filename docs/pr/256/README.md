@@ -6,9 +6,10 @@ mdmark の使い方集を読む AI と人が、比喩の語・一字の語の無
 
 ## 背景
 
-[Issue #185](https://github.com/shuhei1101/mdmark/issues/185) の要望。使い方集（`guide/index.yaml` が指す 17 ページと索引の文）は SessionStart と `read_guide` で毎回 AI に渡るが、比喩の語（箱・層）と一字の語（印・題・節・形）が多い。
-[#105](https://github.com/shuhei1101/mdmark/issues/105) は全文書の語を直す Issue で、使い方集だけを先に直すために切り出した（D-4）。
-『文書の書き方』のページを SessionStart の動線から案内するのは後続の [#186](https://github.com/shuhei1101/mdmark/issues/186)。
+[使い方集の文を規約『文章の書き方』に合わせて直し、『文書の書き方』のページを追加する](https://github.com/shuhei1101/mdmark/issues/185) の要望。
+使い方集（`guide/index.yaml` が指す 17 ページと索引の文）は SessionStart と `read_guide` で毎回 AI に渡るが、比喩の語（箱・層）と一字の語（印・題・節・形）が多い。
+[文書と UI 文言の語を、knowledge の語の選び方の規約に合わせて直す](https://github.com/shuhei1101/mdmark/issues/105) は全文書の語を直す Issue で、使い方集だけを先に直すために切り出した（D-4）。
+『文書の書き方』のページを SessionStart の動線から案内するのは後続の [使い方集を dev-docs の配信元として配り、SessionStart を動線だけにして read_guide を外す](https://github.com/shuhei1101/mdmark/issues/186)。
 
 ## 計画書
 
@@ -33,7 +34,7 @@ mdmark の使い方集を読む AI と人が、比喩の語・一字の語の無
 - [x] ~~部品設計~~（UI の部品を変えない）
 - [x] ~~画面設計~~（画面を変えない）
 - [x] ~~モジュール構成設計~~（影響なし: `scripts/build-plugin.ts` と `src/plugin/` を変えない）
-- [x] ドキュメント修正（使い方集の 17 ページ・`docs/使い方/書く/文書の書き方.md`（新規）・`docs/使い方/書く/index.yaml`・`docs/リファレンス/用語集.md`）
+- [x] ドキュメント修正（使い方集の 17 ページ・[文書の書き方](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E6%96%87%E6%9B%B8%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9.md)（新規）・[docs/使い方/書く/index.yaml](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/index.yaml)・[用語集](https://github.com/shuhei1101/mdmark/blob/20d1c75d670c1ee61cfb6f7a0998e41157d91eee/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%94%A8%E8%AA%9E%E9%9B%86.md)）
 - [x] ~~単体テスト作成~~（コードを変えない）
 - [x] 実装（`guide/index.yaml` の writing の行の追加と、`plugin/guide/` の生成物の再生成）
 - [x] ~~結合テスト作成~~（コードを変えない。既存の結合テストは実行のみ）

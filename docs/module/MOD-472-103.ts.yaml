@@ -114,3 +114,10 @@ functions:
     refs:
       - IF-472-21#constraints[再描画するまでの待ち]
     status: planned
+lead: 'settings.json の mdmark の設定の読み取りと、範囲外の値の既定への戻しを受け持ち、拡張機能の設定の読み込み方を変えるときに参照する。'
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode
+  - name: action:読み取り
+  - name: action:読み込み

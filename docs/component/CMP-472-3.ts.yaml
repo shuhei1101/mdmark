@@ -43,3 +43,7 @@ refs:
 status: planned
 notes:
   HTML: '`<details class="mdmark-collapsible"><summary>{title}</summary>{html}</details>`。タブ・ステップの `collapse` と同じ部品を使用する。モックは `docs/mock/components/details-range/`'
+tags:
+  - name: topic:details
+    main: true
+  - name: action:開閉

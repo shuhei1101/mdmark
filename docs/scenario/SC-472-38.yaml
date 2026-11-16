@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -19,6 +22,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: wide の範囲を本文の幅より広げて描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落の幅が 640px のままで、wide の範囲の幅が 640px より広く、描く先の要素の幅を越えていない
       - wide の範囲が本文の列の中央にそろっている
@@ -37,6 +43,9 @@ scenarios:
         name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -44,6 +53,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 右側の目次の列の内側で wide の範囲を広げて描く
         P-->>U: 文書と右側の目次を表示
+      ```
+
+      <!-- /map -->
     expected:
       - wide の範囲が段落より広く描かれ、右側の目次に重なっていない
       - 右側の目次の項目を押して、その見出しへ移れる
@@ -57,6 +69,9 @@ scenarios:
         description: 正常シナリオと同じ
       - *id001
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -65,6 +80,9 @@ scenarios:
         M-->>P: wide の範囲を本文の幅で描く
         U->>P: 表を横にスクロールする
         P-->>U: 範囲の中で表が動く
+      ```
+
+      <!-- /map -->
     expected:
       - wide の範囲の幅が段落の幅と等しい
       - 表は範囲の中で横にスクロールでき、文書に横のスクロールが出ていない
@@ -77,6 +95,9 @@ scenarios:
         description: '`<!-- wide -->` の後に 8 列の表を持ち、`<!-- /wide -->` を持たない文書'
       - *id001
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -85,6 +106,9 @@ scenarios:
         M->>M: wide の閉じのマーカーが無い
         M-->>P: 記載の警告と、表を本文の幅で描く
         P-->>U: 記載の警告と表を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に、閉じのマーカー `<!-- /wide -->` が無いことを記載した記載の警告がある
       - 表が段落と同じ幅で描かれている
@@ -98,6 +122,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -108,6 +135,9 @@ scenarios:
         P-->>U: 本文の幅に戻した範囲
         U->>P: もう一度押す
         P-->>U: 広げた範囲
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、範囲が広がり、範囲の上の本文の幅の右端にラベルの無いアイコンだけのボタンがあり、スクリーンリーダー向けの名前が「広げて表示」で、`aria-pressed` が `true`
       - 押した後、範囲の幅が段落の幅と等しくなり、ボタンはアイコンだけが変わってスクリーンリーダー向けの名前は「広げて表示」のまま、`aria-pressed` が `false`。ボタンの位置は押す前と同じ
@@ -125,6 +155,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -133,13 +166,15 @@ scenarios:
         M-->>P: 本文の幅の wide の範囲と、広げるボタンを描く
         U->>P: 切り替えのボタンを押す
         P-->>U: 広げた範囲
+      ```
+
+      <!-- /map -->
     expected:
       - 描いた直後、範囲の幅が段落の幅と等しく、ボタンの `aria-pressed` が `false`
       - ボタンを押した後、範囲が段落より広くなる
       - 本文にマーカーの文字と記載の警告が出ていない
     test: test_normal_when_starts_narrow
 lead: 文書の作成者が `<!-- wide -->` 〜 `<!-- /wide -->` で図・表・画像を囲み、mdmark がその範囲を本文の幅（`--mdmark-content-width`）を越えて広げる。
-issue: 220
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
@@ -151,3 +186,8 @@ preconditions:
 success_guarantee: wide の範囲が本文の幅を越えて描く先の要素の幅まで広がり、右の目次とまとめた HTML の文書の一覧に重ならない。読者は範囲の上の本文の幅の右端のボタンで、広げた幅と本文の幅を切り替えられる。狭い画面では本文の幅に収まり、収まらない中身は範囲の中で横にスクロールする。
 minimal_guarantee: 閉じのマーカーが無い範囲は、記載の警告を出して本文の幅で描く。
 test_file: tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts
+tags:
+  - name: topic:wide
+    main: true
+  - name: topic:図
+  - name: topic:テーブル

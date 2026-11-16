@@ -144,3 +144,10 @@ functions:
     refs:
       - IF-472-15#constraints[埋めるライブラリ]
     status: planned
+lead: '書き出す先のパスと HTML の組み立てを受け持ち、HTML への書き出しや PDF への印刷を変えるときに参照する。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:vscode
+  - name: tool:html
+  - name: action:書き出し

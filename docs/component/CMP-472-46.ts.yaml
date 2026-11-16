@@ -60,3 +60,7 @@ status: planned
 notes:
   モック: '`docs/mock/components/revision-picker/` の「変更表示」（閉じている・開いている）'
 test_file: tests/integration/lib/diff-toggle.story.test.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:ボタン

@@ -1,7 +1,7 @@
 docs:
   - page: src/files.yaml
     new: false
-    change: '#352 の render/syntax/card-grid.ts・render/page.ts、#354 の plugin/ の 8 ファイル、#444 の plugin/setup/systemd.ts の行を追加する（description はモジュール構成の受け持ち、related はモジュール構成への implements）'
+    change: '[記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/pull/352) の render/syntax/card-grid.ts・render/page.ts、[プラグインに global-setup・setup のスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/pull/354) の plugin/ の 8 ファイル、[プラグインの global-setup で MCP の常駐サーバーを systemd --user の unit で起動できるようにする](https://github.com/shuhei1101/mdmark/pull/444) の plugin/setup/systemd.ts の行を追加する（description はモジュール構成の受け持ち、related はモジュール構成への implements）'
     status: done
     updated_by: planner
     updated_at: '2026-11-12T13:14:36.174112+00:00'
@@ -11,5 +11,5 @@ scope_out:
     reason: 規約『ドキュメント管理』の files.yaml の関連が受け持つ設計書を正しく指していない。今回の要望（行の無いファイルの行の追加）に含まれない
     plan: '#490'
   - item: src/ 以外の管理用の YAML（tests/files.yaml・docs/mock/files.yml・scripts/files.yaml・docs/guide/files.yml・plugin/files.yaml・vscode/files.yaml）に、フォルダの中にあるのに行の無いファイルがある
-    reason: '規約『ドキュメント管理』の files.yaml の同じ型の欠けだが、今回の要望（src/files.yaml）の外。まとめた配布物・ライセンスのコピー・lock ファイルなど行を持たせるかの判断が要るファイルを含み、tests/e2e/ の分は #450 と対象が重なるため、別の Issue で扱う'
+    reason: '規約『ドキュメント管理』の files.yaml の同じ型の欠けだが、今回の要望（src/files.yaml）の外。まとめた配布物・ライセンスのコピー・lock ファイルなど行を持たせるかの判断が要るファイルを含み、tests/e2e/ の分は [今ある E2E のテストと、E2E だけが使う部品を develop から削除する](https://github.com/shuhei1101/mdmark/issues/450) と対象が重なるため、別の Issue で扱う'
     plan: '#491'

@@ -6,9 +6,10 @@
 
 ## 背景
 
-束の親 Issue [#426](https://github.com/shuhei1101/mdmark/issues/426) の子 Issue [#336](https://github.com/shuhei1101/mdmark/issues/336)・[#337](https://github.com/shuhei1101/mdmark/issues/337) の不具合。どちらも [PR #335](https://github.com/shuhei1101/mdmark/pull/335)（[#291](https://github.com/shuhei1101/mdmark/issues/291)）のレビューで切り出された。
+束の親 Issue [差分の判定の不具合 2 件（差分のパネルで変えていない段落を削除と追加の対で出す・空行で段落を分けた変更を追加と判定しない）](https://github.com/shuhei1101/mdmark/issues/426) の子 Issue [差分のパネルで、1 行の段落だけの文書の変えていない段落を削除と追加の対で出す](https://github.com/shuhei1101/mdmark/issues/336)・[ブロックの色分けで、空行を足して段落を 2 つに分けた変更を追加と判定しない](https://github.com/shuhei1101/mdmark/issues/337) の不具合。
+どちらも [ブロックの色分けで、空行だけが一致する並びを避け、変えていない段落を追加と判定しないようにする](https://github.com/shuhei1101/mdmark/pull/335)（[ブロックの色分けで、1 行の段落だけの文書の変えていない段落を追加と判定する](https://github.com/shuhei1101/mdmark/issues/291)）のレビューで切り出された。
 差分のパネルは `computeDiff` が jsdiff の `diffLines` をそのまま使用するため、1 行の段落だけの文書で空行どうしが一致する並びが選ばれる。
-ブロックの色分けは #335 で空白だけの行を除いて比べるようにしたため、空行だけを追加した変更が比較に現れない。
+ブロックの色分けは [ブロックの色分けで、空行だけが一致する並びを避け、変えていない段落を追加と判定しないようにする](https://github.com/shuhei1101/mdmark/pull/335) で空白だけの行を除いて比べるようにしたため、空行だけを追加した変更が比較に現れない。
 
 ## 計画書
 

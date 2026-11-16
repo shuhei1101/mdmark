@@ -134,3 +134,7 @@ functions:
         condition: '引数 `{title: 全体}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、`kind` が `flowchart`'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

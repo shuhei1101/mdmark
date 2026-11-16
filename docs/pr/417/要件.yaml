@@ -16,7 +16,7 @@ use_cases:
     depends_on: []
 scope_out:
   - item: 表の `wide=` の引数と表の幅の E2E（表を操作する）
-    reason: '本文の wide の範囲のマーカーとは別の機能で、作業 PR #411 が修正済み'
+    reason: '本文の wide の範囲のマーカーとは別の機能で、作業 PR [表の操作の E2E 9 件の fail（結合した見出しの絞り込みのボタン・並べ替えの順・ピン止め・はみ出しと幅）を修正する](https://github.com/shuhei1101/mdmark/pull/411) が修正済み'
     plan: '#399'
   - item: 390px の枠で描く narrow のストーリーが 390px の画面幅で横にスクロールする
     reason: Storybook のストーリーの枠の不具合で、E2E の fail とは別の事象

@@ -40,8 +40,6 @@ functions:
         mock: なし
         expected: どれも `undefined`
     status: planned
-    introduced:
-      pr: 39
   - name: compareVersions
     title: バージョンを比べる
     container: src/cli/versions.ts
@@ -74,8 +72,6 @@ functions:
         mock: なし
         expected: 1・0・-1
     status: planned
-    introduced:
-      pr: 39
   - name: cliVersion
     title: 呼んだ CLI のバージョン
     container: src/cli/versions.ts
@@ -96,5 +92,9 @@ functions:
         mock: '`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`'
         expected: '`v0.5.0`'
     status: planned
-    introduced:
-      pr: 39
+lead: 'バージョンの書式と比較を受け持ち、バージョンを上げるときのバージョンの扱いを変えるときに参照する。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:cli

@@ -36,22 +36,24 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| mp4（H.264・AAC）の動画 | `canplay` が来て、`play()` の 1 秒後に `currentTime` が 0.5 秒以上進む | ❌ 映像は 1.0 秒進むが、音声を復号しない | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | `webkitAudioDecodedByteCount` が 0 |
-| m4a（AAC）の音声 | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`。AAC だけの mp4 も同じ |
-| mp3 の音声 | 同上 | ✅ 0.92 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
-| webm（記録だけ） | 同上 | ❌ 開けない | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | VP9・Opus と VP8・Vorbis のどちらも `DEMUXER_ERROR_COULD_NOT_OPEN` |
-| ogg（Vorbis。記録だけ） | 同上 | ✅ 0.79 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
-| wav（記録だけ） | 同上 | ✅ 0.70 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
-| mov（H.264・AAC。記録だけ） | 同上 | 映像だけ ✅ 1.0 秒 | [#264](https://github.com/shuhei1101/mdmark/pull/264)（closed） | mp4 と同じく音声を復号しない |
+| mp4（H.264・AAC）の動画 | `canplay` が来て、`play()` の 1 秒後に `currentTime` が 0.5 秒以上進む | ❌ 映像は 1.0 秒進むが、音声を復号しない | [PoC: GIF の停止・再生とプレビューの動画・音声の再生](https://github.com/shuhei1101/mdmark/pull/264)（closed） | `webkitAudioDecodedByteCount` が 0 |
+| m4a（AAC）の音声 | 同上 | ❌ 開けない | [PoC: GIF の停止・再生とプレビューの動画・音声の再生](https://github.com/shuhei1101/mdmark/pull/264)（closed） | `DEMUXER_ERROR_NO_SUPPORTED_STREAMS`。AAC だけの mp4 も同じ |
+| mp3 の音声 | 同上 | ✅ 0.92 秒 | [PoC: GIF の停止・再生とプレビューの動画・音声の再生](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
+| webm（記録だけ） | 同上 | ❌ 開けない | [PoC: GIF の停止・再生とプレビューの動画・音声の再生](https://github.com/shuhei1101/mdmark/pull/264)（closed） | VP9・Opus と VP8・Vorbis のどちらも `DEMUXER_ERROR_COULD_NOT_OPEN` |
+| ogg（Vorbis。記録だけ） | 同上 | ✅ 0.79 秒 | [PoC: GIF の停止・再生とプレビューの動画・音声の再生](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
+| wav（記録だけ） | 同上 | ✅ 0.70 秒 | [PoC: GIF の停止・再生とプレビューの動画・音声の再生](https://github.com/shuhei1101/mdmark/pull/264)（closed） | |
+| mov（H.264・AAC。記録だけ） | 同上 | 映像だけ ✅ 1.0 秒 | [PoC: GIF の停止・再生とプレビューの動画・音声の再生](https://github.com/shuhei1101/mdmark/pull/264)（closed） | mp4 と同じく音声を復号しない |
 
 <!-- /table -->
 
 VS Code 1.141.0（Electron 43.7.7）と stable の 1.144.0（Electron 43.8.3）で、結果は同じだった（どちらも Chrome 150）。
 
-結論: 不成立。プレビューの Webview は AAC の音声を再生できず、webm を開けない。
+結論: 不成立。
+プレビューの Webview は AAC の音声を再生できず、webm を開けない。
 
 - CSP に `media-src` を追加し、`asWebviewUri` の URI を `src` に入れれば、対応する形式は再生できる
-- ユーザーの操作なしの `play()` は、自動再生の制限で `NotAllowedError` になる。画面を 1 回クリックした後は再生できた
+- ユーザーの操作なしの `play()` は、自動再生の制限で `NotAllowedError` になる。
+  画面を 1 回クリックした後は再生できた
 
 最小再現コードの要点（`poc/webview/test.cjs`）:
 

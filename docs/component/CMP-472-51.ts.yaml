@@ -40,3 +40,7 @@ refs:
 status: planned
 notes:
   HTML: '`<div class="mdmark-layout-columns" data-count="{列の数}"><div class="mdmark-layout-column">{中身}</div>…</div>`。縦に並べる幅はコンテナクエリで決める。モックは `docs/mock/components/columns/`'
+tags:
+  - name: topic:段組み
+    main: true
+  - name: topic:レイアウト

@@ -138,3 +138,9 @@ function_types:
     returns:
       type: '-'
       description: 上の 2 つを持つオブジェクト
+lead: '行と単語の差分の計算を受け持ち、差分の計算方法や比べる単位を変えるときに参照する。'
+tags:
+  - name: tool:jsdiff
+    main: true
+  - name: topic:差分
+  - name: action:計算

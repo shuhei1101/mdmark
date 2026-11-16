@@ -43,3 +43,7 @@ install: |-
   ```bash
   npm i -D -E vitest@5.0.4 @vitest/browser-playwright@5.0.4 playwright@1.64.0
   ```
+tags:
+  - name: tool:vitest
+    main: true
+  - name: topic:テスト

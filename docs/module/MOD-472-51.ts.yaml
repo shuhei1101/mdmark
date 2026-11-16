@@ -13,8 +13,6 @@ constants:
     refs:
       - IF-472-4#constraints[待ち受けるアドレス]
     status: planned
-    introduced:
-      pr: 141
   - name: MCP_PATH
     title: MCP のパス
     container: src/plugin/http.ts
@@ -24,8 +22,6 @@ constants:
     refs:
       - IF-472-4#constraints[パス]
     status: planned
-    introduced:
-      pr: 141
   - name: PORT_IN_USE_MESSAGE
     title: ポートが使用されているときの文
     container: src/plugin/http.ts
@@ -35,8 +31,6 @@ constants:
     refs:
       - IF-472-4#exceptions[なし（ポートが使用されている・終了コード 1）]
     status: planned
-    introduced:
-      pr: 141
 functions:
   - name: routeRequest
     title: 要求を振り分ける
@@ -89,8 +83,6 @@ functions:
     refs:
       - IF-472-4#constraints[パス]
     status: planned
-    introduced:
-      pr: 141
   - name: toRequest
     title: 要求を変換する
     kind: 関数
@@ -118,8 +110,6 @@ functions:
         mock: なし（`node:http` の一時サーバー）
         expected: 'URL が `http://127.0.0.1:{port}/mcp`、`content-type` が移り、`await request.json()` が `{ a: 1 }`'
     status: planned
-    introduced:
-      pr: 141
   - name: writeResponse
     title: 応答を記載する
     kind: 関数
@@ -148,8 +138,6 @@ functions:
         mock: なし（`node:http` の一時サーバー）
         expected: クライアントが受けたステータスが 202、`x-a` が `1`、本文が `ok`
     status: planned
-    introduced:
-      pr: 141
   - name: runServe
     title: 常駐サーバーを動かす
     kind: 関数
@@ -200,5 +188,13 @@ functions:
     refs:
       - IF-472-4#
     status: planned
-    introduced:
-      pr: 141
+lead: '常駐サーバーの HTTP の待ち受け・ポートの読み取り・要求と応答の変換を受け持ち、常駐サーバーの待ち受けを変えるときに参照する。'
+tags:
+  - name: topic:http
+    main: true
+  - name: tool:mcp
+  - name: tool:claude-code
+  - name: topic:サーバー
+  - name: action:読み取り
+  - name: action:変換
+  - name: action:待ち受け

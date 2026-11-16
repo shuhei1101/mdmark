@@ -31,8 +31,6 @@ data_models:
     refs:
       - IF-472-33#constraints[まとめるスクリプト]
     status: planned
-    introduced:
-      pr: 296
 functions:
   - name: hasDynamicImport
     title: 動的 import が残るかを確認する
@@ -58,8 +56,6 @@ functions:
         mock: なし
         expected: 順に `true`・`true`・`false`
     status: planned
-    introduced:
-      pr: 296
   - name: createViewerEntry
     title: 起動の処理の入口を作る
     container: src/cli/embed.ts
@@ -108,14 +104,22 @@ functions:
         mock: なし
         expected: ソースに `"@@html-script-key-0@@"` があり、`window.__mdmarkOpened` が無い
     status: planned
-    introduced:
-      pr: 296
   - name: bundleViewer
     title: 起動の処理と埋めるモジュールをまとめる
     container: src/cli/embed.ts
     usecase: 共通
     summary: '`createViewerEntry` のソースを入口に、esbuild で分割せずに 1 つの ES モジュールのスクリプトにまとめ、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返却する'
-    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。`</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。`prepareEmbeds` が確認したモジュールだけを指定するため、まとめる失敗は例外のまま投げる。`hideTraces` があれば、替える前のまとめたコードを `hideScript` に通す'
+    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。
+
+      リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。
+
+      `</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。
+
+      esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。
+
+      `prepareEmbeds` が確認したモジュールだけを指定するため、まとめる失敗は例外のまま投げる。
+
+      `hideTraces` があれば、替える前のまとめたコードを `hideScript` に通す'
     kind: 関数
     scope: internal
     is_async: true
@@ -159,8 +163,6 @@ functions:
       - IF-472-33#constraints[まとめるスクリプト]
       - IF-472-33#constraints[mdmark の痕跡]
     status: planned
-    introduced:
-      pr: 296
   - name: inlineImages
     title: 画像を埋める
     container: src/cli/embed.ts
@@ -218,8 +220,6 @@ functions:
         mock: 一時フォルダ
         expected: どちらの `markdown` も同じ `mdmark-asset:{キー}` を持ち、`assets` が 1 件
     status: planned
-    introduced:
-      pr: 32
     callees:
       - 'MOD-472-113#functions[resolveAssetFile]'
       - 'MOD-472-113#functions[collectAssetRefs]'
@@ -255,8 +255,6 @@ functions:
         mock: なし
         expected: '`["下書き/メモ.md"]`'
     status: planned
-    introduced:
-      pr: 32
   - name: usedParts
     title: 埋める部品を選ぶ
     container: src/cli/embed.ts
@@ -317,8 +315,6 @@ functions:
         mock: なし
         expected: '`scripts` が空で、`warnings` に文書のパスを含む 1 行'
     status: planned
-    introduced:
-      pr: 303
     callees:
       - 'MOD-472-118#functions[collectRangeScripts]'
   - name: usesMap
@@ -349,3 +345,9 @@ functions:
         condition: '`features: -map` と map の範囲'
         mock: なし
         expected: '`false`'
+lead: '外部ライブラリと拡張のまとめ・色分けの言語の抽出・画像の埋め込みを受け持ち、1 枚の HTML に埋める中身を変えるときに参照する。'
+tags:
+  - name: topic:cli
+    main: true
+  - name: tool:html
+  - name: action:まとめ

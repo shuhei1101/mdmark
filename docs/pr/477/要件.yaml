@@ -482,10 +482,10 @@ scope_out:
     reason: D-312 で 1 つのマイナーバージョンの間は読むと決めた。削除は次のマイナーバージョンの破壊的変更で行う
     plan: '#479'
   - item: 列の幅 columns.{列名}.width.min・width.max を使った自動計算
-    reason: 'この PR はキーとスキーマだけを持ち、幅の計算は #458 で行う'
+    reason: 'この PR はキーとスキーマだけを持ち、幅の計算は [表の列の幅を、セルの文字の量と改行から既定で自動計算する](https://github.com/shuhei1101/mdmark/issues/458) で行う'
     plan: '#458'
   - item: ファイルツリーの既定を全てのフォルダを開いた状態にする振る舞いの変更
-    reason: 'この PR は depth のキーと既定の値 all を定義する。今の既定の振る舞いの変更は #459 で行う'
+    reason: 'この PR は depth のキーと既定の値 all を定義する。今の既定の振る舞いの変更は [ファイルツリーの既定を、全てのフォルダを開いた状態にする](https://github.com/shuhei1101/mdmark/issues/459) で行う'
     plan: '#459'
   - item: 'HTML コメントでない記法（画像の {width=…}・[!NOTE]・badge: など）と設定ファイルの書き方'
     reason: A-128 の対象外（HTML コメントのマーカーの引数だけを JSON にする）

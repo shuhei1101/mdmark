@@ -20,13 +20,13 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| 今の `when`（`editorLangId == markdown`）のまま、変更後の側の本文の行を押して `Shift+Alt+D` | 差分のパネルが開き `div.mdmark-diff-block` が描かれる | ✅ 開いた | [#239](https://github.com/shuhei1101/mdmark/pull/239)（closed） | `when` を変えなくても成り立つ |
-| 今の `when` のまま、変更前の側を押して `Shift+Alt+D` | 同じ差分のパネルが開く | ✅ 開いた | [#239](https://github.com/shuhei1101/mdmark/pull/239)（closed） | - |
-| 差分ビューのタイトル（両側） | `mdmark: プレビューを横に開く` のボタンが出る | ✅ 1 個 | [#239](https://github.com/shuhei1101/mdmark/pull/239)（closed） | 変更後の側・変更前の側のどちらを押した後も出る |
-| 普通に開いた Markdown | ボタンが出て、`Shift+Alt+D` でプレビューが開く | ✅ 開いた | [#239](https://github.com/shuhei1101/mdmark/pull/239)（closed） | - |
-| Markdown でないエディタ（`notes.txt`） | ボタンが出ず、`Shift+Alt+D` でパネルが開かない | ✅ 0 個・開かない | [#239](https://github.com/shuhei1101/mdmark/pull/239)（closed） | - |
-| 落ちていた 4 ケース（E2E のヘルパー `focusModifiedSide` のロケーターだけを修正） | 4 ケースが pass する | ✅ 3 回繰り返して 12/12 pass | [#239](https://github.com/shuhei1101/mdmark/pull/239)（closed） | `vscode/package.json` は変えていない |
-| 落ちていた 4 ケース（ヘルパーを変えない） | - | ❌ 4 ケースとも fail | [#239](https://github.com/shuhei1101/mdmark/pull/239)（closed） | Issue の事象を手元で再現した |
+| 今の `when`（`editorLangId == markdown`）のまま、変更後の側の本文の行を押して `Shift+Alt+D` | 差分のパネルが開き `div.mdmark-diff-block` が描かれる | ✅ 開いた | [PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)（closed） | `when` を変えなくても成り立つ |
+| 今の `when` のまま、変更前の側を押して `Shift+Alt+D` | 同じ差分のパネルが開く | ✅ 開いた | [PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)（closed） | - |
+| 差分ビューのタイトル（両側） | `mdmark: プレビューを横に開く` のボタンが出る | ✅ 1 個 | [PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)（closed） | 変更後の側・変更前の側のどちらを押した後も出る |
+| 普通に開いた Markdown | ボタンが出て、`Shift+Alt+D` でプレビューが開く | ✅ 開いた | [PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)（closed） | - |
+| Markdown でないエディタ（`notes.txt`） | ボタンが出ず、`Shift+Alt+D` でパネルが開かない | ✅ 0 個・開かない | [PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)（closed） | - |
+| 落ちていた 4 ケース（E2E のヘルパー `focusModifiedSide` のロケーターだけを修正） | 4 ケースが pass する | ✅ 3 回繰り返して 12/12 pass | [PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)（closed） | `vscode/package.json` は変えていない |
+| 落ちていた 4 ケース（ヘルパーを変えない） | - | ❌ 4 ケースとも fail | [PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)（closed） | Issue の事象を手元で再現した |
 
 結論: 成立。
 ただし、Issue の前提だった「`editorLangId == markdown` が差分エディターで当たらない」は誤りで、`when` を変える必要は無い。

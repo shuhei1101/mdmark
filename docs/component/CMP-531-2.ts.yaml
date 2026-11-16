@@ -105,6 +105,9 @@ accessibility:
 refs:
   - IF-472-35#constraints[map の状態遷移図]
 status: planned
-introduced:
-  pr: 531
 test_file: tests/integration/lib/map-state.story.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:状態遷移
+  - name: topic:図

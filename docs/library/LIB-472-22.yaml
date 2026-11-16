@@ -42,3 +42,7 @@ install: '```bash
   npm i -D -E react-error-boundary@6.1.6
 
   ```'
+tags:
+  - name: tool:react
+    main: true
+  - name: topic:エラー

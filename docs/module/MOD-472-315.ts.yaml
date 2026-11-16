@@ -299,8 +299,6 @@ functions:
     callees:
       - 'MOD-472-313#functions[escapeHtml]'
     status: planned
-    introduced:
-      pr: 151
   - name: renderTableSettings
     title: テーブル設定のパネルを返却する
     container: src/parts/table.ts
@@ -336,8 +334,6 @@ functions:
         mock: なし
         expected: '`mdmark-table-settings-group` が 3 つで、名前と備考のつまみが `disabled`'
     status: planned
-    introduced:
-      pr: 303
   - name: renderTreeKeyCell
     title: 階層の表のキーのセルを返却する
     container: src/parts/table.ts
@@ -361,8 +357,6 @@ functions:
         mock: なし
         expected: '`mdmark-tree-guide` が 1 つ、`mdmark-tree-name` の文字が `aliases`、`mdmark-tree-array` が `[]`、`mdmark-tree-required` がある'
     status: planned
-    introduced:
-      pr: 303
   - name: renderTypeCell
     title: 型のセルを返却する
     container: src/parts/table.ts
@@ -385,8 +379,6 @@ functions:
         mock: なし
         expected: '`<span class="mdmark-type-badge" data-type="bool">bool</span>`、`ref`・`custom` の `mdmark-type-chip` 2 つ、空の文字'
     status: planned
-    introduced:
-      pr: 303
   - name: renderTreeTools
     title: 階層の表のボタンを返却する
     container: src/parts/table.ts
@@ -409,8 +401,6 @@ functions:
         mock: なし
         expected: '`aria-expanded="false"`・`aria-label="aliases[] を開く"` のボタン、`aria-label="全体のパスをコピー"` のボタン、`aria-controls="t-example"` で文字が `見本を隠す` のボタン'
     status: planned
-    introduced:
-      pr: 303
   - name: renderRawToggle
     title: RAW のボタンを描く
     container: src/parts/table.ts
@@ -432,3 +422,11 @@ functions:
         expected: '`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">` と `aria-pressed="true"` の `code-xml` のアイコンのボタン'
         mock: なし
         summary: 押した状態を `aria-pressed` に入れる
+lead: '表・表の上のバー・集計の行・コピーのパネル・畳んだ列の HTML を受け持ち、表の部品の外観を変えるときに参照する。'
+tags:
+  - name: topic:テーブル
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画
+  - name: action:コピー

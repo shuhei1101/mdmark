@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #121](https://github.com/shuhei1101/mdmark/issues/121) の要望。
+[VS Code の Git の差分ビューで、Markdown のプレビューに変更箇所を色分けする](https://github.com/shuhei1101/mdmark/issues/121) の要望。
 VS Code の拡張機能のプレビューは、開いている Markdown の 1 つの内容だけを描き、差分ビューの変更前と変更後を受け取る処理を持たない（[vscode/src/preview/manager.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/src/preview/manager.ts)）。
-ライブラリ本体には [#7](https://github.com/shuhei1101/mdmark/issues/7) で入れた文書の差分表示があり、`mount` の `diffSource` に取り出し元を渡すと、読む人が「変更を見る」を押してから 2 つのリビジョンの差分を出す（[src/diff/panel.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/diff/panel.ts)）。
+ライブラリ本体には [文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/issues/7) で入れた文書の差分表示があり、`mount` の `diffSource` に取り出し元を渡すと、読む人が「変更を見る」を押してから 2 つのリビジョンの差分を出す（[src/diff/panel.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/diff/panel.ts)）。
 この差分表示が比べて色分けするのは Markdown のソースの行で、描いた結果ではない（[差分を表示する仕組み](https://github.com/shuhei1101/mdmark/blob/develop/docs/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/%E3%82%B3%E3%82%A2%E3%82%B3%E3%83%B3%E3%82%BB%E3%83%97%E3%83%88/%E5%B7%AE%E5%88%86%E3%82%92%E8%A1%A8%E7%A4%BA%E3%81%99%E3%82%8B%E4%BB%95%E7%B5%84%E3%81%BF.md)）。
-計画の扱いの判断（[#121 のコメント](https://github.com/shuhei1101/mdmark/issues/121#issuecomment-6385102457)）で、VS Code 拡張機能とライブラリ本体（`mount` の指定の追加）にまたがる作業とした。
+計画の扱いの判断（[VS Code の Git の差分ビューで、Markdown のプレビューに変更箇所を色分けする のコメント](https://github.com/shuhei1101/mdmark/issues/121#issuecomment-6385102457)）で、VS Code 拡張機能とライブラリ本体（`mount` の指定の追加）にまたがる作業とした。
 
 ## 計画書
 

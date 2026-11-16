@@ -73,10 +73,12 @@ accessibility:
   - 列より広いときだけ `tabindex="0"` を持ち、キーボードで横にスクロールできる
   - 記載した人の HTML のスクリプトとイベントの属性は落とすため、文書に記載したボタンは、範囲の `ts`・`js` が操作を付けない限り押しても何も起きない
 status: planned
-introduced:
-  pr: 45
 refs:
   - IF-472-34#constraints[埋め込んだ HTML]
   - IF-472-34#constraints[範囲のスクリプトと CSS]
   - IF-472-35#constraints[範囲のスクリプト]
 test_file: tests/integration/lib/embedded-html.story.test.ts
+tags:
+  - name: tool:html
+    main: true
+  - name: action:埋め込み

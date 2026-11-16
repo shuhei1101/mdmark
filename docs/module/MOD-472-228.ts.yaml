@@ -289,3 +289,13 @@ functions:
       - 'MOD-472-218#functions[rowIdFromHash]'
       - MOD-472-315#functions[renderTableBar]
       - MOD-472-315#functions[renderTotalRows]
+lead: '表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピーの操作を受け持ち、表の操作を変えるときに参照する。'
+tags:
+  - name: topic:テーブル
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
+  - name: topic:部品
+  - name: action:コピー
+  - name: action:並べ替え

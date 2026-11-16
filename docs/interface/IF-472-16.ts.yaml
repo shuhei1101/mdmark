@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: HTMLに書き出す.ts の正常系と同じ。書き出した HTML を Playwright の Chromium で開き、`window.print` を呼ばれた時刻とその時の `details` の `open` を記録する代役に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -21,6 +24,9 @@ flows:
         EX->>EX: 印刷を待つ処理を追加した HTML を書き出す
         EX->>BR: env.openExternal
         BR->>BR: 描き終えたら window.print()
+      ```
+
+      <!-- /map -->
     expected:
       - '`env.openExternal` の代役に書き出した HTML の `file:` の URL が渡る'
       - '`window.print` が 1 回だけ、外部ライブラリのマーカーが描かれた後に呼ばれる'
@@ -37,12 +43,18 @@ flows:
       - name: Mock
         description: 正常系と同じ。ページの時計を Playwright の `clock` で進める
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant EX as 拡張機能
         participant BR as 既定のブラウザ
         EX->>BR: 書き出した HTML を開く
         BR->>BR: 待ちの上限までマーカーの場所が残る
         BR->>BR: window.print()
+      ```
+
+      <!-- /map -->
     expected:
       - 開いてから待ちの上限（10 秒）の前には `window.print` が呼ばれず、上限を超えたところで 1 回呼ばれる
     test: test_normal_when_wait_limit_reached
@@ -54,12 +66,18 @@ flows:
       - name: Mock
         description: HTMLに書き出す.ts の異常系（書き出せない・通知）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         U->>EX: mdmark.printToPdf
         EX->>EX: 書き出す先に書き込めない
         EX->>U: 書き出せない理由の通知
+      ```
+
+      <!-- /map -->
     expected:
       - '`showErrorMessage` に書き出す先のパスと理由が入り、`env.openExternal` の代役は呼ばれない'
     test: test_error_when_output_unwritable
@@ -71,6 +89,9 @@ flows:
       - name: Mock
         description: '正常系と同じ。書き出した HTML は配色をダーク（`prefers-color-scheme: dark`）にして開き、`window.print` の代役が呼ばれた時のリンクの色の計算値を記録する'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -79,6 +100,9 @@ flows:
         EX->>EX: colorTheme: theme-slate を埋めた HTML を書き出す
         EX->>BR: env.openExternal
         BR->>BR: 描き終えたら window.print()
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の間、描く先の要素のリンクの色の計算値が theme-slate の明るい配色の `--mdmark-color-link` の値
     test: test_normal_when_color_theme_selected
@@ -112,3 +136,8 @@ constraints:
     constraint: '`mount` を呼んだ後、外部ライブラリのマーカーの場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。待ちの上限を超えたらそのまま呼ぶ'
     decided_by: NFR-472-1#requirements[印刷のダイアログを出すまでの待ちの上限]
     notes: マーカーの場所の要素は文書を描く.ts の制約「外部ライブラリのマーカーの場所」。折り畳みを開くのは mdmark の印刷の機能（`beforeprint`）
+tags:
+  - name: topic:印刷
+    main: true
+  - name: topic:pdf
+  - name: tool:vscode

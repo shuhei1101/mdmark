@@ -29,7 +29,23 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する
-    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、単語か別名が `normalizeWord` で正規化した後に同じになるものを 1 組 1 件にし、`message` には後ろの側の記載した表記と先の側の場所を記載する。用語集の表は `collectReferences` と同じ読み込み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み込み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語。やめた言い方は用語の `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に指定して取得する。`broken_ref` は `readRelated` の `to` が索引の文書に無い要素ごとに 1 つで、`where` は文字列の要素が `docs[0].related[1]`、オブジェクトの要素が `docs[0].related[1].to`。`untyped_related`・`one_sided_change_together`・`related_link_overlap` は `findRelatedIssues` で、`missed_change_together` は `changedPaths` を指定したときだけ `findMissedChangeTogether` で取得し、`broken_ref` の後ろに並べる。`findRelatedIssues` に指定する文書ごとの本文のリンクは、`parseDocument` で読み込んだトークンの `link_open` の `href` を `resolveLink` で解いたパス。`message` は日本語の 1 文で、修正する場所を記載する'
+    description: '`schema` は `normalizeIndex` の合わない場所。
+
+      文書の対応は `./` と重なった `/` を除いて比べる。
+
+      用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、単語か別名が `normalizeWord` で正規化した後に同じになるものを 1 組 1 件にし、`message` には後ろの側の記載した表記と先の側の場所を記載する。
+
+      用語集の表は `collectReferences` と同じ読み込み方。
+
+      やめた言い方は、先に索引の全ての文書を `parseDocument` で読み込み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語。やめた言い方は用語の `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に指定して取得する。
+
+      `broken_ref` は `readRelated` の `to` が索引の文書に無い要素ごとに 1 つで、`where` は文字列の要素が `docs[0].related[1]`、オブジェクトの要素が `docs[0].related[1].to`。
+
+      `untyped_related`・`one_sided_change_together`・`related_link_overlap` は `findRelatedIssues` で、`missed_change_together` は `changedPaths` を指定したときだけ `findMissedChangeTogether` で取得し、`broken_ref` の後ろに並べる。
+
+      `findRelatedIssues` に指定する文書ごとの本文のリンクは、`parseDocument` で読み込んだトークンの `link_open` の `href` を `resolveLink` で解いたパス。
+
+      `message` は日本語の 1 文で、修正する場所を記載する'
     args:
       - name: input
         type: '{ index: unknown; documents: Record<string, string>; indexFile?: string; changedPaths?: string[] }'
@@ -161,7 +177,14 @@ functions:
     container: src/knowledge/check.ts
     usecase: 索引を点検する
     summary: 索引の関連から `untyped_related`・`one_sided_change_together`・`related_link_overlap` をこの順で返却する
-    description: 同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び。関連の相手は `readRelated` の `to`。`untyped_related` は文字列の要素ごとに 1 つ。`one_sided_change_together` は `type` が `change_together` の要素のうち、相手が索引にあり、相手の `related` に自分を `to` とする `change_together` が無いものごとに 1 つ。`related_link_overlap` は `type` が `change_together` でない要素（文字列の要素を含む）のうち、相手が索引にあり、自分の `links` が相手の `path`（`./` と重なった `/` を除いたもの）を持つものごとに 1 つで、`links` にキーを持たない文書は確認しない。`where` はどれも `docs[0].related[1]`、`file` は `indexFile`。`message` は日本語の 1 文で、`untyped_related` は `to`・`type`・`when` を持つ関連に書き換える修正方法、`one_sided_change_together` は相手の `id` と自分の `id` と相手にも記載する修正方法、`related_link_overlap` は相手の `id` と関連か本文のリンクのどちらかにする修正方法を記載する
+    description: |-
+      同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び。
+      関連の相手は `readRelated` の `to`。
+      `untyped_related` は文字列の要素ごとに 1 つ。
+      `one_sided_change_together` は `type` が `change_together` の要素のうち、相手が索引にあり、相手の `related` に自分を `to` とする `change_together` が無いものごとに 1 つ。
+      `related_link_overlap` は `type` が `change_together` でない要素（文字列の要素を含む）のうち、相手が索引にあり、自分の `links` が相手の `path`（`./` と重なった `/` を除いたもの）を持つものごとに 1 つで、`links` にキーを持たない文書は確認しない。
+      `where` はどれも `docs[0].related[1]`、`file` は `indexFile`。
+      `message` は日本語の 1 文で、`untyped_related` は `to`・`type`・`when` を持つ関連に書き換える修正方法、`one_sided_change_together` は相手の `id` と自分の `id` と相手にも記載する修正方法、`related_link_overlap` は相手の `id` と関連か本文のリンクのどちらかにする修正方法を記載する
     scope: internal
     args:
       - name: options
@@ -201,8 +224,6 @@ functions:
     refs:
       - IF-472-37#constraints[関連の点検]
     status: planned
-    introduced:
-      pr: 127
   - name: findMissedChangeTogether
     title: change_together の修正漏れを取得する
     kind: 関数
@@ -249,5 +270,10 @@ functions:
     refs:
       - IF-472-37#constraints[修正漏れ]
     status: planned
-    introduced:
-      pr: 127
+lead: '索引と文書のずれの点検を受け持ち、索引の点検で返却するずれを変えるときに参照する。'
+tags:
+  - name: topic:検査
+    main: true
+  - name: topic:索引
+  - name: topic:用語
+  - name: action:点検

@@ -10,6 +10,9 @@ scenarios:
       - name: Mock
         description: Claude Code の代わりに、プラグインの `hooks/hooks.json` の SessionStart のコマンドを実行し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使用する。モデルは使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as SessionStart のフック
@@ -20,6 +23,9 @@ scenarios:
         H-->>C: 何も出さない・終了コード 0
         C->>S: initialize
         S-->>C: instructions
+      ```
+
+      <!-- /map -->
     expected:
       - SessionStart のフックが標準出力に何も出さず、終了コード 0 で終わる
       - '`initialize` の `instructions` に、常駐サーバーが systemd --user の unit で動いていること・unit の名前・ログを確認する操作（`journalctl --user -u {unit の名前}`）と、`global-setup` でもう一度起動できることがある'
@@ -32,6 +38,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as SessionStart のフック
@@ -42,6 +51,9 @@ scenarios:
         H-->>C: 何も出さない・終了コード 0
         C->>S: initialize
         S-->>C: instructions
+      ```
+
+      <!-- /map -->
     expected:
       - SessionStart のフックが標準出力に何も出さず、終了コード 0 で終わる
       - '`initialize` の `instructions` に、端末の設定の tmux のセッション名と、`global-setup` でもう一度起動できることがある'
@@ -53,6 +65,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as SessionStart のフック
@@ -61,12 +76,14 @@ scenarios:
         H->>S: ポートが待ち受けているか
         S-->>H: 接続を拒否された
         H-->>C: additionalContext の 1 行・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - SessionStart のフックが終了コード 0 で終わり、`additionalContext` に、常駐サーバーが `127.0.0.1:{ポート}` で待ち受けていないことと `/mdmark:global-setup` で起動できることを 1 行で出す
       - MCP のクライアントの接続が、接続を拒否されたエラー（`ECONNREFUSED`）で失敗する
     test: test_error_when_server_not_running
 lead: Claude Code のセッションの開始で、mdmark のプラグインが常駐サーバーの状態を伝える。待ち受けていないときだけ SessionStart のフックで起動の仕方を伝え、起動しているときは MCP の `instructions` で、常駐サーバーが動いている systemd --user の unit か tmux のセッションを伝える。
-issue: 165
 primary_actor: Claude Code
 stakeholders:
   - name: 文書の作成者
@@ -79,3 +96,9 @@ preconditions:
 success_guarantee: 常駐サーバーが待ち受けているときは SessionStart のフックが何も出さず、`instructions` から常駐サーバーが動いている unit か tmux のセッションとログの確認方法が分かる。待ち受けていないときは、待ち受けていないことと `global-setup` での起動の仕方が 1 行で伝わる。
 minimal_guarantee: SessionStart のフックはどの場合も終了コード 0 で終わり、セッションの開始を止めない。
 test_file: tests/e2e/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.spec.ts
+tags:
+  - name: topic:サーバー
+    main: true
+  - name: topic:常駐
+  - name: topic:フック
+  - name: tool:claude-code

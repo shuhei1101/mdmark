@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #425](https://github.com/shuhei1101/mdmark/issues/425) の要望。
-作業 PR [#424](https://github.com/shuhei1101/mdmark/pull/424) のモックのレビューで、reviewer が対象外の逸脱として報告した（[報告](https://github.com/shuhei1101/mdmark/pull/424#discussion_r4507303693)）。
+[モック ui-canvas/80/side-by-side で、同じ role と名前のランドマークが列の数だけ並び axe の landmark-unique に当たる](https://github.com/shuhei1101/mdmark/issues/425) の要望。
+作業 PR [フロー図のノードの種類 dm の表示名「意思決定モデル」を汎用の名前にし、dm と question の使い分けを示す](https://github.com/shuhei1101/mdmark/pull/424) のモックのレビューで、reviewer が対象外の逸脱として報告した（[報告](https://github.com/shuhei1101/mdmark/pull/424#discussion_r4507303693)）。
 `app.js` は `[data-canvas]` のセクションごとに列を作って列ごとに同じ Markdown と設定で `mount` を呼び、HTML の見本（`template`）も列ごとに同じ要素を写すため、目次・関連文書の nav、箇所が見つからないコメントの section、`nav.mdmark-doc-list` が同じ名前で列の数だけ並ぶ。
 
 ## 計画書

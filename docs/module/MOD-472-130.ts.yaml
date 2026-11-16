@@ -235,3 +235,9 @@ functions:
         condition: '`follow([mount, marker])` を呼ぶ。表示する枠でホイールを回してからもう一度呼ぶ。`resumeFollow` の後にもう一度呼ぶ'
         mock: 表示する枠の `scrollTo`
         expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
+lead: 'map の構成図の描画と、選んだノードの線と経路の強調を受け持ち、構成図の描画と操作を変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:描画

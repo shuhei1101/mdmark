@@ -10,8 +10,6 @@ constants:
     summary: リサイズハンドルで変えた高さを sessionStorage に記載するキーの頭
     value: '"mdmark-diagram-height:"'
     status: planned
-    introduced:
-      pr: 308
 functions:
   - name: attachDiagramResize
     title: リサイズハンドルを付ける
@@ -30,8 +28,6 @@ functions:
     callees:
       - 'MOD-472-173#functions[clampDiagramHeight]'
     status: planned
-    introduced:
-      pr: 308
     unit_tests:
       - name: test_attach_diagram_resize
         case: 正常
@@ -79,5 +75,8 @@ functions:
         mock: なし
         expected: '`mdmark-diagram-height:/docs/a.html#1:問い合わせの流れ`'
     status: planned
-    introduced:
-      pr: 308
+lead: '表示ブロックの高さを変えるリサイズハンドルと高さの保持を受け持ち、図のリサイズの操作を変えるときに参照する。'
+tags:
+  - name: topic:図
+    main: true
+  - name: tool:svg

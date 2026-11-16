@@ -62,5 +62,8 @@ functions:
     refs:
       - IF-472-39#constraints[変わった文書]
     status: planned
-    introduced:
-      pr: 127
+lead: '比べる基準から変わったファイルの取得を受け持ち、点検で修正漏れを探す範囲を変えるときに参照する。'
+tags:
+  - name: topic:cli
+    main: true
+  - name: action:点検

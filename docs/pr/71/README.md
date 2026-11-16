@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #59](https://github.com/shuhei1101/mdmark/issues/59) の食い違い。
-作業 PR [#55](https://github.com/shuhei1101/mdmark/pull/55)（[#8](https://github.com/shuhei1101/mdmark/issues/8)）のインターフェース定義設計のレビューで、reviewer が対象外の逸脱として報告した。
-制約「対応ブラウザ」は [#16](https://github.com/shuhei1101/mdmark/pull/16) で `Chrome 99・Firefox 97・Safari 16.4 以上` として入った。
-非機能要件は [#32](https://github.com/shuhei1101/mdmark/pull/32) で `<dialog>` のために Firefox の下限を 98 へ上げたが、この制約は追随していない。
+[インターフェース定義『文書を描く』の対応ブラウザが非機能要件の Firefox 98 と合っていない](https://github.com/shuhei1101/mdmark/issues/59) の食い違い。
+作業 PR [ビュー・検索・コメントの部品を文書と使う側の JavaScript・TypeScript から使えるようにする](https://github.com/shuhei1101/mdmark/pull/55)（[ビュー・検索・コメントなどの部品を Markdown の中から使えるようにする](https://github.com/shuhei1101/mdmark/issues/8)）のインターフェース定義設計のレビューで、reviewer が対象外の逸脱として報告した。
+制約「対応ブラウザ」は [Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/pull/16) で `Chrome 99・Firefox 97・Safari 16.4 以上` として入った。
+非機能要件は [サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/pull/32) で `<dialog>` のために Firefox の下限を 98 へ上げたが、この制約は追随していない。
 
 ## 計画書
 

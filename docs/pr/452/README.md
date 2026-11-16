@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #373](https://github.com/shuhei1101/mdmark/issues/373) の要望。
-PR [#352](https://github.com/shuhei1101/mdmark/pull/352) で Storybook の結合テストが OOM killer に止められ、PR [#355](https://github.com/shuhei1101/mdmark/pull/355) では `--maxWorkers=2` で 6 回に分けて実行した。
-2026-11-08 には PR [#394](https://github.com/shuhei1101/mdmark/pull/394) の全件の実行が Chromium のレンダラーを 15 本（約 3.2GB）使用し、同じ端末の別のリポジトリの結合テストが止まった（[コメント](https://github.com/shuhei1101/mdmark/issues/373#issuecomment-6721711330)）。
+[結合テストがファイルごとに Chromium を起動し並列の上限も無いため、メモリを使い過ぎてほかの作業と重なると回せない](https://github.com/shuhei1101/mdmark/issues/373) の要望。
+PR [記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/pull/352) で Storybook の結合テストが OOM killer に止められ、PR [索引のタグの語彙と、語彙に無いタグの点検をやめる](https://github.com/shuhei1101/mdmark/pull/355) では `--maxWorkers=2` で 6 回に分けて実行した。
+2026-11-08 には PR [コードのコメント・文書・UI 文言の単語を、用語の選び方の規約の対応表に合わせて修正する](https://github.com/shuhei1101/mdmark/pull/394) の全件の実行が Chromium のレンダラーを 15 本（約 3.2GB）使用し、同じ端末の別のリポジトリの結合テストが止まった（[コメント](https://github.com/shuhei1101/mdmark/issues/373#issuecomment-6721711330)）。
 暫定として、連絡ボードの `共通` に行「結合テストの全件は maxWorkers=4 で流す」がある。
 
 `*.story.test.ts` はファイルごとの `beforeAll` で `createBrowserHolder` から Chromium を起動し、開いたページをファイルの終わりまで閉じない。

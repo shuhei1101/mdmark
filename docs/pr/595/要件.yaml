@@ -120,19 +120,19 @@ docs:
     updated_at: '2026-11-15T11:07:53.956448+00:00'
 scope_out:
   - item: AI Monitor の設計書の Markdown の生成が出力する `docs/README.md`・設計書のフォルダの `README.md`・`docs/guide/README.md`・`docs/guide/` の分類のトップのページ（`はじめに.md`・`使用方法.md`・`リファレンス.md`）の拡張子の移行
-    reason: '生成し直すと `.md` に戻るため（#546 の扱いの判断と #481 と同じ扱い）。分類のトップのページは AI Monitor の `design_docs publish` が `docs/guide/{分類}.md` の名前で書き出す'
+    reason: '生成し直すと `.md` に戻るため（[mdmark のリポジトリの既存の文書のうち、mdmark の記法を含む .md の拡張子を .mark.md へ移す](https://github.com/shuhei1101/mdmark/issues/546) の扱いの判断と [mdmark のリポジトリのほかの文書（docs/mock など）のマーカーを JSON の記載へ移す](https://github.com/shuhei1101/mdmark/issues/481) と同じ扱い）。分類のトップのページは AI Monitor の `design_docs publish` が `docs/guide/{分類}.md` の名前で書き出す'
     plan: none
   - item: 過去の PR ドキュメント（`docs/pr/`）の記法を含む `.md` の拡張子の移行と、そこから改名したガイドのページへのリンクの修正
-    reason: '#546 の終わりの条件の対象は利用者が読む既存のガイドなどの文書で、PR ドキュメントはその作業 PR の時点の記録のため。過去の記録を書き換えると当時の差分と食い違う'
+    reason: '[mdmark のリポジトリの既存の文書のうち、mdmark の記法を含む .md の拡張子を .mark.md へ移す](https://github.com/shuhei1101/mdmark/issues/546) の終わりの条件の対象は利用者が読む既存のガイドなどの文書で、PR ドキュメントはその作業 PR の時点の記録のため。過去の記録を書き換えると当時の差分と食い違う'
     plan: none
   - item: 記法を含まない `.md`（`docs/guide/` の 33 件など）の拡張子の移行
-    reason: '`.mark.md` は mdmark の記法で記載する文書の拡張子で、記法を含まない文書は純粋な Markdown のままにする（#546 の終わりの条件）'
+    reason: '`.mark.md` は mdmark の記法で記載する文書の拡張子で、記法を含まない文書は純粋な Markdown のままにする（[mdmark のリポジトリの既存の文書のうち、mdmark の記法を含む .md の拡張子を .mark.md へ移す](https://github.com/shuhei1101/mdmark/issues/546) の終わりの条件）'
     plan: none
-  - item: '#290（既存の文書を表し方の優先順位へ移行する）で記法を足した文書の改名'
-    reason: '#290 はこの作業の後に着手し、改名後のパスで書き換える（#546 の扱いの判断）'
+  - item: '[既存の文書を mdmark の書き方と表し方の優先順位（図 → 表 → 箇条書き → 文）に移行する](https://github.com/shuhei1101/mdmark/issues/290)（既存の文書を表し方の優先順位へ移行する）で記法を足した文書の改名'
+    reason: '[既存の文書を mdmark の書き方と表し方の優先順位（図 → 表 → 箇条書き → 文）に移行する](https://github.com/shuhei1101/mdmark/issues/290) はこの作業の後に着手し、改名後のパスで書き換える（[mdmark のリポジトリの既存の文書のうち、mdmark の記法を含む .md の拡張子を .mark.md へ移す](https://github.com/shuhei1101/mdmark/issues/546) の扱いの判断）'
     plan: '#290'
   - item: '`docs/design-policy.md` と `docs/mock/` の記法を含む `index.md`（6 件）の拡張子の移行'
-    reason: AI Monitor がこのパスを決め打ちで扱うため（判定フローチャート『モック要否』が `docs/design-policy.md` を名指しし、モックの配信がフォルダの索引として `index.html`・`index.md`・`README.md` だけを探す）。改名するとモックのフォルダの索引として配信されなくなる。#546 の扱いの判断は対象に含めたが、生成される `README.md` と同じく対象外にする
+    reason: 'AI Monitor がこのパスを決め打ちで扱うため（判定フローチャート『モック要否』が `docs/design-policy.md` を名指しし、モックの配信がフォルダの索引として `index.html`・`index.md`・`README.md` だけを探す）。改名するとモックのフォルダの索引として配信されなくなる。[mdmark のリポジトリの既存の文書のうち、mdmark の記法を含む .md の拡張子を .mark.md へ移す](https://github.com/shuhei1101/mdmark/issues/546) の扱いの判断は対象に含めたが、生成される `README.md` と同じく対象外にする'
     plan: none
   - item: '`docs/guide/README.md` と分類のトップのページの目次で、改名したページの表示名が `変更履歴.mark` のように `.mark` を含む'
     reason: AI Monitor の `design_docs publish` が表示名を作るときに `.mark.md` の `.md` だけを落とす不具合。生成物のため手で修正せず、AI Monitor 側で修正した後に publish を実行し直す

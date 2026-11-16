@@ -29,8 +29,6 @@ constants:
     refs:
       - IF-472-41#constraints[配布ファイル 1 つのサイズ]
     status: planned
-    introduced:
-      pr: 32
 functions:
   - name: main
     title: ビルドを実行する
@@ -399,3 +397,13 @@ functions:
         mock: なし
         expected: メッセージに `tsc` のエラーを含む例外
 
+lead: '配布物のビルドと、移行のスクリプトが読み込む書き換えの処理のまとめを受け持ち、配布物のビルドの流れを変えるときに参照する。'
+tags:
+  - name: topic:バンドル
+    main: true
+  - name: topic:バージョン
+  - name: topic:移行
+  - name: topic:マーカー
+  - name: topic:ライセンス
+  - name: topic:図
+  - name: tool:esbuild

@@ -13,12 +13,18 @@ flows:
       - name: Mock
         description: '`commands.executeCommand` を、`workbench.action.openSettings` の呼び出しだけ引数を記録して解決する代役に差し替える（他のコマンドは元のものを呼ぶ）'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         participant VS as VS Code
         U->>EX: 歯車のボタン（mdmark.openSettings）
         EX->>VS: workbench.action.openSettings（@ext:ShuheiNishikawa.mdmark-vscode）
+      ```
+
+      <!-- /map -->
     expected:
       - 代役が 1 回だけ、引数 `@ext:ShuheiNishikawa.mdmark-vscode` で呼ばれる
       - プレビューのパネルが開いたままで、Webview へ `render` が送信されない
@@ -31,12 +37,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         participant VS as VS Code
         U->>EX: mdmark.openSettings
         EX->>VS: workbench.action.openSettings（@ext:ShuheiNishikawa.mdmark-vscode）
+      ```
+
+      <!-- /map -->
     expected:
       - 代役が 1 回だけ、引数 `@ext:ShuheiNishikawa.mdmark-vscode` で呼ばれる
       - アクティブなエディタの文書が `guide.md` のままで、`mdmark.config.yaml` が開かれていない
@@ -60,6 +72,10 @@ constraints:
     decided_by: CFG-472-2#
   - item: 歯車のボタン
     constraint: '`contributes.menus` の `editor/title` に `mdmark.openSettings` を配置し、mdmark のプレビューのパネルがアクティブなときだけ出す（`when` はプレビューの Webview の `activeWebviewPanelId`）。アイコンは `$(gear)`。表示名・ツールチップの文言は画面設計で決める'
-    notes: モックの合意で、歯車はプレビューの中でなくエディタのタイトルの帯に配置することに決めた（docs/pr/181/確認ログ.md）
+    notes: モックの合意で、歯車はプレビューの中でなくエディタのタイトルの帯に配置することに決めた（[確認ログ（見た目のテーマを選べるようにし、プレビューから設定を開けるようにする）](../pr/181/%E7%A2%BA%E8%AA%8D%E3%83%AD%E3%82%B0.md)）
   - item: プレビューへの影響
     constraint: プレビューのパネルを閉じず、Webview へメッセージを送信しない
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode

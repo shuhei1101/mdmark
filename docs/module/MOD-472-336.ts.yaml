@@ -25,3 +25,9 @@ functions:
         expected: '`<mark class="mdmark-highlight">決め手</mark>` と `<mark class="mdmark-highlight" data-color="green">例外</mark>`'
         mock: なし
         summary: 色があれば `data-color` を付ける
+lead: '蛍光ペンの部品が返却する HTML を受け持ち、蛍光ペンの外観を変えるときに参照する。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: tool:html
+  - name: action:描画

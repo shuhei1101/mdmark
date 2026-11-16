@@ -6,8 +6,8 @@ E2E『VSCodeでプレビューを開く』の `test_normal_when_tags_unreachable
 
 ## 背景
 
-[Issue #107](https://github.com/shuhei1101/mdmark/issues/107) の修正。
-release/v0.7.0 の E2E の再実行（[E2E 実行 Issue #56](https://github.com/shuhei1101/mdmark/issues/56)・[release PR #85](https://github.com/shuhei1101/mdmark/pull/85)）で、このケースが準備の段階で落ちた。
+[E2E『VSCodeでプレビューを開く』の test_normal_when_tags_unreachable が、準備でプレビューを Control+W で閉じきれずに落ちる](https://github.com/shuhei1101/mdmark/issues/107) の修正。
+release/v0.7.0 の E2E の再実行（[Sprint v0.7.0 の E2E 実行](https://github.com/shuhei1101/mdmark/issues/56)・[release/v0.7.0](https://github.com/shuhei1101/mdmark/pull/85)）で、このケースが準備の段階で落ちた。
 `openPreviewWithShortcut()` の後にフォーカスがエディタ側にあると、`Control+W` がプレビューでなく Markdown のタブを閉じ、プレビューのタブが残る。
 tester がテスト不備と切り分け、製品の挙動は仕様どおり。
 

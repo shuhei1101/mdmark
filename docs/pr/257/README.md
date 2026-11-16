@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #154](https://github.com/shuhei1101/mdmark/issues/154) の要望。
+[図の枠（.mdmark-diagram-box）が、枠を持つ面や mdmark-param の枠の中で入れ子の枠になる](https://github.com/shuhei1101/mdmark/issues/154) の要望。
 [src/index.css](https://github.com/shuhei1101/mdmark/blob/develop/src/index.css) の `.mdmark-diagram-box` は `box-shadow: inset 0 0 0 1px var(--mdmark-color-border)` で枠を描き、`.mdmark-param` も `border: 1px solid var(--mdmark-color-border)` で枠を描く。
-`<mdmark-param>` の中のグラフや、枠を持つ面に埋め込んだ図で枠が入れ子になり、Impeccable の `nested-cards` が検出する（[shuhei1101/mindstella#348 の指摘](https://github.com/shuhei1101/mindstella/pull/348#discussion_r4379492521)）。
+`<mdmark-param>` の中のグラフや、枠を持つ面に埋め込んだ図で枠が入れ子になり、Impeccable の `nested-cards` が検出する（[mdmark の上で、資料に HTML と操作できる部品を埋め込み、資料を書き出せるようにする の指摘](https://github.com/shuhei1101/mindstella/pull/348#discussion_r4379492521)）。
 mindstella は部品の見た目を mdmark の共通スタイルに合わせる方針のため、mindstella 側で上書きせずに mdmark での対応を待つ。
 
 ## 計画書

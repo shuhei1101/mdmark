@@ -46,3 +46,10 @@ functions:
     refs:
       - IF-472-19#constraints[リンクの見分け方]
     status: planned
+lead: 'プレビューのリンクの押下の受け取りを受け持ち、プレビューのリンクの開き方を変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

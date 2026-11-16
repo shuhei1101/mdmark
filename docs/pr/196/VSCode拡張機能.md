@@ -47,13 +47,13 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| 作業ツリーの変更: ステージせずに書き換え、`git.openChange(Uri)` | `TabInputTextDiff` で、`original` が `git show :a.md`、`modified` が作業ツリーと一致 | ✅ 一致 | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | `original` は `git:` の `ref` が `~`（インデックス）、`modified` は `file:` |
-| ステージした変更: `git add` の後に `git.openChange(Uri)` | `original` が `git show HEAD:a.md`、`modified` が `git show :a.md` と一致 | ✅ 一致 | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 両側とも `git:`（`ref` が `HEAD` と空） |
-| コミットの差分（タイムライン）: `vscode.diff` を `getAPI(1)` の `toGitUri(uri, {SHA})` の 2 つで呼ぶ | `original`・`modified` がそれぞれのコミットの `git show` と一致 | ✅ 一致 | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 両側とも `git:`（`ref` が SHA） |
-| 両側の言語 | 上の 3 つで `languageId` がどちらも `markdown` | ✅ markdown | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | `git:` の文書も `markdown` |
-| フォーカスが移ったとき: 横の列に Webview のパネルを表に出す | `window.tabGroups.all` から差分のタブを引け、同じ `original`・`modified` を取れる | ✅ 取れた | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | アクティブなタブは Webview |
-| コミットの差分（Source Control のグラフ）: `git.viewCommit(rootUri, {SHA})` | 記録のみ（成立の条件に含めない） | - | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | タブの入力は stable API に無いクラスで、実行時は `textDiffs[]` の `original`・`modified` を持つ。`window.activeTextEditor` は変更後の側だけ |
-| 待ち | 記録のみ | 0 ms | [#197](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 差分ビューが開いた時点で両側の文書は読み込み済みで、`openTextDocument` はすぐ返る |
+| 作業ツリーの変更: ステージせずに書き換え、`git.openChange(Uri)` | `TabInputTextDiff` で、`original` が `git show :a.md`、`modified` が作業ツリーと一致 | ✅ 一致 | [PoC: VS Code の差分ビューの変更前と変更後を拡張機能から読む](https://github.com/shuhei1101/mdmark/pull/197)（closed） | `original` は `git:` の `ref` が `~`（インデックス）、`modified` は `file:` |
+| ステージした変更: `git add` の後に `git.openChange(Uri)` | `original` が `git show HEAD:a.md`、`modified` が `git show :a.md` と一致 | ✅ 一致 | [PoC: VS Code の差分ビューの変更前と変更後を拡張機能から読む](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 両側とも `git:`（`ref` が `HEAD` と空） |
+| コミットの差分（タイムライン）: `vscode.diff` を `getAPI(1)` の `toGitUri(uri, {SHA})` の 2 つで呼ぶ | `original`・`modified` がそれぞれのコミットの `git show` と一致 | ✅ 一致 | [PoC: VS Code の差分ビューの変更前と変更後を拡張機能から読む](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 両側とも `git:`（`ref` が SHA） |
+| 両側の言語 | 上の 3 つで `languageId` がどちらも `markdown` | ✅ markdown | [PoC: VS Code の差分ビューの変更前と変更後を拡張機能から読む](https://github.com/shuhei1101/mdmark/pull/197)（closed） | `git:` の文書も `markdown` |
+| フォーカスが移ったとき: 横の列に Webview のパネルを表に出す | `window.tabGroups.all` から差分のタブを引け、同じ `original`・`modified` を取れる | ✅ 取れた | [PoC: VS Code の差分ビューの変更前と変更後を拡張機能から読む](https://github.com/shuhei1101/mdmark/pull/197)（closed） | アクティブなタブは Webview |
+| コミットの差分（Source Control のグラフ）: `git.viewCommit(rootUri, {SHA})` | 記録のみ（成立の条件に含めない） | - | [PoC: VS Code の差分ビューの変更前と変更後を拡張機能から読む](https://github.com/shuhei1101/mdmark/pull/197)（closed） | タブの入力は stable API に無いクラスで、実行時は `textDiffs[]` の `original`・`modified` を持つ。`window.activeTextEditor` は変更後の側だけ |
+| 待ち | 記録のみ | 0 ms | [PoC: VS Code の差分ビューの変更前と変更後を拡張機能から読む](https://github.com/shuhei1101/mdmark/pull/197)（closed） | 差分ビューが開いた時点で両側の文書は読み込み済みで、`openTextDocument` はすぐ返る |
 
 <!-- /table -->
 

@@ -53,3 +53,10 @@ functions:
         expected: '`{ title: "補足", open: false }`・`{ title: "実行の例", open: true }`・`{ title: "詳細", open: false }`'
         mock: なし
         summary: タイトルと開閉を読み込む
+lead: 'details の範囲のマーカーの読み取りを受け持ち、details の範囲の記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:構文
+    main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
+  - name: action:読み取り

@@ -85,3 +85,7 @@ refs:
 status: planned
 notes:
   HTML: '`<figure class="mdmark-figure" id="fig-{id}">{画像}<figcaption class="mdmark-figure-caption"><b>図 {number}</b>{caption}</figcaption></figure>`。表は `figcaption`（`<b>表 {number}</b>`）を表の前に配置する。タイトルの構造は確認ログの決定（図表の番号のタイトル）。モックは `docs/mock/components/figure/`'
+tags:
+  - name: topic:図表
+    main: true
+  - name: topic:番号

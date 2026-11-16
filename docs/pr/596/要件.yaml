@@ -87,10 +87,10 @@ docs:
     updated_at: '2026-11-15T19:46:32.605928+00:00'
 scope_out:
   - item: pie・xychart-beta・quadrantChart・sankey-beta を map で描く
-    reason: 今の部品 chart と重なる（#531 のスコープ外の判断と Issue の補足のとおり）
+    reason: '今の部品 chart と重なる（[map で erDiagram・stateDiagram-v2 の Mermaid を、flowchart・シーケンス図と同じ記載方法と操作で描く](https://github.com/shuhei1101/mdmark/pull/531) のスコープ外の判断と Issue の補足のとおり）'
     plan: none
   - item: map を Markdown へ書き出すときの種類ごとの扱い
-    reason: '#313 は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
+    reason: '[mdmark の文書を、MCP と CLI で純粋な Markdown（GFM と Mermaid）に書き出す](https://github.com/shuhei1101/mdmark/issues/313) は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
     plan: '#313'
   - item: C4Container・C4Component・C4Dynamic・C4Deployment を map で描く
     reason: Issue の対象は C4Context だけ。書き方は C4Context と共通で、この PR で作る C4 図の読み取りと描画を前提に要素の種類を足す後続になる

@@ -29,8 +29,6 @@ data_models:
         type: '(id: string) => void'
         description: その `id` のコメントのマーカーへ移って強調する
     status: planned
-    introduced:
-      pr: 280
 constants:
   - name: COMMENT_BLOCKS
     title: コメントを付けられるブロック
@@ -221,3 +219,8 @@ functions:
         condition: 画面の下端近くの矩形
         mock: なし
         expected: '`top` が矩形の上端より上'
+lead: 'コメントの部品のモジュールのエントリーポイントを受け持ち、コメントの付け方を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

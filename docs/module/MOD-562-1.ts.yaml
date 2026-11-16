@@ -204,3 +204,11 @@ functions:
         condition: 定義 1 つと参照 1 つの文書
         mock: なし
         expected: 出力に定義の本文の段落が無く、ツールチップと一覧にだけ本文がある
+lead: '注記の定義・参照の読み取りと番号・末尾の一覧を受け持ち、注記の記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:注記
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

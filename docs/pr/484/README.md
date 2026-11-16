@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #380](https://github.com/shuhei1101/mdmark/issues/380) の要望。
-[Issue #259](https://github.com/shuhei1101/mdmark/issues/259)（[PR #381](https://github.com/shuhei1101/mdmark/pull/381)）の受付で、同じ型の取りこぼしとして切り出した。
+[VS Code 拡張機能のプレビューと書き出す HTML へ設定 tooltips と syntax.url を通す](https://github.com/shuhei1101/mdmark/issues/380) の要望。
+[VS Code 拡張機能のプレビューと書き出す HTML へ設定 labels（部品の文言）を通す](https://github.com/shuhei1101/mdmark/issues/259)（[VS Code 拡張機能のプレビューと書き出す HTML へ設定 labels（部品の文言）を通す](https://github.com/shuhei1101/mdmark/pull/381)）の受付で、同じ型の取りこぼしとして切り出した。
 拡張機能は `vscode/src/config.ts` の `pickPreviewConfig` で `tooltips`・`syntax` を取り出していないため、プレビューと書き出し（HTML に書き出す・ブラウザで開く・PDF に印刷）の `mount` では、記載した値が効かない。
 
 ## 計画書

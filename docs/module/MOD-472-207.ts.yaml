@@ -74,3 +74,12 @@ functions:
         expected: '`https://cdn.jsdelivr.net/npm/lucide@{LUCIDE_VERSION}/dist/esm/icons/sailboat.mjs`'
         mock: なし
         summary: まとめたバージョンの URL にする
+lead: 'まとめていない名前のアイコンの jsDelivr からの読み込みを受け持ち、アイコンの読み込みを変えるときに参照する。'
+tags:
+  - name: topic:アイコン
+    main: true
+  - name: topic:dom
+  - name: action:描画
+  - name: topic:文書
+  - name: action:読み込み
+  - name: action:まとめ

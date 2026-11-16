@@ -29,3 +29,10 @@ functions:
     callees:
       - 'MOD-472-59#classes[DocumentView]'
     status: planned
+lead: '描いた文書の保持を受け持ち、Webview の中の描いた文書の扱いを変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

@@ -26,8 +26,6 @@ settings:
       - IF-472-22#constraints[バージョンの決め方]
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: mdmark.configPath
     title: 設定ファイルの場所
     file: settings.json
@@ -39,8 +37,6 @@ settings:
     allowed: 相対パスか絶対パス
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: mdmark.preview.liveUpdate
     title: 打つたびに再描画するか
     file: settings.json
@@ -51,8 +47,6 @@ settings:
     reload: immediate
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: mdmark.preview.updateDelayMs
     title: 再描画するまでの待ち
     file: settings.json
@@ -66,8 +60,6 @@ settings:
       - NFR-472-1#requirements[再描画するまでの待ち]
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: mdmark.preview.scrollPreviewWithEditor
     title: エディタに合わせてプレビューを動かすか
     file: settings.json
@@ -78,8 +70,6 @@ settings:
     reload: immediate
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: mdmark.preview.scrollEditorWithPreview
     title: プレビューに合わせてエディタを動かすか
     file: settings.json
@@ -90,8 +80,6 @@ settings:
     reload: immediate
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: mdmark.preview.theme
     title: プレビューの配色
     file: settings.json
@@ -104,8 +92,6 @@ settings:
       - IF-472-35#constraints[配色の切り替え]
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: mdmark.export.outputDir
     title: 書き出す先
     file: settings.json
@@ -119,8 +105,6 @@ settings:
       - IF-472-15#constraints[書き出す先]
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: features
     title: 機能のオン・オフ（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -133,8 +117,6 @@ settings:
       - CFG-472-3#settings[features]
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: libraries
     title: 外部ライブラリの対応表（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -148,8 +130,6 @@ settings:
     reason: Webview で読み込める URL への修正方法（`asWebviewUri`）は拡張機能にしかできず、mdmark に基準を指定するインターフェースを追加しても拡張機能が URL を修正する処理を持つことは変わらないため（要件.md の推奨案 B）
     status: planned
     visibility: user
-    introduced:
-      pr: 69
   - key: MDMARK_VSCODE_DIST_BASE
     title: テストの配布物の配信元
     file: 環境変数
@@ -162,8 +142,6 @@ settings:
     allowed: '`http:` か `https:` の URL（末尾の `/` を持たない）'
     status: planned
     visibility: developer
-    introduced:
-      pr: 69
   - key: MDMARK_VSCODE_TAGS_URL
     title: テストのタグ一覧の取得先
     file: 環境変数
@@ -176,8 +154,6 @@ settings:
     allowed: '`http:` か `https:` の URL'
     status: planned
     visibility: developer
-    introduced:
-      pr: 69
   - key: side-toc
     title: 右側の目次の出し方（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -190,8 +166,6 @@ settings:
       - CFG-472-3#settings[side-toc.mode]
     status: planned
     visibility: user
-    introduced:
-      pr: 166
   - key: labels
     title: 部品の文言（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -204,8 +178,6 @@ settings:
       - CFG-472-3#settings[labels.paramCopy]
     status: planned
     visibility: user
-    introduced:
-      pr: 381
   - key: mdmark.colorTheme
     title: プレビューと書き出しのテーマ
     file: settings.json
@@ -221,8 +193,6 @@ settings:
     reason: 選んだテーマは書き出す HTML にも該当するため、`mdmark.preview.*` の下に配置しない（確認ログ「テーマの設定のキーと設定画面の表示名」）
     status: planned
     visibility: user
-    introduced:
-      pr: 181
   - key: colorTheme
     title: 選ぶテーマ（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -235,8 +205,6 @@ settings:
       - CFG-472-3#settings[colorTheme]
     status: planned
     visibility: user
-    introduced:
-      pr: 181
   - key: colorScheme
     title: 配色の明暗（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -275,8 +243,6 @@ settings:
       - IF-472-22#constraints[CSP]
     status: planned
     visibility: user
-    introduced:
-      pr: 303
   - key: mermaid
     title: mermaid の設定（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -290,8 +256,6 @@ settings:
       - IF-472-22#constraints[CSP]
     status: planned
     visibility: user
-    introduced:
-      pr: 382
   - key: aliases
     title: エイリアスの元の行（拡張機能が読み込む）
     file: mdmark.config.yaml
@@ -306,8 +270,6 @@ settings:
       - IF-472-15#constraints[エイリアス]
     status: planned
     visibility: user
-    introduced:
-      pr: 378
   - key: table
     title: 表の設定（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -320,8 +282,6 @@ settings:
       - CFG-472-3#settings[table.pin]
     status: planned
     visibility: user
-    introduced:
-      pr: 438
   - key: tooltips
     title: ツールチップを出す場所（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -335,8 +295,6 @@ settings:
       - CFG-472-3#settings[tooltips.diagramPlacement]
     status: planned
     visibility: user
-    introduced:
-      pr: 484
   - key: syntax.url
     title: 色分けのライブラリの読み込み先（拡張機能が指定する）
     file: mdmark.config.yaml
@@ -351,5 +309,7 @@ settings:
       - IF-472-15#constraints[埋める色分けのライブラリ]
     status: planned
     visibility: user
-    introduced:
-      pr: 484
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:vscode

@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
@@ -22,6 +25,9 @@ flows:
         B->>F: v0.0.0 を埋めた dist/index.js と index.css、型定義の dist/index.d.ts、まとめた依存の THIRD_PARTY_LICENSES.txt を書き込む
         B->>F: migrations/next/ に retired-diagrams.js と、まとめた依存の THIRD_PARTY_LICENSES.txt を書き込む
         B-->>D: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`dist/index.js` と `dist/index.css` がある'
@@ -43,6 +49,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
@@ -50,6 +59,9 @@ flows:
         D->>B: npm run build -- --version v0.0.1
         B->>F: v0.0.1 を埋めた dist/index.js と index.css を書き込む
         B-->>D: 終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`dist/index.js` の `version()` が `v0.0.1` を返却する'
@@ -64,6 +76,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
@@ -72,6 +87,9 @@ flows:
         B->>G: v0.3.0 の schemas/ を読み込む
         B->>B: 変えた Schema に手順も合う行も無い
         B-->>D: Schema と修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`dist/` が無い'
@@ -86,6 +104,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
@@ -94,6 +115,9 @@ flows:
         B->>G: 最新のバージョンのタグ v0.3.0 を読み込む
         B->>B: v0.4.0 がタグより新しく migrations/next/ が残る
         B-->>D: 移し方・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`dist/` が無い'
@@ -107,12 +131,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
         D->>B: npm run build
         B->>B: migrations/next/steps.yaml が Schema に合わない
         B-->>D: ファイルと合わないところ・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`dist/` が無い'
@@ -127,11 +157,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
         D->>B: npm run build -- --version 1.2
         B-->>D: 書式 v{MAJOR}.{MINOR}.{PATCH} を示して終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`dist/` が無い'
@@ -145,6 +181,9 @@ flows:
       - name: Mock
         description: 配布ファイルの上限を 1 バイトに差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
@@ -153,6 +192,9 @@ flows:
         B->>F: dist/ を書き込む
         B->>F: サイズを数え、dist/ を削除する
         B-->>D: 超えたファイル名とサイズを示して終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`dist/` が無い'
@@ -167,6 +209,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor D as 開発者
         participant B as ビルド
@@ -176,6 +221,9 @@ flows:
         B->>B: minify せずにまとめた JS を下限のバージョンと照らす
         B->>F: dist/ を削除する
         B-->>D: API・配布ファイル・ブラウザのバージョンを示して終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`dist/` が無い'
@@ -224,7 +272,17 @@ constraints:
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
     notes: 書き出しに埋める `dist/index.css`・`dist/viewer.js`・`dist/viewer.css` は、同じバージョンのものを `dist/cli.js` と同じフォルダから読み込む。`dist/viewer.js` はライブラリ本体を含めてまとめる
   - item: 移行の手順の点検
-    constraint: '配布物を書き込む前に実行する。比べるバージョンは `--version` があればそのバージョン、無ければ `version.ini` のバージョン。最新のバージョンのタグは `git tag` の `v{MAJOR}.{MINOR}.{PATCH}` のうち最も新しいバージョン。比べるバージョンがタグと同じなら `migrations/next/` と `version: next` の行を、新しければ `migrations/v{比べるバージョン}/` と `version: v{比べるバージョン}` の行を確認する。`schemas/mdmark.config.schema.json`・`schemas/mdmark.index.schema.json`・`schemas/mdmark.settings.schema.json`・`schemas/mdmark.templates.schema.json` の中身がタグのものと違うとき、確認するフォルダに `steps.yaml` があるか、確認する行のうち `schema` がそのファイルで `sha256` が今の中身と合う行があれば合格にする。タグに無い Schema と作業ツリーに無い Schema は比べない'
+    constraint: '配布物を書き込む前に実行する。
+
+      比べるバージョンは `--version` があればそのバージョン、無ければ `version.ini` のバージョン。
+
+      最新のバージョンのタグは `git tag` の `v{MAJOR}.{MINOR}.{PATCH}` のうち最も新しいバージョン。
+
+      比べるバージョンがタグと同じなら `migrations/next/` と `version: next` の行を、新しければ `migrations/v{比べるバージョン}/` と `version: v{比べるバージョン}` の行を確認する。
+
+      `schemas/mdmark.config.schema.json`・`schemas/mdmark.index.schema.json`・`schemas/mdmark.settings.schema.json`・`schemas/mdmark.templates.schema.json` の中身がタグのものと違うとき、確認するフォルダに `steps.yaml` があるか、確認する行のうち `schema` がそのファイルで `sha256` が今の中身と合う行があれば合格にする。
+
+      タグに無い Schema と作業ツリーに無い Schema は比べない'
     decided_by: ER-472-5#
     notes: バージョンのタグが 1 つも無いとき、git の作業ツリーでないとき、比べるバージョンがタグより古いときは飛ばす。
   - item: 出していないバージョンの手順の移し
@@ -241,3 +299,7 @@ constraints:
     decided_by: NFR-472-1#requirements[対応ブラウザ]
     notes: 照らすバージョンは制約『出力の対象のブラウザ』と同じ値から取る。minify した配布ファイルは `if` のブロックが式に畳まれ、有無を確認した箇所も報告に出るため照らさない。`dist/cli.js` は対象外
 test_file: tests/integration/lib/build.test.ts
+tags:
+  - name: topic:配布物
+    main: true
+  - name: action:ビルド

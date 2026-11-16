@@ -29,8 +29,6 @@ functions:
         mock: なし
         expected: '`["a.png", "m/demo.mp4"]`'
     status: planned
-    introduced:
-      pr: 263
   - name: applyAssetUrls
     title: Webview の URL に替える
     kind: 関数
@@ -61,8 +59,6 @@ functions:
         mock: なし
         expected: '`video` の `src` と `poster` が替わり、`img` の `src` が `none.png` のまま'
     status: planned
-    introduced:
-      pr: 263
   - name: attachMediaErrors
     title: 再生できない動画・音声を通知に替える
     kind: 関数
@@ -91,5 +87,10 @@ functions:
         mock: なし
         expected: '`video` の場所に `mdmark-notice` の枠があり本文に `webm` と `media/clip.webm`、リンクが `data-path="media/clip.webm"`'
     status: planned
-    introduced:
-      pr: 263
+lead: '相対パスの画像・動画・音声の Webview の URL への置き換えを受け持ち、プレビューのアセットの扱いを変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:置き換え

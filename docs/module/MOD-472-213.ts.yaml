@@ -93,8 +93,6 @@ functions:
         mock: なし
         expected: '`env.warnings` が `{ line: 5, kind: "unknown_mark_arg" }`（`message` に `grop` と `group`・`collapse` を含む）と `{ line: 17, kind: "legacy_mark" }` の 2 件'
     status: planned
-    introduced:
-      pr: 328
   - name: recordMarkNotes
     title: マーカーの注記を記録する
     container: src/render/syntax/warnings.ts
@@ -123,3 +121,11 @@ functions:
     refs:
       - IF-472-39#constraints[マーカーの設定の点検]
     status: planned
+lead: '記載の警告の差し込みと収集を受け持ち、記載の警告の出し方を変えるときに参照する。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: topic:部品

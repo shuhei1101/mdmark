@@ -36,3 +36,9 @@ functions:
         condition: '`<div class="a"><p>x &lt;y&gt;</p></div>` と nonce `n1`'
         mock: なし
         expected: '`<div data-mdmark-own="n1" class="a"><p data-mdmark-own="n1">x &lt;y&gt;</p></div>`'
+lead: 'mdmark が出した要素へのマーカーの付与を受け持ち、部品の要素の見分け方を変えるときに参照する。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: tool:html
+  - name: action:付与

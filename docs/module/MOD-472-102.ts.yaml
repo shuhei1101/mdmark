@@ -106,5 +106,9 @@ functions:
     refs:
       - IF-472-15#constraints[埋める色分けのライブラリ]
     status: planned
-    introduced:
-      pr: 484
+lead: '相対パスのライブラリと範囲のスクリプトを HTML に埋める処理を受け持ち、相対パスのライブラリの埋め方を変えるときに参照する。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:vscode
+  - name: tool:html

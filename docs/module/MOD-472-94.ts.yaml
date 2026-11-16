@@ -39,5 +39,9 @@ functions:
         mock: なし
         expected: '`files` が空'
     status: planned
-    introduced:
-      pr: 263
+lead: '文書が指すファイルを探す場所の候補を受け持ち、プレビューのアセットの探し方を変えるときに参照する。'
+tags:
+  - name: topic:ファイル
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

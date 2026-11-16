@@ -40,5 +40,12 @@ functions:
         mock: '`navigator.clipboard` を `undefined` に差し替える'
         expected: '`false`'
     status: planned
-    introduced:
-      pr: 151
+lead: 'クリップボードへの書き込みを受け持ち、表・コードブロック・ファイルツリーのコピーの処理を変えるときに参照する。'
+tags:
+  - name: topic:クリップボード
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
+  - name: topic:部品
+  - name: action:コピー

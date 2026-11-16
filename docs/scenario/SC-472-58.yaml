@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。印刷は、媒体を `print` にして印刷の前のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -21,6 +24,9 @@ scenarios:
         M->>M: 折り畳みを全て開く
         B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
+      ```
+
+      <!-- /map -->
     expected:
       - 折り畳み（`details`）が開いている
       - 描く先の要素の `--mdmark-color-bg` の計算値が明るい配色の値（ダークの配色が解除される）で、地の色は削除される
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -42,6 +51,9 @@ scenarios:
         B->>M: 印刷の後のイベント
         M->>M: 印刷の前の開閉に戻す
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前に閉じていた折り畳みが閉じている
       - 印刷の前に開いていた折り畳みが開いている
@@ -55,6 +67,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -66,6 +81,9 @@ scenarios:
         B->>M: 印刷の後のイベント
         M->>M: 印刷の前の表示に戻す
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、タブの 2 つの中身がタブ名をタイトルにして縦に並んで表示されている
       - 印刷の前のイベントの後、閉じたセクション・行の詳細・閉じた表・閉じた注意書きの中身が表示されている
@@ -83,6 +101,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -91,6 +112,9 @@ scenarios:
         U->>B: 印刷を始める
         B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
+      ```
+
+      <!-- /map -->
     expected:
       - '`ワークスペース` の下線が削除され、単語は本文の文字として出ている'
       - ツールチップが出ていない
@@ -107,6 +131,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -115,6 +142,9 @@ scenarios:
         B->>M: 印刷の前のイベント
         B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上の列のボタン（隠した列の数のバッジを含む）・コピー・「集計」のボタンが出ていない
       - 行へのリンクのマーカーが出ていない
@@ -131,6 +161,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。色分けのライブラリの本体と `typescript` のモジュールも、jsDelivr と同じパスで返却する手元の応答に差し替え、色分けし終えてから印刷を始める
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -139,6 +172,9 @@ scenarios:
         B->>M: 印刷の前のイベント
         B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
+      ```
+
+      <!-- /map -->
     expected:
       - コードブロックの上にタイトル `app.ts` が出ている
       - 3 つの行の左に 1〜3 の行番号が出ている
@@ -157,6 +193,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -168,6 +207,9 @@ scenarios:
         B-->>U: 右側の目次とボタンの無い印刷の出力
         B->>M: 印刷の後のイベント
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、右側の目次・目次を出すボタン・すべて展開とすべて折りたたむのボタンが出ていない
       - 印刷の前のイベントの後、`付録` の段落が表示されている
@@ -183,6 +225,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -193,6 +238,9 @@ scenarios:
         B-->>U: 先頭へ戻るボタンの無い印刷の出力
         B->>M: 印刷の後のイベント
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、先頭へ戻るボタンが出ていない
       - 印刷の後のイベントの後、先頭へ戻るボタンが画面の右下に表示されている
@@ -207,6 +255,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -215,6 +266,9 @@ scenarios:
         B->>M: 印刷の前のイベント
         M->>M: ダークを解除し、選んだテーマの明るい配色にする
         B-->>U: theme-slate の明るい配色で印刷
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素のリンクの色の計算値が、theme-slate の明るい配色の `--mdmark-color-link` の値（既定のテーマに戻らない）
       - 地の色は正常シナリオと同じく削除される
@@ -230,6 +284,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -238,6 +295,9 @@ scenarios:
         B->>M: 印刷の前のイベント
         B->>B: 印刷向けの CSS を適用する
         B-->>U: 印刷の出力
+      ```
+
+      <!-- /map -->
     expected:
       - 表の行・バッジ・本文の文字の色が、ライトの色のプリセットの値で残っている
       - '`#only-light` の画像が出て、`#only-dark` の画像が出ていない'
@@ -254,6 +314,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（記法を開いて出す）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -265,6 +328,9 @@ scenarios:
         B->>M: 印刷の後のイベント
         M->>M: 印刷の前の表示に戻す
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、コードブロックの全ての行と、入れ子の閉じた注意書きの本文が表示されている
       - 印刷の前のイベントの後、コードの開閉のボタンと ⋯ が印刷に出ていない
@@ -279,6 +345,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -290,6 +359,9 @@ scenarios:
         B->>M: 印刷の後のイベント
         M->>M: 脚注の一覧をもう一度閉じる
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、文書の末尾の脚注の一覧が開いていて、`1` と `出典の説明` が表示されている
       - 印刷の前のイベントの後も、本文の番号 `1` は上付きの数字で出ていて、脚注のツールチップが出ていない
@@ -306,6 +378,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（脚注の一覧を開いて出す）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -317,6 +392,9 @@ scenarios:
         B->>M: 印刷の後のイベント
         M->>M: 注記の一覧をもう一度閉じる
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、文書の末尾の注記の一覧が開いていて、`cond` の項目の `条件を満たさないときは次の工程へ進む` が表示されている
       - 印刷の前のイベントの後も、段落の注記のマーカーは出ていて、注記のツールチップが出ていない
@@ -333,6 +411,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（記法を開いて出す）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -345,6 +426,9 @@ scenarios:
         B->>M: 印刷の後のイベント
         M->>M: 印刷の前の表示に戻す
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の前のイベントの後、階層の表の全ての行と、見本の全てのタブの中身が表示されている
       - 印刷の前のイベントの後、▾・⧉・見本の表示を切り替えるボタンが印刷に出ていない
@@ -360,6 +444,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant B as ブラウザ
@@ -371,6 +458,9 @@ scenarios:
         B-->>U: 印刷の出力
         B->>M: 印刷の後のイベント
         B-->>U: 画面の表示に戻る
+      ```
+
+      <!-- /map -->
     expected:
       - 画面では `pagebreak` の場所に何も表示されず、高さも取っていない
       - '印刷の前のイベントの後、`pagebreak` の場所の要素に改ページの指定（`break-before: page`）が該当している'
@@ -379,7 +469,6 @@ scenarios:
       - 印刷の後のイベントの後、`補足` の範囲が閉じている
     test: test_normal_when_pagebreak_details_wide
 lead: 読者が mdmark の描いた文書を印刷・PDF にすると、折り畳みを全て開き、図表を改ページで切らず、ダークの配色を解除し、リンクの URL を併記して出す。印刷を終えると画面の表示に戻る。
-issue: 3
 primary_actor: 読者
 stakeholders:
   - name: 印刷・PDF を受け取る人
@@ -391,3 +480,7 @@ preconditions:
 success_guarantee: 印刷の出力で、折り畳みの中身・リンクの URL が読み込め、配色は明るい配色になる。
 minimal_guarantee: 印刷を終えた後、画面の折り畳みは印刷の前の開閉に戻る。
 test_file: tests/e2e/単一ユースケース/文書を印刷する.spec.ts
+tags:
+  - name: topic:印刷
+    main: true
+  - name: topic:pdf

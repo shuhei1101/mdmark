@@ -138,3 +138,7 @@ refs:
 status: planned
 notes:
   HTML: '`<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: {width}"><video src="{src}" controls preload="metadata" playsinline aria-label="{alt}" poster="{poster}"></video><img class="mdmark-media-print" src="{poster}" alt=""><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。音声は `audio`（`playsinline` を持たない）。モックは `docs/mock/components/media/`'
+tags:
+  - name: topic:動画
+    main: true
+  - name: topic:音声

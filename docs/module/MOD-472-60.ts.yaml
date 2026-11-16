@@ -60,3 +60,12 @@ functions:
     refs:
       - SCR-472-2#elements[読み込み中の表示]
     status: planned
+lead: '配布物の読み込みと読み込み中の表示の待ちを受け持ち、プレビューの配布物の読み込みを変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー
+  - name: action:読み込み
+  - name: action:配布

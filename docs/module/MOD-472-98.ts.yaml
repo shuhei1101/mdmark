@@ -24,3 +24,10 @@ data_models:
         type: Logger
         description: ログの出力先
     status: planned
+lead: '各処理が受ける共通の依存と globalState のキーを受け持ち、拡張機能の起動やコマンドの登録を変えるときに参照する。'
+tags:
+  - name: topic:エントリポイント
+    main: true
+  - name: tool:vscode
+  - name: action:登録
+  - name: action:起動

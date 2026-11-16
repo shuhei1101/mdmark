@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #5](https://github.com/shuhei1101/mdmark/issues/5) の要望。
-[#16](https://github.com/shuhei1101/mdmark/pull/16) と [#19](https://github.com/shuhei1101/mdmark/pull/19) で入った `mount`・`render` は Markdown と設定だけを受け取り、文書の索引を持たない。
-#19 は用語集の表の印と用語のツールチップをこの Issue へ回している。
-点検を呼ぶ口は、CLI の `mdmark check` を [#9](https://github.com/shuhei1101/mdmark/issues/9)、MCP の `check` を [#11](https://github.com/shuhei1101/mdmark/issues/11) が持つ。
+[文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/issues/5) の要望。
+[Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/pull/16) と [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) で入った `mount`・`render` は Markdown と設定だけを受け取り、文書の索引を持たない。
+[HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) は用語集の表の印と用語のツールチップをこの Issue へ回している。
+点検を呼ぶ口は、CLI の `mdmark check` を [サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9)、MCP の `check` を [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11) が持つ。
 
 ## 計画書
 
@@ -20,10 +20,10 @@
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（用語の照合と被参照の算出は #19 の解析器のトークンの上で行え、ツールチップは DOM の標準の操作で付けられ、未検証の技術機構に依存しない）
+- [x] ~~PoC 検証~~（用語の照合と被参照の算出は [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) の解析器のトークンの上で行え、ツールチップは DOM の標準の操作で付けられ、未検証の技術機構に依存しない）
 - [x] ~~複合ユースケース設計~~（単一ユースケースの E2E で足りる）
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、見た目の方向を変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

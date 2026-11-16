@@ -15,6 +15,9 @@ scenarios:
         description: '`MDMARK_PORT` に、待ち受けるプロセスの無いポートを指定する'
         notes: 常駐サーバーの起動と `.mcp.json` の接続先の展開に同じポートを使用する。手元の `mdmark serve` が使用する 8782 を回避する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[MCPサーバーを起動・停止する:正常シナリオ（起動する）] --> B[ClaudeCodeにプラグインを入れる:正常シナリオ]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
@@ -23,6 +26,9 @@ scenarios:
         click B "id:SC-472-4#scenarios[正常シナリオ]"
         click C "id:SC-472-3#scenarios[正常シナリオ]"
         click D "id:SC-472-3#scenarios[正常シナリオ（ずれがある）]"
+      ```
+
+      <!-- /map -->
     expected:
       - '`MDMARK_PORT` に指定したポートで待ち受けるプロセスが 1 つだけある'
       - 作業のフォルダ A のクライアントの `check` が、空のずれの一覧を返却する
@@ -44,12 +50,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:異常シナリオ（常駐サーバーが起動していない）] --> B[MCPサーバーを起動・停止する:正常シナリオ（起動する）]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
         click A "id:SC-472-4#scenarios[異常シナリオ（常駐サーバーが起動していない）]"
         click B "id:SC-472-7#scenarios[正常シナリオ（起動する）]"
         click C "id:SC-472-3#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - 常駐サーバーを起動した後は、同じクライアントがもう一度接続して `check` が作業のフォルダ A の空のずれの一覧を返却する
       - 続けて `build_site` が、作業のフォルダ A の `build.out` に 1 枚の HTML を書き込み、入れた文書の数 1 を返却する
@@ -59,7 +71,6 @@ scenarios:
       - SC-472-7#scenarios[正常シナリオ（起動する）]
       - SC-472-3#scenarios[正常シナリオ]
 lead: 文書の作成者が mdmark の MCP の常駐サーバーを 1 つ起動し、mdmark のプラグインを入れて並行に開いた 2 つのセッションから同じプロセスのツールを呼ぶ。
-issue: 111
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
@@ -74,3 +85,9 @@ preconditions:
 success_guarantee: 常駐サーバーのプロセスが 1 つだけ待ち受け、2 つのセッションのツールの呼び出しがそれぞれの作業のフォルダに対して働く。
 minimal_guarantee: 常駐サーバーが起動していないときも Claude Code のセッションは開け、MCP サーバー `plugin:mdmark:mdmark` だけが接続の失敗になる。常駐サーバーを起動してからもう一度接続すれば、セッションをもう一度開かずにツールを呼べる。
 test_file: tests/e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
+tags:
+  - name: topic:サーバー
+    main: true
+  - name: topic:常駐
+  - name: tool:mcp
+  - name: topic:プラグイン

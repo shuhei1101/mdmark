@@ -62,4 +62,5 @@
 
 <!-- /table -->
 
-E2E の全件実行（`npm run test:e2e`）は流していない。影響するユースケースの 9 spec（38 件）だけを Chromium のプロジェクトで流した。
+E2E の全件実行（`npm run test:e2e`）は流していない。
+影響するユースケースの 9 spec（38 件）だけを Chromium のプロジェクトで流した。

@@ -4,11 +4,6 @@ title: ClaudeCodeプラグイン / ガイド / guide.ts
 lead: ガイドの索引（名前・参照するとき・概要・本文のページ）の構造を検査する。プラグインのビルドが使用する。
 test_files:
   - tests/unit/src/plugin/guide.test.ts
-directory: |-
-  ```tree
-  src/plugin/
-  └── guide.ts  # ガイドの索引の検査
-  ```
 data_models:
   - name: GuideEntry
     title: ガイドの索引の行
@@ -32,8 +27,6 @@ data_models:
     refs:
       - ER-472-4#tables[guides]
     status: planned
-    introduced:
-      pr: 72
 functions:
   - name: parseGuideIndex
     title: ガイドの索引を検査する
@@ -91,5 +84,15 @@ functions:
     refs:
       - ER-472-4#
     status: planned
-    introduced:
-      pr: 72
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/plugin/
+    └── guide.ts  # ガイドの索引の検査
+    ```
+tags:
+  - name: topic:ガイド
+    main: true
+  - name: tool:claude-code
+  - name: action:検査
+  - name: action:ビルド

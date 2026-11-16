@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。`features.callout` だけ `false` を、ほかは既定のままを回答し、書き込んでよいかには認める回答を返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as Claude Code（setup）
@@ -23,6 +26,9 @@ scenarios:
         W->>C: 書き込んでよい
         C->>F: 雛形に回答した値を入れて書き込む
         C-->>W: 書き込んだパスと値
+      ```
+
+      <!-- /map -->
     expected:
       - '文書のフォルダに `mdmark.config.yaml` があり、`features.callout: false` を持つ'
       - '`mdmark check` と同じ点検が設定の構造のずれを返却しない'
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。`features.callout` だけ `false` を、ほかは今の値のままを回答する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as Claude Code（setup）
@@ -49,6 +58,9 @@ scenarios:
         W->>C: 書き込んでよい
         C->>F: 変えるキーだけ書き換える
         C-->>W: 変えたキー
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.config.yaml` が `features.callout: false` と `features.table: false` を持つ'
       - '`features.callout` の行のほかの行（コメントの行を含む）が呼ぶ前と同じ'
@@ -60,6 +72,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。書き込んでよいかには断る回答を返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as Claude Code（setup）
@@ -72,12 +87,14 @@ scenarios:
         C-->>W: 書き込む内容
         W->>C: 書き込まない
         C-->>W: 書き込まなかったこと
+      ```
+
+      <!-- /map -->
     expected:
       - 文書のフォルダに `mdmark.config.yaml` が無い
       - 最後の報告に、書き込まなかったことが出る
     test: test_error_when_write_declined
 lead: 文書の作成者が Claude Code で `setup` を呼び、文書のフォルダの `mdmark.config.yaml` をキーごとに確認しながら作る・修正する。
-issue: 165
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
@@ -89,3 +106,8 @@ preconditions:
 success_guarantee: 文書のフォルダの `mdmark.config.yaml` が、文書の作成者が回答した値を持ち、設定の構造のずれが無い。
 minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、`mdmark.config.yaml` を作らず、書き換えない。
 test_file: tests/e2e/単一ユースケース/文書のフォルダに設定を作る.spec.ts
+tags:
+  - name: topic:設定
+    main: true
+  - name: topic:セットアップ
+  - name: tool:claude-code

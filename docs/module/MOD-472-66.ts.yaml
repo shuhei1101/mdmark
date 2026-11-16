@@ -30,3 +30,10 @@ functions:
     refs:
       - IF-472-17#constraints[通知の間引き]
     status: planned
+lead: 'プレビューのスクロールの通知を受け持ち、エディタとプレビューのスクロールの合わせ方を変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

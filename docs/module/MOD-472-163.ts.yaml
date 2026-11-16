@@ -171,8 +171,6 @@ functions:
     refs:
       - CMP-472-17#
     status: planned
-    introduced:
-      pr: 280
   - name: renderCommentOrphans
     title: 箇所が見つからないコメントの一覧の HTML
     container: src/parts/comment.ts
@@ -229,3 +227,9 @@ functions:
         expected: '`aria-label` が `コメント 2 件、「担当者」（選ばれていないタブの中）`、`span` が `2`、`data-closed="tab"`・`data-current` を持つ'
     refs:
       - CMP-472-33#
+lead: 'コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧の HTML を受け持ち、コメントの部品の HTML を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント
+  - name: action:描画

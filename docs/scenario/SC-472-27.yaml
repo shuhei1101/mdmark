@@ -10,6 +10,9 @@ scenarios:
         description: 呼んだ CLI のバージョンを `v0.5.0` に、移行の手順のフォルダと変更履歴をテスト用のものに差し替える
         notes: '`v0.4.0` は設定のキーの名前を変える手順、`v0.5.0` は文書のマーカーを書き換える手順を持つ。どちらも壊すマーカーと値を聞く指定を持たない。変更履歴は v0.3.0・v0.4.0・v0.5.0 の行を持つ'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -22,6 +25,9 @@ scenarios:
         C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
         C->>F: 設定の version を v0.5.0 にする
         C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 設定のキーの名前が v0.4.0 の手順のとおりに変わり、文書のマーカーが v0.5.0 の手順のとおりに書き換わっている
       - 設定の `version` が `v0.5.0`
@@ -37,6 +43,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊すマーカーを付ける
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -45,6 +54,9 @@ scenarios:
         C->>F: 設定の version を読み込む
         C->>C: v0.4.0・v0.5.0 の手順を参照する
         C-->>W: バージョンごとの手順・変更履歴の行・壊す手順があること・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 出力に v0.4.0・v0.5.0 の順で手順が出る
       - 出力に v0.4.0・v0.5.0 の変更履歴の行が出る
@@ -60,6 +72,9 @@ scenarios:
         description: 呼んだ CLI のバージョンを `v0.4.0` に、`v0.4.0` の手順を値を利用者に聞いてキーを追加する手順に差し替える
         notes: 標準入力に追加するキーの値を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -72,6 +87,9 @@ scenarios:
         C->>C: 点検を実行する（ずれ 0 件）
         C->>F: 設定の version を v0.4.0 にする
         C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 設定に、回答した値でキーが追加されている
       - 設定の `version` が `v0.4.0`
@@ -85,6 +103,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 標準入力に手元のバージョン `v0.3.0` を指定する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -97,6 +118,9 @@ scenarios:
         C->>C: 点検を実行する（ずれ 0 件）
         C->>F: 設定に version: v0.5.0 を記載する
         C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 設定の `version` が `v0.5.0`
       - 変更後の設定・文書が、`version` を除いて正常シナリオと同じ
@@ -109,6 +133,9 @@ scenarios:
       - name: Mock
         description: 呼んだ CLI のバージョンを `v0.5.0` に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -116,6 +143,9 @@ scenarios:
         W->>C: mdmark upgrade
         C->>F: 設定の version を読み込む
         C-->>W: 適用する手順が無いこと・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 出力に、手元のバージョンが目標のバージョンと同じで適用する手順が無いことが出る
       - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
@@ -129,6 +159,9 @@ scenarios:
         description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊すマーカーを付ける
         notes: '`--yes` を付けず、確認に標準入力で断る'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -138,6 +171,9 @@ scenarios:
         C-->>W: 壊す手順を示して適用してよいか確認する
         W->>C: 断る
         C-->>W: 何も適用しなかったこと・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
       - 出力に、何も適用しなかったことと `--yes` で確認せずに適用できることが出る
@@ -150,6 +186,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。加えて `v0.5.0` の手順を、終了コード 1 で終わるスクリプトの手順に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -160,6 +199,9 @@ scenarios:
         C->>F: v0.5.0 のスクリプトを実行する（失敗）
         C->>F: コピーから戻す
         C-->>W: 失敗したバージョン・手順・理由・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 設定・索引・文書が適用する前と同じ中身に戻っている（v0.4.0 で変えたキーも戻っている）
       - 設定の `version` が `v0.3.0` のまま
@@ -173,6 +215,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。加えて `v0.5.0` の手順を、設定の `build.out` を拡張子 `.txt` の値として解釈する手順に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -182,6 +227,9 @@ scenarios:
         C->>C: 点検を実行する（ずれがある）
         C->>F: コピーから戻す
         C-->>W: ずれの一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 設定・索引・文書が適用する前と同じ中身に戻っている
       - 設定の `version` が `v0.3.0` のまま
@@ -195,6 +243,9 @@ scenarios:
       - name: Mock
         description: 呼んだ CLI のバージョンを `v0.5.0` に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -202,6 +253,9 @@ scenarios:
         W->>C: mdmark upgrade
         C->>F: 設定の version を読み込む
         C-->>W: 手元のバージョンが新しいことと、手元のバージョン以上の CLI で呼ぶこと・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 出力に手元のバージョン `v0.6.0` と目標のバージョン `v0.5.0` と、手元のバージョン以上のバージョンの CLI でもう一度呼ぶことが出る
       - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
@@ -215,6 +269,9 @@ scenarios:
         description: 正常シナリオと同じ。加えて `v0.5.0` の手順に壊すマーカーを付ける
         notes: '`--yes` を付け、標準入力には何も指定しない'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -225,6 +282,9 @@ scenarios:
         C->>C: 点検を実行する（ずれ 0 件）
         C->>F: 設定の version を v0.5.0 にする
         C-->>W: 適用した手順・変更履歴の行・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 出力に壊す手順の確認が出ない
       - 壊す手順を含む v0.4.0・v0.5.0 の手順が該当している
@@ -238,6 +298,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -247,6 +310,9 @@ scenarios:
         C->>C: 点検を実行する（図の定義のずれがある）
         C->>F: バックアップから戻す
         C-->>W: ずれの一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 設定・索引・文書が適用する前と同じ中身に戻っている
       - 設定の `version` が `v0.3.0` のまま
@@ -262,6 +328,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -270,6 +339,9 @@ scenarios:
         C->>F: docs/ の mdmark.config.yaml の手元のバージョンから手順を適用する
         C->>F: docs/ の mdmark.config.yaml のバージョンを書き換える
         C-->>W: 適用した手順と変更履歴・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - '`docs/` の `mdmark.config.yaml` の `version` が目標のバージョンになる'
@@ -283,6 +355,9 @@ scenarios:
         description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
         notes: '`--yes` を付ける'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -293,6 +368,9 @@ scenarios:
         C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 適用した手順・除外したキーと値・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`terms` の行が `alias_type: term` を持ち、`metadata` の `name`・`description` が元の `field` の列名の文字列になっている'
       - '`commands` の行が `alias_type: command` を持ち、`metadata` が `alias_type` を持たない'
@@ -313,6 +391,9 @@ scenarios:
         description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
         notes: '`--yes` を付ける'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -323,6 +404,9 @@ scenarios:
         C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '表のマーカーが `<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"名前": {"filter": {}}, "更新日": {"filter": {"type": "date"}}}, "collapse": {"open": false}} -->` になり、`total` を持たない'
       - 'code のマーカーが `<!-- code: {"title": "app.ts", "lines": {}, "highlight": [2, {"from": 4, "to": 6}]} -->` になる'
@@ -345,6 +429,9 @@ scenarios:
         description: 正常シナリオ（文書のマーカーを JSON の記載へ書き換える）と同じ
         notes: '`--yes` を付ける'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -356,6 +443,9 @@ scenarios:
         C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`flow`・`sequence` の範囲が、`<!-- map: {"title": "{元の題名}"} -->` 〜 `<!-- /map -->` の範囲（`mermaid` のブロック 1 つと補足 `<!-- map-data: {"version": 1, …} -->`）に 1 つずつ書き換わり、範囲の外の本文は変わっていない'
       - フロー図の Mermaid が `flowchart` で、システムの枠と層が `subgraph` の入れ子、ノードと線とラベルが元の定義と同じ数と向きで、ノードの種類は Mermaid のクラス、`read`・`write` の線は補足の `layout` の `line` で指されている。リンク先を持つノードには `click` の行がある
@@ -376,6 +466,9 @@ scenarios:
         description: 正常シナリオ（文書のマーカーを JSON の記載へ書き換える）と同じ
         notes: '`--yes` を付ける'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -386,6 +479,9 @@ scenarios:
         C->>C: mdmark check と同じ点検を実行する（残った今の書き方のマーカーと flow の範囲は移行の報告に挙げたもので、点検の失敗に数えない）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`<!-- section: closed -->` が `<!-- section: {"open": false} -->` に書き換わっている'
       - '表のマーカーが `<!-- table: {"kind": "data"} -->` になり、読み込めない `filter=名前:range` を持たない'
@@ -401,6 +497,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -409,6 +508,9 @@ scenarios:
         C->>F: コピーを取り、手順を適用する（mixed の行を書き換えられず、手順が失敗する）
         C->>F: コピーから戻す
         C-->>W: mixed の行を種類ごとの行に分ける修正方法・終了コード 0 以外
+      ```
+
+      <!-- /map -->
     expected:
       - 出力に `mixed` の行と、レコードの種類 `term`・`command` ごとに行を分ける修正方法が出る
       - 設定が適用する前と同じ中身に戻っている
@@ -416,7 +518,6 @@ scenarios:
       - 終了コードが 0 以外
     test: test_error_when_aliases_row_mixed_types
 lead: 文書の作成者が `mdmark upgrade` を実行し、設定の手元のバージョンから目標のバージョンまでの移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換え、その範囲の変更履歴を受け取る。
-issue: 10
 primary_actor: 文書の作成者
 trigger: 新しいバージョンが出て、文書の作成者がそのバージョンの CLI と配布物を使用したくなった
 preconditions:
@@ -428,3 +529,8 @@ frequency: バージョンが上がるたびに 1 回
 refs:
   - SC-472-78#
 test_file: tests/e2e/単一ユースケース/バージョンを上げる.spec.ts
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:cli

@@ -16,8 +16,6 @@ data_models:
         type: boolean
         description: ピン止めしているか
     status: planned
-    introduced:
-      pr: 166
 constants:
   - name: CURRENT_LINE_RATIO
     title: 今いるセクションを決める線の位置
@@ -25,31 +23,23 @@ constants:
     summary: 画面の上端から、今いるセクションを決める線までの高さの、画面の高さに対する割合
     value: '0.25'
     status: planned
-    introduced:
-      pr: 166
   - name: NARROW_WIDTH_REM
     title: 狭い幅の境目
     container: src/interact/side-toc.ts
     summary: 描く先の要素の幅がこの値（rem）未満のとき、右側の目次を狭い幅の帯で出す。CSS のコンテナクエリと同じ値で、項目を押した後にパネルを隠すかを決めるのに使用する
     value: '48'
     status: planned
-    introduced:
-      pr: 166
   - name: SIDE_TOC_HEADING_SELECTOR
     title: 右側の目次に並べる見出し
     container: src/interact/side-toc.ts
     summary: 右側の目次に並べる見出しのセレクタ。埋め込んだ HTML（`.mdmark-html`）の中の見出しは除く
     value: '"h1[id], h2[id], h3[id]"'
     status: planned
-    introduced:
-      pr: 166
   - name: SIDE_TOC_RAIL_COVER_REM
     title: 右端の線を枠で覆う高さ
     container: src/interact/side-toc.ts
     summary: hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても右側の目次の外を通らず hover が切れない
     value: '2'
-    introduced:
-      pr: 320
   - name: SIDE_TOC_EDGE_GAP_REM
     title: スクロールする場所の右端と右側の目次の間
     container: src/interact/side-toc.ts
@@ -58,8 +48,6 @@ constants:
     refs:
       - IF-472-35#constraints[右側の目次の重なりと留める位置]
     status: planned
-    introduced:
-      pr: 323
   - name: SIDE_TOC_AVOID_GAP_PX
     title: 差分のミニマップと右側の目次の間
     container: src/interact/side-toc.ts
@@ -68,8 +56,6 @@ constants:
     refs:
       - IF-472-35#constraints[右側の目次の重なりと留める位置]
     status: planned
-    introduced:
-      pr: 323
 functions:
   - name: collectSideTocHeadings
     title: 右側の目次の見出しを集める
@@ -101,8 +87,6 @@ functions:
         mock: なし
         expected: '`手引き`・`使用方法` が `changed: true` を持ち、`導入` は `changed` を持たない'
     status: planned
-    introduced:
-      pr: 166
   - name: findChangedHeadings
     title: 変わったセクションの見出しを集める
     container: src/interact/side-toc.ts
@@ -149,8 +133,6 @@ functions:
         mock: なし
         expected: 空の集まり
     status: planned
-    introduced:
-      pr: 550
   - name: pickCurrentHeading
     title: 今いるセクションの見出しを決める
     container: src/interact/side-toc.ts
@@ -185,8 +167,6 @@ functions:
         mock: なし
         expected: '`undefined`'
     status: planned
-    introduced:
-      pr: 166
   - name: attachSideToc
     title: 右側の目次を付ける
     container: src/interact/side-toc.ts
@@ -312,5 +292,12 @@ functions:
         mock: なし
         expected: '`--mdmark-side-toc-panel-end` が `SIDE_TOC_EDGE_GAP_REM`（rem）を px にした値（スクロールする要素の右端ではなく `document.documentElement.clientWidth` を右端にする）'
     status: planned
-    introduced:
-      pr: 166
+lead: '右側の目次の配置・ピン止め・項目から移る操作・今いるセクションの表示を受け持ち、右側の目次の操作を変えるときに参照する。'
+tags:
+  - name: topic:目次
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
+  - name: topic:部品
+  - name: action:配置

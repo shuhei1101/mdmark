@@ -51,5 +51,9 @@ functions:
         mock: なし
         expected: 先頭から 3 行で、`pr` が `#45` のようなリンクの文字
     status: planned
-    introduced:
-      pr: 39
+lead: '変更履歴の表から範囲の行を抜き出す処理を受け持ち、バージョンを上げるときに表示する変更を変えるときに参照する。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:cli

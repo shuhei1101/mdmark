@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #419](https://github.com/shuhei1101/mdmark/issues/419) の報告。
+[まとめた HTML で side-toc をオフにすると、脚注の番号・戻るリンクを押したときに URL の # が書き換わる](https://github.com/shuhei1101/mdmark/issues/419) の報告。
 まとめた HTML（`mdmark build`）で `side-toc` をオフにし、コメントの列でも包まないとき、`attachFootnotes` の `root` がまとめた HTML の `view` そのものになる。
 最初の `mount` より前に登録した `src/viewer/bundle.ts` の `view` の `click` が脚注の `click` より先に走り、`history.replaceState` で URL の `#` を書き換える。
 モジュール構成『ライブラリ本体 / 操作』の `attachFootnotes` の「どちらも URL の `#` を書き換えない」が成り立たない。
-[PR #416](https://github.com/shuhei1101/mdmark/pull/416) の reviewer の任意の指摘（[discussion_r4506507077](https://github.com/shuhei1101/mdmark/pull/416#discussion_r4506507077)）から切り出した。
+[脚注と先頭へ戻るボタンの E2E 5 件の fail（ポインターの操作の時間切れ・戻ったときのフォーカス）を修正する](https://github.com/shuhei1101/mdmark/pull/416) の reviewer の任意の指摘（[discussion_r4506507077](https://github.com/shuhei1101/mdmark/pull/416#discussion_r4506507077)）から切り出した。
 
 ## 計画書
 

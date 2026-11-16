@@ -100,8 +100,6 @@ data_models:
         type: MdmarkErRelation[]
         description: 関係
     status: planned
-    introduced:
-      pr: 298
   - name: MdmarkErTable
     title: ER 図のテーブル
     container: src/diagram/definition.ts
@@ -141,8 +139,6 @@ data_models:
         type: '{ name: string; type: string; pk?: boolean; fk?: boolean; nn?: boolean; desc?: string }[]'
         description: 列。定義の順に並べる
     status: planned
-    introduced:
-      pr: 298
   - name: MdmarkErRelation
     title: ER 図の関係
     container: src/diagram/definition.ts
@@ -173,8 +169,6 @@ data_models:
         type: number | undefined
         description: 縦の線の x（px）。省くと両端の中間
     status: planned
-    introduced:
-      pr: 298
   - name: DefinitionResult
     title: 定義を読み込んだ結果
     container: src/diagram/definition.ts
@@ -328,5 +322,9 @@ functions:
         mock: なし
         expected: どれも `ok` が `false` で、`problems[0]` が重なった `id`・列の名前、使用できる種類 `master・transaction`・色の名前・多重度 `1・0..1・1..n・0..n` をそれぞれ含む
     status: planned
-    introduced:
-      pr: 328
+lead: '図の部品の定義の型と JSON の読み取り・構造の確認を受け持ち、図の部品の定義のキーを変えるときに参照する。'
+tags:
+  - name: topic:図
+    main: true
+  - name: tool:svg
+  - name: action:読み取り

@@ -103,3 +103,10 @@ components:
     refs:
       - CMP-472-29#
     status: planned
+lead: 'プレビューの状態の表示のコンポーネントを受け持ち、プレビューの状態の表示を変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

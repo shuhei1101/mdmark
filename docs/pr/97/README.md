@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #67](https://github.com/shuhei1101/mdmark/issues/67) の要望。
-[PR #65](https://github.com/shuhei1101/mdmark/pull/65)（起点 [Issue #25](https://github.com/shuhei1101/mdmark/issues/25)）のモックへの合意で、ユーザーから YAML・ts・Python などのシンタックスハイライトを出せるようにしたいと要望があり（[コメント](https://github.com/shuhei1101/mdmark/pull/65#discussion_r4355360829)）、PR #65 の `## スコープ外` に切り出した。
-PR #65 はマージ済みで、行番号か行の種類（強調・足した行・消した行）を持つコードブロックは行ごとの `mdmark-code-line` に分けて描き、行の中身 `mdmark-code-text` は色分けした HTML を入れられる形になっている。
+[コードブロックを言語に応じてシンタックスハイライトする](https://github.com/shuhei1101/mdmark/issues/67) の要望。
+[拡張記法でコードブロックの題・行番号・行の強調とコードの行の印を書けるようにする](https://github.com/shuhei1101/mdmark/pull/65)（起点 [拡張記法でコードブロックの題・行番号・行の強調とコードの行の印を書けるようにする](https://github.com/shuhei1101/mdmark/issues/25)）のモックへの合意で、ユーザーから YAML・ts・Python などのシンタックスハイライトを出せるようにしたいと要望があり（[コメント](https://github.com/shuhei1101/mdmark/pull/65#discussion_r4355360829)）、PR [拡張記法でコードブロックの題・行番号・行の強調とコードの行の印を書けるようにする](https://github.com/shuhei1101/mdmark/pull/65) の `## スコープ外` に切り出した。
+PR [拡張記法でコードブロックの題・行番号・行の強調とコードの行の印を書けるようにする](https://github.com/shuhei1101/mdmark/pull/65) はマージ済みで、行番号か行の種類（強調・足した行・消した行）を持つコードブロックは行ごとの `mdmark-code-line` に分けて描き、行の中身 `mdmark-code-text` は色分けした HTML を入れられる形になっている。
 行番号も行の種類も無いコードブロック（題だけのものを含む）は、`code` 要素の中にエスケープした文字をそのまま置いて描く。
 今のコードブロックは色分けをせず、配布物 `dist/index.js` は非機能要件『配布ファイル 1 つのサイズ』の上限 384KB に対して 376,991 バイト（2026-10-24）になっている。
 
@@ -35,7 +35,7 @@ PR #65 はマージ済みで、行番号か行の種類（強調・足した行�
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/記法.md・docs/使い方/書く/本文を部品で組む.md・docs/リファレンス/用語集.md・docs/リファレンス/設定.md・docs/リファレンス/API.md・docs/使い方/カスタマイズ/テーマを上書きする.md・docs/使い方/カスタマイズ/印刷する.md・docs/使い方/書き出す/文書を書き出す.md・docs/はじめに/コアコンセプト/1枚にまとめる仕組み.md）
+- [x] ドキュメント修正（[記法](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E8%A8%98%E6%B3%95.md)・[本文を部品で組む](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E6%9C%AC%E6%96%87%E3%82%92%E9%83%A8%E5%93%81%E3%81%A7%E7%B5%84%E3%82%80.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%94%A8%E8%AA%9E%E9%9B%86.md)・[設定](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E8%A8%AD%E5%AE%9A.md)・[API](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/API.md)・[テーマを上書きする](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%9E%E3%82%A4%E3%82%BA/%E3%83%86%E3%83%BC%E3%83%9E%E3%82%92%E4%B8%8A%E6%9B%B8%E3%81%8D%E3%81%99%E3%82%8B.md)・[印刷する](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%9E%E3%82%A4%E3%82%BA/%E5%8D%B0%E5%88%B7%E3%81%99%E3%82%8B.md)・[文書を書き出す](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8D%E5%87%BA%E3%81%99/%E6%96%87%E6%9B%B8%E3%82%92%E6%9B%B8%E3%81%8D%E5%87%BA%E3%81%99.md)・[1枚にまとめる仕組み](https://github.com/shuhei1101/mdmark/blob/eae7001473d342fd922060b2bf68c1f2a7d78749/docs/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/%E3%82%B3%E3%82%A2%E3%82%B3%E3%83%B3%E3%82%BB%E3%83%97%E3%83%88/1%E6%9E%9A%E3%81%AB%E3%81%BE%E3%81%A8%E3%82%81%E3%82%8B%E4%BB%95%E7%B5%84%E3%81%BF.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

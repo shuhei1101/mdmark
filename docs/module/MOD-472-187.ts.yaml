@@ -38,8 +38,6 @@ functions:
         mock: なし
         expected: 札と `data-color` が無く、開閉のボタンが無い
     status: planned
-    introduced:
-      pr: 298
   - name: erEndSvg
     title: ER 図の多重度の記号
     container: src/parts/er.ts
@@ -62,5 +60,9 @@ functions:
         mock: なし
         expected: '`1` は `line` 2 つ、`0..1` は `line` と `circle[data-ring]`、`1..n` は鳥の足の `path` と `line`、`0..n` は鳥の足の `path` と `circle[data-ring]`'
     status: planned
-    introduced:
-      pr: 298
+lead: 'ER 図のテーブルと多重度の記号の描画を受け持ち、ER 図のテーブルの描き方を変えるときに参照する。'
+tags:
+  - name: topic:図
+    main: true
+  - name: tool:svg
+  - name: action:描画

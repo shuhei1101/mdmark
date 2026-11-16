@@ -44,3 +44,8 @@ functions:
         condition: '`defaults` が `{ print: true }`、`marks` が `[{ print: false }, { print: true }]`'
         mock: なし
         expected: '`{ print: true }`'
+lead: '文書のマーカーで機能のオン・オフを決める処理を受け持ち、機能のオン・オフの決め方を変えるときに参照する。'
+tags:
+  - name: topic:機能フラグ
+    main: true
+  - name: topic:設定

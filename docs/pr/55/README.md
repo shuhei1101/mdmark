@@ -7,10 +7,10 @@
 
 ## 背景
 
-[Issue #8](https://github.com/shuhei1101/mdmark/issues/8) の要望。
+[ビュー・検索・コメントなどの部品を Markdown の中から使えるようにする](https://github.com/shuhei1101/mdmark/issues/8) の要望。
 今の mdmark は記法の表・図の部品と、使う側が印を足す `registerExtension` を持つが、ビュー・検索・コメントの部品は無く、部品を使う側の JavaScript から呼ぶ関数も配っていない。
 アプリごとに別々に実装している表の機能・検索を共通にするのが目的（D-19・D-36・D-50）。
-部品の形と図の部品の仕組みは [#6](https://github.com/shuhei1101/mdmark/issues/6)（[#45](https://github.com/shuhei1101/mdmark/pull/45)）と [#21](https://github.com/shuhei1101/mdmark/issues/21)（[#42](https://github.com/shuhei1101/mdmark/pull/42)）で入っており、この Issue はその上に載せる。
+部品の形と図の部品の仕組みは [コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6)（[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/pull/45)）と [図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/issues/21)（[図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/pull/42)）で入っており、この Issue はその上に載せる。
 
 ## 計画書
 
@@ -21,7 +21,7 @@
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
 - [x] ~~PoC 検証~~（印のある文書でだけモジュールを読む仕組み・記法の表の並べ替えと絞り込み・図のツールチップは入っており、選んだ箇所はブラウザ標準の Selection と Range で取れるため、未検証の技術機構に依存しない）

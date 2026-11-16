@@ -17,8 +17,6 @@ data_models:
         type: string
         description: 引数の `project_dir`。相対パスの引数と設定ファイルの探索の基準
     status: planned
-    introduced:
-      pr: 72
   - name: ToolDefinition
     title: ツールの定義
     container: src/plugin/tools.ts
@@ -42,8 +40,6 @@ data_models:
         type: '{ readOnlyHint: boolean } | undefined'
         description: '`tools/list` に出すツールの annotations。何も書き換えない `check` と `list_templates` だけが `{ readOnlyHint: true }` を持つ'
     status: planned
-    introduced:
-      pr: 72
   - name: ToolOutput
     title: ツールの処理の結果
     container: src/plugin/tools.ts
@@ -55,8 +51,6 @@ data_models:
         type: Record<string, unknown>
         description: JSON の文字列にして 1 つのテキストで返却する値（`export_html`・`build_site`・`check`）
     status: planned
-    introduced:
-      pr: 72
   - name: ServerRoots
     title: サーバーの読み込む場所
     container: src/plugin/tools.ts
@@ -68,8 +62,6 @@ data_models:
         type: string
         description: 書き出しに埋める配布物のフォルダ（`{パッケージの直下}/dist`）
     status: planned
-    introduced:
-      pr: 141
 constants:
   - name: TOOLS
     title: ツールの一覧
@@ -96,8 +88,6 @@ constants:
         value: name（必須）・dir（文字列）・overwrite（真偽値）
         description: テンプレートの CSS を配置先へコピーし、`path`・`theme`（基準の設定ファイルが無ければ持たない）・`replaced` を返却する
     status: planned
-    introduced:
-      pr: 72
     description: どのツールも引数の `project_dir` を必須にし、`project_dir` は `inputSchema` に含めない
   - name: PROJECT_DIR_ARG
     title: 作業のフォルダの引数
@@ -108,8 +98,6 @@ constants:
     refs:
       - IF-472-5#
     status: planned
-    introduced:
-      pr: 141
   - name: PROJECT_DIR_ERROR_MESSAGE
     title: 作業のフォルダが無いときの文
     container: src/plugin/tools.ts
@@ -119,8 +107,6 @@ constants:
     refs:
       - IF-472-10#exceptions[ツールのエラー（作業のフォルダが無い）]
     status: planned
-    introduced:
-      pr: 141
 functions:
   - name: callTool
     title: ツールを呼ぶ
@@ -195,8 +181,6 @@ functions:
     refs:
       - IF-472-4#constraints[ツールのログ]
     status: planned
-    introduced:
-      pr: 72
   - name: runExportHtml
     title: 文書を HTML に書き出す（export_html）
     kind: 関数
@@ -246,8 +230,6 @@ functions:
     refs:
       - IF-472-9#
     status: planned
-    introduced:
-      pr: 72
   - name: runBuildSite
     title: 複数の文書を 1 枚にまとめる（build_site）
     kind: 関数
@@ -297,8 +279,6 @@ functions:
     refs:
       - IF-472-13#
     status: planned
-    introduced:
-      pr: 72
   - name: runCheckTool
     title: 点検する（check）
     kind: 関数
@@ -357,8 +337,6 @@ functions:
     refs:
       - IF-472-10#
     status: planned
-    introduced:
-      pr: 72
   - name: runListTemplates
     title: CSS のテンプレートの一覧を返却する（list_templates）
     kind: 関数
@@ -392,8 +370,6 @@ functions:
     refs:
       - IF-472-1#
     status: planned
-    introduced:
-      pr: 353
   - name: runAddTemplate
     title: CSS のテンプレートを登録する（add_template）
     kind: 関数
@@ -432,8 +408,6 @@ functions:
     refs:
       - IF-472-2#
     status: planned
-    introduced:
-      pr: 353
   - name: runApplyTemplate
     title: CSS のテンプレートを配置する（apply_template）
     kind: 関数
@@ -472,5 +446,10 @@ functions:
     refs:
       - IF-472-3#
     status: planned
-    introduced:
-      pr: 353
+lead: 'MCP のツールの定義と処理・結果への変換を受け持ち、MCP のツールの振る舞いを変えるときに参照する。'
+tags:
+  - name: tool:mcp
+    main: true
+  - name: tool:claude-code
+  - name: topic:サーバー
+  - name: action:変換

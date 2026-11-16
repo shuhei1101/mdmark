@@ -22,7 +22,7 @@ scope_out:
     reason: この PR は実装とテストを変えない設計書だけの変更（type:docs）。テストの移動は、この PR で collectMapStructure を structure.ts のモジュール構成へ移すことを前提にする。モジュール構成設計のレビューでスコープ外に決まった
     plan: '#592'
   - item: vscode/files.yaml の package-lock.json の行と、src/ 以外の管理用の YAML の行の無いファイルの行の追加
-    reason: 要望に含まれない（この PR は vite-env.d.ts の行だけを追加する。#491 は先にこの PR が入れば vite-env.d.ts を対象から外す）
+    reason: '要望に含まれない（この PR は vite-env.d.ts の行だけを追加する。[src/ 以外の管理用の YAML に、フォルダの中にあるのに行の無いファイルの行を追加する](https://github.com/shuhei1101/mdmark/issues/491) は先にこの PR が入れば vite-env.d.ts を対象から外す）'
     plan: '#491'
   - item: 同じく物理ファイルごとのモジュール構成を持たない src/render/syntax/blocks.ts・src/render/syntax/tokens.ts・src/viewer/includes.ts・src/viewer/viewer.css・vscode/src/escape.ts・vscode/src/workspace.ts のモジュール構成の作成
     reason: 要望に含まれない横展開の残り（Issue は 4 ファイルだけを対象にする）

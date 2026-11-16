@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。画像は手元の応答で返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -20,6 +23,9 @@ scenarios:
         M-->>P: 番号を付けた図表と、番号にした参照を描く
         U->>P: 参照の「図 2」を押す
         P-->>U: 2 つ目の図へ移る
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の画像に `図 1`、2 つ目の画像に `図 2`、表に `表 1` の番号が付いている
       - 図表の要素が ID `fig-arch`・`fig-flow`・`fig-list` を持つ
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -43,6 +52,9 @@ scenarios:
         M->>M: 参照先の ID が文書に無い
         M-->>P: リンクの文字をそのままにし、記載の警告を付けて描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - リンクの文字が `図` のまま
       - リンクのある段落の上に、`fig-missing` の図表が無いことを記載した記載の警告がある
@@ -57,6 +69,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -65,6 +80,9 @@ scenarios:
         M->>M: 2 つ目の ID が 1 つ目と同じ
         M-->>P: 1 つ目にだけ ID を付け、両方に番号を付けて描く
         P-->>U: 記載の警告と図を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 両方の画像に `図 1`・`図 2` の番号が付いている
       - ID `fig-arch` を持つ要素は 1 つ目の図だけ
@@ -79,6 +97,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -87,6 +108,9 @@ scenarios:
         M->>M: マーカーのある図だけを数え、ギャラリーの画像にサブ図の番号を付ける
         M-->>P: 番号とキャプションを付けた図を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - ギャラリーに `図 1` の番号が付き、2 つの画像に `図 1a`・`図 1b` のサブ図の番号が付いている
       - title `構成` の画像のキャプションが `図 2` の番号と `構成` を持つ
@@ -94,7 +118,6 @@ scenarios:
       - 本文のリンクの文字が `図 1` になっている
     test: test_normal_when_gallery_and_caption
 lead: '文書の作成者が図・表の直前に `<!-- fig: {"id": "ID"} -->` を記載すると、mdmark が種類ごとの通し番号（`図 1`・`表 1`）を付け、本文の `#fig-ID` へのリンクの文字をその番号にする。'
-issue: 4
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
@@ -106,3 +129,8 @@ preconditions:
 success_guarantee: マーカーを付けた図と表に、文書の頭から種類ごとに数えた番号が付き、参照のリンクがその番号と図表への移動を持つ。
 minimal_guarantee: 切れた参照や重なった ID があっても、本文は描かれ、記載の警告が出る。
 test_file: tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts
+tags:
+  - name: topic:図表
+    main: true
+  - name: topic:番号
+  - name: action:参照

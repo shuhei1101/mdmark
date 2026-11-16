@@ -129,3 +129,7 @@ refs:
 status: planned
 notes:
   HTML: '`<div class="markdown-alert markdown-alert-{kind}"><p class="markdown-alert-title">{タイトル}</p>{本文}</div>`。`title` を指定するとタイトルを `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする。`collapsed` のときは `<details class="markdown-alert markdown-alert-{kind}"><summary class="markdown-alert-title">{タイトル}</summary>{本文}</details>`（`open` のときは `details` に `open` を付ける）。タイトルの文言は確認ログの決定（注意書きのタイトルの文言）。モックは `docs/mock/components/callout/`'
+tags:
+  - name: topic:注意書き
+    main: true
+  - name: topic:部品

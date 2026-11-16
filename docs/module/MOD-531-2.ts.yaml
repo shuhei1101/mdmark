@@ -113,3 +113,10 @@ functions:
       description: 形状（`start`・`end`・`choice`・`note`）・同じ状態への遷移・配置の上書き
 refs:
   - IF-472-35#constraints[map の状態遷移図]
+lead: 'Mermaid の stateDiagram の読み取りと構成図の入力への変換を受け持ち、map の状態遷移図の読み取りを変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:読み取り
+  - name: action:変換

@@ -14,3 +14,8 @@ constants:
       - key: check
         value: '`npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode`'
     status: planned
+lead: '検査の npm scripts を受け持ち、リポジトリの検査のコマンドを変えるときに参照する。'
+tags:
+  - name: topic:検査
+    main: true
+  - name: action:検査

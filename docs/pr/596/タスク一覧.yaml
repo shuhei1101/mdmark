@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-15T09:18:06.712279+00:00'
   - process: PoC 検証
     status: skipped
-    reason: '#531 で作った種類に依らない共通の部分と map の自前の配置（src/map/layout.ts）、Mermaid の読み取りを広げる変更で、未検証の技術機構に依存しない'
+    reason: '[map で erDiagram・stateDiagram-v2 の Mermaid を、flowchart・シーケンス図と同じ記載方法と操作で描く](https://github.com/shuhei1101/mdmark/pull/531) で作った種類に依らない共通の部分と map の自前の配置（src/map/layout.ts）、Mermaid の読み取りを広げる変更で、未検証の技術機構に依存しない'
     updated_by: planner
     updated_at: '2026-11-15T09:18:06.712279+00:00'
   - process: 複合ユースケース設計

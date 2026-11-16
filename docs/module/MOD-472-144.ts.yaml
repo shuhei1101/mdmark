@@ -241,3 +241,10 @@ functions:
         condition: '`stateDiagram-v2`・`journey`・`constructor`'
         mock: なし
         expected: '`状態遷移図`・`図`・`図`'
+lead: 'mermaid のソースのタイトルの取り出しと、テーマの変数と CSS 変数の対応表を受け持ち、mermaid の図のタイトルやテーマを変えるときに参照する。'
+tags:
+  - name: topic:テーマ
+    main: true
+  - name: topic:図
+  - name: tool:mermaid
+  - name: action:取り出し

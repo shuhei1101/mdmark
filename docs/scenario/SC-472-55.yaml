@@ -11,6 +11,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、見本の 2 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -22,6 +24,8 @@ scenarios:
         M->>M: 行で比べ、削除した行と追加した行の対を単語で比べる
         M-->>U: 行と文字を色分けした差分を出す
       ```
+
+      <!-- /map -->
     expected:
       - 削除した行が、赤の背景と行頭の `-` で出て、スクリーンリーダー向けの名前で削除した行と分かる
       - 追加した行が、緑の背景と行頭の `+` で出て、スクリーンリーダー向けの名前で追加した行と分かる
@@ -39,6 +43,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、見本の 3 つのリビジョンを返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -51,6 +57,8 @@ scenarios:
         S-->>M: Markdown
         M-->>U: r1 と r2 の差分に再描画する
       ```
+
+      <!-- /map -->
     expected:
       - 開いた時点では、前に `r2`、後に `r3` が選ばれ、書き換えた見出しの行だけが差分に出る
       - 前に `r1`、後に `r2` を選ぶと、正常シナリオと同じ差分に再描画される
@@ -65,6 +73,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、本文が同じ 2 つのリビジョンを返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -75,6 +85,8 @@ scenarios:
         S-->>M: 同じ Markdown
         M-->>U: 変更が無いことを通知する
       ```
+
+      <!-- /map -->
     expected:
       - 差分の場所に、比べた 2 つのリビジョンに変更が無いことを通知する文がある
       - 赤と緑の行が無い
@@ -87,8 +99,10 @@ scenarios:
         description: 正常シナリオと同じ
       - name: Mock
         description: ページを開く前に `Intl.Segmenter` を削除する（対応ブラウザの Firefox 98〜124 の代わり）。ほかは正常シナリオと同じ
-        notes: '配布物の読み込みが例外になる不具合（#50）で修正されていることが前提。#7 は #50 に依存し、#50 が develop に入ってからマージする'
+        notes: '配布物の読み込みが例外になる不具合（[配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50)）で修正されていることが前提。[文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/issues/7) は [配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50) に依存し、[配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50) が develop に入ってからマージする'
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -100,6 +114,8 @@ scenarios:
         M->>M: 行で比べ、対の行を文字ごとに比べる
         M-->>U: 行と文字を色分けした差分を出す
       ```
+
+      <!-- /map -->
     expected:
       - 削除した行と追加した行は、正常シナリオと同じ色とマーカーで出る
       - 単語を書き換えた行の対で、変わった文字が濃い赤・濃い緑で出る（区切りは 1 文字ずつ）
@@ -111,6 +127,8 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -118,6 +136,8 @@ scenarios:
         U->>M: 差分を閉じる
         M-->>U: 差分を片付け、文書の表示に戻す
       ```
+
+      <!-- /map -->
     expected:
       - 差分の行が無くなり、文書の本文が開く前と同じように出る
       - 差分を開く UI にフォーカスが戻る
@@ -131,6 +151,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、長い文書の 2 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -140,6 +162,8 @@ scenarios:
         U->>M: ミニマップの帯を押したまま上へ動かす
         M-->>U: 動かした位置に合わせて差分をスクロールする
       ```
+
+      <!-- /map -->
     expected:
       - 後半のマーカーの位置を押すと、後半の変えた行が画面に入る
       - 帯を押したまま上へ動かすと、前半の変えた行が画面に入る
@@ -154,6 +178,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、見本の 2 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor U as 読者
@@ -164,6 +190,8 @@ scenarios:
         M->>M: r2 を描き、描いたブロックごとに r1 と比べる
         M-->>U: ブロックを色分けした文書を出す
       ```
+
+      <!-- /map -->
     expected:
       - '`r2` の文書が描かれ、見出し・表は Markdown のソースではなく描いた構造で出る'
       - 単語を書き換えた段落と追加した段落が、緑の背景とマーカーで出て、スクリーンリーダー向けの名前で追加と分かる
@@ -171,7 +199,6 @@ scenarios:
       - 変えていない見出し・表は、色とマーカーを持たずに出る
     test: test_normal_when_rendered
 lead: 読者が、文書の 2 つのリビジョンの Markdown を行で比べた差分を、削除した行は赤・追加した行は緑・行の中で変わった文字は濃い色で確認する。前と後のリビジョンはもう一度選べる。利用側のページが描いた結果の上で色分けする指定を指定したときは、描いた文書のブロックごとに比べた差分を確認する。
-issue: 7
 primary_actor: 読者
 stakeholders:
   - name: 読者
@@ -182,3 +209,7 @@ preconditions:
 success_guarantee: 前のリビジョンにだけある行が赤と行頭の `-`、後のリビジョンにだけある行が緑と行頭の `+` で出て、同じ行は色なしで出る。削除した行と追加した行が対になるときは、変わった文字だけが濃い赤・濃い緑で出る。描いた結果の上で色分けする指定を指定したときは、後のリビジョンを描いた文書の上で、追加・変更したブロックが緑の背景とマーカー、削除したブロックが前のリビジョンでの位置に赤の背景とマーカーで描いた構造のまま出て、変えていないブロックは色なしで出る。
 minimal_guarantee: 差分を出せないときも、文書の本文は読み込める。
 test_file: tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: action:確認

@@ -7,10 +7,10 @@
 
 ## 背景
 
-[Issue #179](https://github.com/shuhei1101/mdmark/issues/179) の要望。
-タグの語彙と語彙に無いタグの点検は [#101](https://github.com/shuhei1101/mdmark/issues/101)・[#114](https://github.com/shuhei1101/mdmark/pull/114) で v0.8.0 に入れた。
+[索引のタグの語彙（マスター）と、語彙に無いタグの点検をやめる](https://github.com/shuhei1101/mdmark/issues/179) の要望。
+タグの語彙と語彙に無いタグの点検は [索引のタグにマスターと主題の印を持たせ、find_docs のタグを AND / OR にして返す量を選べるようにする](https://github.com/shuhei1101/mdmark/issues/101)・[索引のタグにマスターと主題のマーカーを持たせ、find_docs のタグを AND / OR にして返す量を選べるようにする](https://github.com/shuhei1101/mdmark/pull/114) で v0.8.0 に入れた。
 話し合いでタグのマスターを持たないと決め直した（D-169）ため、語彙と語彙に無いタグの点検は要らなくなった。
-語彙を引く `list_tags` は [#156](https://github.com/shuhei1101/mdmark/issues/156)（[#260](https://github.com/shuhei1101/mdmark/pull/260)）で MCP から外れている。
+語彙を引く `list_tags` は [MCP から索引の検索・編集のツール（find_docs・list_tags・update_index）を外す](https://github.com/shuhei1101/mdmark/issues/156)（[MCP から索引の検索・編集のツール（find_docs・list_tags・update_index）を外す](https://github.com/shuhei1101/mdmark/pull/260)）で MCP から外れている。
 
 ## 計画書
 

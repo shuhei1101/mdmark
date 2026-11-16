@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（CLI をそのフォルダで子プロセスとして実行する）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -22,6 +25,9 @@ flows:
         C->>M: 索引・文書
         M-->>C: []
         C-->>W: ずれ 0 件・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力が `ずれ 0 件` の 1 行
@@ -35,6 +41,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -44,6 +53,9 @@ flows:
         C->>M: 索引・文書
         M-->>C: missing_doc のずれ
         C-->>W: ずれ 2 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`mdmark.config.yaml:build: schema:` で始まり `build.out` を含む行がある'
@@ -59,12 +71,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: include に該当する文書が 0 件
         C-->>W: no_documents の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`mdmark.config.yaml:build.include: no_documents:` で始まる行がある'
@@ -77,12 +95,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: 今のフォルダから上へ設定ファイルを探す
         C-->>W: 設定ファイルが無いことと mdmark init・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `mdmark.config.yaml` が無いことと `mdmark init` が出る
@@ -95,12 +119,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: 設定ファイルを YAML として読み込めない
         C-->>W: ファイルと行と修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `mdmark.config.yaml` と 3 行目が出る
@@ -113,6 +143,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -123,6 +156,9 @@ flows:
         M-->>C: []
         C->>C: 文書の本文から、知っているマーカーに該当しないマーカーを取得する
         C-->>W: unknown_mark の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`a.mark.md:3: unknown_mark:` で始まり `tabz` を含む行が 1 つだけある'
@@ -138,6 +174,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -147,6 +186,9 @@ flows:
         M-->>C: []
         C->>C: 文書のマーカーの引数を描く処理と同じ読み取りで読む
         C-->>W: legacy_mark の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`a.mark.md:3: legacy_mark:`・`b.mark.md:1: legacy_mark:`・`b.mark.md:5: legacy_mark:` で始まる行が 1 つずつあり、どれも `mdmark upgrade` を含む'
@@ -164,6 +206,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -173,6 +218,9 @@ flows:
         M-->>C: []
         C->>C: 文書の本文から、廃止した flow・sequence の範囲の開きのマーカーを取得する
         C-->>W: retired_diagram の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`a.mark.md:3: retired_diagram:`・`b.mark.md:5: retired_diagram:` で始まる行が 1 つずつあり、どちらも map の範囲で記載することと `mdmark upgrade` を含む'
@@ -190,12 +238,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: 文書のマーカーの引数をマーカーの JSON Schema で検証する
         C-->>W: ずれの行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`a.mark.md:1: unknown_mark_arg:` で始まり `color` を含む行、`a.mark.md:5: mark_option_invalid:` で始まり `open` を含む行、`a.mark.md:9: mark_option_unapplied:` で始まり `columns.数量.total` を含む行が 1 つずつある'
@@ -211,6 +265,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -221,6 +278,9 @@ flows:
         M-->>C: []
         C->>C: 文書の本文のマーカーを知っているマーカーと突き合わせる
         C-->>W: ずれ 0 件・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力が `ずれ 0 件` の 1 行
@@ -233,6 +293,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -243,6 +306,9 @@ flows:
         M-->>C: []
         C->>C: 文書の本文のマーカーを知っているマーカーと突き合わせる
         C-->>W: schema と unknown_mark の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`mdmark.config.yaml:extensions[0]: schema:` で始まり、元のエラー（`HTMLElement`）と `load` の中へ移す修正方法を含む行がある'
@@ -259,6 +325,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（そのフォルダで CLI と git を子プロセスとして実行する）
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
@@ -272,6 +340,8 @@ flows:
         M-->>C: missed_change_together
         C-->>W: ずれ 1 行・終了コード 1
       ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`b.mark.md: missed_change_together:` で始まり `a.mark.md` を含む行がある'
@@ -289,6 +359,8 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
@@ -299,6 +371,8 @@ flows:
         G-->>C: 参照できない
         C-->>W: 参照できないことと修正方法・終了コード 1
       ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `no-such-ref` と `fetch-depth` が出る
@@ -312,6 +386,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -322,6 +399,9 @@ flows:
         C->>B: 行・読み込んだ中身
         B-->>C: alias_required_empty のずれ
         C-->>W: ずれ 2 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`alias_no_files` の行があり、内容に `missing/*.yaml` を含む'
@@ -340,6 +420,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -347,6 +430,9 @@ flows:
         C->>C: 設定の Schema を確認する
         C->>C: colorTheme を入っているテーマの名前と照らす
         C-->>W: unknown_color_theme の 1 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 知らない名前のフォルダで、終了コードが 1
       - '`mdmark.config.yaml:colorTheme: unknown_color_theme:` で始まる行が 1 つだけあり、内容に `sepia` と `dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` を含む'
@@ -364,12 +450,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant W as 文書の作成者
         participant C as mdmark check
         W->>C: 知らない明暗の値のフォルダで mdmark check
         C->>C: colorScheme を記載できる値と照らす
         C-->>W: unknown_color_scheme の 1 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.config.yaml:colorScheme: unknown_color_scheme:` で始まる行が 1 つだけあり、内容に `sepia` と `light`・`dark`・`auto` を含む'
       - 終了コードが 1
@@ -385,12 +477,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: 文書の画像・動画・音声・添付のパスを、文書からの相対パスとアセットのルートで確認する
         C-->>W: missing_file の 4 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`docs/guide.mark.md:3: missing_file:`・`docs/guide.mark.md:5: missing_file:`・`docs/guide.mark.md:7: missing_file:`・`docs/guide.mark.md:9: missing_file:` で始まる行があり、内容にそれぞれ `images/missing.png`・`media/missing.mp4`・`media/missing.mp3`・`files/missing.pdf` を含む'
@@ -408,6 +506,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -415,6 +516,9 @@ flows:
         C->>C: 点検する文書の図の部品の定義を読み込む
         C->>C: 描く処理と同じ確認で定義を確認する
         C-->>W: 図のずれの 3 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`docs/a.mark.md:3: diagram_invalid:` で始まる行が 1 つだけあり、内容に重なった id `orders` と、id を変える修正方法がある'
@@ -435,12 +539,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: include のマーカーの取り込み先をファイルから読み込んで確認する
         C-->>W: include_target_missing の 3 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`docs/a.mark.md:3: include_target_missing:`・`docs/b.mark.md:2: include_target_missing:`・`docs/b.mark.md:4: include_target_missing:` で始まる行があり、内容にそれぞれ `missing.md`、`無い見出し`、`L8-L10` と `5 行` と、修正方法を含む'
@@ -458,12 +568,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: 取り込みをたどり、循環とフォルダの外を見つける
         C-->>W: include_circular と include_target_missing の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`docs/b.mark.md:2: include_circular:` で始まる行があり、内容に `a.mark.md → b.mark.md → a.mark.md` と修正方法を含む'
@@ -483,12 +599,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（CLI をそのフォルダで子プロセスとして実行する）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check --text -
         C->>C: 描くときと同じ読み取りで記載の警告を集める
         C-->>W: ずれ 0 件・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力が `ずれ 0 件` の 1 行
@@ -504,12 +626,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check --text {Markdown}
         C->>C: 描くときと同じ読み取りで記載の警告を集める
         C-->>W: ずれ 3 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`-:1: retired_diagram:`・`-:20: unknown_mark:`・`-:22: syntax_warning:` で始まる行が 1 つずつある'
@@ -526,6 +654,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -534,6 +665,9 @@ flows:
         C->>F: YAML を読み込み、キーの値と値の始まる行を取り出す
         C->>C: 描くときと同じ読み取りで記載の警告を集める
         C-->>W: ずれ 1 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`records.yaml:8: unknown_mark:` で始まり `tabz` を含む行が 1 つだけある'
@@ -550,6 +684,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -557,6 +694,9 @@ flows:
         C->>C: 設定の extensions をまとめて読み込み directive を取る
         C->>C: 記載の警告を集める
         C-->>W: ずれ 1 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`-:3: unknown_mark:` で始まる行が 1 つだけあり、`-:1:` で始まる行が無い'
@@ -571,6 +711,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -578,6 +721,9 @@ flows:
         W->>C: mdmark check --file records.yaml --key items[5].body
         C->>F: YAML を読み込み、キーをたどる
         C-->>W: キーが無いことと修正方法・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - 標準エラーに `records.yaml` と `items[5].body` と、`items` の要素が 2 つしか無いことが出る
@@ -591,12 +737,18 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check
         C->>C: 設定を Schema で確認する
         C-->>W: schema の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`mdmark.config.yaml:tooltips.diagramPlacement: schema:` で始まる行が 1 つだけあり、内容に記載できる値 `top`・`bottom` がある'
@@ -616,12 +768,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check --text {Markdown}
         C->>C: 描くときと同じ読み取りとマーカーの JSON Schema の検証で、記載の警告と無視したキーを集める
         C-->>W: ずれ 3 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`-:1: unknown_mark_arg:` で始まる行が 2 つ（`features.unknown` と使用できる機能、`widht` と使用できるキーを含む）、`-:8: unknown_mark_arg:` で始まり `grop` を含む行が 1 つある'
@@ -640,12 +798,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check --text {Markdown}
         C->>C: 描くときと同じ読み取りで、記載の警告と今の書き方のマーカーを集める
         C-->>W: ずれ 2 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`-:1: legacy_mark:`・`-:7: legacy_mark:` で始まる行が 1 つずつあり、どちらも `mdmark upgrade` を含む'
@@ -663,12 +827,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check --text {Markdown}
         C->>C: 描くときと同じ読み取りで、記載の警告を集める
         C-->>W: ずれ 2 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`-:1: syntax_warning:` で始まり、JSON として読めない位置と理由を含む行がある'
@@ -686,6 +856,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -693,6 +866,9 @@ flows:
         C->>C: 点検する文書の map の範囲の Mermaid と補足を読み込む
         C->>C: 補足のスキーマと、補足が指すノード・線の ID を確認する
         C-->>W: map のずれの 4 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`docs/a.mark.md:10:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` を含めない修正方法）で 1 つずつある'
@@ -711,6 +887,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -718,6 +897,9 @@ flows:
         C->>C: map の範囲の erDiagram・stateDiagram-v2 と補足を読み込む
         C->>C: 補足が指すテーブル・列・関連・状態・遷移の ID と、groups を確認する
         C-->>W: map のずれの 5 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`docs/a.mark.md:10:` で始まる行に、`map_unknown_ref` が 3 つ（内容に `notes.注文.幽霊`・`notes.r3`・`groups.記録.tables` の「支払い」）と、`map_invalid_value` が 1 つ（内容に、分類の ID `明細` がテーブル名と同じで、分類の ID を付け直す修正方法）ある'
@@ -735,12 +917,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check --text {Markdown}
         C->>C: 描くときと同じ読み取りで、map の書き方の警告の項目を集める
         C-->>W: ずれ 2 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`-:4: map_invalid:` で始まり `A -> B` と `-->` にする修正方法を含む行と、`-:8: map_unknown_key:` で始まり `layuot` を含む行がある'
@@ -756,7 +944,20 @@ flows:
         description: '設定の `map` に `node_fit: tall`・`kinds.store.shape: hexagon`・`kinds.store.icon: no-such-icon` を持ち、`build.include` が該当する `docs/a.mark.md` の 3 行目の `<!-- map -->` の範囲に、`:::queue` のノード（`map.kinds` に `queue` が無い）と、補足の `layout` の `line: back` の線（`map.lines` に `back` が無い）を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
-    flow: "sequenceDiagram\n  actor W as 文書の作成者\n  participant C as mdmark CLI\n  W->>C: mdmark check\n  C->>C: 設定の Schema と map のアイコンの名前を確認する\n  C->>C: 文書の map の範囲のクラスと線の名前を設定の map と照らす\n  C-->>W: ずれ 5 行・終了コード 1"
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 設定の Schema と map のアイコンの名前を確認する
+        C->>C: 文書の map の範囲のクラスと線の名前を設定の map と照らす
+        C-->>W: ずれ 5 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`mdmark.config.yaml` を指す `schema` の行が `map.node_fit` と `map.kinds.store.shape` で 1 つずつあり、内容に記載できる値の一覧がある'
@@ -773,6 +974,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -783,6 +987,9 @@ flows:
         M-->>C: []
         C->>C: 拡張子が純粋な .md の文書の本文から、知っているマーカーを取得する
         C-->>W: plain_md_with_marks の行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`a.md:5: plain_md_with_marks:` で始まり、`a.mark.md` への改名と `check.suggestMarkExtension` を含む行が 1 つだけある'
@@ -798,6 +1005,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -807,6 +1017,9 @@ flows:
         C->>M: 索引・文書
         M-->>C: []
         C-->>W: ずれ 0 件・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 0
       - 標準出力が `ずれ 0 件` の 1 行
@@ -819,6 +1032,9 @@ flows:
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -826,6 +1042,9 @@ flows:
         C->>C: map の範囲の classDiagram・architecture-beta・C4Context と補足を読み込む
         C->>C: 補足が指すクラス・メンバー・関係・service・線・要素の ID を確認する
         C-->>W: map のずれの 3 行・終了コード 1
+      ```
+
+      <!-- /map -->
     expected:
       - 終了コードが 1
       - '`docs/a.mark.md:10:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `notes.図面.幽霊`）ある'
@@ -969,18 +1188,64 @@ constraints:
     constraint: '制約「点検する文書」の文書ごとに、include のマーカー（コードブロックとインラインコードの中を除く）の取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み、無いファイル・設定ファイルのフォルダの外を指すパス・無い見出しの ID・ファイルの行の数を越える行の範囲を 1 つにつき 1 件の `include_target_missing`、循環する取り込みを 1 つにつき 1 件の `include_circular` のずれにする（取り込んだ文書の中のマーカーもたどる）。ファイルはマーカーを記載した文書の相対パス、場所はマーカーの行の番号（1 から）、内容は、`include_target_missing` は記載した取り込み先と、無いもの（ファイル・フォルダの外・見出し・行。行はファイルの行の数も）と、パス・見出し・行の範囲を修正するかファイルを配置する修正方法の 1 文、`include_circular` は循環の順（`a.mark.md → b.mark.md → a.mark.md`）と、循環するマーカーのどれかを取り除く修正方法の 1 文。文書の `<!-- features: {"include": false} -->` の文書は点検しない'
     notes: 種類の名前は単一ユースケース『設定と索引を点検する』でインターフェース定義に任せたもの
   - item: 記法の点検
-    constraint: '`--text` か `--file` と `--key` を指定したときは、設定・索引・`build` の対象・エイリアス・テーマの名前・見つからないファイルの点検をしない。指定した Markdown を `render` と同じ読み取りで読み込み、描いたときに出る記載の警告を 1 つにつき 1 件のずれにする。内容は警告の本文と同じ文。知らないマーカーの警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、廃止した図の範囲の警告は `retired_diagram`、注記の定義の無い参照は `annotation_undefined`、参照されていない注記の定義は `annotation_unused`、同じ ID の 2 つ目以降の注記の定義は `annotation_duplicate`、そのほかは `syntax_warning` にする。マーカーの引数は制約「マーカーの設定の点検」のとおり点検し、JSON として読めない引数と型・選べる値・必須に合わない値は、描いたときの記載の警告として `syntax_warning` のずれにする。include のマーカーの取り込み先が無い警告（ファイル・見出し・行の範囲）は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` が確認する）。設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っているマーカー」と同じ読み込み方）・`check.ignore` を適用して描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。点検はブラウザを使用しない'
+    constraint: '`--text` か `--file` と `--key` を指定したときは、設定・索引・`build` の対象・エイリアス・テーマの名前・見つからないファイルの点検をしない。
+
+      指定した Markdown を `render` と同じ読み取りで読み込み、描いたときに出る記載の警告を 1 つにつき 1 件のずれにする。
+
+      内容は警告の本文と同じ文。
+
+      知らないマーカーの警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、廃止した図の範囲の警告は `retired_diagram`、注記の定義の無い参照は `annotation_undefined`、参照されていない注記の定義は `annotation_unused`、同じ ID の 2 つ目以降の注記の定義は `annotation_duplicate`、そのほかは `syntax_warning` にする。
+
+      マーカーの引数は制約「マーカーの設定の点検」のとおり点検し、JSON として読めない引数と型・選べる値・必須に合わない値は、描いたときの記載の警告として `syntax_warning` のずれにする。
+
+      include のマーカーの取り込み先が無い警告（ファイル・見出し・行の範囲）は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` が確認する）。
+
+      設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っているマーカー」と同じ読み込み方）・`check.ignore` を適用して描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。
+
+      点検はブラウザを使用しない'
     notes: 入口を `mdmark check` の引数にするのは要件.md の未確定（記法の点検の入口、推奨 A）
   - item: マーカーの設定の点検
-    constraint: '点検する文書ごと（`--text`・`--file` のときは指定した Markdown）に、記法のマーカー（`map`・`map-data` を除く。map のマーカーは制約「map の点検」の種類で点検する）の引数を、描く処理と同じ読み取り（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの書式」）で読み、マーカーごとの JSON Schema（ER 図『マーカーの設定の共通の決まり』から辿るマーカーごとの ER 図と同じ内容）で検証する。拡張のマーカーと設定の `libraries` のマーカーは、今の書き方の `legacy_mark` だけを点検し、キーと値は検証しない（拡張の検査は `registerExtension` の `schema` で、描くときだけ行う）。名前の後ろが `{` で始まらない引数のマーカーは、1 つにつき 1 件の `legacy_mark` のずれにし、内容に引数を JSON のオブジェクトで記載することと `mdmark upgrade` で書き換えられること（拡張と `libraries` のマーカーは、描くときに描かないことと、`mdmark upgrade` が書き換えずに移行の報告に挙げること）を記載する。知らないキー（`features` のマーカーと表の `features` の知らない機能名を含む）は 1 つにつき 1 件の `unknown_mark_arg` のずれにし、内容に無視したキーのパス（`features.unknown` など）と、その場所で使用できるキー、誤記なら修正し新しいバージョンのキーなら mdmark のバージョンを上げる修正方法を記載する。`enabled` を `false` にした機能の列の設定は 1 つにつき 1 件の `mark_option_unapplied` のずれにし、内容に適用しない列の設定のパスと、機能を削除するか列の設定を削除する修正方法を記載する。点検する文書の、JSON として読めない引数と型・選べる値・必須に合わない値は 1 つにつき 1 件の `mark_option_invalid` のずれにし、内容は描いたときの記載の警告の本文と同じ文にする（`--text`・`--file` のときは `syntax_warning`）。ファイル・場所は制約「知らないマーカーの点検」と同じ（`--text`・`--file` のときは制約「記法の点検の場所」）。点検はブラウザを使用しない'
+    constraint: '点検する文書ごと（`--text`・`--file` のときは指定した Markdown）に、記法のマーカー（`map`・`map-data` を除く。map のマーカーは制約「map の点検」の種類で点検する）の引数を、描く処理と同じ読み取り（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの書式」）で読み、マーカーごとの JSON Schema（ER 図『マーカーの設定の共通の決まり』から辿るマーカーごとの ER 図と同じ内容）で検証する。
+
+      拡張のマーカーと設定の `libraries` のマーカーは、今の書き方の `legacy_mark` だけを点検し、キーと値は検証しない（拡張の検査は `registerExtension` の `schema` で、描くときだけ行う）。
+
+      名前の後ろが `{` で始まらない引数のマーカーは、1 つにつき 1 件の `legacy_mark` のずれにし、内容に引数を JSON のオブジェクトで記載することと `mdmark upgrade` で書き換えられること（拡張と `libraries` のマーカーは、描くときに描かないことと、`mdmark upgrade` が書き換えずに移行の報告に挙げること）を記載する。
+
+      知らないキー（`features` のマーカーと表の `features` の知らない機能名を含む）は 1 つにつき 1 件の `unknown_mark_arg` のずれにし、内容に無視したキーのパス（`features.unknown` など）と、その場所で使用できるキー、誤記なら修正し新しいバージョンのキーなら mdmark のバージョンを上げる修正方法を記載する。
+
+      `enabled` を `false` にした機能の列の設定は 1 つにつき 1 件の `mark_option_unapplied` のずれにし、内容に適用しない列の設定のパスと、機能を削除するか列の設定を削除する修正方法を記載する。
+
+      点検する文書の、JSON として読めない引数と型・選べる値・必須に合わない値は 1 つにつき 1 件の `mark_option_invalid` のずれにし、内容は描いたときの記載の警告の本文と同じ文にする（`--text`・`--file` のときは `syntax_warning`）。
+
+      ファイル・場所は制約「知らないマーカーの点検」と同じ（`--text`・`--file` のときは制約「記法の点検の場所」）。
+
+      点検はブラウザを使用しない'
   - item: 記法の点検の場所
     constraint: '`--text` のずれの場所は、文字列の中の行の番号（1 から）。`--file` のずれのファイルは YAML のファイル、場所は YAML のファイルの行の番号（1 から）。キーの値がブロックスカラー（`|`・`>`）なら、値の中の行を YAML のファイルの行へ置き換え、それ以外の記載方法の値はキーの行にする。警告の場所は、警告の元になったマーカー（範囲なら開きのマーカー）の行。マーカーを持たない警告（読み込めないファイルツリーなど）は、警告を配置した場所の後ろのブロックの開始の行'
   - item: 重ねた設定ファイルの点検
     constraint: '索引と文書のずれは、インターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼んで重ねた設定で点検する。設定の構造は、重ねた設定ファイルのそれぞれと、`config.applyToExport` によらず端末の設定のファイルがあればその構造も検める。ずれの `file` は『設定を重ねて読み込む』の制約「パスの表示」のパス（今のフォルダからの相対パスか `~` のパス）にする'
   - item: map の点検
-    constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、補足のスキーマに合わない値・`--` を含む値・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。内容は書き方の警告の項目と同じ文。配置は点検しない。文書の `<!-- features: {"map": false} -->` の文書は点検しない。点検はブラウザを使用しない'
+    constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。
+
+      Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、補足のスキーマに合わない値・`--` を含む値・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。
+
+      ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。
+
+      内容は書き方の警告の項目と同じ文。
+
+      配置は点検しない。
+
+      文書の `<!-- features: {"map": false} -->` の文書は点検しない。
+
+      点検はブラウザを使用しない'
     notes: '`--text`・`--file` の点検でも同じ種類にする（制約「記法の点検」の `syntax_warning` にしない）'
   - item: map の設定の点検
     constraint: 設定の `map.node_fit`・`map.url_state`・`map.kinds`・`map.lines` は、制約「設定の点検」の Schema で検査し、`node_fit` の知らない値・`url_state` が真偽値でない値・知らない形・模様・太さ・矢じり・色の名前を `schema` のずれにする。`map.kinds` の `icon` が Lucide に無い名前のものは、1 つにつき 1 件の `map_unknown_icon` のずれにする。ファイルは設定ファイル、場所はキーのパス（`map.kinds.store.icon`）、内容は記載した名前と、Lucide のアイコンの名前にする修正方法の 1 文。Lucide の名前の一覧は、外部ライブラリ『lucide』の採用バージョンのパッケージのアイコンの名前を使用する
     decided_by: IF-472-35#request[opts.config.map.kinds]
 test_file: tests/integration/lib/check-config.test.ts
+tags:
+  - name: action:点検
+    main: true
+  - name: topic:設定
+  - name: topic:索引
+  - name: topic:cli

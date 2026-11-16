@@ -14,6 +14,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -22,6 +24,8 @@ scenarios:
         M->>M: 用語・文書の別名を単語の区切りに統一して照合する
         M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` の参照の一覧が、段落の `ワークスペース` 2 回・`WS`・`公開関数` の 4 件を本文の頭からの順に持つ'
       - '`ワークスペース` と `WS` の要素が、種類が索引の用語・ID `ws`・タイトル `ワークスペース`・短い説明 `話し合いの記録を配置するフォルダ` を持つ'
@@ -42,6 +46,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -50,6 +56,8 @@ scenarios:
         M->>M: 文書ごとに照合し、参照先の重なりを除いてまとめる
         M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` と `api` のそれぞれの参照の一覧が、`ws` の要素を持つ'
       - まとめた参照の一覧が、`ws` を 1 回だけ持つ
@@ -65,6 +73,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -73,6 +83,8 @@ scenarios:
         M->>M: 用語集の表の用語を辞書に入れて照合する
         M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` の参照の一覧が、`マーカー` の 1 件を、種類が用語集の表の用語・タイトル `マーカー`・短い説明 `HTML コメントで記載する指定` で持つ'
       - '`印刷` の `マーカー` は一覧に無い'
@@ -90,6 +102,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -98,6 +112,8 @@ scenarios:
         M->>M: 文書のマーカーで決まった機能のオン・オフで照合する単語を選ぶ
         M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` の参照の一覧が、索引の用語の要素を持たず、文書の別名 `公開関数` の要素を持つ'
       - '`memo` の参照の一覧が空'
@@ -116,6 +132,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -124,6 +142,8 @@ scenarios:
         M->>M: 埋め込んだ HTML の文字と map の範囲の Mermaid の文字も照合する
         M-->>C: 文書ごとの参照の一覧と、まとめた参照の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` の参照の一覧が、HTML の中の段落の `ワークスペース` と、`<!-- map -->` の図のノードの名前の `ワークスペース` の 2 件を `ws` の要素として持つ'
       - HTML の中のリンクの文字の `ワークスペース` は一覧に無い
@@ -146,6 +166,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -154,6 +176,8 @@ scenarios:
         M->>M: 用語の単語・別名とやめた言い方を単語の区切りに統一して照合する
         M-->>C: 文書ごとの参照の一覧・やめた言い方の一覧と、まとめた参照の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` のやめた言い方の一覧が、段落の `作業場` 3 件を本文の頭からの順に持つ'
       - やめた言い方の各要素が、一致した文字列 `作業場` と、本文の中でその文字列が出た位置を持つ
@@ -176,6 +200,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -184,6 +210,8 @@ scenarios:
         M->>M: 本文の単語と用語の単語・別名・やめた言い方を正規化して照合し、一致した範囲を正規化する前の本文の位置へ戻す
         M-->>C: 文書ごとの参照の一覧・やめた言い方の一覧と、まとめた参照の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` の参照の一覧が、`ﾜｰｸｽﾍﾟｰｽ`・`ＷＳ`・`ws` の 3 件を本文の頭からの順に持ち、どれも種類が索引の用語・ID `ws` を持つ'
       - '`ﾜｰｸｽﾍﾟｰｽ` の要素の始まりと終わりの位置が、本文の 1 行目で `ﾜｰｸｽﾍﾟｰｽ` が出た範囲（8 文字分）を指す'
@@ -206,6 +234,8 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
       ```mermaid
       sequenceDiagram
         participant C as 利用側の処理
@@ -214,6 +244,8 @@ scenarios:
         M->>M: 用語・文書の別名・エイリアスを単語の区切りに統一して照合する
         M-->>C: 文書ごとの参照の一覧・まとめた参照の一覧・やめた言い方の一覧
       ```
+
+      <!-- /map -->
     expected:
       - '`guide` の参照の一覧の `単体テスト` の要素が、種類がエイリアス（`command`）・ID `unit-test`・タイトル `単体テスト`・短い説明 `ライブラリ本体の単体テストを実行する` を持つ'
       - まとめた参照の一覧が `unit-test` を 1 回持つ
@@ -221,7 +253,6 @@ scenarios:
       - 引数の索引・本文・エイリアスが書き換わっていない
     test: test_normal_when_aliases
 lead: 利用側の処理（AI へ本文を返却する MCP・サーバー）が、索引と文書の本文を mdmark に指定し、画面を出さずに、本文に出た用語・文書の別名と、その参照先の一覧を受け取る。
-issue: 47
 primary_actor: 利用側の処理
 stakeholders:
   - name: 文書を読み込む AI
@@ -238,3 +269,8 @@ refs:
   - SC-472-65#
   - SC-472-75#
 test_file: tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts
+tags:
+  - name: topic:用語
+    main: true
+  - name: topic:参照
+  - name: topic:api

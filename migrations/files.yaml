@@ -4,77 +4,77 @@ files:
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「移行の手順が要らないスキーマの変更の一覧」を受け持つ。mdmark upgrade の移行の流れを変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: v0.10.0/steps.yaml
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「出していないバージョンの移行の手順」を受け持つ。mdmark upgrade で適用する手順を追加する・変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: v0.10.0/drop-tag-vocabulary.mjs
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「索引からタグの語彙を削除する移行のスクリプト」を受け持つ。索引のタグの移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:索引, topic:タグ]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: v0.10.0/drop-tag-vocabulary.d.mts
     description: 索引からタグの語彙を削除する移行のスクリプトの型定義。drop-tag-vocabulary.mjs の公開する関数を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:型]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: v0.10.0/alias-rows.mjs
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「設定の aliases の行を alias-inject v0.3.0 の構造へ書き換える移行のスクリプト（migrateAliasRows）」を受け持つ。エイリアスの元の行の移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:エイリアス]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: v0.11.0/steps.yaml
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「出していないバージョンの移行の手順」を受け持つ。mdmark upgrade で適用する手順を追加する・変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: v0.11.0/marker-json.mjs
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「文書のマーカーの今の書き方を JSON のオブジェクトに書き換える移行のスクリプト」を受け持つ。文書のマーカーの移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:マーカー]
     related:
-      - to: docs/module/MOD-477-4.mjs
+      - to: MOD-477-4
         type: implements
   - path: v0.11.0/legacy-marks.js
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「移行のスクリプトが読み込む、今の書き方の引数を JSON に書き換える処理をまとめたファイル（buildLegacyMarks が書き込む）」を受け持つ。文書のマーカーの移行が使う書き換えの処理を確かめるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:マーカー]
     related:
-      - to: docs/module/MOD-472-166.ts
+      - to: MOD-472-166
         type: implements
   - path: v0.11.0/THIRD_PARTY_LICENSES.txt
     description: モジュール構成『ライブラリ本体 / ビルド / build.ts』のうち「legacy-marks.js にまとめた依存のライセンス（buildLegacyMarks が書き込む）」を受け持つ。移行の手順のフォルダにまとめた依存のライセンスを確かめるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:ライセンス]
     related:
-      - to: docs/module/MOD-472-166.ts
+      - to: MOD-472-166
         type: implements
   - path: v0.13.0/steps.yaml
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「出していないバージョンの移行の手順」を受け持つ。mdmark upgrade で適用する手順を追加する・変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: docs/module/MOD-472-30
+      - to: MOD-472-30
         type: implements
   - path: v0.13.0/retired-diagrams.mjs
     description: モジュール構成『ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs』のうち「文書の廃止した flow・sequence の範囲を map の範囲へ書き換え、設定に map.kinds・map.lines を書き足す移行のスクリプト」を受け持つ。廃止した図の移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:図]
     related:
-      - to: docs/module/MOD-477-6.mjs
+      - to: MOD-477-6
         type: implements
   - path: v0.13.0/retired-diagrams.js
     description: モジュール構成『ライブラリ本体 / ビルド / build.ts』のうち「retired-diagrams.mjs が読み込む書き換えの処理と拡張・設定の読み込みをまとめたファイル（buildRetiredDiagrams が書き込む）」を受け持つ。廃止した図の移行の手順が読み込む処理を確かめるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:図]
     related:
-      - to: docs/module/MOD-472-166.ts
+      - to: MOD-472-166
         type: implements
   - path: v0.13.0/THIRD_PARTY_LICENSES.txt
     description: モジュール構成『ライブラリ本体 / ビルド / build.ts』のうち「retired-diagrams.js にまとめた依存のライセンス（buildRetiredDiagrams が書き込む）」を受け持つ。移行の手順のフォルダにまとめた依存のライセンスを確かめるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:ライセンス]
     related:
-      - to: docs/module/MOD-472-166.ts
+      - to: MOD-472-166
         type: implements

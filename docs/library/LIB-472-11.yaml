@@ -51,11 +51,23 @@ upstream: evanw/esbuild
 verification:
   state: 済
   date: '2026-11-06'
-  detail: 'PoC #349（`206ff67d`）。`esbuild-wasm/lib/browser.js` を、そのファイルの先頭に `var self = globalThis;` を追加する esbuild のプラグインつきで `dist/extension.cjs` にまとめ、`esbuild.wasm` を `dist/` にコピーした。`vsce package --no-dependencies` の .vsix は 3.99MB で `node_modules` を含まない。VS Code 1.141.0 の拡張機能ホストで `initialize({ wasmModule, worker: false })` が通り、`globalThis.self` は増えない。`build`（`bundle`・`format: esm`・`platform: browser`・`minify`・`target`・`write: false`）で、型注釈・相対パスの `.ts`・jsDelivr の URL の import を持つ拡張を 1 つの ES モジュールにした。初期化と 1 回目 801ms、2 回目以降 189〜555ms（URL の取得を含む）。20 回で RSS が 12.1MB 増え、`stop()` では戻らない'
+  detail: '[PoC: esbuild-wasm](https://github.com/shuhei1101/mdmark/pull/349)（`206ff67d`）。
+
+    `esbuild-wasm/lib/browser.js` を、そのファイルの先頭に `var self = globalThis;` を追加する esbuild のプラグインつきで `dist/extension.cjs` にまとめ、`esbuild.wasm` を `dist/` にコピーした。
+
+    `vsce package --no-dependencies` の .vsix は 3.99MB で `node_modules` を含まない。
+
+    VS Code 1.141.0 の拡張機能ホストで `initialize({ wasmModule, worker: false })` が通り、`globalThis.self` は増えない。
+
+    `build`（`bundle`・`format: esm`・`platform: browser`・`minify`・`target`・`write: false`）で、型注釈・相対パスの `.ts`・jsDelivr の URL の import を持つ拡張を 1 つの ES モジュールにした。
+
+    初期化と 1 回目 801ms、2 回目以降 189〜555ms（URL の取得を含む）。
+
+    20 回で RSS が 12.1MB 増え、`stop()` では戻らない'
 limitations:
   - item: 入口
     content: '`main` の `lib/main.js` はまとめると例外を投げ、PATH の `node` を子プロセスで起動するため、拡張機能ホストでは使用できない。`lib/browser.js` を読み込む'
-    notes: PoC #349
+    notes: '[PoC: esbuild-wasm](https://github.com/shuhei1101/mdmark/pull/349)'
 issues:
   - title: 終わったビルドの結果がメモリに残る
     summary: '`worker: false` では、終わったビルドの結果が解放されない'
@@ -70,10 +82,15 @@ issues:
 license: MIT（商用利用可）
 docs_url: https://esbuild.github.io/api/
 selection:
-  candidates: esbuild-wasm・`@rollup/wasm-node` と sucrase・`@rollup/browser` と sucrase・`@rolldown/browser` を比べた（PR #347 の案のレビュー）。ネイティブの esbuild は .vsix に入らないため削除した。
+  candidates: esbuild-wasm・`@rollup/wasm-node` と sucrase・`@rollup/browser` と sucrase・`@rolldown/browser` を比べた（[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) の案のレビュー）。ネイティブの esbuild は .vsix に入らないため削除した。
   decision: CLI と同じ esbuild のバージョン・プラグイン・`minify`・`target` でまとめられ、`mdmark export` と同じ出力になる。依存が自身だけで、今の配布（`dist/extension.cjs` 1 つ・`--no-dependencies`）に入る。
   consequences: .vsix が約 3.6MB 増える。`lib/browser.js` を読み込み、`self` を追加するビルドのプラグインが要る。
 install: |-
   ```bash
   cd vscode && npm i -D -E esbuild-wasm@0.28.2
   ```
+tags:
+  - name: tool:esbuild
+    main: true
+  - name: tool:wasm
+  - name: action:ビルド

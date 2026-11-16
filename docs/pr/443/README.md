@@ -6,10 +6,10 @@
 
 ## 背景
 
-[#367](https://github.com/shuhei1101/mdmark/issues/367) の要望。
+[390px の枠で描く narrow のストーリーが、390px の画面幅で横にスクロールする](https://github.com/shuhei1101/mdmark/issues/367) の要望。
 `frameWidth: "390px"` を持つ narrow のストーリー（`parts-layoutcolumns--narrow`・`parts-cardgrid--narrow` など）を 390x844 の画面幅で開くと、`detect_screen_issues` が `horizontal-scroll`（`scrollWidth 430 > clientWidth 390`）を返却する。
 `scripts/storybook-render.ts` がストーリーを `frameWidth` の幅の `div` で包み、Storybook の余白が加わって画面幅を超える。
-[#352](https://github.com/shuhei1101/mdmark/pull/352) の実装のレビューで、対象外の逸脱として見つかった。
+[記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/pull/352) の実装のレビューで、対象外の逸脱として見つかった。
 
 ## 計画書
 

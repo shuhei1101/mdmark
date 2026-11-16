@@ -22,3 +22,10 @@ constants:
     refs:
       - LIB-472-24#
     status: planned
+lead: 'shadcn/ui の CLI の設定を受け持ち、Webview に追加する shadcn/ui の部品を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:部品
+  - name: topic:プレビュー

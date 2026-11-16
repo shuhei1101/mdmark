@@ -116,3 +116,8 @@ functions:
       1. `mode` で `.mdmark-view-board` と `.mdmark-view-table` の `hidden` と、ボタンの `aria-pressed` を記載する
       2. `.mdmark-view-switch` の `click` を受け、押したボタンの `data-mode` で手順 1 をする（`disabled` のボタンは押せない）
     unit_tests: []
+lead: 'ビューの部品のモジュールのエントリーポイントを受け持ち、ビューの描き方を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

@@ -20,8 +20,6 @@ data_models:
         type: '(id: string) => void'
         description: 付けたコメントの `focus` を呼ぶ。コメントを付けていないときは何もしない
     status: planned
-    introduced:
-      pr: 280
 functions:
   - name: mountView
     title: ビューを描く公開関数
@@ -203,3 +201,8 @@ functions:
     refs:
       - IF-472-35#exceptions[なし（ビュー・コメントの部品のモジュールを読み込めない）]
       - IF-472-35#constraints[コメントの再読み込み]
+lead: 'ビューとコメントの公開関数と、描いた文書に部品を付ける処理を受け持ち、ビューやコメントの呼び出し方を変えるときに参照する。'
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

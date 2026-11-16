@@ -20,8 +20,6 @@ data_models:
         type: number
         description: 記載した行の番号（1 から）
     status: planned
-    introduced:
-      pr: 263
 functions:
   - name: collectAssetRefs
     title: ファイルの参照を取得する
@@ -54,8 +52,6 @@ functions:
         mock: なし
         expected: 空
     status: planned
-    introduced:
-      pr: 263
   - name: resolveAssetFile
     title: アセットのルートでファイルを探す
     container: src/cli/assets.ts
@@ -86,8 +82,6 @@ functions:
         mock: 一時フォルダ
         expected: '`docs/a.png`・`assets/b.png`・`undefined`'
     status: planned
-    introduced:
-      pr: 263
   - name: copyMedia
     title: 動画と音声をコピーする
     container: src/cli/assets.ts
@@ -141,8 +135,6 @@ functions:
         expected: '`CliError` を投げ、メッセージに `guide_files` が入る'
         exception: '`_files/` を作れない・記載できない'
     status: planned
-    introduced:
-      pr: 263
   - name: checkMissingFiles
     title: 見つからないファイルを点検する
     container: src/cli/assets.ts
@@ -172,5 +164,11 @@ functions:
         mock: 一時フォルダ
         expected: '`missing_file` が 2 件で、`where` が `3`・`5`、`message` に `none.png` と `画像`、`none.pdf` と `添付` が入る'
     status: planned
-    introduced:
-      pr: 263
+lead: '文書が指す画像・動画・音声・添付の抽出とコピー・見つからないファイルの点検を受け持ち、書き出しのアセットの扱いを変えるときに参照する。'
+tags:
+  - name: topic:ファイル
+    main: true
+  - name: topic:cli
+  - name: action:点検
+  - name: action:書き出し
+  - name: action:コピー

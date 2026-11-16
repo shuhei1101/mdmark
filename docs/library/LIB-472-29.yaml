@@ -82,3 +82,8 @@ limitations:
     content: 確認したのは 3.4。それより前のバージョンで `new-session -e` があるかは確認していない
   - item: Windows
     content: Windows のネイティブの端末には無い。WSL・macOS・Linux で使用する
+tags:
+  - name: tool:tmux
+    main: true
+  - name: topic:常駐
+  - name: topic:サーバー

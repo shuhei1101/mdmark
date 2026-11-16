@@ -137,5 +137,11 @@ functions:
         mock: なし
         expected: '`close` が `-1`、`nested` が `true`'
     status: planned
-    introduced:
-      pr: 275
+lead: 'タブの範囲の区切りとマーカーの読み取りを受け持ち、タブの記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:タブ
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

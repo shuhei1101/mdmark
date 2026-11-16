@@ -25,3 +25,11 @@ functions:
         condition: '`<!-- toc -->` と `## 導入`・`### 前提`・`#### 細目`・`## 使用方法`'
         mock: なし
         expected: マーカーの場所に `mdmark-toc` があり、`前提` が `導入` の入れ子で、`細目` が無い
+lead: '目次のマーカーの位置への目次の配置を受け持ち、目次の記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:目次
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:配置

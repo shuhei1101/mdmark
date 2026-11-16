@@ -108,8 +108,6 @@ data_models:
     summary: mermaid の図のテーマの名前（`"mdmark" | "default" | "neutral" | "dark" | "forest" | "base"`）
     description: '`mdmark` は描く先の要素の CSS 変数から作る mdmark の外観のテーマ、ほかは mermaid のテーマの名前'
     status: planned
-    introduced:
-      pr: 382
   - name: TooltipPlacement
     title: ツールチップを出す場所
     container: src/config.ts
@@ -123,16 +121,12 @@ data_models:
     summary: 右側の目次の出し方（`"hover" | "fixed"`）
     description: '`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する'
     status: planned
-    introduced:
-      pr: 166
   - name: ColorTheme
     title: 配色のテーマ
     container: src/config.ts
     usecase: 共通
     summary: mdmark に入れた配色のテーマの名前（`"dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"`）
     status: planned
-    introduced:
-      pr: 181
   - name: ColorScheme
     title: 配色の明暗
     container: src/config.ts
@@ -163,8 +157,6 @@ data_models:
     summary: 表のピン止めの動き（`"each" | "through"`）
     description: '`each` は押した列だけを留め、留めた列より左を表示している間は右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める'
     status: planned
-    introduced:
-      pr: 438
 constants:
   - name: DEFAULT_FEATURES
     title: 機能の既定
@@ -176,7 +168,7 @@ constants:
   - name: DEFAULT_LIBRARIES
     title: 既定の対応表
     container: src/config.ts
-    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表。この Issue では空で、外部ライブラリを使用する機能を作る Issue（#6）がバージョンを固定した URL の行を追加する
+    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表。この Issue では空で、外部ライブラリを使用する機能を作る Issue（[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6)）がバージョンを固定した URL の行を追加する
     value: '{}'
   - name: MARK_NAME_PATTERN
     title: マーカーの名前の書式
@@ -191,8 +183,6 @@ constants:
     refs:
       - CFG-472-3#settings[syntax.url]
     status: planned
-    introduced:
-      pr: 97
   - name: COLOR_THEMES
     title: 選べるテーマ
     container: src/config.ts
@@ -201,16 +191,12 @@ constants:
     refs:
       - CFG-472-3#settings[colorTheme]
     status: planned
-    introduced:
-      pr: 181
   - name: DEFAULT_COLOR_THEME
     title: 既定のテーマ
     container: src/config.ts
     summary: 設定に `colorTheme` が無いか知らない名前のときのテーマ。配色の値は `src/index.css` の `:root` の既定のまま
     value: '"dev-swiss"'
     status: planned
-    introduced:
-      pr: 181
   - name: COLOR_SCHEMES
     title: 記載できる明暗
     container: src/config.ts
@@ -233,8 +219,6 @@ constants:
     refs:
       - CFG-472-3#settings[labels.paramCopy]
     status: implemented
-    introduced:
-      pr: 258
   - name: DEFAULT_MERMAID_URL
     title: mermaid の既定の読み込み先
     container: src/config.ts
@@ -244,8 +228,6 @@ constants:
       - CFG-472-3#settings[mermaid.url]
       - LIB-472-17#
     status: planned
-    introduced:
-      pr: 382
   - name: MERMAID_THEMES
     title: 選べる mermaid のテーマ
     container: src/config.ts
@@ -254,8 +236,6 @@ constants:
     refs:
       - CFG-472-3#settings[mermaid.theme]
     status: planned
-    introduced:
-      pr: 382
   - name: DEFAULT_HTML_SCRIPTS_URL
     title: 範囲のスクリプトの変換のライブラリの既定の読み込み先
     container: src/config.ts
@@ -265,8 +245,6 @@ constants:
       - CFG-472-3#settings[html-scripts.url]
       - LIB-472-6#
     status: planned
-    introduced:
-      pr: 303
   - name: MAP_SHAPES
     title: mapのノードの形状
     container: src/config.ts
@@ -298,7 +276,35 @@ functions:
     kind: 関数
     scope: public
     summary: 利用側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返却する
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`table.pin` は `through` のときだけ `through` にし、無い値・他の値は `each` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。`mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。`mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。`mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。指定されたオブジェクトは書き換えない'
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。
+
+      `libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。
+
+      `tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。
+
+      `tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。
+
+      `syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。
+
+      `html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。
+
+      `side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。
+
+      `table.pin` は `through` のときだけ `through` にし、無い値・他の値は `each` にする。
+
+      `colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。
+
+      `colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。
+
+      `labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。
+
+      `mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。
+
+      `mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。
+
+      `mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。
+
+      指定されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
@@ -455,3 +461,8 @@ functions:
         condition: '`node_fit: tall`・`url_state: "no"`・`kinds.a.shape: hexagon`'
         mock: なし
         expected: '`node_fit` が `height`、`url_state` が `true`、`kinds.a` に `shape` が無い'
+lead: '設定の型・既定・既定の適用を受け持ち、設定のキーや既定の値を変えるときに参照する。'
+tags:
+  - name: topic:機能フラグ
+    main: true
+  - name: topic:設定

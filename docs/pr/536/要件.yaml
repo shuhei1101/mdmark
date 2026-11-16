@@ -4,7 +4,7 @@ scope_out:
     reason: 要望はフォルダ構成のツリーへの行の追加。今回の作業 PR がマージされなくても同じ内容で成り立つ
     plan: '#537'
   - item: src/cli/ の markdown-check.ts・issues.ts
-    reason: '#437（PR #494）で対応する'
+    reason: '[モジュール構成『ライブラリ本体 / CLI』のフォルダ構成に markdown-check.ts・issues.ts を追加する](https://github.com/shuhei1101/mdmark/issues/437)（PR [モジュール構成『ライブラリ本体 / CLI』のフォルダ構成に markdown-check.ts・issues.ts を追加する](https://github.com/shuhei1101/mdmark/pull/494)）で対応する'
     plan: '#437'
   - item: '*.stories.ts'
     reason: 起点 Issue が対象外としている

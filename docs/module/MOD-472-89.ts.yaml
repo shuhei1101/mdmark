@@ -164,3 +164,8 @@ constants:
     summary: '`window.createWebviewPanel` に指定する viewType'
     value: '"mdmark.preview"'
     status: planned
+lead: 'Markdown ごとのパネルの管理と、エディタ・設定の変更の振り分けを受け持ち、プレビューのパネルの振る舞いを変えるときに参照する。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode

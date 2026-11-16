@@ -12,6 +12,8 @@ scenarios:
       - name: Mock
         description: 取り出し元は、見本の 3 つのリビジョンをメモリーから返却するページの中の `DiffSource`。jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
       ```mermaid
       flowchart TD
         A[差分の取り出し元を指定する:正常シナリオ] --> B[文書の差分を確認する:正常シナリオ（リビジョンをもう一度選ぶ）]
@@ -20,6 +22,8 @@ scenarios:
         click B "id:SC-472-55#scenarios[正常シナリオ（リビジョンをもう一度選ぶ）]"
         click C "id:SC-472-45#scenarios[正常シナリオ]"
       ```
+
+      <!-- /map -->
     expected:
       - '`r1` と `r2` を比べると、削除した行が赤の背景と行頭の `-`、追加した行が緑の背景と行頭の `+` で出て、同じ行は色なしで出る'
       - 単語を書き換えた行の対で、変わった単語だけが濃い赤・濃い緑で出る
@@ -39,11 +43,15 @@ scenarios:
       - name: Mock
         description: 取り出し元の `content` が `r1` のときだけ reject する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
       ```mermaid
       flowchart TD
         A[差分の取り出し元を指定する:異常シナリオ（本文を取り出せない）]
         click A "id:SC-472-47#scenarios[異常シナリオ（本文を取り出せない）]"
       ```
+
+      <!-- /map -->
     expected:
       - '`r1` を比べる側に選ぶと、差分の場所に通知ブロックが出て、文書の本文は描かれたまま残る'
       - 比べる側を `r2` にもう一度選ぶと、通知ブロックが消えて `r2` と `r3` の差分が出る
@@ -51,7 +59,6 @@ scenarios:
     uses:
       - SC-472-47#scenarios[異常シナリオ（本文を取り出せない）]
 lead: 利用側のページが差分の取り出し元を指定して文書を描き、読者が 2 つのリビジョンを比べて、本文と埋め込んだ HTML の変更を読み込む。
-issue: 7
 primary_actor: 読者
 stakeholders:
   - name: 読者
@@ -65,3 +72,7 @@ preconditions:
 success_guarantee: 比べた 2 つのリビジョンの差分が、削除した行は赤、追加した行は緑、行の中で変わった文字は濃い色で、行頭の `-`・`+` のマーカーつきで出る。埋め込んだ HTML の差分は、描いた結果の前と後に切り替えて見られる。
 minimal_guarantee: 取り出し元がリビジョンの一覧か本文を返却できないときは、差分の場所に通知ブロックを出し、文書は描く。
 test_file: tests/e2e/複合ユースケース/取り出し元を指定して文書の差分を確認する.spec.ts
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:取り出し元

@@ -13,6 +13,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系と同じ。拡張機能と Webview の間のメッセージを記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -20,6 +23,9 @@ flows:
         U->>EX: 8 番目のセクションの見出しの行をエディタの先頭にする
         EX->>PV: scrollToLine（見出しの行）
         PV->>PV: data-source-line から先頭に配置する
+      ```
+
+      <!-- /map -->
     expected:
       - Webview の見えている先頭から 1 行分の高さの中に 8 番目のセクションの見出しがある
       - その後 200 ms の間にエディタの `visibleRanges[0].start.line` が変わらない（逆向きの `revealLine` でもう一度動かない）
@@ -32,6 +38,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant PV as Webview
@@ -39,6 +48,9 @@ flows:
         U->>PV: 5 番目のセクションの見出しを先頭までスクロールする
         PV->>EX: revealLine（見出しの行）
         EX->>EX: revealRange（AtTop）
+      ```
+
+      <!-- /map -->
     expected:
       - 5 番目のセクションの見出しの行が、エディタの `visibleRanges[0]` の先頭から 6 行以内にある
       - その後に Webview へ `scrollToLine` が送信されない（自分が発生させた通知を捨てている）
@@ -52,12 +64,18 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: エディタを 8 番目のセクションまでスクロールする
         U->>PV: プレビューを 3 番目のセクションまでスクロールする
+      ```
+
+      <!-- /map -->
     expected:
       - '`scrollToLine` が 1 回も送信されず、プレビューの位置はエディタを動かす前のまま'
       - エディタの先頭の行は 8 番目のセクションの見出しの行のまま
@@ -70,6 +88,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant PV as Webview
@@ -77,6 +98,9 @@ flows:
         U->>PV: プレビューをスクロールする
         PV->>EX: revealLine
         EX->>EX: 見えているエディタが無いので何もしない
+      ```
+
+      <!-- /map -->
     expected:
       - アクティブなタブがプレビューのままで、エディタのタブが表に出ない
     test: test_error_when_editor_hidden
@@ -88,6 +112,9 @@ flows:
       - name: Mock
         description: プレビューを開く.ts の正常系（差分ビューから開く）と同じ。拡張機能と Webview の間のメッセージを記録する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -95,6 +122,9 @@ flows:
         U->>EX: 変更後の側で 8 番目のセクションの見出しの行を先頭にする
         EX->>PV: scrollToLine（変更後の文書の行）
         PV->>PV: data-source-line から先頭に配置する
+      ```
+
+      <!-- /map -->
     expected:
       - Webview の見えている先頭から 1 行分の高さの中に 8 番目のセクションの見出しがある
       - '`scrollToLine` の `line` が変更後の文書の見出しの行番号'
@@ -110,6 +140,9 @@ flows:
       - name: Mock
         description: 正常系と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant U as 文書の作成者
         participant EX as 拡張機能
@@ -120,6 +153,9 @@ flows:
         U->>EX: 3 つ目の段落に文字を入力する
         EX->>PV: render（書き換えた Markdown）
         PV->>PV: 描く前の位置のまま描き直す
+      ```
+
+      <!-- /map -->
     expected:
       - 8 番目のセクションの見出しの下端が、Webview の見えている先頭（帯があれば帯の下端）より下にある
       - 8 番目のセクションの見出しの上端が、見えている先頭から本文 1 行分の高さ（本文の文字の大きさ × `--mdmark-line-height`）より下へ離れていない
@@ -158,3 +194,8 @@ constraints:
   - item: 閉じたセクションの合わせ方
     constraint: 閉じたセクション（中身に `hidden` が付いたセクション）の中の `data-source-line` の要素は、両方の向きで内分の前後の要素にならない。エディタから合わせる行が閉じたセクションの中の行（見出しの行より後で、閉じたセクションの後ろの最初の目印の行より前。後ろに目印が無ければ文書の末尾まで）のときは、そのセクションの見出しの上端を先頭に配置する。入れ子のときは最も外側の閉じたセクションの見出しを使用する。プレビューはセクションを開かない
     notes: '`hidden="until-found"` で隠した中身の要素も、Chromium の `getBoundingClientRect` は高さを持った値を返却し、後ろの見出しが「位置が戻る要素」として目印から除外される'
+tags:
+  - name: topic:スクロール
+    main: true
+  - name: topic:プレビュー
+  - name: tool:vscode

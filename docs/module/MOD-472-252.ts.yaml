@@ -51,3 +51,10 @@ functions:
         mock: 一時フォルダを `root` にし、`run` を npm には 1 を返却する関数に差し替える
         expected: 1 を返却し、ESLint を呼ばない
     status: planned
+lead: 'ESLint の道具が無ければ入れてから起動する処理を受け持ち、Webview の ESLint の起動を変えるときに参照する。'
+tags:
+  - name: topic:lint
+    main: true
+  - name: tool:eslint
+  - name: topic:検査
+  - name: action:起動

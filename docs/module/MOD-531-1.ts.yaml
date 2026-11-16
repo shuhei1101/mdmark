@@ -234,3 +234,10 @@ functions:
       description: テーブル名ごとの上書き
 refs:
   - IF-472-35#constraints[map の ER 図]
+lead: 'Mermaid の erDiagram の読み取りと構成図の入力への変換を受け持ち、map の ER 図の読み取りを変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:読み取り
+  - name: action:変換

@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #54](https://github.com/shuhei1101/mdmark/issues/54) の要望。
-[#50](https://github.com/shuhei1101/mdmark/issues/50) の作業 PR [#53](https://github.com/shuhei1101/mdmark/pull/53) の現状調査で見つかった。
+[対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で配布物を読み込めるかを確かめる仕組みが無い](https://github.com/shuhei1101/mdmark/issues/54) の要望。
+[配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50) の作業 PR [配布物の読み込み時に Intl.Segmenter を作らず、Firefox 98〜124 でも mdmark を動かす](https://github.com/shuhei1101/mdmark/pull/53) の現状調査で見つかった。
 非機能要件『対応ブラウザ』の決定値は Chrome 99・Firefox 98・Safari 16.4 以降だが、今の確かめ方は E2E を Playwright 同梱の Chromium 156・Firefox 157 で流すことと、単体・結合テストを同梱の Chromium で流すことだけ。
 `scripts/build.ts` の `BROWSER_TARGETS` は esbuild の構文の変換にだけ効き、下限の版に無い API を配布物が使っても止まらない。
-#50 の `Intl.Segmenter`（Firefox 125 から）は、この穴で v0.3.0 から気付かれなかった。
+[配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50) の `Intl.Segmenter`（Firefox 125 から）は、この穴で v0.3.0 から気付かれなかった。
 
 ## 計画書
 

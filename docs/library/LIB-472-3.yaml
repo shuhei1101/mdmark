@@ -64,9 +64,18 @@ verification:
 selection:
   candidates: '`@storybook/server-webpack5`・`@storybook/html-vite`・`@storybook/web-components-vite`（いずれも 10.6.2）・`storybook-html-rsbuild` 3.6.1 を比べた。'
   decision: 判定フローチャート『Storybookの描画の方式』の R3（部品を Node で描く描画のインターフェース）に合い、AI Monitor の Storybook の配信と同じ構造で起動できる。html-vite はフローチャートの結果から削除され、Vitest 5 への対応が途中で TypeScript 7 も未対応と表明されている。web-components-vite は lit が要り、rsbuild は非公式で 3 つ目のバンドラーになる。
-  consequences: 描画のインターフェースを `scripts/` に Node の HTTP サーバーとして配置し、`src/` の部品の関数を型の除去で直接読む。`fetchStoryHtml` で失敗の応答を例外にする。`webpack-dev-middleware` は `overrides` で 7.4.6 以上にして GHSA-g84c-rxfj-3j2c を削除する（Storybook 10.6.2 が参照する 6 系に修正版が無い）。 VS Code の Webview を React にした（#342）ため、framework を `@storybook/react-vite` に替え、部品の HTML のストーリーは CSF とデコレーターで描画のインターフェースの HTML を描く。`@storybook/server-webpack5` と `webpack-dev-middleware` の `overrides` は削除した。
+  consequences: |-
+    描画のインターフェースを `scripts/` に Node の HTTP サーバーとして配置し、`src/` の部品の関数を型の除去で直接読む。
+    `fetchStoryHtml` で失敗の応答を例外にする。
+    `webpack-dev-middleware` は `overrides` で 7.4.6 以上にして GHSA-g84c-rxfj-3j2c を削除する（Storybook 10.6.2 が参照する 6 系に修正版が無い）。
+     VS Code の Webview を React にした（[VS Code の webview の画面を React（Vite + shadcn/ui）へ移す](https://github.com/shuhei1101/mdmark/pull/342)）ため、framework を `@storybook/react-vite` に替え、部品の HTML のストーリーは CSF とデコレーターで描画のインターフェースの HTML を描く。
+    `@storybook/server-webpack5` と `webpack-dev-middleware` の `overrides` は削除した。
 install: '```bash
 
   npm i -D -E storybook@10.6.2 @storybook/react-vite@10.6.2 @storybook/addon-a11y@10.6.2
 
   ```'
+tags:
+  - name: tool:storybook
+    main: true
+  - name: topic:部品

@@ -10,16 +10,12 @@ constants:
     summary: 書き出した HTML の起動の処理が入れる、範囲のコードの文字から既定のエクスポートを返却する関数を参照する表。既定は `undefined`
     value: undefined
     status: planned
-    introduced:
-      pr: 303
   - name: HTML_SCRIPTS_REGISTRY
     title: 範囲の関数の受け取りの鍵
     container: src/html-scripts.ts
     summary: '`script` 要素が包んだ関数を指定する、`window` の鍵の名前。動かす間だけ配置し、終えたら削除する'
     value: '"__mdmarkHtmlScript"'
     status: planned
-    introduced:
-      pr: 303
   - name: TRANSPILE_OPTIONS
     title: 範囲のコードの変換の設定
     container: src/html-scripts.ts
@@ -28,8 +24,6 @@ constants:
     refs:
       - LIB-472-6#catalogs[API].entries[transform]
     status: planned
-    introduced:
-      pr: 303
 functions:
   - name: runHtmlScripts
     title: 範囲のスクリプトを動かす
@@ -38,7 +32,21 @@ functions:
     scope: internal
     is_async: true
     summary: 描いた要素の中の `template.mdmark-html-script` を文書の順に変換して動かし、既定のエクスポートの関数を範囲の根の要素で呼ぶ。範囲が返却した `destroy` をまとめて呼ぶ関数を返却する
-    description: '`embeddedHtmlScripts` があるときは、範囲のコードの文字で関数を引き、変換も `script` 要素も使用しない（表に無い範囲は構文エラーと同じ記載の警告にする）。無いときは `loadTranspiler` で変換のライブラリを 1 回読み、`TRANSPILE_OPTIONS` で CommonJS に変えて `wrapRangeScript` で包む。`script` 要素は `document.head` に配置してすぐ削除し、配置している間だけ `window` の `error` を受け取る。`nonce` は `document.querySelector("script[nonce]")` の `nonce` プロパティ（属性ではなく）を使用する。変換・評価・呼び出しの失敗は範囲ごとに記載の警告（`renderSyntaxWarning`）を範囲の前に配置し、範囲の通し番号と元のエラーを `console.error` に出して次の範囲へ進む。変換のライブラリを読み込めないときは全ての範囲の前に通知ブロック（`renderNotice`、名前 `html-scripts`）を配置する。待った後に `isCurrent()` が `false` なら何もしない。`template` は動かした後も残す'
+    description: '`embeddedHtmlScripts` があるときは、範囲のコードの文字で関数を引き、変換も `script` 要素も使用しない（表に無い範囲は構文エラーと同じ記載の警告にする）。
+
+      無いときは `loadTranspiler` で変換のライブラリを 1 回読み、`TRANSPILE_OPTIONS` で CommonJS に変えて `wrapRangeScript` で包む。
+
+      `script` 要素は `document.head` に配置してすぐ削除し、配置している間だけ `window` の `error` を受け取る。
+
+      `nonce` は `document.querySelector("script[nonce]")` の `nonce` プロパティ（属性ではなく）を使用する。
+
+      変換・評価・呼び出しの失敗は範囲ごとに記載の警告（`renderSyntaxWarning`）を範囲の前に配置し、範囲の通し番号と元のエラーを `console.error` に出して次の範囲へ進む。
+
+      変換のライブラリを読み込めないときは全ての範囲の前に通知ブロック（`renderNotice`、名前 `html-scripts`）を配置する。
+
+      待った後に `isCurrent()` が `false` なら何もしない。
+
+      `template` は動かした後も残す'
     side_effects: '`document.head` に `script` 要素を一時的に配置し、`window` の `HTML_SCRIPTS_REGISTRY` の鍵に受け取りの関数を配置する（終えたら削除する）。変換のライブラリを読み込む。失敗した範囲の前に警告か通知ブロックを配置し、`console.error` に出す'
     args:
       - name: options
@@ -103,8 +111,6 @@ functions:
         mock: 同上
         expected: 関数が呼ばれない
     status: planned
-    introduced:
-      pr: 303
   - name: loadTranspiler
     title: 変換のライブラリを読み込む
     container: src/html-scripts.ts
@@ -134,8 +140,6 @@ functions:
         mock: '`importModule` が `{}` を返却する'
         expected: '`Error` で拒否する'
     status: planned
-    introduced:
-      pr: 303
   - name: wrapRangeScript
     title: 範囲のコードを包む
     container: src/html-scripts.ts
@@ -159,8 +163,6 @@ functions:
         mock: なし
         expected: 戻りを `new Function` なしに評価できる構造で、`HTML_SCRIPTS_REGISTRY` の鍵と `2` を含み、`</script` を含まない
     status: planned
-    introduced:
-      pr: 303
   - name: setEmbeddedHtmlScripts
     title: 埋めた範囲の関数を入れる
     container: src/html-scripts.ts
@@ -177,5 +179,12 @@ functions:
       type: void
       description: なし
     status: planned
-    introduced:
-      pr: 303
+lead: '埋め込んだ HTML の範囲のスクリプトの変換と実行を受け持ち、範囲のスクリプトの動かし方を変えるときに参照する。'
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:dom
+  - name: topic:markdown
+  - name: topic:文書
+  - name: action:変換
+  - name: action:実行

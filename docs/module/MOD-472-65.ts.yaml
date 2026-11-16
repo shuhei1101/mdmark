@@ -35,3 +35,10 @@ functions:
     refs:
       - IF-472-22#constraints[Webview とのメッセージ]
     status: planned
+lead: '拡張機能からのメッセージの受け取りを受け持ち、Webview が受けるメッセージを変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー

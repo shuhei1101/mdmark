@@ -45,3 +45,8 @@ notes:
   出力の構造: '`<nav class="mdmark-backlinks" aria-labelledby="{id}"><p class="mdmark-backlinks-title" id="{id}">関連文書</p><ul><li><a href="{href}">{title}</a></li>…</ul></nav>`。タイトルの文言は確認ログの決定。モックは `docs/mock/components/backlinks/`'
   印刷: 印刷では、一覧のリンクの後ろに `href`（描いた文書からの相対パス）を併記する。本文の相対リンクには併記しない（本文の印刷の出力を変えない）。索引を基準にしたパスにする案もあったが、ユーザーが合意したモックの印刷の見え方と、リンクそのものの指し先に合わせる
 test_file: tests/integration/lib/backlinks.story.test.ts
+tags:
+  - name: topic:関連
+    main: true
+  - name: topic:文書
+  - name: topic:一覧

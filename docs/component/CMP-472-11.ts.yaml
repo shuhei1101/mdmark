@@ -49,3 +49,7 @@ refs:
 status: planned
 notes:
   HTML: '`<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">{key}</kbd><span class="mdmark-kbd-join">+</span>…</span>`。モックは `docs/mock/components/kbd/`'
+tags:
+  - name: topic:キー
+    main: true
+  - name: topic:部品

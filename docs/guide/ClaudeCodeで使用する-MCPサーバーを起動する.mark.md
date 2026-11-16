@@ -111,7 +111,8 @@ MDMARK_PORT=18782 npx github:shuhei1101/mdmark#v{バージョン} serve
 ```
 
 PowerShell では、先に `$env:MDMARK_PORT = "18782"` を実行する。
-`/mdmark:global-setup` で起動するときは、`settings.json` の `env` だけを変えてセッションをもう一度開き、もう一度呼ぶ。unit と tmux のセッションへは、その値を指定する。
+`/mdmark:global-setup` で起動するときは、`settings.json` の `env` だけを変えてセッションをもう一度開き、もう一度呼ぶ。
+unit と tmux のセッションへは、その値を指定する。
 `~/.claude/settings.json` を変えた後は、セッションをもう一度開く。
 
 `MDMARK_PORT` は 1〜65535 の整数。

@@ -63,3 +63,9 @@ functions:
         expected: どのノードも `data-selected` を持たず、`map-dim` を持つノードが無い
 refs:
   - IF-472-35#constraints[map のアーキテクチャ図]
+lead: 'map のアーキテクチャ図の描画と操作を受け持ち、map のアーキテクチャ図の操作を変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:描画

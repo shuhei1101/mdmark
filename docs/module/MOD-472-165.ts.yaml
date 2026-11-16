@@ -105,8 +105,6 @@ functions:
       - '#functions[toBrowserslist]'
       - '#functions[isGuardedByTypeof]'
       - '#functions[lintBundle]'
-    callers:
-      - 'MOD-472-166#functions[main]'
     refs:
       - IF-472-41#constraints[対応ブラウザの下限の確認]
       - LIB-472-13#
@@ -178,8 +176,6 @@ functions:
         condition: '`Intl.Segmenter;if (typeof Intl.Segmenter !== "undefined") {}` の 1 行目 15 列（`;` の位置。1 ずれると `if` の `i` を指す）'
         mock: なし
         expected: '`false`'
-    callers:
-      - '#functions[findBaselineViolations]'
   - name: toBrowserslist
     title: ブラウザのバージョンを browserslist の記載方法に修正する
     kind: 関数
@@ -212,8 +208,6 @@ functions:
         mock: なし
         expected: '`Error` を投げ、メッセージに `chrome` が入る'
         exception: 名前とバージョンに分けられない
-    callers:
-      - '#functions[findBaselineViolations]'
   - name: lintBundle
     title: まとめた JS を下限のバージョンと照らす
     kind: 関数
@@ -269,8 +263,15 @@ functions:
         mock: なし
         expected: '`Error` を投げ、メッセージに `dist/index.ts` と `No matching configuration` が入る'
         exception: 設定が該当しない
-    callers:
-      - '#functions[findBaselineViolations]'
     callees:
       - '#functions[toBrowserslist]'
       - '#functions[isGuardedByTypeof]'
+lead: '利用側のブラウザが読み込む JavaScript から対応ブラウザの下限に無い API を探す処理を受け持ち、配布物の対応ブラウザの点検を変えるときに参照する。'
+tags:
+  - name: topic:バンドル
+    main: true
+  - name: tool:esbuild
+  - name: action:ビルド
+  - name: topic:配布物
+  - name: action:点検
+  - name: action:配布

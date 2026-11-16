@@ -1,14 +1,14 @@
-# dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す
+# dev/ を廃止して文書を docs/ 1 つにまとめ、[dev/ を廃止して文書を docs/ 1 つにまとめ、公開範囲を visibility で持つ](https://github.com/shuhei1101/ai-monitor/pull/3307) と同じ構成へ移す
 
 ## 概要
 
-`dev/` を廃止して文書を `docs/` 1 つにまとめ、[shuhei1101/ai-monitor#3307](https://github.com/shuhei1101/ai-monitor/pull/3307) と同じ構成（種類だけのフォルダ・フラットな中身・Schema は `schemas/`・公開範囲は各文書の `visibility`）へ移す。
+`dev/` を廃止して文書を `docs/` 1 つにまとめ、[dev/ を廃止して文書を docs/ 1 つにまとめ、公開範囲を visibility で持つ](https://github.com/shuhei1101/ai-monitor/pull/3307) と同じ構成（種類だけのフォルダ・フラットな中身・Schema は `schemas/`・公開範囲は各文書の `visibility`）へ移す。
 
 ## 背景
 
-[#454](https://github.com/shuhei1101/mdmark/issues/454) の要望。
-ai-monitor#3307 の要件「AI Monitor 自身以外の全ての監視対象のプロジェクトも、この PR と同じ構成へ移す。」による。
-ai-monitor#3307 はマージ済みで、`dev/` が残る間は `python -m ai_monitor.design_docs` の設計書の検証・Markdown の生成が動かない。
+[dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す](https://github.com/shuhei1101/mdmark/issues/454) の要望。
+[dev/ を廃止して文書を docs/ 1 つにまとめ、公開範囲を visibility で持つ](https://github.com/shuhei1101/ai-monitor/pull/3307) の要件「AI Monitor 自身以外の全ての監視対象のプロジェクトも、この PR と同じ構成へ移す。」による。
+[dev/ を廃止して文書を docs/ 1 つにまとめ、公開範囲を visibility で持つ](https://github.com/shuhei1101/ai-monitor/pull/3307) はマージ済みで、`dev/` が残る間は `python -m ai_monitor.design_docs` の設計書の検証・Markdown の生成が動かない。
 
 ## 計画書
 

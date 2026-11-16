@@ -6,14 +6,16 @@
 
 ## 背景
 
-[Issue #299](https://github.com/shuhei1101/mdmark/issues/299) の要望。
+[描いた文書の表示の改善 5 件（グラフの値のツールチップ・表の幅・図の高さのつまみ・表の列のボタン・構成図の見直し）](https://github.com/shuhei1101/mdmark/issues/299) の要望。
 描いた文書の表示を改善する子 Issue の束で、子ごとの範囲と決まったことは子の Issue の本文が正。
 
-- [#160](https://github.com/shuhei1101/mdmark/issues/160): グラフの点・棒・円の項目にポインターを乗せても値が出ない。図のツールチップが付くのはノードの `hint`・`io`、線の `tip`、埋め込んだ HTML の `data-hint` だけ
-- [#168](https://github.com/shuhei1101/mdmark/issues/168): 表の幅が中身の幅で決まり、列の少ない表が本文の幅に比べて狭くなる
-- [#169](https://github.com/shuhei1101/mdmark/issues/169): 図の表示の範囲の高さは定義から決まり、全画面で開く以外に広げる方法が無い（上限 `--mdmark-diagram-max-height` の扱いは [#198](https://github.com/shuhei1101/mdmark/issues/198) で修正済み）
-- [#172](https://github.com/shuhei1101/mdmark/issues/172): 表の上の帯の列のボタンがアイコンと文字（今は「列設定」）で出ている
-- [#188](https://github.com/shuhei1101/mdmark/issues/188): 設定の `tooltips.placement`（既定 `top`）を本文と図が共有し、凡例に枠・層・交差・ツールチップのマーカーまで載る。`frame`・`lanes` のタイトルに説明を出す方法と、拡大して動かしたときにタイトルを留める動きが無い
+- [グラフの点・棒・円の項目にポインターを乗せたとき、値をツールチップで出す](https://github.com/shuhei1101/mdmark/issues/160): グラフの点・棒・円の項目にポインターを乗せても値が出ない。
+  図のツールチップが付くのはノードの `hint`・`io`、線の `tip`、埋め込んだ HTML の `data-hint` だけ
+- [表を本文の幅いっぱいに広げ、収まらないときだけ横スクロールにする](https://github.com/shuhei1101/mdmark/issues/168): 表の幅が中身の幅で決まり、列の少ない表が本文の幅に比べて狭くなる
+- [図・グラフの表示の範囲の高さを、右下のつまみで縦にだけ変えられるようにする](https://github.com/shuhei1101/mdmark/issues/169): 図の表示の範囲の高さは定義から決まり、全画面で開く以外に広げる方法が無い（上限 `--mdmark-diagram-max-height` の扱いは [図のリサイズハンドルで、表示の範囲の max-height（36rem）より高くできない](https://github.com/shuhei1101/mdmark/issues/198) で修正済み）
+- [表の列の表示・非表示のボタンをアイコンだけにし、隠した列の数をバッジで出す](https://github.com/shuhei1101/mdmark/issues/172): 表の上の帯の列のボタンがアイコンと文字（今は「列設定」）で出ている
+- [構成図を見直す（図のツールチップを下に出す・凡例を絞る・グループのタイトルにヒントと上端への固定）](https://github.com/shuhei1101/mdmark/issues/188): 設定の `tooltips.placement`（既定 `top`）を本文と図が共有し、凡例に枠・層・交差・ツールチップのマーカーまで載る。
+  `frame`・`lanes` のタイトルに説明を出す方法と、拡大して動かしたときにタイトルを留める動きが無い
 
 ## 計画書
 

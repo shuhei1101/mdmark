@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。画像は手元の応答で返却する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 描いた文書
@@ -23,6 +26,9 @@ scenarios:
         M-->>U: 1 つ目の画像
         U->>M: Esc を押す
         M-->>U: ダイアログを閉じた文書
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つ目の画像を押した後、全画面のダイアログが開き、`b.png` が表示されている
       - 右の矢印キーの後に `c.png`、前へのボタンを 2 回押した後に `a.png` が表示されている
@@ -39,6 +45,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 描いた文書
@@ -46,6 +55,9 @@ scenarios:
         U->>P: Tab で 1 つ目の画像にフォーカスする
         U->>P: Enter を押す
         M-->>U: 1 つ目の画像を拡大した全画面のダイアログ
+      ```
+
+      <!-- /map -->
     expected:
       - 画像が Tab でフォーカスでき、拡大できることがスクリーンリーダーで知らされる
       - Enter の後、全画面のダイアログで `a.png` が表示されている
@@ -59,6 +71,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 描いた文書
@@ -69,13 +84,15 @@ scenarios:
         M-->>U: 1 つ目の画像の全画面のダイアログ
         U->>M: 右の矢印キーを押す
         M-->>U: 3 つ目の画像
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つ目の画像を押してもダイアログが開かず、2 つ目の画像は Tab でフォーカスされない
       - 1 つ目から右の矢印キーで送信すると `c.png` が表示され、`b.png` は飛ばされる
       - ダイアログの枚数が 2 枚になっている
     test: test_normal_when_nolightbox
 lead: 読者が文書の画像を押すと、全画面のダイアログで拡大し、同じ文書の画像を前後に切り替える。キー・ボタン・閉じ方は図の全画面と統一する。`nolightbox` の属性を付けた画像は拡大しない。
-issue: 199
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者
@@ -87,3 +104,8 @@ preconditions:
 success_guarantee: 押した画像が全画面で拡大され、前後の画像へ送信できて、閉じると押した画像へフォーカスが戻る。
 minimal_guarantee: 拡大を閉じた後の文書は、押す前と同じスクロールの位置にある。
 test_file: tests/e2e/単一ユースケース/画像をライトボックスで拡大する.spec.ts
+tags:
+  - name: topic:ライトボックス
+    main: true
+  - name: topic:画像
+  - name: action:拡大

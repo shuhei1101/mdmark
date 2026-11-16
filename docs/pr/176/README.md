@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #125](https://github.com/shuhei1101/mdmark/issues/125) の要望。
+[エイリアス（用語・文書・コマンド・URL）を Markdown の用語集に加えて YAML（aliases［］）からも登録できるようにする](https://github.com/shuhei1101/mdmark/issues/125) の要望。
 今の mdmark は、索引の YAML（`terms[]`・`docs[]` の決まったスキーマ）と Markdown の用語集の表（`<!-- glossary -->`）からしか用語を登録できない（[src/knowledge/dictionary.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/knowledge/dictionary.ts)）。
 各プロジェクトの YAML を使うには、索引のスキーマに書き換えるか表に起こす必要があり、コマンド・URL の種類も無い。
-エイリアスの共通のスキーマは alias-inject が SSOT として持つ「エイリアスの元の行」（[alias-inject v0.2.0 の `schemas/aliases.schema.yaml`](https://github.com/shuhei1101/alias-inject/blob/v0.2.0/schemas/aliases.schema.yaml)、[alias-inject#20](https://github.com/shuhei1101/alias-inject/issues/20)）で、mdmark はタグを指定してこれを取り込む（D-120）。
+エイリアスの共通のスキーマは alias-inject が SSOT として持つ「エイリアスの元の行」（[alias-inject v0.2.0 の `schemas/aliases.schema.yaml`](https://github.com/shuhei1101/alias-inject/blob/v0.2.0/schemas/aliases.schema.yaml)、[共通のスキーマを documents の行と同じ形の「エイリアスの元の行」（metadata の ref・custom）に変え、dev-docs.yaml の documents から読む](https://github.com/shuhei1101/alias-inject/issues/20)）で、mdmark はタグを指定してこれを取り込む（D-120）。
 mdmark は文書の中身を YAML から描かない（D-85）が、エイリアスの登録だけは例外にする（D-119）。
-後続は、mdmark-style が設定の `aliases` を読む [#116](https://github.com/shuhei1101/mdmark/issues/116) と、dev-docs が読み込んだエイリアスを mdmark へ渡す [dev-docs#11](https://github.com/shuhei1101/dev-docs/issues/11)。
+後続は、mdmark-style が設定の `aliases` を読む [Claude Code の画面を mdmark の共通スタイルで描く mod のプラグイン mdmark-style を置く](https://github.com/shuhei1101/mdmark/issues/116) と、dev-docs が読み込んだエイリアスを mdmark へ渡す [aliases［］ のスキーマを alias-inject から取り込み、用語の検索と mdmark への受け渡しに使う](https://github.com/shuhei1101/dev-docs/issues/11)。
 
 ## 計画書
 
@@ -35,7 +35,7 @@ mdmark は文書の中身を YAML から描かない（D-85）が、エイリア
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/設定.md・docs/リファレンス/API.md・docs/リファレンス/CLI.md・docs/リファレンス/用語集.md・docs/使い方/書く/索引と用語集を書く.md・docs/使い方/書き出す/点検する.md・docs/はじめに/コアコンセプト/索引と被参照.md）
+- [x] ドキュメント修正（[設定](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E8%A8%AD%E5%AE%9A.md)・[API](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/API.md)・[CLI](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/CLI.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%94%A8%E8%AA%9E%E9%9B%86.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E7%B4%A2%E5%BC%95%E3%81%A8%E7%94%A8%E8%AA%9E%E9%9B%86%E3%82%92%E6%9B%B8%E3%81%8F.md)・[点検する](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8D%E5%87%BA%E3%81%99/%E7%82%B9%E6%A4%9C%E3%81%99%E3%82%8B.md)・[索引と被参照](https://github.com/shuhei1101/mdmark/blob/a6abcb1a2bff4c4226ae4c0cbb6d045a1e228bf8/docs/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/%E3%82%B3%E3%82%A2%E3%82%B3%E3%83%B3%E3%82%BB%E3%83%97%E3%83%88/%E7%B4%A2%E5%BC%95%E3%81%A8%E8%A2%AB%E5%8F%82%E7%85%A7.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

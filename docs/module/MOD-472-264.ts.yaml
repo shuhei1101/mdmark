@@ -41,3 +41,10 @@ functions:
         condition: '`docId` が `arch`、参照の表が無く、索引の `api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確認するとき" }]`、`guide` の `related` が `["arch"]`'
         mock: なし
         expected: 末尾の一覧の項目が `api`・`guide` の順
+lead: '文書の末尾に関連文書の一覧を配置するコアルールを受け持ち、関連文書の一覧の出し方を変えるときに参照する。'
+tags:
+  - name: topic:被参照
+    main: true
+  - name: topic:索引
+  - name: topic:用語
+  - name: action:配置

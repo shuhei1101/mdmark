@@ -115,3 +115,12 @@ refs:
   - ER-477-1#
 decisions:
   - D-312
+tags:
+  - name: topic:スキーマ
+    main: true
+  - name: topic:markdown
+  - name: topic:マーカー
+  - name: action:検証
+  - name: action:描画
+  - name: topic:部品
+  - name: action:検査

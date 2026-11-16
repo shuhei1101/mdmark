@@ -6,10 +6,11 @@ release/v0.8.0 の E2E で fail した 2 つの spec を、実装に合う読み
 
 ## 背景
 
-[Issue #148](https://github.com/shuhei1101/mdmark/issues/148) の束の修正（子 Issue は [#146](https://github.com/shuhei1101/mdmark/issues/146)・[#147](https://github.com/shuhei1101/mdmark/issues/147)）。
-[release PR #144](https://github.com/shuhei1101/mdmark/pull/144) の E2E（[E2E 実行 Issue #117](https://github.com/shuhei1101/mdmark/issues/117)）で次の 2 つが fail し、tester がどちらもテスト不備と切り分けた。製品の挙動は仕様どおり。
+[Sprint v0.8.0 の E2E の 2 件のテスト不備（find_docs の本文の読み方・has に渡すロケーター）を修正する](https://github.com/shuhei1101/mdmark/issues/148) の束の修正（子 Issue は [E2E『ClaudeCodeで索引を書き換えて点検してから配る』の test_normal が、markdown で返る find_docs の本文を JSON として読んで fail する](https://github.com/shuhei1101/mdmark/issues/146)・[E2E『表から用語集に用語を入れる』のやめた言い方の列の 2 件が、has に #doc から始まるロケーターを渡してツールチップを見つけられず fail する](https://github.com/shuhei1101/mdmark/issues/147)）。
+[release/v0.8.0](https://github.com/shuhei1101/mdmark/pull/144) の E2E（[Sprint v0.8.0 の E2E 実行](https://github.com/shuhei1101/mdmark/issues/117)）で次の 2 つが fail し、tester がどちらもテスト不備と切り分けた。
+製品の挙動は仕様どおり。
 
-- 複合ユースケース『ClaudeCodeで索引を書き換えて点検してから配る』の `test_normal`: `find_docs` の既定が [#114](https://github.com/shuhei1101/mdmark/pull/114) で markdown になった後も、返った本文を JSON として読んでいる
+- 複合ユースケース『ClaudeCodeで索引を書き換えて点検してから配る』の `test_normal`: `find_docs` の既定が [索引のタグにマスターと主題のマーカーを持たせ、find_docs のタグを AND / OR にして返す量を選べるようにする](https://github.com/shuhei1101/mdmark/pull/114) で markdown になった後も、返った本文を JSON として読んでいる
 - 単一ユースケース『表から用語集に用語を入れる』の `test_normal_when_avoid_column`・`test_normal_when_other_document_avoid_column`: `has` に `#doc` から始まるロケーターを渡し、外側の要素の中でツールチップを見つけられない
 
 ## 計画書
@@ -17,8 +18,8 @@ release/v0.8.0 の E2E で fail した 2 つの spec を、実装に合う読み
 | ファイル | 中身 |
 | --- | --- |
 | [要件](./要件.md) | 要望の整理と影響する UC 一覧 |
-| [Claude Code プラグイン](./ClaudeCodeプラグイン.md) | Claude Code プラグインの計画書（#146） |
-| [ライブラリ本体](./ライブラリ本体.md) | ライブラリ本体の計画書（#147） |
+| [Claude Code プラグイン](./ClaudeCodeプラグイン.md) | Claude Code プラグインの計画書（[E2E『ClaudeCodeで索引を書き換えて点検してから配る』の test_normal が、markdown で返る find_docs の本文を JSON として読んで fail する](https://github.com/shuhei1101/mdmark/issues/146)） |
+| [ライブラリ本体](./ライブラリ本体.md) | ライブラリ本体の計画書（[E2E『表から用語集に用語を入れる』のやめた言い方の列の 2 件が、has に #doc から始まるロケーターを渡してツールチップを見つけられず fail する](https://github.com/shuhei1101/mdmark/issues/147)） |
 
 ## タスク一覧
 

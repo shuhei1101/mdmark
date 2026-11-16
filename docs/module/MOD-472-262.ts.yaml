@@ -14,8 +14,6 @@ constants:
       - IF-472-39#constraints[拡張子の提案]
       - IF-472-43#constraints[案内する条件]
     status: planned
-    introduced:
-      pr: 541
 functions:
   - name: isMarkMarkdown
     title: mdmark の文書のパスか
@@ -41,8 +39,6 @@ functions:
         mock: なし
         expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
-    introduced:
-      pr: 541
   - name: resolveLink
     title: 本文のリンクを索引のパスにする
     container: src/knowledge/paths.ts
@@ -100,3 +96,9 @@ functions:
         condition: '`設計/arch.md` から `api.md`・`使い方/guide.md`・`設計/b.md`、`undefined` から `api.md`'
         mock: なし
         expected: '`../api.md`・`../使い方/guide.md`・`b.md`・`api.md`'
+lead: '索引のパスの正規化・リンクの解決・相対パスの作成を受け持ち、索引のパスの扱いを変えるときに参照する。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語
+  - name: action:作成

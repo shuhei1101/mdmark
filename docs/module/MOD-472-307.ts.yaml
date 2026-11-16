@@ -22,9 +22,6 @@ data_models:
         type: boolean | undefined
         description: 比較元から変わったセクションか。`true` なら項目と右端の線に変更のマーカーを付ける（省くと付けない）
     status: planned
-    introduced:
-      pr: 166
-
 functions:
   - name: renderSideToc
     title: 右側の目次を描く
@@ -82,5 +79,10 @@ functions:
     refs:
       - CMP-472-37#
     status: planned
-    introduced:
-      pr: 166
+lead: '右側の目次の部品が返却する HTML を受け持ち、右側の目次の外観を変えるときに参照する。'
+tags:
+  - name: topic:目次
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

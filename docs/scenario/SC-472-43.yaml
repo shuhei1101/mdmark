@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。色分けのライブラリへの要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -21,6 +24,9 @@ scenarios:
         M->>M: グラフの部品が系列を描く
         M-->>P: タイトルと凡例つきのグラフと本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 つの系列が、色と線の模様の組で分かれて描かれている
       - 題名と、系列の名前を記載した凡例がある
@@ -36,6 +42,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -44,6 +53,9 @@ scenarios:
         M->>M: 部品の定義を読み込んで構造を確認する
         M-->>P: 読み込めない定義の場所に記載の警告、ほかは図と本文を描く
         P-->>U: 警告と図と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 読み込めない定義の場所に記載の警告があり、読み込めない箇所が記載されている
       - 正しい定義のグラフが描かれている
@@ -58,6 +70,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -66,6 +81,9 @@ scenarios:
         M->>M: データから縦の軸の目盛りを切り、棒を描く
         M-->>P: タイトルと凡例つきの棒のグラフと本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 系列 2 つを色と模様の組で分けた棒が、項目 4 つ分描かれている
       - 縦の軸の目盛りが、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切られている
@@ -81,6 +99,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -89,6 +110,9 @@ scenarios:
         M->>M: 項目の値の割合で扇形を描く
         M-->>P: タイトルと凡例つきの円のグラフと本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 項目 3 つの扇形が、値の割合の角度で、色と模様の組で分けて描かれている
       - 凡例に項目の名前が並ぶ
@@ -102,6 +126,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -110,6 +137,9 @@ scenarios:
         M->>M: 横と縦の両方の軸の目盛りを切り、点を配置する
         M-->>P: タイトルと凡例つきの散布図と本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 点 6 つが、横と縦の値の位置に系列の点のマーカーで配置されている
       - 横と縦の両方の軸に、数値の目盛りがある
@@ -123,6 +153,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -131,6 +164,9 @@ scenarios:
         M->>M: グラフの部品が種類ごとに系列を描く
         M-->>P: タイトルと凡例つきの 8 つのグラフと本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 8 つの定義の場所に、それぞれの種類のグラフが図の枠に載って描かれている
       - 積み上げの棒と面は、同じ項目の系列の値を積み上げた高さで描かれている
@@ -147,6 +183,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。ライトとダークの両方の配色で描く
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -155,6 +194,9 @@ scenarios:
         M->>M: 系列ごとに色・点のマーカー・塗りの模様の組を適用する
         M-->>P: タイトルと凡例つきのグラフと本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 6 つの系列が全て描かれ、凡例に 6 つの系列の名前がある
       - 6 つの系列の色・点のマーカー・塗りの模様の組が互いに異なる
@@ -169,6 +211,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -177,6 +222,9 @@ scenarios:
         M->>M: ER 図の部品がテーブルと関係を配置する
         M-->>P: タイトルと凡例つきの ER 図と本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 3 つのテーブルが、物理名と論理名を持つノードとして描かれている
       - 各テーブルに列の名前と型が並び、主キー・外部キー・NOT NULL の列にそれぞれのマーカーがある
@@ -192,6 +240,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -200,6 +251,9 @@ scenarios:
         M->>M: ER 図の定義を読み込んで構造を確認する
         M-->>P: 読み込めない定義の場所に記載の警告、ほかは図と本文を描く
         P-->>U: 警告と図と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 読み込めない定義の場所に記載の警告があり、関係の先のテーブルが定義に無いことが記載されている
       - 正しい定義の ER 図が描かれている
@@ -214,6 +268,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -222,6 +279,9 @@ scenarios:
         M->>M: flow・sequence の範囲を図として読まずに、廃止した記載方法として扱う
         M-->>P: 範囲ごとに、map へ変換できる旨の書き方の警告と、本文とグラフ
         P-->>U: 警告と本文とグラフを表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`flow`・`sequence` の範囲ごとに書き方の警告が 1 つずつ出て、図は描かれない'
       - 警告に、その記載方法を廃止したことと、`mdmark upgrade` で map の範囲へ変換できることが記載されている
@@ -229,7 +289,6 @@ scenarios:
       - 段落とグラフは描かれている
     test: test_normal_when_retired_diagram
 lead: 文書の作成者が、文書に部品の定義（JSON）だけを記載し、mdmark の共通の図の部品にグラフ・ER 図を描かせる。廃止した `flow`・`sequence` の範囲は描かずに、map へ変換できる旨の書き方の警告を出す。
-issue: 21
 primary_actor: 文書の作成者（AI を含む）
 stakeholders:
   - name: 文書の作成者
@@ -242,3 +301,7 @@ preconditions:
 success_guarantee: 部品の定義の場所に、決まりのとおりの図が描かれる。文書に記載したスクリプトは動かない。
 minimal_guarantee: 定義を読み込めない図と、廃止した `flow`・`sequence` の範囲の場所には記載の警告が出て、ほかの本文と図は描かれる。
 test_file: tests/e2e/単一ユースケース/図を描く.spec.ts
+tags:
+  - name: topic:図
+    main: true
+  - name: action:描画

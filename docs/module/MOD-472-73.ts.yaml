@@ -22,3 +22,9 @@ functions:
       - LIB-472-19#
       - API-472-2#
     status: planned
+lead: 'MSW のハンドラを受け持ち、Webview のストーリーとテストの応答を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

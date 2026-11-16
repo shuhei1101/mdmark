@@ -98,8 +98,6 @@ functions:
       - MOD-472-257#functions[findWords]
       - 'MOD-472-213#functions[pushWarning]'
     status: planned
-    introduced:
-      pr: 45
   - name: readRangeScripts
     title: 範囲の css・ts・js を読み込む
     container: src/render/syntax/html.ts
@@ -135,5 +133,12 @@ functions:
         mock: なし
         expected: '`warnings` に 1 件'
     status: planned
-    introduced:
-      pr: 303
+lead: '埋め込んだ HTML の描画と範囲の CSS・スクリプトの読み取りを受け持ち、埋め込んだ HTML の記法を変えるときに参照する。'
+tags:
+  - name: topic:構文
+    main: true
+  - name: topic:markdown
+  - name: tool:markdown-it
+  - name: tool:html
+  - name: action:読み取り
+  - name: action:描画

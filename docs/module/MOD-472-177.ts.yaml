@@ -84,5 +84,10 @@ functions:
         mock: なし
         expected: '`dragstart` が `defaultPrevented`'
     status: planned
-    introduced:
-      pr: 263
+lead: '表示ブロックの中身の拡大・縮小・移動（ボタン・キー・ドラッグ）を受け持ち、図とライトボックスの拡大・縮小の操作を変えるときに参照する。'
+tags:
+  - name: topic:拡大
+    main: true
+  - name: topic:図
+  - name: action:移動
+  - name: action:拡大

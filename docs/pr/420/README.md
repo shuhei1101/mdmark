@@ -6,10 +6,10 @@ Firefox で図を参照する人が、リサイズハンドルのドラッグで
 
 ## 背景
 
-[Issue #418](https://github.com/shuhei1101/mdmark/issues/418) の報告。
-[PR #412](https://github.com/shuhei1101/mdmark/pull/412)（[Issue #400](https://github.com/shuhei1101/mdmark/issues/400) の修正）で図の E2E を Firefox でも実行したところ、#400 の 8 件に含まれない 2 件が Firefox だけで fail した。
+[Firefox の E2E で、図のリサイズハンドルのドラッグとグラフの項目へのフォーカスの 2 件が fail する](https://github.com/shuhei1101/mdmark/issues/418) の報告。
+[図の操作と表示の E2E 8 件の fail を修正する（ノードのリンク・グラフの項目の上のドラッグ・mermaid の拡大率・ツールチップ・凡例）](https://github.com/shuhei1101/mdmark/pull/412)（[図の操作と表示の E2E 8 件が fail する（ノードのリンク・グラフの項目の上のドラッグ・mermaid の拡大率・ツールチップ・凡例）](https://github.com/shuhei1101/mdmark/issues/400) の修正）で図の E2E を Firefox でも実行したところ、[図の操作と表示の E2E 8 件が fail する（ノードのリンク・グラフの項目の上のドラッグ・mermaid の拡大率・ツールチップ・凡例）](https://github.com/shuhei1101/mdmark/issues/400) の 8 件に含まれない 2 件が Firefox だけで fail した。
 release/v0.10.0 の [4d5568c4](https://github.com/shuhei1101/mdmark/commit/4d5568c4) でも同じく fail し、Chromium ではどちらも pass する。
-修正は release へ入れ、E2E 実行 [#255](https://github.com/shuhei1101/mdmark/issues/255) で実行し直す。
+修正は release へ入れ、E2E 実行 [Sprint v0.10.0 の E2E 実行](https://github.com/shuhei1101/mdmark/issues/255) で実行し直す。
 
 ## 計画書
 

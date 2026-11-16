@@ -59,7 +59,7 @@ functions:
       - name: test_inline_offsets_in_blocks
         case: 正常
         summary: 複数行の段落・リストの入れ子・引用・表のセル・参照形式のリンク・画像の後ろでも、本文の行と行の中の位置が合う
-        condition: PoC（#75）の見本のうち地の文のものと、`[文字][ref]`・`![画像の文字](a.png)` の後ろに用語を記載した行
+        condition: '[PoC: 照合した語を本文の Markdown の行と行の中の位置へ戻す](https://github.com/shuhei1101/mdmark/pull/75)の見本のうち地の文のものと、`[文字][ref]`・`![画像の文字](a.png)` の後ろに用語を記載した行'
         mock: なし
         expected: 全ての一致で、本文の行を切り出した文字が一致した文字と同じ（実体参照は戻して同じ）
   - name: maskEmbeddedHtml
@@ -84,3 +84,9 @@ functions:
         condition: '`<span title="単語">単語</span><!-- 単語 --><script>単語</script><code>単語</code><a href="#">単語</a><a href="#"><span>入</span></a><h2><em>見</em></h2>`'
         mock: なし
         expected: 長さが同じで、最初の `span` の要素の文字の `単語` と、`a` の中の `span` の `入`、見出しの中の `em` の `見` だけが残る
+lead: '照合した文字の位置を本文の行と行の中の位置へ戻す処理を受け持ち、照合の位置の求め方を変えるときに参照する。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語
+  - name: action:照合

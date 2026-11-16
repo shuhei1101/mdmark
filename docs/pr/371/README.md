@@ -6,9 +6,9 @@ E2E『MCPサーバーを起動・停止する』の `test_normal_when_start` が
 
 ## 背景
 
-[Issue #365](https://github.com/shuhei1101/mdmark/issues/365) の要望。
-[PR #353](https://github.com/shuhei1101/mdmark/pull/353) で MCP のツールに `list_templates`・`add_template`・`apply_template` が加わったが、この E2E はツールが 3 つちょうどであることを期待していて、release の E2E で fail する。
-[PR #354](https://github.com/shuhei1101/mdmark/pull/354) では同じ型の `ClaudeCodeにプラグインを入れる.spec.ts` を「3 つを含む」に修正したが、このファイルは対象外だった。
+[E2E『MCPサーバーを起動・停止する』の test_normal が、ツールが 3 つちょうどであることを期待している](https://github.com/shuhei1101/mdmark/issues/365) の要望。
+[端末の設定のフォルダに CSS のテンプレートを配置し、MCP で一覧・登録・配置する](https://github.com/shuhei1101/mdmark/pull/353) で MCP のツールに `list_templates`・`add_template`・`apply_template` が加わったが、この E2E はツールが 3 つちょうどであることを期待していて、release の E2E で fail する。
+[プラグインに global-setup・setup のスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/pull/354) では同じ型の `ClaudeCodeにプラグインを入れる.spec.ts` を「3 つを含む」に修正したが、このファイルは対象外だった。
 
 ## 計画書
 

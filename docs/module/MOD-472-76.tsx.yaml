@@ -50,3 +50,11 @@ components:
     refs:
       - CMP-472-63#
     status: planned
+lead: '設定ファイルを読み込めないバーのコンポーネントを受け持ち、設定ファイルの読み込みの失敗の表示を変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー
+  - name: action:読み込み

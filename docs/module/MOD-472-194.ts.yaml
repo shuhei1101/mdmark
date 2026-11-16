@@ -27,3 +27,8 @@ functions:
         expected: '`aria-expanded="true"`・`aria-controls="p1"` と文字 `変更表示` を持ち、アイコンが `aria-hidden`'
     refs:
       - CMP-472-46#
+lead: '差分を開くボタンの HTML を受け持ち、差分を開くボタンの外観を変えるときに参照する。'
+tags:
+  - name: topic:差分
+    main: true
+  - name: action:描画

@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。拡張の代役は、`draw` が受けた `options` の `target` をマーカーの場所に記載するモジュールを返却し、受けた要求を数える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -25,6 +28,9 @@ scenarios:
         M->>X: draw(slot, {options: {target: "world"}, definition: undefined})
         M-->>P: マーカーの場所に拡張が描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 拡張の代役への要求が 1 件
       - マーカーの場所に `world` が描かれている
@@ -40,6 +46,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -48,6 +57,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 拡張を読み込まずに本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 拡張の代役への要求が 0 件
       - 段落が描かれている
@@ -62,6 +74,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -71,6 +86,9 @@ scenarios:
         M->>M: マーカーの JSON のオブジェクトを options にして schema で確認する
         M-->>P: マーカーの場所に合わない項目を記載した枠、ほかは本文を描く
         P-->>U: 枠と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に、合わない引数を記載した枠がある
       - 拡張の代役はマーカーの場所に描いていない
@@ -85,6 +103,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -94,6 +115,9 @@ scenarios:
         M->>M: 拡張のマーカーの引数が JSON のオブジェクトでない
         M-->>P: マーカーの場所に移行を案内する記載の警告、ほかは本文を描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に、拡張のマーカーの引数は JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられることを記載した記載の警告がある
       - 拡張の代役への要求が 0 件で、マーカーの場所に `world` が描かれていない
@@ -108,6 +132,9 @@ scenarios:
       - name: Mock
         description: 拡張の代役が 404 を返却する。ほかは正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -119,6 +146,9 @@ scenarios:
         X-->>M: 404
         M-->>P: マーカーの場所に通知ブロック、ほかは本文を描く
         P-->>U: 通知ブロックと本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に通知ブロックがあり、拡張の名前が記載されている
       - マーカーの前後の段落が描かれている
@@ -132,6 +162,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ。拡張の代役は、受けた定義のタイトルと項目の数をマーカーの場所に記載する
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -144,12 +177,14 @@ scenarios:
         M->>X: マーカーの JSON のオブジェクトを options、部品の定義を definition に指定して描かせる
         M-->>P: マーカーの場所に拡張が描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの場所に、定義のタイトルと項目の数 3 が描かれている
       - 部品の定義の JSON は本文にそのまま出ていない
     test: test_normal_when_definition
 lead: 利用側が `registerExtension({ name, directive, load, schema })` で自分のマーカーを追加する。mdmark は文書にそのマーカーがあるときだけ `load` でモジュールを読み込み、マーカーの JSON のオブジェクトを `options` に、部品の定義を `definition` にしてマーカーの場所に描かせる。
-issue: 4
 primary_actor: 利用側のアプリの開発者
 stakeholders:
   - name: 文書の作成者
@@ -163,3 +198,8 @@ preconditions:
 success_guarantee: 文書に拡張のマーカーがあるときだけモジュールが 1 回読まれ、マーカーの場所に描かれる。
 minimal_guarantee: モジュールを読み込めない、または引数が Schema に合わないマーカーの場所には枠が出て、引数が JSON のオブジェクトでないマーカーの場所には移行を案内する記載の警告が出て、ほかの本文は描かれる。
 test_file: tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts
+tags:
+  - name: topic:拡張
+    main: true
+  - name: topic:マーカー
+  - name: action:登録

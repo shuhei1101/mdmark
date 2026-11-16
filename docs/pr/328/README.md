@@ -6,13 +6,13 @@
 
 ## 背景
 
-[Issue #327](https://github.com/shuhei1101/mdmark/issues/327) の要望。
+[既存の記法・点検への項目の追加 4 件（フロー図の自動配置・記法の点検・コードブロックの折り返し・フロー図のノードのリンク）](https://github.com/shuhei1101/mdmark/issues/327) の要望。
 既存の記法・点検へ項目を追加する子 Issue の束で、子ごとの範囲は子の Issue の本文が正。
 
-- [#272](https://github.com/shuhei1101/mdmark/issues/272): フロー図のノードの `x`・`y`・`w`・`h` と線の `points` が必須で、判定フローチャートも座標を全て手で書く
-- [#288](https://github.com/shuhei1101/mdmark/issues/288): `check` は設定と索引に載った文書のファイルだけを点検し、YAML のキーの中（dev-docs の文書の本文・MindStella の記録の本文）に書いた記法を点検する手段が無い
-- [#294](https://github.com/shuhei1101/mdmark/issues/294): コードブロック・ファイルツリーの折り返しをブロックごとに選ぶ記法が無く、埋め込む側の `pre` への `white-space: pre-wrap` で横スクロールが上書きされる
-- [#310](https://github.com/shuhei1101/mdmark/issues/310): フロー図のノードにリンク先の項目が無く、dev-docs が mermaid の `click` をノードのリンクとして残せない（shuhei1101/dev-docs#97）
+- [フロー図の判定フローチャートで、ノードの座標と線の点を省いたときに上から下へ自動で配置する](https://github.com/shuhei1101/mdmark/issues/272): フロー図のノードの `x`・`y`・`w`・`h` と線の `points` が必須で、判定フローチャートも座標を全て手で書く
+- [Markdown の文字列と YAML のキーの中の mdmark の記法を点検し、描画の「書き方の警告」と同じ内容を返す](https://github.com/shuhei1101/mdmark/issues/288): `check` は設定と索引に載った文書のファイルだけを点検し、YAML のキーの中（dev-docs の文書の本文・MindStella の記録の本文）に書いた記法を点検する手段が無い
+- [コードブロック・ファイルツリーの折り返しをブロックごとに選べるようにし、埋め込む側の CSS で既定の「折り返さない」が変わらないようにする](https://github.com/shuhei1101/mdmark/issues/294): コードブロック・ファイルツリーの折り返しをブロックごとに選ぶ記法が無く、埋め込む側の `pre` への `white-space: pre-wrap` で横スクロールが上書きされる
+- [フロー図の部品のノード（箱）にリンク先を持たせ、押すとリンク先を開けるようにする](https://github.com/shuhei1101/mdmark/issues/310): フロー図のノードにリンク先の項目が無く、dev-docs が mermaid の `click` をノードのリンクとして残せない（[文書の本文の `id:{文書の ID}#{項目}` のリンクを、画面でリンク先の文書へ解決する](https://github.com/shuhei1101/dev-docs/issues/97)）
 
 ## 計画書
 

@@ -25,3 +25,11 @@ constants:
       - LIB-472-32#
       - LIB-472-21#
     status: planned
+lead: 'Webview の Vite の設定を受け持ち、Webview のビルドを変えるときに参照する。'
+tags:
+  - name: topic:バンドル
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー
+  - name: action:ビルド

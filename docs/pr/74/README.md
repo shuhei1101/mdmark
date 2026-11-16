@@ -6,11 +6,11 @@ mdmark を使うアプリ（mindstella など）が、画面を出さずに、�
 
 ## 背景
 
-[Issue #47](https://github.com/shuhei1101/mdmark/issues/47) の要望。
+[ツールチップに使う参照（用語・項目の ID・別名の一致と参照先）を、画面なしで取り出す関数として出す](https://github.com/shuhei1101/mdmark/issues/47) の要望。
 使う側のアプリが AI に MCP で本文を返すときに、利用者が画面のツールチップで見るのと同じ補足を本文とは別に付けるため。
 aituber の設計のワークスペースで利用者から提案された。
 
-[PR #27](https://github.com/shuhei1101/mdmark/pull/27)（起点 [Issue #5](https://github.com/shuhei1101/mdmark/issues/5)）で、索引の用語・文書の別名を本文と照合して下線とツールチップを付ける処理と、参照の表を返す公開関数 `collectReferences` を入れた。
+[文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27)（起点 [文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/issues/5)）で、索引の用語・文書の別名を本文と照合して下線とツールチップを付ける処理と、参照の表を返す公開関数 `collectReferences` を入れた。
 照合の規則（`src/knowledge/dictionary.ts` の `buildDictionary`・`findWords`）は develop にあるが、`collectReferences` が返すのは被参照と用語集の表の用語だけで、本文のどの文字列がどの用語・文書に一致したかと、その位置は返さない。
 
 ## 計画書
@@ -35,7 +35,7 @@ aituber の設計のワークスペースで利用者から提案された。
 - [x] ~~部品設計~~（部品の引数・状態が変わらない）
 - [x] ~~画面設計~~（変更が画面に及ばない）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/API.md・docs/リファレンス/用語集.md・docs/使い方/書く/索引と用語集を書く.md・docs/はじめに/コアコンセプト/索引と被参照.md）
+- [x] ドキュメント修正（[API](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/API.md)・[用語集](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E7%94%A8%E8%AA%9E%E9%9B%86.md)・[索引と用語集を書く](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E6%9B%B8%E3%81%8F/%E7%B4%A2%E5%BC%95%E3%81%A8%E7%94%A8%E8%AA%9E%E9%9B%86%E3%82%92%E6%9B%B8%E3%81%8F.md)・[索引と被参照](https://github.com/shuhei1101/mdmark/blob/3758f2d5e0256ccae5b45bf5ccf5cfd55dfdae42/docs/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/%E3%82%B3%E3%82%A2%E3%82%B3%E3%83%B3%E3%82%BB%E3%83%97%E3%83%88/%E7%B4%A2%E5%BC%95%E3%81%A8%E8%A2%AB%E5%8F%82%E7%85%A7.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

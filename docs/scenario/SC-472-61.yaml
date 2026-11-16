@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -20,6 +23,9 @@ scenarios:
         M->>M: column のマーカーで範囲を列に分ける
         M-->>P: 横に並べた列を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 1 つ目の範囲の 2 つの列が、同じ高さの位置から横に並んでいて、幅が等しい
       - 2 つ目の範囲の 3 つの列が、横に等しい幅で並んでいる
@@ -38,6 +44,9 @@ scenarios:
         name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -45,6 +54,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 列を記載した順に縦に追加して描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - どちらの範囲も、列が記載した順に縦に追加され、各列の幅が本文の幅と等しい
       - 文書に横のスクロールが出ていない
@@ -57,6 +69,9 @@ scenarios:
         description: '`<!-- column -->` を持たない columns の範囲と、`<!-- column -->` 3 つで 4 列に分けた columns の範囲を並べた文書'
       - *id001
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -65,6 +80,9 @@ scenarios:
         M->>M: 列の数が 1 つと 4 つで、並べられない
         M-->>P: 記載の警告と、中身を記載した順に描く
         P-->>U: 記載の警告と本文を表示
+      ```
+
+      <!-- /map -->
     expected:
       - それぞれの範囲の上に、列の数と、並べられるのが 2〜3 列であることを記載した記載の警告がある
       - 範囲の中身が横に並ばず、記載した順に本文の幅で出ている
@@ -77,6 +95,9 @@ scenarios:
         description: 2 列の columns の範囲の 1 列目の中に、もう 1 つ 2 列の columns の範囲を記載した文書
       - *id001
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -85,12 +106,14 @@ scenarios:
         M->>M: columns の中に columns がある
         M-->>P: 外側を列に並べ、内側は記載の警告と記載した順の中身で描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 外側の範囲の 2 つの列が横に並んでいる
       - 内側の範囲の上に、columns を入れ子にできないことを記載した記載の警告があり、内側の中身は記載した順に縦に出ている
     test: test_error_when_nested
 lead: 文書の作成者が `<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切り、mdmark が本文を横に 2〜3 列で並べる。狭い画面では縦に並べる。
-issue: 193
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
@@ -102,3 +125,7 @@ preconditions:
 success_guarantee: 区切った 2〜3 の中身が、広い画面では横に等しい幅で並び、狭い画面では記載した順に縦に追加される。
 minimal_guarantee: 列の数が 2〜3 でない範囲と入れ子の範囲は、記載の警告を出して中身を記載した順に描く。
 test_file: tests/e2e/単一ユースケース/本文を横に並べる.spec.ts
+tags:
+  - name: topic:段組み
+    main: true
+  - name: topic:レイアウト

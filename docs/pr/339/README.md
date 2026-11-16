@@ -1,14 +1,14 @@
-# dev/mock/files.yaml で拡張子違いの素材の ID を分ける
+# [dev/mock/files.yaml](https://github.com/shuhei1101/mdmark/blob/703cdac93ce2cd8a66e99f6cb67a89b25b574baf/dev/mock/files.yaml) で拡張子違いの素材の ID を分ける
 
 ## 概要
 
-`dev/mock/files.yaml` で拡張子を落とすと同じ ID になる素材の行に `id:` を付けて ID を分け、dev-docs が `dev/mock/files.yaml` を参照できるようにする。
+[dev/mock/files.yaml](https://github.com/shuhei1101/mdmark/blob/703cdac93ce2cd8a66e99f6cb67a89b25b574baf/dev/mock/files.yaml) で拡張子を落とすと同じ ID になる素材の行に `id:` を付けて ID を分け、dev-docs が [dev/mock/files.yaml](https://github.com/shuhei1101/mdmark/blob/703cdac93ce2cd8a66e99f6cb67a89b25b574baf/dev/mock/files.yaml) を参照できるようにする。
 
 ## 背景
 
-[Issue #266](https://github.com/shuhei1101/mdmark/issues/266) の要望。
-[#257](https://github.com/shuhei1101/mdmark/pull/257) で入った `refs/257/assets/scene.css` と `scene.js` は、拡張子を落とすと同じ ID `dev/mock/refs/257/assets/scene` になり、dev-docs が `dev/mock/files.yaml` を参照できない。
-[PR #263](https://github.com/shuhei1101/mdmark/pull/263) の実装で、対象外の逸脱として報告された（[差し戻し報告](https://github.com/shuhei1101/mdmark/pull/263#discussion_r4436993773)）。
+[dev/mock/files.yaml の #257 の scene.css と scene.js の ID を分ける](https://github.com/shuhei1101/mdmark/issues/266) の要望。
+[図の枠が、枠を持つ面や操作できる部品の枠の中で入れ子の枠にならないようにする](https://github.com/shuhei1101/mdmark/pull/257) で入った `refs/257/assets/scene.css` と `scene.js` は、拡張子を落とすと同じ ID `dev/mock/refs/257/assets/scene` になり、dev-docs が [dev/mock/files.yaml](https://github.com/shuhei1101/mdmark/blob/703cdac93ce2cd8a66e99f6cb67a89b25b574baf/dev/mock/files.yaml) を参照できない。
+[表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/pull/263) の実装で、対象外の逸脱として報告された（[差し戻し報告](https://github.com/shuhei1101/mdmark/pull/263#discussion_r4436993773)）。
 
 ## 計画書
 
@@ -31,7 +31,7 @@
 - [x] ~~部品設計~~（影響なし）
 - [x] ~~画面設計~~（影響なし）
 - [x] ~~モジュール構成設計~~（影響なし）
-- [x] ドキュメント修正（dev/mock/files.yaml）
+- [x] ドキュメント修正（[dev/mock/files.yaml](https://github.com/shuhei1101/mdmark/blob/703cdac93ce2cd8a66e99f6cb67a89b25b574baf/dev/mock/files.yaml)）
 - [x] ~~単体テスト作成~~（コードを変えない）
 - [x] ~~実装~~（コードを変えない）
 - [x] ~~結合テスト作成~~（コードを変えない）

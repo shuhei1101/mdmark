@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #440](https://github.com/shuhei1101/mdmark/issues/440) の不具合。
+[手で開閉したセクションが、編集で描き直すたびにマーカーのとおりの開閉へ戻る](https://github.com/shuhei1101/mdmark/issues/440) の不具合。
 `MountHandle.update` は毎回本文を丸ごと差し替えて操作を付け直し、セクションは付けるたびにマーカーのとおりの開閉（既定は開く、`<!-- section: closed -->` で閉じる）になる。
 描き直しをまたいで保つ状態は右側の目次（`sideTocState`）にしか無く、VS Code のプレビューでは、手で閉じたセクションの中を編集するとセクションが開く。
 

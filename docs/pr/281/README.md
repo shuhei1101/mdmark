@@ -6,13 +6,16 @@
 
 ## 背景
 
-[Issue #279](https://github.com/shuhei1101/mdmark/issues/279) の要望で、部品の操作の不具合 3 件を束ねる。
+[部品の操作の不具合の修正 3 件（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/issues/279) の要望で、部品の操作の不具合 3 件を束ねる。
 
-- [#170](https://github.com/shuhei1101/mdmark/issues/170): iOS の Safari で図のツールチップを開くと、タップした持ち主に `:hover` が残り、外をタップしても閉じる処理が走らない。閉じる手段が Esc だけになる
-- [#267](https://github.com/shuhei1101/mdmark/issues/267): Firefox で hover で開いた用語のツールチップが同じ文書のリンクを覆い、E2E『複数の文書を1枚のHTMLにまとめる』の `test_normal`・`test_normal_when_aliases` が Firefox だけ時間切れで fail する。[PR #263](https://github.com/shuhei1101/mdmark/pull/263) の E2E テスト作成で見つかった
-- [#273](https://github.com/shuhei1101/mdmark/issues/273): E2E『図を拡大・縮小・移動する』の `test_normal_when_embedded_chart` で、拡大してから余白をドラッグしても `scrollLeft` が増えず、Chromium と Firefox で fail する。[PR #268](https://github.com/shuhei1101/mdmark/pull/268) のレビューで見つかった
+- [タッチ端末で、図のツールチップを開いた後に閉じられない](https://github.com/shuhei1101/mdmark/issues/170): iOS の Safari で図のツールチップを開くと、タップした持ち主に `:hover` が残り、外をタップしても閉じる処理が走らない。
+  閉じる手段が Esc だけになる
+- [Firefox で、hover で開いた用語のツールチップが同じ文書のリンクを覆い、押せない](https://github.com/shuhei1101/mdmark/issues/267): Firefox で hover で開いた用語のツールチップが同じ文書のリンクを覆い、E2E『複数の文書を1枚のHTMLにまとめる』の `test_normal`・`test_normal_when_aliases` が Firefox だけ時間切れで fail する。
+  [表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/pull/263) の E2E テスト作成で見つかった
+- [E2E の test_normal_when_embedded_chart で、拡大してから余白をドラッグしても図が動かない](https://github.com/shuhei1101/mdmark/issues/273): E2E『図を拡大・縮小・移動する』の `test_normal_when_embedded_chart` で、拡大してから余白をドラッグしても `scrollLeft` が増えず、Chromium と Firefox で fail する。
+  [フロー図の部品に、判定フローチャートの「質問」「結果」のノードの種類を追加する](https://github.com/shuhei1101/mdmark/pull/268) のレビューで見つかった
 
-#267 と #273 は Sprint v0.10.0 の E2E 実行（[#255](https://github.com/shuhei1101/mdmark/issues/255)）を fail させる。
+[Firefox で、hover で開いた用語のツールチップが同じ文書のリンクを覆い、押せない](https://github.com/shuhei1101/mdmark/issues/267) と [E2E の test_normal_when_embedded_chart で、拡大してから余白をドラッグしても図が動かない](https://github.com/shuhei1101/mdmark/issues/273) は Sprint v0.10.0 の E2E 実行（[Sprint v0.10.0 の E2E 実行](https://github.com/shuhei1101/mdmark/issues/255)）を fail させる。
 
 ## 計画書
 
@@ -36,7 +39,7 @@
 - [x] 部品設計
 - [x] 画面設計
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/使い方/図を描く/図を描く.md・docs/リファレンス/構成図の決まり.md・docs/使い方/図を描く/コードブロックのHTMLを描く.md・docs/リファレンス/記法.md）
+- [x] ドキュメント修正（[図を描く](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E5%9B%B3%E3%82%92%E6%8F%8F%E3%81%8F/%E5%9B%B3%E3%82%92%E6%8F%8F%E3%81%8F.md)・[構成図の決まり](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E6%A7%8B%E6%88%90%E5%9B%B3%E3%81%AE%E6%B1%BA%E3%81%BE%E3%82%8A.md)・[コードブロックのHTMLを描く](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/%E4%BD%BF%E3%81%84%E6%96%B9/%E5%9B%B3%E3%82%92%E6%8F%8F%E3%81%8F/%E3%82%B3%E3%83%BC%E3%83%89%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF%E3%81%AEHTML%E3%82%92%E6%8F%8F%E3%81%8F.md)・[記法](https://github.com/shuhei1101/mdmark/blob/748e77a51f533c02847d5f66996930efc0f3dc2c/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/%E8%A8%98%E6%B3%95.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

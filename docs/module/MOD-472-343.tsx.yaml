@@ -27,3 +27,8 @@ functions:
     returns:
       type: ReactElement
       description: 描く要素
+lead: 'ストーリーへの VS Code の配色の適用を受け持ち、Storybook で VS Code の配色を確認する仕組みを変えるときに参照する。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:描画

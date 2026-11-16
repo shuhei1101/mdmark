@@ -268,3 +268,9 @@ classes:
           - IF-472-22#constraints[テストのときの差し替え]
           - MOD-472-52#data_models[AxeViolation]
     status: planned
+lead: '1 つのパネルの HTML・メッセージ・再描画の待ちを受け持ち、プレビューのパネルの振る舞いを変えるときに参照する。'
+tags:
+  - name: topic:プレビュー
+    main: true
+  - name: tool:vscode
+  - name: action:描画

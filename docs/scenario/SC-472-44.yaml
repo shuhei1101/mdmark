@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。固有の部品は、受けた定義のタイトルを要素に記載する手元のモジュール
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 利用側のページ
@@ -23,6 +26,9 @@ scenarios:
         M-->>P: 固有の部品・map の図・本文
         P->>P: 固有の CSS が該当する
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 固有の部品の場所に、定義のタイトルが描かれている
       - 固有の CSS が変えた色が、固有の部品とmap の図の計算値に出ている
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant C as mdmark CLI
@@ -43,6 +52,9 @@ scenarios:
         C->>C: 固有の CSS と部品を 1 枚に埋める
         C-->>W: 書き出した HTML
         U->>U: 書き出した HTML を file:// で開く
+      ```
+
+      <!-- /map -->
     expected:
       - 書き出した HTML に、固有の部品が描かれ、固有の CSS が該当している
       - 開いてからの外への要求が 0 件
@@ -54,6 +66,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 読者
         participant P as 別の場所のページ
@@ -62,6 +77,9 @@ scenarios:
         M->>M: 登録されていないマーカーを取り除く
         M-->>P: map の図と本文
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 固有の部品の場所には何も描かれず、定義の JSON も出ない
       - map の図の色は mdmark の既定のまま
@@ -74,6 +92,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -82,13 +103,15 @@ scenarios:
         EX->>PV: theme の CSS と extensions を読み込むパネルを開く
         PV->>PV: extensions を registerExtension で登録してから描く
         PV-->>W: 固有の部品と固有の CSS を適用した文書
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューの固有の部品の場所に、定義のタイトルが描かれている
       - 固有の CSS が変えた色が、固有の部品とmap の図の計算値に出ている
       - パネルの CSP の違反が 0 件
     test: test_normal_when_vscode_preview
 lead: 利用側が、自分の場所だけの部品を `registerExtension` で追加し、自分の場所だけの外観を CSS で適用する。該当するのは、その部品と CSS を読み込んだページと、同じ設定ファイルで書き出した文書と VS Code のプレビューだけ。
-issue: 21
 primary_actor: 利用側（ワークスペースの持ち主）
 trigger: 利用側が、共通の部品に無い自分の場所だけの部品と外観を文書に使用したくなる
 preconditions:
@@ -96,3 +119,9 @@ preconditions:
 success_guarantee: 固有の部品と CSS を読み込んだ場所の文書でだけ、固有の部品が描かれ、固有の CSS が該当する。文書に記載したスクリプトは動かない。
 minimal_guarantee: 固有の部品を読み込んでいない場所の文書では、その部品のマーカーは知らないマーカーとして取り除かれ、ほかの本文は描かれる。
 test_file: tests/e2e/単一ユースケース/固有の部品とCSSを適用する.spec.ts
+tags:
+  - name: topic:固有
+    main: true
+  - name: topic:定義
+  - name: topic:部品
+  - name: topic:css

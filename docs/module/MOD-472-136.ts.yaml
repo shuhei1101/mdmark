@@ -14,3 +14,9 @@ functions:
     returns:
       type: ReadonlySet<string>
       description: アイコンの名前の集合
+lead: 'Lucide のアイコンの名前の一覧を受け持ち、map の設定のアイコンの点検を変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:点検

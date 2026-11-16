@@ -6,8 +6,9 @@
 
 ## 背景
 
-[Issue #363](https://github.com/shuhei1101/mdmark/issues/363) の要望。develop で `npx biome check .` を実行すると、`src/cli/embed.ts` に `noUnusedVariables`（`HTTP_PATTERN`）の警告が出る。
-`HTTP_PATTERN` は [#347](https://github.com/shuhei1101/mdmark/pull/347) で拡張をまとめる処理を `src/cli/embed.ts` の外へ移したときに参照が無くなり、定義だけが残った。
+[src/cli/embed.ts の使用していない import（dirname）と定数（HTTP_PATTERN）を削除する](https://github.com/shuhei1101/mdmark/issues/363) の要望。
+develop で `npx biome check .` を実行すると、`src/cli/embed.ts` に `noUnusedVariables`（`HTTP_PATTERN`）の警告が出る。
+`HTTP_PATTERN` は [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) で拡張をまとめる処理を `src/cli/embed.ts` の外へ移したときに参照が無くなり、定義だけが残った。
 
 ## 計画書
 

@@ -11,6 +11,9 @@ scenarios:
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の配信に差し替える
         notes: '`/gh/shuhei1101/mdmark@v0.0.1/dist/{ファイル}` への要求に、作業ツリーの `dist/{ファイル}` を返却する'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -20,6 +23,9 @@ scenarios:
         C-->>P: CSS と JavaScript
         P->>P: 公開関数を呼ぶ
         P-->>U: バージョン v0.0.1 を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 公開関数が `v0.0.1` を返却する
       - ページのルート要素の CSS 変数 `--mdmark-version` の計算値が `"v0.0.1"`
@@ -32,6 +38,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、どの要求にも 404 を返却する手元の配信に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -40,12 +49,14 @@ scenarios:
         P->>C: @v9.9.9/dist/index.css と index.js を要求
         C-->>P: 404
         P-->>U: 本文だけを表示し、コンソールに読み込めなかった旨が出る
+      ```
+
+      <!-- /map -->
     expected:
       - ページの本文の段落が表示されている
       - ブラウザのコンソールに `index.js` を読み込めなかったエラーが出る
     test: test_error_when_dist_not_found
 lead: 利用側のページが、バージョンのタグを固定した URL で mdmark の JavaScript と CSS を読み込み、公開関数を呼ぶ。サーバーの言語によらず、ページに記載したタグだけで使用できる。
-issue: 2
 primary_actor: mdmark を使用するアプリのページ
 trigger: 利用者が、mdmark を読み込むページをブラウザで開く
 preconditions:
@@ -54,3 +65,8 @@ preconditions:
 success_guarantee: ページに CSS が該当し、JavaScript の公開関数がページに記載したタグと同じバージョンを返却する。
 minimal_guarantee: 配布物を読み込めなかったときも、ページの本文はそのまま表示され、読み込めなかったことがブラウザのコンソールに出る。
 test_file: tests/e2e/単一ユースケース/バージョンを固定して配布物を読み込む.spec.ts
+tags:
+  - name: topic:配布物
+    main: true
+  - name: topic:バージョン
+  - name: tool:jsdelivr

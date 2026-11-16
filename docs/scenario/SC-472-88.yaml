@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は、そのバージョンを最新の `vX.Y.Z` として返却する代役。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[VSCodeでプレビューを開く:正常シナリオ] --> B[記載した内容をプレビューに映す:正常シナリオ]
         B --> C[エディタとプレビューのスクロールを合わせる:正常シナリオ]
@@ -19,6 +22,9 @@ scenarios:
         click C "id:SC-472-14#scenarios[正常シナリオ]"
         click D "id:SC-472-6#scenarios[正常シナリオ]"
         click E "id:SC-472-9#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューが Markdown の横の列に開き、見出し・表・注意書き・map の構成図が mdmark で描かれる
       - エディタで見出しを書き換えると、保存せずにプレビューの見出しが書き換えた文字になる
@@ -40,10 +46,16 @@ scenarios:
       - name: Mock
         description: 配布物を配る手元のサーバーは、初めは配布物の要求に応えず（オフラインの代わり）、再描画する前に配る状態へ戻す。GitHub のタグ一覧は正常シナリオと同じ代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       flowchart TD
         A[VSCodeでプレビューを開く:異常シナリオ（配布物を読み込めない）] --> B[記載した内容をプレビューに映す:正常シナリオ（リロードする）]
         click A "id:SC-472-10#scenarios[異常シナリオ（配布物を読み込めない）]"
         click B "id:SC-472-77#scenarios[正常シナリオ（リロードする）]"
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューに、配布物を読み込めず描けない理由と、再描画する操作が出る
       - Markdown と `mdmark.config.yaml` は書き換わらない
@@ -53,7 +65,6 @@ scenarios:
       - SC-472-10#scenarios[異常シナリオ（配布物を読み込めない）]
       - SC-472-77#scenarios[正常シナリオ（リロードする）]
 lead: 文書の作成者が、VS Code で Markdown を記載しながら横に出した mdmark のプレビューで描いた外観を確認し、書き込み終えた文書を HTML に書き出してブラウザの印刷で PDF にする。
-issue: 22
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
@@ -67,3 +78,8 @@ preconditions:
 success_guarantee: 記載した内容がプレビューに mdmark で描かれ、エディタの位置とプレビューの位置が合い、書き出した HTML をブラウザで開くとプレビューと同じ文書が描かれて印刷のダイアログが出る。
 minimal_guarantee: 配布物を読み込めないときは、プレビューに描けない理由を出し、Markdown と設定ファイルを書き換えない。
 test_file: tests/e2e/複合ユースケース/VSCodeで記載しながら確認してPDFにする.spec.ts
+tags:
+  - name: tool:vscode
+    main: true
+  - name: topic:プレビュー
+  - name: topic:pdf

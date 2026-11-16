@@ -93,3 +93,9 @@ functions:
         condition: '`mount` の参加者の箱の名前の外を押す'
         mock: なし
         expected: '`mount` が送る・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'
+lead: 'map のシーケンス図の描画と操作を受け持ち、シーケンス図の描画と操作を変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:描画

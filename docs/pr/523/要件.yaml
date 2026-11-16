@@ -14,7 +14,7 @@ scope_out:
     reason: 上限より早く見えたのは測る時計の戻りで、上限の値は原因ではない
     plan: none
   - item: test_normal_when_tags_unreachable の経過時間の期待の範囲（2800 ms 以上 6000 ms 未満）の見直し
-    reason: '#485 で見直した後で、範囲はそのままに、経過時間を測る時計だけを Date.now から performance.now へ替える'
+    reason: '[結合テストの所要時間を測り、意味の薄い長いテストを削除・軽量化し、ときどき落ちる既存のテストを直す](https://github.com/shuhei1101/mdmark/pull/485) で見直した後で、範囲はそのままに、経過時間を測る時計だけを Date.now から performance.now へ替える'
     plan: none
   - item: preview-rerender.test.ts の test_normal が helpers.ts の sentAt（Date.now）で最後の書き換えからの時間を比べている箇所
     reason: 同じ Date.now の戻りが原因になりうるが、別の open な Issue がある

@@ -4,34 +4,32 @@ title: ClaudeCodeプラグイン / CSSのテンプレート / templates.ts
 lead: 端末の設定のフォルダの `templates/css/` に配置する CSS のテンプレートの索引を読み込み・検査し・記載し、テンプレートを一覧・登録・配置する。MCP の `list_templates`・`add_template`・`apply_template` の処理が呼ぶ。
 test_files:
   - tests/unit/src/plugin/templates.test.ts
-directory: |-
-  ```tree
-  src/plugin/
-  └── templates.ts  # テンプレートのフォルダの場所・索引の読み取りと検査と書き込み・一覧・登録・配置
-  schemas/
-  └── mdmark.templates.schema.json  # テンプレートの索引の JSON Schema
-  ```
 diagrams:
   - name: 全体
     diagram: |-
-      classDiagram
-      direction LR
-      class テンプレートを一覧する
-      class テンプレートを登録する
-      class テンプレートを配置する
-      class 索引を読み込む
-      class 索引を検査する
-      class 索引を書き込む
-      class テンプレートのフォルダを決める
-      テンプレートを一覧する --> 索引を読み込む
-      テンプレートを登録する --> 索引を読み込む
-      テンプレートを登録する --> 索引を検査する
-      テンプレートを登録する --> 索引を書き込む
-      テンプレートを配置する --> 索引を読み込む
-      索引を読み込む --> 索引を検査する
-      テンプレートを一覧する --> テンプレートのフォルダを決める
-      テンプレートを登録する --> テンプレートのフォルダを決める
-      テンプレートを配置する --> テンプレートのフォルダを決める
+      <!-- map -->
+
+      ```mermaid
+      flowchart LR
+        n1["テンプレートを一覧する"]
+        n2["索引を読み込む"]
+        n3["テンプレートを登録する"]
+        n4["索引を検査する"]
+        n5["索引を書き込む"]
+        n6["テンプレートを配置する"]
+        n7["テンプレートのフォルダを決める"]
+        n1 -.-> n2
+        n3 -.-> n2
+        n3 -.-> n4
+        n3 -.-> n5
+        n6 -.-> n2
+        n2 -.-> n4
+        n1 -.-> n7
+        n3 -.-> n7
+        n6 -.-> n7
+      ```
+
+      <!-- /map -->
 data_models:
   - name: TemplateEntry
     title: テンプレートの行
@@ -55,8 +53,6 @@ data_models:
     refs:
       - ER-472-1#tables[templates]
     status: planned
-    introduced:
-      pr: 353
   - name: TemplatesIndex
     title: テンプレートの索引
     container: src/plugin/templates.ts
@@ -73,8 +69,6 @@ data_models:
     refs:
       - ER-472-1#
     status: planned
-    introduced:
-      pr: 353
   - name: ListedTemplate
     title: 一覧の行
     container: src/plugin/templates.ts
@@ -95,8 +89,6 @@ data_models:
         type: string
         description: CSS の絶対パス
     status: planned
-    introduced:
-      pr: 353
 constants:
   - name: TEMPLATES_SUBDIR
     title: テンプレートのフォルダ
@@ -107,8 +99,6 @@ constants:
     refs:
       - IF-472-1#constraints[テンプレートのフォルダ]
     status: planned
-    introduced:
-      pr: 353
   - name: TEMPLATES_INDEX_FILE
     title: 索引のファイル名
     container: src/plugin/templates.ts
@@ -116,8 +106,6 @@ constants:
     summary: テンプレートのフォルダの索引のファイル名
     value: templates.yaml
     status: planned
-    introduced:
-      pr: 353
   - name: TEMPLATES_SCHEMA_VERSION
     title: 索引のバージョン
     container: src/plugin/templates.ts
@@ -125,8 +113,6 @@ constants:
     summary: 記載する索引の `schema` の値
     value: '1'
     status: planned
-    introduced:
-      pr: 353
   - name: TEMPLATE_NAME_PATTERN
     title: 名前に使用できる文字
     container: src/plugin/templates.ts
@@ -136,8 +122,6 @@ constants:
     refs:
       - ER-472-1#tables[templates].columns[name]
     status: planned
-    introduced:
-      pr: 353
 functions:
   - name: resolveTemplatesDir
     title: テンプレートのフォルダを決める
@@ -175,8 +159,6 @@ functions:
     callees:
       - MOD-472-116#functions[resolveSettingsPath]
     status: planned
-    introduced:
-      pr: 353
   - name: validateTemplatesIndex
     title: 索引を検査する
     kind: 関数
@@ -226,8 +208,6 @@ functions:
     callees:
       - LIB-472-4#
     status: planned
-    introduced:
-      pr: 353
   - name: readTemplatesIndex
     title: 索引を読み込む
     kind: 関数
@@ -272,8 +252,6 @@ functions:
       - '#functions[validateTemplatesIndex]'
       - LIB-472-36#
     status: planned
-    introduced:
-      pr: 353
   - name: listTemplates
     title: テンプレートを一覧する
     kind: 関数
@@ -306,8 +284,6 @@ functions:
     refs:
       - IF-472-1#
     status: planned
-    introduced:
-      pr: 353
   - name: writeTemplatesIndex
     title: 索引を書き込む
     kind: 関数
@@ -338,8 +314,6 @@ functions:
         mock: なし（一時フォルダ）
         expected: '`readTemplatesIndex` が同じ索引を返却し、フォルダに `.tmp` が無い'
     status: planned
-    introduced:
-      pr: 353
   - name: addTemplate
     title: テンプレートを登録する
     kind: 関数
@@ -423,8 +397,6 @@ functions:
     refs:
       - IF-472-2#
     status: planned
-    introduced:
-      pr: 353
   - name: applyTemplate
     title: テンプレートを配置する
     kind: 関数
@@ -522,5 +494,20 @@ functions:
     refs:
       - IF-472-3#
     status: planned
-    introduced:
-      pr: 353
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/plugin/
+    └── templates.ts  # テンプレートのフォルダの場所・索引の読み取りと検査と書き込み・一覧・登録・配置
+    schemas/
+    └── mdmark.templates.schema.json  # テンプレートの索引の JSON Schema
+    ```
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: tool:mcp
+  - name: tool:claude-code
+  - name: topic:css
+  - name: action:読み込み
+  - name: action:検査
+  - name: action:配置

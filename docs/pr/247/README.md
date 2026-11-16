@@ -6,9 +6,9 @@ VS Code 拡張機能の結合テスト `test_normal_when_tags_unreachable` を�
 
 ## 背景
 
-[Issue #195](https://github.com/shuhei1101/mdmark/issues/195) の不具合。
+[VS Code 拡張機能の結合テスト test_normal_when_tags_unreachable が develop でも fail する](https://github.com/shuhei1101/mdmark/issues/195) の不具合。
 タグ一覧の代役が応答しないとき、前回のバージョン（v0.6.0）の配布物を要求するまでの経過が 1734 ms で、テストの期待（2800 ms 以上 6000 ms 未満）を外れ、develop でも毎回落ちる。
-[PR #181](https://github.com/shuhei1101/mdmark/pull/181) の結合テスト作成で implementer が気づいた（[報告](https://github.com/shuhei1101/mdmark/pull/181#discussion_r4417618665)）。
+[見た目のテーマを選べるようにし、プレビューから設定を開けるようにする](https://github.com/shuhei1101/mdmark/pull/181) の結合テスト作成で implementer が気づいた（[報告](https://github.com/shuhei1101/mdmark/pull/181#discussion_r4417618665)）。
 結合テストの全 pass は作業 PR ごとの前提になるため、他の作業 PR もこの fail を抱える。
 
 ## 計画書

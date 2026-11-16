@@ -10,7 +10,14 @@ functions:
     kind: 関数
     scope: internal
     summary: 範囲の `css` の各規則のセレクタの前に `.mdmark-html[data-html-scope="{scope}"]` を付け、`:scope` をその根の要素のセレクタに置き換えた CSS を返却する
-    description: 要件の `未確定`（範囲の `css` を範囲の HTML にだけ適用する手段）の案 A。対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で有効になり、範囲の中の mdmark の部品に `dist/index.css` が該当するため、`@scope` と Shadow DOM は使用しない。文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。`@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` は中を書き換えずに残す。この 6 つ以外の `@` の規則（`@import`・`@scope`・`@starting-style` など）は、範囲の外へ適用しない・外へ要求させないため落とし、記載の警告は出さない。`html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。DOM を使用せず、`render` と同じく Node でも動く
+    description: |-
+      要件の `未確定`（範囲の `css` を範囲の HTML にだけ適用する手段）の案 A。
+      対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で有効になり、範囲の中の mdmark の部品に `dist/index.css` が該当するため、`@scope` と Shadow DOM は使用しない。
+      文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。
+      `@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` は中を書き換えずに残す。
+      この 6 つ以外の `@` の規則（`@import`・`@scope`・`@starting-style` など）は、範囲の外へ適用しない・外へ要求させないため落とし、記載の警告は出さない。
+      `html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。
+      DOM を使用せず、`render` と同じく Node でも動く
     args:
       - name: options
         type: '{ css: string; scope: number }'
@@ -59,5 +66,10 @@ functions:
         mock: なし
         expected: 戻りに `</style` が無く、`<\/style` がある
     status: planned
-    introduced:
-      pr: 303
+lead: '埋め込んだ HTML の範囲の CSS を範囲の中だけに適用する処理を受け持ち、範囲の CSS の適用範囲を変えるときに参照する。'
+tags:
+  - name: topic:css
+    main: true
+  - name: topic:markdown
+  - name: action:描画
+  - name: topic:部品

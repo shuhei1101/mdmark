@@ -41,3 +41,8 @@ install: '```bash
   npm i -D -E vite@8.3.6 @vitejs/plugin-react@6.2.1 @rolldown/plugin-babel@0.3.0 @babel/core@8.1.0
 
   ```'
+tags:
+  - name: tool:vite
+    main: true
+  - name: action:ビルド
+  - name: topic:webview

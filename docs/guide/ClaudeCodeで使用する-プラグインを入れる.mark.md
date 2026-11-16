@@ -8,8 +8,10 @@ Claude Code で mdmark の文書を記載し始める前に実行する。
 
 - 手元に Claude Code・git・Node 24 以降がある
 - 手元から GitHub と npm のレジストリへ届く
-- MCP の常駐サーバーは、入れた後に `/mdmark:global-setup` で起動する（[セットアップする](./ClaudeCodeで使用する-セットアップする.mark.md)）。起動していなくてもプラグインは入るが、MCP サーバーだけが接続に失敗する
-- ガイドを参照させるときは、mdmark のクローンを dev-docs の配信元 `mdmark` として登録している（`/dev-docs:setup`）。登録していなくてもツールは使用できるが、ガイドは見つからない
+- MCP の常駐サーバーは、入れた後に `/mdmark:global-setup` で起動する（[セットアップする](./ClaudeCodeで使用する-セットアップする.mark.md)）。
+  起動していなくてもプラグインは入るが、MCP サーバーだけが接続に失敗する
+- ガイドを参照させるときは、mdmark のクローンを dev-docs の配信元 `mdmark` として登録している（`/dev-docs:setup`）。
+  登録していなくてもツールは使用できるが、ガイドは見つからない
 
 ## 手順
 

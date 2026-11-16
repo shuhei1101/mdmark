@@ -79,3 +79,11 @@ functions:
         mock: なし
         expected: '`20.5`・`undefined`・`undefined`・`undefined`'
     status: planned
+lead: 'パネルの始め方と保存した行の読み込みを受け持ち、プレビューのパネルの開き方を変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー
+  - name: action:読み込み
+  - name: action:保存

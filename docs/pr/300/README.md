@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #174](https://github.com/shuhei1101/mdmark/issues/174) の要望。
-[PR #166](https://github.com/shuhei1101/mdmark/pull/166) の結合テストで、`serve.test.ts` の `test_normal` が 8782 で起動しようとして fail した（[経緯](https://github.com/shuhei1101/mdmark/pull/166#discussion_r4396509744)）。
-結合テストは PR #166 で 8782 を使わなくなったが、E2E の共通の準備 `tests/e2e/plugin.ts` の `DEFAULT_PORT`（8782）と既定のポートを譲り合うロック、それを使う E2E の spec と、対応するシナリオの 8782 の前提が残っている。
+[テストが既定のポート 8782 を使わないようにする](https://github.com/shuhei1101/mdmark/issues/174) の要望。
+[描いた文書の右側に目次を出し、節の開閉を H1 とまとめての操作に広げる](https://github.com/shuhei1101/mdmark/pull/166) の結合テストで、`serve.test.ts` の `test_normal` が 8782 で起動しようとして fail した（[経緯](https://github.com/shuhei1101/mdmark/pull/166#discussion_r4396509744)）。
+結合テストは PR [描いた文書の右側に目次を出し、節の開閉を H1 とまとめての操作に広げる](https://github.com/shuhei1101/mdmark/pull/166) で 8782 を使わなくなったが、E2E の共通の準備 `tests/e2e/plugin.ts` の `DEFAULT_PORT`（8782）と既定のポートを譲り合うロック、それを使う E2E の spec と、対応するシナリオの 8782 の前提が残っている。
 
 ## 計画書
 
@@ -35,5 +35,5 @@
 - [x] ドキュメント修正（設計書/テスト/テスト実行方法.yaml）
 - [x] ~~単体テスト作成~~（既定の値は既存の `test_read_port` で確認しており、単体テストを変えない）
 - [x] ~~実装~~（テストコードとシナリオだけの変更）
-- [x] ~~結合テスト作成~~（結合テストは PR #166 で 8782 を使わなくなった）
+- [x] ~~結合テスト作成~~（結合テストは PR [描いた文書の右側に目次を出し、節の開閉を H1 とまとめての操作に広げる](https://github.com/shuhei1101/mdmark/pull/166) で 8782 を使わなくなった）
 - [x] E2E テスト作成

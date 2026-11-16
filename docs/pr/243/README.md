@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #235](https://github.com/shuhei1101/mdmark/issues/235) の不具合。
-release PR [#229](https://github.com/shuhei1101/mdmark/pull/229) の E2E で、`tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts` の `test_normal` が fail した（プレビューの `scrollY` が 6591 でなく 0）。
+[VS Code のプレビューの歯車から設定を開いてプレビューのタブへ戻ると、プレビューのスクロールの位置が先頭に戻る](https://github.com/shuhei1101/mdmark/issues/235) の不具合。
+release PR [release/v0.9.0](https://github.com/shuhei1101/mdmark/pull/229) の E2E で、`tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts` の `test_normal` が fail した（プレビューの `scrollY` が 6591 でなく 0）。
 プレビューのパネルは `retainContextWhenHidden: false` で開くため、背面に回ると Webview が作り直され、`ready` を受けて最後の全文を送り直す（[vscode/src/preview/panel.ts](https://github.com/shuhei1101/mdmark/blob/release/v0.9.0/vscode/src/preview/panel.ts)）。
 作り直した Webview へ前のスクロールの位置を戻す処理が無く、シナリオ『プレビューから設定を開く』の期待値「本文とスクロールの位置は押す前と同じ」を満たさない。
-歯車（`mdmark.openSettings`）と位置を保つ要件は [#181](https://github.com/shuhei1101/mdmark/pull/181) で入った。
-計画の扱いの判断（[#235 のコメント](https://github.com/shuhei1101/mdmark/issues/235#issuecomment-6532811536)）で、Sprint v0.9.0 の release の E2E の fail の修正とした。
+歯車（`mdmark.openSettings`）と位置を保つ要件は [見た目のテーマを選べるようにし、プレビューから設定を開けるようにする](https://github.com/shuhei1101/mdmark/pull/181) で入った。
+計画の扱いの判断（[VS Code のプレビューの歯車から設定を開いてプレビューのタブへ戻ると、プレビューのスクロールの位置が先頭に戻る のコメント](https://github.com/shuhei1101/mdmark/issues/235#issuecomment-6532811536)）で、Sprint v0.9.0 の release の E2E の fail の修正とした。
 
 ## 計画書
 
@@ -25,7 +25,7 @@ release PR [#229](https://github.com/shuhei1101/mdmark/pull/229) の E2E で、`
 - [x] ~~初期構築~~（既存リポジトリのため対象外）
 - [x] ~~リバースエンジニアリング~~（現状設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（未検証の技術機構に依存しない: Webview の状態の保存と戻しは VS Code の Webview の API の範囲で、背面からの復帰の挙動は #70 で確かめ済み）
+- [x] ~~PoC 検証~~（未検証の技術機構に依存しない: Webview の状態の保存と戻しは VS Code の Webview の API の範囲で、背面からの復帰の挙動は [PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70) で確かめ済み）
 - [x] ~~複合ユースケース設計~~（影響なし: 背面から戻す流れは単一ユースケースで閉じる）
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、見た目の方向を変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

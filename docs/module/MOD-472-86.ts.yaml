@@ -20,3 +20,11 @@ functions:
     refs:
       - LIB-472-18#
     status: planned
+lead: '拡張機能ホストの中のテストの実行を受け持ち、拡張機能のテストの実行を変えるときに参照する。'
+tags:
+  - name: topic:ci
+    main: true
+  - name: tool:vscode
+  - name: action:ビルド
+  - name: action:配布
+  - name: action:実行

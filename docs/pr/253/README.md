@@ -7,9 +7,9 @@
 
 ## 背景
 
-[Issue #198](https://github.com/shuhei1101/mdmark/issues/198) の不具合。
+[図のリサイズハンドルで、表示の範囲の max-height（36rem）より高くできない](https://github.com/shuhei1101/mdmark/issues/198) の不具合。
 MindStella のプレビュー（mdmark で描く）は暫定で表示する枠に `resize: vertical` を当てているが、`src/index.css` の `.mdmark-diagram-viewport` の `max-height: var(--mdmark-diagram-max-height)` が残るため、つまみを下へドラッグしても 36rem で止まり、図の全体が収まる高さまで広げられない。
-つまみを正式に入れる [Issue #169](https://github.com/shuhei1101/mdmark/issues/169) は、この Issue に依存する（同じ上限が残ると同じことが起きる）。
+つまみを正式に入れる [図・グラフの表示の範囲の高さを、右下のつまみで縦にだけ変えられるようにする](https://github.com/shuhei1101/mdmark/issues/169) は、この Issue に依存する（同じ上限が残ると同じことが起きる）。
 
 ## 計画書
 
@@ -33,7 +33,7 @@ MindStella のプレビュー（mdmark で描く）は暫定で表示する枠�
 - [x] 部品設計
 - [x] ~~画面設計~~（変更は部品『図の枠』の中に閉じ、画面の要素と部品へ渡す値は変わらない）
 - [x] モジュール構成設計
-- [x] ドキュメント修正（docs/リファレンス/API.md）
+- [x] ドキュメント修正（[API](https://github.com/shuhei1101/mdmark/blob/1bfbe4de77f64f1615176604ab9031eeb7ed3d66/docs/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/API.md)）
 - [x] 単体テスト作成
 - [x] 実装
 - [x] 結合テスト作成

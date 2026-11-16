@@ -9,6 +9,9 @@ scenarios:
       - name: Mock
         description: HTMLに書き出すの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -18,6 +21,9 @@ scenarios:
         EX->>BR: 書き出した HTML を開く
         BR->>BR: 描き終えたら印刷のダイアログを出す
         BR-->>W: 印刷のダイアログ（PDF に保存は文書の作成者が選ぶ）
+      ```
+
+      <!-- /map -->
     expected:
       - ブラウザで開く代役に、書き出した HTML の URL が渡る
       - 書き出した HTML をブラウザで開くと、文書を描き終えた後に印刷のダイアログが呼ばれる
@@ -32,12 +38,18 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
         W->>EX: mdmark: PDF に印刷
         EX->>EX: 書き出し先に書き込めない
         EX-->>W: 書き出せない理由の通知
+      ```
+
+      <!-- /map -->
     expected:
       - 通知に、書き出し先のパスと書き込めない理由が出る
       - ブラウザで開く代役は呼ばれない
@@ -50,6 +62,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -58,13 +73,15 @@ scenarios:
         EX->>B: 選んだテーマで書き出した HTML を開く
         B->>B: 印刷の前にダークを解除する
         B-->>W: theme-slate の明るい配色で印刷のダイアログ
+      ```
+
+      <!-- /map -->
     expected:
       - 印刷の間、描く先の要素のリンクの色の計算値が theme-slate の明るい配色の `--mdmark-color-link` の値
     test: test_normal_when_theme_selected
     refs:
       - SC-472-58#scenarios[正常シナリオ（テーマを選んだ文書）]
 lead: 文書の作成者が、開いている Markdown をコマンドパレットから印刷する。拡張機能は HTML を書き出して既定のブラウザで開き、ブラウザの印刷のダイアログを出す。PDF はそのダイアログで作る。
-issue: 22
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
@@ -76,3 +93,8 @@ preconditions:
 success_guarantee: 書き出した HTML がブラウザで開き、文書を描き終えた後に印刷のダイアログが出る。
 minimal_guarantee: 書き出せないときはブラウザを開かず、理由を通知に出す。Markdown は書き換えない。
 test_file: tests/e2e/単一ユースケース/PDFに印刷する.spec.ts
+tags:
+  - name: topic:印刷
+    main: true
+  - name: topic:pdf
+  - name: tool:vscode

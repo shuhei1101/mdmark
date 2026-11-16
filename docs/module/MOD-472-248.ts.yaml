@@ -43,5 +43,11 @@ functions:
       - 'MOD-472-244#functions[prepareModules]'
       - 'MOD-472-247#functions[startBundle]'
     status: planned
-    introduced:
-      pr: 32
+lead: '埋めた中身を読み込んで書き出した HTML を起動する処理を受け持ち、書き出した HTML を開いたときの振る舞いを変えるときに参照する。'
+tags:
+  - name: topic:ナビゲーション
+    main: true
+  - name: tool:html
+  - name: topic:書き出し
+  - name: action:起動
+  - name: action:書き出し

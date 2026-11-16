@@ -23,3 +23,12 @@ functions:
         mock: '`vi.stubEnv` で環境変数を配置し、テストの後に `vi.unstubAllEnvs` で戻す'
         expected: '`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` が無くなり、`GIT_AUTHOR_NAME` は残る'
     status: planned
+lead: 'Git のリポジトリの場所を指す環境変数の削除を受け持ち、テストの起動で削除する環境変数を変えるときに参照する。'
+tags:
+  - name: topic:単体テスト
+    main: true
+  - name: tool:vitest
+  - name: tool:git
+  - name: topic:検査
+  - name: action:起動
+  - name: action:削除

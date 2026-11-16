@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #248](https://github.com/shuhei1101/mdmark/issues/248) の不具合。
-release PR [#229](https://github.com/shuhei1101/mdmark/pull/229) の E2E の再実行で、`tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts` の `test_normal` が fail した（プレビューの `scrollY` が 6591 でなく 6567）。
-[#243](https://github.com/shuhei1101/mdmark/pull/243) は、背面に回す前の位置を `currentLine()` の行番号で `setState` に保存して戻す。
+[VS Code のプレビューを設定画面から表に戻すと、スクロールの位置が押す前より最大 1 行分上にずれる（保存した行が整数に切り捨てられる）](https://github.com/shuhei1101/mdmark/issues/248) の不具合。
+release PR [release/v0.9.0](https://github.com/shuhei1101/mdmark/pull/229) の E2E の再実行で、`tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts` の `test_normal` が fail した（プレビューの `scrollY` が 6591 でなく 6567）。
+[VS Code のプレビューを背面から表に戻したとき、作り直した Webview を前のスクロールの位置へ戻す](https://github.com/shuhei1101/mdmark/pull/243) は、背面に回す前の位置を `currentLine()` の行番号で `setState` に保存して戻す。
 その行番号は `lineForTop` が整数に切り捨てた値のため、見えている先頭が行の途中にあると、最大 1 行分（前後の `data-source-line` の要素の間の高さ）上にずれる。
 シナリオ『プレビューから設定を開く』の期待値「本文とスクロールの位置は押す前と同じ」と、インターフェース定義『プレビューを描き直す』の正常系（背面から戻る）の「1 px 以内で同じ」を満たさない。
-計画の扱いの判断（[#248 のコメント](https://github.com/shuhei1101/mdmark/issues/248#issuecomment-6540729877)）で、Sprint v0.9.0 の release の E2E の fail の修正とした。
+計画の扱いの判断（[VS Code のプレビューを設定画面から表に戻すと、スクロールの位置が押す前より最大 1 行分上にずれる（保存した行が整数に切り捨てられる） のコメント](https://github.com/shuhei1101/mdmark/issues/248#issuecomment-6540729877)）で、Sprint v0.9.0 の release の E2E の fail の修正とした。
 
 ## 計画書
 
@@ -25,7 +25,7 @@ release PR [#229](https://github.com/shuhei1101/mdmark/pull/229) の E2E の再�
 - [x] ~~初期構築~~（既存リポジトリのため対象外）
 - [x] ~~リバースエンジニアリング~~（現状設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（未検証の技術機構に依存しない: Webview の状態の保存と戻しは #243 で動いている仕組みのまま、保存する値だけを変える）
+- [x] ~~PoC 検証~~（未検証の技術機構に依存しない: Webview の状態の保存と戻しは [VS Code のプレビューを背面から表に戻したとき、作り直した Webview を前のスクロールの位置へ戻す](https://github.com/shuhei1101/mdmark/pull/243) で動いている仕組みのまま、保存する値だけを変える）
 - [x] ~~複合ユースケース設計~~（影響なし: 背面から戻す流れは単一ユースケースで閉じる）
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、見た目の方向を変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

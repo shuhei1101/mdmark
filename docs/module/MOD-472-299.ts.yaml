@@ -142,3 +142,9 @@ functions:
         expected: '3〜5 行目の文字と `{ lineCount: 12 }`'
         mock: なし
         summary: 範囲の行を返却し、越えたら行の数を返却する
+lead: 'ほかの文書の取り込みと見出しの範囲の選択を受け持ち、取り込みの記法を変えるときに参照する。'
+tags:
+  - name: topic:構文
+    main: true
+  - name: topic:markdown
+  - name: tool:markdown-it

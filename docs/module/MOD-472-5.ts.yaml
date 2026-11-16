@@ -29,8 +29,6 @@ data_models:
     refs:
       - LIB-472-25#catalogs
     status: planned
-    introduced:
-      pr: 444
 constants:
   - name: UNIT_BASE_PATH
     title: unit の PATH の末尾
@@ -41,8 +39,6 @@ constants:
     refs:
       - IF-472-7#constraints[unit のファイル]
     status: planned
-    introduced:
-      pr: 444
   - name: SYSTEMD_USABLE_STATES
     title: systemd --user が使える状態
     container: src/plugin/setup/systemd.ts
@@ -52,8 +48,6 @@ constants:
     refs:
       - IF-472-7#constraints[systemd --user が使えるか]
     status: planned
-    introduced:
-      pr: 444
 functions:
   - name: hasSystemd
     title: systemd --user が使えるか
@@ -89,8 +83,6 @@ functions:
     refs:
       - LIB-472-25#catalogs
     status: planned
-    introduced:
-      pr: 444
   - name: escapeUnitValue
     title: unit の値を打ち消す
     kind: 関数
@@ -119,8 +111,6 @@ functions:
     refs:
       - IF-472-7#constraints[unit の値の書き方]
     status: planned
-    introduced:
-      pr: 444
   - name: buildUnitFile
     title: unit のファイルを組み立てる
     kind: 関数
@@ -156,8 +146,6 @@ functions:
       - IF-472-7#constraints[unit のファイル]
       - LIB-472-25#limitations
     status: planned
-    introduced:
-      pr: 444
   - name: buildUnitPathEnv
     title: unit の PATH を作る
     kind: 関数
@@ -196,8 +184,6 @@ functions:
       - IF-472-7#constraints[unit のファイル]
       - LIB-472-25#limitations
     status: planned
-    introduced:
-      pr: 444
   - name: readUnitState
     title: unit の状態を読む
     kind: 関数
@@ -226,8 +212,6 @@ functions:
     refs:
       - LIB-472-25#catalogs
     status: planned
-    introduced:
-      pr: 444
   - name: hasUnitExited
     title: unit の常駐サーバーが終わったか
     kind: 関数
@@ -256,5 +240,9 @@ functions:
     refs:
       - IF-472-7#constraints[終わったことの判定]
     status: planned
-    introduced:
-      pr: 444
+tags:
+  - name: topic:セットアップ
+    main: true
+  - name: tool:claude-code
+  - name: topic:設定
+  - name: action:読み取り

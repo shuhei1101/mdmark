@@ -6,8 +6,8 @@ mdmark の配布物を受け取った人が、mdmark を MIT のライセンス�
 
 ## 背景
 
-[Issue #140](https://github.com/shuhei1101/mdmark/issues/140) の要望。
-mindstella のプレビューは描画を mdmark v0.7.0 に置き換え、配る書き出しは mdmark の `dist/index.js`・`dist/index.css` を HTML に入れて配布する（[shuhei1101/mindstella#342](https://github.com/shuhei1101/mindstella/pull/342)）。
+[リポジトリに MIT の LICENSE を追加する](https://github.com/shuhei1101/mdmark/issues/140) の要望。
+mindstella のプレビューは描画を mdmark v0.7.0 に置き換え、配る書き出しは mdmark の `dist/index.js`・`dist/index.css` を HTML に入れて配布する（[プレビューの資料とスレッドの描画を mdmark に置き換える](https://github.com/shuhei1101/mindstella/pull/342)）。
 リポジトリの直下に `LICENSE` が無く、直下の `package.json` にも `license` が無いため、受け取った人に mdmark を使う許諾を示せない。
 ライセンスは mindstella と同じ MIT にすると[確認事項のスレッド](https://github.com/shuhei1101/mindstella/pull/342#discussion_r4368813557)で決まっている。
 

@@ -46,3 +46,9 @@ functions:
         expected: '`path` と `cx` だけを持つ `circle` を持つ svg で、`script`・`onclick` が無い'
         mock: なし
         summary: 許す要素と属性だけを残す
+lead: '行内のアイコンの HTML とアイコンの svg を受け持ち、行内のアイコンの外観を変えるときに参照する。'
+tags:
+  - name: topic:アイコン
+    main: true
+  - name: topic:部品
+  - name: tool:html

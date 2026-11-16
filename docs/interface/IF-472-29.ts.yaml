@@ -13,11 +13,17 @@ flows:
       - name: Mock
         description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant P as 利用側のページ
         participant L as ライブラリ本体
         P->>L: version()
         L-->>P: "v0.0.1"
+      ```
+
+      <!-- /map -->
     expected:
       - 戻り値が `v0.0.1`
       - ルート要素の `--mdmark-version` の計算値が `"v0.0.1"`
@@ -37,3 +43,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 常に埋めたバージョンを返却する
 test_file: tests/integration/lib/version.browser.test.ts
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:api

@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #82](https://github.com/shuhei1101/mdmark/issues/82) の要望。
-[PR #79](https://github.com/shuhei1101/mdmark/pull/79)（起点 [#63](https://github.com/shuhei1101/mdmark/issues/63)）で、描いた文書（`mount`・`render`）の本文に出た索引の用語のやめた言い方に、波線のマーカーと代わりの用語のツールチップを出すようになった。
-画面を持たずに本文の参照を取り出す公開関数 `collectMatches` は、参照先（用語・用語集の表の用語・文書）の一致だけを返し、やめた言い方は返さない（PR #79 で参照先を持たないため数えないと定めた）。
+[collectMatches が本文に出たやめた言い方の位置と代わりの用語を返すかを決める](https://github.com/shuhei1101/mdmark/issues/82) の要望。
+[描いた文書の本文に出たやめた言い方に、代わりの用語を示す印とツールチップを出す](https://github.com/shuhei1101/mdmark/pull/79)（起点 [描いた文書の本文に出たやめた言い方に、代わりの用語を示す印とツールチップを出す](https://github.com/shuhei1101/mdmark/issues/63)）で、描いた文書（`mount`・`render`）の本文に出た索引の用語のやめた言い方に、波線のマーカーと代わりの用語のツールチップを出すようになった。
+画面を持たずに本文の参照を取り出す公開関数 `collectMatches` は、参照先（用語・用語集の表の用語・文書）の一致だけを返し、やめた言い方は返さない（PR [描いた文書の本文に出たやめた言い方に、代わりの用語を示す印とツールチップを出す](https://github.com/shuhei1101/mdmark/pull/79) で参照先を持たないため数えないと定めた）。
 戻り値の既存の項目を変えずに `avoided` を加えるため、公開済みの戻り値の互換性は壊さない。
 
 ## 計画書

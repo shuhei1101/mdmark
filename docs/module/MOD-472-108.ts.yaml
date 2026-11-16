@@ -59,3 +59,8 @@ functions:
         expected: '`missing`・`heading`・`lines`（行の数 5）・`outside`・`circular`（順 `a.md → b.md → a.md`）の問題が 1 件ずつで、`outside.md` を読み込んでいない'
         mock: 一時フォルダに文書を配置する
         summary: 取り込めないものを種類ごとの問題にする
+lead: '取り込む文書の表の組み立てと、取り込めない問題の抽出を受け持ち、CLI の取り込みの扱いを変えるときに参照する。'
+tags:
+  - name: topic:ファイル
+    main: true
+  - name: topic:cli

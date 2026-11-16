@@ -41,8 +41,6 @@ data_models:
     refs:
       - IF-472-7#response
     status: planned
-    introduced:
-      pr: 354
   - name: LauncherChoice
     title: 起動の方法の決定
     container: src/plugin/setup/server.ts
@@ -58,8 +56,6 @@ data_models:
     refs:
       - IF-472-7#constraints[移し替え]
     status: planned
-    introduced:
-      pr: 444
 constants:
   - name: START_TIMEOUT_SEC
     title: 待ち受けを待つ上限の既定
@@ -70,8 +66,6 @@ constants:
     refs:
       - IF-472-7#constraints[待ち]
     status: planned
-    introduced:
-      pr: 354
   - name: POLL_INTERVAL_MS
     title: 待ち受けを確認する間隔
     container: src/plugin/setup/server.ts
@@ -81,8 +75,6 @@ constants:
     refs:
       - IF-472-7#constraints[待ち]
     status: planned
-    introduced:
-      pr: 354
   - name: PORT_RELEASE_TIMEOUT_SEC
     title: ポートの解放を待つ上限
     container: src/plugin/setup/server.ts
@@ -92,8 +84,6 @@ constants:
     refs:
       - IF-472-7#constraints[移し替え]
     status: planned
-    introduced:
-      pr: 444
 functions:
   - name: resolveLauncher
     title: 起動の方法を決める
@@ -133,8 +123,6 @@ functions:
       - IF-472-7#constraints[起動の方法の決め方]
       - IF-472-7#constraints[移し替え]
     status: planned
-    introduced:
-      pr: 444
   - name: buildTmuxArgs
     title: tmux の起動の引数を作る
     kind: 関数
@@ -164,8 +152,6 @@ functions:
       - IF-472-7#constraints[tmux の起動のコマンド]
       - LIB-472-29#limitations
     status: planned
-    introduced:
-      pr: 354
   - name: startServer
     title: 常駐サーバーを起動する
     kind: 関数
@@ -209,8 +195,6 @@ functions:
     refs:
       - IF-472-7#
     status: planned
-    introduced:
-      pr: 354
   - name: startWithSystemd
     title: unit で起動する
     kind: 関数
@@ -281,8 +265,6 @@ functions:
       - IF-472-7#constraints[移し替え]
       - IF-472-7#constraints[終わったことの判定]
     status: planned
-    introduced:
-      pr: 444
   - name: startWithTmux
     title: tmux のセッションで起動する
     kind: 関数
@@ -353,8 +335,6 @@ functions:
       - IF-472-7#constraints[tmux の起動のコマンド]
       - IF-472-7#constraints[移し替え]
     status: planned
-    introduced:
-      pr: 444
   - name: waitForListening
     title: 待ち受けを待つ
     kind: 関数
@@ -385,8 +365,6 @@ functions:
     refs:
       - IF-472-7#constraints[待ち]
     status: planned
-    introduced:
-      pr: 444
   - name: listToolNames
     title: ツールの名前を取る
     kind: 関数
@@ -417,8 +395,6 @@ functions:
     refs:
       - IF-472-7#response
     status: planned
-    introduced:
-      pr: 354
 function_types:
   - name: RunCommand
     title: 外部のコマンドを実行する
@@ -438,5 +414,10 @@ function_types:
       type: 'Promise<{ code: number; stdout: string }>'
       description: 終了コードと標準出力
     status: planned
-    introduced:
-      pr: 354
+tags:
+  - name: topic:セットアップ
+    main: true
+  - name: tool:claude-code
+  - name: topic:設定
+  - name: action:起動
+  - name: action:待ち受け

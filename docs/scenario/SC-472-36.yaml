@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -21,6 +24,9 @@ scenarios:
         M-->>P: 色を付けた表・バッジ・本文を描く
         U->>P: 金額の列の見出しで並べ替える
         P-->>U: 並べ替えた表
+      ```
+
+      <!-- /map -->
     expected:
       - 金額の列のセルの面の色が、テーマの強調の面の色で、金額の列の見出しのセルに下端の線がある
       - 状態が 完了 の行の面が green、保留 の行の面が yellow の面の薄い色で、色を付けた 2 行に上下の線がある。未着手 の行は色も線も無い
@@ -39,6 +45,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -46,6 +55,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: ダークの色のプリセットで色を付けた表・バッジ・本文を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 列・行・バッジ・本文の色が、ダークの配色の色のプリセットの値になっている
       - 色を付けた全ての文字と、その面の色のコントラストが 4.5:1 以上
@@ -60,6 +72,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -67,6 +82,9 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 2 行目に色を付けた表を描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 2 行目の面が yellow の面の薄い色で、上下の線がある
       - 1 行目と 3 行目には色も線も無い
@@ -80,6 +98,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -88,6 +109,9 @@ scenarios:
         M->>M: 最初の : の前が色の名前でないため、全てをラベルにする
         M-->>P: 今の外観のバッジを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - バッジが文言 `v1:beta` の札で、色の名前の無いバッジと同じ外観になっている
       - 記載の警告が出ていない
@@ -101,6 +125,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -109,6 +136,9 @@ scenarios:
         M->>M: pink が色の名前の一覧に無い
         M-->>P: 記載の警告と、色を付けない表と本文を描く
         P-->>U: 記載の警告と文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 表の上と本文の段落の上に、`pink` が使用できない色の名前であることと使用できる色の名前を記載した記載の警告がある
       - 表の行に色も線も無く、本文の `決め手の 1 文` は本文の文字の色のまま出ている
@@ -124,6 +154,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -132,6 +165,9 @@ scenarios:
         M->>M: == で囲んだ文字を蛍光ペンのマーカーにし、色の名前を適用する
         M-->>P: 蛍光ペンのマーカーとコメントのマーカーを描く
         P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - '`決め手` が既定の色の蛍光ペンのマーカー、`例外` が green の蛍光ペンのマーカーで描かれ、`==` と `{color=green}` は出ていない'
       - 蛍光ペンのマーカーは `<mark>` で、コメントのマーカーの class `mdmark-comment-mark` を持たない
@@ -147,6 +183,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -155,12 +194,14 @@ scenarios:
         M->>M: pink が色の名前の一覧に無い
         M-->>P: 記載の警告と、既定の色の蛍光ペンのマーカーを描く
         P-->>U: 記載の警告と文書を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 段落の上に、`pink` が使用できない色の名前であることと使用できる色の名前を記載した記載の警告がある
       - '`決め手` が既定の色の蛍光ペンのマーカーで描かれ、`{color=pink}` は出ていない'
     test: test_error_when_highlighter_color_unknown
 lead: 文書の作成者が、表のマーカーの引数・`badge:` の後ろ・本文の文字の後ろの属性に色の名前を記載すると、mdmark がテーマの色のプリセットで表の列・行、バッジ、本文の文字に色を付け、色以外の見分けも付ける。
-issue: 158
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
@@ -172,3 +213,7 @@ preconditions:
 success_guarantee: 表の列は面の薄い色と見出しの下端の線、行は面の薄い色と上下の線、バッジと本文の文字はその色の名前の文字の色で描かれる。ライト・ダーク・選べるテーマのそれぞれで、文字と面のコントラストが 4.5:1 以上になる。
 minimal_guarantee: 知らない色の名前は色を付けずに記載の警告で通知し、文字は記載したとおりに描く。
 test_file: tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts
+tags:
+  - name: topic:色
+    main: true
+  - name: action:強調

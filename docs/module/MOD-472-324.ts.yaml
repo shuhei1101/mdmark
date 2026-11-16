@@ -34,5 +34,9 @@ functions:
     refs:
       - CMP-472-34#
     status: planned
-    introduced:
-      pr: 287
+lead: '先頭へ戻るボタンの HTML を受け持ち、先頭へ戻るボタンの外観を変えるときに参照する。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: tool:html
+  - name: action:描画

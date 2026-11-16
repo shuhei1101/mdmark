@@ -11,7 +11,7 @@ tasks:
     updated_at: '2026-11-11T08:13:24.632806+00:00'
   - process: 方針決め
     status: skipped
-    reason: 方針決めを依頼する Issue ではない。移した後の構成は ai-monitor#3307 で決着済み
+    reason: '方針決めを依頼する Issue ではない。移した後の構成は [dev/ を廃止して文書を docs/ 1 つにまとめ、公開範囲を visibility で持つ](https://github.com/shuhei1101/ai-monitor/pull/3307) で決着済み'
     updated_by: planner
     updated_at: '2026-11-11T08:13:24.632806+00:00'
   - process: PoC 検証

@@ -11,6 +11,9 @@ scenarios:
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する。ツールの引数には、プラグインの PreToolUse のフックを経由して作業のフォルダの絶対パスを入れる
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -23,6 +26,9 @@ scenarios:
         S->>F: 上へ探して最も近い mdmark.config.yaml を見つける
         S->>F: そのフォルダへ CSS をコピーする
         S-->>C: 配置したパスと theme に記載する値
+      ```
+
+      <!-- /map -->
     expected:
       - '`mdmark.config.yaml` のフォルダに、テンプレートと同じ中身の CSS が配置される'
       - '`apply_template` が、配置したパスと、`mdmark.config.yaml` のフォルダからの相対パスを `theme` に記載する値として返却する'
@@ -37,6 +43,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（一覧から選んで配置する）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -44,6 +53,9 @@ scenarios:
         C->>S: list_templates
         S->>T: 索引を探す
         S-->>C: 空の一覧
+      ```
+
+      <!-- /map -->
     expected:
       - '`list_templates` が空の一覧を返却し、エラーにならない'
       - テンプレートのフォルダが作られない
@@ -57,6 +69,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（一覧から選んで配置する）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -64,6 +79,9 @@ scenarios:
         C->>S: apply_template（名前・上書きする）
         S->>F: 既にある CSS をテンプレートの CSS で置き換える
         S-->>C: 配置したパスと theme に記載する値
+      ```
+
+      <!-- /map -->
     expected:
       - 配置先の CSS がテンプレートと同じ中身になる
     test: test_normal_when_overwriting
@@ -76,6 +94,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（一覧から選んで配置する）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -83,6 +104,9 @@ scenarios:
         C->>S: apply_template（名前・上書きしない）
         S->>F: 配置先に同じ名前の CSS を見つける
         S-->>C: エラー（同じ名前の CSS があることと、上書きの指定で置き換えられること）
+      ```
+
+      <!-- /map -->
     expected:
       - ツールの結果がエラーになる
       - エラーの文に、配置先に同じ名前の CSS があることと、上書きを指定すれば置き換えられることが出る
@@ -97,6 +121,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオ（一覧から選んで配置する）と同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant S as MCP サーバー
@@ -104,13 +131,15 @@ scenarios:
         C->>S: apply_template（名前・配置先を省く）
         S->>F: 上へ mdmark.config.yaml を探す
         S-->>C: エラー（設定ファイルが無いことと、配置先を指定するか mdmark init で配置できること）
+      ```
+
+      <!-- /map -->
     expected:
       - ツールの結果がエラーになる
       - エラーの文に、設定ファイルが無いことと、配置先を指定するか `mdmark init` で設定ファイルを配置できることが出る
       - 作業のフォルダに CSS が配置されない
     test: test_error_when_config_missing
 lead: Claude Code が MCP のツールで、テンプレートの一覧から CSS を選び、作業のフォルダの設定ファイルの隣へ配置して、`theme` に記載する値を受け取る。
-issue: 164
 primary_actor: Claude Code
 stakeholders:
   - name: 文書の作成者
@@ -123,3 +152,8 @@ preconditions:
 success_guarantee: 選んだテンプレートの CSS が作業のフォルダの設定ファイルの隣にあり、`theme` に記載する値が返る。
 minimal_guarantee: エラーのときは、作業のフォルダの設定ファイルと CSS、テンプレートのフォルダを書き換えない。
 test_file: tests/e2e/単一ユースケース/CSSのテンプレートを配置する.spec.ts
+tags:
+  - name: topic:テンプレート
+    main: true
+  - name: topic:css
+  - name: action:配置

@@ -38,3 +38,11 @@ functions:
         condition: '`placement: "bottom"` で、`anchorBottom: 320`（下に収まる）と `anchorTop: 740`・`anchorBottom: 760`（下に収まらず上に収まる）と、`viewportHeight: 120`・`anchorTop: 50`・`anchorBottom: 70`（どちらにも収まらない）'
         mock: なし
         expected: 順に `bottom`・`top`・`bottom`
+lead: 'ツールチップを持ち主の上と下のどちらに配置するかの決定を受け持ち、ツールチップの配置を変えるときに参照する。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: topic:部品
+  - name: action:配置

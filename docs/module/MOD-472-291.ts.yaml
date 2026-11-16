@@ -55,5 +55,10 @@ functions:
         mock: なし
         expected: 段落の文字が `[決め手]{color=blue}`
     status: planned
-    introduced:
-      pr: 263
+lead: '本文の文字の色の記法を受け持ち、文字の色の記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:色
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it

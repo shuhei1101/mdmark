@@ -71,3 +71,9 @@ functions:
         expected: ボタンの `aria-describedby` が指す `role="tooltip"` の要素が `hidden` でない
 refs:
   - IF-472-35#constraints[map の ER 図]
+lead: 'map の ER 図の描画と操作を受け持ち、map の ER 図の操作を変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:描画

@@ -1,6 +1,6 @@
 confirmations:
-  - topic: 'Issue #564 の 9 種類の分け方（この PR で作る種類）'
-    decision: '配置の処理ごとに分け、この PR は classDiagram・architecture-beta・C4Context、残りは #597・#598・#599（推奨案 A）'
+  - topic: 'Issue [map で classDiagram・mindmap・gantt などの残りの Mermaid の種類を、ER 図・状態遷移図と同じ記載方法と操作で描く](https://github.com/shuhei1101/mdmark/issues/564) の 9 種類の分け方（この PR で作る種類）'
+    decision: '配置の処理ごとに分け、この PR は classDiagram・architecture-beta・C4Context、残りは [map で mindmap の Mermaid を、根からの木の配置と、ほかの種類と同じ記載方法と操作で描く](https://github.com/shuhei1101/mdmark/issues/597)・[map で gantt・timeline・gitGraph・journey の Mermaid を、時間か記載順の軸に沿った配置と再生で描く](https://github.com/shuhei1101/mdmark/issues/598)・[map で block-beta の Mermaid を、columns の格子の配置と、ほかの種類と同じ記載方法と操作で描く](https://github.com/shuhei1101/mdmark/issues/599)（推奨案 A）'
     decided_by: thumbs_up
     approver: shuhei1101
     commit: 9bdf3cea

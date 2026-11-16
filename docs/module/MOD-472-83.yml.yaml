@@ -21,3 +21,9 @@ constants:
       - IF-472-23#
       - LIB-472-34#
     status: planned
+lead: 'vscode-v* のタグで .vsix を作り Release に添えて公開するワークフローを受け持ち、拡張機能の配布を変えるときに参照する。'
+tags:
+  - name: action:ビルド
+    main: true
+  - name: action:配布
+  - name: tool:vscode

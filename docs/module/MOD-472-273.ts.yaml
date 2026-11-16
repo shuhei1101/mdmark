@@ -19,8 +19,6 @@ data_models:
         type: WarningItem[]
         description: 結合する相手の無い `^^`・`<<` の項目（ラベルは `^^`・`<<`、本文に行と列の位置）
     status: planned
-    introduced:
-      pr: 275
 functions:
   - name: planCellMerges
     title: セルの結合を決める
@@ -62,8 +60,6 @@ functions:
         mock: なし
         expected: 2 行目の 1 列目が `merged` を持たず、`warnings` にその `^^` の項目がある
     status: planned
-    introduced:
-      pr: 275
   - name: headerGroupsOf
     title: 結合した見出しの範囲を求める
     container: src/render/syntax/table-cells.ts
@@ -87,5 +83,9 @@ functions:
         mock: なし
         expected: '`[undefined, "0:1", "0:1", "0:1", undefined]`'
     status: planned
-    introduced:
-      pr: 303
+lead: '表のセルの結合の計画を受け持ち、セルの結合の決め方や警告を変えるときに参照する。'
+tags:
+  - name: topic:テーブル
+    main: true
+  - name: topic:markdown
+  - name: topic:構文

@@ -32,8 +32,6 @@ data_models:
         type: boolean | undefined
         description: 主題のタグか。無いときは `false` として扱う
     status: planned
-    introduced:
-      pr: 114
   - name: MdmarkIndexRelated
     title: 文書の関連
     container: src/knowledge/index-shape.ts
@@ -55,8 +53,6 @@ data_models:
     refs:
       - ER-472-6#tables[docs].columns[related]
     status: planned
-    introduced:
-      pr: 127
 enums:
   - name: MdmarkRelationType
     title: 関係の種類
@@ -82,8 +78,6 @@ enums:
     refs:
       - ER-472-6#tables[docs].columns[related]
     status: planned
-    introduced:
-      pr: 127
 constants:
   - name: INDEX_SHAPE
     title: 索引の構造
@@ -108,8 +102,6 @@ constants:
       - key: '4'
         value: change_together
     status: planned
-    introduced:
-      pr: 127
 functions:
   - name: normalizeIndex
     title: 索引の構造を検査する
@@ -117,7 +109,13 @@ functions:
     kind: 関数
     scope: internal
     summary: 値を ER 図『索引』の構造で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返却する
-    description: 検査のライブラリを使用せず、`INDEX_SHAPE` で TypeScript の検査を記載する（配布物のサイズを検査のライブラリに割かない）。`schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確認する。必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキー（v0.9.0 までの最上位の `tags` を含む）を合わない場所にする。重なった要素は先の 1 つを残す。`schema` が `CURRENT_SCHEMA`（`2`）でない整数のときは、`message` に `mdmark upgrade` で移す修正方法を記載し、文書・用語はそのまま検査して使用する。`docs[].related` の要素は `doc_related` で検査し、合わない要素を持つ文書を除く（`where` は `docs[0].related[1].when` の構造。`type` が `MdmarkRelationType` の値でないときは、`message` に許す 5 つの値を並べる）
+    description: |-
+      検査のライブラリを使用せず、`INDEX_SHAPE` で TypeScript の検査を記載する（配布物のサイズを検査のライブラリに割かない）。
+      `schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確認する。
+      必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキー（v0.9.0 までの最上位の `tags` を含む）を合わない場所にする。
+      重なった要素は先の 1 つを残す。
+      `schema` が `CURRENT_SCHEMA`（`2`）でない整数のときは、`message` に `mdmark upgrade` で移す修正方法を記載し、文書・用語はそのまま検査して使用する。
+      `docs[].related` の要素は `doc_related` で検査し、合わない要素を持つ文書を除く（`where` は `docs[0].related[1].when` の構造。`type` が `MdmarkRelationType` の値でないときは、`message` に許す 5 つの値を並べる）
     args:
       - name: value
         type: unknown
@@ -222,5 +220,9 @@ functions:
     refs:
       - ER-472-6#tables[docs].columns[related]
     status: planned
-    introduced:
-      pr: 127
+lead: '索引の型と構造の検査を受け持ち、索引のキーや構造の決まりを変えるときに参照する。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語
+  - name: action:検査

@@ -12,6 +12,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -21,6 +24,9 @@ scenarios:
         M-->>P: 層の中の CSS が該当した本文
         P->>P: 層の外の利用側の CSS が該当する
         P-->>U: 上書きした外観で表示
+      ```
+
+      <!-- /map -->
     expected:
       - リンクの色の計算値が `rgb(255, 0, 0)`
       - リンクの `text-decoration-line` の計算値が `none`
@@ -35,6 +41,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -42,6 +51,9 @@ scenarios:
         P->>M: 文書を描かせる
         M-->>P: 既定の値が該当した本文
         P-->>U: 既定の外観で表示
+      ```
+
+      <!-- /map -->
     expected:
       - リンクの色の計算値が、デザイン方針の dev-swiss の明るい配色の `--mdmark-color-link` の値
     test: test_normal_when_not_overridden
@@ -55,6 +67,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -62,6 +77,9 @@ scenarios:
         P->>M: 文書を描かせる
         M-->>P: ダークの値が該当した本文
         P-->>U: ダークの外観で表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の地の色の計算値が、デザイン方針の dev-swiss のダークの `--mdmark-color-bg` の値
     test: test_normal_when_dark
@@ -75,6 +93,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -84,6 +105,9 @@ scenarios:
         M-->>P: 層の中の CSS が該当した map の図
         P->>P: 層の外の利用側の CSS が該当する
         P-->>U: 上書きした色で図を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 色を指定していない線の色の計算値が `rgb(255, 0, 0)`
       - 線の矢じりの色も同じ色に変わる
@@ -100,6 +124,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -108,6 +135,9 @@ scenarios:
         P->>M: 文書を描かせる
         M-->>P: ダークの値が該当した本文
         P-->>U: ダークの外観で表示
+      ```
+
+      <!-- /map -->
     expected:
       - OS の配色がライトでも、描く先の要素の地の色の計算値がデザイン方針の dev-swiss のダークの `--mdmark-color-bg` の値
     test: test_normal_when_parent_class_dark
@@ -123,6 +153,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -131,6 +164,9 @@ scenarios:
         P->>M: 文書を描かせる
         M-->>P: ライトの値が該当した本文
         P-->>U: ライトの外観で表示
+      ```
+
+      <!-- /map -->
     expected:
       - OS の配色がダークでも、描く先の要素の地の色の計算値がデザイン方針の dev-swiss のライトの `--mdmark-color-bg` の値
     test: test_normal_when_parent_class_light
@@ -146,6 +182,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -156,6 +195,9 @@ scenarios:
         P->>P: 層の外の利用側の CSS が該当する
         U->>P: ページを縦にスクロールして表の途中を出す
         P-->>U: 固定のヘッダーの下に見出し行を留めた表
+      ```
+
+      <!-- /map -->
     expected:
       - 本文の段落の幅が `40rem` を超えない
       - 表の途中を出したとき、見出し行の上端が画面の上端から 48px の位置にあり、固定のヘッダーに隠れていない
@@ -172,6 +214,9 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -180,6 +225,9 @@ scenarios:
         M-->>P: 既定の値が該当した本文
         U->>P: 画面の幅を 1920px に広げる
         P-->>U: 広げた幅を使用した本文
+      ```
+
+      <!-- /map -->
     expected:
       - 1280px のとき、1920px に広げたときのどちらも、段落の幅が描く先の要素の中身の幅と同じ（本文の幅に既定の上限が無い）
     test: test_normal_when_content_width_default
@@ -193,6 +241,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -201,6 +252,9 @@ scenarios:
         M-->>P: 選んだテーマの値が該当した本文
         P->>P: 層の外の利用側の CSS が該当する
         P-->>U: 選んだテーマの上に上書きを重ねた外観で表示
+      ```
+
+      <!-- /map -->
     expected:
       - リンクの色の計算値が `rgb(255, 0, 0)`
       - 描く先の要素の地の色の計算値が、theme-slate の明るい配色の `--mdmark-color-bg` の値
@@ -217,6 +271,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -226,6 +283,9 @@ scenarios:
         M-->>P: 色のプリセットの CSS 変数で色を付けた本文
         P->>P: 層の外の利用側の CSS が該当する
         P-->>U: 上書きした色で表示
+      ```
+
+      <!-- /map -->
     expected:
       - バッジと本文の `決め手の 1 文` の文字の色の計算値が `rgb(0, 0, 128)`
       - バッジの面の色の計算値が `rgb(230, 240, 255)`
@@ -240,6 +300,9 @@ scenarios:
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -253,6 +316,9 @@ scenarios:
         P-->>U: 図のツールチップを表示
         U->>P: 図の全画面のボタンを押す
         P-->>U: 全画面の図を表示
+      ```
+
+      <!-- /map -->
     expected:
       - 描く先の要素の地の色の計算値が `rgba(0, 0, 0, 0)`
       - 表の本文の行の高さの真ん中で、表の左右の枠の内側の画素の色が `rgb(240, 240, 240)`（横スクロールしない表の端に影が出ない）
@@ -269,6 +335,9 @@ scenarios:
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor U as 利用者
         participant P as 利用側のページ
@@ -277,6 +346,9 @@ scenarios:
         M-->>P: 折り返しを記法で決めたコードブロックとファイルツリー
         P->>P: 層の外の利用側の CSS が該当する
         P-->>U: マーカーの無いブロックは折り返さずに表示
+      ```
+
+      <!-- /map -->
     expected:
       - マーカーの無い `json` のコードブロックの `white-space` の計算値が `pre` で、枠の中で横にスクロールできる
       - マーカーの無い `tree` のファイルツリーの項目が折り返さず、枠の中で横にスクロールできる
@@ -290,6 +362,9 @@ scenarios:
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         actor W as 文書の作成者
         participant EX as 拡張機能
@@ -297,12 +372,14 @@ scenarios:
         W->>EX: プレビューを横に開く
         EX->>PV: theme の CSS を読み込むパネルを開く
         PV-->>W: theme の CSS を適用した文書
+      ```
+
+      <!-- /map -->
     expected:
       - プレビューのリンクの色の計算値が、theme の CSS で上書きした `--mdmark-color-link` の値
       - 同じ設定で `mdmark export` を実行した HTML のリンクの色と同じ
     test: test_normal_when_vscode_preview
 lead: 利用側が自分の CSS で `--mdmark-` の変数や本文の規則を記載し、mdmark が描いた文書の外観を変える。何も記載しなければ既定の外観（dev-swiss）で描かれる。
-issue: 3
 primary_actor: mdmark を使用するアプリの開発者
 stakeholders:
   - name: 読者
@@ -313,3 +390,8 @@ preconditions:
 success_guarantee: 利用側が mdmark の層の外に記載した CSS は、詳細度によらず mdmark の CSS に勝つ。ただし、コードブロックとファイルツリーの折り返しは記法の `wrap` で決まり、利用側の要素名だけの `pre` への汎用の CSS で変わらない。
 minimal_guarantee: 利用側が CSS を書き込まなくても、既定の外観で文書が描かれる。
 test_file: tests/e2e/単一ユースケース/テーマを上書きする.spec.ts
+tags:
+  - name: topic:テーマ
+    main: true
+  - name: topic:css
+  - name: action:上書き

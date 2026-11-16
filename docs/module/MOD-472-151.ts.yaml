@@ -35,8 +35,6 @@ functions:
         mock: '`Readable.from([])`'
         expected: '`undefined`'
     status: planned
-    introduced:
-      pr: 39
 function_types:
   - name: Prompter
     title: 質問
@@ -50,3 +48,9 @@ function_types:
     returns:
       type: Promise<string | undefined>
       description: 前後の空白を落とした回答し、入力が終わっていれば `undefined`
+lead: '標準入力の 1 行を回答にする質問を受け持ち、バージョンを上げるときの確認の仕方を変えるときに参照する。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:cli

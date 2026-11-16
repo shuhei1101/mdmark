@@ -41,7 +41,7 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| [tests/integration/lib/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/lib/build.test.ts) | 全実行 | 実行のみ | ❌ | 5 pass・3 fail。fail は `dist/index.js` の上限超えで、develop でも同じ 3 件が fail する（#601）。実際の `plugin/guide-index.yaml` は `checkGuideSource` の検査を通った（22 行・問題 0）<br>`テスト結果/20261115223312_5801dc20_結合テスト.log` |
+| [tests/integration/lib/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/lib/build.test.ts) | 全実行 | 実行のみ | ❌ | 5 pass・3 fail。fail は `dist/index.js` の上限超えで、develop でも同じ 3 件が fail する（[ビルドの結合テスト 3 件が、dist/index.js が配布ファイルの上限（688128 バイト）を超えて fail する](https://github.com/shuhei1101/mdmark/issues/601)）。実際の `plugin/guide-index.yaml` は `checkGuideSource` の検査を通った（22 行・問題 0）<br>`テスト結果/20261115223312_5801dc20_結合テスト.log` |
 | [tests/integration/plugin-inputs.ts](https://github.com/shuhei1101/mdmark/blob/docs/guide/mark-md-extension-and-index-placement/tests/integration/plugin-inputs.ts) | - | 変更 | ✅ | 結合テストの準備（`global-setup.ts`）と `build.test.ts` の準備で通った |
 
 ### 単体
@@ -52,4 +52,5 @@
 | [tests/unit/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/scripts/build.test.ts) | 全実行 | 変更 | ✅ | 索引のパスを `plugin/guide-index.yaml` に合わせた |
 
 ドキュメント修正の工程では、単体・結合テストを実行していない。
-改名したページを参照するテスト（`tests/unit/helpers/diagrams.ts`・`tests/unit/scripts/build-plugin.test.ts`・`tests/unit/scripts/build.test.ts`・`upgrade` の単体と結合のテスト）は、この時点で旧パスを参照して fail する。単体テスト作成・実装・結合テスト作成の工程で新しいパスに合わせ、そこで実行する。
+改名したページを参照するテスト（`tests/unit/helpers/diagrams.ts`・`tests/unit/scripts/build-plugin.test.ts`・`tests/unit/scripts/build.test.ts`・`upgrade` の単体と結合のテスト）は、この時点で旧パスを参照して fail する。
+単体テスト作成・実装・結合テスト作成の工程で新しいパスに合わせ、そこで実行する。

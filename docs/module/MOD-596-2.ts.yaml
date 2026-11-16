@@ -88,3 +88,10 @@ functions:
         expected: '`r3` が `rankless` で、`worker` の上書きが `align: api` と `api` より大きい `order`、`r1` の元が `web`、`hub` の幅と高さが 16'
 refs:
   - IF-472-35#constraints[map のアーキテクチャ図]
+lead: 'Mermaid の architecture-beta の読み取りと構成図の入力への変換を受け持ち、map のアーキテクチャ図の読み取りを変えるときに参照する。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: action:読み取り
+  - name: action:変換

@@ -24,3 +24,10 @@ functions:
       type: Server
       description: 待ち受けを始めていない `node:http` のサーバー
     status: planned
+lead: '配布物とタグ一覧の代役の配信を受け持ち、拡張機能の結合テストの代役を変えるときに参照する。'
+tags:
+  - name: topic:ci
+    main: true
+  - name: tool:vscode
+  - name: action:ビルド
+  - name: action:配布

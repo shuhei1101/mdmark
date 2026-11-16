@@ -31,8 +31,6 @@ constants:
     summary: 色分けするコードブロックの `code` に付け、値に言語のモジュール名を持つ属性。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に記載した生の HTML の `code` は色分けの対象にならない
     value: '"data-mdmark-syntax"'
     status: planned
-    introduced:
-      pr: 97
   - name: MERMAID_ATTRIBUTE
     title: mermaid の対象の属性
     container: src/parts/code-block.ts
@@ -41,8 +39,6 @@ constants:
     refs:
       - IF-472-34#constraints[mermaid のコードブロック]
     status: planned
-    introduced:
-      pr: 382
 functions:
   - name: renderCodeBlock
     title: コードブロックを描く
@@ -54,7 +50,15 @@ functions:
       - name: options
         type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; wrap?: boolean; lines: CodeLine[]; syntax?: string; mermaid?: boolean; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean; foldColumnHovered?: boolean }'
         required: true
-        description: 部品設計の引数。`language`・`title`・`fileName` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、指定すると `code` に `SYNTAX_ATTRIBUTE` を付ける。`mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。`bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。`copyState` は省くとコピーのボタンを配置しない（`render` は指定せず、Storybook が指定する）。`foldButtons` は行の開閉のボタンを配置するか（既定 `false`。`render` は指定せず、Storybook が指定する）。`foldColumnHovered` が `true` なら `pre` に `data-fold-hover` を付ける（既定 `false`。Storybook が開閉のボタンの列にポインターが乗った状態を見せるために指定する）
+        description: |-
+          部品設計の引数。
+          `language`・`title`・`fileName` は無ければ空。
+          `syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、指定すると `code` に `SYNTAX_ATTRIBUTE` を付ける。
+          `mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。
+          `bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。
+          `copyState` は省くとコピーのボタンを配置しない（`render` は指定せず、Storybook が指定する）。
+          `foldButtons` は行の開閉のボタンを配置するか（既定 `false`。`render` は指定せず、Storybook が指定する）。
+          `foldColumnHovered` が `true` なら `pre` に `data-fold-hover` を付ける（既定 `false`。Storybook が開閉のボタンの列にポインターが乗った状態を見せるために指定する）
     returns:
       type: string
       description: '`bar` が `true` なら `<figure class="mdmark-code">` か `<div class="mdmark-code">`、`false` なら `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'
@@ -165,8 +169,6 @@ functions:
         mock: なし
         expected: '`idle` は `コピー` で `role="status"` が空、`copied` は `コピーしました` と `コードをコピーしました`、`failed` は `コピーできませんでした` と `コードをコピーできませんでした`。どれも `type="button"` と `data-state` を持つ'
     status: planned
-    introduced:
-      pr: 151
   - name: renderCodeFoldToggle
     title: 行の開閉のボタンを描く
     container: src/parts/code-block.ts
@@ -191,8 +193,6 @@ functions:
         mock: なし
         expected: '`aria-expanded="false"`・`aria-label="4 行目から 7 行目"` と `chevron-right` の svg を持つ'
     status: planned
-    introduced:
-      pr: 275
   - name: renderCodeFoldMore
     title: 畳んだ行の ⋯ のボタンを描く
     container: src/parts/code-block.ts
@@ -215,5 +215,10 @@ functions:
         mock: なし
         expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
     status: planned
-    introduced:
-      pr: 275
+lead: 'コードブロックとコードのコピーのボタンの HTML を受け持ち、コードブロックの外観を変えるときに参照する。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: tool:html
+  - name: action:描画
+  - name: action:コピー

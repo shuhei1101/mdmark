@@ -44,3 +44,11 @@ functions:
       - LIB-472-5#
       - MOD-472-61#constants[viteConfig]
     status: planned
+lead: '拡張機能と Webview のビルドとテストの出力を受け持ち、拡張機能のビルドを変えるときに参照する。'
+tags:
+  - name: topic:バンドル
+    main: true
+  - name: tool:vscode
+  - name: topic:ci
+  - name: action:ビルド
+  - name: action:配布

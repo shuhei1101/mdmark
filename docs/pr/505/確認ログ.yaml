@@ -1,11 +1,11 @@
 confirmations:
-  - topic: '#460 の帯と本文の背景の色の違いを残すか'
+  - topic: '[コードブロックの言語のラベルの帯と本文の間の線を削除する](https://github.com/shuhei1101/mdmark/issues/460) の帯と本文の背景の色の違いを残すか'
     decision: 帯の背景を本文と同じ色にする（別案 B）。言語のラベルは、帯の上端に付けた枠線を持たない塗りのタブにする（ユーザーの画像のとおり）
     decided_by: reply
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4554582525
-  - topic: '#458 の自動の列の幅と、既存の「狭い幅で最終列を畳む」のどちらを優先するか'
+  - topic: '[表の列の幅を、セルの文字の量と改行から既定で自動計算する](https://github.com/shuhei1101/mdmark/issues/458) の自動の列の幅と、既存の「狭い幅で最終列を畳む」のどちらを優先するか'
     decision: 自動の列の幅を持つ表では最終列を畳まず、最小の幅で横にスクロールする（推奨案 A）
     decided_by: thumbs_up
     approver: shuhei1101

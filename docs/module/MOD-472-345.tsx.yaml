@@ -38,3 +38,8 @@ components:
         type: Record<string, unknown>
         required: true
         description: ストーリーの引数。文字列でない値は JSON にして問い合わせの引数にする
+lead: '描画のインターフェースの HTML をストーリーに出すコンポーネントを受け持ち、Storybook で部品を確認する仕組みを変えるときに参照する。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:描画

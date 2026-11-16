@@ -10,8 +10,6 @@ constants:
     summary: '`attachSections` が操作を付けたセクションの中身（`mdmark-section-body`）から、そのセクションを開くか閉じる関数を参照する。`revealTarget`・`foldAllSections` と Shift での入れ子の開閉が使用し、削除する関数が取り除く'
     value: 'new WeakMap<HTMLElement, (open: boolean) => void>()'
     status: planned
-    introduced:
-      pr: 166
 functions:
   - name: attachSections
     title: セクションと行の詳細に開閉を付ける
@@ -160,8 +158,6 @@ functions:
     refs:
       - IF-472-35#constraints[コメントの箇所へ移る]
     status: planned
-    introduced:
-      pr: 280
   - name: revealTarget
     title: 要素へ移る
     container: src/interact/sections.ts
@@ -197,8 +193,6 @@ functions:
         mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
         expected: 見出しを指定した後、`A`・`B` の中身が `hidden` を持たず、2 つのボタンが `aria-expanded="true"`。段落を指定したときは、段落を囲むセクションだけが開き、段落の後ろの見出しのセクションは開かない
     status: planned
-    introduced:
-      pr: 166
   - name: foldAllSections
     title: すべてのセクションを開閉する
     container: src/interact/sections.ts
@@ -222,8 +216,6 @@ functions:
         mock: なし
         expected: 1 回目の後は全てのボタンが `aria-expanded="true"`。2 回目の後は `手引き` だけが `true` で、`導入`・`注意`・`付録` は `false`
     status: planned
-    introduced:
-      pr: 166
 data_models:
   - name: SectionStates
     title: セクションの開閉の記録
@@ -238,5 +230,13 @@ data_models:
         type: string
         description: 記録したときの中身の `data-section` の値（`open`・`closed`）
     status: planned
-    introduced:
-      pr: 497
+lead: 'セクションと行の詳細の開閉・入れ子のまとめた開閉・URL のアンカーでの展開を受け持ち、セクションの開閉の操作を変えるときに参照する。'
+tags:
+  - name: topic:セクション
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作
+  - name: topic:部品
+  - name: action:まとめ
+  - name: action:開閉

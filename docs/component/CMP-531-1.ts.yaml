@@ -134,6 +134,9 @@ accessibility:
 refs:
   - IF-472-35#constraints[map の ER 図]
 status: planned
-introduced:
-  pr: 531
 test_file: tests/integration/lib/map-er.story.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:er図
+  - name: topic:図

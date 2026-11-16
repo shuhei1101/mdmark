@@ -29,3 +29,11 @@ functions:
         mock: '`acquireVsCodeApi` を呼ばれたかを記録する代役にする'
         expected: 例外を投げず、`acquireVsCodeApi` が呼ばれない
     status: planned
+lead: 'プレビューのパネルの起動を受け持ち、Webview の起動の流れを変えるときに参照する。'
+tags:
+  - name: tool:react
+    main: true
+  - name: tool:vscode
+  - name: topic:webview
+  - name: topic:プレビュー
+  - name: action:起動

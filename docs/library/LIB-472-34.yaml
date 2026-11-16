@@ -58,7 +58,19 @@ upstream: microsoft/vscode-vsce
 verification:
   state: 済
   date: '2026-11-14'
-  detail: '`dist/extension.js` だけを持ち `.vscodeignore` で `node_modules/**` を除いた最小の拡張機能で `npx @vscode/vsce@4.0.0 package --no-dependencies --out mdmark-0.1.0.vsix` を実行し、.vsix が `extension/package.json`（`version` が `0.1.0`）・`extension/dist/extension.js`・`extension/LICENSE.txt`・`extension/readme.md`・`extension.vsixmanifest`・`[Content_Types].xml` だけを持ち `node_modules/` を含まないことを確認した。`engines.vscode` を `^1.130.0`、`@types/vscode` を `1.140.0` にすると `@types/vscode 1.140.0 greater than engines.vscode ^1.130.0` で失敗し、.vsix を書き込まないことを確認した。2026-11-14 に 4.1.1 で次を確認した。`npm --prefix vscode exec -- vsce publish --help` が `--oidc`・`--packagePath`・`--skip-duplicate` を持つ。リポジトリの直下の `npm ci` と `npm --prefix vscode ci` の後の `npm --prefix vscode run package` が `mdmark-0.1.2.vsix` を作る（直下の依存が無いと `yaml`・`ajv`・`lucide` を解決できず失敗する）。PoC（#555、run 43542400400）で、`id-token: write` のワークフローから `out/oidc.js` の `getOIDCCredential(''ShuheiNishikawa'')` が公開用のトークン（長さ 942）を返した。公開（`vsce publish --oidc`）は Marketplace へ書き込むため走らせておらず、マージの後の最初のタグで確認する'
+  detail: '`dist/extension.js` だけを持ち `.vscodeignore` で `node_modules/**` を除いた最小の拡張機能で `npx @vscode/vsce@4.0.0 package --no-dependencies --out mdmark-0.1.0.vsix` を実行し、.vsix が `extension/package.json`（`version` が `0.1.0`）・`extension/dist/extension.js`・`extension/LICENSE.txt`・`extension/readme.md`・`extension.vsixmanifest`・`[Content_Types].xml` だけを持ち `node_modules/` を含まないことを確認した。
+
+    `engines.vscode` を `^1.130.0`、`@types/vscode` を `1.140.0` にすると `@types/vscode 1.140.0 greater than engines.vscode ^1.130.0` で失敗し、.vsix を書き込まないことを確認した。
+
+    2026-11-14 に 4.1.1 で次を確認した。
+
+    `npm --prefix vscode exec -- vsce publish --help` が `--oidc`・`--packagePath`・`--skip-duplicate` を持つ。
+
+    リポジトリの直下の `npm ci` と `npm --prefix vscode ci` の後の `npm --prefix vscode run package` が `mdmark-0.1.2.vsix` を作る（直下の依存が無いと `yaml`・`ajv`・`lucide` を解決できず失敗する）。
+
+    [PoC: GitHub Actions の OIDC トークンを Marketplace のトークンに交換する](https://github.com/shuhei1101/mdmark/pull/555)（run 43542400400）で、`id-token: write` のワークフローから `out/oidc.js` の `getOIDCCredential(''ShuheiNishikawa'')` が公開用のトークン（長さ 942）を返した。
+
+    公開（`vsce publish --oidc`）は Marketplace へ書き込むため走らせておらず、マージの後の最初のタグで確認する'
 license: MIT（商用利用可）
 official_url: https://code.visualstudio.com/api/working-with-extensions/publishing-extension
 docs_url: https://github.com/microsoft/vscode-vsce
@@ -66,3 +78,8 @@ install: |-
   ```bash
   npm --prefix vscode i -D -E @vscode/vsce@4.1.1
   ```
+tags:
+  - name: tool:vsce
+    main: true
+  - name: tool:vscode
+  - name: action:配布

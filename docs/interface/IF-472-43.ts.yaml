@@ -15,6 +15,9 @@ flows:
       - name: 呼び出し
         description: '`session_id` が `s1`、`tool_name` が `Write`、`tool_input.file_path` が `/w/docs/a.mark.md`'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as 案内のフック
@@ -24,6 +27,9 @@ flows:
         R-->>H: 無い
         H->>R: s1 の記録を作る
         H-->>C: hookSpecificOutput（additionalContext）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力が JSON で、`hookSpecificOutput.hookEventName` が `PreToolUse`
       - '`hookSpecificOutput.additionalContext` が制約「案内の文」の文で、ファイル名 `a.mark.md` を含む'
@@ -41,6 +47,9 @@ flows:
       - name: 呼び出し
         description: '`session_id` が `s1`、`tool_name` が `Edit`、`tool_input.file_path` が `/w/docs/a.mark.md`'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as 案内のフック
@@ -49,6 +58,9 @@ flows:
         H->>R: s1 の記録があるか
         R-->>H: ある
         H-->>C: 空の標準出力・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力が空
       - 終了コードが 0
@@ -61,12 +73,18 @@ flows:
       - name: 呼び出し
         description: '`session_id` が `s2`、`tool_name` が `Write`、`tool_input.file_path` が `/w/README.md`'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as 案内のフック
         C->>H: session_id・hook_event_name・tool_name・tool_input
         H->>H: file_path が .mark.md で終わらない
         H-->>C: 空の標準出力・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力が空
       - 記録のフォルダに `s2` のファイルが無い
@@ -80,6 +98,9 @@ flows:
       - name: 呼び出し
         description: '`session_id` が `s3`、`hook_event_name` が `UserPromptSubmit`、`prompt` が `設計メモを MDMark で書いて`'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as 案内のフック
@@ -89,6 +110,9 @@ flows:
         R-->>H: 無い
         H->>R: s3 の記録を作る
         H-->>C: hookSpecificOutput（additionalContext）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - '`hookSpecificOutput.hookEventName` が `UserPromptSubmit`'
       - '`hookSpecificOutput.additionalContext` が制約「案内の文」の文'
@@ -104,12 +128,18 @@ flows:
       - name: 呼び出し
         description: '`session_id` が `s4`、`prompt` が `README を直して`'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as 案内のフック
         C->>H: session_id・hook_event_name・prompt
         H->>H: prompt が mdmark を含まない
         H-->>C: 空の標準出力・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力が空
       - 記録のフォルダに `s4` のファイルが無い
@@ -123,12 +153,18 @@ flows:
       - name: 呼び出し
         description: '`session_id` が `../x`、`tool_input.file_path` が `/w/docs/a.mark.md`'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as 案内のフック
         C->>H: session_id・hook_event_name・tool_name・tool_input
         H->>H: session_id がファイル名に使用できない
         H-->>C: 空の標準出力・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - 標準出力が空
       - 記録のフォルダの外にファイルが作られていない
@@ -144,6 +180,9 @@ flows:
       - name: 呼び出し
         description: '`session_id` が `s1`、`hook_event_name` が `PreCompact` の呼び出しの後に、正常系と同じ Write の呼び出し'
     flow: |-
+      <!-- map -->
+
+      ```mermaid
       sequenceDiagram
         participant C as Claude Code
         participant H as 案内のフック
@@ -156,6 +195,9 @@ flows:
         R-->>H: 無い
         H->>R: s1 の記録を作る
         H-->>C: hookSpecificOutput（additionalContext）・終了コード 0
+      ```
+
+      <!-- /map -->
     expected:
       - PreCompact の呼び出しの標準出力が空で、終了コードが 0
       - PreCompact の後の Write で、`hookSpecificOutput.additionalContext` が制約「案内の文」の文
@@ -230,3 +272,8 @@ constraints:
 refs:
   - SC-472-15#
 test_file: tests/integration/ClaudeCodeプラグイン/guide-notice.test.ts
+tags:
+  - name: topic:構文
+    main: true
+  - name: topic:フック
+  - name: tool:claude-code

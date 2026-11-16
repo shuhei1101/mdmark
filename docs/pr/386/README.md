@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #326](https://github.com/shuhei1101/mdmark/issues/326) の不具合。
+[コードブロックとファイルツリーの直前の要素との間隔が 0px になり、くっついて表示される](https://github.com/shuhei1101/mdmark/issues/326) の不具合。
 develop の 60e0bff2 で 2 つずつのブロックの組み合わせの縦の間隔を測ると、直後がコードブロック（`.mdmark-code`）かファイルツリー（`.mdmark-tree`）のときだけ 0px で、ほかの組み合わせは 14px だった。
 VS Code のプレビューと `export_html` の書き出しで同じく起きる。
 

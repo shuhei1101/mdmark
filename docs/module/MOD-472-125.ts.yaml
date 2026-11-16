@@ -33,9 +33,10 @@ functions:
         condition: '`file` が `aliases/a.yaml`・`where` が空・`kind` が `alias_unreadable`・`message` が `m`'
         mock: なし
         expected: '`aliases/a.yaml: alias_unreadable: m`'
-    callers:
-      - 'MOD-472-110#functions[runCheck]'
-      - 'MOD-472-120#functions[prepareEmbeds]'
-      - MOD-472-30#
-      - MOD-472-90#classes[PreviewPanel]
     status: planned
+lead: '点検のずれを 1 行の文字列にする処理を受け持ち、点検のずれの出力の書式を変えるときに参照する。'
+tags:
+  - name: topic:検査
+    main: true
+  - name: topic:cli
+  - name: action:点検

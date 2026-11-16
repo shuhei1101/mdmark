@@ -6,8 +6,8 @@ E2E『チャートを描く』の `test_error_when_definition_invalid` が、HTM
 
 ## 背景
 
-[Issue #51](https://github.com/shuhei1101/mdmark/issues/51) の不具合。
-release/v0.6.0 の E2E（[release PR #48](https://github.com/shuhei1101/mdmark/pull/48)）で、`test_error_when_definition_invalid` が Chromium・Firefox の両方で fail した。
+[E2E『チャートを描く』の test_error_when_definition_invalid が、段落の指定が書き方の警告の段落にも当たって落ちる](https://github.com/shuhei1101/mdmark/issues/51) の不具合。
+release/v0.6.0 の E2E（[release/v0.6.0](https://github.com/shuhei1101/mdmark/pull/48)）で、`test_error_when_definition_invalid` が Chromium・Firefox の両方で fail した。
 書き方の警告は題と本文を `p` で描き、テストの `#doc .mdmark-html p` が警告の 2 つと「後ろの段落」の 3 つに当たって Playwright の strict mode で落ちる。
 警告とチャートと段落はシナリオどおりに描かれており、製品の挙動は正しい。
 

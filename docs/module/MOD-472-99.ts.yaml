@@ -71,3 +71,10 @@ functions:
       - SCR-472-1#elements[書き出せない通知]
       - SCR-472-1#elements[バージョンを決められない通知]
     status: planned
+lead: 'HTML への書き出し・ブラウザで開く・PDF への印刷のコマンドの本体を受け持ち、HTML への書き出しや PDF への印刷を変えるときに参照する。'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:vscode
+  - name: tool:html
+  - name: action:書き出し

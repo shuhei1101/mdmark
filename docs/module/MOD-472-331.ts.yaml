@@ -30,8 +30,6 @@ functions:
         mock: なし
         expected: 1 つ目が `aria-pressed="false"`・`aria-label="GIF を停止"`、2 つ目が `aria-pressed="true"`・`aria-label="GIF を再生"`。どちらも `svg` を 2 つ持つ
     status: planned
-    introduced:
-      pr: 263
   - name: renderGif
     title: GIF を描く
     container: src/parts/gif.ts
@@ -66,5 +64,10 @@ functions:
         mock: なし
         expected: '`canvas` が `hidden` を持たず、`img` が `visibility: hidden`、ボタンが `aria-pressed="true"`'
     status: planned
-    introduced:
-      pr: 263
+lead: 'GIF と止める・再生するボタンの HTML を受け持ち、GIF の外観を変えるときに参照する。'
+tags:
+  - name: topic:gif
+    main: true
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

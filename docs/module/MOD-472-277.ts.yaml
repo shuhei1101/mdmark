@@ -10,16 +10,12 @@ constants:
     summary: '`columns` に記載できる列の数の範囲と、省いたときの数'
     value: '{ min: 1, max: 6, default: 2 }'
     status: planned
-    introduced:
-      pr: 263
   - name: SUBFIGURE_LETTERS
     title: サブ図の番号の文字
     container: src/render/syntax/gallery.ts
     summary: 番号を付けたギャラリーの画像に、範囲の中の順に付ける文字。27 枚目からは番号を付けない
     value: '"abcdefghijklmnopqrstuvwxyz"'
     status: planned
-    introduced:
-      pr: 263
 functions:
   - name: readGalleryOptions
     title: ギャラリーのマーカーの指定を読み込む
@@ -43,8 +39,6 @@ functions:
         mock: なし
         expected: '`cols` が `3`・`2`'
     status: planned
-    introduced:
-      pr: 263
   - name: buildGallery
     title: ギャラリーにする
     container: src/render/syntax/gallery.ts
@@ -85,5 +79,11 @@ functions:
         mock: なし
         expected: どちらの範囲の前にも記載の警告があり、2 つ目は 27 枚目の `figure` が `id` とサブ図の番号を持たない
     status: planned
-    introduced:
-      pr: 263
+lead: 'ギャラリーのマーカーの読み取りと並べ方を受け持ち、ギャラリーの記法や出力する HTML を変えるときに参照する。'
+tags:
+  - name: topic:ギャラリー
+    main: true
+  - name: topic:markdown
+  - name: topic:構文
+  - name: tool:markdown-it
+  - name: action:読み取り

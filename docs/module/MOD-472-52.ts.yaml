@@ -88,3 +88,9 @@ data_models:
         type: string[]
         description: 違反した要素のセレクタ
     status: planned
+lead: '拡張機能と Webview の間のメッセージの型を受け持ち、拡張機能と Webview のやり取りを変えるときに参照する。'
+tags:
+  - name: topic:webview
+    main: true
+  - name: tool:vscode
+  - name: topic:プレビュー

@@ -39,8 +39,6 @@ functions:
         mock: 一時フォルダ
         expected: '`["a.md"]`'
     status: planned
-    introduced:
-      pr: 32
   - name: readIndexWithDocuments
     title: 索引と索引の文書を読み込む
     container: src/cli/documents.ts
@@ -82,8 +80,6 @@ functions:
         expected: '`CliError` を投げ、メッセージに `docs/index.yaml` が入る'
         exception: CliError
     status: planned
-    introduced:
-      pr: 32
   - name: documentTitle
     title: 文書のタイトルを決める
     container: src/cli/documents.ts
@@ -119,5 +115,9 @@ functions:
         mock: なし
         expected: '`guide`'
     status: planned
-    introduced:
-      pr: 32
+lead: 'まとめる文書・索引の文書の読み取りと文書のタイトルの決定を受け持ち、1 枚にまとめる対象の決め方を変えるときに参照する。'
+tags:
+  - name: topic:cli
+    main: true
+  - name: action:読み取り
+  - name: action:まとめ

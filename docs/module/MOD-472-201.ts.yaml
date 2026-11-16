@@ -204,3 +204,10 @@ functions:
         condition: '`path` が `["options"]` と、`path` が無い issue'
         mock: なし
         expected: どちらもラベルが空で、本文が `message`
+lead: '拡張の登録表と登録の関数・引数の検査を受け持ち、拡張の登録や引数の検査を変えるときに参照する。'
+tags:
+  - name: topic:スキーマ
+    main: true
+  - name: topic:拡張
+  - name: action:検査
+  - name: action:登録

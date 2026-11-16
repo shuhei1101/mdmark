@@ -65,8 +65,10 @@ accessibility:
   - ブロックの要素のマーカーの外では開かず、ポインターの形状は変えない
   - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。印刷では出さない
 status: planned
-introduced:
-  pr: 45
 refs:
   - IF-472-35#constraints[ヒントの操作]
 test_file: tests/integration/lib/hint.story.test.ts
+tags:
+  - name: topic:ヒント
+    main: true
+  - name: topic:ツールチップ

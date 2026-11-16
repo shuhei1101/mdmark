@@ -28,3 +28,10 @@ functions:
         condition: '`printSvg` を指定した呼び出しと指定しない呼び出し'
         mock: なし
         expected: '前者は `mdmark-mermaid mdmark-mermaid-has-print` の中に `svg` と `div.mdmark-mermaid-print[aria-hidden="true"]` がこの順にある。後者は `mdmark-mermaid-print` が無い。どちらも `width`・`height` が指定した値'
+lead: '部品『mermaid の図』の HTML を受け持ち、mermaid の図の部品の HTML を変えるときに参照する。'
+tags:
+  - name: tool:svg
+    main: true
+  - name: topic:図
+  - name: tool:mermaid
+  - name: action:描画

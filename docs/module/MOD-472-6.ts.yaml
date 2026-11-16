@@ -42,5 +42,8 @@ functions:
     refs:
       - IF-472-14#
     status: planned
-    introduced:
-      pr: 354
+tags:
+  - name: topic:セットアップ
+    main: true
+  - name: tool:claude-code
+  - name: topic:設定

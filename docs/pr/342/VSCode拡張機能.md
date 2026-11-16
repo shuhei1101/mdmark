@@ -23,7 +23,7 @@
 | テスト | [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/preview.browser.test.ts) ほか `tests/unit/vscode/src/webview/` | Webview の単体テスト（Vitest のブラウザ） | React のコンポーネントと hook の単体テストに書き換える |
 | テスト | `vscode/tests/integration/` | 拡張機能ホストで実行する結合テスト（`inspect` で Webview の DOM を確認する） | Webview の DOM の class・属性を変えた分だけ期待値を修正する |
 | テスト | `tests/e2e/単一ユースケース/` の VS Code のシナリオ | VS Code の E2E | 実行のみ |
-| モック | [dev/mock/pages/vscode-preview/](https://github.com/shuhei1101/mdmark/blob/develop/dev/mock/pages/vscode-preview/) | パネルのモック HTML（#69・#181・#196） | Storybook のストーリーへ移す |
+| モック | [dev/mock/pages/vscode-preview/](https://github.com/shuhei1101/mdmark/blob/develop/dev/mock/pages/vscode-preview/) | パネルのモック HTML（[VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/pull/69)・[見た目のテーマを選べるようにし、プレビューから設定を開けるようにする](https://github.com/shuhei1101/mdmark/pull/181)・[VS Code の差分ビューで開いた Markdown の変更を、mdmark のプレビューに色分けで表示する](https://github.com/shuhei1101/mdmark/pull/196)） | Storybook のストーリーへ移す |
 
 <!-- /table -->
 
@@ -85,7 +85,7 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| 1. Vite 8 + `@vitejs/plugin-react` 6 + React Compiler（`@rolldown/plugin-babel` + `reactCompilerPreset`）+ Tailwind v4 の Webview を、今の `buildCsp` の CSP で描く | VS Code 1.141.0・stable（1.145.1）で CSP 違反 0 件、代役の配布物の `mount` で描け `rendered` が届く | ✅ 両方で違反 0 件 | [#343](https://github.com/shuhei1101/mdmark/pull/343) | `securitypolicyviolation` を Webview で数えた。`buildCsp` は変えていない |
+| 1. Vite 8 + `@vitejs/plugin-react` 6 + React Compiler（`@rolldown/plugin-babel` + `reactCompilerPreset`）+ Tailwind v4 の Webview を、今の `buildCsp` の CSP で描く | VS Code 1.141.0・stable（1.145.1）で CSP 違反 0 件、代役の配布物の `mount` で描け `rendered` が届く | ✅ 両方で違反 0 件 | [PoC: React の Webview の CSP・Storybook react-vite・拡張機能ホストの axe](https://github.com/shuhei1101/mdmark/pull/343) | `securitypolicyviolation` を Webview で数えた。`buildCsp` は変えていない |
 | 1. 同上 | 出力が `media/preview.js`（ES モジュール 1 ファイル）と `media/preview.css` の 2 つで、inline の `<script>` を出さない | ✅ 2 ファイル（345 KB・13 KB） | 同上 | `build.lib` の `formats: ["es"]`・`codeSplitting: false` |
 | 1. 同上 | `logger` に `CompileSuccess`、`preview.js` に `react.memo_cache_sentinel`、`tsc --noEmit` が通る | ✅ 全コンポーネントで `CompileSuccess`・3 件・通る | 同上 | コンポーネントの中に `import()` を書くと `CompileError`（`Handle ImportExpression expressions`）になる |
 | 1b. Preflight を参照せず `tailwindcss/theme`・`tailwindcss/utilities` だけを層に入れる | 見出し・段落・リスト・画像の `getComputedStyle` が `develop` の Webview と一致する | ✅ 両方のバージョンで 10 要素 × 8 プロパティが一致 | 同上 | `font-size`・`list-style-type`・`margin`・`padding-left`・`display`・`border-top-width`・`box-sizing` |
@@ -95,7 +95,8 @@
 
 <!-- /table -->
 
-結論: 成立。React の Webview は今の CSP・配布物の参照のまま動き、Preflight を参照しない構成なら描いた文書の見た目は変わらない。
+結論: 成立。
+React の Webview は今の CSP・配布物の参照のまま動き、Preflight を参照しない構成なら描いた文書の見た目は変わらない。
 
 実装へ持ち越す所見:
 
@@ -107,7 +108,7 @@
 | axe の `color-contrast`（描けない理由の文）と `label-content-name-mismatch`（描いた文書） | 実装で原因の要素を特定して修正する。描いた文書の側なら mdmark 本体の問題として切り出す |
 | `media/test/axe.js` が `.gitignore` に無い | 実装で `vscode/media/` を丸ごと管理の外にする |
 
-最小再現コードの要点（[#343 の diff](https://github.com/shuhei1101/mdmark/pull/343/files)）:
+最小再現コードの要点（[PoC: React の Webview の CSP・Storybook react-vite・拡張機能ホストの axe の diff](https://github.com/shuhei1101/mdmark/pull/343/files)）:
 
 ```tsx
 // vscode/src/webview/react/main.tsx（要点）
@@ -147,7 +148,7 @@ diff の見どころ: `vscode/vite.config.ts`（ライブラリの出力と Reac
 | --- | --- |
 | Web の実装ガイド | `search_web_guidance` で状態の表示・読み込み中を引き、`spinner` を読んだ。ガイドは `<progress>` を推すが、Spinner は部品設計『プレビューの状態の表示』のとおり `role="img"` の SVG にし、動きを減らす設定ではガイドと同じく 6 秒で回す |
 | 足した・直したストーリー | `vscode-panelscreen--document`・`--loading`・`--offline`・`--version-missing`・`--version-undecidable`・`--diff-unsupported`・`--config-error`・`--media-error`、`vscode-configband--default`・`--narrow-long-path`、`vscode-previewstatus--loading`・`--offline`・`--version-missing`・`--version-missing-long`・`--version-undecidable`・`--diff-unsupported`・`--unexpected`、`vscode-mediaerror--audio`・`--video`・`--long-path`。部品の HTML のストーリー（`parts-*`）は YAML から CSF に書き換えた |
-| ストーリーの確認 | `start_storybook_serve` は `.venv` を求めて起動しない（[ai-monitor#2432](https://github.com/shuhei1101/ai-monitor/issues/2432)）ため、描画の口と `storybook dev` を手で起動した。446 個のストーリーを Playwright で開き、エラーの表示・`pageerror`・空の描画・描画の失敗の表示が無いことを確かめた（描画の失敗の表示は、それを見せる `vscode-previewstatus--unexpected` だけ） |
+| ストーリーの確認 | `start_storybook_serve` は `.venv` を求めて起動しない（[start_storybook_serve が Python の .venv を要求し、npm だけのプロジェクトの worktree で使えない](https://github.com/shuhei1101/ai-monitor/issues/2432)）ため、描画の口と `storybook dev` を手で起動した。446 個のストーリーを Playwright で開き、エラーの表示・`pageerror`・空の描画・描画の失敗の表示が無いことを確かめた（描画の失敗の表示は、それを見せる `vscode-previewstatus--unexpected` だけ） |
 | 開発コマンド | 『取り込み後の追従（pull 後）』の `effects`（`prepare` の Git フックと `tools/eslint/`）、『起動・停止』の Storybook の確認、『取り込み前の検査』（`npm run check`・lefthook） |
 | テスト実行方法 | `lint` 層に `npm run lint:eslint` を加えた |
 

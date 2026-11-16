@@ -111,6 +111,9 @@ accessibility:
 refs:
   - IF-472-35#constraints[map の C4 図]
 status: planned
-introduced:
-  pr: 596
 test_file: tests/integration/lib/map-c4.story.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:c4
+  - name: topic:図

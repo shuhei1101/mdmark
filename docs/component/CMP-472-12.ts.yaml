@@ -73,3 +73,7 @@ refs:
 status: planned
 notes:
   HTML: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: {cols}"><div class="mdmark-gallery-grid">{画像の図}</div></div>`。列を減らす幅は確認ログのモックへの合意。モックは `docs/mock/components/figure/` のギャラリーの場面'
+tags:
+  - name: topic:ギャラリー
+    main: true
+  - name: topic:画像

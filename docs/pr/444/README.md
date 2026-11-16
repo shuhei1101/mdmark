@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #366](https://github.com/shuhei1101/mdmark/issues/366) の要望。
-[#165](https://github.com/shuhei1101/mdmark/issues/165)（[#354](https://github.com/shuhei1101/mdmark/pull/354)）で、`global-setup` は常駐サーバーを tmux のセッション（既定 `mdmark-mcp`）で起動するようにした。
+[プラグインの global-setup で、MCP の常駐サーバーを systemd --user の unit で起動できるようにするかを決める](https://github.com/shuhei1101/mdmark/issues/366) の要望。
+[プラグインにセットアップのスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/issues/165)（[プラグインに global-setup・setup のスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/pull/354)）で、`global-setup` は常駐サーバーを tmux のセッション（既定 `mdmark-mcp`）で起動するようにした。
 規約『ローカルサーバーの立て方』は、必ず動いていてほしい常駐サーバーを systemd --user の unit で起動し、WSL の起動時に自動で起動すると定めている。
-#354 では tmux を既定にし、systemd --user に合わせるかは tmux の起動が入った後に決めることにしてスコープ外に残した。
+[プラグインに global-setup・setup のスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/pull/354) では tmux を既定にし、systemd --user に合わせるかは tmux の起動が入った後に決めることにしてスコープ外に残した。
 
 ## 計画書
 

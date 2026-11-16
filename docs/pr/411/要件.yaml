@@ -7,7 +7,7 @@ use_cases:
 docs: []
 scope_out:
   - item: '表のキーの階層の E2E 3 件（ファイルツリーの .mdmark-tree-row の display: flex）'
-    reason: '別の原因で起票済みで、作業 PR #408 が修正する'
+    reason: '別の原因で起票済みで、作業 PR [ファイルツリーの .mdmark-tree-row の display: flex をファイルツリーの中に限定し、表のキーの階層の折りたたんだ行と絞り込んだ行を隠す](https://github.com/shuhei1101/mdmark/pull/408) が修正する'
     plan: '#396'
   - item: 表のピン止めを選んだ列だけにする変更
     reason: 要望に含まれない。この PR の後に着手する計画の行

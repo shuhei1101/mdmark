@@ -46,3 +46,7 @@ install: '```bash
   npm i -D -E @testing-library/react@16.3.3 @testing-library/dom@10.4.2
 
   ```'
+tags:
+  - name: tool:testing-library
+    main: true
+  - name: topic:テスト
