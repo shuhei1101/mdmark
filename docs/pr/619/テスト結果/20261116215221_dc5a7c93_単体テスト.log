@@ -1,0 +1,232 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/refactor-lint-complexity-vscode-scripts
+
+ ❯ |unit| tests/unit/src/config-files.test.ts (44 tests | 1 failed) 37111ms
+   × test_load_layered_config 34036ms
+ ❯ |unit| tests/unit/src/parts/table.test.ts (38 tests | 1 failed) 38846ms
+   × test_render_table 30010ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (39 tests | 1 failed) 33984ms
+   × test_render_map_flow 30009ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (37 tests | 1 failed) 57934ms
+   × test_run_check 30996ms
+ ❯ |unit| tests/unit/src/plugin/setup/server.test.ts (17 tests | 1 failed) 49706ms
+   × test_build_tmux_args 31009ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (26 tests | 1 failed) 65133ms
+   × test_prepare_embeds 30010ms
+ ❯ |unit| tests/unit/scripts/build.test.ts (29 tests | 1 failed) 166796ms
+   × test_main 111409ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_main
+Error: Test timed out in 70000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/build.test.ts:150:1
+    148|
+    149| // version.ini のバージョンでビルドする（正常系）
+    150| test("test_main", { timeout: MAIN_BUILD_TIMEOUT_MS }, async () => {
+       | ^
+    151|   // 準備
+    152|   const { main } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_load_layered_config
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/config-files.test.ts:40:1
+     38|
+     39| // 端末の設定・上・近いを重ね、相対パスを記載したファイルから解決する（正常系）
+     40| test("test_load_layered_config", async () => {
+       | ^
+     41|   // 準備
+     42|   const { loadLayeredConfig } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/check.test.ts:51:1
+     49|
+     50| // ずれの無いフォルダで 0 件（正常系）
+     51| test("test_run_check", async () => {
+       | ^
+     52|   // 準備
+     53|   const { runCheck } = await loadCheck();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/parts/map.test.ts:42:1
+     40|
+     41| // グループとノード（正常系）
+     42| test("test_render_map_flow", async () => {
+       | ^
+     43|   // 準備
+     44|   const { renderMapFlow } = await loadParts();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/parts/table.test.ts:23:1
+     21|
+     22| // 囲みに種類・機能・絞り込みを属性で持たせる（正常系）
+     23| test("test_render_table", async () => {
+       | ^
+     24|   // 準備
+     25|   const { renderTable } = await loadTable();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_build_tmux_args
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/setup/server.test.ts:90:1
+     88|
+     89| // 環境変数を -e で指定し sh -c で包む（正常系）
+     90| test("test_build_tmux_args", async () => {
+       | ^
+     91|   // 準備
+     92|   const { buildTmuxArgs } = await loadServer();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: Failed to connect to the browser session "3d50bc0c-6d41-45c8-a8ac-3bb6864702bf" [unit-browser (chromium)] within the timeout.
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Bx28WXzL.js:5500:33
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ process.processTimers node:internal/timers:541:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  7 failed | 215 passed (301)
+      Tests  7 failed | 1617 passed (1624)
+     Errors  1 error
+   Start at  21:36:54
+   Duration  443.17s (tests 58%, import 21%, transform 19%, worker 1%)
+
+exit=1
+
+===== fail した 7 ファイルの再実行 =====
+$ npx vitest run --project 'unit*' tests/unit/scripts/build.test.ts tests/unit/src/config-files.test.ts tests/unit/src/cli/check.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/parts/map.test.ts tests/unit/src/parts/table.test.ts tests/unit/src/plugin/setup/server.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/refactor-lint-complexity-vscode-scripts
+
+ ❯ |unit| tests/unit/scripts/build.test.ts (29 tests | 1 failed) 118855ms
+   × test_main 70608ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_main
+Error: Test timed out in 70000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/build.test.ts:150:1
+    148|
+    149| // version.ini のバージョンでビルドする（正常系）
+    150| test("test_main", { timeout: MAIN_BUILD_TIMEOUT_MS }, async () => {
+       | ^
+    151|   // 準備
+    152|   const { main } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 6 passed (7)
+      Tests  1 failed | 229 passed (230)
+   Start at  21:44:31
+   Duration  121.31s (tests 93%, transform 5%, import 2%)
+
+exit=1
+
+===== build.test.ts の再実行 =====
+$ npx vitest run --project 'unit*' tests/unit/scripts/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/refactor-lint-complexity-vscode-scripts
+
+ ❯ |unit| tests/unit/scripts/build.test.ts (29 tests | 1 failed) 145992ms
+   × test_main 82515ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_main
+Error: Test timed out in 70000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/build.test.ts:150:1
+    148|
+    149| // version.ini のバージョンでビルドする（正常系）
+    150| test("test_main", { timeout: MAIN_BUILD_TIMEOUT_MS }, async () => {
+       | ^
+    151|   // 準備
+    152|   const { main } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 28 passed (29)
+   Start at  21:47:08
+   Duration  150.89s (tests 99%)
+
+exit=1
+
+===== test_main の再実行 =====
+ 21:49:59 up 41 days, 10:21,  2 users,  load average: 58.68, 53.50, 47.85
+$ npx vitest run --project 'unit*' tests/unit/scripts/build.test.ts -t test_main
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/refactor-lint-complexity-vscode-scripts
+
+ ❯ |unit| tests/unit/scripts/build.test.ts (29 tests | 1 failed | 20 skipped) 86269ms
+   × test_main 70129ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_main
+Error: Test timed out in 70000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/scripts/build.test.ts:150:1
+    148|
+    149| // version.ini のバージョンでビルドする（正常系）
+    150| test("test_main", { timeout: MAIN_BUILD_TIMEOUT_MS }, async () => {
+       | ^
+    151|   // 準備
+    152|   const { main } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 8 passed | 20 skipped (29)
+   Start at  21:50:27
+   Duration  91.34s (tests 99%, import 1%)
+
+exit=1
+ 21:51:50 up 41 days, 10:23,  2 users,  load average: 44.73, 49.34, 46.98
