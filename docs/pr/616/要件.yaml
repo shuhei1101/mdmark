@@ -44,9 +44,9 @@ use_cases:
     detail: map の ER 図の巡回は変えないが、ER 図の部品を削る範囲を誤ると壊れる
     depends_on: []
   - kind: composite
-    scenario: docs/scenario/SC-477-2.yaml
-    impact: changed
-    detail: 統合する場合、座標で記載した図を map へ移す流れに ER 図の部品を加え、描いた文書の警告と点検の案内から移行の手順で map の ER 図へ書き換える流れにする
+    scenario: docs/scenario/SC-616-1.yaml
+    impact: new
+    detail: 統合する場合、部品の定義で書いた ER 図を、描いた文書の警告と点検の案内から移行の手順で map の ER 図へ書き換え、移せなかった図を手で記載し直して map の ER 図で描く
     depends_on: []
 docs:
   - page: docs/guide/記法.mark.md
