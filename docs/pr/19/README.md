@@ -8,7 +8,7 @@
 
 [Issue #4](https://github.com/shuhei1101/mdmark/issues/4) の要望。
 [#16](https://github.com/shuhei1101/mdmark/pull/16) で入った土台は、印を機能のオン・オフと外部ライブラリの印の場所にだけ使い、それ以外の印は取り除いて本文だけを描く。
-#16 は拡張記法と印刷時のタブの展開をこの Issue へ回している。
+[Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/pull/16) は拡張記法と印刷時のタブの展開をこの Issue へ回している。
 
 ## 計画書
 

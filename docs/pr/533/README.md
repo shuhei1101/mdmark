@@ -8,7 +8,7 @@
 
 [Issue #453](https://github.com/shuhei1101/mdmark/issues/453) の要望。
 `table.pin: each` で複数の列を留めると、留めた列の幅の合計が表の見える幅を超えたときに留めた列どうしが重なり、一部の列が隠れる（390px の画面幅で 10 列の表の 1・3・9 列目を留めると 3 列目が隠れる）。
-[#438](https://github.com/shuhei1101/mdmark/pull/438) で選んだ列だけを留める動きを入れ、[#449](https://github.com/shuhei1101/mdmark/pull/449) で列を広げるときの上限を設けたが、幅を変えない場合の重なりは #449 の範囲の外として切り出された。
+[#438](https://github.com/shuhei1101/mdmark/pull/438) で選んだ列だけを留める動きを入れ、[#449](https://github.com/shuhei1101/mdmark/pull/449) で列を広げるときの上限を設けたが、幅を変えない場合の重なりは [表の列の幅を、見出しの右端をドラッグして変えられるようにし、ダブルクリックで元の幅に戻す](https://github.com/shuhei1101/mdmark/pull/449) の範囲の外として切り出された。
 
 ## 計画書
 

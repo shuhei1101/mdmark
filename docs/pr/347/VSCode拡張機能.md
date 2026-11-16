@@ -24,7 +24,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 設定の読み取り | ライブラリ本体の設定を読む共通の処理を esbuild で拡張機能に束ねて呼び、`parseConfig` の取り出しをやめる | `mount` に渡すキーは共通の処理の結果から取る（#259 の `labels` も渡る見込み） |
+| 設定の読み取り | ライブラリ本体の設定を読む共通の処理を esbuild で拡張機能に束ねて呼び、`parseConfig` の取り出しをやめる | `mount` に渡すキーは共通の処理の結果から取る（[VS Code 拡張機能のプレビューと書き出す HTML へ設定 labels（部品の文言）を通す](https://github.com/shuhei1101/mdmark/issues/259) の `labels` も渡る見込み） |
 | `mdmark.configPath` | 既定を空にし、空のときは Markdown のフォルダから上へ探して重ねる。値を書いたときは、そのファイルと端末の設定だけを重ねる | 既定の変更は設定の設計書と `package.json` の `contributes` に反映する |
 | `theme` | プレビューの HTML に `theme` の CSS を Webview の URI で読む `link` を足し、`localResourceRoots` にそのフォルダを足す | CSP の `style-src` は `cspSource` を持つため変えない |
 | `extensions` | Webview が `mount` の前に `extensions` のモジュールを読み込んで登録し、`localResourceRoots` にそのフォルダを足す | CLI の書き出しと同じ順で登録する。CSP の `script-src` は `cspSource` を持つため変えない |
@@ -48,7 +48,7 @@
 | 部品設計・画面設計 | `5abdfa0f..7c6608ba` | レビューの指摘の修正 |
 | モジュール構成設計 | `65ead7b4..aca3eea0` | 確認ダイアログのボタンを「作成」にした修正（`73a94a2d`）を含む |
 | モジュール構成設計 | `98411289..f0a77052` | 単体テスト作成で見つけた VS Code 拡張機能の設定の読み取り結果・帯へのメッセージ・プレビューの `theme` と `extensions` の読み込みの抜けの修正 |
-| モジュール構成設計 | `a4cecca7..a4f4d589` | esbuild-wasm の採用（PoC #349）と、`extensions` を拡張機能の中で束ねる修正 |
+| モジュール構成設計 | `a4cecca7..a4f4d589` | esbuild-wasm の採用（[PoC: esbuild-wasm](https://github.com/shuhei1101/mdmark/pull/349)）と、`extensions` を拡張機能の中で束ねる修正 |
 | モジュール構成設計 | `e37e675d..e67b7b91` | 実装で要ったシグネチャの追加（`keepInvalid`・`relativizeConfigPaths`・`buildExportHtml` の `themeCss`・`extensions`・見張るファイルの張り方・`mdmark.configPath` の既定） |
 
 ## テスト結果

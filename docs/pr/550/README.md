@@ -9,8 +9,8 @@
 
 [Issue #549](https://github.com/shuhei1101/mdmark/issues/549) の束で、[Issue #518](https://github.com/shuhei1101/mdmark/issues/518) と [Issue #526](https://github.com/shuhei1101/mdmark/issues/526) の要望。
 
-- #518: dev-docs の文書の画面は独自の目次を削除して mdmark の右側の目次だけを使用する（[shuhei1101/dev-docs#88](https://github.com/shuhei1101/dev-docs/issues/88)）。独自の目次は比較中に変わったセクションの見出しにマーカーを出していたが、`src/interact/side-toc.ts` は `baseMarkdown` の色分けを扱わず、長い文書では変わったセクションを本文をスクロールして探すことになる
-- #526: `src/render/syntax/tables.ts` は data の表の既定の機能に `sort` を含め、列の中身によらず全ての列の見出しに並べ替えのボタンを付ける。説明文のような長文の列を並べ替えることは無い
+- [比較元（baseMarkdown）を指定したとき、右側の目次の変わったセクションの見出しにマーカーを出す](https://github.com/shuhei1101/mdmark/issues/518): dev-docs の文書の画面は独自の目次を削除して mdmark の右側の目次だけを使用する（[shuhei1101/dev-docs#88](https://github.com/shuhei1101/dev-docs/issues/88)）。独自の目次は比較中に変わったセクションの見出しにマーカーを出していたが、`src/interact/side-toc.ts` は `baseMarkdown` の色分けを扱わず、長い文書では変わったセクションを本文をスクロールして探すことになる
+- [表の並べ替えを、長文のテキストの列には既定で付けない](https://github.com/shuhei1101/mdmark/issues/526): `src/render/syntax/tables.ts` は data の表の既定の機能に `sort` を含め、列の中身によらず全ての列の見出しに並べ替えのボタンを付ける。説明文のような長文の列を並べ替えることは無い
 
 ## 計画書
 

@@ -61,7 +61,7 @@
 | --- | --- | --- | --- | --- |
 | [vscode/tests/integration/export.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/export.test.ts) | `test_normal_when_relative_libraries` | 新規 | ✅ | VS Code 1.141.0 と stable で pass<br>`テスト結果/20261108012829_3a58704c_結合テスト.log` |
 | VS Code 拡張機能の結合テスト全体 | 全実行 | 実行のみ | ✅ | 70 テスト pass（VS Code 1.141.0・stable）<br>`テスト結果/20261108012829_3a58704c_結合テスト.log` |
-| VS Code 拡張機能の結合テスト全体（develop の取り込みの後） | 全実行 | 実行のみ | ✅ | #352 の `test_normal_when_config_color_scheme` と `test_normal_when_relative_libraries` の両方を含む 72 テスト pass（VS Code 1.141.0・stable）<br>`テスト結果/20261108025458_1d670327_結合テスト.log` |
+| VS Code 拡張機能の結合テスト全体（develop の取り込みの後） | 全実行 | 実行のみ | ✅ | [記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/pull/352) の `test_normal_when_config_color_scheme` と `test_normal_when_relative_libraries` の両方を含む 72 テスト pass（VS Code 1.141.0・stable）<br>`テスト結果/20261108025458_1d670327_結合テスト.log` |
 
 結合テストで、拡張機能のビルドが `esbuild.wasm` を `dist/` に複写しておらず、esbuild-wasm の `self` も当てていないため `bundleExtensions` が拡張機能ホストで動かないことが分かった。モジュール構成『VS Code 拡張機能 / ビルドと配布』の `buildExtension` の記述どおりに実装し（[3a58704c](https://github.com/shuhei1101/mdmark/commit/3a58704c)）、単体テストの期待値に足した（[abd308f4](https://github.com/shuhei1101/mdmark/commit/abd308f4)・[34e7d120](https://github.com/shuhei1101/mdmark/commit/34e7d120)）。esbuild は束ねるときに `self` の名前に数字を付ける（`var self2 = globalThis;`）。
 

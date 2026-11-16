@@ -53,7 +53,7 @@
 ## 実装
 
 - 実装で決めたこと（モジュール構成に書いた）: `SetupError`（`exitCode` 1〜3）と `readYamlFile`（パス）、`hasTmux`・`hasSession`（状態）、`listConfigKeys` の `resolveRef`、`readPort` と待ち受けのポートの定数を `src/plugin/port.ts` へ移した（`setup.js` と SessionStart のフックが MCP サーバー全体を読み込まないため。`http.ts` から同じ名前で export し直している）、ビルドが `templates/mdmark.config.yaml` を `plugin/templates/` へ写す
-- ビルドの移行の点検（`scripts/migrations.ts`）の対象に `mdmark.settings.schema.json` を足し、作業ツリーに無い Schema は比べないようにした。#347 で入った `no-steps.yaml` の端末の設定の Schema の行で、develop の `npm run build` が止まっていた
+- ビルドの移行の点検（`scripts/migrations.ts`）の対象に `mdmark.settings.schema.json` を足し、作業ツリーに無い Schema は比べないようにした。[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) で入った `no-steps.yaml` の端末の設定の Schema の行で、develop の `npm run build` が止まっていた
 - 開発コマンド: 変えたのはビルドの入口と生成物で、`npm run build` のコマンドは変わらないため、開発コマンドのページは書き換えていない
 - 束ねた `plugin/bin/setup.js` と `plugin/scripts/session-start.js` を手元でビルドして流し、`status`・`write-settings`・`keys`・`write-config`・`start-server`（tmux で `dist/cli.js serve` を起動し `tools/list` まで）と、待ち受けていないとき・いるときの SessionStart のフックを確かめた。束ねた生成物は、ほかのプラグインの生成物と同じくリリースで入れるため commit していない
 
@@ -73,7 +73,7 @@
 
 Red のログ（`2de9eb1e`）は `3fa99b49` で取った。その後の `3b5bd716` は Biome の整形だけで、テストの中身は変えていない。
 
-develop（#353）の取り込みの後: `test_list_tool_names` の期待値を、常駐サーバーのツールが 6 つになったことに合わせて 3 つを含むことにした（`83fe7b97`）。単体テストは 1716 件が全 pass（[テスト結果/20261107183746_3a1be07a_単体テスト.log](./テスト結果/20261107183746_3a1be07a_単体テスト.log)。`tests/unit/src/viewer/` のブラウザのテスト 2 件が全件の実行の負荷で 1 回待ちを超えたため、流し直した結果を置いた）
+develop（[端末の設定のフォルダに CSS のテンプレートを配置し、MCP で一覧・登録・配置する](https://github.com/shuhei1101/mdmark/pull/353)）の取り込みの後: `test_list_tool_names` の期待値を、常駐サーバーのツールが 6 つになったことに合わせて 3 つを含むことにした（`83fe7b97`）。単体テストは 1716 件が全 pass（[テスト結果/20261107183746_3a1be07a_単体テスト.log](./テスト結果/20261107183746_3a1be07a_単体テスト.log)。`tests/unit/src/viewer/` のブラウザのテスト 2 件が全件の実行の負荷で 1 回待ちを超えたため、流し直した結果を置いた）
 
 lint: [テスト結果/20261107183746_3a1be07a_lint.log](./テスト結果/20261107183746_3a1be07a_lint.log)（違反は無し。警告は既存の `src/cli/embed.ts` の 2 件）
 

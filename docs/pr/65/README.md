@@ -7,8 +7,8 @@
 ## 背景
 
 [Issue #25](https://github.com/shuhei1101/mdmark/issues/25) の要望。
-[PR #19](https://github.com/shuhei1101/mdmark/pull/19)（起点 [Issue #4](https://github.com/shuhei1101/mdmark/issues/4)）の要件.md の `## スコープ外` に切り出した項目で、#4 の記法の一覧に無いため含めなかった。
-PR #19 はマージ済みで、印の読み取り（`src/render/marks.ts`・`src/render/syntax/`）は develop にある。
+[PR #19](https://github.com/shuhei1101/mdmark/pull/19)（起点 [Issue #4](https://github.com/shuhei1101/mdmark/issues/4)）の要件.md の `## スコープ外` に切り出した項目で、[HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/issues/4) の記法の一覧に無いため含めなかった。
+PR [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) はマージ済みで、印の読み取り（`src/render/marks.ts`・`src/render/syntax/`）は develop にある。
 今のコードブロックは、`pre` に読み上げの名前と `tabindex` を付けるだけで描いている。
 
 ## 計画書

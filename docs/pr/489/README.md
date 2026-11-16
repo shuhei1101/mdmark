@@ -1,4 +1,4 @@
-# src/files.yaml に #352・#354 で追加した行の無い 10 ファイルの行を追加する
+# src/files.yaml に [記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/pull/352)・[プラグインに global-setup・setup のスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/pull/354) で追加した行の無い 10 ファイルの行を追加する
 
 ## 概要
 

@@ -18,8 +18,8 @@ release/v0.7.0 の E2E（[E2E 実行 Issue #56](https://github.com/shuhei1101/md
 | ファイル | 中身 |
 | --- | --- |
 | [要件](./要件.md) | 要望の整理と影響する UC 一覧 |
-| [Claude Code プラグイン](./ClaudeCodeプラグイン.md) | Claude Code プラグインの計画書（#89） |
-| [ライブラリ本体](./ライブラリ本体.md) | ライブラリ本体の計画書（#90） |
+| [Claude Code プラグイン](./ClaudeCodeプラグイン.md) | Claude Code プラグインの計画書（[E2E『ClaudeCodeにプラグインを入れる』が、Claude Code 2.1.309 の `claude plugin list` に無い `Read from:` の行を探して落ちる](https://github.com/shuhei1101/mdmark/issues/89)） |
+| [ライブラリ本体](./ライブラリ本体.md) | ライブラリ本体の計画書（[E2E『文書をHTML文字列にする』が、`data-source-line` を持つ段落を `<p>` の文字列で探して落ちる](https://github.com/shuhei1101/mdmark/issues/90)） |
 
 ## タスク一覧
 

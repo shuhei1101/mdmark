@@ -8,8 +8,8 @@
 
 [Issue #23](https://github.com/shuhei1101/mdmark/issues/23) の要望。
 [PR #19](https://github.com/shuhei1101/mdmark/pull/19)（起点 [Issue #4](https://github.com/shuhei1101/mdmark/issues/4)）で入れた表の印は、並べ替え・ピン止め・絞り込み・折り畳みを持つ。
-上の 5 つの機能は PR #19 の要件.md の `## スコープ外` に切り出した。
-PR #19 はマージ済みで、表の印の実装（`src/render/syntax/tables.ts`・`src/parts/table.ts`・`src/interact/tables.ts`）は develop にある。
+上の 5 つの機能は PR [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) の要件.md の `## スコープ外` に切り出した。
+PR [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) はマージ済みで、表の印の実装（`src/render/syntax/tables.ts`・`src/parts/table.ts`・`src/interact/tables.ts`）は develop にある。
 
 ## 計画書
 

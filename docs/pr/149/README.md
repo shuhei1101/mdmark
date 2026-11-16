@@ -17,8 +17,8 @@ release/v0.8.0 の E2E で fail した 2 つの spec を、実装に合う読み
 | ファイル | 中身 |
 | --- | --- |
 | [要件](./要件.md) | 要望の整理と影響する UC 一覧 |
-| [Claude Code プラグイン](./ClaudeCodeプラグイン.md) | Claude Code プラグインの計画書（#146） |
-| [ライブラリ本体](./ライブラリ本体.md) | ライブラリ本体の計画書（#147） |
+| [Claude Code プラグイン](./ClaudeCodeプラグイン.md) | Claude Code プラグインの計画書（[E2E『ClaudeCodeで索引を書き換えて点検してから配る』の test_normal が、markdown で返る find_docs の本文を JSON として読んで fail する](https://github.com/shuhei1101/mdmark/issues/146)） |
+| [ライブラリ本体](./ライブラリ本体.md) | ライブラリ本体の計画書（[E2E『表から用語集に用語を入れる』のやめた言い方の列の 2 件が、has に #doc から始まるロケーターを渡してツールチップを見つけられず fail する](https://github.com/shuhei1101/mdmark/issues/147)） |
 
 ## タスク一覧
 

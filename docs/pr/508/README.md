@@ -8,8 +8,8 @@
 ## 背景
 
 束の親 Issue [#507](https://github.com/shuhei1101/mdmark/issues/507) の要望で、子 Issue [#464](https://github.com/shuhei1101/mdmark/issues/464)・[#466](https://github.com/shuhei1101/mdmark/issues/466) を 1 つの作業 PR で進める。
-#464 は、map で作り直すとしてクローズした [#404](https://github.com/shuhei1101/mdmark/issues/404)・[#405](https://github.com/shuhei1101/mdmark/issues/405)・[#357](https://github.com/shuhei1101/mdmark/issues/357)・[#333](https://github.com/shuhei1101/mdmark/issues/333) の要件を、map（[#445](https://github.com/shuhei1101/mdmark/pull/445)）へ追加する。
-#466 は、エージェントがフォルダ構成を言語 `text` のコードブロックで記載し、`export_html` も描画の確認も警告を出さず、利用者に指摘されるまで気づかなかったことによる。
+[新しい図 map に、シーケンス図の参加者の操作・loop と alt の枠・タッチでのドラッグ・汎用の箱の種類の表示名を追加する](https://github.com/shuhei1101/mdmark/issues/464) は、map で作り直すとしてクローズした [#404](https://github.com/shuhei1101/mdmark/issues/404)・[#405](https://github.com/shuhei1101/mdmark/issues/405)・[#357](https://github.com/shuhei1101/mdmark/issues/357)・[#333](https://github.com/shuhei1101/mdmark/issues/333) の要件を、map（[#445](https://github.com/shuhei1101/mdmark/pull/445)）へ追加する。
+[罫線でフォルダ構成を記載したのに言語が tree でないコードブロックを点検で警告し、使い方集の索引からファイルツリーの記載方法に行き着けるようにする](https://github.com/shuhei1101/mdmark/issues/466) は、エージェントがフォルダ構成を言語 `text` のコードブロックで記載し、`export_html` も描画の確認も警告を出さず、利用者に指摘されるまで気づかなかったことによる。
 
 ## 計画書
 

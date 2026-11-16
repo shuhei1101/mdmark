@@ -23,7 +23,7 @@
 | テスト | [tests/unit/vscode/src/webview/preview.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode/src/webview/preview.browser.test.ts) ほか `tests/unit/vscode/src/webview/` | Webview の単体テスト（Vitest のブラウザ） | React のコンポーネントと hook の単体テストに書き換える |
 | テスト | `vscode/tests/integration/` | 拡張機能ホストで実行する結合テスト（`inspect` で Webview の DOM を確認する） | Webview の DOM の class・属性を変えた分だけ期待値を修正する |
 | テスト | `tests/e2e/単一ユースケース/` の VS Code のシナリオ | VS Code の E2E | 実行のみ |
-| モック | [dev/mock/pages/vscode-preview/](https://github.com/shuhei1101/mdmark/blob/develop/dev/mock/pages/vscode-preview/) | パネルのモック HTML（#69・#181・#196） | Storybook のストーリーへ移す |
+| モック | [dev/mock/pages/vscode-preview/](https://github.com/shuhei1101/mdmark/blob/develop/dev/mock/pages/vscode-preview/) | パネルのモック HTML（[VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/pull/69)・[見た目のテーマを選べるようにし、プレビューから設定を開けるようにする](https://github.com/shuhei1101/mdmark/pull/181)・[VS Code の差分ビューで開いた Markdown の変更を、mdmark のプレビューに色分けで表示する](https://github.com/shuhei1101/mdmark/pull/196)） | Storybook のストーリーへ移す |
 
 <!-- /table -->
 

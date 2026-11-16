@@ -37,7 +37,7 @@
 | --- | --- | --- |
 | 単一ユースケース設計 | `076685e8..0887d22e` | VSCodeでプレビューを開く・HTMLに書き出す・記載した内容をプレビューに映す |
 | 単一ユースケース設計 | `0887d22e..7f1f1b22` | レビューの指摘の修正（色分けのライブラリの手元のコピーを `@highlightjs/cdn-assets` の `es/` と明記） |
-| インターフェース定義設計 | `ef884572..4703c5ea` | プレビューを再描画する・プレビューを開く・HTMLに書き出すと設定（VS Code 拡張機能）。develop の取り込み（#483）を含む |
+| インターフェース定義設計 | `ef884572..4703c5ea` | プレビューを再描画する・プレビューを開く・HTMLに書き出すと設定（VS Code 拡張機能）。develop の取り込み（[dev-docs が配信から除いている docs/mock/files.yml のバイナリの素材 4 行を修正する](https://github.com/shuhei1101/mdmark/pull/483)）を含む |
 | モジュール構成設計 | `1b4d4ae8..11d595b1` | 設定（`tooltips`・`syntax` の取り出し・色分けのライブラリの URL を修正する・`libraryOrigins` の `syntax`）・プレビュー（panel.ts）・書き出し（相対パスの色分けのライブラリを埋める・import map）。インターフェース定義の任意の指摘（IF-472-21 の再読み込みで比べる origin に `mermaid.url`）の修正を含む |
 | モジュール構成設計 | `4ea9af36..0ad400c7` | レビューの任意の指摘の修正（書き出しで `config.syntax` を置き換える・`buildCsp` の `syntax.url` の origin） |
 | モジュール構成設計 | `308b8fa5..17a18454` | 実装で判明した責務の移動。`usedSyntaxLanguages` を `src/render/used.ts` から import する（[ライブラリ本体](./ライブラリ本体.md)）。IF-472-15 の制約「埋める色分けのライブラリ」の参照先も直す |

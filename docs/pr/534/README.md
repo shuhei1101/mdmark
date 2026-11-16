@@ -9,7 +9,7 @@
 
 [#467](https://github.com/shuhei1101/mdmark/issues/467) の要望。
 [#445](https://github.com/shuhei1101/mdmark/pull/445)（[#324](https://github.com/shuhei1101/mdmark/issues/324) の作業 PR）で map を追加し、[#464](https://github.com/shuhei1101/mdmark/issues/464) で map のシーケンス図に loop・alt の枠などを追加した。
-#445 では今の `flow`・`sequence` を残し、資料 A-38 の「廃止の進め方」で、変換のスクリプトを用意してから廃止するとしていた（#445 の要件.yaml のスコープ外）。
+[Mermaid と補足で書き、自動配置で描いて階層を辿れる新しい図（map）を追加する](https://github.com/shuhei1101/mdmark/pull/445) では今の `flow`・`sequence` を残し、資料 A-38 の「廃止の進め方」で、変換のスクリプトを用意してから廃止するとしていた（[Mermaid と補足で書き、自動配置で描いて階層を辿れる新しい図（map）を追加する](https://github.com/shuhei1101/mdmark/pull/445) の要件.yaml のスコープ外）。
 [#290](https://github.com/shuhei1101/mdmark/issues/290)（既存の文書の図を map へ移行する）は、この変換を使う側にあたる。
 
 ## 計画書

@@ -12,7 +12,7 @@
 - [#267](https://github.com/shuhei1101/mdmark/issues/267): Firefox で hover で開いた用語のツールチップが同じ文書のリンクを覆い、E2E『複数の文書を1枚のHTMLにまとめる』の `test_normal`・`test_normal_when_aliases` が Firefox だけ時間切れで fail する。[PR #263](https://github.com/shuhei1101/mdmark/pull/263) の E2E テスト作成で見つかった
 - [#273](https://github.com/shuhei1101/mdmark/issues/273): E2E『図を拡大・縮小・移動する』の `test_normal_when_embedded_chart` で、拡大してから余白をドラッグしても `scrollLeft` が増えず、Chromium と Firefox で fail する。[PR #268](https://github.com/shuhei1101/mdmark/pull/268) のレビューで見つかった
 
-#267 と #273 は Sprint v0.10.0 の E2E 実行（[#255](https://github.com/shuhei1101/mdmark/issues/255)）を fail させる。
+[Firefox で、hover で開いた用語のツールチップが同じ文書のリンクを覆い、押せない](https://github.com/shuhei1101/mdmark/issues/267) と [E2E の test_normal_when_embedded_chart で、拡大してから余白をドラッグしても図が動かない](https://github.com/shuhei1101/mdmark/issues/273) は Sprint v0.10.0 の E2E 実行（[#255](https://github.com/shuhei1101/mdmark/issues/255)）を fail させる。
 
 ## 計画書
 

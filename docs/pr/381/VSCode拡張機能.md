@@ -30,8 +30,8 @@
 | インターフェース定義設計 | `276f06b9..2395facd` | - |
 | モジュール構成設計 | `2395facd..1e4ba000` | - |
 | モジュール構成設計 | `1e4ba000..fe46b4f6` | レビューの任意の指摘の修正 |
-| インターフェース定義設計・モジュール構成設計 | `fe46b4f6..551137eb` | develop（#378）の取り込みの競合の解消 |
-| インターフェース定義設計 | `551137eb..7279cdff` | 取り込んだ #378 の想定値 1 件が文字列として読めない誤りの修正 |
+| インターフェース定義設計・モジュール構成設計 | `fe46b4f6..551137eb` | develop（[VS Code 拡張機能のプレビューで、設定の aliases のエイリアスのツールチップを出す](https://github.com/shuhei1101/mdmark/pull/378)）の取り込みの競合の解消 |
+| インターフェース定義設計 | `551137eb..7279cdff` | 取り込んだ [VS Code 拡張機能のプレビューで、設定の aliases のエイリアスのツールチップを出す](https://github.com/shuhei1101/mdmark/pull/378) の想定値 1 件が文字列として読めない誤りの修正 |
 
 ## テスト結果
 
@@ -41,7 +41,7 @@ develop（[PR #378](https://github.com/shuhei1101/mdmark/pull/378) を含む）�
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/vscode/src/config.test.ts` | 全実行 | 変更 | ✅ | `test_load_config_when_labels` を追加（#378 の aliases のテストと並べた）<br>`テスト結果/20261108073657_551137eb_単体テスト.log` |
+| `tests/unit/vscode/src/config.test.ts` | 全実行 | 変更 | ✅ | `test_load_config_when_labels` を追加（[VS Code 拡張機能のプレビューで、設定の aliases のエイリアスのツールチップを出す](https://github.com/shuhei1101/mdmark/pull/378) の aliases のテストと並べた）<br>`テスト結果/20261108073657_551137eb_単体テスト.log` |
 | 単体テストの全件（`npm run test:unit`） | 全実行 | 実行のみ | ✅ | 1753 件 pass<br>`テスト結果/20261108073657_551137eb_単体テスト.log` |
 
 ### 結合

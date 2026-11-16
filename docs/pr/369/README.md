@@ -10,7 +10,7 @@
 「HTML に書き出す」（`vscode/src/export/export.ts` の `readExportConfig`）は、相対パスの `libraries` と `html-scripts.url` を `file:` の URL にして HTML に入れる。
 file:// で開いたページの origin は `null` になり、Chromium 系のブラウザは `file:` のモジュールの動的 `import()` を CORS で止めるため、そのマーカーと範囲に知らせの枠が出る。「ブラウザで開く」「PDF に印刷する」も同じ HTML を開く。
 
-[PR #347](https://github.com/shuhei1101/mdmark/pull/347) で `extensions` は esbuild-wasm でまとめて `data:` の URL で HTML に埋める構造に修正した。`libraries`・`html-scripts.url` は PR #347 の前からある挙動のため、この Issue に切り出した。
+[PR #347](https://github.com/shuhei1101/mdmark/pull/347) で `extensions` は esbuild-wasm でまとめて `data:` の URL で HTML に埋める構造に修正した。`libraries`・`html-scripts.url` は PR [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) の前からある挙動のため、この Issue に切り出した。
 [#190](https://github.com/shuhei1101/mdmark/issues/190)（mermaid の描画）は、この PR の埋め方の後に進める。
 
 ## 計画書
@@ -25,7 +25,7 @@ file:// で開いたページの origin は `null` になり、Chromium 系の�
 - [x] ~~初期構築~~（既存リポジトリのため対象外）
 - [x] ~~リバースエンジニアリング~~（現状設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（esbuild-wasm でまとめたモジュールを `data:` の URL で読む経路は [#349](https://github.com/shuhei1101/mdmark/pull/349) と PR #347 で確認済み）
+- [x] ~~PoC 検証~~（esbuild-wasm でまとめたモジュールを `data:` の URL で読む経路は [#349](https://github.com/shuhei1101/mdmark/pull/349) と PR [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) で確認済み）
 - [x] ~~複合ユースケース設計~~（影響なし: 既存フローの範囲内）
 - [x] ~~デザインスタイル選定~~（利用者に見える画面の見た目を変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

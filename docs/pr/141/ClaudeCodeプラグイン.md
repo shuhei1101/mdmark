@@ -51,7 +51,7 @@ PoC 検証で確かめること:
 
 ## PoC 結果
 
-結論: 成立。PoC PR は #142（検証コードの commit: [0b22e50](https://github.com/shuhei1101/mdmark/commit/0b22e50)）。
+結論: 成立。PoC PR は [PoC: MCP の常駐サーバーへの HTTP の接続と PreToolUse のフックでの作業フォルダの受け渡し](https://github.com/shuhei1101/mdmark/pull/142)（検証コードの commit: [0b22e50](https://github.com/shuhei1101/mdmark/commit/0b22e50)）。
 
 確かめた環境: Claude Code 2.1.310・Node v24.14.0・`@modelcontextprotocol/server` 2.3.1（WSL2）。
 

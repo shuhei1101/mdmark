@@ -8,7 +8,7 @@
 
 [Issue #180](https://github.com/shuhei1101/mdmark/issues/180) の要望。
 [PR #176](https://github.com/shuhei1101/mdmark/pull/176)（[Issue #125](https://github.com/shuhei1101/mdmark/issues/125)）でライブラリ本体に設定の `aliases` と `mount` の `opts.aliases` を追加し、CLI の書き出しは `loadAliases` で作ったエイリアスを指定している。
-プレビューへの対応は PR #176 の要件.md の `## スコープ外` で別の要望として切り出した。
+プレビューへの対応は PR [エイリアス（用語・文書・コマンド・URL など）を Markdown の用語集に加えて設定の aliases で YAML からも登録できるようにする](https://github.com/shuhei1101/mdmark/pull/176) の要件.md の `## スコープ外` で別の要望として切り出した。
 今のプレビューは設定ファイルを重ねて参照する（[#163](https://github.com/shuhei1101/mdmark/issues/163)）が、`aliases` を参照せず、Webview の `mount` の呼び出しにもエイリアスを指定していない。
 
 ## 計画書

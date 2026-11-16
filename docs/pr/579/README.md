@@ -8,7 +8,7 @@
 
 [Issue #529](https://github.com/shuhei1101/mdmark/issues/529) の要望。
 画面設計『文書』の要素「表」は「続きがある側の端に影を出す」と記載しているが、`src/index.css` の表は [#283](https://github.com/shuhei1101/mdmark/pull/283) から横スクロールの端の影を出さない。
-[#505](https://github.com/shuhei1101/mdmark/pull/505) の結合テストで見つかり、#505 は画面設計の記述をスコープ外として残した。
+[#505](https://github.com/shuhei1101/mdmark/pull/505) の結合テストで見つかり、[描いた文書の表示を改善する（表の列の幅の自動計算・ファイルツリーの既定の全開き・コードブロックの帯の線の削除・目次で押した見出しのセクションを開く）](https://github.com/shuhei1101/mdmark/pull/505) は画面設計の記述をスコープ外として残した。
 
 ## 計画書
 
