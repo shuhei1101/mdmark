@@ -488,7 +488,9 @@ test("test_render_map_sequence_when_participant_hit", async () => {
     /<span class="mdmark-diagram-node-hit"[^>]*>[\s\S]*?<\/span>/g,
   );
   expect(hits).toHaveLength(1);
-  expect(hits[0]).toMatch(/^<span class="mdmark-diagram-node-hit"[^>]*><\/span>$/);
+  expect(hits[0]).toMatch(
+    /^<span class="mdmark-diagram-node-hit"[^>]*><\/span>$/,
+  );
 });
 
 test("test_render_map_sequence_when_hints_off", async () => {
