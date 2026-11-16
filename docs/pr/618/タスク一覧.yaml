@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-16T11:42:24.117550+00:00'
   - process: PoC 検証
     status: skipped
-    reason: Mermaid が描いた SVG のノードは `{描画の ID}-{種類の接頭辞}-{ノードの ID}-{連番}` の id を持ち（tests/fixtures/mermaid-svg の flowchart・class の見本で確認）、描いた後に要素を囲む処理は map のノードのリンクで実績があり、未検証の技術機構に依存しないため
+    reason: strict で Mermaid が URL のノードを xlink:href の <a> で囲むことを実測し（計画書『ライブラリ本体』の実測）、mdmark はその <a> に href を付ける・外すだけで、未検証の技術機構に依存しないため
     updated_by: planner
     updated_at: '2026-11-16T11:42:24.117550+00:00'
   - process: 複合ユースケース設計
