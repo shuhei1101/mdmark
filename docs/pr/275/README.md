@@ -6,15 +6,15 @@
 
 ## 背景
 
-[Issue #274](https://github.com/shuhei1101/mdmark/issues/274) の要望。
+[既存の記法・点検への項目の追加 8 件（グラフの種類・表のセルの結合・図の定義の点検・タブの入れ子・注意書きのタイトル・ER 図・表のピン止め・コードの折りたたみ）](https://github.com/shuhei1101/mdmark/issues/274) の要望。
 既存の記法・点検へ項目を追加する子 Issue の束で、子ごとの範囲と決まったことは子の Issue の本文が正。
 
-- [#159](https://github.com/shuhei1101/mdmark/issues/159): グラフの `type` は `line`・`bar`・`pie`・`scatter` の 4 つで、系列は 4 つまで
-- [#183](https://github.com/shuhei1101/mdmark/issues/183): 表のセルを結合する書き方が無く、見出しを多段・行見出しにできない
-- [#187](https://github.com/shuhei1101/mdmark/issues/187): `mdmark check`（MCP の `check`）は図の定義を見ず、重なり・はみ出しは Playwright のスクリーンショットを目で見て確かめている
-- [#191](https://github.com/shuhei1101/mdmark/issues/191): 外側のタブの中にタブを置くと、内側の閉じで外側の範囲が閉じる。タブ名を強調できない
-- [#216](https://github.com/shuhei1101/mdmark/issues/216): 注意書きにタイトル・`+`・入れ子が無く、コードの行末のマーカーは `++`・`--`・`highlight` だけ
-- [#249](https://github.com/shuhei1101/mdmark/issues/249): コードブロックに折りたたみとインデントの縦線が無い（折りたためるのは tree だけ）
+- [グラフの種類を Chart.js の主な種類まで増やし、5 つ以上の系列を描けるようにする](https://github.com/shuhei1101/mdmark/issues/159): グラフの `type` は `line`・`bar`・`pie`・`scatter` の 4 つで、系列は 4 つまで
+- [表のセルを結合し、見出しを多段・行見出しにできるようにする](https://github.com/shuhei1101/mdmark/issues/183): 表のセルを結合する書き方が無く、見出しを多段・行見出しにできない
+- [check で図の定義を点検し、重なり・はみ出し・線の横切り・ラベルの長さをずれとして返す](https://github.com/shuhei1101/mdmark/issues/187): `mdmark check`（MCP の `check`）は図の定義を見ず、重なり・はみ出しは Playwright のスクリーンショットを目で見て確かめている
+- [タブを入れ子にでき、見出しの太字のタブ名を強調して出す](https://github.com/shuhei1101/mdmark/issues/191): 外側のタブの中にタブを置くと、内側の閉じで外側の範囲が閉じる。タブ名を強調できない
+- [注意書きにタイトル・+・入れ子を付け、コードの行に focus・error・warning のマーカーを追加する](https://github.com/shuhei1101/mdmark/issues/216): 注意書きにタイトル・`+`・入れ子が無く、コードの行末のマーカーは `++`・`--`・`highlight` だけ
+- [すべてのコードブロックをインデントで折りたため、インデントに縦線を引く](https://github.com/shuhei1101/mdmark/issues/249): コードブロックに折りたたみとインデントの縦線が無い（折りたためるのは tree だけ）
 
 ## 計画書
 

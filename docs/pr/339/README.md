@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #266](https://github.com/shuhei1101/mdmark/issues/266) の要望。
-[#257](https://github.com/shuhei1101/mdmark/pull/257) で入った `refs/257/assets/scene.css` と `scene.js` は、拡張子を落とすと同じ ID `dev/mock/refs/257/assets/scene` になり、dev-docs が `dev/mock/files.yaml` を参照できない。
-[PR #263](https://github.com/shuhei1101/mdmark/pull/263) の実装で、対象外の逸脱として報告された（[差し戻し報告](https://github.com/shuhei1101/mdmark/pull/263#discussion_r4436993773)）。
+[dev/mock/files.yaml の #257 の scene.css と scene.js の ID を分ける](https://github.com/shuhei1101/mdmark/issues/266) の要望。
+[図の枠が、枠を持つ面や操作できる部品の枠の中で入れ子の枠にならないようにする](https://github.com/shuhei1101/mdmark/pull/257) で入った `refs/257/assets/scene.css` と `scene.js` は、拡張子を落とすと同じ ID `dev/mock/refs/257/assets/scene` になり、dev-docs が `dev/mock/files.yaml` を参照できない。
+[表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/pull/263) の実装で、対象外の逸脱として報告された（[差し戻し報告](https://github.com/shuhei1101/mdmark/pull/263#discussion_r4436993773)）。
 
 ## 計画書
 

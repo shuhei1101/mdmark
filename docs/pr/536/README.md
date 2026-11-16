@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #495](https://github.com/shuhei1101/mdmark/issues/495) の要望。
-[PR #494](https://github.com/shuhei1101/mdmark/pull/494)（[Issue #437](https://github.com/shuhei1101/mdmark/issues/437)）の現状調査で、`src/cli/` 以外にもフォルダ構成に載っていないファイルが見つかった。
-依存の [#455](https://github.com/shuhei1101/mdmark/issues/455) は取り下げで解消済み。
+[モジュール構成のフォルダ構成（directory）に、どのツリーにも載っていない src/・vscode/src/ のファイルの行を追加する](https://github.com/shuhei1101/mdmark/issues/495) の要望。
+[モジュール構成『ライブラリ本体 / CLI』のフォルダ構成に markdown-check.ts・issues.ts を追加する](https://github.com/shuhei1101/mdmark/pull/494)（[モジュール構成『ライブラリ本体 / CLI』のフォルダ構成に markdown-check.ts・issues.ts を追加する](https://github.com/shuhei1101/mdmark/issues/437)）の現状調査で、`src/cli/` 以外にもフォルダ構成に載っていないファイルが見つかった。
+依存の [モジュール構成『ライブラリ本体 / 操作』を物理ファイルごとの設計書に分ける](https://github.com/shuhei1101/mdmark/issues/455) は取り下げで解消済み。
 
 ## 計画書
 

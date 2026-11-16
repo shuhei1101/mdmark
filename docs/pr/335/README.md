@@ -6,7 +6,7 @@
 
 ## 背景
 
-[#291](https://github.com/shuhei1101/mdmark/issues/291) の不具合。[PR #280](https://github.com/shuhei1101/mdmark/pull/280) の reviewer の合格報告の「対象外の逸脱の報告」（[コメント](https://github.com/shuhei1101/mdmark/pull/280#discussion_r4451032628)）から切り出された。
+[ブロックの色分けで、1 行の段落だけの文書の変えていない段落を追加と判定する](https://github.com/shuhei1101/mdmark/issues/291) の不具合。[mount に比較元の Markdown との差分の強調・列の表示の通知・コメントの修正と削除と移動を追加する](https://github.com/shuhei1101/mdmark/pull/280) の reviewer の合格報告の「対象外の逸脱の報告」（[コメント](https://github.com/shuhei1101/mdmark/pull/280#discussion_r4451032628)）から切り出された。
 `colorDiffBlocks` は `computeDiff`（jsdiff の `diffLines` をそのまま使う）の行の比較結果をそのまま分類する。
 段落 `A`・`B`・`C` を比較元 `A`・`C`・`D` と比べると、空行どうしが一致する並びと段落 `C` が一致する並びが同じ長さになり、`C` が追加のブロックになる。
 

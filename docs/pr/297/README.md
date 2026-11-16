@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #246](https://github.com/shuhei1101/mdmark/issues/246) の要望。
+[VS Code 拡張機能の結合テストを回した作業ツリーで、単体テスト test_build_extension が落ちる](https://github.com/shuhei1101/mdmark/issues/246) の要望。
 `tests/unit/vscode/scripts/build.test.ts` の `test_build_extension` は、作業ツリーの `vscode/` を一時フォルダへコピーするとき `node_modules` だけを除外する。
 結合テスト（`npm --prefix vscode run test:integration`）が作成する git 管理外の `vscode/.vscode-test/`（取得した VS Code、約 2 GB）と `vscode/out/` もコピーするため、30 秒で時間切れになるか、最後の `out` が無いことの検証で失敗する。
-[PR #243](https://github.com/shuhei1101/mdmark/pull/243) の結合テスト作成で検出した（対象外の逸脱の報告）。
+[VS Code のプレビューを背面から表に戻したとき、作り直した Webview を前のスクロールの位置へ戻す](https://github.com/shuhei1101/mdmark/pull/243) の結合テスト作成で検出した（対象外の逸脱の報告）。
 
 ## 計画書
 

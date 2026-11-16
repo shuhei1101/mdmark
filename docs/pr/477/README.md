@@ -6,11 +6,11 @@
 
 ## 背景
 
-[#451](https://github.com/shuhei1101/mdmark/issues/451) の要望。
+[マーカーの設定を JSON で記載できるようにし、マーカーごとに設定の設計書を置く](https://github.com/shuhei1101/mdmark/issues/451) の要望。
 今のマーカーの設定は、空白で区切った単語を `キー=値`・`+機能`・位置の値に分けて参照する mdmark 独自の書き方で、値に空白を含められず、数・真偽・配列の型を持てず、知らないキーや値の誤りを検証できない。
 マーカーごとの設定（キー・型・既定・選べる値）をまとめた設計書も無い。
 キーの構成は、Issue の [ユーザーの追記](https://github.com/shuhei1101/mdmark/issues/451#issuecomment-6768376015) と [D-344・D-345 の回答](https://github.com/shuhei1101/mdmark/issues/451#issuecomment-6769163544) のとおり、資料 A-128 を正とする。
-`map`・`map-data` のマーカー（[#445](https://github.com/shuhei1101/mdmark/pull/445)）は、A-128 の構成の JSON のオブジェクトで既に参照している。
+`map`・`map-data` のマーカー（[Mermaid と補足で書き、自動配置で描いて階層を辿れる新しい図（map）を追加する](https://github.com/shuhei1101/mdmark/pull/445)）は、A-128 の構成の JSON のオブジェクトで既に参照している。
 ほかのリポジトリの文書の移行は、この PR のリリースの後にリポジトリごとの Issue で行う。
 
 ## 計画書

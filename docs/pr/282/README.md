@@ -6,7 +6,7 @@
 
 ## 背景
 
-[#167](https://github.com/shuhei1101/mdmark/issues/167) の要望。
+[--mdmark-color-bg を透明にすると、表の端の影・全画面の図・ツールチップの地が透ける](https://github.com/shuhei1101/mdmark/issues/167) の要望。
 MindStella のプレビューは資料の本文を周りの面になじませるため `.mdmark { --mdmark-color-bg: transparent; }` を当てており、表の左右の端に常に影が出る・全画面の図の地が透けて後ろの本文が重なる・構成図のツールチップの地が透ける。
 mdmark は `--mdmark-color-bg` を本文の地だけでなく、浮く部品・表の影の覆い・留める見出し・地の色を混ぜた塗りにも使っており、不透明を前提にした別の変数が無い。
 

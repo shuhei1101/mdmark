@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #24](https://github.com/shuhei1101/mdmark/issues/24) の要望。
-[PR #19](https://github.com/shuhei1101/mdmark/pull/19)（起点 [Issue #4](https://github.com/shuhei1101/mdmark/issues/4)）で入れたタブは、見出しで区切った範囲をタブで切り替えるまでを持ち、描いた直後は常に最初のタブを選ぶ。
+[拡張記法のタブで同じ組のタブの選択を揃え、選んだタブを覚える](https://github.com/shuhei1101/mdmark/issues/24) の要望。
+[HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19)（起点 [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/issues/4)）で入れたタブは、見出しで区切った範囲をタブで切り替えるまでを持ち、描いた直後は常に最初のタブを選ぶ。
 上の 2 つの機能は PR [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) の要件.md の `## スコープ外` に切り出した。
 PR [HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) はマージ済みで、タブの実装（`src/render/syntax/tabs.ts`・`src/parts/tabs.ts`・`src/interact/tabs.ts`）は develop にある。
 

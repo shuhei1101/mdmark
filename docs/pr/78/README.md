@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #62](https://github.com/shuhei1101/mdmark/issues/62) の要望。
-[PR #61](https://github.com/shuhei1101/mdmark/pull/61)（起点 [Issue #30](https://github.com/shuhei1101/mdmark/issues/30)）で、索引の用語にやめた言い方（`terms[].avoid`）を書けるようにし、本文に出たら点検が `avoided_term` で知らせるようにした。
+[用語集の表にやめた言い方の列を指定し、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/issues/62) の要望。
+[索引の用語にやめた言い方（avoid）を書けるようにし、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/pull/61)（起点 [索引の用語にやめた言い方（avoid）を書き、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/issues/30)）で、索引の用語にやめた言い方（`terms[].avoid`）を書けるようにし、本文に出たら点検が `avoided_term` で知らせるようにした。
 用語集の表のやめた言い方は、要望が索引の用語に限られていたため PR [索引の用語にやめた言い方（avoid）を書けるようにし、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/pull/61) の要件.md の `## スコープ外` に切り出した。
 PR [索引の用語にやめた言い方（avoid）を書けるようにし、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/pull/61) はマージ済みで、用語集の表の読み取り（`src/render/syntax/glossary.ts`）と、やめた言い方の点検（`src/knowledge/check.ts` の `findAvoidedTerms`）は develop にある。
 

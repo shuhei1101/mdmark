@@ -42,7 +42,7 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| `buildCsp` と同じ規則（`cspSource` の代わりにページの origin）で組んだ CSP のページで、mermaid 12.3.0 の本体と chunk を jsDelivr から読み込んで描く（Chromium） | CSP 違反が 0 件、7 種類の図すべてが SVG | ✅ 0 件・7/7 | [#384](https://github.com/shuhei1101/mdmark/pull/384)（closed） | ライト・ダークとも。jsDelivr への要求は 55 件（本体と chunk） |
+| `buildCsp` と同じ規則（`cspSource` の代わりにページの origin）で組んだ CSP のページで、mermaid 12.3.0 の本体と chunk を jsDelivr から読み込んで描く（Chromium） | CSP 違反が 0 件、7 種類の図すべてが SVG | ✅ 0 件・7/7 | [PoC: mermaid のまとめ方・CSS 変数のテーマ・プレビューの CSP](https://github.com/shuhei1101/mdmark/pull/384)（closed） | ライト・ダークとも。jsDelivr への要求は 55 件（本体と chunk） |
 
 結論: Chromium で成立。
 

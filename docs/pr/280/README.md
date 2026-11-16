@@ -6,8 +6,8 @@
 
 ## 背景
 
-[#222](https://github.com/shuhei1101/mdmark/issues/222) の要望。dev-docs の文書の画面（React の SPA）は本文を mdmark の `mount` で描く（[shuhei1101/dev-docs#36](https://github.com/shuhei1101/dev-docs/pull/36)）。
-今の `mount` は、ブロックの色分け（`diffMode: blocks`。[#121](https://github.com/shuhei1101/mdmark/issues/121) で追加）を `diffSource` の取り出し元を通してしか使えず、列の表示の切り替えを使う側へ通知しない。
+[mount に差分の強調・列の表示の通知・コメントの修正と削除と移動を追加する](https://github.com/shuhei1101/mdmark/issues/222) の要望。dev-docs の文書の画面（React の SPA）は本文を mdmark の `mount` で描く（[shuhei1101/dev-docs#36](https://github.com/shuhei1101/dev-docs/pull/36)）。
+今の `mount` は、ブロックの色分け（`diffMode: blocks`。[VS Code の Git の差分ビューで、Markdown のプレビューに変更箇所を色分けする](https://github.com/shuhei1101/mdmark/issues/121) で追加）を `diffSource` の取り出し元を通してしか使えず、列の表示の切り替えを使う側へ通知しない。
 `MdmarkCommentStore` は `load`・`save` だけを持ち、`mount` の戻り値は `update`・`destroy` だけを持つ。
 dev-docs#44・dev-docs#5 がこの Issue の完了を待っている。
 

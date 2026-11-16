@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #4](https://github.com/shuhei1101/mdmark/issues/4) の要望。
-[#16](https://github.com/shuhei1101/mdmark/pull/16) で入った土台は、印を機能のオン・オフと外部ライブラリの印の場所にだけ使い、それ以外の印は取り除いて本文だけを描く。
+[HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/issues/4) の要望。
+[Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/pull/16) で入った土台は、印を機能のオン・オフと外部ライブラリの印の場所にだけ使い、それ以外の印は取り除いて本文だけを描く。
 [Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/pull/16) は拡張記法と印刷時のタブの展開をこの Issue へ回している。
 
 ## 計画書
@@ -20,10 +20,10 @@
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] ~~PoC 検証~~（印の読み取り・DOM なしの `render`・`import()` での読み込みは [#17](https://github.com/shuhei1101/mdmark/pull/17) で確かめ、未検証の技術機構に依存しない）
+- [x] ~~PoC 検証~~（印の読み取り・DOM なしの `render`・`import()` での読み込みは [PoC: DOM なしの render・使うときだけの外部ライブラリの読み込み・@layer での上書きが成立するか](https://github.com/shuhei1101/mdmark/pull/17) で確かめ、未検証の技術機構に依存しない）
 - [x] ~~複合ユースケース設計~~（単一ユースケースの E2E で足りる）
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、見た目の方向を変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

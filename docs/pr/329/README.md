@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #284](https://github.com/shuhei1101/mdmark/issues/284) の要望。
+[タッチ端末で用語のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/issues/284) の要望。
 
-[PR #281](https://github.com/shuhei1101/mdmark/pull/281)（[#279](https://github.com/shuhei1101/mdmark/issues/279)。子 Issue [#170](https://github.com/shuhei1101/mdmark/issues/170)）で、図のツールチップと埋め込んだ HTML のヒントに、タッチのタップでの開閉の切り替えと、外の `pointerdown` で閉じる処理を追加した。
+[部品の操作の不具合を修正する（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/pull/281)（[部品の操作の不具合の修正 3 件（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/issues/279)。子 Issue [タッチ端末で、図のツールチップを開いた後に閉じられない](https://github.com/shuhei1101/mdmark/issues/170)）で、図のツールチップと埋め込んだ HTML のヒントに、タッチのタップでの開閉の切り替えと、外の `pointerdown` で閉じる処理を追加した。
 用語のツールチップ（`src/interact/terms.ts`）も同じ作りで、`:hover, :focus-within` の間は閉じない。iOS の Safari はタップした語に `:hover` を残すため、閉じる手段が Esc と `beforeprint` だけになる。
 PR [部品の操作の不具合を修正する（タッチ端末の図のツールチップ・Firefox の用語のツールチップ・拡大した図のドラッグ）](https://github.com/shuhei1101/mdmark/pull/281) では [タッチ端末で、図のツールチップを開いた後に閉じられない](https://github.com/shuhei1101/mdmark/issues/170) が図のツールチップだけを報告していたため、スコープ外とした。
 

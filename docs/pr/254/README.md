@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #178](https://github.com/shuhei1101/mdmark/issues/178) の要望。
+[mdmark の既存の文書を dev-docs.yaml に載せ、タグで引けるようにする](https://github.com/shuhei1101/mdmark/issues/178) の要望。
 mdmark の直下に `dev-docs.yaml` が無く、既存の文書は dev-docs で配信されていない。
 依存の [shuhei1101/dev-docs#4](https://github.com/shuhei1101/dev-docs/issues/4)（`/dev-docs:setup`）・[shuhei1101/dev-docs#32](https://github.com/shuhei1101/dev-docs/issues/32)（メタデータを列の対応だけにする）・[shuhei1101/dev-docs#34](https://github.com/shuhei1101/dev-docs/issues/34)（`files.yaml` の列の値と `implements`・`tests`）・[shuhei1101/alias-inject#37](https://github.com/shuhei1101/alias-inject/issues/37)（`alias_type` を行の属性にする）は閉じている。
 

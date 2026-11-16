@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #244](https://github.com/shuhei1101/mdmark/issues/244) の要望。
+[ER 図の部品を追加する（テーブル・列・関係を定義から描く）](https://github.com/shuhei1101/mdmark/issues/244) の要望。
 dev-docs は設計書の ER 図を Mermaid のコードのまま出しており、mdmark には ER 図の部品が無い。
-[#275](https://github.com/shuhei1101/mdmark/pull/275) の範囲から切り出し、先に完了させる。
+[既存の記法・点検への項目の追加 6 件（グラフの種類・表のセルの結合・図の定義の点検・タブの入れ子・注意書きのタイトル・コードの折りたたみ）](https://github.com/shuhei1101/mdmark/pull/275) の範囲から切り出し、先に完了させる。
 
 ## 計画書
 

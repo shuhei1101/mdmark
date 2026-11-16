@@ -71,7 +71,7 @@ flowchart LR
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| 配布物の読み込み（Linux 版 VS Code 1.143.1 + `xvfb-run`） | `version()` が `v0.6.0` で、見本の要素が見本どおりの数だけ描かれる | ✅ 全て一致 | [#70](https://github.com/shuhei1101/mdmark/pull/70)（closed） | 見出し 2 が 6・表 1・注意書き 1・図 2（箱 5）・ヒント 2・自作の図 1。初回の報告まで 641〜845 ms（jsDelivr のキャッシュが冷えた最初の実行は 5,045 ms） |
+| 配布物の読み込み（Linux 版 VS Code 1.143.1 + `xvfb-run`） | `version()` が `v0.6.0` で、見本の要素が見本どおりの数だけ描かれる | ✅ 全て一致 | [PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)（closed） | 見出し 2 が 6・表 1・注意書き 1・図 2（箱 5）・ヒント 2・自作の図 1。初回の報告まで 641〜845 ms（jsDelivr のキャッシュが冷えた最初の実行は 5,045 ms） |
 | 配布物の読み込み（Windows の VS Code 1.141.0 で WSL を開く Remote） | 同上 | ✅ 全て一致 | 同上 | 初回の報告まで 1,400 ms |
 | CSP の `style-src`（`'unsafe-inline'` なし） | 違反の件数と出元を記録する | ✅ 記録した（20 件） | 同上 | 全て `style-src-attr` で出元は `dist/index.js`。図の箱の `style` 属性が止まり、箱の `left` が `12px` でなく `0px` になって位置が崩れる（Linux 版・Remote とも同じ） |
 | CSP の `style-src`（`'unsafe-inline'` あり） | 違反が 0 件 | ✅ 0 件 | 同上 | 箱の `left` が `12px`・`top` が `100px` で `style` 属性どおり（Linux 版・Remote とも） |

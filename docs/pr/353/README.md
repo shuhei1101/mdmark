@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #164](https://github.com/shuhei1101/mdmark/issues/164) の要望。
+[グローバルの設定のフォルダに CSS のテンプレートを置き、MCP で一覧・登録・配置できるようにする](https://github.com/shuhei1101/mdmark/issues/164) の要望。
 使う側の CSS は設定ファイルの `theme` で 1 つ指定するだけで、作った CSS をほかのリポジトリや文書で使い回す置き場所も、CSS ごとの説明を記載する仕組みも無い。
 AI が使えそうな CSS を探して選ぶ手段も無い。
 MCP のツールは `export_html`・`build_site`・`check` だけで、テンプレートを扱うツールは無い。
 
-端末の設定（`${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`、環境変数 `MDMARK_CONFIG` で上書き）は [#163](https://github.com/shuhei1101/mdmark/issues/163)（[PR #347](https://github.com/shuhei1101/mdmark/pull/347)）で入った。
+端末の設定（`${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`、環境変数 `MDMARK_CONFIG` で上書き）は [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする（プレビューにも theme の CSS を当てる）](https://github.com/shuhei1101/mdmark/issues/163)（[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347)）で入った。
 テンプレートのフォルダは、この端末の設定のフォルダに統一する。
 
 ## 計画書

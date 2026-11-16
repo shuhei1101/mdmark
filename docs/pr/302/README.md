@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #175](https://github.com/shuhei1101/mdmark/issues/175) の要望。
+[索引のタグの付け方の案内を、規約『タグと用語の登録』の取りこぼさない付け方に合わせる](https://github.com/shuhei1101/mdmark/issues/175) の要望。
 使い方集の `glossary` は、索引の `tags` と `main` の記載方法は説明しているが、どのタグを付与するかの判定は説明していない。
 タグの付与の判定は knowledge の規約『タグと用語の登録』（[shuhei1101/knowledge#85](https://github.com/shuhei1101/knowledge/issues/85) で改訂済み）を正本にする（D-109）。
 タグのマスター（語彙）は持たないと決め直した（D-169）ため、追加する工程は語彙に依らない。
-語彙そのものの削除は [#179](https://github.com/shuhei1101/mdmark/issues/179) で行う。
-mdmark の MCP の `list_tags` は [#156](https://github.com/shuhei1101/mdmark/issues/156) で削除済み。
+語彙そのものの削除は [索引のタグの語彙（マスター）と、語彙に無いタグの点検をやめる](https://github.com/shuhei1101/mdmark/issues/179) で行う。
+mdmark の MCP の `list_tags` は [MCP から索引の検索・編集のツール（find_docs・list_tags・update_index）を外す](https://github.com/shuhei1101/mdmark/issues/156) で削除済み。
 
 ## 計画書
 

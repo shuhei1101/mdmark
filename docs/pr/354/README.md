@@ -7,13 +7,13 @@
 
 ## 背景
 
-[Issue #165](https://github.com/shuhei1101/mdmark/issues/165) の要望。
+[プラグインにセットアップのスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/issues/165) の要望。
 プラグインは `.mcp.json` で `http://127.0.0.1:${MDMARK_PORT:-8782}/mcp` につなぐだけで、常駐サーバーは利用者が別に `mdmark serve` を起動しておく必要があり、落ちていてもそれを伝える仕組みが無い。
 手元では `setsid nohup` で起動したサーバーが残り、どこで動いているか・止め方・ログの見方が決まっていなかった。
 設定の項目は多いが、`mdmark init` は雛形を置くだけで、利用者にどうするかを聞きながら設定ファイルを作る手順が無い。
 
 [ユーザーのコメント](https://github.com/shuhei1101/mdmark/issues/165#issuecomment-6652543567) で、端末の設定と環境変数をツールの間で揃えること（`MDMARK_STATE_DIR` と状態の置き場所）と、dev-docs の `global-setup` を元に `global-setup`・`setup` の 2 つのスキルを作ることが範囲に加わった。
-端末の設定のパスと `MDMARK_CONFIG` の読み方は [#163](https://github.com/shuhei1101/mdmark/issues/163)（[#347](https://github.com/shuhei1101/mdmark/pull/347)）で入った。
+端末の設定のパスと `MDMARK_CONFIG` の読み方は [設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする（プレビューにも theme の CSS を当てる）](https://github.com/shuhei1101/mdmark/issues/163)（[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347)）で入った。
 
 ## 計画書
 

@@ -42,7 +42,7 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| PoC ブランチへの push で `vscode-release.yml`（`id-token: write`）を動かし、`npm --prefix vscode ci` で入れた vsce 4.1.1 の `getOIDCCredential('ShuheiNishikawa')` で交換する | 例外なく返り、トークンの長さが 1 以上、終了コード 0 | ✅ 長さ 942 | [#555](https://github.com/shuhei1101/mdmark/pull/555)（closed） | [run 43542400400](https://github.com/shuhei1101/mdmark/actions/runs/43542400400) |
+| PoC ブランチへの push で `vscode-release.yml`（`id-token: write`）を動かし、`npm --prefix vscode ci` で入れた vsce 4.1.1 の `getOIDCCredential('ShuheiNishikawa')` で交換する | 例外なく返り、トークンの長さが 1 以上、終了コード 0 | ✅ 長さ 942 | [PoC: GitHub Actions の OIDC トークンを Marketplace のトークンに交換する](https://github.com/shuhei1101/mdmark/pull/555)（closed） | [run 43542400400](https://github.com/shuhei1101/mdmark/actions/runs/43542400400) |
 | 同上 | workflow が `secrets.*` を参照しない | ✅ 参照なし | 同上 | - |
 | 同上 | PoC の後も Marketplace のバージョンが 0.1.0・0.1.1 のまま | ✅ 0.1.0・0.1.1 | 同上 | - |
 

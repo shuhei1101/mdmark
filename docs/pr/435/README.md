@@ -6,8 +6,8 @@
 
 ## 背景
 
-束の親 [Issue #433](https://github.com/shuhei1101/mdmark/issues/433) の要望。
-子の [#345](https://github.com/shuhei1101/mdmark/issues/345)（`parts/back-to-top.ts`・`parts/chart.ts`）と [#346](https://github.com/shuhei1101/mdmark/issues/346)（`src/parts/` の外の 13 ファイル）は、規約『ドキュメント管理』の files.yaml（フォルダごとの `files.yaml` が 1 ファイル 1 行で持つ）に反する箇所を挙げている。
+束の親 [src/files.yaml に行が無いファイルの行を追加する 2 件（src/parts/back-to-top.ts・chart.ts と、src/parts/ の外の 13 ファイル）](https://github.com/shuhei1101/mdmark/issues/433) の要望。
+子の [src/files.yaml に src/parts/back-to-top.ts の行を足す](https://github.com/shuhei1101/mdmark/issues/345)（`parts/back-to-top.ts`・`parts/chart.ts`）と [src/files.yaml に、src/parts/ の外で行が無い 13 ファイルの行を追加する](https://github.com/shuhei1101/mdmark/issues/346)（`src/parts/` の外の 13 ファイル）は、規約『ドキュメント管理』の files.yaml（フォルダごとの `files.yaml` が 1 ファイル 1 行で持つ）に反する箇所を挙げている。
 
 ## 計画書
 

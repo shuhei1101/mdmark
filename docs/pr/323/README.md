@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #270](https://github.com/shuhei1101/mdmark/issues/270) の要望。
+[右側の目次を、ピン止めしていないときも画面の右端に置く](https://github.com/shuhei1101/mdmark/issues/270) の要望。
 広い幅の hover の出し方でピン止めしていないとき、右端の線と重ねて出す目次の枠が、画面の右端ではなく描く先の要素（`.mdmark`）の右端に出る。
 dev-docs の画面（幅 1600px）では、線が 1256〜1280px、描く先の要素が 312〜1304px にあり、画面の途中に出ている。
 
-右側の目次は [#166](https://github.com/shuhei1101/mdmark/pull/166) で新設し、[#320](https://github.com/shuhei1101/mdmark/pull/320) で hover で開く枠を画面に固定して縦の位置を決め、[#322](https://github.com/shuhei1101/mdmark/pull/322)（[#285](https://github.com/shuhei1101/mdmark/issues/285)）で右端の線も画面に固定した。
+右側の目次は [描いた文書の右側に目次を出し、節の開閉を H1 とまとめての操作に広げる](https://github.com/shuhei1101/mdmark/pull/166) で新設し、[描いた文書の表示の改善 2 件（見出し 1・2 の下の区切り線・右側の目次の上端とピン止めと hover の位置）](https://github.com/shuhei1101/mdmark/pull/320) で hover で開く枠を画面に固定して縦の位置を決め、[右側の目次の、hover で開いた目次に表のヘッダーが重なる不具合と、追従する目次の上端が見切れる不具合を修正する](https://github.com/shuhei1101/mdmark/pull/322)（[右側の目次で、hover で開いた目次に表のヘッダーが重なり、追従する目次の上端が見切れる](https://github.com/shuhei1101/mdmark/issues/285)）で右端の線も画面に固定した。
 線と枠の横の位置は `followPanelPosition` が入れる `--mdmark-side-toc-panel-end`（画面の右端から aside の右端まで）で決まり、aside は描く先の要素の右端に寄るため、描く先の要素の右端に出る。
 
 ## 計画書

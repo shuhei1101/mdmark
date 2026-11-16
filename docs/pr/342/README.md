@@ -7,7 +7,7 @@ viewer・書き出す HTML の部品・CDN で配る `dist/index.js` と公開�
 
 ## 背景
 
-[Issue #173](https://github.com/shuhei1101/mdmark/issues/173) の要望。
+[VS Code の webview の画面を React（Vite + shadcn/ui）へ移す](https://github.com/shuhei1101/mdmark/issues/173) の要望。
 knowledge の規約をバニラ TS から React 前提に改めたのに合わせて（[shuhei1101/knowledge#79](https://github.com/shuhei1101/knowledge/issues/79)・[shuhei1101/knowledge#80](https://github.com/shuhei1101/knowledge/issues/80)）、バニラ TS で実装した Webview の画面（`vscode/src/webview/`）を React へ移す。
 モックの手順は [shuhei1101/ai-monitor#3065](https://github.com/shuhei1101/ai-monitor/issues/3065) で Storybook + MSW に切り替わった。
 

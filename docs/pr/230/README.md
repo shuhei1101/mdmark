@@ -6,9 +6,9 @@ mdmark の準拠バージョンを AI Monitor v0.3.0 にし、サイトのレイ
 
 ## 背景
 
-[Issue #194](https://github.com/shuhei1101/mdmark/issues/194) の要望（AI Monitor の配布元が `v0.2.0..v0.3.0` の差分から起票した追従 Issue）。
+[AI Monitor v0.3.0 の配布物へ追従する](https://github.com/shuhei1101/mdmark/issues/194) の要望（AI Monitor の配布元が `v0.2.0..v0.3.0` の差分から起票した追従 Issue）。
 `ai-monitor-version.ini` は `v0.2.0` のままで、サイトのレイアウトの控え `ai-monitor-theme.yaml` は無い。
-v0.2.0 への追従（[Issue #15](https://github.com/shuhei1101/mdmark/issues/15)）は、初期構築で揃っていたためスコープ消失で閉じている。
+v0.2.0 への追従（[AI Monitor v0.2.0 の配布物へ追従する](https://github.com/shuhei1101/mdmark/issues/15)）は、初期構築で揃っていたためスコープ消失で閉じている。
 mdmark は v0.2.0 より後の配布元の develop の構成で作られたため、v0.3.0 との差分は一部のテンプレートの Schema・サイトのレイアウト・規約に限られる。
 
 ## 計画書

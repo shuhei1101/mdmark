@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #30](https://github.com/shuhei1101/mdmark/issues/30) の要望。
-[PR #27](https://github.com/shuhei1101/mdmark/pull/27)（起点 [Issue #5](https://github.com/shuhei1101/mdmark/issues/5)）で、索引の用語（`terms`）と、索引と文書のずれを返す点検（`checkIndex`）を入れた。
+[索引の用語にやめた言い方（avoid）を書き、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/issues/30) の要望。
+[文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27)（起点 [文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/issues/5)）で、索引の用語（`terms`）と、索引と文書のずれを返す点検（`checkIndex`）を入れた。
 用語のやめた言い方は、起点 Issue の点検の項目に無いため PR [文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27) の要件.md の `## スコープ外` に切り出した。
 PR [文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27) はマージ済みで、索引の形（`src/knowledge/index-shape.ts`）・点検（`src/knowledge/check.ts`）・索引の JSON Schema（`schemas/mdmark.index.schema.json`）は develop にある。
 

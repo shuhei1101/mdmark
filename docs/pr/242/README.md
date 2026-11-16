@@ -6,10 +6,10 @@ E2E の共通の準備 `openCommitDiff` が、VS Code 1.141.0 にあるコマン
 
 ## 背景
 
-[Issue #234](https://github.com/shuhei1101/mdmark/issues/234) の修正。
+[E2E『差分ビューの変更をプレビューで見る』の test_normal_when_commit_diff が、VS Code 1.141 に無いコマンド名「Timeline: Focus on Timeline View」を探して fail する](https://github.com/shuhei1101/mdmark/issues/234) の修正。
 [release PR #229](https://github.com/shuhei1101/mdmark/pull/229) の E2E（[E2E 実行 Issue #153](https://github.com/shuhei1101/mdmark/issues/153)）で、`差分ビューの変更をプレビューで見る.spec.ts` の `test_normal_when_commit_diff` が VS Code 1.141.0 で fail し、tester がテスト不備と切り分けた。
 `openCommitDiff` はコマンドパレットで `Timeline: Focus on Timeline View` を探すが、VS Code 1.141.0 の名前は `Explorer: Focus on Timeline View` だけだった。
-Issue が依存に置いた差分ビューの `Shift+Alt+D` の不具合（[Issue #233](https://github.com/shuhei1101/mdmark/issues/233)）は、[PR #238](https://github.com/shuhei1101/mdmark/pull/238) で release/v0.9.0 へ入っている。
+Issue が依存に置いた差分ビューの `Shift+Alt+D` の不具合（[差分ビューから Shift+Alt+D でプレビューを開く E2E が fail する（ヘルパー focusModifiedSide が削除した行の view zone を押してフォーカスが入らない）](https://github.com/shuhei1101/mdmark/issues/233)）は、[差分ビューの E2E のヘルパーが削除した行の view zone を押してフォーカスを入れられない不備を修正する](https://github.com/shuhei1101/mdmark/pull/238) で release/v0.9.0 へ入っている。
 
 ## 計画書
 

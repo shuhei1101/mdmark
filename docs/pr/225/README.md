@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #224](https://github.com/shuhei1101/mdmark/issues/224) は、計画の未着手の行のうち、既存の記法への項目の追加で触る場所（`src/render`・`src/parts`・`src/index.css`・部品設計・記法の一覧）が重なる [#128](https://github.com/shuhei1101/mdmark/issues/128)・[#135](https://github.com/shuhei1101/mdmark/issues/135)・[#137](https://github.com/shuhei1101/mdmark/issues/137) を束ねた親 Issue。
+[表の絞り込み欄とチップ・表とタブとステップの折りたたみの title= と closed・open・ファイルツリーの注釈とコピーと開閉を追加する](https://github.com/shuhei1101/mdmark/issues/224) は、計画の未着手の行のうち、既存の記法への項目の追加で触る場所（`src/render`・`src/parts`・`src/index.css`・部品設計・記法の一覧）が重なる [表の上に、全ての列を語で絞り込む欄と、適用中の条件のチップを出す](https://github.com/shuhei1101/mdmark/issues/128)・[表・タブ・ステップの折りたたみの見出しを title= で指定し、タブとステップに closed・open を追加する](https://github.com/shuhei1101/mdmark/issues/135)・[ファイルツリーの項目の注釈とコピーボタンを追加する](https://github.com/shuhei1101/mdmark/issues/137) を束ねた親 Issue。
 3 件とも、AI Monitor のドキュメントサイトの本文を mdmark の `mount` で描くように置き換える作業（[shuhei1101/ai-monitor#2990](https://github.com/shuhei1101/ai-monitor/pull/2990)）で、AI Monitor にあり mdmark に無い機能として起票された。
 [ファイルツリーの項目の注釈とコピーボタンを追加する](https://github.com/shuhei1101/mdmark/issues/137) は 2026-10-29 の話し合い（D-13・D-14・D-22・D-23）で、アイコン・`...`・開閉・ASCII の罫線へ範囲を広げた。
 [表の上に、全ての列を語で絞り込む欄と、適用中の条件のチップを出す](https://github.com/shuhei1101/mdmark/issues/128) の表全体の検索の欄とチップは、ユーザーの判断で対象外にした（[要件](./要件.md) のスコープ外）。

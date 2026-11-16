@@ -35,7 +35,7 @@
 
 ## テスト結果
 
-develop（[PR #378](https://github.com/shuhei1101/mdmark/pull/378) を含む）を取り込んだ merge commit `551137eb` で流し直した結果。
+develop（[VS Code 拡張機能のプレビューで、設定の aliases のエイリアスのツールチップを出す](https://github.com/shuhei1101/mdmark/pull/378) を含む）を取り込んだ merge commit `551137eb` で流し直した結果。
 
 ### 単体
 

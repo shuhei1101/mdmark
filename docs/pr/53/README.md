@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #50](https://github.com/shuhei1101/mdmark/issues/50) の不具合。
-[#7](https://github.com/shuhei1101/mdmark/issues/7) の作業 PR [#49](https://github.com/shuhei1101/mdmark/pull/49) の現状調査で見つかった。
+[配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50) の不具合。
+[文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/issues/7) の作業 PR [文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/pull/49) の現状調査で見つかった。
 配布物 `dist/index.js` は読み込み時（モジュールの最上位）に `new Intl.Segmenter("ja", { granularity: "word" })` を呼ぶ。
 Firefox が `Intl.Segmenter` を持つのは 125 からのため、Firefox 98〜124 では読み込んだ時点で例外になり、全ての公開関数が動かない。
-非機能要件『対応ブラウザ』の決定値は Firefox 98 以降で、[#27](https://github.com/shuhei1101/mdmark/pull/27)（v0.3.0）で用語の照合を入れたときから外れている。
+非機能要件『対応ブラウザ』の決定値は Firefox 98 以降で、[文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27)（v0.3.0）で用語の照合を入れたときから外れている。
 
 ## 計画書
 

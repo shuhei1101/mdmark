@@ -6,8 +6,8 @@ E2E『ClaudeCodeにプラグインを入れる』を流す人が、手元の HEA
 
 ## 背景
 
-[Issue #77](https://github.com/shuhei1101/mdmark/issues/77) の要望。
-[PR #72](https://github.com/shuhei1101/mdmark/pull/72) で足した E2E は、手元の HEAD に `plugin/server/mcp.js` があるかだけを見て、GitHub の同じ名前のブランチ（`shuhei1101/mdmark#{ブランチ}`）からプラグインを入れる。
+[E2E『ClaudeCodeにプラグインを入れる』で、手元の HEAD と GitHub のブランチの一致を確かめてから入れる](https://github.com/shuhei1101/mdmark/issues/77) の要望。
+[Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/pull/72) で足した E2E は、手元の HEAD に `plugin/server/mcp.js` があるかだけを見て、GitHub の同じ名前のブランチ（`shuhei1101/mdmark#{ブランチ}`）からプラグインを入れる。
 手元の HEAD が push されていない・GitHub のブランチと違う・detached のときに、手元と違う中身を入れて結果を判定してしまう。
 PR [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/pull/72) の reviewer の任意の指摘（[合格報告](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4359173232)）から切り出した。
 

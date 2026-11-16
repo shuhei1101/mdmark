@@ -6,11 +6,11 @@ Claude Code で mdmark の文書を書く人が、dev-docs の `search_docs` で
 
 ## 背景
 
-[#186](https://github.com/shuhei1101/mdmark/issues/186) の要望。
+[使い方集を dev-docs の配信元として配り、SessionStart を動線だけにして read_guide を外す](https://github.com/shuhei1101/mdmark/issues/186) の要望。
 プラグインを有効にすると、mdmark を使わないセッションにも使い方集の索引の表（20 行・1,395 文字）が SessionStart で入る。
 使い方集は MCP の `read_guide` で読むが、検索・返し済み・既読の仕組みが mdmark の側に無い。
 [追記のコメント](https://github.com/shuhei1101/mdmark/issues/186#issuecomment-6598893018) で、使い方集を参照せず書いた後も点検しなかったため、描画で「書き方の警告」が出る図が残った事例が報告され、書く前の参照と書いた後の点検の 2 工程の動線と、注入文の置き場所の書き分けが要望に加わった。
-依存の [#156](https://github.com/shuhei1101/mdmark/issues/156)（MCP から `find_docs`・`list_tags`・`update_index` を削除）と [#185](https://github.com/shuhei1101/mdmark/issues/185)（『文書の書き方』のページの追加）は完了済み。
+依存の [MCP から索引の検索・編集のツール（find_docs・list_tags・update_index）を外す](https://github.com/shuhei1101/mdmark/issues/156)（MCP から `find_docs`・`list_tags`・`update_index` を削除）と [使い方集の文を規約『文章の書き方』に合わせて直し、『文書の書き方』のページを追加する](https://github.com/shuhei1101/mdmark/issues/185)（『文書の書き方』のページの追加）は完了済み。
 
 ## 計画書
 

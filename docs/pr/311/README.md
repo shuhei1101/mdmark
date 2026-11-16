@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #215](https://github.com/shuhei1101/mdmark/issues/215) の要望（親 [#203](https://github.com/shuhei1101/mdmark/issues/203) の分割の子）。
+[脚注（［^1］ と行内の ^［…］）をツールチップと末尾のまとめで描く](https://github.com/shuhei1101/mdmark/issues/215) の要望（親 [本文の記法を追加する（マーカー・キー・脚注・注意書き・コードの行・details・cards・include・wide・csv・pagebreak）](https://github.com/shuhei1101/mdmark/issues/203) の分割の子）。
 脚注の書き方が記法の一覧に無く、`[^1]` は書いた文字のまま描かれる。補足は本文に混ぜて記載するしかない。
 
 ## 計画書

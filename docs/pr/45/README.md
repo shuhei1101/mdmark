@@ -7,9 +7,9 @@
 
 ## 背景
 
-[Issue #6](https://github.com/shuhei1101/mdmark/issues/6) の要望。
+[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の要望。
 今の mdmark は文書に書いた生の HTML をサニタイズして描くが、`html` のコードブロックはコードとして出す。
-図の部品の仕組みと、フロー図・シーケンス図・グラフの部品・図のツールチップ・図の拡大・縮小・移動は [#21](https://github.com/shuhei1101/mdmark/issues/21)（[#42](https://github.com/shuhei1101/mdmark/pull/42)）で入り、この Issue はその仕組みに載せる（[#42 の確認ログ](https://github.com/shuhei1101/mdmark/pull/42#discussion_r4302353569)）。
+図の部品の仕組みと、フロー図・シーケンス図・グラフの部品・図のツールチップ・図の拡大・縮小・移動は [図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/issues/21)（[図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/pull/42)）で入り、この Issue はその仕組みに載せる（[#42 の確認ログ](https://github.com/shuhei1101/mdmark/pull/42#discussion_r4302353569)）。
 チャートの拡大・縮小は [図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読む作り方の手順書・図の見た目の決まりを持たせる](https://github.com/shuhei1101/mdmark/issues/21) の図の部品と同じ決まりにする（[#42 の確認ログ](https://github.com/shuhei1101/mdmark/pull/42#discussion_r4302442247)）。
 埋め込んだ HTML に書いた任意のスクリプトは動かさない（D-22）。
 
@@ -22,7 +22,7 @@
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
 - [x] ~~PoC 検証~~（外部ライブラリを使うときだけ読み込む口・サニタイズ・図の枠の拡大・縮小・移動・図のツールチップは入っており、未検証の技術機構に依存しない）

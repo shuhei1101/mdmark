@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #91](https://github.com/shuhei1101/mdmark/issues/91) の報告。
+[クローンした直後に `npm ci` だけで `npm run typecheck` が通らない（tests/e2e が vscode/ の依存 @vscode/test-electron の型を引く）](https://github.com/shuhei1101/mdmark/issues/91) の報告。
 release/v0.7.0 の E2E（[E2E 実行 Issue #56](https://github.com/shuhei1101/mdmark/issues/56)・[release PR #85](https://github.com/shuhei1101/mdmark/pull/85)）で、単一『配布物をビルドして検査する』の `test_normal` が `npm run typecheck` の終了コード 1 で fail し、続く 7 件は serial のため流れなかった。
 直下の `tsconfig.json` は `tests` を含み、`tests/e2e/vscode.ts` が `vscode/tests/integration/run.ts` を import する。
 `run.ts` が import する `@vscode/test-electron` は `vscode/package.json` にだけあるため、直下の `npm ci` だけでは型を引けない。
-原因は [#69](https://github.com/shuhei1101/mdmark/pull/69)（`7fb28e4`）が足した import。
+原因は [VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/pull/69)（`7fb28e4`）が足した import。
 
 ## 計画書
 

@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #314](https://github.com/shuhei1101/mdmark/issues/314) の要望。
+[markdown-it を 15.0.3 に上げ、15.0.2 の勧告 2 件を解消する](https://github.com/shuhei1101/mdmark/issues/314) の要望。
 `package.json` の `markdown-it` は 15.0.2 で、勧告 GHSA-gfr2-rv44-r23c（リンク参照定義の 2 次の計算量によるサービス停止、CVSS 7.5）と GHSA-vfgh-jcmw-g37q（CVSS 3.7）がある。どちらも 15.0.3 で解消している。
-脚注の作業 PR [#311](https://github.com/shuhei1101/mdmark/pull/311) のライブラリ選定の調査で見つけ、別の変更として切り出した。
+脚注の作業 PR [脚注（［^1］ と行内の ^［…］）をツールチップと末尾の一覧で描く](https://github.com/shuhei1101/mdmark/pull/311) のライブラリ選定の調査で見つけ、別の変更として切り出した。
 
 ## 計画書
 

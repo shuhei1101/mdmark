@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #233](https://github.com/shuhei1101/mdmark/issues/233) の修正。
+[差分ビューから Shift+Alt+D でプレビューを開く E2E が fail する（ヘルパー focusModifiedSide が削除した行の view zone を押してフォーカスが入らない）](https://github.com/shuhei1101/mdmark/issues/233) の修正。
 [release PR #229](https://github.com/shuhei1101/mdmark/pull/229) の E2E（[E2E 実行 Issue #153](https://github.com/shuhei1101/mdmark/issues/153)）で、差分ビューから `Shift+Alt+D` でプレビューを開く 4 ケースが VS Code 1.141.0 で fail し、tester が実装バグと切り分けた。
 差分ビューで押した `Shift+Alt+D` は `no when clauses matched the context` で `mdmark.openPreviewToSide` が呼ばれず、コマンドパレットからは差分のパネルが開く。
-PoC（[#239](https://github.com/shuhei1101/mdmark/pull/239)）で、製品の `when` は差分ビューでも当たり、fail の原因は E2E のヘルパー `focusModifiedSide` のロケーターだと分かった（[確認ログ](./確認ログ.md)）。
+PoC（[PoC: VS Code 1.141.0 の差分エディターで当たるショートカットとボタンの when の条件](https://github.com/shuhei1101/mdmark/pull/239)）で、製品の `when` は差分ビューでも当たり、fail の原因は E2E のヘルパー `focusModifiedSide` のロケーターだと分かった（[確認ログ](./確認ログ.md)）。
 
 ## 計画書
 

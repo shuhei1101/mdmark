@@ -7,8 +7,8 @@
 
 ## 背景
 
-[Issue #358](https://github.com/shuhei1101/mdmark/issues/358) の要望。
-今のピン止めは、ボタンを押した列までの全ての列を表の左端に留める（[#19](https://github.com/shuhei1101/mdmark/pull/19) で作り、[#283](https://github.com/shuhei1101/mdmark/pull/283) で既定のピン止めと `pin=` を追加した）。
+[表のピン止めを、選んだ列だけを留められるようにし、留めた列はスクロールの位置で左端か右端に留める](https://github.com/shuhei1101/mdmark/issues/358) の要望。
+今のピン止めは、ボタンを押した列までの全ての列を表の左端に留める（[HTML コメントの印で表・注意書き・タブなどの表示を付ける拡張記法を作る](https://github.com/shuhei1101/mdmark/pull/19) で作り、[はみ出す表は既定で先頭の列をピン止めし、pin=・wide= と真偽値の ✓ 表示を追加する](https://github.com/shuhei1101/mdmark/pull/283) で既定のピン止めと `pin=` を追加した）。
 先頭の列が横に長いと、3 番目の列を留めたいときも先頭の列が留まり、表示できる範囲が狭くなる。
 
 ## 計画書

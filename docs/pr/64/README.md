@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #36](https://github.com/shuhei1101/mdmark/issues/36) の要望。
-[PR #32](https://github.com/shuhei1101/mdmark/pull/32)（[Issue #9](https://github.com/shuhei1101/mdmark/issues/9)）で作った `mdmark check` が点検するのは、設定の形・設定が指すファイル・`build` の対象・索引のずれ（`checkIndex`）だけで、文書の本文は点検しない。
+[mdmark check で文書の本文にある知らない印を知らせる](https://github.com/shuhei1101/mdmark/issues/36) の要望。
+[サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/pull/32)（[サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9)）で作った `mdmark check` が点検するのは、設定の形・設定が指すファイル・`build` の対象・索引のずれ（`checkIndex`）だけで、文書の本文は点検しない。
 対応表にも登録した拡張にも無い印は描くときに取り除かれるため、本文は描かれるが、書いた人は印が効いていないことに気づけない。
 PR [サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/pull/32) では、この点検をスコープ外にしていた。
 

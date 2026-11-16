@@ -6,16 +6,16 @@
 
 ## 背景
 
-[Issue #503](https://github.com/shuhei1101/mdmark/issues/503) がまとめる 4 件の要望。
+[描いた文書の表示の改善 4 件（表の列の幅の自動計算・ファイルツリーの既定の全開き・コードブロックの帯の線・右側の目次で押した見出しのセクションを開く）](https://github.com/shuhei1101/mdmark/issues/503) がまとめる 4 件の要望。
 
 | Issue | 今の描き方 |
 | --- | --- |
-| [#458](https://github.com/shuhei1101/mdmark/issues/458) | 列の幅はブラウザの表の配置に任せ、表は `width: max-content; max-width: 100%`、セルは `min-width: 6em`。短い値の列が細く折り返されたり、長い文の列が表の幅を使い切ったりする |
-| [#459](https://github.com/shuhei1101/mdmark/issues/459) | ファイルツリーは `depth` を省くとルートだけを開く |
-| [#460](https://github.com/shuhei1101/mdmark/issues/460) | コードブロックの帯に続く `pre` の上の枠線が、帯と本文の間の線になる |
-| [#501](https://github.com/shuhei1101/mdmark/issues/501) | 右側の目次の項目を押すと、見出しを囲む親のセクションだけを開き、押した見出し自身のセクションは閉じたまま |
+| [表の列の幅を、セルの文字の量と改行から既定で自動計算する](https://github.com/shuhei1101/mdmark/issues/458) | 列の幅はブラウザの表の配置に任せ、表は `width: max-content; max-width: 100%`、セルは `min-width: 6em`。短い値の列が細く折り返されたり、長い文の列が表の幅を使い切ったりする |
+| [ファイルツリーの既定を、全てのフォルダを開いた状態にする](https://github.com/shuhei1101/mdmark/issues/459) | ファイルツリーは `depth` を省くとルートだけを開く |
+| [コードブロックの言語のラベルの帯と本文の間の線を削除する](https://github.com/shuhei1101/mdmark/issues/460) | コードブロックの帯に続く `pre` の上の枠線が、帯と本文の間の線になる |
+| [右側の目次の項目を押したとき、押した見出し自身の閉じたセクションも開く](https://github.com/shuhei1101/mdmark/issues/501) | 右側の目次の項目を押すと、見出しを囲む親のセクションだけを開き、押した見出し自身のセクションは閉じたまま |
 
-依存していた [#451](https://github.com/shuhei1101/mdmark/issues/451)（マーカーの設定の JSON）・[#455](https://github.com/shuhei1101/mdmark/issues/455)（モジュール構成『操作』の分割）・[#440](https://github.com/shuhei1101/mdmark/issues/440)（手で開閉したセクションの保持）は解消済み。
+依存していた [マーカーの設定を JSON で記載できるようにし、マーカーごとに設定の設計書を置く](https://github.com/shuhei1101/mdmark/issues/451)（マーカーの設定の JSON）・[モジュール構成『ライブラリ本体 / 操作』を物理ファイルごとの設計書に分ける](https://github.com/shuhei1101/mdmark/issues/455)（モジュール構成『操作』の分割）・[手で開閉したセクションが、編集で描き直すたびにマーカーのとおりの開閉へ戻る](https://github.com/shuhei1101/mdmark/issues/440)（手で開閉したセクションの保持）は解消済み。
 
 ## 計画書
 

@@ -85,7 +85,7 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| 1. Vite 8 + `@vitejs/plugin-react` 6 + React Compiler（`@rolldown/plugin-babel` + `reactCompilerPreset`）+ Tailwind v4 の Webview を、今の `buildCsp` の CSP で描く | VS Code 1.141.0・stable（1.145.1）で CSP 違反 0 件、代役の配布物の `mount` で描け `rendered` が届く | ✅ 両方で違反 0 件 | [#343](https://github.com/shuhei1101/mdmark/pull/343) | `securitypolicyviolation` を Webview で数えた。`buildCsp` は変えていない |
+| 1. Vite 8 + `@vitejs/plugin-react` 6 + React Compiler（`@rolldown/plugin-babel` + `reactCompilerPreset`）+ Tailwind v4 の Webview を、今の `buildCsp` の CSP で描く | VS Code 1.141.0・stable（1.145.1）で CSP 違反 0 件、代役の配布物の `mount` で描け `rendered` が届く | ✅ 両方で違反 0 件 | [PoC: React の Webview の CSP・Storybook react-vite・拡張機能ホストの axe](https://github.com/shuhei1101/mdmark/pull/343) | `securitypolicyviolation` を Webview で数えた。`buildCsp` は変えていない |
 | 1. 同上 | 出力が `media/preview.js`（ES モジュール 1 ファイル）と `media/preview.css` の 2 つで、inline の `<script>` を出さない | ✅ 2 ファイル（345 KB・13 KB） | 同上 | `build.lib` の `formats: ["es"]`・`codeSplitting: false` |
 | 1. 同上 | `logger` に `CompileSuccess`、`preview.js` に `react.memo_cache_sentinel`、`tsc --noEmit` が通る | ✅ 全コンポーネントで `CompileSuccess`・3 件・通る | 同上 | コンポーネントの中に `import()` を書くと `CompileError`（`Handle ImportExpression expressions`）になる |
 | 1b. Preflight を参照せず `tailwindcss/theme`・`tailwindcss/utilities` だけを層に入れる | 見出し・段落・リスト・画像の `getComputedStyle` が `develop` の Webview と一致する | ✅ 両方のバージョンで 10 要素 × 8 プロパティが一致 | 同上 | `font-size`・`list-style-type`・`margin`・`padding-left`・`display`・`border-top-width`・`box-sizing` |

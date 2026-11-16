@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #66](https://github.com/shuhei1101/mdmark/issues/66) の要望。
+[mdmark の見た目をすべて洗い出し、mindstella のデザイントークンに揃える](https://github.com/shuhei1101/mdmark/issues/66) の要望。
 [mindstella の PR #327](https://github.com/shuhei1101/mindstella/pull/327)（Markdown の本文の共通のスタイル）のモックを見たユーザーから、mdmark は表をはじめとする色が全体に濃く、mindstella の表や本文のように薄めの色に揃えたいと依頼があった。
 mdmark の既定の見た目は [デザイン方針](https://github.com/shuhei1101/mdmark/blob/develop/dev/%E8%A8%AD%E8%A8%88%E6%9B%B8/%E3%83%87%E3%82%B6%E3%82%A4%E3%83%B3%E6%96%B9%E9%87%9D.md) の「モダン」（GitHub に近い配色）で、`--mdmark-` の CSS 変数の値として [src/index.css](https://github.com/shuhei1101/mdmark/blob/develop/src/index.css) が持つ。
 

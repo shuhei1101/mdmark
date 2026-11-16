@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #182](https://github.com/shuhei1101/mdmark/issues/182) の要望。
+[alias-inject のエイリアスの元の行のスキーマを、行の alias_type と列名の metadata の新しい構造で取り込む](https://github.com/shuhei1101/mdmark/issues/182) の要望。
 alias-inject は [shuhei1101/alias-inject#37](https://github.com/shuhei1101/alias-inject/issues/37)（作業 PR [shuhei1101/alias-inject#41](https://github.com/shuhei1101/alias-inject/pull/41)）でエイリアスの元の行のスキーマの構造を変更し、[v0.3.0](https://github.com/shuhei1101/alias-inject/tree/v0.3.0) のタグで出した。
 旧い構造の行は alias-inject が参照しない。
-mdmark は v0.2.0 のスキーマを `schemas/alias-inject/v0.2.0/aliases.schema.json` に取り込み、`mdmark check` の検証と `buildAliases` の metadata の適用に使用している（[Issue #125](https://github.com/shuhei1101/mdmark/issues/125)、v0.9.0 で出した）。
+mdmark は v0.2.0 のスキーマを `schemas/alias-inject/v0.2.0/aliases.schema.json` に取り込み、`mdmark check` の検証と `buildAliases` の metadata の適用に使用している（[エイリアス（用語・文書・コマンド・URL）を Markdown の用語集に加えて YAML（aliases［］）からも登録できるようにする](https://github.com/shuhei1101/mdmark/issues/125)、v0.9.0 で出した）。
 
 ## 計画書
 

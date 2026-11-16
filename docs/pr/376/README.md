@@ -6,9 +6,9 @@ VS Code 拡張機能の E2E が、テストの前の拡張機能のビルドで�
 
 ## 背景
 
-[Issue #375](https://github.com/shuhei1101/mdmark/issues/375) の修正。
-[#347](https://github.com/shuhei1101/mdmark/pull/347) から拡張機能のソースがリポジトリの直下の `src/config-files.ts`・`src/bundle-module.ts` を参照するようになったが、E2E の準備 `buildExtensionAndDist` は `vscode/` だけを一時フォルダに複製するため、ビルドが `Could not resolve` で失敗する。
-[#352](https://github.com/shuhei1101/mdmark/pull/352) の E2E テスト作成で見つかった。
+[VS Code 拡張機能の E2E が、拡張機能のビルドで ../../src/config-files.ts を解決できずに全て失敗する](https://github.com/shuhei1101/mdmark/issues/375) の修正。
+[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) から拡張機能のソースがリポジトリの直下の `src/config-files.ts`・`src/bundle-module.ts` を参照するようになったが、E2E の準備 `buildExtensionAndDist` は `vscode/` だけを一時フォルダに複製するため、ビルドが `Could not resolve` で失敗する。
+[記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/pull/352) の E2E テスト作成で見つかった。
 
 ## 計画書
 

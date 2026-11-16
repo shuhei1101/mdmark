@@ -6,7 +6,7 @@ develop から、今ある E2E のテストと、E2E だけが使用する部品
 
 ## 背景
 
-[Issue #450](https://github.com/shuhei1101/mdmark/issues/450) の要望（決定 D-311 A）。
+[今ある E2E のテストと、E2E だけが使う部品を develop から削除する](https://github.com/shuhei1101/mdmark/issues/450) の要望（決定 D-311 A）。
 0.x の間は E2E を実行せず修正もしない（D-307 A）ため、今ある E2E は仕様の変更で古くなり、エージェントが参照して誤解するノイズになる。
 E2E はメジャーのリリースの前に、シナリオから作り直す。
 

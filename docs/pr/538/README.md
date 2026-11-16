@@ -6,8 +6,8 @@ VS Code 拡張機能の結合テスト `vscode/tests/integration/preview-rerende
 
 ## 背景
 
-[#496](https://github.com/shuhei1101/mdmark/issues/496) の要望。
-テストの文書が `libraries` のマーカーを今の書き方（`<!-- my-chart: a -->`）で記載している。[#477](https://github.com/shuhei1101/mdmark/pull/477) の要件 No 7 で今の書き方は描かずに記載の警告を出すようになり、このテストは「別の配信元がモジュールの要求を受けない」で毎回 fail する。
+[VS Code 拡張機能の結合テスト test_normal_when_library_origin_added が、libraries のマーカーを今の書き方で記載していて毎回 fail する](https://github.com/shuhei1101/mdmark/issues/496) の要望。
+テストの文書が `libraries` のマーカーを今の書き方（`<!-- my-chart: a -->`）で記載している。[マーカーの設定を JSON で記載できるようにし、マーカーごとに設定の設計書を置く](https://github.com/shuhei1101/mdmark/pull/477) の要件 No 7 で今の書き方は描かずに記載の警告を出すようになり、このテストは「別の配信元がモジュールの要求を受けない」で毎回 fail する。
 
 ## 計画書
 

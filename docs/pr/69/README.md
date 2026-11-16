@@ -7,10 +7,10 @@ mdmark のタグを打てば、拡張機能を上げ直さなくてもプレビ�
 
 ## 背景
 
-[Issue #22](https://github.com/shuhei1101/mdmark/issues/22) の要望。
+[VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/issues/22) の要望。
 今の mdmark は使う側のページへ組み込むか、CLI で HTML に書き出して読むもので、エディタで書きながら描いた見た目を確かめる手段が無い。
 VS Code の組み込みのプレビューは markdown-it 14 で描き、mdmark の拡張記法・図・部品は出ない。
-HTML への書き出しは [Issue #9](https://github.com/shuhei1101/mdmark/issues/9) で CLI の `mdmark export` として入っている。
+HTML への書き出しは [サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9) で CLI の `mdmark export` として入っている。
 拡張機能の置き場所・配布物の読み込み方・公開の範囲は、Issue の本文の決定事項（D-1〜D-13）を元にする。
 
 ## 計画書

@@ -6,12 +6,12 @@ Sprint v0.7.0 の E2E で、実際の出力と合わずに落ちた 2 つのケ�
 
 ## 背景
 
-[Issue #93](https://github.com/shuhei1101/mdmark/issues/93) の束。
+[E2E『ClaudeCodeにプラグインを入れる』と『文書をHTML文字列にする』のケースを実際の出力に合わせて直す](https://github.com/shuhei1101/mdmark/issues/93) の束。
 release/v0.7.0 の E2E（[E2E 実行 Issue #56](https://github.com/shuhei1101/mdmark/issues/56)・[release PR #85](https://github.com/shuhei1101/mdmark/pull/85)）で、次の 2 件が落ちた。
 どちらも tester がテスト不備と切り分け、製品の挙動は仕様どおり。
 
-- [#89](https://github.com/shuhei1101/mdmark/issues/89): 『ClaudeCodeにプラグインを入れる』の `test_normal` が、Claude Code 2.1.309 の `claude plugin list` が出さない `Read from:` の行から導入先を取ろうとして落ちる
-- [#90](https://github.com/shuhei1101/mdmark/issues/90): 『文書をHTML文字列にする』の `test_normal` が、[#69](https://github.com/shuhei1101/mdmark/pull/69) で `data-source-line` を持つようになった段落を、属性の無い開始タグ `<p>` の文字列で探して落ちる
+- [E2E『ClaudeCodeにプラグインを入れる』が、Claude Code 2.1.309 の `claude plugin list` に無い `Read from:` の行を探して落ちる](https://github.com/shuhei1101/mdmark/issues/89): 『ClaudeCodeにプラグインを入れる』の `test_normal` が、Claude Code 2.1.309 の `claude plugin list` が出さない `Read from:` の行から導入先を取ろうとして落ちる
+- [E2E『文書をHTML文字列にする』が、`data-source-line` を持つ段落を `<p>` の文字列で探して落ちる](https://github.com/shuhei1101/mdmark/issues/90): 『文書をHTML文字列にする』の `test_normal` が、[VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/pull/69) で `data-source-line` を持つようになった段落を、属性の無い開始タグ `<p>` の文字列で探して落ちる
 
 ## 計画書
 

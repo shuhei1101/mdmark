@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #338](https://github.com/shuhei1101/mdmark/issues/338) の要望。まとめた HTML の `route`（`src/viewer/bundle.ts`）は、文書が替わると見出しの指定が無ければ `scrollTo(0, 0)` を呼び、リンクでの移動と戻る・進むを分けていないため、戻ると前の文書が一番上から出る。画面の状態の保持の決まりは [shuhei1101/knowledge#199](https://github.com/shuhei1101/knowledge/issues/199) で判定フローチャート『画面の状態の保持先』と規約『入力と文言』の「スクロール位置とタブの切り替え」にまとまった。
+[1 枚の HTML のビュワーで、戻るで文書に戻るとスクロール位置が一番上になる。画面の状態の保持を knowledge の決まりに合わせる](https://github.com/shuhei1101/mdmark/issues/338) の要望。まとめた HTML の `route`（`src/viewer/bundle.ts`）は、文書が替わると見出しの指定が無ければ `scrollTo(0, 0)` を呼び、リンクでの移動と戻る・進むを分けていないため、戻ると前の文書が一番上から出る。画面の状態の保持の決まりは [shuhei1101/knowledge#199](https://github.com/shuhei1101/knowledge/issues/199) で判定フローチャート『画面の状態の保持先』と規約『入力と文言』の「スクロール位置とタブの切り替え」にまとまった。
 
 ## 計画書
 

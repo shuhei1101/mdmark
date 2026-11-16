@@ -29,13 +29,13 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| マーケットプレイス | `claude plugin marketplace add`・`claude plugin install` が終了コード 0 | ✅ 成功 | [#73](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 空の `CLAUDE_CONFIG_DIR` と、ユーザーの手元の対話のセッションの両方 |
-| 索引の注入（対話） | 起動の直後の最初の依頼で、索引の先頭と末尾の合言葉を答えに出せる | ✅ 両方とも出た | [#73](https://github.com/shuhei1101/mdmark/pull/73)（closed） | ユーザーの手元の対話のセッション（[返信](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4357235963)） |
-| 索引の長さ | 9,000 文字の索引の末尾まで届く | ✅ 8,982 文字の末尾の合言葉が出た | [#73](https://github.com/shuhei1101/mdmark/pull/73)（closed） | debug のログに `provided additionalContext (8982 chars)` |
-| `instructions` | ツールを呼ぶ前に `instructions` の合言葉を答えに出せる | ✅ 出た | [#73](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 同上の返信 |
-| ツールの呼び出し | `read_guide`・`check` を最初の依頼で呼べ、`check` が `mdmark check` と同じ 2 件を返す | ✅ `schema`・`missing_doc` | [#73](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 同上の返信 |
-| MCP の起動（案 A: `npx github:` で CLI の `mdmark mcp`） | 空の npm のキャッシュから 30 秒以内（`MCP_TIMEOUT` の既定） | ❌ 53.0 秒 / 54.1 秒 | [#73](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 取得した npm のキャッシュ 474M。キャッシュありは 7.9 秒。不採用 |
-| MCP の起動（案 B: `plugin/` に束ねた JavaScript を `node` で起動） | 同上 | ✅ 120ms で接続 | [#73](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 空のキャッシュからプラグインの導入まで 7 秒（`marketplace add` 5.2 秒・`install` 1.8 秒）。採用 |
+| マーケットプレイス | `claude plugin marketplace add`・`claude plugin install` が終了コード 0 | ✅ 成功 | [PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 空の `CLAUDE_CONFIG_DIR` と、ユーザーの手元の対話のセッションの両方 |
+| 索引の注入（対話） | 起動の直後の最初の依頼で、索引の先頭と末尾の合言葉を答えに出せる | ✅ 両方とも出た | [PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)（closed） | ユーザーの手元の対話のセッション（[返信](https://github.com/shuhei1101/mdmark/pull/72#discussion_r4357235963)） |
+| 索引の長さ | 9,000 文字の索引の末尾まで届く | ✅ 8,982 文字の末尾の合言葉が出た | [PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)（closed） | debug のログに `provided additionalContext (8982 chars)` |
+| `instructions` | ツールを呼ぶ前に `instructions` の合言葉を答えに出せる | ✅ 出た | [PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 同上の返信 |
+| ツールの呼び出し | `read_guide`・`check` を最初の依頼で呼べ、`check` が `mdmark check` と同じ 2 件を返す | ✅ `schema`・`missing_doc` | [PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 同上の返信 |
+| MCP の起動（案 A: `npx github:` で CLI の `mdmark mcp`） | 空の npm のキャッシュから 30 秒以内（`MCP_TIMEOUT` の既定） | ❌ 53.0 秒 / 54.1 秒 | [PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 取得した npm のキャッシュ 474M。キャッシュありは 7.9 秒。不採用 |
+| MCP の起動（案 B: `plugin/` に束ねた JavaScript を `node` で起動） | 同上 | ✅ 120ms で接続 | [PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)（closed） | 空のキャッシュからプラグインの導入まで 7 秒（`marketplace add` 5.2 秒・`install` 1.8 秒）。採用 |
 
 成立。
 SessionStart のフックで索引を渡すこと、MCP サーバーの `instructions`、ツールの呼び出しは、対話のセッションの起動の直後の依頼にも間に合った。

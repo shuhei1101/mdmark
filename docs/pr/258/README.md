@@ -7,7 +7,7 @@
 
 ## 背景
 
-[Issue #155](https://github.com/shuhei1101/mdmark/issues/155) の要望（起点は [shuhei1101/mindstella#348](https://github.com/shuhei1101/mindstella/pull/348)）。
+[操作できる部品の「今の値をコピーする」ボタンの文言を設定で替えられるようにする](https://github.com/shuhei1101/mdmark/issues/155) の要望（起点は [shuhei1101/mindstella#348](https://github.com/shuhei1101/mindstella/pull/348)）。
 v0.8.0 の `<mdmark-param>` の部品はボタンの文言を固定で描き、替える設定が無い。
 mindstella のプレビューは UI の文言を「コピー」で揃えるため、描いた後にボタンの文字を書き換えており、部品を描き直すたびに書き換え直している。
 

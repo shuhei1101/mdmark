@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #330](https://github.com/shuhei1101/mdmark/issues/330) の要望。
+[タッチ端末で脚注の番号のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/issues/330) の要望。
 
-[PR #329](https://github.com/shuhei1101/mdmark/pull/329)（[#284](https://github.com/shuhei1101/mdmark/issues/284)）で、用語のツールチップに、タッチのタップでの開閉の切り替えと、外の `pointerdown` で閉じる処理を追加した。
+[タッチ端末で用語のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/pull/329)（[タッチ端末で用語のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/issues/284)）で、用語のツールチップに、タッチのタップでの開閉の切り替えと、外の `pointerdown` で閉じる処理を追加した。
 脚注のツールチップ（`src/interact/footnotes.ts`）も同じ作りで、`:hover, :focus-within` の間は閉じない。iOS の Safari はタップした番号に `:hover` を残すため、`click` が発火しなかったときやフォーカスで開いたときに、閉じる手段が Esc と `beforeprint` だけになる。
 番号は末尾の一覧へ移るリンクでもあるため、PR [タッチ端末で用語のツールチップを外のタップで閉じられるようにする](https://github.com/shuhei1101/mdmark/pull/329) ではタップの動きを別に決める項目としてスコープ外にした。
 

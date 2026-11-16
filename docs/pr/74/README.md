@@ -6,11 +6,11 @@ mdmark を使うアプリ（mindstella など）が、画面を出さずに、�
 
 ## 背景
 
-[Issue #47](https://github.com/shuhei1101/mdmark/issues/47) の要望。
+[ツールチップに使う参照（用語・項目の ID・別名の一致と参照先）を、画面なしで取り出す関数として出す](https://github.com/shuhei1101/mdmark/issues/47) の要望。
 使う側のアプリが AI に MCP で本文を返すときに、利用者が画面のツールチップで見るのと同じ補足を本文とは別に付けるため。
 aituber の設計のワークスペースで利用者から提案された。
 
-[PR #27](https://github.com/shuhei1101/mdmark/pull/27)（起点 [Issue #5](https://github.com/shuhei1101/mdmark/issues/5)）で、索引の用語・文書の別名を本文と照合して下線とツールチップを付ける処理と、参照の表を返す公開関数 `collectReferences` を入れた。
+[文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27)（起点 [文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/issues/5)）で、索引の用語・文書の別名を本文と照合して下線とツールチップを付ける処理と、参照の表を返す公開関数 `collectReferences` を入れた。
 照合の規則（`src/knowledge/dictionary.ts` の `buildDictionary`・`findWords`）は develop にあるが、`collectReferences` が返すのは被参照と用語集の表の用語だけで、本文のどの文字列がどの用語・文書に一致したかと、その位置は返さない。
 
 ## 計画書

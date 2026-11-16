@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #396](https://github.com/shuhei1101/mdmark/issues/396) の不具合。Sprint v0.10.0 の E2E（[release PR #393](https://github.com/shuhei1101/mdmark/pull/393)）で、表のキーの階層の 4 件が fail した。
+[表のキーの階層の行にファイルツリーの .mdmark-tree-row の display: flex が当たり、折りたたんだ行と絞り込んだ行が隠れない](https://github.com/shuhei1101/mdmark/issues/396) の不具合。Sprint v0.10.0 の E2E（[release PR #393](https://github.com/shuhei1101/mdmark/pull/393)）で、表のキーの階層の 4 件が fail した。
 
-ファイルツリーの項目の行に当てる `src/index.css` の `.mdmark .mdmark-tree-row { display: flex }` が、[#303](https://github.com/shuhei1101/mdmark/pull/303) で同じクラス名を付けた表のキーの階層の `<tr>` にも当たる。作者の CSS の `display: flex` が `[hidden]` の UA の `display: none` に勝つため、`hidden` を付けた行が隠れない。
+ファイルツリーの項目の行に当てる `src/index.css` の `.mdmark .mdmark-tree-row { display: flex }` が、[既存の記法への項目の追加 3 件（表の列の並べ替え・コードブロックの HTML の TypeScript と CSS・表のキーの階層）](https://github.com/shuhei1101/mdmark/pull/303) で同じクラス名を付けた表のキーの階層の `<tr>` にも当たる。作者の CSS の `display: flex` が `[hidden]` の UA の `display: none` に勝つため、`hidden` を付けた行が隠れない。
 
 ## 計画書
 

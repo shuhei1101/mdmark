@@ -6,7 +6,7 @@
 
 ## 背景
 
-[#262](https://github.com/shuhei1101/mdmark/issues/262) は、[#158](https://github.com/shuhei1101/mdmark/issues/158)（名前で指定する色のプリセットと、表・バッジ・本文の文字の色）と [#199](https://github.com/shuhei1101/mdmark/issues/199)（画像の属性・キャプション・ライトボックス・ギャラリー・テーマごとの切り替え、アセットのルートと書き出し、動画・GIF・音声、リンクと添付のカード）を 1 本の作業 PR で進める束。
+[表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/issues/262) は、[表の列と行を色で強調し、決まった色を名前で指定できるようにする](https://github.com/shuhei1101/mdmark/issues/158)（名前で指定する色のプリセットと、表・バッジ・本文の文字の色）と [画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/issues/199)（画像の属性・キャプション・ライトボックス・ギャラリー・テーマごとの切り替え、アセットのルートと書き出し、動画・GIF・音声、リンクと添付のカード）を 1 本の作業 PR で進める束。
 どちらも `src/render`・`src/parts`・`src/index.css` の記法と部品を足し、[画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/issues/199) の画像の属性の書き方（`{...}`）は [表の列と行を色で強調し、決まった色を名前で指定できるようにする](https://github.com/shuhei1101/mdmark/issues/158) の本文の文字の色の書き方にも使える。
 
 今の mdmark は、表のマーカーに色の指定が無く、バッジは 1 色だけで、色の CSS 変数は系列・図の箱・注意書きなど用途ごとの色だけを持つ。

@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #190](https://github.com/shuhei1101/mdmark/issues/190) の要望。
+[mermaid のコードブロックを VS Code 拡張機能と HTML の書き出しで描く](https://github.com/shuhei1101/mdmark/issues/190) の要望。
 今の mdmark は mermaid を描かず、コードブロックのまま出すため、ほかのツールで記載した mermaid が図にならない。
 mermaid の既定のデザインのままにせず、テーマとアイコンを mdmark の見た目に合わせることも要望に含む。
-外部ライブラリは highlight.js（`syntax.url`）・@babel/standalone（`html-scripts.url`）と同じく、使用する文書のときだけ jsDelivr から読み込み、書き出しでは [#189](https://github.com/shuhei1101/mdmark/issues/189) のまとめ方で 1 つの script に入れる。
-図の枠のリサイズハンドルは [#169](https://github.com/shuhei1101/mdmark/issues/169) で入った。
+外部ライブラリは highlight.js（`syntax.url`）・@babel/standalone（`html-scripts.url`）と同じく、使用する文書のときだけ jsDelivr から読み込み、書き出しでは [書き出した HTML で blob: URL と動的 import をやめ、1 つの script に束ねる](https://github.com/shuhei1101/mdmark/issues/189) のまとめ方で 1 つの script に入れる。
+図の枠のリサイズハンドルは [図・グラフの表示の範囲の高さを、右下のつまみで縦にだけ変えられるようにする](https://github.com/shuhei1101/mdmark/issues/169) で入った。
 
 ## 計画書
 

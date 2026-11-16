@@ -7,10 +7,10 @@ VS Code 拡張機能の `name` を `mdmark-vscode`、`displayName` を `mdmark f
 
 ## 背景
 
-[Issue #157](https://github.com/shuhei1101/mdmark/issues/157) の要望。
+[VS Code 拡張機能の name を mdmark-vscode・表示名を mdmark for VS Code にし、拡張機能の ID を固定する](https://github.com/shuhei1101/mdmark/issues/157) の要望。
 `name` の `mdmark` と表示名の `mdmark` は、Visual Studio Marketplace 全体でほかの拡張機能が使っていて、アップロードが拒否される。
 Marketplace には `ShuheiNishikawa.mdmark-vscode`（表示名 `mdmark for VS Code`）で手動で公開済みで、リポジトリの `vscode/package.json` だけが古い値のまま。
-後続の [#84](https://github.com/shuhei1101/mdmark/issues/84)（Marketplace と Open VSX への公開の自動化）は、この ID を前提にする。
+後続の [VS Code 拡張機能の Marketplace と Open VSX への公開を GitHub Actions で自動化する](https://github.com/shuhei1101/mdmark/issues/84)（Marketplace と Open VSX への公開の自動化）は、この ID を前提にする。
 
 ## 計画書
 

@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #180](https://github.com/shuhei1101/mdmark/issues/180) の要望。
-[PR #176](https://github.com/shuhei1101/mdmark/pull/176)（[Issue #125](https://github.com/shuhei1101/mdmark/issues/125)）でライブラリ本体に設定の `aliases` と `mount` の `opts.aliases` を追加し、CLI の書き出しは `loadAliases` で作ったエイリアスを指定している。
+[VS Code 拡張機能のプレビューで、設定の aliases のエイリアスのツールチップを出す](https://github.com/shuhei1101/mdmark/issues/180) の要望。
+[エイリアス（用語・文書・コマンド・URL など）を Markdown の用語集に加えて設定の aliases で YAML からも登録できるようにする](https://github.com/shuhei1101/mdmark/pull/176)（[エイリアス（用語・文書・コマンド・URL）を Markdown の用語集に加えて YAML（aliases［］）からも登録できるようにする](https://github.com/shuhei1101/mdmark/issues/125)）でライブラリ本体に設定の `aliases` と `mount` の `opts.aliases` を追加し、CLI の書き出しは `loadAliases` で作ったエイリアスを指定している。
 プレビューへの対応は PR [エイリアス（用語・文書・コマンド・URL など）を Markdown の用語集に加えて設定の aliases で YAML からも登録できるようにする](https://github.com/shuhei1101/mdmark/pull/176) の要件.md の `## スコープ外` で別の要望として切り出した。
-今のプレビューは設定ファイルを重ねて参照する（[#163](https://github.com/shuhei1101/mdmark/issues/163)）が、`aliases` を参照せず、Webview の `mount` の呼び出しにもエイリアスを指定していない。
+今のプレビューは設定ファイルを重ねて参照する（[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする（プレビューにも theme の CSS を当てる）](https://github.com/shuhei1101/mdmark/issues/163)）が、`aliases` を参照せず、Webview の `mount` の呼び出しにもエイリアスを指定していない。
 
 ## 計画書
 

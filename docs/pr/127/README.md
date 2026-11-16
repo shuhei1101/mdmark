@@ -6,7 +6,7 @@
 
 ## 背景
 
-[Issue #103](https://github.com/shuhei1101/mdmark/issues/103) の要望。
+[索引の related に関係の種類といつ読むかを持たせる](https://github.com/shuhei1101/mdmark/issues/103) の要望。
 knowledge のワークスペース `tmp/mcpベストプラクティス検討` の話し合いで決めた、knowledge の規約『ドキュメント管理』の `## 関連`（[shuhei1101/knowledge#42](https://github.com/shuhei1101/knowledge/issues/42) で入った）に mdmark を合わせる。
 今の索引の `related` は文書の ID の並びで、関係の種類といつ読むかが分からない。
 `find_docs` の `related_to` は両向きの文書を返すが、どちら向きのどの関係かは返さない。

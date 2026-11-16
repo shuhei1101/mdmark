@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #63](https://github.com/shuhei1101/mdmark/issues/63) の要望。
-[PR #61](https://github.com/shuhei1101/mdmark/pull/61)（起点 [#30](https://github.com/shuhei1101/mdmark/issues/30)）で索引の用語にやめた言い方を書けるようにし、本文に出たら `checkIndex`・`mdmark check` が `avoided_term` で知らせるようにした。
+[描いた文書の本文に出たやめた言い方に、代わりの用語を示す印とツールチップを出す](https://github.com/shuhei1101/mdmark/issues/63) の要望。
+[索引の用語にやめた言い方（avoid）を書けるようにし、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/pull/61)（起点 [索引の用語にやめた言い方（avoid）を書き、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/issues/30)）で索引の用語にやめた言い方を書けるようにし、本文に出たら `checkIndex`・`mdmark check` が `avoided_term` で知らせるようにした。
 描いた文書（`mount`・`render`）は変わらず、やめた言い方の箇所には何も出ない。
 要望が点検で知らせるところまでだったため、描いた文書にマーカーとツールチップを出す機能は PR [索引の用語にやめた言い方（avoid）を書けるようにし、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/pull/61) のスコープ外になり、この Issue に切り出された。
 

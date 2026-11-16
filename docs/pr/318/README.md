@@ -6,9 +6,9 @@
 
 ## 背景
 
-[#265](https://github.com/shuhei1101/mdmark/issues/265) の要望。
-[#256](https://github.com/shuhei1101/mdmark/pull/256) で語を一括で置き換えたとき、「打ち消した」の「消」が「削除」に置き換わった。
-[#263](https://github.com/shuhei1101/mdmark/pull/263) のドキュメント修正で対象外の逸脱として報告された。
+[記法.md のバッジの引数の「打ち削除した」を「打ち消した」に修正する](https://github.com/shuhei1101/mdmark/issues/265) の要望。
+[使い方集の語と文を規約『文章の書き方』に合わせて修正し、『文書の書き方』のページを追加する](https://github.com/shuhei1101/mdmark/pull/256) で語を一括で置き換えたとき、「打ち消した」の「消」が「削除」に置き換わった。
+[表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/pull/263) のドキュメント修正で対象外の逸脱として報告された。
 
 ## 計画書
 

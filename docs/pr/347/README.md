@@ -7,13 +7,13 @@ VS Code 拡張機能のプレビューにも `theme` の CSS と `extensions` �
 
 ## 背景
 
-[Issue #163](https://github.com/shuhei1101/mdmark/issues/163) の要望。
+[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする（プレビューにも theme の CSS を当てる）](https://github.com/shuhei1101/mdmark/issues/163) の要望。
 CLI（`export`・`build`・`check`・`upgrade`）と MCP は、`--config`（MCP は `config`）で指したファイルか、今のフォルダから上へ探して最初に見つかった 1 つの `mdmark.config.yaml` だけを読み、端末に共通の設定を置く場所が無い。
 VS Code 拡張機能は `mdmark.configPath` をワークスペースのフォルダから解決するだけで上へ探さず、設定ファイルから `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`assets.root` だけを取り出す。
 そのため `theme` の CSS と `extensions` の拡張が書き出した HTML には当たるがプレビューには当たらず、設定を読む処理も CLI（`src/cli/config.ts`）と拡張機能（`vscode/src/config.ts`）に別々にある。
 
 端末の設定の場所と環境変数 `MDMARK_CONFIG` は、[#165 のユーザーのコメント](https://github.com/shuhei1101/mdmark/issues/165#issuecomment-6652543567) で決まった。
-文書ごとのページの設定（[#161](https://github.com/shuhei1101/mdmark/issues/161)）と CSS のテンプレート（[#164](https://github.com/shuhei1101/mdmark/issues/164)）は、この PR の設定の読み方を前提にする。
+文書ごとのページの設定（[配色（ライト・ダーク）などのページの設定を、文書の先頭の印で指定できるようにする](https://github.com/shuhei1101/mdmark/issues/161)）と CSS のテンプレート（[グローバルの設定のフォルダに CSS のテンプレートを置き、MCP で一覧・登録・配置できるようにする](https://github.com/shuhei1101/mdmark/issues/164)）は、この PR の設定の読み方を前提にする。
 
 ## 計画書
 
@@ -29,7 +29,7 @@ VS Code 拡張機能は `mdmark.configPath` をワークスペースのフォル
 - [x] ~~初期構築~~（既存リポジトリのため対象外）
 - [x] ~~リバースエンジニアリング~~（現状設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
-- [x] PoC 検証（VS Code 拡張機能の拡張機能ホストの中で esbuild-wasm で `extensions` を束ねる。[#349](https://github.com/shuhei1101/mdmark/pull/349) で確かめ、esbuild-wasm を採用）
+- [x] PoC 検証（VS Code 拡張機能の拡張機能ホストの中で esbuild-wasm で `extensions` を束ねる。[PoC: esbuild-wasm](https://github.com/shuhei1101/mdmark/pull/349) で確かめ、esbuild-wasm を採用）
 - [x] 複合ユースケース設計
 - [x] ~~デザインスタイル選定~~（デザイン方針があり、見た目の方向を変えない）
 - [x] ~~画面一覧・画面遷移~~（画面の追加・削除と画面遷移の変更を含まない）

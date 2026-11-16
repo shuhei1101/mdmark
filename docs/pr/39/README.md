@@ -6,8 +6,8 @@ mdmark の版が上がったとき、使う側が `mdmark upgrade` で手元の�
 
 ## 背景
 
-[Issue #10](https://github.com/shuhei1101/mdmark/issues/10) の要望。
-今の mdmark は、[#9](https://github.com/shuhei1101/mdmark/issues/9)（[#32](https://github.com/shuhei1101/mdmark/pull/32)）が作った CLI の `init`・`check`・`export`・`build` を持ち、版を上げる口を持たない。
+[版を上げるときに移行の手順を当てる upgrade を作る](https://github.com/shuhei1101/mdmark/issues/10) の要望。
+今の mdmark は、[サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9)（[サーバー無しで Markdown を 1 枚で完結する HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/pull/32)）が作った CLI の `init`・`check`・`export`・`build` を持ち、版を上げる口を持たない。
 設定ファイル `mdmark.config.yaml` は使う側の版を持たず、索引は `schema: 1` だけを持つ。
 版ごとの移行の手順を置く `migrations/` は無く、変更履歴は版ごとの PR を 1 行ずつ並べた `docs/はじめに/変更履歴.md` にある。
 GitHub Actions などの CI は無く、開発側の検査は `npm run build`・`npm test` などの開発コマンドで流している。
@@ -21,7 +21,7 @@ GitHub Actions などの CI は無く、開発側の検査は `npm run build`・
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
 - [x] ~~PoC 検証~~（未検証の技術機構に依存しない。YAML の読み書きは採用済みの yaml、版の取得は既存の `npx github:shuhei1101/mdmark#v{版}` の経路を使う）

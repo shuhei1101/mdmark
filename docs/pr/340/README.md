@@ -6,10 +6,10 @@
 
 ## 背景
 
-[Issue #292](https://github.com/shuhei1101/mdmark/issues/292) の要望。
+[390px 幅で、コメントの吹き出しと入力欄のストーリーに横スクロールが出る](https://github.com/shuhei1101/mdmark/issues/292) の要望。
 390px 幅で、コメントの吹き出し・入力欄のストーリーに横スクロールが出る（`detect_screen_issues` の horizontal-scroll。scrollWidth 392 > clientWidth 390）。
-[PR #280](https://github.com/shuhei1101/mdmark/pull/280) で変更していない `Single`・`CommentForm/Idle` でも出る。
-[PR #280](https://github.com/shuhei1101/mdmark/pull/280) の reviewer が対象外の逸脱として報告したもの（[報告](https://github.com/shuhei1101/mdmark/pull/280#discussion_r4451032628)）で、依存の [#222](https://github.com/shuhei1101/mdmark/issues/222) は develop へ入っている。
+[mount に比較元の Markdown との差分の強調・列の表示の通知・コメントの修正と削除と移動を追加する](https://github.com/shuhei1101/mdmark/pull/280) で変更していない `Single`・`CommentForm/Idle` でも出る。
+[mount に比較元の Markdown との差分の強調・列の表示の通知・コメントの修正と削除と移動を追加する](https://github.com/shuhei1101/mdmark/pull/280) の reviewer が対象外の逸脱として報告したもの（[報告](https://github.com/shuhei1101/mdmark/pull/280#discussion_r4451032628)）で、依存の [mount に差分の強調・列の表示の通知・コメントの修正と削除と移動を追加する](https://github.com/shuhei1101/mdmark/issues/222) は develop へ入っている。
 
 ストーリーは、`document.body` に `position: fixed` で配置する吹き出し・入力欄を `STATIC_POPOVER_STYLE` で `position: static` にして描く。
 枠の幅は `min(22rem, calc(100vw - 32px))` で、390px では 352px になり計算上は収まるため、ストーリーの描く先の要素の余白など計算に入っていない幅がある。

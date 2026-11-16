@@ -6,19 +6,19 @@
 
 ## 背景
 
-[#305](https://github.com/shuhei1101/mdmark/issues/305) の要望。
+[記法の新設 8 件（icon:・columns・蛍光ペン・kbd: と ruby・details と pagebreak・include・wide・csv の表）](https://github.com/shuhei1101/mdmark/issues/305) の要望。
 記法を新設する子 Issue の束で、子ごとの範囲と決まったことは子の Issue の本文と、本文の `## 必読` に挙げた話し合いの記録が正。
 
-- [#192](https://github.com/shuhei1101/mdmark/issues/192): セクションのタイトルにアイコンを付ける方法が無い。Lucide のアイコンは図とボタンで使う分だけを配布物に束ねている
-- [#193](https://github.com/shuhei1101/mdmark/issues/193): 本文を横に並べる記法が無い
-- [#213](https://github.com/shuhei1101/mdmark/issues/213): 本文の強調が太字だけで、蛍光ペンのマーカーが無い
-- [#214](https://github.com/shuhei1101/mdmark/issues/214): 操作の手順でキーが目立たない。ルビは描く処理が `<ruby>` を落とさないが、記法の一覧と使い方集に記載が無い
-- [#217](https://github.com/shuhei1101/mdmark/issues/217): 折りたためるのは見出しのセクションと注意書きの `-` だけで、見出しの無い補足を閉じられない。印刷で改ページの位置を決められない
-- [#219](https://github.com/shuhei1101/mdmark/issues/219): 同じ説明を複数の文書に記載するしかなく、記載した箇所ごとにずれる
-- [#220](https://github.com/shuhei1101/mdmark/issues/220): 大きい図や表も本文の幅に収まり、狭いまま見ることになる
-- [#221](https://github.com/shuhei1101/mdmark/issues/221): 表計算から貼った CSV を、Markdown の表に修正する手間がある
+- [インラインコード `icon\:名前` で Lucide のアイコンを見出しと本文に出す](https://github.com/shuhei1101/mdmark/issues/192): セクションのタイトルにアイコンを付ける方法が無い。Lucide のアイコンは図とボタンで使う分だけを配布物に束ねている
+- [本文を横に分割する columns のマーカーを追加する](https://github.com/shuhei1101/mdmark/issues/193): 本文を横に並べる記法が無い
+- [蛍光ペンのマーカー ==text== を描き、色を名前の色で選べるようにする](https://github.com/shuhei1101/mdmark/issues/213): 本文の強調が太字だけで、蛍光ペンのマーカーが無い
+- [インラインコード kbd: をキーの見た目で描き、文書の HTML で ruby を許す](https://github.com/shuhei1101/mdmark/issues/214): 操作の手順でキーが目立たない。ルビは描く処理が `<ruby>` を落とさないが、記法の一覧と使い方集に記載が無い
+- [details のマーカーで範囲を折りたたみ、pagebreak のマーカーで印刷のときに改ページする](https://github.com/shuhei1101/mdmark/issues/217): 折りたためるのは見出しのセクションと注意書きの `-` だけで、見出しの無い補足を閉じられない。印刷で改ページの位置を決められない
+- [include のマーカーでほかの文書・見出し・コードの行の範囲を取り込む](https://github.com/shuhei1101/mdmark/issues/219): 同じ説明を複数の文書に記載するしかなく、記載した箇所ごとにずれる
+- [wide のマーカーで図・表・画像を本文の幅を越えて広げる](https://github.com/shuhei1101/mdmark/issues/220): 大きい図や表も本文の幅に収まり、狭いまま見ることになる
+- [言語 csv のコードブロックを表の機能付きの表で描く](https://github.com/shuhei1101/mdmark/issues/221): 表計算から貼った CSV を、Markdown の表に修正する手間がある
 
-依存の [#158](https://github.com/shuhei1101/mdmark/issues/158)（色のプリセット）・[#189](https://github.com/shuhei1101/mdmark/issues/189)（書き出した HTML を 1 つの script に束ねる）は develop へ入っている。
+依存の [表の列と行を色で強調し、決まった色を名前で指定できるようにする](https://github.com/shuhei1101/mdmark/issues/158)（色のプリセット）・[書き出した HTML で blob: URL と動的 import をやめ、1 つの script に束ねる](https://github.com/shuhei1101/mdmark/issues/189)（書き出した HTML を 1 つの script に束ねる）は develop へ入っている。
 
 ## 計画書
 

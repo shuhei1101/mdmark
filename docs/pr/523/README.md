@@ -6,10 +6,10 @@
 
 ## 背景
 
-[#504](https://github.com/shuhei1101/mdmark/issues/504) の不具合。
+[VS Code 拡張機能のタグ一覧の要求が、待ちの上限 3 秒より早い 276 ms で TimeoutError になることがある](https://github.com/shuhei1101/mdmark/issues/504) の不具合。
 VS Code 拡張機能の結合テスト `test_normal_when_tags_unreachable` で、タグ一覧の要求が待ちの上限 3000 ms より早い 276 ms で `TimeoutError` になり、前回のバージョンの配布物を 335 ms で要求した（VS Code 1.141.0、10 回の繰り返しのうち 1 回）。
-[#485](https://github.com/shuhei1101/mdmark/pull/485) の stable の実行でも、中断が 2451 ms で発火していた。
-同じテストは [#195](https://github.com/shuhei1101/mdmark/issues/195) でも 1734 ms で落ち、[#247](https://github.com/shuhei1101/mdmark/pull/247) では再現せず、原因の材料をメッセージに出す修正だけを入れた。
+[結合テストの所要時間を測り、意味の薄い長いテストを削除・軽量化し、ときどき落ちる既存のテストを直す](https://github.com/shuhei1101/mdmark/pull/485) の stable の実行でも、中断が 2451 ms で発火していた。
+同じテストは [VS Code 拡張機能の結合テスト test_normal_when_tags_unreachable が develop でも fail する](https://github.com/shuhei1101/mdmark/issues/195) でも 1734 ms で落ち、[VS Code 拡張機能の結合テスト test_normal_when_tags_unreachable の fail を、誤っている側を切り分けて修正する](https://github.com/shuhei1101/mdmark/pull/247) では再現せず、原因の材料をメッセージに出す修正だけを入れた。
 
 ## 計画書
 

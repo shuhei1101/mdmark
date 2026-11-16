@@ -6,9 +6,9 @@
 
 ## 背景
 
-[Issue #81](https://github.com/shuhei1101/mdmark/issues/81) の要望。
-[PR #78](https://github.com/shuhei1101/mdmark/pull/78)（起点 [#62](https://github.com/shuhei1101/mdmark/issues/62)）で用語集の表にやめた言い方の列を書けるようにし、本文に出たら点検（`checkIndex`・`mdmark check` の `avoided_term`）で知らせるようにした。
-[PR #79](https://github.com/shuhei1101/mdmark/pull/79)（起点 [#63](https://github.com/shuhei1101/mdmark/issues/63)）で描いた文書にやめた言い方のマーカーとツールチップを出すようにしたが、対象は索引の用語のやめた言い方（`terms[].avoid`）だけで、用語集の表のやめた言い方は描いた文書を変えないまま、この Issue に切り出された。
+[用語集の表のやめた言い方の列から入れたやめた言い方にも、描いた文書でマーカーと代わりの用語のツールチップを出す](https://github.com/shuhei1101/mdmark/issues/81) の要望。
+[用語集の表にやめた言い方の列を指定し、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/pull/78)（起点 [用語集の表にやめた言い方の列を指定し、本文に出たら点検で知らせる](https://github.com/shuhei1101/mdmark/issues/62)）で用語集の表にやめた言い方の列を書けるようにし、本文に出たら点検（`checkIndex`・`mdmark check` の `avoided_term`）で知らせるようにした。
+[描いた文書の本文に出たやめた言い方に、代わりの用語を示す印とツールチップを出す](https://github.com/shuhei1101/mdmark/pull/79)（起点 [描いた文書の本文に出たやめた言い方に、代わりの用語を示す印とツールチップを出す](https://github.com/shuhei1101/mdmark/issues/63)）で描いた文書にやめた言い方のマーカーとツールチップを出すようにしたが、対象は索引の用語のやめた言い方（`terms[].avoid`）だけで、用語集の表のやめた言い方は描いた文書を変えないまま、この Issue に切り出された。
 
 ## 計画書
 

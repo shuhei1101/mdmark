@@ -39,7 +39,7 @@
 
 | 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
 | --- | --- | --- | --- | --- |
-| `version` の無いプラグインの導入 | `plugin install` が終了コード 0、導入の記録のバージョンが commit の SHA | ✅ `version: 8841e5f1e4ee` | [#493](https://github.com/shuhei1101/mdmark/pull/493)（closed） | `gitCommitSha` は commit の SHA の全桁、`installPath` は `cache/{マーケットプレイス}/{プラグイン}/{短縮 SHA}` |
+| `version` の無いプラグインの導入 | `plugin install` が終了コード 0、導入の記録のバージョンが commit の SHA | ✅ `version: 8841e5f1e4ee` | [PoC: plugin.json に version が無いプラグインが commit で更新されるか](https://github.com/shuhei1101/mdmark/pull/493)（closed） | `gitCommitSha` は commit の SHA の全桁、`installPath` は `cache/{マーケットプレイス}/{プラグイン}/{短縮 SHA}` |
 | commit での更新 | `marketplace update` → `plugin update` で新しい commit に上がる | ✅ `0b17f55c38dc` | 同上 | `updated from 8841e5f1e4ee to 0b17f55c38dc`。導入先の `SKILL.md` が 2 つ目の commit の内容になった |
 | `version` を持つプラグインとの差 | `version` を変えずに commit を追加すると更新されない | ✅ `v0.1.0` のまま | 同上 | `already at the latest version (v0.1.0)`。導入先の `SKILL.md` は 1 つ目の commit のまま |
 | 自動更新 | `marketplace update` だけで上がるかを記録する | 上がらない | 同上 | `marketplace update` の後も `version`・`gitCommitSha` は変わらず、`plugin update` で上がった |

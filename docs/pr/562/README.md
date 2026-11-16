@@ -6,11 +6,11 @@
 
 ## 背景
 
-[Issue #304](https://github.com/shuhei1101/mdmark/issues/304) の要望。
+[本文・表・図の箱から参照でき、ツールチップで出る再利用できる注釈の記法を追加する](https://github.com/shuhei1101/mdmark/issues/304) の要望。
 判定フローチャートなどの図では、ノードの名前に `※1` を付けて図の下の表に注記を並べており、読者は図と表を行き来する。
 ノードの説明（map の補足の `notes`）はノードの概要のための欄で注意書きとは役割が違い、同じ注記を複数の場所から参照する仕組みも無い。
-参照のマーカーのツールチップと文書の末尾の閉じた一覧は、[#215](https://github.com/shuhei1101/mdmark/issues/215) の脚注のものを再利用・拡張する（[#304 の確認事項への回答](https://github.com/shuhei1101/mdmark/issues/304#issuecomment-6610069555)）。
-Issue のフロー図とシーケンス図は、[#534](https://github.com/shuhei1101/mdmark/pull/534) で map に移った。
+参照のマーカーのツールチップと文書の末尾の閉じた一覧は、[脚注（［^1］ と行内の ^［…］）をツールチップと末尾のまとめで描く](https://github.com/shuhei1101/mdmark/issues/215) の脚注のものを再利用・拡張する（[#304 の確認事項への回答](https://github.com/shuhei1101/mdmark/issues/304#issuecomment-6610069555)）。
+Issue のフロー図とシーケンス図は、[今の flow・sequence の定義を map へ変換するスクリプトを用意し、flow・sequence を廃止する](https://github.com/shuhei1101/mdmark/pull/534) で map に移った。
 
 ## 計画書
 

@@ -7,11 +7,11 @@
 
 ## 背景
 
-[Issue #9](https://github.com/shuhei1101/mdmark/issues/9) の要望。
+[サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9) の要望。
 OneDrive など Microsoft の環境では CDN を読めないため、CDN を読まない 1 枚の HTML が要る（[PR #16 での要望](https://github.com/shuhei1101/mdmark/pull/16#discussion_r4258211591)）。
 今の mdmark は、使う側のページが jsDelivr から配布物を読み、使う側のサーバーが読んだ設定と索引を `mount`・`render` に渡す形だけを持ち、ファイルを読んで HTML を書き出す口を持たない。
-[#3](https://github.com/shuhei1101/mdmark/issues/3)（[#16](https://github.com/shuhei1101/mdmark/pull/16)）が画面を持たない `render` を、[#5](https://github.com/shuhei1101/mdmark/issues/5)（[#27](https://github.com/shuhei1101/mdmark/pull/27)）が参照の表を作る `collectReferences` と索引を点検する `checkIndex` を、この Issue の CLI から呼ぶ前提で用意している。
-MCP の `export_html`・`build_site`・`check` は [#11](https://github.com/shuhei1101/mdmark/issues/11)、版を上げる `mdmark upgrade` は [#10](https://github.com/shuhei1101/mdmark/issues/10) が持つ。
+[Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/issues/3)（[Markdown をブラウザで描く土台（mount・render・テーマ・機能のオン・オフ）を作る](https://github.com/shuhei1101/mdmark/pull/16)）が画面を持たない `render` を、[文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/issues/5)（[文書の索引・用語のツールチップ・被参照を表示する](https://github.com/shuhei1101/mdmark/pull/27)）が参照の表を作る `collectReferences` と索引を点検する `checkIndex` を、この Issue の CLI から呼ぶ前提で用意している。
+MCP の `export_html`・`build_site`・`check` は [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11)、版を上げる `mdmark upgrade` は [版を上げるときに移行の手順を当てる upgrade を作る](https://github.com/shuhei1101/mdmark/issues/10) が持つ。
 
 ## 計画書
 
@@ -23,7 +23,7 @@ MCP の `export_html`・`build_site`・`check` は [#11](https://github.com/shuh
 
 ## タスク一覧
 
-- [x] ~~初期構築~~（[#12](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
+- [x] ~~初期構築~~（[プロジェクトを立ち上げる](https://github.com/shuhei1101/mdmark/pull/12) で済んでいる）
 - [x] ~~リバースエンジニアリング~~（現状の設計書が揃っている）
 - [x] ~~方針決め~~（方針決めを依頼する Issue ではない）
 - [x] PoC 検証

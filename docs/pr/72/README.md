@@ -6,8 +6,8 @@ Claude Code で文書を書く人が、mdmark のプラグインを入れると�
 
 ## 背景
 
-[Issue #11](https://github.com/shuhei1101/mdmark/issues/11) の要望。
-今の mdmark の使い方は `docs/` にあり、書き出し・まとめ・点検は CLI の `mdmark export`・`build`・`check`（[Issue #9](https://github.com/shuhei1101/mdmark/issues/9)）で呼ぶ。
+[Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11) の要望。
+今の mdmark の使い方は `docs/` にあり、書き出し・まとめ・点検は CLI の `mdmark export`・`build`・`check`（[サーバー無しで Markdown を HTML に書き出し、複数の文書を 1 枚にまとめる CLI を作る](https://github.com/shuhei1101/mdmark/issues/9)）で呼ぶ。
 Claude Code が文書を書くときに、どのページを読めばよいかを知る手段と、CLI を引数の説明つきで呼ぶ手段が無い。
 アーキテクチャ図のリポジトリ構成には、この Issue が作る `guide/`（使い方集）と `plugin/`（Claude Code のプラグイン）の場所だけがある。
 渡し方は Issue の本文の一案（A-4・A-6・D-20・D-21・D-35・R-1）を元にする。

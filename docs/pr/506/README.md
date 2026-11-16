@@ -6,7 +6,7 @@
 
 ## 背景
 
-[#456](https://github.com/shuhei1101/mdmark/issues/456) の要望。
+[設計書『リンクをカードの格子に並べる』の notes の icon:名前 が、mdmark の点検で syntax_warning になる](https://github.com/shuhei1101/mdmark/issues/456) の要望。
 シナリオの `notes.項目の記載方法` の `` `icon:名前` `` を mdmark v0.10.0 の `check --text -` で点検すると、`名前` が Lucide のアイコンの名前でないため書き方の警告になる。
 knowledge の設計書のスキーマの `$defs/markdown` に `contentMediaType: text/markdown` が入り（[shuhei1101/knowledge#240](https://github.com/shuhei1101/knowledge/pull/240)）、dev-docs の `write_docs` はこの値を書き換えたときに書き込みを止める。
 

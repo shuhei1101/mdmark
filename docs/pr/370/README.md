@@ -6,8 +6,8 @@
 
 ## 背景
 
-[Issue #350](https://github.com/shuhei1101/mdmark/issues/350) の不具合。
-[#342](https://github.com/shuhei1101/mdmark/pull/342) で `package.json` に `"prepare": "lefthook install && npm ci --prefix tools/eslint"` が追加された。
+[#342 で追加した prepare のため、次のバージョンのタグも npx github:shuhei1101/mdmark#v{バージョン} で入れられない](https://github.com/shuhei1101/mdmark/issues/350) の不具合。
+[VS Code の webview の画面を React（Vite + shadcn/ui）へ移す](https://github.com/shuhei1101/mdmark/pull/342) で `package.json` に `"prepare": "lefthook install && npm ci --prefix tools/eslint"` が追加された。
 GitHub の参照から入れると npm が `prepare` を実行し、`lefthook install` と `npm ci --prefix tools/eslint` が失敗して起動できない（`npm exec --yes github:shuhei1101/mdmark#develop serve` が exit 1。`prepare` の無い v0.9.0 は起動できる）。
 次の release でタグにも `prepare` が入るため、release の前に修正する。
 今の E2E は作業ツリーの `dist/cli.js` を動かしており、GitHub の参照から入れる経路を通らないため検出できなかった。

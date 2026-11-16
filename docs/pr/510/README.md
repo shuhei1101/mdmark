@@ -6,8 +6,8 @@ VS Code 拡張機能の結合テスト `vscode/tests/integration/preview-rerende
 
 ## 背景
 
-[#474](https://github.com/shuhei1101/mdmark/issues/474) の要望。
-[#472](https://github.com/shuhei1101/mdmark/pull/472) の結合テストで、`render` を送信した時刻と最後の書き換えの時刻の比較（`sentAt - lastEdit >= 150`）が「最後の書き換えから -1254 ms」で fail した。同じ commit の次の実行は全 pass した。
+[VS Code 拡張機能の結合テスト『プレビューを再描画する』の test_normal が、時間の比較でときどき fail する](https://github.com/shuhei1101/mdmark/issues/474) の要望。
+[dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す](https://github.com/shuhei1101/mdmark/pull/472) の結合テストで、`render` を送信した時刻と最後の書き換えの時刻の比較（`sentAt - lastEdit >= 150`）が「最後の書き換えから -1254 ms」で fail した。同じ commit の次の実行は全 pass した。
 
 ## 計画書
 

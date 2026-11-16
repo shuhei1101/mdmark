@@ -6,12 +6,12 @@
 
 ## 背景
 
-[Issue #118](https://github.com/shuhei1101/mdmark/issues/118) の要望。
+[プレビューの右側に目次を出し、見出しの節の折りたたみを H1 と入れ子のまとめての操作に広げる](https://github.com/shuhei1101/mdmark/issues/118) の要望。
 今の目次は `<!-- toc -->` のマーカーの場所に h2・h3 を並べるだけで本文の中に置かれ（[src/render/syntax/toc.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/render/syntax/toc.ts)）、画面の横に出す目次が無いため、今どの節を読んでいるかが分からない。
 節の開閉は h2〜h4 だけが対象で（[src/render/syntax/sections.ts](https://github.com/shuhei1101/mdmark/blob/develop/src/render/syntax/sections.ts)）、H1 の節は開閉できず、全ての節や入れ子の節をまとめて開閉する操作も無い。
 VS Code 拡張機能のプレビュー・書き出した HTML・まとめた HTML はどれもライブラリ本体の `mount` で描くため、`mount` に入れると全てに当たる。
 
-目次の出し方を文書ごとに選ぶ要望（[ユーザーのコメント](https://github.com/shuhei1101/mdmark/issues/118#issuecomment-6435884079)）は、文書の先頭にページの設定を記載する [#161](https://github.com/shuhei1101/mdmark/issues/161) が、この PR で作る目次の出し方の設定を前提に扱う。
+目次の出し方を文書ごとに選ぶ要望（[ユーザーのコメント](https://github.com/shuhei1101/mdmark/issues/118#issuecomment-6435884079)）は、文書の先頭にページの設定を記載する [配色（ライト・ダーク）などのページの設定を、文書の先頭の印で指定できるようにする](https://github.com/shuhei1101/mdmark/issues/161) が、この PR で作る目次の出し方の設定を前提に扱う。
 
 ## 計画書
 
