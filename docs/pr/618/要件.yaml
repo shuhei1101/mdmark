@@ -1,0 +1,33 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: mermaid の図（flowchart・classDiagram）の click の行で URL を指すノードを、書かれた URL のリンクにして描く。スクリプトの URL とコールバックの click はリンクにしない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: map の構成図の click のノードのリンクは今の扱いのまま変えない
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: click の行で URL を指すノードがリンクになることと、リンクにならない形（スクリプトの URL・コールバック）を追加する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: mermaid のコードブロックの行に、click の URL の行がノードのリンクになることを追加する
+    status: todo
+scope_out:
+  - item: 'map の構成図の click の行で id: のリンク先をノードのリンクにする'
+    reason: map の範囲の図が対象で、部品にしない Mermaid の図とは別の処理
+    plan: '#611'
+  - item: 部品にしない Mermaid の図のビュワーの操作（移動・拡大など）とツールチップ
+    reason: 要望に含まれない。#570 の後に同じ src/mermaid.ts を変える
+    plan: '#500'
+  - item: click の行のツールチップの文字（`"{URL}" "{ツールチップ}"` の 2 つ目の値）を描く
+    reason: 要望に含まれない（target と同じく読んで捨てる）
+    plan: '#391'
+  - item: flowchart・classDiagram 以外の Mermaid の種類の click
+    reason: Mermaid の記法で click を持つのは flowchart と classDiagram だけで、他の種類には書く行が無い
+    plan: none
