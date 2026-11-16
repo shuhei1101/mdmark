@@ -1,0 +1,28 @@
+dev-docsの端末の設定の付け替え:
+  説明: dev-docs の端末の設定（~/.config/dev-docs/settings.yaml）の sources[] の id が mdmark の行の config を、develop の worktree の dev-docs.yaml から project-index.yaml へ書き換える。書き換える前に同じ場所へバックアップを取る
+  タグ: [端末の設定]
+  実行者: planner
+  時期: マージの後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: dev-docs の MCP の describe（source が mdmark）が、警告なしで mdmark の種類の一覧を返す
+  状態: "-"
+project-indexの端末の設定の付け替え:
+  説明: project-index の端末の設定（~/.config/project-index/settings.yaml）の id が mdmark の行の config を、develop の worktree の dev-docs.yaml から project-index.yaml へ書き換える。書き換える前に同じ場所へバックアップを取る
+  タグ: [端末の設定]
+  実行者: planner
+  時期: マージの後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: project-index の MCP の describe（source が mdmark）が、警告なしで mdmark の種類の一覧を返す
+  状態: "-"
