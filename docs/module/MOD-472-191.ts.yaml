@@ -242,7 +242,8 @@ functions:
     refs:
       - IF-472-35#constraints[書き換えと入れ替えの見分け]
     status: planned
-lead: '`blocks.ts` の型（比べる 2 つの本文・ブロックの行の範囲）と関数（比べる 2 つの本文を取り出す・ブロックに分ける・ブロックを色分けする・書き換えかを見分ける）。'
+lead: '比べる 2 つの本文の取り出しと、描いた文書のブロックの色分けを受け持ち、差分のブロックの色分けを変えるときに参照する。'
 tags:
   - name: topic:差分
     main: true
+  - name: action:取り出し

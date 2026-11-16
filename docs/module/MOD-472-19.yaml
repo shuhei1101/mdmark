@@ -17,6 +17,6 @@ notes:
 
     `extension.ts` はビルドが `vscode/dist/extension.cjs`（CommonJS。`vscode` はまとめない）にまとめ、`package.json` の `main` が指す。
 tags:
-  - name: topic:エントリーポイント
+  - name: topic:エントリポイント
     main: true
   - name: tool:vscode

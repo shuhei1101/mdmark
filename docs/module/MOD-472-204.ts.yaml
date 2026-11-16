@@ -160,8 +160,11 @@ function_types:
     returns:
       type: Promise<LibraryModule>
       description: 読み込んだモジュール
-lead: '`libraries.ts` の型（外部ライブラリのモジュール）と関数（マーカーの場所に外部ライブラリを描かせる・埋めた外部ライブラリを入れる）と関数型（モジュールを読み込む）と定数（描き終えたマーカー・埋めた外部ライブラリの記録）。'
+lead: 'マーカーの場所への外部ライブラリの描画を受け持ち、外部ライブラリの読み込みを変えるときに参照する。'
 tags:
   - name: action:描画
     main: true
+  - name: topic:dom
+  - name: topic:markdown
   - name: topic:文書
+  - name: action:読み込み

@@ -16,3 +16,5 @@ tags:
     main: true
   - name: tool:html
   - name: tool:vscode
+  - name: action:書き出し
+  - name: action:配布

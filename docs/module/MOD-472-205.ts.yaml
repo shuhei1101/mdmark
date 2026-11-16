@@ -141,8 +141,12 @@ function_types:
       type: 'Promise<{ default?: unknown }>'
       description: 読み込んだモジュール。本体の `default` は `HLJSApi`、言語の `default` は `LanguageFn`
     status: planned
-lead: '`highlight.ts` の型（埋めた色分けのモジュール）と関数（色分けの対象を色分けする・埋めた色分けのモジュールを入れる）と関数型（色分けのモジュールを読み込む）と定数（埋めた色分けのモジュールの記録）。'
+lead: '色分けのライブラリの読み込みとコードブロックの色分けを受け持ち、コードブロックの色分けを変えるときに参照する。'
 tags:
-  - name: action:描画
+  - name: tool:highlight.js
     main: true
+  - name: topic:dom
+  - name: topic:markdown
+  - name: action:描画
   - name: topic:文書
+  - name: action:読み込み

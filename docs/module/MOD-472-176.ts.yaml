@@ -103,7 +103,8 @@ functions:
         mock: なし
         expected: '`end.y` が先のテーブルの `y + 22`'
     status: planned
-lead: '`er.ts` の関数（ER 図のテーブルの高さ・ER 図の関係の線の経路）と定数（ER 図のテーブルの種類・ER 図の多重度・ER 図の列のマーカー・ER 図の寸法）。'
+lead: 'ER 図のテーブルの種類・多重度・寸法と関係の線の経路を受け持ち、ER 図の描き方を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg

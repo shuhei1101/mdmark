@@ -35,7 +35,8 @@ functions:
       - 'MOD-472-197#functions[renderDiffHtml]'
     refs:
       - CMP-472-45#
-lead: '`diff-lines.ts` の関数（差分の行を描く）。'
+lead: '差分の行の部品が返却する HTML を受け持ち、差分の行の外観を変えるときに参照する。'
 tags:
   - name: topic:差分
     main: true
+  - name: action:描画

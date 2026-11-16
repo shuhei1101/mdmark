@@ -91,7 +91,9 @@ functions:
         condition: 折れ線のグラフのクリックを受ける円にフォーカスし、次に ER 図のテーブルの説明のボタンに `pointerenter`。`placement` は `bottom`
         mock: なし（Chromium）
         expected: それぞれの `aria-describedby` が指すツールチップが `hidden` を持たず、`top` が持ち主の `bottom` 以上。同時に開いているのは 1 つ
-lead: '`diagram-tips.ts` の関数（図のツールチップを付ける）。'
+lead: '図のツールチップの操作の付与を受け持ち、図のツールチップの開き方を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg
+  - name: action:付与

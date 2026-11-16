@@ -114,7 +114,11 @@ functions:
         condition: モーダルの中でツールチップ A にポインターを乗せて Esc、ツールチップ B にポインターを乗せて Esc（Playwright のキー操作）
         mock: なし
         expected: どちらの Esc の後もツールチップが `hidden` を持ち、`dialog` が `open` のまま
-lead: '`diagrams.ts` の関数（図の拡大・縮小・移動・全画面を付ける・図を全画面で開く）。'
+lead: '図の拡大・縮小・移動・全画面の操作の付与を受け持ち、図の表示の操作を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg
+  - name: action:移動
+  - name: action:拡大
+  - name: action:付与

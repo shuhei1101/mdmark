@@ -39,7 +39,9 @@ functions:
         expected: 前の側が `前のリビジョンには、この範囲がありません`
     refs:
       - CMP-472-42#
-lead: '`diff-html.ts` の関数（埋め込んだ HTML の差分を描く）。'
+lead: '埋め込んだ HTML の差分の HTML を受け持ち、埋め込んだ HTML の差分の見せ方を変えるときに参照する。'
 tags:
   - name: topic:差分
     main: true
+  - name: tool:html
+  - name: action:描画

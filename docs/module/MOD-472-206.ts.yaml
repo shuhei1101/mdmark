@@ -165,8 +165,12 @@ functions:
       type: void
       description: なし
     status: planned
-lead: '`html-scripts.ts` の関数（範囲のスクリプトを動かす・変換のライブラリを読み込む・範囲のコードを包む・埋めた範囲の関数を入れる）と定数（埋めた範囲の関数・範囲の関数の受け取りの鍵・範囲のコードの変換の設定）。'
+lead: '埋め込んだ HTML の範囲のスクリプトの変換と実行を受け持ち、範囲のスクリプトの動かし方を変えるときに参照する。'
 tags:
   - name: action:描画
     main: true
+  - name: topic:dom
+  - name: topic:markdown
   - name: topic:文書
+  - name: action:変換
+  - name: action:実行

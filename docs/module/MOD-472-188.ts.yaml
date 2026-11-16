@@ -67,7 +67,9 @@ functions:
         mock: なし（Chromium）
         expected: '`false` の後に全ての列の行が `hidden` を持たず `非表示 {数} 列` の行が無い。`true` の後に描いた直後と同じ HTML'
     status: planned
-lead: '`er-folds.ts` の関数（ER 図の列の開閉を付ける・ER 図のテーブルの列を畳む・開く）。'
+lead: 'ER 図のテーブルの列の開閉を受け持ち、ER 図の列の開閉の操作を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg
+  - name: action:開閉

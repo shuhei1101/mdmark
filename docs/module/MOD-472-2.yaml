@@ -39,3 +39,6 @@ tags:
     main: true
   - name: topic:サーバー
   - name: tool:claude-code
+  - name: action:検査
+  - name: action:登録
+  - name: action:待ち受け

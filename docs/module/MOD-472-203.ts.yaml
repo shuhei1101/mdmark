@@ -469,8 +469,10 @@ functions:
 notes:
   ブラウザのテストファイル: |-
     - `tests/unit/src/mount-view.browser.test.ts`
-lead: '`mount.ts` の型（描く設定・描いた要素の操作・列の表示の通知）と関数（文書を要素に描く・比較元を検める）と定数（描いた要素の記録・描く先の class・テーマの属性・明暗の class）。'
+lead: '文書を要素に描く公開関数と描いた要素の記録を受け持ち、mount の描く流れを変えるときに参照する。'
 tags:
   - name: action:描画
     main: true
+  - name: topic:dom
+  - name: topic:markdown
   - name: topic:文書

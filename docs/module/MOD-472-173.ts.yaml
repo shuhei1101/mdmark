@@ -166,7 +166,10 @@ functions:
         mock: なし
         expected: '`120`・`401`・`3000`'
     status: planned
-lead: '`geometry.ts` の関数（全体が収まる倍率・飛び越えの弧を入れた線のパス・縦の軸の刻みを切る・系列を積み上げるなど）と定数（拡大・縮小と移動の量・飛び越えの弧の半径・重なる線のずらし・リサイズハンドルの量）。'
+lead: '収まる倍率・線の飛び越えの弧・重なる線のずらし・軸の刻みの計算を受け持ち、図の配置の計算を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg
+  - name: action:配置
+  - name: action:計算

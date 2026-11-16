@@ -60,7 +60,9 @@ functions:
         mock: なし
         expected: '`1` は `line` 2 つ、`0..1` は `line` と `circle[data-ring]`、`1..n` は鳥の足の `path` と `line`、`0..n` は鳥の足の `path` と `circle[data-ring]`'
     status: planned
-lead: '`er.ts` の関数（ER 図のテーブルを描く・ER 図の多重度の記号）。'
+lead: 'ER 図のテーブルと多重度の記号の描画を受け持ち、ER 図のテーブルの描き方を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg
+  - name: action:描画

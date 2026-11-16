@@ -75,7 +75,8 @@ functions:
         mock: なし
         expected: '`mdmark-diagram-height:/docs/a.html#1:問い合わせの流れ`'
     status: planned
-lead: '`diagram-resize.ts` の関数（リサイズハンドルを付ける・図の高さのキー）と定数（図の高さのキーの頭）。'
+lead: '表示ブロックの高さを変えるリサイズハンドルと高さの保持を受け持ち、図のリサイズの操作を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg

@@ -28,7 +28,9 @@ functions:
     refs:
       - 'MOD-472-172#functions[renderDiagramTip]'
     status: planned
-lead: '`hint.ts` の関数（ヒントのマーカーと中身を付ける）。'
+lead: '埋め込んだ HTML のヒントのマーカーと中身の付与を受け持ち、ヒントの出し方を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg
+  - name: action:付与

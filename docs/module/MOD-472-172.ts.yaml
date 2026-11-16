@@ -258,7 +258,9 @@ functions:
         mock: なし
         expected: 論理名とラベルの `{{顧客}}`・`{{注文}}` が `mdmark-term` の下線になり、`{{`・`}}` が文字に残らず、`tips` に `顧客` の意味があり、`tips` に `{{` が残らず、`terms` が `true`。説明のボタン・開閉のボタンのスクリーンリーダー向けの名前が `「顧客」の…`
     status: planned
-lead: '`diagram.ts` の関数（図の枠を描く・map の構成図のノードと線を描く・凡例の項目・図のツールチップを描くなど）。'
+lead: '図の表示ブロック・構成図のノードと線・グラフ・ER 図・図のツールチップ・凡例の描画を受け持ち、図の部品の描き方を変えるときに参照する。'
 tags:
   - name: topic:図
     main: true
+  - name: tool:svg
+  - name: action:描画
