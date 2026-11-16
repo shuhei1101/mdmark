@@ -21,9 +21,9 @@ tasks:
     updated_at: '2026-11-16T17:37:32.437787+00:00'
   - process: 複合ユースケース設計
     status: skipped
-    reason: 文書の作成者が mermaid のコードブロックを記載し、読者が描いた図を操作する流れ（単一 UC の連鎖）は変わらず、変わるのは単一 UC『mermaidの図を描く』『図を拡大・縮小・移動する』の中の操作だけのため。複合 UC『Mermaidと補足で書いた図を辿って読む』は記載方法が map の範囲のままで影響しない
     updated_by: planner
-    updated_at: '2026-11-16T20:21:11.281186+00:00'
+    updated_at: '2026-11-16T20:29:57.312017+00:00'
+    reason: 文書の作成者が mermaid のコードブロックを記載し、読者が描いた図を操作する流れ（単一 UC の連鎖）は変わらず、変わるのは単一 UC『mermaidの図を描く』『図を拡大・縮小・移動する』の中の操作だけのため。純粋な Markdown だけの文書を描いて操作する新規の複合 UC も、同じ連鎖になるため作らない。複合 UC『Mermaidと補足で書いた図を辿って読む』は記載方法が map の範囲のままで影響しない
   - process: デザインスタイル選定
     status: skipped
     reason: docs/design-policy.md があり、Issue は見た目の方向を変えないため（モック要否 Q4）
@@ -35,9 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T17:37:32.437787+00:00'
   - process: 単一ユースケース設計
-    status: done
+    status: todo
     updated_by: planner
-    updated_at: '2026-11-16T20:22:30.087917+00:00'
+    updated_at: '2026-11-16T20:29:49.508077+00:00'
+    note: 操作を付ける方法（要件.md の案 A / B）をユーザーに確認して決めてから、要件.md の「案ごとに書き直す単一 UC」のとおり SC-472-11・SC-472-19 と要件.yaml の use_cases を書き直す
   - process: モック作成
     status: todo
     note: 'Mermaid の図の部品のモック（docs/mock/components/mermaid-diagram/）に、固定した参加者の行など見た目が変わる場面だけを足す（モック要否 Q3: 固定した行の見た目を Issue が決めていない）'
