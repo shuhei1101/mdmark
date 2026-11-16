@@ -126,3 +126,8 @@ functions:
         expected: 端の形が 6（`--` の `r7` は形を持たない）・多重度が 2 で、「基本図形」の上書きの高さが名前の行と開閉のボタンの 1 行、「描画器」の高さがメンバー 2 行と区切り線 2 本の分
 refs:
   - IF-472-35#constraints[map のクラス図]
+lead: '`class-diagram.ts` の型（クラス図の読み取り結果）と関数（classDiagramを読む・クラス図を構成図の入力にする・クラス図の部品の入力）と定数（クラス図のノードの種類）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

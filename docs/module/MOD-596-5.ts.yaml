@@ -63,3 +63,8 @@ functions:
         expected: どのノードも `data-selected` を持たず、`map-dim` を持つノードが無い
 refs:
   - IF-472-35#constraints[map のアーキテクチャ図]
+lead: '`architecture-view.ts` の関数（アーキテクチャ図を付ける）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

@@ -113,3 +113,8 @@ functions:
       description: 形状（`start`・`end`・`choice`・`note`）・同じ状態への遷移・配置の上書き
 refs:
   - IF-472-35#constraints[map の状態遷移図]
+lead: '`state-diagram.ts` の型（状態遷移図の読み取り結果）と関数（stateDiagramを読む・状態遷移図を構成図の入力にする・状態遷移図の部品の入力）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

@@ -63,3 +63,8 @@ functions:
         expected: 帯の文字が `–/2`
 refs:
   - IF-472-35#constraints[map の状態遷移図]
+lead: '`state-view.ts` の関数（状態遷移図を付ける）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

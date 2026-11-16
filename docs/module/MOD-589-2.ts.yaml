@@ -25,3 +25,6 @@ functions:
       description: '`div.mdmark-html`（`wide` のときは `div.mdmark-html.is-wide[tabindex="0"]`）で包んだ HTML'
     refs:
       - CMP-472-41#
+tags:
+  - name: topic:部品
+    main: true

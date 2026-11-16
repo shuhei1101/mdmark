@@ -46,3 +46,8 @@ functions:
         condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `rewriteLegacyMarks`、もう片方にスクリプトと同じフォルダの `legacy-marks.js` の `rewriteLegacyMarks` を渡す
         mock: 一時フォルダ
         expected: 戻り値と書き換えた文書が同じ（まとめたファイルが無い・古いときは失敗する）
+lead: '`marker-json.mjs` の関数（文書のマーカーを JSON の記載へ書き換える）。'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行

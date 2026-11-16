@@ -234,3 +234,8 @@ functions:
       description: テーブル名ごとの上書き
 refs:
   - IF-472-35#constraints[map の ER 図]
+lead: '`er.ts` の型（ER図の読み取り結果・行が増える関連）と関数（erDiagramを読む・関連の端の列を決める・行が増える関連を求める・ER図を構成図の入力にするなど）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

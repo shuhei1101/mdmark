@@ -63,3 +63,8 @@ functions:
         expected: '`b` が `a` より上にあり、`r1` の線の終点（矢じり）が `b` の下の辺'
 refs:
   - IF-472-35#constraints[map の C4 図]
+lead: '`c4-view.ts` の関数（C4図を付ける）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

@@ -88,3 +88,8 @@ functions:
         expected: '`r3` が `rankless` で、`worker` の上書きが `align: api` と `api` より大きい `order`、`r1` の元が `web`、`hub` の幅と高さが 16'
 refs:
   - IF-472-35#constraints[map のアーキテクチャ図]
+lead: '`architecture.ts` の型（アーキテクチャ図の読み取り結果）と関数（architecture-betaを読む・アーキテクチャ図を構成図の入力にする）と定数（アーキテクチャ図のノードの種類）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

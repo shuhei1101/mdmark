@@ -204,3 +204,7 @@ functions:
         condition: 定義 1 つと参照 1 つの文書
         mock: なし
         expected: 出力に定義の本文の段落が無く、ツールチップと一覧にだけ本文がある
+lead: '`annotations.ts` の型（注記の状態）と関数（注記のルールを登録する・注記の定義を読み込む・注記の参照を読み込む・注記に番号を振るなど）。'
+tags:
+  - name: topic:構文
+    main: true

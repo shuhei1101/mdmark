@@ -36,3 +36,6 @@ functions:
     returns:
       type: string
       description: svg の文字列
+tags:
+  - name: topic:部品
+    main: true

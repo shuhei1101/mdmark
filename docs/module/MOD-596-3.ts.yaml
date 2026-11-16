@@ -98,3 +98,8 @@ functions:
         expected: '`r1` が `b` から `a` への線で、`reversed` が `r1`・`r2`、`r2` は `a` から `c` への線で `direction` が `back`'
 refs:
   - IF-472-35#constraints[map の C4 図]
+lead: '`c4.ts` の型（C4図の読み取り結果）と関数（C4Contextを読む・C4図を構成図の入力にする）と定数（C4図のノードの種類）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

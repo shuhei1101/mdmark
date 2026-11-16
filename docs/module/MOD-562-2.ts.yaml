@@ -50,3 +50,8 @@ functions:
         condition: '`id="mdmark-note-owner-1-judge"` の持ち主を持つ範囲と、`data-note-owner="mdmark-note-owner-1-judge"`・`href="#mdmark-note-owner-3-1-judge"` の戻るリンク'
         mock: なし（Chromium）
         expected: 持ち主の `id` が `mdmark-note-owner-3-1-judge`
+lead: '`annotations.ts` の関数（図の要素ごとの注記を読み込む・持ち主の id を一覧の戻るリンクに合わせる）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図

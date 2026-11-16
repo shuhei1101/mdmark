@@ -71,3 +71,8 @@ functions:
         expected: ボタンの `aria-describedby` が指す `role="tooltip"` の要素が `hidden` でない
 refs:
   - IF-472-35#constraints[map の ER 図]
+lead: '`er-view.ts` の関数（ER図を付ける）。'
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
