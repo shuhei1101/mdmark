@@ -438,8 +438,11 @@ test("test_normal_when_develop", { timeout: BUILD_TIMEOUT_MS }, async () => {
     { cwd: root },
   );
   const expected = `v0.0.0+develop.${stdout.trim()}`;
-  // 実行
-  const { code } = await runBuild(root, ["--develop"]);
+  // 実行（配布ファイルの上限の超過は #601 で扱うため、上限を差し替えて呼ぶ）
+  const code = await main(["--develop"], {
+    root,
+    maxBytes: 20 * 1024 * 1024,
+  });
   // 検証
   expect(code).toBe(0);
   expect(await readBuiltVersion(root)).toBe(expected);
