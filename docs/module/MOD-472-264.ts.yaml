@@ -41,3 +41,8 @@ functions:
         condition: '`docId` が `arch`、参照の表が無く、索引の `api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確認するとき" }]`、`guide` の `related` が `["arch"]`'
         mock: なし
         expected: 末尾の一覧の項目が `api`・`guide` の順
+lead: '`backlinks.ts` の関数（関連文書の一覧のコアルール）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

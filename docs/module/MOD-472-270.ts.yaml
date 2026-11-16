@@ -88,3 +88,7 @@ functions:
       type: WarningItem
       description: 警告の項目
     status: planned
+lead: '`collapse.ts` の型（折り畳みの指定）と関数（折り畳みの指定を読み込む・title= の後ろの単語を参照する・title= の続きの警告の項目を作る）。'
+tags:
+  - name: topic:構文
+    main: true

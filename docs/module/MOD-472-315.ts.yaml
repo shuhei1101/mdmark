@@ -422,3 +422,7 @@ functions:
         expected: '`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">` と `aria-pressed="true"` の `code-xml` のアイコンのボタン'
         mock: なし
         summary: 押した状態を `aria-pressed` に入れる
+lead: '`table.ts` の関数（表を描く・真偽値のセルの中身を描く・表の見出しのボタンとドロワーを描く・表の上の帯とテーブル設定のパネルを描くなど）。'
+tags:
+  - name: topic:部品
+    main: true

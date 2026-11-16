@@ -33,3 +33,7 @@ functions:
         condition: '`label: "要確認"`、`color: red`'
         mock: なし
         expected: '`<span class="mdmark-badge" data-color="red">要確認</span>`'
+lead: '`badge.ts` の関数（バッジを描く）。'
+tags:
+  - name: topic:部品
+    main: true

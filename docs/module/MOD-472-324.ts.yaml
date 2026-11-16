@@ -34,3 +34,7 @@ functions:
     refs:
       - CMP-472-34#
     status: planned
+lead: '`back-to-top.ts` の関数（先頭へ戻るボタンを描く）。'
+tags:
+  - name: topic:部品
+    main: true

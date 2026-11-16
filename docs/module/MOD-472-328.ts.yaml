@@ -28,3 +28,7 @@ functions:
         mock: なし
         expected: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3"><div class="mdmark-gallery-grid">` の中に `SLOT_MARKER`'
     status: planned
+lead: '`gallery.ts` の関数（ギャラリーを描く）。'
+tags:
+  - name: topic:部品
+    main: true

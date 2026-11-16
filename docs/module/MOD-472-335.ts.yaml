@@ -25,3 +25,7 @@ functions:
         expected: '`<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">+</kbd></span>`'
         mock: なし
         summary: キーを `+` でつなぐ
+lead: '`kbd.ts` の関数（キーを描く）。'
+tags:
+  - name: topic:部品
+    main: true

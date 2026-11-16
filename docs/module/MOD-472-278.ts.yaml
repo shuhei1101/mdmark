@@ -43,3 +43,7 @@ functions:
         expected: '`sailboat` の `span` の中にその構造の `svg` がある'
         mock: なし
         summary: 指定した構造の表を使用する
+lead: '`inline-icons.ts` の関数（行内のアイコンにする）と定数（アイコンの名前の記載方法）。'
+tags:
+  - name: topic:構文
+    main: true

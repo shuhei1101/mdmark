@@ -51,3 +51,6 @@ notes:
         ├── diff-minimap.ts     # ミニマップの HTML
         └── diff-message.ts     # 差分の状態の文の HTML
     ```
+tags:
+  - name: topic:差分
+    main: true

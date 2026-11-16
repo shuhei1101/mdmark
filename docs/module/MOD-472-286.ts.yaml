@@ -68,3 +68,7 @@ functions:
         mock: なし
         expected: どちらも `color` が `red` で、`label` が空白だけ
     status: planned
+lead: '`badges.ts` の関数（バッジにする・バッジの色とラベルを分ける）。'
+tags:
+  - name: topic:構文
+    main: true

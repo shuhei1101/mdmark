@@ -36,3 +36,7 @@ functions:
         condition: '`<div class="a"><p>x &lt;y&gt;</p></div>` と nonce `n1`'
         mock: なし
         expected: '`<div data-mdmark-own="n1" class="a"><p data-mdmark-own="n1">x &lt;y&gt;</p></div>`'
+lead: '`own.ts` の関数（mdmark が出した要素にマーカーを付ける）と定数（中身の差し込みインターフェース）。'
+tags:
+  - name: topic:部品
+    main: true

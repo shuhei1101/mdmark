@@ -215,3 +215,7 @@ functions:
         mock: なし
         expected: '`video` が無く、`figure.mdmark-image` の `img` の `src` が `demo.mp4`'
     status: planned
+lead: '`images.ts` の型（画像の属性）と関数（画像の種類を見分ける・画像の属性を読み込む・画像の属性を読み込んで種類を見分ける・画像と動画と音声を図にする）と定数（動画と音声の拡張子・画像の属性の名前）。'
+tags:
+  - name: topic:構文
+    main: true

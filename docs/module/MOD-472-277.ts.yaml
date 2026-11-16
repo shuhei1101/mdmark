@@ -79,3 +79,7 @@ functions:
         mock: なし
         expected: どちらの範囲の前にも記載の警告があり、2 つ目は 27 枚目の `figure` が `id` とサブ図の番号を持たない
     status: planned
+lead: '`gallery.ts` の関数（ギャラリーのマーカーの指定を読み込む・ギャラリーにする）と定数（ギャラリーの列の数・サブ図の番号の文字）。'
+tags:
+  - name: topic:構文
+    main: true

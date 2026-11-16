@@ -118,3 +118,8 @@ functions:
         mock: なし
         expected: 文言が順に `コピー`・`コピーしました`・`コピーできませんでした` で、それぞれ `svg` を持つ
     status: planned
+lead: '`term-tip.ts` の関数（用語のツールチップの HTML を返却する・コマンドのコピーのボタンの中身を返却する）と定数（エイリアスの区分の見出し・コマンドのコピーのボタンの状態）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

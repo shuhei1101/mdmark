@@ -37,3 +37,7 @@ notes:
     └── parts/
         └── mermaid.ts      # 部品『mermaid の図』の renderMermaidDiagram
     ```
+tags:
+  - name: tool:mermaid
+    main: true
+  - name: topic:図

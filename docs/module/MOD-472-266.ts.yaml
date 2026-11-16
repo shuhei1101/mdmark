@@ -78,3 +78,8 @@ functions:
     callees:
       - MOD-472-232#functions[copyText]
       - 'MOD-472-261#functions[renderTermTipCopy]'
+lead: '`terms.ts` の関数（用語のツールチップの操作を付ける）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

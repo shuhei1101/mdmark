@@ -69,3 +69,7 @@ functions:
     refs:
       - IF-472-34#
       - MOD-472-154#data_models[ViewSpec]
+lead: '`views.ts` の関数（ビューのマーカーを囲みにする）。'
+tags:
+  - name: topic:構文
+    main: true

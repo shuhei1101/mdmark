@@ -113,3 +113,7 @@ functions:
         mock: なし
         expected: '`open` が無く、`wrap` が `false`'
     status: planned
+lead: '`tree.ts` の関数（罫線のツリーを読み込む・ファイルツリーにする・ファイルツリーのマーカーの指定を読み込む）。'
+tags:
+  - name: topic:構文
+    main: true

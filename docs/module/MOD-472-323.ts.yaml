@@ -37,3 +37,7 @@ functions:
     refs:
       - CMP-472-49#
     status: planned
+lead: '`doc-list.ts` の関数（文書の一覧を描く）。'
+tags:
+  - name: topic:部品
+    main: true

@@ -133,3 +133,7 @@ functions:
         mock: なし
         expected: '`warnings` に 1 件'
     status: planned
+lead: '`html.ts` の関数（埋め込んだ HTML を描く・範囲の css・ts・js を読み込む）。'
+tags:
+  - name: topic:構文
+    main: true

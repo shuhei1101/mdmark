@@ -46,3 +46,7 @@ functions:
         expected: '`path` と `cx` だけを持つ `circle` を持つ svg で、`script`・`onclick` が無い'
         mock: なし
         summary: 許す要素と属性だけを残す
+lead: '`inline-icon.ts` の関数（行内のアイコンを描く・IconNode を svg にする）。'
+tags:
+  - name: topic:部品
+    main: true

@@ -41,3 +41,7 @@ functions:
         mock: なし
         expected: '`state.tokens` が変わらない'
     status: planned
+lead: '`frontmatter.ts` の関数（フロントマターの表示を差し込む）。'
+tags:
+  - name: topic:構文
+    main: true

@@ -148,3 +148,8 @@ data_models:
         type: string
         description: 記録したときのマーカーの値（details・注意書き・フロントマターは `open`・`closed`、ER 図は `folded` の有無、ファイルツリーは `data-open`、コードの折りたたみは `data-folded` の有無。マーカーを持たない部品は空の文字列）
     status: planned
+lead: '`part-states.ts` の型（部品の開閉の記録）と関数（部品の記録の鍵を作る・部品の要素を始める開閉を決める・読者が変えた開閉を記録する・details の範囲・折りたたみの注意書き・フロントマターの開閉を記録する）と定数（開閉を記録する部品のセレクタ）。'
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

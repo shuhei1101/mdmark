@@ -79,3 +79,7 @@ functions:
     refs:
       - CMP-472-37#
     status: planned
+lead: '`side-toc.ts` の型（右側の目次の見出し）と関数（右側の目次を描く）。'
+tags:
+  - name: topic:部品
+    main: true

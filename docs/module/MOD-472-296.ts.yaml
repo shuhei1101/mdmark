@@ -53,3 +53,7 @@ functions:
     refs:
       - IF-472-34#constraints[カードの格子]
     status: planned
+lead: '`card-grid.ts` の関数（カードの格子にする）。'
+tags:
+  - name: topic:構文
+    main: true

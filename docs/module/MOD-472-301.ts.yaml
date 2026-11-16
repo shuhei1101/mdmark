@@ -59,3 +59,7 @@ functions:
         expected: 表の前に行番号 `2`・`3` の記載の警告があり、表は 3 列で 2 行目の 3 列目が空
         mock: なし
         summary: 列の数を見出しにそろえて警告する
+lead: '`csv.ts` の関数（CSV を読み込む・CSV の表にする）。'
+tags:
+  - name: topic:構文
+    main: true

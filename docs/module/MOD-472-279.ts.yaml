@@ -85,3 +85,7 @@ functions:
         condition: '`Hello, World!`・`使用方法`・`!!!`'
         mock: なし
         expected: '`hello-world`・`使用方法`・空文字'
+lead: '`headings.ts` の関数（見出しの ID を作る・見出しに ID とアンカーを付ける・ID の元を作る）。'
+tags:
+  - name: topic:構文
+    main: true

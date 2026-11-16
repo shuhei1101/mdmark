@@ -27,3 +27,7 @@ functions:
         condition: '`kind: image`、`number: 1`、`caption: 全体の構成` と、`kind: table`、`number: 1`'
         mock: なし
         expected: 1 つ目は中身の後に `<figcaption class="mdmark-figure-caption"><b>図 1</b>全体の構成</figcaption>`、2 つ目は中身の前に `<b>表 1</b>`
+lead: '`figure.ts` の関数（図表の番号を描く）。'
+tags:
+  - name: topic:部品
+    main: true

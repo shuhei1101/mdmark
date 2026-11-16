@@ -60,3 +60,7 @@ notes:
         ├── view.ts          # ビューの HTML とアイコンの形状（dist/view.js）
         └── comment.ts       # コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧・余白のマーカーの HTML（dist/comments.js）
     ```
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:コメント

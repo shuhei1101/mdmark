@@ -65,3 +65,7 @@ functions:
         condition: '`{ name: "view", figure: false, source: "part" }`'
         mock: なし
         expected: タイトルが `この箇所を表示できません`、本文が `表示に使用する部品（<code>view</code>）を読み込めませんでした。` で始まる
+lead: '`notice.ts` の関数（通知ブロックを描く）と定数（通知ブロックのタイトル）。'
+tags:
+  - name: topic:部品
+    main: true

@@ -44,3 +44,7 @@ functions:
         condition: '`defaults` が `{ print: true }`、`marks` が `[{ print: false }, { print: true }]`'
         mock: なし
         expected: '`{ print: true }`'
+lead: '`features.ts` の関数（文書のマーカーで機能のオン・オフを決める）。'
+tags:
+  - name: topic:設定
+    main: true

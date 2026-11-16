@@ -53,3 +53,7 @@ functions:
         expected: '`{ title: "補足", open: false }`・`{ title: "実行の例", open: true }`・`{ title: "詳細", open: false }`'
         mock: なし
         summary: タイトルと開閉を読み込む
+lead: '`details.ts` の関数（details の範囲にする・details のマーカーを読み込む）。'
+tags:
+  - name: topic:構文
+    main: true

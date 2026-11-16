@@ -27,3 +27,7 @@ functions:
         condition: '`導入`（h2）・`前提`（h3）・`使用方法`（h2）'
         mock: なし
         expected: '`導入` の `li` の中の `ul` に `#前提` のリンク'
+lead: '`toc.ts` の関数（目次を描く）。'
+tags:
+  - name: topic:部品
+    main: true

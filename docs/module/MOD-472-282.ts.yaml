@@ -137,3 +137,7 @@ functions:
         mock: なし
         expected: '`close` が `-1`、`nested` が `true`'
     status: planned
+lead: '`tabs.ts` の関数（タブの範囲を区切る・タブのマーカーの指定を読み込む・タブの閉じを探す）。'
+tags:
+  - name: topic:構文
+    main: true

@@ -25,3 +25,7 @@ functions:
         expected: '`<mark class="mdmark-highlight">決め手</mark>` と `<mark class="mdmark-highlight" data-color="green">例外</mark>`'
         mock: なし
         summary: 色があれば `data-color` を付ける
+lead: '`highlight.ts` の関数（蛍光ペンを描く）。'
+tags:
+  - name: topic:部品
+    main: true

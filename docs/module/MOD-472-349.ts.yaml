@@ -160,3 +160,7 @@ notes:
     src/plugin/
     └── guide-notice.ts   # 記法のルールの参照の案内のフックの入口
     ```
+tags:
+  - name: topic:フック
+    main: true
+  - name: tool:claude-code

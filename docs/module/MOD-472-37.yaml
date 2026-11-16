@@ -38,3 +38,7 @@ notes:
     ├── inline-icons.ts     # まとめていない名前のアイコンを jsDelivr から読み込む loadInlineIcons
     └── print.ts            # 印刷の前後で折り畳みを開いて戻す attachPrint
     ```
+tags:
+  - name: action:描画
+    main: true
+  - name: topic:文書

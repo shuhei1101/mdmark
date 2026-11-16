@@ -10,3 +10,7 @@ notes:
     ├── index.ts   # 公開関数 version()・mount()・render()・registerExtension()・collectReferences()・collectMatches()・checkIndex()・buildAliases()・定数 diffModes と公開の型の export
     └── index.css  # 描いた文書と記法の CSS（@layer mdmark）
     ```
+tags:
+  - name: topic:api
+    main: true
+  - name: topic:エントリーポイント

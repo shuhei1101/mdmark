@@ -71,3 +71,7 @@ functions:
         mock: なし
         expected: 表の前に `mdmark-syntax-warning` があり、`mdmark-tree-example` が無い
     status: planned
+lead: '`table-tree.ts` の関数（階層の表の行を作る・見本を表の下へ移す）。'
+tags:
+  - name: topic:構文
+    main: true

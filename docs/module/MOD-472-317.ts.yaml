@@ -33,3 +33,7 @@ functions:
         expected: 1 つ目が `<details class="mdmark-collapsible"><summary>手順（3 ステップ）</summary><ol class="mdmark-steps">` で始まり、2 つ目が `<details class="mdmark-collapsible" open><summary>準備</summary>` で始まる
     callees:
       - 'MOD-472-325#functions[renderCollapsible]'
+lead: '`steps.ts` の関数（ステップを描く）。'
+tags:
+  - name: topic:部品
+    main: true

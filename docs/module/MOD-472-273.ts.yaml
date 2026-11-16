@@ -83,3 +83,7 @@ functions:
         mock: なし
         expected: '`[undefined, "0:1", "0:1", "0:1", undefined]`'
     status: planned
+lead: '`table-cells.ts` の型（セルの結合の計画）と関数（セルの結合を決める・結合した見出しの範囲を求める）。'
+tags:
+  - name: topic:構文
+    main: true

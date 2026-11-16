@@ -64,3 +64,7 @@ functions:
         mock: なし
         expected: '`canvas` が `hidden` を持たず、`img` が `visibility: hidden`、ボタンが `aria-pressed="true"`'
     status: planned
+lead: '`gif.ts` の関数（GIF の止める・再生するボタンを描く・GIF を描く）。'
+tags:
+  - name: topic:部品
+    main: true

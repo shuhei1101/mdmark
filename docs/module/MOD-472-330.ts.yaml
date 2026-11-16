@@ -42,3 +42,7 @@ functions:
         mock: なし
         expected: '`audio` が `controls` を持ち、`playsinline` と `img.mdmark-media-print` を持たない'
     status: planned
+lead: '`media.ts` の関数（動画と音声を描く）。'
+tags:
+  - name: topic:部品
+    main: true

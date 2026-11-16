@@ -21,3 +21,8 @@ functions:
     refs:
       - CMP-472-6#
     status: planned
+lead: '`mermaid-fixtures.ts` の関数（mermaid の見本の SVG を記載する）。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:描画

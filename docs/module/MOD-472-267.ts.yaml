@@ -84,3 +84,8 @@ functions:
         condition: '`<span title="単語">単語</span><!-- 単語 --><script>単語</script><code>単語</code><a href="#">単語</a><a href="#"><span>入</span></a><h2><em>見</em></h2>`'
         mock: なし
         expected: 長さが同じで、最初の `span` の要素の文字の `単語` と、`a` の中の `span` の `入`、見出しの中の `em` の `見` だけが残る
+lead: '`positions.ts` の関数（文字を本文へ適用する・行内のトークンを本文へ適用する・埋め込んだ HTML の照合しない範囲を伏せる）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

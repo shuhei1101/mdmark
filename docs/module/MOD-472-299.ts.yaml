@@ -142,3 +142,7 @@ functions:
         expected: '3〜5 行目の文字と `{ lineCount: 12 }`'
         mock: なし
         summary: 範囲の行を返却し、越えたら行の数を返却する
+lead: '`includes.ts` の関数（取り込みの設定を取り込み先の文字にする・取り込みのパスを解く・取り込む・見出しの範囲を選ぶなど）。'
+tags:
+  - name: topic:構文
+    main: true

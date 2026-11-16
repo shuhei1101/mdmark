@@ -110,3 +110,8 @@ functions:
         condition: '`test_terms_rule_aliases` と同じ入力に `<!-- features: {"glossary": false} -->`'
         mock: なし
         expected: '`mdmark-term-wrap` の要素が無い'
+lead: '`terms.ts` の関数（用語の下線のコアルール）。'
+tags:
+  - name: topic:索引
+    main: true
+  - name: topic:用語

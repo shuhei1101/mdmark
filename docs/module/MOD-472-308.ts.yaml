@@ -53,3 +53,7 @@ functions:
     refs:
       - CMP-472-10#
     status: planned
+lead: '`card-grid.ts` の型（カードの格子の項目）と関数（カードの格子を描く）。'
+tags:
+  - name: topic:部品
+    main: true

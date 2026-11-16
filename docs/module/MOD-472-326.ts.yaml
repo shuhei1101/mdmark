@@ -28,3 +28,7 @@ functions:
         mock: なし
         expected: '`<span class="mdmark-color" data-color="blue"><strong>重要</strong></span>`'
     status: planned
+lead: '`text-color.ts` の関数（文字の色を描く）。'
+tags:
+  - name: topic:部品
+    main: true

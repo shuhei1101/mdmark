@@ -75,3 +75,7 @@ functions:
     status: planned
     callees:
       - 'MOD-472-270#functions[readCollapse]'
+lead: '`steps.ts` の関数（ステップにする・ステップのマーカーの指定を読み込む）。'
+tags:
+  - name: topic:構文
+    main: true

@@ -23,3 +23,7 @@ functions:
         expected: オンは `div.mdmark-pagebreak` が 1 つ、オフは無く、どちらも `<!--` が無い
         mock: なし
         summary: オンなら要素、オフなら取り除く
+lead: '`pagebreak.ts` の関数（改ページにする）。'
+tags:
+  - name: topic:構文
+    main: true

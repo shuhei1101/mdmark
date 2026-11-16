@@ -49,3 +49,7 @@ functions:
         condition: '`kind` が `warning`、`collapsed` と `open` が `true`'
         mock: なし
         expected: '`<details class="markdown-alert markdown-alert-warning" open>`'
+lead: '`callout.ts` の関数（注意書きを描く）と定数（注意書きの種類）。'
+tags:
+  - name: topic:構文
+    main: true

@@ -33,3 +33,7 @@ functions:
         condition: '`message` だけ'
         mock: なし
         expected: '`<code>` で始まらず、`<ul>` が無い'
+lead: '`syntax-warning.ts` の関数（記載の警告を描く）。'
+tags:
+  - name: topic:部品
+    main: true

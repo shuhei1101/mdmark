@@ -66,3 +66,7 @@ functions:
         mock: なし
         expected: どちらも `undefined`
     status: planned
+lead: '`callouts.ts` の関数（注意書きにする・注意書きの 1 行目を読み取る）。'
+tags:
+  - name: topic:構文
+    main: true

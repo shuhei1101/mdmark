@@ -37,3 +37,7 @@ functions:
         condition: '`level: 1`、`open: true`、`toggle: true`'
         mock: なし
         expected: '`<h1 id="{id}"` の中に `mdmark-section-toggle` のボタンが `aria-expanded="true"` であり、中身が `data-section="open"`'
+lead: '`section.ts` の関数（セクションを描く）。'
+tags:
+  - name: topic:部品
+    main: true

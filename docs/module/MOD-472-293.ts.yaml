@@ -47,3 +47,7 @@ functions:
         expected: '`["Ctrl","Shift","P"]`・`["Ctrl","+"]`・`["Ctrl","C"]`'
         mock: なし
         summary: '`+` で区切り、`++` を `+` のキーにする'
+lead: '`kbd.ts` の関数（キーにする・キーに区切る）。'
+tags:
+  - name: topic:構文
+    main: true

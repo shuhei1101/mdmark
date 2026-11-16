@@ -43,3 +43,7 @@ functions:
       - IF-472-35#constraints[図の移動]
       - CMP-472-39#
     status: planned
+lead: '`diagram-touch.ts` の関数（指で図を動かす操作中を付ける）。'
+tags:
+  - name: topic:図
+    main: true

@@ -40,3 +40,7 @@ functions:
     status: planned
     callees:
       - 'MOD-472-313#functions[escapeHtml]'
+lead: '`collapsible.ts` の関数（折り畳みを描く）。'
+tags:
+  - name: topic:部品
+    main: true

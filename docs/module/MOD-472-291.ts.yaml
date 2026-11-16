@@ -55,3 +55,7 @@ functions:
         mock: なし
         expected: 段落の文字が `[決め手]{color=blue}`
     status: planned
+lead: '`text-color.ts` の関数（本文の文字に色を付ける）。'
+tags:
+  - name: topic:構文
+    main: true

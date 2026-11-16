@@ -32,3 +32,7 @@ functions:
         condition: '3 行の表と `<!-- row-detail: {"at": 5} -->`'
         mock: なし
         expected: 警告の本文に `5` と `3`、表の後に段落
+lead: '`row-details.ts` の関数（行の詳細を表に入れる）。'
+tags:
+  - name: topic:構文
+    main: true

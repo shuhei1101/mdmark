@@ -433,3 +433,7 @@ functions:
         condition: '`node_fit: tall`・`url_state: "no"`・`kinds.a.shape: hexagon`'
         mock: なし
         expected: '`node_fit` が `height`、`url_state` が `true`、`kinds.a` に `shape` が無い'
+lead: '`config.ts` の型（設定・対応表の行・既定を適用した設定・mermaid のテーマなど）と関数（設定に既定を適用する・ページの設定を重ねる・mapの設定に既定を当てる）と定数（機能の既定・既定の対応表・マーカーの名前の書式・色分けのライブラリの既定の読み込み先など）。'
+tags:
+  - name: topic:設定
+    main: true

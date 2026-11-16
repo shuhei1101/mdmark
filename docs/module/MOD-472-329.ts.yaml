@@ -49,3 +49,7 @@ functions:
         mock: なし
         expected: 拡大が `disabled`、倍率の文字が `300%`、移動のまとまりが `hidden` を持たない
     status: planned
+lead: '`lightbox.ts` の関数（ライトボックスを描く）。'
+tags:
+  - name: topic:部品
+    main: true

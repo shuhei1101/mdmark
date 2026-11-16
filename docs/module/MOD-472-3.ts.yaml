@@ -77,3 +77,8 @@ functions:
     refs:
       - IF-472-6#
     status: planned
+tags:
+  - name: topic:フック
+    main: true
+  - name: topic:サーバー
+  - name: tool:claude-code

@@ -111,3 +111,7 @@ functions:
 refs:
   - IF-472-35#constraints[列の幅]
   - CMP-472-61#notes
+tags:
+  - name: action:操作
+    main: true
+  - name: topic:部品

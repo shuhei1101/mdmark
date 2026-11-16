@@ -10,3 +10,6 @@ notes:
     ├── extensions.ts       # 拡張の登録表と registerExtension、引数の検査
     └── standard-schema.ts  # Standard Schema の型（仕様の型を複製したもの）
     ```
+tags:
+  - name: topic:拡張
+    main: true

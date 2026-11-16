@@ -154,3 +154,7 @@ functions:
     status: planned
 refs:
   - IF-472-33#constraints[mdmark の痕跡]
+lead: '`traces.ts` の関数（mdmark の名前を別名へ置き換える・埋め込みの Markdown の名前とコメントを隠す・書き出しの中身の名前を隠す・CSS の痕跡を隠すなど）と定数（mdmark の名前の別名・範囲のスクリプトの表の鍵の仮の文字列の頭）。'
+tags:
+  - name: topic:cli
+    main: true

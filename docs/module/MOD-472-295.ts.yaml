@@ -31,3 +31,7 @@ functions:
         expected: それぞれの範囲の前に記載の警告があり、その中身が `mdmark-layout-columns` に入っていない。入れ子の外側は 2 列のまま
         mock: なし
         summary: 2〜3 列でない範囲と入れ子は囲まずに警告する
+lead: '`layout-columns.ts` の関数（段組みにする）。'
+tags:
+  - name: topic:構文
+    main: true

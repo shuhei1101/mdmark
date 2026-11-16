@@ -31,3 +31,7 @@ functions:
         expected: '`data-color` を持たない `mark.mdmark-highlight` と、段落の前の `pink` を含む記載の警告'
         mock: なし
         summary: 知らない色は既定の色で警告する
+lead: '`highlight.ts` の関数（蛍光ペンのルールを追加する）。'
+tags:
+  - name: topic:構文
+    main: true

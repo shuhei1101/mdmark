@@ -35,3 +35,7 @@ functions:
         mock: なし
         expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
+lead: '`colors.ts` の関数（色の名前か）と定数（色の名前）。'
+tags:
+  - name: topic:部品
+    main: true

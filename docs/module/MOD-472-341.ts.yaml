@@ -22,3 +22,8 @@ constants:
         value: '`server.proxy["/render"]` を環境変数 `RENDER_ORIGIN` の描画のインターフェースへ向け（`RENDER_ORIGIN` が無ければ例外で起動しない）、`@tailwindcss/vite` を追加し、`resolve.alias` の `@` を `vscode/src/webview` に、`resolve.dedupe` を `["react", "react-dom"]` にする'
     refs:
       - LIB-472-3#
+lead: '`main.ts` の定数（Storybook の設定）。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:描画

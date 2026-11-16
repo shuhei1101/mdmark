@@ -25,3 +25,7 @@ functions:
         condition: "`<a href=\"x\">'&'</a>`"
         mock: なし
         expected: '`&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;`'
+lead: '`escape.ts` の関数（HTML の特別な文字をエスケープする）。'
+tags:
+  - name: topic:部品
+    main: true

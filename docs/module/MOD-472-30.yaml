@@ -26,3 +26,7 @@ notes:
     │   └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（ビルドが書き込んで commit する）
     └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
     ```
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行

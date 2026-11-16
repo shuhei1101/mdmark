@@ -38,3 +38,8 @@ components:
         type: Record<string, unknown>
         required: true
         description: ストーリーの引数。文字列でない値は JSON にして問い合わせの引数にする
+lead: '`server-html.tsx` の関数（描画のインターフェースの HTML を描く）とコンポーネント（描画のインターフェースの HTML）。'
+tags:
+  - name: topic:部品
+    main: true
+  - name: action:描画

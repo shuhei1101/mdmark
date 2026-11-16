@@ -11,3 +11,7 @@ notes:
     ├── bundle.ts      # build.ts と build-plugin.ts が使用する Node とブラウザのまとめの target・先頭の行・postcss の差し替え・まとめたパッケージとライセンスの引き方
     └── migrations.ts  # スキーマを変えたバージョンに移行の手順があるかの点検
     ```
+tags:
+  - name: action:ビルド
+    main: true
+  - name: topic:配布物

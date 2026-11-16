@@ -25,3 +25,7 @@ functions:
         condition: '`<!-- toc -->` と `## 導入`・`### 前提`・`#### 細目`・`## 使用方法`'
         mock: なし
         expected: マーカーの場所に `mdmark-toc` があり、`前提` が `導入` の入れ子で、`細目` が無い
+lead: '`toc.ts` の関数（目次を配置する）。'
+tags:
+  - name: topic:構文
+    main: true
