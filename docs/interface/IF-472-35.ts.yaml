@@ -10083,7 +10083,7 @@ constraints:
     constraint: |-
       機能 `card-grid` がオンの文書で、`<!-- cards -->` 〜 `<!-- /cards -->` の中身がリスト 1 つのとき、`ul.mdmark-card-grid` にして項目ごとに 1 枚のカードを描く。
 
-      - 項目の最初のリンクがカードのリンク（`a.mdmark-card-grid-item`）とタイトル、その前の行内の `icon:名前` がアイコン（`icon` の機能と同じ要素と読み込みに class `mdmark-card-grid-icon` を追加したもの）、残りの文字が説明になる。
+      - 項目の最初のリンクがカードのリンク（`a.mdmark-card-grid-item`）とタイトル、その前の行内の `icon\:名前` がアイコン（`icon` の機能と同じ要素と読み込みに class `mdmark-card-grid-icon` を追加したもの）、残りの文字が説明になる。
       - URL をそのまま記載したリンクのタイトルはスキームを除いた URL。
       - リンクを持たない項目は `div.mdmark-card-grid-item` にする。
       - 範囲の中のリンクはリンクと添付のカード（`cards`）にしない。

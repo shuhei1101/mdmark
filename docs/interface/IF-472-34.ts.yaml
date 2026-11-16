@@ -3714,7 +3714,7 @@ constraints:
     constraint: '`card-grid` がオンのとき、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを `<ul class="mdmark-card-grid">` にし、項目ごとの `<li>` に、リンクを持つ項目は `<a class="mdmark-card-grid-item" href="{最初のリンク先}">`、持たない項目は `<div class="mdmark-card-grid-item">` を配置する。
 
 
-      - 中に、項目の最初のリンクの前の行内の `icon:名前` のアイコン（制約「アイコン」と同じ要素に class `mdmark-card-grid-icon` を追加したもの）、`<span class="mdmark-card-grid-title">`（リンクの文字。URL をそのまま記載したリンクはスキームを除いた URL、リンクの無い項目は項目の最初の行の文字）、残りの文字があれば `<p class="mdmark-card-grid-desc">` を配置する。
+      - 中に、項目の最初のリンクの前の行内の `icon\:名前` のアイコン（制約「アイコン」と同じ要素に class `mdmark-card-grid-icon` を追加したもの）、`<span class="mdmark-card-grid-title">`（リンクの文字。URL をそのまま記載したリンクはスキームを除いた URL、リンクの無い項目は項目の最初の行の文字）、残りの文字があれば `<p class="mdmark-card-grid-desc">` を配置する。
 
       - 範囲の中のリンクは制約「リンクと添付のカード」にしない。
 
