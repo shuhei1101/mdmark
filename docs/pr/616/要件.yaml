@@ -1,0 +1,117 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-43.yaml
+    impact: changed
+    detail: 統合する場合、ER 図の部品を描く流れ（正常シナリオ（ER 図））を削除し、`er` の範囲には描かずに map へ変換できる旨の書き方の警告を出す流れにする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: changed
+    detail: 統合する場合、バージョンを上げると文書の `er` の定義が map の範囲へ書き換わる流れを追加する。定義に無いテーブルを関係の先に指定した ER 図の部品の定義の扱いを、変換の報告に挙げる流れにする
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: 統合する場合、ER 図の部品の定義の誤りの点検を削除し、`er` を記載した文書に map へ変換できる旨を知らせる流れにする
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 統合する場合、拡大・縮小・移動を確かめる ER 図の部品を map の ER 図に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: changed
+    detail: 統合する場合、ツールチップと `features.hints`・`tooltips.diagramPlacement` を確かめる ER 図のテーブルを map の ER 図に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: map の ER 図を描く流れは変えないが、変換の先として使い、ER 図の部品を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: run_only
+    detail: map の ER 図の列と分類の箱の開閉は変えないが、ER 図の部品の列の開閉を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: run_only
+    detail: map の ER 図の巡回は変えないが、ER 図の部品を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-477-2.yaml
+    impact: changed
+    detail: 統合する場合、座標で記載した図を map へ移す流れに ER 図の部品を加え、描いた文書の警告と点検の案内から移行の手順で map の ER 図へ書き換える流れにする
+    depends_on: []
+docs:
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 統合する場合、図の部品の `er` の行を削除し、map へ変換できる旨と変換の方法を案内する
+    status: todo
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 統合する場合、ER 図の部品の手順と例を削除し、ER 図は map で描く案内にする
+    status: todo
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 統合する場合、今の ER 図の部品の定義から変換する手順を追加する
+    status: todo
+  - page: docs/guide/API.mark.md
+    new: false
+    change: 統合する場合、ER 図の部品の型・CSS 変数の記述を削除する
+    status: todo
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: 統合する場合、図の機能のキーの説明から `er` を削除する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 統合する場合、ER 図の用語を map の ER 図の意味に修正する
+    status: todo
+  - page: docs/guide/index.yaml
+    new: false
+    change: 統合する場合、使い方集の索引の `summary` から ER 図の部品を削除する
+    status: todo
+  - page: docs/mock/components/er-diagram/index.html
+    new: false
+    change: 統合する場合、ER 図の部品のモックを削除する
+    status: todo
+  - page: docs/mock/components/index.md
+    new: false
+    change: 統合する場合、ER 図の部品のモックの行を削除する
+    status: todo
+  - page: docs/mock/files.yml
+    new: false
+    change: 統合する場合、削除したモックの行を削除する
+    status: todo
+  - page: src/files.yaml
+    new: false
+    change: 統合する場合、`diagram/er.ts`・`parts/er.ts`・`parts/er-diagram.stories.ts`・`interact/er-folds.ts` の行を削除し、変換のスクリプトの行を追加する
+    status: todo
+  - page: tests/files.yaml
+    new: false
+    change: 統合する場合、削除・追加したテストの行を修正する
+    status: todo
+  - page: schemas/mdmark.config.schema.json
+    new: false
+    change: 統合する場合、図の機能のキーの description から `er` を削除する（`migrations/next/steps.yaml` に移行の手順を配置するため、`no-steps.yaml` の行は要らない）
+    status: todo
+  - page: schemas/er.schema.yaml
+    new: false
+    change: 統合する場合、ER 図の部品の定義の Schema を削除する（`schemas/files.yaml` の行も削除する）
+    status: todo
+scope_out:
+  - item: mdmark を使用する各リポジトリ（dev-docs など）の `er` の図を、用意した変換で map へ書き換える移行
+    reason: 変換を使用する側の作業で、この Issue では変換と廃止までを扱う。このリポジトリの使い方集・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）。dev-docs の map への移行は dev-docs#201 で扱う
+    plan: none
+  - item: 今の図の部品の固定のノードの種類・線の名前・構成図の 3 層を、使う側の設定で作る形にすること（`src/diagram/er.ts` の `ER_TABLE_KINDS` を含む）
+    reason: 'この Issue の結論で #470 の範囲が決まる（統合する場合は `ER_TABLE_KINDS` が廃止で消える）。別の題材'
+    plan: '#470'
+  - item: 変換で座標（テーブルの `x`・`y` と図の `width`）を補足の `layout` の座標の固定へ写して元の配置を再現すること
+    reason: map は自動配置を既定にし、座標の固定は配置を上書きしたいときだけ使う（#534 の変換と同じ扱い）
+    plan: none
