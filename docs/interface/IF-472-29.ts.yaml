@@ -37,7 +37,7 @@ response:
   - name: '-'
     type: string
     description: ビルドで埋めたバージョン
-    format: '`v{MAJOR}.{MINOR}.{PATCH}`'
+    format: '`v{MAJOR}.{MINOR}.{PATCH}`。develop のビルドは `v{MAJOR}.{MINOR}.{PATCH}+develop.{短縮 SHA}`'
     example: v0.0.1
 exceptions:
   - name: なし（正常終了）
