@@ -264,6 +264,42 @@ scenarios:
       - 範囲の中の mermaid のブロックは、mermaid の図ではなく map の図として描かれる
       - map の範囲の中にだけ mermaid のブロックを持つ文書では、mermaid の本体への要求が 0 件
     test: test_normal_when_inside_map
+  - name: 正常シナリオ（click の行の URL でノードをリンクにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: click の行を持つ mermaid のコードブロックの Markdown
+        description: 言語 `mermaid` の flowchart と classDiagram のコードブロックを 1 つずつ持つ文書。それぞれのノードに、`click {ノード} href "{URL}"`・`click {ノード} "{URL}"`・`click {ノード} href "{URL}" _blank`・`click {ノード} href "javascript:alert(1)"`・`click {ノード} call show()` の行を 1 つずつ持つ
+        notes: URL は相対パス `./a.md`・`#` のアンカー付きのパス `../b.md#c`・`https://example.com/` を使う
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>X: securityLevel strict のまま描かせる
+        X-->>M: click を無効にした SVG
+        M->>M: ソースの click の行を読み、許す URL を指すノードをリンクで囲む
+        M-->>P: 図の枠に入れた図を描く
+        P-->>U: 文書を表示
+        U->>P: リンクのノードを押す
+        P-->>U: 本文のリンクと同じく、同じタブで URL を開く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`href` の形・`href` を持たない形・後ろに `_blank` を持つ形のノードが、それぞれ `href` が記載した URL の文字のままのリンクの中にある'
+      - '`javascript:` の URL とコールバックの行のノードはリンクの中に無く、ノードとして描かれている'
+      - リンクのノードを押すと、同じタブで URL を開く。ページが本文の要素に置いたクリックのイベントの処理が、押したリンクを受け取る
+      - リンクのノードは Tab でフォーカスでき、Enter で URL を開く
+      - click の行を持たないノードはリンクの中に無い
+    test: test_normal_when_click_url
 tags:
   - name: tool:mermaid
     main: true
