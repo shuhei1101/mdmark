@@ -185,10 +185,13 @@ scope_out:
     plan: '#611'
   - item: ブラウザの単体テストのファイルを持つモジュール構成 5 件の test_files
     reason: 'knowledge の module.schema.yaml の test_files は maxItems: 1 で、Node とブラウザの 2 つのテストファイルを持てない。今回は 2 つ目を補足へ移し、検証が 4 件のモジュール（MOD-472-161・162・203・246）で『テスト関数がありません』を 12 件出す。Schema を広げるかは knowledge で決める'
-    plan: to_file
+    plan: shuhei1101/knowledge#426
   - item: モジュール構成の functions[].summary のうち、1 行の概要に詳細が入った 28 項目の書き分け
     reason: Schema の summary は 1 行の決まりで改行を入れられない。詳細を description などへ移すかは項目ごとに書き分けが要り、文の表し方の移行（改行と表）の範囲を超える
-    plan: to_file
+    plan: '#614'
   - item: 工程 4「文を削り、AI slop を修正する」と改善「エイリアスと用語」
     reason: 文書ごとに文を読んで判断する作業で、レビューも文書ごとになるため、ユーザーの判断（推奨案 B）で別の Issue に切り出した
     plan: '#612'
+  - item: map の構成図で、複数のノードから出る線が同じ通り道に重なる（MOD-472-1 の図の確認で見つかった）
+    reason: 図の中身ではなく map の線の経路の決め方の問題で、この PR はコードを変えない
+    plan: '#613'
