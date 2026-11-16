@@ -8084,6 +8084,24 @@
     .mdmark-mermaid-print > svg {
       display: block;
     }
+
+    /* ノードのリンク: 文字を本文のリンクの色と下線にし、文字を選ばせない。mermaid が SVG の中に置く層の外の style の文字色に勝つため !important を付ける */
+    a.mdmark-diagram-node-link {
+      cursor: pointer;
+
+      :is(text, tspan, span, p, div) {
+        color: var(--mdmark-color-link) !important;
+        fill: var(--mdmark-color-link) !important;
+        text-decoration: underline !important;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+    }
   }
 
   /* 表示する枠より小さい mermaid の図: 枠の中で横の中央に配置する（大きい図は左端から動かして確認する） */
