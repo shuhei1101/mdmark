@@ -437,7 +437,6 @@ test("test_render_map_sequence_when_notes", async () => {
   expect(tip).not.toMatch(/mdmark-term"[^>]*tabindex/);
 });
 
-// ヒントがオフならメッセージの説明と注記のツールチップを作らず、注記の持ち主の id だけを残す（正常系）
 // 参加者の箱の名前の用語を、押せる要素の中に入れない（正常系）
 test("test_render_map_sequence_when_participant_hit", async () => {
   // 準備
@@ -493,6 +492,7 @@ test("test_render_map_sequence_when_participant_hit", async () => {
   );
 });
 
+// ヒントがオフならメッセージの説明と注記のツールチップを作らず、注記の持ち主の id だけを残す（正常系）
 test("test_render_map_sequence_when_hints_off", async () => {
   // 準備
   const { renderMapSequence } = await loadParts();
