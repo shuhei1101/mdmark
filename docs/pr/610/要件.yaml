@@ -2,71 +2,105 @@ docs:
   - page: docs/scenario
     new: false
     change: flow の Mermaid（```mermaid で囲まれていない flow を含む）を map のマーカーで囲んで補足を付ける。文を表へ・削れる文を削る・タグ・エイリアス・description・関連を付け直す・本文の ID と Issue 番号とパスをリンクへ移す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/interface
     new: false
     change: Mermaid の図を map で描く。文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/module
     new: false
     change: クラス図の Mermaid を map で描く。文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/component
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/screen
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/er
     new: false
-    change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    change: '文の書き換えはしない。ER 図は今の Schema の検査に通らず書き込めないため、knowledge の Schema への切り替えと一緒に #587 で移行する（スコープ外の表）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:36.823563+00:00'
   - page: docs/library
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/config
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/architecture
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/nonfunctional
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/dev-command
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/external-api
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/test-procedure
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/layout
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/design-policy.md
     new: false
     change: 文を表へ・削れる文を削る・メタデータの付け直し・本文の ID と Issue 番号とパスの移動
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/guide
     new: false
     change: 公開ドキュメントの Mermaid を map で描く（Mermaid の記法そのものを説明するページの見本は残す）。文を表へ・削れる文を削る・files.yml の行のタグ・エイリアス・description・関連の付け直し
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: docs/pr
     new: false
     change: PR ドキュメントの Mermaid を map で描き、文を表へ・削れる文を削る（起点 Issue の『フォルダの移動』の節で範囲に含めた）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T09:03:26.114067+00:00'
   - page: schemas/common.schema.yaml
     new: false
     change: ER 図・目次の Schema が参照するため残し、使う設計書が無くなる $defs.mermaid を削除する
