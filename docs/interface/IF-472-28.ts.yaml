@@ -327,7 +327,7 @@ flows:
     summary: 適用した後の点検で図の定義にずれがあると、コピーから戻してずれを出す
     setup:
       - name: 図の定義にずれを持つ手元のバージョンが古いフォルダ
-        description: 正常系のフォルダの文書の 1 つの 5 行目の `<!-- er -->` の範囲に、関係の先が定義に無いテーブル `payments` を指す ER 図の定義を記載したもの
+        description: 正常系のフォルダの文書の 1 つの 5 行目の `<!-- chart -->` の範囲に、項目 3 つに対して系列 `売上` の値を 2 つだけ持つグラフの定義を記載したもの
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -348,7 +348,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - 標準エラーに、その文書の 5 行目を指す `diagram_invalid` の行があり、内容に `payments` を含む
+      - 標準エラーに、その文書の 5 行目を指す `diagram_invalid` の行があり、内容に系列 `売上` を含む
       - 設定・索引・文書が適用する前と同じ中身で、設定の `version` が `v0.3.0` のまま
     test: test_error_when_diagram_drift
     refs:
@@ -592,6 +592,46 @@ flows:
     refs:
       - SC-472-27#scenarios[正常シナリオ（座標で書いた図を map へ書き換える）]
       - SC-472-27#scenarios[正常シナリオ（書き換えない記載を移行の報告に挙げる）]
+  - name: 正常系（ER 図の部品の範囲を map へ書き換える）
+    summary: 文書の `er` の範囲を `erDiagram` の map の範囲へ書き換える `call` の手順を当て、写せない値と書き換えない範囲を移行の報告に出す
+    setup:
+      - name: ER 図の部品の範囲を持つフォルダ
+        description: シナリオ『バージョンを上げる』の「正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）」の文書と、「正常シナリオ（書き換えない記載を移行の報告に挙げる）」の定義に無いテーブル `payments` を関係の先に指す `er` の範囲を、設定の `build.include` に該当させたフォルダ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
+        notes: '`--yes` を指定する'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant S as スクリプト
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 設定・索引・文書を写す
+        C->>S: node {ER 図の部品の範囲を書き換えるスクリプト} --config {設定ファイル}
+        S->>F: er の範囲を erDiagram の map の範囲にする
+        S-->>C: 移行の報告の行
+        C->>C: mdmark check と同じ点検（移行の報告に挙げた retired_diagram を除いてずれ 0 件）
+        C->>F: 設定の version を目標のバージョンにする
+        C-->>W: 手順の行の下の移行の報告の行・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0
+      - '読める定義の `er` の範囲が、シナリオの期待値のとおりの `<!-- map: {"title": "{元の題}"} -->` 〜 `<!-- /map -->` の範囲（`erDiagram` の `mermaid` のブロック 1 つと補足 `<!-- map-data: {"version": 1, …} -->`）になり、範囲の外の本文とコードブロックの中が変わっていない'
+      - 定義に無いテーブルを指す `er` の範囲は書き換わっていない
+      - 設定ファイルは `version` のほかが変わっていない
+      - '標準出力の手順の行の下に、`{文書の相対パス}:{行}: er: {項目}: {理由}` の移行の報告の行が、写せない値（テーブルの `kind`・`color`、列の `nn`、`scope`・`updated`）ごとと、書き換えない範囲ごとに 1 つずつある'
+      - 書き換えた文書を `mount` で描くと、範囲の場所に map の ER 図が描かれ、書き方の警告が無い
+      - 設定の `version` が目標のバージョン
+    test: test_normal_when_retired_er_migrated
+    refs:
+      - SC-472-27#scenarios[正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]
+      - SC-472-27#scenarios[正常シナリオ（書き換えない記載を移行の報告に挙げる）]
 lead: 文書の作成者が、設定の手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI のバージョンにする。適用する前にコピーを取り、失敗したらコピーから戻す。
 idempotent: true
 side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` にコピーを配置する。`--plan` は何も書き換えない
@@ -765,6 +805,25 @@ constraints:
   - item: 動く Node のバージョン
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
+  - item: ER 図の部品の範囲の移行
+    constraint: |-
+      `er` を廃止したバージョンの移行の手順は、`files` が `[documents]` の `call` の手順 1 つで、制約「文書」の文書の `<!-- er -->` の範囲（コードブロックと行内のコードの中を除く）を、`<!-- map: {"title": "{題}"} -->` 〜 `<!-- /map -->` の範囲（`erDiagram` の `mermaid` のブロック 1 つと補足 `<!-- map-data: {JSON のオブジェクト} -->`）に書き換える。
+
+      テーブルは物理名 `name`、列は型 `type`・名前 `name` と主キー `pk` を `PK`・外部キー `fk` を `FK`、関係は元と先のテーブルと両端の多重度（`fromCard`・`toCard`）とラベルにする。
+
+      テーブルの論理名 `label` と概要 `desc` を補足の `notes` のテーブルの説明（論理名を先頭に置き、概要を続ける）、列の `desc` を `notes` の `{テーブル}.{列}` の説明、`folded` を補足の `layout` のそのテーブルの `collapsed: true` にする。名前の `{{単語}}` を `単語` にする。
+
+      座標と大きさ（テーブルの `x`・`y`・`w` と図の `width`）は写さず、報告にも挙げない。
+
+      テーブルの `kind`・`color`、列の `nn`、題の行の `scope`・`updated` は書き出さず、範囲の外の本文・コードブロックの中は書き換えない。
+
+      部品の定義を読めない範囲（JSON として読めない・関係が定義に無いテーブルか列を指す）は書き換えない。
+
+      設定の `extensions` の拡張が既定の書き出しで持つ `directive` が `er` のときは、その名前の範囲を書き換えず、移行の報告にも挙げない。
+
+      写さない値と書き換えない範囲は、移行の報告の行（`{文書の相対パス}:{行}: er: {項目}: {理由}`）を標準出力に 1 つずつ書く
+    decided_by: SC-472-27#scenarios[正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]
+    notes: 確認ログ『ER 図の部品を map の ER 図へ統合して廃止するか』。関数の分け方と、flow・sequence の移行のスクリプトと共通にする範囲はモジュール構成設計
 test_file: tests/integration/lib/upgrade.test.ts
 tags:
   - name: topic:バージョン

@@ -199,10 +199,10 @@ flows:
     refs:
       - SC-472-78#scenarios[正常シナリオ（今の書き方のマーカーがある）]
   - name: 正常系（廃止した図の範囲がある）
-    summary: 文書の廃止した `flow`・`sequence` の範囲を、文書と行を指す `retired_diagram` の行にして終了コード 1 で終わる
+    summary: 文書の廃止した `flow`・`sequence`・`er` の範囲を、文書と行を指す `retired_diagram` の行にして終了コード 1 で終わる
     setup:
       - name: 廃止した図の範囲を持つフォルダ
-        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（座標で書いた図がある）」と同じ。`a.mark.md` の 3 行目に `<!-- flow -->`、`b.mark.md` の 5 行目に `<!-- sequence -->` の範囲を記載し、どちらも廃止の前のバージョンで描けた部品の定義を持つ'
+        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（座標で書いた図がある）」と同じ。`a.mark.md` の 3 行目に `<!-- flow -->`、`a.mark.md` の 20 行目に `<!-- er -->`、`b.mark.md` の 5 行目に `<!-- sequence -->` の範囲を記載し、どれも廃止の前のバージョンで描けた部品の定義を持つ'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -216,16 +216,16 @@ flows:
         W->>C: mdmark check
         C->>M: 索引・文書
         M-->>C: []
-        C->>C: 文書の本文から、廃止した flow・sequence の範囲の開きのマーカーを取得する
+        C->>C: 文書の本文から、廃止した flow・sequence・er の範囲の開きのマーカーを取得する
         C-->>W: retired_diagram の行・終了コード 1
       ```
 
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - '`a.mark.md:3: retired_diagram:`・`b.mark.md:5: retired_diagram:` で始まる行が 1 つずつあり、どちらも map の範囲で記載することと `mdmark upgrade` を含む'
+      - '`a.mark.md:3: retired_diagram:`・`a.mark.md:20: retired_diagram:`・`b.mark.md:5: retired_diagram:` で始まる行が 1 つずつあり、どれも map の範囲で記載することと `mdmark upgrade` を含む'
       - '`diagram_invalid` の行が無い（範囲の中の定義は点検しない）'
-      - 最後の行が `ずれ 2 件`
+      - 最後の行が `ずれ 3 件`
       - 設定・索引・文書が変わっていない
     test: test_normal_when_retired_diagram
     refs:
@@ -502,7 +502,7 @@ flows:
     summary: 文書の図の部品の定義を読み込み、定義の誤りをずれにする
     setup:
       - name: 図の定義にずれを持つフォルダ
-        description: '`build.include` が該当する `docs/a.mark.md` と `docs/b.mark.md`。`a.mark.md` は 3 行目の `<!-- er -->` の範囲に id `orders` のテーブルを 2 つ持つ ER 図の定義と、20 行目の `<!-- chart -->` の範囲に横の目盛り 4 つ・点 3 つの系列を持つグラフの定義と、30 行目の `<!-- er -->` の範囲に関係の先が定義に無いテーブル `payments` を指す ER 図の定義を持つ。`b.mark.md` はずれの無い ER 図とグラフの定義を持つ'
+        description: '`build.include` が該当する `docs/a.mark.md` と `docs/b.mark.md`。`a.mark.md` は 20 行目の `<!-- chart -->` の範囲に横の目盛り 4 つ・点 3 つの系列を持つグラフの定義を持つ。`b.mark.md` はずれの無いグラフの定義を持つ'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -515,18 +515,16 @@ flows:
         W->>C: mdmark check
         C->>C: 点検する文書の図の部品の定義を読み込む
         C->>C: 描く処理と同じ確認で定義を確認する
-        C-->>W: 図のずれの 3 行・終了コード 1
+        C-->>W: 図のずれの 1 行・終了コード 1
       ```
 
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - '`docs/a.mark.md:3: diagram_invalid:` で始まる行が 1 つだけあり、内容に重なった id `orders` と、id を変える修正方法がある'
       - '`docs/a.mark.md:20: diagram_invalid:` で始まる行が 1 つだけあり、内容に点の数と横の目盛りの数が合わないことがある'
-      - '`docs/a.mark.md:30: diagram_invalid:` で始まる行が 1 つだけあり、内容に `payments` がある'
       - '`unknown_mark` の行が無い'
       - '`docs/b.mark.md` を指す行が無い'
-      - 最後の行が `ずれ 3 件`
+      - 最後の行が `ずれ 1 件`
       - 設定・索引・文書が変わっていない
     test: test_normal_when_diagram_drift
     refs:
@@ -1180,9 +1178,9 @@ constraints:
     constraint: '制約「点検する文書」の文書ごとに、相対パスで指す画像（動画の `poster` を含む）・動画・音声と、添付のカードにするリンク（インターフェース定義『文書をHTML文字列にする』の制約「リンクと添付のカード」の添付の拡張子）のファイルを、インターフェース定義『文書をHTMLに書き出す』の制約「アセットのルート」と同じ順に探し、どちらにも無いものを 1 つにつき 1 件の `missing_file` のずれにする。ファイルは文書の相対パス、場所は記載した行の番号（1 から）、内容は記載したパスと種類（画像・動画・音声・添付）と、パスを修正するかファイルを配置するか `assets.root` を確認する修正方法の 1 文。コードブロックとインラインコードの中、絶対 URL、`#` で始まるリンクは点検しない。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれにする'
     decided_by: CFG-472-3#settings[assets.root]
   - item: 図の定義の点検
-    constraint: '制約「点検する文書」の文書ごとに、`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` の範囲の `json` のコードブロック（インターフェース定義『文書をHTML文字列にする』の制約「図の部品」と同じ読み込み方。埋め込んだ HTML の中の custom element は点検しない）を読み込む。描く処理と同じ確認で読み込めない定義は、1 つの定義につき 1 件の `diagram_invalid` のずれにし、内容は記載の警告と同じ文にする。図の配置は点検しない。ファイルは文書の相対パス、場所は図の部品の開きのマーカーの行の番号（1 から）。点検はブラウザを使用しない'
+    constraint: '制約「点検する文書」の文書ごとに、`<!-- chart -->`・`<!-- param -->` の範囲の `json` のコードブロック（インターフェース定義『文書をHTML文字列にする』の制約「図の部品」と同じ読み込み方。埋め込んだ HTML の中の custom element は点検しない）を読み込む。描く処理と同じ確認で読み込めない定義は、1 つの定義につき 1 件の `diagram_invalid` のずれにし、内容は記載の警告と同じ文にする。図の配置は点検しない。ファイルは文書の相対パス、場所は図の部品の開きのマーカーの行の番号（1 から）。点検はブラウザを使用しない'
   - item: 廃止した図の範囲の点検
-    constraint: '制約「点検する文書」の文書ごとに、`<!-- flow -->`・`<!-- sequence -->` の範囲（コードブロックとインラインコードの中を除く）を 1 つにつき 1 件の `retired_diagram` のずれにする。範囲の中の定義は読み込まず、点検しない。制約「知っているマーカー」の設定の `extensions` の拡張の `directive` が `flow`・`sequence` のときは、その名前の範囲を `retired_diagram` にせず、拡張のマーカーとして点検する。ファイルは文書の相対パス、場所は開きのマーカーの行の番号（1 から）、内容は廃止した記載方法であることと、map の範囲で記載することと、`mdmark upgrade` で map の範囲へ変換できる修正方法の 1 文。`--text`・`--file` のときも同じ種類にする'
+    constraint: '制約「点検する文書」の文書ごとに、`<!-- flow -->`・`<!-- sequence -->`・`<!-- er -->` の範囲（コードブロックとインラインコードの中を除く）を 1 つにつき 1 件の `retired_diagram` のずれにする。範囲の中の定義は読み込まず、点検しない。制約「知っているマーカー」の設定の `extensions` の拡張の `directive` が `flow`・`sequence`・`er` のときは、その名前の範囲を `retired_diagram` にせず、拡張のマーカーとして点検する。ファイルは文書の相対パス、場所は開きのマーカーの行の番号（1 から）、内容は廃止した記載方法であることと、map の範囲で記載することと、`mdmark upgrade` で map の範囲へ変換できる修正方法の 1 文。`--text`・`--file` のときも同じ種類にする'
     decided_by: SC-472-78#scenarios[正常シナリオ（座標で書いた図がある）]
   - item: 取り込み先の点検
     constraint: '制約「点検する文書」の文書ごとに、include のマーカー（コードブロックとインラインコードの中を除く）の取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み、無いファイル・設定ファイルのフォルダの外を指すパス・無い見出しの ID・ファイルの行の数を越える行の範囲を 1 つにつき 1 件の `include_target_missing`、循環する取り込みを 1 つにつき 1 件の `include_circular` のずれにする（取り込んだ文書の中のマーカーもたどる）。ファイルはマーカーを記載した文書の相対パス、場所はマーカーの行の番号（1 から）、内容は、`include_target_missing` は記載した取り込み先と、無いもの（ファイル・フォルダの外・見出し・行。行はファイルの行の数も）と、パス・見出し・行の範囲を修正するかファイルを配置する修正方法の 1 文、`include_circular` は循環の順（`a.mark.md → b.mark.md → a.mark.md`）と、循環するマーカーのどれかを取り除く修正方法の 1 文。文書の `<!-- features: {"include": false} -->` の文書は点検しない'
