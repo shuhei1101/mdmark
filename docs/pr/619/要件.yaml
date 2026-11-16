@@ -8,11 +8,15 @@ docs:
   - page: docs/library/LIB-472-12.yaml
     new: false
     change: コマンドの `purpose` の複雑さの規則を適用する範囲に `vscode/scripts/` を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T12:04:48.696222+00:00'
   - page: docs/test-procedure/TP-472-1.yaml
     new: false
     change: TL-8（lint）の説明の、複雑さの規則を適用する範囲に `vscode/scripts/` を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T12:04:48.696222+00:00'
 scope_out:
   - item: '`tests/`・`vscode/tests/` の TypeScript への複雑さの規則の適用'
     reason: Issue の要望は `vscode/scripts/` だけで、テストコードを含まない
