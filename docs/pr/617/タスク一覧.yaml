@@ -64,8 +64,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T11:41:05.080955+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/dev-command/CMD-472-1.yaml・docs/library/LIB-472-34.yaml
+    updated_by: planner
+    updated_at: '2026-11-16T12:17:48.850629+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えない
