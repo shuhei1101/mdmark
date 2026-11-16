@@ -3,5 +3,5 @@ scope_out:
     reason: シナリオ『コードブロックを飾る』・code-blocks.ts とモックの食い違いで、バックマージの競合の解消に含まれない
     plan: '#431'
   - item: インターフェース定義『バージョンを上げる』の test_normal_when_tag_vocabulary_dropped の Mock が、migrations/next/ のスクリプトを配置すると記載している
-    reason: '#407 のテストの探し方と設計書の食い違いで、合意した競合の解消案に含まれない'
+    reason: '[リポジトリの移行の手順を参照するテストを、スクリプトを持つ migrations/ のフォルダから参照するようにする](https://github.com/shuhei1101/mdmark/pull/407) のテストの探し方と設計書の食い違いで、合意した競合の解消案に含まれない'
     plan: '#432'

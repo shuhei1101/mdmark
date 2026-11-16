@@ -5,6 +5,6 @@ use_cases:
     detail: タッチで列の幅を変える流れは変わらない。確かめる結合テストの後始末か置き場所だけを直す
     depends_on: []
 scope_out:
-  - item: '#505 でタッチのテストより前へ移した test_normal_when_code_fold_column_hovered を、元の末尾へ戻すこと'
+  - item: '[描いた文書の表示を改善する（表の列の幅の自動計算・ファイルツリーの既定の全開き・コードブロックの帯の線の削除・目次で押した見出しのセクションを開く）](https://github.com/shuhei1101/mdmark/pull/505) でタッチのテストより前へ移した test_normal_when_code_fold_column_hovered を、元の末尾へ戻すこと'
     reason: 前に置いたままでも確かめる内容は同じで、戻さなくても要望を満たす
     plan: none

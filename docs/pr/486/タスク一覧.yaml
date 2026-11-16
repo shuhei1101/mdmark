@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-12T12:17:06.322264+00:00'
   - process: PoC 検証
     status: skipped
-    reason: '確認に使う data-mdmark-csp-violations は #382 で test_normal_when_mermaid が使っており検証済み'
+    reason: '確認に使う data-mdmark-csp-violations は [mermaid のコードブロックを VS Code 拡張機能と HTML の書き出しで描く](https://github.com/shuhei1101/mdmark/pull/382) で test_normal_when_mermaid が使っており検証済み'
     updated_by: planner
     updated_at: '2026-11-12T12:17:06.322264+00:00'
   - process: 複合ユースケース設計
@@ -61,7 +61,7 @@ tasks:
     updated_at: '2026-11-12T12:17:06.322264+00:00'
   - process: モジュール構成設計
     status: skipped
-    reason: 'モジュールを変えない（MOD-472-75 の CSP の違反の件数の記載は #382 で入っている）'
+    reason: 'モジュールを変えない（MOD-472-75 の CSP の違反の件数の記載は [mermaid のコードブロックを VS Code 拡張機能と HTML の書き出しで描く](https://github.com/shuhei1101/mdmark/pull/382) で入っている）'
     updated_by: planner
     updated_at: '2026-11-12T12:17:06.322264+00:00'
   - process: ドキュメント修正

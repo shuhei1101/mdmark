@@ -89,7 +89,7 @@ scope_out:
     reason: GitHub の設定の操作で、2026-11-09 に変更済み（A-120 の「GitHub の設定の変更」）
     plan: none
   - item: E2E のテスト（tests/e2e/）の vscode-v* のタグ・plugin.json の version を前提にしたケースの修正
-    reason: '0.x の間は E2E を回さず修正もしない（D-297）。今ある E2E は #450 で削除する'
+    reason: '0.x の間は E2E を回さず修正もしない（D-297）。今ある E2E は [今ある E2E のテストと、E2E だけが使う部品を develop から削除する](https://github.com/shuhei1101/mdmark/issues/450) で削除する'
     plan: '#450'
   - item: VS Code 拡張機能の Marketplace と Open VSX への公開の自動化
     reason: 公開の工程の追加で、この作業の契機の変更の後ろへ回した（task-planner の扱いの判断）

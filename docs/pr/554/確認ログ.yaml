@@ -1,6 +1,6 @@
 confirmations:
   - topic: 書き出した HTML の埋め込みの Markdown のマーカーのコメントの扱い
-    decision: '#532 で埋め込みを無くすまで残す。HTML の本文のコメントと、埋め込みの Markdown のマーカーでない HTML のコメントは削除し、開いた後の文書にコメントを残さない（推奨案 A）'
+    decision: '[書き出した HTML に元の Markdown を埋め込まず、書き出すときに描画した HTML から起動する](https://github.com/shuhei1101/mdmark/issues/532) で埋め込みを無くすまで残す。HTML の本文のコメントと、埋め込みの Markdown のマーカーでない HTML のコメントは削除し、開いた後の文書にコメントを残さない（推奨案 A）'
     decided_by: thumbs_up
     approver: shuhei1101
     commit:

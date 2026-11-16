@@ -8,5 +8,5 @@ docs:
     updated_at: '2026-11-12T12:30:24.587021+00:00'
 scope_out:
   - item: ライブラリが描く目次・関連文書の nav と箇所が見つからないコメントの section の accessible name を、同じページで mount を複数回呼んでも重ならないようにする
-    reason: 'Issue #425 はモックだけの修正で、task-planner の受付判断も公開関数・描いた文書の HTML を変えないとした。1 ページに 1 文書を描く使い方では名前は重ならない'
+    reason: 'Issue [モック ui-canvas/80/side-by-side で、同じ role と名前のランドマークが列の数だけ並び axe の landmark-unique に当たる](https://github.com/shuhei1101/mdmark/issues/425) はモックだけの修正で、task-planner の受付判断も公開関数・描いた文書の HTML を変えないとした。1 ページに 1 文書を描く使い方では名前は重ならない'
     plan: none

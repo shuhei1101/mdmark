@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-15T06:57:49.151558+00:00'
   - process: PoC 検証
     status: skipped
-    reason: 'PR #540 で入れた開閉の記録の仕組みに対象を加える変更で、未検証の技術機構に依存しない'
+    reason: 'PR [描き直しで手で変えた部品の開閉を保ち、タブの切り替えで押したタブの見出しの位置を保つ](https://github.com/shuhei1101/mdmark/pull/540) で入れた開閉の記録の仕組みに対象を加える変更で、未検証の技術機構に依存しない'
     updated_by: planner
     updated_at: '2026-11-15T06:57:49.151558+00:00'
   - process: 複合ユースケース設計

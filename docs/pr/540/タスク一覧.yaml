@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-13T18:19:23.729428+00:00'
   - process: PoC 検証
     status: skipped
-    reason: 既存の開閉の記録（#497）とスクロール位置の調整で成り立ち、未検証の技術機構に依存しないため対象外
+    reason: '既存の開閉の記録（[手で開閉したセクションの開閉を、update で描き直した後も保つ](https://github.com/shuhei1101/mdmark/pull/497)）とスクロール位置の調整で成り立ち、未検証の技術機構に依存しないため対象外'
     updated_by: planner
     updated_at: '2026-11-13T18:19:23.729428+00:00'
   - process: 複合ユースケース設計

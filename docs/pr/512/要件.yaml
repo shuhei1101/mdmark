@@ -31,7 +31,7 @@ docs:
     updated_at: '2026-11-14T02:37:14.320114+00:00'
 scope_out:
   - item: E2E `tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts` の追従
-    reason: '#450 で develop から E2E を削除した（この PR に取り込み済み）。シナリオの `test_file` が削除した spec を指すのは他のシナリオも同じで、#450 の扱いに従う'
+    reason: '[今ある E2E のテストと、E2E だけが使う部品を develop から削除する](https://github.com/shuhei1101/mdmark/issues/450) で develop から E2E を削除した（この PR に取り込み済み）。シナリオの `test_file` が削除した spec を指すのは他のシナリオも同じで、[今ある E2E のテストと、E2E だけが使う部品を develop から削除する](https://github.com/shuhei1101/mdmark/issues/450) の扱いに従う'
     plan: '#450'
   - item: Open VSX への公開
     reason: ユーザーが VS Code だけを使用するため公開しないと決めた（確認ログ）

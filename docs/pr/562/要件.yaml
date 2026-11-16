@@ -112,5 +112,5 @@ scope_out:
     reason: 別のリポジトリの後続で、この記法が develop に入ってから着手する。close のときに着手できる旨をコメントする
     plan: shuhei1101/knowledge#173
   - item: map 以外の図（ER 図・グラフ・補足を持たない mermaid のコードブロック・コードブロックの HTML）の要素から注記を参照する
-    reason: '要望はフロー図とシーケンス図のノードと線。両方とも #534 で map に移ったため、map のノードと線だけを対象にする'
+    reason: '要望はフロー図とシーケンス図のノードと線。両方とも [今の flow・sequence の定義を map へ変換するスクリプトを用意し、flow・sequence を廃止する](https://github.com/shuhei1101/mdmark/pull/534) で map に移ったため、map のノードと線だけを対象にする'
     plan: none

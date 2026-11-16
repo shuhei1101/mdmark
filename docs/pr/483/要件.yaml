@@ -6,6 +6,6 @@ docs:
     updated_by: planner
     updated_at: '2026-11-12T12:14:26.031665+00:00'
 scope_out:
-  - item: '#413: plugin/files.yaml の skills/global-setup/SKILL.md・skills/setup/SKILL.md の行の description を引用符で囲む'
-    reason: 'origin/develop では #472（23881bce）で 2 行とも引用符で囲まれ、解消済みのため変更しない（ドキュメント修正で dev-docs の警告が出ないことだけ確かめる）'
+  - item: '[plugin/files.yaml の SKILL.md の行の description がバッククォートで始まり、YAML として参照できない](https://github.com/shuhei1101/mdmark/issues/413): plugin/files.yaml の skills/global-setup/SKILL.md・skills/setup/SKILL.md の行の description を引用符で囲む'
+    reason: 'origin/develop では [dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す](https://github.com/shuhei1101/mdmark/pull/472)（23881bce）で 2 行とも引用符で囲まれ、解消済みのため変更しない（ドキュメント修正で dev-docs の警告が出ないことだけ確かめる）'
     plan: none

@@ -2,12 +2,12 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 読者が図をタップしてから、スマホの指のドラッグで図を縦にも動かせる。タップする前の縦のドラッグは文書のスクロールにする（#357。共通の図の枠のため、map・フロー図・シーケンス図・グラフ・ER 図・mermaid の図・埋め込んだ HTML のチャートの全てに当たる）
+    detail: '読者が図をタップしてから、スマホの指のドラッグで図を縦にも動かせる。タップする前の縦のドラッグは文書のスクロールにする（[スマホ（タッチ）でも、フロー図・シーケンス図をドラッグで動かせるようにする](https://github.com/shuhei1101/mdmark/issues/357)。共通の図の枠のため、map・フロー図・シーケンス図・グラフ・ER 図・mermaid の図・埋め込んだ HTML のチャートの全てに当たる）'
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-20.yaml
     impact: changed
-    detail: 文書の作成者が罫線でフォルダ構成を記載したのに言語が tree でないコードブロックに、言語を tree にする書き方の警告を受け取り、罫線の例をそのまま見せたいときは警告を止められる（#466）
+    detail: '文書の作成者が罫線でフォルダ構成を記載したのに言語が tree でないコードブロックに、言語を tree にする書き方の警告を受け取り、罫線の例をそのまま見せたいときは警告を止められる（[罫線でフォルダ構成を記載したのに言語が tree でないコードブロックを点検で警告し、使い方集の索引からファイルツリーの記載方法に行き着けるようにする](https://github.com/shuhei1101/mdmark/issues/466)）'
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-3.yaml
@@ -17,7 +17,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-15.yaml
     impact: changed
-    detail: フォルダ構成を記載しようとした Claude Code が、ガイドの索引からファイルツリーの記載方法のページに行き着く（#466）
+    detail: 'フォルダ構成を記載しようとした Claude Code が、ガイドの索引からファイルツリーの記載方法のページに行き着く（[罫線でフォルダ構成を記載したのに言語が tree でないコードブロックを点検で警告し、使い方集の索引からファイルツリーの記載方法に行き着けるようにする](https://github.com/shuhei1101/mdmark/issues/466)）'
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
@@ -42,7 +42,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-52.yaml
     impact: changed
-    detail: mdmark check に Markdown の文字列かファイルを指定すると、罫線の行を持つ言語が tree でないコードブロックをずれに挙げる（#466）
+    detail: 'mdmark check に Markdown の文字列かファイルを指定すると、罫線の行を持つ言語が tree でないコードブロックをずれに挙げる（[罫線でフォルダ構成を記載したのに言語が tree でないコードブロックを点検で警告し、使い方集の索引からファイルツリーの記載方法に行き着けるようにする](https://github.com/shuhei1101/mdmark/issues/466)）'
     depends_on:
       - docs/scenario/SC-472-20.yaml
 docs:
@@ -84,9 +84,9 @@ docs:
     updated_at: '2026-11-12T20:18:25.028567+00:00'
 scope_out:
   - item: 今の flow（座標の JSON のフロー図）の箱の種類 dm の表示名「意思決定モデル」
-    reason: 'map は固定のノードの種類を持たず、表示名は使う側の設定 map.kinds の label で決まるため、#464 の #333 の要件は develop で満たされている。今の flow の固定の種類を設定で作る形にするのは #470 が扱う'
+    reason: 'map は固定のノードの種類を持たず、表示名は使う側の設定 map.kinds の label で決まるため、[新しい図 map に、シーケンス図の参加者の操作・loop と alt の枠・タッチでのドラッグ・汎用の箱の種類の表示名を追加する](https://github.com/shuhei1101/mdmark/issues/464) の [フロー図の箱の種類 dm の表示名「意思決定モデル」（aituber の固有の用語）を、汎用の名前にする](https://github.com/shuhei1101/mdmark/issues/333) の要件は develop で満たされている。今の flow の固定の種類を設定で作る形にするのは [今の図の部品の固定のノードの種類・線の名前・構成図の 3 層を、使う側の設定で作る形にする](https://github.com/shuhei1101/mdmark/issues/470) が扱う'
     plan: '#470'
-  - item: map・今の sequence のシーケンス図での参加者の表示と非表示（#404 の残り）
+  - item: 'map・今の sequence のシーケンス図での参加者の表示と非表示（[シーケンス図で、参加者を選ぶと関係するメッセージとライフラインだけを強調し、参加者の表示と並び順を変えられるようにする](https://github.com/shuhei1101/mdmark/issues/404) の残り）'
     reason: ユーザーが参加者の非表示の機能は不要と判断した（https://github.com/shuhei1101/mdmark/pull/508#discussion_r4555259514 ）。図の枠のタッチでのドラッグは、図の枠が共通の部品のため今の図にも当て、この PR に含める
     plan: none
   - item: mdmark check を引数なしで実行するフォルダの点検での、罫線のコードブロックの警告

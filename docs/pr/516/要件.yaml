@@ -12,7 +12,7 @@ use_cases:
 docs: []
 scope_out:
   - item: 再利用できる注釈の記法（脚注のツールチップと末尾の一覧の再利用・拡張）
-    reason: '要望に含まれない。計画で #419 の後ろへ回した'
+    reason: '要望に含まれない。計画で [まとめた HTML で side-toc をオフにすると、脚注の番号・戻るリンクを押したときに URL の # が書き換わる](https://github.com/shuhei1101/mdmark/issues/419) の後ろへ回した'
     plan: '#304'
   - item: まとめた HTML の bundle.ts の click で脚注のリンクを除く（Issue の案 B）
     reason: 案 A で脚注の側だけで順序が決まり、まとめた HTML に脚注の class を持たせずに済むため採らない

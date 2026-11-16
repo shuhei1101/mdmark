@@ -66,7 +66,7 @@ tasks:
     updated_at: '2026-11-12T13:07:43.536267+00:00'
   - process: ドキュメント修正
     status: done
-    note: 'src/files.yaml に #352・#354 で追加した 10 ファイルの行を追加する'
+    note: 'src/files.yaml に [記法の新設 2 件（文書の先頭のマーカーでページの設定・cards のマーカーでカードの格子）](https://github.com/shuhei1101/mdmark/pull/352)・[プラグインに global-setup・setup のスキルを置き、tmux でサーバーを起動して設定を利用者に確認しながら作る](https://github.com/shuhei1101/mdmark/pull/354) で追加した 10 ファイルの行を追加する'
     updated_by: planner
     updated_at: '2026-11-12T13:14:46.405258+00:00'
   - process: 単体テスト作成

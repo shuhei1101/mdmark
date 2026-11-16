@@ -519,7 +519,7 @@ scope_out:
     reason: マージ済みの PR のモックの記録で、dev/pr/ と同じく今後参照されない。要件.md の対象の表で初めから除いている
     plan: none
   - item: docs/_theme/ と ai-monitor-theme.yaml
-    reason: AI Monitor の配布物を取り込んだファイル（#230）で、このリポジトリで修正すると次の追従で上書きされる。修正は配布元の ai-monitor で行う
+    reason: 'AI Monitor の配布物を取り込んだファイル（[AI Monitor v0.3.0 の配布物へ追従する](https://github.com/shuhei1101/mdmark/pull/230)）で、このリポジトリで修正すると次の追従で上書きされる。修正は配布元の ai-monitor で行う'
     plan: none
   - item: docs/はじめに/変更履歴.md・CHANGELOG.md の公開済みのバージョンの行
     reason: 公開済みのバージョンの記録で、当時の文言のまま維持する（確認ログ「変更履歴の公開済みのバージョンの行の単語」）
@@ -531,7 +531,7 @@ scope_out:
     reason: 画面の検査（横スクロール）から外れているが、この PR の変更は文言だけで幅に関わらず、今回の要望に含まれない
     plan: '#367'
   - item: schemas/alias-inject/v0.3.0/ の Schema
-    reason: alias-inject の配布物を取り込んだファイル（#360）で、このリポジトリで修正すると次の取り込みで上書きされる。修正は配布元の alias-inject で行う
+    reason: 'alias-inject の配布物を取り込んだファイル（[alias-inject v0.3.0 のエイリアスの元の行のスキーマ（行の alias_type・列名の metadata）を取り込む](https://github.com/shuhei1101/mdmark/pull/360)）で、このリポジトリで修正すると次の取り込みで上書きされる。修正は配布元の alias-inject で行う'
     plan: none
   - item: migrations/no-steps.yaml の公開済みのバージョンの行
     reason: 公開済みのバージョンで変えた Schema の記録で、当時の文言のまま維持する（確認ログ「migrations/no-steps.yaml の公開済みのバージョンの行の単語」）

@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-14T02:38:54.970189+00:00'
   - process: PoC 検証
     status: skipped
-    reason: 参照のマーカーのツールチップと末尾の閉じた一覧は脚注（#215）で実装済みで、未検証の技術機構に依存しない
+    reason: '参照のマーカーのツールチップと末尾の閉じた一覧は脚注（[脚注（［^1］ と行内の ^［…］）をツールチップと末尾のまとめで描く](https://github.com/shuhei1101/mdmark/issues/215)）で実装済みで、未検証の技術機構に依存しない'
     updated_by: planner
     updated_at: '2026-11-14T02:38:54.970189+00:00'
   - process: 複合ユースケース設計
