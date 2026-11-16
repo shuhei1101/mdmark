@@ -144,9 +144,10 @@ functions:
     refs:
       - IF-472-15#constraints[埋めるライブラリ]
     status: planned
-lead: '`html.ts` の関数（書き出す先を決める・script に埋める JSON にする・書き出す HTML を組む・モジュールの data: の URL にする）と定数（印刷のダイアログを出すまでの待ちの上限）。'
+lead: '書き出す先のパスと HTML の組み立てを受け持ち、HTML への書き出しや PDF への印刷を変えるときに参照する。'
 tags:
   - name: topic:書き出し
     main: true
-  - name: tool:html
   - name: tool:vscode
+  - name: tool:html
+  - name: action:書き出し

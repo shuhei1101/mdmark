@@ -505,5 +505,9 @@ notes:
 tags:
   - name: topic:テンプレート
     main: true
-  - name: topic:css
+  - name: tool:mcp
   - name: tool:claude-code
+  - name: topic:css
+  - name: action:読み込み
+  - name: action:検査
+  - name: action:配置

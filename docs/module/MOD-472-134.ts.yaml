@@ -117,8 +117,9 @@ functions:
         condition: '図の余白の内側の左上にある `A` を `dy: -8`。縦の区間の線を `dy: 8`'
         mock: なし
         expected: どちらも `undefined`
-lead: '`drag.ts` の関数（ドラッグを始める・キーで動かす）と定数（押した扱いの動き・キー 1 回で動かす量・Shift で動かす量）。'
+lead: 'ノード・グループ・線の区間のドラッグとキーでの移動を受け持ち、構成図の移動の操作を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true
   - name: topic:図
+  - name: action:移動

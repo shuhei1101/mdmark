@@ -513,8 +513,10 @@ function_types:
       - target: node:fs/promises の readFile
         notes: 拡張機能の中で使用する
     status: planned
-lead: '`config.ts` の型（mount に指定する設定・設定ファイルの読み取りの結果・読み込めない設定ファイル）と関数（設定ファイルの場所を決める・設定を取り出す・設定ファイルを読み込む・libraries の URL を修正するなど）と関数型（テキストのファイルを読み込む関数）と定数（設定ファイルの雛形）。'
+lead: '設定ファイルの場所の決定・端末の設定との重ね合わせ・mount に指定するキーの取り出しを受け持ち、拡張機能の設定の読み込み方を変えるときに参照する。'
 tags:
   - name: topic:設定
     main: true
   - name: tool:vscode
+  - name: action:読み込み
+  - name: action:取り出し

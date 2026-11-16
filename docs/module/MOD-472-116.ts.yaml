@@ -533,7 +533,10 @@ functions:
         mock: なし
         expected: '`theme` が `theme.css`、`index` が `/w/index.yaml`、`libraries.b` がそのまま、`build.include[0]` が `*.md`、`build.out` が `site.html`'
     status: planned
-lead: '`config-files.ts` の型（重ねた設定・重ねた設定ファイル）と関数（設定の構造を検める・設定を重ねて読み込む・端末の設定のパスを決める・上のフォルダの設定ファイルを探すなど）と定数（端末の設定のファイル名）。'
+lead: '端末の設定と上のフォルダの設定ファイルの探索・重ね合わせ・構造の検査を受け持ち、設定の読み込み方を変えるときに参照する。'
 tags:
   - name: topic:cli
     main: true
+  - name: topic:設定
+  - name: action:読み込み
+  - name: action:検査

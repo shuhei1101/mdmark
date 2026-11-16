@@ -120,7 +120,9 @@ functions:
         mock: 一時フォルダ
         expected: 1 つ目の文に `items[5].body` と要素が 2 つであること、2 つ目の文に値が文字列でないことがある
     status: planned
-lead: '`markdown-check.ts` の関数（指定した Markdown の記法を点検する・YAML のキーの値を読み込む）。'
+lead: '指定した Markdown の文字列と YAML のキーの値の記法の点検を受け持ち、文字列とキーの点検を変えるときに参照する。'
 tags:
-  - name: topic:cli
+  - name: topic:検査
     main: true
+  - name: topic:cli
+  - name: action:点検

@@ -84,7 +84,8 @@ functions:
     refs:
       - MOD-472-166#functions[buildDist]
       - IF-472-33#constraints[mdmark の痕跡]
-lead: '`html.ts` の型（書き出しの中身）と関数（書き出す HTML を組み立てる）。'
+lead: '書き出す HTML の組み立てを受け持ち、CLI が書き出す HTML の構造を変えるときに参照する。'
 tags:
   - name: topic:cli
     main: true
+  - name: tool:html

@@ -149,7 +149,10 @@ functions:
       3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の構造にする。`base` は `cwd`）と行で、今の「YAML として読み込めません」の `CliError` を投げる
       4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の構造にして、今の「設定の構造に合いません」の `CliError` を投げる
       5. `{ path: nearest, dir: nearest のフォルダ, config }` を返却する。`config` は重ねた設定のパスを相対パスに戻したもの（パスを相対パスに戻す。`dir` は nearest のフォルダ）
-lead: '`config.ts` の型（読み込んだ設定）と関数（設定ファイルを探す・設定ファイルを読み込む・書き出しに使用する設定を読み込む）と定数（設定ファイルの名前）。'
+lead: '設定ファイルの探索と、重ねて読み込んだ設定を書き出しに使用する構造にする処理を受け持ち、CLI の設定の読み込みを変えるときに参照する。'
 tags:
   - name: topic:cli
     main: true
+  - name: topic:設定
+  - name: action:読み込み
+  - name: action:書き出し

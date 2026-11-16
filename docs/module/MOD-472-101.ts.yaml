@@ -39,9 +39,11 @@ functions:
         expected: 例外を投げ、フォルダに `.tmp` のファイルが無い
         exception: 置き換えられない
     status: planned
-lead: '`write.ts` の関数（一時ファイルから置き換える）。'
+lead: '一時ファイルに記載してから置き換える書き込みを受け持ち、HTML への書き出しや PDF への印刷を変えるときに参照する。'
 tags:
   - name: topic:書き出し
     main: true
-  - name: tool:html
   - name: tool:vscode
+  - name: tool:html
+  - name: action:書き出し
+  - name: action:置き換え

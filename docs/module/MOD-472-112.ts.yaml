@@ -335,7 +335,9 @@ functions:
         condition: '`features: -map` と map の範囲'
         mock: なし
         expected: '`false`'
-lead: '`embed.ts` の型（起動の処理とまとめるモジュール）と関数（動的 import が残るかを確認する・起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる・画像を埋めるなど）。'
+lead: '外部ライブラリと拡張のまとめ・色分けの言語の抽出・画像の埋め込みを受け持ち、1 枚の HTML に埋める中身を変えるときに参照する。'
 tags:
   - name: topic:cli
     main: true
+  - name: tool:html
+  - name: action:まとめ

@@ -57,7 +57,10 @@ functions:
         mock: なし
         expected: '`aliases` が `undefined`、`issues` と `files` が空'
     status: planned
-lead: '`aliases.ts` の関数（エイリアスを読み込む）。'
+lead: 'エイリアスの行が指す YAML の読み取りとエイリアスの組み立てを受け持ち、CLI のエイリアスの読み込みを変えるときに参照する。'
 tags:
-  - name: topic:cli
+  - name: topic:エイリアス
     main: true
+  - name: topic:cli
+  - name: action:読み取り
+  - name: action:読み込み

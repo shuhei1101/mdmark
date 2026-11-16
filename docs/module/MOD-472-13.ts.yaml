@@ -100,3 +100,4 @@ tags:
   - name: topic:フック
     main: true
   - name: tool:claude-code
+  - name: action:起動

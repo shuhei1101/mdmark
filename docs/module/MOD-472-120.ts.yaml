@@ -313,7 +313,9 @@ functions:
       - IF-472-33#
       - IF-472-9#
     status: planned
-lead: '`export.ts` の関数（埋めるものを用意する・文書を HTML に書き出す・配布物を読み込む・HTML を書き込むなど）。'
+lead: '文書を 1 枚の HTML に書き出すコマンドを受け持ち、書き出しの流れを変えるときに参照する。'
 tags:
-  - name: topic:cli
+  - name: topic:書き出し
     main: true
+  - name: topic:cli
+  - name: action:書き出し

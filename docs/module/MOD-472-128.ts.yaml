@@ -86,7 +86,7 @@ functions:
         condition: '構成図と `plays_over: 1` のシーケンス図で、シーケンス図の自動で進めるを押し、時計を 2 秒進める。次に構成図の表示する枠でホイールを回して時計を 2 秒進める'
         mock: 時計・構成図の表示する枠の `scrollTo`
         expected: 最初の 2 秒で構成図の `scrollTo` を 1 回呼び、ホイールの後は呼ばない
-lead: '`index.ts` の型（mapの部品のモジュール）と関数（mapを付ける）。'
+lead: 'map の部品のモジュールのエントリーポイントを受け持ち、map の図の付け方を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true

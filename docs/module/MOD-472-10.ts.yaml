@@ -169,7 +169,8 @@ functions:
       - IF-472-8#
     status: planned
 tags:
-  - name: topic:セットアップ
+  - name: topic:プラグイン
     main: true
   - name: topic:設定
   - name: tool:claude-code
+  - name: topic:セットアップ
