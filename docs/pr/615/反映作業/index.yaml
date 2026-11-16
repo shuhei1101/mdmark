@@ -10,5 +10,5 @@
   確認: null
   切り戻し: null
   失敗時: 実行・確認のどちらも再試行せず、ワークフローのログを添えて依頼元へ返す
-  確認方法: タグ vscode-v0.1.4 の vscode-release.yml の実行が success で、GitHub Release vscode-v0.1.4 に mdmark-0.1.4.vsix があり、Marketplace の ShuheiNishikawa.mdmark-vscode の公開済みのバージョンに 0.1.4 があり、Marketplace の拡張機能のページに作ったアイコンが表示される
+  確認方法: タグ vscode-v0.1.4 の vscode-release.yml の実行が success で、GitHub Release vscode-v0.1.4 に mdmark-0.1.4.vsix があり、Marketplace の ShuheiNishikawa.mdmark-vscode の公開済みのバージョンに 0.1.4 があり、Marketplace のギャラリー API で引いた ShuheiNishikawa.mdmark-vscode の 0.1.4 の files に assetType が Microsoft.VisualStudio.Services.Icons.Default の資産がある
   状態: "-"
