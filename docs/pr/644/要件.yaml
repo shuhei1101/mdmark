@@ -32,7 +32,9 @@ docs:
   - page: docs/rules.yaml
     new: false
     change: 反映作業『プロジェクトの索引の移動』で直下の `rules.yaml` へ移し、エントリの `rule` の相対パスを直す。反映作業『配布先の規約のパスの追従』で AI Monitor の規約の .md のパスを YAML のパスに直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
   - page: docs/_root/files.yml
     new: false
     change: '`rules.yaml` の行を、ルール索引の移動に合わせる'
@@ -42,11 +44,15 @@ docs:
   - page: project-index.yaml
     new: false
     change: ER 図の行の `schema` を knowledge の `schemas/design/er.schema.yaml` の参照へ、管理用の YAML の行の `schema` を `schemas/knowledge-files.schema.yaml` の参照へ切り替える。反映作業『配布先のデータの設計書の作成』で `docs/data/` の行を足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
   - page: schemas/files.schema.yaml
     new: false
     change: AI Monitor から配られたコピーのため削除する（`files.schema.yaml`・`index.schema.yaml`・`er.schema.yaml`・`common.schema.yaml`）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
   - page: schemas/files.yaml
     new: false
     change: 削除した Schema のコピーの行を外す
@@ -73,12 +79,16 @@ docs:
     updated_at: '2026-11-17T07:20:13.816545+00:00'
   - page: docs/er/ER-472-1.yaml
     new: false
-    change: 反映作業『配布先のデータの設計書の作成』で、`source` を持たないテーブルとカラムにデータの設計書を指す `source` を付ける（`docs/er/` の他の ER 図も同じ）。knowledge の `er.schema.yaml` の検査に合格させる
-    status: todo
+    change: 反映作業『配布先のデータの設計書の作成』で、`source` を持たないテーブルとカラムにデータの設計書を指す `source` を付ける（`docs/er/` の他の ER 図も同じ）。knowledge の `er.schema.yaml` の検査に合格させる。ER-472-1・ER-472-4 の `tables[].introduced`（knowledge のスキーマで削除された項目）を外す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
   - page: docs/data/index.yaml
     new: true
     change: 反映作業『配布先のデータの設計書の作成』で、ER 図のテーブルのカラムが保存するキーを並べたデータの設計書（`DATA-*.yaml`）とその目次を作る
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
 scope_out:
   - item: ER 図を除く設計書 13 種類の Schema の切り替え、設計書の Schema のコピー 14 件の削除、検査への合格、`instructions` の「書式は `schemas/{種類}.schema.yaml` が持つ」の修正
     reason: '#290 の作業 PR #610 が引き取り、develop へ入っている'
