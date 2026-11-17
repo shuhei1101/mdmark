@@ -19,7 +19,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-11.yaml
     impact: changed
-    detail: map の範囲の外の 5 種類のコードブロックを、補足の無い map の図にする。5 種類だけの文書では mermaid のライブラリを読み込まない
+    detail: map の範囲の外の 5 種類のコードブロックを、補足の無い map の図にする。5 種類だけの文書では mermaid のライブラリを読み込まない。mermaid の読み込み・テーマ・設定を確かめる題材を gantt から pie に替える
     depends_on:
       - docs/scenario/SC-472-8.yaml
   - kind: single
@@ -35,8 +35,8 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
-    impact: run_only
-    detail: 拡大・縮小・移動の記述は変わらないが、軸と格子の配置の図にも同じ操作を付けるため壊しうる
+    impact: changed
+    detail: map が描けない種類の拡大・リサイズ・全画面の題材を、map で描くようになる gantt から xychart-beta に替える。軸と格子の配置の図にも同じ操作を付ける
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-19.yaml
@@ -48,6 +48,30 @@ use_cases:
     impact: run_only
     detail: 図の種類に依らない流れで記述は変わらないが、map の読み取り・配置・操作とノードのリンクを広げるため壊しうる
     depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: changed
+    detail: mermaid の手元のコピーを読み込む題材を、map で描くようになる gantt から map が描かない pie に替える
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-26.yaml
+    impact: changed
+    detail: テーマの配色を確かめる mermaid の図の題材を、gantt から pie に替える
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: changed
+    detail: HTML に書き出す mermaid の図の題材を、gantt から pie に替える
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: changed
+    detail: プレビューで mermaid を設定の配信から読み込む題材を、gantt から pie に替える
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false

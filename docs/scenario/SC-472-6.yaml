@@ -166,7 +166,7 @@ scenarios:
   - name: 正常シナリオ（相対パスの mermaid を読み込む）
     setup:
       - name: 手元の mermaid を指すワークスペース
-        description: '`mdmark.config.yaml` の `mermaid` の読み込み先に、mermaid の本体と chunk の手元のコピーを相対パスで記載し、Markdown は言語 `mermaid` の gantt（map が描けない種類）のコードブロックを 1 つ持つ'
+        description: '`mdmark.config.yaml` の `mermaid` の読み込み先に、mermaid の本体と chunk の手元のコピーを相対パスで記載し、Markdown は言語 `mermaid` の pie（map が描けない種類）のコードブロックを 1 つ持つ'
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
     flow: |-

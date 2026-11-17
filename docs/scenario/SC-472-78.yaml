@@ -635,7 +635,7 @@ scenarios:
     setup:
       - name: map の補足にずれを持つフォルダ
         description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つガントチャート・Git グラフ・ブロック図の map の範囲を 1 つずつと、ずれの無いタイムラインの map の範囲 1 つを記載したもの
-        notes: ずれは、ガントチャートのどのタスクの ID にもタスク名にも一致しない `notes` のキー、Git グラフの `id:` を持たず同じ `msg:` を持つ 2 つの commit を指す `notes` のキー、ブロック図のどのブロックの ID にも一致しない `layout` のキーの 3 つ
+        notes: ずれは、ガントチャートのどのタスクの ID にもタスク名にも一致しない `notes` のキー、ガントチャートの同じ名前の 2 つの section を指す `layout` の `collapsed` のキー、Git グラフの `id:` を持たず同じ `msg:` を持つ 2 つの commit を指す `notes` のキー、ブロック図のどのブロックの ID にも一致しない `layout` のキーの 4 つ
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -656,7 +656,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - ずれを持つ map の範囲の場所を指す行が 3 つある。一致しないキーの 2 行は種類が `map_unknown_ref`、同じ `msg:` の commit を指すキーの行は種類が `map_ambiguous_ref` で、内容に対象のキーと修正の方法（同じ文字の commit は `id:` を記載して ID で指す）が記載されている
+      - ずれを持つ map の範囲の場所を指す行が 4 つある。一致しないキーの 2 行は種類が `map_unknown_ref`、同じ名前の section を指すキーと同じ `msg:` の commit を指すキーの 2 行は種類が `map_ambiguous_ref` で、内容に対象のキーと修正の方法（同じ名前の section は名前を分ける。同じ文字の commit は `id:` を記載して ID で指す）が記載されている
       - ずれの無いタイムラインの map の範囲を指す行が無い
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない

@@ -23,8 +23,8 @@ scenarios:
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
         notes: 設定の `mermaid` の読み込み先は既定（jsDelivr のバージョンを固定した URL）のまま
       - name: mermaid のコードブロックを持つ Markdown
-        description: 段落の間に、言語 `mermaid` の flowchart・sequenceDiagram・gantt のコードブロックを 1 つずつ持つ文書
-        notes: flowchart は front matter の `title` を持ち、sequenceDiagram は `actor` を持つ。gantt は map が描けない種類
+        description: 段落の間に、言語 `mermaid` の flowchart・sequenceDiagram・pie のコードブロックを 1 つずつ持つ文書
+        notes: flowchart は front matter の `title` を持ち、sequenceDiagram は `actor` を持つ。pie は map が描けない種類
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を jsDelivr と同じパスで返却する手元の応答に差し替える。mermaid への要求を数える
     flow: |-
@@ -40,20 +40,20 @@ scenarios:
         M->>M: 言語 mermaid のコードブロックを集め、map が描ける種類と描けない種類に分ける
         M->>M: flowchart と sequenceDiagram を、補足の無い map の図として描く
         M->>X: 本体を要求
-        X-->>M: 本体と、gantt の chunk
+        X-->>M: 本体と、pie の chunk
         M->>M: 描く先の要素の CSS 変数からテーマを作る
-        M-->>P: gantt の場所に、図の枠に入れた mermaid の図を描く
+        M-->>P: pie の場所に、図の枠に入れた mermaid の図を描く
         P-->>U: 文書を表示
       ```
 
       <!-- /map -->
     expected:
-      - mermaid の本体への要求が 1 件（gantt の分だけ読み込む）
+      - mermaid の本体への要求が 1 件（pie の分だけ読み込む）
       - 3 つのコードブロックの場所に、それぞれ図の枠があり、コードブロックの文字が出ていない
       - flowchart と sequenceDiagram の図の枠は map の図で、同じ Mermaid を補足の無い map の範囲で囲んだ文書と同じノード・線・参加者とラベルで描かれる
       - flowchart の図の枠のタイトルが front matter の `title` の文字
       - sequenceDiagram の actor が、設定に `map.kinds.actor` が無くても人のアイコンで描かれる。front matter の `title` を持たない sequenceDiagram の図の枠のタイトルが「シーケンス図」
-      - gantt の図の枠には mermaid の SVG の図があり、タスクの棒の塗りと文字の色が、描く先の要素の CSS 変数の値と一致する
+      - pie の図の枠には mermaid の SVG の図があり、扇形の塗りと凡例の文字の色が、描く先の要素の CSS 変数の値と一致する
       - 図の文字の書体が、描く先の要素の本文の書体と一致する
       - コードブロックの前後の段落が描かれている
     test: test_normal
@@ -89,7 +89,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
       - name: map が描けない種類の mermaid のコードブロックを持つ Markdown
-        description: 言語 `mermaid` の gantt のコードブロックを 1 つ持つ文書
+        description: 言語 `mermaid` の pie のコードブロックを 1 つ持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -112,17 +112,17 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 開いたとき、gantt のタスクの棒の塗りと文字の色が、暗い配色の CSS 変数の値と一致する
-      - OS の配色を明るいに切り替えると、タスクの棒の塗りと文字の色が明るい配色の CSS 変数の値になる
+      - 開いたとき、pie の扇形の塗りと凡例の文字の色が、暗い配色の CSS 変数の値と一致する
+      - OS の配色を明るいに切り替えると、扇形の塗りと凡例の文字の色が明るい配色の CSS 変数の値になる
       - 再描画しても、mermaid の本体への要求が増えない
     test: test_normal_when_dark
   - name: 正常シナリオ（テーマを設定で変える）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-        notes: 設定の `mermaid` で、テーマを mermaid の `neutral` にし、gantt のタスクの塗り `taskBkgColor` を上書きする。キーの構造はインターフェース定義で決める
+        notes: 設定の `mermaid` で、テーマを mermaid の `neutral` にし、pie の 1 つ目の扇形の塗り `pie1` を上書きする。キーの構造はインターフェース定義で決める
       - name: mermaid のコードブロックを持つ Markdown
-        description: 言語 `mermaid` の gantt と flowchart のコードブロックを 1 つずつ持つ文書
+        description: 言語 `mermaid` の pie と flowchart のコードブロックを 1 つずつ持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -140,8 +140,8 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - gantt のタスクの棒の塗りが、設定で上書きした `taskBkgColor` の色
-      - gantt のタスクの棒の枠線の色が、mermaid の `neutral` テーマの値で、描く先の要素の CSS 変数の値ではない
+      - pie の 1 つ目の扇形の塗りが、設定で上書きした `pie1` の色
+      - pie の扇形の枠線の色が、mermaid の `neutral` テーマの値で、描く先の要素の CSS 変数の値ではない
       - flowchart は map の図で、ノードの色が設定の `mermaid` のテーマに左右されない
     test: test_normal_when_theme_configured
   - name: 正常シナリオ（機能をオフにする）
@@ -177,7 +177,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: mermaid のコードブロックを持つ Markdown
-        description: 言語 `mermaid` の gantt と flowchart のコードブロックを 1 つずつ持つ文書
+        description: 言語 `mermaid` の pie と flowchart のコードブロックを 1 つずつ持つ文書
       - name: Mock
         description: mermaid の本体への要求が 404 を返却する。ほかは正常シナリオと同じ
     flow: |-
@@ -198,7 +198,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - gantt のコードブロックの前に、mermaid を読み込めないことを記載した通知ブロックがあり、gantt のソースがコードブロックのまま出ている
+      - pie のコードブロックの前に、mermaid を読み込めないことを記載した通知ブロックがあり、pie のソースがコードブロックのまま出ている
       - flowchart は mermaid を読み込めなくても、map の図として描かれている
       - コードブロックの前後の段落が描かれている
     test: test_error_when_mermaid_not_found
@@ -207,7 +207,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 解釈できない mermaid を持つ Markdown
-        description: 言語 `mermaid` のコードブロックを 2 つ持ち、1 つ目は図の種類の行が無い（mermaid が解釈できない）、2 つ目は map が描けない種類の gantt
+        description: 言語 `mermaid` のコードブロックを 2 つ持ち、1 つ目は図の種類の行が無い（mermaid が解釈できない）、2 つ目は map が描けない種類の pie
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -397,8 +397,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: title を持たない mermaid のコードブロックを持つ Markdown
-        description: map の範囲の外に、front matter の `title` を持たない言語 `mermaid` の flowchart・classDiagram・mindmap・gantt のコードブロックを 1 つずつ持つ文書
-        notes: gantt は本文の `title` の行も持たない
+        description: map の範囲の外に、front matter の `title` を持たない言語 `mermaid` の flowchart・classDiagram・mindmap・pie のコードブロックを 1 つずつ持つ文書
+        notes: pie は本文の `title` の行も持たない
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -416,7 +416,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - flowchart・classDiagram・mindmap（map の図）と gantt（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「マインドマップ」「ガントチャート」
+      - flowchart・classDiagram・mindmap（map の図）と pie（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「マインドマップ」「円グラフ」
     test: test_normal_when_untitled
   - name: 異常シナリオ（map が読めない行を持つ）
     setup:

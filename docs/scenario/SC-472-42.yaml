@@ -93,7 +93,7 @@ scenarios:
   - name: 正常シナリオ（矢印キーとボタンで動かす）
     setup:
       - name: 拡大した図
-        description: 表示する枠より広い mermaid の gantt（正常シナリオ（mermaid の図）と同じ図） を拡大のボタンで 2 回拡大した状態
+        description: 表示する枠より広い mermaid の xychart-beta（正常シナリオ（mermaid の図）と同じ図） を拡大のボタンで 2 回拡大した状態
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -151,8 +151,8 @@ scenarios:
   - name: 正常シナリオ（mermaid の図）
     setup:
       - name: 図を描いたページ
-        description: map の範囲の外に、言語 `mermaid` の gantt・flowchart・sequenceDiagram のコードブロックを 1 つずつ持つ文書を描いたページ
-        notes: gantt（map が描けない種類）は幅が表示する枠の幅より広く、タスクを 3 つ持つ。flowchart は線のラベルを持つ線を 1 本持ち、sequenceDiagram はメッセージを 3 本持つ（どちらも map の図で描かれる）
+        description: map の範囲の外に、言語 `mermaid` の xychart-beta・flowchart・sequenceDiagram のコードブロックを 1 つずつ持つ文書を描いたページ
+        notes: xychart-beta（map が描けない種類）は幅が表示する枠の幅より広く、x 軸の項目を 12 個持つ棒のチャート。flowchart は線のラベルを持つ線を 1 本持ち、sequenceDiagram はメッセージを 3 本持つ（どちらも map の図で描かれる）
       - name: Mock
         description: 『mermaidの図を描く』の正常シナリオと同じ
     flow: |-
@@ -163,14 +163,14 @@ scenarios:
         actor U as 読者
         participant D as mermaid の図
         U->>D: ページを開く
-        D-->>U: gantt を全体が収まる倍率で表示
-        U->>D: gantt の右上の拡大のボタンを押し、タスクの外の余白を押したまま動かす
+        D-->>U: xychart-beta を全体が収まる倍率で表示
+        U->>D: xychart-beta の右上の拡大のボタンを押し、棒の外の余白を押したまま動かす
         D-->>U: 倍率を上げ、動かした位置で表示
-        U->>D: gantt のタスク名・flowchart のノードの文字と線のラベル・sequenceDiagram のメッセージの文字の上で、それぞれ押したまま動かしてコピーする
+        U->>D: xychart-beta の x 軸のラベル・flowchart のノードの文字と線のラベル・sequenceDiagram のメッセージの文字の上で、それぞれ押したまま動かしてコピーする
         D-->>U: 図を動かさず、文字を選ぶ
-        U->>D: gantt の右下のリサイズハンドルを下へドラッグする
+        U->>D: xychart-beta の右下のリサイズハンドルを下へドラッグする
         D-->>U: 表示する枠を高くして表示
-        U->>D: gantt の右上の全画面のボタンを押す
+        U->>D: xychart-beta の右上の全画面のボタンを押す
         D-->>U: 全画面で表示
         U->>D: 0 を押す
         D-->>U: 全体が収まる倍率に戻す
@@ -178,13 +178,13 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 開いたとき、gantt の全体が表示する枠の中に収まっている
-      - 拡大のボタンで倍率が上がり、タスクの外の余白のドラッグで図が動き、ドラッグ中は文字が選ばれない
-      - gantt のタスク名・flowchart のノードの文字と線のラベル・sequenceDiagram のメッセージの文字の上では、それぞれカーソルが I の構造で、ドラッグした範囲の文字が選ばれ、図は動かない。コピーした文字が、それぞれ記載した文字と一致する
+      - 開いたとき、xychart-beta の全体が表示する枠の中に収まっている
+      - 拡大のボタンで倍率が上がり、棒の外の余白のドラッグで図が動き、ドラッグ中は文字が選ばれない
+      - xychart-beta の x 軸のラベル・flowchart のノードの文字と線のラベル・sequenceDiagram のメッセージの文字の上では、それぞれカーソルが I の構造で、ドラッグした範囲の文字が選ばれ、図は動かない。コピーした文字が、それぞれ記載した文字と一致する
       - リサイズハンドルのドラッグで、表示する枠の高さが変わる
-      - 全画面のボタンで gantt が全画面で表示される
+      - 全画面のボタンで xychart-beta が全画面で表示される
       - '`0` で開いたときの倍率と位置に戻る'
-      - gantt の右上のボタンが、移動・拡大と縮小・全画面の並びで、右上のボタンとリサイズハンドルがそれぞれスクリーンリーダー向けの名前を持つ
+      - xychart-beta の右上のボタンが、移動・拡大と縮小・全画面の並びで、右上のボタンとリサイズハンドルがそれぞれスクリーンリーダー向けの名前を持つ
       - 拡大しても線と文字が SVG のまま描かれ、ぼやけない
     test: test_normal_when_mermaid
   - name: 正常シナリオ（リサイズハンドルで高さを変える）
@@ -253,7 +253,7 @@ scenarios:
   - name: 正常シナリオ（スマホの指で動かす）
     setup:
       - name: 図を描いたページ
-        description: 図の枠に描く図を 1 つずつ並べ、どの図も拡大のボタンで 2 回拡大したページ。並べるのは、『Mermaidと補足で図を描く』の正常シナリオの map の構成図とシーケンス図、『図を描く』の正常シナリオのグラフ、正常シナリオ（mermaid の図）の gantt、『チャートを描く』の正常シナリオの埋め込んだ HTML の中の棒のチャート。最後の図の下にも段落が続き、文書が縦にスクロールできる
+        description: 図の枠に描く図を 1 つずつ並べ、どの図も拡大のボタンで 2 回拡大したページ。並べるのは、『Mermaidと補足で図を描く』の正常シナリオの map の構成図とシーケンス図、『図を描く』の正常シナリオのグラフ、正常シナリオ（mermaid の図）の xychart-beta、『チャートを描く』の正常シナリオの埋め込んだ HTML の中の棒のチャート。最後の図の下にも段落が続き、文書が縦にスクロールできる
         notes: 画面の幅は 390px。タッチの操作で開く。フローの操作を図ごとに行う。タップするのは図の余白（ノード・線・項目の無いところ）
       - name: Mock
         description: 正常シナリオと同じ
