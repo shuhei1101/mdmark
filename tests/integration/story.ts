@@ -198,7 +198,7 @@ export async function expectCountBelowTitle(
   expect(rows.count.bottom).toBeLessThanOrEqual(rows.node.bottom + 0.5);
 }
 
-/** map の図の、同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」） */
+/** map の図の、同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」。同じ点から出る・入る線の端の区間は除く） */
 export function mapWireOverlaps(page: Page): Promise<string[]> {
   return page
     .locator(".map-wire-hits > .map-wire-hit[data-wire]")
@@ -208,19 +208,36 @@ export function mapWireOverlaps(page: Page): Promise<string[]> {
         from: [number, number];
         to: [number, number];
       };
-      const segments: Segment[] = paths.flatMap((path) => {
-        const points = [
+      const pointsOf = (path: Element) =>
+        [
           ...(path.getAttribute("d") ?? "").matchAll(
             /[ML](-?[\d.]+) (-?[\d.]+)/g,
           ),
         ].map(
           (match) => [Number(match[1]), Number(match[2])] as [number, number],
         );
-        return points.slice(1).map((to, index) => ({
-          wire: path.getAttribute("data-wire") ?? "",
-          from: points[index] as [number, number],
-          to,
-        }));
+      const ends = new Map<string, number>();
+      for (const points of paths.map(pointsOf))
+        for (const end of [points[0], points.at(-1)])
+          if (end) ends.set(`${end}`, (ends.get(`${end}`) ?? 0) + 1);
+      const sharedEnd = (end: [number, number]) =>
+        (ends.get(`${end}`) ?? 0) > 1;
+      const segments: Segment[] = paths.flatMap((path) => {
+        const points = pointsOf(path);
+        const last = points.length - 2;
+        return points
+          .slice(1)
+          .map((to, index) => ({
+            wire: path.getAttribute("data-wire") ?? "",
+            from: points[index] as [number, number],
+            to,
+            index,
+          }))
+          .filter(
+            (segment) =>
+              !(segment.index === 0 && sharedEnd(segment.from)) &&
+              !(segment.index === last && sharedEnd(segment.to)),
+          );
       });
       const axisOf = (s: Segment): number | undefined => {
         if (s.from[1] === s.to[1] && s.from[0] !== s.to[0]) return 0;

@@ -16675,21 +16675,39 @@ const MAP_STATE_MARKDOWN = mapRange({
   data: MAP_STATE_DATA,
 });
 
-/** 同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」） */
+/** 同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」。同じ点から出る・入る線の端の区間は除く） */
 function mapWireOverlaps(figure: Element): string[] {
-  const segments = [
+  const paths = [
     ...figure.querySelectorAll<SVGPathElement>(
       ".map-wire-hits > .map-wire-hit[data-wire]",
     ),
-  ].flatMap((path) => {
-    const points = [
+  ];
+  const pointsOf = (path: SVGPathElement) =>
+    [
       ...(path.getAttribute("d") ?? "").matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g),
     ].map((match) => [Number(match[1]), Number(match[2])] as const);
-    return points.slice(1).map((end, index) => ({
-      wire: path.dataset.wire ?? "",
-      from: points[index] as readonly [number, number],
-      to: end,
-    }));
+  const ends = new Map<string, number>();
+  for (const points of paths.map(pointsOf))
+    for (const end of [points[0], points.at(-1)])
+      if (end) ends.set(`${end}`, (ends.get(`${end}`) ?? 0) + 1);
+  const sharedEnd = (end: readonly [number, number] | undefined) =>
+    end !== undefined && (ends.get(`${end}`) ?? 0) > 1;
+  const segments = paths.flatMap((path) => {
+    const points = pointsOf(path);
+    const last = points.length - 2;
+    return points
+      .slice(1)
+      .map((end, index) => ({
+        wire: path.dataset.wire ?? "",
+        from: points[index] as readonly [number, number],
+        to: end,
+        index,
+      }))
+      .filter(
+        (segment) =>
+          !(segment.index === 0 && sharedEnd(segment.from)) &&
+          !(segment.index === last && sharedEnd(segment.to)),
+      );
   });
   const overlap = (
     a: (typeof segments)[number],
