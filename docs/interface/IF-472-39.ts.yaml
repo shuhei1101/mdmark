@@ -869,7 +869,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - '`docs/a.mark.md:10:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` を含めない修正方法）で 1 つずつある'
+      - '`docs/a.mark.md:10:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` をそのまま記載せずに 2 つ目の `-` を JSON の Unicode エスケープで記載する修正方法）で 1 つずつある'
       - '`docs/a.mark.md:3:` で始まる行が `map_unknown_key` の 1 つ（内容に印のキー `mdoe` と、使用できるキー `title`・`focus`・`play`・`interval`・`collapse`）だけある'
       - '`docs/a.mark.md:20:` で始まる行が無い'
       - 最後の行が `ずれ 4 件`
