@@ -63,10 +63,10 @@ files:
       - to: MOD-472-98
         type: implements
   - path: src/escape.ts
-    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「HTML として特別な文字のエスケープ（vscode を import しない）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに参照する。
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口 / escape.ts』の、HTML として特別な文字のエスケープ（vscode を import しない）を受け持つ。拡張機能が組み立てる HTML のエスケープを変えるときに参照する。
     tags: [tool:vscode, topic:エントリポイント]
     related:
-      - to: MOD-472-19
+      - to: MOD-647-5
         type: implements
   - path: src/export/export.ts
     description: モジュール構成『VS Code 拡張機能 / 書き出し』のうち「mdmark.exportHtml・mdmark.openInBrowser・mdmark.printToPdf の本体」を受け持つ。HTML への書き出しや PDF への印刷を変えるときに参照する。
@@ -171,10 +171,10 @@ files:
       - to: MOD-472-22
         type: implements
   - path: src/workspace.ts
-    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口』のうち「相対パスの設定の基準のフォルダ（baseDirOf）」を受け持つ。拡張機能の起動やコマンドの登録を変えるときに参照する。
+    description: モジュール構成『VS Code 拡張機能 / 拡張機能の入口 / workspace.ts』の、相対パスの設定の基準にするフォルダ（baseDirOf）の決め方を受け持つ。設定の相対パスの解決の基準を変えるときに参照する。
     tags: [tool:vscode, topic:エントリポイント]
     related:
-      - to: MOD-472-19
+      - to: MOD-647-6
         type: implements
   - path: tests/integration/00-undecidable.test.ts
     description: 拡張機能ホストの中で「前回のバージョンが空でタグ一覧も取れず、読み込む mdmark のバージョンを決められない場面」の振る舞いを確認する結合テスト。この操作の振る舞いを変えたときに参照する。
