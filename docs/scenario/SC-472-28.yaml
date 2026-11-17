@@ -84,13 +84,70 @@ scenarios:
       - 公開関数が `v0.0.1+develop.abc1234` を返却する
       - ページのルート要素の CSS 変数 `--mdmark-version` の計算値が、公開関数の返却値を引用符で囲んだ文字列
     test: test_normal_when_develop
+  - name: 正常シナリオ（埋めた配布物から読み込む）
+    setup:
+      - name: 配布物を埋めたページ
+        description: '`dist/index.js` と部品の配布ファイル（`dist/map.js`・`dist/view.js`・`dist/comments.js`）と `dist/index.css` を `text/plain` の `<script>` に持ち、それぞれを Blob の URL にして `import()` し、部品のモジュールを mdmark に指定してから `mount` を呼ぶ HTML'
+        notes: '`mount` に指定する Markdown は map の範囲・ビューのマーカーを 1 つずつ持ち、設定でコメントの機能をオンにする'
+      - name: Mock
+        description: ページの外部への要求を全て拒否し、要求した URL を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as 埋めた配布物
+        U->>P: ページを開く
+        P->>M: index.js と部品の配布ファイルを Blob の URL から import()
+        M-->>P: モジュール
+        P->>P: 部品のモジュールを指定して mount を呼ぶ
+        P-->>U: map・ビュー・コメントのある文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - map の範囲が図として描かれている
+      - ビューのマーカーの表がビューとして描かれている
+      - 本文にコメントのボタンが付いている
+      - ページが外部へ要求した URL が無い
+      - ブラウザのコンソールにエラーが出ていない
+    test: test_normal_when_embedded
+  - name: 異常シナリオ（埋めていない部品のマーカーがある）
+    setup:
+      - name: 配布物を埋めたページ
+        description: 正常シナリオ（埋めた配布物から読み込む）と同じ HTML で、map の部品のモジュールだけを埋めず指定しないもの
+        notes: '`mount` に指定する Markdown は map の範囲と段落を 1 つずつ持つ'
+      - name: Mock
+        description: ページの外部への要求を全て拒否し、要求した URL を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as 埋めた配布物
+        U->>P: ページを開く
+        P->>M: index.js を Blob の URL から import()
+        M-->>P: モジュール
+        P->>P: mount を呼ぶ
+        P-->>U: 段落を表示し、コンソールに map の部品を読み込めなかった旨が出る
+      ```
+
+      <!-- /map -->
+    expected:
+      - 本文の段落が表示されている
+      - ブラウザのコンソールに map の部品を読み込めなかったエラーが出る
+    test: test_error_when_part_not_embedded
 lead: 利用側のページが、タグか develop を指定した URL で mdmark の JavaScript と CSS を読み込み、公開関数を呼ぶ。サーバーの言語によらず、ページに記載した参照だけで使用できる。
 primary_actor: mdmark を使用するアプリのページ
 trigger: 利用者が、mdmark を読み込むページをブラウザで開く
 preconditions:
   - 読み込むバージョンのタグか develop が指す commit に `dist/` が入っている
-  - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグか develop}/dist/index.js` と `index.css` を読み込む記述を持つ
-success_guarantee: ページに CSS が該当し、JavaScript の公開関数が、タグを指定したときはそのタグ、develop を指定したときは develop のビルドのバージョンを返却する。
+  - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグか develop}/dist/index.js` と `index.css` を読み込む記述を持つか、`dist/` の配布ファイルを埋めて持つ
+success_guarantee: ページに CSS が該当し、JavaScript の公開関数が、タグを指定したときはそのタグ、develop を指定したときは develop のビルドのバージョンを返却する。配布ファイルを埋めたページは、埋めた部品のモジュールを外部へ要求せずに読み込み、map・ビュー・コメントを描く。
 minimal_guarantee: 配布物を読み込めなかったときも、ページの本文はそのまま表示され、読み込めなかったことがブラウザのコンソールに出る。
 test_file: tests/e2e/単一ユースケース/配布物を読み込む.spec.ts
 tags:
