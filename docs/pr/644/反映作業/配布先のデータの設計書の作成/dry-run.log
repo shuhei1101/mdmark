@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/shuhei2441/repo/mdmark/.claude/worktrees/chore-ai-monitor-follow-v0.4.0/docs/pr/644/反映作業/配布先のデータの設計書の作成/実行.py", line 47, in <module>
+    dev_docs = dev_docs_path.read_text(encoding="utf-8")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shuhei2441/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shuhei2441/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/shuhei2441/repo/mdmark/.claude/worktrees/chore-ai-monitor-follow-v0.4.0/dev-docs.yaml'
+exit=1
