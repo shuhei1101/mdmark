@@ -65,16 +65,20 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T05:27:51.802391+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: LIB-472-12（eslint）のコマンドの purpose と、TP-472-1（テスト実行方法）の lint の説明に tests/・vscode/tests/ を足す
+    updated_by: planner
+    updated_at: '2026-11-17T05:32:57.087804+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: 挙動を変えないリファクタで、新しく確かめる振る舞いが無い。違反を直した単体テストは『実装』で全件を実行して pass を確かめる
     updated_by: planner
     updated_at: '2026-11-17T05:22:09.629978+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: tools/eslint/eslint.config.js の COMPLEXITY_FILES に tests/・vscode/tests/ を足し、テストコードの違反（origin/develop で 32 ファイル・53 件）を挙動を変えずに直す
+    updated_by: planner
+    updated_at: '2026-11-17T05:50:32.178213+00:00'
   - process: 結合テスト作成
     status: todo
     note: 新しい結合テストは作らない。違反を直した結合テストのファイル（tests/integration/・vscode/tests/integration/）を実行して pass を確かめる

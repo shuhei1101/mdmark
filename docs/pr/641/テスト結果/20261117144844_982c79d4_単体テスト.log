@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests
+
+
+ Test Files  300 passed (300)
+      Tests  2298 passed (2298)
+   Start at  14:48:07
+   Duration  23.20s (worker 78%, tests 13%, import 6%, transform 3%)
+

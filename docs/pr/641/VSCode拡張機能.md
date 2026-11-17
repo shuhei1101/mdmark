@@ -16,4 +16,12 @@
 
 ## テスト結果
 
-未実施（『実装』『結合テスト作成』で記入する）
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts](https://github.com/shuhei1101/mdmark/blob/e2d0e7d88db58a00b297bff6934c8a20b505fe57/tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261117144844_982c79d4_単体テスト.log` |
+
+### 結合
+
+`vscode/tests/integration/stub-server.ts` の実行範囲は [ライブラリ本体](./ライブラリ本体.md) の `### 結合テストの実行範囲` に記載した。未実施（実行範囲の確認を受けてから『結合テスト作成』で実行する）
