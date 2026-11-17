@@ -2,6 +2,8 @@
 name: test
 
 on:
+  push:
+    branches: [chore/test/runner-workflow]
   workflow_dispatch:
     inputs:
       layer:
@@ -20,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: test-${{ github.ref }}-${{ inputs.layer }}
+  group: test-${{ github.ref }}-${{ inputs.layer || 'unit' }}
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     # 入力は環境変数を経由して参照し、run のスクリプトに直接埋めない
     env:
-      LAYER: ${{ inputs.layer }}
+      LAYER: ${{ inputs.layer || 'unit' }}
       PATHS: ${{ inputs.paths }}
     steps:
       - name: ブランチを取得する
