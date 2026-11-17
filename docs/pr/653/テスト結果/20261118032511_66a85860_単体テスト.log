@@ -6,124 +6,124 @@ $ npm run test:unit
 
  RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links
 
- ❯ |unit| tests/unit/src/map/structure.test.ts (11 tests | 1 failed) 175ms
-   × test_collect_map_structure_when_axis_grid 8ms
- ❯ |unit| tests/unit/src/map/axis-grid-layout.test.ts (6 tests | 6 failed) 198ms
-   × test_layout_axis_grid_when_gantt 43ms
-   × test_layout_axis_grid_when_gantt_collapsed_entered 14ms
-   × test_layout_axis_grid_when_timeline 98ms
-   × test_layout_axis_grid_when_git_graph 11ms
-   × test_layout_axis_grid_when_journey 11ms
-   × test_layout_axis_grid_when_block 20ms
- ❯ |unit| tests/unit/src/map/axis-grid.test.ts (8 tests | 8 failed) 252ms
-   × test_parse_axis_grid_when_gantt 38ms
-   × test_parse_axis_grid_when_timeline 15ms
-   × test_parse_axis_grid_when_git_graph 34ms
-   × test_parse_axis_grid_when_journey 56ms
-   × test_parse_axis_grid_when_block 23ms
-   × test_parse_axis_grid_when_first_word 7ms
-   × test_parse_axis_grid_when_unreadable 20ms
-   × test_axis_grid_item_of 52ms
- ❯ |unit| tests/unit/src/render/sanitize.test.ts (24 tests | 1 failed) 212ms
-   × test_resolve_id_href 5ms
- ❯ |unit| tests/unit/src/map/flowchart.test.ts (11 tests | 2 failed) 50ms
-   × test_map_link_problems 7ms
-   × test_map_link_problems_when_id_links 1ms
- ❯ |unit| tests/unit/src/map/check.test.ts (23 tests | 2 failed) 2307ms
-   × test_collect_map_problems_when_axis_grid 15ms
-   × test_collect_map_problems_when_id_link 3ms
- ❯ |unit| tests/unit/src/parts/map.test.ts (51 tests | 4 failed) 2813ms
-   × test_render_map_axis_grid 33ms
-   × test_render_map_axis_grid_when_collapsed 56ms
-   × test_render_map_axis_grid_when_entered 35ms
-   × test_render_map_axis_grid_when_selected 21ms
- ❯ |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts (11 tests | 2 failed) 1710ms
-   × test_attach_map_when_axis_grid 518ms
-   × test_attach_map_when_id_link 501ms
- ❯ |unit| tests/unit/src/render/parser.test.ts (17 tests | 1 failed) 4561ms
-   × test_resolve_id_links 7ms
- ❯ |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts (5 tests | 5 failed) 4218ms
-   × test_attach_map_axis_grid 692ms
-   × test_attach_map_axis_grid_when_section_toggled 361ms
-   × test_attach_map_axis_grid_when_selected 395ms
-   × test_attach_map_axis_grid_when_layout 627ms
-   × test_attach_map_axis_grid_when_played 2142ms
+ ❯ |unit| tests/unit/src/render/sanitize.test.ts (24 tests | 1 failed) 108ms
+   × test_resolve_id_href 3ms
+ ❯ |unit| tests/unit/src/map/structure.test.ts (11 tests | 1 failed) 93ms
+   × test_collect_map_structure_when_axis_grid 4ms
+ ❯ |unit| tests/unit/src/map/axis-grid-layout.test.ts (6 tests | 6 failed) 125ms
+   × test_layout_axis_grid_when_gantt 11ms
+   × test_layout_axis_grid_when_gantt_collapsed_entered 24ms
+   × test_layout_axis_grid_when_timeline 19ms
+   × test_layout_axis_grid_when_git_graph 15ms
+   × test_layout_axis_grid_when_journey 49ms
+   × test_layout_axis_grid_when_block 7ms
+ ❯ |unit| tests/unit/src/map/axis-grid.test.ts (8 tests | 8 failed) 155ms
+   × test_parse_axis_grid_when_gantt 43ms
+   × test_parse_axis_grid_when_timeline 19ms
+   × test_parse_axis_grid_when_git_graph 5ms
+   × test_parse_axis_grid_when_journey 8ms
+   × test_parse_axis_grid_when_block 21ms
+   × test_parse_axis_grid_when_first_word 49ms
+   × test_parse_axis_grid_when_unreadable 8ms
+   × test_axis_grid_item_of 2ms
+ ❯ |unit| tests/unit/src/map/flowchart.test.ts (11 tests | 2 failed) 64ms
+   × test_map_link_problems 6ms
+   × test_map_link_problems_when_id_links 2ms
+ ❯ |unit| tests/unit/src/map/check.test.ts (23 tests | 2 failed) 2218ms
+   × test_collect_map_problems_when_axis_grid 6ms
+   × test_collect_map_problems_when_id_link 2ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (51 tests | 4 failed) 2349ms
+   × test_render_map_axis_grid 41ms
+   × test_render_map_axis_grid_when_collapsed 58ms
+   × test_render_map_axis_grid_when_entered 39ms
+   × test_render_map_axis_grid_when_selected 70ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts (11 tests | 2 failed) 1663ms
+   × test_attach_map_when_axis_grid 670ms
+   × test_attach_map_when_id_link 244ms
+ ❯ |unit| tests/unit/src/render/parser.test.ts (17 tests | 1 failed) 5935ms
+   × test_resolve_id_links 22ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts (5 tests | 5 failed) 3880ms
+   × test_attach_map_axis_grid 1194ms
+   × test_attach_map_axis_grid_when_section_toggled 307ms
+   × test_attach_map_axis_grid_when_selected 1677ms
+   × test_attach_map_axis_grid_when_layout 338ms
+   × test_attach_map_axis_grid_when_played 364ms
 
 ⎯⎯⎯⎯⎯⎯ Failed Tests 32 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_gantt
 Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
- ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
-     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
-     21| }) {
-     22|   const { parseAxisGrid } = await loadAxisGrid();
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:28:29
+     26|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     27| }) {
+     28|   const { parseAxisGrid } = await loadAxisGrid();
        |                             ^
-     23|   const { layoutAxisGrid } = await loadLayout();
-     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
- ❯ tests/unit/src/map/axis-grid-layout.test.ts:45:30
+     29|   const { layoutAxisGrid } = await loadLayout();
+     30|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:51:30
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/32]⎯
 
  FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_gantt_collapsed_entered
 Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
- ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
-     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
-     21| }) {
-     22|   const { parseAxisGrid } = await loadAxisGrid();
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:28:29
+     26|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     27| }) {
+     28|   const { parseAxisGrid } = await loadAxisGrid();
        |                             ^
-     23|   const { layoutAxisGrid } = await loadLayout();
-     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
- ❯ tests/unit/src/map/axis-grid-layout.test.ts:66:17
+     29|   const { layoutAxisGrid } = await loadLayout();
+     30|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:72:17
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/32]⎯
 
  FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_timeline
 Error: Cannot find module '/src/map/axis-grid-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
- ❯ tests/unit/src/map/axis-grid-layout.test.ts:90:32
-     88| test("test_layout_axis_grid_when_timeline", async () => {
-     89|   // 準備
-     90|   const { AXIS_GRID_LAYOUT } = await loadLayout();
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:96:32
+     94| test("test_layout_axis_grid_when_timeline", async () => {
+     95|   // 準備
+     96|   const { AXIS_GRID_LAYOUT } = await loadLayout();
        |                                ^
-     91|   // 実行
-     92|   const open = await layOut({ kind: "timeline", source: TIMELINE });
+     97|   // 実行
+     98|   const open = await layOut({ kind: "timeline", source: TIMELINE });
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/32]⎯
 
  FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_git_graph
 Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
- ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
-     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
-     21| }) {
-     22|   const { parseAxisGrid } = await loadAxisGrid();
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:28:29
+     26|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     27| }) {
+     28|   const { parseAxisGrid } = await loadAxisGrid();
        |                             ^
-     23|   const { layoutAxisGrid } = await loadLayout();
-     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
- ❯ tests/unit/src/map/axis-grid-layout.test.ts:117:36
+     29|   const { layoutAxisGrid } = await loadLayout();
+     30|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:123:36
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/32]⎯
 
  FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_journey
 Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
- ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
-     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
-     21| }) {
-     22|   const { parseAxisGrid } = await loadAxisGrid();
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:28:29
+     26|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     27| }) {
+     28|   const { parseAxisGrid } = await loadAxisGrid();
        |                             ^
-     23|   const { layoutAxisGrid } = await loadLayout();
-     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
- ❯ tests/unit/src/map/axis-grid-layout.test.ts:140:20
+     29|   const { layoutAxisGrid } = await loadLayout();
+     30|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:146:20
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/32]⎯
 
  FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_block
 Error: Cannot find module '/src/map/axis-grid-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
- ❯ tests/unit/src/map/axis-grid-layout.test.ts:167:32
-    165| test("test_layout_axis_grid_when_block", async () => {
-    166|   // 準備
-    167|   const { AXIS_GRID_LAYOUT } = await loadLayout();
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:173:32
+    171| test("test_layout_axis_grid_when_block", async () => {
+    172|   // 準備
+    173|   const { AXIS_GRID_LAYOUT } = await loadLayout();
        |                                ^
-    168|   // 実行
-    169|   const open = await layOut({ kind: "block", source: BLOCK });
+    174|   // 実行
+    175|   const open = await layOut({ kind: "block", source: BLOCK });
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/32]⎯
 
@@ -422,7 +422,7 @@ TypeError: resolveIdHref is not a function
  FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid_when_selected
  FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid_when_layout
  FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid_when_played
-TypeError: Failed to fetch dynamically imported module: http://localhost:63315/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/map/axis-grid-view.ts?import
+TypeError: Failed to fetch dynamically imported module: http://localhost:63317/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/map/axis-grid-view.ts?import
 
 Failure screenshots:
   - .vitest/attachments/failure-screenshots/axis-grid-view.browser.test.ts/test_attach_map_axis_grid.png
@@ -484,7 +484,7 @@ undefined
 
  Test Files  10 failed | 296 passed (306)
       Tests  32 failed | 2327 passed (2359)
-   Start at  03:22:15
-   Duration  28.89s (worker 82%, tests 12%, import 6%, transform 1%)
+   Start at  03:24:44
+   Duration  20.69s (worker 82%, tests 12%, import 5%, transform 1%)
 
 exit=1
