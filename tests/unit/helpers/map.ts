@@ -412,3 +412,174 @@ export const MINDMAP_UNREADABLE = `mindmap
     (体制)
  二つ目の根
 `;
+
+/** ガントチャート（section 4・タスク 8。モック `docs/mock/refs/653/assets/samples.js` の `GANTT` と同じ） */
+export const GANTT = `gantt
+  title リリースの計画
+  dateFormat YYYY-MM-DD
+  axisFormat %m/%d
+  excludes weekends
+  section 準備
+    要件を決める :done, req, 2026-11-02, 3d
+    設計する :active, des, after req, 4d
+  section 開発
+    実装する :crit, imp, after des, 5d
+    結合テスト :tst, after imp, 3d
+  section 準備
+    環境を用意する :env, 2026-11-09, 2026-11-13
+    手順書を書く :2026-11-16, 2d
+  section 公開
+    リリース判定 :milestone, rel, after tst, 0d
+    告知する :after rel, 2d
+`;
+
+/** ガントチャートの補足（モックの `GANTT_DATA` と同じ） */
+export const GANTT_DATA = `{
+  "version": 1,
+  "notes": {
+    "imp": {"text": "map の 5 種類の読み取りと配置を実装する"},
+    "手順書を書く": {"text": "利用側の更新の手順を含める"}
+  }
+}
+`;
+
+/** ガントチャートの補足の layout（モックの `GANTT_LAYOUT_DATA` と同じ） */
+export const GANTT_LAYOUT_DATA = `{
+  "version": 1,
+  "notes": {
+    "imp": {"text": "map の 5 種類の読み取りと配置を実装する"},
+    "手順書を書く": {"text": "利用側の更新の手順を含める"}
+  },
+  "layout": {
+    "rel": {"color": "purple"},
+    "公開": {"collapsed": true},
+    "tst": {"pos": {"x": 40, "y": 40}}
+  }
+}
+`;
+
+/** タイムライン（section 2・期間 6・出来事 9。モックの `TIMELINE` と同じ） */
+export const TIMELINE = `timeline
+  title mdmark の歩み
+  2026-04 : 構想を書く
+  section 記法を作る
+    2026-05 : 表のマーカー : 注意書き : タブ
+    2026-06 : 図の部品
+  section 図を広げる
+    2026-08 : map を追加する : シーケンス図
+    2026-10 : ER 図と状態遷移図
+    2026-11 : マインドマップ
+`;
+
+/** タイムラインの補足（モックの `TIMELINE_DATA` と同じ） */
+export const TIMELINE_DATA = `{
+  "version": 1,
+  "notes": {
+    "2026-08": {"text": "Mermaid と補足で図を書けるようにした"},
+    "マインドマップ": {"text": "木の配置を追加した"}
+  }
+}
+`;
+
+/** Git グラフ（ブランチ 3・commit 10。モックの `GIT_GRAPH` と同じ） */
+export const GIT_GRAPH = `gitGraph
+  commit id: "init"
+  commit msg: "README を書く"
+  branch develop
+  checkout develop
+  commit id: "map" tag: "v0.10.0"
+  branch feat
+  checkout feat
+  commit msg: "gantt を足す"
+  commit type: HIGHLIGHT id: "axis"
+  checkout develop
+  commit
+  merge feat
+  checkout main
+  commit type: REVERSE msg: "誤りを戻す"
+  cherry-pick id: "map"
+  merge develop
+`;
+
+/** Git グラフの補足（モックの `GIT_GRAPH_DATA` と同じ） */
+export const GIT_GRAPH_DATA = `{
+  "version": 1,
+  "notes": {
+    "axis": {"text": "軸に沿った配置を入れた commit"},
+    "README を書く": {"text": "最初の説明"},
+    "c6": {"text": "develop の作業の続き"},
+    "feat": {"text": "機能を足すブランチ"}
+  }
+}
+`;
+
+/** ジャーニー（section 3・タスク 7・人 3。モックの `JOURNEY` と同じ） */
+export const JOURNEY = `journey
+  title 文書を書いて読む
+  section 書く
+    記法を調べる: 2: 作成者
+    図を書く: 4: 作成者, AI
+  section 点検する
+    mdmark check を流す: 3: 作成者, AI
+    ずれを直す: 1: 作成者
+  section 読む
+    文書を開く: 5: 読者
+    図を辿る: 4: 読者, 作成者, AI
+    検索する: 3: 読者
+`;
+
+/** ジャーニーの補足（モックの `JOURNEY_DATA` と同じ） */
+export const JOURNEY_DATA = `{
+  "version": 1,
+  "notes": {
+    "ずれを直す": {"text": "直し方が分からない警告が残る"}
+  }
+}
+`;
+
+/** ブロック図（columns 3・入れ子 1・space 1・線 3。モックの `BLOCK` と同じ） */
+export const BLOCK = `block-beta
+  columns 3
+  page["利用側のページ"]:2 cdn[("CDN")]
+  mdmark(("mdmark"))
+  space
+  block:core
+    columns 2
+    parse["読み取り"] layout("配置")
+  end
+  doc["文書"] cache[("キャッシュ")]
+  page --> mdmark
+  mdmark -- "描く" --> core
+  cdn --> page
+`;
+
+/** ブロック図の補足（モックの `BLOCK_DATA` と同じ） */
+export const BLOCK_DATA = `{
+  "version": 1,
+  "notes": {
+    "core": {"text": "種類ごとの読み取りと配置"}
+  }
+}
+`;
+
+/** ブロック図の補足の layout（モックの `BLOCK_LAYOUT_DATA` と同じ） */
+export const BLOCK_LAYOUT_DATA = `{
+  "version": 1,
+  "notes": {
+    "core": {"text": "種類ごとの読み取りと配置"}
+  },
+  "layout": {
+    "mdmark": {"color": "green"},
+    "core": {"collapsed": true},
+    "doc": {"pos": {"x": 0, "y": 0}}
+  }
+}
+`;
+
+/** 読めない行を持つガントチャート（モックの `GANTT_UNREADABLE` と同じ） */
+export const GANTT_UNREADABLE = `gantt
+  dateFormat YYYY-MM-DD
+  section 準備
+    要件を決める :req, 2026-11-02, 3d
+    設計する :des, after req, 四日
+`;

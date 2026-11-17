@@ -213,3 +213,74 @@ test("test_attach_map_when_mindmap", async () => {
   expect(blocks).toHaveLength(1);
   expect(blocks[0]?.querySelector("code")?.textContent).toContain("::icon");
 });
+
+// 軸と格子の配置の図（正常系）
+test("test_attach_map_when_axis_grid", async () => {
+  // 準備
+  const samples = await import("../../helpers/map.ts");
+  const sources = [
+    samples.GANTT,
+    samples.TIMELINE,
+    samples.GIT_GRAPH,
+    samples.JOURNEY,
+    samples.BLOCK,
+  ];
+  const ranges = sources.map((mermaid) => mapRange({ mermaid })).join("\n");
+  // 実行
+  const { root } = await attach(
+    `${ranges}\n\`\`\`mermaid\n${samples.GANTT_UNREADABLE}\`\`\`\n`,
+  );
+  // 検証
+  const figures = [
+    ...root.querySelectorAll<HTMLElement>(
+      'figure.mdmark-diagram[data-diagram="map"]',
+    ),
+  ];
+  expect(figures).toHaveLength(5);
+  expect(
+    figures.map(
+      (figure) =>
+        figure.closest<HTMLElement>(".mdmark-map")?.dataset.mapKind ??
+        figure.dataset.mapKind,
+    ),
+  ).toEqual(["gantt", "timeline", "gitGraph", "journey", "block"]);
+  const blocks = root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]");
+  expect(blocks).toHaveLength(1);
+  expect(blocks[0]?.querySelector("code")?.textContent).toContain("四日");
+});
+
+// id: のノードのリンク先（正常系）
+test("test_attach_map_when_id_link", async () => {
+  // 準備
+  const { attachMap } = await loadMap();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(
+      mapRange({
+        mermaid:
+          'flowchart LR\n  A --> B\n  click A "id:SC-1"\n  click B "id:unknown"\n',
+      }),
+    ).html,
+  );
+  // 実行
+  detachers.push(
+    attachMap(root, resolveConfig({ config: { map: CONFIG } }), {
+      resolveIdLink: (href) =>
+        href.startsWith("id:SC-")
+          ? `https://docs.example.com/${href.slice("id:".length)}`
+          : undefined,
+    }),
+  );
+  // 検証
+  expect(
+    root
+      .querySelector('[data-node="A"] a.mdmark-diagram-node-link')
+      ?.getAttribute("href"),
+  ).toBe("https://docs.example.com/SC-1");
+  expect(
+    root.querySelector('[data-node="B"] a.mdmark-diagram-node-link'),
+  ).toBeNull();
+  const warning = root.querySelector(".mdmark-syntax-warning");
+  expect(warning?.textContent).toContain("B");
+  expect(warning?.textContent).toContain("id:unknown");
+});

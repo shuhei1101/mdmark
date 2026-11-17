@@ -268,3 +268,22 @@ test("test_mark_source_lines_when_raw_html", async () => {
   expect(html).toContain("地");
   expect(html).not.toContain("data-source-line");
 });
+
+// 本文の id: のリンク（正常系）
+test("test_resolve_id_links", async () => {
+  // 準備
+  const { render } = await loadRender();
+  const resolveIdLink = (href: string) =>
+    href.startsWith("id:SC-")
+      ? `https://docs.example.com/${href.slice("id:".length)}`
+      : undefined;
+  // 実行
+  const html = render("[仕様](id:SC-1) と [無い](id:unknown)\n", {
+    resolveIdLink,
+  });
+  // 検証
+  const anchors = html.match(/<a\b[^>]*>/g) ?? [];
+  expect(anchors).toHaveLength(2);
+  expect(anchors[0]).toContain('href="https://docs.example.com/SC-1"');
+  expect(anchors[1]).not.toContain("href=");
+});

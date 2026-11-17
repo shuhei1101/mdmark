@@ -170,11 +170,14 @@ test("test_map_link_problems", async () => {
   const { mapLinkProblems } = await loadFlowchart();
   // 実行
   const result = mapLinkProblems({
-    a: "https://example.com/spec",
-    b: "./other.md",
-    c: "mailto:a@example.com",
-    d: "javascript:alert(1)",
-    e: "id:spec#items",
+    links: {
+      a: "https://example.com/spec",
+      b: "./other.md",
+      c: "mailto:a@example.com",
+      d: "javascript:alert(1)",
+      e: "id:spec#items",
+    },
+    idLinks: { mode: "resolve", resolveIdLink: undefined },
   });
   // 検証
   expect(result.allowed).toEqual({
@@ -196,4 +199,27 @@ test("test_map_link_problems", async () => {
     );
     expect(problem?.message).toContain(text);
   }
+});
+
+// id: のリンク先（正常系）
+test("test_map_link_problems_when_id_links", async () => {
+  // 準備
+  const { mapLinkProblems } = await loadFlowchart();
+  const links = { a: "id:SC-1", b: "id:unknown" };
+  const resolveIdLink = (href: string) =>
+    href.startsWith("id:SC-")
+      ? `https://docs.example.com/${href.slice("id:".length)}`
+      : undefined;
+  // 実行
+  const resolved = mapLinkProblems({
+    links,
+    idLinks: { mode: "resolve", resolveIdLink },
+  });
+  const skipped = mapLinkProblems({ links, idLinks: { mode: "skip" } });
+  // 検証
+  expect(resolved.allowed).toEqual({ a: "https://docs.example.com/SC-1" });
+  expect(resolved.problems).toHaveLength(1);
+  expect(resolved.problems[0]?.message).toContain("b: id:unknown");
+  expect(skipped.allowed).toEqual({});
+  expect(skipped.problems).toEqual([]);
 });
