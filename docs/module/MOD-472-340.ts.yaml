@@ -144,7 +144,7 @@ functions:
       type: http.Server
       description: 待ち受けていないサーバー
     process: |-
-      1. `/render/index.css` は、`src/index.css` を読み込んで `text/css; charset=utf-8` の 200 で返却する。`/render/diagram.js`・`/render/sticky.js` は、`src/interact/diagrams.ts`・`src/interact/sticky.ts` を esbuild でまとめた ES モジュールを `text/javascript; charset=utf-8` の 200 で返却する（まとめられなければ 500）
+      1. `/render/index.css` は、`src/index.css` を読み込んで `text/css; charset=utf-8` の 200 で返却する。`/render/diagram.js`・`/render/sticky.js` は、`src/diagram/diagram.interact.ts`・`src/table/table-sticky.interact.ts` を esbuild でまとめた ES モジュールを `text/javascript; charset=utf-8` の 200 で返却する（まとめられなければ 500）
       2. `/render/{部品の id}` は、部品の HTML を返却する（部品の HTML を返却する）
          - HTML があれば `text/html; charset=utf-8` の 200 で返却する
          - 無ければ `知らない部品: {部品の id}` を 404 で返却する

@@ -1,8 +1,3 @@
-import {
-  MAP_STATE,
-  type MapStateLoop,
-  type MapStateShape,
-} from "../parts/map.ts";
 import type {
   Direction,
   Flowchart,
@@ -11,6 +6,11 @@ import type {
   FlowNode,
 } from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
+import {
+  MAP_STATE,
+  type MapStateLoop,
+  type MapStateShape,
+} from "./map.part.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** 状態の種類（開始・終了は `[*]`、分岐は `<<choice>>`） */

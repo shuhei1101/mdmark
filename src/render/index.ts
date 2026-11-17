@@ -6,16 +6,16 @@ import {
   resolveConfig,
 } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
-import type { MdmarkIconNode } from "../parts/inline-icon.ts";
-import { splitFrontmatter } from "./frontmatter.ts";
+import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
+import type { CollectedWarning } from "../shared/syntax-warning.syntax.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
 import { type ResolveIdLink, sanitize } from "./sanitize.ts";
-import type { CollectedWarning } from "./syntax/warnings.ts";
 
-export type { CollectedWarning } from "./syntax/warnings.ts";
+export type { CollectedWarning } from "../shared/syntax-warning.syntax.ts";
 
 /** 本文の HTML と、文書のマーカーで決まった機能のオン・オフ */
 export type RenderedDocument = {

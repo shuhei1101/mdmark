@@ -1,31 +1,31 @@
 id: MOD-472-220
 visibility: internal
-title: ライブラリ本体 / 操作 / tabs.ts
+title: ライブラリ本体 / タブ / tabs.interact.ts
 test_files:
-  - tests/unit/src/interact/tabs.browser.test.ts
+  - tests/unit/src/tabs/tabs.interact.browser.test.ts
 constants:
   - name: TAB_CHOICE_KEY_PREFIX
     title: 残したタブ名のキーの頭
-    container: src/interact/tabs.ts
+    container: src/tabs/tabs.interact.ts
     summary: 選んだタブ名を残す localStorage のキーの頭。キーは `{頭}{group}`
     value: '"mdmark-tabs:"'
     refs:
       - IF-472-35#constraints[タブの操作]
   - name: tabSelectors
     title: タブを名前で選ぶ関数の記録
-    container: src/interact/tabs.ts
+    container: src/tabs/tabs.interact.ts
     summary: '`attachTabs` が操作を付けた `mdmark-tabs` から、タブ名でタブを選ぶ関数を参照する。ページの別の `mount` のタブも同じ記録しから参照して統一する。削除する関数が取り除く'
     value: 'new WeakMap<HTMLElement, (name: string) => void>()'
   - name: tabPanelSelectors
     title: タブの中身を選ぶ関数の記録
-    container: src/interact/tabs.ts
+    container: src/tabs/tabs.interact.ts
     summary: '`attachTabs` が操作を付けた `mdmark-tabs` から、中身（`mdmark-tab-panel`）を指定してそのタブを選ぶ関数を参照する。選んだタブ名を残さず、同じ `group` のほかのタブ群も切り替えない。削除する関数が取り除く'
     value: 'new WeakMap<HTMLElement, (panel: HTMLElement) => void>()'
     status: planned
 functions:
   - name: attachTabs
     title: タブに操作を付ける
-    container: src/interact/tabs.ts
+    container: src/tabs/tabs.interact.ts
     kind: 関数
     scope: internal
     summary: 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。中身の選び方を `tabPanelSelectors` に登録し、付けたときに URL の `#ID`（`rowIdFromHash` で読み込む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から参照した関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す。タブのボタンにはタブ名の要素の子のノードのコピーを入れ（`strong` を残す）、組の統一と残すタブ名にはその文字を使用する。入れ子の `mdmark-tabs` はそれぞれ別の並びにし、キーの移動と選択はその並びの中だけで行う。読者が押すかキーで選ぶときは、選ぶ前に押したタブのボタンの `getBoundingClientRect().top` を測り、選んで同じ組を統一した後にもう一度測って、`findScrollContainer` の要素（画面全体なら `window.scrollBy`）を差の分だけスクロールする（文書が縮んで戻しきれない分はブラウザがスクロール位置の上限で止める）。付けたときの選択と `revealTabTarget` の選択ではスクロールしない
@@ -43,7 +43,7 @@ functions:
       - '#functions[saveTabChoice]'
       - MOD-472-316#functions[renderTabs]
       - '#functions[revealTabTarget]'
-      - 'MOD-472-218#functions[rowIdFromHash]'
+      - 'MOD-583-17#functions[rowIdFromHash]'
       - MOD-472-234#functions[findScrollContainer]
     unit_tests:
       - name: test_attach_tabs
@@ -114,7 +114,7 @@ functions:
         expected: どちらの後も、押したボタンの `getBoundingClientRect().top` の差が押す前と 1px 以内
   - name: loadTabChoice
     title: 残したタブ名を読み込む
-    container: src/interact/tabs.ts
+    container: src/tabs/tabs.interact.ts
     kind: 関数
     scope: internal
     summary: localStorage の `{TAB_CHOICE_KEY_PREFIX}{group}` を読み込む。`window.localStorage` の取り出しと読み込み出しを try の中で行い、例外は `console.warn` に出して `undefined` を返却する
@@ -141,7 +141,7 @@ functions:
         expected: 例外を投げず `undefined` を返却し、`console.warn` が 1 回呼ばれる
   - name: saveTabChoice
     title: 選んだタブ名を残す
-    container: src/interact/tabs.ts
+    container: src/tabs/tabs.interact.ts
     kind: 関数
     scope: internal
     summary: localStorage の `{TAB_CHOICE_KEY_PREFIX}{group}` にタブ名を記載する。`window.localStorage` の取り出しと書き込みを try の中で行い、例外は `console.warn` に出して続ける
@@ -166,7 +166,7 @@ functions:
         expected: 例外を投げず、`console.warn` が 1 回呼ばれる
   - name: revealTabTarget
     title: 要素を含むタブを選ぶ
-    container: src/interact/tabs.ts
+    container: src/tabs/tabs.interact.ts
     summary: 要素を含む `role="tabpanel"` を外側から順にたどり、`tabPanelSelectors` から参照した関数でその中身のタブを選ぶ。選んだタブは `saveTabChoice` で残さず、同じ組のタブも統一しない。タブの中に無ければ何もしない
     kind: 関数
     scope: internal

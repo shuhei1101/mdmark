@@ -1,12 +1,12 @@
 id: MOD-472-266
 visibility: internal
-title: ライブラリ本体 / 索引と用語 / terms.ts
+title: ライブラリ本体 / 索引と用語 / term.interact.ts
 test_files:
-  - tests/unit/src/interact/terms.browser.test.ts
+  - tests/unit/src/knowledge/term.interact.browser.test.ts
 functions:
   - name: attachTermTips
     title: 用語のツールチップの操作を付ける
-    container: src/interact/terms.ts
+    container: src/knowledge/term.interact.ts
     kind: 関数
     scope: internal
     summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける

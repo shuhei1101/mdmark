@@ -1,12 +1,12 @@
 id: MOD-472-181
 visibility: internal
-title: ライブラリ本体 / 図 / param.ts
+title: ライブラリ本体 / 図 / param.part.ts
 test_files:
-  - tests/unit/src/parts/param.test.ts
+  - tests/unit/src/diagram/param.part.test.ts
 functions:
   - name: renderParam
     title: 操作できる部品を描く
-    container: src/parts/param.ts
+    container: src/diagram/param.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『操作できる部品』の HTML。タイトル・スライダー・今の値・写すボタン・通知し・写せなかったときの `pre` と、`table` の今の値と既定の値の系列のグラフを図の枠で出す
@@ -37,7 +37,7 @@ functions:
         expected: 前者の `button.mdmark-param-copy` の文字が `コピー` で `aria-label` を持たない。後者の出力に `&lt;b&gt;写す&lt;/b&gt;` があり `<b>` が無い
   - name: paramJson
     title: 今の値の JSON
-    container: src/parts/param.ts
+    container: src/diagram/param.part.ts
     kind: 関数
     scope: internal
     summary: '`{"{key}": {"name": "{label}", "value": {値}}}` を 2 字下げの JSON にする'

@@ -1,7 +1,7 @@
 id: CMP-472-48
 visibility: internal
 title: 文字の色
-implementation: src/parts/text-color.ts#renderTextColor
+implementation: src/inline/text-color.part.ts#renderTextColor
 story: Parts/TextColor
 test_file: tests/integration/lib/text-color.story.test.ts
 states:

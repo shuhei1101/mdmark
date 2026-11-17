@@ -2,7 +2,7 @@ id: CMP-472-51
 visibility: internal
 title: 段組み
 lead: columns の範囲の中身を、同じ高さの位置から等しい幅で横に 2〜3 列に並べる。描く先の要素が狭いときは記載した順に縦に並べる。
-implementation: src/parts/layout-columns.ts#renderLayoutColumns
+implementation: src/layout/layout-columns.part.ts#renderLayoutColumns
 story: Parts/LayoutColumns
 test_file: tests/integration/lib/layout-columns.story.test.ts
 args:

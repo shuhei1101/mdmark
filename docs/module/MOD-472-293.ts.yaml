@@ -1,12 +1,12 @@
 id: MOD-472-293
 visibility: internal
-title: ライブラリ本体 / 記法 / kbd.ts
+title: ライブラリ本体 / 行内の記法 / kbd.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/kbd.test.ts
+  - tests/unit/src/inline/kbd.syntax.test.ts
 functions:
   - name: buildKbds
     title: キーにする
-    container: src/render/syntax/kbd.ts
+    container: src/inline/kbd.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`kbd` がオンなら、頭が `kbd:` で後ろに空白以外の文字を持つ `code_inline` を、`splitKeys` で区切った部品『キー』にする。`kbd\:` と空の扱いは `buildBadges` と同じ
@@ -28,7 +28,7 @@ functions:
         summary: キーにし、打ち消しと空はコードに残す
   - name: splitKeys
     title: キーに区切る
-    container: src/render/syntax/kbd.ts
+    container: src/inline/kbd.syntax.ts
     kind: 関数
     scope: internal
     summary: '`+` で区切り、`++` を `+` のキーとして読み込む。キーの前後の空白を削除し、空のキーを捨てる'

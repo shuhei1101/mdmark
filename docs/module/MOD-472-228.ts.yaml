@@ -1,12 +1,12 @@
 id: MOD-472-228
 visibility: internal
-title: ライブラリ本体 / 操作 / tables.ts
+title: ライブラリ本体 / 表 / table.interact.ts
 test_files:
-  - tests/unit/src/interact/tables.browser.test.ts
+  - tests/unit/src/table/table.interact.browser.test.ts
 functions:
   - name: attachTables
     title: 表に操作を付ける
-    container: src/interact/tables.ts
+    container: src/table/table.interact.ts
     kind: 関数
     scope: internal
     summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを適用するはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` とスクリーンリーダー向けの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin`・`data-unpin`・`data-no-sort` を読み込み、見出しに `renderTableTools` のボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける（`data-no-sort` の列は `renderTableTools` の `sortable` を `false` にして並べ替えのボタンにしない）。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を配置し、`rowlink` の表は行へ移る処理と行の URL のコピーを付け、`resize` の表は `attachColumnResize` で列の幅のつまみの操作を付ける。全ての表に、`attachAutoColumnWidths` で列の幅を自動で決める処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ配置し、列の位置はそのセルの列で数える（`cellIndex` を使用しない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` をもう一度付ける。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使用する。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を取得しない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
@@ -286,7 +286,7 @@ functions:
       - IF-472-35#constraints[列の表示の通知]
       - 'MOD-472-218#functions[computeTotal]'
       - 'MOD-472-218#functions[tableToTsv]'
-      - 'MOD-472-218#functions[rowIdFromHash]'
+      - 'MOD-583-17#functions[rowIdFromHash]'
       - MOD-472-315#functions[renderTableBar]
       - MOD-472-315#functions[renderTotalRows]
 lead: '表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピーの操作を受け持ち、表の操作を変えるときに参照する。'

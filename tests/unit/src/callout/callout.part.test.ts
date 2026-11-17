@@ -1,0 +1,65 @@
+import { expect, test } from "vitest";
+
+/** 注意書きの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadCallout = () => import("../../../../src/callout/callout.part.ts");
+
+// 種類の class とタイトルを出す（正常系）
+test("test_render_callout", async () => {
+  // 準備
+  const { renderCallout } = await loadCallout();
+  // 実行
+  const html = renderCallout({ kind: "warning", body: "<p>本文</p>" });
+  // 検証
+  expect(html).toContain(
+    '<div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title">警告</p>',
+  );
+});
+
+// 折り畳みは details にする（正常系）
+test("test_render_callout_when_collapsed", async () => {
+  // 準備
+  const { renderCallout } = await loadCallout();
+  // 実行
+  const html = renderCallout({
+    kind: "note",
+    collapsed: true,
+    body: "<p>本文</p>",
+  });
+  // 検証
+  expect(html).toContain(
+    '<details class="markdown-alert markdown-alert-note"><summary class="markdown-alert-title">補足</summary>',
+  );
+});
+
+// タイトルの頭にスクリーンリーダー向けの種類の名前を配置する（正常系）
+test("test_render_callout_when_titled", async () => {
+  // 準備
+  const { renderCallout } = await loadCallout();
+  // 実行
+  const html = renderCallout({
+    kind: "tip",
+    title: "設定を先に確認する",
+    body: "<p>本文</p>",
+  });
+  // 検証
+  expect(html).toContain(
+    '<p class="markdown-alert-title"><span class="mdmark-visually-hidden">ヒント: </span>設定を先に確認する</p>',
+  );
+});
+
+// 開いた状態の折り畳みにする（正常系）
+test("test_render_callout_when_open", async () => {
+  // 準備
+  const { renderCallout } = await loadCallout();
+  // 実行
+  const html = renderCallout({
+    kind: "warning",
+    collapsed: true,
+    open: true,
+    body: "<p>本文</p>",
+  });
+  // 検証
+  expect(html).toContain(
+    '<details class="markdown-alert markdown-alert-warning" open>',
+  );
+});

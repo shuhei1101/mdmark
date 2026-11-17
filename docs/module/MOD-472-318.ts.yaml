@@ -1,12 +1,12 @@
 id: MOD-472-318
 visibility: internal
-title: ライブラリ本体 / 部品 / badge.ts
+title: ライブラリ本体 / 行内の記法 / badge.part.ts
 test_files:
-  - tests/unit/src/parts/badge.test.ts
+  - tests/unit/src/inline/badge.part.test.ts
 functions:
   - name: renderBadge
     title: バッジを描く
-    container: src/parts/badge.ts
+    container: src/inline/badge.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『バッジ』の HTML を返却する。`color` を指定したときは `data-color` を付ける

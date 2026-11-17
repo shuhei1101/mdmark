@@ -8,7 +8,7 @@ import type {
   MdmarkReferences,
   MountHandle,
 } from "../../../src/index.ts";
-import { VIEW_ICON_PATHS } from "../../../src/parts/view.ts";
+import { VIEW_ICON_PATHS } from "../../../src/views/view.part.ts";
 import {
   ADDED_CHART_DEFINITIONS,
   INQUIRY_COUNT_TEXT,

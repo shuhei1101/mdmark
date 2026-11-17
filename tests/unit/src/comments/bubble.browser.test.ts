@@ -10,7 +10,7 @@ const loadBubble = () =>
   );
 
 /** コメントの部品の HTML を読み込む */
-const loadParts = () => import("../../../../src/parts/comment.ts");
+const loadParts = () => import("../../../../src/comments/comment.part.ts");
 
 const DOC_ID = "panel-setup";
 

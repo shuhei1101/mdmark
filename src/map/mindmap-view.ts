@@ -1,7 +1,6 @@
 import type { ResolvedConfig } from "../config.ts";
-import { attachDiagrams } from "../interact/diagrams.ts";
-import { renderDiagramFrame } from "../parts/diagram.ts";
-import { renderMapMindmap } from "../parts/map.ts";
+import { attachDiagrams } from "../diagram/diagram.interact.ts";
+import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import {
   linkAnnotationOwners,
   type MapAnnotation,
@@ -15,6 +14,7 @@ import {
   sessionStorageOf,
   termsOf,
 } from "./flow-view.ts";
+import { renderMapMindmap } from "./map.part.ts";
 import { type Mindmap, mindmapItemOf, parseMindmap } from "./mindmap.ts";
 import { layoutMindmap, type MindmapLayout } from "./mindmap-layout.ts";
 import type { MapArgs } from "./spec.ts";

@@ -1,4 +1,4 @@
-import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
+import { renderSyntaxWarning } from "./shared/syntax-warning.part.ts";
 
 /** 範囲のコードを CommonJS に変える変換のライブラリ */
 export type Transpiler = {

@@ -1,7 +1,7 @@
 id: CMP-596-2
 visibility: internal
 title: mapのアーキテクチャ図
-implementation: src/parts/map.ts#renderMapArchitecture
+implementation: src/map/map.part.ts#renderMapArchitecture
 story: Parts/MapArchitecture
 states:
   - name: Default

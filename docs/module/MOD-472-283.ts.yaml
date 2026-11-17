@@ -1,12 +1,12 @@
 id: MOD-472-283
 visibility: internal
-title: ライブラリ本体 / 記法 / steps.ts
+title: ライブラリ本体 / ステップ / steps.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/steps.test.ts
+  - tests/unit/src/steps/steps.syntax.test.ts
 functions:
   - name: buildSteps
     title: ステップにする
-    container: src/render/syntax/steps.ts
+    container: src/steps/steps.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`steps` がオンなら、`steps` の範囲の最初の番号付きリスト（入れ子は除く）の `ol` に class `mdmark-steps` を付ける。マーカーの設定は `readStepsOptions` で読み込む。`collapse` が `closed`・`open` なら、その `ol` を `renderCollapsible` の折り畳み（見出しは `title` か `手順（{入れ子を除く項目の数} ステップ）`）に入れる。番号付きリストが無ければ警告を差し込む
@@ -47,7 +47,7 @@ functions:
         expected: 1 つ目の範囲の前に記載の警告が無く（`fold` は `unknown_mark_arg` になる）、2 つ目の範囲の前に `collapse` の型の記載の警告がある。どちらの `<ol class="mdmark-steps">` も `details` に入らない
   - name: readStepsOptions
     title: ステップのマーカーの指定を読み込む
-    container: src/render/syntax/steps.ts
+    container: src/steps/steps.syntax.ts
     summary: ステップのマーカーの設定の `collapse` を `readCollapse` で読み込む
     kind: 関数
     scope: internal

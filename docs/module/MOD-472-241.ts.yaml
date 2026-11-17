@@ -1,12 +1,12 @@
 id: MOD-472-241
 visibility: internal
-title: ライブラリ本体 / 操作 / table-tree.ts
+title: ライブラリ本体 / 表 / table-tree.interact.ts
 test_files:
-  - tests/unit/src/interact/table-tree.browser.test.ts
+  - tests/unit/src/table/table-tree.interact.browser.test.ts
 functions:
   - name: attachTableTree
     title: 階層の表の操作を付ける
-    container: src/interact/table-tree.ts
+    container: src/table/table-tree.interact.ts
     kind: 関数
     scope: internal
     summary: '`data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを配置し、開閉・行の選択・キーの列の絞り込み・見本との連動と見本の表示の切り替えを付ける'

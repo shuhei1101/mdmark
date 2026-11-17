@@ -1,12 +1,12 @@
 id: MOD-472-281
 visibility: internal
-title: ライブラリ本体 / 記法 / row-details.ts
+title: ライブラリ本体 / 表 / row-detail.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/row-details.test.ts
+  - tests/unit/src/table/row-detail.syntax.test.ts
 functions:
   - name: attachRowDetails
     title: 行の詳細を表に入れる
-    container: src/render/syntax/row-details.ts
+    container: src/table/row-detail.syntax.ts
     kind: 関数
     scope: internal
     summary: 'コアルール。`row-details` がオンなら、表の直後の `row-detail` の範囲のトークンを、その行の直後の部品『行の詳細』の行（`toggle: false`）に移す。表に無い行は警告を差し込み、中身を表の後に残す'

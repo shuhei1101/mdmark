@@ -1,12 +1,12 @@
 id: MOD-472-234
 visibility: internal
-title: ライブラリ本体 / 操作 / scroller.ts
+title: ライブラリ本体 / 記法の共通 / scroller.interact.ts
 test_files:
-  - tests/unit/src/interact/scroller.browser.test.ts
+  - tests/unit/src/shared/scroller.interact.browser.test.ts
 functions:
   - name: findScrollContainer
     title: スクロールする場所を見つける
-    container: src/interact/scroller.ts
+    container: src/shared/scroller.interact.ts
     summary: 要素の祖先を `document.body` の手前までたどり、`overflow-y` が `auto` か `scroll` で `scrollHeight` が `clientHeight` より大きい一番近い要素を返却する。無ければ `document.scrollingElement`（無ければ `document.documentElement`）を返却し、`page` を `true` にする
     kind: 関数
     scope: internal

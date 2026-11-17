@@ -1,7 +1,7 @@
 id: CMP-472-18
 visibility: internal
 title: "コードブロック"
-implementation: "src/parts/code-block.ts#renderCodeBlock"
+implementation: "src/code-block/code-block.part.ts#renderCodeBlock"
 story: "Parts/CodeBlock"
 states:
   - name: TitleAndLineNumbers

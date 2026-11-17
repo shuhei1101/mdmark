@@ -1,12 +1,12 @@
 id: MOD-472-218
 visibility: internal
-title: ライブラリ本体 / 操作 / table-logic.ts
+title: ライブラリ本体 / 表 / table.logic.ts
 test_files:
-  - tests/unit/src/interact/tables.browser.test.ts
+  - tests/unit/src/table/table.interact.browser.test.ts
 data_models:
   - name: FilterValue
     title: 適用した絞り込み
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: 列 1 つに適用した絞り込み（部品『表』の `filterValues` の要素と同じ構造）
     properties:
       - name: column
@@ -27,17 +27,17 @@ data_models:
 constants:
   - name: FILTER_KINDS
     title: 絞り込みの種類
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: '`columns.{列名}.filter.type` に記載できる種類。省いたときは `defaultFilterKind` で決める'
     value: '["select", "text", "date"]'
   - name: TOTAL_CALCS
     title: 集計の計算
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: '`columns.{列名}.total[].calc` に記載できる計算。集計の行のタイトルはそれぞれ `合計`・`平均`・`件数`'
     value: '["sum", "avg", "count"]'
   - name: LONG_COLUMN_CHARS
     title: 長文の列とみなす文字数
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: 改行で分けた 1 行がこの文字数（コードポイントの数）以上のセルを持つ列を長文の列にする
     value: '20'
     refs:
@@ -45,7 +45,7 @@ constants:
     status: planned
   - name: DEFAULT_LONG_COLUMN_MIN_EM
     title: 長文の列の最小の幅の既定
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: 設定の `table.long_column_min` が無いか読み込めないときの、長文の列の最小の幅（em）
     value: '45'
     refs:
@@ -54,7 +54,7 @@ constants:
 functions:
   - name: compareCells
     title: セルを比べる
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 並べ替えの比較。両方が数値（`,` を除いて数になる）なら数の大きさ、それ以外は `Intl.Collator`（`ja`・数字を数として）の順で比べる
@@ -85,7 +85,7 @@ functions:
         expected: 負
   - name: matchesFilter
     title: セルが絞り込みに合うか
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: '`select` は選んだ値のどれかと等しい、`text` は大文字と小文字を区別せずに含む、`date` は開始日以降かつ終了日以前（片方だけも可。日付として読み込めないセルは合わない）。値が空の絞り込みは全てに合う'
@@ -120,7 +120,7 @@ functions:
         expected: '`2026-10-01` が合わず、`2026-10-10` が合う'
   - name: computeTotal
     title: 列を集計する
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: セルの文字を集計して表示する文字にする。`sum`・`avg` は `parseNumberCell` で数として読み込めるセルだけ（空のセルと読み込めないセルを除く）、`count` は空でないセルを数える。値は `Intl.NumberFormat`（`ja`、小数は 2 桁まで）で整え、平均する値が無いときは `—`。読み込めないセルを持つ列のセルを空にするのは呼ぶ側（`findUnreadableTotals`）
@@ -159,7 +159,7 @@ functions:
       - '#functions[parseNumberCell]'
   - name: tableToTsv
     title: 表を TSV にする
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 行ごとのセルの文字を、セルをタブで、行を改行で区切った文字にする。セルの中のタブと改行は空白 1 つにする
@@ -184,30 +184,9 @@ functions:
         condition: '`[["a\tb", "c\nd"]]`'
         mock: なし
         expected: '`a b\tc d`'
-  - name: rowIdFromHash
-    title: 'URL の # から行の ID を読み込む'
-    container: src/table-logic.ts
-    kind: 関数
-    scope: internal
-    summary: '`location.hash` の最後の `#` の後ろを `decodeURIComponent` して返却する（読み込めないときはそのまま）。まとめた HTML の `#/{文書のパス}#{ID}` も同じように読み込む'
-    args:
-      - name: hash
-        type: string
-        required: true
-        description: '`location.hash`'
-    returns:
-      type: string
-      description: 行の ID（`#` が無ければ空文字）
-    unit_tests:
-      - name: test_row_id_from_hash
-        case: 正常
-        summary: '最後の # の後ろを戻した文字を返却する'
-        condition: '`#%E3%81%BF%E3%81%8B%E3%82%93`・`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93`・`#%E3%81`・空文字'
-        mock: なし
-        expected: '`みかん`・`みかん`・`%E3%81`・空文字'
   - name: parseNumberCell
     title: セルを数として読み込む
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: セルの文字の前後の空白と `,` を除いて数にする。空か、数として読み込めなければ `undefined`。今の内部の `toNumber` をこの名前で公開し、`compareCells` もこれを使用する
     kind: 関数
     scope: internal
@@ -229,7 +208,7 @@ functions:
     status: planned
   - name: findUnreadableTotals
     title: 集計できない列を探す
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: 集計する列のうち `sum`・`avg` の列ごとに、空でなく `parseNumberCell` で読み込めないセルの文字を、重なりを除いて現れた順に集める。読み込めないセルが無い列と計算は返却しない。`render` の警告と、部品と `mount` の集計のセルを空にする処理が使用する
     kind: 関数
     scope: internal
@@ -257,7 +236,7 @@ functions:
     status: planned
   - name: tableToMarkdown
     title: 表を Markdown の表にする
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: 行ごとのセルの文字を、先頭の行を見出しの行にした `| セル | セル |` の構造の行と、見出しの行の後ろの `| --- | --- |` の区切りの行を改行でつなぐ。セルの中の `|` は `\|` にし、改行は空白 1 つにする
     kind: 関数
     scope: internal
@@ -279,7 +258,7 @@ functions:
     status: planned
   - name: stickyShift
     title: 行をずらす量を求める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: '`animation-timeline` を持たないブラウザで、見出し行と集計の行をずらす量を画面の中の位置から求める（`docs/mock/refs/151/assets/table.js` の案 C）。見出し行は `stickyTop - headTop` を 0 以上、`bodyBottom - headBottom`（負なら 0）以下に収めた量だけ下げ、集計の行は `viewportBottom - footBottom` を 0 以下、`bodyTop - footTop` 以上に収めた量だけ上げる（値はずらす前の位置）'
     kind: 関数
     scope: internal
@@ -313,7 +292,7 @@ functions:
     status: planned
   - name: stickyRange
     title: 行をずらせる範囲を求める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     summary: '`animation-timeline` を持つブラウザで、CSS のアニメーションが使用する動く範囲を求める（`docs/mock/refs/151/assets/table.js` の案 D）。`headStart` は表の上端から見出し行の上端まで、`headMax` は見出し行の下端から本文の行のまとまりの下端まで（負なら 0）、`footMax` は本文の行のまとまりの上端から集計の行の上端まで、`footEnd` は集計の行の下端から表の下端まで'
     kind: 関数
     scope: internal
@@ -335,7 +314,7 @@ functions:
     status: planned
   - name: bottomHeadCells
     title: 列ごとの最下段の見出しのセルを決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 見出しの行ごとのセルの `rowspan`・`colspan` から格子を作り、列ごとに、その列だけを覆い最下段まで届くセルの位置を返却する（上の行から縦に結合したセルを含む）。複数の列をまたぐセルしか無い列は `undefined`
@@ -363,7 +342,7 @@ functions:
     status: planned
   - name: mergeSpans
     title: 隣り合う同じ値の結合を決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 表示している行の結合する列の値から、列ごとに隣り合う同じ値の範囲を決める。左にある結合する列の範囲の切れ目でも切る
@@ -391,7 +370,7 @@ functions:
     status: planned
   - name: canMoveColumn
     title: 列を動かせるかを決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返却する。`each` の表は呼ぶ側が全ての列の `pinned` を `false` にして渡し、ピン止めの側で分けない
@@ -413,7 +392,7 @@ functions:
     status: planned
   - name: moveColumn
     title: 列の順を入れ替える
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返却する
@@ -435,7 +414,7 @@ functions:
     status: planned
   - name: initialPinnedColumns
     title: 描いた直後に留める列を決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: '`data-pin` の位置・行見出しの列の数・ピン止めの動きから、描いた直後に留める列の位置を小さい順に返却する'
@@ -458,7 +437,7 @@ functions:
     status: planned
   - name: togglePinnedColumn
     title: 押した列で留める列を切り替える
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: ピン止めのボタンを押した列と今の留める列から、新しい留める列の位置を小さい順に返却する
@@ -481,7 +460,7 @@ functions:
     status: planned
   - name: pinOffsets
     title: 留める列の左右の位置を求める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 列ごとの幅と留める列から、留める列ごとにそれより左で留めた列の幅の合計（`start`）と右で留めた列の幅の合計（`end`）を返却する
@@ -504,7 +483,7 @@ functions:
     status: planned
   - name: fitPinnedColumns
     title: 見えている幅に収まる留める列を選ぶ
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 選んだ列を左から順に幅を足し、表の見えている幅に収まる列（`fitted`）と、見えている幅を超える列から右の列（`unpinned`）に分けて返却する
@@ -533,7 +512,7 @@ functions:
     status: planned
   - name: clampColumnWidth
     title: 列の幅を範囲に収める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 列の幅を、列の最小幅から上限までに収めた値を返却する
@@ -556,7 +535,7 @@ functions:
     status: planned
   - name: columnWidthLimit
     title: 列の幅の上限を求める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 表の見えている幅から、ほかに留めている列の幅の合計を引いた幅を返却する
@@ -579,7 +558,7 @@ functions:
     status: planned
   - name: isCompactCellText
     title: 短い値だけのセルか
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: セルの文字が、空・数値（`,`・`.`・`%` を含む）・日付（`YYYY-MM-DD`・`YYYY/M/D`）・✓ のどれかなら `true` を返却する
@@ -601,7 +580,7 @@ functions:
     status: planned
   - name: findLongColumns
     title: 長文の列を決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 列ごとに、本文のセルが全て短い値でなく、見出しか本文のセルの改行で分けた行のどれかが `LONG_COLUMN_CHARS` 文字以上の列の位置を、小さい順に返却する
@@ -630,7 +609,7 @@ functions:
     status: planned
   - name: findNoSortColumns
     title: 並べ替えを付けない列を決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 長文の列のうち `sorts` で `true` を指定していない列と、`sorts` で `false` を指定した列の位置を、小さい順に重ねずに返却する
@@ -658,7 +637,7 @@ functions:
     status: planned
   - name: defaultFilterKind
     title: 省いた絞り込みの種類を決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: '`filter.type` を省いた列の絞り込みの種類を、長文の列なら `text`、ほかは `select` にして返却する'
@@ -680,7 +659,7 @@ functions:
     status: planned
   - name: columnBounds
     title: 列の最小の幅と望む幅を決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 部品設計『表』の注記「列の幅」の 1 つ目の図（読者が幅を変えた列を除く）で、列が折り返すかと最小の幅・望む幅（px）を返却する
@@ -709,16 +688,16 @@ functions:
     status: planned
   - name: distributeColumnWidths
     title: 表の列の幅を決める
-    container: src/table-logic.ts
+    container: src/table/table.logic.ts
     kind: 関数
     scope: internal
     summary: 部品設計『表』の注記「列の幅」の 2 つ目の図で、列ごとの最小の幅・望む幅と表の見える幅から、列の幅（px）と横にスクロールするかを返却する
-    description: '最小の幅の合計が `available` を超えるときは各列を最小の幅にして `overflow` を `true` にする。望む幅の合計が `available` 以下なら望む幅にする。どちらでもなければ、`available` から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分け、最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りをほかの列へ分け直す（止める列が出なくなるまで繰り返す）。`fixed` の列（読者がつまみで幅を変えた列）は `wanted` の幅のまま分けない'
+    description: 最小の幅の合計が `available` を超えるときは各列を最小の幅にして `overflow` を `true` にする。望む幅の合計が `available` 以下なら望む幅にする。どちらでもなければ、`available` から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分け、最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りをほかの列へ分け直す（止める列が出なくなるまで繰り返す）。`fixed` の列（読者がつまみで幅を変えた列）は `wanted` の幅のまま分けない
     args:
       - name: columns
         type: '{ wraps: boolean; min: number; wanted: number; fixed?: boolean }[]'
         required: true
-        description: '列ごとの `columnBounds` の結果（読者が幅を変えた列は、その幅を `min`・`wanted` に入れて `fixed` を `true` にする）'
+        description: 列ごとの `columnBounds` の結果（読者が幅を変えた列は、その幅を `min`・`wanted` に入れて `fixed` を `true` にする）
       - name: available
         type: number
         required: true

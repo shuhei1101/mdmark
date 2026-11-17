@@ -1,18 +1,18 @@
 id: MOD-472-160
 visibility: internal
-title: ライブラリ本体 / ビューとコメント / view.ts
+title: ライブラリ本体 / ビューとコメント / view.part.ts
 test_files:
-  - tests/unit/src/parts/view.test.ts
+  - tests/unit/src/views/view.part.test.ts
 constants:
   - name: VIEW_ICON_PATHS
     title: アイコンの形状
-    container: src/parts/view.ts
+    container: src/views/view.part.ts
     summary: '`VIEW_ICON_NAMES` と切り替えの `board`・`table` の、24 の格子の lucide の SVG の中身'
     value: "{ circle: '<circle cx=\"12\" cy=\"12\" r=\"10\"/>', … }"
 functions:
   - name: renderView
     title: ビューの HTML
-    container: src/parts/view.ts
+    container: src/views/view.part.ts
     summary: 部品設計『ビュー』の HTML を返却する
     kind: 関数
     scope: public
@@ -51,7 +51,7 @@ functions:
       - CMP-472-25#
   - name: renderViewSwitch
     title: 切り替えの HTML
-    container: src/parts/view.ts
+    container: src/views/view.part.ts
     summary: 「ボード」「表」の切り替えの HTML を返却する
     kind: 関数
     scope: internal
@@ -73,7 +73,7 @@ functions:
         expected: ボードのボタンが `disabled` と `aria-describedby="w1"`、表のボタンが `aria-pressed="true"`
   - name: renderViewBoard
     title: ボードの HTML
-    container: src/parts/view.ts
+    container: src/views/view.part.ts
     summary: 値ごとの列に項目を並べたボードの HTML を返却する
     kind: 関数
     scope: internal

@@ -1,12 +1,12 @@
 id: MOD-472-332
 visibility: internal
-title: ライブラリ本体 / 部品 / card.ts
+title: ライブラリ本体 / カード / card.part.ts
 test_files:
-  - tests/unit/src/parts/card.test.ts
+  - tests/unit/src/card/card.part.test.ts
 functions:
   - name: renderCard
     title: カードを描く
-    container: src/parts/card.ts
+    container: src/card/card.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『カード』の HTML を返却する。`link` はドメインに URL のホスト、URL に `href` を出し、`file` はドメインに拡張子の大文字、URL にファイル名を出す。アイコンの `span` は中身を持たず、CSS が `data-card`・`data-file-kind` ごとに付ける

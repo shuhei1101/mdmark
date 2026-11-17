@@ -1,5 +1,5 @@
-import { setCodeFoldOpen } from "./interact/code-folds.ts";
-import { setFolderOpen } from "./interact/trees.ts";
+import { setCodeFoldOpen } from "./code-block/code-fold.interact.ts";
+import { setFolderOpen } from "./tree/tree.interact.ts";
 
 /** 印刷の前に開いた折り畳み・セクション・行の詳細・ファイルツリーのフォルダ・コードブロックの畳んだ行・タブの中身 */
 type Expanded = {

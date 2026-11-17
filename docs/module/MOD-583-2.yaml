@@ -1,0 +1,17 @@
+id: MOD-583-2
+visibility: internal
+title: ライブラリ本体 / ファイルツリー
+lead: 言語 `tree` のコードブロックをファイルツリーにするコアルールと部品と、`mount` が付けるフォルダの開閉とコピーの操作。操作だけはブラウザでだけ動く。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/tree/
+    ├── tree.syntax.ts       # ファイルツリー
+    ├── tree.part.ts         # ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault
+    ├── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    └── tree.interact.ts     # ファイルツリーのフォルダの開閉とコピー
+    ```
+tags:
+  - name: topic:ファイルツリー
+    main: true
+  - name: topic:ツリー

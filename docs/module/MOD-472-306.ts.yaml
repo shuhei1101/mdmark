@@ -1,12 +1,12 @@
 id: MOD-472-306
 visibility: internal
-title: ライブラリ本体 / 部品 / code-block.ts
+title: ライブラリ本体 / コードブロック / code-block.part.ts
 test_files:
-  - tests/unit/src/parts/code-block.test.ts
+  - tests/unit/src/code-block/code-block.part.test.ts
 data_models:
   - name: CodeLine
     title: コードの行
-    container: src/parts/code-block.ts
+    container: src/code-block/code-block.part.ts
     summary: 部品『コードブロック』の `lines` の要素
     properties:
       - name: text
@@ -27,13 +27,13 @@ data_models:
 constants:
   - name: SYNTAX_ATTRIBUTE
     title: 色分けの対象の属性
-    container: src/parts/code-block.ts
+    container: src/code-block/code-block.part.ts
     summary: 色分けするコードブロックの `code` に付け、値に言語のモジュール名を持つ属性。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に記載した生の HTML の `code` は色分けの対象にならない
     value: '"data-mdmark-syntax"'
     status: planned
   - name: MERMAID_ATTRIBUTE
     title: mermaid の対象の属性
-    container: src/parts/code-block.ts
+    container: src/code-block/code-block.part.ts
     summary: mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使用する。`SYNTAX_ATTRIBUTE` と同じく mdmark が出した要素だけが持ち続ける
     value: '"data-mdmark-mermaid"'
     refs:
@@ -42,7 +42,7 @@ constants:
 functions:
   - name: renderCodeBlock
     title: コードブロックを描く
-    container: src/parts/code-block.ts
+    container: src/code-block/code-block.part.ts
     kind: 関数
     scope: internal
     summary: '部品設計『コードブロック』の HTML を返却する。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行を持つとき `pre` に `mdmark-code-foldable` を付け、畳める行に `renderCodeFoldToggle` を配置し、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を配置する（`mount` の操作の後の外観。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、タイトルを持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろにタイトルの文字、`copyState` を指定したときは右端に `renderCodeCopy` を配置する。`bar` が `false` なら今の `pre` だけを返却する。`pre` には `tabindex="0"` とスクリーンリーダー向けの名前（`コード: {タイトル}`、タイトルが無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
@@ -149,7 +149,7 @@ functions:
         expected: 1 つ目の `pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-wrap` を持ち、2 つ目の `pre` が `mdmark-code-lines mdmark-code-wrap` を持って `mdmark-code-numbered` を持たず、どちらも `mdmark-code-line` が 3 つ
   - name: renderCodeCopy
     title: コードのコピーのボタンを描く
-    container: src/parts/code-block.ts
+    container: src/code-block/code-block.part.ts
     summary: コードブロックの帯の右端に配置する `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{状態}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>` を返却する。文言とアイコンは `idle` が `コピー`（`copy`）、`copied` が `コピーしました`（`check`）、`failed` が `コピーできませんでした`（`circle-alert`）。`copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる。`mount` が帯に付けるときと状態を切り替えるときにも使用する
     kind: 関数
     scope: internal
@@ -171,7 +171,7 @@ functions:
     status: planned
   - name: renderCodeFoldToggle
     title: 行の開閉のボタンを描く
-    container: src/parts/code-block.ts
+    container: src/code-block/code-block.part.ts
     kind: 関数
     scope: internal
     summary: 畳める行の行番号の右に配置する開閉のボタン（`type="button"`・class `mdmark-code-fold`・`aria-expanded`・`aria-controls`・スクリーンリーダー向けの名前 `{開始} 行目から {終了} 行目`・`chevron-down` か `chevron-right` のアイコン）の HTML を返却する
@@ -195,7 +195,7 @@ functions:
     status: planned
   - name: renderCodeFoldMore
     title: 畳んだ行の ⋯ のボタンを描く
-    container: src/parts/code-block.ts
+    container: src/code-block/code-block.part.ts
     kind: 関数
     scope: internal
     summary: 畳んだ行の末尾に配置する `⋯` のボタン（`type="button"`・class `mdmark-code-fold-more`・スクリーンリーダー向けの名前 `{開始} 行目から {終了} 行目を展開`）の HTML を返却する

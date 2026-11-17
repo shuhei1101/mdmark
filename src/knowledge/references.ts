@@ -1,16 +1,16 @@
 import type { MarkdownIt as MarkdownItParser, Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
-import { splitFrontmatter } from "../render/frontmatter.ts";
+import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import { resolveDocumentFeatures, takeMarks } from "../render/marks.ts";
 import type { RenderEnv } from "../render/parser.ts";
-import { glossaryRule } from "../render/syntax/glossary.ts";
 import {
   findWords,
   forEachInline,
   matchableChildren,
   normalizeWord,
 } from "./dictionary.ts";
+import { glossaryRule } from "./glossary.syntax.ts";
 import {
   type MdmarkIndex,
   type MdmarkIndexDoc,

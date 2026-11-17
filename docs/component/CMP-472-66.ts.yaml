@@ -1,7 +1,7 @@
 id: CMP-472-66
 visibility: internal
 title: "関連文書の一覧"
-implementation: "src/parts/backlinks.ts#renderBacklinks"
+implementation: "src/knowledge/backlinks.part.ts#renderBacklinks"
 story: "Parts/Backlinks"
 states:
   - name: Two

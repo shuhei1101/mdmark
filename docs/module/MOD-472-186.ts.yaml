@@ -1,12 +1,12 @@
 id: MOD-472-186
 visibility: internal
-title: ライブラリ本体 / 図 / hint.ts
+title: ライブラリ本体 / 図 / hint.part.ts
 test_files:
-  - tests/unit/src/parts/hint.test.ts
+  - tests/unit/src/diagram/hint.part.test.ts
 functions:
   - name: renderHintMarkup
     title: ヒントのマーカーと中身を付ける
-    container: src/parts/hint.ts
+    container: src/diagram/hint.part.ts
     summary: '部品設計『ヒント』の HTML。`data-hint` を持つ要素の開きタグに、行内の要素なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を、それ以外なら class `mdmark-hint-block` を付け、閉じタグの前に `button.mdmark-hint-mark`（ブロックだけ）と、要素の後ろに `renderDiagramTip` の `kind: "hint"` の中身を配置する。`sanitizeEmbedded` の `transformTags` と `exclusiveFilter` から呼ぶ'
     kind: 関数
     scope: internal

@@ -1,7 +1,7 @@
 id: CMP-472-56
 visibility: internal
 title: "箇所が見つからないコメントの一覧"
-implementation: "src/parts/comment.ts#renderCommentOrphans"
+implementation: "src/comments/comment.part.ts#renderCommentOrphans"
 story: "Parts/CommentOrphans"
 states:
   - name: Default

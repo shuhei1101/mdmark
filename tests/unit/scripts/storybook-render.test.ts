@@ -9,22 +9,22 @@ import { afterEach, expect, test, vi } from "vitest";
 const loadRender = () => import("../../../scripts/storybook-render.ts");
 
 /** 通知ブロックの処理を読み込む */
-const loadNotice = () => import("../../../src/parts/notice.ts");
+const loadNotice = () => import("../../../src/shared/notice.part.ts");
 
 /** 読み込み中のブロックの処理を読み込む */
-const loadEmbed = () => import("../../../src/parts/embed.ts");
+const loadEmbed = () => import("../../../src/shared/embed.part.ts");
 
 /** 表の処理を読み込む */
-const loadTable = () => import("../../../src/parts/table.ts");
+const loadTable = () => import("../../../src/table/table.part.ts");
 
 /** 文書の一覧の処理を読み込む */
-const loadDocList = () => import("../../../src/parts/doc-list.ts");
+const loadDocList = () => import("../../../src/viewer/doc-list.part.ts");
 
 /** コメントの部品の処理を読み込む */
-const loadComment = () => import("../../../src/parts/comment.ts");
+const loadComment = () => import("../../../src/comments/comment.part.ts");
 
 /** バッジの処理を読み込む */
-const loadBadge = () => import("../../../src/parts/badge.ts");
+const loadBadge = () => import("../../../src/inline/badge.part.ts");
 
 /** VS Code 拡張機能のプレビューの状態の表示の処理を読み込む */
 const loadMediaError = () =>

@@ -1,12 +1,12 @@
 id: MOD-472-230
 visibility: internal
-title: ライブラリ本体 / 操作 / embedded-html.ts
+title: ライブラリ本体 / 埋め込んだHTML / embedded-html.interact.ts
 test_files:
-  - tests/unit/src/interact/embedded-html.browser.test.ts
+  - tests/unit/src/embedded-html/embedded-html.interact.browser.test.ts
 functions:
   - name: attachEmbeddedHtml
     title: 埋め込んだ HTML の幅を確認する
-    container: src/interact/embedded-html.ts
+    container: src/embedded-html/embedded-html.interact.ts
     summary: '`root` の中の `div.mdmark-html` ごとに `ResizeObserver` で幅を見、`scrollWidth` が `clientWidth` を 1px より大きく超える間だけ class `is-wide` と `tabindex="0"` を付ける。返却する関数で監視を解除し、付けた class と `tabindex` を削除する'
     kind: 関数
     scope: internal

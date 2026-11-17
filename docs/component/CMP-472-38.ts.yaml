@@ -1,7 +1,7 @@
 id: CMP-472-38
 visibility: internal
 title: "図のツールチップ"
-implementation: "src/parts/diagram.ts#renderDiagramTip"
+implementation: "src/diagram/diagram.part.ts#renderDiagramTip"
 story: "Parts/DiagramTooltip"
 states:
   - name: Closed

@@ -1,12 +1,12 @@
 id: MOD-472-182
 visibility: internal
-title: ライブラリ本体 / 図 / diagrams.ts
+title: ライブラリ本体 / 図 / diagram.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/diagrams.test.ts
+  - tests/unit/src/diagram/diagram.syntax.test.ts
 functions:
   - name: buildDiagrams
     title: 図の部品のマーカーを部品にする
-    container: src/render/syntax/diagrams.ts
+    container: src/diagram/diagram.syntax.ts
     kind: 関数
     scope: internal
     summary: markdown-it のコアルール。登録した拡張に無い `RETIRED_DIAGRAM_DIRECTIVES` のマーカーの範囲は、機能 `diagrams` のオン・オフによらず、範囲のトークンを廃止した図の記載の警告（画面設計『文書』の文言。`env.warnings` の種類は `retired_diagram`）に置き換える。`diagrams` がオンのとき、登録した拡張に無い図の部品のマーカーの範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読み込めたら部品の HTML（`renderDiagramFrame` に機能 `diagram-resize` のオン・オフを `resizable` に指定し、`renderParam` に `env.labels?.paramCopy` を指定する）（`markOwn` を掛けた `html_block`）、読み込めなければ記載の警告に範囲のトークンを置き換える。オフのときはマーカーだけを取り除く
@@ -62,7 +62,7 @@ functions:
         expected: '`button.mdmark-param-copy` の文字が `コピー`'
   - name: findDiagramBlocks
     title: 図の部品の範囲を探す
-    container: src/render/syntax/diagrams.ts
+    container: src/diagram/diagram.syntax.ts
     kind: 関数
     scope: internal
     summary: Markdown を markdown-it で解析し、`chart`・`param` のマーカーの範囲と、`RETIRED_DIAGRAM_DIRECTIVES` のマーカーの範囲ごとに、マーカーの名前・開きと閉じのマーカーの行の番号・範囲の `json` のコードブロックの中身を返却する（`buildDiagrams` と同じ範囲の読み込み方。埋め込んだ HTML の中の custom element は返却しない）

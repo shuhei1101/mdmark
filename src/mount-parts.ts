@@ -5,10 +5,10 @@ import {
   type MdmarkCommentsHandle,
 } from "./comments/spec.ts";
 import type { ResolvedConfig } from "./config.ts";
-import { openEnclosing } from "./interact/sections.ts";
 import { loadPartModule, type PartName } from "./part-modules.ts";
-import { renderNotice } from "./parts/notice.ts";
 import type { ResolveIdLink } from "./render/sanitize.ts";
+import { openEnclosing } from "./section/section.interact.ts";
+import { renderNotice } from "./shared/notice.part.ts";
 import {
   checkViewOptions,
   type MdmarkViewHandle,

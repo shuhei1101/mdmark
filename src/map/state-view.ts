@@ -1,11 +1,11 @@
 import type { ResolvedConfig } from "../config.ts";
+import { type MapStep, parseMapData } from "./data.ts";
+import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
 import {
   mapStateLoopDim,
   renderMapStateDiagram,
   renderMapStateLoops,
-} from "../parts/map.ts";
-import { type MapStep, parseMapData } from "./data.ts";
-import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
+} from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 import {
   parseStateDiagram,

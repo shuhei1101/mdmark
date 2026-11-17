@@ -1,12 +1,12 @@
 id: MOD-472-271
 visibility: internal
-title: ライブラリ本体 / 記法 / images.ts
+title: ライブラリ本体 / 画像と動画 / image.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/images.test.ts
+  - tests/unit/src/media/image.syntax.test.ts
 data_models:
   - name: ImageAttributes
     title: 画像の属性
-    container: src/render/syntax/images.ts
+    container: src/media/image.syntax.ts
     summary: 画像の直後の `{…}` を読み込んだ結果。`readImages` がトークンの `meta.mdmarkImage` に配置し、図を作るコアルールが読み込む
     properties:
       - name: kind
@@ -42,7 +42,7 @@ data_models:
 constants:
   - name: MEDIA_EXTENSIONS
     title: 動画と音声の拡張子
-    container: src/render/syntax/images.ts
+    container: src/media/image.syntax.ts
     summary: '`src` の拡張子（小文字）から種類を参照する。どれにも該当しない `gif` は `gif`、それ以外は `image`。CLI の書き出しと点検も使用する'
     entries:
       - key: video
@@ -54,14 +54,14 @@ constants:
     status: planned
   - name: IMAGE_ATTRIBUTE_NAMES
     title: 画像の属性の名前
-    container: src/render/syntax/images.ts
+    container: src/media/image.syntax.ts
     summary: '`{…}` に記載できる属性の名前。記載の警告の本文に並べる。後ろの 4 つは動画・音声だけ'
     value: '["width", "align", "nolightbox", "autoplay", "muted", "loop", "poster"]'
     status: planned
 functions:
   - name: mediaKindOf
     title: 画像の種類を見分ける
-    container: src/render/syntax/images.ts
+    container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
     summary: '`src` からクエリとフラグメントを除いた拡張子を小文字にし、`MEDIA_EXTENSIONS` の動画・音声なら `video`・`audio`、`gif` なら `gif`、それ以外は `image` を返却する'
@@ -83,7 +83,7 @@ functions:
     status: planned
   - name: readImageAttributes
     title: 画像の属性を読み込む
-    container: src/render/syntax/images.ts
+    container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
     summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。読み込めない属性は当てずに `items` に入れる'
@@ -125,7 +125,7 @@ functions:
     status: planned
   - name: readImages
     title: 画像の属性を読み込んで種類を見分ける
-    container: src/render/syntax/images.ts
+    container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`inline` の子の `image` のトークンごとに、`mediaKindOf` の種類と、`images` がオンなら直後の `text` の頭の `{…}` を `readImageAttributes` で読み込んだ属性を `meta.mdmarkImage` に配置し、`{…}` を `text` から除外する。`gif` の画像に `data-gif` を、文の中の画像の `width` を `img` の `style` の `--mdmark-image-width` に付ける。読み込めない属性は段落の前に 1 つの記載の警告を差し込む
@@ -171,7 +171,7 @@ functions:
     status: planned
   - name: buildImageFigures
     title: 画像と動画と音声を図にする
-    container: src/render/syntax/images.ts
+    container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
     summary: 'コアルール。`images` がオンなら、画像 1 つだけの段落（前後の空白を除く。図表の番号とギャラリーが図にしたもの・リンクの中の画像を除く）を部品『画像の図』（`opener: false`）の `html_block` に置き換える。`media` がオンなら、`video`・`audio` の画像を部品『動画と音声』の `html_block` にし、画像 1 つだけの段落は段落ごと置き換え、文の中のものは段落の後ろに配置する'

@@ -1,6 +1,6 @@
 import { afterEach, expect, inject, test, vi } from "vitest";
 import type { MdmarkViewHandle, MountHandle } from "../../../src/index.ts";
-import { VIEW_ICON_PATHS } from "../../../src/parts/view.ts";
+import { VIEW_ICON_PATHS } from "../../../src/views/view.part.ts";
 
 type Built = typeof import("../../../src/index.ts");
 

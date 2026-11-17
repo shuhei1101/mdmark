@@ -1,12 +1,12 @@
 id: MOD-472-133
 visibility: internal
-title: ライブラリ本体 / map / 描画と操作 / map.ts
+title: ライブラリ本体 / map / 描画と操作 / map.part.ts
 test_files:
-  - tests/unit/src/parts/map.test.ts
+  - tests/unit/src/map/map.part.test.ts
 data_models:
   - name: MapFlowArgs
     title: mapの構成図の引数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
     summary: 部品設計『mapの構成図』の引数（`layout`・`notes`・`links`・`collapsed`・`entered`・`selected`・`focus`・`packets`・`dragging`）
@@ -55,7 +55,7 @@ data_models:
         description: ノードの ID ごとに、種類の行の末尾（`head`）とノードの末尾（`body`）へ入れる HTML と、そのツールチップ（ER 図の列の開閉のボタンと列の行）
   - name: MapSequenceArgs
     title: mapのシーケンス図の引数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
     summary: 部品設計『mapのシーケンス図』の引数
@@ -86,7 +86,7 @@ data_models:
         description: '`false` のとき、`notes` の説明と注記のツールチップとメッセージの線の `data-tip-owner` を作らず、注記の持ち主の `id` だけをメッセージの線の `.map-wire-hit` に付ける。既定は `true`'
   - name: MapBandArgs
     title: 案内の帯の引数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
     summary: 部品設計『案内の帯』の引数
@@ -117,7 +117,7 @@ data_models:
         description: 帯の名前
   - name: MapClassNode
     title: クラス図のクラスの中身
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
     summary: 部品設計『mapのクラス図』の `layout.nodes[].classMembers`・`annotation` をクラスごとにまとめた値
@@ -133,7 +133,7 @@ data_models:
         description: メンバー（記載の順）
   - name: MapClassEnd
     title: クラス図の関係の端
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
     summary: 部品設計『mapのクラス図』の `layout.ends` の 1 件
@@ -152,7 +152,7 @@ data_models:
         description: 多重度
   - name: MapMindmapArgs
     title: mapのマインドマップの引数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
     summary: 部品設計『mapのマインドマップ』の引数。項目は `stateKey` で指す
@@ -195,7 +195,7 @@ data_models:
         description: 用語から意味への対応
   - name: MapAxisGridArgs
     title: mapの軸と格子の配置の図の引数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
     summary: 部品設計『mapの軸と格子の配置の図』の引数。項目は `stateKey` で指す
@@ -246,7 +246,7 @@ functions:
   - name: renderMapFlow
     title: mapの構成図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。`notes` に説明を持つグループ（閉じたグループのノードを含む）は、タイトルの右にノードと同じマーカー（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`。タイトルのボタンの外）とツールチップの中身を配置する。ノードと線を押す場所はフォーカスできるボタンにし（リンク先を持たず形状が開始・終了・分岐でないノードは、ノードの `div` に `tabindex`・`role` を付けず、ノードの `div` の先頭にノードの全体を覆う `span.mdmark-diagram-node-hit` を入れて `role="button"`・`tabindex="0"`・`aria-roledescription="ノード"`・`aria-keyshortcuts`・`aria-label`（ノードの名前。選んでいれば末尾に `（選択中）`）を付ける。種類の行・名前・説明のマーカー・`nodeParts` の中身はその後ろの兄弟として重ね、押せる要素の中に入れない。選んだノードの `div` には今と同じく `data-selected` を付ける）、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
@@ -355,7 +355,7 @@ functions:
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる
@@ -403,7 +403,7 @@ functions:
   - name: renderMapErDiagram
     title: mapのER図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのER図』。`renderMapFlow` のテーブルのノードに `renderMapEr` の列の行と開閉のボタンを入れ、`renderMapErMarks` の多重度とラベル、`renderMapErFanouts` の行が増える関連のマーカーを重ねる。関連の線は設定の線の種類によらず矢じりを持たず（`..` は破線）、テーブルを 1 つ選んだときはその関連と相手のテーブルを `keep` で残す
@@ -438,7 +438,7 @@ functions:
   - name: rewireMapEr
     title: ER図の関連の端の付け替え
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 関連の線の両端を、つなぐ列の行の縦の中ほど（ノードの上端 + `MAP_ER.head` + 行の番号 × `MAP_ER.row` + `MAP_ER.row` の半分）の左右の辺へ付け替える。列を閉じたテーブルと列の無い端は、ノードの縦の中ほどにつなぐ
@@ -464,7 +464,7 @@ functions:
   - name: renderMapErMarks
     title: ER図の多重度とラベルのHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 関連の両端の多重度と、両端を除いた最も長い区間の中ほどのラベルの `svg.map-er-marks`。文字は `data-wire-mark` に関連の ID を持ち、先に配置した多重度と重なる多重度はノードから離れる向きへ、先に配置したラベルと重なるラベルは 1 行分ずつ下へずらす
@@ -480,7 +480,7 @@ functions:
   - name: renderMapErFanouts
     title: 行が増える関連のマーカーのHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 行が増える関連ごとに `button.map-er-fanout`（「×n」）と、その説明のツールチップを描く。置き場所は、両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、ラベルの反対側 → ラベルの側の順に試し、どのノードの矩形（`MAP_ER.aside` を含む）とも重ならない最初の場所
@@ -496,7 +496,7 @@ functions:
   - name: renderMapStateDiagram
     title: mapの状態遷移図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapの状態遷移図』。`shapes` を指定した `renderMapFlow` に、`renderMapStateLoops` の同じ状態への遷移を重ねる
@@ -519,7 +519,7 @@ functions:
   - name: renderMapStateLoops
     title: 同じ状態への遷移の層のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 同じ状態への遷移ごとの `renderMapState` を並べた `svg.map-state-loops`
@@ -535,7 +535,7 @@ functions:
   - name: renderMapEr
     title: mapのER図の列の行のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのER図』のテーブルのノードの中身。列ごとにキー・名前・型・説明のボタンの行（テーブル名の行の下 `MAP_ER.head` から `MAP_ER.row` の高さで並べる）と、テーブル名の行の列の開閉のボタン（`data-node-toggle`）を描く
@@ -576,7 +576,7 @@ functions:
   - name: renderMapState
     title: mapの状態遷移図の同じ状態への遷移のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapの状態遷移図』の同じ状態への遷移の線（状態の右の辺から出て上を回り、上の辺へ戻る `path`）と、押せる帯とラベル
@@ -599,7 +599,7 @@ functions:
   - name: renderMapClassDiagram
     title: mapのクラス図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのクラス図』。`renderMapFlow` のクラスのノードに、種類の行の注釈（`«…»`）と `renderMapClassMembers` の開閉のボタンとメンバーの区画を入れ、`renderMapClassEnds` の端の形・多重度・ラベルを重ねる。関係の線は矢じりを持たず（`..` は破線）、関係のラベルは `layout` の線から取って線の中ほどに描き、ノートのノード（`note_{番号}`）は種類の行「ノート」を持つ。クラスの大きさは `MAP_CLASS`（幅・名前の行・メンバーの行・区切り線）で決める
@@ -630,7 +630,7 @@ functions:
   - name: renderMapClassMembers
     title: mapのクラス図のメンバーのHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのクラス図』のクラスのノードの中身。属性とメソッドの区画（`role="list"`。区切り線で分ける）に、可視性・名前と型・説明のボタンの行（`role="listitem"`。静的は下線、抽象は斜体）を `MAP_CLASS.row` の高さで並べ、名前の行にメンバーの開閉のボタン（`data-node-toggle`）を描く
@@ -659,7 +659,7 @@ functions:
   - name: renderMapClassEnds
     title: クラス図の端の形と多重度のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 関係の端の形（白抜きの三角・黒と白のひし形・開いた矢じり）と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの `svg.map-class-ends`。形と文字は `aria-hidden` で、`data-wire-mark` に関係の ID を持つ。多重度とラベルの重なりは `renderMapErMarks` と同じくずらす
@@ -675,7 +675,7 @@ functions:
   - name: spreadMapEnds
     title: 同じ点の線の端をずらす
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 同じ点から出る・入る線の端を、辺に沿って `MAP_CLASS.endGap`（16px）ずつ、ずらした幅の中ほどが元の点になるようにずらし、端から次の点までの区間を辺と直角に保つ（クラス図・C4 図）
@@ -698,7 +698,7 @@ functions:
   - name: renderMapArchitecture
     title: mapのアーキテクチャ図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのアーキテクチャ図』。`renderMapFlow` に、group のタイトル（閉じた group のタイトルを含む）のアイコンと、junction の点（`shapes` の `junction`。`data-shape="junction"`・`role="img"`・`aria-label="分岐点"`。フォーカスを持たない）を加え、線の矢じりを `head` のとおりに描く（`start` は点の並びを逆にして終点の矢じりで描く）。アイコンは Lucide の `cloud`・`database`・`hard-drive`・`globe`・`server` を配布物にまとめて描く
@@ -723,7 +723,7 @@ functions:
   - name: rewireMapArchitecture
     title: アーキテクチャ図の線の引き直し
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 線を、指定の辺の中ほどから `MAP_ARCH.endOut`（16px）外へ出た 2 点を直角につなぐ経路に引き直す。2 点は、出る辺と入る辺がどちらも左右なら中ほどの縦の区間で、どちらも上下なら中ほどの横の区間で、左右と上下の組なら 1 回だけ折れてつなぐ（折れる点の 2 つの候補のうち、両端の矩形の中を通らない方）
@@ -749,7 +749,7 @@ functions:
   - name: renderMapC4Diagram
     title: mapのC4図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのC4図』。`renderMapFlow` の要素のノードの名前の下に説明（`p.map-c4-description`。中の用語は名前と同じ下線とツールチップ）を入れ、外部の要素のノードに `map-c4-external`（灰色の面）を付け、境界のグループを破線の枠（`.map-c4-boundary`）にしてタイトルの後ろに種類（`［Enterprise］`・`［Software System］`）を付ける。`reversed` の線は点の並びを逆にして、矢じりを線の元の側に描く
@@ -774,7 +774,7 @@ functions:
   - name: renderMapBand
     title: 案内の帯のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『案内の帯』の HTML
@@ -809,7 +809,7 @@ functions:
   - name: renderMapMindmap
     title: mapのマインドマップのHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのマインドマップ』。項目を構成図のノードと同じ `div.mdmark-diagram-node`（`map-mindmap-item`・`data-node` に `stateKey`・`data-shape`・`data-side`。今の図の根は `map-mindmap-root`、`filled` の項目は `map-mindmap-filled`）で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。子を持つ項目には子の側の辺に持ち手 `div.map-mindmap-grip`（開閉の `button[data-mindmap-toggle]` と中へ入る `button[data-mindmap-enter]`）を付け、枝の曲線を SVG の `path.map-mindmap-branch`（`aria-hidden`・`data-branch` に `{親}->{子}`）で描く。中へ入ったときは図の上端に根からの道筋 `nav.map-mindmap-trail` を出す。選択と案内の強調で残さない項目と曲線に `map-dim` を付ける
@@ -871,7 +871,7 @@ functions:
   - name: renderMapAxisGrid
     title: mapの軸と格子の配置の図のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapの軸と格子の配置の図』。項目を構成図のノードと同じ `div.mdmark-diagram-node`（`map-axis-item`・`data-node` に `stateKey`・`data-shape`）で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。軸の目盛り・section の見出しと枠・ブランチの線とブランチ名のボタン・つながりの線・今日の線を SVG と `div` で重ね、section と入れ子のブロックに開閉の `button[data-map-section-toggle]` と中へ入る `button[data-map-section-enter]` を付け、ブロック図の入れ子のブロックの名前を選ぶ `button[data-map-section-select]`（`aria-pressed`）にする。中へ入ったときは図の上端に「全体 › {名前}」の `nav.map-axis-trail` を出す。選択と強調で残さないものに `map-dim` を付ける
@@ -923,7 +923,7 @@ functions:
   - name: renderMapAxisGridLegend
     title: ジャーニーの人の凡例のHTML
     kind: 関数
-    container: src/parts/map.ts
+    container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapの軸と格子の配置の図』のジャーニーの人の凡例を、図の枠の凡例の行に入れる `li` の並びにする。人ごとに `button[data-map-actor]`（`aria-pressed`、人の色の丸と名前）

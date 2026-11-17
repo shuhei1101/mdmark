@@ -1,7 +1,7 @@
 id: CMP-472-5
 visibility: internal
 title: mapの構成図
-implementation: src/parts/map.ts#renderMapFlow
+implementation: src/map/map.part.ts#renderMapFlow
 story: Parts/MapFlow
 states:
   - name: Default

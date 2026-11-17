@@ -1,0 +1,18 @@
+id: MOD-583-4
+visibility: internal
+title: ライブラリ本体 / 脚注と注記
+lead: 脚注と注記の定義・参照を読み取り、番号と末尾の一覧にするコアルールと部品と、`mount` が付けるツールチップの開閉と一覧との行き来の操作。操作だけはブラウザでだけ動く。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/footnote/
+    ├── annotations.syntax.ts # 注記の定義・参照の読み取りと番号・末尾の一覧
+    ├── footnote.syntax.ts    # 脚注の定義・参照・行内の脚注の読み取りと、末尾の一覧・機能のオフの文字への戻し
+    ├── footnote.part.ts      # 脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes
+    ├── {部品}.part.stories.ts  # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    └── footnote.interact.ts  # 脚注のツールチップの開閉と、番号と末尾の一覧の行き来
+    ```
+tags:
+  - name: topic:脚注
+    main: true
+  - name: topic:注記

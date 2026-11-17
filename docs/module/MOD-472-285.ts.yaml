@@ -1,12 +1,12 @@
 id: MOD-472-285
 visibility: internal
-title: ライブラリ本体 / 記法 / tree.ts
+title: ライブラリ本体 / ファイルツリー / tree.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/tree.test.ts
+  - tests/unit/src/tree/tree.syntax.test.ts
 functions:
   - name: parseTree
     title: 罫線のツリーを読み込む
-    container: src/render/syntax/tree.ts
+    container: src/tree/tree.syntax.ts
     kind: 関数
     scope: internal
     summary: 罫線（`├── `・`└── `・`│   `）と ASCII の罫線（`|-- `・`` `-- ``・`|   `）と字下げで記載した行を `TreeNode` の入れ子にする（1 つのツリーで 2 種類の罫線を混ぜてよい）。項目は、前に空白がある最初の `#` で名前と注釈に分け、注釈を `renderNote` で HTML にする。上の行より 2 段以上深い行があれば、その行番号と階層の差を返却する
@@ -50,7 +50,7 @@ functions:
         expected: '`[{ name: "src/", children: [{ name: "index.ts" }, { name: "parts/", children: [{ name: "tree.ts" }, { name: "..." }] }] }]`'
   - name: buildFileTrees
     title: ファイルツリーにする
-    container: src/render/syntax/tree.ts
+    container: src/tree/tree.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み込み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。直前に `tree` のマーカーがあれば `readTreeOptions` で読み込み、`open` と `wrap` を部品へ指定する。罫線を読み込めなければ警告を差し込み、コードブロックのままにする
@@ -86,7 +86,7 @@ functions:
         expected: ツリーの前に `depth` の記載の警告（`all` と階層の数を記載）があり、`<div class="mdmark-tree"` が `data-open` を持たない
   - name: readTreeOptions
     title: ファイルツリーのマーカーの指定を読み込む
-    container: src/render/syntax/tree.ts
+    container: src/tree/tree.syntax.ts
     summary: ファイルツリーのマーカーの設定（`validateMarkOptions` が `"all"` か 1 以上の整数に照らしてある）から `depth` と `wrap` を読み込む
     description: '`depth` を省いたときは `open` を入れず、部品『ファイルツリー』の既定の開き方にする'
     kind: 関数

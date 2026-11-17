@@ -1,12 +1,12 @@
 id: MOD-472-337
 visibility: internal
-title: ライブラリ本体 / 部品 / layout-columns.ts
+title: ライブラリ本体 / 範囲の記法 / layout-columns.part.ts
 test_files:
-  - tests/unit/src/parts/layout-columns.test.ts
+  - tests/unit/src/layout/layout-columns.part.test.ts
 functions:
   - name: renderLayoutColumns
     title: 段組みを描く
-    container: src/parts/layout-columns.ts
+    container: src/layout/layout-columns.part.ts
     summary: 部品設計『段組み』の HTML を返却する
     kind: 関数
     scope: internal

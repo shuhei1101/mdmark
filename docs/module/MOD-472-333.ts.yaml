@@ -1,12 +1,12 @@
 id: MOD-472-333
 visibility: internal
-title: ライブラリ本体 / 部品 / footnote.ts
+title: ライブラリ本体 / 脚注と注記 / footnote.part.ts
 test_files:
-  - tests/unit/src/parts/footnote.test.ts
+  - tests/unit/src/footnote/footnote.part.test.ts
 functions:
   - name: renderFootnoteRef
     title: 脚注の番号を描く
-    container: src/parts/footnote.ts
+    container: src/footnote/footnote.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『脚注の番号』の HTML を返却する。`bodies` のどれかが `<a ` を持つときはツールチップを `role="group"`・`aria-label="脚注 {number}"` にして番号のリンクから `aria-details` で指し、持たないときは `role="tooltip"` にして `aria-describedby` で指す。`bodies` は描いた HTML なのでエスケープしない
@@ -51,7 +51,7 @@ functions:
         expected: '`sup` が class `is-after-ref` を持つ'
   - name: renderFootnotes
     title: 脚注の一覧を描く
-    container: src/parts/footnote.ts
+    container: src/footnote/footnote.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『脚注の一覧』の HTML を返却する。`items` が空なら空文字。項目の最後の `</p>` の前（`p` が無ければ末尾）に、`refCount` の数の戻るリンクを配置する。`html` は描いた HTML なのでエスケープしない

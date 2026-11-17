@@ -1,12 +1,12 @@
 id: MOD-472-284
 visibility: internal
-title: ライブラリ本体 / 記法 / callouts.ts
+title: ライブラリ本体 / 注意書き / callout.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/callouts.test.ts
+  - tests/unit/src/callout/callout.syntax.test.ts
 functions:
   - name: buildCallouts
     title: 注意書きにする
-    container: src/render/syntax/callouts.ts
+    container: src/callout/callout.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`callout` がオンなら、1 行目が `[!種類]`（末尾に `-` を許す）の引用を部品『注意書き』にし、種類の文字を本文から除外する。知らない種類は `note`。1 行目は `readCallout` で読み取り、`+` は開いた折り畳み、種類の後ろの文字はタイトルとして部品へ指定し、1 行目を本文から削除する。注意書きの本文の範囲（引用の開きに対応する閉じまで）は同じ処理に指定し、中の引用も注意書きにする
@@ -40,7 +40,7 @@ functions:
         expected: '1 つ目のタイトルが `設定を先に確認する` で頭にスクリーンリーダー向けの `ヒント: `、2 つ目が `open` を持つ `details` で `summary` が `詳細`、`markdown-alert-warning` の中に `markdown-alert-tip` があり、`[!` が無い'
   - name: readCallout
     title: 注意書きの 1 行目を読み取る
-    container: src/render/syntax/callouts.ts
+    container: src/callout/callout.syntax.ts
     kind: 関数
     scope: internal
     summary: 引用の最初の段落の 1 行目（最初の `softbreak` の手前まで）が `[!種類]` で始まるかを `CALLOUT_PATTERN` で読み取り、末尾の `-`・`+` と、後ろの空白の後の文字をタイトルにする。タイトルは 1 行目の残りの行内のトークンを `state.md.renderer.renderInline` で HTML にしたもの

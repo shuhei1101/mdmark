@@ -1,7 +1,7 @@
 id: CMP-472-61
 visibility: internal
 title: "表"
-implementation: "src/parts/table.ts#renderTable"
+implementation: "src/table/table.part.ts#renderTable"
 story: "Parts/Table"
 test_file: tests/integration/lib/table.story.test.ts
 states:

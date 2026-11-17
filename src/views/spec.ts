@@ -1,4 +1,4 @@
-import { FILTER_KINDS, type FilterKind } from "../table-logic.ts";
+import { FILTER_KINDS, type FilterKind } from "../table/table.logic.ts";
 
 /** ボードの列の見出しに使用できるアイコンの名前 */
 export const VIEW_ICON_NAMES = [

@@ -1,12 +1,12 @@
 id: MOD-472-322
 visibility: internal
-title: ライブラリ本体 / 部品 / figure.ts
+title: ライブラリ本体 / 図表の番号 / figure.part.ts
 test_files:
-  - tests/unit/src/parts/figure.test.ts
+  - tests/unit/src/figure/figure.part.test.ts
 functions:
   - name: renderFigure
     title: 図表の番号を描く
-    container: src/parts/figure.ts
+    container: src/figure/figure.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『図表の番号』の HTML を返却する。画像はタイトルを下、表は上に配置する

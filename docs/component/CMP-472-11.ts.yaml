@@ -2,7 +2,7 @@ id: CMP-472-11
 visibility: internal
 title: キー
 lead: 頭に `kbd:` を付けた行内のコードを、`+` で区切ったキーの外観の並びにする。
-implementation: src/parts/kbd.ts#renderKbd
+implementation: src/inline/kbd.part.ts#renderKbd
 story: Parts/Kbd
 test_file: tests/integration/lib/kbd.story.test.ts
 args:

@@ -1,0 +1,27 @@
+id: MOD-583-15
+visibility: internal
+title: ライブラリ本体 / 画像と動画
+lead: 画像の属性・ギャラリー・動画と音声・GIF・ライトボックスのコアルールと部品と、`mount` が付けるライトボックスと GIF の操作。操作だけはブラウザでだけ動く。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/media/
+    ├── gallery.syntax.ts    # ギャラリー
+    ├── image.syntax.ts      # 画像の属性の読み取り・動画と音声と GIF の見分け・画像と動画と音声の図
+    ├── gallery.part.ts      # ギャラリーの renderGallery
+    ├── gif.part.ts          # GIF の renderGif と止める・再生するボタンの renderGifToggle
+    ├── image.part.ts        # 画像の図の renderImageFigure と拡大のボタンの renderImageOpener
+    ├── lightbox.part.ts     # ライトボックスの renderLightbox
+    ├── media.part.ts        # 動画と音声の renderMedia
+    ├── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ├── gif.interact.ts      # GIF を止める・再生するボタンを付ける
+    └── lightbox.interact.ts # 画像を拡大のボタンで包み、ライトボックスで開いて切り替え・拡大・縮小・移動を付ける
+    ```
+tags:
+  - name: topic:画像
+    main: true
+  - name: topic:動画
+  - name: topic:音声
+  - name: topic:ギャラリー
+  - name: topic:ライトボックス
+  - name: topic:gif

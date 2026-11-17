@@ -24,7 +24,7 @@ data_models:
         description: 描いた直後に出すビュー
       - name: filter
         type: Record<string, FilterKind> | undefined
-        description: 表形式で絞り込みを付ける列と種類（`FilterKind` は `src/table-logic.ts`）
+        description: 表形式で絞り込みを付ける列と種類（`FilterKind` は `src/table/table.logic.ts`）
       - name: icons
         type: Record<string, ViewIconName> | undefined
         description: ボードの列の見出しの値からアイコンの名前を参照する対応。`DEFAULT_VALUE_ICONS` に重ねる

@@ -1,7 +1,7 @@
 id: CMP-472-54
 visibility: internal
 title: 画像の図
-implementation: src/parts/image.ts#renderImageFigure
+implementation: src/media/image.part.ts#renderImageFigure
 story: Parts/ImageFigure
 test_file: tests/integration/lib/image-figure.story.test.ts
 states:

@@ -1,12 +1,12 @@
 id: MOD-472-263
 visibility: internal
-title: ライブラリ本体 / 索引と用語 / terms.ts
+title: ライブラリ本体 / 索引と用語 / term.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/terms.test.ts
+  - tests/unit/src/knowledge/term.syntax.test.ts
 functions:
   - name: termsRule
     title: 用語の下線のコアルール
-    container: src/render/syntax/terms.ts
+    container: src/knowledge/term.syntax.ts
     kind: 関数
     scope: internal
     summary: 本文のテキストのトークンを `findWords` で辞書と照合し、該当した単語を単語とツールチップの組（`renderTermTip`）に置き換える

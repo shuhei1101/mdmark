@@ -2,7 +2,7 @@ id: CMP-472-27
 visibility: internal
 title: フロントマター
 lead: 機能 `frontmatter` がオンのとき、文書の先頭の YAML のフロントマターを、本文の先頭の閉じた折りたたみに言語 `yaml` のコードブロックで出す。
-implementation: src/parts/frontmatter.ts#renderFrontmatter
+implementation: src/frontmatter/frontmatter.part.ts#renderFrontmatter
 story: Parts/Frontmatter
 test_file: tests/integration/lib/frontmatter.story.test.ts
 args:

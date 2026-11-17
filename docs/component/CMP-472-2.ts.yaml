@@ -1,7 +1,7 @@
 id: CMP-472-2
 visibility: internal
 title: GIF
-implementation: src/parts/gif.ts#renderGif
+implementation: src/media/gif.part.ts#renderGif
 story: Parts/Gif
 test_file: tests/integration/lib/gif.story.test.ts
 states:

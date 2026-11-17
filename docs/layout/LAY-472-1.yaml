@@ -901,7 +901,7 @@ entries:
           - '{package}.txt'
   - type: folder
     name: src
-    contents: ライブラリ本体・CLI・Claude Code プラグインのフックのコード。直下は公開関数の起点と、複数のフォルダが使用する処理
+    contents: ライブラリ本体・CLI・Claude Code プラグインのフックのコード。記法は機能ごとのフォルダに分け、直下は公開関数の起点と、複数のフォルダが使用する処理
     content_types:
       - code
       - library
@@ -911,6 +911,32 @@ entries:
       - files.yaml
     children:
       - type: folder
+        name: callout
+        contents: 注意書きの記法と部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: card
+        contents: カードとカードの格子の記法と部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
         name: cli
         contents: CLI のコマンド
         content_types:
@@ -919,63 +945,179 @@ entries:
         naming:
           - '{module}.ts'
       - type: folder
-        name: comments
-        contents: コメントの部品
-        content_types:
-          - code
-          - library
-        naming:
-          - '{module}.ts'
-      - type: folder
-        name: diagram
-        contents: 図の部品の定義と幾何の計算
-        content_types:
-          - code
-          - library
-        naming:
-          - '{module}.ts'
-      - type: folder
-        name: diff
-        contents: 差分の計算と表示
-        content_types:
-          - code
-          - library
-        naming:
-          - '{module}.ts'
-      - type: folder
-        name: interact
-        contents: 描いた文書での読者の操作
-        content_types:
-          - code
-          - library
-        naming:
-          - '{module}.ts'
-      - type: folder
-        name: knowledge
-        contents: 索引・用語・参照の読み込みと点検
-        content_types:
-          - code
-          - library
-        naming:
-          - '{module}.ts'
-      - type: folder
-        name: map
-        contents: map の図（構成図・フローチャート・シーケンス図・状態遷移図・ER 図）
-        content_types:
-          - code
-          - library
-        naming:
-          - '{module}.ts'
-      - type: folder
-        name: parts
-        contents: 文書の中に配置する部品と、部品ごとのストーリー
+        name: code-block
+        contents: コードブロックの記法・部品・操作と、畳む行の計算
         content_types:
           - code
           - story
           - library
         naming:
-          - '{part}.ts'
-          - '{part}.stories.ts'
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: comments
+        contents: コメントの部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{module}.ts'
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: diagram
+        contents: 図の部品の定義と幾何の計算と、図の部品・mermaid の図の枠の記法・部品・操作
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{module}.ts'
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: diff
+        contents: 差分の計算と表示と、差分の部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{module}.ts'
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: embedded-html
+        contents: 埋め込んだ HTML の記法・部品・操作と、範囲の css の適用
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: figure
+        contents: 図表の番号の記法と部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: footnote
+        contents: 脚注と注記の記法・部品・操作
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: frontmatter
+        contents: フロントマターの判定と、表示の記法と部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: inline
+        contents: バッジ・キー・行内のアイコン・蛍光ペン・文字の色の、行内の記法と部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: knowledge
+        contents: 索引・用語・参照の読み込みと点検と、用語・用語集・関連文書の記法・部品・操作
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{module}.ts'
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: layout
+        contents: 段組み・wide・details・改ページの範囲の記法・部品・操作
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: map
+        contents: map の図（構成図・フローチャート・シーケンス図・状態遷移図・ER 図）
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{module}.ts'
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: media
+        contents: 画像・ギャラリー・動画と音声・GIF・ライトボックスの記法・部品・操作
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
       - type: folder
         name: plugin
         contents: Claude Code プラグインのフックと MCP のツール
@@ -995,38 +1137,119 @@ entries:
               - '{module}.ts'
       - type: folder
         name: render
-        contents: Markdown を HTML に変換する流れと、マーカーの解釈
+        contents: Markdown を HTML に変換する流れ・マーカーの解釈・取り込み・sanitize
         content_types:
           - code
           - library
         naming:
           - '{module}.ts'
-        children:
-          - type: folder
-            name: syntax
-            contents: 記法ごとの変換
-            content_types:
-              - code
-              - library
-            naming:
-              - '{module}.ts'
       - type: folder
-        name: viewer
-        contents: 書き出した HTML に埋める文書の一覧と行き来
+        name: section
+        contents: 見出し・セクション・目次の記法と部品と、開閉・右側の目次・先頭へ戻るボタンの操作
         content_types:
           - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: shared
+        contents: 複数の機能のフォルダが使用する、記法・部品・操作の助け
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: steps
+        contents: ステップの記法と部品
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: table
+        contents: 表の記法・部品・操作と、DOM を使用しない計算
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: tabs
+        contents: タブの記法・部品・操作
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: tree
+        contents: ファイルツリーの記法・部品・操作
+        content_types:
+          - code
+          - story
+          - library
+        naming:
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
+      - type: folder
+        name: viewer
+        contents: 書き出した HTML に埋める文書の一覧と行き来と、文書の一覧の部品
+        content_types:
+          - code
+          - story
           - cli
         naming:
           - '{module}.ts'
           - viewer.css
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
       - type: folder
         name: views
-        contents: ビューの部品
+        contents: ビューの記法と部品
         content_types:
           - code
+          - story
           - library
         naming:
           - '{module}.ts'
+          - '{name}.syntax.ts'
+          - '{name}.part.ts'
+          - '{name}.part.stories.ts'
+          - '{name}.interact.ts'
+          - '{name}.logic.ts'
   - type: folder
     name: templates
     contents: mdmark init が配置する雛形
@@ -1512,3 +1735,16 @@ notes:
     | --- | --- | --- |
     | `tests/unit/vscode/`・`tests/integration/vscode/` | 直下の Vitest | 直下の `package.json` の依存（Vitest・Playwright・Storybook）と、`tests/` が共有する補助のコードを使用する。単体と結合は、ほかの対象と同じ層の分け方にする |
     | `vscode/tests/integration/` | `vscode/` の mocha と `@vscode/test-electron` | `mocha`・`@vscode/test-electron` は `vscode/package.json` だけの依存で、Node は `vscode/` の外のファイルからは `vscode/node_modules/` を探さない。`vscode/scripts/build.ts` が `vscode/` の中の結合テストを `out/test/` にまとめる |
+  src の機能のフォルダのファイル名: |-
+    記法の機能のフォルダ（`table/`・`tabs/` など）と、図・map・索引・ビュー・コメント・差分・書き出した HTML の起動のフォルダは、ファイル名の後ろに中身の役割を付ける。
+
+    | 役割 | ファイル名 | 中身 | 動く場所 |
+    | --- | --- | --- | --- |
+    | 記法 | `{name}.syntax.ts` | markdown-it のコアルールと、コアルールが使用するトークンの助け | ブラウザと Node |
+    | 部品 | `{name}.part.ts` | 部品の HTML 文字列を返却する関数 | ブラウザと Node |
+    | ストーリー | `{name}.part.stories.ts` | 部品の状態ごとの Storybook のストーリー | Storybook |
+    | 操作 | `{name}.interact.ts` | `mount` が描いた文書に付ける読者の操作と、操作が使用する DOM の助け | ブラウザ（単体テストは `*.browser.test.ts`） |
+    | 計算 | `{name}.logic.ts` | DOM もトークンも使用しない計算・定数 | ブラウザと Node |
+
+    持ち主の機能が無い助け（どの機能の記法・部品・操作でもない関数・定数）は `shared/` に配置する。
+    ある機能の記法・部品・操作を別の機能が組み込むときは、持ち主の機能のフォルダに置いたまま import する。

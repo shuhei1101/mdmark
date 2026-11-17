@@ -5,6 +5,31 @@ import { join, resolve } from "node:path";
 import { runInNewContext } from "node:vm";
 import { build } from "esbuild";
 import type { HLJSApi, LanguageFn } from "highlight.js";
+import {
+  type CalloutKind,
+  renderCallout,
+} from "../src/callout/callout.part.ts";
+import { type AttachmentKind, renderCard } from "../src/card/card.part.ts";
+import {
+  type CardGridItem,
+  renderCardGrid,
+} from "../src/card/card-grid.part.ts";
+import {
+  type CodeLine,
+  renderCodeBlock,
+} from "../src/code-block/code-block.part.ts";
+import { syntaxLanguageOf } from "../src/code-block/code-block.syntax.ts";
+import {
+  type CommentClosedKind,
+  type CommentFormState,
+  type CommentRemoveState,
+  renderCommentBubble,
+  renderCommentButton,
+  renderCommentForm,
+  renderCommentMark,
+  renderCommentMarker,
+  renderCommentOrphans,
+} from "../src/comments/comment.part.ts";
 import type { SideTocMode } from "../src/config.ts";
 import {
   type DiagramDirective,
@@ -13,10 +38,49 @@ import {
   type MdmarkParamDefinition,
   readDefinition,
 } from "../src/diagram/definition.ts";
+import {
+  renderDiagram,
+  renderDiagramFrame,
+  renderDiagramTip,
+} from "../src/diagram/diagram.part.ts";
+import { type HintPlacement, renderHint } from "../src/diagram/hint.part.ts";
+import { renderMermaidDiagram } from "../src/diagram/mermaid.part.ts";
+import { type CopyState, renderParam } from "../src/diagram/param.part.ts";
 import { computeDiff } from "../src/diff/compute.ts";
+import { renderDiffBlock } from "../src/diff/diff-blocks.part.ts";
+import { renderDiffHtml } from "../src/diff/diff-html.part.ts";
+import { renderDiffLines } from "../src/diff/diff-lines.part.ts";
+import { renderDiffMessage } from "../src/diff/diff-message.part.ts";
+import {
+  type DiffMinimapMark,
+  renderDiffMinimap,
+} from "../src/diff/diff-minimap.part.ts";
+import { renderDiffToggle } from "../src/diff/diff-toggle.part.ts";
+import { renderRevisionPicker } from "../src/diff/revision-picker.part.ts";
+import { renderEmbeddedHtml } from "../src/embedded-html/embedded-html.part.ts";
+import { scopeCss } from "../src/embedded-html/scope-css.logic.ts";
 import type { WarningItem } from "../src/extensions.ts";
+import { renderFigure } from "../src/figure/figure.part.ts";
+import {
+  renderFootnoteRef,
+  renderFootnotes,
+} from "../src/footnote/footnote.part.ts";
+import { renderFrontmatter } from "../src/frontmatter/frontmatter.part.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
+import { renderBadge } from "../src/inline/badge.part.ts";
+import { renderHighlight } from "../src/inline/highlight.part.ts";
+import { renderInlineIcon } from "../src/inline/inline-icon.part.ts";
+import { renderKbd } from "../src/inline/kbd.part.ts";
+import { renderTextColor } from "../src/inline/text-color.part.ts";
 import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
+import { renderBacklinks } from "../src/knowledge/backlinks.part.ts";
+import {
+  renderTermTip,
+  type TermTipCopyState,
+  type TermTipDoc,
+} from "../src/knowledge/term-tip.part.ts";
+import { renderLayoutColumns } from "../src/layout/layout-columns.part.ts";
+import { renderWide } from "../src/layout/wide.part.ts";
 import {
   ARCH_LUCIDE_ICONS,
   architectureToFlowchart,
@@ -50,68 +114,6 @@ import {
 import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap } from "../src/map/layout.ts";
-import { mindmapItemOf, parseMindmap } from "../src/map/mindmap.ts";
-import { layoutMindmap } from "../src/map/mindmap-layout.ts";
-import { parseSequence } from "../src/map/sequence.ts";
-import { sequenceRows } from "../src/map/sequence-rows.ts";
-import {
-  parseStateDiagram,
-  statePartInputs,
-  stateToFlowchart,
-} from "../src/map/state-diagram.ts";
-import { renderBackToTop } from "../src/parts/back-to-top.ts";
-import { renderBacklinks } from "../src/parts/backlinks.ts";
-import { renderBadge } from "../src/parts/badge.ts";
-import { type CalloutKind, renderCallout } from "../src/parts/callout.ts";
-import { type AttachmentKind, renderCard } from "../src/parts/card.ts";
-import { type CardGridItem, renderCardGrid } from "../src/parts/card-grid.ts";
-import { type CodeLine, renderCodeBlock } from "../src/parts/code-block.ts";
-import { renderCollapsible } from "../src/parts/collapsible.ts";
-import type { ColorName } from "../src/parts/colors.ts";
-import {
-  type CommentClosedKind,
-  type CommentFormState,
-  type CommentRemoveState,
-  renderCommentBubble,
-  renderCommentButton,
-  renderCommentForm,
-  renderCommentMark,
-  renderCommentMarker,
-  renderCommentOrphans,
-} from "../src/parts/comment.ts";
-import {
-  renderDiagram,
-  renderDiagramFrame,
-  renderDiagramTip,
-} from "../src/parts/diagram.ts";
-import { renderDiffBlock } from "../src/parts/diff-blocks.ts";
-import { renderDiffHtml } from "../src/parts/diff-html.ts";
-import { renderDiffLines } from "../src/parts/diff-lines.ts";
-import { renderDiffMessage } from "../src/parts/diff-message.ts";
-import {
-  type DiffMinimapMark,
-  renderDiffMinimap,
-} from "../src/parts/diff-minimap.ts";
-import { renderDiffToggle } from "../src/parts/diff-toggle.ts";
-import { type DocListItem, renderDocList } from "../src/parts/doc-list.ts";
-import { renderEmbed } from "../src/parts/embed.ts";
-import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
-import { escapeHtml } from "../src/parts/escape.ts";
-import { renderFigure } from "../src/parts/figure.ts";
-import { renderFootnoteRef, renderFootnotes } from "../src/parts/footnote.ts";
-import { renderFrontmatter } from "../src/parts/frontmatter.ts";
-import { renderGallery } from "../src/parts/gallery.ts";
-import { renderGif } from "../src/parts/gif.ts";
-import { renderHighlight } from "../src/parts/highlight.ts";
-import { type HintPlacement, renderHint } from "../src/parts/hint.ts";
-import { renderImageFigure } from "../src/parts/image.ts";
-import {
-  type MdmarkIconNode,
-  renderInlineIcon,
-} from "../src/parts/inline-icon.ts";
-import { renderKbd } from "../src/parts/kbd.ts";
-import { renderLayoutColumns } from "../src/parts/layout-columns.ts";
-import { renderLightbox } from "../src/parts/lightbox.ts";
 import {
   type MapErFanout,
   renderMapArchitecture,
@@ -128,34 +130,48 @@ import {
   rewireMapArchitecture,
   rewireMapEr,
   spreadMapEnds,
-} from "../src/parts/map.ts";
-import { renderMedia } from "../src/parts/media.ts";
-import { renderMermaidDiagram } from "../src/parts/mermaid.ts";
-import { renderNotice } from "../src/parts/notice.ts";
-import { type CopyState, renderParam } from "../src/parts/param.ts";
-import { renderRevisionPicker } from "../src/parts/revision-picker.ts";
-import { renderRowDetail } from "../src/parts/row-detail.ts";
-import { renderSection } from "../src/parts/section.ts";
-import { renderSideToc, type SideTocHeading } from "../src/parts/side-toc.ts";
-import { renderSteps } from "../src/parts/steps.ts";
-import { renderSyntaxWarning } from "../src/parts/syntax-warning.ts";
-import { renderTable, type TableOptions } from "../src/parts/table.ts";
-import { renderTabs } from "../src/parts/tabs.ts";
+} from "../src/map/map.part.ts";
+import { mindmapItemOf, parseMindmap } from "../src/map/mindmap.ts";
+import { layoutMindmap } from "../src/map/mindmap-layout.ts";
+import { parseSequence } from "../src/map/sequence.ts";
+import { sequenceRows } from "../src/map/sequence-rows.ts";
 import {
-  renderTermTip,
-  type TermTipCopyState,
-  type TermTipDoc,
-} from "../src/parts/term-tip.ts";
-import { renderTextColor } from "../src/parts/text-color.ts";
-import { renderToc, type TocHeading } from "../src/parts/toc.ts";
-import { renderTree, type TreeNode } from "../src/parts/tree.ts";
-import { renderView } from "../src/parts/view.ts";
-import { renderWide } from "../src/parts/wide.ts";
+  parseStateDiagram,
+  statePartInputs,
+  stateToFlowchart,
+} from "../src/map/state-diagram.ts";
+import { renderGallery } from "../src/media/gallery.part.ts";
+import { renderGif } from "../src/media/gif.part.ts";
+import { renderImageFigure } from "../src/media/image.part.ts";
+import { renderLightbox } from "../src/media/lightbox.part.ts";
+import { renderMedia } from "../src/media/media.part.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
-import { scopeCss } from "../src/render/scope-css.ts";
-import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
-import { planCellMerges } from "../src/render/syntax/table-cells.ts";
-import { warningsOf } from "../src/render/syntax/tables.ts";
+import { renderBackToTop } from "../src/section/back-to-top.part.ts";
+import { renderSection } from "../src/section/section.part.ts";
+import {
+  renderSideToc,
+  type SideTocHeading,
+} from "../src/section/side-toc.part.ts";
+import { renderToc, type TocHeading } from "../src/section/toc.part.ts";
+import { renderCollapsible } from "../src/shared/collapsible.part.ts";
+import type { ColorName } from "../src/shared/colors.logic.ts";
+import { renderEmbed } from "../src/shared/embed.part.ts";
+import { escapeHtml } from "../src/shared/escape.logic.ts";
+import type { MdmarkIconNode } from "../src/shared/icon-node.logic.ts";
+import { renderNotice } from "../src/shared/notice.part.ts";
+import { renderSyntaxWarning } from "../src/shared/syntax-warning.part.ts";
+import { renderSteps } from "../src/steps/steps.part.ts";
+import { renderRowDetail } from "../src/table/row-detail.part.ts";
+import { renderTable, type TableOptions } from "../src/table/table.part.ts";
+import { warningsOf } from "../src/table/table.syntax.ts";
+import { planCellMerges } from "../src/table/table-cells.logic.ts";
+import { renderTabs } from "../src/tabs/tabs.part.ts";
+import { renderTree, type TreeNode } from "../src/tree/tree.part.ts";
+import {
+  type DocListItem,
+  renderDocList,
+} from "../src/viewer/doc-list.part.ts";
+import { renderView } from "../src/views/view.part.ts";
 import {
   ARCH as MAP_ARCH,
   ARCH_DATA as MAP_ARCH_DATA,
@@ -200,9 +216,9 @@ const CSS_PATH = "/render/index.css";
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
 // ストーリーが読み込む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、ファイルツリーの注釈の列を統一する処理）
 const SCRIPT_SOURCES: Record<string, string> = {
-  "/render/diagram.js": "src/interact/diagrams.ts",
-  "/render/sticky.js": "src/interact/sticky.ts",
-  "/render/trees.js": "src/interact/trees.ts",
+  "/render/diagram.js": "src/diagram/diagram.interact.ts",
+  "/render/sticky.js": "src/table/table-sticky.interact.ts",
+  "/render/trees.js": "src/tree/tree.interact.ts",
 };
 
 /** mermaid の図の見本の SVG のフォルダ（`npm run fixtures:mermaid` が記載する） */

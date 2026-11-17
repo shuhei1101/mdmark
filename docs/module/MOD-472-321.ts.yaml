@@ -1,12 +1,12 @@
 id: MOD-472-321
 visibility: internal
-title: ライブラリ本体 / 部品 / row-detail.ts
+title: ライブラリ本体 / 表 / row-detail.part.ts
 test_files:
-  - tests/unit/src/parts/row-detail.test.ts
+  - tests/unit/src/table/row-detail.part.test.ts
 functions:
   - name: renderRowDetail
     title: 行の詳細を描く
-    container: src/parts/row-detail.ts
+    container: src/table/row-detail.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『行の詳細』の詳細の行と、`toggle` のときは行の先頭のセルの開閉のボタンの HTML を返却する

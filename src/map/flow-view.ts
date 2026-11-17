@@ -1,14 +1,9 @@
 import type { ResolvedConfig } from "../config.ts";
-import { attachDiagrams, DIAGRAM_REDRAW_EVENT } from "../interact/diagrams.ts";
-import { renderDiagramFrame } from "../parts/diagram.ts";
 import {
-  type MapFlowArgs,
-  type MapPacketMark,
-  type MapPart,
-  renderMapFlow,
-  renderMapPackets,
-  selectableName,
-} from "../parts/map.ts";
+  attachDiagrams,
+  DIAGRAM_REDRAW_EVENT,
+} from "../diagram/diagram.interact.ts";
+import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import type { ResolveIdLink } from "../render/sanitize.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
@@ -32,6 +27,14 @@ import {
   parseFlowchart,
 } from "./flowchart.ts";
 import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
+import {
+  type MapFlowArgs,
+  type MapPacketMark,
+  type MapPart,
+  renderMapFlow,
+  renderMapPackets,
+  selectableName,
+} from "./map.part.ts";
 import type { MapArgs, MapKind, MapLine } from "./spec.ts";
 import {
   emptyMapState,

@@ -1,19 +1,19 @@
 id: MOD-472-225
 visibility: internal
-title: ライブラリ本体 / 操作 / code-folds.ts
+title: ライブラリ本体 / コードブロック / code-fold.interact.ts
 test_files:
-  - tests/unit/src/interact/code-folds.browser.test.ts
+  - tests/unit/src/code-block/code-fold.interact.browser.test.ts
 constants:
   - name: codeFoldSetters
     title: コードの行の開閉の関数の記録
-    container: src/interact/code-folds.ts
+    container: src/code-block/code-fold.interact.ts
     summary: '`attachCodeFolds` が開閉のボタンごとに登録する、行を開くか畳む関数。削除する関数が取り除く'
     value: '`new WeakMap<Element, (open: boolean) => void>()`'
     status: planned
 functions:
   - name: attachCodeFolds
     title: コードの行に畳む・開くを付ける
-    container: src/interact/code-folds.ts
+    container: src/code-block/code-fold.interact.ts
     kind: 関数
     scope: internal
     summary: '`data-fold-lines` の行に `renderCodeFoldToggle` のボタンを配置し（`data-folded` の行は畳んだ状態）、押すと行の畳んだ状態を切り替えて `hiddenLinesOf` の行に `hidden` を付与・解除し、畳んだ行の末尾に `renderCodeFoldMore` を配置する。Shift を押しながらの押下（Enter・Space を含む）は範囲の中の畳める行も同じ状態にする。`⋯` を押すとその行を開く。`pointerover`・`pointerout` で `guideRangeOf` の範囲の行に `data-guide-active` を付与・解除する。畳める行を持つ `pre` の `pointermove` で、ポインターの横の位置が開閉のボタンの列（コードブロックの最初の開閉のボタンの `getBoundingClientRect()` の左端から右端まで）にあれば `pre` に `data-fold-hover` を付け、無ければ外し、`pointerleave` で外す（行の高さに関わらず、ボタンを持たない行の上でも列に乗れば付ける）。開閉を切り替える関数を `codeFoldSetters` に登録する'
@@ -78,7 +78,7 @@ functions:
     status: planned
   - name: setCodeFoldOpen
     title: コードの行の開閉を切り替える
-    container: src/interact/code-folds.ts
+    container: src/code-block/code-fold.interact.ts
     kind: 関数
     scope: internal
     summary: 開閉のボタンから `codeFoldSetters` の関数を参照して、その行を開くか畳む。登録の無いボタンは何もしない。印刷の前後に使用する

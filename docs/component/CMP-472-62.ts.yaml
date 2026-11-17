@@ -1,7 +1,7 @@
 id: CMP-472-62
 visibility: internal
 title: "記載の警告"
-implementation: "src/parts/syntax-warning.ts#renderSyntaxWarning"
+implementation: "src/shared/syntax-warning.part.ts#renderSyntaxWarning"
 story: "Parts/SyntaxWarning"
 test_file: tests/integration/lib/syntax-warning.story.test.ts
 states:

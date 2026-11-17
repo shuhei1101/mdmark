@@ -1,12 +1,12 @@
 id: MOD-472-259
 visibility: internal
-title: ライブラリ本体 / 索引と用語 / glossary.ts
+title: ライブラリ本体 / 索引と用語 / glossary.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/glossary.test.ts
+  - tests/unit/src/knowledge/glossary.syntax.test.ts
 data_models:
   - name: GlossaryRow
     title: 用語集の表の行
-    container: src/render/syntax/glossary.ts
+    container: src/knowledge/glossary.syntax.ts
     summary: 用語集の表の 1 行から読み込んだ用語と、その行の行番号
     properties:
       - name: entry
@@ -18,7 +18,7 @@ data_models:
 functions:
   - name: readGlossaryTable
     title: 用語集の表を読み込む
-    container: src/render/syntax/glossary.ts
+    container: src/knowledge/glossary.syntax.ts
     kind: 関数
     scope: internal
     summary: '`glossary` のマーカーの範囲の中の表のトークンから、用語・意味・別名の列を読み込んで用語を返却する'
@@ -52,7 +52,7 @@ functions:
         expected: '`entries` が空、`warning` が無い（記載の警告は `takeMarks` が出す）'
   - name: glossaryRule
     title: 用語集の表のコアルール
-    container: src/render/syntax/glossary.ts
+    container: src/knowledge/glossary.syntax.ts
     kind: 関数
     scope: internal
     summary: '`glossary` のマーカーの範囲を取り除き、中の表を普通の表として残し、読み込んだ用語を `env.ownGlossary` に追加する'
@@ -88,7 +88,7 @@ functions:
         expected: '`env.ownGlossary` の `ワークスペース` の `avoid` が `["作業場", "ワーク場"]`'
   - name: readGlossaryRows
     title: 用語集の表の行を読み込む
-    container: src/render/syntax/glossary.ts
+    container: src/knowledge/glossary.syntax.ts
     summary: '`glossary` のマーカーの範囲の中の表のトークンから、用語・意味・別名・やめた言い方の列を読み込んで行ごとに返却する'
     description: マーカーの設定の `term.column`・`meaning.column`・`aliases.column`・`avoid.column` で列の見出しの文字を指す（`aliases`・`avoid` は任意）。別名とやめた言い方のセルは「、」と「,」で区切り、前後の空白を落とし、空のものを除く。必須の `term`・`meaning` が無いときはその表の行を返却せず、表に無い列名のときはその表の行を返却せず、最初の誤りを記載の警告の本文にする。用語か意味が空の行は飛ばす
     kind: 関数

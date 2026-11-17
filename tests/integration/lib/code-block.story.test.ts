@@ -1,6 +1,6 @@
 import type { Locator } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { iconSvg } from "../../../src/parts/icons.ts";
+import { iconSvg } from "../../../src/shared/icons.part.ts";
 import { createBrowserHolder, pageOverflows } from "../story.ts";
 
 const holder = createBrowserHolder();

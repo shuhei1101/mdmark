@@ -1,0 +1,15 @@
+id: MOD-583-10
+visibility: internal
+title: ライブラリ本体 / ステップ
+lead: '`<!-- steps -->` の範囲の番号付きリストを手順にするコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。'
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/steps/
+    ├── steps.syntax.ts      # ステップ
+    ├── steps.part.ts        # ステップの renderSteps
+    └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ```
+tags:
+  - name: topic:ステップ
+    main: true

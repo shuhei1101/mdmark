@@ -1,12 +1,12 @@
 id: MOD-472-276
 visibility: internal
-title: ライブラリ本体 / 記法 / code-blocks.ts
+title: ライブラリ本体 / コードブロック / code-block.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/code-blocks.test.ts
+  - tests/unit/src/code-block/code-block.syntax.test.ts
 constants:
   - name: LINE_COMMENT_HEADS
     title: 行コメントの頭
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     summary: マーカーだけを持つ行コメントのときにマーカーと一緒に削除する、マーカーの直前の頭。言語に依らず同じものを適用する。`//`・`/*`・`<!--` は前の文字を問わずに削除し、`#`・`--`・`;` は行頭か空白の後ろにあるときだけ削除する（`i--`・`foo();` を頭と取り違えない）
     entries:
       - key: //
@@ -23,7 +23,7 @@ constants:
         value: CSS など（マーカーの後ろの `*/` も削除する）
   - name: SYNTAX_LANGUAGES
     title: 色分けの言語の対応表
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     summary: 情報文字列の最初の単語（小文字）から、highlight.js の言語のモジュール名を参照する表。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に該当する
     value: '{ typescript: "typescript", ts: "typescript", tsx: "typescript", javascript: "javascript", js: "javascript", jsx: "javascript", mjs: "javascript", cjs: "javascript", json: "json", yaml: "yaml", yml: "yaml", python: "python", py: "python", bash: "bash", sh: "bash", shell: "bash", zsh: "bash", html: "xml", xml: "xml", css: "css", markdown: "markdown", md: "markdown", sql: "sql", dockerfile: "dockerfile", docker: "dockerfile", diff: "diff", patch: "diff" }'
     refs:
@@ -31,7 +31,7 @@ constants:
     status: planned
   - name: TREE_LINE_PATTERN
     title: 罫線のフォルダ構成の行
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     summary: 罫線でフォルダ構成を記載した行に当たる正規表現。行頭の空白（タブ・空白・`tree` コマンドが縦線の後ろに出す NBSP の U+00A0）と縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行。`tree` 2.1.1 の出力を `od -c` で測り、縦線の後ろが NBSP 2 つと空白 1 つであることを確かめた
     value: '/^[\t \u00A0│|]*(?:├── |└── |\|-- |`-- )/u'
     refs:
@@ -39,7 +39,7 @@ constants:
     status: planned
   - name: TREE_WARNING_MIN_LINES
     title: 罫線の記載の警告を出す行の数
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     summary: '`TREE_LINE_PATTERN` に当たる行がこの数以上あるコードブロックに、罫線のフォルダ構成の記載の警告を出す。1 行だけの罫線は説明の中の例として許す'
     value: '2'
     refs:
@@ -48,7 +48,7 @@ constants:
 functions:
   - name: readCodeSpec
     title: コードブロックのマーカーを読み込む
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
     summary: '`code` のマーカーの設定（`validateMarkOptions` を経た値）を、タイトル（`title`。空白を含められる）・行番号の有無と最初の行の番号（`lines`・`lines.start`）・強調する行（`highlight`）・最初から畳む行（`fold`）・折り返すか（`wrap`）・罫線のフォルダ構成の記載の警告を出すか（`tree_warning`。`false` だけを止める指定にし、ほかは `true`）に読み込む。`highlight`・`fold` の要素は行の番号か行の範囲（`from`〜`to`。`to` を省くと `from` の 1 行）で、`lines.start` から数えた行の番号として読み、コードブロックの行に無い番号と `from` より小さい `to` は当てずに警告にする'
@@ -99,7 +99,7 @@ functions:
         expected: '`treeWarning` が順に `false`・`true`・`true`。どれも `warnings` が空'
   - name: countTreeLines
     title: 罫線のフォルダ構成の行を数える
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
     summary: コードブロックの中身を行に分け、`TREE_LINE_PATTERN` に当たる行の数を返却する
@@ -129,7 +129,7 @@ functions:
     status: planned
   - name: readLineMarks
     title: コードの行のマーカーを読み込む
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
     summary: コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）にしてマーカーを削除する。行コメントがマーカーだけならマーカーの直前の行コメントの頭（`LINE_COMMENT_HEADS`）も削除し、削除した後の行末の空白も削除する。`[\!code …]` は `\` を削除した文字にする。知らないマーカー（`[!code blink]` など）はその行に当てず記載した文字のままにし、警告にする
@@ -168,7 +168,7 @@ functions:
         expected: '`{ text: "foo(); // [!code blink]" }` と、`[!code blink]` の警告'
   - name: buildCodeBlocks
     title: コードブロックを飾る
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
     summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次の処理をする。`code` がオンのときは `readLineMarks` で行を読み込み、直前のトークンが `code` のマーカーなら `readCodeSpec` で指定を読み込み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・タイトル・行番号と最初の行の番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語。`copyState` は指定しない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行のマーカーを削除せず中身の行をそのまま使用し、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の単語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の単語を削除する）。`mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず部品に置き換え（`code` がオフなら `bar: false`）、`mermaid: true` を指定し、色分けの言語を指定しない。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold` の畳んだ状態を付けてから部品へ指定する。`readCodeSpec` と `readLineMarks` と `readFolds` の読み込めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` のマーカーの場所にも警告を差し込む（`code` がオンのときだけ）。`code` がオンで、mermaid のコードブロックでなく、`readCodeSpec` の `treeWarning` が `true` のコードブロックのうち、`countTreeLines` が `TREE_WARNING_MIN_LINES` 以上のものの前に、罫線のフォルダ構成の記載の警告（画面設計『文書』の記載の警告の文言。言語が空なら `言語の無いコードブロックに`）を差し込む。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の単語との一致で `fence` でなくしているため該当せず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
@@ -305,7 +305,7 @@ functions:
     reason: 色分けの対象を、mdmark が出した要素だけが持ち続ける属性 `data-mdmark-syntax` で示すため、マーカーも行のマーカーも持たない色分けの対象も部品に置き換える（`fence` のままだと `code` の属性は sanitize が生の HTML と同じく落とす）。部品は `pre` に同じスクリーンリーダー向けの名前と `tabindex` を付け、`markSourceLines` が元の行番号を付けるため、出力は `fence` のときと属性 1 つだけ違う
   - name: syntaxLanguageOf
     title: 色分けの言語を参照する
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: public
     summary: 情報文字列の言語の単語を小文字にして `SYNTAX_LANGUAGES` を引き、色分けの言語のモジュール名を返却する。表に無ければ `undefined`
@@ -340,7 +340,7 @@ functions:
     status: planned
   - name: splitInfoString
     title: 情報文字列を言語とファイル名に分ける
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     summary: 情報文字列の最初の単語を最初の `:` で分け、前を言語、後ろをファイル名にする。`:` が無ければ単語の全てが言語でファイル名は空。`:` の前が空なら言語もファイル名も空にする
     kind: 関数
     scope: public
@@ -368,7 +368,7 @@ functions:
     status: planned
   - name: readFolds
     title: 行のインデントと畳む行を決める
-    container: src/render/syntax/code-blocks.ts
+    container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
     summary: 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行（コードブロックに無い行は `readCodeSpec` が除く）は当てずに警告にする

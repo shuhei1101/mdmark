@@ -1,7 +1,7 @@
 id: CMP-472-41
 visibility: internal
 title: "埋め込んだHTML"
-implementation: "src/parts/embedded-html.ts#renderEmbeddedHtml"
+implementation: "src/embedded-html/embedded-html.part.ts#renderEmbeddedHtml"
 story: "Parts/EmbeddedHtml"
 states:
   - name: Default

@@ -2,7 +2,7 @@ id: CMP-472-10
 visibility: internal
 title: カードの格子
 lead: cards の範囲のリストの項目を、アイコン・タイトル・説明を持つカードにして、入るだけ横に並べる。描く先の要素が狭いときは記載した順に 1 列に追加する。
-implementation: src/parts/card-grid.ts#renderCardGrid
+implementation: src/card/card-grid.part.ts#renderCardGrid
 story: Parts/CardGrid
 test_file: tests/integration/lib/card-grid.story.test.ts
 args:

@@ -1,6 +1,8 @@
 import { COLOR_SCHEMES, COLOR_THEMES } from "../config.ts";
-import { COLOR_NAMES } from "../parts/colors.ts";
-import { FILTER_KINDS, TOTAL_CALCS } from "../table-logic.ts";
+import { titleTailOf } from "../shared/collapse.logic.ts";
+import { COLOR_NAMES } from "../shared/colors.logic.ts";
+import { FILTER_KINDS, TOTAL_CALCS } from "../table/table.logic.ts";
+import { TABLE_FEATURES, TABLE_KINDS } from "../table/table.syntax.ts";
 import type { MarkOptions } from "./mark-options.ts";
 import {
   FEATURES_MARK,
@@ -9,8 +11,6 @@ import {
   parseMarkArgs,
   SYNTAX_MARKS,
 } from "./marks.ts";
-import { titleTailOf } from "./syntax/collapse.ts";
-import { TABLE_FEATURES, TABLE_KINDS } from "./syntax/tables.ts";
 
 /** 書き出さない今の書き方の記載 1 つ */
 export type DroppedLegacyArg = {

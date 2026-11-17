@@ -1,12 +1,12 @@
 id: MOD-472-300
 visibility: internal
-title: ライブラリ本体 / 記法 / wide.ts
+title: ライブラリ本体 / 範囲の記法 / wide.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/wide.test.ts
+  - tests/unit/src/layout/wide.syntax.test.ts
 functions:
   - name: buildWideRanges
     title: wide の範囲にする
-    container: src/render/syntax/wide.ts
+    container: src/layout/wide.syntax.ts
     kind: 関数
     scope: internal
     summary: 'コアルール。`wide` がオンなら、`<!-- wide -->`（`open` の `false` で `narrow`）〜 `<!-- /wide -->` を部品『wide の範囲』（`toggle: false`）で囲む。閉じのマーカーが無いときは記載の警告を差し込む。範囲の中の wide のマーカーは取り除く'

@@ -1,12 +1,12 @@
 id: MOD-472-287
 visibility: internal
-title: ライブラリ本体 / 記法 / figures.ts
+title: ライブラリ本体 / 図表の番号 / figure.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/figures.test.ts
+  - tests/unit/src/figure/figure.syntax.test.ts
 functions:
   - name: numberFigures
     title: 図表に番号を付ける
-    container: src/render/syntax/figures.ts
+    container: src/figure/figure.syntax.ts
     kind: 関数
     scope: internal
     summary: 'コアルール。`figures` がオンなら、`fig` のマーカーの直後の画像の段落と表を部品『図表の番号』で囲み、種類ごとに番号を付ける。`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID（2 つ目に ID を付けない）は警告を差し込む。囲む表の終わりは、表の囲みの `table-open`・`table-close`（`table` がオフなら `table_open`・`table_close`）の入れ子の数を数え、自分の開きに対応する閉じにする。`images` がオンなら、`fig` のマーカーの直後の画像の段落を部品『図表の番号』の代わりに部品『画像の図』（`opener: false`、`id` は `fig-{ID}`、`label` は `図 {番号}`）にし、`meta.mdmarkImage` の属性を適用する。`fig` のマーカーの直後がギャラリーの開きのマーカーなら、`図` の番号を付けて開きのマーカーの `meta.figure` に `{ id, number }` を配置し、囲むのは `buildGallery` に任せる'

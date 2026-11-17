@@ -1,12 +1,12 @@
 id: MOD-472-268
 visibility: internal
-title: ライブラリ本体 / 記法 / tables.ts
+title: ライブラリ本体 / 表 / table.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/tables.test.ts
+  - tests/unit/src/table/table.syntax.test.ts
 data_models:
   - name: TableSpec
     title: 表の指定
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     summary: 表のマーカーの設定を読み込んだ結果
     properties:
       - name: kind
@@ -71,7 +71,7 @@ data_models:
         description: '`tree.example.heading` の見出しの文字。`tree` の無い表では入れない（見出しがあるかは `linkTreeExamples` が確認する）'
   - name: TableColors
     title: 表の色の指定
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     summary: 表のマーカーの `columns.{列名}.highlight`・`rows.colors` を読み込んだ結果
     properties:
       - name: highlight
@@ -89,7 +89,7 @@ data_models:
 constants:
   - name: TABLE_KINDS
     title: 表の種類と機能
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     summary: 種類ごとの既定の機能
     entries:
       - key: default
@@ -100,13 +100,13 @@ constants:
         value: '[]'
   - name: TABLE_FEATURES
     title: 表の機能の名前
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     summary: '`+機能`・`-機能` に記載できる機能の名前。後ろの 6 つはどの種類の既定にも入らない'
     value: '["sort", "pin", "filter", "resize", "count", "columns", "reorder", "total", "copy", "rowlink"]'
 functions:
   - name: readTableSpec
     title: 表のマーカーを読み込む
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     kind: 関数
     scope: internal
     summary: '表のマーカーの設定（`validateMarkOptions` を経た値）と表の見出しから `TableSpec` を作る。`columns` のキーと `tree` の `column` を見出しの文字（多段の見出しは最下段。同じ文字は最初の列）に照らし、表に無い列名は当てずに警告にする（項目に表の列名の並び）。`tree` を持つ表は `features` から `sort` を除き、`tree` の無い表の `tree.*` は無い。`header.rows` が表の行の数以上・`header.columns` が表の列の数以上なら既定にして警告にする。先頭の列の `hidden` は当てずに警告にする。`features.{機能}.enabled` が `false` の機能の列の設定は当てない（注記は `takeMarks` が記録する）。`columns.{列名}.sort` の `true` は `features` に `sort` を加え、`sort` の機能を持つ表の `columns.{列名}.sort` を `sorts` に入れる。`collapse` は `readCollapse` で読み込む。マーカーが無い表は `default`'
@@ -191,7 +191,7 @@ functions:
       - 'MOD-472-270#functions[readCollapse]'
   - name: decorateTables
     title: 表を表の部品にする
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表のマーカーの範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・`data-no-sort`（`findNoSortColumns` で決めた並べ替えを付けない列。ビューのマーカーの指定を適用した表も同じく付ける）・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。`total` の機能の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読み込めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、適用する表のマーカーの範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表のマーカーの指定は適用しない）。表の範囲の中の表のマーカーのトークンは、外の表と一緒に移さず使用し切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は半角の空白で区切って囲みの `data-pin`、`unpinned` は同じく `data-unpin`（`mount` が既定で留める列から除く）、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` をコピーし、表の範囲のトークンを `decorateTreeTable` に指定する。`widths` の `mode` が `nowrap` の列の `th`・`td` のトークンに class `mdmark-wide` を付け、`min`・`max` を持つ列を `renderTable` の `widthRanges` に渡して囲みの `data-width` に写す。`columnLinesOf` の列ごとの行から `findLongColumns` で長文の列を決め、`mode` が `nowrap` の列も除かずに `renderTable` の `long`（囲みの `data-long`）に渡し（折り返さないのは `mdmark-wide` で決まる）、`filters` の `kind` を持たない列は `defaultFilterKind`（長文の列か）で決めてから `renderTable` の `filters` に渡す。`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に指定して結合を適用する。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に設定し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
@@ -324,7 +324,7 @@ functions:
       - MOD-472-315#functions[renderTable]
   - name: rowIdOf
     title: 行の ID を作る
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     kind: 関数
     scope: internal
     summary: 先頭のセルの文字を `slugBase` で ID の元にし（作れないときは `row`）、`taken` にあれば `-1`・`-2` と番号を上げて空いている ID を返却する。返却した ID を `taken` に追加する
@@ -356,7 +356,7 @@ functions:
         expected: '`row`・`row-1`'
   - name: readTableColors
     title: 表の色の指定を読み込む
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     kind: 関数
     scope: internal
     summary: 表のマーカーの `columns.{列名}.highlight` と `rows.colors` を、表の見出しと本文の行のセルの文字で照らして `TableColors` を作る
@@ -399,7 +399,7 @@ functions:
     status: planned
   - name: bodyCellsOf
     title: 表の本文のセルの文字を集める
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     kind: 関数
     scope: internal
     summary: 表の本文の各行のセルの文字を集める
@@ -418,7 +418,7 @@ functions:
       description: 本文の行ごとのセルの文字
   - name: columnLinesOf
     title: 列ごとのセルの行を集める
-    container: src/render/syntax/tables.ts
+    container: src/table/table.syntax.ts
     kind: 関数
     scope: internal
     summary: '`table_open` の位置から、その表の最下段の見出しと本文のセルを列ごとに集め、セルを改行（`<br>` の `html_inline` のトークンと `softbreak`）で分けた行の文字と、短い値だけのセルかを返却する'

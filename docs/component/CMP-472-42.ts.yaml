@@ -1,7 +1,7 @@
 id: CMP-472-42
 visibility: internal
 title: "埋め込んだHTMLの差分"
-implementation: "src/parts/diff-html.ts#renderDiffHtml"
+implementation: "src/diff/diff-html.part.ts#renderDiffHtml"
 story: "Parts/DiffHtml"
 states:
   - name: Source

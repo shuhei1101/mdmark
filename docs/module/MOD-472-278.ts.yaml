@@ -1,18 +1,18 @@
 id: MOD-472-278
 visibility: internal
-title: ライブラリ本体 / 記法 / inline-icons.ts
+title: ライブラリ本体 / 行内の記法 / inline-icon.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/inline-icons.test.ts
+  - tests/unit/src/inline/inline-icon.syntax.test.ts
 constants:
   - name: ICON_NAME_PATTERN
     title: アイコンの名前の記載方法
-    container: src/render/syntax/inline-icons.ts
+    container: src/inline/inline-icon.syntax.ts
     value: /^[a-z0-9][a-z0-9-]*$/
     summary: Lucide のアイコンの名前の記載方法
 functions:
   - name: buildInlineIcons
     title: 行内のアイコンにする
-    container: src/render/syntax/inline-icons.ts
+    container: src/inline/inline-icon.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`icon` がオンなら、頭が `icon:` の `code_inline` のうち名前が `ICON_NAME_PATTERN` に合うものを部品『アイコン』にし、まとめた名前と `opts.icons` の名前は IconNode を指定する。合わない名前はコードのまま残して段落の前に記載の警告を差し込む。`icon\:` は `\` を削除したコード、後ろが空か空白だけのものはコードのまま

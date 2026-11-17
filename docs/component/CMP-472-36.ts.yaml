@@ -1,7 +1,7 @@
 id: CMP-472-36
 visibility: internal
 title: 動画と音声
-implementation: src/parts/media.ts#renderMedia
+implementation: src/media/media.part.ts#renderMedia
 story: Parts/Media
 test_file: tests/integration/lib/media.story.test.ts
 states:

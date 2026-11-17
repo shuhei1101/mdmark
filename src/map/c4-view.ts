@@ -1,5 +1,4 @@
 import type { ResolvedConfig } from "../config.ts";
-import { renderMapC4Diagram, spreadMapEnds } from "../parts/map.ts";
 import { c4ToFlowchart, MAP_C4_KINDS, parseC4Context } from "./c4.ts";
 import {
   attachMapFlow,
@@ -7,6 +6,7 @@ import {
   neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
+import { renderMapC4Diagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
 /** `C4Context` を構成図の入力にし、構成図と同じ配置と操作に、要素の説明・境界の破線の枠と種類・外部の要素の描き分けを追加する */

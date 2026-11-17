@@ -1,0 +1,16 @@
+id: MOD-583-12
+visibility: internal
+title: ライブラリ本体 / 図表の番号
+lead: '`<!-- fig -->` の直後の図と表に種類ごとの通し番号を付け、番号への参照を解くコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。'
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/figure/
+    ├── figure.syntax.ts     # 図表の番号と参照
+    ├── figure.part.ts       # 図表の番号の renderFigure
+    └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ```
+tags:
+  - name: topic:図表の番号
+    main: true
+  - name: topic:番号

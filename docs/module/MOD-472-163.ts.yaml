@@ -1,23 +1,23 @@
 id: MOD-472-163
 visibility: internal
-title: ライブラリ本体 / ビューとコメント / comment.ts
+title: ライブラリ本体 / ビューとコメント / comment.part.ts
 test_files:
-  - tests/unit/src/parts/comment.test.ts
+  - tests/unit/src/comments/comment.part.test.ts
 constants:
   - name: CLOSED_LABELS
     title: 閉じた中の種類の文言
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 余白のマーカーのスクリーンリーダー向けの名前に添える、閉じた中の種類ごとの文言
     value: '{ section: "閉じたセクションの中", tab: "選ばれていないタブの中", row: "閉じた行の詳細の中" }'
   - name: COMMENT_MESSAGES
     title: 入力欄の通知
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 部品設計『コメントの入力欄』の `empty`・`failed` の通知と、部品設計『コメントの吹き出し』の修正・削除の通知と削除の確認の文
     value: '{ empty: "コメントを記載してから保存してください。", failed: "コメントを保存できませんでした。記載したコメントは残っています。もう一度「コメントを保存」を押してください。", updateFailed: "コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。", removeFailed: "コメントを削除できませんでした。もう一度「削除」を押してください。", removeConfirm: "このコメントを削除しますか? 削除すると元に戻せません。" }'
 functions:
   - name: renderCommentButton
     title: コメントのボタンの HTML
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 部品設計『コメントのボタン』の HTML を返却する
     kind: 関数
     scope: public
@@ -36,7 +36,7 @@ functions:
       - CMP-472-14#
   - name: renderCommentForm
     title: コメントの入力欄の HTML
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 部品設計『コメントの入力欄』の HTML を返却する
     kind: 関数
     scope: public
@@ -72,7 +72,7 @@ functions:
       - CMP-472-16#
   - name: renderCommentMark
     title: コメントのマーカーの HTML
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 部品設計『コメントのマーカー』の HTML を返却する（ストーリーと単体テスト用。文書のマーカーは `attachComments` が同じ属性で文字のセクションを包む）
     kind: 関数
     scope: public
@@ -102,7 +102,7 @@ functions:
       - CMP-472-15#
   - name: renderCommentBubble
     title: コメントの吹き出しの HTML
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 部品設計『コメントの吹き出し』の HTML を返却する
     kind: 関数
     scope: public
@@ -132,7 +132,7 @@ functions:
       - CMP-472-17#
   - name: renderCommentItem
     title: 吹き出しのコメント 1 件の HTML
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 吹き出しのコメント 1 件の `li` の HTML を、本文の表示・入力欄・削除の確認のどれかで返却する。`renderCommentBubble` と `attachCommentActions` が使用する
     kind: 関数
     scope: public
@@ -140,7 +140,7 @@ functions:
       - name: props
         type: '{ body: string; id?: string; canEdit?: boolean; canRemove?: boolean; edit?: { draft: string; state: CommentFormState; fieldId: string }; confirm?: { state: CommentRemoveState } }'
         required: true
-        description: 本文・コメントの `id`・配置するボタン、入力欄の本文の欄の文字と状態と通知を指す `id`、削除の確認の状態（`CommentRemoveState` は `idle`・`removing`・`failed` の型で、`src/parts/comment.ts` が export する）
+        description: 本文・コメントの `id`・配置するボタン、入力欄の本文の欄の文字と状態と通知を指す `id`、削除の確認の状態（`CommentRemoveState` は `idle`・`removing`・`failed` の型で、`src/comments/comment.part.ts` が export する）
     returns:
       type: string
       description: '`li` の HTML'
@@ -173,7 +173,7 @@ functions:
     status: planned
   - name: renderCommentOrphans
     title: 箇所が見つからないコメントの一覧の HTML
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 部品設計『箇所が見つからないコメントの一覧』の HTML を返却する
     kind: 関数
     scope: public
@@ -199,7 +199,7 @@ functions:
       - CMP-472-56#
   - name: renderCommentMarker
     title: 余白のマーカーの HTML
-    container: src/parts/comment.ts
+    container: src/comments/comment.part.ts
     summary: 部品設計『余白のマーカー』の HTML を返却する
     kind: 関数
     scope: public

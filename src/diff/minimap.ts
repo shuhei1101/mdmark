@@ -1,8 +1,8 @@
-import { findScrollContainer } from "../interact/scroller.ts";
+import { findScrollContainer } from "../shared/scroller.interact.ts";
 import {
   type DiffMinimapMark,
   renderDiffMinimap,
-} from "../parts/diff-minimap.ts";
+} from "./diff-minimap.part.ts";
 
 /** 帯に写す CSS 変数: 差分の行の計算値から読み込み、`document.body` の直下の帯の `style` に写す。利用側が `.mdmark` に記載した上書きを帯にも適用する */
 const MINIMAP_VARIABLES = [

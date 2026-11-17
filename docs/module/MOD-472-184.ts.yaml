@@ -1,12 +1,12 @@
 id: MOD-472-184
 visibility: internal
-title: ライブラリ本体 / 図 / diagram-tips.ts
+title: ライブラリ本体 / 図 / diagram-tips.interact.ts
 test_files:
-  - tests/unit/src/interact/diagram-tips.browser.test.ts
+  - tests/unit/src/diagram/diagram-tips.interact.browser.test.ts
 functions:
   - name: attachDiagramTips
     title: 図のツールチップを付ける
-    container: src/interact/diagram-tips.ts
+    container: src/diagram/diagram-tips.interact.ts
     kind: 関数
     scope: internal
     summary: ツールチップの持ち主（線のラベル・ノードの右上のマーカー・グループのタイトルのマーカー・`data-tip-owner` を持つグラフの項目。ノードそのものは持ち主にしない）に `pointerenter`・`focus` で開き、持ち主とツールチップの両方から削除されたら閉じ、開いている間だけ `document` の `keydown`（Esc）・`pointerdown` と `window` の `scroll`・`resize` を受け取って持ち主に付いて動かす。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、タッチで開いている間は `pointerleave`・`blur` では閉じず、`document` の `pointerdown` の対象が開いている持ち主とツールチップの外なら閉じる（iOS の Safari はタップした持ち主に `:hover` を残すため、`pointerleave`・`blur` だけでは閉じない）。同時に開くのは 1 つ。配置する側は `chooseTipSide`（持ち主の上端・下端、ノードのマーカーはノードの上端・下端。`gap` は `TIP_GAP_PX`）で決め、横は持ち主の左端に合わせて画面の端から `VIEWPORT_MARGIN_PX` の内に収める。`beforeprint` で閉じる。埋め込んだ HTML のヒント（`mdmark-hint-mark` と `mdmark-hint-inline`）にも同じ操作を付けるため、引数に `div.mdmark-html` も受ける。`div.mdmark-html` を受けたときは、`render` が振った `mdmark-hint-{n}` とそれを指す `aria-describedby` を、モジュールの通し番号でページの中で一意な値にもう一度振る（用語と図の `renumberIds` と同じ作り）

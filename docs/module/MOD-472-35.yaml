@@ -31,25 +31,25 @@ diagrams:
 
       <!-- /map -->
 notes:
-  単体テストの実行場所: '`checkRevisions`・`normalizeDiffMode`・`computeDiff` と `render*` は DOM を使用せず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/parts/diff-*.test.ts` で Vitest の `unit` プロジェクトで実行する。`attachDiff`・`attachMinimap`・`src/diff/blocks.ts` の関数は `tests/unit/src/diff/{panel,minimap,blocks}.browser.test.ts` で `unit-browser` プロジェクトで実行する'
+  単体テストの実行場所: '`checkRevisions`・`normalizeDiffMode`・`computeDiff` と `render*` は DOM を使用せず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/diff/{diff-*,revision-picker}.part.test.ts` で Vitest の `unit` プロジェクトで実行する。`attachDiff`・`attachMinimap`・`src/diff/blocks.ts` の関数は `tests/unit/src/diff/{panel,minimap,blocks}.browser.test.ts` で `unit-browser` プロジェクトで実行する'
   配布物の大きさ: jsdiff は `diffLines`・`diffWords`・`diffChars` だけを名前で import し、使用しない関数をまとめない。追加した後の `dist/index.js` が非機能要件の上限に収まることを、ビルドのサイズの検査で確認する
   ディレクトリ: |-
     ```tree
     src/
-    ├── diff/
-    │   ├── source.ts   # 公開の型 DiffSource・DiffRevision・DiffMode と対応する差分の出し方 diffModes、取り出し元が返却した値の検査
-    │   ├── compute.ts  # 行と単語の比較（jsdiff を差分の計算の関数型の後ろに配置する）
-    │   ├── panel.ts    # 差分を開く UI・待ち・再選択・通知ブロックを付ける attachDiff
-    │   ├── blocks.ts   # 比べる 2 つの本文の取り出し loadDiffPair と、描いた文書のブロックの色分け colorDiffBlocks
-    │   └── minimap.ts  # スクロール先ごとに 1 本のミニマップを配置する attachMinimap
-    └── parts/
-        ├── diff-toggle.ts      # 差分を開くボタンの HTML
-        ├── revision-picker.ts  # リビジョンの選択の HTML
-        ├── diff-lines.ts       # 差分の行の HTML
-        ├── diff-html.ts        # 埋め込んだ HTML の差分の HTML
-        ├── diff-blocks.ts      # 差分のブロックの HTML
-        ├── diff-minimap.ts     # ミニマップの HTML
-        └── diff-message.ts     # 差分の状態の文の HTML
+    └── diff/
+        ├── source.ts   # 公開の型 DiffSource・DiffRevision・DiffMode と対応する差分の出し方 diffModes、取り出し元が返却した値の検査
+        ├── compute.ts  # 行と単語の比較（jsdiff を差分の計算の関数型の後ろに配置する）
+        ├── panel.ts    # 差分を開く UI・待ち・再選択・通知ブロックを付ける attachDiff
+        ├── blocks.ts   # 比べる 2 つの本文の取り出し loadDiffPair と、描いた文書のブロックの色分け colorDiffBlocks
+        ├── minimap.ts  # スクロール先ごとに 1 本のミニマップを配置する attachMinimap
+        ├── diff-toggle.part.ts # 差分を開くボタンの HTML
+        ├── revision-picker.part.ts # リビジョンの選択の HTML
+        ├── diff-lines.part.ts # 差分の行の HTML
+        ├── diff-html.part.ts # 埋め込んだ HTML の差分の HTML
+        ├── diff-blocks.part.ts # 差分のブロックの HTML
+        ├── diff-minimap.part.ts # ミニマップの HTML
+        ├── diff-message.part.ts # 差分の状態の文の HTML
+        └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
     ```
 tags:
   - name: topic:差分

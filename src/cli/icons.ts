@@ -1,7 +1,7 @@
 import { icons as lucideIcons } from "lucide";
-import { bundledIconNode } from "../parts/icons.ts";
-import type { MdmarkIconNode } from "../parts/inline-icon.ts";
-import { ICON_NAME_PATTERN } from "../render/syntax/inline-icons.ts";
+import { ICON_NAME_PATTERN } from "../inline/inline-icon.syntax.ts";
+import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
+import { bundledIconNode } from "../shared/icons.part.ts";
 
 /** 本文の `icon:` の行内のコード（打ち消した `icon\:` は除く） */
 const ICON_CODE_PATTERN = /`icon:\s*([^`\s]+)\s*`/g;

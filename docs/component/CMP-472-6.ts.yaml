@@ -1,7 +1,7 @@
 id: CMP-472-6
 visibility: internal
 title: "mermaid の図"
-implementation: "src/parts/mermaid.ts#renderMermaidDiagram"
+implementation: "src/diagram/mermaid.part.ts#renderMermaidDiagram"
 story: "Parts/MermaidDiagram"
 states:
   - name: Flowchart

@@ -1,12 +1,12 @@
 id: MOD-472-272
 visibility: internal
-title: ライブラリ本体 / 記法 / cards.ts
+title: ライブラリ本体 / カード / card.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/cards.test.ts
+  - tests/unit/src/card/card.syntax.test.ts
 data_models:
   - name: CardSpec
     title: カードの指定
-    container: src/render/syntax/cards.ts
+    container: src/card/card.syntax.ts
     summary: リンク 1 つだけの段落から作る、部品『カード』へ指定する値
     properties:
       - name: kind
@@ -27,7 +27,7 @@ data_models:
 constants:
   - name: ATTACHMENT_KINDS
     title: 添付の拡張子と種類
-    container: src/render/syntax/cards.ts
+    container: src/card/card.syntax.ts
     summary: リンク先のパスの拡張子（小文字）から添付の種類（`AttachmentKind`）を参照する。CLI の点検も使用する
     entries:
       - key: pdf
@@ -48,7 +48,7 @@ constants:
 functions:
   - name: cardOf
     title: リンクからカードの指定を作る
-    container: src/render/syntax/cards.ts
+    container: src/card/card.syntax.ts
     kind: 関数
     scope: internal
     summary: リンク先のパス（クエリとフラグメントを除く）の拡張子が `ATTACHMENT_KINDS` にあれば `file`、`http`・`https` の URL なら `link` の `CardSpec` を返却する。`#` で始まるリンク・`mailto:`・拡張子 `md` のリンクと、それ以外は `undefined`
@@ -84,7 +84,7 @@ functions:
     status: planned
   - name: buildCards
     title: リンクと添付のカードにする
-    container: src/render/syntax/cards.ts
+    container: src/card/card.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`cards` がオンなら、段落の `inline` の子が前後の空白の `text` を除いて `link_open`・文字・`link_close` だけのものを `cardOf` で見分け、カードになるものは段落を部品『カード』の `html_block` に置き換える。脚注の定義の囲み（`mdmark_footnote_def_open`〜`close`）の中の段落は、ツールチップでリンクのまま読み込めるようカードにしない

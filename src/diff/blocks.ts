@@ -1,10 +1,10 @@
-import { renderDiffBlock } from "../parts/diff-blocks.ts";
 import {
   computeDiff,
   type DiffEngine,
   type DiffResult,
   jsdiffEngine,
 } from "./compute.ts";
+import { renderDiffBlock } from "./diff-blocks.part.ts";
 import {
   checkRevisions,
   type DiffRevision,

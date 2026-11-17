@@ -1,7 +1,7 @@
 id: CMP-472-26
 visibility: internal
 title: "ファイルツリー"
-implementation: "src/parts/tree.ts#renderTree"
+implementation: "src/tree/tree.part.ts#renderTree"
 story: "Parts/FileTree"
 test_file: tests/integration/lib/tree.story.test.ts
 states:

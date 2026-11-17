@@ -1,0 +1,16 @@
+id: MOD-583-13
+visibility: internal
+title: ライブラリ本体 / フロントマター
+lead: 文書の先頭のフロントマターの判定と本文からの除外と、フロントマターの表示を差し込むコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/frontmatter/
+    ├── frontmatter.syntax.ts # 文書の先頭のフロントマターの表示を差し込むコアルール
+    ├── frontmatter.part.ts   # フロントマターの表示の折り畳みの renderFrontmatter
+    ├── {部品}.part.stories.ts  # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    └── frontmatter.logic.ts  # 文書の先頭のフロントマターの判定と、本文からの除外（DOM を使用しない）
+    ```
+tags:
+  - name: topic:フロントマター
+    main: true

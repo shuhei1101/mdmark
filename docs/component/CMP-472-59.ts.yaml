@@ -2,7 +2,7 @@ id: CMP-472-59
 visibility: internal
 title: 蛍光ペン
 lead: '`==文字==` を、文字に色の面を敷いた蛍光ペンのマーカーにする。色の名前を指定するとその色の面にする。'
-implementation: src/parts/highlight.ts#renderHighlight
+implementation: src/inline/highlight.part.ts#renderHighlight
 story: Parts/Highlight
 test_file: tests/integration/lib/highlight.story.test.ts
 args:

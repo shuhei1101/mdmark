@@ -1,5 +1,5 @@
 import type { MapKind, MapLine, ResolvedMapConfig } from "./map/spec.ts";
-import { DEFAULT_LONG_COLUMN_MIN_EM } from "./table-logic.ts";
+import { DEFAULT_LONG_COLUMN_MIN_EM } from "./table/table.logic.ts";
 
 /** 利用側が `opts.config` に指定する設定。他のキーを持っていても読み込まない */
 export type MdmarkConfig = {

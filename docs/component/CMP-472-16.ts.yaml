@@ -1,7 +1,7 @@
 id: CMP-472-16
 visibility: internal
 title: "コメントの入力欄"
-implementation: "src/parts/comment.ts#renderCommentForm"
+implementation: "src/comments/comment.part.ts#renderCommentForm"
 story: "Parts/CommentForm"
 states:
   - name: Idle

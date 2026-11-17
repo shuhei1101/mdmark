@@ -1,6 +1,6 @@
 import type { HLJSApi, LanguageFn } from "highlight.js";
+import { SYNTAX_ATTRIBUTE } from "./code-block/code-block.part.ts";
 import { highlightLines } from "./highlight-lines.ts";
-import { SYNTAX_ATTRIBUTE } from "./parts/code-block.ts";
 
 /** 読み込んだモジュール。本体の `default` は `HLJSApi`、言語の `default` は `LanguageFn` */
 type SyntaxModule = { default?: unknown };

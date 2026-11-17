@@ -3,8 +3,8 @@ import { LUCIDE_VERSION } from "../inline-icons.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
-import { escapeHtml } from "../parts/escape.ts";
-import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import { escapeHtml } from "../shared/escape.logic.ts";
+import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
 import { hideCss, hideNames, hidePayload } from "./traces.ts";
 
 /** `bundle` で埋めた画像を指す `src` の頭 */

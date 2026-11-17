@@ -1,12 +1,12 @@
 id: MOD-472-240
 visibility: internal
-title: ライブラリ本体 / 操作 / table-settings.ts
+title: ライブラリ本体 / 表 / table-settings.interact.ts
 test_files:
-  - tests/unit/src/interact/table-settings.browser.test.ts
+  - tests/unit/src/table/table-settings.interact.browser.test.ts
 functions:
   - name: attachTableSettings
     title: テーブル設定を付ける
-    container: src/interact/table-settings.ts
+    container: src/table/table-settings.interact.ts
     kind: 関数
     scope: internal
     summary: 表の帯のテーブル設定のボタンでパネルを開閉し、目のアイコンで列を隠し、つまみのドラッグ＆ドロップと ↑・↓ キーで列を動かす。列を動かしたら見出し・本文の行・集計の行のセルと一覧をもう一度並べ、隠したらバッジと `aria-label` を書き換えて `onColumnsChange` を呼ぶ

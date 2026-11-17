@@ -1,7 +1,7 @@
 id: CMP-472-46
 visibility: internal
 title: "差分を開くボタン"
-implementation: "src/parts/diff-toggle.ts#renderDiffToggle"
+implementation: "src/diff/diff-toggle.part.ts#renderDiffToggle"
 story: "Parts/DiffToggle"
 states:
   - name: Closed

@@ -1,12 +1,12 @@
 id: MOD-472-238
 visibility: internal
-title: ライブラリ本体 / 操作 / footnotes.ts
+title: ライブラリ本体 / 脚注と注記 / footnote.interact.ts
 test_files:
-  - tests/unit/src/interact/footnotes.browser.test.ts
+  - tests/unit/src/footnote/footnote.interact.browser.test.ts
 functions:
   - name: attachFootnotes
     title: 脚注の操作を付ける
-    container: src/interact/footnotes.ts
+    container: src/footnote/footnote.interact.ts
     kind: 関数
     scope: internal
     summary: mount が描いた脚注の番号と注記のマーカーにツールチップを開閉する操作を、番号・マーカーと末尾の一覧の項目に行き来する操作を付ける

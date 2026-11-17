@@ -1,12 +1,12 @@
 id: MOD-472-346
 visibility: internal
-title: ライブラリ本体 / 図 / diagram-touch.ts
+title: ライブラリ本体 / 図 / diagram-touch.interact.ts
 test_files:
-  - tests/unit/src/interact/diagram-touch.browser.test.ts
+  - tests/unit/src/diagram/diagram-touch.interact.browser.test.ts
 functions:
   - name: attachDiagramTouch
     title: 指で図を動かす操作中を付ける
-    container: src/interact/diagram-touch.ts
+    container: src/diagram/diagram-touch.interact.ts
     kind: 関数
     scope: internal
     summary: '`pointerType` が `touch` の `pointerup` で、押してから離すまで動かしていない（`DRAG_THRESHOLD` 以下）タップを見分ける。表示する枠の余白（ノード・線・グラフの項目・ボタン・リンク・ツールチップのマーカーの外）のタップで、表示するノード（`.mdmark-diagram-box`）に `data-touch-active` を付ける。付いている間の `document` の `pointerdown` が `touch` で表示するノードの外なら外す。`touch-action` の切り替えと枠線の色は CSS が `data-touch-active` で当てる。`mouse`・`pen` の操作では付けない'

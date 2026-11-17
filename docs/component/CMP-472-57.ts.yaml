@@ -2,7 +2,7 @@ id: CMP-472-57
 visibility: internal
 title: 脚注の一覧
 lead: 描いた文書の本文の後ろ・関連文書の一覧の前に、「脚注（{件数} 件）」の見出しで閉じた脚注の一覧を配置し、項目ごとに脚注の中身と本文の参照へ戻るリンクを並べる。注記の一覧は同じ部品で「注記（{件数} 件）」の見出しにし、脚注の一覧の後ろに配置する。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
-implementation: src/parts/footnote.ts#renderFootnotes
+implementation: src/footnote/footnote.part.ts#renderFootnotes
 story: Parts/Footnotes
 test_file: tests/integration/lib/footnote.story.test.ts
 args:

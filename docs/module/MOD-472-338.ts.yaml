@@ -1,13 +1,13 @@
 id: MOD-472-338
 visibility: internal
-title: ライブラリ本体 / 部品 / wide.ts
+title: ライブラリ本体 / 範囲の記法 / wide.part.ts
 test_files:
-  - tests/unit/src/parts/wide.test.ts
+  - tests/unit/src/layout/wide.part.test.ts
 functions:
   - name: renderWide
     title: wide の範囲を描く
-    container: src/parts/wide.ts
-    summary: 部品設計『wide の範囲』の HTML を返却する。`toggle` のときは直前に帯と切り替えのボタンを配置する。2 つのアイコンは `src/parts/icons.ts` の `ICONS` に Lucide と同じ IconNode の構造で追加する `WideExpand`（`|←→|`）・`WideShrink`（`→|←`）
+    container: src/layout/wide.part.ts
+    summary: 部品設計『wide の範囲』の HTML を返却する。`toggle` のときは直前に帯と切り替えのボタンを配置する。2 つのアイコンは `src/shared/icons.part.ts` の `ICONS` に Lucide と同じ IconNode の構造で追加する `WideExpand`（`|←→|`）・`WideShrink`（`→|←`）
     kind: 関数
     scope: internal
     args:

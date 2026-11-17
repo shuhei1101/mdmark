@@ -1,7 +1,7 @@
 id: CMP-472-49
 visibility: internal
 title: "文書の一覧"
-implementation: "src/parts/doc-list.ts#renderDocList"
+implementation: "src/viewer/doc-list.part.ts#renderDocList"
 story: "Parts/DocList"
 states:
   - name: Grouped

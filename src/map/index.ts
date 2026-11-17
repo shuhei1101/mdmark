@@ -1,7 +1,7 @@
+import { MERMAID_ATTRIBUTE } from "../code-block/code-block.part.ts";
 import type { ResolvedConfig } from "../config.ts";
-import { MERMAID_ATTRIBUTE } from "../parts/code-block.ts";
-import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
 import type { ResolveIdLink } from "../render/sanitize.ts";
+import { renderSyntaxWarning } from "../shared/syntax-warning.part.ts";
 import { attachMapArchitecture } from "./architecture-view.ts";
 import { attachMapAxisGrid } from "./axis-grid-view.ts";
 import { attachMapC4 } from "./c4-view.ts";

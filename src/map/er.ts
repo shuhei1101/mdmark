@@ -1,7 +1,7 @@
-import { MAP_ER, type MapErRelation, mapErNodeSize } from "../parts/map.ts";
 import type { MapGroup } from "./data.ts";
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
+import { MAP_ER, type MapErRelation, mapErNodeSize } from "./map.part.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** 関連の片端の多重度 */

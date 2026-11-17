@@ -1,7 +1,7 @@
 id: CMP-472-22
 visibility: internal
 title: "タブ"
-implementation: "src/parts/tabs.ts#renderTabs"
+implementation: "src/tabs/tabs.part.ts#renderTabs"
 story: "Parts/Tabs"
 test_file: tests/integration/lib/tabs.story.test.ts
 states:

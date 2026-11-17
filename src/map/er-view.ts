@@ -1,11 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
-import { DIAGRAM_REDRAW_EVENT } from "../interact/diagrams.ts";
-import {
-  type MapErFanout,
-  renderMapErDiagram,
-  renderMapErFanouts,
-  rewireMapEr,
-} from "../parts/map.ts";
+import { DIAGRAM_REDRAW_EVENT } from "../diagram/diagram.interact.ts";
 import { parseMapData } from "./data.ts";
 import {
   erColumnNotes,
@@ -16,6 +10,12 @@ import {
   parseErDiagram,
 } from "./er.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
+import {
+  type MapErFanout,
+  renderMapErDiagram,
+  renderMapErFanouts,
+  rewireMapEr,
+} from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
 /** `erDiagram` を構成図の入力にし、構成図と同じ配置と操作に、列の行・関連の端の付け替え・多重度・経路の選択・行が増える関連のマーカーを追加する */

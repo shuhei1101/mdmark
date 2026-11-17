@@ -1,14 +1,14 @@
 import type { Token } from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { DIAGRAM_DIRECTIVES } from "../diagram/definition.ts";
-import { sanitizeEmbedded } from "../render/sanitize.ts";
-import { isRetiredDiagram, jsonFences } from "../render/syntax/diagrams.ts";
+import { isRetiredDiagram, jsonFences } from "../diagram/diagram.syntax.ts";
 import {
   isHtmlFence,
   PART_PATTERN,
   unescapeHtml,
-} from "../render/syntax/html.ts";
-import { findClose, markOf } from "../render/syntax/tokens.ts";
+} from "../embedded-html/embedded-html.syntax.ts";
+import { sanitizeEmbedded } from "../render/sanitize.ts";
+import { findClose, markOf } from "../shared/tokens.syntax.ts";
 import type { MdmarkAlias, MdmarkAliasType } from "./aliases.ts";
 import {
   buildDictionary,

@@ -1,12 +1,12 @@
 id: MOD-472-299
 visibility: internal
-title: ライブラリ本体 / 記法 / includes.ts
+title: ライブラリ本体 / 描画 / includes.ts
 test_files:
-  - tests/unit/src/render/syntax/includes.test.ts
+  - tests/unit/src/render/includes.test.ts
 functions:
   - name: writtenOf
     title: 取り込みの設定を取り込み先の文字にする
-    container: src/render/syntax/includes.ts
+    container: src/render/includes.ts
     kind: 関数
     scope: internal
     summary: 取り込みのマーカーの設定（`path`・`heading`・`lines`）を、`resolveIncludePath` に指定する取り込み先の文字（`パス`・`パス#見出しの ID`・`パス#L開始-L終了`）にする
@@ -21,7 +21,7 @@ functions:
       description: 取り込み先の文字
   - name: resolveIncludePath
     title: 取り込みのパスを解く
-    container: src/render/syntax/includes.ts
+    container: src/render/includes.ts
     kind: 関数
     scope: internal
     summary: マーカーを記載した文書のパスのフォルダを基準に、記載したパスの `./`・`../` を解いて、描く文書のフォルダからのパスにする。`#` の後ろを見出しの ID か行の範囲として分ける（行の範囲は Markdown 以外のファイルだけ）。CLI は同じ関数でパスを解き、単独でまとめる VS Code 拡張機能は同じ解き方を `readIncludes` に持つ
@@ -46,7 +46,7 @@ functions:
         summary: 取り込んだ文書のフォルダを基準に解き、Markdown の `#L` は見出しにする
   - name: expandIncludes
     title: 取り込む
-    container: src/render/syntax/includes.ts
+    container: src/render/includes.ts
     kind: 関数
     scope: internal
     summary: コアルール（見出しの ID と図表の番号より前）。`include` がオンなら、include のマーカーを `resolveIncludePath` で解き、`opts.includes` の本文を、Markdown は `splitFrontmatter` で先頭のフロントマターを空白にしてから同じパーサでトークンにして `selectHeadingSection` の範囲を、それ以外は `selectLines` の行を拡張子を言語にした `fence` として、`div.mdmark-include` の中に差し込む。差し込んだトークンの元の行番号はマーカーの行にする。取り込んだ Markdown の中のマーカーは取り込みの順を持ってたどり、途中に同じキーがあれば循環の警告を差し込む。表に無いキー・無い見出し・行の数を越える範囲は記載の警告を差し込み、`collectWarnings` が集める警告に `includeTarget` を付ける（`mdmark check --text`・`--file` が除く）。取り込んだ文書の `features` のマーカーは取り除く
@@ -88,7 +88,7 @@ functions:
         summary: 循環を止める
   - name: selectHeadingSection
     title: 見出しの範囲を選ぶ
-    container: src/render/syntax/includes.ts
+    container: src/render/includes.ts
     kind: 関数
     scope: internal
     summary: トークンの並びから、見出しの文字を `slugBase` で ID にしたものが `id` と一致する最初の見出しから、次の同じか上の階層の見出しの前まで（見出しを含む）を返却する
@@ -115,7 +115,7 @@ functions:
         summary: 同じか上の階層の見出しの前までを選ぶ
   - name: selectLines
     title: 行の範囲を選ぶ
-    container: src/render/syntax/includes.ts
+    container: src/render/includes.ts
     kind: 関数
     scope: internal
     summary: 本文を行（LF・CRLF）に分け、`from`〜`to` 行目（1 から）を返却する。範囲が行の数を越えるときは行の数を返却する

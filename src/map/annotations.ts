@@ -1,4 +1,4 @@
-import { NOTE_OWNER_PREFIX } from "../parts/footnote.ts";
+import { NOTE_OWNER_PREFIX } from "../footnote/footnote.part.ts";
 
 /** 図のツールチップに出す注記 1 つ */
 export type MapAnnotation = { number: number; html: string };

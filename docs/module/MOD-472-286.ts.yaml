@@ -1,12 +1,12 @@
 id: MOD-472-286
 visibility: internal
-title: ライブラリ本体 / 記法 / badges.ts
+title: ライブラリ本体 / 行内の記法 / badge.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/badges.test.ts
+  - tests/unit/src/inline/badge.syntax.test.ts
 functions:
   - name: buildBadges
     title: バッジにする
-    container: src/render/syntax/badges.ts
+    container: src/inline/badge.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`badge` がオンなら、頭が `badge:` で後ろに空白以外の文字を持つ `code_inline` を部品『バッジ』にし、頭が `badge\:` のものは `\` を削除したコードにする。`badge:` の後ろが空か空白だけのものはコードのまま残す。`splitBadgeColor` で色とラベルに分け、色があれば部品へ指定する。色の名前の後ろが空か空白だけのものもコードのまま残す
@@ -40,7 +40,7 @@ functions:
         expected: '`<span class="mdmark-badge" data-color="red">要確認</span>`・`<span class="mdmark-badge">v1:beta</span>`・`<code>badge:red:</code>`'
   - name: splitBadgeColor
     title: バッジの色とラベルを分ける
-    container: src/render/syntax/badges.ts
+    container: src/inline/badge.syntax.ts
     kind: 関数
     scope: internal
     summary: '`badge:` の後ろの文字の最初の `:` の前が色の名前（`isColorName`）なら、色と `:` の後ろのラベルに分ける。色の名前でないときと `:` が無いときは、全てをラベルにする'

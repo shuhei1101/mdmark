@@ -2,7 +2,7 @@ import {
   type CommentFormState,
   type CommentRemoveState,
   renderCommentItem,
-} from "../parts/comment.ts";
+} from "./comment.part.ts";
 import type { MdmarkCommentStore } from "./spec.ts";
 
 /** 入力欄か削除の確認を開いているコメント */

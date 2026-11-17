@@ -3,7 +3,7 @@ visibility: internal
 title: ライブラリ本体 / 部品の描画
 lead: Storybook（`@storybook/react-vite`）のストーリーに部品の HTML を出す仕組み。部品の HTML を返却する描画のインターフェース（Node の HTTP サーバー）と、Storybook の設定・描画のインターフェースの HTML を描くデコレーター・VS Code の配色を与えるデコレーターを持つ。配布物には入らない。
 notes:
-  ストーリーの場所: '部品『部品』のストーリーは `src/parts/*.stories.ts`（CSF。`meta` の `title` と `parameters.server.id`、ストーリーごとの `args` だけを持ち、描くのは `withServerHtml`）。
+  ストーリーの場所: '部品のストーリーは、部品と同じ機能のフォルダの `src/{機能}/*.part.stories.ts`（CSF。`meta` の `title` と `parameters.server.id`、ストーリーごとの `args` だけを持ち、描くのは `withServerHtml`）。
 
     ストーリーの ID は server 形式のときと同じ（`title` と export 名から作る）。
 

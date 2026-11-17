@@ -19,22 +19,25 @@ import {
 import { highlightCodeBlocks } from "./highlight.ts";
 import { runHtmlScripts, type Transpiler } from "./html-scripts.ts";
 import { loadInlineIcons } from "./inline-icons.ts";
-import { attachBackToTop } from "./interact/back-to-top.ts";
-import { attachInteractions } from "./interact/index.ts";
-import type { PartStates } from "./interact/part-states.ts";
-import type { SectionStates } from "./interact/sections.ts";
-import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
+import { attachInteractions } from "./interact.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { embeddedLibraries, loadLibraries } from "./libraries.ts";
 import { attachMermaid } from "./mermaid.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
-import type { MdmarkIconNode } from "./parts/inline-icon.ts";
-import { renderNotice } from "./parts/notice.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
 import type { ResolveIdLink } from "./render/sanitize.ts";
+import { attachBackToTop } from "./section/back-to-top.interact.ts";
+import type { SectionStates } from "./section/section.interact.ts";
+import {
+  attachSideToc,
+  type SideTocState,
+} from "./section/side-toc.interact.ts";
+import type { MdmarkIconNode } from "./shared/icon-node.logic.ts";
+import { renderNotice } from "./shared/notice.part.ts";
+import type { PartStates } from "./shared/part-states.interact.ts";
 
 /** `mount` の第 2 引数 */
 export type MountOptions = {

@@ -1,12 +1,12 @@
 id: MOD-472-200
 visibility: internal
-title: ライブラリ本体 / 差分 / diff-blocks.ts
+title: ライブラリ本体 / 差分 / diff-blocks.part.ts
 test_files:
-  - tests/unit/src/parts/diff-blocks.test.ts
+  - tests/unit/src/diff/diff-blocks.part.test.ts
 functions:
   - name: renderDiffBlock
     title: 差分のブロックを描く
-    container: src/parts/diff-blocks.ts
+    container: src/diff/diff-blocks.part.ts
     summary: 部品設計『差分のブロック』の HTML を返却する
     kind: 関数
     scope: internal

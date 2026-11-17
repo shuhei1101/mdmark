@@ -1,12 +1,12 @@
 id: MOD-472-235
 visibility: internal
-title: ライブラリ本体 / 操作 / trees.ts
+title: ライブラリ本体 / ファイルツリー / tree.interact.ts
 test_files:
-  - tests/unit/src/interact/trees.browser.test.ts
+  - tests/unit/src/tree/tree.interact.browser.test.ts
 functions:
   - name: attachFileTrees
     title: ファイルツリーに開閉とコピーを付ける
-    container: src/interact/trees.ts
+    container: src/tree/tree.interact.ts
     summary: '各 `div.mdmark-tree` の `ul` の前に `renderTreeBar` の帯を配置し、子を持つフォルダの名前を `aria-expanded`・`aria-controls` を持つ `mdmark-tree-toggle` のボタンで包む。`data-open` とルートを 0 とした深さを `folderOpenByDefault` に指定し、開かないフォルダの入れ子の `ul` を `hidden="until-found"` にする。注釈を持つツリーは、最も右で終わる名前の端を測って `--mdmark-tree-note-start` に入れる。ボタンを押すとそのフォルダを開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じた `ul` を開いたとき（`beforematch`）はそのフォルダを開いた状態にする。コピーボタンは `copyText` で `data-source` を記載し、書き込めたら `data-state="copied"` と `role="status"` の通知にして 2 秒で `idle` に戻し、書き込めなければツリーの下に `renderCopyPanel`（`format: tree`）のパネルを配置して文字を選んだ状態にする（閉じるボタンでパネルを取り除き、コピーボタンへフォーカスを戻す）'
     kind: 関数
     scope: internal
@@ -85,7 +85,7 @@ functions:
     status: planned
   - name: setFolderOpen
     title: フォルダを開閉する
-    container: src/interact/trees.ts
+    container: src/tree/tree.interact.ts
     summary: '`mdmark-tree-toggle` の `aria-expanded` を書き換え、開くときはそのフォルダの入れ子の `ul` の `hidden` を削除し、閉じるときは `hidden="until-found"` にする。`attachFileTrees` と印刷の前後の `attachPrint` が使用する'
     kind: 関数
     scope: internal
@@ -105,7 +105,7 @@ functions:
     status: planned
   - name: alignFileTreeNotes
     title: ファイルツリーの注釈の列を統一する
-    container: src/interact/trees.ts
+    container: src/tree/tree.interact.ts
     summary: '`render` が出した `div.mdmark-tree` の注釈の列の位置を測り、`--mdmark-tree-note-start` に入れる。`attachFileTrees` と同じ測り方で、Storybook の `preview.js` がファイルツリーのストーリーに使用する（`/render/trees.js`）'
     kind: 関数
     scope: internal

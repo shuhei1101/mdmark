@@ -1,12 +1,12 @@
 id: MOD-472-195
 visibility: internal
-title: ライブラリ本体 / 差分 / revision-picker.ts
+title: ライブラリ本体 / 差分 / revision-picker.part.ts
 test_files:
-  - tests/unit/src/parts/revision-picker.test.ts
+  - tests/unit/src/diff/revision-picker.part.test.ts
 functions:
   - name: renderRevisionPicker
     title: リビジョンの選択を描く
-    container: src/parts/revision-picker.ts
+    container: src/diff/revision-picker.part.ts
     summary: 部品設計『リビジョンの選択』の HTML を返却する。項目の文字は `Intl.DateTimeFormat`（`ja-JP`・`Asia/Tokyo`）の日時に `label` と `author` を続ける
     kind: 関数
     scope: internal

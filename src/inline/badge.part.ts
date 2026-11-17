@@ -1,0 +1,14 @@
+import type { ColorName } from "../shared/colors.logic.ts";
+import { escapeHtml } from "../shared/escape.logic.ts";
+
+/** バッジの HTML を返却する。色を指定したときは `data-color` を付ける */
+export function renderBadge(options: {
+  /** 札の文言 */
+  label: string;
+  /** 色の名前 */
+  color?: ColorName;
+}): string {
+  const color =
+    options.color === undefined ? "" : ` data-color="${options.color}"`;
+  return `<span class="mdmark-badge"${color}>${escapeHtml(options.label)}</span>`;
+}

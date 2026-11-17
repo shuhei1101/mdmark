@@ -1,13 +1,13 @@
 id: MOD-472-347
 visibility: internal
-title: ライブラリ本体 / 操作 / table-width.ts
+title: ライブラリ本体 / 表 / table-width.interact.ts
 lead: 表を描いた直後と表の見える幅が変わったときに、列ごとの中身の幅を測り、部品設計『表』の注記「列の幅」のとおりに列の幅を決めて入れる。
 test_files:
-  - tests/unit/src/interact/table-width.browser.test.ts
+  - tests/unit/src/table/table-width.interact.browser.test.ts
 constants:
   - name: MEASURE_ROWS
     title: 列の幅を測る行の数
-    container: src/interact/table-width.ts
+    container: src/table/table-width.interact.ts
     summary: 列の幅を決めるときに測る本文の行の数の上限。表の先頭から数える
     value: '200'
     refs:
@@ -16,7 +16,7 @@ constants:
 functions:
   - name: measureColumns
     title: 列の中身の幅を測る
-    container: src/interact/table-width.ts
+    container: src/table/table-width.interact.ts
     kind: 関数
     scope: internal
     summary: 表示している列ごとに、見出しのセルと先頭から `MEASURE_ROWS` 行までの本文のセルを改行（`br`・`li`・`p`）で行に分け、最も長い行の幅と最も長い半角の単語の幅を測って返却する
@@ -49,7 +49,7 @@ functions:
     status: planned
   - name: attachAutoColumnWidths
     title: 表の列の幅を自動で決める
-    container: src/interact/table-width.ts
+    container: src/table/table-width.interact.ts
     kind: 関数
     scope: internal
     summary: '`measureColumns` で測った幅を `columnBounds`・`distributeColumnWidths` に渡して列の幅を決め、見出しのセルの `--mdmark-auto-width`（外側の幅）と表の `--mdmark-auto-table-width` に入れ、表に `data-auto-width` を付ける。入れた幅より広く描かれた列（見出しのボタンの幅など）は、描かれた幅を最小の幅にして 1 回だけ分け直す'

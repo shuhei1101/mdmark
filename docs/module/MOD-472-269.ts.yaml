@@ -1,12 +1,12 @@
 id: MOD-472-269
 visibility: internal
-title: ライブラリ本体 / 記法 / tree.ts
+title: ライブラリ本体 / ファイルツリー / tree.part.ts
 test_files:
-  - tests/unit/src/parts/tree.test.ts
+  - tests/unit/src/tree/tree.part.test.ts
 data_models:
   - name: TreeNode
     title: ツリーの項目
-    container: src/parts/tree.ts
+    container: src/tree/tree.part.ts
     summary: 罫線を読み込んだ 1 項目（部品『ファイルツリー』の `nodes` の要素）
     properties:
       - name: name
@@ -21,7 +21,7 @@ data_models:
 functions:
   - name: renderTree
     title: ファイルツリーを描く
-    container: src/parts/tree.ts
+    container: src/tree/tree.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『ファイルツリー』の HTML を返却する。`div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。`interactive` のときは `renderTreeBar` の帯を配置し、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを配置する
@@ -72,7 +72,7 @@ functions:
         expected: '`div.mdmark-tree` が `mdmark-tree-wrap` と `data-open="all"` を持ち、`wrap` を指定しないと `mdmark-tree-wrap` を持たない'
   - name: fileIconOf
     title: ファイルのアイコンの種類を決める
-    container: src/parts/tree.ts
+    container: src/tree/tree.part.ts
     summary: ファイル名から、部品設計『ファイルツリー』のアイコンの種類（lucide の名前）を返却する。名前そのもの（`LICENSE`・`Dockerfile`・`Makefile`）を先に引き、次に最後の `.` の後ろを小文字にした拡張子で参照する。どれにも該当しなければ `file`
     kind: 関数
     scope: internal
@@ -94,7 +94,7 @@ functions:
     status: planned
   - name: renderTreeBar
     title: ファイルツリーの帯を描く
-    container: src/parts/tree.ts
+    container: src/tree/tree.part.ts
     summary: ツリーの上に配置する `<div class="mdmark-tree-bar">`（種類 `tree`・`mdmark-tree-copy` のボタン・`role="status"` の `mdmark-tree-status`）を返却する。ボタンは `copyState` を `data-state` に持ち、`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`。`mount` が描いたツリーに追加するのにも使用する
     kind: 関数
     scope: internal
@@ -116,7 +116,7 @@ functions:
     status: planned
   - name: folderOpenByDefault
     title: フォルダを既定で開くかを決める
-    container: src/parts/tree.ts
+    container: src/tree/tree.part.ts
     summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` と値が無いときは常に開き、数は深さがその数より浅いときに開く。部品のツリーと操作が使用する
     kind: 関数
     scope: internal
@@ -142,7 +142,7 @@ functions:
     status: planned
   - name: renderTreeCopyContent
     title: ツリーのコピーボタンの中身を描く
-    container: src/parts/tree.ts
+    container: src/tree/tree.part.ts
     summary: コピーボタンの中身を状態ごとに返却する（`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`）。`renderTreeBar` と、コピーの後にボタンを書き換える `attachFileTrees` が使用する
     kind: 関数
     scope: internal

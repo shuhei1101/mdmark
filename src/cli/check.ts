@@ -14,6 +14,11 @@ import {
 } from "../config.ts";
 import { displayConfigPath, relativizeConfigPaths } from "../config-files.ts";
 import { definitionWarning, readDefinition } from "../diagram/definition.ts";
+import {
+  findDiagramBlocks,
+  isRetiredDiagram,
+  retiredDiagramMessage,
+} from "../diagram/diagram.syntax.ts";
 import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
 import {
@@ -34,11 +39,6 @@ import {
   SYNTAX_MARKS,
 } from "../render/marks.ts";
 import { findMarks, findMarkTexts } from "../render/parser.ts";
-import {
-  findDiagramBlocks,
-  isRetiredDiagram,
-  retiredDiagramMessage,
-} from "../render/syntax/diagrams.ts";
 import { loadAliases } from "./aliases.ts";
 import { checkMissingFiles } from "./assets.ts";
 import {

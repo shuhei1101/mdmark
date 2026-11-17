@@ -1,6 +1,6 @@
-import { mapC4BoundaryTitle, mapClosedGroupSize } from "../parts/map.ts";
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
+import { mapC4BoundaryTitle, mapClosedGroupSize } from "./map.part.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
 
 /** 境界の種類 */

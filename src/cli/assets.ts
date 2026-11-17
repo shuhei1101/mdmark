@@ -11,8 +11,8 @@ import {
 } from "node:path";
 import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
-import { ATTACHMENT_KINDS } from "../render/syntax/cards.ts";
-import { mediaKindOf } from "../render/syntax/images.ts";
+import { ATTACHMENT_KINDS } from "../card/card.syntax.ts";
+import { mediaKindOf } from "../media/image.syntax.ts";
 import type { CheckIssue } from "./check.ts";
 import { CliError } from "./errors.ts";
 

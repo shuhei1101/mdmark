@@ -1,12 +1,12 @@
 id: MOD-472-301
 visibility: internal
-title: ライブラリ本体 / 記法 / csv.ts
+title: ライブラリ本体 / 表 / csv.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/csv.test.ts
+  - tests/unit/src/table/csv.syntax.test.ts
 functions:
   - name: parseCsv
     title: CSV を読み込む
-    container: src/render/syntax/csv.ts
+    container: src/table/csv.syntax.ts
     kind: 関数
     scope: internal
     summary: RFC 4180 の決まり（区切り `,`、`"` で囲んだ値の中の `,` と改行、`""` は `"`、改行は LF か CRLF）で 1 回走査して行と値に分ける。末尾の改行は行にしない
@@ -33,7 +33,7 @@ functions:
         summary: 空の値を残す
   - name: buildCsvTables
     title: CSV の表にする
-    container: src/render/syntax/csv.ts
+    container: src/table/csv.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール（表のマーカーのルールより前）。`csv` がオンなら、情報文字列の最初の単語がちょうど `csv` で中身が空でない `fence` を `parseCsv` で読み込み、1 行目を見出しにした表のトークン（値は `text`）に置き換え、元の CSV を `rawCsv` として表のマーカーの処理へ指定する。列の数が見出しと違う行はそろえて、その行番号の記載の警告を表の前に差し込む
