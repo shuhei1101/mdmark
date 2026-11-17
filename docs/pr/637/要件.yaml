@@ -1,0 +1,15 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-77.yaml
+    impact: none
+    detail: 設定を書き換えた後に最後の内容で再描画する流れは変わらない。この流れを確かめる結合テストの待ち方だけを修正する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: none
+    detail: 固定したバージョンの配布物を読み込んで描く流れは変わらない。この流れを確かめる結合テストの待ち方だけを修正する
+    depends_on: []
+scope_out:
+  - item: preview-open.test.ts・preview-rerender.test.ts の、今回直すテスト（test_normal_when_map_configured・test_normal_when_version_pinned・test_normal）以外の待ち方の見直し
+    reason: ときどき fail すると報告されたのは 2 件で、test_normal は同じ形で配布物の要求を検証するため合わせて直す。他のテストは要望に含まれない
+    plan: none
