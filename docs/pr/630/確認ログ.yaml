@@ -5,3 +5,21 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4591221761
+  - topic: 純粋な Mermaid を案 A（補足の無い map の図）で描くモックの見た目
+    decision: モックの案 A の見た目で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594564680
+  - topic: 案 A の sequenceDiagram の actor
+    decision: 既定で人のアイコンを付ける。設定の map.kinds.actor があればそちらを使用する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594565789
+  - topic: 案 A の sequenceDiagram の再生のバー
+    decision: map の操作として付ける（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594566246
