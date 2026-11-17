@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-16T21:47:49.152794+00:00'
   - process: PoC 検証
     status: skipped
-    reason: テストの移動と設定のパスの変更で、未検証の技術機構に依存しない
+    reason: 単体テストの移動と設計書の記入で、未検証の技術機構に依存しない
     updated_by: planner
     updated_at: '2026-11-16T21:47:49.152794+00:00'
   - process: 複合ユースケース設計
@@ -51,7 +51,7 @@ tasks:
     updated_at: '2026-11-16T21:47:49.152794+00:00'
   - process: 部品設計
     status: skipped
-    reason: 部品の設計は変えない。CMP-472-29・35・63 のテストのパスの置き換えはドキュメント修正で扱う
+    reason: 部品の設計とテストのパスを変えない
     updated_by: planner
     updated_at: '2026-11-16T21:47:49.152794+00:00'
   - process: 画面設計
@@ -75,7 +75,7 @@ tasks:
     note: tests/files.yaml に unit/src/map/structure.test.ts の行を追加する
   - process: 結合テスト作成
     status: skipped
-    note: VS Code の上で動かす結合テストを決めた置き場所へ移し、移す前と同じ件数で pass することを確かめる
+    note:
     reason: VS Code 拡張機能の結合テストは移さず、結合テストを追加・変更しない
     updated_by: planner
     updated_at: '2026-11-17T00:09:57.197516+00:00'
