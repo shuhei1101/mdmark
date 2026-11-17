@@ -369,6 +369,13 @@ const fadedIdsOf = (
   return fadedIds;
 };
 
+/** 閉じたグループの高さ（タイトルの行の下に数の行が収まる高さ以上） */
+const closedGroupHeight = (estimated: number): number =>
+  Math.max(
+    estimated,
+    MAP_LAYOUT.groupTitle + MAP_LAYOUT.closedCount + LABEL_METRICS.padY,
+  );
+
 /** 描く木の葉（ノードか閉じたグループ） */
 const makeLeaf = (
   context: ViewContext,
@@ -381,15 +388,10 @@ const makeLeaf = (
     width: override?.width,
     size: override?.size,
   });
-  const above = collapsedGroup ? 0 : (override?.above ?? 0);
-  const aside = collapsedGroup ? 0 : (override?.aside ?? 0);
-  // 閉じたグループは、タイトルの行の下に数の行が収まる高さにする
-  const h = collapsedGroup
-    ? Math.max(
-        size.h,
-        MAP_LAYOUT.groupTitle + MAP_LAYOUT.closedCount + LABEL_METRICS.padY,
-      )
-    : size.h;
+  // 閉じたグループは上と左右を空けず、タイトルの行の下に数の行が収まる高さにする
+  const { above, aside, h } = collapsedGroup
+    ? { above: 0, aside: 0, h: closedGroupHeight(size.h) }
+    : { above: override?.above ?? 0, aside: override?.aside ?? 0, h: size.h };
   return {
     kind: "leaf",
     id,
@@ -1628,29 +1630,51 @@ const endCountsOf = (wires: PlacedWire[]): Map<string, number> => {
   return counts;
 };
 
+/** 2 点の間の縦か横の区間（斜め・長さ 0 は undefined） */
+const segmentOf = (
+  [p, q]: [[number, number], [number, number]],
+  at: { wire: number; index: number },
+): Segment | undefined => {
+  if (p[0] === q[0] && p[1] === q[1]) return undefined;
+  if (p[1] !== q[1] && p[0] !== q[0]) return undefined;
+  const axis = p[1] === q[1] ? 0 : 1;
+  return {
+    ...at,
+    axis,
+    at: axis === 0 ? p[1] : p[0],
+    low: Math.min(p[axis], q[axis]),
+    high: Math.max(p[axis], q[axis]),
+  };
+};
+
+/** 区間が、ほかの線と同じ点から出る・入る線の端の区間か */
+const isSharedEnd = (
+  points: Array<[number, number]>,
+  context: { index: number; shared: Map<string, number> },
+): boolean => {
+  const { index, shared } = context;
+  const ends = [
+    index === 0 ? points[0] : undefined,
+    index === points.length - 2 ? points.at(-1) : undefined,
+  ];
+  return ends.some(
+    (end) => end !== undefined && (shared.get(pointKey(end)) ?? 0) > 1,
+  );
+};
+
 /** 線の縦と横の区間（同じ点から出る・入る線の端の区間を除く） */
 const segmentsOf = (wires: PlacedWire[]): Segment[] => {
   const shared = endCountsOf(wires);
-  const segments: Segment[] = [];
-  for (const [wire, { points }] of wires.entries()) {
-    for (const [index, q] of points.slice(1).entries()) {
-      const p = points[index] as [number, number];
-      const last = index === points.length - 2;
-      const end = index === 0 ? p : last ? q : undefined;
-      if (end !== undefined && (shared.get(pointKey(end)) ?? 0) > 1) continue;
-      const axis = p[1] === q[1] ? 0 : p[0] === q[0] ? 1 : undefined;
-      if (axis === undefined || (p[0] === q[0] && p[1] === q[1])) continue;
-      segments.push({
+  return wires.flatMap(({ points }, wire) =>
+    points.slice(1).flatMap((q, index) => {
+      if (isSharedEnd(points, { index, shared })) return [];
+      const segment = segmentOf([points[index] as [number, number], q], {
         wire,
         index,
-        axis,
-        at: axis === 0 ? p[1] : p[0],
-        low: Math.min(p[axis], q[axis]),
-        high: Math.max(p[axis], q[axis]),
       });
-    }
-  }
-  return segments;
+      return segment ? [segment] : [];
+    }),
+  );
 };
 
 /** 区間を、同じ向き・同じ直線ごとに範囲が重なる束にまとめる（2 本以上の線を持つ束だけ） */
@@ -1679,27 +1703,37 @@ const bundlesOf = (segments: Segment[]): Bundle[] => {
   );
 };
 
+/** 矩形が束のどちら側にあるか（束の範囲にかからなければ undefined） */
+const sideOf = (
+  bundle: Bundle,
+  rect: Rect,
+): { side: "low" | "high"; edge: number } | undefined => {
+  const vertical = bundle.axis === 1;
+  const along = vertical ? rect.y : rect.x;
+  const length = vertical ? rect.h : rect.w;
+  if (along >= bundle.high || along + length <= bundle.low) return undefined;
+  const start = vertical ? rect.x : rect.y;
+  const size = vertical ? rect.w : rect.h;
+  if (start + size <= bundle.at) return { side: "low", edge: start + size };
+  if (start >= bundle.at) return { side: "high", edge: start };
+  return undefined;
+};
+
 /** 束の両側の矩形（束の線の端点とその祖先を除き、clearance を含める）の間の通り道 */
 const corridorOf = (
   bundle: Bundle,
   context: { rects: Array<Rect & { id: string }>; skipped: Set<string> },
 ): { low: number | undefined; high: number | undefined } => {
-  const cross = bundle.axis === 0 ? 1 : 0;
   const m = MAP_LAYOUT.clearance;
-  let low: number | undefined;
-  let high: number | undefined;
-  for (const rect of context.rects) {
-    if (context.skipped.has(rect.id)) continue;
-    const start = cross === 0 ? rect.x : rect.y;
-    const size = cross === 0 ? rect.w : rect.h;
-    const along = bundle.axis === 0 ? rect.x : rect.y;
-    const length = bundle.axis === 0 ? rect.w : rect.h;
-    if (along >= bundle.high || along + length <= bundle.low) continue;
-    if (start + size <= bundle.at)
-      low = Math.max(low ?? -Infinity, start + size + m);
-    else if (start >= bundle.at) high = Math.min(high ?? Infinity, start - m);
-  }
-  return { low, high };
+  const sides = context.rects
+    .filter((rect) => !context.skipped.has(rect.id))
+    .flatMap((rect) => sideOf(bundle, rect) ?? []);
+  const lows = sides.filter((s) => s.side === "low").map((s) => s.edge + m);
+  const highs = sides.filter((s) => s.side === "high").map((s) => s.edge - m);
+  return {
+    low: lows.length > 0 ? Math.max(...lows) : undefined,
+    high: highs.length > 0 ? Math.min(...highs) : undefined,
+  };
 };
 
 /** 束の線を並べる最初の座標と、通り道に足りない幅 */
