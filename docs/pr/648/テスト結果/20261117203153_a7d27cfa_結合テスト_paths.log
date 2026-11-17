@@ -1,0 +1,94 @@
+# ランナーでの実行（結合テスト（フロント）・paths を指定）
+# 作業ブランチへの push を一時的に追加し、PATHS の既定値を 'tests/integration/ClaudeCodeプラグイン/ tests/integration/lib/init.test.ts'（空白で区切った 2 つのパス）にした commit a7d27cfa で起動した
+# 実行: https://github.com/shuhei1101/mdmark/actions/runs/44074389754
+$ gh run view 44074389754 --json conclusion,jobs
+success
+Set up job success
+ブランチを取得する success
+Node をインストールする success
+依存をインストールする success
+Chromium をインストールする success
+結合テストの道具を用意する success
+単体テストを回す skipped
+結合テストを回す success
+VS Code 拡張機能の結合テストを回す skipped
+ログを成果物に上げる success
+Post Node をインストールする success
+Post ブランチを取得する success
+Complete job success
+
+$ gh run view 44074389754 --log
+test	結合テストの道具を用意する	2026-11-17T11:29:34.8072246Z echo "bus のソケットを待った回数: $n（1 秒ごと）"
+test	結合テストの道具を用意する	2026-11-17T11:29:35.9839343Z bus のソケットを待った回数: 0（1 秒ごと）
+test	結合テストを回す	﻿2026-11-17T11:29:35.9875330Z ##[group]Run if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-17T11:29:35.9875531Z if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-17T11:29:35.9875698Z   npm run test:integration 2>&1 | tee test.log
+test	結合テストを回す	2026-11-17T11:29:35.9875862Z else
+test	結合テストを回す	2026-11-17T11:29:35.9875984Z   # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+test	結合テストを回す	2026-11-17T11:29:35.9876145Z   # shellcheck disable=SC2086
+test	結合テストを回す	2026-11-17T11:29:35.9876353Z   npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+test	結合テストを回す	2026-11-17T11:29:35.9876547Z fi
+test	結合テストを回す	2026-11-17T11:29:35.9916240Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	結合テストを回す	2026-11-17T11:29:35.9916434Z env:
+test	結合テストを回す	2026-11-17T11:29:35.9916548Z   LAYER: integration
+test	結合テストを回す	2026-11-17T11:29:35.9916802Z   PATHS: tests/integration/ClaudeCodeプラグイン/ tests/integration/lib/init.test.ts
+test	結合テストを回す	2026-11-17T11:29:35.9917028Z   XDG_RUNTIME_DIR: /run/user/1001
+test	結合テストを回す	2026-11-17T11:29:35.9917197Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	結合テストを回す	2026-11-17T11:29:35.9917365Z   XDG_CONFIG_HOME: 
+test	結合テストを回す	2026-11-17T11:29:35.9917516Z ##[endgroup]
+test	結合テストを回す	2026-11-17T11:29:36.6120473Z 
+test	結合テストを回す	2026-11-17T11:29:36.6132476Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+test	結合テストを回す	2026-11-17T11:29:36.6132985Z 
+test	結合テストを回す	2026-11-17T11:29:44.8563757Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/check.test.ts (8 tests) 3474ms
+test	結合テストを回す	2026-11-17T11:29:44.8564969Z    ✓ test_normal_when_drift 426ms
+test	結合テストを回す	2026-11-17T11:29:44.8565634Z    ✓ test_normal_when_base_given 750ms
+test	結合テストを回す	2026-11-17T11:29:44.8566418Z    ✓ test_normal_when_plain_md_has_marks 503ms
+test	結合テストを回す	2026-11-17T11:29:44.8566989Z    ✓ test_normal_when_text_and_key 591ms
+test	結合テストを回す	2026-11-17T11:29:44.8567494Z    ✓ test_normal_when_include_targets_missing 479ms
+test	結合テストを回す	2026-11-17T11:29:45.5250847Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/guide-notice.test.ts (7 tests) 316ms
+test	結合テストを回す	2026-11-17T11:29:51.6385078Z  ✓  integration-node  tests/integration/lib/init.test.ts (5 tests) 5568ms
+test	結合テストを回す	2026-11-17T11:29:51.6386238Z    ✓ test_normal_when_javascript 357ms
+test	結合テストを回す	2026-11-17T11:29:51.6386886Z    ✓ test_normal_when_cli_built_from_develop 4693ms
+test	結合テストを回す	2026-11-17T11:29:53.5787683Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/apply-template.test.ts (6 tests) 1565ms
+test	結合テストを回す	2026-11-17T11:29:53.5788568Z    ✓ test_normal 301ms
+test	結合テストを回す	2026-11-17T11:29:54.9973393Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/add-template.test.ts (4 tests) 1102ms
+test	結合テストを回す	2026-11-17T11:29:54.9973995Z    ✓ test_normal_when_overwriting 331ms
+test	結合テストを回す	2026-11-17T11:29:57.0660443Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-status.test.ts (5 tests) 1740ms
+test	結合テストを回す	2026-11-17T11:29:57.0661010Z    ✓ test_normal_when_already_set_up 1374ms
+test	結合テストを回す	2026-11-17T11:29:59.4372549Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/serve.test.ts (6 tests) 1195ms
+test	結合テストを回す	2026-11-17T11:30:01.8593726Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/export-html.test.ts (4 tests) 2104ms
+test	結合テストを回す	2026-11-17T11:30:01.8595724Z    ✓ test_normal 685ms
+test	結合テストを回す	2026-11-17T11:30:01.8596387Z    ✓ test_normal_when_traces_kept 973ms
+test	結合テストを回す	2026-11-17T11:30:04.3210693Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/build-site.test.ts (4 tests) 2087ms
+test	結合テストを回す	2026-11-17T11:30:04.3211218Z    ✓ test_normal 610ms
+test	結合テストを回す	2026-11-17T11:30:04.3211497Z    ✓ test_normal_when_traces_kept 881ms
+test	結合テストを回す	2026-11-17T11:30:04.3211914Z    ✓ test_error_when_build_missing 390ms
+test	結合テストを回す	2026-11-17T11:30:05.0585947Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-write-settings.test.ts (4 tests) 403ms
+test	結合テストを回す	2026-11-17T11:30:06.1781562Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/list-templates.test.ts (3 tests) 793ms
+test	結合テストを回す	2026-11-17T11:30:06.1782712Z    ✓ test_normal 314ms
+test	結合テストを回す	2026-11-17T11:30:06.5333605Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts (14 tests) 25095ms
+test	結合テストを回す	2026-11-17T11:30:06.5334530Z    ✓ test_normal 1710ms
+test	結合テストを回す	2026-11-17T11:30:06.5335104Z    ✓ test_normal_when_already_running 1879ms
+test	結合テストを回す	2026-11-17T11:30:06.5335626Z    ✓ test_normal_when_unit_not_listening 1754ms
+test	結合テストを回す	2026-11-17T11:30:06.5336131Z    ✓ test_normal_when_unit_outdated 3253ms
+test	結合テストを回す	2026-11-17T11:30:06.5336622Z    ✓ test_normal_when_moved_from_tmux 1813ms
+test	結合テストを回す	2026-11-17T11:30:06.5337099Z    ✓ test_normal_when_tmux 1288ms
+test	結合テストを回す	2026-11-17T11:30:06.5337567Z    ✓ test_normal_when_tmux_already_running 1529ms
+test	結合テストを回す	2026-11-17T11:30:06.5337901Z    ✓ test_normal_when_session_stale 1253ms
+test	結合テストを回す	2026-11-17T11:30:06.5338203Z    ✓ test_normal_when_fixed_to_tmux 2997ms
+test	結合テストを回す	2026-11-17T11:30:06.5338520Z    ✓ test_normal_when_launcher_argument_is_tmux 2975ms
+test	結合テストを回す	2026-11-17T11:30:06.5338841Z    ✓ test_error_when_server_exited 1649ms
+test	結合テストを回す	2026-11-17T11:30:06.5339142Z    ✓ test_error_when_start_timed_out 2661ms
+test	結合テストを回す	2026-11-17T11:30:07.0881515Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-write-config.test.ts (3 tests) 512ms
+test	結合テストを回す	2026-11-17T11:30:07.1137773Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/setup-keys.test.ts (2 tests) 201ms
+test	結合テストを回す	2026-11-17T11:30:07.5274758Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts (2 tests) 65ms
+test	結合テストを回す	2026-11-17T11:30:07.5561523Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/session-start.test.ts (2 tests) 64ms
+test	結合テストを回す	2026-11-17T11:30:07.5595202Z 
+test	結合テストを回す	2026-11-17T11:30:07.5598370Z  Test Files  16 passed (16)
+test	結合テストを回す	2026-11-17T11:30:07.5598884Z       Tests  79 passed (79)
+test	結合テストを回す	2026-11-17T11:30:07.5612648Z    Start at  11:29:36
+test	結合テストを回す	2026-11-17T11:30:07.5613119Z    Duration  30.92s (tests 89%, import 9%, transform 2%)
+test	結合テストを回す	2026-11-17T11:30:07.5613456Z 
+
+# 期待値: 結論 success・step「VS Code 拡張機能の結合テストを回す」skipped・test.log のテストのファイルは指定した 2 つのパスの 16 ファイルだけ（全て満たした）
+# bus のソケットを待った回数: 0（待ちの上限の実測）
