@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.4391cdf";
+  return "v0.14.0+develop.2901d51";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -72159,7 +72159,8 @@ var MERMAID_KIND_NAMES = {
   "stateDiagram-v2": "\u72B6\u614B\u9077\u79FB\u56F3",
   erDiagram: "ER \u56F3",
   gantt: "\u30AC\u30F3\u30C8\u30C1\u30E3\u30FC\u30C8",
-  pie: "\u5186\u30B0\u30E9\u30D5"
+  pie: "\u5186\u30B0\u30E9\u30D5",
+  mindmap: "\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7"
 };
 var FRONT_MATTER = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
 var TITLE_LINE = /^title:[ \t]*(.*)$/m;
@@ -72308,7 +72309,8 @@ var KIND_OF_FIRST_WORD = {
   classDiagram: "classDiagram",
   "classDiagram-v2": "classDiagram",
   "architecture-beta": "architecture",
-  C4Context: "C4Context"
+  C4Context: "C4Context",
+  mindmap: "mindmap"
 };
 var mapKindOf = (mermaid) => {
   const first = mermaid.trimStart().split(/\s/, 1)[0] ?? "";
@@ -72353,7 +72355,7 @@ var collectMapStructure = (range) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\`\u30FB\`classDiagram\`\u30FB\`architecture-beta\`\u30FB\`C4Context\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\`\u30FB\`classDiagram\`\u30FB\`architecture-beta\`\u30FB\`C4Context\`\u30FB\`mindmap\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
     });
   }
   return { problems, kind, args: parsedArgs };
@@ -80031,6 +80033,91 @@ var lucideIconNames = () => {
   return names;
 };
 
+// src/map/mindmap.ts
+var SHAPE_PATTERNS = [
+  ["circle", /^(.*?)\(\((.+)\)\)$/],
+  ["bang", /^(.*?)\)\)(.+)\(\($/],
+  ["cloud", /^(.*?)\)(.+)\($/],
+  ["hexagon", /^(.*?)\{\{(.+)\}\}$/],
+  ["rounded", /^(.*?)\((.+)\)$/],
+  ["square", /^(.*?)\[(.+)\]$/]
+];
+var SKIPPED_LINE_RE = /^(::icon\(|:::)/;
+var readShape2 = (text2) => {
+  for (const [shape, pattern] of SHAPE_PATTERNS) {
+    const match = pattern.exec(text2);
+    if (!match) continue;
+    const id = (match[1] ?? "").trim();
+    return {
+      shape,
+      id: id === "" ? void 0 : id,
+      label: (match[2] ?? "").trim()
+    };
+  }
+  return { shape: "plain", id: void 0, label: text2 };
+};
+var secondRoot = (line, text2) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${text2}\` \u306F\u6839\u3088\u308A\u6D45\u3044\u304B\u540C\u3058\u5B57\u4E0B\u3052\u306E\u305F\u3081\u30012 \u3064\u76EE\u306E\u6839\u306B\u306A\u308A\u307E\u3059\u3002\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7\u306E\u6839\u306F 1 \u3064\u306B\u3057\u3001\u3053\u306E\u884C\u3092\u6839\u3088\u308A\u6DF1\u304F\u5B57\u4E0B\u3052\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var ambiguousLabels = (items) => {
+  const counts = /* @__PURE__ */ new Map();
+  for (const item of items) {
+    if (item.id === void 0)
+      counts.set(item.label, (counts.get(item.label) ?? 0) + 1);
+  }
+  return new Set(
+    [...counts].flatMap(([label, count]) => count > 1 ? [label] : [])
+  );
+};
+var isSkipped = (line, text2) => line === 0 || text2 === "" || text2.startsWith("%%") || SKIPPED_LINE_RE.test(text2);
+var parentAt = (state, indent) => {
+  while ((state.stack.at(-1)?.indent ?? -1) >= indent) state.stack.pop();
+  return state.stack.at(-1)?.item;
+};
+var readItemLine = (state, raw, line) => {
+  const text2 = raw.trim();
+  if (isSkipped(line, text2)) return;
+  const indent = raw.length - raw.trimStart().length;
+  if (state.rootIndent !== void 0 && indent <= state.rootIndent) {
+    state.problems.push(secondRoot(line, text2));
+    return;
+  }
+  const parent = parentAt(state, indent);
+  const shape = readShape2(text2);
+  const item = {
+    order: state.items.length,
+    ...shape,
+    parent: parent?.order,
+    children: [],
+    key: shape.id ?? shape.label,
+    stateKey: shape.id ?? shape.label
+  };
+  parent?.children.push(item.order);
+  state.rootIndent ??= indent;
+  state.items.push(item);
+  state.stack.push({ item, indent });
+};
+var parseMindmap = (source) => {
+  const state = {
+    items: [],
+    problems: [],
+    stack: [],
+    rootIndent: void 0
+  };
+  source.split(/\r?\n/).forEach((raw, line) => {
+    readItemLine(state, raw, line);
+  });
+  const { items, problems } = state;
+  const ambiguous = ambiguousLabels(items);
+  for (const item of items) {
+    if (item.id === void 0 && ambiguous.has(item.label))
+      item.stateKey = `n${item.order}`;
+  }
+  return { root: items[0], items, ambiguous, problems };
+};
+
 // src/map/state-diagram.ts
 var ID3 = "[A-Za-z0-9_\\u0080-\\uffff]+";
 var DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
@@ -80187,7 +80274,8 @@ var REF_HINTS = {
   stateDiagram: "\u72B6\u614B\u306E ID \u304B\u3001\u9077\u79FB\u306E ID \u3092\u8A18\u8F09\u9806\u306E `t{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   classDiagram: "\u30AF\u30E9\u30B9\u540D\u30FB`{\u30AF\u30E9\u30B9\u540D}.{\u30E1\u30F3\u30D0\u30FC\u540D}`\u30FB`namespace` \u306E ID\u30FB\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   architecture: "service\u30FBgroup\u30FBjunction \u306E ID \u304B\u3001\u7DDA\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  C4Context: "\u8981\u7D20\u30FB\u5883\u754C\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+  C4Context: "\u8981\u7D20\u30FB\u5883\u754C\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  mindmap: "\u9805\u76EE\u306E ID \u304B\u3001ID \u3092\u6301\u305F\u306A\u3044\u9805\u76EE\u306E\u8868\u793A\u3059\u308B\u6587\u5B57\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
 };
 var groupProblems = (data, tables, lineOf) => {
   const problems = [];
@@ -80233,6 +80321,7 @@ var emptyMermaidIds = (problems) => ({
   edgeIds: /* @__PURE__ */ new Set(),
   classes: /* @__PURE__ */ new Set(),
   tables: /* @__PURE__ */ new Set(),
+  ambiguous: /* @__PURE__ */ new Set(),
   problems,
   linkProblems: []
 });
@@ -80321,6 +80410,13 @@ var c4Ids = (mermaid, line) => {
   );
   return found;
 };
+var mindmapIds = (mermaid, line) => {
+  const mindmap = parseMindmap(mermaid);
+  const found = emptyMermaidIds(shiftProblems(mindmap.problems, line));
+  for (const item of mindmap.items) found.ids.add(item.key);
+  found.ambiguous = mindmap.ambiguous;
+  return found;
+};
 var sequenceIds = (mermaid, line) => {
   const sequence = parseSequence(mermaid);
   const found = emptyMermaidIds(shiftProblems(sequence.problems, line));
@@ -80346,6 +80442,8 @@ var mermaidIdsOf = (kind, source) => {
       return architectureIds(mermaid, line);
     case "C4Context":
       return c4Ids(mermaid, line);
+    case "mindmap":
+      return mindmapIds(mermaid, line);
     default:
       return sequenceIds(mermaid, line);
   }
@@ -80376,7 +80474,7 @@ var checkLayout = (context) => {
   for (const [id, entry] of Object.entries(data.layout)) {
     ref(`layout.${id}`, id);
     ref(`layout.${id}.align`, entry.align);
-    if (found.ids.has(id) && !found.edgeIds.has(id)) {
+    if (context.kind !== "mindmap" && found.ids.has(id) && !found.edgeIds.has(id)) {
       problems.push(...edgeOnlyProblems({ id, entry, lineOf }));
     }
     if (entry.line !== void 0 && !(entry.line in config3.lines) && !lineNames.has(entry.line)) {
@@ -80388,6 +80486,25 @@ var checkLayout = (context) => {
     }
   }
 };
+var MINDMAP_LAYOUT_KEYS = /* @__PURE__ */ new Set(["color", "collapsed"]);
+var mindmapLayoutProblems = (context) => Object.entries(context.data.layout).flatMap(
+  ([id, entry]) => Object.entries(entry).filter(
+    ([key, value]) => value !== void 0 && !MINDMAP_LAYOUT_KEYS.has(key)
+  ).map(([key]) => ({
+    kind: "map_invalid_value",
+    line: context.lineOf(`layout.${id}.${key}`),
+    message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7\u306B\u306F\u9069\u7528\u3057\u307E\u305B\u3093\u3002\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7\u306E \`layout\` \u306F \`color\` \u3068 \`collapsed\` \u3060\u3051\u3092\u9069\u7528\u3057\u307E\u3059\u3002\u4E26\u3073\u9806\u306F Mermaid \u306E\u884C\u306E\u9806\u3067\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+  }))
+);
+var mindmapProblems = (context, focus) => [
+  ...mindmapLayoutProblems(context),
+  ...focus !== void 0 && context.found.ambiguous.has(focus) ? [ambiguousProblem("\u30DE\u30FC\u30AB\u30FC\u306E\u5F15\u6570\u306E `focus`", focus, void 0)] : []
+];
+var ambiguousProblem = (where, key, line) => ({
+  kind: "map_ambiguous_ref",
+  line,
+  message: `${where} \u306E \`${key}\` \u306F\u3001ID \u3092\u6301\u305F\u306A\u3044 2 \u3064\u4EE5\u4E0A\u306E\u9805\u76EE\u306E\u8868\u793A\u3059\u308B\u6587\u5B57\u306E\u305F\u3081\u3001\u3069\u306E\u9805\u76EE\u306B\u3082\u9069\u7528\u3057\u307E\u305B\u3093\u3002\u6307\u3059\u9805\u76EE\u306B ID\uFF08\`{ID}[${key}]\` \u306A\u3069\uFF09\u3092\u8A18\u8F09\u3057\u3001ID \u3067\u6307\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
 var edgeOnlyProblems = (item) => {
   const { id, entry, lineOf } = item;
   return ["ends", "via"].filter((key) => entry[key] !== void 0).map((key) => ({
@@ -80425,7 +80542,9 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
     return local === void 0 || range.dataLine === void 0 ? void 0 : local + range.dataLine;
   };
   const ref = (path, id) => {
-    if (id !== void 0 && !found.ids.has(id)) {
+    if (id !== void 0 && found.ambiguous.has(id)) {
+      problems.push(ambiguousProblem(`\u88DC\u8DB3\u306E \`${path}\``, id, lineOf(path)));
+    } else if (id !== void 0 && !found.ids.has(id)) {
       problems.push({
         kind: "map_unknown_ref",
         line: lineOf(path),
@@ -80453,6 +80572,8 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
   checkLayout(context);
+  if (kind === "mindmap")
+    problems.push(...mindmapProblems(context, structure.args.args.focus));
   problems.push(...found.linkProblems);
   for (const name of found.classes) {
     if (!(name in config3.kinds)) {
@@ -80483,12 +80604,13 @@ var checkMapConfig = (map) => {
 var STYLE_LINE_RE = /^(classDef|style|linkStyle|cssClass)\b/;
 var CLASS_LINE_RE = /^class\s/;
 var CLASS_SHORTHAND_RE = /:::[\w-]/;
+var ICON_LINE_RE = /^::icon\(/;
 var needsMermaidFallback = (options) => {
   const { kind, mermaid } = options;
   const lines = mermaid.split(/\r?\n/).map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("%%"));
   const classLine = kind === "flowchart" || kind === "stateDiagram";
   if (lines.some(
-    (line) => STYLE_LINE_RE.test(line) || CLASS_SHORTHAND_RE.test(line) || classLine && CLASS_LINE_RE.test(line)
+    (line) => STYLE_LINE_RE.test(line) || CLASS_SHORTHAND_RE.test(line) || kind === "mindmap" && ICON_LINE_RE.test(line) || classLine && CLASS_LINE_RE.test(line)
   )) {
     return true;
   }
