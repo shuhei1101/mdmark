@@ -162,8 +162,8 @@ files:
     related:
       - to: MOD-472-148
         type: implements
-  - path: code-fold-logic.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードの行のインデントのレベル・畳む行の数・隠す行・縦線の範囲の計算（記法と操作が使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: code-block/code-fold.logic.ts
+    description: モジュール構成『ライブラリ本体 / コードブロック』のうち「コードの行のインデントのレベル・畳む行の数・隠す行・縦線の範囲の計算（記法と操作が使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-237
@@ -297,184 +297,184 @@ files:
     related:
       - to: MOD-472-207
         type: implements
-  - path: interact/back-to-top.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「先頭へ戻るボタンを配置し、出し分け・配置する位置・押したときの移動を付ける」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: section/back-to-top.interact.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「先頭へ戻るボタンを配置し、出し分け・配置する位置・押したときの移動を付ける」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-223
         type: implements
       - to: CMP-472-34
         type: implements
-  - path: interact/clipboard.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「クリップボードへ書き込む（表・行の URL・コードブロック・ファイルツリーが使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: shared/clipboard.interact.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「クリップボードへ書き込む（表・行の URL・コードブロック・ファイルツリーが使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:クリップボード]
     related:
       - to: MOD-472-232
         type: implements
-  - path: interact/code-blocks.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードブロックのコピー」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: code-block/code-block.interact.ts
+    description: モジュール構成『ライブラリ本体 / コードブロック』のうち「コードブロックのコピー」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-233
         type: implements
-  - path: interact/code-folds.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「コードの行の開閉とインデントの縦線の範囲」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: code-block/code-fold.interact.ts
+    description: モジュール構成『ライブラリ本体 / コードブロック』のうち「コードの行の開閉とインデントの縦線の範囲」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-225
         type: implements
-  - path: interact/csv-raw.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「CSV の表と元の CSV の切り替え」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: table/csv.interact.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「CSV の表と元の CSV の切り替え」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:表]
     related:
       - to: MOD-472-243
         type: implements
-  - path: interact/diagram-resize.ts
+  - path: diagram/diagram-resize.interact.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「表示する枠の高さを変えるリサイズハンドルと高さの保持」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: MOD-472-179
         type: implements
-  - path: interact/diagram-touch.ts
+  - path: diagram/diagram-touch.interact.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「指で図を動かす操作中」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図]
     related:
       - to: MOD-472-346
         type: implements
-  - path: interact/diagram-tips.ts
+  - path: diagram/diagram-tips.interact.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「図のツールチップ」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: MOD-472-184
         type: implements
-  - path: interact/diagrams.ts
+  - path: diagram/diagram.interact.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「拡大・縮小・移動・全画面」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: MOD-472-183
         type: implements
-  - path: interact/embedded-html.ts
+  - path: embedded-html/embedded-html.interact.ts
     description: 埋め込んだ HTML が列より広い間だけ、その中で横にスクロールさせる処理を受け持つ。埋め込んだ HTML の幅の扱いを変えるときに参照する。
     tags: [topic:dom, topic:横スクロール, tool:html]
     related:
       - to: MOD-472-230
         type: implements
-  - path: interact/footnotes.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「脚注のツールチップの開閉と、番号と末尾の一覧の行き来」を受け持つ。脚注の操作を変えるときに参照する。
+  - path: footnote/footnote.interact.ts
+    description: モジュール構成『ライブラリ本体 / 脚注と注記』のうち「脚注のツールチップの開閉と、番号と末尾の一覧の行き来」を受け持つ。脚注の操作を変えるときに参照する。
     tags: [topic:脚注, topic:ツールチップ]
     related:
       - to: MOD-472-238
         type: implements
-  - path: interact/gif.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「GIF を止める・再生するボタン」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: media/gif.interact.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「GIF を止める・再生するボタン」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:gif]
     related:
       - to: MOD-472-236
         type: implements
-  - path: interact/index.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「attachInteractions」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: interact.ts
+    description: モジュール構成『ライブラリ本体 / 描く』のうち「attachInteractions」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-227
         type: implements
-  - path: interact/lightbox.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「画像を拡大のボタンで包み、ライトボックスで開いて切り替え・拡大・縮小・移動を付ける処理」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: media/lightbox.interact.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「画像を拡大のボタンで包み、ライトボックスで開いて切り替え・拡大・縮小・移動を付ける処理」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:ライトボックス]
     related:
       - to: MOD-472-224
         type: implements
-  - path: interact/params.ts
+  - path: diagram/param.interact.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「操作できる部品の値とコピーする」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: MOD-472-185
         type: implements
-  - path: interact/placement.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「ツールチップを持ち主の上と下のどちらに配置するかを決める」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: shared/placement.logic.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「ツールチップを持ち主の上と下のどちらに配置するかを決める」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-231
         type: implements
-  - path: interact/scroller.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: shared/scroller.interact.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-234
         type: implements
-  - path: interact/sections.ts
-    description: 'モジュール構成『ライブラリ本体 / 操作』のうち「セクションと行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く」を受け持つ。描いた文書での読者の操作を変えるときに参照する。'
+  - path: section/section.interact.ts
+    description: 'モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「セクションと行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く」を受け持つ。描いた文書での読者の操作を変えるときに参照する。'
     tags: [topic:dom, topic:イベント, topic:セクション]
     related:
       - to: MOD-472-222
         type: implements
-  - path: interact/side-toc.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「右側の目次を配置し、出し方・ピン止め・項目から移る・すべて開閉・今いるセクションを付ける」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: section/side-toc.interact.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「右側の目次を配置し、出し方・ピン止め・項目から移る・すべて開閉・今いるセクションを付ける」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:目次]
     related:
       - to: MOD-472-219
         type: implements
-  - path: interact/sticky.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「表の見出し行と集計の行を画面の端に留める」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: table/table-sticky.interact.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表の見出し行と集計の行を画面の端に留める」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-221
         type: implements
-  - path: interact/table-settings.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: table/table-settings.interact.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:テーブル]
     related:
       - to: MOD-472-240
         type: implements
-  - path: interact/table-resize.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「列の幅のつまみのドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: table/table-resize.interact.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「列の幅のつまみのドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:テーブル]
     related:
       - to: MOD-472-226
         type: implements
-  - path: interact/table-tree.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: table/table-tree.interact.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:テーブル]
     related:
       - to: MOD-472-241
         type: implements
-  - path: interact/tables.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: table/table.interact.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:テーブル]
     related:
       - to: MOD-472-228
         type: implements
-  - path: interact/tabs.ts
-    description: 'モジュール構成『ライブラリ本体 / 操作』のうち「タブの切り替えと、URL の #ID の指すタブを選ぶ処理」を受け持つ。描いた文書での読者の操作を変えるときに参照する。'
+  - path: tabs/tabs.interact.ts
+    description: 'モジュール構成『ライブラリ本体 / タブ』のうち「タブの切り替えと、URL の #ID の指すタブを選ぶ処理」を受け持つ。描いた文書での読者の操作を変えるときに参照する。'
     tags: [topic:dom, topic:イベント, topic:タブ]
     related:
       - to: MOD-472-220
         type: implements
-  - path: interact/terms.ts
+  - path: knowledge/term.interact.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「ツールチップの開閉・配置場所・id の再割り当て」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。
     tags: [topic:索引, topic:用語]
     related:
       - to: MOD-472-266
         type: implements
-  - path: interact/text.ts
+  - path: shared/text.interact.ts
     description: 要素の文字から用語のツールチップの文字を除いて取り出す処理を受け持つ。コピーや見出しの文字の取り出し方を変えるときに参照する。
     tags: [topic:dom, topic:用語]
     related:
       - to: MOD-472-229
         type: implements
-  - path: interact/trees.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「ファイルツリーのフォルダの開閉とコピー」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: tree/tree.interact.ts
+    description: モジュール構成『ライブラリ本体 / ファイルツリー』のうち「ファイルツリーのフォルダの開閉とコピー」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:ツリー]
     related:
       - to: MOD-472-235
         type: implements
-  - path: interact/wide.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「wide の範囲の幅の切り替えのボタン」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: layout/wide.interact.ts
+    description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「wide の範囲の幅の切り替えのボタン」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
     related:
       - to: MOD-472-242
         type: implements
-  - path: interact/zoom.ts
-    description: モジュール構成『ライブラリ本体 / 図』のうち「表示する枠と中身への拡大・縮小・移動（ボタン・キー・ドラッグ）」を受け持つ。図とライトボックスの拡大・縮小の操作を変えるときに参照する。
+  - path: shared/zoom.interact.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「表示する枠と中身への拡大・縮小・移動（ボタン・キー・ドラッグ）」を受け持つ。図とライトボックスの拡大・縮小の操作を変えるときに参照する。
     tags: [topic:図, topic:拡大]
     related:
       - to: MOD-472-177
@@ -665,21 +665,21 @@ files:
     related:
       - to: MOD-472-159
         type: implements
-  - path: parts/back-to-top.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「先頭へ戻るボタンの renderBackToTop」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: section/back-to-top.part.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「先頭へ戻るボタンの renderBackToTop」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-324
         type: implements
       - to: CMP-472-34
         type: implements
-  - path: parts/backlinks.stories.ts
+  - path: knowledge/backlinks.part.stories.ts
     description: 部品設計『関連文書の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:被参照]
     related:
       - to: CMP-472-66
         type: implements
-  - path: parts/backlinks.ts
+  - path: knowledge/backlinks.part.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「関連文書の一覧の HTML」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。
     tags: [topic:索引, topic:用語, topic:被参照]
     related:
@@ -687,69 +687,69 @@ files:
         type: implements
       - to: CMP-472-66
         type: implements
-  - path: parts/badge.stories.ts
+  - path: inline/badge.part.stories.ts
     description: 部品設計『バッジ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:バッジ]
     related:
       - to: CMP-472-23
         type: implements
-  - path: parts/badge.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「バッジの renderBadge」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: inline/badge.part.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「バッジの renderBadge」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:バッジ]
     related:
       - to: MOD-472-318
         type: implements
       - to: CMP-472-23
         type: implements
-  - path: parts/callout.stories.ts
+  - path: callout/callout.part.stories.ts
     description: 部品設計『注意書き』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:注意書き]
     related:
       - to: CMP-472-52
         type: implements
-  - path: parts/callout.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「注意書きの renderCallout」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: callout/callout.part.ts
+    description: モジュール構成『ライブラリ本体 / 注意書き』のうち「注意書きの renderCallout」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:注意書き]
     related:
       - to: MOD-472-275
         type: implements
       - to: CMP-472-52
         type: implements
-  - path: parts/card-grid.stories.ts
+  - path: card/card-grid.part.stories.ts
     description: 部品設計『カードの格子』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:カード]
     related:
       - to: CMP-472-10
         type: implements
-  - path: parts/card-grid.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「カードの格子の renderCardGrid」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: card/card-grid.part.ts
+    description: モジュール構成『ライブラリ本体 / カード』のうち「カードの格子の renderCardGrid」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:カード]
     related:
       - to: MOD-472-308
         type: implements
       - to: CMP-472-10
         type: implements
-  - path: parts/card.stories.ts
+  - path: card/card.part.stories.ts
     description: 部品設計『カード』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:カード]
     related:
       - to: CMP-472-9
         type: implements
-  - path: parts/card.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「リンクと添付のカードの renderCard」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: card/card.part.ts
+    description: モジュール構成『ライブラリ本体 / カード』のうち「リンクと添付のカードの renderCard」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:カード]
     related:
       - to: MOD-472-332
         type: implements
       - to: CMP-472-9
         type: implements
-  - path: parts/chart.stories.ts
+  - path: diagram/chart.part.stories.ts
     description: 部品設計『グラフ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: CMP-472-13
         type: implements
-  - path: parts/chart.ts
+  - path: diagram/chart.part.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「グラフの種類ごとの描き方と系列の外観の組」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
@@ -757,63 +757,63 @@ files:
         type: implements
       - to: CMP-472-13
         type: implements
-  - path: parts/code-block.stories.ts
+  - path: code-block/code-block.part.stories.ts
     description: 部品設計『コードブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-18
         type: implements
-  - path: parts/code-block.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「コードブロックの renderCodeBlock と renderCodeCopy」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: code-block/code-block.part.ts
+    description: モジュール構成『ライブラリ本体 / コードブロック』のうち「コードブロックの renderCodeBlock と renderCodeCopy」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-306
         type: implements
       - to: CMP-472-18
         type: implements
-  - path: parts/collapsible.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「タブとステップの折り畳みの renderCollapsible」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: shared/collapsible.part.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「タブとステップの折り畳みの renderCollapsible」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-325
         type: implements
-  - path: parts/colors.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「色の名前の一覧と見分け」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: shared/colors.logic.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「色の名前の一覧と見分け」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:色]
     related:
       - to: MOD-472-312
         type: implements
-  - path: parts/comment-bubble.stories.ts
+  - path: comments/comment-bubble.part.stories.ts
     description: 部品設計『コメントの吹き出し』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: CMP-472-17
         type: implements
-  - path: parts/comment-button.stories.ts
+  - path: comments/comment-button.part.stories.ts
     description: 部品設計『コメントのボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: CMP-472-14
         type: implements
-  - path: parts/comment-form.stories.ts
+  - path: comments/comment-form.part.stories.ts
     description: 部品設計『コメントの入力欄』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: CMP-472-16
         type: implements
-  - path: parts/comment-mark.stories.ts
+  - path: comments/comment-mark.part.stories.ts
     description: 部品設計『コメントのマーカー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: CMP-472-15
         type: implements
-  - path: parts/comment-orphans.stories.ts
+  - path: comments/comment-orphans.part.stories.ts
     description: 部品設計『箇所が見つからないコメントの一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:コメント]
     related:
       - to: CMP-472-56
         type: implements
-  - path: parts/comment.ts
+  - path: comments/comment.part.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧の HTML（dist/comments.js）」を受け持つ。ビューやコメントの部品を変えるときに参照する。
     tags: [topic:ビュー, topic:コメント]
     related:
@@ -829,25 +829,25 @@ files:
         type: implements
       - to: CMP-472-56
         type: implements
-  - path: parts/details-range.stories.ts
+  - path: layout/details-range.part.stories.ts
     description: 部品設計『detailsの範囲』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-3
         type: implements
-  - path: parts/diagram-frame.stories.ts
+  - path: diagram/diagram-frame.part.stories.ts
     description: 部品設計『図の枠』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: CMP-472-39
         type: implements
-  - path: parts/diagram-tooltip.stories.ts
+  - path: diagram/diagram-tooltip.part.stories.ts
     description: 部品設計『図のツールチップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: CMP-472-38
         type: implements
-  - path: parts/diagram.ts
+  - path: diagram/diagram.part.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「図の枠・map の構成図のノードと線・グラフ・ER 図・図のツールチップ・凡例」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
@@ -859,13 +859,13 @@ files:
         type: implements
       - to: CMP-472-39
         type: implements
-  - path: parts/diff-blocks.stories.ts
+  - path: diff/diff-blocks.part.stories.ts
     description: 部品設計『差分のブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
       - to: CMP-472-43
         type: implements
-  - path: parts/diff-blocks.ts
+  - path: diff/diff-blocks.part.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「差分のブロックの HTML」を受け持つ。差分の計算や表示を変えるときに参照する。
     tags: [topic:差分]
     related:
@@ -873,13 +873,13 @@ files:
         type: implements
       - to: CMP-472-43
         type: implements
-  - path: parts/diff-html.stories.ts
+  - path: diff/diff-html.part.stories.ts
     description: 部品設計『埋め込んだHTML の差分』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html, topic:差分]
     related:
       - to: CMP-472-42
         type: implements
-  - path: parts/diff-html.ts
+  - path: diff/diff-html.part.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「埋め込んだ HTML の差分の HTML」を受け持つ。差分の計算や表示を変えるときに参照する。
     tags: [topic:差分, tool:html]
     related:
@@ -887,13 +887,13 @@ files:
         type: implements
       - to: CMP-472-42
         type: implements
-  - path: parts/diff-lines.stories.ts
+  - path: diff/diff-lines.part.stories.ts
     description: 部品設計『差分の行』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
       - to: CMP-472-45
         type: implements
-  - path: parts/diff-lines.ts
+  - path: diff/diff-lines.part.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「差分の行の HTML」を受け持つ。差分の計算や表示を変えるときに参照する。
     tags: [topic:差分]
     related:
@@ -901,13 +901,13 @@ files:
         type: implements
       - to: CMP-472-45
         type: implements
-  - path: parts/diff-message.stories.ts
+  - path: diff/diff-message.part.stories.ts
     description: 部品設計『差分の状態の文』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
       - to: CMP-472-44
         type: implements
-  - path: parts/diff-message.ts
+  - path: diff/diff-message.part.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「差分の状態の文の HTML」を受け持つ。差分の計算や表示を変えるときに参照する。
     tags: [topic:差分]
     related:
@@ -915,13 +915,13 @@ files:
         type: implements
       - to: CMP-472-44
         type: implements
-  - path: parts/diff-minimap.stories.ts
+  - path: diff/diff-minimap.part.stories.ts
     description: 部品設計『ミニマップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
       - to: CMP-472-30
         type: implements
-  - path: parts/diff-minimap.ts
+  - path: diff/diff-minimap.part.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「ミニマップの HTML」を受け持つ。差分の計算や表示を変えるときに参照する。
     tags: [topic:差分]
     related:
@@ -929,13 +929,13 @@ files:
         type: implements
       - to: CMP-472-30
         type: implements
-  - path: parts/diff-toggle.stories.ts
+  - path: diff/diff-toggle.part.stories.ts
     description: 部品設計『差分を開くボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:差分]
     related:
       - to: CMP-472-46
         type: implements
-  - path: parts/diff-toggle.ts
+  - path: diff/diff-toggle.part.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「差分を開くボタンの HTML」を受け持つ。差分の計算や表示を変えるときに参照する。
     tags: [topic:差分]
     related:
@@ -943,41 +943,41 @@ files:
         type: implements
       - to: CMP-472-46
         type: implements
-  - path: parts/doc-list.stories.ts
+  - path: viewer/doc-list.part.stories.ts
     description: 部品設計『文書の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-49
         type: implements
-  - path: parts/doc-list.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「文書の一覧の renderDocList」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: viewer/doc-list.part.ts
+    description: モジュール構成『ライブラリ本体 / 書き出したHTMLの起動』のうち「文書の一覧の renderDocList」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-323
         type: implements
       - to: CMP-472-49
         type: implements
-  - path: parts/embed.stories.ts
+  - path: shared/embed.part.stories.ts
     description: 部品設計『読み込み中のブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html]
     related:
       - to: CMP-472-64
         type: implements
-  - path: parts/embed.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「読み込み中のブロックの renderEmbed」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: shared/embed.part.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「読み込み中のブロックの renderEmbed」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-309
         type: implements
       - to: CMP-472-64
         type: implements
-  - path: parts/embedded-html.stories.ts
+  - path: embedded-html/embedded-html.part.stories.ts
     description: 部品設計『埋め込んだHTML』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, tool:html]
     related:
       - to: CMP-472-41
         type: implements
-  - path: parts/embedded-html.ts
+  - path: embedded-html/embedded-html.part.ts
     description: 埋め込んだ HTML を包む枠の HTML を返却する部品を受け持つ。埋め込んだ HTML の枠を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
@@ -985,34 +985,34 @@ files:
         type: implements
       - to: MOD-589-2
         type: implements
-  - path: parts/escape.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「HTML の特別な文字をエスケープする escapeHtml」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: shared/escape.logic.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「HTML の特別な文字をエスケープする escapeHtml」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-313
         type: implements
-  - path: parts/figure.stories.ts
+  - path: figure/figure.part.stories.ts
     description: 部品設計『図表の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図表の番号]
     related:
       - to: CMP-472-40
         type: implements
-  - path: parts/figure.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「図表の番号の renderFigure」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: figure/figure.part.ts
+    description: モジュール構成『ライブラリ本体 / 図表の番号』のうち「図表の番号の renderFigure」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:図表の番号]
     related:
       - to: MOD-472-322
         type: implements
       - to: CMP-472-40
         type: implements
-  - path: parts/footnote-ref.stories.ts
+  - path: footnote/footnote-ref.part.stories.ts
     description: 部品設計『脚注の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:脚注]
     related:
       - to: CMP-472-58
         type: implements
-  - path: parts/footnote.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: footnote/footnote.part.ts
+    description: モジュール構成『ライブラリ本体 / 脚注と注記』のうち「脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:脚注]
     related:
       - to: MOD-472-333
@@ -1021,73 +1021,73 @@ files:
         type: implements
       - to: CMP-472-57
         type: implements
-  - path: parts/footnotes.stories.ts
+  - path: footnote/footnotes.part.stories.ts
     description: 部品設計『脚注の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:脚注]
     related:
       - to: CMP-472-57
         type: implements
-  - path: parts/frontmatter.stories.ts
+  - path: frontmatter/frontmatter.part.stories.ts
     description: 部品設計『フロントマター』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:フロントマター]
     related:
       - to: CMP-472-27
         type: implements
-  - path: parts/frontmatter.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「フロントマターの表示の折りたたみの renderFrontmatter」を受け持つ。フロントマターの表示の HTML を変えるときに参照する。
+  - path: frontmatter/frontmatter.part.ts
+    description: モジュール構成『ライブラリ本体 / フロントマター』のうち「フロントマターの表示の折りたたみの renderFrontmatter」を受け持つ。フロントマターの表示の HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:フロントマター]
     related:
       - to: MOD-472-339
         type: implements
-  - path: parts/gallery.stories.ts
+  - path: media/gallery.part.stories.ts
     description: 部品設計『ギャラリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ギャラリー]
     related:
       - to: CMP-472-12
         type: implements
-  - path: parts/gallery.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「ギャラリーの renderGallery」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: media/gallery.part.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「ギャラリーの renderGallery」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:ギャラリー]
     related:
       - to: MOD-472-328
         type: implements
       - to: CMP-472-12
         type: implements
-  - path: parts/gif.stories.ts
+  - path: media/gif.part.stories.ts
     description: 部品設計『GIF』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:gif]
     related:
       - to: CMP-472-2
         type: implements
-  - path: parts/gif.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「GIF の止める・再生するボタンの renderGifToggle と renderGif」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: media/gif.part.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「GIF の止める・再生するボタンの renderGifToggle と renderGif」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:gif]
     related:
       - to: MOD-472-331
         type: implements
       - to: CMP-472-2
         type: implements
-  - path: parts/highlight.stories.ts
+  - path: inline/highlight.part.stories.ts
     description: 部品設計『蛍光ペン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-59
         type: implements
-  - path: parts/highlight.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「蛍光ペンの renderHighlight」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: inline/highlight.part.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「蛍光ペンの renderHighlight」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-336
         type: implements
       - to: CMP-472-59
         type: implements
-  - path: parts/hint.stories.ts
+  - path: diagram/hint.part.stories.ts
     description: 部品設計『ヒント』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-24
         type: implements
-  - path: parts/hint.ts
+  - path: diagram/hint.part.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「埋め込んだ HTML のヒントのマーカーと中身」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
@@ -1095,167 +1095,167 @@ files:
         type: implements
       - to: CMP-472-24
         type: implements
-  - path: parts/icon-node.ts
+  - path: shared/icon-node.logic.ts
     description: lucide のアイコンの形状を、24 の格子の svg の文字にする処理を受け持つ。アイコンの描き方を変えるときに参照する。
     tags: [topic:部品, tool:lucide, tool:svg]
     related:
       - to: MOD-589-3
         type: implements
-  - path: parts/icons.ts
-    description: モジュール構成『ライブラリ本体 / 図』のうち「lucide のアイコンの svg」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+  - path: shared/icons.part.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「lucide のアイコンの svg」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg, tool:lucide]
     related:
       - to: MOD-472-180
         type: implements
-  - path: parts/image-figure.stories.ts
+  - path: media/image-figure.part.stories.ts
     description: 部品設計『画像の図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:画像]
     related:
       - to: CMP-472-54
         type: implements
-  - path: parts/image.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「画像の図の renderImageFigure と拡大のボタンの renderImageOpener」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: media/image.part.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「画像の図の renderImageFigure と拡大のボタンの renderImageOpener」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:画像]
     related:
       - to: MOD-472-327
         type: implements
       - to: CMP-472-54
         type: implements
-  - path: parts/inline-icon.stories.ts
+  - path: inline/inline-icon.part.stories.ts
     description: 部品設計『アイコン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:アイコン]
     related:
       - to: CMP-472-8
         type: implements
-  - path: parts/inline-icon.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「行内のアイコンの renderInlineIcon と IconNode の svg の iconNodeSvg」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: inline/inline-icon.part.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「行内のアイコンの renderInlineIcon と IconNode の svg の iconNodeSvg」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:アイコン]
     related:
       - to: MOD-472-334
         type: implements
       - to: CMP-472-8
         type: implements
-  - path: parts/kbd.stories.ts
+  - path: inline/kbd.part.stories.ts
     description: 部品設計『キー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-11
         type: implements
-  - path: parts/kbd.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「キーの renderKbd」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: inline/kbd.part.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「キーの renderKbd」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-335
         type: implements
       - to: CMP-472-11
         type: implements
-  - path: parts/layout-columns.stories.ts
+  - path: layout/layout-columns.part.stories.ts
     description: 部品設計『段組み』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-51
         type: implements
-  - path: parts/layout-columns.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「段組みの renderLayoutColumns」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: layout/layout-columns.part.ts
+    description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「段組みの renderLayoutColumns」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-337
         type: implements
       - to: CMP-472-51
         type: implements
-  - path: parts/lightbox.stories.ts
+  - path: media/lightbox.part.stories.ts
     description: 部品設計『ライトボックス』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ライトボックス]
     related:
       - to: CMP-472-31
         type: implements
-  - path: parts/lightbox.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「ライトボックスの renderLightbox」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: media/lightbox.part.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「ライトボックスの renderLightbox」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:ライトボックス]
     related:
       - to: MOD-472-329
         type: implements
       - to: CMP-472-31
         type: implements
-  - path: parts/map-band.stories.ts
+  - path: map/map-band.part.stories.ts
     description: 部品設計『案内の帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-50
         type: implements
-  - path: parts/map-flow.stories.ts
+  - path: map/map-flow.part.stories.ts
     description: 部品設計『mapの構成図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-5
         type: implements
-  - path: parts/map-sequence.stories.ts
+  - path: map/map-sequence.part.stories.ts
     description: 部品設計『mapのシーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-4
         type: implements
-  - path: parts/map.ts
+  - path: map/map.part.ts
     description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「部品『mapの構成図』『mapのシーケンス図』『案内の帯』の HTML」を受け持つ。map の部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, topic:map, tool:html]
     related:
       - to: MOD-472-133
         type: implements
-  - path: parts/media.stories.ts
+  - path: media/media.part.stories.ts
     description: 部品設計『動画と音声』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
     related:
       - to: CMP-472-36
         type: implements
-  - path: parts/media.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「動画と音声の renderMedia」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: media/media.part.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「動画と音声の renderMedia」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:動画, topic:音声]
     related:
       - to: MOD-472-330
         type: implements
       - to: CMP-472-36
         type: implements
-  - path: parts/notice.stories.ts
+  - path: shared/notice.part.stories.ts
     description: 部品設計『通知ブロック』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-65
         type: implements
-  - path: parts/mermaid-diagram.stories.ts
+  - path: diagram/mermaid-diagram.part.stories.ts
     description: 部品設計『mermaid の図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: CMP-472-6
         type: implements
-  - path: parts/mermaid.ts
-    description: モジュール構成『ライブラリ本体 / mermaid』のうち「部品『mermaid の図』の renderMermaidDiagram」を受け持つ。mermaid の図の部品の HTML を変えるときに参照する。
+  - path: diagram/mermaid.part.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「部品『mermaid の図』の renderMermaidDiagram」を受け持つ。mermaid の図の部品の HTML を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: MOD-472-145
         type: implements
       - to: CMP-472-6
         type: implements
-  - path: parts/notice.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「通知ブロックの renderNotice」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: shared/notice.part.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「通知ブロックの renderNotice」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-310
         type: implements
       - to: CMP-472-65
         type: implements
-  - path: parts/own.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: shared/own.logic.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-311
         type: implements
-  - path: parts/param.stories.ts
+  - path: diagram/param.part.stories.ts
     description: 部品設計『操作できる部品』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
       - to: CMP-472-47
         type: implements
-  - path: parts/param.ts
+  - path: diagram/param.part.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「操作できる部品」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
@@ -1263,13 +1263,13 @@ files:
         type: implements
       - to: CMP-472-47
         type: implements
-  - path: parts/revision-picker.stories.ts
+  - path: diff/revision-picker.part.stories.ts
     description: 部品設計『リビジョンの選択』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-32
         type: implements
-  - path: parts/revision-picker.ts
+  - path: diff/revision-picker.part.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「リビジョンの選択の HTML」を受け持つ。差分の計算や表示を変えるときに参照する。
     tags: [topic:差分]
     related:
@@ -1277,111 +1277,111 @@ files:
         type: implements
       - to: CMP-472-32
         type: implements
-  - path: parts/row-detail.stories.ts
+  - path: table/row-detail.part.stories.ts
     description: 部品設計『行の詳細』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-60
         type: implements
-  - path: parts/row-detail.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「行の詳細の renderRowDetail」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: table/row-detail.part.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「行の詳細の renderRowDetail」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-321
         type: implements
       - to: CMP-472-60
         type: implements
-  - path: parts/section.stories.ts
+  - path: section/section.part.stories.ts
     description: 部品設計『セクション』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:セクション]
     related:
       - to: CMP-472-21
         type: implements
-  - path: parts/section.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「セクションの renderSection」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: section/section.part.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「セクションの renderSection」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:セクション]
     related:
       - to: MOD-472-320
         type: implements
       - to: CMP-472-21
         type: implements
-  - path: parts/side-toc.stories.ts
+  - path: section/side-toc.part.stories.ts
     description: 部品設計『右側の目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:目次]
     related:
       - to: CMP-472-37
         type: implements
-  - path: parts/side-toc.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「右側の目次の renderSideToc」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: section/side-toc.part.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「右側の目次の renderSideToc」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:目次]
     related:
       - to: MOD-472-307
         type: implements
       - to: CMP-472-37
         type: implements
-  - path: parts/steps.stories.ts
+  - path: steps/steps.part.stories.ts
     description: 部品設計『ステップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ステップ]
     related:
       - to: CMP-472-20
         type: implements
-  - path: parts/steps.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「ステップの renderSteps」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: steps/steps.part.ts
+    description: モジュール構成『ライブラリ本体 / ステップ』のうち「ステップの renderSteps」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:ステップ]
     related:
       - to: MOD-472-317
         type: implements
       - to: CMP-472-20
         type: implements
-  - path: parts/syntax-warning.stories.ts
+  - path: shared/syntax-warning.part.stories.ts
     description: 部品設計『記載の警告』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-62
         type: implements
-  - path: parts/syntax-warning.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「記載の警告の renderSyntaxWarning」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: shared/syntax-warning.part.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「記載の警告の renderSyntaxWarning」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-314
         type: implements
       - to: CMP-472-62
         type: implements
-  - path: parts/table.stories.ts
+  - path: table/table.part.stories.ts
     description: 部品設計『表』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:テーブル]
     related:
       - to: CMP-472-61
         type: implements
-  - path: parts/table.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: table/table.part.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:テーブル]
     related:
       - to: MOD-472-315
         type: implements
       - to: CMP-472-61
         type: implements
-  - path: parts/tabs.stories.ts
+  - path: tabs/tabs.part.stories.ts
     description: 部品設計『タブ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:タブ]
     related:
       - to: CMP-472-22
         type: implements
-  - path: parts/tabs.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「タブの renderTabs」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: tabs/tabs.part.ts
+    description: モジュール構成『ライブラリ本体 / タブ』のうち「タブの renderTabs」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:タブ]
     related:
       - to: MOD-472-316
         type: implements
       - to: CMP-472-22
         type: implements
-  - path: parts/term-tip.stories.ts
+  - path: knowledge/term-tip.part.stories.ts
     description: 部品設計『用語のツールチップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:用語]
     related:
       - to: CMP-472-53
         type: implements
-  - path: parts/term-tip.ts
+  - path: knowledge/term-tip.part.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「用語のツールチップの HTML」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。
     tags: [topic:索引, topic:用語]
     related:
@@ -1389,55 +1389,55 @@ files:
         type: implements
       - to: CMP-472-53
         type: implements
-  - path: parts/text-color.stories.ts
+  - path: inline/text-color.part.stories.ts
     description: 部品設計『文字の色』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:色]
     related:
       - to: CMP-472-48
         type: implements
-  - path: parts/text-color.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「本文の文字の色の renderTextColor」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: inline/text-color.part.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「本文の文字の色の renderTextColor」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:色]
     related:
       - to: MOD-472-326
         type: implements
       - to: CMP-472-48
         type: implements
-  - path: parts/toc.stories.ts
+  - path: section/toc.part.stories.ts
     description: 部品設計『目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:目次]
     related:
       - to: CMP-472-55
         type: implements
-  - path: parts/toc.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「目次の renderToc」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: section/toc.part.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「目次の renderToc」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:目次]
     related:
       - to: MOD-472-319
         type: implements
       - to: CMP-472-55
         type: implements
-  - path: parts/tree.stories.ts
+  - path: tree/tree.part.stories.ts
     description: 部品設計『ファイルツリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ツリー]
     related:
       - to: CMP-472-26
         type: implements
-  - path: parts/tree.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: tree/tree.part.ts
+    description: モジュール構成『ライブラリ本体 / ファイルツリー』のうち「ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:ツリー]
     related:
       - to: MOD-472-269
         type: implements
       - to: CMP-472-26
         type: implements
-  - path: parts/view.stories.ts
+  - path: views/view.part.stories.ts
     description: 部品設計『ビュー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ビュー]
     related:
       - to: CMP-472-25
         type: implements
-  - path: parts/view.ts
+  - path: views/view.part.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「ビューの HTML とアイコンの形状（dist/view.js）」を受け持つ。ビューやコメントの部品を変えるときに参照する。
     tags: [topic:ビュー, topic:コメント]
     related:
@@ -1445,14 +1445,14 @@ files:
         type: implements
       - to: CMP-472-25
         type: implements
-  - path: parts/wide.stories.ts
+  - path: layout/wide.part.stories.ts
     description: 部品設計『wideの範囲』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-7
         type: implements
-  - path: parts/wide.ts
-    description: モジュール構成『ライブラリ本体 / 部品』のうち「wide の範囲の renderWide」を受け持つ。部品が返却する HTML を変えるときに参照する。
+  - path: layout/wide.part.ts
+    description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「wide の範囲の renderWide」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html]
     related:
       - to: MOD-472-338
@@ -1567,8 +1567,8 @@ files:
     related:
       - to: MOD-472-208
         type: implements
-  - path: render/frontmatter.ts
-    description: モジュール構成『ライブラリ本体 / 描画』のうち「文書の先頭のフロントマターの判定と、本文からの除外の splitFrontmatter」を受け持つ。フロントマターの判定を変えるときに参照する。
+  - path: frontmatter/frontmatter.logic.ts
+    description: モジュール構成『ライブラリ本体 / フロントマター』のうち「文書の先頭のフロントマターの判定と、本文からの除外の splitFrontmatter」を受け持つ。フロントマターの判定を変えるときに参照する。
     tags: [topic:markdown, topic:フロントマター]
     related:
       - to: MOD-472-217
@@ -1603,8 +1603,8 @@ files:
     related:
       - to: MOD-477-3
         type: implements
-  - path: render/syntax/frontmatter.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「フロントマターの表示を差し込むコアルールの insertFrontmatter」を受け持つ。フロントマターの表示の差し込みを変えるときに参照する。
+  - path: frontmatter/frontmatter.syntax.ts
+    description: モジュール構成『ライブラリ本体 / フロントマター』のうち「フロントマターの表示を差し込むコアルールの insertFrontmatter」を受け持つ。フロントマターの表示の差し込みを変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:フロントマター]
     related:
       - to: MOD-472-302
@@ -1633,254 +1633,254 @@ files:
     related:
       - to: MOD-472-214
         type: implements
-  - path: render/scope-css.ts
-    description: モジュール構成『ライブラリ本体 / 描画』のうち「埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
+  - path: embedded-html/scope-css.logic.ts
+    description: モジュール構成『ライブラリ本体 / 埋め込んだHTML』のうち「埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
     tags: [topic:markdown, topic:css]
     related:
       - to: MOD-472-216
         type: implements
-  - path: render/syntax/annotations.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「注記の定義・参照の読み取りと番号・記載の警告・末尾の一覧・機能のオフの文字への戻し」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: footnote/annotations.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 脚注と注記』のうち「注記の定義・参照の読み取りと番号・記載の警告・末尾の一覧・機能のオフの文字への戻し」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:注記]
     related:
       - to: MOD-562-1
         type: implements
-  - path: render/syntax/backlinks.ts
+  - path: knowledge/backlinks.syntax.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「末尾の関連文書の一覧を配置するコアルール」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。
     tags: [topic:索引, topic:用語, topic:被参照]
     related:
       - to: MOD-472-264
         type: implements
-  - path: render/syntax/badges.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「バッジ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: inline/badge.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「バッジ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:バッジ]
     related:
       - to: MOD-472-286
         type: implements
-  - path: render/syntax/blocks.ts
-    description: モジュール構成『ライブラリ本体 / 記法 / blocks.ts』の、範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告のブロックの前への差し込みを受け持つ。範囲のマーカーの組み方や警告を差し込む位置を変えるときに参照する。
+  - path: shared/blocks.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』の、範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告のブロックの前への差し込みを受け持つ。範囲のマーカーの組み方や警告を差し込む位置を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-647-1
         type: implements
-  - path: render/syntax/callouts.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「注意書き」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: callout/callout.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 注意書き』のうち「注意書き」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:注意書き]
     related:
       - to: MOD-472-284
         type: implements
-  - path: render/syntax/card-grid.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「カードの格子のマーカーの中のリストを部品『カードの格子』にするコアルールの buildCardGrid」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: card/card-grid.syntax.ts
+    description: モジュール構成『ライブラリ本体 / カード』のうち「カードの格子のマーカーの中のリストを部品『カードの格子』にするコアルールの buildCardGrid」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:カード]
     related:
       - to: MOD-472-296
         type: implements
-  - path: render/syntax/cards.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「リンクと添付のカード」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: card/card.syntax.ts
+    description: モジュール構成『ライブラリ本体 / カード』のうち「リンクと添付のカード」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:カード]
     related:
       - to: MOD-472-272
         type: implements
-  - path: render/syntax/code-blocks.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「コードブロックのタイトル・行番号・行の強調とコードの行のマーカー・色分けの対象の言語」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: code-block/code-block.syntax.ts
+    description: モジュール構成『ライブラリ本体 / コードブロック』のうち「コードブロックのタイトル・行番号・行の強調とコードの行のマーカー・色分けの対象の言語」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-276
         type: implements
-  - path: render/syntax/collapse.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「表・タブ・ステップの折り畳みの指定（closed・open・title=）の読み取り」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: shared/collapse.logic.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「表・タブ・ステップの折り畳みの指定（closed・open・title=）の読み取り」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-270
         type: implements
-  - path: render/syntax/csv.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「CSV の表」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: table/csv.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「CSV の表」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:表]
     related:
       - to: MOD-472-301
         type: implements
-  - path: render/syntax/details.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「details の範囲」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: layout/details.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「details の範囲」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-297
         type: implements
-  - path: render/syntax/diagrams.ts
+  - path: diagram/diagram.syntax.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「図の部品のマーカーの範囲を部品の HTML にするコアルール」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: MOD-472-182
         type: implements
-  - path: render/syntax/figures.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「図表の番号と参照」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: figure/figure.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 図表の番号』のうち「図表の番号と参照」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:図表の番号]
     related:
       - to: MOD-472-287
         type: implements
-  - path: render/syntax/footnotes.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「脚注の定義・参照・行内の脚注の読み取りと、末尾の一覧・機能のオフの文字への戻し」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: footnote/footnote.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 脚注と注記』のうち「脚注の定義・参照・行内の脚注の読み取りと、末尾の一覧・機能のオフの文字への戻し」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:脚注]
     related:
       - to: MOD-472-274
         type: implements
-  - path: render/syntax/gallery.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「ギャラリー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: media/gallery.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「ギャラリー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ギャラリー]
     related:
       - to: MOD-472-277
         type: implements
-  - path: render/syntax/glossary.ts
+  - path: knowledge/glossary.syntax.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「glossary のマーカーで囲んだ表の読み取り」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。
     tags: [topic:索引, topic:用語]
     related:
       - to: MOD-472-259
         type: implements
-  - path: render/syntax/headings.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「見出しの ID とアンカー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: section/heading.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「見出しの ID とアンカー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-279
         type: implements
-  - path: render/syntax/highlight.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「蛍光ペン」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: inline/highlight.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「蛍光ペン」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-294
         type: implements
-  - path: render/syntax/html.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「埋め込んだ HTML」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: embedded-html/embedded-html.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 埋め込んだHTML』のうち「埋め込んだ HTML」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, tool:html]
     related:
       - to: MOD-472-289
         type: implements
-  - path: render/syntax/images.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「画像・動画・音声の属性と画像の図」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: media/image.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「画像・動画・音声の属性と画像の図」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:画像, topic:動画]
     related:
       - to: MOD-472-271
         type: implements
-  - path: render/syntax/includes.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「取り込み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: render/includes.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「取り込み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-299
         type: implements
-  - path: render/syntax/inline-icons.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「行内のアイコン」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: inline/inline-icon.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「行内のアイコン」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:アイコン]
     related:
       - to: MOD-472-278
         type: implements
-  - path: render/syntax/kbd.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「キー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: inline/kbd.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「キー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-293
         type: implements
-  - path: render/syntax/layout-columns.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「段組み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: layout/layout-columns.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「段組み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-295
         type: implements
-  - path: render/syntax/map.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「map の範囲の buildMapRanges」を受け持つ。map の範囲の出力を変えるときに参照する。
+  - path: map/map.syntax.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「map の範囲の buildMapRanges」を受け持つ。map の範囲の出力を変えるときに参照する。
     tags: [topic:記法, topic:map]
     related:
       - to: MOD-472-303
         type: implements
-  - path: render/syntax/pagebreak.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「改ページ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: layout/pagebreak.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「改ページ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:印刷]
     related:
       - to: MOD-472-298
         type: implements
-  - path: render/syntax/row-details.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「行の詳細」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: table/row-detail.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「行の詳細」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-281
         type: implements
-  - path: render/syntax/sections.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「セクションの囲み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: section/section.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「セクションの囲み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:セクション]
     related:
       - to: MOD-472-280
         type: implements
-  - path: render/syntax/steps.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「ステップ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: steps/steps.syntax.ts
+    description: モジュール構成『ライブラリ本体 / ステップ』のうち「ステップ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ステップ]
     related:
       - to: MOD-472-283
         type: implements
-  - path: render/syntax/tables.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「表の種類・機能・絞り込みと、表の属性」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: table/table.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表の種類・機能・絞り込みと、表の属性」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:テーブル]
     related:
       - to: MOD-472-268
         type: implements
-  - path: render/syntax/table-cells.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「表のセルの `^^`・`<<` の結合の計画」を受け持つ。セルの結合の決め方や警告を変えるときに参照する。
+  - path: table/table-cells.logic.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表のセルの `^^`・`<<` の結合の計画」を受け持つ。セルの結合の決め方や警告を変えるときに参照する。
     tags: [topic:markdown, topic:構文, topic:テーブル]
     related:
       - to: MOD-472-273
         type: implements
-  - path: render/syntax/table-tree.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「`tree=` の表の階層の行・型・必須・既定のセルと、`example=` の見本を表の下へ移す処理」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: table/table-tree.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「`tree=` の表の階層の行・型・必須・既定のセルと、`example=` の見本を表の下へ移す処理」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:テーブル]
     related:
       - to: MOD-472-292
         type: implements
-  - path: render/syntax/tabs.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「タブ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: tabs/tabs.syntax.ts
+    description: モジュール構成『ライブラリ本体 / タブ』のうち「タブ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:タブ]
     related:
       - to: MOD-472-282
         type: implements
-  - path: render/syntax/terms.ts
+  - path: knowledge/term.syntax.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「本文の用語と文書の別名に下線を付けるコアルール」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。
     tags: [topic:索引, topic:用語]
     related:
       - to: MOD-472-263
         type: implements
-  - path: render/syntax/text-color.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「本文の文字の色」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: inline/text-color.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 行内の記法』のうち「本文の文字の色」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:色]
     related:
       - to: MOD-472-291
         type: implements
-  - path: render/syntax/toc.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「目次」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: section/toc.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 見出しとセクション』のうち「目次」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:目次]
     related:
       - to: MOD-472-288
         type: implements
-  - path: render/syntax/tokens.ts
-    description: モジュール構成『ライブラリ本体 / 記法 / tokens.ts』の、記法のコアルールが共有するトークンの処理（マーカーの読み取り・閉じのマーカーの探索・機能の判定・mdmark が出した HTML のトークン）を受け持つ。マーカーの読み取りや閉じの探し方を変えるときに参照する。
+  - path: shared/tokens.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』の、記法のコアルールが共有するトークンの処理（マーカーの読み取り・閉じのマーカーの探索・機能の判定・mdmark が出した HTML のトークン）を受け持つ。マーカーの読み取りや閉じの探し方を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-647-2
         type: implements
-  - path: render/syntax/tree.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「ファイルツリー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: tree/tree.syntax.ts
+    description: モジュール構成『ライブラリ本体 / ファイルツリー』のうち「ファイルツリー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ツリー]
     related:
       - to: MOD-472-285
         type: implements
-  - path: render/syntax/views.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「ビューのマーカーの囲み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: views/view.syntax.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「ビューのマーカーの囲み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:ビュー]
     related:
       - to: MOD-472-290
         type: implements
-  - path: render/syntax/warnings.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「記載の警告を差し込む助け」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: shared/syntax-warning.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「記載の警告を差し込む助け」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-213
         type: implements
-  - path: render/syntax/wide.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「wide の範囲」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+  - path: layout/wide.syntax.ts
+    description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「wide の範囲」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
       - to: MOD-472-300
@@ -1891,14 +1891,14 @@ files:
     related:
       - to: MOD-472-202
         type: implements
-  - path: table-logic.ts
-    description: 'モジュール構成『ライブラリ本体 / 操作』のうち「表の並べ替えの比べ方・絞り込みの当てはめ・数の読み込み方・集計と読み込めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み込み方（部品の表と操作が使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。'
+  - path: table/table.logic.ts
+    description: 'モジュール構成『ライブラリ本体 / 表』のうち「表の並べ替えの比べ方・絞り込みの当てはめ・数の読み込み方・集計と読み込めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量（部品の表と操作が使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。'
     tags: [topic:dom, topic:イベント, topic:テーブル]
     related:
       - to: MOD-472-218
         type: implements
-  - path: tree-logic.ts
-    description: モジュール構成『ライブラリ本体 / 操作』のうち「キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使用する。DOM もトークンも使用しない）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+  - path: table/table-tree.logic.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使用する。DOM もトークンも使用しない）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:テーブル]
     related:
       - to: MOD-472-239
@@ -1957,15 +1957,21 @@ files:
     related:
       - to: MOD-472-154
         type: implements
-  - path: parts/back-to-top.stories.ts
+  - path: section/back-to-top.part.stories.ts
     description: 部品設計『先頭へ戻るボタン』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-34
         type: implements
-  - path: parts/comment-marker.stories.ts
+  - path: comments/comment-marker.part.stories.ts
     description: 部品設計『余白のマーカー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
     related:
       - to: CMP-472-33
+        type: implements
+  - path: shared/row-hash.logic.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「URL の `#` から行の ID を読み込む rowIdFromHash（表・セクション・タブが使用する）」を受け持つ。URL の `#ID` で移る先の読み方を変えるときに参照する。
+    tags: [topic:リンク, action:読み取り]
+    related:
+      - to: MOD-583-17
         type: implements
