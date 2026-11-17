@@ -29,7 +29,7 @@ flowchart LR
 言語を `mermaid` にしたコードブロックが、図の枠に入った図になる。
 front matter の `title` が図の枠のタイトルになり、図の中には重ねて描かない。
 `title` が無ければ `accTitle`、どちらも無ければ図の種類の名前（`フローチャート`・`シーケンス図` など）がタイトルになる。
-`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`mindmap` は、map の範囲に入れなくても map の図で描く（機能 `map` がオフのときは mermaid の図で描く）。
+`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` は、map の範囲に入れなくても map の図で描く（機能 `map` がオフのときは mermaid の図で描く）。
 説明のツールチップ・案内・配置の上書きを付けるときは、[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md) の map の範囲に入れて補足を記載する。
 次のどれかを持つコードブロックは、map の図にせず、警告を出さずに mermaid の図で描く。
 
@@ -56,6 +56,7 @@ flowchart LR
 リンクは本文のリンクと同じ色と下線で、押すか Tab でフォーカスして Enter を押すと同じタブで開く。
 後ろに記載した `_blank` などの開く先とツールチップは使用しない。
 URL は本文のリンクと同じく `http`・`https`・`mailto` と相対パスだけをリンクにし、`javascript:` などはリンクにしない。
+`flowchart` の `id:` で始まる URL は、`mount` の `resolveIdLink` が返却した URL のリンクにする（[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md#ノードにリンク先を持たせる)）。
 `click {ノード} call {関数}()` などの関数を呼ぶ行は動かさない。
 
 ### テーマを変える
