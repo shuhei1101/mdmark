@@ -35,3 +35,9 @@ confirmations:
     approver: shuhei1101
     commit: e2bec0f2
     thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594642955
+  - topic: map で同じ図にできない純粋な Mermaid（map が読めない行・見た目を指定する行・%%{init}%%・front matter の config）の扱い
+    decision: 書き方の警告を出さず、今の mermaid の図で描く（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: cff546f2
+    thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594950148
