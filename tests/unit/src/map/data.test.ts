@@ -97,6 +97,19 @@ test("test_parse_map_data_when_double_hyphen", async () => {
   expect(problems[0]?.message).toContain("walkthroughs[0].text");
 });
 
+// Unicode エスケープで記載した -- を含む値（正常系）
+test("test_parse_map_data_when_escaped_double_hyphen", async () => {
+  // 準備
+  const { parseMapData } = await loadData();
+  // 実行
+  const { data, problems } = parseMapData(
+    '{"version": 1, "notes": {"a": {"text": "a -\\u002db"}}}',
+  );
+  // 検証
+  expect(problems).toEqual([]);
+  expect(data.notes.a).toEqual({ text: "a --b" });
+});
+
 // JSON のオブジェクトとして読めない（異常系）
 test("test_parse_map_data_when_unreadable", async () => {
   // 準備
