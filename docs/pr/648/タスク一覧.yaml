@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T10:24:00.457581+00:00'
   - process: ドキュメント修正
-    status: todo
-    note: テスト実行方法の location・run_runner、project-index.yaml の Schema の参照、アーキテクチャ図の外部システム、.github/files.yaml
+    status: done
+    note: .github/files.yaml は workflow のファイルを作る実装で修正する
+    updated_by: planner
+    updated_at: '2026-11-17T10:40:46.192847+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: workflow の YAML と設計書の変更で、単体テストの対象になるコードを変えない
