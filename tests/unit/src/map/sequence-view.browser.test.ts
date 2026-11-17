@@ -175,7 +175,7 @@ test("test_attach_map_sequence_when_actor_default", async () => {
     root
       .querySelector(`[data-participant="${id}"] .mdmark-map-icon`)
       ?.getAttribute("data-icon") ?? null;
-  const attachWith = (kinds: Record<string, unknown>) => {
+  const attachWith = (kinds: Record<string, { icon: string }>) => {
     const root = createRootFromHtml(renderDoc(mapRange({ mermaid })).html);
     const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
     handles.push(

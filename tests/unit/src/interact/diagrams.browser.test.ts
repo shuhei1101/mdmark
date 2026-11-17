@@ -484,14 +484,25 @@ test("test_attach_diagrams_when_modal_heads", async () => {
   button(root, "全画面で開く").click();
   const dialog = document.querySelector<HTMLDialogElement>("dialog[open]");
   const modalViewport = viewportOf(dialog as HTMLDialogElement);
+  // 全画面の全体が収まる倍率では縦に動かせないため、拡大してから動かす
+  button(dialog as HTMLDialogElement, "拡大").click();
+  button(dialog as HTMLDialogElement, "拡大").click();
+  const stage = (dialog as HTMLDialogElement).querySelector<HTMLElement>(
+    ".mdmark-diagram-stage",
+  );
+  const scale = Number(/scale\(([\d.]+)\)/.exec(stage?.style.transform ?? "")?.[1] ?? "1");
   // 実行
   modalViewport.scrollTop = 120;
   modalViewport.dispatchEvent(new Event("scroll"));
-  // 検証
+  // 検証（図の座標に直した 120px）
   await vi.waitFor(() =>
-    expect(headsTransform(dialog as HTMLDialogElement)).toBe(
-      "translateY(120px)",
-    ),
+    expect(
+      Number(
+        /translateY\(([\d.]+)px\)/.exec(
+          headsTransform(dialog as HTMLDialogElement),
+        )?.[1],
+      ),
+    ).toBeCloseTo(120 / scale, 2),
   );
 });
 
