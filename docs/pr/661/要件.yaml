@@ -1,0 +1,36 @@
+use_cases: []
+docs:
+  - page: project-index.yaml
+    new: false
+    change: 'nav を記載する（タブ: はじめに・使い方・設計書・コード・リファレンス・用語集の順。規約の文書が配信元に無いため規約のタブは配置しない。設計書の種類と、コードのフォルダをサイドバーのグループにし、目次を並べない）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:58.303074+00:00'
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: リポジトリの構成の表の project-index.yaml の行の中身に、dev-docs の画面のタブとサイドバーの構成（nav）を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:58.303074+00:00'
+  - page: docs/layout/LAY-472-1.yaml
+    new: false
+    change: project-index.yaml の contents に、dev-docs の画面のタブとサイドバーの構成を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:58.303074+00:00'
+  - page: docs/guide/files.yml
+    new: false
+    change: 各行に name を付け、サイドバーのページ名からグループ名の頭（「コアコンセプト-」など）と拡張子を除く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:59.173212+00:00'
+scope_out:
+  - item: 配信元 mdmark の検索の対象（documents[]）とメタデータの見直し
+    reason: 要望に含まれない。同じ project-index.yaml を変えるが目的が別
+    plan: '#645'
+  - item: dev-docs の画面の目次の重なり
+    reason: dev-docs 側の不具合で、この配信元の設定では直らない
+    plan: shuhei1101/dev-docs#226
+  - item: 公開ドキュメントのファイルの置き場所・category の付け直し
+    reason: 要望はナビゲーションの定義で、文書の分類は今の category をそのまま使用する
+    plan: none
