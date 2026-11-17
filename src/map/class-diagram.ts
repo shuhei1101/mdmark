@@ -45,6 +45,8 @@ export type ClassDiagram = {
   namespaces: string[];
   relations: ClassRelation[];
   notes: ClassNote[];
+  /** `click`・`link` の行のクラスの ID からリンク先 */
+  links: Record<string, string>;
   problems: MapProblem[];
 };
 
@@ -91,6 +93,9 @@ const ANNOTATION_RE = new RegExp(`^<<(.+)>>\\s+(${ID})$`);
 const MEMBER_RE = new RegExp(`^(${ID})\\s*:\\s*(.+)$`);
 const NOTE_RE = new RegExp(`^note\\s+for\\s+(${ID})\\s+"([^"]*)"$`);
 /** 読んで捨てる行 */
+/** `click {クラス} href "{URL}"`（`href` は省ける）と `link {クラス} "{URL}"` の行（後ろのツールチップと `_blank` などは読まない） */
+const LINK_RE = /^(click|link)\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
+
 const IGNORED_RE =
   /^(direction|classDef|cssClass|style|click|callback|link|accTitle|accDescr|title)\b/;
 
@@ -289,11 +294,17 @@ export const parseClassDiagram = (source: string): ClassDiagram => {
     open: undefined,
   };
   const problems: MapProblem[] = [];
+  const links: Record<string, string> = {};
   for (const [line, raw] of source.split("\n").entries()) {
     const text = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text === "") continue;
     if (reading.open) {
       readInside(reading, text);
+      continue;
+    }
+    const link = LINK_RE.exec(text);
+    if (link) {
+      links[link[2] ?? ""] = link[3] ?? "";
       continue;
     }
     if (IGNORED_RE.test(text)) continue;
@@ -306,6 +317,7 @@ export const parseClassDiagram = (source: string): ClassDiagram => {
     namespaces: reading.namespaces,
     relations: reading.relations,
     notes: reading.notes,
+    links,
     problems,
   };
 };
@@ -360,7 +372,7 @@ export const classToFlowchart = (diagram: ClassDiagram): Flowchart => {
     nodes,
     groups,
     edges,
-    links: {},
+    links: { ...diagram.links },
     problems: diagram.problems,
   };
 };

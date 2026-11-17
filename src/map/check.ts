@@ -441,3 +441,39 @@ export const checkMapConfig = (
   }
   return issues;
 };
+
+/** map が読み捨てる見た目を指定する行（どの種類にも当たる） */
+const STYLE_LINE_RE = /^(classDef|style|linkStyle|cssClass)\b/;
+
+/** flowchart と状態遷移図でクラスを当てる `class` の行 */
+const CLASS_LINE_RE = /^class\s/;
+
+/** ノードの `:::` のクラスの指定 */
+const CLASS_SHORTHAND_RE = /:::[\w-]/;
+
+/** 範囲の外の map の図を mermaid の図に戻すか（map が読めない行か、読み捨てる見た目の指定を持つ） */
+export const needsMermaidFallback = (options: {
+  kind: MapKindName;
+  mermaid: string;
+}): boolean => {
+  const { kind, mermaid } = options;
+  const lines = mermaid
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== "" && !line.startsWith("%%"));
+  const classLine = kind === "flowchart" || kind === "stateDiagram";
+  if (
+    lines.some(
+      (line) =>
+        STYLE_LINE_RE.test(line) ||
+        CLASS_SHORTHAND_RE.test(line) ||
+        (classLine && CLASS_LINE_RE.test(line)),
+    )
+  ) {
+    return true;
+  }
+  const { data } = parseMapData(undefined);
+  return (
+    mermaidIdsOf(kind, { mermaid, line: undefined, data }).problems.length > 0
+  );
+};

@@ -67,3 +67,21 @@ export const ParticipantTerms: Story = {
   parameters: { server: { id: "map-sequence" } },
   args: { terms: '{"mount": "文書を要素の中に描く関数"}' },
 };
+
+export const ActorIcon: Story = {
+  name: "ActorIcon",
+  parameters: { server: { id: "map-sequence" } },
+  args: { source: "actor" },
+};
+
+export const HeadsStuck: Story = {
+  name: "HeadsStuck",
+  parameters: { server: { id: "map-sequence" } },
+  args: {},
+};
+
+export const Plain: Story = {
+  name: "Plain",
+  parameters: { server: { id: "map-sequence" } },
+  args: { title: "シーケンス図" },
+};

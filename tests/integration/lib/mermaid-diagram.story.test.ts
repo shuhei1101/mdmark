@@ -255,3 +255,19 @@ test("test_node_link", async () => {
   expect(outline).toEqual({ width: "2px", color: linkColor });
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// map の図から mermaid の図に戻した flowchart は、`style` の行で指定した塗りで描く（StyledFallback）
+test("test_styled_fallback", async () => {
+  // 準備・実行
+  const page = await openMermaid("styled-fallback");
+  // 検証
+  const fills = await page
+    .locator("svg .node :is(rect, path, polygon)")
+    .evaluateAll((shapes) =>
+      shapes.map((shape) => getComputedStyle(shape).fill),
+    );
+  expect(fills).toContain("rgb(255, 153, 255)");
+  await expect(page.locator("figcaption").innerText()).resolves.toBe(
+    "フローチャート",
+  );
+});

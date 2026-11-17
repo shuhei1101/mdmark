@@ -1,0 +1,78 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリへの機能追加のため
+    updated_by: planner
+    updated_at: '2026-11-16T17:37:32.437787+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が揃っているため
+    updated_by: planner
+    updated_at: '2026-11-16T17:37:32.437787+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため
+    updated_by: planner
+    updated_at: '2026-11-16T17:37:32.437787+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: map の図で SVG に操作を付ける仕組みが動いており、未検証の技術に依存しないため
+    updated_by: planner
+    updated_at: '2026-11-16T17:37:32.437787+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    updated_by: planner
+    updated_at: '2026-11-16T20:29:57.312017+00:00'
+    reason: 文書の作成者が mermaid のコードブロックを記載し、読者が描いた図を操作する流れ（単一 UC の連鎖）は変わらず、変わるのは単一 UC『mermaidの図を描く』『図を拡大・縮小・移動する』の中の操作だけのため。純粋な Markdown だけの文書を描いて操作する新規の複合 UC も、同じ連鎖になるため作らない。複合 UC『Mermaidと補足で書いた図を辿って読む』は記載方法が map の範囲のままで影響しない
+  - process: デザインスタイル選定
+    status: skipped
+    reason: docs/design-policy.md があり、Issue は見た目の方向を変えないため（モック要否 Q4）
+    updated_by: planner
+    updated_at: '2026-11-16T17:37:32.437787+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更が無いため（モック要否 Q2）
+    updated_by: planner
+    updated_at: '2026-11-16T17:37:32.437787+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T01:14:06.740802+00:00'
+    note: 案 A（確認ログ）で SC-472-11・SC-472-19・SC-472-42 を書き直した
+  - process: モック作成
+    status: done
+    note: '同じ Mermaid を今の描き方と案 A で並べる部品のモック（docs/mock/components/plain-mermaid/）を作る（モック要否 Q3: 案 A で読者に見える変化を確認する）'
+    updated_by: planner
+    updated_at: '2026-11-17T02:50:39.340088+00:00'
+  - process: インターフェース定義設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:01:06.790250+00:00'
+  - process: 部品設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:39:47.926235+00:00'
+  - process: 画面設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:39:47.926235+00:00'
+  - process: モジュール構成設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:50:38.330819+00:00'
+  - process: ドキュメント修正
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:15.122657+00:00'
+  - process: 単体テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T04:08:04.357327+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T04:22:07.792987+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T04:50:43.712217+00:00'

@@ -80,3 +80,9 @@ export const Narrow: Story = {
   parameters: { server: { id: "map-flow" } },
   args: {},
 };
+
+export const Plain: Story = {
+  name: "Plain",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "plain" },
+};

@@ -3156,6 +3156,7 @@ test("test_normal_when_index_in_browser", async () => {
 /** ノード 12 個を横につなぎ、6 つ目から 4 つの分岐を縦に並べ、描くと幅が 1100px を超える flowchart の mermaid のコードブロック */
 const WIDE_MERMAID = [
   "```mermaid",
+  "%%{init: {}}%%",
   "flowchart LR",
   ...Array.from(
     { length: 11 },
@@ -12791,6 +12792,7 @@ const TALL_MERMAID = [
   "---",
   "title: 縦に長いデータ",
   "---",
+  "%%{init: {}}%%",
   "flowchart TD",
   ...Array.from(
     { length: 19 },
@@ -14109,12 +14111,14 @@ const MERMAID_MARKDOWN = [
   "---",
   "title: 問い合わせの受付",
   "---",
+  "%%{init: {}}%%",
   "flowchart LR",
   "  A[問い合わせを受ける] --> B{担当がいるか}",
   "  B -->|いる| C[担当へ回す]",
   "```",
   "",
   "```mermaid",
+  "%%{init: {}}%%",
   "sequenceDiagram",
   "  actor U as 読者",
   "  participant M as mdmark",
@@ -14126,6 +14130,7 @@ const MERMAID_MARKDOWN = [
 /** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
 const MERMAID_FLOWCHART = [
   "```mermaid",
+  "%%{init: {}}%%",
   "flowchart LR",
   "  A[受付] --> B[回答]",
   "```",
@@ -14488,6 +14493,7 @@ test(
 /** click・link の URL の行・関数を呼ぶ行を持つ flowchart と classDiagram の mermaid のコードブロックを持つ文書 */
 const MERMAID_LINKED = [
   "```mermaid",
+  "%%{init: {}}%%",
   "flowchart LR",
   "  A[設計] --> B[実装] --> C[外部] --> D[危険] --> E[関数] --> F[無し]",
   '  click A href "./a.md"',
@@ -14498,6 +14504,7 @@ const MERMAID_LINKED = [
   "```",
   "",
   "```mermaid",
+  "%%{init: {}}%%",
   "classDiagram",
   "  class A",
   "  class B",
@@ -18540,4 +18547,150 @@ test("test_normal_when_map_hints_off", async () => {
       (tip) => !tip.hidden,
     ),
   ).toHaveLength(0);
+});
+
+/** 範囲の外の純粋な Mermaid（map が描く種類）と gantt を持つ文書 */
+const PLAIN_MERMAID_MARKDOWN = [
+  "```mermaid",
+  "flowchart LR",
+  "  A[受付] --> B[回答]",
+  "```",
+  "",
+  "```mermaid",
+  "sequenceDiagram",
+  "  actor U as 読者",
+  "  participant M as mdmark",
+  "  U->>M: ページを開く",
+  "```",
+  "",
+  "```mermaid",
+  "gantt",
+  "  dateFormat YYYY-MM-DD",
+  "  section 設計",
+  "  画面 :a1, 2026-01-01, 3d",
+  "```",
+  "",
+].join("\n");
+
+// 範囲の外の純粋な Mermaid のうち map が描く種類は補足の無い map の図、ほかの種類は mermaid の図にする（正常系（範囲の外の map の図））
+test(
+  "test_normal_when_plain_mermaid_map",
+  async () => {
+    // 準備
+    const el = createElement();
+    // 実行
+    await mountTracked(el, {
+      markdown: PLAIN_MERMAID_MARKDOWN,
+      config: { mermaid: { url: mermaidUrl("plain") } },
+    });
+    await vi.waitFor(
+      () => {
+        expect(
+          el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+        ).toHaveLength(2);
+        expect(
+          el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+        ).toHaveLength(1);
+      },
+      { timeout: MERMAID_WAIT_MS },
+    );
+    // 検証
+    const titles = [
+      ...el.querySelectorAll<HTMLElement>(
+        'figure.mdmark-diagram[data-diagram="map"] figcaption',
+      ),
+    ].map((caption) => caption.textContent?.trim());
+    expect(titles).toEqual(["フローチャート", "シーケンス図"]);
+    expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+    expect(
+      el.querySelector('[data-participant="U"] .mdmark-diagram-node-kind svg'),
+    ).not.toBeNull();
+  },
+  MERMAID_WAIT_MS + 30_000,
+);
+
+// map で同じ図にできない純粋な Mermaid は、警告を出さずに mermaid の図で描く（異常系（map が読めない行を持つ））
+test(
+  "test_error_when_plain_map_cannot_read",
+  async () => {
+    // 準備
+    const el = createElement();
+    const markdown = [
+      "```mermaid",
+      "flowchart LR",
+      "  A --> B",
+      "  style A fill:#f9f",
+      "```",
+      "",
+      "```mermaid",
+      "flowchart LR",
+      "  C --> D",
+      "```",
+      "",
+    ].join("\n");
+    // 実行
+    await mountTracked(el, {
+      markdown,
+      config: { mermaid: { url: mermaidUrl("fallback") } },
+    });
+    await vi.waitFor(
+      () => {
+        expect(
+          el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+        ).toHaveLength(1);
+        expect(
+          el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+        ).toHaveLength(1);
+      },
+      { timeout: MERMAID_WAIT_MS },
+    );
+    // 検証
+    expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  },
+  MERMAID_WAIT_MS + 30_000,
+);
+
+// 範囲の外のシーケンス図の参加者の行を、文書をスクロールしたときも画面の上端（--mdmark-sticky-top）に留める（正常系（参加者の行を留める））
+test("test_normal_when_plain_sequence_heads_stuck", async () => {
+  // 準備
+  const el = createElement();
+  el.style.setProperty("--mdmark-sticky-top", "48px");
+  const messages = Array.from(
+    { length: 30 },
+    (_, index) => `  A->>B: 手順 ${index + 1}`,
+  );
+  const markdown = [
+    "```mermaid",
+    "sequenceDiagram",
+    "  participant A as 利用側",
+    "  participant B as mdmark",
+    ...messages,
+    "```",
+    "",
+    "本文",
+    "",
+  ].join("\n");
+  const spacer = document.createElement("div");
+  spacer.style.height = "3000px";
+  document.body.append(spacer);
+  await mountTracked(el, { markdown });
+  const viewport = await vi.waitFor(
+    () =>
+      find<HTMLElement>(
+        el,
+        'figure.mdmark-diagram[data-diagram="map"] .mdmark-diagram-viewport',
+      ),
+    { timeout: MAP_WAIT_MS },
+  );
+  const heads = find<HTMLElement>(el, ".mdmark-diagram-seq-heads");
+  // 実行: 表示する枠の上端を画面の上端より 100px 上に出す
+  window.scrollBy(0, viewport.getBoundingClientRect().top + 100);
+  // 検証
+  await vi.waitFor(() => {
+    expect(heads.classList.contains("is-stuck")).toBe(true);
+    const top = heads.getBoundingClientRect().top;
+    expect(Math.abs(top - 48)).toBeLessThanOrEqual(2);
+  });
+  window.scrollTo(0, 0);
+  spacer.remove();
 });

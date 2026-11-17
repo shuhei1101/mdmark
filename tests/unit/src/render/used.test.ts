@@ -83,7 +83,7 @@ test("test_collect_range_scripts_when_off_or_no_script", async () => {
 test("test_uses_mermaid", async () => {
   // 準備
   const { usesMermaid } = await loadUsed();
-  const mermaid = ["```mermaid", "flowchart LR", "```", ""].join("\n");
+  const mermaid = ["```mermaid", "gantt", "```", ""].join("\n");
   const ts = ["```ts", "const a = 1;", "```", ""].join("\n");
   const disabled = `<!-- features: {"mermaid": false} -->\n\n${mermaid}`;
   // 実行
@@ -173,4 +173,28 @@ test("test_used_syntax_languages_when_disabled", async () => {
   });
   // 検証
   expect(languages).toEqual([]);
+});
+
+// 範囲の外の map の図は、mermaid の図に戻すものだけ数える（正常系）
+test("test_uses_mermaid_when_plain", async () => {
+  // 準備
+  const { usesMermaid } = await loadUsed();
+  const plain = ["```mermaid", "flowchart LR", "  A --> B", "```", ""].join(
+    "\n",
+  );
+  const styled = [
+    "```mermaid",
+    "flowchart LR",
+    "  A --> B",
+    "  style A fill:#f9f",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const results = [
+    usesMermaid({ markdowns: [plain], config: {} }),
+    usesMermaid({ markdowns: [styled], config: {} }),
+  ];
+  // 検証
+  expect(results).toEqual([false, true]);
 });

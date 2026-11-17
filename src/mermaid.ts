@@ -393,6 +393,8 @@ export const attachMermaid = (options: {
   modules: Map<string, Promise<{ default?: unknown }>>;
   placement: TooltipPlacement;
   importModule?: SyntaxImport;
+  /** 図にするコードブロック（省くと `root` の中の全ての `[data-mdmark-mermaid]`） */
+  blocks?: HTMLElement[] | undefined;
 }): { ready: Promise<void>; detach: () => void } => {
   const {
     root,
@@ -404,7 +406,7 @@ export const attachMermaid = (options: {
     placement,
     importModule = importByUrl,
   } = options;
-  const blocks = [
+  const blocks = options.blocks ?? [
     ...root.querySelectorAll<HTMLElement>(`[${MERMAID_ATTRIBUTE}]`),
   ];
   if (blocks.length === 0) {

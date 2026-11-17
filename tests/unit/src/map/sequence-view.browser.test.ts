@@ -163,3 +163,42 @@ test("test_attach_map_sequence_when_reorder_cancelled", async () => {
       .translate,
   ).toBe("");
 });
+
+// 設定に無くても actor に人のアイコンを付ける（正常系）
+test("test_attach_map_sequence_when_actor_default", async () => {
+  // 準備
+  const { attachMapSequence } = await loadSequenceView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const mermaid =
+    "sequenceDiagram\n  actor U as 読者\n  participant P\n  U->>P: 開く\n";
+  const iconOf = (root: HTMLElement, id: string) =>
+    root
+      .querySelector(`[data-participant="${id}"] .mdmark-map-icon`)
+      ?.getAttribute("data-icon") ?? null;
+  const attachWith = (kinds: Record<string, { icon: string }>) => {
+    const root = createRootFromHtml(renderDoc(mapRange({ mermaid })).html);
+    const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+    handles.push(
+      attachMapSequence(
+        range,
+        resolveConfig({ config: { map: { ...CONFIG, kinds } } }),
+        { args: parseMapArgs("").args },
+      ),
+    );
+    return root;
+  };
+  // 実行
+  const withoutActor = attachWith({});
+  const withActor = attachWith({ actor: { icon: "smile" } });
+  // 検証
+  expect(iconOf(withoutActor, "U")).toBe("user");
+  expect(iconOf(withoutActor, "P")).toBeNull();
+  expect(iconOf(withActor, "U")).toBe("smile");
+  // 人のアイコンは種類の行に svg で描かれる
+  expect(
+    withoutActor.querySelector(
+      '[data-participant="U"] .mdmark-diagram-node-kind svg',
+    ),
+  ).not.toBeNull();
+});

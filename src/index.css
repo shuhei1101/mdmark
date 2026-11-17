@@ -5127,6 +5127,12 @@
     .mdmark-diagram-node-kind {
       display: flex;
       gap: 0.3rem;
+
+      /* 種類を持たないノード: 種類の行を描かず、名前をノードの上下の中央に置く */
+      &.is-empty {
+        display: none;
+      }
+
       align-items: center;
       color: var(--node-color);
       font-size: 11px;
@@ -5264,6 +5270,16 @@
       &.is-stuck {
         border-bottom: 1px solid var(--mdmark-color-border);
       }
+    }
+
+    /* 留めた相手の名前の行の地が、表示するノードの枠線とツールの行の線を隠さないよう、枠線を行の上に重ねて描く */
+    .mdmark-diagram-box:has(.mdmark-diagram-seq-heads)::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inherit;
+      pointer-events: none;
     }
 
     /* ---------- グラフ ---------- */
@@ -10425,6 +10441,12 @@
     > .mdmark-diagram-node {
     justify-content: flex-start;
     padding-right: 28px;
+  }
+  /* 種類を持たないノードは種類の行を描かず、名前をノードの上下の中央に置く */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node:has(> .mdmark-diagram-node-kind.is-empty) {
+    justify-content: center;
   }
   /* シーケンス図の参加者の箱は、名前が 2 行になっても詰まらないよう高さを中身に合わせる */
   .mdmark-diagram[data-diagram="map"] .map-participant {

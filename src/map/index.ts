@@ -1,8 +1,9 @@
 import type { ResolvedConfig } from "../config.ts";
+import { MERMAID_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
 import { attachMapArchitecture } from "./architecture-view.ts";
 import { attachMapC4 } from "./c4-view.ts";
-import { collectMapProblems } from "./check.ts";
+import { collectMapProblems, needsMermaidFallback } from "./check.ts";
 import { attachMapClass } from "./class-view.ts";
 import { attachMapEr } from "./er-view.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
@@ -11,7 +12,11 @@ import { parseSequence, type SequenceMessage } from "./sequence.ts";
 import { attachMapSequence } from "./sequence-view.ts";
 import { parseMapArgs } from "./spec.ts";
 import { attachMapState } from "./state-view.ts";
-import { collectMapStructure, type MapRangeSource } from "./structure.ts";
+import {
+  collectMapStructure,
+  type MapKindName,
+  type MapRangeSource,
+} from "./structure.ts";
 
 export { attachMapFlow } from "./flow-view.ts";
 export { attachMapSequence } from "./sequence-view.ts";
@@ -139,7 +144,8 @@ const FLOW_BASED: Record<
 const attachRange = (context: AttachContext, range: HTMLElement): void => {
   const { config, destroyers } = context;
   const source = sourceOf(range);
-  warnRange(range, { source, config });
+  if (range.dataset.mapPlain === undefined)
+    warnRange(range, { source, config });
   const { args } = parseMapArgs(range.dataset.mapArgs ?? "");
   collapseRange(range, args);
   const kind = range.dataset.mapKind ?? "";
@@ -261,10 +267,32 @@ const linkSequence = (context: AttachContext, entry: SequenceEntry): void => {
     ]);
 };
 
+/** map の図から戻したときに呼ぶ関数 */
+export type MapHooks = {
+  /** 戻した mermaid のコードブロック（`data-mdmark-mermaid` を持つ要素）を指定して呼ぶ */
+  restoreMermaid?: (blocks: HTMLElement[]) => void;
+};
+
+/** 範囲の外の map の図を、front matter を含む元のソースの mermaid のコードブロックに戻す。戻さない図は `undefined` */
+const restorePlain = (range: HTMLElement): HTMLElement | undefined => {
+  const code = range.querySelector("code");
+  const block = code?.closest<HTMLElement>(".mdmark-code, pre");
+  if (!code || !block) return undefined;
+  const mermaid = code.textContent ?? "";
+  const kind = (range.dataset.mapKind ?? "") as MapKindName;
+  if (!needsMermaidFallback({ kind, mermaid })) return undefined;
+  const front = range.dataset.mapFrontMatter;
+  code.textContent = front === undefined ? mermaid : `${front}\n${mermaid}`;
+  block.setAttribute(MERMAID_ATTRIBUTE, "");
+  range.replaceWith(block);
+  return block;
+};
+
 /** `root` の中の `div.mdmark-map` ごとに、種類で構成図かシーケンス図を付け、案内と再生をつなぎ、片付ける関数を返す */
 export const attachMap = (
   root: HTMLElement,
   config: ResolvedConfig,
+  hooks: MapHooks = {},
 ): (() => void) => {
   const context: AttachContext = {
     config,
@@ -273,8 +301,14 @@ export const attachMap = (
     sequences: [],
     flowIds: new Map(),
   };
-  for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map"))
-    attachRange(context, range);
+  const restored: HTMLElement[] = [];
+  for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map")) {
+    const block =
+      range.dataset.mapPlain === undefined ? undefined : restorePlain(range);
+    if (block) restored.push(block);
+    else attachRange(context, range);
+  }
+  if (restored.length > 0) hooks.restoreMermaid?.(restored);
   for (const entry of context.sequences) linkSequence(context, entry);
   return () => {
     for (const destroy of context.destroyers.splice(0)) destroy();

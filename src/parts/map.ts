@@ -1490,10 +1490,13 @@ const renderSeqMarkers = (id: string): string =>
 
 /** 参加者の種類の行（アイコンと種類の名前） */
 const seqHeadKind = (kind: MapKind | undefined): string => {
+  const bundled =
+    kind?.icon === undefined ? undefined : bundledIconNode(kind.icon);
+  // まとめたアイコンはその場で描き、まとめていないアイコンは読み込む場所を配置する
   const icon =
     kind?.icon === undefined
       ? ""
-      : `<span class="mdmark-map-icon" data-icon="${escapeHtml(kind.icon)}" aria-hidden="true"></span>`;
+      : `<span class="mdmark-map-icon" data-icon="${escapeHtml(kind.icon)}" aria-hidden="true">${bundled ? iconNodeSvg(bundled as unknown as MdmarkIconNode) : ""}</span>`;
   const tag =
     kind?.label === undefined ? "" : `<span>${escapeHtml(kind.label)}</span>`;
   return `<span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span>`;

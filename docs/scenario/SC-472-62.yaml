@@ -523,7 +523,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 設定の `features` は `map` を記載しない（既定のオン）
       - name: map の機能を解除する Markdown
-        description: '先頭に `map` の機能を解除する `<!-- features: {...} -->` を持ち、map の範囲を 1 つ持つ文書'
+        description: '先頭に `map` の機能を解除する `<!-- features: {...} -->` を持ち、map の範囲を 1 つと、範囲の外に言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書'
         notes: 機能名はインターフェース定義で決める
       - name: Mock
         description: 正常シナリオと同じ。mermaid の本体と chunk も jsDelivr と同じパスで返却する
@@ -543,7 +543,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - map の図が描かれず、範囲の中の mermaid のブロックが、mermaid のコードブロックと同じく mermaid の図で描かれる
+      - map の図が描かれず、範囲の中の mermaid のブロックと、範囲の外の flowchart のコードブロックが、どちらも mermaid の図で描かれる（map をオフにした文書では、map が描ける種類も mermaid で描く）
       - 補足の文字とマーカーの文字が出ていない
       - 記載の警告が出ていない
     test: test_normal_when_map_disabled

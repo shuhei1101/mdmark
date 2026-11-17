@@ -1453,3 +1453,30 @@ test("test_render_map_c4_diagram", async () => {
     expect(plainText(group)).toContain(title);
   }
 });
+
+// 種類を持たないノードは種類の行を空にする（正常系）
+test("test_render_map_flow_when_no_kind", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap } = await loadLayout();
+  const chart = parseFlowchart("flowchart LR\n  A[受付]:::step --> B[回答]\n");
+  const layout = layoutMap(
+    chart,
+    { collapsed: [], entered: undefined },
+    { overrides: {}, nodeFit: "height" },
+  );
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    layout,
+  });
+  // 検証
+  const kindOf = (id: string): string => {
+    const start = html.indexOf(`data-node="${id}"`);
+    const rest = html.slice(start);
+    return rest.match(/class="mdmark-diagram-node-kind[^"]*"/)?.[0] ?? "";
+  };
+  expect(kindOf("B")).toContain("is-empty");
+  expect(kindOf("A")).not.toContain("is-empty");
+});

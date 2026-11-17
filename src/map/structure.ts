@@ -1,3 +1,4 @@
+import { splitMermaidTitle } from "../mermaid-source.ts";
 import { type MapProblem, parseMapArgs } from "./spec.ts";
 
 /** 範囲の中身（マーカーの引数・mermaid のブロック・補足とその数）。line は範囲の開きのマーカーからの行 */
@@ -43,6 +44,37 @@ export const mapKindOf = (mermaid: string): MapKindName | undefined => {
   return Object.hasOwn(KIND_OF_FIRST_WORD, first)
     ? KIND_OF_FIRST_WORD[first]
     : undefined;
+};
+
+/** ソースの先頭の front matter（`---` で囲んだ行） */
+const FRONT_MATTER_RE = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+
+/** 範囲の外の map の図にする mermaid のコードブロックの中身 */
+export type PlainMapSource = {
+  kind: MapKindName;
+  body: string;
+  frontMatter: string | undefined;
+  title: string | undefined;
+};
+
+/** mermaid のコードブロックのソースから、範囲の外の map の図にする中身を返す。front matter の `config`・`%%{` の行を持つか、map が描けない種類なら `undefined` */
+export const plainMapSourceOf = (
+  source: string,
+): PlainMapSource | undefined => {
+  const front = FRONT_MATTER_RE.exec(source);
+  if (front && /^config\s*:/m.test(front[1] ?? "")) return undefined;
+  const body = front ? source.slice(front[0].length) : source;
+  const lines = body.split(/\r?\n/).map((line) => line.trim());
+  if (lines.some((line) => line.startsWith("%%{"))) return undefined;
+  const first = lines.find((line) => line !== "" && !line.startsWith("%%"));
+  const kind = mapKindOf(first ?? "");
+  if (kind === undefined) return undefined;
+  return {
+    kind,
+    body,
+    frontMatter: front ? front[0].replace(/\r?\n$/, "") : undefined,
+    title: splitMermaidTitle(source).title,
+  };
 };
 
 /** 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめる（Mermaid と補足の中身は読まない） */

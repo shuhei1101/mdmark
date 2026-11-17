@@ -40,7 +40,7 @@ functions:
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`classDiagram` の Mermaid を、クラス・メンバー・関係・`namespace`・ノートと読めない行の項目に読む'
+    summary: '`classDiagram` の Mermaid を、クラス・メンバー・関係・`namespace`・ノートと読めない行の項目に読み、`click {クラス} href "{URL}"`（`href` は省ける）と `link {クラス} "{URL}"` の行をクラスの ID からリンク先への `links` に読む'
     scope: public
     args:
       - name: source
@@ -74,13 +74,21 @@ functions:
         condition: '`class 図面 {` の後に `}` が無い'
         mock: なし
         expected: '`map_invalid` が 1 件'
+      - name: test_parse_class_diagram_when_links
+        case: 正常
+        summary: click と link の行をリンク先にする
+        condition: '`click 図面 href "./drawing.md"`・`click 円 "https://example.com"`・`link 線 "./line.md"` の行を持つ classDiagram'
+        mock: なし
+        expected: '`links` が `{"図面":"./drawing.md","円":"https://example.com","線":"./line.md"}` で、読めない行の項目が無い'
+    refs:
+      - IF-472-35#constraints[map のクラス図]
   - name: classToFlowchart
     title: クラス図を構成図の入力にする
     kind: 関数
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: クラスをノード、`namespace` をグループ、関係を線、ノートを破線でつないだノードにした、左から右の `Flowchart` を作る
+    summary: クラスをノード、`namespace` をグループ、関係を線、ノートを破線でつないだノードにした、左から右の `Flowchart` を作る。クラス図の `links` を `Flowchart` の `links` に写す
     scope: public
     args:
       - name: diagram
@@ -97,6 +105,12 @@ functions:
         condition: モックの `CLASS`
         mock: なし
         expected: ノード 7（クラス 6・ノート 1）・グループ 1（`形状` の中に 3）・線 8 で、「一覧」の名前が `一覧<T>`、`r1` の元が「基本図形」、`n1` が「描画器」と `note_1` をつなぐ破線
+      - name: test_class_to_flowchart_when_links
+        case: 正常
+        summary: リンク先を構成図に写す
+        condition: '`links` に `図面` のリンク先を持つクラス図'
+        mock: なし
+        expected: '`Flowchart` の `links` が同じ対応'
   - name: classPartInputs
     title: クラス図の部品の入力
     kind: 関数

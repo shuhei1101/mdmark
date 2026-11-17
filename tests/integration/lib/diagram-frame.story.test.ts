@@ -336,3 +336,15 @@ test("test_touch_active", async () => {
   ).resolves.toBe("");
   await expectResizeValues(page);
 });
+
+// 範囲の外の純粋な Mermaid を描いた map の図は、タイトルが図の種類の名前（PlainMap）
+test("test_plain_map", async () => {
+  // 準備・実行
+  const page = await openFrame("plain-map", false);
+  // 検証
+  await expect(
+    page
+      .locator('figure.mdmark-diagram[data-diagram="map"] figcaption')
+      .innerText(),
+  ).resolves.toBe("シーケンス図");
+});

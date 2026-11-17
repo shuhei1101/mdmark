@@ -130,9 +130,9 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; commentStore?: MdmarkCommentStore; docId?: string; isCurrent: () => boolean; warned: { missingStore: boolean } }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; commentStore?: MdmarkCommentStore; docId?: string; isCurrent: () => boolean; warned: { missingStore: boolean }; config?: ResolvedConfig; restoreMermaid?: (blocks: HTMLElement[]) => void }'
         required: true
-        description: 描いた要素・文書で決まった機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか・`mount` ごとに記録する、読み込みと保存の関数が無いことを出したか
+        description: 描いた要素・文書で決まった機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか・`mount` ごとに記録する、読み込みと保存の関数が無いことを出したか・既定を当てた設定（map の図が使う）・map の図を mermaid の図に戻したときに呼ぶ関数（`attachMap` の `hooks.restoreMermaid` に指定する）
     returns:
       type: PartsHandle
       description: 付けた部品を削除する関数と、付けたコメントを再読み込みする・マーカーへ移る関数

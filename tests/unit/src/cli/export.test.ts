@@ -505,7 +505,7 @@ test("test_prepare_embeds_when_mermaid", async () => {
   const { prepareEmbeds } = await loadExport();
   const dir = await createTempDir();
   await writeFiles(dir, {
-    "guide.md": "```mermaid\nflowchart LR\n```\n",
+    "guide.md": "```mermaid\ngantt\n```\n",
     "plain.md": "# タイトル\n",
     "vendor/mermaid.mjs": "export default { initialize() {}, render() {} };\n",
   });
@@ -542,7 +542,7 @@ test("test_prepare_embeds_when_mermaid_unreadable", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
   const dir = await createTempDir();
-  await writeFiles(dir, { "guide.md": "```mermaid\nflowchart LR\n```\n" });
+  await writeFiles(dir, { "guide.md": "```mermaid\ngantt\n```\n" });
   const loaded = createLoaded(dir, { mermaid: { url: "missing/mermaid.mjs" } });
   // 実行
   const result = await prepareEmbeds({

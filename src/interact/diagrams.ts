@@ -4,6 +4,7 @@ import { iconSvg } from "../parts/icons.ts";
 import { attachDiagramResize, diagramHeightKey } from "./diagram-resize.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagramTouch } from "./diagram-touch.ts";
+import { findScrollContainer, type ScrollContainer } from "./scroller.ts";
 import { attachZoom } from "./zoom.ts";
 
 export { ZOOM };
@@ -13,7 +14,7 @@ const ZOOM_EPSILON = 0.001;
 
 // 文字を選べる所（ここではドラッグを始めない）
 const TEXT_SELECTOR =
-  ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
+  ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term, .mdmark-mermaid svg text, .mdmark-mermaid svg tspan, .mdmark-mermaid svg foreignObject *";
 
 // 操作を付けた回数の通し番号。`id` を重ならせないために使用する
 let attachCounter = 0;
@@ -65,6 +66,53 @@ export function renumberIds(
   }
 }
 
+/** 参加者の行を文書のスクロールでも留める図の、表示する枠をスクロールさせる場所（全画面のモーダルと、参加者の行の無い図は `undefined`） */
+function headsScroller(
+  figure: HTMLElement,
+  options: { modal: boolean; heads: HTMLElement | null },
+): ScrollContainer | undefined {
+  if (options.modal || !options.heads) return undefined;
+  return findScrollContainer(figure);
+}
+
+/** スクロールする場所の `scroll` を受け取る */
+function listenScroller(
+  scroller: ScrollContainer | undefined,
+  listener: () => void,
+  signal: AbortSignal,
+): void {
+  if (!scroller) return;
+  (scroller.page ? window : scroller.target).addEventListener(
+    "scroll",
+    listener,
+    { passive: true, signal },
+  );
+}
+
+/** シーケンス図の参加者の行を表示する枠の上端から下げる幅（px）。表示する枠の中を縦に動かした分と、文書のスクロールで表示する枠の上端が留める位置より上へ出た分の大きいほうで、表示する枠の下端より下へは出さない */
+function headsOffset(target: {
+  figure: HTMLElement;
+  viewport: HTMLElement;
+  heads: HTMLElement;
+  scroller: ScrollContainer | undefined;
+  scale: number;
+}): number {
+  const { figure, viewport, heads, scroller, scale } = target;
+  if (!scroller) return viewport.scrollTop;
+  const top = scroller.page ? 0 : scroller.target.getBoundingClientRect().top;
+  const stickyTop =
+    Number.parseFloat(
+      getComputedStyle(figure).getPropertyValue("--mdmark-sticky-top"),
+    ) || 0;
+  const page = top + stickyTop - viewport.getBoundingClientRect().top;
+  const limit =
+    viewport.clientHeight - heads.clientHeight * scale + viewport.scrollTop;
+  return Math.max(
+    viewport.scrollTop,
+    Math.min(viewport.scrollTop + page, limit),
+  );
+}
+
 /** 図 1 つの倍率と位置の操作（右上のボタン・キー・ドラッグ・リサイズハンドル）と、グループのタイトルを上端に留める処理を付け、操作と監視を解除する関数を返却する */
 function attachView(
   figure: HTMLElement,
@@ -94,12 +142,14 @@ function attachView(
   // リサイズハンドルで変えた高さ（変えていなければ `null`）
   let userHeight: number | null = null;
   /** シーケンス図の相手の名前の行を、表示する枠の上端に留める（図の座標で縦に動いた分だけ下げる） */
+  const scroller = headsScroller(figure, { modal, heads });
   const stickHeads = (): void => {
     if (!heads) {
       return;
     }
-    heads.style.transform = `translateY(${viewport.scrollTop / scale}px)`;
-    heads.classList.toggle("is-stuck", viewport.scrollTop > 0);
+    const offset = headsOffset({ figure, viewport, heads, scroller, scale });
+    heads.style.transform = `translateY(${Math.round(offset) / scale}px)`;
+    heads.classList.toggle("is-stuck", offset > 0);
   };
 
   /** 倍率が変わったとき: 文書の中では表示する枠の高さを合わせ、相手の名前の行をもう一度留める */
@@ -127,6 +177,8 @@ function attachView(
     passive: true,
     signal: controller.signal,
   });
+  listenScroller(scroller, stickHeads, controller.signal);
+
   const zoom = attachZoom({
     viewport,
     content: stage,

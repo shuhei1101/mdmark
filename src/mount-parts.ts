@@ -167,6 +167,8 @@ export function attachParts(options: {
   warned: PartsWarned;
   /** 既定を当てた設定（map の図が使う） */
   config?: ResolvedConfig | undefined;
+  /** map の図を mermaid の図に戻したときに、戻したコードブロックを指定して呼ぶ関数 */
+  restoreMermaid?: ((blocks: HTMLElement[]) => void) | undefined;
 }): PartsHandle {
   const { root, features, commentStore, docId, isCurrent, warned } = options;
   const detachers: Array<() => void> = [];
@@ -206,7 +208,14 @@ export function attachParts(options: {
   ) {
     loadPartModule("map")
       .then(({ module }) => {
-        if (active()) detachers.push(module.attachMap(root, config));
+        if (active())
+          detachers.push(
+            module.attachMap(root, config, {
+              restoreMermaid: (blocks) => {
+                if (active()) options.restoreMermaid?.(blocks);
+              },
+            }),
+          );
       })
       .catch((error: unknown) => report("map", error));
   }

@@ -29,7 +29,15 @@ flowchart LR
 言語を `mermaid` にしたコードブロックが、図の枠に入った図になる。
 front matter の `title` が図の枠のタイトルになり、図の中には重ねて描かない。
 `title` が無ければ `accTitle`、どちらも無ければ図の種類の名前（`フローチャート`・`シーケンス図` など）がタイトルになる。
-`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context` を、中へ入る・開閉・案内・再生・選択で読ませるときは、[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md) の map の範囲に入れる。
+`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context` は、map の範囲に入れなくても map の図で描く（機能 `map` がオフのときは mermaid の図で描く）。
+説明のツールチップ・案内・配置の上書きを付けるときは、[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md) の map の範囲に入れて補足を記載する。
+次のどれかを持つコードブロックは、map の図にせず、警告を出さずに mermaid の図で描く。
+
+- map が読めない行（`A --o B` など）
+- 見た目を指定する行（`classDef`・`style`・`linkStyle`・`cssClass`・flowchart の `class`）とノードの `:::` のクラスの指定
+- `%%{` で始まる設定の行と、front matter の `config`
+
+`gantt`・`pie` など、ほかの種類は mermaid の図で描く。
 シーケンス図の `actor` は、mdmark のほかの図と同じ人のアイコンで描く。
 記載方法の一覧は [mermaid のコードブロック](./記法.mark.md#mermaid-のコードブロック)。
 
@@ -59,6 +67,7 @@ mermaid:
     mainBkg: "#e0f2f1"
 ```
 
+テーマは mermaid で描く図にだけ適用し、map の図は map の配色で描く。
 既定のテーマ `mdmark` は、描いた文書の配色（`--mdmark-color-*` の CSS 変数）から図の色を作り、明暗を切り替えると図も再描画する。
 `theme` に mermaid のテーマの名前（`default`・`neutral`・`dark`・`forest`・`base`）を記載すると、そのテーマで描く。
 `themeVariables` は、選んだテーマの変数に重ねる。
@@ -72,13 +81,16 @@ mermaid:
   url: /vendor/mermaid/mermaid.esm.min.mjs
 ```
 
-既定では、バージョンを固定した jsDelivr の URL から、mermaid のコードブロックがある文書でだけ読み込む。
+既定では、バージョンを固定した jsDelivr の URL から、mermaid で描くコードブロックがある文書でだけ読み込む。
 外へ要求できない環境では、mermaid の `dist/` をそのまま配置した場所を指す。
-`mdmark export`・`mdmark build` は、mermaid のコードブロックがある文書のときだけ mermaid を 1 枚の HTML に埋めるため、開いたときに外へ要求しない（[1枚にまとめる仕組み](./コアコンセプト-1枚にまとめる仕組み.md)）。
+`mdmark export`・`mdmark build` は、mermaid で描くコードブロックがある文書のときだけ mermaid を 1 枚の HTML に埋めるため、開いたときに外へ要求しない（[1枚にまとめる仕組み](./コアコンセプト-1枚にまとめる仕組み.md)）。
 
 ### 読者ができること
 
 図の枠の右上のボタンとキーの `+`・`-`・`0` で拡大・縮小し、ドラッグと矢印キーで動かし、全画面で開き、右下のリサイズハンドルで高さを変える。
+図の中の文字はドラッグで選んでコピーでき、文字の無い所のドラッグは図を動かす。
+map の図では、ノード・参加者の選択と強調、ノード・グループ・線の移動と参加者の並べ替え、グループの開閉、シーケンス図の再生のバーも使える。
+シーケンス図の参加者の行は、図の中を縦に動かしたときも文書をスクロールしたときも上端に留まる。
 操作は [図を描く](./図を描く-図を描く.md#読者ができること)。
 
 ## 反映
@@ -95,13 +107,13 @@ mermaid:
 [...document.querySelectorAll(".mdmark figure.mdmark-diagram")].map((f) => f.dataset.diagram)
 ```
 
-記載した順に `mermaid` が出る。
+記載した順に、map が描ける種類は `map`、ほかの種類と mermaid の図で描いたコードブロックは `mermaid` が出る。
 図の枠のタイトルが front matter の `title` の文字になっている。
 
 #### ノードがリンクになっている
 
 ```js
-[...document.querySelectorAll(".mdmark-mermaid a.mdmark-diagram-node-link")].map((a) => a.getAttribute("href"))
+[...document.querySelectorAll(".mdmark a.mdmark-diagram-node-link")].map((a) => a.getAttribute("href"))
 ```
 
 `click`・`link` の行に記載した URL が、記載した文字のまま出る。
@@ -116,5 +128,6 @@ mermaid:
 ## 元に戻す
 
 コードブロックの言語を `mermaid` 以外にするか、コードブロックを削除する。
+map が描ける種類を mermaid の図で描くときは、`features.map` をオフにする。
 mermaid の図を描く機能ごと止めるときは、`features.mermaid` をオフにする。
 オフにすると mermaid を読み込まず、コードブロックのまま描く。

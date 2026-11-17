@@ -7424,7 +7424,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: mermaid のコードブロックを持つ Markdown
-        description: 言語 `mermaid` の flowchart（front matter の `title` を持つ）と sequenceDiagram（`actor` を持つ）のコードブロックを 1 つずつ持つ文書
+        description: '言語 `mermaid` の flowchart（front matter の `title` を持つ）と sequenceDiagram（`actor` を持つ）のコードブロックを 1 つずつ持つ文書（どちらも `%%{init: {}}%%` の設定の行を持ち、範囲の外の map の図にしない。mermaid の図を確かめるほかの流れも同じ）'
       - name: 設定
         description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
       - name: Mock
@@ -9078,6 +9078,91 @@ flows:
     test: test_normal_when_map_class_arch_walked
     refs:
       - SC-472-41#scenarios[正常シナリオ（追加した種類を案内する）]
+  - name: 正常系（範囲の外の map の図）
+    summary: 範囲の外の純粋な Mermaid のうち map が描く種類は補足の無い map の図、ほかの種類は mermaid の図にする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 範囲の外の純粋な Mermaid を持つ Markdown
+        description: map の範囲の外に、flowchart・`actor` を持つ sequenceDiagram・gantt の言語 `mermaid` のコードブロックを 1 つずつ持つ文書
+      - name: 設定
+        description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>M: flowchart と sequenceDiagram を範囲の外の map の図にする
+        M->>X: gantt を render(ソース)
+        X-->>M: SVG
+        M->>P: map の図 2 つと mermaid の図 1 つを描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`figure.mdmark-diagram[data-diagram="map"]` が 2 つ、`figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つ'
+      - map の図のタイトルが `フローチャート`・`シーケンス図`
+      - 記載の警告が無い
+      - '`actor` の参加者の種類の行に人のアイコンの `svg` がある'
+    test: test_normal_when_plain_mermaid_map
+  - name: 異常系（map が読めない行を持つ）
+    summary: map で同じ図にできない純粋な Mermaid は、警告を出さずに mermaid の図で描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 見た目を指定する行を持つ Markdown
+        description: '`style A fill:#f9f` の行を持つ flowchart と、読める行だけの flowchart のコードブロックを持つ文書'
+      - name: 設定
+        description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>M: 2 つを範囲の外の map の図にし、1 つ目を mermaid のコードブロックに戻す
+        M->>X: render(ソース)
+        X-->>M: SVG
+        M->>P: mermaid の図 1 つと map の図 1 つを描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つ、`figure.mdmark-diagram[data-diagram="map"]` が 1 つ'
+      - 記載の警告が無い
+    test: test_error_when_plain_map_cannot_read
+  - name: 正常系（参加者の行を留める）
+    summary: 範囲の外のシーケンス図の参加者の行を、文書をスクロールしたときも画面の上端（`--mdmark-sticky-top`）に留める
+    setup:
+      - name: 配布物を読み込んだページ
+        description: '描く先の要素に `--mdmark-sticky-top: 48px`。文書の後ろに高さ 3000px の要素を置き、画面をスクロールできるようにする'
+      - name: 参加者 2 人とメッセージ 30 件の Markdown
+        description: map の範囲の外に sequenceDiagram の言語 `mermaid` のコードブロックを 1 つ持つ文書
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 範囲の外の map のシーケンス図を描く
+        U->>P: 文書をスクロールする
+        M->>P: 参加者の行を画面の上端から 48px の位置に留める
+      ```
+
+      <!-- /map -->
+    expected:
+      - 参加者の行が `is-stuck` を持ち、上端が画面の上端から 48px（±2px）の位置
+    test: test_normal_when_plain_sequence_heads_stuck
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -9629,7 +9714,7 @@ constraints:
     notes: 'D-43 は部品でない普通の HTML に限る（確認ログ）。戻すのボタンを倍率のボタンにまとめ、今のスクリーンリーダー向けの名前 `全体が収まる倍率に戻す` を残すのは [コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログの決定。ほかのボタンのスクリーンリーダー向けの名前は部品設計'
   - item: 図の移動
     constraint: |-
-      図の文字の上ではカーソルを `text` にして文字を選ばせ、それ以外の上では `grab` にして、ドラッグした分だけ図を動かす（ドラッグの間は `grabbing` で、文字を選ばせない）。
+      図の文字（mermaid の図の SVG の `text`・`foreignObject` の中のノード・線のラベル・メッセージ・タスク名の文字を含む）の上ではカーソルを `text` にして文字を選ばせ、それ以外の上では `grab` にして、ドラッグした分だけ図を動かす（ドラッグの間は `grabbing` で、文字を選ばせない）。
       map の構成図のリンク先を持つノード（`a.mdmark-diagram-node-link`）の上は、名前の文字の上も含めてカーソルを `pointer` にし、文字を選ばせない。
       その上で押したまま 4px を超えて動かしたときはノードを動かし、離した後の `click` を `window` のキャプチャで止め（`preventDefault` と `stopPropagation`）、利用側が `document` で `click` を受けてもリンク先を開かない。
       この `window` の受け取りは、動かした後の 1 回の `click` を止めたら解除し、`update`・`destroy` でも解除する。
@@ -10393,7 +10478,7 @@ constraints:
   - item: フロントマター
     constraint: インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じく、文書の先頭のフロントマターを除外して描き、機能 `frontmatter` がオンのときだけ本文の先頭に閉じた折りたたみを描く。右側の目次・目次・セクションの開閉はフロントマターとその表示を対象にしない。折りたたみの開閉は、印刷の前に開く折り畳みに含める。`update` は差し替えた本文のフロントマターでもう一度決め、折りたたみの開閉は制約「描き直しで部品の開閉を保つ」のとおりに描く
   - item: map の図
-    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図、`erDiagram` はテーブルを列の行を持つノードにした ER 図（制約『map の ER 図』）、`stateDiagram-v2`・`stateDiagram` は状態をノードにした状態遷移図（制約『map の状態遷移図』）、`classDiagram` はクラスをメンバーの行を持つノードにしたクラス図（制約『map のクラス図』）、`architecture-beta` は service をアイコンを持つノードにしたアーキテクチャ図（制約『map のアーキテクチャ図』）、`C4Context` は要素を種類の行と説明を持つノードにした C4 図（制約『map の C4 図』）にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す'
+    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図、`erDiagram` はテーブルを列の行を持つノードにした ER 図（制約『map の ER 図』）、`stateDiagram-v2`・`stateDiagram` は状態をノードにした状態遷移図（制約『map の状態遷移図』）、`classDiagram` はクラスをメンバーの行を持つノードにしたクラス図（制約『map のクラス図』）、`architecture-beta` は service をアイコンを持つノードにしたアーキテクチャ図（制約『map のアーキテクチャ図』）、`C4Context` は要素を種類の行と説明を持つノードにした C4 図（制約『map の C4 図』）にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す。種類を持たないノードは種類の行の高さを空けず、名前をノードの上下の中央に描く。シーケンス図の `actor` の参加者は、設定の `map.kinds.actor` があればその種類で、無ければ lucide の人のアイコンを持つ既定の種類で描く。`data-map-plain` を持つ範囲の外の map の図も、この制約と map の制約を範囲と同じく当てる'
     notes: 外観はモック `docs/mock/pages/document/445/a-map/` と `docs/mock/components/map-kinds/`（確認ログ）。配置の方式はライブラリ本体.md の `## PoC 結果`
   - item: map の強調
     constraint: 線のホバー・案内・再生・ノードと参加者の選択では、強調する要素の表示は変えず、ほかのノード・線・ラベル・ライフラインを `opacity` 0.25 にし、強調する線の上をデータの印が流れ続ける（両向きの線は両方へ）。選択の強調は案内・再生の強調より優先する。読者が始めたデータの印は `prefers-reduced-motion` でも流し、自動で始める再生は動きを減らす設定では止めて始める
@@ -10469,7 +10554,9 @@ constraints:
 
       クラスを 1 つ選ぶとその関係と相手を、 2 つ選ぶと 2 つをつなぐ最短の経路に乗る全ての関係とクラスを残す。
 
-      補足の `notes` のキーはクラス名・`{クラス名}.{メンバー名}`・関係の記載順の `r{番号}`'
+      補足の `notes` のキーはクラス名・`{クラス名}.{メンバー名}`・関係の記載順の `r{番号}`。
+
+      `click {クラス} href "{リンク先}"`・`link {クラス} "{リンク先}"` の行（後ろのツールチップ・`_blank` などは読んで捨てる）をそのクラスのリンク先にし、制約『map のノードのリンク』と同じ許可と描き方（クラスの全体を覆う `a.mdmark-diagram-node-link`）にする。コールバックの関数を指す `click {クラス} call {関数}`・`callback` の行は読んで捨てる'
     notes: 外観はモック `docs/mock/components/map-class-arch-c4/`（確認ログ『map のクラス図・アーキテクチャ図・C4 図のモック（map-class-arch-c4）の描き方と操作への合意』）
   - item: map のアーキテクチャ図
     constraint: '`architecture-beta` の service を、アイコン（`cloud`・`database`・`disk`・`internet`・`server` を Lucide のアイコンにする）と名前のノード、`group` をアイコンと名前のタイトルを持つ入れ子のグループ、`junction` を小さい点のノードにして、構成図と同じ自動配置で左から右へ配置する。
@@ -10511,6 +10598,35 @@ constraints:
 
       補足の `notes` のキーは要素・境界の別名（第 1 引数）と関係の記載順の `r{番号}`'
     notes: 外観はモック `docs/mock/components/map-class-arch-c4/`（確認ログ『C4 図の外部の要素の種類の行』）
+  - item: シーケンス図の参加者の行を留める
+    constraint: |-
+      map のシーケンス図（範囲の中と外）の参加者の行（`.mdmark-diagram-seq-heads`）を、次の位置に留める。
+      表示する枠の中を縦に動かしたときは、表示する枠の上端。
+      文書をスクロールして表示する枠の上端が、スクロールする場所の上端から `--mdmark-sticky-top` を加算した位置より上へ出たときは、その位置。表示する枠の下端がその位置に近づいたら、参加者の行を下端より下へ出さずに押し上げ、表示する枠と一緒にスクロールする場所の外へ出す。
+      どちらの位置でも、参加者の行の背景は表示する枠の内側に収め、表示する枠の枠線とツールの行の線に重ねない。全画面のモーダルでは、表示する枠の上端だけに留める。
+      留めた行の参加者の名前は、動かす前と同じ要素のままスクリーンリーダーが読み上げる
+  - item: 範囲の外の map の図を mermaid の図に戻す
+    constraint: |-
+      `data-map-plain` を持つ範囲の外の map の図は、制約『map の書き方の警告』の項目のうち Mermaid の読めない行・閉じの無い `subgraph` と複合フラグメントが 1 つでもあるときと、map が読み捨てる見た目を指定する行（`classDef`・`style`・`linkStyle`・`cssClass`・flowchart の `class`）とノードの `:::` のクラスの指定が 1 つでもあるとき、書き方の警告を出さず、map の図にせずに、中のソース（front matter を含む元の文字）を `data-mdmark-mermaid` を持つ mermaid のコードブロックに戻して、制約『mermaid の対象』「mermaid の読み込み」「mermaid の描き方」のとおり描く。
+      そのほかの書き方の警告の項目（設定の `map.kinds` に無いクラス・許可しないリンク先 など）は、範囲の外の map の図では警告を出さず、その要素を種類・リンクを持たないものとして map の図で描く
+  - item: 範囲の外の map の図に付く操作
+    constraint: |-
+      範囲の外の map の図と範囲の中の map の図は、次の表のとおりに操作を付ける。補足を前提にする操作だけが範囲の中に限られる。
+
+      | 操作 | 範囲の外 | 範囲の中 |
+      | --- | --- | --- |
+      | 拡大・縮小・移動・全画面・リサイズハンドル（制約『図の移動』） | 付く | 付く |
+      | 文字の選択とコピー | 付く | 付く |
+      | シーケンス図の参加者の行を留める | 付く | 付く |
+      | ノード・参加者・テーブル・クラス・状態の選択と強調、線のホバーの強調（制約『map の強調』） | 付く | 付く |
+      | ノード・グループ・線を動かす、参加者の並べ替え（制約『map の操作の分け方』） | 付く | 付く |
+      | グループの開閉・中へ入る | 付く | 付く |
+      | シーケンス図の再生のバー | 付く | 付く |
+      | 状態の保存（制約『map の状態の保存』） | 付く | 付く |
+      | `click`・`link` の行のノード・クラスのリンク | 付く | 付く |
+      | ノード・線・グループ・メッセージの説明と注記のツールチップ（補足の `notes`） | 付かない | 付く |
+      | 案内の手順（補足の `tour`）・構成図の上の再生（補足の `plays_over`） | 付かない | 付く |
+      | 配置と見た目の上書き（補足の `layout`）・印の引数の `focus`・`play`・`collapse` | 付かない | 付く |
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

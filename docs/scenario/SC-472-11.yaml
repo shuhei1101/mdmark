@@ -1,7 +1,7 @@
 id: SC-472-11
 visibility: internal
 title: mermaidの図を描く
-lead: mdmark が、言語 `mermaid` のコードブロックを、mdmark の外観のテーマで図にして図の枠に入れて描く。mermaid のライブラリは、mermaid のコードブロックがある文書のときだけ読み込む。
+lead: mdmark が、言語 `mermaid` のコードブロックを図の枠に入れて描く。map が描ける種類は補足の無い map の図に、それ以外の種類は mdmark の外観のテーマの mermaid の図にする。mermaid のライブラリは、map が描けない種類のコードブロックがある文書のときだけ読み込む。
 test_file: tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts
 primary_actor: mdmark を使用するアプリのページ
 stakeholders:
@@ -10,11 +10,11 @@ stakeholders:
   - name: 文書の作成者
     interest: mermaid のコードブロックを修正せずに、そのまま図にできる
   - name: 利用側のアプリの開発者
-    interest: mermaid を使用しない文書では、mermaid を読み込む時間と通信が増えない
+    interest: mermaid を使用しない文書と、map が描ける種類のコードブロックだけを持つ文書では、mermaid を読み込む時間と通信が増えない
 trigger: 利用側のページが、言語 `mermaid` のコードブロックを持つ文書を描かせる
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
-success_guarantee: mermaid のコードブロックが、mdmark の外観のテーマで図の枠に入った図として描かれる。
+success_guarantee: mermaid のコードブロックが、map が描ける種類は map の図、それ以外の種類は mdmark の外観のテーマの mermaid の図として、図の枠に入って描かれる。
 minimal_guarantee: mermaid を読み込めない・記法を解釈できないコードブロックは、コードブロックのまま残り、ほかの本文と図は描かれる。
 scenarios:
   - name: 正常シナリオ
@@ -23,8 +23,8 @@ scenarios:
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
         notes: 設定の `mermaid` の読み込み先は既定（jsDelivr のバージョンを固定した URL）のまま
       - name: mermaid のコードブロックを持つ Markdown
-        description: 段落の間に、言語 `mermaid` の flowchart と sequenceDiagram のコードブロックを 1 つずつ持つ文書
-        notes: flowchart は front matter の `title` を持ち、sequenceDiagram は `actor` を持つ
+        description: 段落の間に、言語 `mermaid` の flowchart・sequenceDiagram・gantt のコードブロックを 1 つずつ持つ文書
+        notes: flowchart は front matter の `title` を持ち、sequenceDiagram は `actor` を持つ。gantt は map が描けない種類
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を jsDelivr と同じパスで返却する手元の応答に差し替える。mermaid への要求を数える
     flow: |-
@@ -37,22 +37,24 @@ scenarios:
         participant M as mdmark
         participant X as mermaid
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 言語 mermaid のコードブロックを集める
+        M->>M: 言語 mermaid のコードブロックを集め、map が描ける種類と描けない種類に分ける
+        M->>M: flowchart と sequenceDiagram を、補足の無い map の図として描く
         M->>X: 本体を要求
-        X-->>M: 本体と、使用する図の種類の chunk
+        X-->>M: 本体と、gantt の chunk
         M->>M: 描く先の要素の CSS 変数からテーマを作る
-        M-->>P: コードブロックの場所に、図の枠に入れた図を描く
+        M-->>P: gantt の場所に、図の枠に入れた mermaid の図を描く
         P-->>U: 文書を表示
       ```
 
       <!-- /map -->
     expected:
-      - mermaid の本体への要求が 1 件（コードブロックが 2 つでも 1 回だけ読み込む）
-      - 2 つのコードブロックの場所に、それぞれ図の枠と SVG の図があり、コードブロックの文字が出ていない
+      - mermaid の本体への要求が 1 件（gantt の分だけ読み込む）
+      - 3 つのコードブロックの場所に、それぞれ図の枠があり、コードブロックの文字が出ていない
+      - flowchart と sequenceDiagram の図の枠は map の図で、同じ Mermaid を補足の無い map の範囲で囲んだ文書と同じノード・線・参加者とラベルで描かれる
       - flowchart の図の枠のタイトルが front matter の `title` の文字
-      - flowchart のノードの塗り・枠線・文字の色と線の色が、描く先の要素の CSS 変数の値と一致し、枠線にグラデーションが無い
+      - sequenceDiagram の actor が、設定に `map.kinds.actor` が無くても人のアイコンで描かれる。front matter の `title` を持たない sequenceDiagram の図の枠のタイトルが「シーケンス図」
+      - gantt の図の枠には mermaid の SVG の図があり、タスクの棒の塗りと文字の色が、描く先の要素の CSS 変数の値と一致する
       - 図の文字の書体が、描く先の要素の本文の書体と一致する
-      - sequenceDiagram の actor のアイコンが、mdmark の図と同じアイコンで描かれている
       - コードブロックの前後の段落が描かれている
     test: test_normal
   - name: 正常シナリオ（mermaid のコードブロックが無い）
@@ -86,8 +88,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
         notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
-      - name: mermaid のコードブロックを持つ Markdown
-        description: 正常シナリオと同じ文書
+      - name: map が描けない種類の mermaid のコードブロックを持つ Markdown
+        description: 言語 `mermaid` の gantt のコードブロックを 1 つ持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -110,17 +112,17 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 開いたとき、flowchart のノードの塗りと文字の色が、暗い配色の CSS 変数の値と一致する
-      - OS の配色を明るいに切り替えると、ノードの塗りと文字の色が明るい配色の CSS 変数の値になる
+      - 開いたとき、gantt のタスクの棒の塗りと文字の色が、暗い配色の CSS 変数の値と一致する
+      - OS の配色を明るいに切り替えると、タスクの棒の塗りと文字の色が明るい配色の CSS 変数の値になる
       - 再描画しても、mermaid の本体への要求が増えない
     test: test_normal_when_dark
   - name: 正常シナリオ（テーマを設定で変える）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-        notes: 設定の `mermaid` で、テーマを mermaid の `neutral` にし、ノードの塗り `mainBkg` を上書きする（`neutral` はノードの塗りを `primaryColor` から作らない）。キーの構造はインターフェース定義で決める
+        notes: 設定の `mermaid` で、テーマを mermaid の `neutral` にし、gantt のタスクの塗り `taskBkgColor` を上書きする。キーの構造はインターフェース定義で決める
       - name: mermaid のコードブロックを持つ Markdown
-        description: 正常シナリオと同じ文書
+        description: 言語 `mermaid` の gantt と flowchart のコードブロックを 1 つずつ持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -138,15 +140,16 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - flowchart のノードの塗りが、設定で上書きした `mainBkg` の色
-      - ノードの枠線の色が、mermaid の `neutral` テーマの値で、描く先の要素の CSS 変数の値ではない
+      - gantt のタスクの棒の塗りが、設定で上書きした `taskBkgColor` の色
+      - gantt のタスクの棒の枠線の色が、mermaid の `neutral` テーマの値で、描く先の要素の CSS 変数の値ではない
+      - flowchart は map の図で、ノードの色が設定の `mermaid` のテーマに左右されない
     test: test_normal_when_theme_configured
   - name: 正常シナリオ（機能をオフにする）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: mermaid の機能を解除する Markdown
-        description: '先頭に `<!-- features: {"mermaid": false} -->` を持ち、言語 `mermaid` のコードブロックを 1 つ持つ文書'
+        description: '先頭に `<!-- features: {"mermaid": false} -->` を持ち、言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -166,7 +169,7 @@ scenarios:
       <!-- /map -->
     expected:
       - mermaid への要求が 0 件
-      - mermaid のソースが、ほかの言語と同じコードブロックとして出ている
+      - flowchart のソースが、map の図にならず、ほかの言語と同じコードブロックとして出ている
       - 本文にマーカーの文字が出ていない
     test: test_normal_when_disabled
   - name: 異常シナリオ（mermaid を読み込めない）
@@ -174,7 +177,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: mermaid のコードブロックを持つ Markdown
-        description: 正常シナリオと同じ文書
+        description: 言語 `mermaid` の gantt と flowchart のコードブロックを 1 つずつ持つ文書
       - name: Mock
         description: mermaid の本体への要求が 404 を返却する。ほかは正常シナリオと同じ
     flow: |-
@@ -195,8 +198,8 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 2 つのコードブロックの前に、mermaid を読み込めないことを記載した通知ブロックがある
-      - mermaid のソースが、コードブロックのまま出ている
+      - gantt のコードブロックの前に、mermaid を読み込めないことを記載した通知ブロックがあり、gantt のソースがコードブロックのまま出ている
+      - flowchart は mermaid を読み込めなくても、map の図として描かれている
       - コードブロックの前後の段落が描かれている
     test: test_error_when_mermaid_not_found
   - name: 異常シナリオ（記法を解釈できない）
@@ -204,7 +207,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 解釈できない mermaid を持つ Markdown
-        description: 言語 `mermaid` のコードブロックを 2 つ持ち、1 つ目は図の種類の行が無い（mermaid が解釈できない）、2 つ目は正常シナリオの flowchart
+        description: 言語 `mermaid` のコードブロックを 2 つ持ち、1 つ目は図の種類の行が無い（mermaid が解釈できない）、2 つ目は map が描けない種類の gantt
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -250,19 +253,17 @@ scenarios:
         actor U as 読者
         participant P as 利用側のページ
         participant M as mdmark
-        participant X as mermaid
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: map の範囲の外の言語 mermaid のコードブロックだけを集める
-        M->>X: 本体を要求（範囲の外にコードブロックがあるときだけ）
-        M-->>P: 範囲の外は mermaid の図、範囲の中は map の図
+        M->>M: 範囲の中のブロックは範囲の引数と補足で、範囲の外のコードブロックは補足の無い map の範囲として描く
+        M-->>P: どちらも map の図を描く
         P-->>U: 文書を表示
       ```
 
       <!-- /map -->
     expected:
-      - 範囲の外のコードブロックを持つ文書では、mermaid の本体への要求が 1 件で、範囲の外の場所に mermaid の図が描かれる
-      - 範囲の中の mermaid のブロックは、mermaid の図ではなく map の図として描かれる
-      - map の範囲の中にだけ mermaid のブロックを持つ文書では、mermaid の本体への要求が 0 件
+      - どちらの文書も、mermaid の本体への要求が 0 件
+      - 範囲の中のブロックは、範囲の引数と補足を適用した map の図として描かれる
+      - 範囲の外のコードブロックは、補足の無い map の図として描かれる
     test: test_normal_when_inside_map
   - name: 正常シナリオ（click の行の URL でノードをリンクにする）
     setup:
@@ -281,12 +282,9 @@ scenarios:
         actor U as 読者
         participant P as 利用側のページ
         participant M as mdmark
-        participant X as mermaid
         P->>M: 設定と Markdown を指定して描かせる
-        M->>X: securityLevel strict のまま描かせる
-        X-->>M: URL のノードを xlink:href のリンクで囲んだ SVG
-        M->>M: 許可する URL のリンクに href を付け、許可しないリンクを外す
-        M-->>P: 図の枠に入れた図を描く
+        M->>M: flowchart と classDiagram の click・link の行から URL を取り出し、許可する URL のノードをリンクにする
+        M-->>P: 図の枠に入れた map の図を描く
         P-->>U: 文書を表示
         U->>P: リンクのノードを押す
         P-->>U: 本文のリンクと同じく、同じタブで URL を開く
@@ -300,6 +298,159 @@ scenarios:
       - リンクのノードは Tab でフォーカスでき、Enter で URL を開く
       - click の行を持たないノードはリンクの中に無い
     test: test_normal_when_click_url
+  - name: 正常シナリオ（シーケンス図の参加者の行を留める）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 縦に長いシーケンス図の mermaid のコードブロックを持つ Markdown
+        description: map の範囲の外に言語 `mermaid` の sequenceDiagram のコードブロックを 1 つ、map の範囲に同じ sequenceDiagram を 1 つ持つ文書。図の下にも段落が続き、文書が縦にスクロールできる
+        notes: 参加者は actor 1 つと participant 3 つ。メッセージは 30 本。拡大のボタンを 2 回押した倍率で、図の高さが表示する枠の高さより大きい
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant D as シーケンス図
+        P->>D: 設定と Markdown を指定して描かせる
+        D-->>U: 図の枠に入れたシーケンス図を表示
+        U->>D: 右上の拡大のボタンを 2 回押し、図の余白を押したまま上へ動かす
+        D-->>U: 参加者の行を表示する枠の上端に留めたまま、メッセージを動かす
+        U->>D: 図の余白を押したまま下へ動かし、一番上へ戻す
+        D-->>U: 参加者の行を図の中の元の位置に戻す
+        U->>P: 文書を下へスクロールし、図の上端を画面の外へ出す
+        D-->>U: 参加者の行を画面の上端に留める
+        U->>P: 図の下端が画面の上端を過ぎるまでスクロールする
+        D-->>U: 参加者の行を図と一緒に画面の外へ出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 拡大して図の余白を上へドラッグしても、4 つの参加者の名前が表示する枠の上端に見えている
+      - 留まった参加者の行の下を、メッセージとライフラインが通り過ぎ、留まった行の後ろのメッセージの文字が透けて見えない
+      - 図の余白を下へドラッグして一番上へ戻すと、参加者の行が図の中の元の位置に戻る
+      - 文書をスクロールして図の上端が画面の外へ出ても、図の下端が画面の上端を過ぎるまでは、参加者の行が画面の上端（利用側が指定した `--mdmark-sticky-top` の位置）に見えている
+      - 図の下端が画面の上端を過ぎると、参加者の行も図と一緒に画面の外へ出る
+      - map の範囲の sequenceDiagram も、純粋な Mermaid と同じく参加者の行を留める
+      - 参加者の行を留めている間も、表示する枠の左右の枠線が欠けない
+      - 留まった参加者の行の文字も、スクロールする前と同じくスクリーンリーダーが読み上げる
+    test: test_normal_when_sequence_heads_stuck
+  - name: 正常シナリオ（map が描ける種類だけの文書）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: map が描ける種類の mermaid のコードブロックだけを持つ Markdown
+        description: map の範囲の外に、言語 `mermaid` の flowchart と sequenceDiagram のコードブロックを 1 つずつ持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 2 つのコードブロックを、補足の無い map の範囲として描く
+        M-->>P: mermaid を読み込まずに、図の枠に入れた map の図を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - mermaid への要求が 0 件
+      - 2 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない
+    test: test_normal_when_only_map_kinds
+  - name: 正常シナリオ（actor のアイコンを設定で変える）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `map.kinds.actor` で、アイコンを lucide の `bot` にする
+      - name: sequenceDiagram の mermaid のコードブロックを持つ Markdown
+        description: map の範囲の外に、`actor` を 1 つ持つ言語 `mermaid` の sequenceDiagram のコードブロックを 1 つ持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: map.kinds.actor を持つ設定と Markdown を指定して描かせる
+        M-->>P: actor を設定の種類で描いた map の図
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`actor` の参加者が、人のアイコンではなく設定の `bot` のアイコンで描かれる'
+      - '`participant` の参加者はアイコンを持たない'
+    test: test_normal_when_actor_kind_configured
+  - name: 正常シナリオ（title を持たない図）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: title を持たない mermaid のコードブロックを持つ Markdown
+        description: map の範囲の外に、front matter の `title` を持たない言語 `mermaid` の flowchart・classDiagram・gantt のコードブロックを 1 つずつ持つ文書
+        notes: gantt は本文の `title` の行も持たない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 図の種類の名前をタイトルにした図の枠を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - flowchart・classDiagram（map の図）と gantt（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「ガントチャート」
+    test: test_normal_when_untitled
+  - name: 異常シナリオ（map が読めない行を持つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: map が読めない行を持つ mermaid のコードブロックの Markdown
+        description: map の範囲の外に、言語 `mermaid` の flowchart のコードブロックを 4 つ持つ文書
+        notes: '1 つ目は map が読めない行（`A --o B`）を持ち、2 つ目は 1 行目に `%%{init: {"theme": "forest"}}%%` を持ち、3 つ目は map が読める行だけを持ち、4 つ目はノードの塗りを指定する `style A fill:#f9f` の行を持つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 2 つ目は設定の行を持つので mermaid の対象にし、1・3・4 つ目を範囲の外の map の図にする
+        M->>M: 1 つ目は map が読めない行、4 つ目は見た目を指定する行を持つので mermaid の対象に戻す
+        M->>X: 本体を要求
+        X-->>M: 本体
+        M-->>P: 1・2・4 つ目は mermaid の図、3 つ目は map の図を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1・2・4 つ目の場所に mermaid の図があり、3 つ目の場所に map の図がある。4 つ目のノード A の塗りは `style` の行で指定した色
+      - どの図の前にも書き方の警告が無い
+      - mermaid の本体への要求が 1 件
+    test: test_error_when_map_cannot_read
 tags:
   - name: tool:mermaid
     main: true

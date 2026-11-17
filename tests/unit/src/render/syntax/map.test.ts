@@ -140,3 +140,74 @@ test("test_build_map_ranges_when_annotations", () => {
   );
   expect(missing.html).toContain('data-map-annotations="{}"');
 });
+
+/** 言語 mermaid のコードブロックの Markdown */
+const fence = (source: string): string => `\`\`\`mermaid\n${source}\n\`\`\`\n`;
+
+// 範囲の外の純粋な Mermaid を map の図にする（正常系）
+test("test_build_map_ranges_when_plain", () => {
+  // 準備
+  const markdown = `${fence("flowchart LR\n  A --> B")}\n${fence("gantt\n  title 予定\n  section 設計\n  画面 :a1, 2026-01-01, 3d")}\n${mapRange({ mermaid: FLOW })}`;
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const opens = matches(html, /<div class="mdmark-map"[^>]*>/g);
+  expect(opens).toHaveLength(2);
+  expect(opens[0]).toContain("data-map-plain");
+  expect(opens[0]).toContain('data-map="1"');
+  expect(opens[0]).toContain(
+    'data-map-args="{&quot;title&quot;:&quot;フローチャート&quot;}"',
+  );
+  expect(opens[1]).not.toContain("data-map-plain");
+  expect(opens[1]).toContain('data-map="2"');
+  expect(matches(html, /data-mdmark-mermaid/g)).toHaveLength(1);
+  expect(html.indexOf("data-mdmark-mermaid")).toBeLessThan(
+    html.indexOf(opens[1] as string),
+  );
+});
+
+// front matter を除いてタイトルにする（正常系）
+test("test_build_map_ranges_when_plain_front_matter", () => {
+  // 準備
+  const markdown = fence(
+    "---\ntitle: 受付\ndisplayMode: compact\n---\nflowchart LR\n  A --> B",
+  );
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const open = html.match(/<div class="mdmark-map"[^>]*>/)?.[0] ?? "";
+  expect(open).toContain(
+    'data-map-args="{&quot;title&quot;:&quot;受付&quot;}"',
+  );
+  expect(open).toContain(
+    'data-map-front-matter="---\ntitle: 受付\ndisplayMode: compact\n---"',
+  );
+  const code = html.match(/<code[^>]*>([\s\S]*?)<\/code>/)?.[1] ?? "";
+  expect(code.replace(/<[^>]+>/g, "").trimStart()).toMatch(/^flowchart/);
+  expect(code).not.toContain("displayMode");
+});
+
+// 設定を持つコードブロックは mermaid のまま（正常系）
+test("test_build_map_ranges_when_plain_config", () => {
+  // 準備
+  const markdown = `${fence("---\nconfig:\n  theme: forest\n---\nflowchart LR\n  A --> B")}\n${fence('%%{init: {"theme": "forest"}}%%\nsequenceDiagram\n  A->>B: 送る')}`;
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).not.toContain('class="mdmark-map"');
+  expect(matches(html, /data-mdmark-mermaid/g)).toHaveLength(2);
+});
+
+// 機能を外すと範囲の外の map の図にしない（正常系）
+test("test_build_map_ranges_when_plain_features_off", () => {
+  // 準備
+  const markdown = fence("flowchart LR\n  A --> B");
+  // 実行
+  const mapOff = renderDoc(markdown, { map: false }).html;
+  const mermaidOff = renderDoc(markdown, { mermaid: false }).html;
+  // 検証
+  expect(mapOff).not.toContain('class="mdmark-map"');
+  expect(mapOff).toContain("data-mdmark-mermaid");
+  expect(mermaidOff).not.toContain("data-mdmark-mermaid");
+  expect(mermaidOff).not.toContain("data-map-plain");
+});

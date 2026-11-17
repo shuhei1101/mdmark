@@ -216,3 +216,18 @@ test("test_accessibility", async () => {
     page.locator(".map-class-ends").getAttribute("aria-hidden"),
   ).resolves.toBe("true");
 });
+
+// click・link の行のクラスは、クラスの全体が本文のリンクになる（LinkedClass）
+test("test_linked_class", async () => {
+  // 準備・実行
+  const page = await openStory("linked-class");
+  // 検証
+  await expect(
+    page
+      .locator('[data-node="図面"] a.mdmark-diagram-node-link')
+      .getAttribute("href"),
+  ).resolves.toBe("https://example.com/drawing");
+  await expect(
+    page.locator("a.mdmark-diagram-node-link").count(),
+  ).resolves.toBe(1);
+});

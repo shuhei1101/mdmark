@@ -1,0 +1,293 @@
+$ (npm run lint; npm run lint:eslint; npm run typecheck; npm --prefix vscode run typecheck)
+# 結果: 作業 PR の変更ファイルに違反なし。Biome の違反 8 件は全て git の管理外の作業用ファイル（tmp/*.mjs）。ESLint・tsc（ルートと vscode/）は違反なし
+
+
+> lint
+> biome check .
+
+tmp/probe.mjs:6:133 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+  
+    4 │ p.on("pageerror", (e) => console.log("pageerror:", e.message.slice(0, 200)));
+    5 │ await p.goto(process.argv[2], { waitUntil: "networkidle" }); await p.waitForTimeout(6000);
+  > 6 │ console.log(await p.evaluate(() => [...document.querySelectorAll("figure, .mdmark-notice, .mdmark-syntax-warning, pre")].map((e) => e.tagName + " " + (e.dataset.diagram ?? e.className)).join("\n")));
+      │                                                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    7 │ await b.close();
+    8 │ 
+  
+  i Unsafe fix: Use a template literal.
+  
+    4 4 │   p.on("pageerror", (e) => console.log("pageerror:", e.message.slice(0, 200)));
+    5 5 │   await p.goto(process.argv[2], { waitUntil: "networkidle" }); await p.waitForTimeout(6000);
+    6   │ - console.log(await·p.evaluate(()·=>·[...document.querySelectorAll("figure,·.mdmark-notice,·.mdmark-syntax-warning,·pre")].map((e)·=>·e.tagName·+·"·"·+·(e.dataset.diagram·??·e.className)).join("\n")));
+      6 │ + console.log(await·p.evaluate(()·=>·[...document.querySelectorAll("figure,·.mdmark-notice,·.mdmark-syntax-warning,·pre")].map((e)·=>·`${e.tagName}·${e.dataset.diagram·??·e.className}`).join("\n")));
+    7 7 │   await b.close();
+    8 8 │   
+  
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+tmp/probe.mjs:2:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This statement must be preceded by a blank line. Add a newline before this statement.
+  
+    1 │ import { chromium } from "playwright";
+  > 2 │ const b = await chromium.launch(); const p = await b.newPage();
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ p.on("console", (m) => console.log("console:", m.type(), m.text().slice(0, 200)));
+    4 │ p.on("pageerror", (e) => console.log("pageerror:", e.message.slice(0, 200)));
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+    1 1 │   import { chromium } from "playwright";
+      2 │ + 
+    2 3 │   const b = await chromium.launch(); const p = await b.newPage();
+    3 4 │   p.on("console", (m) => console.log("console:", m.type(), m.text().slice(0, 200)));
+  
+
+tmp/probe.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    1  1 │   import { chromium } from "playwright";
+    2    │ - const·b·=·await·chromium.launch();·const·p·=·await·b.newPage();
+    3    │ - p.on("console",·(m)·=>·console.log("console:",·m.type(),·m.text().slice(0,·200)));
+       2 │ + const·b·=·await·chromium.launch();
+       3 │ + const·p·=·await·b.newPage();
+       4 │ + p.on("console",·(m)·=>
+       5 │ + ··console.log("console:",·m.type(),·m.text().slice(0,·200)),
+       6 │ + );
+    4  7 │   p.on("pageerror", (e) => console.log("pageerror:", e.message.slice(0, 200)));
+    5    │ - await·p.goto(process.argv[2],·{·waitUntil:·"networkidle"·});·await·p.waitForTimeout(6000);
+    6    │ - console.log(await·p.evaluate(()·=>·[...document.querySelectorAll("figure,·.mdmark-notice,·.mdmark-syntax-warning,·pre")].map((e)·=>·e.tagName·+·"·"·+·(e.dataset.diagram·??·e.className)).join("\n")));
+       8 │ + await·p.goto(process.argv[2],·{·waitUntil:·"networkidle"·});
+       9 │ + await·p.waitForTimeout(6000);
+      10 │ + console.log(
+      11 │ + ··await·p.evaluate(()·=>
+      12 │ + ····[
+      13 │ + ······...document.querySelectorAll(
+      14 │ + ········"figure,·.mdmark-notice,·.mdmark-syntax-warning,·pre",
+      15 │ + ······),
+      16 │ + ····]
+      17 │ + ······.map((e)·=>·e.tagName·+·"·"·+·(e.dataset.diagram·??·e.className))
+      18 │ + ······.join("\n"),
+      19 │ + ··),
+      20 │ + );
+    7 21 │   await b.close();
+    8 22 │   
+  
+
+tmp/rv630.mjs:2:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This statement must be preceded by a blank line. Add a newline before this statement.
+  
+    1 │ import { chromium } from "playwright";
+  > 2 │ const url = "http://127.0.0.1:47523/docs/mock/components/plain-mermaid/index.html";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ const out = process.argv[2];
+    4 │ const b = await chromium.launch();
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1  1 │   import { chromium } from "playwright";
+        2 │ + 
+     2  3 │   const url = "http://127.0.0.1:47523/docs/mock/components/plain-mermaid/index.html";
+     3  4 │   const out = process.argv[2];
+  
+
+tmp/rv630.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1  1 │   import { chromium } from "playwright";
+     2    │ - const·url·=·"http://127.0.0.1:47523/docs/mock/components/plain-mermaid/index.html";
+        2 │ + const·url·=
+        3 │ + ··"http://127.0.0.1:47523/docs/mock/components/plain-mermaid/index.html";
+     3  4 │   const out = process.argv[2];
+     4  5 │   const b = await chromium.launch();
+     5    │ - for·(const·[w,h]·of·[[1280,800],[390,844]])·{
+     6    │ - ··const·p·=·await·b.newPage({·viewport:·{·width:·w,·height:·h·},·isMobile:·w·<·768·});
+        6 │ + for·(const·[w,·h]·of·[
+        7 │ + ··[1280,·800],
+        8 │ + ··[390,·844],
+        9 │ + ])·{
+       10 │ + ··const·p·=·await·b.newPage({
+       11 │ + ····viewport:·{·width:·w,·height:·h·},
+       12 │ + ····isMobile:·w·<·768,
+       13 │ + ··});
+     7 14 │     const errs = [];
+     8    │ - ··p.on("pageerror",·e·=>·errs.push(String(e)));
+     9    │ - ··p.on("console",·m·=>·m.type()==="error"·&&·errs.push(m.text()));
+    10    │ - ··await·p.goto(url);·await·p.waitForTimeout(4000);
+       15 │ + ··p.on("pageerror",·(e)·=>·errs.push(String(e)));
+       16 │ + ··p.on("console",·(m)·=>·m.type()·===·"error"·&&·errs.push(m.text()));
+       17 │ + ··await·p.goto(url);
+       18 │ + ··await·p.waitForTimeout(4000);
+    11 19 │     const info = await p.evaluate(() => ({
+    12    │ - ····figures:·[...document.querySelectorAll("#doc·figure")].map(f·=>·({kind:·f.dataset.diagram,·w:·f.getBoundingClientRect().width,·title:·f.querySelector("figcaption,.mdmark-diagram-title")?.textContent?.trim()})),
+       20 │ + ····figures:·[...document.querySelectorAll("#doc·figure")].map((f)·=>·({
+       21 │ + ······kind:·f.dataset.diagram,
+       22 │ + ······w:·f.getBoundingClientRect().width,
+       23 │ + ······title:·f
+       24 │ + ········.querySelector("figcaption,.mdmark-diagram-title")
+       25 │ + ········?.textContent?.trim(),
+       26 │ + ····})),
+    13 27 │       hscroll: document.documentElement.scrollWidth > innerWidth,
+    14 28 │       codeblocks: document.querySelectorAll("#doc pre code").length,
+    15    │ - ····notices:·[...document.querySelectorAll("#doc·.mdmark-notice,·#doc·[role=alert]")].map(e=>e.textContent.trim().slice(0,80)),
+       29 │ + ····notices:·[
+       30 │ + ······...document.querySelectorAll("#doc·.mdmark-notice,·#doc·[role=alert]"),
+       31 │ + ····].map((e)·=>·e.textContent.trim().slice(0,·80)),
+    16 32 │       seqHeads: document.querySelectorAll(".mdmark-diagram-seq-heads").length,
+    17    │ - ····links:·[...document.querySelectorAll("#doc·figure·a[href]")].map(a=>a.getAttribute("href")),
+       33 │ + ····links:·[...document.querySelectorAll("#doc·figure·a[href]")].map((a)·=>
+       34 │ + ······a.getAttribute("href"),
+       35 │ + ····),
+    18 36 │     }));
+    19 37 │     console.log(w, JSON.stringify(info), errs);
+  
+
+tmp/shot-corner.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     5  5 │   const [url, out] = process.argv.slice(2);
+     6  6 │   const browser = await chromium.launch();
+     7    │ - const·page·=·await·browser.newPage({·viewport:·{·width:·1280,·height:·800·},·deviceScaleFactor:·2·});
+        7 │ + const·page·=·await·browser.newPage({
+        8 │ + ··viewport:·{·width:·1280,·height:·800·},
+        9 │ + ··deviceScaleFactor:·2,
+       10 │ + });
+     8 11 │   await page.goto(url, { waitUntil: "networkidle" });
+     9 12 │   await page.waitForTimeout(3000);
+    ····· │ 
+    11 14 │   await seqMap.scrollIntoViewIfNeeded();
+    12 15 │   const box = await seqMap.locator(".mdmark-diagram-box").boundingBox();
+    13    │ - await·page.screenshot({·path:·`${out}/sequence-map-corner.png`,·clip:·{·x:·box.x·-·4,·y:·box.y·-·4,·width:·240,·height:·200·}·});
+    14    │ - const·vp·=·await·seqMap.locator(".mdmark-diagram-viewport").evaluate((el)·=>·({·client:·el.clientHeight,·scroll:·el.scrollHeight·}));
+       16 │ + await·page.screenshot({
+       17 │ + ··path:·`${out}/sequence-map-corner.png`,
+       18 │ + ··clip:·{·x:·box.x·-·4,·y:·box.y·-·4,·width:·240,·height:·200·},
+       19 │ + });
+       20 │ + const·vp·=·await·seqMap
+       21 │ + ··.locator(".mdmark-diagram-viewport")
+       22 │ + ··.evaluate((el)·=>·({·client:·el.clientHeight,·scroll:·el.scrollHeight·}));
+    15 23 │   console.log("viewport", JSON.stringify(vp));
+    16 24 │   // 文書を、図の上端が画面の上端より 300px 上へ出るまでスクロールする
+  
+
+tmp/shot.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    11 11 │   const browser = await chromium.launch();
+    12 12 │   for (const [w, h] of viewports) {
+    13    │ - ··const·page·=·await·browser.newPage({·viewport:·{·width:·w,·height:·h·},·isMobile:·w·<·768,·hasTouch:·w·<·768·});
+       13 │ + ··const·page·=·await·browser.newPage({
+       14 │ + ····viewport:·{·width:·w,·height:·h·},
+       15 │ + ····isMobile:·w·<·768,
+       16 │ + ····hasTouch:·w·<·768,
+       17 │ + ··});
+    14 18 │     await page.goto(url, { waitUntil: "networkidle" });
+    15    │ - ··await·page.waitForSelector('.mdmark-diagram[data-diagram="mermaid"]·.mdmark-diagram-stage·svg',·{·state:·"attached",·timeout:·30000·});
+       19 │ + ··await·page.waitForSelector(
+       20 │ + ····'.mdmark-diagram[data-diagram="mermaid"]·.mdmark-diagram-stage·svg',
+       21 │ + ····{·state:·"attached",·timeout:·30000·},
+       22 │ + ··);
+    16 23 │     await page.waitForTimeout(1500);
+    17 24 │     const heads = await page.$$("#doc h2");
+    18 25 │     for (let i = 0; i < heads.length && i < names.length; i++) {
+    19    │ - ····await·page.evaluate((el)·=>·el.scrollIntoView({·block:·"start"·}),·heads[i]);
+       26 │ + ····await·page.evaluate(
+       27 │ + ······(el)·=>·el.scrollIntoView({·block:·"start"·}),
+       28 │ + ······heads[i],
+       29 │ + ····);
+    20 30 │       await page.screenshot({ path: `${out}/${names[i]}-${w}x${h}.png` });
+    21 31 │     }
+    ····· │ 
+    34 44 │     await page.waitForTimeout(500);
+    35 45 │     await seqMap.screenshot({ path: `${out}/sequence-map-stuck-${w}x${h}.png` });
+    36    │ - ··const·maps·=·await·page.locator('.mdmark-diagram[data-diagram="map"]').count();
+    37    │ - ··const·mermaids·=·await·page.locator('.mdmark-diagram[data-diagram="mermaid"]').count();
+    38    │ - ··console.log(`${w}x${h}·headings=${heads.length}·map=${maps}·mermaid=${mermaids}`);
+       46 │ + ··const·maps·=·await·page
+       47 │ + ····.locator('.mdmark-diagram[data-diagram="map"]')
+       48 │ + ····.count();
+       49 │ + ··const·mermaids·=·await·page
+       50 │ + ····.locator('.mdmark-diagram[data-diagram="mermaid"]')
+       51 │ + ····.count();
+       52 │ + ··console.log(
+       53 │ + ····`${w}x${h}·headings=${heads.length}·map=${maps}·mermaid=${mermaids}`,
+       54 │ + ··);
+    39 55 │     await page.close();
+    40 56 │   }
+  
+
+tmp/warn.mjs:2:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × This statement must be preceded by a blank line. Add a newline before this statement.
+  
+    1 │ import { chromium } from "playwright";
+  > 2 │ const b = await chromium.launch(); const p = await b.newPage();
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ await p.goto(process.argv[2], { waitUntil: "networkidle" }); await p.waitForTimeout(6000);
+    4 │ console.log(await p.evaluate(() => [...document.querySelectorAll(".mdmark-syntax-warning")].map((e) => e.textContent).join("\n")));
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+    1 1 │   import { chromium } from "playwright";
+      2 │ + 
+    2 3 │   const b = await chromium.launch(); const p = await b.newPage();
+    3 4 │   await p.goto(process.argv[2], { waitUntil: "networkidle" }); await p.waitForTimeout(6000);
+  
+
+tmp/warn.mjs format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    1  1 │   import { chromium } from "playwright";
+    2    │ - const·b·=·await·chromium.launch();·const·p·=·await·b.newPage();
+    3    │ - await·p.goto(process.argv[2],·{·waitUntil:·"networkidle"·});·await·p.waitForTimeout(6000);
+    4    │ - console.log(await·p.evaluate(()·=>·[...document.querySelectorAll(".mdmark-syntax-warning")].map((e)·=>·e.textContent).join("\n")));
+       2 │ + const·b·=·await·chromium.launch();
+       3 │ + const·p·=·await·b.newPage();
+       4 │ + await·p.goto(process.argv[2],·{·waitUntil:·"networkidle"·});
+       5 │ + await·p.waitForTimeout(6000);
+       6 │ + console.log(
+       7 │ + ··await·p.evaluate(()·=>
+       8 │ + ····[...document.querySelectorAll(".mdmark-syntax-warning")]
+       9 │ + ······.map((e)·=>·e.textContent)
+      10 │ + ······.join("\n"),
+      11 │ + ··),
+      12 │ + );
+    5 13 │   await b.close();
+    6 14 │   
+  
+
+Checked 911 files in 743ms. No fixes applied.
+Found 8 errors.
+Found 1 warning.
+Found 1 info.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.4 typecheck
+> tsc --noEmit
+
+exit=1

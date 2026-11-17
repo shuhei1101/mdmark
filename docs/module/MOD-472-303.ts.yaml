@@ -20,6 +20,7 @@ functions:
       描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。
       `map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする。
       補足の `notes.{ID}.annotations` が、`collectAnnotations` が番号を振った注記を参照する範囲は、参照する注記のうち定義のある ID から番号への JSON を `data-map-annotations` に入れる（補足が注記を参照する範囲は、定義のある ID が無くても `{}` で付ける。注記の機能がオフの文書と、補足が注記を参照しない範囲には付けない）
+      `mermaid` と `map` がオンの文書で、範囲の外の言語 `mermaid` のコードブロックは、`plainMapSourceOf` が値を返したとき、補足を持たない範囲と同じ `div.mdmark-map` で囲み、`data-map-plain` を付ける（図の番号は範囲と通し）。`data-map-args` は `{"title": …}` だけで、値は `plainMapSourceOf` の `title`、無ければ `mermaidKindName` の図の種類の名前にする。中のコードブロックのソースは `body` にし、`frontMatter` があれば `data-map-front-matter` に入れる。`data-map-terms` は範囲と同じく付け、`data-map-annotations` と記載の警告は付けない
     args:
       - name: state
         type: StateCore
@@ -30,6 +31,8 @@ functions:
       description: なし
     callees:
       - MOD-589-1#functions[collectMapStructure]
+      - MOD-589-1#functions[plainMapSourceOf]
+      - MOD-472-144#functions[mermaidKindName]
     unit_tests:
       - name: test_build_map_ranges
         case: 正常
@@ -67,6 +70,30 @@ functions:
         condition: '本文で `※[img]` を参照し、補足の `notes.mount.annotations` が `["cond", "img", "missing"]` の範囲と、定義 `※[cond]`・`※[img]` を持つ文書'
         mock: なし
         expected: '`data-map-annotations` が `{"cond":2,"img":1}`。`annotations` をオフにすると `data-map-annotations` が無い。補足の注記の参照が `missing` だけの範囲は `data-map-annotations` が `{}`'
+      - name: test_build_map_ranges_when_plain
+        case: 正常
+        summary: 範囲の外の純粋な Mermaid を map の図にする
+        condition: 範囲の外の flowchart と gantt のコードブロック、その後ろに構成図の範囲
+        mock: なし
+        expected: flowchart が `div.mdmark-map[data-map-plain]` で `data-map` が `1`、`data-map-args` が `{"title":"フローチャート"}`。gantt は `data-mdmark-mermaid` を持つコードブロックのまま。範囲の `data-map` が `2`
+      - name: test_build_map_ranges_when_plain_front_matter
+        case: 正常
+        summary: front matter を除いてタイトルにする
+        condition: 'front matter に `title: 受付` と `displayMode: compact` を持つ flowchart のコードブロック'
+        mock: なし
+        expected: '`data-map-args` が `{"title":"受付"}`、中のコードブロックのソースが `flowchart` から始まる、`data-map-front-matter` が front matter の 4 行'
+      - name: test_build_map_ranges_when_plain_config
+        case: 正常
+        summary: 設定を持つコードブロックは mermaid のまま
+        condition: 'front matter に `config:` を持つ flowchart と、1 行目が `%%{init: {"theme": "forest"}}%%` の sequenceDiagram'
+        mock: なし
+        expected: '`div.mdmark-map` が無く、どちらも `data-mdmark-mermaid` を持つ'
+      - name: test_build_map_ranges_when_plain_features_off
+        case: 正常
+        summary: 機能を外すと範囲の外の map の図にしない
+        condition: 'flowchart のコードブロックを、`features: -map` と `features: -mermaid` の文書で描く'
+        mock: なし
+        expected: '`-map` では `data-mdmark-mermaid` を持つコードブロック、`-mermaid` では `data-mdmark-mermaid` も `data-map-plain` も持たないコードブロック'
 lead: 'map の範囲の組み立てを受け持ち、map の範囲の出力を変えるときに参照する。'
 tags:
   - name: topic:map

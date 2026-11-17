@@ -403,11 +403,13 @@ const MERMAID_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
 /** mermaid の図を描き終えるまでの待ちの上限（全件を並べて実行すると、5MB の mermaid のモジュールの読み込みに 10 秒を超えることがある） */
 const MERMAID_WAIT_MS = 60_000;
 
-/** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
+/** gantt の mermaid のコードブロックを 1 つ持つ文書（map が描く種類は map の図になる） */
 const MERMAID_MARKDOWN = [
   "```mermaid",
-  "flowchart LR",
-  "  A --> B",
+  "gantt",
+  "  dateFormat YYYY-MM-DD",
+  "  section 設計",
+  "  画面 :a1, 2026-01-01, 3d",
   "```",
   "",
 ].join("\n");
@@ -1362,3 +1364,52 @@ test("test_mount_when_range_scripts", async () => {
     setEmbeddedHtmlScripts(undefined);
   }
 });
+
+// map の図から戻したコードブロックを mermaid の図にする（正常系）
+test(
+  "test_mount_when_plain_mermaid_fallback",
+  async () => {
+    // 準備: map の部品のモジュールはソースから読み込む
+    addStyles();
+    const { partModules, partModuleLoaders, setPartModuleLoader } =
+      await import("../../../src/part-modules.ts");
+    partModules.clear();
+    setPartModuleLoader("map", () => import("../../../src/map/index.ts"));
+    const el = createElement();
+    const markdown = [
+      "```mermaid",
+      "flowchart LR",
+      "  A --> B",
+      "  style A fill:#f9f",
+      "```",
+      "",
+      "```mermaid",
+      "sequenceDiagram",
+      "  A->>B: 送る",
+      "```",
+      "",
+    ].join("\n");
+    const config = { mermaid: { url: MERMAID_URL } };
+    const counts = () => [
+      el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]')
+        .length,
+      el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]').length,
+    ];
+    // 実行
+    const handle = await mountTracked(el, { markdown, config });
+    await vi.waitFor(() => expect(counts()).toEqual([1, 1]), {
+      timeout: MERMAID_WAIT_MS,
+    });
+    handle.update(markdown);
+    await vi.waitFor(() => expect(counts()).toEqual([1, 1]), {
+      timeout: MERMAID_WAIT_MS,
+    });
+    // 検証
+    expect(counts()).toEqual([1, 1]);
+    handle.destroy();
+    expect(counts()).toEqual([0, 0]);
+    partModules.clear();
+    partModuleLoaders.clear();
+  },
+  MERMAID_WAIT_MS * 2 + 30_000,
+);

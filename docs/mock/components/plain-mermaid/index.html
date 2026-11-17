@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>plain-mermaid（map の範囲の外の mermaid のコードブロック） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / plain-mermaid
+  </nav>
+  <main class="host">
+    <!-- 配布物の mount で、同じ Mermaid を今の描き方（コードブロックのまま）と案 A（補足の無い map の範囲）で描いた文書 -->
+    <div id="doc"></div>
+  </main>
+  <script type="module" src="../../refs/630/assets/plain-mermaid.js"></script>
+</body>
+</html>

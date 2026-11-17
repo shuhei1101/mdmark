@@ -35,6 +35,7 @@ const INTRO = [
   "<!-- /table -->",
   "",
   "```mermaid",
+  "%%{init: {}}%%",
   "flowchart LR",
   "  A[書く] --> B[書き出す]",
   "```",

@@ -1,0 +1,115 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: map の範囲の外の言語 mermaid のコードブロックを、map が描ける種類は補足の無い map の図に、描けない種類は今の mermaid の図にする。title の無い図は図の種類の名前をタイトルにし、`actor` は既定で人のアイコンを持つ。参加者の行を文書のスクロールでも留め、枠線を欠かさないことは、図の枠の共通の振る舞いのため、純粋な Mermaid と map の範囲のシーケンス図を並べたこの UC のシナリオ 1 つで確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: map が描けない種類（gantt）の mermaid の図で拡大・移動し、純粋な Mermaid の図の文字の上のドラッグを、図の移動ではなく文字の選択にする
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: changed
+    detail: 純粋な Mermaid のシーケンス図でも、参加者を選んで強調し、並び順を変え、再生できる。`actor` は、map の範囲でも既定で人のアイコンを持つ
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 種類を持たないノードは、名前をノードの上下の中央に描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: 図の中の文字の選択を足しても、ノードの上のツールチップが今のとおり出ることを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: map の図を辿って読む流れが、純粋な Mermaid への操作の追加で変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: changed
+    detail: プレビューで mermaid を読み込む確認を、map が描けない種類（gantt）のコードブロックで行う
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: changed
+    detail: mermaid を埋めた書き出しを、map が描けない種類（gantt）のコードブロックで確かめる
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: changed
+    detail: 相対パスの mermaid の読み込みを、map が描けない種類（gantt）のコードブロックで確かめる
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-26.yaml
+    impact: changed
+    detail: 選んだテーマの mermaid の図の配色を、map が描けない種類（gantt）のタスクの棒で確かめる
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-62.yaml
+    impact: changed
+    detail: map の機能をオフにした文書では、範囲の外の map が描ける種類の mermaid のコードブロックも mermaid の図で描く
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-46.yaml
+    impact: run_only
+    detail: シナリオは mermaid を使用しない文書で mermaid への要求が 0 件のまま。mermaid を読み込む条件の変更は『mermaidの図を描く』が持ち、外部ライブラリの読み込みが変わらないことを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 記法を記載しなくても純粋な Mermaid の図に付く操作（参加者の行の固定・文字の選択とコピー など）を追記する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: map の操作のうち、補足や map の範囲が無くても付くものと、map の範囲で囲むと増えるものの違いを追記する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: '`## mermaid のコードブロック` の節と一覧の行に、map の範囲が無くても付く操作を足す'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: '`mermaid.url` を読み込む条件と CLI の `export`・`build` が mermaid を埋める条件を「map が描けない種類のコードブロックがあるとき」に、`mermaid.theme`・`mermaid.themeVariables` を map が描けない種類の図にだけ当たる記載に、`features.mermaid`・`features.map` を範囲の外の純粋な Mermaid の扱い（map がオンなら map、オフなら mermaid で描く）を含む記載に修正する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    new: false
+    change: '`features.mermaid`・`features.map` の説明を、範囲の外の純粋な Mermaid の扱い（map がオンなら map、オフなら mermaid で描く）を含む記載に修正する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
+scope_out:
+  - item: mermaid の図の要素への用語の下線・ツールチップ
+    reason: 別の要望で、本 PR で描き方を揃えた後に着手する計画のため
+    plan: '#391'
+  - item: map の操作のうち、補足（map-data）か map の引数を記載しないと成り立たないもの（案内の手順・ノードの説明・種類の表示名 など）
+    reason: 記法を記載した文書だけが持つ情報を元にする操作で、純粋な Mermaid には元になる情報が無いため
+    plan: none
+  - item: 図以外の記法（表・コードブロック など）で、記法が無くても付けられる操作の洗い出しと追加
+    reason: 純粋な Mermaid への操作の追加とは対象の記法が別で、本 PR がマージされなくても同じ内容で成り立つため
+    plan: '#632'
+  - item: map のクラス図の説明のマーカー（`.mdmark-diagram-info`）のタップ領域が axe の `target-size` に当たる
+    reason: 既存のストーリー `parts-mapclass--default` でも出る、本 PR の変更と関係しない事象のため（reviewer の対象外の逸脱の報告）
+    plan: none
+  - item: '`MOD-472-203` の単体テストの行のうち、2 つ目のテストファイル（`mount-view.browser.test.ts`）にあるテスト 2 件が、設計書の検証で「テスト関数がありません」と出る'
+    reason: '対応テストファイルの項目に 1 ファイルしか記載できないスキーマによる #472 からのずれで、本 PR の変更が起こしたものではなく、テストのファイルの組み替えが要るため'
+    plan: '#640'

@@ -110,3 +110,41 @@ test("test_class_part_inputs", async () => {
     "interface",
   );
 });
+
+// click と link の行をリンク先にする（正常系）
+test("test_parse_class_diagram_when_links", async () => {
+  // 準備
+  const { parseClassDiagram } = await loadClass();
+  // 実行
+  const diagram = parseClassDiagram(
+    [
+      "classDiagram",
+      "  class 図面",
+      "  class 円",
+      "  class 線",
+      '  click 図面 href "./drawing.md"',
+      '  click 円 "https://example.com"',
+      '  link 線 "./line.md"',
+    ].join("\n"),
+  );
+  // 検証
+  expect(diagram.links).toEqual({
+    図面: "./drawing.md",
+    円: "https://example.com",
+    線: "./line.md",
+  });
+  expect(diagram.problems).toEqual([]);
+});
+
+// リンク先を構成図に写す（正常系）
+test("test_class_to_flowchart_when_links", async () => {
+  // 準備
+  const { parseClassDiagram, classToFlowchart } = await loadClass();
+  const diagram = parseClassDiagram(
+    'classDiagram\n  class 図面\n  click 図面 href "./drawing.md"',
+  );
+  // 実行
+  const chart = classToFlowchart(diagram);
+  // 検証
+  expect(chart.links).toEqual({ 図面: "./drawing.md" });
+});

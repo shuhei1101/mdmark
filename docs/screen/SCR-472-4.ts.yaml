@@ -514,14 +514,16 @@ elements:
         value: docs/component/CMP-472-6.ts#（`svg` は今の配色で描いた SVG、`printSvg` は暗い配色のときだけ明るい配色で描いた SVG）
     position: 描く先の要素
     description: 言語 `mermaid` のコードブロックを mermaid で描いた図。コードブロックの場所に置き換え、描いたときは全体が収まる倍率（0.75 を下限）で出す
-    visible_when: '`mermaid` がオンで、mermaid のコードブロックを mermaid が描けたとき'
+    visible_when: '`mermaid` がオンで、map が描けない種類の mermaid のコードブロック（`map` がオフのとき・front matter に `config` を持つか `%%{` の設定の行を持つとき・map の図から mermaid の図に戻したときは全ての種類）を mermaid が描けたとき'
     action: |-
       要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドル。
-      mermaid の `click`・`link` の行で許可する URL を持つノードを動かさずに押すか、フォーカスして Enter で、リンク先を同じタブで開く（押したまま動かして図を動かしたときは開かない）
+      mermaid の `click`・`link` の行で許可する URL を持つノードを動かさずに押すか、フォーカスして Enter で、リンク先を同じタブで開く（押したまま動かして図を動かしたときは開かない）。
+      ノード・ラベル・メッセージの文字はドラッグで選んでコピーでき、文字の無い所のドラッグは図を動かす
     refs:
       - IF-472-35#constraints[mermaid の描き方]
       - IF-472-35#constraints[mermaid のテーマ]
       - IF-472-35#constraints[mermaid のノードのリンク]
+      - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
     status: planned
   - name: map の構成図
     id: map-flow
@@ -531,7 +533,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`
+        value: map のマーカーの `title`（範囲の外のコードブロックは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前）
       - name: legend
         value: '`[]`'
       - name: wide
@@ -547,7 +549,7 @@ elements:
         value: docs/component/CMP-472-5.ts#（`layout` は Mermaid と補足から自動配置した結果、`collapsed`・`entered`・`selected`・位置は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
     position: 描く先の要素
     description: map の範囲の `flowchart` を自動配置して描いた構成図。置き場所の幅いっぱいに広げ、倍率 1 で出す。図の枠の下に要素「map の案内の帯」を置く
-    visible_when: '`map` がオンで、map の範囲に `flowchart` の mermaid のブロックがあるとき'
+    visible_when: '`map` がオンで、map の範囲に `flowchart` の mermaid のブロックがあるか、map の範囲の外にその種類の言語 `mermaid` のコードブロックがあり、front matter の `config`・`%%{` の設定の行を持たず、map の図から mermaid の図に戻さないとき'
     action: |-
       要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドルに加え、グループの山形で開閉し、タイトルで中へ入り、外へ戻る・Esc で外へ戻る。
       ノードを押して選び、線を押して両端を選び、Esc か「配置と選択を元に戻す」で解く。
@@ -563,6 +565,7 @@ elements:
       - IF-472-35#constraints[map の操作の分け方]
       - IF-472-35#constraints[map のノードのリンク]
       - IF-472-35#constraints[map のグループの説明]
+      - IF-472-35#constraints[範囲の外の map の図に付く操作]
     status: planned
   - name: map のシーケンス図
     id: map-sequence
@@ -572,7 +575,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`
+        value: map のマーカーの `title`（範囲の外のコードブロックは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前）
       - name: legend
         value: '`[]`'
       - name: wide
@@ -586,11 +589,13 @@ elements:
         value: docs/component/CMP-472-4.ts#
     position: 描く先の要素
     description: map の範囲の `sequenceDiagram` を全ての記法で描いたシーケンス図。図の枠の下に要素「map の案内の帯」を再生として置く
-    visible_when: '`map` がオンで、map の範囲に `sequenceDiagram` の mermaid のブロックがあるとき'
-    action: 要素「map の構成図」と同じ図の枠の操作に加え、ブロックのタブの山形で開閉し、タブの名前で中だけを描く。参加者を押して選び、ドラッグか Alt + 左右の矢印キーで並べ替える
+    visible_when: '`map` がオンで、map の範囲に `sequenceDiagram` の mermaid のブロックがあるか、map の範囲の外にその種類の言語 `mermaid` のコードブロックがあり、front matter の `config`・`%%{` の設定の行を持たず、map の図から mermaid の図に戻さないとき'
+    action: 要素「map の構成図」と同じ図の枠の操作に加え、ブロックのタブの山形で開閉し、タブの名前で中だけを描く。参加者を押して選び、ドラッグか Alt + 左右の矢印キーで並べ替える。参加者の行は、表示する枠の中を縦に動かしたときは表示する枠の上端に、文書をスクロールして表示する枠の上端が画面の外へ出たときは画面の上端に留まる
     refs:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[範囲の外の map の図に付く操作]
+      - IF-472-35#constraints[シーケンス図の参加者の行を留める]
     status: planned
   - name: map の ER 図
     id: map-er
@@ -600,7 +605,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`
+        value: map のマーカーの `title`（範囲の外のコードブロックは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前）
       - name: legend
         value: '`[]`'
       - name: wide
@@ -614,12 +619,13 @@ elements:
         value: docs/component/CMP-531-1.ts#（`collapsed`・`entered`・`selected` は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
     position: 描く先の要素
     description: map の範囲の `erDiagram` を、列の行を持つテーブルのノードと分類のグループにして自動配置した ER 図。補足に `walkthroughs` があれば、図の枠の下に要素「map の案内の帯」を配置する
-    visible_when: '`map` がオンで、map の範囲に `erDiagram` の mermaid のブロックがあるとき'
+    visible_when: '`map` がオンで、map の範囲に `erDiagram` の mermaid のブロックがあるか、map の範囲の外にその種類の言語 `mermaid` のコードブロックがあり、front matter の `config`・`%%{` の設定の行を持たず、map の図から mermaid の図に戻さないとき'
     action: 要素「map の構成図」と同じ図の枠の操作に加え、テーブルの開閉のボタンで列を開閉する。2 つのテーブルを押すと経路を残し、行が増える旨のマーカーにフォーカスすると説明を出す
     refs:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map の ER 図]
       - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[範囲の外の map の図に付く操作]
     status: planned
   - name: map の状態遷移図
     id: map-state
@@ -629,7 +635,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`
+        value: map のマーカーの `title`（範囲の外のコードブロックは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前）
       - name: legend
         value: '`[]`'
       - name: wide
@@ -643,12 +649,13 @@ elements:
         value: docs/component/CMP-531-2.ts#
     position: 描く先の要素
     description: map の範囲の `stateDiagram-v2`・`stateDiagram` を自動配置した状態遷移図。図の枠の下に要素「map の案内の帯」を、補足に `walkthroughs` があれば案内、無ければ遷移の再生として配置する
-    visible_when: '`map` がオンで、map の範囲に `stateDiagram-v2` か `stateDiagram` の mermaid のブロックがあるとき'
+    visible_when: '`map` がオンで、map の範囲に `stateDiagram-v2` か `stateDiagram` の mermaid のブロックがあるか、map の範囲の外にその種類の言語 `mermaid` のコードブロックがあり、front matter の `config`・`%%{` の設定の行を持たず、map の図から mermaid の図に戻さないとき'
     action: 要素「map の構成図」と同じ図の枠の操作に加え、状態を押して入る遷移と出る遷移を残す
     refs:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map の状態遷移図]
       - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[範囲の外の map の図に付く操作]
     status: planned
   - name: map のクラス図
     id: map-class
@@ -658,7 +665,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`
+        value: map のマーカーの `title`（範囲の外のコードブロックは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前）
       - name: legend
         value: '`[]`'
       - name: wide
@@ -672,12 +679,13 @@ elements:
         value: docs/component/CMP-596-1.ts#（`collapsed`・`entered`・`selected` は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
     position: 描く先の要素
     description: map の範囲の `classDiagram` を、属性とメソッドの区画を持つクラスのノードと namespace のグループにして自動配置したクラス図。補足に `walkthroughs` があれば、図の枠の下に要素「map の案内の帯」を配置する
-    visible_when: '`map` がオンで、map の範囲に `classDiagram` の mermaid のブロックがあるとき'
+    visible_when: '`map` がオンで、map の範囲に `classDiagram` の mermaid のブロックがあるか、map の範囲の外にその種類の言語 `mermaid` のコードブロックがあり、front matter の `config`・`%%{` の設定の行を持たず、map の図から mermaid の図に戻さないとき'
     action: 要素「map の構成図」と同じ図の枠の操作に加え、クラスの開閉のボタンでメンバーを開閉する。2 つのクラスを押すと経路を残し、メンバーの説明のボタンにフォーカスすると説明を出す
     refs:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map のクラス図]
       - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[範囲の外の map の図に付く操作]
     status: planned
   - name: map のアーキテクチャ図
     id: map-architecture
@@ -687,7 +695,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`
+        value: map のマーカーの `title`（範囲の外のコードブロックは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前）
       - name: legend
         value: '`[]`'
       - name: wide
@@ -701,12 +709,13 @@ elements:
         value: docs/component/CMP-596-2.ts#（`collapsed`・`entered`・`selected` は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
     position: 描く先の要素
     description: map の範囲の `architecture-beta` を、アイコンを持つ service のノード・group のグループ・junction の点にして自動配置したアーキテクチャ図。補足に `walkthroughs` があれば、図の枠の下に要素「map の案内の帯」を配置する
-    visible_when: '`map` がオンで、map の範囲に `architecture-beta` の mermaid のブロックがあるとき'
+    visible_when: '`map` がオンで、map の範囲に `architecture-beta` の mermaid のブロックがあるか、map の範囲の外にその種類の言語 `mermaid` のコードブロックがあり、front matter の `config`・`%%{` の設定の行を持たず、map の図から mermaid の図に戻さないとき'
     action: 要素「map の構成図」と同じ
     refs:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map のアーキテクチャ図]
       - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[範囲の外の map の図に付く操作]
     status: planned
   - name: map の C4 図
     id: map-c4
@@ -716,7 +725,7 @@ elements:
       - name: kind
         value: '`map`'
       - name: title
-        value: map のマーカーの `title`。無ければ Mermaid の `title` の行
+        value: map のマーカーの `title`。無ければ Mermaid の `title` の行（範囲の外のコードブロックは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前）
       - name: legend
         value: '`[]`'
       - name: wide
@@ -730,12 +739,13 @@ elements:
         value: docs/component/CMP-596-3.ts#（`collapsed`・`entered`・`selected` は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
     position: 描く先の要素
     description: map の範囲の `C4Context` を、種類の行と説明を持つ要素のノードと破線の境界のグループにして自動配置した C4 図。補足に `walkthroughs` があれば、図の枠の下に要素「map の案内の帯」を配置する
-    visible_when: '`map` がオンで、map の範囲に `C4Context` の mermaid のブロックがあるとき'
+    visible_when: '`map` がオンで、map の範囲に `C4Context` の mermaid のブロックがあるか、map の範囲の外にその種類の言語 `mermaid` のコードブロックがあり、front matter の `config`・`%%{` の設定の行を持たず、map の図から mermaid の図に戻さないとき'
     action: 要素「map の構成図」と同じ
     refs:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map の C4 図]
       - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[範囲の外の map の図に付く操作]
     status: planned
   - name: map の案内の帯
     id: map-band

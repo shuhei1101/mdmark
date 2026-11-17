@@ -956,6 +956,7 @@ test("test_normal_when_mermaid_embedded", async () => {
       "# ガイド",
       "",
       "```mermaid",
+      "%%{init: {}}%%",
       "flowchart LR",
       "  A[受付] --> B[回答]",
       "```",
