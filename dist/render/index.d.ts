@@ -20,6 +20,8 @@ export type RenderedDocument = {
     warnings: CollectedWarning[];
     /** 文書の先頭の page のマーカーから読み込んだページの設定 */
     page: PageSettings;
+    /** 文書の注記の定義の ID（注記の機能がオフなら空） */
+    annotationIds: string[];
 };
 /** Markdown を本文の HTML にし、文書のマーカーで決まった機能のオン・オフと一緒に返却する */
 export declare function renderDocument(options: {

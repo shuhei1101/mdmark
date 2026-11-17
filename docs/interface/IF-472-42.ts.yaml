@@ -113,6 +113,32 @@ flows:
       - 標準エラーに配置先のパスと修正方法が出る
       - 配置先のファイルが変わっていない
     test: test_error_when_unwritable
+  - name: 正常系（develop のビルドの CLI）
+    summary: develop のビルドの CLI は、設定の `version` を `develop` にして配置する
+    setup:
+      - name: 空のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: CLI に埋めたバージョンを `v0.5.0+develop.abc1234` に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init {フォルダ}
+        C->>F: version を develop にした設定とほかの雛形を書き込む
+        C-->>W: 配置した 6 つの行・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0
+      - '`mdmark.config.yaml` の `version` が `develop`'
+      - '`mdmark.config.yaml` が設定の JSON Schema に合う'
+    test: test_normal_when_cli_built_from_develop
 lead: 文書の作成者が、設定・利用側の CSS・索引・拡張の雛形をフォルダに配置する。雛形の原本はリポジトリの `templates/` に配置し、既にあるファイルは上書きしない。
 idempotent: true
 side_effects: 配置先のフォルダに、無い雛形のファイルとフォルダを書き込む
@@ -169,7 +195,7 @@ constraints:
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
   - item: 設定のバージョン
-    constraint: 配置する `mdmark.config.yaml` の `version` は、ビルドが呼んだ CLI に埋めたバージョン。`templates/mdmark.config.yaml` の `version` の値を配置するときに置き換える
+    constraint: 配置する `mdmark.config.yaml` の `version` は、ビルドが呼んだ CLI に埋めたバージョン。`templates/mdmark.config.yaml` の `version` の値を配置するときに置き換える。埋めたバージョンが `+develop.` を含む develop のビルドのときは `develop` にする
     decided_by: CFG-472-3#settings[version]
 test_file: tests/integration/lib/init.test.ts
 tags:

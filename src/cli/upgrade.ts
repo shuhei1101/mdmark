@@ -24,7 +24,13 @@ import {
   stepFiles,
 } from "./migrations.ts";
 import type { Prompter } from "./prompt.ts";
-import { compareVersions, parseVersion } from "./versions.ts";
+import {
+  compareVersions,
+  DEVELOP_VERSION,
+  isDevelopBuild,
+  parseVersion,
+  releaseVersionOf,
+} from "./versions.ts";
 
 /** 壊す手順の確認で承諾とする回答し */
 const CONFIRM_ANSWER = "y";
@@ -250,11 +256,36 @@ async function upgradeConfigPath(
 
 /** 手元のバージョン（設定に無ければ聞く） */
 async function localVersion(raw: unknown, ask: Prompter): Promise<string> {
-  return assertVersion(
+  const value =
     isRecord(raw) && raw.version !== undefined
       ? raw.version
-      : await askRequired(ask, VERSION_QUESTION),
-  );
+      : await askRequired(ask, VERSION_QUESTION);
+  if (value === DEVELOP_VERSION) {
+    throw new CliError(
+      `手元のバージョンが ${DEVELOP_VERSION} のため、移行の手順を選べません。設定の version に今の文書が合わせてあるバージョンを v{MAJOR}.{MINOR}.{PATCH} で記載してから、もう一度呼んでください。`,
+    );
+  }
+  return assertVersion(value);
+}
+
+/** develop のビルドで出していないバージョンの手順（`migrations/next/steps.yaml`）があれば止める */
+async function assertNoUnreleasedSteps(
+  packageDir: string,
+  cliVersion: string,
+): Promise<void> {
+  if (!isDevelopBuild(cliVersion)) {
+    return;
+  }
+  const text = await readFile(
+    join(packageDir, "migrations", "next", "steps.yaml"),
+    "utf8",
+  ).catch(() => undefined);
+  const steps = text === undefined ? undefined : parse(text)?.steps;
+  if (Array.isArray(steps) && steps.length > 0) {
+    throw new CliError(
+      `この develop のビルド（${cliVersion}）は、出していないバージョンの移行の手順を持ちます。npx github:shuhei1101/mdmark#${releaseVersionOf(cliVersion)} upgrade のように、タグを指定した mdmark で呼んでください。`,
+    );
+  }
 }
 
 /** 端末の設定は設定ファイルの手順（設定ファイルだけを書き換える call を含む）だけを当て、索引と文書の手順は飛ばす */
@@ -367,7 +398,8 @@ export async function runUpgrade(
   const loaded = await loadConfig(configPath);
   const dir = loaded.dir;
   const local = await localVersion(loaded.raw, ask);
-  const target = options.cliVersion;
+  await assertNoUnreleasedSteps(options.packageDir, options.cliVersion);
+  const target = releaseVersionOf(options.cliVersion);
   io.stdout(`手元のバージョン: ${local}`);
   io.stdout(`目標のバージョン: ${target}`);
   const order = compareVersions(local, target);

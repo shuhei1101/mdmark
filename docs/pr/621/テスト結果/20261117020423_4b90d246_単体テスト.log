@@ -1,0 +1,95 @@
+$ npx vitest run --project 'unit*' tests/unit/src/cli/versions.test.ts tests/unit/src/cli/upgrade.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/chore-dist-develop-latest-reference
+
+ ❯ |unit| tests/unit/src/cli/versions.test.ts (8 tests | 4 failed) 35ms
+   × test_is_develop_build 2ms
+   × test_release_version_of 5ms
+   × test_local_version_of 0ms
+   × test_is_local_version 0ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (18 tests | 2 failed) 2401ms
+   × test_run_upgrade_when_develop_build 10ms
+   × test_run_upgrade_when_develop_build_has_unreleased_steps 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_develop_build
+Error: バージョンの書式が違います: v0.5.0+develop.abc1234
+ ❯ compareVersions src/cli/versions.ts:22:11
+     20|   const right = parseVersion(b);
+     21|   if (!left || !right) {
+     22|     throw new Error(`バージョンの書式が違います: ${left ? b : a}`);
+       |           ^
+     23|   }
+     24|   for (const [index, value] of left.entries()) {
+ ❯ runUpgrade src/cli/upgrade.ts:373:17
+ ❯ tests/unit/src/cli/upgrade.test.ts:618:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_run_upgrade_when_develop_build_has_unreleased_steps
+AssertionError: expected Error: バージョンの書式が違います: v0.5.0+develop.abc1… to be an instance of CliError
+ ❯ tests/unit/src/cli/upgrade.test.ts:664:23
+    662|   );
+    663|   // 検証
+    664|   await expect(result).rejects.toBeInstanceOf(CliError);
+       |                       ^
+    665|   await expect(result).rejects.toThrow(
+    666|     "npx github:shuhei1101/mdmark#v0.5.0 upgrade",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/versions.test.ts > test_is_develop_build
+TypeError: isDevelopBuild is not a function
+ ❯ tests/unit/src/cli/versions.test.ts:56:10
+     54|   const { isDevelopBuild } = await loadModule();
+     55|   // 実行・検証
+     56|   expect(isDevelopBuild("v0.5.0+develop.abc1234")).toBe(true);
+       |          ^
+     57|   expect(isDevelopBuild("v0.5.0")).toBe(false);
+     58|   expect(isDevelopBuild("v0.5.0-develop.abc1234")).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/versions.test.ts > test_release_version_of
+TypeError: releaseVersionOf is not a function
+ ❯ tests/unit/src/cli/versions.test.ts:66:10
+     64|   const { releaseVersionOf } = await loadModule();
+     65|   // 実行・検証
+     66|   expect(releaseVersionOf("v0.5.0+develop.abc1234")).toBe("v0.5.0");
+       |          ^
+     67|   expect(releaseVersionOf("v0.5.0")).toBe("v0.5.0");
+     68| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/versions.test.ts > test_local_version_of
+TypeError: localVersionOf is not a function
+ ❯ tests/unit/src/cli/versions.test.ts:75:10
+     73|   const { localVersionOf } = await loadModule();
+     74|   // 実行・検証
+     75|   expect(localVersionOf("v0.5.0+develop.abc1234")).toBe("develop");
+       |          ^
+     76|   expect(localVersionOf("v0.5.0")).toBe("v0.5.0");
+     77| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/versions.test.ts > test_is_local_version
+TypeError: isLocalVersion is not a function
+ ❯ tests/unit/src/cli/versions.test.ts:84:10
+     82|   const { isLocalVersion } = await loadModule();
+     83|   // 実行・検証
+     84|   expect(isLocalVersion("v0.5.0")).toBe(true);
+       |          ^
+     85|   expect(isLocalVersion("develop")).toBe(true);
+     86|   expect(isLocalVersion("latest")).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 20 passed (26)
+   Start at  02:04:13
+   Duration  2.64s (tests 93%, transform 5%, import 2%)
+

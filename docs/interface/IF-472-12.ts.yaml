@@ -155,7 +155,7 @@ constraints:
     constraint: コメント・キーの並び・触らないキーの記載方法を残す
     decided_by: LIB-472-36#
   - item: version
-    constraint: 端末の設定を新しく作るときだけ `version` をプラグインのビルドで埋めた mdmark のバージョンにする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
+    constraint: 端末の設定を新しく作るときだけ `version` をプラグインのビルドで埋めた mdmark のバージョン（`+develop.` を含む develop のビルドは `develop`）にする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
   - item: settings.json
     constraint: '`env.MDMARK_CONFIG` だけを書き込み、ほかのキーと記載方法を残す。端末の設定が既定のパスなら書き込まない'
   - item: 出力

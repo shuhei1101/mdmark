@@ -424,3 +424,32 @@ test("test_error_when_steps_invalid", async () => {
   expect(stderr).toContain("migrations/next/steps.yaml");
   expect(stderr).toContain("to");
 });
+
+// --develop でビルドメタデータを添えたバージョンを埋める（正常系（develop のビルド））
+test("test_normal_when_develop", { timeout: BUILD_TIMEOUT_MS }, async () => {
+  // 準備
+  const root = await createWorkTree("v0.0.0\n");
+  await git(root, ["init", "--quiet"]);
+  await git(root, ["add", "--all", ":!node_modules"]);
+  await git(root, ["commit", "--quiet", "-m", "develop"]);
+  const { stdout } = await execFileAsync(
+    "git",
+    ["rev-parse", "--short=7", "HEAD"],
+    { cwd: root },
+  );
+  const expected = `v0.0.0+develop.${stdout.trim()}`;
+  // 実行（配布ファイルの上限の超過は #601 で扱うため、上限を差し替えて呼ぶ）
+  const code = await main(["--develop"], {
+    root,
+    maxBytes: 20 * 1024 * 1024,
+  });
+  // 検証
+  expect(code).toBe(0);
+  expect(await readBuiltVersion(root)).toBe(expected);
+  const cli = await execFileAsync(
+    process.execPath,
+    [join(root, "dist", "cli.js"), "--version"],
+    { cwd: root },
+  );
+  expect(cli.stdout.trim()).toBe(expected);
+});

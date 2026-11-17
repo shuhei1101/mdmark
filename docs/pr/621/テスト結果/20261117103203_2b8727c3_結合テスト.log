@@ -1,0 +1,10 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/upgrade.test.ts tests/integration/lib/init.test.ts tests/integration/lib/build.test.ts tests/integration/lib/config-cascade.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/chore-dist-develop-latest-reference
+
+
+ Test Files  4 passed (4)
+      Tests  44 passed (44)
+   Start at  10:32:36
+   Duration  27.71s (tests 96%, import 4%)
+
