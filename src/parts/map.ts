@@ -4,6 +4,9 @@ import type {
   MdmarkFlowDefinition,
 } from "../diagram/definition.ts";
 import { MAP_LAYOUT, type MapLayout } from "../map/layout.ts";
+import type { Mindmap, MindmapItem } from "../map/mindmap.ts";
+import type { MindmapLayout, MindmapPlacement } from "../map/mindmap-layout.ts";
+import { MINDMAP_LAYOUT } from "../map/mindmap-layout.ts";
 import {
   SEQ_ARROW_STYLES,
   type Sequence,
@@ -2998,4 +3001,221 @@ export const renderMapC4Diagram = (args: MapC4Args): MapPart => {
       name: "map-c4-external",
     });
   return { html, tips: `${flow.tips}${marker.tips.html()}` };
+};
+
+/** 部品『mapのマインドマップ』の引数。項目は `stateKey` で指す */
+export type MapMindmapArgs = {
+  mindmap: Mindmap;
+  tree: MindmapLayout;
+  /** 補足の `layout` の `color` を持つ項目（その色の面も付ける） */
+  filled: ReadonlySet<string>;
+  collapsed: string[];
+  entered: string | undefined;
+  selected: string | undefined;
+  focus: { nodes: string[] } | undefined;
+  notes: Record<string, string>;
+  annotations: Record<string, DiagramAnnotation[]>;
+  hints?: boolean | undefined;
+  id: string;
+  terms?: Record<string, string> | undefined;
+};
+
+/** 描くときに繰り返し引く値 */
+type MindmapContext = {
+  args: MapMindmapArgs;
+  byKey: Map<string, MindmapItem>;
+  /** 薄くせずに残す項目（選択と案内の強調が無ければ undefined） */
+  kept: Set<string> | undefined;
+  marker: TermMarker;
+  tips: TipList;
+  ownerPrefix: string;
+};
+
+/** 全体の根から項目までの項目（両端を含む） */
+const mindmapPath = (mindmap: Mindmap, item: MindmapItem): MindmapItem[] => {
+  const path: MindmapItem[] = [];
+  let at: MindmapItem | undefined = item;
+  while (at) {
+    path.unshift(at);
+    at = at.parent === undefined ? undefined : mindmap.items[at.parent];
+  }
+  return path;
+};
+
+/** 項目の子孫 */
+const mindmapDescendants = (
+  mindmap: Mindmap,
+  item: MindmapItem,
+): MindmapItem[] =>
+  item.children.flatMap((order) => {
+    const child = mindmap.items[order];
+    return child ? [child, ...mindmapDescendants(mindmap, child)] : [];
+  });
+
+/** 選んだ項目の道筋と子孫、無ければ案内で強調する項目と道筋。どちらも無ければ undefined */
+const mindmapKept = (
+  args: MapMindmapArgs,
+  byKey: Map<string, MindmapItem>,
+): Set<string> | undefined => {
+  const selected =
+    args.selected === undefined ? undefined : byKey.get(args.selected);
+  if (selected) {
+    return new Set(
+      [
+        ...mindmapPath(args.mindmap, selected),
+        ...mindmapDescendants(args.mindmap, selected),
+      ].map((item) => item.stateKey),
+    );
+  }
+  const focused = (args.focus?.nodes ?? []).flatMap((key) => {
+    const item = byKey.get(key);
+    return item ? mindmapPath(args.mindmap, item) : [];
+  });
+  return focused.length === 0
+    ? undefined
+    : new Set(focused.map((item) => item.stateKey));
+};
+
+/** 薄くする項目と線の class（残す項目の外なら付ける） */
+const mindmapDim = (context: MindmapContext, key: string): string =>
+  context.kept !== undefined && !context.kept.has(key) ? " map-dim" : "";
+
+/** 説明か注記を持つ項目の説明のマーカー。`hints` がオフなら空 */
+const mindmapInfo = (context: MindmapContext, item: MindmapItem): string => {
+  const { args, tips, ownerPrefix } = context;
+  const hint = args.notes[item.stateKey];
+  const notes = args.annotations[item.stateKey];
+  const described = hint !== undefined && hint !== "";
+  const annotated = (notes?.length ?? 0) > 0;
+  if (args.hints === false || !(described || annotated)) return "";
+  const owner = `node:${item.stateKey}`;
+  const id = tips.add({
+    kind: "hint",
+    label: item.label,
+    hint,
+    owner,
+    annotations: notes,
+  });
+  const ownerId = annotated
+    ? ` id="${escapeHtml(noteOwnerId(ownerPrefix, item.stateKey))}"`
+    : "";
+  return `<button class="mdmark-diagram-info" type="button"${ownerId} aria-label="${escapeHtml(infoLabel({ name: item.label, described, annotated }))}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
+};
+
+/** 項目の押せる要素。`hints` がオフで注記を持てば、持ち主の `id` を付ける */
+const mindmapHit = (context: MindmapContext, item: MindmapItem): string => {
+  const { args, ownerPrefix } = context;
+  const selected = args.selected === item.stateKey;
+  const ownerId =
+    args.hints === false && (args.annotations[item.stateKey]?.length ?? 0) > 0
+      ? ` id="${escapeHtml(noteOwnerId(ownerPrefix, item.stateKey))}"`
+      : "";
+  return `<span class="mdmark-diagram-node-hit" role="button" tabindex="0" aria-roledescription="項目"${ownerId} aria-keyshortcuts="Enter Space" aria-label="${escapeHtml(selectableName(item.label, selected))}"></span>`;
+};
+
+/** 項目の色と位置の style */
+const mindmapStyle = (
+  context: MindmapContext,
+  placed: MindmapPlacement,
+): string => {
+  const color = colorVar(placed.color);
+  const fill = context.args.filled.has(placed.stateKey)
+    ? colorVar(placed.color, "bg")
+    : undefined;
+  return [
+    `left:${placed.x}px`,
+    `top:${placed.y}px`,
+    `width:${placed.width}px`,
+    `min-height:${placed.height}px`,
+    color === undefined ? "" : `--map-mindmap-color:${color}`,
+    fill === undefined ? "" : `--map-mindmap-fill:${fill}`,
+  ]
+    .filter((item) => item !== "")
+    .join(";");
+};
+
+/** 項目 1 つ。項目の `div` はフォーカスを受けず、全体を覆う押せる要素を先頭に入れ、名前と説明のマーカーをその兄弟にする */
+const renderMindmapItem = (
+  context: MindmapContext,
+  placed: MindmapPlacement,
+): string => {
+  const item = context.byKey.get(placed.stateKey);
+  if (!item) return "";
+  const { args } = context;
+  const selected = args.selected === item.stateKey;
+  const classes = [
+    "mdmark-diagram-node",
+    "map-mindmap-item",
+    placed.side === "root" ? "map-mindmap-root" : "",
+    args.filled.has(item.stateKey) ? "map-mindmap-filled" : "",
+  ]
+    .filter((name) => name !== "")
+    .join(" ");
+  return `<div class="${classes}${mindmapDim(context, item.stateKey)}" data-node="${escapeHtml(item.stateKey)}" data-shape="${item.shape}" data-side="${placed.side}"${selected ? " data-selected" : ""} style="${mindmapStyle(context, placed)}">${mindmapHit(context, item)}<span class="mdmark-diagram-node-name">${context.marker.render(item.label)}</span>${mindmapInfo(context, item)}</div>`;
+};
+
+/** 子を持つ項目の、子の側の辺に付ける開閉と中へ入るボタンの持ち手 */
+const renderMindmapGrip = (
+  context: MindmapContext,
+  placed: MindmapPlacement,
+): string => {
+  const item = context.byKey.get(placed.stateKey);
+  if (!item || !placed.hasChildren) return "";
+  const closed = context.args.collapsed.includes(item.stateKey);
+  const left =
+    placed.side === "left"
+      ? placed.x - MINDMAP_LAYOUT.gripWidth
+      : placed.x + placed.width;
+  const key = escapeHtml(item.stateKey);
+  const toggleLabel = closed
+    ? `${item.label}の子孫 ${placed.descendants} 件を開く`
+    : `${item.label}の子孫を閉じる`;
+  const toggle = `<button class="map-mindmap-toggle" type="button" data-mindmap-toggle="${key}" aria-expanded="${closed ? "false" : "true"}" aria-label="${escapeHtml(toggleLabel)}">${closed ? `<span class="map-mindmap-count">${placed.descendants}</span>` : iconSvg(placed.side === "left" ? "chevron-right" : "chevron-left")}</button>`;
+  const enter = `<button class="map-mindmap-enter" type="button" data-mindmap-enter="${key}" aria-label="${escapeHtml(`${item.label}の中へ入る`)}">${iconSvg("maximize-2")}</button>`;
+  const buttons =
+    placed.side === "left" ? `${enter}${toggle}` : `${toggle}${enter}`;
+  return `<div class="map-mindmap-grip${mindmapDim(context, item.stateKey)}" data-side="${placed.side}" style="left:${left}px;top:${placed.y + placed.height / 2 - 14}px">${buttons}</div>`;
+};
+
+/** 中へ入ったときの、全体の根から今の図の根までの道筋 */
+const renderMindmapTrail = (args: MapMindmapArgs): string => {
+  const top = args.mindmap.items.find((item) => item.stateKey === args.entered);
+  if (!top || top.order === args.mindmap.root?.order) return "";
+  const names = mindmapPath(args.mindmap, top).map(
+    (item) => `<span>${escapeHtml(item.label)}</span>`,
+  );
+  return `<nav class="map-mindmap-trail" aria-label="根からの道筋">${names.join(' <span aria-hidden="true">›</span> ')}</nav>`;
+};
+
+/** 部品『mapのマインドマップ』の HTML。項目・持ち手・枝の曲線・中へ入ったときの道筋を描く */
+export const renderMapMindmap = (args: MapMindmapArgs): MapPart => {
+  const byKey = new Map(
+    args.mindmap.items.map((item) => [item.stateKey, item]),
+  );
+  const context: MindmapContext = {
+    args,
+    byKey,
+    kept: mindmapKept(args, byKey),
+    marker: termMarker(args.terms, args.id),
+    tips: createTips(`${args.id}-mindmap`),
+    ownerPrefix: noteOwnerPrefix(args.id),
+  };
+  const { tree } = args;
+  const branches = tree.curves
+    .map(
+      (curve) =>
+        `<path class="map-mindmap-branch${mindmapDim(context, curve.to)}" data-branch="${escapeHtml(`${curve.from}->${curve.to}`)}" aria-hidden="true" d="${curve.d}"${curve.color === undefined ? "" : ` style="--map-mindmap-color:${colorVar(curve.color)}"`}></path>`,
+    )
+    .join("");
+  const items = tree.items
+    .map((placed) => renderMindmapItem(context, placed))
+    .join("");
+  const grips = tree.items
+    .map((placed) => renderMindmapGrip(context, placed))
+    .join("");
+  const html = `<svg class="mdmark-diagram-wires map-mindmap-branches" width="${tree.width}" height="${tree.height}" aria-hidden="true">${branches}</svg>${items}${grips}${renderMindmapTrail(args)}`;
+  return {
+    html,
+    tips: `${markTipTerms(context.tips.html(), args.terms)}${context.marker.tips.html()}`,
+  };
 };
