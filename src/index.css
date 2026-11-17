@@ -10676,4 +10676,171 @@
   .mdmark-diagram-node[data-kind="map"] {
     --node-color: var(--map-kind, var(--mdmark-color-border));
   }
+
+  /* map のマインドマップ: 項目は種類の行を持たず、名前を中央に置く。縁と面は 1 レイヤー目の枝の色 */
+  .mdmark-diagram[data-diagram="map"] .map-mindmap-item {
+    --node-color: var(--map-mindmap-color, var(--mdmark-color-text));
+    align-items: center;
+    width: max-content;
+    max-width: 200px;
+    padding: 8px 28px 8px 20px;
+    text-align: center;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+
+    &:not(:has(.mdmark-diagram-info)) {
+      padding-inline-end: 20px;
+    }
+    & .mdmark-diagram-node-name {
+      cursor: text;
+      user-select: text;
+    }
+    /* 押せる要素は項目の全体を覆い、フォーカスの枠を項目の外側に出す */
+    & .mdmark-diagram-node-hit {
+      cursor: pointer;
+    }
+    & .mdmark-diagram-node-hit:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 4px;
+    }
+    &[data-selected] {
+      outline: 3px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+  }
+  /* 色を指定した項目（補足の layout）は、その色の面にする */
+  .mdmark-diagram[data-diagram="map"] .map-mindmap-item.map-mindmap-filled {
+    background: var(--map-mindmap-fill);
+  }
+  /* 根: 文字を大きく太く */
+  .mdmark-diagram[data-diagram="map"] .map-mindmap-root {
+    border-width: 2px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  /* 形状: 四角・角の丸い四角・丸・バン・雲・六角形。形状の指定の無い項目は枠線の無い文字に下線 */
+  .mdmark-diagram[data-diagram="map"] .map-mindmap-item {
+    &[data-shape="square"] {
+      border-radius: 0;
+    }
+    &[data-shape="rounded"] {
+      border-radius: 16px;
+    }
+    &[data-shape="circle"] {
+      aspect-ratio: 1;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    &[data-shape="cloud"] {
+      border-radius: 42% 58% 46% 54% / 60% 44% 56% 40%;
+    }
+    &:is([data-shape="bang"], [data-shape="hexagon"]) {
+      border: 0;
+      background: color-mix(
+        in srgb,
+        var(--node-color) 16%,
+        var(--mdmark-color-bg-opaque)
+      );
+    }
+    &[data-shape="hexagon"] {
+      padding-inline: 40px;
+      clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%);
+    }
+    &[data-shape="bang"] {
+      padding: 20px 44px;
+      clip-path: polygon(
+        0 20%,
+        12% 0,
+        30% 12%,
+        50% 0,
+        70% 12%,
+        88% 0,
+        100% 20%,
+        92% 50%,
+        100% 80%,
+        88% 100%,
+        70% 88%,
+        50% 100%,
+        30% 88%,
+        12% 100%,
+        0 80%,
+        8% 50%
+      );
+    }
+    &[data-shape="cloud"] {
+      padding-inline: 36px;
+    }
+    &[data-shape="plain"] {
+      border: 0;
+      border-bottom: 2px solid var(--node-color);
+      border-radius: 0;
+      background: transparent;
+    }
+    /* 切り抜く形状は説明のマーカーが角で欠けるため、内側へ寄せる */
+    &:is([data-shape="bang"], [data-shape="hexagon"], [data-shape="circle"])
+      .mdmark-diagram-info {
+      inset-block-start: 50%;
+      inset-inline-end: 6px;
+      translate: 0 -50%;
+    }
+  }
+  /* 枝の線: 1 レイヤー目の枝の色の曲線 */
+  .map-mindmap-branch {
+    fill: none;
+    stroke: var(--map-mindmap-color, var(--mdmark-color-diagram-line));
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  /* 開閉と中へ入るボタンの持ち手: 項目の子の側の辺に付け、枝の線は持ち手の先から出す */
+  .map-mindmap-grip {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 28px;
+  }
+  :is(.map-mindmap-toggle, .map-mindmap-enter) {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 4px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: 999px;
+    background: var(--mdmark-color-bg-opaque);
+    color: var(--mdmark-color-muted);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--mdmark-color-text);
+    }
+    & svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  .map-mindmap-count {
+    color: var(--mdmark-color-text);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  /* 中へ入ったときの道筋: 図の上端に、根から入った枝までを薄く並べる */
+  .map-mindmap-trail {
+    position: absolute;
+    inset: 8px auto auto 16px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--mdmark-color-muted);
+    font-size: 12px;
+
+    & span:last-child {
+      color: var(--mdmark-color-text);
+      font-weight: 700;
+    }
+  }
 }
