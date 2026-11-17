@@ -3,7 +3,9 @@ docs:
   - page: CHANGELOG.md
     new: false
     change: 3 行目の変更履歴へのリンク先を、存在しない ./docs/はじめに/変更履歴.md から実体の ./docs/guide/変更履歴.mark.md へ修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T06:25:36.081874+00:00'
 scope_out:
   - item: docs/mock/pages/bundle/・src/parts/doc-list.stories.ts・docs/component/CMP-472-49.ts.yaml に残る はじめに/変更履歴.md のパス
     reason: 文書の一覧の見本として置いたデータで、リポジトリのファイルを指すリンクではないためリンク切れに当たらない
