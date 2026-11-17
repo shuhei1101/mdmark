@@ -35,9 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T21:11:42.375427+00:00'
   - process: 単一ユースケース設計
-    status: done
+    status: todo
     updated_by: planner
-    updated_at: '2026-11-17T21:27:51.666921+00:00'
+    updated_at: '2026-11-17T23:44:51.936910+00:00'
+    note: 帯をバーだけにし自動で進める・play・interval を廃止する決定（確認ログ）に合わせ、SC-472-41・SC-472-18 と play・interval を持つシナリオを書き直す
   - process: モック作成
     status: todo
   - process: インターフェース定義設計
