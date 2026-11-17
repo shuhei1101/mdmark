@@ -248,7 +248,7 @@ functions:
       - name: test_mermaid_kind_name
         case: 正常
         summary: 表の単語は名前に、表に無い単語と継承した名前は `図` にする
-        condition: '`stateDiagram-v2`・`journey`・`constructor`'
+        condition: '`stateDiagram-v2`・`quadrantChart`・`constructor`'
         mock: なし
         expected: '`状態遷移図`・`図`・`図`'
 lead: 'mermaid のソースのタイトルの取り出しと、テーマの変数と CSS 変数の対応表を受け持ち、mermaid の図のタイトルやテーマを変えるときに参照する。'

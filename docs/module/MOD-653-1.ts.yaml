@@ -42,6 +42,9 @@ data_models:
       - name: problems
         type: MapProblem[]
         description: 読めない行の `map_invalid`（行番号・行の文字・直し方）
+      - name: firstWord
+        type: string
+        description: Mermaid の 1 行目の最初の単語（`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta`）。`title` を持たない図の枠のタイトルを `mermaidKindName` で引くときに指定する
   - name: AxisGridItem
     title: 軸と格子の配置の図の項目
     container: src/map/axis-grid.ts
@@ -269,6 +272,12 @@ functions:
         condition: モックの `GANTT_UNREADABLE`
         mock: なし
         expected: '`map_invalid` が 1 件で、行番号とその行の文字を含む。ほかのタスクは読む'
+      - name: test_parse_axis_grid_when_first_word
+        case: 正常
+        summary: 1 行目の単語
+        condition: モックの `BLOCK` と `GIT_GRAPH`
+        mock: なし
+        expected: '`kind` が `block`・`gitGraph` で、`firstWord` が `block-beta`・`gitGraph`'
     refs:
       - IF-472-35#constraints[map のガントチャート]
       - IF-472-35#constraints[map のタイムライン]
