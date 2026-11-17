@@ -93,9 +93,9 @@ functions:
       - name: test_attach_diagrams_when_modal_heads
         case: 正常
         summary: 全画面の中は表示する枠の上端だけに留める
-        condition: map のシーケンス図を全画面で開き、モーダルの表示する枠を 120px 縦に動かす
+        condition: map のシーケンス図を全画面で開き、拡大を 2 回押して、モーダルの表示する枠を 120px 縦に動かす（全体が収まる倍率では縦に動かせない）
         mock: なし
-        expected: モーダルの中の参加者の行の `transform` が `translateY(120px)`
+        expected: モーダルの中の参加者の行の `transform` が 図の座標に直した 120px（`120 / 今の倍率`）の `translateY`
       - name: test_attach_diagrams_when_mermaid_text_drag
         case: 正常
         summary: mermaid の図の文字の上のドラッグは図を動かさない
