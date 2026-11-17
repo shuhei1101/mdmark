@@ -1,0 +1,28 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 複数のノードから出る線が同じ区間を重ならずに通り、線の出どころを追えることを期待結果に加える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: 閉じたグループで、中のノードの数がグループの名前の行の下に重ならずに出ることを期待結果に加える
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図を描いて辿る流れは変わらないが、線の通り方と閉じたグループの見え方が変わるため確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 線の経路探索の手順に、先に引いた線が通った区間を後の線が避けることを足す
+    status: todo
+scope_out:
+  - item: クラス図で線のラベルがクラスに重なり、折り返したメンバーの行が次の行に重なる
+    reason: 線のラベルとメンバーの行の重なりで、閉じたグループの数と線の区間の重なりとは別の事象
+    plan: '#622'
+  - item: マインドマップ・ガントチャートなど軸と格子の配置の図の閉じた項目の見せ方
+    reason: 別の配置の処理で「{名前}（{種類} {数} 件）」の 1 つの項目で描き、タイトルの行に重ならないため
+    plan: none
