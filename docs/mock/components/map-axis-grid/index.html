@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-axis-grid（map の軸と格子の配置の図の状態） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.12.0/dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <!-- 軸と格子の配置の図に固有の規則（#653 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/653/assets/axis-grid.css">
+  <style>
+    /* カタログの並び: 種類ごとの見出しの下に、状態ごとの見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 24px; margin: 48px 0 8px; }
+    .map-catalog h3 { font-size: 18px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0 0 4px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-axis-grid
+  </nav>
+  <main class="map-catalog" id="catalog"><h1>map-axis-grid</h1></main>
+  <script type="module">
+    import { createAxisGrid } from "../../refs/653/assets/axis-grid.js";
+    import { GANTT, GANTT_DATA, GANTT_LAYOUT_DATA, GANTT_UNREADABLE, TIMELINE, TIMELINE_DATA, GIT_GRAPH, GIT_GRAPH_DATA, JOURNEY, JOURNEY_DATA, BLOCK, BLOCK_DATA, BLOCK_LAYOUT_DATA } from "../../refs/653/assets/samples.js";
+
+    /** 種類ごとの見出しと、状態の見出し・補足・図の中身・初期状態 */
+    const GROUPS = [
+      ["ガントチャート", [
+        ["通常", "上に日付の軸、左に名前の列。タスクを記載順に 1 行ずつ、開始日から終了日までの棒で描く。done は薄く、active は濃く、crit は赤の縁、milestone はひし形。土日は面を薄くして期間に数えない。今日の線を出す", { kind: "gantt", source: GANTT, data: GANTT_DATA }, {}],
+        ["section を閉じる", "閉じた section は、名前とタスクの数を持つ 1 行の、最初の開始日から最後の終了日までの 1 本の棒にする。日付の軸は変えない", { kind: "gantt", source: GANTT, data: GANTT_DATA }, { collapsed: ["開発"] }],
+        ["section の中", "中へ入ると、その section のタスクだけを配置し直し、日付の軸をその section の期間に縮める。上端のパンくずに section の名前を出す", { kind: "gantt", source: GANTT, data: GANTT_DATA }, { enter: "開発" }],
+        ["タスクを選ぶ", "選んだタスクと、after でつながる前と後ろのタスクを残し、依存の線を出す", { kind: "gantt", source: GANTT, data: GANTT_DATA }, { selected: "imp" }],
+        ["補足の layout を適用する", "色（リリース判定）と閉じた状態（公開）だけを適用し、座標の指定は書き方の警告にする", { kind: "gantt", source: GANTT, data: GANTT_LAYOUT_DATA }, {}],
+        ["再生（手順 3）", "再生の帯で、開始日の順にタスクを 1 つずつ強調する", { kind: "gantt", source: GANTT, data: GANTT_DATA }, { step: 2 }],
+        ["今日の線を出さない（todayMarker off）", "todayMarker off を書いた図は、今日の線を出さない", { kind: "gantt", source: `${GANTT}\n  todayMarker off`, data: GANTT_DATA }, {}],
+        ["読めない行", "期間を読めない行を書き方の警告にし、読めた部分の図を描く", { kind: "gantt", source: GANTT_UNREADABLE, data: {} }, {}],
+      ]],
+      ["タイムライン", [
+        ["通常", "期間を記載順に横の軸の上に並べ、期間の下に出来事を縦に並べる。section の期間は名前の見出しを持つ箱にまとめ、section の前の期間は箱の外に置く。Mermaid の title を図の枠のタイトルに出す", { kind: "timeline", source: TIMELINE, data: TIMELINE_DATA }, {}],
+        ["section を閉じる", "閉じた section は、名前と期間の数を持つ期間 1 つ分の幅の箱にし、後ろの期間を詰める", { kind: "timeline", source: TIMELINE, data: TIMELINE_DATA }, { collapsed: ["記法を作る"] }],
+        ["section の中", "中へ入ると、その section の期間と出来事だけを配置し直す", { kind: "timeline", source: TIMELINE, data: TIMELINE_DATA }, { enter: "図を広げる" }],
+        ["期間を選ぶ", "選んだ期間と、その期間の出来事を残す", { kind: "timeline", source: TIMELINE, data: TIMELINE_DATA }, { selected: "2026-05" }],
+        ["出来事を選ぶ", "選んだ出来事と、出来事を持つ期間を残す", { kind: "timeline", source: TIMELINE, data: TIMELINE_DATA }, { selected: "注意書き" }],
+      ]],
+      ["Git グラフ", [
+        ["通常", "ブランチごとの横の線を作った順に並べ、左端にブランチ名を出す。commit を記載順に左から右へ丸で描き、id は丸の下、tag は丸の上の札。HIGHLIGHT は四角、REVERSE は × の丸、merge は塗った丸、cherry-pick は破線の丸。id を持たない commit は乱数の ID を出さない", { kind: "gitGraph", source: GIT_GRAPH, data: GIT_GRAPH_DATA }, {}],
+        ["ブランチを選ぶ", "選んだブランチの線と commit、merge と cherry-pick でそのブランチへ入った commit を残す", { kind: "gitGraph", source: GIT_GRAPH, data: GIT_GRAPH_DATA }, { branch: "feat" }],
+        ["commit を選ぶ", "選んだ commit から親をたどった全ての祖先を残す", { kind: "gitGraph", source: GIT_GRAPH, data: GIT_GRAPH_DATA }, { selected: "c7" }],
+        ["再生（手順 5）", "再生の帯で、記載の順に commit を 1 つずつ強調する", { kind: "gitGraph", source: GIT_GRAPH, data: GIT_GRAPH_DATA }, { step: 4 }],
+      ]],
+      ["ジャーニー", [
+        ["通常", "タスクを記載順に左から右へ並べ、点数が高いほど上に置き、点数に合った表情の顔の印を出す。隣のタスクの印を線でつなぎ、タスクの下に人の色の丸を並べる。人の名前と色の凡例を図の下に出す", { kind: "journey", source: JOURNEY, data: JOURNEY_DATA }, {}],
+        ["section を閉じる", "閉じた section は、名前とタスクの数を持ち、中のタスクの点数の平均の高さの印 1 つにする", { kind: "journey", source: JOURNEY, data: JOURNEY_DATA }, { collapsed: ["点検する"] }],
+        ["section の中", "中へ入ると、その section のタスクだけを配置し直す。点数の目盛りは変えない", { kind: "journey", source: JOURNEY, data: JOURNEY_DATA }, { enter: "読む" }],
+        ["人を選ぶ", "凡例の人を押すと、その人のタスクを残し、その人のタスクの印だけを線でつなぐ", { kind: "journey", source: JOURNEY, data: JOURNEY_DATA }, { actor: "AI" }],
+      ]],
+      ["ブロック図", [
+        ["通常", "ブロックを記載の順に columns 3 の格子で並べる。幅 :2 は 2 列分、space は空ける。入れ子のブロックは中の columns 2 の格子を囲む箱にする。形状は四角・角の丸い四角・丸・円柱", { kind: "block", source: BLOCK, data: BLOCK_DATA }, {}],
+        ["入れ子のブロックを閉じる", "閉じた入れ子のブロックは、記載した幅のまま 1 行の高さにし、中のブロックの数を出す。ほかのブロックの列の位置は変えない", { kind: "block", source: BLOCK, data: BLOCK_DATA }, { collapsed: ["core"] }],
+        ["入れ子のブロックの中", "中へ入ると、その入れ子のブロックの格子だけを配置し直す", { kind: "block", source: BLOCK, data: BLOCK_DATA }, { enter: "core" }],
+        ["ブロックを選ぶ", "選んだブロックと、線でつながる相手を残す", { kind: "block", source: BLOCK, data: BLOCK_DATA }, { selected: "mdmark" }],
+        ["補足の layout を適用する", "色（mdmark）と閉じた状態（core）だけを適用し、座標の指定は書き方の警告にする", { kind: "block", source: BLOCK, data: BLOCK_LAYOUT_DATA }, {}],
+      ]],
+      ["範囲の外のコードブロック", [
+        ["タイトルを持たないガントチャート", "範囲の外の 5 種類のコードブロックは、補足の無い map の図にする。title を持たない図の枠のタイトルは種類の名前", { kind: "gantt", source: GANTT.replace(/\n  title .*/, ""), data: {} }, {}],
+        ["タイトルを持たないタイムライン", "図の枠のタイトルは「タイムライン」", { kind: "timeline", source: TIMELINE.replace(/\n  title .*/, ""), data: {} }, {}],
+        ["タイトルを持たない Git グラフ", "図の枠のタイトルは「Git グラフ」", { kind: "gitGraph", source: GIT_GRAPH, data: {} }, {}],
+        ["タイトルを持たないジャーニー", "図の枠のタイトルは「ジャーニー」", { kind: "journey", source: JOURNEY.replace(/\n  title .*/, ""), data: {} }, {}],
+        ["タイトルを持たないブロック図", "図の枠のタイトルは「ブロック図」", { kind: "block", source: BLOCK, data: {} }, {}],
+      ]],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (title, note, spec, initial, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h3"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      createAxisGrid(host, spec, initial);
+    };
+    for (const [kind, states] of GROUPS) {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: kind }));
+      for (const [title, note, spec, initial] of states) add(title, note, spec, initial);
+    }
+    catalog.append(Object.assign(document.createElement("h2"), { textContent: "狭い幅" }));
+    add("狭い幅（390px）", "表示する枠の中で横にスクロールする", { kind: "gantt", source: GANTT, data: GANTT_DATA }, {}, true);
+  </script>
+</body>
+</html>

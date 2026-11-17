@@ -1,0 +1,459 @@
+/* map の軸と格子の配置の図のモックの規則（#653）。図の枠・再生の帯・書き方の警告は #445 の map-mock.css を使用する */
+
+/* 項目: 種類の行を出さず、名前を中央に置く。縁と面は section・ブランチの色 */
+.ag-figure .ag-item {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  padding: 0 8px;
+  border: 1.5px solid var(--ag-color, var(--mdmark-color-text));
+  border-radius: 6px;
+  background: var(--mdmark-color-bg);
+  text-align: center;
+  cursor: pointer;
+}
+.ag-figure .ag-item .mdmark-diagram-node-kind {
+  display: none;
+}
+.ag-figure .ag-item .mdmark-diagram-node-name {
+  position: relative;
+  z-index: 1;
+  cursor: text;
+  user-select: text;
+}
+.ag-figure .ag-item .mdmark-diagram-info {
+  z-index: 1;
+}
+.ag-figure .ag-item.ag-colored {
+  background: var(--ag-fill);
+}
+.ag-figure .ag-hit {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.ag-figure .ag-hit:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 3px;
+}
+/* 選んだ項目は枠の全体を太くし、つながりの無い項目・線・文字を薄くする */
+.ag-figure .ag-item.ag-selected {
+  outline: 3px solid var(--mdmark-color-link);
+  outline-offset: 2px;
+}
+.ag-figure .ag-dim {
+  opacity: 0.25;
+}
+
+/* section・入れ子のブロックの面と、見出しの開閉・中へ入るボタン */
+.ag-figure .ag-section {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.ag-figure .ag-section-head {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 4px;
+  pointer-events: auto;
+}
+.ag-figure .ag-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ag-color, var(--mdmark-color-text));
+  white-space: nowrap;
+}
+.ag-figure :is(.ag-toggle, .ag-enter) {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 999px;
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-muted);
+  cursor: pointer;
+}
+.ag-figure :is(.ag-toggle, .ag-enter):hover {
+  color: var(--mdmark-color-text);
+}
+.ag-figure :is(.ag-toggle, .ag-enter) .mdmark-diagram-icon {
+  width: 14px;
+  height: 14px;
+}
+/* ガントチャートの section: 行の帯を薄い面で敷き、見出しは名前の列の上に置く */
+.ag-figure .ag-section-row {
+  border-top: 1px solid var(--mdmark-color-border);
+  background: color-mix(in srgb, var(--ag-fill) 40%, transparent);
+}
+.ag-figure .ag-section-row .ag-section-head {
+  top: 3px;
+}
+/* タイムラインの section と、ブロック図の入れ子: 枠線の箱。見出しは箱の上端 */
+.ag-figure :is(.ag-section-box, .ag-section-block) {
+  border: 1.5px solid var(--ag-color, var(--mdmark-color-border));
+  background: color-mix(in srgb, var(--ag-fill, var(--mdmark-color-surface)) 50%, transparent);
+}
+.ag-figure .ag-section-block.ag-section-closed {
+  border: 0;
+  background: transparent;
+}
+.ag-figure .ag-section-block.ag-section-closed .ag-section-title {
+  display: none;
+}
+.ag-figure .ag-section-block.ag-section-closed .ag-section-head {
+  top: -14px;
+  right: 4px;
+  left: auto;
+}
+/* ジャーニーの section: タスクの上の帯 */
+.ag-figure .ag-section-band {
+  background: var(--ag-fill);
+}
+
+/* ガントチャート: 軸の目盛り・行の名前・棒・今日の線・依存の線 */
+.ag-figure .ag-axis-tick {
+  position: absolute;
+  font-size: 11px;
+  text-align: center;
+  color: var(--mdmark-color-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ag-figure .ag-axis-month {
+  position: absolute;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ag-figure .ag-axis-tick.ag-weekend {
+  background: var(--mdmark-color-surface);
+}
+.ag-figure .ag-row-name {
+  position: absolute;
+  max-width: 120px;
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ag-figure .ag-bar {
+  border: 0;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ag-color) 70%, var(--mdmark-color-bg));
+}
+.ag-figure .ag-bar .mdmark-diagram-node-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.ag-figure .ag-bar.ag-done {
+  background: color-mix(in srgb, var(--ag-color) 30%, var(--mdmark-color-bg));
+}
+.ag-figure .ag-bar.ag-active {
+  background: var(--ag-color);
+}
+.ag-figure .ag-bar.ag-crit {
+  box-shadow: inset 0 0 0 2px var(--mdmark-color-accent-red-text);
+}
+.ag-figure .ag-bar.ag-milestone {
+  border-radius: 2px;
+  transform: rotate(45deg) scale(0.8);
+}
+.ag-figure .ag-bar.ag-bar-closed {
+  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ag-color) 60%, var(--mdmark-color-bg)) 0 6px, color-mix(in srgb, var(--ag-color) 45%, var(--mdmark-color-bg)) 6px 12px);
+}
+.ag-figure .ag-bar.ag-bar-closed .mdmark-diagram-node-name {
+  position: relative;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ag-figure .ag-today {
+  stroke: var(--mdmark-color-accent-red-text);
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+.ag-figure .ag-today-label {
+  position: absolute;
+  width: 32px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--mdmark-color-accent-red-text);
+}
+.ag-figure .ag-dep {
+  fill: none;
+  stroke: var(--mdmark-color-link);
+  stroke-width: 1.5;
+  marker-end: none;
+}
+
+/* タイムライン: 軸の線・期間・出来事・期間から出来事への線 */
+.ag-figure .ag-axis-line {
+  stroke: var(--mdmark-color-border);
+  stroke-width: 3;
+}
+.ag-figure .ag-period {
+  font-weight: 700;
+  background: var(--ag-fill, var(--mdmark-color-surface));
+}
+.ag-figure .ag-period.ag-closed {
+  border-style: dashed;
+}
+.ag-figure .ag-event {
+  font-size: 13px;
+}
+.ag-figure .ag-stem {
+  fill: none;
+  stroke: var(--ag-color, var(--mdmark-color-border));
+  stroke-width: 1.5;
+}
+
+/* Git グラフ: ブランチの線・commit の丸・ブランチ名・commit の下の文字・札 */
+.ag-figure .ag-lane {
+  fill: none;
+  stroke: var(--ag-color);
+  stroke-width: 3;
+}
+.ag-figure .ag-commit {
+  padding: 0;
+  border-width: 3px;
+  border-radius: 50%;
+  background: var(--mdmark-color-bg);
+}
+.ag-figure .ag-commit .mdmark-diagram-node-name,
+.ag-figure .ag-face .mdmark-diagram-node-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.ag-figure .ag-commit.ag-commit-merge {
+  background: var(--ag-color);
+}
+.ag-figure .ag-commit.ag-commit-highlight {
+  border-radius: 3px;
+  background: var(--ag-color);
+}
+.ag-figure .ag-commit.ag-commit-reverse {
+  background: linear-gradient(45deg, transparent 44%, var(--ag-color) 44% 56%, transparent 56%), linear-gradient(-45deg, var(--mdmark-color-bg) 44%, var(--ag-color) 44% 56%, var(--mdmark-color-bg) 56%);
+}
+.ag-figure .ag-commit.ag-commit-cherry-pick {
+  border-style: dashed;
+}
+.ag-figure .ag-branch-name {
+  position: absolute;
+  max-width: 88px;
+  height: 24px;
+  padding: 0 8px;
+  overflow: hidden;
+  border: 1px solid var(--ag-color);
+  border-radius: 999px;
+  background: var(--mdmark-color-bg);
+  color: var(--ag-color);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ag-figure .ag-branch-name[aria-pressed="true"] {
+  background: var(--ag-color);
+  color: var(--mdmark-color-bg);
+}
+.ag-figure .ag-branch-name:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 2px;
+}
+.ag-figure .ag-commit-caption {
+  position: absolute;
+  overflow: hidden;
+  font-size: 11px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--mdmark-color-muted);
+}
+.ag-figure .ag-tag {
+  position: absolute;
+  height: 20px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 4px;
+  background: var(--mdmark-color-surface);
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* ジャーニー: 点数の目盛り・顔の印・線・タスク名・人の丸と凡例 */
+.ag-figure .ag-scale-rule {
+  stroke: var(--mdmark-color-border);
+  stroke-dasharray: 2 4;
+}
+.ag-figure .ag-scale-label {
+  position: absolute;
+  width: 16px;
+  font-size: 11px;
+  text-align: right;
+  color: var(--mdmark-color-muted);
+  font-variant-numeric: tabular-nums;
+}
+.ag-figure .ag-face {
+  padding: 0;
+  border-width: 2px;
+  border-radius: 50%;
+  background: var(--ag-fill);
+}
+.ag-figure .ag-face.ag-closed {
+  border-style: dashed;
+}
+.ag-figure .ag-face-icon {
+  position: absolute;
+  inset: 4px;
+  fill: var(--ag-color);
+  stroke: var(--ag-color);
+  pointer-events: none;
+}
+.ag-figure .ag-journey-line {
+  fill: none;
+  stroke: var(--mdmark-color-muted);
+  stroke-width: 1.5;
+}
+.ag-figure .ag-actor-line {
+  fill: none;
+  stroke: var(--ag-actor);
+  stroke-width: 3;
+}
+.ag-figure .ag-task-name {
+  position: absolute;
+  padding: 0 4px;
+  box-sizing: border-box;
+  font-size: 12px;
+  text-align: center;
+}
+.ag-actor-0 { --ag-actor: var(--mdmark-color-accent-blue-text); }
+.ag-actor-1 { --ag-actor: var(--mdmark-color-accent-orange-text); }
+.ag-actor-2 { --ag-actor: var(--mdmark-color-accent-green-text); }
+.ag-figure .ag-actor-dot,
+.ag-legend .ag-actor-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ag-actor);
+}
+.ag-figure .mdmark-diagram-stage .ag-actor-dot {
+  position: absolute;
+}
+.ag-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.ag-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 999px;
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.ag-legend-item[aria-pressed="true"] {
+  border-color: var(--ag-actor);
+  background: color-mix(in srgb, var(--ag-actor) 14%, var(--mdmark-color-bg));
+}
+
+/* ブロック図: 形状と線とラベル */
+.ag-figure .ag-block[data-ag-shape="square"] { border-radius: 0; }
+.ag-figure .ag-block[data-ag-shape="rounded"] { border-radius: 14px; }
+.ag-figure .ag-block[data-ag-shape="circle"] { border-radius: 999px; }
+.ag-figure .ag-block[data-ag-shape="cylinder"] { border-radius: 50% / 18%; }
+.ag-figure .ag-block.ag-closed {
+  border-style: dashed;
+  background: var(--mdmark-color-surface);
+  font-weight: 700;
+}
+.ag-figure .ag-wire {
+  fill: none;
+  stroke: var(--mdmark-color-text);
+  stroke-width: 1.5;
+  color: var(--mdmark-color-text);
+}
+.ag-figure .ag-wire-label {
+  position: absolute;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--mdmark-color-bg);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* 中へ入ったときのパンくず: 図の上端に、全体から入った section・入れ子までを並べる */
+.ag-figure .ag-trail {
+  position: absolute;
+  top: 6px;
+  left: 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+}
+.ag-figure .ag-trail span:last-child {
+  color: var(--mdmark-color-text);
+  font-weight: 700;
+}
+
+/* 小さい項目（commit の丸・顔の印）: 今の部品の幅の下限を外し、説明のマーカーは項目の右上の外に出す */
+.ag-figure :is(.ag-commit, .ag-face, .ag-bar) {
+  min-width: 0;
+  min-height: 0;
+}
+.ag-figure :is(.ag-commit, .ag-face, .ag-milestone) .mdmark-diagram-info {
+  top: -12px;
+  right: -14px;
+  transform: none;
+}
+.ag-figure .ag-bar .mdmark-diagram-info {
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+}
+.ag-figure .mdmark-diagram-stage > :is(.ag-commit, .ag-face, .ag-bar) {
+  padding: 0;
+}
+.ag-figure .mdmark-diagram-stage > .ag-item:not(.ag-commit, .ag-face, .ag-bar) {
+  padding: 0 8px;
+  justify-content: center;
+}
+.ag-figure .mdmark-diagram-stage > .ag-item:not(.ag-commit, .ag-face, .ag-bar):has(.mdmark-diagram-info) {
+  padding-right: 26px;
+}
+/* 見出しの開閉と中へ入るボタンは、項目より手前に出す */
+.ag-figure .ag-section-head {
+  z-index: 3;
+}
+.ag-figure .ag-section-block.ag-section-closed .ag-section-head {
+  top: -28px;
+  right: 0;
+}
