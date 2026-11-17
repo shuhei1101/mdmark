@@ -5,6 +5,7 @@ import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import type { MdmarkIconNode } from "./parts/inline-icon.ts";
+import type { ResolveIdLink } from "./render/sanitize.ts";
 /** `mount` の第 2 引数 */
 export type MountOptions = {
     /** 描く Markdown */
@@ -33,6 +34,8 @@ export type MountOptions = {
     includes?: Record<string, string>;
     /** まとめていない名前のアイコンの形状の表。表に無い名前は jsDelivr から読み込む */
     icons?: Record<string, MdmarkIconNode>;
+    /** `id:` で始まるリンク先（`id:` を含む値）を開く URL に変える関数。本文のリンクと map のノードのリンクに使用する。省くと、`id:` のリンク先を許可しないリンク先として扱う */
+    resolveIdLink?: ResolveIdLink;
 };
 /** `onColumnsChange` が受け取る列の表示 */
 export type MdmarkColumnsChange = {

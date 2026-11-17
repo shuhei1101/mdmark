@@ -1,5 +1,6 @@
 import { type MdmarkCommentStore, type MdmarkCommentsHandle } from "./comments/spec.ts";
 import type { ResolvedConfig } from "./config.ts";
+import type { ResolveIdLink } from "./render/sanitize.ts";
 import { type MdmarkViewHandle, type MdmarkViewOptions } from "./views/spec.ts";
 /** 要素の中にビューを描く。引数を同期で検め、ビューの部品のモジュールを読み込んで描く */
 export declare function mountView(el: HTMLElement, opts: MdmarkViewOptions): Promise<MdmarkViewHandle>;
@@ -40,4 +41,6 @@ export declare function attachParts(options: {
     config?: ResolvedConfig | undefined;
     /** map の図を mermaid の図に戻したときに、戻したコードブロックを指定して呼ぶ関数 */
     restoreMermaid?: ((blocks: HTMLElement[]) => void) | undefined;
+    /** `mount` の `resolveIdLink`（map のノードの `id:` のリンク先を URL に変える） */
+    resolveIdLink?: ResolveIdLink | undefined;
 }): PartsHandle;

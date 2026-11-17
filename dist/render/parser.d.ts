@@ -6,6 +6,7 @@ import type { MdmarkGlossaryEntry, MdmarkReferences } from "../knowledge/referen
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 import type { MarkOptions } from "./mark-options.ts";
 import type { MarkNote } from "./mark-schema.ts";
+import { type ResolveIdLink } from "./sanitize.ts";
 import { type AnnotationState } from "./syntax/annotations.ts";
 import { type FootnoteState } from "./syntax/footnotes.ts";
 import { type CollectedWarning } from "./syntax/warnings.ts";
@@ -68,6 +69,8 @@ export type RenderEnv = {
     viewCount?: number;
     /** 取り込む文書の表（`render`・`mount` の `includes`） */
     includes?: Record<string, string> | undefined;
+    /** `id:` で始まる本文のリンク先を URL に変える、利用側の関数（`render`・`mount` の `resolveIdLink`） */
+    resolveIdLink?: ResolveIdLink | undefined;
     /** まとめていない名前のアイコンの形状の表（`render`・`mount` の `icons`） */
     icons?: Record<string, MdmarkIconNode> | undefined;
     /** 描いた記載の警告（最後のコアルール `collectWarningsRule` が入れる） */

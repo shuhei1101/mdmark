@@ -33674,8 +33674,8 @@ function cleanRegex(source) {
   const end = source.endsWith("$") ? source.length - 1 : source.length;
   return source.slice(start, end);
 }
-function floatSafeRemainder(val, step) {
-  const ratio = val / step;
+function floatSafeRemainder(val, step2) {
+  const ratio = val / step2;
   const roundedRatio = Math.round(ratio);
   const tolerance = 4 * Number.EPSILON * Math.max(Math.abs(ratio), 1);
   if (Math.abs(ratio - roundedRatio) < tolerance)
@@ -52980,8 +52980,8 @@ var require_formats = /* @__PURE__ */ __commonJSMin(((exports) => {
     if (!matches) return false;
     const year = +matches[1];
     const month = +matches[2];
-    const day = +matches[3];
-    return month >= 1 && month <= 12 && day >= 1 && day <= (month === 2 && isLeapYear(year) ? 29 : DAYS[month]);
+    const day2 = +matches[3];
+    return month >= 1 && month <= 12 && day2 >= 1 && day2 <= (month === 2 && isLeapYear(year) ? 29 : DAYS[month]);
   }
   function compareDate(d1, d2) {
     if (!(d1 && d2)) return void 0;
@@ -56818,16 +56818,16 @@ function validateAliasRows(rows, file) {
     }
     seen.add(key);
     issues.push({ file, where, kind: "schema", message });
-    const row = pointerParts(pointer)[0];
-    if (row !== void 0 && /^\d+$/.test(row)) {
-      invalid3.add(Number(row));
+    const row2 = pointerParts(pointer)[0];
+    if (row2 !== void 0 && /^\d+$/.test(row2)) {
+      invalid3.add(Number(row2));
     }
   };
   for (const error2 of validate2.errors ?? []) {
     add(error2.instancePath, messageOf(error2, whereOf(error2.instancePath)));
   }
   return {
-    rows: rows.map((row, position) => invalid3.has(position) ? null : row),
+    rows: rows.map((row2, position) => invalid3.has(position) ? null : row2),
     issues
   };
 }
@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.c4044c5";
+  return "v0.14.0+develop.67a6251";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -56896,8 +56896,8 @@ function toIsoDate(text2) {
   if (!match) {
     return void 0;
   }
-  const [, year, month, day] = match;
-  return `${year}-${month?.padStart(2, "0")}-${day?.padStart(2, "0")}`;
+  const [, year, month, day2] = match;
+  return `${year}-${month?.padStart(2, "0")}-${day2?.padStart(2, "0")}`;
 }
 function matchesFilter(cell, kind, value) {
   if (kind === "select") {
@@ -56948,8 +56948,8 @@ function findUnreadableTotals(options) {
       continue;
     }
     const values = /* @__PURE__ */ new Set();
-    for (const row of rows) {
-      const cell = row[column] ?? "";
+    for (const row2 of rows) {
+      const cell = row2[column] ?? "";
       if (cell.trim() !== "" && parseNumberCell(cell) === void 0) {
         values.add(cell);
       }
@@ -56961,23 +56961,23 @@ function findUnreadableTotals(options) {
   return found;
 }
 function fillGrid(grid, at) {
-  const { row, cell, column, span } = at;
-  const end = Math.min(grid.length, row + span.rowSpan);
-  for (const line of grid.slice(row, end)) {
+  const { row: row2, cell, column, span } = at;
+  const end = Math.min(grid.length, row2 + span.rowSpan);
+  for (const line of grid.slice(row2, end)) {
     for (let c = column; c < column + span.colSpan; c++) {
-      line[c] = { row, cell, colSpan: span.colSpan };
+      line[c] = { row: row2, cell, colSpan: span.colSpan };
     }
   }
 }
 function bottomHeadCells(rows) {
   const grid = rows.map(() => []);
-  for (const [row, cells] of rows.entries()) {
+  for (const [row2, cells] of rows.entries()) {
     let column = 0;
     for (const [cell, span] of cells.entries()) {
-      while (grid[row]?.[column]) {
+      while (grid[row2]?.[column]) {
         column += 1;
       }
-      fillGrid(grid, { row, cell, column, span });
+      fillGrid(grid, { row: row2, cell, column, span });
       column += span.colSpan;
     }
   }
@@ -56999,16 +56999,16 @@ function mergeSpans(options) {
   const { values, columns } = options;
   const spans = values.map(() => columns.map(() => 1));
   const starts = columns.map(() => 0);
-  for (let row = 1; row < values.length; row++) {
+  for (let row2 = 1; row2 < values.length; row2++) {
     const found = columns.findIndex(
-      (_, index) => values[row]?.[index] !== values[starts[index] ?? 0]?.[index]
+      (_, index) => values[row2]?.[index] !== values[starts[index] ?? 0]?.[index]
     );
     const breakAt = found === -1 ? columns.length : found;
     for (const [index] of columns.entries()) {
       if (index >= breakAt) {
-        starts[index] = row;
+        starts[index] = row2;
       } else {
-        joinSpan(spans, { start: starts[index] ?? 0, row, index });
+        joinSpan(spans, { start: starts[index] ?? 0, row: row2, index });
       }
     }
   }
@@ -57820,12 +57820,12 @@ function mapBuildPaths(config3, map) {
 }
 function mapAliasPaths(rows, map) {
   return rows.map(
-    (row) => isRecord3(row) && Array.isArray(row.paths) ? {
-      ...row,
-      paths: row.paths.map(
+    (row2) => isRecord3(row2) && Array.isArray(row2.paths) ? {
+      ...row2,
+      paths: row2.paths.map(
         (path) => typeof path === "string" ? map(path) : path
       )
-    } : row
+    } : row2
   );
 }
 var NESTED_PATH_KEYS = [
@@ -57998,7 +57998,7 @@ var folderConfigPaths = async (options) => {
 };
 var loadLayeredConfig = async (options) => {
   const issues = [];
-  let unreadable7;
+  let unreadable8;
   const layers = [];
   const take = async (path, layer) => {
     const read = await readLayer(path, options.readFile);
@@ -58006,7 +58006,7 @@ var loadLayeredConfig = async (options) => {
       return void 0;
     }
     if (read.kind === "unreadable") {
-      unreadable7 ??= { path, line: read.line, message: read.message };
+      unreadable8 ??= { path, line: read.line, message: read.message };
       return void 0;
     }
     const raw = layer === "folder" && isRecord3(read.raw) && "config" in read.raw ? Object.fromEntries(
@@ -58052,7 +58052,7 @@ var loadLayeredConfig = async (options) => {
     config: mergeConfigs(used.map((layer) => layer.config)),
     files: used.map((layer) => layer.file),
     nearest: paths.at(-1),
-    unreadable: unreadable7,
+    unreadable: unreadable8,
     issues
   };
 };
@@ -63911,9 +63911,9 @@ function planTreeRows(keys) {
     }
     place(path, index);
   }
-  const parents = new Set(rows.map((row) => row.parent));
-  for (const row of rows) {
-    row.hasChildren = row.path !== "" && parents.has(row.path);
+  const parents = new Set(rows.map((row2) => row2.parent));
+  for (const row2 of rows) {
+    row2.hasChildren = row2.path !== "" && parents.has(row2.path);
   }
   return rows;
 }
@@ -64649,7 +64649,7 @@ function headToolsOptions(context, cell) {
     sortable: !(options.noSort ?? []).includes(index),
     filter: filter2 && {
       kind: filter2.kind,
-      values: [...new Set(rows.map((row) => plainText2(row[index] ?? "")))]
+      values: [...new Set(rows.map((row2) => plainText2(row2[index] ?? "")))]
     },
     active: isActive(value),
     open: options.openFilter === index,
@@ -64686,10 +64686,10 @@ function headWidthStyle(context, index) {
   ];
   return declarations.length === 0 ? "" : ` style="${declarations.join(";")}"`;
 }
-function rowMatches(context, row) {
+function rowMatches(context, row2) {
   return context.values.every((value) => {
     const filter2 = context.filters.find((c) => c.column === value.column);
-    return filter2 ? matchesFilter(plainText2(row[value.column] ?? ""), filter2.kind, value) : true;
+    return filter2 ? matchesFilter(plainText2(row2[value.column] ?? ""), filter2.kind, value) : true;
   });
 }
 function mergeSpanOf(context, shownOrder) {
@@ -64718,18 +64718,18 @@ function rowLinkOf(context, rowIndex) {
 }
 function renderBodyRow(context, place) {
   const { rowIndex, spanOf } = place;
-  const row = context.rows[rowIndex] ?? [];
+  const row2 = context.rows[rowIndex] ?? [];
   const link2 = rowLinkOf(context, rowIndex);
   const spans = spanOf.get(rowIndex);
-  const cells = row.map((text2, index) => renderBodyCell(context, { text: text2, index, link: link2, spans })).join("");
-  const hidden = rowMatches(context, row) ? "" : " hidden";
+  const cells = row2.map((text2, index) => renderBodyCell(context, { text: text2, index, link: link2, spans })).join("");
+  const hidden = rowMatches(context, row2) ? "" : " hidden";
   return `<tr${rowAttributes(context, { rowIndex, link: link2 })}${hidden}>${cells}</tr>`;
 }
-function rowAttributes(context, row) {
-  const { rowId, targeted } = row.link;
+function rowAttributes(context, row2) {
+  const { rowId, targeted } = row2.link;
   const idAttribute = rowId === void 0 ? "" : ` id="${escapeHtml2(rowId)}"`;
   const target = targeted ? " data-target" : "";
-  const rowColor = context.options.rowColors?.[row.rowIndex];
+  const rowColor = context.options.rowColors?.[row2.rowIndex];
   const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
   return `${idAttribute}${target}${colorAttribute}`;
 }
@@ -64778,18 +64778,18 @@ function renderBodyFooter(context, shownRows) {
   if (totals.length === 0) {
     return "";
   }
-  const unreadable7 = findUnreadableTotals({
-    rows: rows.map((row) => row.map(plainText2)),
+  const unreadable8 = findUnreadableTotals({
+    rows: rows.map((row2) => row2.map(plainText2)),
     totals
   });
   return renderTotalRows({
     columns: columns.length,
     totals: totals.map((total) => ({
       ...total,
-      value: unreadable7.some(
+      value: unreadable8.some(
         (item) => item.column === total.column && item.calc === total.calc
       ) ? "" : computeTotal(
-        shownRows.map((row) => plainText2(row[total.column] ?? "")),
+        shownRows.map((row2) => plainText2(row2[total.column] ?? "")),
         total.calc
       )
     })),
@@ -64858,16 +64858,16 @@ function headGroupsOf(headRows) {
   const bottom = headRows.length - 1;
   const columns = Math.max(
     ...headRows.flatMap(
-      (row) => row.map((cell) => cell.column + (cell.colspan ?? 1))
+      (row2) => row2.map((cell) => cell.column + (cell.colspan ?? 1))
     )
   );
   return Array.from({ length: columns }, (_, column) => {
-    for (let row = bottom - 1; row >= 0; row -= 1) {
-      const cell = headRows[row]?.find(
-        (candidate) => (candidate.colspan ?? 1) > 1 && candidate.column <= column && column < candidate.column + (candidate.colspan ?? 1) && row + (candidate.rowspan ?? 1) - 1 < bottom
+    for (let row2 = bottom - 1; row2 >= 0; row2 -= 1) {
+      const cell = headRows[row2]?.find(
+        (candidate) => (candidate.colspan ?? 1) > 1 && candidate.column <= column && column < candidate.column + (candidate.colspan ?? 1) && row2 + (candidate.rowspan ?? 1) - 1 < bottom
       );
       if (cell) {
-        return `${row}:${cell.column}`;
+        return `${row2}:${cell.column}`;
       }
     }
     return void 0;
@@ -64875,8 +64875,8 @@ function headGroupsOf(headRows) {
 }
 function headGroupLabelsOf(headRows) {
   const labels = {};
-  headRows.forEach((row, index) => {
-    for (const cell of row) {
+  headRows.forEach((row2, index) => {
+    for (const cell of row2) {
       if ((cell.colspan ?? 1) > 1) {
         labels[`${index}:${cell.column}`] = plainText2(cell.html);
       }
@@ -64893,8 +64893,8 @@ function renderTreeTable(options, id) {
   const columns = options.columns ?? [];
   const head = context.shownColumns.map((column) => `<th>${columns[column] ?? ""}</th>`).join("");
   const rendered = plans.map((plan) => renderTreeRow(context, plan));
-  const body = rendered.map((row) => row.html).join("");
-  const shown = rendered.filter((row) => row.counted).length;
+  const body = rendered.map((row2) => row2.html).join("");
+  const shown = rendered.filter((row2) => row2.counted).length;
   const counted = plans.filter((plan) => !plan.virtual).length;
   const count = options.features.includes("count") ? `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${counted} \u4EF6</span><span class="mdmark-visually-hidden">${counted} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p></div>` : "";
   const table2 = `<div class="mdmark-table" data-kind="${options.kind ?? "default"}" data-features="${options.features.join(" ")}" data-tree="${tree}">${count}<div class="mdmark-table-scroll"><table tabindex="0" aria-label="\u8868"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div></div>`;
@@ -64909,7 +64909,7 @@ function treeContextOf(options) {
   const rows = options.rows ?? [];
   const tree = options.tree ?? 0;
   const required2 = options.treeRequired;
-  const plans = planTreeRows(rows.map((row) => plainText2(row[tree] ?? "")));
+  const plans = planTreeRows(rows.map((row2) => plainText2(row2[tree] ?? "")));
   const word = (options.treeFilter ?? "").trim().toLowerCase();
   const hits = treeHits(plans, word);
   return {
@@ -64950,11 +64950,11 @@ function inTreeScope(context, path) {
 }
 function renderTreeRow(context, plan) {
   const { rows, collapsed, word, keep, selected } = context;
-  const row = plan.source === void 0 ? void 0 : rows[plan.source];
+  const row2 = plan.source === void 0 ? void 0 : rows[plan.source];
   const folded = treeAncestorsOf(plan.path).some((path) => collapsed.has(path));
   const hidden = word === "" ? folded : !keep.has(plan.path);
-  const key = renderTreeRowKey(context, { plan, row });
-  const cells = context.shownColumns.map((column) => renderTreeCell(context, { column, row, key })).join("");
+  const key = renderTreeRowKey(context, { plan, row: row2 });
+  const cells = context.shownColumns.map((column) => renderTreeCell(context, { column, row: row2, key })).join("");
   const classes = [
     "mdmark-tree-row",
     ...plan.virtual ? ["is-virtual"] : [],
@@ -64967,8 +64967,8 @@ function renderTreeRow(context, plan) {
 }
 function renderTreeRowKey(context, item) {
   const { required: required2, selectedPlan, hits, word, collapsed } = context;
-  const { plan, row } = item;
-  const isRequired = row !== void 0 && required2 !== void 0 && ["\u2713", "true"].includes(plainText2(row[required2] ?? "").trim());
+  const { plan, row: row2 } = item;
+  const isRequired = row2 !== void 0 && required2 !== void 0 && ["\u2713", "true"].includes(plainText2(row2[required2] ?? "").trim());
   let key = renderTreeKeyCell({
     name: plan.name,
     depth: plan.depth,
@@ -65012,19 +65012,19 @@ function markTreeHit(key, word) {
   );
 }
 function renderTreeCell(context, cell) {
-  const { column, row, key } = cell;
+  const { column, row: row2, key } = cell;
   const { options } = context;
   if (column === context.tree) {
     return `<td class="mdmark-tree-key">${key}</td>`;
   }
-  const text2 = row?.[column] ?? "";
+  const text2 = row2?.[column] ?? "";
   if (column === options.treeType && text2 !== "") {
     return `<td>${renderTypeCell(plainText2(text2))}</td>`;
   }
   if (column === options.treeDefault && text2 !== "") {
     return `<td><span class="mdmark-tree-default">${text2}</span></td>`;
   }
-  return `<td>${row ? text2 : ""}</td>`;
+  return `<td>${row2 ? text2 : ""}</td>`;
 }
 function renderTreeExample(options) {
   const { example, id, table: table2, selected } = options;
@@ -65056,10 +65056,10 @@ function renderHeadRows(headRows, columns, headCell) {
       }))
     )
   );
-  return headRows.map((cells, row) => {
+  return headRows.map((cells, row2) => {
     const html = cells.map((cell, index) => {
       const column = bottom.findIndex(
-        (item) => item?.row === row && item.cell === index
+        (item) => item?.row === row2 && item.cell === index
       );
       const rowspan = cell.rowspan ?? 1;
       const colspan = cell.colspan ?? 1;
@@ -65799,31 +65799,31 @@ function assignHeadingIds(state) {
 var MERGE_UP = "^^";
 var MERGE_LEFT = "<<";
 function mergeWarning(options) {
-  const { label, row, column, reason } = options;
+  const { label, row: row2, column, reason } = options;
   return {
     label,
-    message: `${row + 1} \u884C\u76EE\u306E ${column + 1} \u5217\u76EE\u306F\u3001${reason}\u3002\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    message: `${row2 + 1} \u884C\u76EE\u306E ${column + 1} \u5217\u76EE\u306F\u3001${reason}\u3002\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
   };
 }
-function sourceOf(cells, row, column) {
-  return cells[row]?.[column]?.source ?? [row, column];
+function sourceOf(cells, row2, column) {
+  return cells[row2]?.[column]?.source ?? [row2, column];
 }
 function planCellMerges(options) {
   const { cells: texts, headRows } = options;
   const cells = texts.map(
-    (row) => row.map(() => ({ rowspan: 1, colspan: 1 }))
+    (row2) => row2.map(() => ({ rowspan: 1, colspan: 1 }))
   );
   const warnings = [];
   const mergeColumns = /* @__PURE__ */ new Set();
-  for (const [row, values] of texts.entries()) {
+  for (const [row2, values] of texts.entries()) {
     for (const [column, text2] of values.entries()) {
-      if (!cells[row]?.[column] || text2 !== MERGE_UP && text2 !== MERGE_LEFT) {
+      if (!cells[row2]?.[column] || text2 !== MERGE_UP && text2 !== MERGE_LEFT) {
         continue;
       }
-      const reason = planMerge({ cells, row, column, headRows, text: text2 });
+      const reason = planMerge({ cells, row: row2, column, headRows, text: text2 });
       if (reason) {
-        warnings.push(mergeWarning({ label: text2, row, column, reason }));
-      } else if (text2 === MERGE_UP && row >= headRows) {
+        warnings.push(mergeWarning({ label: text2, row: row2, column, reason }));
+      } else if (text2 === MERGE_UP && row2 >= headRows) {
         mergeColumns.add(column);
       }
     }
@@ -65839,20 +65839,20 @@ function planMerge(options) {
   return text2 === MERGE_UP ? planUp(place) : planLeft(place);
 }
 function planUp(options) {
-  const { cells, row, column, headRows } = options;
-  if (row === 0) {
+  const { cells, row: row2, column, headRows } = options;
+  if (row2 === 0) {
     return "\u4E0A\u306B\u7D50\u5408\u3059\u308B\u30BB\u30EB\u304C\u3042\u308A\u307E\u305B\u3093";
   }
-  if (row === headRows) {
+  if (row2 === headRows) {
     return "\u898B\u51FA\u3057\u306E\u884C\u3068\u672C\u6587\u306E\u884C\u3092\u307E\u305F\u3044\u3067\u7D50\u5408\u3067\u304D\u307E\u305B\u3093";
   }
-  const [sourceRow, sourceColumn] = sourceOf(cells, row - 1, column);
+  const [sourceRow, sourceColumn] = sourceOf(cells, row2 - 1, column);
   const source = cells[sourceRow]?.[sourceColumn];
-  if (!source || sourceColumn !== column || source.colspan !== 1 || sourceRow + source.rowspan !== row) {
+  if (!source || sourceColumn !== column || source.colspan !== 1 || sourceRow + source.rowspan !== row2) {
     return "\u4E0A\u306E\u30BB\u30EB\u3068\u7D50\u5408\u3059\u308B\u3068\u77E9\u5F62\u306B\u306A\u3089\u306A\u3044\u305F\u3081\u7D50\u5408\u3067\u304D\u307E\u305B\u3093";
   }
   source.rowspan += 1;
-  const cell = cells[row]?.[column];
+  const cell = cells[row2]?.[column];
   if (cell) {
     cell.merged = "up";
     cell.source = [sourceRow, sourceColumn];
@@ -65860,17 +65860,17 @@ function planUp(options) {
   return void 0;
 }
 function planLeft(options) {
-  const { cells, row, column } = options;
+  const { cells, row: row2, column } = options;
   if (column === 0) {
     return "\u5DE6\u306B\u7D50\u5408\u3059\u308B\u30BB\u30EB\u304C\u3042\u308A\u307E\u305B\u3093";
   }
-  const [sourceRow, sourceColumn] = sourceOf(cells, row, column - 1);
+  const [sourceRow, sourceColumn] = sourceOf(cells, row2, column - 1);
   const source = cells[sourceRow]?.[sourceColumn];
-  if (!source || sourceRow !== row || source.rowspan !== 1 || sourceColumn + source.colspan !== column) {
+  if (!source || sourceRow !== row2 || source.rowspan !== 1 || sourceColumn + source.colspan !== column) {
     return "\u5DE6\u306E\u30BB\u30EB\u3068\u7D50\u5408\u3059\u308B\u3068\u77E9\u5F62\u306B\u306A\u3089\u306A\u3044\u305F\u3081\u7D50\u5408\u3067\u304D\u307E\u305B\u3093";
   }
   source.colspan += 1;
-  const cell = cells[row]?.[column];
+  const cell = cells[row2]?.[column];
   if (cell) {
     cell.merged = "left";
     cell.source = [sourceRow, sourceColumn];
@@ -65882,12 +65882,12 @@ function headerGroupsOf(options) {
   const bottom = head.length - 1;
   const columns = head[bottom]?.length ?? 0;
   return Array.from({ length: columns }, (_, column) => {
-    for (let row = bottom - 1; row >= 0; row -= 1) {
-      const cells = plan.cells[row] ?? [];
+    for (let row2 = bottom - 1; row2 >= 0; row2 -= 1) {
+      const cells = plan.cells[row2] ?? [];
       for (const [start, cell] of cells.entries()) {
-        const covers = cell.merged === void 0 && cell.colspan > 1 && start <= column && column < start + cell.colspan && row + cell.rowspan - 1 < bottom;
+        const covers = cell.merged === void 0 && cell.colspan > 1 && start <= column && column < start + cell.colspan && row2 + cell.rowspan - 1 < bottom;
         if (covers) {
-          return `${row}:${start}`;
+          return `${row2}:${start}`;
         }
       }
     }
@@ -66072,8 +66072,8 @@ function droppedHeadCells(head, required2) {
   if (required2 === void 0) {
     return dropped;
   }
-  for (const row of head) {
-    const cell = row.cells[required2];
+  for (const row2 of head) {
+    const cell = row2.cells[required2];
     for (let index = cell?.open ?? 0; cell && index <= cell.close; index++) {
       dropped.add(index);
     }
@@ -66103,17 +66103,17 @@ function decorateSourceCell(context, cell) {
     ];
   }
 }
-function sourceCells(context, row) {
+function sourceCells(context, row2) {
   const { tokens, required: required2 } = context;
   const out = [];
-  for (const [column, cell] of row.source.cells.entries()) {
+  for (const [column, cell] of row2.source.cells.entries()) {
     if (column === required2) {
       continue;
     }
     decorateSourceCell(context, {
       column,
       open: cell.open,
-      keyHtml: row.keyHtml
+      keyHtml: row2.keyHtml
     });
     out.push(...tokens.slice(cell.open, cell.close + 1));
   }
@@ -66141,9 +66141,9 @@ function virtualCells(context, keyHtml) {
   }
   return out;
 }
-function treeRowTokens(context, row) {
+function treeRowTokens(context, row2) {
   const { state, tokens, required: required2, level, nonce } = context;
-  const { plan, body } = row;
+  const { plan, body } = row2;
   const source = plan.source === void 0 ? void 0 : body[plan.source];
   const isRequired = source !== void 0 && required2 !== void 0 && REQUIRED_VALUES.includes(cellText(tokens, source.cells[required2]));
   const keyHtml = renderTreeKeyCell({
@@ -66198,7 +66198,7 @@ function decorateTreeTable(options) {
   }
   const context = treeContextOf2(state, { spec, tree, sample: body[0] });
   const dropped = droppedHeadCells(head, spec.treeRequired);
-  const keys = body.map((row) => cellText(tokens, row.cells[tree]));
+  const keys = body.map((row2) => cellText(tokens, row2.cells[tree]));
   const rowsOut = planTreeRows(keys).flatMap(
     (plan) => treeRowTokens(context, { plan, body })
   );
@@ -66263,8 +66263,8 @@ function linkYamlLines(html) {
   });
 }
 function findRole(tokens, search) {
-  const { from, step, role } = search;
-  for (let index = from; index >= 0 && index < tokens.length; index += step) {
+  const { from, step: step2, role } = search;
+  for (let index = from; index >= 0 && index < tokens.length; index += step2) {
     if (tokens[index]?.meta?.role === role) {
       return index;
     }
@@ -66724,9 +66724,9 @@ function readRowColor(item, context) {
 function applyRowColor(rows, context) {
   const { rule, cells } = context;
   const { range, position } = rule;
-  cells.forEach((row, index) => {
+  cells.forEach((row2, index) => {
     const inRange2 = range === void 0 || index + 1 >= range[0] && index + 1 <= range[1];
-    const matches = position === void 0 || (row[position] ?? "").trim() === rule.value;
+    const matches = position === void 0 || (row2[position] ?? "").trim() === rule.value;
     if (inRange2 && matches) {
       rows[index] = rule.color;
     }
@@ -66752,7 +66752,7 @@ function readTableColors(options, headers, cells) {
 var isCellOpen = (token) => token.type === "th_open" || token.type === "td_open";
 function visitCells(tokens, tableOpen, visit) {
   let inBody = false;
-  let row = -1;
+  let row2 = -1;
   let column = 0;
   for (const index of ownTokenIndexes(tokens, tableOpen)) {
     const token = tokens[index];
@@ -66763,10 +66763,10 @@ function visitCells(tokens, tableOpen, visit) {
       inBody = true;
     } else if (token.type === "tr_open") {
       column = 0;
-      row += inBody ? 1 : 0;
-      visit(token, { index, row, column: -1, inBody });
+      row2 += inBody ? 1 : 0;
+      visit(token, { index, row: row2, column: -1, inBody });
     } else if (isCellOpen(token)) {
-      visit(token, { index, row, column, inBody });
+      visit(token, { index, row: row2, column, inBody });
       column += 1;
     }
   }
@@ -66776,9 +66776,9 @@ function applyTableColors(state, tableOpen, colors) {
   const colorOf = new Map(
     colors.highlight.map((item) => [item.column, item.color])
   );
-  visitCells(state.tokens, tableOpen, (token, { row, column, inBody }) => {
+  visitCells(state.tokens, tableOpen, (token, { row: row2, column, inBody }) => {
     if (token.type === "tr_open") {
-      const color2 = inBody ? colors.rows[row] : null;
+      const color2 = inBody ? colors.rows[row2] : null;
       if (color2) {
         token.attrSet("data-color", color2);
         token.attrSet("data-mdmark-own", nonce);
@@ -67014,11 +67014,11 @@ function columnLinesOf(tokens, tableOpen) {
     if (inBody) body.at(-1)?.push(cell);
     else head[column] = cell.lines;
   });
-  const count = Math.max(head.length, ...body.map((row) => row.length));
+  const count = Math.max(head.length, ...body.map((row2) => row2.length));
   return Array.from({ length: count }, (_, index) => ({
     head: head[index] ?? [],
-    cells: body.flatMap((row) => {
-      const cell = row[index];
+    cells: body.flatMap((row2) => {
+      const cell = row2[index];
       return cell ? [cell] : [];
     })
   }));
@@ -67116,8 +67116,8 @@ function moveRowsToHead(tokens, tableOpen, count) {
   }
   const moved = tokens.splice(tbodyOpen + 1, end - tbodyOpen);
   tokens.splice(theadClose, 0, ...moved);
-  for (const row of rowCellsOf(tokens, tableOpen).filter((r) => r.head)) {
-    for (const cell of row.cells) {
+  for (const row2 of rowCellsOf(tokens, tableOpen).filter((r) => r.head)) {
+    for (const cell of row2.cells) {
       const open2 = tokens[cell.open];
       if (open2?.type === "td_open") {
         toHeadCell(open2, tokens[cell.close]);
@@ -67130,17 +67130,17 @@ function moveRowsToHead(tokens, tableOpen, count) {
 }
 function rowTextsOf(tokens, rows) {
   return rows.map(
-    (row) => row.cells.map((cell) => {
+    (row2) => row2.cells.map((cell) => {
       const inline2 = tokens[cell.open + 1];
       return inline2?.type === "inline" ? textOf(inline2) : "";
     })
   );
 }
 function relabelBodyCells(tokens, context) {
-  const head = rowCellsOf(tokens, context.tableOpen).filter((row) => row.head);
+  const head = rowCellsOf(tokens, context.tableOpen).filter((row2) => row2.head);
   const labels = headLabelsOf(rowTextsOf(tokens, head));
-  for (const row of context.rows.filter((r) => !r.head)) {
-    for (const [column, cell] of row.cells.entries()) {
+  for (const row2 of context.rows.filter((r) => !r.head)) {
+    for (const [column, cell] of row2.cells.entries()) {
       tokens[cell.open]?.attrSet("data-label", labels[column] ?? "");
     }
   }
@@ -67194,9 +67194,9 @@ function setSpans(context, cell) {
 }
 function applyPlannedCell(context, place) {
   const { tokens, spec, dropped, nonce } = context;
-  const { row, column, cell, planned } = place;
+  const { row: row2, column, cell, planned } = place;
   const open2 = tokens[cell.open];
-  if (row.head && planned.merged) {
+  if (row2.head && planned.merged) {
     for (let index = cell.open; index <= cell.close; index++) {
       const token = tokens[index];
       if (token) {
@@ -67205,7 +67205,7 @@ function applyPlannedCell(context, place) {
     }
     return;
   }
-  if (!row.head && column < spec.rowHeader) {
+  if (!row2.head && column < spec.rowHeader) {
     toHeadCell(open2, tokens[cell.close]);
     open2.attrs = [["scope", "row"], ...open2.attrs ?? []];
     open2.attrSet("data-mdmark-own", nonce);
@@ -67218,7 +67218,7 @@ function applyPlannedCell(context, place) {
     });
     return;
   }
-  setSpans(context, { open: open2, head: row.head, planned });
+  setSpans(context, { open: open2, head: row2.head, planned });
 }
 function mergeTableCells(options) {
   const { state, tableOpen, spec, dropped } = options;
@@ -67243,11 +67243,11 @@ function mergeTableCells(options) {
     });
   }
   const context = { tokens, rows, spec, dropped, nonce };
-  for (const [r, row] of rows.entries()) {
-    for (const [column, cell] of row.cells.entries()) {
+  for (const [r, row2] of rows.entries()) {
+    for (const [column, cell] of row2.cells.entries()) {
       const planned = plan.cells[r]?.[column];
       if (tokens[cell.open] && planned) {
-        applyPlannedCell(context, { row, column, cell, planned });
+        applyPlannedCell(context, { row: row2, column, cell, planned });
       }
     }
   }
@@ -67256,11 +67256,11 @@ function mergeTableCells(options) {
 function headLabelsOf(head) {
   const bottom = head.length - 1;
   return (head[bottom] ?? []).map((text2, column) => {
-    let row = bottom;
+    let row2 = bottom;
     let label = text2.trim();
-    while (label === MERGE_UP && row > 0) {
-      row -= 1;
-      label = (head[row]?.[column] ?? "").trim();
+    while (label === MERGE_UP && row2 > 0) {
+      row2 -= 1;
+      label = (head[row2]?.[column] ?? "").trim();
     }
     return label;
   });
@@ -69789,6 +69789,527 @@ function dropMarks(state) {
   state.tokens = state.tokens.filter((token) => token.type !== MARK_TOKEN);
 }
 
+// src/render/sanitize.ts
+var import_sanitize_html = __toESM(require_sanitize_html(), 1);
+var ALIGN_VALUES = ["left", "center", "right"];
+var TEXT_ALIGN_PATTERN = /(?:^|;)\s*text-align\s*:\s*([a-z]+)/;
+var OWN_ATTRIBUTE = "data-mdmark-own";
+var KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
+var RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
+var SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$|is-after-ref$)/;
+var DIAGRAM_ONLY_TAGS = /* @__PURE__ */ new Set([
+  "svg",
+  "defs",
+  "marker",
+  "pattern",
+  "g",
+  "path",
+  "rect",
+  "circle",
+  "ellipse",
+  "line",
+  "polyline",
+  "polygon",
+  "text",
+  "button",
+  "output",
+  "label"
+]);
+var DROP_ATTRIBUTE = "data-mdmark-drop";
+var DIAGRAM_STYLE_PATTERN = /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|padding:\d+(?:\.\d+)?px(?: \d+(?:\.\d+)?px)?|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
+var CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
+var IMAGE_WIDTH_PATTERN = /^\s*--mdmark-image-width\s*:\s*(\d+(?:px|%))\s*;?\s*$/;
+var GALLERY_COLS_PATTERN = /^\s*--mdmark-gallery-cols\s*:\s*([1-6])\s*;?\s*$/;
+var MEDIA_TAGS = /* @__PURE__ */ new Set(["video", "audio"]);
+var SOURCE_LINE_ATTRIBUTE = "data-source-line";
+var SOURCE_LINE_PATTERN = /^\d+$/;
+var DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
+var DATA_IMAGE_ATTRIBUTES = {
+  img: "src",
+  video: "poster"
+};
+var isForbiddenDataUrl = (url2) => url2?.startsWith("data:") === true && !DATA_IMAGE_PATTERN.test(url2);
+function dropDataUrls(tagName, attribs) {
+  const imageAttribute = Object.hasOwn(DATA_IMAGE_ATTRIBUTES, tagName) ? DATA_IMAGE_ATTRIBUTES[tagName] : void 0;
+  if (imageAttribute !== void 0 && isForbiddenDataUrl(attribs[imageAttribute])) {
+    delete attribs[imageAttribute];
+  }
+  if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
+    delete attribs.src;
+  }
+}
+function fixTabindex(tagName, attribs) {
+  const next = { ...attribs };
+  if (next.tabindex !== void 0) {
+    next.tabindex = "0";
+  }
+  return { tagName, attribs: next };
+}
+var isPreOrTable = (tagName) => tagName === "pre" || tagName === "table";
+var ATTRIBUTE_KEEPERS = {
+  // 外部ライブラリのマーカーの場所の `status` だけを残す
+  role: (tagName, value) => tagName === "div" && value === "status",
+  "aria-label": isPreOrTable,
+  tabindex: isPreOrTable,
+  [SOURCE_LINE_ATTRIBUTE]: () => true
+};
+var STRUCTURE_ATTRIBUTES = /* @__PURE__ */ new Set([
+  "id",
+  "hidden",
+  "colspan",
+  "rowspan",
+  "scope"
+]);
+var keepsDataAttribute = (tagName, name) => tagName === "td" && name === "data-label" || tagName === "div" && (name === "data-mdmark-slot" || name === "data-mdmark-args");
+var keepsPlainAttribute = (tagName, name) => {
+  if (tagName === "abbr" && name === "title") {
+    return false;
+  }
+  if (STRUCTURE_ATTRIBUTES.has(name) || name.startsWith("aria-")) {
+    return false;
+  }
+  return !DIAGRAM_ATTRIBUTE_SET.has(name) || tagName === "input" && (name === "type" || name === "disabled");
+};
+function keepsAttribute(tagName, name, value) {
+  const keeper = Object.hasOwn(ATTRIBUTE_KEEPERS, name) ? ATTRIBUTE_KEEPERS[name] : void 0;
+  if (keeper) {
+    return keeper(tagName, value);
+  }
+  return name.startsWith("data-") ? keepsDataAttribute(tagName, name) : keepsPlainAttribute(tagName, name);
+}
+function dropSyntaxAttributes(tagName, attribs) {
+  const next = {};
+  for (const [name, value] of Object.entries(attribs)) {
+    if (name === "class") {
+      const classes = value.split(/\s+/).filter(
+        (name2) => !SYNTAX_CLASS_PATTERN.test(name2) || RAW_CLASS_PATTERN.test(name2)
+      );
+      if (classes.length) {
+        next.class = classes.join(" ");
+      }
+    } else if (keepsAttribute(tagName, name, value)) {
+      next[name] = value;
+    }
+  }
+  return next;
+}
+var DIAGRAM_ATTRIBUTES = [
+  "tabindex",
+  "style",
+  "for",
+  "type",
+  "min",
+  "max",
+  "step",
+  "value",
+  "disabled",
+  "datetime",
+  "d",
+  "viewbox",
+  "width",
+  "height",
+  "x",
+  "y",
+  "x1",
+  "y1",
+  "x2",
+  "y2",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "points",
+  "fill",
+  "stroke",
+  "stroke-width",
+  "stroke-dasharray",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "marker-end",
+  "markerwidth",
+  "markerheight",
+  "markerunits",
+  "patternunits",
+  "refx",
+  "refy",
+  "orient",
+  "transform",
+  "text-anchor"
+];
+var RANGE_SCRIPT_TAGS = /* @__PURE__ */ new Set(["style", "template"]);
+var DIAGRAM_ATTRIBUTE_SET = new Set(DIAGRAM_ATTRIBUTES);
+var SANITIZE_OPTIONS = {
+  allowedTags: [
+    ...import_sanitize_html.default.defaults.allowedTags,
+    "img",
+    "del",
+    "details",
+    "summary",
+    "input",
+    "nav",
+    "figure",
+    "figcaption",
+    "style",
+    "template",
+    ...MEDIA_TAGS,
+    ...DIAGRAM_ONLY_TAGS
+  ],
+  allowedAttributes: {
+    "*": [
+      "id",
+      "role",
+      "aria-*",
+      "data-*",
+      "hidden",
+      "colspan",
+      "rowspan",
+      "scope",
+      ...DIAGRAM_ATTRIBUTES
+    ],
+    a: ["href", "title"],
+    img: ["src", "alt", "title"],
+    // ER 図の列のマーカーの名前（文書に記載した `abbr` の `title` は `dropSyntaxAttributes` が落とす）
+    abbr: ["title"],
+    details: ["open"],
+    input: ["type", "disabled", "checked"],
+    pre: ["tabindex"],
+    table: ["tabindex"],
+    span: ["tabindex"],
+    video: [
+      "src",
+      "controls",
+      "autoplay",
+      "muted",
+      "loop",
+      "playsinline",
+      "preload",
+      "poster"
+    ],
+    audio: ["src", "controls", "autoplay", "muted", "loop", "preload"]
+  },
+  // 図の部品の要素以外から取り除く要素は、マーカーを付けた要素を中身ごと削除する
+  exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== void 0,
+  // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
+  allowedClasses: {
+    "*": [
+      "mdmark-*",
+      "markdown-alert*",
+      "has-tip",
+      "has-link",
+      "has-children",
+      "is-virtual",
+      "is-after-ref"
+    ],
+    code: ["language-*"],
+    li: ["task-list-item"]
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す構造は `transformTags` が絞る）
+  allowedSchemesByTag: {
+    img: ["http", "https", "data"],
+    video: ["http", "https", "data"],
+    audio: ["http", "https", "data"]
+  },
+  // postcss を呼ばない。`style` 属性は許可せず、列の配置だけを class に移す
+  parseStyleAttributes: false,
+  // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に記載したものは `transformTags` が落とす）
+  allowVulnerableTags: true,
+  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に記載した `hidden` は `dropSyntaxAttributes` が先に落とす
+  nonBooleanAttributes: import_sanitize_html.default.defaults.nonBooleanAttributes.filter(
+    (name) => name !== "hidden"
+  )
+};
+var CONTROL_OR_SPACE_MAX = 32;
+function isAllowedUrl(url2) {
+  const trimmed = Array.from(url2).filter((char) => char.charCodeAt(0) > CONTROL_OR_SPACE_MAX).join("");
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed)?.[1];
+  if (scheme === void 0) {
+    return true;
+  }
+  const allowed = SANITIZE_OPTIONS.allowedSchemes;
+  return Array.isArray(allowed) && allowed.includes(scheme.toLowerCase());
+}
+var resolveIdHref = (options) => {
+  const { href, resolveIdLink } = options;
+  if (resolveIdLink === void 0) return void 0;
+  let resolved;
+  try {
+    resolved = resolveIdLink(href);
+  } catch (error2) {
+    console.warn("[mdmark] resolveIdLink \u304C\u4F8B\u5916\u3092\u6295\u3052\u307E\u3057\u305F", error2);
+    return void 0;
+  }
+  return typeof resolved === "string" && isAllowedUrl(resolved) ? resolved : void 0;
+};
+var EMBED_STYLES = (() => {
+  const length = String.raw`-?(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
+  const unsigned = String.raw`(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
+  const keyword = "[a-z]+(?:-[a-z]+)*";
+  const color = String.raw`#[0-9a-f]{3,8}|[a-z]+|(?:rgb|hsl)a?\(\s*[0-9.%\s,/-]+\)|var\(--mdmark-[a-z0-9-]+\)`;
+  const fn = String.raw`(?:repeat|minmax)\([a-z0-9\s,.%-]*\)`;
+  const words = (tokens) => new RegExp(`^(?:${tokens})(?:\\s+(?:${tokens}))*$`, "i");
+  return [
+    {
+      name: /^display$/,
+      value: /^(?:block|inline|inline-block|flex|inline-flex|grid|inline-grid|none)$/i
+    },
+    {
+      name: /^(?:flex(?:-(?:direction|wrap|grow|shrink|basis))?|align-items|justify-content|align-self)$/,
+      value: words(`${keyword}|${length}`)
+    },
+    {
+      name: /^(?:grid-template-columns|grid-template-rows|grid-column|grid-row|gap|row-gap|column-gap)$/,
+      value: words(`${keyword}|${length}|${fn}`)
+    },
+    {
+      name: /^(?:margin|padding)(?:-[a-z-]+)?$/,
+      value: words(`${unsigned}|auto`)
+    },
+    {
+      name: /^border(?:-(?!image)[a-z-]+)?$/,
+      value: words(`${length}|${color}`)
+    },
+    {
+      name: /^(?:width|max-width|min-width|height)$/,
+      value: words(`${length}|${keyword}`)
+    },
+    { name: /^(?:color|background-color)$/, value: words(color) },
+    {
+      name: /^(?:font-size|font-weight|text-align)$/,
+      value: words(`${length}|${keyword}`)
+    }
+  ];
+})();
+var EMBED_STYLE_FORBIDDEN = /\/\*|["'\\]|url\(|expression\(|\d\s*(?:dvw|dvh|svw|svh|lvw|lvh|vmin|vmax|vw|vh)\b/i;
+function filterEmbeddedStyle(style) {
+  const kept2 = [];
+  for (const declaration of style.split(";")) {
+    const colon = declaration.indexOf(":");
+    if (colon < 0) {
+      continue;
+    }
+    const name = declaration.slice(0, colon).trim().toLowerCase();
+    const value = declaration.slice(colon + 1).trim().replace(/\s+/g, " ");
+    if (value !== "" && !EMBED_STYLE_FORBIDDEN.test(value) && EMBED_STYLES.some(
+      (entry) => entry.name.test(name) && entry.value.test(value)
+    )) {
+      kept2.push(`${name}:${value}`);
+    }
+  }
+  return kept2.join(";");
+}
+var OWN_STYLE_VARIABLES = [
+  {
+    name: "--mdmark-image-width",
+    pattern: IMAGE_WIDTH_PATTERN,
+    format: (value) => `--mdmark-image-width: ${value}`
+  },
+  {
+    name: "--mdmark-gallery-cols",
+    pattern: GALLERY_COLS_PATTERN,
+    format: (value) => `--mdmark-gallery-cols: ${value}`
+  },
+  {
+    name: "--mdmark-code-digits",
+    pattern: CODE_DIGITS_PATTERN,
+    format: (value) => `--mdmark-code-digits:${value}`
+  }
+];
+function ownStyle(style) {
+  if (DIAGRAM_STYLE_PATTERN.test(style)) {
+    return style;
+  }
+  const variable = OWN_STYLE_VARIABLES.find(
+    (entry) => style.includes(entry.name)
+  );
+  if (variable) {
+    const value = variable.pattern.exec(style)?.[1];
+    return value === void 0 ? "" : variable.format(value);
+  }
+  return filterEmbeddedStyle(style);
+}
+var EMBED_PART_TAG = "mdmark-part";
+var EMBED_PART_ATTRIBUTE = "data-part";
+var TEXT_FILTER_SKIP_TAGS = /* @__PURE__ */ new Set([
+  "a",
+  "code",
+  "pre",
+  "button",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6"
+]);
+var EMBEDDED_NON_TEXT_TAGS = [
+  "script",
+  "style",
+  "textarea",
+  "option",
+  "xmp"
+];
+var EMBEDDED_OPTIONS = {
+  ...SANITIZE_OPTIONS,
+  allowedTags: [
+    ...SANITIZE_OPTIONS.allowedTags,
+    "button",
+    EMBED_PART_TAG
+  ],
+  allowedAttributes: {
+    "*": ["data-hint", "style", "colspan", DROP_ATTRIBUTE],
+    a: ["href", "title"],
+    img: ["src", "alt", "title"],
+    details: ["open"],
+    input: ["type", "disabled", "checked"],
+    button: ["type"],
+    [EMBED_PART_TAG]: [EMBED_PART_ATTRIBUTE]
+  },
+  allowedClasses: {},
+  nonTextTags: EMBEDDED_NON_TEXT_TAGS
+};
+function sanitizeEmbedded(html, onText, keepClasses = false) {
+  return (0, import_sanitize_html.default)(html, {
+    ...EMBEDDED_OPTIONS,
+    ...keepClasses ? {
+      allowedAttributes: {
+        ...EMBEDDED_OPTIONS.allowedAttributes,
+        "*": [
+          ...EMBEDDED_OPTIONS.allowedAttributes["*"] ?? [],
+          "class",
+          KEEP_CLASS_ATTRIBUTE
+        ]
+      },
+      allowedClasses: void 0
+    } : {},
+    textFilter: (text2, tagName) => TEXT_FILTER_SKIP_TAGS.has(tagName) ? text2 : onText(text2),
+    transformTags: {
+      "*": (tagName, attribs) => {
+        if (tagName === "input") {
+          return { tagName, attribs: embeddedCheckbox(attribs) };
+        }
+        const next = { ...attribs };
+        const style = filterEmbeddedStyle(attribs.style ?? "");
+        if (style === "") {
+          delete next.style;
+        } else {
+          next.style = style;
+        }
+        if (tagName === "button") {
+          next.type = "button";
+        }
+        delete next[KEEP_CLASS_ATTRIBUTE];
+        if (keepClasses) {
+          keepAuthorClasses(next);
+        }
+        dropDataUrls(tagName, next);
+        if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
+          next[DROP_ATTRIBUTE] = "1";
+        }
+        return { tagName, attribs: next };
+      }
+    }
+  });
+}
+function embeddedCheckbox(attribs) {
+  const checkbox = { type: "checkbox", disabled: "" };
+  if (attribs.checked !== void 0) {
+    checkbox.checked = "";
+  }
+  return checkbox;
+}
+function keepAuthorClasses(next) {
+  if (next.class === void 0) {
+    return;
+  }
+  const classes = next.class.split(/\s+/).filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
+  if (classes.length > 0) {
+    next.class = classes.join(" ");
+    next[KEEP_CLASS_ATTRIBUTE] = "";
+  } else {
+    delete next.class;
+  }
+}
+function isAllowedClass(tagName, name) {
+  const allowed = SANITIZE_OPTIONS.allowedClasses;
+  return [...allowed["*"] ?? [], ...allowed[tagName] ?? []].some(
+    (pattern) => pattern.endsWith("*") ? name.startsWith(pattern.slice(0, -1)) : name === pattern
+  );
+}
+function filterClasses(next, tagName) {
+  if (next.class === void 0) {
+    return;
+  }
+  const classes = next.class.split(/\s+/).filter((name) => name !== "" && isAllowedClass(tagName, name));
+  if (classes.length > 0) {
+    next.class = classes.join(" ");
+  } else {
+    delete next.class;
+  }
+}
+function dropInvalidSourceLine(next) {
+  const line = next[SOURCE_LINE_ATTRIBUTE];
+  if (line !== void 0 && !SOURCE_LINE_PATTERN.test(line)) {
+    delete next[SOURCE_LINE_ATTRIBUTE];
+  }
+}
+function addAlignClass(next, style) {
+  const align = TEXT_ALIGN_PATTERN.exec(style)?.[1];
+  if (align && ALIGN_VALUES.includes(align)) {
+    next.class = [next.class, `mdmark-align-${align}`].filter(Boolean).join(" ");
+  }
+}
+function isDocumentOnlyTag(tagName) {
+  return DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName) || RANGE_SCRIPT_TAGS.has(tagName);
+}
+function sanitize(html, nonce) {
+  return (0, import_sanitize_html.default)(html, {
+    ...SANITIZE_OPTIONS,
+    // class は `transformTags` で `SANITIZE_OPTIONS` の `allowedClasses` のとおりに絞る
+    allowedClasses: { "*": [/^\S+$/] },
+    transformTags: {
+      // 全ての要素: mdmark が出した要素以外から記法の属性を落とし、`text-align` の値を class に移し、`style` は常に削除する
+      "*": (tagName, attribs) => {
+        const own2 = attribs[OWN_ATTRIBUTE] === nonce;
+        const next = own2 ? { ...attribs } : dropSyntaxAttributes(tagName, attribs);
+        delete next[OWN_ATTRIBUTE];
+        const keepClass = own2 && attribs[KEEP_CLASS_ATTRIBUTE] !== void 0;
+        delete next[KEEP_CLASS_ATTRIBUTE];
+        if (!keepClass) {
+          filterClasses(next, tagName);
+        }
+        dropInvalidSourceLine(next);
+        dropDataUrls(tagName, next);
+        addAlignClass(next, attribs.style ?? "");
+        const kept2 = own2 ? ownStyle(attribs.style ?? "") : "";
+        if (kept2 === "") {
+          delete next.style;
+        } else {
+          next.style = kept2;
+        }
+        if (!own2 && isDocumentOnlyTag(tagName)) {
+          next[DROP_ATTRIBUTE] = "1";
+        }
+        return { tagName, attribs: next };
+      },
+      // 入力欄: 常に無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ。図の部品が出したスライダーはそのまま残す
+      input: (tagName, attribs) => {
+        if (attribs[OWN_ATTRIBUTE] === nonce && attribs.type === "range") {
+          return { tagName, attribs };
+        }
+        const next = { type: "checkbox", disabled: "" };
+        if (attribs.checked !== void 0) {
+          next.checked = "";
+        }
+        return { tagName, attribs: next };
+      },
+      pre: fixTabindex,
+      table: fixTabindex
+    }
+  });
+}
+
 // src/render/syntax/blocks.ts
 var blockStartOf = (tokens, index) => {
   let at = index;
@@ -70440,515 +70961,6 @@ function buildCalloutsIn(state, tokens) {
     index = closeIndex;
   }
   return out;
-}
-
-// src/render/sanitize.ts
-var import_sanitize_html = __toESM(require_sanitize_html(), 1);
-var ALIGN_VALUES = ["left", "center", "right"];
-var TEXT_ALIGN_PATTERN = /(?:^|;)\s*text-align\s*:\s*([a-z]+)/;
-var OWN_ATTRIBUTE = "data-mdmark-own";
-var KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
-var RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
-var SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$|is-after-ref$)/;
-var DIAGRAM_ONLY_TAGS = /* @__PURE__ */ new Set([
-  "svg",
-  "defs",
-  "marker",
-  "pattern",
-  "g",
-  "path",
-  "rect",
-  "circle",
-  "ellipse",
-  "line",
-  "polyline",
-  "polygon",
-  "text",
-  "button",
-  "output",
-  "label"
-]);
-var DROP_ATTRIBUTE = "data-mdmark-drop";
-var DIAGRAM_STYLE_PATTERN = /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|padding:\d+(?:\.\d+)?px(?: \d+(?:\.\d+)?px)?|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
-var CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
-var IMAGE_WIDTH_PATTERN = /^\s*--mdmark-image-width\s*:\s*(\d+(?:px|%))\s*;?\s*$/;
-var GALLERY_COLS_PATTERN = /^\s*--mdmark-gallery-cols\s*:\s*([1-6])\s*;?\s*$/;
-var MEDIA_TAGS = /* @__PURE__ */ new Set(["video", "audio"]);
-var SOURCE_LINE_ATTRIBUTE = "data-source-line";
-var SOURCE_LINE_PATTERN = /^\d+$/;
-var DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
-var DATA_IMAGE_ATTRIBUTES = {
-  img: "src",
-  video: "poster"
-};
-var isForbiddenDataUrl = (url2) => url2?.startsWith("data:") === true && !DATA_IMAGE_PATTERN.test(url2);
-function dropDataUrls(tagName, attribs) {
-  const imageAttribute = Object.hasOwn(DATA_IMAGE_ATTRIBUTES, tagName) ? DATA_IMAGE_ATTRIBUTES[tagName] : void 0;
-  if (imageAttribute !== void 0 && isForbiddenDataUrl(attribs[imageAttribute])) {
-    delete attribs[imageAttribute];
-  }
-  if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
-    delete attribs.src;
-  }
-}
-function fixTabindex(tagName, attribs) {
-  const next = { ...attribs };
-  if (next.tabindex !== void 0) {
-    next.tabindex = "0";
-  }
-  return { tagName, attribs: next };
-}
-var isPreOrTable = (tagName) => tagName === "pre" || tagName === "table";
-var ATTRIBUTE_KEEPERS = {
-  // 外部ライブラリのマーカーの場所の `status` だけを残す
-  role: (tagName, value) => tagName === "div" && value === "status",
-  "aria-label": isPreOrTable,
-  tabindex: isPreOrTable,
-  [SOURCE_LINE_ATTRIBUTE]: () => true
-};
-var STRUCTURE_ATTRIBUTES = /* @__PURE__ */ new Set([
-  "id",
-  "hidden",
-  "colspan",
-  "rowspan",
-  "scope"
-]);
-var keepsDataAttribute = (tagName, name) => tagName === "td" && name === "data-label" || tagName === "div" && (name === "data-mdmark-slot" || name === "data-mdmark-args");
-var keepsPlainAttribute = (tagName, name) => {
-  if (tagName === "abbr" && name === "title") {
-    return false;
-  }
-  if (STRUCTURE_ATTRIBUTES.has(name) || name.startsWith("aria-")) {
-    return false;
-  }
-  return !DIAGRAM_ATTRIBUTE_SET.has(name) || tagName === "input" && (name === "type" || name === "disabled");
-};
-function keepsAttribute(tagName, name, value) {
-  const keeper = Object.hasOwn(ATTRIBUTE_KEEPERS, name) ? ATTRIBUTE_KEEPERS[name] : void 0;
-  if (keeper) {
-    return keeper(tagName, value);
-  }
-  return name.startsWith("data-") ? keepsDataAttribute(tagName, name) : keepsPlainAttribute(tagName, name);
-}
-function dropSyntaxAttributes(tagName, attribs) {
-  const next = {};
-  for (const [name, value] of Object.entries(attribs)) {
-    if (name === "class") {
-      const classes = value.split(/\s+/).filter(
-        (name2) => !SYNTAX_CLASS_PATTERN.test(name2) || RAW_CLASS_PATTERN.test(name2)
-      );
-      if (classes.length) {
-        next.class = classes.join(" ");
-      }
-    } else if (keepsAttribute(tagName, name, value)) {
-      next[name] = value;
-    }
-  }
-  return next;
-}
-var DIAGRAM_ATTRIBUTES = [
-  "tabindex",
-  "style",
-  "for",
-  "type",
-  "min",
-  "max",
-  "step",
-  "value",
-  "disabled",
-  "datetime",
-  "d",
-  "viewbox",
-  "width",
-  "height",
-  "x",
-  "y",
-  "x1",
-  "y1",
-  "x2",
-  "y2",
-  "cx",
-  "cy",
-  "r",
-  "rx",
-  "ry",
-  "points",
-  "fill",
-  "stroke",
-  "stroke-width",
-  "stroke-dasharray",
-  "stroke-linecap",
-  "stroke-linejoin",
-  "marker-end",
-  "markerwidth",
-  "markerheight",
-  "markerunits",
-  "patternunits",
-  "refx",
-  "refy",
-  "orient",
-  "transform",
-  "text-anchor"
-];
-var RANGE_SCRIPT_TAGS = /* @__PURE__ */ new Set(["style", "template"]);
-var DIAGRAM_ATTRIBUTE_SET = new Set(DIAGRAM_ATTRIBUTES);
-var SANITIZE_OPTIONS = {
-  allowedTags: [
-    ...import_sanitize_html.default.defaults.allowedTags,
-    "img",
-    "del",
-    "details",
-    "summary",
-    "input",
-    "nav",
-    "figure",
-    "figcaption",
-    "style",
-    "template",
-    ...MEDIA_TAGS,
-    ...DIAGRAM_ONLY_TAGS
-  ],
-  allowedAttributes: {
-    "*": [
-      "id",
-      "role",
-      "aria-*",
-      "data-*",
-      "hidden",
-      "colspan",
-      "rowspan",
-      "scope",
-      ...DIAGRAM_ATTRIBUTES
-    ],
-    a: ["href", "title"],
-    img: ["src", "alt", "title"],
-    // ER 図の列のマーカーの名前（文書に記載した `abbr` の `title` は `dropSyntaxAttributes` が落とす）
-    abbr: ["title"],
-    details: ["open"],
-    input: ["type", "disabled", "checked"],
-    pre: ["tabindex"],
-    table: ["tabindex"],
-    span: ["tabindex"],
-    video: [
-      "src",
-      "controls",
-      "autoplay",
-      "muted",
-      "loop",
-      "playsinline",
-      "preload",
-      "poster"
-    ],
-    audio: ["src", "controls", "autoplay", "muted", "loop", "preload"]
-  },
-  // 図の部品の要素以外から取り除く要素は、マーカーを付けた要素を中身ごと削除する
-  exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== void 0,
-  // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
-  allowedClasses: {
-    "*": [
-      "mdmark-*",
-      "markdown-alert*",
-      "has-tip",
-      "has-link",
-      "has-children",
-      "is-virtual",
-      "is-after-ref"
-    ],
-    code: ["language-*"],
-    li: ["task-list-item"]
-  },
-  allowedSchemes: ["http", "https", "mailto"],
-  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す構造は `transformTags` が絞る）
-  allowedSchemesByTag: {
-    img: ["http", "https", "data"],
-    video: ["http", "https", "data"],
-    audio: ["http", "https", "data"]
-  },
-  // postcss を呼ばない。`style` 属性は許可せず、列の配置だけを class に移す
-  parseStyleAttributes: false,
-  // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に記載したものは `transformTags` が落とす）
-  allowVulnerableTags: true,
-  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に記載した `hidden` は `dropSyntaxAttributes` が先に落とす
-  nonBooleanAttributes: import_sanitize_html.default.defaults.nonBooleanAttributes.filter(
-    (name) => name !== "hidden"
-  )
-};
-var CONTROL_OR_SPACE_MAX = 32;
-function isAllowedUrl(url2) {
-  const trimmed = Array.from(url2).filter((char) => char.charCodeAt(0) > CONTROL_OR_SPACE_MAX).join("");
-  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed)?.[1];
-  if (scheme === void 0) {
-    return true;
-  }
-  const allowed = SANITIZE_OPTIONS.allowedSchemes;
-  return Array.isArray(allowed) && allowed.includes(scheme.toLowerCase());
-}
-var EMBED_STYLES = (() => {
-  const length = String.raw`-?(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
-  const unsigned = String.raw`(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
-  const keyword = "[a-z]+(?:-[a-z]+)*";
-  const color = String.raw`#[0-9a-f]{3,8}|[a-z]+|(?:rgb|hsl)a?\(\s*[0-9.%\s,/-]+\)|var\(--mdmark-[a-z0-9-]+\)`;
-  const fn = String.raw`(?:repeat|minmax)\([a-z0-9\s,.%-]*\)`;
-  const words = (tokens) => new RegExp(`^(?:${tokens})(?:\\s+(?:${tokens}))*$`, "i");
-  return [
-    {
-      name: /^display$/,
-      value: /^(?:block|inline|inline-block|flex|inline-flex|grid|inline-grid|none)$/i
-    },
-    {
-      name: /^(?:flex(?:-(?:direction|wrap|grow|shrink|basis))?|align-items|justify-content|align-self)$/,
-      value: words(`${keyword}|${length}`)
-    },
-    {
-      name: /^(?:grid-template-columns|grid-template-rows|grid-column|grid-row|gap|row-gap|column-gap)$/,
-      value: words(`${keyword}|${length}|${fn}`)
-    },
-    {
-      name: /^(?:margin|padding)(?:-[a-z-]+)?$/,
-      value: words(`${unsigned}|auto`)
-    },
-    {
-      name: /^border(?:-(?!image)[a-z-]+)?$/,
-      value: words(`${length}|${color}`)
-    },
-    {
-      name: /^(?:width|max-width|min-width|height)$/,
-      value: words(`${length}|${keyword}`)
-    },
-    { name: /^(?:color|background-color)$/, value: words(color) },
-    {
-      name: /^(?:font-size|font-weight|text-align)$/,
-      value: words(`${length}|${keyword}`)
-    }
-  ];
-})();
-var EMBED_STYLE_FORBIDDEN = /\/\*|["'\\]|url\(|expression\(|\d\s*(?:dvw|dvh|svw|svh|lvw|lvh|vmin|vmax|vw|vh)\b/i;
-function filterEmbeddedStyle(style) {
-  const kept2 = [];
-  for (const declaration of style.split(";")) {
-    const colon = declaration.indexOf(":");
-    if (colon < 0) {
-      continue;
-    }
-    const name = declaration.slice(0, colon).trim().toLowerCase();
-    const value = declaration.slice(colon + 1).trim().replace(/\s+/g, " ");
-    if (value !== "" && !EMBED_STYLE_FORBIDDEN.test(value) && EMBED_STYLES.some(
-      (entry) => entry.name.test(name) && entry.value.test(value)
-    )) {
-      kept2.push(`${name}:${value}`);
-    }
-  }
-  return kept2.join(";");
-}
-var OWN_STYLE_VARIABLES = [
-  {
-    name: "--mdmark-image-width",
-    pattern: IMAGE_WIDTH_PATTERN,
-    format: (value) => `--mdmark-image-width: ${value}`
-  },
-  {
-    name: "--mdmark-gallery-cols",
-    pattern: GALLERY_COLS_PATTERN,
-    format: (value) => `--mdmark-gallery-cols: ${value}`
-  },
-  {
-    name: "--mdmark-code-digits",
-    pattern: CODE_DIGITS_PATTERN,
-    format: (value) => `--mdmark-code-digits:${value}`
-  }
-];
-function ownStyle(style) {
-  if (DIAGRAM_STYLE_PATTERN.test(style)) {
-    return style;
-  }
-  const variable = OWN_STYLE_VARIABLES.find(
-    (entry) => style.includes(entry.name)
-  );
-  if (variable) {
-    const value = variable.pattern.exec(style)?.[1];
-    return value === void 0 ? "" : variable.format(value);
-  }
-  return filterEmbeddedStyle(style);
-}
-var EMBED_PART_TAG = "mdmark-part";
-var EMBED_PART_ATTRIBUTE = "data-part";
-var TEXT_FILTER_SKIP_TAGS = /* @__PURE__ */ new Set([
-  "a",
-  "code",
-  "pre",
-  "button",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6"
-]);
-var EMBEDDED_NON_TEXT_TAGS = [
-  "script",
-  "style",
-  "textarea",
-  "option",
-  "xmp"
-];
-var EMBEDDED_OPTIONS = {
-  ...SANITIZE_OPTIONS,
-  allowedTags: [
-    ...SANITIZE_OPTIONS.allowedTags,
-    "button",
-    EMBED_PART_TAG
-  ],
-  allowedAttributes: {
-    "*": ["data-hint", "style", "colspan", DROP_ATTRIBUTE],
-    a: ["href", "title"],
-    img: ["src", "alt", "title"],
-    details: ["open"],
-    input: ["type", "disabled", "checked"],
-    button: ["type"],
-    [EMBED_PART_TAG]: [EMBED_PART_ATTRIBUTE]
-  },
-  allowedClasses: {},
-  nonTextTags: EMBEDDED_NON_TEXT_TAGS
-};
-function sanitizeEmbedded(html, onText, keepClasses = false) {
-  return (0, import_sanitize_html.default)(html, {
-    ...EMBEDDED_OPTIONS,
-    ...keepClasses ? {
-      allowedAttributes: {
-        ...EMBEDDED_OPTIONS.allowedAttributes,
-        "*": [
-          ...EMBEDDED_OPTIONS.allowedAttributes["*"] ?? [],
-          "class",
-          KEEP_CLASS_ATTRIBUTE
-        ]
-      },
-      allowedClasses: void 0
-    } : {},
-    textFilter: (text2, tagName) => TEXT_FILTER_SKIP_TAGS.has(tagName) ? text2 : onText(text2),
-    transformTags: {
-      "*": (tagName, attribs) => {
-        if (tagName === "input") {
-          return { tagName, attribs: embeddedCheckbox(attribs) };
-        }
-        const next = { ...attribs };
-        const style = filterEmbeddedStyle(attribs.style ?? "");
-        if (style === "") {
-          delete next.style;
-        } else {
-          next.style = style;
-        }
-        if (tagName === "button") {
-          next.type = "button";
-        }
-        delete next[KEEP_CLASS_ATTRIBUTE];
-        if (keepClasses) {
-          keepAuthorClasses(next);
-        }
-        dropDataUrls(tagName, next);
-        if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
-          next[DROP_ATTRIBUTE] = "1";
-        }
-        return { tagName, attribs: next };
-      }
-    }
-  });
-}
-function embeddedCheckbox(attribs) {
-  const checkbox = { type: "checkbox", disabled: "" };
-  if (attribs.checked !== void 0) {
-    checkbox.checked = "";
-  }
-  return checkbox;
-}
-function keepAuthorClasses(next) {
-  if (next.class === void 0) {
-    return;
-  }
-  const classes = next.class.split(/\s+/).filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
-  if (classes.length > 0) {
-    next.class = classes.join(" ");
-    next[KEEP_CLASS_ATTRIBUTE] = "";
-  } else {
-    delete next.class;
-  }
-}
-function isAllowedClass(tagName, name) {
-  const allowed = SANITIZE_OPTIONS.allowedClasses;
-  return [...allowed["*"] ?? [], ...allowed[tagName] ?? []].some(
-    (pattern) => pattern.endsWith("*") ? name.startsWith(pattern.slice(0, -1)) : name === pattern
-  );
-}
-function filterClasses(next, tagName) {
-  if (next.class === void 0) {
-    return;
-  }
-  const classes = next.class.split(/\s+/).filter((name) => name !== "" && isAllowedClass(tagName, name));
-  if (classes.length > 0) {
-    next.class = classes.join(" ");
-  } else {
-    delete next.class;
-  }
-}
-function dropInvalidSourceLine(next) {
-  const line = next[SOURCE_LINE_ATTRIBUTE];
-  if (line !== void 0 && !SOURCE_LINE_PATTERN.test(line)) {
-    delete next[SOURCE_LINE_ATTRIBUTE];
-  }
-}
-function addAlignClass(next, style) {
-  const align = TEXT_ALIGN_PATTERN.exec(style)?.[1];
-  if (align && ALIGN_VALUES.includes(align)) {
-    next.class = [next.class, `mdmark-align-${align}`].filter(Boolean).join(" ");
-  }
-}
-function isDocumentOnlyTag(tagName) {
-  return DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName) || RANGE_SCRIPT_TAGS.has(tagName);
-}
-function sanitize(html, nonce) {
-  return (0, import_sanitize_html.default)(html, {
-    ...SANITIZE_OPTIONS,
-    // class は `transformTags` で `SANITIZE_OPTIONS` の `allowedClasses` のとおりに絞る
-    allowedClasses: { "*": [/^\S+$/] },
-    transformTags: {
-      // 全ての要素: mdmark が出した要素以外から記法の属性を落とし、`text-align` の値を class に移し、`style` は常に削除する
-      "*": (tagName, attribs) => {
-        const own2 = attribs[OWN_ATTRIBUTE] === nonce;
-        const next = own2 ? { ...attribs } : dropSyntaxAttributes(tagName, attribs);
-        delete next[OWN_ATTRIBUTE];
-        const keepClass = own2 && attribs[KEEP_CLASS_ATTRIBUTE] !== void 0;
-        delete next[KEEP_CLASS_ATTRIBUTE];
-        if (!keepClass) {
-          filterClasses(next, tagName);
-        }
-        dropInvalidSourceLine(next);
-        dropDataUrls(tagName, next);
-        addAlignClass(next, attribs.style ?? "");
-        const kept2 = own2 ? ownStyle(attribs.style ?? "") : "";
-        if (kept2 === "") {
-          delete next.style;
-        } else {
-          next.style = kept2;
-        }
-        if (!own2 && isDocumentOnlyTag(tagName)) {
-          next[DROP_ATTRIBUTE] = "1";
-        }
-        return { tagName, attribs: next };
-      },
-      // 入力欄: 常に無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ。図の部品が出したスライダーはそのまま残す
-      input: (tagName, attribs) => {
-        if (attribs[OWN_ATTRIBUTE] === nonce && attribs.type === "range") {
-          return { tagName, attribs };
-        }
-        const next = { type: "checkbox", disabled: "" };
-        if (attribs.checked !== void 0) {
-          next.checked = "";
-        }
-        return { tagName, attribs: next };
-      },
-      pre: fixTabindex,
-      table: fixTabindex
-    }
-  });
 }
 
 // src/parts/inline-icon.ts
@@ -71723,9 +71735,9 @@ function usableAliases(aliases) {
     if (!isRecord5(item) || type === void 0) {
       continue;
     }
-    const row = item;
-    seen.add(row.id);
-    usable.push(toUsableAlias(row, type));
+    const row2 = item;
+    seen.add(row2.id);
+    usable.push(toUsableAlias(row2, type));
   }
   return usable;
 }
@@ -71771,49 +71783,49 @@ function baseName(path) {
 function joinWhere(recordPath, key) {
   return recordPath === "" ? key : `${recordPath}.${key}`;
 }
-function columnOf(row, key) {
-  const column = row.metadata[key];
+function columnOf(row2, key) {
+  const column = row2.metadata[key];
   return isFilled(column) ? column : key;
 }
-function isEnabledRow(row) {
-  return isRecord5(row) && isFilled(row.id) && Array.isArray(row.paths) && typeof row.alias_type === "string" && row.enabled !== false;
+function isEnabledRow(row2) {
+  return isRecord5(row2) && isFilled(row2.id) && Array.isArray(row2.paths) && typeof row2.alias_type === "string" && row2.enabled !== false;
 }
-function acceptRow(build5, row, rowPosition) {
-  if (!isEnabledRow(row)) {
+function acceptRow(build5, row2, rowPosition) {
+  if (!isEnabledRow(row2)) {
     return void 0;
   }
-  if (build5.rowIds.has(row.id)) {
+  if (build5.rowIds.has(row2.id)) {
     build5.problems.push({
       file: build5.configFile,
       where: `aliases[${rowPosition}].id`,
       kind: "duplicate_alias_row_id",
-      message: `\u884C\u306E \`id\` \`${row.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+      message: `\u884C\u306E \`id\` \`${row2.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
     });
     return void 0;
   }
-  build5.rowIds.add(row.id);
+  build5.rowIds.add(row2.id);
   const aliasType = ALIAS_TYPES.find(
-    (candidate) => candidate === row.alias_type
+    (candidate) => candidate === row2.alias_type
   );
   if (aliasType === void 0) {
     build5.problems.push({
       file: build5.configFile,
       where: `aliases[${rowPosition}].alias_type`,
       kind: "alias_unknown_type",
-      message: `\`alias_type\` \u306E \`${row.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      message: `\`alias_type\` \u306E \`${row2.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     });
     return void 0;
   }
   return {
-    id: row.id,
+    id: row2.id,
     aliasType,
-    metadata: isRecord5(row.metadata) ? row.metadata : {},
-    recordsKey: isFilled(row.records) ? row.records : void 0,
-    bodyFile: isFilled(row.body_file) ? row.body_file : void 0
+    metadata: isRecord5(row2.metadata) ? row2.metadata : {},
+    recordsKey: isFilled(row2.records) ? row2.records : void 0,
+    bodyFile: isFilled(row2.body_file) ? row2.body_file : void 0
   };
 }
-function recordsOf(build5, row, source) {
-  const { recordsKey } = row;
+function recordsOf(build5, row2, source) {
+  const { recordsKey } = row2;
   if (recordsKey === void 0) {
     return [{ record: source.data, path: "" }];
   }
@@ -71832,12 +71844,12 @@ function recordsOf(build5, row, source) {
     path: `${recordsKey}[${position}]`
   }));
 }
-function pushRequiredProblems(build5, row, at) {
+function pushRequiredProblems(build5, row2, at) {
   const { source, path, keys } = at;
   const head = path === "" ? `\`${source.path}\`` : `\`${source.path}\` \u306E \`${path}\``;
   for (const key of keys) {
-    const column = columnOf(row, key);
-    const sentence = key === "url" && row.aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    const column = columnOf(row2, key);
+    const sentence = key === "url" && row2.aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
     build5.problems.push({
       file: source.path,
       where: joinWhere(path, column),
@@ -71846,13 +71858,13 @@ function pushRequiredProblems(build5, row, at) {
     });
   }
 }
-function takeRecord(build5, row, at) {
+function takeRecord(build5, row2, at) {
   const { source, record: record2, path } = at;
-  const fallbackName = row.recordsKey === void 0 ? baseName(source.path) : toText(record2.id) ?? "";
+  const fallbackName = row2.recordsKey === void 0 ? baseName(source.path) : toText(record2.id) ?? "";
   const { values, missing } = readAliasRecord({
     record: record2,
-    metadata: row.metadata,
-    bodyFile: row.bodyFile,
+    metadata: row2.metadata,
+    bodyFile: row2.bodyFile,
     fallbackName
   });
   for (const { key, field } of missing) {
@@ -71866,24 +71878,24 @@ function takeRecord(build5, row, at) {
   if (missing.length > 0) {
     return;
   }
-  const checked = checkAliasFields({ aliasType: row.aliasType, values });
+  const checked = checkAliasFields({ aliasType: row2.aliasType, values });
   if (checked !== void 0) {
-    pushRequiredProblems(build5, row, { source, path, keys: checked.keys });
+    pushRequiredProblems(build5, row2, { source, path, keys: checked.keys });
     return;
   }
   const id = values.id;
   if (build5.aliasIds.has(id)) {
     build5.problems.push({
       file: source.path,
-      where: joinWhere(path, columnOf(row, "id")),
+      where: joinWhere(path, columnOf(row2, "id")),
       kind: "duplicate_alias_id",
       message: `\u30A8\u30A4\u30EA\u30A2\u30B9\u306E \`id\` \`${id}\` \u304C\u524D\u306E\u30A8\u30A4\u30EA\u30A2\u30B9\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
     });
     return;
   }
   build5.aliasIds.add(id);
-  if (row.aliasType !== "env") {
-    build5.aliases.push(toAlias(values, row.aliasType));
+  if (row2.aliasType !== "env") {
+    build5.aliases.push(toAlias(values, row2.aliasType));
   }
 }
 function buildAliases(input) {
@@ -71896,14 +71908,14 @@ function buildAliases(input) {
     configFile
   };
   rows.forEach((item, rowPosition) => {
-    const row = acceptRow(build5, item, rowPosition);
-    if (!row) {
+    const row2 = acceptRow(build5, item, rowPosition);
+    if (!row2) {
       return;
     }
-    for (const source of sources.filter((entry) => entry.rowId === row.id)) {
-      for (const { record: record2, path } of recordsOf(build5, row, source) ?? []) {
+    for (const source of sources.filter((entry) => entry.rowId === row2.id)) {
+      for (const { record: record2, path } of recordsOf(build5, row2, source) ?? []) {
         if (isRecord5(record2)) {
-          takeRecord(build5, row, { source, record: record2, path });
+          takeRecord(build5, row2, { source, record: record2, path });
         }
       }
     }
@@ -72160,7 +72172,11 @@ var MERMAID_KIND_NAMES = {
   erDiagram: "ER \u56F3",
   gantt: "\u30AC\u30F3\u30C8\u30C1\u30E3\u30FC\u30C8",
   pie: "\u5186\u30B0\u30E9\u30D5",
-  mindmap: "\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7"
+  mindmap: "\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7",
+  timeline: "\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3",
+  gitGraph: "Git \u30B0\u30E9\u30D5",
+  journey: "\u30B8\u30E3\u30FC\u30CB\u30FC",
+  "block-beta": "\u30D6\u30ED\u30C3\u30AF\u56F3"
 };
 var FRONT_MATTER = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
 var TITLE_LINE = /^title:[ \t]*(.*)$/m;
@@ -72310,7 +72326,12 @@ var KIND_OF_FIRST_WORD = {
   "classDiagram-v2": "classDiagram",
   "architecture-beta": "architecture",
   C4Context: "C4Context",
-  mindmap: "mindmap"
+  mindmap: "mindmap",
+  gantt: "gantt",
+  timeline: "timeline",
+  gitGraph: "gitGraph",
+  journey: "journey",
+  "block-beta": "block"
 };
 var mapKindOf = (mermaid) => {
   const first = mermaid.trimStart().split(/\s/, 1)[0] ?? "";
@@ -72355,7 +72376,7 @@ var collectMapStructure = (range) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\`\u30FB\`classDiagram\`\u30FB\`architecture-beta\`\u30FB\`C4Context\`\u30FB\`mindmap\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\`\u30FB\`classDiagram\`\u30FB\`architecture-beta\`\u30FB\`C4Context\`\u30FB\`mindmap\`\u30FB\`gantt\`\u30FB\`timeline\`\u30FB\`gitGraph\`\u30FB\`journey\`\u30FB\`block-beta\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
     });
   }
   return { problems, kind, args: parsedArgs };
@@ -73034,9 +73055,9 @@ var tableTokens = (options) => {
   push("thead_close", "thead", { nesting: -1, depth: 1 });
   if (body.length) {
     push("tbody_open", "tbody", { nesting: 1, depth: 1 });
-    for (const row of body) {
+    for (const row2 of body) {
       push("tr_open", "tr", { nesting: 1, depth: 2 });
-      for (const value of row) {
+      for (const value of row2) {
         push("td_open", "td", { nesting: 1, depth: 3 });
         const inline2 = cellInline(state, value);
         inline2.level = level + 4;
@@ -73062,12 +73083,12 @@ var buildCsvTables = (state) => {
     const rows = parseCsv(token.content);
     const width = rows[0]?.length ?? 0;
     const mismatched = [];
-    const fitted = rows.map((row, index) => {
-      if (row.length === width) {
-        return row;
+    const fitted = rows.map((row2, index) => {
+      if (row2.length === width) {
+        return row2;
       }
       mismatched.push(index + 1);
-      return Array.from({ length: width }, (_, column) => row[column] ?? "");
+      return Array.from({ length: width }, (_, column) => row2[column] ?? "");
     });
     const tokens = tableTokens({ state, fence: token, rows: fitted });
     if (mismatched.length === 0) {
@@ -73149,12 +73170,12 @@ function niceTicks(values) {
   const lower = lowest >= 0 ? 0 : lowest;
   const rough = (highest - lower || Math.abs(highest) || 1) / TICK_TARGET;
   const magnitude = 10 ** Math.floor(Math.log10(rough));
-  const step = STEP_BASES.map((base) => base * magnitude).find(
+  const step2 = STEP_BASES.map((base) => base * magnitude).find(
     (value) => value >= rough
   ) ?? 10 * magnitude;
-  const min = tidy(Math.floor(lower / step) * step);
-  const max = tidy(Math.ceil(highest / step) * step);
-  return { min, max: max > min ? max : tidy(min + step), step: tidy(step) };
+  const min = tidy(Math.floor(lower / step2) * step2);
+  const max = tidy(Math.ceil(highest / step2) * step2);
+  return { min, max: max > min ? max : tidy(min + step2), step: tidy(step2) };
 }
 function stackSeries(series) {
   const positive = [];
@@ -74636,15 +74657,15 @@ function readImageAttributes(text2, kind, inline2) {
   };
   for (const part of text2.split(/\s+/).filter((item) => item !== "")) {
     const equals = part.indexOf("=");
-    const unreadable7 = readAttribute(attributes, {
+    const unreadable8 = readAttribute(attributes, {
       part,
       name: equals < 0 ? part : part.slice(0, equals),
       value: equals < 0 ? void 0 : part.slice(equals + 1),
       kind,
       inline: inline2
     });
-    if (unreadable7) {
-      attributes.items.push(unreadable7);
+    if (unreadable8) {
+      attributes.items.push(unreadable8);
     }
   }
   if (attributes.autoplay) {
@@ -75333,9 +75354,9 @@ function columnPositions(spec, columns) {
 }
 function tableRows(table2, positions, docId) {
   const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
-  return table2.rows.flatMap((row) => {
-    const term = cellOf(row.cells, "term");
-    const meaning = cellOf(row.cells, "meaning");
+  return table2.rows.flatMap((row2) => {
+    const term = cellOf(row2.cells, "term");
+    const meaning = cellOf(row2.cells, "meaning");
     if (term === "" || meaning === "") {
       return [];
     }
@@ -75343,12 +75364,12 @@ function tableRows(table2, positions, docId) {
       {
         entry: {
           term,
-          aliases: splitCell(cellOf(row.cells, "aliases")),
+          aliases: splitCell(cellOf(row2.cells, "aliases")),
           meaning,
           docId,
-          avoid: splitCell(cellOf(row.cells, "avoid"))
+          avoid: splitCell(cellOf(row2.cells, "avoid"))
         },
-        line: row.line
+        line: row2.line
       }
     ];
   });
@@ -75384,9 +75405,9 @@ function collectGlossary(state, range) {
   if (warning !== void 0) {
     out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
   }
-  for (const row of rows) {
-    env.ownGlossary.push(row.entry);
-    env.glossaryLines?.push(row.line);
+  for (const row2 of rows) {
+    env.ownGlossary.push(row2.entry);
+    env.glossaryLines?.push(row2.line);
   }
   for (const inline2 of tokens) {
     for (const child of inline2.children ?? []) {
@@ -76935,7 +76956,7 @@ var buildPagebreaks = (state) => {
 function renderRowDetail(options) {
   const {
     id,
-    row,
+    row: row2,
     columns,
     label,
     open: open2 = false,
@@ -76944,7 +76965,7 @@ function renderRowDetail(options) {
   } = options;
   const hidden = toggle && !open2 ? " hidden" : "";
   return {
-    row: `<tr class="mdmark-row-detail" data-row="${row}" id="${escapeHtml2(id)}"${hidden}><td colspan="${columns}">${body}</td></tr>`,
+    row: `<tr class="mdmark-row-detail" data-row="${row2}" id="${escapeHtml2(id)}"${hidden}><td colspan="${columns}">${body}</td></tr>`,
     toggle: toggle ? `<button class="mdmark-row-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u8A73\u7D30"></button>` : ""
   };
 }
@@ -76989,10 +77010,10 @@ function skipTableCloses(tokens, position) {
   return at;
 }
 function detailTokens(state, range, table2) {
-  const { position, end, row } = range;
+  const { position, end, row: row2 } = range;
   const html = renderRowDetail({
     id: table2.id,
-    row,
+    row: row2,
     columns: table2.columns,
     label: table2.label,
     toggle: false,
@@ -77010,8 +77031,8 @@ function attachRowDetail(state, edits, range) {
   const { position, mark, table: table2 } = range;
   const closeIndex = findClose(tokens, position, "row-detail");
   const end = closeIndex < 0 ? tokens.length : closeIndex;
-  const row = Number(mark.options.at);
-  const target = Number.isInteger(row) ? table2.rows[row - 1] : void 0;
+  const row2 = Number(mark.options.at);
+  const target = Number.isInteger(row2) ? table2.rows[row2 - 1] : void 0;
   edits.removed.add(position);
   const warnings = [];
   if (closeIndex >= 0) {
@@ -77023,7 +77044,7 @@ function attachRowDetail(state, edits, range) {
     edits.counter += 1;
     const detail = detailTokens(
       state,
-      { position, end, row },
+      { position, end, row: row2 },
       {
         columns: table2.columns,
         label: target.label,
@@ -77906,7 +77927,7 @@ function readGroupColumn(state, context) {
 function readIcons(context) {
   const { column, cells, values, groupName, items } = context;
   const icons2 = {};
-  const present = [...new Set(cells.map((row) => (row[column] ?? "").trim()))];
+  const present = [...new Set(cells.map((row2) => (row2[column] ?? "").trim()))];
   for (const [value, settings] of Object.entries(values)) {
     const icon = isObject3(settings) ? settings.icon : void 0;
     if (!present.includes(value)) {
@@ -78259,6 +78280,22 @@ function findMarkTexts(markdown) {
   }
   return found;
 }
+function resolveIdLinks(state) {
+  const env = state.env;
+  for (const token of state.tokens) {
+    for (const child of token.children ?? []) {
+      if (child.type !== "link_open") continue;
+      const raw = child.attrGet("href");
+      const href = raw === null ? "" : String(raw);
+      if (!href.startsWith("id:")) continue;
+      const url2 = resolveIdHref({
+        href: state.md.normalizeLinkText(href),
+        resolveIdLink: env.resolveIdLink
+      });
+      if (url2 !== void 0) child.attrSet("href", url2);
+    }
+  }
+}
 function createParser() {
   const parser3 = new MarkdownItCallable(PARSER_OPTIONS);
   parser3.linkify.set({ fuzzyLink: true });
@@ -78311,6 +78348,7 @@ function createParser() {
     ["mdmark_backlinks", backlinksRule],
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
+    ["mdmark_resolve_id_links", resolveIdLinks],
     ["mdmark_drop_marks", dropMarks],
     ["mdmark_mark_source_lines", markSourceLines],
     ["mdmark_take_footnote_definitions", takeFootnoteDefinitions],
@@ -78369,6 +78407,7 @@ function renderDocument(options) {
     aliases: options.aliases,
     includes: options.includes,
     icons: options.icons,
+    resolveIdLink: options.resolveIdLink,
     ownGlossary: [],
     extensionDefinitions: [],
     paramDefinitions: []
@@ -78394,6 +78433,565 @@ function collectWarnings(markdown, opts = {}) {
   const config3 = resolveConfig({ config: opts.config });
   return renderDocument({ markdown, config: config3 }).warnings;
 }
+
+// src/map/axis-grid.ts
+var DAY_MS = 24 * 60 * 60 * 1e3;
+var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+var DURATION_RE = /^(\d+)d$/;
+var GANTT_TAGS = /* @__PURE__ */ new Set(["done", "active", "crit", "milestone"]);
+var unreadable = (line, text2, fix) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${text2}\` \u3092\u8AAD\u3081\u306A\u3044\u305F\u3081\u3001\u3053\u306E\u884C\u3092\u8AAD\u307F\u98DB\u3070\u3057\u307E\u3057\u305F\u3002${fix}`
+});
+var toDate = (text2) => {
+  if (!DATE_RE.test(text2)) return void 0;
+  const date4 = /* @__PURE__ */ new Date(`${text2}T00:00:00Z`);
+  return Number.isNaN(date4.getTime()) ? void 0 : date4;
+};
+var dateText = (date4) => date4.toISOString().slice(0, 10);
+var isWeekend = (date4) => date4.getUTCDay() === 0 || date4.getUTCDay() === 6;
+var addDays = (start, days, excludesWeekends) => {
+  let date4 = start;
+  let left = days;
+  while (left > 0) {
+    if (!(excludesWeekends && isWeekend(date4))) left -= 1;
+    date4 = new Date(date4.getTime() + DAY_MS);
+  }
+  return date4;
+};
+var attributeOf = (text2, name) => new RegExp(`\\b${name}:\\s*"([^"]*)"`).exec(text2)?.[1];
+var emptyState = () => ({
+  grid: {
+    title: void 0,
+    branches: [],
+    actors: [],
+    options: { excludesWeekends: false, todayMarker: true },
+    problems: []
+  },
+  items: [],
+  sections: [],
+  links: []
+});
+var addSection = (state, section) => {
+  const order = state.sections.length + 1;
+  state.sections.push({
+    order,
+    label: section.label,
+    members: [],
+    columns: void 0,
+    parentOrder: section.parentOrder,
+    width: section.width ?? 1,
+    after: state.items.length
+  });
+  return order;
+};
+var addItem = (state, item, member = true) => {
+  const draft = { ...item, order: state.items.length + 1 };
+  state.items.push(draft);
+  const section = state.sections[(item.sectionOrder ?? 0) - 1];
+  if (member && section) section.members.push(draft.order);
+  return draft;
+};
+var readGanttTask = (text2) => {
+  const match = /^(.+?)\s*:(.+)$/.exec(text2);
+  if (!match) return void 0;
+  const parts = (match[2] ?? "").split(",").map((part) => part.trim());
+  const tags = parts.filter((part) => GANTT_TAGS.has(part));
+  const rest2 = parts.filter((part) => !GANTT_TAGS.has(part));
+  if (rest2.length < 2 || rest2.length > 3) return void 0;
+  return {
+    label: (match[1] ?? "").trim(),
+    id: rest2.length === 3 ? rest2[0] : void 0,
+    tags,
+    start: rest2.at(-2) ?? "",
+    end: rest2.at(-1) ?? ""
+  };
+};
+var ganttStart = (start, ends) => start.startsWith("after ") ? ends.get(start.slice("after ".length).trim()) : toDate(start);
+var ganttEnd = (from, end, excludesWeekends) => {
+  const duration3 = DURATION_RE.exec(end);
+  if (duration3) return addDays(from, Number(duration3[1]), excludesWeekends);
+  const date4 = toDate(end);
+  return date4 === void 0 ? void 0 : new Date(date4.getTime() + DAY_MS);
+};
+var ganttSpan = (context, task) => {
+  const from = ganttStart(task.start, context.ends);
+  if (from === void 0) return void 0;
+  const to = ganttEnd(
+    from,
+    task.end,
+    context.state.grid.options.excludesWeekends
+  );
+  return to === void 0 ? void 0 : { from, to };
+};
+var addAfterLink = (context, link2) => {
+  if (!link2.start.startsWith("after ")) return;
+  const target = context.orders.get(link2.start.slice("after ".length).trim());
+  if (target !== void 0)
+    context.state.links.push({
+      from: target,
+      to: link2.order,
+      kind: "after",
+      label: void 0
+    });
+};
+var readGanttTaskLine = (context, line) => {
+  const { state } = context;
+  const task = readGanttTask(line.text);
+  const span = task === void 0 ? void 0 : ganttSpan(context, task);
+  if (task === void 0 || span === void 0) {
+    state.grid.problems.push(
+      unreadable(
+        line.index,
+        line.text,
+        "\u30BF\u30B9\u30AF\u306F `{\u540D\u524D} :{\u30BF\u30B0,}{ID,}{\u958B\u59CB},{\u7D42\u4E86\u304B\u671F\u9593}` \u3067\u8A18\u8F09\u3057\u3001\u958B\u59CB\u306F `YYYY-MM-DD` \u304B `after {ID}`\u3001\u7D42\u4E86\u306F `YYYY-MM-DD` \u304B `{\u6570}d` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return;
+  }
+  const item = addItem(state, {
+    id: task.id,
+    label: task.label,
+    shape: task.tags.includes("milestone") ? "milestone" : "bar",
+    sectionOrder: context.section,
+    parent: void 0,
+    detail: {
+      kind: "gantt",
+      start: dateText(span.from),
+      end: dateText(span.to),
+      tags: task.tags
+    }
+  });
+  if (task.id !== void 0) {
+    context.ends.set(task.id, span.to);
+    context.orders.set(task.id, item.order);
+  }
+  addAfterLink(context, { start: task.start, order: item.order });
+};
+var readGanttLine = (context, line) => {
+  const { text: text2 } = line;
+  const options = context.state.grid.options;
+  if (text2.startsWith("dateFormat "))
+    options.dateFormat = text2.slice(11).trim();
+  else if (text2.startsWith("axisFormat "))
+    options.axisFormat = text2.slice(11).trim();
+  else if (text2 === "excludes weekends") options.excludesWeekends = true;
+  else if (text2 === "todayMarker off") options.todayMarker = false;
+  else if (/^(excludes|includes|todayMarker|tickInterval|weekday)\b/.test(text2))
+    return;
+  else if (text2.startsWith("section "))
+    context.section = addSection(context.state, {
+      label: text2.slice(8).trim()
+    });
+  else readGanttTaskLine(context, line);
+};
+var addEvents = (context, labels) => {
+  const period = context.period;
+  if (!period) return;
+  for (const label of labels.filter((text2) => text2 !== "")) {
+    addItem(
+      context.state,
+      {
+        id: void 0,
+        label,
+        shape: "event",
+        sectionOrder: context.section,
+        parent: period.order,
+        detail: { kind: "timeline" }
+      },
+      false
+    );
+  }
+};
+var readTimelineLine = (context, line) => {
+  const { text: text2 } = line;
+  if (text2.startsWith("section ")) {
+    context.section = addSection(context.state, {
+      label: text2.slice(8).trim()
+    });
+    context.period = void 0;
+    return;
+  }
+  const parts = text2.split(/\s*:(?:\s+|$)/).map((part) => part.trim());
+  if (text2.startsWith(":")) {
+    if (context.period === void 0)
+      context.state.grid.problems.push(
+        unreadable(
+          line.index,
+          text2,
+          "\u51FA\u6765\u4E8B\u306E\u524D\u306B\u671F\u9593\u306E\u884C\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+        )
+      );
+    addEvents(
+      context,
+      text2.slice(1).split(/\s*:(?:\s+|$)/).map((part) => part.trim())
+    );
+    return;
+  }
+  context.period = addItem(context.state, {
+    id: void 0,
+    label: parts[0] ?? text2,
+    shape: "period",
+    sectionOrder: context.section,
+    parent: void 0,
+    detail: { kind: "timeline" }
+  });
+  addEvents(context, parts.slice(1));
+};
+var commitShape = (command, type) => {
+  if (command === "merge") return "merge";
+  if (command === "cherry-pick") return "cherryPick";
+  if (type === "HIGHLIGHT") return "highlight";
+  if (type === "REVERSE") return "reverse";
+  return "commit";
+};
+var addCommit = (context, commit) => {
+  const { state, current, text: text2 } = { ...context, text: commit.text };
+  const id = commit.command === "cherry-pick" ? attributeOf(text2, "commit") : attributeOf(text2, "id");
+  const type = /\btype:\s*(\w+)/.exec(text2)?.[1];
+  const item = addItem(state, {
+    id,
+    label: attributeOf(text2, "msg") ?? "",
+    shape: commitShape(commit.command, type),
+    sectionOrder: void 0,
+    parent: void 0,
+    detail: {
+      kind: "gitGraph",
+      branch: current,
+      tag: attributeOf(text2, "tag"),
+      source: commit.source
+    }
+  });
+  const parent = context.heads.get(current);
+  if (parent !== void 0)
+    state.links.push({
+      from: parent,
+      to: item.order,
+      kind: "parent",
+      label: void 0
+    });
+  if (commit.from !== void 0)
+    state.links.push({
+      from: commit.from,
+      to: item.order,
+      kind: commit.command === "merge" ? "merge" : "cherryPick",
+      label: void 0
+    });
+  context.heads.set(current, item.order);
+  if (id !== void 0) context.ids.set(id, item.order);
+};
+var readGitBranchLine = (context, words) => {
+  const { command, name } = words;
+  if (command === "branch" && name !== "") {
+    context.state.grid.branches.push(name);
+    context.heads.set(name, context.heads.get(context.current));
+    context.current = name;
+    return true;
+  }
+  if ((command === "checkout" || command === "switch") && context.heads.has(name)) {
+    context.current = name;
+    return true;
+  }
+  return false;
+};
+var readGitCommitLine = (context, words) => {
+  const { command, name, text: text2 } = words;
+  if (command === "commit") {
+    addCommit(context, { command, text: text2 });
+    return true;
+  }
+  if (command === "merge" && context.heads.has(name)) {
+    addCommit(context, { command, text: text2, from: context.heads.get(name) });
+    return true;
+  }
+  const source = attributeOf(text2, "id") ?? "";
+  if (command !== "cherry-pick" || !context.ids.has(source)) return false;
+  addCommit(context, { command, text: text2, from: context.ids.get(source), source });
+  return true;
+};
+var readGitLine = (context, line) => {
+  const { text: text2 } = line;
+  const [command = "", name = ""] = text2.split(/\s+/);
+  if (readGitBranchLine(context, { command, name }) || readGitCommitLine(context, { command, name, text: text2 }))
+    return;
+  context.state.grid.problems.push(
+    unreadable(
+      line.index,
+      text2,
+      '`commit`\u30FB`branch`\u30FB`checkout`\u30FB`merge {\u30D6\u30E9\u30F3\u30C1}`\u30FB`cherry-pick id: "{ID}"` \u306E\u884C\u306B\u3057\u3001\u30D6\u30E9\u30F3\u30C1\u3068 ID \u306F\u524D\u306E\u884C\u3067\u4F5C\u3063\u305F\u3082\u306E\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002'
+    )
+  );
+};
+var readJourneyLine = (context, line) => {
+  const { text: text2 } = line;
+  const { state } = context;
+  if (text2.startsWith("section ")) {
+    context.section = addSection(state, { label: text2.slice(8).trim() });
+    return;
+  }
+  const match = /^(.+?)\s*:\s*([1-5])\s*(?::\s*(.*))?$/.exec(text2);
+  if (!match) {
+    state.grid.problems.push(
+      unreadable(
+        line.index,
+        text2,
+        "\u30BF\u30B9\u30AF\u306F `{\u30BF\u30B9\u30AF\u540D}: {\u70B9\u6570 1\u301C5}: {\u4EBA}, {\u4EBA}` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return;
+  }
+  const actors = (match[3] ?? "").split(",").map((name) => name.trim()).filter((name) => name !== "");
+  for (const name of actors)
+    if (!state.grid.actors.includes(name)) state.grid.actors.push(name);
+  addItem(state, {
+    id: void 0,
+    label: (match[1] ?? "").trim(),
+    shape: "face",
+    sectionOrder: context.section,
+    parent: void 0,
+    detail: { kind: "journey", score: Number(match[2]), actors }
+  });
+};
+var BLOCK_SHAPES = [
+  ["cylinder", /^([\w-]+)\[\("(.*)"\)\]$/],
+  ["circle", /^([\w-]+)\(\("(.*)"\)\)$/],
+  ["square", /^([\w-]+)\["(.*)"\]$/],
+  ["rounded", /^([\w-]+)\("(.*)"\)$/],
+  ["square", /^([\w-]+)$/]
+];
+var BLOCK_TOKEN_RE = /[\w-]+(?:\[\(".*?"\)\]|\(\(".*?"\)\)|\[".*?"\]|\(".*?"\))?(?::\d+)?/g;
+var BLOCK_LINK_RE = /^([\w-]+)\s*(?:--\s*"([^"]*)"\s*)?-->\s*([\w-]+)$/;
+var readBlockToken = (context, token) => {
+  const [body = "", widthText] = token.split(/:(?=\d+$)/);
+  const width = Number(widthText ?? "1");
+  const section = context.stack.at(-1);
+  if (body === "space") {
+    addItem(context.state, {
+      id: void 0,
+      label: "",
+      shape: "space",
+      sectionOrder: section,
+      parent: void 0,
+      detail: { kind: "block", width }
+    });
+    return true;
+  }
+  for (const [shape, pattern] of BLOCK_SHAPES) {
+    const match = pattern.exec(body);
+    if (!match) continue;
+    addItem(context.state, {
+      id: match[1],
+      label: match[2] ?? match[1] ?? "",
+      shape,
+      sectionOrder: section,
+      parent: void 0,
+      detail: { kind: "block", width }
+    });
+    return true;
+  }
+  return false;
+};
+var readBlockStructureLine = (context, text2) => {
+  const { state } = context;
+  const parent = context.stack.at(-1);
+  const columns = /^columns\s+(\d+)$/.exec(text2);
+  if (columns) {
+    const section = state.sections[(parent ?? 0) - 1];
+    if (section) section.columns = Number(columns[1]);
+    else state.grid.options.columns = Number(columns[1]);
+    return true;
+  }
+  const nested = /^block:([\w-]+)(?::(\d+))?$/.exec(text2);
+  if (nested) {
+    context.stack.push(
+      addSection(state, {
+        label: nested[1] ?? "",
+        parentOrder: parent,
+        width: Number(nested[2] ?? "1")
+      })
+    );
+    return true;
+  }
+  if (text2 === "end" && parent !== void 0) {
+    context.stack.pop();
+    return true;
+  }
+  return false;
+};
+var readBlockLine = (context, line) => {
+  const { text: text2 } = line;
+  const link2 = BLOCK_LINK_RE.exec(text2);
+  if (readBlockStructureLine(context, text2)) return;
+  if (link2) {
+    context.state.links.push({
+      from: link2[1] ?? "",
+      to: link2[3] ?? "",
+      kind: "arrow",
+      label: link2[2]
+    });
+  } else if (!readBlockTokens(context, text2)) {
+    context.state.grid.problems.push(
+      unreadable(
+        line.index,
+        text2,
+        '`columns {\u6570}`\u30FB`{ID}["\u540D\u524D"]` \u306A\u3069\u306E\u30D6\u30ED\u30C3\u30AF\u30FB`space`\u30FB`block:{ID}` \u3068 `end`\u30FB`{ID} --> {ID}` \u306E\u884C\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002'
+      )
+    );
+  }
+};
+var readBlockTokens = (context, text2) => {
+  const tokens = text2.match(BLOCK_TOKEN_RE) ?? [];
+  if (tokens.join(" ").replace(/\s+/g, "") !== text2.replace(/\s+/g, ""))
+    return false;
+  return tokens.every((token) => readBlockToken(context, token));
+};
+var eachLine = (source, read, state) => {
+  const lines = source.split(/\r?\n/);
+  const firstIndex = lines.findIndex(
+    (raw) => raw.trim() !== "" && !raw.trim().startsWith("%%")
+  );
+  const firstWord = (lines[firstIndex] ?? "").trim().split(/\s+/, 1)[0] ?? "";
+  lines.forEach((raw, index) => {
+    const text2 = raw.trim();
+    if (index <= firstIndex || text2 === "" || text2.startsWith("%%")) return;
+    if (text2.startsWith("title ")) state.grid.title = text2.slice(6).trim();
+    else if (/^(accTitle|accDescr)\b/.test(text2)) return;
+    else read({ text: text2, index });
+  });
+  return firstWord;
+};
+var readKind = (kind, source, state) => {
+  switch (kind) {
+    case "gantt": {
+      const context = {
+        state,
+        section: void 0,
+        ends: /* @__PURE__ */ new Map(),
+        orders: /* @__PURE__ */ new Map()
+      };
+      return eachLine(source, (line) => readGanttLine(context, line), state);
+    }
+    case "timeline": {
+      const context = { state, section: void 0, period: void 0 };
+      return eachLine(source, (line) => readTimelineLine(context, line), state);
+    }
+    case "gitGraph": {
+      state.grid.branches.push("main");
+      const context = {
+        state,
+        current: "main",
+        heads: /* @__PURE__ */ new Map([["main", void 0]]),
+        ids: /* @__PURE__ */ new Map()
+      };
+      return eachLine(source, (line) => readGitLine(context, line), state);
+    }
+    case "journey": {
+      const context = { state, section: void 0 };
+      return eachLine(source, (line) => readJourneyLine(context, line), state);
+    }
+    case "block":
+      return readBlock(source, state);
+    default:
+      return assertNever2(kind);
+  }
+};
+var assertNever2 = (value) => {
+  throw new Error(`\u77E5\u3089\u306A\u3044\u7A2E\u985E: ${String(value)}`);
+};
+var readBlock = (source, state) => {
+  const context = { state, stack: [] };
+  const firstWord = eachLine(
+    source,
+    (line) => readBlockLine(context, line),
+    state
+  );
+  for (const order of context.stack) {
+    const section = state.sections[order - 1];
+    state.grid.problems.push({
+      kind: "map_invalid",
+      message: `\`block:${section?.label ?? ""}\` \u306B\u9589\u3058\u306E \`end\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u884C\u3067\u9589\u3058\u305F\u3082\u306E\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002\u5165\u308C\u5B50\u306E\u6700\u5F8C\u306B \`end\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  return firstWord;
+};
+var duplicatesOf = (values) => {
+  const seen = /* @__PURE__ */ new Set();
+  const twice = /* @__PURE__ */ new Set();
+  for (const value of values) {
+    if (seen.has(value)) twice.add(value);
+    seen.add(value);
+  }
+  return twice;
+};
+var keyOf = (item) => item.id ?? (item.label === "" ? `c${item.order}` : item.label);
+var finish = (kind, state, firstWord) => {
+  const unnamed = state.items.filter(
+    (item) => item.id === void 0 && item.label !== ""
+  );
+  const sameLabels = duplicatesOf(unnamed.map((item) => item.label));
+  const sameSections = duplicatesOf(
+    state.sections.map((section) => section.label)
+  );
+  const sectionKey = (order) => {
+    const section = state.sections[(order ?? 0) - 1];
+    if (!section) return void 0;
+    return sameSections.has(section.label) ? `s${section.order}` : section.label;
+  };
+  const items = state.items.map(({ sectionOrder, ...item }) => {
+    const key = keyOf({ ...item, sectionOrder });
+    const shared = item.id === void 0 && sameLabels.has(item.label);
+    return {
+      ...item,
+      section: sectionKey(sectionOrder),
+      key,
+      stateKey: shared ? `n${item.order}` : key
+    };
+  });
+  const sections = state.sections.map(
+    ({ parentOrder, ...section }) => ({
+      ...section,
+      stateKey: sectionKey(section.order) ?? section.label,
+      parent: sectionKey(parentOrder)
+    })
+  );
+  const stateKeyOf = (end) => typeof end === "number" ? items[end - 1]?.stateKey ?? "" : items.find((item) => item.id === end)?.stateKey ?? sections.find((section) => section.label === end)?.stateKey ?? end;
+  return {
+    ...state.grid,
+    kind,
+    firstWord,
+    items,
+    sections,
+    links: state.links.map((link2) => ({
+      ...link2,
+      from: stateKeyOf(link2.from),
+      to: stateKeyOf(link2.to)
+    })),
+    ambiguous: /* @__PURE__ */ new Set([...sameLabels, ...sameSections])
+  };
+};
+var parseAxisGrid = (options) => {
+  const state = emptyState();
+  const firstWord = readKind(options.kind, options.source, state);
+  return finish(options.kind, state, firstWord);
+};
+
+// src/map/axis-grid-layout.ts
+var AXIS_GRID_LAYOUT = {
+  nameColumn: 200,
+  step: 104,
+  day: 28,
+  row: 32,
+  cellWidth: 156,
+  rowGap: 36,
+  margin: 24,
+  gap: 16
+};
+var { nameColumn, step, day, row, cellWidth, rowGap, margin, gap } = AXIS_GRID_LAYOUT;
+var DAY_MS2 = 24 * 60 * 60 * 1e3;
+var DOT = row * 3 / 4;
+var SCALE_COLUMN = row * 1.5;
+var BLOCK_PAD = gap / 2;
 
 // src/map/layout.ts
 var MAP_LAYOUT = {
@@ -78429,17 +79027,25 @@ var decodeEntities = (text2) => text2.replace(/#([a-z]+|\d+);/g, (whole, name) =
   return NAMED_ENTITIES[name] ?? whole;
 });
 var LINK_NOT_ALLOWED = "\u30CE\u30FC\u30C9\u306E\u30EA\u30F3\u30AF\u5148\u306B\u4F7F\u7528\u3067\u304D\u306A\u3044\u3082\u306E\u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30EA\u30F3\u30AF\u5148\u306F http\u30FBhttps\u30FBmailto \u3068\u76F8\u5BFE\u30D1\u30B9\u3067\u3059\u3002\u3053\u306E\u30CE\u30FC\u30C9\u306F\u30EA\u30F3\u30AF\u306B\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002";
-var mapLinkProblems = (links) => {
+var LINK_NOT_ALLOWED_CHECK = "\u30CE\u30FC\u30C9\u306E\u30EA\u30F3\u30AF\u5148\u306B\u4F7F\u7528\u3067\u304D\u306A\u3044\u3082\u306E\u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30EA\u30F3\u30AF\u5148\u306F http\u30FBhttps\u30FBmailto\u30FB\u76F8\u5BFE\u30D1\u30B9\u3068 `id:` \u3067\u3059\u3002\u3053\u306E\u30CE\u30FC\u30C9\u306F\u30EA\u30F3\u30AF\u306B\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002";
+var mapLinkProblems = (options) => {
+  const { links, idLinks, lines } = options;
+  const notAllowed = idLinks.mode === "skip" ? LINK_NOT_ALLOWED_CHECK : LINK_NOT_ALLOWED;
   const allowed = {};
   const problems = [];
   for (const [id, href] of Object.entries(links)) {
-    if (isAllowedUrl(href)) {
-      allowed[id] = href;
+    let url2;
+    if (!href.startsWith("id:")) url2 = isAllowedUrl(href) ? href : void 0;
+    else if (idLinks.mode === "skip") continue;
+    else url2 = resolveIdHref({ href, resolveIdLink: idLinks.resolveIdLink });
+    if (url2 !== void 0) {
+      allowed[id] = url2;
       continue;
     }
     problems.push({
       kind: "map_invalid_value",
-      message: `${LINK_NOT_ALLOWED} ${id}: ${href}`
+      line: lines?.[id],
+      message: `${notAllowed} ${id}: ${href}`
     });
   }
   return { allowed, problems };
@@ -78586,7 +79192,7 @@ var toDirection = (value) => {
   if (value === "LR" || value === "RL") return "LR";
   return void 0;
 };
-var unreadable = (line, raw) => {
+var unreadable2 = (line, raw) => {
   const text2 = raw.trim();
   const hint = /(^|[^-<])->(?!>)/.test(text2) ? "\u77E2\u5370\u306F `-->` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002" : "Mermaid \u306E flowchart \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
   return {
@@ -78603,6 +79209,7 @@ var parseFlowchart = (source) => {
   const groups = [];
   const edges = [];
   const links = {};
+  const linkLines = {};
   const problems = [];
   const stack = [];
   const groupIds = /* @__PURE__ */ new Set();
@@ -78667,10 +79274,10 @@ var parseFlowchart = (source) => {
     const current = stack.at(-1);
     const value = toDirection(dir[1]);
     if (current && value) current.direction = value;
-    else problems.push(unreadable(at.line, at.raw));
+    else problems.push(unreadable2(at.line, at.raw));
     return true;
   };
-  const readClassOrClick = (text2) => {
+  const readClassOrClick = (text2, line) => {
     const classLine = /^class\s+([\w,\s]+?)\s+([\w-]+)$/.exec(text2);
     if (classLine?.[1] && classLine[2]) {
       for (const id of classLine[1].split(",").map((part) => part.trim()))
@@ -78680,6 +79287,7 @@ var parseFlowchart = (source) => {
     const click = CLICK_RE.exec(text2);
     if (click?.[1] && click[2] !== void 0) {
       links[click[1]] = click[2];
+      linkLines[click[1]] = line;
       return true;
     }
     return false;
@@ -78705,11 +79313,11 @@ var parseFlowchart = (source) => {
     const line = index + 1;
     const text2 = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
     if (text2 === "") return;
-    if (readSubgraph(text2) || readEnd(text2, line) || readDirection(text2, { line, raw }) || readClassOrClick(text2) || IGNORED_RE.test(text2))
+    if (readSubgraph(text2) || readEnd(text2, line) || readDirection(text2, { line, raw }) || readClassOrClick(text2, line) || IGNORED_RE.test(text2))
       return;
     const statement = readStatement(text2);
     if (!statement) {
-      problems.push(unreadable(line, raw));
+      problems.push(unreadable2(line, raw));
       return;
     }
     addStatement(statement);
@@ -78726,6 +79334,7 @@ var parseFlowchart = (source) => {
     groups,
     edges,
     links,
+    linkLines,
     problems
   };
 };
@@ -78761,7 +79370,7 @@ var TOGGLE_RE = new RegExp(`^(activate|deactivate)\\s+(${SEQ_ID})$`);
 var IGNORED_RE2 = new RegExp(
   `^(destroy\\s+${SEQ_ID}|links?\\s+${SEQ_ID}\\s*:.*|title\\b.*|accTitle\\b.*|accDescr\\b.*)$`
 );
-var unreadable2 = (line, raw) => ({
+var unreadable3 = (line, raw) => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E sequenceDiagram \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -78797,7 +79406,7 @@ var parseSequence = (source) => {
   const deactivate = (id, at, where) => {
     const start = active.get(id)?.pop();
     if (start === void 0) {
-      problems.push(unreadable2(where.line, where.raw));
+      problems.push(unreadable3(where.line, where.raw));
       return;
     }
     activations.push({
@@ -78808,7 +79417,7 @@ var parseSequence = (source) => {
     });
   };
   const fail = (where) => {
-    problems.push(unreadable2(where.line, where.raw));
+    problems.push(unreadable3(where.line, where.raw));
   };
   const readBox = (text2) => {
     const boxLine = /^box\b\s*(.*)$/.exec(text2);
@@ -79185,7 +79794,7 @@ var IGNORED_RE4 = /^(accTitle|accDescr|UpdateLayoutConfig|UpdateElementStyle|Upd
 var argumentsOf = (text2) => [...text2.matchAll(/"([^"]*)"|([^,\s][^,]*)/g)].map(
   (match) => (match[1] ?? match[2] ?? "").trim()
 );
-var unreadable3 = (line, raw) => ({
+var unreadable4 = (line, raw) => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E C4Context \u306E\u8A18\u6CD5\uFF08\`Person(\u2026)\`\u30FB\`System(\u2026)\`\u30FB\`Rel(\u2026)\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -79267,7 +79876,7 @@ var parseC4Context = (source) => {
     const text2 = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text2 === "" || IGNORED_RE4.test(text2)) continue;
     if (!readLine2(reading, text2, line))
-      reading.diagram.problems.push(unreadable3(line, raw));
+      reading.diagram.problems.push(unreadable4(line, raw));
   }
   for (const open2 of reading.stack)
     reading.diagram.problems.push({
@@ -79308,7 +79917,7 @@ var MEMBER_RE = new RegExp(`^(${ID2})\\s*:\\s*(.+)$`);
 var NOTE_RE2 = new RegExp(`^note\\s+for\\s+(${ID2})\\s+"([^"]*)"$`);
 var LINK_RE = /^(click|link)\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
 var IGNORED_RE5 = /^(direction|classDef|cssClass|style|click|callback|link|accTitle|accDescr|title)\b/;
-var unreadable4 = (line, raw) => ({
+var unreadable5 = (line, raw) => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E classDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30AF\u30E9\u30B9} <|-- {\u30AF\u30E9\u30B9}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -79479,7 +80088,7 @@ var parseClassDiagram = (source) => {
     }
     if (IGNORED_RE5.test(text2)) continue;
     if (!READERS.some((read) => read(reading, text2, line)))
-      problems.push(unreadable4(line, raw));
+      problems.push(unreadable5(line, raw));
   }
   problems.push(...unclosedProblems(reading));
   return {
@@ -79944,7 +80553,7 @@ var COLUMN_RE = /^(\S+)\s+(\S+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?(?:
 var RELATION_RE3 = new RegExp(
   `^(${NAME2})\\s+([|}o][|o])(--|\\.\\.)([|o][|{o])\\s+(${NAME2})\\s*:\\s*(?:"([^"]*)"|(.*))$`
 );
-var unreadable5 = (line, raw) => ({
+var unreadable6 = (line, raw) => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E erDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30C6\u30FC\u30D6\u30EB} ||--o{ {\u30C6\u30FC\u30D6\u30EB} : "{\u30E9\u30D9\u30EB}"\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -79980,7 +80589,7 @@ var readInTable = (current, at) => {
   if (at.text === "}") return void 0;
   const column = readColumn2(at.text);
   if (column) current.table.columns.push(column);
-  else at.problems.push(unreadable5(at.line, at.raw));
+  else at.problems.push(unreadable6(at.line, at.raw));
   return current;
 };
 var parseErDiagram = (source) => {
@@ -80010,7 +80619,7 @@ var parseErDiagram = (source) => {
     }
     const relation = readRelation3(text2);
     if (!relation) {
-      problems.push(unreadable5(line, raw));
+      problems.push(unreadable6(line, raw));
       continue;
     }
     tableOf(relation.from);
@@ -80136,7 +80745,7 @@ var MOVE_RE = new RegExp(
 );
 var IGNORED_RE6 = /^(classDef|class|style|accTitle|accDescr|title)\b/;
 var toDirection2 = (value) => value === "LR" || value === "RL" ? "LR" : "TB";
-var unreadable6 = (line, raw) => ({
+var unreadable7 = (line, raw) => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E stateDiagram-v2 \u306E\u8A18\u6CD5\uFF08\`{\u72B6\u614B} --> {\u72B6\u614B} : {\u30E9\u30D9\u30EB}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -80238,7 +80847,7 @@ var parseStateDiagram = (source) => {
     readOpen,
     (text2, line, raw) => {
       if (text2 !== "}") return false;
-      if (!stack.pop()) problems.push(unreadable6(line, raw));
+      if (!stack.pop()) problems.push(unreadable7(line, raw));
       return true;
     },
     readNote2,
@@ -80249,7 +80858,7 @@ var parseStateDiagram = (source) => {
     const text2 = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text2 === "" || IGNORED_RE6.test(text2)) continue;
     if (!readers.some((read) => read(text2, line, raw)))
-      problems.push(unreadable6(line, raw));
+      problems.push(unreadable7(line, raw));
   }
   for (const open2 of stack) {
     problems.push({
@@ -80278,7 +80887,12 @@ var REF_HINTS = {
   classDiagram: "\u30AF\u30E9\u30B9\u540D\u30FB`{\u30AF\u30E9\u30B9\u540D}.{\u30E1\u30F3\u30D0\u30FC\u540D}`\u30FB`namespace` \u306E ID\u30FB\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   architecture: "service\u30FBgroup\u30FBjunction \u306E ID \u304B\u3001\u7DDA\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   C4Context: "\u8981\u7D20\u30FB\u5883\u754C\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  mindmap: "\u9805\u76EE\u306E ID \u304B\u3001ID \u3092\u6301\u305F\u306A\u3044\u9805\u76EE\u306E\u8868\u793A\u3059\u308B\u6587\u5B57\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+  mindmap: "\u9805\u76EE\u306E ID \u304B\u3001ID \u3092\u6301\u305F\u306A\u3044\u9805\u76EE\u306E\u8868\u793A\u3059\u308B\u6587\u5B57\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  gantt: "\u30BF\u30B9\u30AF\u306E ID \u304B\u3001ID \u3092\u6301\u305F\u306A\u3044\u30BF\u30B9\u30AF\u306E\u540D\u524D\u304B\u3001section \u306E\u540D\u524D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  timeline: "\u671F\u9593\u304B\u51FA\u6765\u4E8B\u306E\u6587\u304B\u3001section \u306E\u540D\u524D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  gitGraph: "commit \u306E `id:` \u304B\u3001`id:` \u3092\u6301\u305F\u306A\u3044 commit \u306E `msg:` \u304B\u8A18\u8F09\u9806\u306E `c{\u756A\u53F7}` \u304B\u3001\u30D6\u30E9\u30F3\u30C1\u540D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  journey: "\u30BF\u30B9\u30AF\u540D\u304B\u3001section \u306E\u540D\u524D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  block: "\u30D6\u30ED\u30C3\u30AF\u306E ID \u304B\u3001\u5165\u308C\u5B50\u306E\u30D6\u30ED\u30C3\u30AF\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
 };
 var groupProblems = (data, tables, lineOf) => {
   const problems = [];
@@ -80328,10 +80942,15 @@ var emptyMermaidIds = (problems) => ({
   problems,
   linkProblems: []
 });
-var flowchartIds = (mermaid, line) => {
+var flowchartIds = (mermaid, line, idLinks) => {
   const chart = parseFlowchart(mermaid);
   const found = emptyMermaidIds(shiftProblems(chart.problems, line));
-  found.linkProblems.push(...mapLinkProblems(chart.links).problems);
+  found.linkProblems.push(
+    ...shiftProblems(
+      mapLinkProblems({ links: chart.links, idLinks, lines: chart.linkLines }).problems,
+      line
+    )
+  );
   for (const node2 of chart.nodes) {
     found.ids.add(node2.id);
     for (const name of node2.classes) found.classes.add(name);
@@ -80420,6 +81039,27 @@ var mindmapIds = (mermaid, line) => {
   found.ambiguous = mindmap.ambiguous;
   return found;
 };
+var AXIS_GRID_KINDS = /* @__PURE__ */ new Set([
+  "gantt",
+  "timeline",
+  "gitGraph",
+  "journey",
+  "block"
+]);
+var isAxisGridKind = (kind) => AXIS_GRID_KINDS.has(kind);
+var axisGridIds = (kind, mermaid, line) => {
+  const grid = parseAxisGrid({ kind, source: mermaid });
+  const found = emptyMermaidIds(shiftProblems(grid.problems, line));
+  for (const item of grid.items) {
+    found.ids.add(item.key);
+    if (kind === "gitGraph") found.ids.add(`c${item.order}`);
+  }
+  for (const section of grid.sections) found.ids.add(section.label);
+  for (const branch of grid.branches) found.ids.add(branch);
+  found.ambiguous = grid.ambiguous;
+  found.grid = grid;
+  return found;
+};
 var sequenceIds = (mermaid, line) => {
   const sequence = parseSequence(mermaid);
   const found = emptyMermaidIds(shiftProblems(sequence.problems, line));
@@ -80431,10 +81071,11 @@ var sequenceIds = (mermaid, line) => {
   return found;
 };
 var mermaidIdsOf = (kind, source) => {
-  const { mermaid, line, data } = source;
+  const { mermaid, line, data, idLinks } = source;
+  if (isAxisGridKind(kind)) return axisGridIds(kind, mermaid, line);
   switch (kind) {
     case "flowchart":
-      return flowchartIds(mermaid, line);
+      return flowchartIds(mermaid, line, idLinks);
     case "erDiagram":
       return erIds(mermaid, line, data);
     case "stateDiagram":
@@ -80489,24 +81130,53 @@ var checkLayout = (context) => {
     }
   }
 };
-var MINDMAP_LAYOUT_KEYS = /* @__PURE__ */ new Set(["color", "collapsed"]);
-var mindmapLayoutProblems = (context) => Object.entries(context.data.layout).flatMap(
+var COLOR_LAYOUT_KEYS = /* @__PURE__ */ new Set(["color", "collapsed"]);
+var COLOR_LAYOUT_KIND_NAMES = {
+  mindmap: "\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7",
+  gantt: "\u30AC\u30F3\u30C8\u30C1\u30E3\u30FC\u30C8",
+  timeline: "\u30BF\u30A4\u30E0\u30E9\u30A4\u30F3",
+  gitGraph: "Git \u30B0\u30E9\u30D5",
+  journey: "\u30B8\u30E3\u30FC\u30CB\u30FC",
+  block: "\u30D6\u30ED\u30C3\u30AF\u56F3"
+};
+var colorLayoutProblems = (context, name) => Object.entries(context.data.layout).flatMap(
   ([id, entry]) => Object.entries(entry).filter(
-    ([key, value]) => value !== void 0 && !MINDMAP_LAYOUT_KEYS.has(key)
+    ([key, value]) => value !== void 0 && !COLOR_LAYOUT_KEYS.has(key)
   ).map(([key]) => ({
     kind: "map_invalid_value",
     line: context.lineOf(`layout.${id}.${key}`),
-    message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7\u306B\u306F\u9069\u7528\u3057\u307E\u305B\u3093\u3002\u30DE\u30A4\u30F3\u30C9\u30DE\u30C3\u30D7\u306E \`layout\` \u306F \`color\` \u3068 \`collapsed\` \u3060\u3051\u3092\u9069\u7528\u3057\u307E\u3059\u3002\u4E26\u3073\u9806\u306F Mermaid \u306E\u884C\u306E\u9806\u3067\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+    message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F${name}\u306B\u306F\u9069\u7528\u3057\u307E\u305B\u3093\u3002${name}\u306E \`layout\` \u306F \`color\` \u3068 \`collapsed\` \u3060\u3051\u3092\u9069\u7528\u3057\u307E\u3059\u3002\u4E26\u3073\u9806\u306F Mermaid \u306E\u884C\u306E\u9806\u3067\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
   }))
 );
-var mindmapProblems = (context, focus) => [
-  ...mindmapLayoutProblems(context),
-  ...focus !== void 0 && context.found.ambiguous.has(focus) ? [ambiguousProblem("\u30DE\u30FC\u30AB\u30FC\u306E\u5F15\u6570\u306E `focus`", focus, void 0)] : []
-];
-var ambiguousProblem = (where, key, line) => ({
+var colorLayoutKindProblems = (context, focus) => {
+  const name = COLOR_LAYOUT_KIND_NAMES[context.kind];
+  if (name === void 0) return [];
+  return [
+    ...colorLayoutProblems(context, name),
+    ...focus !== void 0 && context.found.ambiguous.has(focus) ? [
+      ambiguousProblem(context.found, {
+        where: "\u30DE\u30FC\u30AB\u30FC\u306E\u5F15\u6570\u306E `focus`",
+        key: focus
+      })
+    ] : []
+  ];
+};
+var ambiguousHint = (found, key) => {
+  const grid = found.grid;
+  if (grid === void 0)
+    return `\u6307\u3059\u9805\u76EE\u306B ID\uFF08\`{ID}[${key}]\` \u306A\u3069\uFF09\u3092\u8A18\u8F09\u3057\u3001ID \u3067\u6307\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+  if (grid.sections.filter((section) => section.label === key).length > 1)
+    return "\u540C\u3058\u540D\u524D\u306E section \u306E\u540D\u524D\u3092\u5206\u3051\u3066\u304F\u3060\u3055\u3044\u3002";
+  if (grid.kind === "gitGraph")
+    return "\u6307\u3059 commit \u306B `id:` \u3092\u8A18\u8F09\u3057\u3001`id:` \u3067\u6307\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+  if (grid.kind === "gantt")
+    return "\u6307\u3059\u30BF\u30B9\u30AF\u306B ID \u3092\u8A18\u8F09\u3057\u3001ID \u3067\u6307\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+  return "\u540C\u3058\u540D\u524D\u306E\u9805\u76EE\u306E\u540D\u524D\u3092\u5206\u3051\u3066\u304F\u3060\u3055\u3044\u3002";
+};
+var ambiguousProblem = (found, ref) => ({
   kind: "map_ambiguous_ref",
-  line,
-  message: `${where} \u306E \`${key}\` \u306F\u3001ID \u3092\u6301\u305F\u306A\u3044 2 \u3064\u4EE5\u4E0A\u306E\u9805\u76EE\u306E\u8868\u793A\u3059\u308B\u6587\u5B57\u306E\u305F\u3081\u3001\u3069\u306E\u9805\u76EE\u306B\u3082\u9069\u7528\u3057\u307E\u305B\u3093\u3002\u6307\u3059\u9805\u76EE\u306B ID\uFF08\`{ID}[${key}]\` \u306A\u3069\uFF09\u3092\u8A18\u8F09\u3057\u3001ID \u3067\u6307\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  line: ref.line,
+  message: `${ref.where} \u306E \`${ref.key}\` \u306F\u3001ID \u3092\u6301\u305F\u306A\u3044 2 \u3064\u4EE5\u4E0A\u306E\u9805\u76EE\u306E\u8868\u793A\u3059\u308B\u6587\u5B57\u304B 2 \u3064\u4EE5\u4E0A\u306E section \u306E\u540D\u524D\u306E\u305F\u3081\u3001\u3069\u306E\u9805\u76EE\u306B\u3082\u9069\u7528\u3057\u307E\u305B\u3093\u3002${ambiguousHint(found, ref.key)}`
 });
 var edgeOnlyProblems = (item) => {
   const { id, entry, lineOf } = item;
@@ -80516,7 +81186,8 @@ var edgeOnlyProblems = (item) => {
     message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u7DDA\u306E ID \u306E\u3068\u304D\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002\`${id}\` \u306F\u30CE\u30FC\u30C9\u304B\u30B0\u30EB\u30FC\u30D7\u3067\u3059\u3002`
   }));
 };
-var collectMapProblems = (range, config3, includeUnknownKeys) => {
+var collectMapProblems = (range, config3, options) => {
+  const { includeUnknownKeys, idLinks } = options;
   const structure = collectMapStructure(range);
   if (structure.kind === void 0 || range.mermaid === void 0)
     return structure.problems;
@@ -80534,7 +81205,8 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
   const found = mermaidIdsOf(kind, {
     mermaid: range.mermaid,
     line: range.mermaidLine,
-    data
+    data,
+    idLinks
   });
   problems.push(
     ...found.problems,
@@ -80546,7 +81218,13 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
   };
   const ref = (path, id) => {
     if (id !== void 0 && found.ambiguous.has(id)) {
-      problems.push(ambiguousProblem(`\u88DC\u8DB3\u306E \`${path}\``, id, lineOf(path)));
+      problems.push(
+        ambiguousProblem(found, {
+          where: `\u88DC\u8DB3\u306E \`${path}\``,
+          key: id,
+          line: lineOf(path)
+        })
+      );
     } else if (id !== void 0 && !found.ids.has(id)) {
       problems.push({
         kind: "map_unknown_ref",
@@ -80569,14 +81247,13 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
   if (kind === "erDiagram")
     problems.push(...groupProblems(data, found.tables, lineOf));
   problems.push(...reservedIdProblems(context));
-  data.walkthroughs.forEach((step, index) => {
-    for (const id of step.nodes) ref(`walkthroughs[${index}].nodes`, id);
-    for (const id of step.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
-    ref(`walkthroughs[${index}].enter`, step.enter);
+  data.walkthroughs.forEach((step2, index) => {
+    for (const id of step2.nodes) ref(`walkthroughs[${index}].nodes`, id);
+    for (const id of step2.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
+    ref(`walkthroughs[${index}].enter`, step2.enter);
   });
   checkLayout(context);
-  if (kind === "mindmap")
-    problems.push(...mindmapProblems(context, structure.args.args.focus));
+  problems.push(...colorLayoutKindProblems(context, structure.args.args.focus));
   problems.push(...found.linkProblems);
   for (const name of found.classes) {
     if (!(name in config3.kinds)) {
@@ -80618,7 +81295,12 @@ var needsMermaidFallback = (options) => {
     return true;
   }
   const { data } = parseMapData(void 0);
-  return mermaidIdsOf(kind, { mermaid, line: void 0, data }).problems.length > 0;
+  return mermaidIdsOf(kind, {
+    mermaid,
+    line: void 0,
+    data,
+    idLinks: { mode: "skip" }
+  }).problems.length > 0;
 };
 
 // src/render/used.ts
@@ -81525,7 +82207,7 @@ function collectReferences(input) {
     backlinks[id] = [...sources];
   }
   const glossary = scanned.flatMap(
-    (item) => (item.parsed?.glossary ?? []).map((row) => row.entry)
+    (item) => (item.parsed?.glossary ?? []).map((row2) => row2.entry)
   );
   return { backlinks, glossary };
 }
@@ -81537,8 +82219,8 @@ import { parse as parse5, YAMLParseError as YAMLParseError3 } from "yaml";
 function isRecord7(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-function isReadRow(row, rowIds) {
-  return isRecord7(row) && row.enabled !== false && typeof row.id === "string" && row.id !== "" && Array.isArray(row.paths) && !rowIds.has(row.id);
+function isReadRow(row2, rowIds) {
+  return isRecord7(row2) && row2.enabled !== false && typeof row2.id === "string" && row2.id !== "" && Array.isArray(row2.paths) && !rowIds.has(row2.id);
 }
 async function filesOf(dir, patterns) {
   const files = [];
@@ -81582,12 +82264,12 @@ async function loadAliases(loaded) {
   const sources = [];
   const rowIds = /* @__PURE__ */ new Set();
   const matched = /* @__PURE__ */ new Set();
-  for (const [position, row] of rows.entries()) {
-    if (!isReadRow(row, rowIds)) {
+  for (const [position, row2] of rows.entries()) {
+    if (!isReadRow(row2, rowIds)) {
       continue;
     }
-    rowIds.add(row.id);
-    const patterns = row.paths.filter(
+    rowIds.add(row2.id);
+    const patterns = row2.paths.filter(
       (path) => typeof path === "string"
     );
     const files = await filesOf(loaded.dir, patterns);
@@ -81603,7 +82285,7 @@ async function loadAliases(loaded) {
     for (const file of files) {
       const absolute = join5(loaded.dir, file);
       matched.add(absolute);
-      const read = await readAliasFile({ absolute, file, rowId: row.id });
+      const read = await readAliasFile({ absolute, file, rowId: row2.id });
       if ("source" in read) {
         sources.push(read.source);
       } else {
@@ -81656,12 +82338,12 @@ function duplicateTerms(sites) {
 }
 function rowStarts(tokens) {
   const starts = /* @__PURE__ */ new Map();
-  let row;
+  let row2;
   for (const token of tokens) {
     if (token.type === "tr_open") {
-      row = token.map?.[0];
+      row2 = token.map?.[0];
     } else if (token.type === "inline") {
-      starts.set(token, row);
+      starts.set(token, row2);
     }
   }
   return starts;
@@ -82318,9 +83000,9 @@ async function readYamlKey(options) {
   for (const [position, part] of parts.entries()) {
     const walked = joinKeyPath(parts.slice(0, position));
     const parent = walked === "" ? "\u30D5\u30A1\u30A4\u30EB\u306E\u5148\u982D" : walked;
-    const step = stepKeyPath({ node: node2, part, names: { name, key, parent } });
-    node2 = step.node;
-    keyOffset = step.offset ?? keyOffset;
+    const step2 = stepKeyPath({ node: node2, part, names: { name, key, parent } });
+    node2 = step2.node;
+    keyOffset = step2.offset ?? keyOffset;
   }
   if (!isScalar(node2) || typeof node2.value !== "string") {
     throw new CliError(
@@ -82628,12 +83310,12 @@ function mapRowValues(value) {
   ]) {
     const rows = value[group];
     if (typeof rows !== "object" || rows === null) continue;
-    for (const [name, row] of Object.entries(rows)) {
-      if (typeof row !== "object" || row === null) continue;
+    for (const [name, row2] of Object.entries(rows)) {
+      if (typeof row2 !== "object" || row2 === null) continue;
       for (const key of keys)
         values.push({
           where: `map.${group}.${name}.${key}`,
-          item: row[key],
+          item: row2[key],
           allowed: MAP_ENUMS[key]
         });
     }
@@ -82904,7 +83586,7 @@ function checkMaps(documents, config3) {
       for (const problem of collectMapProblems(
         { ...range, annotationIds: annotations },
         config3.map,
-        true
+        { includeUnknownKeys: true, idLinks: { mode: "skip" } }
       )) {
         issues.push({
           file: document2.path,
@@ -83902,11 +84584,11 @@ var validateTemplatesIndex = (options) => {
   }
   const names2 = /* @__PURE__ */ new Set();
   const rows = value.templates;
-  for (const [position, row] of rows.entries()) {
-    if (names2.has(row.name)) {
-      return `${path} \u306E templates[${position}].name \u306E ${row.name} \u304C\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u540D\u524D\u3092\u5909\u3048\u308B\u304B\u3001\u884C\u3092 1 \u3064\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+  for (const [position, row2] of rows.entries()) {
+    if (names2.has(row2.name)) {
+      return `${path} \u306E templates[${position}].name \u306E ${row2.name} \u304C\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u540D\u524D\u3092\u5909\u3048\u308B\u304B\u3001\u884C\u3092 1 \u3064\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
     }
-    names2.add(row.name);
+    names2.add(row2.name);
   }
   return void 0;
 };
@@ -83940,16 +84622,16 @@ var readTemplatesIndex = async (dir) => {
   const index = raw;
   return {
     schema: TEMPLATES_SCHEMA_VERSION,
-    templates: index.templates.map((row) => ({ ...row, tags: row.tags ?? [] }))
+    templates: index.templates.map((row2) => ({ ...row2, tags: row2.tags ?? [] }))
   };
 };
 var listTemplates = async (dir) => {
   const index = await readTemplatesIndex(dir);
-  return index.templates.map((row) => ({
-    name: row.name,
-    description: row.description,
-    tags: row.tags,
-    path: join9(dir, row.file)
+  return index.templates.map((row2) => ({
+    name: row2.name,
+    description: row2.description,
+    tags: row2.tags,
+    path: join9(dir, row2.file)
   }));
 };
 var writeTemplatesIndex = async (options) => {
@@ -84001,16 +84683,16 @@ var addTemplate = async (options) => {
   }
   const run = async () => {
     const index = await readTemplatesIndex(dir);
-    const position = index.templates.findIndex((row2) => row2.name === name);
+    const position = index.templates.findIndex((row3) => row3.name === name);
     if (position !== -1 && !overwrite) {
       throw new CliError(
         `\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8 ${name} \u306F\u65E2\u306B\u3042\u308A\u307E\u3059\u3002\u7F6E\u304D\u63DB\u3048\u308B\u3068\u304D\u306F overwrite \u3092 true \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
       );
     }
     const file = `${name}.css`;
-    const row = { name, file, description, tags };
-    const templates = position === -1 ? [...index.templates, row] : index.templates.map(
-      (current, at) => at === position ? row : current
+    const row2 = { name, file, description, tags };
+    const templates = position === -1 ? [...index.templates, row2] : index.templates.map(
+      (current, at) => at === position ? row2 : current
     );
     const next = {
       schema: TEMPLATES_SCHEMA_VERSION,
@@ -84082,8 +84764,8 @@ var copyTemplateCss = async (options) => {
 var applyTemplate = async (options) => {
   const { dir, name, cwd, target, overwrite } = options;
   const index = await readTemplatesIndex(dir);
-  const row = index.templates.find((current) => current.name === name);
-  if (row === void 0) {
+  const row2 = index.templates.find((current) => current.name === name);
+  if (row2 === void 0) {
     throw new CliError(
       `\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8 ${name} \u304C\u3042\u308A\u307E\u305B\u3093\u3002list_templates \u3067\u540D\u524D\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
@@ -84095,7 +84777,7 @@ var applyTemplate = async (options) => {
   }
   const { config: config3, destination } = await findDestination({ cwd, target });
   const path = join9(destination, `${name}.css`);
-  const sourcePath = join9(dir, row.file);
+  const sourcePath = join9(dir, row2.file);
   const css = await readIfExists(sourcePath);
   if (css === void 0) {
     throw new CliError(
@@ -84848,9 +85530,9 @@ function changelogRows(options) {
     if (!line.trim().startsWith("|")) {
       break;
     }
-    const row = rowOf(line);
-    if (row && inRange(row.version, options)) {
-      rows.push(row);
+    const row2 = rowOf(line);
+    if (row2 && inRange(row2.version, options)) {
+      rows.push(row2);
     }
   }
   return rows;
@@ -85086,11 +85768,11 @@ async function readStepsFile(dir, label) {
   if (result.problems.length > 0) {
     return result;
   }
-  for (const [index, step] of result.steps.entries()) {
-    if (step.op !== "call") {
+  for (const [index, step2] of result.steps.entries()) {
+    if (step2.op !== "call") {
       continue;
     }
-    const script = resolve14(dir, step.script);
+    const script = resolve14(dir, step2.script);
     const path = relative11(dir, script);
     if (path.startsWith("..") || isAbsolute7(path)) {
       result.problems.push(
@@ -85098,7 +85780,7 @@ async function readStepsFile(dir, label) {
       );
     } else if (!await isFile3(script)) {
       result.problems.push(
-        `${label}: steps[${index}].script: ${step.script} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002`
+        `${label}: steps[${index}].script: ${step2.script} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002`
       );
     }
   }
@@ -85194,23 +85876,23 @@ function mapValues(doc, key, mapping) {
 function replaceMark(text2, from, to) {
   return text2.split(from).join(to);
 }
-function stepTouches(step) {
-  switch (step.op) {
+function stepTouches(step2) {
+  switch (step2.op) {
     case "replace_mark":
       return { index: false, documents: true };
     case "call":
       return {
-        index: step.files.includes("index"),
-        documents: step.files.includes("documents")
+        index: step2.files.includes("index"),
+        documents: step2.files.includes("documents")
       };
     default:
-      return { index: step.file === "index", documents: false };
+      return { index: step2.file === "index", documents: false };
   }
 }
 function stepFiles(versions, target) {
   const files = /* @__PURE__ */ new Set([target.configPath]);
-  for (const step of versions.flatMap(({ steps }) => steps)) {
-    const touches = stepTouches(step);
+  for (const step2 of versions.flatMap(({ steps }) => steps)) {
+    const touches = stepTouches(step2);
     if (touches.index && target.indexPath !== void 0) {
       files.add(target.indexPath);
     }
@@ -85237,18 +85919,18 @@ async function editYaml(path, edit) {
 function outputLines(output) {
   return typeof output === "string" ? output.split(/\r?\n/).filter((line) => line.trim() !== "") : [];
 }
-async function replaceDocumentMarks(step, documents) {
+async function replaceDocumentMarks(step2, documents) {
   for (const path of documents) {
     const text2 = await readFile13(path, "utf8");
-    const replaced2 = replaceMark(text2, step.from, step.to);
+    const replaced2 = replaceMark(text2, step2.from, step2.to);
     if (replaced2 !== text2) {
       await writeFile5(path, replaced2);
     }
   }
 }
 async function runCallStep(options) {
-  const { step, version: version2, target, onStderr } = options;
-  const script = resolve14(version2.dir, step.script);
+  const { step: step2, version: version2, target, onStderr } = options;
+  const script = resolve14(version2.dir, step2.script);
   try {
     const { stdout } = await execFileAsync2(
       process.execPath,
@@ -85259,41 +85941,41 @@ async function runCallStep(options) {
   } catch (error2) {
     onStderr(isRecord8(error2) ? outputLines(error2.stderr) : []);
     const code2 = isRecord8(error2) && typeof error2.code === "number" ? `\u7D42\u4E86\u30B3\u30FC\u30C9 ${error2.code} \u3067\u7D42\u308F\u308A\u307E\u3057\u305F` : reasonOf4(error2);
-    throw new Error(`\u30B9\u30AF\u30EA\u30D7\u30C8 ${step.script} \u304C${code2}`);
+    throw new Error(`\u30B9\u30AF\u30EA\u30D7\u30C8 ${step2.script} \u304C${code2}`);
   }
 }
-async function editStepYaml(step, target) {
-  const path = step.file === "config" ? target.configPath : target.indexPath;
+async function editStepYaml(step2, target) {
+  const path = step2.file === "config" ? target.configPath : target.indexPath;
   if (path === void 0) {
     return;
   }
   await editYaml(path, (doc) => {
-    switch (step.op) {
+    switch (step2.op) {
       case "rename_key":
-        return renameKey(doc, step.from, step.to);
+        return renameKey(doc, step2.from, step2.to);
       case "map_values":
-        return mapValues(doc, step.key, step.mapping);
+        return mapValues(doc, step2.key, step2.mapping);
       case "set_default": {
-        if (step.ask === void 0) {
-          return setDefault(doc, step.key, step.value);
+        if (step2.ask === void 0) {
+          return setDefault(doc, step2.key, step2.value);
         }
-        const answer = target.answers.get(step);
-        return answer === void 0 ? false : setDefault(doc, step.key, parse8(answer));
+        const answer = target.answers.get(step2);
+        return answer === void 0 ? false : setDefault(doc, step2.key, parse8(answer));
       }
     }
   });
 }
 async function applyStep(options) {
-  const { step, version: version2, target } = options;
+  const { step: step2, version: version2, target } = options;
   let stderrLines = [];
   try {
-    switch (step.op) {
+    switch (step2.op) {
       case "replace_mark":
-        await replaceDocumentMarks(step, target.documents);
+        await replaceDocumentMarks(step2, target.documents);
         return [];
       case "call":
         return await runCallStep({
-          step,
+          step: step2,
           version: version2,
           target,
           onStderr: (lines) => {
@@ -85301,13 +85983,13 @@ async function applyStep(options) {
           }
         });
       default:
-        await editStepYaml(step, target);
+        await editStepYaml(step2, target);
         return [];
     }
   } catch (error2) {
     throw new CliError(
       [
-        `${version2.version} \u306E\u624B\u9806\u300C${step.description}\u300D\u306B\u5931\u6557\u3057\u307E\u3057\u305F\uFF08${reasonOf4(error2)}\uFF09\u3002`,
+        `${version2.version} \u306E\u624B\u9806\u300C${step2.description}\u300D\u306B\u5931\u6557\u3057\u307E\u3057\u305F\uFF08${reasonOf4(error2)}\uFF09\u3002`,
         ...stderrLines
       ].join("\n")
     );
@@ -85405,9 +86087,9 @@ async function printPlan(options) {
       continue;
     }
     io.stdout(`${version2.version}:`);
-    for (const step of version2.steps) {
-      const mark = step.destructive === true ? "\uFF08\u58CA\u3059\u624B\u9806\uFF09" : "";
-      io.stdout(`  ${step.op}${mark}: ${step.description}`);
+    for (const step2 of version2.steps) {
+      const mark = step2.destructive === true ? "\uFF08\u58CA\u3059\u624B\u9806\uFF09" : "";
+      io.stdout(`  ${step2.op}${mark}: ${step2.description}`);
     }
   }
   let text2;
@@ -85421,38 +86103,38 @@ async function printPlan(options) {
   const rows = changelogRows({ text: text2, from, to });
   if (rows.length > 0) {
     io.stdout("\u5909\u66F4\u5C65\u6B74:");
-    for (const row of rows) {
-      io.stdout(`  ${row.version} ${row.pr} ${row.change}`);
+    for (const row2 of rows) {
+      io.stdout(`  ${row2.version} ${row2.pr} ${row2.change}`);
     }
   }
 }
 async function askValue(options) {
-  const { step, target, ask } = options;
-  if (step.op !== "set_default" || step.ask === void 0) {
+  const { step: step2, target, ask } = options;
+  if (step2.op !== "set_default" || step2.ask === void 0) {
     return;
   }
-  const path = step.file === "config" ? target.configPath : target.indexPath;
+  const path = step2.file === "config" ? target.configPath : target.indexPath;
   if (path === void 0) {
     return;
   }
   const doc = parseDocument5(await readFile14(path, "utf8"));
-  if (doc.hasIn(step.key.split("."))) {
+  if (doc.hasIn(step2.key.split("."))) {
     return;
   }
-  const answer = await askRequired(ask, step.ask);
+  const answer = await askRequired(ask, step2.ask);
   try {
     parse9(answer);
   } catch {
     throw new CliError(
-      `\u300C${step.ask}\u300D\u306E\u56DE\u7B54 ${answer} \u3092 YAML \u306E\u5024\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u4F55\u3082\u66F8\u304D\u63DB\u3048\u3066\u3044\u307E\u305B\u3093\u3002`
+      `\u300C${step2.ask}\u300D\u306E\u56DE\u7B54 ${answer} \u3092 YAML \u306E\u5024\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u4F55\u3082\u66F8\u304D\u63DB\u3048\u3066\u3044\u307E\u305B\u3093\u3002`
     );
   }
-  target.answers.set(step, answer);
+  target.answers.set(step2, answer);
 }
 async function askValues(options) {
   const { versions, target, ask } = options;
-  for (const step of versions.flatMap(({ steps }) => steps)) {
-    await askValue({ step, target, ask });
+  for (const step2 of versions.flatMap(({ steps }) => steps)) {
+    await askValue({ step: step2, target, ask });
   }
 }
 async function collectSettingsIssues(path) {
@@ -85497,13 +86179,13 @@ function settingsVersions(versions) {
   return versions.map((version2) => ({
     ...version2,
     steps: version2.steps.filter(
-      (step) => step.op === "call" ? step.files.length > 0 && step.files.every((file) => file === "config") : "file" in step && step.file === "config"
+      (step2) => step2.op === "call" ? step2.files.length > 0 && step2.files.every((file) => file === "config") : "file" in step2 && step2.file === "config"
     )
   }));
 }
 async function confirmDestructive(options) {
   const { steps, yes, ask } = options;
-  if (yes || !steps.some((step) => step.destructive === true)) {
+  if (yes || !steps.some((step2) => step2.destructive === true)) {
     return;
   }
   const answer = await askRequired(ask, CONFIRM_QUESTION);
@@ -85516,12 +86198,12 @@ async function confirmDestructive(options) {
 async function applyVersions(options) {
   const { versions, target, io } = options;
   for (const version2 of versions) {
-    for (const step of version2.steps) {
-      const lines = await applyStep({ step, version: version2, target });
+    for (const step2 of version2.steps) {
+      const lines = await applyStep({ step: step2, version: version2, target });
       if (lines.length === 0) {
         continue;
       }
-      io.stdout(`${version2.version} \u306E\u624B\u9806\u300C${step.description}\u300D:`);
+      io.stdout(`${version2.version} \u306E\u624B\u9806\u300C${step2.description}\u300D:`);
       for (const line of lines) {
         io.stdout(`  ${line}`);
       }

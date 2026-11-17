@@ -4,6 +4,7 @@ import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import { type ResolveIdLink } from "./sanitize.ts";
 import type { CollectedWarning } from "./syntax/warnings.ts";
 export type { CollectedWarning } from "./syntax/warnings.ts";
 /** 本文の HTML と、文書のマーカーで決まった機能のオン・オフ */
@@ -41,6 +42,8 @@ export declare function renderDocument(options: {
     includes?: Record<string, string> | undefined;
     /** まとめていない名前のアイコンの形状の表 */
     icons?: Record<string, MdmarkIconNode> | undefined;
+    /** `id:` で始まるリンク先を URL に変える関数 */
+    resolveIdLink?: ResolveIdLink | undefined;
 }): RenderedDocument;
 /** `render` と同じ設定の当て方で描き、描いたときに配置する記載の警告を HTML にせずに返却する */
 export declare function collectWarnings(markdown: string, opts?: {
@@ -59,4 +62,6 @@ export declare function render(markdown: string, opts?: {
     includes?: Record<string, string>;
     /** まとめていない名前のアイコンの形状の表。省くと、そのアイコンは中が空の要素にする */
     icons?: Record<string, MdmarkIconNode>;
+    /** `id:` で始まるリンク先（`id:` を含む値）を開く URL に変える関数。省くと、`id:` のリンク先を許可しないリンク先として扱う */
+    resolveIdLink?: ResolveIdLink;
 }): string;
