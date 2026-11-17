@@ -47,4 +47,10 @@
 
 ### 結合
 
-なし（結合テスト作成で記入する）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/1a96831993adc055b60a9106421ddca9f1352891/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_map_configured` | 変更 | ✅ | `test.only` で 10 回実行し、1.141.0 と stable（1.146.0）で 20 回 pass<br>`テスト結果/20261117103355_1a968319_結合テスト.log` |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/1a96831993adc055b60a9106421ddca9f1352891/vscode/tests/integration/preview-open.test.ts) | `test_normal`・`test_normal_when_version_pinned` | 変更 | ✅ | `test.only` で 10 回実行し、1.141.0 と stable（1.146.0）でそれぞれ 20 回 pass<br>`テスト結果/20261117103355_1a968319_結合テスト.log` |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/1a96831993adc055b60a9106421ddca9f1352891/vscode/tests/integration/preview-open.test.ts)・[vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/1a96831993adc055b60a9106421ddca9f1352891/vscode/tests/integration/preview-rerender.test.ts) | suite「プレビューを開く」「プレビューを再描画する」 | 実行のみ | ✅ | `suite.only` で 1 回実行し、1.141.0 と stable（1.146.0）でそれぞれ 36 件 pass<br>`テスト結果/20261117103355_1a968319_結合テスト.log` |
+
+lint は違反なし（`テスト結果/20261117103355_1a968319_lint.log`）。
