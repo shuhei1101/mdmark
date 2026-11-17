@@ -1,6 +1,10 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import {
+  createBrowserHolder,
+  expectCountBelowTitle,
+  pageOverflows,
+} from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -127,14 +131,16 @@ test("test_entered", async () => {
   expect(shown.sort()).toEqual(["api", "worker"].sort());
 });
 
-// group「アプリ」を閉じると、「service 2 件」を持つ 1 つのノードになる（GroupCollapsed）
+// group「アプリ」を閉じると、名前の行の下に「service 2 件」の行を持つ 1 つのノードになる（GroupCollapsed）
 test("test_group_collapsed", async () => {
   // 準備・実行
   const page = await openStory("group-collapsed");
   // 検証
-  await expect(
-    page.locator('.map-closed-group[data-group="app"]').innerText(),
-  ).resolves.toContain("service 2 件");
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="app"]',
+    "service 2 件",
+  );
 });
 
 // 「API サーバー」を選ぶと、つながる 3 本の線と相手のほかが薄い（ServiceSelected）

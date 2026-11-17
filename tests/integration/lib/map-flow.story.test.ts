@@ -3,6 +3,8 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import {
   contrastRatio,
   createBrowserHolder,
+  expectCountBelowTitle,
+  mapWireOverlaps,
   pageOverflows,
   resolveColorIn,
 } from "../story.ts";
@@ -133,7 +135,7 @@ test("test_entered", async () => {
   );
 });
 
-// グループを閉じると、開くボタンを持つ二重の枠線のノードにし、そこへの線を 1 本にまとめて本数とラベルを出さない（Collapsed）
+// グループを閉じると、開くボタンを持つ二重の枠線のノードにし、タイトルの行の下に数の行を重ねずに置き、そこへの線を 1 本にまとめて本数とラベルを出さない（Collapsed）
 test("test_collapsed", async () => {
   // 準備・実行
   const page = await openMap("collapsed");
@@ -147,6 +149,11 @@ test("test_collapsed", async () => {
   await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("false");
   await expect(toggle.getAttribute("aria-label")).resolves.toBe(
     "記法の読み取りを開く",
+  );
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="read"]',
+    "ノード 3 件",
   );
   for (const id of ["marker", "mermaid", "data"]) {
     await expect(
@@ -450,6 +457,21 @@ test("test_accessibility", async () => {
     "var(--mdmark-color-bg)",
   );
   expect(contrastRatio(border, background)).toBeGreaterThanOrEqual(3);
+});
+
+// 同じ列の 3 つのノードから別のグループへ出る 3 本の線は、同じ向きの区間が同じ直線の上で重ならない（ParallelWires）
+test("test_parallel_wires", async () => {
+  // 準備・実行
+  const page = await openMap("parallel-wires");
+  // 検証
+  const wires = await page
+    .locator(".map-wire-hits > .map-wire-hit[data-wire]")
+    .evaluateAll((paths) =>
+      paths.map((path) => path.getAttribute("data-wire") ?? ""),
+    );
+  expect(wires.sort()).toEqual(["a1->b3", "a2->b1", "a3->b2"]);
+  await expect(mapWireOverlaps(page)).resolves.toEqual([]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
 // 範囲の外の純粋な Mermaid の構成図は、種類を持たないノードの名前を上下の中央に描く（Plain）
