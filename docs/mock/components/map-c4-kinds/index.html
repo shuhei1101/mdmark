@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-c4-kinds（map の C4 のコンテナ図・コンポーネント図・動的図・配置図の状態） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.12.0/dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <!-- 列の行・開閉のボタン・説明のマーカー（#531 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/531/assets/er-state.css">
+  <!-- C4 図の要素・境界・外部の要素（#596 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/596/assets/class-arch-c4.css">
+  <!-- C4 の 4 種類に固有の規則（#660 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/660/assets/c4-kinds.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-c4-kinds
+  </nav>
+  <main class="map-catalog" id="catalog"><h1>map-c4-kinds</h1></main>
+  <script type="module">
+    import { createC4KindMap } from "../../refs/660/assets/c4-kinds.js";
+    import { COMPONENT, COMPONENT_DATA, CONTAINER, CONTAINER_DATA, DEPLOYMENT, DEPLOYMENT_DATA, DYNAMIC, DYNAMIC_DATA, UNREADABLE } from "../../refs/660/assets/samples.js";
+
+    /** 状態の見出し・補足・見本・初期状態 */
+    const STATES = [
+      ["コンテナ図（通常）", "要素は種類の行・名前・説明を持つ。種類の行は技術を持つ要素で [Container: 技術]。Container_Boundary は名前と［Container］のタイトルの破線の枠。外部の要素は灰色の面", CONTAINER, CONTAINER_DATA, {}],
+      ["コンテナ図（境界を閉じる）", "境界を 1 つのノードに閉じ、中への関係をまとめる", CONTAINER, CONTAINER_DATA, { collapsed: ["shop"] }],
+      ["コンポーネント図（通常）", "種類の行は [Component: 技術]。境界は Container_Boundary の破線の枠", COMPONENT, COMPONENT_DATA, {}],
+      ["動的図（通常）", "関係のラベルの前に記載の順の番号を出す。RelIndex(5, …) も第 1 引数によらず記載の順の 3", DYNAMIC, DYNAMIC_DATA, {}],
+      ["配置図（通常）", "配置先のノードは名前と種類（［AWS］など）のタイトルを持つ実線の枠で、入れ子の配置先のノードは外の中に描く。境界の破線と描き分ける", DEPLOYMENT, DEPLOYMENT_DATA, {}],
+      ["配置図（配置先のノードの中）", "配置先のノードの中だけを配置し直し、外を薄く残す", DEPLOYMENT, DEPLOYMENT_DATA, { enter: "region" }],
+      ["配置図（配置先のノードを閉じる）", "外の配置先のノードを閉じると、中の配置先のノードごと 1 つのノードになる", DEPLOYMENT, DEPLOYMENT_DATA, { collapsed: ["cloud"] }],
+      ["読めない行", "読めない行は描画を止めずに書き方の警告にし、読めた部分の図を描く（警告の文言は C4Context と同じ形）", UNREADABLE, { version: 1 }, {}],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (index, title, note, source, data, initial, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      createC4KindMap(host, { id: `c4k-${index}`, source, data }, initial);
+    };
+    STATES.forEach(([title, note, source, data, initial], index) => add(index, title, note, source, data, initial));
+    add(STATES.length, "狭い幅（390px）", "表示する枠の中で横にスクロールする", CONTAINER, CONTAINER_DATA, {}, true);
+  </script>
+</body>
+</html>
