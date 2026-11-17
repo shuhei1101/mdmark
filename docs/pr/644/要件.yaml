@@ -96,3 +96,6 @@ scope_out:
   - item: AI Monitor v0.5.0 の配布物への追従
     reason: 別の版の追従で、起点 Issue の範囲（v0.3.0..v0.4.0）に含まれない
     plan: '#625'
+  - item: ER-472-3・ER-472-6 の `relations[0]` に `from_column`・`to_column` が無い
+    reason: 規約『ドキュメント管理』の YAML の設計書（knowledge の Schema の検査に合格させる）から外れている。develop の時点からの違反で、今回の要望に含まれない
+    plan: '#646'
