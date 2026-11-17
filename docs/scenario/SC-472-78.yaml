@@ -488,8 +488,8 @@ scenarios:
   - name: 正常シナリオ（map の補足にずれがある）
     setup:
       - name: map の補足にずれを持つフォルダ
-        description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つ map の範囲 1 つと、ずれの無い map の範囲 1 つを記載したもの
-        notes: ずれは、Mermaid に無いノード・線の ID を指す `notes` のキー・知らないトップレベルのキー・`--` を含む `walkthroughs` の `text` の値・印の JSON のオブジェクトの知らないキーの 4 つ
+        description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つ map の範囲 1 つと、ずれの無い map の範囲 1 つを記載したもの。ずれの無い範囲の補足は、`--` の 2 つ目の `-` を JSON の Unicode エスケープで記載した `notes` の説明を持つ
+        notes: ずれは、Mermaid に無いノード・線の ID を指す `notes` のキー・知らないトップレベルのキー・HTML コメントの中にそのまま記載した `--` を含む `walkthroughs` の `text` の値・印の JSON のオブジェクトの知らないキーの 4 つ
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-

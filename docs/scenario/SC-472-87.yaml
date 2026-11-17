@@ -113,7 +113,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: ずれを持つ図の文書
         description: 正常シナリオの構成図の文書のうち、補足に 3 つのずれを持つもの。索引に文書を記載する
-        notes: Mermaid に無いノード・線の ID を指す `notes` のキー・知らないトップレベルのキー・`--` を含む `label` の値
+        notes: Mermaid に無いノード・線の ID を指す `notes` のキー・知らないトップレベルのキー・HTML コメントの中にそのまま記載した `--` を含む `label` の値
       - name: 修正した図の文書
         description: 1 回目の点検の後に、文書の作成者が 3 つのずれを手で修正したもの
       - name: Mock
