@@ -3350,7 +3350,9 @@ constraints:
     constraint: '`render` は色分けせず、色分けのライブラリを読み込まない（返却する HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"`（言語は制約『コードブロック』の `:` の前）を手掛かりに行う（文書に記載した生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: {"syntax": false} -->` を受け、返却する `features` に含める'
     notes: '`render` を同期のまま保ち、外部ライブラリのマーカーを `mount` だけが描く今の役割分担と統一する（要件.md の推奨案 A）。色分けの中身は docs/interface/IF-472-35.ts の制約『色分けの対象』〜『色分けを読み込めないとき』'
   - item: mermaid のコードブロック
-    constraint: '機能 `mermaid` がオンの文書で、情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、制約『コードブロック』のとおりのコードブロックに描き、囲む `div.mdmark-code` に属性 `data-mdmark-mermaid` を付ける。`render` は図にせず、mermaid を読み込まない。色分けの対象にしない（`data-mdmark-syntax` を付けない）。機能 `mermaid` は文書の `<!-- features: {"mermaid": false} -->` を受け、返却する `features` に含める'
+    constraint: '機能 `mermaid` がオンの文書で、情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、制約『コードブロック』のとおりのコードブロックに描き、囲む `div.mdmark-code` に属性 `data-mdmark-mermaid` を付ける。`render` は図にせず、mermaid を読み込まない。色分けの対象にしない（`data-mdmark-syntax` を付けない）。機能 `mermaid` は文書の `<!-- features: {"mermaid": false} -->` を受け、返却する `features` に含める。
+
+      機能 `map` がオンで、ソースの front matter（先頭の `---` で囲んだ行）の後ろの最初の単語が制約『map の範囲』の図の種類のコードブロックは、この制約の対象にせず、制約『map の範囲』の「範囲の外の map の図」にする（機能 `mermaid` がオフのときは、どちらにもしない）'
     notes: 図にするのは `mount`（文書を描く.ts の制約『mermaid の対象』〜『mermaid を読み込めないとき』）。JavaScript が動かない場所でもソースがコードブロックとして読み込める
   - item: 色の名前
     constraint: 色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に記載した色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を当てずに制約「作成者の誤り」と同じ記載の警告を配置し、本文に記載した名前と色の名前の一覧を出す
@@ -3641,6 +3643,8 @@ constraints:
       `render` は配置と図を描かない（図にするのは `mount`。文書を描く.ts の制約『map の図』）。
 
       範囲の中の mermaid のブロックは、制約『mermaid のコードブロック』の対象にしない。
+
+      範囲の外の map の図: 制約『mermaid のコードブロック』から回ったコードブロックも、補足を持たない範囲として同じ `div.mdmark-map` にし、属性 `data-map-plain` を付ける。図の番号は範囲と通しで数える。`data-map-args` は `title` だけを持ち、値は front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（文書を描く.ts の制約『mermaid の描き方』の対応）にする。中のコードブロックのソースから front matter を除く。範囲の中で `title` の引数を持たない図は、タイトルを空にする
 
       機能 `map` は文書の `<!-- features: {"map": false} -->` を受け、返却する `features` に含める'
     notes: 印の引数（`title`・`focus`・`play`・`interval`・`collapse`）の構成は shuhei1101/mdmark#451 の資料 A-128 のとおりで、意味は文書を描く.ts の制約『map の印の引数』。補足の構造は ER 図『mapの補足』
