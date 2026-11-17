@@ -7,7 +7,8 @@ from pathlib import Path
 
 ER_DIR = Path("docs/er")
 DATA_DIR = Path("docs/data")
-DEV_DOCS = Path("dev-docs.yaml")
+# mdmark は配信元の定義を project-index.yaml に改名している
+DEV_DOCS = Path("project-index.yaml")
 DATA_ROW = """  - id: data
     title: データ
     paths: ["docs/data/**/*.yaml"]

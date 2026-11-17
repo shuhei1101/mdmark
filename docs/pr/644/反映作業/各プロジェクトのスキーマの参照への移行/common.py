@@ -4,7 +4,8 @@ import re
 import sys
 from pathlib import Path
 
-REF = "design-schemas/v8.1.0"
+# mdmark の project-index.yaml のほかの設計書の行が指す版に揃える
+REF = "design-schemas/v8.4.0"
 SOURCE = "knowledge"
 # AI Monitor から配ったスキーマのコピーの名前 → knowledge のスキーマのパス（None は参照の行を持たない）
 COPIES = {
@@ -49,6 +50,18 @@ COPIES = {
 # コピーを置くフォルダ（`docs/` へ移したリポジトリと、`dev/` が残るリポジトリ）
 COPY_DIRS = ("schemas", "dev/テンプレート")
 SCHEMA_LINE = re.compile(r"^(?P<indent>\s*)schema: (?P<path>(?:schemas|dev/テンプレート)/(?P<name>[^/\s]+)\.schema\.yaml)\s*$")
+
+
+# mdmark は配信元の定義を project-index.yaml に改名している
+CONFIG_NAMES = ("project-index.yaml", "dev-docs.yaml")
+
+
+def config_path(root):
+    """配信元の定義のファイルを返す（どちらも無ければ先頭の名前のパス）。"""
+    for name in CONFIG_NAMES:
+        if (root / name).is_file():
+            return root / name
+    return root / CONFIG_NAMES[0]
 
 
 def parse_args(argv):

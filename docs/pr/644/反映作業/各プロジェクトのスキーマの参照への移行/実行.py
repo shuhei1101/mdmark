@@ -7,13 +7,13 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import copies, fail, parse_args, rewrite  # noqa: E402
+from common import config_path, copies, fail, parse_args, rewrite  # noqa: E402
 
 args = parse_args(sys.argv[1:])
 if args is None:
     fail("前提確認", "引数は {配布先のリポジトリの直下} [--dry-run] だけを受け付けます")
 root, dry_run = args
-config = root / "dev-docs.yaml"
+config = config_path(root)
 if not config.is_file():
     fail("前提確認", f"{config} がありません")
 print("前提確認: ok")
@@ -39,7 +39,7 @@ if dry_run:
 import yaml  # noqa: E402
 
 work = Path(tempfile.mkdtemp(prefix="schema-migration-"))
-staged = work / "dev-docs.yaml"
+staged = work / config.name
 staged.write_text(new_text, encoding="utf-8")
 try:
     before = yaml.safe_load(text) or {}
@@ -51,7 +51,7 @@ if len(before.get("documents") or []) != len(after.get("documents") or []):
 print("検証: ok")
 backup = work / "backup"
 backup.mkdir()
-shutil.copy2(config, backup / "dev-docs.yaml")
+shutil.copy2(config, backup / config.name)
 for path in targets:
     shutil.copy2(path, backup / path.name)
 print(f"退避: ok（{backup}）")

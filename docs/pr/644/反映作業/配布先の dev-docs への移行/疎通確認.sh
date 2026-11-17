@@ -7,7 +7,7 @@ if [ -z "$REPO" ] || ! git -C "$REPO" rev-parse --show-toplevel >/dev/null 2>&1;
   exit 1
 fi
 echo "対象のリポジトリ: ok"
-if [ -r "$HOME/.config/dev-docs/settings.yaml" ]; then
+if [ -r "$HOME/.config/project-index/settings.yaml" ] || [ -r "$HOME/.config/dev-docs/settings.yaml" ]; then
   echo "dev-docs の端末の設定: ok"
 else
   echo "dev-docs の端末の設定: failed"

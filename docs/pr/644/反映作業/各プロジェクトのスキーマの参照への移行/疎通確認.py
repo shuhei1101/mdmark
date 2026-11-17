@@ -5,14 +5,14 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import REF, fail, knowledge_clone, parse_args  # noqa: E402
+from common import REF, config_path, fail, knowledge_clone, parse_args  # noqa: E402
 
 args = parse_args(sys.argv[1:])
 if args is None:
     fail("前提確認", "第 1 引数に配布先のリポジトリの直下を渡してください")
 root, _ = args
-if not (root / "dev-docs.yaml").is_file():
-    fail("dev-docs.yaml", f"{root / 'dev-docs.yaml'} がありません")
+if not config_path(root).is_file():
+    fail("dev-docs.yaml", f"{config_path(root)} がありません")
 print("dev-docs.yaml: ok")
 # knowledge のクローンは、AI Monitor と同じく端末の project-index の設定から引く
 knowledge = knowledge_clone()

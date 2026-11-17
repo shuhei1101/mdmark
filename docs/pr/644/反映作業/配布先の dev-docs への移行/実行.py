@@ -1,6 +1,7 @@
 """配布先が dev-docs の配信元として登録され、共通設定に撤去した設計書のツールが残っていないことを確かめる。
 
 配信元の dev-docs.yaml と端末の設定への登録は、`/dev-docs:setup {配布先のパス}` が判断を伴って作るため、無ければ failed で止める。
+mdmark では配信元の定義を project-index.yaml に改名し、project-index の端末の設定に登録しているため、両方の名前と設定を受け付ける。
 """
 
 import subprocess
@@ -9,7 +10,8 @@ from pathlib import Path
 
 import yaml
 
-DEV_DOCS_SETTINGS = Path.home() / ".config/dev-docs/settings.yaml"
+SETTINGS = (Path.home() / ".config/project-index/settings.yaml", Path.home() / ".config/dev-docs/settings.yaml")
+CONFIG_NAMES = ("project-index.yaml", "dev-docs.yaml")
 AI_MONITOR_SETTINGS = Path.home() / ".config/ai-monitor/settings.yaml"
 REMOVED_TOOLS = (
     "search_design_docs",
@@ -40,15 +42,21 @@ def main() -> int:
 
     # 計画（--dry-run もここを通る。このスクリプトは書き換えないため適用は無い）
     status = 0
-    if (repo / "dev-docs.yaml").is_file():
-        print("dev-docs.yaml: ok")
+    found = [name for name in CONFIG_NAMES if (repo / name).is_file()]
+    if found:
+        print(f"{found[0]}: ok")
     else:
         print(f"dev-docs.yaml: failed（/dev-docs:setup {repo} で作る）")
         status = 1
-    sources = yaml.safe_load(DEV_DOCS_SETTINGS.read_text(encoding="utf-8"))["sources"]
     root = repo.parent.parent.parent if repo.parent.name == "worktrees" else repo
-    configs = [Path(source["config"]) for source in sources]
-    if any(config.is_relative_to(root) and config.name == "dev-docs.yaml" for config in configs):
+    configs = []
+    for settings in SETTINGS:
+        if not settings.is_file():
+            continue
+        for source in yaml.safe_load(settings.read_text(encoding="utf-8")).get("sources") or []:
+            values = source.get("config") or []
+            configs += [Path(value) for value in ([values] if isinstance(values, str) else values)]
+    if any(config.is_relative_to(root) and config.name in CONFIG_NAMES for config in configs):
         print("配信元の登録: ok")
     else:
         print(f"配信元の登録: failed（/dev-docs:setup {repo} で登録する）")

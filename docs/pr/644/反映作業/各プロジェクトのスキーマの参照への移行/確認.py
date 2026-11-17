@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import SCHEMA_LINE, COPIES, copies, fail, parse_args  # noqa: E402
+from common import SCHEMA_LINE, COPIES, config_path, copies, fail, parse_args  # noqa: E402
 
 args = parse_args(sys.argv[1:])
 if args is None:
@@ -12,7 +12,7 @@ if args is None:
 root, _ = args
 remaining = [
     line.strip()
-    for line in (root / "dev-docs.yaml").read_text(encoding="utf-8").splitlines()
+    for line in config_path(root).read_text(encoding="utf-8").splitlines()
     if (m := SCHEMA_LINE.match(line)) and COPIES.get(m.group("name"))
 ]
 if remaining:
