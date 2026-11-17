@@ -1,176 +1,100 @@
-// #660 のモックの案内・再生の帯: 手順のバー・この手順を再生・全て再生・速度を持つ帯の HTML と、帯で動かす実演の図
+// #660 のモックの案内・再生の帯: 手順のバーと、手順のタイトル・説明の文だけを持つ帯の HTML と、帯で動かす実演の図
+// 区切りを押すとその手順を 1 回再生し、もう一度押すと再生し直す。バー以外（帯の中・図の空いた場所）を押すと停止する
 
-/** lucide のアイコン（chevron-left・square・play・list-video・pause・chevron-right） */
-const ICONS = {
-  prev: '<path d="m15 18-6-6 6-6"/>',
-  stop: '<rect width="14" height="14" x="5" y="5" rx="2"/>',
-  one: '<polygon points="6 3 20 12 6 21 6 3"/>',
-  all: '<path d="M12 12H3"/><path d="M16 6H3"/><path d="M12 18H3"/><path d="m16 12 5 3-5 3v-6Z"/>',
-  pause: '<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>',
-  next: '<path d="m9 18 6-6-6-6"/>',
-};
-const svg = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+/** 単位ごとの名前（バーの読み上げの名前に使用する） */
+const UNITS = { walkthrough: "手順", message: "メッセージ", transition: "遷移", task: "タスク", commit: "commit" };
 
-/** 単位ごとのボタンの名前（今の帯の名前を引き継ぐ） */
-const UNITS = {
-  walkthrough: { name: "手順", stop: "案内をやめる" },
-  message: { name: "メッセージ", stop: "再生をやめる" },
-  transition: { name: "遷移", stop: "再生をやめる" },
-  task: { name: "タスク", stop: "再生をやめる" },
-  commit: { name: "commit", stop: "再生をやめる" },
-};
-
-export const SPEEDS = [0.5, 1, 2];
+/** 1 つの手順を再生する時間（ミリ秒）。マーカーの引数 interval は廃止し、固定にする */
+export const STEP_MS = 2000;
 
 const escape = (text) => String(text).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 /**
  * 帯の HTML
- * state: { unit, total, index, title, text, titles, playing: "none" | "one" | "all", speed, speedUi: "radio" | "select", segUi: "slider" | "buttons", fill, label }
+ * state: { unit, total, index, title, text, titles, playing, fill, label }
  */
 export const renderBand = (state) => {
   const unit = UNITS[state.unit ?? "walkthrough"];
   const index = state.index;
   const started = index !== undefined;
-  const tool = (action, label, icon, extra = "") =>
-    `<button class="pb-tool" type="button" data-band="${action}" aria-label="${label}" title="${label}"${extra}>${svg(icon)}</button>`;
-  const playingAll = state.playing === "all";
-  const speed = state.speed ?? 1;
-  const speedUi =
-    state.speedUi === "select"
-      ? `<select class="pb-speed-select" data-band="speed" aria-label="再生の速度" title="再生の速度">${SPEEDS.map((value) => `<option value="${value}"${value === speed ? " selected" : ""}>${value} 倍</option>`).join("")}</select>`
-      : `<div class="pb-speed" role="radiogroup" aria-label="再生の速度">${SPEEDS.map((value) => `<button type="button" role="radio" data-band="speed" data-speed="${value}" aria-checked="${value === speed}" tabindex="${value === speed ? 0 : -1}" title="${value} 倍">${value}×</button>`).join("")}</div>`;
-  const actions = [
-    tool("prev", `前の${unit.name}`, "prev"),
-    tool("stop", unit.stop, "stop", started ? "" : " disabled"),
-    tool("one", `この${unit.name}を再生`, "one", ` aria-pressed="${state.playing === "one"}"`),
-    tool("all", playingAll ? "一時停止" : "全て再生", playingAll ? "pause" : "all", ` aria-pressed="${playingAll}"`),
-    tool("next", `次の${unit.name}`, "next"),
-    '<span class="pb-sep" aria-hidden="true"></span>',
-    speedUi,
-  ].join("");
   const titles = state.titles ?? [];
-  const segClass = (i) => ["pb-seg", started && i < index ? "is-done" : "", i === index ? "is-current" : ""].filter(Boolean).join(" ");
+  const segClass = (i) => ["pb-seg", started && i < index ? "is-done" : "", i === index ? "is-current" : "", i === index && state.playing ? "is-playing" : ""].filter(Boolean).join(" ");
   const fill = (i) => (i === index ? `<span class="pb-fill" style="width:${Math.round((state.fill ?? 0) * 100)}%"></span>` : "");
-  const steps =
-    state.segUi === "buttons"
-      ? `<div class="pb-steps" role="toolbar" aria-label="${unit.name}の一覧">${Array.from({ length: state.total }, (_, i) => `<button type="button" class="${segClass(i)}" data-band="seg" data-index="${i}" tabindex="${i === (index ?? 0) ? 0 : -1}" aria-label="${unit.name} ${i + 1}: ${escape(titles[i] ?? "")}"${i === index ? ' aria-current="step"' : ""} title="${i + 1}. ${escape(titles[i] ?? "")}"></button>`).join("")}</div>`
-      : `<div class="pb-steps" role="slider" tabindex="0" data-band="steps" aria-label="${unit.name}" aria-valuemin="0" aria-valuemax="${state.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${started ? `${index + 1}/${state.total} ${escape(titles[index] ?? "")}` : "始める前"}">${Array.from({ length: state.total }, (_, i) => `<span class="${segClass(i)}" title="${i + 1}. ${escape(titles[i] ?? "")}">${fill(i)}</span>`).join("")}</div>`;
-  const count = `${started ? index + 1 : "–"}/${state.total}`;
+  const steps = `<div class="pb-steps" role="slider" tabindex="0" data-band="steps" aria-label="${unit}" aria-valuemin="0" aria-valuemax="${state.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${started ? `${unit} ${index + 1}/${state.total} ${escape(titles[index] ?? "")}` : "始める前"}" aria-keyshortcuts="ArrowLeft ArrowRight Escape">${Array.from({ length: state.total }, (_, i) => `<span class="${segClass(i)}" title="${i + 1}. ${escape(titles[i] ?? "")}">${fill(i)}</span>`).join("")}</div>`;
   const title = `<strong class="pb-title"${state.title ? "" : " hidden"}>${escape(state.title ?? "")}</strong>`;
   const text = `<p class="pb-text" aria-live="polite"${state.text ? "" : " hidden"}>${escape(state.text ?? "")}</p>`;
-  return `<div class="pb-band" role="region" aria-label="${escape(state.label ?? "図の案内")}"><div class="pb-head"><span class="pb-count">${count}</span>${title}<div class="pb-actions">${actions}</div></div>${steps}${text}</div>`;
+  return `<div class="pb-band" role="region" aria-label="${escape(state.label ?? "図の案内")}">${steps}${title}${text}</div>`;
 };
 
-/** 帯を描き、押した操作で手順を進める。figure は手順の移動で呼ぶ（無ければ帯だけ） */
+/** 帯を描き、押した区切りの手順を再生する。figure は手順の移動と停止で呼ぶ（無ければ帯だけ） */
 export const createBand = (host, options, figure) => {
-  const state = { playing: "none", speed: 1, fill: 0, ...options };
+  const state = { playing: false, fill: 0, ...options };
   const steps = options.steps;
   state.total = steps.length;
   state.titles = steps.map((step) => step.title);
   let timer;
   let started = 0;
-  const duration = () => (options.interval ?? 2) * 1000 / state.speed;
   const draw = () => {
-    const focused = host.contains(document.activeElement) ? document.activeElement.dataset : undefined;
+    const focused = host.contains(document.activeElement);
     const step = state.index === undefined ? undefined : steps[state.index];
     host.innerHTML = renderBand({ ...state, title: step?.title, text: step?.text });
-    if (focused) host.querySelector(`[data-band="${focused.band}"]${focused.index ? `[data-index="${focused.index}"]` : ""}${focused.speed ? `[data-speed="${focused.speed}"]` : ""}`)?.focus();
-  };
-  const go = (index) => {
-    state.index = (index + state.total) % state.total;
-    state.fill = 0;
-    started = performance.now();
-    figure?.show(steps[state.index]);
-    draw();
+    if (focused) host.querySelector(".pb-steps")?.focus();
   };
   const tick = () => {
-    if (state.playing === "none") return;
-    state.fill = Math.min(1, (performance.now() - started) / duration());
+    state.fill = Math.min(1, (performance.now() - started) / STEP_MS);
     const fillEl = host.querySelector(".pb-fill");
     if (fillEl) fillEl.style.width = `${Math.round(state.fill * 100)}%`;
     if (state.fill >= 1) {
-      if (state.playing === "one") {
-        state.playing = "none";
-        draw();
-        return;
-      }
-      go(state.index + 1);
-    }
-    timer = requestAnimationFrame(tick);
-  };
-  const play = (kind) => {
-    cancelAnimationFrame(timer);
-    if (state.playing === kind) {
-      state.playing = "none";
+      state.playing = false;
       draw();
       return;
     }
-    state.playing = kind;
-    if (state.index === undefined) go(0);
-    else {
-      started = performance.now() - state.fill * duration();
-      if (state.fill >= 1) go(state.index);
-      figure?.show(steps[state.index]);
-    }
+    timer = requestAnimationFrame(tick);
+  };
+  /** その手順を最初から 1 回再生する（再生中の手順でも最初から） */
+  const play = (index) => {
+    cancelAnimationFrame(timer);
+    state.index = (index + state.total) % state.total;
+    state.fill = 0;
+    state.playing = true;
+    started = performance.now();
+    figure?.resume();
+    figure?.show(steps[state.index]);
     draw();
     timer = requestAnimationFrame(tick);
   };
+  const stop = () => {
+    if (state.index === undefined) return;
+    cancelAnimationFrame(timer);
+    Object.assign(state, { index: undefined, playing: false, fill: 0 });
+    figure?.reset();
+    draw();
+  };
   host.addEventListener("click", (event) => {
-    const target = event.target.closest("[data-band]");
-    if (!target) return;
-    const action = target.dataset.band;
-    figure?.resume();
-    if (action === "prev") go((state.index ?? 0) - 1);
-    if (action === "next") go(state.index === undefined ? 0 : state.index + 1);
-    if (action === "stop") {
-      cancelAnimationFrame(timer);
-      Object.assign(state, { index: undefined, playing: "none", fill: 0 });
-      figure?.reset();
-      draw();
+    const bar = event.target.closest(".pb-steps");
+    if (!bar) {
+      stop();
+      return;
     }
-    if (action === "one") play("one");
-    if (action === "all") play("all");
-    if (action === "seg") go(Number(target.dataset.index));
-    if (action === "steps") {
-      const rect = target.getBoundingClientRect();
-      go(Math.min(state.total - 1, Math.floor(((event.clientX - rect.left) / rect.width) * state.total)));
-    }
-    if (action === "speed" && target.dataset.speed) {
-      state.speed = Number(target.dataset.speed);
-      started = performance.now() - state.fill * duration();
-      draw();
-    }
-  });
-  host.addEventListener("change", (event) => {
-    if (event.target.dataset.band !== "speed") return;
-    state.speed = Number(event.target.value);
-    started = performance.now() - state.fill * duration();
+    const rect = bar.getBoundingClientRect();
+    play(Math.min(state.total - 1, Math.floor(((event.clientX - rect.left) / rect.width) * state.total)));
   });
   host.addEventListener("keydown", (event) => {
-    const target = event.target;
-    figure?.resume();
-    if (target.dataset.band === "steps" || target.closest(".pb-steps")) {
-      if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
-        event.preventDefault();
-        go(state.index === undefined ? 0 : state.index + (event.key === "ArrowRight" ? 1 : -1));
-      }
-      if (event.key === "Home" || event.key === "End") {
-        event.preventDefault();
-        go(event.key === "Home" ? 0 : state.total - 1);
-      }
-    }
-    if (target.dataset.speed && (event.key === "ArrowRight" || event.key === "ArrowLeft")) {
+    if (!event.target.closest(".pb-steps")) return;
+    const moves = { ArrowRight: 1, ArrowLeft: -1 };
+    if (event.key in moves) {
       event.preventDefault();
-      const next = SPEEDS[(SPEEDS.indexOf(state.speed) + (event.key === "ArrowRight" ? 1 : SPEEDS.length - 1)) % SPEEDS.length];
-      state.speed = next;
-      started = performance.now() - state.fill * duration();
-      draw();
-      host.querySelector(`[data-speed="${next}"]`)?.focus();
+      play(state.index === undefined ? (event.key === "ArrowRight" ? 0 : state.total - 1) : state.index + moves[event.key]);
     }
+    if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      play(event.key === "Home" ? 0 : state.total - 1);
+    }
+    if (event.key === "Escape") stop();
   });
+  figure?.onBlankClick(stop);
   draw();
-  return { go };
+  return { play, stop };
 };
 
 /** 実演の図: 手順で強調するノードを囲む範囲が表示する枠に収まる倍率と位置へ、図をなめらかに移す */
@@ -184,7 +108,17 @@ export const createFigure = (host, { title, nodes }) => {
   const MAX = 3;
   const fitScale = () => Math.min(viewport.clientWidth / 960, viewport.clientHeight / 560);
   let touched = false;
-  viewport.addEventListener("pointerdown", () => { touched = true; });
+  let down;
+  const blankHandlers = [];
+  viewport.addEventListener("pointerdown", (event) => {
+    touched = true;
+    down = { x: event.clientX, y: event.clientY, blank: !event.target.closest(".pb-node") };
+  });
+  // ノード以外の空いた場所を押して離したら停止。4px 以上動かしたらドラッグとして止めない
+  viewport.addEventListener("pointerup", (event) => {
+    if (down?.blank && Math.hypot(event.clientX - down.x, event.clientY - down.y) < 4) for (const handler of blankHandlers) handler();
+    down = undefined;
+  });
   const apply = (scale, x, y) => {
     content.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
     zoom.textContent = `${Math.round((scale / fitScale()) * 100)}%`;
@@ -210,5 +144,5 @@ export const createFigure = (host, { title, nodes }) => {
     apply(scale, viewport.clientWidth / 2 - ((left + right) / 2) * scale, viewport.clientHeight / 2 - ((top + bottom) / 2) * scale);
   };
   reset();
-  return { show, reset, resume: () => { touched = false; } };
+  return { show, reset, resume: () => { touched = false; }, onBlankClick: (handler) => blankHandlers.push(handler) };
 };

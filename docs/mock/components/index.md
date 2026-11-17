@@ -43,7 +43,7 @@
 | [map-class-arch-c4](./map-class-arch-c4/index.html) | map のクラス図・アーキテクチャ図・C4 図（メンバーの行と関係の端の形・メンバーと namespace の開閉・service のアイコンと group と junction・要素の種類の行と境界・狭い幅） |
 | [map-c4-kinds](./map-c4-kinds/index.html) | map の C4 のコンテナ図・コンポーネント図・動的図・配置図（種類と技術の行・Container_Boundary・関係の番号・配置先のノードの実線の枠と開閉と中へ入る・読めない行・狭い幅） |
 | [map-axis-grid](./map-axis-grid/index.html) | map の軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の配置・section と入れ子のブロックの開閉と中へ入る・選択と強調・再生・補足の layout と書き方の警告・範囲の外のコードブロック・読めない行・狭い幅） |
-| [map-band](./map-band/index.html) | map の案内・再生の帯（手順のバー・この手順を再生・全て再生・速度の切り替え・なめらかな移動の実演・手順が多いとき・区切りと速度の案・狭い幅） |
+| [map-band](./map-band/index.html) | map の案内・再生の帯（手順のバーだけの帯・区切りを押した手順の再生と再生し直し・バー以外を押して停止・なめらかな移動の実演・手順が多いとき・狭い幅） |
 | [map-mindmap](./map-mindmap/index.html) | map のマインドマップ（根を中央に配置した木の配置・項目の形状と枝の色・枝の開閉と中へ入る・項目の選択と強調・補足の layout と書き方の警告・案内・狭い幅） |
 | [map-kinds](./map-kinds/index.html) | map の図で使えるノードの種類・線の種類・グループ・データの点の一覧と、使う場面の例 |
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |

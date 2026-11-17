@@ -1,64 +1,27 @@
-/* #660 のモックの案内・再生の帯: 1 行目は番号・タイトル・操作のボタン・速度、2 行目は手順のバー、3 行目から説明の文 */
+/* #660 のモックの案内・再生の帯: 1 行目は手順のバー、2 行目に手順のタイトル、3 行目から説明の文 */
 
 .pb-band {
-  container-type: inline-size;
   margin-top: 4px;
-  padding: 4px 8px 6px 12px;
+  padding: 2px 12px 6px;
   border: 1px solid var(--mdmark-color-border);
   border-radius: calc(var(--mdmark-radius) * 2);
   background: var(--mdmark-color-surface);
   color: var(--mdmark-color-text);
   font-size: 14px;
+  cursor: default;
 }
-.pb-head { display: flex; align-items: center; gap: 8px; }
-.pb-count { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--mdmark-color-muted); min-width: 3.5em; }
-.pb-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pb-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; }
-.pb-tool {
-  display: inline-grid; place-items: center; width: 28px; height: 28px; padding: 0;
-  border: 1px solid transparent; border-radius: var(--mdmark-radius); background: transparent;
-  color: var(--mdmark-color-text); cursor: pointer; touch-action: manipulation;
-}
-.pb-tool svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.pb-tool:hover:not(:disabled) { background: var(--mdmark-color-bg); border-color: var(--mdmark-color-border); }
-.pb-tool:disabled { color: var(--mdmark-color-muted); opacity: 0.5; cursor: default; }
-.pb-tool[aria-pressed="true"] { background: var(--mdmark-color-bg); border-color: var(--mdmark-color-border); }
-.pb-tool:focus-visible, .pb-speed button:focus-visible, .pb-steps:focus-visible, .pb-seg:focus-visible, .pb-speed-select:focus-visible {
-  outline: 2px solid var(--mdmark-color-link); outline-offset: 2px;
-}
-.pb-sep { width: 1px; height: 18px; background: var(--mdmark-color-border); margin: 0 2px; }
-
-/* 速度: 案 A は 3 つの選択肢を並べたラジオ、案 B は選択欄 */
-.pb-speed { display: inline-flex; border: 1px solid var(--mdmark-color-border); border-radius: var(--mdmark-radius); overflow: hidden; }
-.pb-speed button {
-  min-width: 36px; height: 26px; padding: 0 6px; border: 0; background: transparent; color: var(--mdmark-color-muted);
-  font: inherit; font-size: 12px; font-variant-numeric: tabular-nums; cursor: pointer; touch-action: manipulation;
-}
-.pb-speed button + button { border-left: 1px solid var(--mdmark-color-border); }
-.pb-speed button[aria-checked="true"] { background: var(--mdmark-color-text); color: var(--mdmark-color-bg); }
-.pb-speed-select { height: 28px; font: inherit; font-size: 16px; color: var(--mdmark-color-text); background: var(--mdmark-color-bg); border: 1px solid var(--mdmark-color-border); border-radius: var(--mdmark-radius); }
 
 /* 手順のバー: 高さ 24px の押せる範囲の中に、6px の区切りを並べる */
-.pb-steps { position: relative; display: flex; align-items: center; gap: 3px; height: 24px; margin-top: 2px; cursor: pointer; touch-action: manipulation; border-radius: var(--mdmark-radius); }
+.pb-steps { display: flex; align-items: center; gap: 3px; height: 24px; cursor: pointer; touch-action: manipulation; border-radius: var(--mdmark-radius); }
+.pb-steps:focus-visible { outline: 2px solid var(--mdmark-color-link); outline-offset: 2px; }
 .pb-seg { position: relative; flex: 1 1 0; min-width: 0; height: 6px; border-radius: 3px; background: var(--mdmark-color-border); overflow: hidden; }
-span.pb-seg.is-done { background: var(--mdmark-color-muted); }
-span.pb-seg.is-current { height: 10px; background: color-mix(in srgb, var(--mdmark-color-link) 25%, var(--mdmark-color-border)); box-shadow: 0 0 0 1px var(--mdmark-color-link); }
+.pb-seg.is-done { background: var(--mdmark-color-muted); }
+.pb-seg.is-current { height: 10px; background: color-mix(in srgb, var(--mdmark-color-link) 25%, var(--mdmark-color-border)); box-shadow: 0 0 0 1px var(--mdmark-color-link); }
 .pb-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--mdmark-color-link); }
-/* 案 B: 区切りごとのボタン（押せる範囲を 24px にする） */
-button.pb-seg { height: 24px; padding: 0; border: 0; background: transparent; box-shadow: none; overflow: visible; cursor: pointer; }
-button.pb-seg::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 6px; border-radius: 3px; background: var(--mdmark-color-border); }
-button.pb-seg.is-done::before { background: var(--mdmark-color-muted); }
-button.pb-seg.is-current::before { top: 7px; height: 10px; background: var(--mdmark-color-link); }
 
+.pb-title { display: block; margin-top: 2px; overflow-wrap: anywhere; }
 .pb-text { margin: 2px 0 0; white-space: pre-line; }
 .pb-text[hidden], .pb-title[hidden] { display: none; }
-
-/* 狭い幅: タイトルを番号とボタンの下の行に回し、操作を右端へ寄せる */
-@container (max-width: 480px) {
-  .pb-head { flex-wrap: wrap; row-gap: 2px; }
-  .pb-title { flex-basis: 100%; order: 3; white-space: normal; }
-  .pb-actions { flex-wrap: wrap; justify-content: flex-end; }
-}
 
 /* 実演の図: 表示する枠の中の図を、倍率と位置で動かす */
 .pb-figure { border: 1px solid var(--mdmark-color-border); border-radius: calc(var(--mdmark-radius) * 2); background: var(--mdmark-color-bg); }
