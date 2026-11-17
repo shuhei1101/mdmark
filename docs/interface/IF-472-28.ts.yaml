@@ -632,6 +632,84 @@ flows:
     refs:
       - SC-472-27#scenarios[正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]
       - SC-472-27#scenarios[正常シナリオ（書き換えない記載を移行の報告に挙げる）]
+  - name: 異常系（手元のバージョンが develop・終了コード 1）
+    summary: 手元が `develop` のときは手順を選ばずに止める
+    setup:
+      - name: develop を追うフォルダ
+        description: '`version: develop` の設定・索引・文書を持つ一時フォルダ'
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.5.0` に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定の version を読み込む（develop）
+        C-->>W: 固定したバージョンを記載してから呼ぶこと・終了コード 1
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `develop` と `v{MAJOR}.{MINOR}.{PATCH}` が出る
+      - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
+    test: test_error_when_local_version_develop
+  - name: 正常系（develop のビルドの CLI）
+    summary: develop のビルドは、ビルドの元のバージョンを目標にする
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.5.0+develop.abc1234` にし、`migrations/next/` を空にする。それ以外は正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>C: 目標を v0.5.0 にし、next/ に手順が無いことを確かめる
+        C->>F: コピーを取り、v0.4.0・v0.5.0 の手順を適用する
+        C->>F: 設定の version を v0.5.0 にする
+        C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0
+      - 設定の `version` が `v0.5.0`
+    test: test_normal_when_cli_built_from_develop
+  - name: 異常系（develop のビルドで出していない手順がある・終了コード 1）
+    summary: develop のビルドは、`migrations/next/` に手順があれば止める
+    setup:
+      - name: 手元のバージョンが古いフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを `v0.5.0+develop.abc1234` にし、`migrations/next/steps.yaml` に `rename_key` を 1 つ配置する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark upgrade
+        C->>C: next/ に手順がある
+        C-->>W: タグを指定した CLI で呼ぶこと・終了コード 1
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 1
+      - 標準エラーに `npx github:shuhei1101/mdmark#v0.5.0 upgrade` が出る
+      - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
+    test: test_error_when_develop_build_has_unreleased_steps
 lead: 文書の作成者が、設定の手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI のバージョンにする。適用する前にコピーを取り、失敗したらコピーから戻す。
 idempotent: true
 side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` にコピーを配置する。`--plan` は何も書き換えない
@@ -726,12 +804,18 @@ exceptions:
   - name: 設定ファイルが無い・読み込めない（終了コード 1）
     condition: '`--config` のファイルが無い、今のフォルダと上のフォルダに `mdmark.config.yaml` が無い、または YAML として読み込めない'
     notes: '`mdmark check` と同じ文を出す'
+  - name: 手元のバージョンが develop（終了コード 1）
+    condition: 設定の `version` が `develop`
+    notes: 何も書き換えず、コピーも取らない。設定の `version` に今の文書が合わせてあるバージョンを `v{MAJOR}.{MINOR}.{PATCH}` で記載してからもう一度呼ぶことを出す
+  - name: develop のビルドで出していない手順がある（終了コード 1）
+    condition: develop のビルドの CLI で呼び、パッケージの `migrations/next/steps.yaml` が手順を 1 つ以上持つ
+    notes: 何も書き換えない。ビルドの元のバージョン（`+` より前）のタグの CLI（`npx github:shuhei1101/mdmark#v{ビルドの元のバージョン} upgrade`）で呼ぶことを出す
 constraints:
   - item: 目標のバージョン
-    constraint: ビルドが呼んだ CLI（`dist/cli.js`）に埋めたバージョン（ライブラリ本体の `version()` と同じ出所）。`version.ini` は読み込まない。引数では受けない
+    constraint: ビルドが呼んだ CLI（`dist/cli.js`）に埋めたバージョン（ライブラリ本体の `version()` と同じ出所）。`version.ini` は読み込まない。引数では受けない。develop のビルド（埋めたバージョンが `+develop.` を含む）は、`+` より前のビルドの元のバージョンを目標にする
     notes: hotfix のビルドは `version.ini` を上げず `--version` で打つタグのバージョンを埋める。引数で古いバージョンを受けると、呼んだ CLI の構造で点検して目標のバージョンでは正しい設定を戻してしまう
   - item: 手元のバージョン
-    constraint: 設定の `version`。無ければ標準エラーに `手元のバージョン（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出し、標準入力の 1 行を手元のバージョンにする（`--plan` のときも聞く）
+    constraint: 設定の `version`。`develop` のときは手順を選ばずに止める。無ければ標準エラーに `手元のバージョン（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出し、標準入力の 1 行を手元のバージョンにする（`--plan` のときも聞く）
     decided_by: CFG-472-3#settings[version]
   - item: バージョンの比較
     constraint: '`v{MAJOR}.{MINOR}.{PATCH}` の 3 つの数を左から数として比べる'

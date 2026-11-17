@@ -3,7 +3,7 @@ visibility: internal
 title: 配布物をビルドする
 entry:
   kind: operation
-  value: '`npm run build [-- --version v{MAJOR}.{MINOR}.{PATCH}]`（CLI）'
+  value: '`npm run build [-- --version v{MAJOR}.{MINOR}.{PATCH}] [--develop]`（CLI）'
 flows:
   - name: 正常系
     summary: '`version.ini` のバージョンを埋めてビルドする'
@@ -229,6 +229,35 @@ flows:
       - '`dist/` が無い'
       - 標準エラーに `Intl.Segmenter`・`dist/index.js`・Firefox 98 が出る
     test: test_error_when_api_missing_in_baseline_browser
+  - name: 正常系（develop のビルド）
+    summary: '`--develop` でビルドメタデータを添えたバージョンを埋める'
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`version.ini` が `v0.0.0` の作業ツリーをコピーした一時フォルダを git のリポジトリにして commit したもの'
+        notes: '`--develop`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        participant F as ファイル
+        D->>B: npm run build -- --develop
+        B->>G: HEAD の短縮 SHA を読み込む
+        B->>F: v0.0.0+develop.{短縮 SHA} を埋めた dist/ を書き込む
+        B-->>D: 終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0
+      - '`dist/index.js` の `version()` が `v0.0.0+develop.{短縮 SHA}` を返却し、短縮 SHA がビルドした作業ツリーの HEAD の `git rev-parse --short=7 HEAD` と一致する'
+      - '`node dist/cli.js --version` の出力が同じ値'
+    test: test_normal_when_develop
 lead: '`src/` の TypeScript と CSS を、バージョンを埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` と、Node で動く CLI の `dist/cli.js` と、CLI が書き出す HTML に埋める起動の処理 `dist/viewer.js`・`dist/viewer.css` にビルドする。'
 idempotent: true
 side_effects: '`dist/` と、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js` と `retired-diagrams.mjs` を持つフォルダの `retired-diagrams.js`、それぞれのフォルダの `THIRD_PARTY_LICENSES.txt` を書き換える'
@@ -243,6 +272,13 @@ request:
     description: 埋めるバージョン
     constraints: '`^v\d+\.\d+\.\d+$`'
     example: v0.0.1
+  - name: --develop
+    type: boolean
+    required: false
+    default: false（バージョンだけを埋める）
+    location: argument
+    description: develop のビルドとして、埋めるバージョンにビルドメタデータ `+develop.{短縮 SHA}` を添える
+    notes: 短縮 SHA は、ビルドした作業ツリーの HEAD（生成物を commit する前の、ビルドの元の commit）の `git rev-parse --short=7 HEAD`。develop への push のワークフローが付ける
 exceptions:
   - name: なし（正常終了）
     condition: 配布物を書き込んで終了コード 0
@@ -260,6 +296,8 @@ exceptions:
     condition: '`plugin/guide-index.yaml` が ER 図『ガイド』の構造に合わないか、無いページを指す'
   - name: 対応ブラウザの下限に無い API（終了コード 1）
     condition: 利用側のブラウザが読み込む JS（`dist/index.js`・`dist/view.js`・`dist/comments.js`・`dist/viewer.js`）のどれかが、下限のバージョンに無い API を、同じ API の `typeof` で確認する `if` のブロックの外で使用する
+  - name: develop のビルドで commit を読めない（終了コード 1）
+    condition: '`--develop` を指定したのに、作業ツリーが git の作業ツリーでないか HEAD を読めない'
 constraints:
   - item: 配布ファイル 1 つのサイズ
     constraint: 688KB 以下（704512 バイト）。利用側のページが読み込まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外

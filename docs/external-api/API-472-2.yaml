@@ -10,7 +10,7 @@ endpoints:
   - name: GET /gh/{user}/{repo}@{version}/{file}
     method: GET
     path: /gh/{user}/{repo}@{version}/{file}
-    summary: GitHub のリポジトリの、バージョンのタグが指す commit のファイルを返却する
+    summary: GitHub のリポジトリの、バージョンのタグか develop のブランチが指す commit のファイルを返却する
     idempotent: true
     description: バージョンにはタグ・commit・ブランチ・semver の範囲を指定できる。タグと commit の指定は中身が変わらず無期限にキャッシュされ、ブランチは 12 時間、バージョンの範囲と `latest` は 7 日キャッシュされる。1 ファイル 20MB を超えるファイルは配らない。
     request:
@@ -30,7 +30,7 @@ endpoints:
         type: string
         required: true
         location: path
-        description: バージョンのタグ
+        description: バージョンのタグか、develop の最新を読み込むときは `develop`
         example: v0.1.0
       - name: file
         type: string

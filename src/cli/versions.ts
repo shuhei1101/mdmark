@@ -34,3 +34,33 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 {
 export function cliVersion(): string {
   return __MDMARK_VERSION__;
 }
+
+/** develop の最新を表す手元のバージョン */
+export const DEVELOP_VERSION = "develop";
+
+/** ビルドが `--develop` で埋めたバージョン（ビルドメタデータ付き）の書式 */
+export const DEVELOP_BUILD_PATTERN =
+  /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
+
+/** 埋めたバージョンが develop のビルドか */
+export function isDevelopBuild(version: string): boolean {
+  return DEVELOP_BUILD_PATTERN.test(version);
+}
+
+/** develop のビルドは `+` より前を、それ以外はそのまま返却する */
+export function releaseVersionOf(version: string): string {
+  return DEVELOP_BUILD_PATTERN.exec(version)?.[1] ?? version;
+}
+
+/** 設定に記載する手元のバージョン（develop のビルドは `develop`） */
+export function localVersionOf(version: string): string {
+  return isDevelopBuild(version) ? DEVELOP_VERSION : version;
+}
+
+/** 手元のバージョンとして受け付けるか（`VERSION_PATTERN` か `develop`） */
+export function isLocalVersion(value: unknown): boolean {
+  return (
+    typeof value === "string" &&
+    (value === DEVELOP_VERSION || VERSION_PATTERN.test(value))
+  );
+}

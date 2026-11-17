@@ -4,7 +4,9 @@ import type { MarkNote } from "../mark-schema.ts";
 import type { Mark } from "../marks.ts";
 import type { RenderEnv } from "../parser.ts";
 /** 集める警告の種類。マーカーの注記（`MarkNote` の種類）は画面に出さず、点検だけが返却する */
-export type WarningKind = "diagram_invalid" | "retired_diagram" | "syntax_warning" | MarkNote["kind"] | "map";
+export type WarningKind = "diagram_invalid" | "retired_diagram" | "syntax_warning" | AnnotationWarningKind | MarkNote["kind"] | "map";
+/** 注記の参照と定義が合わない警告の種類 */
+export type AnnotationWarningKind = "annotation_undefined" | "annotation_unused" | "annotation_duplicate";
 /** 記載の警告に指定する値 */
 export type SyntaxWarning = {
     /** 読み込めない指定を記載したマーカーの文字 */
@@ -16,7 +18,7 @@ export type SyntaxWarning = {
     /** 枠の `id` */
     id?: string;
     /** 警告の種類（省くと `syntax_warning`） */
-    kind?: "diagram_invalid" | "retired_diagram" | "syntax_warning" | "map";
+    kind?: "diagram_invalid" | "retired_diagram" | "syntax_warning" | "map" | AnnotationWarningKind;
     /** 警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く） */
     line?: number;
     /** include のマーカーの取り込み先が無い警告か（`mdmark check --text`・`--file` が除く） */
@@ -29,8 +31,10 @@ export type WarningMeta = {
     line?: number;
     includeTarget?: boolean;
 };
-/** 記載の警告の HTML にマーカーを掛けて `html_block` にし、`index` の位置に差し込む。`source` は警告の元になったマーカーのトークン（範囲なら開きのマーカー）で、その行を警告の場所にする */
-export declare function pushWarning(state: StateCore, index: number, warning: SyntaxWarning, source?: Token): void;
+/** 記載の警告の HTML にマーカーを掛けて `html_block` にし、`index` の位置に差し込む。`warning.source` は警告の元になったマーカーのトークン（範囲なら開きのマーカー）で、その行を警告の場所にする */
+export declare function pushWarning(state: StateCore, index: number, warning: SyntaxWarning & {
+    source?: Token;
+}): void;
 /** 記載の警告の `html_block` を作る（差し込む位置を呼ぶ側が決めるとき）。`source` は `pushWarning` と同じ */
 export declare function warningBlock(state: StateCore, warning: SyntaxWarning, source?: Token): Token;
 /** 集めた記載の警告 1 つ（元の行番号は 1 から） */

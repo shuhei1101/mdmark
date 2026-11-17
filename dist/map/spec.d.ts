@@ -1,5 +1,5 @@
 /** map の書き方の誤りの項目の種類（点検のずれの種類と同じ名前） */
-export type MapProblemKind = "map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line";
+export type MapProblemKind = "map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line" | "annotation_undefined";
 /** 読み取りと点検が返す、書き方の誤り 1 件 */
 export type MapProblem = {
     kind: MapProblemKind;

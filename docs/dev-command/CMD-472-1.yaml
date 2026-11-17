@@ -268,6 +268,14 @@ categories:
       git push origin v{バージョン}
       ```
 
+      develop へ push すると、GitHub Actions の `develop-dist.yml` が `npm run build -- --develop` で `dist/`・`plugin/` の生成物を再作成し、差分があれば develop へ commit する（手順 5 の commit の後も同じ）。
+      release を develop へ戻すバックマージで `dist/`・`plugin/` が競合したときは、develop 側を採って取り込み、取り込みの push でワークフローに再作成させる。
+
+      ```bash
+      git checkout --ours dist plugin
+      git add dist plugin
+      ```
+
       VS Code 拡張機能を出すときは、`vscode/package.json` の `version` を出すバージョンにした commit が develop に入った後、その commit でタグと `version` を照合してからタグを打つ（GitHub Actions の `vscode-release.yml` が .vsix を作り、そのタグの GitHub Release に添えて、Visual Studio Marketplace へ公開する）。`version` は Marketplace に公開済みのバージョンより上にする（同じバージョンは公開できず、ワークフローが `already exists.` で失敗する）。mdmark の `v{バージョン}` のタグと混ぜない。
 
       ```bash

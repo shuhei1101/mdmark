@@ -8,7 +8,7 @@ export declare const PART_SELECTORS: {
     readonly "row-detail": "table:has(tr.mdmark-row-detail)";
     readonly details: 'details[class="mdmark-collapsible"]';
     readonly callout: "details.markdown-alert";
-    readonly er: 'figure.mdmark-diagram[data-diagram="er"]';
+    readonly frontmatter: "details.mdmark-frontmatter";
     readonly tree: "div.mdmark-tree";
     readonly code: "pre:has([data-fold-lines])";
     readonly "table-tree": "div.mdmark-table[data-tree]";
@@ -48,7 +48,7 @@ export declare const recordOpen: (options: {
     /** 今のマーカーの値 */
     marker: string;
 }) => void;
-/** details の範囲と折りたたみの注意書きを記録の開閉で始め、`summary` を押して変えた開閉を記録する。受け取りを取り除く関数を返却する */
+/** details の範囲・折りたたみの注意書き・フロントマターを記録の開閉で始め、`summary` を押して変えた開閉を記録する。受け取りを取り除く関数を返却する */
 export declare const attachDetailsStates: (options: {
     /** 描いた要素 */
     root: HTMLElement;

@@ -17,7 +17,7 @@ functions:
     container: src/cli/init.ts
     usecase: 雛形を配置する
     summary: '`TEMPLATE_FILES` のうち配置先に無いものをコピーし、配置した・配置しなかった行を出す'
-    description: '雛形の原本は `dist/cli.js` を基準にした `../templates/` を読み込む。既にあるファイルは中身を読み込まずに飛ばす（`writeFile` の `flag: "wx"`）。`mdmark.config.yaml` は雛形の `version` の値を `options.version` に置き換えて記載する'
+    description: '雛形の原本は `dist/cli.js` を基準にした `../templates/` を読み込む。既にあるファイルは中身を読み込まずに飛ばす（`writeFile` の `flag: "wx"`）。`mdmark.config.yaml` は雛形の `version` の値を `localVersionOf(options.version)`（develop のビルドは `develop`）に置き換えて記載する'
     kind: 関数
     scope: public
     is_async: true

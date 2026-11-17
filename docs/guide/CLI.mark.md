@@ -4,6 +4,8 @@
 
 どのコマンドも `npx github:shuhei1101/mdmark#v{バージョン} {コマンド}` で呼ぶ。
 `{バージョン}` は使用するバージョンの `{MAJOR}.{MINOR}.{PATCH}`。
+develop の最新を使用するときは、`v{バージョン}` の代わりに `develop` を指定する（`npx github:shuhei1101/mdmark#develop {コマンド}`）。
+`npx github:shuhei1101/mdmark#{参照} --version` は、呼んだ CLI に埋めたバージョンを出す（develop のビルドは `v{MAJOR}.{MINOR}.{PATCH}+develop.{短縮 SHA}`）。
 npm のレジストリには公開しない。
 Node 24 以降で動く。
 `export`・`build`・`check` は、端末の設定と、`--config` で指した設定ファイルか今のフォルダから上のフォルダの `mdmark.config.yaml` を重ねて読み込む（[設定を重ねて読み込む仕組み](./コアコンセプト-設定を重ねて読み込む仕組み.mark.md)）。
@@ -357,6 +359,8 @@ npx github:shuhei1101/mdmark#v{目標のバージョン} upgrade [--plan] [--yes
 | `1` | 適用するバージョンの `steps.yaml` が読み込めない・構造に合わない、または `call` のスクリプトが無い。標準エラーにバージョンと合わないところと、mdmark をもう一度入れることを出す。何も書き換えない |
 | `1` | `--config` のファイルが無い、今のフォルダと上のフォルダに `mdmark.config.yaml` が無い、または YAML として読み込めない。`mdmark check` と同じ文を標準エラーに出す |
 | `1` | `--config` と `--settings` を一緒に指定した |
+| `1` | 手元のバージョンが `develop`。標準エラーに、`version` を `v{MAJOR}.{MINOR}.{PATCH}` で記載してからもう一度呼ぶことを出す。何も書き換えない |
+| `1` | develop のビルドの CLI で呼び、出していないバージョンの移行の手順（`migrations/next/`）がある。標準エラーに `npx github:shuhei1101/mdmark#v{ビルドの元のバージョン} upgrade` で呼ぶことを出す。何も書き換えない |
 
 <!-- /table -->
 

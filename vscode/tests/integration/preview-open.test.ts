@@ -37,6 +37,20 @@ import {
   writeFixture,
 } from "./helpers.ts";
 
+/** 期待する配布物の要求が全て記録されるまで待ち、記録された配布物の要求を並べ替えて返却する（map.js は rendered の後に要求されうる） */
+const settledDistRequests = async (
+  expected: readonly string[],
+): Promise<string[]> => {
+  await waitFor(
+    async () => {
+      const requests = await distRequests();
+      return expected.every((path) => requests.includes(path));
+    },
+    { message: "配布物の要求が全て記録されない" },
+  );
+  return (await distRequests()).sort();
+};
+
 /** 用語のエイリアスの行を 1 つ持つ設定ファイル */
 const ALIAS_CONFIG = [
   "aliases:",
@@ -221,11 +235,12 @@ suite("プレビューを開く", () => {
     // 検証
     assert.strictEqual(record.options.showOptions, vscode.ViewColumn.Beside);
     assert.strictEqual(record.options.title, "プレビュー guide.md");
-    assert.deepStrictEqual((await distRequests()).sort(), [
+    const expected = [
       distPath("v0.10.0", "index.css"),
       distPath("v0.10.0", "index.js"),
       distPath("v0.10.0", "map.js"),
-    ]);
+    ];
+    assert.deepStrictEqual(await settledDistRequests(expected), expected);
     assert.strictEqual(await tagRequestCount(), 1);
     // 前回のバージョンが v0.10.0 になったことを、タグ一覧が応えない状態のリロードで確認する
     await stub.setMode({ tags: "hang", dist: "ok" });
@@ -597,11 +612,12 @@ suite("プレビューを開く", () => {
     const record = lastPanel();
     await waitForRendered(record);
     // 検証
-    assert.deepStrictEqual((await distRequests()).sort(), [
+    const expected = [
       distPath("v0.6.0", "index.css"),
       distPath("v0.6.0", "index.js"),
       distPath("v0.6.0", "map.js"),
-    ]);
+    ];
+    assert.deepStrictEqual(await settledDistRequests(expected), expected);
     assert.strictEqual(await tagRequestCount(), 0);
     // 前回のバージョンが v0.7.0 のままであることを、固定を削除してタグ一覧が応えない状態で開いて確認する
     await closePreviews();
