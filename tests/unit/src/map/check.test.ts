@@ -333,6 +333,10 @@ test("test_needs_mermaid_fallback_when_style", async () => {
       mermaid: "flowchart LR\n  A:::warn --> B",
     }),
     needsMermaidFallback({
+      kind: "flowchart",
+      mermaid: "flowchart LR\n  A[受付]:::warn --> B",
+    }),
+    needsMermaidFallback({
       kind: "classDiagram",
       mermaid: 'classDiagram\n  class 図面\n  cssClass "図面" warn',
     }),
@@ -342,5 +346,5 @@ test("test_needs_mermaid_fallback_when_style", async () => {
     }),
   ];
   // 検証
-  expect(results).toEqual([true, true, true, true]);
+  expect(results).toEqual([true, true, true, true, true]);
 });

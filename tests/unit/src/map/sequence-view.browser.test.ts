@@ -195,4 +195,10 @@ test("test_attach_map_sequence_when_actor_default", async () => {
   expect(iconOf(withoutActor, "U")).toBe("user");
   expect(iconOf(withoutActor, "P")).toBeNull();
   expect(iconOf(withActor, "U")).toBe("smile");
+  // 人のアイコンは種類の行に svg で描かれる
+  expect(
+    withoutActor.querySelector(
+      '[data-participant="U"] .mdmark-diagram-node-kind svg',
+    ),
+  ).not.toBeNull();
 });
