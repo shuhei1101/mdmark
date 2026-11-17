@@ -12,3 +12,9 @@ files:
     related:
       - to: docs/interface/IF-472-41.ts.yaml
         type: implements
+  - path: workflows/test.yml
+    description: インターフェース定義『テストの全件実行』の workflow を受け持ち、テスト実行方法の実行場所が runner の層をランナーで回す方法を変えるときに参照する。
+    tags: [topic:ci, topic:テスト, topic:単体テスト, topic:結合テスト, action:実行]
+    related:
+      - to: docs/interface/IF-472-44.yaml
+        type: implements

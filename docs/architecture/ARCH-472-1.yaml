@@ -154,13 +154,14 @@ external_systems:
       - IF-472-22#constraints[バージョンの決め方]
     status: planned
   - name: GitHub Actions と GitHub Releases
-    purpose: '`vscode-v*` のタグで拡張機能の .vsix を作り、そのタグの Release に添える。develop への push で `dist/`・`plugin/` の生成物を再作成し、差分があれば develop へ commit する'
+    purpose: '`vscode-v*` のタグで拡張機能の .vsix を作り、そのタグの Release に添える。develop への push で `dist/`・`plugin/` の生成物を再作成し、差分があれば develop へ commit する。手動の起動で、テスト実行方法の実行場所が `runner` の層のテストを回し、ログを成果物に上げる'
     direction: 送信のみ
-    protocol: GitHub Actions のワークフロー（`.github/workflows/vscode-release.yml`）と `gh release`
+    protocol: GitHub Actions のワークフロー（`.github/workflows/vscode-release.yml`・`.github/workflows/test.yml`）と `gh release`・`gh workflow run`
     detail: LIB-472-34#
     cost: 公開リポジトリの GitHub Actions は無料。Release に .vsix を残す
     refs:
       - IF-472-23#
+      - IF-472-44#
     status: planned
   - name: Visual Studio Marketplace
     purpose: '`vscode-v*` のタグのワークフローが、Release に添えた .vsix を拡張機能 `ShuheiNishikawa.mdmark-vscode` の新しいバージョンとして公開し、文書の作成者の VS Code へ更新を届ける'
