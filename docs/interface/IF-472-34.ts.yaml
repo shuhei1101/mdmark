@@ -3352,7 +3352,7 @@ constraints:
   - item: mermaid のコードブロック
     constraint: '機能 `mermaid` がオンの文書で、情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、制約『コードブロック』のとおりのコードブロックに描き、囲む `div.mdmark-code` に属性 `data-mdmark-mermaid` を付ける。`render` は図にせず、mermaid を読み込まない。色分けの対象にしない（`data-mdmark-syntax` を付けない）。機能 `mermaid` は文書の `<!-- features: {"mermaid": false} -->` を受け、返却する `features` に含める。
 
-      機能 `map` がオンで、ソースの front matter（先頭の `---` で囲んだ行）の後ろの最初の単語が制約『map の範囲』の図の種類のコードブロックは、この制約の対象にせず、制約『map の範囲』の「範囲の外の map の図」にする（機能 `mermaid` がオフのときは、どちらにもしない）'
+      機能 `map` がオンで、ソースの front matter（先頭の `---` で囲んだ行）と `%%` で始まるコメントの行を飛ばした最初の単語が制約『map の範囲』の図の種類で、front matter に `config` を持たず `%%{` で始まる設定の行を持たないコードブロックは、この制約の対象にせず、制約『map の範囲』の「範囲の外の map の図」にする（機能 `mermaid` がオフのときは、どちらにもしない）'
     notes: 図にするのは `mount`（文書を描く.ts の制約『mermaid の対象』〜『mermaid を読み込めないとき』）。JavaScript が動かない場所でもソースがコードブロックとして読み込める
   - item: 色の名前
     constraint: 色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に記載した色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を当てずに制約「作成者の誤り」と同じ記載の警告を配置し、本文に記載した名前と色の名前の一覧を出す

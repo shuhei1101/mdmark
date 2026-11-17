@@ -418,6 +418,39 @@ scenarios:
     expected:
       - flowchart・classDiagram（map の図）と gantt（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「ガントチャート」
     test: test_normal_when_untitled
+  - name: 異常シナリオ（map が読めない行を持つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: map が読めない行を持つ mermaid のコードブロックの Markdown
+        description: map の範囲の外に、言語 `mermaid` の flowchart のコードブロックを 3 つ持つ文書
+        notes: '1 つ目は map が読めない行（`A --o B`）を持ち、2 つ目は 1 行目に `%%{init: {"theme": "forest"}}%%` を持ち、3 つ目は map が読める行だけを持つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 2 つ目は設定の行を持つので mermaid の対象にし、1 つ目と 3 つ目を範囲の外の map の図にする
+        M->>M: 1 つ目は map が読めない行を持つので mermaid の対象に戻す
+        M->>X: 本体を要求
+        X-->>M: 本体
+        M-->>P: 1 つ目と 2 つ目は mermaid の図、3 つ目は map の図を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目と 2 つ目の場所に mermaid の図があり、3 つ目の場所に map の図がある
+      - どの図の前にも書き方の警告が無い
+      - mermaid の本体への要求が 1 件
+    test: test_error_when_map_cannot_read
 tags:
   - name: tool:mermaid
     main: true
