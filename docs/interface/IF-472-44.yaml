@@ -48,6 +48,12 @@ constraints:
   - item: タイムアウト（その他の step）
     constraint: GitHub Actions の 1 ジョブの上限
     notes: 実測の無いインストールの step は外側の作業の上限
+  - item: 依存
+    constraint: 両方の層で、step「依存をインストールする」が `npm ci` と `npm --prefix vscode ci` を実行する
+    notes: 単体テストの `tests/unit/vscode/` は `vscode/src/` を読み込み、VS Code 拡張機能の結合テストは `vscode/` の依存でビルドする
+  - item: 入力の受け取り方
+    constraint: '`inputs.paths` は step の `env` で環境変数にしてから `run` のスクリプトで参照し、`${{ inputs.paths }}` を `run` に直接記載しない'
+    notes: GitHub の Security hardening のスクリプトの差し込みを防ぐ
 overall_flow: |-
   <!-- map -->
 
@@ -201,6 +207,7 @@ flows:
       - step「単体テストを回す」の結論が `skipped`
 notes:
   確認の方法: フローは、テストのファイルを持たず、規約『Git フックと CI で動かすもの』の手順で作業ブランチのランナーを動かして確認する。
+  止めた実行の結論: '排他（`cancel-in-progress: true`）で止めた実行の結論は `cancelled` になる。テスト実行方法の `run_runner` は、`gh run watch --exit-status` の終了コードで `cancelled` も失敗として終える。'
 refs:
   - TP-472-1#layers[単体テスト（フロント）]
   - TP-472-1#layers[結合テスト（フロント）]
