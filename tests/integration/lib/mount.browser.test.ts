@@ -19545,7 +19545,7 @@ test("test_normal_when_map_block_toggled", async () => {
   const figure = () => figures()[0] as HTMLElement;
   const lefts = () =>
     ["mdmark", "doc", "cache"].map(
-      (key) => rectOf(axisItem(figure(), key)).left,
+      (key) => axisItem(figure(), key).style.left,
     );
   const before = lefts();
   const width = rectOf(
@@ -19587,7 +19587,7 @@ test("test_normal_when_map_block_toggled", async () => {
 test("test_normal_when_map_axis_grid_layout", async () => {
   // 準備
   const gitData = JSON.parse(MAP_GIT_GRAPH_DATA);
-  gitData.layout = { axis: { color: "teal", order: 1 } };
+  gitData.layout = { axis: { color: "red", order: 1 } };
   const markdown = [
     axisGridRange(MAP_GANTT, MAP_GANTT_LAYOUT_DATA),
     axisGridRange(MAP_BLOCK, MAP_BLOCK_LAYOUT_DATA),
@@ -19631,7 +19631,7 @@ test("test_normal_when_map_axis_grid_layout", async () => {
   ).toContain("green");
   expect(
     axisItem(git, "axis").style.getPropertyValue("--map-axis-color"),
-  ).toContain("teal");
+  ).toContain("red");
   // 検証: 座標と並び順の書き方の警告
   const warnings = [...el.querySelectorAll(".mdmark-syntax-warning")].map(
     (warning) => warning.textContent ?? "",
