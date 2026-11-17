@@ -863,17 +863,21 @@ const mapFrame = (
     { ...part, ...size },
   );
 
+/** ストーリーの引数 `source` の、シーケンス図の見本の Mermaid */
+const SEQUENCE_SOURCES: Record<string, string> = {
+  arrows: MAP_SEQUENCE_ARROWS,
+  tall: MAP_SEQUENCE_TALL,
+  actor: MAP_SEQUENCE_ACTOR,
+};
+
+/** ストーリーの引数 `source` からシーケンス図の見本を選ぶ（知らない値と無いときは既定の見本） */
+const sequenceSourceOf = (source: unknown): string =>
+  (typeof source === "string" ? SEQUENCE_SOURCES[source] : undefined) ??
+  MAP_SEQUENCE;
+
 /** 部品『mapのシーケンス図』のストーリー（`source` で見本、`title` で図の枠のタイトルを選ぶ） */
 function mapSequenceStory(args: PartArgs): string {
-  const sequence = parseSequence(
-    args.source === "arrows"
-      ? MAP_SEQUENCE_ARROWS
-      : args.source === "tall"
-        ? MAP_SEQUENCE_TALL
-        : args.source === "actor"
-          ? MAP_SEQUENCE_ACTOR
-          : MAP_SEQUENCE,
-  );
+  const sequence = parseSequence(sequenceSourceOf(args.source));
   const collapsed = jsonList(args.collapsed).map(Number);
   // 問い合わせの値は数に読み替わって届く
   const entered =
