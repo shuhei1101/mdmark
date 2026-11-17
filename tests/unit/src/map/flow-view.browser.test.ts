@@ -1,4 +1,4 @@
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, expect, onTestFinished, test, vi } from "vitest";
 import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 import { CONFIG, DATA, FLOW, mapRange } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
@@ -357,14 +357,19 @@ test("test_attach_map_flow_when_crowded", async () => {
     [3, 3],
     [3, 7],
   ];
+  const original = separateWires.getMockImplementation();
+  // 2 回目以降（広げて配置し直した後と、描いた後に測り直したとき）は印の点の線を返す
   separateWires
-    .mockImplementationOnce((value) => ({ wires: value.wires, crowded: 16 }))
-    .mockImplementationOnce((value) => ({
+    .mockImplementation((value) => ({
       wires: value.wires.map((wire, index) =>
         index === 0 ? { ...wire, points: marked } : wire,
       ),
       crowded: 0,
-    }));
+    }))
+    .mockImplementationOnce((value) => ({ wires: value.wires, crowded: 16 }));
+  onTestFinished(() => {
+    if (original) separateWires.mockImplementation(original);
+  });
   // 実行
   const root = await setUp();
   // 検証
