@@ -168,14 +168,16 @@ const visibleItems = (options: LayoutOptions): AxisGridItem[] =>
     ? options.grid.items
     : options.grid.items.filter((item) => item.section === options.entered);
 
-/** 閉じた section として描くか（中へ入った section は閉じない） */
-const isClosed = (
+/** 閉じた section として描くなら、その section（中へ入った section は閉じない） */
+const closedSection = (
   options: LayoutOptions,
   section: AxisGridSection | undefined,
-): section is AxisGridSection =>
+): AxisGridSection | undefined =>
   section !== undefined &&
   section.stateKey !== options.entered &&
-  options.collapsed.has(section.stateKey);
+  options.collapsed.has(section.stateKey)
+    ? section
+    : undefined;
 
 /** 閉じた section・入れ子のブロックの項目 */
 const collapsedItem = (
@@ -258,7 +260,8 @@ const placeGanttGroup = (
   const { options, layout, axis } = context;
   const color = sectionColor(group.section);
   let y = group.section === undefined ? top : top + row;
-  if (isClosed(options, group.section)) {
+  const closed = closedSection(options, group.section);
+  if (closed) {
     const spans = group.items.map(spanOf);
     const start = axis.xOf(
       new Date(Math.min(...spans.map((s) => s.start.getTime()))),
@@ -268,7 +271,7 @@ const placeGanttGroup = (
     );
     layout.items.push(
       collapsedItem(
-        group.section,
+        closed,
         {
           x: start,
           y: top + row / 8,
@@ -295,7 +298,7 @@ const placeGanttGroup = (
       width: nameColumn + axis.days * day,
       height: y - top,
       color,
-      collapsed: isClosed(options, group.section),
+      collapsed: closed !== undefined,
     });
   return y;
 };
@@ -422,10 +425,11 @@ const layoutTimeline = (options: LayoutOptions): AxisGridLayout => {
   for (const group of groupsOf(options.grid, periods)) {
     const left = x;
     const color = sectionColor(group.section);
-    if (isClosed(options, group.section)) {
+    const closed = closedSection(options, group.section);
+    if (closed) {
       layout.items.push(
         collapsedItem(
-          group.section,
+          closed,
           { x, y: margin + row, width: step - gap, height: row * 1.5 },
           color,
         ),
@@ -450,7 +454,7 @@ const layoutTimeline = (options: LayoutOptions): AxisGridLayout => {
         width: x - left - gap / 2,
         height: 0,
         color,
-        collapsed: isClosed(options, group.section),
+        collapsed: closed !== undefined,
       });
   }
   for (const frame of layout.frames) frame.height = bottom - margin;
@@ -616,8 +620,9 @@ const layoutJourney = (options: LayoutOptions): AxisGridLayout => {
   for (const group of groupsOf(options.grid, items)) {
     const left = x;
     const color = sectionColor(group.section);
-    const tasks = isClosed(options, group.section)
-      ? [group]
+    const closed = closedSection(options, group.section);
+    const tasks = closed
+      ? [{ section: closed, items: group.items }]
       : group.items.map((item) => ({ section: undefined, items: [item] }));
     for (const task of tasks) {
       const score =
@@ -652,7 +657,7 @@ const layoutJourney = (options: LayoutOptions): AxisGridLayout => {
         width: x - left,
         height: row,
         color,
-        collapsed: isClosed(options, group.section),
+        collapsed: closed !== undefined,
       });
   }
   for (let score = 1; score <= 5; score += 1)
@@ -758,7 +763,7 @@ const placeBlockChild = (
     return row;
   }
   const section = child.section;
-  if (isClosed(options, section)) {
+  if (closedSection(options, section)) {
     const placed = { ...box, height: row };
     layout.items.push({
       ...collapsedItem(section, placed, undefined),

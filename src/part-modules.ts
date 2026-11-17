@@ -1,5 +1,6 @@
 import type { CommentsPartModule } from "./comments/index.ts";
 import type { ResolvedConfig } from "./config.ts";
+import type { ResolveIdLink } from "./render/sanitize.ts";
 import type { ViewPartModule } from "./views/index.ts";
 
 /** 部品のモジュールの名前 */
@@ -10,7 +11,10 @@ export type MapPartModule = {
   attachMap: (
     root: HTMLElement,
     config: ResolvedConfig,
-    hooks?: { restoreMermaid?: (blocks: HTMLElement[]) => void },
+    hooks?: {
+      restoreMermaid?: (blocks: HTMLElement[]) => void;
+      resolveIdLink?: ResolveIdLink;
+    },
   ) => () => void;
 };
 

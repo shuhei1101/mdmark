@@ -352,8 +352,9 @@ function resolveIdLinks(state: StateCore): void {
   for (const token of state.tokens) {
     for (const child of token.children ?? []) {
       if (child.type !== "link_open") continue;
-      const href = child.attrGet("href");
-      if (href === null || !href.startsWith("id:")) continue;
+      const raw = child.attrGet("href");
+      const href = raw === null ? "" : String(raw);
+      if (!href.startsWith("id:")) continue;
       const url = resolveIdHref({ href, resolveIdLink: env.resolveIdLink });
       if (url !== undefined) child.attrSet("href", url);
     }

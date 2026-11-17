@@ -1,7 +1,6 @@
 import type { ResolvedConfig } from "../config.ts";
 import { attachDiagrams, DIAGRAM_REDRAW_EVENT } from "../interact/diagrams.ts";
 import { renderDiagramFrame } from "../parts/diagram.ts";
-import type { ResolveIdLink } from "../render/sanitize.ts";
 import {
   type MapFlowArgs,
   type MapPacketMark,
@@ -10,6 +9,7 @@ import {
   renderMapPackets,
   selectableName,
 } from "../parts/map.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
   attachBand,

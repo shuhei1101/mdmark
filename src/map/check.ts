@@ -557,9 +557,7 @@ export const collectMapProblems = (
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
   checkLayout(context);
-  problems.push(
-    ...colorLayoutKindProblems(context, structure.args.args.focus),
-  );
+  problems.push(...colorLayoutKindProblems(context, structure.args.args.focus));
   problems.push(...found.linkProblems);
   for (const name of found.classes) {
     if (!(name in config.kinds)) {

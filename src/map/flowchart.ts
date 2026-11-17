@@ -96,13 +96,10 @@ export const mapLinkProblems = (options: {
   const allowed: Record<string, string> = {};
   const problems: MapProblem[] = [];
   for (const [id, href] of Object.entries(links)) {
-    const isIdLink = href.startsWith("id:");
-    if (isIdLink && idLinks.mode === "skip") continue;
-    const url = isIdLink
-      ? resolveIdHref({ href, resolveIdLink: idLinks.resolveIdLink })
-      : isAllowedUrl(href)
-        ? href
-        : undefined;
+    let url: string | undefined;
+    if (!href.startsWith("id:")) url = isAllowedUrl(href) ? href : undefined;
+    else if (idLinks.mode === "skip") continue;
+    else url = resolveIdHref({ href, resolveIdLink: idLinks.resolveIdLink });
     if (url !== undefined) {
       allowed[id] = url;
       continue;
