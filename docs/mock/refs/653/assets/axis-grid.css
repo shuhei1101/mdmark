@@ -109,11 +109,6 @@
 .ag-figure .ag-section-block.ag-section-closed .ag-section-title {
   display: none;
 }
-.ag-figure .ag-section-block.ag-section-closed .ag-section-head {
-  top: -14px;
-  right: 4px;
-  left: auto;
-}
 /* ジャーニーの section: タスクの上の帯 */
 .ag-figure .ag-section-band {
   background: var(--ag-fill);
@@ -171,14 +166,6 @@
 }
 .ag-figure .ag-bar.ag-bar-closed {
   background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ag-color) 60%, var(--mdmark-color-bg)) 0 6px, color-mix(in srgb, var(--ag-color) 45%, var(--mdmark-color-bg)) 6px 12px);
-}
-.ag-figure .ag-bar.ag-bar-closed .mdmark-diagram-node-name {
-  position: relative;
-  width: auto;
-  height: auto;
-  clip-path: none;
-  font-size: 12px;
-  font-weight: 700;
 }
 .ag-figure .ag-today {
   stroke: var(--mdmark-color-accent-red-text);
@@ -280,11 +267,10 @@
 }
 .ag-figure .ag-commit-caption {
   position: absolute;
-  overflow: hidden;
   font-size: 11px;
+  line-height: 1.3;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   color: var(--mdmark-color-muted);
 }
 .ag-figure .ag-tag {
@@ -454,6 +440,17 @@
   z-index: 3;
 }
 .ag-figure .ag-section-block.ag-section-closed .ag-section-head {
-  top: -28px;
-  right: 0;
+  top: -30px;
+  left: 0;
+}
+
+/* 閉じた項目の名前と数: 名前の行の下に「（{種類} {数} 件）」の行を出す */
+.ag-figure .ag-two-lines .mdmark-diagram-node-name,
+.ag-figure .ag-task-name {
+  white-space: pre-line;
+  line-height: 1.3;
+}
+.ag-figure .ag-two-lines .mdmark-diagram-node-name {
+  font-size: 12px;
+  white-space: pre;
 }

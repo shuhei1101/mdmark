@@ -261,7 +261,7 @@ const parseBlock = (source) => {
 
 /** ガントチャート: 上に日付の軸、左に名前の列、タスクを記載順に 1 行ずつ、開始日から終了日までの棒で並べる */
 const layoutGantt = (model, state) => {
-  const NAME_COL = 150;
+  const NAME_COL = 200;
   const DAY_W = 26;
   const ROW = 34;
   const AXIS = 34;
@@ -285,7 +285,7 @@ const layoutGantt = (model, state) => {
     if (closed) {
       const first = new Date(Math.min(...section.items.map((item) => item.from.getTime())));
       const last = new Date(Math.max(...section.items.map((item) => item.to.getTime())));
-      layout.nodes.push({ key: `section:${section.stateKey}`, label: `${section.items.length}`, x: xOf(first), y: y + 6, w: xOf(last) - xOf(first), h: ROW - 12, cls: "ag-bar ag-bar-closed", color: section.color, section });
+      layout.nodes.push({ key: `section:${section.stateKey}`, label: `${section.label}（タスク ${section.items.length} 件）`, x: xOf(first), y: y + 6, w: xOf(last) - xOf(first), h: ROW - 12, cls: "ag-bar ag-bar-closed", color: section.color, section });
       y += ROW;
     } else {
       // 開いた section は、見出しの行の下にタスクを 1 行ずつ並べる
@@ -299,7 +299,7 @@ const layoutGantt = (model, state) => {
         y += ROW;
       }
     }
-    layout.sections.push({ key: section.key, stateKey: section.stateKey, label: section.label, x: MARGIN, y: top, w: layout.width - MARGIN * 2, h: y - top, closed, count: section.items.length, color: section.color, kind: "row" });
+    layout.sections.push({ key: section.key, stateKey: section.stateKey, label: section.label, title: closed ? `${section.label}（タスク ${section.items.length} 件）` : section.label, x: MARGIN, y: top, w: layout.width - MARGIN * 2, h: y - top, closed, count: section.items.length, color: section.color, kind: "row" });
   }
   // after の依存: 選んだときだけ線を出す（keys の両端が強調に入るときに描く）
   for (const item of shownItems) {
@@ -324,7 +324,7 @@ const layoutGantt = (model, state) => {
 
 /** タイムライン: 期間を記載順に横の軸の上に並べ、期間の下に出来事を縦に並べる */
 const layoutTimeline = (model, state) => {
-  const COL = 168;
+  const COL = 188;
   const PERIOD_H = 40;
   const EVENT_H = 48;
   const GAP = 12;
@@ -354,7 +354,7 @@ const layoutTimeline = (model, state) => {
     const closed = state.collapsed.has(section.stateKey) && !state.enter;
     const left = x - GAP / 2;
     if (closed) {
-      layout.nodes.push({ key: `section:${section.stateKey}`, label: `${section.label}（${section.items.length} 期間）`, x, y: MARGIN + SECTION_HEAD, w: COL - GAP * 2, h: PERIOD_H, cls: "ag-period ag-closed", color: section.color, section });
+      layout.nodes.push({ key: `section:${section.stateKey}`, label: `${section.label}\n（期間 ${section.items.length} 件）`, x, y: MARGIN + SECTION_HEAD, w: COL - GAP * 2, h: PERIOD_H + 12, cls: "ag-period ag-closed ag-two-lines", color: section.color, section });
       x += COL;
     } else for (const item of section.items) placePeriod(item, section.color);
     layout.sections.push({ key: section.key, stateKey: section.stateKey, label: section.label, x: left, y: MARGIN, w: x - left - GAP, h: Math.max(maxY, MARGIN + SECTION_HEAD + PERIOD_H + GAP) - MARGIN, closed, count: section.items.length, color: section.color, kind: "box" });
@@ -368,7 +368,7 @@ const layoutTimeline = (model, state) => {
 /** Git グラフ: ブランチごとの横の線に、commit を記載順に左から右へ並べる */
 const layoutGitGraph = (model) => {
   const NAME_COL = 96;
-  const STEP = 64;
+  const STEP = 104;
   const LANE = 64;
   const DOT = 24;
   const layout = { nodes: [], sections: [], lines: [], labels: [], width: MARGIN * 2 + NAME_COL + (model.items.length + 1) * STEP, height: MARGIN * 2 + model.branches.length * LANE + 16 };
@@ -383,11 +383,12 @@ const layoutGitGraph = (model) => {
     const y = laneY(branch.name);
     const first = pos.get(commits[0]);
     const last = pos.get(commits.at(-1));
-    const startX = branch.from ? pos.get(branch.from).x : first.x;
+    const startX = branch.from ? pos.get(branch.from).x + STEP / 2 + 12 : first.x;
     layout.lines.push({ d: `M${startX} ${y} H${last.x}`, keys: commits.map((item) => item.key), cls: "ag-lane", color, branch: branch.name });
     if (branch.from) {
       const p = pos.get(branch.from);
-      layout.lines.push({ d: `M${p.x} ${p.y} C${p.x + STEP / 2} ${p.y} ${p.x} ${y} ${p.x + STEP / 2} ${y}`, keys: [branch.from.key, commits[0].key], cls: "ag-lane", color, branch: branch.name });
+      const mid = p.x + STEP / 2;
+      layout.lines.push({ d: `M${p.x + DOT / 2} ${p.y} H${mid - 12} Q${mid} ${p.y} ${mid} ${p.y + 12} V${y - 12} Q${mid} ${y} ${mid + 12} ${y}`, keys: [branch.from.key, commits[0].key], cls: "ag-lane", color, branch: branch.name });
     }
     layout.labels.push({ text: branch.name, x: MARGIN, y: y - 12, cls: "ag-branch-name", branch: branch.name, color });
   });
@@ -401,7 +402,8 @@ const layoutGitGraph = (model) => {
     }
     layout.nodes.push({ key: item.key, label: item.label || "commit", x: p.x - DOT / 2, y: p.y - DOT / 2, w: DOT, h: DOT, cls: `ag-commit ag-commit-${item.type.toLowerCase()} ag-commit-${item.kind}`, color, item });
     const caption = item.kind === "cherry-pick" ? `← ${item.pickOf}` : item.id ?? item.msg;
-    if (caption) layout.labels.push({ text: caption, x: p.x - 48, y: p.y + DOT / 2 + 4, w: 96, cls: "ag-commit-caption", key: item.key });
+    // commit の下の文字は、隣の commit との間に収まる幅で折り返す（分かれる線は丸の右の間を通る）
+    if (caption) layout.labels.push({ text: caption, x: p.x - (STEP - 16) / 2, y: p.y + DOT / 2 + 4, w: STEP - 16, cls: "ag-commit-caption", key: item.key });
     if (item.tag) layout.labels.push({ text: item.tag, x: p.x - 36, y: p.y - DOT / 2 - 26, w: 72, cls: "ag-tag", key: item.key });
   }
   return layout;
@@ -422,7 +424,7 @@ const layoutJourney = (model, state) => {
   for (const section of visibleSections) {
     const left = x;
     const closed = state.collapsed.has(section.stateKey) && !state.enter;
-    const tasks = closed ? [{ label: `${section.label}（${section.items.length}）`, key: `section:${section.stateKey}`, score: section.items.reduce((sum, item) => sum + item.score, 0) / section.items.length, actors: [], closed: true }] : section.items;
+    const tasks = closed ? [{ label: `${section.label}\n（タスク ${section.items.length} 件）`, key: `section:${section.stateKey}`, score: section.items.reduce((sum, item) => sum + item.score, 0) / section.items.length, actors: [], closed: true }] : section.items;
     for (const task of tasks) {
       const cx = x + COL / 2;
       const y = yOf(task.score);
@@ -454,9 +456,11 @@ const layoutJourney = (model, state) => {
 
 /** ブロック図: columns の列の数の格子に記載の順で並べ、幅で列を進める。入れ子は中の columns で格子を作り直す */
 const layoutBlock = (model, state) => {
-  const CELL_W = 132;
+  const CELL_W = 156;
   const CELL_H = 52;
   const GAP = 20;
+  /** 行の間: 閉じた入れ子のブロックの開閉のボタンを上に置ける高さ */
+  const ROW_GAP = 36;
   const HEAD = 28;
   const PAD = 12;
   const layout = { nodes: [], sections: [], lines: [], labels: [], width: 0, height: 0 };
@@ -470,14 +474,14 @@ const layoutBlock = (model, state) => {
     for (const child of container.children) {
       if (col + child.span > container.columns) {
         col = 0;
-        rowTop += rowH + GAP;
+        rowTop += rowH + ROW_GAP;
         rowH = 0;
       }
       const x = left + col * (CELL_W + GAP);
       if (child.isGroup) {
         const closed = state.collapsed.has(child.key);
         if (closed) {
-          layout.nodes.push({ key: child.key, label: `${child.label}（${child.children.filter((kid) => !kid.space).length}）`, x, y: rowTop, w: cellW(child.span), h: CELL_H, cls: "ag-block ag-closed", group: child });
+          layout.nodes.push({ key: child.key, label: `${child.label}\n（ブロック ${child.children.filter((kid) => !kid.space).length} 件）`, x, y: rowTop, w: cellW(child.span), h: CELL_H, cls: "ag-block ag-closed ag-two-lines", group: child });
           layout.sections.push({ key: child.key, stateKey: child.key, label: child.label, x, y: rowTop, w: cellW(child.span), h: CELL_H, closed: true, count: child.children.length, kind: "block" });
           rowH = Math.max(rowH, CELL_H);
           child.box = { x, y: rowTop, w: cellW(child.span), h: CELL_H };
@@ -718,7 +722,7 @@ export const createAxisGrid = (host, spec, initial = {}) => {
       if (keep && !keep.has(`section:${section.stateKey}`) && !(section.closed === false && [...keep].some((key) => layout.nodes.some((node) => node.key === key && node.section?.stateKey === section.stateKey)))) face.classList.add("ag-dim");
       const head = document.createElement("div");
       head.className = "ag-section-head";
-      const title = Object.assign(document.createElement("span"), { className: "ag-section-title", textContent: section.label });
+      const title = Object.assign(document.createElement("span"), { className: "ag-section-title", textContent: section.title ?? section.label });
       head.append(title);
       if (!state.enter || state.enter.key !== section.key) {
         const toggle = document.createElement("button");
