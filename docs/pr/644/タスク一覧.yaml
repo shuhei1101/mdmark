@@ -75,8 +75,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T06:42:55.620288+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: 反映作業 8 件のスクリプトを mdmark の project-index.yaml に合わせ、疎通確認・実行・確認を流す
+    updated_by: planner
+    updated_at: '2026-11-17T07:21:29.919249+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: ソースコードを変えない

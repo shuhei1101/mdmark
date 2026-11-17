@@ -26,7 +26,9 @@ docs:
   - page: docs/_config.yml
     new: false
     change: 配布元の v0.4.0 で増えた `exclude` の行のうち mdmark にあるフォルダ（`data/`・`layout/` 等）を足し、`rules.yaml` の行をルール索引の移動に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
   - page: docs/rules.yaml
     new: false
     change: 反映作業『プロジェクトの索引の移動』で直下の `rules.yaml` へ移し、エントリの `rule` の相対パスを直す。反映作業『配布先の規約のパスの追従』で AI Monitor の規約の .md のパスを YAML のパスに直す
@@ -34,7 +36,9 @@ docs:
   - page: docs/_root/files.yml
     new: false
     change: '`rules.yaml` の行を、ルール索引の移動に合わせる'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
   - page: project-index.yaml
     new: false
     change: ER 図の行の `schema` を knowledge の `schemas/design/er.schema.yaml` の参照へ、管理用の YAML の行の `schema` を `schemas/knowledge-files.schema.yaml` の参照へ切り替える。反映作業『配布先のデータの設計書の作成』で `docs/data/` の行を足す
@@ -46,7 +50,9 @@ docs:
   - page: schemas/files.yaml
     new: false
     change: 削除した Schema のコピーの行を外す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
   - page: src/files.yaml
     new: false
     change: 1 行目の `$schema` を、削除した `files.schema.yaml` から knowledge の `knowledge-files.schema.yaml` へ向ける（ほかの各フォルダの `files.yaml`・`files.yml` の 1 行目も同じ）
@@ -62,7 +68,9 @@ docs:
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: '`docs/_theme/` の `generated_from.source` を `shuhei1101/ai-monitor@v0.4.0` にし、`schemas/` のエントリから削除した Schema のコピーを外し、`rules.yaml` の置き場所と `docs/data/` のエントリを合わせる'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
   - page: docs/er/ER-472-1.yaml
     new: false
     change: 反映作業『配布先のデータの設計書の作成』で、`source` を持たないテーブルとカラムにデータの設計書を指す `source` を付ける（`docs/er/` の他の ER 図も同じ）。knowledge の `er.schema.yaml` の検査に合格させる
