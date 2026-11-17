@@ -18,9 +18,13 @@ docs:
   - page: src/files.yaml
     new: false
     change: render/syntax/blocks.ts・render/syntax/tokens.ts・viewer/includes.ts・viewer/viewer.css の行の implements を、新しく作る物理ファイルごとのモジュール構成へ向ける（description の受け持ちも合わせる）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:43:16.494646+00:00'
   - page: vscode/files.yaml
     new: false
     change: src/escape.ts・src/workspace.ts の行の implements を、新しく作る物理ファイルごとのモジュール構成へ向ける（description の受け持ちも合わせる）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:43:16.494646+00:00'
 scope_out: []

@@ -64,8 +64,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T10:31:04.171773+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: src/files.yaml・vscode/files.yaml の 6 ファイルの行の implements を、新しく作るモジュール構成へ向ける
+    updated_by: planner
+    updated_at: '2026-11-17T10:43:18.161600+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: 実装とテストを変えない設計書だけの変更のため
