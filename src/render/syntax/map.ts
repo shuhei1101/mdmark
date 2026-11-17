@@ -2,7 +2,8 @@ import type { StateCore, Token } from "markdown-it";
 import type { WarningItem } from "../../extensions.ts";
 import { buildDictionary, findWords } from "../../knowledge/dictionary.ts";
 import type { MapProblem } from "../../map/spec.ts";
-import { collectMapStructure } from "../../map/structure.ts";
+import { collectMapStructure, plainMapSourceOf } from "../../map/structure.ts";
+import { mermaidKindName, splitMermaidTitle } from "../../mermaid-source.ts";
 import { escapeHtml } from "../../parts/escape.ts";
 import { mapNoteAnnotations } from "./annotations.ts";
 import { outermostRanges, pairRanges } from "./blocks.ts";
@@ -193,6 +194,38 @@ const mapRangeTokens = (
   ];
 };
 
+/** 範囲の外の mermaid のコードブロック 1 つを、補足の無い範囲の div.mdmark-map で囲んだトークンにする。範囲の外の map の図にしないコードブロックは `undefined` */
+const plainMapTokens = (
+  state: StateCore,
+  fence: Token,
+  draw: {
+    number: number;
+    findTerms: ((text: string) => Record<string, string>) | undefined;
+  },
+): Token[] | undefined => {
+  const plain = plainMapSourceOf(fence.content);
+  if (plain === undefined) return undefined;
+  const title =
+    plain.title ?? mermaidKindName(splitMermaidTitle(fence.content).kind);
+  fence.content = plain.body;
+  fence.meta = { ...(fence.meta ?? {}), [MAP_SOURCE_META]: true };
+  const args = escapeHtml(JSON.stringify({ title }));
+  const terms = draw.findTerms?.(plain.body);
+  const front =
+    plain.frontMatter === undefined
+      ? ""
+      : ` data-map-front-matter="${escapeHtml(plain.frontMatter)}"`;
+  return [
+    ownBlock(
+      state,
+      `<div class="mdmark-map" data-map="${draw.number}" data-map-kind="${plain.kind}" data-map-args="${args}" data-map-plain${front}${termsAttrOf(terms)}>`,
+      fence,
+    ),
+    fence,
+    ownBlock(state, "</div>", fence),
+  ];
+};
+
 /** `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲を div.mdmark-map にし、範囲の形の誤りを記載の警告にする。オフのときはマーカーと補足を取り除き、mermaid のブロックを普通のコードブロックとして残す */
 export const buildMapRanges = (state: StateCore): void => {
   const tokens = state.tokens;
@@ -208,8 +241,24 @@ export const buildMapRanges = (state: StateCore): void => {
   let cursor = 0;
   let number = 0;
   const findTerms = termsFinder(state);
+  const plainOn = featureOn(state, "mermaid");
+  /** 範囲の外のトークンを、範囲の外の map の図にする mermaid のコードブロックを囲んで足す */
+  const pushOutside = (outside: Token[]): void => {
+    for (const token of outside) {
+      const drawn =
+        plainOn && isMermaid(token)
+          ? plainMapTokens(state, token, { number: number + 1, findTerms })
+          : undefined;
+      if (drawn === undefined) {
+        out.push(token);
+        continue;
+      }
+      number += 1;
+      out.push(...drawn);
+    }
+  };
   for (const { open, close } of ranges) {
-    out.push(...tokens.slice(cursor, open));
+    pushOutside(tokens.slice(cursor, open));
     const openToken = tokens[open] as Token;
     const mark = markOf(openToken);
     if (close === -1 || mark === undefined) {
@@ -231,6 +280,6 @@ export const buildMapRanges = (state: StateCore): void => {
     );
     cursor = close + 1;
   }
-  out.push(...tokens.slice(cursor));
+  pushOutside(tokens.slice(cursor));
   state.tokens = out;
 };
