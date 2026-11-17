@@ -112,7 +112,7 @@ test("test_embed_local_libraries_when_mermaid", async () => {
   // 実行
   const withBlock = await embedLocalLibraries({
     ...options,
-    markdown: "```mermaid\nflowchart LR\n```\n",
+    markdown: "```mermaid\ngantt\n```\n",
     bundle: used.bundle,
   });
   const withoutBlock = await embedLocalLibraries({

@@ -1369,8 +1369,12 @@ test("test_mount_when_range_scripts", async () => {
 test(
   "test_mount_when_plain_mermaid_fallback",
   async () => {
-    // 準備
+    // 準備: map の部品のモジュールはソースから読み込む
     addStyles();
+    const { partModules, partModuleLoaders, setPartModuleLoader } =
+      await import("../../../src/part-modules.ts");
+    partModules.clear();
+    setPartModuleLoader("map", () => import("../../../src/map/index.ts"));
     const el = createElement();
     const markdown = [
       "```mermaid",
@@ -1404,6 +1408,8 @@ test(
     expect(counts()).toEqual([1, 1]);
     handle.destroy();
     expect(counts()).toEqual([0, 0]);
+    partModules.clear();
+    partModuleLoaders.clear();
   },
   MERMAID_WAIT_MS * 2 + 30_000,
 );
