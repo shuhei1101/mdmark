@@ -251,9 +251,9 @@ functions:
       - name: test_layout_map_when_spread
         case: 正常
         summary: 間を広げる
-        condition: 'モックの `FLOW` を `spread` なしと `spread: 16` で配置する'
+        condition: '`flowchart LR` の `A --> B`・`A --> C`（`B` と `C` が同じ段）を `spread` なしと `spread: 16` で配置する'
         mock: なし
-        expected: '`spread: 16` のほうが、同じ段で隣り合う 2 つのノードの間と、隣の段の 2 つのノードの間がそれぞれ 16px 広い'
+        expected: '`spread: 16` のほうが、同じ段の `B` と `C` の間と、隣の段の `A` と `B` の間がそれぞれ 16px 広い'
   - name: routeWires
     title: 線の経路を引く
     kind: 関数
