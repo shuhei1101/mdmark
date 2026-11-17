@@ -1,0 +1,11 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/build.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-build-dist-index-size-limit
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  09:48:37
+   Duration  18.94s (tests 98%, import 2%)
+
+exit=0
