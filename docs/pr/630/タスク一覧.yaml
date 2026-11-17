@@ -40,8 +40,10 @@ tasks:
     updated_at: '2026-11-17T01:14:06.740802+00:00'
     note: 案 A（確認ログ）で SC-472-11・SC-472-19・SC-472-42 を書き直した
   - process: モック作成
-    status: todo
+    status: done
     note: '同じ Mermaid を今の描き方と案 A で並べる部品のモック（docs/mock/components/plain-mermaid/）を作る（モック要否 Q3: 案 A で読者に見える変化を確認する）'
+    updated_by: planner
+    updated_at: '2026-11-17T02:50:39.340088+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計

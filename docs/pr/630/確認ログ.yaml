@@ -23,3 +23,15 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594566246
+  - topic: 案 A の title の無い図の枠のタイトル
+    decision: 今に合わせ、図の種類の名前（シーケンス図・クラス図 など）をタイトルに出す（推奨案 A）
+    decided_by: recommended
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594626939
+  - topic: モックで見つかった map の図の 3 点（ノードの名前の位置・参加者の行の固定・左上の枠線）の直し方
+    decision: 種類を持たないノードは名前を上下の中央に描く。文書をスクロールしても図の下端が過ぎるまで参加者の行を画面の上端に留める。参加者の行を留めても表示する枠の枠線を欠かさない
+    decided_by: reply
+    approver: shuhei1101
+    commit: e2bec0f2
+    thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4594642955
