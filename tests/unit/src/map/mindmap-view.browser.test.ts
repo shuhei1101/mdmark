@@ -225,17 +225,14 @@ test("test_attach_map_mindmap_when_initial_scroll", async () => {
   // 実行
   const root = await setUp(MINDMAP_DATA, 390);
   // 検証
-  const viewport = root.querySelector<HTMLElement>(".mdmark-diagram-viewport");
-  const rootItem = itemOf(root, "企画の論点");
-  expect(viewport?.scrollLeft).toBeGreaterThan(0);
-  const box = viewport?.getBoundingClientRect();
-  const item = rootItem?.getBoundingClientRect();
-  expect(
-    Math.abs(
-      (item?.left ?? 0) +
-        (item?.width ?? 0) / 2 -
-        ((box?.left ?? 0) + (box?.width ?? 0) / 2),
-    ),
-  ).toBeLessThan(2);
+  const viewport = root.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
+  const rootItem = itemOf(root, "企画の論点") as HTMLElement;
+  expect(viewport.scrollLeft).toBeGreaterThan(0);
+  const box = viewport.getBoundingClientRect();
+  const item = rootItem.getBoundingClientRect();
+  const center = (rect: DOMRect) => rect.left + rect.width / 2;
+  expect(Math.abs(center(item) - center(box))).toBeLessThan(2);
   expect(root.querySelector("figure")?.dataset.fitMin).toBe("1");
 });
