@@ -25,6 +25,26 @@
 
 なし
 
+### 結合テストの実行範囲
+
+層は「結合テスト（フロント）」の補足「VS Code 拡張機能」（`xvfb-run -a npm --prefix vscode run test:integration`）。
+実行のコマンドはファイルを選べないため、実行するテストを `suite.only`・`test.only` で絞り、作業ツリーは実行後に戻す。
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無い入口 |
+| --- | --- | --- | --- |
+| `docs/pr/637/README.md` | R7（PR ドキュメントで、参照する結合テストが無い） | - | - |
+| `docs/pr/637/VSCode拡張機能.md` | R7（同上） | - | - |
+| `docs/pr/637/タスク一覧.yaml` | R7（同上） | - | - |
+| `docs/pr/637/要件.md` | R7（同上） | - | - |
+| `docs/pr/637/要件.yaml` | R7（同上） | - | - |
+| `vscode/tests/integration/preview-open.test.ts` | R2 | `vscode/tests/integration/preview-open.test.ts` | - |
+| `vscode/tests/integration/preview-rerender.test.ts` | R2 | `vscode/tests/integration/preview-rerender.test.ts` | - |
+
+| 実行 | 回数 | 確認すること |
+| --- | --- | --- |
+| `test_normal_when_map_configured`・`test_normal`・`test_normal_when_version_pinned` だけを `test.only` にする | 10 回（1 回で 1.141.0 と stable） | ときどき fail した待ちが、繰り返しても fail しない |
+| `preview-open.test.ts`・`preview-rerender.test.ts` の suite だけを `suite.only` にする | 1 回（1.141.0 と stable） | 同じファイルの他のテストが、追加した関数・変数で壊れていない |
+
 ### 結合
 
 なし（結合テスト作成で記入する）
