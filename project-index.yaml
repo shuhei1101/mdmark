@@ -119,7 +119,10 @@ documents:
     title: ER 図
     paths: ["docs/er/*.yaml"]
     exclude: [index.yaml]
-    schema: schemas/er.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/design/er.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       name: title
       visibility: visibility
@@ -214,7 +217,10 @@ documents:
     exclude: [README.md, index.yaml, nav.yml, nav.project.yml, llms.txt, search.json, _config.yml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       visibility: visibility
   - id: mock
@@ -223,7 +229,10 @@ documents:
     exclude: [comments.js, index.css, index.js, view.js, viewer.css, viewer.js, "*.gif", "*.png", "*.mp4", "*.mp3"]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       visibility: visibility
   - id: docs
@@ -232,7 +241,10 @@ documents:
     exclude: [README.md, index.yaml, はじめに.md, 使用方法.md, リファレンス.md]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
     metadata:
       visibility: visibility
       category: category
@@ -241,62 +253,92 @@ documents:
     paths: [src/files.yaml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: tests
     title: テスト
     paths: [tests/files.yaml]
     exclude: ["*.webm"]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: scripts
     title: 開発のスクリプト
     paths: [scripts/files.yaml]
     exclude: ["*.txt"]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: init_templates
     title: 雛形
     paths: [templates/files.yaml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: schemas
     title: Schema
     paths: [schemas/files.yaml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: migrations
     title: 移行の手順
     paths: [migrations/files.yaml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: vscode
     title: VS Code 拡張機能
     paths: [vscode/files.yaml]
     exclude: [package-lock.json]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: plugin
     title: Claude Code プラグインの定義
     paths: [plugin/files.yaml]
     exclude: [THIRD_PARTY_LICENSES.txt, "*.js", mdmark.config.yaml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: storybook
     title: Storybook の設定
     paths: [.storybook/files.yaml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
   - id: workflows
     title: ワークフロー
     paths: [.github/files.yaml]
     records: files
     body_file: path
-    schema: schemas/files.schema.yaml
+    schema:
+      source: knowledge
+      path: schemas/knowledge-files.schema.yaml
+      ref: design-schemas/v8.4.0
