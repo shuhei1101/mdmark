@@ -377,14 +377,23 @@ test("test_check", async () => {
       ),
     ].map((row) => {
       const cell = row.querySelectorAll("td")[2];
-      const mark = cell?.querySelector(".mdmark-check");
+      if (!cell) {
+        return {
+          value: undefined,
+          label: null,
+          role: null,
+          spoken: null,
+          align: "",
+        };
+      }
+      const mark = cell.querySelector(".mdmark-check");
       return {
-        value: cell?.getAttribute("data-value"),
+        value: cell.getAttribute("data-value"),
         label: mark?.getAttribute("aria-label") ?? null,
         role: mark?.getAttribute("role") ?? null,
         spoken:
-          cell?.querySelector(".mdmark-visually-hidden")?.textContent ?? null,
-        align: cell ? getComputedStyle(cell).textAlign : "",
+          cell.querySelector(".mdmark-visually-hidden")?.textContent ?? null,
+        align: getComputedStyle(cell).textAlign,
       };
     }),
   );
@@ -1334,6 +1343,26 @@ async function accent(page: Page, color: string) {
   };
 }
 
+/** 描いた表の行ごとの色 */
+type RowColor = Awaited<ReturnType<typeof rowColors>>[number];
+
+/** 指定した番目の行のセルの色（行が無ければ空） */
+const cellsOf = (rows: RowColor[], at: number) => rows[at]?.cells ?? [];
+
+/** 3 列目を強調した行で、3 列目だけが強調の面の色を持ち、文字が読める */
+const expectThirdHighlighted = (row: RowColor, background: string) => {
+  expect(row.cells.map((cell) => cell.highlighted)).toEqual([
+    false,
+    false,
+    true,
+  ]);
+  expect(row.cells[2]?.background).toBe(background);
+  expect(row.cells[0]?.background).not.toBe(background);
+  expect(
+    contrastRatio(row.cells[2]?.text ?? "", row.cells[2]?.background ?? ""),
+  ).toBeGreaterThanOrEqual(4.5);
+};
+
 // highlight= の列は、セルを面の薄い色にし、見出しのセルの下端に線を付ける（Highlighted）
 test("test_highlighted", async () => {
   // 準備・実行
@@ -1349,23 +1378,14 @@ test("test_highlighted", async () => {
     })),
   );
   expect(head.map((th) => th.highlighted)).toEqual([false, false, true]);
-  expect(head[2]?.color).toBe("blue");
-  expect(head[2]?.background).toBe(blue.bg);
+  expect(head[2]).toMatchObject({ color: "blue", background: blue.bg });
   // 見出しの下端の線は、色の文字の色の内側の影
-  expect(head[2]?.shadow).toContain(blue.text);
-  expect(head[2]?.shadow).toContain("inset");
+  const shadow = head[2]?.shadow ?? "";
+  expect(shadow).toContain(blue.text);
+  expect(shadow).toContain("inset");
   const rows = await rowColors(page);
   for (const row of rows) {
-    expect(row.cells.map((cell) => cell.highlighted)).toEqual([
-      false,
-      false,
-      true,
-    ]);
-    expect(row.cells[2]?.background).toBe(blue.bg);
-    expect(row.cells[0]?.background).not.toBe(blue.bg);
-    expect(
-      contrastRatio(row.cells[2]?.text ?? "", row.cells[2]?.background ?? ""),
-    ).toBeGreaterThanOrEqual(4.5);
+    expectThirdHighlighted(row, blue.bg);
   }
 });
 
@@ -1383,7 +1403,7 @@ test("test_row_colors", async () => {
     null,
     "green",
   ]);
-  for (const cell of rows[0]?.cells ?? []) {
+  for (const cell of cellsOf(rows, 0)) {
     expect(cell.background).toBe(green.bg);
     expect(cell.bottom).toBe(green.text);
     // 先頭の行は上に線を付ける
@@ -1392,7 +1412,7 @@ test("test_row_colors", async () => {
       4.5,
     );
   }
-  for (const cell of rows[1]?.cells ?? []) {
+  for (const cell of cellsOf(rows, 1)) {
     expect(cell.background).toBe(yellow.bg);
     expect(cell.bottom).toBe(yellow.text);
     expect(contrastRatio(cell.text, cell.background)).toBeGreaterThanOrEqual(
@@ -1400,11 +1420,11 @@ test("test_row_colors", async () => {
     );
   }
   // 色の無い行の後ろの色の行は、上に線を付ける
-  for (const cell of rows[3]?.cells ?? []) {
+  for (const cell of cellsOf(rows, 3)) {
     expect(cell.background).toBe(green.bg);
     expect(cell.shadow).toContain(green.text);
   }
-  for (const cell of rows[2]?.cells ?? []) {
+  for (const cell of cellsOf(rows, 2)) {
     expect(cell.background).not.toBe(green.bg);
     expect(cell.background).not.toBe(yellow.bg);
   }

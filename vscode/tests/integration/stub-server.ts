@@ -105,6 +105,65 @@ async function serveDist(
   }
 }
 
+/** タグ一覧の要求を記録し、代役の振る舞いに合わせて応答する（応答しない・403・タグの一覧） */
+function serveTags(
+  stub: Stub,
+  { request, response }: { request: IncomingMessage; response: ServerResponse },
+): void {
+  stub.requests.push("/tags");
+  const received = performance.now();
+  const timing: TagRequestTiming = {
+    receivedAt: Date.now(),
+    closedAt: null,
+    openMs: null,
+  };
+  stub.tagRequests.push(timing);
+  request.on("close", () => {
+    timing.closedAt = Date.now();
+    timing.openMs = performance.now() - received;
+  });
+  if (stub.mode.tags === "hang") {
+    return;
+  }
+  if (stub.mode.tags === "forbidden") {
+    response.writeHead(403);
+    response.end();
+    return;
+  }
+  sendJson(
+    response,
+    stub.tags.map((name) => ({ name })),
+  );
+}
+
+/** 配布物の要求を記録し、代役の振る舞いに合わせて接続を切る・遅らせてから配布物を返却する */
+async function serveDistRequest(
+  stub: Stub,
+  {
+    request,
+    response,
+    path,
+    distDir,
+  }: {
+    request: IncomingMessage;
+    response: ServerResponse;
+    path: string;
+    distDir: string;
+  },
+): Promise<void> {
+  stub.requests.push(path);
+  if (stub.mode.dist === "drop") {
+    request.socket.destroy();
+    return;
+  }
+  if (stub.mode.dist === "slow") {
+    await new Promise((resolveWait) => setTimeout(resolveWait, SLOW_DIST_MS));
+  }
+  // ブラウザの配布物の読み込みは別のオリジンのため、CORS を許す
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  await serveDist(path, distDir, response);
+}
+
 /** 待ち受けを始めていない代役の配信のサーバーを作る。配布物とタグ一覧に加えて、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読み込む `GET /requests`・`DELETE /requests`・`GET /tag-requests` を持つ */
 export function createStubServer(stub: Stub, distDir: string): Server {
   return createServer(async (request, response) => {
@@ -133,42 +192,9 @@ export function createStubServer(stub: Stub, distDir: string): Server {
       return;
     }
     if (path === "/tags") {
-      stub.requests.push(path);
-      const received = performance.now();
-      const timing: TagRequestTiming = {
-        receivedAt: Date.now(),
-        closedAt: null,
-        openMs: null,
-      };
-      stub.tagRequests.push(timing);
-      request.on("close", () => {
-        timing.closedAt = Date.now();
-        timing.openMs = performance.now() - received;
-      });
-      if (stub.mode.tags === "hang") {
-        return;
-      }
-      if (stub.mode.tags === "forbidden") {
-        response.writeHead(403);
-        response.end();
-        return;
-      }
-      sendJson(
-        response,
-        stub.tags.map((name) => ({ name })),
-      );
+      serveTags(stub, { request, response });
       return;
     }
-    stub.requests.push(path);
-    if (stub.mode.dist === "drop") {
-      request.socket.destroy();
-      return;
-    }
-    if (stub.mode.dist === "slow") {
-      await new Promise((resolveWait) => setTimeout(resolveWait, SLOW_DIST_MS));
-    }
-    // ブラウザの配布物の読み込みは別のオリジンのため、CORS を許す
-    response.setHeader("Access-Control-Allow-Origin", "*");
-    await serveDist(path, distDir, response);
+    await serveDistRequest(stub, { request, response, path, distDir });
   });
 }

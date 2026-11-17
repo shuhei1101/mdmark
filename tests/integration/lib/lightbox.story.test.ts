@@ -26,29 +26,27 @@ async function readTools(page: Page) {
     const visible = (element: Element | null) =>
       element !== null && (element as HTMLElement).offsetParent !== null;
     const pan = dialog.querySelector('[data-group="pan"]');
+    const stage = dialog.querySelector(".mdmark-lightbox-stage");
+    const disabledOf = (name: string) => tool(name)?.disabled ?? null;
+    const textOf = (selector: string) =>
+      dialog.querySelector(selector)?.textContent ?? null;
+    const labelOf = (element: Element | null) =>
+      element?.getAttribute("aria-label") ?? null;
     return {
       label: dialog.getAttribute("aria-label"),
-      count:
-        dialog.querySelector(".mdmark-lightbox-count")?.textContent ?? null,
+      count: textOf(".mdmark-lightbox-count"),
       navVisible: visible(dialog.querySelector(".mdmark-lightbox-nav")),
-      prevDisabled: tool("prev")?.disabled ?? null,
-      nextDisabled: tool("next")?.disabled ?? null,
-      outDisabled: tool("out")?.disabled ?? null,
-      inDisabled: tool("in")?.disabled ?? null,
+      prevDisabled: disabledOf("prev"),
+      nextDisabled: disabledOf("next"),
+      outDisabled: disabledOf("out"),
+      inDisabled: disabledOf("in"),
       zoomText: tool("fit")?.textContent ?? null,
-      zoomLabel: tool("fit")?.getAttribute("aria-label") ?? null,
+      zoomLabel: labelOf(tool("fit")),
       panVisible: visible(pan),
-      closeLabel: tool("close")?.getAttribute("aria-label") ?? null,
-      stageZoomed:
-        dialog
-          .querySelector(".mdmark-lightbox-stage")
-          ?.classList.contains("is-zoomed") ?? false,
-      stageLabel:
-        dialog
-          .querySelector(".mdmark-lightbox-stage")
-          ?.getAttribute("aria-label") ?? null,
-      caption:
-        dialog.querySelector(".mdmark-lightbox-caption")?.textContent ?? "",
+      closeLabel: labelOf(tool("close")),
+      stageZoomed: stage?.classList.contains("is-zoomed") ?? false,
+      stageLabel: labelOf(stage),
+      caption: textOf(".mdmark-lightbox-caption") ?? "",
     };
   });
 }

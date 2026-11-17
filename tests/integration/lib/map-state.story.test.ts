@@ -110,12 +110,16 @@ test("test_default", async () => {
   for (const id of ["end_root", "end_実行中", "end_保留"])
     expect(byId.get(id), id).toMatchObject({ shape: "end", label: "終了" });
   const start = byId.get("start_root");
-  expect(start?.width).toBeCloseTo(start?.height ?? 0, 0);
-  expect(start?.radius).toBe("50%");
   const end = byId.get("end_root");
-  expect(end?.width).toBeCloseTo(end?.height ?? 0, 0);
-  expect(byId.get("判定")).toMatchObject({ shape: "choice", label: "分岐" });
-  expect(byId.get("判定")?.clip).toContain("polygon");
+  if (!start || !end) throw new Error("開始か終了のノードが無い");
+  expect(start.width).toBeCloseTo(start.height, 0);
+  expect(start.radius).toBe("50%");
+  expect(end.width).toBeCloseTo(end.height, 0);
+  expect(byId.get("判定")).toMatchObject({
+    shape: "choice",
+    label: "分岐",
+    clip: expect.stringContaining("polygon"),
+  });
   // 検証: as で付けた名前と、注記の種類の行
   await expect(
     page

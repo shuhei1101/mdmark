@@ -271,6 +271,14 @@ test("test_stacked_area", async () => {
   expect(bottomReversed(shapes[2] ?? "")).toBe(top(shapes[1] ?? ""));
 });
 
+/** 積み上げた棒の並びで、上の棒の下端が下の棒の上端に接することを確かめる */
+const expectStackTouches = (stack: Array<{ y: number; height: number }>) => {
+  for (const [index, upper] of stack.slice(1).entries()) {
+    const lower = stack[index];
+    expect(upper.y + upper.height).toBeCloseTo(lower?.y ?? 0, 1);
+  }
+};
+
 // 積み上げの棒は、項目ごとに系列を 1 本に追加し、棒の上に合計を出す（StackedBar）
 test("test_stacked_bar", async () => {
   // 準備・実行
@@ -294,14 +302,7 @@ test("test_stacked_bar", async () => {
   expect(byX.size).toBe(4);
   for (const stack of byX.values()) {
     expect(stack).toHaveLength(3);
-    for (let index = 1; index < stack.length; index += 1) {
-      const lower = stack[index - 1];
-      const upper = stack[index];
-      expect((upper?.y ?? 0) + (upper?.height ?? 0)).toBeCloseTo(
-        lower?.y ?? 0,
-        1,
-      );
-    }
+    expectStackTouches(stack);
   }
   await expect(
     svgTexts(page, "svg[role=img] .mdmark-diagram-value-text"),

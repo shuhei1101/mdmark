@@ -207,10 +207,9 @@ test("test_block_collapsed", async () => {
   expect(labels).toEqual(["1 設定と Markdown", "2 map の範囲", "7 描いた文書"]);
   const activation = await page.locator(".map-seq-activation").boundingBox();
   const row = await alt.boundingBox();
-  expect(activation?.y ?? 0).toBeLessThanOrEqual(row?.y ?? 0);
-  expect((activation?.y ?? 0) + (activation?.height ?? 0)).toBeGreaterThan(
-    row?.y ?? 0,
-  );
+  if (!activation || !row) throw new Error("活性化の帯か alt の行が無い");
+  expect(activation.y).toBeLessThanOrEqual(row.y);
+  expect(activation.y + activation.height).toBeGreaterThan(row.y);
 });
 
 // loop の中だけを描くと、loop の枠とタブを残し、タブの名前を押せず山形も無く、関わる参加者だけを並べる（BlockEntered）

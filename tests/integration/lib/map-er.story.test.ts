@@ -24,6 +24,21 @@ const overlaps = (a: Box, b: Box) =>
   a.top < b.bottom - 0.5 &&
   b.top < a.bottom - 0.5;
 
+/** 矩形の並びのどの 2 つも重ならないことを確かめる（失敗のメッセージは `nameOf` の名前の対） */
+const expectApart = <T extends Box>(boxes: T[], nameOf: (box: T) => string) => {
+  for (const [i, a] of boxes.entries())
+    for (const b of boxes.slice(i + 1))
+      expect(overlaps(a, b), `${nameOf(a)} と ${nameOf(b)}`).toBe(false);
+};
+
+/** 内側の矩形が外側の矩形の中に収まるか（外側が無ければ収まらない） */
+const isInside = (inner: Box, outer: Box | undefined) =>
+  outer !== undefined &&
+  inner.left >= outer.left &&
+  inner.right <= outer.right &&
+  inner.top >= outer.top &&
+  inner.bottom <= outer.bottom;
+
 /** セレクターの要素ごとの ID と矩形（ページの座標） */
 function boxesOf(page: Page, selector: string, attribute: string) {
   return page.locator(selector).evaluateAll(
@@ -106,19 +121,11 @@ test("test_default", async () => {
   expect(tables.map((table) => table.id).sort()).toEqual(
     ["支払い", "明細", "注文", "商品", "顧客"].sort(),
   );
-  for (const [i, a] of tables.entries())
-    for (const b of tables.slice(i + 1))
-      expect(overlaps(a, b), `${a.id} と ${b.id}`).toBe(false);
+  expectApart(tables, (table) => table.id);
   const [group] = await boxesOf(page, ".map-group[data-group]", "data-group");
-  expect(group?.id).toBe("記録");
+  expect(group).toMatchObject({ id: "記録" });
   for (const table of tables) {
-    const inside =
-      group !== undefined &&
-      table.left >= group.left &&
-      table.right <= group.right &&
-      table.top >= group.top &&
-      table.bottom <= group.bottom;
-    expect(inside, table.id).toBe(
+    expect(isInside(table, group), table.id).toBe(
       ["注文", "明細", "支払い"].includes(table.id),
     );
   }
@@ -134,23 +141,21 @@ test("test_default", async () => {
   await expect(
     order.locator('[data-column="状態"] button.map-er-note').count(),
   ).resolves.toBe(1);
-  const orderBox = (await boxesOf(
+  const [orderBox] = await boxesOf(
     page,
     '.mdmark-diagram-node[data-node="注文"]',
     "data-node",
-  )) as Box[];
+  );
+  if (!orderBox) throw new Error("注文のノードが無い");
   const last = await rowBox(page, "注文", "更新日時");
-  expect(last.bottom).toBeLessThanOrEqual((orderBox[0]?.bottom ?? 0) + 1);
+  expect(last.bottom).toBeLessThanOrEqual(orderBox.bottom + 1);
   // 検証: 「顧客」→「注文」の線の「注文」の側の端が、列 顧客ID の行の高さの左右の辺にある
   const row = await rowBox(page, "注文", "顧客ID");
   const { end } = await wireEnds(page, "r1");
   expect(end.y).toBeGreaterThanOrEqual(row.top);
   expect(end.y).toBeLessThanOrEqual(row.bottom);
   expect(
-    Math.min(
-      Math.abs(end.x - (orderBox[0]?.left ?? 0)),
-      Math.abs(end.x - (orderBox[0]?.right ?? 0)),
-    ),
+    Math.min(Math.abs(end.x - orderBox.left), Math.abs(end.x - orderBox.right)),
   ).toBeLessThanOrEqual(1);
   // 検証: 矢じりを持たず、.. の関連は破線
   const heads = await page
@@ -196,12 +201,7 @@ test("test_default", async () => {
       .map((text) => text.text)
       .sort(),
   ).toEqual(["含む", "指す", "支払う", "最後に見た", "注文する"].sort());
-  for (const [i, a] of texts.entries())
-    for (const b of texts.slice(i + 1))
-      expect(
-        overlaps(a, b),
-        `${a.text}(${a.wire}) と ${b.text}(${b.wire})`,
-      ).toBe(false);
+  expectApart(texts, (text) => `${text.text}(${text.wire})`);
   // 検証: 同じ辺から出る線どうしの間隔（含む と 支払う。押せる帯の 2 つ目の点の x が、辺から出た縦の区間の x）
   const r2 = await wireEnds(page, "r2");
   const r4 = await wireEnds(page, "r4");

@@ -56,6 +56,10 @@ const CONTENT_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
 };
 
+/** 要求の URL のパスを `/` で分けた並び（クエリを除く） */
+const pathSegmentsOf = (url: string | undefined): string[] =>
+  (url ?? "").split("?")[0]?.split("/") ?? [];
+
 /** 結合テストの開発サーバーに、色分けのライブラリを `/fixtures/highlightjs/{名前}/es/` で配る経路（名前が `no-yaml` のときは `languages/yaml.min.js` を 404 にする）と、404 を返却する `/fixtures/missing/` を追加する。ほかに、外部ライブラリの代役 `/fixtures/test-lib.js`・拡張の代役 `/fixtures/greet.js`・部品の定義を受ける拡張の代役 `/fixtures/definition.js` と、404 を返却する `/fixtures/missing.js` を追加する。mermaid の `dist/` は `/fixtures/mermaid/{名前}/` で配る。範囲の `ts`・`js` の変換のライブラリは `/fixtures/babel.mjs` で配る（クエリが違えば別のモジュールとして読み込ませられる）。ビルドした配布物は `/fixtures/dist/{名前}{絶対パス}` でも配り、名前ごとに別の URL にして、ページの中のモジュールの読み込み済みを分ける（名前が `blocked` のときは部品のモジュール `view.js`・`comments.js` を 404 にする） */
 export function fixturesPlugin(): Plugin {
   return {
@@ -77,8 +81,7 @@ export function fixturesPlugin(): Plugin {
         },
       );
       server.middlewares.use(HIGHLIGHT_PREFIX, (request, response) => {
-        const [, name = "", folder = "", ...rest] =
-          (request.url ?? "").split("?")[0]?.split("/") ?? [];
+        const [, name = "", folder = "", ...rest] = pathSegmentsOf(request.url);
         const file = resolve(HIGHLIGHT_ES_ROOT, ...rest);
         const blocked =
           name === NO_YAML_NAME && rest.join("/") === "languages/yaml.min.js";
@@ -107,8 +110,7 @@ export function fixturesPlugin(): Plugin {
         );
       });
       server.middlewares.use(MERMAID_PREFIX, (request, response) => {
-        const [, , ...rest] =
-          (request.url ?? "").split("?")[0]?.split("/") ?? [];
+        const [, , ...rest] = pathSegmentsOf(request.url);
         const file = resolve(MERMAID_DIST_ROOT, ...rest);
         if (!file.startsWith(MERMAID_DIST_ROOT) || extname(file) !== ".mjs") {
           response.statusCode = 404;
@@ -156,8 +158,7 @@ export function fixturesPlugin(): Plugin {
         response.end();
       });
       server.middlewares.use(DIST_COPY_PREFIX, (request, response) => {
-        const [, name = "", ...rest] =
-          (request.url ?? "").split("?")[0]?.split("/") ?? [];
+        const [, name = "", ...rest] = pathSegmentsOf(request.url);
         const file = resolve(`/${rest.join("/")}`);
         const allowed = file.startsWith(join(tmpdir(), BUILT_ROOT_PREFIX));
         const blocked =

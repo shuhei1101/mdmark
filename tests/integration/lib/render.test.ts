@@ -2749,6 +2749,27 @@ test("test_normal_when_nested_tabs_unclosed", async () => {
   }
 });
 
+/** 積み上げの棒: 1 つ目の項目で 2 つ目の系列が 1 つ目の上に載り、高さの和が値 7 の高さ */
+const expectStackedBars = (figure: string) => {
+  const [first, , second] = chartBars(figure).map(rectBox);
+  if (!first || !second) throw new Error("積み上げの棒が無い");
+  expect(second.x).toBe(first.x);
+  expect(second.y + second.height).toBeCloseTo(first.y);
+  const unit = first.height / 3;
+  expect(first.height + second.height).toBeCloseTo(unit * 7);
+};
+
+/** 横の棒: 値が大きいほど幅が広く、縦の位置で項目を分ける */
+const expectHorizontalBars = (figure: string) => {
+  const bars = chartBars(figure).map(rectBox);
+  const [three, five, two] = bars;
+  if (!three || !five || !two) throw new Error("横の棒が無い");
+  expect(five.width).toBeGreaterThan(three.width);
+  expect(three.width).toBeGreaterThan(two.width);
+  expect(new Set(bars.slice(0, 3).map((bar) => bar.y)).size).toBe(3);
+  expect(new Set(bars.slice(0, 3).map((bar) => bar.x)).size).toBe(1);
+};
+
 // 追加したグラフの種類と 6 つの系列を、タイトルと凡例を持つ図に描く（正常系）
 test("test_normal_when_chart_types_added", async () => {
   // 準備
@@ -2819,19 +2840,8 @@ test("test_normal_when_chart_types_added", async () => {
     combo = "",
     six = "",
   ] = figures;
-  // 積み上げの棒: 1 つ目の項目で 2 つ目の系列が 1 つ目の上に載り、高さの和が値 7 の高さ
-  const [first, , second] = chartBars(stacked).map(rectBox);
-  expect(second?.x).toBe(first?.x);
-  expect((second?.y ?? 0) + (second?.height ?? 0)).toBeCloseTo(first?.y ?? 0);
-  const unit = (first?.height ?? 0) / 3;
-  expect((first?.height ?? 0) + (second?.height ?? 0)).toBeCloseTo(unit * 7);
-  // 横の棒: 値が大きいほど幅が広く、縦の位置で項目を分ける
-  const bars = chartBars(horizontal).map(rectBox);
-  const [three, five, two] = bars;
-  expect(five?.width).toBeGreaterThan(three?.width ?? 0);
-  expect(three?.width).toBeGreaterThan(two?.width ?? 0);
-  expect(new Set(bars.slice(0, 3).map((bar) => bar.y)).size).toBe(3);
-  expect(new Set(bars.slice(0, 3).map((bar) => bar.x)).size).toBe(1);
+  expectStackedBars(stacked);
+  expectHorizontalBars(horizontal);
   // ドーナツ: 扇形が外と内の 2 つの弧を持つ
   const slices = matches(
     donut,
@@ -4518,32 +4528,33 @@ test("test_normal_when_map_written_wrongly", async () => {
   // 検証: 範囲ごとに切り分ける
   const pieces = html.split(/<p[^>]*>段落 P\d<\/p>/).slice(1);
   expect(pieces).toHaveLength(5);
+  const pieceAt = (at: number) => pieces[at] ?? "";
   const warning = (piece: string) =>
     matches(piece, /class="mdmark-syntax-warning[" ]/g).length;
   // 1 つ目: 書き方の警告が無く、印の知らないキーを落とす
-  expect(warning(pieces[0] ?? "")).toBe(0);
-  const first = findTags(pieces[0] ?? "", 'class="mdmark-map"');
+  expect(warning(pieceAt(0))).toBe(0);
+  const first = findTags(pieceAt(0), 'class="mdmark-map"');
   expect(first).toHaveLength(1);
   expect(first[0]).not.toContain("mdoe");
   // 2 つ目: JSON として読めない印の引数
-  expect(warning(pieces[1] ?? "")).toBe(1);
-  expect(plainText(pieces[1] ?? "")).toContain("JSON");
-  const second = findTags(pieces[1] ?? "", 'class="mdmark-map"');
+  expect(warning(pieceAt(1))).toBe(1);
+  expect(plainText(pieceAt(1))).toContain("JSON");
+  const second = findTags(pieceAt(1), 'class="mdmark-map"');
   expect(second).toHaveLength(1);
   expect(second[0]).not.toContain("title");
   // 3 つ目: 描かない図の種類
-  expect(warning(pieces[2] ?? "")).toBe(1);
-  expect(plainText(pieces[2] ?? "")).toContain("flowchart");
-  expect(plainText(pieces[2] ?? "")).toContain("sequenceDiagram");
-  expect(plainText(pieces[2] ?? "")).toContain("erDiagram");
-  expect(plainText(pieces[2] ?? "")).toContain("stateDiagram-v2");
-  expect(plainText(pieces[2] ?? "")).toContain("classDiagram");
-  expect(plainText(pieces[2] ?? "")).toContain("architecture-beta");
-  expect(plainText(pieces[2] ?? "")).toContain("C4Context");
-  expect(findTags(pieces[2] ?? "", 'class="mdmark-map"')).toHaveLength(0);
-  expect(findTags(pieces[2] ?? "", "language-mermaid")).toHaveLength(1);
+  expect(warning(pieceAt(2))).toBe(1);
+  expect(plainText(pieceAt(2))).toContain("flowchart");
+  expect(plainText(pieceAt(2))).toContain("sequenceDiagram");
+  expect(plainText(pieceAt(2))).toContain("erDiagram");
+  expect(plainText(pieceAt(2))).toContain("stateDiagram-v2");
+  expect(plainText(pieceAt(2))).toContain("classDiagram");
+  expect(plainText(pieceAt(2))).toContain("architecture-beta");
+  expect(plainText(pieceAt(2))).toContain("C4Context");
+  expect(findTags(pieceAt(2), 'class="mdmark-map"')).toHaveLength(0);
+  expect(findTags(pieceAt(2), "language-mermaid")).toHaveLength(1);
   // 4・5 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲
-  for (const piece of [pieces[3] ?? "", pieces[4] ?? ""]) {
+  for (const piece of [pieceAt(3), pieceAt(4)]) {
     expect(warning(piece)).toBe(1);
     expect(findTags(piece, 'class="mdmark-map"')).toHaveLength(0);
   }

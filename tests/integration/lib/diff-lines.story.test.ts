@@ -17,6 +17,8 @@ async function readLines(id: string) {
       const [line] = kinds(kind);
       return line ? getComputedStyle(line).backgroundColor : undefined;
     };
+    const firstOf = (kind: string, selector: string) =>
+      kinds(kind)[0]?.querySelector(selector);
     const words = (tag: string) =>
       [...document.querySelectorAll(`${tag}.mdmark-diff-word`)].map(
         (element) => element.textContent,
@@ -25,15 +27,13 @@ async function readLines(id: string) {
       same: background("same"),
       del: background("del"),
       add: background("add"),
-      delSign: kinds("del")[0]?.querySelector(".mdmark-diff-sign")?.textContent,
-      addSign: kinds("add")[0]?.querySelector(".mdmark-diff-sign")?.textContent,
-      signHidden: kinds("del")[0]
-        ?.querySelector(".mdmark-diff-sign")
-        ?.getAttribute("aria-hidden"),
-      delName: kinds("del")[0]?.querySelector(".mdmark-visually-hidden")
-        ?.textContent,
-      addName: kinds("add")[0]?.querySelector(".mdmark-visually-hidden")
-        ?.textContent,
+      delSign: firstOf("del", ".mdmark-diff-sign")?.textContent,
+      addSign: firstOf("add", ".mdmark-diff-sign")?.textContent,
+      signHidden: firstOf("del", ".mdmark-diff-sign")?.getAttribute(
+        "aria-hidden",
+      ),
+      delName: firstOf("del", ".mdmark-visually-hidden")?.textContent,
+      addName: firstOf("add", ".mdmark-visually-hidden")?.textContent,
       delWords: words("del"),
       insWords: words("ins"),
       group: document
