@@ -210,11 +210,6 @@ entries:
           - tool_config
           - pages
       - type: file
-        name: rules.yaml
-        contents: 公開ドキュメントに適用する rule-inject のルールの設定
-        content_types:
-          - tool_config
-      - type: file
         name: design-policy.md
         contents: mdmark が描く文書の既定の外観のデザインの方向性
         content_types:
@@ -246,7 +241,7 @@ entries:
                 name: nav.yml
                 contents: AI Monitor の共通のナビゲーション
                 generated_from:
-                  source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/_data/nav.yml
+                  source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/_data/nav.yml
                   tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
               - type: file
                 name: nav.project.yml
@@ -258,7 +253,7 @@ entries:
               - theme
               - pages
             generated_from:
-              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/_includes/
+              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/_includes/
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: folder
             name: _layouts
@@ -267,7 +262,7 @@ entries:
               - theme
               - pages
             generated_from:
-              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/_layouts/
+              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/_layouts/
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: folder
             name: assets
@@ -276,19 +271,19 @@ entries:
               - theme
               - pages
             generated_from:
-              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/assets/
+              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/assets/
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: file
             name: llms.txt
             contents: LLM 向けのページの一覧を出す Jekyll のテンプレート
             generated_from:
-              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/llms.txt
+              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/llms.txt
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: file
             name: search.json
             contents: サイト内の検索の索引を出す Jekyll のテンプレート
             generated_from:
-              source: shuhei1101/ai-monitor@v0.3.0:docs/_theme/search.json
+              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/search.json
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
       - type: folder
         name: architecture
@@ -379,6 +374,16 @@ entries:
           - index
         naming:
           - ER-{issue}-{n}.yaml
+          - index.yaml
+          - README.md
+      - type: folder
+        name: data
+        contents: データの設計書（ER 図のテーブルのカラムが保存するキー）
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - DATA-{issue}-{n}.yaml
           - index.yaml
           - README.md
       - type: folder
@@ -802,12 +807,11 @@ entries:
           tracked: まとめた依存のライセンスをフックと一緒に配る
   - type: folder
     name: schemas
-    contents: JSON Schema。利用者が記載する設定・索引・移行の手順・マーカーのスキーマと、設計書と管理用の YAML の検査のスキーマ
+    contents: JSON Schema。利用者が記載する設定・索引・移行の手順・マーカーのスキーマ
     content_types:
       - schema
     naming:
       - mdmark.{name}.schema.json
-      - '{kind}.schema.yaml'
       - files.yaml
     children:
       - type: folder
@@ -1443,6 +1447,11 @@ entries:
   - type: file
     name: project-index.yaml
     contents: dev-docs と project-index の配信元の設定（文書の種類ごとのパス・スキーマ）
+    content_types:
+      - tool_config
+  - type: file
+    name: rules.yaml
+    contents: プロジェクトのルール索引（rule-inject が読む）
     content_types:
       - tool_config
   - type: file
