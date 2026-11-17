@@ -159,3 +159,19 @@ test("test_plain_map_source_of_when_other_kind", async () => {
   expect(gantt).toBeUndefined();
   expect(pie).toBeUndefined();
 });
+
+// マインドマップ（正常系）
+test("test_collect_map_structure_when_mindmap", async () => {
+  // 準備
+  const { collectMapStructure } = await loadStructure();
+  // 実行
+  const result = collectMapStructure({
+    args: "",
+    mermaid: "mindmap\n  root\n    A\n",
+    mermaidCount: 1,
+    dataCount: 0,
+  });
+  // 検証
+  expect(result.problems).toEqual([]);
+  expect(result.kind).toBe("mindmap");
+});

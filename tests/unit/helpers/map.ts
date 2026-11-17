@@ -335,3 +335,80 @@ export const C4_DATA = `{
   "layout": {"orders": {"pos": {"x": 0, "y": 200}}}
 }
 `;
+
+/** マインドマップ（根 1・1 レイヤー目の枝 4・項目 14。モック `docs/mock/refs/649/assets/samples.js` の `MINDMAP` と同じ） */
+export const MINDMAP = `mindmap
+  root((企画の論点))
+    a1[目的]
+      利用者を増やす
+      継続して使ってもらう
+    (体制)
+      課題
+        人手が足りない
+      ))担当の割り当て((
+    )予算(
+      課題
+        見積もりが粗い
+    {{スケジュール}}
+      リリースの時期を四半期の終わりまでに決めて関係者へ共有する
+        ::icon(fa fa-book)
+      マイルストーン
+      :::urgent
+`;
+
+/** 見た目を指定する行（`::icon()` と `:::`）を持たないマインドマップ（モックの `MINDMAP_PLAIN` と同じ） */
+export const MINDMAP_PLAIN = MINDMAP.split("\n")
+  .filter(
+    (line) =>
+      !line.trim().startsWith("::icon(") && !line.trim().startsWith(":::"),
+  )
+  .join("\n");
+
+/** マインドマップの補足（説明。モックの `MINDMAP_DATA` と同じ） */
+export const MINDMAP_DATA = `{
+  "version": 1,
+  "notes": {
+    "a1": {"text": "利用者の数と、続けて使う割合の 2 つで測る"},
+    "人手が足りない": {"text": "開発 2 名・デザイン 0 名"}
+  }
+}
+`;
+
+/** マインドマップの補足の layout（色と閉じた状態、適用しない座標と並び順。モックの `MINDMAP_LAYOUT_DATA` と同じ） */
+export const MINDMAP_LAYOUT_DATA = `{
+  "version": 1,
+  "notes": {
+    "a1": {"text": "利用者の数と、続けて使う割合の 2 つで測る"},
+    "人手が足りない": {"text": "開発 2 名・デザイン 0 名"}
+  },
+  "layout": {
+    "a1": {"color": "purple"},
+    "予算": {"collapsed": true},
+    "マイルストーン": {"pos": {"x": 40, "y": 40}},
+    "継続して使ってもらう": {"order": 0}
+  }
+}
+`;
+
+/** マインドマップの補足の案内（手順 2 は体制の中へ入る。モックの `MINDMAP_WALK_DATA` と同じ） */
+export const MINDMAP_WALK_DATA = `{
+  "version": 1,
+  "notes": {
+    "a1": {"text": "利用者の数と、続けて使う割合の 2 つで測る"},
+    "人手が足りない": {"text": "開発 2 名・デザイン 0 名"}
+  },
+  "walkthroughs": [
+    {"title": "目的と体制", "text": "まず、何のためにやるかと、誰がやるかを決める", "nodes": ["a1", "体制"]},
+    {"title": "体制の課題", "text": "体制の中では、人手の不足がいちばん大きい課題", "enter": "体制", "nodes": ["人手が足りない"]}
+  ]
+}
+`;
+
+/** 2 つ目の根を持つマインドマップ（モックの `MINDMAP_UNREADABLE` と同じ） */
+export const MINDMAP_UNREADABLE = `mindmap
+  root((企画の論点))
+    a1[目的]
+      利用者を増やす
+    (体制)
+ 二つ目の根
+`;

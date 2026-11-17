@@ -1491,3 +1491,170 @@ test("test_render_map_flow_when_no_kind", async () => {
   expect(kindOf("B")).toContain("is-empty");
   expect(kindOf("A")).not.toContain("is-empty");
 });
+
+/** 部品『mapのマインドマップ』の Default の引数（全ての項目の大きさ 100 × 40） */
+async function mindmapArgs(
+  options: {
+    collapsed?: string[];
+    entered?: string;
+    selected?: string;
+    hints?: boolean;
+    annotations?: Record<string, Array<{ number: number; html: string }>>;
+    terms?: Record<string, string>;
+  } = {},
+) {
+  const { MINDMAP } = await import("../../helpers/map.ts");
+  const { parseMindmap } = await import("../../../../src/map/mindmap.ts");
+  const { layoutMindmap } = await import(
+    "../../../../src/map/mindmap-layout.ts"
+  );
+  const mindmap = parseMindmap(MINDMAP);
+  const collapsed = options.collapsed ?? [];
+  const tree = layoutMindmap({
+    mindmap,
+    top: options.entered,
+    collapsed: new Set(collapsed),
+    sizes: new Map(
+      mindmap.items.map((item) => [item.stateKey, { width: 100, height: 40 }]),
+    ),
+  });
+  return {
+    mindmap,
+    tree,
+    filled: new Set<string>(),
+    collapsed,
+    entered: options.entered,
+    selected: options.selected,
+    focus: undefined,
+    notes: {
+      a1: "利用者の数と、続けて使う割合の 2 つで測る",
+      人手が足りない: "開発 2 名・デザイン 0 名",
+    },
+    annotations: options.annotations ?? {},
+    hints: options.hints,
+    id: "map-1",
+    terms: options.terms,
+  };
+}
+
+// 項目・持ち手・曲線（正常系）
+test("test_render_map_mindmap", async () => {
+  // 準備
+  const { renderMapMindmap } = await loadParts();
+  const args = await mindmapArgs();
+  // 実行
+  const part = renderMapMindmap(args);
+  // 検証
+  const items = matches(
+    part.html,
+    /<div class="[^"]*map-mindmap-item[^"]*"[^>]*>/g,
+  );
+  expect(items).toHaveLength(14);
+  for (const tag of items) expect(tag).not.toContain("tabindex");
+  expect(
+    matches(
+      part.html,
+      /<div class="[^"]*map-mindmap-item[^"]*"[^>]*><span class="mdmark-diagram-node-hit" role="button" tabindex="0" aria-roledescription="項目"/g,
+    ),
+  ).toHaveLength(14);
+  expect(matches(part.html, /class="mdmark-diagram-info/g)).toHaveLength(2);
+  expect(part.html).not.toMatch(
+    /<span class="mdmark-diagram-node-hit"[^>]*>(?:(?!<\/span>)[\s\S])*mdmark-diagram-info/,
+  );
+  expect(matches(part.html, /class="map-mindmap-grip"/g)).toHaveLength(6);
+  const toggle = findTag(part.html, 'data-mindmap-toggle="体制"');
+  expect(toggle).toContain('aria-expanded="true"');
+  expect(toggle).toContain('aria-label="体制の子孫を閉じる"');
+  expect(findTag(part.html, 'data-mindmap-enter="体制"')).toContain(
+    'aria-label="体制の中へ入る"',
+  );
+  const branches = matches(part.html, /<path class="map-mindmap-branch[^>]*>/g);
+  expect(branches).toHaveLength(13);
+  for (const tag of branches) expect(tag).toContain('aria-hidden="true"');
+});
+
+// 閉じた項目（正常系）
+test("test_render_map_mindmap_when_collapsed", async () => {
+  // 準備
+  const { renderMapMindmap } = await loadParts();
+  const args = await mindmapArgs({ collapsed: ["体制"] });
+  // 実行
+  const part = renderMapMindmap(args);
+  // 検証
+  const toggle = outerHtml(part.html, 'data-mindmap-toggle="体制"');
+  expect(toggle).toContain('aria-expanded="false"');
+  expect(toggle).toContain('aria-label="体制の子孫 3 件を開く"');
+  expect(plainText(toggle)).toContain("3");
+  expect(part.html).not.toContain('data-node="人手が足りない"');
+});
+
+// 枝の中の道筋（正常系）
+test("test_render_map_mindmap_when_entered", async () => {
+  // 準備
+  const { renderMapMindmap } = await loadParts();
+  const args = await mindmapArgs({ entered: "体制" });
+  // 実行
+  const part = renderMapMindmap(args);
+  // 検証
+  const trail = outerHtml(part.html, 'class="map-mindmap-trail"');
+  expect(trail).toContain('aria-label="根からの道筋"');
+  expect(plainText(trail).replace(/\s+/g, " ")).toContain("企画の論点 › 体制");
+  expect(trail).toMatch(/<span aria-hidden="true">›<\/span>/);
+  expect(part.html).not.toContain('data-mindmap-toggle="体制"');
+});
+
+// 選んだ項目の道筋と子孫を残す（正常系）
+test("test_render_map_mindmap_when_selected", async () => {
+  // 準備
+  const { renderMapMindmap } = await loadParts();
+  const args = await mindmapArgs({ selected: "体制" });
+  // 実行
+  const part = renderMapMindmap(args);
+  // 検証
+  const item = (key: string) => findTag(part.html, `data-node="${key}"`);
+  expect(item("体制")).toContain("data-selected");
+  expect(innerHtml(part.html, 'data-node="体制"')).toContain(
+    'aria-label="体制（選択中）"',
+  );
+  expect(item("企画の論点")).not.toContain("map-dim");
+  expect(item("人手が足りない")).not.toContain("map-dim");
+  expect(item("a1")).toContain("map-dim");
+  expect(findTag(part.html, 'data-branch="企画の論点->a1"')).toContain(
+    "map-dim",
+  );
+});
+
+// ヒントがオフなら説明のマーカーを作らず、注記の持ち主の id だけを残す（正常系）
+test("test_render_map_mindmap_when_hints_off", async () => {
+  // 準備
+  const { renderMapMindmap } = await loadParts();
+  const args = await mindmapArgs({
+    hints: false,
+    annotations: { a1: [{ number: 1, html: "注記の本文" }] },
+  });
+  // 実行
+  const part = renderMapMindmap(args);
+  // 検証
+  expect(part.html).not.toContain("mdmark-diagram-info");
+  expect(part.tips).not.toContain('role="tooltip"');
+  expect(innerHtml(part.html, 'data-node="a1"')).toMatch(
+    /<span class="mdmark-diagram-node-hit"[^>]*id="mdmark-note-owner-map-1-a1"/,
+  );
+});
+
+// 名前の用語を押せる要素の中に入れない（正常系）
+test("test_render_map_mindmap_when_terms", async () => {
+  // 準備
+  const { renderMapMindmap } = await loadParts();
+  const args = await mindmapArgs({ terms: { 体制: "意味" } });
+  // 実行
+  const part = renderMapMindmap(args);
+  // 検証
+  const inner = innerHtml(part.html, 'data-node="体制"');
+  expect(inner).toMatch(
+    /class="mdmark-diagram-node-name"[^>]*>[\s\S]*?class="mdmark-term"/,
+  );
+  expect(inner).not.toMatch(
+    /<span class="mdmark-diagram-node-hit"[^>]*>[^<]*<span class="mdmark-term"/,
+  );
+});
