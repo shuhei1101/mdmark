@@ -76,7 +76,9 @@ docs:
   - page: docs/er/ER-472-2.yaml
     new: false
     change: notes のキーにマインドマップの項目を追加し、layout のうち木の配置で当てるキーを書く
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T13:32:59.200918+00:00'
   - page: docs/guide/CLI.mark.md
     new: false
     change: ずれの種類の表に `map_ambiguous_ref`（補足のキーが、同じ文字を持つ 2 つ以上のマインドマップの項目を指す）を追加する
