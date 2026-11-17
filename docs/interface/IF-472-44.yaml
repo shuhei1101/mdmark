@@ -54,6 +54,9 @@ constraints:
   - item: 入力の受け取り方
     constraint: '`inputs.paths` は step の `env` で環境変数にしてから `run` のスクリプトで参照し、`${{ inputs.paths }}` を `run` に直接記載しない'
     notes: GitHub の Security hardening のスクリプトの差し込みを防ぐ
+  - item: 環境変数
+    constraint: step「結合テストを回す」は `XDG_CONFIG_HOME` を空にする
+    notes: ランナーは `XDG_CONFIG_HOME` を設定する。結合テストの端末は `HOME` だけを差し替えるため、残ると unit のファイルのパスがランナーの `~/.config` を指し、手元（未設定）と結果が変わる
 overall_flow: |-
   <!-- map -->
 
