@@ -1,0 +1,47 @@
+use_cases:
+  - kind: composite
+    scenario: docs/scenario/SC-477-2.yaml
+    impact: changed
+    detail: 元の図の文字に `--` があっても、移行の手順で map へ書き換えた図が点検に合格し、ほかの図の書き換えも戻らない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: changed
+    detail: 廃止した図の移行で、補足に `--` を持つ図があっても点検のずれにならず、版を上げられる
+    depends_on:
+      - docs/scenario/SC-477-2.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: 補足の値の `--` のずれを、HTML コメントの中にそのまま書いた `--` だけにする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: following
+    detail: 補足の値の `--` のずれの条件の変更に追随する
+    depends_on:
+      - docs/scenario/SC-472-78.yaml
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 補足の文字の値に `--` を書くときの書き方（2 つ目の `-` を JSON の Unicode エスケープで書けば点検に合格する）を記載する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: map の補足の文字の値の `--` の決まりを、図を描くガイドと同じ書き方に修正する
+    status: todo
+  - page: docs/guide/CLI.mark.md
+    new: false
+    change: '`map_invalid_value` の説明の `--` の条件を、HTML コメントの中にそのまま書いた `--` に修正する'
+    status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 点検が見る `--` を含む値の説明を、HTML コメントの中にそのまま書いた `--` に修正する
+    status: todo
+scope_out:
+  - item: 出したバージョンの移行の手順の配布物（`migrations/v0.13.0/`・`migrations/v0.14.0/`）の書き換え
+    reason: 'v0.13.0・v0.14.0 はタグを打った後で中身を変えない。推奨の直し方は upgrade を実行する CLI の点検の側を直すため、配布物を書き換えずに直る。配布物の作り直しが出したバージョンを書き換える不具合は #639 が扱う'
+    plan: '#639'
+  - item: upgrade が点検のずれで戻す単位を、全ての変更からずれを持つ範囲だけにする変更
+    reason: 点検に合格してから版を書き換え、合格しなければコピーから全て戻すのはインターフェース定義『バージョンを上げる』の設計どおり。本件の原因は変換の出力と点検の食い違いで、それを直せば変換がずれを出さず、ほかの範囲の変換も戻らない。含めるかは後段のレビューで確定する
+    plan: none
