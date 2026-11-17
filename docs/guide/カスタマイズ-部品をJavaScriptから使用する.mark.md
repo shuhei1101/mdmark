@@ -180,12 +180,36 @@ handle.destroy();
 | `remove` が失敗する | 例外を投げず、コメントとマーカーを残し、削除の確認を開いたまま通知を出す。`console.error` に出る |
 | コメントの部品のモジュールを読み込めない | 要素を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで拒否する |
 
+### 配布物を 1 枚の HTML に埋めて使う
+
+#### 部品のモジュールを指定してから描く
+
+配布物を 1 枚の HTML に埋めて Blob の URL から読み込むと、部品のモジュールを `dist/index.js` の隣から読み込めない。
+使用する部品の配布ファイルも埋め、`setPartModuleLoader` で部品の名前とモジュールを返却する関数を指定してから描く。
+
+```js
+const load = (id) =>
+  import(URL.createObjectURL(new Blob([document.getElementById(id).textContent], { type: "text/javascript" })));
+const mdmark = await load("mdmark-index");
+const [map, view, comments] = await Promise.all([load("mdmark-map"), load("mdmark-view"), load("mdmark-comments")]);
+mdmark.setPartModuleLoader("map", () => Promise.resolve(map));
+mdmark.setPartModuleLoader("view", () => Promise.resolve(view));
+mdmark.setPartModuleLoader("comments", () => Promise.resolve(comments));
+mdmark.mount(document.querySelector("#doc"), { markdown, commentStore, docId, config: { features: { comments: true } } });
+```
+
+`dist/index.js`・`dist/map.js`・`dist/view.js`・`dist/comments.js` は、`type="text/plain"` の `<script>` に同じタグの中身を入れる。
+`dist/index.css` は `<style>` に入れる。
+文書に出ない部品は、埋めずに指定しなくてよい。
+指定しない部品を使用する文書を描くと、その部品は読み込めず、`console.error` に出てほかを描く。
+
 ## 反映
 
 即時。
 呼んだ時点で有効になる。
 部品のモジュール（`dist/view.js`・`dist/comments.js`）は、初めて呼んだときに 1 回だけ読み込む。
 配布物を読み込んだ URL の隣から読み込むため、同じタグの `dist/` を配信しておく。
+`setPartModuleLoader` で指定した部品は、指定した関数で読み込む。
 
 ## 確認
 
@@ -221,6 +245,11 @@ document.querySelector("#tasks").childElementCount
 `mountComments` を呼んだ要素の中の文字を選ぶと、「コメント」のボタンが出る。
 本文を記載して保存すると、`save` が `{ docId, comment }` で 1 回呼ばれ、選んだ文字が class `mdmark-comment-mark` のマーカーで包まれる。
 マーカーから開いた吹き出しの本文は、HTML として解釈されず文字のまま出る。
+
+#### 埋めた配布物から部品を読み込んでいる
+
+ブラウザの開発者ツールのネットワークのタブを開いてページを再読み込みする。
+`map.js`・`view.js`・`comments.js` への要求が無く、map・ビュー・コメントのボタンが出る。
 
 #### 型検査が通る
 

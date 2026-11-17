@@ -1,0 +1,41 @@
+# Red の確認（実装前）。単体テストの層は実行場所が runner だが、Red の確認は手元の個別実行で行った
+$ npx vitest run --project 'unit*' tests/unit/src/part-modules.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-part-modules-embedded-loader
+
+ ❯ |unit| tests/unit/src/part-modules.test.ts (7 tests | 2 failed) 11ms
+   × test_load_part_module_when_url_unresolvable 3ms
+   × test_set_part_module_loader_when_args_invalid 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/part-modules.test.ts > test_load_part_module_when_url_unresolvable
+AssertionError: expected undefined to be an instance of TypeError
+ ❯ tests/unit/src/part-modules.test.ts:95:17
+     93|     (reason: unknown) => reason,
+     94|   );
+     95|   expect(error).toBeInstanceOf(TypeError);
+       |                 ^
+     96|   expect((error as Error).cause).toBe("map.js");
+     97|   expect(importModule).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/src/part-modules.test.ts > test_set_part_module_loader_when_args_invalid
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/unit/src/part-modules.test.ts:106:54
+    104|   const set = setPartModuleLoader as (name: unknown, loader: unknown) …
+    105|   // 実行・検証
+    106|   expect(() => set("chart", async () => MAP_MODULE)).toThrow(TypeError…
+       |                                                      ^
+    107|   expect(() => set("chart", async () => MAP_MODULE)).toThrow(/name/);
+    108|   expect(() => set("map", "map.js")).toThrow(TypeError);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 5 passed (7)
+   Start at  02:43:48
+   Duration  164ms (tests 37%, import 32%, transform 21%, worker 9%, environment 1%)
+

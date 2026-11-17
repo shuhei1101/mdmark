@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.2901d51";
+  return "v0.14.0+develop.c4044c5";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -79527,8 +79527,9 @@ var emptyMapData = () => ({
   plays_over: void 0,
   groups: {}
 });
-var jsonPathLines = (source) => {
+var jsonPaths = (source) => {
   const lines = /* @__PURE__ */ new Map();
+  const hyphens = /* @__PURE__ */ new Set();
   let at = 0;
   let line = 0;
   const skip = () => {
@@ -79580,14 +79581,16 @@ var jsonPathLines = (source) => {
     if (char === "{" || char === "[") {
       container(char, path);
     } else if (char === '"') {
+      const start = at;
       readString();
+      if (source.slice(start, at).includes("--")) hyphens.add(path);
     } else {
       while (at < source.length && !/[,\]}\s]/.test(source[at]))
         at += 1;
     }
   };
   value("");
-  return lines;
+  return { lines, hyphens };
 };
 var errorLine = (source, error2) => {
   const message = error2 instanceof Error ? error2.message : "";
@@ -79618,11 +79621,11 @@ var readText = (reader, value, path) => {
     invalid2(reader, path, "\u6587\u5B57");
     return void 0;
   }
-  if (value.includes("--")) {
+  if (reader.hyphens.has(path)) {
     reader.problems.push({
       kind: "map_invalid_value",
       line: reader.lines.get(path),
-      message: `\u88DC\u8DB3\u306E \`${path}\` \u306B \`--\` \u304C\u3042\u308A\u307E\u3059\u3002HTML \u30B3\u30E1\u30F3\u30C8\u3092\u9589\u3058\u3066\u3057\u307E\u3046\u305F\u3081\u3001\`--\` \u3092\u542B\u3081\u305A\u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      message: `\u88DC\u8DB3\u306E \`${path}\` \u306B \`--\` \u3092\u305D\u306E\u307E\u307E\u8A18\u8F09\u3057\u3066\u3044\u307E\u3059\u3002HTML \u30B3\u30E1\u30F3\u30C8\u3092\u9589\u3058\u3066\u3057\u307E\u3046\u305F\u3081\u3001\`--\` \u3092\u305D\u306E\u307E\u307E\u8A18\u8F09\u305B\u305A\u306B 2 \u3064\u76EE\u306E \`-\` \u3092 JSON \u306E Unicode \u30A8\u30B9\u30B1\u30FC\u30D7\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     });
     return void 0;
   }
@@ -79918,8 +79921,8 @@ var parseMapData = (source) => {
     });
     return { data, problems, lines: /* @__PURE__ */ new Map() };
   }
-  const lines = jsonPathLines(source);
-  const reader = { problems, lines };
+  const { lines, hyphens } = jsonPaths(source);
+  const reader = { problems, lines, hyphens };
   for (const [key, value] of Object.entries(root))
     readRootKey(reader, data, { key, value });
   return { data, problems, lines };

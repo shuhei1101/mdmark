@@ -421,7 +421,7 @@ scenarios:
         description: |-
           手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 1 つを持つフォルダ。
           文書は `<!-- flow -->` の範囲 2 つと `<!-- sequence -->` の範囲 1 つを持つ。
-          フロー図の 1 つは、`hint` を持つシステムの枠と層 2 つ・種類の異なるノード（`llm`・`script`・`data`・`external`）・種類の異なる線（`flow`・`read`・`write`）・`tip` を持つ線・`io` を持つノード・`https://example.com/spec` のリンク先を持つノード・題名・範囲・更新日を持ち、`stickyTitles` に `false` を記載する。
+          フロー図の 1 つは、`hint` を持つシステムの枠と層 2 つ・種類の異なるノード（`llm`・`script`・`data`・`external`）・種類の異なる線（`flow`・`read`・`write`）・`tip` を持つ線・`io` を持つノード・`sub` に `--` を含む文字（`コンテナの中・--mcp-config`）を持つノード・`https://example.com/spec` のリンク先を持つノード・題名・範囲・更新日を持ち、`stickyTitles` に `false` を記載する。
           もう 1 つは判定フローチャートの種類のノード（開始・質問・アクション・結果）と `YES`・`NO` のラベルの線だけを持つ。
           シーケンス図は参加者 3 つ・メッセージ 4 つ（`tip` を持つメッセージ 1 つ）・loop の範囲を持つ。
           設定は `map.kinds`・`map.lines` を持たない
@@ -455,6 +455,7 @@ scenarios:
       - 設定の `map.kinds`・`map.lines` に、文書が使っていたノードの種類と線の種類の名前・アイコン・形・模様が書き足され、ほかの設定のキーは変わっていない
       - 出力の移行の報告に、書き換えた範囲ごとの範囲・更新日と、`stickyTitles` を記載したフロー図の `stickyTitles` が、文書のファイルと行と項目つきで挙がる。座標と大きさは挙がらない
       - 設定の `version` が目標のバージョンで、終了コードが 0
+      - 元の `sub` の `--` が、補足の `notes` の説明に Unicode エスケープで記載され、適用した後の点検が `map_invalid_value` を出さない
     test: test_normal_when_retired_diagrams
   - name: 正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）
     setup:

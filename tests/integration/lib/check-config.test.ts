@@ -1108,7 +1108,7 @@ test("test_normal_when_diagram_placement_invalid", async () => {
   expect(await snapshot(invalidDir)).toEqual(before);
 });
 
-// 文書の map の補足が指す無い ID・知らないキー・-- を含む値を、範囲の場所を指すずれにする（正常系（map の補足にずれがある））
+// 文書の map の補足が指す無い ID・知らないキー・-- をそのまま記載した値を、範囲の場所を指すずれにし、Unicode エスケープで記載した -- はずれにしない（正常系（map の補足にずれがある））
 test("test_normal_when_map_data_drift", async () => {
   // 準備
   const drift = mapLines({
@@ -1120,7 +1120,10 @@ test("test_normal_when_map_data_drift", async () => {
   const a = [
     ...head,
     ...Array.from({ length: 19 - head.length }, () => ""),
-    ...mapLines({ mermaid: ["flowchart LR", "  C[C] --> D[D]"] }),
+    ...mapLines({
+      mermaid: ["flowchart LR", "  C[C] --> D[D]"],
+      data: '{"version": 1, "notes": {"C": {"text": "コンテナの中・-\\u002dmcp-config"}}}',
+    }),
     "",
   ];
   expect(a.indexOf("<!-- map -->") + 1).toBe(20);
@@ -1143,6 +1146,7 @@ test("test_normal_when_map_data_drift", async () => {
   expect(at(10, "map_invalid_value")).toHaveLength(1);
   expect(at(10, "map_invalid_value")[0]).toContain("walkthroughs[0].text");
   expect(at(10, "map_invalid_value")[0]).toContain("--");
+  expect(at(10, "map_invalid_value")[0]).toContain("Unicode エスケープ");
   const mark = lines.filter((item) => item.startsWith("docs/a.mark.md:3:"));
   expect(mark).toHaveLength(1);
   expect(mark[0]).toMatch(/^docs\/a\.mark\.md:3: map_unknown_key: .*mdoe/);

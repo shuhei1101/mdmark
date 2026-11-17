@@ -17,6 +17,7 @@ export { collectReferences } from "./knowledge/references.ts";
 export type { MdmarkColumnsChange, MountHandle, MountOptions, } from "./mount.ts";
 export { mount } from "./mount.ts";
 export { mountComments, mountView } from "./mount-parts.ts";
+export { setPartModuleLoader } from "./part-modules.ts";
 export type { MdmarkIconNode } from "./parts/inline-icon.ts";
 export { render } from "./render/index.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";

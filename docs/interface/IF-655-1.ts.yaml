@@ -1,0 +1,243 @@
+id: IF-655-1
+visibility: internal
+title: 部品のモジュールを指定する
+lead: 利用側のページが、map・ビュー・コメントの部品のモジュールを返却する関数を mdmark に指定する。指定した部品は配布物の隣へ要求せず、その関数で読み込む。配布物を 1 枚の HTML に埋めて、アドレスを持たない場所から読み込むページで使用する。
+entry:
+  kind: operation
+  value: '`setPartModuleLoader(name, loader)`（配布物 `dist/index.js` の公開関数）'
+callers:
+  - SC-472-28#scenarios[正常シナリオ（埋めた配布物から読み込む）]
+  - SC-472-28#scenarios[異常シナリオ（埋めていない部品のマーカーがある）]
+request:
+  - name: name
+    location: argument
+    type: '"map" | "view" | "comments"'
+    required: true
+    description: 部品の名前
+    constraints: 3 つの名前のどれか
+  - name: loader
+    location: argument
+    type: () => Promise<Record<string, unknown>>
+    required: true
+    description: 部品のモジュールを返却する関数。利用側が埋めた部品の配布ファイル（`dist/map.js`・`dist/view.js`・`dist/comments.js`）を `import()` した結果を返却する
+    constraints: 関数
+    notes: 部品を初めて使用するときに 1 回だけ呼ぶ。指定しない部品は今と同じく `dist/index.js` の隣から読み込む
+request_example: |-
+  ```js
+  const map = await import(URL.createObjectURL(new Blob([mapSource], { type: "text/javascript" })));
+  setPartModuleLoader("map", () => Promise.resolve(map));
+  ```
+response:
+  - name: (戻り値)
+    type: undefined
+    description: 返却しない
+side_effects: 部品の名前ごとの読み込み方をページの中に記録する。以降の `mount`・`mountView`・`mountComments` がその部品を初めて読み込むときに `loader` を呼ぶ
+idempotent: true
+exclusivity: 同じ名前に 2 回目を呼ぶと、後の `loader` で置き換える。その部品を読み込んだ後に呼んだときは、読み込み済みのモジュールを使用し続ける
+exceptions:
+  - name: なし（正常終了）
+    condition: 名前と関数が正しい
+  - name: TypeError
+    condition: '`name` が 3 つの名前のどれでもないか、`loader` が関数でない'
+    notes: 記録を変えずに同期で投げる
+  - name: なし（読み込みの失敗）
+    condition: '`loader` が拒否するか、返却したモジュールが部品の関数を export していないか、指定しなかった部品の隣の URL を作れない'
+    notes: '`setPartModuleLoader` は投げない。部品を使用する `mount` は `console.error` に部品の名前と元のエラーを出して描画を続け、`mountView`・`mountComments` は戻り値の Promise を拒否する'
+constraints:
+  - item: 呼ぶ時期
+    constraint: 部品を使用する `mount`・`mountView`・`mountComments` を呼ぶ前に呼ぶ
+  - item: モジュールの構造
+    constraint: 返却したモジュールは、`map` は `attachMap`、`view` は `drawView`・`attachView`、`comments` は `attachComments` を関数として export する
+    notes: 隣から読み込むときと同じ確認
+  - item: 配布ファイルのサイズ
+    constraint: '`dist/index.js` に部品のモジュールを含めない'
+    notes: 非機能要件『配布ファイル 1 つのサイズ』
+  - item: 型の配布
+    constraint: '`setPartModuleLoader` を `dist/index.d.ts` に書き出す'
+flows:
+  - name: 正常系
+    summary: 指定した関数で部品を読み込み、配布物の隣へ要求せずに map・ビュー・コメントを描く
+    setup:
+      - name: 配布物を埋めたページ
+        description: '`dist/index.css` を `<style>` に持ち、`dist/index.js` と `dist/map.js`・`dist/view.js`・`dist/comments.js` を Blob の URL から `import()` するページ。描く先の `div` を 1 つ持つ'
+      - name: 部品のマーカーを持つ Markdown
+        description: map の範囲・ビューのマーカー・段落を 1 つずつ持つ文書
+        notes: '`mount` に `commentStore`（読み込みは空の一覧を返却し、保存は受け取った値を返却する関数）と `docId` を指定し、設定でコメントの機能をオンにする'
+      - name: Mock
+        description: ページの外部への要求を全て拒否して記録する。3 つの `loader` は呼ばれた回数を数える関数で包む
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: setPartModuleLoader("map" / "view" / "comments", loader)
+        P->>M: mount(el, { markdown, commentStore, docId })
+        M->>P: loader()
+        P-->>M: 部品のモジュール
+        M->>P: map・ビュー・コメントのボタンを描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - map の範囲が図として描かれている
+      - ビューのマーカーの表がビューとして描かれている
+      - 本文にコメントのボタンが付いている
+      - 3 つの `loader` がそれぞれ 1 回だけ呼ばれる
+      - ページが外部へ要求した URL が無い
+      - '`setPartModuleLoader` の戻り値が `undefined`'
+    test: test_normal
+  - name: 正常系（指定しない部品は隣から読み込む）
+    summary: 指定しなかった部品は `dist/index.js` の隣の配布ファイルから読み込む
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/` を手元の開発サーバーが配り、`dist/index.js` を URL から読み込むページ
+      - name: 部品のマーカーを持つ Markdown
+        description: map の範囲とビューのマーカーを 1 つずつ持つ文書
+      - name: Mock
+        description: '`view` だけ、`dist/view.js` を `import()` して返却する `loader` を指定する。開発サーバーへの要求を記録する'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 開発サーバー
+        P->>M: setPartModuleLoader("view", loader)
+        P->>M: mount(el, { markdown })
+        M->>P: loader()
+        M->>S: dist/map.js を要求
+        S-->>M: map の部品のモジュール
+        M->>P: map とビューを描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - map の範囲とビューのマーカーの表が描かれている
+      - 開発サーバーへの要求に `dist/map.js` があり、`dist/view.js` が無い
+    test: test_normal_when_partially_set
+  - name: 異常系（読み込めない部品・console.error）
+    summary: '`loader` が拒否する部品は描かず、`console.error` に出してほかを描く'
+    setup:
+      - name: 配布物を埋めたページ
+        description: 正常系と同じ
+      - name: 部品のマーカーを持つ Markdown
+        description: map の範囲と段落を 1 つずつ持つ文書
+      - name: Mock
+        description: '`map` の `loader` は `Error("missing")` で拒否する。`console.error` を、呼ばれた引数を記録する関数で包む'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: setPartModuleLoader("map", loader)
+        P->>M: mount(el, { markdown })
+        M->>P: loader()
+        P-->>M: 拒否
+        M->>P: 段落を描き、console.error に出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 段落が描かれ、`mount` が例外を投げない
+      - '`console.error` が呼ばれ、引数に `map` と `missing` のエラーを含む'
+    test: test_error_when_loader_rejects
+  - name: 異常系（構造が合わないモジュール・console.error）
+    summary: 部品の関数を export しないモジュールを返却した部品は描かず、`console.error` に出す
+    setup:
+      - name: 配布物を埋めたページ
+        description: 正常系と同じ
+      - name: 部品のマーカーを持つ Markdown
+        description: ビューのマーカーと段落を 1 つずつ持つ文書
+      - name: Mock
+        description: '`view` の `loader` は `{}` を返却する。`console.error` を、呼ばれた引数を記録する関数で包む'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: setPartModuleLoader("view", loader)
+        P->>M: mount(el, { markdown })
+        M->>P: loader()
+        P-->>M: {}
+        M->>P: 段落を描き、console.error に出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 段落が描かれ、`mount` が例外を投げない
+      - '`console.error` が呼ばれ、引数に `view` と `drawView` を含むエラーを含む'
+    test: test_error_when_shape_mismatch
+  - name: 異常系（引数の誤り・TypeError）
+    summary: 名前か関数が誤っている呼び出しは記録せずに TypeError を投げる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（指定しない部品は隣から読み込む）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: setPartModuleLoader("chart", loader)
+        M-->>P: TypeError
+        P->>M: setPartModuleLoader("map", "map.js")
+        M-->>P: TypeError
+      ```
+
+      <!-- /map -->
+    expected:
+      - どちらの呼び出しも `TypeError` を投げ、メッセージに `name`・`loader` を含む
+      - その後 map の範囲を持つ文書を `mount` すると、`dist/map.js` を隣から読み込んで描く
+    test: test_error_when_args_invalid
+  - name: 異常系（指定しない部品の URL を作れない・console.error）
+    summary: 配布物を埋めたページで指定しなかった部品は、隣の URL を作れずに描かず、`console.error` に出してほかを描く
+    setup:
+      - name: 配布物を埋めたページ
+        description: 正常系と同じで、map の部品だけを指定しないもの
+        notes: '`dist/index.js` の `import.meta.url` が Blob の URL になり、`./map.js` を解決できない'
+      - name: 部品のマーカーを持つ Markdown
+        description: map の範囲と段落を 1 つずつ持つ文書
+      - name: Mock
+        description: ページの外部への要求を全て拒否して記録する。`console.error` を、呼ばれた引数を記録する関数で包む
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: map の部品の URL を作れず、読み込みを拒否する
+        M->>P: 段落を描き、console.error に出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 段落が描かれ、`mount` が例外を投げない
+      - '`console.error` が呼ばれ、引数に `map` と URL を作れなかったエラーを含む'
+      - ページが外部へ要求した URL が無い
+    test: test_error_when_url_unresolvable
+    refs:
+      - SC-472-28#scenarios[異常シナリオ（埋めていない部品のマーカーがある）]
+test_file: tests/integration/lib/set-part-module-loader.browser.test.ts
+refs:
+  - SC-472-28#
+  - IF-472-35#
+  - IF-472-30#constraints[部品のモジュールの読み込み]
+  - IF-472-27#constraints[部品のモジュールの読み込み]
+tags:
+  - name: topic:部品
+    main: true
+  - name: topic:api
+  - name: topic:配布物
+  - name: action:読み込み

@@ -30,8 +30,8 @@ export declare const PART_MODULE_FILES: Readonly<Record<PartName, string>>;
 export declare const partModuleLoaders: Map<PartName, () => Promise<Record<string, unknown>>>;
 /** 部品の名前から読み込みの Promise を参照する。ページの中で 1 回だけ読み込む（失敗も記録し、再読み込みしない） */
 export declare const partModules: Map<PartName, Promise<LoadedPart<PartName>>>;
-/** 部品の配布ファイルをページの中で 1 回だけ読み込み、export の構造を確認して返却する。読み込めない・構造が合わないときは元のエラーで reject し、エラーの `cause` に URL を持たせる */
-export declare function loadPartModule<Name extends PartName>(name: Name, importModule?: ImportModule): Promise<LoadedPart<Name>>;
-/** 部品のモジュールの読み込みを、モジュールを返却する関数に差し替える。書き出した HTML の起動の処理が呼ぶ */
+/** 部品の配布ファイルをページの中で 1 回だけ読み込み、export の構造を確認して返却する。読み込めない・構造が合わない・隣の URL を作れないときは元のエラーで reject し、エラーの `cause` に URL（作れないときは配布ファイルの名前）を持たせる */
+export declare function loadPartModule<Name extends PartName>(name: Name, importModule?: ImportModule, baseUrl?: string): Promise<LoadedPart<Name>>;
+/** 部品のモジュールの読み込みを、モジュールを返却する関数に差し替える。`dist/index.js` の公開関数で、書き出した HTML の起動の処理も呼ぶ。名前か関数が誤っていると `TypeError` を投げ、差し替えを変えない */
 export declare function setPartModuleLoader(name: PartName, loader: () => Promise<Record<string, unknown>>): void;
 export {};
