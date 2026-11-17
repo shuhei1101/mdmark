@@ -36,6 +36,9 @@ data_models:
       - name: height
         type: number
         description: 図の高さ（外周の余白を含む）
+      - name: baseline
+        type: number
+        description: ガントチャートのタスクの行・ジャーニーのタスク名の行の上端の y 座標
   - name: AxisGridPlacement
     title: 項目の配置
     container: src/map/axis-grid-layout.ts
@@ -67,14 +70,105 @@ data_models:
       - name: count
         type: number | undefined
         description: 閉じた section・入れ子のブロックの中の項目の数
+  - name: AxisGridTick
+    title: 軸の目盛り
+    container: src/map/axis-grid-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: ガントチャートの日付とジャーニーの点数の目盛り 1 つ
+    properties:
+      - name: value
+        type: string
+        description: ガントチャートは `YYYY-MM-DD`、ジャーニーは点数
+      - name: x
+        type: number
+        description: 中心の x 座標（日付は 1 日の幅の中央）
+      - name: y
+        type: number
+        description: 中心の y 座標
+      - name: weekend
+        type: boolean
+        description: '`excludes weekends` のときの土日（面を薄くする）'
+  - name: AxisGridFrame
+    title: section の見出しと入れ子の枠
+    container: src/map/axis-grid-layout.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: データモデル
+    summary: 開閉と中へ入るボタンを置く見出しの行・枠 1 つ
+    properties:
+      - name: key
+        type: string
+        description: section の `stateKey`
+      - name: label
+        type: string
+        description: section の名前
+      - name: kind
+        type: '"row" | "box" | "band" | "block"'
+        description: ガントチャートの行・タイムラインの枠・ジャーニーの帯・ブロック図の入れ子（閉じた入れ子は枠を持たず、項目の上にボタンを置く）
+      - name: x, y, width, height
+        type: number
+        description: 位置と大きさ
+      - name: color
+        type: string | undefined
+        description: section の色の名前
+      - name: collapsed
+        type: boolean
+        description: 閉じているか
+  - name: AxisGridLane
+    title: ブランチと人の線
+    container: src/map/axis-grid-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: Git グラフのブランチの線と、ジャーニーで選んだ人のタスクをつなぐ線
+    properties:
+      - name: kind
+        type: '"branch" | "actor"'
+        description: ブランチか人
+      - name: key
+        type: string
+        description: ブランチ名か人の名前
+      - name: y
+        type: number
+        description: ブランチの線の y 座標（人の線は 0）
+      - name: d
+        type: string
+        description: SVG の `path` の `d`
+      - name: color
+        type: string | undefined
+        description: 色の名前
+      - name: members
+        type: string[]
+        description: 線の上の項目の `stateKey`
+  - name: AxisGridWire
+    title: つながりの線
+    container: src/map/axis-grid-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 項目の間の線 1 本
+    properties:
+      - name: from, to
+        type: string
+        description: 両端の `stateKey`（閉じた入れ子の中は入れ子）
+      - name: kind
+        type: AxisGridLink["kind"] | "stem" | "step"
+        description: つながりの種類。期間から出来事への線は `stem`、ジャーニーの隣のタスクの線は `step`
+      - name: d
+        type: string
+        description: SVG の `path` の `d`
+      - name: color
+        type: string | undefined
+        description: 色の名前
+      - name: label
+        type: '{ text: string; x: number; y: number } | undefined'
+        description: ブロック図の線のラベルと位置
 constants:
   - name: AXIS_GRID_LAYOUT
     title: 軸と格子の配置の寸法
     container: src/map/axis-grid-layout.ts
     usecase: Mermaidと補足で図を描く
     role: 定数
-    summary: モック map-axis-grid の寸法（px）。タスク名の列の幅 `nameColumn`・記載順の軸の 1 歩 `step`・1 日の幅 `day`・行の高さ `row`・格子のセルの幅 `cellWidth`・行の間 `rowGap`・外周の余白 `margin`
-    value: '{ nameColumn: 200, step: 104, day: 28, row: 32, cellWidth: 156, rowGap: 36, margin: 24 }'
+    summary: モック map-axis-grid の寸法（px）。タスク名の列の幅 `nameColumn`・記載順の軸の 1 歩 `step`・1 日の幅 `day`・行の高さ `row`・格子のセルの幅 `cellWidth`・行の間 `rowGap`・外周の余白 `margin`・項目と格子の列の間 `gap`
+    value: '{ nameColumn: 200, step: 104, day: 28, row: 32, cellWidth: 156, rowGap: 36, margin: 24, gap: 16 }'
 functions:
   - name: layoutAxisGrid
     title: 軸と格子の配置の図を配置する

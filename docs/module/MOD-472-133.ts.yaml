@@ -917,6 +917,24 @@ functions:
     refs:
       - IF-472-35#constraints[map のガントチャート]
       - IF-472-35#constraints[map の section の開閉と中へ入る]
+  - name: renderMapAxisGridLegend
+    title: ジャーニーの人の凡例のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapの軸と格子の配置の図』のジャーニーの人の凡例を、図の枠の凡例の行に入れる `li` の並びにする。人ごとに `button[data-map-actor]`（`aria-pressed`、人の色の丸と名前）
+    scope: public
+    args:
+      - name: args
+        type: '{ grid: AxisGrid; selected: AxisGridSelection | undefined }'
+        required: true
+        description: 読み取り結果と選んだもの
+    returns:
+      type: string
+      description: 凡例の `li` の HTML
+    refs:
+      - IF-472-35#constraints[map のジャーニー]
 lead: 'map の構成図・シーケンス図・案内のバーの HTML を受け持ち、map の部品が返却する HTML を変えるときに参照する。'
 tags:
   - name: topic:map

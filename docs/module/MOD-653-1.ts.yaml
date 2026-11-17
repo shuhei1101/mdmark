@@ -104,6 +104,12 @@ data_models:
       - name: parent
         type: string | undefined
         description: 入れ子のブロックの外の入れ子の `stateKey`
+      - name: width
+        type: number
+        description: ブロック図の入れ子のブロックの、外側の格子での幅（`block:{ID}:{数}` の数。無ければ 1）
+      - name: after
+        type: number
+        description: ブロック図の入れ子のブロックの前に記載した項目の `order`（無ければ 0）。外側の格子の並びの位置になる
   - name: AxisGridLink
     title: つながり
     container: src/map/axis-grid.ts
@@ -112,11 +118,11 @@ data_models:
     summary: 項目の間のつながり 1 つ
     properties:
       - name: from
-        type: number
-        description: 元の項目の `order`
+        type: string
+        description: 元の項目の `stateKey`（ブロック図の線は入れ子のブロックの `stateKey` も指す）
       - name: to
-        type: number
-        description: 先の項目の `order`
+        type: string
+        description: 先の項目の `stateKey`（ブロック図の線は入れ子のブロックの `stateKey` も指す）
       - name: kind
         type: '"after" | "parent" | "merge" | "cherryPick" | "arrow"'
         description: ガントチャートの `after`、Git グラフの親・merge の取り込み・cherry-pick の元、ブロック図の線

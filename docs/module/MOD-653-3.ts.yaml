@@ -55,7 +55,7 @@ functions:
     process: |-
       1. `parseAxisGrid`・`parseMapData` で参照し、補足の `notes`・`layout`・`walkthroughs` の `nodes` と `enter`・マーカーの引数の `focus` のキーを `axisGridItemOf` で `stateKey` にする。`ambiguous`・`missing` のキーはどの項目にも適用しない。`layout` は `color` と `collapsed` だけを使用する
       2. `readMapState` に、section と入れ子のブロックの `stateKey`・引数の `focus` の `stateKey`・`layout` の `collapsed` が `true` の `stateKey` を指定して状態を参照する
-      3. `layoutAxisGrid` で配置し、`renderMapAxisGrid`（`readMapAnnotations` の注記、`hints` は `config.features.hints`）を部品『図の枠』（種類 `map`・タイトルはマーカーの `title`、無ければ `grid.title`、無ければ `mermaidKindName` に `grid.firstWord`（`block-beta` など Mermaid の 1 行目の単語）を指定した名前・ジャーニーは人の凡例・`wide`・`fitMin` 1）に入れる。ツールのボタンは「外へ戻る」（中へ入っているときだけ押せる）・「全て開く」「全て閉じる」（section か入れ子のブロックを持つときだけ）・「配置と選択を元に戻す」（選んだときだけ押せる）。図のツールチップと拡大と縮小・ドラッグでのスクロールは `attachDiagrams` で付け、描くたびに `linkAnnotationOwners` で注記の持ち主を合わせる。項目にはドラッグの操作を付けない
+      3. `layoutAxisGrid` で配置し、`renderMapAxisGrid`（`readMapAnnotations` の注記、`hints` は `config.features.hints`）を部品『図の枠』（種類 `map`・タイトルはマーカーの `title`、無ければ `grid.title`、無ければ `mermaidKindName` に `grid.firstWord`（`block-beta` など Mermaid の 1 行目の単語）を指定した名前・ジャーニーは描くたびに `renderMapAxisGridLegend` を凡例の行に入れる・`wide`・`fitMin` 1）に入れる。ツールのボタンは「外へ戻る」（中へ入っているときだけ押せる）・「全て開く」「全て閉じる」（section か入れ子のブロックを持つときだけ）・「配置と選択を元に戻す」（選んだときだけ押せる）。図のツールチップと拡大と縮小・ドラッグでのスクロールは `attachDiagrams` で付け、描くたびに `linkAnnotationOwners` で注記の持ち主を合わせる。項目にはドラッグの操作を付けない
       4. 開閉のボタン（`data-map-section-toggle`）で `collapsed` を切り替え、中へ入るボタン（`data-map-section-enter`）で `entered` をその section にして `collapsed` から除外する。「外へ戻る」と Esc（選んでいないとき）で `entered` を外の入れ子（無ければ無し）にする
       5. 項目・ガントチャートのタスク名・Git グラフのブランチ名のボタン・ジャーニーの凡例のボタンを押すと `selected` をその `{kind}:{key}`（`item:des` など）の 1 件にし、同じものを押すと解除する。Enter・Space でも選ぶ。ブロック図の 2 つの選択と線の選択は構成図と同じにする。Esc は選んでいれば選択を解除する
       6. 描き直した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
@@ -84,7 +84,7 @@ functions:
         summary: 補足の layout
         condition: モックの `GANTT_LAYOUT_DATA` と `BLOCK_LAYOUT_DATA` の範囲
         mock: なし
-        expected: 「公開」と `core` が閉じて描かれ、「mdmark」が `green` の面を持つ。`tst` と `doc` の位置は `layout` を持たないときと同じ
+        expected: 「公開」と `core` が閉じて描かれ、「mdmark」が `green` の面を持つ。`tst` の位置と `doc` の x 座標は `layout` を持たないときと同じ（閉じた `core` の行は低くなるため `doc` の y 座標は変わる）
       - name: test_attach_map_axis_grid_when_played
         case: 正常
         summary: 再生
