@@ -4,8 +4,8 @@ import { type DiffMode, type DiffSource } from "./diff/source.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
-import type { MdmarkIconNode } from "./parts/inline-icon.ts";
 import type { ResolveIdLink } from "./render/sanitize.ts";
+import type { MdmarkIconNode } from "./shared/icon-node.logic.ts";
 /** `mount` の第 2 引数 */
 export type MountOptions = {
     /** 描く Markdown */

@@ -1,4 +1,4 @@
-import { type MdmarkIconNode } from "./parts/inline-icon.ts";
+import { type MdmarkIconNode } from "./shared/icon-node.logic.ts";
 /** まとめた lucide のバージョン（ビルドと単体テストの `define` で埋める） */
 export declare const LUCIDE_VERSION: string;
 /** URL のアイコンのモジュールを読み込む関数 */

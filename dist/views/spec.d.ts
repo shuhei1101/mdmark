@@ -1,4 +1,4 @@
-import { type FilterKind } from "../table-logic.ts";
+import { type FilterKind } from "../table/table.logic.ts";
 /** ボードの列の見出しに使用できるアイコンの名前 */
 export declare const VIEW_ICON_NAMES: readonly ["circle", "circle-dashed", "circle-dot", "circle-pause", "circle-check", "circle-x", "inbox", "archive", "clock", "flag", "star", "bug", "eye", "lock", "zap", "ban"];
 /** ボードの列の見出しに使用できるアイコンの名前 */
