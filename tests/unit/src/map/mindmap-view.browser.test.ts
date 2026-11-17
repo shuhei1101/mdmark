@@ -237,3 +237,23 @@ test("test_attach_map_mindmap_when_initial_scroll", async () => {
   expect(Math.abs(center(item) - center(box))).toBeLessThan(2);
   expect(root.querySelector("figure")?.dataset.fitMin).toBe("1");
 });
+
+// 全ての枝を閉じる（正常系）
+test("test_attach_map_mindmap_when_collapse_all", async () => {
+  // 準備
+  const root = await setUp();
+  const { parseMindmap } = await loadMindmap();
+  const issue = parseMindmap(MINDMAP).items.find(
+    (item) => item.label === "課題",
+  );
+  // 実行
+  root.querySelector<HTMLButtonElement>('[data-tool="collapseAll"]')?.click();
+  // 検証
+  expect(root.querySelectorAll(".map-mindmap-item")).toHaveLength(5);
+  expect(saved().collapsed).toContain(issue?.stateKey);
+  // 実行・検証: 「体制」を開くと、2 レイヤー目の「課題」は閉じたまま
+  gripButton(root, "体制", "toggle")?.click();
+  expect(itemOf(root, issue?.stateKey ?? "")).not.toBeNull();
+  expect(itemOf(root, "担当の割り当て")).not.toBeNull();
+  expect(itemOf(root, "人手が足りない")).toBeNull();
+});
