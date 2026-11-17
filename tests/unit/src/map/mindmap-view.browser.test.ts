@@ -172,7 +172,8 @@ test("test_attach_map_mindmap_when_layout", async () => {
   ).toBe("false");
   for (const item of issues) {
     expect(
-      itemOf(root, item.stateKey)?.querySelector(".mdmark-diagram-info"),
+      itemOf(root, item.stateKey)?.querySelector(".mdmark-diagram-info") ??
+        null,
     ).toBeNull();
   }
 });
