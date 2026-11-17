@@ -6,7 +6,8 @@ import {
 } from "../../helpers/dom.ts";
 
 /** 埋め込んだ HTML の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadEmbedded = () => import("../../../../src/embedded-html/embedded-html.interact.ts");
+const loadEmbedded = () =>
+  import("../../../../src/embedded-html/embedded-html.interact.ts");
 
 beforeAll(() => {
   addStyles();

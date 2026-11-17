@@ -1,7 +1,8 @@
 import { afterEach, expect, test } from "vitest";
 
 /** スクロールする場所を見つける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadScroller = () => import("../../../../src/shared/scroller.interact.ts");
+const loadScroller = () =>
+  import("../../../../src/shared/scroller.interact.ts");
 
 const elements: HTMLElement[] = [];
 

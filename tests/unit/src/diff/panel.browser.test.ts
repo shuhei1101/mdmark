@@ -10,7 +10,8 @@ import {
 const loadPanel = () => import("../../../../src/diff/panel.ts");
 
 /** セクションの操作を読み込む（H1 のセクションの中の差分を確認する） */
-const loadSections = () => import("../../../../src/section/section.interact.ts");
+const loadSections = () =>
+  import("../../../../src/section/section.interact.ts");
 
 /** 通知ブロックの処理を読み込む（差分の通知ブロックを期待値にする） */
 const loadNotice = () => import("../../../../src/shared/notice.part.ts");

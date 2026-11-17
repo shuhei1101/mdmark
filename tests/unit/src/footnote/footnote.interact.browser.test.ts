@@ -7,13 +7,16 @@ import {
 } from "../../helpers/dom.ts";
 
 /** 脚注の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadFootnotes = () => import("../../../../src/footnote/footnote.interact.ts");
+const loadFootnotes = () =>
+  import("../../../../src/footnote/footnote.interact.ts");
 
 /** セクションと行の詳細の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadSections = () => import("../../../../src/section/section.interact.ts");
+const loadSections = () =>
+  import("../../../../src/section/section.interact.ts");
 
 /** 脚注の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadFootnotePart = () => import("../../../../src/footnote/footnote.part.ts");
+const loadFootnotePart = () =>
+  import("../../../../src/footnote/footnote.part.ts");
 
 const detachers: Array<() => void> = [];
 

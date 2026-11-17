@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
 
 /** 行内のアイコンの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadInlineIcon = () => import("../../../../src/inline/inline-icon.part.ts");
+const loadInlineIcon = () =>
+  import("../../../../src/inline/inline-icon.part.ts");
 
 // 構造があれば svg を入れる（正常系）
 test("test_render_inline_icon", async () => {
@@ -21,4 +22,3 @@ test("test_render_inline_icon", async () => {
     '<span class="mdmark-inline-icon" data-icon="sailboat" aria-hidden="true"></span>',
   );
 });
-

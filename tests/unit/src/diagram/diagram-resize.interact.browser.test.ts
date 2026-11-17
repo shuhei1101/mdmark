@@ -4,7 +4,8 @@ import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 import { memoryStorage, throwingStorage } from "../../helpers/storage.ts";
 
 /** リサイズハンドルの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadResize = () => import("../../../../src/diagram/diagram-resize.interact.ts");
+const loadResize = () =>
+  import("../../../../src/diagram/diagram-resize.interact.ts");
 
 const detachers: Array<() => void> = [];
 

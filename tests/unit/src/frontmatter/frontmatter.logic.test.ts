@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
 
 /** フロントマターの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadFrontmatter = () => import("../../../../src/frontmatter/frontmatter.logic.ts");
+const loadFrontmatter = () =>
+  import("../../../../src/frontmatter/frontmatter.logic.ts");
 
 /** 改行以外の文字を空白に置き換えた文字列 */
 const blank = (text: string) => text.replace(/[^\r\n]/g, " ");

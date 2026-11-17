@@ -16,7 +16,8 @@ import {
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 図のツールチップの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadTips = () => import("../../../../src/diagram/diagram-tips.interact.ts");
+const loadTips = () =>
+  import("../../../../src/diagram/diagram-tips.interact.ts");
 
 const detachers: Array<() => void> = [];
 

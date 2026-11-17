@@ -2,12 +2,7 @@ import type { Token } from "markdown-it";
 import { expect, test } from "vitest";
 import type { RenderEnv } from "../../../../src/render/parser.ts";
 import { createEnv } from "../../helpers/env.ts";
-import {
-  findTag,
-  findTags,
-  innerHtml,
-  plainText,
-} from "../../helpers/html.ts";
+import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 import { mapRange } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 

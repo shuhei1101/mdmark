@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
 
 /** 折り畳みの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadCollapsible = () => import("../../../../src/shared/collapsible.part.ts");
+const loadCollapsible = () =>
+  import("../../../../src/shared/collapsible.part.ts");
 
 // 閉じた折り畳みに中身を入れ、見出しをエスケープする（正常系）
 test("test_render_collapsible", async () => {

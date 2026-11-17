@@ -4,8 +4,7 @@ import { findTags, innerHtml } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 取り込みの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadIncludes = () =>
-  import("../../../../src/render/includes.ts");
+const loadIncludes = () => import("../../../../src/render/includes.ts");
 
 /** 1〜12 行目に `line N` を持つ本文 */
 const TWELVE_LINES = Array.from(

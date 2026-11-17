@@ -2,8 +2,7 @@ import { expect, test } from "vitest";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 見出しの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadHeadings = () =>
-  import("../../../../src/section/heading.syntax.ts");
+const loadHeadings = () => import("../../../../src/section/heading.syntax.ts");
 
 // 小文字にし、記号を落とし、空白を - にする（正常系）
 test("test_slugify", async () => {

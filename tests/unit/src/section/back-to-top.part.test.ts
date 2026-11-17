@@ -2,7 +2,8 @@ import { expect, test } from "vitest";
 import { findTag } from "../../helpers/html.ts";
 
 /** 先頭へ戻るボタンの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadBackToTop = () => import("../../../../src/section/back-to-top.part.ts");
+const loadBackToTop = () =>
+  import("../../../../src/section/back-to-top.part.ts");
 
 /** 開始タグが値なしの hidden 属性を持つか */
 const HIDDEN_ATTRIBUTE = /\shidden(?=[\s=>])/;

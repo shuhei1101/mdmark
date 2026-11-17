@@ -2,7 +2,8 @@ import { afterEach, expect, test } from "vitest";
 import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 
 /** 指で図を動かす操作中の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadTouch = () => import("../../../../src/diagram/diagram-touch.interact.ts");
+const loadTouch = () =>
+  import("../../../../src/diagram/diagram-touch.interact.ts");
 
 const detachers: Array<() => void> = [];
 

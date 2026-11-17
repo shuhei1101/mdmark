@@ -5,12 +5,7 @@ import type { MdmarkIndex } from "../../../../src/knowledge/index-shape.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../../helpers/charts.ts";
 import { STRENGTH_TEXT } from "../../helpers/diagrams.ts";
 import { createEnv } from "../../helpers/env.ts";
-import {
-  findTag,
-  innerHtml,
-  matches,
-  plainText,
-} from "../../helpers/html.ts";
+import { findTag, innerHtml, matches, plainText } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 解析の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -247,10 +242,12 @@ const RANGE_SCRIPTS = [
 ].join("\n");
 
 /** 範囲の css を根の要素の中に限る処理を読み込む */
-const loadScopeCss = () => import("../../../../src/embedded-html/scope-css.logic.ts");
+const loadScopeCss = () =>
+  import("../../../../src/embedded-html/scope-css.logic.ts");
 
 /** 埋め込んだ HTML の処理を読み込む */
-const loadHtml = () => import("../../../../src/embedded-html/embedded-html.syntax.ts");
+const loadHtml = () =>
+  import("../../../../src/embedded-html/embedded-html.syntax.ts");
 
 /** コードブロックを並べた Markdown を記法のルールを経由せずに解析し、`fence` のトークンを返却する */
 function fenceTokens(languages: string[]) {

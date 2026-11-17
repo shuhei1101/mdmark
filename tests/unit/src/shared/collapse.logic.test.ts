@@ -1,8 +1,7 @@
 import { expect, test } from "vitest";
 
 /** 折り畳みの指定の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadCollapse = () =>
-  import("../../../../src/shared/collapse.logic.ts");
+const loadCollapse = () => import("../../../../src/shared/collapse.logic.ts");
 
 // 閉じた折り畳みと見出しを読み込む（正常系）
 test("test_read_collapse", async () => {

@@ -5,8 +5,7 @@ import { innerHtml } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 注意書きの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadCallouts = () =>
-  import("../../../../src/callout/callout.syntax.ts");
+const loadCallouts = () => import("../../../../src/callout/callout.syntax.ts");
 
 /** Markdown を解析した状態と、引用の開きのトークンの位置 */
 function quoteStates(markdown: string): { state: StateCore; opens: number[] } {

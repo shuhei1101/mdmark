@@ -3,7 +3,8 @@ import { page } from "vitest/browser";
 import { addStyles } from "../../helpers/dom.ts";
 
 /** 先頭へ戻るボタンの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadBackToTop = () => import("../../../../src/section/back-to-top.interact.ts");
+const loadBackToTop = () =>
+  import("../../../../src/section/back-to-top.interact.ts");
 
 /** 画面の幅と高さ */
 const VIEWPORT = { width: 1280, height: 800 };

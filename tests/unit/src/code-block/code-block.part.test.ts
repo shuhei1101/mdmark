@@ -2,7 +2,8 @@ import { expect, test } from "vitest";
 import { findTag, findTags, innerHtml } from "../../helpers/html.ts";
 
 /** コードブロックの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadCodeBlock = () => import("../../../../src/code-block/code-block.part.ts");
+const loadCodeBlock = () =>
+  import("../../../../src/code-block/code-block.part.ts");
 
 // タイトル・行番号・行の種類を付け、文字をエスケープする（正常系）
 test("test_render_code_block", async () => {

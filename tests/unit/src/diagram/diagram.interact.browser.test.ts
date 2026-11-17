@@ -14,7 +14,8 @@ import {
 import { memoryStorage } from "../../helpers/storage.ts";
 
 /** 図の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadDiagrams = () => import("../../../../src/diagram/diagram.interact.ts");
+const loadDiagrams = () =>
+  import("../../../../src/diagram/diagram.interact.ts");
 
 const detachers: Array<() => void> = [];
 

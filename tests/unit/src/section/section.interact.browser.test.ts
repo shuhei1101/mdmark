@@ -1,10 +1,11 @@
 import { afterEach, expect, test, vi } from "vitest";
-import type { PartStates } from "../../../../src/shared/part-states.interact.ts";
 import type { SectionStates } from "../../../../src/section/section.interact.ts";
+import type { PartStates } from "../../../../src/shared/part-states.interact.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
 /** セクションの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadSections = () => import("../../../../src/section/section.interact.ts");
+const loadSections = () =>
+  import("../../../../src/section/section.interact.ts");
 
 /** 差分のブロックの処理を読み込む（見出しを包む `div` を作る） */
 const loadDiffBlocks = () => import("../../../../src/diff/diff-blocks.part.ts");

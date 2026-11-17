@@ -141,8 +141,7 @@ test("test_build_diagrams_when_param_copy_label", async () => {
 });
 
 /** 図の部品の範囲を探す処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadDiagrams = () =>
-  import("../../../../src/diagram/diagram.syntax.ts");
+const loadDiagrams = () => import("../../../../src/diagram/diagram.syntax.ts");
 
 // 図の部品の範囲だけを返却する（正常系）
 test("test_find_diagram_blocks", async () => {

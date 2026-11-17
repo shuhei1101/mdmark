@@ -6,7 +6,8 @@ import {
 } from "../../helpers/dom.ts";
 
 /** 列の幅のつまみの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadResize = () => import("../../../../src/table/table-resize.interact.ts");
+const loadResize = () =>
+  import("../../../../src/table/table-resize.interact.ts");
 
 const detachers: Array<() => void> = [];
 

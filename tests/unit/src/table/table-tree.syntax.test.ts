@@ -1,10 +1,5 @@
 import { expect, test } from "vitest";
-import {
-  findTag,
-  findTags,
-  innerHtml,
-  plainText,
-} from "../../helpers/html.ts";
+import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 表のマーカーと見出し・行から、マーカーで囲んだ表の Markdown を作る */

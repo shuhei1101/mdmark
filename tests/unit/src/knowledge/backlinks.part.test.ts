@@ -2,7 +2,8 @@ import { expect, test } from "vitest";
 import { findTag, matches } from "../../helpers/html.ts";
 
 /** 関連文書の一覧の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadBacklinks = () => import("../../../../src/knowledge/backlinks.part.ts");
+const loadBacklinks = () =>
+  import("../../../../src/knowledge/backlinks.part.ts");
 
 // タイトル「関連文書」と項目を並びのとおりに返却する（正常系）
 test("test_render_backlinks", async () => {

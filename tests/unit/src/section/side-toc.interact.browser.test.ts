@@ -9,10 +9,12 @@ import {
 } from "../../helpers/dom.ts";
 
 /** 右側の目次の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadSideToc = () => import("../../../../src/section/side-toc.interact.ts");
+const loadSideToc = () =>
+  import("../../../../src/section/side-toc.interact.ts");
 
 /** セクションの操作を読み込む */
-const loadSections = () => import("../../../../src/section/section.interact.ts");
+const loadSections = () =>
+  import("../../../../src/section/section.interact.ts");
 
 /** 差分のブロックの部品を読み込む */
 const loadDiffBlocks = () => import("../../../../src/diff/diff-blocks.part.ts");

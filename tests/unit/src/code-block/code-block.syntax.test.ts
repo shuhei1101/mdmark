@@ -1,11 +1,6 @@
 import { expect, test } from "vitest";
 import type { WarningItem } from "../../../../src/extensions.ts";
-import {
-  findTag,
-  findTags,
-  innerHtml,
-  matches,
-} from "../../helpers/html.ts";
+import { findTag, findTags, innerHtml, matches } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** コードブロックの処理を読み込む（実装が無い間は各テストが個別に失敗する） */

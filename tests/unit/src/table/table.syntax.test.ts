@@ -1,11 +1,6 @@
 import MarkdownIt from "markdown-it";
 import { expect, test } from "vitest";
-import {
-  findTags,
-  matches,
-  outerHtml,
-  plainText,
-} from "../../helpers/html.ts";
+import { findTags, matches, outerHtml, plainText } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 表の処理を読み込む（実装が無い間は各テストが個別に失敗する） */

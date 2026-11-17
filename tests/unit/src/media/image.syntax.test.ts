@@ -1,12 +1,7 @@
 import { expect, test } from "vitest";
 import type { ImageAttributes } from "../../../../src/media/image.syntax.ts";
 import { flattenTokens, parseWithRules } from "../../helpers/core-rules.ts";
-import {
-  findTag,
-  findTags,
-  innerHtml,
-  plainText,
-} from "../../helpers/html.ts";
+import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 画像の属性と図の処理を読み込む（実装が無い間は各テストが個別に失敗する） */

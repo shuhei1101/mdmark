@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
 
 /** 範囲の css を根の要素の中に限る処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadScopeCss = () => import("../../../../src/embedded-html/scope-css.logic.ts");
+const loadScopeCss = () =>
+  import("../../../../src/embedded-html/scope-css.logic.ts");
 
 /** 範囲の通し番号から、範囲の根の要素のセレクタを作る */
 const rootOf = (scope: number) => `.mdmark-html[data-html-scope="${scope}"]`;
