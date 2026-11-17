@@ -403,13 +403,13 @@ const MERMAID_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
 /** mermaid の図を描き終えるまでの待ちの上限（全件を並べて実行すると、5MB の mermaid のモジュールの読み込みに 10 秒を超えることがある） */
 const MERMAID_WAIT_MS = 60_000;
 
-/** gantt の mermaid のコードブロックを 1 つ持つ文書（map が描く種類は map の図になる） */
+/** pie の mermaid のコードブロックを 1 つ持つ文書（map が描く種類は map の図になる） */
 const MERMAID_MARKDOWN = [
   "```mermaid",
-  "gantt",
-  "  dateFormat YYYY-MM-DD",
-  "  section 設計",
-  "  画面 :a1, 2026-01-01, 3d",
+  "pie",
+  "  title 予定",
+  '  "設計" : 3',
+  '  "実装" : 5',
   "```",
   "",
 ].join("\n");

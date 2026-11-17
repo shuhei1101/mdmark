@@ -147,7 +147,7 @@ const fence = (source: string): string => `\`\`\`mermaid\n${source}\n\`\`\`\n`;
 // 範囲の外の純粋な Mermaid を map の図にする（正常系）
 test("test_build_map_ranges_when_plain", () => {
   // 準備
-  const markdown = `${fence("flowchart LR\n  A --> B")}\n${fence("gantt\n  title 予定\n  section 設計\n  画面 :a1, 2026-01-01, 3d")}\n${mapRange({ mermaid: FLOW })}`;
+  const markdown = `${fence("flowchart LR\n  A --> B")}\n${fence('pie\n  title 予定\n  "設計" : 3')}\n${mapRange({ mermaid: FLOW })}`;
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
