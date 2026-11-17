@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/chore-release-tag-v0.14.0
+
+
+ Test Files  300 passed (300)
+      Tests  2268 passed (2268)
+   Start at  10:20:18
+   Duration  18.68s (worker 82%, tests 12%, import 5%, transform 1%)
+
