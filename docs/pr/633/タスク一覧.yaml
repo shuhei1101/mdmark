@@ -72,7 +72,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T00:14:45.758561+00:00'
   - process: 実装
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T00:15:49.210293+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: 既存の tests/integration/lib/build.test.ts を実行して確かめる。新しい結合テストは作らない
