@@ -1569,3 +1569,70 @@ test("test_normal_when_text_mark_args_not_json", async () => {
   expect(closed).toContain("--\\u003e");
   expect(lines.some((line) => line.startsWith("-:7:"))).toBe(false);
 });
+
+// マインドマップの補足が指す無い項目と、同じ文字の 2 つ以上の項目を指すキーを点検のずれにする（正常系（マインドマップの map の補足にずれがある））
+test("test_normal_when_map_mindmap_data_drift", async () => {
+  // 準備: 範囲の開きのマーカーを 3・19 行目、補足を 12・26 行目に置く
+  const a = [
+    "# A",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "mindmap",
+    "  root((企画))",
+    "    体制",
+    "      課題",
+    "    予算",
+    "      課題",
+    "```",
+    '<!-- map-data: {"version": 1, "notes": {"幽霊": {"text": "無い項目"}, "課題": {"text": "どちらの課題か決まらない"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+    "",
+    "",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "mindmap",
+    "  root((旅行))",
+    "    行き先",
+    "    予算",
+    "```",
+    '<!-- map-data: {"version": 1, "notes": {"行き先": {"text": "海"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+  ];
+  const opens = a.flatMap((line, index) =>
+    line === "<!-- map -->" ? [index + 1] : [],
+  );
+  expect(opens).toEqual([3, 19]);
+  const data = a.flatMap((line, index) =>
+    line.startsWith("<!-- map-data") ? [index + 1] : [],
+  );
+  expect(data).toEqual([12, 26]);
+  const dir = await createMapDir(a);
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const at = (line: number, kind: string) =>
+    lines.filter((item) => item.startsWith(`docs/a.mark.md:${line}: ${kind}:`));
+  const unknown = at(12, "map_unknown_ref");
+  expect(unknown).toHaveLength(1);
+  expect(unknown[0]).toContain("notes.幽霊");
+  const ambiguous = at(12, "map_ambiguous_ref");
+  expect(ambiguous).toHaveLength(1);
+  expect(ambiguous[0]).toContain("notes.課題");
+  expect(ambiguous[0]).toContain("ID");
+  for (let line = 19; line <= 28; line += 1)
+    expect(
+      lines.some((item) => item.startsWith(`docs/a.mark.md:${line}:`)),
+      `${line} 行目`,
+    ).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 2 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});

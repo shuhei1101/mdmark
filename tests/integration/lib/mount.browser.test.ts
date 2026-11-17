@@ -34,6 +34,11 @@ import {
   ER as MAP_ER,
   ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
+  MINDMAP as MAP_MINDMAP,
+  MINDMAP_DATA as MAP_MINDMAP_DATA,
+  MINDMAP_LAYOUT_DATA as MAP_MINDMAP_LAYOUT_DATA,
+  MINDMAP_PLAIN as MAP_MINDMAP_PLAIN,
+  MINDMAP_WALK_DATA as MAP_MINDMAP_WALK_DATA,
   SEQUENCE as MAP_SEQUENCE,
   STATE as MAP_STATE,
   STATE_DATA as MAP_STATE_DATA,
@@ -18524,17 +18529,20 @@ test("test_normal_when_map_annotations", async () => {
 // features.hints がオフなら、map の図の説明と注記のツールチップとマーカーを配置せず、ラベルと名前は描き、注記の一覧の戻るリンクは要素そのものへ戻る（正常系（map の図のヒントを削除する））
 test("test_normal_when_map_hints_off", async () => {
   // 準備
-  const markdown = `${HINT_MAP_FLOW}\n${HINT_MAP_SEQUENCE}\n※[cond]: 条件を満たさないときは次の工程へ進む。\n`;
+  const mindmap = mapRange({ mermaid: MAP_MINDMAP, data: MAP_MINDMAP_DATA });
+  const markdown = `${HINT_MAP_FLOW}\n${HINT_MAP_SEQUENCE}\n${mindmap}\n※[cond]: 条件を満たさないときは次の工程へ進む。\n`;
   // 実行
   const { el, figures } = await mountMap(markdown, {
     features: { hints: false },
   });
-  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+  await vi.waitFor(() => expect(figures()).toHaveLength(3), {
     timeout: MAP_WAIT_MS,
   });
-  const [flow, seq] = figures() as [HTMLElement, HTMLElement];
-  // 検証: ノードとグループのタイトルの説明のマーカーが無く、線とメッセージの押せる帯は aria-describedby を持たない
+  const [flow, seq, map] = figures() as [HTMLElement, HTMLElement, HTMLElement];
+  // 検証: ノードとグループのタイトル・マインドマップの項目の説明のマーカーが無く、線とメッセージの押せる帯は aria-describedby を持たない
   expect(flow.querySelector(".mdmark-diagram-info")).toBeNull();
+  expect(map.querySelector(".map-mindmap-item")).not.toBeNull();
+  expect(map.querySelector(".mdmark-diagram-info")).toBeNull();
   const wire = find<SVGPathElement>(flow, '.map-wire-hit[data-wire="e1"]');
   expect(wire.hasAttribute("aria-describedby")).toBe(false);
   const message = find<SVGPathElement>(seq, '.map-wire-hit[data-message="0"]');
@@ -18577,7 +18585,7 @@ test("test_normal_when_map_hints_off", async () => {
   ).toHaveLength(0);
 });
 
-/** 範囲の外の純粋な Mermaid（map が描く種類）と gantt を持つ文書 */
+/** 範囲の外の純粋な Mermaid（map が描く種類）と gantt を持つ文書（マインドマップは見た目を指定する行を持たない） */
 const PLAIN_MERMAID_MARKDOWN = [
   "```mermaid",
   "flowchart LR",
@@ -18589,6 +18597,10 @@ const PLAIN_MERMAID_MARKDOWN = [
   "  actor U as 読者",
   "  participant M as mdmark",
   "  U->>M: ページを開く",
+  "```",
+  "",
+  "```mermaid",
+  MAP_MINDMAP_PLAIN.trimEnd(),
   "```",
   "",
   "```mermaid",
@@ -18615,7 +18627,7 @@ test(
       () => {
         expect(
           el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
-        ).toHaveLength(2);
+        ).toHaveLength(3);
         expect(
           el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
         ).toHaveLength(1);
@@ -18628,7 +18640,11 @@ test(
         'figure.mdmark-diagram[data-diagram="map"] figcaption',
       ),
     ].map((caption) => caption.textContent?.trim());
-    expect(titles).toEqual(["フローチャート", "シーケンス図"]);
+    expect(titles).toEqual([
+      "フローチャート",
+      "シーケンス図",
+      "マインドマップ",
+    ]);
     expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
     expect(
       el.querySelector('[data-participant="U"] .mdmark-diagram-node-kind svg'),
@@ -18721,4 +18737,361 @@ test("test_normal_when_plain_sequence_heads_stuck", async () => {
   });
   window.scrollTo(0, 0);
   spacer.remove();
+});
+
+/** マインドマップの map を持つ Markdown */
+const MAP_MINDMAP_MARKDOWN = mapRange({
+  args: '{"title": "企画の論点"}',
+  mermaid: MAP_MINDMAP,
+  data: MAP_MINDMAP_DATA,
+});
+
+/** マインドマップの項目の、持ち手のボタン */
+const mindmapButton = (
+  figure: Element,
+  key: string,
+  kind: "toggle" | "enter",
+): HTMLButtonElement =>
+  find<HTMLButtonElement>(figure, `[data-mindmap-${kind}="${key}"]`);
+
+/** マインドマップの項目の、押せる要素 */
+const mindmapHit = (figure: Element, key: string): HTMLElement =>
+  find<HTMLElement>(mapNode(figure, key), ".mdmark-diagram-node-hit");
+
+/** マインドマップの描いた項目の data-node */
+const mindmapKeys = (figure: Element): string[] =>
+  [...figure.querySelectorAll<HTMLElement>(".map-mindmap-item")].map(
+    (item) => item.dataset.node ?? "",
+  );
+
+// map のマインドマップを、根を中央に置いて枝を左右の外へ広げる木の配置で描く（正常系（map のマインドマップを描く））
+test("test_normal_when_map_mindmap_drawn", async () => {
+  // 準備・実行
+  const before = mermaidLoads();
+  const { el, figures } = await mountMap(MAP_MINDMAP_MARKDOWN);
+  const figure = figures()[0] as HTMLElement;
+  // 検証: タイトル・mermaid を読み込まない・書き方の警告が無い
+  expect(find(figure, ".mdmark-diagram-title").textContent).toBe("企画の論点");
+  expect(mermaidLoads()).toBe(before);
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  // 検証: 根の左右に 2 つずつの枝があり、子は親より根から遠い側・記載順に上から並ぶ
+  const [rootX] = mapCenter(mapNode(figure, "root"));
+  const branches = ["a1", "体制", "予算", "スケジュール"];
+  const sides = branches.map(
+    (key) => mapCenter(mapNode(figure, key))[0] > rootX,
+  );
+  expect(sides.filter(Boolean)).toHaveLength(2);
+  const away = (child: string, parent: string) =>
+    Math.abs(mapCenter(mapNode(figure, child))[0] - rootX) >
+    Math.abs(mapCenter(mapNode(figure, parent))[0] - rootX);
+  expect(away("利用者を増やす", "a1")).toBe(true);
+  expect(away("人手が足りない", "n5")).toBe(true);
+  expect(mapCenter(mapNode(figure, "利用者を増やす"))[1]).toBeLessThan(
+    mapCenter(mapNode(figure, "継続して使ってもらう"))[1],
+  );
+  // 検証: 形状
+  const shape = (key: string) => mapNode(figure, key).dataset.shape;
+  expect(
+    [
+      "a1",
+      "体制",
+      "root",
+      "担当の割り当て",
+      "予算",
+      "スケジュール",
+      "利用者を増やす",
+    ].map(shape),
+  ).toEqual([
+    "square",
+    "rounded",
+    "circle",
+    "bang",
+    "cloud",
+    "hexagon",
+    "plain",
+  ]);
+  const plain = getComputedStyle(mapNode(figure, "利用者を増やす"));
+  expect(plain.borderTopStyle).toBe("none");
+  expect(plain.borderBottomStyle).toBe("solid");
+  // 検証: 枝ごとに縁と曲線の色が分かれる
+  const colors = branches.map((key) =>
+    mapNode(figure, key).style.getPropertyValue("--map-mindmap-color"),
+  );
+  expect(new Set(colors).size).toBe(4);
+  // 検証: ::icon と ::: の項目もアイコンの svg を持たない
+  for (const key of [
+    "リリースの時期を四半期の終わりまでに決めて関係者へ共有する",
+    "マイルストーン",
+  ])
+    expect(mapNode(figure, key).querySelector("svg")).toBeNull();
+  // 検証: 重ならず、30 文字の名前は折り返す
+  const items = [...figure.querySelectorAll<HTMLElement>(".map-mindmap-item")];
+  for (const [i, a] of items.entries())
+    for (const b of items.slice(i + 1))
+      expect(
+        mapOverlaps(a.getBoundingClientRect(), b.getBoundingClientRect()),
+        `${a.dataset.node} と ${b.dataset.node}`,
+      ).toBe(false);
+  const long = mapNode(
+    figure,
+    "リリースの時期を四半期の終わりまでに決めて関係者へ共有する",
+  );
+  expect(long.getBoundingClientRect().height).toBeGreaterThan(40);
+  // 検証: 説明のマーカーとツールチップ
+  const info = find<HTMLButtonElement>(
+    mapNode(figure, "a1"),
+    ".mdmark-diagram-info",
+  );
+  expect(
+    mapNode(figure, "人手が足りない").querySelector(".mdmark-diagram-info"),
+  ).not.toBeNull();
+  info.focus();
+  await vi.waitFor(() => {
+    const tip = document.getElementById(
+      info.getAttribute("aria-describedby") ?? "",
+    );
+    expect(tip?.hidden).toBe(false);
+    expect(tip?.textContent).toContain(
+      "利用者の数と、続けて使う割合の 2 つで測る",
+    );
+  });
+  // 検証: 最初に根が表示する枠の横の中央にある
+  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
+  const box = viewport.getBoundingClientRect();
+  expect(Math.abs(rootX - (box.left + box.width / 2))).toBeLessThan(4);
+});
+
+// map のマインドマップの枝を開閉し、中へ入って戻る（正常系（map のマインドマップの枝を開閉する・中へ入る））
+test("test_normal_when_map_mindmap_toggled", async () => {
+  // 準備
+  const { el, figures } = await mountMap(MAP_MINDMAP_MARKDOWN);
+  const figure = () => figures()[0] as HTMLElement;
+  const placed = () =>
+    Object.fromEntries(
+      mindmapKeys(figure()).map((key) => [
+        key,
+        mapCenter(mapNode(figure(), key)),
+      ]),
+    );
+  const initial = placed();
+  // 実行・検証: 「体制」を閉じる
+  mindmapButton(figure(), "体制", "toggle").click();
+  const toggle = mindmapButton(figure(), "体制", "toggle");
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  expect(toggle.getAttribute("aria-label")).toBe("体制の子孫 3 件を開く");
+  expect(toggle.textContent).toContain("3");
+  for (const key of ["n5", "人手が足りない", "担当の割り当て"])
+    expect(mindmapKeys(figure())).not.toContain(key);
+  // 検証: 根と子を持たない項目には持ち手が無い
+  for (const key of ["root", "利用者を増やす", "マイルストーン"]) {
+    expect(figure().querySelector(`[data-mindmap-toggle="${key}"]`)).toBeNull();
+    expect(figure().querySelector(`[data-mindmap-enter="${key}"]`)).toBeNull();
+  }
+  mindmapButton(figure(), "体制", "toggle").click();
+  // 実行・検証: 「予算」の下の「課題」の中へ入る
+  const budgetColor = mapNode(figure(), "予算").style.getPropertyValue(
+    "--map-mindmap-color",
+  );
+  mindmapButton(figure(), "n9", "enter").click();
+  expect(mindmapKeys(figure()).sort()).toEqual(["n9", "見積もりが粗い"].sort());
+  expect(
+    find(figure(), ".map-mindmap-trail").textContent?.replace(/\s+/g, " "),
+  ).toContain("企画の論点 › 予算 › 課題");
+  expect(
+    mapNode(figure(), "見積もりが粗い").style.getPropertyValue(
+      "--map-mindmap-color",
+    ),
+  ).toBe(budgetColor);
+  expect(new URL(location.href).searchParams.get("map-1")).toBe("n9");
+  // 実行・検証: 読み込み直しても「予算」の下の「課題」の中から描く
+  await remountMap(el, MAP_MINDMAP_MARKDOWN);
+  expect(mindmapKeys(figure()).sort()).toEqual(["n9", "見積もりが粗い"].sort());
+  // 実行・検証: Esc で 1 つ外（「予算」の中）へ、もう 1 回で全体へ戻り、入る前と同じ配置
+  const escape = () =>
+    find<HTMLElement>(figure(), ".mdmark-diagram-viewport").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+  escape();
+  expect(mindmapKeys(figure()).sort()).toEqual(
+    ["予算", "n9", "見積もりが粗い"].sort(),
+  );
+  escape();
+  expect(mindmapKeys(figure())).toHaveLength(14);
+  const now = placed();
+  for (const [key, at] of Object.entries(initial)) {
+    expect(Math.abs((now[key]?.[0] ?? 0) - at[0]), key).toBeLessThan(2);
+    expect(Math.abs((now[key]?.[1] ?? 0) - at[1]), key).toBeLessThan(2);
+  }
+  // 実行・検証: 全て閉じるは子を持つ全ての項目を閉じ、全て開くで戻る
+  find<HTMLButtonElement>(figure(), '[data-tool="collapseAll"]').click();
+  expect(mindmapKeys(figure()).sort()).toEqual(
+    ["root", "a1", "体制", "予算", "スケジュール"].sort(),
+  );
+  mindmapButton(figure(), "体制", "toggle").click();
+  expect(mindmapKeys(figure())).toContain("n5");
+  expect(mindmapKeys(figure())).not.toContain("人手が足りない");
+  find<HTMLButtonElement>(figure(), '[data-tool="expandAll"]').click();
+  expect(mindmapKeys(figure())).toHaveLength(14);
+});
+
+// map のマインドマップの項目を選ぶ（正常系（map のマインドマップの項目を選ぶ））
+test("test_normal_when_map_mindmap_selected", async () => {
+  // 準備
+  const { figures } = await mountMap(MAP_MINDMAP_MARKDOWN);
+  const figure = () => figures()[0] as HTMLElement;
+  const dimmedKeys = () =>
+    mindmapKeys(figure()).filter((key) => mapDimmed(mapNode(figure(), key)));
+  // 実行・検証: Tab でフォーカスして Enter で「体制」を選ぶ
+  const hit = mindmapHit(figure(), "体制");
+  hit.focus();
+  expect(document.activeElement).toBe(hit);
+  await userEvent.keyboard("{Enter}");
+  expect(mindmapHit(figure(), "体制").getAttribute("aria-label")).toBe(
+    "体制（選択中）",
+  );
+  expect(
+    mapNode(figure(), "体制").querySelector(
+      ".mdmark-diagram-node-hit [tabindex], .mdmark-diagram-node-hit button",
+    ),
+  ).toBeNull();
+  const kept = ["root", "体制", "n5", "人手が足りない", "担当の割り当て"];
+  for (const key of kept) expect(dimmedKeys(), key).not.toContain(key);
+  expect(dimmedKeys()).toContain("a1");
+  expect(getComputedStyle(mapNode(figure(), "a1")).opacity).toBe("0.25");
+  // 実行・検証: 形状の指定の無い項目を押すと選択が移る
+  mindmapHit(figure(), "利用者を増やす").click();
+  expect(
+    mindmapKeys(figure())
+      .filter((key) => !mapDimmed(mapNode(figure(), key)))
+      .sort(),
+  ).toEqual(["root", "a1", "利用者を増やす"].sort());
+  // 実行・検証: 名前の文字・説明のマーカー・持ち手のボタンでは選択が変わらない
+  find<HTMLElement>(
+    mapNode(figure(), "体制"),
+    ".mdmark-diagram-node-name",
+  ).click();
+  find<HTMLButtonElement>(
+    mapNode(figure(), "a1"),
+    ".mdmark-diagram-info",
+  ).click();
+  expect(
+    mindmapHit(figure(), "利用者を増やす").getAttribute("aria-label"),
+  ).toBe("利用者を増やす（選択中）");
+  // 実行・検証: Esc・配置と選択を元に戻す・選んだ項目をもう一度押すで解ける
+  const viewport = find<HTMLElement>(figure(), ".mdmark-diagram-viewport");
+  viewport.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
+  expect(dimmedKeys()).toHaveLength(0);
+  mindmapHit(figure(), "体制").click();
+  find<HTMLButtonElement>(figure(), '[data-tool="reset"]').click();
+  expect(dimmedKeys()).toHaveLength(0);
+  mindmapHit(figure(), "体制").click();
+  mindmapHit(figure(), "体制").click();
+  expect(dimmedKeys()).toHaveLength(0);
+});
+
+// map のマインドマップに補足の layout の色と閉じた状態だけを適用する（正常系（map のマインドマップに補足の layout を適用する））
+test("test_normal_when_map_mindmap_layout", async () => {
+  // 準備: layout を持たないときの位置
+  const plain = await mountMap(MAP_MINDMAP_MARKDOWN);
+  const plainFigure = plain.figures()[0] as HTMLElement;
+  const atPlain = (key: string) => {
+    const box = mapNode(plainFigure, key).getBoundingClientRect();
+    const stage = find<HTMLElement>(
+      plainFigure,
+      ".mdmark-diagram-stage",
+    ).getBoundingClientRect();
+    return [box.left - stage.left, box.top - stage.top];
+  };
+  const before = {
+    milestone: atPlain("マイルストーン"),
+    keep: atPlain("継続して使ってもらう"),
+  };
+  handles.pop()?.destroy();
+  plain.el.remove();
+  // 実行
+  const { el, figures } = await mountMap(
+    mapRange({
+      args: '{"title": "企画の論点"}',
+      mermaid: MAP_MINDMAP,
+      data: MAP_MINDMAP_LAYOUT_DATA,
+    }),
+  );
+  const figure = figures()[0] as HTMLElement;
+  // 検証: 色の面と縁・閉じた状態
+  const purpose = mapNode(figure, "a1");
+  expect(purpose.classList.contains("map-mindmap-filled")).toBe(true);
+  expect(purpose.style.getPropertyValue("--map-mindmap-color")).toContain(
+    "purple",
+  );
+  expect(
+    mindmapButton(figure, "予算", "toggle").getAttribute("aria-expanded"),
+  ).toBe("false");
+  expect(mindmapKeys(figure)).not.toContain("見積もりが粗い");
+  // 検証: 適用しない pos と order の書き方の警告
+  const warning = find<HTMLElement>(el, ".mdmark-syntax-warning");
+  expect(warning.textContent).toContain("layout.マイルストーン.pos");
+  expect(warning.textContent).toContain("layout.継続して使ってもらう.order");
+  expect(warning.textContent).toContain("Mermaid の行の順");
+  // 検証: マイルストーンと継続の位置は layout を持たないときと同じ（「予算」を閉じても右の側の並びは変わらない）
+  const stage = find<HTMLElement>(
+    figure,
+    ".mdmark-diagram-stage",
+  ).getBoundingClientRect();
+  const at = (key: string) => {
+    const box = mapNode(figure, key).getBoundingClientRect();
+    return [box.left - stage.left, box.top - stage.top];
+  };
+  expect(
+    Math.abs((at("マイルストーン")[0] ?? 0) - (before.milestone[0] ?? 0)),
+  ).toBeLessThan(2);
+  expect(
+    Math.abs((at("継続して使ってもらう")[0] ?? 0) - (before.keep[0] ?? 0)),
+  ).toBeLessThan(2);
+  // 検証: ドラッグしても動かず、配置と選択を元に戻すは押せない
+  const team = mapNode(figure, "体制");
+  const start = mapCenter(team);
+  pressMap(team, 60, 40);
+  const end = mapCenter(mapNode(figure, "体制"));
+  expect(Math.abs(end[0] - start[0])).toBeLessThan(2);
+  expect(find<HTMLButtonElement>(figure, '[data-tool="reset"]').disabled).toBe(
+    true,
+  );
+});
+
+// map のマインドマップを案内の帯で案内する（正常系（map のマインドマップを案内する））
+test("test_normal_when_map_mindmap_walked", async () => {
+  // 準備
+  const { figures } = await mountMap(
+    mapRange({
+      args: '{"title": "企画の論点"}',
+      mermaid: MAP_MINDMAP,
+      data: MAP_MINDMAP_WALK_DATA,
+    }),
+  );
+  const figure = () => figures()[0] as HTMLElement;
+  const press = (action: string) =>
+    find<HTMLButtonElement>(figure(), `[data-band="${action}"]`).click();
+  const kept = () =>
+    mindmapKeys(figure())
+      .filter((key) => !mapDimmed(mapNode(figure(), key)))
+      .sort();
+  // 検証: 帯と手順の数
+  expect(find(figure(), ".map-band-count").textContent).toBe("–/2");
+  // 実行・検証: 手順 1
+  press("next");
+  expect(kept()).toEqual(["root", "a1", "体制"].sort());
+  // 実行・検証: 手順 2 は体制の中で人手が足りないまでの道筋を残す
+  press("next");
+  expect(mindmapKeys(figure()).sort()).toEqual(
+    ["体制", "n5", "人手が足りない", "担当の割り当て"].sort(),
+  );
+  expect(kept()).toEqual(["体制", "n5", "人手が足りない"].sort());
+  expect(figure().textContent).toContain("体制の課題");
+  expect(figure().textContent).toContain("人手の不足がいちばん大きい課題");
+  // 実行・検証: 停止で全体の図に戻る
+  press("stop");
+  expect(mindmapKeys(figure())).toHaveLength(14);
+  expect(kept()).toHaveLength(14);
 });
