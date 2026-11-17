@@ -107,10 +107,13 @@ export const emptyMapData = (): MapData => ({
 
 /**
  * JSON の文字を走査し、オブジェクトのキーと配列の要素のパス（`notes.ghost`・`walkthroughs[0]`）ごとに、
- * 始まる行（0 から）を返す。JSON.parse で読めた文字だけを渡す
+ * 始まる行（0 から）と、元の文字に `--` をそのまま記載した文字列の値のパスを返す。JSON.parse で読めた文字だけを渡す
  */
-export const jsonPathLines = (source: string): Map<string, number> => {
+export const jsonPaths = (
+  source: string,
+): { lines: Map<string, number>; hyphens: Set<string> } => {
   const lines = new Map<string, number>();
+  const hyphens = new Set<string>();
   let at = 0;
   let line = 0;
   const skip = () => {
@@ -167,14 +170,16 @@ export const jsonPathLines = (source: string): Map<string, number> => {
     if (char === "{" || char === "[") {
       container(char, path);
     } else if (char === '"') {
+      const start = at;
       readString();
+      if (source.slice(start, at).includes("--")) hyphens.add(path);
     } else {
       while (at < source.length && !/[,\]}\s]/.test(source[at] as string))
         at += 1;
     }
   };
   value("");
-  return lines;
+  return { lines, hyphens };
 };
 
 /** JSON.parse のエラーの文から、補足の中の行（0 から）を求める */
@@ -191,7 +196,12 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 /** 補足を読むときに、項目とパスごとの行を持つ読み手 */
-type DataReader = { problems: MapProblem[]; lines: Map<string, number> };
+type DataReader = {
+  problems: MapProblem[];
+  lines: Map<string, number>;
+  /** 元の文字に `--` をそのまま記載した文字列の値のパス */
+  hyphens: Set<string>;
+};
 
 /** 値の型が合わない項目を足す */
 const invalid = (reader: DataReader, path: string, expected: string): void => {
@@ -215,7 +225,7 @@ const unknownKey = (
   });
 };
 
-/** 文字の値。`--` を含めば項目にする */
+/** 文字の値。元の文字に `--` をそのまま記載していれば項目にする */
 const readText = (
   reader: DataReader,
   value: unknown,
@@ -225,11 +235,11 @@ const readText = (
     invalid(reader, path, "文字");
     return undefined;
   }
-  if (value.includes("--")) {
+  if (reader.hyphens.has(path)) {
     reader.problems.push({
       kind: "map_invalid_value",
       line: reader.lines.get(path),
-      message: `補足の \`${path}\` に \`--\` があります。HTML コメントを閉じてしまうため、\`--\` を含めずに記載してください。`,
+      message: `補足の \`${path}\` に \`--\` をそのまま記載しています。HTML コメントを閉じてしまうため、\`--\` をそのまま記載せずに 2 つ目の \`-\` を JSON の Unicode エスケープで記載してください。`,
     });
     return undefined;
   }
@@ -643,8 +653,8 @@ export const parseMapData = (
     });
     return { data, problems, lines: new Map() };
   }
-  const lines = jsonPathLines(source);
-  const reader: DataReader = { problems, lines };
+  const { lines, hyphens } = jsonPaths(source);
+  const reader: DataReader = { problems, lines, hyphens };
   for (const [key, value] of Object.entries(root))
     readRootKey(reader, data, { key, value });
   return { data, problems, lines };
