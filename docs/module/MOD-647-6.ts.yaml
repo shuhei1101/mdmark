@@ -1,0 +1,23 @@
+id: MOD-647-6
+visibility: internal
+title: VS Code 拡張機能 / 拡張機能の入口 / workspace.ts
+lead: 相対パスの設定の基準にするフォルダを決める処理。
+functions:
+  - name: baseDirOf
+    title: 相対パスの設定の基準のフォルダを返却する
+    kind: 関数
+    container: vscode/src/workspace.ts
+    role: 変換
+    scope: public
+    summary: Markdown を含むワークスペースのフォルダのパスを返却する。ワークスペースに含まれない Markdown は、その Markdown のフォルダのパスを返却する
+    args:
+      - name: uri
+        type: Uri
+        required: true
+        description: Markdown の URI
+    returns:
+      type: string
+      description: 相対パスの設定の基準にするフォルダの絶対パス
+tags:
+  - name: tool:vscode
+    main: true

@@ -1,0 +1,202 @@
+id: MOD-647-2
+visibility: internal
+title: ライブラリ本体 / 記法 / tokens.ts
+lead: 記法のコアルールが共有するトークンの処理（解析の環境・機能の判定・mdmark が出した HTML のトークン・タブの中身の境目・マーカーの読み取り・閉じの探索・インライン要素の文字）。
+enums:
+  - name: TabBoundary
+    title: タブの中身の境目
+    container: src/render/syntax/tokens.ts
+    summary: '`tabBoundaryBlock` が付け、`tabBoundaryOf` が読み取るタブの中身の境目'
+    values:
+      - value: start
+        title: タブの先頭
+        description: タブの組の最初の中身の前
+      - value: between
+        title: 中身の間
+        description: 隣り合うタブの中身の間
+      - value: end
+        title: タブの終了
+        description: タブの組の最後の中身の後
+constants:
+  - name: TAB_BOUNDARY_KEY
+    title: タブの中身の境目のキー
+    container: src/render/syntax/tokens.ts
+    summary: タブの中身の境目として `ownBlock` のトークンの `meta` に付けるキー。export しない
+    value: '`tabBoundary`'
+functions:
+  - name: envOf
+    title: 解析の環境を取り出す
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 変換
+    scope: public
+    summary: コアルールの状態の `env` を、解析の環境 `RenderEnv` として返却する
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアルールの状態
+    returns:
+      type: RenderEnv
+      description: 解析の環境
+  - name: featureOn
+    title: 記法の機能がオンか
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 判定
+    scope: public
+    summary: 解析の環境の `features` で、`name` の機能が `true` かを返却する
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアルールの状態
+      - name: name
+        type: string
+        required: true
+        description: 機能の名前
+    returns:
+      type: boolean
+      description: '`features[name]` が `true` のときだけ `true`'
+    callees:
+      - '#functions[envOf]'
+  - name: ownBlock
+    title: mdmarkが出したHTMLのトークンを作る
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 変換
+    scope: public
+    summary: mdmark が出した要素としてマーカーを付けた HTML を、`html_block` のトークンにする
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアルールの状態
+      - name: html
+        type: string
+        required: true
+        description: トークンの中身にする HTML
+      - name: source
+        type: Token
+        required: false
+        description: 元の行（`map`）をコピーするトークン
+    returns:
+      type: Token
+      description: '`block` が `true` の `html_block` のトークン。中身は `markOwn` で解析の環境の `nonce` を付けた HTML'
+    process: |-
+      1. `html_block` のトークンを作り、`block` を `true` にする
+      2. `source` が `map` を持てば、そのコピーを `map` にする
+      3. `markOwn` で `html` に `nonce` を付けて中身にする
+    callees:
+      - '#functions[envOf]'
+  - name: tabBoundaryBlock
+    title: タブの中身の境目のトークンを作る
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 変換
+    scope: public
+    summary: '`ownBlock` と同じ HTML のトークンの `meta` に、`TAB_BOUNDARY_KEY` のキーでタブの中身の境目を付ける'
+    args:
+      - name: options
+        type: '{ state: StateCore; html: string; boundary: TabBoundary; source?: Token | undefined }'
+        required: true
+        description: コアルールの状態・HTML・境目・元の行をコピーするトークン
+    returns:
+      type: Token
+      description: '`meta` に境目を持つ `html_block` のトークン'
+    callees:
+      - '#functions[ownBlock]'
+  - name: tabBoundaryOf
+    title: タブの中身の境目を読み取る
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 判定
+    scope: public
+    summary: '`html_block` のトークンなら `meta` の `TAB_BOUNDARY_KEY` の値を返却する'
+    args:
+      - name: token
+        type: Token | undefined
+        required: true
+        description: 読み取るトークン
+    returns:
+      type: TabBoundary | undefined
+      description: タブの中身の境目。`html_block` でないか境目を持たなければ `undefined`
+  - name: markOf
+    title: マーカーを読み取る
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 判定
+    scope: public
+    summary: マーカーのトークン（`MARK_TOKEN`）なら、`meta` のマーカーを返却する
+    args:
+      - name: token
+        type: Token | undefined
+        required: true
+        description: 読み取るトークン
+    returns:
+      type: Mark | undefined
+      description: マーカー。マーカーのトークンでなければ `undefined`
+  - name: findClose
+    title: 閉じのマーカーを探す
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 探索
+    scope: public
+    summary: '`openIndex` のマーカーより後ろで、同じ `level` の `name` の閉じのマーカーの位置を返却する'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: markdown-it のトークンの並び
+      - name: openIndex
+        type: number
+        required: true
+        description: 開きのマーカーの位置
+      - name: name
+        type: string
+        required: true
+        description: マーカーの名前
+    returns:
+      type: number
+      description: 最初に見つかった閉じのマーカーの位置。無ければ `-1`
+    callees:
+      - '#functions[markOf]'
+  - name: findNestedClose
+    title: 閉じのトークンを階層で探す
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 探索
+    scope: public
+    summary: '`openIndex` の開きのトークンに対応する、同じ `level` で型の `_open` を `_close` にした閉じのトークンの位置を返却する'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: markdown-it のトークンの並び
+      - name: openIndex
+        type: number
+        required: true
+        description: 開きのトークンの位置
+    returns:
+      type: number
+      description: 閉じのトークンの位置。無ければ `-1`
+  - name: textOf
+    title: インライン要素の文字を集める
+    kind: 関数
+    container: src/render/syntax/tokens.ts
+    role: 変換
+    scope: public
+    summary: インラインのトークンの子のうち `text` と `code_inline` の中身をつなげて返却する（タグを除いた文字）
+    args:
+      - name: token
+        type: Token
+        required: true
+        description: インラインのトークン
+    returns:
+      type: string
+      description: 子の文字をつないだ文字列。子が無ければ空文字列
+tags:
+  - name: topic:markdown
+    main: true
+  - name: topic:構文
+  - name: tool:markdown-it

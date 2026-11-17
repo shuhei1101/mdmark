@@ -1,0 +1,46 @@
+id: MOD-647-3
+visibility: internal
+title: ライブラリ本体 / 書き出したHTMLの起動 / includes.ts
+lead: 書き出しの中身から、文書ごとの取り込む文書の表と、`mount` に指定する索引・参照の引数を作る処理。
+functions:
+  - name: includesOf
+    title: 取り込む文書の表を作る
+    kind: 関数
+    container: src/viewer/includes.ts
+    role: 変換
+    scope: public
+    summary: 書き出しの中身から、文書のフォルダからのパスをキーにした取り込む文書の表を作る
+    args:
+      - name: payload
+        type: ExportPayload
+        required: true
+        description: 書き出しの中身
+      - name: doc
+        type: ExportPayload["docs"][number]
+        required: true
+        description: 開く文書
+    returns:
+      type: Record<string, string>
+      description: 文書の `includes` のキーごとに、`payload.includes` の中身を値にした表。中身が無いキーは空文字列
+  - name: knowledgeOptions
+    title: 索引と参照をmountの引数にする
+    kind: 関数
+    container: src/viewer/includes.ts
+    role: 変換
+    scope: public
+    summary: 書き出しの中身が持つ索引・文書の ID・参照の表・用語を、`mount` の引数にする
+    args:
+      - name: payload
+        type: ExportPayload
+        required: true
+        description: 書き出しの中身
+      - name: docId
+        type: string | undefined
+        required: true
+        description: 開く文書の ID
+    returns:
+      type: Pick<MountOptions, "index" | "docId" | "references" | "aliases">
+      description: '`payload` と `docId` が持つものだけを入れた引数（持たないキーは入れない）'
+tags:
+  - name: tool:html
+    main: true
