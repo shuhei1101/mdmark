@@ -347,7 +347,7 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 同じ向きで同じ直線の上に重なる区間を持つ線を、区間と直角の向きに `wireGap` ずつずらして並べ、並べた線が矩形に入るときに広げる幅を返す
+    summary: 同じ向きで同じ直線の上に重なる区間を持つ線を、区間と直角の向きに `wireGap` ずつずらして並べ、両側の矩形の間に収まらないときに広げる幅を返す
     scope: public
     args:
       - name: layout
@@ -359,8 +359,8 @@ functions:
       description: 並べた線と、並べた線が端点とその祖先以外の矩形に入る区間があるときに `layoutMap` の `spread` に指定する幅（入らなければ 0）
     process: |-
       1. 全ての線の縦と横の区間を、向きと直線の座標ごとに集め、範囲が重なる区間の束を作る（同じ点から出る・入る線の端の区間は束に入れない）
-      2. 束ごとに、中の n 本を記載順に並べ、束の中ほどが元の直線になるように `wireGap` ずつずらす。ずらした区間の前後の区間の端も同じ量だけ動かし、端点を含む区間は端点を辺に沿って動かす
-      3. ずらした区間が端点とその祖先以外の矩形（`clearance` を含めない）に入る束があれば、その束の幅（`wireGap` × (n − 1)）の最大を `crowded` にする
+      2. 束ごとに、束の範囲で両側にある矩形（端点とその祖先を除く。`clearance` を含める）の間を通り道にし、中の n 本を記載順に、束の中ほどが通り道の中ほどになるように `wireGap` ずつ並べる（片側に矩形が無ければ、矩形のある側から遠ざかる向きへ並べ、両側に無ければ束の中ほどを元の直線にする）。ずらした区間の前後の区間の端も同じ量だけ動かし、端点を含む区間は端点を辺に沿って動かす
+      3. 通り道の幅が束の幅（`wireGap` × (n − 1)）に足りない束があれば、足りない幅の最大を `crowded` にする（`spread` でこの幅だけ間を広げると、通り道の中ほどに束が収まる）。幅が足りない束も、通り道の中ほどに並べたまま返す
     unit_tests:
       - name: test_separate_wires
         case: 正常
@@ -368,18 +368,24 @@ functions:
         condition: 同じ縦の直線の上で範囲が重なる区間を持つ 3 本の線と、間に十分な幅のある 2 つのノード
         mock: なし
         expected: 3 本のその区間の x 座標が元の x − 8・x・x + 8 で、どの 2 本も同じ向きの区間が同じ直線の上で重ならず、線は縦横の折れ線のまま。`crowded` が 0
-      - name: test_separate_wires_when_crowded
-        case: 正常
-        summary: 通り道の幅が足りない
-        condition: test_separate_wires の 3 本と、区間の右 4px に辺を持つノード
-        mock: なし
-        expected: '`crowded` が 16'
       - name: test_separate_wires_when_shared_end
         case: 正常
         summary: 同じ点から出る線の端
         condition: 同じノードの同じ辺の中央から出て、最初の区間だけが重なる 2 本の線
         mock: なし
         expected: 2 本の点の並びが引数のまま
+      - name: test_separate_wires_when_grid_line
+        case: 正常
+        summary: 辺から 12px の格子の線を通る束
+        condition: 左のノードの右の辺から 12px（`clearance`）の縦の直線の上で範囲が重なる 5 本の線と、右のノードの左の辺が左のノードの右の辺から 80px
+        mock: なし
+        expected: 5 本のその区間の x 座標が、左のノードの右の辺から 24・32・40・48・56px（通り道 12〜68px の中ほど 40px が束の中ほど）で、どの区間も両側の矩形に入らず、`crowded` が 0
+      - name: test_separate_wires_when_crowded
+        case: 正常
+        summary: 通り道の幅が足りない
+        condition: test_separate_wires_when_grid_line の 5 本と、右のノードの左の辺が左のノードの右の辺から 40px
+        mock: なし
+        expected: '`crowded` が 16（束の幅 32px に対して通り道 12〜28px の幅が 16px）で、`layoutMap` に `spread: 16` を指定して配置し直した後の線を並べると `crowded` が 0'
 lead: '入れ子のグループの自動配置と線の経路を受け持ち、構成図の配置を変えるときに参照する。'
 tags:
   - name: topic:map
