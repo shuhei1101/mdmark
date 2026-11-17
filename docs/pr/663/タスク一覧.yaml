@@ -50,8 +50,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T22:13:54.066343+00:00'
   - process: 部品設計
-    status: todo
+    status: done
     note: CMP-472-5・CMP-531-1・CMP-531-2・CMP-596-1・CMP-596-2・CMP-596-3
+    updated_by: planner
+    updated_at: '2026-11-17T22:23:48.796883+00:00'
   - process: 画面設計
     status: skipped
     reason: docs/screen に閉じたグループと線の経路の記載が無く、部品設計で扱うため対象外
