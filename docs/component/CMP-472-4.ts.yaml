@@ -42,6 +42,11 @@ states:
         value: '{"1": "文書を描く要求"}'
       - name: hints
         value: 'false'
+  - name: ParticipantTerms
+    description: 参加者の名前に用語を持つ。名前の用語に下線が付き、参加者の箱を覆う押せる要素と名前の用語が別々にフォーカスを受ける
+    args:
+      - name: terms
+        value: '{"mount": "文書を要素の中に描く関数"}'
 lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・ノート・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
   - name: sequence
@@ -110,7 +115,8 @@ uses:
     how: ブロックのタブの開閉の山形
 accessibility:
   - ブロックの開閉のボタンは `aria-expanded` と `aria-label="{種類}「{名前}」を開く"`（開いているときは `閉じる`）を持つ。タブの名前のボタンは `aria-label="{種類}「{名前}」の中だけを見る"` を持つ
-  - 参加者の箱は `tabindex="0"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight"` を持ち、選んだかを `data-selected` とスクリーンリーダー向けの名前の末尾の `（選択中）` で伝える。並べ替えのアイコンは持たない
+  - 参加者の箱の `div` はフォーカスを受けず、箱の全体を覆う押せる要素（`span.mdmark-diagram-node-hit`）が箱の代わりにフォーカスを受ける（箱の中にフォーカスできる要素を入れ子にしない）。押せる要素は `role="button"`・`tabindex="0"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight"` と、参加者の名前のスクリーンリーダー向けの名前を持ち、フォーカスの枠を箱の外側に出す。選んだかを箱の `data-selected` とスクリーンリーダー向けの名前の末尾の `（選択中）` で伝える。並べ替えのアイコンは持たない
+  - 押せる要素は、箱の中の種類の行と名前の文字の下に重ね、それらを押せる要素の中に入れない。名前の中の用語は、押せる要素とは別にフォーカスできる（Tab の順は押せる要素、名前の中の用語）。並べ替えた後は、移した参加者の押せる要素へフォーカスを戻す
   - 参加者の名前の文字は選んでコピーでき、ドラッグできる場所のポインターの形状は `grab`
   - ブロックの枠線とライフラインは 1px で、背景とのコントラスト比 3:1 以上
 refs:

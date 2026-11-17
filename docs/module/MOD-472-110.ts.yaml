@@ -478,7 +478,7 @@ functions:
       - name: test_check_diagrams_when_clean
         case: 正常
         summary: 整った図と図の無い文書はずれを返却しない
-        condition: モックの `shop-er` の定義を持つ文書と、図の無い文書
+        condition: モックの `reply-time` のグラフの定義を持つ文書と、図の無い文書
         mock: なし
         expected: 空の配列
     refs:

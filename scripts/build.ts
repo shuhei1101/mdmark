@@ -32,8 +32,8 @@ import { checkMigrations } from "./migrations.ts";
 
 // 埋めるバージョンが合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
-// 配布ファイル 1 つの上限（非機能要件の 672KB）
-const MAX_DIST_FILE_BYTES = 672 * 1024;
+// 配布ファイル 1 つの上限（非機能要件の 688KB）
+const MAX_DIST_FILE_BYTES = 688 * 1024;
 // まとめた依存のライセンスを記載する、`dist/` と移行の手順のフォルダの中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // サイズを検めない配布ファイル（利用側のページが jsDelivr から読み込まない出力）
@@ -42,11 +42,11 @@ const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
 const LEGACY_MIGRATION_SCRIPT = "marker-json.mjs";
 const LEGACY_MARKS_FILE = "legacy-marks.js";
 // 廃止した図の範囲を書き換える移行の手順のスクリプトと、そのフォルダにまとめる書き換えの処理と拡張の読み込みのファイル名
-const RETIRED_MIGRATION_SCRIPT = "retired-diagrams.mjs";
+const RETIRED_MIGRATION_SCRIPTS = ["retired-diagrams.mjs", "retired-er.mjs"];
 const RETIRED_DIAGRAMS_FILE = "retired-diagrams.js";
 // 廃止した図の書き換えの処理と拡張の読み込みを re-export する入口
 const RETIRED_DIAGRAMS_ENTRY = [
-  'export { convertRetiredDiagrams } from "./src/map/convert.ts";',
+  'export { convertRetiredDiagrams, convertRetiredEr } from "./src/map/convert.ts";',
   'export { loadExtensionDirectives } from "./src/cli/check.ts";',
   'export { loadConfig } from "./src/cli/config.ts";',
 ].join("\n");
@@ -285,7 +285,7 @@ export async function buildLegacyMarks(
   return folders.map((folder) => `${folder}/${LEGACY_MARKS_FILE}`);
 }
 
-/** `src/map/convert.ts` の `convertRetiredDiagrams` と、拡張の `directive` と設定を読み込む `loadExtensionDirectives`・`loadConfig` を、Node で動く 1 つのファイルにまとめ、`migrations/` の中の `retired-diagrams.mjs` を持つフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `retired-diagrams.js` のパスを返却する。ソースが無ければ何も書き込まない（廃止の前の定義を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
+/** `src/map/convert.ts` の `convertRetiredDiagrams`・`convertRetiredEr` と、拡張の `directive` と設定を読み込む `loadExtensionDirectives`・`loadConfig` を、Node で動く 1 つのファイルにまとめ、`migrations/` の中の `retired-diagrams.mjs` か `retired-er.mjs` を持つフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `retired-diagrams.js` のパスを返却する。ソースが無ければ何も書き込まない（廃止の前の定義を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
 export async function buildRetiredDiagrams(
   version: string,
   root: string,
@@ -301,7 +301,9 @@ export async function buildRetiredDiagrams(
     .filter(
       (entry) =>
         entry.isDirectory() &&
-        existsSync(join(migrations, entry.name, RETIRED_MIGRATION_SCRIPT)),
+        RETIRED_MIGRATION_SCRIPTS.some((script) =>
+          existsSync(join(migrations, entry.name, script)),
+        ),
     )
     .map((entry) => `migrations/${entry.name}`)
     .sort();

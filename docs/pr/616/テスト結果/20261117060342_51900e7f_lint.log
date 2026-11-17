@@ -1,0 +1,18 @@
+$ npx biome check .
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 903 files in 1311ms. No fixes applied.
+Found 1 warning.
+exit=0
+
+$ node scripts/eslint.ts
+exit=0
+
+$ npx tsc --noEmit
+tests/integration/lib/mount.browser.test.ts(3,15): error TS2724: '"../../../src/diagram/definition.ts"' has no exported member named 'MdmarkErDefinition'. Did you mean 'MdmarkDefinition'?
+exit=1
+（tsc の残る 1 件は tests/integration/lib/mount.browser.test.ts の ER 図の部品の型の import で、結合テスト作成の工程でこのテストを修正する）

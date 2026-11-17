@@ -1140,13 +1140,14 @@ test("test_normal_when_diagram_invalid", async () => {
   expect(html).toContain("<p>段落</p>");
 });
 
-// 廃止した flow・sequence の範囲を mdmark upgrade で変換できる記載の警告、<mdmark-flow> を map の範囲で記載し直す記載の警告にして描かない（正常系）
+// 廃止した flow・sequence・er の範囲を mdmark upgrade で変換できる記載の警告、<mdmark-flow> を map の範囲で記載し直す記載の警告にして描かない（正常系）
 test("test_normal_when_retired_diagram", async () => {
   // 準備
   const render = await loadRender();
   const markdown = [
     wrapDirective("flow", INQUIRY_TEXT),
     wrapDirective("sequence", INQUIRY_SEQ_TEXT),
+    wrapDirective("er", erText(shopEr())),
     wrapHtml(`<p>前</p>\n<mdmark-flow>\n${INQUIRY_TEXT}\n</mdmark-flow>`),
     "段落",
     "",
@@ -1159,19 +1160,20 @@ test("test_normal_when_retired_diagram", async () => {
       /<div class="mdmark-syntax-warning"[^>]*>([\s\S]*?)<\/div>/g,
     ),
   ].map((match) => plainText(match[1] ?? ""));
-  expect(warnings).toHaveLength(3);
-  for (const [index, name] of ["flow", "sequence"].entries()) {
+  expect(warnings).toHaveLength(4);
+  for (const [index, name] of ["flow", "sequence", "er"].entries()) {
     expect(warnings[index]).toContain(
       `<!-- ${name} --> の図の記載方法は廃止しました。`,
     );
     expect(warnings[index]).toContain("mdmark upgrade");
   }
   // 埋め込んだ HTML の要素は、map の範囲で記載し直す文
-  expect(warnings[2]).toContain("<mdmark-flow> の要素は廃止しました。");
-  expect(warnings[2]).toContain("<!-- map --> の範囲で記載し直してください");
-  expect(warnings[2]).not.toContain("mdmark upgrade");
+  expect(warnings[3]).toContain("<mdmark-flow> の要素は廃止しました。");
+  expect(warnings[3]).toContain("<!-- map --> の範囲で記載し直してください");
+  expect(warnings[3]).not.toContain("mdmark upgrade");
   expect(diagramFigures(html)).toHaveLength(0);
   expect(html).not.toContain('"nodes"');
+  expect(html).not.toContain('"tables"');
   expect(html).not.toContain("<mdmark-flow");
   expect(html).toContain("<p>段落</p>");
 });
@@ -1317,7 +1319,7 @@ test("test_normal_when_html_and_hints_disabled", async () => {
   // 準備
   const render = await loadRender();
   const htmlOff = wrapHtml(EMBEDDED_BODY, '<!-- features: {"html": false} -->');
-  const diagramHints = `<!-- features: {"hints": false} -->\n\n${wrapDirective("er", erText(shopEr()))}`;
+  const diagramHints = `<!-- features: {"hints": false} -->\n\n${wrapDirective("chart", REPLY_TIME_TEXT)}`;
   const hintsOff = `${wrapHtml(EMBEDDED_BODY)}\n${diagramHints}`;
   // 実行
   const offHtml = render(htmlOff);
@@ -1335,10 +1337,6 @@ test("test_normal_when_html_and_hints_disabled", async () => {
   for (const tag of tooltips) {
     expect(tag).toMatch(/data-tip-for="item:\d+"/);
   }
-  // ER 図のテーブルと列の名前は出て、テーブルの説明のボタンとツールチップの中身は無い
-  expect(offHints).toContain("顧客");
-  expect(offHints).toContain("email");
-  expect(offHints).not.toContain("mdmark-diagram-info");
 });
 
 // 範囲にコードブロックが 1 つでないときと、読み込めないチャートの定義の場所に記載の警告を配置する（正常系）
@@ -3044,159 +3042,6 @@ test("test_normal_when_code_fold_invalid", async () => {
   for (const text of ["a:", "  b: 1", "c: 2", "d: 3", "e: 4"]) {
     expect(html).toContain(`<span class="mdmark-code-text">${text}</span>`);
   }
-});
-
-/** 結合テストの ER 図の定義（モックの `shop-er` の `products` を緑にして概要を除き、`orders` を畳んだもの） */
-function integrationEr(): ReturnType<typeof shopEr> {
-  const definition = shopEr();
-  definition.tables = definition.tables.map((table) => {
-    if (table.id === "products") {
-      const { desc: _desc, ...rest } = table;
-      return { ...rest, color: "green" };
-    }
-    return table.id === "orders" ? { ...table, folded: true } : table;
-  });
-  return definition;
-}
-
-/** 描いた HTML の中の、`data-node` が `id` の ER 図のテーブル */
-function erTableHtml(html: string, id: string): string {
-  return outerHtmlOf(html, `data-node="${id}"`);
-}
-
-/** `needle` を含む開始タグから、その要素の閉じタグまで（入れ子を数える） */
-function outerHtmlOf(html: string, needle: string): string {
-  const tag = findTag(html, needle);
-  return `${tag}${innerHtml(html, needle)}</div>`;
-}
-
-// ER 図を描く（正常系）
-test("test_normal_when_er_diagram", async () => {
-  // 準備
-  const render = await loadRender();
-  const definition = integrationEr();
-  // 実行
-  const html = render(wrapDirective("er", erText(definition)));
-  // 検証
-  const figures = findTags(html, 'mdmark-diagram"');
-  expect(findTags(html, 'class="mdmark-diagram"')).toHaveLength(1);
-  expect(figures.some((tag) => tag.includes('data-diagram="er"'))).toBe(true);
-  const text = plainText(html);
-  expect(text).toContain(definition.title);
-  expect(text).toContain(`範囲: ${definition.scope}`);
-  expect(html).toContain(`datetime="${definition.updated}"`);
-  for (const table of definition.tables) {
-    const tag = findTag(html, `data-node="${table.id}"`);
-    expect(tag).toContain(
-      `left:${table.x}px;top:${table.y}px;width:${table.w}px`,
-    );
-    const inner = plainText(erTableHtml(html, table.id));
-    expect(inner).toContain(table.name);
-    expect(inner).toContain(table.label);
-  }
-  const customers = erTableHtml(html, "customers");
-  expect(findTag(html, 'data-node="customers"')).toContain('data-color="blue"');
-  expect(plainText(customers)).toContain("マスター");
-  expect(findTag(html, 'data-node="order_items"')).toContain(
-    'data-color="orange"',
-  );
-  expect(plainText(erTableHtml(html, "order_items"))).toContain(
-    "トランザクション",
-  );
-  expect(findTag(html, 'data-node="products"')).toContain('data-color="green"');
-  expect(plainText(erTableHtml(html, "products"))).toContain("マスター");
-  const columns = matches(customers, /data-column="([^"]+)"/g).map((m) =>
-    m.slice('data-column="'.length, -1),
-  );
-  expect(columns).toEqual(["id", "email", "name", "created_at"]);
-  const idRow = outerHtmlOf(customers, 'data-column="id"').replace(
-    /<\/div>$/,
-    "",
-  );
-  expect(idRow).toMatch(/<abbr[^>]*title="主キー"[^>]*>PK<\/abbr>/);
-  expect(idRow).toMatch(/<abbr[^>]*title="NOT NULL"[^>]*>NN<\/abbr>/);
-  const orders = erTableHtml(html, "orders");
-  const visible = findTags(orders, "data-column=").filter(
-    (tag) => !/\bhidden\b/.test(tag),
-  );
-  expect(visible).toHaveLength(2);
-  expect(findTag(orders, "mdmark-diagram-er-rest")).not.toMatch(/\bhidden\b/);
-  expect(plainText(orders)).toContain("非表示 6 列");
-  expect(findTag(orders, "mdmark-diagram-er-fold")).toContain(
-    'aria-expanded="false"',
-  );
-  expect(findTag(customers, "mdmark-diagram-er-fold")).toContain(
-    'aria-expanded="true"',
-  );
-  expect(
-    matches(html, /<g data-er-relation="\d+"[^>]*><path[^>]*data-line="er"/g),
-  ).toHaveLength(3);
-  const order = findTag(html, 'data-er-to-column="customer_id"');
-  expect(order).toContain('data-er-from-card="1"');
-  expect(order).toContain('data-er-to-card="0..n"');
-  expect(text).toContain("注文する");
-  const info = findTag(customers, "mdmark-diagram-info");
-  const tipId = /aria-describedby="([^"]+)"/.exec(info)?.[1] ?? "";
-  const tip = findTag(html, `id="${tipId}"`);
-  expect(tip).toContain('role="tooltip"');
-  expect(tip).toMatch(/\bhidden\b/);
-  const tipText = plainText(innerHtml(html, `id="${tipId}"`));
-  expect(tipText).toContain("顧客（customers）");
-  expect(tipText).toContain("注文する人");
-  expect(tipText).toContain("ログインに使用する");
-  expect(erTableHtml(html, "products")).not.toContain("mdmark-diagram-info");
-  const legend = plainText(innerHtml(html, "mdmark-diagram-legend"));
-  expect(findTags(html, "mdmark-diagram-legend-item")).toHaveLength(8);
-  for (const word of [
-    "マスター",
-    "トランザクション",
-    "PK",
-    "FK",
-    "NN",
-    "1 つ",
-    "1 つ以上",
-    "0 以上",
-  ]) {
-    expect(legend).toContain(word);
-  }
-  expect(html).not.toContain('"tables"');
-});
-
-// 誤った ER 図の定義は記載の警告にし、ほかの図と本文は描く（正常系）
-test("test_normal_when_er_diagram_invalid", async () => {
-  // 準備
-  const render = await loadRender();
-  const relate = (patch: Record<string, string>) => {
-    const definition = integrationEr();
-    definition.relations = definition.relations.map((relation) =>
-      relation.label === "注文する" ? { ...relation, ...patch } : relation,
-    );
-    return erText(definition);
-  };
-  const markdown = [
-    wrapDirective("er", relate({ toColumn: "customer" })),
-    wrapDirective("er", relate({ to: "payments" })),
-    wrapDirective("er", erText(integrationEr())),
-    "段落",
-    "",
-  ].join("\n");
-  // 実行
-  const html = render(markdown);
-  // 検証
-  const warnings = html
-    .split('class="mdmark-syntax-warning"')
-    .slice(1)
-    .map((part) =>
-      plainText(part.slice(part.indexOf(">") + 1, part.indexOf("</div>"))),
-    );
-  expect(warnings).toHaveLength(2);
-  expect(warnings[0]).toMatch(/^記載の警告ER 図の部品の定義を読み込めません/);
-  expect(warnings[0]).toContain(
-    "関係「注文する」の先の列 orders.customer がテーブル orders にありません",
-  );
-  expect(warnings[1]).toContain("関係「注文する」の先のテーブル payments");
-  expect(findTags(html, 'class="mdmark-diagram"')).toHaveLength(1);
-  expect(html).toContain("<p>段落</p>");
 });
 
 /** 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、途中に 2 段落の定義を配置した文書 */

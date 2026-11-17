@@ -61,3 +61,9 @@ export const HintsOff: Story = {
   parameters: { server: { id: "map-sequence" } },
   args: { notes: '{"1": "文書を描く要求"}', hints: "false" },
 };
+
+export const ParticipantTerms: Story = {
+  name: "ParticipantTerms",
+  parameters: { server: { id: "map-sequence" } },
+  args: { terms: '{"mount": "文書を要素の中に描く関数"}' },
+};

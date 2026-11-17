@@ -25,6 +25,12 @@ import {
   RETIRED_LINES,
 } from "../../unit/helpers/retired-document.ts";
 import {
+  RETIRED_ER_DOCUMENT,
+  RETIRED_ER_DOCUMENT_CONVERTED,
+  RETIRED_ER_LINE,
+  RETIRED_ER_REPORT_ITEMS,
+} from "../../unit/helpers/retired-er-document.ts";
+import {
   type CliResult,
   GREET_SOURCE,
   linesOf,
@@ -703,31 +709,36 @@ test("test_error_when_diagram_drift", async () => {
   const pkg = packageOf("v0.5.0");
   await setMigrations(pkg, migrationFiles());
   const dir = await createWork();
-  const missingTable = shopEr();
-  missingTable.relations = missingTable.relations.map((relation) =>
-    relation.label === "注文する" ? { ...relation, to: "payments" } : relation,
-  );
+  // 項目 3 つに対して系列「売上」の値を 2 つだけ持つグラフ
+  const mismatched = {
+    title: "売上",
+    scope: "月ごと",
+    updated: "2026-11-01",
+    x: { label: "月", ticks: ["1 月", "2 月", "3 月"] },
+    y: { label: "万円", min: 0, max: 100, step: 25 },
+    series: [{ name: "売上", points: [10, 20] }],
+  };
   const a = [
     WORK_FILES["docs/a.md"],
-    "<!-- er -->",
+    "<!-- chart -->",
     "",
     "```json",
-    JSON.stringify(missingTable),
+    JSON.stringify(mismatched),
     "```",
     "",
-    "<!-- /er -->",
+    "<!-- /chart -->",
     "",
   ].join("\n");
   await writeFiles(dir, { "docs/a.md": a });
   // 実行
   const result = await runUpgrade(pkg, { cwd: dir });
   // 検証
-  expect(a.split("\n").indexOf("<!-- er -->") + 1).toBe(5);
+  expect(a.split("\n").indexOf("<!-- chart -->") + 1).toBe(5);
   expect(result.code).toBe(1);
   const invalid = linesOf(result.stderr).find((line) =>
     line.startsWith("docs/a.md:5: diagram_invalid:"),
   );
-  expect(invalid).toContain("payments");
+  expect(invalid).toContain("売上");
   const work = await readWork(dir);
   expect(work.config).toBe(OLD_CONFIG);
   expect(parse(work.config).version).toBe("v0.3.0");
@@ -814,6 +825,77 @@ test("test_normal_when_retired_diagrams_migrated", async () => {
   )) as { render: (markdown: string) => string };
   const html = render(await read("docs/a.md"));
   expect(html.match(/class="mdmark-map"/g)).toHaveLength(3);
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// ER 図の部品の範囲を map の ER 図の範囲へ書き換える call の手順を当て、写さない値と書き換えない範囲を移行の報告に出す（正常系（ER 図の部品の範囲を map へ書き換える））
+test("test_normal_when_retired_er_migrated", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  const next = migrationsDirOf("retired-er.mjs");
+  const files: Record<string, string> = {};
+  for (const name of await readdir(next)) {
+    files[`migrations/v0.5.0/${name}`] = await readFile(
+      join(next, name),
+      "utf8",
+    );
+  }
+  await setMigrations(pkg, {
+    ...files,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
+  });
+  const dir = await createWork();
+  const missingTable = shopEr();
+  missingTable.relations = missingTable.relations.map((relation) =>
+    relation.label === "注文する" ? { ...relation, to: "payments" } : relation,
+  );
+  const unconvertible = [
+    "# B",
+    "",
+    "<!-- er -->",
+    "",
+    "```json",
+    JSON.stringify(missingTable),
+    "```",
+    "",
+    "<!-- /er -->",
+    "",
+  ].join("\n");
+  await writeFiles(dir, {
+    "docs/a.md": RETIRED_ER_DOCUMENT,
+    "docs/b.md": unconvertible,
+  });
+  const configBefore = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  // 実行
+  const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+  // 検証
+  expect(result.code, result.stderr).toBe(0);
+  const read = (path: string) => readFile(join(dir, path), "utf8");
+  expect(await read("docs/a.md")).toBe(RETIRED_ER_DOCUMENT_CONVERTED);
+  expect(await read("docs/b.md")).toBe(unconvertible);
+  const configText = await read("mdmark.config.yaml");
+  expect(parse(configText).version).toBe("v0.5.0");
+  expect(configText.replace(/^version: .*$/m, "")).toBe(
+    configBefore.replace(/^version: .*$/m, ""),
+  );
+  const report = linesOf(result.stdout).map((line) => line.trim());
+  for (const item of RETIRED_ER_REPORT_ITEMS) {
+    expect(
+      report.filter((line) =>
+        line.startsWith(`docs/a.md:${RETIRED_ER_LINE}: er: ${item}: `),
+      ),
+      item,
+    ).toHaveLength(1);
+  }
+  expect(
+    report.filter((line) => /^docs\/b\.md:3: er: 範囲: .*payments/.test(line)),
+  ).toHaveLength(1);
+  // 書き換えた文書を描くと map の ER 図になり、記載の警告が無い
+  const { render } = (await import(
+    pathToFileURL(join(pkg, "dist", "index.js")).href
+  )) as { render: (markdown: string) => string };
+  const html = render(await read("docs/a.md"));
+  expect(html.match(/class="mdmark-map"/g)).toHaveLength(1);
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 

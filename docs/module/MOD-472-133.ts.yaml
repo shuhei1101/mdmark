@@ -296,6 +296,12 @@ functions:
         condition: '`notes` が `{"2": "補足を渡す"}`、`annotations` が 3 つ目のメッセージに注記 1、`hints` が `false`'
         mock: なし
         expected: どの `.map-wire-hit` も `data-tip-owner` を持たず、`tips` に `role="tooltip"` が無い。3 つ目のメッセージの `.map-wire-hit` が `id="mdmark-note-owner-{図の ID}-3"` と `tabindex="0"` を持つ
+      - name: test_render_map_sequence_when_participant_hit
+        case: 正常
+        summary: 参加者の箱の名前の用語を、押せる要素の中に入れない
+        condition: '部品の Default の引数に、`terms` が `{"mount": "意味"}`、`selected` が `["mount"]`'
+        mock: なし
+        expected: '`mount` の参加者の箱（`div.map-participant`）が `tabindex`・`role`・`aria-keyshortcuts`・`aria-label` を持たず `data-selected` を持ち、先頭の子の `span.mdmark-diagram-node-hit` が `role="button"`・`tabindex="0"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight"`・`aria-label="mount（選択中）"` を持つ。名前の中の `span.mdmark-term` は `span.mdmark-diagram-node-hit` の中に無い'
   - name: renderMapErDiagram
     title: mapのER図のHTML
     kind: 関数

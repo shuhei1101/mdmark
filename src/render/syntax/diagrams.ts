@@ -4,14 +4,12 @@ import {
   type DiagramDirective,
   definitionWarning,
   type MdmarkChartDefinition,
-  type MdmarkErDefinition,
   type MdmarkParamDefinition,
   RETIRED_DIAGRAM_DIRECTIVES,
   type RetiredDiagramDirective,
   readDefinition,
 } from "../../diagram/definition.ts";
-import { buildDictionary } from "../../knowledge/dictionary.ts";
-import { renderDiagram, type TermLookup } from "../../parts/diagram.ts";
+import { renderDiagram } from "../../parts/diagram.ts";
 import { renderParam } from "../../parts/param.ts";
 import { MARK_PATTERN } from "../marks.ts";
 import { envOf, featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
@@ -92,8 +90,6 @@ function replaceRetiredDiagrams(state: StateCore): void {
 /** 図の部品を描くときに、文書の全ての図で共通に使用するもの */
 type DiagramContext = {
   env: ReturnType<typeof envOf>;
-  lookup: TermLookup;
-  hints: boolean;
   resizable: boolean;
 };
 
@@ -114,7 +110,7 @@ function diagramHtml(
   definition: NonNullable<ReturnType<typeof readDefinition>["definition"]>,
   context: DiagramContext,
 ): string {
-  const { env, lookup, hints, resizable } = context;
+  const { env, resizable } = context;
   env.diagramCount = (env.diagramCount ?? 0) + 1;
   const count = env.diagramCount;
   if (directive === "param") {
@@ -128,10 +124,8 @@ function diagramHtml(
   }
   return renderDiagram({
     kind: directive,
-    definition: definition as MdmarkChartDefinition | MdmarkErDefinition,
+    definition: definition as MdmarkChartDefinition,
     id: `${DIAGRAM_ID_PREFIX}-${count}`,
-    lookup,
-    hints,
     resizable,
   });
 }
@@ -164,18 +158,6 @@ function diagramToken(
   return block;
 }
 
-/** 本文の用語と同じ辞書から、ノードの中の `{{単語}}` の意味を参照する関数を作る */
-function termLookupOf(env: ReturnType<typeof envOf>): TermLookup {
-  const dictionary = buildDictionary({
-    index: env.index,
-    docId: env.docId,
-    ownGlossary: env.ownGlossary,
-    references: env.mdmarkReferences,
-    features: env.features,
-  });
-  return (word) => dictionary.term(word)?.meaning;
-}
-
 /** 拡張に無い廃止した図の範囲を記載の警告にする。`diagrams` がオンなら、図の部品のマーカーの範囲の `json` のコードブロックを定義として読み込み、図か操作できる部品の HTML にする。読み込めない定義は記載の警告にする。範囲の中身は出力に残さない。オフのときはマーカーだけを取り除く */
 export function buildDiagrams(state: StateCore): void {
   replaceRetiredDiagrams(state);
@@ -186,8 +168,6 @@ export function buildDiagrams(state: StateCore): void {
   env.paramDefinitions ??= [];
   const context: DiagramContext = {
     env,
-    lookup: termLookupOf(env),
-    hints: featureOn(state, "hints"),
     resizable: featureOn(state, "diagram-resize"),
   };
   const tokens = state.tokens;

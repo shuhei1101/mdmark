@@ -13,7 +13,6 @@ import {
   createRootFromHtml,
   removeRoots,
 } from "../../helpers/dom.ts";
-import { erText, shopEr } from "../../helpers/er.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 図のツールチップの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -467,27 +466,24 @@ test("test_attach_diagram_tips_when_touch_tip_tapped", async () => {
   expect(tip.hidden).toBe(false);
 });
 
-// グラフの項目とグループのタイトルのマーカーで開き、bottom で下に配置する（正常系）
+// グラフの項目と map の構成図のノードの説明のマーカーで開き、bottom で下に配置する（正常系）
 test("test_attach_diagram_tips_when_chart_item", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
-  const { root } = createRoot(
-    `${wrapDirective("chart", REPLY_TIME_TEXT)}\n\n${wrapDirective("er", erText(shopEr()))}`,
-  );
-  const [chart, er] = [
-    ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
-  ];
-  if (!chart || !er) {
+  const { root } = createRoot(wrapDirective("chart", REPLY_TIME_TEXT));
+  const chart = root.querySelector<HTMLElement>("figure.mdmark-diagram");
+  const map = createFigure();
+  if (!chart) {
     throw new Error("図が描かれていない");
   }
-  for (const figure of [chart, er]) {
+  for (const figure of [chart, map]) {
     const { detach } = attachDiagramTips({ figure, placement: "bottom" });
     detachers.push(detach);
   }
   const item = chart.querySelector<HTMLElement>(".mdmark-diagram-item-hit");
-  const tableMark = er.querySelector<HTMLElement>(".mdmark-diagram-info");
-  if (!item || !tableMark) {
-    throw new Error("グラフの項目かテーブルの説明のボタンが無い");
+  const nodeMark = map.querySelector<HTMLElement>(".mdmark-diagram-info");
+  if (!item || !nodeMark) {
+    throw new Error("グラフの項目かノードの説明のマーカーが無い");
   }
   // 実行: グラフの項目にフォーカスする
   item.focus();
@@ -497,18 +493,18 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   expect(itemTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
     item.getBoundingClientRect().bottom,
   );
-  // 実行: テーブルの説明のボタンにポインターを乗せる
-  tableMark.dispatchEvent(
+  // 実行: ノードの説明のマーカーにポインターを乗せる
+  nodeMark.dispatchEvent(
     new PointerEvent("pointerenter", { pointerType: "mouse" }),
   );
   // 検証
-  const tableTip = tipOf(tableMark);
-  expect(tableTip.hidden).toBe(false);
-  expect(tableTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-    tableMark.getBoundingClientRect().bottom,
+  const nodeTip = tipOf(nodeMark);
+  expect(nodeTip.hidden).toBe(false);
+  expect(nodeTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    nodeMark.getBoundingClientRect().bottom,
   );
-  const open = [...er.querySelectorAll<HTMLElement>('[role="tooltip"]')].filter(
-    (tip) => !tip.hidden,
-  );
+  const open = [
+    ...map.querySelectorAll<HTMLElement>('[role="tooltip"]'),
+  ].filter((tip) => !tip.hidden);
   expect(open).toHaveLength(1);
 });

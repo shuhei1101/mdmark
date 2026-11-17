@@ -9,8 +9,8 @@ requirements:
     external_constraint: jsDelivr の GitHub エンドポイントは 1 ファイル 20MB までを配る
     source_kind: 実行基盤の制限
     source: https://github.com/jsdelivr/jsdelivr#restrictions
-    value: '672'
-    unit: KB 以下（688128 バイト）
+    value: '688'
+    unit: KB 以下（704512 バイト）
     rationale: '外部の上限は 20MB。利用側のページが開くたびに読み込むため、まとめた後の実測から目標を配置する。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target でまとめて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が追加する機能の余地を確認して 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。
 
 
@@ -57,6 +57,8 @@ requirements:
       | [Mermaid と補足で書き、自動配置で描いて階層を辿れる新しい図（map）を追加する](https://github.com/shuhei1101/mdmark/pull/445) | map の記法の読み取り・マーカーの引数の検査・部品の読み込み（Mermaid と補足の読み取り・配置・描画・操作は dist/map.js に分ける） | - | 646,957（2026-11-11、develop は 638,287） | 656KB に上げた |
 
       | [map の図のタッチでのドラッグと、罫線のコードブロックの点検の警告を追加する](https://github.com/shuhei1101/mdmark/pull/508) | 罫線のフォルダ構成の記載の警告と、指で図を動かす操作中の切り替え | - | 673,526（2026-11-13、develop は 671,198） | 672KB に上げた |
+
+      | - | -（[map の図のタッチでのドラッグと、罫線のコードブロックの点検の警告を追加する](https://github.com/shuhei1101/mdmark/pull/508) の後の作業 PR のマージで増えた。[ビルドの結合テスト 3 件が、dist/index.js が配布ファイルの上限（688128 バイト）を超えて fail する](https://github.com/shuhei1101/mdmark/issues/601)） | - | 687,125（2026-11-17、develop の 6edae01e。2026-11-15 の f79ed7d7 は 701,585） | 688KB に上げた |
 
 
       <!-- /table -->

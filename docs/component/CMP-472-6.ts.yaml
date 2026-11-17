@@ -39,6 +39,13 @@ states:
         value: 明るい配色で描いた Flowchart と同じ図の SVG
     notes:
       定義: Flowchart と同じ。ストーリーは描く先の祖先に `mdmark-theme-dark` を付ける
+  - name: NodeLink
+    description: mermaid の `click`・`link` の URL の行を持つノードが、`href` と class `mdmark-diagram-node-link` を持つ `a` の中にある。ノードの文字が本文のリンクと同じ色と下線で、フォーカスするとノードの外側に `--mdmark-color-link` の 2px の枠を出す。リンクを持たないノードは今のまま
+    args:
+      - name: svg
+        value: '`click A href "./a.md"` の行を持つ Flowchart と同じ図を描いた SVG'
+    notes:
+      定義: 部品設計『mapの構成図』の LinkedNode と同じ見た目（モック作成は skipped。作業 PR #618 のタスク一覧）
 lead: 図の枠の表示する枠に入れる、mermaid で描いた SVG。SVG は mdmark の CSS 変数から作ったテーマで描かれる。
 args:
   - name: svg
@@ -54,6 +61,10 @@ args:
     required: false
     description: SVG を描いた幅（px）。ガントチャートは描く先の幅と 720 の大きいほう。指定しないときは SVG の `viewBox` の幅
 css_properties:
+  - name: --mdmark-color-link
+    syntax: <color>
+    default: 本文のリンクの色
+    description: リンクを持つノードの文字の色と、フォーカスの枠の色
   - name: --mdmark-color-text
     syntax: <color>
     default: '#18181b（ダーク #ececef）'
@@ -63,10 +74,12 @@ accessibility:
   - '`printSvg` は `aria-hidden="true"` を持ち、同じ図を 2 回スクリーンリーダーに伝えない'
   - ノード・ラベルの文字は SVG の文字のまま選べ、スクリーンリーダーに出る
   - 色だけで意味を伝える図（円グラフ）は、mermaid が描く凡例とラベルに名前と値を出す
+  - リンクを持つノードは SVG の `a` が Tab でフォーカスを受け、Enter で開く。スクリーンリーダー向けの名前はノードの文字。リンクであることは色だけでなく下線でも伝える
 status: planned
 refs:
   - IF-472-35#constraints[mermaid の描き方]
   - IF-472-35#constraints[mermaid のテーマ]
+  - IF-472-35#constraints[mermaid のノードのリンク]
 notes:
   ストーリーの SVG: Storybook のストーリーは Node で HTML を返却するため、mermaid をストーリーの中で動かさない。モックと同じソースを `mount` が描いた SVG を、テストの準備で書き出したファイルとして指定する。ストーリーは図の枠（種類 `mermaid`）で包んで出し、題名はモックの場面のタイトル（front matter の `title` か図の種類の名前）にする
 test_file: tests/integration/lib/mermaid-diagram.story.test.ts

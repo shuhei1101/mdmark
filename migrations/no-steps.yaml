@@ -89,5 +89,5 @@ entries:
     reason: features に省いてよい annotations を足しただけで、古い設定もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.config.schema.json
-    sha256: d448382d7523b2599a5176084b5d03efb172eaa8c3e19277519a18c2f23e40a2
+    sha256: 4601f7bafa8583cc67e9ae36e76d1f86e4d4f71e4f85a2ee6e3795c47781a2ee
     reason: version に develop を受け付けるよう足しただけで、古い設定の v{MAJOR}.{MINOR}.{PATCH} もそのまま新しい Schema に合う

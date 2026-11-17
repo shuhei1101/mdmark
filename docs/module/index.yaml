@@ -80,6 +80,8 @@ items:
   summary: ライブラリ本体 / バージョンを上げる / migrations.ts
 - page: MOD-472-151.ts.yaml
   summary: ライブラリ本体 / バージョンを上げる / prompt.ts
+- page: MOD-616-1.yaml
+  summary: ライブラリ本体 / バージョンを上げる / retired-er.mjs
 - page: MOD-472-150.ts.yaml
   summary: ライブラリ本体 / バージョンを上げる / upgrade.ts
 - page: MOD-472-148.ts.yaml
@@ -102,8 +104,6 @@ items:
   summary: ライブラリ本体 / 設定と機能 / config.ts
 - page: MOD-472-171.ts.yaml
   summary: ライブラリ本体 / 図 / definition.ts
-- page: MOD-472-176.ts.yaml
-  summary: ライブラリ本体 / 図 / er.ts
 - page: MOD-472-173.ts.yaml
   summary: ライブラリ本体 / 図 / geometry.ts
 - page: MOD-472-191.ts.yaml
@@ -152,8 +152,6 @@ items:
   summary: ライブラリ本体 / 図 / diagrams.ts
 - page: MOD-472-230.ts.yaml
   summary: ライブラリ本体 / 操作 / embedded-html.ts
-- page: MOD-472-188.ts.yaml
-  summary: ライブラリ本体 / 図 / er-folds.ts
 - page: MOD-472-238.ts.yaml
   summary: ライブラリ本体 / 操作 / footnotes.ts
 - page: MOD-472-236.ts.yaml
@@ -318,8 +316,6 @@ items:
   summary: ライブラリ本体 / 部品 / doc-list.ts
 - page: MOD-472-309.ts.yaml
   summary: ライブラリ本体 / 部品 / embed.ts
-- page: MOD-472-187.ts.yaml
-  summary: ライブラリ本体 / 図 / er.ts
 - page: MOD-472-313.ts.yaml
   summary: ライブラリ本体 / 部品 / escape.ts
 - page: MOD-589-2.ts.yaml

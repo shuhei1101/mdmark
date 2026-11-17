@@ -240,10 +240,11 @@ test("test_participant_selected", async () => {
   // 検証
   const mount = page.locator('.map-participant[data-participant="mount"]');
   await expect(mount.getAttribute("data-selected")).resolves.not.toBeNull();
-  await expect(mount.getAttribute("aria-label")).resolves.toBe(
+  const mountHit = mount.locator(":scope > .mdmark-diagram-node-hit");
+  await expect(mountHit.getAttribute("aria-label")).resolves.toBe(
     "mount（選択中）",
   );
-  await expect(mount.getAttribute("aria-pressed")).resolves.toBeNull();
+  await expect(mountHit.getAttribute("aria-pressed")).resolves.toBeNull();
   expect(await messageDims(page)).toEqual({
     0: false,
     1: false,
@@ -333,11 +334,15 @@ test("test_accessibility", async () => {
     loop.locator("button.map-seq-fragment-title").getAttribute("aria-label"),
   ).resolves.toBe("loop「map の範囲ごと」の中だけを見る");
   const box = page.locator('.map-participant[data-participant="user"]');
-  await expect(box.getAttribute("tabindex")).resolves.toBe("0");
-  await expect(box.getAttribute("aria-keyshortcuts")).resolves.toBe(
+  await expect(box.getAttribute("tabindex")).resolves.toBeNull();
+  await expect(box.getAttribute("role")).resolves.toBeNull();
+  const hit = box.locator(":scope > .mdmark-diagram-node-hit");
+  await expect(hit.getAttribute("role")).resolves.toBe("button");
+  await expect(hit.getAttribute("tabindex")).resolves.toBe("0");
+  await expect(hit.getAttribute("aria-keyshortcuts")).resolves.toBe(
     "Enter Space Alt+ArrowLeft Alt+ArrowRight",
   );
-  await expect(box.getAttribute("aria-label")).resolves.toBe("利用側のページ");
+  await expect(hit.getAttribute("aria-label")).resolves.toBe("利用側のページ");
   const styles = await box.evaluate((element) => ({
     box: getComputedStyle(element).cursor,
     name: getComputedStyle(
@@ -367,4 +372,43 @@ test("test_accessibility", async () => {
       selector,
     ).toBeGreaterThanOrEqual(3);
   }
+});
+
+// 参加者の名前の用語は押せる要素の外にあり、押せる要素と別々にフォーカスを受け、意味のツールチップを指す（ParticipantTerms）
+test("test_participant_terms", async () => {
+  // 準備
+  const page = await openSequence("participant-terms");
+  const box = page.locator('.map-participant[data-participant="mount"]');
+  const hit = box.locator(":scope > .mdmark-diagram-node-hit");
+  const term = box.locator(".mdmark-diagram-node-name .mdmark-term");
+  // 検証: 押せる要素（role="button"）の中にフォーカスできる要素を入れ子にしない
+  const nested = await page.evaluate(
+    () =>
+      [...document.querySelectorAll('[role="button"], button, a[href]')].filter(
+        (element) =>
+          element.querySelector(
+            'button, a[href], [tabindex]:not([tabindex="-1"]), [role="button"]',
+          ) !== null,
+      ).length,
+  );
+  expect(nested).toBe(0);
+  await expect(term.count()).resolves.toBe(1);
+  await expect(hit.locator(".mdmark-term").count()).resolves.toBe(0);
+  await expect(hit.getAttribute("aria-label")).resolves.toBe("mount");
+  // 実行・検証: Tab の順は押せる要素、名前の中の用語
+  await hit.focus();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.evaluate(() => document.activeElement?.className),
+  ).resolves.toBe("mdmark-term");
+  // 検証: 用語は持ち主（data-tip-owner）として意味のツールチップを指す
+  await expect(term.getAttribute("data-tip-owner")).resolves.toBe("term:mount");
+  const tipId = await term.getAttribute("aria-describedby");
+  const tip = page.locator(`[id="${tipId}"]`);
+  await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
+  await expect(tip.getAttribute("data-tip-for")).resolves.toBe("term:mount");
+  await expect(tip.textContent()).resolves.toContain(
+    "文書を要素の中に描く関数",
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });

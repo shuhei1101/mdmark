@@ -122,6 +122,12 @@ flowchart LR
 システムの枠と層は入れ子の `subgraph`、ノードの種類は Mermaid のクラス、`flow` 以外の線の種類は補足の `layout` の `line`、ノードの `sub`・`io`・`hint` と線の `tip` は補足の `notes` になり、使用していた種類は設定の `map.kinds`・`map.lines` に書き足される。
 範囲と更新日と `stickyTitles` は写さず、移行の報告に挙がる。
 
+廃止した `er` の範囲も、`mdmark upgrade` が `erDiagram` の map の範囲へ書き換える。
+テーブル・列（型・名前・PK・FK・説明）・関係（多重度・ラベル）を写し、関係はテーブルの物理名（`name`）で指す。
+論理名（`label`）は補足の `notes` のテーブルの説明の先頭、題（`title`）は map のマーカーの引数 `title`、畳んだテーブル（`folded`）は補足の `layout` の `collapsed` になる。
+テーブルの種類（`kind`）・色（`color`）・列の `nn`・範囲・更新日と座標は写さず、写さない値は移行の報告に挙がる。
+Mermaid の記法で記載できない名前を持つ範囲と、物理名が重なる範囲は書き換えずに、移行の報告に挙がる。
+
 ### シーケンス図を構成図の上で再生する
 
 ````markdown

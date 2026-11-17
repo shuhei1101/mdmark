@@ -31,12 +31,6 @@ export const Hint: Story = {
   args: { kind: "hint", open: true },
 };
 
-export const Table: Story = {
-  name: "Table",
-  parameters: { server: { id: "diagram-tooltip" } },
-  args: { kind: "table", open: true },
-};
-
 export const Item: Story = {
   name: "Item",
   parameters: { server: { id: "diagram-tooltip" } },

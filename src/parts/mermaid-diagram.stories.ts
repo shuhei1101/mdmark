@@ -60,3 +60,9 @@ export const DarkWithPrint: Story = {
     scheme: "dark",
   },
 };
+
+export const NodeLink: Story = {
+  name: "NodeLink",
+  parameters: { server: { id: "mermaid-diagram" } },
+  args: { svg: "flowchart-link", title: "フローチャート" },
+};

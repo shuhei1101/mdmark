@@ -418,12 +418,12 @@ flows:
       - '`figure.mdmark-diagram` が 1 つだけあり、段落がある'
     test: test_normal_when_diagram_invalid
   - name: 正常系（廃止した図の範囲）
-    summary: 廃止した `flow`・`sequence` の範囲は図にせず、範囲ごとに map へ変換できる旨の記載の警告を配置する
+    summary: 廃止した `flow`・`sequence`・`er` の範囲は図にせず、範囲ごとに map へ変換できる旨の記載の警告を配置する
     setup:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 廃止した図の範囲を持つ Markdown
-        description: '`<!-- flow -->` 〜 `<!-- /flow -->` と `<!-- sequence -->` 〜 `<!-- /sequence -->` の範囲に、廃止の前のバージョンで描けた部品の定義（`json` のコードブロック）を 1 つずつ配置し、その後に段落を持つ文書。埋め込んだ HTML の範囲に `<mdmark-flow>` の要素も 1 つ持つ'
+        description: '`<!-- flow -->` 〜 `<!-- /flow -->` と `<!-- sequence -->` 〜 `<!-- /sequence -->` と `<!-- er -->` 〜 `<!-- /er -->` の範囲に、廃止の前のバージョンで描けた部品の定義（`json` のコードブロック）を 1 つずつ配置し、その後に段落を持つ文書。埋め込んだ HTML の範囲に `<mdmark-flow>` の要素も 1 つ持つ'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -434,81 +434,19 @@ flows:
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
-        M->>M: flow・sequence の範囲を、廃止した記載方法として扱う
+        M->>M: flow・sequence・er の範囲を、廃止した記載方法として扱う
         M-->>C: 範囲ごとに記載の警告を持つ HTML 文字列
       ```
 
       <!-- /map -->
     expected:
-      - '`flow`・`sequence` の範囲の場所に `div.mdmark-syntax-warning` が 1 つずつあり、本文に廃止した記載方法であることと、`mdmark upgrade` で map の範囲へ変換できることが記載されている'
+      - '`flow`・`sequence`・`er` の範囲の場所に `div.mdmark-syntax-warning` が 1 つずつあり、本文に廃止した記載方法であることと、`mdmark upgrade` で map の範囲へ変換できることが記載されている'
       - '`figure.mdmark-diagram` が無く、出力に範囲の中の定義の JSON の文字（`"nodes"`）が無い'
       - '埋め込んだ HTML の中の `<mdmark-flow>` の要素が中身ごと落ちていて、その場所に、要素を廃止したことと、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すことを記載した記載の警告がある（`mdmark upgrade` は記載しない）'
       - 段落がある
     test: test_normal_when_retired_diagram
     refs:
       - SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
-  - name: 正常系（ER 図）
-    summary: ER 図の定義から、テーブル・列のマーカー・関係の線と多重度・種類の札と色・凡例を持つ図を描く
-    setup:
-      - name: 配布物を読み込んだ Node の処理
-        description: 正常系と同じ
-      - name: ER 図を持つ Markdown
-        description: '`<!-- er -->` 〜 `<!-- /er -->` に、`docs/mock/refs/298/assets/er-samples.js` の `shop-er` と同じ定義（`master` 2 つ・`transaction` 2 つのテーブル、関係 3 本）を配置した文書'
-        notes: '`products` は `color` を `green` にし、`desc` を除く。`orders` は `folded` を `true` にする'
-      - name: Mock
-        description: 差し替える依存は無い
-    flow: |-
-      <!-- map -->
-
-      ```mermaid
-      sequenceDiagram
-        participant C as 利用側の処理
-        participant M as mdmark
-        C->>M: render(markdown)
-        M->>M: ER 図の範囲から定義を読み込み、構造を確認する
-        M->>M: タイトル・テーブルと関係・凡例を描く
-        M-->>C: HTML 文字列
-      ```
-
-      <!-- /map -->
-    expected:
-      - '`figure.mdmark-diagram` が 1 つあり、`data-diagram` が `er` で、題名・範囲・更新日のタイトルと凡例がある'
-      - 4 つのテーブルが定義の座標に配置され、見出しに物理名と論理名がある
-      - '`customers` が `data-color="blue"` と札 `マスター`、`order_items` が `data-color="orange"` と札 `トランザクション`、`products` が `data-color="green"` と札 `マスター` を持つ'
-      - '`customers` の列が定義の順に 4 行並び、`id` の行が `PK`・`NN` のマーカーを持ち、マーカーの `title` が `主キー`・`NOT NULL`'
-      - '`orders` が主キーと外部キーの 2 つの列の行と `非表示 6 列` の行を持ち、列の開閉のボタンの `aria-expanded` が `false`。`customers` の開閉のボタンは `true`'
-      - 関係の線が 3 本あり、`注文する` の線の元の端が `1`、先の端が `0..n` の記号で、ラベル `注文する` がある
-      - '`customers` の説明のボタンの `aria-describedby` が `hidden` を持つ `role="tooltip"` の要素を指し、その中に `顧客（customers）`・概要・`email` の説明がある。`products` の見出しに説明のボタンが無い'
-      - 凡例が、札 `マスター`・`トランザクション`、マーカー `PK`・`FK`・`NN`、多重度 `1`・`1..n`・`0..n` の項目だけを持つ
-      - 出力に定義の JSON の文字（`"tables"`）が無い
-    test: test_normal_when_er_diagram
-  - name: 正常系（ER 図の定義の誤り）
-    summary: 関係が無いテーブルか列を指す ER 図の定義の場所だけを記載の警告にし、ほかの図と本文を描く
-    setup:
-      - name: 配布物を読み込んだ Node の処理
-        description: 正常系と同じ
-      - name: 誤った定義を持つ Markdown
-        description: 正常系（ER 図）の定義のうち、関係 `注文する` の `toColumn` を `orders` に無い `customer` にした定義、関係 `注文する` の `to` を定義に無い `payments` にした定義、正常系（ER 図）と同じ定義、段落を持つ文書
-      - name: Mock
-        description: 差し替える依存は無い
-    flow: |-
-      <!-- map -->
-
-      ```mermaid
-      sequenceDiagram
-        participant C as 利用側の処理
-        participant M as mdmark
-        C->>M: render(markdown)
-        M->>M: 読み込めない定義の場所を記載の警告に替える
-        M-->>C: HTML 文字列
-      ```
-
-      <!-- /map -->
-    expected:
-      - 1 つ目の図の場所に記載の警告があり、`ER 図の部品の定義を読み込めません` で始まり、関係 `注文する` の先の列 `orders.customer` がテーブル `orders` に無いことが記載されている
-      - 2 つ目の図の場所に記載の警告があり、関係 `注文する` の先のテーブル `payments` が定義に無いことが記載されている
-      - '`figure.mdmark-diagram` が 1 つだけあり、段落がある'
-    test: test_normal_when_er_diagram_invalid
   - name: 正常系（埋め込んだ HTML）
     summary: マーカーを付けた `html` のコードブロックの中身を HTML として描き、スクリプトと許可していない宣言を落とす
     setup:
@@ -547,7 +485,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 機能を解除する Markdown
-        description: '先頭に `<!-- features: {"html": false} -->` を持ち、正常系（埋め込んだ HTML）と同じ範囲を持つ文書と、先頭に `<!-- features: {"hints": false} -->` を持ち、同じ範囲と、概要を持つテーブルと説明を持つ列の ER 図を持つ文書'
+        description: '先頭に `<!-- features: {"html": false} -->` を持ち、正常系（埋め込んだ HTML）と同じ範囲を持つ文書と、先頭に `<!-- features: {"hints": false} -->` を持ち、同じ範囲を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -567,7 +505,6 @@ flows:
     expected:
       - '`html` を `false` にした文書で、範囲のコードブロックが `<pre><code class="language-html">` で出て、文字列に `mdmark-html` と `<!--` が無い'
       - '`hints` を `false` にした文書で、埋め込んだ HTML が描かれ、文字列に `data-hint`・`mdmark-hint-` が無く、`role="tooltip"` はグラフの項目のツールチップ（`data-tip-for="item:{n}"`。設定の `features.hints` が受け持たない）だけ'
-      - '`hints` を `false` にした文書で、ER 図のテーブルと列の名前は出て、テーブルの説明のボタンとツールチップの中身が無い'
     test: test_normal_when_html_and_hints_disabled
   - name: 正常系（埋め込んだ HTML の記載方法の誤り）
     summary: 範囲にコードブロックが 1 つでないときと、読み込めないチャートの定義の場所に記載の警告を配置する
@@ -3294,11 +3231,11 @@ constraints:
     constraint: 記法のマーカーの、名前の後ろが `{` で始まるのに JSON のオブジェクトとして読めない引数（読めない位置と理由。値に `-->` を記載するとコメントがそこで閉じるため、`>` を `\u003e` にした `--\u003e` での記載方法も）、マーカーごとの JSON Schema（制約「マーカーの書式」の ER 図）の型・選べる値・必須に合わない値（その値を持つ設定だけを適用しない。必須の `tree.key` の無い `tree` は `tree` を適用しない）、表に無い列名の `columns.{列名}`・`tree.key.column` などの列を指す値、列に無い値の `board.values.{値}`、先頭の列の `columns.{列名}.hidden`、文書に無い見出しか直下にタブの範囲を持たない見出しの `tree.example.heading`、`ts` と `js` のコードブロックを両方置いた埋め込んだ HTML の範囲・同じ言語のコードブロックを 2 つ配置した範囲、閉じのマーカーの無い範囲（マーカーから文書の終わりまでを範囲にする）、見出しの無いタブの範囲、空の文字の `group`（組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読み込めない行を持つファイルツリー、コードブロックに無い行の番号、直後にコードブロックの無いコードブロックのマーカー、知らないコードの行のマーカー（`[!code blink]` など。その行には当てず、記載した文字のまま出す）、`fold` の畳めない行（コードブロックに無い行と、次の空でない行が深くない行）の番号、表の行の数以上の `header.rows`、表の列の数以上の `header.columns`（行見出しを持たない表として描く）、結合するセルの無い `^^`・`<<`（制約「表」）、閉じの無い入れ子のタブの開き（場所は外側の開き）、`total` の表の `sum`・`avg` の列にある空でなく数として読み込めないセル（読み込み方は docs/interface/IF-472-35.ts の制約『表の操作』。その列のその集計のセルは `mount` が空にする）では、読み込めた指定だけを適用して描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` とタイトル `<p class="mdmark-syntax-warning-title">記載の警告</p>` と、読み込めない指定と修正方法の本文を配置する。記法のマーカーの知らないキー（`features` のマーカーと表の `features` の知らない機能名を含む）と、`enabled` を `false` にした機能の列の設定は、記載の警告を配置せずに無視し、残りの指定で描く（点検が通知する）。今の書き方の記法のマーカーは、記載の警告を配置せずに制約「マーカーの書式」のとおり描く（点検が通知する）。今の書き方の中の読めない単語は、今の実装のとおり扱う
     notes: 本文の文言は画面設計『文書』
   - item: 図の部品
-    constraint: '`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` 〜 閉じのマーカーの範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み込み、構造（`dist/index.d.ts` の `MdmarkChartDefinition`・`MdmarkParamDefinition`・`MdmarkErDefinition`）を確認して、`<figure class="mdmark-diagram" data-diagram="{種類}">` にタイトル（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。
+    constraint: '`<!-- chart -->`・`<!-- param -->` 〜 閉じのマーカーの範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み込み、構造（`dist/index.d.ts` の `MdmarkChartDefinition`・`MdmarkParamDefinition`）を確認して、`<figure class="mdmark-diagram" data-diagram="{種類}">` にタイトル（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。
 
       範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。
 
-      定義の文字（テーブルと列の名前と型・関係のラベル・ツールチップの中身）は文字として出し、`{{単語}}` はその単語を用語の照合に回す。
+      定義の文字（系列と項目の名前・ツールチップの中身）は文字として出し、`{{単語}}` はその単語を用語の照合に回す。
 
       ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に配置する。
 
@@ -3315,40 +3252,17 @@ constraints:
       値の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
     notes: 定義の構造の項目はモジュール構成設計で型に記載する。見本は `docs/mock/refs/42/assets/samples.js`
   - item: 廃止した図の範囲
-    constraint: '`<!-- flow -->`・`<!-- sequence -->` 〜 閉じのマーカーの範囲は図にせず、範囲の中の Markdown と定義の JSON を出力に残さずに、範囲の場所へ記載の警告を 1 つ配置する。本文は、その記載方法を廃止したことと、`mdmark upgrade` で map の範囲（Mermaid と補足）へ変換できることを記載する。閉じのマーカーの無い範囲は、マーカーから文書の終わりまでを範囲にする。機能 `diagrams` がオフでも同じ警告を配置する。`registerExtension` で `flow`・`sequence` と同じ `directive` の拡張を登録したページでは、その名前の範囲を廃止した図として扱わず、制約「マーカーの扱い」のとおり拡張のマーカーにする（インターフェース定義『拡張を登録する』の `directive`）'
+    constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- er -->` 〜 閉じのマーカーの範囲は図にせず、範囲の中の Markdown と定義の JSON を出力に残さずに、範囲の場所へ記載の警告を 1 つ配置する。本文は、その記載方法を廃止したことと、`mdmark upgrade` で map の範囲（Mermaid と補足）へ変換できることを記載する。閉じのマーカーの無い範囲は、マーカーから文書の終わりまでを範囲にする。機能 `diagrams` がオフでも同じ警告を配置する。`registerExtension` で `flow`・`sequence`・`er` と同じ `directive` の拡張を登録したページでは、その名前の範囲を廃止した図として扱わず、制約「マーカーの扱い」のとおり拡張のマーカーにする（インターフェース定義『拡張を登録する』の `directive`）'
     decided_by: SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
     notes: 本文の文言は画面設計『文書』。変換は移行の手順（確認ログ）
   - item: 図の外観の決まり
     constraint: グラフは系列を色と線の模様と点の形状の組で描き分ける。グラフの凡例には系列（円とドーナツは項目）を記載する
     notes: 色と模様の値はデザイン方針と CSS 変数（モジュール構成設計）
-  - item: ER 図
-    constraint: '`er` の定義は、テーブル（`id`・物理名 `name`・論理名 `label`・種類 `kind`・色 `color`・概要 `desc`・座標 `x`・`y`・幅 `w`・畳んだ状態で開く `folded`・列 `columns`）と関係（元 `from`・`fromColumn`・`fromCard`、先 `to`・`toColumn`・`toCard`、ラベル `label`、縦の線の位置 `midX`）を持つ。
-
-      テーブルは定義の座標のとおりに配置し、自動配置はしない。
-
-      テーブルの見出しに lucide の `table` のアイコンと物理名、論理名と種類の札（`master` は `マスター`、`transaction` は `トランザクション`。`kind` の無いテーブルは札を出さない）を出し、列（`name`・`type`・主キー `pk`・外部キー `fk`・NOT NULL `nn`・説明 `desc`）を定義の順に 1 行ずつ、`PK`・`FK`・`NN` のマーカー（`abbr`。`title` が `主キー`・`外部キー`・`NOT NULL`）・名前・型で並べる。
-
-      テーブルの `data-color` は `color`、無ければ種類の既定の色（`master` は `blue`、`transaction` は `orange`）にし、どちらも無いテーブルは `data-color` を持たない。
-
-      関係は、元の列の行から先の列の行へ横・縦・横の直角の線で結び（縦の線は `midX`、省いたときは両端の中間）、両端に多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）を配置し、`label` を縦の線の中ほどに出す。
-
-      同じ `x` のテーブルどうしの関係は両方の右の辺から出す。
-
-      主キーでも外部キーでもない列を持つテーブルの見出しに、列の開閉のボタン（スクリーンリーダー向けの名前 `「{論理名}」の主キーと外部キー以外の列`、`aria-expanded` は `folded` が `true` のとき `false`）を配置する。
-
-      `folded` が `true` のテーブルは主キーと外部キーの列だけを出し、`非表示 {数} 列` の行を配置する。
-
-      関係の列が畳まれて見えないときは、線を見出しの縦の中ほどへ結ぶ。
-
-      `desc` を持つテーブルと、`desc` を持つ列のあるテーブルは、見出しに説明のボタン（スクリーンリーダー向けの名前 `「{論理名}」の説明`）を配置し、`role="tooltip"` と `hidden` を持つ中身に `{論理名}（{物理名}）`・概要・`desc` を持つ列の名前と説明を入れる（`hints` がオフのときは配置しない）。
-
-      凡例には、図にあるテーブルの種類の札・列のマーカー・多重度の記号だけを記載する（説明のボタンと用語の下線は記載しない。制約「図の外観の決まり」の凡例の決まりより優先する）'
-    notes: 外観はモック `docs/mock/components/er-diagram/`（確認ログ）。見本は `docs/mock/refs/298/assets/er-samples.js`。色の名前は制約「色の名前」
   - item: 操作できる部品
     constraint: '`param` はタイトル・スライダー（`input type="range"`。`min`・`max`・`step` と既定の値を定義から写す）と今の値の `output`・今の値を写すボタン・既定の値の系列で描いたグラフを出す。グラフの系列は、定義の `table`（スライダーの値ごとの点の並び）から参照する。値を変えて再描画する操作と写す操作は `mount` が付ける'
     notes: 文書に式やスクリプトを記載させない（D-22）ため、計算した点を定義に持たせる
   - item: 図の定義の誤り
-    constraint: 図の部品の範囲に `json` のコードブロックが無いか 2 つ以上ある、JSON として読み込めない、または構造に合わないときは、その図だけを描かず、その場所に記載の警告を配置する。警告は図の種類の名前を主語にし、JSON として読み込めないときは行と読み込めた最後の部分と足りない記号、構造に合わないときは読み込めない箇所と修正方法を文で記載する。線の端が無いノードの `id` を指す・`id` が重なる・系列の点の数が横の目盛りの数と合わない・グラフの系列（円とドーナツは項目）が 7 つ以上ある・ER 図の関係の元か先が無いテーブルの `id` かそのテーブルに無い列を指す・テーブルの `id` か同じテーブルの列の名前が重なる・`kind` が `master`・`transaction` でない・`color` が色の名前でない・多重度が `1`・`0..1`・`1..n`・`0..n` でないのも構造の誤りにする。ほかの図と本文は描く
+    constraint: 図の部品の範囲に `json` のコードブロックが無いか 2 つ以上ある、JSON として読み込めない、または構造に合わないときは、その図だけを描かず、その場所に記載の警告を配置する。警告は図の種類の名前を主語にし、JSON として読み込めないときは行と読み込めた最後の部分と足りない記号、構造に合わないときは読み込めない箇所と修正方法を文で記載する。線の端が無いノードの `id` を指す・`id` が重なる・系列の点の数が横の目盛りの数と合わない・グラフの系列（円とドーナツは項目）が 7 つ以上あるのも構造の誤りにする。ほかの図と本文は描く
     notes: 本文の文言は画面設計『文書』
   - item: 拡張のマーカーの定義
     constraint: 登録した拡張のマーカーを範囲で記載し、範囲に `json` のコードブロックを配置したときも、マーカーの場所の要素だけを出し、範囲の中身と定義の JSON は出力に残さない。登録していないマーカーの範囲のうち、中身が `json` のコードブロックだけのものは中身ごと取り除く（それ以外の範囲は今のとおりマーカーだけを取り除く）

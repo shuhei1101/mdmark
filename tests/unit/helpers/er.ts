@@ -1,7 +1,46 @@
-import type {
-  MdmarkErDefinition,
-  MdmarkErTable,
-} from "../../../src/diagram/definition.ts";
+/** 廃止した ER 図の部品の列（移行のテストの入力） */
+type MdmarkErColumn = {
+  name: string;
+  type: string;
+  pk?: boolean;
+  fk?: boolean;
+  nn?: boolean;
+  desc?: string;
+};
+
+/** 廃止した ER 図の部品のテーブル */
+export type MdmarkErTable = {
+  id: string;
+  name: string;
+  label?: string;
+  kind?: string;
+  color?: string;
+  desc?: string;
+  x: number;
+  y: number;
+  w: number;
+  folded?: boolean;
+  columns: MdmarkErColumn[];
+};
+
+/** 廃止した ER 図の部品の定義（`<!-- er -->` の範囲の JSON） */
+export type MdmarkErDefinition = {
+  title: string;
+  scope: string;
+  updated: string;
+  width: number;
+  tables: MdmarkErTable[];
+  relations: Array<{
+    from: string;
+    fromColumn: string;
+    fromCard: string;
+    to: string;
+    toColumn: string;
+    toCard: string;
+    midX?: number;
+    label?: string;
+  }>;
+};
 
 /** モックの `shop-er` のテーブル（顧客・注文・注文の明細・商品。注文は列が多い） */
 function shopTables(): MdmarkErTable[] {

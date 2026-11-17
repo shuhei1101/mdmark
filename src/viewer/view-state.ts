@@ -6,7 +6,7 @@ export const HISTORY_ENTRY_FIELD = "mdmarkEntry";
 
 /** 戻す本文の開閉の要素のセレクタ。表のメニュー・ドロワー・絞り込み、右側の目次、差分のパネル、コメントの吹き出しの開閉は含めない */
 export const RESTORABLE_FOLDS =
-  "details, .mdmark-section-toggle, .mdmark-row-toggle, .mdmark-code-fold, .mdmark-diagram-er-fold, .mdmark-tree-toggle, .mdmark-tree-example-toggle";
+  "details, .mdmark-section-toggle, .mdmark-row-toggle, .mdmark-code-fold, .mdmark-tree-toggle, .mdmark-tree-example-toggle";
 
 /** スクロールしている間、表示の状態を保存する最短の間隔（ミリ秒） */
 export const SCROLL_SAVE_INTERVAL_MS = 100;

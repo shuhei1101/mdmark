@@ -1,0 +1,72 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-sequence-participant-nested-interactive
+
+ ❯ |unit| tests/unit/src/parts/map.test.ts (40 tests | 1 failed) 6091ms
+   × test_render_map_sequence_when_participant_hit 52ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts (5 tests | 2 failed) 3007ms
+   × test_attach_map_sequence_when_reorder 1778ms
+   × test_attach_map_sequence_when_select_by_key 976ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_sequence_when_participant_hit
+AssertionError: expected '<div class="mdmark-diagram-node map-p…' not to contain 'tabindex'
+
+Expected: "tabindex"
+Received: "<div class="mdmark-diagram-node map-participant map-kinded is-selected" data-kind="map" data-shape="rounded" data-node="mount" data-participant="mount" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="mount（選択中）" data-selected style="left:197px;top:16px;width:150px">"
+
+ ❯ tests/unit/src/parts/map.test.ts:469:19
+    467|   const div = findTag(head, needle);
+    468|   expect(div).toContain("map-participant");
+    469|   expect(div).not.toContain("tabindex");
+       |                   ^
+    470|   expect(div).not.toContain("role=");
+    471|   expect(div).not.toContain("aria-keyshortcuts");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_reorder
+TypeError: Cannot read properties of null (reading 'focus')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_reorder.png
+
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:54:9
+     52|     '.map-participant[data-participant="user"] .mdmark-diagram-node-hi…
+     53|   ) as HTMLElement;
+     54|   first.focus();
+       |         ^
+     55|   // 実行
+     56|   first.dispatchEvent(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a92aad8b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_select_by_key
+TypeError: Cannot read properties of null (reading 'focus')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_select_by_key.png
+
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:79:7
+     77|     '.map-participant[data-participant="mount"] .mdmark-diagram-node-h…
+     78|   ) as HTMLElement;
+     79|   hit.focus();
+       |       ^
+     80|   // 実行
+     81|   hit.dispatchEvent(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a92aad8b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 299 passed (301)
+      Tests  3 failed | 2271 passed (2274)
+   Start at  06:07:52
+   Duration  49.34s (worker 82%, tests 11%, import 6%, transform 1%)
+
