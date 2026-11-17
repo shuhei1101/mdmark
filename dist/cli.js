@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.ba3399d";
+  return "v0.14.0+develop.4d38ecc";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -72149,6 +72149,56 @@ function matchableChildren(inline2) {
   return positions;
 }
 
+// src/mermaid-source.ts
+var MERMAID_KIND_NAMES = {
+  flowchart: "\u30D5\u30ED\u30FC\u30C1\u30E3\u30FC\u30C8",
+  graph: "\u30D5\u30ED\u30FC\u30C1\u30E3\u30FC\u30C8",
+  sequenceDiagram: "\u30B7\u30FC\u30B1\u30F3\u30B9\u56F3",
+  classDiagram: "\u30AF\u30E9\u30B9\u56F3",
+  stateDiagram: "\u72B6\u614B\u9077\u79FB\u56F3",
+  "stateDiagram-v2": "\u72B6\u614B\u9077\u79FB\u56F3",
+  erDiagram: "ER \u56F3",
+  gantt: "\u30AC\u30F3\u30C8\u30C1\u30E3\u30FC\u30C8",
+  pie: "\u5186\u30B0\u30E9\u30D5"
+};
+var FRONT_MATTER = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+var TITLE_LINE = /^title:[ \t]*(.*)$/m;
+var ACC_TITLE_LINE = /^[ \t]*accTitle[ \t]*:[ \t]*(.+)$/m;
+var unquote2 = (value) => {
+  const trimmed = value.trim();
+  const quoted = /^(["'])(.*)\1$/.exec(trimmed);
+  return quoted ? quoted[2] ?? "" : trimmed;
+};
+var takeFrontTitle = (source) => {
+  const front = FRONT_MATTER.exec(source);
+  const inner = front?.[1] ?? "";
+  const line = front ? TITLE_LINE.exec(inner) : null;
+  if (!front || !line) {
+    return void 0;
+  }
+  const rest2 = inner.replace(/^title:.*(?:\r?\n|$)/m, "").trimEnd();
+  return {
+    title: unquote2(line[1] ?? "") || void 0,
+    body: (rest2.trim() === "" ? "" : `---
+${rest2}
+---
+`) + source.slice(front[0].length)
+  };
+};
+var accTitleOf = (source) => {
+  const acc = ACC_TITLE_LINE.exec(source);
+  return acc ? unquote2(acc[1] ?? "") || void 0 : void 0;
+};
+var splitMermaidTitle = (source) => {
+  const front = takeFrontTitle(source);
+  const body = front?.body ?? source;
+  const title = front?.title ?? accTitleOf(source);
+  const withoutFront = body.replace(FRONT_MATTER, "");
+  const kind = withoutFront.split(/\r?\n/).map((line) => line.trim()).find((line) => line !== "" && !line.startsWith("%%"))?.split(/\s/)[0] ?? "";
+  return title === void 0 ? { body, kind } : { title, body, kind };
+};
+var mermaidKindName = (kind) => Object.hasOwn(MERMAID_KIND_NAMES, kind) ? MERMAID_KIND_NAMES[kind] ?? "\u56F3" : "\u56F3";
+
 // src/map/spec.ts
 var MAP_ARG_KEYS = [
   "title",
@@ -72263,6 +72313,23 @@ var KIND_OF_FIRST_WORD = {
 var mapKindOf = (mermaid) => {
   const first = mermaid.trimStart().split(/\s/, 1)[0] ?? "";
   return Object.hasOwn(KIND_OF_FIRST_WORD, first) ? KIND_OF_FIRST_WORD[first] : void 0;
+};
+var FRONT_MATTER_RE = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+var plainMapSourceOf = (source) => {
+  const front = FRONT_MATTER_RE.exec(source);
+  if (front && /^config\s*:/m.test(front[1] ?? "")) return void 0;
+  const body = front ? source.slice(front[0].length) : source;
+  const lines = body.split(/\r?\n/).map((line) => line.trim());
+  if (lines.some((line) => line.startsWith("%%{"))) return void 0;
+  const first = lines.find((line) => line !== "" && !line.startsWith("%%"));
+  const kind = mapKindOf(first ?? "");
+  if (kind === void 0) return void 0;
+  return {
+    kind,
+    body,
+    frontMatter: front ? front[0].replace(/\r?\n$/, "") : void 0,
+    title: splitMermaidTitle(source).title
+  };
 };
 var collectMapStructure = (range) => {
   const parsedArgs = parseMapArgs(range.args);
@@ -72416,6 +72483,25 @@ var mapRangeTokens = (state, range, draw) => {
     )
   ];
 };
+var plainMapTokens = (state, fence2, draw) => {
+  const plain = plainMapSourceOf(fence2.content);
+  if (plain === void 0) return void 0;
+  const title = plain.title ?? mermaidKindName(splitMermaidTitle(fence2.content).kind);
+  fence2.content = plain.body;
+  fence2.meta = { ...fence2.meta ?? {}, [MAP_SOURCE_META]: true };
+  const args = escapeHtml2(JSON.stringify({ title }));
+  const terms = draw.findTerms?.(plain.body);
+  const front = plain.frontMatter === void 0 ? "" : ` data-map-front-matter="${escapeHtml2(plain.frontMatter)}"`;
+  return [
+    ownBlock(
+      state,
+      `<div class="mdmark-map" data-map="${draw.number}" data-map-kind="${plain.kind}" data-map-args="${args}" data-map-plain${front}${termsAttrOf(terms)}>`,
+      fence2
+    ),
+    fence2,
+    ownBlock(state, "</div>", fence2)
+  ];
+};
 var buildMapRanges = (state) => {
   const tokens = state.tokens;
   if (!featureOn(state, MAP_MARK2)) {
@@ -72430,8 +72516,20 @@ var buildMapRanges = (state) => {
   let cursor = 0;
   let number4 = 0;
   const findTerms = termsFinder(state);
+  const plainOn = featureOn(state, "mermaid");
+  const pushOutside = (outside) => {
+    for (const token of outside) {
+      const drawn = plainOn && isMermaid(token) ? plainMapTokens(state, token, { number: number4 + 1, findTerms }) : void 0;
+      if (drawn === void 0) {
+        out.push(token);
+        continue;
+      }
+      number4 += 1;
+      out.push(...drawn);
+    }
+  };
   for (const { open: open2, close } of ranges) {
-    out.push(...tokens.slice(cursor, open2));
+    pushOutside(tokens.slice(cursor, open2));
     const openToken = tokens[open2];
     const mark = markOf(openToken);
     if (close === -1 || mark === void 0) {
@@ -72453,7 +72551,7 @@ var buildMapRanges = (state) => {
     );
     cursor = close + 1;
   }
-  out.push(...tokens.slice(cursor));
+  pushOutside(tokens.slice(cursor));
   state.tokens = out;
 };
 
@@ -78295,6 +78393,2109 @@ function collectWarnings(markdown, opts = {}) {
   return renderDocument({ markdown, config: config3 }).warnings;
 }
 
+// src/map/layout.ts
+var MAP_LAYOUT = {
+  maxWidth: 220,
+  maxWidthWide: 360,
+  minWidth: 120,
+  gapItem: 48,
+  gapRank: 64,
+  groupPad: 24,
+  groupTitle: 36,
+  margin: 24,
+  /** 線を引く通り道の、矩形からの離れ */
+  clearance: 12,
+  bendCost: 30,
+  /** 祖先でないグループの枠を出入りする 1 回の重み。最短より出入りを増やさないために大きくする */
+  borderCost: 1e5,
+  /** ドラッグで近づけられる間の下限 */
+  minGap: 16
+};
+
+// src/map/flowchart.ts
+var NAMED_ENTITIES = {
+  quot: '"',
+  amp: "&",
+  lt: "<",
+  gt: ">"
+};
+var decodeEntities = (text2) => text2.replace(/#([a-z]+|\d+);/g, (whole, name) => {
+  if (/^\d+$/.test(name)) {
+    const code2 = Number(name);
+    return code2 <= 1114111 ? String.fromCodePoint(code2) : whole;
+  }
+  return NAMED_ENTITIES[name] ?? whole;
+});
+var LINK_NOT_ALLOWED = "\u30CE\u30FC\u30C9\u306E\u30EA\u30F3\u30AF\u5148\u306B\u4F7F\u7528\u3067\u304D\u306A\u3044\u3082\u306E\u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30EA\u30F3\u30AF\u5148\u306F http\u30FBhttps\u30FBmailto \u3068\u76F8\u5BFE\u30D1\u30B9\u3067\u3059\u3002\u3053\u306E\u30CE\u30FC\u30C9\u306F\u30EA\u30F3\u30AF\u306B\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002";
+var mapLinkProblems = (links) => {
+  const allowed = {};
+  const problems = [];
+  for (const [id, href] of Object.entries(links)) {
+    if (isAllowedUrl(href)) {
+      allowed[id] = href;
+      continue;
+    }
+    problems.push({
+      kind: "map_invalid_value",
+      message: `${LINK_NOT_ALLOWED} ${id}: ${href}`
+    });
+  }
+  return { allowed, problems };
+};
+var SHAPES = [
+  { open: "([", close: "])", shape: "stadium" },
+  { open: "((", close: "))", shape: "circle" },
+  { open: "[(", close: ")]", shape: "cylinder" },
+  { open: "[[", close: "]]", shape: "subroutine" },
+  { open: "{{", close: "}}", shape: "hexagon" },
+  { open: "[", close: "]", shape: "rect" },
+  { open: "(", close: ")", shape: "round" },
+  { open: "{", close: "}", shape: "rhombus" },
+  { open: ">", close: "]", shape: "flag" }
+];
+var ARROWS = [
+  { re: /^<-->/, arrow: "-->", both: true },
+  { re: /^<-\.->/, arrow: "-.->", both: true },
+  { re: /^<==>/, arrow: "==>", both: true },
+  { re: /^--\s+(.+?)\s+-->/, arrow: "-->" },
+  { re: /^--\s+(.+?)\s+---/, arrow: "---" },
+  { re: /^-\.\s+(.+?)\s+\.->/, arrow: "-.->" },
+  { re: /^==\s+(.+?)\s+==>/, arrow: "==>" },
+  { re: /^-->/, arrow: "-->" },
+  { re: /^---/, arrow: "---" },
+  { re: /^-\.->/, arrow: "-.->" },
+  { re: /^-\.-/, arrow: "-.->" },
+  { re: /^==>/, arrow: "==>" },
+  { re: /^===/, arrow: "---" }
+];
+var ID_RE = /^[A-Za-z0-9_\u0080-￿]+/;
+var EDGE_ID_RE = /^([A-Za-z0-9_]+)@(?=[-=<])/;
+var IGNORED_RE = /^(classDef|style|linkStyle|click|accTitle|accDescr)\b/;
+var CLICK_RE = /^click\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
+var skipSpace = (cursor) => {
+  while (cursor.pos < cursor.text.length && /\s/.test(cursor.text[cursor.pos] ?? "")) {
+    cursor.pos += 1;
+  }
+};
+var rest = (cursor) => cursor.text.slice(cursor.pos);
+var readShape = (cursor) => {
+  const tail = rest(cursor);
+  for (const { open: open2, close, shape } of SHAPES) {
+    if (!tail.startsWith(open2)) continue;
+    let body = tail.slice(open2.length);
+    let consumed = open2.length;
+    let label;
+    if (body.startsWith('"')) {
+      const end = body.indexOf('"', 1);
+      if (end < 0) return void 0;
+      label = body.slice(1, end);
+      body = body.slice(end + 1);
+      consumed += end + 1;
+      if (!body.startsWith(close)) return void 0;
+    } else {
+      const end = body.indexOf(close);
+      if (end < 0) return void 0;
+      label = body.slice(0, end);
+      consumed += end;
+    }
+    cursor.pos += consumed + close.length;
+    return {
+      label: decodeEntities(label.replace(/<br\s*\/?>/g, "\n")),
+      shape
+    };
+  }
+  return void 0;
+};
+var readNode = (cursor) => {
+  skipSpace(cursor);
+  const match = ID_RE.exec(rest(cursor));
+  if (!match || EDGE_ID_RE.test(rest(cursor))) return void 0;
+  cursor.pos += match[0].length;
+  const ref = { id: match[0], classes: [] };
+  const shape = readShape(cursor);
+  if (shape) {
+    ref.label = shape.label;
+    ref.shape = shape.shape;
+  }
+  const cls = /^:::([A-Za-z0-9_-]+)/.exec(rest(cursor));
+  if (cls?.[1]) {
+    ref.classes.push(cls[1]);
+    cursor.pos += cls[0].length;
+  }
+  return ref;
+};
+var readGroup = (cursor) => {
+  const group = [];
+  for (; ; ) {
+    const node2 = readNode(cursor);
+    if (!node2) return void 0;
+    group.push(node2);
+    skipSpace(cursor);
+    if (!rest(cursor).startsWith("&")) return group;
+    cursor.pos += 1;
+  }
+};
+var readArrow = (cursor) => {
+  skipSpace(cursor);
+  let id;
+  const idMatch = EDGE_ID_RE.exec(rest(cursor));
+  if (idMatch) {
+    id = idMatch[1];
+    cursor.pos += idMatch[0].length;
+  }
+  for (const { re, arrow, both = false } of ARROWS) {
+    const match = re.exec(rest(cursor));
+    if (!match) continue;
+    cursor.pos += match[0].length;
+    let label = match[1];
+    const pipe2 = /^\|([^|]*)\|/.exec(rest(cursor));
+    if (pipe2) {
+      label = pipe2[1];
+      cursor.pos += pipe2[0].length;
+    }
+    return {
+      id,
+      arrow,
+      both,
+      label: label === void 0 ? void 0 : decodeEntities(label.replace(/^"|"$/g, ""))
+    };
+  }
+  return void 0;
+};
+var readStatement = (text2) => {
+  const cursor = { text: text2, pos: 0 };
+  const first = readGroup(cursor);
+  if (!first) return void 0;
+  const groups = [first];
+  const arrows = [];
+  for (; ; ) {
+    skipSpace(cursor);
+    if (cursor.pos >= text2.length) return { groups, arrows };
+    const arrow = readArrow(cursor);
+    if (!arrow) return void 0;
+    const next = readGroup(cursor);
+    if (!next) return void 0;
+    arrows.push(arrow);
+    groups.push(next);
+  }
+};
+var toDirection = (value) => {
+  if (value === "TB" || value === "TD" || value === "BT") return "TB";
+  if (value === "LR" || value === "RL") return "LR";
+  return void 0;
+};
+var unreadable = (line, raw) => {
+  const text2 = raw.trim();
+  const hint = /(^|[^-<])->(?!>)/.test(text2) ? "\u77E2\u5370\u306F `-->` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002" : "Mermaid \u306E flowchart \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+  return {
+    kind: "map_invalid",
+    line,
+    message: `${line + 1} \u884C\u76EE \`${text2}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002${hint}`
+  };
+};
+var parseFlowchart = (source) => {
+  const lines = source.split("\n");
+  const header = /^\s*(flowchart|graph)\s+(\w+)/.exec(lines[0] ?? "");
+  const direction = toDirection(header?.[2] ?? "TB") ?? "TB";
+  const nodes = /* @__PURE__ */ new Map();
+  const groups = [];
+  const edges = [];
+  const links = {};
+  const problems = [];
+  const stack = [];
+  const groupIds = /* @__PURE__ */ new Set();
+  const edgeIds = /* @__PURE__ */ new Map();
+  const touch = (ref) => {
+    if (groupIds.has(ref.id)) return;
+    const parent = stack.at(-1)?.id;
+    const existing = nodes.get(ref.id);
+    if (existing) {
+      if (ref.label !== void 0) {
+        existing.label = ref.label;
+        existing.shape = ref.shape ?? existing.shape;
+        existing.parent = parent;
+      }
+      existing.classes.push(
+        ...ref.classes.filter((name) => !existing.classes.includes(name))
+      );
+      return;
+    }
+    nodes.set(ref.id, {
+      id: ref.id,
+      label: ref.label ?? ref.id,
+      shape: ref.shape ?? "rect",
+      classes: [...ref.classes],
+      parent
+    });
+  };
+  const edgeId = (id, from, to) => {
+    if (id !== void 0) return id;
+    const base = `${from}->${to}`;
+    const count = (edgeIds.get(base) ?? 0) + 1;
+    edgeIds.set(base, count);
+    return count === 1 ? base : `${base}#${count}`;
+  };
+  const readSubgraph = (text2) => {
+    const subgraph = /^subgraph\s+([^\s[]+)\s*(?:\[\s*"?([^"\]]*)"?\s*\])?\s*$/.exec(text2);
+    if (!subgraph?.[1]) return false;
+    const group = {
+      id: subgraph[1],
+      title: decodeEntities(subgraph[2] ?? subgraph[1]),
+      parent: stack.at(-1)?.id,
+      direction: void 0
+    };
+    groups.push(group);
+    groupIds.add(group.id);
+    stack.push(group);
+    return true;
+  };
+  const readEnd = (text2, line) => {
+    if (text2 !== "end") return false;
+    if (!stack.pop())
+      problems.push({
+        kind: "map_invalid",
+        line,
+        message: `${line + 1} \u884C\u76EE\u306E \`end\` \u306B\u5BFE\u5FDC\u3059\u308B \`subgraph\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002`
+      });
+    return true;
+  };
+  const readDirection = (text2, at) => {
+    const dir = /^direction\s+(\w+)$/.exec(text2);
+    if (!dir?.[1]) return false;
+    const current = stack.at(-1);
+    const value = toDirection(dir[1]);
+    if (current && value) current.direction = value;
+    else problems.push(unreadable(at.line, at.raw));
+    return true;
+  };
+  const readClassOrClick = (text2) => {
+    const classLine = /^class\s+([\w,\s]+?)\s+([\w-]+)$/.exec(text2);
+    if (classLine?.[1] && classLine[2]) {
+      for (const id of classLine[1].split(",").map((part) => part.trim()))
+        nodes.get(id)?.classes.push(classLine[2]);
+      return true;
+    }
+    const click = CLICK_RE.exec(text2);
+    if (click?.[1] && click[2] !== void 0) {
+      links[click[1]] = click[2];
+      return true;
+    }
+    return false;
+  };
+  const addStatement = (statement) => {
+    for (const group of statement.groups) group.forEach(touch);
+    statement.arrows.forEach((arrow, at) => {
+      for (const from of statement.groups[at] ?? []) {
+        for (const to of statement.groups[at + 1] ?? []) {
+          edges.push({
+            id: edgeId(arrow.id, from.id, to.id),
+            from: from.id,
+            to: to.id,
+            arrow: arrow.arrow,
+            both: arrow.both,
+            label: arrow.label
+          });
+        }
+      }
+    });
+  };
+  lines.slice(1).forEach((raw, index) => {
+    const line = index + 1;
+    const text2 = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
+    if (text2 === "") return;
+    if (readSubgraph(text2) || readEnd(text2, line) || readDirection(text2, { line, raw }) || readClassOrClick(text2) || IGNORED_RE.test(text2))
+      return;
+    const statement = readStatement(text2);
+    if (!statement) {
+      problems.push(unreadable(line, raw));
+      return;
+    }
+    addStatement(statement);
+  });
+  for (const group of stack) {
+    problems.push({
+      kind: "map_invalid",
+      message: `\`subgraph ${group.id}\` \u306B\u9589\u3058\u306E \`end\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u884C\u3067\u9589\u3058\u305F\u3082\u306E\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    });
+  }
+  return {
+    direction,
+    nodes: [...nodes.values()],
+    groups,
+    edges,
+    links,
+    problems
+  };
+};
+
+// src/map/sequence.ts
+var SEQ_ARROW_STYLES = {
+  "<<-->>": { dotted: true, head: "filled", both: true },
+  "<<->>": { dotted: false, head: "filled", both: true },
+  "-->>": { dotted: true, head: "filled", both: false },
+  "->>": { dotted: false, head: "filled", both: false },
+  "--x": { dotted: true, head: "cross", both: false },
+  "-x": { dotted: false, head: "cross", both: false },
+  "--)": { dotted: true, head: "async", both: false },
+  "-)": { dotted: false, head: "async", both: false },
+  "-->": { dotted: true, head: "none", both: false },
+  "->": { dotted: false, head: "none", both: false }
+};
+var SEQ_ID = "[\\w\\u0080-\\uffff]+";
+var ARROW_RE = Object.keys(SEQ_ARROW_STYLES).map((arrow) => arrow.replace(/[()]/g, "\\$&")).join("|");
+var MESSAGE_RE = new RegExp(
+  `^(${SEQ_ID})\\s*(${ARROW_RE})\\s*([+-]?)(${SEQ_ID})\\s*:\\s*(.*)$`
+);
+var FRAGMENT_RE = /^(loop|alt|opt|par|critical|break|rect)\b\s*(.*)$/;
+var SECTION_RE = /^(else|and|option)\b\s*(.*)$/;
+var NOTE_RE = new RegExp(
+  `^note\\s+(left of|right of|over)\\s+(${SEQ_ID}(?:\\s*,\\s*${SEQ_ID})?)\\s*:\\s*(.*)$`,
+  "i"
+);
+var DECL_RE = new RegExp(
+  `^(?:create\\s+)?(participant|actor)\\s+(${SEQ_ID})(?:\\s+as\\s+(.+))?$`
+);
+var TOGGLE_RE = new RegExp(`^(activate|deactivate)\\s+(${SEQ_ID})$`);
+var IGNORED_RE2 = new RegExp(
+  `^(destroy\\s+${SEQ_ID}|links?\\s+${SEQ_ID}\\s*:.*|title\\b.*|accTitle\\b.*|accDescr\\b.*)$`
+);
+var unreadable2 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E sequenceDiagram \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var notePlacementOf = (where) => {
+  const lower = where.toLowerCase();
+  if (lower.startsWith("left")) return "left";
+  return lower.startsWith("right") ? "right" : "over";
+};
+var activationOf = (mark) => mark === "+" || mark === "-" ? mark : void 0;
+var parseSequence = (source) => {
+  const participants = /* @__PURE__ */ new Map();
+  const messages = [];
+  const fragments = [];
+  const notes = [];
+  const activations = [];
+  const boxes = [];
+  const problems = [];
+  const open2 = [];
+  const active = /* @__PURE__ */ new Map();
+  let box;
+  let autonumber = false;
+  let pendingBlock;
+  const ensure = (id) => {
+    if (!participants.has(id))
+      participants.set(id, { id, label: id, actor: false });
+  };
+  const activate = (id, at) => {
+    const list2 = active.get(id) ?? [];
+    list2.push(at);
+    active.set(id, list2);
+  };
+  const deactivate = (id, at, where) => {
+    const start = active.get(id)?.pop();
+    if (start === void 0) {
+      problems.push(unreadable2(where.line, where.raw));
+      return;
+    }
+    activations.push({
+      id,
+      start,
+      end: at,
+      depth: active.get(id)?.length ?? 0
+    });
+  };
+  const fail = (where) => {
+    problems.push(unreadable2(where.line, where.raw));
+  };
+  const readBox = (text2) => {
+    const boxLine = /^box\b\s*(.*)$/.exec(text2);
+    if (!boxLine) return false;
+    const rest2 = boxLine[1] ?? "";
+    const color = /^(rgba?\([^)]*\)|transparent|[a-z]+)(?=\s|$)/i.exec(
+      rest2
+    )?.[0];
+    box = {
+      label: (color ? rest2.slice(color.length) : rest2).trim(),
+      color,
+      members: []
+    };
+    boxes.push(box);
+    return true;
+  };
+  const readDecl = (text2) => {
+    const decl = DECL_RE.exec(text2);
+    if (!decl?.[1] || !decl[2]) return false;
+    participants.set(decl[2], {
+      id: decl[2],
+      label: decodeEntities(decl[3] ?? decl[2]),
+      actor: decl[1] === "actor"
+    });
+    box?.members.push(decl[2]);
+    return true;
+  };
+  const readFragment = (text2, where) => {
+    const fragment = FRAGMENT_RE.exec(text2);
+    if (!fragment?.[1]) return false;
+    const label = fragment[1] === "rect" ? where.blockName ?? "" : decodeEntities(fragment[2] ?? "");
+    const item = {
+      kind: fragment[1],
+      label,
+      depth: open2.length,
+      sections: [{ start: messages.length, label }],
+      start: messages.length,
+      end: messages.length
+    };
+    open2.push(item);
+    fragments.push(item);
+    return true;
+  };
+  const readSection = (text2, where) => {
+    const section = SECTION_RE.exec(text2);
+    if (!section) return false;
+    const current = open2.at(-1);
+    if (current)
+      current.sections.push({
+        start: messages.length,
+        label: decodeEntities(section[2] ?? "")
+      });
+    else fail(where);
+    return true;
+  };
+  const readEnd = (text2, where) => {
+    if (text2 !== "end") return false;
+    if (box && open2.length === 0) {
+      box = void 0;
+      return true;
+    }
+    const current = open2.pop();
+    if (current) current.end = messages.length;
+    else fail(where);
+    return true;
+  };
+  const readToggle = (text2, where) => {
+    const toggle = TOGGLE_RE.exec(text2);
+    if (!toggle?.[2]) return false;
+    ensure(toggle[2]);
+    if (toggle[1] === "activate") activate(toggle[2], messages.length);
+    else deactivate(toggle[2], messages.length - 1, where);
+    return true;
+  };
+  const readNote2 = (text2) => {
+    const note = NOTE_RE.exec(text2);
+    if (!note?.[1] || !note[2]) return false;
+    const of = note[2].split(",").map((id) => id.trim());
+    for (const id of of) ensure(id);
+    notes.push({
+      after: messages.length,
+      placement: notePlacementOf(note[1]),
+      of,
+      text: decodeEntities(note[3] ?? "")
+    });
+    return true;
+  };
+  const readMessage = (text2, where) => {
+    const message = MESSAGE_RE.exec(text2);
+    if (!message?.[1] || !message[2] || !message[4]) return false;
+    ensure(message[1]);
+    ensure(message[4]);
+    const activation = activationOf(message[3]);
+    messages.push({
+      from: message[1],
+      to: message[4],
+      text: decodeEntities(message[5] ?? ""),
+      arrow: message[2],
+      activation
+    });
+    const at = messages.length - 1;
+    if (activation === "+") activate(message[4], at);
+    if (activation === "-") deactivate(message[1], at, where);
+    return true;
+  };
+  const readers = [
+    readBox,
+    readDecl,
+    (text2) => IGNORED_RE2.test(text2),
+    readFragment,
+    readSection,
+    readEnd,
+    readToggle,
+    readNote2,
+    readMessage
+  ];
+  source.split("\n").slice(1).forEach((raw, index) => {
+    const line = index + 1;
+    const block2 = /^\s*%%\s*block:\s*(.*)$/.exec(raw);
+    if (block2) {
+      pendingBlock = (block2[1] ?? "").trim();
+      return;
+    }
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (text2 === "") return;
+    const blockName = pendingBlock;
+    pendingBlock = void 0;
+    if (text2 === "autonumber") {
+      autonumber = true;
+      return;
+    }
+    const where = { line, raw, blockName };
+    if (!readers.some((read) => read(text2, where))) fail(where);
+  });
+  for (const item of open2) {
+    item.end = messages.length;
+    problems.push({
+      kind: "map_invalid",
+      message: `\`${item.kind}\` \u306B\u9589\u3058\u306E \`end\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u30E1\u30C3\u30BB\u30FC\u30B8\u3067\u9589\u3058\u305F\u3082\u306E\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    });
+  }
+  return {
+    participants: [...participants.values()],
+    messages,
+    fragments,
+    notes,
+    activations,
+    boxes,
+    autonumber,
+    problems
+  };
+};
+
+// src/parts/map.ts
+var MAP_ER = {
+  width: 240,
+  /** テーブル名の行（種類の行と名前）の高さ */
+  head: 56,
+  row: 28,
+  foot: 6,
+  /** ノードの左右に空ける幅（関連の端と多重度の置き場所） */
+  aside: 32,
+  /** 関連の端の、ノードの辺から外へ出す長さ（同じ辺から出る 2 本目からは step ずつ延ばす） */
+  endOut: 14,
+  step: MAP_LAYOUT.clearance,
+  /** 同じ列の行から同じ辺へ出る 2 本目からの端の縦のずれ */
+  shift: 6,
+  /** 多重度の文字の 1 文字の幅と、文字の高さ（重なりの見積もり） */
+  cardinalityChar: 7,
+  cardinalityLine: 13,
+  /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
+  crowd: 120,
+  /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
+  labelChar: 12,
+  labelLine: 16,
+  /** 多重度の文字の、端からの離れ */
+  cardinalityGap: 4,
+  /** 行が増える関連のマーカーの、線からの離れ */
+  fanoutGap: 22,
+  /** 行が増える関連のマーカーの一辺 */
+  fanoutSize: 24
+};
+
+// src/map/architecture.ts
+var ARCH_LUCIDE_ICONS = {
+  cloud: "cloud",
+  database: "database",
+  disk: "hard-drive",
+  internet: "globe",
+  server: "server"
+};
+var MAP_ARCH_KINDS = {
+  "mdmark-arch-service": { shape: "rounded" },
+  "mdmark-arch-junction": { shape: "rounded" },
+  ...Object.fromEntries(
+    Object.entries(ARCH_LUCIDE_ICONS).map(([name, icon]) => [
+      `mdmark-arch-${name}`,
+      { icon, shape: "rounded" }
+    ])
+  )
+};
+var ID = "[A-Za-z0-9_\\u0080-\\uffff-]+";
+var SIDES = { L: "left", R: "right", T: "top", B: "bottom" };
+var ITEM_RE = new RegExp(
+  `^(group|service)\\s+(${ID})(?:\\((\\w+)\\))?\\[([^\\]]*)\\](?:\\s+in\\s+(${ID}))?$`
+);
+var JUNCTION_RE = new RegExp(`^junction\\s+(${ID})(?:\\s+in\\s+(${ID}))?$`);
+var EDGE_RE = new RegExp(
+  `^(${ID})(\\{group\\})?:([LRTB])\\s*(<?)--(>?)\\s*([LRTB]):(${ID})(\\{group\\})?$`
+);
+var IGNORED_RE3 = /^(accTitle|accDescr|title)\b/;
+var invalid = (line, message) => ({
+  kind: "map_invalid",
+  line,
+  message
+});
+var unreadableText = (line, raw) => `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E architecture-beta \u306E\u8A18\u6CD5\uFF08\`{ID}:R --> L:{ID}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+var iconText = (line, icon) => `${line + 1} \u884C\u76EE\u306E\u30A2\u30A4\u30B3\u30F3 \`${icon}\` \u306F\u63CF\u3051\u307E\u305B\u3093\u3002\`cloud\`\u30FB\`database\`\u30FB\`disk\`\u30FB\`internet\`\u30FB\`server\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+var iconOf = (name) => name !== void 0 && name in ARCH_LUCIDE_ICONS ? name : void 0;
+var headOf = (tail, head) => {
+  if (tail && head) return "both";
+  if (head) return "end";
+  return tail ? "start" : "none";
+};
+var readItem2 = (diagram, context) => {
+  const match = ITEM_RE.exec(context.text);
+  if (!match?.[1] || !match[2]) return false;
+  const icon = iconOf(match[3]);
+  if (match[3] !== void 0 && icon === void 0)
+    diagram.problems.push(
+      invalid(context.line, iconText(context.line, match[3]))
+    );
+  if (match[1] === "group")
+    diagram.groups.push({
+      id: match[2],
+      icon,
+      title: match[4] ?? match[2],
+      parent: match[5]
+    });
+  else
+    diagram.services.push({
+      id: match[2],
+      icon,
+      label: match[4] ?? match[2],
+      parent: match[5],
+      junction: false
+    });
+  return true;
+};
+var readEdge = (diagram, text2) => {
+  const match = EDGE_RE.exec(text2);
+  if (!match?.[1] || !match[3] || !match[6] || !match[7]) return false;
+  diagram.edges.push({
+    id: `r${diagram.edges.length + 1}`,
+    from: match[1],
+    fromSide: SIDES[match[3]],
+    fromGroup: match[2] !== void 0,
+    to: match[7],
+    toSide: SIDES[match[6]],
+    toGroup: match[8] !== void 0,
+    head: headOf(match[4] === "<", match[5] === ">")
+  });
+  return true;
+};
+var parentProblems = (diagram, lines) => {
+  const groups = new Set(diagram.groups.map((group) => group.id));
+  return [...diagram.groups, ...diagram.services].flatMap((item) => {
+    if (item.parent === void 0 || groups.has(item.parent)) return [];
+    const line = lines.get(item.id) ?? 0;
+    return [
+      invalid(
+        line,
+        `${line + 1} \u884C\u76EE\u306E \`in ${item.parent}\` \u304C\u6307\u3059 group \u304C\u3042\u308A\u307E\u305B\u3093\u3002group \u306E ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      )
+    ];
+  });
+};
+var parseArchitecture = (source) => {
+  const diagram = {
+    groups: [],
+    services: [],
+    edges: [],
+    problems: []
+  };
+  const lines = /* @__PURE__ */ new Map();
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "" || IGNORED_RE3.test(text2)) continue;
+    const count = diagram.groups.length + diagram.services.length;
+    const junction = JUNCTION_RE.exec(text2);
+    if (junction?.[1])
+      diagram.services.push({
+        id: junction[1],
+        icon: void 0,
+        label: "",
+        parent: junction[2],
+        junction: true
+      });
+    else if (!readItem2(diagram, { text: text2, line }) && !readEdge(diagram, text2))
+      diagram.problems.push(invalid(line, unreadableText(line, raw)));
+    const added = [...diagram.groups, ...diagram.services].slice(count);
+    for (const item of added) lines.set(item.id, line);
+  }
+  diagram.problems.push(...parentProblems(diagram, lines));
+  return diagram;
+};
+
+// src/map/c4.ts
+var C4_LABELS = {
+  person: "[Person]",
+  system: "[Software System]"
+};
+var MAP_C4_KINDS = {
+  "mdmark-c4-person": {
+    label: C4_LABELS.person,
+    icon: "user",
+    shape: "rounded"
+  },
+  "mdmark-c4-person-ext": {
+    label: "[External Person]",
+    icon: "user",
+    shape: "rounded",
+    color: "gray"
+  },
+  "mdmark-c4-system": { label: C4_LABELS.system, shape: "rect" },
+  "mdmark-c4-system-ext": {
+    label: "[External Software System]",
+    shape: "rect",
+    color: "gray"
+  },
+  "mdmark-c4-system_db": {
+    label: C4_LABELS.system,
+    icon: "database",
+    shape: "rect"
+  },
+  "mdmark-c4-system_db-ext": {
+    label: "[External Software System]",
+    icon: "database",
+    shape: "rect",
+    color: "gray"
+  },
+  "mdmark-c4-system_queue": { label: C4_LABELS.system, shape: "pill" },
+  "mdmark-c4-system_queue-ext": {
+    label: "[External Software System]",
+    shape: "pill",
+    color: "gray"
+  }
+};
+var BOUNDARIES = {
+  Enterprise_Boundary: "enterprise",
+  System_Boundary: "system",
+  Boundary: "boundary"
+};
+var ELEMENTS = {
+  Person: "person",
+  System: "system",
+  SystemDb: "system_db",
+  SystemQueue: "system_queue"
+};
+var DIRECTIONS = {
+  U: "up",
+  Up: "up",
+  D: "down",
+  Down: "down",
+  L: "left",
+  Left: "left",
+  R: "right",
+  Right: "right",
+  Back: "back"
+};
+var CALL_RE = /^(\w+)\((.*)\)\s*(\{)?$/;
+var RELATION_RE = /^(Bi)?Rel(?:_(U|Up|D|Down|L|Left|R|Right|Back))?$/;
+var IGNORED_RE4 = /^(accTitle|accDescr|UpdateLayoutConfig|UpdateElementStyle|UpdateRelStyle|UpdateBoundaryStyle|AddElementTag|AddRelTag)\b/;
+var argumentsOf = (text2) => [...text2.matchAll(/"([^"]*)"|([^,\s][^,]*)/g)].map(
+  (match) => (match[1] ?? match[2] ?? "").trim()
+);
+var unreadable3 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E C4Context \u306E\u8A18\u6CD5\uFF08\`Person(\u2026)\`\u30FB\`System(\u2026)\`\u30FB\`Rel(\u2026)\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var readBoundary = (reading, call) => {
+  const kind = BOUNDARIES[call.name];
+  const [id, label] = call.values;
+  if (kind === void 0 || id === void 0) return false;
+  const boundary = {
+    id,
+    label: label ?? id,
+    kind,
+    parent: reading.stack.at(-1)?.boundary.id
+  };
+  reading.diagram.boundaries.push(boundary);
+  if (call.open) reading.stack.push({ boundary, line: call.line });
+  return true;
+};
+var readElement = (reading, call) => {
+  const external = call.name.endsWith("_Ext");
+  const kind = ELEMENTS[external ? call.name.slice(0, -4) : call.name];
+  const [id, label, description] = call.values;
+  if (kind === void 0 || id === void 0) return false;
+  reading.diagram.elements.push({
+    id,
+    label: label ?? id,
+    description,
+    kind,
+    external,
+    parent: reading.stack.at(-1)?.boundary.id
+  });
+  return true;
+};
+var readRelation = (reading, call) => {
+  const relation = RELATION_RE.exec(call.name);
+  const [from, to, label, technology] = call.values;
+  if (!relation || from === void 0 || to === void 0) return false;
+  const { relations } = reading.diagram;
+  relations.push({
+    id: `r${relations.length + 1}`,
+    from,
+    to,
+    label,
+    technology,
+    both: relation[1] !== void 0,
+    direction: relation[2] === void 0 ? void 0 : DIRECTIONS[relation[2]]
+  });
+  return true;
+};
+var readCall = (reading, call) => readBoundary(reading, call) || readElement(reading, call) || readRelation(reading, call);
+var readLine2 = (reading, text2, line) => {
+  if (text2 === "}") return reading.stack.pop() !== void 0;
+  const heading2 = /^title\s+(.+)$/.exec(text2);
+  if (heading2?.[1]) {
+    reading.diagram.title = heading2[1].trim();
+    return true;
+  }
+  const call = CALL_RE.exec(text2);
+  if (!call?.[1]) return false;
+  return readCall(reading, {
+    name: call[1],
+    values: argumentsOf(call[2] ?? ""),
+    open: call[3] !== void 0,
+    line
+  });
+};
+var parseC4Context = (source) => {
+  const reading = {
+    diagram: {
+      title: void 0,
+      boundaries: [],
+      elements: [],
+      relations: [],
+      problems: []
+    },
+    stack: []
+  };
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "" || IGNORED_RE4.test(text2)) continue;
+    if (!readLine2(reading, text2, line))
+      reading.diagram.problems.push(unreadable3(line, raw));
+  }
+  for (const open2 of reading.stack)
+    reading.diagram.problems.push({
+      kind: "map_invalid",
+      line: open2.line,
+      message: `\u5883\u754C \`${open2.boundary.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5883\u754C\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  return reading.diagram;
+};
+
+// src/map/class-diagram.ts
+var RELATION_SYMBOLS = {
+  "<|--": { dashed: false, left: "triangle" },
+  "--|>": { dashed: false, right: "triangle" },
+  "*--": { dashed: false, left: "diamond-filled" },
+  "--*": { dashed: false, right: "diamond-filled" },
+  "o--": { dashed: false, left: "diamond-open" },
+  "--o": { dashed: false, right: "diamond-open" },
+  "-->": { dashed: false, right: "arrow" },
+  "<--": { dashed: false, left: "arrow" },
+  "..>": { dashed: true, right: "arrow" },
+  "<..": { dashed: true, left: "arrow" },
+  "..|>": { dashed: true, right: "triangle" },
+  "<|..": { dashed: true, left: "triangle" },
+  "--": { dashed: false },
+  "..": { dashed: true }
+};
+var ID2 = "[A-Za-z0-9_\\u0080-\\uffff]+";
+var NAME = `(${ID2})(?:~([^~]+)~)?`;
+var RELATION_RE2 = new RegExp(
+  `^${NAME}\\s+(?:"([^"]*)"\\s+)?(${Object.keys(RELATION_SYMBOLS).sort((a, b) => b.length - a.length).map((key) => key.replace(/[|*.]/g, "\\$&")).join("|")})\\s+(?:"([^"]*)"\\s+)?${NAME}(?:\\s*:\\s*(.+))?$`
+);
+var NAMESPACE_RE = new RegExp(`^namespace\\s+(${ID2})\\s*\\{$`);
+var CLASS_OPEN_RE = new RegExp(`^class\\s+${NAME}\\s*\\{$`);
+var CLASS_RE = new RegExp(`^class\\s+${NAME}$`);
+var ANNOTATION_RE = new RegExp(`^<<(.+)>>\\s+(${ID2})$`);
+var MEMBER_RE = new RegExp(`^(${ID2})\\s*:\\s*(.+)$`);
+var NOTE_RE2 = new RegExp(`^note\\s+for\\s+(${ID2})\\s+"([^"]*)"$`);
+var LINK_RE = /^(click|link)\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
+var IGNORED_RE5 = /^(direction|classDef|cssClass|style|click|callback|link|accTitle|accDescr|title)\b/;
+var unreadable4 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E classDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30AF\u30E9\u30B9} <|-- {\u30AF\u30E9\u30B9}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var splitSign = (text2) => {
+  const marker = /([$*])$|^([^\s(]+|[^)]*\))([$*])(?=\s|$)/.exec(text2);
+  if (!marker) return { body: text2, sign: void 0 };
+  if (marker[1]) return { body: text2.slice(0, -1).trimEnd(), sign: marker[1] };
+  return {
+    body: `${marker[2] ?? ""}${text2.slice(marker[0].length)}`,
+    sign: marker[3]
+  };
+};
+var parseMember = (text2) => {
+  const trimmed = text2.trim();
+  const visibility = /^[+\-#~]/.test(trimmed) ? trimmed.slice(0, 1) : "";
+  const { body, sign } = splitSign(trimmed.slice(visibility.length));
+  const isStatic = sign === "$";
+  const isAbstract = sign === "*";
+  const method = /^([^(]+)\(([^)]*)\)\s*(.*)$/.exec(body);
+  if (method) {
+    const name = (method[1] ?? "").trim();
+    const type = method[3] ?? "";
+    return {
+      visibility,
+      name,
+      text: `${name}(${method[2] ?? ""})${type === "" ? "" : ` ${type}`}`,
+      method: true,
+      isStatic,
+      isAbstract
+    };
+  }
+  return {
+    visibility,
+    name: body.split(/\s+/, 1)[0] ?? body,
+    text: body,
+    method: false,
+    isStatic,
+    isAbstract
+  };
+};
+var ensureClass = (reading, id, generic) => {
+  const found = reading.classes.get(id);
+  const item = found ?? {
+    id,
+    generic: void 0,
+    annotation: void 0,
+    namespace: reading.space?.id,
+    members: []
+  };
+  if (!found) reading.classes.set(id, item);
+  if (generic !== void 0) item.generic = generic;
+  return item;
+};
+var readInside = (reading, text2) => {
+  const current = reading.open?.item;
+  if (!current) return;
+  if (text2 === "}") {
+    reading.open = void 0;
+    return;
+  }
+  const annotation = /^<<(.+)>>$/.exec(text2);
+  if (annotation?.[1]) current.annotation = annotation[1];
+  else current.members.push(parseMember(text2));
+};
+var readRelation2 = (reading, text2) => {
+  const match = RELATION_RE2.exec(text2);
+  if (!match?.[1] || !match[4] || !match[6]) return false;
+  const symbol = RELATION_SYMBOLS[match[4]] ?? { dashed: false };
+  const label = match[8]?.trim();
+  reading.relations.push({
+    id: `r${reading.relations.length + 1}`,
+    from: ensureClass(reading, match[1], match[2]).id,
+    to: ensureClass(reading, match[6], match[7]).id,
+    fromCardinality: match[3],
+    toCardinality: match[5],
+    fromEnd: symbol.left,
+    toEnd: symbol.right,
+    dashed: symbol.dashed,
+    label: label === "" ? void 0 : label
+  });
+  return true;
+};
+var READERS = [
+  (reading, text2, line) => {
+    const match = NAMESPACE_RE.exec(text2);
+    if (!match?.[1]) return false;
+    reading.namespaces.push(match[1]);
+    reading.space = { id: match[1], line };
+    return true;
+  },
+  (reading, text2, line) => {
+    const match = CLASS_OPEN_RE.exec(text2);
+    if (!match?.[1]) return false;
+    reading.open = { item: ensureClass(reading, match[1], match[2]), line };
+    return true;
+  },
+  (reading, text2) => {
+    const match = CLASS_RE.exec(text2);
+    if (!match?.[1]) return false;
+    ensureClass(reading, match[1], match[2]);
+    return true;
+  },
+  (reading, text2) => {
+    const match = ANNOTATION_RE.exec(text2);
+    if (!match?.[1] || !match[2]) return false;
+    ensureClass(reading, match[2]).annotation = match[1];
+    return true;
+  },
+  (reading, text2) => {
+    const match = NOTE_RE2.exec(text2);
+    if (!match?.[1] || match[2] === void 0) return false;
+    reading.notes.push({
+      id: `note_${reading.notes.length + 1}`,
+      of: match[1],
+      text: match[2]
+    });
+    return true;
+  },
+  readRelation2,
+  (reading, text2) => {
+    const match = MEMBER_RE.exec(text2);
+    if (!match?.[1] || !match[2]) return false;
+    ensureClass(reading, match[1]).members.push(parseMember(match[2]));
+    return true;
+  },
+  (reading, text2) => {
+    if (text2 !== "}" || reading.space === void 0) return false;
+    reading.space = void 0;
+    return true;
+  }
+];
+var unclosedProblems = (reading) => {
+  const opened = [
+    ...reading.open ? [{ kind: "\u30AF\u30E9\u30B9", id: reading.open.item.id, line: reading.open.line }] : [],
+    ...reading.space ? [{ kind: "namespace", id: reading.space.id, line: reading.space.line }] : []
+  ];
+  return opened.map(
+    (item) => ({
+      kind: "map_invalid",
+      line: item.line,
+      message: `${item.kind} \`${item.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    })
+  );
+};
+var parseClassDiagram = (source) => {
+  const reading = {
+    classes: /* @__PURE__ */ new Map(),
+    namespaces: [],
+    relations: [],
+    notes: [],
+    space: void 0,
+    open: void 0
+  };
+  const problems = [];
+  const links = {};
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "") continue;
+    if (reading.open) {
+      readInside(reading, text2);
+      continue;
+    }
+    const link2 = LINK_RE.exec(text2);
+    if (link2) {
+      links[link2[2] ?? ""] = link2[3] ?? "";
+      continue;
+    }
+    if (IGNORED_RE5.test(text2)) continue;
+    if (!READERS.some((read) => read(reading, text2, line)))
+      problems.push(unreadable4(line, raw));
+  }
+  problems.push(...unclosedProblems(reading));
+  return {
+    classes: [...reading.classes.values()],
+    namespaces: reading.namespaces,
+    relations: reading.relations,
+    notes: reading.notes,
+    links,
+    problems
+  };
+};
+
+// src/map/data.ts
+var MAP_DATA_KEYS = [
+  "version",
+  "notes",
+  "walkthroughs",
+  "layout",
+  "plays_over",
+  "groups"
+];
+var GROUP_KEYS = ["title", "tables", "parent"];
+var STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
+var LAYOUT_KEYS = [
+  "align",
+  "order",
+  "justify",
+  "pos",
+  "width",
+  "color",
+  "line",
+  "packet",
+  "ends",
+  "via",
+  "collapsed"
+];
+var PACKET_SHAPES = ["circle", "square", "diamond"];
+var SIDES2 = ["top", "right", "bottom", "left"];
+var JUSTIFIES = ["start", "center", "end"];
+var emptyMapData = () => ({
+  version: 1,
+  notes: {},
+  walkthroughs: [],
+  layout: {},
+  plays_over: void 0,
+  groups: {}
+});
+var jsonPathLines = (source) => {
+  const lines = /* @__PURE__ */ new Map();
+  let at = 0;
+  let line = 0;
+  const skip = () => {
+    while (at < source.length && /\s/.test(source[at])) {
+      if (source[at] === "\n") line += 1;
+      at += 1;
+    }
+  };
+  const readString = () => {
+    const start = at;
+    at += 1;
+    while (at < source.length && source[at] !== '"')
+      at += source[at] === "\\" ? 2 : 1;
+    at += 1;
+    return JSON.parse(source.slice(start, at));
+  };
+  const childPath2 = (char, context) => {
+    const { path, index } = context;
+    if (char !== "{") {
+      const child2 = `${path}[${index}]`;
+      lines.set(child2, line);
+      return child2;
+    }
+    const keyLine2 = line;
+    const key = readString();
+    const child = path === "" ? key : `${path}.${key}`;
+    lines.set(child, keyLine2);
+    skip();
+    at += 1;
+    return child;
+  };
+  const container = (char, path) => {
+    const close = char === "{" ? "}" : "]";
+    at += 1;
+    skip();
+    let index = 0;
+    while (at < source.length && source[at] !== close) {
+      value(childPath2(char, { path, index }));
+      index += 1;
+      skip();
+      if (source[at] === ",") at += 1;
+      skip();
+    }
+    at += 1;
+  };
+  const value = (path) => {
+    skip();
+    const char = source[at];
+    if (char === "{" || char === "[") {
+      container(char, path);
+    } else if (char === '"') {
+      readString();
+    } else {
+      while (at < source.length && !/[,\]}\s]/.test(source[at]))
+        at += 1;
+    }
+  };
+  value("");
+  return lines;
+};
+var errorLine = (source, error2) => {
+  const message = error2 instanceof Error ? error2.message : "";
+  const lineMatch = /line (\d+)/.exec(message);
+  if (lineMatch) return Number(lineMatch[1]) - 1;
+  const position = /position (\d+)/.exec(message);
+  if (!position) return void 0;
+  return source.slice(0, Number(position[1])).split("\n").length - 1;
+};
+var isObject4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var invalid2 = (reader, path, expected) => {
+  reader.problems.push({
+    kind: "map_invalid_value",
+    line: reader.lines.get(path),
+    message: `\u88DC\u8DB3\u306E \`${path}\` \u306F${expected}\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  });
+};
+var unknownKey = (reader, item) => {
+  const { path, key, keys } = item;
+  reader.problems.push({
+    kind: "map_unknown_key",
+    line: reader.lines.get(path === "" ? key : `${path}.${key}`),
+    message: `\u88DC\u8DB3${path === "" ? "" : `\u306E \`${path}\``}\u306B\u77E5\u3089\u306A\u3044\u30AD\u30FC \`${key}\` \u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30AD\u30FC\u306F ${keys.map((name) => `\`${name}\``).join("\u30FB")} \u3067\u3059\u3002`
+  });
+};
+var readText = (reader, value, path) => {
+  if (typeof value !== "string") {
+    invalid2(reader, path, "\u6587\u5B57");
+    return void 0;
+  }
+  if (value.includes("--")) {
+    reader.problems.push({
+      kind: "map_invalid_value",
+      line: reader.lines.get(path),
+      message: `\u88DC\u8DB3\u306E \`${path}\` \u306B \`--\` \u304C\u3042\u308A\u307E\u3059\u3002HTML \u30B3\u30E1\u30F3\u30C8\u3092\u9589\u3058\u3066\u3057\u307E\u3046\u305F\u3081\u3001\`--\` \u3092\u542B\u3081\u305A\u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return value;
+};
+var readIds = (reader, value, path) => {
+  if (!Array.isArray(value)) {
+    invalid2(reader, path, "ID \u306E\u914D\u5217");
+    return void 0;
+  }
+  const out = [];
+  for (const [i, item] of value.entries()) {
+    const id = readText(reader, item, `${path}[${i}]`);
+    if (id !== void 0) out.push(id);
+  }
+  return out;
+};
+var readNumber = (reader, value, path) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  invalid2(reader, path, "\u6570");
+  return void 0;
+};
+var readPoint = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, ' `{"x", "y"}` ');
+    return void 0;
+  }
+  const x = readNumber(reader, value.x, `${path}.x`);
+  const y = readNumber(reader, value.y, `${path}.y`);
+  return x === void 0 || y === void 0 ? void 0 : { x, y };
+};
+var readChoice = (reader, value, place) => {
+  const { path, choices } = place;
+  if (typeof value === "string" && choices.includes(value)) return value;
+  invalid2(reader, path, ` ${choices.map((name) => `\`${name}\``).join("\u30FB")} `);
+  return void 0;
+};
+var readEnds = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, ' `{"from": {"side"}, "to": {"side"}}` ');
+    return void 0;
+  }
+  const out = {};
+  for (const end of ["from", "to"]) {
+    const item = value[end];
+    if (item === void 0) continue;
+    if (!isObject4(item)) {
+      invalid2(reader, `${path}.${end}`, ' `{"side"}` ');
+      return void 0;
+    }
+    const side = readChoice(reader, item.side, {
+      path: `${path}.${end}.side`,
+      choices: SIDES2
+    });
+    if (side === void 0) return void 0;
+    out[end] = side;
+  }
+  return out;
+};
+var readPacket = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, ' `{"color", "shape"}` ');
+    return void 0;
+  }
+  const out = {};
+  if (value.color !== void 0)
+    out.color = readText(reader, value.color, `${path}.color`);
+  if (value.shape !== void 0)
+    out.shape = readChoice(reader, value.shape, {
+      path: `${path}.shape`,
+      choices: PACKET_SHAPES
+    });
+  return out;
+};
+var readVia = (reader, value, path) => {
+  if (!Array.isArray(value)) {
+    invalid2(reader, path, ' `[{"x", "y"}]` ');
+    return void 0;
+  }
+  const points = value.map(
+    (item, i) => readPoint(reader, item, `${path}[${i}]`)
+  );
+  return points.every((item) => item !== void 0) ? points : void 0;
+};
+var LAYOUT_FIELD_READERS = {
+  align: (reader, field, at) => ({ align: readText(reader, field, at) }),
+  color: (reader, field, at) => ({ color: readText(reader, field, at) }),
+  line: (reader, field, at) => ({ line: readText(reader, field, at) }),
+  order: (reader, field, at) => ({ order: readNumber(reader, field, at) }),
+  width: (reader, field, at) => ({ width: readNumber(reader, field, at) }),
+  justify: (reader, field, at) => ({
+    justify: readChoice(reader, field, { path: at, choices: JUSTIFIES })
+  }),
+  pos: (reader, field, at) => ({ pos: readPoint(reader, field, at) }),
+  packet: (reader, field, at) => ({ packet: readPacket(reader, field, at) }),
+  ends: (reader, field, at) => ({ ends: readEnds(reader, field, at) }),
+  via: (reader, field, at) => ({ via: readVia(reader, field, at) }),
+  collapsed: (reader, field, at) => {
+    if (typeof field === "boolean") return { collapsed: field };
+    invalid2(reader, at, "\u771F\u507D\u5024");
+    return {};
+  }
+};
+var readLayoutEntry = (reader, value, path) => {
+  const entry = {};
+  for (const [name, field] of Object.entries(value)) {
+    if (Object.hasOwn(LAYOUT_FIELD_READERS, name)) {
+      const read = LAYOUT_FIELD_READERS[name];
+      Object.assign(entry, read(reader, field, `${path}.${name}`));
+    } else unknownKey(reader, { path, key: name, keys: LAYOUT_KEYS });
+  }
+  for (const key of Object.keys(entry))
+    if (entry[key] === void 0) delete entry[key];
+  return entry;
+};
+var applyStepField = (reader, out, item) => {
+  const { name, field, path } = item;
+  if (name === "title") out.title = readText(reader, field, `${path}.title`);
+  else if (name === "text") {
+    const body = readText(reader, field, `${path}.text`);
+    if (body === void 0) return false;
+    out.text = body;
+  } else if (name === "nodes")
+    out.nodes = readIds(reader, field, `${path}.nodes`) ?? [];
+  else if (name === "edges")
+    out.edges = readIds(reader, field, `${path}.edges`);
+  else if (name === "enter")
+    out.enter = readText(reader, field, `${path}.enter`);
+  else unknownKey(reader, { path, key: name, keys: STEP_KEYS });
+  return true;
+};
+var readStep = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
+    return void 0;
+  }
+  const out = {
+    title: void 0,
+    text: "",
+    nodes: [],
+    edges: void 0,
+    enter: void 0
+  };
+  let ok = true;
+  for (const [name, field] of Object.entries(value)) {
+    if (!applyStepField(reader, out, { name, field, path })) ok = false;
+  }
+  return ok ? out : void 0;
+};
+var readNote = (reader, note, path) => {
+  if (!isObject4(note)) {
+    invalid2(reader, path, ' `{"text": \u8AAC\u660E\u306E\u6587}` ');
+    return void 0;
+  }
+  if (note.text === void 0 && note.annotations === void 0) {
+    invalid2(
+      reader,
+      path,
+      ' `{"text": \u8AAC\u660E\u306E\u6587}` \u304B `{"annotations": [\u6CE8\u8A18\u306E ID]}` '
+    );
+    return void 0;
+  }
+  const parsed = {};
+  if (note.text !== void 0) {
+    const body = readText(reader, note.text, `${path}.text`);
+    if (body === void 0) return void 0;
+    parsed.text = body;
+  }
+  if (note.annotations === void 0) return parsed;
+  const ids = note.annotations;
+  if (!Array.isArray(ids) || !ids.every((item) => typeof item === "string")) {
+    invalid2(reader, `${path}.annotations`, " \u6CE8\u8A18\u306E ID \u306E\u914D\u5217 ");
+    return void 0;
+  }
+  parsed.annotations = ids;
+  return parsed;
+};
+var readNotes = (reader, value, data) => {
+  if (!isObject4(value)) {
+    invalid2(reader, "notes", ' ID \u3054\u3068\u306E `{"text"}` ');
+    return;
+  }
+  for (const [id, note] of Object.entries(value)) {
+    const parsed = readNote(reader, note, `notes.${id}`);
+    if (parsed !== void 0) data.notes[id] = parsed;
+  }
+};
+var readWalkthroughs = (reader, value, data) => {
+  if (!Array.isArray(value)) {
+    invalid2(reader, "walkthroughs", "\u624B\u9806\u306E\u914D\u5217");
+    return;
+  }
+  for (const [i, item] of value.entries()) {
+    const parsed = readStep(reader, item, `walkthroughs[${i}]`);
+    if (parsed) data.walkthroughs.push(parsed);
+  }
+};
+var readLayout = (reader, value, data) => {
+  if (!isObject4(value)) {
+    invalid2(reader, "layout", " ID \u3054\u3068\u306E\u4E0A\u66F8\u304D ");
+    return;
+  }
+  for (const [id, entry] of Object.entries(value)) {
+    const path = `layout.${id}`;
+    if (isObject4(entry)) data.layout[id] = readLayoutEntry(reader, entry, path);
+    else invalid2(reader, path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
+  }
+};
+var readGroupFields = (reader, group, path) => {
+  const out = {};
+  for (const [name, field] of Object.entries(group)) {
+    if (name === "title") out.title = readText(reader, field, `${path}.title`);
+    else if (name === "tables")
+      out.tables = readIds(reader, field, `${path}.tables`);
+    else if (name === "parent")
+      out.parent = readText(reader, field, `${path}.parent`);
+    else unknownKey(reader, { path, key: name, keys: GROUP_KEYS });
+  }
+  return out;
+};
+var readGroup2 = (reader, group, path) => {
+  if (!isObject4(group)) {
+    invalid2(reader, path, ' `{"title", "tables"}` ');
+    return void 0;
+  }
+  const { title, tables, parent } = readGroupFields(reader, group, path);
+  if (title === void 0 && group.title === void 0)
+    invalid2(reader, `${path}.title`, "\u6587\u5B57");
+  if (tables === void 0 && group.tables === void 0)
+    invalid2(reader, `${path}.tables`, "\u30C6\u30FC\u30D6\u30EB\u540D\u306E\u914D\u5217");
+  if (title === void 0 || tables === void 0) return void 0;
+  return { title, tables, parent };
+};
+var readGroups = (reader, value, data) => {
+  if (!isObject4(value)) {
+    invalid2(reader, "groups", ' \u5206\u985E\u306E ID \u3054\u3068\u306E `{"title", "tables"}` ');
+    return;
+  }
+  for (const [id, group] of Object.entries(value)) {
+    const parsed = readGroup2(reader, group, `groups.${id}`);
+    if (parsed !== void 0) data.groups[id] = parsed;
+  }
+};
+var readRootKey = (reader, data, item) => {
+  const { key, value } = item;
+  switch (key) {
+    case "version":
+      if (value !== 1) invalid2(reader, "version", " `1` ");
+      return;
+    case "notes":
+      readNotes(reader, value, data);
+      return;
+    case "walkthroughs":
+      readWalkthroughs(reader, value, data);
+      return;
+    case "layout":
+      readLayout(reader, value, data);
+      return;
+    case "plays_over": {
+      const target = readNumber(reader, value, "plays_over");
+      if (target !== void 0) data.plays_over = target;
+      return;
+    }
+    case "groups":
+      readGroups(reader, value, data);
+      return;
+    default:
+      unknownKey(reader, { path: "", key, keys: MAP_DATA_KEYS });
+  }
+};
+var parseMapData = (source) => {
+  const data = emptyMapData();
+  const problems = [];
+  if (source === void 0 || source.trim() === "")
+    return { data, problems, lines: /* @__PURE__ */ new Map() };
+  let root;
+  try {
+    root = JSON.parse(source);
+  } catch (error2) {
+    const reason = error2 instanceof Error ? error2.message : String(error2);
+    problems.push({
+      kind: "map_invalid_value",
+      line: errorLine(source, error2),
+      message: `\u88DC\u8DB3\u3092 JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\`<!-- map-data: {"version": 1} -->\` \u306E\u3088\u3046\u306B JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return { data, problems, lines: /* @__PURE__ */ new Map() };
+  }
+  if (!isObject4(root)) {
+    problems.push({
+      kind: "map_invalid_value",
+      line: 0,
+      message: '\u88DC\u8DB3\u306F JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\uFF08`{"version": 1}` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002'
+    });
+    return { data, problems, lines: /* @__PURE__ */ new Map() };
+  }
+  const lines = jsonPathLines(source);
+  const reader = { problems, lines };
+  for (const [key, value] of Object.entries(root))
+    readRootKey(reader, data, { key, value });
+  return { data, problems, lines };
+};
+
+// src/map/er.ts
+var CARDINALITY = {
+  "||": "1",
+  "|o": "0..1",
+  "o|": "0..1",
+  "}|": "1..n",
+  "|{": "1..n",
+  "}o": "0..n",
+  "o{": "0..n"
+};
+var NAME2 = '[^\\s{}:"|]+';
+var TABLE_OPEN_RE = new RegExp(`^(${NAME2})\\s*\\{$`);
+var COLUMN_RE = /^(\S+)\s+(\S+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?(?:\s+"([^"]*)")?$/;
+var RELATION_RE3 = new RegExp(
+  `^(${NAME2})\\s+([|}o][|o])(--|\\.\\.)([|o][|{o])\\s+(${NAME2})\\s*:\\s*(?:"([^"]*)"|(.*))$`
+);
+var unreadable5 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E erDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30C6\u30FC\u30D6\u30EB} ||--o{ {\u30C6\u30FC\u30D6\u30EB} : "{\u30E9\u30D9\u30EB}"\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var readColumn2 = (text2) => {
+  const column = COLUMN_RE.exec(text2);
+  if (!column?.[1] || !column[2]) return void 0;
+  return {
+    type: column[1],
+    name: column[2],
+    keys: column[3]?.split(/\s*,\s*/) ?? [],
+    comment: column[4]
+  };
+};
+var cardinalityOf = (mark) => mark ? CARDINALITY[mark] : void 0;
+var readRelation3 = (text2) => {
+  const relation = RELATION_RE3.exec(text2);
+  if (!relation?.[1] || !relation[5]) return void 0;
+  const left = cardinalityOf(relation[2]);
+  const right = cardinalityOf(relation[4]);
+  if (!left || !right) return void 0;
+  const label = (relation[6] ?? relation[7] ?? "").trim();
+  return {
+    from: relation[1],
+    to: relation[5],
+    fromCardinality: left,
+    toCardinality: right,
+    dashed: relation[3] === "..",
+    label: label === "" ? void 0 : label
+  };
+};
+var readInTable = (current, at) => {
+  if (at.text === "}") return void 0;
+  const column = readColumn2(at.text);
+  if (column) current.table.columns.push(column);
+  else at.problems.push(unreadable5(at.line, at.raw));
+  return current;
+};
+var parseErDiagram = (source) => {
+  const tables = /* @__PURE__ */ new Map();
+  const relations = [];
+  const problems = [];
+  const tableOf = (name) => {
+    const found = tables.get(name);
+    if (found) return found;
+    const table2 = { name, columns: [] };
+    tables.set(name, table2);
+    return table2;
+  };
+  let current;
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "") continue;
+    const at = { text: text2, line, raw, problems };
+    if (current) {
+      current = readInTable(current, at);
+      continue;
+    }
+    const open2 = TABLE_OPEN_RE.exec(text2);
+    if (open2?.[1]) {
+      current = { table: tableOf(open2[1]), line };
+      continue;
+    }
+    const relation = readRelation3(text2);
+    if (!relation) {
+      problems.push(unreadable5(line, raw));
+      continue;
+    }
+    tableOf(relation.from);
+    tableOf(relation.to);
+    relations.push({ id: `r${relations.length + 1}`, ...relation });
+  }
+  if (current) {
+    problems.push({
+      kind: "map_invalid",
+      line: current.line,
+      message: `\u30C6\u30FC\u30D6\u30EB \`${current.table.name}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  return { tables: [...tables.values()], relations, problems };
+};
+
+// src/map/lucide-names.ts
+var import_lucide3 = __toESM(require_lucide(), 1);
+var kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").replace(/([a-zA-Z])([0-9])/g, "$1-$2").toLowerCase();
+var names;
+var lucideIconNames = () => {
+  names ??= new Set(Object.keys(import_lucide3.icons).map(kebab));
+  return names;
+};
+
+// src/map/state-diagram.ts
+var ID3 = "[A-Za-z0-9_\\u0080-\\uffff]+";
+var DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
+var ALIAS_RE = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID3})$`);
+var CHOICE_RE = new RegExp(`^state\\s+(${ID3})\\s+<<choice>>$`);
+var OPEN_RE = new RegExp(`^state\\s+(?:"([^"]+)"\\s+as\\s+)?(${ID3})\\s*\\{$`);
+var NOTE_RE3 = new RegExp(
+  `^note\\s+(left|right)\\s+of\\s+(${ID3})\\s*:\\s*(.+)$`
+);
+var DECLARE_RE = new RegExp(`^(${ID3})$`);
+var MOVE_RE = new RegExp(
+  `^(\\[\\*\\]|${ID3})\\s*-->\\s*(\\[\\*\\]|${ID3})(?:\\s*:\\s*(.+))?$`
+);
+var IGNORED_RE6 = /^(classDef|class|style|accTitle|accDescr|title)\b/;
+var toDirection2 = (value) => value === "LR" || value === "RL" ? "LR" : "TB";
+var unreadable6 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E stateDiagram-v2 \u306E\u8A18\u6CD5\uFF08\`{\u72B6\u614B} --> {\u72B6\u614B} : {\u30E9\u30D9\u30EB}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var parseStateDiagram = (source) => {
+  const states = /* @__PURE__ */ new Map();
+  const composites = [];
+  const transitions = [];
+  const notes = [];
+  const problems = [];
+  const stack = [];
+  let direction = "TB";
+  const scope = () => stack.at(-1)?.composite.id;
+  const ensure = (id) => {
+    const found = states.get(id);
+    if (found) return found;
+    const state = { id, label: id, kind: "state", parent: scope() };
+    states.set(id, state);
+    return state;
+  };
+  const endpoint = (token, side) => {
+    if (token !== "[*]") return ensure(token).id;
+    const id = `${side}_${scope() ?? "root"}`;
+    if (!states.has(id))
+      states.set(id, {
+        id,
+        label: side === "start" ? "\u958B\u59CB" : "\u7D42\u4E86",
+        kind: side,
+        parent: scope()
+      });
+    return id;
+  };
+  const readDirection = (text2) => {
+    const dir = DIRECTION_RE.exec(text2);
+    if (!dir?.[1]) return false;
+    const current = stack.at(-1)?.composite;
+    if (current) current.direction = toDirection2(dir[1]);
+    else direction = toDirection2(dir[1]);
+    return true;
+  };
+  const readAlias = (text2) => {
+    const alias = ALIAS_RE.exec(text2);
+    if (!alias?.[1] || !alias[2]) return false;
+    ensure(alias[2]).label = alias[1];
+    return true;
+  };
+  const readChoice2 = (text2) => {
+    const choice = CHOICE_RE.exec(text2);
+    if (!choice?.[1]) return false;
+    ensure(choice[1]).kind = "choice";
+    return true;
+  };
+  const readOpen = (text2, line) => {
+    const open2 = OPEN_RE.exec(text2);
+    if (!open2?.[2]) return false;
+    const composite = {
+      id: open2[2],
+      title: open2[1] ?? open2[2],
+      parent: scope(),
+      direction: void 0
+    };
+    composites.push(composite);
+    stack.push({ composite, line });
+    return true;
+  };
+  const readNote2 = (text2) => {
+    const note = NOTE_RE3.exec(text2);
+    if (!note?.[1] || !note[2] || !note[3]) return false;
+    notes.push({
+      id: `n${notes.length + 1}`,
+      of: note[2],
+      side: note[1] === "left" ? "left" : "right",
+      text: note[3].trim()
+    });
+    return true;
+  };
+  const readMove = (text2) => {
+    const move = MOVE_RE.exec(text2);
+    if (!move?.[1] || !move[2]) return false;
+    const label = move[3]?.trim();
+    transitions.push({
+      id: `t${transitions.length + 1}`,
+      from: endpoint(move[1], "start"),
+      to: endpoint(move[2], "end"),
+      label: label === "" ? void 0 : label
+    });
+    return true;
+  };
+  const readDeclare = (text2) => {
+    const declared = DECLARE_RE.exec(text2);
+    if (!declared?.[1]) return false;
+    ensure(declared[1]).parent = scope();
+    return true;
+  };
+  const readers = [
+    readDirection,
+    readAlias,
+    readChoice2,
+    readOpen,
+    (text2, line, raw) => {
+      if (text2 !== "}") return false;
+      if (!stack.pop()) problems.push(unreadable6(line, raw));
+      return true;
+    },
+    readNote2,
+    readMove,
+    readDeclare
+  ];
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "" || IGNORED_RE6.test(text2)) continue;
+    if (!readers.some((read) => read(text2, line, raw)))
+      problems.push(unreadable6(line, raw));
+  }
+  for (const open2 of stack) {
+    problems.push({
+      kind: "map_invalid",
+      line: open2.line,
+      message: `\u5165\u308C\u5B50\u306E\u72B6\u614B \`${open2.composite.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5165\u308C\u5B50\u306E\u72B6\u614B\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  const compositeIds = new Set(composites.map((item) => item.id));
+  return {
+    direction,
+    states: [...states.values()].filter((item) => !compositeIds.has(item.id)),
+    composites,
+    transitions,
+    notes,
+    problems
+  };
+};
+
+// src/map/check.ts
+var REF_HINTS = {
+  flowchart: "Mermaid \u306E\u30CE\u30FC\u30C9\u30FB\u7DDA\u30FB\u30B0\u30EB\u30FC\u30D7\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  sequenceDiagram: "Mermaid \u306E\u53C2\u52A0\u8005\u306E ID \u304B\u3001\u30E1\u30C3\u30BB\u30FC\u30B8\u30FB\u30D6\u30ED\u30C3\u30AF\u306E\u756A\u53F7\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  erDiagram: "\u30C6\u30FC\u30D6\u30EB\u540D\u30FB`{\u30C6\u30FC\u30D6\u30EB}.{\u5217}`\u30FB\u95A2\u9023\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}`\u30FB\u5206\u985E\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  stateDiagram: "\u72B6\u614B\u306E ID \u304B\u3001\u9077\u79FB\u306E ID \u3092\u8A18\u8F09\u9806\u306E `t{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  classDiagram: "\u30AF\u30E9\u30B9\u540D\u30FB`{\u30AF\u30E9\u30B9\u540D}.{\u30E1\u30F3\u30D0\u30FC\u540D}`\u30FB`namespace` \u306E ID\u30FB\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  architecture: "service\u30FBgroup\u30FBjunction \u306E ID \u304B\u3001\u7DDA\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  C4Context: "\u8981\u7D20\u30FB\u5883\u754C\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+};
+var groupProblems = (data, tables, lineOf) => {
+  const problems = [];
+  const owner = /* @__PURE__ */ new Map();
+  for (const [id, group] of Object.entries(data.groups)) {
+    const path = `groups.${id}`;
+    if (tables.has(id))
+      problems.push({
+        kind: "map_invalid_value",
+        line: lineOf(path),
+        message: `\u5206\u985E\u306E ID \`${id}\` \u304C\u30C6\u30FC\u30D6\u30EB\u540D\u3068\u540C\u3058\u3067\u3059\u3002\u5206\u985E\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    for (const table2 of group.tables) {
+      const first = owner.get(table2);
+      if (!tables.has(table2))
+        problems.push({
+          kind: "map_unknown_ref",
+          line: lineOf(`${path}.tables`),
+          message: `\u88DC\u8DB3\u306E \`${path}.tables\` \u306E \`${table2}\` \u304C Mermaid \u306E\u30C6\u30FC\u30D6\u30EB\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        });
+      else if (first !== void 0)
+        problems.push({
+          kind: "map_invalid_value",
+          line: lineOf(`${path}.tables`),
+          message: `\u30C6\u30FC\u30D6\u30EB \`${table2}\` \u304C\u5206\u985E \`${first}\` \u3068 \`${id}\` \u306E 2 \u3064\u306B\u5165\u3063\u3066\u3044\u307E\u3059\u30021 \u3064\u306E\u5206\u985E\u306B\u3060\u3051\u5165\u308C\u3066\u304F\u3060\u3055\u3044\u3002`
+        });
+      else owner.set(table2, id);
+    }
+    if (group.parent !== void 0 && !(group.parent in data.groups))
+      problems.push({
+        kind: "map_unknown_ref",
+        line: lineOf(`${path}.parent`),
+        message: `\u88DC\u8DB3\u306E \`${path}.parent\` \u306E \`${group.parent}\` \u304C\u88DC\u8DB3\u306E\u5206\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5206\u985E\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+  }
+  return problems;
+};
+var shiftProblems = (items, offset) => items.map(
+  (item) => item.line === void 0 || offset === void 0 ? { ...item, line: item.line === void 0 ? void 0 : item.line } : { ...item, line: item.line + offset }
+);
+var emptyMermaidIds = (problems) => ({
+  ids: /* @__PURE__ */ new Set(),
+  edgeIds: /* @__PURE__ */ new Set(),
+  classes: /* @__PURE__ */ new Set(),
+  tables: /* @__PURE__ */ new Set(),
+  problems,
+  linkProblems: []
+});
+var flowchartIds = (mermaid, line) => {
+  const chart = parseFlowchart(mermaid);
+  const found = emptyMermaidIds(shiftProblems(chart.problems, line));
+  found.linkProblems.push(...mapLinkProblems(chart.links).problems);
+  for (const node2 of chart.nodes) {
+    found.ids.add(node2.id);
+    for (const name of node2.classes) found.classes.add(name);
+  }
+  for (const group of chart.groups) found.ids.add(group.id);
+  for (const edge of chart.edges) {
+    found.ids.add(edge.id);
+    found.edgeIds.add(edge.id);
+  }
+  return found;
+};
+var erIds = (mermaid, line, data) => {
+  const er = parseErDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(er.problems, line));
+  for (const table2 of er.tables) {
+    found.ids.add(table2.name);
+    found.tables.add(table2.name);
+    for (const column of table2.columns)
+      found.ids.add(`${table2.name}.${column.name}`);
+  }
+  for (const relation of er.relations) {
+    found.ids.add(relation.id);
+    found.edgeIds.add(relation.id);
+  }
+  for (const id of Object.keys(data.groups)) found.ids.add(id);
+  return found;
+};
+var stateIds = (mermaid, line) => {
+  const diagram = parseStateDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const state of diagram.states) found.ids.add(state.id);
+  for (const composite of diagram.composites) found.ids.add(composite.id);
+  for (const transition of diagram.transitions) {
+    found.ids.add(transition.id);
+    found.edgeIds.add(transition.id);
+  }
+  return found;
+};
+var addEdgeIds = (found, ids) => {
+  for (const id of ids) {
+    found.ids.add(id);
+    found.edgeIds.add(id);
+  }
+};
+var classIds = (mermaid, line) => {
+  const diagram = parseClassDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of diagram.classes) {
+    found.ids.add(item.id);
+    for (const member of item.members)
+      found.ids.add(`${item.id}.${member.name}`);
+  }
+  for (const space of diagram.namespaces) found.ids.add(space);
+  addEdgeIds(
+    found,
+    diagram.relations.map((relation) => relation.id)
+  );
+  return found;
+};
+var architectureIds = (mermaid, line) => {
+  const diagram = parseArchitecture(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of [...diagram.services, ...diagram.groups])
+    found.ids.add(item.id);
+  addEdgeIds(
+    found,
+    diagram.edges.map((edge) => edge.id)
+  );
+  return found;
+};
+var c4Ids = (mermaid, line) => {
+  const diagram = parseC4Context(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of [...diagram.elements, ...diagram.boundaries])
+    found.ids.add(item.id);
+  addEdgeIds(
+    found,
+    diagram.relations.map((relation) => relation.id)
+  );
+  return found;
+};
+var sequenceIds = (mermaid, line) => {
+  const sequence = parseSequence(mermaid);
+  const found = emptyMermaidIds(shiftProblems(sequence.problems, line));
+  for (const participant of sequence.participants)
+    found.ids.add(participant.id);
+  for (const index of sequence.messages.keys())
+    found.ids.add(String(index + 1));
+  for (const index of sequence.fragments.keys()) found.ids.add(String(index));
+  return found;
+};
+var mermaidIdsOf = (kind, source) => {
+  const { mermaid, line, data } = source;
+  switch (kind) {
+    case "flowchart":
+      return flowchartIds(mermaid, line);
+    case "erDiagram":
+      return erIds(mermaid, line, data);
+    case "stateDiagram":
+      return stateIds(mermaid, line);
+    case "classDiagram":
+      return classIds(mermaid, line);
+    case "architecture":
+      return architectureIds(mermaid, line);
+    case "C4Context":
+      return c4Ids(mermaid, line);
+    default:
+      return sequenceIds(mermaid, line);
+  }
+};
+var annotationProblems = (context, annotationIds) => {
+  if (annotationIds === void 0) return [];
+  return Object.entries(context.data.notes).flatMap(
+    ([id, note]) => (note.annotations ?? []).filter((annotation) => !annotationIds.has(annotation)).map(
+      (annotation) => ({
+        kind: "annotation_undefined",
+        line: context.lineOf(`notes.${id}.annotations`),
+        message: `\u88DC\u8DB3\u306E \`notes.${id}.annotations\` \u304C\u6307\u3059\u6CE8\u8A18 \`\u203B[${annotation}]\` \u306E\u5B9A\u7FA9\u304C\u3042\u308A\u307E\u305B\u3093\u3002\`\u203B[${annotation}]: \u672C\u6587\` \u3092\u8A18\u8F09\u3059\u308B\u304B\u3001ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      })
+    )
+  );
+};
+var reservedIdProblems = (context) => {
+  const { kind, found } = context;
+  if (kind !== "erDiagram" && kind !== "stateDiagram") return [];
+  return [...found.ids].filter((id) => !found.edgeIds.has(id) && /^[rt]\d+$/.test(id)).map((id) => ({
+    kind: "map_invalid_value",
+    message: `\`${id}\` \u306F\u95A2\u9023\u30FB\u9077\u79FB\u306E ID\uFF08\u8A18\u8F09\u9806\u306E \`r{\u756A\u53F7}\`\u30FB\`t{\u756A\u53F7}\`\uFF09\u3068\u540C\u3058\u540D\u524D\u3067\u3059\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u30FB\u72B6\u614B\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  }));
+};
+var checkLayout = (context) => {
+  const { found, data, config: config3, lineOf, ref, problems } = context;
+  const lineNames = /* @__PURE__ */ new Set();
+  for (const [id, entry] of Object.entries(data.layout)) {
+    ref(`layout.${id}`, id);
+    ref(`layout.${id}.align`, entry.align);
+    if (found.ids.has(id) && !found.edgeIds.has(id)) {
+      problems.push(...edgeOnlyProblems({ id, entry, lineOf }));
+    }
+    if (entry.line !== void 0 && !(entry.line in config3.lines) && !lineNames.has(entry.line)) {
+      lineNames.add(entry.line);
+      problems.push({
+        kind: "map_unknown_line",
+        message: `\u88DC\u8DB3\u306E \`layout.${id}.line\` \u306E \`${entry.line}\` \u304C\u8A2D\u5B9A\u306E \`map.lines\` \u306B\u3042\u308A\u307E\u305B\u3093\u3002\`map.lines\` \u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u540D\u524D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E\u7DDA\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    }
+  }
+};
+var edgeOnlyProblems = (item) => {
+  const { id, entry, lineOf } = item;
+  return ["ends", "via"].filter((key) => entry[key] !== void 0).map((key) => ({
+    kind: "map_invalid_value",
+    line: lineOf(`layout.${id}.${key}`),
+    message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u7DDA\u306E ID \u306E\u3068\u304D\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002\`${id}\` \u306F\u30CE\u30FC\u30C9\u304B\u30B0\u30EB\u30FC\u30D7\u3067\u3059\u3002`
+  }));
+};
+var collectMapProblems = (range, config3, includeUnknownKeys) => {
+  const structure = collectMapStructure(range);
+  if (structure.kind === void 0 || range.mermaid === void 0)
+    return structure.problems;
+  const problems = [...structure.problems];
+  const kind = structure.kind;
+  if (includeUnknownKeys) {
+    for (const key of structure.args.unknownKeys) {
+      problems.push({
+        kind: "map_unknown_key",
+        message: `\u30DE\u30FC\u30AB\u30FC\u306E\u5F15\u6570\u306B\u77E5\u3089\u306A\u3044\u30AD\u30FC \`${key}\` \u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30AD\u30FC\u306F ${MAP_ARG_KEYS.map((name) => `\`${name}\``).join("\u30FB")} \u3067\u3059\u3002`
+      });
+    }
+  }
+  const { data, problems: dataProblems, lines } = parseMapData(range.data);
+  const found = mermaidIdsOf(kind, {
+    mermaid: range.mermaid,
+    line: range.mermaidLine,
+    data
+  });
+  problems.push(
+    ...found.problems,
+    ...shiftProblems(dataProblems, range.dataLine)
+  );
+  const lineOf = (path) => {
+    const local = lines.get(path);
+    return local === void 0 || range.dataLine === void 0 ? void 0 : local + range.dataLine;
+  };
+  const ref = (path, id) => {
+    if (id !== void 0 && !found.ids.has(id)) {
+      problems.push({
+        kind: "map_unknown_ref",
+        line: lineOf(path),
+        message: `\u88DC\u8DB3\u306E \`${path}\` \u304C\u6307\u3059 \`${id}\` \u304C Mermaid \u306B\u3042\u308A\u307E\u305B\u3093\u3002${REF_HINTS[kind]}`
+      });
+    }
+  };
+  const context = {
+    kind,
+    found,
+    data,
+    config: config3,
+    lineOf,
+    ref,
+    problems
+  };
+  for (const id of Object.keys(data.notes)) ref(`notes.${id}`, id);
+  problems.push(...annotationProblems(context, range.annotationIds));
+  if (kind === "erDiagram")
+    problems.push(...groupProblems(data, found.tables, lineOf));
+  problems.push(...reservedIdProblems(context));
+  data.walkthroughs.forEach((step, index) => {
+    for (const id of step.nodes) ref(`walkthroughs[${index}].nodes`, id);
+    for (const id of step.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
+    ref(`walkthroughs[${index}].enter`, step.enter);
+  });
+  checkLayout(context);
+  problems.push(...found.linkProblems);
+  for (const name of found.classes) {
+    if (!(name in config3.kinds)) {
+      problems.push({
+        kind: "map_unknown_class",
+        message: `\u30CE\u30FC\u30C9\u306E\u30AF\u30E9\u30B9 \`${name}\` \u304C\u8A2D\u5B9A\u306E \`map.kinds\` \u306B\u3042\u308A\u307E\u305B\u3093\u3002\`map.kinds\` \u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u30AF\u30E9\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7A2E\u985E\u306E\u884C\u306E\u7121\u3044\u30CE\u30FC\u30C9\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    }
+  }
+  return problems;
+};
+var checkMapConfig = (map) => {
+  const issues = [];
+  if (typeof map !== "object" || map === null) return issues;
+  const kinds = map.kinds;
+  if (typeof kinds !== "object" || kinds === null) return issues;
+  for (const [name, kind] of Object.entries(kinds)) {
+    const icon = kind?.icon;
+    if (typeof icon === "string" && !lucideIconNames().has(icon)) {
+      issues.push({
+        key: `map.kinds.${name}.icon`,
+        message: `\`${icon}\` \u306F Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u306B\u3042\u308A\u307E\u305B\u3093\u3002Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\uFF08\`database\` \u306A\u3069\uFF09\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    }
+  }
+  return issues;
+};
+var STYLE_LINE_RE = /^(classDef|style|linkStyle|cssClass)\b/;
+var CLASS_LINE_RE = /^class\s/;
+var CLASS_SHORTHAND_RE = /:::[\w-]/;
+var needsMermaidFallback = (options) => {
+  const { kind, mermaid } = options;
+  const lines = mermaid.split(/\r?\n/).map((line) => line.trim()).filter((line) => line !== "" && !line.startsWith("%%"));
+  const classLine = kind === "flowchart" || kind === "stateDiagram";
+  if (lines.some(
+    (line) => STYLE_LINE_RE.test(line) || CLASS_SHORTHAND_RE.test(line) || classLine && CLASS_LINE_RE.test(line)
+  )) {
+    return true;
+  }
+  const { data } = parseMapData(void 0);
+  return mermaidIdsOf(kind, { mermaid, line: void 0, data }).problems.length > 0;
+};
+
 // src/render/used.ts
 function usedLibraryMarks(markdowns, libraries) {
   const marks = /* @__PURE__ */ new Set();
@@ -78320,16 +80521,22 @@ function collectRangeScripts(options) {
 var MERMAID_PATTERN = new RegExp(`<[a-z]+\\b[^>]*\\s${MERMAID_ATTRIBUTE}\\b`);
 function usesMermaid(options) {
   const config3 = resolveConfig({ config: options.config });
-  return options.markdowns.some(
-    (markdown, position) => MERMAID_PATTERN.test(
-      renderDocument({
-        markdown,
-        config: config3,
-        includes: options.includes?.[position]
-      }).html
-    )
-  );
+  return options.markdowns.some((markdown, position) => {
+    const { html } = renderDocument({
+      markdown,
+      config: config3,
+      includes: options.includes?.[position]
+    });
+    return MERMAID_PATTERN.test(html) || hasMermaidFallback(html);
+  });
 }
+var PLAIN_MAP_PATTERN = /<div\b[^>]*class="mdmark-map"[^>]*data-map-kind="([^"]*)"[^>]*data-map-plain[^>]*>[\s\S]*?<code[^>]*>([\s\S]*?)<\/code>/g;
+var hasMermaidFallback = (html) => [...html.matchAll(PLAIN_MAP_PATTERN)].some(
+  (match) => needsMermaidFallback({
+    kind: match[1] ?? "",
+    mermaid: unescapeHtml2((match[2] ?? "").replace(/<[^>]+>/g, ""))
+  })
+);
 var SYNTAX_LANGUAGE_PATTERN = new RegExp(
   `<code\\b[^>]*\\s${SYNTAX_ATTRIBUTE}="([^"]*)"`,
   "g"
@@ -79608,2086 +81815,6 @@ function checkIndex(input) {
     ...avoided
   ];
 }
-
-// src/map/layout.ts
-var MAP_LAYOUT = {
-  maxWidth: 220,
-  maxWidthWide: 360,
-  minWidth: 120,
-  gapItem: 48,
-  gapRank: 64,
-  groupPad: 24,
-  groupTitle: 36,
-  margin: 24,
-  /** 線を引く通り道の、矩形からの離れ */
-  clearance: 12,
-  bendCost: 30,
-  /** 祖先でないグループの枠を出入りする 1 回の重み。最短より出入りを増やさないために大きくする */
-  borderCost: 1e5,
-  /** ドラッグで近づけられる間の下限 */
-  minGap: 16
-};
-
-// src/map/flowchart.ts
-var NAMED_ENTITIES = {
-  quot: '"',
-  amp: "&",
-  lt: "<",
-  gt: ">"
-};
-var decodeEntities = (text2) => text2.replace(/#([a-z]+|\d+);/g, (whole, name) => {
-  if (/^\d+$/.test(name)) {
-    const code2 = Number(name);
-    return code2 <= 1114111 ? String.fromCodePoint(code2) : whole;
-  }
-  return NAMED_ENTITIES[name] ?? whole;
-});
-var LINK_NOT_ALLOWED = "\u30CE\u30FC\u30C9\u306E\u30EA\u30F3\u30AF\u5148\u306B\u4F7F\u7528\u3067\u304D\u306A\u3044\u3082\u306E\u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30EA\u30F3\u30AF\u5148\u306F http\u30FBhttps\u30FBmailto \u3068\u76F8\u5BFE\u30D1\u30B9\u3067\u3059\u3002\u3053\u306E\u30CE\u30FC\u30C9\u306F\u30EA\u30F3\u30AF\u306B\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002";
-var mapLinkProblems = (links) => {
-  const allowed = {};
-  const problems = [];
-  for (const [id, href] of Object.entries(links)) {
-    if (isAllowedUrl(href)) {
-      allowed[id] = href;
-      continue;
-    }
-    problems.push({
-      kind: "map_invalid_value",
-      message: `${LINK_NOT_ALLOWED} ${id}: ${href}`
-    });
-  }
-  return { allowed, problems };
-};
-var SHAPES = [
-  { open: "([", close: "])", shape: "stadium" },
-  { open: "((", close: "))", shape: "circle" },
-  { open: "[(", close: ")]", shape: "cylinder" },
-  { open: "[[", close: "]]", shape: "subroutine" },
-  { open: "{{", close: "}}", shape: "hexagon" },
-  { open: "[", close: "]", shape: "rect" },
-  { open: "(", close: ")", shape: "round" },
-  { open: "{", close: "}", shape: "rhombus" },
-  { open: ">", close: "]", shape: "flag" }
-];
-var ARROWS = [
-  { re: /^<-->/, arrow: "-->", both: true },
-  { re: /^<-\.->/, arrow: "-.->", both: true },
-  { re: /^<==>/, arrow: "==>", both: true },
-  { re: /^--\s+(.+?)\s+-->/, arrow: "-->" },
-  { re: /^--\s+(.+?)\s+---/, arrow: "---" },
-  { re: /^-\.\s+(.+?)\s+\.->/, arrow: "-.->" },
-  { re: /^==\s+(.+?)\s+==>/, arrow: "==>" },
-  { re: /^-->/, arrow: "-->" },
-  { re: /^---/, arrow: "---" },
-  { re: /^-\.->/, arrow: "-.->" },
-  { re: /^-\.-/, arrow: "-.->" },
-  { re: /^==>/, arrow: "==>" },
-  { re: /^===/, arrow: "---" }
-];
-var ID_RE = /^[A-Za-z0-9_\u0080-￿]+/;
-var EDGE_ID_RE = /^([A-Za-z0-9_]+)@(?=[-=<])/;
-var IGNORED_RE = /^(classDef|style|linkStyle|click|accTitle|accDescr)\b/;
-var CLICK_RE = /^click\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
-var skipSpace = (cursor) => {
-  while (cursor.pos < cursor.text.length && /\s/.test(cursor.text[cursor.pos] ?? "")) {
-    cursor.pos += 1;
-  }
-};
-var rest = (cursor) => cursor.text.slice(cursor.pos);
-var readShape = (cursor) => {
-  const tail = rest(cursor);
-  for (const { open: open2, close, shape } of SHAPES) {
-    if (!tail.startsWith(open2)) continue;
-    let body = tail.slice(open2.length);
-    let consumed = open2.length;
-    let label;
-    if (body.startsWith('"')) {
-      const end = body.indexOf('"', 1);
-      if (end < 0) return void 0;
-      label = body.slice(1, end);
-      body = body.slice(end + 1);
-      consumed += end + 1;
-      if (!body.startsWith(close)) return void 0;
-    } else {
-      const end = body.indexOf(close);
-      if (end < 0) return void 0;
-      label = body.slice(0, end);
-      consumed += end;
-    }
-    cursor.pos += consumed + close.length;
-    return {
-      label: decodeEntities(label.replace(/<br\s*\/?>/g, "\n")),
-      shape
-    };
-  }
-  return void 0;
-};
-var readNode = (cursor) => {
-  skipSpace(cursor);
-  const match = ID_RE.exec(rest(cursor));
-  if (!match || EDGE_ID_RE.test(rest(cursor))) return void 0;
-  cursor.pos += match[0].length;
-  const ref = { id: match[0], classes: [] };
-  const shape = readShape(cursor);
-  if (shape) {
-    ref.label = shape.label;
-    ref.shape = shape.shape;
-  }
-  const cls = /^:::([A-Za-z0-9_-]+)/.exec(rest(cursor));
-  if (cls?.[1]) {
-    ref.classes.push(cls[1]);
-    cursor.pos += cls[0].length;
-  }
-  return ref;
-};
-var readGroup = (cursor) => {
-  const group = [];
-  for (; ; ) {
-    const node2 = readNode(cursor);
-    if (!node2) return void 0;
-    group.push(node2);
-    skipSpace(cursor);
-    if (!rest(cursor).startsWith("&")) return group;
-    cursor.pos += 1;
-  }
-};
-var readArrow = (cursor) => {
-  skipSpace(cursor);
-  let id;
-  const idMatch = EDGE_ID_RE.exec(rest(cursor));
-  if (idMatch) {
-    id = idMatch[1];
-    cursor.pos += idMatch[0].length;
-  }
-  for (const { re, arrow, both = false } of ARROWS) {
-    const match = re.exec(rest(cursor));
-    if (!match) continue;
-    cursor.pos += match[0].length;
-    let label = match[1];
-    const pipe2 = /^\|([^|]*)\|/.exec(rest(cursor));
-    if (pipe2) {
-      label = pipe2[1];
-      cursor.pos += pipe2[0].length;
-    }
-    return {
-      id,
-      arrow,
-      both,
-      label: label === void 0 ? void 0 : decodeEntities(label.replace(/^"|"$/g, ""))
-    };
-  }
-  return void 0;
-};
-var readStatement = (text2) => {
-  const cursor = { text: text2, pos: 0 };
-  const first = readGroup(cursor);
-  if (!first) return void 0;
-  const groups = [first];
-  const arrows = [];
-  for (; ; ) {
-    skipSpace(cursor);
-    if (cursor.pos >= text2.length) return { groups, arrows };
-    const arrow = readArrow(cursor);
-    if (!arrow) return void 0;
-    const next = readGroup(cursor);
-    if (!next) return void 0;
-    arrows.push(arrow);
-    groups.push(next);
-  }
-};
-var toDirection = (value) => {
-  if (value === "TB" || value === "TD" || value === "BT") return "TB";
-  if (value === "LR" || value === "RL") return "LR";
-  return void 0;
-};
-var unreadable = (line, raw) => {
-  const text2 = raw.trim();
-  const hint = /(^|[^-<])->(?!>)/.test(text2) ? "\u77E2\u5370\u306F `-->` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002" : "Mermaid \u306E flowchart \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-  return {
-    kind: "map_invalid",
-    line,
-    message: `${line + 1} \u884C\u76EE \`${text2}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002${hint}`
-  };
-};
-var parseFlowchart = (source) => {
-  const lines = source.split("\n");
-  const header = /^\s*(flowchart|graph)\s+(\w+)/.exec(lines[0] ?? "");
-  const direction = toDirection(header?.[2] ?? "TB") ?? "TB";
-  const nodes = /* @__PURE__ */ new Map();
-  const groups = [];
-  const edges = [];
-  const links = {};
-  const problems = [];
-  const stack = [];
-  const groupIds = /* @__PURE__ */ new Set();
-  const edgeIds = /* @__PURE__ */ new Map();
-  const touch = (ref) => {
-    if (groupIds.has(ref.id)) return;
-    const parent = stack.at(-1)?.id;
-    const existing = nodes.get(ref.id);
-    if (existing) {
-      if (ref.label !== void 0) {
-        existing.label = ref.label;
-        existing.shape = ref.shape ?? existing.shape;
-        existing.parent = parent;
-      }
-      existing.classes.push(
-        ...ref.classes.filter((name) => !existing.classes.includes(name))
-      );
-      return;
-    }
-    nodes.set(ref.id, {
-      id: ref.id,
-      label: ref.label ?? ref.id,
-      shape: ref.shape ?? "rect",
-      classes: [...ref.classes],
-      parent
-    });
-  };
-  const edgeId = (id, from, to) => {
-    if (id !== void 0) return id;
-    const base = `${from}->${to}`;
-    const count = (edgeIds.get(base) ?? 0) + 1;
-    edgeIds.set(base, count);
-    return count === 1 ? base : `${base}#${count}`;
-  };
-  const readSubgraph = (text2) => {
-    const subgraph = /^subgraph\s+([^\s[]+)\s*(?:\[\s*"?([^"\]]*)"?\s*\])?\s*$/.exec(text2);
-    if (!subgraph?.[1]) return false;
-    const group = {
-      id: subgraph[1],
-      title: decodeEntities(subgraph[2] ?? subgraph[1]),
-      parent: stack.at(-1)?.id,
-      direction: void 0
-    };
-    groups.push(group);
-    groupIds.add(group.id);
-    stack.push(group);
-    return true;
-  };
-  const readEnd = (text2, line) => {
-    if (text2 !== "end") return false;
-    if (!stack.pop())
-      problems.push({
-        kind: "map_invalid",
-        line,
-        message: `${line + 1} \u884C\u76EE\u306E \`end\` \u306B\u5BFE\u5FDC\u3059\u308B \`subgraph\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002`
-      });
-    return true;
-  };
-  const readDirection = (text2, at) => {
-    const dir = /^direction\s+(\w+)$/.exec(text2);
-    if (!dir?.[1]) return false;
-    const current = stack.at(-1);
-    const value = toDirection(dir[1]);
-    if (current && value) current.direction = value;
-    else problems.push(unreadable(at.line, at.raw));
-    return true;
-  };
-  const readClassOrClick = (text2) => {
-    const classLine = /^class\s+([\w,\s]+?)\s+([\w-]+)$/.exec(text2);
-    if (classLine?.[1] && classLine[2]) {
-      for (const id of classLine[1].split(",").map((part) => part.trim()))
-        nodes.get(id)?.classes.push(classLine[2]);
-      return true;
-    }
-    const click = CLICK_RE.exec(text2);
-    if (click?.[1] && click[2] !== void 0) {
-      links[click[1]] = click[2];
-      return true;
-    }
-    return false;
-  };
-  const addStatement = (statement) => {
-    for (const group of statement.groups) group.forEach(touch);
-    statement.arrows.forEach((arrow, at) => {
-      for (const from of statement.groups[at] ?? []) {
-        for (const to of statement.groups[at + 1] ?? []) {
-          edges.push({
-            id: edgeId(arrow.id, from.id, to.id),
-            from: from.id,
-            to: to.id,
-            arrow: arrow.arrow,
-            both: arrow.both,
-            label: arrow.label
-          });
-        }
-      }
-    });
-  };
-  lines.slice(1).forEach((raw, index) => {
-    const line = index + 1;
-    const text2 = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
-    if (text2 === "") return;
-    if (readSubgraph(text2) || readEnd(text2, line) || readDirection(text2, { line, raw }) || readClassOrClick(text2) || IGNORED_RE.test(text2))
-      return;
-    const statement = readStatement(text2);
-    if (!statement) {
-      problems.push(unreadable(line, raw));
-      return;
-    }
-    addStatement(statement);
-  });
-  for (const group of stack) {
-    problems.push({
-      kind: "map_invalid",
-      message: `\`subgraph ${group.id}\` \u306B\u9589\u3058\u306E \`end\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u884C\u3067\u9589\u3058\u305F\u3082\u306E\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-    });
-  }
-  return {
-    direction,
-    nodes: [...nodes.values()],
-    groups,
-    edges,
-    links,
-    problems
-  };
-};
-
-// src/map/sequence.ts
-var SEQ_ARROW_STYLES = {
-  "<<-->>": { dotted: true, head: "filled", both: true },
-  "<<->>": { dotted: false, head: "filled", both: true },
-  "-->>": { dotted: true, head: "filled", both: false },
-  "->>": { dotted: false, head: "filled", both: false },
-  "--x": { dotted: true, head: "cross", both: false },
-  "-x": { dotted: false, head: "cross", both: false },
-  "--)": { dotted: true, head: "async", both: false },
-  "-)": { dotted: false, head: "async", both: false },
-  "-->": { dotted: true, head: "none", both: false },
-  "->": { dotted: false, head: "none", both: false }
-};
-var SEQ_ID = "[\\w\\u0080-\\uffff]+";
-var ARROW_RE = Object.keys(SEQ_ARROW_STYLES).map((arrow) => arrow.replace(/[()]/g, "\\$&")).join("|");
-var MESSAGE_RE = new RegExp(
-  `^(${SEQ_ID})\\s*(${ARROW_RE})\\s*([+-]?)(${SEQ_ID})\\s*:\\s*(.*)$`
-);
-var FRAGMENT_RE = /^(loop|alt|opt|par|critical|break|rect)\b\s*(.*)$/;
-var SECTION_RE = /^(else|and|option)\b\s*(.*)$/;
-var NOTE_RE = new RegExp(
-  `^note\\s+(left of|right of|over)\\s+(${SEQ_ID}(?:\\s*,\\s*${SEQ_ID})?)\\s*:\\s*(.*)$`,
-  "i"
-);
-var DECL_RE = new RegExp(
-  `^(?:create\\s+)?(participant|actor)\\s+(${SEQ_ID})(?:\\s+as\\s+(.+))?$`
-);
-var TOGGLE_RE = new RegExp(`^(activate|deactivate)\\s+(${SEQ_ID})$`);
-var IGNORED_RE2 = new RegExp(
-  `^(destroy\\s+${SEQ_ID}|links?\\s+${SEQ_ID}\\s*:.*|title\\b.*|accTitle\\b.*|accDescr\\b.*)$`
-);
-var unreadable2 = (line, raw) => ({
-  kind: "map_invalid",
-  line,
-  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E sequenceDiagram \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-});
-var notePlacementOf = (where) => {
-  const lower = where.toLowerCase();
-  if (lower.startsWith("left")) return "left";
-  return lower.startsWith("right") ? "right" : "over";
-};
-var activationOf = (mark) => mark === "+" || mark === "-" ? mark : void 0;
-var parseSequence = (source) => {
-  const participants = /* @__PURE__ */ new Map();
-  const messages = [];
-  const fragments = [];
-  const notes = [];
-  const activations = [];
-  const boxes = [];
-  const problems = [];
-  const open2 = [];
-  const active = /* @__PURE__ */ new Map();
-  let box;
-  let autonumber = false;
-  let pendingBlock;
-  const ensure = (id) => {
-    if (!participants.has(id))
-      participants.set(id, { id, label: id, actor: false });
-  };
-  const activate = (id, at) => {
-    const list2 = active.get(id) ?? [];
-    list2.push(at);
-    active.set(id, list2);
-  };
-  const deactivate = (id, at, where) => {
-    const start = active.get(id)?.pop();
-    if (start === void 0) {
-      problems.push(unreadable2(where.line, where.raw));
-      return;
-    }
-    activations.push({
-      id,
-      start,
-      end: at,
-      depth: active.get(id)?.length ?? 0
-    });
-  };
-  const fail = (where) => {
-    problems.push(unreadable2(where.line, where.raw));
-  };
-  const readBox = (text2) => {
-    const boxLine = /^box\b\s*(.*)$/.exec(text2);
-    if (!boxLine) return false;
-    const rest2 = boxLine[1] ?? "";
-    const color = /^(rgba?\([^)]*\)|transparent|[a-z]+)(?=\s|$)/i.exec(
-      rest2
-    )?.[0];
-    box = {
-      label: (color ? rest2.slice(color.length) : rest2).trim(),
-      color,
-      members: []
-    };
-    boxes.push(box);
-    return true;
-  };
-  const readDecl = (text2) => {
-    const decl = DECL_RE.exec(text2);
-    if (!decl?.[1] || !decl[2]) return false;
-    participants.set(decl[2], {
-      id: decl[2],
-      label: decodeEntities(decl[3] ?? decl[2]),
-      actor: decl[1] === "actor"
-    });
-    box?.members.push(decl[2]);
-    return true;
-  };
-  const readFragment = (text2, where) => {
-    const fragment = FRAGMENT_RE.exec(text2);
-    if (!fragment?.[1]) return false;
-    const label = fragment[1] === "rect" ? where.blockName ?? "" : decodeEntities(fragment[2] ?? "");
-    const item = {
-      kind: fragment[1],
-      label,
-      depth: open2.length,
-      sections: [{ start: messages.length, label }],
-      start: messages.length,
-      end: messages.length
-    };
-    open2.push(item);
-    fragments.push(item);
-    return true;
-  };
-  const readSection = (text2, where) => {
-    const section = SECTION_RE.exec(text2);
-    if (!section) return false;
-    const current = open2.at(-1);
-    if (current)
-      current.sections.push({
-        start: messages.length,
-        label: decodeEntities(section[2] ?? "")
-      });
-    else fail(where);
-    return true;
-  };
-  const readEnd = (text2, where) => {
-    if (text2 !== "end") return false;
-    if (box && open2.length === 0) {
-      box = void 0;
-      return true;
-    }
-    const current = open2.pop();
-    if (current) current.end = messages.length;
-    else fail(where);
-    return true;
-  };
-  const readToggle = (text2, where) => {
-    const toggle = TOGGLE_RE.exec(text2);
-    if (!toggle?.[2]) return false;
-    ensure(toggle[2]);
-    if (toggle[1] === "activate") activate(toggle[2], messages.length);
-    else deactivate(toggle[2], messages.length - 1, where);
-    return true;
-  };
-  const readNote2 = (text2) => {
-    const note = NOTE_RE.exec(text2);
-    if (!note?.[1] || !note[2]) return false;
-    const of = note[2].split(",").map((id) => id.trim());
-    for (const id of of) ensure(id);
-    notes.push({
-      after: messages.length,
-      placement: notePlacementOf(note[1]),
-      of,
-      text: decodeEntities(note[3] ?? "")
-    });
-    return true;
-  };
-  const readMessage = (text2, where) => {
-    const message = MESSAGE_RE.exec(text2);
-    if (!message?.[1] || !message[2] || !message[4]) return false;
-    ensure(message[1]);
-    ensure(message[4]);
-    const activation = activationOf(message[3]);
-    messages.push({
-      from: message[1],
-      to: message[4],
-      text: decodeEntities(message[5] ?? ""),
-      arrow: message[2],
-      activation
-    });
-    const at = messages.length - 1;
-    if (activation === "+") activate(message[4], at);
-    if (activation === "-") deactivate(message[1], at, where);
-    return true;
-  };
-  const readers = [
-    readBox,
-    readDecl,
-    (text2) => IGNORED_RE2.test(text2),
-    readFragment,
-    readSection,
-    readEnd,
-    readToggle,
-    readNote2,
-    readMessage
-  ];
-  source.split("\n").slice(1).forEach((raw, index) => {
-    const line = index + 1;
-    const block2 = /^\s*%%\s*block:\s*(.*)$/.exec(raw);
-    if (block2) {
-      pendingBlock = (block2[1] ?? "").trim();
-      return;
-    }
-    const text2 = raw.replace(/%%.*$/, "").trim();
-    if (text2 === "") return;
-    const blockName = pendingBlock;
-    pendingBlock = void 0;
-    if (text2 === "autonumber") {
-      autonumber = true;
-      return;
-    }
-    const where = { line, raw, blockName };
-    if (!readers.some((read) => read(text2, where))) fail(where);
-  });
-  for (const item of open2) {
-    item.end = messages.length;
-    problems.push({
-      kind: "map_invalid",
-      message: `\`${item.kind}\` \u306B\u9589\u3058\u306E \`end\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u30E1\u30C3\u30BB\u30FC\u30B8\u3067\u9589\u3058\u305F\u3082\u306E\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-    });
-  }
-  return {
-    participants: [...participants.values()],
-    messages,
-    fragments,
-    notes,
-    activations,
-    boxes,
-    autonumber,
-    problems
-  };
-};
-
-// src/parts/map.ts
-var MAP_ER = {
-  width: 240,
-  /** テーブル名の行（種類の行と名前）の高さ */
-  head: 56,
-  row: 28,
-  foot: 6,
-  /** ノードの左右に空ける幅（関連の端と多重度の置き場所） */
-  aside: 32,
-  /** 関連の端の、ノードの辺から外へ出す長さ（同じ辺から出る 2 本目からは step ずつ延ばす） */
-  endOut: 14,
-  step: MAP_LAYOUT.clearance,
-  /** 同じ列の行から同じ辺へ出る 2 本目からの端の縦のずれ */
-  shift: 6,
-  /** 多重度の文字の 1 文字の幅と、文字の高さ（重なりの見積もり） */
-  cardinalityChar: 7,
-  cardinalityLine: 13,
-  /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
-  crowd: 120,
-  /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
-  labelChar: 12,
-  labelLine: 16,
-  /** 多重度の文字の、端からの離れ */
-  cardinalityGap: 4,
-  /** 行が増える関連のマーカーの、線からの離れ */
-  fanoutGap: 22,
-  /** 行が増える関連のマーカーの一辺 */
-  fanoutSize: 24
-};
-
-// src/map/architecture.ts
-var ARCH_LUCIDE_ICONS = {
-  cloud: "cloud",
-  database: "database",
-  disk: "hard-drive",
-  internet: "globe",
-  server: "server"
-};
-var MAP_ARCH_KINDS = {
-  "mdmark-arch-service": { shape: "rounded" },
-  "mdmark-arch-junction": { shape: "rounded" },
-  ...Object.fromEntries(
-    Object.entries(ARCH_LUCIDE_ICONS).map(([name, icon]) => [
-      `mdmark-arch-${name}`,
-      { icon, shape: "rounded" }
-    ])
-  )
-};
-var ID = "[A-Za-z0-9_\\u0080-\\uffff-]+";
-var SIDES = { L: "left", R: "right", T: "top", B: "bottom" };
-var ITEM_RE = new RegExp(
-  `^(group|service)\\s+(${ID})(?:\\((\\w+)\\))?\\[([^\\]]*)\\](?:\\s+in\\s+(${ID}))?$`
-);
-var JUNCTION_RE = new RegExp(`^junction\\s+(${ID})(?:\\s+in\\s+(${ID}))?$`);
-var EDGE_RE = new RegExp(
-  `^(${ID})(\\{group\\})?:([LRTB])\\s*(<?)--(>?)\\s*([LRTB]):(${ID})(\\{group\\})?$`
-);
-var IGNORED_RE3 = /^(accTitle|accDescr|title)\b/;
-var invalid = (line, message) => ({
-  kind: "map_invalid",
-  line,
-  message
-});
-var unreadableText = (line, raw) => `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E architecture-beta \u306E\u8A18\u6CD5\uFF08\`{ID}:R --> L:{ID}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-var iconText = (line, icon) => `${line + 1} \u884C\u76EE\u306E\u30A2\u30A4\u30B3\u30F3 \`${icon}\` \u306F\u63CF\u3051\u307E\u305B\u3093\u3002\`cloud\`\u30FB\`database\`\u30FB\`disk\`\u30FB\`internet\`\u30FB\`server\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-var iconOf = (name) => name !== void 0 && name in ARCH_LUCIDE_ICONS ? name : void 0;
-var headOf = (tail, head) => {
-  if (tail && head) return "both";
-  if (head) return "end";
-  return tail ? "start" : "none";
-};
-var readItem2 = (diagram, context) => {
-  const match = ITEM_RE.exec(context.text);
-  if (!match?.[1] || !match[2]) return false;
-  const icon = iconOf(match[3]);
-  if (match[3] !== void 0 && icon === void 0)
-    diagram.problems.push(
-      invalid(context.line, iconText(context.line, match[3]))
-    );
-  if (match[1] === "group")
-    diagram.groups.push({
-      id: match[2],
-      icon,
-      title: match[4] ?? match[2],
-      parent: match[5]
-    });
-  else
-    diagram.services.push({
-      id: match[2],
-      icon,
-      label: match[4] ?? match[2],
-      parent: match[5],
-      junction: false
-    });
-  return true;
-};
-var readEdge = (diagram, text2) => {
-  const match = EDGE_RE.exec(text2);
-  if (!match?.[1] || !match[3] || !match[6] || !match[7]) return false;
-  diagram.edges.push({
-    id: `r${diagram.edges.length + 1}`,
-    from: match[1],
-    fromSide: SIDES[match[3]],
-    fromGroup: match[2] !== void 0,
-    to: match[7],
-    toSide: SIDES[match[6]],
-    toGroup: match[8] !== void 0,
-    head: headOf(match[4] === "<", match[5] === ">")
-  });
-  return true;
-};
-var parentProblems = (diagram, lines) => {
-  const groups = new Set(diagram.groups.map((group) => group.id));
-  return [...diagram.groups, ...diagram.services].flatMap((item) => {
-    if (item.parent === void 0 || groups.has(item.parent)) return [];
-    const line = lines.get(item.id) ?? 0;
-    return [
-      invalid(
-        line,
-        `${line + 1} \u884C\u76EE\u306E \`in ${item.parent}\` \u304C\u6307\u3059 group \u304C\u3042\u308A\u307E\u305B\u3093\u3002group \u306E ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      )
-    ];
-  });
-};
-var parseArchitecture = (source) => {
-  const diagram = {
-    groups: [],
-    services: [],
-    edges: [],
-    problems: []
-  };
-  const lines = /* @__PURE__ */ new Map();
-  for (const [line, raw] of source.split("\n").entries()) {
-    const text2 = raw.replace(/%%.*$/, "").trim();
-    if (line === 0 || text2 === "" || IGNORED_RE3.test(text2)) continue;
-    const count = diagram.groups.length + diagram.services.length;
-    const junction = JUNCTION_RE.exec(text2);
-    if (junction?.[1])
-      diagram.services.push({
-        id: junction[1],
-        icon: void 0,
-        label: "",
-        parent: junction[2],
-        junction: true
-      });
-    else if (!readItem2(diagram, { text: text2, line }) && !readEdge(diagram, text2))
-      diagram.problems.push(invalid(line, unreadableText(line, raw)));
-    const added = [...diagram.groups, ...diagram.services].slice(count);
-    for (const item of added) lines.set(item.id, line);
-  }
-  diagram.problems.push(...parentProblems(diagram, lines));
-  return diagram;
-};
-
-// src/map/c4.ts
-var C4_LABELS = {
-  person: "[Person]",
-  system: "[Software System]"
-};
-var MAP_C4_KINDS = {
-  "mdmark-c4-person": {
-    label: C4_LABELS.person,
-    icon: "user",
-    shape: "rounded"
-  },
-  "mdmark-c4-person-ext": {
-    label: "[External Person]",
-    icon: "user",
-    shape: "rounded",
-    color: "gray"
-  },
-  "mdmark-c4-system": { label: C4_LABELS.system, shape: "rect" },
-  "mdmark-c4-system-ext": {
-    label: "[External Software System]",
-    shape: "rect",
-    color: "gray"
-  },
-  "mdmark-c4-system_db": {
-    label: C4_LABELS.system,
-    icon: "database",
-    shape: "rect"
-  },
-  "mdmark-c4-system_db-ext": {
-    label: "[External Software System]",
-    icon: "database",
-    shape: "rect",
-    color: "gray"
-  },
-  "mdmark-c4-system_queue": { label: C4_LABELS.system, shape: "pill" },
-  "mdmark-c4-system_queue-ext": {
-    label: "[External Software System]",
-    shape: "pill",
-    color: "gray"
-  }
-};
-var BOUNDARIES = {
-  Enterprise_Boundary: "enterprise",
-  System_Boundary: "system",
-  Boundary: "boundary"
-};
-var ELEMENTS = {
-  Person: "person",
-  System: "system",
-  SystemDb: "system_db",
-  SystemQueue: "system_queue"
-};
-var DIRECTIONS = {
-  U: "up",
-  Up: "up",
-  D: "down",
-  Down: "down",
-  L: "left",
-  Left: "left",
-  R: "right",
-  Right: "right",
-  Back: "back"
-};
-var CALL_RE = /^(\w+)\((.*)\)\s*(\{)?$/;
-var RELATION_RE = /^(Bi)?Rel(?:_(U|Up|D|Down|L|Left|R|Right|Back))?$/;
-var IGNORED_RE4 = /^(accTitle|accDescr|UpdateLayoutConfig|UpdateElementStyle|UpdateRelStyle|UpdateBoundaryStyle|AddElementTag|AddRelTag)\b/;
-var argumentsOf = (text2) => [...text2.matchAll(/"([^"]*)"|([^,\s][^,]*)/g)].map(
-  (match) => (match[1] ?? match[2] ?? "").trim()
-);
-var unreadable3 = (line, raw) => ({
-  kind: "map_invalid",
-  line,
-  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E C4Context \u306E\u8A18\u6CD5\uFF08\`Person(\u2026)\`\u30FB\`System(\u2026)\`\u30FB\`Rel(\u2026)\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-});
-var readBoundary = (reading, call) => {
-  const kind = BOUNDARIES[call.name];
-  const [id, label] = call.values;
-  if (kind === void 0 || id === void 0) return false;
-  const boundary = {
-    id,
-    label: label ?? id,
-    kind,
-    parent: reading.stack.at(-1)?.boundary.id
-  };
-  reading.diagram.boundaries.push(boundary);
-  if (call.open) reading.stack.push({ boundary, line: call.line });
-  return true;
-};
-var readElement = (reading, call) => {
-  const external = call.name.endsWith("_Ext");
-  const kind = ELEMENTS[external ? call.name.slice(0, -4) : call.name];
-  const [id, label, description] = call.values;
-  if (kind === void 0 || id === void 0) return false;
-  reading.diagram.elements.push({
-    id,
-    label: label ?? id,
-    description,
-    kind,
-    external,
-    parent: reading.stack.at(-1)?.boundary.id
-  });
-  return true;
-};
-var readRelation = (reading, call) => {
-  const relation = RELATION_RE.exec(call.name);
-  const [from, to, label, technology] = call.values;
-  if (!relation || from === void 0 || to === void 0) return false;
-  const { relations } = reading.diagram;
-  relations.push({
-    id: `r${relations.length + 1}`,
-    from,
-    to,
-    label,
-    technology,
-    both: relation[1] !== void 0,
-    direction: relation[2] === void 0 ? void 0 : DIRECTIONS[relation[2]]
-  });
-  return true;
-};
-var readCall = (reading, call) => readBoundary(reading, call) || readElement(reading, call) || readRelation(reading, call);
-var readLine2 = (reading, text2, line) => {
-  if (text2 === "}") return reading.stack.pop() !== void 0;
-  const heading2 = /^title\s+(.+)$/.exec(text2);
-  if (heading2?.[1]) {
-    reading.diagram.title = heading2[1].trim();
-    return true;
-  }
-  const call = CALL_RE.exec(text2);
-  if (!call?.[1]) return false;
-  return readCall(reading, {
-    name: call[1],
-    values: argumentsOf(call[2] ?? ""),
-    open: call[3] !== void 0,
-    line
-  });
-};
-var parseC4Context = (source) => {
-  const reading = {
-    diagram: {
-      title: void 0,
-      boundaries: [],
-      elements: [],
-      relations: [],
-      problems: []
-    },
-    stack: []
-  };
-  for (const [line, raw] of source.split("\n").entries()) {
-    const text2 = raw.replace(/%%.*$/, "").trim();
-    if (line === 0 || text2 === "" || IGNORED_RE4.test(text2)) continue;
-    if (!readLine2(reading, text2, line))
-      reading.diagram.problems.push(unreadable3(line, raw));
-  }
-  for (const open2 of reading.stack)
-    reading.diagram.problems.push({
-      kind: "map_invalid",
-      line: open2.line,
-      message: `\u5883\u754C \`${open2.boundary.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5883\u754C\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-  return reading.diagram;
-};
-
-// src/map/class-diagram.ts
-var RELATION_SYMBOLS = {
-  "<|--": { dashed: false, left: "triangle" },
-  "--|>": { dashed: false, right: "triangle" },
-  "*--": { dashed: false, left: "diamond-filled" },
-  "--*": { dashed: false, right: "diamond-filled" },
-  "o--": { dashed: false, left: "diamond-open" },
-  "--o": { dashed: false, right: "diamond-open" },
-  "-->": { dashed: false, right: "arrow" },
-  "<--": { dashed: false, left: "arrow" },
-  "..>": { dashed: true, right: "arrow" },
-  "<..": { dashed: true, left: "arrow" },
-  "..|>": { dashed: true, right: "triangle" },
-  "<|..": { dashed: true, left: "triangle" },
-  "--": { dashed: false },
-  "..": { dashed: true }
-};
-var ID2 = "[A-Za-z0-9_\\u0080-\\uffff]+";
-var NAME = `(${ID2})(?:~([^~]+)~)?`;
-var RELATION_RE2 = new RegExp(
-  `^${NAME}\\s+(?:"([^"]*)"\\s+)?(${Object.keys(RELATION_SYMBOLS).sort((a, b) => b.length - a.length).map((key) => key.replace(/[|*.]/g, "\\$&")).join("|")})\\s+(?:"([^"]*)"\\s+)?${NAME}(?:\\s*:\\s*(.+))?$`
-);
-var NAMESPACE_RE = new RegExp(`^namespace\\s+(${ID2})\\s*\\{$`);
-var CLASS_OPEN_RE = new RegExp(`^class\\s+${NAME}\\s*\\{$`);
-var CLASS_RE = new RegExp(`^class\\s+${NAME}$`);
-var ANNOTATION_RE = new RegExp(`^<<(.+)>>\\s+(${ID2})$`);
-var MEMBER_RE = new RegExp(`^(${ID2})\\s*:\\s*(.+)$`);
-var NOTE_RE2 = new RegExp(`^note\\s+for\\s+(${ID2})\\s+"([^"]*)"$`);
-var IGNORED_RE5 = /^(direction|classDef|cssClass|style|click|callback|link|accTitle|accDescr|title)\b/;
-var unreadable4 = (line, raw) => ({
-  kind: "map_invalid",
-  line,
-  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E classDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30AF\u30E9\u30B9} <|-- {\u30AF\u30E9\u30B9}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-});
-var splitSign = (text2) => {
-  const marker = /([$*])$|^([^\s(]+|[^)]*\))([$*])(?=\s|$)/.exec(text2);
-  if (!marker) return { body: text2, sign: void 0 };
-  if (marker[1]) return { body: text2.slice(0, -1).trimEnd(), sign: marker[1] };
-  return {
-    body: `${marker[2] ?? ""}${text2.slice(marker[0].length)}`,
-    sign: marker[3]
-  };
-};
-var parseMember = (text2) => {
-  const trimmed = text2.trim();
-  const visibility = /^[+\-#~]/.test(trimmed) ? trimmed.slice(0, 1) : "";
-  const { body, sign } = splitSign(trimmed.slice(visibility.length));
-  const isStatic = sign === "$";
-  const isAbstract = sign === "*";
-  const method = /^([^(]+)\(([^)]*)\)\s*(.*)$/.exec(body);
-  if (method) {
-    const name = (method[1] ?? "").trim();
-    const type = method[3] ?? "";
-    return {
-      visibility,
-      name,
-      text: `${name}(${method[2] ?? ""})${type === "" ? "" : ` ${type}`}`,
-      method: true,
-      isStatic,
-      isAbstract
-    };
-  }
-  return {
-    visibility,
-    name: body.split(/\s+/, 1)[0] ?? body,
-    text: body,
-    method: false,
-    isStatic,
-    isAbstract
-  };
-};
-var ensureClass = (reading, id, generic) => {
-  const found = reading.classes.get(id);
-  const item = found ?? {
-    id,
-    generic: void 0,
-    annotation: void 0,
-    namespace: reading.space?.id,
-    members: []
-  };
-  if (!found) reading.classes.set(id, item);
-  if (generic !== void 0) item.generic = generic;
-  return item;
-};
-var readInside = (reading, text2) => {
-  const current = reading.open?.item;
-  if (!current) return;
-  if (text2 === "}") {
-    reading.open = void 0;
-    return;
-  }
-  const annotation = /^<<(.+)>>$/.exec(text2);
-  if (annotation?.[1]) current.annotation = annotation[1];
-  else current.members.push(parseMember(text2));
-};
-var readRelation2 = (reading, text2) => {
-  const match = RELATION_RE2.exec(text2);
-  if (!match?.[1] || !match[4] || !match[6]) return false;
-  const symbol = RELATION_SYMBOLS[match[4]] ?? { dashed: false };
-  const label = match[8]?.trim();
-  reading.relations.push({
-    id: `r${reading.relations.length + 1}`,
-    from: ensureClass(reading, match[1], match[2]).id,
-    to: ensureClass(reading, match[6], match[7]).id,
-    fromCardinality: match[3],
-    toCardinality: match[5],
-    fromEnd: symbol.left,
-    toEnd: symbol.right,
-    dashed: symbol.dashed,
-    label: label === "" ? void 0 : label
-  });
-  return true;
-};
-var READERS = [
-  (reading, text2, line) => {
-    const match = NAMESPACE_RE.exec(text2);
-    if (!match?.[1]) return false;
-    reading.namespaces.push(match[1]);
-    reading.space = { id: match[1], line };
-    return true;
-  },
-  (reading, text2, line) => {
-    const match = CLASS_OPEN_RE.exec(text2);
-    if (!match?.[1]) return false;
-    reading.open = { item: ensureClass(reading, match[1], match[2]), line };
-    return true;
-  },
-  (reading, text2) => {
-    const match = CLASS_RE.exec(text2);
-    if (!match?.[1]) return false;
-    ensureClass(reading, match[1], match[2]);
-    return true;
-  },
-  (reading, text2) => {
-    const match = ANNOTATION_RE.exec(text2);
-    if (!match?.[1] || !match[2]) return false;
-    ensureClass(reading, match[2]).annotation = match[1];
-    return true;
-  },
-  (reading, text2) => {
-    const match = NOTE_RE2.exec(text2);
-    if (!match?.[1] || match[2] === void 0) return false;
-    reading.notes.push({
-      id: `note_${reading.notes.length + 1}`,
-      of: match[1],
-      text: match[2]
-    });
-    return true;
-  },
-  readRelation2,
-  (reading, text2) => {
-    const match = MEMBER_RE.exec(text2);
-    if (!match?.[1] || !match[2]) return false;
-    ensureClass(reading, match[1]).members.push(parseMember(match[2]));
-    return true;
-  },
-  (reading, text2) => {
-    if (text2 !== "}" || reading.space === void 0) return false;
-    reading.space = void 0;
-    return true;
-  }
-];
-var unclosedProblems = (reading) => {
-  const opened = [
-    ...reading.open ? [{ kind: "\u30AF\u30E9\u30B9", id: reading.open.item.id, line: reading.open.line }] : [],
-    ...reading.space ? [{ kind: "namespace", id: reading.space.id, line: reading.space.line }] : []
-  ];
-  return opened.map(
-    (item) => ({
-      kind: "map_invalid",
-      line: item.line,
-      message: `${item.kind} \`${item.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    })
-  );
-};
-var parseClassDiagram = (source) => {
-  const reading = {
-    classes: /* @__PURE__ */ new Map(),
-    namespaces: [],
-    relations: [],
-    notes: [],
-    space: void 0,
-    open: void 0
-  };
-  const problems = [];
-  for (const [line, raw] of source.split("\n").entries()) {
-    const text2 = raw.replace(/%%.*$/, "").trim();
-    if (line === 0 || text2 === "") continue;
-    if (reading.open) {
-      readInside(reading, text2);
-      continue;
-    }
-    if (IGNORED_RE5.test(text2)) continue;
-    if (!READERS.some((read) => read(reading, text2, line)))
-      problems.push(unreadable4(line, raw));
-  }
-  problems.push(...unclosedProblems(reading));
-  return {
-    classes: [...reading.classes.values()],
-    namespaces: reading.namespaces,
-    relations: reading.relations,
-    notes: reading.notes,
-    problems
-  };
-};
-
-// src/map/data.ts
-var MAP_DATA_KEYS = [
-  "version",
-  "notes",
-  "walkthroughs",
-  "layout",
-  "plays_over",
-  "groups"
-];
-var GROUP_KEYS = ["title", "tables", "parent"];
-var STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
-var LAYOUT_KEYS = [
-  "align",
-  "order",
-  "justify",
-  "pos",
-  "width",
-  "color",
-  "line",
-  "packet",
-  "ends",
-  "via",
-  "collapsed"
-];
-var PACKET_SHAPES = ["circle", "square", "diamond"];
-var SIDES2 = ["top", "right", "bottom", "left"];
-var JUSTIFIES = ["start", "center", "end"];
-var emptyMapData = () => ({
-  version: 1,
-  notes: {},
-  walkthroughs: [],
-  layout: {},
-  plays_over: void 0,
-  groups: {}
-});
-var jsonPathLines = (source) => {
-  const lines = /* @__PURE__ */ new Map();
-  let at = 0;
-  let line = 0;
-  const skip = () => {
-    while (at < source.length && /\s/.test(source[at])) {
-      if (source[at] === "\n") line += 1;
-      at += 1;
-    }
-  };
-  const readString = () => {
-    const start = at;
-    at += 1;
-    while (at < source.length && source[at] !== '"')
-      at += source[at] === "\\" ? 2 : 1;
-    at += 1;
-    return JSON.parse(source.slice(start, at));
-  };
-  const childPath2 = (char, context) => {
-    const { path, index } = context;
-    if (char !== "{") {
-      const child2 = `${path}[${index}]`;
-      lines.set(child2, line);
-      return child2;
-    }
-    const keyLine2 = line;
-    const key = readString();
-    const child = path === "" ? key : `${path}.${key}`;
-    lines.set(child, keyLine2);
-    skip();
-    at += 1;
-    return child;
-  };
-  const container = (char, path) => {
-    const close = char === "{" ? "}" : "]";
-    at += 1;
-    skip();
-    let index = 0;
-    while (at < source.length && source[at] !== close) {
-      value(childPath2(char, { path, index }));
-      index += 1;
-      skip();
-      if (source[at] === ",") at += 1;
-      skip();
-    }
-    at += 1;
-  };
-  const value = (path) => {
-    skip();
-    const char = source[at];
-    if (char === "{" || char === "[") {
-      container(char, path);
-    } else if (char === '"') {
-      readString();
-    } else {
-      while (at < source.length && !/[,\]}\s]/.test(source[at]))
-        at += 1;
-    }
-  };
-  value("");
-  return lines;
-};
-var errorLine = (source, error2) => {
-  const message = error2 instanceof Error ? error2.message : "";
-  const lineMatch = /line (\d+)/.exec(message);
-  if (lineMatch) return Number(lineMatch[1]) - 1;
-  const position = /position (\d+)/.exec(message);
-  if (!position) return void 0;
-  return source.slice(0, Number(position[1])).split("\n").length - 1;
-};
-var isObject4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var invalid2 = (reader, path, expected) => {
-  reader.problems.push({
-    kind: "map_invalid_value",
-    line: reader.lines.get(path),
-    message: `\u88DC\u8DB3\u306E \`${path}\` \u306F${expected}\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  });
-};
-var unknownKey = (reader, item) => {
-  const { path, key, keys } = item;
-  reader.problems.push({
-    kind: "map_unknown_key",
-    line: reader.lines.get(path === "" ? key : `${path}.${key}`),
-    message: `\u88DC\u8DB3${path === "" ? "" : `\u306E \`${path}\``}\u306B\u77E5\u3089\u306A\u3044\u30AD\u30FC \`${key}\` \u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30AD\u30FC\u306F ${keys.map((name) => `\`${name}\``).join("\u30FB")} \u3067\u3059\u3002`
-  });
-};
-var readText = (reader, value, path) => {
-  if (typeof value !== "string") {
-    invalid2(reader, path, "\u6587\u5B57");
-    return void 0;
-  }
-  if (value.includes("--")) {
-    reader.problems.push({
-      kind: "map_invalid_value",
-      line: reader.lines.get(path),
-      message: `\u88DC\u8DB3\u306E \`${path}\` \u306B \`--\` \u304C\u3042\u308A\u307E\u3059\u3002HTML \u30B3\u30E1\u30F3\u30C8\u3092\u9589\u3058\u3066\u3057\u307E\u3046\u305F\u3081\u3001\`--\` \u3092\u542B\u3081\u305A\u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return void 0;
-  }
-  return value;
-};
-var readIds = (reader, value, path) => {
-  if (!Array.isArray(value)) {
-    invalid2(reader, path, "ID \u306E\u914D\u5217");
-    return void 0;
-  }
-  const out = [];
-  for (const [i, item] of value.entries()) {
-    const id = readText(reader, item, `${path}[${i}]`);
-    if (id !== void 0) out.push(id);
-  }
-  return out;
-};
-var readNumber = (reader, value, path) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  invalid2(reader, path, "\u6570");
-  return void 0;
-};
-var readPoint = (reader, value, path) => {
-  if (!isObject4(value)) {
-    invalid2(reader, path, ' `{"x", "y"}` ');
-    return void 0;
-  }
-  const x = readNumber(reader, value.x, `${path}.x`);
-  const y = readNumber(reader, value.y, `${path}.y`);
-  return x === void 0 || y === void 0 ? void 0 : { x, y };
-};
-var readChoice = (reader, value, place) => {
-  const { path, choices } = place;
-  if (typeof value === "string" && choices.includes(value)) return value;
-  invalid2(reader, path, ` ${choices.map((name) => `\`${name}\``).join("\u30FB")} `);
-  return void 0;
-};
-var readEnds = (reader, value, path) => {
-  if (!isObject4(value)) {
-    invalid2(reader, path, ' `{"from": {"side"}, "to": {"side"}}` ');
-    return void 0;
-  }
-  const out = {};
-  for (const end of ["from", "to"]) {
-    const item = value[end];
-    if (item === void 0) continue;
-    if (!isObject4(item)) {
-      invalid2(reader, `${path}.${end}`, ' `{"side"}` ');
-      return void 0;
-    }
-    const side = readChoice(reader, item.side, {
-      path: `${path}.${end}.side`,
-      choices: SIDES2
-    });
-    if (side === void 0) return void 0;
-    out[end] = side;
-  }
-  return out;
-};
-var readPacket = (reader, value, path) => {
-  if (!isObject4(value)) {
-    invalid2(reader, path, ' `{"color", "shape"}` ');
-    return void 0;
-  }
-  const out = {};
-  if (value.color !== void 0)
-    out.color = readText(reader, value.color, `${path}.color`);
-  if (value.shape !== void 0)
-    out.shape = readChoice(reader, value.shape, {
-      path: `${path}.shape`,
-      choices: PACKET_SHAPES
-    });
-  return out;
-};
-var readVia = (reader, value, path) => {
-  if (!Array.isArray(value)) {
-    invalid2(reader, path, ' `[{"x", "y"}]` ');
-    return void 0;
-  }
-  const points = value.map(
-    (item, i) => readPoint(reader, item, `${path}[${i}]`)
-  );
-  return points.every((item) => item !== void 0) ? points : void 0;
-};
-var LAYOUT_FIELD_READERS = {
-  align: (reader, field, at) => ({ align: readText(reader, field, at) }),
-  color: (reader, field, at) => ({ color: readText(reader, field, at) }),
-  line: (reader, field, at) => ({ line: readText(reader, field, at) }),
-  order: (reader, field, at) => ({ order: readNumber(reader, field, at) }),
-  width: (reader, field, at) => ({ width: readNumber(reader, field, at) }),
-  justify: (reader, field, at) => ({
-    justify: readChoice(reader, field, { path: at, choices: JUSTIFIES })
-  }),
-  pos: (reader, field, at) => ({ pos: readPoint(reader, field, at) }),
-  packet: (reader, field, at) => ({ packet: readPacket(reader, field, at) }),
-  ends: (reader, field, at) => ({ ends: readEnds(reader, field, at) }),
-  via: (reader, field, at) => ({ via: readVia(reader, field, at) }),
-  collapsed: (reader, field, at) => {
-    if (typeof field === "boolean") return { collapsed: field };
-    invalid2(reader, at, "\u771F\u507D\u5024");
-    return {};
-  }
-};
-var readLayoutEntry = (reader, value, path) => {
-  const entry = {};
-  for (const [name, field] of Object.entries(value)) {
-    if (Object.hasOwn(LAYOUT_FIELD_READERS, name)) {
-      const read = LAYOUT_FIELD_READERS[name];
-      Object.assign(entry, read(reader, field, `${path}.${name}`));
-    } else unknownKey(reader, { path, key: name, keys: LAYOUT_KEYS });
-  }
-  for (const key of Object.keys(entry))
-    if (entry[key] === void 0) delete entry[key];
-  return entry;
-};
-var applyStepField = (reader, out, item) => {
-  const { name, field, path } = item;
-  if (name === "title") out.title = readText(reader, field, `${path}.title`);
-  else if (name === "text") {
-    const body = readText(reader, field, `${path}.text`);
-    if (body === void 0) return false;
-    out.text = body;
-  } else if (name === "nodes")
-    out.nodes = readIds(reader, field, `${path}.nodes`) ?? [];
-  else if (name === "edges")
-    out.edges = readIds(reader, field, `${path}.edges`);
-  else if (name === "enter")
-    out.enter = readText(reader, field, `${path}.enter`);
-  else unknownKey(reader, { path, key: name, keys: STEP_KEYS });
-  return true;
-};
-var readStep = (reader, value, path) => {
-  if (!isObject4(value)) {
-    invalid2(reader, path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
-    return void 0;
-  }
-  const out = {
-    title: void 0,
-    text: "",
-    nodes: [],
-    edges: void 0,
-    enter: void 0
-  };
-  let ok = true;
-  for (const [name, field] of Object.entries(value)) {
-    if (!applyStepField(reader, out, { name, field, path })) ok = false;
-  }
-  return ok ? out : void 0;
-};
-var readNote = (reader, note, path) => {
-  if (!isObject4(note)) {
-    invalid2(reader, path, ' `{"text": \u8AAC\u660E\u306E\u6587}` ');
-    return void 0;
-  }
-  if (note.text === void 0 && note.annotations === void 0) {
-    invalid2(
-      reader,
-      path,
-      ' `{"text": \u8AAC\u660E\u306E\u6587}` \u304B `{"annotations": [\u6CE8\u8A18\u306E ID]}` '
-    );
-    return void 0;
-  }
-  const parsed = {};
-  if (note.text !== void 0) {
-    const body = readText(reader, note.text, `${path}.text`);
-    if (body === void 0) return void 0;
-    parsed.text = body;
-  }
-  if (note.annotations === void 0) return parsed;
-  const ids = note.annotations;
-  if (!Array.isArray(ids) || !ids.every((item) => typeof item === "string")) {
-    invalid2(reader, `${path}.annotations`, " \u6CE8\u8A18\u306E ID \u306E\u914D\u5217 ");
-    return void 0;
-  }
-  parsed.annotations = ids;
-  return parsed;
-};
-var readNotes = (reader, value, data) => {
-  if (!isObject4(value)) {
-    invalid2(reader, "notes", ' ID \u3054\u3068\u306E `{"text"}` ');
-    return;
-  }
-  for (const [id, note] of Object.entries(value)) {
-    const parsed = readNote(reader, note, `notes.${id}`);
-    if (parsed !== void 0) data.notes[id] = parsed;
-  }
-};
-var readWalkthroughs = (reader, value, data) => {
-  if (!Array.isArray(value)) {
-    invalid2(reader, "walkthroughs", "\u624B\u9806\u306E\u914D\u5217");
-    return;
-  }
-  for (const [i, item] of value.entries()) {
-    const parsed = readStep(reader, item, `walkthroughs[${i}]`);
-    if (parsed) data.walkthroughs.push(parsed);
-  }
-};
-var readLayout = (reader, value, data) => {
-  if (!isObject4(value)) {
-    invalid2(reader, "layout", " ID \u3054\u3068\u306E\u4E0A\u66F8\u304D ");
-    return;
-  }
-  for (const [id, entry] of Object.entries(value)) {
-    const path = `layout.${id}`;
-    if (isObject4(entry)) data.layout[id] = readLayoutEntry(reader, entry, path);
-    else invalid2(reader, path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
-  }
-};
-var readGroupFields = (reader, group, path) => {
-  const out = {};
-  for (const [name, field] of Object.entries(group)) {
-    if (name === "title") out.title = readText(reader, field, `${path}.title`);
-    else if (name === "tables")
-      out.tables = readIds(reader, field, `${path}.tables`);
-    else if (name === "parent")
-      out.parent = readText(reader, field, `${path}.parent`);
-    else unknownKey(reader, { path, key: name, keys: GROUP_KEYS });
-  }
-  return out;
-};
-var readGroup2 = (reader, group, path) => {
-  if (!isObject4(group)) {
-    invalid2(reader, path, ' `{"title", "tables"}` ');
-    return void 0;
-  }
-  const { title, tables, parent } = readGroupFields(reader, group, path);
-  if (title === void 0 && group.title === void 0)
-    invalid2(reader, `${path}.title`, "\u6587\u5B57");
-  if (tables === void 0 && group.tables === void 0)
-    invalid2(reader, `${path}.tables`, "\u30C6\u30FC\u30D6\u30EB\u540D\u306E\u914D\u5217");
-  if (title === void 0 || tables === void 0) return void 0;
-  return { title, tables, parent };
-};
-var readGroups = (reader, value, data) => {
-  if (!isObject4(value)) {
-    invalid2(reader, "groups", ' \u5206\u985E\u306E ID \u3054\u3068\u306E `{"title", "tables"}` ');
-    return;
-  }
-  for (const [id, group] of Object.entries(value)) {
-    const parsed = readGroup2(reader, group, `groups.${id}`);
-    if (parsed !== void 0) data.groups[id] = parsed;
-  }
-};
-var readRootKey = (reader, data, item) => {
-  const { key, value } = item;
-  switch (key) {
-    case "version":
-      if (value !== 1) invalid2(reader, "version", " `1` ");
-      return;
-    case "notes":
-      readNotes(reader, value, data);
-      return;
-    case "walkthroughs":
-      readWalkthroughs(reader, value, data);
-      return;
-    case "layout":
-      readLayout(reader, value, data);
-      return;
-    case "plays_over": {
-      const target = readNumber(reader, value, "plays_over");
-      if (target !== void 0) data.plays_over = target;
-      return;
-    }
-    case "groups":
-      readGroups(reader, value, data);
-      return;
-    default:
-      unknownKey(reader, { path: "", key, keys: MAP_DATA_KEYS });
-  }
-};
-var parseMapData = (source) => {
-  const data = emptyMapData();
-  const problems = [];
-  if (source === void 0 || source.trim() === "")
-    return { data, problems, lines: /* @__PURE__ */ new Map() };
-  let root;
-  try {
-    root = JSON.parse(source);
-  } catch (error2) {
-    const reason = error2 instanceof Error ? error2.message : String(error2);
-    problems.push({
-      kind: "map_invalid_value",
-      line: errorLine(source, error2),
-      message: `\u88DC\u8DB3\u3092 JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\`<!-- map-data: {"version": 1} -->\` \u306E\u3088\u3046\u306B JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return { data, problems, lines: /* @__PURE__ */ new Map() };
-  }
-  if (!isObject4(root)) {
-    problems.push({
-      kind: "map_invalid_value",
-      line: 0,
-      message: '\u88DC\u8DB3\u306F JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\uFF08`{"version": 1}` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002'
-    });
-    return { data, problems, lines: /* @__PURE__ */ new Map() };
-  }
-  const lines = jsonPathLines(source);
-  const reader = { problems, lines };
-  for (const [key, value] of Object.entries(root))
-    readRootKey(reader, data, { key, value });
-  return { data, problems, lines };
-};
-
-// src/map/er.ts
-var CARDINALITY = {
-  "||": "1",
-  "|o": "0..1",
-  "o|": "0..1",
-  "}|": "1..n",
-  "|{": "1..n",
-  "}o": "0..n",
-  "o{": "0..n"
-};
-var NAME2 = '[^\\s{}:"|]+';
-var TABLE_OPEN_RE = new RegExp(`^(${NAME2})\\s*\\{$`);
-var COLUMN_RE = /^(\S+)\s+(\S+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?(?:\s+"([^"]*)")?$/;
-var RELATION_RE3 = new RegExp(
-  `^(${NAME2})\\s+([|}o][|o])(--|\\.\\.)([|o][|{o])\\s+(${NAME2})\\s*:\\s*(?:"([^"]*)"|(.*))$`
-);
-var unreadable5 = (line, raw) => ({
-  kind: "map_invalid",
-  line,
-  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E erDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30C6\u30FC\u30D6\u30EB} ||--o{ {\u30C6\u30FC\u30D6\u30EB} : "{\u30E9\u30D9\u30EB}"\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-});
-var readColumn2 = (text2) => {
-  const column = COLUMN_RE.exec(text2);
-  if (!column?.[1] || !column[2]) return void 0;
-  return {
-    type: column[1],
-    name: column[2],
-    keys: column[3]?.split(/\s*,\s*/) ?? [],
-    comment: column[4]
-  };
-};
-var cardinalityOf = (mark) => mark ? CARDINALITY[mark] : void 0;
-var readRelation3 = (text2) => {
-  const relation = RELATION_RE3.exec(text2);
-  if (!relation?.[1] || !relation[5]) return void 0;
-  const left = cardinalityOf(relation[2]);
-  const right = cardinalityOf(relation[4]);
-  if (!left || !right) return void 0;
-  const label = (relation[6] ?? relation[7] ?? "").trim();
-  return {
-    from: relation[1],
-    to: relation[5],
-    fromCardinality: left,
-    toCardinality: right,
-    dashed: relation[3] === "..",
-    label: label === "" ? void 0 : label
-  };
-};
-var readInTable = (current, at) => {
-  if (at.text === "}") return void 0;
-  const column = readColumn2(at.text);
-  if (column) current.table.columns.push(column);
-  else at.problems.push(unreadable5(at.line, at.raw));
-  return current;
-};
-var parseErDiagram = (source) => {
-  const tables = /* @__PURE__ */ new Map();
-  const relations = [];
-  const problems = [];
-  const tableOf = (name) => {
-    const found = tables.get(name);
-    if (found) return found;
-    const table2 = { name, columns: [] };
-    tables.set(name, table2);
-    return table2;
-  };
-  let current;
-  for (const [line, raw] of source.split("\n").entries()) {
-    const text2 = raw.replace(/%%.*$/, "").trim();
-    if (line === 0 || text2 === "") continue;
-    const at = { text: text2, line, raw, problems };
-    if (current) {
-      current = readInTable(current, at);
-      continue;
-    }
-    const open2 = TABLE_OPEN_RE.exec(text2);
-    if (open2?.[1]) {
-      current = { table: tableOf(open2[1]), line };
-      continue;
-    }
-    const relation = readRelation3(text2);
-    if (!relation) {
-      problems.push(unreadable5(line, raw));
-      continue;
-    }
-    tableOf(relation.from);
-    tableOf(relation.to);
-    relations.push({ id: `r${relations.length + 1}`, ...relation });
-  }
-  if (current) {
-    problems.push({
-      kind: "map_invalid",
-      line: current.line,
-      message: `\u30C6\u30FC\u30D6\u30EB \`${current.table.name}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-  }
-  return { tables: [...tables.values()], relations, problems };
-};
-
-// src/map/lucide-names.ts
-var import_lucide3 = __toESM(require_lucide(), 1);
-var kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").replace(/([a-zA-Z])([0-9])/g, "$1-$2").toLowerCase();
-var names;
-var lucideIconNames = () => {
-  names ??= new Set(Object.keys(import_lucide3.icons).map(kebab));
-  return names;
-};
-
-// src/map/state-diagram.ts
-var ID3 = "[A-Za-z0-9_\\u0080-\\uffff]+";
-var DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
-var ALIAS_RE = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID3})$`);
-var CHOICE_RE = new RegExp(`^state\\s+(${ID3})\\s+<<choice>>$`);
-var OPEN_RE = new RegExp(`^state\\s+(?:"([^"]+)"\\s+as\\s+)?(${ID3})\\s*\\{$`);
-var NOTE_RE3 = new RegExp(
-  `^note\\s+(left|right)\\s+of\\s+(${ID3})\\s*:\\s*(.+)$`
-);
-var DECLARE_RE = new RegExp(`^(${ID3})$`);
-var MOVE_RE = new RegExp(
-  `^(\\[\\*\\]|${ID3})\\s*-->\\s*(\\[\\*\\]|${ID3})(?:\\s*:\\s*(.+))?$`
-);
-var IGNORED_RE6 = /^(classDef|class|style|accTitle|accDescr|title)\b/;
-var toDirection2 = (value) => value === "LR" || value === "RL" ? "LR" : "TB";
-var unreadable6 = (line, raw) => ({
-  kind: "map_invalid",
-  line,
-  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E stateDiagram-v2 \u306E\u8A18\u6CD5\uFF08\`{\u72B6\u614B} --> {\u72B6\u614B} : {\u30E9\u30D9\u30EB}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-});
-var parseStateDiagram = (source) => {
-  const states = /* @__PURE__ */ new Map();
-  const composites = [];
-  const transitions = [];
-  const notes = [];
-  const problems = [];
-  const stack = [];
-  let direction = "TB";
-  const scope = () => stack.at(-1)?.composite.id;
-  const ensure = (id) => {
-    const found = states.get(id);
-    if (found) return found;
-    const state = { id, label: id, kind: "state", parent: scope() };
-    states.set(id, state);
-    return state;
-  };
-  const endpoint = (token, side) => {
-    if (token !== "[*]") return ensure(token).id;
-    const id = `${side}_${scope() ?? "root"}`;
-    if (!states.has(id))
-      states.set(id, {
-        id,
-        label: side === "start" ? "\u958B\u59CB" : "\u7D42\u4E86",
-        kind: side,
-        parent: scope()
-      });
-    return id;
-  };
-  const readDirection = (text2) => {
-    const dir = DIRECTION_RE.exec(text2);
-    if (!dir?.[1]) return false;
-    const current = stack.at(-1)?.composite;
-    if (current) current.direction = toDirection2(dir[1]);
-    else direction = toDirection2(dir[1]);
-    return true;
-  };
-  const readAlias = (text2) => {
-    const alias = ALIAS_RE.exec(text2);
-    if (!alias?.[1] || !alias[2]) return false;
-    ensure(alias[2]).label = alias[1];
-    return true;
-  };
-  const readChoice2 = (text2) => {
-    const choice = CHOICE_RE.exec(text2);
-    if (!choice?.[1]) return false;
-    ensure(choice[1]).kind = "choice";
-    return true;
-  };
-  const readOpen = (text2, line) => {
-    const open2 = OPEN_RE.exec(text2);
-    if (!open2?.[2]) return false;
-    const composite = {
-      id: open2[2],
-      title: open2[1] ?? open2[2],
-      parent: scope(),
-      direction: void 0
-    };
-    composites.push(composite);
-    stack.push({ composite, line });
-    return true;
-  };
-  const readNote2 = (text2) => {
-    const note = NOTE_RE3.exec(text2);
-    if (!note?.[1] || !note[2] || !note[3]) return false;
-    notes.push({
-      id: `n${notes.length + 1}`,
-      of: note[2],
-      side: note[1] === "left" ? "left" : "right",
-      text: note[3].trim()
-    });
-    return true;
-  };
-  const readMove = (text2) => {
-    const move = MOVE_RE.exec(text2);
-    if (!move?.[1] || !move[2]) return false;
-    const label = move[3]?.trim();
-    transitions.push({
-      id: `t${transitions.length + 1}`,
-      from: endpoint(move[1], "start"),
-      to: endpoint(move[2], "end"),
-      label: label === "" ? void 0 : label
-    });
-    return true;
-  };
-  const readDeclare = (text2) => {
-    const declared = DECLARE_RE.exec(text2);
-    if (!declared?.[1]) return false;
-    ensure(declared[1]).parent = scope();
-    return true;
-  };
-  const readers = [
-    readDirection,
-    readAlias,
-    readChoice2,
-    readOpen,
-    (text2, line, raw) => {
-      if (text2 !== "}") return false;
-      if (!stack.pop()) problems.push(unreadable6(line, raw));
-      return true;
-    },
-    readNote2,
-    readMove,
-    readDeclare
-  ];
-  for (const [line, raw] of source.split("\n").entries()) {
-    const text2 = raw.replace(/%%.*$/, "").trim();
-    if (line === 0 || text2 === "" || IGNORED_RE6.test(text2)) continue;
-    if (!readers.some((read) => read(text2, line, raw)))
-      problems.push(unreadable6(line, raw));
-  }
-  for (const open2 of stack) {
-    problems.push({
-      kind: "map_invalid",
-      line: open2.line,
-      message: `\u5165\u308C\u5B50\u306E\u72B6\u614B \`${open2.composite.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5165\u308C\u5B50\u306E\u72B6\u614B\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-  }
-  const compositeIds = new Set(composites.map((item) => item.id));
-  return {
-    direction,
-    states: [...states.values()].filter((item) => !compositeIds.has(item.id)),
-    composites,
-    transitions,
-    notes,
-    problems
-  };
-};
-
-// src/map/check.ts
-var REF_HINTS = {
-  flowchart: "Mermaid \u306E\u30CE\u30FC\u30C9\u30FB\u7DDA\u30FB\u30B0\u30EB\u30FC\u30D7\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  sequenceDiagram: "Mermaid \u306E\u53C2\u52A0\u8005\u306E ID \u304B\u3001\u30E1\u30C3\u30BB\u30FC\u30B8\u30FB\u30D6\u30ED\u30C3\u30AF\u306E\u756A\u53F7\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  erDiagram: "\u30C6\u30FC\u30D6\u30EB\u540D\u30FB`{\u30C6\u30FC\u30D6\u30EB}.{\u5217}`\u30FB\u95A2\u9023\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}`\u30FB\u5206\u985E\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  stateDiagram: "\u72B6\u614B\u306E ID \u304B\u3001\u9077\u79FB\u306E ID \u3092\u8A18\u8F09\u9806\u306E `t{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  classDiagram: "\u30AF\u30E9\u30B9\u540D\u30FB`{\u30AF\u30E9\u30B9\u540D}.{\u30E1\u30F3\u30D0\u30FC\u540D}`\u30FB`namespace` \u306E ID\u30FB\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  architecture: "service\u30FBgroup\u30FBjunction \u306E ID \u304B\u3001\u7DDA\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  C4Context: "\u8981\u7D20\u30FB\u5883\u754C\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-};
-var groupProblems = (data, tables, lineOf) => {
-  const problems = [];
-  const owner = /* @__PURE__ */ new Map();
-  for (const [id, group] of Object.entries(data.groups)) {
-    const path = `groups.${id}`;
-    if (tables.has(id))
-      problems.push({
-        kind: "map_invalid_value",
-        line: lineOf(path),
-        message: `\u5206\u985E\u306E ID \`${id}\` \u304C\u30C6\u30FC\u30D6\u30EB\u540D\u3068\u540C\u3058\u3067\u3059\u3002\u5206\u985E\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    for (const table2 of group.tables) {
-      const first = owner.get(table2);
-      if (!tables.has(table2))
-        problems.push({
-          kind: "map_unknown_ref",
-          line: lineOf(`${path}.tables`),
-          message: `\u88DC\u8DB3\u306E \`${path}.tables\` \u306E \`${table2}\` \u304C Mermaid \u306E\u30C6\u30FC\u30D6\u30EB\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        });
-      else if (first !== void 0)
-        problems.push({
-          kind: "map_invalid_value",
-          line: lineOf(`${path}.tables`),
-          message: `\u30C6\u30FC\u30D6\u30EB \`${table2}\` \u304C\u5206\u985E \`${first}\` \u3068 \`${id}\` \u306E 2 \u3064\u306B\u5165\u3063\u3066\u3044\u307E\u3059\u30021 \u3064\u306E\u5206\u985E\u306B\u3060\u3051\u5165\u308C\u3066\u304F\u3060\u3055\u3044\u3002`
-        });
-      else owner.set(table2, id);
-    }
-    if (group.parent !== void 0 && !(group.parent in data.groups))
-      problems.push({
-        kind: "map_unknown_ref",
-        line: lineOf(`${path}.parent`),
-        message: `\u88DC\u8DB3\u306E \`${path}.parent\` \u306E \`${group.parent}\` \u304C\u88DC\u8DB3\u306E\u5206\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5206\u985E\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-  }
-  return problems;
-};
-var shiftProblems = (items, offset) => items.map(
-  (item) => item.line === void 0 || offset === void 0 ? { ...item, line: item.line === void 0 ? void 0 : item.line } : { ...item, line: item.line + offset }
-);
-var emptyMermaidIds = (problems) => ({
-  ids: /* @__PURE__ */ new Set(),
-  edgeIds: /* @__PURE__ */ new Set(),
-  classes: /* @__PURE__ */ new Set(),
-  tables: /* @__PURE__ */ new Set(),
-  problems,
-  linkProblems: []
-});
-var flowchartIds = (mermaid, line) => {
-  const chart = parseFlowchart(mermaid);
-  const found = emptyMermaidIds(shiftProblems(chart.problems, line));
-  found.linkProblems.push(...mapLinkProblems(chart.links).problems);
-  for (const node2 of chart.nodes) {
-    found.ids.add(node2.id);
-    for (const name of node2.classes) found.classes.add(name);
-  }
-  for (const group of chart.groups) found.ids.add(group.id);
-  for (const edge of chart.edges) {
-    found.ids.add(edge.id);
-    found.edgeIds.add(edge.id);
-  }
-  return found;
-};
-var erIds = (mermaid, line, data) => {
-  const er = parseErDiagram(mermaid);
-  const found = emptyMermaidIds(shiftProblems(er.problems, line));
-  for (const table2 of er.tables) {
-    found.ids.add(table2.name);
-    found.tables.add(table2.name);
-    for (const column of table2.columns)
-      found.ids.add(`${table2.name}.${column.name}`);
-  }
-  for (const relation of er.relations) {
-    found.ids.add(relation.id);
-    found.edgeIds.add(relation.id);
-  }
-  for (const id of Object.keys(data.groups)) found.ids.add(id);
-  return found;
-};
-var stateIds = (mermaid, line) => {
-  const diagram = parseStateDiagram(mermaid);
-  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
-  for (const state of diagram.states) found.ids.add(state.id);
-  for (const composite of diagram.composites) found.ids.add(composite.id);
-  for (const transition of diagram.transitions) {
-    found.ids.add(transition.id);
-    found.edgeIds.add(transition.id);
-  }
-  return found;
-};
-var addEdgeIds = (found, ids) => {
-  for (const id of ids) {
-    found.ids.add(id);
-    found.edgeIds.add(id);
-  }
-};
-var classIds = (mermaid, line) => {
-  const diagram = parseClassDiagram(mermaid);
-  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
-  for (const item of diagram.classes) {
-    found.ids.add(item.id);
-    for (const member of item.members)
-      found.ids.add(`${item.id}.${member.name}`);
-  }
-  for (const space of diagram.namespaces) found.ids.add(space);
-  addEdgeIds(
-    found,
-    diagram.relations.map((relation) => relation.id)
-  );
-  return found;
-};
-var architectureIds = (mermaid, line) => {
-  const diagram = parseArchitecture(mermaid);
-  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
-  for (const item of [...diagram.services, ...diagram.groups])
-    found.ids.add(item.id);
-  addEdgeIds(
-    found,
-    diagram.edges.map((edge) => edge.id)
-  );
-  return found;
-};
-var c4Ids = (mermaid, line) => {
-  const diagram = parseC4Context(mermaid);
-  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
-  for (const item of [...diagram.elements, ...diagram.boundaries])
-    found.ids.add(item.id);
-  addEdgeIds(
-    found,
-    diagram.relations.map((relation) => relation.id)
-  );
-  return found;
-};
-var sequenceIds = (mermaid, line) => {
-  const sequence = parseSequence(mermaid);
-  const found = emptyMermaidIds(shiftProblems(sequence.problems, line));
-  for (const participant of sequence.participants)
-    found.ids.add(participant.id);
-  for (const index of sequence.messages.keys())
-    found.ids.add(String(index + 1));
-  for (const index of sequence.fragments.keys()) found.ids.add(String(index));
-  return found;
-};
-var mermaidIdsOf = (kind, source) => {
-  const { mermaid, line, data } = source;
-  switch (kind) {
-    case "flowchart":
-      return flowchartIds(mermaid, line);
-    case "erDiagram":
-      return erIds(mermaid, line, data);
-    case "stateDiagram":
-      return stateIds(mermaid, line);
-    case "classDiagram":
-      return classIds(mermaid, line);
-    case "architecture":
-      return architectureIds(mermaid, line);
-    case "C4Context":
-      return c4Ids(mermaid, line);
-    default:
-      return sequenceIds(mermaid, line);
-  }
-};
-var annotationProblems = (context, annotationIds) => {
-  if (annotationIds === void 0) return [];
-  return Object.entries(context.data.notes).flatMap(
-    ([id, note]) => (note.annotations ?? []).filter((annotation) => !annotationIds.has(annotation)).map(
-      (annotation) => ({
-        kind: "annotation_undefined",
-        line: context.lineOf(`notes.${id}.annotations`),
-        message: `\u88DC\u8DB3\u306E \`notes.${id}.annotations\` \u304C\u6307\u3059\u6CE8\u8A18 \`\u203B[${annotation}]\` \u306E\u5B9A\u7FA9\u304C\u3042\u308A\u307E\u305B\u3093\u3002\`\u203B[${annotation}]: \u672C\u6587\` \u3092\u8A18\u8F09\u3059\u308B\u304B\u3001ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      })
-    )
-  );
-};
-var reservedIdProblems = (context) => {
-  const { kind, found } = context;
-  if (kind !== "erDiagram" && kind !== "stateDiagram") return [];
-  return [...found.ids].filter((id) => !found.edgeIds.has(id) && /^[rt]\d+$/.test(id)).map((id) => ({
-    kind: "map_invalid_value",
-    message: `\`${id}\` \u306F\u95A2\u9023\u30FB\u9077\u79FB\u306E ID\uFF08\u8A18\u8F09\u9806\u306E \`r{\u756A\u53F7}\`\u30FB\`t{\u756A\u53F7}\`\uFF09\u3068\u540C\u3058\u540D\u524D\u3067\u3059\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u30FB\u72B6\u614B\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  }));
-};
-var checkLayout = (context) => {
-  const { found, data, config: config3, lineOf, ref, problems } = context;
-  const lineNames = /* @__PURE__ */ new Set();
-  for (const [id, entry] of Object.entries(data.layout)) {
-    ref(`layout.${id}`, id);
-    ref(`layout.${id}.align`, entry.align);
-    if (found.ids.has(id) && !found.edgeIds.has(id)) {
-      problems.push(...edgeOnlyProblems({ id, entry, lineOf }));
-    }
-    if (entry.line !== void 0 && !(entry.line in config3.lines) && !lineNames.has(entry.line)) {
-      lineNames.add(entry.line);
-      problems.push({
-        kind: "map_unknown_line",
-        message: `\u88DC\u8DB3\u306E \`layout.${id}.line\` \u306E \`${entry.line}\` \u304C\u8A2D\u5B9A\u306E \`map.lines\` \u306B\u3042\u308A\u307E\u305B\u3093\u3002\`map.lines\` \u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u540D\u524D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E\u7DDA\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    }
-  }
-};
-var edgeOnlyProblems = (item) => {
-  const { id, entry, lineOf } = item;
-  return ["ends", "via"].filter((key) => entry[key] !== void 0).map((key) => ({
-    kind: "map_invalid_value",
-    line: lineOf(`layout.${id}.${key}`),
-    message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u7DDA\u306E ID \u306E\u3068\u304D\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002\`${id}\` \u306F\u30CE\u30FC\u30C9\u304B\u30B0\u30EB\u30FC\u30D7\u3067\u3059\u3002`
-  }));
-};
-var collectMapProblems = (range, config3, includeUnknownKeys) => {
-  const structure = collectMapStructure(range);
-  if (structure.kind === void 0 || range.mermaid === void 0)
-    return structure.problems;
-  const problems = [...structure.problems];
-  const kind = structure.kind;
-  if (includeUnknownKeys) {
-    for (const key of structure.args.unknownKeys) {
-      problems.push({
-        kind: "map_unknown_key",
-        message: `\u30DE\u30FC\u30AB\u30FC\u306E\u5F15\u6570\u306B\u77E5\u3089\u306A\u3044\u30AD\u30FC \`${key}\` \u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30AD\u30FC\u306F ${MAP_ARG_KEYS.map((name) => `\`${name}\``).join("\u30FB")} \u3067\u3059\u3002`
-      });
-    }
-  }
-  const { data, problems: dataProblems, lines } = parseMapData(range.data);
-  const found = mermaidIdsOf(kind, {
-    mermaid: range.mermaid,
-    line: range.mermaidLine,
-    data
-  });
-  problems.push(
-    ...found.problems,
-    ...shiftProblems(dataProblems, range.dataLine)
-  );
-  const lineOf = (path) => {
-    const local = lines.get(path);
-    return local === void 0 || range.dataLine === void 0 ? void 0 : local + range.dataLine;
-  };
-  const ref = (path, id) => {
-    if (id !== void 0 && !found.ids.has(id)) {
-      problems.push({
-        kind: "map_unknown_ref",
-        line: lineOf(path),
-        message: `\u88DC\u8DB3\u306E \`${path}\` \u304C\u6307\u3059 \`${id}\` \u304C Mermaid \u306B\u3042\u308A\u307E\u305B\u3093\u3002${REF_HINTS[kind]}`
-      });
-    }
-  };
-  const context = {
-    kind,
-    found,
-    data,
-    config: config3,
-    lineOf,
-    ref,
-    problems
-  };
-  for (const id of Object.keys(data.notes)) ref(`notes.${id}`, id);
-  problems.push(...annotationProblems(context, range.annotationIds));
-  if (kind === "erDiagram")
-    problems.push(...groupProblems(data, found.tables, lineOf));
-  problems.push(...reservedIdProblems(context));
-  data.walkthroughs.forEach((step, index) => {
-    for (const id of step.nodes) ref(`walkthroughs[${index}].nodes`, id);
-    for (const id of step.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
-    ref(`walkthroughs[${index}].enter`, step.enter);
-  });
-  checkLayout(context);
-  problems.push(...found.linkProblems);
-  for (const name of found.classes) {
-    if (!(name in config3.kinds)) {
-      problems.push({
-        kind: "map_unknown_class",
-        message: `\u30CE\u30FC\u30C9\u306E\u30AF\u30E9\u30B9 \`${name}\` \u304C\u8A2D\u5B9A\u306E \`map.kinds\` \u306B\u3042\u308A\u307E\u305B\u3093\u3002\`map.kinds\` \u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u30AF\u30E9\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7A2E\u985E\u306E\u884C\u306E\u7121\u3044\u30CE\u30FC\u30C9\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    }
-  }
-  return problems;
-};
-var checkMapConfig = (map) => {
-  const issues = [];
-  if (typeof map !== "object" || map === null) return issues;
-  const kinds = map.kinds;
-  if (typeof kinds !== "object" || kinds === null) return issues;
-  for (const [name, kind] of Object.entries(kinds)) {
-    const icon = kind?.icon;
-    if (typeof icon === "string" && !lucideIconNames().has(icon)) {
-      issues.push({
-        key: `map.kinds.${name}.icon`,
-        message: `\`${icon}\` \u306F Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u306B\u3042\u308A\u307E\u305B\u3093\u3002Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\uFF08\`database\` \u306A\u3069\uFF09\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-    }
-  }
-  return issues;
-};
 
 // src/cli/git.ts
 import { execFile } from "node:child_process";

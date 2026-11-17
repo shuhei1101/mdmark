@@ -63,6 +63,8 @@ export declare const attachMermaid: (options: {
     }>>;
     placement: TooltipPlacement;
     importModule?: SyntaxImport;
+    /** 図にするコードブロック（省くと `root` の中の全ての `[data-mdmark-mermaid]`） */
+    blocks?: HTMLElement[] | undefined;
 }) => {
     ready: Promise<void>;
     detach: () => void;

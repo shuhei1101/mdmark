@@ -38,4 +38,6 @@ export declare function attachParts(options: {
     warned: PartsWarned;
     /** 既定を当てた設定（map の図が使う） */
     config?: ResolvedConfig | undefined;
+    /** map の図を mermaid の図に戻したときに、戻したコードブロックを指定して呼ぶ関数 */
+    restoreMermaid?: ((blocks: HTMLElement[]) => void) | undefined;
 }): PartsHandle;

@@ -5,7 +5,9 @@ import type { ViewPartModule } from "./views/index.ts";
 export type PartName = "view" | "comments" | "map";
 /** map の部品のモジュール（`dist/map.js`）の構造 */
 export type MapPartModule = {
-    attachMap: (root: HTMLElement, config: ResolvedConfig) => () => void;
+    attachMap: (root: HTMLElement, config: ResolvedConfig, hooks?: {
+        restoreMermaid?: (blocks: HTMLElement[]) => void;
+    }) => () => void;
 };
 /** 部品の名前ごとのモジュールの構造 */
 type PartModules = {

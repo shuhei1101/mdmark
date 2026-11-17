@@ -15,6 +15,15 @@ export type MapRangeSource = {
 export type MapKindName = "flowchart" | "sequenceDiagram" | "erDiagram" | "stateDiagram" | "classDiagram" | "architecture" | "C4Context";
 /** Mermaid の 1 行目の最初の単語から図の種類を決める */
 export declare const mapKindOf: (mermaid: string) => MapKindName | undefined;
+/** 範囲の外の map の図にする mermaid のコードブロックの中身 */
+export type PlainMapSource = {
+    kind: MapKindName;
+    body: string;
+    frontMatter: string | undefined;
+    title: string | undefined;
+};
+/** mermaid のコードブロックのソースから、範囲の外の map の図にする中身を返す。front matter の `config`・`%%{` の行を持つか、map が描けない種類なら `undefined` */
+export declare const plainMapSourceOf: (source: string) => PlainMapSource | undefined;
 /** 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめる（Mermaid と補足の中身は読まない） */
 export declare const collectMapStructure: (range: MapRangeSource) => {
     problems: MapProblem[];
