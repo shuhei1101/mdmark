@@ -34,7 +34,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T16:55:42.640258+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T17:14:16.877867+00:00'
   - process: モック作成
     status: skipped
     reason: 画面を変えない（CLI の移行と補足の点検の修正）
