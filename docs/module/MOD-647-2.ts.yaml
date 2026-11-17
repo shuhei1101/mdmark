@@ -1,7 +1,7 @@
 id: MOD-647-2
 visibility: internal
 title: ライブラリ本体 / 記法 / tokens.ts
-lead: 記法のコアルールが共有するトークンの処理（解析の環境・機能の判定・mdmark が出した HTML のトークン・タブの中身の境目・マーカーの読み取り・閉じの探索・インライン要素の文字）。
+lead: 記法のコアルールが共有するトークンの処理を受け持ち、マーカーの読み取りや閉じの探し方、mdmark が出した HTML のトークンの作り方を変えるときに参照する。
 enums:
   - name: TabBoundary
     title: タブの中身の境目
@@ -89,6 +89,7 @@ functions:
       3. `markOwn` で `html` に `nonce` を付けて中身にする
     callees:
       - '#functions[envOf]'
+      - MOD-472-311#functions[markOwn]
   - name: tabBoundaryBlock
     title: タブの中身の境目のトークンを作る
     kind: 関数

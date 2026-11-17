@@ -1,7 +1,7 @@
 id: MOD-647-3
 visibility: internal
 title: ライブラリ本体 / 書き出したHTMLの起動 / includes.ts
-lead: 書き出しの中身から、文書ごとの取り込む文書の表と、`mount` に指定する索引・参照の引数を作る処理。
+lead: 書き出しの中身からの取り込む文書の表と `mount` の索引・参照の引数の組み立てを受け持ち、まとめた HTML で文書を開くときに指定する値を変えるときに参照する。
 functions:
   - name: includesOf
     title: 取り込む文書の表を作る
@@ -44,3 +44,5 @@ functions:
 tags:
   - name: tool:html
     main: true
+  - name: topic:書き出し
+  - name: action:起動

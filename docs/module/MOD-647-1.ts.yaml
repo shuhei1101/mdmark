@@ -1,7 +1,7 @@
 id: MOD-647-1
 visibility: internal
 title: ライブラリ本体 / 記法 / blocks.ts
-lead: 範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告をブロックの前へ差し込む処理。
+lead: 範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告のブロックの前への差し込みを受け持ち、範囲のマーカーの組み方や警告を差し込む位置を変えるときに参照する。
 functions:
   - name: blockStartOf
     title: トークンを含むブロックの開きを探す
@@ -97,7 +97,7 @@ functions:
     process: |-
       1. 組を開きの位置の順に並べる
       2. 直前に採った組の終了より前で開く組は飛ばし、それ以外を採る
-      3. 採った組の終了位置を `close`（`-1` なら `length`）にする
+      3. 次の組を飛ばすかの判定に使う終了位置を、採った組の `close`（`-1` なら `length`）にする
 tags:
   - name: topic:markdown
     main: true

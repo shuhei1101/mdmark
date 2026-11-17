@@ -1,7 +1,7 @@
 id: MOD-647-4
 visibility: internal
 title: ライブラリ本体 / 書き出したHTMLの起動 / viewer.css
-lead: まとめた HTML の画面と印刷の規則。
+lead: まとめた HTML の画面と印刷の規則を受け持ち、まとめた HTML の文書の一覧・狭い幅のバー・パネル・印刷の外観を変えるときに参照する。
 styles:
   - name: viewer
     title: まとめたHTMLのCSS
@@ -42,3 +42,4 @@ tags:
   - name: tool:html
     main: true
   - name: topic:ナビゲーション
+  - name: topic:書き出し
