@@ -75,7 +75,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T10:24:00.457581+00:00'
   - process: 実装
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T11:25:14.647347+00:00'
   - process: 結合テスト作成
     status: skipped
     note: workflow のテストの要否と置き場所はインターフェース定義設計で決める

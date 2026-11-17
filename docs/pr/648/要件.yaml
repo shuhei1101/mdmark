@@ -14,9 +14,14 @@ docs:
   - page: .github/files.yaml
     new: false
     change: テストを回す workflow の行を追加し、インターフェース定義への implements を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T11:25:13.052312+00:00'
 scope_out:
   - item: 全件実行のコマンドが未確定の層（非機能要件・E2E・結合（バック）・単体（バック）・外部疎通）の実行場所
     reason: 全件実行のコマンドが無く、テンプレートが実行場所を決めるまで記載しないとしている
     plan: none
+  - item: VS Code 拡張機能の結合テストの mermaid の 2 件（test_normal_when_relative_mermaid・test_normal_when_mermaid）の fail
+    reason: develop にある不具合で、手元でも同じ 2 件が fail する。この作業 PR の変更ではない
+    plan: '#642'
 use_cases: []
