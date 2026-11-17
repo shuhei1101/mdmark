@@ -9873,6 +9873,9 @@
     .mdmark-diagram-stage
     > .mdmark-diagram-node.map-closed-group {
     padding-left: 30px;
+    /* 数の行を、左上のタイトルの行（上から 6px・高さ 24px）の下から描く */
+    padding-top: 30px;
+    justify-content: flex-start;
   }
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-closed-group {
     border: 3px double var(--mdmark-color-border);
