@@ -46,6 +46,13 @@ states:
         value: '`click A href "./a.md"` の行を持つ Flowchart と同じ図を描いた SVG'
     notes:
       定義: 部品設計『mapの構成図』の LinkedNode と同じ見た目（モック作成は skipped。作業 PR #618 のタスク一覧）
+  - name: StyledFallback
+    description: map の範囲の外の flowchart のうち、`style` の行を持ち map で同じ図にできないものを mermaid で描いた。ノードの塗りが `style` の行で指定した色
+    args:
+      - name: svg
+        value: '`style A fill:#f9f` の行を持つ Flowchart と同じ図を描いた SVG'
+    notes:
+      定義: 単一 UC『mermaidの図を描く』の異常シナリオ（map が読めない行を持つ）の 4 つ目のコードブロック
 lead: 図の枠の表示する枠に入れる、mermaid で描いた SVG。SVG は mdmark の CSS 変数から作ったテーマで描かれる。
 args:
   - name: svg
@@ -72,7 +79,7 @@ css_properties:
 accessibility:
   - SVG は mermaid が付ける `role="graphics-document document"`・`aria-roledescription`（図の種類）を持ち、`accTitle`・`accDescr` を `title`・`desc` で持つ
   - '`printSvg` は `aria-hidden="true"` を持ち、同じ図を 2 回スクリーンリーダーに伝えない'
-  - ノード・ラベルの文字は SVG の文字のまま選べ、スクリーンリーダーに出る
+  - ノード・ラベル・メッセージの文字は SVG の文字のままドラッグで選んでコピーでき（ポインターの形状は `text`）、スクリーンリーダーに出る。文字の無い所のドラッグは図を動かす
   - 色だけで意味を伝える図（円グラフ）は、mermaid が描く凡例とラベルに名前と値を出す
   - リンクを持つノードは SVG の `a` が Tab でフォーカスを受け、Enter で開く。スクリーンリーダー向けの名前はノードの文字。リンクであることは色だけでなく下線でも伝える
 status: planned
@@ -80,6 +87,7 @@ refs:
   - IF-472-35#constraints[mermaid の描き方]
   - IF-472-35#constraints[mermaid のテーマ]
   - IF-472-35#constraints[mermaid のノードのリンク]
+  - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
 notes:
   ストーリーの SVG: Storybook のストーリーは Node で HTML を返却するため、mermaid をストーリーの中で動かさない。モックと同じソースを `mount` が描いた SVG を、テストの準備で書き出したファイルとして指定する。ストーリーは図の枠（種類 `mermaid`）で包んで出し、題名はモックの場面のタイトル（front matter の `title` か図の種類の名前）にする
 test_file: tests/integration/lib/mermaid-diagram.story.test.ts

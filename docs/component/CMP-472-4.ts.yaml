@@ -47,6 +47,13 @@ states:
     args:
       - name: terms
         value: '{"mount": "文書を要素の中に描く関数"}'
+  - name: ActorIcon
+    description: '`actor` の参加者。設定の `map.kinds.actor` が無くても、参加者の箱に lucide の人のアイコンを出す'
+  - name: HeadsStuck
+    description: 表示する枠の中を縦に動かした。参加者の行が表示する枠の上端に留まり、行の背景が表示する枠の枠線とツールの行の線に重ならない
+    screenshot: false
+  - name: Plain
+    description: map の範囲の外の純粋な Mermaid のシーケンス図（`data-map-plain`）。補足が無く、メッセージの説明のツールチップを持たない
 lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・ノート・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
   - name: sequence
@@ -119,8 +126,11 @@ accessibility:
   - 押せる要素は、箱の中の種類の行と名前の文字の下に重ね、それらを押せる要素の中に入れない。名前の中の用語は、押せる要素とは別にフォーカスできる（Tab の順は押せる要素、名前の中の用語）。並べ替えた後は、移した参加者の押せる要素へフォーカスを戻す
   - 参加者の名前の文字は選んでコピーでき、ドラッグできる場所のポインターの形状は `grab`
   - ブロックの枠線とライフラインは 1px で、背景とのコントラスト比 3:1 以上
+  - 留めた参加者の行は、動かす前と同じ要素のまま、同じ順でスクリーンリーダーに出る
 refs:
   - IF-472-35#
+  - IF-472-35#constraints[シーケンス図の参加者の行を留める]
+  - IF-472-35#constraints[範囲の外の map の図に付く操作]
 status: planned
 test_file: tests/integration/lib/map-sequence.story.test.ts
 tags:

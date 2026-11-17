@@ -35,6 +35,11 @@ states:
         value: 'false'
   - name: Narrow
     description: 幅 390px の置き場所
+  - name: LinkedClass
+    description: Mermaid の `click`・`link` の行でリンク先を持つクラス。名前が本文のリンクと同じ色と下線で、クラスの全体がリンクになる。リンク先を持たないクラスは今のまま
+    args:
+      - name: links
+        value: '{"図面": "https://example.com/drawing"}'
 lead: map の `classDiagram` を、クラスを属性とメソッドの区画を持つノード、namespace をグループにして構成図の部品の上に描き、関係の端の形状・多重度・ラベルとメンバーの開閉を持つ。
 args:
   - name: layout
@@ -91,6 +96,11 @@ args:
     required: false
     default: なし（下線を付けない）
     description: 用語から意味への対応。クラスの名前とノートの文の中の用語を `span.mdmark-term` にする
+  - name: links
+    type: オブジェクト
+    required: false
+    default: '{}'
+    description: Mermaid の `click`・`link` の行のクラスの ID からリンク先への対応（許可したものだけ）。構成図の部品の `links` と同じ
 events:
   - name: 開閉する・中へ入る
     when: namespace の山形・タイトルのボタン、クラスの開閉のボタンを押す

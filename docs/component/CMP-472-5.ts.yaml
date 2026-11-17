@@ -5,7 +5,7 @@ implementation: src/parts/map.ts#renderMapFlow
 story: Parts/MapFlow
 states:
   - name: Default
-    description: 入れ子のグループ 2 つ・色を持つグループ・種類を持つノードと持たないノード・破線と太い線・両向きの線。凡例が無く、種類を持たないノードも高さ 24px の空の種類の行を持つ
+    description: 入れ子のグループ 2 つ・色を持つグループ・種類を持つノードと持たないノード・破線と太い線・両向きの線。凡例が無く、種類を持たないノードは種類の行を持たず、名前をノードの上下の中央に描く
     notes:
       定義: モックの `FLOW`・`DATA`・`CONFIG`（`docs/mock/refs/445/assets/samples.js`）
   - name: Entered
@@ -55,6 +55,8 @@ states:
         value: 'false'
   - name: Narrow
     description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
+  - name: Plain
+    description: map の範囲の外の純粋な Mermaid の flowchart（`data-map-plain`）。補足が無く、種類を持たないノードだけで、説明のマーカーとツールチップを持たない
 lead: map の `flowchart` を自動配置した結果のノードと線（線の交差の飛び越えを含む）を描き、その上に入れ子のグループの面を重ねる。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
 args:
   - name: layout
@@ -184,6 +186,7 @@ accessibility:
   - リンク先を持つノードは、ノードの `div` がフォーカスを受けず、`a.mdmark-diagram-node-link` がノードの代わりにフォーカスを受ける（ノードの中にフォーカスできる要素を入れ子にしない）。リンクはスクリーンリーダー向けの名前がノードの名前（選んでいれば `（選択中）`）で、`aria-roledescription="ノード"`・`aria-keyshortcuts="Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` を持ち、Enter でリンク先を開き、Space で選び、Alt + 矢印キーで動かす。説明のマーカーとは別にフォーカスできる（Tab の順はリンク、マーカー）。グループの説明のマーカーはタイトルのボタンの外にあり、`aria-describedby` で説明のツールチップを指す
 refs:
   - IF-472-35#
+  - IF-472-35#constraints[範囲の外の map の図に付く操作]
 status: planned
 test_file: tests/integration/lib/map-flow.story.test.ts
 tags:
