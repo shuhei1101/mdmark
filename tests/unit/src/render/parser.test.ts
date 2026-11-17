@@ -287,3 +287,21 @@ test("test_resolve_id_links", async () => {
   expect(anchors[0]).toContain('href="https://docs.example.com/SC-1"');
   expect(anchors[1]).not.toContain("href=");
 });
+
+// 本文の id: のリンクは、記載した文字のまま関数に指定する（正常系）
+test("test_resolve_id_links_when_encoded_characters", async () => {
+  // 準備
+  const { render } = await loadRender();
+  const received: string[] = [];
+  const resolveIdLink = (href: string) => {
+    received.push(href);
+    return `https://docs.example.com/${href.slice("id:".length)}`;
+  };
+  // 実行
+  const html = render("[一覧](id:SC-1#scenarios[正常シナリオ])\n", {
+    resolveIdLink,
+  });
+  // 検証
+  expect(received).toEqual(["id:SC-1#scenarios[正常シナリオ]"]);
+  expect(html).toContain('href="https://docs.example.com/SC-1#scenarios');
+});
