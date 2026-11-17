@@ -10902,6 +10902,15 @@
       background: var(--map-axis-fill);
     }
   }
+  /* 項目の名前は項目の上下の中央に置き、構成図のノードの右の余白を持たない。ブロック図の格子の狭いセルでも名前が収まるよう、左右の余白を詰める */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-stage > .map-axis-item {
+    justify-content: center;
+    padding-inline: 4px;
+
+    &:has(.mdmark-diagram-info) {
+      padding-inline-end: 30px;
+    }
+  }
   /* 名前を項目の外に出す小さい項目（棒・commit の丸・顔の印）: 名前はスクリーンリーダー向けにだけ残し、説明のマーカーは項目の右上の外に出す */
   .mdmark-diagram[data-diagram="map"]
   .map-axis-item:is(
@@ -11118,6 +11127,12 @@
   }
   .map-axis-frame-head {
     inset: 2px auto auto 0;
+  }
+  .map-axis-frame-head .mdmark-diagram-info {
+    position: static;
+    width: 24px;
+    height: 24px;
+    translate: none;
   }
   .map-axis-frame-title {
     color: var(--map-axis-color, var(--mdmark-color-text));

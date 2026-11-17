@@ -3460,7 +3460,7 @@ const renderAxisGridCollapsed = (
     context.args.grid.kind === "journey"
       ? axisGridFace(placedScore(context, members))
       : "";
-  return `<div class="mdmark-diagram-node map-axis-item map-axis-collapsed${axisGridDim(context, placed.stateKey, ...members)}" data-node="${escapeHtml(placed.stateKey)}" data-shape="collapsed" data-kind="${context.args.grid.kind}" style="${axisGridStyle(context, placed)}">${axisGridHit(context, { stateKey: placed.stateKey, name: `${section.label}${count}` })}${face}<span class="mdmark-diagram-node-name">${escapeHtml(section.label)}</span><span class="map-axis-count">${escapeHtml(count)}</span></div>`;
+  return `<div class="mdmark-diagram-node map-axis-item map-axis-collapsed${axisGridDim(context, placed.stateKey, ...members)}" data-node="${escapeHtml(placed.stateKey)}" data-shape="collapsed" data-kind="${context.args.grid.kind}" style="${axisGridStyle(context, placed)}">${axisGridHit(context, { stateKey: placed.stateKey, name: `${section.label}${count}` })}${face}<span class="mdmark-diagram-node-name">${escapeHtml(section.label)}</span><span class="map-axis-count">${escapeHtml(count)}</span>${axisGridInfo(context, { stateKey: placed.stateKey, label: section.label })}</div>`;
 };
 
 /** 閉じたジャーニーの section の点数の平均 */
@@ -3539,7 +3539,7 @@ const renderAxisGridFrame = (
   ]
     .filter((entry) => entry !== "")
     .join(";");
-  return `<div class="map-axis-frame" data-frame="${frame.kind}" data-section="${escapeHtml(frame.key)}"${frame.collapsed ? " data-collapsed" : ""} style="${style}"><div class="map-axis-frame-head">${renderAxisGridControls(context, section)}<span class="map-axis-frame-title">${escapeHtml(section.label)}</span></div></div>`;
+  return `<div class="map-axis-frame" data-frame="${frame.kind}" data-section="${escapeHtml(frame.key)}"${frame.collapsed ? " data-collapsed" : ""} style="${style}"><div class="map-axis-frame-head">${renderAxisGridControls(context, section)}<span class="map-axis-frame-title">${escapeHtml(section.label)}</span>${axisGridInfo(context, { stateKey: section.stateKey, label: section.label })}</div></div>`;
 };
 
 /** 枠を持たない閉じた入れ子のブロックの、項目の上に置く開閉と中へ入るボタン */
