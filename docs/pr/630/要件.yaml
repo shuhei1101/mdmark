@@ -31,6 +31,41 @@ use_cases:
     impact: run_only
     detail: map の図を辿って読む流れが、純粋な Mermaid への操作の追加で変わらないことを確かめる
     depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: changed
+    detail: プレビューで mermaid を読み込む確認を、map が描けない種類（gantt）のコードブロックで行う
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: changed
+    detail: mermaid を埋めた書き出しを、map が描けない種類（gantt）のコードブロックで確かめる
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: changed
+    detail: 相対パスの mermaid の読み込みを、map が描けない種類（gantt）のコードブロックで確かめる
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-26.yaml
+    impact: changed
+    detail: 選んだテーマの mermaid の図の配色を、map が描けない種類（gantt）のタスクの棒で確かめる
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-62.yaml
+    impact: changed
+    detail: map の機能をオフにした文書では、範囲の外の map が描ける種類の mermaid のコードブロックも mermaid の図で描く
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-46.yaml
+    impact: run_only
+    detail: シナリオは mermaid を使用しない文書で mermaid への要求が 0 件のまま。mermaid を読み込む条件の変更は『mermaidの図を描く』が持ち、外部ライブラリの読み込みが変わらないことを確かめる
+    depends_on: []
 docs:
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
@@ -43,6 +78,14 @@ docs:
   - page: docs/guide/記法.mark.md
     new: false
     change: '`## mermaid のコードブロック` の節と一覧の行に、map の範囲が無くても付く操作を足す'
+    status: todo
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: '`mermaid.url` を読み込む条件と CLI の `export`・`build` が mermaid を埋める条件を「map が描けない種類のコードブロックがあるとき」に、`mermaid.theme`・`mermaid.themeVariables` を map が描けない種類の図にだけ当たる記載に、`features.mermaid`・`features.map` を範囲の外の純粋な Mermaid の扱い（map がオンなら map、オフなら mermaid で描く）を含む記載に修正する'
+    status: todo
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    new: false
+    change: '`features.mermaid`・`features.map` の説明を、範囲の外の純粋な Mermaid の扱い（map がオンなら map、オフなら mermaid で描く）を含む記載に修正する'
     status: todo
 scope_out:
   - item: mermaid の図の要素への用語の下線・ツールチップ
