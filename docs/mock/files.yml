@@ -1039,6 +1039,12 @@ files:
   - path: refs/562/index.md
     description: '#562（本文・表・図のノードと線から参照できる注記の記法を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/630/assets/plain-mermaid.js
+    description: '#630 のモックの見本: 同じ Mermaid を言語 mermaid のコードブロックのままと補足の無い map の範囲で並べ、配布物の mount で描く処理。このモックの図の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/630/index.md
+    description: '#630（map の範囲の外の mermaid のコードブロックにも map の図の操作を付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/596/assets/class-arch-c4.js
     description: '#596 のモックのクラス図・アーキテクチャ図・C4 図: classDiagram・architecture-beta・C4Context と補足を #445 の map の図の入力に読み替え、メンバーの行・関係の端の形・service のアイコン・辺の指定の線・要素の種類の行と説明を足す処理。このモックの振る舞いを変えるときに参照する。'
     tags: [topic:モック, topic:図]
@@ -1182,6 +1188,9 @@ files:
     description: '部品『map-diagram』のモック: Mermaid と補足で書いた map の図の、全体・グループの中・閉じたグループとまとめた線・案内の最初と最後・再生の一時停止・狭い幅。部品の外観や状態を決めるときに参照する。'
   - path: components/map-er-state/index.html
     description: '部品『map-er-state』のモック: map の ER 図・状態遷移図の、テーブルの列と多重度・分類の箱・列と分類の開閉・開始と終了と分岐・入れ子の状態・遷移の再生・狭い幅。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/plain-mermaid/index.html
+    description: '部品『plain-mermaid』のモック: map の範囲の外の mermaid のコードブロックの、今の描き方（mermaid の図）と案 A（補足の無い map の図）の flowchart・sequenceDiagram・classDiagram と、map が描けない種類の gantt。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: components/map-class-arch-c4/index.html
     description: '部品『map-class-arch-c4』のモック: map のクラス図・アーキテクチャ図・C4 図の、メンバーの行と関係の端の形・メンバーと namespace の開閉と中へ入る・service のアイコンと group と junction・要素の種類の行と説明と境界・境界の開閉・狭い幅。部品の外観や状態を決めるときに参照する。'
