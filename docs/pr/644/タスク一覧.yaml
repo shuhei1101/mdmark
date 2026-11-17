@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T06:42:55.620288+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: 準拠バージョン・docs/_theme/・docs/_config.yml の取り込みと、LAY-472-1・ARCH-472-1・project-index.yaml・管理用の YAML の修正、v0.3.0..v0.4.0 で変わった規約・テンプレート・判定の読み直し
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:58.254047+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: ソースコードを変えない

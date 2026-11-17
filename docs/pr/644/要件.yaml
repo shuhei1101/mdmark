@@ -8,15 +8,21 @@ docs:
   - page: ai-monitor-version.ini
     new: false
     change: 準拠バージョンを `v0.4.0` にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
   - page: ai-monitor-theme.yaml
     new: false
     change: '`import-site` が書く控えの `version` を `v0.4.0` にする'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
   - page: docs/_theme/llms.txt
     new: false
-    change: '`import-site --version v0.4.0` で `docs/_theme/` の共通の部品（`_layouts/`・`_includes/`・`_data/nav.yml`・`assets/`・`llms.txt`・`search.json`）を v0.4.0 の内容にする（`nav.project.yml` は変えない）'
-    status: todo
+    change: '`import-site --version v0.4.0` で `docs/_theme/` の共通の部品（`_layouts/`・`_includes/`・`_data/nav.yml`・`assets/`・`llms.txt`・`search.json`）を v0.4.0 の内容にする（`nav.project.yml` は変えない）。実行した結果、`docs/_theme/` は既に v0.4.0 と一致しており、書き換わったのは控えだけだった'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
   - page: docs/_config.yml
     new: false
     change: 配布元の v0.4.0 で増えた `exclude` の行のうち mdmark にあるフォルダ（`data/`・`layout/` 等）を足し、`rules.yaml` の行をルール索引の移動に合わせる
@@ -44,11 +50,15 @@ docs:
   - page: src/files.yaml
     new: false
     change: 1 行目の `$schema` を、削除した `files.schema.yaml` から knowledge の `knowledge-files.schema.yaml` へ向ける（ほかの各フォルダの `files.yaml`・`files.yml` の 1 行目も同じ）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: 管理用の YAML のスキーマを `schemas/files.schema.yaml` と記載している箇所を、knowledge の `knowledge-files.schema.yaml` に直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: '`docs/_theme/` の `generated_from.source` を `shuhei1101/ai-monitor@v0.4.0` にし、`schemas/` のエントリから削除した Schema のコピーを外し、`rules.yaml` の置き場所と `docs/data/` のエントリを合わせる'
