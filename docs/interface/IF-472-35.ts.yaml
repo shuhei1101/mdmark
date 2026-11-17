@@ -10522,7 +10522,7 @@ constraints:
       留めた行の参加者の名前は、動かす前と同じ要素のままスクリーンリーダーが読み上げる
   - item: 範囲の外の map の図を mermaid の図に戻す
     constraint: |-
-      `data-map-plain` を持つ範囲の外の map の図は、制約『map の書き方の警告』の項目のうち Mermaid の読めない行・閉じの無い `subgraph` と複合フラグメントが 1 つでもあるとき、書き方の警告を出さず、map の図にせずに、中のソース（front matter を含む元の文字）を `data-mdmark-mermaid` を持つ mermaid のコードブロックに戻して、制約『mermaid の対象』「mermaid の読み込み」「mermaid の描き方」のとおり描く。
+      `data-map-plain` を持つ範囲の外の map の図は、制約『map の書き方の警告』の項目のうち Mermaid の読めない行・閉じの無い `subgraph` と複合フラグメントが 1 つでもあるときと、map が読み捨てる見た目を指定する行（`classDef`・`style`・`linkStyle`・`cssClass`・flowchart の `class`）とノードの `:::` のクラスの指定が 1 つでもあるとき、書き方の警告を出さず、map の図にせずに、中のソース（front matter を含む元の文字）を `data-mdmark-mermaid` を持つ mermaid のコードブロックに戻して、制約『mermaid の対象』「mermaid の読み込み」「mermaid の描き方」のとおり描く。
       そのほかの書き方の警告の項目（設定の `map.kinds` に無いクラス・許可しないリンク先 など）は、範囲の外の map の図では警告を出さず、その要素を種類・リンクを持たないものとして map の図で描く
   - item: 範囲の外の map の図に付く操作
     constraint: |-
