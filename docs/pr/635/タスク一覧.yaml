@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T00:09:57.197516+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: LAY-472-1 の notes はモジュール構成設計で反映済み
+    updated_by: planner
+    updated_at: '2026-11-17T00:20:47.131469+00:00'
   - process: 単体テスト作成
     status: todo
     note: collectMapStructure の単体テスト 5 件を tests/unit/src/map/structure.test.ts へ移す
