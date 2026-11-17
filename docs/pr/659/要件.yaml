@@ -1,0 +1,64 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: スマホで、拡大した図を指 1 本で縦にも横にも動かし、全体が収まっている図の上ではページをスクロールし、ピンチで図を拡大・縮小する。拡大・縮小・全画面のボタンを、図の上の別の行から図に重ねる小さいパネルへ移す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-66.yaml
+    impact: run_only
+    detail: 画像の全画面の表示は図の全画面と操作を統一しているため、図の拡大・移動の変更が画像の拡大・移動を壊さないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: シーケンス図の参加者の箱を指でドラッグする操作が、図を指で動かす操作の変更で妨げられないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-89.yaml
+    impact: run_only
+    detail: 埋め込んだ HTML のチャートの拡大・縮小・移動が、図と同じ操作の変更で壊れないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-93.yaml
+    impact: run_only
+    detail: 共通の図の部品の操作の確認が、ボタンの配置の変更で壊れないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 右上のボタンを図に重ねるパネルへ、タッチの端末の「余白をタップして操作中にする」の説明を、拡大した図の指 1 本の縦横の移動とピンチの拡大・縮小へ書き換える
+    status: todo
+  - page: docs/guide/構成図の決まり.mark.md
+    new: false
+    change: 操作の表の拡大・縮小・全画面の「右上のボタン」を図に重ねるパネルへ書き換え、指の移動とピンチを追加する
+    status: todo
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 「図の枠の右上のボタン」を図に重ねるパネルへ書き換える
+    status: todo
+  - page: docs/guide/図を描く-コードブロックのHTMLを描く.md
+    new: false
+    change: チャートの「図の部品と同じ右上のボタン」を図に重ねるパネルへ書き換える
+    status: todo
+  - page: docs/guide/API.mark.md
+    new: false
+    change: CSS 変数 `--mdmark-diagram-box-shadow` の「右上のボタンの帯」の説明と、パネルの CSS 変数を追加・修正する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 図に重ねるボタンのパネルの用語を追加する
+    status: todo
+scope_out:
+  - item: 図の順番の再生の手順のバー・速度・なめらかな移動
+    reason: 同じ調査 R-17 から別の Issue として起票されている
+    plan: '#603'
+  - item: 拡大した図のミニマップ
+    reason: 同じ調査 R-17 から別の Issue として起票されている
+    plan: '#604'
+  - item: ボタンのパネルの見た目を DynamicArchitectViewer に合わせること
+    reason: 利用者の決まりで、機能だけを参考にし、見た目はモックで改めて決める
+    plan: none
+  - item: ライトボックスの画像のピンチの拡大・縮小と、上の帯のボタンの配置
+    reason: 判断が分かれている。Issue は図を対象にしているが、ライトボックスは図の全画面と操作を統一し、同じ拡大の処理（attachZoom）を使う。今の判断は、ピンチを拡大の処理に入れると画像にも効くため統一を保って含め、上の帯のボタンの配置は変えない。設計のレビューで確定する
+    plan: to_file
