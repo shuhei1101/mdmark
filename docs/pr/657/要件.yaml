@@ -23,7 +23,9 @@ docs:
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: src/・tests/unit/src/・dist/ のエントリを組み直した後のフォルダに合わせる（組み直さないなら、層で分ける理由を補足に記載する）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T20:23:27.834925+00:00'
   - page: src/files.yaml
     new: false
     change: 移したファイルの行のパスを修正する
@@ -35,7 +37,9 @@ docs:
   - page: docs/library/LIB-472-15.yaml
     new: false
     change: 使用箇所の src/parts/icons.ts のパスを移した先に修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T20:23:27.834925+00:00'
 scope_out:
   - item: src/files.yaml に行の無い map/・interact/・parts/ のファイルの行の追加
     reason: 行の欠けの修正はフォルダの分け方とは別の要望で、別の Issue がある。この PR では移したファイルの既存の行のパスだけを修正する
@@ -43,6 +47,6 @@ scope_out:
   - item: 既に機能で分かれている src/cli・src/map・src/diff・src/knowledge・src/comments・src/views・src/diagram・src/viewer・src/plugin の中の分け方
     reason: 層で分かれているのは render/syntax・interact・parts と直下の *-logic.ts で、これらのフォルダは import のパスの修正だけを行う
     plan: none
-  - item: モック docs/mock/components/code-block/index.html のコードブロックのタイトルの例にある src/render/syntax/ のパス
+  - item: モック docs/mock/components/code-block/index.html と部品設計 CMP-472-18 のストーリーの引数の、コードブロックのタイトルの例にある src/render/syntax/ のパス
     reason: 長いファイル名の表示を確かめるための例の文字列で、実在のファイルを指していない
     plan: none
