@@ -62,3 +62,5 @@ tags:
     main: true
   - name: topic:部品
   - name: tool:svg
+test_files:
+  - tests/unit/src/shared/icon-node.logic.test.ts
