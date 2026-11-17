@@ -11,12 +11,12 @@
   cursor: default;
 }
 
-/* 手順のバー: 高さ 24px の押せる範囲の中に、6px の区切りを並べる */
+/* 手順のバー: 高さ 24px の押せる範囲の中に、6px の区切りを並べる。帯の面と 3:1 以上の色で、残りの区切り（線の色）・済んだ区切り（文字の色）・今の区切り（マーカーの色）を描き分ける */
 .pb-steps { display: flex; align-items: center; gap: 3px; height: 24px; cursor: pointer; touch-action: manipulation; border-radius: var(--mdmark-radius); }
 .pb-steps:focus-visible { outline: 2px solid var(--mdmark-color-link); outline-offset: 2px; }
-.pb-seg { position: relative; flex: 1 1 0; min-width: 0; height: 6px; border-radius: 3px; background: var(--mdmark-color-border); overflow: hidden; }
-.pb-seg.is-done { background: var(--mdmark-color-muted); }
-.pb-seg.is-current { height: 10px; background: color-mix(in srgb, var(--mdmark-color-link) 25%, var(--mdmark-color-border)); box-shadow: 0 0 0 1px var(--mdmark-color-link); }
+.pb-seg { position: relative; flex: 1 1 0; min-width: 0; height: 6px; border-radius: 3px; background: var(--mdmark-color-diagram-line); overflow: hidden; }
+.pb-seg.is-done { background: var(--mdmark-color-text); }
+.pb-seg.is-current { height: 10px; background: var(--mdmark-color-bg); box-shadow: 0 0 0 1.5px var(--mdmark-color-link); }
 .pb-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--mdmark-color-link); }
 
 .pb-title { display: block; margin-top: 2px; overflow-wrap: anywhere; }

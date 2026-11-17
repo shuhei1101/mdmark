@@ -39,19 +39,23 @@ use_cases:
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
-    change: 案内・再生の帯の手順のバー・この手順だけの再生・全ての再生・速度・なめらかな移動の使い方と、C4Container・C4Component・C4Dynamic・C4Deployment の書き方を追加する
+    change: 案内・再生の帯を手順のバーの使い方（区切りを押してその手順を再生・もう一度押して再生し直し・バー以外と図の空いた場所を押して停止・← → と Esc・なめらかな移動）に書き換え、自動で進める・`play`・`interval` の記述を削除する。C4Container・C4Component・C4Dynamic・C4Deployment の書き方を追加する
     status: todo
   - page: docs/guide/記法.mark.md
     new: false
-    change: map の描ける種類に C4 の 4 種類を追加し、速度をマーカーの引数で持たせる設計になった場合は map の引数の表を修正する
+    change: map の描ける種類に C4 の 4 種類を追加し、map の引数の表から `play`・`interval` を削除する
     status: todo
   - page: docs/guide/用語集.mark.md
     new: false
-    change: 手順のバーなど、帯の操作で新しく増えた用語を追加する
+    change: 「案内」「再生」の意味を、帯の前へ・次へ・自動で進めるから手順のバーの区切りを押して再生する形に書き換え、手順のバーの用語を追加する
     status: todo
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: map の範囲に入れなくても map の図で描く種類に C4 の 4 種類を追加する
+    status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: マーカーの引数の行から「自動で進めるか・間隔」を削除し、案内・再生を手順のバーで辿る形に合わせる
     status: todo
 scope_out:
   - item: スマホで拡大した図を指で動かす・ピンチで拡大する操作と、拡大のボタンの配置
@@ -69,3 +73,6 @@ scope_out:
   - item: map の図のモックで、中へ入ったときに薄く残す外のノードの文字のコントラスト（docs/mock/refs/445/assets/map-mock.css の .map-faded）
     reason: モック HTML のレビュー観点「文字色が薄すぎない」から外れているが、今回の要望に含まれない（reviewer の対象外の逸脱の報告）
     plan: '#664'
+  - item: 全ての手順の連続再生と速度の切り替え（#603 の「全ての再生・速度を選べる」）
+    reason: ユーザーが廃止を決めた（確認ログ『案内・再生の帯をバーだけにするか』『連続再生の廃止に…』）
+    plan: none
