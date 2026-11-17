@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-mindmap（map のマインドマップの状態） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.12.0/dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <!-- マインドマップに固有の規則（#649 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/649/assets/mindmap.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-mindmap
+  </nav>
+  <main class="map-catalog" id="catalog"><h1>map-mindmap</h1></main>
+  <script type="module">
+    import { createMindmap } from "../../refs/649/assets/mindmap.js";
+    import { MINDMAP, MINDMAP_DATA, MINDMAP_LAYOUT_DATA, MINDMAP_UNREADABLE, MINDMAP_WALK_DATA } from "../../refs/649/assets/samples.js";
+
+    /** 状態の見出し・補足・図の中身・初期状態 */
+    const STATES = [
+      ["通常", "根を中央に配置し、1 レイヤー目の枝を左右に分けて外へ広げる。形状は四角・角の丸い四角・丸・バン・雲・六角形と、形状の指定の無い下線。枝ごとに線と縁の色が分かれる。目的と人手が足りないに説明のマーカー", { title: "企画の論点", source: MINDMAP, data: MINDMAP_DATA }, {}],
+      ["枝を閉じる", "閉じた枝は、子孫の数のボタンを持つ 1 つの項目になり、子孫と線を出さない", { title: "企画の論点", source: MINDMAP, data: MINDMAP_DATA }, { collapsed: ["体制"] }],
+      ["枝の中", "枝の中へ入ると、その枝を根にして子孫だけを配置し直し、根からの道筋を上端に薄く出す", { title: "企画の論点", source: MINDMAP, data: MINDMAP_DATA }, { enter: "体制" }],
+      ["項目を選ぶ", "選んだ項目の根からの道筋と子孫を残し、兄弟とほかの枝を薄くする", { title: "企画の論点", source: MINDMAP, data: MINDMAP_DATA }, { selected: "体制" }],
+      ["形状の指定の無い項目を選ぶ", "形状の指定の無い項目は、名前の周りの余白か下線を押して選ぶ", { title: "企画の論点", source: MINDMAP, data: MINDMAP_DATA }, { selected: "利用者を増やす" }],
+      ["補足の layout を適用する", "色（目的）と閉じた状態（予算）だけを適用し、座標と並び順の指定は書き方の警告にする", { title: "企画の論点", source: MINDMAP, data: MINDMAP_LAYOUT_DATA }, {}],
+      ["案内（手順 2）", "案内の帯で手順を進める。手順 2 は体制の中へ入り、人手が足りないを強調する", { title: "企画の論点", source: MINDMAP, data: MINDMAP_WALK_DATA }, { step: 1 }],
+      ["範囲の外のコードブロック", "補足の無い map の図にする。図の枠のタイトルは「マインドマップ」", { source: MINDMAP, data: {} }, {}],
+      ["読めない行", "根が 2 つ以上ある行を書き方の警告にし、読めた部分の図を描く", { title: "企画の論点", source: MINDMAP_UNREADABLE, data: {} }, {}],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (title, note, spec, initial, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      createMindmap(host, spec, initial);
+    };
+    for (const [title, note, spec, initial] of STATES) add(title, note, spec, initial);
+    add("狭い幅（390px）", "表示する枠の中で横にスクロールする", { title: "企画の論点", source: MINDMAP, data: MINDMAP_DATA }, {}, true);
+  </script>
+</body>
+</html>
