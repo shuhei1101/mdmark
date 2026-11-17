@@ -1,7 +1,7 @@
 id: CMP-472-47
 visibility: internal
 title: "操作できる部品"
-implementation: "src/parts/param.ts#renderParam"
+implementation: "src/diagram/param.part.ts#renderParam"
 story: "Parts/ParamControl"
 states:
   - name: Default

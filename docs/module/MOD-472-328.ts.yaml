@@ -1,12 +1,12 @@
 id: MOD-472-328
 visibility: internal
-title: ライブラリ本体 / 部品 / gallery.ts
+title: ライブラリ本体 / 画像と動画 / gallery.part.ts
 test_files:
-  - tests/unit/src/parts/gallery.test.ts
+  - tests/unit/src/media/gallery.part.test.ts
 functions:
   - name: renderGallery
     title: ギャラリーを描く
-    container: src/parts/gallery.ts
+    container: src/media/gallery.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『ギャラリー』の HTML を返却する。`cols` を `style` の `--mdmark-gallery-cols` にし、`body`（画像の図の並び。`SLOT_MARKER` を指定できる）を格子の `div` に入れる

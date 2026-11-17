@@ -1,7 +1,7 @@
 id: CMP-472-23
 visibility: internal
 title: "バッジ"
-implementation: "src/parts/badge.ts#renderBadge"
+implementation: "src/inline/badge.part.ts#renderBadge"
 story: "Parts/Badge"
 test_file: tests/integration/lib/badge.story.test.ts
 states:

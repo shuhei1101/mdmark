@@ -1,7 +1,7 @@
 id: CMP-472-52
 visibility: internal
 title: "注意書き"
-implementation: "src/parts/callout.ts#renderCallout"
+implementation: "src/callout/callout.part.ts#renderCallout"
 story: "Parts/Callout"
 test_file: tests/integration/lib/callout.story.test.ts
 states:

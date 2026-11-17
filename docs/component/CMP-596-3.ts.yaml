@@ -1,7 +1,7 @@
 id: CMP-596-3
 visibility: internal
 title: mapのC4図
-implementation: src/parts/map.ts#renderMapC4Diagram
+implementation: src/map/map.part.ts#renderMapC4Diagram
 story: Parts/MapC4
 states:
   - name: Default

@@ -1,19 +1,19 @@
 id: MOD-472-179
 visibility: internal
-title: ライブラリ本体 / 図 / diagram-resize.ts
+title: ライブラリ本体 / 図 / diagram-resize.interact.ts
 test_files:
-  - tests/unit/src/interact/diagram-resize.browser.test.ts
+  - tests/unit/src/diagram/diagram-resize.interact.browser.test.ts
 constants:
   - name: DIAGRAM_HEIGHT_KEY_PREFIX
     title: 図の高さのキーの頭
-    container: src/interact/diagram-resize.ts
+    container: src/diagram/diagram-resize.interact.ts
     summary: リサイズハンドルで変えた高さを sessionStorage に記載するキーの頭
     value: '"mdmark-diagram-height:"'
     status: planned
 functions:
   - name: attachDiagramResize
     title: リサイズハンドルを付ける
-    container: src/interact/diagram-resize.ts
+    container: src/diagram/diagram-resize.interact.ts
     kind: 関数
     scope: internal
     summary: リサイズハンドルの `pointerdown`（`setPointerCapture`）から `pointerup` までの縦の移動だけ表示する枠の `style.height` を変え、フォーカスの間の `ArrowUp`・`ArrowDown` で `RESIZE.step` ずつ変え、`dblclick` で倍率を変えずに `fit()`（今の倍率の図の全体が収まる高さ）にする。高さは `clampDiagramHeight` で収め、変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax`（今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext`（`{高さ}px`）を書き換え、`onResize` を呼ぶ。変えた高さを `storage` の `key` に整数の文字で記載し、戻したらキーを削除する。`storage` の読み込みと保存の例外は捕まえて保たない。読み込んだ値が正の整数でなければ使用しない。ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
@@ -55,7 +55,7 @@ functions:
         expected: 例外を外へ出さず、高さが 32px 増える
   - name: diagramHeightKey
     title: 図の高さのキー
-    container: src/interact/diagram-resize.ts
+    container: src/diagram/diagram-resize.interact.ts
     kind: 関数
     scope: internal
     summary: '`{DIAGRAM_HEIGHT_KEY_PREFIX}{pathname}#{index}:{title}` を返却する。同じページの同じ順の同じ題名の図だけが同じ高さを読み込む'

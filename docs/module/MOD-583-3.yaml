@@ -1,0 +1,20 @@
+id: MOD-583-3
+visibility: internal
+title: ライブラリ本体 / コードブロック
+lead: コードブロックのタイトル・行番号・行の強調・畳む行を付けるコアルールと部品、`mount` が付けるコピーと行の開閉の操作、畳む行の計算。操作だけはブラウザでだけ動く。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/code-block/
+    ├── code-block.syntax.ts   # コードブロックのタイトル・行番号・行の強調とコードの行のマーカー・畳む行・色分けの対象の言語
+    ├── code-block.part.ts     # コードブロックの renderCodeBlock と renderCodeCopy と、行の開閉のボタンの renderCodeFoldToggle・renderCodeFoldMore
+    ├── {部品}.part.stories.ts   # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ├── code-block.interact.ts # コードブロックのコピー
+    ├── code-fold.interact.ts  # コードの行の畳む・開く・Shift でまとめて開閉・インデントの縦線を濃くする
+    └── code-fold.logic.ts     # コードの行のインデントのレベル・畳む行の数・隠す行・縦線を濃くする範囲（render と部品と操作が使用する）
+    ```
+tags:
+  - name: topic:コードブロック
+    main: true
+  - name: action:コピー
+  - name: action:開閉

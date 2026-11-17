@@ -1,12 +1,12 @@
 id: MOD-472-217
 visibility: internal
-title: ライブラリ本体 / 描画 / frontmatter.ts
+title: ライブラリ本体 / フロントマター / frontmatter.logic.ts
 test_files:
-  - tests/unit/src/render/frontmatter.test.ts
+  - tests/unit/src/frontmatter/frontmatter.logic.test.ts
 functions:
   - name: splitFrontmatter
     title: フロントマターを分ける
-    container: src/render/frontmatter.ts
+    container: src/frontmatter/frontmatter.logic.ts
     kind: 関数
     scope: internal
     summary: Markdown の先頭のフロントマターを判定し、その範囲の改行以外の文字を空白に置き換えた本文と、フロントマターの中身（開く行と閉じる行を除いた行）を返却する。フロントマターが無ければ、本文はそのままで中身は `undefined`

@@ -1,12 +1,12 @@
 id: MOD-472-223
 visibility: internal
-title: ライブラリ本体 / 操作 / back-to-top.ts
+title: ライブラリ本体 / 見出しとセクション / back-to-top.interact.ts
 test_files:
-  - tests/unit/src/interact/back-to-top.browser.test.ts
+  - tests/unit/src/section/back-to-top.interact.browser.test.ts
 constants:
   - name: BACK_TO_TOP_AVOID_GAP_PX
     title: 回避する部品と先頭へ戻るボタンの間
-    container: src/interact/back-to-top.ts
+    container: src/section/back-to-top.interact.ts
     summary: 差分のミニマップか余白の列と横の範囲が重なるとき、その部品の左端からボタンの右端までに空ける幅（px）
     value: '8'
     refs:
@@ -15,7 +15,7 @@ constants:
 functions:
   - name: attachBackToTop
     title: 先頭へ戻るボタンを付ける
-    container: src/interact/back-to-top.ts
+    container: src/section/back-to-top.interact.ts
     summary: '`renderBackToTop({ hidden: true })` のボタンを `el` の子の末尾に配置し、スクロールする場所を `findScrollContainer(el)` で決めて、出し分け・配置する位置・押したときの移動を付ける'
     kind: 関数
     scope: internal

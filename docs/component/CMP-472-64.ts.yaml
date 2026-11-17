@@ -1,7 +1,7 @@
 id: CMP-472-64
 visibility: internal
 title: "読み込み中のブロック"
-implementation: "src/parts/embed.ts#renderEmbed"
+implementation: "src/shared/embed.part.ts#renderEmbed"
 story: "Parts/Embed"
 states:
   - name: Loading

@@ -1,7 +1,7 @@
 id: CMP-472-53
 visibility: internal
 title: "用語のツールチップ"
-implementation: "src/parts/term-tip.ts#renderTermTip"
+implementation: "src/knowledge/term-tip.part.ts#renderTermTip"
 story: "Parts/TermTip"
 states:
   - name: TermOnly

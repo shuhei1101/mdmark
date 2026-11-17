@@ -1,0 +1,18 @@
+id: MOD-583-14
+visibility: internal
+title: ライブラリ本体 / 埋め込んだHTML
+lead: '`<!-- html -->` の範囲のコードブロックを HTML として描くコアルールと範囲の css の適用と部品と、`mount` が付ける横のスクロールの操作。操作だけはブラウザでだけ動く。'
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/embedded-html/
+    ├── embedded-html.syntax.ts   # 埋め込んだ HTML と、範囲の css・ts・js
+    ├── embedded-html.part.ts     # 埋め込んだ HTML を包む枠の renderEmbeddedHtml
+    ├── {部品}.part.stories.ts      # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ├── embedded-html.interact.ts # 埋め込んだ HTML が列より広い間だけ、中で横にスクロールさせる
+    └── scope-css.logic.ts        # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）
+    ```
+tags:
+  - name: tool:html
+    main: true
+  - name: action:埋め込み

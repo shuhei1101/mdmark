@@ -1,12 +1,12 @@
 id: MOD-472-185
 visibility: internal
-title: ライブラリ本体 / 図 / params.ts
+title: ライブラリ本体 / 図 / param.interact.ts
 test_files:
-  - tests/unit/src/interact/params.browser.test.ts
+  - tests/unit/src/diagram/param.interact.browser.test.ts
 functions:
   - name: attachParams
     title: 操作できる部品の操作を付ける
-    container: src/interact/params.ts
+    container: src/diagram/param.interact.ts
     kind: 関数
     scope: internal
     summary: スライダーの `input` で今の値とグラフの系列を再描画し、写すボタンで `paramJson` を `navigator.clipboard.writeText` で書き込み、結果を `role="status"` に出す。拒まれたら `pre` を出す。点の表は、`mount` が Markdown から読み込んだ `param` の定義を文書の中の並びの順で受け取る（出力の HTML に定義を残さない）

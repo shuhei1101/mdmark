@@ -48,17 +48,19 @@ notes:
     ├── part-modules.ts      # 部品のモジュールのファイル名・読み込みの差し替え・1 回だけ読み込む loadPartModule（dist/index.js）
     ├── mount-parts.ts       # 公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）
     ├── views/
+    │   ├── view.syntax.ts   # ビューのマーカーの囲み（dist/index.js）
     │   ├── spec.ts          # 公開の型 MdmarkViewOptions・MdmarkViewHandle、使用できるアイコンと既定の対応、引数の検査（dist/index.js）
-    │   └── index.ts         # dist/view.js の入口。drawView・attachView
-    ├── comments/
-    │   ├── spec.ts          # 公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの構造の検査（dist/index.js）
-    │   ├── anchor.ts        # 選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）
-    │   ├── bubble.ts        # 吹き出しのコメントの修正と削除の操作（dist/comments.js）
-    │   ├── margin.ts        # 本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを配置する（dist/comments.js）
-    │   └── index.ts         # dist/comments.js の入口。attachComments
-    └── parts/
-        ├── view.ts          # ビューの HTML とアイコンの形状（dist/view.js）
-        └── comment.ts       # コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧・余白のマーカーの HTML（dist/comments.js）
+    │   ├── index.ts         # dist/view.js の入口。drawView・attachView
+    │   ├── view.part.ts     # ビューの HTML とアイコンの形状（dist/view.js）
+    │   └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー
+    └── comments/
+        ├── spec.ts          # 公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの構造の検査（dist/index.js）
+        ├── anchor.ts        # 選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）
+        ├── bubble.ts        # 吹き出しのコメントの修正と削除の操作（dist/comments.js）
+        ├── margin.ts        # 本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを配置する（dist/comments.js）
+        ├── index.ts         # dist/comments.js の入口。attachComments
+        ├── comment.part.ts  # コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧・余白のマーカーの HTML（dist/comments.js）
+        └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー
     ```
 tags:
   - name: topic:ビュー

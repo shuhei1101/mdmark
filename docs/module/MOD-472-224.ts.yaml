@@ -1,12 +1,12 @@
 id: MOD-472-224
 visibility: internal
-title: ライブラリ本体 / 操作 / lightbox.ts
+title: ライブラリ本体 / 画像と動画 / lightbox.interact.ts
 test_files:
-  - tests/unit/src/interact/lightbox.browser.test.ts
+  - tests/unit/src/media/lightbox.interact.browser.test.ts
 constants:
   - name: LIGHTBOX_IMAGE_SELECTOR
     title: 拡大できる画像
-    container: src/interact/lightbox.ts
+    container: src/media/lightbox.interact.ts
     summary: ライトボックスで拡大のボタンで包む `img`。リンクの中の画像と文の中の画像は `figure.mdmark-image` の中に無いため該当しない
     value: '"figure.mdmark-image img:not([data-nolightbox])"'
     refs:
@@ -15,7 +15,7 @@ constants:
 functions:
   - name: collectLightboxImages
     title: 切り替えの並びを集める
-    container: src/interact/lightbox.ts
+    container: src/media/lightbox.interact.ts
     kind: 関数
     scope: internal
     summary: '`root` の中の `button.mdmark-image-open` を文書の順に並べ、今の配色で隠れているもの（`getComputedStyle` の `display` が `none` の `figure` の中）を除いて返却する'
@@ -37,7 +37,7 @@ functions:
     status: planned
   - name: attachLightbox
     title: 画像を拡大できるようにする
-    container: src/interact/lightbox.ts
+    container: src/media/lightbox.interact.ts
     kind: 関数
     scope: internal
     summary: '`LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む（`img[data-gif]` は `icon: false`）。押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に配置して `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送信し（端では切り替えない）、送信するたびに画像・キャプション・枚数・切り替えのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。閉じたら `close` で受け取りと `attachZoom` を削除して `dialog` を削除し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする'

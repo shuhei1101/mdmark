@@ -1,7 +1,7 @@
 id: CMP-472-44
 visibility: internal
 title: "差分の状態の文"
-implementation: "src/parts/diff-message.ts#renderDiffMessage"
+implementation: "src/diff/diff-message.part.ts#renderDiffMessage"
 story: "Parts/DiffMessage"
 states:
   - name: Same

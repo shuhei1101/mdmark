@@ -1,12 +1,12 @@
 id: MOD-472-308
 visibility: internal
-title: ライブラリ本体 / 部品 / card-grid.ts
+title: ライブラリ本体 / カード / card-grid.part.ts
 test_files:
-  - tests/unit/src/parts/card-grid.test.ts
+  - tests/unit/src/card/card-grid.part.test.ts
 data_models:
   - name: CardGridItem
     title: カードの格子の項目
-    container: src/parts/card-grid.ts
+    container: src/card/card-grid.part.ts
     summary: カード 1 枚の中身
     properties:
       - name: title
@@ -25,7 +25,7 @@ data_models:
 functions:
   - name: renderCardGrid
     title: カードの格子を描く
-    container: src/parts/card-grid.ts
+    container: src/card/card-grid.part.ts
     summary: 部品設計『カードの格子』の HTML を返却する。アイコンは `renderInlineIcon` の要素に class `mdmark-card-grid-icon` を追加して組み立てる
     kind: 関数
     scope: internal

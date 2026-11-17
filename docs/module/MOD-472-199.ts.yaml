@@ -1,12 +1,12 @@
 id: MOD-472-199
 visibility: internal
-title: ライブラリ本体 / 差分 / diff-message.ts
+title: ライブラリ本体 / 差分 / diff-message.part.ts
 test_files:
-  - tests/unit/src/parts/diff-message.test.ts
+  - tests/unit/src/diff/diff-message.part.test.ts
 functions:
   - name: renderDiffMessage
     title: 差分の状態の文を描く
-    container: src/parts/diff-message.ts
+    container: src/diff/diff-message.part.ts
     summary: 部品設計『差分の状態の文』の HTML を返却する
     kind: 関数
     scope: internal

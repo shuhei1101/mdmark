@@ -1,7 +1,7 @@
 id: CMP-472-13
 visibility: internal
 title: "グラフ"
-implementation: "src/parts/diagram.ts#renderChart"
+implementation: "src/diagram/diagram.part.ts#renderChart"
 story: "Parts/Chart"
 states:
   - name: TwoSeries

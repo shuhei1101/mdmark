@@ -1,12 +1,12 @@
 id: MOD-472-226
 visibility: internal
-title: ライブラリ本体 / 操作 / table-resize.ts
+title: ライブラリ本体 / 表 / table-resize.interact.ts
 test_files:
-  - tests/unit/src/interact/table-resize.browser.test.ts
+  - tests/unit/src/table/table-resize.interact.browser.test.ts
 constants:
   - name: COLUMN_RESIZE_STEP_PX
     title: キーで変える列の幅
-    container: src/interact/table-resize.ts
+    container: src/table/table-resize.interact.ts
     summary: 列の幅のつまみにフォーカスして ←・→ キーを 1 回押したときに変える幅（px）
     value: '16'
     refs:
@@ -14,7 +14,7 @@ constants:
     status: planned
   - name: DOUBLE_TAP_MS
     title: ダブルタップの間隔
-    container: src/interact/table-resize.ts
+    container: src/table/table-resize.interact.ts
     summary: タッチの 2 回のタップをダブルタップとみなす、前のタップを離してから次のタップを離すまでの上限（ms）
     value: '300'
     refs:
@@ -22,7 +22,7 @@ constants:
     status: planned
   - name: TAP_MOVE_TOLERANCE_PX
     title: タップとみなす移動の上限
-    container: src/interact/table-resize.ts
+    container: src/table/table-resize.interact.ts
     summary: タッチの `pointerdown` から `pointerup` までの移動がこの幅（px）以内なら、ドラッグでなくタップとして数える
     value: '8'
     refs:
@@ -31,7 +31,7 @@ constants:
 functions:
   - name: attachColumnResize
     title: 列の幅のつまみに操作を付ける
-    container: src/interact/table-resize.ts
+    container: src/table/table-resize.interact.ts
     kind: 関数
     scope: internal
     summary: 表の最下段の見出しのつまみ（`span.mdmark-col-resize`）に、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける

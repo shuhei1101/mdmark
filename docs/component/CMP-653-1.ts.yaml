@@ -1,7 +1,7 @@
 id: CMP-653-1
 visibility: internal
 title: mapの軸と格子の配置の図
-implementation: src/parts/map.ts#renderMapAxisGrid
+implementation: src/map/map.part.ts#renderMapAxisGrid
 story: Parts/MapAxisGrid
 lead: map の `gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` を、日付の軸・記載順の軸・`columns` の格子に沿って配置した項目にして描き、section と入れ子のブロックの開閉と中へ入る持ち手、種類ごとのつながりを残す選択を持つ。
 args:

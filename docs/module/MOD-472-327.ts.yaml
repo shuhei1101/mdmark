@@ -1,12 +1,12 @@
 id: MOD-472-327
 visibility: internal
-title: ライブラリ本体 / 部品 / image.ts
+title: ライブラリ本体 / 画像と動画 / image.part.ts
 test_files:
-  - tests/unit/src/parts/image.test.ts
+  - tests/unit/src/media/image.part.test.ts
 functions:
   - name: renderImageOpener
     title: 画像の拡大のボタンを描く
-    container: src/parts/image.ts
+    container: src/media/image.part.ts
     kind: 関数
     scope: internal
     summary: '`img` の HTML を、スクリーンリーダー向けの名前 `画像を拡大: {alt}` の `button.mdmark-image-open` と、右上の `maximize-2` のアイコン（`aria-hidden`）で包む。`icon` が `false` のとき（GIF の画像。右上に止める・再生するボタンを配置するため）はアイコンを配置しない。`mount` が描いた `img` を包むときと、Storybook の部品が使用する'
@@ -39,7 +39,7 @@ functions:
     status: planned
   - name: renderImageFigure
     title: 画像の図を描く
-    container: src/parts/image.ts
+    container: src/media/image.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『画像の図』の HTML を返却する。`width` を `style` の `--mdmark-image-width`、`align` を `data-align`、`only` を class `mdmark-only-{only}` にし、`caption` か `label` があれば `figcaption` を配置する（`label` は頭の `b`）。`lightbox` が `false` のときは `img` に `data-nolightbox` を付ける。`opener` が `false` のとき（`render`）は拡大のボタンを付けず `img` だけを配置し、`true` のとき（Storybook）は `lightbox` が `false` でなければ `renderImageOpener` で包む。`gif` が `true` のときは `img` に `data-gif` を付ける

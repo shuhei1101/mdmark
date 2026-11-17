@@ -1,12 +1,12 @@
 id: MOD-472-231
 visibility: internal
-title: ライブラリ本体 / 操作 / placement.ts
+title: ライブラリ本体 / 記法の共通 / placement.interact.ts
 test_files:
-  - tests/unit/src/interact/placement.test.ts
+  - tests/unit/src/shared/placement.interact.test.ts
 functions:
   - name: chooseTipSide
     title: ツールチップを配置する側を決める
-    container: src/interact/placement.ts
+    container: src/shared/placement.interact.ts
     summary: 持ち主の上端・下端とツールチップの高さから、ツールチップを上と下のどちらに配置するかを返却する
     description: '`placement` が `top` なら、`anchorTop - gap - height` が 0 以上のとき `top`、そうでなければ `bottom`。`bottom` なら、`anchorBottom + gap + height` が `viewportHeight` 以下のとき `bottom`、収まらず `anchorTop - gap - height` が 0 以上のとき `top`、どちらにも収まらなければ `bottom`。用語・図・ヒントのツールチップを配置する処理が共通で使用する'
     kind: 関数

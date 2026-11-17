@@ -1,12 +1,12 @@
 id: MOD-472-261
 visibility: internal
-title: ライブラリ本体 / 索引と用語 / term-tip.ts
+title: ライブラリ本体 / 索引と用語 / term-tip.part.ts
 test_files:
-  - tests/unit/src/parts/term-tip.test.ts
+  - tests/unit/src/knowledge/term-tip.part.test.ts
 constants:
   - name: ALIAS_HEADINGS
     title: エイリアスの区分の見出し
-    container: src/parts/term-tip.ts
+    container: src/knowledge/term-tip.part.ts
     summary: '`renderTermTip` がエイリアスの種類ごとに配置する区分の見出し'
     value: '`{ term: "用語", doc: "文書", command: "コマンド", url: "URL", skill: "スキル", tool: "ツール", path: "パス" }`'
     refs:
@@ -14,7 +14,7 @@ constants:
     status: planned
   - name: COMMAND_COPY_STATES
     title: コマンドのコピーのボタンの状態
-    container: src/parts/term-tip.ts
+    container: src/knowledge/term-tip.part.ts
     summary: コピーのボタンの状態ごとの文言とアイコン（コードブロックのコピーと同じ）
     value: '`{ idle: { text: "コピー", icon: "copy" }, copied: { text: "コピーしました", icon: "check" }, failed: { text: "コピーできませんでした", icon: "circle-alert" } }`'
     refs:
@@ -23,7 +23,7 @@ constants:
 functions:
   - name: renderTermTip
     title: 用語のツールチップの HTML を返却する
-    container: src/parts/term-tip.ts
+    container: src/knowledge/term-tip.part.ts
     kind: 関数
     scope: internal
     summary: 単語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の単語とツールチップの組の HTML（`mdmark-term-wrap` の中に単語と、その直後のツールチップ）を返却する
@@ -109,7 +109,7 @@ functions:
       - '#functions[renderTermTipCopy]'
   - name: renderTermTipCopy
     title: コマンドのコピーのボタンの中身を返却する
-    container: src/parts/term-tip.ts
+    container: src/knowledge/term-tip.part.ts
     kind: 関数
     scope: internal
     summary: コピーのボタンの状態から、ボタンの中に配置するアイコンと文言の HTML を返却する

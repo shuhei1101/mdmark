@@ -1,12 +1,12 @@
 id: MOD-472-180
 visibility: internal
-title: ライブラリ本体 / 図 / icons.ts
+title: ライブラリ本体 / 記法の共通 / icons.part.ts
 test_files:
-  - tests/unit/src/parts/icons.test.ts
+  - tests/unit/src/shared/icons.part.test.ts
 functions:
   - name: iconSvg
     title: アイコンの svg
-    container: src/parts/icons.ts
+    container: src/shared/icons.part.ts
     kind: 関数
     scope: internal
     summary: lucide のアイコンの形状（`lucide` のパッケージから名前付きで import した要素の並び）を、24 の格子・`stroke="currentColor"`・`aria-hidden="true"` の svg の文字にする。図のボタンとノードの種類で使用する

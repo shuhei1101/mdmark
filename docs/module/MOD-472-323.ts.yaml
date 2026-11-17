@@ -1,12 +1,12 @@
 id: MOD-472-323
 visibility: internal
-title: ライブラリ本体 / 部品 / doc-list.ts
+title: ライブラリ本体 / 書き出したHTMLの起動 / doc-list.part.ts
 test_files:
-  - tests/unit/src/parts/doc-list.test.ts
+  - tests/unit/src/viewer/doc-list.part.test.ts
 functions:
   - name: renderDocList
     title: 文書の一覧を描く
-    container: src/parts/doc-list.ts
+    container: src/viewer/doc-list.part.ts
     usecase: まとめたHTMLで文書を行き来する
     summary: 部品設計『文書の一覧』の HTML を返却する。フォルダの無い文書を先に、フォルダごとに 1 階層の見出しでまとめ、`current` の行に `aria-current="page"` を付ける
     kind: 関数

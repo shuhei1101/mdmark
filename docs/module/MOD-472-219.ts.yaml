@@ -1,12 +1,12 @@
 id: MOD-472-219
 visibility: internal
-title: ライブラリ本体 / 操作 / side-toc.ts
+title: ライブラリ本体 / 見出しとセクション / side-toc.interact.ts
 test_files:
-  - tests/unit/src/interact/side-toc.browser.test.ts
+  - tests/unit/src/section/side-toc.interact.browser.test.ts
 data_models:
   - name: SideTocState
     title: 右側の目次の状態
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: '`mount` ごとに 1 つ作り、`update` で再描画しても保つ右側の目次の状態。`attachSideToc` が読み込んで描き、押されるたびに書き換える'
     properties:
       - name: open
@@ -19,30 +19,30 @@ data_models:
 constants:
   - name: CURRENT_LINE_RATIO
     title: 今いるセクションを決める線の位置
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: 画面の上端から、今いるセクションを決める線までの高さの、画面の高さに対する割合
     value: '0.25'
     status: planned
   - name: NARROW_WIDTH_REM
     title: 狭い幅の境目
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: 描く先の要素の幅がこの値（rem）未満のとき、右側の目次を狭い幅の帯で出す。CSS のコンテナクエリと同じ値で、項目を押した後にパネルを隠すかを決めるのに使用する
     value: '48'
     status: planned
   - name: SIDE_TOC_HEADING_SELECTOR
     title: 右側の目次に並べる見出し
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: 右側の目次に並べる見出しのセレクタ。埋め込んだ HTML（`.mdmark-html`）の中の見出しは除く
     value: '"h1[id], h2[id], h3[id]"'
     status: planned
   - name: SIDE_TOC_RAIL_COVER_REM
     title: 右端の線を枠で覆う高さ
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても右側の目次の外を通らず hover が切れない
     value: '2'
   - name: SIDE_TOC_EDGE_GAP_REM
     title: スクロールする場所の右端と右側の目次の間
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: hover でピン止めしていない右端の線と目次の枠の右端の、スクロールする場所の右端からの間（rem）。先頭へ戻るボタンの `--mdmark-back-to-top-gap` の既定と同じ
     value: '1'
     refs:
@@ -50,7 +50,7 @@ constants:
     status: planned
   - name: SIDE_TOC_AVOID_GAP_PX
     title: 差分のミニマップと右側の目次の間
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: 差分のミニマップの帯と横の範囲が重なるとき、帯の左端から右端の線と目次の枠の右端までに空ける幅（px）。`BACK_TO_TOP_AVOID_GAP_PX` と同じ値
     value: '8'
     refs:
@@ -59,7 +59,7 @@ constants:
 functions:
   - name: collectSideTocHeadings
     title: 右側の目次の見出しを集める
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: '本文の中の `SIDE_TOC_HEADING_SELECTOR` に該当する見出しを文書の順に集め、レベル・ID・表示する文字（`visibleText`。開閉のボタンとアンカーを除いた見出しの文字）と、`findChangedHeadings` が返却した ID の見出しに `changed: true` を返却する。`.mdmark-html` の中の見出しは除く'
     kind: 関数
     scope: internal
@@ -89,7 +89,7 @@ functions:
     status: planned
   - name: findChangedHeadings
     title: 変わったセクションの見出しを集める
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: 本文の中の h1〜h3 と `.mdmark-diff-block` を文書の順に 1 回だけたどり、今の見出しとその祖先の見出しの並びを持ちながら、`.mdmark-diff-block` ごとに、そのブロックが含む h1〜h3 の見出しか、無ければ文書の順でそのブロックの前にある最後の h1〜h3 の見出しを起点にし、起点とそれより浅いレベルの前にある見出しを順に祖先として集めて、ID を持つ見出しの ID を返却する。数える見出しは本文の中の全ての h1〜h3（削除のブロックの中の `id` を持たない見出しを含む。`.mdmark-html` の中の見出しは除く）で、`id` を持たない見出しは ID を返却せず祖先だけを集める
     kind: 関数
     scope: internal
@@ -135,7 +135,7 @@ functions:
     status: planned
   - name: pickCurrentHeading
     title: 今いるセクションの見出しを決める
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: 画面に出ている見出しの位置から今いるセクションの見出しを決める。上端が線（`line`）以下の見出しのうち最後のものを返却し、無ければ画面の中にある最初の見出しを返却する。どちらも無ければ `undefined`
     kind: 関数
     scope: internal
@@ -169,7 +169,7 @@ functions:
     status: planned
   - name: attachSideToc
     title: 右側の目次を付ける
-    container: src/interact/side-toc.ts
+    container: src/section/side-toc.interact.ts
     summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を配置して操作を付ける。見出しが無ければ何も配置せず `content` に `el` を返却する。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に記録する。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読み込まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いるセクションをもう一度決める。もう一度決めるときは、祖先に `hidden` を持つ見出し（閉じたセクションの中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に指定し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を配置する。hover の出し方では、付けたときと、`findScrollContainer` のスクロールする場所と画面の `scroll`・`resize` と、`document.body` の子の追加・削除（`MutationObserver`。差分のミニマップの帯の出し入れ）のたびに、hover で開く目次の枠の位置を aside の `--mdmark-side-toc-panel-top`（見えている枠の上端 = スクロールする場所が画面全体なら 0、要素ならその上端に、`--mdmark-sticky-top` と `--mdmark-space` を加算した位置）・`--mdmark-side-toc-panel-end`（右端の線と枠の右端。画面の右端から、スクロールする場所のスクロールバーを除いた右端（画面全体なら `document.documentElement.clientWidth`、要素ならその左端に `clientLeft` と `clientWidth` を加算した位置。画面からはみ出す分は画面の端）までの幅に `SIDE_TOC_EDGE_GAP_REM` を追加した値。`document.body` の子の `.mdmark-diff-minimap` のうち、幅が 0 でなく、その右端から左へパネルの幅までの横の範囲と重なるものがあれば、画面の右端からその左端までの幅に `SIDE_TOC_AVOID_GAP_PX` を追加した値。描く先の要素の位置は使用しない。aside は CSS の `min-width` で線の幅を取ったままにし、ピン止めの有無で本文の列の幅を変えない）・`--mdmark-side-toc-panel-min-height`（右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を追加した位置までの高さ。0 未満は 0）と、右端の線の位置を `--mdmark-side-toc-rail-top`（aside の上端と `--mdmark-side-toc-panel-top` の大きい方。右端の線の上端はこの値で決める）・`--mdmark-side-toc-rail-height`（画面の下端・スクロールする要素の下端・描く先の要素の下端のうち最も小さい位置から、`--mdmark-side-toc-rail-top` と `--mdmark-space` を減算した高さ。0 未満は 0）に px で入れる。その高さが 0 のとき（描く先の要素の下端が線の上端より上にある）は aside に `data-rail-outside` を付け、それ以外は削除する。削除する関数は包む前の子の並びへ戻し、位置を決める受け取りを解除する
     kind: 関数
     scope: internal

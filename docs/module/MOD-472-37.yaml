@@ -31,6 +31,7 @@ notes:
     ```tree
     src/
     ├── mount.ts            # 公開関数 mount と、描いた要素の記録
+    ├── interact.ts         # 描いた文書に記法の操作を付ける attachInteractions（機能のフォルダの *.interact.ts を呼ぶ）
     ├── libraries.ts        # マーカーの場所に外部ライブラリのモジュールを描かせる loadLibraries と、埋めたモジュールの記録
     ├── highlight.ts        # 色分けのライブラリを読み込んでコードブロックを色分けする highlightCodeBlocks と、埋めたモジュールの記録
     ├── highlight-lines.ts  # 色分けした HTML を行に分ける splitHighlightedLines・highlightLines（DOM を使用しない）

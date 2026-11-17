@@ -87,7 +87,7 @@ items:
 - page: MOD-472-148.ts.yaml
   summary: ライブラリ本体 / バージョンを上げる / versions.ts
 - page: MOD-472-237.ts.yaml
-  summary: ライブラリ本体 / 操作 / code-fold-logic.ts
+  summary: ライブラリ本体 / コードブロック / code-fold.logic.ts
 - page: MOD-472-161.ts.yaml
   summary: ライブラリ本体 / ビューとコメント / anchor.ts
 - page: MOD-472-164.ts.yaml
@@ -133,69 +133,69 @@ items:
 - page: MOD-472-207.ts.yaml
   summary: ライブラリ本体 / 描く / inline-icons.ts
 - page: MOD-472-223.ts.yaml
-  summary: ライブラリ本体 / 操作 / back-to-top.ts
+  summary: ライブラリ本体 / 見出しとセクション / back-to-top.interact.ts
 - page: MOD-472-232.ts.yaml
-  summary: ライブラリ本体 / 操作 / clipboard.ts
+  summary: ライブラリ本体 / 記法の共通 / clipboard.interact.ts
 - page: MOD-472-233.ts.yaml
-  summary: ライブラリ本体 / 操作 / code-blocks.ts
+  summary: ライブラリ本体 / コードブロック / code-block.interact.ts
 - page: MOD-472-225.ts.yaml
-  summary: ライブラリ本体 / 操作 / code-folds.ts
+  summary: ライブラリ本体 / コードブロック / code-fold.interact.ts
 - page: MOD-472-243.ts.yaml
-  summary: ライブラリ本体 / 操作 / csv-raw.ts
+  summary: ライブラリ本体 / 表 / csv.interact.ts
 - page: MOD-472-179.ts.yaml
-  summary: ライブラリ本体 / 図 / diagram-resize.ts
+  summary: ライブラリ本体 / 図 / diagram-resize.interact.ts
 - page: MOD-472-346.ts.yaml
-  summary: ライブラリ本体 / 図 / diagram-touch.ts
+  summary: ライブラリ本体 / 図 / diagram-touch.interact.ts
 - page: MOD-472-184.ts.yaml
-  summary: ライブラリ本体 / 図 / diagram-tips.ts
+  summary: ライブラリ本体 / 図 / diagram-tips.interact.ts
 - page: MOD-472-183.ts.yaml
-  summary: ライブラリ本体 / 図 / diagrams.ts
+  summary: ライブラリ本体 / 図 / diagram.interact.ts
 - page: MOD-472-230.ts.yaml
-  summary: ライブラリ本体 / 操作 / embedded-html.ts
+  summary: ライブラリ本体 / 埋め込んだHTML / embedded-html.interact.ts
 - page: MOD-472-238.ts.yaml
-  summary: ライブラリ本体 / 操作 / footnotes.ts
+  summary: ライブラリ本体 / 脚注と注記 / footnote.interact.ts
 - page: MOD-472-236.ts.yaml
-  summary: ライブラリ本体 / 操作 / gif.ts
+  summary: ライブラリ本体 / 画像と動画 / gif.interact.ts
 - page: MOD-472-227.ts.yaml
-  summary: ライブラリ本体 / 操作 / index.ts
+  summary: ライブラリ本体 / 描く / interact.ts
 - page: MOD-472-224.ts.yaml
-  summary: ライブラリ本体 / 操作 / lightbox.ts
+  summary: ライブラリ本体 / 画像と動画 / lightbox.interact.ts
 - page: MOD-472-185.ts.yaml
-  summary: ライブラリ本体 / 図 / params.ts
+  summary: ライブラリ本体 / 図 / param.interact.ts
 - page: MOD-472-348.ts.yaml
-  summary: ライブラリ本体 / 操作 / part-states.ts
+  summary: ライブラリ本体 / 記法の共通 / part-states.interact.ts
 - page: MOD-472-231.ts.yaml
-  summary: ライブラリ本体 / 操作 / placement.ts
+  summary: ライブラリ本体 / 記法の共通 / placement.interact.ts
 - page: MOD-472-234.ts.yaml
-  summary: ライブラリ本体 / 操作 / scroller.ts
+  summary: ライブラリ本体 / 記法の共通 / scroller.interact.ts
 - page: MOD-472-222.ts.yaml
-  summary: ライブラリ本体 / 操作 / sections.ts
+  summary: ライブラリ本体 / 見出しとセクション / section.interact.ts
 - page: MOD-472-219.ts.yaml
-  summary: ライブラリ本体 / 操作 / side-toc.ts
+  summary: ライブラリ本体 / 見出しとセクション / side-toc.interact.ts
 - page: MOD-472-221.ts.yaml
-  summary: ライブラリ本体 / 操作 / sticky.ts
+  summary: ライブラリ本体 / 表 / table-sticky.interact.ts
 - page: MOD-472-226.ts.yaml
-  summary: ライブラリ本体 / 操作 / table-resize.ts
+  summary: ライブラリ本体 / 表 / table-resize.interact.ts
 - page: MOD-472-240.ts.yaml
-  summary: ライブラリ本体 / 操作 / table-settings.ts
+  summary: ライブラリ本体 / 表 / table-settings.interact.ts
 - page: MOD-472-241.ts.yaml
-  summary: ライブラリ本体 / 操作 / table-tree.ts
+  summary: ライブラリ本体 / 表 / table-tree.interact.ts
 - page: MOD-472-347.ts.yaml
-  summary: ライブラリ本体 / 操作 / table-width.ts
+  summary: ライブラリ本体 / 表 / table-width.interact.ts
 - page: MOD-472-228.ts.yaml
-  summary: ライブラリ本体 / 操作 / tables.ts
+  summary: ライブラリ本体 / 表 / table.interact.ts
 - page: MOD-472-220.ts.yaml
-  summary: ライブラリ本体 / 操作 / tabs.ts
+  summary: ライブラリ本体 / タブ / tabs.interact.ts
 - page: MOD-472-266.ts.yaml
-  summary: ライブラリ本体 / 索引と用語 / terms.ts
+  summary: ライブラリ本体 / 索引と用語 / term.interact.ts
 - page: MOD-472-229.ts.yaml
-  summary: ライブラリ本体 / 操作 / text.ts
+  summary: ライブラリ本体 / 記法の共通 / text.interact.ts
 - page: MOD-472-235.ts.yaml
-  summary: ライブラリ本体 / 操作 / trees.ts
+  summary: ライブラリ本体 / ファイルツリー / tree.interact.ts
 - page: MOD-472-242.ts.yaml
-  summary: ライブラリ本体 / 操作 / wide.ts
+  summary: ライブラリ本体 / 範囲の記法 / wide.interact.ts
 - page: MOD-472-177.ts.yaml
-  summary: ライブラリ本体 / 図 / zoom.ts
+  summary: ライブラリ本体 / 記法の共通 / zoom.interact.ts
 - page: MOD-472-260.ts.yaml
   summary: ライブラリ本体 / 索引と用語 / aliases.ts
 - page: MOD-472-256.ts.yaml
@@ -289,117 +289,117 @@ items:
 - page: MOD-472-159.ts.yaml
   summary: ライブラリ本体 / ビューとコメント / part-modules.ts
 - page: MOD-472-324.ts.yaml
-  summary: ライブラリ本体 / 部品 / back-to-top.ts
+  summary: ライブラリ本体 / 見出しとセクション / back-to-top.part.ts
 - page: MOD-472-265.ts.yaml
-  summary: ライブラリ本体 / 索引と用語 / backlinks.ts
+  summary: ライブラリ本体 / 索引と用語 / backlinks.part.ts
 - page: MOD-472-318.ts.yaml
-  summary: ライブラリ本体 / 部品 / badge.ts
+  summary: ライブラリ本体 / 行内の記法 / badge.part.ts
 - page: MOD-472-275.ts.yaml
-  summary: ライブラリ本体 / 記法 / callout.ts
+  summary: ライブラリ本体 / 注意書き / callout.part.ts
 - page: MOD-472-308.ts.yaml
-  summary: ライブラリ本体 / 部品 / card-grid.ts
+  summary: ライブラリ本体 / カード / card-grid.part.ts
 - page: MOD-472-332.ts.yaml
-  summary: ライブラリ本体 / 部品 / card.ts
+  summary: ライブラリ本体 / カード / card.part.ts
 - page: MOD-472-174.ts.yaml
-  summary: ライブラリ本体 / 図 / chart.ts
+  summary: ライブラリ本体 / 図 / chart.part.ts
 - page: MOD-472-306.ts.yaml
-  summary: ライブラリ本体 / 部品 / code-block.ts
+  summary: ライブラリ本体 / コードブロック / code-block.part.ts
 - page: MOD-472-325.ts.yaml
-  summary: ライブラリ本体 / 部品 / collapsible.ts
+  summary: ライブラリ本体 / 記法の共通 / collapsible.part.ts
 - page: MOD-472-312.ts.yaml
-  summary: ライブラリ本体 / 部品 / colors.ts
+  summary: ライブラリ本体 / 記法の共通 / colors.part.ts
 - page: MOD-472-163.ts.yaml
-  summary: ライブラリ本体 / ビューとコメント / comment.ts
+  summary: ライブラリ本体 / ビューとコメント / comment.part.ts
 - page: MOD-472-172.ts.yaml
-  summary: ライブラリ本体 / 図 / diagram.ts
+  summary: ライブラリ本体 / 図 / diagram.part.ts
 - page: MOD-472-200.ts.yaml
-  summary: ライブラリ本体 / 差分 / diff-blocks.ts
+  summary: ライブラリ本体 / 差分 / diff-blocks.part.ts
 - page: MOD-472-197.ts.yaml
-  summary: ライブラリ本体 / 差分 / diff-html.ts
+  summary: ライブラリ本体 / 差分 / diff-html.part.ts
 - page: MOD-472-196.ts.yaml
-  summary: ライブラリ本体 / 差分 / diff-lines.ts
+  summary: ライブラリ本体 / 差分 / diff-lines.part.ts
 - page: MOD-472-199.ts.yaml
-  summary: ライブラリ本体 / 差分 / diff-message.ts
+  summary: ライブラリ本体 / 差分 / diff-message.part.ts
 - page: MOD-472-198.ts.yaml
-  summary: ライブラリ本体 / 差分 / diff-minimap.ts
+  summary: ライブラリ本体 / 差分 / diff-minimap.part.ts
 - page: MOD-472-194.ts.yaml
-  summary: ライブラリ本体 / 差分 / diff-toggle.ts
+  summary: ライブラリ本体 / 差分 / diff-toggle.part.ts
 - page: MOD-472-323.ts.yaml
-  summary: ライブラリ本体 / 部品 / doc-list.ts
+  summary: ライブラリ本体 / 書き出したHTMLの起動 / doc-list.part.ts
 - page: MOD-472-309.ts.yaml
-  summary: ライブラリ本体 / 部品 / embed.ts
+  summary: ライブラリ本体 / 記法の共通 / embed.part.ts
 - page: MOD-472-313.ts.yaml
-  summary: ライブラリ本体 / 部品 / escape.ts
+  summary: ライブラリ本体 / 記法の共通 / escape.part.ts
 - page: MOD-589-2.ts.yaml
-  summary: ライブラリ本体 / 部品 / embedded-html.ts
+  summary: ライブラリ本体 / 埋め込んだHTML / embedded-html.part.ts
 - page: MOD-589-3.ts.yaml
-  summary: ライブラリ本体 / 部品 / icon-node.ts
+  summary: ライブラリ本体 / 記法の共通 / icon-node.part.ts
 - page: MOD-472-322.ts.yaml
-  summary: ライブラリ本体 / 部品 / figure.ts
+  summary: ライブラリ本体 / 図表の番号 / figure.part.ts
 - page: MOD-472-333.ts.yaml
-  summary: ライブラリ本体 / 部品 / footnote.ts
+  summary: ライブラリ本体 / 脚注と注記 / footnote.part.ts
 - page: MOD-472-339.ts.yaml
-  summary: ライブラリ本体 / 部品 / frontmatter.ts
+  summary: ライブラリ本体 / フロントマター / frontmatter.part.ts
 - page: MOD-472-328.ts.yaml
-  summary: ライブラリ本体 / 部品 / gallery.ts
+  summary: ライブラリ本体 / 画像と動画 / gallery.part.ts
 - page: MOD-472-331.ts.yaml
-  summary: ライブラリ本体 / 部品 / gif.ts
+  summary: ライブラリ本体 / 画像と動画 / gif.part.ts
 - page: MOD-472-336.ts.yaml
-  summary: ライブラリ本体 / 部品 / highlight.ts
+  summary: ライブラリ本体 / 行内の記法 / highlight.part.ts
 - page: MOD-472-186.ts.yaml
-  summary: ライブラリ本体 / 図 / hint.ts
+  summary: ライブラリ本体 / 図 / hint.part.ts
 - page: MOD-472-180.ts.yaml
-  summary: ライブラリ本体 / 図 / icons.ts
+  summary: ライブラリ本体 / 記法の共通 / icons.part.ts
 - page: MOD-472-327.ts.yaml
-  summary: ライブラリ本体 / 部品 / image.ts
+  summary: ライブラリ本体 / 画像と動画 / image.part.ts
 - page: MOD-472-334.ts.yaml
-  summary: ライブラリ本体 / 部品 / inline-icon.ts
+  summary: ライブラリ本体 / 行内の記法 / inline-icon.part.ts
 - page: MOD-472-335.ts.yaml
-  summary: ライブラリ本体 / 部品 / kbd.ts
+  summary: ライブラリ本体 / 行内の記法 / kbd.part.ts
 - page: MOD-472-337.ts.yaml
-  summary: ライブラリ本体 / 部品 / layout-columns.ts
+  summary: ライブラリ本体 / 範囲の記法 / layout-columns.part.ts
 - page: MOD-472-329.ts.yaml
-  summary: ライブラリ本体 / 部品 / lightbox.ts
+  summary: ライブラリ本体 / 画像と動画 / lightbox.part.ts
 - page: MOD-472-133.ts.yaml
-  summary: ライブラリ本体 / map / 描画と操作 / map.ts
+  summary: ライブラリ本体 / map / 描画と操作 / map.part.ts
 - page: MOD-472-330.ts.yaml
-  summary: ライブラリ本体 / 部品 / media.ts
+  summary: ライブラリ本体 / 画像と動画 / media.part.ts
 - page: MOD-472-145.ts.yaml
-  summary: ライブラリ本体 / mermaid / mermaid.ts
+  summary: ライブラリ本体 / 図 / mermaid.part.ts
 - page: MOD-472-310.ts.yaml
-  summary: ライブラリ本体 / 部品 / notice.ts
+  summary: ライブラリ本体 / 記法の共通 / notice.part.ts
 - page: MOD-472-311.ts.yaml
-  summary: ライブラリ本体 / 部品 / own.ts
+  summary: ライブラリ本体 / 記法の共通 / own.part.ts
 - page: MOD-472-181.ts.yaml
-  summary: ライブラリ本体 / 図 / param.ts
+  summary: ライブラリ本体 / 図 / param.part.ts
 - page: MOD-472-195.ts.yaml
-  summary: ライブラリ本体 / 差分 / revision-picker.ts
+  summary: ライブラリ本体 / 差分 / revision-picker.part.ts
 - page: MOD-472-321.ts.yaml
-  summary: ライブラリ本体 / 部品 / row-detail.ts
+  summary: ライブラリ本体 / 表 / row-detail.part.ts
 - page: MOD-472-320.ts.yaml
-  summary: ライブラリ本体 / 部品 / section.ts
+  summary: ライブラリ本体 / 見出しとセクション / section.part.ts
 - page: MOD-472-307.ts.yaml
-  summary: ライブラリ本体 / 部品 / side-toc.ts
+  summary: ライブラリ本体 / 見出しとセクション / side-toc.part.ts
 - page: MOD-472-317.ts.yaml
-  summary: ライブラリ本体 / 部品 / steps.ts
+  summary: ライブラリ本体 / ステップ / steps.part.ts
 - page: MOD-472-314.ts.yaml
-  summary: ライブラリ本体 / 部品 / syntax-warning.ts
+  summary: ライブラリ本体 / 記法の共通 / syntax-warning.part.ts
 - page: MOD-472-315.ts.yaml
-  summary: ライブラリ本体 / 部品 / table.ts
+  summary: ライブラリ本体 / 表 / table.part.ts
 - page: MOD-472-316.ts.yaml
-  summary: ライブラリ本体 / 部品 / tabs.ts
+  summary: ライブラリ本体 / タブ / tabs.part.ts
 - page: MOD-472-261.ts.yaml
-  summary: ライブラリ本体 / 索引と用語 / term-tip.ts
+  summary: ライブラリ本体 / 索引と用語 / term-tip.part.ts
 - page: MOD-472-326.ts.yaml
-  summary: ライブラリ本体 / 部品 / text-color.ts
+  summary: ライブラリ本体 / 行内の記法 / text-color.part.ts
 - page: MOD-472-319.ts.yaml
-  summary: ライブラリ本体 / 部品 / toc.ts
+  summary: ライブラリ本体 / 見出しとセクション / toc.part.ts
 - page: MOD-472-269.ts.yaml
-  summary: ライブラリ本体 / 記法 / tree.ts
+  summary: ライブラリ本体 / ファイルツリー / tree.part.ts
 - page: MOD-472-160.ts.yaml
-  summary: ライブラリ本体 / ビューとコメント / view.ts
+  summary: ライブラリ本体 / ビューとコメント / view.part.ts
 - page: MOD-472-338.ts.yaml
-  summary: ライブラリ本体 / 部品 / wide.ts
+  summary: ライブラリ本体 / 範囲の記法 / wide.part.ts
 - page: MOD-472-49.ts.yaml
   summary: ClaudeCodeプラグイン / MCPサーバー / arguments.ts
 - page: MOD-472-4.ts.yaml
@@ -437,7 +437,7 @@ items:
 - page: MOD-472-208.ts.yaml
   summary: ライブラリ本体 / 描く / print.ts
 - page: MOD-472-217.ts.yaml
-  summary: ライブラリ本体 / 描画 / frontmatter.ts
+  summary: ライブラリ本体 / フロントマター / frontmatter.logic.ts
 - page: MOD-472-212.ts.yaml
   summary: ライブラリ本体 / 描画 / index.ts
 - page: MOD-472-210.ts.yaml
@@ -449,99 +449,99 @@ items:
 - page: MOD-472-214.ts.yaml
   summary: ライブラリ本体 / 描画 / sanitize.ts
 - page: MOD-472-216.ts.yaml
-  summary: ライブラリ本体 / 描画 / scope-css.ts
+  summary: ライブラリ本体 / 埋め込んだHTML / scope-css.logic.ts
 - page: MOD-472-264.ts.yaml
-  summary: ライブラリ本体 / 索引と用語 / backlinks.ts
+  summary: ライブラリ本体 / 索引と用語 / backlinks.syntax.ts
 - page: MOD-472-286.ts.yaml
-  summary: ライブラリ本体 / 記法 / badges.ts
+  summary: ライブラリ本体 / 行内の記法 / badge.syntax.ts
 - page: MOD-647-1.ts.yaml
-  summary: ライブラリ本体 / 記法 / blocks.ts
+  summary: ライブラリ本体 / 記法の共通 / blocks.syntax.ts
 - page: MOD-472-284.ts.yaml
-  summary: ライブラリ本体 / 記法 / callouts.ts
+  summary: ライブラリ本体 / 注意書き / callout.syntax.ts
 - page: MOD-472-296.ts.yaml
-  summary: ライブラリ本体 / 記法 / card-grid.ts
+  summary: ライブラリ本体 / カード / card-grid.syntax.ts
 - page: MOD-472-272.ts.yaml
-  summary: ライブラリ本体 / 記法 / cards.ts
+  summary: ライブラリ本体 / カード / card.syntax.ts
 - page: MOD-472-276.ts.yaml
-  summary: ライブラリ本体 / 記法 / code-blocks.ts
+  summary: ライブラリ本体 / コードブロック / code-block.syntax.ts
 - page: MOD-472-270.ts.yaml
-  summary: ライブラリ本体 / 記法 / collapse.ts
+  summary: ライブラリ本体 / 記法の共通 / collapse.syntax.ts
 - page: MOD-472-301.ts.yaml
-  summary: ライブラリ本体 / 記法 / csv.ts
+  summary: ライブラリ本体 / 表 / csv.syntax.ts
 - page: MOD-472-297.ts.yaml
-  summary: ライブラリ本体 / 記法 / details.ts
+  summary: ライブラリ本体 / 範囲の記法 / details.syntax.ts
 - page: MOD-472-182.ts.yaml
-  summary: ライブラリ本体 / 図 / diagrams.ts
+  summary: ライブラリ本体 / 図 / diagram.syntax.ts
 - page: MOD-472-287.ts.yaml
-  summary: ライブラリ本体 / 記法 / figures.ts
+  summary: ライブラリ本体 / 図表の番号 / figure.syntax.ts
 - page: MOD-472-274.ts.yaml
-  summary: ライブラリ本体 / 記法 / footnotes.ts
+  summary: ライブラリ本体 / 脚注と注記 / footnote.syntax.ts
 - page: MOD-562-1.ts.yaml
-  summary: ライブラリ本体 / 記法 / annotations.ts
+  summary: ライブラリ本体 / 脚注と注記 / annotations.syntax.ts
 - page: MOD-472-302.ts.yaml
-  summary: ライブラリ本体 / 記法 / frontmatter.ts
+  summary: ライブラリ本体 / フロントマター / frontmatter.syntax.ts
 - page: MOD-472-277.ts.yaml
-  summary: ライブラリ本体 / 記法 / gallery.ts
+  summary: ライブラリ本体 / 画像と動画 / gallery.syntax.ts
 - page: MOD-472-259.ts.yaml
-  summary: ライブラリ本体 / 索引と用語 / glossary.ts
+  summary: ライブラリ本体 / 索引と用語 / glossary.syntax.ts
 - page: MOD-472-279.ts.yaml
-  summary: ライブラリ本体 / 記法 / headings.ts
+  summary: ライブラリ本体 / 見出しとセクション / heading.syntax.ts
 - page: MOD-472-294.ts.yaml
-  summary: ライブラリ本体 / 記法 / highlight.ts
+  summary: ライブラリ本体 / 行内の記法 / highlight.syntax.ts
 - page: MOD-472-289.ts.yaml
-  summary: ライブラリ本体 / 記法 / html.ts
+  summary: ライブラリ本体 / 埋め込んだHTML / embedded-html.syntax.ts
 - page: MOD-472-271.ts.yaml
-  summary: ライブラリ本体 / 記法 / images.ts
+  summary: ライブラリ本体 / 画像と動画 / image.syntax.ts
 - page: MOD-472-299.ts.yaml
-  summary: ライブラリ本体 / 記法 / includes.ts
+  summary: ライブラリ本体 / 描画 / includes.ts
 - page: MOD-472-278.ts.yaml
-  summary: ライブラリ本体 / 記法 / inline-icons.ts
+  summary: ライブラリ本体 / 行内の記法 / inline-icon.syntax.ts
 - page: MOD-472-293.ts.yaml
-  summary: ライブラリ本体 / 記法 / kbd.ts
+  summary: ライブラリ本体 / 行内の記法 / kbd.syntax.ts
 - page: MOD-472-295.ts.yaml
-  summary: ライブラリ本体 / 記法 / layout-columns.ts
+  summary: ライブラリ本体 / 範囲の記法 / layout-columns.syntax.ts
 - page: MOD-472-303.ts.yaml
-  summary: ライブラリ本体 / 記法 / map.ts
+  summary: ライブラリ本体 / map / 描画と操作 / map.syntax.ts
 - page: MOD-472-298.ts.yaml
-  summary: ライブラリ本体 / 記法 / pagebreak.ts
+  summary: ライブラリ本体 / 範囲の記法 / pagebreak.syntax.ts
 - page: MOD-472-281.ts.yaml
-  summary: ライブラリ本体 / 記法 / row-details.ts
+  summary: ライブラリ本体 / 表 / row-detail.syntax.ts
 - page: MOD-472-280.ts.yaml
-  summary: ライブラリ本体 / 記法 / sections.ts
+  summary: ライブラリ本体 / 見出しとセクション / section.syntax.ts
 - page: MOD-472-283.ts.yaml
-  summary: ライブラリ本体 / 記法 / steps.ts
+  summary: ライブラリ本体 / ステップ / steps.syntax.ts
 - page: MOD-472-273.ts.yaml
-  summary: ライブラリ本体 / 記法 / table-cells.ts
+  summary: ライブラリ本体 / 表 / table-cells.syntax.ts
 - page: MOD-472-292.ts.yaml
-  summary: ライブラリ本体 / 記法 / table-tree.ts
+  summary: ライブラリ本体 / 表 / table-tree.syntax.ts
 - page: MOD-472-268.ts.yaml
-  summary: ライブラリ本体 / 記法 / tables.ts
+  summary: ライブラリ本体 / 表 / table.syntax.ts
 - page: MOD-472-282.ts.yaml
-  summary: ライブラリ本体 / 記法 / tabs.ts
+  summary: ライブラリ本体 / タブ / tabs.syntax.ts
 - page: MOD-472-263.ts.yaml
-  summary: ライブラリ本体 / 索引と用語 / terms.ts
+  summary: ライブラリ本体 / 索引と用語 / term.syntax.ts
 - page: MOD-472-291.ts.yaml
-  summary: ライブラリ本体 / 記法 / text-color.ts
+  summary: ライブラリ本体 / 行内の記法 / text-color.syntax.ts
 - page: MOD-472-288.ts.yaml
-  summary: ライブラリ本体 / 記法 / toc.ts
+  summary: ライブラリ本体 / 見出しとセクション / toc.syntax.ts
 - page: MOD-647-2.ts.yaml
-  summary: ライブラリ本体 / 記法 / tokens.ts
+  summary: ライブラリ本体 / 記法の共通 / tokens.syntax.ts
 - page: MOD-472-285.ts.yaml
-  summary: ライブラリ本体 / 記法 / tree.ts
+  summary: ライブラリ本体 / ファイルツリー / tree.syntax.ts
 - page: MOD-472-290.ts.yaml
-  summary: ライブラリ本体 / 記法 / views.ts
+  summary: ライブラリ本体 / ビューとコメント / view.syntax.ts
 - page: MOD-472-213.ts.yaml
-  summary: ライブラリ本体 / 描画 / warnings.ts
+  summary: ライブラリ本体 / 記法の共通 / syntax-warning.syntax.ts
 - page: MOD-472-300.ts.yaml
-  summary: ライブラリ本体 / 記法 / wide.ts
+  summary: ライブラリ本体 / 範囲の記法 / wide.syntax.ts
 - page: MOD-472-118.ts.yaml
   summary: ライブラリ本体 / CLI / used.ts
 - page: MOD-472-202.ts.yaml
   summary: ライブラリ本体 / 拡張 / standard-schema.ts
 - page: MOD-472-218.ts.yaml
-  summary: ライブラリ本体 / 操作 / table-logic.ts
+  summary: ライブラリ本体 / 表 / table.logic.ts
 - page: MOD-472-239.ts.yaml
-  summary: ライブラリ本体 / 操作 / tree-logic.ts
+  summary: ライブラリ本体 / 表 / table-tree.logic.ts
 - page: MOD-472-247.ts.yaml
   summary: ライブラリ本体 / 書き出したHTMLの起動 / bundle.ts
 - page: MOD-472-248.ts.yaml
@@ -730,22 +730,48 @@ items:
   summary: 利用側のページの要素に文書を描き、再描画と片付けを受け持つ処理。記法の操作を付け、文書のマーカーにある外部ライブラリと拡張のモジュールを読み込んでマーカーの場所に描かせ、色分けの対象のコードブロックを色分けし、印刷の前後で折り畳みと記法を開いて戻す。ブラウザでだけ動く（色分けの HTML を行に分ける `src/highlight-lines.ts` だけは DOM を使用せず、部品の描画のインターフェースも使用する）。
 - page: MOD-472-38.yaml
   summary: Markdown を本文の HTML 文字列にする処理。markdown-it で解析し、トークンの段階でマーカーを取得し GitHub Flavored Markdown の不足と画面設計の属性を追加し、sanitize-html で許可していない要素・属性・URL を落とす。DOM に頼らず、ブラウザと Node で同じ文字列を返却する。
-- page: MOD-472-39.yaml
-  summary: '`mount` が描いた記法に操作を付け、削除する処理。表の並べ替え・ピン止め・絞り込み、タブ、セクションと行の詳細の開閉、表の見出し行と集計の行を留める処理、コードブロックのコピー、右側の目次を受け持ち、付ける関数はどれも削除する関数を返却する。ブラウザでだけ動く。'
 - page: MOD-472-40.yaml
   summary: CLI が書き出した HTML に埋める起動の処理。ライブラリ本体と一緒に `dist/viewer.js` にまとめ、書き出しのときに CLI が埋めるモジュールと 1 つのスクリプトにまとめる。開いたときに埋めた中身を読み込んで、読み込み済みのモジュールを指定し、拡張を登録して `mount` で描く。まとめた HTML では URL の `#` で文書を行き来する。
 - page: MOD-472-41.yaml
   summary: ESLint の道具と設定（`tools/eslint/`）・検査の npm scripts と、テストの起動で Git のリポジトリの場所を指す環境変数を削除する処理。配布物には入らない。
 - page: MOD-472-42.yaml
   summary: 索引の構造の検査・参照の表・索引の点検と、用語集の表の読み取り・用語と文書の別名の照合・ツールチップと関連文書の一覧の部品・ツールチップの操作。索引の処理は DOM に頼らず、Node とブラウザで同じ結果を返却する。
-- page: MOD-472-43.yaml
-  summary: マーカーと記法を HTML にする markdown-it のコアルール。記法ごとに 1 ファイルで、トークンの並びを書き換え、部品の HTML を差し込む。機能がオフの記法は何もしない。読み込めない指定は記載の警告を差し込み、読み込めた指定で描く。
+- page: MOD-583-1.yaml
+  summary: 表の記法（表のマーカー・セルの結合・キーの階層の表・CSV の表・行の詳細）を HTML にするコアルールと表の部品、`mount` が付ける表の操作（並べ替え・ピン止め・絞り込み・列の幅・テーブル設定・階層の開閉・見出し行と集計の行を留める処理・CSV の切り替え）、それらが使用する DOM を使用しない計算。操作だけはブラウザでだけ動く。
+- page: MOD-583-2.yaml
+  summary: 言語 `tree` のコードブロックをファイルツリーにするコアルールと部品と、`mount` が付けるフォルダの開閉とコピーの操作。操作だけはブラウザでだけ動く。
+- page: MOD-583-3.yaml
+  summary: コードブロックのタイトル・行番号・行の強調・畳む行を付けるコアルールと部品、`mount` が付けるコピーと行の開閉の操作、畳む行の計算。操作だけはブラウザでだけ動く。
+- page: MOD-583-4.yaml
+  summary: 脚注と注記の定義・参照を読み取り、番号と末尾の一覧にするコアルールと部品と、`mount` が付けるツールチップの開閉と一覧との行き来の操作。操作だけはブラウザでだけ動く。
+- page: MOD-583-5.yaml
+  summary: バッジ・キー・行内のアイコン・蛍光ペン・本文の文字の色の、行内の記法のコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。
+- page: MOD-583-6.yaml
+  summary: '`> [!NOTE]` などの引用を注意書きにするコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。'
+- page: MOD-583-7.yaml
+  summary: リンクと添付のカードと、カードの格子のコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。
+- page: MOD-583-8.yaml
+  summary: 見出しの ID とアンカー・セクションの囲み・目次のコアルールと部品と、`mount` が付けるセクションと行の詳細の開閉・右側の目次・先頭へ戻るボタンの操作。操作だけはブラウザでだけ動く。
+- page: MOD-583-9.yaml
+  summary: '`<!-- tabs -->` の範囲を見出しで区切ってタブにするコアルールと部品と、`mount` が付けるタブの切り替えの操作。操作だけはブラウザでだけ動く。'
+- page: MOD-583-10.yaml
+  summary: '`<!-- steps -->` の範囲の番号付きリストを手順にするコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。'
+- page: MOD-583-11.yaml
+  summary: 段組み・wide の範囲・details の範囲・改ページの、範囲のマーカーで囲んだ中身の並べ方を変えるコアルールと部品と、`mount` が付ける wide の幅の切り替えの操作。操作だけはブラウザでだけ動く。
+- page: MOD-583-12.yaml
+  summary: '`<!-- fig -->` の直後の図と表に種類ごとの通し番号を付け、番号への参照を解くコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。'
+- page: MOD-583-13.yaml
+  summary: 文書の先頭のフロントマターの判定と本文からの除外と、フロントマターの表示を差し込むコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。
+- page: MOD-583-14.yaml
+  summary: '`<!-- html -->` の範囲のコードブロックを HTML として描くコアルールと範囲の css の適用と部品と、`mount` が付ける横のスクロールの操作。操作だけはブラウザでだけ動く。'
+- page: MOD-583-15.yaml
+  summary: 画像の属性・ギャラリー・動画と音声・GIF・ライトボックスのコアルールと部品と、`mount` が付けるライトボックスと GIF の操作。操作だけはブラウザでだけ動く。
+- page: MOD-583-16.yaml
+  summary: 複数の機能のフォルダが使用する、コアルールの助け（トークン・範囲のマーカー・折り畳みの指定・記載の警告）、部品の助け（エスケープ・マーカー・アイコン・色・折り畳み・通知ブロック・読み込み中のブロック）、操作の助け（クリップボード・ツールチップの配置・スクロールする祖先・開閉の記録・要素の文字・拡大と縮小）。
 - page: MOD-472-44.yaml
   summary: 利用側が指定する設定に既定を適用する処理と、設定の `features` に文書の `features` のマーカーを重ねて機能のオン・オフを決める処理。どちらも DOM に頼らず、ブラウザと Node で動く。
 - page: MOD-472-45.yaml
   summary: 端末の設定と、起点のフォルダから上のフォルダの `mdmark.config.yaml` を探して重ねる処理。CLI・MCP のツール・VS Code 拡張機能が同じ関数を呼ぶ。
-- page: MOD-472-46.yaml
-  summary: 文書の中に mdmark が配置する UI の部品を HTML 文字列で返却する関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。
 - page: MOD-472-47.yaml
   summary: Storybook（`@storybook/react-vite`）のストーリーに部品の HTML を出す仕組み。部品の HTML を返却する描画のインターフェース（Node の HTTP サーバー）と、Storybook の設定・描画のインターフェースの HTML を描くデコレーター・VS Code の配色を与えるデコレーターを持つ。配布物には入らない。
 - page: MOD-477-1.ts.yaml

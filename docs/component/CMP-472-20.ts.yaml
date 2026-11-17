@@ -1,7 +1,7 @@
 id: CMP-472-20
 visibility: internal
 title: "ステップ"
-implementation: "src/parts/steps.ts#renderSteps"
+implementation: "src/steps/steps.part.ts#renderSteps"
 story: "Parts/Steps"
 test_file: tests/integration/lib/steps.story.test.ts
 states:

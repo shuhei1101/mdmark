@@ -1,12 +1,12 @@
 id: MOD-472-239
 visibility: internal
-title: ライブラリ本体 / 操作 / tree-logic.ts
+title: ライブラリ本体 / 表 / table-tree.logic.ts
 test_files:
-  - tests/unit/src/tree-logic.test.ts
+  - tests/unit/src/table/table-tree.logic.test.ts
 functions:
   - name: splitKeyPath
     title: キーのパスを分ける
-    container: src/tree-logic.ts
+    container: src/table/table-tree.logic.ts
     kind: 関数
     scope: internal
     summary: '`aliases[].metadata.type` の構造のパスを `.` で分け、`[]` を前の名前に付けたままの名前の並びと、親のパスの並びを返却する'
@@ -28,7 +28,7 @@ functions:
     status: planned
   - name: planTreeRows
     title: 階層の行を計画する
-    container: src/tree-logic.ts
+    container: src/table/table-tree.logic.ts
     kind: 関数
     scope: internal
     summary: 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並び（`{ path, parent, depth, name, virtual, hasChildren, source }`）を返却する
@@ -57,7 +57,7 @@ functions:
     status: planned
   - name: yamlLinePaths
     title: YAML の行のパスを求める
-    container: src/tree-logic.ts
+    container: src/table/table-tree.logic.ts
     kind: 関数
     scope: internal
     summary: YAML の行ごとに、インデントと `- ` から求めたキーのパス（表の `data-path` と同じ記載方法。キーを持たない行は `undefined`）を返却する
@@ -86,7 +86,7 @@ functions:
     status: planned
   - name: filterTreeRows
     title: 階層の行を絞り込む
-    container: src/tree-logic.ts
+    container: src/table/table-tree.logic.ts
     kind: 関数
     scope: internal
     summary: 末尾の名前に単語を含む行とその祖先の行のパスの集まりと、該当した行のうち補った行でないものの数を返却する

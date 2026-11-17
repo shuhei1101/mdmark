@@ -1,12 +1,12 @@
 id: MOD-472-233
 visibility: internal
-title: ライブラリ本体 / 操作 / code-blocks.ts
+title: ライブラリ本体 / コードブロック / code-block.interact.ts
 test_files:
-  - tests/unit/src/interact/code-blocks.browser.test.ts
+  - tests/unit/src/code-block/code-block.interact.browser.test.ts
 functions:
   - name: attachCodeCopy
     title: コードブロックにコピーを付ける
-    container: src/interact/code-blocks.ts
+    container: src/code-block/code-block.interact.ts
     summary: 各 `mdmark-code-bar` の末尾に `renderCodeCopy` のボタンを配置し、押すと `copyText` でコードを写す。写す文字は、行に分けたブロックでは `data-kind="del"` の行を除いた `mdmark-code-text` を改行でつないだもの（畳んで `hidden` を持つ行も含め、`⋯` のボタンの文字は含めない）、それ以外は `code` の文字から末尾の改行を 1 つ除いたもの。書き込めたら `data-state="copied"` にして 2 秒で `idle` に戻し、書き込めなければ `failed` にして次に押すまで残す
     kind: 関数
     scope: internal

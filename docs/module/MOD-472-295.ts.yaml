@@ -1,12 +1,12 @@
 id: MOD-472-295
 visibility: internal
-title: ライブラリ本体 / 記法 / layout-columns.ts
+title: ライブラリ本体 / 範囲の記法 / layout-columns.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/layout-columns.test.ts
+  - tests/unit/src/layout/layout-columns.syntax.test.ts
 functions:
   - name: buildLayoutColumns
     title: 段組みにする
-    container: src/render/syntax/layout-columns.ts
+    container: src/layout/layout-columns.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`columns` がオンなら、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切り、2〜3 列なら部品『段組み』で囲む。列の数が 2〜3 でない範囲と入れ子の内側は、記載の警告を差し込んで囲まない。範囲の外の `<!-- column -->` と、オフのときのマーカーは取り除く

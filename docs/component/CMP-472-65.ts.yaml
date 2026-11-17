@@ -1,7 +1,7 @@
 id: CMP-472-65
 visibility: internal
 title: "通知ブロック"
-implementation: "src/parts/notice.ts#renderNotice"
+implementation: "src/shared/notice.part.ts#renderNotice"
 story: "Parts/Notice"
 states:
   - name: Figure

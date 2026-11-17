@@ -1,7 +1,7 @@
 id: CMP-472-32
 visibility: internal
 title: "リビジョンの選択"
-implementation: "src/parts/revision-picker.ts#renderRevisionPicker"
+implementation: "src/diff/revision-picker.part.ts#renderRevisionPicker"
 story: "Parts/RevisionPicker"
 states:
   - name: Normal

@@ -1,12 +1,12 @@
 id: MOD-472-196
 visibility: internal
-title: ライブラリ本体 / 差分 / diff-lines.ts
+title: ライブラリ本体 / 差分 / diff-lines.part.ts
 test_files:
-  - tests/unit/src/parts/diff-lines.test.ts
+  - tests/unit/src/diff/diff-lines.part.test.ts
 functions:
   - name: renderDiffLines
     title: 差分の行を描く
-    container: src/parts/diff-lines.ts
+    container: src/diff/diff-lines.part.ts
     summary: 部品設計『差分の行』の HTML を返却する。`html` の塊は `renderDiffHtml` で描く
     kind: 関数
     scope: internal

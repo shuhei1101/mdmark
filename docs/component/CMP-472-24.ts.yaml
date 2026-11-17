@@ -1,7 +1,7 @@
 id: CMP-472-24
 visibility: internal
 title: "ヒント"
-implementation: "src/parts/hint.ts#renderHint"
+implementation: "src/diagram/hint.part.ts#renderHint"
 story: "Parts/Hint"
 states:
   - name: Block

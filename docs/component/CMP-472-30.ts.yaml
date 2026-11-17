@@ -1,7 +1,7 @@
 id: CMP-472-30
 visibility: internal
 title: "ミニマップ"
-implementation: "src/parts/diff-minimap.ts#renderDiffMinimap"
+implementation: "src/diff/diff-minimap.part.ts#renderDiffMinimap"
 story: "Parts/DiffMinimap"
 states:
   - name: Top

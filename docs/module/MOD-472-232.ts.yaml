@@ -1,12 +1,12 @@
 id: MOD-472-232
 visibility: internal
-title: ライブラリ本体 / 操作 / clipboard.ts
+title: ライブラリ本体 / 記法の共通 / clipboard.interact.ts
 test_files:
-  - tests/unit/src/interact/clipboard.browser.test.ts
+  - tests/unit/src/shared/clipboard.interact.browser.test.ts
 functions:
   - name: copyText
     title: クリップボードへ書き込む
-    container: src/interact/clipboard.ts
+    container: src/shared/clipboard.interact.ts
     summary: '`navigator.clipboard.writeText` で文字を書き込み、書き込めたかを返却する。`navigator.clipboard` が無いときと拒まれたときは `false` を返却し、例外を投げない'
     kind: 関数
     scope: internal

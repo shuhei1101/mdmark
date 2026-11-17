@@ -1,18 +1,18 @@
 id: MOD-472-275
 visibility: internal
-title: ライブラリ本体 / 記法 / callout.ts
+title: ライブラリ本体 / 注意書き / callout.part.ts
 test_files:
-  - tests/unit/src/parts/callout.test.ts
+  - tests/unit/src/callout/callout.part.test.ts
 constants:
   - name: CALLOUT_KINDS
     title: 注意書きの種類
-    container: src/parts/callout.ts
+    container: src/callout/callout.part.ts
     summary: 引用の 1 行目に記載できる種類。知らない種類は `note`
     value: '["note", "tip", "important", "warning", "caution"]'
 functions:
   - name: renderCallout
     title: 注意書きを描く
-    container: src/parts/callout.ts
+    container: src/callout/callout.part.ts
     kind: 関数
     scope: internal
     summary: '部品設計『注意書き』の HTML を返却する。`title` を指定すると、タイトルを `<span class="mdmark-visually-hidden">{種類の名前}: </span>{title}` にする'

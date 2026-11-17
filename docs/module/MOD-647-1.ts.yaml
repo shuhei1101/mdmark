@@ -1,12 +1,12 @@
 id: MOD-647-1
 visibility: internal
-title: ライブラリ本体 / 記法 / blocks.ts
+title: ライブラリ本体 / 記法の共通 / blocks.syntax.ts
 lead: 範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告のブロックの前への差し込みを受け持ち、範囲のマーカーの組み方や警告を差し込む位置を変えるときに参照する。
 functions:
   - name: blockStartOf
     title: トークンを含むブロックの開きを探す
     kind: 関数
-    container: src/render/syntax/blocks.ts
+    container: src/shared/blocks.syntax.ts
     role: 探索
     scope: public
     summary: '`index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返却する'
@@ -28,7 +28,7 @@ functions:
   - name: insertWarningsBeforeBlocks
     title: 警告をブロックの前に差し込む
     kind: 関数
-    container: src/render/syntax/blocks.ts
+    container: src/shared/blocks.syntax.ts
     role: 変換
     scope: public
     summary: 行内のトークンの位置ごとに記録した警告を、それを含むブロックの前に差し込む
@@ -53,7 +53,7 @@ functions:
   - name: pairRanges
     title: 範囲のマーカーの開きと閉じを組にする
     kind: 関数
-    container: src/render/syntax/blocks.ts
+    container: src/shared/blocks.syntax.ts
     role: 探索
     scope: public
     summary: 名前の範囲のマーカーを、入れ子を数えて開きと閉じの組にする
@@ -78,7 +78,7 @@ functions:
   - name: outermostRanges
     title: 外側の範囲だけを選ぶ
     kind: 関数
-    container: src/render/syntax/blocks.ts
+    container: src/shared/blocks.syntax.ts
     role: 変換
     scope: public
     summary: '`pairRanges` の組のうち、ほかの組の中に入っていない組だけを開きの順に返却する'

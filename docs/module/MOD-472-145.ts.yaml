@@ -1,12 +1,12 @@
 id: MOD-472-145
 visibility: internal
-title: ライブラリ本体 / mermaid / mermaid.ts
+title: ライブラリ本体 / 図 / mermaid.part.ts
 test_files:
-  - tests/unit/src/parts/mermaid.test.ts
+  - tests/unit/src/diagram/mermaid.part.test.ts
 functions:
   - name: renderMermaidDiagram
     title: mermaid の図を描く部品
-    container: src/parts/mermaid.ts
+    container: src/diagram/mermaid.part.ts
     kind: 関数
     scope: internal
     usecase: mermaidの図を描く

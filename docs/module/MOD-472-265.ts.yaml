@@ -1,12 +1,12 @@
 id: MOD-472-265
 visibility: internal
-title: ライブラリ本体 / 索引と用語 / backlinks.ts
+title: ライブラリ本体 / 索引と用語 / backlinks.part.ts
 test_files:
-  - tests/unit/src/parts/backlinks.test.ts
+  - tests/unit/src/knowledge/backlinks.part.test.ts
 functions:
   - name: renderBacklinks
     title: 関連文書の一覧の HTML を返却する
-    container: src/parts/backlinks.ts
+    container: src/knowledge/backlinks.part.ts
     kind: 関数
     scope: internal
     summary: タイトルの要素の `id` と文書のタイトル・リンク先の並びから、部品設計『関連文書の一覧』の HTML を返却する。`docs` が空なら空文字

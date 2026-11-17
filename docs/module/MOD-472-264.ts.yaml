@@ -1,12 +1,12 @@
 id: MOD-472-264
 visibility: internal
-title: ライブラリ本体 / 索引と用語 / backlinks.ts
+title: ライブラリ本体 / 索引と用語 / backlinks.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/backlinks.test.ts
+  - tests/unit/src/knowledge/backlinks.syntax.test.ts
 functions:
   - name: backlinksRule
     title: 関連文書の一覧のコアルール
-    container: src/render/syntax/backlinks.ts
+    container: src/knowledge/backlinks.syntax.ts
     kind: 関数
     scope: internal
     summary: 描く文書の被参照を、本文の末尾に関連文書の一覧として追加する

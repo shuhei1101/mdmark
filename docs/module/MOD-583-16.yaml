@@ -1,0 +1,36 @@
+id: MOD-583-16
+visibility: internal
+title: ライブラリ本体 / 記法の共通
+lead: 複数の機能のフォルダが使用する、コアルールの助け（トークン・範囲のマーカー・折り畳みの指定・記載の警告）、部品の助け（エスケープ・マーカー・アイコン・色・折り畳み・通知ブロック・読み込み中のブロック）、操作の助け（クリップボード・ツールチップの配置・スクロールする祖先・開閉の記録・要素の文字・拡大と縮小）。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/shared/
+    ├── blocks.syntax.ts         # 範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告のブロックの前への差し込み
+    ├── collapse.syntax.ts       # 表・タブ・ステップの折り畳みの指定（collapse）の読み取り
+    ├── syntax-warning.syntax.ts # 記載の警告を差し込む助け
+    ├── tokens.syntax.ts         # 記法のコアルールが共有するトークンの助け（マーカーの読み取り・閉じのマーカーの探索・機能の判定）
+    ├── collapsible.part.ts      # タブとステップの折り畳みの renderCollapsible
+    ├── colors.part.ts           # 色の名前の COLOR_NAMES と isColorName
+    ├── embed.part.ts            # 読み込み中のブロックの renderEmbed
+    ├── escape.part.ts           # HTML の特別な文字をエスケープする escapeHtml
+    ├── icon-node.part.ts        # lucide のアイコンの形状を svg の中身にする iconNodeBody と、svg の文字にする iconSvgOf
+    ├── icons.part.ts            # lucide のアイコンの svg
+    ├── notice.part.ts           # 通知ブロックの renderNotice
+    ├── own.part.ts              # mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER
+    ├── syntax-warning.part.ts   # 記載の警告の renderSyntaxWarning
+    ├── {部品}.part.stories.ts     # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ├── clipboard.interact.ts    # クリップボードへ書き込む（表・行の URL・コードブロック・ファイルツリーが使用する）
+    ├── part-states.interact.ts  # 読者が開閉した部品の開閉を描き直しをまたいで記録する
+    ├── placement.interact.ts    # ツールチップを持ち主の上と下のどちらに配置するかを決める
+    ├── scroller.interact.ts     # 要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタン・差分のミニマップ・タブの位置の保持が使用する）
+    ├── text.interact.ts         # 用語のツールチップの文字を除いた要素の文字 visibleText と、表のセルの値 cellValue（表・セクション・右側の目次・ビューが使用する）
+    └── zoom.interact.ts         # 図とライトボックスが共有する拡大・縮小・移動
+    ```
+  ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で記載する。この PR で追加する部品の配列・オブジェクトの引数は JSON の文字列で記載する（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を指定する'
+  マーカーの付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
+tags:
+  - name: topic:部品
+    main: true
+  - name: topic:構文
+  - name: action:操作

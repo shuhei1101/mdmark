@@ -1,12 +1,12 @@
 id: MOD-472-302
 visibility: internal
-title: ライブラリ本体 / 記法 / frontmatter.ts
+title: ライブラリ本体 / フロントマター / frontmatter.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/frontmatter.test.ts
+  - tests/unit/src/frontmatter/frontmatter.syntax.test.ts
 functions:
   - name: insertFrontmatter
     title: フロントマターの表示を差し込む
-    container: src/render/syntax/frontmatter.ts
+    container: src/frontmatter/frontmatter.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール（機能を決めた後、取り込みの後、コードブロックの飾りより前）。`frontmatter` がオンで `env.frontmatter` の中身が空白だけでないとき、中身を持つ `fence` のトークン（`info` は `yaml`、`map` はフロントマターの 2 行目から閉じる行まで）を作り、その前後に `renderFrontmatter` の HTML を `SLOT_MARKER` で分けた `ownBlock` を置いて、`state.tokens` の先頭に入れる

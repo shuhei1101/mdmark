@@ -1,7 +1,7 @@
 id: CMP-649-1
 visibility: internal
 title: mapのマインドマップ
-implementation: src/parts/map.ts#renderMapMindmap
+implementation: src/map/map.part.ts#renderMapMindmap
 story: Parts/MapMindmap
 lead: map の `mindmap` を、根を中央に配置して枝を左右の外へ広げる木の配置で、記載した形状の項目と 1 レイヤー目の枝ごとの色の曲線にして描き、枝の開閉と中へ入る持ち手、根からの道筋と子孫を残す選択を持つ。
 args:

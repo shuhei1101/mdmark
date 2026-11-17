@@ -1,12 +1,12 @@
 id: MOD-472-289
 visibility: internal
-title: ライブラリ本体 / 記法 / html.ts
+title: ライブラリ本体 / 埋め込んだHTML / embedded-html.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/html.test.ts
+  - tests/unit/src/embedded-html/embedded-html.syntax.test.ts
 functions:
   - name: buildEmbeddedHtml
     title: 埋め込んだ HTML を描く
-    container: src/render/syntax/html.ts
+    container: src/embedded-html/embedded-html.syntax.ts
     summary: コアルール。`html` がオンのとき、`<!-- html -->` の範囲ごとに言語 `html` の `fence` を数え、1 つなら範囲のトークンを `html_block` 1 つに置き換える。`html-scripts` がオンのときは、範囲の言語 `css`・`ts`・`js` の `fence` も読み込み（`readRangeScripts`）、`css` を `scopeCss` で根の要素に限った `style.mdmark-html-style` を根の要素の先頭に、`ts`・`js` をエスケープした文字の `template.mdmark-html-script`（`data-lang`）を末尾に配置し、根の要素に文書の中の範囲の通し番号を `data-html-scope` で付ける（どれも `markOwn`）。オフのときは `css`・`ts`・`js` の `fence` を範囲の `html_block` の後ろにそのまま残す。`ts` と `js` を両方持つ範囲と同じ言語を 2 つ持つ範囲は記載の警告を差し込み、`template` を配置しない。0 ・ 2 つ以上なら `pushWarning` で記載の警告を差し込み、範囲の中身はそのまま残す。オフのときは何もしない（マーカーは `dropMarks` が取り除く）
     description: |-
       置き換える HTML は次の順で作る。
@@ -100,7 +100,7 @@ functions:
     status: planned
   - name: readRangeScripts
     title: 範囲の css・ts・js を読み込む
-    container: src/render/syntax/html.ts
+    container: src/embedded-html/embedded-html.syntax.ts
     kind: 関数
     scope: internal
     summary: '`<!-- html -->` の範囲の `fence` を言語ごとに数え、`{ html, css, script, warnings }` を返却する'

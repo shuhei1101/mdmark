@@ -1,12 +1,12 @@
 id: MOD-472-216
 visibility: internal
-title: ライブラリ本体 / 描画 / scope-css.ts
+title: ライブラリ本体 / 埋め込んだHTML / scope-css.logic.ts
 test_files:
-  - tests/unit/src/render/scope-css.test.ts
+  - tests/unit/src/embedded-html/scope-css.logic.test.ts
 functions:
   - name: scopeCss
     title: 範囲の css を根の要素の中に限る
-    container: src/render/scope-css.ts
+    container: src/embedded-html/scope-css.logic.ts
     kind: 関数
     scope: internal
     summary: 範囲の `css` の各規則のセレクタの前に `.mdmark-html[data-html-scope="{scope}"]` を付け、`:scope` をその根の要素のセレクタに置き換えた CSS を返却する

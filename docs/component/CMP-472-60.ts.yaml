@@ -1,7 +1,7 @@
 id: CMP-472-60
 visibility: internal
 title: "行の詳細"
-implementation: "src/parts/row-detail.ts#renderRowDetail"
+implementation: "src/table/row-detail.part.ts#renderRowDetail"
 story: "Parts/RowDetail"
 test_file: tests/integration/lib/row-detail.story.test.ts
 states:

@@ -1,0 +1,27 @@
+id: MOD-583-5
+visibility: internal
+title: ライブラリ本体 / 行内の記法
+lead: バッジ・キー・行内のアイコン・蛍光ペン・本文の文字の色の、行内の記法のコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/inline/
+    ├── badge.syntax.ts       # バッジとバッジの色
+    ├── highlight.syntax.ts   # 蛍光ペン
+    ├── inline-icon.syntax.ts # 行内のアイコン
+    ├── kbd.syntax.ts         # キー
+    ├── text-color.syntax.ts  # 本文の文字の色
+    ├── badge.part.ts         # バッジの renderBadge（色を含む）
+    ├── highlight.part.ts     # 蛍光ペンの renderHighlight
+    ├── inline-icon.part.ts   # 行内のアイコンの renderInlineIcon と IconNode の svg の iconNodeSvg
+    ├── kbd.part.ts           # キーの renderKbd
+    ├── text-color.part.ts    # 文字の色の renderTextColor
+    └── {部品}.part.stories.ts  # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ```
+tags:
+  - name: topic:構文
+    main: true
+  - name: topic:バッジ
+  - name: topic:アイコン
+  - name: topic:蛍光ペン
+  - name: topic:色

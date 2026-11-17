@@ -1,11 +1,11 @@
 id: MOD-647-2
 visibility: internal
-title: ライブラリ本体 / 記法 / tokens.ts
+title: ライブラリ本体 / 記法の共通 / tokens.syntax.ts
 lead: 記法のコアルールが共有するトークンの処理を受け持ち、マーカーの読み取りや閉じの探し方、mdmark が出した HTML のトークンの作り方を変えるときに参照する。
 enums:
   - name: TabBoundary
     title: タブの中身の境目
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     summary: '`tabBoundaryBlock` が付け、`tabBoundaryOf` が読み取るタブの中身の境目'
     values:
       - value: start
@@ -20,14 +20,14 @@ enums:
 constants:
   - name: TAB_BOUNDARY_KEY
     title: タブの中身の境目のキー
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     summary: タブの中身の境目として `ownBlock` のトークンの `meta` に付けるキー。export しない
     value: '`tabBoundary`'
 functions:
   - name: envOf
     title: 解析の環境を取り出す
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 変換
     scope: public
     summary: コアルールの状態の `env` を、解析の環境 `RenderEnv` として返却する
@@ -42,7 +42,7 @@ functions:
   - name: featureOn
     title: 記法の機能がオンか
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 判定
     scope: public
     summary: 解析の環境の `features` で、`name` の機能が `true` かを返却する
@@ -63,7 +63,7 @@ functions:
   - name: ownBlock
     title: mdmarkが出したHTMLのトークンを作る
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 変換
     scope: public
     summary: mdmark が出した要素としてマーカーを付けた HTML を、`html_block` のトークンにする
@@ -93,7 +93,7 @@ functions:
   - name: tabBoundaryBlock
     title: タブの中身の境目のトークンを作る
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 変換
     scope: public
     summary: '`ownBlock` と同じ HTML のトークンの `meta` に、`TAB_BOUNDARY_KEY` のキーでタブの中身の境目を付ける'
@@ -110,7 +110,7 @@ functions:
   - name: tabBoundaryOf
     title: タブの中身の境目を読み取る
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 判定
     scope: public
     summary: '`html_block` のトークンなら `meta` の `TAB_BOUNDARY_KEY` の値を返却する'
@@ -125,7 +125,7 @@ functions:
   - name: markOf
     title: マーカーを読み取る
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 判定
     scope: public
     summary: マーカーのトークン（`MARK_TOKEN`）なら、`meta` のマーカーを返却する
@@ -140,7 +140,7 @@ functions:
   - name: findClose
     title: 閉じのマーカーを探す
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 探索
     scope: public
     summary: '`openIndex` のマーカーより後ろで、同じ `level` の `name` の閉じのマーカーの位置を返却する'
@@ -165,7 +165,7 @@ functions:
   - name: findNestedClose
     title: 閉じのトークンを階層で探す
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 探索
     scope: public
     summary: '`openIndex` の開きのトークンに対応する、同じ `level` で型の `_open` を `_close` にした閉じのトークンの位置を返却する'
@@ -184,7 +184,7 @@ functions:
   - name: textOf
     title: インライン要素の文字を集める
     kind: 関数
-    container: src/render/syntax/tokens.ts
+    container: src/shared/tokens.syntax.ts
     role: 変換
     scope: public
     summary: インラインのトークンの子のうち `text` と `code_inline` の中身をつなげて返却する（タグを除いた文字）

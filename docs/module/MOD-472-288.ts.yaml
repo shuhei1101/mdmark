@@ -1,12 +1,12 @@
 id: MOD-472-288
 visibility: internal
-title: ライブラリ本体 / 記法 / toc.ts
+title: ライブラリ本体 / 見出しとセクション / toc.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/toc.test.ts
+  - tests/unit/src/section/toc.syntax.test.ts
 functions:
   - name: buildToc
     title: 目次を配置する
-    container: src/render/syntax/toc.ts
+    container: src/section/toc.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`toc` がオンなら、`toc` のマーカーの場所に `env.headings` の h2・h3 の部品『目次』を配置する

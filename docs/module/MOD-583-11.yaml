@@ -1,0 +1,23 @@
+id: MOD-583-11
+visibility: internal
+title: ライブラリ本体 / 範囲の記法
+lead: 段組み・wide の範囲・details の範囲・改ページの、範囲のマーカーで囲んだ中身の並べ方を変えるコアルールと部品と、`mount` が付ける wide の幅の切り替えの操作。操作だけはブラウザでだけ動く。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/layout/
+    ├── details.syntax.ts        # details の範囲
+    ├── layout-columns.syntax.ts # 段組み
+    ├── pagebreak.syntax.ts      # 改ページ
+    ├── wide.syntax.ts           # wide の範囲
+    ├── layout-columns.part.ts   # 段組みの renderLayoutColumns
+    ├── wide.part.ts             # wide の範囲の renderWide
+    ├── {部品}.part.stories.ts     # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    └── wide.interact.ts         # wide の範囲の幅の切り替えのボタン
+    ```
+tags:
+  - name: topic:段組み
+    main: true
+  - name: topic:wide
+  - name: topic:details
+  - name: topic:レイアウト

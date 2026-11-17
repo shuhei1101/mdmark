@@ -1,7 +1,7 @@
 id: CMP-472-34
 visibility: internal
 title: "先頭へ戻るボタン"
-implementation: "src/parts/back-to-top.ts#renderBackToTop"
+implementation: "src/section/back-to-top.part.ts#renderBackToTop"
 story: "Parts/BackToTop"
 states:
   - name: Shown

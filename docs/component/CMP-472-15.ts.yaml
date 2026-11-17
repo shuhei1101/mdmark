@@ -1,7 +1,7 @@
 id: CMP-472-15
 visibility: internal
 title: "コメントのマーカー"
-implementation: "src/parts/comment.ts#renderCommentMark"
+implementation: "src/comments/comment.part.ts#renderCommentMark"
 story: "Parts/CommentMark"
 states:
   - name: Default

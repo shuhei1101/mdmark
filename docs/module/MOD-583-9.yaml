@@ -1,0 +1,17 @@
+id: MOD-583-9
+visibility: internal
+title: ライブラリ本体 / タブ
+lead: '`<!-- tabs -->` の範囲を見出しで区切ってタブにするコアルールと部品と、`mount` が付けるタブの切り替えの操作。操作だけはブラウザでだけ動く。'
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/tabs/
+    ├── tabs.syntax.ts       # タブと、入れ子のタブの開きと閉じの対応
+    ├── tabs.part.ts         # タブの renderTabs
+    ├── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    └── tabs.interact.ts     # タブの切り替えと、URL の #ID の指すタブを選ぶ処理
+    ```
+tags:
+  - name: topic:タブ
+    main: true
+  - name: action:切り替え

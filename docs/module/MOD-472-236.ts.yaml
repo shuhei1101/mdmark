@@ -1,12 +1,12 @@
 id: MOD-472-236
 visibility: internal
-title: ライブラリ本体 / 操作 / gif.ts
+title: ライブラリ本体 / 画像と動画 / gif.interact.ts
 test_files:
-  - tests/unit/src/interact/gif.browser.test.ts
+  - tests/unit/src/media/gif.interact.browser.test.ts
 functions:
   - name: attachGifs
     title: GIF を止める・再生するボタンを付ける
-    container: src/interact/gif.ts
+    container: src/media/gif.interact.ts
     kind: 関数
     scope: internal
     summary: '`img[data-gif]` ごとに `span.mdmark-gif` で包み、`img.decode()` の後に最初のフレームを同じ大きさの `canvas`（`aria-hidden`・`hidden`）に描いて `img` の後ろに配置し、`renderGifToggle` のボタンを付ける。押すと `canvas` の `hidden` と `img` の `visibility` とボタンの状態を切り替える。`prefers-reduced-motion: reduce` のときは止めた状態で始める。`decode()` が失敗した GIF は包まずボタンを付けない。ライトボックスの拡大のボタンで包んだ `img` は、ボタンごと包む'

@@ -1,12 +1,12 @@
 id: MOD-472-292
 visibility: internal
-title: ライブラリ本体 / 記法 / table-tree.ts
+title: ライブラリ本体 / 表 / table-tree.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/table-tree.test.ts
+  - tests/unit/src/table/table-tree.syntax.test.ts
 functions:
   - name: decorateTreeTable
     title: 階層の表の行を作る
-    container: src/render/syntax/table-tree.ts
+    container: src/table/table-tree.syntax.ts
     kind: 関数
     scope: internal
     summary: '`tree` の表の範囲のトークンの、本文の各行の `tr` に `data-path`・`data-parent`・`data-depth`・ class を付け、表に無い親の行のトークンを差し込む。キー・型・必須・既定の列のセルを替える'
@@ -40,7 +40,7 @@ functions:
     status: planned
   - name: linkTreeExamples
     title: 見本を表の下へ移す
-    container: src/render/syntax/table-tree.ts
+    container: src/table/table-tree.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`example` を持つ階層の表ごとに、文字が一致する見出しの直下のタブの範囲のトークンを表の直後の `aside.mdmark-tree-example` に移し、表と見本を `div.mdmark-tree-layout` で囲む。見本の `yaml` のコードブロックの行に `yamlLinePaths` のパスを付ける

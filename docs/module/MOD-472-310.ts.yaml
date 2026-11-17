@@ -1,18 +1,18 @@
 id: MOD-472-310
 visibility: internal
-title: ライブラリ本体 / 部品 / notice.ts
+title: ライブラリ本体 / 記法の共通 / notice.part.ts
 test_files:
-  - tests/unit/src/parts/notice.test.ts
+  - tests/unit/src/shared/notice.part.test.ts
 constants:
   - name: NOTICE_TITLES
     title: 通知ブロックのタイトル
-    container: src/parts/notice.ts
+    container: src/shared/notice.part.ts
     summary: 図のマーカーかどうかで分けるタイトル
     value: '{ figure: "この図を表示できません", block: "この箇所を表示できません", icons: "アイコンを表示できません" }'
 functions:
   - name: renderNotice
     title: 通知ブロックを描く
-    container: src/parts/notice.ts
+    container: src/shared/notice.part.ts
     kind: 関数
     scope: public
     summary: 部品設計『通知ブロック』の HTML を返却する

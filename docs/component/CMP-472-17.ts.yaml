@@ -1,7 +1,7 @@
 id: CMP-472-17
 visibility: internal
 title: "コメントの吹き出し"
-implementation: "src/parts/comment.ts#renderCommentBubble"
+implementation: "src/comments/comment.part.ts#renderCommentBubble"
 story: "Parts/CommentBubble"
 states:
   - name: Single

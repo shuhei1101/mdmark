@@ -1,7 +1,7 @@
 id: CMP-472-21
 visibility: internal
 title: "セクション"
-implementation: "src/parts/section.ts#renderSection"
+implementation: "src/section/section.part.ts#renderSection"
 story: "Parts/Section"
 test_file: tests/integration/lib/section.story.test.ts
 states:

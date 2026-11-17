@@ -1,12 +1,12 @@
 id: MOD-472-330
 visibility: internal
-title: ライブラリ本体 / 部品 / media.ts
+title: ライブラリ本体 / 画像と動画 / media.part.ts
 test_files:
-  - tests/unit/src/parts/media.test.ts
+  - tests/unit/src/media/media.part.test.ts
 functions:
   - name: renderMedia
     title: 動画と音声を描く
-    container: src/parts/media.ts
+    container: src/media/media.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『動画と音声』の HTML を返却する。`video`・`audio` に `controls`・`preload="metadata"`・`aria-label`（`alt`）を付け、`video` には `playsinline` も付ける。`autoplay` のときは `muted` も付ける。`poster` を指定したときは `video` の `poster` と、印刷用の `img.mdmark-media-print`（`alt=""`）を配置する

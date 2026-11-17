@@ -1,12 +1,12 @@
 id: MOD-472-296
 visibility: internal
-title: ライブラリ本体 / 記法 / card-grid.ts
+title: ライブラリ本体 / カード / card-grid.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/card-grid.test.ts
+  - tests/unit/src/card/card-grid.syntax.test.ts
 functions:
   - name: buildCardGrid
     title: カードの格子にする
-    container: src/render/syntax/card-grid.ts
+    container: src/card/card-grid.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`card-grid` がオンなら、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを、項目ごとの最初のリンク・その前の `icon\:名前` の行内のコード・残りの文字から部品『カードの格子』の HTML のトークンに置き換える。中身がリスト 1 つでないときは記載の警告を差し込んでマーカーだけを取り除く。オフのときはマーカーを取り除く

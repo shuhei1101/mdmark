@@ -1,12 +1,12 @@
 id: MOD-472-237
 visibility: internal
-title: ライブラリ本体 / 操作 / code-fold-logic.ts
+title: ライブラリ本体 / コードブロック / code-fold.logic.ts
 test_files:
-  - tests/unit/src/code-fold-logic.test.ts
+  - tests/unit/src/code-block/code-fold.logic.test.ts
 functions:
   - name: measureIndents
     title: 行のインデントのレベルを決める
-    container: src/code-fold-logic.ts
+    container: src/code-block/code-fold.logic.ts
     kind: 関数
     scope: internal
     summary: 行の頭の空白から、コードブロックの中で最も小さいインデントの幅（空白の数）を 1 レベル、タブを 1 レベルとしてレベルを決める。空白だけの行と空行は `undefined`
@@ -34,7 +34,7 @@ functions:
     status: planned
   - name: foldLinesOf
     title: 畳む行の数を決める
-    container: src/code-fold-logic.ts
+    container: src/code-block/code-fold.logic.ts
     kind: 関数
     scope: internal
     summary: 次の空でない行がより深い行を畳める行とし、その後ろの、次の同じ深さ以下の行の手前までの行の数を返却する（範囲の末尾の空行は含めない）
@@ -62,7 +62,7 @@ functions:
     status: planned
   - name: hiddenLinesOf
     title: 隠す行を決める
-    container: src/code-fold-logic.ts
+    container: src/code-block/code-fold.logic.ts
     kind: 関数
     scope: internal
     summary: 畳んだ行の後ろの畳む行の数の行を、隠す行にする。内側の畳んだ状態は外側を開いても残る
@@ -90,7 +90,7 @@ functions:
     status: planned
   - name: guideRangeOf
     title: 縦線を濃くする範囲を決める
-    container: src/code-fold-logic.ts
+    container: src/code-block/code-fold.logic.ts
     kind: 関数
     scope: internal
     summary: 行を含む最も内側の畳める範囲（畳める行の後ろの畳む行の数の行）を返却する。深さは範囲の畳める行の `indents` のレベルに 1 を追加した値

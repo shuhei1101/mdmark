@@ -1,12 +1,12 @@
 id: MOD-472-290
 visibility: internal
-title: ライブラリ本体 / 記法 / views.ts
+title: ライブラリ本体 / ビューとコメント / view.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/views.test.ts
+  - tests/unit/src/views/view.syntax.test.ts
 functions:
   - name: buildViews
     title: ビューのマーカーを囲みにする
-    container: src/render/syntax/views.ts
+    container: src/views/view.syntax.ts
     summary: 'コアルール。`views` がオンのとき、`<!-- view: {JSON のオブジェクト} -->` の範囲を `div.mdmark-view` の囲みにし、範囲の最初の表に表の部品の指定を当て、記載方法の誤りを警告にする。オフのときは何もしない（マーカーは `dropMarks` が取り除き、表は囲まない表として描く）'
     kind: 関数
     scope: internal

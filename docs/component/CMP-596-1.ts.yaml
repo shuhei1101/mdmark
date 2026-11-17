@@ -1,7 +1,7 @@
 id: CMP-596-1
 visibility: internal
 title: mapのクラス図
-implementation: src/parts/map.ts#renderMapClassDiagram
+implementation: src/map/map.part.ts#renderMapClassDiagram
 story: Parts/MapClass
 states:
   - name: Default

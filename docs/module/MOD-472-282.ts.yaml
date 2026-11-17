@@ -1,12 +1,12 @@
 id: MOD-472-282
 visibility: internal
-title: ライブラリ本体 / 記法 / tabs.ts
+title: ライブラリ本体 / タブ / tabs.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/tabs.test.ts
+  - tests/unit/src/tabs/tabs.syntax.test.ts
 functions:
   - name: buildTabs
     title: タブの範囲を区切る
-    container: src/render/syntax/tabs.ts
+    container: src/tabs/tabs.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`tabs` がオンなら、`tabs` の範囲を最初に出る見出しの階層で区切り、部品『タブ』（`selected` 無し）の囲みと中身にする。マーカーの設定は `readTabsOptions` で読み込み、`group` と折り畳みの指定（`collapse`・`title`）を部品へ指定する。区切りの見出しのトークンは取り除く。見出しが無ければ警告を差し込み、中身をそのまま残す。範囲の閉じは `findTabsClose` で入れ子を数えて探し、中身の中のタブのマーカーの範囲も同じ処理でタブにする（内側のタブは外側の中身の中で、内側の範囲で最初に出る見出しの階層で区切る）。タブ名は区切りの見出しの `inline` のトークンを `state.md.renderer.renderInline` で HTML にしたもの（`**` の強調は `strong` のまま）を部品へ指定し、折り畳みの見出しの既定にはタブ名のタグを除いた文字を使用する。閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きの場所に閉じの無い警告を 1 つ差し込み、文書の終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま残す
@@ -72,7 +72,7 @@ functions:
         expected: 外側の開きの場所に記載の警告が 1 つあり、`mdmark-tabs` が無く、`<h3` の `macOS`・`Windows` と `<h4` の `zsh`・`bash` が残る
   - name: readTabsOptions
     title: タブのマーカーの指定を読み込む
-    container: src/render/syntax/tabs.ts
+    container: src/tabs/tabs.syntax.ts
     kind: 関数
     scope: internal
     summary: タブのマーカーの設定（`validateMarkOptions` を経た値）から `group` を読み込み、`collapse` を `readCollapse` で読み込む
@@ -107,7 +107,7 @@ functions:
       - 'MOD-472-270#functions[readCollapse]'
   - name: findTabsClose
     title: タブの閉じを探す
-    container: src/render/syntax/tabs.ts
+    container: src/tabs/tabs.syntax.ts
     kind: 関数
     scope: internal
     summary: '`openIndex` のタブのマーカーと同じ階層のタブの開きと閉じを数え、対応する閉じの位置を返却する。共通の `findClose` は使用しない（タブ以外のマーカーの閉じの対応を変えないため）'

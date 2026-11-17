@@ -1,19 +1,19 @@
 id: MOD-472-348
 visibility: internal
-title: ライブラリ本体 / 操作 / part-states.ts
+title: ライブラリ本体 / 記法の共通 / part-states.interact.ts
 test_files:
-  - tests/unit/src/interact/part-states.browser.test.ts
+  - tests/unit/src/shared/part-states.interact.browser.test.ts
 constants:
   - name: PART_SELECTORS
     title: 開閉を記録する部品のセレクタ
-    container: src/interact/part-states.ts
+    container: src/shared/part-states.interact.ts
     summary: '`partKey` の種類ごとに、同じセクションの中の何番目かを数える部品の要素のセレクタ。`details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ）。`frontmatter` は class に `mdmark-frontmatter` を加えたフロントマターの折りたたみで、`details` には当たらない'
     value: '`{ "row-detail": "table:has(tr.mdmark-row-detail)", details: "details[class=\"mdmark-collapsible\"]", callout: "details.markdown-alert", frontmatter: "details.mdmark-frontmatter", er: "figure.mdmark-diagram[data-diagram=\"er\"]", tree: "div.mdmark-tree", code: "pre:has([data-fold-lines])", "table-tree": "div.mdmark-table[data-tree]" }`'
     status: planned
 functions:
   - name: partKey
     title: 部品の記録の鍵を作る
-    container: src/interact/part-states.ts
+    container: src/shared/part-states.interact.ts
     kind: 関数
     scope: internal
     summary: '`part` を囲む最も内側の `mdmark-section-body` の `id`（`root` の中に無ければ空の文字列）と、そのセクションの中で `PART_SELECTORS[kind]` に当たる部品のうち、囲む最も内側の `mdmark-section-body` が同じものの中の何番目か（0 から。文書の順）を `{kind}|{セクションの id}|{何番目か}` にし、`inner` を指定したときは後ろに `|{inner}` を付けて返却する'
@@ -41,7 +41,7 @@ functions:
     status: planned
   - name: startOpen
     title: 部品の要素を始める開閉を決める
-    container: src/interact/part-states.ts
+    container: src/shared/part-states.interact.ts
     kind: 関数
     scope: internal
     summary: '`states` の `key` の記録が有り、記録の `marker` が `marker` と同じなら記録の `open` を、そうでなければ `markerOpen` を返却する'
@@ -69,7 +69,7 @@ functions:
     status: planned
   - name: recordOpen
     title: 読者が変えた開閉を記録する
-    container: src/interact/part-states.ts
+    container: src/shared/part-states.interact.ts
     kind: 関数
     scope: internal
     summary: '`states` が有れば、`key` に `{ open, marker }` を書き込む（前の記録は上書きする）'
@@ -91,7 +91,7 @@ functions:
     status: planned
   - name: attachDetailsStates
     title: details の範囲・折りたたみの注意書き・フロントマターの開閉を記録する
-    container: src/interact/part-states.ts
+    container: src/shared/part-states.interact.ts
     kind: 関数
     scope: internal
     summary: '`root` の中の `PART_SELECTORS` の `details`・`callout`・`frontmatter` に当たる `details` ごとに、`partKey`（`inner` 無し）の鍵で `startOpen`（マーカーは `open` 属性の有無を `open`・`closed` にしたもの）の開閉にする。`summary` の `click`（Enter・Space を含む）で押した `details` を控え、その `details` の次の `toggle` で `recordOpen` に書き込む（印刷の前後など、`summary` を押さずに変わった開閉は書き込まない）。マーカーは付けたときの `open` 属性の有無で決め、記録の照合と書き込みに使用する'
@@ -137,7 +137,7 @@ functions:
 data_models:
   - name: PartStates
     title: 部品の開閉の記録
-    container: src/interact/part-states.ts
+    container: src/shared/part-states.interact.ts
     usecase: 利用側のページが文書を描く
     summary: '読者が開閉した行の詳細・details の範囲・折りたたみの注意書き・フロントマターの折りたたみ・ファイルツリーのフォルダ・コードの折りたたみ・階層の表の行の開閉を、`partKey` の鍵から引く `Map<string, { open: boolean; marker: string }>`。`mount` ごとに 1 つ作り、各部品の操作が読み書きする'
     properties:

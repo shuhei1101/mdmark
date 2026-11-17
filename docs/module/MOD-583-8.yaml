@@ -1,0 +1,26 @@
+id: MOD-583-8
+visibility: internal
+title: ライブラリ本体 / 見出しとセクション
+lead: 見出しの ID とアンカー・セクションの囲み・目次のコアルールと部品と、`mount` が付けるセクションと行の詳細の開閉・右側の目次・先頭へ戻るボタンの操作。操作だけはブラウザでだけ動く。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/section/
+    ├── heading.syntax.ts       # 見出しの ID とアンカー
+    ├── section.syntax.ts       # セクションの囲み
+    ├── toc.syntax.ts           # 目次
+    ├── back-to-top.part.ts     # 先頭へ戻るボタンの renderBackToTop
+    ├── section.part.ts         # セクションの renderSection
+    ├── side-toc.part.ts        # 右側の目次の renderSideToc
+    ├── toc.part.ts             # 目次の renderToc
+    ├── {部品}.part.stories.ts    # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ├── back-to-top.interact.ts # 先頭へ戻るボタンを配置し、出し分け・配置する位置・押したときの移動を付ける
+    ├── section.interact.ts     # セクションと行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く
+    └── side-toc.interact.ts    # 右側の目次を配置し、出し方・ピン止め・項目から移る・すべて開閉・今いるセクションを付ける
+    ```
+tags:
+  - name: topic:セクション
+    main: true
+  - name: topic:目次
+  - name: topic:先頭
+  - name: action:開閉

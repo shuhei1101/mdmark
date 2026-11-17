@@ -108,7 +108,7 @@ functions:
     container: src/render/marks.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`html_block`・`html_inline` のトークンのマーカーを取得し、引数を `readMarkArgs` で読み、記法のマーカーは `validateMarkOptions` でマーカーの JSON Schema に通して `Mark` にする（`map`・`map-data` は検証せず、今の `src/render/syntax/map.ts` の読み方のまま）。`features` は `options` を `env.featureOptions` へ記載した順に追加し、`page` は文書の先頭（それより前のトークンがマーカーか空のときだけ）なら `options` を `env.pageOptions` へ追加し、先頭に無ければマーカーの場所に記載の警告を差し込む。対応表と登録した拡張の名前は、引数が JSON のオブジェクトか無いときだけ `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、今の書き方のときはマーカーの場所に移行を案内する記載の警告を差し込む。マーカーだけの `html_block` の記法のマーカーはマーカーのトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、`problems` を記載の警告にして差し込み、`markOptionNotes` の注記を `recordMarkNotes` で記録する。それ以外は取り除く
+    summary: コアルール。`html_block`・`html_inline` のトークンのマーカーを取得し、引数を `readMarkArgs` で読み、記法のマーカーは `validateMarkOptions` でマーカーの JSON Schema に通して `Mark` にする（`map`・`map-data` は検証せず、今の `src/map/map.syntax.ts` の読み方のまま）。`features` は `options` を `env.featureOptions` へ記載した順に追加し、`page` は文書の先頭（それより前のトークンがマーカーか空のときだけ）なら `options` を `env.pageOptions` へ追加し、先頭に無ければマーカーの場所に記載の警告を差し込む。対応表と登録した拡張の名前は、引数が JSON のオブジェクトか無いときだけ `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、今の書き方のときはマーカーの場所に移行を案内する記載の警告を差し込む。マーカーだけの `html_block` の記法のマーカーはマーカーのトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、`problems` を記載の警告にして差し込み、`markOptionNotes` の注記を `recordMarkNotes` で記録する。それ以外は取り除く
     description: コードブロックと行内のコードは `html_*` のトークンにならないため、中のマーカーのような文字はそのまま残る。記法のマーカーは機能のオン・オフによらずマーカーのトークンにし、オフの記法のマーカーは `dropMarks` が取り除く
     args:
       - name: state

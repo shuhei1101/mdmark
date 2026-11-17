@@ -1,12 +1,12 @@
 id: MOD-472-303
 visibility: internal
-title: ライブラリ本体 / 記法 / map.ts
+title: ライブラリ本体 / map / 描画と操作 / map.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/map.test.ts
+  - tests/unit/src/map/map.syntax.test.ts
 functions:
   - name: buildMapRanges
     title: mapの範囲を組み立てる
-    container: src/render/syntax/map.ts
+    container: src/map/map.syntax.ts
     usecase: Mermaidと補足で図を描く
     kind: 関数
     scope: internal

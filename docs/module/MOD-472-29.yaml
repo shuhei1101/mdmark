@@ -28,14 +28,14 @@ diagrams:
 
       <!-- /map -->
 notes:
-  他の分類への変更: '`mount` は記法の操作と外部ライブラリの後に `attachMermaid` を呼ぶ（分類『描く』）。`render` は機能 `mermaid` がオンなら言語 `mermaid` のコードブロックに `data-mdmark-mermaid` を付ける（分類『記法』『部品』）。図の枠は種類 `mermaid` と倍率の下限を持ち、`attachDiagrams` は指定した図だけに付けられる（分類『図』）。書き出しは mermaid をまとめ、起動の処理が `setEmbeddedMermaid` で指定する（分類『CLI』『書き出したHTMLの起動』）'
+  他の分類への変更: '`mount` は記法の操作と外部ライブラリの後に `attachMermaid` を呼ぶ（分類『描く』）。`render` は機能 `mermaid` がオンなら言語 `mermaid` のコードブロックに `data-mdmark-mermaid` を付ける（分類『コードブロック』）。図の枠は種類 `mermaid` と倍率の下限を持ち、`attachDiagrams` は指定した図だけに付けられる（分類『図』）。書き出しは mermaid をまとめ、起動の処理が `setEmbeddedMermaid` で指定する（分類『CLI』『書き出したHTMLの起動』）'
   ディレクトリ: |-
     ```tree
     src/
     ├── mermaid.ts          # mermaid を読み込んで図にする attachMermaid と、埋めたモジュールの記録・テーマの変数の解決・actor のアイコンの置き換え
     ├── mermaid-source.ts   # ソースのタイトルの取り出し・図の種類の名前・テーマの変数の対応表（DOM を使用しない）
-    └── parts/
-        └── mermaid.ts      # 部品『mermaid の図』の renderMermaidDiagram
+    └── diagram/
+        └── mermaid.part.ts # 部品『mermaid の図』の renderMermaidDiagram（分類『図』）
     ```
 tags:
   - name: tool:mermaid

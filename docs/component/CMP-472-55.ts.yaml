@@ -1,7 +1,7 @@
 id: CMP-472-55
 visibility: internal
 title: "目次"
-implementation: "src/parts/toc.ts#renderToc"
+implementation: "src/section/toc.part.ts#renderToc"
 story: "Parts/Toc"
 test_file: tests/integration/lib/toc.story.test.ts
 states:

@@ -1,12 +1,12 @@
 id: MOD-472-294
 visibility: internal
-title: ライブラリ本体 / 記法 / highlight.ts
+title: ライブラリ本体 / 行内の記法 / highlight.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/highlight.test.ts
+  - tests/unit/src/inline/highlight.syntax.test.ts
 functions:
   - name: useHighlight
     title: 蛍光ペンのルールを追加する
-    container: src/render/syntax/highlight.ts
+    container: src/inline/highlight.syntax.ts
     kind: 関数
     scope: internal
     summary: markdown-it の行内のルールとして、`==` で囲んだ文字（開きの直後と閉じの直前が空白でない）を `mark_open`・`mark_close` にし、閉じの直後の `{color=色}` を色の名前として読み込んで `data-color` に写す。`highlight` がオフのときはルールを適用しない。知らない色の名前は属性を削除して既定の色にし、段落の前に記載の警告を差し込む

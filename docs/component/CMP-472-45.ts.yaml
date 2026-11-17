@@ -1,7 +1,7 @@
 id: CMP-472-45
 visibility: internal
 title: "差分の行"
-implementation: "src/parts/diff-lines.ts#renderDiffLines"
+implementation: "src/diff/diff-lines.part.ts#renderDiffLines"
 story: "Parts/DiffLines"
 states:
   - name: Normal

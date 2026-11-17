@@ -1,13 +1,13 @@
 id: MOD-472-324
 visibility: internal
-title: ライブラリ本体 / 部品 / back-to-top.ts
+title: ライブラリ本体 / 見出しとセクション / back-to-top.part.ts
 test_files:
-  - tests/unit/src/parts/back-to-top.test.ts
+  - tests/unit/src/section/back-to-top.part.test.ts
 functions:
   - name: renderBackToTop
     title: 先頭へ戻るボタンを描く
-    container: src/parts/back-to-top.ts
-    summary: 部品設計『先頭へ戻るボタン』の HTML を返却する。アイコンは lucide の arrow-up-to-line（`src/parts/icons.ts` に ArrowUpToLine を追加する）
+    container: src/section/back-to-top.part.ts
+    summary: 部品設計『先頭へ戻るボタン』の HTML を返却する。アイコンは lucide の arrow-up-to-line（`src/shared/icons.part.ts` に ArrowUpToLine を追加する）
     kind: 関数
     scope: internal
     args:

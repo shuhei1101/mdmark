@@ -1,12 +1,12 @@
 id: MOD-472-325
 visibility: internal
-title: ライブラリ本体 / 部品 / collapsible.ts
+title: ライブラリ本体 / 記法の共通 / collapsible.part.ts
 test_files:
-  - tests/unit/src/parts/collapsible.test.ts
+  - tests/unit/src/shared/collapsible.part.test.ts
 functions:
   - name: renderCollapsible
     title: 折り畳みを描く
-    container: src/parts/collapsible.ts
+    container: src/shared/collapsible.part.ts
     summary: タブとステップを入れる `<details class="mdmark-collapsible">` と、エスケープした見出しの `<summary>` を返却する。`open` のときは `details` に `open` を付ける
     kind: 関数
     scope: internal

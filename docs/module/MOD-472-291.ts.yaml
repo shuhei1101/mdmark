@@ -1,12 +1,12 @@
 id: MOD-472-291
 visibility: internal
-title: ライブラリ本体 / 記法 / text-color.ts
+title: ライブラリ本体 / 行内の記法 / text-color.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/text-color.test.ts
+  - tests/unit/src/inline/text-color.syntax.test.ts
 functions:
   - name: buildTextColors
     title: 本文の文字に色を付ける
-    container: src/render/syntax/text-color.ts
+    container: src/inline/text-color.syntax.ts
     kind: 関数
     scope: internal
     summary: コアルール。`text-color` がオンなら、`inline` の子のトークンで、同じ入れ子の深さの `[` で始まる `text` から `]{color=色}` で始まる `text` までを、部品『文字の色』の開きと閉じの `html_inline` で挟み、`[` と `]{color=色}` を削除する。リンクの中と、`]` の直後が `(` のものは適用しない。知らない色の名前は `[` と `]{color=色}` だけを削除して色を付けず、段落の前に記載の警告を差し込む

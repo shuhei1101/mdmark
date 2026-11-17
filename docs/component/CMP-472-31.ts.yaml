@@ -1,7 +1,7 @@
 id: CMP-472-31
 visibility: internal
 title: ライトボックス
-implementation: src/parts/lightbox.ts#renderLightbox
+implementation: src/media/lightbox.part.ts#renderLightbox
 story: Parts/Lightbox
 test_file: tests/integration/lib/lightbox.story.test.ts
 states:

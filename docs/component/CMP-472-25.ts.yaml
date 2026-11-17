@@ -1,7 +1,7 @@
 id: CMP-472-25
 visibility: internal
 title: "ビュー"
-implementation: "src/parts/view.ts#renderView"
+implementation: "src/views/view.part.ts#renderView"
 story: "Parts/View"
 states:
   - name: Board

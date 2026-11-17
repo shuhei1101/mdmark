@@ -1,0 +1,15 @@
+id: MOD-583-6
+visibility: internal
+title: ライブラリ本体 / 注意書き
+lead: '`> [!NOTE]` などの引用を注意書きにするコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。'
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/callout/
+    ├── callout.syntax.ts    # 注意書きと、注意書きのタイトル・開閉・入れ子
+    ├── callout.part.ts      # 注意書きの renderCallout
+    └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ```
+tags:
+  - name: topic:注意書き
+    main: true

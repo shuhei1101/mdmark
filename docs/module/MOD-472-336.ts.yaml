@@ -1,12 +1,12 @@
 id: MOD-472-336
 visibility: internal
-title: ライブラリ本体 / 部品 / highlight.ts
+title: ライブラリ本体 / 行内の記法 / highlight.part.ts
 test_files:
-  - tests/unit/src/parts/highlight.test.ts
+  - tests/unit/src/inline/highlight.part.test.ts
 functions:
   - name: renderHighlight
     title: 蛍光ペンを描く
-    container: src/parts/highlight.ts
+    container: src/inline/highlight.part.ts
     summary: 部品設計『蛍光ペン』の HTML を返却する。ストーリーの描画で使用し、`render` は `useHighlight` のトークンから同じ HTML を出す
     kind: 関数
     scope: internal

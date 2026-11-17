@@ -1,12 +1,12 @@
 id: MOD-472-297
 visibility: internal
-title: ライブラリ本体 / 記法 / details.ts
+title: ライブラリ本体 / 範囲の記法 / details.syntax.ts
 test_files:
-  - tests/unit/src/render/syntax/details.test.ts
+  - tests/unit/src/layout/details.syntax.test.ts
 functions:
   - name: buildDetailsRanges
     title: details の範囲にする
-    container: src/render/syntax/details.ts
+    container: src/layout/details.syntax.ts
     kind: 関数
     scope: internal
     summary: 'コアルール。`details` がオンなら、`<!-- details: {"title": "…"} -->` 〜 `<!-- /details -->` を `readDetailsOptions` のタイトルと開閉で部品『details の範囲』にする。閉じのマーカーが無いときは警告を差し込んで囲まない。`summary` は見出しのトークンにしない'
@@ -34,7 +34,7 @@ functions:
         summary: 閉じのマーカーが無いと囲まずに警告する
   - name: readDetailsOptions
     title: details のマーカーを読み込む
-    container: src/render/syntax/details.ts
+    container: src/layout/details.syntax.ts
     kind: 関数
     scope: internal
     summary: マーカーの設定の `title`（空の文字か省くと `詳細`）と `open`（省くと `false`）を読み込む

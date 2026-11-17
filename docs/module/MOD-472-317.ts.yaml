@@ -1,12 +1,12 @@
 id: MOD-472-317
 visibility: internal
-title: ライブラリ本体 / 部品 / steps.ts
+title: ライブラリ本体 / ステップ / steps.part.ts
 test_files:
-  - tests/unit/src/parts/steps.test.ts
+  - tests/unit/src/steps/steps.part.test.ts
 functions:
   - name: renderSteps
     title: ステップを描く
-    container: src/parts/steps.ts
+    container: src/steps/steps.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『ステップ』の HTML を返却する（Storybook 用。`render` は `ol` に class を付けるだけ）。`collapse` が `closed`・`open` なら、`ol` を `renderCollapsible` の折り畳み（見出しは `title` か `手順（{項目の数} ステップ）`）に入れる

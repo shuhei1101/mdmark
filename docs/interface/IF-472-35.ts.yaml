@@ -10316,7 +10316,7 @@ constraints:
     constraint: 索引のタイトル・意味・`description` は Markdown として解析せず、文字として出す。リンクの `href` は本文のリンクと同じ許可の検査にかける
   - item: 用語と関連文書の一覧の id
     constraint: 1 つのページに文書を 2 つ以上描いても重ならないよう、`mount` は用語の下線のツールチップと関連文書の一覧のタイトルの `id` を、モジュールの通し番号でページの中で一意な値にもう一度振り、それを指す `aria-describedby`・`aria-details`・`aria-labelledby` も修正する。`update` でもう一度振る。`render` の出力の `id` は文書の中で一意なまま
-    notes: タブの `mdmark-tabs-{n}`（`src/interact/tabs.ts` の `tabsCounter`）と同じ作り
+    notes: タブの `mdmark-tabs-{n}`（`src/tabs/tabs.interact.ts` の `tabsCounter`）と同じ作り
   - item: 図の拡大・縮小
     constraint: |-
       図の部品の右上に、縮小・倍率・拡大・全画面のボタンをこの順に配置する（アイコンは lucide の `minus`・`plus`・`expand`。倍率のボタンは今の倍率を `125%` の構造の文字で出す）。
@@ -10627,7 +10627,7 @@ constraints:
     notes: 本文の幅はモック作成で案 A に決定（確認ログ）。`--mdmark-table-max-height` は設定と索引の Schema（`schemas/`）の項目でないため移行の手順を配置せず、変更履歴で廃止を通知する
   - item: URL の ID でタブの中へ移る
     constraint: URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` した ID（読み込めないときはそのまま）が、選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指すとき（描いたときと `hashchange`）、外側のタブから順にその要素を含むタブを選び、外側の閉じたセクションを開いてから要素へスクロールする。見出し・表の行を含め、`id` を持つ全ての要素に適用する。描いたときは localStorage に残したタブ名より URL の ID を優先する。URL の ID で選んだタブは localStorage に残さず、同じ `group` のほかのタブ群も切り替えない
-    notes: '`src/interact/sections.ts` の `revealHashTarget` は、タブの中の要素の処理をタブの操作に任せる（受付判断のレビュー）'
+    notes: '`src/section/section.interact.ts` の `revealHashTarget` は、タブの中の要素の処理をタブの操作に任せる（受付判断のレビュー）'
   - item: 右側の目次
     constraint: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき、`el` の中を、本文（`render` の HTML）を入れた `div.mdmark-content` と、その右の `aside.mdmark-side-toc` に分ける。
 
@@ -10769,7 +10769,7 @@ constraints:
       ブロックの行の範囲は `data-source-line` から次のブロックの `data-source-line` の前まで。
       制約「差分の計算」の行の比べで、後のブロックの範囲に空白だけでない追加した行があるか、同じ行のブロックの境目が動いた（前の 1 つのブロックの途中の行が後のブロックの開始の行になった・前のブロックの開始の行が後のブロックの途中の行になった。空行で段落を分けた・つないだ）ときは、境目が動いた後のブロックに追加の色を適用する。
       前のブロックで範囲の空白だけでない行が全て削除した行のものは削除の候補にし、制約「書き換えと入れ替えの見分け」で削除したブロックを決める
-    notes: 確認ログの色分けの描き方（B）とリストと表の単位（A）。`sections` は既定でオンで、見出しの後ろは `mdmark-section-body` に入る（`src/render/syntax/sections.ts` の `wrapSections`）。セクションの開閉・右側の目次・アンカーは普通の描き方のまま使用する
+    notes: 確認ログの色分けの描き方（B）とリストと表の単位（A）。`sections` は既定でオンで、見出しの後ろは `mdmark-section-body` に入る（`src/section/section.syntax.ts` の `wrapSections`）。セクションの開閉・右側の目次・アンカーは普通の描き方のまま使用する
   - item: 比較元の Markdown
     constraint: '`opts.baseMarkdown` が文字列のとき、取り出し元を呼ばずに、前を `opts.baseMarkdown`、後を `opts.markdown` として制約「描いた文書のブロックの色分け」のとおり本文を描く。`opts.diffSource` も指定したときは、本文の中の色分けに比較元を使用し、取り出し元は差分を開く UI（`opts.diffMode` が `button`・`open`）にだけ使用する。`opts.diffMode` が `blocks` のときは取り出し元の `revisions`・`content` を呼ばない。`update` で比較元を差し替えたときと、比較元のまま本文を差し替えたときは、色分けをもう一度計算する'
     notes: 取り出し元との優先はシナリオ『比較元のMarkdownを指定して変更を強調する』の決定。比較元で色を適用した本文は、制約「描く本文」の `render` の出力と同じではない

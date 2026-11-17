@@ -1,7 +1,7 @@
 id: CMP-472-9
 visibility: internal
 title: カード
-implementation: src/parts/card.ts#renderCard
+implementation: src/card/card.part.ts#renderCard
 story: Parts/Card
 test_file: tests/integration/lib/card.story.test.ts
 states:

@@ -2,7 +2,7 @@ id: CMP-472-58
 visibility: internal
 title: 脚注の番号
 lead: 本文の脚注の参照の場所に、マーカーの色で角括弧付きの上付きの番号を配置し、隣に「脚注 {番号}」のタイトルと脚注の中身を持つツールチップを配置する。注記の参照の場所には、同じ部品で「※」と番号の上付きのマーカーと「注記 {番号}」のツールチップを配置する。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。開閉・配置場所・一覧への移動は `mount` の操作が付ける。
-implementation: src/parts/footnote.ts#renderFootnoteRef
+implementation: src/footnote/footnote.part.ts#renderFootnoteRef
 story: Parts/FootnoteRef
 test_file: tests/integration/lib/footnote.story.test.ts
 args:

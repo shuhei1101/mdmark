@@ -1,12 +1,12 @@
 id: MOD-472-326
 visibility: internal
-title: ライブラリ本体 / 部品 / text-color.ts
+title: ライブラリ本体 / 行内の記法 / text-color.part.ts
 test_files:
-  - tests/unit/src/parts/text-color.test.ts
+  - tests/unit/src/inline/text-color.part.test.ts
 functions:
   - name: renderTextColor
     title: 文字の色を描く
-    container: src/parts/text-color.ts
+    container: src/inline/text-color.part.ts
     kind: 関数
     scope: internal
     summary: 部品設計『文字の色』の HTML を返却する。`text` は描いた行内の HTML（`SLOT_MARKER` を指定できる）

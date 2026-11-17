@@ -1,0 +1,18 @@
+id: MOD-583-7
+visibility: internal
+title: ライブラリ本体 / カード
+lead: リンクと添付のカードと、カードの格子のコアルールと部品。DOM に頼らず、ブラウザと Node で同じ出力になる。
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/card/
+    ├── card-grid.syntax.ts  # カードの格子
+    ├── card.syntax.ts       # リンクと添付のカード
+    ├── card-grid.part.ts    # カードの格子の renderCardGrid
+    ├── card.part.ts         # カードの renderCard
+    └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+    ```
+tags:
+  - name: topic:カード
+    main: true
+  - name: topic:格子
