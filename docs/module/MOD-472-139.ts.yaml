@@ -49,7 +49,7 @@ functions:
     process: |-
       1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方。読めないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返す
       2. トップレベル・`walkthroughs` の手順・`layout` の値・`groups` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
-      3. 文字の値に `--` を含むものは `map_invalid_value`（HTML コメントを閉じてしまうため `--` を含めない直し方）にする
+      3. 補足の文字の中で `--` をそのまま記載した文字の値は `map_invalid_value`（HTML コメントを閉じてしまうため、`--` をそのまま記載せずに 2 つ目の `-` を JSON の Unicode エスケープで記載する直し方）にする。値の `--` は、パスごとの行を求める走査で値の文字列の元の文字を確かめて判定し、JSON の Unicode エスケープで記載した `--` はずれにしない
     unit_tests:
       - name: test_parse_map_data
         case: 正常
@@ -93,6 +93,12 @@ functions:
         condition: '`{"version": 1, "notes": {"mount": "公開関数"}}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、`notes` に `mount` が無い'
+      - name: test_parse_map_data_when_escaped_double_hyphen
+        case: 正常
+        summary: Unicode エスケープで記載した -- を含む値
+        condition: '`notes.a.text` の元の文字が、2 つ目の `-` を Unicode エスケープで記載した `a --b`'
+        mock: なし
+        expected: '`notes.a.text` が `a --b` で読め、`problems` が空'
 lead: 'map の補足の JSON の読み取りを受け持ち、補足のキーと読み取り方を変えるときに参照する。'
 tags:
   - name: topic:map
