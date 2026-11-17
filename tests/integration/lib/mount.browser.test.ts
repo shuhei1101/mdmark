@@ -19544,9 +19544,7 @@ test("test_normal_when_map_block_toggled", async () => {
   const { figures } = await mountMap(axisGridRange(MAP_BLOCK, MAP_BLOCK_DATA));
   const figure = () => figures()[0] as HTMLElement;
   const lefts = () =>
-    ["mdmark", "doc", "cache"].map(
-      (key) => axisItem(figure(), key).style.left,
-    );
+    ["mdmark", "doc", "cache"].map((key) => axisItem(figure(), key).style.left);
   const before = lefts();
   const width = rectOf(
     find(figure(), '.map-axis-frame[data-section="core"]'),
