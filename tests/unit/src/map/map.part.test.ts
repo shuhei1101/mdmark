@@ -860,6 +860,138 @@ test("test_render_map_er_diagram", async () => {
   expect(part.tips).toContain("行が増える関連");
 });
 
+// 行が増える関連のマーカーを、ほかの関連のラベルの文字と重ならない場所に置く（正常系）
+test("test_render_map_er_fanouts_when_label_nearby", async () => {
+  // 準備: r1 のラベルの反対側の中ほど（マーカーの最初の候補）に、r2 のラベルの文字が来る配置
+  const { MAP_ER, renderMapErFanouts, renderMapErMarks } = await loadParts();
+  const node = (id: string, x: number, y: number) => ({
+    id,
+    x,
+    y,
+    w: 100,
+    h: 40,
+    lines: [id],
+    faded: false,
+    ancestors: [],
+  });
+  const wire = (
+    id: string,
+    from: string,
+    to: string,
+    points: Array<[number, number]>,
+  ) => ({ id, from, to, label: undefined, merged: undefined, points });
+  const layout = {
+    width: 600,
+    height: 240,
+    nodes: [
+      node("A", 0, 0),
+      node("B", 500, 0),
+      node("C", 0, 200),
+      node("D", 500, 200),
+    ],
+    groups: [],
+    wires: [
+      wire("r1", "A", "B", [
+        [100, 20],
+        [130, 20],
+        [130, 100],
+        [470, 100],
+        [470, 20],
+        [500, 20],
+      ]),
+      wire("r2", "C", "D", [
+        [100, 220],
+        [130, 220],
+        [130, 140],
+        [470, 140],
+        [470, 220],
+        [500, 220],
+      ]),
+    ],
+  };
+  const relation = (id: string, from: string, to: string) => ({
+    id,
+    from,
+    to,
+    fromCardinality: "1",
+    toCardinality: "0..n",
+    label: "テスト",
+    fromColumn: undefined,
+    toColumn: undefined,
+  });
+  const relations = [relation("r1", "A", "B"), relation("r2", "C", "D")];
+  // 実行
+  const part = renderMapErFanouts({
+    layout,
+    relations,
+    fanouts: [{ wire: "r1", from: "A", to: "B" }],
+    id: "er",
+  });
+  // 検証: マーカーの矩形が、ノードの矩形とも、多重度・ラベルの文字の矩形とも重ならない
+  const half = MAP_ER.fanoutSize / 2;
+  const [mark] = [
+    ...part.html.matchAll(
+      /class="map-er-fanout"[^>]*style="left:([-\d.]+)px;top:([-\d.]+)px"/g,
+    ),
+  ].map((match) => ({ x: Number(match[1]), y: Number(match[2]) }));
+  expect(mark).toBeDefined();
+  const box = {
+    left: (mark?.x ?? 0) - half,
+    right: (mark?.x ?? 0) + half,
+    top: (mark?.y ?? 0) - half,
+    bottom: (mark?.y ?? 0) + half,
+  };
+  const apart = (other: {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+  }) =>
+    box.right <= other.left ||
+    other.right <= box.left ||
+    box.bottom <= other.top ||
+    other.bottom <= box.top;
+  for (const item of layout.nodes)
+    expect(
+      apart({
+        left: item.x - MAP_ER.aside,
+        right: item.x + item.w + MAP_ER.aside,
+        top: item.y,
+        bottom: item.y + item.h,
+      }),
+      item.id,
+    ).toBe(true);
+  const marks = renderMapErMarks({ layout, relations, dim: new Set() });
+  const texts = [
+    ...marks.matchAll(
+      /<text class="(map-er-label|map-er-cardinality)"[^>]*x="([-\d.]+)" y="([-\d.]+)" text-anchor="(\w+)">([^<]*)<\/text>/g,
+    ),
+  ];
+  expect(texts).toHaveLength(6);
+  for (const [, className, x, y, anchor, value] of texts) {
+    const label = className === "map-er-label";
+    const width =
+      (value ?? "").length *
+      (label ? MAP_ER.labelChar : MAP_ER.cardinalityChar);
+    const left =
+      anchor === "middle"
+        ? Number(x) - width / 2
+        : anchor === "end"
+          ? Number(x) - width
+          : Number(x);
+    const line = label ? MAP_ER.labelLine : MAP_ER.cardinalityLine;
+    expect(
+      apart({
+        left,
+        right: left + width,
+        top: Number(y) - line,
+        bottom: Number(y),
+      }),
+      `${className} ${value} (${x}, ${y})`,
+    ).toBe(true);
+  }
+});
+
 // テーブルのノードの列の行とボタンを、押せる要素の中に入れない（正常系）
 test("test_render_map_er_diagram_when_node_hit", async () => {
   // 準備
