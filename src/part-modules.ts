@@ -92,10 +92,26 @@ async function readPartModule(
   return { url, module: module as unknown as PartModules[PartName] };
 }
 
-/** 部品の配布ファイルをページの中で 1 回だけ読み込み、export の構造を確認して返却する。読み込めない・構造が合わないときは元のエラーで reject し、エラーの `cause` に URL を持たせる */
+/** `baseUrl` の隣の配布ファイルを読み込む。URL を作れないときは同期で投げずに reject し、エラーの `cause` に配布ファイルの名前を持たせる */
+async function readSiblingPartModule(
+  name: PartName,
+  importModule: ImportModule,
+  baseUrl: string,
+): Promise<LoadedPart<PartName>> {
+  let url: string;
+  try {
+    url = new URL(`./${PART_MODULE_FILES[name]}`, baseUrl).href;
+  } catch (error) {
+    throw withUrl(error, PART_MODULE_FILES[name]);
+  }
+  return readPartModule(name, url, importModule);
+}
+
+/** 部品の配布ファイルをページの中で 1 回だけ読み込み、export の構造を確認して返却する。読み込めない・構造が合わない・隣の URL を作れないときは元のエラーで reject し、エラーの `cause` に URL（作れないときは配布ファイルの名前）を持たせる */
 export function loadPartModule<Name extends PartName>(
   name: Name,
   importModule: ImportModule = importByUrl,
+  baseUrl: string = import.meta.url,
 ): Promise<LoadedPart<Name>> {
   const loaded = partModules.get(name);
   if (loaded !== undefined) {
@@ -104,20 +120,24 @@ export function loadPartModule<Name extends PartName>(
   const loader = partModuleLoaders.get(name);
   const loading =
     loader === undefined
-      ? readPartModule(
-          name,
-          new URL(`./${PART_MODULE_FILES[name]}`, import.meta.url).href,
-          importModule,
-        )
+      ? readSiblingPartModule(name, importModule, baseUrl)
       : readPartModule(name, PART_MODULE_FILES[name], loader);
   partModules.set(name, loading);
   return loading as Promise<LoadedPart<Name>>;
 }
 
-/** 部品のモジュールの読み込みを、モジュールを返却する関数に差し替える。書き出した HTML の起動の処理が呼ぶ */
+/** 部品のモジュールの読み込みを、モジュールを返却する関数に差し替える。`dist/index.js` の公開関数で、書き出した HTML の起動の処理も呼ぶ。名前か関数が誤っていると `TypeError` を投げ、差し替えを変えない */
 export function setPartModuleLoader(
   name: PartName,
   loader: () => Promise<Record<string, unknown>>,
 ): void {
+  if (typeof name !== "string" || !Object.hasOwn(PART_MODULE_FILES, name)) {
+    throw new TypeError(
+      `name は ${Object.keys(PART_MODULE_FILES).join("・")} のどれかを指定してください: ${String(name)}`,
+    );
+  }
+  if (typeof loader !== "function") {
+    throw new TypeError("loader はモジュールを返却する関数を指定してください");
+  }
   partModuleLoaders.set(name, loader);
 }

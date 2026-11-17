@@ -12,9 +12,9 @@ constants:
   - name: partModuleLoaders
     title: 部品のモジュールの読み込みの差し替え
     container: src/part-modules.ts
-    summary: 書き出した HTML の起動の処理が、同じスクリプトにまとめた部品のモジュールを返却する関数を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む
+    summary: '`setPartModuleLoader` で、部品のモジュールを返却する関数を入れる（書き出した HTML の起動の処理と利用側のページが呼ぶ）。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む'
     value: 'new Map<PartName, () => Promise<Record<string, unknown>>>()'
-    status: planned
+    status: implemented
   - name: partModules
     title: 読み込んだ部品のモジュール
     container: src/part-modules.ts
@@ -31,20 +31,26 @@ functions:
       - name: name
         type: PartName
         required: true
-        description: '`"view"` か `"comments"`'
+        description: '`"view"`・`"comments"`・`"map"`'
       - name: importModule
         type: '(url: string) => Promise<Record<string, unknown>>'
         required: false
         default: 動的 `import()`
         passing: injected
         description: モジュールを読み込む関数（単体テストで差し替える）
+      - name: baseUrl
+        type: string
+        required: false
+        default: '`import.meta.url`'
+        passing: injected
+        description: 隣の配布ファイルの URL を解決する基準（単体テストで差し替える）
     returns:
-      type: 'Promise<{ url: string; module: ViewPartModule | CommentsPartModule }>'
-      description: 読み込んだ URL とモジュール。読み込めない・構造が合わないときは元のエラーで reject し、エラーの `cause` に URL を持たせる
+      type: 'Promise<{ url: string; module: ViewPartModule | CommentsPartModule | MapPartModule }>'
+      description: 読み込んだ URL とモジュール。読み込めない・構造が合わない・隣の URL を作れないときは元のエラーで reject し、エラーの `cause` に URL（作れないときは配布ファイルの名前）を持たせる。同期では投げない
     process: |-
       1. `partModules` に名前があればその Promise を返却する
-      2. `partModuleLoaders` に名前があれば、URL を `PART_MODULE_FILES[name]` にしてその関数を待つ。無ければ URL を `new URL("./" + PART_MODULE_FILES[name], import.meta.url).href` にして `importModule(url)` を待つ
-      3. 読み込んだモジュールで、`view` は `drawView`・`attachView`、`comments` は `attachComments` が関数かを確認する。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
+      2. `partModuleLoaders` に名前があれば、URL を `PART_MODULE_FILES[name]` にしてその関数を待つ。無ければ Promise の中で URL を `new URL("./" + PART_MODULE_FILES[name], baseUrl).href` にして `importModule(url)` を待つ。URL を作れないときはそのエラーに `cause` として `PART_MODULE_FILES[name]` を持たせて reject する
+      3. 読み込んだモジュールで、`view` は `drawView`・`attachView`、`comments` は `attachComments`、`map` は `attachMap` が関数かを確認する。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
       4. 手順 2〜3 の Promise を `partModules` に記録して返却する
     unit_tests:
       - name: test_load_part_module
@@ -71,30 +77,55 @@ functions:
         condition: '`view` を 2 回読む'
         mock: '`importModule` は reject する'
         expected: 2 回とも同じエラーで reject し、`importModule` は 1 回だけ呼ばれる
+      - name: test_load_part_module_when_url_unresolvable
+        case: 異常
+        summary: 隣の URL を作れないとき、同期で投げずに reject する
+        condition: '`baseUrl` に `blob:null/0` のように階層を持たない URL を指定して `map` を読み込む'
+        mock: '`importModule` を見張る'
+        expected: '`loadPartModule` は例外を投げずに Promise を返却し、`TypeError` で reject する。`cause` が `map.js` で、`importModule` は呼ばれない'
     refs:
       - IF-472-30#constraints[部品のモジュールの読み込み]
       - IF-472-27#constraints[部品のモジュールの読み込み]
+      - IF-655-1#flows[異常系（指定しない部品の URL を作れない・console.error）]
   - name: setPartModuleLoader
     title: 部品のモジュールの読み込みを差し替える
     container: src/part-modules.ts
-    summary: '`partModuleLoaders` に部品の名前とモジュールを返却する関数を入れる。書き出した HTML の起動の処理が呼ぶ'
+    summary: 引数を検め、`partModuleLoaders` に部品の名前とモジュールを返却する関数を入れる。`dist/index.js` の公開関数で、書き出した HTML の起動の処理も呼ぶ
     kind: 関数
-    scope: internal
+    scope: public
     args:
       - name: name
         type: PartName
         required: true
-        description: 部品の名前
+        description: 部品の名前。`PART_MODULE_FILES` のキーのどれか
       - name: loader
-        type: '() => Promise<Record<string, unknown>>'
+        type: () => Promise<Record<string, unknown>>
         required: true
-        description: 同じスクリプトにまとめた部品のモジュールを返却する関数。埋めなかった部品は拒否する関数
+        description: 部品のモジュールを返却する関数。書き出した HTML の起動の処理は、埋めなかった部品に拒否する関数を入れる
     returns:
       type: void
       description: '-'
-    process: 1. `partModuleLoaders` に `name` → `loader` を入れる
-    unit_tests: []
-    status: planned
+    exceptions:
+      - name: TypeError
+        condition: '`name` が `PART_MODULE_FILES` のキーに無いか、`loader` が関数でない。メッセージに誤った引数の名前（`name`・`loader`）を含め、`partModuleLoaders` を変えない'
+    process: |-
+      1. `name` が `PART_MODULE_FILES` の自身のキーか、`loader` が関数かを確認し、合わなければ `TypeError` を投げる
+      2. `partModuleLoaders` に `name` → `loader` を入れる（既にあれば置き換える。`partModules` に記録済みの名前は、読み込み済みの Promise を使用し続ける）
+    unit_tests:
+      - name: test_set_part_module_loader_when_args_invalid
+        case: 異常
+        summary: 知らない名前と関数でない loader を拒む
+        condition: '`setPartModuleLoader("chart", 関数)` と `setPartModuleLoader("map", "map.js")` を呼ぶ'
+        mock: なし
+        expected: どちらも `TypeError` を投げ、メッセージが `name`・`loader` を含む。`partModuleLoaders` が空のまま
+      - name: test_set_part_module_loader_when_replaced
+        case: 正常
+        summary: 同じ名前の 2 回目は後の関数で置き換える
+        condition: '`map` に関数 A、次に関数 B を指定してから `map` を読み込む'
+        mock: A・B は呼ばれた回数を数え、`attachMap` を持つオブジェクトを返却する
+        expected: B が 1 回呼ばれ、A は呼ばれない
+    refs:
+      - IF-655-1#
 lead: '部品のモジュールのファイル名・URL の差し替え・読み込みを受け持ち、部品のモジュールの読み込み方を変えるときに参照する。'
 tags:
   - name: topic:ビュー

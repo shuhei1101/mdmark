@@ -238,7 +238,7 @@ constraints:
     notes: docs/interface/IF-472-35.ts
   - item: 部品のモジュールの読み込み
     constraint: コメントの部品のモジュールは、初めて `mountComments` を呼んだときか、`mount` でコメントの機能がオンになったときに 1 回だけ読み込む
-    notes: モジュールは `dist/index.js` の隣の `dist/comments.js`（モジュール構成『ビューとコメント』）。読み込めないときは例外の「なし（読み込みの失敗）」
+    notes: モジュールは `dist/index.js` の隣の `dist/comments.js`（モジュール構成『ビューとコメント』）。インターフェース定義『部品のモジュールを指定する』で指定したときは、その関数で読み込む。読み込めないときは例外の「なし（読み込みの失敗）」
   - item: 型の配布
     constraint: '`mountComments`・`MdmarkCommentStore`（省略可能な `update`・`remove` を含む）・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` を `dist/index.d.ts` に書き出す'
 test_file: tests/integration/lib/mount-comments.browser.test.ts

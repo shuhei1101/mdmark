@@ -73,3 +73,54 @@ test("test_load_part_module_when_rejected", async () => {
   await expect(loadPartModule("view", importModule)).rejects.toBe(failure);
   expect(importModule).toHaveBeenCalledTimes(1);
 });
+
+/** map の部品のモジュールの構造 */
+const MAP_MODULE = { attachMap: () => () => {} };
+
+// 隣の URL を作れないとき、同期で投げずに reject する（異常系）
+test("test_load_part_module_when_url_unresolvable", async () => {
+  // 準備
+  const { loadPartModule } = await freshPartModules();
+  const importModule = vi.fn(async (_url: string) => MAP_MODULE);
+  // 実行
+  let loading: Promise<unknown> | undefined;
+  expect(() => {
+    loading = loadPartModule("map", importModule, "blob:null/0");
+  }).not.toThrow();
+  // 検証
+  const error: unknown = await (loading as Promise<unknown>).then(
+    () => undefined,
+    (reason: unknown) => reason,
+  );
+  expect(error).toBeInstanceOf(TypeError);
+  expect((error as Error).cause).toBe("map.js");
+  expect(importModule).not.toHaveBeenCalled();
+});
+
+// 知らない名前と関数でない loader を拒む（異常系）
+test("test_set_part_module_loader_when_args_invalid", async () => {
+  // 準備
+  const { setPartModuleLoader, partModuleLoaders } = await freshPartModules();
+  const set = setPartModuleLoader as (name: unknown, loader: unknown) => void;
+  // 実行・検証
+  expect(() => set("chart", async () => MAP_MODULE)).toThrow(TypeError);
+  expect(() => set("chart", async () => MAP_MODULE)).toThrow(/name/);
+  expect(() => set("map", "map.js")).toThrow(TypeError);
+  expect(() => set("map", "map.js")).toThrow(/loader/);
+  expect(partModuleLoaders.size).toBe(0);
+});
+
+// 同じ名前の 2 回目は後の関数で置き換える（正常系）
+test("test_set_part_module_loader_when_replaced", async () => {
+  // 準備
+  const { loadPartModule, setPartModuleLoader } = await freshPartModules();
+  const first = vi.fn(async () => MAP_MODULE);
+  const second = vi.fn(async () => MAP_MODULE);
+  setPartModuleLoader("map", first);
+  setPartModuleLoader("map", second);
+  // 実行
+  await loadPartModule("map");
+  // 検証
+  expect(second).toHaveBeenCalledTimes(1);
+  expect(first).not.toHaveBeenCalled();
+});
