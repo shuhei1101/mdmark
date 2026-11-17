@@ -1,6 +1,7 @@
 import type { ResolvedConfig } from "../config.ts";
 import { attachDiagrams, DIAGRAM_REDRAW_EVENT } from "../interact/diagrams.ts";
 import { renderDiagramFrame } from "../parts/diagram.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import {
   type MapFlowArgs,
   type MapPacketMark,
@@ -495,9 +496,14 @@ const focusOf = (
 export const attachMapFlow = (
   range: HTMLElement,
   config: ResolvedConfig,
-  options: { args: MapArgs; onWalk?: () => void; extension?: MapFlowExtension },
+  options: {
+    args: MapArgs;
+    onWalk?: () => void;
+    extension?: MapFlowExtension;
+    resolveIdLink?: ResolveIdLink;
+  },
 ): MapFlowHandle => {
-  const { args, onWalk, extension } = options;
+  const { args, onWalk, extension, resolveIdLink } = options;
   const { index, chart, data } = readFlowRange(range, extension);
   const kinds = { ...config.map.kinds, ...extension?.kinds };
   const lines = { ...config.map.lines, ...extension?.lines };
@@ -522,7 +528,10 @@ export const attachMapFlow = (
   };
   const notes = noteTexts(data.notes);
   const annotations = readMapAnnotations({ range, notes: data.notes });
-  const links = mapLinkProblems(chart.links).allowed;
+  const links = mapLinkProblems({
+    links: chart.links,
+    idLinks: { mode: "resolve", resolveIdLink },
+  }).allowed;
   const wireLines = layoutValues(data, "line");
   const colors = layoutValues(data, "color");
   const sizes: Record<string, { w: number; h: number }> = {};

@@ -8,6 +8,7 @@ import type { ResolvedConfig } from "./config.ts";
 import { openEnclosing } from "./interact/sections.ts";
 import { loadPartModule, type PartName } from "./part-modules.ts";
 import { renderNotice } from "./parts/notice.ts";
+import type { ResolveIdLink } from "./render/sanitize.ts";
 import {
   checkViewOptions,
   type MdmarkViewHandle,
@@ -169,6 +170,8 @@ export function attachParts(options: {
   config?: ResolvedConfig | undefined;
   /** map の図を mermaid の図に戻したときに、戻したコードブロックを指定して呼ぶ関数 */
   restoreMermaid?: ((blocks: HTMLElement[]) => void) | undefined;
+  /** `mount` の `resolveIdLink`（map のノードの `id:` のリンク先を URL に変える） */
+  resolveIdLink?: ResolveIdLink | undefined;
 }): PartsHandle {
   const { root, features, commentStore, docId, isCurrent, warned } = options;
   const detachers: Array<() => void> = [];
@@ -214,6 +217,7 @@ export function attachParts(options: {
               restoreMermaid: (blocks) => {
                 if (active()) options.restoreMermaid?.(blocks);
               },
+              resolveIdLink: options.resolveIdLink,
             }),
           );
       })

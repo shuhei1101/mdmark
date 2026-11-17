@@ -20,6 +20,10 @@ export const MERMAID_KIND_NAMES: Record<string, string> = {
   gantt: "ガントチャート",
   pie: "円グラフ",
   mindmap: "マインドマップ",
+  timeline: "タイムライン",
+  gitGraph: "Git グラフ",
+  journey: "ジャーニー",
+  "block-beta": "ブロック図",
 };
 
 /** テーマ `mdmark` で、mermaid の `base` テーマの変数ごとに元にする mdmark の CSS 変数 */

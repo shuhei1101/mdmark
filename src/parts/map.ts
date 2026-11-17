@@ -3,6 +3,18 @@ import type {
   MdmarkDiagramWire,
   MdmarkFlowDefinition,
 } from "../diagram/definition.ts";
+import type {
+  AxisGrid,
+  AxisGridItem,
+  AxisGridSection,
+  AxisGridSelection,
+} from "../map/axis-grid.ts";
+import {
+  AXIS_GRID_LAYOUT,
+  type AxisGridFrame,
+  type AxisGridLayout,
+  type AxisGridPlacement,
+} from "../map/axis-grid-layout.ts";
 import { MAP_LAYOUT, type MapLayout } from "../map/layout.ts";
 import type { Mindmap, MindmapItem } from "../map/mindmap.ts";
 import type { MindmapLayout, MindmapPlacement } from "../map/mindmap-layout.ts";
@@ -867,11 +879,19 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   };
 };
 
+/** 再生で進める単位 */
+export type MapBandUnit =
+  | "message"
+  | "transition"
+  | "task"
+  | "period"
+  | "commit";
+
 /** 部品『案内の帯』の引数 */
 export type MapBandArgs = {
   mode: "walkthrough" | "playback";
-  /** 再生で進める単位（既定 message。transition は状態遷移図の遷移） */
-  unit?: "message" | "transition" | undefined;
+  /** 再生で進める単位（既定 message。transition は状態遷移図の遷移、task はガントチャートとジャーニーのタスク、period はタイムラインの期間、commit は Git グラフの commit） */
+  unit?: MapBandUnit | undefined;
   total: number;
   index: number | undefined;
   title: string;
@@ -893,6 +913,9 @@ const NAMES = {
     stop: "再生をやめる",
     next: "次の遷移",
   },
+  task: { prev: "前のタスク", stop: "再生をやめる", next: "次のタスク" },
+  period: { prev: "前の期間", stop: "再生をやめる", next: "次の期間" },
+  commit: { prev: "前の commit", stop: "再生をやめる", next: "次の commit" },
 } as const;
 
 /** 案内の帯のボタン */
@@ -908,8 +931,10 @@ const bandButton = (button: {
 export const renderMapBand = (args: MapBandArgs): string => {
   const names =
     NAMES[
-      args.mode === "playback" && args.unit === "transition"
-        ? "transition"
+      args.mode === "playback" &&
+      args.unit !== undefined &&
+      args.unit !== "message"
+        ? args.unit
         : args.mode
     ];
   const count = `${args.index === undefined ? "–" : args.index + 1}/${args.total}`;
@@ -3219,3 +3244,503 @@ export const renderMapMindmap = (args: MapMindmapArgs): MapPart => {
     tips: `${markTipTerms(context.tips.html(), args.terms)}${context.marker.tips.html()}`,
   };
 };
+
+/** 部品『mapの軸と格子の配置の図』の引数。項目は `stateKey` で指す */
+export type MapAxisGridArgs = {
+  grid: AxisGrid;
+  layout: AxisGridLayout;
+  /** 補足の `layout` の `color` を持つ項目（色の名前の面と縁で描く） */
+  filled: ReadonlySet<string>;
+  colors: Record<string, string>;
+  collapsed: string[];
+  entered: string | undefined;
+  selected: AxisGridSelection | undefined;
+  focus: { nodes: string[] } | undefined;
+  notes: Record<string, string>;
+  annotations: Record<string, DiagramAnnotation[]>;
+  hints?: boolean | undefined;
+  id: string;
+  terms?: Record<string, string> | undefined;
+};
+
+/** 閉じた section・入れ子のブロックの中身の種類の名前 */
+const AXIS_GRID_UNITS = {
+  gantt: "タスク",
+  timeline: "期間",
+  gitGraph: "commit",
+  journey: "タスク",
+  block: "ブロック",
+} as const satisfies Record<AxisGrid["kind"], string>;
+
+/** 描くときに繰り返し引く値 */
+type AxisGridContext = {
+  args: MapAxisGridArgs;
+  byKey: Map<string, AxisGridItem>;
+  sections: Map<string, AxisGridSection>;
+  /** 薄くせずに残す項目（選択と案内の強調が無ければ undefined） */
+  kept: Set<string> | undefined;
+  marker: TermMarker;
+  tips: TipList;
+  ownerPrefix: string;
+};
+
+/** Git グラフの commit から、親をたどった全ての祖先（自分を含む） */
+const axisGridAncestors = (grid: AxisGrid, key: string): string[] => {
+  const kept = new Set<string>();
+  const walk = (at: string) => {
+    if (kept.has(at)) return;
+    kept.add(at);
+    for (const link of grid.links) if (link.to === at) walk(link.from);
+  };
+  walk(key);
+  return [...kept];
+};
+
+/** 選んだ項目と種類ごとのつながりの項目 */
+const axisGridItemKept = (grid: AxisGrid, key: string): string[] => {
+  const item = grid.items.find((entry) => entry.stateKey === key);
+  if (!item) return [key];
+  switch (grid.kind) {
+    case "gitGraph":
+      return axisGridAncestors(grid, key);
+    case "timeline": {
+      const period = grid.items.find((entry) => entry.order === item.parent);
+      const events = grid.items.filter((entry) => entry.parent === item.order);
+      return [
+        key,
+        ...(period ? [period.stateKey] : []),
+        ...events.map((entry) => entry.stateKey),
+      ];
+    }
+    case "journey":
+      return [key];
+    default:
+      return [
+        key,
+        ...grid.links.flatMap((link) =>
+          link.from === key ? [link.to] : link.to === key ? [link.from] : [],
+        ),
+      ];
+  }
+};
+
+/** Git グラフのブランチの commit と、merge と cherry-pick でそのブランチへ入った commit */
+const axisGridBranchKept = (grid: AxisGrid, branch: string): string[] => {
+  const own = grid.items.filter(
+    (item) => item.detail.kind === "gitGraph" && item.detail.branch === branch,
+  );
+  const keys = new Set(own.map((item) => item.stateKey));
+  const brought = grid.links.flatMap((link) =>
+    (link.kind === "merge" || link.kind === "cherryPick") && keys.has(link.to)
+      ? [link.from]
+      : [],
+  );
+  return [...keys, ...brought];
+};
+
+/** 選んだもののつながり、無ければ案内と再生で強調する項目。どちらも無ければ undefined */
+const axisGridKept = (args: MapAxisGridArgs): Set<string> | undefined => {
+  const { grid, selected } = args;
+  if (selected?.kind === "item")
+    return new Set(axisGridItemKept(grid, selected.key));
+  if (selected?.kind === "branch")
+    return new Set(axisGridBranchKept(grid, selected.key));
+  if (selected?.kind === "actor")
+    return new Set(
+      grid.items
+        .filter(
+          (item) =>
+            item.detail.kind === "journey" &&
+            item.detail.actors.includes(selected.key),
+        )
+        .map((item) => item.stateKey),
+    );
+  const nodes = args.focus?.nodes ?? [];
+  return nodes.length === 0 ? undefined : new Set(nodes);
+};
+
+/** 薄くする項目と線の class（残す項目の外なら付ける） */
+const axisGridDim = (context: AxisGridContext, ...keys: string[]): string =>
+  context.kept !== undefined && !keys.some((key) => context.kept?.has(key))
+    ? " map-dim"
+    : "";
+
+/** 説明か注記を持つ項目の説明のマーカー。`hints` がオフなら空 */
+const axisGridInfo = (
+  context: AxisGridContext,
+  item: { stateKey: string; label: string },
+): string => {
+  const { args, tips, ownerPrefix } = context;
+  const hint = args.notes[item.stateKey];
+  const notes = args.annotations[item.stateKey];
+  const described = hint !== undefined && hint !== "";
+  const annotated = (notes?.length ?? 0) > 0;
+  if (args.hints === false || !(described || annotated)) return "";
+  const owner = `node:${item.stateKey}`;
+  const id = tips.add({
+    kind: "hint",
+    label: item.label,
+    hint,
+    owner,
+    annotations: notes,
+  });
+  const ownerId = annotated
+    ? ` id="${escapeHtml(noteOwnerId(ownerPrefix, item.stateKey))}"`
+    : "";
+  return `<button class="mdmark-diagram-info" type="button"${ownerId} aria-label="${escapeHtml(infoLabel({ name: item.label, described, annotated }))}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
+};
+
+/** 項目の名前（commit の名前は `id:` か `msg:`、どちらも無ければ `commit {番号}`） */
+const axisGridName = (item: AxisGridItem): string => {
+  if (item.label !== "") return item.label;
+  if (item.id !== undefined) return item.id;
+  return `commit ${item.order}`;
+};
+
+/** 項目の押せる要素。`hints` がオフで注記を持てば、持ち主の `id` を付ける */
+const axisGridHit = (
+  context: AxisGridContext,
+  item: { stateKey: string; name: string },
+): string => {
+  const { args, ownerPrefix } = context;
+  const selected =
+    args.selected?.kind === "item" && args.selected.key === item.stateKey;
+  const ownerId =
+    args.hints === false && (args.annotations[item.stateKey]?.length ?? 0) > 0
+      ? ` id="${escapeHtml(noteOwnerId(ownerPrefix, item.stateKey))}"`
+      : "";
+  return `<span class="mdmark-diagram-node-hit" role="button" tabindex="0" aria-roledescription="項目"${ownerId} aria-keyshortcuts="Enter Space" aria-label="${escapeHtml(selectableName(item.name, selected))}"></span>`;
+};
+
+/** 項目の位置と色の style */
+const axisGridStyle = (
+  context: AxisGridContext,
+  placed: AxisGridPlacement,
+): string => {
+  const own = context.args.colors[placed.stateKey];
+  const color = colorVar(own ?? placed.color);
+  const fill = colorVar(own ?? placed.color, "bg");
+  return [
+    `left:${placed.x}px`,
+    `top:${placed.y}px`,
+    `width:${placed.width}px`,
+    `height:${placed.height}px`,
+    color === undefined ? "" : `--map-axis-color:${color}`,
+    fill === undefined ? "" : `--map-axis-fill:${fill}`,
+  ]
+    .filter((entry) => entry !== "")
+    .join(";");
+};
+
+/** 点数に合った表情の顔（1・2 は口を下げ、3 は横、4・5 は上げる） */
+const axisGridFace = (score: number): string => {
+  const mouth =
+    score >= 4
+      ? "M9 15 Q12 18 15 15"
+      : score >= 3
+        ? "M9 15.5 H15"
+        : "M9 17 Q12 14 15 17";
+  return `<svg class="map-axis-face" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="10" r="1.2"></circle><circle cx="15" cy="10" r="1.2"></circle><path d="${mouth}"></path></svg>`;
+};
+
+/** 閉じた section・入れ子のブロックの項目 */
+const renderAxisGridCollapsed = (
+  context: AxisGridContext,
+  placed: AxisGridPlacement,
+): string => {
+  const section = context.sections.get(placed.stateKey);
+  if (!section) return "";
+  const unit = AXIS_GRID_UNITS[context.args.grid.kind];
+  const count = `（${unit} ${placed.count ?? section.members.length} 件）`;
+  const members = section.members.flatMap((order) => {
+    const item = context.args.grid.items[order - 1];
+    return item ? [item.stateKey] : [];
+  });
+  const face =
+    context.args.grid.kind === "journey"
+      ? axisGridFace(placedScore(context, members))
+      : "";
+  return `<div class="mdmark-diagram-node map-axis-item map-axis-collapsed${axisGridDim(context, placed.stateKey, ...members)}" data-node="${escapeHtml(placed.stateKey)}" data-shape="collapsed" data-kind="${context.args.grid.kind}" style="${axisGridStyle(context, placed)}">${axisGridHit(context, { stateKey: placed.stateKey, name: `${section.label}${count}` })}${face}<span class="mdmark-diagram-node-name">${escapeHtml(section.label)}</span><span class="map-axis-count">${escapeHtml(count)}</span></div>`;
+};
+
+/** 閉じたジャーニーの section の点数の平均 */
+const placedScore = (context: AxisGridContext, members: string[]): number => {
+  const scores = members.flatMap((key) => {
+    const detail = context.byKey.get(key)?.detail;
+    return detail?.kind === "journey" ? [detail.score] : [];
+  });
+  return scores.length === 0
+    ? 3
+    : scores.reduce((sum, score) => sum + score, 0) / scores.length;
+};
+
+/** ガントチャートのタスクのタグの class */
+const axisGridTags = (item: AxisGridItem): string =>
+  item.detail.kind === "gantt"
+    ? item.detail.tags.map((tag) => ` map-axis-${tag}`).join("")
+    : "";
+
+/** 項目 1 つ。項目の `div` はフォーカスを受けず、全体を覆う押せる要素を先頭に入れ、名前と説明のマーカーをその兄弟にする */
+const renderAxisGridItem = (
+  context: AxisGridContext,
+  placed: AxisGridPlacement,
+): string => {
+  if (placed.shape === "collapsed")
+    return renderAxisGridCollapsed(context, placed);
+  const item = context.byKey.get(placed.stateKey);
+  if (!item) return "";
+  const { args } = context;
+  const selected =
+    args.selected?.kind === "item" && args.selected.key === item.stateKey;
+  const name = axisGridName(item);
+  const classes = [
+    "mdmark-diagram-node",
+    "map-axis-item",
+    args.filled.has(item.stateKey) ? "map-axis-filled" : "",
+  ]
+    .filter((entry) => entry !== "")
+    .join(" ");
+  const face =
+    item.detail.kind === "journey" ? axisGridFace(item.detail.score) : "";
+  return `<div class="${classes}${axisGridTags(item)}${axisGridDim(context, item.stateKey)}" data-node="${escapeHtml(item.stateKey)}" data-shape="${item.shape}" data-kind="${args.grid.kind}"${selected ? " data-selected" : ""} style="${axisGridStyle(context, placed)}">${axisGridHit(context, { stateKey: item.stateKey, name })}${face}<span class="mdmark-diagram-node-name">${context.marker.render(name)}</span>${axisGridInfo(context, { stateKey: item.stateKey, label: name })}</div>`;
+};
+
+/** section・入れ子のブロックの開閉と中へ入るボタン（中へ入った section には付けない） */
+const renderAxisGridControls = (
+  context: AxisGridContext,
+  section: AxisGridSection,
+): string => {
+  if (context.args.entered === section.stateKey) return "";
+  const closed = context.args.collapsed.includes(section.stateKey);
+  const key = escapeHtml(section.stateKey);
+  const label = closed ? `${section.label}を開く` : `${section.label}を閉じる`;
+  const toggle = `<button class="map-axis-toggle" type="button" data-map-section-toggle="${key}" aria-expanded="${closed ? "false" : "true"}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${iconSvg(closed ? "chevron-right" : "chevron-down")}</button>`;
+  const enterLabel = `${section.label}の中へ入る`;
+  const enter = `<button class="map-axis-enter" type="button" data-map-section-enter="${key}" aria-label="${escapeHtml(enterLabel)}" title="${escapeHtml(enterLabel)}">${iconSvg("maximize-2")}</button>`;
+  return `${toggle}${enter}`;
+};
+
+/** section の見出しの行・枠と入れ子のブロックの枠 */
+const renderAxisGridFrame = (
+  context: AxisGridContext,
+  frame: AxisGridFrame,
+): string => {
+  const section = context.sections.get(frame.key);
+  if (!section) return "";
+  const color = colorVar(frame.color);
+  const fill = colorVar(frame.color, "bg");
+  const style = [
+    `left:${frame.x}px`,
+    `top:${frame.y}px`,
+    `width:${frame.width}px`,
+    `height:${frame.height}px`,
+    color === undefined ? "" : `--map-axis-color:${color}`,
+    fill === undefined ? "" : `--map-axis-fill:${fill}`,
+  ]
+    .filter((entry) => entry !== "")
+    .join(";");
+  return `<div class="map-axis-frame" data-frame="${frame.kind}" data-section="${escapeHtml(frame.key)}"${frame.collapsed ? " data-collapsed" : ""} style="${style}"><div class="map-axis-frame-head">${renderAxisGridControls(context, section)}<span class="map-axis-frame-title">${escapeHtml(section.label)}</span></div></div>`;
+};
+
+/** 枠を持たない閉じた入れ子のブロックの、項目の上に置く開閉と中へ入るボタン */
+const renderAxisGridGrips = (context: AxisGridContext): string => {
+  const framed = new Set(context.args.layout.frames.map((frame) => frame.key));
+  return context.args.layout.items
+    .filter(
+      (placed) => placed.shape === "collapsed" && !framed.has(placed.stateKey),
+    )
+    .map((placed) => {
+      const section = context.sections.get(placed.stateKey);
+      if (!section) return "";
+      return `<div class="map-axis-grip" style="left:${placed.x}px;top:${placed.y - 30}px">${renderAxisGridControls(context, section)}</div>`;
+    })
+    .join("");
+};
+
+/** 軸の目盛り・タスク名・commit の下の文字と札・ブランチ名のボタン・ジャーニーのタスク名と人の丸 */
+const renderAxisGridLabels = (context: AxisGridContext): string => {
+  const { args } = context;
+  const { grid, layout } = args;
+  const ticks = layout.ticks
+    .map((tick) =>
+      grid.kind === "gantt"
+        ? `<span class="map-axis-tick${tick.weekend ? " map-axis-weekend" : ""}" aria-hidden="true" style="left:${tick.x - 14}px;top:${tick.y - 8}px">${escapeHtml(String(Number(tick.value.slice(8))))}</span>`
+        : `<span class="map-axis-score" aria-hidden="true" style="left:${tick.x}px;top:${tick.y - 8}px">${escapeHtml(tick.value)}</span>`,
+    )
+    .join("");
+  const placed = layout.items.filter((item) => item.shape !== "collapsed");
+  const labels = placed.map((entry) => {
+    const item = context.byKey.get(entry.stateKey);
+    return item ? axisGridLabel(context, item, entry) : "";
+  });
+  return `${ticks}${labels.join("")}${renderAxisGridBranches(context)}`;
+};
+
+/** 項目 1 つの外に出す文字（ガントチャートのタスク名・commit の文字と札・ジャーニーのタスク名と人の丸） */
+const axisGridLabel = (
+  context: AxisGridContext,
+  item: AxisGridItem,
+  placed: AxisGridPlacement,
+): string => {
+  const { grid, layout } = context.args;
+  const dim = axisGridDim(context, item.stateKey);
+  const detail = item.detail;
+  if (detail.kind === "gantt")
+    return `<span class="map-axis-name${dim}" aria-hidden="true" style="left:${layout.ticks.length === 0 ? 0 : 40}px;top:${placed.y + placed.height / 2 - 9}px">${escapeHtml(item.label)}</span>`;
+  if (detail.kind === "gitGraph") {
+    const caption =
+      detail.source !== undefined
+        ? `← ${detail.source}`
+        : (item.id ?? item.label);
+    const text =
+      caption === ""
+        ? ""
+        : `<span class="map-axis-caption${dim}" aria-hidden="true" style="left:${placed.x + placed.width / 2 - 44}px;top:${placed.y + placed.height + 4}px">${escapeHtml(caption)}</span>`;
+    const tag =
+      detail.tag === undefined
+        ? ""
+        : `<span class="map-axis-tag${dim}" aria-hidden="true" style="left:${placed.x + placed.width / 2 - 36}px;top:${placed.y - 26}px">${escapeHtml(detail.tag)}</span>`;
+    return `${text}${tag}`;
+  }
+  if (detail.kind === "journey") {
+    const dots = detail.actors
+      .map(
+        (name) =>
+          `<span class="map-axis-actor" data-actor="${grid.actors.indexOf(name) % 3}" title="${escapeHtml(name)}"></span>`,
+      )
+      .join("");
+    return `<span class="map-axis-task${dim}" aria-hidden="true" style="left:${placed.x + placed.width / 2 - 52}px;top:${layout.baseline}px"><span>${escapeHtml(item.label)}</span><span class="map-axis-actors">${dots}</span></span>`;
+  }
+  return "";
+};
+
+/** Git グラフの左端のブランチ名のボタン */
+const renderAxisGridBranches = (context: AxisGridContext): string =>
+  context.args.layout.lanes
+    .filter((lane) => lane.kind === "branch")
+    .map((lane) => {
+      const pressed =
+        context.args.selected?.kind === "branch" &&
+        context.args.selected.key === lane.key;
+      const dim =
+        context.args.selected?.kind === "branch" && !pressed ? " map-dim" : "";
+      const color = colorVar(lane.color);
+      return `<button class="map-axis-branch${dim}" type="button" data-map-branch="${escapeHtml(lane.key)}" aria-pressed="${pressed}" style="left:${AXIS_GRID_LAYOUT.margin}px;top:${lane.y - 12}px${color === undefined ? "" : `;--map-axis-color:${color}`}">${escapeHtml(lane.key)}</button>`;
+    })
+    .join("");
+
+/** つながりの線・ブランチと人の線・今日の線・ガントチャートの土日の面（SVG） */
+const renderAxisGridWires = (context: AxisGridContext): string => {
+  const { layout } = context.args;
+  const colored = (color: string | undefined) => {
+    const value = colorVar(color);
+    return value === undefined ? "" : ` style="--map-axis-color:${value}"`;
+  };
+  const weekends = layout.ticks
+    .filter((tick) => tick.weekend)
+    .map(
+      (tick) =>
+        `<rect class="map-axis-weekend-face" x="${tick.x - AXIS_GRID_LAYOUT.day / 2}" y="${tick.y + AXIS_GRID_LAYOUT.row / 2}" width="${AXIS_GRID_LAYOUT.day}" height="${Math.max(layout.height - tick.y - AXIS_GRID_LAYOUT.margin * 2, 0)}"></rect>`,
+    )
+    .join("");
+  const lanes = layout.lanes
+    .map(
+      (lane) =>
+        `<path class="map-axis-lane${axisGridDim(context, ...lane.members)}" data-lane="${lane.kind}" d="${lane.d}"${colored(lane.color)}></path>`,
+    )
+    .join("");
+  const wires = layout.links
+    .map((wire) => {
+      const arrow =
+        wire.kind === "arrow" || wire.kind === "after"
+          ? ` marker-end="url(#${context.args.id}-axis-arrow)"`
+          : "";
+      const dim =
+        axisGridDim(context, wire.from) !== "" ||
+        axisGridDim(context, wire.to) !== ""
+          ? " map-dim"
+          : "";
+      return `<path class="map-axis-wire${dim}" data-wire="${wire.kind}" d="${wire.d}"${arrow}${colored(wire.color)}></path>`;
+    })
+    .join("");
+  const today =
+    layout.today === undefined
+      ? ""
+      : `<path class="map-axis-today" aria-hidden="true" d="M${layout.today} ${layout.baseline} V${layout.height - AXIS_GRID_LAYOUT.margin - AXIS_GRID_LAYOUT.row / 2}"></path>`;
+  const marker = `<defs><marker id="${context.args.id}-axis-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z"></path></marker></defs>`;
+  return `<svg class="mdmark-diagram-wires map-axis-wires" width="${layout.width}" height="${layout.height}" aria-hidden="true">${marker}${weekends}${lanes}${wires}${today}</svg>`;
+};
+
+/** ブロック図の線のラベルと、ガントチャートの今日の文字 */
+const renderAxisGridWireLabels = (context: AxisGridContext): string => {
+  const { layout } = context.args;
+  const labels = layout.links
+    .flatMap((wire) =>
+      wire.label === undefined
+        ? []
+        : [
+            `<span class="map-axis-wire-label${axisGridDim(context, wire.from, wire.to)}" aria-hidden="true" style="left:${wire.label.x - 28}px;top:${wire.label.y - 20}px">${escapeHtml(wire.label.text)}</span>`,
+          ],
+    )
+    .join("");
+  const today =
+    layout.today === undefined
+      ? ""
+      : `<span class="map-axis-today-label" aria-hidden="true" style="left:${layout.today - 16}px;top:${layout.height - AXIS_GRID_LAYOUT.margin - AXIS_GRID_LAYOUT.row / 2}px">今日</span>`;
+  return `${labels}${today}`;
+};
+
+/** 中へ入ったときの、全体から入った section までの道筋 */
+const renderAxisGridTrail = (context: AxisGridContext): string => {
+  const { entered } = context.args;
+  if (entered === undefined) return "";
+  const names: string[] = [];
+  let at = context.sections.get(entered);
+  while (at) {
+    names.unshift(at.label);
+    at = at.parent === undefined ? undefined : context.sections.get(at.parent);
+  }
+  const spans = ["全体", ...names].map(
+    (name) => `<span>${escapeHtml(name)}</span>`,
+  );
+  return `<nav class="map-axis-trail" aria-label="全体からの道筋">${spans.join(' <span aria-hidden="true">›</span> ')}</nav>`;
+};
+
+/** 部品『mapの軸と格子の配置の図』の HTML。項目・枠・軸・線・中へ入ったときの道筋を描く */
+export const renderMapAxisGrid = (args: MapAxisGridArgs): MapPart => {
+  const context: AxisGridContext = {
+    args,
+    byKey: new Map(args.grid.items.map((item) => [item.stateKey, item])),
+    sections: new Map(
+      args.grid.sections.map((section) => [section.stateKey, section]),
+    ),
+    kept: axisGridKept(args),
+    marker: termMarker(args.terms, args.id),
+    tips: createTips(`${args.id}-axis`),
+    ownerPrefix: noteOwnerPrefix(args.id),
+  };
+  const frames = args.layout.frames
+    .map((frame) => renderAxisGridFrame(context, frame))
+    .join("");
+  const items = args.layout.items
+    .map((placed) => renderAxisGridItem(context, placed))
+    .join("");
+  const html = `${frames}${renderAxisGridWires(context)}${renderAxisGridLabels(context)}${renderAxisGridWireLabels(context)}${items}${renderAxisGridGrips(context)}${renderAxisGridTrail(context)}`;
+  return {
+    html,
+    tips: `${markTipTerms(context.tips.html(), args.terms)}${context.marker.tips.html()}`,
+  };
+};
+
+/** ジャーニーの人の凡例のボタン（図の枠の凡例の行に入れる `li`） */
+export const renderMapAxisGridLegend = (args: {
+  grid: AxisGrid;
+  selected: AxisGridSelection | undefined;
+}): string =>
+  args.grid.actors
+    .map((name, index) => {
+      const pressed =
+        args.selected?.kind === "actor" && args.selected.key === name;
+      return `<li class="mdmark-diagram-legend-item"><button class="map-axis-legend" type="button" data-map-actor="${escapeHtml(name)}" aria-pressed="${pressed}"><span class="map-axis-actor" data-actor="${index % 3}" aria-hidden="true"></span>${escapeHtml(name)}</button></li>`;
+    })
+    .join("");

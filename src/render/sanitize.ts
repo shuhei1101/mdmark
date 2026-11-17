@@ -339,6 +339,29 @@ export function isAllowedUrl(url: string): boolean {
   return Array.isArray(allowed) && allowed.includes(scheme.toLowerCase());
 }
 
+/** `id:` で始まるリンク先（`id:` を含む値）を開く URL に変える、利用側の関数 */
+export type ResolveIdLink = (ref: string) => string | undefined;
+
+/** `id:` で始まるリンク先を利用側の関数で URL に変え、許可する URL だけを返却する（関数が無い・文字を返却しない・例外を投げる・許可しない URL のときは undefined） */
+export const resolveIdHref = (options: {
+  href: string;
+  resolveIdLink: ResolveIdLink | undefined;
+}): string | undefined => {
+  const { href, resolveIdLink } = options;
+  if (resolveIdLink === undefined) return undefined;
+  let resolved: unknown;
+  try {
+    resolved = resolveIdLink(href);
+  } catch (error) {
+    // 利用側の関数の例外で文書の描画を止めず、許可しないリンク先として扱う
+    console.warn("[mdmark] resolveIdLink が例外を投げました", error);
+    return undefined;
+  }
+  return typeof resolved === "string" && isAllowedUrl(resolved)
+    ? resolved
+    : undefined;
+};
+
 /** 埋め込んだ HTML の `style` に残す宣言: 名前と、値の許可の正規表現。値に `url(`・`expression(`・単位 `vw`・`vh` を含むものは、ここに該当しても落とす */
 export const EMBED_STYLES: ReadonlyArray<{ name: RegExp; value: RegExp }> =
   (() => {

@@ -10854,4 +10854,467 @@
       font-weight: 700;
     }
   }
+
+  /* map の軸と格子の配置の図: 項目は種類の行を持たず、名前を中央に置く。縁と面は section・ブランチの色 */
+  .mdmark-diagram[data-diagram="map"] .map-axis-item {
+    --node-color: var(--map-axis-color, var(--mdmark-color-text));
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
+    padding: 0 8px;
+    font-size: 13px;
+    line-height: 1.3;
+    text-align: center;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+
+    & .mdmark-diagram-node-name {
+      position: relative;
+      z-index: 1;
+      cursor: text;
+      user-select: text;
+    }
+    & .mdmark-diagram-node-hit {
+      cursor: pointer;
+    }
+    & .mdmark-diagram-node-hit:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 4px;
+    }
+    &[data-selected] {
+      outline: 3px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+    & .mdmark-diagram-info {
+      z-index: 1;
+      width: 24px;
+      height: 24px;
+      inset-block-start: 50%;
+      inset-inline-end: 4px;
+      translate: 0 -50%;
+    }
+    &:has(.mdmark-diagram-info) {
+      padding-inline-end: 30px;
+    }
+    &.map-axis-filled {
+      background: var(--map-axis-fill);
+    }
+  }
+  /* 名前を項目の外に出す小さい項目（棒・commit の丸・顔の印）: 名前はスクリーンリーダー向けにだけ残し、説明のマーカーは項目の右上の外に出す */
+  .mdmark-diagram[data-diagram="map"]
+  .map-axis-item:is(
+    [data-shape="bar"],
+    [data-shape="milestone"],
+    [data-shape="commit"],
+    [data-shape="highlight"],
+    [data-shape="reverse"],
+    [data-shape="merge"],
+    [data-shape="cherryPick"],
+    [data-shape="face"]
+  ) {
+    padding: 0;
+
+    & > .mdmark-diagram-node-name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    & .mdmark-diagram-info {
+      inset-block-start: -14px;
+      inset-inline-end: -16px;
+      translate: none;
+    }
+  }
+  /* ガントチャートの棒: section の色。done は薄く、active は濃く、crit は赤の縁、milestone はひし形 */
+  .mdmark-diagram[data-diagram="map"]
+  .map-axis-item:is([data-shape="bar"], [data-shape="milestone"]) {
+    border: 0;
+    border-radius: 4px;
+    background: color-mix(
+      in srgb,
+      var(--node-color) 70%,
+      var(--mdmark-color-bg-opaque)
+    );
+
+    &.map-axis-done {
+      background: color-mix(
+        in srgb,
+        var(--node-color) 30%,
+        var(--mdmark-color-bg-opaque)
+      );
+    }
+    &.map-axis-active {
+      background: var(--node-color);
+    }
+    &.map-axis-crit {
+      box-shadow: inset 0 0 0 2px var(--mdmark-color-accent-red-text);
+    }
+    &[data-shape="milestone"] {
+      border-radius: 2px;
+      rotate: 45deg;
+    }
+  }
+  /* 閉じた section・入れ子のブロック: 破線の縁で、1 行目に名前、2 行目に「（{種類} {数} 件）」 */
+  .mdmark-diagram[data-diagram="map"] .map-axis-item[data-shape="collapsed"] {
+    flex-direction: column;
+    gap: 0;
+    border-style: dashed;
+    background: var(--mdmark-color-surface);
+    font-size: 12px;
+    font-weight: 700;
+
+    & .map-axis-count {
+      position: relative;
+      z-index: 1;
+      font-size: 11px;
+      font-weight: 400;
+    }
+    &[data-kind="gantt"] {
+      flex-direction: row;
+      gap: 4px;
+      border-style: solid;
+      background: repeating-linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--node-color) 55%, var(--mdmark-color-bg-opaque))
+          0 6px,
+        color-mix(in srgb, var(--node-color) 40%, var(--mdmark-color-bg-opaque))
+          6px 12px
+      );
+    }
+    &[data-kind="journey"] {
+      border-radius: 50%;
+      overflow: visible;
+
+      & :is(.mdmark-diagram-node-name, .map-axis-count) {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+      }
+    }
+  }
+  /* タイムラインの期間と出来事 */
+  .mdmark-diagram[data-diagram="map"] .map-axis-item[data-shape="period"] {
+    background: var(--map-axis-fill, var(--mdmark-color-surface));
+    font-weight: 700;
+  }
+  /* Git グラフの commit: 丸。merge は塗った丸、HIGHLIGHT は塗った四角、REVERSE は × の入った丸、cherry-pick は破線の丸 */
+  .mdmark-diagram[data-diagram="map"]
+  .map-axis-item:is(
+    [data-shape="commit"],
+    [data-shape="highlight"],
+    [data-shape="reverse"],
+    [data-shape="merge"],
+    [data-shape="cherryPick"]
+  ) {
+    border-width: 3px;
+    border-radius: 50%;
+    background: var(--mdmark-color-bg-opaque);
+
+    &:is([data-shape="merge"], [data-shape="highlight"]) {
+      background: var(--node-color);
+    }
+    &[data-shape="highlight"] {
+      border-radius: 3px;
+    }
+    &[data-shape="cherryPick"] {
+      border-style: dashed;
+    }
+    &[data-shape="reverse"] {
+      background:
+        linear-gradient(
+          45deg,
+          transparent 44%,
+          var(--node-color) 44% 56%,
+          transparent 56%
+        ),
+        linear-gradient(
+          -45deg,
+          transparent 44%,
+          var(--node-color) 44% 56%,
+          transparent 56%
+        ),
+        var(--mdmark-color-bg-opaque);
+    }
+  }
+  /* ジャーニーの顔の印: section の色の丸と表情 */
+  .mdmark-diagram[data-diagram="map"] .map-axis-item[data-shape="face"],
+  .mdmark-diagram[data-diagram="map"]
+    .map-axis-item[data-shape="collapsed"][data-kind="journey"] {
+    border-width: 2px;
+    border-radius: 50%;
+    background: var(--map-axis-fill, var(--mdmark-color-surface));
+  }
+  .map-axis-face {
+    position: absolute;
+    inset: 4px;
+    fill: var(--map-axis-color, var(--mdmark-color-text));
+    stroke: var(--map-axis-color, var(--mdmark-color-text));
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    pointer-events: none;
+
+    & path {
+      fill: none;
+    }
+  }
+  /* ブロック図の形状: 四角・角の丸い四角・丸・円柱 */
+  .mdmark-diagram[data-diagram="map"] .map-axis-item {
+    &[data-shape="square"] {
+      border-radius: 0;
+    }
+    &[data-shape="rounded"] {
+      border-radius: 14px;
+    }
+    &[data-shape="circle"] {
+      border-radius: 999px;
+    }
+    &[data-shape="cylinder"] {
+      border-radius: 50% / 30%;
+    }
+  }
+  /* section の見出しの行・枠と入れ子のブロックの枠。見出しに開閉と中へ入るボタンを置く */
+  .map-axis-frame {
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: 8px;
+    pointer-events: none;
+
+    &[data-frame="row"] {
+      border-top: 1px solid var(--mdmark-color-border);
+      border-radius: 0;
+      background: color-mix(
+        in srgb,
+        var(--map-axis-fill, transparent) 40%,
+        transparent
+      );
+    }
+    &:is([data-frame="box"], [data-frame="block"]) {
+      border: 1.5px solid var(--map-axis-color, var(--mdmark-color-border));
+      background: color-mix(
+        in srgb,
+        var(--map-axis-fill, var(--mdmark-color-surface)) 50%,
+        transparent
+      );
+    }
+    &[data-frame="band"] {
+      background: var(--map-axis-fill, var(--mdmark-color-surface));
+    }
+  }
+  :is(.map-axis-frame-head, .map-axis-grip) {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    height: 28px;
+    padding: 0 4px;
+    pointer-events: auto;
+  }
+  .map-axis-frame-head {
+    inset: 2px auto auto 0;
+  }
+  .map-axis-frame-title {
+    color: var(--map-axis-color, var(--mdmark-color-text));
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  :is(.map-axis-toggle, .map-axis-enter) {
+    display: inline-grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: 999px;
+    background: var(--mdmark-color-bg-opaque);
+    color: var(--mdmark-color-muted);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--mdmark-color-text);
+    }
+    & svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  /* 軸の目盛り・タスク名・commit の下の文字と札・ジャーニーのタスク名と人の丸・線のラベル・今日の文字 */
+  :is(
+    .map-axis-tick,
+    .map-axis-score,
+    .map-axis-name,
+    .map-axis-caption,
+    .map-axis-tag,
+    .map-axis-task,
+    .map-axis-wire-label,
+    .map-axis-today-label
+  ) {
+    position: absolute;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  .map-axis-tick {
+    width: 28px;
+    color: var(--mdmark-color-muted);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .map-axis-score {
+    width: 16px;
+    color: var(--mdmark-color-muted);
+    text-align: end;
+  }
+  .map-axis-name {
+    max-width: 150px;
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .map-axis-caption {
+    width: 88px;
+    color: var(--mdmark-color-muted);
+    text-align: center;
+  }
+  .map-axis-tag {
+    width: 72px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: 4px;
+    background: var(--mdmark-color-surface);
+    text-align: center;
+  }
+  .map-axis-task {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    width: 104px;
+    font-size: 12px;
+    text-align: center;
+  }
+  .map-axis-actors {
+    display: flex;
+    gap: 4px;
+  }
+  .map-axis-actor {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--mdmark-color-accent-blue-text);
+
+    &[data-actor="1"] {
+      background: var(--mdmark-color-accent-orange-text);
+    }
+    &[data-actor="2"] {
+      background: var(--mdmark-color-accent-green-text);
+    }
+  }
+  .map-axis-wire-label {
+    width: 56px;
+    border-radius: 4px;
+    background: var(--mdmark-color-bg-opaque);
+    font-size: 12px;
+    text-align: center;
+  }
+  .map-axis-today-label {
+    width: 32px;
+    color: var(--mdmark-color-accent-red-text);
+    text-align: center;
+  }
+  /* Git グラフのブランチ名と、ジャーニーの人の凡例のボタン */
+  .map-axis-branch,
+  .map-axis-legend {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 10px;
+    border: 1px solid var(--map-axis-color, var(--mdmark-color-border));
+    border-radius: 999px;
+    background: var(--mdmark-color-bg-opaque);
+    color: var(--map-axis-color, var(--mdmark-color-text));
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      background: color-mix(
+        in srgb,
+        var(--map-axis-color, var(--mdmark-color-link)) 16%,
+        var(--mdmark-color-bg-opaque)
+      );
+      outline: 2px solid var(--map-axis-color, var(--mdmark-color-link));
+    }
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+  }
+  .map-axis-branch {
+    position: absolute;
+    z-index: 2;
+    max-width: 88px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* 線: ブランチと人の線・つながりの線・期間から出来事への線・今日の破線・土日の面 */
+  .map-axis-wires {
+    color: var(--mdmark-color-diagram-line);
+
+    & marker path {
+      fill: currentColor;
+    }
+  }
+  .map-axis-lane {
+    fill: none;
+    stroke: var(--map-axis-color, var(--mdmark-color-diagram-line));
+    stroke-width: 3;
+  }
+  .map-axis-wire {
+    fill: none;
+    stroke: var(--map-axis-color, var(--mdmark-color-diagram-line));
+    stroke-width: 1.5;
+
+    &[data-wire="cherryPick"] {
+      stroke-dasharray: 4 3;
+    }
+    &[data-wire="after"] {
+      stroke: var(--mdmark-color-link);
+    }
+  }
+  .map-axis-today {
+    stroke: var(--mdmark-color-accent-red-text);
+    stroke-width: 2;
+    stroke-dasharray: 4 3;
+  }
+  .map-axis-weekend-face {
+    fill: var(--mdmark-color-surface);
+  }
+  /* 中へ入ったときの道筋: 図の上端に、全体から入った section までを薄く並べる */
+  .map-axis-trail {
+    position: absolute;
+    inset: 4px auto auto 16px;
+    z-index: 3;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--mdmark-color-muted);
+    font-size: 12px;
+
+    & span:last-child {
+      color: var(--mdmark-color-text);
+      font-weight: 700;
+    }
+  }
 }

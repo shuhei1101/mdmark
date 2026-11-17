@@ -12,7 +12,7 @@ import type { MdmarkReferences } from "../knowledge/references.ts";
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 import { splitFrontmatter } from "./frontmatter.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
-import { sanitize } from "./sanitize.ts";
+import { type ResolveIdLink, sanitize } from "./sanitize.ts";
 import type { CollectedWarning } from "./syntax/warnings.ts";
 
 export type { CollectedWarning } from "./syntax/warnings.ts";
@@ -64,6 +64,8 @@ export function renderDocument(options: {
   includes?: Record<string, string> | undefined;
   /** まとめていない名前のアイコンの形状の表 */
   icons?: Record<string, MdmarkIconNode> | undefined;
+  /** `id:` で始まるリンク先を URL に変える関数 */
+  resolveIdLink?: ResolveIdLink | undefined;
 }): RenderedDocument {
   parser ??= createParser();
   const index =
@@ -89,6 +91,7 @@ export function renderDocument(options: {
     aliases: options.aliases,
     includes: options.includes,
     icons: options.icons,
+    resolveIdLink: options.resolveIdLink,
     ownGlossary: [],
     extensionDefinitions: [],
     paramDefinitions: [],
@@ -138,6 +141,8 @@ export function render(
     includes?: Record<string, string>;
     /** まとめていない名前のアイコンの形状の表。省くと、そのアイコンは中が空の要素にする */
     icons?: Record<string, MdmarkIconNode>;
+    /** `id:` で始まるリンク先（`id:` を含む値）を開く URL に変える関数。省くと、`id:` のリンク先を許可しないリンク先として扱う */
+    resolveIdLink?: ResolveIdLink;
   } = {},
 ): string {
   const config = resolveConfig({ config: opts.config });
@@ -150,5 +155,6 @@ export function render(
     aliases: opts.aliases,
     includes: opts.includes,
     icons: opts.icons,
+    resolveIdLink: opts.resolveIdLink,
   }).html;
 }

@@ -1,9 +1,14 @@
 import { parseArchitecture } from "./architecture.ts";
+import { type AxisGrid, parseAxisGrid } from "./axis-grid.ts";
 import { parseC4Context } from "./c4.ts";
 import { parseClassDiagram } from "./class-diagram.ts";
 import { type MapData, parseMapData } from "./data.ts";
 import { parseErDiagram } from "./er.ts";
-import { mapLinkProblems, parseFlowchart } from "./flowchart.ts";
+import {
+  type MapIdLinks,
+  mapLinkProblems,
+  parseFlowchart,
+} from "./flowchart.ts";
 import { lucideIconNames } from "./lucide-names.ts";
 import { parseMindmap } from "./mindmap.ts";
 import { parseSequence } from "./sequence.ts";
@@ -41,6 +46,13 @@ const REF_HINTS = {
   C4Context:
     "要素・境界の別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
   mindmap: "項目の ID か、ID を持たない項目の表示する文字にしてください。",
+  gantt:
+    "タスクの ID か、ID を持たないタスクの名前か、section の名前にしてください。",
+  timeline: "期間か出来事の文か、section の名前にしてください。",
+  gitGraph:
+    "commit の `id:` か、`id:` を持たない commit の `msg:` か記載順の `c{番号}` か、ブランチ名にしてください。",
+  journey: "タスク名か、section の名前にしてください。",
+  block: "ブロックの ID か、入れ子のブロックの ID にしてください。",
 } as const satisfies Record<MapKindName, string>;
 
 /** ER 図の補足の groups の、無いテーブル・無い親・2 つの分類に入るテーブル・テーブル名と同じ分類の ID の項目 */
@@ -106,8 +118,10 @@ type MermaidIds = {
   classes: Set<string>;
   /** ER 図のテーブル名 */
   tables: Set<string>;
-  /** マインドマップの、ID を持たない 2 つ以上の項目が使う表示する文字 */
+  /** マインドマップと軸と格子の配置の図の、ID を持たない 2 つ以上の項目が使う表示する文字（と 2 つ以上の section が使う名前） */
   ambiguous: ReadonlySet<string>;
+  /** 軸と格子の配置の図の読み取り結果 */
+  grid?: AxisGrid;
   /** Mermaid の読み取りの項目（範囲の開きのマーカーからの行） */
   problems: MapProblem[];
   /** ノードのリンク先の項目 */
@@ -126,10 +140,16 @@ const emptyMermaidIds = (problems: MapProblem[]): MermaidIds => ({
 });
 
 /** フローチャートの ID */
-const flowchartIds = (mermaid: string, line: number | undefined) => {
+const flowchartIds = (
+  mermaid: string,
+  line: number | undefined,
+  idLinks: MapIdLinks,
+) => {
   const chart = parseFlowchart(mermaid);
   const found = emptyMermaidIds(shiftProblems(chart.problems, line));
-  found.linkProblems.push(...mapLinkProblems(chart.links).problems);
+  found.linkProblems.push(
+    ...mapLinkProblems({ links: chart.links, idLinks }).problems,
+  );
   for (const node of chart.nodes) {
     found.ids.add(node.id);
     for (const name of node.classes) found.classes.add(name);
@@ -240,6 +260,25 @@ const mindmapIds = (mermaid: string, line: number | undefined): MermaidIds => {
   return found;
 };
 
+/** 軸と格子の配置の図の ID（項目のキー・section の名前・ブランチ名） */
+const axisGridIds = (
+  kind: AxisGrid["kind"],
+  mermaid: string,
+  line: number | undefined,
+): MermaidIds => {
+  const grid = parseAxisGrid({ kind, source: mermaid });
+  const found = emptyMermaidIds(shiftProblems(grid.problems, line));
+  for (const item of grid.items) {
+    found.ids.add(item.key);
+    if (kind === "gitGraph") found.ids.add(`c${item.order}`);
+  }
+  for (const section of grid.sections) found.ids.add(section.label);
+  for (const branch of grid.branches) found.ids.add(branch);
+  found.ambiguous = grid.ambiguous;
+  found.grid = grid;
+  return found;
+};
+
 /** シーケンス図の ID（参加者の ID と、メッセージ・ブロックの番号） */
 const sequenceIds = (mermaid: string, line: number | undefined): MermaidIds => {
   const sequence = parseSequence(mermaid);
@@ -255,12 +294,17 @@ const sequenceIds = (mermaid: string, line: number | undefined): MermaidIds => {
 /** 図の種類ごとに Mermaid を読み、ID を集める */
 const mermaidIdsOf = (
   kind: MapKindName,
-  source: { mermaid: string; line: number | undefined; data: MapData },
+  source: {
+    mermaid: string;
+    line: number | undefined;
+    data: MapData;
+    idLinks: MapIdLinks;
+  },
 ): MermaidIds => {
-  const { mermaid, line, data } = source;
+  const { mermaid, line, data, idLinks } = source;
   switch (kind) {
     case "flowchart":
-      return flowchartIds(mermaid, line);
+      return flowchartIds(mermaid, line, idLinks);
     case "erDiagram":
       return erIds(mermaid, line, data);
     case "stateDiagram":
@@ -273,6 +317,12 @@ const mermaidIdsOf = (
       return c4Ids(mermaid, line);
     case "mindmap":
       return mindmapIds(mermaid, line);
+    case "gantt":
+    case "timeline":
+    case "gitGraph":
+    case "journey":
+    case "block":
+      return axisGridIds(kind, mermaid, line);
     default:
       return sequenceIds(mermaid, line);
   }
@@ -350,43 +400,75 @@ const checkLayout = (context: DataContext): void => {
   }
 };
 
-/** マインドマップに適用する `layout` のキー */
-const MINDMAP_LAYOUT_KEYS = new Set(["color", "collapsed"]);
+/** マインドマップと軸と格子の配置の図に適用する `layout` のキー */
+const COLOR_LAYOUT_KEYS = new Set(["color", "collapsed"]);
 
-/** マインドマップの `layout` の、適用しないキーの項目 */
-const mindmapLayoutProblems = (context: DataContext): MapProblem[] =>
+/** マインドマップと軸と格子の配置の図の、図の種類の名前 */
+const COLOR_LAYOUT_KIND_NAMES: Partial<Record<MapKindName, string>> = {
+  mindmap: "マインドマップ",
+  gantt: "ガントチャート",
+  timeline: "タイムライン",
+  gitGraph: "Git グラフ",
+  journey: "ジャーニー",
+  block: "ブロック図",
+};
+
+/** マインドマップと軸と格子の配置の図の `layout` の、適用しないキーの項目 */
+const colorLayoutProblems = (
+  context: DataContext,
+  name: string,
+): MapProblem[] =>
   Object.entries(context.data.layout).flatMap(([id, entry]) =>
     Object.entries(entry)
       .filter(
-        ([key, value]) => value !== undefined && !MINDMAP_LAYOUT_KEYS.has(key),
+        ([key, value]) => value !== undefined && !COLOR_LAYOUT_KEYS.has(key),
       )
       .map(([key]) => ({
         kind: "map_invalid_value",
         line: context.lineOf(`layout.${id}.${key}`),
-        message: `補足の \`layout.${id}.${key}\` はマインドマップには適用しません。マインドマップの \`layout\` は \`color\` と \`collapsed\` だけを適用します。並び順は Mermaid の行の順で変えてください。`,
+        message: `補足の \`layout.${id}.${key}\` は${name}には適用しません。${name}の \`layout\` は \`color\` と \`collapsed\` だけを適用します。並び順は Mermaid の行の順で変えてください。`,
       })),
   );
 
-/** マインドマップの、適用しない `layout` のキーとマーカーの引数の `focus` の項目 */
-const mindmapProblems = (
+/** マインドマップと軸と格子の配置の図の、適用しない `layout` のキーとマーカーの引数の `focus` の項目 */
+const colorLayoutKindProblems = (
   context: DataContext,
   focus: string | undefined,
-): MapProblem[] => [
-  ...mindmapLayoutProblems(context),
-  ...(focus !== undefined && context.found.ambiguous.has(focus)
-    ? [ambiguousProblem("マーカーの引数の `focus`", focus, undefined)]
-    : []),
-];
+): MapProblem[] => {
+  const name = COLOR_LAYOUT_KIND_NAMES[context.kind];
+  if (name === undefined) return [];
+  return [
+    ...colorLayoutProblems(context, name),
+    ...(focus !== undefined && context.found.ambiguous.has(focus)
+      ? [ambiguousProblem(context, "マーカーの引数の `focus`", focus)]
+      : []),
+  ];
+};
 
-/** ID を持たない同じ文字の 2 つ以上の項目を指すキーの項目 */
+/** 同じ名前の 2 つ以上を指すキーの、図の種類と項目ごとの修正の方法 */
+const ambiguousHint = (found: MermaidIds, key: string): string => {
+  const grid = found.grid;
+  if (grid === undefined)
+    return `指す項目に ID（\`{ID}[${key}]\` など）を記載し、ID で指してください。`;
+  if (grid.sections.filter((section) => section.label === key).length > 1)
+    return "同じ名前の section の名前を分けてください。";
+  if (grid.kind === "gitGraph")
+    return "指す commit に `id:` を記載し、`id:` で指してください。";
+  if (grid.kind === "gantt")
+    return "指すタスクに ID を記載し、ID で指してください。";
+  return "同じ名前の項目の名前を分けてください。";
+};
+
+/** ID を持たない同じ文字の 2 つ以上の項目（同じ名前の 2 つ以上の section）を指すキーの項目 */
 const ambiguousProblem = (
+  context: { found: MermaidIds },
   where: string,
   key: string,
-  line: number | undefined,
+  line?: number,
 ): MapProblem => ({
   kind: "map_ambiguous_ref",
   line,
-  message: `${where} の \`${key}\` は、ID を持たない 2 つ以上の項目の表示する文字のため、どの項目にも適用しません。指す項目に ID（\`{ID}[${key}]\` など）を記載し、ID で指してください。`,
+  message: `${where} の \`${key}\` は、ID を持たない 2 つ以上の項目の表示する文字か 2 つ以上の section の名前のため、どの項目にも適用しません。${ambiguousHint(context.found, key)}`,
 });
 
 /** ノードかグループの layout に、線の ID のときだけ記載できるキーがある項目 */
@@ -410,6 +492,7 @@ export const collectMapProblems = (
   range: MapRangeSource & { annotationIds?: ReadonlySet<string> | undefined },
   config: ResolvedMapConfig,
   includeUnknownKeys: boolean,
+  idLinks: MapIdLinks,
 ): MapProblem[] => {
   const structure = collectMapStructure(range);
   if (structure.kind === undefined || range.mermaid === undefined)
@@ -429,6 +512,7 @@ export const collectMapProblems = (
     mermaid: range.mermaid,
     line: range.mermaidLine,
     data,
+    idLinks,
   });
   problems.push(
     ...found.problems,
@@ -442,7 +526,9 @@ export const collectMapProblems = (
   };
   const ref = (path: string, id: string | undefined) => {
     if (id !== undefined && found.ambiguous.has(id)) {
-      problems.push(ambiguousProblem(`補足の \`${path}\``, id, lineOf(path)));
+      problems.push(
+        ambiguousProblem({ found }, `補足の \`${path}\``, id, lineOf(path)),
+      );
     } else if (id !== undefined && !found.ids.has(id)) {
       problems.push({
         kind: "map_unknown_ref",
@@ -471,8 +557,9 @@ export const collectMapProblems = (
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
   checkLayout(context);
-  if (kind === "mindmap")
-    problems.push(...mindmapProblems(context, structure.args.args.focus));
+  problems.push(
+    ...colorLayoutKindProblems(context, structure.args.args.focus),
+  );
   problems.push(...found.linkProblems);
   for (const name of found.classes) {
     if (!(name in config.kinds)) {
@@ -541,6 +628,11 @@ export const needsMermaidFallback = (options: {
   }
   const { data } = parseMapData(undefined);
   return (
-    mermaidIdsOf(kind, { mermaid, line: undefined, data }).problems.length > 0
+    mermaidIdsOf(kind, {
+      mermaid,
+      line: undefined,
+      data,
+      idLinks: { mode: "skip" },
+    }).problems.length > 0
   );
 };

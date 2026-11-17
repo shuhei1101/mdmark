@@ -34,6 +34,7 @@ import type { MdmarkIconNode } from "./parts/inline-icon.ts";
 import { renderNotice } from "./parts/notice.ts";
 import { attachPrint } from "./print.ts";
 import { renderDocument } from "./render/index.ts";
+import type { ResolveIdLink } from "./render/sanitize.ts";
 
 /** `mount` の第 2 引数 */
 export type MountOptions = {
@@ -63,6 +64,8 @@ export type MountOptions = {
   includes?: Record<string, string>;
   /** まとめていない名前のアイコンの形状の表。表に無い名前は jsDelivr から読み込む */
   icons?: Record<string, MdmarkIconNode>;
+  /** `id:` で始まるリンク先（`id:` を含む値）を開く URL に変える関数。本文のリンクと map のノードのリンクに使用する。省くと、`id:` のリンク先を許可しないリンク先として扱う */
+  resolveIdLink?: ResolveIdLink;
 };
 
 /** `onColumnsChange` が受け取る列の表示 */
@@ -297,6 +300,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       aliases: opts.aliases,
       includes,
       icons: opts.icons,
+      resolveIdLink: opts.resolveIdLink,
     });
   /** 描いた HTML を要素に入れる。`from` があれば、前の Markdown と比べて色分けする */
   const paint = (target: {
@@ -514,6 +518,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       isCurrent,
       warned,
       config: drawn,
+      resolveIdLink: opts.resolveIdLink,
       // map の図から戻したコードブロックだけを mermaid の図にし、片付けを足していく
       restoreMermaid: (blocks) => {
         if (features.mermaid !== true) return;

@@ -1,4 +1,8 @@
-import { isAllowedUrl } from "../render/sanitize.ts";
+import {
+  isAllowedUrl,
+  type ResolveIdLink,
+  resolveIdHref,
+} from "../render/sanitize.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** グループとノードを並べる向き */
@@ -78,15 +82,29 @@ export const decodeEntities = (text: string): string =>
 const LINK_NOT_ALLOWED =
   "ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。";
 
-/** ノードのリンク先を確かめ、許すものの対応と、許さないリンク先の項目を返却する */
-export const mapLinkProblems = (
-  links: Record<string, string>,
-): { allowed: Record<string, string>; problems: MapProblem[] } => {
+/** `id:` で始まるノードのリンク先の扱い（描くときは利用側の関数で URL に変え、点検は確かめない） */
+export type MapIdLinks =
+  | { mode: "resolve"; resolveIdLink: ResolveIdLink | undefined }
+  | { mode: "skip" };
+
+/** ノードのリンク先を確かめ、許可するものの対応と、許可しないリンク先の項目を返却する */
+export const mapLinkProblems = (options: {
+  links: Record<string, string>;
+  idLinks: MapIdLinks;
+}): { allowed: Record<string, string>; problems: MapProblem[] } => {
+  const { links, idLinks } = options;
   const allowed: Record<string, string> = {};
   const problems: MapProblem[] = [];
   for (const [id, href] of Object.entries(links)) {
-    if (isAllowedUrl(href)) {
-      allowed[id] = href;
+    const isIdLink = href.startsWith("id:");
+    if (isIdLink && idLinks.mode === "skip") continue;
+    const url = isIdLink
+      ? resolveIdHref({ href, resolveIdLink: idLinks.resolveIdLink })
+      : isAllowedUrl(href)
+        ? href
+        : undefined;
+    if (url !== undefined) {
+      allowed[id] = url;
       continue;
     }
     problems.push({

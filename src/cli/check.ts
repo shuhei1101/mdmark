@@ -747,6 +747,7 @@ export function checkMaps(
         { ...range, annotationIds: annotations },
         config.map,
         true,
+        { mode: "skip" },
       )) {
         issues.push({
           file: document.path,
