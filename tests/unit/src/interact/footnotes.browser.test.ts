@@ -234,6 +234,10 @@ test("test_attach_footnotes_when_annotations", async () => {
   expect(new Set(ids).size).toBe(ids.length);
 });
 
+/** リンクの href（`#{id}`）が指す要素 */
+const hrefTargetOf = (element: Element | null) =>
+  document.getElementById(element?.getAttribute("href")?.slice(1) ?? "");
+
 // 同じページに 2 回描いても id が重ならない（正常系）
 test("test_attach_footnotes_unique_ids", async () => {
   // 準備
@@ -256,12 +260,8 @@ test("test_attach_footnotes_unique_ids", async () => {
     const back = root.querySelector(".mdmark-fn-back");
     const describedBy = link?.getAttribute("aria-describedby") ?? "";
     expect(document.getElementById(describedBy)).toBe(tip);
-    expect(
-      document.getElementById(link?.getAttribute("href")?.slice(1) ?? ""),
-    ).toBe(item);
-    expect(
-      document.getElementById(back?.getAttribute("href")?.slice(1) ?? ""),
-    ).toBe(link);
+    expect(hrefTargetOf(link)).toBe(item);
+    expect(hrefTargetOf(back)).toBe(link);
   }
 });
 

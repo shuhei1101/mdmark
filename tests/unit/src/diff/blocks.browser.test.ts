@@ -283,6 +283,18 @@ test("test_color_diff_blocks", async () => {
   }
 });
 
+/** 指定した番目の要素が、指定した文字を含み、差分のブロックの class を持つことを確かめる */
+const expectDiffBlocks = (
+  elements: Element[],
+  expected: Array<[number, string]>,
+) => {
+  for (const [at, text] of expected) {
+    const element = elements[at];
+    expect(element?.textContent).toContain(text);
+    expect(element?.classList.contains("mdmark-diff-block")).toBe(true);
+  }
+};
+
 // リストの項目と表の行の単位で色を適用する（正常系）
 test("test_color_diff_blocks_when_list_and_table", async () => {
   // 準備: 番号付きリストの番号は全て 1 にして、行の違いを項目の文字だけにする
@@ -319,11 +331,10 @@ test("test_color_diff_blocks_when_list_and_table", async () => {
     null,
     "add",
   ]);
-  expect(items[3]?.textContent).toContain("項目四");
-  expect(items[5]?.textContent).toContain("項目六");
-  for (const item of [items[3], items[5]]) {
-    expect(item?.classList.contains("mdmark-diff-block")).toBe(true);
-  }
+  expectDiffBlocks(items, [
+    [3, "項目四"],
+    [5, "項目六"],
+  ]);
   // 検証: 表の 2 行目は削除の行と追加の行がこの順
   const rows = [...(tableElement?.querySelectorAll("tbody > tr") ?? [])];
   expect(rows.map((row) => row.getAttribute("data-kind"))).toEqual([
@@ -332,11 +343,10 @@ test("test_color_diff_blocks_when_list_and_table", async () => {
     "add",
     null,
   ]);
-  expect(rows[1]?.textContent).toContain("行二");
-  expect(rows[2]?.textContent).toContain("更新");
-  for (const row of [rows[1], rows[2]]) {
-    expect(row?.classList.contains("mdmark-diff-block")).toBe(true);
-  }
+  expectDiffBlocks(rows, [
+    [1, "行二"],
+    [2, "更新"],
+  ]);
 });
 
 // 見出しごと削除したセクションを 1 つの削除のブロックにする（正常系）

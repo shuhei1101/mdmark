@@ -145,6 +145,10 @@ test("test_normalize_index_when_not_object", async () => {
   }
 });
 
+/** 配列のキーの要素の候補（`anyOf`）のうち、指定した番目のオブジェクトが持つキーの並び */
+const alternativeKeysOf = (property: SchemaProperty | undefined, at: number) =>
+  Object.keys(property?.items?.anyOf?.[at]?.properties ?? {});
+
 // JSON Schema が INDEX_SHAPE と同じキー・型・必須を持つ（正常系）
 test("test_normalize_index_matches_json_schema", async () => {
   // 準備
@@ -159,9 +163,7 @@ test("test_normalize_index_matches_json_schema", async () => {
   const root = shapeOf(schema);
   const doc = shapeOf(schema.properties.docs.items);
   const term = shapeOf(schema.properties.terms.items);
-  const docTagItems = schema.properties.docs.items.properties?.tags?.items;
-  const docRelated = schema.properties.docs.items.properties?.related;
-  const docRelatedItems = docRelated?.items;
+  const docProperties = schema.properties.docs.items.properties ?? {};
   // 検証
   expect(root).toEqual(INDEX_SHAPE.root);
   expect(doc).toEqual(INDEX_SHAPE.doc);
@@ -174,40 +176,42 @@ test("test_normalize_index_matches_json_schema", async () => {
     expect(object.additionalProperties).toBe(false);
   }
   // 文書のタグの要素は、文字列か `name` が必須で `main` を持つオブジェクト
-  expect(docTagItems?.anyOf).toHaveLength(2);
-  expect(docTagItems?.anyOf?.[0]?.type).toBe("string");
-  const docTagObject = docTagItems?.anyOf?.[1];
-  expect(docTagObject?.type).toBe("object");
-  expect(docTagObject?.required).toEqual(["name"]);
-  expect(Object.keys(docTagObject?.properties ?? {})).toEqual(["name", "main"]);
-  expect(docTagObject?.additionalProperties).toBe(false);
+  expect(docProperties.tags?.items).toMatchObject({
+    anyOf: [
+      { type: "string" },
+      { type: "object", required: ["name"], additionalProperties: false },
+    ],
+  });
+  expect(alternativeKeysOf(docProperties.tags, 1)).toEqual(["name", "main"]);
   // 文書の関連の要素は、文字列か `to`・`type`・`when` が必須で `paths` を持つオブジェクトで、件数の上限を配置しない
-  expect(docRelatedItems?.anyOf).toHaveLength(2);
-  expect(docRelatedItems?.anyOf?.[0]?.type).toBe("string");
-  const docRelatedObject = docRelatedItems?.anyOf?.[1];
-  expect(docRelatedObject?.type).toBe("object");
-  expect(docRelatedObject?.required).toEqual(["to", "type", "when"]);
-  expect(Object.keys(docRelatedObject?.properties ?? {})).toEqual([
+  expect(docProperties.related?.items).toMatchObject({
+    anyOf: [
+      { type: "string" },
+      {
+        type: "object",
+        required: ["to", "type", "when"],
+        additionalProperties: false,
+        properties: {
+          type: {
+            enum: [
+              "requires",
+              "references",
+              "replaces",
+              "part_of",
+              "change_together",
+            ],
+          },
+        },
+      },
+    ],
+  });
+  expect(alternativeKeysOf(docProperties.related, 1)).toEqual([
     "to",
     "type",
     "when",
     "paths",
   ]);
-  expect(docRelatedObject?.additionalProperties).toBe(false);
-  expect(
-    (
-      docRelatedObject?.properties?.type as unknown as
-        | { enum?: string[] }
-        | undefined
-    )?.enum,
-  ).toEqual([
-    "requires",
-    "references",
-    "replaces",
-    "part_of",
-    "change_together",
-  ]);
-  expect(docRelated?.maxItems).toBeUndefined();
+  expect(docProperties.related?.maxItems).toBeUndefined();
 });
 
 // 文字列・オブジェクトの文書のタグをそのまま返却する（正常系）

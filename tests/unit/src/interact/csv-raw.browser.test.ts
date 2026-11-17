@@ -13,6 +13,21 @@ afterEach(() => {
   removeRoots();
 });
 
+/** 表と元の CSV の隠れ方と、ボタンの押された状態 */
+const toggleState = ({
+  table,
+  raw,
+  button,
+}: {
+  table: HTMLElement | null | undefined;
+  raw: HTMLElement | null;
+  button: HTMLButtonElement | null;
+}) => ({
+  table: table?.hidden,
+  raw: raw?.hidden,
+  pressed: button?.getAttribute("aria-pressed"),
+});
+
 // 押すたびに表（を包む要素）と元の CSV を入れ替える（正常系）
 test("test_attach_csv_raw", async () => {
   // 準備
@@ -27,17 +42,9 @@ test("test_attach_csv_raw", async () => {
   const raw = root.querySelector<HTMLElement>("pre.mdmark-raw");
   // 実行
   button?.click();
-  const afterFirst = {
-    table: table?.hidden,
-    raw: raw?.hidden,
-    pressed: button?.getAttribute("aria-pressed"),
-  };
+  const afterFirst = toggleState({ table, raw, button });
   button?.click();
-  const afterSecond = {
-    table: table?.hidden,
-    raw: raw?.hidden,
-    pressed: button?.getAttribute("aria-pressed"),
-  };
+  const afterSecond = toggleState({ table, raw, button });
   // 検証
   expect(afterFirst).toEqual({ table: true, raw: false, pressed: "true" });
   expect(afterSecond).toEqual({ table: false, raw: true, pressed: "false" });

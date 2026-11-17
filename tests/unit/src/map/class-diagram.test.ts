@@ -24,17 +24,24 @@ test("test_parse_class_diagram", async () => {
   expect(diagram.namespaces).toEqual(["形状"]);
   expect(diagram.notes).toHaveLength(1);
   const byId = new Map(diagram.classes.map((item) => [item.id, item]));
-  expect(byId.get("図形")?.annotation).toBe("interface");
-  expect(byId.get("一覧")?.generic).toBe("T");
+  expect(byId.get("図形")).toMatchObject({ annotation: "interface" });
+  expect(byId.get("一覧")).toMatchObject({ generic: "T" });
   const members = byId.get("基本図形")?.members ?? [];
-  expect(members.find((item) => item.name === "描く")?.isAbstract).toBe(true);
-  expect(members.find((item) => item.name === "数")?.isStatic).toBe(true);
-  expect(byId.get("円")?.namespace).toBe("形状");
-  const r1 = diagram.relations[0];
-  expect(r1?.toEnd).toBe("triangle");
-  expect(r1?.dashed).toBe(true);
-  const r7 = diagram.relations[6];
-  expect([r7?.fromCardinality, r7?.toCardinality]).toEqual(["1", "*"]);
+  expect(members.find((item) => item.name === "描く")).toMatchObject({
+    isAbstract: true,
+  });
+  expect(members.find((item) => item.name === "数")).toMatchObject({
+    isStatic: true,
+  });
+  expect(byId.get("円")).toMatchObject({ namespace: "形状" });
+  expect(diagram.relations[0]).toMatchObject({
+    toEnd: "triangle",
+    dashed: true,
+  });
+  expect(diagram.relations[6]).toMatchObject({
+    fromCardinality: "1",
+    toCardinality: "*",
+  });
   expect(diagram.problems).toEqual([]);
 });
 

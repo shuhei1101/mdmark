@@ -20,6 +20,42 @@ function inlineTokens(body: string): Token[] {
   return tokens.filter((token) => token.type === "inline");
 }
 
+/** 行内のトークンの子の文字（子が無ければ空） */
+const childContent = (inline: Token | undefined, position: number) =>
+  inline?.children?.[position]?.content ?? "";
+
+/** 一致した語の、本文の行と行の中の位置 */
+type LineMatch = { line: number; start: number; end: number; word: string };
+
+/** 行内のトークンの地の文の子から語を探し、本文の行と行の中の位置にする */
+const lineMatchesOf = ({
+  body,
+  inline,
+  byChild,
+  lineStarts,
+  words,
+}: {
+  body: string;
+  inline: Token;
+  byChild: Map<number, number[]>;
+  lineStarts: number[];
+  words: string[];
+}): LineMatch[] =>
+  [...byChild].flatMap(([position, offsets]) =>
+    findWords(childContent(inline, position), words).map((found) => {
+      const from = offsets[found.start] ?? -1;
+      const to = offsets[found.end] ?? -1;
+      const row = body.slice(0, from).split("\n").length;
+      const lineStart = lineStarts[row - 1] ?? 0;
+      return {
+        line: row,
+        start: from - lineStart,
+        end: to - lineStart,
+        word: found.word,
+      };
+    }),
+  );
+
 // 記法の記号を飛ばして文字を適用する（正常系）
 test("test_align_text", async () => {
   // 準備
@@ -84,7 +120,7 @@ test("test_inline_offsets", async () => {
   expect(positions).toHaveLength(2);
   // 地の文の子の各文字が、本文の同じ文字を指す
   for (const [position, offsets] of aligned.byChild) {
-    const content = inline?.children?.[position]?.content ?? "";
+    const content = childContent(inline, position);
     expect(offsets).toHaveLength(content.length + 1);
     [...content].forEach((char, at) => {
       expect(body[offsets[at] ?? -1]).toBe(char);
@@ -92,10 +128,9 @@ test("test_inline_offsets", async () => {
   }
   // 地の文の `ワークスペース` は、本文の最後の綴りを指す
   const last = aligned.byChild.get(positions[1] as number) ?? [];
-  const found = findWords(
-    inline?.children?.[positions[1] as number]?.content ?? "",
-    ["ワークスペース"],
-  );
+  const found = findWords(childContent(inline, positions[1] as number), [
+    "ワークスペース",
+  ]);
   expect(found).toHaveLength(1);
   expect(last[found[0]?.start ?? -1]).toBe(body.lastIndexOf("ワークスペース"));
   expect(aligned.end).toBe(body.length);
@@ -147,12 +182,7 @@ test("test_inline_offsets_in_blocks", async () => {
   );
   const words = ["ワークスペース", "WS", "A&B"];
   // 実行
-  const matched: Array<{
-    line: number;
-    start: number;
-    end: number;
-    word: string;
-  }> = [];
+  const matched: LineMatch[] = [];
   let previous: { line: number; end: number } | undefined;
   for (const inline of inlineTokens(body)) {
     const line = inline.map?.[0] ?? 0;
@@ -161,20 +191,15 @@ test("test_inline_offsets_in_blocks", async () => {
       previous?.line === line ? previous.end : (lineStarts[line] ?? 0);
     const aligned = inlineOffsets({ body, inline, start });
     previous = { line, end: aligned.end };
-    for (const [position, offsets] of aligned.byChild) {
-      const content = inline.children?.[position]?.content ?? "";
-      for (const found of findWords(content, words)) {
-        const from = offsets[found.start] ?? -1;
-        const to = offsets[found.end] ?? -1;
-        const row = body.slice(0, from).split("\n").length;
-        matched.push({
-          line: row,
-          start: from - (lineStarts[row - 1] ?? 0),
-          end: to - (lineStarts[row - 1] ?? 0),
-          word: found.word,
-        });
-      }
-    }
+    matched.push(
+      ...lineMatchesOf({
+        body,
+        inline,
+        byChild: aligned.byChild,
+        lineStarts,
+        words,
+      }),
+    );
   }
   // 検証
   // 見本の地の文の一致は 18 件

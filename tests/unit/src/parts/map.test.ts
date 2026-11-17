@@ -791,13 +791,13 @@ test("test_rewire_map_er", async () => {
     er.tables
       .find((table) => table.name === "注文")
       ?.columns.findIndex((column) => column.name === "顧客ID") ?? -1;
-  const wire = layout.wires.find((item) => item.id === "r1");
-  const last = wire?.points.at(-1);
+  const last = layout.wires.find((item) => item.id === "r1")?.points.at(-1);
+  if (!order || !last) throw new Error("注文の表と r1 の線がありません");
   expect(index).toBeGreaterThanOrEqual(0);
-  expect(last?.[1]).toBe(
-    (order?.y ?? 0) + MAP_ER.head + index * MAP_ER.row + MAP_ER.row / 2,
+  expect(last[1]).toBe(
+    order.y + MAP_ER.head + index * MAP_ER.row + MAP_ER.row / 2,
   );
-  expect([order?.x, (order?.x ?? 0) + (order?.w ?? 0)]).toContain(last?.[0]);
+  expect([order.x, order.x + order.w]).toContain(last[0]);
 });
 
 // ER 図の部品（正常系）
@@ -1304,6 +1304,27 @@ const atSide = (
   );
 };
 
+/** 線分（前の点から次の点まで）が矩形の中を通るか */
+const crossesRect = (
+  [point, previous]: [[number, number], [number, number]],
+  rect: { x: number; y: number; w: number; h: number },
+) => {
+  const [left, right] = [
+    Math.min(point[0], previous[0]),
+    Math.max(point[0], previous[0]),
+  ];
+  const [top, bottom] = [
+    Math.min(point[1], previous[1]),
+    Math.max(point[1], previous[1]),
+  ];
+  return (
+    left < rect.x + rect.w &&
+    right > rect.x &&
+    top < rect.y + rect.h &&
+    bottom > rect.y
+  );
+};
+
 // 辺の指定と group の端（正常系）
 test("test_rewire_map_architecture", async () => {
   // 準備・実行
@@ -1328,20 +1349,10 @@ test("test_rewire_map_architecture", async () => {
   expect(atSide(r2.at(-1), api, "top")).toBe(true);
   for (const [index, point] of r2.slice(1).entries()) {
     const previous = r2[index] as [number, number];
-    const [left, right] = [
-      Math.min(point[0], previous[0]),
-      Math.max(point[0], previous[0]),
-    ];
-    const [top, bottom] = [
-      Math.min(point[1], previous[1]),
-      Math.max(point[1], previous[1]),
-    ];
-    const inside =
-      left < api.x + api.w &&
-      right > api.x &&
-      top < api.y + api.h &&
-      bottom > api.y;
-    expect(inside, `r2 の ${index + 1} 本目の区間`).toBe(false);
+    expect(
+      crossesRect([point, previous], api),
+      `r2 の ${index + 1} 本目の区間`,
+    ).toBe(false);
   }
 });
 

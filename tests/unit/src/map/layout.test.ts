@@ -29,8 +29,10 @@ const segmentCrosses = (a: [number, number], b: [number, number], r: Rect) => {
 async function laid(
   view = {},
   overrides = {},
-  nodeFit: "height" | "width" = "height",
-  source = FLOW,
+  {
+    nodeFit = "height",
+    source = FLOW,
+  }: { nodeFit?: "height" | "width"; source?: string } = {},
 ) {
   const { layoutMap } = await loadLayout();
   const { parseFlowchart } = await loadFlowchart();
@@ -151,8 +153,7 @@ test("test_layout_map_when_node_fit_width", async () => {
   const layout = await laid(
     {},
     {},
-    "width",
-    `flowchart LR\n  A["${long}"] --> B\n`,
+    { nodeFit: "width", source: `flowchart LR\n  A["${long}"] --> B\n` },
   );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A") as Rect;
@@ -166,8 +167,7 @@ test("test_route_wires", async () => {
   const layout = await laid(
     {},
     { B: { align: "A" }, C: { align: "A" } },
-    "height",
-    "flowchart LR\n  A --> B --> C\n  A --> C\n",
+    { nodeFit: "height", source: "flowchart LR\n  A --> B --> C\n  A --> C\n" },
   );
   // 検証
   const b = layout.nodes.find((node) => node.id === "B") as Rect;
@@ -187,8 +187,11 @@ test("test_route_wires_when_nested", async () => {
   const layout = await laid(
     {},
     {},
-    "height",
-    "flowchart LR\n  subgraph g [g]\n    A\n  end\n  subgraph h [h]\n    B\n  end\n  A --> B\n",
+    {
+      nodeFit: "height",
+      source:
+        "flowchart LR\n  subgraph g [g]\n    A\n  end\n  subgraph h [h]\n    B\n  end\n  A --> B\n",
+    },
   );
   // 検証
   const wire = layout.wires[0];
@@ -211,8 +214,16 @@ test("test_layout_map_when_justify", async () => {
   const source =
     "flowchart TB\n  subgraph g [g]\n    A --> B\n    A --> C\n    A --> D\n  end\n";
   // 実行
-  const start = await laid({}, { A: { justify: "start" } }, "height", source);
-  const end = await laid({}, { A: { justify: "end" } }, "height", source);
+  const start = await laid(
+    {},
+    { A: { justify: "start" } },
+    { nodeFit: "height", source },
+  );
+  const end = await laid(
+    {},
+    { A: { justify: "end" } },
+    { nodeFit: "height", source },
+  );
   // 検証（グループの中身の左右の端はグループの内側の余白 24px の内側）
   const left = start.groups.find((item) => item.id === "g") as Rect;
   const a1 = start.nodes.find((item) => item.id === "A") as Rect;
@@ -228,8 +239,7 @@ test("test_route_wires_when_ends", async () => {
   const layout = await laid(
     {},
     { "A->B": { ends: { from: "bottom", to: "top" } } },
-    "height",
-    "flowchart LR\n  A --> B\n",
+    { nodeFit: "height", source: "flowchart LR\n  A --> B\n" },
   );
   // 検証
   const a = layout.nodes.find((node) => node.id === "A") as Rect;
@@ -251,8 +261,7 @@ test("test_route_wires_when_via", async () => {
   const layout = await laid(
     {},
     { "A->B": { via: [{ x: 240, y: 300 }] } },
-    "height",
-    "flowchart LR\n  A --> B\n",
+    { nodeFit: "height", source: "flowchart LR\n  A --> B\n" },
   );
   // 検証
   const points = layout.wires[0]?.points ?? [];
@@ -321,8 +330,7 @@ test("test_layout_map_when_rankless", async () => {
       a: { order: 0 },
       b: { align: "a", order: 1 },
     },
-    "height",
-    source,
+    { nodeFit: "height", source },
   );
   // 検証
   const a = layout.nodes.find((node) => node.id === "a") as Rect;

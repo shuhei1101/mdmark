@@ -337,6 +337,26 @@ function createFakeCommands(
   return { run, calls, has, indexOf };
 }
 
+/** 偽のコマンドの応答 */
+type FakeResponse = { code: number; stdout?: string };
+
+/** 応答を引くキー（systemctl は 2 つ目の引数、tmux は 1 つ目の引数を添える） */
+const commandKey = (command: string, args: string[]) => {
+  if (command === "systemctl") return `systemctl ${args[1]}`;
+  return command === "tmux" ? `tmux ${args[0]}` : command;
+};
+
+/** キーごとの応答から、偽のコマンドの応答を作る（キーに無いコマンドは 0 で終える） */
+const respondBy =
+  (
+    handlers: Record<string, () => FakeResponse | Promise<FakeResponse>>,
+  ): ((
+    command: string,
+    args: string[],
+  ) => FakeResponse | Promise<FakeResponse>) =>
+  (command, args) =>
+    handlers[commandKey(command, args)]?.() ?? { code: 0 };
+
 /** systemctl --user show の Key=Value の行 */
 const showLines = (state: {
   active: string;
@@ -606,31 +626,28 @@ test("test_start_with_systemd_when_exited", async () => {
   const { startServer } = await loadServer();
   const { env, unit } = await createSystemdTerminal();
   let enabled = false;
-  const { run, has } = createFakeCommands((command, args) => {
-    if (command === "systemctl" && args[1] === "is-system-running") {
-      return { code: 0, stdout: "running\n" };
-    }
-    if (command === "systemctl" && args[1] === "show") {
-      return {
+  const { run, has } = createFakeCommands(
+    respondBy({
+      "systemctl is-system-running": () => ({ code: 0, stdout: "running\n" }),
+      "systemctl show": () => ({
         code: 0,
         stdout: showLines(
           enabled
             ? { active: "active", restarts: 1, enabled: true }
             : { active: "inactive" },
         ),
-      };
-    }
-    if (command === "systemctl" && args[1] === "enable") {
-      enabled = true;
-    }
-    if (command === "journalctl") {
-      return {
+      }),
+      "systemctl enable": () => {
+        enabled = true;
+        return { code: 0 };
+      },
+      journalctl: () => ({
         code: 0,
         stdout: "mdmark-test-u.service: Failed with result 'exit-code'.\n",
-      };
-    }
-    return { code: command === "tmux" && args[0] === "has-session" ? 1 : 0 };
-  });
+      }),
+      "tmux has-session": () => ({ code: 1 }),
+    }),
+  );
   // 実行
   const result = startServer({
     env,
@@ -700,32 +717,28 @@ test("test_start_with_tmux_when_migrating", async () => {
   const port = Number(env.MDMARK_PORT);
   let active = true;
   let session = false;
-  const { run, indexOf } = createFakeCommands(async (command, args) => {
-    if (command === "systemctl" && args[1] === "is-system-running") {
-      return { code: 0, stdout: "running\n" };
-    }
-    if (command === "systemctl" && args[1] === "show") {
-      return {
+  const { run, indexOf } = createFakeCommands(
+    respondBy({
+      "systemctl is-system-running": () => ({ code: 0, stdout: "running\n" }),
+      "systemctl show": () => ({
         code: 0,
         stdout: showLines({
           active: active ? "active" : "inactive",
           enabled: active,
         }),
-      };
-    }
-    if (command === "systemctl" && args[1] === "disable") {
-      active = false;
-      return { code: 0 };
-    }
-    if (command === "tmux" && args[0] === "has-session") {
-      return { code: session ? 0 : 1 };
-    }
-    if (command === "tmux" && args[0] === "new-session") {
-      session = true;
-      cleanups.push(await serveMcp(port));
-    }
-    return { code: 0 };
-  });
+      }),
+      "systemctl disable": () => {
+        active = false;
+        return { code: 0 };
+      },
+      "tmux has-session": () => ({ code: session ? 0 : 1 }),
+      "tmux new-session": async () => {
+        session = true;
+        cleanups.push(await serveMcp(port));
+        return { code: 0 };
+      },
+    }),
+  );
   // 実行
   const result = await startServer({
     env,

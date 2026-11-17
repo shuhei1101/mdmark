@@ -79,8 +79,7 @@ const STATE = {
 /** 要素をドラッグする（pointerdown → move → up） */
 function drag(
   target: Element,
-  dx: number,
-  dy: number,
+  { dx, dy }: { dx: number; dy: number },
   start = { x: 50, y: 50 },
 ) {
   const base = { bubbles: true, pointerId: 1, button: 0 };
@@ -133,7 +132,7 @@ test("test_start_drag_when_click", async () => {
   // 準備
   const { target, moves, clicks } = await setUp('[data-node="A"]');
   // 実行
-  drag(target, 3, 0);
+  drag(target, { dx: 3, dy: 0 });
   // 検証
   expect(clicks).toHaveLength(1);
   expect(moves).toHaveLength(0);
@@ -144,7 +143,7 @@ test("test_start_drag_when_node", async () => {
   // 準備
   const { target, moves } = await setUp('[data-node="A"]');
   // 実行
-  drag(target, 0, 40);
+  drag(target, { dx: 0, dy: 40 });
   // 検証: 位置は親の中身の左上（最上位は図の余白の内側 24, 24）からの座標
   const last = moves.at(-1) as unknown as {
     positions: Record<string, { x: number; y: number }>;
@@ -158,7 +157,7 @@ test("test_start_drag_when_blocked", async () => {
   // 準備
   const { target, moves } = await setUp('[data-node="A"]');
   // 実行: B の上端（160）との間が 10px になる位置（A の下端 150）まで動かす
-  drag(target, 0, 66);
+  drag(target, { dx: 0, dy: 66 });
   // 検証: 間が 16px の位置（A の図の y が 84。親の中身からは 60）で止まる
   const last = moves.at(-1) as unknown as {
     positions: Record<string, { x: number; y: number }>;
@@ -171,7 +170,7 @@ test("test_start_drag_when_reattach", async () => {
   // 準備
   const { target, moves } = await setUp(".map-wire-hit");
   // 実行: C の下を通る真ん中の区間（y が 140）を、C の上（y が 24 より上）まで動かす
-  drag(target, 0, -150, { x: 280, y: 140 });
+  drag(target, { dx: 0, dy: -150 }, { x: 280, y: 140 });
   // 検証
   const last = moves.at(-1) as unknown as {
     wireShifts: Record<string, Array<{ segment: number; offset: number }>>;

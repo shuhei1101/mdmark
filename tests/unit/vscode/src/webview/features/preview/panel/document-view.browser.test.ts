@@ -293,16 +293,19 @@ test("test_inspect", async () => {
   // 実行
   const [heading, image] = await view.inspect("h1, img");
   // 検証
-  expect(heading?.tagName).toBe("h1");
-  expect(heading?.className).toBe("x");
-  expect(heading?.attributes.id).toBe("a");
-  expect(heading?.text).toBe("タイトル");
+  expect(heading).toMatchObject({
+    tagName: "h1",
+    className: "x",
+    attributes: { id: "a" },
+    text: "タイトル",
+  });
   expect(heading?.naturalWidth).toBeUndefined();
-  expect(image?.tagName).toBe("img");
-  expect(image?.naturalWidth).toBe(1);
+  expect(image).toMatchObject({ tagName: "img", naturalWidth: 1 });
   for (const element of [heading, image]) {
-    expect(typeof element?.top).toBe("number");
-    expect(typeof element?.height).toBe("number");
+    expect(element).toMatchObject({
+      top: expect.any(Number),
+      height: expect.any(Number),
+    });
   }
 });
 
