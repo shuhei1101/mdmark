@@ -87,8 +87,8 @@ scenarios:
   - name: 正常シナリオ（埋めた配布物から読み込む）
     setup:
       - name: 配布物を埋めたページ
-        description: '`dist/index.js` と部品の配布ファイル（`dist/map.js`・`dist/view.js`・`dist/comments.js`）と `dist/index.css` を `text/plain` の `<script>` に持ち、それぞれを Blob の URL にして `import()` し、部品のモジュールを mdmark に指定してから `mount` を呼ぶ HTML'
-        notes: '`mount` に指定する Markdown は map の範囲・ビューのマーカーを 1 つずつ持ち、設定でコメントの機能をオンにする'
+        description: '`dist/index.css` は `<style>` に持つ。`dist/index.js` と部品の配布ファイル（`dist/map.js`・`dist/view.js`・`dist/comments.js`）は `text/plain` の `<script>` に持ち、それぞれを Blob の URL にして `import()` し、部品のモジュールを mdmark に指定してから `mount` を呼ぶ HTML'
+        notes: '`mount` に指定する Markdown は map の範囲・ビューのマーカーを 1 つずつ持ち、設定でコメントの機能をオンにする。`mount` に `commentStore`（読み込みは空の一覧を返却し、保存は受け取った値を返却する関数）と `docId` を指定する'
       - name: Mock
         description: ページの外部への要求を全て拒否し、要求した URL を記録する
     flow: |-
