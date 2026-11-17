@@ -67,8 +67,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T20:23:27.212093+00:00'
   - process: ドキュメント修正
-    status: todo
-    note: フォルダ構成の設計書 LAY-472-1・src/files.yaml・tests/files.yaml・開発コマンド
+    status: done
+    note: src/files.yaml・tests/files.yaml は実装の工程でファイルを移すときに直す
+    updated_by: planner
+    updated_at: '2026-11-17T20:37:55.046677+00:00'
   - process: 単体テスト作成
     status: todo
     note: tests/unit/src/ の置き場所と import の修正
