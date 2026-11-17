@@ -2029,6 +2029,12 @@ files:
     related:
       - to: src/map/check.ts
         type: tests
+  - path: unit/src/map/structure.test.ts
+    description: src/map/structure.ts を確認する単体テスト。structure.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/structure.ts
+        type: tests
   - path: unit/src/map/layout.test.ts
     description: src/map/layout.ts を確認する単体テスト。layout.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図]
