@@ -77,9 +77,23 @@
 .mm-figure .mm-dim {
   opacity: 0.25;
 }
-.mm-figure .mm-item:focus-visible {
+/* 項目の全体を覆う押せる要素: フォーカスを受け、フォーカスの枠を項目の外側に出す。名前の文字と説明のマーカーはその上に重ねる */
+.mm-figure .mm-hit {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.mm-figure .mm-hit:focus-visible {
   outline: 2px solid var(--mdmark-color-link);
-  outline-offset: 2px;
+  outline-offset: 4px;
+}
+.mm-figure .mm-item .mdmark-diagram-node-name {
+  position: relative;
+  z-index: 1;
+}
+.mm-figure .mm-item .mdmark-diagram-info {
+  z-index: 1;
 }
 
 /* 開閉と中へ入るボタンの持ち手: 項目の外側の辺に付け、枝の線は持ち手の先から出す */

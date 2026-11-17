@@ -283,7 +283,7 @@ export const createMindmap = (host, spec, initial = {}) => {
   const focusMark = () => {
     const active = document.activeElement;
     if (!active || !host.contains(active)) return undefined;
-    return active.dataset.node ? `[data-node="${active.dataset.node}"]` : active.getAttribute("aria-label") ? `[aria-label="${CSS.escape(active.getAttribute("aria-label"))}"]` : ".mdmark-diagram-viewport";
+    return active.dataset.mmHit ? `[data-mm-hit="${active.dataset.mmHit}"]` : active.dataset.node ? `[data-node="${active.dataset.node}"]` : active.getAttribute("aria-label") ? `[aria-label="${CSS.escape(active.getAttribute("aria-label"))}"]` : ".mdmark-diagram-viewport";
   };
 
   const render = () => {
@@ -368,10 +368,16 @@ export const createMindmap = (host, spec, initial = {}) => {
       if (layoutData[item.key]?.color) element.classList.add("mm-colored");
       if (keep && !keep.has(item)) element.classList.add("mm-dim");
       const selected = state.selected === item;
-      element.tabIndex = 0;
-      // 項目は説明のマーカーと持ち手のボタンを含むため、ボタンにせずまとまりにし、選択中かを名前で伝える
-      element.setAttribute("role", "group");
-      element.setAttribute("aria-label", selected ? `${item.label}（選択中）` : item.label);
+      // 構成図のノードと同じく、項目の全体を覆う押せる要素がフォーカスを受ける（項目の中にフォーカスできる要素を入れ子にしない）
+      const hit = document.createElement("span");
+      hit.className = "mm-hit";
+      hit.dataset.mmHit = String(item.order);
+      hit.tabIndex = 0;
+      hit.setAttribute("role", "button");
+      hit.setAttribute("aria-roledescription", "項目");
+      hit.setAttribute("aria-label", selected ? `${item.label}（選択中）` : item.label);
+      element.prepend(hit);
+      element.dataset.selected = String(selected);
       if (selected) element.classList.add("mm-selected");
       const choose = () => {
         state.selected = state.selected === item ? undefined : item;
@@ -382,8 +388,7 @@ export const createMindmap = (host, spec, initial = {}) => {
         if (event.target.closest("button, .mdmark-diagram-node-name, .mdmark-diagram-info")) return;
         choose();
       });
-      element.addEventListener("keydown", (event) => {
-        if (event.target !== element) return;
+      hit.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           choose();
