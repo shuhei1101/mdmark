@@ -8,7 +8,7 @@ import {
 const loadPrint = () => import("../../../src/print.ts");
 
 /** 記法の操作を付ける処理を読み込む */
-const loadInteract = () => import("../../../src/interact/index.ts");
+const loadInteract = () => import("../../../src/interact.ts");
 
 // 詳細を持つ行の表、2 つの中身のタブ、閉じたセクションを持つ文書
 const SYNTAX_MARKDOWN = [

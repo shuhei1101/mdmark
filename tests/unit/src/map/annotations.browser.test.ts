@@ -5,7 +5,7 @@ import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 const loadAnnotations = () => import("../../../../src/map/annotations.ts");
 
 /** 脚注の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadFootnotePart = () => import("../../../../src/parts/footnote.ts");
+const loadFootnotePart = () => import("../../../../src/footnote/footnote.part.ts");
 
 afterEach(() => {
   removeRoots();

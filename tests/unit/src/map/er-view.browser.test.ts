@@ -7,7 +7,7 @@ import { renderDoc } from "../../helpers/render.ts";
 const loadErView = () => import("../../../../src/map/er-view.ts");
 const loadSpec = () => import("../../../../src/map/spec.ts");
 const loadConfig = () => import("../../../../src/config.ts");
-const loadParts = () => import("../../../../src/parts/map.ts");
+const loadParts = () => import("../../../../src/map/map.part.ts");
 
 const handles: Array<{ destroy: () => void }> = [];
 

@@ -18,7 +18,7 @@ test("test_collect_includes", async () => {
     "mdmark.config.yaml": "",
     "docs/guide.md": markdown,
     "docs/共通/手順.md":
-      '## 準備\n\nA\n\n## 実行\n\n<!-- include: {"path": "../../src/app.ts", "heading": "L1"} -->\n',
+      '## 準備\n\nA\n\n## 実行\n\n<!-- include: {"path": "../app.ts", "heading": "L1"} -->\n',
     "src/app.ts": "export const a = 1;\n",
   });
   // 実行

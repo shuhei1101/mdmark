@@ -8,10 +8,10 @@ import type { ImportModule, LibraryModule } from "../../../src/libraries.ts";
 const loadLibraries = () => import("../../../src/libraries.ts");
 
 /** 読み込み中のブロックの処理を読み込む */
-const loadEmbed = () => import("../../../src/parts/embed.ts");
+const loadEmbed = () => import("../../../src/shared/embed.part.ts");
 
 /** 通知ブロックの処理を読み込む */
-const loadNotice = () => import("../../../src/parts/notice.ts");
+const loadNotice = () => import("../../../src/shared/notice.part.ts");
 
 /** 拡張の処理を読み込む */
 const loadExtensions = () => import("../../../src/extensions.ts");

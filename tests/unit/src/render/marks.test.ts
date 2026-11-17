@@ -12,10 +12,10 @@ const loadParser = () => import("../../../../src/render/parser.ts");
 const loadMarks = () => import("../../../../src/render/marks.ts");
 
 /** 読み込み中のブロックの処理を読み込む */
-const loadEmbed = () => import("../../../../src/parts/embed.ts");
+const loadEmbed = () => import("../../../../src/shared/embed.part.ts");
 
 /** mdmark が出した要素のマーカーの処理を読み込む */
-const loadOwn = () => import("../../../../src/parts/own.ts");
+const loadOwn = () => import("../../../../src/shared/own.logic.ts");
 
 /** 拡張の処理を読み込む */
 const loadExtensions = () => import("../../../../src/extensions.ts");

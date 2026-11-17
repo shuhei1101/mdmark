@@ -5,7 +5,7 @@ import typescript from "highlight.js/lib/languages/typescript";
 import yaml from "highlight.js/lib/languages/yaml";
 import { afterEach, expect, test, vi } from "vitest";
 import type { SyntaxImport } from "../../../src/highlight.ts";
-import { renderCodeBlock } from "../../../src/parts/code-block.ts";
+import { renderCodeBlock } from "../../../src/code-block/code-block.part.ts";
 import { renderDoc } from "../helpers/render.ts";
 
 /** 色分けの処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ち、ほかのテストも巻き込むため、URL を組んで読み込む） */

@@ -825,7 +825,7 @@ test("test_mount_when_back_to_top_off", async () => {
 });
 
 /** 通知ブロックの処理を読み込む（blocks で本文を取り出せない通知ブロックを期待値にする） */
-const loadNotice = () => import("../../../src/parts/notice.ts");
+const loadNotice = () => import("../../../src/shared/notice.part.ts");
 
 // 新しい順に並べた 2 つのリビジョン（後 r2・前 r1）
 const DIFF_REVISIONS = [

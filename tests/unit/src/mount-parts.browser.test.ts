@@ -418,7 +418,7 @@ test("test_attach_parts_when_parts_mounted_inside", async () => {
 });
 
 /** 部品を開閉する処理を読み込む（`reveal` に指定する関数を比べる） */
-const loadSections = () => import("../../../src/interact/sections.ts");
+const loadSections = () => import("../../../src/section/section.interact.ts");
 
 /** コメントの読み込みと保存の関数 */
 function createStore() {
