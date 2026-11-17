@@ -1,0 +1,97 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 'map の範囲に gantt・timeline・gitGraph・journey・block-beta の Mermaid と補足を記載すると、日付・記載順の軸か columns の格子に沿って描き、補足の説明を当てる。項目の選択でつながりを強調し、読めない行を書き方の警告にし、描けない種類の案内の文言に 5 種類を加える。flowchart の click の id: のリンク先を、決めた方法でノードのリンクにする'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: gantt・timeline・journey の section と、ブロック図の入れ子のブロックを開閉し、中へ入ってその中だけを読み、戻る
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: ガントチャート・タイムライン・Git グラフ・ジャーニーを、記載順に 1 歩ずつ再生して項目を強調する
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: map の範囲の外の 5 種類のコードブロックを、補足の無い map の図にする。5 種類だけの文書では mermaid のライブラリを読み込まない
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: '5 種類の map の補足が無い項目を指すとき・キーで指せない項目があるときを点検のずれにし、flowchart の click の id: のリンク先を決めた方法で点検する'
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: ツールチップの記述は変わらないが、5 種類の項目にも補足の説明を出すため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: 拡大・縮小・移動の記述は変わらないが、軸と格子の配置の図にも同じ操作を付けるため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: シーケンス図の参加者の選択の記述は変わらないが、選択と強調・再生の処理を種類で共通にしているため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図の種類に依らない流れで記述は変わらないが、map の読み取り・配置・操作とノードのリンクを広げるため壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: '5 種類の記載方法と、section・入れ子のブロックの開閉と中へ入る・選択・再生の手順を追加し、「ノードにリンク先を持たせる」を id: のリンク先の決めた扱いに合わせる'
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 'map の節の描ける Mermaid の種類に 5 種類を加え、click の id: の扱いを合わせる'
+    status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 入れ子の自動配置・木の配置と別に持つ軸に沿った配置と格子の配置を追記する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 5 種類で増える用語（軸・格子・section など）を追加する
+    status: todo
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: map の範囲の外の 5 種類のコードブロックも map の図にすることを、map が描ける種類の一覧に加える
+    status: todo
+  - page: docs/guide/CLI.mark.md
+    new: false
+    change: 'ずれの種類の表の map_invalid_value・map_ambiguous_ref の説明を、5 種類と id: のリンク先の決めた扱いに合わせる'
+    status: todo
+  - page: docs/guide/API.mark.md
+    new: false
+    change: 'id: を URL に変える関数を mount の設定に追加する案に決まった場合、その設定を追加する'
+    status: todo
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: 'id: を URL に変える関数を mount の設定に追加する案に決まった場合、その設定と既定を追加する'
+    status: todo
+  - page: docs/er/ER-472-2.yaml
+    new: false
+    change: notes のキーに 5 種類の項目を追加し、layout のうち軸と格子の配置で適用するキーを記載する
+    status: todo
+scope_out:
+  - item: 案内の帯の手順のバー・手順ごとの再生と速度・なめらかな移動
+    reason: 再生の帯そのものの機能の追加で、5 種類の再生は今の帯の操作で足りる
+    plan: '#603'
+  - item: map のクラス図の click {クラス} href "{URL}" のリンク
+    reason: 'クラス図のリンクの退行で、flowchart の id: のリンク先と事象が別'
+    plan: '#650'
+  - item: map を Markdown へ書き出すときの 5 種類の扱い
+    reason: '[mdmark の文書を、MCP と CLI で純粋な Markdown（GFM と Mermaid）に書き出す](https://github.com/shuhei1101/mdmark/issues/313) は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
+    plan: '#313'
