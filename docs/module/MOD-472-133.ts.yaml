@@ -95,8 +95,8 @@ data_models:
         type: '"walkthrough" | "playback"'
         description: モード
       - name: unit
-        type: '"message" | "transition" | undefined'
-        description: 再生で進める単位（既定 `message`）。`transition` では再生のボタンの名前を `前の遷移`・`次の遷移` にする
+        type: '"message" | "transition" | "task" | "period" | "commit" | undefined'
+        description: 再生で進める単位（既定 `message`）。`transition` では再生のボタンの名前を `前の遷移`・`次の遷移`、`task`・`period`・`commit` では `前のタスク`・`前の期間`・`前の commit` と `次の…` にする
       - name: total
         type: number
         description: 手順の数
@@ -187,6 +187,52 @@ data_models:
       - name: hints
         type: boolean | undefined
         description: '`false` のとき、説明のマーカーとツールチップを作らず、注記の持ち主の `id` だけを項目の押せる要素に付ける。既定は `true`'
+      - name: id
+        type: string
+        description: 図の ID（`map-{図の番号}`）
+      - name: terms
+        type: Record<string, string> | undefined
+        description: 用語から意味への対応
+  - name: MapAxisGridArgs
+    title: mapの軸と格子の配置の図の引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapの軸と格子の配置の図』の引数。項目は `stateKey` で指す
+    properties:
+      - name: grid
+        type: AxisGrid
+        description: 読み取り結果（項目の名前・形状・section・ブランチ・人・つながり）
+      - name: layout
+        type: AxisGridLayout
+        description: '`layoutAxisGrid` の配置'
+      - name: filled
+        type: ReadonlySet<string>
+        description: 補足の `layout` の `color` を持つ項目（色の名前の面と縁で描く）
+      - name: colors
+        type: Record<string, string>
+        description: '`filled` の項目の色の名前'
+      - name: collapsed
+        type: string[]
+        description: 閉じた section と入れ子のブロック
+      - name: entered
+        type: string | undefined
+        description: 中へ入った section か入れ子のブロック
+      - name: selected
+        type: AxisGridSelection | undefined
+        description: 選んだ項目・ブランチ・人
+      - name: focus
+        type: '{ nodes: string[] } | undefined'
+        description: 案内か再生で強調する項目
+      - name: notes
+        type: Record<string, string>
+        description: 項目の説明（ガントチャートは説明の後ろに開始日と終了日、ジャーニーは点数を出す）
+      - name: annotations
+        type: Record<string, MapAnnotation[]>
+        description: 項目の注記
+      - name: hints
+        type: boolean | undefined
+        description: '`false` のとき、説明のマーカーとツールチップを作らない。既定は `true`'
       - name: id
         type: string
         description: 図の ID（`map-{図の番号}`）
@@ -819,6 +865,58 @@ functions:
         expected: 「体制」の名前の中に `span.mdmark-term` があり、`span.mdmark-diagram-node-hit` の中に無い
     refs:
       - IF-472-35#constraints[map のマインドマップ]
+  - name: renderMapAxisGrid
+    title: mapの軸と格子の配置の図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapの軸と格子の配置の図』。項目を構成図のノードと同じ `div.mdmark-diagram-node`（`map-axis-item`・`data-node` に `stateKey`・`data-shape`）で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。軸の目盛り・section の見出しと枠・ブランチの線とブランチ名のボタン・つながりの線・今日の線を SVG と `div` で重ね、section と入れ子のブロックに開閉の `button[data-map-section-toggle]` と中へ入る `button[data-map-section-enter]` を付ける。中へ入ったときは図の上端に「全体 › {名前}」の `nav.map-axis-trail` を出す。選択と強調で残さないものに `map-dim` を付ける
+    description: 形状・棒・顔のマーカー・格子の見た目は CSS（`src/index.css`。モックの `docs/mock/refs/653/assets/axis-grid.css`）で決める
+    scope: public
+    args:
+      - name: args
+        type: MapAxisGridArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: MapPart
+      description: 図の中身とツールチップの HTML
+    process: |-
+      1. 項目の押せる要素は `role="button"`・`tabindex="0"` と、名前（ガントチャートの棒はタスク名。選んだ項目は末尾に `（選択中）`）のスクリーンリーダー向けの名前を持つ。選んだ項目は `data-selected` を持つ
+      2. Git グラフのブランチ名とジャーニーの凡例（図の枠の凡例の行）は `button` で `aria-pressed` を持つ
+      3. 開閉のボタンは `aria-expanded` と「{名前}を開く」「{名前}を閉じる」の名前、中へ入るボタンは「{名前}の中へ入る」の名前を持つ。閉じた項目は 1 行目に名前、2 行目に「（{種類} {数} 件）」を出す
+      4. 軸の目盛り・つながりの線・今日の線・道筋の区切りの `›` は `aria-hidden`、道筋は `aria-label="全体からの道筋"` を持つ
+      5. 選んだものがあれば、項目は種類ごとのつながり（ガントチャートの `after` の前後・タイムラインの期間と出来事・Git グラフの祖先・ジャーニーの人の丸・ブロック図の矢印の相手）、ブランチはそのブランチと入った commit、人はその人のタスクを残す。選んでおらず `focus` があれば、強調する項目だけを残す
+      6. `hints` が `false` のときは、説明のマーカーとツールチップを作らず、注記を持つ項目の押せる要素に持ち主の `id` を付ける
+    unit_tests:
+      - name: test_render_map_axis_grid
+        case: 正常
+        summary: 5 種類の項目と押せる要素
+        condition: 部品の Gantt・Timeline・GitGraph・Journey・Block の引数
+        mock: なし
+        expected: '`div.map-axis-item` がそれぞれ 8・15・10・7・7 で、先頭の子の押せる要素が `role="button"`・`tabindex="0"` を持つ。Git グラフのブランチ名のボタンが 3 つで `aria-pressed="false"`、ガントチャートに今日の線が `aria-hidden` である'
+      - name: test_render_map_axis_grid_when_collapsed
+        case: 正常
+        summary: 閉じた section
+        condition: 部品の GanttCollapsed・BlockCollapsed の引数
+        mock: なし
+        expected: 「開発（タスク 2 件）」と「core（ブロック 2 件）」があり、その開閉のボタンが `aria-expanded="false"`
+      - name: test_render_map_axis_grid_when_entered
+        case: 正常
+        summary: 中へ入ったときの道筋
+        condition: 部品の GanttEntered の引数
+        mock: なし
+        expected: '`nav.map-axis-trail` が `aria-label="全体からの道筋"` を持ち、文字が「全体 › 準備」'
+      - name: test_render_map_axis_grid_when_selected
+        case: 正常
+        summary: 選んだもののつながりを残す
+        condition: 部品の GanttSelected・GitBranchSelected・JourneyActorSelected の引数
+        mock: なし
+        expected: 「設計する」と `after` の前後の 3 つ、feat の commit 2 つ、AI のタスク 3 つのほかの項目が `map-dim` を持ち、「設計する」の押せる要素の名前が「設計する（選択中）」
+    refs:
+      - IF-472-35#constraints[map のガントチャート]
+      - IF-472-35#constraints[map の section の開閉と中へ入る]
 lead: 'map の構成図・シーケンス図・案内のバーの HTML を受け持ち、map の部品が返却する HTML を変えるときに参照する。'
 tags:
   - name: topic:map

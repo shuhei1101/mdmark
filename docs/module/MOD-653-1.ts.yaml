@@ -1,0 +1,306 @@
+id: MOD-653-1
+visibility: internal
+title: ライブラリ本体 / map / 読み取り / axis-grid.ts
+lead: Mermaid の gantt・timeline・gitGraph・journey・block-beta の読み取りと、補足とマーカーの引数のキーが指す項目の解決を受け持ち、map の軸と格子の配置の図の読み取りを変えるときに参照する。
+test_files:
+  - tests/unit/src/map/axis-grid.test.ts
+data_models:
+  - name: AxisGrid
+    title: 軸と格子の配置の図の読み取り結果
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseAxisGrid` の戻り値。5 種類で共通の構造で持ち、種類に固有の値は項目の `detail` に持つ'
+    properties:
+      - name: kind
+        type: AxisGridKind
+        description: 図の種類
+      - name: title
+        type: string | undefined
+        description: Mermaid の `title` の行の文字。無ければ無い
+      - name: items
+        type: AxisGridItem[]
+        description: 項目（記載の順）。ガントチャートとジャーニーはタスク、タイムラインは期間と出来事、Git グラフは commit、ブロック図はブロックと `space`
+      - name: sections
+        type: AxisGridSection[]
+        description: section（ガントチャート・タイムライン・ジャーニー）と入れ子のブロック（ブロック図）。記載の順
+      - name: branches
+        type: string[]
+        description: Git グラフのブランチ名（作った順。先頭が `main`）。ほかの種類は空
+      - name: actors
+        type: string[]
+        description: ジャーニーの人（出てくる順）。ほかの種類は空
+      - name: links
+        type: AxisGridLink[]
+        description: つながり（ガントチャートの `after`・Git グラフの親の commit・ブロック図の線）
+      - name: options
+        type: '{ dateFormat?: string; axisFormat?: string; excludesWeekends: boolean; todayMarker: boolean; columns?: number }'
+        description: ガントチャートの `dateFormat`・`axisFormat`・`excludes weekends`・`todayMarker off` が無いかと、ブロック図の最上位の `columns`
+      - name: ambiguous
+        type: ReadonlySet<string>
+        description: ID を持たない 2 つ以上の項目が使う表示する文字と、2 つ以上の section が使う名前（補足とマーカーの引数の `focus` で指すと、どの項目にも適用しない）
+      - name: problems
+        type: MapProblem[]
+        description: 読めない行の `map_invalid`（行番号・行の文字・直し方）
+  - name: AxisGridItem
+    title: 軸と格子の配置の図の項目
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 項目 1 つ
+    properties:
+      - name: order
+        type: number
+        description: 記載の順の番号（1 から。Git グラフの `c{番号}` の番号）
+      - name: id
+        type: string | undefined
+        description: 記載した ID（タスクの ID・commit の `id:`・ブロックの ID）。無ければ無い
+      - name: label
+        type: string
+        description: 表示する文字（タスク名・期間と出来事の文・commit の `msg:`・ブロックの名前）。`id:` も `msg:` も持たない commit は空
+      - name: shape
+        type: AxisGridShape
+        description: 形状
+      - name: section
+        type: string | undefined
+        description: 属する section・入れ子のブロックの `stateKey`。無ければ無い
+      - name: parent
+        type: number | undefined
+        description: タイムラインの出来事の期間の `order`
+      - name: detail
+        type: AxisGridDetail
+        description: 種類に固有の値（ガントチャートの開始日・終了日・タグ、Git グラフのブランチ・`tag:`・元の ID、ジャーニーの点数と人、ブロック図の幅）。`kind` で判別できる union
+      - name: key
+        type: string
+        description: 補足とマーカーの引数の `focus` が指すキー（`id`、無ければ `label`、どちらも空の commit は `c{order}`）
+      - name: stateKey
+        type: string
+        description: 状態の保存と描画が項目を区別するキー。`key` と同じ。ID を持たない同じ文字の項目が 2 つ以上あるときは、その項目だけ `n{order}`
+  - name: AxisGridSection
+    title: section と入れ子のブロック
+    container: src/map/axis-grid.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: データモデル
+    summary: 開閉と中へ入るの対象 1 つ
+    properties:
+      - name: order
+        type: number
+        description: 記載の順の番号（1 から。`s{番号}` の番号）
+      - name: label
+        type: string
+        description: section の名前か、入れ子のブロックの ID
+      - name: stateKey
+        type: string
+        description: 状態のキー。`label`、同じ名前の section が 2 つ以上あるときはその section だけ `s{order}`
+      - name: members
+        type: number[]
+        description: 中の項目の `order`（タイムラインは期間だけ。出来事は期間に属する）
+      - name: columns
+        type: number | undefined
+        description: 入れ子のブロックの中の `columns`
+      - name: parent
+        type: string | undefined
+        description: 入れ子のブロックの外の入れ子の `stateKey`
+  - name: AxisGridLink
+    title: つながり
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 項目の間のつながり 1 つ
+    properties:
+      - name: from
+        type: number
+        description: 元の項目の `order`
+      - name: to
+        type: number
+        description: 先の項目の `order`
+      - name: kind
+        type: '"after" | "parent" | "merge" | "cherryPick" | "arrow"'
+        description: ガントチャートの `after`、Git グラフの親・merge の取り込み・cherry-pick の元、ブロック図の線
+      - name: label
+        type: string | undefined
+        description: ブロック図の線のラベル
+  - name: AxisGridSelection
+    title: 選んだ項目
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapの軸と格子の配置の図』の `selected`。配置・描画・操作が使用する
+    properties:
+      - name: kind
+        type: '"item" | "branch" | "actor"'
+        description: 項目・Git グラフのブランチ・ジャーニーの人
+      - name: key
+        type: string
+        description: 項目の `stateKey`・ブランチ名・人の名前
+enums:
+  - name: AxisGridKind
+    title: 軸と格子の配置の図の種類
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: 型
+    summary: '`MapKindName` のうちこのモジュールが読む種類'
+    values:
+      - value: gantt
+        title: ガントチャート
+        description: '`gantt`'
+      - value: timeline
+        title: タイムライン
+        description: '`timeline`'
+      - value: gitGraph
+        title: Git グラフ
+        description: '`gitGraph`'
+      - value: journey
+        title: ジャーニー
+        description: '`journey`'
+      - value: block
+        title: ブロック図
+        description: '`block-beta`'
+  - name: AxisGridShape
+    title: 軸と格子の配置の図の項目の形状
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: 型
+    summary: 部品設計『mapの軸と格子の配置の図』の `grid.items[].shape`
+    values:
+      - value: bar
+        title: 棒
+        description: ガントチャートのタスク
+      - value: milestone
+        title: ひし形
+        description: ガントチャートの `milestone`
+      - value: period
+        title: 期間
+        description: タイムラインの期間
+      - value: event
+        title: 出来事
+        description: タイムラインの出来事
+      - value: commit
+        title: commit
+        description: '`type: NORMAL` の commit'
+      - value: highlight
+        title: 強調の commit
+        description: '`type: HIGHLIGHT`'
+      - value: reverse
+        title: 戻す commit
+        description: '`type: REVERSE`'
+      - value: merge
+        title: merge
+        description: '`merge` の commit'
+      - value: cherryPick
+        title: cherry-pick
+        description: '`cherry-pick` の commit'
+      - value: face
+        title: 顔
+        description: ジャーニーのタスク
+      - value: square
+        title: 四角
+        description: ブロック図の `[""]`
+      - value: rounded
+        title: 角の丸い四角
+        description: ブロック図の `("")`
+      - value: circle
+        title: 丸
+        description: ブロック図の `((""))`
+      - value: cylinder
+        title: 円柱
+        description: ブロック図の `[("")]`
+      - value: space
+        title: 空き
+        description: ブロック図の `space`（描かず列を進める）
+functions:
+  - name: parseAxisGrid
+    title: 軸と格子の配置の図を読む
+    kind: 関数
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 5 種類の Mermaid を、種類ごとの読み取りで共通の `AxisGrid` に読む
+    scope: public
+    args:
+      - name: options
+        type: '{ kind: AxisGridKind; source: string }'
+        required: true
+        description: 図の種類と mermaid のブロックの中身
+    returns:
+      type: AxisGrid
+      description: 読み取り結果
+    process: |-
+      1. 1 行目・空の行・`%%` で始まる行を飛ばし、`title` の行を `title` にする
+      2. `kind` ごとに行を読む（ガントチャートは `dateFormat`・`axisFormat`・`excludes`・`todayMarker`・`section`・タスクの行、タイムラインは `section` と `{期間} : {出来事}` の行と `:` で始まる続きの行、Git グラフは `commit`・`branch`・`checkout`・`switch`・`merge`・`cherry-pick`、ジャーニーは `section` と `{タスク名}: {点数}: {人}` の行、ブロック図は `columns`・ブロック・`space`・`block:{ID}` と `end`・線）。読めない行は `map_invalid` の項目（行番号・行の文字・直し方）にして次の行へ進む
+      3. ガントチャートは、開始の `after {ID}` をそのタスクの終了日に、終了の `{数}d` を開始日からの日数（`excludes weekends` のときは土日を数えない）にして開始日と終了日を決め、`after` を `links` に入れる。無い ID を指す `after`・読めない日付のタスクは `map_invalid` にして読み飛ばす
+      4. Git グラフは、commit を今のブランチの先頭につなぎ、親を `links`（`parent`）に、merge は取り込むブランチの先頭も `merge`、cherry-pick は元の commit を `cherryPick` に入れる。Mermaid が振る乱数の ID は作らない
+      5. ブロック図は、入れ子の `block:{ID}` を `sections` に入れ、中の項目の `section` をその `stateKey` にする。線は `arrow` とラベルで `links` に入れる。閉じの無い `block` は `map_invalid` にし、最後の行で閉じたものとして扱う
+      6. ID を持たない項目の `label` と section の名前を数え、2 つ以上のものを `ambiguous` に入れ、その項目の `stateKey` を `n{order}`、section の `stateKey` を `s{order}` にする
+    unit_tests:
+      - name: test_parse_axis_grid_when_gantt
+        case: 正常
+        summary: ガントチャート
+        condition: モックの `GANTT`
+        mock: なし
+        expected: タスク 8・section 4 で、「設計する」の開始日が「要件を決める」の終了日、「実装する」の終了日が土日を数えない 5 日後。`links` に `after` が 4 本、`ambiguous` が `準備` だけで 2 つの「準備」の `stateKey` が `s1`・`s3`。「手順書を書く」の `key` がタスク名。`problems` が空
+      - name: test_parse_axis_grid_when_timeline
+        case: 正常
+        summary: タイムライン
+        condition: モックの `TIMELINE`
+        mock: なし
+        expected: 期間 6・出来事 9・section 2 で、「2026-04」の `section` が無く、「注意書き」の `parent` が「2026-05」。`title` が `mdmark の歩み`
+      - name: test_parse_axis_grid_when_git_graph
+        case: 正常
+        summary: Git グラフ
+        condition: モックの `GIT_GRAPH`
+        mock: なし
+        expected: '`branches` が `main`・`develop`・`feat`、commit 10 で、6 個目の `label` が空で `key` が `c6`。`axis` の `shape` が `highlight`、cherry-pick の元が `map`、merge が 2 つで `links` に `merge` が 2 本'
+      - name: test_parse_axis_grid_when_journey
+        case: 正常
+        summary: ジャーニー
+        condition: モックの `JOURNEY`
+        mock: なし
+        expected: タスク 7・section 3・`actors` が `作成者`・`AI`・`読者` で、「図を辿る」の人が 3 人・点数が 4
+      - name: test_parse_axis_grid_when_block
+        case: 正常
+        summary: ブロック図
+        condition: モックの `BLOCK`
+        mock: なし
+        expected: '`columns` が 3、「利用側のページ」の幅が 2、`space` が 1 つ、`sections` が `core`（`columns` 2・中の項目 2）、`links` にラベル「描く」の線を含む 3 本'
+      - name: test_parse_axis_grid_when_unreadable
+        case: 異常
+        summary: 読めない行
+        condition: モックの `GANTT_UNREADABLE`
+        mock: なし
+        expected: '`map_invalid` が 1 件で、行番号とその行の文字を含む。ほかのタスクは読む'
+    refs:
+      - IF-472-35#constraints[map のガントチャート]
+      - IF-472-35#constraints[map のタイムライン]
+      - IF-472-35#constraints[map の Git グラフ]
+      - IF-472-35#constraints[map のジャーニー]
+      - IF-472-35#constraints[map のブロック図]
+  - name: axisGridItemOf
+    title: キーが指す項目を探す
+    kind: 関数
+    container: src/map/axis-grid.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 補足とマーカーの引数のキー（ID・表示する文字・`c{番号}`・section の名前・ブランチ名）が指す項目か section を探す
+    scope: public
+    args:
+      - name: options
+        type: '{ grid: AxisGrid; key: string }'
+        required: true
+        description: 読み取り結果と、補足かマーカーの引数のキー
+    returns:
+      type: '{ kind: "item"; item: AxisGridItem } | { kind: "section"; section: AxisGridSection } | { kind: "branch"; branch: string } | { kind: "ambiguous" } | { kind: "missing" }'
+      description: '`id` が一致する項目、無ければ `id` を持たない項目の `label`・`c{番号}`・section の名前・ブランチ名の順に照らす。キーが `ambiguous` にあれば `ambiguous`、どれにも一致しなければ `missing`'
+    unit_tests:
+      - name: test_axis_grid_item_of
+        case: 正常
+        summary: 各種のキー
+        condition: モックの `GANTT` でキー `imp`・`手順書を書く`・`公開`・`準備`・`幽霊`、`GIT_GRAPH` で `c6`・`feat`・`README を書く`
+        mock: なし
+        expected: '`imp` と `手順書を書く` と `c6`・`README を書く` が `item`、`公開` が `section`、`feat` が `branch`、`準備` が `ambiguous`、`幽霊` が `missing`'
+refs:
+  - IF-472-35#constraints[map の軸と格子の配置の図の補足]
+tags:
+  - name: topic:map
+  - name: topic:図
+  - name: action:読み取り

@@ -45,6 +45,14 @@ constants:
         value: 円グラフ
       - key: mindmap
         value: マインドマップ
+      - key: timeline
+        value: タイムライン
+      - key: gitGraph
+        value: Git グラフ
+      - key: journey
+        value: ジャーニー
+      - key: block-beta
+        value: ブロック図
     refs:
       - IF-472-35#constraints[mermaid の描き方]
   - name: MERMAID_THEME_COLORS

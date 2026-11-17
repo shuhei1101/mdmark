@@ -1,0 +1,151 @@
+id: MOD-653-2
+visibility: internal
+title: ライブラリ本体 / map / 配置 / axis-grid-layout.ts
+lead: ガントチャート・タイムライン・Git グラフ・ジャーニーの軸に沿った配置と、ブロック図の格子の配置を受け持ち、map の軸と格子の配置の図の配置を変えるときに参照する。
+test_files:
+  - tests/unit/src/map/axis-grid-layout.test.ts
+data_models:
+  - name: AxisGridLayout
+    title: 軸と格子の配置
+    container: src/map/axis-grid-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`layoutAxisGrid` の戻り値。部品設計『mapの軸と格子の配置の図』の `grid`'
+    properties:
+      - name: items
+        type: AxisGridPlacement[]
+        description: 描く項目（閉じた section は 1 つの項目。中へ入ったときはその中の項目だけ）
+      - name: ticks
+        type: AxisGridTick[]
+        description: 軸の目盛り（ガントチャートの日付・ジャーニーの点数）。ほかの種類は空
+      - name: frames
+        type: AxisGridFrame[]
+        description: section の見出しの行・枠と入れ子のブロックの枠
+      - name: lanes
+        type: AxisGridLane[]
+        description: Git グラフのブランチの線と、ジャーニーのタスクをつなぐ線
+      - name: links
+        type: AxisGridWire[]
+        description: つながりの線（SVG の `path` の `d`）。ガントチャートの `after` は選んだときだけ描く
+      - name: today
+        type: number | undefined
+        description: ガントチャートの今日の線の x 座標。軸の外か `todayMarker off` なら無い
+      - name: width
+        type: number
+        description: 図の幅（外周の余白を含む）
+      - name: height
+        type: number
+        description: 図の高さ（外周の余白を含む）
+  - name: AxisGridPlacement
+    title: 項目の配置
+    container: src/map/axis-grid-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 項目 1 つの位置と描き方
+    properties:
+      - name: stateKey
+        type: string
+        description: 項目の `stateKey`（閉じた section は section の `stateKey`）
+      - name: shape
+        type: AxisGridShape | "collapsed"
+        description: 形状。閉じた section と入れ子のブロックは `collapsed`
+      - name: x
+        type: number
+        description: 左端
+      - name: y
+        type: number
+        description: 上端
+      - name: width
+        type: number
+        description: 幅
+      - name: height
+        type: number
+        description: 高さ
+      - name: color
+        type: string | undefined
+        description: section・ブランチの色の名前（`MINDMAP_BRANCH_COLORS` と同じ順）。section の前の期間は `gray`
+      - name: count
+        type: number | undefined
+        description: 閉じた section・入れ子のブロックの中の項目の数
+constants:
+  - name: AXIS_GRID_LAYOUT
+    title: 軸と格子の配置の寸法
+    container: src/map/axis-grid-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: モック map-axis-grid の寸法（px）。タスク名の列の幅 `nameColumn`・記載順の軸の 1 歩 `step`・1 日の幅 `day`・行の高さ `row`・格子のセルの幅 `cellWidth`・行の間 `rowGap`・外周の余白 `margin`
+    value: '{ nameColumn: 200, step: 104, day: 28, row: 32, cellWidth: 156, rowGap: 36, margin: 24 }'
+functions:
+  - name: layoutAxisGrid
+    title: 軸と格子の配置の図を配置する
+    kind: 関数
+    container: src/map/axis-grid-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 種類ごとに、日付の軸・記載順の軸・`columns` の格子に項目を配置する。入れ子の自動配置（`layout.ts`）と木の配置（`mindmap-layout.ts`）は使用しない
+    scope: public
+    args:
+      - name: options
+        type: '{ grid: AxisGrid; entered: string | undefined; collapsed: ReadonlySet<string>; today: string; selected: AxisGridSelection | undefined }'
+        required: true
+        description: 読み取り結果・中へ入った section の `stateKey`・閉じた section の `stateKey`・今日の日付（`YYYY-MM-DD`。時刻を差し替えられるように引数で受ける）・選んだ項目（ジャーニーの人の線とガントチャートの `after` の線を引くため）
+    returns:
+      type: AxisGridLayout
+      description: 配置
+    process: |-
+      1. 中へ入ったときは、その section の項目だけを配置の対象にする
+      2. ガントチャートは、対象の最初の開始日から最後の終了日までを 1 日 `day` の日付の軸にし、左に `nameColumn` のタスク名の列を置き、タスクを記載順に 1 行ずつ、開始日から終了日までの棒にする。閉じた section は最初の開始日から最後の終了日までの 1 本の棒にし、日付の軸は全体のまま。今日が軸の中にあり `todayMarker` が `true` なら `today` に x 座標を入れる
+      3. タイムラインは、期間を記載順に `step` ごとに右へ並べ、出来事を期間の下に記載順に縦に並べる。閉じた section は期間 1 つ分の幅の項目にし、後ろの期間を詰める
+      4. Git グラフは、ブランチを作った順に上から並べ、commit を記載順に `step` ごとに右へそのブランチの線の上に並べる。分かれる線は元の commit の右から出し、次の commit との中間で曲げる。merge は取り込むブランチの先頭から曲線で合流させる
+      5. ジャーニーは、タスクを記載順に `step` ごとに右へ並べ、点数 1〜5 の高さに置き、隣のタスクを線でつなぐ。閉じた section は点数の平均の高さの項目 1 つにする。人を選んだときはその人のタスクだけをつなぐ線を `lanes` に加える
+      6. ブロック図は、`columns` の列の数の格子に記載順に左から右へ並べ、幅の列数分を占め、`space` は空け、列の数を超えると次の行へ移る。入れ子は中の `columns` で格子を作り直す。閉じた入れ子は記載した幅のまま 1 行の高さにし、ほかのブロックの列の位置を変えない。線は両端のブロック（閉じた入れ子の中は入れ子）の辺から辺へ、横か縦に折れる線にする
+      7. section ごとに色の名前を記載順に割り当て、全体を外周の余白 `margin` から始まる座標にずらす
+    callees:
+      - MOD-649-2#constants[MINDMAP_BRANCH_COLORS]
+    unit_tests:
+      - name: test_layout_axis_grid_when_gantt
+        case: 正常
+        summary: 日付の軸
+        condition: モックの `GANTT`、今日が 2026-11-12
+        mock: なし
+        expected: 「設計する」の左端が「要件を決める」の右端と同じ x 座標で、目盛りの先頭が 2026-11-02、`today` が 2026-11-12 の目盛りの x 座標。`todayMarker` が `false` のときは `today` が無い
+      - name: test_layout_axis_grid_when_gantt_collapsed_entered
+        case: 正常
+        summary: 閉じた section と中へ入った section
+        condition: '`collapsed` に「開発」、次に `entered` が `s3`'
+        mock: なし
+        expected: 閉じたときは「開発」が `collapsed` の 1 項目で `count` が 2、目盛りは閉じる前と同じ。入ったときは項目が 2 で、目盛りが 2026-11-09 から 2026-11-17
+      - name: test_layout_axis_grid_when_timeline
+        case: 正常
+        summary: 記載順の軸と閉じた section
+        condition: モックの `TIMELINE`、次に `collapsed` に「記法を作る」
+        mock: なし
+        expected: 6 つの期間の x 座標が `step` ずつ大きくなる。閉じたときは「2026-08」の x 座標が `step` の 2 つ分の位置に詰まる
+      - name: test_layout_axis_grid_when_git_graph
+        case: 正常
+        summary: ブランチの線
+        condition: モックの `GIT_GRAPH`
+        mock: なし
+        expected: '`lanes` が 3 本で上から main・develop・feat。commit の x 座標が記載順に大きくなり、`axis` の y 座標が feat の線'
+      - name: test_layout_axis_grid_when_journey
+        case: 正常
+        summary: 点数の高さと人の線
+        condition: モックの `JOURNEY` で、`selected` が人「AI」、次に `collapsed` に「点検する」
+        mock: なし
+        expected: 「文書を開く」の y 座標が最も小さく「ずれを直す」が最も大きい。`lanes` に AI の 3 つのタスクをつなぐ線がある。閉じたときは「点検する」の項目が点数 2（平均）の高さ
+      - name: test_layout_axis_grid_when_block
+        case: 正常
+        summary: 格子と閉じた入れ子
+        condition: モックの `BLOCK`、次に `collapsed` に `core`
+        mock: なし
+        expected: 「利用側のページ」の幅が `cellWidth` の 2 つ分と間、「mdmark」が 2 行目の 1 列目、`core` が 3 列目。閉じたときは `core` の幅が同じで高さが `row`、「文書」の x 座標が閉じる前と同じ
+    refs:
+      - IF-472-35#constraints[map の軸と格子の配置の図の補足]
+      - IF-472-35#constraints[map の section の開閉と中へ入る]
+refs:
+  - IF-472-35#constraints[map のガントチャート]
+  - IF-472-35#constraints[map のブロック図]
+tags:
+  - name: topic:map
+  - name: topic:図
+  - name: action:配置

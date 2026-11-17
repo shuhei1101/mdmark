@@ -34,10 +34,10 @@ functions:
         required: true
         description: HTML にする Markdown
       - name: opts
-        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
+        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode>; resolveIdLink?: ResolveIdLink }'
         required: false
         default: '{}'
-        description: 設定・索引・描く文書の `id`・参照の表・エイリアス
+        description: 設定・索引・描く文書の `id`・参照の表・エイリアス・`id:` のリンク先を URL に変える関数
     returns:
       type: string
       description: 本文の HTML 文字列
@@ -68,9 +68,9 @@ functions:
     description: '`render` と `mount` が共通で使用する。解析の前に `splitFrontmatter` で文書の先頭のフロントマターを空白にした Markdown を解析器に指定し、フロントマターの中身と閉じる行の位置を `env.frontmatter` に入れる（表示はコアルールの `insertFrontmatter` が差し込む）。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使用するときに呼ぶ）、呼び出しごとの値は `env` で指定する。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から除外するため、同じ入力には同じ文字列を返却する'
     args:
       - name: options
-        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
+        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode>; resolveIdLink?: ResolveIdLink }'
         required: true
-        description: '`markdown` は Markdown、`config` は既定を適用した設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使用できるものへの絞り込みは `buildDictionary` が行う）。`config` の `libraries`・`features`・`labels` は `env` の `libraries`・`defaults`・`labels` に入れる'
+        description: '`markdown` は Markdown、`config` は既定を適用した設定、`index`・`docId`・`references`・`aliases`・`resolveIdLink` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使用できるものへの絞り込みは `buildDictionary` が行う）。`config` の `libraries`・`features`・`labels` は `env` の `libraries`・`defaults`・`labels` に入れる'
     returns:
       type: RenderedDocument
       description: 本文の HTML と機能のオン・オフ

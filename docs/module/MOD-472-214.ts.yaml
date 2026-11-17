@@ -255,6 +255,32 @@ functions:
         mock: なし
         expected: 前の 4 つが `true`、後ろの 3 つが `false`
     status: planned
+  - name: resolveIdHref
+    title: 'id: のリンク先をURLに変える'
+    container: src/render/sanitize.ts
+    kind: 関数
+    scope: public
+    summary: '`id:` で始まるリンク先を `resolveIdLink`（`id:` を含む値を渡す）で URL に変え、`isAllowedUrl` で許可する URL だけを返却する。関数が無い・文字を返却しない・例外を投げる・許可しない URL を返却するときは `undefined`（例外は捕まえて描画を止めない）'
+    description: 本文のリンク（コアルール `resolveIdLinks`）と map のノードのリンク（`mapLinkProblems`）が同じ変え方を使用する
+    args:
+      - name: options
+        type: '{ href: string; resolveIdLink: ResolveIdLink | undefined }'
+        required: true
+        description: '`id:` で始まるリンク先と、利用側が指定した関数（型 `ResolveIdLink` は `(ref: string) => string | undefined`）'
+    returns:
+      type: string | undefined
+      description: 開く URL
+    callees:
+      - '#functions[isAllowedUrl]'
+    refs:
+      - IF-472-34#request[opts.resolveIdLink]
+    unit_tests:
+      - name: test_resolve_id_href
+        case: 正常
+        summary: 返却した URL を許可で確認する
+        condition: '`id:SC-` で始まる値を `https://docs.example.com/{id: の後ろ}` に、`id:bad` を `javascript:alert(1)` に変え、`id:boom` で例外を投げ、ほかは `undefined` を返却する関数で、`id:SC-1#scenarios[正常シナリオ]`・`id:bad`・`id:boom`・`id:unknown` と、関数が無いときの `id:SC-1`'
+        mock: なし
+        expected: 1 つ目だけ `https://docs.example.com/SC-1#scenarios[正常シナリオ]`、ほかは `undefined`。例外が外へ出ない
 lead: 'sanitize-html の設定と許可していない要素の除去を受け持ち、描いた文書に残す要素と属性を変えるときに参照する。'
 tags:
   - name: tool:sanitize-html
