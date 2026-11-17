@@ -52,7 +52,7 @@ scenarios:
       - 3 つのコードブロックの場所に、それぞれ図の枠があり、コードブロックの文字が出ていない
       - flowchart と sequenceDiagram の図の枠は map の図で、同じ Mermaid を補足の無い map の範囲で囲んだ文書と同じノード・線・参加者とラベルで描かれる
       - flowchart の図の枠のタイトルが front matter の `title` の文字
-      - sequenceDiagram の actor が、map のシーケンス図と同じアイコンで描かれる
+      - sequenceDiagram の actor が、設定に `map.kinds.actor` が無くても人のアイコンで描かれる。front matter の `title` を持たない sequenceDiagram の図の枠のタイトルが「シーケンス図」
       - gantt の図の枠には mermaid の SVG の図があり、タスクの棒の塗りと文字の色が、描く先の要素の CSS 変数の値と一致する
       - 図の文字の書体が、描く先の要素の本文の書体と一致する
       - コードブロックの前後の段落が描かれている
@@ -365,6 +365,59 @@ scenarios:
       - mermaid への要求が 0 件
       - 2 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない
     test: test_normal_when_only_map_kinds
+  - name: 正常シナリオ（actor のアイコンを設定で変える）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `map.kinds.actor` で、アイコンを lucide の `bot` にする
+      - name: sequenceDiagram の mermaid のコードブロックを持つ Markdown
+        description: map の範囲の外に、`actor` を 1 つ持つ言語 `mermaid` の sequenceDiagram のコードブロックを 1 つ持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: map.kinds.actor を持つ設定と Markdown を指定して描かせる
+        M-->>P: actor を設定の種類で描いた map の図
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`actor` の参加者が、人のアイコンではなく設定の `bot` のアイコンで描かれる'
+      - '`participant` の参加者はアイコンを持たない'
+    test: test_normal_when_actor_kind_configured
+  - name: 正常シナリオ（title を持たない図）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: title を持たない mermaid のコードブロックを持つ Markdown
+        description: map の範囲の外に、front matter の `title` を持たない言語 `mermaid` の flowchart・classDiagram・gantt のコードブロックを 1 つずつ持つ文書
+        notes: gantt は本文の `title` の行も持たない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 図の種類の名前をタイトルにした図の枠を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - flowchart・classDiagram（map の図）と gantt（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「ガントチャート」
+    test: test_normal_when_untitled
 tags:
   - name: tool:mermaid
     main: true

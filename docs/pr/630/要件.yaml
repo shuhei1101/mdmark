@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-11.yaml
     impact: changed
-    detail: map の範囲の外の言語 mermaid のコードブロックを、map が描ける種類は補足の無い map の図に、描けない種類は今の mermaid の図にする。map が描ける種類だけの文書では mermaid を読み込まない
+    detail: map の範囲の外の言語 mermaid のコードブロックを、map が描ける種類は補足の無い map の図に、描けない種類は今の mermaid の図にする。title の無い図は図の種類の名前をタイトルにし、`actor` は既定で人のアイコンを持つ。参加者の行を文書のスクロールでも留め、枠線を欠かさないことは、図の枠の共通の振る舞いのため、純粋な Mermaid と map の範囲のシーケンス図を並べたこの UC のシナリオ 1 つで確かめる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
@@ -13,13 +13,13 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-19.yaml
     impact: changed
-    detail: 純粋な Mermaid のシーケンス図でも、参加者を選んで強調し、並び順を変えられる
+    detail: 純粋な Mermaid のシーケンス図でも、参加者を選んで強調し、並び順を変え、再生できる。`actor` は、map の範囲でも既定で人のアイコンを持つ
     depends_on:
       - docs/scenario/SC-472-11.yaml
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
-    impact: run_only
-    detail: map の描画と操作の処理を純粋な Mermaid と共有するため、map の図の描画が変わらないことを確かめる
+    impact: changed
+    detail: 種類を持たないノードは、名前をノードの上下の中央に描く
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-40.yaml
