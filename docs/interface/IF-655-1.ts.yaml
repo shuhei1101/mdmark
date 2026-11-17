@@ -41,7 +41,7 @@ exceptions:
     condition: '`name` が 3 つの名前のどれでもないか、`loader` が関数でない'
     notes: 記録を変えずに同期で投げる
   - name: なし（読み込みの失敗）
-    condition: '`loader` が拒否するか、返却したモジュールが部品の関数を export していない'
+    condition: '`loader` が拒否するか、返却したモジュールが部品の関数を export していないか、指定しなかった部品の隣の URL を作れない'
     notes: '`setPartModuleLoader` は投げない。部品を使用する `mount` は `console.error` に部品の名前と元のエラーを出して描画を続け、`mountView`・`mountComments` は戻り値の Promise を拒否する'
 constraints:
   - item: 呼ぶ時期
@@ -199,6 +199,36 @@ flows:
       - どちらの呼び出しも `TypeError` を投げ、メッセージに `name`・`loader` を含む
       - その後 map の範囲を持つ文書を `mount` すると、`dist/map.js` を隣から読み込んで描く
     test: test_error_when_args_invalid
+  - name: 異常系（指定しない部品の URL を作れない・console.error）
+    summary: 配布物を埋めたページで指定しなかった部品は、隣の URL を作れずに描かず、`console.error` に出してほかを描く
+    setup:
+      - name: 配布物を埋めたページ
+        description: 正常系と同じで、map の部品だけを指定しないもの
+        notes: '`dist/index.js` の `import.meta.url` が Blob の URL になり、`./map.js` を解決できない'
+      - name: 部品のマーカーを持つ Markdown
+        description: map の範囲と段落を 1 つずつ持つ文書
+      - name: Mock
+        description: ページの外部への要求を全て拒否して記録する。`console.error` を、呼ばれた引数を記録する関数で包む
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: map の部品の URL を作れず、読み込みを拒否する
+        M->>P: 段落を描き、console.error に出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 段落が描かれ、`mount` が例外を投げない
+      - '`console.error` が呼ばれ、引数に `map` と URL を作れなかったエラーを含む'
+      - ページが外部へ要求した URL が無い
+    test: test_error_when_url_unresolvable
+    refs:
+      - SC-472-28#scenarios[異常シナリオ（埋めていない部品のマーカーがある）]
 test_file: tests/integration/lib/set-part-module-loader.browser.test.ts
 refs:
   - SC-472-28#
