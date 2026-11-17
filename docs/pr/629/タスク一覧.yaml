@@ -75,10 +75,12 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T17:19:58.301862+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: version.ini と migrations/no-steps.yaml の next を v0.14.0 にし、npm run build -- --version v0.14.0 で dist/・plugin/ を作り直して commit する。検査・単体テスト・結合テストを通す
-  - process: 結合テスト作成
-    status: skipped
-    reason: コードを変えない。既存の結合テストの実行は実装の工程で行う
     updated_by: planner
-    updated_at: '2026-11-16T17:19:58.301862+00:00'
+    updated_at: '2026-11-17T01:21:39.346969+00:00'
+  - process: 結合テスト作成
+    status: todo
+    updated_by: planner
+    updated_at: '2026-11-17T01:21:52.151390+00:00'
+    note: テストは作らず、ライブラリ本体.md の結合テストの実行範囲（build.test.ts・upgrade.test.ts）を reviewer の確認の後に実行する
