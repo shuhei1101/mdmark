@@ -38,6 +38,11 @@ layers:
         ```
 
         初回と stable が上がったときは VS Code を `vscode/.vscode-test/` に取得する。jsDelivr と GitHub へは接続せず、`MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える（`MDMARK_VSCODE_DIST_BASE` は `http://127.0.0.1:{ポート}/mdmark` の構造で、配布物は `/mdmark@{バージョン}/dist/{ファイル}` で参照する）。VS Code のバージョンごとに新しい `--user-data-dir` で起動し、前回のバージョンが空の状態から始める。ユーザーデータの `User/settings.json` に `workbench.colorTheme` を `Dark 2026`（VS Code の既定のダークのテーマ）で配置し、パネルの axe の検査を起動ごとに同じテーマで確認する（空のユーザーデータのままだと、既定と違うテーマで描くことがある）
+    location: runner
+    run_runner: |-
+      ```bash
+      run_url=$(gh workflow run test.yml --ref "$(git branch --show-current)" -f layer=integration -f paths="{結合テストのパス}" | grep -o 'https://[^ ]*/actions/runs/[0-9]*') && run_id=${run_url##*/} && (n=0; until gh api "repos/{owner}/{repo}/actions/runs/$run_id?exclude_pull_requests=true" > /dev/null 2>&1; do n=$((n+1)); if [ $n -ge 10 ]; then echo "実行 $run_id を 10 秒参照できません" >&2; exit 1; fi; sleep 1; done) && (rc=0; gh run watch "$run_id" --exit-status > /dev/null || rc=1; gh run view "$run_id" --log; exit $rc)
+      ```
   - id: TL-4
     name: 結合テスト（バック）
     run_all: 未確定
@@ -63,6 +68,11 @@ layers:
         ```
 
         `npm run test:unit` のあとに `npm run test:integration` を実行する。E2E は含まない。
+    location: runner
+    run_runner: |-
+      ```bash
+      run_url=$(gh workflow run test.yml --ref "$(git branch --show-current)" -f layer=unit | grep -o 'https://[^ ]*/actions/runs/[0-9]*') && run_id=${run_url##*/} && (n=0; until gh api "repos/{owner}/{repo}/actions/runs/$run_id?exclude_pull_requests=true" > /dev/null 2>&1; do n=$((n+1)); if [ $n -ge 10 ]; then echo "実行 $run_id を 10 秒参照できません" >&2; exit 1; fi; sleep 1; done) && (rc=0; gh run watch "$run_id" --exit-status > /dev/null || rc=1; gh run view "$run_id" --log; exit $rc)
+      ```
   - id: TL-6
     name: 単体テスト（バック）
     run_all: 未確定
@@ -71,14 +81,16 @@ layers:
     run_all: 未確定
   - id: TL-8
     name: lint
-    description: Biome の check（lint と整形）と、ESLint（`tools/eslint/` の ESLint 9。`src/`・`scripts/`・`vscode/src/`・`vscode/scripts/`・`plugin/`・`tests/`・`vscode/tests/` の TypeScript に複雑さの規則、Webview（`vscode/src/webview/`）に React などの規則）と、ルートと VS Code 拡張機能（`vscode/`）の tsc の型検査。どれかが失敗しても全てを最後まで回し、1 つでも失敗したら失敗で終える。
+    description: Biome の check（lint と整形）と、ESLint（`tools/eslint/` の ESLint 9。`src/`・`scripts/`・`vscode/src/`・`vscode/scripts/`・`plugin/`・`tests/`・`vscode/tests/` の TypeScript に複雑さの規則、Webview（`vscode/src/webview/`）に React などの規則）と、ルートと VS Code 拡張機能（`vscode/`）の tsc の型検査と、`.github/workflows/` の workflow の actionlint の検査。どれかが失敗しても全てを最後まで回し、1 つでも失敗したら失敗で終える。
     prerequisites:
       - '`npm ci` で依存を入れてある（`tools/eslint/` の依存は、無ければ `npm run lint:eslint` が起動の前に入れる）'
       - '`vscode/` の依存を入れてある（`npm --prefix vscode ci`）'
+      - actionlint を PATH に入れてある（取得方法は [actionlint の公式のドキュメント](https://github.com/rhysd/actionlint/blob/main/docs/install.md)）
     run_all: |-
       ```bash
-      (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+      (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
       ```
+    location: local
 tags:
   - name: topic:テスト
     main: true

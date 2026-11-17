@@ -1,0 +1,225 @@
+id: IF-472-44
+visibility: internal
+title: テストの全件実行
+aliases:
+  - .github/workflows/test.yml
+entry:
+  kind: trigger
+  value: '`.github/workflows/test.yml`（手動の起動 `workflow_dispatch` だけ。`branches`・`paths` で絞らない）'
+lead: 指定された層のテストの全件か、指定した結合テストを GitHub Actions のランナーで実行し、ログを成果物に上げる。
+permissions: '`contents: read`'
+exclusivity: '同じブランチ・同じ層の実行は、先に起動した実行を止める（`concurrency` の `group: test-${{ github.ref }}-${{ inputs.layer }}`・`cancel-in-progress: true`）'
+side_effects: 成果物 `test-log`（実行したテストの出力 `test.log`）を上げる
+request:
+  - name: layer
+    type: unit / integration
+    required: true
+    location: argument
+    description: 回す層（`unit` は単体テスト（フロント）、`integration` は結合テスト（フロント））
+    notes: '`on.workflow_dispatch.inputs.layer` の `type: choice`'
+  - name: paths
+    type: 文字列
+    required: false
+    location: argument
+    default: なし（層の全件を回す）
+    description: '`integration` で回す結合テストのファイルかフォルダを空白で区切った並び'
+    notes: '`on.workflow_dispatch.inputs.paths` の `type: string`。指定したときは VS Code 拡張機能の結合テストを回さない。`unit` では使用しない'
+constraints:
+  - item: ランナー
+    constraint: '`ubuntu-latest`'
+  - item: Node
+    constraint: 24（`actions/setup-node`）
+    notes: '`package.json` の `engines`'
+  - item: 層ごとのコマンド
+    constraint: "`unit`: `npm run test:unit` / `integration`: `paths` が無ければ `npm run test:integration` の後に `xvfb-run -a npm --prefix vscode run test:integration`、あれば `npx vitest run --project 'integration*' {paths}`"
+    notes: テスト実行方法の層の `run_all`・`run_one` と同じコマンド
+  - item: 結合テストの道具
+    constraint: '`integration` のときだけ、apt で `tmux`・`xvfb` を入れ、`loginctl enable-linger` で systemd のユーザーのマネージャーを起動して、`XDG_RUNTIME_DIR` を後の step の環境変数に指定する'
+    notes: '`tmux`・`systemctl --user` が無いと、Claude Code プラグインの結合テストが skip になる。bus のソケットを 1 秒ごとに確認し、10 秒でできなければ失敗で終える（ランナーの実測は待たずにソケットがあり、1 秒の刻みで 1 回未満。その 10 倍）'
+  - item: 同時に実行するファイルの数
+    constraint: Vitest の設定のまま（CPU 数の半分）
+    notes: ランナーの 4 コアで 2
+  - item: タイムアウト（単体テスト）
+    constraint: 'step「単体テストを回す」の `timeout-minutes: 75`'
+    notes: 判定フローチャート『タイムアウトの決め方』の「実測の 10 倍」。実測は過去の作業 PR の単体テストのログの最長（443 秒）。GitHub Actions は無出力の時間で止める設定を持たない
+  - item: タイムアウト（結合テスト）
+    constraint: 'step「結合テストを回す」の `timeout-minutes: 305`、step「VS Code 拡張機能の結合テストを回す」の `timeout-minutes: 50`'
+    notes: 実測の 10 倍。実測は過去の作業 PR のログの最長（Vitest 1,816 秒・VS Code 拡張機能 5 分）。合計は GitHub Actions の 1 ジョブの上限（360 分）より短い
+  - item: タイムアウト（その他の step）
+    constraint: GitHub Actions の 1 ジョブの上限
+    notes: 実測の無いインストールの step は外側の作業の上限
+  - item: 依存
+    constraint: 両方の層で、step「依存をインストールする」が `npm ci` と `npm --prefix vscode ci` を実行する
+    notes: 単体テストの `tests/unit/vscode/` は `vscode/src/` を読み込み、VS Code 拡張機能の結合テストは `vscode/` の依存でビルドする
+  - item: 入力の受け取り方
+    constraint: '`inputs.paths` は step の `env` で環境変数にしてから `run` のスクリプトで参照し、`${{ inputs.paths }}` を `run` に直接記載しない'
+    notes: GitHub の Security hardening のスクリプトの差し込みを防ぐ
+  - item: 環境変数
+    constraint: step「結合テストを回す」は `XDG_CONFIG_HOME` を空にする
+    notes: ランナーは `XDG_CONFIG_HOME` を設定する。結合テストの端末は `HOME` だけを差し替えるため、残ると unit のファイルのパスがランナーの `~/.config` を指し、手元（未設定）と結果が変わる
+overall_flow: |-
+  <!-- map -->
+
+  ```mermaid
+  flowchart TD
+    s([workflow_dispatch で起動])
+    subgraph test
+      a[ブランチを取得する]
+      n[Node をインストールする]
+      d[依存をインストールする]
+      c[Chromium をインストールする]
+      t[結合テストの道具を用意する]
+      u[単体テストを回す]
+      i[結合テストを回す]
+      v[VS Code 拡張機能の結合テストを回す]
+      l[ログを成果物に上げる]
+    end
+    s --> a
+    a -- 成功 --> n
+    n -- 成功 --> d
+    d -- 成功 --> c
+    c -->|"成功・layer が unit"| u
+    c -->|"成功・layer が integration"| t
+    t -- 成功 --> i
+    i -->|"成功・失敗（paths が空）"| v
+    i -->|"成功・失敗（paths あり）"| l
+    u -->|"成功・失敗（if: always()）"| l
+    v -->|"成功・失敗（if: always()）"| l
+    a & n & d & c & t -->|"失敗（if: always()）"| l
+    l -->|"全ての step が成功"| ok([成功])
+    l -->|"どれかの step が失敗"| ng([失敗])
+  ```
+
+  <!-- /map -->
+flows:
+  - name: 正常系
+    summary: 単体テストの層の全件が pass して成功で終わる
+    setup:
+      - name: Mock
+        description: なし（本物の GitHub Actions で回す）
+      - name: ブランチ
+        description: 全件が pass するブランチ
+        notes: '`layer: unit`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([layer: unit で起動]) --> a[ブランチを取得する] --> n[Node をインストールする] --> d[依存をインストールする] --> c[Chromium をインストールする]
+        c -- layer が unit --> u[単体テストを回す]
+        u -- 全件 pass --> l[ログを成果物に上げる] --> e([成功])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `success`
+      - 成果物 `test-log` の `test.log` に Vitest の集計の行がある
+  - name: 正常系（結合テストの層）
+    summary: 結合テストの層の全件と VS Code 拡張機能の結合テストが pass して成功で終わる
+    setup:
+      - name: Mock
+        description: なし（本物の GitHub Actions で回す）
+      - name: ブランチ
+        description: 全件が pass するブランチ
+        notes: '`layer: integration`・`paths` は空'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([layer: integration で起動]) --> a[ブランチを取得する] --> n[Node をインストールする] --> d[依存をインストールする] --> c[Chromium をインストールする]
+        c -- layer が integration --> t[結合テストの道具を用意する]
+        t -- 成功 --> i[結合テストを回す]
+        i -- 全件 pass・paths が空 --> v[VS Code 拡張機能の結合テストを回す]
+        v -- 全件 pass --> l[ログを成果物に上げる] --> e([成功])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `success`
+      - 成果物 `test-log` の `test.log` に Vitest の集計の行と mocha の `passing` の行がある
+      - '`test.log` の skip の件数が、手元の全件実行の skip の件数と同じ'
+  - name: 正常系（指定した結合テスト）
+    summary: 指定した結合テストだけが pass して成功で終わる
+    setup:
+      - name: Mock
+        description: なし（本物の GitHub Actions で回す）
+      - name: ブランチ
+        description: 全件が pass するブランチ
+        notes: '`layer: integration`・`paths: tests/integration/ClaudeCodeプラグイン/`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([layer: integration と paths で起動]) --> a[ブランチを取得する] --> n[Node をインストールする] --> d[依存をインストールする] --> c[Chromium をインストールする]
+        c -- layer が integration --> t[結合テストの道具を用意する]
+        t -- 成功 --> i[結合テストを回す]
+        i -- 指定したテストが pass・paths あり --> l[ログを成果物に上げる] --> e([成功])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `success`
+      - step「VS Code 拡張機能の結合テストを回す」の結論が `skipped`
+      - '`test.log` に `paths` に含まれないテストのファイルが無い'
+  - name: 異常系（テストの失敗・failure）
+    summary: 層のテストが fail し、ログを成果物に上げてから失敗で終わる
+    setup:
+      - name: Mock
+        description: なし（本物の GitHub Actions で回す）
+      - name: ブランチ
+        description: '`tests/unit/` に必ず fail するテストを 1 つ追加したブランチ'
+        notes: '`layer: unit`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([layer: unit で起動]) --> a[ブランチを取得する] --> n[Node をインストールする] --> d[依存をインストールする] --> c[Chromium をインストールする]
+        c -- layer が unit --> u[単体テストを回す]
+        u -->|"失敗（if: always()）"| l[ログを成果物に上げる] --> e([失敗])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `failure`
+      - step「単体テストを回す」の結論が `failure`
+      - 成果物 `test-log` の `test.log` に fail したテストの名前がある
+  - name: 異常系（道具の導入に失敗・failure）
+    summary: 依存のインストールに失敗し、テストを回さずに失敗で終わる
+    setup:
+      - name: Mock
+        description: なし（本物の GitHub Actions で回す）
+      - name: ブランチ
+        description: '`package-lock.json` と食い違う依存を `package.json` に追加したブランチ'
+        notes: '`layer: unit`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([layer: unit で起動]) --> a[ブランチを取得する] --> n[Node をインストールする] --> d[依存をインストールする]
+        d -->|"失敗（if: always()）"| l[ログを成果物に上げる] --> e([失敗])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `failure`
+      - step「依存をインストールする」の結論が `failure`
+      - step「単体テストを回す」の結論が `skipped`
+notes:
+  確認の方法: フローは、テストのファイルを持たず、規約『Git フックと CI で動かすもの』の手順で作業ブランチのランナーを動かして確認する。
+  止めた実行の結論: '排他（`cancel-in-progress: true`）で止めた実行の結論は `cancelled` になる。テスト実行方法の `run_runner` は、`gh run watch --exit-status` の終了コードで `cancelled` も失敗として終える。'
+refs:
+  - TP-472-1#layers[単体テスト（フロント）]
+  - TP-472-1#layers[結合テスト（フロント）]
+tags:
+  - name: topic:テスト
+    main: true
+  - name: topic:ci
+  - name: tool:github
+  - name: tool:vitest
+  - name: topic:単体テスト
+  - name: topic:結合テスト
+  - name: action:実行

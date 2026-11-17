@@ -1,0 +1,105 @@
+id: MOD-647-1
+visibility: internal
+title: ライブラリ本体 / 記法 / blocks.ts
+lead: 範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告のブロックの前への差し込みを受け持ち、範囲のマーカーの組み方や警告を差し込む位置を変えるときに参照する。
+functions:
+  - name: blockStartOf
+    title: トークンを含むブロックの開きを探す
+    kind: 関数
+    container: src/render/syntax/blocks.ts
+    role: 探索
+    scope: public
+    summary: '`index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返却する'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: markdown-it のトークンの並び
+      - name: index
+        type: number
+        required: true
+        description: 探し始めるトークンの位置
+    returns:
+      type: number
+      description: '`level` が 0 のトークンの位置。先頭まで戻っても無ければ `0`'
+    process: |-
+      1. `index` から前へ、`level` が 0 より大きい間だけ位置を 1 つずつ戻す
+      2. 止まった位置を返却する
+  - name: insertWarningsBeforeBlocks
+    title: 警告をブロックの前に差し込む
+    kind: 関数
+    container: src/render/syntax/blocks.ts
+    role: 変換
+    scope: public
+    summary: 行内のトークンの位置ごとに記録した警告を、それを含むブロックの前に差し込む
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアルールの状態
+      - name: warnings
+        type: 'Array<{ index: number; warning: SyntaxWarning }>'
+        required: true
+        description: 警告と、警告を出すトークンの位置の組の並び（位置の昇順）
+    returns:
+      type: void
+      description: 返却値なし
+    side_effects: '`state.tokens` に警告のブロックのトークンを差し込む'
+    process: |-
+      1. `warnings` を後ろから順に処理する（差し込んだ分だけ前の位置がずれないようにする）
+      2. 警告ごとに `blockStartOf` で差し込む位置を決め、`warningBlock` で作った警告のブロックをその位置に差し込む
+    callees:
+      - '#functions[blockStartOf]'
+  - name: pairRanges
+    title: 範囲のマーカーの開きと閉じを組にする
+    kind: 関数
+    container: src/render/syntax/blocks.ts
+    role: 探索
+    scope: public
+    summary: 名前の範囲のマーカーを、入れ子を数えて開きと閉じの組にする
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: markdown-it のトークンの並び
+      - name: name
+        type: string
+        required: true
+        description: 組にするマーカーの名前
+    returns:
+      type: Map<number, number>
+      description: 開きのマーカーの位置から閉じのマーカーの位置への表。閉じの無い開きは `-1` に対応させる
+    process: |-
+      1. トークンを先頭から順に確認し、`markOf` が `name` のマーカーを返却したものだけを扱う
+      2. 開きのマーカーは位置をスタックに追加し、閉じのマーカーはスタックの最後の開きと組にする（スタックが空のときの閉じは捨てる）
+      3. 最後まで閉じの無かった開きを `-1` と組にする
+    callees:
+      - MOD-647-2#functions[markOf]
+  - name: outermostRanges
+    title: 外側の範囲だけを選ぶ
+    kind: 関数
+    container: src/render/syntax/blocks.ts
+    role: 変換
+    scope: public
+    summary: '`pairRanges` の組のうち、ほかの組の中に入っていない組だけを開きの順に返却する'
+    args:
+      - name: pairs
+        type: Map<number, number>
+        required: true
+        description: '`pairRanges` が返却した開きと閉じの組'
+      - name: length
+        type: number
+        required: true
+        description: トークンの数。閉じの無い組（`-1`）を末尾まで続く範囲として扱うために使用する
+    returns:
+      type: 'Array<{ open: number; close: number }>'
+      description: 外側の組の並び（開きの位置の昇順）。閉じの無い組の `close` は `-1` のまま
+    process: |-
+      1. 組を開きの位置の順に並べる
+      2. 直前に採った組の終了より前で開く組は飛ばし、それ以外を採る
+      3. 次の組を飛ばすかの判定に使う終了位置を、採った組の `close`（`-1` なら `length`）にする
+tags:
+  - name: topic:markdown
+    main: true
+  - name: topic:構文
+  - name: tool:markdown-it

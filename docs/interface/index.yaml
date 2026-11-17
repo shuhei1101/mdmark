@@ -4,6 +4,8 @@ items:
   summary: 利用側のページが、読み込んだ配布物のバージョンを取る
 - page: IF-472-41.ts.yaml
   summary: バージョンを埋めた dist/index.js と dist/index.css をビルドする
+- page: IF-472-44.yaml
+  summary: 指定した層のテストの全件か、指定した結合テストを GitHub Actions のランナーで実行する（test.yml）
 - page: IF-472-35.ts.yaml
   summary: 利用側のページが、要素の中に Markdown を文書として描く（mount）
 - page: IF-472-34.ts.yaml
