@@ -6,6 +6,7 @@ import type { MdmarkGlossaryEntry, MdmarkReferences } from "../knowledge/referen
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 import type { MarkOptions } from "./mark-options.ts";
 import type { MarkNote } from "./mark-schema.ts";
+import { type AnnotationState } from "./syntax/annotations.ts";
 import { type FootnoteState } from "./syntax/footnotes.ts";
 import { type CollectedWarning } from "./syntax/warnings.ts";
 /** markdown-it の `env` としてコアルールに指定する値と、コアルールが取得したマーカー */
@@ -59,6 +60,8 @@ export type RenderEnv = {
     termTipCount?: number;
     /** 読み込んだ脚注の定義と参照（定義の block のルールが作り、機能がオフなら `collectFootnotes` が削除する） */
     mdmarkFootnotes?: FootnoteState | undefined;
+    /** 読み込んだ注記の定義と参照（定義の block のルールが作り、機能がオフなら `collectAnnotations` が削除する） */
+    mdmarkAnnotations?: AnnotationState | undefined;
     /** ヒントのツールチップの数（`id` の通し番号） */
     hintCount?: number;
     /** ビューの記載の警告の数（`id` の通し番号） */

@@ -1,4 +1,3 @@
-import { type ColorName } from "../parts/colors.ts";
 /** map の構成図のノード */
 export type MdmarkDiagramNode = {
     /** 線が端に指す id */
@@ -151,86 +150,8 @@ export type MdmarkParamDefinition = {
     /** スライダーの値（文字にしたもの）ごとの点。`min` から `max` まで `step` ごとの全ての値を持つ */
     table: Record<string, number[]>;
 };
-/** ER 図のテーブルの種類 */
-export type MdmarkErTableKind = "master" | "transaction";
-/** ER 図の関係の端の多重度 */
-export type MdmarkErCardinality = "1" | "0..1" | "1..n" | "0..n";
-/** ER 図の列 */
-export type MdmarkErColumn = {
-    /** 列の名前 */
-    name: string;
-    /** 型 */
-    type: string;
-    /** 主キーか */
-    pk?: boolean;
-    /** 外部キーか */
-    fk?: boolean;
-    /** NOT NULL か */
-    nn?: boolean;
-    /** 説明。テーブルのツールチップに出す */
-    desc?: string;
-};
-/** ER 図のテーブル */
-export type MdmarkErTable = {
-    /** 関係の `from`・`to` で指す名前 */
-    id: string;
-    /** 物理名 */
-    name: string;
-    /** 論理名 */
-    label: string;
-    /** 種類。見出しの札と既定の色を決める */
-    kind?: MdmarkErTableKind;
-    /** 色の名前。`kind` の既定の色より優先する */
-    color?: ColorName;
-    /** 概要。テーブルのツールチップに出す */
-    desc?: string;
-    /** 左端（px） */
-    x: number;
-    /** 上端（px） */
-    y: number;
-    /** 幅（px） */
-    w: number;
-    /** 主キーと外部キーの列だけを出した状態で開くか */
-    folded?: boolean;
-    /** 列。定義の順に並べる */
-    columns: MdmarkErColumn[];
-};
-/** ER 図の関係 */
-export type MdmarkErRelation = {
-    /** 元のテーブルの `id` */
-    from: string;
-    /** 元のテーブルの列の `name` */
-    fromColumn: string;
-    /** 元の端の多重度 */
-    fromCard: MdmarkErCardinality;
-    /** 先のテーブルの `id` */
-    to: string;
-    /** 先のテーブルの列の `name` */
-    toColumn: string;
-    /** 先の端の多重度 */
-    toCard: MdmarkErCardinality;
-    /** 縦の線の中ほどに出すラベル */
-    label?: string;
-    /** 縦の線の x（px）。省くと両端の中間 */
-    midX?: number;
-};
-/** ER 図の定義 */
-export type MdmarkErDefinition = {
-    /** 題名 */
-    title: string;
-    /** 範囲 */
-    scope: string;
-    /** 更新日 */
-    updated: string;
-    /** 図の幅（px）。高さはテーブルの位置と列の数から求める */
-    width: number;
-    /** テーブル */
-    tables: MdmarkErTable[];
-    /** 関係 */
-    relations: MdmarkErRelation[];
-};
 /** 読み込めた定義の種類 */
-export type MdmarkDefinition = MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition;
+export type MdmarkDefinition = MdmarkChartDefinition | MdmarkParamDefinition;
 /** 定義を読み込んだ結果 */
 export type DefinitionResult = {
     /** 読み込めたか */
@@ -241,9 +162,9 @@ export type DefinitionResult = {
     problems: string[];
 };
 /** 図の部品のマーカーの名前 */
-export type DiagramDirective = "chart" | "param" | "er";
+export type DiagramDirective = "chart" | "param";
 /** 廃止した図の部品のマーカーの名前 */
-export type RetiredDiagramDirective = "flow" | "sequence";
+export type RetiredDiagramDirective = "flow" | "sequence" | "er";
 /** 廃止した図の部品のマーカー。同じ名前の拡張が無い範囲を、描く処理・点検・参照の取り出し・移行の手順が廃止した図として扱う */
 export declare const RETIRED_DIAGRAM_DIRECTIVES: readonly RetiredDiagramDirective[];
 /** 図の部品のマーカーの名前と、記載の警告に出す図の種類の名前・呼び名 */

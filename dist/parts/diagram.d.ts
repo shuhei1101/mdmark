@@ -1,8 +1,8 @@
-import type { MdmarkChartDefinition, MdmarkErDefinition, MdmarkErTable, MdmarkFlowDefinition } from "../diagram/definition.ts";
+import type { MdmarkChartDefinition, MdmarkFlowDefinition } from "../diagram/definition.ts";
 import { type IconName } from "./icons.ts";
 /** 凡例の項目 */
 export type DiagramLegendItem = {
-    /** 見本の種類: `series-{n}`・`fill-{n}`・`point-{n}`・`bubble`・ER 図の `er-*`・`info`・`underline` */
+    /** 見本の種類: `series-{n}`・`fill-{n}`・`point-{n}`・`bubble`・`info`・`underline` */
     sample: string;
     /** 意味 */
     label: string;
@@ -10,7 +10,7 @@ export type DiagramLegendItem = {
 /** 図の枠の引数 */
 export type DiagramFrame = {
     /** 中の図の種類 */
-    kind: "chart" | "er" | "mermaid" | "map";
+    kind: "chart" | "mermaid" | "map";
     /** 題名 */
     title: string;
     /** 範囲（種類 `mermaid` では持たず、タイトルに出さない） */
@@ -55,7 +55,7 @@ export type DiagramBody = {
     /** ツールチップの HTML */
     tips: string;
 };
-/** `renderFlow`・`renderEr`・`renderChart` の戻り値: 図の中身と、凡例に記載する図の特徴 */
+/** `renderFlow`・`renderChart` の戻り値: 図の中身と、凡例に記載する図の特徴 */
 export type DiagramPart = DiagramBody & {
     /** 横の線が縦の線を飛び越える点があるか */
     jumps: boolean;
@@ -68,8 +68,8 @@ export type TermLookup = (word: string) => string | undefined;
 export type DiagramTip = {
     /** ツールチップの `id` */
     id: string;
-    /** 線の詳細か、文だけか（ノード・グループの説明・埋め込んだ HTML の `data-hint`）か、ER 図のテーブルか、グラフの項目か */
-    kind: "wire" | "hint" | "table" | "item";
+    /** 線の詳細か、文だけか（ノード・グループの説明・埋め込んだ HTML の `data-hint`）か、グラフの項目か */
+    kind: "wire" | "hint" | "item";
     /** 持ち主の名前。ツールチップのタイトルに出す */
     label: string;
     /** グラフの項目の値の文（`item` のとき） */
@@ -78,13 +78,31 @@ export type DiagramTip = {
     tip?: string;
     /** ノード・グループの説明か `data-hint` の文 */
     hint?: string;
-    /** ER 図のテーブル。タイトルを `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる */
-    table?: MdmarkErTable;
     /** 持ち主を参照する名前（線の `id`・`node:{ノードの id}`・`term:{単語}`）。省くとタイトル */
     owner?: string;
     /** 開いているか */
     open?: boolean;
+    /** 持ち主が参照する注記（番号の順）。`html` は描いた HTML なのでエスケープしない */
+    annotations?: DiagramAnnotation[] | undefined;
 };
+/** 図のツールチップに出す注記 1 つ */
+export type DiagramAnnotation = {
+    number: number;
+    html: string;
+};
+/** 図の要素の ID ごとの注記と、持ち主の `id` の頭（`renderFlow` の引数） */
+export type DiagramAnnotations = {
+    items: Record<string, DiagramAnnotation[]>;
+    ownerPrefix: string;
+};
+/** 説明と注記の有無から、マーカーのボタンのスクリーンリーダー向けの名前を返却する */
+export declare function infoLabel(options: {
+    name: string;
+    described: boolean;
+    annotated: boolean;
+}): string;
+/** 注記を持つ要素の持ち主の `id` 属性（注記を持たなければ空） */
+export declare function ownerIdAttribute(annotations: DiagramAnnotations | undefined, elementId: string): string;
 /** 図のツールチップを描く。文だけの `hint` は、行内の要素の後ろにも配置できるよう `span` で出す */
 export declare function renderDiagramTip(tip: DiagramTip): string;
 /** 図の中のツールチップを集める入れ物 */
@@ -97,8 +115,12 @@ export type TipList = {
 /** `id` の頭から通し番号の `id` を振るツールチップの入れ物を作る */
 export declare function createTips(prefix: string): TipList;
 /** 定義の文字の `{{単語}}` を、意味のある用語なら下線とツールチップの持ち主にし、それ以外は単語だけにして、文字を逃がして返却する */
-export declare function renderText(text: string, tips: TipList, lookup: TermLookup | undefined, found: {
-    terms: boolean;
+export declare function renderText(text: string, context: {
+    tips: TipList;
+    lookup: TermLookup | undefined;
+    found: {
+        terms: boolean;
+    };
 }): string;
 /** 説明を持つグループのタイトルの右のマーカー（説明が無ければ空） */
 export declare function groupInfo(options: {
@@ -106,14 +128,20 @@ export declare function groupInfo(options: {
     label: string;
     owner: string;
     tips: TipList;
+    /** グループの注記 */
+    annotations?: DiagramAnnotation[] | undefined;
+    /** 注記を持つときの持ち主の `id` */
+    ownerId?: string | undefined;
 }): string;
 /** map の構成図のノードと線を描く */
-export declare function renderFlow(definition: MdmarkFlowDefinition, id: string, hints: boolean, lookup?: TermLookup): DiagramPart;
-/** ER 図を描く: テーブルを配置し、関係の線と両端の多重度の記号を svg に描き、ラベルを縦の線の中ほどに配置する */
-export declare function renderEr(definition: MdmarkErDefinition, id: string, hints: boolean, lookup?: TermLookup): DiagramPart;
+export declare function renderFlow(definition: MdmarkFlowDefinition, id: string, options: {
+    hints: boolean;
+    lookup?: TermLookup;
+    annotations?: DiagramAnnotations;
+}): DiagramPart;
 /** 図の定義 */
-type LegendDefinition = MdmarkChartDefinition | MdmarkErDefinition;
-/** 凡例の項目: グラフは系列（円とドーナツは項目）、ER 図はテーブルの種類・列のマーカー・多重度を並べる */
+type LegendDefinition = MdmarkChartDefinition;
+/** 凡例の項目: グラフは系列（円とドーナツは項目）を並べる */
 export declare function legendFor(definition: LegendDefinition): DiagramLegendItem[];
 /** 凡例の項目の並び（`ul` の中身）。`id` はグラフの塗りの模様の見本が指す `id` の頭 */
 export declare function renderLegendItems(id: string, items: DiagramLegendItem[]): string;
@@ -121,16 +149,12 @@ export declare function renderLegendItems(id: string, items: DiagramLegendItem[]
 export declare function renderDiagramFrame(frame: DiagramFrame, body: DiagramBody): string;
 /** 図の種類 */
 export type DiagramKind = Exclude<DiagramFrame["kind"], "mermaid" | "map">;
-/** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、ER 図のテーブルの説明のツールチップとボタンを配置しない */
+/** 図を描く: グラフの中身を描き、凡例を決めて枠に差す */
 export declare function renderDiagram(options: {
     kind: DiagramKind;
     definition: LegendDefinition;
     /** ツールチップと矢じりの `id` の頭 */
     id: string;
-    /** 用語から意味を参照する関数 */
-    lookup?: TermLookup;
-    /** 機能 `hints` がオンか（既定 `true`） */
-    hints?: boolean;
     /** 機能 `diagram-resize` がオンか（既定 `true`） */
     resizable?: boolean;
     zoom?: number;

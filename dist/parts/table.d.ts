@@ -263,8 +263,8 @@ export declare const COPY_FORMATS: {
         readonly note: "表計算ソフトに貼るとセルに分かれる";
     };
 };
-/** 表の上の帯（件数・テーブル設定・集計・コピーのボタン）と、テーブル設定のパネル・集計・コピーの形式のメニューの HTML を返却する。付けた機能が無ければ空 */
-export declare function renderTableBar(options: {
+/** `renderTableBar` の引数 */
+export type TableBarOptions = {
     /** メニューの id の頭 */
     id: string;
     /** 付ける機能 */
@@ -303,7 +303,9 @@ export declare function renderTableBar(options: {
     openTotals?: boolean;
     /** コピーの形式のメニューを開いているか（既定 `false`） */
     openCopy?: boolean;
-}): {
+};
+/** 表の上の帯（件数・テーブル設定・集計・コピーのボタン）と、テーブル設定のパネル・集計・コピーの形式のメニューの HTML を返却する。付けた機能が無ければ空 */
+export declare function renderTableBar(options: TableBarOptions): {
     bar: string;
     menus: string;
 };
@@ -318,8 +320,8 @@ export declare function renderSettingsToggle(options: {
 }): string;
 /** テーブル設定のボタンの隠した列の数とスクリーンリーダー向けの名前を書き換える */
 export declare function updateSettingsToggle(toggle: HTMLElement, hidden: number): void;
-/** テーブル設定のパネル（タイトル・列名の一覧・案内）の HTML を返却する。`hidden` は付けない */
-export declare function renderTableSettings(options: {
+/** `renderTableSettings` の引数 */
+export type TableSettingsOptions = {
     /** パネルの id の頭 */
     id: string;
     /** 元の列の順の列名 */
@@ -342,7 +344,9 @@ export declare function renderTableSettings(options: {
         target: number;
         side: "before" | "after";
     };
-}): string;
+};
+/** テーブル設定のパネル（タイトル・列名の一覧・案内）の HTML を返却する。`hidden` は付けない */
+export declare function renderTableSettings(options: TableSettingsOptions): string;
 /** 階層の表のキーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返却する */
 export declare function renderTreeKeyCell(options: {
     /** `splitKeyPath` の末尾の名前 */
@@ -392,7 +396,16 @@ export declare function renderCopyPanel(options: {
     text: string;
 }): string;
 /** 行へのリンクのマーカーを持つ先頭のセルの HTML を返却する。`content` は先頭のセルの中身（`SLOT_MARKER` を指定して前後に分けられる）。`notice` を指定すると、URL をコピーした結果をマーカーの横の通知に出す */
-export declare function renderRowLink(content: string, id: string, label: string, notice?: "copied" | "failed"): string;
+export declare function renderRowLink(options: {
+    /** 先頭のセルの中身 */
+    content: string;
+    /** 行の id */
+    id: string;
+    /** 行の名前 */
+    label: string;
+    /** URL をコピーした結果 */
+    notice?: "copied" | "failed" | undefined;
+}): string;
 /** 真偽値のセルの中身の HTML を返却する。`true` は ✓ のアイコン、`false` はスクリーンリーダー向けの `いいえ` */
 export declare function renderCheckCell(value: "true" | "false"): string;
 /** セルの文字が真偽値か */

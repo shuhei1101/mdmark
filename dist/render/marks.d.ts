@@ -39,6 +39,7 @@ export type LegacyMarkArgs = {
 };
 /** 今の書き方の引数の文字を空白で区切り、`キー=値` を `keys`、それ以外を記載した順に `args` に入れる */
 export declare function parseMarkArgs(text: string): LegacyMarkArgs;
+/** マーカーを取得し、`features` は設定を環境へ追加し、`page` は文書の先頭なら環境へ追加し、対応表と拡張の名前はマーカーの場所の要素にし、記法のマーカーはマーカーのトークンにし、それ以外は取り除く。引数の誤りは記載の警告にしてマーカーの前に差し込み、注記を記録する */
 export declare function takeMarks(state: StateCore): void;
 /** `takeMarks` の後に、設定の `features` に文書の `features` のマーカーを重ねて `env.features` に入れる */
 export declare function resolveDocumentFeatures(state: StateCore): void;

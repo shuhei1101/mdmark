@@ -5065,8 +5065,8 @@ var require_multipleOf2 = __commonJS({
         const { gen, data, schemaCode, it } = cxt;
         const prec = it.opts.multipleOfPrecision;
         const res = gen.let("res");
-        const invalid = prec ? (0, codegen_1._)`Math.abs(Math.round(${res}) - ${res}) > 1e-${prec}` : (0, codegen_1._)`${res} !== parseInt(${res})`;
-        cxt.fail$data((0, codegen_1._)`(${schemaCode} === 0 || (${res} = ${data}/${schemaCode}, ${invalid}))`);
+        const invalid3 = prec ? (0, codegen_1._)`Math.abs(Math.round(${res}) - ${res}) > 1e-${prec}` : (0, codegen_1._)`${res} !== parseInt(${res})`;
+        cxt.fail$data((0, codegen_1._)`(${schemaCode} === 0 || (${res} = ${data}/${schemaCode}, ${invalid3}))`);
       }
     };
     exports.default = def;
@@ -6080,7 +6080,7 @@ var require_patternProperties2 = __commonJS({
         if (patterns.length === 0 || alwaysValidPatterns.length === patterns.length && (!it.opts.unevaluated || it.props === true)) {
           return;
         }
-        const checkProperties = opts.strictSchema && !opts.allowMatchingProperties && parentSchema.properties;
+        const checkProperties2 = opts.strictSchema && !opts.allowMatchingProperties && parentSchema.properties;
         const valid = gen.name("valid");
         if (it.props !== true && !(it.props instanceof codegen_1.Name)) {
           it.props = (0, util_2.evaluatedPropsToName)(gen, it.props);
@@ -6089,7 +6089,7 @@ var require_patternProperties2 = __commonJS({
         validatePatternProperties();
         function validatePatternProperties() {
           for (const pat of patterns) {
-            if (checkProperties)
+            if (checkProperties2)
               checkMatchingProperties(pat);
             if (it.allErrors) {
               validateProperties(pat);
@@ -6101,7 +6101,7 @@ var require_patternProperties2 = __commonJS({
           }
         }
         function checkMatchingProperties(pat) {
-          for (const prop in checkProperties) {
+          for (const prop in checkProperties2) {
             if (new RegExp(pat).test(prop)) {
               (0, util_1.checkStrictMode)(it, `property ${prop} matches pattern ${pat} (use allowMatchingProperties)`);
             }
@@ -12449,7 +12449,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M7 10v4h4" }],
       ["path", { d: "m7 14 1.535-1.605a5 5 0 0 1 8 1.5" }]
     ];
-    var Cloud = [["path", { d: "M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" }]];
+    var Cloud2 = [["path", { d: "M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" }]];
     var Cloudy = [
       ["path", { d: "M17.5 12a1 1 0 1 1 0 9H9.006a7 7 0 1 1 6.702-9z" }],
       ["path", { d: "M21.832 9A3 3 0 0 0 19 7h-2.207a5.5 5.5 0 0 0-10.72.61" }]
@@ -15673,7 +15673,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M6 18h.01" }],
       ["path", { d: "M10 18h.01" }]
     ];
-    var HardDrive = [
+    var HardDrive2 = [
       ["path", { d: "M10 16h.01" }],
       [
         "path",
@@ -24828,7 +24828,7 @@ var require_lucide = __commonJS({
       ClockFading,
       ClockPlus,
       ClosedCaption,
-      Cloud,
+      Cloud: Cloud2,
       CloudAlert,
       CloudBackup,
       CloudCheck,
@@ -25278,7 +25278,7 @@ var require_lucide = __commonJS({
       Handbag,
       HandleBottomRight,
       Handshake,
-      HardDrive,
+      HardDrive: HardDrive2,
       HardDriveDownload,
       HardDriveUpload,
       HardHat,
@@ -27025,7 +27025,7 @@ var require_lucide = __commonJS({
     exports.ClockFading = ClockFading;
     exports.ClockPlus = ClockPlus;
     exports.ClosedCaption = ClosedCaption;
-    exports.Cloud = Cloud;
+    exports.Cloud = Cloud2;
     exports.CloudAlert = CloudAlert;
     exports.CloudBackup = CloudBackup;
     exports.CloudCheck = CloudCheck;
@@ -27475,7 +27475,7 @@ var require_lucide = __commonJS({
     exports.Handbag = Handbag;
     exports.HandleBottomRight = HandleBottomRight;
     exports.Handshake = Handshake;
-    exports.HardDrive = HardDrive;
+    exports.HardDrive = HardDrive2;
     exports.HardDriveDownload = HardDriveDownload;
     exports.HardDriveUpload = HardDriveUpload;
     exports.HardHat = HardHat;
@@ -32715,13 +32715,13 @@ var require_sanitize_html = __commonJS({
                     return t;
                   });
                   if (allowedSpecificClasses && allowedWildcardClasses) {
-                    value = filterClasses(
+                    value = filterClasses2(
                       value,
                       mergeClasses(allowedSpecificClasses, allowedWildcardClasses),
                       allowedClassesGlobs
                     );
                   } else {
-                    value = filterClasses(
+                    value = filterClasses2(
                       value,
                       allowedSpecificClasses || allowedWildcardClasses,
                       allowedClassesGlobs
@@ -33118,7 +33118,7 @@ var require_sanitize_html = __commonJS({
           return allowedDeclarationsList;
         };
       }
-      function filterClasses(classes, allowed, allowedGlobs) {
+      function filterClasses2(classes, allowed, allowedGlobs) {
         if (!allowed) {
           return classes;
         }
@@ -50247,8 +50247,8 @@ var require_multipleOf = /* @__PURE__ */ __commonJSMin(((exports) => {
       const { gen, data, schemaCode, it } = cxt;
       const prec = it.opts.multipleOfPrecision;
       const res = gen.let("res");
-      const invalid = prec ? (0, codegen_1._)`Math.abs(Math.round(${res}) - ${res}) > 1e-${prec}` : (0, codegen_1._)`${res} !== parseInt(${res})`;
-      cxt.fail$data((0, codegen_1._)`(${schemaCode} === 0 || (${res} = ${data}/${schemaCode}, ${invalid}))`);
+      const invalid3 = prec ? (0, codegen_1._)`Math.abs(Math.round(${res}) - ${res}) > 1e-${prec}` : (0, codegen_1._)`${res} !== parseInt(${res})`;
+      cxt.fail$data((0, codegen_1._)`(${schemaCode} === 0 || (${res} = ${data}/${schemaCode}, ${invalid3}))`);
     }
   };
   exports.default = def;
@@ -51087,14 +51087,14 @@ var require_patternProperties = /* @__PURE__ */ __commonJSMin(((exports) => {
       const patterns = (0, code_1.allSchemaProperties)(schema);
       const alwaysValidPatterns = patterns.filter((p) => (0, util_1.alwaysValidSchema)(it, schema[p]));
       if (patterns.length === 0 || alwaysValidPatterns.length === patterns.length && (!it.opts.unevaluated || it.props === true)) return;
-      const checkProperties = opts.strictSchema && !opts.allowMatchingProperties && parentSchema.properties;
+      const checkProperties2 = opts.strictSchema && !opts.allowMatchingProperties && parentSchema.properties;
       const valid = gen.name("valid");
       if (it.props !== true && !(it.props instanceof codegen_1.Name)) it.props = (0, util_2.evaluatedPropsToName)(gen, it.props);
       const { props } = it;
       validatePatternProperties();
       function validatePatternProperties() {
         for (const pat of patterns) {
-          if (checkProperties) checkMatchingProperties(pat);
+          if (checkProperties2) checkMatchingProperties(pat);
           if (it.allErrors) validateProperties(pat);
           else {
             gen.var(valid, true);
@@ -51104,7 +51104,7 @@ var require_patternProperties = /* @__PURE__ */ __commonJSMin(((exports) => {
         }
       }
       function checkMatchingProperties(pat) {
-        for (const prop in checkProperties) if (new RegExp(pat).test(prop)) (0, util_1.checkStrictMode)(it, `property ${prop} matches pattern ${pat} (use allowMatchingProperties)`);
+        for (const prop in checkProperties2) if (new RegExp(pat).test(prop)) (0, util_1.checkStrictMode)(it, `property ${prop} matches pattern ${pat} (use allowMatchingProperties)`);
       }
       function validateProperties(pat) {
         gen.forIn("key", data, (key) => {
@@ -56400,16 +56400,25 @@ function matchesType(schema, value) {
     }
   });
 }
+function describeArray(schema) {
+  if (schema.items?.enum !== void 0) {
+    return `${schema.items.enum.join(" \u304B ")} \u306E\u914D\u5217`;
+  }
+  return schema.items === void 0 ? "\u914D\u5217" : "\u6587\u5B57\u5217\u306E\u914D\u5217";
+}
+function describeObject(types) {
+  if (types.includes("object") && types.includes("null")) {
+    return "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u304B null";
+  }
+  return types.includes("object") ? "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8" : "null";
+}
 function describeType(schema) {
   if (schema.enum !== void 0) {
     return schema.enum.join(" \u304B ");
   }
   const types = Array.isArray(schema.type) ? schema.type : [schema.type];
   if (types.includes("array")) {
-    if (schema.items?.enum !== void 0) {
-      return `${schema.items.enum.join(" \u304B ")} \u306E\u914D\u5217`;
-    }
-    return schema.items === void 0 ? "\u914D\u5217" : "\u6587\u5B57\u5217\u306E\u914D\u5217";
+    return describeArray(schema);
   }
   if (types.includes("integer")) {
     return schema.minimum !== void 0 && schema.maximum !== void 0 ? `${schema.minimum} \u4EE5\u4E0A ${schema.maximum} \u4EE5\u4E0B\u306E\u6574\u6570` : "\u6574\u6570";
@@ -56420,10 +56429,23 @@ function describeType(schema) {
   if (types.includes("string")) {
     return schema.minLength === void 0 ? "\u6587\u5B57\u5217" : "\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217";
   }
-  if (types.includes("object") && types.includes("null")) {
-    return "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u304B null";
+  return describeObject(types);
+}
+function outOfRange(schema, value) {
+  return typeof value === "number" && (schema.minimum !== void 0 && value < schema.minimum || schema.maximum !== void 0 && value > schema.maximum);
+}
+function hasUnknownItem(schema, value) {
+  const allowed = schema.items?.enum;
+  return allowed !== void 0 && Array.isArray(value) && value.some((item) => !allowed.includes(item));
+}
+function describeTooShort(schema, value) {
+  if (schema.minItems !== void 0 && Array.isArray(value) && value.length < schema.minItems) {
+    return `${schema.minItems} \u4EF6\u4EE5\u4E0A\u306E\u914D\u5217`;
   }
-  return types.includes("object") ? "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8" : "null";
+  if (schema.minLength !== void 0 && typeof value === "string" && value.length < schema.minLength) {
+    return "\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217";
+  }
+  return void 0;
 }
 function describeMismatch(schema, value) {
   if (!matchesType(schema, value)) {
@@ -56432,19 +56454,10 @@ function describeMismatch(schema, value) {
   if (schema.enum !== void 0 && !schema.enum.includes(value)) {
     return schema.enum.join(" \u304B ");
   }
-  if (typeof value === "number" && (schema.minimum !== void 0 && value < schema.minimum || schema.maximum !== void 0 && value > schema.maximum)) {
+  if (outOfRange(schema, value) || hasUnknownItem(schema, value)) {
     return describeType(schema);
   }
-  if (schema.items?.enum !== void 0 && Array.isArray(value) && value.some((item) => !schema.items?.enum?.includes(item))) {
-    return describeType(schema);
-  }
-  if (schema.minItems !== void 0 && Array.isArray(value) && value.length < schema.minItems) {
-    return `${schema.minItems} \u4EF6\u4EE5\u4E0A\u306E\u914D\u5217`;
-  }
-  if (schema.minLength !== void 0 && typeof value === "string" && value.length < schema.minLength) {
-    return "\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217";
-  }
-  return void 0;
+  return describeTooShort(schema, value);
 }
 function checkArguments(options) {
   const { schema, args } = options;
@@ -56478,7 +56491,7 @@ import { homedir as homedir3 } from "node:os";
 import { isAbsolute as isAbsolute5, resolve as resolve13 } from "node:path";
 
 // src/cli/build.ts
-import { join as join7, resolve as resolve9 } from "node:path";
+import { join as join8, resolve as resolve12 } from "node:path";
 
 // src/knowledge/paths.ts
 var MARK_MARKDOWN_SUFFIX = ".mark.md";
@@ -56489,6 +56502,13 @@ function normalizePath(path) {
 function directoryOf(path) {
   return normalizePath(path).split("/").filter(Boolean).slice(0, -1);
 }
+function decodeOrKeep(target) {
+  try {
+    return decodeURI(target);
+  } catch {
+    return target;
+  }
+}
 function resolveLink(fromPath, href) {
   if (href.startsWith("/") || SCHEME_PATTERN.test(href)) {
     return void 0;
@@ -56497,13 +56517,8 @@ function resolveLink(fromPath, href) {
   if (target === "") {
     return void 0;
   }
-  let decoded = target;
-  try {
-    decoded = decodeURI(target);
-  } catch {
-  }
   const segments = directoryOf(fromPath);
-  for (const segment of decoded.split("/")) {
+  for (const segment of decodeOrKeep(target).split("/")) {
     if (segment === "" || segment === ".") {
       continue;
     }
@@ -56762,28 +56777,29 @@ function titleOf(error2) {
   const parent = error2.parentSchema;
   return parent?.title ?? "";
 }
+function requiredMessage(error2, where) {
+  const name = String(
+    error2.params.missingProperty
+  );
+  const child = error2.parentSchema?.properties?.[name]?.title;
+  return `\`${where}\` \u306B \`${name}\`${child === void 0 ? "" : `\uFF08${child}\uFF09`}\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+}
+var KEYWORD_MESSAGES = {
+  type: (where, label, params) => `\`${where}\`${label}\u306F${TYPE_NAMES[String(params.type)] ?? String(params.type)}\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  minLength: (where, label) => `\`${where}\`${label}\u304C\u7A7A\u3067\u3059\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  minItems: (where, label) => `\`${where}\`${label}\u304C\u7A7A\u3067\u3059\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  enum: (where, label, params) => `\`${where}\`${label}\u306F ${params.allowedValues.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  additionalProperties: (where, _, params) => `\`${where}\` \u306E \`${String(params.additionalProperty)}\` \u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+};
 function messageOf(error2, where) {
+  if (error2.keyword === "required") {
+    return requiredMessage(error2, where);
+  }
   const title = titleOf(error2);
   const label = title === "" ? "" : `\uFF08${title}\uFF09`;
   const params = error2.params;
-  switch (error2.keyword) {
-    case "required": {
-      const name = String(params.missingProperty);
-      const child = error2.parentSchema?.properties?.[name]?.title;
-      return `\`${where}\` \u306B \`${name}\`${child === void 0 ? "" : `\uFF08${child}\uFF09`}\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    }
-    case "type":
-      return `\`${where}\`${label}\u306F${TYPE_NAMES[String(params.type)] ?? String(params.type)}\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "minLength":
-    case "minItems":
-      return `\`${where}\`${label}\u304C\u7A7A\u3067\u3059\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "enum":
-      return `\`${where}\`${label}\u306F ${params.allowedValues.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "additionalProperties":
-      return `\`${where}\` \u306E \`${String(params.additionalProperty)}\` \u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    default:
-      return `\`${where}\`${label}\u304C Schema \u306B\u5408\u3044\u307E\u305B\u3093\uFF08${error2.message ?? ""}\uFF09\u3002`;
-  }
+  const message = Object.hasOwn(KEYWORD_MESSAGES, error2.keyword) ? KEYWORD_MESSAGES[error2.keyword] : void 0;
+  return message ? message(where, label, params) : `\`${where}\`${label}\u304C Schema \u306B\u5408\u3044\u307E\u305B\u3093\uFF08${error2.message ?? ""}\uFF09\u3002`;
 }
 function validateAliasRows(rows, file) {
   const validate2 = getValidator();
@@ -56793,7 +56809,7 @@ function validateAliasRows(rows, file) {
   }
   const issues = [];
   const seen = /* @__PURE__ */ new Set();
-  const invalid = /* @__PURE__ */ new Set();
+  const invalid3 = /* @__PURE__ */ new Set();
   const add = (pointer, message) => {
     const where = whereOf(pointer);
     const key = `${where}\0${message}`;
@@ -56804,14 +56820,14 @@ function validateAliasRows(rows, file) {
     issues.push({ file, where, kind: "schema", message });
     const row = pointerParts(pointer)[0];
     if (row !== void 0 && /^\d+$/.test(row)) {
-      invalid.add(Number(row));
+      invalid3.add(Number(row));
     }
   };
   for (const error2 of validate2.errors ?? []) {
     add(error2.instancePath, messageOf(error2, whereOf(error2.instancePath)));
   }
   return {
-    rows: rows.map((row, position) => invalid.has(position) ? null : row),
+    rows: rows.map((row, position) => invalid3.has(position) ? null : row),
     issues
   };
 }
@@ -56840,7 +56856,21 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.13.0";
+  return "v0.13.0+develop.87dc067";
+}
+var DEVELOP_VERSION = "develop";
+var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
+function isDevelopBuild(version2) {
+  return DEVELOP_BUILD_PATTERN.test(version2);
+}
+function releaseVersionOf(version2) {
+  return DEVELOP_BUILD_PATTERN.exec(version2)?.[1] ?? version2;
+}
+function localVersionOf(version2) {
+  return isDevelopBuild(version2) ? DEVELOP_VERSION : version2;
+}
+function isLocalVersion(value) {
+  return typeof value === "string" && (value === DEVELOP_VERSION || VERSION_PATTERN.test(value));
 }
 
 // src/table-logic.ts
@@ -56876,14 +56906,18 @@ function matchesFilter(cell, kind, value) {
   if (kind === "text") {
     return !value.text || cell.toLowerCase().includes(value.text.toLowerCase());
   }
-  if (!value.from && !value.to) {
+  return matchesDateRange(cell, value);
+}
+function matchesDateRange(cell, value) {
+  const { from, to } = value;
+  if (!from && !to) {
     return true;
   }
   const date4 = toIsoDate(cell);
   if (date4 === void 0) {
     return false;
   }
-  return (!value.from || date4 >= value.from) && (!value.to || date4 <= value.to);
+  return (!from || date4 >= from) && (!to || date4 <= to);
 }
 var TOTAL_CALCS = ["sum", "avg", "count"];
 var TOTAL_LABELS = {
@@ -56926,6 +56960,15 @@ function findUnreadableTotals(options) {
   }
   return found;
 }
+function fillGrid(grid, at) {
+  const { row, cell, column, span } = at;
+  const end = Math.min(grid.length, row + span.rowSpan);
+  for (const line of grid.slice(row, end)) {
+    for (let c = column; c < column + span.colSpan; c++) {
+      line[c] = { row, cell, colSpan: span.colSpan };
+    }
+  }
+}
 function bottomHeadCells(rows) {
   const grid = rows.map(() => []);
   for (const [row, cells] of rows.entries()) {
@@ -56934,14 +56977,7 @@ function bottomHeadCells(rows) {
       while (grid[row]?.[column]) {
         column += 1;
       }
-      for (let r = row; r < Math.min(rows.length, row + span.rowSpan); r++) {
-        for (let c = column; c < column + span.colSpan; c++) {
-          const line = grid[r];
-          if (line) {
-            line[c] = { row, cell, colSpan: span.colSpan };
-          }
-        }
-      }
+      fillGrid(grid, { row, cell, column, span });
       column += span.colSpan;
     }
   }
@@ -56951,25 +56987,28 @@ function bottomHeadCells(rows) {
     (item) => item && item.colSpan === 1 ? { row: item.row, cell: item.cell } : void 0
   );
 }
+function joinSpan(spans, at) {
+  const startSpans = spans[at.start];
+  const rowSpans = spans[at.row];
+  if (startSpans && rowSpans) {
+    startSpans[at.index] = (startSpans[at.index] ?? 1) + 1;
+    rowSpans[at.index] = 0;
+  }
+}
 function mergeSpans(options) {
   const { values, columns } = options;
   const spans = values.map(() => columns.map(() => 1));
   const starts = columns.map(() => 0);
   for (let row = 1; row < values.length; row++) {
-    let broken = false;
+    const found = columns.findIndex(
+      (_, index) => values[row]?.[index] !== values[starts[index] ?? 0]?.[index]
+    );
+    const breakAt = found === -1 ? columns.length : found;
     for (const [index] of columns.entries()) {
-      const start = starts[index] ?? 0;
-      const same = values[row]?.[index] === values[start]?.[index];
-      if (broken || !same) {
-        broken = true;
+      if (index >= breakAt) {
         starts[index] = row;
-        continue;
-      }
-      const startSpans = spans[start];
-      const rowSpans = spans[row];
-      if (startSpans && rowSpans) {
-        startSpans[index] = (startSpans[index] ?? 1) + 1;
-        rowSpans[index] = 0;
+      } else {
+        joinSpan(spans, { start: starts[index] ?? 0, row, index });
       }
     }
   }
@@ -57022,6 +57061,7 @@ var DEFAULT_FEATURES = {
   tree: true,
   badge: true,
   footnotes: true,
+  annotations: true,
   code: true,
   syntax: true,
   toc: true,
@@ -57073,73 +57113,91 @@ var MERMAID_THEMES = [
   "base"
 ];
 var FIXED_MERMAID_VARIABLES = /* @__PURE__ */ new Set(["useGradient", "dropShadow"]);
-var resolveMermaid = (mermaid) => {
-  const url2 = typeof mermaid?.url === "string" ? mermaid.url : DEFAULT_MERMAID_URL;
-  const theme = MERMAID_THEMES.find((name) => name === mermaid?.theme) ?? "mdmark";
-  const given = mermaid?.themeVariables;
+var pickThemeVariables = (given) => {
   const themeVariables = {};
-  if (given !== null && typeof given === "object" && !Array.isArray(given)) {
-    for (const [key, value] of Object.entries(given)) {
-      if (typeof value === "string" && !FIXED_MERMAID_VARIABLES.has(key)) {
-        themeVariables[key] = value;
-      }
+  if (given === null || typeof given !== "object" || Array.isArray(given)) {
+    return themeVariables;
+  }
+  for (const [key, value] of Object.entries(given)) {
+    if (typeof value === "string" && !FIXED_MERMAID_VARIABLES.has(key)) {
+      themeVariables[key] = value;
     }
   }
-  return { url: url2, theme, themeVariables };
+  return themeVariables;
 };
+var resolveMermaid = (mermaid) => ({
+  url: urlOr(mermaid?.url, DEFAULT_MERMAID_URL),
+  theme: MERMAID_THEMES.find((name) => name === mermaid?.theme) ?? "mdmark",
+  themeVariables: pickThemeVariables(mermaid?.themeVariables)
+});
 var DEFAULT_LIBRARIES = {};
 var MARK_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
-function resolveConfig(options) {
-  const { config: config3, defaultLibraries = DEFAULT_LIBRARIES } = options;
+function resolveFeatures(given) {
   const features = { ...DEFAULT_FEATURES };
   for (const name of Object.keys(DEFAULT_FEATURES)) {
-    const value = config3?.features?.[name];
+    const value = given?.[name];
     if (typeof value === "boolean") {
       features[name] = value;
     }
   }
+  return features;
+}
+function resolveLibraries(given, defaultLibraries) {
   const libraries = {};
   for (const [name, entry] of Object.entries(defaultLibraries)) {
     libraries[name] = { ...entry };
   }
-  for (const [name, url3] of Object.entries(config3?.libraries ?? {})) {
-    if (!MARK_NAME_PATTERN.test(name) || typeof url3 !== "string") {
+  for (const [name, url2] of Object.entries(given ?? {})) {
+    if (!MARK_NAME_PATTERN.test(name) || typeof url2 !== "string") {
       continue;
     }
     const existing = Object.hasOwn(libraries, name) ? libraries[name] : void 0;
-    libraries[name] = existing ? { ...existing, url: url3 } : { url: url3, figure: true };
+    libraries[name] = existing ? { ...existing, url: url2 } : { url: url2, figure: true };
   }
-  const placement = config3?.tooltips?.placement === "bottom" ? "bottom" : "top";
-  const diagramPlacement = config3?.tooltips?.diagramPlacement === "top" ? "top" : "bottom";
-  const url2 = config3?.syntax?.url;
-  const syntax = { url: typeof url2 === "string" ? url2 : DEFAULT_SYNTAX_URL };
-  const htmlScriptsUrl = config3?.["html-scripts"]?.url;
-  const htmlScripts = {
-    url: typeof htmlScriptsUrl === "string" ? htmlScriptsUrl : DEFAULT_HTML_SCRIPTS_URL
+  return libraries;
+}
+function resolveTooltips(tooltips) {
+  return {
+    placement: tooltips?.placement === "bottom" ? "bottom" : "top",
+    diagramPlacement: tooltips?.diagramPlacement === "top" ? "top" : "bottom"
   };
-  const mode = config3?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
-  const pin = config3?.table?.pin === "through" ? "through" : "each";
-  const requestedMin = config3?.table?.long_column_min;
-  const longColumnMin = typeof requestedMin === "number" && Number.isFinite(requestedMin) && requestedMin > 0 ? requestedMin : DEFAULT_LONG_COLUMN_MIN_EM;
-  const colorTheme = COLOR_THEMES.find((name) => name === config3?.colorTheme) ?? DEFAULT_COLOR_THEME;
-  const colorScheme = COLOR_SCHEMES.find((name) => name === config3?.colorScheme) ?? DEFAULT_COLOR_SCHEME;
-  const paramCopy = config3?.labels?.paramCopy;
-  const labels = {
+}
+function urlOr(url2, fallback) {
+  return typeof url2 === "string" ? url2 : fallback;
+}
+function resolveTable(table2) {
+  const requestedMin = table2?.long_column_min;
+  const valid = typeof requestedMin === "number" && Number.isFinite(requestedMin) && requestedMin > 0;
+  return {
+    pin: table2?.pin === "through" ? "through" : "each",
+    longColumnMin: valid ? requestedMin : DEFAULT_LONG_COLUMN_MIN_EM
+  };
+}
+function resolveLabels(labels) {
+  const paramCopy = labels?.paramCopy;
+  return {
     paramCopy: typeof paramCopy === "string" && paramCopy !== "" ? paramCopy : DEFAULT_LABELS.paramCopy
   };
+}
+function resolveConfig(options) {
+  const { config: config3 = {}, defaultLibraries = DEFAULT_LIBRARIES } = options;
   return {
-    features,
-    libraries,
-    tooltips: { placement, diagramPlacement },
-    syntax,
-    htmlScripts,
-    mermaid: resolveMermaid(config3?.mermaid),
-    sideToc: { mode },
-    table: { pin, longColumnMin },
-    colorTheme,
-    colorScheme,
-    labels,
-    map: resolveMapConfig(config3?.map)
+    features: resolveFeatures(config3.features),
+    libraries: resolveLibraries(config3.libraries, defaultLibraries),
+    tooltips: resolveTooltips(config3.tooltips),
+    syntax: { url: urlOr(config3.syntax?.url, DEFAULT_SYNTAX_URL) },
+    htmlScripts: {
+      url: urlOr(config3["html-scripts"]?.url, DEFAULT_HTML_SCRIPTS_URL)
+    },
+    mermaid: resolveMermaid(config3.mermaid),
+    // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
+    sideToc: { mode: config3["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
+    table: resolveTable(config3.table),
+    // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
+    colorTheme: oneOf(COLOR_THEMES, config3.colorTheme) ?? DEFAULT_COLOR_THEME,
+    colorScheme: oneOf(COLOR_SCHEMES, config3.colorScheme) ?? DEFAULT_COLOR_SCHEME,
+    labels: resolveLabels(config3.labels),
+    map: resolveMapConfig(config3.map)
   };
 }
 var MAP_SHAPES = ["rounded", "rect", "pill", "double"];
@@ -57154,35 +57212,36 @@ var MAP_WIDTHS = ["thin", "normal", "thick"];
 var MAP_HEADS = ["filled", "open", "none"];
 var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var oneOf = (list2, value) => typeof value === "string" && list2.includes(value) ? value : void 0;
+var recordEntries = (value) => Object.entries(isRecord2(value) ? value : {});
+var resolveMapKind = (kind) => {
+  const entry = {};
+  if (typeof kind.label === "string") entry.label = kind.label;
+  if (typeof kind.icon === "string") entry.icon = kind.icon;
+  const shape = oneOf(MAP_SHAPES, kind.shape);
+  if (shape) entry.shape = shape;
+  if (typeof kind.color === "string") entry.color = kind.color;
+  return entry;
+};
+var resolveMapLine = (line) => {
+  const entry = {};
+  const dash = oneOf(MAP_DASHES, line.dash);
+  if (dash) entry.dash = dash;
+  const width = oneOf(MAP_WIDTHS, line.width);
+  if (width) entry.width = width;
+  const head = oneOf(MAP_HEADS, line.head);
+  if (head) entry.head = head;
+  if (typeof line.color === "string") entry.color = line.color;
+  return entry;
+};
 var resolveMapConfig = (value) => {
   const map = isRecord2(value) ? value : {};
   const kinds = {};
-  for (const [name, kind] of Object.entries(
-    isRecord2(map.kinds) ? map.kinds : {}
-  )) {
-    if (!isRecord2(kind)) continue;
-    const entry = {};
-    if (typeof kind.label === "string") entry.label = kind.label;
-    if (typeof kind.icon === "string") entry.icon = kind.icon;
-    const shape = oneOf(MAP_SHAPES, kind.shape);
-    if (shape) entry.shape = shape;
-    if (typeof kind.color === "string") entry.color = kind.color;
-    kinds[name] = entry;
+  for (const [name, kind] of recordEntries(map.kinds)) {
+    if (isRecord2(kind)) kinds[name] = resolveMapKind(kind);
   }
   const lines = {};
-  for (const [name, line] of Object.entries(
-    isRecord2(map.lines) ? map.lines : {}
-  )) {
-    if (!isRecord2(line)) continue;
-    const entry = {};
-    const dash = oneOf(MAP_DASHES, line.dash);
-    if (dash) entry.dash = dash;
-    const width = oneOf(MAP_WIDTHS, line.width);
-    if (width) entry.width = width;
-    const head = oneOf(MAP_HEADS, line.head);
-    if (head) entry.head = head;
-    if (typeof line.color === "string") entry.color = line.color;
-    lines[name] = entry;
+  for (const [name, line] of recordEntries(map.lines)) {
+    if (isRecord2(line)) lines[name] = resolveMapLine(line);
   }
   return {
     node_fit: map.node_fit === "width" ? "width" : "height",
@@ -57202,6 +57261,42 @@ function isStringArray(value) {
 function schemaIssue(file, where, message) {
   return { file, where, kind: "schema", message };
 }
+var BUILD_RULES = [
+  ({ include }) => {
+    if (include === void 0) {
+      return {
+        where: "build",
+        message: "`build.include` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B Markdown \u306E glob \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      };
+    }
+    return isStringArray(include) && include.length > 0 ? void 0 : {
+      where: "build.include",
+      message: "`build.include` \u306F 1 \u3064\u4EE5\u4E0A\u306E glob \u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    };
+  },
+  ({ out }) => {
+    if (out === void 0) {
+      return {
+        where: "build",
+        message: "`build.out` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      };
+    }
+    return typeof out === "string" && out.endsWith(".html") ? void 0 : {
+      where: "build.out",
+      message: "`build.out` \u306F\u62E1\u5F35\u5B50 `.html` \u306E\u30D1\u30B9\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    };
+  },
+  ...["exclude", "glossary"].map(
+    (key) => (value) => value[key] === void 0 || isStringArray(value[key]) ? void 0 : {
+      where: `build.${key}`,
+      message: `\`build.${key}\` \u306F\u6587\u5B57\u5217\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    }
+  ),
+  ({ entry }) => entry === void 0 || typeof entry === "string" ? void 0 : {
+    where: "build.entry",
+    message: "`build.entry` \u306F\u6587\u66F8\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+  }
+];
 function validateBuild(value, file, issues) {
   if (!isRecord3(value)) {
     issues.push(
@@ -57210,62 +57305,153 @@ function validateBuild(value, file, issues) {
     return void 0;
   }
   const before = issues.length;
-  if (value.include === void 0) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build",
-        "`build.include` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B Markdown \u306E glob \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-  } else if (!isStringArray(value.include) || value.include.length === 0) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build.include",
-        "`build.include` \u306F 1 \u3064\u4EE5\u4E0A\u306E glob \u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
+  for (const rule of BUILD_RULES) {
+    const found = rule(value);
+    if (found) {
+      issues.push(schemaIssue(file, found.where, found.message));
+    }
   }
-  if (value.out === void 0) {
+  return issues.length === before ? value : void 0;
+}
+function typed(test, message) {
+  return (value, { key, file, issues }) => {
+    if (test(value)) {
+      return { value };
+    }
+    issues.push(schemaIssue(file, key, message));
+    return void 0;
+  };
+}
+function kept(valid) {
+  return (value, { file, issues }) => valid(value, file, issues) ? { value } : void 0;
+}
+function replaced(validate2) {
+  return (value, { file, issues }) => {
+    const checked = validate2(value, file, issues);
+    return checked === void 0 ? void 0 : { value: checked };
+  };
+}
+var validateFeatures = (value, { file, issues }) => {
+  if (!isRecord3(value)) {
     issues.push(
       schemaIssue(
         file,
-        "build",
-        "`build.out` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+        "features",
+        "`features` \u306F\u6A5F\u80FD\u540D\u3068 true / false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
-  } else if (typeof value.out !== "string" || !value.out.endsWith(".html")) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build.out",
-        "`build.out` \u306F\u62E1\u5F35\u5B50 `.html` \u306E\u30D1\u30B9\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
+    return void 0;
   }
-  for (const key of ["exclude", "glossary"]) {
-    if (value[key] !== void 0 && !isStringArray(value[key])) {
+  const features = {};
+  for (const [name, enabled] of Object.entries(value)) {
+    if (typeof enabled === "boolean") {
+      features[name] = enabled;
+    } else {
       issues.push(
         schemaIssue(
           file,
-          `build.${key}`,
-          `\`build.${key}\` \u306F\u6587\u5B57\u5217\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+          `features.${name}`,
+          `\`features.${name}\` \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         )
       );
     }
   }
-  if (value.entry !== void 0 && typeof value.entry !== "string") {
+  return { value: features };
+};
+var validateLibraries = (value, { file, issues }) => {
+  if (!isRecord3(value)) {
     issues.push(
       schemaIssue(
         file,
-        "build.entry",
-        "`build.entry` \u306F\u6587\u66F8\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+        "libraries",
+        "`libraries` \u306F\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
+    return void 0;
   }
-  return issues.length === before ? value : void 0;
-}
+  const libraries = {};
+  for (const [name, url2] of Object.entries(value)) {
+    if (!MARK_NAME_PATTERN.test(name) || typeof url2 !== "string") {
+      issues.push(
+        schemaIssue(
+          file,
+          `libraries.${name}`,
+          `\`libraries.${name}\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        )
+      );
+    } else {
+      libraries[name] = url2;
+    }
+  }
+  return { value: libraries };
+};
+var validateAliases = (value, { file, issues }) => {
+  if (!Array.isArray(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "aliases",
+        "`aliases` \u306F\u30A8\u30A4\u30EA\u30A2\u30B9\u306E\u5143\u306E\u884C\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return void 0;
+  }
+  const checked = validateAliasRows(value, file);
+  issues.push(...checked.issues);
+  return { value: checked.rows };
+};
+var isString = (value) => typeof value === "string";
+var CONFIG_KEY_VALIDATORS = [
+  ["features", validateFeatures],
+  ["libraries", validateLibraries],
+  [
+    "version",
+    typed(
+      isLocalVersion,
+      "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u304B develop \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  ],
+  [
+    "index",
+    typed(isString, "`index` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002")
+  ],
+  [
+    "theme",
+    typed(isString, "`theme` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002")
+  ],
+  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が通知する）
+  [
+    "colorTheme",
+    typed(isString, "`colorTheme` \u306F\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002")
+  ],
+  // 知らない値はここでは拒まず、設定に残す（`mdmark check` が通知する）
+  [
+    "colorScheme",
+    typed(
+      isString,
+      "`colorScheme` \u306F `light`\u30FB`dark`\u30FB`auto` \u306E\u3069\u308C\u304B\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  ],
+  [
+    "extensions",
+    typed(
+      isStringArray,
+      "`extensions` \u306F\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  ],
+  ["build", replaced(validateBuild)],
+  ["tooltips", kept(isValidTooltips)],
+  ["labels", kept(isValidLabels)],
+  ["syntax", kept(isValidSyntax)],
+  ["html-scripts", kept(isValidHtmlScripts)],
+  ["mermaid", kept(isValidMermaid)],
+  ["assets", kept(isValidAssets)],
+  ["side-toc", kept(isValidSideToc)],
+  ["table", kept(isValidTable)],
+  ["map", kept(isValidMap)],
+  ["aliases", validateAliases],
+  ["check", replaced(validateCheck)]
+];
 function validateConfig(raw, file) {
   const issues = [];
   if (!isRecord3(raw)) {
@@ -57279,173 +57465,15 @@ function validateConfig(raw, file) {
     return { config: {}, issues };
   }
   const config3 = { ...raw };
-  if (raw.features !== void 0) {
-    const features = {};
-    if (isRecord3(raw.features)) {
-      for (const [name, value] of Object.entries(raw.features)) {
-        if (typeof value === "boolean") {
-          features[name] = value;
-        } else {
-          issues.push(
-            schemaIssue(
-              file,
-              `features.${name}`,
-              `\`features.${name}\` \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-            )
-          );
-        }
-      }
-      config3.features = features;
+  for (const [key, validate2] of CONFIG_KEY_VALIDATORS) {
+    if (raw[key] === void 0) {
+      continue;
+    }
+    const checked = validate2(raw[key], { key, file, issues });
+    if (checked) {
+      config3[key] = checked.value;
     } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "features",
-          "`features` \u306F\u6A5F\u80FD\u540D\u3068 true / false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config3.features;
-    }
-  }
-  if (raw.libraries !== void 0) {
-    if (isRecord3(raw.libraries)) {
-      const libraries = {};
-      for (const [name, url2] of Object.entries(raw.libraries)) {
-        if (!MARK_NAME_PATTERN.test(name) || typeof url2 !== "string") {
-          issues.push(
-            schemaIssue(
-              file,
-              `libraries.${name}`,
-              `\`libraries.${name}\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-            )
-          );
-        } else {
-          libraries[name] = url2;
-        }
-      }
-      config3.libraries = libraries;
-    } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "libraries",
-          "`libraries` \u306F\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config3.libraries;
-    }
-  }
-  if (raw.version !== void 0) {
-    if (typeof raw.version !== "string" || !VERSION_PATTERN.test(raw.version)) {
-      issues.push(
-        schemaIssue(
-          file,
-          "version",
-          "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config3.version;
-    }
-  }
-  for (const key of ["index", "theme"]) {
-    if (raw[key] !== void 0 && typeof raw[key] !== "string") {
-      issues.push(
-        schemaIssue(
-          file,
-          key,
-          `\`${key}\` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        )
-      );
       delete config3[key];
-    }
-  }
-  if (raw.colorTheme !== void 0 && typeof raw.colorTheme !== "string") {
-    issues.push(
-      schemaIssue(
-        file,
-        "colorTheme",
-        "`colorTheme` \u306F\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    delete config3.colorTheme;
-  }
-  if (raw.colorScheme !== void 0 && typeof raw.colorScheme !== "string") {
-    issues.push(
-      schemaIssue(
-        file,
-        "colorScheme",
-        "`colorScheme` \u306F `light`\u30FB`dark`\u30FB`auto` \u306E\u3069\u308C\u304B\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    delete config3.colorScheme;
-  }
-  if (raw.extensions !== void 0 && !isStringArray(raw.extensions)) {
-    issues.push(
-      schemaIssue(
-        file,
-        "extensions",
-        "`extensions` \u306F\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    delete config3.extensions;
-  }
-  if (raw.build !== void 0) {
-    const build5 = validateBuild(raw.build, file, issues);
-    if (build5) {
-      config3.build = build5;
-    } else {
-      delete config3.build;
-    }
-  }
-  if (raw.tooltips !== void 0 && !isValidTooltips(raw.tooltips, file, issues)) {
-    delete config3.tooltips;
-  }
-  if (raw.labels !== void 0 && !isValidLabels(raw.labels, file, issues)) {
-    delete config3.labels;
-  }
-  if (raw.syntax !== void 0 && !isValidSyntax(raw.syntax, file, issues)) {
-    delete config3.syntax;
-  }
-  if (raw["html-scripts"] !== void 0 && !isValidHtmlScripts(raw["html-scripts"], file, issues)) {
-    delete config3["html-scripts"];
-  }
-  if (raw.mermaid !== void 0 && !isValidMermaid(raw.mermaid, file, issues)) {
-    delete config3.mermaid;
-  }
-  if (raw.assets !== void 0 && !isValidAssets(raw.assets, file, issues)) {
-    delete config3.assets;
-  }
-  if (raw["side-toc"] !== void 0 && !isValidSideToc(raw["side-toc"], file, issues)) {
-    delete config3["side-toc"];
-  }
-  if (raw.table !== void 0 && !isValidTable(raw.table, file, issues)) {
-    delete config3.table;
-  }
-  if (raw.map !== void 0 && !isValidMap(raw.map, file, issues)) {
-    delete config3.map;
-  }
-  if (raw.aliases !== void 0) {
-    if (Array.isArray(raw.aliases)) {
-      const checked = validateAliasRows(raw.aliases, file);
-      issues.push(...checked.issues);
-      config3.aliases = checked.rows;
-    } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "aliases",
-          "`aliases` \u306F\u30A8\u30A4\u30EA\u30A2\u30B9\u306E\u5143\u306E\u884C\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config3.aliases;
-    }
-  }
-  if (raw.check !== void 0) {
-    const check2 = validateCheck(raw.check, file, issues);
-    if (check2) {
-      config3.check = check2;
-    } else {
-      delete config3.check;
     }
   }
   return { config: config3, issues };
@@ -57769,8 +57797,44 @@ var findConfigChain = async (options) => {
 };
 var absolutize = (value, dir) => HTTP_PATTERN.test(value) || isAbsolute(value) ? value : resolve(dir, value);
 var relativize = (value, dir) => isAbsolute(value) && isInside(value, dir) ? relative(dir, value).split(sep).join("/") : value;
+function mapNestedPath(value, key, map) {
+  if (!isRecord3(value) || typeof value[key] !== "string") {
+    return void 0;
+  }
+  return { ...value, [key]: map(value[key]) };
+}
+function mapBuildPaths(config3, map) {
+  const build5 = { ...config3 };
+  build5.include = build5.include.map(map);
+  build5.out = map(build5.out);
+  if (build5.exclude) {
+    build5.exclude = build5.exclude.map(map);
+  }
+  if (build5.glossary) {
+    build5.glossary = build5.glossary.map(map);
+  }
+  if (build5.entry !== void 0) {
+    build5.entry = map(build5.entry);
+  }
+  return build5;
+}
+function mapAliasPaths(rows, map) {
+  return rows.map(
+    (row) => isRecord3(row) && Array.isArray(row.paths) ? {
+      ...row,
+      paths: row.paths.map(
+        (path) => typeof path === "string" ? map(path) : path
+      )
+    } : row
+  );
+}
+var NESTED_PATH_KEYS = [
+  ["html-scripts", "url"],
+  ["mermaid", "url"],
+  ["syntax", "url"],
+  ["assets", "root"]
+];
 var mapConfigPaths = (config3, map) => {
-  const all = (values) => values.map(map);
   const result = { ...config3 };
   if (typeof config3.theme === "string") {
     result.theme = map(config3.theme);
@@ -57779,7 +57843,7 @@ var mapConfigPaths = (config3, map) => {
     result.index = map(config3.index);
   }
   if (config3.extensions) {
-    result.extensions = all(config3.extensions);
+    result.extensions = config3.extensions.map(map);
   }
   if (isRecord3(config3.libraries)) {
     result.libraries = Object.fromEntries(
@@ -57789,44 +57853,18 @@ var mapConfigPaths = (config3, map) => {
       ])
     );
   }
-  const htmlScripts = config3["html-scripts"];
-  if (isRecord3(htmlScripts) && typeof htmlScripts.url === "string") {
-    result["html-scripts"] = { ...htmlScripts, url: map(htmlScripts.url) };
-  }
-  const mermaid = config3.mermaid;
-  if (isRecord3(mermaid) && typeof mermaid.url === "string") {
-    result.mermaid = { ...mermaid, url: map(mermaid.url) };
-  }
-  if (isRecord3(config3.syntax) && typeof config3.syntax.url === "string") {
-    result.syntax = { ...config3.syntax, url: map(config3.syntax.url) };
-  }
-  if (isRecord3(config3.assets) && typeof config3.assets.root === "string") {
-    result.assets = { ...config3.assets, root: map(config3.assets.root) };
+  const nested = result;
+  for (const [key, pathKey] of NESTED_PATH_KEYS) {
+    const mapped = mapNestedPath(config3[key], pathKey, map);
+    if (mapped !== void 0) {
+      nested[key] = mapped;
+    }
   }
   if (config3.build) {
-    const build5 = { ...config3.build };
-    build5.include = all(build5.include);
-    build5.out = map(build5.out);
-    if (build5.exclude) {
-      build5.exclude = all(build5.exclude);
-    }
-    if (build5.glossary) {
-      build5.glossary = all(build5.glossary);
-    }
-    if (build5.entry !== void 0) {
-      build5.entry = map(build5.entry);
-    }
-    result.build = build5;
+    result.build = mapBuildPaths(config3.build, map);
   }
   if (config3.aliases) {
-    result.aliases = config3.aliases.map(
-      (row) => isRecord3(row) && Array.isArray(row.paths) ? {
-        ...row,
-        paths: row.paths.map(
-          (path) => typeof path === "string" ? map(path) : path
-        )
-      } : row
-    );
+    result.aliases = mapAliasPaths(config3.aliases, map);
   }
   return result;
 };
@@ -57942,9 +57980,25 @@ var readLayer = async (path, readFile15) => {
     throw error2;
   }
 };
+var folderConfigPaths = async (options) => {
+  if (options.explicit === void 0) {
+    return findConfigChain({
+      cwd: options.cwd,
+      cascade: options.cascade,
+      isFile: options.isFile
+    });
+  }
+  const path = resolve(options.cwd, options.explicit);
+  if (!await options.isFile(path)) {
+    throw new ConfigNotFoundError(
+      `${options.explicit} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\uFF08${options.explicitName}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3059\u308B\u304B\u3001mdmark init \u3067\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  return [path];
+};
 var loadLayeredConfig = async (options) => {
   const issues = [];
-  let unreadable5;
+  let unreadable7;
   const layers = [];
   const take = async (path, layer) => {
     const read = await readLayer(path, options.readFile);
@@ -57952,7 +58006,7 @@ var loadLayeredConfig = async (options) => {
       return void 0;
     }
     if (read.kind === "unreadable") {
-      unreadable5 ??= { path, line: read.line, message: read.message };
+      unreadable7 ??= { path, line: read.line, message: read.message };
       return void 0;
     }
     const raw = layer === "folder" && isRecord3(read.raw) && "config" in read.raw ? Object.fromEntries(
@@ -57980,22 +58034,7 @@ var loadLayeredConfig = async (options) => {
       config: absolutizeConfigPaths({ config: config3, dir: dirname(settingsPath) })
     });
   }
-  let paths;
-  if (options.explicit !== void 0) {
-    const path = resolve(options.cwd, options.explicit);
-    if (!await options.isFile(path)) {
-      throw new ConfigNotFoundError(
-        `${options.explicit} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\uFF08${options.explicitName}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3059\u308B\u304B\u3001mdmark init \u3067\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-    paths = [path];
-  } else {
-    paths = await findConfigChain({
-      cwd: options.cwd,
-      cascade,
-      isFile: options.isFile
-    });
-  }
+  const paths = await folderConfigPaths({ ...options, cascade });
   for (const path of paths) {
     const taken = await take(path, "folder");
     if (taken) {
@@ -58013,7 +58052,7 @@ var loadLayeredConfig = async (options) => {
     config: mergeConfigs(used.map((layer) => layer.config)),
     files: used.map((layer) => layer.file),
     nearest: paths.at(-1),
-    unreadable: unreadable5,
+    unreadable: unreadable7,
     issues
   };
 };
@@ -58078,7 +58117,8 @@ async function loadConfig(path) {
     throw error2;
   }
 }
-async function readLayeredConfig(cwd, explicit, purpose, keepInvalid = false) {
+async function readLayeredConfig(options) {
+  const { cwd, explicit, purpose, keepInvalid = false } = options;
   try {
     return await loadLayeredConfig({
       cwd,
@@ -58099,7 +58139,7 @@ async function readLayeredConfig(cwd, explicit, purpose, keepInvalid = false) {
   }
 }
 async function requireConfig(cwd, explicit) {
-  const layered = await readLayeredConfig(cwd, explicit, "export");
+  const layered = await readLayeredConfig({ cwd, explicit, purpose: "export" });
   const shown = (path) => displayConfigPath({ path, base: cwd, home: homedir() });
   if (layered.nearest === void 0) {
     throw new CliError(
@@ -58295,7 +58335,8 @@ var localPlugin = {
     );
   }
 };
-async function bundleModule(entry, baseDir, fetchText, build5) {
+async function bundleModule(entry, baseDir, deps) {
+  const { fetchText, build: build5 } = deps;
   try {
     const result = await build5({
       absWorkingDir: baseDir,
@@ -62982,6 +63023,12 @@ var CURRENT_SCHEMA = 2;
 function isRecord4(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+function checkString(key, value) {
+  if (typeof value !== "string") {
+    return `${key} \u306F\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`;
+  }
+  return value === "" && !EMPTY_ALLOWED.has(key) ? `${key} \u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093` : void 0;
+}
 function checkType(key, value, shape) {
   if (shape.type === "integer") {
     return Number.isInteger(value) ? void 0 : `${key} \u306F\u6574\u6570\u306B\u3057\u307E\u3059`;
@@ -62993,10 +63040,7 @@ function checkType(key, value, shape) {
     return typeof value === "boolean" ? void 0 : `${key} \u306F\u771F\u507D\u5024\u306B\u3057\u307E\u3059`;
   }
   if (shape.type === "string") {
-    if (typeof value !== "string") {
-      return `${key} \u306F\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`;
-    }
-    return value === "" && !EMPTY_ALLOWED.has(key) ? `${key} \u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093` : void 0;
+    return checkString(key, value);
   }
   const ok = Array.isArray(value) && value.every((item) => typeof item === "string" && item !== "");
   return ok ? void 0 : `${key} \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u306E\u4E26\u3073\u306B\u3057\u307E\u3059`;
@@ -63080,6 +63124,26 @@ function checkDocRelated(options) {
   });
   return valid;
 }
+function checkKey(options) {
+  const { value, key, shape, where, problems } = options;
+  if (value === void 0) {
+    if (shape.required) {
+      problems.push({ where, message: `${key} \u304C\u3042\u308A\u307E\u305B\u3093` });
+    }
+    return !shape.required;
+  }
+  if (shape.type === "doc_tags") {
+    return checkDocTags({ value, where, problems });
+  }
+  if (shape.type === "doc_related") {
+    return checkDocRelated({ value, where, problems });
+  }
+  const message = checkType(key, value, shape);
+  if (message) {
+    problems.push({ where, message });
+  }
+  return message === void 0;
+}
 function checkItem(options) {
   const { item, shape, where, problems } = options;
   if (!isRecord4(item)) {
@@ -63088,36 +63152,14 @@ function checkItem(options) {
   }
   let valid = true;
   for (const [key, keyShape] of Object.entries(shape)) {
-    const value = item[key];
-    if (value === void 0) {
-      if (keyShape.required) {
-        problems.push({
-          where: `${where}.${key}`,
-          message: `${key} \u304C\u3042\u308A\u307E\u305B\u3093`
-        });
-        valid = false;
-      }
-      continue;
-    }
-    if (keyShape.type === "doc_tags") {
-      const tagsWhere = `${where}.${key}`;
-      if (!checkDocTags({ value, where: tagsWhere, problems })) {
-        valid = false;
-      }
-      continue;
-    }
-    if (keyShape.type === "doc_related") {
-      const relatedWhere = `${where}.${key}`;
-      if (!checkDocRelated({ value, where: relatedWhere, problems })) {
-        valid = false;
-      }
-      continue;
-    }
-    const message = checkType(key, value, keyShape);
-    if (message) {
-      problems.push({ where: `${where}.${key}`, message });
-      valid = false;
-    }
+    const checked = checkKey({
+      value: item[key],
+      key,
+      shape: keyShape,
+      where: `${where}.${key}`,
+      problems
+    });
+    valid = checked && valid;
   }
   for (const key of Object.keys(item)) {
     if (!Object.hasOwn(shape, key)) {
@@ -63260,29 +63302,15 @@ function escapeHtml2(text2) {
   return text2.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
-// src/parts/colors.ts
-var COLOR_NAMES = [
-  "blue",
-  "red",
-  "green",
-  "yellow",
-  "orange",
-  "purple",
-  "gray"
-];
-function isColorName(value) {
-  return COLOR_NAMES.includes(value);
-}
-
 // src/diagram/definition.ts
 var RETIRED_DIAGRAM_DIRECTIVES = [
   "flow",
-  "sequence"
+  "sequence",
+  "er"
 ];
 var DIAGRAM_DIRECTIVES = {
   chart: { name: "\u30B0\u30E9\u30D5", call: "\u3053\u306E\u30B0\u30E9\u30D5" },
-  param: { name: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1", call: "\u3053\u306E\u90E8\u54C1" },
-  er: { name: "ER \u56F3", call: "\u3053\u306E ER \u56F3" }
+  param: { name: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1", call: "\u3053\u306E\u90E8\u54C1" }
 };
 var SERIES_RANGE = { min: 1, max: 6 };
 var CHART_TYPES = [
@@ -63320,17 +63348,21 @@ function missingSymbols(text2) {
       } else if (char === '"') {
         inString = false;
       }
-    } else if (char === '"') {
-      inString = true;
-    } else if (char === "{") {
-      stack.push("}");
-    } else if (char === "[") {
-      stack.push("]");
-    } else if (char === "}" || char === "]") {
-      stack.pop();
+      continue;
     }
+    inString = char === '"';
+    trackBracket(stack, char);
   }
   return `${inString ? '"' : ""}${stack.reverse().join("")}`;
+}
+function trackBracket(stack, char) {
+  if (char === "{") {
+    stack.push("}");
+  } else if (char === "[") {
+    stack.push("]");
+  } else if (char === "}" || char === "]") {
+    stack.pop();
+  }
 }
 function errorPosition(error2, length) {
   const message = error2 instanceof Error ? error2.message : "";
@@ -63400,61 +63432,51 @@ function checkOptionalText(value, path, problems) {
     problems.expect(value, "\u6587\u5B57", path);
   }
 }
-function checkDuplicates(ids, noun, problems) {
-  const seen = /* @__PURE__ */ new Set();
-  const reported = /* @__PURE__ */ new Set();
-  for (const id of ids) {
-    if (seen.has(id) && !reported.has(id)) {
-      reported.add(id);
-      const count = ids.filter((other) => other === id).length;
-      problems.add(
-        `${noun}\u306E id ${id} \u304C ${count} \u3064\u3042\u308A\u307E\u3059\u3002\u5225\u306E id \u306B\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-    }
-    seen.add(id);
-  }
-}
 function checkAxes(source, problems) {
   const x = asObject(source.x, "x", problems);
   const y = asObject(source.y, "y", problems);
-  let tickCount;
-  if (x) {
-    problems.expect(x.label, "\u6587\u5B57", "x.label");
-    const ticks = asArray(x.ticks, "x.ticks", problems);
-    if (ticks) {
-      if (ticks.length < 2) {
-        problems.add(
-          "x.ticks \u304C 2 \u3064\u306B\u6E80\u305F\u306A\u3044\u3067\u3059\u3002\u76EE\u76DB\u308A\u3092 2 \u3064\u4EE5\u4E0A\u66F8\u3044\u3066\u304F\u3060\u3055\u3044"
-        );
-      }
-      if (ticks.every((tick) => typeof tick === "string")) {
-        tickCount = ticks.length;
-      } else {
-        problems.add(
-          "x.ticks \u306B\u6587\u5B57\u3067\u306A\u3044\u76EE\u76DB\u308A\u304C\u3042\u308A\u307E\u3059\u3002\u76EE\u76DB\u308A\u306F\u6587\u5B57\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044"
-        );
-      }
-    }
-  }
+  const tickCount = x ? checkTicksAxis(x, problems) : void 0;
   if (y) {
-    problems.expect(y.label, "\u6587\u5B57", "y.label");
-    const numbers = ["min", "max", "step"].map(
-      (key) => problems.expect(y[key], "\u6570", `y.${key}`)
-    );
-    if (numbers.every(Boolean)) {
-      if (y.min >= y.max) {
-        problems.add(
-          "y.min \u304C y.max \u4EE5\u4E0A\u3067\u3059\u3002min \u306F max \u3088\u308A\u5C0F\u3055\u304F\u3057\u3066\u304F\u3060\u3055\u3044"
-        );
-      }
-      if (y.step <= 0) {
-        problems.add("y.step \u304C 0 \u4EE5\u4E0B\u3067\u3059\u3002step \u306F\u6B63\u306E\u6570\u306B\u3057\u3066\u304F\u3060\u3055\u3044");
-      }
-    }
+    checkRangeAxis(y, problems);
   }
   return tickCount;
 }
-function checkPointList(points, label, tickCount, problems) {
+function checkTicksAxis(x, problems) {
+  problems.expect(x.label, "\u6587\u5B57", "x.label");
+  const ticks = asArray(x.ticks, "x.ticks", problems);
+  if (!ticks) {
+    return void 0;
+  }
+  if (ticks.length < 2) {
+    problems.add(
+      "x.ticks \u304C 2 \u3064\u306B\u6E80\u305F\u306A\u3044\u3067\u3059\u3002\u76EE\u76DB\u308A\u3092 2 \u3064\u4EE5\u4E0A\u66F8\u3044\u3066\u304F\u3060\u3055\u3044"
+    );
+  }
+  if (ticks.every((tick) => typeof tick === "string")) {
+    return ticks.length;
+  }
+  problems.add(
+    "x.ticks \u306B\u6587\u5B57\u3067\u306A\u3044\u76EE\u76DB\u308A\u304C\u3042\u308A\u307E\u3059\u3002\u76EE\u76DB\u308A\u306F\u6587\u5B57\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044"
+  );
+  return void 0;
+}
+function checkRangeAxis(y, problems) {
+  problems.expect(y.label, "\u6587\u5B57", "y.label");
+  const numbers = ["min", "max", "step"].map(
+    (key) => problems.expect(y[key], "\u6570", `y.${key}`)
+  );
+  if (!numbers.every(Boolean)) {
+    return;
+  }
+  if (y.min >= y.max) {
+    problems.add("y.min \u304C y.max \u4EE5\u4E0A\u3067\u3059\u3002min \u306F max \u3088\u308A\u5C0F\u3055\u304F\u3057\u3066\u304F\u3060\u3055\u3044");
+  }
+  if (y.step <= 0) {
+    problems.add("y.step \u304C 0 \u4EE5\u4E0B\u3067\u3059\u3002step \u306F\u6B63\u306E\u6570\u306B\u3057\u3066\u304F\u3060\u3055\u3044");
+  }
+}
+function checkPointList(points, tickCount, at) {
+  const { label, problems } = at;
   const list2 = asArray(points, `${label}\u306E points`, problems);
   if (!list2) {
     return;
@@ -63534,7 +63556,8 @@ function checkYAxis(source, problems, key = "y") {
     }
   }
 }
-function checkTupleList(points, label, bubble, problems) {
+function checkTupleList(points, bubble, at) {
+  const { label, problems } = at;
   const list2 = asArray(points, `${label}\u306E points`, problems);
   const shape = bubble ? "[x, y, size]" : "[x, y]";
   if (list2 && !list2.every(
@@ -63545,7 +63568,8 @@ function checkTupleList(points, label, bubble, problems) {
     );
   }
 }
-function checkComboSeries(entry, label, hasY2, problems) {
+function checkComboSeries(entry, hasY2, at) {
+  const { label, problems } = at;
   if (entry.as !== void 0 && entry.as !== "line" && entry.as !== "bar") {
     problems.add(
       `${label}\u306E as ${String(entry.as)} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002as \u306F line\u30FBbar \u306E\u3069\u3061\u3089\u304B\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
@@ -63599,6 +63623,29 @@ function checkChart(source, problems) {
     checkPieItems(source, problems);
     return;
   }
+  const tickCount = checkChartAxes(source, type, problems);
+  const series = asArray(source.series, "series", problems);
+  if (!series) {
+    return;
+  }
+  if (series.length < SERIES_RANGE.min || series.length > SERIES_RANGE.max) {
+    problems.add(
+      `\u7CFB\u5217\u304C ${series.length} \u3064\u3067\u3059\u3002\u7CFB\u5217\u306F ${SERIES_RANGE.min}\u301C${SERIES_RANGE.max} \u3064\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
+    );
+  }
+  series.forEach((value, index) => {
+    const entry = asObject(value, `series[${index}]`, problems);
+    if (entry) {
+      checkChartSeries(entry, index, {
+        type,
+        tickCount,
+        hasY2: source.y2 !== void 0,
+        problems
+      });
+    }
+  });
+}
+function checkChartAxes(source, type, problems) {
   let tickCount;
   if (NUMERIC_X_CHART_TYPES.includes(type)) {
     checkNumericXAxis(source, problems);
@@ -63615,41 +63662,21 @@ function checkChart(source, problems) {
       problems.expect(size.label, "\u6587\u5B57", "size.label");
     }
   }
-  const series = asArray(source.series, "series", problems);
-  if (!series) {
-    return;
+  return tickCount;
+}
+function checkChartSeries(entry, index, chart) {
+  const { type, tickCount, hasY2, problems } = chart;
+  const name = typeof entry.name === "string" ? entry.name : `${index + 1} \u3064\u76EE`;
+  problems.expect(entry.name, "\u6587\u5B57", `series[${index}].name`);
+  const at = { label: `\u7CFB\u5217\u300C${name}\u300D`, problems };
+  if (NUMERIC_X_CHART_TYPES.includes(type)) {
+    checkTupleList(entry.points, type === "bubble", at);
+  } else {
+    checkPointList(entry.points, tickCount, at);
   }
-  if (series.length < SERIES_RANGE.min || series.length > SERIES_RANGE.max) {
-    problems.add(
-      `\u7CFB\u5217\u304C ${series.length} \u3064\u3067\u3059\u3002\u7CFB\u5217\u306F ${SERIES_RANGE.min}\u301C${SERIES_RANGE.max} \u3064\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-    );
+  if (type === "combo") {
+    checkComboSeries(entry, hasY2, at);
   }
-  series.forEach((value, index) => {
-    const entry = asObject(value, `series[${index}]`, problems);
-    if (!entry) {
-      return;
-    }
-    const name = typeof entry.name === "string" ? entry.name : `${index + 1} \u3064\u76EE`;
-    problems.expect(entry.name, "\u6587\u5B57", `series[${index}].name`);
-    if (NUMERIC_X_CHART_TYPES.includes(type)) {
-      checkTupleList(
-        entry.points,
-        `\u7CFB\u5217\u300C${name}\u300D`,
-        type === "bubble",
-        problems
-      );
-    } else {
-      checkPointList(entry.points, `\u7CFB\u5217\u300C${name}\u300D`, tickCount, problems);
-    }
-    if (type === "combo") {
-      checkComboSeries(
-        entry,
-        `\u7CFB\u5217\u300C${name}\u300D`,
-        source.y2 !== void 0,
-        problems
-      );
-    }
-  });
 }
 function knobValues(knob) {
   const values = [];
@@ -63659,28 +63686,47 @@ function knobValues(knob) {
   }
   return values;
 }
-function checkParam(source, problems) {
-  problems.expect(source.title, "\u6587\u5B57", "title");
-  const knob = asObject(source.knob, "knob", problems);
-  let knobOk = false;
-  if (knob) {
-    problems.expect(knob.key, "\u6587\u5B57", "knob.key");
-    problems.expect(knob.label, "\u6587\u5B57", "knob.label");
-    const numbers = ["min", "max", "step", "value"].map(
-      (key) => problems.expect(knob[key], "\u6570", `knob.${key}`)
+function checkKnob(knob, problems) {
+  problems.expect(knob.key, "\u6587\u5B57", "knob.key");
+  problems.expect(knob.label, "\u6587\u5B57", "knob.label");
+  const numbers = ["min", "max", "step", "value"].map(
+    (key) => problems.expect(knob[key], "\u6570", `knob.${key}`)
+  );
+  if (!numbers.every(Boolean)) {
+    return void 0;
+  }
+  const checked = knob;
+  if (checked.min >= checked.max) {
+    problems.add(
+      "knob.min \u304C knob.max \u4EE5\u4E0A\u3067\u3059\u3002min \u306F max \u3088\u308A\u5C0F\u3055\u304F\u3057\u3066\u304F\u3060\u3055\u3044"
     );
-    knobOk = numbers.every(Boolean);
-    if (knobOk && knob.min >= knob.max) {
+    return void 0;
+  }
+  if (checked.step <= 0) {
+    problems.add("knob.step \u304C 0 \u4EE5\u4E0B\u3067\u3059\u3002step \u306F\u6B63\u306E\u6570\u306B\u3057\u3066\u304F\u3060\u3055\u3044");
+    return void 0;
+  }
+  return checked;
+}
+function checkKnobValues(knob, table2, problems) {
+  const values = knobValues(knob);
+  for (const value of values) {
+    if (!Object.hasOwn(table2, String(value))) {
       problems.add(
-        "knob.min \u304C knob.max \u4EE5\u4E0A\u3067\u3059\u3002min \u306F max \u3088\u308A\u5C0F\u3055\u304F\u3057\u3066\u304F\u3060\u3055\u3044"
+        `\u30B9\u30E9\u30A4\u30C0\u30FC\u306E\u5024 ${value} \u306E\u70B9\u304C table \u306B\u3042\u308A\u307E\u305B\u3093\u3002min \u304B\u3089 max \u307E\u3067 step \u3054\u3068\u306E\u5168\u3066\u306E\u5024\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
       );
-      knobOk = false;
-    }
-    if (knobOk && knob.step <= 0) {
-      problems.add("knob.step \u304C 0 \u4EE5\u4E0B\u3067\u3059\u3002step \u306F\u6B63\u306E\u6570\u306B\u3057\u3066\u304F\u3060\u3055\u3044");
-      knobOk = false;
     }
   }
+  if (!values.includes(knob.value)) {
+    problems.add(
+      `knob.value ${String(knob.value)} \u304C min \u304B\u3089 step \u3054\u3068\u306E\u5024\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u65E2\u5B9A\u306E\u5024\u306F step \u3054\u3068\u306E\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
+    );
+  }
+}
+function checkParam(source, problems) {
+  problems.expect(source.title, "\u6587\u5B57", "title");
+  const knobSource = asObject(source.knob, "knob", problems);
+  const knob = knobSource ? checkKnob(knobSource, problems) : void 0;
   const chart = asObject(source.chart, "chart", problems);
   let tickCount;
   if (chart) {
@@ -63692,167 +63738,15 @@ function checkParam(source, problems) {
     return;
   }
   for (const [key, points] of Object.entries(table2)) {
-    checkPointList(points, `table \u306E ${key}`, tickCount, problems);
+    checkPointList(points, tickCount, { label: `table \u306E ${key}`, problems });
   }
-  if (knobOk && knob) {
-    const values = knobValues(
-      knob
-    );
-    for (const value of values) {
-      if (!Object.hasOwn(table2, String(value))) {
-        problems.add(
-          `\u30B9\u30E9\u30A4\u30C0\u30FC\u306E\u5024 ${value} \u306E\u70B9\u304C table \u306B\u3042\u308A\u307E\u305B\u3093\u3002min \u304B\u3089 max \u307E\u3067 step \u3054\u3068\u306E\u5168\u3066\u306E\u5024\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-        );
-      }
-    }
-    if (!values.includes(knob.value)) {
-      problems.add(
-        `knob.value ${String(knob.value)} \u304C min \u304B\u3089 step \u3054\u3068\u306E\u5024\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u65E2\u5B9A\u306E\u5024\u306F step \u3054\u3068\u306E\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-    }
+  if (knob) {
+    checkKnobValues(knob, table2, problems);
   }
-}
-var ER_TABLE_KIND_LIST = [
-  "master",
-  "transaction"
-];
-var ER_CARDINALITY_LIST = [
-  "1",
-  "0..1",
-  "1..n",
-  "0..n"
-];
-function checkOptionalBoolean(value, path, problems) {
-  if (value !== void 0) {
-    problems.expect(value, "\u771F\u507D\u5024", path);
-  }
-}
-function checkErTable(value, index, problems) {
-  const table2 = asObject(value, `tables[${index}]`, problems);
-  if (!table2) {
-    return void 0;
-  }
-  const name = typeof table2.label === "string" ? table2.label : `${index + 1} \u3064\u76EE`;
-  const label = `\u30C6\u30FC\u30D6\u30EB\u300C${name}\u300D`;
-  problems.expect(table2.id, "\u6587\u5B57", `${label}\u306E id`);
-  problems.expect(table2.name, "\u6587\u5B57", `${label}\u306E name`);
-  problems.expect(table2.label, "\u6587\u5B57", `tables[${index}].label`);
-  for (const key of ["x", "y", "w"]) {
-    problems.expect(table2[key], "\u6570", `${label}\u306E ${key}`);
-  }
-  checkOptionalText(table2.desc, `${label}\u306E desc`, problems);
-  checkOptionalBoolean(table2.folded, `${label}\u306E folded`, problems);
-  if (table2.kind !== void 0) {
-    if (typeof table2.kind !== "string" || !ER_TABLE_KIND_LIST.includes(table2.kind)) {
-      problems.add(
-        `${label}\u306E\u7A2E\u985E ${String(table2.kind)} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u7A2E\u985E\u306F ${ER_TABLE_KIND_LIST.join("\u30FB")} \u3067\u3059`
-      );
-    }
-  }
-  if (table2.color !== void 0 && !isColorName(String(table2.color))) {
-    problems.add(
-      `${label}\u306E\u8272 ${String(table2.color)} \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u8272\u306E\u540D\u524D\u306F ${COLOR_NAMES.join("\u30FB")} \u3067\u3059`
-    );
-  }
-  const columns = [];
-  const list2 = asArray(table2.columns, `${label}\u306E columns`, problems) ?? [];
-  list2.forEach((item, i) => {
-    const column = asObject(item, `${label}\u306E columns[${i}]`, problems);
-    if (!column) {
-      return;
-    }
-    if (problems.expect(column.name, "\u6587\u5B57", `${label}\u306E columns[${i}].name`)) {
-      columns.push(column.name);
-    }
-    problems.expect(column.type, "\u6587\u5B57", `${label}\u306E columns[${i}].type`);
-    for (const key of ["pk", "fk", "nn"]) {
-      checkOptionalBoolean(
-        column[key],
-        `${label}\u306E columns[${i}].${key}`,
-        problems
-      );
-    }
-    checkOptionalText(column.desc, `${label}\u306E columns[${i}].desc`, problems);
-  });
-  const seen = /* @__PURE__ */ new Set();
-  for (const column of columns) {
-    if (seen.has(column)) {
-      problems.add(
-        `${label}\u306E\u5217\u306E\u540D\u524D ${column} \u304C 2 \u3064\u4EE5\u4E0A\u3042\u308A\u307E\u3059\u3002\u5225\u306E\u540D\u524D\u306B\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-      break;
-    }
-    seen.add(column);
-  }
-  return typeof table2.id === "string" ? { id: table2.id, columns } : void 0;
-}
-function checkErCardinality(value, path, problems) {
-  if (typeof value !== "string" || !ER_CARDINALITY_LIST.includes(value)) {
-    problems.add(
-      value === void 0 ? `${path} \u304C\u3042\u308A\u307E\u305B\u3093\u3002${ER_CARDINALITY_LIST.join("\u30FB")} \u306E\u3069\u308C\u304B\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044` : `${path} \u306E ${String(value)} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u591A\u91CD\u5EA6\u306F ${ER_CARDINALITY_LIST.join("\u30FB")} \u3067\u3059`
-    );
-  }
-}
-function checkErEnd(relation, side, label, tables, problems) {
-  const tableId = relation[side];
-  const column = relation[side === "from" ? "fromColumn" : "toColumn"];
-  const where = side === "from" ? "\u5143" : "\u5148";
-  if (!problems.expect(tableId, "\u6587\u5B57", `${label}\u306E ${side}`)) {
-    return;
-  }
-  if (!problems.expect(
-    column,
-    "\u6587\u5B57",
-    `${label}\u306E ${side === "from" ? "fromColumn" : "toColumn"}`
-  )) {
-    return;
-  }
-  const columns = tables.get(tableId);
-  if (columns === void 0) {
-    problems.add(
-      `${label}\u306E${where}\u306E\u30C6\u30FC\u30D6\u30EB ${String(tableId)} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u306E id \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-    );
-  } else if (!columns.includes(column)) {
-    problems.add(
-      `${label}\u306E${where}\u306E\u5217 ${String(tableId)}.${String(column)} \u304C\u30C6\u30FC\u30D6\u30EB ${String(tableId)} \u306B\u3042\u308A\u307E\u305B\u3093`
-    );
-  }
-}
-function checkEr(source, problems) {
-  checkHead(source, problems);
-  problems.expect(source.width, "\u6570", "width");
-  const tables = /* @__PURE__ */ new Map();
-  const ids = [];
-  const list2 = asArray(source.tables, "tables", problems) ?? [];
-  list2.forEach((value, index) => {
-    const table2 = checkErTable(value, index, problems);
-    if (table2) {
-      ids.push(table2.id);
-      tables.set(table2.id, table2.columns);
-    }
-  });
-  checkDuplicates(ids, "\u30C6\u30FC\u30D6\u30EB", problems);
-  const relations = asArray(source.relations, "relations", problems) ?? [];
-  relations.forEach((value, index) => {
-    const relation = asObject(value, `relations[${index}]`, problems);
-    if (!relation) {
-      return;
-    }
-    const label = typeof relation.label === "string" ? `\u95A2\u4FC2\u300C${relation.label}\u300D` : `${index + 1} \u3064\u76EE\u306E\u95A2\u4FC2`;
-    checkErEnd(relation, "from", label, tables, problems);
-    checkErEnd(relation, "to", label, tables, problems);
-    checkErCardinality(relation.fromCard, `${label}\u306E fromCard`, problems);
-    checkErCardinality(relation.toCard, `${label}\u306E toCard`, problems);
-    checkOptionalText(relation.label, `${label}\u306E label`, problems);
-    if (relation.midX !== void 0) {
-      problems.expect(relation.midX, "\u6570", `${label}\u306E midX`);
-    }
-  });
 }
 var CHECKERS = {
   chart: checkChart,
-  param: checkParam,
-  er: checkEr
+  param: checkParam
 };
 function readDefinition(directive, blocks) {
   const [block2] = blocks;
@@ -63905,7 +63799,7 @@ function extensionFor(directive) {
 }
 
 // src/features.ts
-function resolveFeatures(options) {
+function resolveFeatures2(options) {
   const features = { ...options.defaults };
   for (const mark of options.marks) {
     for (const [name, value] of Object.entries(mark)) {
@@ -63937,6 +63831,20 @@ function splitSlots(html) {
   return html.split(SLOT_MARKER);
 }
 
+// src/parts/colors.ts
+var COLOR_NAMES = [
+  "blue",
+  "red",
+  "green",
+  "yellow",
+  "orange",
+  "purple",
+  "gray"
+];
+function isColorName(value) {
+  return COLOR_NAMES.includes(value);
+}
+
 // src/render/syntax/collapse.ts
 function titleTailOf(text2) {
   const tail = /(?:^|\s)title=\S*\s+(\S+)/.exec(text2)?.[1];
@@ -63960,7 +63868,7 @@ function splitKeyPath(path) {
   const parents = names2.slice(0, -1).map((_, index) => names2.slice(0, index + 1).join("."));
   return { names: names2, parents };
 }
-function planTreeRows(keys) {
+function firstPositions(keys) {
   const positions = /* @__PURE__ */ new Map();
   for (const [index, key] of keys.entries()) {
     const path = key.trim();
@@ -63968,6 +63876,10 @@ function planTreeRows(keys) {
       positions.set(path, index);
     }
   }
+  return positions;
+}
+function planTreeRows(keys) {
+  const positions = firstPositions(keys);
   const rows = [];
   const placed = /* @__PURE__ */ new Set();
   const place = (path, source) => {
@@ -64020,58 +63932,71 @@ function isContent(line) {
   const trimmed = line.trim();
   return trimmed !== "" && !trimmed.startsWith("#");
 }
+function parentPath(stack, indent) {
+  while (stack.length > 0 && (stack.at(-1)?.indent ?? 0) >= indent) {
+    stack.pop();
+  }
+  return stack.at(-1)?.path ?? "";
+}
+function enterItem(stack, at) {
+  const { column, rest: rest2 } = at;
+  if (rest2 !== "-" && !rest2.startsWith("- ")) {
+    return at;
+  }
+  const parent = parentPath(stack, column);
+  stack.push({
+    indent: column,
+    path: parent.endsWith("[]") ? parent : `${parent}[]`
+  });
+  const after = rest2.slice(1);
+  return {
+    column: column + 1 + (after.length - after.trimStart().length),
+    rest: after.trimStart()
+  };
+}
+function opensKeyedItems(next, column) {
+  const nextRest = next?.trimStart() ?? "";
+  return next !== void 0 && indentOf(next) >= column && nextRest.startsWith("- ") && YAML_KEY.test(nextRest.slice(2).trimStart());
+}
+function keyLine(options) {
+  const { stack, at, next } = options;
+  const key = YAML_KEY.exec(at.rest);
+  if (key?.[1] === void 0) {
+    return void 0;
+  }
+  const parent = parentPath(stack, at.column);
+  const name = unquote(key[1]);
+  const value = at.rest.slice(key[0].length).trim();
+  const path = parent === "" ? name : `${parent}.${name}`;
+  if (value === "" || value.startsWith("#")) {
+    const items = opensKeyedItems(next(), at.column);
+    return { path: items ? `${path}[]` : path, block: false };
+  }
+  return { path, block: BLOCK_SCALAR.test(value) };
+}
 function yamlLinePaths(lines) {
   const stack = [];
   const paths = [];
   let blockIndent;
-  const parentPath = (indent) => {
-    while (stack.length > 0 && (stack.at(-1)?.indent ?? 0) >= indent) {
-      stack.pop();
-    }
-    return stack.at(-1)?.path ?? "";
-  };
   for (const [index, line] of lines.entries()) {
     const indent = indentOf(line);
-    if (blockIndent !== void 0) {
-      if (!isContent(line) || indent > blockIndent) {
-        paths.push(void 0);
-        continue;
-      }
-      blockIndent = void 0;
-    }
-    if (!isContent(line)) {
+    const inBlock = blockIndent !== void 0 && (!isContent(line) || indent > blockIndent);
+    if (inBlock || !isContent(line)) {
       paths.push(void 0);
       continue;
     }
-    let column = indent;
-    let rest2 = line.slice(indent);
-    let path;
-    if (rest2 === "-" || rest2.startsWith("- ")) {
-      const parent = parentPath(column);
-      const item = parent.endsWith("[]") ? parent : `${parent}[]`;
-      stack.push({ indent: column, path: item });
-      const after = rest2.slice(1);
-      column += 1 + (after.length - after.trimStart().length);
-      rest2 = after.trimStart();
+    blockIndent = void 0;
+    const at = enterItem(stack, { column: indent, rest: line.slice(indent) });
+    const found = keyLine({
+      stack,
+      at,
+      next: () => lines.slice(index + 1).find(isContent)
+    });
+    if (found) {
+      blockIndent = found.block ? at.column : void 0;
+      stack.push({ indent: at.column, path: found.path });
     }
-    const key = YAML_KEY.exec(rest2);
-    if (key?.[1] !== void 0) {
-      const parent = parentPath(column);
-      const name = unquote(key[1]);
-      const value = rest2.slice(key[0].length).trim();
-      path = parent === "" ? name : `${parent}.${name}`;
-      if (value === "" || value.startsWith("#")) {
-        const next = lines.slice(index + 1).find(isContent);
-        const nextRest = next?.trimStart() ?? "";
-        if (next !== void 0 && indentOf(next) >= column && nextRest.startsWith("- ") && YAML_KEY.test(nextRest.slice(2).trimStart())) {
-          path = `${path}[]`;
-        }
-      } else if (BLOCK_SCALAR.test(value)) {
-        blockIndent = column;
-      }
-      stack.push({ indent: column, path });
-    }
-    paths.push(path);
+    paths.push(found?.path);
   }
   return paths;
 }
@@ -64120,6 +64045,8 @@ var ICONS = {
   plug: import_lucide.Plug,
   database: import_lucide.Database,
   globe: import_lucide.Globe,
+  cloud: import_lucide.Cloud,
+  "hard-drive": import_lucide.HardDrive,
   "circle-question-mark": import_lucide.CircleQuestionMark,
   wrench: import_lucide.Wrench,
   flag: import_lucide.Flag,
@@ -64231,15 +64158,22 @@ function drawerId(id, column) {
   return `${id}-drawer-${column}`;
 }
 function renderFilterFields(options) {
-  const { filter: filter2, value } = options;
+  const { filter: filter2 } = options;
+  const value = options.value ?? {};
   if (filter2?.kind === "text") {
-    return `<label class="mdmark-filter-field">\u542B\u3080\u6587\u5B57<input type="text" value="${escapeHtml2(value?.text ?? "")}"></label>`;
+    return `<label class="mdmark-filter-field">\u542B\u3080\u6587\u5B57<input type="text" value="${escapeHtml2(value.text ?? "")}"></label>`;
   }
   if (filter2?.kind === "date") {
-    return `<div class="mdmark-filter-range"><label class="mdmark-filter-field">\u958B\u59CB\u65E5<input type="date" value="${escapeHtml2(value?.from ?? "")}"></label><label class="mdmark-filter-field">\u7D42\u4E86\u65E5<input type="date" value="${escapeHtml2(value?.to ?? "")}"></label></div>`;
+    return renderDateFields(value);
   }
-  const checked = new Set(value?.values ?? []);
-  const items = (filter2?.values ?? []).map(
+  return renderValueFields({ candidates: filter2?.values ?? [], value });
+}
+function renderDateFields(value) {
+  return `<div class="mdmark-filter-range"><label class="mdmark-filter-field">\u958B\u59CB\u65E5<input type="date" value="${escapeHtml2(value.from ?? "")}"></label><label class="mdmark-filter-field">\u7D42\u4E86\u65E5<input type="date" value="${escapeHtml2(value.to ?? "")}"></label></div>`;
+}
+function renderValueFields(options) {
+  const checked = new Set(options.value.values ?? []);
+  const items = options.candidates.map(
     (candidate) => `<li><label><input type="checkbox" value="${escapeHtml2(candidate)}"${checked.has(candidate) ? " checked" : ""}>${escapeHtml2(candidate)}</label></li>`
   ).join("");
   return `<label class="mdmark-filter-field">\u5019\u88DC\u3092\u691C\u7D22<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options">${items}</ul><p class="mdmark-filter-none" hidden>\u4E00\u81F4\u3059\u308B\u5019\u88DC\u304C\u3042\u308A\u307E\u305B\u3093</p>`;
@@ -64251,38 +64185,55 @@ function pinButtonLabel(options) {
   return unpinned ? `${base}${PIN_UNPINNED_SUFFIX}` : base;
 }
 function renderTableTools(options) {
+  const { id, column, label, features, filter: filter2 } = options;
+  const escapedLabel = escapeHtml2(label);
+  const controls = escapeHtml2(drawerId(id, column));
+  const filterable = features.includes("filter") && filter2 !== void 0;
+  const title = renderColumnTitle({ options, escapedLabel });
+  const filterButton = filterable ? renderFilterButton({ options, escapedLabel, controls }) : "";
+  const pinButton = features.includes("pin") ? renderPinButton({ options, escapedLabel }) : "";
+  const tools = filterButton || pinButton ? `<span class="mdmark-th-tools">${filterButton}${pinButton}</span>` : "";
+  const drawer = filterable ? renderFilterDrawer({
+    options,
+    kind: filter2.kind,
+    escapedLabel,
+    controls
+  }) : "";
+  const resizeHandle2 = features.includes("resize") ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="\u300C${escapedLabel}\u300D\u306E\u5217\u306E\u5E45"></span>` : "";
+  return {
+    header: `<span class="mdmark-th">${title}${tools}</span>${resizeHandle2}`,
+    drawer
+  };
+}
+function renderColumnTitle(parts) {
+  const { options, escapedLabel } = parts;
+  const sortable = options.sortable ?? true;
+  return options.features.includes("sort") && sortable ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>` : `<span class="mdmark-th-label">${escapedLabel}</span>`;
+}
+function renderFilterButton(parts) {
+  const { options, escapedLabel, controls } = parts;
+  const { active = false, open: open2 = false } = options;
+  return `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" aria-expanded="${open2}" aria-controls="${controls}"><span class="mdmark-visually-hidden">${active ? "\uFF08\u7D5E\u308A\u8FBC\u307F\u4E2D\uFF09" : ""}</span></button>`;
+}
+function renderPinButton(parts) {
+  const { options, escapedLabel } = parts;
   const {
-    id,
-    column,
-    label,
-    features,
-    sortable = true,
-    filter: filter2,
-    active = false,
     pinVisible = false,
     pinPressed = false,
     pinUnpinned = false,
     pinMode = "each"
   } = options;
-  const open2 = options.open ?? false;
-  const escapedLabel = escapeHtml2(label);
-  const controls = drawerId(id, column);
-  const filterable = features.includes("filter") && filter2 !== void 0;
-  const title = features.includes("sort") && sortable ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>` : `<span class="mdmark-th-label">${escapedLabel}</span>`;
-  const filterButton = filterable ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" aria-expanded="${open2}" aria-controls="${escapeHtml2(controls)}"><span class="mdmark-visually-hidden">${active ? "\uFF08\u7D5E\u308A\u8FBC\u307F\u4E2D\uFF09" : ""}</span></button>` : "";
   const pinLabel = pinButtonLabel({
     label: escapedLabel,
     mode: pinMode,
     unpinned: pinUnpinned
   });
-  const pinButton = features.includes("pin") ? `<button class="mdmark-pin${pinUnpinned ? " is-unpinned" : ""}" type="button" aria-label="${pinLabel}"${pinUnpinned ? ` title="${pinLabel}"` : ""} aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>` : "";
-  const tools = filterButton || pinButton ? `<span class="mdmark-th-tools">${filterButton}${pinButton}</span>` : "";
-  const drawer = filterable ? `<div class="mdmark-filter-drawer" id="${escapeHtml2(controls)}" role="dialog" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" data-filter-kind="${filter2.kind}" data-column="${column}"${open2 ? "" : " hidden"}><p class="mdmark-filter-title">\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">\u7D5E\u308A\u8FBC\u307F\u3092\u89E3\u9664</button></div>` : "";
-  const resizeHandle = features.includes("resize") ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="\u300C${escapedLabel}\u300D\u306E\u5217\u306E\u5E45"></span>` : "";
-  return {
-    header: `<span class="mdmark-th">${title}${tools}</span>${resizeHandle}`,
-    drawer
-  };
+  return `<button class="mdmark-pin${pinUnpinned ? " is-unpinned" : ""}" type="button" aria-label="${pinLabel}"${pinUnpinned ? ` title="${pinLabel}"` : ""} aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>`;
+}
+function renderFilterDrawer(parts) {
+  const { options, kind, escapedLabel, controls } = parts;
+  const open2 = options.open ?? false;
+  return `<div class="mdmark-filter-drawer" id="${controls}" role="dialog" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" data-filter-kind="${kind}" data-column="${options.column}"${open2 ? "" : " hidden"}><p class="mdmark-filter-title">\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">\u7D5E\u308A\u8FBC\u307F\u3092\u89E3\u9664</button></div>`;
 }
 function isActive(value) {
   return Boolean(
@@ -64330,29 +64281,73 @@ function copyMenuId(id) {
   return `${id}-copy`;
 }
 function renderTableBar(options) {
-  const { id, features, labels, shown, total, hiddenColumns } = options;
-  const copyState = options.copyState ?? "idle";
-  const open2 = options.openColumns ?? false;
-  const hidden = new Set(hiddenColumns);
-  const calcs = TOTAL_CALCS.filter((calc) => options.totals?.includes(calc));
-  const shownCalcs = new Set(options.shownTotals ?? calcs);
-  const hiddenCalcs = calcs.filter((calc) => !shownCalcs.has(calc));
-  const counting = features.includes("count");
-  const columns = features.includes("columns");
-  const settings = columns || features.includes("reorder");
-  const totaling = features.includes("total") && calcs.length > 0;
-  const copying = features.includes("copy");
-  const count = counting ? `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} \u4EF6</span><span class="mdmark-visually-hidden">${total} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p>` : "";
-  const settingsToggle = settings ? renderSettingsToggle({ id, hidden: hidden.size, open: open2 }) : "";
-  const totalsToggle = totaling ? `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs.length > 0 ? " is-active" : ""}" type="button" aria-expanded="${options.openTotals ?? false}" aria-controls="${escapeHtml2(totalsMenuId(id))}">${iconSvg("sigma")}\u96C6\u8A08<span class="mdmark-visually-hidden">${hiddenCalcs.length > 0 ? `\uFF08${hiddenCalcs.length} \u4EF6\u3092\u975E\u8868\u793A\u306B\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span></button>` : "";
-  const copy = copying ? `<button class="mdmark-table-tool mdmark-copy is-icon-only" type="button" title="${COPY_STATES[copyState].label}" data-state="${copyState}" aria-expanded="${options.openCopy ?? false}" aria-controls="${escapeHtml2(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>` : "";
-  const tools = settingsToggle || totalsToggle || copy ? `<div class="mdmark-table-tools">${settingsToggle}${totalsToggle}${copy}</div>` : "";
+  const state = barStateOf(options);
+  const count = options.features.includes("count") ? renderTableCount(options) : "";
+  const tools = renderBarTools(options, state);
+  const { totaling, copying, copyState } = state;
   const status = totaling || copying ? `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copying && copyState !== "idle" ? COPY_STATES[copyState].label : ""}</span>` : "";
-  const settingsPanel = settings ? renderTableSettings({
+  return {
+    bar: count || tools ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>` : "",
+    menus: renderBarMenus(options, state)
+  };
+}
+function barStateOf(options) {
+  const { features } = options;
+  const calcs = TOTAL_CALCS.filter((calc) => options.totals?.includes(calc));
+  return {
+    calcs,
+    shownCalcs: new Set(options.shownTotals ?? calcs),
+    settings: features.includes("columns") || features.includes("reorder"),
+    totaling: features.includes("total") && calcs.length > 0,
+    copying: features.includes("copy"),
+    copyState: options.copyState ?? "idle"
+  };
+}
+function renderBarTools(options, state) {
+  const { id } = options;
+  const { calcs, shownCalcs, settings, totaling, copying, copyState } = state;
+  const settingsToggle = settings ? renderSettingsToggle({
+    id,
+    hidden: new Set(options.hiddenColumns).size,
+    open: options.openColumns ?? false
+  }) : "";
+  const totalsToggle = totaling ? renderTotalsToggle({
+    id,
+    hiddenCalcs: calcs.filter((calc) => !shownCalcs.has(calc)).length,
+    open: options.openTotals ?? false
+  }) : "";
+  const copy = copying ? renderCopyToggle({ id, copyState, open: options.openCopy ?? false }) : "";
+  return settingsToggle || totalsToggle || copy ? `<div class="mdmark-table-tools">${settingsToggle}${totalsToggle}${copy}</div>` : "";
+}
+function renderBarMenus(options, state) {
+  const { id } = options;
+  const { calcs, shownCalcs, settings, totaling, copying } = state;
+  return [
+    settings ? renderSettingsPanel(options) : "",
+    totaling ? renderTotalsMenu({ id, calcs, shownCalcs, open: options.openTotals }) : "",
+    copying ? renderCopyMenu({ id, open: options.openCopy }) : ""
+  ].join("");
+}
+function renderTableCount(options) {
+  const { shown, total } = options;
+  return `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} \u4EF6</span><span class="mdmark-visually-hidden">${total} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p>`;
+}
+function renderTotalsToggle(options) {
+  const { id, hiddenCalcs, open: open2 } = options;
+  return `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs > 0 ? " is-active" : ""}" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(totalsMenuId(id))}">${iconSvg("sigma")}\u96C6\u8A08<span class="mdmark-visually-hidden">${hiddenCalcs > 0 ? `\uFF08${hiddenCalcs} \u4EF6\u3092\u975E\u8868\u793A\u306B\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span></button>`;
+}
+function renderCopyToggle(options) {
+  const { id, copyState, open: open2 } = options;
+  return `<button class="mdmark-table-tool mdmark-copy is-icon-only" type="button" title="${COPY_STATES[copyState].label}" data-state="${copyState}" aria-expanded="${open2}" aria-controls="${escapeHtml2(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>`;
+}
+function renderSettingsPanel(options) {
+  const { id, features, labels } = options;
+  const open2 = options.openColumns ?? false;
+  return renderTableSettings({
     id,
     columns: labels,
     order: options.order ?? labels.map((_, index) => index),
-    hidden: [...hidden],
+    hidden: [...new Set(options.hiddenColumns)],
     features: features.filter(
       (feature) => feature === "columns" || feature === "reorder"
     ),
@@ -64360,19 +64355,20 @@ function renderTableBar(options) {
     groupLabels: options.groupLabels,
     pinned: options.pinned ?? 0,
     dragging: options.dragging
-  }).replace(/^<div /, `<div${open2 ? "" : " hidden"} `) : "";
+  }).replace(/^<div /, `<div${open2 ? "" : " hidden"} `);
+}
+function renderTotalsMenu(options) {
+  const { id, calcs, shownCalcs, open: open2 } = options;
   const totalItems = calcs.map(
     (calc) => `<li><label><input type="checkbox" value="${calc}"${shownCalcs.has(calc) ? " checked" : ""}>${TOTAL_LABELS[calc]}</label></li>`
   ).join("");
-  const totalsMenu = totaling ? `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml2(totalsMenuId(id))}" role="dialog" aria-label="\u8868\u793A\u3059\u308B\u96C6\u8A08"${options.openTotals ? "" : " hidden"}><p class="mdmark-totals-title">\u8868\u793A\u3059\u308B\u96C6\u8A08</p><ul class="mdmark-totals-options">${totalItems}</ul></div>` : "";
+  return `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml2(totalsMenuId(id))}" role="dialog" aria-label="\u8868\u793A\u3059\u308B\u96C6\u8A08"${open2 ? "" : " hidden"}><p class="mdmark-totals-title">\u8868\u793A\u3059\u308B\u96C6\u8A08</p><ul class="mdmark-totals-options">${totalItems}</ul></div>`;
+}
+function renderCopyMenu(options) {
   const formats = ["markdown", "tsv"].map(
     (format2) => `<button class="mdmark-copy-format" type="button" data-format="${format2}"><span class="mdmark-copy-format-name">${COPY_FORMATS[format2].name}</span><span class="mdmark-copy-format-note">${COPY_FORMATS[format2].note}</span></button>`
   ).join("");
-  const copyMenu = copying ? `<div class="mdmark-copy-menu mdmark-table-menu" id="${escapeHtml2(copyMenuId(id))}" role="dialog" aria-label="\u30B3\u30D4\u30FC\u306E\u5F62\u5F0F"${options.openCopy ? "" : " hidden"}>${formats}</div>` : "";
-  return {
-    bar: count || tools ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>` : "",
-    menus: `${settingsPanel}${totalsMenu}${copyMenu}`
-  };
+  return `<div class="mdmark-copy-menu mdmark-table-menu" id="${escapeHtml2(copyMenuId(options.id))}" role="dialog" aria-label="\u30B3\u30D4\u30FC\u306E\u5F62\u5F0F"${options.open ? "" : " hidden"}>${formats}</div>`;
 }
 function settingsLabel(hidden) {
   return hidden > 0 ? `\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A\uFF08${hidden} \u5217\u3092\u975E\u8868\u793A\uFF09` : "\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A";
@@ -64386,11 +64382,19 @@ function placeKey(options) {
   return column < pinned ? "pinned" : groups[column] ?? "";
 }
 function renderTableSettings(options) {
-  const { id, columns, order, groups, pinned, dragging } = options;
-  const hidden = new Set(options.hidden);
+  const { id } = options;
   const showing = options.features.includes("columns");
   const reordering = options.features.includes("reorder");
   const noteId = `${id}-settings-note`;
+  const items = renderSettingsItems({ options, noteId, showing, reordering });
+  const note = [
+    reordering ? "\u3064\u307E\u307F\u3092\u30C9\u30E9\u30C3\u30B0\u3059\u308B\u304B\u3001\u3064\u307E\u307F\u306B\u30D5\u30A9\u30FC\u30AB\u30B9\u3057\u3066 \u2191\u30FB\u2193 \u30AD\u30FC\u3067\u4E26\u3079\u66FF\u3048\u307E\u3059\u3002" : "",
+    showing ? "\u5148\u982D\u306E\u5217\u306F\u96A0\u305B\u307E\u305B\u3093" : ""
+  ].join("");
+  return `<div class="mdmark-table-settings" id="${escapeHtml2(menuId(id))}" role="dialog" aria-label="\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A"><p class="mdmark-table-settings-title">${showing ? "\u8868\u793A\u3068\u4E26\u3073\u9806" : "\u4E26\u3073\u9806"}</p><ul class="mdmark-table-settings-list">${items}</ul><p class="mdmark-table-settings-note" id="${escapeHtml2(noteId)}">${note}</p></div>`;
+}
+function renderSettingsItems(context) {
+  const { order, groups, pinned } = context.options;
   const keys = order.map((column) => placeKey({ column, groups, pinned }));
   const counts = /* @__PURE__ */ new Map();
   for (const key of keys) {
@@ -64402,27 +64406,40 @@ function renderTableSettings(options) {
   for (const [index, column] of order.entries()) {
     const key = keys[index] ?? "";
     if (split && key !== previous) {
-      const heading2 = key === "pinned" ? "\u30D4\u30F3\u6B62\u3081\u306E\u5217" : key === "" ? "\u7BC4\u56F2\u306E\u5916\u306E\u5217" : options.groupLabels?.[key] ?? "\u7D50\u5408\u3057\u305F\u898B\u51FA\u3057\u306E\u7BC4\u56F2";
       items.push(
-        `<li class="mdmark-table-settings-group" aria-hidden="true">${escapeHtml2(heading2)}</li>`
+        `<li class="mdmark-table-settings-group" aria-hidden="true">${escapeHtml2(settingsGroupHeading(key, context.options.groupLabels))}</li>`
       );
     }
     previous = key;
-    const name = columns[column] ?? "";
     const movable = (counts.get(key) ?? 0) > 1;
-    const draggingClass = dragging?.column === column ? " is-dragging" : dragging?.target === column ? ` is-drop-${dragging.side}` : "";
-    const grip = reordering ? `<button class="mdmark-table-settings-grip" type="button" aria-label="\u300C${escapeHtml2(name)}\u300D\u306E\u5217\u3092\u4E26\u3079\u66FF\u3048\u308B" aria-describedby="${escapeHtml2(noteId)}"${movable ? ' draggable="true"' : " disabled"}>${iconSvg("grip-vertical")}</button>` : "";
-    const isHidden = hidden.has(column);
-    const eye = showing ? `<button class="mdmark-table-settings-eye" type="button" aria-pressed="${isHidden}" aria-label="\u300C${escapeHtml2(name)}\u300D\u3092${isHidden ? "\u8868\u793A" : "\u96A0\u3059"}"${column === 0 ? " disabled" : ""}>${iconSvg(isHidden ? "eye-off" : "eye")}</button>` : "";
-    items.push(
-      `<li class="mdmark-table-settings-item${draggingClass}" data-column="${column}" data-name="${escapeHtml2(name)}" data-place="${escapeHtml2(key)}">${grip}<span class="mdmark-table-settings-name">${escapeHtml2(name)}</span>${eye}</li>`
-    );
+    items.push(renderSettingsItem(context, { column, key, movable }));
   }
-  const note = [
-    reordering ? "\u3064\u307E\u307F\u3092\u30C9\u30E9\u30C3\u30B0\u3059\u308B\u304B\u3001\u3064\u307E\u307F\u306B\u30D5\u30A9\u30FC\u30AB\u30B9\u3057\u3066 \u2191\u30FB\u2193 \u30AD\u30FC\u3067\u4E26\u3079\u66FF\u3048\u307E\u3059\u3002" : "",
-    showing ? "\u5148\u982D\u306E\u5217\u306F\u96A0\u305B\u307E\u305B\u3093" : ""
-  ].join("");
-  return `<div class="mdmark-table-settings" id="${escapeHtml2(menuId(id))}" role="dialog" aria-label="\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A"><p class="mdmark-table-settings-title">${showing ? "\u8868\u793A\u3068\u4E26\u3073\u9806" : "\u4E26\u3073\u9806"}</p><ul class="mdmark-table-settings-list">${items.join("")}</ul><p class="mdmark-table-settings-note" id="${escapeHtml2(noteId)}">${note}</p></div>`;
+  return items.join("");
+}
+function settingsGroupHeading(key, groupLabels) {
+  if (key === "pinned") {
+    return "\u30D4\u30F3\u6B62\u3081\u306E\u5217";
+  }
+  if (key === "") {
+    return "\u7BC4\u56F2\u306E\u5916\u306E\u5217";
+  }
+  return groupLabels?.[key] ?? "\u7D50\u5408\u3057\u305F\u898B\u51FA\u3057\u306E\u7BC4\u56F2";
+}
+function renderSettingsItem(context, item) {
+  const { options, noteId, showing, reordering } = context;
+  const { column, key, movable } = item;
+  const name = options.columns[column] ?? "";
+  const draggingClass = settingsDraggingClass(options.dragging, column);
+  const grip = reordering ? `<button class="mdmark-table-settings-grip" type="button" aria-label="\u300C${escapeHtml2(name)}\u300D\u306E\u5217\u3092\u4E26\u3079\u66FF\u3048\u308B" aria-describedby="${escapeHtml2(noteId)}"${movable ? ' draggable="true"' : " disabled"}>${iconSvg("grip-vertical")}</button>` : "";
+  const isHidden = options.hidden.includes(column);
+  const eye = showing ? `<button class="mdmark-table-settings-eye" type="button" aria-pressed="${isHidden}" aria-label="\u300C${escapeHtml2(name)}\u300D\u3092${isHidden ? "\u8868\u793A" : "\u96A0\u3059"}"${column === 0 ? " disabled" : ""}>${iconSvg(isHidden ? "eye-off" : "eye")}</button>` : "";
+  return `<li class="mdmark-table-settings-item${draggingClass}" data-column="${column}" data-name="${escapeHtml2(name)}" data-place="${escapeHtml2(key)}">${grip}<span class="mdmark-table-settings-name">${escapeHtml2(name)}</span>${eye}</li>`;
+}
+function settingsDraggingClass(dragging, column) {
+  if (dragging?.column === column) {
+    return " is-dragging";
+  }
+  return dragging?.target === column ? ` is-drop-${dragging.side}` : "";
 }
 function renderTreeKeyCell(options) {
   const { name, depth, required: required2 } = options;
@@ -64487,7 +64504,8 @@ function renderCopyPanel(options) {
   const target = format2 === "tree" ? "\u30C4\u30EA\u30FC\u306E\u30C6\u30AD\u30B9\u30C8" : `\u300C${COPY_FORMATS[format2].name}\u300D\u306E\u4E2D\u8EAB`;
   return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml2(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml2(titleId)}">${iconSvg("circle-alert")}\u30AF\u30EA\u30C3\u30D7\u30DC\u30FC\u30C9\u306B\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F</p><button class="mdmark-copy-panel-close" type="button" aria-label="\u9589\u3058\u308B">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml2(noteId)}">${target}\u3092\u9078\u629E\u3057\u3066\u3044\u307E\u3059\u3002Ctrl+C\uFF08Mac \u306F \u2318C\uFF09\u3067\u30B3\u30D4\u30FC\u3057\u3066\u304F\u3060\u3055\u3044\u3002</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml2(titleId)} ${escapeHtml2(noteId)}">${escapeHtml2(text2)}</textarea></div>`;
 }
-function renderRowLink(content, id, label, notice) {
+function renderRowLink(options) {
+  const { content, id, label, notice } = options;
   const message = notice === "copied" ? `${iconSvg("check")}\u30EA\u30F3\u30AF\u3092\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F` : notice === "failed" ? `${iconSvg("circle-alert")}\u30EA\u30F3\u30AF\u3092\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F` : "";
   const state = notice === void 0 ? "" : ` data-state="${notice}"`;
   return `<span class="mdmark-row-link-cell">${content}<a class="mdmark-row-anchor" href="#${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u884C\u3078\u306E\u30EA\u30F3\u30AF">${iconSvg("link")}</a><span class="mdmark-row-link-notice" role="status"${state}>${message}</span></span>`;
@@ -64499,158 +64517,276 @@ function isCheckValue(text2) {
   return text2 === "true" || text2 === "false";
 }
 function renderTableBody(options, id) {
+  const context = bodyContextOf(options, id);
+  const { columns, rows, hidden } = context;
+  const drawers = [];
+  const headCell = (column, index) => {
+    const cell = renderHeadCell(context, { column, index });
+    drawers.push(cell.drawer);
+    return cell.html;
+  };
+  const head = options.headRows ? renderHeadRows(options.headRows, columns, headCell) : `<tr>${columns.map(headCell).join("")}</tr>`;
+  const order = sortedIndexes(options);
+  const shownOrder = order.filter(
+    (rowIndex) => rowMatches(context, rows[rowIndex] ?? [])
+  );
+  const shownRows = shownOrder.map((rowIndex) => rows[rowIndex] ?? []);
+  const spanOf = mergeSpanOf(context, shownOrder);
+  const body = order.map((rowIndex) => renderBodyRow(context, { rowIndex, spanOf })).join("");
+  const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">\u4E00\u81F4\u3059\u308B\u884C\u304C\u3042\u308A\u307E\u305B\u3093</td></tr>`;
+  const footer = renderBodyFooter(context, shownRows);
+  const { bar, menus } = renderTableBar(
+    tableBarOptionsOf(context, shownRows.length)
+  );
+  const panel = options.copyFallback ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback }) : "";
+  const tableHtml = `<table tabindex="0" aria-label="\u8868"${autoWidthAttribute(context.autoWidthOf)}><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
+  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${menus}${drawers.join("")}`;
+}
+function bodyContextOf(options, id) {
   const columns = options.columns ?? [];
-  const rows = options.rows ?? [];
-  const filters = options.filters ?? [];
-  const values = options.filterValues ?? [];
-  const pinMode = options.pinMode ?? "each";
+  return {
+    ...pinStateOf(options),
+    ...columnStateOf(options),
+    options,
+    id,
+    columns,
+    rows: options.rows ?? [],
+    filters: options.filters ?? [],
+    values: options.filterValues ?? [],
+    rowHeader: options.rowHeader ?? 0,
+    labels: columns.map(plainText2),
+    mergeColumns: options.mergeColumns ?? []
+  };
+}
+function pinStateOf(options) {
   const pinned = new Set(
     options.overflow ? options.pinned ?? Array.from({ length: options.rowHeader ?? 0 }, (_, index) => index) : []
   );
   const unpinned = new Set(options.overflow ? options.unpinned ?? [] : []);
-  const stuck = (column) => pinned.has(column) && !unpinned.has(column);
   let pinnedEdge = -1;
-  while (stuck(pinnedEdge + 1)) {
+  while (pinned.has(pinnedEdge + 1) && !unpinned.has(pinnedEdge + 1)) {
     pinnedEdge += 1;
   }
-  const pinnedLast = Math.max(-1, ...pinned);
-  const rowHeader = options.rowHeader ?? 0;
-  const hidden = new Set(
-    options.features.includes("columns") ? options.hiddenColumns ?? options.hide ?? [] : []
-  );
-  const hiddenAttribute = (column) => hidden.has(column) ? " hidden" : "";
-  const drawers = [];
-  const highlightOf = (column) => options.highlight?.find((item) => item.column === column)?.color;
-  const wideColumns = new Set(options.wide ?? []);
-  const checkColumns = new Set(options.check ?? []);
-  const widthOf = new Map(
-    (options.widths ?? []).map((item) => [item.column, item.width])
-  );
-  const autoWidthOf = new Map(
-    (options.autoWidths ?? []).map((item) => [item.column, item.width])
-  );
-  const cellClass = (column, extra = []) => {
-    const names2 = [
-      ...stuck(column) ? column === pinnedEdge ? ["is-pinned-col", "is-pinned-edge"] : ["is-pinned-col"] : [],
-      ...highlightOf(column) ? ["mdmark-col-highlight"] : [],
-      ...wideColumns.has(column) ? ["mdmark-wide"] : [],
-      ...checkColumns.has(column) ? ["mdmark-align-center"] : [],
-      ...widthOf.has(column) ? ["is-resized"] : [],
-      ...extra
-    ];
-    const color = highlightOf(column);
-    const colorAttribute = color ? ` data-color="${color}"` : "";
-    return `${names2.length > 0 ? ` class="${names2.join(" ")}"` : ""}${colorAttribute}`;
+  return {
+    pinMode: options.pinMode ?? "each",
+    pinned,
+    unpinned,
+    pinnedEdge,
+    pinnedLast: Math.max(-1, ...pinned)
   };
-  const headCell = (column, index) => {
-    const filter2 = filters.find((candidate) => candidate.column === index);
-    const value = values.find((candidate) => candidate.column === index);
-    const tools = renderTableTools({
-      id,
-      column: index,
-      label: plainText2(column),
-      features: options.features,
-      sortable: !(options.noSort ?? []).includes(index),
-      filter: filter2 && {
-        kind: filter2.kind,
-        values: [...new Set(rows.map((row) => plainText2(row[index] ?? "")))]
-      },
-      active: isActive(value),
-      open: options.openFilter === index,
-      value,
-      pinVisible: options.overflow === true,
-      pinPressed: pinMode === "each" ? pinned.has(index) : index === pinnedLast,
-      pinUnpinned: pinMode === "each" ? unpinned.has(index) : index === pinnedLast && unpinned.size > 0,
+}
+function columnStateOf(options) {
+  return {
+    hidden: new Set(
+      options.features.includes("columns") ? options.hiddenColumns ?? options.hide ?? [] : []
+    ),
+    checkColumns: new Set(options.check ?? []),
+    wideColumns: new Set(options.wide ?? []),
+    widthOf: new Map(
+      (options.widths ?? []).map((item) => [item.column, item.width])
+    ),
+    autoWidthOf: new Map(
+      (options.autoWidths ?? []).map((item) => [item.column, item.width])
+    )
+  };
+}
+function isStuck(context, column) {
+  return context.pinned.has(column) && !context.unpinned.has(column);
+}
+function hiddenAttribute(context, column) {
+  return context.hidden.has(column) ? " hidden" : "";
+}
+function highlightOf(options, column) {
+  return options.highlight?.find((item) => item.column === column)?.color;
+}
+function pinnedClasses(context, column) {
+  if (!isStuck(context, column)) {
+    return [];
+  }
+  return column === context.pinnedEdge ? ["is-pinned-col", "is-pinned-edge"] : ["is-pinned-col"];
+}
+function cellClass(context, column, extra = []) {
+  const color = highlightOf(context.options, column);
+  const names2 = [
+    ...pinnedClasses(context, column),
+    ...color ? ["mdmark-col-highlight"] : [],
+    ...context.wideColumns.has(column) ? ["mdmark-wide"] : [],
+    ...context.checkColumns.has(column) ? ["mdmark-align-center"] : [],
+    ...context.widthOf.has(column) ? ["is-resized"] : [],
+    ...extra
+  ];
+  const colorAttribute = color ? ` data-color="${color}"` : "";
+  return `${names2.length > 0 ? ` class="${names2.join(" ")}"` : ""}${colorAttribute}`;
+}
+var HEAD_TOOL_FEATURES = ["sort", "filter", "pin", "resize"];
+function renderHeadCell(context, cell) {
+  const { options } = context;
+  const { column, index } = cell;
+  const tools = renderTableTools(headToolsOptions(context, cell));
+  const sorted = options.sort?.column === index ? ` aria-sort="${options.sort.direction}"` : "";
+  const header = HEAD_TOOL_FEATURES.some(
+    (feature) => options.features.includes(feature)
+  ) ? tools.header : escapeHtml2(plainText2(column));
+  const resizedHeader = options.resizing === index ? header.replace(
+    'class="mdmark-col-resize"',
+    'class="mdmark-col-resize is-dragging"'
+  ) : header;
+  return {
+    html: `<th${cellClass(context, index)}${headWidthStyle(context, index)}${sorted}${hiddenAttribute(context, index)}>${resizedHeader}</th>`,
+    drawer: tools.drawer
+  };
+}
+function headToolsOptions(context, cell) {
+  const { options, filters, values, rows } = context;
+  const { column, index } = cell;
+  const filter2 = filters.find((candidate) => candidate.column === index);
+  const value = values.find((candidate) => candidate.column === index);
+  return {
+    id: context.id,
+    column: index,
+    label: plainText2(column),
+    features: options.features,
+    sortable: !(options.noSort ?? []).includes(index),
+    filter: filter2 && {
+      kind: filter2.kind,
+      values: [...new Set(rows.map((row) => plainText2(row[index] ?? "")))]
+    },
+    active: isActive(value),
+    open: options.openFilter === index,
+    value,
+    pinVisible: options.overflow === true,
+    ...pinToolState(context, index)
+  };
+}
+function pinToolState(context, index) {
+  const { pinMode, pinned, unpinned, pinnedLast } = context;
+  if (pinMode === "each") {
+    return {
+      pinPressed: pinned.has(index),
+      pinUnpinned: unpinned.has(index),
       pinMode
-    });
-    drawers.push(tools.drawer);
-    const sorted = options.sort?.column === index ? ` aria-sort="${options.sort.direction}"` : "";
-    const header = ["sort", "filter", "pin", "resize"].some(
-      (feature) => options.features.includes(feature)
-    ) ? tools.header : escapeHtml2(plainText2(column));
-    const resizedHeader = options.resizing === index ? header.replace(
-      'class="mdmark-col-resize"',
-      'class="mdmark-col-resize is-dragging"'
-    ) : header;
-    const width = widthOf.get(index);
-    const autoWidth = autoWidthOf.get(index);
-    const declarations = [
-      ...width === void 0 ? [] : [
-        `width:${width}px`,
-        `min-width:${width}px`,
-        `--mdmark-column-min-width:${width}px`
-      ],
-      ...autoWidth === void 0 || width !== void 0 ? [] : [`--mdmark-auto-width:${autoWidth}px`]
-    ];
-    const style = declarations.length === 0 ? "" : ` style="${declarations.join(";")}"`;
-    return `<th${cellClass(index)}${style}${sorted}${hiddenAttribute(index)}>${resizedHeader}</th>`;
+    };
+  }
+  return {
+    pinPressed: index === pinnedLast,
+    pinUnpinned: index === pinnedLast && unpinned.size > 0,
+    pinMode
   };
-  const head = options.headRows ? renderHeadRows(options.headRows, columns, headCell) : `<tr>${columns.map(headCell).join("")}</tr>`;
-  const rowLinking = options.features.includes("rowlink");
-  const labels = columns.map(plainText2);
-  const shownRows = [];
-  const matches = (row) => values.every((value) => {
-    const filter2 = filters.find((c) => c.column === value.column);
+}
+function headWidthStyle(context, index) {
+  const width = context.widthOf.get(index);
+  const autoWidth = context.autoWidthOf.get(index);
+  const declarations = [
+    ...width === void 0 ? [] : [
+      `width:${width}px`,
+      `min-width:${width}px`,
+      `--mdmark-column-min-width:${width}px`
+    ],
+    ...autoWidth === void 0 || width !== void 0 ? [] : [`--mdmark-auto-width:${autoWidth}px`]
+  ];
+  return declarations.length === 0 ? "" : ` style="${declarations.join(";")}"`;
+}
+function rowMatches(context, row) {
+  return context.values.every((value) => {
+    const filter2 = context.filters.find((c) => c.column === value.column);
     return filter2 ? matchesFilter(plainText2(row[value.column] ?? ""), filter2.kind, value) : true;
   });
-  const order = sortedIndexes(options);
-  const mergeColumns = options.mergeColumns ?? [];
-  const shownOrder = order.filter((rowIndex) => matches(rows[rowIndex] ?? []));
+}
+function mergeSpanOf(context, shownOrder) {
+  const { rows, mergeColumns } = context;
   const spans = mergeSpans({
     values: shownOrder.map(
       (rowIndex) => mergeColumns.map((column) => plainText2(rows[rowIndex]?.[column] ?? ""))
     ),
     columns: mergeColumns
   });
-  const spanOf = new Map(
+  return new Map(
     shownOrder.map((rowIndex, position) => [rowIndex, spans[position] ?? []])
   );
-  const body = order.map((rowIndex) => {
-    const row = rows[rowIndex] ?? [];
-    const match = matches(row);
-    if (match) {
-      shownRows.push(row);
-    }
-    const rowId = rowLinking ? options.rowIds?.[rowIndex] : void 0;
-    const targeted = rowLinking && options.targetRow === rowIndex;
-    const cells = row.map((text2, index) => {
-      const checkValue = checkColumns.has(index) && isCheckValue(text2) ? text2 : void 0;
-      const cell = checkValue ? renderCheckCell(checkValue) : text2;
-      const valueAttribute = checkValue ? ` data-value="${checkValue}"` : "";
-      const linked = index === 0 && rowId !== void 0 ? renderRowLink(
-        cell,
-        rowId,
-        plainText2(cell),
-        targeted ? options.rowLinkNotice : void 0
-      ) : cell;
-      const content = linked;
-      const merge2 = mergeColumns.indexOf(index);
-      const span = merge2 >= 0 ? spanOf.get(rowIndex)?.[merge2] : void 0;
-      const spanAttribute = span !== void 0 && span > 1 ? ` rowspan="${span}"` : "";
-      const mergedHidden = span === 0 && !hidden.has(index) ? " hidden" : "";
-      const classes = cellClass(index, spanAttribute ? ["is-merged"] : []);
-      const tag = index < rowHeader ? "th" : "td";
-      const scope = tag === "th" ? ' scope="row"' : "";
-      return `<${tag}${scope}${classes}${spanAttribute}${valueAttribute} data-label="${escapeHtml2(labels[index] ?? "")}"${hiddenAttribute(index)}${mergedHidden}>${content}</${tag}>`;
-    }).join("");
-    const idAttribute = rowId === void 0 ? "" : ` id="${escapeHtml2(rowId)}"`;
-    const target = targeted ? " data-target" : "";
-    const rowColor = options.rowColors?.[rowIndex];
-    const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
-    const line = `<tr${idAttribute}${target}${colorAttribute}${match ? "" : " hidden"}>${cells}</tr>`;
-    return line;
-  }).join("");
-  const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">\u4E00\u81F4\u3059\u308B\u884C\u304C\u3042\u308A\u307E\u305B\u3093</td></tr>`;
-  const totals = options.features.includes("total") ? options.totals ?? [] : [];
-  const unreadable5 = findUnreadableTotals({
+}
+function rowLinkOf(context, rowIndex) {
+  const { options } = context;
+  if (!options.features.includes("rowlink")) {
+    return { rowId: void 0, targeted: false, notice: void 0 };
+  }
+  const targeted = options.targetRow === rowIndex;
+  return {
+    rowId: options.rowIds?.[rowIndex],
+    targeted,
+    notice: targeted ? options.rowLinkNotice : void 0
+  };
+}
+function renderBodyRow(context, place) {
+  const { rowIndex, spanOf } = place;
+  const row = context.rows[rowIndex] ?? [];
+  const link2 = rowLinkOf(context, rowIndex);
+  const spans = spanOf.get(rowIndex);
+  const cells = row.map((text2, index) => renderBodyCell(context, { text: text2, index, link: link2, spans })).join("");
+  const hidden = rowMatches(context, row) ? "" : " hidden";
+  return `<tr${rowAttributes(context, { rowIndex, link: link2 })}${hidden}>${cells}</tr>`;
+}
+function rowAttributes(context, row) {
+  const { rowId, targeted } = row.link;
+  const idAttribute = rowId === void 0 ? "" : ` id="${escapeHtml2(rowId)}"`;
+  const target = targeted ? " data-target" : "";
+  const rowColor = context.options.rowColors?.[row.rowIndex];
+  const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
+  return `${idAttribute}${target}${colorAttribute}`;
+}
+function renderBodyCell(context, cell) {
+  const { index } = cell;
+  const { content, valueAttribute } = bodyCellContent(context, cell);
+  const { spanAttribute, mergedHidden } = mergeAttributes(context, cell);
+  const classes = cellClass(context, index, spanAttribute ? ["is-merged"] : []);
+  const tag = index < context.rowHeader ? "th" : "td";
+  const scope = tag === "th" ? ' scope="row"' : "";
+  return `<${tag}${scope}${classes}${spanAttribute}${valueAttribute} data-label="${escapeHtml2(context.labels[index] ?? "")}"${hiddenAttribute(context, index)}${mergedHidden}>${content}</${tag}>`;
+}
+function bodyCellContent(context, cell) {
+  const { text: text2, index, link: link2 } = cell;
+  const checkValue = context.checkColumns.has(index) && isCheckValue(text2) ? text2 : void 0;
+  const content = checkValue ? renderCheckCell(checkValue) : text2;
+  const valueAttribute = checkValue ? ` data-value="${checkValue}"` : "";
+  if (index !== 0 || link2.rowId === void 0) {
+    return { content, valueAttribute };
+  }
+  return {
+    content: renderRowLink({
+      content,
+      id: link2.rowId,
+      label: plainText2(content),
+      notice: link2.notice
+    }),
+    valueAttribute
+  };
+}
+function mergeAttributes(context, cell) {
+  const { index, spans } = cell;
+  const merge2 = context.mergeColumns.indexOf(index);
+  const span = merge2 >= 0 ? spans?.[merge2] : void 0;
+  return {
+    spanAttribute: span !== void 0 && span > 1 ? ` rowspan="${span}"` : "",
+    mergedHidden: span === 0 && !context.hidden.has(index) ? " hidden" : ""
+  };
+}
+function totalsOf(options) {
+  return options.features.includes("total") ? options.totals ?? [] : [];
+}
+function renderBodyFooter(context, shownRows) {
+  const { options, rows, hidden, columns, labels } = context;
+  const totals = totalsOf(options);
+  if (totals.length === 0) {
+    return "";
+  }
+  const unreadable7 = findUnreadableTotals({
     rows: rows.map((row) => row.map(plainText2)),
     totals
   });
-  const footer = totals.length > 0 ? renderTotalRows({
+  return renderTotalRows({
     columns: columns.length,
     totals: totals.map((total) => ({
       ...total,
-      value: unreadable5.some(
+      value: unreadable7.some(
         (item) => item.column === total.column && item.calc === total.calc
       ) ? "" : computeTotal(
         shownRows.map((row) => plainText2(row[total.column] ?? "")),
@@ -64660,39 +64796,56 @@ function renderTableBody(options, id) {
     shown: options.shownTotals,
     hiddenColumns: [...hidden],
     labels
-  }) : "";
-  const { bar, menus } = renderTableBar({
+  });
+}
+function tableBarOptionsOf(context, shown) {
+  const { options, id, rows, hidden, labels } = context;
+  return {
     id,
     features: options.features,
     labels,
-    shown: shownRows.length,
+    shown,
     total: rows.length,
     hiddenColumns: [...hidden],
     openColumns: options.openColumns ?? false,
     copyState: options.copyState ?? "idle",
-    totals: totals.map((total) => total.calc),
+    totals: totalsOf(options).map((total) => total.calc),
     shownTotals: options.shownTotals,
     openTotals: options.openTotals ?? false,
     openCopy: options.openCopy ?? false,
     order: options.order,
-    groups: options.headRows ? headGroupsOf(options.headRows) : void 0,
-    groupLabels: options.headRows ? headGroupLabelsOf(options.headRows) : void 0,
-    pinned: options.pinMode === "through" && options.pin !== void 0 ? Math.max(...options.pin) + 1 : 0,
+    ...headGroupOptions(options),
+    pinned: throughPinnedOf(options),
     dragging: options.dragging
-  });
-  const panel = options.copyFallback ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback }) : "";
+  };
+}
+function headGroupOptions(options) {
+  if (!options.headRows) {
+    return { groups: void 0, groupLabels: void 0 };
+  }
+  return {
+    groups: headGroupsOf(options.headRows),
+    groupLabels: headGroupLabelsOf(options.headRows)
+  };
+}
+function throughPinnedOf(options) {
+  return options.pinMode === "through" && options.pin !== void 0 ? Math.max(...options.pin) + 1 : 0;
+}
+function autoWidthAttribute(autoWidthOf) {
+  if (autoWidthOf.size === 0) {
+    return "";
+  }
   const autoTotal = [...autoWidthOf.values()].reduce(
     (sum, width) => sum + width,
     0
   );
-  const autoAttribute = autoWidthOf.size > 0 ? ` data-auto-width style="--mdmark-auto-table-width:${autoTotal}px"` : "";
-  const tableHtml = `<table tabindex="0" aria-label="\u8868"${autoAttribute}><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
-  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${menus}${drawers.join("")}`;
+  return ` data-auto-width style="--mdmark-auto-table-width:${autoTotal}px"`;
 }
 function reorderCellsHtml(html, order) {
   return html.replace(
     /(<tr\b[^>]*>)([\s\S]*?)(<\/tr>)/g,
-    (whole, open2, inner, close) => {
+    (whole, ...groups) => {
+      const [open2 = "", inner = "", close = ""] = groups;
       const cells = inner.match(/<t([hd])\b[\s\S]*?<\/t\1>/g) ?? [];
       if (cells.length !== order.length) {
         return whole;
@@ -64731,99 +64884,17 @@ function headGroupLabelsOf(headRows) {
   });
   return labels;
 }
+function treeAncestorsOf(path) {
+  return splitKeyPath(path).parents;
+}
 function renderTreeTable(options, id) {
+  const context = treeContextOf(options);
+  const { plans, tree } = context;
   const columns = options.columns ?? [];
-  const rows = options.rows ?? [];
-  const tree = options.tree ?? 0;
-  const required2 = options.treeRequired;
-  const keys = rows.map((row) => plainText2(row[tree] ?? ""));
-  const plans = planTreeRows(keys);
-  const collapsed = new Set(options.collapsedPaths ?? []);
-  const word = (options.treeFilter ?? "").trim().toLowerCase();
-  const selected = options.selectedPath;
-  const selectedPlan = plans.find((plan) => plan.path === selected);
-  const ancestorsOf = (path) => splitKeyPath(path).parents;
-  const hits = new Set(
-    word === "" ? [] : plans.filter((plan) => plan.name.toLowerCase().includes(word)).map((plan) => plan.path)
-  );
-  const keep = new Set(
-    [...hits].flatMap((path) => [path, ...ancestorsOf(path)])
-  );
-  const inScope = (path) => {
-    if (!selectedPlan) {
-      return false;
-    }
-    return plans.some(
-      (plan) => plan.parent === selectedPlan.parent && (plan.path === path || path.startsWith(`${plan.path}.`))
-    );
-  };
-  const shownColumns = columns.flatMap(
-    (_, column) => column === required2 ? [] : [column]
-  );
-  const head = shownColumns.map((column) => `<th>${columns[column] ?? ""}</th>`).join("");
-  let shown = 0;
-  const body = plans.map((plan) => {
-    const row = plan.source === void 0 ? void 0 : rows[plan.source];
-    const folded = ancestorsOf(plan.path).some((path) => collapsed.has(path));
-    const hidden2 = word === "" ? folded : !keep.has(plan.path);
-    if (!hidden2 && !plan.virtual) {
-      shown += 1;
-    }
-    const isRequired = row !== void 0 && required2 !== void 0 && ["\u2713", "true"].includes(plainText2(row[required2] ?? "").trim());
-    let key = renderTreeKeyCell({
-      name: plan.name,
-      depth: plan.depth,
-      required: isRequired
-    });
-    if (selectedPlan && inScope(plan.path)) {
-      let count2 = 0;
-      key = key.replace(/class="mdmark-tree-guide"/g, (match) => {
-        count2 += 1;
-        return count2 === selectedPlan.depth ? 'class="mdmark-tree-guide is-active"' : match;
-      });
-    }
-    const tool = plan.hasChildren ? renderTreeTools({
-      kind: "toggle",
-      path: plan.path,
-      expanded: !collapsed.has(plan.path)
-    }) : '<span class="mdmark-tree-spacer" aria-hidden="true"></span>';
-    key = key.replace(
-      '<span class="mdmark-tree-name"',
-      `${tool}<span class="mdmark-tree-name"`
-    );
-    if (hits.has(plan.path)) {
-      key = key.replace(
-        /(<span class="mdmark-tree-name" tabindex="0">)([^<]*)(<\/span>)/,
-        (_whole, open2, text2, close) => {
-          const at = text2.toLowerCase().indexOf(word);
-          return at < 0 ? `${open2}${text2}${close}` : `${open2}${text2.slice(0, at)}<mark class="mdmark-tree-hit">${text2.slice(at, at + word.length)}</mark>${text2.slice(at + word.length)}${close}`;
-        }
-      );
-    }
-    key = key.replace(
-      /<\/span>$/,
-      `${renderTreeTools({ kind: "copy" })}</span>`
-    );
-    const cells = shownColumns.map((column) => {
-      if (column === tree) {
-        return `<td class="mdmark-tree-key">${key}</td>`;
-      }
-      const text2 = row?.[column] ?? "";
-      if (column === options.treeType && text2 !== "") {
-        return `<td>${renderTypeCell(plainText2(text2))}</td>`;
-      }
-      if (column === options.treeDefault && text2 !== "") {
-        return `<td><span class="mdmark-tree-default">${text2}</span></td>`;
-      }
-      return `<td>${row ? text2 : ""}</td>`;
-    }).join("");
-    const classes = [
-      "mdmark-tree-row",
-      ...plan.virtual ? ["is-virtual"] : [],
-      ...plan.hasChildren ? ["has-children"] : []
-    ].join(" ");
-    return `<tr class="${classes}" data-path="${escapeHtml2(plan.path)}" data-parent="${escapeHtml2(plan.parent)}" data-depth="${plan.depth}" aria-selected="${plan.path === selected}"${hidden2 ? " hidden" : ""}>${cells}</tr>`;
-  }).join("");
+  const head = context.shownColumns.map((column) => `<th>${columns[column] ?? ""}</th>`).join("");
+  const rendered = plans.map((plan) => renderTreeRow(context, plan));
+  const body = rendered.map((row) => row.html).join("");
+  const shown = rendered.filter((row) => row.counted).length;
   const counted = plans.filter((plan) => !plan.virtual).length;
   const count = options.features.includes("count") ? `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${counted} \u4EF6</span><span class="mdmark-visually-hidden">${counted} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p></div>` : "";
   const table2 = `<div class="mdmark-table" data-kind="${options.kind ?? "default"}" data-features="${options.features.join(" ")}" data-tree="${tree}">${count}<div class="mdmark-table-scroll"><table tabindex="0" aria-label="\u8868"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div></div>`;
@@ -64831,6 +64902,132 @@ function renderTreeTable(options, id) {
   if (!example) {
     return table2;
   }
+  return renderTreeExample({ example, id, table: table2, selected: context.selected });
+}
+function treeContextOf(options) {
+  const columns = options.columns ?? [];
+  const rows = options.rows ?? [];
+  const tree = options.tree ?? 0;
+  const required2 = options.treeRequired;
+  const plans = planTreeRows(rows.map((row) => plainText2(row[tree] ?? "")));
+  const word = (options.treeFilter ?? "").trim().toLowerCase();
+  const hits = treeHits(plans, word);
+  return {
+    options,
+    rows,
+    tree,
+    required: required2,
+    plans,
+    collapsed: new Set(options.collapsedPaths ?? []),
+    word,
+    selected: options.selectedPath,
+    selectedPlan: plans.find((plan) => plan.path === options.selectedPath),
+    hits,
+    keep: new Set(
+      [...hits].flatMap((path) => [path, ...treeAncestorsOf(path)])
+    ),
+    shownColumns: columns.flatMap(
+      (_, column) => column === required2 ? [] : [column]
+    )
+  };
+}
+function treeHits(plans, word) {
+  if (word === "") {
+    return /* @__PURE__ */ new Set();
+  }
+  return new Set(
+    plans.filter((plan) => plan.name.toLowerCase().includes(word)).map((plan) => plan.path)
+  );
+}
+function inTreeScope(context, path) {
+  const { selectedPlan, plans } = context;
+  if (!selectedPlan) {
+    return false;
+  }
+  return plans.some(
+    (plan) => plan.parent === selectedPlan.parent && (plan.path === path || path.startsWith(`${plan.path}.`))
+  );
+}
+function renderTreeRow(context, plan) {
+  const { rows, collapsed, word, keep, selected } = context;
+  const row = plan.source === void 0 ? void 0 : rows[plan.source];
+  const folded = treeAncestorsOf(plan.path).some((path) => collapsed.has(path));
+  const hidden = word === "" ? folded : !keep.has(plan.path);
+  const key = renderTreeRowKey(context, { plan, row });
+  const cells = context.shownColumns.map((column) => renderTreeCell(context, { column, row, key })).join("");
+  const classes = [
+    "mdmark-tree-row",
+    ...plan.virtual ? ["is-virtual"] : [],
+    ...plan.hasChildren ? ["has-children"] : []
+  ].join(" ");
+  return {
+    html: `<tr class="${classes}" data-path="${escapeHtml2(plan.path)}" data-parent="${escapeHtml2(plan.parent)}" data-depth="${plan.depth}" aria-selected="${plan.path === selected}"${hidden ? " hidden" : ""}>${cells}</tr>`,
+    counted: !hidden && !plan.virtual
+  };
+}
+function renderTreeRowKey(context, item) {
+  const { required: required2, selectedPlan, hits, word, collapsed } = context;
+  const { plan, row } = item;
+  const isRequired = row !== void 0 && required2 !== void 0 && ["\u2713", "true"].includes(plainText2(row[required2] ?? "").trim());
+  let key = renderTreeKeyCell({
+    name: plan.name,
+    depth: plan.depth,
+    required: isRequired
+  });
+  if (selectedPlan && inTreeScope(context, plan.path)) {
+    key = activateTreeGuide(key, selectedPlan.depth);
+  }
+  const tool = plan.hasChildren ? renderTreeTools({
+    kind: "toggle",
+    path: plan.path,
+    expanded: !collapsed.has(plan.path)
+  }) : '<span class="mdmark-tree-spacer" aria-hidden="true"></span>';
+  key = key.replace(
+    '<span class="mdmark-tree-name"',
+    `${tool}<span class="mdmark-tree-name"`
+  );
+  if (hits.has(plan.path)) {
+    key = markTreeHit(key, word);
+  }
+  return key.replace(
+    /<\/span>$/,
+    `${renderTreeTools({ kind: "copy" })}</span>`
+  );
+}
+function activateTreeGuide(key, depth) {
+  let count = 0;
+  return key.replace(/class="mdmark-tree-guide"/g, (match) => {
+    count += 1;
+    return count === depth ? 'class="mdmark-tree-guide is-active"' : match;
+  });
+}
+function markTreeHit(key, word) {
+  return key.replace(
+    /(<span class="mdmark-tree-name" tabindex="0">)([^<]*)(<\/span>)/,
+    (_whole, ...groups) => {
+      const [open2 = "", text2 = "", close = ""] = groups;
+      const at = text2.toLowerCase().indexOf(word);
+      return at < 0 ? `${open2}${text2}${close}` : `${open2}${text2.slice(0, at)}<mark class="mdmark-tree-hit">${text2.slice(at, at + word.length)}</mark>${text2.slice(at + word.length)}${close}`;
+    }
+  );
+}
+function renderTreeCell(context, cell) {
+  const { column, row, key } = cell;
+  const { options } = context;
+  if (column === context.tree) {
+    return `<td class="mdmark-tree-key">${key}</td>`;
+  }
+  const text2 = row?.[column] ?? "";
+  if (column === options.treeType && text2 !== "") {
+    return `<td>${renderTypeCell(plainText2(text2))}</td>`;
+  }
+  if (column === options.treeDefault && text2 !== "") {
+    return `<td><span class="mdmark-tree-default">${text2}</span></td>`;
+  }
+  return `<td>${row ? text2 : ""}</td>`;
+}
+function renderTreeExample(options) {
+  const { example, id, table: table2, selected } = options;
   const exampleId = `${id}-example`;
   const active = example.active ?? 0;
   const panels = example.tabs.map((tab, index) => {
@@ -64884,83 +65081,156 @@ function renderTable(options) {
     return renderTreeTable(options, options.id ?? "mdmark-table");
   }
   const kind = options.kind ?? "default";
-  const filters = options.features.includes("filter") ? options.filters ?? [] : [];
-  const filterAttribute = filters.length ? ` data-filter="${filters.map((filter2) => `${filter2.column}:${filter2.kind}`).join(" ")}"` : "";
-  const hide2 = options.features.includes("columns") ? options.hide ?? [] : [];
-  const hideAttribute = hide2.length ? ` data-hide="${hide2.join(" ")}"` : "";
-  const totals = options.features.includes("total") ? options.totals ?? [] : [];
-  const totalAttribute = totals.length ? ` data-total="${totals.map((total) => `${total.column}:${total.calc}`).join(" ")}"` : "";
-  const pinAttribute = options.pin !== void 0 && options.features.includes("pin") ? ` data-pin="${options.pin.join(" ")}"` : "";
-  const unpinAttribute = options.unpin !== void 0 && options.unpin.length > 0 && options.features.includes("pin") ? ` data-unpin="${options.unpin.join(" ")}"` : "";
-  const check2 = options.check ?? [];
-  const checkAttribute = check2.length ? ` data-check="${check2.join(" ")}"` : "";
-  const treeAttribute = options.tree !== void 0 ? ` data-tree="${options.tree}"` : "";
-  const content = options.body === void 0 ? renderTableBody(options, options.id ?? "mdmark-table") : `<div class="mdmark-table-scroll">${options.body}</div>`;
-  const collapse = options.collapse ?? "none";
-  const title = options.title ?? `\u8868\uFF08${options.rows?.length ?? options.rowCount ?? 0} \u884C\uFF09`;
-  const inner = collapse === "none" ? content : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${content}</details>`;
-  const long = options.long ?? [];
-  const longAttribute = long.length ? ` data-long="${long.join(" ")}"` : "";
-  const noSort = options.noSort ?? [];
-  const noSortAttribute = noSort.length ? ` data-no-sort="${noSort.join(" ")}"` : "";
-  const ranges = options.widthRanges ?? [];
-  const widthAttribute = ranges.length ? ` data-width="${ranges.map((range) => `${range.column}:${range.min ?? ""}-${range.max ?? ""}`).join(" ")}"` : "";
-  const mergeColumns = options.mergeColumns ?? [];
-  const mergeAttribute = mergeColumns.length ? ` data-merge-columns="${mergeColumns.join(" ")}"` : "";
+  const attributes = `${featureAttributes(options)}${columnAttributes(options)}`;
+  const inner = wrapCollapse(options, tableContent(options));
   if (options.rawCsv === void 0) {
-    return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${noSortAttribute}${widthAttribute}>${inner}</div>`;
+    return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${attributes}>${inner}</div>`;
   }
+  return renderCsvTable({
+    options,
+    kind,
+    attributes,
+    inner,
+    rawCsv: options.rawCsv
+  });
+}
+function listAttribute(name, values) {
+  return values.length ? ` data-${name}="${values.join(" ")}"` : "";
+}
+function featureAttributes(options) {
+  const has = (feature) => options.features.includes(feature);
+  const filters = has("filter") ? options.filters ?? [] : [];
+  const hide2 = has("columns") ? options.hide ?? [] : [];
+  const pin = options.pin !== void 0 && has("pin") ? ` data-pin="${options.pin.join(" ")}"` : "";
+  const unpin = has("pin") ? listAttribute("unpin", options.unpin ?? []) : "";
+  return `${listAttribute(
+    "filter",
+    filters.map((filter2) => `${filter2.column}:${filter2.kind}`)
+  )}${listAttribute("hide", hide2)}${listAttribute(
+    "total",
+    totalsOf(options).map((total) => `${total.column}:${total.calc}`)
+  )}${pin}${unpin}`;
+}
+function columnAttributes(options) {
+  const ranges = options.widthRanges ?? [];
+  const tree = options.tree !== void 0 ? ` data-tree="${options.tree}"` : "";
+  return `${listAttribute("check", options.check ?? [])}${tree}${listAttribute(
+    "merge-columns",
+    options.mergeColumns ?? []
+  )}${listAttribute("long", options.long ?? [])}${listAttribute(
+    "no-sort",
+    options.noSort ?? []
+  )}${listAttribute(
+    "width",
+    ranges.map(
+      (range) => `${range.column}:${range.min ?? ""}-${range.max ?? ""}`
+    )
+  )}`;
+}
+function tableContent(options) {
+  return options.body === void 0 ? renderTableBody(options, options.id ?? "mdmark-table") : `<div class="mdmark-table-scroll">${options.body}</div>`;
+}
+function wrapCollapse(options, content) {
+  const collapse = options.collapse ?? "none";
+  if (collapse === "none") {
+    return content;
+  }
+  const title = options.title ?? `\u8868\uFF08${options.rows?.length ?? options.rowCount ?? 0} \u884C\uFF09`;
+  return `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${content}</details>`;
+}
+function renderCsvTable(parts) {
+  const { options, kind, attributes, inner, rawCsv } = parts;
   const shown = options.rawShown ?? false;
   const bar = options.body === void 0 ? renderRawBar(shown) : "";
-  const raw = `<pre class="mdmark-raw"${shown ? "" : " hidden"} tabindex="0" aria-label="\u5143\u306E CSV"><code class="language-csv">${escapeHtml2(options.rawCsv)}</code></pre>`;
+  const raw = `<pre class="mdmark-raw"${shown ? "" : " hidden"} tabindex="0" aria-label="\u5143\u306E CSV"><code class="language-csv">${escapeHtml2(rawCsv)}</code></pre>`;
   const viewAttribute = shown ? ' data-view="raw"' : "";
-  const shownInner = shown ? inner.includes('<div class="mdmark-table-scroll">') ? inner.replace(
+  const shownInner = shown ? hideTableOf(inner) : inner;
+  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${attributes}>${bar}${shownInner}${raw}</div>`;
+}
+function hideTableOf(inner) {
+  return inner.includes('<div class="mdmark-table-scroll">') ? inner.replace(
     '<div class="mdmark-table-scroll">',
     '<div class="mdmark-table-scroll" hidden>'
-  ) : inner.replace(/^<table(?=[\s>])/, "<table hidden") : inner;
-  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${noSortAttribute}${widthAttribute}>${bar}${shownInner}${raw}</div>`;
+  ) : inner.replace(/^<table(?=[\s>])/, "<table hidden");
 }
 
 // src/parts/footnote.ts
-var FOOTNOTE_LABEL = "\u811A\u6CE8";
+var KINDS = {
+  footnote: {
+    label: "\u811A\u6CE8",
+    refId: "mdmark-fnref-",
+    tipId: "mdmark-fn-tip-",
+    itemId: "mdmark-fn-",
+    refClass: "",
+    listClass: ""
+  },
+  annotation: {
+    label: "\u6CE8\u8A18",
+    refId: "mdmark-noteref-",
+    tipId: "mdmark-note-tip-",
+    itemId: "mdmark-note-",
+    refClass: " mdmark-note-ref",
+    listClass: " mdmark-notes"
+  }
+};
+var NOTE_OWNER_PREFIX = "mdmark-note-owner-";
+var noteOwnerId = (prefix, elementId) => `${prefix}${elementId.replace(/\s/g, "_")}`;
 var FOOTNOTE_BODY_OPEN = '<span class="mdmark-fn-tip-body">';
 var BACK_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 function hasLink(bodies) {
   return bodies.some((body) => /<a\s/i.test(body));
 }
 function renderFootnoteRef(options) {
-  const { number: number4, refIndex = 0, bodies, below = false } = options;
-  const tipId = `mdmark-fn-tip-${number4}-${refIndex}`;
-  const label = `${FOOTNOTE_LABEL} ${number4}`;
+  const {
+    number: number4,
+    refIndex = 0,
+    bodies,
+    below = false,
+    kind = "footnote",
+    afterRef = false
+  } = options;
+  const names2 = KINDS[kind];
+  const tipId = `${names2.tipId}${number4}-${refIndex}`;
+  const label = `${names2.label} ${number4}`;
   const linked = hasLink(bodies);
   const pointer = linked ? `aria-details="${tipId}"` : `aria-describedby="${tipId}"`;
   const role = linked ? `role="group" aria-label="${label}"` : 'role="tooltip"';
-  const classes = below ? "mdmark-fn-ref is-below" : "mdmark-fn-ref";
+  const classes = `mdmark-fn-ref${names2.refClass}${below ? " is-below" : ""}${afterRef ? " is-after-ref" : ""}`;
   const items = bodies.map((body) => `${FOOTNOTE_BODY_OPEN}${body}</span>`).join("");
-  return `<sup class="${classes}"><a class="mdmark-fn-link" id="mdmark-fnref-${number4}-${refIndex}" href="#mdmark-fn-${number4}" ${pointer}><span class="mdmark-visually-hidden">${FOOTNOTE_LABEL} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-title">${label}</span>${items}</span></sup>`;
+  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names2.refId}${number4}-${refIndex}" href="#${names2.itemId}${number4}" ${pointer}><span class="mdmark-visually-hidden">${names2.label} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-title">${label}</span>${items}</span></sup>`;
 }
 function renderBackLink(options) {
-  const { number: number4, index, count } = options;
+  const { label: name, number: number4, index, count, ref } = options;
   const several = count > 1;
-  const label = several ? `\u672C\u6587\u306E${FOOTNOTE_LABEL} ${number4} \u306E ${index + 1} \u3064\u76EE\u306E\u53C2\u7167\u3078\u623B\u308B` : `\u672C\u6587\u306E${FOOTNOTE_LABEL} ${number4} \u3078\u623B\u308B`;
+  const label = several ? `\u672C\u6587\u306E${name} ${number4} \u306E ${index + 1} \u3064\u76EE\u306E\u53C2\u7167\u3078\u623B\u308B` : `\u672C\u6587\u306E${name} ${number4} \u3078\u623B\u308B`;
   const letter = several ? BACK_LETTERS[index] ?? String(index + 1) : "";
-  return `<a class="mdmark-fn-back" href="#mdmark-fnref-${number4}-${index}" aria-label="${label}">${iconSvg("corner-up-left")}${letter}</a>`;
+  const owner = ref.owner === void 0 ? "" : ` data-note-owner="${escapeHtml2(ref.owner)}"`;
+  return `<a class="mdmark-fn-back" href="${escapeHtml2(ref.href)}"${owner} aria-label="${label}">${iconSvg("corner-up-left")}${letter}</a>`;
 }
 function renderFootnotes(options) {
-  const { items, open: open2 = false } = options;
+  const { items, open: open2 = false, kind = "footnote" } = options;
+  const names2 = KINDS[kind];
   if (items.length === 0) {
     return "";
   }
-  const lis = items.map(({ number: number4, html, refCount }) => {
-    const backs = Array.from(
-      { length: refCount },
-      (_, index) => renderBackLink({ number: number4, index, count: refCount })
+  const lis = items.map(({ number: number4, html, refCount, refs }) => {
+    const targets = refs ?? Array.from({ length: refCount }, (_, index) => ({
+      href: `#${names2.refId}${number4}-${index}`
+    }));
+    const backs = targets.map(
+      (ref, index) => renderBackLink({
+        label: names2.label,
+        number: number4,
+        index,
+        count: targets.length,
+        ref
+      })
     ).join("");
     const at = html.lastIndexOf("</p>");
     const body = at < 0 ? `${html} ${backs}` : `${html.slice(0, at)} ${backs}${html.slice(at)}`;
-    return `<li class="mdmark-fn-item" id="mdmark-fn-${number4}">${body}</li>`;
+    return `<li class="mdmark-fn-item" id="${names2.itemId}${number4}">${body}</li>`;
   }).join("");
-  return `<details class="mdmark-footnotes"${open2 ? " open" : ""}><summary>${FOOTNOTE_LABEL}\uFF08${items.length} \u4EF6\uFF09</summary><ol class="mdmark-footnotes-list">${lis}</ol></details>`;
+  return `<details class="mdmark-footnotes${names2.listClass}"${open2 ? " open" : ""}><summary>${names2.label}\uFF08${items.length} \u4EF6\uFF09</summary><ol class="mdmark-footnotes-list">${lis}</ol></details>`;
 }
 
 // src/render/syntax/tokens.ts
@@ -65020,6 +65290,12 @@ function textOf(token) {
 // src/render/syntax/footnotes.ts
 var DEF_OPEN = "mdmark_footnote_def_open";
 var DEF_CLOSE = "mdmark_footnote_def_close";
+var ANNOTATION_DEF_OPEN = "mdmark_annotation_def_open";
+var ANNOTATION_DEF_CLOSE = "mdmark_annotation_def_close";
+var DEFINITION_CLOSES = {
+  [DEF_OPEN]: DEF_CLOSE,
+  [ANNOTATION_DEF_OPEN]: ANNOTATION_DEF_CLOSE
+};
 var REF = "mdmark_footnote_ref";
 var LIST = "mdmark_footnote_list";
 var INLINE_KEY_PREFIX = "\0inline:";
@@ -65055,23 +65331,76 @@ function labelEnd(src, pos, max) {
   }
   return -1;
 }
-function readFootnoteDefinition(state, startLine, endLine, silent) {
+function findDefinition(state, startLine) {
   const src = state.src;
   const start = (state.bMarks[startLine] ?? 0) + (state.tShift[startLine] ?? 0);
   const max = state.eMarks[startLine] ?? 0;
   if ((state.sCount[startLine] ?? 0) - state.blkIndent >= CONTINUATION_INDENT) {
-    return false;
+    return void 0;
   }
   if (src.charCodeAt(start) !== OPEN_BRACKET || src.charCodeAt(start + 1) !== CARET) {
-    return false;
+    return void 0;
   }
   const close = labelEnd(src, start, max);
   if (close < 0 || src.charCodeAt(close + 1) !== COLON) {
+    return void 0;
+  }
+  return { start, close, max };
+}
+function skipIndent(src, from) {
+  let { pos, offset } = from;
+  while (pos < from.max) {
+    const code2 = src.charCodeAt(pos);
+    if (code2 === TAB) {
+      offset += TAB_WIDTH - offset % TAB_WIDTH;
+    } else if (code2 === SPACE) {
+      offset += 1;
+    } else {
+      break;
+    }
+    pos += 1;
+  }
+  return { pos, offset };
+}
+function tokenizeBody(state, range) {
+  const { startLine, endLine, start, afterColon, max } = range;
+  const oldBMark = state.bMarks[startLine] ?? 0;
+  const oldTShift = state.tShift[startLine] ?? 0;
+  const oldSCount = state.sCount[startLine] ?? 0;
+  const oldParentType = state.parentType;
+  const initial = oldSCount + afterColon - start;
+  const { pos, offset } = skipIndent(state.src, {
+    pos: afterColon,
+    max,
+    offset: initial
+  });
+  state.tShift[startLine] = pos - afterColon;
+  state.sCount[startLine] = offset - initial;
+  state.bMarks[startLine] = afterColon;
+  state.blkIndent += CONTINUATION_INDENT;
+  state.parentType = "footnote";
+  const sCount = state.sCount[startLine] ?? 0;
+  if (sCount < state.blkIndent) {
+    state.sCount[startLine] = sCount + state.blkIndent;
+  }
+  state.md.block.tokenize(state, startLine, endLine);
+  state.parentType = oldParentType;
+  state.blkIndent -= CONTINUATION_INDENT;
+  state.tShift[startLine] = oldTShift;
+  state.sCount[startLine] = oldSCount;
+  state.bMarks[startLine] = oldBMark;
+}
+function readFootnoteDefinition(...args) {
+  const [state, startLine, endLine, silent] = args;
+  const found = findDefinition(state, startLine);
+  if (!found) {
     return false;
   }
   if (silent) {
     return true;
   }
+  const { start, close, max } = found;
+  const src = state.src;
   const afterColon = close + 2;
   const key = state.md.utils.normalizeReference(src.slice(start + 2, close));
   const footnotes = footnoteStateOf(state.env);
@@ -65086,38 +65415,7 @@ function readFootnoteDefinition(state, startLine, endLine, silent) {
     source: `${src.slice(start, afterColon)} `
   };
   open2.map = [startLine, startLine];
-  const oldBMark = state.bMarks[startLine] ?? 0;
-  const oldTShift = state.tShift[startLine] ?? 0;
-  const oldSCount = state.sCount[startLine] ?? 0;
-  const oldParentType = state.parentType;
-  const initial = oldSCount + afterColon - start;
-  let offset = initial;
-  let pos = afterColon;
-  while (pos < max) {
-    const code2 = src.charCodeAt(pos);
-    if (code2 === TAB) {
-      offset += TAB_WIDTH - offset % TAB_WIDTH;
-    } else if (code2 === SPACE) {
-      offset += 1;
-    } else {
-      break;
-    }
-    pos += 1;
-  }
-  state.tShift[startLine] = pos - afterColon;
-  state.sCount[startLine] = offset - initial;
-  state.bMarks[startLine] = afterColon;
-  state.blkIndent += CONTINUATION_INDENT;
-  state.parentType = "footnote";
-  if ((state.sCount[startLine] ?? 0) < state.blkIndent) {
-    state.sCount[startLine] = (state.sCount[startLine] ?? 0) + state.blkIndent;
-  }
-  state.md.block.tokenize(state, startLine, endLine);
-  state.parentType = oldParentType;
-  state.blkIndent -= CONTINUATION_INDENT;
-  state.tShift[startLine] = oldTShift;
-  state.sCount[startLine] = oldSCount;
-  state.bMarks[startLine] = oldBMark;
+  tokenizeBody(state, { startLine, endLine, start, afterColon, max });
   open2.map = [startLine, state.line];
   state.push(DEF_CLOSE, "", -1);
   return true;
@@ -65188,12 +65486,14 @@ function readInlineFootnote(state, silent) {
   return true;
 }
 function findDefinitionClose(tokens, openIndex) {
+  const open2 = tokens[openIndex]?.type ?? "";
+  const close = DEFINITION_CLOSES[open2];
   let depth = 0;
   for (let index = openIndex; index < tokens.length; index++) {
     const type = tokens[index]?.type;
-    if (type === DEF_OPEN) {
+    if (type === open2) {
       depth += 1;
-    } else if (type === DEF_CLOSE) {
+    } else if (type === close) {
       depth -= 1;
       if (depth === 0) {
         return index;
@@ -65295,7 +65595,7 @@ function outsideFootnoteDefinitions(tokens) {
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    if (token?.type === DEF_OPEN) {
+    if (token !== void 0 && token.type in DEFINITION_CLOSES) {
       index = findDefinitionClose(tokens, index);
     } else if (token !== void 0) {
       out.push(token);
@@ -65333,6 +65633,10 @@ function blockText(md, env, tokens) {
 function footnoteBodies(options) {
   const { md, env, note } = options;
   const tokens = (note.key === null ? null : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [];
+  return definitionBodies({ md, env, tokens });
+}
+function definitionBodies(options) {
+  const { md, env, tokens } = options;
   const bodies = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -65381,22 +65685,37 @@ function renderReference(md, token, env) {
   return markOwnAroundBodies(html, bodies, env.nonce);
 }
 function renderList(md, env) {
+  return renderDefinitionList({
+    md,
+    env,
+    kind: "footnote",
+    items: (env.mdmarkFootnotes?.notes ?? []).map((note, index) => ({
+      number: index + 1,
+      tokens: (note.key === null ? null : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [],
+      refCount: note.refCount
+    }))
+  });
+}
+function renderDefinitionList(options) {
+  const { md, env, kind } = options;
   const fills = [];
-  const items = (env.mdmarkFootnotes?.notes ?? []).map((note, index) => {
-    const { html } = footnoteBodies({ md, env, note });
+  const items = options.items.map(({ number: number4, tokens, refCount, refs }) => {
+    const { html } = definitionBodies({ md, env, tokens });
     const at = html.lastIndexOf("</p>");
+    const back = refs === void 0 ? {} : { refs };
     if (at < 0) {
       fills.push(html);
-      return { number: index + 1, html: SLOT_MARKER, refCount: note.refCount };
+      return { number: number4, html: SLOT_MARKER, refCount, ...back };
     }
     fills.push(html.slice(0, at), html.slice(at + "</p>".length));
     return {
-      number: index + 1,
+      number: number4,
       html: `${SLOT_MARKER}</p>${SLOT_MARKER}`,
-      refCount: note.refCount
+      refCount,
+      ...back
     };
   });
-  return splitSlots(markOwn(renderFootnotes({ items }), env.nonce)).map((part, index) => `${part}${fills[index] ?? ""}`).join("");
+  return splitSlots(markOwn(renderFootnotes({ items, kind }), env.nonce)).map((part, index) => `${part}${fills[index] ?? ""}`).join("");
 }
 function buildFootnoteList(state) {
   if ((envOf(state).mdmarkFootnotes?.notes.length ?? 0) === 0) {
@@ -65425,8 +65744,8 @@ function useFootnotes(parser3) {
     "mdmark_footnote_ref",
     readFootnoteReference
   );
-  parser3.renderer.rules[LIST] = (_tokens, _index, _options, env) => renderList(parser3, env);
-  parser3.renderer.rules[REF] = (tokens, index, _options, env) => {
+  parser3.renderer.rules[LIST] = (...[_tokens, _index, _options, env]) => renderList(parser3, env);
+  parser3.renderer.rules[REF] = (...[tokens, index, _options, env]) => {
     const token = tokens[index];
     if (token === void 0) {
       throw new Error("\u811A\u6CE8\u306E\u53C2\u7167\u306E\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u3044");
@@ -65498,15 +65817,13 @@ function planCellMerges(options) {
   const mergeColumns = /* @__PURE__ */ new Set();
   for (const [row, values] of texts.entries()) {
     for (const [column, text2] of values.entries()) {
-      const cell = cells[row]?.[column];
-      if (!cell || text2 !== MERGE_UP && text2 !== MERGE_LEFT) {
+      if (!cells[row]?.[column] || text2 !== MERGE_UP && text2 !== MERGE_LEFT) {
         continue;
       }
-      const up = text2 === MERGE_UP;
-      const reason = up ? planUp({ cells, row, column, headRows }) : planLeft({ cells, row, column });
+      const reason = planMerge({ cells, row, column, headRows, text: text2 });
       if (reason) {
         warnings.push(mergeWarning({ label: text2, row, column, reason }));
-      } else if (up && row >= headRows) {
+      } else if (text2 === MERGE_UP && row >= headRows) {
         mergeColumns.add(column);
       }
     }
@@ -65516,6 +65833,10 @@ function planCellMerges(options) {
     mergeColumns: [...mergeColumns].sort((a, b) => a - b),
     warnings
   };
+}
+function planMerge(options) {
+  const { text: text2, ...place } = options;
+  return text2 === MERGE_UP ? planUp(place) : planLeft(place);
 }
 function planUp(options) {
   const { cells, row, column, headRows } = options;
@@ -65615,8 +65936,9 @@ function makeWarningToken(state, warning, source) {
   token.meta = { ...token.meta ?? {}, warning: meta2 };
   return token;
 }
-function pushWarning(state, index, warning, source) {
-  state.tokens.splice(index, 0, makeWarningToken(state, warning, source));
+function pushWarning(state, index, warning) {
+  const { source, ...rest2 } = warning;
+  state.tokens.splice(index, 0, makeWarningToken(state, rest2, source));
 }
 function warningBlock(state, warning, source) {
   return makeWarningToken(state, warning, source);
@@ -65678,63 +66000,190 @@ function unclosedWarning(mark) {
 
 // src/render/syntax/table-tree.ts
 var REQUIRED_VALUES = ["\u2713", "true"];
-function collectRows(tokens, start, end) {
-  const head = [];
-  const body = [];
-  let depth = 0;
-  let inBody = false;
-  let bodyOpen = -1;
-  let bodyClose = -1;
-  let row;
-  let cellOpen = -1;
-  for (let index = start + 1; index < end; index++) {
-    const token = tokens[index];
-    if (!token) {
-      continue;
+var openCell = (walk, index) => {
+  walk.cellOpen = index;
+};
+var closeCell = (walk, index) => {
+  walk.row?.cells.push({ open: walk.cellOpen, close: index });
+};
+var ROW_STEPS = {
+  tbody_open: (walk, index) => {
+    walk.inBody = true;
+    walk.bodyOpen = index;
+  },
+  tbody_close: (walk, index) => {
+    walk.bodyClose = index;
+  },
+  tr_open: (walk, index) => {
+    walk.row = { open: index, close: index, cells: [] };
+  },
+  tr_close: (walk, index) => {
+    if (walk.row) {
+      walk.row.close = index;
+      (walk.inBody ? walk.body : walk.head).push(walk.row);
     }
-    if (token.type === "table_open") {
+    walk.row = void 0;
+  },
+  th_open: openCell,
+  td_open: openCell,
+  th_close: closeCell,
+  td_close: closeCell
+};
+function collectRows(tokens, start, end) {
+  const walk = {
+    head: [],
+    body: [],
+    bodyOpen: -1,
+    bodyClose: -1,
+    inBody: false,
+    row: void 0,
+    cellOpen: -1
+  };
+  let depth = 0;
+  for (let index = start + 1; index < end; index++) {
+    const type = tokens[index]?.type;
+    if (type === "table_open") {
       depth += 1;
-    } else if (token.type === "table_close") {
+    } else if (type === "table_close") {
       depth -= 1;
     }
-    if (depth > 0) {
-      continue;
-    }
-    switch (token.type) {
-      case "tbody_open":
-        inBody = true;
-        bodyOpen = index;
-        break;
-      case "tbody_close":
-        bodyClose = index;
-        break;
-      case "tr_open":
-        row = { open: index, close: index, cells: [] };
-        break;
-      case "tr_close":
-        if (row) {
-          row.close = index;
-          (inBody ? body : head).push(row);
-        }
-        row = void 0;
-        break;
-      case "th_open":
-      case "td_open":
-        cellOpen = index;
-        break;
-      case "th_close":
-      case "td_close":
-        row?.cells.push({ open: cellOpen, close: index });
-        break;
-      default:
-        break;
+    if (type !== void 0 && depth === 0 && Object.hasOwn(ROW_STEPS, type)) {
+      ROW_STEPS[type]?.(walk, index);
     }
   }
+  const { head, body, bodyOpen, bodyClose } = walk;
   return { head, body, bodyOpen, bodyClose };
 }
 function cellText(tokens, cell) {
   const inline2 = cell ? tokens[cell.open + 1] : void 0;
   return inline2?.type === "inline" ? textOf(inline2).trim() : "";
+}
+function inlineHtml(context, html) {
+  const token = new context.state.Token("html_inline", "", 0);
+  token.content = markOwn(html, context.nonce);
+  return token;
+}
+function setOwn(token, attribute) {
+  token.attrSet(attribute.name, attribute.value);
+  token.attrSet("data-mdmark-own", attribute.nonce);
+}
+function droppedHeadCells(head, required2) {
+  const dropped = /* @__PURE__ */ new Set();
+  if (required2 === void 0) {
+    return dropped;
+  }
+  for (const row of head) {
+    const cell = row.cells[required2];
+    for (let index = cell?.open ?? 0; cell && index <= cell.close; index++) {
+      dropped.add(index);
+    }
+  }
+  return dropped;
+}
+function decorateSourceCell(context, cell) {
+  const { tokens, tree, spec, nonce } = context;
+  const { column, keyHtml } = cell;
+  const open2 = tokens[cell.open];
+  const inline2 = tokens[cell.open + 1];
+  if (inline2?.type !== "inline") {
+    return;
+  }
+  const text2 = textOf(inline2).trim();
+  if (column === tree) {
+    open2.attrJoin("class", "mdmark-tree-key");
+    open2.attrSet("data-mdmark-own", nonce);
+    inline2.children = [inlineHtml(context, keyHtml)];
+  } else if (column === spec.treeType && text2 !== "") {
+    inline2.children = [inlineHtml(context, renderTypeCell(text2))];
+  } else if (column === spec.treeDefault && text2 !== "") {
+    inline2.children = [
+      inlineHtml(context, '<span class="mdmark-tree-default">'),
+      ...inline2.children ?? [],
+      inlineHtml(context, "</span>")
+    ];
+  }
+}
+function sourceCells(context, row) {
+  const { tokens, required: required2 } = context;
+  const out = [];
+  for (const [column, cell] of row.source.cells.entries()) {
+    if (column === required2) {
+      continue;
+    }
+    decorateSourceCell(context, {
+      column,
+      open: cell.open,
+      keyHtml: row.keyHtml
+    });
+    out.push(...tokens.slice(cell.open, cell.close + 1));
+  }
+  return out;
+}
+function virtualCells(context, keyHtml) {
+  const { state, tree, required: required2, level, columns, nonce } = context;
+  const out = [];
+  for (let column = 0; column < columns; column++) {
+    if (column === required2) {
+      continue;
+    }
+    const open2 = new state.Token("td_open", "td", 1);
+    open2.level = level + 1;
+    const inline2 = new state.Token("inline", "", 0);
+    inline2.level = level + 2;
+    inline2.children = [];
+    if (column === tree) {
+      setOwn(open2, { name: "class", value: "mdmark-tree-key", nonce });
+      inline2.children = [inlineHtml(context, keyHtml)];
+    }
+    const close = new state.Token("td_close", "td", -1);
+    close.level = level + 1;
+    out.push(open2, inline2, close);
+  }
+  return out;
+}
+function treeRowTokens(context, row) {
+  const { state, tokens, required: required2, level, nonce } = context;
+  const { plan, body } = row;
+  const source = plan.source === void 0 ? void 0 : body[plan.source];
+  const isRequired = source !== void 0 && required2 !== void 0 && REQUIRED_VALUES.includes(cellText(tokens, source.cells[required2]));
+  const keyHtml = renderTreeKeyCell({
+    name: plan.name,
+    depth: plan.depth,
+    required: isRequired
+  });
+  const trOpen = source ? tokens[source.open] : new state.Token("tr_open", "tr", 1);
+  if (!source) {
+    trOpen.level = level;
+  }
+  const cellsOut = source ? sourceCells(context, { source, keyHtml }) : virtualCells(context, keyHtml);
+  trOpen.attrJoin(
+    "class",
+    [
+      "mdmark-tree-row",
+      ...plan.virtual ? ["is-virtual"] : [],
+      ...plan.hasChildren ? ["has-children"] : []
+    ].join(" ")
+  );
+  setOwn(trOpen, { name: "data-path", value: plan.path, nonce });
+  setOwn(trOpen, { name: "data-parent", value: plan.parent, nonce });
+  setOwn(trOpen, { name: "data-depth", value: String(plan.depth), nonce });
+  const trClose = source ? tokens[source.close] : new state.Token("tr_close", "tr", -1);
+  trClose.level = level;
+  return [trOpen, ...cellsOut, trClose];
+}
+function treeContextOf2(state, table2) {
+  const { spec, tree, sample } = table2;
+  const tokens = state.tokens;
+  return {
+    state,
+    tokens,
+    nonce: envOf(state).nonce,
+    spec,
+    tree,
+    required: spec.treeRequired,
+    level: sample ? tokens[sample.open]?.level ?? 0 : 0,
+    columns: sample?.cells.length ?? 0
+  };
 }
 function decorateTreeTable(options) {
   const { state, start, end, spec } = options;
@@ -65743,106 +66192,16 @@ function decorateTreeTable(options) {
     return;
   }
   const tokens = state.tokens;
-  const nonce = envOf(state).nonce;
   const { head, body, bodyOpen, bodyClose } = collectRows(tokens, start, end);
   if (bodyOpen < 0 || bodyClose < 0) {
     return;
   }
-  const inlineHtml = (html) => {
-    const token = new state.Token("html_inline", "", 0);
-    token.content = markOwn(html, nonce);
-    return token;
-  };
-  const setOwn = (token, name, value) => {
-    token.attrSet(name, value);
-    token.attrSet("data-mdmark-own", nonce);
-  };
-  const required2 = spec.treeRequired;
-  const dropped = /* @__PURE__ */ new Set();
-  if (required2 !== void 0) {
-    for (const row of head) {
-      const cell = row.cells[required2];
-      for (let index = cell?.open ?? 0; cell && index <= cell.close; index++) {
-        dropped.add(index);
-      }
-    }
-  }
+  const context = treeContextOf2(state, { spec, tree, sample: body[0] });
+  const dropped = droppedHeadCells(head, spec.treeRequired);
   const keys = body.map((row) => cellText(tokens, row.cells[tree]));
-  const plans = planTreeRows(keys);
-  const sample = body[0];
-  const level = sample ? tokens[sample.open]?.level ?? 0 : 0;
-  const columns = sample?.cells.length ?? 0;
-  const rowsOut = [];
-  for (const plan of plans) {
-    const classes = [
-      "mdmark-tree-row",
-      ...plan.virtual ? ["is-virtual"] : [],
-      ...plan.hasChildren ? ["has-children"] : []
-    ].join(" ");
-    const source = plan.source === void 0 ? void 0 : body[plan.source];
-    const isRequired = source !== void 0 && required2 !== void 0 && REQUIRED_VALUES.includes(cellText(tokens, source.cells[required2]));
-    const keyHtml = renderTreeKeyCell({
-      name: plan.name,
-      depth: plan.depth,
-      required: isRequired
-    });
-    let trOpen;
-    const cellsOut = [];
-    if (source) {
-      trOpen = tokens[source.open];
-      for (const [column, cell] of source.cells.entries()) {
-        if (column === required2) {
-          continue;
-        }
-        const open2 = tokens[cell.open];
-        const inline2 = tokens[cell.open + 1];
-        if (inline2?.type === "inline") {
-          const text2 = textOf(inline2).trim();
-          if (column === tree) {
-            open2.attrJoin("class", "mdmark-tree-key");
-            open2.attrSet("data-mdmark-own", nonce);
-            inline2.children = [inlineHtml(keyHtml)];
-          } else if (column === spec.treeType && text2 !== "") {
-            inline2.children = [inlineHtml(renderTypeCell(text2))];
-          } else if (column === spec.treeDefault && text2 !== "") {
-            inline2.children = [
-              inlineHtml('<span class="mdmark-tree-default">'),
-              ...inline2.children ?? [],
-              inlineHtml("</span>")
-            ];
-          }
-        }
-        cellsOut.push(...tokens.slice(cell.open, cell.close + 1));
-      }
-    } else {
-      trOpen = new state.Token("tr_open", "tr", 1);
-      trOpen.level = level;
-      for (let column = 0; column < columns; column++) {
-        if (column === required2) {
-          continue;
-        }
-        const open2 = new state.Token("td_open", "td", 1);
-        open2.level = level + 1;
-        const inline2 = new state.Token("inline", "", 0);
-        inline2.level = level + 2;
-        inline2.children = [];
-        if (column === tree) {
-          setOwn(open2, "class", "mdmark-tree-key");
-          inline2.children = [inlineHtml(keyHtml)];
-        }
-        const close = new state.Token("td_close", "td", -1);
-        close.level = level + 1;
-        cellsOut.push(open2, inline2, close);
-      }
-    }
-    trOpen.attrJoin("class", classes);
-    setOwn(trOpen, "data-path", plan.path);
-    setOwn(trOpen, "data-parent", plan.parent);
-    setOwn(trOpen, "data-depth", String(plan.depth));
-    const trClose = source ? tokens[source.close] : new state.Token("tr_close", "tr", -1);
-    trClose.level = level;
-    rowsOut.push(trOpen, ...cellsOut, trClose);
-  }
+  const rowsOut = planTreeRows(keys).flatMap(
+    (plan) => treeRowTokens(context, { plan, body })
+  );
   const bodyStart = body[0]?.open ?? bodyClose;
   const bodyEnd = body.at(-1)?.close ?? bodyClose - 1;
   const rest2 = tokens.slice(bodyEnd + 1, bodyClose);
@@ -65895,17 +66254,16 @@ function linkYamlLines(html) {
   );
   const paths = yamlLinePaths(lines);
   let index = 0;
-  return html.replace(
-    linePattern,
-    (_whole, before, after, rest2) => {
-      const path = paths[index];
-      index += 1;
-      const pathAttribute = path === void 0 ? "" : ` data-path="${escapeHtml2(path)}"`;
-      return `<span${before} class="mdmark-code-line mdmark-yaml-line"${after}${pathAttribute}>${rest2}`;
-    }
-  );
+  return html.replace(linePattern, (_whole, ...groups) => {
+    const [before = "", after = "", rest2 = ""] = groups;
+    const path = paths[index];
+    index += 1;
+    const pathAttribute = path === void 0 ? "" : ` data-path="${escapeHtml2(path)}"`;
+    return `<span${before} class="mdmark-code-line mdmark-yaml-line"${after}${pathAttribute}>${rest2}`;
+  });
 }
-function findRole(tokens, from, step, role) {
+function findRole(tokens, search) {
+  const { from, step, role } = search;
   for (let index = from; index >= 0 && index < tokens.length; index += step) {
     if (tokens[index]?.meta?.role === role) {
       return index;
@@ -65913,67 +66271,99 @@ function findRole(tokens, from, step, role) {
   }
   return -1;
 }
+function wrapTreeExample(state, place) {
+  const { tabs, wrapperOpen, wrapperClose, id, example } = place;
+  const tokens = state.tokens;
+  const moved = tokens.slice(tabs.from, tabs.to + 1).map((moving) => {
+    if (moving.type === "html_block") {
+      moving.content = linkYamlLines(moving.content);
+    }
+    return moving;
+  });
+  const layoutOpen = ownBlock(state, '<div class="mdmark-tree-layout">');
+  const asideOpen = ownBlock(
+    state,
+    `<aside class="mdmark-tree-example" id="${id}" aria-label="\u898B\u672C: ${escapeHtml2(example)}">`
+  );
+  const asideClose = ownBlock(state, "</aside></div>");
+  const remaining = tokens.filter(
+    (_, position) => position < tabs.from || position > tabs.to
+  );
+  const shift = tabs.from < wrapperOpen ? moved.length : 0;
+  const open2 = wrapperOpen - shift;
+  const close = wrapperClose - shift;
+  state.tokens = [
+    ...remaining.slice(0, open2),
+    layoutOpen,
+    ...remaining.slice(open2, close + 1),
+    asideOpen,
+    ...moved,
+    asideClose,
+    ...remaining.slice(close + 1)
+  ];
+  return close + 1 + moved.length + 2;
+}
+function placeTreeExample(state, table2) {
+  const { index, example, meta: meta2, id } = table2;
+  const tokens = state.tokens;
+  const wrapperOpen = findRole(tokens, {
+    from: index,
+    step: -1,
+    role: "table-open"
+  });
+  const wrapperClose = findRole(tokens, {
+    from: findNestedClose(tokens, index),
+    step: 1,
+    role: "table-close"
+  });
+  const heading2 = findHeading(tokens, example);
+  const tabs = heading2 < 0 ? void 0 : tabsAfterHeading(tokens, heading2);
+  if (tabs && wrapperOpen >= 0 && wrapperClose >= 0) {
+    return {
+      index: wrapTreeExample(state, {
+        tabs,
+        wrapperOpen,
+        wrapperClose,
+        id,
+        example
+      }),
+      placed: true
+    };
+  }
+  const warning = warningBlock(state, {
+    mark: meta2.treeMark,
+    message: `\u306E \`tree.example.heading\` \u306E\u898B\u51FA\u3057 \`${example}\` \u304C\u6587\u66F8\u306B\u7121\u3044\u304B\u3001\u76F4\u4E0B\u306B\u30BF\u30D6\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u898B\u672C\u3092\u914D\u7F6E\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+  });
+  tokens.splice(Math.max(wrapperOpen, index), 0, warning);
+  return { index: index + 1, placed: false };
+}
+function treeExampleOf(token) {
+  const meta2 = token?.meta;
+  const example = meta2?.treeSpec?.example;
+  if (token?.type !== "table_open" || !meta2 || example === void 0) {
+    return void 0;
+  }
+  return { meta: meta2, example };
+}
 function linkTreeExamples(state) {
   if (!featureOn(state, "table")) {
     return;
   }
   let serial = 0;
   for (let index = 0; index < state.tokens.length; index++) {
-    const tokens = state.tokens;
-    const token = tokens[index];
-    const meta2 = token?.meta;
-    const example = meta2?.treeSpec?.example;
-    if (token?.type !== "table_open" || example === void 0) {
+    const found = treeExampleOf(state.tokens[index]);
+    if (!found) {
       continue;
     }
-    const wrapperOpen = findRole(tokens, index, -1, "table-open");
-    const wrapperClose = findRole(
-      tokens,
-      findNestedClose(tokens, index),
-      1,
-      "table-close"
-    );
-    const heading2 = findHeading(tokens, example);
-    const tabs = heading2 < 0 ? void 0 : tabsAfterHeading(tokens, heading2);
-    if (!tabs || wrapperOpen < 0 || wrapperClose < 0) {
-      const warning = warningBlock(state, {
-        mark: meta2?.treeMark,
-        message: `\u306E \`tree.example.heading\` \u306E\u898B\u51FA\u3057 \`${example}\` \u304C\u6587\u66F8\u306B\u7121\u3044\u304B\u3001\u76F4\u4E0B\u306B\u30BF\u30D6\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u898B\u672C\u3092\u914D\u7F6E\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-      tokens.splice(Math.max(wrapperOpen, index), 0, warning);
-      index += 1;
-      continue;
-    }
-    const moved = tokens.slice(tabs.from, tabs.to + 1).map((moving) => {
-      if (moving.type === "html_block") {
-        moving.content = linkYamlLines(moving.content);
-      }
-      return moving;
+    const result = placeTreeExample(state, {
+      index,
+      ...found,
+      id: `mdmark-tree-${serial}-example`
     });
-    const id = `mdmark-tree-${serial}-example`;
-    serial += 1;
-    const layoutOpen = ownBlock(state, '<div class="mdmark-tree-layout">');
-    const asideOpen = ownBlock(
-      state,
-      `<aside class="mdmark-tree-example" id="${id}" aria-label="\u898B\u672C: ${escapeHtml2(example)}">`
-    );
-    const asideClose = ownBlock(state, "</aside></div>");
-    const remaining = tokens.filter(
-      (_, position) => position < tabs.from || position > tabs.to
-    );
-    const shift = tabs.from < wrapperOpen ? moved.length : 0;
-    const open2 = wrapperOpen - shift;
-    const close = wrapperClose - shift;
-    state.tokens = [
-      ...remaining.slice(0, open2),
-      layoutOpen,
-      ...remaining.slice(open2, close + 1),
-      asideOpen,
-      ...moved,
-      asideClose,
-      ...remaining.slice(close + 1)
-    ];
-    index = close + 1 + moved.length + 2;
+    index = result.index;
+    if (result.placed) {
+      serial += 1;
+    }
   }
 }
 
@@ -66012,10 +66402,7 @@ var COLUMN_FEATURES = {
   total: "total"
 };
 var isObject2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-function readTableSpec(options, headers, rowCount) {
-  const spec = options ?? {};
-  const warnings = [];
-  const kind = spec.kind === "data" || spec.kind === "plain" ? spec.kind : "default";
+function featureSetOf(spec, kind) {
   const featureSettings = isObject2(spec.features) ? spec.features : {};
   const disabled = new Set(
     Object.entries(featureSettings).filter(([, value]) => isObject2(value) && value.enabled === false).map(([name]) => name)
@@ -66033,14 +66420,96 @@ function readTableSpec(options, headers, rowCount) {
       add(name);
     }
   }
-  const filters = [];
-  const hide2 = [];
-  const totals = [];
-  const pinned = [];
-  const unpinned = [];
-  const widths = [];
-  const check2 = [];
-  const sorts = [];
+  return { features, disabled, add };
+}
+function readFilterSetting(specs, context) {
+  const { column, settings, on } = context;
+  if (!isObject2(settings.filter) || !on("filter")) {
+    return;
+  }
+  const type = settings.filter.type;
+  specs.filters.push(
+    typeof type === "string" ? { column, kind: type } : { column }
+  );
+}
+function readHiddenSetting(specs, context) {
+  const { column, name, settings, on } = context;
+  if (settings.hidden !== true || !on("hidden")) {
+    return;
+  }
+  if (column === 0) {
+    specs.warnings.push({
+      label: `columns.${name}.hidden`,
+      message: `\u306E\u5217 \`${name}\` \u306F\u5148\u982D\u306E\u5217\u306E\u305F\u3081\u96A0\u305B\u307E\u305B\u3093\u3002\u5148\u982D\u306E\u5217\u306F\u884C\u306E\u8B58\u5225\u5B50\u3068\u884C\u3078\u306E\u30EA\u30F3\u30AF\u306E\u914D\u7F6E\u5834\u6240\u306A\u306E\u3067\u3001\u96A0\u3055\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    });
+  } else {
+    specs.hide.push(column);
+  }
+}
+function readTotalSetting(specs, context) {
+  const { column, settings, on } = context;
+  if (!Array.isArray(settings.total) || !on("total")) {
+    return;
+  }
+  for (const item of settings.total) {
+    const calc = isObject2(item) ? item.calc : void 0;
+    const duplicated = specs.totals.some(
+      (total) => total.column === column && total.calc === calc
+    );
+    if (typeof calc === "string" && !duplicated) {
+      specs.totals.push({ column, calc });
+    }
+  }
+}
+function readPinnedSetting(specs, context) {
+  const { column, settings, on, add } = context;
+  if (settings.pinned === true && on("pinned")) {
+    add("pin");
+    specs.pinned.push(column);
+  } else if (settings.pinned === false) {
+    specs.unpinned.push(column);
+  }
+}
+function readWidthSetting(specs, context) {
+  const { column, settings } = context;
+  if (!isObject2(settings.width)) {
+    return;
+  }
+  const { mode, min, max } = settings.width;
+  specs.widths.push({
+    column,
+    mode: mode === "nowrap" ? "nowrap" : "auto",
+    ...typeof min === "number" ? { min } : {},
+    ...typeof max === "number" ? { max } : {}
+  });
+}
+function readCheckSetting(specs, context) {
+  const { column, settings } = context;
+  if (isObject2(settings.format) && settings.format.type === "check") {
+    specs.check.push(column);
+  }
+}
+function readSortSetting(specs, context) {
+  const { column, settings, add, disabled } = context;
+  if (typeof settings.sort !== "boolean" || disabled.has("sort")) {
+    return;
+  }
+  if (settings.sort) {
+    add("sort");
+  }
+  specs.sorts.push({ column, sort: settings.sort });
+}
+var COLUMN_SETTING_READERS = [
+  readFilterSetting,
+  readHiddenSetting,
+  readTotalSetting,
+  readPinnedSetting,
+  readWidthSetting,
+  readCheckSetting,
+  readSortSetting
+];
+function readColumns(specs, context) {
+  const { spec, headers, disabled, add } = context;
   const columns = isObject2(spec.columns) ? spec.columns : {};
   for (const [name, settings] of Object.entries(columns)) {
     if (!isObject2(settings)) {
@@ -66048,7 +66517,7 @@ function readTableSpec(options, headers, rowCount) {
     }
     const column = headers.indexOf(name);
     if (column < 0) {
-      warnings.push(unknownColumn(`columns.${name}`, name, headers));
+      specs.warnings.push(unknownColumn(`columns.${name}`, name, headers));
       continue;
     }
     for (const key of Object.keys(settings)) {
@@ -66061,81 +66530,60 @@ function readTableSpec(options, headers, rowCount) {
       const feature = COLUMN_FEATURES[key];
       return feature === void 0 || !disabled.has(feature);
     };
-    if (isObject2(settings.filter) && on("filter")) {
-      const type = settings.filter.type;
-      filters.push(
-        typeof type === "string" ? { column, kind: type } : { column }
-      );
-    }
-    if (settings.hidden === true && on("hidden")) {
-      if (column === 0) {
-        warnings.push({
-          label: `columns.${name}.hidden`,
-          message: `\u306E\u5217 \`${name}\` \u306F\u5148\u982D\u306E\u5217\u306E\u305F\u3081\u96A0\u305B\u307E\u305B\u3093\u3002\u5148\u982D\u306E\u5217\u306F\u884C\u306E\u8B58\u5225\u5B50\u3068\u884C\u3078\u306E\u30EA\u30F3\u30AF\u306E\u914D\u7F6E\u5834\u6240\u306A\u306E\u3067\u3001\u96A0\u3055\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-        });
-      } else {
-        hide2.push(column);
-      }
-    }
-    if (Array.isArray(settings.total) && on("total")) {
-      for (const item of settings.total) {
-        const calc = isObject2(item) ? item.calc : void 0;
-        const duplicated = totals.some(
-          (total) => total.column === column && total.calc === calc
-        );
-        if (typeof calc === "string" && !duplicated) {
-          totals.push({ column, calc });
-        }
-      }
-    }
-    if (settings.pinned === true && on("pinned")) {
-      add("pin");
-      pinned.push(column);
-    } else if (settings.pinned === false) {
-      unpinned.push(column);
-    }
-    if (isObject2(settings.width)) {
-      const { mode, min, max } = settings.width;
-      widths.push({
-        column,
-        mode: mode === "nowrap" ? "nowrap" : "auto",
-        ...typeof min === "number" ? { min } : {},
-        ...typeof max === "number" ? { max } : {}
-      });
-    }
-    if (isObject2(settings.format) && settings.format.type === "check") {
-      check2.push(column);
-    }
-    if (typeof settings.sort === "boolean" && !disabled.has("sort")) {
-      if (settings.sort) {
-        add("sort");
-      }
-      sorts.push({ column, sort: settings.sort });
-    }
+    const columnContext = { column, name, settings, on, add, disabled };
+    for (const read of COLUMN_SETTING_READERS) read(specs, columnContext);
   }
+}
+function readHeadRows(header, context) {
+  if (typeof header.rows !== "number") {
+    return 1;
+  }
+  if (header.rows < context.rowCount) {
+    return header.rows;
+  }
+  context.warnings.push({
+    label: "header.rows",
+    message: `\`${header.rows}\` \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u30021 \u4EE5\u4E0A\u3067\u8868\u306E\u884C\u306E\u6570\uFF08${context.rowCount}\uFF09\u3088\u308A\u5C0F\u3055\u3044\u6574\u6570\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E 1 \u3067\u63CF\u3044\u3066\u3044\u307E\u3059`
+  });
+  return 1;
+}
+function readRowHeader(header, context) {
+  if (typeof header.columns !== "number") {
+    return 0;
+  }
+  if (header.columns < context.columnCount) {
+    return header.columns;
+  }
+  context.warnings.push({
+    label: "header.columns",
+    message: `\`${header.columns}\` \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u30020 \u4EE5\u4E0A\u3067\u8868\u306E\u5217\u306E\u6570\uFF08${context.columnCount}\uFF09\u3088\u308A\u5C0F\u3055\u3044\u6574\u6570\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E 0 \u3067\u63CF\u3044\u3066\u3044\u307E\u3059`
+  });
+  return 0;
+}
+var tableKindOf = (spec) => spec.kind === "data" || spec.kind === "plain" ? spec.kind : "default";
+function readTableSpec(options, headers, rowCount) {
+  const spec = options ?? {};
+  const warnings = [];
+  const kind = tableKindOf(spec);
+  const { features, disabled, add } = featureSetOf(spec, kind);
+  const specs = {
+    filters: [],
+    hide: [],
+    totals: [],
+    pinned: [],
+    unpinned: [],
+    widths: [],
+    check: [],
+    sorts: [],
+    warnings
+  };
+  readColumns(specs, { spec, headers, disabled, add });
   const header = isObject2(spec.header) ? spec.header : {};
-  let headRows = 1;
-  if (typeof header.rows === "number") {
-    if (header.rows < rowCount) {
-      headRows = header.rows;
-    } else {
-      warnings.push({
-        label: "header.rows",
-        message: `\`${header.rows}\` \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u30021 \u4EE5\u4E0A\u3067\u8868\u306E\u884C\u306E\u6570\uFF08${rowCount}\uFF09\u3088\u308A\u5C0F\u3055\u3044\u6574\u6570\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E 1 \u3067\u63CF\u3044\u3066\u3044\u307E\u3059`
-      });
-    }
-  }
-  let rowHeader = 0;
-  if (typeof header.columns === "number") {
-    if (header.columns < headers.length) {
-      rowHeader = header.columns;
-    } else {
-      warnings.push({
-        label: "header.columns",
-        message: `\`${header.columns}\` \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u30020 \u4EE5\u4E0A\u3067\u8868\u306E\u5217\u306E\u6570\uFF08${headers.length}\uFF09\u3088\u308A\u5C0F\u3055\u3044\u6574\u6570\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E 0 \u3067\u63CF\u3044\u3066\u3044\u307E\u3059`
-      });
-    }
-  }
+  const headRows = readHeadRows(header, { rowCount, warnings });
+  const rowHeader = readRowHeader(header, {
+    columnCount: headers.length,
+    warnings
+  });
   const tree = readTree({
     tree: isObject2(spec.tree) ? spec.tree : void 0,
     headers,
@@ -66151,22 +66599,17 @@ function readTableSpec(options, headers, rowCount) {
   features.sort(
     (a, b) => TABLE_FEATURES.indexOf(a) - TABLE_FEATURES.indexOf(b)
   );
+  const { pinned, sorts, ...columnSpecs } = specs;
   return {
     ...tree,
+    ...columnSpecs,
     kind,
     features,
-    filters,
     collapse,
     title,
-    warnings,
-    hide: hide2,
-    totals,
     headRows,
     rowHeader,
     pin: features.includes("pin") && pinned.length > 0 ? [...pinned].sort((a, b) => a - b) : void 0,
-    unpinned,
-    widths,
-    check: check2,
     // `sort` の機能を持たない表（階層の表を含む）には列ごとの並べ替えの指定を当てない
     sorts: features.includes("sort") ? sorts : []
   };
@@ -66176,7 +66619,7 @@ function readTree(options) {
   if (spec === void 0) {
     return {};
   }
-  const columnOf = (key) => {
+  const columnOf2 = (key) => {
     const name = spec[key]?.column;
     if (typeof name !== "string") {
       return void 0;
@@ -66193,22 +66636,21 @@ function readTree(options) {
     }
     return column;
   };
-  const tree = columnOf("key");
+  const tree = columnOf2("key");
   if (tree === void 0) {
     return {};
   }
   const heading2 = spec.example?.heading;
   return {
     tree,
-    treeType: columnOf("type"),
-    treeRequired: columnOf("required"),
-    treeDefault: columnOf("default"),
+    treeType: columnOf2("type"),
+    treeRequired: columnOf2("required"),
+    treeDefault: columnOf2("default"),
     example: typeof heading2 === "string" ? heading2 : void 0
   };
 }
-function readTableColors(options, headers, cells) {
-  const spec = options ?? {};
-  const warnings = [];
+function readHighlights(spec, context) {
+  const { headers, warnings } = context;
   const highlight = [];
   const columns = isObject2(spec.columns) ? spec.columns : {};
   for (const [name, settings] of Object.entries(columns)) {
@@ -66229,60 +66671,86 @@ function readTableColors(options, headers, cells) {
       color: typeof color === "string" ? color : DEFAULT_HIGHLIGHT_COLOR
     });
   }
+  return highlight;
+}
+function rowColorColumn(item, context) {
+  if (typeof item.column !== "string") {
+    return void 0;
+  }
+  const position = context.headers.indexOf(item.column);
+  if (position >= 0) {
+    return position;
+  }
+  context.warnings.push({
+    ...unknownColumn("rows.colors", item.column, context.headers),
+    label: item.column
+  });
+  return null;
+}
+function rowColorRange(item, context) {
+  if (item.at === void 0) {
+    return void 0;
+  }
+  const { rowCount } = context;
+  const at = item.at;
+  const [from, to] = typeof at === "number" ? [at, at] : [at.from, at.to ?? at.from];
+  if (from >= 1 && to >= from && to <= rowCount) {
+    return [from, to];
+  }
+  const label = String(typeof at === "number" ? at : `${from}-${to}`);
+  context.warnings.push({
+    label,
+    message: `\u306E\u884C\u306E\u4F4D\u7F6E \`${label}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u672C\u6587\u306F ${rowCount} \u884C\u3067\u3059\u3002\u884C\u306E\u4F4D\u7F6E\u3092 1\u301C${rowCount} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  });
+  return null;
+}
+function readRowColor(item, context) {
+  if (!isObject2(item) || typeof item.color !== "string") {
+    return void 0;
+  }
+  if (typeof item.column === "string" !== (typeof item.value === "string")) {
+    return void 0;
+  }
+  const position = rowColorColumn(item, context);
+  if (position === null) {
+    return void 0;
+  }
+  const range = rowColorRange(item, context);
+  if (range === null || range === void 0 && position === void 0) {
+    return void 0;
+  }
+  return { color: item.color, position, value: item.value, range };
+}
+function applyRowColor(rows, context) {
+  const { rule, cells } = context;
+  const { range, position } = rule;
+  cells.forEach((row, index) => {
+    const inRange2 = range === void 0 || index + 1 >= range[0] && index + 1 <= range[1];
+    const matches = position === void 0 || (row[position] ?? "").trim() === rule.value;
+    if (inRange2 && matches) {
+      rows[index] = rule.color;
+    }
+  });
+}
+function readTableColors(options, headers, cells) {
+  const spec = options ?? {};
+  const warnings = [];
+  const highlight = readHighlights(spec, { headers, warnings });
   const rows = cells.map(() => null);
   const rowSpec = isObject2(spec.rows) ? spec.rows : {};
   const colors = Array.isArray(rowSpec.colors) ? rowSpec.colors : [];
   for (const item of colors) {
-    if (!isObject2(item) || typeof item.color !== "string") {
-      continue;
-    }
-    const color = item.color;
-    const hasColumn = typeof item.column === "string";
-    if (hasColumn !== (typeof item.value === "string")) {
-      continue;
-    }
-    let position;
-    if (hasColumn) {
-      position = headers.indexOf(item.column);
-      if (position < 0) {
-        warnings.push({
-          ...unknownColumn("rows.colors", item.column, headers),
-          label: item.column
-        });
-        continue;
-      }
-    }
-    let range;
-    if (item.at !== void 0) {
-      const at = item.at;
-      const [from, to] = typeof at === "number" ? [at, at] : [at.from, at.to ?? at.from];
-      if (from < 1 || to < from || to > rows.length) {
-        warnings.push({
-          label: String(typeof at === "number" ? at : `${from}-${to}`),
-          message: `\u306E\u884C\u306E\u4F4D\u7F6E \`${typeof at === "number" ? at : `${from}-${to}`}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u672C\u6587\u306F ${rows.length} \u884C\u3067\u3059\u3002\u884C\u306E\u4F4D\u7F6E\u3092 1\u301C${rows.length} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        });
-        continue;
-      }
-      range = [from, to];
-    } else if (!hasColumn) {
-      continue;
-    }
-    cells.forEach((row, index) => {
-      const inRange = range === void 0 || index + 1 >= range[0] && index + 1 <= range[1];
-      const matches = position === void 0 || (row[position] ?? "").trim() === item.value;
-      if (inRange && matches) {
-        rows[index] = color;
-      }
+    const rule = readRowColor(item, {
+      headers,
+      rowCount: rows.length,
+      warnings
     });
+    if (rule) applyRowColor(rows, { rule, cells });
   }
   return { highlight, rows, warnings };
 }
-function applyTableColors(state, tableOpen, colors) {
-  const tokens = state.tokens;
-  const nonce = envOf(state).nonce;
-  const colorOf = new Map(
-    colors.highlight.map((item) => [item.column, item.color])
-  );
+var isCellOpen = (token) => token.type === "th_open" || token.type === "td_open";
+function visitCells(tokens, tableOpen, visit) {
   let inBody = false;
   let row = -1;
   let column = 0;
@@ -66296,21 +66764,45 @@ function applyTableColors(state, tableOpen, colors) {
     } else if (token.type === "tr_open") {
       column = 0;
       row += inBody ? 1 : 0;
-      const color = inBody ? colors.rows[row] : null;
-      if (color) {
-        token.attrSet("data-color", color);
-        token.attrSet("data-mdmark-own", nonce);
-      }
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      const color = colorOf.get(column);
-      if (color) {
-        token.attrJoin("class", "mdmark-col-highlight");
-        token.attrSet("data-color", color);
-        token.attrSet("data-mdmark-own", nonce);
-      }
+      visit(token, { index, row, column: -1, inBody });
+    } else if (isCellOpen(token)) {
+      visit(token, { index, row, column, inBody });
       column += 1;
     }
   }
+}
+function applyTableColors(state, tableOpen, colors) {
+  const nonce = envOf(state).nonce;
+  const colorOf = new Map(
+    colors.highlight.map((item) => [item.column, item.color])
+  );
+  visitCells(state.tokens, tableOpen, (token, { row, column, inBody }) => {
+    if (token.type === "tr_open") {
+      const color2 = inBody ? colors.rows[row] : null;
+      if (color2) {
+        token.attrSet("data-color", color2);
+        token.attrSet("data-mdmark-own", nonce);
+      }
+      return;
+    }
+    const color = colorOf.get(column);
+    if (color) {
+      token.attrJoin("class", "mdmark-col-highlight");
+      token.attrSet("data-color", color);
+      token.attrSet("data-mdmark-own", nonce);
+    }
+  });
+}
+function renderCheckValue(state, cell) {
+  const { token, inline: inline2, nonce } = cell;
+  const text2 = inline2?.type === "inline" ? textOf(inline2).trim() : "";
+  if (!inline2 || !isCheckValue(text2)) {
+    return;
+  }
+  token.attrSet("data-value", text2);
+  const html = new state.Token("html_inline", "", 0);
+  html.content = markOwn(renderCheckCell(text2), nonce);
+  inline2.children = [html];
 }
 function applyColumnStyles(state, tableOpen, spec) {
   const wide = spec.widths.filter((width) => width.mode === "nowrap").map((width) => width.column);
@@ -66319,38 +66811,23 @@ function applyColumnStyles(state, tableOpen, spec) {
   }
   const tokens = state.tokens;
   const nonce = envOf(state).nonce;
-  let inBody = false;
-  let column = 0;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (!token) {
-      continue;
+  visitCells(tokens, tableOpen, (token, { index, column, inBody }) => {
+    if (token.type === "tr_open") {
+      return;
     }
-    if (token.type === "tbody_open") {
-      inBody = true;
-    } else if (token.type === "tr_open") {
-      column = 0;
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      const checking = spec.check.includes(column);
-      if (wide.includes(column)) {
-        token.attrJoin("class", "mdmark-wide");
-        token.attrSet("data-mdmark-own", nonce);
-      }
-      if (checking) {
-        token.attrJoin("class", "mdmark-align-center");
-        token.attrSet("data-mdmark-own", nonce);
-      }
-      const inline2 = tokens[index + 1];
-      const text2 = inline2?.type === "inline" ? textOf(inline2).trim() : "";
-      if (checking && inBody && inline2 && isCheckValue(text2)) {
-        token.attrSet("data-value", text2);
-        const html = new state.Token("html_inline", "", 0);
-        html.content = markOwn(renderCheckCell(text2), nonce);
-        inline2.children = [html];
-      }
-      column += 1;
+    const checking = spec.check.includes(column);
+    if (wide.includes(column)) {
+      token.attrJoin("class", "mdmark-wide");
+      token.attrSet("data-mdmark-own", nonce);
     }
-  }
+    if (checking) {
+      token.attrJoin("class", "mdmark-align-center");
+      token.attrSet("data-mdmark-own", nonce);
+    }
+    if (checking && inBody) {
+      renderCheckValue(state, { token, inline: tokens[index + 1], nonce });
+    }
+  });
 }
 function ownTokenIndexes(tokens, tableOpen) {
   const indexes = [];
@@ -66394,39 +66871,37 @@ function rowIdOf(text2, taken) {
   taken.add(id);
   return id;
 }
-function linkRows(state, tokens, tableOpen, taken) {
+function linkRows(state, table2) {
+  const { tokens, tableOpen, taken } = table2;
   const nonce = envOf(state).nonce;
-  const inlineHtml = (html) => {
+  const inlineHtml2 = (html) => {
     const token = new state.Token("html_inline", "", 0);
     token.content = markOwn(html, nonce);
     return token;
   };
-  let inBody = false;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (token?.type === "tbody_open") {
-      inBody = true;
-    } else if (inBody && token?.type === "tr_open") {
-      const inline2 = tokens.slice(index + 1).find((t) => t.type === "inline");
-      if (!inline2) {
-        continue;
-      }
-      const text2 = textOf(inline2);
-      const id = rowIdOf(text2, taken);
-      token.attrSet("id", id);
-      token.attrSet("data-mdmark-own", nonce);
-      const [open2 = "", close = ""] = renderRowLink(
-        SLOT_MARKER,
-        id,
-        text2
-      ).split(SLOT_MARKER);
-      inline2.children = [
-        inlineHtml(open2),
-        ...inline2.children ?? [],
-        inlineHtml(close)
-      ];
+  visitCells(tokens, tableOpen, (token, { index, inBody }) => {
+    if (!inBody || token.type !== "tr_open") {
+      return;
     }
-  }
+    const inline2 = tokens.slice(index + 1).find((t) => t.type === "inline");
+    if (!inline2) {
+      return;
+    }
+    const text2 = textOf(inline2);
+    const id = rowIdOf(text2, taken);
+    token.attrSet("id", id);
+    token.attrSet("data-mdmark-own", nonce);
+    const [open2 = "", close = ""] = renderRowLink({
+      content: SLOT_MARKER,
+      id,
+      label: text2
+    }).split(SLOT_MARKER);
+    inline2.children = [
+      inlineHtml2(open2),
+      ...inline2.children ?? [],
+      inlineHtml2(close)
+    ];
+  });
 }
 function isItemWarning(item) {
   return !item.message.startsWith("\u306E") || item.label === MERGE_UP || item.label === MERGE_LEFT;
@@ -66447,63 +66922,78 @@ function warningsOf(mark, warnings) {
   }
   return result;
 }
+var ATTRIBUTE_STEPS = {
+  heading_open: (walk, { next }) => {
+    walk.heading = next ? textOf(next) : "";
+  },
+  table_open: (walk, { token }) => {
+    token.attrSet("tabindex", "0");
+    token.attrSet("aria-label", walk.heading ? `\u8868: ${walk.heading}` : "\u8868");
+    walk.outers.push({ headers: walk.headers, column: walk.column });
+    walk.headers = [];
+  },
+  table_close: (walk) => {
+    const outer = walk.outers.pop() ?? { headers: [], column: 0 };
+    walk.headers = outer.headers;
+    walk.column = outer.column;
+  },
+  tr_open: (walk) => {
+    walk.column = 0;
+  },
+  th_open: (walk, { next }) => {
+    walk.headers.push(next ? textOf(next) : "");
+  },
+  td_open: (walk, { token }) => {
+    token.attrSet("data-label", walk.headers[walk.column] ?? "");
+    walk.column += 1;
+  }
+};
 function decorateAttributes(state) {
   const tokens = state.tokens;
-  let heading2 = "";
-  let headers = [];
-  let column = 0;
-  const outers = [];
+  const walk = {
+    heading: "",
+    headers: [],
+    column: 0,
+    outers: []
+  };
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const next = tokens[index + 1];
-    if (!token) {
+    if (!token || !Object.hasOwn(ATTRIBUTE_STEPS, token.type)) {
       continue;
     }
-    if (token.type === "heading_open") {
-      heading2 = next ? textOf(next) : "";
-    } else if (token.type === "table_open") {
-      token.attrSet("tabindex", "0");
-      token.attrSet("aria-label", heading2 ? `\u8868: ${heading2}` : "\u8868");
-      outers.push({ headers, column });
-      headers = [];
-    } else if (token.type === "table_close") {
-      ({ headers, column } = outers.pop() ?? { headers: [], column: 0 });
-    } else if (token.type === "tr_open") {
-      column = 0;
-    } else if (token.type === "th_open") {
-      headers.push(next ? textOf(next) : "");
-    } else if (token.type === "td_open") {
-      token.attrSet("data-label", headers[column] ?? "");
-      column += 1;
-    }
+    ATTRIBUTE_STEPS[token.type]?.(walk, { token, next: tokens[index + 1] });
   }
 }
 var BADGE_PREFIX = "badge:";
 var BREAK_TAG = /^<br\s*\/?>$/i;
 var BREAK_IN_TEXT = /<br\s*\/?>/i;
+var isBreakToken = (child) => child.type === "softbreak" || child.type === "hardbreak" || child.type === "html_inline" && BREAK_TAG.test(child.content.trim());
+var cellPartOf = (child) => {
+  if (child.type === "code_inline") {
+    const text2 = child.content.startsWith(BADGE_PREFIX) ? child.content.slice(BADGE_PREFIX.length) : child.content;
+    return { text: text2, code: true, blank: false };
+  }
+  return {
+    text: child.content,
+    code: false,
+    blank: child.content === "" || child.type === "text" && child.content.trim() === ""
+  };
+};
 var cellLinesOf = (inline2) => {
   const parts = [""];
   let onlyCode = true;
   let hasCode = false;
   for (const child of inline2?.children ?? []) {
-    if (child.type === "softbreak" || child.type === "hardbreak" || child.type === "html_inline" && BREAK_TAG.test(child.content.trim())) {
+    if (isBreakToken(child)) {
       parts.push("");
       continue;
     }
-    if (child.type === "code_inline") {
-      hasCode = true;
-      const text2 = child.content.startsWith(BADGE_PREFIX) ? child.content.slice(BADGE_PREFIX.length) : child.content;
-      parts[parts.length - 1] += text2;
-      continue;
-    }
-    if (child.type === "text" && child.content.trim() === "") {
-      parts[parts.length - 1] += child.content;
-      continue;
-    }
-    if (child.content !== "") {
+    const part = cellPartOf(child);
+    hasCode ||= part.code;
+    if (!part.code && !part.blank) {
       onlyCode = false;
     }
-    parts[parts.length - 1] += child.content;
+    parts[parts.length - 1] += part.text;
   }
   const lines = parts.flatMap((part) => part.split(BREAK_IN_TEXT)).map((line) => line.trim()).filter(Boolean);
   return {
@@ -66514,31 +67004,16 @@ var cellLinesOf = (inline2) => {
 function columnLinesOf(tokens, tableOpen) {
   const head = [];
   const body = [];
-  let section;
-  let column = 0;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (token?.type === "thead_open") {
-      section = "head";
-    } else if (token?.type === "tbody_open") {
-      section = "body";
-    } else if (token?.type === "tr_open") {
-      column = 0;
-      if (section === "head") {
-        head.length = 0;
-      } else {
-        body.push([]);
-      }
-    } else if (token?.type === "th_open" || token?.type === "td_open") {
-      const cell = cellLinesOf(tokens[index + 1]);
-      if (section === "head") {
-        head[column] = cell.lines;
-      } else {
-        body.at(-1)?.push(cell);
-      }
-      column += 1;
+  visitCells(tokens, tableOpen, (token, { index, column, inBody }) => {
+    if (token.type === "tr_open") {
+      if (inBody) body.push([]);
+      else head.length = 0;
+      return;
     }
-  }
+    const cell = cellLinesOf(tokens[index + 1]);
+    if (inBody) body.at(-1)?.push(cell);
+    else head[column] = cell.lines;
+  });
   const count = Math.max(head.length, ...body.map((row) => row.length));
   return Array.from({ length: count }, (_, index) => ({
     head: head[index] ?? [],
@@ -66550,18 +67025,17 @@ function columnLinesOf(tokens, tableOpen) {
 }
 function bodyCellsOf(tokens, tableOpen) {
   const rows = [];
-  let inBody = false;
-  for (const index of ownTokenIndexes(tokens, tableOpen)) {
-    const token = tokens[index];
-    if (token?.type === "tbody_open") {
-      inBody = true;
-    } else if (inBody && token?.type === "tr_open") {
-      rows.push([]);
-    } else if (inBody && (token?.type === "td_open" || token?.type === "th_open")) {
-      const inline2 = tokens[index + 1];
-      rows.at(-1)?.push(inline2 ? textOf(inline2) : "");
+  visitCells(tokens, tableOpen, (token, { index, inBody }) => {
+    if (!inBody) {
+      return;
     }
-  }
+    if (token.type === "tr_open") {
+      rows.push([]);
+      return;
+    }
+    const inline2 = tokens[index + 1];
+    rows.at(-1)?.push(inline2 ? textOf(inline2) : "");
+  });
   return rows;
 }
 function unreadableTotalWarnings(options) {
@@ -66589,6 +67063,20 @@ function headersOf(tokens, tableOpen) {
   }
   return headers;
 }
+function addCellIndex(rows, token) {
+  const { type, index } = token;
+  if (type === "th_open" || type === "td_open") {
+    rows.at(-1)?.cells.push({ open: index, close: index });
+    return;
+  }
+  if (type !== "th_close" && type !== "td_close") {
+    return;
+  }
+  const cell = rows.at(-1)?.cells.at(-1);
+  if (cell) {
+    cell.close = index;
+  }
+}
 function rowCellsOf(tokens, tableOpen) {
   const rows = [];
   let head = true;
@@ -66598,13 +67086,8 @@ function rowCellsOf(tokens, tableOpen) {
       head = false;
     } else if (type === "tr_open") {
       rows.push({ head, cells: [] });
-    } else if (type === "th_open" || type === "td_open") {
-      rows.at(-1)?.cells.push({ open: index, close: index });
-    } else if (type === "th_close" || type === "td_close") {
-      const cell = rows.at(-1)?.cells.at(-1);
-      if (cell) {
-        cell.close = index;
-      }
+    } else {
+      addCellIndex(rows, { type, index });
     }
   }
   return rows;
@@ -66645,6 +67128,98 @@ function moveRowsToHead(tokens, tableOpen, count) {
     }
   }
 }
+function rowTextsOf(tokens, rows) {
+  return rows.map(
+    (row) => row.cells.map((cell) => {
+      const inline2 = tokens[cell.open + 1];
+      return inline2?.type === "inline" ? textOf(inline2) : "";
+    })
+  );
+}
+function relabelBodyCells(tokens, context) {
+  const head = rowCellsOf(tokens, context.tableOpen).filter((row) => row.head);
+  const labels = headLabelsOf(rowTextsOf(tokens, head));
+  for (const row of context.rows.filter((r) => !r.head)) {
+    for (const [column, cell] of row.cells.entries()) {
+      tokens[cell.open]?.attrSet("data-label", labels[column] ?? "");
+    }
+  }
+}
+function markHeaderGroups(tokens, context) {
+  const { rows, texts, plan, headRows, nonce } = context;
+  const groups = headerGroupsOf({ head: texts.slice(0, headRows), plan });
+  const bottom = rows[headRows - 1];
+  for (const [column, group] of groups.entries()) {
+    const cell = bottom?.cells[column];
+    const open2 = cell ? tokens[cell.open] : void 0;
+    if (open2 && group !== void 0) {
+      open2.attrSet("data-group", group);
+      open2.attrSet("data-mdmark-own", nonce);
+    }
+  }
+}
+function setOwn2(token, attribute) {
+  token.attrSet(attribute.name, attribute.value);
+  token.attrSet("data-mdmark-own", attribute.nonce);
+}
+function hideMergedCell(context, cell) {
+  const { tokens, rows, nonce } = context;
+  const { open: open2, inline: inline2, planned } = cell;
+  const [sourceRow, sourceColumn] = planned.source;
+  const source = rows[sourceRow]?.cells[sourceColumn];
+  const from = source ? tokens[source.open + 1] : void 0;
+  if (from?.type === "inline" && inline2?.type === "inline") {
+    inline2.content = from.content;
+    inline2.children = [...from.children ?? []];
+  }
+  setOwn2(open2, { name: "data-merge", value: planned.merged, nonce });
+  setOwn2(open2, { name: "hidden", value: "hidden", nonce });
+}
+function setSpans(context, cell) {
+  const { spec, nonce } = context;
+  const { open: open2, head, planned } = cell;
+  if (planned.rowspan > 1) {
+    setOwn2(open2, { name: "rowspan", value: String(planned.rowspan), nonce });
+  }
+  if (planned.colspan > 1) {
+    setOwn2(open2, { name: "colspan", value: String(planned.colspan), nonce });
+  }
+  if (head && (spec.headRows > 1 || planned.rowspan > 1 || planned.colspan > 1)) {
+    setOwn2(open2, {
+      name: "scope",
+      value: planned.colspan > 1 ? "colgroup" : "col",
+      nonce
+    });
+  }
+}
+function applyPlannedCell(context, place) {
+  const { tokens, spec, dropped, nonce } = context;
+  const { row, column, cell, planned } = place;
+  const open2 = tokens[cell.open];
+  if (row.head && planned.merged) {
+    for (let index = cell.open; index <= cell.close; index++) {
+      const token = tokens[index];
+      if (token) {
+        dropped.add(token);
+      }
+    }
+    return;
+  }
+  if (!row.head && column < spec.rowHeader) {
+    toHeadCell(open2, tokens[cell.close]);
+    open2.attrs = [["scope", "row"], ...open2.attrs ?? []];
+    open2.attrSet("data-mdmark-own", nonce);
+  }
+  if (planned.merged && planned.source) {
+    hideMergedCell(context, {
+      open: open2,
+      inline: tokens[cell.open + 1],
+      planned
+    });
+    return;
+  }
+  setSpans(context, { open: open2, head: row.head, planned });
+}
 function mergeTableCells(options) {
   const { state, tableOpen, spec, dropped } = options;
   const tokens = state.tokens;
@@ -66654,88 +67229,25 @@ function mergeTableCells(options) {
   }
   const rows = rowCellsOf(tokens, tableOpen);
   if (spec.headRows > 1) {
-    const labels = headLabelsOf(
-      rowCellsOf(tokens, tableOpen).filter((row) => row.head).map(
-        (row) => row.cells.map((cell) => {
-          const inline2 = tokens[cell.open + 1];
-          return inline2?.type === "inline" ? textOf(inline2) : "";
-        })
-      )
-    );
-    for (const row of rows.filter((r) => !r.head)) {
-      for (const [column, cell] of row.cells.entries()) {
-        tokens[cell.open]?.attrSet("data-label", labels[column] ?? "");
-      }
-    }
+    relabelBodyCells(tokens, { tableOpen, rows });
   }
-  const texts = rows.map(
-    (row) => row.cells.map((cell) => {
-      const inline2 = tokens[cell.open + 1];
-      return inline2?.type === "inline" ? textOf(inline2) : "";
-    })
-  );
+  const texts = rowTextsOf(tokens, rows);
   const plan = planCellMerges({ cells: texts, headRows: spec.headRows });
   if (spec.features.includes("reorder") && spec.headRows > 1) {
-    const groups = headerGroupsOf({
-      head: texts.slice(0, spec.headRows),
-      plan
+    markHeaderGroups(tokens, {
+      rows,
+      texts,
+      plan,
+      headRows: spec.headRows,
+      nonce
     });
-    const bottom = rows[spec.headRows - 1];
-    for (const [column, group] of groups.entries()) {
-      const cell = bottom?.cells[column];
-      const open2 = cell ? tokens[cell.open] : void 0;
-      if (open2 && group !== void 0) {
-        open2.attrSet("data-group", group);
-        open2.attrSet("data-mdmark-own", nonce);
-      }
-    }
   }
-  const setOwn = (token, name, value) => {
-    token.attrSet(name, value);
-    token.attrSet("data-mdmark-own", nonce);
-  };
+  const context = { tokens, rows, spec, dropped, nonce };
   for (const [r, row] of rows.entries()) {
-    for (const [c, cell] of row.cells.entries()) {
-      const open2 = tokens[cell.open];
-      const planned = plan.cells[r]?.[c];
-      if (!open2 || !planned) {
-        continue;
-      }
-      if (row.head && planned.merged) {
-        for (let index = cell.open; index <= cell.close; index++) {
-          const token = tokens[index];
-          if (token) {
-            dropped.add(token);
-          }
-        }
-        continue;
-      }
-      if (!row.head && c < spec.rowHeader) {
-        toHeadCell(open2, tokens[cell.close]);
-        open2.attrs = [["scope", "row"], ...open2.attrs ?? []];
-        open2.attrSet("data-mdmark-own", nonce);
-      }
-      if (planned.merged && planned.source) {
-        const [sourceRow, sourceColumn] = planned.source;
-        const source = rows[sourceRow]?.cells[sourceColumn];
-        const from = source ? tokens[source.open + 1] : void 0;
-        const to = tokens[cell.open + 1];
-        if (from?.type === "inline" && to?.type === "inline") {
-          to.content = from.content;
-          to.children = [...from.children ?? []];
-        }
-        setOwn(open2, "data-merge", planned.merged);
-        setOwn(open2, "hidden", "hidden");
-        continue;
-      }
-      if (planned.rowspan > 1) {
-        setOwn(open2, "rowspan", String(planned.rowspan));
-      }
-      if (planned.colspan > 1) {
-        setOwn(open2, "colspan", String(planned.colspan));
-      }
-      if (row.head && (spec.headRows > 1 || planned.rowspan > 1 || planned.colspan > 1)) {
-        setOwn(open2, "scope", planned.colspan > 1 ? "colgroup" : "col");
+    for (const [column, cell] of row.cells.entries()) {
+      const planned = plan.cells[r]?.[column];
+      if (tokens[cell.open] && planned) {
+        applyPlannedCell(context, { row, column, cell, planned });
       }
     }
   }
@@ -66768,168 +67280,216 @@ function collectRanges(tokens) {
   });
   return ranges;
 }
+function rangeOf(ranges, place) {
+  const { index, outer } = place;
+  return ranges.filter(
+    (candidate) => candidate.open < index && candidate.open > (outer?.open ?? -1) && (candidate.close < 0 || index < candidate.close)
+  ).pop();
+}
+function tableSpecOf(context, table2) {
+  const { state, tokens, dropped } = context;
+  const { token, index, range } = table2;
+  const viewSpec = token.meta?.tableSpec;
+  if (viewSpec) {
+    return { spec: viewSpec, mergeColumns: [] };
+  }
+  const rowCount = bodyRowCount(tokens, index) + 1;
+  let spec = readTableSpec(
+    range?.mark.options,
+    headersOf(tokens, index),
+    rowCount
+  );
+  if (!range) {
+    return { spec, mergeColumns: [] };
+  }
+  if (spec.headRows > 1) {
+    const head = [
+      headersOf(tokens, index),
+      ...bodyCellsOf(tokens, index).slice(0, spec.headRows - 1)
+    ];
+    spec = readTableSpec(range.mark.options, headLabelsOf(head), rowCount);
+  }
+  const merged = mergeTableCells({ state, tableOpen: index, spec, dropped });
+  spec.warnings.push(...merged.warnings);
+  return { spec, mergeColumns: merged.mergeColumns };
+}
+function widthRangesOf(widths) {
+  return widths.flatMap(
+    (width) => width.min === void 0 && width.max === void 0 ? [] : [
+      {
+        column: width.column,
+        ...width.min === void 0 ? {} : { min: width.min },
+        ...width.max === void 0 ? {} : { max: width.max }
+      }
+    ]
+  );
+}
+function tableOptionsOf(tokens, table2) {
+  const { token, index, spec, mergeColumns } = table2;
+  const long = findLongColumns(columnLinesOf(tokens, index));
+  const noSort = spec.features.includes("sort") ? findNoSortColumns({ long, sorts: spec.sorts }) : [];
+  const filters = spec.filters.map((filter2) => ({
+    column: filter2.column,
+    kind: filter2.kind ?? defaultFilterKind(long.includes(filter2.column))
+  }));
+  return {
+    kind: spec.kind,
+    features: spec.features,
+    filters: spec.features.includes("filter") ? filters : [],
+    long,
+    widthRanges: widthRangesOf(spec.widths),
+    collapse: spec.collapse,
+    title: spec.title,
+    rowCount: bodyRowCount(tokens, index),
+    hide: spec.hide,
+    totals: spec.totals,
+    mergeColumns,
+    pin: spec.pin,
+    unpin: spec.unpinned,
+    check: spec.check,
+    tree: spec.tree,
+    noSort,
+    body: SLOT_MARKER,
+    rawCsv: token.meta?.rawCsv
+  };
+}
+function headWarningsOf(range, spec) {
+  if (!range) {
+    return [];
+  }
+  const warnings = warningsOf(range.mark.raw, spec.warnings);
+  if (range.close < 0 && !range.warned) {
+    range.warned = true;
+    warnings.push(unclosedWarning(range.mark));
+  }
+  return warnings;
+}
+function pushLeadingWarnings(context, table2) {
+  const { state, tokens, out } = context;
+  const { index, range, spec, colors } = table2;
+  const owner = range ? tokens[range.open] : void 0;
+  if (range) {
+    for (const warning of warningsOf(range.mark.raw, colors.warnings)) {
+      out.push(warningBlock(state, warning, owner));
+    }
+  }
+  if (!spec.features.includes("total")) {
+    return;
+  }
+  for (const warning of unreadableTotalWarnings({
+    tokens,
+    tableOpen: index,
+    totals: spec.totals
+  })) {
+    out.push(warningBlock(state, warning, owner));
+  }
+}
+function markTreeSpec(token, table2) {
+  if (table2.spec.tree === void 0) {
+    return;
+  }
+  token.meta = {
+    ...token.meta ?? {},
+    treeSpec: table2.spec,
+    treeMark: table2.range?.mark.raw
+  };
+}
+function openTable(context, table2) {
+  const { state, tokens, out } = context;
+  const { token, index } = table2;
+  const range = rangeOf(context.ranges, table2);
+  const { spec, mergeColumns } = tableSpecOf(context, {
+    token,
+    index,
+    range
+  });
+  const html = renderTable(
+    tableOptionsOf(tokens, { token, index, spec, mergeColumns })
+  );
+  if (spec.features.includes("rowlink")) {
+    linkRows(state, { tokens, tableOpen: index, taken: context.taken });
+  }
+  const colors = readTableColors(
+    range?.mark.options,
+    headersOf(tokens, index),
+    bodyCellsOf(tokens, index)
+  );
+  applyTableColors(state, index, colors);
+  applyColumnStyles(state, index, spec);
+  const [head = "", tail = ""] = html.split(SLOT_MARKER);
+  const divEnd = head.indexOf(">") + 1;
+  const warnings = headWarningsOf(range, spec);
+  pushLeadingWarnings(context, { index, range, spec, colors });
+  const owner = range ? tokens[range.open] : void 0;
+  const open2 = ownBlock(state, head.slice(0, divEnd), owner ?? token);
+  open2.meta = { role: "table-open" };
+  out.push(open2);
+  for (const warning of warnings) {
+    out.push(warningBlock(state, warning, owner));
+  }
+  out.push(ownBlock(state, head.slice(divEnd)));
+  markTreeSpec(token, { spec, range });
+  out.push(token);
+  context.openTables.push({ open: index, tail });
+}
+function moveTableToken(context, index) {
+  const { state, tokens, out, openTables } = context;
+  const token = tokens[index];
+  if (!token || context.dropped.has(token)) {
+    return;
+  }
+  if (markOf(token)?.name === "table") {
+    return;
+  }
+  const outer = openTables.at(-1);
+  if (token.type === "table_close" && outer) {
+    openTables.pop();
+    out.push(token);
+    const close = ownBlock(state, outer.tail);
+    close.meta = { role: "table-close" };
+    out.push(close);
+    return;
+  }
+  if (token.type !== "table_open") {
+    out.push(token);
+    return;
+  }
+  openTable(context, { token, index, outer });
+}
+function decorateTreeTables(state, tokens) {
+  for (let index = tokens.length - 1; index >= 0; index--) {
+    const token = tokens[index];
+    const treeSpec = token?.meta?.treeSpec;
+    if (token?.type === "table_open" && treeSpec) {
+      decorateTreeTable({
+        state,
+        start: index,
+        end: findNestedClose(tokens, index),
+        spec: treeSpec
+      });
+    }
+  }
+}
 function decorateTables(state) {
   decorateAttributes(state);
   if (!featureOn(state, "table")) {
     return;
   }
   const tokens = state.tokens;
-  const ranges = collectRanges(tokens);
-  const taken = new Set(envOf(state).headings.map((heading2) => heading2.id));
-  const out = [];
-  const openTables = [];
-  const dropped = /* @__PURE__ */ new Set();
+  const context = {
+    state,
+    tokens,
+    ranges: collectRanges(tokens),
+    taken: new Set(envOf(state).headings.map((heading2) => heading2.id)),
+    out: [],
+    openTables: [],
+    dropped: /* @__PURE__ */ new Set()
+  };
   for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (!token || dropped.has(token)) {
-      continue;
-    }
-    const mark = markOf(token);
-    if (mark?.name === "table") {
-      continue;
-    }
-    const outer = openTables.at(-1);
-    if (token.type === "table_close" && outer) {
-      openTables.pop();
-      out.push(token);
-      const close = ownBlock(state, outer.tail);
-      close.meta = { role: "table-close" };
-      out.push(close);
-      continue;
-    }
-    if (token.type !== "table_open") {
-      out.push(token);
-      continue;
-    }
-    const range = ranges.filter(
-      (candidate) => candidate.open < index && candidate.open > (outer?.open ?? -1) && (candidate.close < 0 || index < candidate.close)
-    ).pop();
-    const viewSpec = token.meta?.tableSpec;
-    const rowCount = bodyRowCount(tokens, index) + 1;
-    let spec = viewSpec ?? readTableSpec(range?.mark.options, headersOf(tokens, index), rowCount);
-    let mergeColumns = [];
-    if (range && !viewSpec) {
-      if (spec.headRows > 1) {
-        const head2 = [
-          headersOf(tokens, index),
-          ...bodyCellsOf(tokens, index).slice(0, spec.headRows - 1)
-        ];
-        spec = readTableSpec(range.mark.options, headLabelsOf(head2), rowCount);
-      }
-      const merged = mergeTableCells({
-        state,
-        tableOpen: index,
-        spec,
-        dropped
-      });
-      mergeColumns = merged.mergeColumns;
-      spec.warnings.push(...merged.warnings);
-    }
-    const filtering = spec.features.includes("filter");
-    const long = findLongColumns(columnLinesOf(tokens, index));
-    const noSort = spec.features.includes("sort") && !viewSpec ? findNoSortColumns({ long, sorts: spec.sorts }) : [];
-    const filters = spec.filters.map((filter2) => ({
-      column: filter2.column,
-      kind: filter2.kind ?? defaultFilterKind(long.includes(filter2.column))
-    }));
-    const widthRanges = spec.widths.flatMap(
-      (width) => width.min === void 0 && width.max === void 0 ? [] : [
-        {
-          column: width.column,
-          ...width.min === void 0 ? {} : { min: width.min },
-          ...width.max === void 0 ? {} : { max: width.max }
-        }
-      ]
-    );
-    const html = renderTable({
-      kind: spec.kind,
-      features: spec.features,
-      filters: filtering ? filters : [],
-      long,
-      widthRanges,
-      collapse: spec.collapse,
-      title: spec.title,
-      rowCount: bodyRowCount(tokens, index),
-      hide: spec.hide,
-      totals: spec.totals,
-      mergeColumns,
-      pin: spec.pin,
-      unpin: spec.unpinned,
-      check: spec.check,
-      tree: spec.tree,
-      noSort,
-      body: SLOT_MARKER,
-      rawCsv: token.meta?.rawCsv
-    });
-    if (spec.features.includes("rowlink")) {
-      linkRows(state, tokens, index, taken);
-    }
-    const colors = readTableColors(
-      range?.mark.options,
-      headersOf(tokens, index),
-      bodyCellsOf(tokens, index)
-    );
-    applyTableColors(state, index, colors);
-    applyColumnStyles(state, index, spec);
-    const [head = "", tail = ""] = html.split(SLOT_MARKER);
-    const divEnd = head.indexOf(">") + 1;
-    const warnings = range ? warningsOf(range.mark.raw, spec.warnings) : [];
-    if (range && range.close < 0 && !range.warned) {
-      range.warned = true;
-      warnings.push(unclosedWarning(range.mark));
-    }
-    if (range) {
-      for (const warning of warningsOf(range.mark.raw, colors.warnings)) {
-        out.push(warningBlock(state, warning, tokens[range.open]));
-      }
-    }
-    if (spec.features.includes("total")) {
-      for (const warning of unreadableTotalWarnings({
-        tokens,
-        tableOpen: index,
-        totals: spec.totals
-      })) {
-        out.push(
-          warningBlock(state, warning, range ? tokens[range.open] : void 0)
-        );
-      }
-    }
-    const open2 = ownBlock(
-      state,
-      head.slice(0, divEnd),
-      range ? tokens[range.open] : token
-    );
-    open2.meta = { role: "table-open" };
-    out.push(open2);
-    for (const warning of warnings) {
-      out.push(
-        warningBlock(state, warning, range ? tokens[range.open] : void 0)
-      );
-    }
-    out.push(ownBlock(state, head.slice(divEnd)));
-    if (spec.tree !== void 0) {
-      token.meta = {
-        ...token.meta ?? {},
-        treeSpec: spec,
-        treeMark: range?.mark.raw
-      };
-    }
-    out.push(token);
-    openTables.push({ open: index, tail });
+    moveTableToken(context, index);
   }
-  state.tokens = out;
-  for (let index = out.length - 1; index >= 0; index--) {
-    const token = out[index];
-    const treeSpec = token?.meta?.treeSpec;
-    if (token?.type === "table_open" && treeSpec) {
-      decorateTreeTable({
-        state,
-        start: index,
-        end: findNestedClose(out, index),
-        spec: treeSpec
-      });
-    }
-  }
+  state.tokens = context.out;
+  decorateTreeTables(state, context.out);
 }
 
 // src/render/legacy-marks.ts
@@ -66970,31 +67530,38 @@ var unknownWord = (text2) => ({
   text: text2,
   reason: "\u3053\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u306E mdmark \u304C\u77E5\u3089\u306A\u3044\u6307\u5B9A\u3067\u3059"
 });
-var convertTable = (text2) => {
-  const { args, keys } = parseMarkArgs(text2);
-  const dropped = [];
-  const options = {};
-  const flags = [];
+var droppedArg = (arg, tail) => arg === tail ? { text: arg, reason: TITLE_SPACE_REASON } : unknownWord(arg);
+var collapseInto = (converted, context) => {
+  const { flags, title, scope } = context;
+  const collapse = collapseOf(flags, title);
+  if (collapse) {
+    converted.options.collapse = collapse;
+  } else if (title !== void 0) {
+    converted.dropped.push({
+      text: `title=${title}`,
+      reason: `closed \u304B open \u3068\u4E00\u7DD2\u306B\u8A18\u8F09\u3057\u305F${scope}\u3067\u3060\u3051\u4F7F\u7528\u3067\u304D\u308B\u305F\u3081\u3001\u4ECA\u306E\u5B9F\u88C5\u306F\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093`
+    });
+  }
+};
+var isFeatureToggle = (arg) => /^[+-]/.test(arg) && TABLE_FEATURES.includes(arg.slice(1));
+var readTableArgs = (args, context) => {
   let kind = "default";
+  const flags = [];
   const features = {};
-  const tail = keys.title === void 0 ? void 0 : titleTailOf(text2);
   args.forEach((arg, index) => {
     if (index === 0 && (arg === "data" || arg === "plain")) {
       kind = arg;
-      options.kind = arg;
     } else if (arg === "closed" || arg === "open") {
       flags.push(arg);
-    } else if (/^[+-]/.test(arg) && TABLE_FEATURES.includes(arg.slice(1))) {
+    } else if (isFeatureToggle(arg)) {
       features[arg.slice(1)] = arg.startsWith("+") ? {} : { enabled: false };
-    } else if (arg === tail) {
-      dropped.push({
-        text: arg,
-        reason: TITLE_SPACE_REASON
-      });
     } else {
-      dropped.push(unknownWord(arg));
+      context.dropped.push(droppedArg(arg, context.tail));
     }
   });
+  return { kind, flags, features };
+};
+var enabledOf = (kind, features) => {
   const enabled = new Set(
     TABLE_KINDS[kind]
   );
@@ -67005,155 +67572,171 @@ var convertTable = (text2) => {
       enabled.add(name);
     }
   }
-  const columns = {};
-  const column = (name) => {
-    columns[name] ??= {};
-    return columns[name];
-  };
-  const needs = (key, value, feature) => {
-    if (enabled.has(feature)) {
-      return true;
-    }
-    dropped.push({
-      text: `${key}=${value}`,
-      reason: `+${feature} \u3092\u8A18\u8F09\u3057\u305F\u8868\u3067\u3060\u3051\u4F7F\u7528\u3067\u304D\u308B\u305F\u3081\u3001\u4ECA\u306E\u5B9F\u88C5\u306F\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093`
-    });
-    return false;
-  };
-  const header = {};
-  const colors = [];
-  const atColors = [];
-  const tree = {};
-  for (const [key, value] of Object.entries(keys)) {
-    switch (key) {
-      case "filter":
-        if (!needs(key, value, "filter")) break;
-        for (const item of value.split(",")) {
-          const [name = "", type] = item.split(":");
-          if (type !== void 0 && !FILTER_KINDS.includes(type)) {
-            dropped.push({
-              text: `filter=${item}`,
-              reason: `\u7D5E\u308A\u8FBC\u307F\u306E\u7A2E\u985E ${type} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u7A2E\u985E\u306F select\u30FBtext\u30FBdate \u3067\u3059`
-            });
-            continue;
-          }
-          column(name).filter = type === void 0 ? {} : { type };
-        }
-        break;
-      case "hide":
-        if (!needs(key, value, "columns")) break;
-        for (const name of value.split(",")) column(name).hidden = true;
-        break;
-      case "total":
-        if (!needs(key, value, "total")) break;
-        for (const item of value.split(",")) {
-          const [name = "", calc = ""] = item.split(":");
-          if (!TOTAL_CALCS.includes(calc)) {
-            dropped.push({
-              text: `total=${item}`,
-              reason: `\u8A08\u7B97 ${calc} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u8A08\u7B97\u306F sum\u30FBavg\u30FBcount \u3067\u3059`
-            });
-            continue;
-          }
-          const settings = column(name);
-          settings.total = [
-            ...settings.total ?? [],
-            { calc }
-          ];
-        }
-        break;
-      case "pin":
-        if (!needs(key, value, "pin")) break;
-        for (const name of value.split(",")) column(name).pinned = true;
-        break;
-      case "wide":
-        for (const name of value.split(","))
-          column(name).width = { mode: "nowrap" };
-        break;
-      case "check":
-        for (const name of value.split(","))
-          column(name).format = { type: "check" };
-        break;
-      case "highlight":
-        for (const item of value.split(",")) {
-          const [name = "", color] = item.split(":");
-          if (color !== void 0 && !COLOR_NAMES.includes(color)) {
-            dropped.push({
-              text: `highlight=${item}`,
-              reason: `\u8272\u306E\u540D\u524D ${color} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
-            });
-            continue;
-          }
-          column(name).highlight = color === void 0 ? {} : { color };
-        }
-        break;
-      case "row-color": {
-        const [name = "", pairs = ""] = value.split(/:(.*)/s);
-        for (const pair of pairs.split(",")) {
-          const [cell = "", color = ""] = pair.split("=");
-          if (!COLOR_NAMES.includes(color)) {
-            dropped.push({
-              text: `row-color=${name}:${pair}`,
-              reason: `\u8272\u306E\u540D\u524D ${color} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
-            });
-            continue;
-          }
-          colors.push({ column: name, value: cell, color });
-        }
-        break;
-      }
-      case "row-at":
-        for (const pair of value.split(",")) {
-          const [position = "", color = ""] = pair.split("=");
-          const range = /^(\d+)-(\d+)$/.exec(position);
-          const at = range ? { from: Number(range[1]), to: Number(range[2]) } : /^\d+$/.test(position) ? Number(position) : void 0;
-          if (at === void 0 || !COLOR_NAMES.includes(color)) {
-            dropped.push({
-              text: `row-at=${pair}`,
-              reason: "\u884C\u306E\u4F4D\u7F6E\u304B\u8272\u306E\u540D\u524D\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093"
-            });
-            continue;
-          }
-          atColors.push({ at, color });
-        }
-        break;
-      case "header-rows":
-      case "row-header": {
-        const count = Number(value);
-        if (!/^\d+$/.test(value) || count < (key === "header-rows" ? 1 : 0)) {
-          dropped.push({
-            text: `${key}=${value}`,
-            reason: "\u6570\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093"
-          });
-          break;
-        }
-        header[key === "header-rows" ? "rows" : "columns"] = count;
-        break;
-      }
-      case "tree":
-      case "type":
-      case "required":
-      case "default":
-        tree[key === "tree" ? "key" : key] = { column: value };
-        break;
-      case "example":
-        tree.example = { heading: value };
-        break;
-      case "title":
-        break;
-      default:
-        dropped.push(unknownWord(`${key}=`));
-    }
+  return enabled;
+};
+var tableColumn = (conv, name) => {
+  conv.columns[name] ??= {};
+  return conv.columns[name];
+};
+var needsFeature = (conv, entry) => {
+  const { key, value, feature } = entry;
+  if (conv.enabled.has(feature)) {
+    return true;
   }
-  if (Object.keys(tree).length > 0 && tree.key === void 0) {
-    for (const key of Object.keys(tree)) {
-      dropped.push({
-        text: `${key === "key" ? "tree" : key}=`,
-        reason: "tree= \u3068\u4E00\u7DD2\u306B\u8A18\u8F09\u3057\u305F\u8868\u3067\u3060\u3051\u4F7F\u7528\u3067\u304D\u308B\u305F\u3081\u3001\u4ECA\u306E\u5B9F\u88C5\u306F\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093"
+  conv.dropped.push({
+    text: `${key}=${value}`,
+    reason: `+${feature} \u3092\u8A18\u8F09\u3057\u305F\u8868\u3067\u3060\u3051\u4F7F\u7528\u3067\u304D\u308B\u305F\u3081\u3001\u4ECA\u306E\u5B9F\u88C5\u306F\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093`
+  });
+  return false;
+};
+var setColumns = (conv, entry) => {
+  for (const name of entry.value.split(",")) {
+    tableColumn(conv, name)[entry.key] = entry.setting;
+  }
+};
+var readFilterKey = (conv, entry) => {
+  if (!needsFeature(conv, { ...entry, feature: "filter" })) return;
+  for (const item of entry.value.split(",")) {
+    const [name = "", type] = item.split(":");
+    if (type !== void 0 && !FILTER_KINDS.includes(type)) {
+      conv.dropped.push({
+        text: `filter=${item}`,
+        reason: `\u7D5E\u308A\u8FBC\u307F\u306E\u7A2E\u985E ${type} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u7A2E\u985E\u306F select\u30FBtext\u30FBdate \u3067\u3059`
       });
-      delete tree[key];
+      continue;
     }
+    tableColumn(conv, name).filter = type === void 0 ? {} : { type };
   }
+};
+var readTotalKey = (conv, entry) => {
+  if (!needsFeature(conv, { ...entry, feature: "total" })) return;
+  for (const item of entry.value.split(",")) {
+    const [name = "", calc = ""] = item.split(":");
+    if (!TOTAL_CALCS.includes(calc)) {
+      conv.dropped.push({
+        text: `total=${item}`,
+        reason: `\u8A08\u7B97 ${calc} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u8A08\u7B97\u306F sum\u30FBavg\u30FBcount \u3067\u3059`
+      });
+      continue;
+    }
+    const settings = tableColumn(conv, name);
+    settings.total = [...settings.total ?? [], { calc }];
+  }
+};
+var isColorName2 = (color) => COLOR_NAMES.includes(color);
+var readHighlightKey = (conv, entry) => {
+  for (const item of entry.value.split(",")) {
+    const [name = "", color] = item.split(":");
+    if (color !== void 0 && !isColorName2(color)) {
+      conv.dropped.push({
+        text: `highlight=${item}`,
+        reason: `\u8272\u306E\u540D\u524D ${color} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
+      });
+      continue;
+    }
+    tableColumn(conv, name).highlight = color === void 0 ? {} : { color };
+  }
+};
+var readRowColorKey = (conv, entry) => {
+  const [name = "", pairs = ""] = entry.value.split(/:(.*)/s);
+  for (const pair of pairs.split(",")) {
+    const [cell = "", color = ""] = pair.split("=");
+    if (!isColorName2(color)) {
+      conv.dropped.push({
+        text: `row-color=${name}:${pair}`,
+        reason: `\u8272\u306E\u540D\u524D ${color} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
+      });
+      continue;
+    }
+    conv.colors.push({ column: name, value: cell, color });
+  }
+};
+var rowAtOf = (position) => {
+  const range = /^(\d+)-(\d+)$/.exec(position);
+  if (range) {
+    return { from: Number(range[1]), to: Number(range[2]) };
+  }
+  return /^\d+$/.test(position) ? Number(position) : void 0;
+};
+var readRowAtKey = (conv, entry) => {
+  for (const pair of entry.value.split(",")) {
+    const [position = "", color = ""] = pair.split("=");
+    const at = rowAtOf(position);
+    if (at === void 0 || !isColorName2(color)) {
+      conv.dropped.push({
+        text: `row-at=${pair}`,
+        reason: "\u884C\u306E\u4F4D\u7F6E\u304B\u8272\u306E\u540D\u524D\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093"
+      });
+      continue;
+    }
+    conv.atColors.push({ at, color });
+  }
+};
+var readHeaderKey = (conv, entry) => {
+  const { key, value } = entry;
+  const rows = key === "header-rows";
+  const count = Number(value);
+  if (!/^\d+$/.test(value) || count < (rows ? 1 : 0)) {
+    conv.dropped.push({
+      text: `${key}=${value}`,
+      reason: "\u6570\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093"
+    });
+    return;
+  }
+  conv.header[rows ? "rows" : "columns"] = count;
+};
+var readTreeKey = (conv, entry) => {
+  conv.tree[entry.key === "tree" ? "key" : entry.key] = { column: entry.value };
+};
+var TABLE_KEY_READERS = {
+  filter: readFilterKey,
+  hide: (conv, entry) => {
+    if (!needsFeature(conv, { ...entry, feature: "columns" })) return;
+    setColumns(conv, { value: entry.value, key: "hidden", setting: true });
+  },
+  total: readTotalKey,
+  pin: (conv, entry) => {
+    if (!needsFeature(conv, { ...entry, feature: "pin" })) return;
+    setColumns(conv, { value: entry.value, key: "pinned", setting: true });
+  },
+  wide: (conv, entry) => setColumns(conv, {
+    value: entry.value,
+    key: "width",
+    setting: { mode: "nowrap" }
+  }),
+  check: (conv, entry) => setColumns(conv, {
+    value: entry.value,
+    key: "format",
+    setting: { type: "check" }
+  }),
+  highlight: readHighlightKey,
+  "row-color": readRowColorKey,
+  "row-at": readRowAtKey,
+  "header-rows": readHeaderKey,
+  "row-header": readHeaderKey,
+  tree: readTreeKey,
+  type: readTreeKey,
+  required: readTreeKey,
+  default: readTreeKey,
+  example: (conv, entry) => {
+    conv.tree.example = { heading: entry.value };
+  },
+  title: () => {
+  }
+};
+var dropOrphanTree = (conv) => {
+  if (Object.keys(conv.tree).length === 0 || conv.tree.key !== void 0) {
+    return;
+  }
+  for (const key of Object.keys(conv.tree)) {
+    conv.dropped.push({
+      text: `${key === "key" ? "tree" : key}=`,
+      reason: "tree= \u3068\u4E00\u7DD2\u306B\u8A18\u8F09\u3057\u305F\u8868\u3067\u3060\u3051\u4F7F\u7528\u3067\u304D\u308B\u305F\u3081\u3001\u4ECA\u306E\u5B9F\u88C5\u306F\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093"
+    });
+    delete conv.tree[key];
+  }
+};
+var dropColumnFeatures = (features, columns) => {
   const fromColumns = /* @__PURE__ */ new Set();
   for (const settings of Object.values(columns)) {
     if (settings.filter !== void 0) fromColumns.add("filter");
@@ -67166,22 +67749,44 @@ var convertTable = (text2) => {
       delete features[name];
     }
   }
+};
+var assembleTable = (options, context) => {
+  const { conv, features } = context;
   if (Object.keys(features).length > 0) options.features = features;
-  if (Object.keys(columns).length > 0) options.columns = columns;
-  if (Object.keys(header).length > 0) options.header = header;
-  if (colors.length + atColors.length > 0)
-    options.rows = { colors: [...colors, ...atColors] };
-  if (Object.keys(tree).length > 0) options.tree = tree;
-  const collapse = collapseOf(flags, keys.title);
-  if (collapse) {
-    options.collapse = collapse;
-  } else if (keys.title !== void 0) {
-    dropped.push({
-      text: `title=${keys.title}`,
-      reason: "closed \u304B open \u3068\u4E00\u7DD2\u306B\u8A18\u8F09\u3057\u305F\u8868\u3067\u3060\u3051\u4F7F\u7528\u3067\u304D\u308B\u305F\u3081\u3001\u4ECA\u306E\u5B9F\u88C5\u306F\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093"
-    });
+  if (Object.keys(conv.columns).length > 0) options.columns = conv.columns;
+  if (Object.keys(conv.header).length > 0) options.header = conv.header;
+  if (conv.colors.length + conv.atColors.length > 0)
+    options.rows = { colors: [...conv.colors, ...conv.atColors] };
+  if (Object.keys(conv.tree).length > 0) options.tree = conv.tree;
+};
+var convertTable = (text2) => {
+  const { args, keys } = parseMarkArgs(text2);
+  const dropped = [];
+  const tail = keys.title === void 0 ? void 0 : titleTailOf(text2);
+  const { kind, flags, features } = readTableArgs(args, { tail, dropped });
+  const options = kind === "default" ? {} : { kind };
+  const conv = {
+    dropped,
+    enabled: enabledOf(kind, features),
+    columns: {},
+    header: {},
+    colors: [],
+    atColors: [],
+    tree: {}
+  };
+  for (const [key, value] of Object.entries(keys)) {
+    if (Object.hasOwn(TABLE_KEY_READERS, key)) {
+      TABLE_KEY_READERS[key]?.(conv, { key, value });
+    } else {
+      dropped.push(unknownWord(`${key}=`));
+    }
   }
-  return { options, dropped };
+  dropOrphanTree(conv);
+  dropColumnFeatures(features, conv.columns);
+  assembleTable(options, { conv, features });
+  const converted = { options, dropped };
+  collapseInto(converted, { flags, title: keys.title, scope: "\u8868" });
+  return converted;
 };
 var convertCollapseRange = (text2, withGroup) => {
   const { args, keys } = parseMarkArgs(text2);
@@ -67190,136 +67795,145 @@ var convertCollapseRange = (text2, withGroup) => {
   const flags = args.filter((arg) => arg === "closed" || arg === "open");
   const tail = keys.title === void 0 ? void 0 : titleTailOf(text2);
   for (const arg of args.filter((arg2) => arg2 !== "closed" && arg2 !== "open")) {
-    dropped.push(
-      arg === tail ? {
-        text: arg,
-        reason: TITLE_SPACE_REASON
-      } : unknownWord(arg)
-    );
+    dropped.push(droppedArg(arg, tail));
   }
   for (const [key, value] of Object.entries(keys)) {
     if (withGroup && key === "group") {
-      if (value === "") {
-        dropped.push({ text: "group=", reason: "\u7D44\u306E\u540D\u524D\u304C\u3042\u308A\u307E\u305B\u3093" });
-      } else {
-        options.group = value;
-      }
+      readGroupKey({ options, dropped }, value);
     } else if (key !== "title") {
       dropped.push(unknownWord(`${key}=`));
     }
   }
-  const collapse = collapseOf(flags, keys.title);
-  if (collapse) {
-    options.collapse = collapse;
-  } else if (keys.title !== void 0) {
-    dropped.push({
-      text: `title=${keys.title}`,
-      reason: "closed \u304B open \u3068\u4E00\u7DD2\u306B\u8A18\u8F09\u3057\u305F\u7BC4\u56F2\u3067\u3060\u3051\u4F7F\u7528\u3067\u304D\u308B\u305F\u3081\u3001\u4ECA\u306E\u5B9F\u88C5\u306F\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093"
-    });
+  const converted = { options, dropped };
+  collapseInto(converted, { flags, title: keys.title, scope: "\u7BC4\u56F2" });
+  return converted;
+};
+var readGroupKey = (converted, value) => {
+  if (value === "") {
+    converted.dropped.push({ text: "group=", reason: "\u7D44\u306E\u540D\u524D\u304C\u3042\u308A\u307E\u305B\u3093" });
+  } else {
+    converted.options.group = value;
   }
-  return { options, dropped };
+};
+var readCodeArg = (converted, context) => {
+  const { arg, tail } = context;
+  if (arg === "lines") converted.options.lines = {};
+  else if (arg === "wrap") converted.options.wrap = true;
+  else converted.dropped.push(droppedArg(arg, tail));
+};
+var readCodeKey = (converted, entry) => {
+  const { key, value } = entry;
+  if (key === "highlight" || key === "fold") {
+    const ranges = rangesOf(key, value, converted.dropped);
+    if (ranges.length > 0) converted.options[key] = ranges;
+  } else if (key === "wrap") {
+    converted.dropped.push({
+      text: `wrap=${value}`,
+      reason: "wrap \u306F\u5024\u3092\u6301\u3061\u307E\u305B\u3093"
+    });
+  } else if (key !== "title") {
+    converted.dropped.push(unknownWord(`${key}=`));
+  }
 };
 var convertCode = (text2) => {
   const { args, keys } = parseMarkArgs(text2);
-  const dropped = [];
-  const options = {};
+  const converted = { options: {}, dropped: [] };
   const tail = keys.title === void 0 ? void 0 : titleTailOf(text2);
-  if (keys.title !== void 0) {
-    if (keys.title === "") {
-      dropped.push({ text: "title=", reason: "\u30BF\u30A4\u30C8\u30EB\u304C\u3042\u308A\u307E\u305B\u3093" });
-    } else {
-      options.title = keys.title;
-    }
+  if (keys.title === "") {
+    converted.dropped.push({ text: "title=", reason: "\u30BF\u30A4\u30C8\u30EB\u304C\u3042\u308A\u307E\u305B\u3093" });
+  } else if (keys.title !== void 0) {
+    converted.options.title = keys.title;
   }
-  for (const arg of args) {
-    if (arg === "lines") options.lines = {};
-    else if (arg === "wrap") options.wrap = true;
-    else if (arg === tail)
-      dropped.push({
-        text: arg,
-        reason: TITLE_SPACE_REASON
-      });
-    else dropped.push(unknownWord(arg));
-  }
-  for (const [key, value] of Object.entries(keys)) {
-    if (key === "highlight" || key === "fold") {
-      const ranges = rangesOf(key, value, dropped);
-      if (ranges.length > 0) options[key] = ranges;
-    } else if (key === "wrap") {
-      dropped.push({ text: `wrap=${value}`, reason: "wrap \u306F\u5024\u3092\u6301\u3061\u307E\u305B\u3093" });
-    } else if (key !== "title") {
-      dropped.push(unknownWord(`${key}=`));
-    }
-  }
+  for (const arg of args) readCodeArg(converted, { arg, tail });
+  for (const [key, value] of Object.entries(keys))
+    readCodeKey(converted, { key, value });
   const ordered = {};
   for (const key of ["title", "lines", "highlight", "fold", "wrap"]) {
-    if (options[key] !== void 0) ordered[key] = options[key];
+    if (converted.options[key] !== void 0)
+      ordered[key] = converted.options[key];
   }
-  return { options: ordered, dropped };
+  return { options: ordered, dropped: converted.dropped };
+};
+var readTreeOpenKey = (converted, entry) => {
+  const { key, value } = entry;
+  if (key === "open" && (value === "all" || /^[1-9]\d*$/.test(value))) {
+    converted.options.depth = value === "all" ? "all" : Number(value);
+  } else if (key === "open") {
+    converted.dropped.push({
+      text: `open=${value}`,
+      reason: "\u8A18\u8F09\u3067\u304D\u308B\u5024\u306F all \u3068\u968E\u5C64\u306E\u6570\u3067\u3059"
+    });
+  } else if (key === "wrap") {
+    converted.dropped.push({
+      text: `wrap=${value}`,
+      reason: "wrap \u306F\u5024\u3092\u6301\u3061\u307E\u305B\u3093"
+    });
+  } else {
+    converted.dropped.push(unknownWord(`${key}=`));
+  }
 };
 var convertTree = (text2) => {
   const { args, keys } = parseMarkArgs(text2);
-  const dropped = [];
-  const options = {};
-  for (const [key, value] of Object.entries(keys)) {
-    if (key === "open" && (value === "all" || /^[1-9]\d*$/.test(value))) {
-      options.depth = value === "all" ? "all" : Number(value);
-    } else if (key === "open") {
-      dropped.push({
-        text: `open=${value}`,
-        reason: "\u8A18\u8F09\u3067\u304D\u308B\u5024\u306F all \u3068\u968E\u5C64\u306E\u6570\u3067\u3059"
-      });
-    } else if (key === "wrap") {
-      dropped.push({ text: `wrap=${value}`, reason: "wrap \u306F\u5024\u3092\u6301\u3061\u307E\u305B\u3093" });
-    } else {
-      dropped.push(unknownWord(`${key}=`));
-    }
-  }
+  const converted = { options: {}, dropped: [] };
+  for (const [key, value] of Object.entries(keys))
+    readTreeOpenKey(converted, { key, value });
   for (const arg of args) {
-    if (arg === "wrap") options.wrap = true;
-    else dropped.push(unknownWord(arg));
+    if (arg === "wrap") converted.options.wrap = true;
+    else converted.dropped.push(unknownWord(arg));
   }
-  return { options, dropped };
+  return converted;
+};
+var readViewFilterKey = (conv, value) => {
+  for (const item of value.split(",")) {
+    const [name = "", type] = item.split(":");
+    if (type !== void 0 && !FILTER_KINDS.includes(type)) {
+      conv.dropped.push({
+        text: `filter=${item}`,
+        reason: `\u7D5E\u308A\u8FBC\u307F\u306E\u7A2E\u985E ${type} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
+      });
+      continue;
+    }
+    conv.columns[name] = { filter: type === void 0 ? {} : { type } };
+  }
+};
+var VIEW_KEY_READERS = {
+  group: (conv, value) => {
+    conv.board.group = { column: value };
+  },
+  default: (conv, value) => {
+    if (value === "board" || value === "table") conv.options.initial = value;
+    else
+      conv.dropped.push({
+        text: `default=${value}`,
+        reason: "\u8A18\u8F09\u3067\u304D\u308B\u5024\u306F board \u3068 table \u3067\u3059"
+      });
+  },
+  filter: readViewFilterKey,
+  icons: (conv, value) => {
+    const values = {};
+    for (const item of value.split(",")) {
+      const [cell = "", icon = ""] = item.split(":");
+      values[cell] = { icon };
+    }
+    conv.board.values = values;
+  }
 };
 var convertView = (text2) => {
   const { args, keys } = parseMarkArgs(text2);
-  const dropped = args.map(unknownWord);
-  const options = {};
-  const board = {};
-  const columns = {};
+  const conv = {
+    options: {},
+    dropped: args.map(unknownWord),
+    board: {},
+    columns: {}
+  };
   for (const [key, value] of Object.entries(keys)) {
-    if (key === "group") {
-      board.group = { column: value };
-    } else if (key === "default") {
-      if (value === "board" || value === "table") options.initial = value;
-      else
-        dropped.push({
-          text: `default=${value}`,
-          reason: "\u8A18\u8F09\u3067\u304D\u308B\u5024\u306F board \u3068 table \u3067\u3059"
-        });
-    } else if (key === "filter") {
-      for (const item of value.split(",")) {
-        const [name = "", type] = item.split(":");
-        if (type !== void 0 && !FILTER_KINDS.includes(type)) {
-          dropped.push({
-            text: `filter=${item}`,
-            reason: `\u7D5E\u308A\u8FBC\u307F\u306E\u7A2E\u985E ${type} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
-          });
-          continue;
-        }
-        columns[name] = { filter: type === void 0 ? {} : { type } };
-      }
-    } else if (key === "icons") {
-      const values = {};
-      for (const item of value.split(",")) {
-        const [cell = "", icon = ""] = item.split(":");
-        values[cell] = { icon };
-      }
-      board.values = values;
+    if (Object.hasOwn(VIEW_KEY_READERS, key)) {
+      VIEW_KEY_READERS[key]?.(conv, value);
     } else {
-      dropped.push(unknownWord(`${key}=`));
+      conv.dropped.push(unknownWord(`${key}=`));
     }
   }
+  const { board, columns, options } = conv;
   const ordered = {};
   if (Object.keys(board).length > 0) {
     ordered.board = {
@@ -67329,7 +67943,7 @@ var convertView = (text2) => {
   }
   if (options.initial !== void 0) ordered.initial = options.initial;
   if (Object.keys(columns).length > 0) ordered.columns = columns;
-  return { options: ordered, dropped };
+  return { options: ordered, dropped: conv.dropped };
 };
 var convertInclude = (text2) => {
   const [target = "", ...extra] = text2.split(/\s+/).filter(Boolean);
@@ -67357,125 +67971,142 @@ var convertLegacyArgs = (options) => {
     dropped: [...converted.dropped].sort((x, y) => at(x) - at(y))
   };
 };
+var convertSection = (text2) => {
+  const [first] = parseMarkArgs(text2).args;
+  if (first === "closed" || first === "open") {
+    return { options: { open: first === "open" }, dropped: [] };
+  }
+  return {
+    options: {},
+    dropped: first === void 0 ? [] : [unknownWord(first)]
+  };
+};
+var convertWide = (text2) => {
+  const { args, keys } = parseMarkArgs(text2);
+  return {
+    options: args.includes("closed") ? { open: false } : {},
+    dropped: [
+      ...args.filter((arg) => arg !== "closed").map(unknownWord),
+      ...Object.keys(keys).map((key) => unknownWord(`${key}=`))
+    ]
+  };
+};
+var convertDetails = (text2) => {
+  const words = text2.trim().split(/\s+/).filter(Boolean);
+  const open2 = words.at(-1) === "open";
+  const title = (open2 ? words.slice(0, -1) : words).join(" ");
+  return {
+    options: {
+      ...title === "" ? {} : { title },
+      ...open2 ? { open: true } : {}
+    },
+    dropped: []
+  };
+};
+var convertFig = (text2) => {
+  const { args } = parseMarkArgs(text2);
+  return {
+    options: args[0] === void 0 ? {} : { id: args[0] },
+    dropped: args.slice(1).map(unknownWord)
+  };
+};
+var convertRowDetail = (text2) => {
+  const { args } = parseMarkArgs(text2);
+  const at = Number(args[0]);
+  if (Number.isInteger(at) && at >= 1) {
+    return { options: { at }, dropped: [] };
+  }
+  return {
+    options: {},
+    dropped: [
+      { text: args[0] ?? "", reason: "\u884C\u306E\u4F4D\u7F6E\u3092\u6570\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093" }
+    ]
+  };
+};
+var convertGallery = (text2) => {
+  const { args, keys } = parseMarkArgs(text2);
+  const dropped = args.map(unknownWord);
+  const options = {};
+  for (const [key, value] of Object.entries(keys)) {
+    const count = Number(value);
+    if (key !== "cols") {
+      dropped.push(unknownWord(`${key}=`));
+    } else if (Number.isInteger(count) && count >= 1 && count <= 6) {
+      options.columns = count;
+    } else {
+      dropped.push({
+        text: `cols=${value}`,
+        reason: "\u5217\u306E\u6570\u306F 1\u301C6 \u306E\u6574\u6570\u3067\u3059"
+      });
+    }
+  }
+  return { options, dropped };
+};
+var convertFeatures = (text2) => {
+  const options = {};
+  const dropped = [];
+  for (const arg of parseMarkArgs(text2).args) {
+    if (/^[+-][a-z]/.test(arg)) options[arg.slice(1)] = arg.startsWith("+");
+    else dropped.push(unknownWord(arg));
+  }
+  return { options, dropped };
+};
+var convertPage = (text2) => {
+  const { args, keys } = parseMarkArgs(text2);
+  const options = {};
+  const dropped = args.map(unknownWord);
+  for (const [key, value] of Object.entries(keys)) {
+    const values = PAGE_VALUES[key];
+    if (values === void 0) {
+      dropped.push(unknownWord(`${key}=`));
+    } else if (!values.includes(value)) {
+      dropped.push({
+        text: `${key}=${value}`,
+        reason: `\u8A18\u8F09\u3067\u304D\u308B\u5024\u306F ${values.join("\u30FB")} \u3067\u3059`
+      });
+    } else {
+      options[key] = key === "toc" ? { mode: value } : value;
+    }
+  }
+  return { options, dropped };
+};
+var convertGlossary = (text2) => {
+  const { args, keys } = parseMarkArgs(text2);
+  const options = {};
+  const dropped = args.map(unknownWord);
+  for (const [key, value] of Object.entries(keys)) {
+    if (["term", "meaning", "aliases", "avoid"].includes(key)) {
+      options[key] = { column: value };
+    } else {
+      dropped.push(unknownWord(`${key}=`));
+    }
+  }
+  return { options, dropped };
+};
+var converters;
+var convertersOf = () => converters ??= {
+  table: convertTable,
+  tabs: (text2) => convertCollapseRange(text2, true),
+  steps: (text2) => convertCollapseRange(text2, false),
+  code: convertCode,
+  tree: convertTree,
+  view: convertView,
+  include: convertInclude,
+  section: convertSection,
+  wide: convertWide,
+  details: convertDetails,
+  fig: convertFig,
+  "row-detail": convertRowDetail,
+  gallery: convertGallery,
+  [FEATURES_MARK]: convertFeatures,
+  [PAGE_MARK]: convertPage,
+  glossary: convertGlossary
+};
 var convertByName = (options) => {
   const { name, text: text2 } = options;
-  const { args, keys } = parseMarkArgs(text2);
-  switch (name) {
-    case "table":
-      return convertTable(text2);
-    case "tabs":
-      return convertCollapseRange(text2, true);
-    case "steps":
-      return convertCollapseRange(text2, false);
-    case "code":
-      return convertCode(text2);
-    case "tree":
-      return convertTree(text2);
-    case "view":
-      return convertView(text2);
-    case "include":
-      return convertInclude(text2);
-    case "section": {
-      const [first] = args;
-      return first === "closed" || first === "open" ? { options: { open: first === "open" }, dropped: [] } : {
-        options: {},
-        dropped: first === void 0 ? [] : [unknownWord(first)]
-      };
-    }
-    case "wide":
-      return {
-        options: args.includes("closed") ? { open: false } : {},
-        dropped: [
-          ...args.filter((arg) => arg !== "closed").map(unknownWord),
-          ...Object.keys(keys).map((key) => unknownWord(`${key}=`))
-        ]
-      };
-    case "details": {
-      const words = text2.trim().split(/\s+/).filter(Boolean);
-      const open2 = words.at(-1) === "open";
-      const title = (open2 ? words.slice(0, -1) : words).join(" ");
-      return {
-        options: {
-          ...title === "" ? {} : { title },
-          ...open2 ? { open: true } : {}
-        },
-        dropped: []
-      };
-    }
-    case "fig":
-      return {
-        options: args[0] === void 0 ? {} : { id: args[0] },
-        dropped: args.slice(1).map(unknownWord)
-      };
-    case "row-detail": {
-      const at = Number(args[0]);
-      return Number.isInteger(at) && at >= 1 ? { options: { at }, dropped: [] } : {
-        options: {},
-        dropped: [
-          {
-            text: args[0] ?? "",
-            reason: "\u884C\u306E\u4F4D\u7F6E\u3092\u6570\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093"
-          }
-        ]
-      };
-    }
-    case "gallery": {
-      const dropped = args.map(unknownWord);
-      const options2 = {};
-      for (const [key, value] of Object.entries(keys)) {
-        const count = Number(value);
-        if (key === "cols" && Number.isInteger(count) && count >= 1 && count <= 6) {
-          options2.columns = count;
-        } else {
-          dropped.push(
-            key === "cols" ? { text: `cols=${value}`, reason: "\u5217\u306E\u6570\u306F 1\u301C6 \u306E\u6574\u6570\u3067\u3059" } : unknownWord(`${key}=`)
-          );
-        }
-      }
-      return { options: options2, dropped };
-    }
-    case FEATURES_MARK: {
-      const options2 = {};
-      const dropped = [];
-      for (const arg of args) {
-        if (/^[+-][a-z]/.test(arg)) options2[arg.slice(1)] = arg.startsWith("+");
-        else dropped.push(unknownWord(arg));
-      }
-      return { options: options2, dropped };
-    }
-    case PAGE_MARK: {
-      const options2 = {};
-      const dropped = args.map(unknownWord);
-      for (const [key, value] of Object.entries(keys)) {
-        const values = PAGE_VALUES[key];
-        if (values === void 0) {
-          dropped.push(unknownWord(`${key}=`));
-        } else if (!values.includes(value)) {
-          dropped.push({
-            text: `${key}=${value}`,
-            reason: `\u8A18\u8F09\u3067\u304D\u308B\u5024\u306F ${values.join("\u30FB")} \u3067\u3059`
-          });
-        } else {
-          options2[key] = key === "toc" ? { mode: value } : value;
-        }
-      }
-      return { options: options2, dropped };
-    }
-    case "glossary": {
-      const options2 = {};
-      const dropped = args.map(unknownWord);
-      for (const [key, value] of Object.entries(keys)) {
-        if (["term", "meaning", "aliases", "avoid"].includes(key)) {
-          options2[key] = { column: value };
-        } else {
-          dropped.push(unknownWord(`${key}=`));
-        }
-      }
-      return { options: options2, dropped };
-    }
-    default:
-      return { options: {}, dropped: [] };
-  }
+  const table2 = convertersOf();
+  const convert = Object.hasOwn(table2, name) ? table2[name] : void 0;
+  return convert ? convert(text2) : { options: {}, dropped: [] };
 };
 
 // src/render/mark-options.ts
@@ -67490,7 +68121,7 @@ var jsonErrorIndex = (text2) => {
       index++;
     }
   };
-  const literal2 = (word) => {
+  const literal3 = (word) => {
     for (const char of word) {
       if (text2[index] !== char) {
         fail(index);
@@ -67525,11 +68156,11 @@ var jsonErrorIndex = (text2) => {
     } else if (char === '"') {
       string4();
     } else if (char === "t") {
-      literal2("true");
+      literal3("true");
     } else if (char === "f") {
-      literal2("false");
+      literal3("false");
     } else if (char === "n") {
-      literal2("null");
+      literal3("null");
     } else {
       number4();
     }
@@ -68241,6 +68872,9 @@ var view_schema_default = {
               }
             },
             additionalProperties: false
+          },
+          sort: {
+            type: "boolean"
           }
         },
         additionalProperties: false
@@ -68305,19 +68939,14 @@ var showChoice = (value) => typeof value === "string" ? value : JSON.stringify(v
 var DECIDING_KEYS = {
   filter: ["type"]
 };
-var exampleOf = (node2, root) => {
-  const resolved = resolve5(node2, root);
-  if (resolved.anyOf?.[0]) {
-    return exampleOf(resolved.anyOf[0], root);
-  }
-  if (resolved.enum?.[0] !== void 0) {
-    return resolved.enum[0];
-  }
+var exampleObject = (resolved, root) => {
+  const [first] = Object.entries(resolved.properties ?? {});
+  return first ? { [first[0]]: exampleOf(first[1], root) } : {};
+};
+var exampleOfType = (resolved, root) => {
   switch (resolved.type) {
-    case "object": {
-      const [first] = Object.entries(resolved.properties ?? {});
-      return first ? { [first[0]]: exampleOf(first[1], root) } : {};
-    }
+    case "object":
+      return exampleObject(resolved, root);
     case "array":
       return resolved.items ? [exampleOf(resolved.items, root)] : [];
     case "string":
@@ -68331,6 +68960,45 @@ var exampleOf = (node2, root) => {
       return null;
   }
 };
+var exampleOf = (node2, root) => {
+  const resolved = resolve5(node2, root);
+  if (resolved.anyOf?.[0]) {
+    return exampleOf(resolved.anyOf[0], root);
+  }
+  if (resolved.enum?.[0] !== void 0) {
+    return resolved.enum[0];
+  }
+  return exampleOfType(resolved, root);
+};
+var expectedInteger = (resolved) => {
+  const { minimum, maximum } = resolved;
+  if (minimum !== void 0 && maximum !== void 0) {
+    return `${minimum}\u301C${maximum} \u306E\u6574\u6570`;
+  }
+  return minimum !== void 0 ? `${minimum} \u4EE5\u4E0A\u306E\u6574\u6570` : "\u6574\u6570";
+};
+var expectedObject = (resolved) => {
+  const keys = Object.keys(resolved.properties ?? {});
+  return keys.length > 0 ? `${keys.map((key) => `\`${key}\``).join("\u30FB")} \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8` : "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8";
+};
+var expectedOfType = (resolved) => {
+  switch (resolved.type) {
+    case "object":
+      return expectedObject(resolved);
+    case "array":
+      return "\u914D\u5217";
+    case "string":
+      return resolved.minLength !== void 0 && resolved.minLength > 0 ? `${resolved.minLength} \u6587\u5B57\u4EE5\u4E0A\u306E\u6587\u5B57` : "\u6587\u5B57";
+    case "integer":
+      return expectedInteger(resolved);
+    case "number":
+      return resolved.minimum !== void 0 ? `${resolved.minimum} \u4EE5\u4E0A\u306E\u6570` : "\u6570";
+    case "boolean":
+      return "`true` \u304B `false`";
+    default:
+      return "\u5024";
+  }
+};
 var expectedOf = (node2, root) => {
   const resolved = resolve5(node2, root);
   if (resolved.anyOf) {
@@ -68339,24 +69007,7 @@ var expectedOf = (node2, root) => {
   if (resolved.enum) {
     return `${resolved.enum.map((value) => `\`${show(value)}\``).join("\u30FB")} \u306E\u3069\u308C\u304B`;
   }
-  switch (resolved.type) {
-    case "object": {
-      const keys = Object.keys(resolved.properties ?? {});
-      return keys.length > 0 ? `${keys.map((key) => `\`${key}\``).join("\u30FB")} \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8` : "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8";
-    }
-    case "array":
-      return "\u914D\u5217";
-    case "string":
-      return resolved.minLength !== void 0 && resolved.minLength > 0 ? `${resolved.minLength} \u6587\u5B57\u4EE5\u4E0A\u306E\u6587\u5B57` : "\u6587\u5B57";
-    case "integer":
-      return resolved.minimum !== void 0 && resolved.maximum !== void 0 ? `${resolved.minimum}\u301C${resolved.maximum} \u306E\u6574\u6570` : resolved.minimum !== void 0 ? `${resolved.minimum} \u4EE5\u4E0A\u306E\u6574\u6570` : "\u6574\u6570";
-    case "number":
-      return resolved.minimum !== void 0 ? `${resolved.minimum} \u4EE5\u4E0A\u306E\u6570` : "\u6570";
-    case "boolean":
-      return "`true` \u304B `false`";
-    default:
-      return "\u5024";
-  }
+  return expectedOfType(resolved);
 };
 var matchesType2 = (type, value) => {
   switch (type) {
@@ -68378,7 +69029,8 @@ var matchesType2 = (type, value) => {
       return false;
   }
 };
-var mismatchMessage = (path, node2, root, value) => {
+var mismatchMessage = (node2, at) => {
+  const { root, value, path } = at;
   const resolved = resolve5(node2, root);
   if (resolved.enum && matchesType2(resolved.type, value)) {
     const values = resolved.enum.map((item) => `\`${showChoice(item)}\``).join("\u30FB");
@@ -68386,57 +69038,51 @@ var mismatchMessage = (path, node2, root, value) => {
   }
   return `\u306E \`${path}\` \u306B\u306F ${expectedOf(node2, root)} \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\uFF08\u4F8B \`${show(exampleOf(node2, root))}\`\uFF09\u3002\u3053\u306E\u8A2D\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`;
 };
-var check = (node2, root, value, path) => {
+var invalidResult = (node2, at) => ({
+  value: REMOVED,
+  problems: [{ path: at.path, message: mismatchMessage(node2, at) }],
+  unknownKeys: []
+});
+var outOfRange2 = (resolved, value) => {
+  if (typeof value === "number") {
+    return resolved.minimum !== void 0 && value < resolved.minimum || resolved.maximum !== void 0 && value > resolved.maximum;
+  }
+  return typeof value === "string" && resolved.minLength !== void 0 && value.length < resolved.minLength;
+};
+var violates = (resolved, value) => !matchesType2(resolved.type, value) || resolved.enum !== void 0 && !resolved.enum.includes(value) || resolved.const !== void 0 && resolved.const !== value || outOfRange2(resolved, value);
+var checkAnyOf = (node2, context) => {
+  for (const alternative of context.alternatives) {
+    const result = check(alternative, context.at);
+    if (result.value !== REMOVED && result.problems.length === 0) {
+      return result;
+    }
+  }
+  return invalidResult(node2, context.at);
+};
+var check = (node2, at) => {
+  const { root, value, path } = at;
   const resolved = resolve5(node2, root);
   if (resolved.anyOf) {
-    for (const alternative of resolved.anyOf) {
-      const result = check(alternative, root, value, path);
-      if (result.value !== REMOVED && result.problems.length === 0) {
-        return result;
-      }
-    }
-    return {
-      value: REMOVED,
-      problems: [{ path, message: mismatchMessage(path, node2, root, value) }],
-      unknownKeys: []
-    };
+    return checkAnyOf(node2, { alternatives: resolved.anyOf, at });
   }
-  const invalid = () => ({
-    value: REMOVED,
-    problems: [{ path, message: mismatchMessage(path, node2, root, value) }],
-    unknownKeys: []
-  });
-  if (!matchesType2(resolved.type, value)) {
-    return invalid();
-  }
-  if (resolved.enum && !resolved.enum.includes(value)) {
-    return invalid();
-  }
-  if (resolved.const !== void 0 && resolved.const !== value) {
-    return invalid();
-  }
-  if (typeof value === "number") {
-    if (resolved.minimum !== void 0 && value < resolved.minimum || resolved.maximum !== void 0 && value > resolved.maximum) {
-      return invalid();
-    }
-  }
-  if (typeof value === "string" && resolved.minLength !== void 0 && value.length < resolved.minLength) {
-    return invalid();
+  if (violates(resolved, value)) {
+    return invalidResult(node2, at);
   }
   if (Array.isArray(value)) {
-    return checkArray(resolved, root, value, path);
+    return checkArray(resolved, { root, value, path });
   }
   if (isMarkOptions(value) && resolved.type === "object") {
-    return checkObject(resolved, root, value, path);
+    return checkObject(resolved, { root, value, path });
   }
   return { value, problems: [], unknownKeys: [] };
 };
-var checkArray = (node2, root, value, path) => {
+var checkArray = (node2, at) => {
+  const { root, value, path } = at;
   const out = [];
   const problems = [];
   const unknownKeys = [];
   value.forEach((item, index) => {
-    const result = node2.items ? check(node2.items, root, item, childPath(path, index)) : { value: item, problems: [], unknownKeys: [] };
+    const result = node2.items ? check(node2.items, { root, value: item, path: childPath(path, index) }) : { value: item, problems: [], unknownKeys: [] };
     problems.push(...result.problems);
     unknownKeys.push(...result.unknownKeys);
     if (result.value !== REMOVED) {
@@ -68445,19 +69091,24 @@ var checkArray = (node2, root, value, path) => {
   });
   return { value: out, problems, unknownKeys };
 };
-var checkObject = (node2, root, value, path) => {
+var propertySchemaOf = (node2, key) => node2.properties?.[key] ?? (typeof node2.additionalProperties === "object" ? node2.additionalProperties : void 0);
+var checkProperties = (node2, at) => {
+  const { root, value, path } = at;
   const out = {};
   const problems = [];
   const unknownKeys = [];
   const removed = /* @__PURE__ */ new Set();
   for (const [key, child] of Object.entries(value)) {
-    const property = node2.properties?.[key];
-    const schema = property ?? (typeof node2.additionalProperties === "object" ? node2.additionalProperties : void 0);
+    const schema = propertySchemaOf(node2, key);
     if (schema === void 0) {
       unknownKeys.push(childPath(path, key));
       continue;
     }
-    const result = check(schema, root, child, childPath(path, key));
+    const result = check(schema, {
+      root,
+      value: child,
+      path: childPath(path, key)
+    });
     problems.push(...result.problems);
     unknownKeys.push(...result.unknownKeys);
     if (result.value === REMOVED) {
@@ -68466,42 +69117,50 @@ var checkObject = (node2, root, value, path) => {
       out[key] = result.value;
     }
   }
-  const missing = (node2.required ?? []).filter(
-    (key) => !Object.hasOwn(value, key)
-  );
-  if (missing.length > 0) {
-    for (const key of missing) {
-      const where = childPath(path, key);
-      const example = node2.properties?.[key] ? ` \`${show({ [key]: exampleOf(node2.properties[key], root) })}\` \u306E\u3088\u3046\u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : "";
-      const owner2 = path === "" ? "" : `\u306E \`${path}\` `;
-      problems.push({
-        path: where,
-        message: `${owner2}\u306B\u5FC5\u9808\u306E \`${key}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002${example}\u3053\u306E\u8A2D\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    }
-    if (path !== "") {
-      return { value: REMOVED, problems, unknownKeys };
-    }
+  return { value: out, problems, unknownKeys, removed };
+};
+var missingProblems = (node2, at) => {
+  const { root, value, path } = at;
+  return (node2.required ?? []).filter((key) => !Object.hasOwn(value, key)).map((key) => {
+    const property = node2.properties?.[key];
+    const example = property ? ` \`${show({ [key]: exampleOf(property, root) })}\` \u306E\u3088\u3046\u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : "";
+    const owner = path === "" ? "" : `\u306E \`${path}\` `;
+    return {
+      path: childPath(path, key),
+      message: `${owner}\u306B\u5FC5\u9808\u306E \`${key}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002${example}\u3053\u306E\u8A2D\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    };
+  });
+};
+var removesOwner = (node2, context) => {
+  const { path, removed } = context;
+  if (path === "") {
+    return false;
   }
   const owner = path.split(/\.|\[\d+\]/).filter(Boolean).at(-1) ?? "";
-  if (path !== "" && [...node2.required ?? [], ...DECIDING_KEYS[owner] ?? []].some(
+  return [...node2.required ?? [], ...DECIDING_KEYS[owner] ?? []].some(
     (key) => removed.has(key)
-  )) {
-    return { value: REMOVED, problems, unknownKeys };
+  );
+};
+var checkObject = (node2, at) => {
+  const { path } = at;
+  const { removed, ...checked } = checkProperties(node2, at);
+  const missing = missingProblems(node2, at);
+  checked.problems.push(...missing);
+  if (missing.length > 0 && path !== "" || removesOwner(node2, { path, removed })) {
+    return { ...checked, value: REMOVED };
   }
-  return { value: out, problems, unknownKeys };
+  return checked;
 };
 var validateMarkOptions = (options) => {
   const schema = MARK_SCHEMAS[options.name];
   if (schema === void 0) {
     return { options: options.options, problems: [], unknownKeys: [] };
   }
-  const result = checkObject(
-    resolve5(schema, schema),
-    schema,
-    options.options,
-    ""
-  );
+  const result = checkObject(resolve5(schema, schema), {
+    root: schema,
+    value: options.options,
+    path: ""
+  });
   const checked = isMarkOptions(result.value) ? result.value : {};
   if (options.name === "features") {
     for (const key of Object.keys(checked)) {
@@ -68517,6 +69176,11 @@ var validateMarkOptions = (options) => {
     unknownKeys: result.unknownKeys
   };
 };
+var segmentSchemaOf = (node2, context) => {
+  const resolved = resolve5(node2, context.schema);
+  const child = resolved.properties?.[context.segment] ?? (typeof resolved.additionalProperties === "object" ? resolved.additionalProperties : resolved.items);
+  return child?.items && !child.properties ? child.items : child;
+};
 var usableKeysAt = (schema, path) => {
   const segments = path.split(/\.|\[\d+\]/).filter(Boolean);
   segments.pop();
@@ -68525,11 +69189,7 @@ var usableKeysAt = (schema, path) => {
     if (node2 === void 0) {
       return [];
     }
-    const resolved2 = resolve5(node2, schema);
-    node2 = resolved2.properties?.[segment] ?? (typeof resolved2.additionalProperties === "object" ? resolved2.additionalProperties : resolved2.items);
-    if (node2?.items && !node2.properties) {
-      node2 = node2.items;
-    }
+    node2 = segmentSchemaOf(node2, { schema, segment });
   }
   if (node2 === void 0) {
     return [];
@@ -68680,80 +69340,66 @@ function isEmbedMark(name, env) {
 function isOwnMark(name) {
   return name === FEATURES_MARK || name === PAGE_MARK || Object.hasOwn(SYNTAX_MARKS, name);
 }
-function toMark(raw, closing, name, rest2) {
+function emptyMark(base, source) {
+  return { ...base, options: {}, source, problems: [], unknownKeys: [] };
+}
+function legacyMark(base, text2) {
+  const { name } = base;
+  if (!isOwnMark(name) || UNVALIDATED_MARKS.has(name)) {
+    return emptyMark(base, "legacy");
+  }
+  const converted = convertLegacyArgs({ name, text: text2 });
+  const checked = validateMarkOptions({ name, options: converted.options });
+  return {
+    ...base,
+    options: checked.options,
+    source: "legacy",
+    problems: converted.dropped.map((item) => ({
+      path: item.text,
+      message: item.reason
+    })),
+    unknownKeys: []
+  };
+}
+function jsonMark(base, options) {
+  const { name } = base;
+  if (UNVALIDATED_MARKS.has(name) || !isOwnMark(name)) {
+    return { ...base, options, source: "json", problems: [], unknownKeys: [] };
+  }
+  const checked = validateMarkOptions({ name, options });
+  return {
+    ...base,
+    options: checked.options,
+    source: "json",
+    problems: checked.problems,
+    unknownKeys: checked.unknownKeys
+  };
+}
+function toMark(raw, parts) {
+  const { closing, name, rest: rest2 } = parts;
   const base = { name, raw, closing: closing === "/", rest: rest2 ?? "" };
   if (base.closing || UNVALIDATED_MARKS.has(name)) {
-    return {
-      ...base,
-      options: {},
-      source: "none",
-      problems: [],
-      unknownKeys: []
-    };
+    return emptyMark(base, "none");
   }
   const args = readMarkArgs(rest2 ?? "");
   switch (args.kind) {
     case "none":
-      return {
-        ...base,
-        options: {},
-        source: "none",
-        problems: [],
-        unknownKeys: []
-      };
+      return emptyMark(base, "none");
     case "invalid":
       return {
-        ...base,
-        options: {},
-        source: "invalid",
-        problems: [{ path: "", message: args.message }],
-        unknownKeys: []
+        ...emptyMark(base, "invalid"),
+        problems: [{ path: "", message: args.message }]
       };
-    case "legacy": {
-      if (!isOwnMark(name) || UNVALIDATED_MARKS.has(name)) {
-        return {
-          ...base,
-          options: {},
-          source: "legacy",
-          problems: [],
-          unknownKeys: []
-        };
-      }
-      const converted = convertLegacyArgs({ name, text: args.text });
-      const checked = validateMarkOptions({ name, options: converted.options });
-      return {
-        ...base,
-        options: checked.options,
-        source: "legacy",
-        problems: converted.dropped.map((item) => ({
-          path: item.text,
-          message: item.reason
-        })),
-        unknownKeys: []
-      };
-    }
-    case "json": {
-      if (UNVALIDATED_MARKS.has(name) || !isOwnMark(name)) {
-        return {
-          ...base,
-          options: args.options,
-          source: "json",
-          problems: [],
-          unknownKeys: []
-        };
-      }
-      const checked = validateMarkOptions({ name, options: args.options });
-      return {
-        ...base,
-        options: checked.options,
-        source: "json",
-        problems: checked.problems,
-        unknownKeys: checked.unknownKeys
-      };
-    }
+    case "legacy":
+      return legacyMark(base, args.text);
+    case "json":
+      return jsonMark(base, args.options);
     default:
       return args;
   }
+}
+function withLine(warning, line) {
+  return { ...warning, ...line === void 0 ? {} : { line } };
 }
 function markProblemWarning(mark) {
   const [first, ...others] = mark.problems;
@@ -68821,42 +69467,49 @@ function legacyEmbedWarning(mark) {
 function replaceMarks(html, env, context) {
   return html.replace(
     MARK_PATTERN,
-    (raw, closing, name, rest2) => {
-      const mark = toMark(raw, closing, name, rest2);
+    (raw, ...groups) => {
+      const [closing, name = "", rest2] = groups;
+      const mark = toMark(raw, { closing, name, rest: rest2 });
       if (mark.closing) {
         return "";
       }
-      const line = context.line === void 0 ? void 0 : context.line + 1;
-      if (line !== void 0) {
-        recordMarkNotes(env, { notes: notesOf(mark, env), line });
+      if (context.line !== void 0) {
+        recordMarkNotes(env, {
+          notes: notesOf(mark, env),
+          line: context.line + 1
+        });
       }
-      if (mark.name === FEATURES_MARK) {
-        env.featureOptions.push(featureOptionsOf(rest2 ?? "", mark));
-        const warning = markProblemWarning(mark);
-        if (warning) {
-          context.warnings.push(warning);
-        }
-        return "";
-      }
-      if (isEmbedMark(mark.name, env)) {
-        if (mark.source === "legacy") {
-          context.warnings.push(legacyEmbedWarning(mark));
-          return "";
-        }
-        if (mark.source === "invalid") {
-          const warning = markProblemWarning(mark);
-          if (warning) {
-            context.warnings.push(warning);
-          }
-          return "";
-        }
-        return markOwn(
-          renderEmbed({ name: mark.name, options: mark.options }),
-          env.nonce
-        );
-      }
-      return "";
+      return replacementOf(mark, { env, warnings: context.warnings });
     }
+  );
+}
+function replacementOf(mark, context) {
+  const { env, warnings } = context;
+  if (mark.name === FEATURES_MARK) {
+    env.featureOptions.push(featureOptionsOf(mark.rest ?? "", mark));
+    const warning = markProblemWarning(mark);
+    if (warning) {
+      warnings.push(warning);
+    }
+    return "";
+  }
+  return isEmbedMark(mark.name, env) ? embedOf(mark, context) : "";
+}
+function embedOf(mark, context) {
+  if (mark.source === "legacy") {
+    context.warnings.push(legacyEmbedWarning(mark));
+    return "";
+  }
+  if (mark.source === "invalid") {
+    const warning = markProblemWarning(mark);
+    if (warning) {
+      context.warnings.push(warning);
+    }
+    return "";
+  }
+  return markOwn(
+    renderEmbed({ name: mark.name, options: mark.options }),
+    context.env.nonce
   );
 }
 function soleMark(content) {
@@ -68865,7 +69518,11 @@ function soleMark(content) {
   if (matches.length !== 1 || !only || content.replace(MARK_PATTERN, "").trim()) {
     return void 0;
   }
-  return toMark(only[0], only[1], only[2] ?? "", only[3]);
+  return toMark(only[0], {
+    closing: only[1],
+    name: only[2] ?? "",
+    rest: only[3]
+  });
 }
 function soleSyntaxMark(content, env) {
   const mark = soleMark(content);
@@ -68897,36 +69554,44 @@ function ownHtmlBlock(state, html) {
   token.content = markOwn(html, state.env.nonce);
   return token;
 }
+function readFence(fences, extensionName) {
+  const [fence2] = fences;
+  if (!fence2 || fences.length > 1) {
+    return {
+      ok: false,
+      message: `\u306E\u7BC4\u56F2\u306B json \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u304C ${fences.length} \u3064\u3042\u308A\u307E\u3059\u3002\u90E8\u54C1\u306E\u5B9A\u7FA9\u306F 1 \u3064\u3060\u3051\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u62E1\u5F35 \`${extensionName}\` \u306E\u90E8\u54C1\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
+    };
+  }
+  const parsed = parseDefinitionJson(fence2.content);
+  if (parsed.ok) {
+    return { ok: true, value: parsed.value };
+  }
+  const after = parsed.after.replaceAll("`", "'");
+  const where = `${parsed.line} \u884C\u76EE\u306E ${after} \u306E\u5F8C`;
+  const detail = parsed.missing === "" ? `${where}\u304C\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093` : `${where}\u306B ${parsed.missing} \u304C\u3042\u308A\u307E\u305B\u3093`;
+  return {
+    ok: false,
+    message: `\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u3092 JSON \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${detail}\uFF09\u3002\u62E1\u5F35 \`${extensionName}\` \u306E\u90E8\u54C1\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
+  };
+}
 function extensionSlot(options) {
   const { state, mark, fences, extensionName, line } = options;
   const env = state.env;
-  const [fence2] = fences;
-  if (!fence2 || fences.length > 1) {
-    return warningBlock(state, {
-      mark: mark.raw,
-      ...line === void 0 ? {} : { line },
-      message: `\u306E\u7BC4\u56F2\u306B json \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u304C ${fences.length} \u3064\u3042\u308A\u307E\u3059\u3002\u90E8\u54C1\u306E\u5B9A\u7FA9\u306F 1 \u3064\u3060\u3051\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u62E1\u5F35 \`${extensionName}\` \u306E\u90E8\u54C1\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
-    });
-  }
-  const parsed = parseDefinitionJson(fence2.content);
-  if (!parsed.ok) {
-    const after = parsed.after.replaceAll("`", "'");
-    const where = `${parsed.line} \u884C\u76EE\u306E ${after} \u306E\u5F8C`;
-    const detail = parsed.missing === "" ? `${where}\u304C\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093` : `${where}\u306B ${parsed.missing} \u304C\u3042\u308A\u307E\u305B\u3093`;
-    return warningBlock(state, {
-      mark: mark.raw,
-      ...line === void 0 ? {} : { line },
-      message: `\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u3092 JSON \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${detail}\uFF09\u3002\u62E1\u5F35 \`${extensionName}\` \u306E\u90E8\u54C1\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
-    });
+  const read = readFence(fences, extensionName);
+  if (!read.ok) {
+    return warningBlock(
+      state,
+      withLine({ mark: mark.raw, message: read.message }, line)
+    );
   }
   if (mark.source === "legacy" || mark.source === "invalid") {
-    return warningBlock(state, {
-      ...markProblemWarning(mark) ?? legacyEmbedWarning(mark),
-      ...line === void 0 ? {} : { line }
-    });
+    return warningBlock(
+      state,
+      withLine(markProblemWarning(mark) ?? legacyEmbedWarning(mark), line)
+    );
   }
   env.extensionDefinitions ??= [];
-  const definition = env.extensionDefinitions.push(parsed.value) - 1;
+  const definition = env.extensionDefinitions.push(read.value) - 1;
   return ownHtmlBlock(
     state,
     renderEmbed({ name: mark.name, options: mark.options, definition })
@@ -68947,33 +69612,44 @@ function takeDefinitionRanges(state) {
       out.push(token);
       continue;
     }
-    const closeIndex = closeOf(tokens, index, mark);
-    const inner = closeIndex < 0 ? [] : tokens.slice(index + 1, closeIndex);
-    const fences = inner.filter(isJsonFence);
-    if (extension && fences.length > 0) {
-      out.push(
-        extensionSlot({
-          state,
-          mark,
-          fences,
-          extensionName: extension.name,
-          line: token.map?.[0]
-        })
-      );
-      index = closeIndex;
-    } else if (!extension && inner.length > 0 && fences.length === inner.length) {
-      index = closeIndex;
-    } else {
-      out.push(token);
-    }
+    index = takeDefinitionRange(state, {
+      tokens,
+      index,
+      mark,
+      extension,
+      out
+    });
   }
   state.tokens = out;
+}
+function takeDefinitionRange(state, range) {
+  const { tokens, index, mark, extension, out } = range;
+  const token = tokens[index];
+  const closeIndex = closeOf(tokens, index, mark);
+  const inner = closeIndex < 0 ? [] : tokens.slice(index + 1, closeIndex);
+  const fences = inner.filter(isJsonFence);
+  if (extension && fences.length > 0) {
+    out.push(
+      extensionSlot({
+        state,
+        mark,
+        fences,
+        extensionName: extension.name,
+        line: token.map?.[0]
+      })
+    );
+    return closeIndex;
+  }
+  if (!extension && inner.length > 0 && fences.length === inner.length) {
+    return closeIndex;
+  }
+  out.push(token);
+  return index;
 }
 function isMarksOnly(token) {
   return token.type === "html_block" && token.content.replace(MARK_PATTERN, "").trim() === "";
 }
 function takePageMarks(state) {
-  const env = state.env;
   let atTop = true;
   state.tokens = state.tokens.map((token) => {
     const mark = token.type === "html_block" ? soleMark(token.content) : void 0;
@@ -68981,29 +69657,36 @@ function takePageMarks(state) {
       atTop &&= isMarksOnly(token);
       return token;
     }
-    const line = token.map?.[0];
-    if (line !== void 0) {
-      recordMarkNotes(env, { notes: notesOf(mark, env), line: line + 1 });
-    }
-    if (atTop) {
-      env.pageOptions ??= [];
-      env.pageOptions.push({ raw: mark.raw, options: mark.options });
-      const warning = markProblemWarning(mark);
-      if (warning) {
-        return warningBlock(state, {
-          ...warning,
-          ...line === void 0 ? {} : { line }
-        });
-      }
-      token.content = "";
-      return token;
-    }
-    return warningBlock(state, {
-      mark: mark.raw,
-      ...line === void 0 ? {} : { line },
-      message: "\u306F\u6587\u66F8\u306E\u5148\u982D\uFF08\u6700\u521D\u306E\u898B\u51FA\u3057\u30FB\u6BB5\u843D\u30FB\u8868\u30FB\u30EA\u30B9\u30C8\u30FB\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3088\u308A\u524D\uFF09\u306B\u8A18\u8F09\u3057\u307E\u3059\u3002\u3053\u306E\u5834\u6240\u306E\u30DE\u30FC\u30AB\u30FC\u306F\u4F7F\u7528\u3057\u3066\u3044\u307E\u305B\u3093\u3002"
-    });
+    return takePageMark(state, { token, mark, atTop });
   });
+}
+function takePageMark(state, page) {
+  const env = state.env;
+  const { token, mark, atTop } = page;
+  const line = token.map?.[0];
+  if (line !== void 0) {
+    recordMarkNotes(env, { notes: notesOf(mark, env), line: line + 1 });
+  }
+  if (!atTop) {
+    return warningBlock(
+      state,
+      withLine(
+        {
+          mark: mark.raw,
+          message: "\u306F\u6587\u66F8\u306E\u5148\u982D\uFF08\u6700\u521D\u306E\u898B\u51FA\u3057\u30FB\u6BB5\u843D\u30FB\u8868\u30FB\u30EA\u30B9\u30C8\u30FB\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3088\u308A\u524D\uFF09\u306B\u8A18\u8F09\u3057\u307E\u3059\u3002\u3053\u306E\u5834\u6240\u306E\u30DE\u30FC\u30AB\u30FC\u306F\u4F7F\u7528\u3057\u3066\u3044\u307E\u305B\u3093\u3002"
+        },
+        line
+      )
+    );
+  }
+  env.pageOptions ??= [];
+  env.pageOptions.push({ raw: mark.raw, options: mark.options });
+  const warning = markProblemWarning(mark);
+  if (warning) {
+    return warningBlock(state, withLine(warning, line));
+  }
+  token.content = "";
+  return token;
 }
 function splitEarlyClosedMarks(state) {
   const out = [];
@@ -69032,6 +69715,38 @@ function splitEarlyClosedMarks(state) {
   }
   state.tokens = out;
 }
+function takeSyntaxMark(state, block2) {
+  const env = state.env;
+  const { token, line, out } = block2;
+  const mark = soleSyntaxMark(token.content, env);
+  if (!mark) {
+    return false;
+  }
+  const warning = markProblemWarning(mark);
+  if (warning) {
+    out.push(warningBlock(state, withLine(warning, line)));
+  }
+  if (line !== void 0) {
+    recordMarkNotes(env, { notes: notesOf(mark, env), line: line + 1 });
+  }
+  token.type = MARK_TOKEN;
+  token.meta = mark;
+  token.content = "";
+  out.push(token);
+  return true;
+}
+function replaceInlineMarks(token, context) {
+  const warnings = [];
+  for (const child of token.children ?? []) {
+    if (child.type === "html_inline") {
+      child.content = replaceMarks(child.content, context.env, {
+        line: context.line,
+        warnings
+      });
+    }
+  }
+  return warnings;
+}
 function takeMarks(state) {
   const env = state.env;
   splitEarlyClosedMarks(state);
@@ -69041,53 +69756,17 @@ function takeMarks(state) {
   for (const token of state.tokens) {
     const line = token.map?.[0];
     if (token.type === "html_block") {
-      const mark = soleSyntaxMark(token.content, env);
-      if (mark) {
-        const warning = markProblemWarning(mark);
-        if (warning) {
-          out.push(
-            warningBlock(state, {
-              ...warning,
-              ...line === void 0 ? {} : { line }
-            })
-          );
-        }
-        if (line !== void 0) {
-          recordMarkNotes(env, { notes: notesOf(mark, env), line: line + 1 });
-        }
-        token.type = MARK_TOKEN;
-        token.meta = mark;
-        token.content = "";
-        out.push(token);
+      if (takeSyntaxMark(state, { token, line, out })) {
         continue;
       }
       const warnings = [];
       token.content = replaceMarks(token.content, env, { line, warnings });
       for (const warning of warnings) {
-        out.push(
-          warningBlock(state, {
-            ...warning,
-            ...line === void 0 ? {} : { line }
-          })
-        );
+        out.push(warningBlock(state, withLine(warning, line)));
       }
     }
-    const inlineWarnings = [];
-    for (const child of token.children ?? []) {
-      if (child.type === "html_inline") {
-        child.content = replaceMarks(child.content, env, {
-          line,
-          warnings: inlineWarnings
-        });
-      }
-    }
-    for (const warning of inlineWarnings) {
-      out.push(
-        warningBlock(state, {
-          ...warning,
-          ...line === void 0 ? {} : { line }
-        })
-      );
+    for (const warning of replaceInlineMarks(token, { env, line })) {
+      out.push(warningBlock(state, withLine(warning, line)));
     }
     out.push(token);
   }
@@ -69095,7 +69774,7 @@ function takeMarks(state) {
 }
 function resolveDocumentFeatures(state) {
   const env = state.env;
-  env.features = resolveFeatures({
+  env.features = resolveFeatures2({
     defaults: env.defaults,
     marks: env.featureOptions
   });
@@ -69108,6 +69787,485 @@ function resolvePageSettings(state) {
 }
 function dropMarks(state) {
   state.tokens = state.tokens.filter((token) => token.type !== MARK_TOKEN);
+}
+
+// src/render/syntax/blocks.ts
+var blockStartOf = (tokens, index) => {
+  let at = index;
+  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
+    at -= 1;
+  }
+  return at;
+};
+var insertWarningsBeforeBlocks = (state, warnings) => {
+  for (const { index, warning } of [...warnings].reverse()) {
+    state.tokens.splice(
+      blockStartOf(state.tokens, index),
+      0,
+      warningBlock(state, warning)
+    );
+  }
+};
+var pairRanges = (tokens, name) => {
+  const pairs = /* @__PURE__ */ new Map();
+  const stack = [];
+  for (const [index, token] of tokens.entries()) {
+    const mark = markOf(token);
+    if (mark?.name !== name) {
+      continue;
+    }
+    if (!mark.closing) {
+      stack.push(index);
+      continue;
+    }
+    const open2 = stack.pop();
+    if (open2 !== void 0) {
+      pairs.set(open2, index);
+    }
+  }
+  for (const open2 of stack) {
+    pairs.set(open2, -1);
+  }
+  return pairs;
+};
+var outermostRanges = (pairs, length) => {
+  const sorted = [...pairs].sort(([a], [b]) => a - b);
+  const result = [];
+  let end = -1;
+  for (const [open2, close] of sorted) {
+    if (open2 < end) {
+      continue;
+    }
+    result.push({ open: open2, close });
+    end = close < 0 ? length : close;
+  }
+  return result;
+};
+
+// src/render/syntax/annotations.ts
+var REF2 = "mdmark_annotation_ref";
+var LIST2 = "mdmark_annotation_list";
+var FOOTNOTE_REF = "mdmark_footnote_ref";
+var FEATURE = "annotations";
+var MARK = "\u203B";
+var MARK_CODE = MARK.charCodeAt(0);
+var MAP_MARK = "map";
+var DATA_MARK = "map-data";
+var CONTINUATION_INDENT2 = 4;
+var TAB_WIDTH2 = 4;
+var OPEN_BRACKET2 = 91;
+var CLOSE_BRACKET2 = 93;
+var COLON2 = 58;
+var SPACE2 = 32;
+var TAB2 = 9;
+var HYPHEN = 45;
+var UNDERSCORE = 95;
+var DIGIT_0 = 48;
+var DIGIT_9 = 57;
+var UPPER_A = 65;
+var UPPER_Z = 90;
+var LOWER_A = 97;
+var LOWER_Z = 122;
+function annotationStateOf(env) {
+  env.mdmarkAnnotations ??= {
+    definitions: /* @__PURE__ */ new Map(),
+    duplicates: [],
+    order: [],
+    refs: /* @__PURE__ */ new Map()
+  };
+  return env.mdmarkAnnotations;
+}
+function isIdCode(code2) {
+  return code2 >= DIGIT_0 && code2 <= DIGIT_9 || code2 >= UPPER_A && code2 <= UPPER_Z || code2 >= LOWER_A && code2 <= LOWER_Z || code2 === HYPHEN || code2 === UNDERSCORE;
+}
+function idEnd(src, pos, max) {
+  for (let at = pos + 1; at < max; at++) {
+    const code2 = src.charCodeAt(at);
+    if (code2 === CLOSE_BRACKET2) {
+      return at === pos + 1 ? -1 : at;
+    }
+    if (!isIdCode(code2)) {
+      return -1;
+    }
+  }
+  return -1;
+}
+function findDefinition2(state, startLine) {
+  const src = state.src;
+  const start = (state.bMarks[startLine] ?? 0) + (state.tShift[startLine] ?? 0);
+  const max = state.eMarks[startLine] ?? 0;
+  if ((state.sCount[startLine] ?? 0) - state.blkIndent >= CONTINUATION_INDENT2) {
+    return void 0;
+  }
+  if (src.charCodeAt(start) !== MARK_CODE || src.charCodeAt(start + 1) !== OPEN_BRACKET2) {
+    return void 0;
+  }
+  const close = idEnd(src, start + 1, max);
+  if (close < 0 || src.charCodeAt(close + 1) !== COLON2) {
+    return void 0;
+  }
+  return { start, close, max };
+}
+function skipIndent2(src, from) {
+  let { pos, offset } = from;
+  while (pos < from.max) {
+    const code2 = src.charCodeAt(pos);
+    if (code2 === TAB2) {
+      offset += TAB_WIDTH2 - offset % TAB_WIDTH2;
+    } else if (code2 === SPACE2) {
+      offset += 1;
+    } else {
+      break;
+    }
+    pos += 1;
+  }
+  return { pos, offset };
+}
+function tokenizeBody2(state, range) {
+  const { startLine, endLine, start, afterColon, max } = range;
+  const oldBMark = state.bMarks[startLine] ?? 0;
+  const oldTShift = state.tShift[startLine] ?? 0;
+  const oldSCount = state.sCount[startLine] ?? 0;
+  const oldParentType = state.parentType;
+  const initial = oldSCount + afterColon - start;
+  const { pos, offset } = skipIndent2(state.src, {
+    pos: afterColon,
+    max,
+    offset: initial
+  });
+  state.tShift[startLine] = pos - afterColon;
+  state.sCount[startLine] = offset - initial;
+  state.bMarks[startLine] = afterColon;
+  state.blkIndent += CONTINUATION_INDENT2;
+  state.parentType = "footnote";
+  const sCount = state.sCount[startLine] ?? 0;
+  if (sCount < state.blkIndent) {
+    state.sCount[startLine] = sCount + state.blkIndent;
+  }
+  state.md.block.tokenize(state, startLine, endLine);
+  state.parentType = oldParentType;
+  state.blkIndent -= CONTINUATION_INDENT2;
+  state.tShift[startLine] = oldTShift;
+  state.sCount[startLine] = oldSCount;
+  state.bMarks[startLine] = oldBMark;
+}
+function readAnnotationDefinition(...args) {
+  const [state, startLine, endLine, silent] = args;
+  const found = findDefinition2(state, startLine);
+  if (!found) {
+    return false;
+  }
+  if (silent) {
+    return true;
+  }
+  const { start, close, max } = found;
+  const src = state.src;
+  const afterColon = close + 2;
+  const id = src.slice(start + 2, close);
+  const annotations = annotationStateOf(state.env);
+  const first = !annotations.definitions.has(id);
+  if (first) {
+    annotations.definitions.set(id, { tokens: [], line: startLine + 1 });
+  } else {
+    annotations.duplicates.push({ id, line: startLine + 1 });
+  }
+  const open2 = state.push(ANNOTATION_DEF_OPEN, "", 1);
+  open2.meta = {
+    id,
+    first,
+    source: `${src.slice(start, afterColon)} `
+  };
+  open2.map = [startLine, startLine];
+  tokenizeBody2(state, { startLine, endLine, start, afterColon, max });
+  open2.map = [startLine, state.line];
+  state.push(ANNOTATION_DEF_CLOSE, "", -1);
+  return true;
+}
+function readAnnotationReference(state, silent) {
+  const { src, pos: start, posMax: max } = state;
+  if (src.charCodeAt(start) !== OPEN_BRACKET2 || !state.pending.endsWith(MARK)) {
+    return false;
+  }
+  const close = idEnd(src, start, max);
+  if (close < 0) {
+    return false;
+  }
+  if (!silent) {
+    const id = src.slice(start + 1, close);
+    state.pending = state.pending.slice(0, -MARK.length);
+    const token = state.push(REF2, "", 0);
+    token.meta = { id, source: `${MARK}[${id}]` };
+  }
+  state.pos = close + 1;
+  return true;
+}
+function mapNoteAnnotations(rest2) {
+  let data;
+  try {
+    data = JSON.parse((rest2 ?? "").trim());
+  } catch {
+    return [];
+  }
+  const notes = data?.notes;
+  if (typeof notes !== "object" || notes === null) {
+    return [];
+  }
+  return Object.entries(notes).flatMap(([element, note]) => {
+    const ids = note?.annotations;
+    return Array.isArray(ids) ? [[element, ids.filter((id) => typeof id === "string")]] : [];
+  });
+}
+function restoreReferences2(state) {
+  for (const token of state.tokens) {
+    if (token.type !== "inline" || !token.children) {
+      continue;
+    }
+    token.children = token.children.map(
+      (child) => child.type === REF2 ? textToken(state, child) : child
+    );
+  }
+}
+function textToken(state, ref) {
+  const text2 = new state.Token("text", "", 0);
+  text2.content = ref.meta.source;
+  return text2;
+}
+function numberOf(annotations, id) {
+  let at = annotations.order.indexOf(id);
+  if (at < 0) {
+    at = annotations.order.length;
+    annotations.order.push(id);
+    annotations.refs.set(id, []);
+  }
+  return at + 1;
+}
+function mapRangesOf(state) {
+  const ranges = /* @__PURE__ */ new Map();
+  if (!featureOn(state, MAP_MARK)) {
+    return ranges;
+  }
+  let number4 = 0;
+  for (const { open: open2, close } of outermostRanges(
+    pairRanges(state.tokens, MAP_MARK),
+    state.tokens.length
+  )) {
+    if (close === -1) {
+      continue;
+    }
+    number4 += 1;
+    ranges.set(open2, { number: number4, close });
+  }
+  return ranges;
+}
+function collectInline(options) {
+  const { state, inline: inline2, annotations, undefinedRefs } = options;
+  let afterRef = false;
+  inline2.children = (inline2.children ?? []).map((child) => {
+    if (child.type === FOOTNOTE_REF) {
+      afterRef = true;
+      return child;
+    }
+    if (child.type !== REF2) {
+      afterRef = false;
+      return child;
+    }
+    const meta2 = child.meta;
+    if (!annotations.definitions.has(meta2.id)) {
+      undefinedRefs.push(meta2.id);
+      afterRef = false;
+      return textToken(state, child);
+    }
+    const number4 = numberOf(annotations, meta2.id);
+    const refs = annotations.refs.get(meta2.id) ?? [];
+    meta2.number = number4;
+    meta2.refIndex = refs.length;
+    meta2.afterRef = afterRef;
+    refs.push({ href: `#mdmark-noteref-${number4}-${refs.length}` });
+    afterRef = true;
+    return child;
+  });
+}
+function collectMapRange(options) {
+  const { tokens, open: open2, range, annotations } = options;
+  const data = tokens.slice(open2 + 1, range.close).map((token) => markOf(token)).find((mark) => mark?.name === DATA_MARK);
+  for (const [element, ids] of mapNoteAnnotations(data?.rest)) {
+    const owner = noteOwnerId(`${NOTE_OWNER_PREFIX}${range.number}-`, element);
+    for (const id of ids) {
+      if (!annotations.definitions.has(id)) {
+        continue;
+      }
+      numberOf(annotations, id);
+      annotations.refs.get(id)?.push({ href: `#${owner}`, owner });
+    }
+  }
+}
+function undefinedWarning(id) {
+  return {
+    kind: "annotation_undefined",
+    message: `\u6CE8\u8A18 \`${MARK}[${id}]\` \u306E\u5B9A\u7FA9\u304C\u3042\u308A\u307E\u305B\u3093\u3002\`${MARK}[${id}]: \u672C\u6587\` \u3092\u8A18\u8F09\u3059\u308B\u304B\u3001ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  };
+}
+function unusedWarning(id) {
+  return {
+    kind: "annotation_unused",
+    message: `\u6CE8\u8A18 \`${MARK}[${id}]\` \u306E\u5B9A\u7FA9\u304C\u3001\u3069\u3053\u304B\u3089\u3082\u53C2\u7167\u3055\u308C\u3066\u3044\u307E\u305B\u3093\u3002\u53C2\u7167\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\u5B9A\u7FA9\u3092\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  };
+}
+function duplicateWarning(id) {
+  return {
+    kind: "annotation_duplicate",
+    message: `\u6CE8\u8A18 \`${MARK}[${id}]\` \u306E\u5B9A\u7FA9\u304C\u65E2\u306B\u3042\u308A\u307E\u3059\u3002\u6700\u521D\u306E\u5B9A\u7FA9\u3092\u4F7F\u7528\u3057\u3066\u3044\u307E\u3059\u3002ID \u3092\u5909\u3048\u308B\u304B\u3001\u3053\u306E\u5B9A\u7FA9\u3092\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  };
+}
+function collectAnnotations(state) {
+  const env = envOf(state);
+  if (!featureOn(state, FEATURE)) {
+    restoreReferences2(state);
+    delete env.mdmarkAnnotations;
+    return;
+  }
+  const annotations = annotationStateOf(env);
+  const ranges = mapRangesOf(state);
+  const inserts = [];
+  state.tokens.forEach((token, index) => {
+    const range = ranges.get(index);
+    if (range !== void 0) {
+      collectMapRange({
+        tokens: state.tokens,
+        open: index,
+        range,
+        annotations
+      });
+    }
+    if (token.type !== "inline" || !token.children) {
+      return;
+    }
+    const undefinedRefs = [];
+    collectInline({ state, inline: token, annotations, undefinedRefs });
+    const at = blockStartOf(state.tokens, index);
+    for (const id of undefinedRefs) {
+      inserts.push({ at, token: warningBlock(state, undefinedWarning(id)) });
+    }
+  });
+  state.tokens.forEach((token, index) => {
+    if (token.type !== ANNOTATION_DEF_OPEN) {
+      return;
+    }
+    const meta2 = token.meta;
+    if (!meta2.first) {
+      inserts.push({
+        at: index,
+        token: warningBlock(state, duplicateWarning(meta2.id), token)
+      });
+    } else if (!annotations.order.includes(meta2.id)) {
+      inserts.push({
+        at: index,
+        token: warningBlock(state, unusedWarning(meta2.id), token)
+      });
+    }
+  });
+  const sorted = [...inserts].sort((a, b) => a.at - b.at);
+  for (const { at, token } of sorted.reverse()) {
+    state.tokens.splice(at, 0, token);
+  }
+}
+function buildAnnotationList(state) {
+  if ((envOf(state).mdmarkAnnotations?.order.length ?? 0) === 0) {
+    return;
+  }
+  const token = new state.Token(LIST2, "", 0);
+  token.block = true;
+  state.tokens.push(token);
+}
+function takeAnnotationDefinitions(state) {
+  const annotations = envOf(state).mdmarkAnnotations;
+  const enabled = featureOn(state, FEATURE);
+  const out = [];
+  for (let index = 0; index < state.tokens.length; index++) {
+    const token = state.tokens[index];
+    if (token === void 0) {
+      continue;
+    }
+    if (token.type !== ANNOTATION_DEF_OPEN) {
+      out.push(token);
+      continue;
+    }
+    const close = findDefinitionClose(state.tokens, index);
+    const meta2 = token.meta;
+    const inner = state.tokens.slice(index + 1, close);
+    if (!enabled) {
+      out.push(...restoreDefinition(state, meta2.source, inner));
+    } else if (meta2.first) {
+      const definition = annotations?.definitions.get(meta2.id);
+      if (definition !== void 0) {
+        definition.tokens = inner;
+      }
+    }
+    index = close;
+  }
+  state.tokens = out;
+}
+function definitionTokens(env, id) {
+  return env.mdmarkAnnotations?.definitions.get(id)?.tokens ?? [];
+}
+function renderReference2(md, token, env) {
+  const { id, number: number4, refIndex, afterRef } = token.meta;
+  if (number4 === void 0) {
+    throw new Error(`\u6CE8\u8A18\u306E\u756A\u53F7\u304C\u7121\u3044: ${id}`);
+  }
+  const { bodies } = definitionBodies({
+    md,
+    env,
+    tokens: definitionTokens(env, id)
+  });
+  const html = renderFootnoteRef({
+    kind: "annotation",
+    number: number4,
+    refIndex: refIndex ?? 0,
+    afterRef: afterRef ?? false,
+    bodies
+  });
+  return markOwnAroundBodies(html, bodies, env.nonce);
+}
+function renderList2(md, env) {
+  const annotations = env.mdmarkAnnotations;
+  return renderDefinitionList({
+    md,
+    env,
+    kind: "annotation",
+    items: (annotations?.order ?? []).map((id, index) => {
+      const refs = annotations?.refs.get(id) ?? [];
+      return {
+        number: index + 1,
+        tokens: definitionTokens(env, id),
+        refCount: refs.length,
+        refs
+      };
+    })
+  });
+}
+function useAnnotations(parser3) {
+  parser3.block.ruler.before(
+    "reference",
+    "mdmark_annotation_def",
+    readAnnotationDefinition,
+    {
+      alt: ["paragraph", "reference"]
+    }
+  );
+  parser3.inline.ruler.after(
+    "mdmark_footnote_ref",
+    "mdmark_annotation_ref",
+    readAnnotationReference
+  );
+  parser3.renderer.rules[LIST2] = (...[_tokens, _index, _options, env]) => renderList2(parser3, env);
+  parser3.renderer.rules[REF2] = (...[tokens, index, _options, env]) => {
+    const token = tokens[index];
+    if (token === void 0) {
+      throw new Error("\u6CE8\u8A18\u306E\u53C2\u7167\u306E\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u3044");
+    }
+    return renderReference2(parser3, token, env);
+  };
 }
 
 // src/parts/backlinks.ts
@@ -69211,32 +70369,35 @@ function renderCallout(options) {
 
 // src/render/syntax/callouts.ts
 var CALLOUT_PATTERN = /^\[!([A-Za-z]+)\]([-+]?)(?:\s+|$)/;
-function readCallout(options) {
-  const { state, tokens, openIndex } = options;
+function firstLineOf(tokens, openIndex) {
   const paragraph2 = tokens[openIndex + 1];
   const inline2 = tokens[openIndex + 2];
   if (paragraph2?.type !== "paragraph_open" || inline2?.type !== "inline") {
-    return void 0;
+    return [];
   }
   const children = inline2.children ?? [];
   const lineEnd2 = children.findIndex((child) => child.type === "softbreak");
-  const line = children.slice(0, lineEnd2 < 0 ? children.length : lineEnd2);
-  const [first, ...others] = line;
+  return children.slice(0, lineEnd2 < 0 ? children.length : lineEnd2);
+}
+function readCallout(options) {
+  const { state, tokens, openIndex } = options;
+  const [first, ...others] = firstLineOf(tokens, openIndex);
   const match = first?.type === "text" ? CALLOUT_PATTERN.exec(first.content) : null;
   if (!first || !match) {
     return void 0;
   }
-  const name = (match[1] ?? "").toLowerCase();
-  const kind = CALLOUT_KINDS.find((candidate) => candidate === name) ?? "note";
-  const sign = match[2] ?? "";
   const rest2 = new state.Token("text", "", 0);
   rest2.content = first.content.slice(match[0].length);
   const title = state.md.renderer.renderInline([rest2, ...others], state.md.options, state.env).trim();
+  return { ...calloutKindOf(match), ...title ? { title } : {} };
+}
+function calloutKindOf(match) {
+  const name = (match[1] ?? "").toLowerCase();
+  const sign = match[2] ?? "";
   return {
-    kind,
+    kind: CALLOUT_KINDS.find((candidate) => candidate === name) ?? "note",
     collapsed: sign !== "",
-    open: sign === "+",
-    ...title ? { title } : {}
+    open: sign === "+"
   };
 }
 function removeTitleLine(tokens, openIndex) {
@@ -69260,12 +70421,13 @@ function buildCalloutsIn(state, tokens) {
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const callout = token?.type === "blockquote_open" ? readCallout({ state, tokens, openIndex: index }) : void 0;
+    if (!token) {
+      continue;
+    }
+    const callout = token.type === "blockquote_open" ? readCallout({ state, tokens, openIndex: index }) : void 0;
     const closeIndex = callout ? findNestedClose(tokens, index) : -1;
-    if (!token || !callout || closeIndex < 0) {
-      if (token) {
-        out.push(token);
-      }
+    if (!callout || closeIndex < 0) {
+      out.push(token);
       continue;
     }
     const emptied = removeTitleLine(tokens, index);
@@ -69287,7 +70449,7 @@ var TEXT_ALIGN_PATTERN = /(?:^|;)\s*text-align\s*:\s*([a-z]+)/;
 var OWN_ATTRIBUTE = "data-mdmark-own";
 var KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
 var RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
-var SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$)/;
+var SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$|is-after-ref$)/;
 var DIAGRAM_ONLY_TAGS = /* @__PURE__ */ new Set([
   "svg",
   "defs",
@@ -69315,10 +70477,14 @@ var MEDIA_TAGS = /* @__PURE__ */ new Set(["video", "audio"]);
 var SOURCE_LINE_ATTRIBUTE = "data-source-line";
 var SOURCE_LINE_PATTERN = /^\d+$/;
 var DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
+var DATA_IMAGE_ATTRIBUTES = {
+  img: "src",
+  video: "poster"
+};
+var isForbiddenDataUrl = (url2) => url2?.startsWith("data:") === true && !DATA_IMAGE_PATTERN.test(url2);
 function dropDataUrls(tagName, attribs) {
-  const imageAttribute = tagName === "img" ? "src" : tagName === "video" ? "poster" : void 0;
-  const imageUrl = imageAttribute === void 0 ? void 0 : attribs[imageAttribute];
-  if (imageAttribute !== void 0 && imageUrl?.startsWith("data:") && !DATA_IMAGE_PATTERN.test(imageUrl)) {
+  const imageAttribute = Object.hasOwn(DATA_IMAGE_ATTRIBUTES, tagName) ? DATA_IMAGE_ATTRIBUTES[tagName] : void 0;
+  if (imageAttribute !== void 0 && isForbiddenDataUrl(attribs[imageAttribute])) {
     delete attribs[imageAttribute];
   }
   if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
@@ -69332,6 +70498,38 @@ function fixTabindex(tagName, attribs) {
   }
   return { tagName, attribs: next };
 }
+var isPreOrTable = (tagName) => tagName === "pre" || tagName === "table";
+var ATTRIBUTE_KEEPERS = {
+  // 外部ライブラリのマーカーの場所の `status` だけを残す
+  role: (tagName, value) => tagName === "div" && value === "status",
+  "aria-label": isPreOrTable,
+  tabindex: isPreOrTable,
+  [SOURCE_LINE_ATTRIBUTE]: () => true
+};
+var STRUCTURE_ATTRIBUTES = /* @__PURE__ */ new Set([
+  "id",
+  "hidden",
+  "colspan",
+  "rowspan",
+  "scope"
+]);
+var keepsDataAttribute = (tagName, name) => tagName === "td" && name === "data-label" || tagName === "div" && (name === "data-mdmark-slot" || name === "data-mdmark-args");
+var keepsPlainAttribute = (tagName, name) => {
+  if (tagName === "abbr" && name === "title") {
+    return false;
+  }
+  if (STRUCTURE_ATTRIBUTES.has(name) || name.startsWith("aria-")) {
+    return false;
+  }
+  return !DIAGRAM_ATTRIBUTE_SET.has(name) || tagName === "input" && (name === "type" || name === "disabled");
+};
+function keepsAttribute(tagName, name, value) {
+  const keeper = Object.hasOwn(ATTRIBUTE_KEEPERS, name) ? ATTRIBUTE_KEEPERS[name] : void 0;
+  if (keeper) {
+    return keeper(tagName, value);
+  }
+  return name.startsWith("data-") ? keepsDataAttribute(tagName, name) : keepsPlainAttribute(tagName, name);
+}
 function dropSyntaxAttributes(tagName, attribs) {
   const next = {};
   for (const [name, value] of Object.entries(attribs)) {
@@ -69342,27 +70540,7 @@ function dropSyntaxAttributes(tagName, attribs) {
       if (classes.length) {
         next.class = classes.join(" ");
       }
-    } else if (name === "role") {
-      if (tagName === "div" && value === "status") {
-        next[name] = value;
-      }
-    } else if (name === "aria-label") {
-      if (tagName === "pre" || tagName === "table") {
-        next[name] = value;
-      }
-    } else if (name === "tabindex") {
-      if (tagName === "pre" || tagName === "table") {
-        next[name] = value;
-      }
-    } else if (name === SOURCE_LINE_ATTRIBUTE) {
-      next[name] = value;
-    } else if (name.startsWith("data-")) {
-      const keep = tagName === "td" && name === "data-label" || tagName === "div" && (name === "data-mdmark-slot" || name === "data-mdmark-args");
-      if (keep) {
-        next[name] = value;
-      }
-    } else if (!(tagName === "abbr" && name === "title") && name !== "id" && name !== "hidden" && name !== "colspan" && name !== "rowspan" && name !== "scope" && !name.startsWith("aria-") && // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときにもう一度付けた値）
-    (!DIAGRAM_ATTRIBUTE_SET.has(name) || tagName === "input" && (name === "type" || name === "disabled"))) {
+    } else if (keepsAttribute(tagName, name, value)) {
       next[name] = value;
     }
   }
@@ -69473,7 +70651,8 @@ var SANITIZE_OPTIONS = {
       "has-tip",
       "has-link",
       "has-children",
-      "is-virtual"
+      "is-virtual",
+      "is-after-ref"
     ],
     code: ["language-*"],
     li: ["task-list-item"]
@@ -69545,7 +70724,7 @@ var EMBED_STYLES = (() => {
 })();
 var EMBED_STYLE_FORBIDDEN = /\/\*|["'\\]|url\(|expression\(|\d\s*(?:dvw|dvh|svw|svh|lvw|lvh|vmin|vmax|vw|vh)\b/i;
 function filterEmbeddedStyle(style) {
-  const kept = [];
+  const kept2 = [];
   for (const declaration of style.split(";")) {
     const colon = declaration.indexOf(":");
     if (colon < 0) {
@@ -69556,26 +70735,38 @@ function filterEmbeddedStyle(style) {
     if (value !== "" && !EMBED_STYLE_FORBIDDEN.test(value) && EMBED_STYLES.some(
       (entry) => entry.name.test(name) && entry.value.test(value)
     )) {
-      kept.push(`${name}:${value}`);
+      kept2.push(`${name}:${value}`);
     }
   }
-  return kept.join(";");
+  return kept2.join(";");
 }
+var OWN_STYLE_VARIABLES = [
+  {
+    name: "--mdmark-image-width",
+    pattern: IMAGE_WIDTH_PATTERN,
+    format: (value) => `--mdmark-image-width: ${value}`
+  },
+  {
+    name: "--mdmark-gallery-cols",
+    pattern: GALLERY_COLS_PATTERN,
+    format: (value) => `--mdmark-gallery-cols: ${value}`
+  },
+  {
+    name: "--mdmark-code-digits",
+    pattern: CODE_DIGITS_PATTERN,
+    format: (value) => `--mdmark-code-digits:${value}`
+  }
+];
 function ownStyle(style) {
   if (DIAGRAM_STYLE_PATTERN.test(style)) {
     return style;
   }
-  if (style.includes("--mdmark-image-width")) {
-    const width = IMAGE_WIDTH_PATTERN.exec(style)?.[1];
-    return width === void 0 ? "" : `--mdmark-image-width: ${width}`;
-  }
-  if (style.includes("--mdmark-gallery-cols")) {
-    const cols = GALLERY_COLS_PATTERN.exec(style)?.[1];
-    return cols === void 0 ? "" : `--mdmark-gallery-cols: ${cols}`;
-  }
-  if (style.includes("--mdmark-code-digits")) {
-    const digits = CODE_DIGITS_PATTERN.exec(style)?.[1];
-    return digits === void 0 ? "" : `--mdmark-code-digits:${digits}`;
+  const variable = OWN_STYLE_VARIABLES.find(
+    (entry) => style.includes(entry.name)
+  );
+  if (variable) {
+    const value = variable.pattern.exec(style)?.[1];
+    return value === void 0 ? "" : variable.format(value);
   }
   return filterEmbeddedStyle(style);
 }
@@ -69637,14 +70828,7 @@ function sanitizeEmbedded(html, onText, keepClasses = false) {
     transformTags: {
       "*": (tagName, attribs) => {
         if (tagName === "input") {
-          const checkbox = {
-            type: "checkbox",
-            disabled: ""
-          };
-          if (attribs.checked !== void 0) {
-            checkbox.checked = "";
-          }
-          return { tagName, attribs: checkbox };
+          return { tagName, attribs: embeddedCheckbox(attribs) };
         }
         const next = { ...attribs };
         const style = filterEmbeddedStyle(attribs.style ?? "");
@@ -69657,14 +70841,8 @@ function sanitizeEmbedded(html, onText, keepClasses = false) {
           next.type = "button";
         }
         delete next[KEEP_CLASS_ATTRIBUTE];
-        if (keepClasses && next.class !== void 0) {
-          const classes = next.class.split(/\s+/).filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
-          if (classes.length > 0) {
-            next.class = classes.join(" ");
-            next[KEEP_CLASS_ATTRIBUTE] = "";
-          } else {
-            delete next.class;
-          }
+        if (keepClasses) {
+          keepAuthorClasses(next);
         }
         dropDataUrls(tagName, next);
         if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
@@ -69675,11 +70853,56 @@ function sanitizeEmbedded(html, onText, keepClasses = false) {
     }
   });
 }
+function embeddedCheckbox(attribs) {
+  const checkbox = { type: "checkbox", disabled: "" };
+  if (attribs.checked !== void 0) {
+    checkbox.checked = "";
+  }
+  return checkbox;
+}
+function keepAuthorClasses(next) {
+  if (next.class === void 0) {
+    return;
+  }
+  const classes = next.class.split(/\s+/).filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
+  if (classes.length > 0) {
+    next.class = classes.join(" ");
+    next[KEEP_CLASS_ATTRIBUTE] = "";
+  } else {
+    delete next.class;
+  }
+}
 function isAllowedClass(tagName, name) {
   const allowed = SANITIZE_OPTIONS.allowedClasses;
   return [...allowed["*"] ?? [], ...allowed[tagName] ?? []].some(
     (pattern) => pattern.endsWith("*") ? name.startsWith(pattern.slice(0, -1)) : name === pattern
   );
+}
+function filterClasses(next, tagName) {
+  if (next.class === void 0) {
+    return;
+  }
+  const classes = next.class.split(/\s+/).filter((name) => name !== "" && isAllowedClass(tagName, name));
+  if (classes.length > 0) {
+    next.class = classes.join(" ");
+  } else {
+    delete next.class;
+  }
+}
+function dropInvalidSourceLine(next) {
+  const line = next[SOURCE_LINE_ATTRIBUTE];
+  if (line !== void 0 && !SOURCE_LINE_PATTERN.test(line)) {
+    delete next[SOURCE_LINE_ATTRIBUTE];
+  }
+}
+function addAlignClass(next, style) {
+  const align = TEXT_ALIGN_PATTERN.exec(style)?.[1];
+  if (align && ALIGN_VALUES.includes(align)) {
+    next.class = [next.class, `mdmark-align-${align}`].filter(Boolean).join(" ");
+  }
+}
+function isDocumentOnlyTag(tagName) {
+  return DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName) || RANGE_SCRIPT_TAGS.has(tagName);
 }
 function sanitize(html, nonce) {
   return (0, import_sanitize_html.default)(html, {
@@ -69694,30 +70917,19 @@ function sanitize(html, nonce) {
         delete next[OWN_ATTRIBUTE];
         const keepClass = own2 && attribs[KEEP_CLASS_ATTRIBUTE] !== void 0;
         delete next[KEEP_CLASS_ATTRIBUTE];
-        if (!keepClass && next.class !== void 0) {
-          const classes = next.class.split(/\s+/).filter((name) => name !== "" && isAllowedClass(tagName, name));
-          if (classes.length > 0) {
-            next.class = classes.join(" ");
-          } else {
-            delete next.class;
-          }
+        if (!keepClass) {
+          filterClasses(next, tagName);
         }
-        if (next[SOURCE_LINE_ATTRIBUTE] !== void 0 && !SOURCE_LINE_PATTERN.test(next[SOURCE_LINE_ATTRIBUTE])) {
-          delete next[SOURCE_LINE_ATTRIBUTE];
-        }
+        dropInvalidSourceLine(next);
         dropDataUrls(tagName, next);
-        const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
-        if (align && ALIGN_VALUES.includes(align)) {
-          next.class = [next.class, `mdmark-align-${align}`].filter(Boolean).join(" ");
-        }
-        const style = attribs.style ?? "";
-        const kept = own2 ? ownStyle(style) : "";
-        if (kept === "") {
+        addAlignClass(next, attribs.style ?? "");
+        const kept2 = own2 ? ownStyle(attribs.style ?? "") : "";
+        if (kept2 === "") {
           delete next.style;
         } else {
-          next.style = kept;
+          next.style = kept2;
         }
-        if (!own2 && (DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName) || RANGE_SCRIPT_TAGS.has(tagName))) {
+        if (!own2 && isDocumentOnlyTag(tagName)) {
           next[DROP_ATTRIBUTE] = "1";
         }
         return { tagName, attribs: next };
@@ -69801,63 +71013,34 @@ var renderCardGrid = (options) => {
   return `<ul class="mdmark-card-grid">${items}</ul>`;
 };
 
-// src/render/syntax/blocks.ts
-var blockStartOf = (tokens, index) => {
-  let at = index;
-  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
-    at -= 1;
-  }
-  return at;
-};
-var insertWarningsBeforeBlocks = (state, warnings) => {
-  for (const { index, warning } of [...warnings].reverse()) {
-    state.tokens.splice(
-      blockStartOf(state.tokens, index),
-      0,
-      warningBlock(state, warning)
-    );
-  }
-};
-var pairRanges = (tokens, name) => {
-  const pairs = /* @__PURE__ */ new Map();
-  const stack = [];
-  for (const [index, token] of tokens.entries()) {
-    const mark = markOf(token);
-    if (mark?.name !== name) {
-      continue;
-    }
-    if (!mark.closing) {
-      stack.push(index);
-      continue;
-    }
-    const open2 = stack.pop();
-    if (open2 !== void 0) {
-      pairs.set(open2, index);
-    }
-  }
-  for (const open2 of stack) {
-    pairs.set(open2, -1);
-  }
-  return pairs;
-};
-var outermostRanges = (pairs, length) => {
-  const sorted = [...pairs].sort(([a], [b]) => a - b);
-  const result = [];
-  let end = -1;
-  for (const [open2, close] of sorted) {
-    if (open2 < end) {
-      continue;
-    }
-    result.push({ open: open2, close });
-    end = close < 0 ? length : close;
-  }
-  return result;
-};
-
 // src/render/syntax/inline-icons.ts
 var ICON_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 var ICON_PREFIX = "icon:";
 var ESCAPED_PREFIX2 = "icon\\:";
+var iconNodeOf = (name, icons2) => bundledIconNode(name) ?? (icons2 && Object.hasOwn(icons2, name) ? icons2[name] : void 0);
+var buildInlineIcon = (child, env) => {
+  if (child.content.startsWith(ESCAPED_PREFIX2)) {
+    child.content = `${ICON_PREFIX}${child.content.slice(ESCAPED_PREFIX2.length)}`;
+    return void 0;
+  }
+  if (!child.content.startsWith(ICON_PREFIX)) {
+    return void 0;
+  }
+  const name = child.content.slice(ICON_PREFIX.length).trim();
+  if (name === "") {
+    return void 0;
+  }
+  if (!ICON_NAME_PATTERN.test(name)) {
+    return {
+      mark: child.content,
+      message: `\u306E \`${name}\` \u306F Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u306B\u306A\u308A\u307E\u305B\u3093\u3002\u540D\u524D\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\`-\` \u3067\u8A18\u8F09\u3057\u307E\u3059\uFF08\u4F8B: \`rocket\`\uFF09\u3002\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+    };
+  }
+  const node2 = iconNodeOf(name, env.icons);
+  child.type = "html_inline";
+  child.content = markOwn(renderInlineIcon({ name, node: node2 }), env.nonce);
+  return void 0;
+};
 var buildInlineIcons = (state) => {
   if (!featureOn(state, "icon")) {
     return;
@@ -69866,33 +71049,10 @@ var buildInlineIcons = (state) => {
   const warnings = [];
   for (const [index, token] of state.tokens.entries()) {
     for (const child of token.children ?? []) {
-      if (child.type !== "code_inline") {
-        continue;
+      const warning = child.type === "code_inline" ? buildInlineIcon(child, env) : void 0;
+      if (warning) {
+        warnings.push({ index, warning });
       }
-      if (child.content.startsWith(ESCAPED_PREFIX2)) {
-        child.content = `${ICON_PREFIX}${child.content.slice(ESCAPED_PREFIX2.length)}`;
-        continue;
-      }
-      if (!child.content.startsWith(ICON_PREFIX)) {
-        continue;
-      }
-      const name = child.content.slice(ICON_PREFIX.length).trim();
-      if (name === "") {
-        continue;
-      }
-      if (!ICON_NAME_PATTERN.test(name)) {
-        warnings.push({
-          index,
-          warning: {
-            mark: child.content,
-            message: `\u306E \`${name}\` \u306F Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u306B\u306A\u308A\u307E\u305B\u3093\u3002\u540D\u524D\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\`-\` \u3067\u8A18\u8F09\u3057\u307E\u3059\uFF08\u4F8B: \`rocket\`\uFF09\u3002\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
-          }
-        });
-        continue;
-      }
-      const node2 = bundledIconNode(name) ?? (env.icons && Object.hasOwn(env.icons, name) ? env.icons[name] : void 0);
-      child.type = "html_inline";
-      child.content = markOwn(renderInlineIcon({ name, node: node2 }), env.nonce);
     }
   }
   insertWarningsBeforeBlocks(state, warnings);
@@ -69919,17 +71079,19 @@ var trimStart = (children) => {
   }
   return rest2;
 };
-var readItem = (state, children) => {
-  let rest2 = trimStart(children);
-  let icon;
-  const [head] = rest2;
-  if (head?.type === "code_inline" && head.content.startsWith(ICON_PREFIX2)) {
-    const name = head.content.slice(ICON_PREFIX2.length).trim();
-    if (ICON_NAME_PATTERN.test(name)) {
-      icon = name;
-      rest2 = trimStart(rest2.slice(1));
-    }
+var takeIcon = (children) => {
+  const [head] = children;
+  if (head?.type !== "code_inline" || !head.content.startsWith(ICON_PREFIX2)) {
+    return { icon: void 0, rest: children };
   }
+  const name = head.content.slice(ICON_PREFIX2.length).trim();
+  if (!ICON_NAME_PATTERN.test(name)) {
+    return { icon: void 0, rest: children };
+  }
+  return { icon: name, rest: trimStart(children.slice(1)) };
+};
+var readItem = (state, children) => {
+  const { icon, rest: rest2 } = takeIcon(trimStart(children));
   const openIndex = rest2.findIndex((child) => child.type === "link_open");
   const closeIndex = rest2.findIndex(
     (child, index) => index > openIndex && child.type === "link_close"
@@ -70132,6 +71294,23 @@ function soleLinkOf(inline2) {
   }
   return { open: open2, text: inner.map((child) => child.content).join("") };
 }
+function definitionStep(token) {
+  if (token.type === DEF_OPEN || token.type === ANNOTATION_DEF_OPEN) {
+    return 1;
+  }
+  return token.type === DEF_CLOSE || token.type === ANNOTATION_DEF_CLOSE ? -1 : 0;
+}
+function cardSpecOf(inline2) {
+  const link2 = soleLinkOf(inline2);
+  if (!link2) {
+    return void 0;
+  }
+  const autolinked = AUTOLINK_MARKUPS2.includes(link2.open.markup);
+  if (autolinked && !WEB_URL_PATTERN.test(link2.text)) {
+    return void 0;
+  }
+  return cardOf(String(link2.open.attrGet("href") ?? ""), link2.text, autolinked);
+}
 function buildCards(state) {
   if (!featureOn(state, "cards")) {
     return;
@@ -70141,14 +71320,8 @@ function buildCards(state) {
   let definitionDepth = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    if (token.type === DEF_OPEN) {
-      definitionDepth += 1;
-    } else if (token.type === DEF_CLOSE) {
-      definitionDepth -= 1;
-    }
-    const link2 = token.type === "paragraph_open" && definitionDepth === 0 ? soleLinkOf(tokens[index + 1]) : void 0;
-    const autolinked = AUTOLINK_MARKUPS2.includes(link2?.open.markup ?? "");
-    const spec = link2 && (!autolinked || WEB_URL_PATTERN.test(link2.text)) ? cardOf(String(link2.open.attrGet("href") ?? ""), link2.text, autolinked) : void 0;
+    definitionDepth += definitionStep(token);
+    const spec = token.type === "paragraph_open" && definitionDepth === 0 ? cardSpecOf(tokens[index + 1]) : void 0;
     if (!spec) {
       out.push(token);
       continue;
@@ -70226,15 +71399,20 @@ function renderCodeFoldMore(options) {
 function codeLineId(base, index) {
   return `${base}-line-${index + 1}`;
 }
-function renderLine(options) {
-  const { line, number: number4, fold } = options;
-  const attributes = [
-    fold ? ` id="${escapeHtml2(fold.id)}"` : "",
+function lineMarkAttributes(line, number4) {
+  return [
     number4 === void 0 ? "" : ` data-line="${number4}"`,
     line.kind === void 0 ? "" : ` data-kind="${line.kind}"`,
     line.indent ? ` data-indent="${line.indent}"` : "",
     line.foldLines === void 0 ? "" : ` data-fold-lines="${line.foldLines}"`,
-    line.folded ? ' data-folded="true"' : "",
+    line.folded ? ' data-folded="true"' : ""
+  ].join("");
+}
+function renderLine(options) {
+  const { line, number: number4, fold } = options;
+  const attributes = [
+    fold ? ` id="${escapeHtml2(fold.id)}"` : "",
+    lineMarkAttributes(line, number4),
     fold?.hidden ? " hidden" : ""
   ].join("");
   return `<span class="mdmark-code-line"${attributes}>${fold?.toggle ?? ""}<span class="mdmark-code-text">${escapeHtml2(line.text)}</span>${fold?.more ?? ""}</span>`;
@@ -70263,73 +71441,104 @@ function renderLanguageLabel(options) {
   const file = fileName ? `<span class="mdmark-code-file">${escapeHtml2(fileName)}</span>` : "";
   return `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">${escapeHtml2(language)}</span>${file}</span>`;
 }
-function renderCodeBlock(options) {
-  const { language, title, lineNumbers, lines, syntax } = options;
-  const { fileName = "", bar = true, copyState, foldButtons } = options;
-  const wrap = options.wrap === true;
-  const lineStart = options.lineStart ?? 1;
-  const mermaidAttribute = options.mermaid === true ? ` ${MERMAID_ATTRIBUTE}` : "";
-  const split = lineNumbers || wrap || lines.some(
-    (line) => line.kind !== void 0 || Boolean(line.indent) || line.foldLines !== void 0
-  );
-  const classes = split ? [
+function isMarkedLine(line) {
+  return line.kind !== void 0 || Boolean(line.indent) || line.foldLines !== void 0;
+}
+function lineClasses(options) {
+  const { lines, lineNumbers, wrap, foldButtons } = options;
+  const has = (test) => lines.some(test);
+  return [
     "mdmark-code-lines",
     ...lineNumbers ? ["mdmark-code-numbered"] : [],
-    ...lines.some((line) => line.kind === "add" || line.kind === "del") ? ["mdmark-code-signs"] : [],
-    ...lines.some((line) => line.kind === "focus") ? ["mdmark-code-has-focus"] : [],
+    ...has((line) => line.kind === "add" || line.kind === "del") ? ["mdmark-code-signs"] : [],
+    ...has((line) => line.kind === "focus") ? ["mdmark-code-has-focus"] : [],
     // 開閉のボタンを配置するときは、`mount` と同じく開閉のボタンの列の幅を取る
-    ...foldButtons && lines.some((line) => line.foldLines !== void 0) ? ["mdmark-code-foldable"] : [],
+    ...foldButtons && has((line) => line.foldLines !== void 0) ? ["mdmark-code-foldable"] : [],
     ...wrap ? ["mdmark-code-wrap"] : []
-  ] : [];
-  const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";
-  const label = escapeHtml2(labelOf({ title, fileName, language }));
-  const codeAttributes = [
+  ];
+}
+function codeAttributesOf(options) {
+  const { language, syntax, lineNumbers, lastNumber } = options;
+  return [
     language ? `class="language-${escapeHtml2(language)}"` : "",
     syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml2(syntax)}"` : "",
-    lineNumbers ? `style="--mdmark-code-digits: ${String(lineStart + lines.length - 1).length}"` : ""
+    lineNumbers ? `style="--mdmark-code-digits: ${String(lastNumber).length}"` : ""
   ].filter(Boolean).map((attribute) => ` ${attribute}`).join("");
+}
+function foldOf(line, index, hidden) {
+  const count = line.foldLines ?? 0;
+  const range = { from: index + 2, to: index + 1 + count };
+  const controls = Array.from(
+    { length: count },
+    (_, offset) => codeLineId("mdmark-code", index + 1 + offset)
+  ).join(" ");
+  return {
+    id: codeLineId("mdmark-code", index),
+    hidden: hidden.has(index),
+    toggle: count > 0 ? renderCodeFoldToggle({ expanded: !line.folded, ...range, controls }) : "",
+    more: count > 0 && line.folded ? renderCodeFoldMore(range) : ""
+  };
+}
+function codeBody(options) {
+  const { lines, split, lineNumbers, lineStart, foldButtons } = options;
+  if (!split) {
+    return escapeHtml2(lines.map((line) => line.text).join("\n")) + (lines.length > 0 ? "\n" : "");
+  }
   const hidden = foldButtons ? hiddenLinesOf({
     foldLines: lines.map((line) => line.foldLines),
     folded: lines.map((line) => line.folded === true)
   }) : /* @__PURE__ */ new Set();
-  const foldOf = (line, index) => {
-    if (!foldButtons) {
-      return void 0;
-    }
-    const count = line.foldLines ?? 0;
-    const range = { from: index + 2, to: index + 1 + count };
-    const controls = Array.from(
-      { length: count },
-      (_, offset) => codeLineId("mdmark-code", index + 1 + offset)
-    ).join(" ");
-    return {
-      id: codeLineId("mdmark-code", index),
-      hidden: hidden.has(index),
-      toggle: count > 0 ? renderCodeFoldToggle({
-        expanded: !line.folded,
-        ...range,
-        controls
-      }) : "",
-      more: count > 0 && line.folded ? renderCodeFoldMore(range) : ""
-    };
-  };
-  const body = split ? lines.map(
+  return lines.map(
     (line, index) => renderLine({
       line,
       number: lineNumbers ? lineStart + index : void 0,
-      fold: foldOf(line, index)
+      fold: foldButtons ? foldOf(line, index, hidden) : void 0
     })
-  ).join("\n") : escapeHtml2(lines.map((line) => line.text).join("\n")) + (lines.length > 0 ? "\n" : "");
-  const hoverAttribute = options.foldColumnHovered === true ? " data-fold-hover" : "";
-  const pre = `<pre${preClass}${hoverAttribute} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
-  if (!bar) {
-    return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
-  }
+  ).join("\n");
+}
+function wrapWithBar(options) {
+  const { pre, language, fileName, title, copyState, mermaidAttribute } = options;
   const barContent = renderLanguageLabel({ language, fileName }) + (title ? escapeHtml2(title) : "") + (copyState === void 0 ? "" : renderCodeCopy({ state: copyState }));
   if (title) {
     return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
   }
   return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
+}
+function renderPre(options) {
+  const { language, fileName, title, lineNumbers, lines, syntax } = options;
+  const { foldButtons } = options;
+  const wrap = options.wrap === true;
+  const lineStart = options.lineStart ?? 1;
+  const split = lineNumbers || wrap || lines.some(isMarkedLine);
+  const classes = split ? lineClasses({ lines, lineNumbers, wrap, foldButtons }) : [];
+  const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";
+  const label = escapeHtml2(labelOf({ title, fileName, language }));
+  const codeAttributes = codeAttributesOf({
+    language,
+    syntax,
+    lineNumbers,
+    lastNumber: lineStart + lines.length - 1
+  });
+  const body = codeBody({ lines, split, lineNumbers, lineStart, foldButtons });
+  const hoverAttribute = options.foldColumnHovered === true ? " data-fold-hover" : "";
+  return `<pre${preClass}${hoverAttribute} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
+}
+function renderCodeBlock(options) {
+  const { language, title } = options;
+  const { fileName = "", bar = true, copyState } = options;
+  const mermaidAttribute = options.mermaid === true ? ` ${MERMAID_ATTRIBUTE}` : "";
+  const pre = renderPre({ ...options, fileName });
+  if (!bar) {
+    return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
+  }
+  return wrapWithBar({
+    pre,
+    language,
+    fileName,
+    title,
+    copyState,
+    mermaidAttribute
+  });
 }
 
 // src/knowledge/aliases.ts
@@ -70417,44 +71626,38 @@ function readColumn(record2, column) {
   }
   return { found: true, value: current };
 }
+function readAliasKey(options) {
+  const { record: record2, column, key } = options;
+  if (isFilled(column)) {
+    const read = readColumn(record2, column);
+    return read.found ? { present: true, raw: read.value } : { present: false, missing: column };
+  }
+  return Object.hasOwn(record2, key) ? { present: true, raw: record2[key] } : { present: false };
+}
+function toAliasValue(key, raw) {
+  return LIST_KEYS.has(key) ? toList(raw) : toText(raw);
+}
+function nameOf(options) {
+  const { record: record2, bodyFile, fallbackName } = options;
+  const bodyPath = bodyFile === void 0 ? void 0 : toText(readColumn(record2, bodyFile).value);
+  return bodyPath === void 0 ? fallbackName : baseName(bodyPath);
+}
 function readAliasRecord(options) {
   const { record: record2, metadata, bodyFile, fallbackName } = options;
   const values = {};
   const missing = [];
   for (const key of ALIAS_KEYS) {
-    const column = metadata[key];
-    let raw;
-    let present = false;
-    if (isFilled(column)) {
-      const read = readColumn(record2, column);
-      if (read.found) {
-        raw = read.value;
-        present = true;
-      } else {
-        missing.push({ key, field: column });
-      }
-    } else if (Object.hasOwn(record2, key)) {
-      raw = record2[key];
-      present = true;
+    const read = readAliasKey({ record: record2, column: metadata[key], key });
+    if (read.missing !== void 0) {
+      missing.push({ key, field: read.missing });
     }
-    if (!present) {
-      continue;
-    }
-    if (LIST_KEYS.has(key)) {
-      const list2 = toList(raw);
-      if (list2 !== void 0) {
-        values[key] = list2;
-      }
-    } else {
-      const text2 = toText(raw);
-      if (text2 !== void 0) {
-        values[key] = text2;
-      }
+    const value = read.present ? toAliasValue(key, read.raw) : void 0;
+    if (value !== void 0) {
+      values[key] = value;
     }
   }
   if (values.name === void 0) {
-    const bodyPath = bodyFile === void 0 ? void 0 : toText(readColumn(record2, bodyFile).value);
-    const name = bodyPath === void 0 ? fallbackName : baseName(bodyPath);
+    const name = nameOf({ record: record2, bodyFile, fallbackName });
     if (name !== "") {
       values.name = name;
     }
@@ -70473,50 +71676,56 @@ function checkAliasFields(options) {
   }
   return keys.length === 0 ? void 0 : { kind: "alias_required_empty", keys };
 }
+function usableType(item, seen) {
+  const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
+  if (type === void 0 || type === "env") {
+    return void 0;
+  }
+  if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
+    return void 0;
+  }
+  return ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key])) ? type : void 0;
+}
+function toUsableAlias(item, type) {
+  const list2 = (value) => Array.isArray(value) ? value.filter(isFilled) : [];
+  const alias = {
+    alias_type: type,
+    id: item.id,
+    name: item.name,
+    aliases: list2(item.aliases),
+    avoid: list2(item.avoid)
+  };
+  for (const key of [
+    "description",
+    "command",
+    "cwd",
+    "url",
+    "skill",
+    "tool",
+    "path",
+    "replacement"
+  ]) {
+    const value = item[key];
+    if (typeof value === "string") {
+      alias[key] = value;
+    }
+  }
+  if (Array.isArray(item.related)) {
+    alias.related = list2(item.related);
+  }
+  return alias;
+}
 function usableAliases(aliases) {
   const seen = /* @__PURE__ */ new Set();
   const usable = [];
   for (const item of aliases) {
-    if (!isRecord5(item)) {
+    const type = isRecord5(item) ? usableType(item, seen) : void 0;
+    if (!isRecord5(item) || type === void 0) {
       continue;
     }
-    const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
-    if (type === void 0 || type === "env") {
-      continue;
-    }
-    if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
-      continue;
-    }
-    if (!ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key]))) {
-      continue;
-    }
-    seen.add(item.id);
-    const list2 = (value) => Array.isArray(value) ? value.filter(isFilled) : [];
-    const alias = {
-      alias_type: type,
-      id: item.id,
-      name: item.name,
-      aliases: list2(item.aliases),
-      avoid: list2(item.avoid)
-    };
-    for (const key of [
-      "description",
-      "command",
-      "cwd",
-      "url",
-      "skill",
-      "tool",
-      "path",
-      "replacement"
-    ]) {
-      if (typeof item[key] === "string") {
-        alias[key] = item[key];
-      }
-    }
-    if (Array.isArray(item.related)) {
-      alias.related = list2(item.related);
-    }
-    usable.push(alias);
+    const row = item;
+    seen.add(row.id);
+    usable.push(toUsableAlias(row, type));
   }
   return usable;
 }
@@ -70562,123 +71771,144 @@ function baseName(path) {
 function joinWhere(recordPath, key) {
   return recordPath === "" ? key : `${recordPath}.${key}`;
 }
+function columnOf(row, key) {
+  const column = row.metadata[key];
+  return isFilled(column) ? column : key;
+}
+function isEnabledRow(row) {
+  return isRecord5(row) && isFilled(row.id) && Array.isArray(row.paths) && typeof row.alias_type === "string" && row.enabled !== false;
+}
+function acceptRow(build5, row, rowPosition) {
+  if (!isEnabledRow(row)) {
+    return void 0;
+  }
+  if (build5.rowIds.has(row.id)) {
+    build5.problems.push({
+      file: build5.configFile,
+      where: `aliases[${rowPosition}].id`,
+      kind: "duplicate_alias_row_id",
+      message: `\u884C\u306E \`id\` \`${row.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  build5.rowIds.add(row.id);
+  const aliasType = ALIAS_TYPES.find(
+    (candidate) => candidate === row.alias_type
+  );
+  if (aliasType === void 0) {
+    build5.problems.push({
+      file: build5.configFile,
+      where: `aliases[${rowPosition}].alias_type`,
+      kind: "alias_unknown_type",
+      message: `\`alias_type\` \u306E \`${row.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return {
+    id: row.id,
+    aliasType,
+    metadata: isRecord5(row.metadata) ? row.metadata : {},
+    recordsKey: isFilled(row.records) ? row.records : void 0,
+    bodyFile: isFilled(row.body_file) ? row.body_file : void 0
+  };
+}
+function recordsOf(build5, row, source) {
+  const { recordsKey } = row;
+  if (recordsKey === void 0) {
+    return [{ record: source.data, path: "" }];
+  }
+  const list2 = isRecord5(source.data) ? source.data[recordsKey] : void 0;
+  if (!Array.isArray(list2)) {
+    build5.problems.push({
+      file: source.path,
+      where: "",
+      kind: "alias_records_missing",
+      message: `\`${recordsKey}\` \u306E\u914D\u5217\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D5\u30A1\u30A4\u30EB\u306B \`${recordsKey}\` \u306E\u914D\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`records\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return list2.map((record2, position) => ({
+    record: record2,
+    path: `${recordsKey}[${position}]`
+  }));
+}
+function pushRequiredProblems(build5, row, at) {
+  const { source, path, keys } = at;
+  const head = path === "" ? `\`${source.path}\`` : `\`${source.path}\` \u306E \`${path}\``;
+  for (const key of keys) {
+    const column = columnOf(row, key);
+    const sentence = key === "url" && row.aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    build5.problems.push({
+      file: source.path,
+      where: joinWhere(path, column),
+      kind: "alias_required_empty",
+      message: sentence
+    });
+  }
+}
+function takeRecord(build5, row, at) {
+  const { source, record: record2, path } = at;
+  const fallbackName = row.recordsKey === void 0 ? baseName(source.path) : toText(record2.id) ?? "";
+  const { values, missing } = readAliasRecord({
+    record: record2,
+    metadata: row.metadata,
+    bodyFile: row.bodyFile,
+    fallbackName
+  });
+  for (const { key, field } of missing) {
+    build5.problems.push({
+      file: source.path,
+      where: joinWhere(path, field),
+      kind: "alias_field_missing",
+      message: `\`metadata.${key}\` \u304C\u6307\u3059\u5217 \`${field}\` \u304C\u30EC\u30B3\u30FC\u30C9\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`metadata.${key}\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  if (missing.length > 0) {
+    return;
+  }
+  const checked = checkAliasFields({ aliasType: row.aliasType, values });
+  if (checked !== void 0) {
+    pushRequiredProblems(build5, row, { source, path, keys: checked.keys });
+    return;
+  }
+  const id = values.id;
+  if (build5.aliasIds.has(id)) {
+    build5.problems.push({
+      file: source.path,
+      where: joinWhere(path, columnOf(row, "id")),
+      kind: "duplicate_alias_id",
+      message: `\u30A8\u30A4\u30EA\u30A2\u30B9\u306E \`id\` \`${id}\` \u304C\u524D\u306E\u30A8\u30A4\u30EA\u30A2\u30B9\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return;
+  }
+  build5.aliasIds.add(id);
+  if (row.aliasType !== "env") {
+    build5.aliases.push(toAlias(values, row.aliasType));
+  }
+}
 function buildAliases(input) {
   const { rows, sources, configFile = DEFAULT_CONFIG_FILE } = input;
-  const aliases = [];
-  const problems = [];
-  const rowIds = /* @__PURE__ */ new Set();
-  const aliasIds = /* @__PURE__ */ new Set();
-  rows.forEach((row, rowPosition) => {
-    if (!isRecord5(row) || !isFilled(row.id) || !Array.isArray(row.paths) || typeof row.alias_type !== "string") {
+  const build5 = {
+    aliases: [],
+    problems: [],
+    rowIds: /* @__PURE__ */ new Set(),
+    aliasIds: /* @__PURE__ */ new Set(),
+    configFile
+  };
+  rows.forEach((item, rowPosition) => {
+    const row = acceptRow(build5, item, rowPosition);
+    if (!row) {
       return;
     }
-    if (row.enabled === false) {
-      return;
-    }
-    if (rowIds.has(row.id)) {
-      problems.push({
-        file: configFile,
-        where: `aliases[${rowPosition}].id`,
-        kind: "duplicate_alias_row_id",
-        message: `\u884C\u306E \`id\` \`${row.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-      return;
-    }
-    rowIds.add(row.id);
-    const aliasType = ALIAS_TYPES.find(
-      (candidate) => candidate === row.alias_type
-    );
-    if (aliasType === void 0) {
-      problems.push({
-        file: configFile,
-        where: `aliases[${rowPosition}].alias_type`,
-        kind: "alias_unknown_type",
-        message: `\`alias_type\` \u306E \`${row.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-      return;
-    }
-    const metadata = isRecord5(row.metadata) ? row.metadata : {};
-    const recordsKey = isFilled(row.records) ? row.records : void 0;
-    const bodyFile = isFilled(row.body_file) ? row.body_file : void 0;
-    const columnOf = (key) => {
-      const column = metadata[key];
-      return isFilled(column) ? column : key;
-    };
-    for (const source of sources.filter((item) => item.rowId === row.id)) {
-      let records;
-      if (recordsKey === void 0) {
-        records = [{ record: source.data, path: "" }];
-      } else {
-        const list2 = isRecord5(source.data) ? source.data[recordsKey] : void 0;
-        if (!Array.isArray(list2)) {
-          problems.push({
-            file: source.path,
-            where: "",
-            kind: "alias_records_missing",
-            message: `\`${recordsKey}\` \u306E\u914D\u5217\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D5\u30A1\u30A4\u30EB\u306B \`${recordsKey}\` \u306E\u914D\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`records\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-          });
-          continue;
-        }
-        records = list2.map((record2, position) => ({
-          record: record2,
-          path: `${recordsKey}[${position}]`
-        }));
-      }
-      for (const { record: record2, path } of records) {
-        if (!isRecord5(record2)) {
-          continue;
-        }
-        const fallbackName = recordsKey === void 0 ? baseName(source.path) : toText(record2.id) ?? "";
-        const { values, missing } = readAliasRecord({
-          record: record2,
-          metadata,
-          bodyFile,
-          fallbackName
-        });
-        for (const { key, field } of missing) {
-          problems.push({
-            file: source.path,
-            where: joinWhere(path, field),
-            kind: "alias_field_missing",
-            message: `\`metadata.${key}\` \u304C\u6307\u3059\u5217 \`${field}\` \u304C\u30EC\u30B3\u30FC\u30C9\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`metadata.${key}\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-          });
-        }
-        if (missing.length > 0) {
-          continue;
-        }
-        const checked = checkAliasFields({ aliasType, values });
-        if (checked !== void 0) {
-          const head = path === "" ? `\`${source.path}\`` : `\`${source.path}\` \u306E \`${path}\``;
-          for (const key of checked.keys) {
-            const column = columnOf(key);
-            const sentence = key === "url" && aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-            problems.push({
-              file: source.path,
-              where: joinWhere(path, column),
-              kind: "alias_required_empty",
-              message: sentence
-            });
-          }
-          continue;
-        }
-        const id = values.id;
-        if (aliasIds.has(id)) {
-          problems.push({
-            file: source.path,
-            where: joinWhere(path, columnOf("id")),
-            kind: "duplicate_alias_id",
-            message: `\u30A8\u30A4\u30EA\u30A2\u30B9\u306E \`id\` \`${id}\` \u304C\u524D\u306E\u30A8\u30A4\u30EA\u30A2\u30B9\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
-          });
-          continue;
-        }
-        aliasIds.add(id);
-        if (aliasType !== "env") {
-          aliases.push(toAlias(values, aliasType));
+    for (const source of sources.filter((entry) => entry.rowId === row.id)) {
+      for (const { record: record2, path } of recordsOf(build5, row, source) ?? []) {
+        if (isRecord5(record2)) {
+          takeRecord(build5, row, { source, record: record2, path });
         }
       }
     }
   });
-  return { aliases, problems };
+  return { aliases: build5.aliases, problems: build5.problems };
 }
 
 // src/knowledge/dictionary.ts
@@ -70687,130 +71917,151 @@ var FALLBACK_WORD = /[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+|[\s\S]/gu;
 function normalizeWord(word) {
   return word.normalize("NFKC").toLowerCase().trim();
 }
-function buildDictionary(options) {
-  const { index, docId, ownGlossary, references, features } = options;
-  const usable = usableAliases(options.aliases ?? []);
-  const terms = /* @__PURE__ */ new Map();
-  const plainTerms = /* @__PURE__ */ new Map();
-  const docs = /* @__PURE__ */ new Map();
-  const avoided = /* @__PURE__ */ new Map();
-  const written = /* @__PURE__ */ new Map();
-  const addTerm = (words2, id, meaning, alias) => {
-    for (const word of words2) {
-      const key = normalizeWord(word);
+function addTerm(maps2, words, value) {
+  const { id, meaning, alias } = value;
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key === "") {
+      continue;
+    }
+    if (alias === void 0 && !maps2.plainTerms.has(key)) {
+      maps2.plainTerms.set(key, { id, meaning });
+    }
+    if (!maps2.terms.has(key)) {
+      maps2.terms.set(key, value);
+      maps2.written.set(key, word);
+    }
+  }
+}
+function addAvoided(maps2, words, value) {
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key !== "" && !maps2.terms.has(key) && !maps2.avoided.has(key)) {
+      maps2.avoided.set(key, value);
+      maps2.written.set(key, word);
+    }
+  }
+}
+var glossaryId = (entry) => `glossary:${entry.docId}:${entry.term}`;
+function docOrder(index) {
+  return (id) => {
+    const position = index?.docs.findIndex((doc) => doc.id === id) ?? -1;
+    return position === -1 ? Number.MAX_SAFE_INTEGER : position;
+  };
+}
+function addAllTerms(maps2, sources) {
+  const { index, usable, ownGlossary, others } = sources;
+  for (const term of index?.terms ?? []) {
+    addTerm(maps2, [term.term, ...term.aliases ?? []], {
+      id: term.id,
+      meaning: term.meaning
+    });
+  }
+  for (const alias of usable) {
+    if (alias.alias_type !== "avoid") {
+      addTerm(maps2, [alias.name, ...alias.aliases], {
+        id: `alias:${alias.id}`,
+        meaning: alias.description ?? "",
+        alias
+      });
+    }
+  }
+  for (const entry of [...ownGlossary, ...others]) {
+    addTerm(maps2, [entry.term, ...entry.aliases], {
+      id: glossaryId(entry),
+      meaning: entry.meaning
+    });
+  }
+}
+function addAliasAvoided(maps2, usable) {
+  for (const alias of usable) {
+    if (alias.alias_type === "avoid") {
+      addAvoided(maps2, [alias.name, ...alias.aliases], {
+        id: `alias:${alias.id}`,
+        term: alias.replacement ?? "",
+        alias
+      });
+    } else if (alias.alias_type === "term") {
+      addAvoided(maps2, alias.avoid ?? [], {
+        id: `alias:${alias.id}`,
+        term: alias.name,
+        meaning: alias.description ?? "",
+        alias
+      });
+    }
+  }
+}
+function addAllAvoided(maps2, sources) {
+  const { index, usable, tables } = sources;
+  for (const term of index?.terms ?? []) {
+    addAvoided(maps2, term.avoid ?? [], {
+      id: term.id,
+      term: term.term,
+      meaning: term.meaning
+    });
+  }
+  addAliasAvoided(maps2, usable);
+  const sorted = [...tables].sort((a, b) => a.position - b.position);
+  for (const { entry } of sorted) {
+    addAvoided(maps2, entry.avoid ?? [], {
+      id: glossaryId(entry),
+      term: entry.term,
+      meaning: entry.meaning
+    });
+  }
+}
+function addDocAliases(maps2, index, docId) {
+  for (const doc of index?.docs ?? []) {
+    if (doc.id === docId) {
+      continue;
+    }
+    for (const alias of doc.aliases ?? []) {
+      const key = normalizeWord(alias);
       if (key === "") {
         continue;
       }
-      if (alias === void 0 && !plainTerms.has(key)) {
-        plainTerms.set(key, { id, meaning });
-      }
-      if (!terms.has(key)) {
-        terms.set(
-          key,
-          alias === void 0 ? { id, meaning } : { id, meaning, alias }
-        );
-        written.set(key, word);
+      maps2.docs.set(key, [...maps2.docs.get(key) ?? [], doc]);
+      if (!maps2.written.has(key)) {
+        maps2.written.set(key, alias);
       }
     }
-  };
-  if (features.glossary !== false) {
-    for (const term of index?.terms ?? []) {
-      addTerm([term.term, ...term.aliases ?? []], term.id, term.meaning);
-    }
-    for (const alias of usable) {
-      if (alias.alias_type !== "avoid") {
-        addTerm(
-          [alias.name, ...alias.aliases],
-          `alias:${alias.id}`,
-          alias.description ?? "",
-          alias
-        );
-      }
-    }
-    for (const entry of ownGlossary) {
-      addTerm(
-        [entry.term, ...entry.aliases],
-        `glossary:${entry.docId}:${entry.term}`,
-        entry.meaning
-      );
-    }
-    const order = (id) => {
-      const position = index?.docs.findIndex((doc) => doc.id === id) ?? -1;
-      return position === -1 ? Number.MAX_SAFE_INTEGER : position;
-    };
-    const others = (references?.glossary ?? []).filter((entry) => docId === void 0 || entry.docId !== docId).sort((a, b) => order(a.docId) - order(b.docId));
-    for (const entry of others) {
-      addTerm(
-        [entry.term, ...entry.aliases],
-        `glossary:${entry.docId}:${entry.term}`,
-        entry.meaning
-      );
-    }
-    const addAvoided = (words2, value) => {
-      for (const word of words2) {
-        const key = normalizeWord(word);
-        if (key !== "" && !terms.has(key) && !avoided.has(key)) {
-          avoided.set(key, value);
-          written.set(key, word);
-        }
-      }
-    };
-    for (const term of index?.terms ?? []) {
-      addAvoided(term.avoid ?? [], {
-        id: term.id,
-        term: term.term,
-        meaning: term.meaning
-      });
-    }
-    for (const alias of usable) {
-      if (alias.alias_type === "avoid") {
-        addAvoided([alias.name, ...alias.aliases], {
-          id: `alias:${alias.id}`,
-          term: alias.replacement ?? "",
-          alias
-        });
-      } else if (alias.alias_type === "term") {
-        addAvoided(alias.avoid ?? [], {
-          id: `alias:${alias.id}`,
-          term: alias.name,
-          meaning: alias.description ?? "",
-          alias
-        });
-      }
-    }
-    const ownPosition = docId !== void 0 && order(docId) !== Number.MAX_SAFE_INTEGER ? order(docId) : -1;
-    const tableEntries = [
+  }
+}
+function addGlossary(maps2, sources) {
+  const { index, docId, ownGlossary, references, usable } = sources;
+  const order = docOrder(index);
+  const others = (references?.glossary ?? []).filter((entry) => docId === void 0 || entry.docId !== docId).sort((a, b) => order(a.docId) - order(b.docId));
+  addAllTerms(maps2, { index, usable, ownGlossary, others });
+  const ownPosition = docId !== void 0 && order(docId) !== Number.MAX_SAFE_INTEGER ? order(docId) : -1;
+  addAllAvoided(maps2, {
+    index,
+    usable,
+    tables: [
       ...ownGlossary.map((entry) => ({ entry, position: ownPosition })),
       ...others.map((entry) => ({ entry, position: order(entry.docId) }))
-    ].sort((a, b) => a.position - b.position);
-    for (const { entry } of tableEntries) {
-      addAvoided(entry.avoid ?? [], {
-        id: `glossary:${entry.docId}:${entry.term}`,
-        term: entry.term,
-        meaning: entry.meaning
-      });
-    }
+    ]
+  });
+}
+function buildDictionary(options) {
+  const { index, docId, ownGlossary, references, features } = options;
+  const usable = usableAliases(options.aliases ?? []);
+  const maps2 = {
+    terms: /* @__PURE__ */ new Map(),
+    plainTerms: /* @__PURE__ */ new Map(),
+    docs: /* @__PURE__ */ new Map(),
+    avoided: /* @__PURE__ */ new Map(),
+    written: /* @__PURE__ */ new Map()
+  };
+  if (features.glossary !== false) {
+    addGlossary(maps2, { index, docId, ownGlossary, references, usable });
   }
   if (features.backlinks !== false) {
-    for (const doc of index?.docs ?? []) {
-      if (doc.id === docId) {
-        continue;
-      }
-      for (const alias of doc.aliases ?? []) {
-        const key = normalizeWord(alias);
-        if (key === "") {
-          continue;
-        }
-        docs.set(key, [...docs.get(key) ?? [], doc]);
-        if (!written.has(key)) {
-          written.set(key, alias);
-        }
-      }
-    }
+    addDocAliases(maps2, index, docId);
   }
-  const words = [.../* @__PURE__ */ new Set([...terms.keys(), ...docs.keys()])].sort(
+  const words = [.../* @__PURE__ */ new Set([...maps2.terms.keys(), ...maps2.docs.keys()])].sort(
     (a, b) => b.length - a.length
   );
+  const { terms, docs, avoided, written, plainTerms } = maps2;
   return {
     words,
     terms,
@@ -70912,6 +72163,61 @@ var invalidArg = (key, expected) => ({
   message: `\u30DE\u30FC\u30AB\u30FC\u306E\u5F15\u6570 \`${key}\` \u306F${expected}\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E\u5024\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
 });
 var isRecord6 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var parseJson = (text2) => {
+  try {
+    return JSON.parse(text2);
+  } catch {
+    return void 0;
+  }
+};
+var isNonEmptyText = (item) => typeof item === "string" && item !== "";
+var isCollapseArg = (item) => isRecord6(item) && (item.open === void 0 || typeof item.open === "boolean") && (item.title === void 0 || typeof item.title === "string");
+var MAP_ARG_READERS = {
+  title: {
+    expected: "\u7A7A\u3067\u306A\u3044\u6587\u5B57",
+    read: (item, args) => {
+      if (!isNonEmptyText(item)) return false;
+      args.title = item;
+      return true;
+    }
+  },
+  focus: {
+    expected: "\u7A7A\u3067\u306A\u3044\u6587\u5B57",
+    read: (item, args) => {
+      if (!isNonEmptyText(item)) return false;
+      args.focus = item;
+      return true;
+    }
+  },
+  play: {
+    expected: ' `"autoplay"` ',
+    read: (item, args) => {
+      if (item !== "autoplay") return false;
+      args.play = "autoplay";
+      return true;
+    }
+  },
+  interval: {
+    expected: "\u6B63\u306E\u6570\uFF08\u79D2\uFF09",
+    read: (item, args) => {
+      if (typeof item !== "number" || !Number.isFinite(item) || item <= 0)
+        return false;
+      args.interval = item;
+      return true;
+    }
+  },
+  collapse: {
+    expected: ' `{"open": false, "title": "\u898B\u51FA\u3057"}` \u306E\u69CB\u9020',
+    read: (item, args) => {
+      if (!isCollapseArg(item)) return false;
+      args.collapse = {
+        open: item.open === true,
+        title: typeof item.title === "string" ? item.title : void 0
+      };
+      return true;
+    }
+  }
+};
 var parseMapArgs = (source) => {
   const args = { interval: DEFAULT_MAP_INTERVAL };
   const problems = [];
@@ -70921,12 +72227,7 @@ var parseMapArgs = (source) => {
   if (text2 === "") {
     return { args, normalized: "{}", problems, unknownKeys };
   }
-  let value;
-  try {
-    value = JSON.parse(text2);
-  } catch {
-    value = void 0;
-  }
+  const value = parseJson(text2);
   if (!isRecord6(value)) {
     problems.push({
       kind: "map_invalid_value",
@@ -70935,61 +72236,33 @@ var parseMapArgs = (source) => {
     return { args, normalized: "{}", problems, unknownKeys };
   }
   for (const [key, item] of Object.entries(value)) {
-    switch (key) {
-      case "title":
-      case "focus":
-        if (typeof item === "string" && item !== "") {
-          args[key] = item;
-          known[key] = item;
-        } else {
-          problems.push(invalidArg(key, "\u7A7A\u3067\u306A\u3044\u6587\u5B57"));
-        }
-        break;
-      case "play":
-        if (item === "autoplay") {
-          args.play = "autoplay";
-          known.play = item;
-        } else {
-          problems.push(invalidArg(key, ' `"autoplay"` '));
-        }
-        break;
-      case "interval":
-        if (typeof item === "number" && Number.isFinite(item) && item > 0) {
-          args.interval = item;
-          known.interval = item;
-        } else {
-          problems.push(invalidArg(key, "\u6B63\u306E\u6570\uFF08\u79D2\uFF09"));
-        }
-        break;
-      case "collapse":
-        if (isRecord6(item) && (item.open === void 0 || typeof item.open === "boolean") && (item.title === void 0 || typeof item.title === "string")) {
-          args.collapse = {
-            open: item.open === true,
-            title: typeof item.title === "string" ? item.title : void 0
-          };
-          known.collapse = item;
-        } else {
-          problems.push(
-            invalidArg(key, ' `{"open": false, "title": "\u898B\u51FA\u3057"}` \u306E\u69CB\u9020')
-          );
-        }
-        break;
-      default:
-        unknownKeys.push(key);
+    if (!Object.hasOwn(MAP_ARG_READERS, key)) {
+      unknownKeys.push(key);
+      continue;
     }
+    const reader = MAP_ARG_READERS[key];
+    if (reader.read(item, args)) known[key] = item;
+    else problems.push(invalidArg(key, reader.expected));
   }
   return { args, normalized: JSON.stringify(known), problems, unknownKeys };
 };
 
 // src/map/structure.ts
+var KIND_OF_FIRST_WORD = {
+  flowchart: "flowchart",
+  graph: "flowchart",
+  sequenceDiagram: "sequenceDiagram",
+  erDiagram: "erDiagram",
+  "stateDiagram-v2": "stateDiagram",
+  stateDiagram: "stateDiagram",
+  classDiagram: "classDiagram",
+  "classDiagram-v2": "classDiagram",
+  "architecture-beta": "architecture",
+  C4Context: "C4Context"
+};
 var mapKindOf = (mermaid) => {
   const first = mermaid.trimStart().split(/\s/, 1)[0] ?? "";
-  if (first === "flowchart" || first === "graph") return "flowchart";
-  if (first === "sequenceDiagram") return "sequenceDiagram";
-  if (first === "erDiagram") return "erDiagram";
-  if (first === "stateDiagram-v2" || first === "stateDiagram")
-    return "stateDiagram";
-  return void 0;
+  return Object.hasOwn(KIND_OF_FIRST_WORD, first) ? KIND_OF_FIRST_WORD[first] : void 0;
 };
 var collectMapStructure = (range) => {
   const parsedArgs = parseMapArgs(range.args);
@@ -71013,15 +72286,15 @@ var collectMapStructure = (range) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\`\u30FB\`classDiagram\`\u30FB\`architecture-beta\`\u30FB\`C4Context\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
     });
   }
   return { problems, kind, args: parsedArgs };
 };
 
 // src/render/syntax/map.ts
-var MAP_MARK = "map";
-var DATA_MARK = "map-data";
+var MAP_MARK2 = "map";
+var DATA_MARK2 = "map-data";
 var MAP_SOURCE_META = "mdmarkMapSource";
 var mapWarningItems = (problems) => problems.map((problem) => ({ label: "", message: problem.message }));
 var isMermaid = (token) => token.type === "fence" && token.info.trim().split(/\s+/)[0] === "mermaid";
@@ -71049,16 +72322,110 @@ var termsFinder = (state) => {
     return terms;
   };
 };
+var annotationsAttr = (state, rest2) => {
+  const order = envOf(state).mdmarkAnnotations?.order;
+  const referenced = mapNoteAnnotations(rest2).flatMap(([, ids]) => ids);
+  if (order === void 0 || referenced.length === 0) return "";
+  const numbers = {};
+  for (const id of referenced) {
+    const at = order.indexOf(id);
+    if (at >= 0) numbers[id] = at + 1;
+  }
+  return ` data-map-annotations="${escapeHtml2(JSON.stringify(numbers))}"`;
+};
+var structureWarning = (state, openToken, problems) => {
+  const mark = markOf(openToken);
+  const warning = warningBlock(
+    state,
+    {
+      mark: mark?.raw ?? "",
+      message: "\u306E\u7BC4\u56F2\u306E\u66F8\u304D\u65B9\u306B\u8AA4\u308A\u304C\u3042\u308A\u307E\u3059\u3002\u8AAD\u3081\u305F\u5206\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
+      items: mapWarningItems(problems),
+      kind: "map"
+    },
+    openToken
+  );
+  warning.meta = { ...warning.meta ?? {}, mapProblems: problems };
+  return warning;
+};
+var sourceTokens = (inner) => inner.flatMap((token) => {
+  if (markOf(token)?.name === DATA_MARK2) return [];
+  if (isMermaid(token))
+    token.meta = { ...token.meta ?? {}, [MAP_SOURCE_META]: true };
+  return [token];
+});
+var termsAttrOf = (terms) => terms === void 0 || Object.keys(terms).length === 0 ? "" : ` data-map-terms="${escapeHtml2(JSON.stringify(terms))}"`;
+var drawnTokens = (state, range, findTerms) => {
+  const { openToken, closeToken, fence: fence2, data, structure, number: number4 } = range;
+  fence2.meta = { ...fence2.meta ?? {}, [MAP_SOURCE_META]: true };
+  const args = escapeHtml2(structure.args.normalized);
+  const rest2 = data === void 0 ? void 0 : markOf(data)?.rest;
+  const terms = findTerms?.(
+    `${fence2.content}
+${data === void 0 ? "" : dataOf(rest2)}`
+  );
+  const out = [
+    ownBlock(
+      state,
+      `<div class="mdmark-map" data-map="${number4}" data-map-kind="${structure.kind}" data-map-args="${args}"${termsAttrOf(terms)}${annotationsAttr(state, rest2)}>`,
+      openToken
+    ),
+    fence2
+  ];
+  if (data) {
+    out.push(
+      ownBlock(
+        state,
+        `<pre class="mdmark-map-data" hidden>${escapeHtml2(dataOf(rest2))}</pre>`,
+        data
+      )
+    );
+  }
+  out.push(ownBlock(state, "</div>", closeToken));
+  return out;
+};
+var mapRangeTokens = (state, range, draw) => {
+  const { openToken, inner, closeToken } = range;
+  const mark = markOf(openToken);
+  const fences = inner.filter(isMermaid);
+  const datas = inner.filter((token) => markOf(token)?.name === DATA_MARK2);
+  const fence2 = fences[0];
+  const structure = collectMapStructure({
+    args: mark?.rest ?? "",
+    mermaid: fence2?.content,
+    mermaidCount: fences.length,
+    dataCount: datas.length
+  });
+  const out = structure.problems.length > 0 ? [structureWarning(state, openToken, structure.problems)] : [];
+  if (structure.kind === void 0 || fence2 === void 0) {
+    return [...out, ...sourceTokens(inner)];
+  }
+  return [
+    ...out,
+    ...drawnTokens(
+      state,
+      {
+        openToken,
+        closeToken,
+        fence: fence2,
+        data: datas[0],
+        structure,
+        number: draw.number
+      },
+      draw.findTerms
+    )
+  ];
+};
 var buildMapRanges = (state) => {
   const tokens = state.tokens;
-  if (!featureOn(state, MAP_MARK)) {
+  if (!featureOn(state, MAP_MARK2)) {
     state.tokens = tokens.filter((token) => {
       const mark = markOf(token);
-      return mark?.name !== MAP_MARK && mark?.name !== DATA_MARK;
+      return mark?.name !== MAP_MARK2 && mark?.name !== DATA_MARK2;
     });
     return;
   }
-  const ranges = outermostRanges(pairRanges(tokens, MAP_MARK), tokens.length);
+  const ranges = outermostRanges(pairRanges(tokens, MAP_MARK2), tokens.length);
   const out = [];
   let cursor = 0;
   let number4 = 0;
@@ -71073,69 +72440,17 @@ var buildMapRanges = (state) => {
       continue;
     }
     number4 += 1;
-    const inner = tokens.slice(open2 + 1, close);
-    const fences = inner.filter(isMermaid);
-    const datas = inner.filter((token) => markOf(token)?.name === DATA_MARK);
-    const fence2 = fences[0];
-    const data = datas[0];
-    const structure = collectMapStructure({
-      args: mark.rest ?? "",
-      mermaid: fence2?.content,
-      mermaidCount: fences.length,
-      dataCount: datas.length
-    });
-    if (structure.problems.length > 0) {
-      const warning = warningBlock(
+    out.push(
+      ...mapRangeTokens(
         state,
         {
-          mark: mark.raw,
-          message: "\u306E\u7BC4\u56F2\u306E\u66F8\u304D\u65B9\u306B\u8AA4\u308A\u304C\u3042\u308A\u307E\u3059\u3002\u8AAD\u3081\u305F\u5206\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
-          items: mapWarningItems(structure.problems),
-          kind: "map"
+          openToken,
+          inner: tokens.slice(open2 + 1, close),
+          closeToken: tokens[close]
         },
-        openToken
-      );
-      warning.meta = {
-        ...warning.meta ?? {},
-        mapProblems: structure.problems
-      };
-      out.push(warning);
-    }
-    if (structure.kind === void 0 || fence2 === void 0) {
-      for (const token of inner) {
-        if (markOf(token)?.name === DATA_MARK) continue;
-        if (isMermaid(token))
-          token.meta = { ...token.meta ?? {}, [MAP_SOURCE_META]: true };
-        out.push(token);
-      }
-      cursor = close + 1;
-      continue;
-    }
-    fence2.meta = { ...fence2.meta ?? {}, [MAP_SOURCE_META]: true };
-    const args = escapeHtml2(structure.args.normalized);
-    const terms = findTerms?.(
-      `${fence2.content}
-${data === void 0 ? "" : dataOf(markOf(data)?.rest)}`
-    );
-    const termsAttr = terms === void 0 || Object.keys(terms).length === 0 ? "" : ` data-map-terms="${escapeHtml2(JSON.stringify(terms))}"`;
-    out.push(
-      ownBlock(
-        state,
-        `<div class="mdmark-map" data-map="${number4}" data-map-kind="${structure.kind}" data-map-args="${args}"${termsAttr}>`,
-        openToken
+        { number: number4, findTerms }
       )
     );
-    out.push(fence2);
-    if (data) {
-      out.push(
-        ownBlock(
-          state,
-          `<pre class="mdmark-map-data" hidden>${escapeHtml2(dataOf(markOf(data)?.rest))}</pre>`,
-          data
-        )
-      );
-    }
-    out.push(ownBlock(state, "</div>", tokens[close]));
     cursor = close + 1;
   }
   out.push(...tokens.slice(cursor));
@@ -71370,10 +72685,129 @@ function plainLines(source) {
   }
   return body.split("\n").map((text2) => ({ text: text2 }));
 }
+function openCodeMark(token) {
+  const mark = markOf(token);
+  return mark?.name === "code" && !mark.closing ? mark : void 0;
+}
+function missingFenceWarning(state, target) {
+  const { mark, token } = target;
+  return warningBlock(state, {
+    mark: mark.raw,
+    ...token.map ? { line: token.map[0] } : {},
+    message: "\u306E\u76F4\u5F8C\u306B\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30DE\u30FC\u30AB\u30FC\u306E\u6B21\u306E\u884C\u306B\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+  });
+}
+function readFenceLines(options) {
+  const { token, code: code2, codeOn } = options;
+  const { lines: read, warnings: lineWarnings } = codeOn ? readLineMarks(token.content) : { lines: plainLines(token.content), warnings: [] };
+  const spec = code2 ? readCodeSpec({ options: code2.options, lineCount: read.length }) : void 0;
+  const highlights = spec?.highlights ?? /* @__PURE__ */ new Set();
+  const marked = read.map(
+    (line, position) => line.kind === void 0 && highlights.has(position + 1) ? { ...line, kind: "highlight" } : line
+  );
+  const { lines, warnings: foldWarnings } = codeOn ? readFolds({ lines: marked, folds: spec?.folds ?? /* @__PURE__ */ new Set() }) : { lines: marked, warnings: [] };
+  return { lines, spec, lineWarnings, foldWarnings };
+}
+function treeWarning(state, target) {
+  const { token, language, checked } = target;
+  if (!checked || countTreeLines(token.content) < TREE_WARNING_MIN_LINES) {
+    return void 0;
+  }
+  return warningBlock(state, {
+    message: treeLinesMessage(language),
+    ...token.map ? { line: token.map[0] } : {}
+  });
+}
+function readWarnings(state, read) {
+  const { code: code2, previous, spec, lineWarnings, foldWarnings } = read;
+  const out = [];
+  pushWarnings(out, state, {
+    mark: code2?.raw,
+    line: code2 ? previous?.map?.[0] : void 0,
+    message: "\u306E\u8AAD\u307F\u8FBC\u3081\u306A\u3044\u6307\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
+    items: [...spec?.warnings ?? [], ...foldWarnings]
+  });
+  for (const warning of lineWarnings) {
+    out.push(warningBlock(state, { message: warning.message }));
+  }
+  return out;
+}
+function fenceKind(token, target) {
+  const { codeOn, syntaxOn, mermaidOn } = target.features;
+  const { language, fileName } = splitInfoString(token.info);
+  const isMermaid2 = token.info.trim().split(/\s+/)[0] === "mermaid";
+  const mapSource = token.meta?.[MAP_SOURCE_META] === true;
+  const mermaid = mermaidOn && isMermaid2 && !mapSource;
+  return {
+    language,
+    fileName,
+    mermaid,
+    syntax: syntaxOn && !mermaid ? syntaxLanguageOf(language) : void 0,
+    checkTree: codeOn && !isMermaid2 && !mapSource && target.treeWarning
+  };
+}
+function codeBlockToken(state, block2) {
+  const { token, kind, lines, spec, bar } = block2;
+  return ownBlock(
+    state,
+    renderCodeBlock({
+      language: kind.language,
+      fileName: kind.fileName,
+      title: spec?.title ?? "",
+      lineNumbers: spec?.lineNumbers ?? false,
+      lineStart: spec?.lineStart ?? 1,
+      wrap: spec?.wrap ?? false,
+      lines,
+      syntax: kind.syntax,
+      mermaid: kind.mermaid,
+      bar
+    }),
+    token
+  );
+}
+function renderFence(state, target) {
+  const { token, previous, features } = target;
+  const code2 = features.codeOn ? openCodeMark(previous) : void 0;
+  const { lines, spec, lineWarnings, foldWarnings } = readFenceLines({
+    token,
+    code: code2,
+    codeOn: features.codeOn
+  });
+  const out = readWarnings(state, {
+    code: code2,
+    previous,
+    spec,
+    lineWarnings,
+    foldWarnings
+  });
+  const kind = fenceKind(token, {
+    features,
+    treeWarning: spec?.treeWarning ?? true
+  });
+  const tree = treeWarning(state, {
+    token,
+    language: kind.language,
+    checked: kind.checkTree
+  });
+  if (tree) {
+    out.push(tree);
+  }
+  if (!features.codeOn && kind.syntax === void 0 && !kind.mermaid) {
+    keepLanguageOnly(token, kind.language);
+    out.push(token);
+    return out;
+  }
+  out.push(
+    codeBlockToken(state, { token, kind, lines, spec, bar: features.codeOn })
+  );
+  return out;
+}
 function buildCodeBlocks(state) {
-  const codeOn = featureOn(state, "code");
-  const syntaxOn = featureOn(state, "syntax");
-  const mermaidOn = featureOn(state, "mermaid");
+  const features = {
+    codeOn: featureOn(state, "code"),
+    syntaxOn: featureOn(state, "syntax"),
+    mermaidOn: featureOn(state, "mermaid")
+  };
   const tokens = state.tokens;
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
@@ -71381,127 +72815,80 @@ function buildCodeBlocks(state) {
     if (!token) {
       continue;
     }
-    const mark = markOf(token);
-    const next = tokens[index + 1];
-    if (codeOn && mark?.name === "code" && !mark.closing && next?.type !== "fence") {
-      out.push(
-        warningBlock(state, {
-          mark: mark.raw,
-          ...token.map ? { line: token.map[0] } : {},
-          message: "\u306E\u76F4\u5F8C\u306B\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30DE\u30FC\u30AB\u30FC\u306E\u6B21\u306E\u884C\u306B\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        })
-      );
-      continue;
-    }
-    if (codeOn && mark?.name === "code" && !mark.closing) {
+    const mark = features.codeOn ? openCodeMark(token) : void 0;
+    if (mark) {
+      if (tokens[index + 1]?.type !== "fence") {
+        out.push(missingFenceWarning(state, { mark, token }));
+      }
       continue;
     }
     if (token.type !== "fence") {
       out.push(token);
       continue;
     }
-    const spec = markOf(tokens[index - 1]);
-    const code2 = codeOn && spec?.name === "code" && !spec.closing ? spec : void 0;
-    const { lines: read, warnings: lineWarnings } = codeOn ? readLineMarks(token.content) : { lines: plainLines(token.content), warnings: [] };
-    const options = code2 ? readCodeSpec({ options: code2.options, lineCount: read.length }) : void 0;
-    const marked = read.map(
-      (line, position) => line.kind === void 0 && options?.highlights.has(position + 1) ? { ...line, kind: "highlight" } : line
+    out.push(
+      ...renderFence(state, { token, previous: tokens[index - 1], features })
     );
-    const { lines, warnings: foldWarnings } = codeOn ? readFolds({ lines: marked, folds: options?.folds ?? /* @__PURE__ */ new Set() }) : { lines: marked, warnings: [] };
-    pushWarnings(out, state, {
-      mark: code2?.raw,
-      line: code2 ? tokens[index - 1]?.map?.[0] : void 0,
-      message: "\u306E\u8AAD\u307F\u8FBC\u3081\u306A\u3044\u6307\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
-      items: [...options?.warnings ?? [], ...foldWarnings]
-    });
-    for (const warning of lineWarnings) {
-      out.push(warningBlock(state, { message: warning.message }));
-    }
-    const title = options?.title ?? "";
-    const lineNumbers = options?.lineNumbers ?? false;
-    const { language, fileName } = splitInfoString(token.info);
-    const firstWord = token.info.trim().split(/\s+/)[0];
-    const mermaid = mermaidOn && firstWord === "mermaid" && token.meta?.[MAP_SOURCE_META] !== true;
-    if (codeOn && firstWord !== "mermaid" && token.meta?.[MAP_SOURCE_META] !== true && (options?.treeWarning ?? true) && countTreeLines(token.content) >= TREE_WARNING_MIN_LINES) {
-      out.push(
-        warningBlock(state, {
-          message: treeLinesMessage(language),
-          ...token.map ? { line: token.map[0] } : {}
-        })
-      );
-    }
-    const syntax = syntaxOn && !mermaid ? syntaxLanguageOf(language) : void 0;
-    if (codeOn || syntax !== void 0 || mermaid) {
-      out.push(
-        ownBlock(
-          state,
-          renderCodeBlock({
-            language,
-            fileName,
-            title,
-            lineNumbers,
-            lineStart: options?.lineStart ?? 1,
-            wrap: options?.wrap ?? false,
-            lines,
-            syntax,
-            mermaid,
-            bar: codeOn
-          }),
-          token
-        )
-      );
-      continue;
-    }
-    keepLanguageOnly(token, language);
-    out.push(token);
   }
   state.tokens = out;
 }
 
 // src/render/syntax/csv.ts
+var endRow = (reader) => {
+  reader.row.push(reader.value);
+  reader.rows.push(reader.row);
+  reader.row = [];
+  reader.value = "";
+};
+var readQuoted = (reader) => {
+  const char = reader.text[reader.at];
+  if (char === '"' && reader.text[reader.at + 1] === '"') {
+    reader.value += '"';
+    reader.at += 2;
+    return;
+  }
+  if (char === '"') {
+    reader.quoted = false;
+  } else {
+    reader.value += char;
+  }
+  reader.at += 1;
+};
+var readPlain = (reader) => {
+  const char = reader.text[reader.at];
+  if (char === '"') {
+    reader.quoted = true;
+  } else if (char === ",") {
+    reader.row.push(reader.value);
+    reader.value = "";
+  } else if (char === "\r" && reader.text[reader.at + 1] === "\n") {
+  } else if (char === "\n") {
+    endRow(reader);
+  } else {
+    reader.value += char;
+  }
+  reader.at += 1;
+};
 var parseCsv = (text2) => {
-  const rows = [];
-  let row = [];
-  let value = "";
-  let quoted = false;
-  let at = 0;
-  while (at < text2.length) {
-    const char = text2[at];
-    if (quoted) {
-      if (char === '"' && text2[at + 1] === '"') {
-        value += '"';
-        at += 2;
-        continue;
-      }
-      if (char === '"') {
-        quoted = false;
-      } else {
-        value += char;
-      }
-      at += 1;
-      continue;
-    }
-    if (char === '"') {
-      quoted = true;
-    } else if (char === ",") {
-      row.push(value);
-      value = "";
-    } else if (char === "\r" && text2[at + 1] === "\n") {
-    } else if (char === "\n") {
-      row.push(value);
-      rows.push(row);
-      row = [];
-      value = "";
+  const reader = {
+    text: text2,
+    at: 0,
+    rows: [],
+    row: [],
+    value: "",
+    quoted: false
+  };
+  while (reader.at < text2.length) {
+    if (reader.quoted) {
+      readQuoted(reader);
     } else {
-      value += char;
+      readPlain(reader);
     }
-    at += 1;
   }
-  if (value !== "" || row.length > 0) {
-    row.push(value);
-    rows.push(row);
+  if (reader.value !== "" || reader.row.length > 0) {
+    endRow(reader);
   }
-  return rows;
+  return reader.rows;
 };
 var cellInline = (state, value) => {
   const inline2 = new state.Token("inline", "", 0);
@@ -71521,46 +72908,46 @@ var tableTokens = (options) => {
   const { state, fence: fence2, rows } = options;
   const level = fence2.level;
   const tokens = [];
-  const push = (type, tag, nesting, depth) => {
-    const token = new state.Token(type, tag, nesting);
+  const push = (type, tag, place) => {
+    const token = new state.Token(type, tag, place.nesting);
     token.block = true;
-    token.level = level + depth;
-    if (fence2.map && nesting === 1) {
+    token.level = level + place.depth;
+    if (fence2.map && place.nesting === 1) {
       token.map = [...fence2.map];
     }
     tokens.push(token);
     return token;
   };
-  const open2 = push("table_open", "table", 1, 0);
+  const open2 = push("table_open", "table", { nesting: 1, depth: 0 });
   open2.meta = { rawCsv: fence2.content };
   const [head = [], ...body] = rows;
-  push("thead_open", "thead", 1, 1);
-  push("tr_open", "tr", 1, 2);
+  push("thead_open", "thead", { nesting: 1, depth: 1 });
+  push("tr_open", "tr", { nesting: 1, depth: 2 });
   for (const value of head) {
-    push("th_open", "th", 1, 3);
+    push("th_open", "th", { nesting: 1, depth: 3 });
     const inline2 = cellInline(state, value);
     inline2.level = level + 4;
     tokens.push(inline2);
-    push("th_close", "th", -1, 3);
+    push("th_close", "th", { nesting: -1, depth: 3 });
   }
-  push("tr_close", "tr", -1, 2);
-  push("thead_close", "thead", -1, 1);
+  push("tr_close", "tr", { nesting: -1, depth: 2 });
+  push("thead_close", "thead", { nesting: -1, depth: 1 });
   if (body.length) {
-    push("tbody_open", "tbody", 1, 1);
+    push("tbody_open", "tbody", { nesting: 1, depth: 1 });
     for (const row of body) {
-      push("tr_open", "tr", 1, 2);
+      push("tr_open", "tr", { nesting: 1, depth: 2 });
       for (const value of row) {
-        push("td_open", "td", 1, 3);
+        push("td_open", "td", { nesting: 1, depth: 3 });
         const inline2 = cellInline(state, value);
         inline2.level = level + 4;
         tokens.push(inline2);
-        push("td_close", "td", -1, 3);
+        push("td_close", "td", { nesting: -1, depth: 3 });
       }
-      push("tr_close", "tr", -1, 2);
+      push("tr_close", "tr", { nesting: -1, depth: 2 });
     }
-    push("tbody_close", "tbody", -1, 1);
+    push("tbody_close", "tbody", { nesting: -1, depth: 1 });
   }
-  push("table_close", "table", -1, 0);
+  push("table_close", "table", { nesting: -1, depth: 0 });
   return tokens;
 };
 var buildCsvTables = (state) => {
@@ -71648,71 +73035,9 @@ var buildDetailsRanges = (state) => {
   state.tokens = out;
 };
 
-// src/diagram/er.ts
-var ER_TABLE_KINDS = {
-  master: { label: "\u30DE\u30B9\u30BF\u30FC", color: "blue" },
-  transaction: { label: "\u30C8\u30E9\u30F3\u30B6\u30AF\u30B7\u30E7\u30F3", color: "orange" }
-};
-var ER_CARDINALITIES = {
-  "1": "1 \u3064",
-  "0..1": "0 \u304B 1 \u3064",
-  "1..n": "1 \u3064\u4EE5\u4E0A",
-  "0..n": "0 \u4EE5\u4E0A"
-};
-var ER_COLUMN_KEYS = {
-  pk: { text: "PK", title: "\u4E3B\u30AD\u30FC" },
-  fk: { text: "FK", title: "\u5916\u90E8\u30AD\u30FC" },
-  nn: { text: "NN", title: "NOT NULL" }
-};
-var ER_METRICS = {
-  /** 見出しの高さ */
-  head: 44,
-  /** 列の行の高さ */
-  row: 26,
-  /** 畳んだときの `非表示 {数} 列` の行の高さ */
-  rest: 24,
-  /** 枠と余白 */
-  frame: 4,
-  /** 図の下の余白 */
-  bottom: 32
-};
-function isKeyColumn(column) {
-  return column.pk === true || column.fk === true;
-}
-function visibleColumns(table2, folded) {
-  return folded ? table2.columns.filter(isKeyColumn) : table2.columns;
-}
-function erTableHeight(options) {
-  const { table: table2, folded } = options;
-  const rows = visibleColumns(table2, folded).length;
-  return ER_METRICS.head + rows * ER_METRICS.row + (folded ? ER_METRICS.rest : 0) + ER_METRICS.frame;
-}
-function columnY(table2, name, folded) {
-  const index = visibleColumns(table2, folded).findIndex((c) => c.name === name);
-  if (index < 0) {
-    return table2.y + ER_METRICS.head / 2;
-  }
-  return table2.y + ER_METRICS.head + ER_METRICS.row * (index + 0.5) + ER_METRICS.frame / 2;
-}
-function erRelationRoute(options) {
-  const { relation, from, to, folded } = options;
-  const stacked = from.x === to.x;
-  const dir = stacked || to.x > from.x ? 1 : -1;
-  const x1 = dir > 0 ? from.x + from.w : from.x;
-  const x2 = stacked || dir < 0 ? to.x + to.w : to.x;
-  const y1 = columnY(from, relation.fromColumn, folded(from.id));
-  const y2 = columnY(to, relation.toColumn, folded(to.id));
-  const mid = relation.midX ?? (x1 + x2) / 2;
-  return {
-    d: `M${x1},${y1} H${mid} V${y2} H${x2}`,
-    start: { x: x1, y: y1, dir },
-    end: { x: x2, y: y2, dir: stacked ? 1 : dir === 1 ? -1 : 1 },
-    label: { x: mid, y: (y1 + y2) / 2 }
-  };
-}
-
 // src/diagram/geometry.ts
 var ZOOM = { step: 1.25, max: 3, pan: 80 };
+var RESIZE = { step: 32, min: 120 };
 var STEP_BASES = [1, 2, 5, 10];
 var TICK_TARGET = 5;
 function tidy(value) {
@@ -71747,15 +73072,23 @@ function stackSeries(series) {
 
 // src/parts/chart.ts
 var ITEM_HIT_RADIUS = 12;
+function pointItemText(item) {
+  const { type, definition } = item;
+  const [x = 0, y = 0, size = 0] = item.point ?? [];
+  const { x: xAxis, y: yAxis } = definition;
+  const base = `${xAxis?.label ?? "x"} ${x}\u30FB${yAxis?.label ?? "y"} ${y}`;
+  return type === "bubble" ? `${base}\u30FB${sizeLabel(definition)} ${size}` : base;
+}
+function sizeLabel(definition) {
+  return definition.size?.label || "\u5927\u304D\u3055";
+}
 function chartItemText(item) {
   const { type, definition } = item;
   if (type === "pie" || type === "donut") {
     return `${item.value ?? 0}${definition.unit ?? ""}\uFF08${item.percent ?? 0}%\uFF09`;
   }
   if (type === "scatter" || type === "bubble") {
-    const [x = 0, y = 0, size = 0] = item.point ?? [];
-    const base = `${definition.x?.label ?? "x"} ${x}\u30FB${definition.y?.label ?? "y"} ${y}`;
-    return type === "bubble" ? `${base}\u30FB${definition.size?.label || "\u5927\u304D\u3055"} ${size}` : base;
+    return pointItemText(item);
   }
   return `${item.tick ?? ""}: ${item.value ?? 0}`;
 }
@@ -71841,7 +73174,8 @@ function pointShapeOf(series) {
 function polygonPoint(points) {
   return `<path class="mdmark-diagram-point" d="M${points.map(([x, y]) => `${num(x)},${num(y)}`).join(" L")} z"></path>`;
 }
-function pointSvg(series, x, y, size = POINT_SIZE) {
+function pointSvg(series, at, size = POINT_SIZE) {
+  const [x, y] = at;
   const s = size;
   const shape = pointShapeOf(series);
   switch (shape) {
@@ -71957,10 +73291,11 @@ function xTicksSvg(ticks, xAt, box) {
 function pathOf(points, close = false) {
   return `M${points.map(([x, y]) => `${num(x)},${num(y)}`).join(" L")}${close ? " Z" : ""}`;
 }
-function seriesLineSvg(n, points, close = false, hits = []) {
+function seriesLineSvg(n, points, options = {}) {
+  const { close = false, hits = [] } = options;
   return [
     `<path class="mdmark-diagram-series" data-series="${n}" d="${pathOf(points, close)}"></path>`,
-    `<g data-series="${n}">${points.map(([x, y]) => pointSvg(n, x, y)).join("")}${points.map(([x, y], i) => hits[i] === void 0 ? "" : itemHit(hits[i], x, y)).join("")}</g>`
+    `<g data-series="${n}">${points.map(([x, y]) => pointSvg(n, [x, y])).join("")}${points.map(([x, y], i) => hits[i] === void 0 ? "" : itemHit(hits[i], x, y)).join("")}</g>`
   ];
 }
 function seriesAreaSvg(options) {
@@ -71971,7 +73306,8 @@ function barRect(options) {
   const { n, id, x, y, width, height, attrs = "" } = options;
   return `<rect class="mdmark-diagram-bar" x="${num(x)}" y="${num(y)}" width="${num(width)}" height="${num(height)}" fill="url(#${id}-fill-${n})"${attrs}></rect>`;
 }
-function tickedAttrs(input, name, position, value) {
+function tickedAttrs(input, item) {
+  const { name, position, value } = item;
   return input.tips.attrs(name, `${input.ticks[position] ?? ""}: ${value}`);
 }
 function tickedLabel(input) {
@@ -72020,14 +73356,11 @@ function lineChart(input, box, options) {
       );
     }
     lines.push(
-      ...seriesLineSvg(
-        n,
-        points,
-        false,
-        entry.points.map(
-          (value, position) => tickedAttrs(input, entry.name, position, value)
+      ...seriesLineSvg(n, points, {
+        hits: entry.points.map(
+          (value, position) => tickedAttrs(input, { name: entry.name, position, value })
         )
-      )
+      })
     );
   });
   svg.push(...lines);
@@ -72072,12 +73405,11 @@ function stackedAreaChart(input, box, id) {
     const entry = series[index];
     const hits = ranges.map(
       (range, position) => itemHit(
-        tickedAttrs(
-          input,
-          entry?.name ?? "",
+        tickedAttrs(input, {
+          name: entry?.name ?? "",
           position,
-          entry?.points[position] ?? 0
-        ),
+          value: entry?.points[position] ?? 0
+        }),
         xAt(position),
         yAt(range.to)
       )
@@ -72111,7 +73443,7 @@ function barChart(input, box, id) {
         y: Math.min(yAt(value), yAt(0)),
         width: barWidth - 2,
         height: Math.abs(yAt(value) - yAt(0)),
-        attrs: tickedAttrs(input, entry.name, position, value)
+        attrs: tickedAttrs(input, { name: entry.name, position, value })
       })
     );
     svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
@@ -72144,12 +73476,11 @@ function stackedBarChart(input, box, id) {
         y: Math.min(yAt(range.from), yAt(range.to)),
         width: barWidth,
         height: Math.abs(yAt(range.to) - yAt(range.from)),
-        attrs: tickedAttrs(
-          input,
-          series[index]?.name ?? "",
+        attrs: tickedAttrs(input, {
+          name: series[index]?.name ?? "",
           position,
-          series[index]?.points[position] ?? 0
-        )
+          value: series[index]?.points[position] ?? 0
+        })
       })
     );
     svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
@@ -72195,7 +73526,7 @@ function horizontalBarChart(input, box, id) {
         y: yAt(position) - barHeight * series.length / 2 + barHeight * index + 1,
         width: Math.abs(xAt(value) - zero),
         height: barHeight - 2,
-        attrs: tickedAttrs(input, entry.name, position, value)
+        attrs: tickedAttrs(input, { name: entry.name, position, value })
       })
     );
     svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
@@ -72330,14 +73661,12 @@ function radarChart(input, id) {
       seriesAreaSvg({ n, id, className: "mdmark-diagram-area", points })
     );
     lines.push(
-      ...seriesLineSvg(
-        n,
-        points,
-        true,
-        entry.points.map(
-          (value, position) => tickedAttrs(input, entry.name, position, value)
+      ...seriesLineSvg(n, points, {
+        close: true,
+        hits: entry.points.map(
+          (value, position) => tickedAttrs(input, { name: entry.name, position, value })
         )
-      )
+      })
     );
   });
   svg.push(...lines);
@@ -72382,7 +73711,7 @@ function scatterChart(input, box) {
         })
       );
       if (!bubble) {
-        return pointSvg(n, xAt(x), yAt(y), SCATTER_POINT_SIZE) + itemHit(attrs, xAt(x), yAt(y));
+        return pointSvg(n, [xAt(x), yAt(y)], SCATTER_POINT_SIZE) + itemHit(attrs, xAt(x), yAt(y));
       }
       const r = largest > 0 ? BUBBLE_MAX_RADIUS * Math.sqrt(Math.max(0, size) / largest) : 0;
       return `<circle class="mdmark-diagram-bubble" cx="${num(xAt(x))}" cy="${num(yAt(y))}" r="${num(r)}" fill="url(#${bubble.id}-fill-${n})"${attrs}></circle>`;
@@ -72398,27 +73727,9 @@ function scatterChart(input, box) {
     ).join("\u3002")
   };
 }
-function comboChart(definition, box, id, tips) {
-  const ticks = definition.x?.ticks ?? [];
-  const series = definition.series ?? [];
-  const pointsOf = (entry) => entry.points;
-  const onY2 = (entry) => entry.axis === "y2" && definition.y2 !== void 0;
-  const area = definition.y2 ? { ...box, right: CHART.width - Y2_PAD } : box;
-  const left = axisOf(
-    definition.y,
-    series.filter((entry) => !onY2(entry)).flatMap(pointsOf)
-  );
-  const right = definition.y2 ? axisOf(definition.y2, series.filter(onY2).flatMap(pointsOf)) : void 0;
-  const leftAt = yScale(left, area);
-  const rightAt = right ? yScale(right, area) : leftAt;
-  const { band, xAt } = bandScale(ticks.length, area);
-  const bars = series.filter((entry) => entry.as === "bar");
-  const barWidth = Math.min(
-    BAR.maxWidth,
-    band * BAR.share / Math.max(1, bars.length)
-  );
-  const svg = [
-    `<defs>${fillPatterns(id)}</defs>`,
+function comboYAxesSvg(definition, axes) {
+  const { area, left, right, leftAt, rightAt } = axes;
+  return [
     ...yAxisSvg({
       axis: left,
       label: definition.y?.label ?? "",
@@ -72431,9 +73742,50 @@ function comboChart(definition, box, id, tips) {
       yAt: rightAt,
       box: area,
       side: "right"
-    }) : [],
+    }) : []
+  ];
+}
+function comboAxes(definition, box) {
+  const series = definition.series ?? [];
+  const pointsOf = (entry) => entry.points;
+  const onY2 = (entry) => entry.axis === "y2" && definition.y2 !== void 0;
+  const area = definition.y2 ? { ...box, right: CHART.width - Y2_PAD } : box;
+  const left = axisOf(
+    definition.y,
+    series.filter((entry) => !onY2(entry)).flatMap(pointsOf)
+  );
+  const right = definition.y2 ? axisOf(definition.y2, series.filter(onY2).flatMap(pointsOf)) : void 0;
+  const leftAt = yScale(left, area);
+  return {
+    area,
+    left,
+    right,
+    leftAt,
+    rightAt: right ? yScale(right, area) : leftAt,
+    onY2
+  };
+}
+function comboChart(definition, box, context) {
+  const { id, tips } = context;
+  const ticks = definition.x?.ticks ?? [];
+  const series = definition.series ?? [];
+  const pointsOf = (entry) => entry.points;
+  const { area, left, right, leftAt, rightAt, onY2 } = comboAxes(
+    definition,
+    box
+  );
+  const { band, xAt } = bandScale(ticks.length, area);
+  const bars = series.filter((entry) => entry.as === "bar");
+  const barWidth = Math.min(
+    BAR.maxWidth,
+    band * BAR.share / Math.max(1, bars.length)
+  );
+  const svg = [
+    `<defs>${fillPatterns(id)}</defs>`,
+    ...comboYAxesSvg(definition, { area, left, right, leftAt, rightAt }),
     ...xTicksSvg(ticks, xAt, area)
   ];
+  const attrsOf = (entry, position, value) => tips.attrs(entry.name, `${ticks[position] ?? ""}: ${value}`);
   const lines = [];
   series.forEach((entry, index) => {
     const n = index + 1;
@@ -72446,10 +73798,11 @@ function comboChart(definition, box, id, tips) {
             xAt(position),
             yAt(value)
           ]),
-          false,
-          pointsOf(entry).map(
-            (value, position) => tips.attrs(entry.name, `${ticks[position] ?? ""}: ${value}`)
-          )
+          {
+            hits: pointsOf(entry).map(
+              (value, position) => attrsOf(entry, position, value)
+            )
+          }
         )
       );
       return;
@@ -72463,7 +73816,7 @@ function comboChart(definition, box, id, tips) {
         y: Math.min(yAt(value), yAt(0)),
         width: barWidth - 2,
         height: Math.abs(yAt(value) - yAt(0)),
-        attrs: tips.attrs(entry.name, `${ticks[position] ?? ""}: ${value}`)
+        attrs: attrsOf(entry, position, value)
       })
     );
     svg.push(`<g data-series="${n}">${rects.join("")}</g>`);
@@ -72532,7 +73885,7 @@ function renderChart(definition, id) {
       box
     ),
     radar: () => radarChart(input, id),
-    combo: () => comboChart(definition, box, id, tips)
+    combo: () => comboChart(definition, box, { id, tips })
   };
   const body = bodies[type]();
   const label = `${definition.title}\u3002${body.label}`;
@@ -72546,68 +73899,6 @@ function renderChart(definition, id) {
   };
 }
 
-// src/parts/er.ts
-var END = {
-  /** 内側の縦線 */
-  bar: 6,
-  /** 外側の縦線 */
-  outerBar: 11,
-  /** 鳥の足の付け根 */
-  crow: 10,
-  /** 鳥の足の開き（縦の半分） */
-  crowSpread: 7,
-  /** 縦線の高さの半分 */
-  barHalf: 6,
-  /** 丸の半径 */
-  ring: 4
-};
-function erTableColor(table2) {
-  return table2.color ?? (table2.kind ? ER_TABLE_KINDS[table2.kind].color : void 0);
-}
-function erFoldIcon(folded) {
-  return iconSvg(folded ? "chevrons-up-down" : "chevrons-down-up");
-}
-function erRestText(hidden) {
-  return `\u975E\u8868\u793A ${hidden} \u5217`;
-}
-function plainDefinitionText(value) {
-  return value.replace(/\{\{(.+?)\}\}/g, "$1");
-}
-function renderErTable(options) {
-  const { table: table2, tipId, text: text2 } = options;
-  const folded = table2.folded === true;
-  const color = erTableColor(table2);
-  const label = escapeHtml2(plainDefinitionText(table2.label));
-  const others = table2.columns.filter((c) => !isKeyColumn(c)).length;
-  const fold = others > 0 ? `<button class="mdmark-diagram-er-fold" type="button" aria-expanded="${folded ? "false" : "true"}" aria-label="\u300C${label}\u300D\u306E\u4E3B\u30AD\u30FC\u3068\u5916\u90E8\u30AD\u30FC\u4EE5\u5916\u306E\u5217" data-er-fold="${escapeHtml2(table2.id)}">${erFoldIcon(folded)}</button>` : "";
-  const info = tipId === void 0 ? "" : `<button class="mdmark-diagram-info" type="button" aria-label="\u300C${label}\u300D\u306E\u8AAC\u660E" aria-describedby="${escapeHtml2(tipId)}" data-tip-owner="${escapeHtml2(`table:${table2.id}`)}">${iconSvg("info")}</button>`;
-  const kind = table2.kind ? `<span class="mdmark-diagram-er-kind">${ER_TABLE_KINDS[table2.kind].label}</span>` : "";
-  const rows = table2.columns.map((column) => {
-    const keys = ["pk", "fk", "nn"].filter((key) => column[key]).map(
-      (key) => `<abbr class="mdmark-diagram-er-key" data-key="${key}" title="${ER_COLUMN_KEYS[key].title}">${ER_COLUMN_KEYS[key].text}</abbr>`
-    ).join("");
-    const hidden = folded && !isKeyColumn(column) ? ' hidden="hidden"' : "";
-    return `<li class="mdmark-diagram-er-column" data-column="${escapeHtml2(column.name)}"${column.pk ? ' data-pk=""' : ""}${hidden}><span class="mdmark-diagram-er-keys">${keys}</span><span class="mdmark-diagram-er-name">${text2(column.name)}</span><span class="mdmark-diagram-er-type">${text2(column.type)}</span></li>`;
-  }).join("");
-  const rest2 = others > 0 ? `<li class="mdmark-diagram-er-rest"${folded ? "" : ' hidden="hidden"'}>${erRestText(others)}</li>` : "";
-  return `<div class="mdmark-diagram-er-table${info ? " has-tip" : ""}" data-node="${escapeHtml2(table2.id)}"${color ? ` data-color="${color}"` : ""} style="left:${table2.x}px;top:${table2.y}px;width:${table2.w}px"><div class="mdmark-diagram-er-head">${fold}<span class="mdmark-diagram-er-title">${iconSvg("table")}<span class="mdmark-diagram-er-physical">${text2(table2.name)}</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">${text2(table2.label)}</span>${kind}</span><span class="mdmark-diagram-er-actions">${info}</span></div><ul class="mdmark-diagram-er-columns" aria-label="\u300C${label}\u300D\u306E\u5217">${rows}${rest2}</ul></div>`;
-}
-function erEndSvg(options) {
-  const { x, y, dir, card } = options;
-  const at = (d) => x + dir * d;
-  const bar = (d) => `<line class="mdmark-diagram-er-end" x1="${at(d)}" y1="${y - END.barHalf}" x2="${at(d)}" y2="${y + END.barHalf}"></line>`;
-  const ring = (d) => `<circle class="mdmark-diagram-er-end" data-ring="" cx="${at(d)}" cy="${y}" r="${END.ring}"></circle>`;
-  const crow = `<path class="mdmark-diagram-er-end" d="M${at(END.crow)},${y} L${at(0)},${y - END.crowSpread} M${at(END.crow)},${y} L${at(0)},${y} M${at(END.crow)},${y} L${at(0)},${y + END.crowSpread}"></path>`;
-  const ringAt = END.outerBar + END.ring - 1;
-  const shapes = {
-    "1": [bar(END.bar), bar(END.outerBar)],
-    "0..1": [bar(END.bar), ring(ringAt)],
-    "1..n": [crow, bar(ringAt)],
-    "0..n": [crow, ring(ringAt + 1)]
-  };
-  return shapes[card].join("");
-}
-
 // src/parts/diagram.ts
 var VIEWPORT_KEYS = "+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight";
 function num2(value) {
@@ -72619,156 +73910,28 @@ var MAP_TOOL_ICONS = {
   collapseAll: "chevrons-down-up",
   reset: "rotate-ccw"
 };
-function renderDiagramTip(tip) {
+function annotationSections(annotations) {
+  return (annotations ?? []).map(
+    ({ number: number4, html }) => `<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading mdmark-note-tip-heading">\u6CE8\u8A18 ${number4}</span><span class="mdmark-term-tip-meaning">${html}</span></span>`
+  ).join("");
+}
+function renderHintTip(tip, parts) {
+  const { owner, hidden, notes } = parts;
   const hint = tip.hint === void 0 || tip.hint === "" ? "" : `<span class="mdmark-term-tip-meaning">${escapeHtml2(tip.hint)}</span>`;
+  const described = hint === "" && notes !== "" ? "" : `<span class="mdmark-term-tip-section">${hint}</span>`;
+  return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}>${described}${notes}</span>`;
+}
+function renderDiagramTip(tip) {
   const owner = escapeHtml2(tip.owner ?? tip.label);
   const hidden = tip.open ? "" : ' hidden="hidden"';
+  const notes = annotationSections(tip.annotations);
+  const parts = { owner, hidden, notes };
   if (tip.kind === "hint") {
-    return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section">${hint}</span></span>`;
+    return renderHintTip(tip, parts);
   }
-  if (tip.kind === "table" && tip.table) {
-    const table2 = tip.table;
-    const desc = table2.desc === void 0 ? "" : `<span class="mdmark-term-tip-meaning">${escapeHtml2(table2.desc)}</span>`;
-    const rows = table2.columns.filter((column) => column.desc).map(
-      (column) => `<dt><code>${escapeHtml2(column.name)}</code></dt><dd>${escapeHtml2(column.desc ?? "")}</dd>`
-    ).join("");
-    const columns = rows ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>` : "";
-    return `<div class="mdmark-diagram-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml2(plainDefinitionText(table2.label))}\uFF08${escapeHtml2(plainDefinitionText(table2.name))}\uFF09</span>${desc}${columns}</span></div>`;
-  }
-  const body = `<span class="mdmark-term-tip-meaning">${escapeHtml2((tip.kind === "item" ? tip.value : tip.tip) ?? "")}</span>`;
-  return `<div class="mdmark-diagram-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml2(tip.label)}</span>${body}</span></div>`;
-}
-function createTips(prefix) {
-  const rendered = [];
-  return {
-    add: (tip) => {
-      const id = `${prefix}-tip-${rendered.length + 1}`;
-      rendered.push(renderDiagramTip({ ...tip, id }));
-      return id;
-    },
-    html: () => rendered.join("")
-  };
-}
-function renderText(text2, tips, lookup, found) {
-  return text2.split(/\{\{(.+?)\}\}/).map((piece, index) => {
-    if (index % 2 === 0) {
-      return escapeHtml2(piece);
-    }
-    const meaning = lookup?.(piece);
-    if (meaning === void 0 || meaning === "") {
-      return escapeHtml2(piece);
-    }
-    found.terms = true;
-    const owner = `term:${piece}`;
-    const id = tips.add({
-      kind: "wire",
-      label: "\u7528\u8A9E",
-      tip: meaning,
-      owner
-    });
-    return `<span class="mdmark-term" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml2(owner)}">${escapeHtml2(piece)}</span>`;
-  }).join("");
-}
-function renderEr(definition, id, hints, lookup) {
-  const tips = createTips(id);
-  const found = { terms: false };
-  const text2 = (value) => renderText(value, tips, lookup, found);
-  const tables = new Map(definition.tables.map((table2) => [table2.id, table2]));
-  const folded = (tableId) => tables.get(tableId)?.folded === true;
-  const svg = [];
-  const labels = [];
-  definition.relations.forEach((relation, index) => {
-    const from = tables.get(relation.from);
-    const to = tables.get(relation.to);
-    if (!from || !to) {
-      return;
-    }
-    const route = erRelationRoute({ relation, from, to, folded });
-    const mid = relation.midX === void 0 ? "" : ` data-er-mid-x="${relation.midX}"`;
-    svg.push(
-      `<g data-er-relation="${index}" data-er-from="${escapeHtml2(relation.from)}" data-er-from-column="${escapeHtml2(relation.fromColumn)}" data-er-from-card="${relation.fromCard}" data-er-to="${escapeHtml2(relation.to)}" data-er-to-column="${escapeHtml2(relation.toColumn)}" data-er-to-card="${relation.toCard}"${mid}><path class="mdmark-diagram-wire" data-line="er" d="${route.d}"></path><g class="mdmark-diagram-er-ends">${erEndSvg({ ...route.start, card: relation.fromCard })}${erEndSvg({ ...route.end, card: relation.toCard })}</g></g>`
-    );
-    if (relation.label) {
-      labels.push(
-        `<span class="mdmark-diagram-label" data-line="er" data-er-relation="${index}" style="left:${route.label.x}px;top:${route.label.y}px">${text2(relation.label)}</span>`
-      );
-    }
-  });
-  const height = Math.max(
-    0,
-    ...definition.tables.map(
-      (table2) => table2.y + erTableHeight({ table: table2, folded: table2.folded === true })
-    )
-  ) + ER_METRICS.bottom;
-  const parts = [
-    `<svg class="mdmark-diagram-wires" width="${num2(definition.width)}" height="${num2(height)}" aria-hidden="true">${svg.join("")}</svg>`
-  ];
-  for (const table2 of definition.tables) {
-    const described = table2.desc !== void 0 || table2.columns.some((column) => column.desc);
-    const tipId = hints && described ? tips.add({
-      kind: "table",
-      label: plainDefinitionText(table2.label),
-      table: table2,
-      owner: `table:${table2.id}`
-    }) : void 0;
-    parts.push(renderErTable({ table: table2, tipId, text: text2 }));
-  }
-  parts.push(...labels);
-  return {
-    html: parts.join(""),
-    width: definition.width,
-    height,
-    tips: tips.html(),
-    jumps: false,
-    terms: found.terms
-  };
-}
-function isErDefinition(definition) {
-  return "tables" in definition;
-}
-function erLegend(definition) {
-  const items = [];
-  for (const kind of Object.keys(ER_TABLE_KINDS)) {
-    if (definition.tables.some((table2) => table2.kind === kind)) {
-      items.push({
-        sample: `er-kind-${kind}`,
-        label: `${ER_TABLE_KINDS[kind].label}\u306E\u30C6\u30FC\u30D6\u30EB`
-      });
-    }
-  }
-  for (const key of Object.keys(ER_COLUMN_KEYS)) {
-    if (definition.tables.some((table2) => table2.columns.some((c) => c[key]))) {
-      items.push({ sample: `er-key-${key}`, label: ER_COLUMN_KEYS[key].title });
-    }
-  }
-  const used = new Set(
-    definition.relations.flatMap((relation) => [
-      relation.fromCard,
-      relation.toCard
-    ])
-  );
-  for (const card of Object.keys(ER_CARDINALITIES)) {
-    if (used.has(card)) {
-      items.push({ sample: `er-card-${card}`, label: ER_CARDINALITIES[card] });
-    }
-  }
-  return items;
-}
-function erLegendSample(sample) {
-  if (sample.startsWith("er-kind-")) {
-    const kind = sample.slice("er-kind-".length);
-    const style = ER_TABLE_KINDS[kind];
-    return `<span class="mdmark-diagram-er-kind mdmark-diagram-er-kind-sample" data-color="${style.color}" aria-hidden="true">${style.label}</span>`;
-  }
-  if (sample.startsWith("er-key-")) {
-    const key = sample.slice("er-key-".length);
-    return `<span class="mdmark-diagram-er-key" data-key="${key}" aria-hidden="true">${ER_COLUMN_KEYS[key].text}</span>`;
-  }
-  if (sample.startsWith("er-card-")) {
-    const card = sample.slice("er-card-".length);
-    return `<svg class="mdmark-diagram-legend-sample mdmark-diagram-er-sample" width="34" height="16" aria-hidden="true"><path class="mdmark-diagram-wire" data-line="er" d="M8,8 H34"></path>${erEndSvg({ x: 4, y: 8, dir: 1, card })}</svg>`;
-  }
-  return void 0;
+  const text2 = (tip.kind === "item" ? tip.value : tip.tip) ?? "";
+  const section = text2 === "" && notes !== "" ? "" : `<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml2(tip.label)}</span><span class="mdmark-term-tip-meaning">${escapeHtml2(text2)}</span></span>`;
+  return `<div class="mdmark-diagram-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}>${section}${notes}</div>`;
 }
 var FILL_LEGEND_TYPES = [
   "bar",
@@ -72777,33 +73940,34 @@ var FILL_LEGEND_TYPES = [
   "horizontal-bar",
   "bubble"
 ];
+function comboLegendItem(definition, series, n) {
+  const side = definition.y2 === void 0 ? "" : series.axis === "y2" ? "\uFF08\u53F3\u306E\u8EF8\uFF09" : "\uFF08\u5DE6\u306E\u8EF8\uFF09";
+  return {
+    sample: series.as === "bar" ? `fill-${n}` : `series-${n}`,
+    label: `${series.name}${side}`
+  };
+}
+function seriesSample(type) {
+  if (FILL_LEGEND_TYPES.includes(type)) {
+    return "fill";
+  }
+  return type === "scatter" ? "point" : "series";
+}
+function pieLegend(definition, donut) {
+  const unit = definition.unit ?? "";
+  return (definition.items ?? []).map((item, index) => ({
+    sample: `fill-${index + 1}`,
+    label: donut ? `${item.name}: ${item.value}${unit}` : `${item.name}\uFF08${item.value}${unit}\uFF09`
+  }));
+}
 function chartLegend(definition) {
   const type = definition.type ?? "line";
-  const unit = definition.unit ?? "";
-  if (type === "pie") {
-    return (definition.items ?? []).map((item, index) => ({
-      sample: `fill-${index + 1}`,
-      label: `${item.name}\uFF08${item.value}${unit}\uFF09`
-    }));
+  if (type === "pie" || type === "donut") {
+    return pieLegend(definition, type === "donut");
   }
-  if (type === "donut") {
-    return (definition.items ?? []).map((item, index) => ({
-      sample: `fill-${index + 1}`,
-      label: `${item.name}: ${item.value}${unit}`
-    }));
-  }
-  const items = (definition.series ?? []).map((series, index) => {
-    const n = index + 1;
-    if (type === "combo") {
-      const side = definition.y2 === void 0 ? "" : series.axis === "y2" ? "\uFF08\u53F3\u306E\u8EF8\uFF09" : "\uFF08\u5DE6\u306E\u8EF8\uFF09";
-      return {
-        sample: series.as === "bar" ? `fill-${n}` : `series-${n}`,
-        label: `${series.name}${side}`
-      };
-    }
-    const sample = FILL_LEGEND_TYPES.includes(type) ? "fill" : type === "scatter" ? "point" : "series";
-    return { sample: `${sample}-${n}`, label: series.name };
-  });
+  const items = (definition.series ?? []).map(
+    (series, index) => type === "combo" ? comboLegendItem(definition, series, index + 1) : { sample: `${seriesSample(type)}-${index + 1}`, label: series.name }
+  );
   if (type === "bubble") {
     items.push({
       sample: "bubble",
@@ -72813,15 +73977,11 @@ function chartLegend(definition) {
   return items;
 }
 function legendFor(definition) {
-  return isErDefinition(definition) ? erLegend(definition) : chartLegend(definition);
+  return chartLegend(definition);
 }
 function legendSample(id, sample) {
   if (sample === "underline") {
     return "";
-  }
-  const er = erLegendSample(sample);
-  if (er !== void 0) {
-    return er;
   }
   if (sample.startsWith("fill-")) {
     const n = Number(sample.slice("fill-".length));
@@ -72829,11 +73989,11 @@ function legendSample(id, sample) {
   }
   if (sample.startsWith("point-")) {
     const n = Number(sample.slice("point-".length));
-    return `<svg class="mdmark-diagram-legend-sample" width="14" height="14" aria-hidden="true"><g data-series="${n}">${pointSvg(n, 7, 7, SCATTER_POINT_SIZE)}</g></svg>`;
+    return `<svg class="mdmark-diagram-legend-sample" width="14" height="14" aria-hidden="true"><g data-series="${n}">${pointSvg(n, [7, 7], SCATTER_POINT_SIZE)}</g></svg>`;
   }
   if (sample.startsWith("series-")) {
     const n = Number(sample.slice("series-".length));
-    return `<svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-series" data-series="${n}" d="M1,6 H33"></path><g data-series="${n}">${pointSvg(n, 17, 6)}</g></svg>`;
+    return `<svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-series" data-series="${n}" d="M1,6 H33"></path><g data-series="${n}">${pointSvg(n, [17, 6])}</g></svg>`;
   }
   if (sample === "bubble") {
     return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-bubble" width="30" height="16" aria-hidden="true"><circle cx="5" cy="11" r="3"></circle><circle cx="20" cy="8" r="7"></circle></svg>';
@@ -72850,21 +74010,34 @@ function renderLegendItem(id, item) {
 function renderTools(frame) {
   const zoom = frame.zoom ?? 1;
   const fit = frame.fit ?? 1;
-  const tool = (name, label, icon, disabled = false) => `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(icon)}</button>`;
+  const tool = (name, face, disabled = false) => `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${face.label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(face.icon)}</button>`;
   const extra = frame.tools === void 0 || frame.tools.length === 0 ? "" : `<div class="mdmark-diagram-tools-group" data-group="map">${frame.tools.map(
     (item) => `<button class="mdmark-diagram-tool" type="button" data-tool="${escapeHtml2(item.name)}" aria-label="${escapeHtml2(item.label)}" title="${escapeHtml2(item.label)}"${item.disabled ? ' disabled="disabled"' : ""}>${iconSvg(MAP_TOOL_ICONS[item.name] ?? "ellipsis")}</button>`
   ).join("")}</div>`;
   const pan = [
-    tool("left", "\u5DE6\u3078\u52D5\u304B\u3059", "chevron-left"),
-    tool("up", "\u4E0A\u3078\u52D5\u304B\u3059", "chevron-up"),
-    tool("down", "\u4E0B\u3078\u52D5\u304B\u3059", "chevron-down"),
-    tool("right", "\u53F3\u3078\u52D5\u304B\u3059", "chevron-right")
+    tool("left", { label: "\u5DE6\u3078\u52D5\u304B\u3059", icon: "chevron-left" }),
+    tool("up", { label: "\u4E0A\u3078\u52D5\u304B\u3059", icon: "chevron-up" }),
+    tool("down", { label: "\u4E0B\u3078\u52D5\u304B\u3059", icon: "chevron-down" }),
+    tool("right", { label: "\u53F3\u3078\u52D5\u304B\u3059", icon: "chevron-right" })
   ].join("");
-  const screen = frame.modal ? tool("close", "\u5168\u753B\u9762\u3092\u9589\u3058\u308B", "x") : tool("fullscreen", "\u5168\u753B\u9762\u3067\u958B\u304F", "expand");
+  const screen = frame.modal ? tool("close", { label: "\u5168\u753B\u9762\u3092\u9589\u3058\u308B", icon: "x" }) : tool("fullscreen", { label: "\u5168\u753B\u9762\u3067\u958B\u304F", icon: "expand" });
   const percent = `${Math.round(zoom / fit * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="\u500D\u7387 ${percent}\u3002\u5168\u4F53\u304C\u53CE\u307E\u308B\u500D\u7387\u306B\u623B\u3059">${percent}</button>`;
   const panGroup = frame.kind === "map" ? "" : `<div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div>`;
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "\u7E2E\u5C0F", "minus", zoom <= fit)}${zoomButton}${tool("in", "\u62E1\u5927", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "\u7E2E\u5C0F", icon: "minus" }, zoom <= fit)}${zoomButton}${tool("in", { label: "\u62E1\u5927", icon: "plus" }, zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+}
+function resizeHandle(frame, fitHeight) {
+  if (frame.resizable === false || frame.modal === true) return "";
+  const height = Math.round(Math.max(RESIZE.min, fitHeight));
+  return `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A\u306E\u9AD8\u3055" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="${height}" aria-valuemin="${RESIZE.min}" aria-valuemax="${height}" aria-valuetext="${height}px" title="\u30C9\u30E9\u30C3\u30B0\u304B \u2191 \u2193 \u3067\u9AD8\u3055\u3092\u5909\u3048\u308B\u3002\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u56F3\u306E\u5168\u4F53\u304C\u53CE\u307E\u308B\u9AD8\u3055\u306B\u3059\u308B">${iconSvg("equal")}</div>`;
+}
+function frameMeta(frame) {
+  return frame.scope === void 0 || frame.updated === void 0 ? "" : `<span class="mdmark-diagram-meta">\u7BC4\u56F2: ${escapeHtml2(frame.scope)}\u30FB\u66F4\u65B0\u65E5: <time datetime="${escapeHtml2(frame.updated)}">${escapeHtml2(frame.updated)}</time></span>`;
+}
+function frameAttributes(frame) {
+  const fitMin = frame.fitMin === void 0 ? "" : ` data-fit-min="${num2(frame.fitMin)}"`;
+  const wide = frame.wide === true ? ' data-wide="true"' : "";
+  return `${fitMin}${wide}`;
 }
 function renderDiagramFrame(frame, body) {
   const id = escapeHtml2(frame.id);
@@ -72872,27 +74045,21 @@ function renderDiagramFrame(frame, body) {
   const sizer = `width:${num2(body.width * zoom)}px;height:${num2(body.height * zoom)}px`;
   const stage = `width:${num2(body.width)}px;height:${num2(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num2(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
-  const resize = frame.resizable !== false && frame.modal !== true ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A\u306E\u9AD8\u3055" aria-keyshortcuts="ArrowUp ArrowDown" title="\u30C9\u30E9\u30C3\u30B0\u304B \u2191 \u2193 \u3067\u9AD8\u3055\u3092\u5909\u3048\u308B\u3002\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u56F3\u306E\u5168\u4F53\u304C\u53CE\u307E\u308B\u9AD8\u3055\u306B\u3059\u308B">${iconSvg("equal")}</div>` : "";
-  const fitMin = frame.fitMin === void 0 ? "" : ` data-fit-min="${num2(frame.fitMin)}"`;
-  const meta2 = frame.scope === void 0 || frame.updated === void 0 ? "" : `<span class="mdmark-diagram-meta">\u7BC4\u56F2: ${escapeHtml2(frame.scope)}\u30FB\u66F4\u65B0\u65E5: <time datetime="${escapeHtml2(frame.updated)}">${escapeHtml2(frame.updated)}</time></span>`;
-  const wide = frame.wide === true ? ' data-wide="true"' : "";
   const touchActive = frame.touchActive === true ? " data-touch-active" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${fitMin}${wide}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${meta2}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 function renderDiagram(options) {
   const {
     kind,
     definition,
     id,
-    lookup,
     zoom,
     fit,
     modal,
     touchActive,
-    hints = true,
     resizable = true
   } = options;
-  const part = kind === "er" ? renderEr(definition, id, hints, lookup) : renderChart(definition, id);
+  const part = renderChart(definition, id);
   return renderDiagramFrame(
     {
       kind,
@@ -73001,82 +74168,94 @@ function replaceRetiredDiagrams(state) {
   }
   state.tokens = out;
 }
+function openDiagramDirective(token) {
+  const mark = markOf(token);
+  if (!mark || mark.closing || !Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name)) {
+    return void 0;
+  }
+  return mark.name;
+}
+function diagramHtml(directive, definition, context) {
+  const { env, resizable } = context;
+  env.diagramCount = (env.diagramCount ?? 0) + 1;
+  const count = env.diagramCount;
+  if (directive === "param") {
+    const param = definition;
+    env.paramDefinitions?.push(param);
+    return renderParam(param, {
+      id: `${PARAM_ID_PREFIX}-${count}`,
+      copyLabel: env.labels?.paramCopy,
+      resizable
+    });
+  }
+  return renderDiagram({
+    kind: directive,
+    definition,
+    id: `${DIAGRAM_ID_PREFIX}-${count}`,
+    resizable
+  });
+}
+function diagramToken(state, range, context) {
+  const { token, directive, blocks } = range;
+  const result = readDefinition(directive, blocks);
+  const definition = result.definition;
+  if (!result.ok || definition === void 0) {
+    return warningBlock(state, {
+      ...definitionWarning(directive, result.problems),
+      kind: "diagram_invalid",
+      ...token.map ? { line: token.map[0] } : {}
+    });
+  }
+  const block2 = ownBlock(
+    state,
+    diagramHtml(directive, definition, context),
+    token
+  );
+  block2.meta = {
+    [DIAGRAM_META]: true,
+    [PARAM_COUNT_META]: directive === "param" ? 1 : 0
+  };
+  return block2;
+}
 function buildDiagrams(state) {
   replaceRetiredDiagrams(state);
   if (!featureOn(state, "diagrams")) {
     return;
   }
   const env = envOf(state);
-  const dictionary = buildDictionary({
-    index: env.index,
-    docId: env.docId,
-    ownGlossary: env.ownGlossary,
-    references: env.mdmarkReferences,
-    features: env.features
-  });
-  const lookup = (word) => dictionary.term(word)?.meaning;
   env.paramDefinitions ??= [];
-  const hints = featureOn(state, "hints");
-  const resizable = featureOn(state, "diagram-resize");
+  const context = {
+    env,
+    resizable: featureOn(state, "diagram-resize")
+  };
   const tokens = state.tokens;
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const mark = markOf(token);
-    if (!token || !mark || mark.closing || !Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name)) {
+    const directive = openDiagramDirective(token);
+    if (!token || !directive) {
       if (token) {
         out.push(token);
       }
       continue;
     }
-    const directive = mark.name;
-    const closeIndex = findClose(tokens, index, mark.name);
+    const closeIndex = findClose(tokens, index, directive);
     const end = closeIndex < 0 ? tokens.length : closeIndex;
-    if (closeIndex < 0) {
+    const mark = markOf(token);
+    if (closeIndex < 0 && mark) {
       out.push(warningBlock(state, unclosedWarning(mark), token));
     }
-    const result = readDefinition(
-      directive,
-      jsonBlocks(tokens.slice(index + 1, end))
+    out.push(
+      diagramToken(
+        state,
+        {
+          token,
+          directive,
+          blocks: jsonBlocks(tokens.slice(index + 1, end))
+        },
+        context
+      )
     );
-    const definition = result.definition;
-    if (!result.ok || definition === void 0) {
-      out.push(
-        warningBlock(state, {
-          ...definitionWarning(directive, result.problems),
-          kind: "diagram_invalid",
-          ...token.map ? { line: token.map[0] } : {}
-        })
-      );
-    } else {
-      env.diagramCount = (env.diagramCount ?? 0) + 1;
-      const count = env.diagramCount;
-      let html;
-      if (directive === "param") {
-        const param = definition;
-        env.paramDefinitions.push(param);
-        html = renderParam(param, {
-          id: `${PARAM_ID_PREFIX}-${count}`,
-          copyLabel: env.labels?.paramCopy,
-          resizable
-        });
-      } else {
-        html = renderDiagram({
-          kind: directive,
-          definition,
-          id: `${DIAGRAM_ID_PREFIX}-${count}`,
-          lookup,
-          hints,
-          resizable
-        });
-      }
-      const block2 = ownBlock(state, html, token);
-      block2.meta = {
-        [DIAGRAM_META]: true,
-        [PARAM_COUNT_META]: directive === "param" ? 1 : 0
-      };
-      out.push(block2);
-    }
     index = end;
   }
   state.tokens = out;
@@ -73092,6 +74271,24 @@ function blockMark(token) {
   }
   return { name: only[2] ?? "", closing: only[1] === "/" };
 }
+function openBlockMark(token) {
+  const mark = token ? blockMark(token) : void 0;
+  if (!mark || mark.closing) {
+    return void 0;
+  }
+  return Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name) || isRetiredDiagram(mark.name) ? mark : void 0;
+}
+function findBlockClose(tokens, index, name) {
+  const level = tokens[index]?.level;
+  for (let next = index + 1; next < tokens.length; next++) {
+    const candidate = tokens[next];
+    const close = candidate ? blockMark(candidate) : void 0;
+    if (close?.closing && close.name === name && candidate?.level === level) {
+      return next;
+    }
+  }
+  return tokens.length;
+}
 function findDiagramBlocks(markdown) {
   const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
   const lines = markdown.split("\n");
@@ -73099,19 +74296,11 @@ function findDiagramBlocks(markdown) {
   const found = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const mark = token ? blockMark(token) : void 0;
-    if (!token || !mark || mark.closing || !(Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name) || isRetiredDiagram(mark.name))) {
+    const mark = openBlockMark(token);
+    if (!token || !mark) {
       continue;
     }
-    let end = tokens.length;
-    for (let next = index + 1; next < tokens.length; next++) {
-      const candidate = tokens[next];
-      const close = candidate ? blockMark(candidate) : void 0;
-      if (close?.closing && close.name === mark.name && candidate?.level === token.level) {
-        end = next;
-        break;
-      }
-    }
+    const end = findBlockClose(tokens, index, mark.name);
     const closeToken = tokens[end];
     found.push({
       directive: mark.name,
@@ -73143,6 +74332,20 @@ function renderImageOpener(options) {
   const iconHtml = icon ? `<span class="mdmark-image-open-icon" aria-hidden="true">${iconSvg("maximize-2")}</span>` : "";
   return `<button class="mdmark-image-open" type="button" aria-label="\u753B\u50CF\u3092\u62E1\u5927: ${escapeHtml2(alt)}">${img}${iconHtml}</button>`;
 }
+function figureAttributes(options) {
+  const { only, id, align, width } = options;
+  const className = `mdmark-figure mdmark-image${only ? ` mdmark-only-${only}` : ""}`;
+  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
+  const alignAttribute = align === void 0 ? "" : ` data-align="${align}"`;
+  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
+  return `class="${className}"${idAttribute}${alignAttribute}${style}`;
+}
+function renderFigcaption(options) {
+  const { label, caption } = options;
+  const head = label === void 0 ? "" : `<b>${escapeHtml2(label)}</b>`;
+  const text2 = caption === void 0 ? "" : escapeHtml2(caption);
+  return head === "" && text2 === "" ? "" : `<figcaption class="mdmark-figure-caption">${head}${text2}</figcaption>`;
+}
 function renderImageFigure(options) {
   const {
     src,
@@ -73157,20 +74360,28 @@ function renderImageFigure(options) {
     opener = true,
     gif = false
   } = options;
-  const className = `mdmark-figure mdmark-image${only ? ` mdmark-only-${only}` : ""}`;
-  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
-  const alignAttribute = align === void 0 ? "" : ` data-align="${align}"`;
-  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
+  const attributes = figureAttributes({ only, id, align, width });
   const flags = `${lightbox ? "" : " data-nolightbox"}${gif ? " data-gif" : ""}`;
   const img = `<img src="${escapeHtml2(src)}" alt="${escapeHtml2(alt)}"${flags}>`;
   const body = opener && lightbox ? renderImageOpener({ alt, img, icon: !gif }) : img;
-  const head = label === void 0 ? "" : `<b>${escapeHtml2(label)}</b>`;
-  const text2 = caption === void 0 ? "" : escapeHtml2(caption);
-  const figcaption = head === "" && text2 === "" ? "" : `<figcaption class="mdmark-figure-caption">${head}${text2}</figcaption>`;
-  return `<figure class="${className}"${idAttribute}${alignAttribute}${style}>${body}${figcaption}</figure>`;
+  const figcaption = renderFigcaption({ label, caption });
+  return `<figure ${attributes}>${body}${figcaption}</figure>`;
 }
 
 // src/parts/media.ts
+function mediaFlags(options) {
+  const { video, autoplay, muted, loop } = options;
+  return [
+    "controls",
+    autoplay ? "autoplay" : "",
+    autoplay || muted ? "muted" : "",
+    loop ? "loop" : "",
+    video ? "playsinline" : ""
+  ].filter((flag) => flag !== "").map((flag) => ` ${flag}`).join("");
+}
+function renderMediaCaption(caption) {
+  return caption === void 0 || caption === "" ? "" : `<figcaption class="mdmark-figure-caption">${escapeHtml2(caption)}</figcaption>`;
+}
 function renderMedia(options) {
   const {
     kind,
@@ -73184,18 +74395,12 @@ function renderMedia(options) {
     loop = false
   } = options;
   const video = kind === "video";
-  const flags = [
-    "controls",
-    autoplay ? "autoplay" : "",
-    autoplay || muted ? "muted" : "",
-    loop ? "loop" : "",
-    video ? "playsinline" : ""
-  ].filter((flag) => flag !== "").map((flag) => ` ${flag}`).join("");
+  const flags = mediaFlags({ video, autoplay, muted, loop });
   const posterUrl = video && poster !== void 0 ? escapeHtml2(poster) : "";
   const posterAttribute = posterUrl === "" ? "" : ` poster="${posterUrl}"`;
   const player = `<${kind} src="${escapeHtml2(src)}"${flags} preload="metadata" aria-label="${escapeHtml2(alt)}"${posterAttribute}></${kind}>`;
   const print = posterUrl === "" ? "" : `<img class="mdmark-media-print" src="${posterUrl}" alt="">`;
-  const figcaption = caption === void 0 || caption === "" ? "" : `<figcaption class="mdmark-figure-caption">${escapeHtml2(caption)}</figcaption>`;
+  const figcaption = renderMediaCaption(caption);
   const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
   return `<figure class="mdmark-figure mdmark-media"${style}>${player}${print}${figcaption}</figure>`;
 }
@@ -73244,6 +74449,82 @@ function readWidth(value) {
   }
   return void 0;
 }
+var unusable = (attribute) => ({
+  label: attribute.part,
+  message: "\u4F7F\u7528\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002"
+});
+var readWidthAttribute = (attributes, attribute) => {
+  if (attribute.value === void 0) {
+    return unusable(attribute);
+  }
+  const width = readWidth(attribute.value);
+  if (width === void 0) {
+    return {
+      label: attribute.part,
+      message: `\u5E45\u306F \`300\`\u30FB\`300px\` \u306E px \u304B\u3001\`1%\`\u301C\`${MAX_WIDTH_PERCENT}%\` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    };
+  }
+  attributes.width = width;
+  return void 0;
+};
+var readAlignAttribute = (attributes, attribute) => {
+  const { name, value, inline: inline2, part } = attribute;
+  if (inline2) {
+    return {
+      label: name,
+      message: "\u6587\u306E\u4E2D\u306E\u753B\u50CF\u306B\u306F\u8A18\u8F09\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    };
+  }
+  if (!ALIGNS.includes(value)) {
+    return {
+      label: part,
+      message: `\u914D\u7F6E\u306F ${codes(ALIGNS)} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    };
+  }
+  attributes.align = value;
+  return void 0;
+};
+var readFlagAttribute = (attributes, attribute) => {
+  const { part } = attribute;
+  if (part !== "autoplay" && part !== "muted" && part !== "loop") {
+    return unusable(attribute);
+  }
+  attributes[part] = true;
+  return void 0;
+};
+var ATTRIBUTE_READERS = {
+  width: readWidthAttribute,
+  align: readAlignAttribute,
+  nolightbox: (attributes, attribute) => {
+    if (attribute.part !== "nolightbox") {
+      return unusable(attribute);
+    }
+    attributes.lightbox = false;
+    return void 0;
+  },
+  autoplay: readFlagAttribute,
+  muted: readFlagAttribute,
+  loop: readFlagAttribute,
+  poster: (attributes, attribute) => {
+    if (attribute.kind === "video" && attribute.value) {
+      attributes.poster = attribute.value;
+      return void 0;
+    }
+    return {
+      label: attribute.part,
+      message: "\u52D5\u753B\u306B\u3060\u3051\u3001`poster=\u30D1\u30B9` \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002"
+    };
+  }
+};
+var readAttribute = (attributes, attribute) => {
+  const { kind, name, part } = attribute;
+  const media = kind === "video" || kind === "audio";
+  if (MEDIA_ONLY_ATTRIBUTES.includes(name) && !media) {
+    return { label: part, message: "\u52D5\u753B\u3068\u97F3\u58F0\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002" };
+  }
+  const read = Object.hasOwn(ATTRIBUTE_READERS, name) ? ATTRIBUTE_READERS[name] : void 0;
+  return read ? read(attributes, attribute) : unusable(attribute);
+};
 function readImageAttributes(text2, kind, inline2) {
   const attributes = {
     kind,
@@ -73253,46 +74534,17 @@ function readImageAttributes(text2, kind, inline2) {
     loop: false,
     items: []
   };
-  const media = kind === "video" || kind === "audio";
-  const unreadable5 = (label, message) => attributes.items.push({ label, message });
   for (const part of text2.split(/\s+/).filter((item) => item !== "")) {
     const equals = part.indexOf("=");
-    const name = equals < 0 ? part : part.slice(0, equals);
-    const value = equals < 0 ? void 0 : part.slice(equals + 1);
-    if (MEDIA_ONLY_ATTRIBUTES.includes(name) && !media) {
-      unreadable5(part, "\u52D5\u753B\u3068\u97F3\u58F0\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002");
-    } else if (name === "width" && value !== void 0) {
-      const width = readWidth(value);
-      if (width === void 0) {
-        unreadable5(
-          part,
-          `\u5E45\u306F \`300\`\u30FB\`300px\` \u306E px \u304B\u3001\`1%\`\u301C\`${MAX_WIDTH_PERCENT}%\` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        );
-      } else {
-        attributes.width = width;
-      }
-    } else if (name === "align" && inline2) {
-      unreadable5(
-        name,
-        "\u6587\u306E\u4E2D\u306E\u753B\u50CF\u306B\u306F\u8A18\u8F09\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      );
-    } else if (name === "align" && ALIGNS.includes(value)) {
-      attributes.align = value;
-    } else if (name === "align") {
-      unreadable5(part, `\u914D\u7F6E\u306F ${codes(ALIGNS)} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
-    } else if (part === "nolightbox") {
-      attributes.lightbox = false;
-    } else if (part === "autoplay" || part === "muted" || part === "loop") {
-      attributes[part] = true;
-    } else if (name === "poster" && kind === "video" && value) {
-      attributes.poster = value;
-    } else if (name === "poster") {
-      unreadable5(
-        part,
-        "\u52D5\u753B\u306B\u3060\u3051\u3001`poster=\u30D1\u30B9` \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002"
-      );
-    } else {
-      unreadable5(part, "\u4F7F\u7528\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002");
+    const unreadable7 = readAttribute(attributes, {
+      part,
+      name: equals < 0 ? part : part.slice(0, equals),
+      value: equals < 0 ? void 0 : part.slice(equals + 1),
+      kind,
+      inline: inline2
+    });
+    if (unreadable7) {
+      attributes.items.push(unreadable7);
     }
   }
   if (attributes.autoplay) {
@@ -73316,9 +74568,36 @@ function kindOf(state, src) {
   return media && !featureOn(state, "media") ? "image" : kind;
 }
 var ATTRIBUTE_LIST = codes(IMAGE_ATTRIBUTE_NAMES);
+function takeAttributeText(next) {
+  if (next?.type !== "text") {
+    return "";
+  }
+  const found = ATTRIBUTE_PATTERN.exec(next.content);
+  if (!found) {
+    return "";
+  }
+  next.content = next.content.slice(found[0].length);
+  return found[1] ?? "";
+}
+function readImage(state, image2) {
+  const { children, position, sole, images } = image2;
+  const child = children[position];
+  const kind = kindOf(state, String(child.attrGet("src") ?? ""));
+  const inline2 = child !== sole && !isSoleWithAttributes(children, position);
+  const text2 = images ? takeAttributeText(children[position + 1]) : "";
+  const attributes = readImageAttributes(text2, kind, inline2);
+  child.meta = { ...child.meta ?? {}, mdmarkImage: attributes };
+  if (kind === "gif") {
+    child.attrSet("data-gif", "");
+  }
+  if (inline2 && attributes.width !== void 0) {
+    child.attrSet("style", `--mdmark-image-width: ${attributes.width}`);
+    child.attrSet("data-mdmark-own", envOf(state).nonce);
+  }
+  return attributes.items;
+}
 function readImages(state) {
   const images = featureOn(state, "images");
-  const nonce = envOf(state).nonce;
   const warnings = [];
   for (const [index, token] of state.tokens.entries()) {
     const children = token.children;
@@ -73326,30 +74605,9 @@ function readImages(state) {
       continue;
     }
     const sole = soleImageOf(token);
-    const items = [];
-    for (const [position, child] of children.entries()) {
-      if (child.type !== "image") {
-        continue;
-      }
-      const src = String(child.attrGet("src") ?? "");
-      const kind = kindOf(state, src);
-      const next = children[position + 1];
-      const found = images && next?.type === "text" ? ATTRIBUTE_PATTERN.exec(next.content) : null;
-      const inline2 = child !== sole && !isSoleWithAttributes(children, position);
-      const attributes = readImageAttributes(found?.[1] ?? "", kind, inline2);
-      if (found && next) {
-        next.content = next.content.slice(found[0].length);
-      }
-      child.meta = { ...child.meta ?? {}, mdmarkImage: attributes };
-      if (kind === "gif") {
-        child.attrSet("data-gif", "");
-      }
-      if (inline2 && attributes.width !== void 0) {
-        child.attrSet("style", `--mdmark-image-width: ${attributes.width}`);
-        child.attrSet("data-mdmark-own", nonce);
-      }
-      items.push(...attributes.items);
-    }
+    const items = children.flatMap(
+      (child, position) => child.type === "image" ? readImage(state, { children, position, sole, images }) : []
+    );
     token.children = children.filter(
       (child) => !(child.type === "text" && child.content === "")
     );
@@ -73394,46 +74652,100 @@ function altOf(image2) {
 function onlyOf(src) {
   return ONLY_PATTERN.exec(src)?.[1];
 }
+var captionOf = (image2) => {
+  const title = String(image2.attrGet("title") ?? "");
+  return title ? { caption: title } : {};
+};
+var figureAttributesOf = (attributes) => ({
+  ...attributes?.width === void 0 ? {} : { width: attributes.width },
+  ...attributes?.align === void 0 ? {} : { align: attributes.align },
+  lightbox: attributes?.lightbox ?? true
+});
 function imageFigureHtml(image2, extra = {}) {
   const src = String(image2.attrGet("src") ?? "");
   const attributes = imageAttributesOf(image2);
-  const title = String(image2.attrGet("title") ?? "");
+  const only = onlyOf(src);
   return renderImageFigure({
     src,
     alt: altOf(image2),
-    ...title ? { caption: title } : {},
-    ...attributes?.width === void 0 ? {} : { width: attributes.width },
-    ...attributes?.align === void 0 ? {} : { align: attributes.align },
-    lightbox: attributes?.lightbox ?? true,
-    ...onlyOf(src) === void 0 ? {} : { only: onlyOf(src) },
+    ...captionOf(image2),
+    ...figureAttributesOf(attributes),
+    ...only === void 0 ? {} : { only },
     ...extra,
     opener: false,
     gif: attributes?.kind === "gif"
   });
 }
+var mediaAttributesOf = (attributes) => ({
+  ...attributes?.width === void 0 ? {} : { width: attributes.width },
+  ...attributes?.poster === void 0 ? {} : { poster: attributes.poster },
+  ...playbackOf(attributes)
+});
+var playbackOf = (attributes) => ({
+  autoplay: attributes?.autoplay ?? false,
+  muted: attributes?.muted ?? false,
+  loop: attributes?.loop ?? false
+});
 function mediaHtml(image2, kind) {
-  const attributes = imageAttributesOf(image2);
-  const title = String(image2.attrGet("title") ?? "");
   return renderMedia({
     kind,
     src: String(image2.attrGet("src") ?? ""),
     alt: altOf(image2),
-    ...title ? { caption: title } : {},
-    ...attributes?.width === void 0 ? {} : { width: attributes.width },
-    ...attributes?.poster === void 0 ? {} : { poster: attributes.poster },
-    autoplay: attributes?.autoplay ?? false,
-    muted: attributes?.muted ?? false,
-    loop: attributes?.loop ?? false
+    ...captionOf(image2),
+    ...mediaAttributesOf(imageAttributesOf(image2))
   });
 }
 function mediaKindOfToken(image2) {
   const kind = imageAttributesOf(image2)?.kind;
   return kind === "video" || kind === "audio" ? kind : void 0;
 }
+function soleFigure(state, paragraph2) {
+  const { token, inline: inline2, features } = paragraph2;
+  const sole = soleImageOf(inline2);
+  if (!sole) {
+    return void 0;
+  }
+  const soleMedia = mediaKindOfToken(sole);
+  if (soleMedia) {
+    return features.media ? ownBlock(state, mediaHtml(sole, soleMedia), token) : void 0;
+  }
+  return features.images ? ownBlock(state, imageFigureHtml(sole), token) : void 0;
+}
+function splitInlineMedia(state, paragraph2) {
+  const { token, inline: inline2, features } = paragraph2;
+  const after = [];
+  let linkDepth = 0;
+  const children = [];
+  for (const child of inline2.children ?? []) {
+    linkDepth += child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
+    const kind = child.type === "image" ? mediaKindOfToken(child) : void 0;
+    if (kind && features.media && linkDepth === 0) {
+      after.push(ownBlock(state, mediaHtml(child, kind), token));
+      continue;
+    }
+    markOnlyImage(state, { child, images: features.images });
+    children.push(child);
+  }
+  inline2.children = children;
+  return after;
+}
+function markOnlyImage(state, image2) {
+  const { child, images } = image2;
+  if (child.type !== "image" || !images) {
+    return;
+  }
+  const only = onlyOf(String(child.attrGet("src") ?? ""));
+  if (only) {
+    child.attrJoin("class", `mdmark-only-${only}`);
+    child.attrSet("data-mdmark-own", envOf(state).nonce);
+  }
+}
 function buildImageFigures(state) {
-  const images = featureOn(state, "images");
-  const media = featureOn(state, "media");
-  if (!images && !media) {
+  const features = {
+    images: featureOn(state, "images"),
+    media: featureOn(state, "media")
+  };
+  if (!features.images && !features.media) {
     return;
   }
   const tokens = state.tokens;
@@ -73446,41 +74758,14 @@ function buildImageFigures(state) {
       out.push(token);
       continue;
     }
-    const sole = soleImageOf(inline2);
-    const soleMedia = sole ? mediaKindOfToken(sole) : void 0;
-    if (sole && soleMedia && media) {
-      out.push(ownBlock(state, mediaHtml(sole, soleMedia), token));
-      index += 2;
-      continue;
+    const paragraph2 = { token, inline: inline2, features };
+    const figure = soleFigure(state, paragraph2);
+    if (figure) {
+      out.push(figure);
+    } else {
+      const after = splitInlineMedia(state, paragraph2);
+      out.push(token, inline2, ...close ? [close] : [], ...after);
     }
-    if (sole && images && !soleMedia) {
-      out.push(ownBlock(state, imageFigureHtml(sole), token));
-      index += 2;
-      continue;
-    }
-    const after = [];
-    let linkDepth = 0;
-    const children = [];
-    for (const child of inline2.children ?? []) {
-      linkDepth += child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
-      const kind = child.type === "image" ? mediaKindOfToken(child) : void 0;
-      if (kind && media && linkDepth === 0) {
-        after.push(ownBlock(state, mediaHtml(child, kind), token));
-        continue;
-      }
-      const only = child.type === "image" ? onlyOf(String(child.attrGet("src") ?? "")) : void 0;
-      if (only && images) {
-        child.attrJoin("class", `mdmark-only-${only}`);
-        child.attrSet("data-mdmark-own", envOf(state).nonce);
-      }
-      children.push(child);
-    }
-    inline2.children = children;
-    out.push(token, inline2);
-    if (close) {
-      out.push(close);
-    }
-    out.push(...after);
     index += 2;
   }
   state.tokens = out;
@@ -73503,46 +74788,54 @@ function matchingClose(tokens, start, match) {
   }
   return -1;
 }
-function figureTarget(state, start) {
-  const tokens = state.tokens;
-  const first = tokens[start];
-  const firstMark = markOf(first);
-  if (first && firstMark?.name === "gallery" && !firstMark.closing && featureOn(state, "gallery")) {
-    return { kind: "image", end: start, caption: "", gallery: first };
-  }
-  if (first?.meta?.[DIAGRAM_META] === true) {
-    return { kind: "image", end: start, caption: "" };
-  }
-  if (first?.type === "paragraph_open") {
-    const children = tokens[start + 1]?.children ?? [];
-    const image2 = children.find((child) => child.type === "image");
-    if (image2 && children.every((child) => child.type === "image")) {
-      const kind = imageAttributesOf(image2)?.kind;
-      const still = kind !== "video" && kind !== "audio";
-      return {
-        kind: "image",
-        end: start + 2,
-        caption: String(image2.attrGet("title") ?? ""),
-        ...still && children.length === 1 && featureOn(state, "images") ? { image: image2 } : {}
-      };
-    }
+function isStillImageFigure(state, image2) {
+  const kind = imageAttributesOf(image2)?.kind;
+  return kind !== "video" && kind !== "audio" && featureOn(state, "images");
+}
+function imageParagraphTarget(state, start) {
+  const children = state.tokens[start + 1]?.children ?? [];
+  const image2 = children.find((child) => child.type === "image");
+  if (!image2 || !children.every((child) => child.type === "image")) {
     return void 0;
   }
-  if (first?.meta?.role === "table-open") {
-    const end = matchingClose(tokens, start, {
-      isOpen: (token) => token.meta?.role === "table-open",
-      isClose: (token) => token.meta?.role === "table-close"
-    });
-    return end < 0 ? void 0 : { kind: "table", end, caption: "" };
+  return {
+    kind: "image",
+    end: start + 2,
+    caption: String(image2.attrGet("title") ?? ""),
+    ...children.length === 1 && isStillImageFigure(state, image2) ? { image: image2 } : {}
+  };
+}
+function tableTarget(tokens, start) {
+  const first = tokens[start];
+  const match = first?.meta?.role === "table-open" ? {
+    isOpen: (token) => token.meta?.role === "table-open",
+    isClose: (token) => token.meta?.role === "table-close"
+  } : first?.type === "table_open" ? {
+    isOpen: (token) => token.type === "table_open",
+    isClose: (token) => token.type === "table_close"
+  } : void 0;
+  if (!match) {
+    return void 0;
   }
-  if (first?.type === "table_open") {
-    const end = matchingClose(tokens, start, {
-      isOpen: (token) => token.type === "table_open",
-      isClose: (token) => token.type === "table_close"
-    });
-    return end < 0 ? void 0 : { kind: "table", end, caption: "" };
+  const end = matchingClose(tokens, start, match);
+  return end < 0 ? void 0 : { kind: "table", end, caption: "" };
+}
+function figureTarget(state, start) {
+  const first = state.tokens[start];
+  if (!first) {
+    return void 0;
   }
-  return void 0;
+  const firstMark = markOf(first);
+  if (firstMark?.name === "gallery" && !firstMark.closing && featureOn(state, "gallery")) {
+    return { kind: "image", end: start, caption: "", gallery: first };
+  }
+  if (first.meta?.[DIAGRAM_META] === true) {
+    return { kind: "image", end: start, caption: "" };
+  }
+  if (first.type === "paragraph_open") {
+    return imageParagraphTarget(state, start);
+  }
+  return tableTarget(state.tokens, start);
 }
 function referencedId(value) {
   const href = String(value ?? "");
@@ -73584,80 +74877,68 @@ function rewriteReferences(state, inline2, figures) {
   }
   return broken;
 }
-function numberFigures(state) {
-  if (!featureOn(state, "figures")) {
-    return;
+function figMarkTarget(state, index) {
+  const mark = markOf(state.tokens[index]);
+  if (mark?.name !== "fig" || mark.closing) {
+    return void 0;
   }
-  const tokens = state.tokens;
-  const figures = /* @__PURE__ */ new Map();
-  const counts = { image: 0, table: 0 };
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    const target = mark?.name === "fig" && !mark.closing && typeof mark.options.id === "string" && mark.options.id !== "" ? figureTarget(state, index + 1) : void 0;
-    if (!token || !mark || !target) {
-      if (token) {
-        out.push(token);
-      }
-      continue;
-    }
-    const id = String(mark.options.id);
-    counts[target.kind] += 1;
-    const number4 = counts[target.kind];
-    const duplicated = figures.has(id);
-    if (duplicated) {
-      out.push(
-        warningBlock(
-          state,
-          {
-            mark: mark.raw,
-            message: `\u306E ID \`${id}\` \u306F\u3001\u524D\u306E\u56F3\u8868\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u5225\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u56F3\u306B\u306F\u756A\u53F7\u3060\u3051\u3092\u4ED8\u3051\u3001ID \u3092\u4ED8\u3051\u3066\u3044\u307E\u305B\u3093\u3002`
-          },
-          token
-        )
-      );
-    } else {
-      figures.set(id, { kind: target.kind, number: number4 });
-    }
-    const figureId = duplicated ? void 0 : id;
-    if (target.gallery) {
-      target.gallery.meta = {
-        ...target.gallery.meta,
-        figure: { id: figureId, number: number4 }
-      };
-      continue;
-    }
-    if (target.image) {
-      out.push(
-        ownBlock(
-          state,
-          imageFigureHtml(target.image, {
-            ...figureId === void 0 ? {} : { id: `fig-${figureId}` },
-            label: `\u56F3 ${number4}`
-          }),
-          token
-        )
-      );
-      index = target.end;
-      continue;
-    }
-    const html = renderFigure({
-      kind: target.kind,
-      id: figureId,
-      number: number4,
-      caption: target.caption,
-      body: SLOT_MARKER
-    });
-    const [head = "", tail = ""] = html.split(SLOT_MARKER);
-    out.push(ownBlock(state, head, token));
-    out.push(...tokens.slice(index + 1, target.end + 1));
-    out.push(ownBlock(state, tail));
-    index = target.end;
+  const id = mark.options.id;
+  if (typeof id !== "string" || id === "") {
+    return void 0;
   }
+  const target = figureTarget(state, index + 1);
+  return target ? { mark, id, target } : void 0;
+}
+function registerFigure(registry2, figure) {
+  const { id, kind } = figure;
+  registry2.counts[kind] += 1;
+  const number4 = registry2.counts[kind];
+  if (registry2.figures.has(id)) {
+    return { number: number4, figureId: void 0 };
+  }
+  registry2.figures.set(id, { kind, number: number4 });
+  return { number: number4, figureId: id };
+}
+function wrapFigure(state, range, numbered) {
+  const { index, token, target } = range;
+  const { number: number4, figureId } = numbered;
+  if (target.gallery) {
+    target.gallery.meta = {
+      ...target.gallery.meta,
+      figure: { id: figureId, number: number4 }
+    };
+    return [];
+  }
+  if (target.image) {
+    return [
+      ownBlock(
+        state,
+        imageFigureHtml(target.image, {
+          ...figureId === void 0 ? {} : { id: `fig-${figureId}` },
+          label: `\u56F3 ${number4}`
+        }),
+        token
+      )
+    ];
+  }
+  const html = renderFigure({
+    kind: target.kind,
+    id: figureId,
+    number: number4,
+    caption: target.caption,
+    body: SLOT_MARKER
+  });
+  const [head = "", tail = ""] = html.split(SLOT_MARKER);
+  return [
+    ownBlock(state, head, token),
+    ...state.tokens.slice(index + 1, target.end + 1),
+    ownBlock(state, tail)
+  ];
+}
+function rewriteAllReferences(state, tokens, figures) {
   const result = [];
   let blockStart = 0;
-  for (const token of out) {
+  for (const token of tokens) {
     if (token.nesting === 1 && token.level === 0) {
       blockStart = result.length;
     }
@@ -73678,7 +74959,47 @@ function numberFigures(state) {
     }
     result.push(token);
   }
-  state.tokens = result;
+  return result;
+}
+function numberFigures(state) {
+  if (!featureOn(state, "figures")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const registry2 = {
+    figures: /* @__PURE__ */ new Map(),
+    counts: { image: 0, table: 0 }
+  };
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const found = figMarkTarget(state, index);
+    if (!token || !found) {
+      if (token) {
+        out.push(token);
+      }
+      continue;
+    }
+    const { mark, id, target } = found;
+    const numbered = registerFigure(registry2, { id, kind: target.kind });
+    if (numbered.figureId === void 0) {
+      out.push(
+        warningBlock(
+          state,
+          {
+            mark: mark.raw,
+            message: `\u306E ID \`${id}\` \u306F\u3001\u524D\u306E\u56F3\u8868\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u5225\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u56F3\u306B\u306F\u756A\u53F7\u3060\u3051\u3092\u4ED8\u3051\u3001ID \u3092\u4ED8\u3051\u3066\u3044\u307E\u305B\u3093\u3002`
+          },
+          token
+        )
+      );
+    }
+    out.push(...wrapFigure(state, { index, token, target }, numbered));
+    if (!target.gallery) {
+      index = target.end;
+    }
+  }
+  state.tokens = rewriteAllReferences(state, out, registry2.figures);
 }
 
 // src/parts/frontmatter.ts
@@ -73756,6 +75077,50 @@ function galleryWarnings(mark, options) {
   }
   return warnings;
 }
+function figureSlots(figure) {
+  if (!figure) {
+    return ["", ""];
+  }
+  const [head = "", tail = ""] = splitSlots(
+    renderFigure({
+      kind: "image",
+      ...figure.id === void 0 ? {} : { id: figure.id },
+      number: figure.number,
+      body: SLOT_MARKER
+    })
+  );
+  return [head, tail];
+}
+function subfigureOf(figure, position) {
+  const letter = figure ? SUBFIGURE_LETTERS[position] : void 0;
+  if (!figure || !letter) {
+    return {};
+  }
+  return {
+    ...figure.id === void 0 ? {} : { id: `fig-${figure.id}-${letter}` },
+    label: `\u56F3 ${figure.number}${letter}`
+  };
+}
+function galleryTokens(state, range) {
+  const { token, mark, images, closed } = range;
+  const out = galleryWarnings(mark, { count: images.length, closed }).map(
+    (warning) => warningBlock(state, warning, token)
+  );
+  const { cols } = readGalleryOptions(mark);
+  const figure = token.meta.figure;
+  const [figureHead, figureTail] = figureSlots(figure);
+  const [galleryHead = "", galleryTail = ""] = splitSlots(
+    renderGallery({ cols, body: SLOT_MARKER })
+  );
+  out.push(ownBlock(state, `${figureHead}${galleryHead}`, token));
+  for (const [position, image2] of images.entries()) {
+    out.push(
+      ownBlock(state, imageFigureHtml(image2, subfigureOf(figure, position)))
+    );
+  }
+  out.push(ownBlock(state, `${galleryTail}${figureTail}`));
+  return out;
+}
 function buildGallery(state) {
   if (!featureOn(state, "gallery")) {
     return;
@@ -73771,43 +75136,14 @@ function buildGallery(state) {
     }
     const close = findClose(tokens, index, "gallery");
     const end = close < 0 ? tokens.length : close;
-    const images = imagesIn(tokens.slice(index + 1, end));
-    const { cols } = readGalleryOptions(mark);
-    const figure = token.meta.figure;
-    for (const warning of galleryWarnings(mark, {
-      count: images.length,
-      closed: close >= 0
-    })) {
-      out.push(warningBlock(state, warning, token));
-    }
-    const [figureHead = "", figureTail = ""] = figure ? splitSlots(
-      renderFigure({
-        kind: "image",
-        ...figure.id === void 0 ? {} : { id: figure.id },
-        number: figure.number,
-        body: SLOT_MARKER
+    out.push(
+      ...galleryTokens(state, {
+        token,
+        mark,
+        images: imagesIn(tokens.slice(index + 1, end)),
+        closed: close >= 0
       })
-    ) : [];
-    const [galleryHead = "", galleryTail = ""] = splitSlots(
-      renderGallery({ cols, body: SLOT_MARKER })
     );
-    out.push(ownBlock(state, `${figureHead}${galleryHead}`, token));
-    for (const [position, image2] of images.entries()) {
-      const letter = figure ? SUBFIGURE_LETTERS[position] : void 0;
-      out.push(
-        ownBlock(
-          state,
-          imageFigureHtml(
-            image2,
-            figure && letter ? {
-              ...figure.id === void 0 ? {} : { id: `fig-${figure.id}-${letter}` },
-              label: `\u56F3 ${figure.number}${letter}`
-            } : {}
-          )
-        )
-      );
-    }
-    out.push(ownBlock(state, `${galleryTail}${figureTail}`));
     index = end;
   }
   state.tokens = out;
@@ -73818,93 +75154,148 @@ var ALIAS_SEPARATOR = /[、,]/;
 function splitCell(cell) {
   return cell.split(ALIAS_SEPARATOR).map((word) => word.trim()).filter(Boolean);
 }
-function readTables(tokens) {
-  const tables = [];
-  let table2;
-  let inHead = false;
-  let row;
-  for (const [position, token] of tokens.entries()) {
-    if (token.type === "table_open") {
-      table2 = { columns: [], rows: [] };
-      tables.push(table2);
-    } else if (token.type === "thead_open") {
-      inHead = true;
-    } else if (token.type === "thead_close") {
-      inHead = false;
-    } else if (token.type === "tr_open" && !inHead) {
-      row = { cells: [], line: (token.map?.[0] ?? 0) + 1 };
-      table2?.rows.push(row);
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      const inline2 = tokens[position + 1];
-      const text2 = inline2 ? textOf(inline2).trim() : "";
-      if (token.type === "th_open") {
-        table2?.columns.push(text2);
-      } else {
-        row?.cells.push(text2);
+function readStructure(reader, token) {
+  switch (token.type) {
+    case "table_open":
+      reader.table = { columns: [], rows: [] };
+      reader.tables.push(reader.table);
+      return true;
+    case "thead_open":
+      reader.inHead = true;
+      return true;
+    case "thead_close":
+      reader.inHead = false;
+      return true;
+    case "tr_open":
+      if (!reader.inHead) {
+        reader.row = { cells: [], line: (token.map?.[0] ?? 0) + 1 };
+        reader.table?.rows.push(reader.row);
       }
+      return true;
+    default:
+      return false;
+  }
+}
+function readCell(reader, token, inline2) {
+  if (token.type !== "th_open" && token.type !== "td_open") {
+    return;
+  }
+  const text2 = inline2 ? textOf(inline2).trim() : "";
+  if (token.type === "th_open") {
+    reader.table?.columns.push(text2);
+  } else {
+    reader.row?.cells.push(text2);
+  }
+}
+function readTables(tokens) {
+  const reader = {
+    tables: [],
+    table: void 0,
+    inHead: false,
+    row: void 0
+  };
+  for (const [position, token] of tokens.entries()) {
+    if (!readStructure(reader, token)) {
+      readCell(reader, token, tokens[position + 1]);
     }
   }
-  return tables;
+  return reader.tables;
 }
 function unknownColumnMessage(argName, name, columns) {
   const list2 = columns.map((column) => `\`${column}\``).join("\u30FB");
   return `\u306E \`${argName}.column\` \u306E\u5217 \`${name}\` \u304C\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${list2} \u3067\u3059\u3002\u5217\u540D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u8868\u304B\u3089\u306F\u7528\u8A9E\u3092\u5165\u308C\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`;
+}
+var GLOSSARY_COLUMNS = [
+  ["term", true],
+  ["meaning", true],
+  ["aliases", false],
+  ["avoid", false]
+];
+function columnPositions(spec, columns) {
+  const positions = {};
+  let problem;
+  for (const [argName, required2] of GLOSSARY_COLUMNS) {
+    const name = spec[argName]?.column;
+    if (typeof name !== "string" || name === "") {
+      if (required2) {
+        problem ??= "";
+      }
+      continue;
+    }
+    const position = columns.indexOf(name);
+    if (position === -1) {
+      problem ??= unknownColumnMessage(argName, name, columns);
+    } else {
+      positions[argName] = position;
+    }
+  }
+  return problem === void 0 ? { positions } : { problem };
+}
+function tableRows(table2, positions, docId) {
+  const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
+  return table2.rows.flatMap((row) => {
+    const term = cellOf(row.cells, "term");
+    const meaning = cellOf(row.cells, "meaning");
+    if (term === "" || meaning === "") {
+      return [];
+    }
+    return [
+      {
+        entry: {
+          term,
+          aliases: splitCell(cellOf(row.cells, "aliases")),
+          meaning,
+          docId,
+          avoid: splitCell(cellOf(row.cells, "avoid"))
+        },
+        line: row.line
+      }
+    ];
+  });
 }
 function readGlossaryRows(options) {
   const { options: spec, tokens, docId } = options;
   const rows = [];
   let warning;
   for (const table2 of readTables(tokens)) {
-    const positions = {};
-    let problem;
-    for (const [argName, required2] of [
-      ["term", true],
-      ["meaning", true],
-      ["aliases", false],
-      ["avoid", false]
-    ]) {
-      const name = spec[argName]?.column;
-      if (typeof name !== "string" || name === "") {
-        if (required2) {
-          problem ??= "";
-        }
-        continue;
-      }
-      const position = table2.columns.indexOf(name);
-      if (position === -1) {
-        problem ??= unknownColumnMessage(argName, name, table2.columns);
-      } else {
-        positions[argName] = position;
-      }
-    }
-    if (problem !== void 0) {
-      if (problem !== "") {
-        warning ??= problem;
+    const read = columnPositions(spec, table2.columns);
+    if ("problem" in read) {
+      if (read.problem !== "") {
+        warning ??= read.problem;
       }
       continue;
     }
-    for (const row of table2.rows) {
-      const term = row.cells[positions.term ?? -1] ?? "";
-      const meaning = row.cells[positions.meaning ?? -1] ?? "";
-      if (term === "" || meaning === "") {
-        continue;
-      }
-      rows.push({
-        entry: {
-          term,
-          aliases: splitCell(row.cells[positions.aliases ?? -1] ?? ""),
-          meaning,
-          docId,
-          avoid: splitCell(row.cells[positions.avoid ?? -1] ?? "")
-        },
-        line: row.line
-      });
-    }
+    rows.push(...tableRows(table2, read.positions, docId));
   }
   return warning === void 0 ? { rows } : { rows, warning };
 }
-function glossaryRule(state) {
+function collectGlossary(state, range) {
   const env = envOf(state);
+  const { token, mark, tokens, closed } = range;
+  const { rows, warning } = readGlossaryRows({
+    options: mark.options,
+    tokens,
+    docId: env.docId ?? ""
+  });
+  const out = [];
+  if (!closed) {
+    out.push(warningBlock(state, unclosedWarning(mark), token));
+  }
+  if (warning !== void 0) {
+    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
+  }
+  for (const row of rows) {
+    env.ownGlossary.push(row.entry);
+    env.glossaryLines?.push(row.line);
+  }
+  for (const inline2 of tokens) {
+    for (const child of inline2.children ?? []) {
+      child.meta = { ...child.meta, mdmarkNoTerms: true };
+    }
+  }
+  return out;
+}
+function glossaryRule(state) {
   const enabled = featureOn(state, "glossary");
   const tokens = state.tokens;
   const out = [];
@@ -73924,28 +75315,14 @@ function glossaryRule(state) {
     const end = close === -1 ? tokens.length : close;
     const range = tokens.slice(position + 1, end);
     if (enabled) {
-      const { rows, warning } = readGlossaryRows({
-        options: mark.options,
-        tokens: range,
-        docId: env.docId ?? ""
-      });
-      if (close === -1) {
-        out.push(warningBlock(state, unclosedWarning(mark), token));
-      }
-      if (warning !== void 0) {
-        out.push(
-          warningBlock(state, { mark: mark.raw, message: warning }, token)
-        );
-      }
-      for (const row of rows) {
-        env.ownGlossary.push(row.entry);
-        env.glossaryLines?.push(row.line);
-      }
-      for (const inline2 of range) {
-        for (const child of inline2.children ?? []) {
-          child.meta = { ...child.meta, mdmarkNoTerms: true };
-        }
-      }
+      out.push(
+        ...collectGlossary(state, {
+          token,
+          mark,
+          tokens: range,
+          closed: close !== -1
+        })
+      );
     }
     out.push(...range);
     position = end;
@@ -73987,36 +75364,26 @@ var tokenizeHighlight = (state, silent) => {
   state.pos += scanned.length;
   return true;
 };
-var pairHighlights = (state, delimiters) => {
-  const lone = [];
-  for (const start of delimiters) {
-    if (start.marker !== EQUALS || start.end === -1) {
-      continue;
-    }
-    const end = delimiters[start.end];
-    if (!end) {
-      continue;
-    }
-    const open2 = state.tokens[start.token];
-    const close = state.tokens[end.token];
-    if (!open2 || !close) {
-      continue;
-    }
-    open2.type = "mark_open";
-    open2.tag = "mark";
-    open2.nesting = 1;
-    open2.markup = "==";
-    open2.content = "";
-    close.type = "mark_close";
-    close.tag = "mark";
-    close.nesting = -1;
-    close.markup = "==";
-    close.content = "";
-    const before = state.tokens[end.token - 1];
-    if (before?.type === "text" && before.content === "=") {
-      lone.push(end.token - 1);
-    }
+var toMarkToken = (token, nesting) => {
+  token.type = nesting === 1 ? "mark_open" : "mark_close";
+  token.tag = "mark";
+  token.nesting = nesting;
+  token.markup = "==";
+  token.content = "";
+};
+var pairHighlight = (state, start, delimiters) => {
+  const end = start.end === -1 ? void 0 : delimiters[start.end];
+  const open2 = state.tokens[start.token];
+  const close = end ? state.tokens[end.token] : void 0;
+  if (start.marker !== EQUALS || !end || !open2 || !close) {
+    return void 0;
   }
+  toMarkToken(open2, 1);
+  toMarkToken(close, -1);
+  const before = state.tokens[end.token - 1];
+  return before?.type === "text" && before.content === "=" ? end.token - 1 : void 0;
+};
+var moveLoneEquals = (state, lone) => {
   for (const at of lone.reverse()) {
     let swap = at;
     while (state.tokens[swap + 1]?.type === "mark_close" && swap + 1 < state.tokens.length) {
@@ -74027,6 +75394,10 @@ var pairHighlights = (state, delimiters) => {
     }
   }
 };
+var pairHighlights = (state, delimiters) => {
+  const lone = delimiters.map((start) => pairHighlight(state, start, delimiters)).filter((at) => at !== void 0);
+  moveLoneEquals(state, lone);
+};
 var postProcessHighlight = (state) => {
   pairHighlights(state, state.delimiters);
   for (const meta2 of state.tokens_meta) {
@@ -74036,10 +75407,47 @@ var postProcessHighlight = (state) => {
   }
   return true;
 };
-var textToken = (state, content) => {
+var textToken2 = (state, content) => {
   const token = new state.Token("text", "", 0);
   token.content = content;
   return token;
+};
+var restoreHighlights = (state, children) => {
+  for (const [at, child] of children.entries()) {
+    if (child.type === "mark_open" || child.type === "mark_close") {
+      children[at] = textToken2(state, "==");
+    }
+  }
+};
+var applyColor = (next, open2) => {
+  const color = next?.type === "text" ? COLOR_PATTERN.exec(next.content) : null;
+  if (!next || !color) {
+    return void 0;
+  }
+  next.content = next.content.slice(color[0].length);
+  const name = color[1] ?? "";
+  if (!isColorName(name)) {
+    return name;
+  }
+  open2?.attrSet("data-color", name);
+  return void 0;
+};
+var applyHighlights = (children, nonce) => {
+  const opens = [];
+  const unknown2 = [];
+  for (const [at, child] of children.entries()) {
+    if (child.type === "mark_open") {
+      child.attrSet("data-mdmark-own", nonce);
+      child.attrSet("class", "mdmark-highlight");
+      opens.push(child);
+    } else if (child.type === "mark_close") {
+      const name = applyColor(children[at + 1], opens.pop());
+      if (name !== void 0) {
+        unknown2.push(name);
+      }
+    }
+  }
+  return unknown2;
 };
 var finishHighlights = (state) => {
   const on = featureOn(state, "highlight");
@@ -74050,41 +75458,11 @@ var finishHighlights = (state) => {
     if (token.type !== "inline" || !children) {
       continue;
     }
-    const opens = [];
-    const unknown2 = [];
-    for (let at = 0; at < children.length; at++) {
-      const child = children[at];
-      if (child.type === "mark_open") {
-        if (!on) {
-          children[at] = textToken(state, "==");
-          continue;
-        }
-        child.attrSet("data-mdmark-own", nonce);
-        child.attrSet("class", "mdmark-highlight");
-        opens.push(child);
-        continue;
-      }
-      if (child.type !== "mark_close") {
-        continue;
-      }
-      if (!on) {
-        children[at] = textToken(state, "==");
-        continue;
-      }
-      const open2 = opens.pop();
-      const next = children[at + 1];
-      const color = next?.type === "text" ? COLOR_PATTERN.exec(next.content) : null;
-      if (!next || !color) {
-        continue;
-      }
-      next.content = next.content.slice(color[0].length);
-      const name = color[1] ?? "";
-      if (isColorName(name)) {
-        open2?.attrSet("data-color", name);
-      } else {
-        unknown2.push(name);
-      }
+    if (!on) {
+      restoreHighlights(state, children);
+      continue;
     }
+    const unknown2 = applyHighlights(children, nonce);
     if (unknown2.length) {
       const names2 = unknown2.map((name) => `\`${name}\``).join("\u30FB");
       warnings.push({
@@ -74202,6 +75580,24 @@ function stripComments(css) {
   }
   return result;
 }
+function findBlockEnd(css, bodyStart) {
+  let depth = 1;
+  let index = bodyStart;
+  while (index < css.length && depth > 0) {
+    const skipped = skipQuoted(css, index);
+    if (skipped !== index) {
+      index = skipped;
+      continue;
+    }
+    if (css[index] === "{") {
+      depth += 1;
+    } else if (css[index] === "}") {
+      depth -= 1;
+    }
+    index += 1;
+  }
+  return { bodyEnd: depth === 0 ? index - 1 : index, next: index };
+}
 function splitRules(css) {
   const rules = [];
   let preludeStart = 0;
@@ -74218,27 +75614,13 @@ function splitRules(css) {
       preludeStart = index + 1;
     } else if (char === "{") {
       const bodyStart = index + 1;
-      let depth = 1;
-      index += 1;
-      while (index < css.length && depth > 0) {
-        const skipped = skipQuoted(css, index);
-        if (skipped !== index) {
-          index = skipped;
-          continue;
-        }
-        if (css[index] === "{") {
-          depth += 1;
-        } else if (css[index] === "}") {
-          depth -= 1;
-        }
-        index += 1;
-      }
-      const bodyEnd = depth === 0 ? index - 1 : index;
+      const { bodyEnd, next: after } = findBlockEnd(css, bodyStart);
       rules.push({
-        prelude: css.slice(preludeStart, bodyStart - 1),
+        prelude: css.slice(preludeStart, index),
         body: css.slice(bodyStart, bodyEnd)
       });
-      preludeStart = index;
+      preludeStart = after;
+      index = after;
       continue;
     }
     index += 1;
@@ -74282,30 +75664,32 @@ function scopeSelector(selector, root) {
   }
   return `${root} ${selector}`;
 }
-function scopeRules(css, root) {
-  const parts = [];
-  for (const { prelude, body } of splitRules(css)) {
-    const head = prelude.trim();
-    if (head.startsWith("@")) {
-      const name = /^@([\w-]+)/.exec(head)?.[1]?.toLowerCase() ?? "";
-      if (NESTING_AT_RULES.has(name)) {
-        parts.push(
-          body === void 0 ? `${head};` : `${head} { ${scopeRules(body, root)} }`
-        );
-      } else if (KEPT_AT_RULES.has(name) && body !== void 0) {
-        parts.push(`${head} {${body}}`);
-      }
-      continue;
-    }
-    if (body === void 0) {
-      continue;
-    }
-    const selectors = splitSelectors(head).map(
-      (selector) => scopeSelector(selector, root)
-    );
-    parts.push(`${selectors.join(", ")} {${body}}`);
+function scopeAtRule(rule, root) {
+  const { head, body } = rule;
+  const name = /^@([\w-]+)/.exec(head)?.[1]?.toLowerCase() ?? "";
+  if (NESTING_AT_RULES.has(name)) {
+    return body === void 0 ? `${head};` : `${head} { ${scopeRules(body, root)} }`;
   }
-  return parts.join("\n");
+  if (KEPT_AT_RULES.has(name) && body !== void 0) {
+    return `${head} {${body}}`;
+  }
+  return void 0;
+}
+function scopeRule(rule, root) {
+  const head = rule.prelude.trim();
+  if (head.startsWith("@")) {
+    return scopeAtRule({ head, body: rule.body }, root);
+  }
+  if (rule.body === void 0) {
+    return void 0;
+  }
+  const selectors = splitSelectors(head).map(
+    (selector) => scopeSelector(selector, root)
+  );
+  return `${selectors.join(", ")} {${rule.body}}`;
+}
+function scopeRules(css, root) {
+  return splitRules(css).map((rule) => scopeRule(rule, root)).filter((part) => part !== void 0).join("\n");
 }
 function scopeCss(options) {
   const root = `.mdmark-html[data-html-scope="${options.scope}"]`;
@@ -74358,46 +75742,63 @@ function renderTermTip(props) {
   if (replacement === void 0 && meaning === "" && docs.length === 0) {
     return word;
   }
+  return renderWordTip({ word, id, meaning, docs, replacement, below });
+}
+function renderWordTip(options) {
+  const { word, id, meaning, docs, replacement, below } = options;
   const tipId = escapeHtml2(id);
   const meaningId = `${tipId}-meaning`;
-  const sections = [];
-  if (replacement !== void 0) {
-    sections.push(
-      renderSection(
-        "\u4EE3\u308F\u308A\u306E\u7528\u8A9E",
-        `<span class="mdmark-term-tip-replacement">${escapeHtml2(replacement.term)}</span>${replacement.meaning === void 0 ? "" : `<span class="mdmark-term-tip-meaning">${escapeHtml2(replacement.meaning)}</span>`}`
-      )
-    );
-  } else {
-    if (meaning !== "") {
-      const idAttribute = docs.length > 0 ? ` id="${meaningId}"` : "";
-      sections.push(
-        renderSection(
-          "\u7528\u8A9E",
-          `<span class="mdmark-term-tip-meaning"${idAttribute}>${escapeHtml2(meaning)}</span>`
-        )
-      );
-    }
-    if (docs.length > 0) {
-      const items = docs.map((doc) => {
-        const description = doc.description ? `<span class="mdmark-term-tip-doc-desc">${escapeHtml2(doc.description)}</span>` : "";
-        return `<span class="mdmark-term-tip-doc" role="listitem"><a href="${escapeHtml2(doc.href)}">${escapeHtml2(doc.title)}</a>${description}</span>`;
-      }).join("");
-      sections.push(
-        renderSection(
-          "\u95A2\u9023\u6587\u66F8",
-          `<span class="mdmark-term-tip-docs" role="list">${items}</span>`
-        )
-      );
-    }
-  }
+  const sections = replacement === void 0 ? renderTermSections({ meaning, docs, meaningId }) : [renderReplacementSection(replacement)];
   const role = docs.length > 0 && replacement === void 0 ? "group" : "tooltip";
-  const label = role === "tooltip" ? "" : ` aria-label="\u300C${word}\u300D\u306E${meaning === "" ? "" : "\u7528\u8A9E\u3068"}\u95A2\u9023\u6587\u66F8"`;
-  const described = replacement === void 0 && meaning === "" ? "" : ` aria-describedby="${role === "group" ? meaningId : tipId}"`;
+  const label = role === "tooltip" ? "" : ` aria-label="${docsLabel({ word, meaning })}"`;
+  const described = termDescribedBy({
+    described: replacement !== void 0 || meaning !== "",
+    target: role === "group" ? meaningId : tipId
+  });
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const termClass = replacement === void 0 ? "" : " mdmark-term-avoided";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
   return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
+}
+function docsLabel(options) {
+  return `\u300C${options.word}\u300D\u306E${options.meaning === "" ? "" : "\u7528\u8A9E\u3068"}\u95A2\u9023\u6587\u66F8`;
+}
+function termDescribedBy(options) {
+  return options.described ? ` aria-describedby="${options.target}"` : "";
+}
+function renderReplacementSection(replacement) {
+  const meaning = replacement.meaning === void 0 ? "" : `<span class="mdmark-term-tip-meaning">${escapeHtml2(replacement.meaning)}</span>`;
+  return renderSection(
+    "\u4EE3\u308F\u308A\u306E\u7528\u8A9E",
+    `<span class="mdmark-term-tip-replacement">${escapeHtml2(replacement.term)}</span>${meaning}`
+  );
+}
+function renderTermSections(options) {
+  const { meaning, docs, meaningId } = options;
+  const sections = [];
+  if (meaning !== "") {
+    const idAttribute = docs.length > 0 ? ` id="${meaningId}"` : "";
+    sections.push(
+      renderSection(
+        "\u7528\u8A9E",
+        `<span class="mdmark-term-tip-meaning"${idAttribute}>${escapeHtml2(meaning)}</span>`
+      )
+    );
+  }
+  if (docs.length > 0) {
+    sections.push(renderDocsSection(docs));
+  }
+  return sections;
+}
+function renderDocsSection(docs) {
+  const items = docs.map((doc) => {
+    const description = doc.description ? `<span class="mdmark-term-tip-doc-desc">${escapeHtml2(doc.description)}</span>` : "";
+    return `<span class="mdmark-term-tip-doc" role="listitem"><a href="${escapeHtml2(doc.href)}">${escapeHtml2(doc.title)}</a>${description}</span>`;
+  }).join("");
+  return renderSection(
+    "\u95A2\u9023\u6587\u66F8",
+    `<span class="mdmark-term-tip-docs" role="list">${items}</span>`
+  );
 }
 function renderAliasTip(options) {
   const { text: text2, alias, copy, below } = options;
@@ -74410,35 +75811,69 @@ function renderAliasTip(options) {
   if (hasDescription) {
     body += `<span class="mdmark-term-tip-meaning" id="${meaningId}">${escapeHtml2(alias.description)}</span>`;
   }
-  let label = "";
-  if (alias.alias_type === "command" && alias.command !== void 0) {
-    const copyState = COMMAND_COPY_STATES[copy];
-    body += `<span class="mdmark-term-tip-command"><code>${escapeHtml2(alias.command)}</code><button class="mdmark-term-tip-copy" type="button" data-state="${copy}">${renderTermTipCopy(copy)}</button></span>`;
-    if (alias.cwd !== void 0 && alias.cwd !== "") {
-      body += `<span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">\u5B9F\u884C\u5834\u6240</span><span class="mdmark-term-tip-value">${escapeHtml2(alias.cwd)}</span></span>`;
-    }
-    const status = copy === "idle" ? "" : `\u30B3\u30DE\u30F3\u30C9\u3092${copyState.text}`;
-    body += `<span class="mdmark-visually-hidden mdmark-term-tip-status" role="status">${status}</span>`;
-    label = `\u300C${word}\u300D\u306E\u30B3\u30DE\u30F3\u30C9`;
-  } else if (alias.alias_type === "url" && alias.url !== void 0) {
-    if (isHttpUrl(alias.url)) {
-      body += `<a class="mdmark-term-tip-link" href="${escapeHtml2(alias.url)}">${escapeHtml2(alias.url)}</a>`;
-      label = `\u300C${word}\u300D\u306E URL`;
-    } else {
-      body += `<span class="mdmark-term-tip-link">${escapeHtml2(alias.url)}</span>`;
-    }
-  } else {
-    const value = alias.alias_type === "skill" ? alias.skill : alias.alias_type === "tool" ? alias.tool : alias.alias_type === "path" ? alias.path : void 0;
-    if (value !== void 0) {
-      body += `<code class="mdmark-term-tip-code">${escapeHtml2(value)}</code>`;
-    }
-  }
-  const role = label === "" ? "tooltip" : "group";
-  const labelAttribute = label === "" ? "" : ` aria-label="${label}"`;
-  const described = role === "group" ? hasDescription ? ` aria-describedby="${meaningId}"` : "" : ` aria-describedby="${tipId}"`;
+  const kind = renderAliasKind({ alias, copy, word });
+  body += kind.body;
+  const role = kind.label === "" ? "tooltip" : "group";
+  const labelAttribute = kind.label === "" ? "" : ` aria-label="${kind.label}"`;
+  const described = role === "group" ? termDescribedBy({ described: hasDescription, target: meaningId }) : ` aria-describedby="${tipId}"`;
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
   return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}>${renderSection(heading2, body)}</span></span>`;
+}
+function renderAliasKind(options) {
+  const { alias, copy, word } = options;
+  if (alias.alias_type === "command" && alias.command !== void 0) {
+    return renderAliasCommand({
+      command: alias.command,
+      cwd: alias.cwd,
+      copy,
+      word
+    });
+  }
+  if (alias.alias_type === "url" && alias.url !== void 0) {
+    return renderAliasUrl({ url: alias.url, word });
+  }
+  const value = aliasValueOf(alias);
+  return {
+    body: value === void 0 ? "" : `<code class="mdmark-term-tip-code">${escapeHtml2(value)}</code>`,
+    label: ""
+  };
+}
+function renderAliasCommand(options) {
+  const { command, cwd, copy, word } = options;
+  const copyState = COMMAND_COPY_STATES[copy];
+  let body = `<span class="mdmark-term-tip-command"><code>${escapeHtml2(command)}</code><button class="mdmark-term-tip-copy" type="button" data-state="${copy}">${renderTermTipCopy(copy)}</button></span>`;
+  if (cwd !== void 0 && cwd !== "") {
+    body += `<span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">\u5B9F\u884C\u5834\u6240</span><span class="mdmark-term-tip-value">${escapeHtml2(cwd)}</span></span>`;
+  }
+  const status = copy === "idle" ? "" : `\u30B3\u30DE\u30F3\u30C9\u3092${copyState.text}`;
+  body += `<span class="mdmark-visually-hidden mdmark-term-tip-status" role="status">${status}</span>`;
+  return { body, label: `\u300C${word}\u300D\u306E\u30B3\u30DE\u30F3\u30C9` };
+}
+function renderAliasUrl(options) {
+  const { url: url2, word } = options;
+  if (isHttpUrl(url2)) {
+    return {
+      body: `<a class="mdmark-term-tip-link" href="${escapeHtml2(url2)}">${escapeHtml2(url2)}</a>`,
+      label: `\u300C${word}\u300D\u306E URL`
+    };
+  }
+  return {
+    body: `<span class="mdmark-term-tip-link">${escapeHtml2(url2)}</span>`,
+    label: ""
+  };
+}
+function aliasValueOf(alias) {
+  switch (alias.alias_type) {
+    case "skill":
+      return alias.skill;
+    case "tool":
+      return alias.tool;
+    case "path":
+      return alias.path;
+    default:
+      return void 0;
+  }
 }
 
 // src/render/syntax/terms.ts
@@ -74446,61 +75881,78 @@ var TIP_ID_PREFIX = "mdmark-term-";
 function matchWords(dictionary) {
   return dictionary.avoided.size === 0 ? dictionary.words : [.../* @__PURE__ */ new Set([...dictionary.words, ...dictionary.avoided.keys()])];
 }
+function avoidedTip(found, replacement, context) {
+  const { text: text2, seen, nextTipId } = context;
+  if (seen.avoided.has(found.word)) {
+    return void 0;
+  }
+  seen.avoided.add(found.word);
+  return renderTermTip({
+    text: text2.slice(found.start, found.end),
+    id: nextTipId(),
+    replacement: {
+      term: replacement.term,
+      ...replacement.meaning === void 0 ? {} : { meaning: replacement.meaning }
+    }
+  });
+}
+function aliasTip(found, term, context) {
+  const { text: text2, seen, nextTipId } = context;
+  if (seen.terms.has(term.id)) {
+    return void 0;
+  }
+  seen.terms.add(term.id);
+  return renderTermTip({
+    text: text2.slice(found.start, found.end),
+    id: nextTipId(),
+    alias: term.alias
+  });
+}
+function meaningTip(found, term, context) {
+  const { text: text2, dictionary, ownPath, seen, nextTipId } = context;
+  const activeTerm = term !== void 0 && !seen.terms.has(term.id) ? term : void 0;
+  const docs = (dictionary.docs.get(found.word) ?? []).filter(
+    (doc) => !seen.docs.has(doc.id)
+  );
+  if (activeTerm === void 0 && docs.length === 0) {
+    return void 0;
+  }
+  if (activeTerm) {
+    seen.terms.add(activeTerm.id);
+  }
+  for (const doc of docs) {
+    seen.docs.add(doc.id);
+  }
+  return renderTermTip({
+    text: text2.slice(found.start, found.end),
+    id: nextTipId(),
+    meaning: activeTerm?.meaning ?? "",
+    docs: docs.map((doc) => ({
+      title: doc.title,
+      href: relativeHref(ownPath, doc.path),
+      ...doc.description === void 0 ? {} : { description: doc.description }
+    }))
+  });
+}
+function tipOf(found, context) {
+  const term = context.dictionary.terms.get(found.word);
+  const replacement = term === void 0 ? context.dictionary.avoided.get(found.word) : void 0;
+  if (replacement !== void 0) {
+    return avoidedTip(found, replacement, context);
+  }
+  if (term?.alias !== void 0) {
+    return aliasTip(found, { id: term.id, alias: term.alias }, context);
+  }
+  return meaningTip(found, term, context);
+}
 function termSegments(options) {
-  const { text: text2, dictionary, ownPath, seen, nextTipId, nonce } = options;
+  const { text: text2, dictionary, nonce } = options;
   const segments = [];
   let cursor = 0;
   for (const found of findWords(text2, matchWords(dictionary))) {
-    const term = dictionary.terms.get(found.word);
-    const replacement = term === void 0 ? dictionary.avoided.get(found.word) : void 0;
-    let html;
-    if (replacement !== void 0) {
-      if (seen.avoided.has(found.word)) {
-        continue;
-      }
-      seen.avoided.add(found.word);
-      html = renderTermTip({
-        text: text2.slice(found.start, found.end),
-        id: nextTipId(),
-        replacement: {
-          term: replacement.term,
-          ...replacement.meaning === void 0 ? {} : { meaning: replacement.meaning }
-        }
-      });
-    } else if (term?.alias !== void 0) {
-      if (seen.terms.has(term.id)) {
-        continue;
-      }
-      seen.terms.add(term.id);
-      html = renderTermTip({
-        text: text2.slice(found.start, found.end),
-        id: nextTipId(),
-        alias: term.alias
-      });
-    } else {
-      const activeTerm = term !== void 0 && !seen.terms.has(term.id) ? term : void 0;
-      const docs = (dictionary.docs.get(found.word) ?? []).filter(
-        (doc) => !seen.docs.has(doc.id)
-      );
-      if (activeTerm === void 0 && docs.length === 0) {
-        continue;
-      }
-      if (activeTerm) {
-        seen.terms.add(activeTerm.id);
-      }
-      for (const doc of docs) {
-        seen.docs.add(doc.id);
-      }
-      html = renderTermTip({
-        text: text2.slice(found.start, found.end),
-        id: nextTipId(),
-        meaning: activeTerm?.meaning ?? "",
-        docs: docs.map((doc) => ({
-          title: doc.title,
-          href: relativeHref(ownPath, doc.path),
-          ...doc.description === void 0 ? {} : { description: doc.description }
-        }))
-      });
+    const html = tipOf(found, options);
+    if (html === void 0) {
+      continue;
     }
     if (found.start > cursor) {
       segments.push({ kind: "text", content: text2.slice(cursor, found.start) });
@@ -74569,7 +76021,7 @@ function termsRule(state) {
       }
       for (const segment of segments) {
         if (segment.kind === "text") {
-          rebuilt.push(textToken2(state, segment.content));
+          rebuilt.push(textToken3(state, segment.content));
         } else {
           const tip = new state.Token("html_inline", "", 0);
           tip.content = segment.html;
@@ -74580,7 +76032,7 @@ function termsRule(state) {
     inline2.children = rebuilt;
   });
 }
-function textToken2(state, content) {
+function textToken3(state, content) {
   const token = new state.Token("text", "", 0);
   token.content = content;
   return token;
@@ -74601,10 +76053,7 @@ function isRangeScriptFence(token) {
     fenceLanguage(token)
   );
 }
-function readRangeScripts(tokens) {
-  const fences = tokens.filter((token) => token.type === "fence");
-  const html = fences.filter(isHtmlFence);
-  const byLang = (lang) => fences.filter((token) => fenceLanguage(token) === lang);
+function rangeScriptWarnings(byLang) {
   const warnings = [];
   for (const lang of RANGE_SCRIPT_LANGUAGES) {
     if (byLang(lang).length > 1) {
@@ -74614,19 +76063,26 @@ function readRangeScripts(tokens) {
       });
     }
   }
-  const [ts] = byLang("ts");
-  const [js] = byLang("js");
-  if (ts && js) {
+  if (byLang("ts").length > 0 && byLang("js").length > 0) {
     warnings.push({
       label: "ts",
       message: "`<!-- html -->` \u306E\u7BC4\u56F2\u306B `ts` \u3068 `js` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u304C\u4E21\u65B9\u3042\u308A\u307E\u3059\u3002\u3069\u3061\u3089\u304B 1 \u3064\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30B9\u30AF\u30EA\u30D7\u30C8\u3092\u52D5\u304B\u3055\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
     });
   }
+  return warnings;
+}
+function readRangeScripts(tokens) {
+  const fences = tokens.filter((token) => token.type === "fence");
+  const html = fences.filter(isHtmlFence);
+  const byLang = (lang) => fences.filter((token) => fenceLanguage(token) === lang);
+  const warnings = rangeScriptWarnings(byLang);
+  const [ts] = byLang("ts");
+  const [js] = byLang("js");
   const scripted = warnings.length === 0 ? ts ?? js : void 0;
-  const [css] = byLang("css");
+  const css = byLang("css");
   return {
     html: html.length === 1 ? html[0] : void 0,
-    css: byLang("css").length === 1 ? css?.content : void 0,
+    css: css.length === 1 ? css[0]?.content : void 0,
     script: scripted ? { lang: scripted === ts ? "ts" : "js", code: scripted.content } : void 0,
     warnings
   };
@@ -74643,10 +76099,9 @@ function blockCountWarning() {
   };
 }
 function takeParts(options) {
-  const { source, state, paramsBefore, lookup } = options;
+  const { source, state, paramsBefore } = options;
   const env = envOf(state);
   const diagrams = featureOn(state, "diagrams");
-  const hints = featureOn(state, "hints");
   const resizable = featureOn(state, "diagram-resize");
   const parts = [];
   const warnings = [];
@@ -74694,8 +76149,6 @@ function takeParts(options) {
             kind: directive,
             definition,
             id: `${DIAGRAM_ID_PREFIX2}-${count}`,
-            lookup,
-            hints,
             resizable
           });
         }
@@ -74720,10 +76173,41 @@ function restoreParts(html, parts, nonce) {
   });
   return restored.replace(new RegExp(`</?${tag}[^>]*>`, "g"), "");
 }
+var HINT_ATTRIBUTE = /\sdata-hint="([^"]*)"/;
+function isContainer(tag) {
+  return tag.selfClosing === "" && !VOID_TAGS2.has(tag.name);
+}
+function hintOpenTag(tag, text2, env) {
+  env.hintCount = (env.hintCount ?? 0) + 1;
+  const markup = renderHintMarkup({
+    tag: tag.name,
+    text: unescapeHtml2(text2),
+    id: `${HINT_ID_PREFIX}${env.hintCount}`
+  });
+  const added = Object.entries(markup.attributes).map(([key, value]) => ` ${key}="${escapeHtml2(value)}"`).join("");
+  const start = `<${tag.rawName}${tag.attributes}${added}${tag.selfClosing === "/" ? " /" : ""}>`;
+  if (!isContainer(tag)) {
+    return { text: `${start}${markup.after}` };
+  }
+  return {
+    text: start,
+    open: { name: tag.name, inside: markup.inside, after: markup.after }
+  };
+}
+function openTagHtml(tag, env, hints) {
+  const found = HINT_ATTRIBUTE.exec(tag.attributes);
+  if (found !== null && hints) {
+    return hintOpenTag(tag, found[1] ?? "", env);
+  }
+  const text2 = found === null ? tag.raw : tag.raw.replace(HINT_ATTRIBUTE, "");
+  return isContainer(tag) ? { text: text2, open: { name: tag.name, inside: "", after: "" } } : { text: text2 };
+}
+function closeTagHtml(raw, open2) {
+  return `${open2?.inside ?? ""}${raw}${open2?.after ?? ""}`;
+}
 function applyHints(options) {
   const { html, env, hints } = options;
   const tag = /<(\/?)([a-z][a-z0-9-]*)\b([^>]*?)(\/?)>/gi;
-  const hintAttribute = /\sdata-hint="([^"]*)"/;
   const stack = [];
   let out = "";
   let last = 0;
@@ -74731,40 +76215,18 @@ function applyHints(options) {
     out += html.slice(last, match.index);
     last = match.index + match[0].length;
     const [raw, closing = "", rawName = "", attributes = "", selfClosing = ""] = match;
-    const name = rawName.toLowerCase();
     if (closing === "/") {
-      const open2 = stack.pop();
-      out += `${open2?.inside ?? ""}${raw}${open2?.after ?? ""}`;
+      out += closeTagHtml(raw, stack.pop());
       continue;
     }
-    const found = hintAttribute.exec(attributes);
-    if (found === null) {
-      out += raw;
-      if (selfClosing === "" && !VOID_TAGS2.has(name)) {
-        stack.push({ name, inside: "", after: "" });
-      }
-      continue;
-    }
-    if (!hints) {
-      out += raw.replace(hintAttribute, "");
-      if (selfClosing === "" && !VOID_TAGS2.has(name)) {
-        stack.push({ name, inside: "", after: "" });
-      }
-      continue;
-    }
-    env.hintCount = (env.hintCount ?? 0) + 1;
-    const markup = renderHintMarkup({
-      tag: name,
-      text: unescapeHtml2(found[1] ?? ""),
-      id: `${HINT_ID_PREFIX}${env.hintCount}`
-    });
-    const added = Object.entries(markup.attributes).map(([key, value]) => ` ${key}="${escapeHtml2(value)}"`).join("");
-    const start = `<${rawName}${attributes}${added}${selfClosing === "/" ? " /" : ""}>`;
-    if (selfClosing === "/" || VOID_TAGS2.has(name)) {
-      out += `${start}${markup.after}`;
-    } else {
-      out += start;
-      stack.push({ name, inside: markup.inside, after: markup.after });
+    const opened = openTagHtml(
+      { raw, rawName, attributes, selfClosing, name: rawName.toLowerCase() },
+      env,
+      hints
+    );
+    out += opened.text;
+    if (opened.open) {
+      stack.push(opened.open);
     }
   }
   return out + html.slice(last);
@@ -74809,15 +76271,7 @@ function termsFilter(state) {
 function buildHtml(options) {
   const { state, source, paramsBefore, scripts } = options;
   const env = envOf(state);
-  const dictionary = buildDictionary({
-    index: env.index,
-    docId: env.docId,
-    ownGlossary: env.ownGlossary,
-    references: env.mdmarkReferences,
-    features: env.features
-  });
-  const lookup = (word) => dictionary.term(word)?.meaning;
-  const taken = takeParts({ source, state, paramsBefore, lookup });
+  const taken = takeParts({ source, state, paramsBefore });
   const sanitized = sanitizeEmbedded(
     taken.html,
     termsFilter(state),
@@ -74851,6 +76305,49 @@ function buildHtml(options) {
     warnings: taken.warnings
   };
 }
+function openHtmlMark(token) {
+  const mark = markOf(token);
+  return mark && !mark.closing && mark.name === "html" ? mark : void 0;
+}
+function paramCountOf(token) {
+  return Number(token.meta?.[PARAM_COUNT_META] ?? 0);
+}
+function onlyHtmlFence(tokens) {
+  const fences = tokens.filter(isHtmlFence);
+  return fences.length === 1 ? fences[0] : void 0;
+}
+function embeddedToken(state, token, built) {
+  const block2 = new state.Token("html_block", "", 0);
+  block2.block = true;
+  block2.content = built.html;
+  const line = token.map?.[0];
+  block2.meta = {
+    [PARAM_COUNT_META]: built.params,
+    warnings: built.warnings.map(
+      (warning) => line === void 0 ? warning : { ...warning, line }
+    )
+  };
+  return block2;
+}
+function embeddedRange(state, range, place) {
+  const { token, inner, fence: fence2 } = range;
+  const { scripting, scope, params } = place;
+  const scripts = readRangeScripts(inner);
+  const out = scripting ? scripts.warnings.map(
+    (item) => warningBlock(state, { message: item.message }, token)
+  ) : [];
+  const built = buildHtml({
+    state,
+    source: fence2.content,
+    paramsBefore: params,
+    scripts: scripting ? { scope, css: scripts.css, script: scripts.script } : void 0
+  });
+  out.push(embeddedToken(state, token, built));
+  if (!scripting) {
+    out.push(...inner.filter(isRangeScriptFence));
+  }
+  return { tokens: out, params: built.params };
+}
 function buildEmbeddedHtml(state) {
   if (!featureOn(state, "html")) {
     return;
@@ -74862,12 +76359,10 @@ function buildEmbeddedHtml(state) {
   let scope = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const mark = markOf(token);
-    if (!token || !mark || mark.closing || mark.name !== "html") {
-      if (token) {
-        out.push(token);
-        params += Number(token.meta?.[PARAM_COUNT_META] ?? 0);
-      }
+    const mark = openHtmlMark(token);
+    if (!mark) {
+      out.push(token);
+      params += paramCountOf(token);
       continue;
     }
     const closeIndex = findClose(tokens, index, mark.name);
@@ -74875,41 +76370,21 @@ function buildEmbeddedHtml(state) {
     if (closeIndex < 0) {
       out.push(warningBlock(state, unclosedWarning(mark), token));
     }
-    const fences = tokens.slice(index + 1, end).filter(isHtmlFence);
-    const [fence2] = fences;
-    if (fences.length !== 1 || fence2 === void 0) {
+    const inner = tokens.slice(index + 1, end);
+    const fence2 = onlyHtmlFence(inner);
+    if (fence2 === void 0) {
       out.push(warningBlock(state, blockCountWarning(), token), token);
       continue;
     }
-    const range = readRangeScripts(tokens.slice(index + 1, end));
-    if (scripting) {
-      for (const item of range.warnings) {
-        out.push(warningBlock(state, { message: item.message }, token));
-      }
-    }
-    const built = buildHtml({
+    const built = embeddedRange(
       state,
-      source: fence2.content,
-      paramsBefore: params,
-      scripts: scripting ? { scope, css: range.css, script: range.script } : void 0
-    });
+      { token, inner, fence: fence2 },
+      { scripting, scope, params }
+    );
+    out.push(...built.tokens);
+    params += built.params;
     if (scripting) {
       scope += 1;
-    }
-    params += built.params;
-    const block2 = new state.Token("html_block", "", 0);
-    block2.block = true;
-    block2.content = built.html;
-    const line = token.map?.[0];
-    block2.meta = {
-      [PARAM_COUNT_META]: built.params,
-      warnings: built.warnings.map(
-        (warning) => line === void 0 ? warning : { ...warning, line }
-      )
-    };
-    out.push(block2);
-    if (!scripting) {
-      out.push(...tokens.slice(index + 1, end).filter(isRangeScriptFence));
     }
     index = end;
   }
@@ -75033,6 +76508,67 @@ var placeAt = (tokens, marker) => {
   }
   return tokens;
 };
+var specProblem = (spec, key, chain) => {
+  if (spec.lines !== void 0 && spec.heading !== void 0) {
+    return "\u306E `heading` \u3068 `lines` \u306F\u540C\u6642\u306B\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u3069\u3061\u3089\u304B 1 \u3064\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u5834\u6240\u3067\u306F\u53D6\u308A\u8FBC\u3093\u3067\u3044\u307E\u305B\u3093\u3002";
+  }
+  if (spec.lines !== void 0 && isMarkdownPath(key)) {
+    return "\u306E `lines` \u306F Markdown \u4EE5\u5916\u306E\u30D5\u30A1\u30A4\u30EB\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002Markdown \u306E\u30D5\u30A1\u30A4\u30EB\u306F `heading` \u3067\u898B\u51FA\u3057\u3092\u6307\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u5834\u6240\u3067\u306F\u53D6\u308A\u8FBC\u3093\u3067\u3044\u307E\u305B\u3093\u3002";
+  }
+  if (chain.includes(key)) {
+    return problemMessage({ kind: "circular", key, chain: [...chain, key] });
+  }
+  return void 0;
+};
+var includeMarkdown = (state, file, chain) => {
+  const { key, text: text2, target } = file;
+  const tokens = tokenize(state, text2);
+  const selected = target.kind === "heading" ? selectHeadingSection(tokens, target.id) : tokens;
+  if (selected === null) {
+    return {
+      message: problemMessage({
+        kind: "heading",
+        key,
+        id: target.kind === "heading" ? target.id : ""
+      })
+    };
+  }
+  return {
+    tokens: expandTokens({
+      state,
+      tokens: selected,
+      fromPath: key,
+      chain: [...chain, key]
+    })
+  };
+};
+var includeFile = (state, file) => {
+  const { key, text: text2, target } = file;
+  let content = text2;
+  if (target.kind === "lines") {
+    const lines = selectLines(text2, target.from, target.to);
+    if ("lineCount" in lines) {
+      return {
+        message: problemMessage({
+          kind: "lines",
+          key,
+          lineCount: lines.lineCount,
+          from: target.from,
+          to: target.to
+        })
+      };
+    }
+    content = lines.text;
+  }
+  const fence2 = new state.Token("fence", "code", 0);
+  fence2.block = true;
+  fence2.markup = "```";
+  fence2.info = /\.([^./]+)$/.exec(key)?.[1] ?? "";
+  fence2.content = content.endsWith("\n") ? content : `${content}
+`;
+  fence2.map = [0, 1];
+  return { tokens: [fence2] };
+};
 var expandMarker = (options) => {
   const { state, marker, fromPath, chain } = options;
   const mark = markOf(marker);
@@ -75049,73 +76585,18 @@ var expandMarker = (options) => {
     block2.map = marker.map ? [...marker.map] : null;
     return [block2];
   };
-  if (spec.lines !== void 0 && spec.heading !== void 0) {
-    return warn(
-      "\u306E `heading` \u3068 `lines` \u306F\u540C\u6642\u306B\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u3069\u3061\u3089\u304B 1 \u3064\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u5834\u6240\u3067\u306F\u53D6\u308A\u8FBC\u3093\u3067\u3044\u307E\u305B\u3093\u3002",
-      false
-    );
-  }
-  if (spec.lines !== void 0 && isMarkdownPath(key)) {
-    return warn(
-      "\u306E `lines` \u306F Markdown \u4EE5\u5916\u306E\u30D5\u30A1\u30A4\u30EB\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002Markdown \u306E\u30D5\u30A1\u30A4\u30EB\u306F `heading` \u3067\u898B\u51FA\u3057\u3092\u6307\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u5834\u6240\u3067\u306F\u53D6\u308A\u8FBC\u3093\u3067\u3044\u307E\u305B\u3093\u3002",
-      false
-    );
-  }
-  if (chain.includes(key)) {
-    return warn(
-      problemMessage({ kind: "circular", key, chain: [...chain, key] }),
-      false
-    );
+  const problem = specProblem(spec, key, chain);
+  if (problem !== void 0) {
+    return warn(problem, false);
   }
   const includes = envOf(state).includes ?? {};
   const text2 = Object.hasOwn(includes, key) ? includes[key] : void 0;
   if (text2 === void 0) {
     return warn(problemMessage({ kind: "missing", key }));
   }
-  let inner;
-  if (isMarkdownPath(key)) {
-    const tokens = tokenize(state, text2);
-    const selected = target.kind === "heading" ? selectHeadingSection(tokens, target.id) : tokens;
-    if (selected === null) {
-      return warn(
-        problemMessage({
-          kind: "heading",
-          key,
-          id: target.kind === "heading" ? target.id : ""
-        })
-      );
-    }
-    inner = expandTokens({
-      state,
-      tokens: selected,
-      fromPath: key,
-      chain: [...chain, key]
-    });
-  } else {
-    let content = text2;
-    if (target.kind === "lines") {
-      const lines = selectLines(text2, target.from, target.to);
-      if ("lineCount" in lines) {
-        return warn(
-          problemMessage({
-            kind: "lines",
-            key,
-            lineCount: lines.lineCount,
-            from: target.from,
-            to: target.to
-          })
-        );
-      }
-      content = lines.text;
-    }
-    const fence2 = new state.Token("fence", "code", 0);
-    fence2.block = true;
-    fence2.markup = "```";
-    fence2.info = /\.([^./]+)$/.exec(key)?.[1] ?? "";
-    fence2.content = content.endsWith("\n") ? content : `${content}
-`;
-    fence2.map = [0, 1];
-    inner = [fence2];
+  const included = isMarkdownPath(key) ? includeMarkdown(state, { key, text: text2, target }, chain) : includeFile(state, { key, text: text2, target });
+  if ("message" in included) {
+    return warn(included.message);
   }
   return [
     tabBoundaryBlock({
@@ -75124,7 +76605,7 @@ var expandMarker = (options) => {
       boundary: "start",
       source: marker
     }),
-    ...placeAt(inner, marker),
+    ...placeAt(included.tokens, marker),
     tabBoundaryBlock({
       state,
       html: "</div>",
@@ -75185,6 +76666,21 @@ var splitKeys = (text2) => {
   keys.push(current);
   return keys.map((key) => key.trim()).filter((key) => key !== "");
 };
+var buildKbd = (child, nonce) => {
+  if (child.content.startsWith(ESCAPED_PREFIX3)) {
+    child.content = `${KBD_PREFIX}${child.content.slice(ESCAPED_PREFIX3.length)}`;
+    return;
+  }
+  if (!child.content.startsWith(KBD_PREFIX)) {
+    return;
+  }
+  const keys = splitKeys(child.content.slice(KBD_PREFIX.length));
+  if (keys.length === 0) {
+    return;
+  }
+  child.type = "html_inline";
+  child.content = markOwn(renderKbd({ keys }), nonce);
+};
 var buildKbds = (state) => {
   if (!featureOn(state, "kbd")) {
     return;
@@ -75192,22 +76688,9 @@ var buildKbds = (state) => {
   const nonce = envOf(state).nonce;
   for (const token of state.tokens) {
     for (const child of token.children ?? []) {
-      if (child.type !== "code_inline") {
-        continue;
+      if (child.type === "code_inline") {
+        buildKbd(child, nonce);
       }
-      if (child.content.startsWith(ESCAPED_PREFIX3)) {
-        child.content = `${KBD_PREFIX}${child.content.slice(ESCAPED_PREFIX3.length)}`;
-        continue;
-      }
-      if (!child.content.startsWith(KBD_PREFIX)) {
-        continue;
-      }
-      const keys = splitKeys(child.content.slice(KBD_PREFIX.length));
-      if (keys.length === 0) {
-        continue;
-      }
-      child.type = "html_inline";
-      child.content = markOwn(renderKbd({ keys }), nonce);
     }
   }
 };
@@ -75221,100 +76704,116 @@ var renderLayoutColumns = (options) => {
 // src/render/syntax/layout-columns.ts
 var MIN_COLUMNS = 2;
 var MAX_COLUMNS = 3;
+var openRange = (collector, index) => {
+  if (collector.current === void 0) {
+    collector.current = { open: index, close: -1, separators: [], nested: [] };
+  } else {
+    collector.current.nested.push(index);
+  }
+  collector.depth += 1;
+};
+var closeRange = (collector, index) => {
+  const current = collector.current;
+  if (!current) {
+    return;
+  }
+  collector.depth -= 1;
+  if (collector.depth === 0) {
+    current.close = index;
+    collector.ranges.push(current);
+    collector.current = void 0;
+  }
+};
 var collectRanges2 = (tokens) => {
-  const ranges = [];
-  let current;
-  let depth = 0;
+  const collector = {
+    ranges: [],
+    current: void 0,
+    depth: 0
+  };
   for (const [index, token] of tokens.entries()) {
     const mark = markOf(token);
-    if (mark?.name === "columns" && !mark.closing) {
-      if (current === void 0) {
-        current = { open: index, close: -1, separators: [], nested: [] };
+    if (mark?.name === "columns") {
+      if (mark.closing) {
+        closeRange(collector, index);
       } else {
-        current.nested.push(index);
+        openRange(collector, index);
       }
-      depth += 1;
-    } else if (mark?.name === "columns" && mark.closing && current) {
-      depth -= 1;
-      if (depth === 0) {
-        current.close = index;
-        ranges.push(current);
-        current = void 0;
-      }
-    } else if (mark?.name === "column" && current && depth === 1) {
-      current.separators.push(index);
+    } else if (mark?.name === "column" && collector.depth === 1) {
+      collector.current?.separators.push(index);
     }
   }
-  if (current) {
-    ranges.push(current);
+  if (collector.current) {
+    collector.ranges.push(collector.current);
   }
-  return ranges;
+  return collector.ranges;
 };
 var countWarning = (mark, count) => ({
   mark: mark.raw,
   message: count < MIN_COLUMNS ? `\u306E\u7BC4\u56F2\u304C ${count} \u5217\u3067\u3059\u3002\u6A2A\u306B\u4E26\u3079\u3089\u308C\u308B\u306E\u306F ${MIN_COLUMNS}\u301C${MAX_COLUMNS} \u5217\u3067\u3059\u3002\`<!-- column -->\` \u3067\u533A\u5207\u3063\u3066\u304F\u3060\u3055\u3044\u3002\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002` : `\u306E\u7BC4\u56F2\u304C ${count} \u5217\u3067\u3059\u3002\u6A2A\u306B\u4E26\u3079\u3089\u308C\u308B\u306E\u306F ${MIN_COLUMNS}\u301C${MAX_COLUMNS} \u5217\u3067\u3059\u3002\`<!-- column -->\` \u3092\u6E1B\u3089\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
 });
+var rangeProblem = (range, mark) => {
+  if (range.close < 0) {
+    return unclosedWarning(mark);
+  }
+  const count = range.separators.length + 1;
+  return count < MIN_COLUMNS || count > MAX_COLUMNS ? countWarning(mark, count) : void 0;
+};
+var columnsBoundaries = (state, range) => {
+  const tokens = state.tokens;
+  const count = range.separators.length + 1;
+  const pieces = splitSlots(
+    renderLayoutColumns({ columns: Array(count).fill(SLOT_MARKER) })
+  );
+  const boundary = (index, html, kind) => [
+    index,
+    [
+      tabBoundaryBlock({
+        state,
+        html,
+        boundary: kind,
+        source: tokens[index]
+      })
+    ]
+  ];
+  const between = pieces[1] ?? "";
+  return [
+    boundary(range.open, pieces[0] ?? "", "start"),
+    ...range.separators.map(
+      (separator) => boundary(separator, between, "between")
+    ),
+    boundary(range.close, pieces.at(-1) ?? "", "end")
+  ];
+};
+var rangeReplacements = (state, range) => {
+  const tokens = state.tokens;
+  const mark = markOf(tokens[range.open]);
+  const nested = range.nested.map((index) => [
+    index,
+    [
+      warningBlock(state, {
+        mark: markOf(tokens[index]).raw,
+        message: "\u306E columns \u306E\u7BC4\u56F2\u306F\u3001columns \u306E\u7BC4\u56F2\u306E\u4E2D\u306B\u5165\u308C\u5B50\u306B\u3067\u304D\u307E\u305B\u3093\u3002\u5185\u5074\u306E\u7BC4\u56F2\u306F\u6A2A\u306B\u4E26\u3079\u305A\u306B\u3001\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002"
+      })
+    ]
+  ]);
+  const problem = rangeProblem(range, mark);
+  if (problem === void 0) {
+    return [...nested, ...columnsBoundaries(state, range)];
+  }
+  return [
+    ...nested,
+    [range.open, [warningBlock(state, problem)]],
+    ...range.separators.map((separator) => [separator, []])
+  ];
+};
 var buildLayoutColumns = (state) => {
   if (!featureOn(state, "columns")) {
     return;
   }
   const tokens = state.tokens;
-  const replace2 = /* @__PURE__ */ new Map();
-  for (const range of collectRanges2(tokens)) {
-    const open2 = tokens[range.open];
-    const mark = markOf(open2);
-    for (const nested of range.nested) {
-      const nestedMark = markOf(tokens[nested]);
-      replace2.set(nested, [
-        warningBlock(state, {
-          mark: nestedMark.raw,
-          message: "\u306E columns \u306E\u7BC4\u56F2\u306F\u3001columns \u306E\u7BC4\u56F2\u306E\u4E2D\u306B\u5165\u308C\u5B50\u306B\u3067\u304D\u307E\u305B\u3093\u3002\u5185\u5074\u306E\u7BC4\u56F2\u306F\u6A2A\u306B\u4E26\u3079\u305A\u306B\u3001\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002"
-        })
-      ]);
-    }
-    if (range.close < 0) {
-      replace2.set(range.open, [warningBlock(state, unclosedWarning(mark))]);
-      for (const separator of range.separators) {
-        replace2.set(separator, []);
-      }
-      continue;
-    }
-    const count = range.separators.length + 1;
-    if (count < MIN_COLUMNS || count > MAX_COLUMNS) {
-      replace2.set(range.open, [warningBlock(state, countWarning(mark, count))]);
-      for (const separator of range.separators) {
-        replace2.set(separator, []);
-      }
-      continue;
-    }
-    const pieces = splitSlots(
-      renderLayoutColumns({ columns: Array(count).fill(SLOT_MARKER) })
-    );
-    const head = pieces[0] ?? "";
-    const tail = pieces.at(-1) ?? "";
-    const between = pieces[1] ?? "";
-    replace2.set(range.open, [
-      tabBoundaryBlock({ state, html: head, boundary: "start", source: open2 })
-    ]);
-    for (const separator of range.separators) {
-      replace2.set(separator, [
-        tabBoundaryBlock({
-          state,
-          html: between,
-          boundary: "between",
-          source: tokens[separator]
-        })
-      ]);
-    }
-    replace2.set(range.close, [
-      tabBoundaryBlock({
-        state,
-        html: tail,
-        boundary: "end",
-        source: tokens[range.close]
-      })
-    ]);
-  }
+  const replace2 = new Map(
+    collectRanges2(tokens).flatMap((range) => rangeReplacements(state, range))
+  );
   state.tokens = tokens.flatMap(
     (token, index) => replace2.get(index) ?? [token]
   );
@@ -75351,116 +76850,150 @@ function renderRowDetail(options) {
 }
 
 // src/render/syntax/row-details.ts
+function rowLabel(tokens, rowStart, rowEnd) {
+  const first = tokens.slice(rowStart, rowEnd).find((token) => token.type === "inline");
+  return first ? textOf(first) : "";
+}
 function readTable(tokens, openIndex, closeIndex) {
   let columns = 0;
   const rows = [];
   let inBody = false;
   let rowStart = -1;
   for (let index = openIndex; index <= closeIndex; index++) {
-    const token = tokens[index];
-    if (token?.type === "th_open") {
+    const type = tokens[index]?.type;
+    if (type === "th_open") {
       columns += 1;
-    } else if (token?.type === "tbody_open") {
+    } else if (type === "tbody_open") {
       inBody = true;
-    } else if (inBody && token?.type === "tr_open") {
+    } else if (inBody && type === "tr_open") {
       rowStart = index;
-    } else if (inBody && token?.type === "tr_close") {
-      const first = tokens.slice(rowStart, index).find((t) => t.type === "inline");
-      rows.push({ close: index, label: first ? textOf(first) : "" });
+    } else if (inBody && type === "tr_close") {
+      rows.push({ close: index, label: rowLabel(tokens, rowStart, index) });
     }
   }
   return { columns, rows };
+}
+function findTableOpen(tokens, tableClose) {
+  const level = tokens[tableClose]?.level;
+  let tableOpen = tableClose;
+  while (tableOpen > 0 && !(tokens[tableOpen]?.type === "table_open" && tokens[tableOpen]?.level === level)) {
+    tableOpen -= 1;
+  }
+  return tableOpen;
+}
+function skipTableCloses(tokens, position) {
+  let at = position;
+  while (markOf(tokens[at])?.name === "table" && markOf(tokens[at])?.closing) {
+    at += 1;
+  }
+  return at;
+}
+function detailTokens(state, range, table2) {
+  const { position, end, row } = range;
+  const html = renderRowDetail({
+    id: table2.id,
+    row,
+    columns: table2.columns,
+    label: table2.label,
+    toggle: false,
+    body: SLOT_MARKER
+  }).row;
+  const [head = "", tail = ""] = html.split(SLOT_MARKER);
+  return [
+    ownBlock(state, head, state.tokens[position]),
+    ...state.tokens.slice(position + 1, end),
+    ownBlock(state, tail)
+  ];
+}
+function attachRowDetail(state, edits, range) {
+  const tokens = state.tokens;
+  const { position, mark, table: table2 } = range;
+  const closeIndex = findClose(tokens, position, "row-detail");
+  const end = closeIndex < 0 ? tokens.length : closeIndex;
+  const row = Number(mark.options.at);
+  const target = Number.isInteger(row) ? table2.rows[row - 1] : void 0;
+  edits.removed.add(position);
+  const warnings = [];
+  if (closeIndex >= 0) {
+    edits.removed.add(closeIndex);
+  } else {
+    warnings.push(warningBlock(state, unclosedWarning(mark), tokens[position]));
+  }
+  if (target) {
+    edits.counter += 1;
+    const detail = detailTokens(
+      state,
+      { position, end, row },
+      {
+        columns: table2.columns,
+        label: target.label,
+        id: `mdmark-detail-${edits.counter}`
+      }
+    );
+    for (let index = position + 1; index < end; index++) {
+      edits.removed.add(index);
+    }
+    edits.after.set(target.close, [
+      ...edits.after.get(target.close) ?? [],
+      ...detail
+    ]);
+  } else {
+    warnings.push(
+      warningBlock(
+        state,
+        {
+          mark: mark.raw,
+          message: `\u306E at \u306E ${String(mark.options.at ?? "")} \u884C\u76EE\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306F ${table2.rows.length} \u884C\u3067\u3059\u3002\u884C\u306E\u4F4D\u7F6E\u3092 1\u301C${table2.rows.length} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u8A73\u7D30\u306F\u8868\u306E\u5F8C\u306E\u672C\u6587\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+        },
+        tokens[position]
+      )
+    );
+  }
+  if (warnings.length) {
+    edits.before.set(position, warnings);
+  }
+  return end + 1;
+}
+function attachTableDetails(state, edits, tableClose) {
+  const tokens = state.tokens;
+  const table2 = readTable(
+    tokens,
+    findTableOpen(tokens, tableClose),
+    tableClose
+  );
+  let position = skipTableCloses(tokens, tableClose + 1);
+  let mark = markOf(tokens[position]);
+  while (mark?.name === "row-detail" && !mark.closing) {
+    position = skipTableCloses(
+      tokens,
+      attachRowDetail(state, edits, { position, mark, table: table2 })
+    );
+    mark = markOf(tokens[position]);
+  }
 }
 function attachRowDetails(state) {
   if (!featureOn(state, "row-details")) {
     return;
   }
   const tokens = state.tokens;
-  const removed = /* @__PURE__ */ new Set();
-  const after = /* @__PURE__ */ new Map();
-  const before = /* @__PURE__ */ new Map();
-  let counter = 0;
+  const edits = {
+    removed: /* @__PURE__ */ new Set(),
+    after: /* @__PURE__ */ new Map(),
+    before: /* @__PURE__ */ new Map(),
+    counter: 0
+  };
   tokens.forEach((token, tableClose) => {
-    if (token.type !== "table_close") {
-      return;
-    }
-    let tableOpen = tableClose;
-    while (tableOpen > 0 && !(tokens[tableOpen]?.type === "table_open" && tokens[tableOpen]?.level === token.level)) {
-      tableOpen -= 1;
-    }
-    const table2 = readTable(tokens, tableOpen, tableClose);
-    let position = tableClose + 1;
-    for (; ; ) {
-      while (markOf(tokens[position])?.name === "table" && markOf(tokens[position])?.closing) {
-        position += 1;
-      }
-      const mark = markOf(tokens[position]);
-      if (mark?.name !== "row-detail" || mark.closing) {
-        break;
-      }
-      const closeIndex = findClose(tokens, position, "row-detail");
-      const end = closeIndex < 0 ? tokens.length : closeIndex;
-      const row = Number(mark.options.at);
-      const target = Number.isInteger(row) ? table2.rows[row - 1] : void 0;
-      removed.add(position);
-      if (closeIndex >= 0) {
-        removed.add(closeIndex);
-      }
-      const warnings = [];
-      if (closeIndex < 0) {
-        warnings.push(
-          warningBlock(state, unclosedWarning(mark), tokens[position])
-        );
-      }
-      if (!target) {
-        warnings.push(
-          warningBlock(
-            state,
-            {
-              mark: mark.raw,
-              message: `\u306E at \u306E ${String(mark.options.at ?? "")} \u884C\u76EE\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306F ${table2.rows.length} \u884C\u3067\u3059\u3002\u884C\u306E\u4F4D\u7F6E\u3092 1\u301C${table2.rows.length} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u8A73\u7D30\u306F\u8868\u306E\u5F8C\u306E\u672C\u6587\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-            },
-            tokens[position]
-          )
-        );
-      } else {
-        counter += 1;
-        const html = renderRowDetail({
-          id: `mdmark-detail-${counter}`,
-          row,
-          columns: table2.columns,
-          label: target.label,
-          toggle: false,
-          body: SLOT_MARKER
-        }).row;
-        const [head = "", tail = ""] = html.split(SLOT_MARKER);
-        const content = tokens.slice(position + 1, end);
-        for (let index = position + 1; index < end; index++) {
-          removed.add(index);
-        }
-        const detail = [
-          ownBlock(state, head, tokens[position]),
-          ...content,
-          ownBlock(state, tail)
-        ];
-        after.set(target.close, [
-          ...after.get(target.close) ?? [],
-          ...detail
-        ]);
-      }
-      if (warnings.length) {
-        before.set(position, warnings);
-      }
-      position = end + 1;
+    if (token.type === "table_close") {
+      attachTableDetails(state, edits, tableClose);
     }
   });
   const out = [];
   tokens.forEach((token, index) => {
-    out.push(...before.get(index) ?? []);
-    if (!removed.has(index)) {
+    out.push(...edits.before.get(index) ?? []);
+    if (!edits.removed.has(index)) {
       out.push(token);
     }
-    out.push(...after.get(index) ?? []);
+    out.push(...edits.after.get(index) ?? []);
   });
   state.tokens = out;
 }
@@ -75488,72 +77021,93 @@ function renderSection2(options) {
 
 // src/render/syntax/sections.ts
 var TITLE_MARKER = "\0mdmark-title\0";
+function closeBody(writer) {
+  const { levels, tabBases } = writer;
+  levels.pop();
+  writer.out.push(ownBlock(writer.state, "</div>"));
+  for (let i = 0; i < tabBases.length; i++) {
+    tabBases[i] = Math.min(tabBases[i] ?? 0, levels.length);
+  }
+}
+function readTabBoundary(writer, boundary) {
+  const { levels, tabBases } = writer;
+  if (boundary === "start") {
+    tabBases.push(levels.length);
+    return;
+  }
+  while (levels.length > (tabBases[tabBases.length - 1] ?? 0)) {
+    closeBody(writer);
+  }
+  if (boundary === "end") {
+    tabBases.pop();
+  }
+}
+function closeDeeper(writer, level) {
+  const { levels } = writer;
+  while (levels.length && (levels[levels.length - 1] ?? 0) >= level) {
+    closeBody(writer);
+  }
+}
+function openSection(writer, heading2, section) {
+  const { token, inline: inline2, level } = heading2;
+  const html = renderSection2({
+    level,
+    id: String(token.attrGet("id") ?? ""),
+    title: TITLE_MARKER,
+    open: section?.options.open !== false,
+    toggle: false,
+    anchor: false,
+    body: SLOT_MARKER
+  });
+  const [head = "", rest2 = ""] = html.split(TITLE_MARKER);
+  const [body = ""] = rest2.split(SLOT_MARKER);
+  writer.out.push(
+    ownBlock(writer.state, head, token),
+    inline2,
+    ownBlock(writer.state, body)
+  );
+  writer.levels.push(level);
+}
+function readHeading(writer, tokens, index) {
+  const token = tokens[index];
+  const level = Number(token.tag.slice(1));
+  closeDeeper(writer, level);
+  const inline2 = tokens[index + 1];
+  if (level > 4 || !inline2) {
+    writer.out.push(token);
+    return 0;
+  }
+  const mark = markOf(tokens[index + 3]);
+  const section = mark?.name === "section" ? mark : void 0;
+  openSection(
+    writer,
+    { token, inline: inline2, level },
+    section
+  );
+  return section ? 3 : 2;
+}
 function wrapSections(state) {
   if (!featureOn(state, "sections")) {
     return;
   }
   const tokens = state.tokens;
-  const out = [];
-  const levels = [];
-  const tabBases = [];
-  const closeBody = () => {
-    levels.pop();
-    out.push(ownBlock(state, "</div>"));
-    for (let i = 0; i < tabBases.length; i++) {
-      tabBases[i] = Math.min(tabBases[i] ?? 0, levels.length);
-    }
-  };
+  const writer = { state, out: [], levels: [], tabBases: [] };
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const boundary = tabBoundaryOf(token);
     if (boundary !== void 0) {
-      if (boundary === "start") {
-        tabBases.push(levels.length);
-      } else {
-        while (levels.length > (tabBases[tabBases.length - 1] ?? 0)) {
-          closeBody();
-        }
-        if (boundary === "end") {
-          tabBases.pop();
-        }
-      }
+      readTabBoundary(writer, boundary);
     }
-    if (token?.type !== "heading_open" || token.level !== 0) {
-      if (token) {
-        out.push(token);
-      }
+    if (token.type !== "heading_open" || token.level !== 0) {
+      writer.out.push(token);
       continue;
     }
-    const level = Number(token.tag.slice(1));
-    while (levels.length && (levels[levels.length - 1] ?? 0) >= level) {
-      closeBody();
-    }
-    const inline2 = tokens[index + 1];
-    const mark = markOf(tokens[index + 3]);
-    if (level > 4 || !inline2) {
-      out.push(token);
-      continue;
-    }
-    const section = mark?.name === "section" ? mark : void 0;
-    const html = renderSection2({
-      level,
-      id: String(token.attrGet("id") ?? ""),
-      title: TITLE_MARKER,
-      open: section?.options.open !== false,
-      toggle: false,
-      anchor: false,
-      body: SLOT_MARKER
-    });
-    const [head = "", rest2 = ""] = html.split(TITLE_MARKER);
-    const [body = ""] = rest2.split(SLOT_MARKER);
-    out.push(ownBlock(state, head, token), inline2, ownBlock(state, body));
-    levels.push(level);
-    index += section ? 3 : 2;
+    index += readHeading(writer, tokens, index);
   }
-  while (levels.length) {
-    closeBody();
+  while (writer.levels.length) {
+    closeBody(writer);
   }
-  state.tokens = out;
+  state.tokens = writer.out;
 }
 
 // src/render/syntax/steps.ts
@@ -75575,11 +77129,54 @@ function itemCount(tokens, listOpen) {
   }
   return count;
 }
+function buildStepsAt(state, range) {
+  const { index, mark, out } = range;
+  const tokens = state.tokens;
+  const token = tokens[index];
+  const { collapse, title } = readStepsOptions(mark);
+  const closeIndex = findClose(tokens, index, "steps");
+  const end = closeIndex < 0 ? tokens.length : closeIndex;
+  if (closeIndex < 0) {
+    out.push(warningBlock(state, unclosedWarning(mark), token));
+  }
+  const listIndex = tokens.slice(index + 1, end).findIndex((candidate) => candidate.type === "ordered_list_open");
+  if (listIndex < 0) {
+    out.push(
+      warningBlock(
+        state,
+        {
+          message: "`<!-- steps -->` \u306E\u7BC4\u56F2\u306B\u3001\u624B\u9806\u306B\u3059\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u624B\u9806\u3092 `1.` \u304B\u3089\u59CB\u307E\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+        },
+        token
+      )
+    );
+    return index;
+  }
+  const listStart = index + 1 + listIndex;
+  const list2 = tokens[listStart];
+  list2.attrJoin("class", "mdmark-steps");
+  list2.attrSet("data-mdmark-own", envOf(state).nonce);
+  if (collapse === "none") {
+    return index;
+  }
+  const listClose = tokens.findIndex(
+    (candidate, position) => position > listStart && candidate.type === "ordered_list_close" && candidate.level === list2.level
+  );
+  const [head = "", tail = ""] = renderCollapsible({
+    title: title ?? `\u624B\u9806\uFF08${itemCount(tokens, listStart)} \u30B9\u30C6\u30C3\u30D7\uFF09`,
+    open: collapse === "open",
+    body: SLOT_MARKER
+  }).split(SLOT_MARKER);
+  out.push(...tokens.slice(index + 1, listStart));
+  out.push(ownBlock(state, head));
+  out.push(...tokens.slice(listStart, listClose + 1));
+  out.push(ownBlock(state, tail));
+  return listClose;
+}
 function buildSteps(state) {
   if (!featureOn(state, "steps")) {
     return;
   }
-  const nonce = envOf(state).nonce;
   const tokens = state.tokens;
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
@@ -75591,45 +77188,7 @@ function buildSteps(state) {
     if (mark?.name !== "steps" || mark.closing) {
       continue;
     }
-    const { collapse, title } = readStepsOptions(mark);
-    const closeIndex = findClose(tokens, index, "steps");
-    const end = closeIndex < 0 ? tokens.length : closeIndex;
-    if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark), token));
-    }
-    const listIndex = tokens.slice(index + 1, end).findIndex((candidate) => candidate.type === "ordered_list_open");
-    if (listIndex < 0) {
-      out.push(
-        warningBlock(
-          state,
-          {
-            message: "`<!-- steps -->` \u306E\u7BC4\u56F2\u306B\u3001\u624B\u9806\u306B\u3059\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u624B\u9806\u3092 `1.` \u304B\u3089\u59CB\u307E\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-          },
-          token
-        )
-      );
-      continue;
-    }
-    const list2 = tokens[index + 1 + listIndex];
-    list2.attrJoin("class", "mdmark-steps");
-    list2.attrSet("data-mdmark-own", nonce);
-    if (collapse === "none") {
-      continue;
-    }
-    const listStart = index + 1 + listIndex;
-    const listClose = tokens.findIndex(
-      (candidate, position) => position > listStart && candidate.type === "ordered_list_close" && candidate.level === list2.level
-    );
-    const [head = "", tail = ""] = renderCollapsible({
-      title: title ?? `\u624B\u9806\uFF08${itemCount(tokens, listStart)} \u30B9\u30C6\u30C3\u30D7\uFF09`,
-      open: collapse === "open",
-      body: SLOT_MARKER
-    }).split(SLOT_MARKER);
-    out.push(...tokens.slice(index + 1, listStart));
-    out.push(ownBlock(state, head));
-    out.push(...tokens.slice(listStart, listClose + 1));
-    out.push(ownBlock(state, tail));
-    index = listClose;
+    index = buildStepsAt(state, { index, mark, out });
   }
   state.tokens = out;
 }
@@ -75670,97 +77229,102 @@ function buildTabs(state) {
   state.tokens = buildTabsIn(state, state.tokens);
 }
 function buildTabsIn(state, tokens) {
-  const env = envOf(state);
   const out = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const mark = markOf(token);
-    if (!token || mark?.name !== "tabs" || mark.closing) {
-      if (token) {
-        out.push(token);
-      }
+    if (!token) {
       continue;
     }
-    const { group, collapse, title } = readTabsOptions(mark);
+    const mark = markOf(token);
+    if (mark?.name !== "tabs" || mark.closing) {
+      out.push(token);
+      continue;
+    }
     const { close: closeIndex, nested } = findTabsClose(tokens, index);
     if (closeIndex < 0) {
       out.push(warningBlock(state, unclosedWarning(mark), token));
-      if (nested) {
-        out.push(
-          ...tokens.slice(index + 1).filter((candidate) => markOf(candidate)?.name !== "tabs")
-        );
-        break;
-      }
+    }
+    if (closeIndex < 0 && nested) {
+      out.push(
+        ...tokens.slice(index + 1).filter((candidate) => markOf(candidate)?.name !== "tabs")
+      );
+      break;
     }
     const end = closeIndex < 0 ? tokens.length : closeIndex;
     const content = buildTabsIn(state, tokens.slice(index + 1, end));
-    const first = content.find(
-      (candidate) => candidate.type === "heading_open"
-    );
-    if (!first) {
-      out.push(
-        warningBlock(
-          state,
-          {
-            message: "`<!-- tabs -->` \u306E\u7BC4\u56F2\u306B\u3001\u30BF\u30D6\u540D\u306B\u3059\u308B\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30BF\u30D6\u306B\u3057\u305F\u3044\u4E2D\u8EAB\u3054\u3068\u306B\u898B\u51FA\u3057\uFF08`### macOS` \u306A\u3069\uFF09\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-          },
-          token
-        ),
-        ...content
-      );
-      index = end;
-      continue;
-    }
-    const separators = content.map((candidate, position) => ({ candidate, position })).filter(
-      ({ candidate }) => candidate.type === "heading_open" && candidate.tag === first.tag && candidate.level === first.level
-    );
-    const titles = separators.map(({ position }) => {
-      const inline2 = content[position + 1];
-      return inline2 ? state.md.renderer.renderInline(
-        // 見出しのアンカーはタブ名に入れない
-        (inline2.children ?? []).filter(
-          (child) => child.meta?.role !== "heading-anchor"
-        ),
-        state.md.options,
-        state.env
-      ) : "";
-    });
-    const ids = new Set(
-      separators.map(({ candidate }) => candidate.attrGet("id"))
-    );
-    env.headings = env.headings.filter((heading2) => !ids.has(heading2.id));
-    const html = renderTabs({
-      id: "mdmark-tabs",
-      titles,
-      panels: titles.map(() => SLOT_MARKER),
-      group,
-      collapse,
-      title
-    });
-    const pieces = html.split(SLOT_MARKER);
-    const firstPosition = separators[0]?.position ?? 0;
-    out.push(...content.slice(0, firstPosition));
-    separators.forEach(({ position }, panel) => {
-      out.push(
-        tabBoundaryBlock({
-          state,
-          html: pieces[panel] ?? "",
-          boundary: panel === 0 ? "start" : "between",
-          source: panel === 0 ? token : void 0
-        })
-      );
-      const next = separators[panel + 1]?.position ?? content.length;
-      out.push(...content.slice(position + 3, next));
-    });
+    out.push(...tabsTokens(state, { token, mark, content }));
+    index = end;
+  }
+  return out;
+}
+function tabTitleOf(state, inline2) {
+  if (!inline2) {
+    return "";
+  }
+  return state.md.renderer.renderInline(
+    (inline2.children ?? []).filter(
+      (child) => child.meta?.role !== "heading-anchor"
+    ),
+    state.md.options,
+    state.env
+  );
+}
+function tabsTokens(state, range) {
+  const { token, mark, content } = range;
+  const first = content.find((candidate) => candidate.type === "heading_open");
+  if (!first) {
+    return [
+      warningBlock(
+        state,
+        {
+          message: "`<!-- tabs -->` \u306E\u7BC4\u56F2\u306B\u3001\u30BF\u30D6\u540D\u306B\u3059\u308B\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30BF\u30D6\u306B\u3057\u305F\u3044\u4E2D\u8EAB\u3054\u3068\u306B\u898B\u51FA\u3057\uFF08`### macOS` \u306A\u3069\uFF09\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+        },
+        token
+      ),
+      ...content
+    ];
+  }
+  const separators = content.map((candidate, position) => ({ candidate, position })).filter(
+    ({ candidate }) => candidate.type === "heading_open" && candidate.tag === first.tag && candidate.level === first.level
+  );
+  const titles = separators.map(
+    ({ position }) => tabTitleOf(state, content[position + 1])
+  );
+  const env = envOf(state);
+  const ids = new Set(
+    separators.map(({ candidate }) => candidate.attrGet("id"))
+  );
+  env.headings = env.headings.filter((heading2) => !ids.has(heading2.id));
+  const pieces = renderTabs({
+    id: "mdmark-tabs",
+    titles,
+    panels: titles.map(() => SLOT_MARKER),
+    ...readTabsOptions(mark)
+  }).split(SLOT_MARKER);
+  return tabPanelTokens(state, { token, content, separators, pieces });
+}
+function tabPanelTokens(state, tabs) {
+  const { token, content, separators, pieces } = tabs;
+  const out = content.slice(0, separators[0]?.position ?? 0);
+  separators.forEach(({ position }, panel) => {
     out.push(
       tabBoundaryBlock({
         state,
-        html: pieces[separators.length] ?? "",
-        boundary: "end"
+        html: pieces[panel] ?? "",
+        boundary: panel === 0 ? "start" : "between",
+        source: panel === 0 ? token : void 0
       })
     );
-    index = end;
-  }
+    const next = separators[panel + 1]?.position ?? content.length;
+    out.push(...content.slice(position + 3, next));
+  });
+  out.push(
+    tabBoundaryBlock({
+      state,
+      html: pieces[separators.length] ?? "",
+      boundary: "end"
+    })
+  );
   return out;
 }
 
@@ -75772,6 +77336,32 @@ function renderTextColor(options) {
 // src/render/syntax/text-color.ts
 var BRACKET_PATTERN = /\[|\]\{color=([^}]*)\}/g;
 var COLOR_LIST2 = COLOR_NAMES.map((name) => `\`${name}\``).join("\u30FB");
+function splitText(state, child, level) {
+  const pieces = [];
+  let last = 0;
+  for (const found of child.content.matchAll(BRACKET_PATTERN)) {
+    const at = found.index ?? 0;
+    if (at > last) {
+      pieces.push({
+        kind: "token",
+        token: textToken4(state, child.content.slice(last, at))
+      });
+    }
+    pieces.push(
+      found[1] === void 0 ? { kind: "open", level } : { kind: "close", level, color: found[1], raw: found[0] }
+    );
+    last = at + found[0].length;
+  }
+  if (last === 0) {
+    pieces.push({ kind: "token", token: child });
+  } else if (last < child.content.length) {
+    pieces.push({
+      kind: "token",
+      token: textToken4(state, child.content.slice(last))
+    });
+  }
+  return pieces;
+}
 function splitPieces(state, children) {
   const pieces = [];
   let level = 0;
@@ -75787,28 +77377,7 @@ function splitPieces(state, children) {
       level += child.nesting;
       continue;
     }
-    let last = 0;
-    for (const found of child.content.matchAll(BRACKET_PATTERN)) {
-      const at = found.index ?? 0;
-      if (at > last) {
-        pieces.push({
-          kind: "token",
-          token: textToken3(state, child.content.slice(last, at))
-        });
-      }
-      pieces.push(
-        found[1] === void 0 ? { kind: "open", level } : { kind: "close", level, color: found[1], raw: found[0] }
-      );
-      last = at + found[0].length;
-    }
-    if (last === 0) {
-      pieces.push({ kind: "token", token: child });
-    } else if (last < child.content.length) {
-      pieces.push({
-        kind: "token",
-        token: textToken3(state, child.content.slice(last))
-      });
-    }
+    pieces.push(...splitText(state, child, level));
   }
   return pieces;
 }
@@ -75831,59 +77400,53 @@ function pairBrackets(pieces) {
   }
   return pairs;
 }
-function buildTextColors(state) {
-  if (!featureOn(state, "text-color")) {
-    return;
+function pairedClose(bracket, context) {
+  const { at, piece } = bracket;
+  const { pieces, pairs, closes } = context;
+  const openAt = piece.kind === "open" ? at : closes.get(at);
+  const closeAt = piece.kind === "close" ? at : pairs.get(at);
+  const close = closeAt === void 0 ? void 0 : pieces[closeAt];
+  return openAt !== void 0 && close?.kind === "close" ? close : void 0;
+}
+function bracketToken(state, bracket, context) {
+  const { piece } = bracket;
+  const close = pairedClose(bracket, context);
+  if (close === void 0) {
+    return textToken4(state, piece.kind === "open" ? "[" : piece.raw);
   }
-  const nonce = envOf(state).nonce;
-  const warnings = [];
-  for (const [index, token] of state.tokens.entries()) {
-    if (token.type !== "inline" || !token.children?.length) {
-      continue;
+  if (!isColorName(close.color)) {
+    if (piece.kind === "open") {
+      context.unknown.push(close.color);
     }
-    const pieces = splitPieces(state, token.children);
-    const pairs = pairBrackets(pieces);
-    if (pairs.size === 0) {
-      continue;
-    }
-    const closes = new Map([...pairs].map(([open2, close]) => [close, open2]));
-    const unknown2 = [];
-    const children = [];
-    for (const [at, piece] of pieces.entries()) {
-      if (piece.kind === "token") {
-        children.push(piece.token);
-        continue;
-      }
-      const openAt = piece.kind === "open" ? at : closes.get(at);
-      const closeAt = piece.kind === "close" ? at : pairs.get(at);
-      const close = closeAt === void 0 ? void 0 : pieces[closeAt];
-      if (openAt === void 0 || close?.kind !== "close") {
-        children.push(
-          textToken3(state, piece.kind === "open" ? "[" : piece.raw)
-        );
-        continue;
-      }
-      if (!isColorName(close.color)) {
-        if (piece.kind === "open") {
-          unknown2.push(close.color);
-        }
-        continue;
-      }
-      const [before, after] = splitSlots(
-        markOwn(
-          renderTextColor({ color: close.color, text: SLOT_MARKER }),
-          nonce
-        )
-      );
-      const html = new state.Token("html_inline", "", 0);
-      html.content = (piece.kind === "open" ? before : after) ?? "";
-      children.push(html);
-    }
-    token.children = children;
-    if (unknown2.length) {
-      warnings.push({ index, unknown: unknown2 });
+    return void 0;
+  }
+  const [before, after] = splitSlots(
+    markOwn(
+      renderTextColor({ color: close.color, text: SLOT_MARKER }),
+      envOf(state).nonce
+    )
+  );
+  const html = new state.Token("html_inline", "", 0);
+  html.content = (piece.kind === "open" ? before : after) ?? "";
+  return html;
+}
+function colorChildren(state, pieces, pairs) {
+  const context = {
+    pieces,
+    pairs,
+    closes: new Map([...pairs].map(([open2, close]) => [close, open2])),
+    unknown: []
+  };
+  const children = [];
+  for (const [at, piece] of pieces.entries()) {
+    const token = piece.kind === "token" ? piece.token : bracketToken(state, { at, piece }, context);
+    if (token) {
+      children.push(token);
     }
   }
+  return { children, unknown: context.unknown };
+}
+function insertColorWarnings(state, warnings) {
   for (const { index, unknown: unknown2 } of warnings.reverse()) {
     const names2 = unknown2.map((name) => `\`${name}\``).join("\u30FB");
     state.tokens.splice(
@@ -75895,6 +77458,28 @@ function buildTextColors(state) {
     );
   }
 }
+function buildTextColors(state) {
+  if (!featureOn(state, "text-color")) {
+    return;
+  }
+  const warnings = [];
+  for (const [index, token] of state.tokens.entries()) {
+    if (token.type !== "inline" || !token.children?.length) {
+      continue;
+    }
+    const pieces = splitPieces(state, token.children);
+    const pairs = pairBrackets(pieces);
+    if (pairs.size === 0) {
+      continue;
+    }
+    const { children, unknown: unknown2 } = colorChildren(state, pieces, pairs);
+    token.children = children;
+    if (unknown2.length) {
+      warnings.push({ index, unknown: unknown2 });
+    }
+  }
+  insertColorWarnings(state, warnings);
+}
 function blockStartOf3(tokens, index) {
   let at = index;
   while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
@@ -75902,7 +77487,7 @@ function blockStartOf3(tokens, index) {
   }
   return at;
 }
-function textToken3(state, content) {
+function textToken4(state, content) {
   const token = new state.Token("text", "", 0);
   token.content = content;
   return token;
@@ -76040,7 +77625,8 @@ function renderTreeBar(options) {
   const state = options.copyState ?? "idle";
   return `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="${state}">${renderTreeCopyContent(state)}</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div>`;
 }
-function renderNode3(node2, context, depth, path) {
+function renderNode3(node2, context, position) {
+  const { depth, path } = position;
   const note = node2.note ? `<span class="mdmark-tree-note">${node2.note}</span>` : "";
   if (node2.name === TREE_MORE_NAME) {
     return `<li class="mdmark-tree-more"><span class="mdmark-tree-row"><span class="mdmark-tree-name"><span class="mdmark-visually-hidden">\u307B\u304B\u306B\u3082\u3042\u308A\u307E\u3059</span></span>${note}</span></li>`;
@@ -76054,7 +77640,10 @@ function renderNode3(node2, context, depth, path) {
     return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span></li>`;
   }
   const nested = children.map(
-    (child, index) => renderNode3(child, context, depth + 1, `${path}-${index}`)
+    (child, index) => renderNode3(child, context, {
+      depth: depth + 1,
+      path: `${path}-${index}`
+    })
   ).join("");
   if (!context.interactive) {
     return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span><ul>${nested}</ul></li>`;
@@ -76076,7 +77665,9 @@ function renderTree(options) {
   const context = { interactive, open: open2, id };
   const openAttribute = open2 === void 0 ? "" : ` data-open="${escapeHtml2(open2)}"`;
   const bar = interactive ? renderTreeBar({ copyState: copyState ?? "idle" }) : "";
-  const list2 = `<ul class="mdmark-tree-list" aria-label="\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC">${nodes.map((node2, index) => renderNode3(node2, context, 0, String(index))).join("")}</ul>`;
+  const list2 = `<ul class="mdmark-tree-list" aria-label="\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC">${nodes.map(
+    (node2, index) => renderNode3(node2, context, { depth: 0, path: String(index) })
+  ).join("")}</ul>`;
   const panel = interactive && copyFallback ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source }) : "";
   const holderClass = options.wrap ? "mdmark-tree mdmark-tree-wrap" : "mdmark-tree";
   return `<div class="${holderClass}"${openAttribute} data-source="${escapeHtml2(source)}">${bar}${list2}${panel}</div>`;
@@ -76193,54 +77784,47 @@ function buildFileTrees(state) {
 
 // src/render/syntax/views.ts
 var isObject3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-function readView(options) {
-  const { state, mark, headers, cells } = options;
+function readGroupColumn(state, context) {
+  const { mark, headers, groupName, warnings } = context;
+  if (typeof groupName !== "string") {
+    return { group: null, boardDisabled: "" };
+  }
+  const group = headers.indexOf(groupName);
+  if (group >= 0) {
+    return { group, boardDisabled: "" };
+  }
   const env = envOf(state);
-  const items = [];
-  const warnings = [];
-  const board = isObject3(mark.options.board) ? mark.options.board : void 0;
-  const groupName = board?.group?.column;
-  let group = null;
-  let boardDisabled = "";
-  if (typeof groupName === "string") {
-    group = headers.indexOf(groupName);
-    if (group < 0) {
-      group = null;
-      env.viewCount = (env.viewCount ?? 0) + 1;
-      boardDisabled = `mdmark-view-warning-${env.nonce.slice(0, 8)}-${env.viewCount}`;
-      warnings.push({
-        mark: mark.raw,
-        message: `\u306E\u5217 \`${groupName}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${codes(headers)} \u3067\u3059\u3002\u30DC\u30FC\u30C9\u306B\u305B\u305A\u3001\u8868\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`,
-        id: boardDisabled
-      });
-    }
-  }
+  env.viewCount = (env.viewCount ?? 0) + 1;
+  const boardDisabled = `mdmark-view-warning-${env.nonce.slice(0, 8)}-${env.viewCount}`;
+  warnings.push({
+    mark: mark.raw,
+    message: `\u306E\u5217 \`${groupName}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${codes(headers)} \u3067\u3059\u3002\u30DC\u30FC\u30C9\u306B\u305B\u305A\u3001\u8868\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`,
+    id: boardDisabled
+  });
+  return { group: null, boardDisabled };
+}
+function readIcons(context) {
+  const { column, cells, values, groupName, items } = context;
   const icons2 = {};
-  const values = isObject3(board?.values) ? board.values : {};
-  if (group !== null) {
-    const column = group;
-    const present = [
-      ...new Set(cells.map((row) => (row[column] ?? "").trim()))
-    ];
-    for (const [value, settings] of Object.entries(values)) {
-      const icon = isObject3(settings) ? settings.icon : void 0;
-      if (!present.includes(value)) {
-        items.push({
-          label: `board.values.${value}`,
-          message: `\`${value}\` \u306F \`${String(groupName)}\` \u306E\u5217\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u306E\u5024\u306F ${codes(present)} \u3067\u3059\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-        });
-      } else if (typeof icon === "string") {
-        icons2[value] = icon;
-      }
+  const present = [...new Set(cells.map((row) => (row[column] ?? "").trim()))];
+  for (const [value, settings] of Object.entries(values)) {
+    const icon = isObject3(settings) ? settings.icon : void 0;
+    if (!present.includes(value)) {
+      items.push({
+        label: `board.values.${value}`,
+        message: `\`${value}\` \u306F \`${String(groupName)}\` \u306E\u5217\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u306E\u5024\u306F ${codes(present)} \u3067\u3059\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    } else if (typeof icon === "string") {
+      icons2[value] = icon;
     }
   }
+  return icons2;
+}
+function readViewFilters(context) {
+  const { mark, headers, items } = context;
   const filters = [];
   const columns = isObject3(mark.options.columns) ? mark.options.columns : {};
   for (const [name, settings] of Object.entries(columns)) {
-    const filter2 = isObject3(settings) ? settings.filter : void 0;
-    if (!isObject3(filter2)) {
-      continue;
-    }
     const column = headers.indexOf(name);
     if (column < 0) {
       items.push({
@@ -76249,31 +77833,72 @@ function readView(options) {
       });
       continue;
     }
+    const filter2 = isObject3(settings) ? settings.filter : void 0;
+    if (!isObject3(filter2)) {
+      continue;
+    }
     filters.push({
       column,
       kind: typeof filter2.type === "string" ? filter2.type : "select"
     });
   }
-  const requested = mark.options.initial;
-  const mode = group !== null && requested !== "table" ? "board" : "table";
+  return filters;
+}
+function readViewSorts(context) {
+  const { mark, headers } = context;
+  const sorts = [];
+  const columns = isObject3(mark.options.columns) ? mark.options.columns : {};
+  for (const [name, settings] of Object.entries(columns)) {
+    const sort = isObject3(settings) ? settings.sort : void 0;
+    const column = headers.indexOf(name);
+    if (typeof sort === "boolean" && column >= 0) {
+      sorts.push({ column, sort });
+    }
+  }
+  return sorts;
+}
+function viewTableSpec(filters, sorts) {
+  return {
+    kind: "data",
+    features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
+    filters,
+    hide: [],
+    totals: [],
+    unpinned: [],
+    widths: [],
+    check: [],
+    sorts,
+    collapse: "none",
+    warnings: [],
+    headRows: 1,
+    rowHeader: 0
+  };
+}
+function readView(options) {
+  const { state, mark, headers, cells } = options;
+  const items = [];
+  const warnings = [];
+  const board = isObject3(mark.options.board) ? mark.options.board : void 0;
+  const groupName = board?.group?.column;
+  const { group, boardDisabled } = readGroupColumn(state, {
+    mark,
+    headers,
+    groupName,
+    warnings
+  });
+  const icons2 = group === null ? {} : readIcons({
+    column: group,
+    cells,
+    values: isObject3(board?.values) ? board.values : {},
+    groupName,
+    items
+  });
+  const filters = readViewFilters({ mark, headers, items });
+  const sorts = readViewSorts({ mark, headers });
+  const mode = group !== null && mark.options.initial !== "table" ? "board" : "table";
   warnings.push(...warningsOf(mark.raw, items));
   return {
-    tableSpec: {
-      kind: "data",
-      features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
-      filters,
-      // ビューの表には件数・列の表示の切り替え・集計を付けない
-      hide: [],
-      totals: [],
-      unpinned: [],
-      widths: [],
-      check: [],
-      sorts: [],
-      collapse: "none",
-      warnings: [],
-      headRows: 1,
-      rowHeader: 0
-    },
+    tableSpec: viewTableSpec(filters, sorts),
     viewSpec: { group, mode, boardDisabled, icons: icons2 },
     warnings
   };
@@ -76285,6 +77910,31 @@ function firstTable(tokens, from, to) {
     }
   }
   return -1;
+}
+function wrapView(state, range) {
+  const { open: open2, end, mark } = range;
+  const tokens = state.tokens;
+  const table2 = firstTable(tokens, open2 + 1, end);
+  const tableOpen = tokens[table2];
+  if (tableOpen === void 0) {
+    return [
+      {
+        mark: mark.raw,
+        message: "\u306E\u7BC4\u56F2\u306B\u3001\u9805\u76EE\u306B\u3059\u308B\u8868\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u4E2D\u306B Markdown \u306E\u8868\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+      }
+    ];
+  }
+  const reading = readView({
+    state,
+    mark,
+    headers: headersOf(tokens, table2),
+    cells: bodyCellsOf(tokens, table2)
+  });
+  tableOpen.meta = { ...tableOpen.meta ?? {}, tableSpec: reading.tableSpec };
+  const wrapper = `<div class="mdmark-view" data-view="${escapeHtml2(JSON.stringify(reading.viewSpec))}">`;
+  tokens.splice(end, 0, ownBlock(state, "</div>"));
+  tokens.splice(open2 + 1, 0, ownBlock(state, wrapper));
+  return reading.warnings;
 }
 function buildViews(state) {
   if (!featureOn(state, "views")) {
@@ -76302,32 +77952,10 @@ function buildViews(state) {
     if (close < 0) {
       warnings.push(unclosedWarning(mark));
     }
-    const table2 = firstTable(tokens, open2 + 1, end);
-    const tableOpen = tokens[table2];
-    if (tableOpen === void 0) {
-      warnings.push({
-        mark: mark.raw,
-        message: "\u306E\u7BC4\u56F2\u306B\u3001\u9805\u76EE\u306B\u3059\u308B\u8868\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u4E2D\u306B Markdown \u306E\u8868\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-      });
-    } else {
-      const reading = readView({
-        state,
-        mark,
-        headers: headersOf(tokens, table2),
-        cells: bodyCellsOf(tokens, table2)
-      });
-      warnings.unshift(...reading.warnings);
-      tableOpen.meta = {
-        ...tableOpen.meta ?? {},
-        tableSpec: reading.tableSpec
-      };
-      const wrapper = `<div class="mdmark-view" data-view="${escapeHtml2(JSON.stringify(reading.viewSpec))}">`;
-      tokens.splice(end, 0, ownBlock(state, "</div>"));
-      tokens.splice(open2 + 1, 0, ownBlock(state, wrapper));
-    }
+    warnings.unshift(...wrapView(state, { open: open2, end, mark }));
     const source = tokens[open2];
     for (const [offset, warning] of warnings.entries()) {
-      pushWarning(state, open2 + offset, warning, source);
+      pushWarning(state, open2 + offset, { ...warning, source });
     }
   }
 }
@@ -76358,9 +77986,7 @@ var buildWideRanges = (state) => {
     const mark = markOf(token);
     if (mark?.name !== "wide") {
       out.push(token);
-      continue;
-    }
-    if (mark.closing) {
+    } else if (mark.closing) {
       if (closes.has(index)) {
         out.push(
           tabBoundaryBlock({
@@ -76371,48 +77997,60 @@ var buildWideRanges = (state) => {
           })
         );
       }
-      continue;
+    } else {
+      out.push(...wideOpen(state, { token, mark, close: opens.get(index) }));
     }
-    const close = opens.get(index);
-    if (close === void 0) {
-      continue;
-    }
-    if (close === -1) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
-      continue;
-    }
-    const rangeState = mark.options.open === false ? "narrow" : "wide";
-    const [head = ""] = splitSlots(
-      renderWide({ body: SLOT_MARKER, state: rangeState, toggle: false })
-    );
-    out.push(
-      tabBoundaryBlock({ state, html: head, boundary: "start", source: token })
-    );
   }
   state.tokens = out;
+};
+var wideOpen = (state, open2) => {
+  const { token, mark, close } = open2;
+  if (close === void 0) {
+    return [];
+  }
+  if (close === -1) {
+    return [warningBlock(state, unclosedWarning(mark))];
+  }
+  const rangeState = mark.options.open === false ? "narrow" : "wide";
+  const [head = ""] = splitSlots(
+    renderWide({ body: SLOT_MARKER, state: rangeState, toggle: false })
+  );
+  return [
+    tabBoundaryBlock({ state, html: head, boundary: "start", source: token })
+  ];
 };
 
 // src/render/parser.ts
 var EXPLICIT_LINK_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|www\.|[^@]*@)/i;
 var TASK_MARKER_PATTERN = /^\[([ xX])\]\s+/;
+function taskItemAt(tokens, index) {
+  const inline2 = tokens[index];
+  const item = tokens[index - 2];
+  if (inline2?.type !== "inline" || tokens[index - 1]?.type !== "paragraph_open" || item?.type !== "list_item_open") {
+    return void 0;
+  }
+  return { item, inline: inline2 };
+}
+function insertTaskCheckbox(state, target) {
+  const { item, inline: inline2 } = target;
+  const marker = TASK_MARKER_PATTERN.exec(inline2.content);
+  const first = inline2.children?.[0];
+  if (!marker || first?.type !== "text") {
+    return;
+  }
+  item.attrJoin("class", "task-list-item");
+  first.content = first.content.replace(TASK_MARKER_PATTERN, "");
+  const checkbox = new state.Token("html_inline", "", 0);
+  checkbox.content = marker[1] === " " ? '<input type="checkbox" disabled> ' : '<input type="checkbox" disabled checked> ';
+  inline2.children?.unshift(checkbox);
+}
 function taskList(state) {
   const tokens = state.tokens;
   for (let index = 2; index < tokens.length; index++) {
-    const inline2 = tokens[index];
-    const item = tokens[index - 2];
-    if (inline2?.type !== "inline" || tokens[index - 1]?.type !== "paragraph_open" || item?.type !== "list_item_open") {
-      continue;
+    const target = taskItemAt(tokens, index);
+    if (target) {
+      insertTaskCheckbox(state, target);
     }
-    const marker = TASK_MARKER_PATTERN.exec(inline2.content);
-    const first = inline2.children?.[0];
-    if (!marker || first?.type !== "text") {
-      continue;
-    }
-    item.attrJoin("class", "task-list-item");
-    first.content = first.content.replace(TASK_MARKER_PATTERN, "");
-    const checkbox = new state.Token("html_inline", "", 0);
-    checkbox.content = marker[1] === " " ? '<input type="checkbox" disabled> ' : '<input type="checkbox" disabled checked> ';
-    inline2.children?.unshift(checkbox);
   }
 }
 function revertFuzzyLinks(state) {
@@ -76490,35 +78128,33 @@ function foundOf(match) {
 function findMarks(markdown) {
   return findMarkTexts(markdown).map(({ name, line }) => ({ name, line }));
 }
+function htmlBlockMarks(token, start) {
+  return [...token.content.matchAll(MARK_PATTERN)].map((match) => ({
+    ...foundOf(match),
+    line: start + countNewlines(token.content.slice(0, match.index))
+  }));
+}
+function inlineMarks(token, startLine) {
+  const found = [];
+  let offset = startLine;
+  for (const child of token.children ?? []) {
+    if (child.type === "softbreak" || child.type === "hardbreak") {
+      offset += 1;
+    } else if (child.type === "html_inline") {
+      found.push(...htmlBlockMarks(child, offset));
+      offset += countNewlines(child.content);
+    }
+  }
+  return found;
+}
 function findMarkTexts(markdown) {
   const tokens = new MarkdownItCallable(PARSER_OPTIONS).parse(markdown, {});
   const found = [];
   for (const [position, token] of tokens.entries()) {
     if (token.type === "html_block" && token.map) {
-      const start = token.map[0] + 1;
-      for (const match of token.content.matchAll(MARK_PATTERN)) {
-        const before = token.content.slice(0, match.index);
-        found.push({
-          ...foundOf(match),
-          line: start + countNewlines(before)
-        });
-      }
+      found.push(...htmlBlockMarks(token, token.map[0] + 1));
     } else if (token.type === "inline") {
-      let offset = inlineStartLine(tokens, position) + 1;
-      for (const child of token.children ?? []) {
-        if (child.type === "softbreak" || child.type === "hardbreak") {
-          offset += 1;
-        } else if (child.type === "html_inline") {
-          for (const match of child.content.matchAll(MARK_PATTERN)) {
-            const before = child.content.slice(0, match.index);
-            found.push({
-              ...foundOf(match),
-              line: offset + countNewlines(before)
-            });
-          }
-          offset += countNewlines(child.content);
-        }
-      }
+      found.push(...inlineMarks(token, inlineStartLine(tokens, position) + 1));
     }
   }
   return found;
@@ -76534,6 +78170,7 @@ function createParser() {
     // 機能を決めた後、コードブロックの飾りより前に配置する
     ["mdmark_insert_frontmatter", insertFrontmatter],
     ["mdmark_collect_footnotes", collectFootnotes],
+    ["mdmark_collect_annotations", collectAnnotations],
     // 項目の `icon:` の行内のコードを読み込むため、行内のアイコンより前に配置する
     ["mdmark_build_card_grid", buildCardGrid],
     // 見出しの ID と文字から、アイコンにした行内のコードを削除するため、見出しの ID より前に配置する
@@ -76570,27 +78207,31 @@ function createParser() {
     ["mdmark_wrap_sections", wrapSections],
     ["mdmark_build_toc", buildToc],
     ["mdmark_build_footnote_list", buildFootnoteList],
+    ["mdmark_build_annotation_list", buildAnnotationList],
     ["mdmark_backlinks", backlinksRule],
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
     ["mdmark_drop_marks", dropMarks],
     ["mdmark_mark_source_lines", markSourceLines],
     ["mdmark_take_footnote_definitions", takeFootnoteDefinitions],
+    ["mdmark_take_annotation_definitions", takeAnnotationDefinitions],
     ["mdmark_collect_warnings", collectWarningsRule]
   ];
   for (const [name, rule] of rules) {
     parser3.core.ruler.push(name, rule);
   }
   useFootnotes(parser3);
+  useAnnotations(parser3);
   useHighlight(parser3);
   parser3.renderer.rules[MARK_TOKEN] = () => "";
   parser3.renderer.rules.s_open = () => "<del>";
   parser3.renderer.rules.s_close = () => "</del>";
-  const renderFence = parser3.renderer.rules.fence;
-  parser3.renderer.rules.fence = (tokens, index, options, env, self2) => {
+  const renderFence2 = parser3.renderer.rules.fence;
+  parser3.renderer.rules.fence = (...args) => {
+    const [tokens, index] = args;
     const language = tokens[index]?.info.trim().split(/\s+/)[0] ?? "";
     const label = language ? `\u30B3\u30FC\u30C9: ${language}` : "\u30B3\u30FC\u30C9";
-    const html = renderFence?.(tokens, index, options, env, self2) ?? "";
+    const html = renderFence2?.(...args) ?? "";
     const line = tokens[index]?.map?.[0];
     const sourceLine = line === void 0 ? "" : ` data-source-line="${line}"`;
     return html.replace(
@@ -76612,6 +78253,7 @@ var parser;
 function renderDocument(options) {
   parser ??= createParser();
   const index = options.index === void 0 ? void 0 : normalizeIndex(options.index).index;
+  const docId = index?.docs.some((doc) => doc.id === options.docId) ? options.docId : void 0;
   const env = {
     libraries: options.config.libraries,
     defaults: options.config.features,
@@ -76622,7 +78264,7 @@ function renderDocument(options) {
     headings: [],
     nonce: createNonce(),
     index,
-    docId: index?.docs.some((doc) => doc.id === options.docId) ? options.docId : void 0,
+    docId,
     mdmarkReferences: options.references,
     aliases: options.aliases,
     includes: options.includes,
@@ -76636,13 +78278,16 @@ function renderDocument(options) {
     env.frontmatter = { content, endLine };
   }
   const html = sanitize(parser.render(body, env), env.nonce);
+  return { html, ...renderedOf(env) };
+}
+function renderedOf(env) {
   return {
-    html,
     features: env.features,
     extensionDefinitions: env.extensionDefinitions ?? [],
     paramDefinitions: env.paramDefinitions ?? [],
     warnings: env.warnings ?? [],
-    page: env.page ?? {}
+    page: env.page ?? {},
+    annotationIds: [...env.mdmarkAnnotations?.definitions.keys() ?? []]
   };
 }
 function collectWarnings(markdown, opts = {}) {
@@ -76739,8 +78384,7 @@ function refKindOf(src) {
   const kind = mediaKindOf(src);
   return kind === "video" || kind === "audio" ? kind : "image";
 }
-function findAssetRefs(markdown) {
-  const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
+function lineFinder(markdown) {
   const lineStarts = [0];
   for (const [index, char] of [...markdown].entries()) {
     if (char === "\n") {
@@ -76754,6 +78398,59 @@ function findAssetRefs(markdown) {
     }
     return line + 1;
   };
+  return { lineStarts, lineOf };
+}
+function imageSources(children, position) {
+  const child = children[position];
+  const src = String(child.attrGet("src") ?? "");
+  const next = children[position + 1];
+  const poster = next?.type === "text" ? POSTER_PATTERN.exec(next.content)?.[1] : void 0;
+  return [
+    { src, kind: refKindOf(src) },
+    ...poster === void 0 ? [] : [{ src: poster, kind: "poster" }]
+  ];
+}
+function childSources(children, position) {
+  const child = children[position];
+  if (child.type === "image") {
+    return imageSources(children, position);
+  }
+  if (child.type === "link_open") {
+    const href = String(child.attrGet("href") ?? "");
+    return ATTACHMENT_KINDS[extensionOf2(href)] === void 0 ? [] : [{ src: href, kind: "attachment" }];
+  }
+  if (child.type === "html_inline") {
+    return imgSources(child.content).map((src) => ({
+      src,
+      kind: "image"
+    }));
+  }
+  return [];
+}
+function locateSrc(markdown, parsed, cursor) {
+  const src = [parsed, decodeSrc(parsed)].find(
+    (candidate) => markdown.indexOf(candidate, cursor) >= 0
+  );
+  return src === void 0 ? { src: parsed, offset: -1 } : { src, offset: markdown.indexOf(src, cursor) };
+}
+function tokenSources(token) {
+  const children = token.children ?? [];
+  const sources = children.flatMap(
+    (_, position) => childSources(children, position)
+  );
+  if (token.type === "html_block") {
+    sources.push(
+      ...imgSources(token.content).map((src) => ({
+        src,
+        kind: "image"
+      }))
+    );
+  }
+  return sources;
+}
+function findAssetRefs(markdown) {
+  const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
+  const { lineStarts, lineOf } = lineFinder(markdown);
   const refs = [];
   for (const token of tokens) {
     if (!token.map) {
@@ -76761,48 +78458,14 @@ function findAssetRefs(markdown) {
     }
     const [startLine] = token.map;
     let cursor = lineStarts[startLine] ?? 0;
-    const push = (parsed, kind) => {
-      const src = [parsed, decodeSrc(parsed)].find(
-        (candidate) => markdown.indexOf(candidate, cursor) >= 0
-      );
-      const at = src === void 0 ? -1 : markdown.indexOf(src, cursor);
-      if (src !== void 0) {
-        cursor = at + src.length;
+    const relatives = tokenSources(token).filter(({ src }) => isRelative(src));
+    for (const { src: parsed, kind } of relatives) {
+      const found = locateSrc(markdown, parsed, cursor);
+      if (found.offset >= 0) {
+        cursor = found.offset + found.src.length;
       }
-      const line = at >= 0 ? lineOf(at) : startLine + 1;
-      refs.push({ src: src ?? parsed, kind, line, offset: at });
-    };
-    const sources = [];
-    const children = token.children ?? [];
-    for (const [position, child] of children.entries()) {
-      if (child.type === "image") {
-        const src = String(child.attrGet("src") ?? "");
-        sources.push({ src, kind: refKindOf(src) });
-        const next = children[position + 1];
-        const poster = next?.type === "text" ? POSTER_PATTERN.exec(next.content)?.[1] : void 0;
-        if (poster !== void 0) {
-          sources.push({ src: poster, kind: "poster" });
-        }
-      } else if (child.type === "link_open") {
-        const href = String(child.attrGet("href") ?? "");
-        if (ATTACHMENT_KINDS[extensionOf2(href)] !== void 0) {
-          sources.push({ src: href, kind: "attachment" });
-        }
-      } else if (child.type === "html_inline") {
-        for (const src of imgSources(child.content)) {
-          sources.push({ src, kind: "image" });
-        }
-      }
-    }
-    if (token.type === "html_block") {
-      for (const src of imgSources(token.content)) {
-        sources.push({ src, kind: "image" });
-      }
-    }
-    for (const { src, kind } of sources) {
-      if (isRelative(src)) {
-        push(src, kind);
-      }
+      const line = found.offset >= 0 ? lineOf(found.offset) : startLine + 1;
+      refs.push({ src: found.src, kind, line, offset: found.offset });
     }
   }
   return refs;
@@ -76863,16 +78526,36 @@ function copyTargetOf(file, baseDir, used) {
   }
   return name;
 }
+async function copyOnce(options) {
+  const { file, baseDir, filesDir, copied } = options;
+  const known = copied.get(file);
+  if (known !== void 0) {
+    return known;
+  }
+  const target = copyTargetOf(file, baseDir, new Set(copied.values()));
+  const dest = join4(filesDir, ...target.split("/"));
+  try {
+    await mkdir(dirname5(dest), { recursive: true });
+    await copyFile(file, dest);
+  } catch (error2) {
+    const reason = error2 instanceof Error ? error2.message : String(error2);
+    throw new CliError(
+      `${filesDir} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u51FA\u529B\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  copied.set(file, target);
+  return target;
+}
 async function copyMedia(options) {
   const { markdown, docFile, assetsRoot, baseDir, out, copied } = options;
   const filesName = `${basename3(out, extname3(out))}_files`;
   const filesDir = join4(dirname5(out), filesName);
   const warnings = [];
   const replacements = [];
-  for (const ref of findAssetRefs(markdown)) {
-    if (ref.kind !== "video" && ref.kind !== "audio") {
-      continue;
-    }
+  const media = findAssetRefs(markdown).filter(
+    (ref) => ref.kind === "video" || ref.kind === "audio"
+  );
+  for (const ref of media) {
     const file = await resolveAssetFile(ref.src, {
       docDir: dirname5(docFile),
       assetsRoot
@@ -76883,21 +78566,7 @@ async function copyMedia(options) {
       );
       continue;
     }
-    let target = copied.get(file);
-    if (target === void 0) {
-      target = copyTargetOf(file, baseDir, new Set(copied.values()));
-      const dest = join4(filesDir, ...target.split("/"));
-      try {
-        await mkdir(dirname5(dest), { recursive: true });
-        await copyFile(file, dest);
-      } catch (error2) {
-        const reason = error2 instanceof Error ? error2.message : String(error2);
-        throw new CliError(
-          `${filesDir} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u51FA\u529B\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        );
-      }
-      copied.set(file, target);
-    }
+    const target = await copyOnce({ file, baseDir, filesDir, copied });
     if (ref.offset >= 0) {
       replacements.push({
         offset: ref.offset,
@@ -76934,6 +78603,95 @@ async function checkMissingFiles(options) {
 // src/inline-icons.ts
 var LUCIDE_VERSION = "1.59.0";
 
+// src/cli/traces.ts
+var TRACE_ALIAS = "zq";
+var HTML_SCRIPT_KEY_PREFIX = "@@html-script-key-";
+var HTML_SCRIPT_KEY_PATTERN = new RegExp(
+  `(["'\`])${HTML_SCRIPT_KEY_PREFIX}(\\d+)@@\\1`,
+  "g"
+);
+var VERSION_DECLARATION_PATTERN = /:root\{--mdmark-version:"[^"]*"\}\n?/g;
+var COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
+var MARK_COMMENT_PATTERN = /^<!--\s*\/?([a-z][a-z0-9-]*)(?::[\s\S]*?)?\s*-->$/;
+var INLINE_CODE_PATTERN = /(`+)[\s\S]*?\1/g;
+var hideNames = (text2) => text2.replace(/mdmark/gi, (found) => {
+  if (found === found.toUpperCase()) {
+    return TRACE_ALIAS.toUpperCase();
+  }
+  if (found[0] === "M") {
+    return `${TRACE_ALIAS[0]?.toUpperCase() ?? ""}${TRACE_ALIAS.slice(1)}`;
+  }
+  return TRACE_ALIAS;
+});
+var dropCommentsOutsideCode = (text2, markNames) => {
+  const drop = (part) => part.replace(COMMENT_PATTERN, (comment) => {
+    const name = MARK_COMMENT_PATTERN.exec(comment)?.[1];
+    return name !== void 0 && markNames.has(name) ? comment : "";
+  });
+  let result = "";
+  let last = 0;
+  for (const match of text2.matchAll(INLINE_CODE_PATTERN)) {
+    result += drop(text2.slice(last, match.index)) + match[0];
+    last = match.index + match[0].length;
+  }
+  return result + drop(text2.slice(last));
+};
+var htmlLines = (markdown) => {
+  const tokens = new MarkdownItCallable({ html: true, linkify: true }).parse(
+    markdown,
+    {}
+  );
+  const lines = /* @__PURE__ */ new Set();
+  for (const token of tokens) {
+    const hasHtml = token.type === "html_block" || token.type === "inline" && (token.children ?? []).some((child) => child.type === "html_inline");
+    if (hasHtml && token.map) {
+      for (let line = token.map[0]; line < token.map[1]; line++) {
+        lines.add(line);
+      }
+    }
+  }
+  return lines;
+};
+var hideMarkdown = (options) => {
+  const { markdown, markNames } = options;
+  const targets = htmlLines(markdown);
+  const lines = markdown.split("\n");
+  const kept2 = [];
+  for (let line = 0; line < lines.length; ) {
+    if (!targets.has(line)) {
+      kept2.push(lines[line] ?? "");
+      line++;
+      continue;
+    }
+    let end = line;
+    while (targets.has(end)) {
+      end++;
+    }
+    kept2.push(
+      dropCommentsOutsideCode(lines.slice(line, end).join("\n"), markNames)
+    );
+    line = end;
+  }
+  return kept2.join("\n").replace(/(<\/?)mdmark-/gi, `$1${TRACE_ALIAS}-`).replace(/--mdmark-/g, `--${TRACE_ALIAS}-`).replace(
+    /(\bclass\s*=\s*["'])([^"']*)/gi,
+    (_, head, value) => head + value.replace(/\bmdmark-/g, `${TRACE_ALIAS}-`)
+  ).replace(/\bmdmark-asset:/g, `${TRACE_ALIAS}-asset:`);
+};
+var hideValue = (value) => JSON.parse(hideNames(JSON.stringify(value)));
+var hidePayload = (payload) => ({
+  ...payload,
+  config: hideValue(payload.config),
+  ...payload.icons ? { icons: hideValue(payload.icons) } : {}
+});
+var hideCss = (css) => hideNames(css.replace(VERSION_DECLARATION_PATTERN, ""));
+var hideScript = (options) => hideNames(options.code).replace(
+  HTML_SCRIPT_KEY_PATTERN,
+  (found, _quote, index) => {
+    const key = options.keys[Number(index)];
+    return key === void 0 ? found : JSON.stringify(key);
+  }
+);
+
 // src/cli/html.ts
 var ASSET_SCHEME = "mdmark-asset:";
 var PAYLOAD_ID = "mdmark-payload";
@@ -76965,12 +78723,30 @@ function escapeStyle(css) {
 function encodePayload(payload) {
   return JSON.stringify(payload).replaceAll("<", "\\u003c");
 }
+function styleTags(styles, hide2) {
+  return styles.filter((css) => css !== "").map((css) => `<style>${escapeStyle(hide2 ? hideCss(css) : css)}</style>`).join("");
+}
+function lucideLicense(options) {
+  const { payload, script, hide: hide2 } = options;
+  const hasIcons = payload.icons && Object.keys(payload.icons).length > 0;
+  if (!hasIcons) {
+    return { comment: "", script };
+  }
+  const license = `lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis`;
+  return hide2 ? { comment: "", script: `/*! ${license} */
+${script}` } : { comment: `<!-- ${license} -->`, script };
+}
 function assembleHtml(parts) {
-  const { payload, distCss, themeCss, script } = parts;
+  const { distCss, themeCss, script } = parts;
+  const hide2 = parts.hideTraces === true;
+  const payload = hide2 ? hidePayload(parts.payload) : parts.payload;
   const entry = payload.docs.find((doc) => doc.path === payload.entry);
   const title = escapeHtml2(entry?.title ?? payload.entry);
-  const body = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
-  const styles = [distCss, themeCss ?? ""].filter((css) => css !== "").map((css) => `<style>${escapeStyle(css)}</style>`).join("");
+  const skeleton = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
+  const body = hide2 ? hideNames(skeleton) : skeleton;
+  const payloadId = hide2 ? hideNames(PAYLOAD_ID) : PAYLOAD_ID;
+  const styles = styleTags([distCss, themeCss ?? ""], hide2);
+  const license = lucideLicense({ payload, script, hide: hide2 });
   return [
     "<!doctype html>",
     '<html lang="ja">',
@@ -76983,9 +78759,9 @@ function assembleHtml(parts) {
     "</head>",
     "<body>",
     body,
-    payload.icons && Object.keys(payload.icons).length > 0 ? `<!-- lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` : "",
-    `<script type="application/json" id="${PAYLOAD_ID}">${encodePayload(payload)}</script>`,
-    `<script type="module">${script}</script>`,
+    license.comment,
+    `<script type="application/json" id="${payloadId}">${encodePayload(payload)}</script>`,
+    `<script type="module">${license.script}</script>`,
     "</body>",
     "</html>",
     ""
@@ -77051,43 +78827,75 @@ function usesMap(options) {
     (markdown) => MAP_PATTERN.test(renderDocument({ markdown, config: config3 }).html)
   );
 }
-function createViewerEntry(options) {
-  const { viewer, view, embeds } = options;
-  const literal2 = (value) => JSON.stringify(value);
-  const lines = [`import { startViewer } from ${literal2(viewer)};`];
-  if (embeds.view) {
-    lines.push(`import * as viewPart from ${literal2(view)};`);
+var literal2 = (value) => JSON.stringify(value);
+function syntaxEntry(syntax) {
+  if (!syntax) {
+    return { imports: [], argument: "" };
   }
-  if (embeds.map && options.map !== void 0) {
-    lines.push(`import * as mapPart from ${literal2(options.map)};`);
+  const languages = Object.entries(syntax.languages);
+  const imports = [
+    `import syntaxCore from ${literal2(syntax.core)};`,
+    ...languages.map(
+      ([, path], position) => `import syntaxLanguage${position} from ${literal2(path)};`
+    )
+  ];
+  const entries = languages.map(
+    ([name], position) => `${literal2(name)}: { default: syntaxLanguage${position} }`
+  ).join(", ");
+  return {
+    imports,
+    argument: `, syntax: { core: { default: syntaxCore }, languages: { ${entries} } }`
+  };
+}
+function htmlScriptsArgument(htmlScripts, hideTraces) {
+  if (!htmlScripts?.length) {
+    return "";
   }
+  const entries = htmlScripts.map(
+    ({ source, code: code2 }, position) => `[${literal2(hideTraces ? `${HTML_SCRIPT_KEY_PREFIX}${position}@@` : source)}, () => { const module = { exports: {} }; (function (module, exports, require) {
+${code2}
+})(module, module.exports, (name) => { throw new Error("\u7BC4\u56F2\u306E\u30B9\u30AF\u30EA\u30D7\u30C8\u3067\u306F require \u3092\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093: " + name); }); return module.exports.default; }]`
+  ).join(", ");
+  return `, htmlScripts: new Map([${entries}])`;
+}
+function partsEntry(options) {
+  const { view, map, embeds } = options;
+  const withMap = embeds.map && map !== void 0;
+  const imports = [
+    ...embeds.view ? [`import * as viewPart from ${literal2(view)};`] : [],
+    ...withMap ? [`import * as mapPart from ${literal2(map)};`] : []
+  ];
   const parts = [
     ...embeds.view ? ["view: viewPart"] : [],
-    ...embeds.map && options.map !== void 0 ? ["map: mapPart"] : []
+    ...withMap ? ["map: mapPart"] : []
   ];
-  const languages = Object.entries(embeds.syntax?.languages ?? {});
-  if (embeds.syntax) {
-    lines.push(`import syntaxCore from ${literal2(embeds.syntax.core)};`);
-    languages.forEach(([, path], position) => {
-      lines.push(`import syntaxLanguage${position} from ${literal2(path)};`);
-    });
-  }
+  return {
+    imports,
+    argument: parts.length > 0 ? `{ ${parts.join(", ")} }` : "{}"
+  };
+}
+function createViewerEntry(options) {
+  const { viewer, embeds } = options;
+  const parts = partsEntry(options);
+  const syntax = syntaxEntry(embeds.syntax);
+  const lines = [
+    `import { startViewer } from ${literal2(viewer)};`,
+    ...parts.imports,
+    ...syntax.imports
+  ];
   if (embeds.mermaid) {
     lines.push(`import * as mermaidModule from ${literal2(embeds.mermaid)};`);
   }
   const lazy2 = (path) => `() => import(${literal2(path)})`;
   const libraries = Object.entries(embeds.libraries).map(([name, path]) => `${literal2(name)}: ${lazy2(path)}`).join(", ");
   const extensions2 = embeds.extensions.map(lazy2).join(", ");
-  const syntax = embeds.syntax ? `, syntax: { core: { default: syntaxCore }, languages: { ${languages.map(
-    ([name], position) => `${literal2(name)}: { default: syntaxLanguage${position} }`
-  ).join(", ")} } }` : "";
-  const htmlScripts = embeds.htmlScripts?.length ? `, htmlScripts: new Map([${embeds.htmlScripts.map(
-    ({ source, code: code2 }) => `[${literal2(source)}, () => { const module = { exports: {} }; (function (module, exports, require) {
-${code2}
-})(module, module.exports, (name) => { throw new Error("\u7BC4\u56F2\u306E\u30B9\u30AF\u30EA\u30D7\u30C8\u3067\u306F require \u3092\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093: " + name); }); return module.exports.default; }]`
-  ).join(", ")}])` : "";
+  const htmlScripts = htmlScriptsArgument(
+    embeds.htmlScripts,
+    options.hideTraces
+  );
+  const mermaid = embeds.mermaid ? ", mermaid: mermaidModule" : "";
   lines.push(
-    `startViewer(document, { parts: ${parts.length > 0 ? `{ ${parts.join(", ")} }` : "{}"}${syntax}${embeds.mermaid ? ", mermaid: mermaidModule" : ""}, libraries: { ${libraries} }, extensions: [${extensions2}]${htmlScripts} });`
+    `startViewer(document, { parts: ${parts.argument}${syntax.argument}${mermaid}, libraries: { ${libraries} }, extensions: [${extensions2}]${htmlScripts} });`
   );
   return `${lines.join("\n")}
 `;
@@ -77107,65 +78915,66 @@ async function bundleViewer(options) {
     plugins: [urlPlugin(fetchText)],
     logLevel: "silent"
   });
-  const code2 = result.outputFiles[0]?.text;
-  if (code2 === void 0) {
+  const bundled = result.outputFiles[0]?.text;
+  if (bundled === void 0) {
     throw new Error("\u8D77\u52D5\u306E\u51E6\u7406\u3092\u307E\u3068\u3081\u305F\u7D50\u679C\u304C\u3042\u308A\u307E\u305B\u3093");
   }
+  const code2 = options.hideTraces ? hideScript({ code: bundled, keys: options.hideTraces.keys }) : bundled;
   return code2.replace(/<\/(script)/gi, "<\\/$1").replaceAll("<!--", "<\\x21--");
+}
+function tokenImageSources(token) {
+  const sources = (token.children ?? []).flatMap((child) => {
+    if (child.type === "image") {
+      const src = child.attrGet("src");
+      return [typeof src === "string" ? src : ""];
+    }
+    return child.type === "html_inline" ? imgSources2(child.content) : [];
+  });
+  if (token.type === "html_block") {
+    sources.push(...imgSources2(token.content));
+  }
+  return sources;
 }
 function findImageSources(markdown) {
   const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
-  const found = [];
-  for (const token of tokens) {
+  return tokens.flatMap((token) => {
     if (!token.map) {
-      continue;
+      return [];
     }
     const [start, end] = token.map;
-    const sources = [];
-    for (const child of token.children ?? []) {
-      if (child.type === "image") {
-        const src = child.attrGet("src");
-        sources.push(typeof src === "string" ? src : "");
-      } else if (child.type === "html_inline") {
-        sources.push(...imgSources2(child.content));
-      }
-    }
-    if (token.type === "html_block") {
-      sources.push(...imgSources2(token.content));
-    }
-    for (const src of sources) {
-      if (src !== "") {
-        found.push({ start, end, src });
-      }
-    }
-  }
-  return found;
+    return tokenImageSources(token).filter((src) => src !== "").map((src) => ({ start, end, src }));
+  });
 }
 function imgSources2(html) {
   return [
     ...html.matchAll(/<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)
   ].map((match) => match[1] ?? match[2] ?? "");
 }
-async function inlineImages(markdown, docFile, options = {}) {
-  const warnings = [];
+function absoluteImageWarnings(markdown) {
   const warned = /* @__PURE__ */ new Set();
   for (const { src } of findImageSources(markdown)) {
     const media = ["video", "audio"].includes(mediaKindOf(src));
-    if (isAbsoluteSrc(src) && !media && !warned.has(src)) {
+    if (isAbsoluteSrc(src) && !media) {
       warned.add(src);
-      warnings.push(
-        `\u753B\u50CF \`${src}\` \u306F\u7D76\u5BFE URL \u306E\u305F\u3081\u57CB\u3081\u307E\u305B\u3093\u3002\u958B\u3044\u305F\u3068\u304D\u306B\u5916\u3078\u8981\u6C42\u3057\u307E\u3059\u3002`
-      );
     }
   }
+  return [...warned].map(
+    (src) => `\u753B\u50CF \`${src}\` \u306F\u7D76\u5BFE URL \u306E\u305F\u3081\u57CB\u3081\u307E\u305B\u3093\u3002\u958B\u3044\u305F\u3068\u304D\u306B\u5916\u3078\u8981\u6C42\u3057\u307E\u3059\u3002`
+  );
+}
+async function inlineImages(markdown, docFile, options = {}) {
+  const warnings = absoluteImageWarnings(markdown);
   const urls = /* @__PURE__ */ new Map();
   const replacements = [];
-  for (const ref of findAssetRefs(markdown)) {
-    if (ref.kind !== "image" && ref.kind !== "poster") {
-      continue;
-    }
+  const images = findAssetRefs(markdown).filter(
+    (ref) => ref.kind === "image" || ref.kind === "poster"
+  );
+  for (const ref of images) {
     if (!urls.has(ref.src)) {
-      urls.set(ref.src, await readImage(ref.src, docFile, options, warnings));
+      urls.set(
+        ref.src,
+        await readImage2({ src: ref.src, docFile, options, warnings })
+      );
     }
     const url2 = urls.get(ref.src);
     if (url2 !== void 0 && ref.offset >= 0) {
@@ -77189,7 +78998,8 @@ function fragmentOf(src) {
   const at = src.indexOf("#");
   return at < 0 ? "" : src.slice(at);
 }
-async function readImage(src, docFile, options, warnings) {
+async function readImage2(target) {
+  const { src, docFile, options, warnings } = target;
   const mime = IMAGE_MIME[extname4(src.split(/[?#]/)[0] ?? "").toLowerCase()];
   if (mime === void 0) {
     warnings.push(
@@ -77233,7 +79043,7 @@ function decodeHref(href) {
 }
 function findOutsideLinks(markdown, docPath, paths) {
   const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
-  const outside = [];
+  const outside = /* @__PURE__ */ new Set();
   for (const token of tokens) {
     for (const child of token.children ?? []) {
       const href = child.type === "link_open" ? child.attrGet("href") : null;
@@ -77241,27 +79051,26 @@ function findOutsideLinks(markdown, docPath, paths) {
         continue;
       }
       const target = resolveLink(docPath, href);
-      const written = decodeHref(href);
-      if (target !== void 0 && extname4(target) === ".md" && !paths.has(target) && !outside.includes(written)) {
-        outside.push(written);
+      if (target !== void 0 && extname4(target) === ".md" && !paths.has(target)) {
+        outside.add(decodeHref(href));
       }
     }
   }
-  return outside;
+  return [...outside];
 }
 
 // src/cli/export.ts
-import { mkdir as mkdir2, readFile as readFile7, stat as stat3, writeFile } from "node:fs/promises";
+import { mkdir as mkdir2, readFile as readFile9, stat as stat4, writeFile } from "node:fs/promises";
 import {
-  basename as basename6,
-  dirname as dirname8,
+  basename as basename8,
+  dirname as dirname9,
   extname as extname5,
-  join as join6,
-  relative as relative5,
-  resolve as resolve8,
-  sep as sep5
+  join as join7,
+  relative as relative8,
+  resolve as resolve11,
+  sep as sep8
 } from "node:path";
-import { build as build3 } from "esbuild";
+import { build as build4 } from "esbuild";
 
 // src/knowledge/references.ts
 var parser2;
@@ -77319,6 +79128,30 @@ function matchedAliases(tokens, aliases) {
   });
   return matched;
 }
+function aliasOwnersOf(scanned) {
+  const aliasOwners = /* @__PURE__ */ new Map();
+  for (const { doc } of scanned) {
+    for (const alias of doc.aliases ?? []) {
+      const key = normalizeWord(alias);
+      aliasOwners.set(key, [...aliasOwners.get(key) ?? [], doc]);
+    }
+  }
+  return aliasOwners;
+}
+function targetsOf(source, lookup) {
+  const { byPath, byId, aliasOwners } = lookup;
+  const tokens = source.parsed?.tokens ?? [];
+  const found = [
+    ...(source.doc.related ?? []).map((item) => byId.get(readRelated(item).to)),
+    ...[...linkedPaths(source.doc, tokens)].map((path) => byPath.get(path)),
+    ...[...matchedAliases(tokens, [...aliasOwners.keys()])].flatMap(
+      (word) => aliasOwners.get(word) ?? []
+    )
+  ];
+  return new Set(
+    found.filter((target) => target !== void 0)
+  );
+}
 function collectReferences(input) {
   const { index } = normalizeIndex(input.index);
   const defaults = resolveConfig({ config: input.config }).features;
@@ -77336,47 +79169,21 @@ function collectReferences(input) {
     };
   });
   const featureOn2 = (item, name) => (item.parsed?.features ?? defaults)[name] !== false;
-  const aliasOwners = /* @__PURE__ */ new Map();
-  for (const { doc } of scanned) {
-    for (const alias of doc.aliases ?? []) {
-      const key = normalizeWord(alias);
-      aliasOwners.set(key, [...aliasOwners.get(key) ?? [], doc]);
-    }
-  }
-  const aliases = [...aliasOwners.keys()];
-  const byPath = new Map(
-    index.docs.map((doc) => [normalizePath(doc.path), doc])
-  );
-  const byId = new Map(index.docs.map((doc) => [doc.id, doc]));
+  const lookup = {
+    byPath: new Map(index.docs.map((doc) => [normalizePath(doc.path), doc])),
+    byId: new Map(index.docs.map((doc) => [doc.id, doc])),
+    aliasOwners: aliasOwnersOf(scanned)
+  };
+  const receives = (target) => {
+    const targetItem = scanned.find((item) => item.doc === target);
+    return targetItem !== void 0 && featureOn2(targetItem, "backlinks");
+  };
   const referenced = new Map(
     index.docs.map((doc) => [doc.id, /* @__PURE__ */ new Set()])
   );
-  for (const source of scanned) {
-    if (!featureOn2(source, "backlinks")) {
-      continue;
-    }
-    const targets = /* @__PURE__ */ new Set();
-    for (const item of source.doc.related ?? []) {
-      const target = byId.get(readRelated(item).to);
-      if (target) {
-        targets.add(target);
-      }
-    }
-    const tokens = source.parsed?.tokens ?? [];
-    for (const path of linkedPaths(source.doc, tokens)) {
-      const target = byPath.get(path);
-      if (target) {
-        targets.add(target);
-      }
-    }
-    for (const word of matchedAliases(tokens, aliases)) {
-      for (const target of aliasOwners.get(word) ?? []) {
-        targets.add(target);
-      }
-    }
-    for (const target of targets) {
-      const targetItem = scanned.find((item) => item.doc === target);
-      if (target !== source.doc && targetItem && featureOn2(targetItem, "backlinks")) {
+  for (const source of scanned.filter((item) => featureOn2(item, "backlinks"))) {
+    for (const target of targetsOf(source, lookup)) {
+      if (target !== source.doc && receives(target)) {
         referenced.get(target.id)?.add(source.doc.id);
       }
     }
@@ -77398,6 +79205,41 @@ import { parse as parse5, YAMLParseError as YAMLParseError3 } from "yaml";
 function isRecord7(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+function isReadRow(row, rowIds) {
+  return isRecord7(row) && row.enabled !== false && typeof row.id === "string" && row.id !== "" && Array.isArray(row.paths) && !rowIds.has(row.id);
+}
+async function filesOf(dir, patterns) {
+  const files = [];
+  for (const pattern of patterns) {
+    for (const file of await globFiles({ cwd: dir, pattern, exclude: [] })) {
+      if (!files.includes(file)) {
+        files.push(file);
+      }
+    }
+  }
+  return files;
+}
+async function readAliasFile(options) {
+  const { absolute, file, rowId } = options;
+  try {
+    const data = parse5(await readFile5(absolute, "utf8"));
+    return { source: { rowId, path: file, data } };
+  } catch (error2) {
+    if (!(error2 instanceof YAMLParseError3)) {
+      throw error2;
+    }
+    const line = error2.linePos?.[0].line;
+    const reason = error2.message.split("\n")[0] ?? "";
+    return {
+      issue: {
+        file,
+        where: "",
+        kind: "alias_unreadable",
+        message: `${line ?? "?"} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u5B57\u4E0B\u3052\u3068\u8A18\u8F09\u65B9\u6CD5\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      }
+    };
+  }
+}
 async function loadAliases(loaded) {
   const rows = loaded.config.aliases;
   if (rows === void 0) {
@@ -77407,27 +79249,16 @@ async function loadAliases(loaded) {
   const readIssues = [];
   const sources = [];
   const rowIds = /* @__PURE__ */ new Set();
-  const matched = [];
+  const matched = /* @__PURE__ */ new Set();
   for (const [position, row] of rows.entries()) {
-    if (!isRecord7(row) || row.enabled === false || typeof row.id !== "string" || row.id === "" || !Array.isArray(row.paths) || rowIds.has(row.id)) {
+    if (!isReadRow(row, rowIds)) {
       continue;
     }
     rowIds.add(row.id);
     const patterns = row.paths.filter(
       (path) => typeof path === "string"
     );
-    const files = [];
-    for (const pattern of patterns) {
-      for (const file of await globFiles({
-        cwd: loaded.dir,
-        pattern,
-        exclude: []
-      })) {
-        if (!files.includes(file)) {
-          files.push(file);
-        }
-      }
-    }
+    const files = await filesOf(loaded.dir, patterns);
     if (files.length === 0) {
       readIssues.push({
         file: configName,
@@ -77439,24 +79270,12 @@ async function loadAliases(loaded) {
     }
     for (const file of files) {
       const absolute = join5(loaded.dir, file);
-      if (!matched.includes(absolute)) {
-        matched.push(absolute);
-      }
-      try {
-        const data = parse5(await readFile5(absolute, "utf8"));
-        sources.push({ rowId: row.id, path: file, data });
-      } catch (error2) {
-        if (!(error2 instanceof YAMLParseError3)) {
-          throw error2;
-        }
-        const line = error2.linePos?.[0].line;
-        const reason = error2.message.split("\n")[0] ?? "";
-        readIssues.push({
-          file,
-          where: "",
-          kind: "alias_unreadable",
-          message: `${line ?? "?"} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u5B57\u4E0B\u3052\u3068\u8A18\u8F09\u65B9\u6CD5\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        });
+      matched.add(absolute);
+      const read = await readAliasFile({ absolute, file, rowId: row.id });
+      if ("source" in read) {
+        sources.push(read.source);
+      } else {
+        readIssues.push(read.issue);
       }
     }
   }
@@ -77464,723 +79283,15 @@ async function loadAliases(loaded) {
   return {
     aliases: built.aliases,
     issues: [...readIssues, ...built.problems],
-    files: matched
+    files: [...matched]
   };
-}
-
-// src/cli/icons.ts
-var import_lucide3 = __toESM(require_lucide(), 1);
-var ICON_CODE_PATTERN = /`icon:\s*([^`\s]+)\s*`/g;
-var pascalName = (name) => name.split("-").map((part) => part ? `${part[0]?.toUpperCase()}${part.slice(1)}` : "").join("");
-var collectIconNodes = (markdowns) => {
-  const icons2 = {};
-  const missing = /* @__PURE__ */ new Set();
-  const table2 = import_lucide3.icons;
-  for (const markdown of markdowns) {
-    for (const match of markdown.matchAll(ICON_CODE_PATTERN)) {
-      const name = match[1] ?? "";
-      if (!ICON_NAME_PATTERN.test(name) || bundledIconNode(name) !== void 0 || Object.hasOwn(icons2, name)) {
-        continue;
-      }
-      const key = pascalName(name);
-      const node2 = Object.hasOwn(table2, key) ? table2[key] : void 0;
-      if (node2 === void 0) {
-        missing.add(name);
-      } else {
-        icons2[name] = node2;
-      }
-    }
-  }
-  return { icons: icons2, missing: [...missing] };
-};
-
-// src/cli/includes.ts
-import { readFile as readFile6 } from "node:fs/promises";
-import {
-  basename as basename5,
-  dirname as dirname7,
-  isAbsolute as isAbsolute4,
-  relative as relative4,
-  resolve as resolve7,
-  sep as sep4
-} from "node:path";
-var markParser = new MarkdownItCallable({ html: true });
-var findIncludeMarkers = (markdown) => {
-  const found = [];
-  for (const token of markParser.parse(markdown, {})) {
-    if (token.type !== "html_block" || !token.map) {
-      continue;
-    }
-    for (const match of token.content.matchAll(MARK_PATTERN)) {
-      if (match[1] !== void 0 || match[2] !== "include") {
-        continue;
-      }
-      const before = token.content.slice(0, match.index);
-      const args = readMarkArgs(match[3] ?? "");
-      found.push({
-        written: args.kind === "json" ? writtenOf(args.options) : args.kind === "legacy" ? args.text : "",
-        line: token.map[0] + 1 + (before.split("\n").length - 1)
-      });
-    }
-  }
-  return found;
-};
-var includeDisabled = (markdown) => {
-  let disabled = false;
-  for (const match of markdown.matchAll(MARK_PATTERN)) {
-    if (match[1] === void 0 && match[2] === "features") {
-      const args = readMarkArgs(match[3] ?? "");
-      if (args.kind === "json" && typeof args.options.include === "boolean") {
-        disabled = !args.options.include;
-      }
-      if (args.kind === "legacy") {
-        for (const arg of args.text.split(/\s+/)) {
-          if (arg === "-include") {
-            disabled = true;
-          } else if (arg === "+include") {
-            disabled = false;
-          }
-        }
-      }
-    }
-  }
-  return disabled;
-};
-var isInside2 = (root, inner) => {
-  const path = relative4(root, inner);
-  return path === "" || !path.startsWith(`..${sep4}`) && path !== ".." && !isAbsolute4(path);
-};
-var headingLines = (markdown, id) => {
-  const tokens = markParser.parse(markdown, {});
-  const section = selectHeadingSection(tokens, id);
-  if (section === null) {
-    return null;
-  }
-  const start = section[0]?.map?.[0] ?? 0;
-  const next = tokens[tokens.indexOf(section.at(-1)) + 1];
-  const end = next?.map?.[0] ?? markdown.split("\n").length;
-  return { start, end };
-};
-var collectIncludes = async (options) => {
-  const { docPath, markdown, root } = options;
-  const includes = {};
-  const problems = [];
-  if (includeDisabled(markdown)) {
-    return { includes, problems };
-  }
-  const docDir = dirname7(docPath);
-  const cache = /* @__PURE__ */ new Map();
-  const read = (file) => {
-    let pending = cache.get(file);
-    if (!pending) {
-      pending = readFile6(file, "utf8").catch(() => void 0);
-      cache.set(file, pending);
-    }
-    return pending;
-  };
-  const seen = /* @__PURE__ */ new Set();
-  const add = (problem) => {
-    const key = `${problem.kind}\0${problem.file}\0${problem.line}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      problems.push(problem);
-    }
-  };
-  const visit = async (text2, from, offset, chain) => {
-    for (const { written, line } of findIncludeMarkers(text2)) {
-      const at = { file: from, line: offset + line, target: written };
-      const { key, target } = resolveIncludePath(from, written);
-      const file = resolve7(docDir, key);
-      if (!isInside2(root, file)) {
-        add({ ...at, kind: "outside" });
-        continue;
-      }
-      if (chain.includes(key)) {
-        add({
-          ...at,
-          kind: "circular",
-          chain: [...chain.slice(chain.indexOf(key)), key]
-        });
-        continue;
-      }
-      const content = await read(file);
-      if (content === void 0) {
-        add({ ...at, kind: "missing" });
-        continue;
-      }
-      includes[key] = content;
-      if (!isMarkdownPath(key)) {
-        if (target.kind === "lines") {
-          const lines = selectLines(content, target.from, target.to);
-          if ("lineCount" in lines) {
-            add({ ...at, kind: "lines", lineCount: lines.lineCount });
-          }
-        }
-        continue;
-      }
-      let start = 0;
-      let end = content.split("\n").length;
-      if (target.kind === "heading") {
-        const range = headingLines(content, target.id);
-        if (range === null) {
-          add({ ...at, kind: "heading" });
-          continue;
-        }
-        ({ start, end } = range);
-      }
-      const section = content.split("\n").slice(start, end).join("\n");
-      await visit(section, key, start, [...chain, key]);
-    }
-  };
-  await visit(markdown, "", 0, [basename5(docPath)]);
-  return { includes, problems };
-};
-var includeProblemMessage = (problem) => {
-  const { target } = problem;
-  switch (problem.kind) {
-    case "missing":
-      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306E\u30D5\u30A1\u30A4\u30EB\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "heading": {
-      const id = target.slice(target.indexOf("#") + 1);
-      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306B\u3001ID \u304C \`${id}\` \u306E\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u898B\u51FA\u3057\u306E ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    }
-    case "lines": {
-      const range = target.slice(target.indexOf("#") + 1);
-      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306F ${problem.lineCount} \u884C\u3067\u3001${range} \u306E\u884C\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u884C\u306E\u7BC4\u56F2\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    }
-    case "outside":
-      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306F\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u5916\u3092\u6307\u3057\u3066\u3044\u307E\u3059\u3002\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u4E2D\u306E\u30D5\u30A1\u30A4\u30EB\u3092\u53D6\u308A\u8FBC\u3093\u3067\u304F\u3060\u3055\u3044\u3002`;
-    case "circular":
-      return `\u53D6\u308A\u8FBC\u307F\u304C\u5FAA\u74B0\u3057\u3066\u3044\u307E\u3059\uFF08\`${(problem.chain ?? []).join(" \u2192 ")}\`\uFF09\u3002\u5FAA\u74B0\u3057\u306A\u3044\u3088\u3046\u53D6\u308A\u8FBC\u307F\u5148\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    default: {
-      const never2 = problem.kind;
-      return never2;
-    }
-  }
-};
-
-// src/cli/issues.ts
-var formatCheckIssue = (issue2) => {
-  const place = issue2.where === "" ? issue2.file : `${issue2.file}:${issue2.where}`;
-  return `${place}: ${issue2.kind}: ${issue2.message}`;
-};
-
-// src/cli/export.ts
-var GLOSSARY_ID_PREFIX = "mdmark-glossary-";
-function toPosix3(path) {
-  return path.split(sep5).join("/");
-}
-function reasonOf(error2) {
-  return (error2 instanceof Error ? error2.message : String(error2)).split("\n")[0] ?? "";
-}
-var URL_PATTERN = /^https?:\/\//;
-function moduleSource(path, baseDir) {
-  return URL_PATTERN.test(path) ? path : resolve8(baseDir, path);
-}
-async function prepareReferences(options) {
-  const { loaded, kind, markdowns } = options;
-  const info = await readIndexWithDocuments(loaded);
-  const index = info ? normalizeIndex(info.raw).index : void 0;
-  const baseDir = info ? info.indexDir : loaded.dir;
-  const indexPathOf = (path) => toPosix3(relative5(baseDir, join6(loaded.dir, path)));
-  const byPath = (path) => index?.docs.find((doc) => normalizePath(doc.path) === indexPathOf(path));
-  const glossaryPaths = kind === "bundle" ? loaded.config.build?.glossary ?? [] : [];
-  const referenceDocs = [...index?.docs ?? []];
-  const documents = { ...info?.documents };
-  glossaryPaths.forEach((glossaryPath, position) => {
-    const path = normalizePath(glossaryPath);
-    const markdown = markdowns.get(path);
-    if (markdown === void 0) {
-      return;
-    }
-    const key = indexPathOf(path);
-    documents[key] = markdown;
-    if (!referenceDocs.some((doc) => normalizePath(doc.path) === key)) {
-      referenceDocs.push({
-        id: `${GLOSSARY_ID_PREFIX}${position}`,
-        path: key,
-        title: documentTitle({ path, markdown })
-      });
-    }
-  });
-  const references = referenceDocs.length === 0 ? void 0 : collectReferences({
-    index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
-    documents,
-    config: { features: loaded.config.features ?? {} }
-  });
-  return {
-    index,
-    references,
-    docIdOf: (path) => byPath(path)?.id,
-    titleOf: (path) => byPath(path)?.title
-  };
-}
-async function bundleSyntax(options) {
-  const { languages, url: url2, loaded, warnings, fetchText } = options;
-  if (languages.length === 0) {
-    return void 0;
-  }
-  const folder = url2.endsWith("/") ? url2 : `${url2}/`;
-  const bundle = async (path) => {
-    const result = await bundleModule(
-      `${folder}${path}`,
-      loaded.dir,
-      fetchText,
-      build3
-    );
-    if ("code" in result) {
-      return moduleSource(`${folder}${path}`, loaded.dir);
-    }
-    warnings.push(
-      `${basename6(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-    return void 0;
-  };
-  const core = await bundle("core.min.js");
-  if (core === void 0) {
-    return void 0;
-  }
-  const bundled = {};
-  for (const language of languages) {
-    const source = await bundle(`languages/${language}.min.js`);
-    if (source !== void 0) {
-      bundled[language] = source;
-    }
-  }
-  return { core, languages: bundled };
-}
-async function resolveAssetsRoot(loaded, warnings) {
-  const root = loaded.config.assets?.root;
-  if (root === void 0) {
-    return void 0;
-  }
-  const dir = resolve8(loaded.dir, root);
-  try {
-    if ((await stat3(dir)).isDirectory()) {
-      return dir;
-    }
-  } catch {
-  }
-  warnings.push(
-    `${basename6(loaded.path)}: \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${root}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u3060\u3051\u3067\u63A2\u3057\u307E\u3059\u3002`
-  );
-  return void 0;
-}
-async function prepareEmbeds(options) {
-  const { loaded, docs, kind, entry, out, fetchText } = options;
-  const warnings = [];
-  const configName = basename6(loaded.path);
-  const assetsRoot = await resolveAssetsRoot(loaded, warnings);
-  const originals = /* @__PURE__ */ new Map();
-  const inlined = /* @__PURE__ */ new Map();
-  const copied = /* @__PURE__ */ new Map();
-  const assets = kind === "bundle" ? /* @__PURE__ */ new Map() : void 0;
-  for (const doc of docs) {
-    const original = await readFile7(doc.file, "utf8");
-    const media = await copyMedia({
-      markdown: original,
-      docFile: doc.file,
-      assetsRoot,
-      baseDir: loaded.dir,
-      out,
-      copied
-    });
-    const result = await inlineImages(media.markdown, doc.file, {
-      assetsRoot,
-      ...assets ? { assets } : {}
-    });
-    originals.set(doc.path, original);
-    inlined.set(doc.path, result.markdown);
-    warnings.push(
-      ...[...media.warnings, ...result.warnings].map(
-        (text2) => `${doc.path}: ${text2}`
-      )
-    );
-  }
-  const includeTexts = {};
-  const includeKeys = /* @__PURE__ */ new Map();
-  for (const doc of docs) {
-    const result = await collectIncludes({
-      docPath: doc.file,
-      markdown: originals.get(doc.path) ?? "",
-      root: loaded.dir
-    });
-    const keys = {};
-    for (const [key, text2] of Object.entries(result.includes)) {
-      const path = toPosix3(
-        relative5(loaded.dir, resolve8(dirname8(doc.file), key))
-      );
-      keys[key] = path;
-      includeTexts[path] = text2;
-    }
-    includeKeys.set(doc.path, keys);
-    for (const problem of result.problems) {
-      const file = problem.file === "" ? doc.path : toPosix3(
-        relative5(loaded.dir, resolve8(dirname8(doc.file), problem.file))
-      );
-      warnings.push(
-        `${file}:${problem.line}: ${includeProblemMessage(problem)}`
-      );
-    }
-  }
-  const iconResult = collectIconNodes([
-    ...originals.values(),
-    ...Object.values(includeTexts)
-  ]);
-  for (const name of iconResult.missing) {
-    warnings.push(
-      `\`icon:${name}\` \u306E \`${name}\` \u306F Lucide \u306B\u7121\u3044\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u3067\u3059\u3002https://lucide.dev/icons/ \u3067\u540D\u524D\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  const libraries = resolveConfig({ config: loaded.config }).libraries;
-  const urls = Object.fromEntries(
-    Object.entries(libraries).map(([name, library]) => [name, library.url])
-  );
-  const marks = usedLibraryMarks([...originals.values()], urls);
-  const bundled = /* @__PURE__ */ new Map();
-  const modules = {};
-  for (const mark of marks) {
-    const url2 = urls[mark] ?? "";
-    let pending = bundled.get(url2);
-    if (!pending) {
-      pending = bundleModule(url2, loaded.dir, fetchText, build3);
-      bundled.set(url2, pending);
-    }
-    const result = await pending;
-    if ("code" in result) {
-      modules[mark] = moduleSource(url2, loaded.dir);
-      if (hasDynamicImport(result.code)) {
-        warnings.push(
-          dynamicImportWarning(configName, `\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\``)
-        );
-      }
-    } else {
-      warnings.push(
-        `${configName}: \u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002URL \u304B\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-  }
-  const extensions2 = [];
-  for (const path of loaded.config.extensions ?? []) {
-    const result = await bundleModule(path, loaded.dir, fetchText, build3);
-    if ("code" in result) {
-      extensions2.push(moduleSource(path, loaded.dir));
-      if (hasDynamicImport(result.code)) {
-        warnings.push(dynamicImportWarning(configName, `\u62E1\u5F35 \`${path}\``));
-      }
-    } else {
-      warnings.push(
-        `${configName}: \u62E1\u5F35 \`${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-  }
-  let themeCss;
-  const theme = loaded.config.theme;
-  if (theme !== void 0) {
-    try {
-      themeCss = await readFile7(resolve8(loaded.dir, theme), "utf8");
-    } catch (error2) {
-      warnings.push(
-        `${configName}: \u5229\u7528\u5074\u306E CSS \`${theme}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-  }
-  const includesOf = (path) => Object.fromEntries(
-    Object.entries(includeKeys.get(path) ?? {}).map(([key, file]) => [
-      key,
-      includeTexts[file] ?? ""
-    ])
-  );
-  const syntax = await bundleSyntax({
-    languages: usedSyntaxLanguages({
-      markdowns: [...originals.values()],
-      includes: docs.map((doc) => includesOf(doc.path)),
-      config: loaded.config
-    }),
-    url: resolveConfig({ config: loaded.config }).syntax.url,
-    loaded,
-    warnings,
-    fetchText
-  });
-  let mermaid;
-  const mermaidConfig = resolveConfig({ config: loaded.config }).mermaid;
-  if (usesMermaid({
-    markdowns: [...originals.values()],
-    includes: docs.map((doc) => includesOf(doc.path)),
-    config: loaded.config
-  })) {
-    const result = await bundleModule(
-      mermaidConfig.url,
-      loaded.dir,
-      fetchText,
-      build3
-    );
-    if ("code" in result) {
-      mermaid = moduleSource(mermaidConfig.url, loaded.dir);
-    } else {
-      warnings.push(
-        `${configName}: mermaid \`${mermaidConfig.url}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`mermaid.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-  }
-  const { url: _mermaidUrl, ...mermaidPayload } = loaded.config.mermaid ?? {};
-  const aliasResult = await loadAliases(loaded);
-  for (const issue2 of aliasResult.issues) {
-    warnings.push(formatCheckIssue(issue2));
-  }
-  const colorTheme = loaded.config.colorTheme;
-  if (colorTheme !== void 0 && !COLOR_THEMES.some((t) => t === colorTheme)) {
-    warnings.push(
-      `${basename6(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
-    );
-  }
-  const refs = await prepareReferences({ ...options, markdowns: originals });
-  const payload = {
-    kind,
-    config: {
-      ...loaded.config.features ? { features: loaded.config.features } : {},
-      ...loaded.config.tooltips ? { tooltips: loaded.config.tooltips } : {},
-      ...loaded.config["side-toc"] ? { "side-toc": loaded.config["side-toc"] } : {},
-      ...loaded.config.table ? { table: loaded.config.table } : {},
-      ...colorTheme !== void 0 ? { colorTheme } : {},
-      ...loaded.config.colorScheme !== void 0 ? { colorScheme: loaded.config.colorScheme } : {},
-      ...loaded.config.labels ? { labels: loaded.config.labels } : {},
-      ...loaded.config.map ? { map: loaded.config.map } : {},
-      ...Object.keys(mermaidPayload).length > 0 ? { mermaid: mermaidPayload } : {},
-      // 埋めたモジュールは開いたときにまとめたモジュールを指定するため、値はマーカーの名前にする（埋められなかったマーカーが外へ要求しない）
-      libraries: Object.fromEntries(
-        Object.keys(libraries).map((name) => [name, name])
-      )
-    },
-    index: refs.index,
-    references: refs.references,
-    docs: docs.map((doc) => {
-      const markdown = inlined.get(doc.path) ?? "";
-      return {
-        path: doc.path,
-        title: documentTitle({
-          path: doc.path,
-          markdown,
-          indexTitle: refs.titleOf(doc.path)
-        }),
-        markdown,
-        docId: refs.docIdOf(doc.path),
-        ...Object.keys(includeKeys.get(doc.path) ?? {}).length > 0 ? { includes: includeKeys.get(doc.path) } : {}
-      };
-    }),
-    ...Object.keys(includeTexts).length > 0 ? { includes: includeTexts } : {},
-    ...Object.keys(iconResult.icons).length > 0 ? { icons: iconResult.icons } : {},
-    entry,
-    ...aliasResult.aliases ? { aliases: aliasResult.aliases } : {},
-    ...assets ? {
-      assets: Object.fromEntries(
-        [...assets.values()].map((asset) => [asset.key, asset.url])
-      )
-    } : {}
-  };
-  const compiled = await compileHtmlScripts({
-    documents: [...originals.entries()].map(([path, markdown]) => ({
-      path,
-      markdown
-    })),
-    config: loaded.config
-  });
-  warnings.push(...compiled.warnings);
-  const embeds = {
-    libraries: modules,
-    extensions: extensions2,
-    ...syntax ? { syntax } : {},
-    ...mermaid ? { mermaid } : {},
-    view: usedParts({ markdowns: [...originals.values()] }),
-    map: usesMap({ markdowns: [...originals.values()], config: loaded.config }),
-    ...compiled.scripts.length > 0 ? { htmlScripts: compiled.scripts } : {}
-  };
-  return { payload, embeds, themeCss, warnings };
-}
-function dynamicImportWarning(configName, what) {
-  return `${configName}: ${what} \u306F\u307E\u3068\u3081\u305F\u5F8C\u3082\u52D5\u7684 import() \u304C\u6B8B\u308A\u3001blob: \u3068\u52D5\u7684 import \u3092\u8A31\u3055\u306A\u3044\u74B0\u5883\u3067\u306F\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u8AAD\u307F\u8FBC\u3080\u5148\u3092\u30EA\u30C6\u30E9\u30EB\u306E\u6587\u5B57\u5217\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-}
-async function readDistAssets(options) {
-  const { distDir, kind } = options;
-  let distCss;
-  const viewer = resolve8(distDir, "viewer.js");
-  const view = resolve8(distDir, "view.js");
-  const map = resolve8(distDir, "map.js");
-  try {
-    distCss = await readFile7(join6(distDir, "index.css"), "utf8");
-    await stat3(viewer);
-    await stat3(view);
-  } catch (error2) {
-    throw new CliError(
-      `\u914D\u5E03\u7269\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002mdmark \u3092\u3082\u3046\u4E00\u5EA6\u5165\u308C\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  if (kind === "bundle") {
-    try {
-      distCss += `
-${await readFile7(join6(distDir, "viewer.css"), "utf8")}`;
-    } catch (error2) {
-      if (!(error2 instanceof Error && "code" in error2 && error2.code === "ENOENT")) {
-        throw error2;
-      }
-    }
-  }
-  return { distCss, viewer, view, map };
-}
-async function writeHtml(options) {
-  const { file, display, html } = options;
-  try {
-    await mkdir2(dirname8(file), { recursive: true });
-    await writeFile(file, html);
-  } catch (error2) {
-    throw new CliError(
-      `\u66F8\u304D\u8FBC\u3081\u306A\u3044: ${display} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u51FA\u529B\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-}
-async function exportDocument(options) {
-  const { cwd } = options;
-  const loaded = await requireConfig(cwd, options.config);
-  const docFile = resolve8(cwd, options.file);
-  try {
-    await readFile7(docFile);
-  } catch {
-    throw new CliError(
-      `\u6587\u66F8\u304C\u7121\u3044: ${options.file} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  const path = normalizePath(toPosix3(relative5(loaded.dir, docFile)));
-  const outFile = options.out ? resolve8(cwd, options.out) : join6(dirname8(docFile), `${basename6(docFile, extname5(docFile))}.html`);
-  const display = options.out ?? toPosix3(relative5(cwd, outFile));
-  const fetchText = cacheFetchText();
-  const { payload, embeds, themeCss, warnings } = await prepareEmbeds({
-    loaded,
-    docs: [{ path, file: docFile }],
-    kind: "document",
-    entry: path,
-    out: outFile,
-    fetchText
-  });
-  const { distCss, viewer, view, map } = await readDistAssets({
-    distDir: options.distDir,
-    kind: "document"
-  });
-  const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, map, embeds }),
-    baseDir: loaded.dir,
-    fetchText
-  });
-  await writeHtml({
-    file: outFile,
-    display,
-    html: assembleHtml({ payload, distCss, themeCss, script })
-  });
-  return { out: outFile, display, warnings };
-}
-async function runExport(options, io) {
-  const { display, warnings } = await exportDocument({
-    cwd: io.cwd,
-    ...options
-  });
-  for (const warning of warnings) {
-    io.stderr(`\u8B66\u544A: ${warning}`);
-  }
-  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}`);
-  return 0;
-}
-
-// src/cli/build.ts
-async function buildSite(options) {
-  const loaded = await requireConfig(options.cwd, options.config);
-  const build5 = loaded.config.build;
-  if (!build5) {
-    throw new CliError(
-      "build \u304C\u7121\u3044: \u8A2D\u5B9A\u306B build \u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3068 build.out \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  const paths = await collectBuildDocuments(loaded.dir, build5);
-  const first = paths[0];
-  if (first === void 0) {
-    throw new CliError(
-      "0 \u4EF6: build.include \u306B\u8A72\u5F53\u3059\u308B\u6587\u66F8\u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  const included = new Set(paths);
-  const warnings = [];
-  const wantedEntry = build5.entry === void 0 ? void 0 : normalizePath(build5.entry);
-  let entry = first;
-  if (wantedEntry !== void 0) {
-    if (included.has(wantedEntry)) {
-      entry = wantedEntry;
-    } else {
-      warnings.push(
-        `${build5.entry}: build.entry \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B\u6587\u66F8\u306E\u6700\u521D\u306E 1 \u3064\uFF08${first}\uFF09\u3092\u958B\u304D\u307E\u3059\u3002`
-      );
-    }
-  }
-  for (const glossary of build5.glossary ?? []) {
-    if (!included.has(normalizePath(glossary))) {
-      warnings.push(
-        `${glossary}: build.glossary \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u7528\u8A9E\u96C6\u306E\u8868\u3092\u98DB\u3070\u3057\u307E\u3059\u3002`
-      );
-    }
-  }
-  const out = resolve9(loaded.dir, build5.out);
-  const fetchText = cacheFetchText();
-  const {
-    payload,
-    embeds,
-    themeCss,
-    warnings: embedWarnings
-  } = await prepareEmbeds({
-    loaded,
-    docs: paths.map((path) => ({ path, file: join7(loaded.dir, path) })),
-    kind: "bundle",
-    entry,
-    out,
-    fetchText
-  });
-  warnings.unshift(...embedWarnings);
-  for (const doc of payload.docs) {
-    for (const href of findOutsideLinks(doc.markdown, doc.path, included)) {
-      warnings.push(
-        `${doc.path}: \`${href}\` \u3078\u306E\u30EA\u30F3\u30AF\u306F\u307E\u3068\u3081\u305F HTML \u306B\u542B\u307E\u308C\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u305F\u307E\u307E\u306E\u30EA\u30F3\u30AF\u3067\u6B8B\u3057\u307E\u3059\u3002\u307E\u3068\u3081\u308B\u306A\u3089 \`build.include\` \u306B\u8FFD\u52A0\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-  }
-  const { distCss, viewer, view, map } = await readDistAssets({
-    distDir: options.distDir,
-    kind: "bundle"
-  });
-  const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, map, embeds }),
-    baseDir: loaded.dir,
-    fetchText
-  });
-  await writeHtml({
-    file: out,
-    display: build5.out,
-    html: assembleHtml({ payload, distCss, themeCss, script })
-  });
-  return { out, display: build5.out, docs: paths.length, warnings };
-}
-async function runBuild(options, io) {
-  const { display, docs, warnings } = await buildSite({
-    cwd: io.cwd,
-    ...options
-  });
-  for (const warning of warnings) {
-    io.stderr(`\u8B66\u544A: ${warning}`);
-  }
-  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}\uFF08\u6587\u66F8 ${docs} \u4EF6\uFF09`);
-  return 0;
 }
 
 // src/cli/check.ts
-import { readFile as readFile9, stat as stat4 } from "node:fs/promises";
+import { readFile as readFile8, stat as stat3 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
-import { basename as basename8, dirname as dirname9, join as join8, relative as relative8, resolve as resolve12, sep as sep8 } from "node:path";
-import { build as build4 } from "esbuild";
+import { basename as basename7, dirname as dirname8, join as join6, relative as relative7, resolve as resolve10, sep as sep7 } from "node:path";
+import { build as build3 } from "esbuild";
 
 // src/knowledge/check.ts
 var DEFAULT_INDEX_FILE = "index.yaml";
@@ -78355,29 +79466,8 @@ function findMissedChangeTogether(options) {
   }
   return issues;
 }
-function checkIndex(input) {
-  const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
-  const { index, problems } = normalizeIndex(input.index);
-  const schema = problems.map((problem) => ({
-    file: indexFile,
-    where: problem.where,
-    kind: "schema",
-    message: `\u7D22\u5F15\u306E ${problem.where === "" ? "\u5168\u4F53" : `\`${problem.where}\``} \u304C\u69CB\u9020\u306B\u5408\u3044\u307E\u305B\u3093: ${problem.message}\u3002\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  }));
-  if (problems.some((problem) => problem.where === "")) {
-    return schema;
-  }
-  const rawDocs = input.index.docs;
-  const positionOf = (doc) => Array.isArray(rawDocs) ? rawDocs.indexOf(doc) : -1;
-  const documents = new Map(
-    Object.entries(input.documents).map(([path, body]) => [
-      normalizePath(path),
-      { path, body }
-    ])
-  );
-  const indexedPaths = new Set(
-    index.docs.map((doc) => normalizePath(doc.path))
-  );
+function findDocIssues(options) {
+  const { index, documents, indexFile, positionOf } = options;
   const ids = new Set(index.docs.map((doc) => doc.id));
   const missing = [];
   const broken = [];
@@ -78404,17 +79494,27 @@ function checkIndex(input) {
       }
     });
   }
-  const orphan = [...documents.entries()].filter(([normalized]) => !indexedPaths.has(normalized)).map(([, { path }]) => path).sort().map((path) => ({
+  return { missing, broken };
+}
+function orphanIssues(index, documents) {
+  const indexedPaths = new Set(
+    index.docs.map((doc) => normalizePath(doc.path))
+  );
+  return [...documents.entries()].filter(([normalized]) => !indexedPaths.has(normalized)).map(([, { path }]) => path).sort().map((path) => ({
     file: path,
     where: "",
     kind: "orphan_doc",
     message: `\`${path}\` \u304C\u7D22\u5F15\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u7D22\u5F15\u306E \`docs\` \u306B\u8FFD\u52A0\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
   }));
-  const parsedDocs = [];
-  for (const doc of index.docs) {
+}
+function parseIndexedDocs(index, documents) {
+  return index.docs.flatMap((doc) => {
     const entry = documents.get(normalizePath(doc.path));
-    if (entry) {
-      parsedDocs.push({
+    if (!entry) {
+      return [];
+    }
+    return [
+      {
         doc,
         path: entry.path,
         parsed: parseDocument2({
@@ -78422,11 +79522,14 @@ function checkIndex(input) {
           docId: doc.id,
           defaults: { ...DEFAULT_FEATURES }
         })
-      });
-    }
-  }
-  const sites = (index.terms ?? []).map((term) => {
-    const position = (input.index.terms ?? []).indexOf(term);
+      }
+    ];
+  });
+}
+function indexTermSites(options) {
+  const { index, rawTerms, indexFile } = options;
+  return (index.terms ?? []).map((term) => {
+    const position = rawTerms.indexOf(term);
     const aliases = term.aliases ?? [];
     return {
       file: indexFile,
@@ -78437,388 +79540,74 @@ function checkIndex(input) {
       ]
     };
   });
-  const avoidable = [...index.terms ?? []];
-  const links = {};
+}
+function collectGlossary2(parsedDocs, into) {
   for (const { doc, path, parsed } of parsedDocs) {
-    links[doc.id] = [...linkedPaths(doc, parsed.tokens)];
+    into.links[doc.id] = [...linkedPaths(doc, parsed.tokens)];
     for (const { entry: term, line } of parsed.glossary) {
-      sites.push({
+      into.sites.push({
         file: path,
         words: [term.term, ...term.aliases],
         wheres: [term.term, ...term.aliases].map(() => `${line} \u884C\u76EE`)
       });
-      avoidable.push({
+      into.avoidable.push({
         term: term.term,
         aliases: term.aliases,
         avoid: term.avoid ?? []
       });
     }
   }
+}
+function checkIndex(input) {
+  const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
+  const { index, problems } = normalizeIndex(input.index);
+  const schema = problems.map((problem) => ({
+    file: indexFile,
+    where: problem.where,
+    kind: "schema",
+    message: `\u7D22\u5F15\u306E ${problem.where === "" ? "\u5168\u4F53" : `\`${problem.where}\``} \u304C\u69CB\u9020\u306B\u5408\u3044\u307E\u305B\u3093: ${problem.message}\u3002\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  }));
+  if (problems.some((problem) => problem.where === "")) {
+    return schema;
+  }
+  const raw = input.index;
+  const positionOf = (doc) => Array.isArray(raw.docs) ? raw.docs.indexOf(doc) : -1;
+  const documents = new Map(
+    Object.entries(input.documents).map(([path, body]) => [
+      normalizePath(path),
+      { path, body }
+    ])
+  );
+  const { missing, broken } = findDocIssues({
+    index,
+    documents,
+    indexFile,
+    positionOf
+  });
+  const parsedDocs = parseIndexedDocs(index, documents);
+  const sites = indexTermSites({
+    index,
+    rawTerms: raw.terms ?? [],
+    indexFile
+  });
+  const avoidable = [...index.terms ?? []];
+  const links = {};
+  collectGlossary2(parsedDocs, { sites, avoidable, links });
   const avoided = parsedDocs.flatMap(
     ({ path, parsed }) => findAvoidedTerms({ file: path, tokens: parsed.tokens, terms: avoidable })
   );
+  const changed = input.changedPaths === void 0 ? [] : findMissedChangeTogether({ index, changedPaths: input.changedPaths });
   return [
     ...schema,
     ...missing,
-    ...orphan,
+    ...orphanIssues(index, documents),
     ...broken,
     ...findRelatedIssues({ index, links, indexFile, positionOf }),
-    ...input.changedPaths === void 0 ? [] : findMissedChangeTogether({ index, changedPaths: input.changedPaths }),
+    ...changed,
     ...duplicateTerms(sites),
     ...avoided
   ];
 }
-
-// src/map/data.ts
-var MAP_DATA_KEYS = [
-  "version",
-  "notes",
-  "walkthroughs",
-  "layout",
-  "plays_over",
-  "groups"
-];
-var GROUP_KEYS = ["title", "tables", "parent"];
-var STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
-var LAYOUT_KEYS = [
-  "align",
-  "order",
-  "justify",
-  "pos",
-  "width",
-  "color",
-  "line",
-  "packet",
-  "ends",
-  "via",
-  "collapsed"
-];
-var PACKET_SHAPES = ["circle", "square", "diamond"];
-var SIDES = ["top", "right", "bottom", "left"];
-var JUSTIFIES = ["start", "center", "end"];
-var emptyMapData = () => ({
-  version: 1,
-  notes: {},
-  walkthroughs: [],
-  layout: {},
-  plays_over: void 0,
-  groups: {}
-});
-var jsonPathLines = (source) => {
-  const lines = /* @__PURE__ */ new Map();
-  let at = 0;
-  let line = 0;
-  const skip = () => {
-    while (at < source.length && /\s/.test(source[at])) {
-      if (source[at] === "\n") line += 1;
-      at += 1;
-    }
-  };
-  const readString = () => {
-    const start = at;
-    at += 1;
-    while (at < source.length && source[at] !== '"')
-      at += source[at] === "\\" ? 2 : 1;
-    at += 1;
-    return JSON.parse(source.slice(start, at));
-  };
-  const value = (path) => {
-    skip();
-    const char = source[at];
-    if (char === "{" || char === "[") {
-      const close = char === "{" ? "}" : "]";
-      at += 1;
-      skip();
-      let index = 0;
-      while (at < source.length && source[at] !== close) {
-        let child;
-        if (char === "{") {
-          const keyLine = line;
-          const key = readString();
-          child = path === "" ? key : `${path}.${key}`;
-          lines.set(child, keyLine);
-          skip();
-          at += 1;
-        } else {
-          child = `${path}[${index}]`;
-          lines.set(child, line);
-          index += 1;
-        }
-        value(child);
-        skip();
-        if (source[at] === ",") at += 1;
-        skip();
-      }
-      at += 1;
-    } else if (char === '"') {
-      readString();
-    } else {
-      while (at < source.length && !/[,\]}\s]/.test(source[at]))
-        at += 1;
-    }
-  };
-  value("");
-  return lines;
-};
-var errorLine = (source, error2) => {
-  const message = error2 instanceof Error ? error2.message : "";
-  const lineMatch = /line (\d+)/.exec(message);
-  if (lineMatch) return Number(lineMatch[1]) - 1;
-  const position = /position (\d+)/.exec(message);
-  if (!position) return void 0;
-  return source.slice(0, Number(position[1])).split("\n").length - 1;
-};
-var isObject4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-var parseMapData = (source) => {
-  const data = emptyMapData();
-  const problems = [];
-  if (source === void 0 || source.trim() === "")
-    return { data, problems, lines: /* @__PURE__ */ new Map() };
-  let root;
-  try {
-    root = JSON.parse(source);
-  } catch (error2) {
-    const reason = error2 instanceof Error ? error2.message : String(error2);
-    problems.push({
-      kind: "map_invalid_value",
-      line: errorLine(source, error2),
-      message: `\u88DC\u8DB3\u3092 JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\`<!-- map-data: {"version": 1} -->\` \u306E\u3088\u3046\u306B JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return { data, problems, lines: /* @__PURE__ */ new Map() };
-  }
-  if (!isObject4(root)) {
-    problems.push({
-      kind: "map_invalid_value",
-      line: 0,
-      message: '\u88DC\u8DB3\u306F JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\uFF08`{"version": 1}` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002'
-    });
-    return { data, problems, lines: /* @__PURE__ */ new Map() };
-  }
-  const lines = jsonPathLines(source);
-  const invalid = (path, expected) => problems.push({
-    kind: "map_invalid_value",
-    line: lines.get(path),
-    message: `\u88DC\u8DB3\u306E \`${path}\` \u306F${expected}\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  });
-  const unknown2 = (path, key, keys) => problems.push({
-    kind: "map_unknown_key",
-    line: lines.get(path === "" ? key : `${path}.${key}`),
-    message: `\u88DC\u8DB3${path === "" ? "" : `\u306E \`${path}\``}\u306B\u77E5\u3089\u306A\u3044\u30AD\u30FC \`${key}\` \u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30AD\u30FC\u306F ${keys.map((name) => `\`${name}\``).join("\u30FB")} \u3067\u3059\u3002`
-  });
-  const text2 = (value, path) => {
-    if (typeof value !== "string") {
-      invalid(path, "\u6587\u5B57");
-      return void 0;
-    }
-    if (value.includes("--")) {
-      problems.push({
-        kind: "map_invalid_value",
-        line: lines.get(path),
-        message: `\u88DC\u8DB3\u306E \`${path}\` \u306B \`--\` \u304C\u3042\u308A\u307E\u3059\u3002HTML \u30B3\u30E1\u30F3\u30C8\u3092\u9589\u3058\u3066\u3057\u307E\u3046\u305F\u3081\u3001\`--\` \u3092\u542B\u3081\u305A\u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-      return void 0;
-    }
-    return value;
-  };
-  const ids = (value, path) => {
-    if (!Array.isArray(value)) {
-      invalid(path, "ID \u306E\u914D\u5217");
-      return void 0;
-    }
-    const out = [];
-    for (const [i, item] of value.entries()) {
-      const id = text2(item, `${path}[${i}]`);
-      if (id !== void 0) out.push(id);
-    }
-    return out;
-  };
-  const number4 = (value, path) => {
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    invalid(path, "\u6570");
-    return void 0;
-  };
-  const point = (value, path) => {
-    if (!isObject4(value)) {
-      invalid(path, ' `{"x", "y"}` ');
-      return void 0;
-    }
-    const x = number4(value.x, `${path}.x`);
-    const y = number4(value.y, `${path}.y`);
-    return x === void 0 || y === void 0 ? void 0 : { x, y };
-  };
-  const choice = (value, path, choices) => {
-    if (typeof value === "string" && choices.includes(value)) return value;
-    invalid(path, ` ${choices.map((name) => `\`${name}\``).join("\u30FB")} `);
-    return void 0;
-  };
-  const ends = (value, path) => {
-    if (!isObject4(value)) {
-      invalid(path, ' `{"from": {"side"}, "to": {"side"}}` ');
-      return void 0;
-    }
-    const out = {};
-    for (const end of ["from", "to"]) {
-      const item = value[end];
-      if (item === void 0) continue;
-      if (!isObject4(item)) {
-        invalid(`${path}.${end}`, ' `{"side"}` ');
-        return void 0;
-      }
-      const side = choice(item.side, `${path}.${end}.side`, SIDES);
-      if (side === void 0) return void 0;
-      out[end] = side;
-    }
-    return out;
-  };
-  const packet = (value, path) => {
-    if (!isObject4(value)) {
-      invalid(path, ' `{"color", "shape"}` ');
-      return void 0;
-    }
-    const out = {};
-    if (value.color !== void 0)
-      out.color = text2(value.color, `${path}.color`);
-    if (value.shape !== void 0)
-      out.shape = choice(value.shape, `${path}.shape`, PACKET_SHAPES);
-    return out;
-  };
-  const via = (value, path) => {
-    if (!Array.isArray(value)) {
-      invalid(path, ' `[{"x", "y"}]` ');
-      return void 0;
-    }
-    const points = value.map((item, i) => point(item, `${path}[${i}]`));
-    return points.every((item) => item !== void 0) ? points : void 0;
-  };
-  const layoutEntry = (value, path) => {
-    const entry = {};
-    for (const [name, field] of Object.entries(value)) {
-      const at = `${path}.${name}`;
-      if (name === "align" || name === "color" || name === "line")
-        entry[name] = text2(field, at);
-      else if (name === "order" || name === "width")
-        entry[name] = number4(field, at);
-      else if (name === "justify") entry.justify = choice(field, at, JUSTIFIES);
-      else if (name === "pos") entry.pos = point(field, at);
-      else if (name === "packet") entry.packet = packet(field, at);
-      else if (name === "ends") entry.ends = ends(field, at);
-      else if (name === "via") entry.via = via(field, at);
-      else if (name === "collapsed") {
-        if (typeof field === "boolean") entry.collapsed = field;
-        else invalid(at, "\u771F\u507D\u5024");
-      } else unknown2(path, name, LAYOUT_KEYS);
-    }
-    for (const key of Object.keys(entry))
-      if (entry[key] === void 0) delete entry[key];
-    return entry;
-  };
-  const step = (value, path) => {
-    if (!isObject4(value)) {
-      invalid(path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
-      return void 0;
-    }
-    const out = {
-      title: void 0,
-      text: "",
-      nodes: [],
-      edges: void 0,
-      enter: void 0
-    };
-    let ok = true;
-    for (const [name, field] of Object.entries(value)) {
-      if (name === "title") out.title = text2(field, `${path}.title`);
-      else if (name === "text") {
-        const body = text2(field, `${path}.text`);
-        if (body === void 0) ok = false;
-        else out.text = body;
-      } else if (name === "nodes")
-        out.nodes = ids(field, `${path}.nodes`) ?? [];
-      else if (name === "edges") out.edges = ids(field, `${path}.edges`);
-      else if (name === "enter") out.enter = text2(field, `${path}.enter`);
-      else unknown2(path, name, STEP_KEYS);
-    }
-    return ok ? out : void 0;
-  };
-  for (const [key, value] of Object.entries(root)) {
-    switch (key) {
-      case "version":
-        if (value !== 1) invalid("version", " `1` ");
-        break;
-      case "notes":
-        if (!isObject4(value)) {
-          invalid("notes", ' ID \u3054\u3068\u306E `{"text"}` ');
-          break;
-        }
-        for (const [id, note] of Object.entries(value)) {
-          const path = `notes.${id}`;
-          if (!isObject4(note)) {
-            invalid(path, ' `{"text": \u8AAC\u660E\u306E\u6587}` ');
-            continue;
-          }
-          const body = text2(note.text, `${path}.text`);
-          if (body !== void 0) data.notes[id] = { text: body };
-        }
-        break;
-      case "walkthroughs":
-        if (!Array.isArray(value)) {
-          invalid("walkthroughs", "\u624B\u9806\u306E\u914D\u5217");
-          break;
-        }
-        for (const [i, item] of value.entries()) {
-          const parsed = step(item, `walkthroughs[${i}]`);
-          if (parsed) data.walkthroughs.push(parsed);
-        }
-        break;
-      case "layout":
-        if (!isObject4(value)) {
-          invalid("layout", " ID \u3054\u3068\u306E\u4E0A\u66F8\u304D ");
-          break;
-        }
-        for (const [id, entry] of Object.entries(value)) {
-          const path = `layout.${id}`;
-          if (isObject4(entry)) data.layout[id] = layoutEntry(entry, path);
-          else invalid(path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
-        }
-        break;
-      case "plays_over": {
-        const target = number4(value, "plays_over");
-        if (target !== void 0) data.plays_over = target;
-        break;
-      }
-      case "groups":
-        if (!isObject4(value)) {
-          invalid("groups", ' \u5206\u985E\u306E ID \u3054\u3068\u306E `{"title", "tables"}` ');
-          break;
-        }
-        for (const [id, group] of Object.entries(value)) {
-          const path = `groups.${id}`;
-          if (!isObject4(group)) {
-            invalid(path, ' `{"title", "tables"}` ');
-            continue;
-          }
-          let title;
-          let tables;
-          let parent;
-          for (const [name, field] of Object.entries(group)) {
-            if (name === "title") title = text2(field, `${path}.title`);
-            else if (name === "tables") tables = ids(field, `${path}.tables`);
-            else if (name === "parent") parent = text2(field, `${path}.parent`);
-            else unknown2(path, name, GROUP_KEYS);
-          }
-          if (title === void 0 && group.title === void 0)
-            invalid(`${path}.title`, "\u6587\u5B57");
-          if (tables === void 0 && group.tables === void 0)
-            invalid(`${path}.tables`, "\u30C6\u30FC\u30D6\u30EB\u540D\u306E\u914D\u5217");
-          if (title !== void 0 && tables !== void 0)
-            data.groups[id] = { title, tables, parent };
-        }
-        break;
-      default:
-        unknown2("", key, MAP_DATA_KEYS);
-    }
-  }
-  return { data, problems, lines };
-};
 
 // src/map/layout.ts
 var MAP_LAYOUT = {
@@ -79062,57 +79851,54 @@ var parseFlowchart = (source) => {
     edgeIds.set(base, count);
     return count === 1 ? base : `${base}#${count}`;
   };
-  lines.slice(1).forEach((raw, index) => {
-    const line = index + 1;
-    const text2 = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
-    if (text2 === "") return;
+  const readSubgraph = (text2) => {
     const subgraph = /^subgraph\s+([^\s[]+)\s*(?:\[\s*"?([^"\]]*)"?\s*\])?\s*$/.exec(text2);
-    if (subgraph?.[1]) {
-      const group = {
-        id: subgraph[1],
-        title: decodeEntities(subgraph[2] ?? subgraph[1]),
-        parent: stack.at(-1)?.id,
-        direction: void 0
-      };
-      groups.push(group);
-      groupIds.add(group.id);
-      stack.push(group);
-      return;
-    }
-    if (text2 === "end") {
-      if (!stack.pop())
-        problems.push({
-          kind: "map_invalid",
-          line,
-          message: `${line + 1} \u884C\u76EE\u306E \`end\` \u306B\u5BFE\u5FDC\u3059\u308B \`subgraph\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002`
-        });
-      return;
-    }
+    if (!subgraph?.[1]) return false;
+    const group = {
+      id: subgraph[1],
+      title: decodeEntities(subgraph[2] ?? subgraph[1]),
+      parent: stack.at(-1)?.id,
+      direction: void 0
+    };
+    groups.push(group);
+    groupIds.add(group.id);
+    stack.push(group);
+    return true;
+  };
+  const readEnd = (text2, line) => {
+    if (text2 !== "end") return false;
+    if (!stack.pop())
+      problems.push({
+        kind: "map_invalid",
+        line,
+        message: `${line + 1} \u884C\u76EE\u306E \`end\` \u306B\u5BFE\u5FDC\u3059\u308B \`subgraph\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002`
+      });
+    return true;
+  };
+  const readDirection = (text2, at) => {
     const dir = /^direction\s+(\w+)$/.exec(text2);
-    if (dir?.[1]) {
-      const current = stack.at(-1);
-      const value = toDirection(dir[1]);
-      if (current && value) current.direction = value;
-      else problems.push(unreadable(line, raw));
-      return;
-    }
+    if (!dir?.[1]) return false;
+    const current = stack.at(-1);
+    const value = toDirection(dir[1]);
+    if (current && value) current.direction = value;
+    else problems.push(unreadable(at.line, at.raw));
+    return true;
+  };
+  const readClassOrClick = (text2) => {
     const classLine = /^class\s+([\w,\s]+?)\s+([\w-]+)$/.exec(text2);
     if (classLine?.[1] && classLine[2]) {
       for (const id of classLine[1].split(",").map((part) => part.trim()))
         nodes.get(id)?.classes.push(classLine[2]);
-      return;
+      return true;
     }
     const click = CLICK_RE.exec(text2);
     if (click?.[1] && click[2] !== void 0) {
       links[click[1]] = click[2];
-      return;
+      return true;
     }
-    if (IGNORED_RE.test(text2)) return;
-    const statement = readStatement(text2);
-    if (!statement) {
-      problems.push(unreadable(line, raw));
-      return;
-    }
+    return false;
+  };
+  const addStatement = (statement) => {
     for (const group of statement.groups) group.forEach(touch);
     statement.arrows.forEach((arrow, at) => {
       for (const from of statement.groups[at] ?? []) {
@@ -79128,6 +79914,19 @@ var parseFlowchart = (source) => {
         }
       }
     });
+  };
+  lines.slice(1).forEach((raw, index) => {
+    const line = index + 1;
+    const text2 = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
+    if (text2 === "") return;
+    if (readSubgraph(text2) || readEnd(text2, line) || readDirection(text2, { line, raw }) || readClassOrClick(text2) || IGNORED_RE.test(text2))
+      return;
+    const statement = readStatement(text2);
+    if (!statement) {
+      problems.push(unreadable(line, raw));
+      return;
+    }
+    addStatement(statement);
   });
   for (const group of stack) {
     problems.push({
@@ -79181,6 +79980,12 @@ var unreadable2 = (line, raw) => ({
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E sequenceDiagram \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
 });
+var notePlacementOf = (where) => {
+  const lower = where.toLowerCase();
+  if (lower.startsWith("left")) return "left";
+  return lower.startsWith("right") ? "right" : "over";
+};
+var activationOf = (mark) => mark === "+" || mark === "-" ? mark : void 0;
 var parseSequence = (source) => {
   const participants = /* @__PURE__ */ new Map();
   const messages = [];
@@ -79203,10 +80008,10 @@ var parseSequence = (source) => {
     list2.push(at);
     active.set(id, list2);
   };
-  const deactivate = (id, at, line, raw) => {
+  const deactivate = (id, at, where) => {
     const start = active.get(id)?.pop();
     if (start === void 0) {
-      problems.push(unreadable2(line, raw));
+      problems.push(unreadable2(where.line, where.raw));
       return;
     }
     activations.push({
@@ -79216,6 +80021,124 @@ var parseSequence = (source) => {
       depth: active.get(id)?.length ?? 0
     });
   };
+  const fail = (where) => {
+    problems.push(unreadable2(where.line, where.raw));
+  };
+  const readBox = (text2) => {
+    const boxLine = /^box\b\s*(.*)$/.exec(text2);
+    if (!boxLine) return false;
+    const rest2 = boxLine[1] ?? "";
+    const color = /^(rgba?\([^)]*\)|transparent|[a-z]+)(?=\s|$)/i.exec(
+      rest2
+    )?.[0];
+    box = {
+      label: (color ? rest2.slice(color.length) : rest2).trim(),
+      color,
+      members: []
+    };
+    boxes.push(box);
+    return true;
+  };
+  const readDecl = (text2) => {
+    const decl = DECL_RE.exec(text2);
+    if (!decl?.[1] || !decl[2]) return false;
+    participants.set(decl[2], {
+      id: decl[2],
+      label: decodeEntities(decl[3] ?? decl[2]),
+      actor: decl[1] === "actor"
+    });
+    box?.members.push(decl[2]);
+    return true;
+  };
+  const readFragment = (text2, where) => {
+    const fragment = FRAGMENT_RE.exec(text2);
+    if (!fragment?.[1]) return false;
+    const label = fragment[1] === "rect" ? where.blockName ?? "" : decodeEntities(fragment[2] ?? "");
+    const item = {
+      kind: fragment[1],
+      label,
+      depth: open2.length,
+      sections: [{ start: messages.length, label }],
+      start: messages.length,
+      end: messages.length
+    };
+    open2.push(item);
+    fragments.push(item);
+    return true;
+  };
+  const readSection = (text2, where) => {
+    const section = SECTION_RE.exec(text2);
+    if (!section) return false;
+    const current = open2.at(-1);
+    if (current)
+      current.sections.push({
+        start: messages.length,
+        label: decodeEntities(section[2] ?? "")
+      });
+    else fail(where);
+    return true;
+  };
+  const readEnd = (text2, where) => {
+    if (text2 !== "end") return false;
+    if (box && open2.length === 0) {
+      box = void 0;
+      return true;
+    }
+    const current = open2.pop();
+    if (current) current.end = messages.length;
+    else fail(where);
+    return true;
+  };
+  const readToggle = (text2, where) => {
+    const toggle = TOGGLE_RE.exec(text2);
+    if (!toggle?.[2]) return false;
+    ensure(toggle[2]);
+    if (toggle[1] === "activate") activate(toggle[2], messages.length);
+    else deactivate(toggle[2], messages.length - 1, where);
+    return true;
+  };
+  const readNote2 = (text2) => {
+    const note = NOTE_RE.exec(text2);
+    if (!note?.[1] || !note[2]) return false;
+    const of = note[2].split(",").map((id) => id.trim());
+    for (const id of of) ensure(id);
+    notes.push({
+      after: messages.length,
+      placement: notePlacementOf(note[1]),
+      of,
+      text: decodeEntities(note[3] ?? "")
+    });
+    return true;
+  };
+  const readMessage = (text2, where) => {
+    const message = MESSAGE_RE.exec(text2);
+    if (!message?.[1] || !message[2] || !message[4]) return false;
+    ensure(message[1]);
+    ensure(message[4]);
+    const activation = activationOf(message[3]);
+    messages.push({
+      from: message[1],
+      to: message[4],
+      text: decodeEntities(message[5] ?? ""),
+      arrow: message[2],
+      activation
+    });
+    const at = messages.length - 1;
+    if (activation === "+") activate(message[4], at);
+    if (activation === "-") deactivate(message[1], at, where);
+    return true;
+  };
+  const readers = [
+    readBox,
+    readDecl,
+    (text2) => IGNORED_RE2.test(text2),
+    readFragment,
+    readSection,
+    readEnd,
+    readToggle,
+    readNote2,
+    readMessage
+  ];
   source.split("\n").slice(1).forEach((raw, index) => {
     const line = index + 1;
     const block2 = /^\s*%%\s*block:\s*(.*)$/.exec(raw);
@@ -79231,105 +80154,8 @@ var parseSequence = (source) => {
       autonumber = true;
       return;
     }
-    const boxLine = /^box\b\s*(.*)$/.exec(text2);
-    if (boxLine) {
-      const rest2 = boxLine[1] ?? "";
-      const color = /^(rgba?\([^)]*\)|transparent|[a-z]+)(?=\s|$)/i.exec(
-        rest2
-      )?.[0];
-      box = {
-        label: (color ? rest2.slice(color.length) : rest2).trim(),
-        color,
-        members: []
-      };
-      boxes.push(box);
-      return;
-    }
-    const decl = DECL_RE.exec(text2);
-    if (decl?.[1] && decl[2]) {
-      participants.set(decl[2], {
-        id: decl[2],
-        label: decodeEntities(decl[3] ?? decl[2]),
-        actor: decl[1] === "actor"
-      });
-      box?.members.push(decl[2]);
-      return;
-    }
-    if (IGNORED_RE2.test(text2)) return;
-    const fragment = FRAGMENT_RE.exec(text2);
-    if (fragment?.[1]) {
-      const label = fragment[1] === "rect" ? blockName ?? "" : decodeEntities(fragment[2] ?? "");
-      const item = {
-        kind: fragment[1],
-        label,
-        depth: open2.length,
-        sections: [{ start: messages.length, label }],
-        start: messages.length,
-        end: messages.length
-      };
-      open2.push(item);
-      fragments.push(item);
-      return;
-    }
-    const section = SECTION_RE.exec(text2);
-    if (section) {
-      const current = open2.at(-1);
-      if (current)
-        current.sections.push({
-          start: messages.length,
-          label: decodeEntities(section[2] ?? "")
-        });
-      else problems.push(unreadable2(line, raw));
-      return;
-    }
-    if (text2 === "end") {
-      if (box && open2.length === 0) {
-        box = void 0;
-        return;
-      }
-      const current = open2.pop();
-      if (current) current.end = messages.length;
-      else problems.push(unreadable2(line, raw));
-      return;
-    }
-    const toggle = TOGGLE_RE.exec(text2);
-    if (toggle?.[2]) {
-      ensure(toggle[2]);
-      if (toggle[1] === "activate") activate(toggle[2], messages.length);
-      else deactivate(toggle[2], messages.length - 1, line, raw);
-      return;
-    }
-    const note = NOTE_RE.exec(text2);
-    if (note?.[1] && note[2]) {
-      const of = note[2].split(",").map((id) => id.trim());
-      for (const id of of) ensure(id);
-      const where = note[1].toLowerCase();
-      notes.push({
-        after: messages.length,
-        placement: where.startsWith("left") ? "left" : where.startsWith("right") ? "right" : "over",
-        of,
-        text: decodeEntities(note[3] ?? "")
-      });
-      return;
-    }
-    const message = MESSAGE_RE.exec(text2);
-    if (message?.[1] && message[2] && message[4]) {
-      ensure(message[1]);
-      ensure(message[4]);
-      const activation = message[3] === "+" ? "+" : message[3] === "-" ? "-" : void 0;
-      messages.push({
-        from: message[1],
-        to: message[4],
-        text: decodeEntities(message[5] ?? ""),
-        arrow: message[2],
-        activation
-      });
-      const at = messages.length - 1;
-      if (activation === "+") activate(message[4], at);
-      if (activation === "-") deactivate(message[1], at, line, raw);
-      return;
-    }
-    problems.push(unreadable2(line, raw));
+    const where = { line, raw, blockName };
+    if (!readers.some((read) => read(text2, where))) fail(where);
   });
   for (const item of open2) {
     item.end = messages.length;
@@ -79380,6 +80206,931 @@ var MAP_ER = {
   fanoutSize: 24
 };
 
+// src/map/architecture.ts
+var ARCH_LUCIDE_ICONS = {
+  cloud: "cloud",
+  database: "database",
+  disk: "hard-drive",
+  internet: "globe",
+  server: "server"
+};
+var MAP_ARCH_KINDS = {
+  "mdmark-arch-service": { shape: "rounded" },
+  "mdmark-arch-junction": { shape: "rounded" },
+  ...Object.fromEntries(
+    Object.entries(ARCH_LUCIDE_ICONS).map(([name, icon]) => [
+      `mdmark-arch-${name}`,
+      { icon, shape: "rounded" }
+    ])
+  )
+};
+var ID = "[A-Za-z0-9_\\u0080-\\uffff-]+";
+var SIDES = { L: "left", R: "right", T: "top", B: "bottom" };
+var ITEM_RE = new RegExp(
+  `^(group|service)\\s+(${ID})(?:\\((\\w+)\\))?\\[([^\\]]*)\\](?:\\s+in\\s+(${ID}))?$`
+);
+var JUNCTION_RE = new RegExp(`^junction\\s+(${ID})(?:\\s+in\\s+(${ID}))?$`);
+var EDGE_RE = new RegExp(
+  `^(${ID})(\\{group\\})?:([LRTB])\\s*(<?)--(>?)\\s*([LRTB]):(${ID})(\\{group\\})?$`
+);
+var IGNORED_RE3 = /^(accTitle|accDescr|title)\b/;
+var invalid = (line, message) => ({
+  kind: "map_invalid",
+  line,
+  message
+});
+var unreadableText = (line, raw) => `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E architecture-beta \u306E\u8A18\u6CD5\uFF08\`{ID}:R --> L:{ID}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+var iconText = (line, icon) => `${line + 1} \u884C\u76EE\u306E\u30A2\u30A4\u30B3\u30F3 \`${icon}\` \u306F\u63CF\u3051\u307E\u305B\u3093\u3002\`cloud\`\u30FB\`database\`\u30FB\`disk\`\u30FB\`internet\`\u30FB\`server\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+var iconOf = (name) => name !== void 0 && name in ARCH_LUCIDE_ICONS ? name : void 0;
+var headOf = (tail, head) => {
+  if (tail && head) return "both";
+  if (head) return "end";
+  return tail ? "start" : "none";
+};
+var readItem2 = (diagram, context) => {
+  const match = ITEM_RE.exec(context.text);
+  if (!match?.[1] || !match[2]) return false;
+  const icon = iconOf(match[3]);
+  if (match[3] !== void 0 && icon === void 0)
+    diagram.problems.push(
+      invalid(context.line, iconText(context.line, match[3]))
+    );
+  if (match[1] === "group")
+    diagram.groups.push({
+      id: match[2],
+      icon,
+      title: match[4] ?? match[2],
+      parent: match[5]
+    });
+  else
+    diagram.services.push({
+      id: match[2],
+      icon,
+      label: match[4] ?? match[2],
+      parent: match[5],
+      junction: false
+    });
+  return true;
+};
+var readEdge = (diagram, text2) => {
+  const match = EDGE_RE.exec(text2);
+  if (!match?.[1] || !match[3] || !match[6] || !match[7]) return false;
+  diagram.edges.push({
+    id: `r${diagram.edges.length + 1}`,
+    from: match[1],
+    fromSide: SIDES[match[3]],
+    fromGroup: match[2] !== void 0,
+    to: match[7],
+    toSide: SIDES[match[6]],
+    toGroup: match[8] !== void 0,
+    head: headOf(match[4] === "<", match[5] === ">")
+  });
+  return true;
+};
+var parentProblems = (diagram, lines) => {
+  const groups = new Set(diagram.groups.map((group) => group.id));
+  return [...diagram.groups, ...diagram.services].flatMap((item) => {
+    if (item.parent === void 0 || groups.has(item.parent)) return [];
+    const line = lines.get(item.id) ?? 0;
+    return [
+      invalid(
+        line,
+        `${line + 1} \u884C\u76EE\u306E \`in ${item.parent}\` \u304C\u6307\u3059 group \u304C\u3042\u308A\u307E\u305B\u3093\u3002group \u306E ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      )
+    ];
+  });
+};
+var parseArchitecture = (source) => {
+  const diagram = {
+    groups: [],
+    services: [],
+    edges: [],
+    problems: []
+  };
+  const lines = /* @__PURE__ */ new Map();
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "" || IGNORED_RE3.test(text2)) continue;
+    const count = diagram.groups.length + diagram.services.length;
+    const junction = JUNCTION_RE.exec(text2);
+    if (junction?.[1])
+      diagram.services.push({
+        id: junction[1],
+        icon: void 0,
+        label: "",
+        parent: junction[2],
+        junction: true
+      });
+    else if (!readItem2(diagram, { text: text2, line }) && !readEdge(diagram, text2))
+      diagram.problems.push(invalid(line, unreadableText(line, raw)));
+    const added = [...diagram.groups, ...diagram.services].slice(count);
+    for (const item of added) lines.set(item.id, line);
+  }
+  diagram.problems.push(...parentProblems(diagram, lines));
+  return diagram;
+};
+
+// src/map/c4.ts
+var C4_LABELS = {
+  person: "[Person]",
+  system: "[Software System]"
+};
+var MAP_C4_KINDS = {
+  "mdmark-c4-person": {
+    label: C4_LABELS.person,
+    icon: "user",
+    shape: "rounded"
+  },
+  "mdmark-c4-person-ext": {
+    label: "[External Person]",
+    icon: "user",
+    shape: "rounded",
+    color: "gray"
+  },
+  "mdmark-c4-system": { label: C4_LABELS.system, shape: "rect" },
+  "mdmark-c4-system-ext": {
+    label: "[External Software System]",
+    shape: "rect",
+    color: "gray"
+  },
+  "mdmark-c4-system_db": {
+    label: C4_LABELS.system,
+    icon: "database",
+    shape: "rect"
+  },
+  "mdmark-c4-system_db-ext": {
+    label: "[External Software System]",
+    icon: "database",
+    shape: "rect",
+    color: "gray"
+  },
+  "mdmark-c4-system_queue": { label: C4_LABELS.system, shape: "pill" },
+  "mdmark-c4-system_queue-ext": {
+    label: "[External Software System]",
+    shape: "pill",
+    color: "gray"
+  }
+};
+var BOUNDARIES = {
+  Enterprise_Boundary: "enterprise",
+  System_Boundary: "system",
+  Boundary: "boundary"
+};
+var ELEMENTS = {
+  Person: "person",
+  System: "system",
+  SystemDb: "system_db",
+  SystemQueue: "system_queue"
+};
+var DIRECTIONS = {
+  U: "up",
+  Up: "up",
+  D: "down",
+  Down: "down",
+  L: "left",
+  Left: "left",
+  R: "right",
+  Right: "right",
+  Back: "back"
+};
+var CALL_RE = /^(\w+)\((.*)\)\s*(\{)?$/;
+var RELATION_RE = /^(Bi)?Rel(?:_(U|Up|D|Down|L|Left|R|Right|Back))?$/;
+var IGNORED_RE4 = /^(accTitle|accDescr|UpdateLayoutConfig|UpdateElementStyle|UpdateRelStyle|UpdateBoundaryStyle|AddElementTag|AddRelTag)\b/;
+var argumentsOf = (text2) => [...text2.matchAll(/"([^"]*)"|([^,\s][^,]*)/g)].map(
+  (match) => (match[1] ?? match[2] ?? "").trim()
+);
+var unreadable3 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E C4Context \u306E\u8A18\u6CD5\uFF08\`Person(\u2026)\`\u30FB\`System(\u2026)\`\u30FB\`Rel(\u2026)\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var readBoundary = (reading, call) => {
+  const kind = BOUNDARIES[call.name];
+  const [id, label] = call.values;
+  if (kind === void 0 || id === void 0) return false;
+  const boundary = {
+    id,
+    label: label ?? id,
+    kind,
+    parent: reading.stack.at(-1)?.boundary.id
+  };
+  reading.diagram.boundaries.push(boundary);
+  if (call.open) reading.stack.push({ boundary, line: call.line });
+  return true;
+};
+var readElement = (reading, call) => {
+  const external = call.name.endsWith("_Ext");
+  const kind = ELEMENTS[external ? call.name.slice(0, -4) : call.name];
+  const [id, label, description] = call.values;
+  if (kind === void 0 || id === void 0) return false;
+  reading.diagram.elements.push({
+    id,
+    label: label ?? id,
+    description,
+    kind,
+    external,
+    parent: reading.stack.at(-1)?.boundary.id
+  });
+  return true;
+};
+var readRelation = (reading, call) => {
+  const relation = RELATION_RE.exec(call.name);
+  const [from, to, label, technology] = call.values;
+  if (!relation || from === void 0 || to === void 0) return false;
+  const { relations } = reading.diagram;
+  relations.push({
+    id: `r${relations.length + 1}`,
+    from,
+    to,
+    label,
+    technology,
+    both: relation[1] !== void 0,
+    direction: relation[2] === void 0 ? void 0 : DIRECTIONS[relation[2]]
+  });
+  return true;
+};
+var readCall = (reading, call) => readBoundary(reading, call) || readElement(reading, call) || readRelation(reading, call);
+var readLine2 = (reading, text2, line) => {
+  if (text2 === "}") return reading.stack.pop() !== void 0;
+  const heading2 = /^title\s+(.+)$/.exec(text2);
+  if (heading2?.[1]) {
+    reading.diagram.title = heading2[1].trim();
+    return true;
+  }
+  const call = CALL_RE.exec(text2);
+  if (!call?.[1]) return false;
+  return readCall(reading, {
+    name: call[1],
+    values: argumentsOf(call[2] ?? ""),
+    open: call[3] !== void 0,
+    line
+  });
+};
+var parseC4Context = (source) => {
+  const reading = {
+    diagram: {
+      title: void 0,
+      boundaries: [],
+      elements: [],
+      relations: [],
+      problems: []
+    },
+    stack: []
+  };
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "" || IGNORED_RE4.test(text2)) continue;
+    if (!readLine2(reading, text2, line))
+      reading.diagram.problems.push(unreadable3(line, raw));
+  }
+  for (const open2 of reading.stack)
+    reading.diagram.problems.push({
+      kind: "map_invalid",
+      line: open2.line,
+      message: `\u5883\u754C \`${open2.boundary.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5883\u754C\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  return reading.diagram;
+};
+
+// src/map/class-diagram.ts
+var RELATION_SYMBOLS = {
+  "<|--": { dashed: false, left: "triangle" },
+  "--|>": { dashed: false, right: "triangle" },
+  "*--": { dashed: false, left: "diamond-filled" },
+  "--*": { dashed: false, right: "diamond-filled" },
+  "o--": { dashed: false, left: "diamond-open" },
+  "--o": { dashed: false, right: "diamond-open" },
+  "-->": { dashed: false, right: "arrow" },
+  "<--": { dashed: false, left: "arrow" },
+  "..>": { dashed: true, right: "arrow" },
+  "<..": { dashed: true, left: "arrow" },
+  "..|>": { dashed: true, right: "triangle" },
+  "<|..": { dashed: true, left: "triangle" },
+  "--": { dashed: false },
+  "..": { dashed: true }
+};
+var ID2 = "[A-Za-z0-9_\\u0080-\\uffff]+";
+var NAME = `(${ID2})(?:~([^~]+)~)?`;
+var RELATION_RE2 = new RegExp(
+  `^${NAME}\\s+(?:"([^"]*)"\\s+)?(${Object.keys(RELATION_SYMBOLS).sort((a, b) => b.length - a.length).map((key) => key.replace(/[|*.]/g, "\\$&")).join("|")})\\s+(?:"([^"]*)"\\s+)?${NAME}(?:\\s*:\\s*(.+))?$`
+);
+var NAMESPACE_RE = new RegExp(`^namespace\\s+(${ID2})\\s*\\{$`);
+var CLASS_OPEN_RE = new RegExp(`^class\\s+${NAME}\\s*\\{$`);
+var CLASS_RE = new RegExp(`^class\\s+${NAME}$`);
+var ANNOTATION_RE = new RegExp(`^<<(.+)>>\\s+(${ID2})$`);
+var MEMBER_RE = new RegExp(`^(${ID2})\\s*:\\s*(.+)$`);
+var NOTE_RE2 = new RegExp(`^note\\s+for\\s+(${ID2})\\s+"([^"]*)"$`);
+var IGNORED_RE5 = /^(direction|classDef|cssClass|style|click|callback|link|accTitle|accDescr|title)\b/;
+var unreadable4 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E classDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30AF\u30E9\u30B9} <|-- {\u30AF\u30E9\u30B9}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var splitSign = (text2) => {
+  const marker = /([$*])$|^([^\s(]+|[^)]*\))([$*])(?=\s|$)/.exec(text2);
+  if (!marker) return { body: text2, sign: void 0 };
+  if (marker[1]) return { body: text2.slice(0, -1).trimEnd(), sign: marker[1] };
+  return {
+    body: `${marker[2] ?? ""}${text2.slice(marker[0].length)}`,
+    sign: marker[3]
+  };
+};
+var parseMember = (text2) => {
+  const trimmed = text2.trim();
+  const visibility = /^[+\-#~]/.test(trimmed) ? trimmed.slice(0, 1) : "";
+  const { body, sign } = splitSign(trimmed.slice(visibility.length));
+  const isStatic = sign === "$";
+  const isAbstract = sign === "*";
+  const method = /^([^(]+)\(([^)]*)\)\s*(.*)$/.exec(body);
+  if (method) {
+    const name = (method[1] ?? "").trim();
+    const type = method[3] ?? "";
+    return {
+      visibility,
+      name,
+      text: `${name}(${method[2] ?? ""})${type === "" ? "" : ` ${type}`}`,
+      method: true,
+      isStatic,
+      isAbstract
+    };
+  }
+  return {
+    visibility,
+    name: body.split(/\s+/, 1)[0] ?? body,
+    text: body,
+    method: false,
+    isStatic,
+    isAbstract
+  };
+};
+var ensureClass = (reading, id, generic) => {
+  const found = reading.classes.get(id);
+  const item = found ?? {
+    id,
+    generic: void 0,
+    annotation: void 0,
+    namespace: reading.space?.id,
+    members: []
+  };
+  if (!found) reading.classes.set(id, item);
+  if (generic !== void 0) item.generic = generic;
+  return item;
+};
+var readInside = (reading, text2) => {
+  const current = reading.open?.item;
+  if (!current) return;
+  if (text2 === "}") {
+    reading.open = void 0;
+    return;
+  }
+  const annotation = /^<<(.+)>>$/.exec(text2);
+  if (annotation?.[1]) current.annotation = annotation[1];
+  else current.members.push(parseMember(text2));
+};
+var readRelation2 = (reading, text2) => {
+  const match = RELATION_RE2.exec(text2);
+  if (!match?.[1] || !match[4] || !match[6]) return false;
+  const symbol = RELATION_SYMBOLS[match[4]] ?? { dashed: false };
+  const label = match[8]?.trim();
+  reading.relations.push({
+    id: `r${reading.relations.length + 1}`,
+    from: ensureClass(reading, match[1], match[2]).id,
+    to: ensureClass(reading, match[6], match[7]).id,
+    fromCardinality: match[3],
+    toCardinality: match[5],
+    fromEnd: symbol.left,
+    toEnd: symbol.right,
+    dashed: symbol.dashed,
+    label: label === "" ? void 0 : label
+  });
+  return true;
+};
+var READERS = [
+  (reading, text2, line) => {
+    const match = NAMESPACE_RE.exec(text2);
+    if (!match?.[1]) return false;
+    reading.namespaces.push(match[1]);
+    reading.space = { id: match[1], line };
+    return true;
+  },
+  (reading, text2, line) => {
+    const match = CLASS_OPEN_RE.exec(text2);
+    if (!match?.[1]) return false;
+    reading.open = { item: ensureClass(reading, match[1], match[2]), line };
+    return true;
+  },
+  (reading, text2) => {
+    const match = CLASS_RE.exec(text2);
+    if (!match?.[1]) return false;
+    ensureClass(reading, match[1], match[2]);
+    return true;
+  },
+  (reading, text2) => {
+    const match = ANNOTATION_RE.exec(text2);
+    if (!match?.[1] || !match[2]) return false;
+    ensureClass(reading, match[2]).annotation = match[1];
+    return true;
+  },
+  (reading, text2) => {
+    const match = NOTE_RE2.exec(text2);
+    if (!match?.[1] || match[2] === void 0) return false;
+    reading.notes.push({
+      id: `note_${reading.notes.length + 1}`,
+      of: match[1],
+      text: match[2]
+    });
+    return true;
+  },
+  readRelation2,
+  (reading, text2) => {
+    const match = MEMBER_RE.exec(text2);
+    if (!match?.[1] || !match[2]) return false;
+    ensureClass(reading, match[1]).members.push(parseMember(match[2]));
+    return true;
+  },
+  (reading, text2) => {
+    if (text2 !== "}" || reading.space === void 0) return false;
+    reading.space = void 0;
+    return true;
+  }
+];
+var unclosedProblems = (reading) => {
+  const opened = [
+    ...reading.open ? [{ kind: "\u30AF\u30E9\u30B9", id: reading.open.item.id, line: reading.open.line }] : [],
+    ...reading.space ? [{ kind: "namespace", id: reading.space.id, line: reading.space.line }] : []
+  ];
+  return opened.map(
+    (item) => ({
+      kind: "map_invalid",
+      line: item.line,
+      message: `${item.kind} \`${item.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    })
+  );
+};
+var parseClassDiagram = (source) => {
+  const reading = {
+    classes: /* @__PURE__ */ new Map(),
+    namespaces: [],
+    relations: [],
+    notes: [],
+    space: void 0,
+    open: void 0
+  };
+  const problems = [];
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "") continue;
+    if (reading.open) {
+      readInside(reading, text2);
+      continue;
+    }
+    if (IGNORED_RE5.test(text2)) continue;
+    if (!READERS.some((read) => read(reading, text2, line)))
+      problems.push(unreadable4(line, raw));
+  }
+  problems.push(...unclosedProblems(reading));
+  return {
+    classes: [...reading.classes.values()],
+    namespaces: reading.namespaces,
+    relations: reading.relations,
+    notes: reading.notes,
+    problems
+  };
+};
+
+// src/map/data.ts
+var MAP_DATA_KEYS = [
+  "version",
+  "notes",
+  "walkthroughs",
+  "layout",
+  "plays_over",
+  "groups"
+];
+var GROUP_KEYS = ["title", "tables", "parent"];
+var STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
+var LAYOUT_KEYS = [
+  "align",
+  "order",
+  "justify",
+  "pos",
+  "width",
+  "color",
+  "line",
+  "packet",
+  "ends",
+  "via",
+  "collapsed"
+];
+var PACKET_SHAPES = ["circle", "square", "diamond"];
+var SIDES2 = ["top", "right", "bottom", "left"];
+var JUSTIFIES = ["start", "center", "end"];
+var emptyMapData = () => ({
+  version: 1,
+  notes: {},
+  walkthroughs: [],
+  layout: {},
+  plays_over: void 0,
+  groups: {}
+});
+var jsonPathLines = (source) => {
+  const lines = /* @__PURE__ */ new Map();
+  let at = 0;
+  let line = 0;
+  const skip = () => {
+    while (at < source.length && /\s/.test(source[at])) {
+      if (source[at] === "\n") line += 1;
+      at += 1;
+    }
+  };
+  const readString = () => {
+    const start = at;
+    at += 1;
+    while (at < source.length && source[at] !== '"')
+      at += source[at] === "\\" ? 2 : 1;
+    at += 1;
+    return JSON.parse(source.slice(start, at));
+  };
+  const childPath2 = (char, context) => {
+    const { path, index } = context;
+    if (char !== "{") {
+      const child2 = `${path}[${index}]`;
+      lines.set(child2, line);
+      return child2;
+    }
+    const keyLine2 = line;
+    const key = readString();
+    const child = path === "" ? key : `${path}.${key}`;
+    lines.set(child, keyLine2);
+    skip();
+    at += 1;
+    return child;
+  };
+  const container = (char, path) => {
+    const close = char === "{" ? "}" : "]";
+    at += 1;
+    skip();
+    let index = 0;
+    while (at < source.length && source[at] !== close) {
+      value(childPath2(char, { path, index }));
+      index += 1;
+      skip();
+      if (source[at] === ",") at += 1;
+      skip();
+    }
+    at += 1;
+  };
+  const value = (path) => {
+    skip();
+    const char = source[at];
+    if (char === "{" || char === "[") {
+      container(char, path);
+    } else if (char === '"') {
+      readString();
+    } else {
+      while (at < source.length && !/[,\]}\s]/.test(source[at]))
+        at += 1;
+    }
+  };
+  value("");
+  return lines;
+};
+var errorLine = (source, error2) => {
+  const message = error2 instanceof Error ? error2.message : "";
+  const lineMatch = /line (\d+)/.exec(message);
+  if (lineMatch) return Number(lineMatch[1]) - 1;
+  const position = /position (\d+)/.exec(message);
+  if (!position) return void 0;
+  return source.slice(0, Number(position[1])).split("\n").length - 1;
+};
+var isObject4 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var invalid2 = (reader, path, expected) => {
+  reader.problems.push({
+    kind: "map_invalid_value",
+    line: reader.lines.get(path),
+    message: `\u88DC\u8DB3\u306E \`${path}\` \u306F${expected}\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  });
+};
+var unknownKey = (reader, item) => {
+  const { path, key, keys } = item;
+  reader.problems.push({
+    kind: "map_unknown_key",
+    line: reader.lines.get(path === "" ? key : `${path}.${key}`),
+    message: `\u88DC\u8DB3${path === "" ? "" : `\u306E \`${path}\``}\u306B\u77E5\u3089\u306A\u3044\u30AD\u30FC \`${key}\` \u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30AD\u30FC\u306F ${keys.map((name) => `\`${name}\``).join("\u30FB")} \u3067\u3059\u3002`
+  });
+};
+var readText = (reader, value, path) => {
+  if (typeof value !== "string") {
+    invalid2(reader, path, "\u6587\u5B57");
+    return void 0;
+  }
+  if (value.includes("--")) {
+    reader.problems.push({
+      kind: "map_invalid_value",
+      line: reader.lines.get(path),
+      message: `\u88DC\u8DB3\u306E \`${path}\` \u306B \`--\` \u304C\u3042\u308A\u307E\u3059\u3002HTML \u30B3\u30E1\u30F3\u30C8\u3092\u9589\u3058\u3066\u3057\u307E\u3046\u305F\u3081\u3001\`--\` \u3092\u542B\u3081\u305A\u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return value;
+};
+var readIds = (reader, value, path) => {
+  if (!Array.isArray(value)) {
+    invalid2(reader, path, "ID \u306E\u914D\u5217");
+    return void 0;
+  }
+  const out = [];
+  for (const [i, item] of value.entries()) {
+    const id = readText(reader, item, `${path}[${i}]`);
+    if (id !== void 0) out.push(id);
+  }
+  return out;
+};
+var readNumber = (reader, value, path) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  invalid2(reader, path, "\u6570");
+  return void 0;
+};
+var readPoint = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, ' `{"x", "y"}` ');
+    return void 0;
+  }
+  const x = readNumber(reader, value.x, `${path}.x`);
+  const y = readNumber(reader, value.y, `${path}.y`);
+  return x === void 0 || y === void 0 ? void 0 : { x, y };
+};
+var readChoice = (reader, value, place) => {
+  const { path, choices } = place;
+  if (typeof value === "string" && choices.includes(value)) return value;
+  invalid2(reader, path, ` ${choices.map((name) => `\`${name}\``).join("\u30FB")} `);
+  return void 0;
+};
+var readEnds = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, ' `{"from": {"side"}, "to": {"side"}}` ');
+    return void 0;
+  }
+  const out = {};
+  for (const end of ["from", "to"]) {
+    const item = value[end];
+    if (item === void 0) continue;
+    if (!isObject4(item)) {
+      invalid2(reader, `${path}.${end}`, ' `{"side"}` ');
+      return void 0;
+    }
+    const side = readChoice(reader, item.side, {
+      path: `${path}.${end}.side`,
+      choices: SIDES2
+    });
+    if (side === void 0) return void 0;
+    out[end] = side;
+  }
+  return out;
+};
+var readPacket = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, ' `{"color", "shape"}` ');
+    return void 0;
+  }
+  const out = {};
+  if (value.color !== void 0)
+    out.color = readText(reader, value.color, `${path}.color`);
+  if (value.shape !== void 0)
+    out.shape = readChoice(reader, value.shape, {
+      path: `${path}.shape`,
+      choices: PACKET_SHAPES
+    });
+  return out;
+};
+var readVia = (reader, value, path) => {
+  if (!Array.isArray(value)) {
+    invalid2(reader, path, ' `[{"x", "y"}]` ');
+    return void 0;
+  }
+  const points = value.map(
+    (item, i) => readPoint(reader, item, `${path}[${i}]`)
+  );
+  return points.every((item) => item !== void 0) ? points : void 0;
+};
+var LAYOUT_FIELD_READERS = {
+  align: (reader, field, at) => ({ align: readText(reader, field, at) }),
+  color: (reader, field, at) => ({ color: readText(reader, field, at) }),
+  line: (reader, field, at) => ({ line: readText(reader, field, at) }),
+  order: (reader, field, at) => ({ order: readNumber(reader, field, at) }),
+  width: (reader, field, at) => ({ width: readNumber(reader, field, at) }),
+  justify: (reader, field, at) => ({
+    justify: readChoice(reader, field, { path: at, choices: JUSTIFIES })
+  }),
+  pos: (reader, field, at) => ({ pos: readPoint(reader, field, at) }),
+  packet: (reader, field, at) => ({ packet: readPacket(reader, field, at) }),
+  ends: (reader, field, at) => ({ ends: readEnds(reader, field, at) }),
+  via: (reader, field, at) => ({ via: readVia(reader, field, at) }),
+  collapsed: (reader, field, at) => {
+    if (typeof field === "boolean") return { collapsed: field };
+    invalid2(reader, at, "\u771F\u507D\u5024");
+    return {};
+  }
+};
+var readLayoutEntry = (reader, value, path) => {
+  const entry = {};
+  for (const [name, field] of Object.entries(value)) {
+    if (Object.hasOwn(LAYOUT_FIELD_READERS, name)) {
+      const read = LAYOUT_FIELD_READERS[name];
+      Object.assign(entry, read(reader, field, `${path}.${name}`));
+    } else unknownKey(reader, { path, key: name, keys: LAYOUT_KEYS });
+  }
+  for (const key of Object.keys(entry))
+    if (entry[key] === void 0) delete entry[key];
+  return entry;
+};
+var applyStepField = (reader, out, item) => {
+  const { name, field, path } = item;
+  if (name === "title") out.title = readText(reader, field, `${path}.title`);
+  else if (name === "text") {
+    const body = readText(reader, field, `${path}.text`);
+    if (body === void 0) return false;
+    out.text = body;
+  } else if (name === "nodes")
+    out.nodes = readIds(reader, field, `${path}.nodes`) ?? [];
+  else if (name === "edges")
+    out.edges = readIds(reader, field, `${path}.edges`);
+  else if (name === "enter")
+    out.enter = readText(reader, field, `${path}.enter`);
+  else unknownKey(reader, { path, key: name, keys: STEP_KEYS });
+  return true;
+};
+var readStep = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
+    return void 0;
+  }
+  const out = {
+    title: void 0,
+    text: "",
+    nodes: [],
+    edges: void 0,
+    enter: void 0
+  };
+  let ok = true;
+  for (const [name, field] of Object.entries(value)) {
+    if (!applyStepField(reader, out, { name, field, path })) ok = false;
+  }
+  return ok ? out : void 0;
+};
+var readNote = (reader, note, path) => {
+  if (!isObject4(note)) {
+    invalid2(reader, path, ' `{"text": \u8AAC\u660E\u306E\u6587}` ');
+    return void 0;
+  }
+  if (note.text === void 0 && note.annotations === void 0) {
+    invalid2(
+      reader,
+      path,
+      ' `{"text": \u8AAC\u660E\u306E\u6587}` \u304B `{"annotations": [\u6CE8\u8A18\u306E ID]}` '
+    );
+    return void 0;
+  }
+  const parsed = {};
+  if (note.text !== void 0) {
+    const body = readText(reader, note.text, `${path}.text`);
+    if (body === void 0) return void 0;
+    parsed.text = body;
+  }
+  if (note.annotations === void 0) return parsed;
+  const ids = note.annotations;
+  if (!Array.isArray(ids) || !ids.every((item) => typeof item === "string")) {
+    invalid2(reader, `${path}.annotations`, " \u6CE8\u8A18\u306E ID \u306E\u914D\u5217 ");
+    return void 0;
+  }
+  parsed.annotations = ids;
+  return parsed;
+};
+var readNotes = (reader, value, data) => {
+  if (!isObject4(value)) {
+    invalid2(reader, "notes", ' ID \u3054\u3068\u306E `{"text"}` ');
+    return;
+  }
+  for (const [id, note] of Object.entries(value)) {
+    const parsed = readNote(reader, note, `notes.${id}`);
+    if (parsed !== void 0) data.notes[id] = parsed;
+  }
+};
+var readWalkthroughs = (reader, value, data) => {
+  if (!Array.isArray(value)) {
+    invalid2(reader, "walkthroughs", "\u624B\u9806\u306E\u914D\u5217");
+    return;
+  }
+  for (const [i, item] of value.entries()) {
+    const parsed = readStep(reader, item, `walkthroughs[${i}]`);
+    if (parsed) data.walkthroughs.push(parsed);
+  }
+};
+var readLayout = (reader, value, data) => {
+  if (!isObject4(value)) {
+    invalid2(reader, "layout", " ID \u3054\u3068\u306E\u4E0A\u66F8\u304D ");
+    return;
+  }
+  for (const [id, entry] of Object.entries(value)) {
+    const path = `layout.${id}`;
+    if (isObject4(entry)) data.layout[id] = readLayoutEntry(reader, entry, path);
+    else invalid2(reader, path, " JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8 ");
+  }
+};
+var readGroupFields = (reader, group, path) => {
+  const out = {};
+  for (const [name, field] of Object.entries(group)) {
+    if (name === "title") out.title = readText(reader, field, `${path}.title`);
+    else if (name === "tables")
+      out.tables = readIds(reader, field, `${path}.tables`);
+    else if (name === "parent")
+      out.parent = readText(reader, field, `${path}.parent`);
+    else unknownKey(reader, { path, key: name, keys: GROUP_KEYS });
+  }
+  return out;
+};
+var readGroup2 = (reader, group, path) => {
+  if (!isObject4(group)) {
+    invalid2(reader, path, ' `{"title", "tables"}` ');
+    return void 0;
+  }
+  const { title, tables, parent } = readGroupFields(reader, group, path);
+  if (title === void 0 && group.title === void 0)
+    invalid2(reader, `${path}.title`, "\u6587\u5B57");
+  if (tables === void 0 && group.tables === void 0)
+    invalid2(reader, `${path}.tables`, "\u30C6\u30FC\u30D6\u30EB\u540D\u306E\u914D\u5217");
+  if (title === void 0 || tables === void 0) return void 0;
+  return { title, tables, parent };
+};
+var readGroups = (reader, value, data) => {
+  if (!isObject4(value)) {
+    invalid2(reader, "groups", ' \u5206\u985E\u306E ID \u3054\u3068\u306E `{"title", "tables"}` ');
+    return;
+  }
+  for (const [id, group] of Object.entries(value)) {
+    const parsed = readGroup2(reader, group, `groups.${id}`);
+    if (parsed !== void 0) data.groups[id] = parsed;
+  }
+};
+var readRootKey = (reader, data, item) => {
+  const { key, value } = item;
+  switch (key) {
+    case "version":
+      if (value !== 1) invalid2(reader, "version", " `1` ");
+      return;
+    case "notes":
+      readNotes(reader, value, data);
+      return;
+    case "walkthroughs":
+      readWalkthroughs(reader, value, data);
+      return;
+    case "layout":
+      readLayout(reader, value, data);
+      return;
+    case "plays_over": {
+      const target = readNumber(reader, value, "plays_over");
+      if (target !== void 0) data.plays_over = target;
+      return;
+    }
+    case "groups":
+      readGroups(reader, value, data);
+      return;
+    default:
+      unknownKey(reader, { path: "", key, keys: MAP_DATA_KEYS });
+  }
+};
+var parseMapData = (source) => {
+  const data = emptyMapData();
+  const problems = [];
+  if (source === void 0 || source.trim() === "")
+    return { data, problems, lines: /* @__PURE__ */ new Map() };
+  let root;
+  try {
+    root = JSON.parse(source);
+  } catch (error2) {
+    const reason = error2 instanceof Error ? error2.message : String(error2);
+    problems.push({
+      kind: "map_invalid_value",
+      line: errorLine(source, error2),
+      message: `\u88DC\u8DB3\u3092 JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\`<!-- map-data: {"version": 1} -->\` \u306E\u3088\u3046\u306B JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return { data, problems, lines: /* @__PURE__ */ new Map() };
+  }
+  if (!isObject4(root)) {
+    problems.push({
+      kind: "map_invalid_value",
+      line: 0,
+      message: '\u88DC\u8DB3\u306F JSON \u306E\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\uFF08`{"version": 1}` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002'
+    });
+    return { data, problems, lines: /* @__PURE__ */ new Map() };
+  }
+  const lines = jsonPathLines(source);
+  const reader = { problems, lines };
+  for (const [key, value] of Object.entries(root))
+    readRootKey(reader, data, { key, value });
+  return { data, problems, lines };
+};
+
 // src/map/er.ts
 var CARDINALITY = {
   "||": "1",
@@ -79390,17 +81141,51 @@ var CARDINALITY = {
   "}o": "0..n",
   "o{": "0..n"
 };
-var NAME = '[^\\s{}:"|]+';
-var TABLE_OPEN_RE = new RegExp(`^(${NAME})\\s*\\{$`);
+var NAME2 = '[^\\s{}:"|]+';
+var TABLE_OPEN_RE = new RegExp(`^(${NAME2})\\s*\\{$`);
 var COLUMN_RE = /^(\S+)\s+(\S+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?(?:\s+"([^"]*)")?$/;
-var RELATION_RE = new RegExp(
-  `^(${NAME})\\s+([|}o][|o])(--|\\.\\.)([|o][|{o])\\s+(${NAME})\\s*:\\s*(?:"([^"]*)"|(.*))$`
+var RELATION_RE3 = new RegExp(
+  `^(${NAME2})\\s+([|}o][|o])(--|\\.\\.)([|o][|{o])\\s+(${NAME2})\\s*:\\s*(?:"([^"]*)"|(.*))$`
 );
-var unreadable3 = (line, raw) => ({
+var unreadable5 = (line, raw) => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E erDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30C6\u30FC\u30D6\u30EB} ||--o{ {\u30C6\u30FC\u30D6\u30EB} : "{\u30E9\u30D9\u30EB}"\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
 });
+var readColumn2 = (text2) => {
+  const column = COLUMN_RE.exec(text2);
+  if (!column?.[1] || !column[2]) return void 0;
+  return {
+    type: column[1],
+    name: column[2],
+    keys: column[3]?.split(/\s*,\s*/) ?? [],
+    comment: column[4]
+  };
+};
+var cardinalityOf = (mark) => mark ? CARDINALITY[mark] : void 0;
+var readRelation3 = (text2) => {
+  const relation = RELATION_RE3.exec(text2);
+  if (!relation?.[1] || !relation[5]) return void 0;
+  const left = cardinalityOf(relation[2]);
+  const right = cardinalityOf(relation[4]);
+  if (!left || !right) return void 0;
+  const label = (relation[6] ?? relation[7] ?? "").trim();
+  return {
+    from: relation[1],
+    to: relation[5],
+    fromCardinality: left,
+    toCardinality: right,
+    dashed: relation[3] === "..",
+    label: label === "" ? void 0 : label
+  };
+};
+var readInTable = (current, at) => {
+  if (at.text === "}") return void 0;
+  const column = readColumn2(at.text);
+  if (column) current.table.columns.push(column);
+  else at.problems.push(unreadable5(at.line, at.raw));
+  return current;
+};
 var parseErDiagram = (source) => {
   const tables = /* @__PURE__ */ new Map();
   const relations = [];
@@ -79416,20 +81201,9 @@ var parseErDiagram = (source) => {
   for (const [line, raw] of source.split("\n").entries()) {
     const text2 = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text2 === "") continue;
+    const at = { text: text2, line, raw, problems };
     if (current) {
-      if (text2 === "}") {
-        current = void 0;
-        continue;
-      }
-      const column = COLUMN_RE.exec(text2);
-      if (column?.[1] && column[2]) {
-        current.table.columns.push({
-          type: column[1],
-          name: column[2],
-          keys: column[3]?.split(/\s*,\s*/) ?? [],
-          comment: column[4]
-        });
-      } else problems.push(unreadable3(line, raw));
+      current = readInTable(current, at);
       continue;
     }
     const open2 = TABLE_OPEN_RE.exec(text2);
@@ -79437,25 +81211,14 @@ var parseErDiagram = (source) => {
       current = { table: tableOf(open2[1]), line };
       continue;
     }
-    const relation = RELATION_RE.exec(text2);
-    const left = relation?.[2] ? CARDINALITY[relation[2]] : void 0;
-    const right = relation?.[4] ? CARDINALITY[relation[4]] : void 0;
-    if (!relation?.[1] || !relation[5] || !left || !right) {
-      problems.push(unreadable3(line, raw));
+    const relation = readRelation3(text2);
+    if (!relation) {
+      problems.push(unreadable5(line, raw));
       continue;
     }
-    tableOf(relation[1]);
-    tableOf(relation[5]);
-    const label = (relation[6] ?? relation[7] ?? "").trim();
-    relations.push({
-      id: `r${relations.length + 1}`,
-      from: relation[1],
-      to: relation[5],
-      fromCardinality: left,
-      toCardinality: right,
-      dashed: relation[3] === "..",
-      label: label === "" ? void 0 : label
-    });
+    tableOf(relation.from);
+    tableOf(relation.to);
+    relations.push({ id: `r${relations.length + 1}`, ...relation });
   }
   if (current) {
     problems.push({
@@ -79468,30 +81231,30 @@ var parseErDiagram = (source) => {
 };
 
 // src/map/lucide-names.ts
-var import_lucide4 = __toESM(require_lucide(), 1);
+var import_lucide3 = __toESM(require_lucide(), 1);
 var kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").replace(/([a-zA-Z])([0-9])/g, "$1-$2").toLowerCase();
 var names;
 var lucideIconNames = () => {
-  names ??= new Set(Object.keys(import_lucide4.icons).map(kebab));
+  names ??= new Set(Object.keys(import_lucide3.icons).map(kebab));
   return names;
 };
 
 // src/map/state-diagram.ts
-var ID = "[A-Za-z0-9_\\u0080-\\uffff]+";
+var ID3 = "[A-Za-z0-9_\\u0080-\\uffff]+";
 var DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
-var ALIAS_RE = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID})$`);
-var CHOICE_RE = new RegExp(`^state\\s+(${ID})\\s+<<choice>>$`);
-var OPEN_RE = new RegExp(`^state\\s+(?:"([^"]+)"\\s+as\\s+)?(${ID})\\s*\\{$`);
-var NOTE_RE2 = new RegExp(
-  `^note\\s+(left|right)\\s+of\\s+(${ID})\\s*:\\s*(.+)$`
+var ALIAS_RE = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID3})$`);
+var CHOICE_RE = new RegExp(`^state\\s+(${ID3})\\s+<<choice>>$`);
+var OPEN_RE = new RegExp(`^state\\s+(?:"([^"]+)"\\s+as\\s+)?(${ID3})\\s*\\{$`);
+var NOTE_RE3 = new RegExp(
+  `^note\\s+(left|right)\\s+of\\s+(${ID3})\\s*:\\s*(.+)$`
 );
-var DECLARE_RE = new RegExp(`^(${ID})$`);
+var DECLARE_RE = new RegExp(`^(${ID3})$`);
 var MOVE_RE = new RegExp(
-  `^(\\[\\*\\]|${ID})\\s*-->\\s*(\\[\\*\\]|${ID})(?:\\s*:\\s*(.+))?$`
+  `^(\\[\\*\\]|${ID3})\\s*-->\\s*(\\[\\*\\]|${ID3})(?:\\s*:\\s*(.+))?$`
 );
-var IGNORED_RE3 = /^(classDef|class|style|accTitle|accDescr|title)\b/;
+var IGNORED_RE6 = /^(classDef|class|style|accTitle|accDescr|title)\b/;
 var toDirection2 = (value) => value === "LR" || value === "RL" ? "LR" : "TB";
-var unreadable4 = (line, raw) => ({
+var unreadable6 = (line, raw) => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E stateDiagram-v2 \u306E\u8A18\u6CD5\uFF08\`{\u72B6\u614B} --> {\u72B6\u614B} : {\u30E9\u30D9\u30EB}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -79524,69 +81287,87 @@ var parseStateDiagram = (source) => {
       });
     return id;
   };
+  const readDirection = (text2) => {
+    const dir = DIRECTION_RE.exec(text2);
+    if (!dir?.[1]) return false;
+    const current = stack.at(-1)?.composite;
+    if (current) current.direction = toDirection2(dir[1]);
+    else direction = toDirection2(dir[1]);
+    return true;
+  };
+  const readAlias = (text2) => {
+    const alias = ALIAS_RE.exec(text2);
+    if (!alias?.[1] || !alias[2]) return false;
+    ensure(alias[2]).label = alias[1];
+    return true;
+  };
+  const readChoice2 = (text2) => {
+    const choice = CHOICE_RE.exec(text2);
+    if (!choice?.[1]) return false;
+    ensure(choice[1]).kind = "choice";
+    return true;
+  };
+  const readOpen = (text2, line) => {
+    const open2 = OPEN_RE.exec(text2);
+    if (!open2?.[2]) return false;
+    const composite = {
+      id: open2[2],
+      title: open2[1] ?? open2[2],
+      parent: scope(),
+      direction: void 0
+    };
+    composites.push(composite);
+    stack.push({ composite, line });
+    return true;
+  };
+  const readNote2 = (text2) => {
+    const note = NOTE_RE3.exec(text2);
+    if (!note?.[1] || !note[2] || !note[3]) return false;
+    notes.push({
+      id: `n${notes.length + 1}`,
+      of: note[2],
+      side: note[1] === "left" ? "left" : "right",
+      text: note[3].trim()
+    });
+    return true;
+  };
+  const readMove = (text2) => {
+    const move = MOVE_RE.exec(text2);
+    if (!move?.[1] || !move[2]) return false;
+    const label = move[3]?.trim();
+    transitions.push({
+      id: `t${transitions.length + 1}`,
+      from: endpoint(move[1], "start"),
+      to: endpoint(move[2], "end"),
+      label: label === "" ? void 0 : label
+    });
+    return true;
+  };
+  const readDeclare = (text2) => {
+    const declared = DECLARE_RE.exec(text2);
+    if (!declared?.[1]) return false;
+    ensure(declared[1]).parent = scope();
+    return true;
+  };
+  const readers = [
+    readDirection,
+    readAlias,
+    readChoice2,
+    readOpen,
+    (text2, line, raw) => {
+      if (text2 !== "}") return false;
+      if (!stack.pop()) problems.push(unreadable6(line, raw));
+      return true;
+    },
+    readNote2,
+    readMove,
+    readDeclare
+  ];
   for (const [line, raw] of source.split("\n").entries()) {
     const text2 = raw.replace(/%%.*$/, "").trim();
-    if (line === 0 || text2 === "" || IGNORED_RE3.test(text2)) continue;
-    const dir = DIRECTION_RE.exec(text2);
-    if (dir?.[1]) {
-      const current = stack.at(-1)?.composite;
-      if (current) current.direction = toDirection2(dir[1]);
-      else direction = toDirection2(dir[1]);
-      continue;
-    }
-    const alias = ALIAS_RE.exec(text2);
-    if (alias?.[1] && alias[2]) {
-      ensure(alias[2]).label = alias[1];
-      continue;
-    }
-    const choice = CHOICE_RE.exec(text2);
-    if (choice?.[1]) {
-      ensure(choice[1]).kind = "choice";
-      continue;
-    }
-    const open2 = OPEN_RE.exec(text2);
-    if (open2?.[2]) {
-      const composite = {
-        id: open2[2],
-        title: open2[1] ?? open2[2],
-        parent: scope(),
-        direction: void 0
-      };
-      composites.push(composite);
-      stack.push({ composite, line });
-      continue;
-    }
-    if (text2 === "}") {
-      if (!stack.pop()) problems.push(unreadable4(line, raw));
-      continue;
-    }
-    const note = NOTE_RE2.exec(text2);
-    if (note?.[1] && note[2] && note[3]) {
-      notes.push({
-        id: `n${notes.length + 1}`,
-        of: note[2],
-        side: note[1] === "left" ? "left" : "right",
-        text: note[3].trim()
-      });
-      continue;
-    }
-    const move = MOVE_RE.exec(text2);
-    if (move?.[1] && move[2]) {
-      const label = move[3]?.trim();
-      transitions.push({
-        id: `t${transitions.length + 1}`,
-        from: endpoint(move[1], "start"),
-        to: endpoint(move[2], "end"),
-        label: label === "" ? void 0 : label
-      });
-      continue;
-    }
-    const declared = DECLARE_RE.exec(text2);
-    if (declared?.[1]) {
-      ensure(declared[1]).parent = scope();
-      continue;
-    }
-    problems.push(unreadable4(line, raw));
+    if (line === 0 || text2 === "" || IGNORED_RE6.test(text2)) continue;
+    if (!readers.some((read) => read(text2, line, raw)))
+      problems.push(unreadable6(line, raw));
   }
   for (const open2 of stack) {
     problems.push({
@@ -79611,7 +81392,10 @@ var REF_HINTS = {
   flowchart: "Mermaid \u306E\u30CE\u30FC\u30C9\u30FB\u7DDA\u30FB\u30B0\u30EB\u30FC\u30D7\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   sequenceDiagram: "Mermaid \u306E\u53C2\u52A0\u8005\u306E ID \u304B\u3001\u30E1\u30C3\u30BB\u30FC\u30B8\u30FB\u30D6\u30ED\u30C3\u30AF\u306E\u756A\u53F7\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   erDiagram: "\u30C6\u30FC\u30D6\u30EB\u540D\u30FB`{\u30C6\u30FC\u30D6\u30EB}.{\u5217}`\u30FB\u95A2\u9023\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}`\u30FB\u5206\u985E\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-  stateDiagram: "\u72B6\u614B\u306E ID \u304B\u3001\u9077\u79FB\u306E ID \u3092\u8A18\u8F09\u9806\u306E `t{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+  stateDiagram: "\u72B6\u614B\u306E ID \u304B\u3001\u9077\u79FB\u306E ID \u3092\u8A18\u8F09\u9806\u306E `t{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  classDiagram: "\u30AF\u30E9\u30B9\u540D\u30FB`{\u30AF\u30E9\u30B9\u540D}.{\u30E1\u30F3\u30D0\u30FC\u540D}`\u30FB`namespace` \u306E ID\u30FB\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  architecture: "service\u30FBgroup\u30FBjunction \u306E ID \u304B\u3001\u7DDA\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  C4Context: "\u8981\u7D20\u30FB\u5883\u754C\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
 };
 var groupProblems = (data, tables, lineOf) => {
   const problems = [];
@@ -79649,6 +81433,177 @@ var groupProblems = (data, tables, lineOf) => {
   }
   return problems;
 };
+var shiftProblems = (items, offset) => items.map(
+  (item) => item.line === void 0 || offset === void 0 ? { ...item, line: item.line === void 0 ? void 0 : item.line } : { ...item, line: item.line + offset }
+);
+var emptyMermaidIds = (problems) => ({
+  ids: /* @__PURE__ */ new Set(),
+  edgeIds: /* @__PURE__ */ new Set(),
+  classes: /* @__PURE__ */ new Set(),
+  tables: /* @__PURE__ */ new Set(),
+  problems,
+  linkProblems: []
+});
+var flowchartIds = (mermaid, line) => {
+  const chart = parseFlowchart(mermaid);
+  const found = emptyMermaidIds(shiftProblems(chart.problems, line));
+  found.linkProblems.push(...mapLinkProblems(chart.links).problems);
+  for (const node2 of chart.nodes) {
+    found.ids.add(node2.id);
+    for (const name of node2.classes) found.classes.add(name);
+  }
+  for (const group of chart.groups) found.ids.add(group.id);
+  for (const edge of chart.edges) {
+    found.ids.add(edge.id);
+    found.edgeIds.add(edge.id);
+  }
+  return found;
+};
+var erIds = (mermaid, line, data) => {
+  const er = parseErDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(er.problems, line));
+  for (const table2 of er.tables) {
+    found.ids.add(table2.name);
+    found.tables.add(table2.name);
+    for (const column of table2.columns)
+      found.ids.add(`${table2.name}.${column.name}`);
+  }
+  for (const relation of er.relations) {
+    found.ids.add(relation.id);
+    found.edgeIds.add(relation.id);
+  }
+  for (const id of Object.keys(data.groups)) found.ids.add(id);
+  return found;
+};
+var stateIds = (mermaid, line) => {
+  const diagram = parseStateDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const state of diagram.states) found.ids.add(state.id);
+  for (const composite of diagram.composites) found.ids.add(composite.id);
+  for (const transition of diagram.transitions) {
+    found.ids.add(transition.id);
+    found.edgeIds.add(transition.id);
+  }
+  return found;
+};
+var addEdgeIds = (found, ids) => {
+  for (const id of ids) {
+    found.ids.add(id);
+    found.edgeIds.add(id);
+  }
+};
+var classIds = (mermaid, line) => {
+  const diagram = parseClassDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of diagram.classes) {
+    found.ids.add(item.id);
+    for (const member of item.members)
+      found.ids.add(`${item.id}.${member.name}`);
+  }
+  for (const space of diagram.namespaces) found.ids.add(space);
+  addEdgeIds(
+    found,
+    diagram.relations.map((relation) => relation.id)
+  );
+  return found;
+};
+var architectureIds = (mermaid, line) => {
+  const diagram = parseArchitecture(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of [...diagram.services, ...diagram.groups])
+    found.ids.add(item.id);
+  addEdgeIds(
+    found,
+    diagram.edges.map((edge) => edge.id)
+  );
+  return found;
+};
+var c4Ids = (mermaid, line) => {
+  const diagram = parseC4Context(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const item of [...diagram.elements, ...diagram.boundaries])
+    found.ids.add(item.id);
+  addEdgeIds(
+    found,
+    diagram.relations.map((relation) => relation.id)
+  );
+  return found;
+};
+var sequenceIds = (mermaid, line) => {
+  const sequence = parseSequence(mermaid);
+  const found = emptyMermaidIds(shiftProblems(sequence.problems, line));
+  for (const participant of sequence.participants)
+    found.ids.add(participant.id);
+  for (const index of sequence.messages.keys())
+    found.ids.add(String(index + 1));
+  for (const index of sequence.fragments.keys()) found.ids.add(String(index));
+  return found;
+};
+var mermaidIdsOf = (kind, source) => {
+  const { mermaid, line, data } = source;
+  switch (kind) {
+    case "flowchart":
+      return flowchartIds(mermaid, line);
+    case "erDiagram":
+      return erIds(mermaid, line, data);
+    case "stateDiagram":
+      return stateIds(mermaid, line);
+    case "classDiagram":
+      return classIds(mermaid, line);
+    case "architecture":
+      return architectureIds(mermaid, line);
+    case "C4Context":
+      return c4Ids(mermaid, line);
+    default:
+      return sequenceIds(mermaid, line);
+  }
+};
+var annotationProblems = (context, annotationIds) => {
+  if (annotationIds === void 0) return [];
+  return Object.entries(context.data.notes).flatMap(
+    ([id, note]) => (note.annotations ?? []).filter((annotation) => !annotationIds.has(annotation)).map(
+      (annotation) => ({
+        kind: "annotation_undefined",
+        line: context.lineOf(`notes.${id}.annotations`),
+        message: `\u88DC\u8DB3\u306E \`notes.${id}.annotations\` \u304C\u6307\u3059\u6CE8\u8A18 \`\u203B[${annotation}]\` \u306E\u5B9A\u7FA9\u304C\u3042\u308A\u307E\u305B\u3093\u3002\`\u203B[${annotation}]: \u672C\u6587\` \u3092\u8A18\u8F09\u3059\u308B\u304B\u3001ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      })
+    )
+  );
+};
+var reservedIdProblems = (context) => {
+  const { kind, found } = context;
+  if (kind !== "erDiagram" && kind !== "stateDiagram") return [];
+  return [...found.ids].filter((id) => !found.edgeIds.has(id) && /^[rt]\d+$/.test(id)).map((id) => ({
+    kind: "map_invalid_value",
+    message: `\`${id}\` \u306F\u95A2\u9023\u30FB\u9077\u79FB\u306E ID\uFF08\u8A18\u8F09\u9806\u306E \`r{\u756A\u53F7}\`\u30FB\`t{\u756A\u53F7}\`\uFF09\u3068\u540C\u3058\u540D\u524D\u3067\u3059\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u30FB\u72B6\u614B\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  }));
+};
+var checkLayout = (context) => {
+  const { found, data, config: config3, lineOf, ref, problems } = context;
+  const lineNames = /* @__PURE__ */ new Set();
+  for (const [id, entry] of Object.entries(data.layout)) {
+    ref(`layout.${id}`, id);
+    ref(`layout.${id}.align`, entry.align);
+    if (found.ids.has(id) && !found.edgeIds.has(id)) {
+      problems.push(...edgeOnlyProblems({ id, entry, lineOf }));
+    }
+    if (entry.line !== void 0 && !(entry.line in config3.lines) && !lineNames.has(entry.line)) {
+      lineNames.add(entry.line);
+      problems.push({
+        kind: "map_unknown_line",
+        message: `\u88DC\u8DB3\u306E \`layout.${id}.line\` \u306E \`${entry.line}\` \u304C\u8A2D\u5B9A\u306E \`map.lines\` \u306B\u3042\u308A\u307E\u305B\u3093\u3002\`map.lines\` \u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u540D\u524D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E\u7DDA\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    }
+  }
+};
+var edgeOnlyProblems = (item) => {
+  const { id, entry, lineOf } = item;
+  return ["ends", "via"].filter((key) => entry[key] !== void 0).map((key) => ({
+    kind: "map_invalid_value",
+    line: lineOf(`layout.${id}.${key}`),
+    message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u7DDA\u306E ID \u306E\u3068\u304D\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002\`${id}\` \u306F\u30CE\u30FC\u30C9\u304B\u30B0\u30EB\u30FC\u30D7\u3067\u3059\u3002`
+  }));
+};
 var collectMapProblems = (range, config3, includeUnknownKeys) => {
   const structure = collectMapStructure(range);
   if (structure.kind === void 0 || range.mermaid === void 0)
@@ -79663,65 +81618,22 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
       });
     }
   }
-  const shift = (items, offset) => items.map(
-    (item) => item.line === void 0 || offset === void 0 ? { ...item, line: item.line === void 0 ? void 0 : item.line } : { ...item, line: item.line + offset }
-  );
   const { data, problems: dataProblems, lines } = parseMapData(range.data);
-  const ids = /* @__PURE__ */ new Set();
-  const edgeIds = /* @__PURE__ */ new Set();
-  const classes = /* @__PURE__ */ new Set();
-  const tables = /* @__PURE__ */ new Set();
-  const linkProblems = [];
-  if (structure.kind === "flowchart") {
-    const chart = parseFlowchart(range.mermaid);
-    problems.push(...shift(chart.problems, range.mermaidLine));
-    linkProblems.push(...mapLinkProblems(chart.links).problems);
-    for (const node2 of chart.nodes) {
-      ids.add(node2.id);
-      for (const name of node2.classes) classes.add(name);
-    }
-    for (const group of chart.groups) ids.add(group.id);
-    for (const edge of chart.edges) {
-      ids.add(edge.id);
-      edgeIds.add(edge.id);
-    }
-  } else if (structure.kind === "erDiagram") {
-    const er = parseErDiagram(range.mermaid);
-    problems.push(...shift(er.problems, range.mermaidLine));
-    for (const table2 of er.tables) {
-      ids.add(table2.name);
-      tables.add(table2.name);
-      for (const column of table2.columns)
-        ids.add(`${table2.name}.${column.name}`);
-    }
-    for (const relation of er.relations) {
-      ids.add(relation.id);
-      edgeIds.add(relation.id);
-    }
-    for (const id of Object.keys(data.groups)) ids.add(id);
-  } else if (structure.kind === "stateDiagram") {
-    const diagram = parseStateDiagram(range.mermaid);
-    problems.push(...shift(diagram.problems, range.mermaidLine));
-    for (const state of diagram.states) ids.add(state.id);
-    for (const composite of diagram.composites) ids.add(composite.id);
-    for (const transition of diagram.transitions) {
-      ids.add(transition.id);
-      edgeIds.add(transition.id);
-    }
-  } else {
-    const sequence = parseSequence(range.mermaid);
-    problems.push(...shift(sequence.problems, range.mermaidLine));
-    for (const participant of sequence.participants) ids.add(participant.id);
-    for (const index of sequence.messages.keys()) ids.add(String(index + 1));
-    for (const index of sequence.fragments.keys()) ids.add(String(index));
-  }
-  problems.push(...shift(dataProblems, range.dataLine));
+  const found = mermaidIdsOf(kind, {
+    mermaid: range.mermaid,
+    line: range.mermaidLine,
+    data
+  });
+  problems.push(
+    ...found.problems,
+    ...shiftProblems(dataProblems, range.dataLine)
+  );
   const lineOf = (path) => {
     const local = lines.get(path);
     return local === void 0 || range.dataLine === void 0 ? void 0 : local + range.dataLine;
   };
   const ref = (path, id) => {
-    if (id !== void 0 && !ids.has(id)) {
+    if (id !== void 0 && !found.ids.has(id)) {
       problems.push({
         kind: "map_unknown_ref",
         line: lineOf(path),
@@ -79729,47 +81641,28 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
       });
     }
   };
+  const context = {
+    kind,
+    found,
+    data,
+    config: config3,
+    lineOf,
+    ref,
+    problems
+  };
   for (const id of Object.keys(data.notes)) ref(`notes.${id}`, id);
-  if (structure.kind === "erDiagram")
-    problems.push(...groupProblems(data, tables, lineOf));
-  for (const id of ids) {
-    if (edgeIds.has(id) || !/^[rt]\d+$/.test(id)) continue;
-    if (structure.kind !== "erDiagram" && structure.kind !== "stateDiagram")
-      continue;
-    problems.push({
-      kind: "map_invalid_value",
-      message: `\`${id}\` \u306F\u95A2\u9023\u30FB\u9077\u79FB\u306E ID\uFF08\u8A18\u8F09\u9806\u306E \`r{\u756A\u53F7}\`\u30FB\`t{\u756A\u53F7}\`\uFF09\u3068\u540C\u3058\u540D\u524D\u3067\u3059\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u30FB\u72B6\u614B\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-  }
+  problems.push(...annotationProblems(context, range.annotationIds));
+  if (kind === "erDiagram")
+    problems.push(...groupProblems(data, found.tables, lineOf));
+  problems.push(...reservedIdProblems(context));
   data.walkthroughs.forEach((step, index) => {
     for (const id of step.nodes) ref(`walkthroughs[${index}].nodes`, id);
     for (const id of step.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
-  const lineNames = /* @__PURE__ */ new Set();
-  for (const [id, entry] of Object.entries(data.layout)) {
-    ref(`layout.${id}`, id);
-    ref(`layout.${id}.align`, entry.align);
-    if (ids.has(id) && !edgeIds.has(id)) {
-      for (const key of ["ends", "via"]) {
-        if (entry[key] === void 0) continue;
-        problems.push({
-          kind: "map_invalid_value",
-          line: lineOf(`layout.${id}.${key}`),
-          message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u7DDA\u306E ID \u306E\u3068\u304D\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002\`${id}\` \u306F\u30CE\u30FC\u30C9\u304B\u30B0\u30EB\u30FC\u30D7\u3067\u3059\u3002`
-        });
-      }
-    }
-    if (entry.line !== void 0 && !(entry.line in config3.lines) && !lineNames.has(entry.line)) {
-      lineNames.add(entry.line);
-      problems.push({
-        kind: "map_unknown_line",
-        message: `\u88DC\u8DB3\u306E \`layout.${id}.line\` \u306E \`${entry.line}\` \u304C\u8A2D\u5B9A\u306E \`map.lines\` \u306B\u3042\u308A\u307E\u305B\u3093\u3002\`map.lines\` \u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u540D\u524D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E\u7DDA\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    }
-  }
-  problems.push(...linkProblems);
-  for (const name of classes) {
+  checkLayout(context);
+  problems.push(...found.linkProblems);
+  for (const name of found.classes) {
     if (!(name in config3.kinds)) {
       problems.push({
         kind: "map_unknown_class",
@@ -79799,7 +81692,7 @@ var checkMapConfig = (map) => {
 // src/cli/git.ts
 import { execFile } from "node:child_process";
 import { realpath } from "node:fs/promises";
-import { relative as relative6, resolve as resolve10, sep as sep6 } from "node:path";
+import { relative as relative4, resolve as resolve7, sep as sep4 } from "node:path";
 import { promisify } from "node:util";
 var execFileAsync = promisify(execFile);
 function unresolvableBase(base, reason) {
@@ -79852,15 +81745,216 @@ async function changedPathsSince(options) {
   const realIndexDir = await realpath(indexDir);
   const paths = new Set(
     [...changed, ...added].map(
-      (path) => relative6(realIndexDir, resolve10(realTop, path)).split(sep6).join("/")
+      (path) => relative4(realIndexDir, resolve7(realTop, path)).split(sep4).join("/")
     )
   );
   return [...paths];
 }
 
+// src/cli/includes.ts
+import { readFile as readFile6 } from "node:fs/promises";
+import {
+  basename as basename5,
+  dirname as dirname7,
+  isAbsolute as isAbsolute4,
+  relative as relative5,
+  resolve as resolve8,
+  sep as sep5
+} from "node:path";
+var markParser = new MarkdownItCallable({ html: true });
+var findIncludeMarkers = (markdown) => {
+  const found = [];
+  for (const token of markParser.parse(markdown, {})) {
+    if (token.type !== "html_block" || !token.map) {
+      continue;
+    }
+    for (const match of token.content.matchAll(MARK_PATTERN)) {
+      if (match[1] !== void 0 || match[2] !== "include") {
+        continue;
+      }
+      const before = token.content.slice(0, match.index);
+      const args = readMarkArgs(match[3] ?? "");
+      found.push({
+        written: args.kind === "json" ? writtenOf(args.options) : args.kind === "legacy" ? args.text : "",
+        line: token.map[0] + 1 + (before.split("\n").length - 1)
+      });
+    }
+  }
+  return found;
+};
+var includeSwitch = (argsText) => {
+  const args = readMarkArgs(argsText);
+  if (args.kind === "json") {
+    const { include: include2 } = args.options;
+    return typeof include2 === "boolean" ? include2 : void 0;
+  }
+  if (args.kind !== "legacy") {
+    return void 0;
+  }
+  let include;
+  for (const arg of args.text.split(/\s+/)) {
+    if (arg === "-include" || arg === "+include") {
+      include = arg === "+include";
+    }
+  }
+  return include;
+};
+var includeDisabled = (markdown) => {
+  let disabled = false;
+  for (const match of markdown.matchAll(MARK_PATTERN)) {
+    if (match[1] !== void 0 || match[2] !== "features") {
+      continue;
+    }
+    const include = includeSwitch(match[3] ?? "");
+    if (include !== void 0) {
+      disabled = !include;
+    }
+  }
+  return disabled;
+};
+var isInside2 = (root, inner) => {
+  const path = relative5(root, inner);
+  return path === "" || !path.startsWith(`..${sep5}`) && path !== ".." && !isAbsolute4(path);
+};
+var headingLines = (markdown, id) => {
+  const tokens = markParser.parse(markdown, {});
+  const section = selectHeadingSection(tokens, id);
+  if (section === null) {
+    return null;
+  }
+  const start = section[0]?.map?.[0] ?? 0;
+  const next = tokens[tokens.indexOf(section.at(-1)) + 1];
+  const end = next?.map?.[0] ?? markdown.split("\n").length;
+  return { start, end };
+};
+var missingLineCount = (content, target) => {
+  if (target.kind !== "lines") {
+    return void 0;
+  }
+  const lines = selectLines(content, target.from, target.to);
+  return "lineCount" in lines ? lines.lineCount : void 0;
+};
+var sectionLines = (content, target) => target.kind === "heading" ? headingLines(content, target.id) : { start: 0, end: content.split("\n").length };
+var collectIncludes = async (options) => {
+  const { docPath, markdown, root } = options;
+  const includes = {};
+  const problems = [];
+  if (includeDisabled(markdown)) {
+    return { includes, problems };
+  }
+  const docDir = dirname7(docPath);
+  const cache = /* @__PURE__ */ new Map();
+  const read = (file) => {
+    let pending = cache.get(file);
+    if (!pending) {
+      pending = readFile6(file, "utf8").catch(() => void 0);
+      cache.set(file, pending);
+    }
+    return pending;
+  };
+  const seen = /* @__PURE__ */ new Set();
+  const add = (problem) => {
+    const key = `${problem.kind}\0${problem.file}\0${problem.line}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      problems.push(problem);
+    }
+  };
+  const follow = async (marker, scope) => {
+    const at = {
+      file: scope.from,
+      line: scope.offset + marker.line,
+      target: marker.written
+    };
+    const { key, target } = resolveIncludePath(scope.from, marker.written);
+    const file = resolve8(docDir, key);
+    if (!isInside2(root, file)) {
+      add({ ...at, kind: "outside" });
+      return void 0;
+    }
+    const { chain } = scope;
+    if (chain.includes(key)) {
+      add({
+        ...at,
+        kind: "circular",
+        chain: [...chain.slice(chain.indexOf(key)), key]
+      });
+      return void 0;
+    }
+    const content = await read(file);
+    if (content === void 0) {
+      add({ ...at, kind: "missing" });
+      return void 0;
+    }
+    includes[key] = content;
+    if (!isMarkdownPath(key)) {
+      const lineCount = missingLineCount(content, target);
+      if (lineCount !== void 0) {
+        add({ ...at, kind: "lines", lineCount });
+      }
+      return void 0;
+    }
+    const range = sectionLines(content, target);
+    if (range === null) {
+      add({ ...at, kind: "heading" });
+      return void 0;
+    }
+    return {
+      text: content.split("\n").slice(range.start, range.end).join("\n"),
+      from: key,
+      offset: range.start,
+      chain: [...chain, key]
+    };
+  };
+  const visit = async (scope) => {
+    for (const marker of findIncludeMarkers(scope.text)) {
+      const next = await follow(marker, scope);
+      if (next) {
+        await visit(next);
+      }
+    }
+  };
+  await visit({
+    text: markdown,
+    from: "",
+    offset: 0,
+    chain: [basename5(docPath)]
+  });
+  return { includes, problems };
+};
+var includeProblemMessage = (problem) => {
+  const { target } = problem;
+  switch (problem.kind) {
+    case "missing":
+      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306E\u30D5\u30A1\u30A4\u30EB\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    case "heading": {
+      const id = target.slice(target.indexOf("#") + 1);
+      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306B\u3001ID \u304C \`${id}\` \u306E\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u898B\u51FA\u3057\u306E ID \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    }
+    case "lines": {
+      const range = target.slice(target.indexOf("#") + 1);
+      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306F ${problem.lineCount} \u884C\u3067\u3001${range} \u306E\u884C\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u884C\u306E\u7BC4\u56F2\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    }
+    case "outside":
+      return `\u53D6\u308A\u8FBC\u307F\u5148 \`${target}\` \u306F\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u5916\u3092\u6307\u3057\u3066\u3044\u307E\u3059\u3002\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u4E2D\u306E\u30D5\u30A1\u30A4\u30EB\u3092\u53D6\u308A\u8FBC\u3093\u3067\u304F\u3060\u3055\u3044\u3002`;
+    case "circular":
+      return `\u53D6\u308A\u8FBC\u307F\u304C\u5FAA\u74B0\u3057\u3066\u3044\u307E\u3059\uFF08\`${(problem.chain ?? []).join(" \u2192 ")}\`\uFF09\u3002\u5FAA\u74B0\u3057\u306A\u3044\u3088\u3046\u53D6\u308A\u8FBC\u307F\u5148\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    default: {
+      const never2 = problem.kind;
+      return never2;
+    }
+  }
+};
+
+// src/cli/issues.ts
+var formatCheckIssue = (issue2) => {
+  const place = issue2.where === "" ? issue2.file : `${issue2.file}:${issue2.where}`;
+  return `${place}: ${issue2.kind}: ${issue2.message}`;
+};
+
 // src/cli/markdown-check.ts
-import { readFile as readFile8 } from "node:fs/promises";
-import { basename as basename7, relative as relative7, resolve as resolve11, sep as sep7 } from "node:path";
+import { readFile as readFile7 } from "node:fs/promises";
+import { basename as basename6, relative as relative6, resolve as resolve9, sep as sep6 } from "node:path";
 import {
   isMap,
   isScalar,
@@ -79900,12 +81994,10 @@ function nodeTypeName(node2) {
   }
   return "\u5024\u306A\u3057";
 }
-async function readYamlKey(options) {
-  const { path, key } = options;
-  const name = basename7(path);
+async function readYamlDocument(path, name) {
   let text2;
   try {
-    text2 = await readFile8(path, "utf8");
+    text2 = await readFile7(path, "utf8");
   } catch (error2) {
     throw new CliError(
       `${name} \u3092\u958B\u3051\u307E\u305B\u3093\uFF08${error2 instanceof Error ? error2.message : String(error2)}\uFF09\u3002--file \u306E\u30D1\u30B9\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
@@ -79921,6 +82013,48 @@ async function readYamlKey(options) {
       `${name} \u306E ${line} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u5B57\u4E0B\u3052\u3068\u8A18\u8F09\u65B9\u6CD5\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
+  return { document: document2, lineCounter };
+}
+function stepKeyPath(options) {
+  const { node: node2, part } = options;
+  const { name, key, parent } = options.names;
+  if (typeof part === "number") {
+    if (!isSeq(node2)) {
+      throw new CliError(
+        `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306F\u914D\u5217\u3067\u306F\u3042\u308A\u307E\u305B\u3093\uFF09\u3002\u30AD\u30FC\u306E\u30D1\u30B9\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+    }
+    const item = node2.items[part];
+    if (item === void 0) {
+      throw new CliError(
+        `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306F ${node2.items.length} \u8981\u7D20\u3067\u3059\uFF09\u3002\u4F4D\u7F6E\u3092 0\u301C${node2.items.length - 1} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+    }
+    const next = item;
+    return { node: next, offset: next?.range?.[0] };
+  }
+  if (!isMap(node2)) {
+    throw new CliError(
+      `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306F\u30DE\u30C3\u30D7\u3067\u306F\u3042\u308A\u307E\u305B\u3093\uFF09\u3002\u30AD\u30FC\u306E\u30D1\u30B9\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const pair = node2.items.find(
+    (candidate) => isScalar(candidate.key) && candidate.key.value === part
+  );
+  if (pair === void 0) {
+    throw new CliError(
+      `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306B\u30AD\u30FC ${part} \u304C\u3042\u308A\u307E\u305B\u3093\uFF09\u3002\u30AD\u30FC\u306E\u30D1\u30B9\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  return {
+    node: pair.value,
+    offset: pair.key.range?.[0]
+  };
+}
+async function readYamlKey(options) {
+  const { path, key } = options;
+  const name = basename6(path);
+  const { document: document2, lineCounter } = await readYamlDocument(path, name);
   if (!KEY_PATH_PATTERN.test(key)) {
     throw new CliError(
       `--key \u306E ${key} \u3092\u30AD\u30FC\u306E\u30D1\u30B9\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u30DE\u30C3\u30D7\u306E\u30AD\u30FC\u3092 . \u3067\u3001\u914D\u5217\u306E\u8981\u7D20\u3092 [\u4F4D\u7F6E] \u3067\u3064\u306A\u3044\u3067\u304F\u3060\u3055\u3044\uFF08\u4F8B items[0].body\uFF09\u3002`
@@ -79932,51 +82066,29 @@ async function readYamlKey(options) {
   for (const [position, part] of parts.entries()) {
     const walked = joinKeyPath(parts.slice(0, position));
     const parent = walked === "" ? "\u30D5\u30A1\u30A4\u30EB\u306E\u5148\u982D" : walked;
-    if (typeof part === "number") {
-      if (!isSeq(node2)) {
-        throw new CliError(
-          `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306F\u914D\u5217\u3067\u306F\u3042\u308A\u307E\u305B\u3093\uFF09\u3002\u30AD\u30FC\u306E\u30D1\u30B9\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        );
-      }
-      const item = node2.items[part];
-      if (item === void 0) {
-        throw new CliError(
-          `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306F ${node2.items.length} \u8981\u7D20\u3067\u3059\uFF09\u3002\u4F4D\u7F6E\u3092 0\u301C${node2.items.length - 1} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        );
-      }
-      node2 = item;
-      keyOffset = node2?.range?.[0] ?? keyOffset;
-      continue;
-    }
-    if (!isMap(node2)) {
-      throw new CliError(
-        `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306F\u30DE\u30C3\u30D7\u3067\u306F\u3042\u308A\u307E\u305B\u3093\uFF09\u3002\u30AD\u30FC\u306E\u30D1\u30B9\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-    const pair = node2.items.find(
-      (candidate) => isScalar(candidate.key) && candidate.key.value === part
-    );
-    if (pair === void 0) {
-      throw new CliError(
-        `${name} \u306B ${key} \u304C\u3042\u308A\u307E\u305B\u3093\uFF08${parent} \u306B\u30AD\u30FC ${part} \u304C\u3042\u308A\u307E\u305B\u3093\uFF09\u3002\u30AD\u30FC\u306E\u30D1\u30B9\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-    keyOffset = pair.key.range?.[0] ?? keyOffset;
-    node2 = pair.value;
+    const step = stepKeyPath({ node: node2, part, names: { name, key, parent } });
+    node2 = step.node;
+    keyOffset = step.offset ?? keyOffset;
   }
   if (!isScalar(node2) || typeof node2.value !== "string") {
     throw new CliError(
       `${name} \u306E ${key} \u306E\u5024\u306F\u6587\u5B57\u5217\u3067\u306F\u3042\u308A\u307E\u305B\u3093\uFF08${nodeTypeName(node2)}\uFF09\u3002Markdown \u306E\u6587\u5B57\u5217\u3092\u6301\u3064\u30AD\u30FC\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
-  const value = node2.value;
+  return {
+    value: node2.value,
+    lineOf: valueLineOf({ node: node2, lineCounter, keyOffset })
+  };
+}
+function valueLineOf(options) {
+  const { node: node2, lineCounter, keyOffset } = options;
   const block2 = node2.type === Scalar.BLOCK_LITERAL || node2.type === Scalar.BLOCK_FOLDED;
   if (block2) {
     const indicatorLine = lineCounter.linePos(node2.range?.[0] ?? 0).line;
-    return { value, lineOf: (line) => indicatorLine + line };
+    return (line) => indicatorLine + line;
   }
-  const keyLine = lineCounter.linePos(keyOffset).line;
-  return { value, lineOf: () => keyLine };
+  const keyLine2 = lineCounter.linePos(keyOffset).line;
+  return () => keyLine2;
 }
 async function readConfigIfAny(cwd, config3) {
   let path;
@@ -79989,43 +82101,52 @@ async function readConfigIfAny(cwd, config3) {
     throw error2;
   }
   const read = await loadConfig(path);
-  const { config: validated } = validateConfig(read.raw, basename7(path));
+  const { config: validated } = validateConfig(read.raw, basename6(path));
   return { path, dir: read.dir, config: validated };
+}
+async function readMarkdownSource(options, loaded) {
+  const { cwd } = options;
+  if (options.file === void 0) {
+    return {
+      markdown: options.text ?? "",
+      file: TEXT_FILE,
+      lineOf: (line) => line
+    };
+  }
+  const path = resolve9(cwd, options.file);
+  const read = await readYamlKey({ path, key: options.key ?? "" });
+  return {
+    markdown: read.value,
+    file: relative6(loaded?.dir ?? cwd, path).split(sep6).join("/"),
+    lineOf: read.lineOf
+  };
+}
+function markdownWarnings(options) {
+  const { markdown, config: config3, file } = options;
+  return collectWarnings(markdown, {
+    config: {
+      ...config3.features ? { features: config3.features } : {},
+      ...config3.libraries ? { libraries: config3.libraries } : {}
+    }
+  }).flatMap(
+    (warning) => warning.includeTarget || warning.kind === "map" ? [] : [
+      {
+        file,
+        where: String(warning.line),
+        kind: warning.kind,
+        message: warning.message
+      }
+    ]
+  );
 }
 async function checkMarkdownSource(options) {
   const { cwd, importCode } = options;
   const loaded = await readConfigIfAny(cwd, options.config);
   const config3 = loaded?.config ?? {};
-  let markdown;
-  let file;
-  let lineOf = (line) => line;
-  if (options.file !== void 0) {
-    const path = resolve11(cwd, options.file);
-    const read = await readYamlKey({ path, key: options.key ?? "" });
-    markdown = read.value;
-    lineOf = read.lineOf;
-    file = relative7(loaded?.dir ?? cwd, path).split(sep7).join("/");
-  } else {
-    markdown = options.text ?? "";
-    file = TEXT_FILE;
-  }
-  const directives = loaded ? (await loadExtensionDirectives(loaded, basename7(loaded.path), importCode)).directives : /* @__PURE__ */ new Set();
+  const { markdown, file, lineOf } = await readMarkdownSource(options, loaded);
+  const directives = loaded ? (await loadExtensionDirectives(loaded, basename6(loaded.path), importCode)).directives : /* @__PURE__ */ new Set();
   const document2 = [{ path: file, markdown }];
-  const warnings = [];
-  for (const warning of collectWarnings(markdown, {
-    config: {
-      ...config3.features ? { features: config3.features } : {},
-      ...config3.libraries ? { libraries: config3.libraries } : {}
-    }
-  })) {
-    if (warning.includeTarget || warning.kind === "map") continue;
-    warnings.push({
-      file,
-      where: String(warning.line),
-      kind: warning.kind,
-      message: warning.message
-    });
-  }
+  const warnings = markdownWarnings({ markdown, config: config3, file });
   const maps2 = checkMaps(document2, resolveConfig({ config: config3 }));
   const unknownMarks = checkUnknownMarks(document2, config3, directives);
   return [...warnings, ...unknownMarks, ...maps2].map((issue2, order) => ({ issue: issue2, order })).sort(
@@ -80039,31 +82160,31 @@ async function checkMarkdownSource(options) {
 // src/cli/check.ts
 async function exists(path) {
   try {
-    await stat4(path);
+    await stat3(path);
     return true;
   } catch {
     return false;
   }
 }
-function toPosix4(path) {
-  return path.split(sep8).join("/");
+function toPosix3(path) {
+  return path.split(sep7).join("/");
 }
 async function isDirectory(path) {
   try {
-    return (await stat4(path)).isDirectory();
+    return (await stat3(path)).isDirectory();
   } catch {
     return false;
   }
 }
 async function checkDocumentFiles(loaded) {
   const root = loaded.config.assets?.root;
-  const assetsRoot = root !== void 0 && await isDirectory(resolve12(loaded.dir, root)) ? resolve12(loaded.dir, root) : void 0;
+  const assetsRoot = root !== void 0 && await isDirectory(resolve10(loaded.dir, root)) ? resolve10(loaded.dir, root) : void 0;
   const issues = [];
   for (const doc of await collectCheckDocuments(loaded)) {
     issues.push(
       ...await checkMissingFiles({
         markdown: doc.markdown,
-        docFile: resolve12(loaded.dir, doc.path),
+        docFile: resolve10(loaded.dir, doc.path),
         file: doc.path,
         assetsRoot
       })
@@ -80074,7 +82195,7 @@ async function checkDocumentFiles(loaded) {
 async function checkReferencedFiles(loaded, file) {
   const issues = [];
   const { theme, extensions: extensions2, assets } = loaded.config;
-  if (assets?.root !== void 0 && !await isDirectory(resolve12(loaded.dir, assets.root))) {
+  if (assets?.root !== void 0 && !await isDirectory(resolve10(loaded.dir, assets.root))) {
     issues.push({
       file,
       where: "assets.root",
@@ -80082,7 +82203,7 @@ async function checkReferencedFiles(loaded, file) {
       message: `\`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${assets.root}\` \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3059\u308B\u304B\u30D5\u30A9\u30EB\u30C0\u3092\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     });
   }
-  if (theme !== void 0 && !await exists(resolve12(loaded.dir, theme))) {
+  if (theme !== void 0 && !await exists(resolve10(loaded.dir, theme))) {
     issues.push({
       file,
       where: "theme",
@@ -80091,7 +82212,7 @@ async function checkReferencedFiles(loaded, file) {
     });
   }
   for (const [position, path] of (extensions2 ?? []).entries()) {
-    if (!await exists(resolve12(loaded.dir, path))) {
+    if (!await exists(resolve10(loaded.dir, path))) {
       issues.push({
         file,
         where: `extensions[${position}]`,
@@ -80151,7 +82272,7 @@ async function checkIndexFile(loaded, base) {
     }
     return [
       {
-        file: toPosix4(loaded.config.index),
+        file: toPosix3(loaded.config.index),
         where: "",
         kind: "schema",
         message: error2.message
@@ -80161,7 +82282,7 @@ async function checkIndexFile(loaded, base) {
   if (!read) {
     return [];
   }
-  const indexDirFromConfig = toPosix4(relative8(loaded.dir, read.indexDir));
+  const indexDirFromConfig = toPosix3(relative7(loaded.dir, read.indexDir));
   const changedPaths = base === void 0 ? void 0 : await changedPathsSince({
     cwd: loaded.dir,
     base,
@@ -80175,55 +82296,53 @@ async function checkIndexFile(loaded, base) {
   }).map((issue2) => ({
     ...issue2,
     // 索引のずれは設定ファイルのフォルダからの相対パスで出ているので、文書のずれだけ索引のフォルダの分を追加する
-    file: issue2.file === read.indexFile || indexDirFromConfig === "" ? issue2.file : join8(indexDirFromConfig, issue2.file).split(sep8).join("/")
+    file: issue2.file === read.indexFile || indexDirFromConfig === "" ? issue2.file : join6(indexDirFromConfig, issue2.file).split(sep7).join("/")
   }));
 }
 async function importBundledCode(code2) {
   const url2 = `data:text/javascript;base64,${Buffer.from(code2).toString("base64")}`;
   return import(url2);
 }
+async function readExtensionDirective(options) {
+  const { loaded, path, where, importCode } = options;
+  const bundled = await bundleModule(path, loaded.dir, { build: build3 });
+  if ("error" in bundled) {
+    return {
+      message: `\`${where}\` \u306E \`${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${bundled.error}\uFF09\u3002\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    };
+  }
+  let module;
+  try {
+    module = await importCode(bundled.code);
+  } catch (error2) {
+    const reason = error2 instanceof Error ? error2.message.split("\n")[0] : String(error2);
+    return {
+      message: `\`${where}\` \u306E \`${path}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u8AAD\u307F\u8FBC\u307F\u306E\u6642\u70B9\u3067\u30D6\u30E9\u30A6\u30B6\u306E API \u3092\u4F7F\u7528\u3059\u308B\u51E6\u7406\u306F\u3001\`load\` \u306E\u4E2D\u3078\u79FB\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    };
+  }
+  const directive = module?.default?.directive;
+  return typeof directive === "string" && MARK_NAME_PATTERN.test(directive) ? { directive } : {
+    message: `\`${where}\` \u306E \`${path}\` \u306E\u65E2\u5B9A\u306E\u66F8\u304D\u51FA\u3057\u306B \`directive\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3092 \`directive\` \u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  };
+}
 async function loadExtensionDirectives(loaded, file, importCode = importBundledCode) {
   const directives = /* @__PURE__ */ new Set();
   const issues = [];
   for (const [position, path] of (loaded.config.extensions ?? []).entries()) {
     const where = `extensions[${position}]`;
-    if (!await exists(resolve12(loaded.dir, path))) {
+    if (!await exists(resolve10(loaded.dir, path))) {
       continue;
     }
-    const bundled = await bundleModule(path, loaded.dir, void 0, build4);
-    if ("error" in bundled) {
-      issues.push({
-        file,
-        where,
-        kind: "schema",
-        message: `\`${where}\` \u306E \`${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${bundled.error}\uFF09\u3002\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-      continue;
-    }
-    let module;
-    try {
-      module = await importCode(bundled.code);
-    } catch (error2) {
-      const reason = error2 instanceof Error ? error2.message.split("\n")[0] : String(error2);
-      issues.push({
-        file,
-        where,
-        kind: "schema",
-        message: `\`${where}\` \u306E \`${path}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u8AAD\u307F\u8FBC\u307F\u306E\u6642\u70B9\u3067\u30D6\u30E9\u30A6\u30B6\u306E API \u3092\u4F7F\u7528\u3059\u308B\u51E6\u7406\u306F\u3001\`load\` \u306E\u4E2D\u3078\u79FB\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
-      continue;
-    }
-    const extension = module?.default;
-    const directive = extension?.directive;
-    if (typeof directive === "string" && MARK_NAME_PATTERN.test(directive)) {
-      directives.add(directive);
+    const read = await readExtensionDirective({
+      loaded,
+      path,
+      where,
+      importCode
+    });
+    if ("directive" in read) {
+      directives.add(read.directive);
     } else {
-      issues.push({
-        file,
-        where,
-        kind: "schema",
-        message: `\`${where}\` \u306E \`${path}\` \u306E\u65E2\u5B9A\u306E\u66F8\u304D\u51FA\u3057\u306B \`directive\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3092 \`directive\` \u306B\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      });
+      issues.push({ file, where, kind: "schema", message: read.message });
     }
   }
   return { directives, issues };
@@ -80249,6 +82368,26 @@ var MAP_ENUMS = {
   width: ["thin", "normal", "thick"],
   head: ["filled", "open", "none"]
 };
+function mapRowValues(value) {
+  const values = [];
+  for (const [group, keys] of [
+    ["kinds", ["shape"]],
+    ["lines", ["dash", "width", "head"]]
+  ]) {
+    const rows = value[group];
+    if (typeof rows !== "object" || rows === null) continue;
+    for (const [name, row] of Object.entries(rows)) {
+      if (typeof row !== "object" || row === null) continue;
+      for (const key of keys)
+        values.push({
+          where: `map.${group}.${name}.${key}`,
+          item: row[key],
+          allowed: MAP_ENUMS[key]
+        });
+    }
+  }
+  return values;
+}
 function checkMapValues(map, file) {
   const issues = [];
   if (typeof map !== "object" || map === null) return issues;
@@ -80270,21 +82409,8 @@ function checkMapValues(map, file) {
       kind: "schema",
       message: "`map.url_state` \u306F `true` \u304B `false` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
     });
-  for (const [group, keys] of [
-    ["kinds", ["shape"]],
-    ["lines", ["dash", "width", "head"]]
-  ]) {
-    const rows = value[group];
-    if (typeof rows !== "object" || rows === null) continue;
-    for (const [name, row] of Object.entries(rows)) {
-      if (typeof row !== "object" || row === null) continue;
-      for (const key of keys)
-        check2(
-          `map.${group}.${name}.${key}`,
-          row[key],
-          MAP_ENUMS[key]
-        );
-    }
+  for (const { where, item, allowed } of mapRowValues(value)) {
+    check2(where, item, allowed);
   }
   return issues;
 }
@@ -80307,9 +82433,9 @@ async function collectCheckDocuments(loaded) {
   try {
     const read = await readIndexWithDocuments(loaded);
     if (read) {
-      const indexDirFromConfig = toPosix4(relative8(loaded.dir, read.indexDir));
+      const indexDirFromConfig = toPosix3(relative7(loaded.dir, read.indexDir));
       for (const [key, markdown] of Object.entries(read.documents)) {
-        documents.set(toPosix4(join8(indexDirFromConfig, key)), markdown);
+        documents.set(toPosix3(join6(indexDirFromConfig, key)), markdown);
       }
     }
   } catch (error2) {
@@ -80321,7 +82447,7 @@ async function collectCheckDocuments(loaded) {
   if (build5) {
     for (const path of await collectBuildDocuments(loaded.dir, build5)) {
       if (!documents.has(path)) {
-        documents.set(path, await readFile9(resolve12(loaded.dir, path), "utf8"));
+        documents.set(path, await readFile8(resolve10(loaded.dir, path), "utf8"));
       }
     }
   }
@@ -80333,6 +82459,14 @@ function knownMarkNames(options) {
     ...Object.keys(SYNTAX_MARKS),
     ...Object.keys(resolveConfig({ config: options.config }).libraries),
     ...options.directives
+  ]);
+}
+async function collectMarkNames(loaded) {
+  const { directives } = await loadExtensionDirectives(loaded, loaded.path);
+  return /* @__PURE__ */ new Set([
+    ...knownMarkNames({ config: loaded.config, directives }),
+    PAGE_MARK,
+    ...loaded.config.check?.ignore ?? []
   ]);
 }
 function checkUnknownMarks(documents, config3, directives) {
@@ -80367,7 +82501,7 @@ function checkPlainMarkdown(documents, known) {
     if (mark === void 0) {
       continue;
     }
-    const renamed = `${basename8(document2.path).replace(/\.md$/, "")}${MARK_MARKDOWN_SUFFIX}`;
+    const renamed = `${basename7(document2.path).replace(/\.md$/, "")}${MARK_MARKDOWN_SUFFIX}`;
     issues.push({
       file: document2.path,
       where: String(mark.line),
@@ -80379,50 +82513,63 @@ function checkPlainMarkdown(documents, known) {
 }
 var UNCHECKED_MARKS = /* @__PURE__ */ new Set(["map", "map-data"]);
 var plainOf = (text2) => text2.replaceAll("`", "");
-function checkMarkOptions(documents, embedNames) {
-  const issues = [];
-  for (const document2 of documents) {
-    for (const mark of findMarkTexts(document2.markdown)) {
-      if (mark.closing || UNCHECKED_MARKS.has(mark.name)) {
-        continue;
+function markKind(mark, embedNames) {
+  if (mark.closing || UNCHECKED_MARKS.has(mark.name)) {
+    return void 0;
+  }
+  const own2 = mark.name === FEATURES_MARK || mark.name === PAGE_MARK || Object.hasOwn(SYNTAX_MARKS, mark.name);
+  const isExtension = !own2 && embedNames.has(mark.name);
+  return own2 || isExtension ? { own: own2, isExtension } : void 0;
+}
+function markIssues(mark, embedNames) {
+  const checked = markKind(mark, embedNames);
+  if (checked === void 0) {
+    return [];
+  }
+  const { own: own2, isExtension } = checked;
+  const args = readMarkArgs(mark.args);
+  if (args.kind === "invalid") {
+    return [
+      {
+        kind: "mark_option_invalid",
+        message: plainOf(`${mark.raw}${args.message}`)
       }
-      const own2 = mark.name === FEATURES_MARK || mark.name === PAGE_MARK || Object.hasOwn(SYNTAX_MARKS, mark.name);
-      const isExtension = !own2 && embedNames.has(mark.name);
-      if (!own2 && !isExtension) {
-        continue;
-      }
-      const where = String(mark.line);
-      const args = readMarkArgs(mark.args);
-      const push = (kind, message) => {
-        issues.push({ file: document2.path, where, kind, message });
-      };
-      if (args.kind === "invalid") {
-        push("mark_option_invalid", plainOf(`${mark.raw}${args.message}`));
-        continue;
-      }
-      const source = args.kind;
-      let options = args.kind === "json" ? args.options : {};
-      let unknownKeys = [];
-      if (args.kind === "json" && own2) {
-        const checked = validateMarkOptions({ name: mark.name, options });
-        options = checked.options;
-        unknownKeys = checked.unknownKeys;
-        for (const problem of checked.problems) {
-          push("mark_option_invalid", plainOf(`${mark.raw}${problem.message}`));
-        }
-      }
-      for (const note of markOptionNotes({
-        name: mark.name,
-        source,
-        options,
-        unknownKeys,
-        isExtension
-      })) {
-        push(note.kind, note.message);
-      }
+    ];
+  }
+  const found = [];
+  let options = args.kind === "json" ? args.options : {};
+  let unknownKeys = [];
+  if (args.kind === "json" && own2) {
+    const checked2 = validateMarkOptions({ name: mark.name, options });
+    options = checked2.options;
+    unknownKeys = checked2.unknownKeys;
+    for (const problem of checked2.problems) {
+      found.push({
+        kind: "mark_option_invalid",
+        message: plainOf(`${mark.raw}${problem.message}`)
+      });
     }
   }
-  return issues;
+  const notes = markOptionNotes({
+    name: mark.name,
+    source: args.kind,
+    options,
+    unknownKeys,
+    isExtension
+  });
+  return [...found, ...notes];
+}
+function checkMarkOptions(documents, embedNames) {
+  return documents.flatMap(
+    (document2) => findMarkTexts(document2.markdown).flatMap(
+      (mark) => markIssues(mark, embedNames).map(({ kind, message }) => ({
+        file: document2.path,
+        where: String(mark.line),
+        kind,
+        message
+      }))
+    )
+  );
 }
 var onlyMark = (content, name) => {
   const found = [...content.matchAll(MARK_PATTERN)];
@@ -80436,6 +82583,43 @@ var onlyMark = (content, name) => {
     offset: (content.slice(0, Math.max(0, start)).match(/\n/g) ?? []).length
   };
 };
+var addMapInner = (range, inner, at) => {
+  if (inner.type === "fence" && inner.info.trim().split(/\s+/)[0] === "mermaid") {
+    range.mermaidCount += 1;
+    if (range.mermaid === void 0) {
+      range.mermaid = inner.content;
+      range.mermaidLine = at + 1;
+    }
+    return;
+  }
+  const data = inner.type === "html_block" ? onlyMark(inner.content, "map-data") : void 0;
+  if (data) {
+    range.dataCount += 1;
+    if (range.data === void 0) {
+      range.data = data.rest;
+      range.dataLine = at + data.offset;
+    }
+  }
+};
+var isMapClose = (inner) => inner.type === "html_block" && onlyMark(inner.content, "map")?.closing === true;
+var readMapRange = (options) => {
+  const { tokens, from, args, start } = options;
+  const range = {
+    args,
+    mermaid: void 0,
+    mermaidCount: 0,
+    data: void 0,
+    dataCount: 0
+  };
+  let next = from;
+  for (; next < tokens.length; next++) {
+    const inner = tokens[next];
+    if (!inner) continue;
+    if (isMapClose(inner)) break;
+    addMapInner(range, inner, (inner.map?.[0] ?? start) - start);
+  }
+  return { range, next };
+};
 var findMapRanges = (markdown) => {
   const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
   const ranges = [];
@@ -80444,34 +82628,12 @@ var findMapRanges = (markdown) => {
     const open2 = token?.type === "html_block" ? onlyMark(token.content, "map") : void 0;
     if (!token || !open2 || open2.closing) continue;
     const start = token.map?.[0] ?? 0;
-    const range = {
+    const { range, next } = readMapRange({
+      tokens,
+      from: index + 1,
       args: open2.rest,
-      mermaid: void 0,
-      mermaidCount: 0,
-      data: void 0,
-      dataCount: 0
-    };
-    let next = index + 1;
-    for (; next < tokens.length; next++) {
-      const inner = tokens[next];
-      if (!inner) continue;
-      const mark = inner.type === "html_block" ? onlyMark(inner.content, "map") ?? onlyMark(inner.content, "map-data") : void 0;
-      if (mark?.closing && onlyMark(inner.content, "map")) break;
-      const at = (inner.map?.[0] ?? start) - start;
-      if (inner.type === "fence" && inner.info.trim().split(/\s+/)[0] === "mermaid") {
-        range.mermaidCount += 1;
-        if (range.mermaid === void 0) {
-          range.mermaid = inner.content;
-          range.mermaidLine = at + 1;
-        }
-      } else if (mark && onlyMark(inner.content, "map-data")) {
-        range.dataCount += 1;
-        if (range.data === void 0) {
-          range.data = mark.rest;
-          range.dataLine = at + mark.offset;
-        }
-      }
-    }
+      start
+    });
     ranges.push({ line: start + 1, range });
     index = next;
   }
@@ -80480,13 +82642,18 @@ var findMapRanges = (markdown) => {
 function checkMaps(documents, config3) {
   const issues = [];
   for (const document2 of documents) {
-    const { features } = renderDocument({
+    const { features, annotationIds } = renderDocument({
       markdown: document2.markdown,
       config: config3
     });
     if (features.map === false) continue;
+    const annotations = features.annotations === false ? void 0 : new Set(annotationIds);
     for (const { line, range } of findMapRanges(document2.markdown)) {
-      for (const problem of collectMapProblems(range, config3.map, true)) {
+      for (const problem of collectMapProblems(
+        { ...range, annotationIds: annotations },
+        config3.map,
+        true
+      )) {
         issues.push({
           file: document2.path,
           where: String(line + (problem.line ?? 0)),
@@ -80536,14 +82703,14 @@ async function checkIncludes(options) {
   const { documents, root } = options;
   const issues = /* @__PURE__ */ new Map();
   for (const doc of documents) {
-    const docPath = resolve12(root, doc.path);
+    const docPath = resolve10(root, doc.path);
     const { problems } = await collectIncludes({
       docPath,
       markdown: doc.markdown,
       root
     });
     for (const problem of problems) {
-      const file = problem.file === "" ? doc.path : toPosix4(relative8(root, resolve12(dirname9(docPath), problem.file)));
+      const file = problem.file === "" ? doc.path : toPosix3(relative7(root, resolve10(dirname8(docPath), problem.file)));
       const kind = problem.kind === "circular" ? "include_circular" : "include_target_missing";
       issues.set(`${file}\0${problem.line}\0${kind}`, {
         file,
@@ -80559,8 +82726,18 @@ async function checkIncludes(options) {
   ).map(({ line: _line, ...issue2 }) => issue2);
 }
 async function collectCheckIssues(path, options = {}) {
-  const cwd = options.cwd ?? dirname9(path);
-  const layered = options.explicit ? await readLayeredConfig(cwd, path, "export", true) : await readLayeredConfig(dirname9(path), void 0, "export", true);
+  const cwd = options.cwd ?? dirname8(path);
+  const layered = options.explicit ? await readLayeredConfig({
+    cwd,
+    explicit: path,
+    purpose: "export",
+    keepInvalid: true
+  }) : await readLayeredConfig({
+    cwd: dirname8(path),
+    explicit: void 0,
+    purpose: "export",
+    keepInvalid: true
+  });
   const shown = (target) => displayConfigPath({ path: target, base: cwd, home: homedir2() });
   if (layered.unreadable) {
     const { path: target, line, message } = layered.unreadable;
@@ -80572,12 +82749,12 @@ async function collectCheckIssues(path, options = {}) {
     ...issue2,
     file: shown(issue2.file)
   }));
-  const file = basename8(path);
+  const file = basename7(path);
   const config3 = relativizeConfigPaths({
     config: layered.config,
-    dir: dirname9(path)
+    dir: dirname8(path)
   });
-  const loaded = { path, dir: dirname9(path), config: config3 };
+  const loaded = { path, dir: dirname8(path), config: config3 };
   const referenced = await checkReferencedFiles(loaded, file);
   const build5 = await checkBuild(loaded, file);
   const indexIssues = await checkIndexFile(loaded, options.base);
@@ -80630,19 +82807,23 @@ async function collectCheckIssues(path, options = {}) {
     ...plainMarkdown
   ];
 }
+function checkTextArgs(options) {
+  const { file, key, base } = options;
+  const others = [
+    ...base !== void 0 ? ["--base"] : [],
+    ...file !== void 0 ? ["--file"] : [],
+    ...key !== void 0 ? ["--key"] : []
+  ];
+  if (others.length > 0) {
+    throw new CliError(
+      `--text \u306F ${others.join("\u30FB")} \u3068\u4E00\u7DD2\u306B\u6307\u5B9A\u3067\u304D\u307E\u305B\u3093\u3002Markdown \u306E\u6587\u5B57\u5217\u306F --text \u3060\u3051\u3067\u3001YAML \u306E\u30AD\u30FC\u306E\u5024\u306F --file \u3068 --key \u3067\u70B9\u691C\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+}
 function validateSourceArgs(options) {
   const { text: text2, file, key, base } = options;
   if (text2 !== void 0) {
-    const others = [
-      ...base !== void 0 ? ["--base"] : [],
-      ...file !== void 0 ? ["--file"] : [],
-      ...key !== void 0 ? ["--key"] : []
-    ];
-    if (others.length > 0) {
-      throw new CliError(
-        `--text \u306F ${others.join("\u30FB")} \u3068\u4E00\u7DD2\u306B\u6307\u5B9A\u3067\u304D\u307E\u305B\u3093\u3002Markdown \u306E\u6587\u5B57\u5217\u306F --text \u3060\u3051\u3067\u3001YAML \u306E\u30AD\u30FC\u306E\u5024\u306F --file \u3068 --key \u3067\u70B9\u691C\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
+    checkTextArgs(options);
     return;
   }
   if (file === void 0 && key === void 0) {
@@ -80679,6 +82860,656 @@ async function runCheck(options, io) {
   }
   io.stdout(`\u305A\u308C ${issues.length} \u4EF6`);
   return issues.length === 0 ? 0 : 1;
+}
+
+// src/cli/icons.ts
+var import_lucide4 = __toESM(require_lucide(), 1);
+var ICON_CODE_PATTERN = /`icon:\s*([^`\s]+)\s*`/g;
+var pascalName = (name) => name.split("-").map((part) => part ? `${part[0]?.toUpperCase()}${part.slice(1)}` : "").join("");
+var collectIconNodes = (markdowns) => {
+  const icons2 = {};
+  const missing = /* @__PURE__ */ new Set();
+  const table2 = import_lucide4.icons;
+  for (const markdown of markdowns) {
+    for (const match of markdown.matchAll(ICON_CODE_PATTERN)) {
+      const name = match[1] ?? "";
+      if (!ICON_NAME_PATTERN.test(name) || bundledIconNode(name) !== void 0 || Object.hasOwn(icons2, name)) {
+        continue;
+      }
+      const key = pascalName(name);
+      const node2 = Object.hasOwn(table2, key) ? table2[key] : void 0;
+      if (node2 === void 0) {
+        missing.add(name);
+      } else {
+        icons2[name] = node2;
+      }
+    }
+  }
+  return { icons: icons2, missing: [...missing] };
+};
+
+// src/cli/export.ts
+var GLOSSARY_ID_PREFIX = "mdmark-glossary-";
+function toPosix4(path) {
+  return path.split(sep8).join("/");
+}
+function reasonOf(error2) {
+  return (error2 instanceof Error ? error2.message : String(error2)).split("\n")[0] ?? "";
+}
+var URL_PATTERN = /^https?:\/\//;
+function moduleSource(path, baseDir) {
+  return URL_PATTERN.test(path) ? path : resolve11(baseDir, path);
+}
+function addGlossaryDocs(options, target) {
+  const { loaded, kind, markdowns } = options;
+  const { referenceDocs, documents, indexPathOf } = target;
+  const glossaryPaths = kind === "bundle" ? loaded.config.build?.glossary ?? [] : [];
+  const prefix = options.hideTraces ? hideNames(GLOSSARY_ID_PREFIX) : GLOSSARY_ID_PREFIX;
+  glossaryPaths.forEach((glossaryPath, position) => {
+    const path = normalizePath(glossaryPath);
+    const markdown = markdowns.get(path);
+    if (markdown === void 0) {
+      return;
+    }
+    const key = indexPathOf(path);
+    documents[key] = markdown;
+    if (!referenceDocs.some((doc) => normalizePath(doc.path) === key)) {
+      referenceDocs.push({
+        id: `${prefix}${position}`,
+        path: key,
+        title: documentTitle({ path, markdown })
+      });
+    }
+  });
+}
+async function prepareReferences(options) {
+  const { loaded } = options;
+  const info = await readIndexWithDocuments(loaded);
+  const index = info ? normalizeIndex(info.raw).index : void 0;
+  const baseDir = info ? info.indexDir : loaded.dir;
+  const indexPathOf = (path) => toPosix4(relative8(baseDir, join7(loaded.dir, path)));
+  const byPath = (path) => index?.docs.find((doc) => normalizePath(doc.path) === indexPathOf(path));
+  const referenceDocs = [...index?.docs ?? []];
+  const documents = { ...info?.documents };
+  addGlossaryDocs(options, { referenceDocs, documents, indexPathOf });
+  const references = referenceDocs.length === 0 ? void 0 : collectReferences({
+    index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
+    documents,
+    config: { features: loaded.config.features ?? {} }
+  });
+  return {
+    index,
+    references,
+    docIdOf: (path) => byPath(path)?.id,
+    titleOf: (path) => byPath(path)?.title
+  };
+}
+async function bundleSyntax(options) {
+  const { languages, url: url2, loaded, warnings, fetchText } = options;
+  if (languages.length === 0) {
+    return void 0;
+  }
+  const folder = url2.endsWith("/") ? url2 : `${url2}/`;
+  const bundle = async (path) => {
+    const result = await bundleModule(`${folder}${path}`, loaded.dir, {
+      fetchText,
+      build: build4
+    });
+    if ("code" in result) {
+      return moduleSource(`${folder}${path}`, loaded.dir);
+    }
+    warnings.push(
+      `${basename8(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+    return void 0;
+  };
+  const core = await bundle("core.min.js");
+  if (core === void 0) {
+    return void 0;
+  }
+  const bundled = {};
+  for (const language of languages) {
+    const source = await bundle(`languages/${language}.min.js`);
+    if (source !== void 0) {
+      bundled[language] = source;
+    }
+  }
+  return { core, languages: bundled };
+}
+async function resolveAssetsRoot(loaded, warnings) {
+  const root = loaded.config.assets?.root;
+  if (root === void 0) {
+    return void 0;
+  }
+  const dir = resolve11(loaded.dir, root);
+  try {
+    if ((await stat4(dir)).isDirectory()) {
+      return dir;
+    }
+  } catch {
+  }
+  warnings.push(
+    `${basename8(loaded.path)}: \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${root}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u3060\u3051\u3067\u63A2\u3057\u307E\u3059\u3002`
+  );
+  return void 0;
+}
+async function readDocuments(options) {
+  const { loaded, docs, kind, out, assetsRoot, warnings } = options;
+  const originals = /* @__PURE__ */ new Map();
+  const inlined = /* @__PURE__ */ new Map();
+  const copied = /* @__PURE__ */ new Map();
+  const assets = kind === "bundle" ? /* @__PURE__ */ new Map() : void 0;
+  for (const doc of docs) {
+    const original = await readFile9(doc.file, "utf8");
+    const media = await copyMedia({
+      markdown: original,
+      docFile: doc.file,
+      assetsRoot,
+      baseDir: loaded.dir,
+      out,
+      copied
+    });
+    const result = await inlineImages(media.markdown, doc.file, {
+      assetsRoot,
+      ...assets ? { assets } : {}
+    });
+    originals.set(doc.path, original);
+    inlined.set(doc.path, result.markdown);
+    warnings.push(
+      ...[...media.warnings, ...result.warnings].map(
+        (text2) => `${doc.path}: ${text2}`
+      )
+    );
+  }
+  return { originals, inlined, assets };
+}
+async function readIncludes(options) {
+  const { loaded, docs, originals, warnings } = options;
+  const includeTexts = {};
+  const includeKeys = /* @__PURE__ */ new Map();
+  const fromConfig = (docFile, path) => toPosix4(relative8(loaded.dir, resolve11(dirname9(docFile), path)));
+  for (const doc of docs) {
+    const result = await collectIncludes({
+      docPath: doc.file,
+      markdown: originals.get(doc.path) ?? "",
+      root: loaded.dir
+    });
+    const keys = {};
+    for (const [key, text2] of Object.entries(result.includes)) {
+      const path = fromConfig(doc.file, key);
+      keys[key] = path;
+      includeTexts[path] = text2;
+    }
+    includeKeys.set(doc.path, keys);
+    for (const problem of result.problems) {
+      const file = problem.file === "" ? doc.path : fromConfig(doc.file, problem.file);
+      warnings.push(
+        `${file}:${problem.line}: ${includeProblemMessage(problem)}`
+      );
+    }
+  }
+  return { includeTexts, includeKeys };
+}
+async function bundleLibraries(options) {
+  const { loaded, urls, markdowns, fetchText, warnings } = options;
+  const configName = basename8(loaded.path);
+  const bundled = /* @__PURE__ */ new Map();
+  const modules = {};
+  for (const mark of usedLibraryMarks(markdowns, urls)) {
+    const url2 = urls[mark] ?? "";
+    let pending = bundled.get(url2);
+    if (!pending) {
+      pending = bundleModule(url2, loaded.dir, { fetchText, build: build4 });
+      bundled.set(url2, pending);
+    }
+    const result = await pending;
+    if (!("code" in result)) {
+      warnings.push(
+        `${configName}: \u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002URL \u304B\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+      continue;
+    }
+    modules[mark] = moduleSource(url2, loaded.dir);
+    if (hasDynamicImport(result.code)) {
+      warnings.push(
+        dynamicImportWarning(configName, `\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\``)
+      );
+    }
+  }
+  return modules;
+}
+async function bundleExtensions(options) {
+  const { loaded, fetchText, warnings } = options;
+  const configName = basename8(loaded.path);
+  const extensions2 = [];
+  for (const path of loaded.config.extensions ?? []) {
+    const result = await bundleModule(path, loaded.dir, { fetchText, build: build4 });
+    if (!("code" in result)) {
+      warnings.push(
+        `${configName}: \u62E1\u5F35 \`${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+      continue;
+    }
+    extensions2.push(moduleSource(path, loaded.dir));
+    if (hasDynamicImport(result.code)) {
+      warnings.push(dynamicImportWarning(configName, `\u62E1\u5F35 \`${path}\``));
+    }
+  }
+  return extensions2;
+}
+async function readThemeCss(loaded, warnings) {
+  const theme = loaded.config.theme;
+  if (theme === void 0) {
+    return void 0;
+  }
+  try {
+    return await readFile9(resolve11(loaded.dir, theme), "utf8");
+  } catch (error2) {
+    warnings.push(
+      `${basename8(loaded.path)}: \u5229\u7528\u5074\u306E CSS \`${theme}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+    return void 0;
+  }
+}
+async function bundleMermaid(options) {
+  const { loaded, used, fetchText, warnings } = options;
+  if (!used) {
+    return void 0;
+  }
+  const { url: url2 } = resolveConfig({ config: loaded.config }).mermaid;
+  const result = await bundleModule(url2, loaded.dir, { fetchText, build: build4 });
+  if ("code" in result) {
+    return moduleSource(url2, loaded.dir);
+  }
+  warnings.push(
+    `${basename8(loaded.path)}: mermaid \`${url2}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`mermaid.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  );
+  return void 0;
+}
+function colorThemeWarnings(loaded) {
+  const colorTheme = loaded.config.colorTheme;
+  return colorTheme === void 0 || COLOR_THEMES.some((t) => t === colorTheme) ? [] : [
+    `${basename8(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
+  ];
+}
+function payloadConfig(config3, libraryNames) {
+  const { url: _mermaidUrl, ...mermaid } = config3.mermaid ?? {};
+  const picked = {
+    features: config3.features,
+    tooltips: config3.tooltips,
+    "side-toc": config3["side-toc"],
+    table: config3.table,
+    colorTheme: config3.colorTheme,
+    colorScheme: config3.colorScheme,
+    labels: config3.labels,
+    map: config3.map,
+    mermaid: Object.keys(mermaid).length > 0 ? mermaid : void 0
+  };
+  return {
+    ...Object.fromEntries(
+      Object.entries(picked).filter(([, value]) => value !== void 0)
+    ),
+    libraries: Object.fromEntries(libraryNames.map((name) => [name, name]))
+  };
+}
+function whenFilled(key, value) {
+  return value !== void 0 && Object.keys(value).length > 0 ? { [key]: value } : {};
+}
+async function markdownHider(options) {
+  if (!options.hideTraces) {
+    return void 0;
+  }
+  const markNames = await collectMarkNames(options.loaded);
+  return (markdown) => hideMarkdown({ markdown, markNames });
+}
+function hidePayloadText(shown, hideText) {
+  return {
+    ...shown,
+    docs: shown.docs.map((doc) => ({
+      ...doc,
+      markdown: hideText(doc.markdown)
+    })),
+    ...whenFilled(
+      "includes",
+      shown.includes && Object.fromEntries(
+        Object.entries(shown.includes).map(([key, text2]) => [
+          key,
+          hideText(text2)
+        ])
+      )
+    )
+  };
+}
+async function prepareEmbeds(options) {
+  const { loaded, docs, kind, entry, fetchText } = options;
+  const warnings = [];
+  const assetsRoot = await resolveAssetsRoot(loaded, warnings);
+  const { originals, inlined, assets } = await readDocuments({
+    ...options,
+    assetsRoot,
+    warnings
+  });
+  const markdowns = [...originals.values()];
+  const { includeTexts, includeKeys } = await readIncludes({
+    loaded,
+    docs,
+    originals,
+    warnings
+  });
+  const iconResult = collectIconNodes([
+    ...markdowns,
+    ...Object.values(includeTexts)
+  ]);
+  for (const name of iconResult.missing) {
+    warnings.push(
+      `\`icon:${name}\` \u306E \`${name}\` \u306F Lucide \u306B\u7121\u3044\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u3067\u3059\u3002https://lucide.dev/icons/ \u3067\u540D\u524D\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const resolved = resolveConfig({ config: loaded.config });
+  const libraries = Object.fromEntries(
+    Object.entries(resolved.libraries).map(([name, library]) => [
+      name,
+      library.url
+    ])
+  );
+  const modules = await bundleLibraries({
+    loaded,
+    urls: libraries,
+    markdowns,
+    fetchText,
+    warnings
+  });
+  const extensions2 = await bundleExtensions({ loaded, fetchText, warnings });
+  const themeCss = await readThemeCss(loaded, warnings);
+  const includesOf = (path) => Object.fromEntries(
+    Object.entries(includeKeys.get(path) ?? {}).map(([key, file]) => [
+      key,
+      includeTexts[file] ?? ""
+    ])
+  );
+  const used = {
+    markdowns,
+    includes: docs.map((doc) => includesOf(doc.path)),
+    config: loaded.config
+  };
+  const syntax = await bundleSyntax({
+    languages: usedSyntaxLanguages(used),
+    url: resolved.syntax.url,
+    loaded,
+    warnings,
+    fetchText
+  });
+  const mermaid = await bundleMermaid({
+    loaded,
+    used: usesMermaid(used),
+    fetchText,
+    warnings
+  });
+  const aliasResult = await loadAliases(loaded);
+  warnings.push(...aliasResult.issues.map(formatCheckIssue));
+  warnings.push(...colorThemeWarnings(loaded));
+  const refs = await prepareReferences({ ...options, markdowns: originals });
+  const shown = {
+    kind,
+    config: payloadConfig(loaded.config, Object.keys(libraries)),
+    index: refs.index,
+    references: refs.references,
+    docs: docs.map((doc) => {
+      const markdown = inlined.get(doc.path) ?? "";
+      return {
+        path: doc.path,
+        title: documentTitle({
+          path: doc.path,
+          markdown,
+          indexTitle: refs.titleOf(doc.path)
+        }),
+        markdown,
+        docId: refs.docIdOf(doc.path),
+        ...whenFilled("includes", includeKeys.get(doc.path))
+      };
+    }),
+    ...whenFilled("includes", includeTexts),
+    ...whenFilled("icons", iconResult.icons),
+    entry,
+    ...aliasResult.aliases ? { aliases: aliasResult.aliases } : {},
+    ...assets ? {
+      assets: Object.fromEntries(
+        [...assets.values()].map((asset) => [asset.key, asset.url])
+      )
+    } : {}
+  };
+  const hider = await markdownHider(options);
+  const hideText = hider ?? ((markdown) => markdown);
+  const payload = hider ? hidePayloadText(shown, hider) : shown;
+  const compiled = await compileHtmlScripts({
+    documents: [...originals.entries()].map(([path, markdown]) => ({
+      path,
+      markdown: hideText(markdown)
+    })),
+    config: loaded.config
+  });
+  warnings.push(...compiled.warnings);
+  const embeds = {
+    libraries: modules,
+    extensions: extensions2,
+    ...syntax ? { syntax } : {},
+    ...mermaid ? { mermaid } : {},
+    view: usedParts({ markdowns }),
+    map: usesMap({ markdowns, config: loaded.config }),
+    ...compiled.scripts.length > 0 ? { htmlScripts: compiled.scripts } : {}
+  };
+  return { payload, embeds, themeCss, warnings };
+}
+function dynamicImportWarning(configName, what) {
+  return `${configName}: ${what} \u306F\u307E\u3068\u3081\u305F\u5F8C\u3082\u52D5\u7684 import() \u304C\u6B8B\u308A\u3001blob: \u3068\u52D5\u7684 import \u3092\u8A31\u3055\u306A\u3044\u74B0\u5883\u3067\u306F\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u8AAD\u307F\u8FBC\u3080\u5148\u3092\u30EA\u30C6\u30E9\u30EB\u306E\u6587\u5B57\u5217\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+}
+async function readDistAssets(options) {
+  const { distDir, kind } = options;
+  let distCss;
+  const viewer = resolve11(distDir, "viewer.js");
+  const view = resolve11(distDir, "view.js");
+  const map = resolve11(distDir, "map.js");
+  try {
+    distCss = await readFile9(join7(distDir, "index.css"), "utf8");
+    await stat4(viewer);
+    await stat4(view);
+  } catch (error2) {
+    throw new CliError(
+      `\u914D\u5E03\u7269\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002mdmark \u3092\u3082\u3046\u4E00\u5EA6\u5165\u308C\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  if (kind === "bundle") {
+    try {
+      distCss += `
+${await readFile9(join7(distDir, "viewer.css"), "utf8")}`;
+    } catch (error2) {
+      if (!(error2 instanceof Error && "code" in error2 && error2.code === "ENOENT")) {
+        throw error2;
+      }
+    }
+  }
+  return { distCss, viewer, view, map };
+}
+async function writeHtml(options) {
+  const { file, display, html } = options;
+  try {
+    await mkdir2(dirname9(file), { recursive: true });
+    await writeFile(file, html);
+  } catch (error2) {
+    throw new CliError(
+      `\u66F8\u304D\u8FBC\u3081\u306A\u3044: ${display} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u51FA\u529B\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+}
+async function exportDocument(options) {
+  const { cwd } = options;
+  const loaded = await requireConfig(cwd, options.config);
+  const docFile = resolve11(cwd, options.file);
+  try {
+    await readFile9(docFile);
+  } catch {
+    throw new CliError(
+      `\u6587\u66F8\u304C\u7121\u3044: ${options.file} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const path = normalizePath(toPosix4(relative8(loaded.dir, docFile)));
+  const outFile = options.out ? resolve11(cwd, options.out) : join7(dirname9(docFile), `${basename8(docFile, extname5(docFile))}.html`);
+  const display = options.out ?? toPosix4(relative8(cwd, outFile));
+  const fetchText = cacheFetchText();
+  const hide2 = options.keepTraces !== true;
+  const { payload, embeds, themeCss, warnings } = await prepareEmbeds({
+    loaded,
+    docs: [{ path, file: docFile }],
+    kind: "document",
+    entry: path,
+    out: outFile,
+    fetchText,
+    hideTraces: hide2
+  });
+  const { distCss, viewer, view, map } = await readDistAssets({
+    distDir: options.distDir,
+    kind: "document"
+  });
+  const script = await bundleViewer({
+    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide2 }),
+    baseDir: loaded.dir,
+    fetchText,
+    ...hide2 ? {
+      hideTraces: {
+        keys: (embeds.htmlScripts ?? []).map(({ source }) => source)
+      }
+    } : {}
+  });
+  await writeHtml({
+    file: outFile,
+    display,
+    html: assembleHtml({
+      payload,
+      distCss,
+      themeCss,
+      script,
+      hideTraces: hide2
+    })
+  });
+  return { out: outFile, display, warnings };
+}
+async function runExport(options, io) {
+  const { display, warnings } = await exportDocument({
+    cwd: io.cwd,
+    ...options
+  });
+  for (const warning of warnings) {
+    io.stderr(`\u8B66\u544A: ${warning}`);
+  }
+  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}`);
+  return 0;
+}
+
+// src/cli/build.ts
+function chooseEntry(options) {
+  const { build: build5, first, included, warnings } = options;
+  if (build5.entry === void 0) {
+    return first;
+  }
+  const wanted = normalizePath(build5.entry);
+  if (included.has(wanted)) {
+    return wanted;
+  }
+  warnings.push(
+    `${build5.entry}: build.entry \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B\u6587\u66F8\u306E\u6700\u521D\u306E 1 \u3064\uFF08${first}\uFF09\u3092\u958B\u304D\u307E\u3059\u3002`
+  );
+  return first;
+}
+function glossaryWarnings(build5, included) {
+  return (build5.glossary ?? []).filter((glossary) => !included.has(normalizePath(glossary))).map(
+    (glossary) => `${glossary}: build.glossary \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u7528\u8A9E\u96C6\u306E\u8868\u3092\u98DB\u3070\u3057\u307E\u3059\u3002`
+  );
+}
+function outsideLinkWarnings(docs, included) {
+  return docs.flatMap(
+    (doc) => findOutsideLinks(doc.markdown, doc.path, included).map(
+      (href) => `${doc.path}: \`${href}\` \u3078\u306E\u30EA\u30F3\u30AF\u306F\u307E\u3068\u3081\u305F HTML \u306B\u542B\u307E\u308C\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u305F\u307E\u307E\u306E\u30EA\u30F3\u30AF\u3067\u6B8B\u3057\u307E\u3059\u3002\u307E\u3068\u3081\u308B\u306A\u3089 \`build.include\` \u306B\u8FFD\u52A0\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    )
+  );
+}
+async function requireBuild(loaded) {
+  const build5 = loaded.config.build;
+  if (!build5) {
+    throw new CliError(
+      "build \u304C\u7121\u3044: \u8A2D\u5B9A\u306B build \u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3068 build.out \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  const paths = await collectBuildDocuments(loaded.dir, build5);
+  const first = paths[0];
+  if (first === void 0) {
+    throw new CliError(
+      "0 \u4EF6: build.include \u306B\u8A72\u5F53\u3059\u308B\u6587\u66F8\u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  return { build: build5, paths, first };
+}
+async function buildSite(options) {
+  const loaded = await requireConfig(options.cwd, options.config);
+  const hide2 = options.keepTraces !== true;
+  const { build: build5, paths, first } = await requireBuild(loaded);
+  const included = new Set(paths);
+  const warnings = [];
+  const entry = chooseEntry({ build: build5, first, included, warnings });
+  warnings.push(...glossaryWarnings(build5, included));
+  const out = resolve12(loaded.dir, build5.out);
+  const fetchText = cacheFetchText();
+  const {
+    payload,
+    embeds,
+    themeCss,
+    warnings: embedWarnings
+  } = await prepareEmbeds({
+    loaded,
+    docs: paths.map((path) => ({ path, file: join8(loaded.dir, path) })),
+    kind: "bundle",
+    entry,
+    out,
+    fetchText,
+    hideTraces: hide2
+  });
+  warnings.unshift(...embedWarnings);
+  warnings.push(...outsideLinkWarnings(payload.docs, included));
+  const { distCss, viewer, view, map } = await readDistAssets({
+    distDir: options.distDir,
+    kind: "bundle"
+  });
+  const script = await bundleViewer({
+    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide2 }),
+    baseDir: loaded.dir,
+    fetchText,
+    ...hide2 ? { hideTraces: { keys: htmlScriptKeys(embeds) } } : {}
+  });
+  await writeHtml({
+    file: out,
+    display: build5.out,
+    html: assembleHtml({
+      payload,
+      distCss,
+      themeCss,
+      script,
+      hideTraces: hide2
+    })
+  });
+  return { out, display: build5.out, docs: paths.length, warnings };
+}
+function htmlScriptKeys(embeds) {
+  return (embeds.htmlScripts ?? []).map(({ source }) => source);
+}
+async function runBuild(options, io) {
+  const { display, docs, warnings } = await buildSite({
+    cwd: io.cwd,
+    ...options
+  });
+  for (const warning of warnings) {
+    io.stderr(`\u8B66\u544A: ${warning}`);
+  }
+  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}\uFF08\u6587\u66F8 ${docs} \u4EF6\uFF09`);
+  return 0;
 }
 
 // src/plugin/templates.ts
@@ -80782,6 +83613,31 @@ var whereOf2 = (pointer) => pointer.split("/").slice(1).reduce(
   (path, part) => /^\d+$/.test(part) ? `${path}[${part}]` : path === "" ? part : `${path}.${part}`,
   ""
 );
+var describeKeyError = (error2, base) => {
+  const params = error2.params;
+  const join17 = (key) => [base, String(key)].filter((part) => part !== "").join(".");
+  if (error2.keyword === "required") {
+    return `${join17(params.missingProperty)} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`;
+  }
+  if (error2.keyword === "additionalProperties") {
+    return `${join17(params.additionalProperty)} \u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044`;
+  }
+  return void 0;
+};
+var describeSchemaError = (error2, path) => {
+  const base = whereOf2(error2?.instancePath ?? "");
+  const keyError = error2 === void 0 ? void 0 : describeKeyError(error2, base);
+  if (keyError !== void 0) {
+    return `${path} \u306E ${keyError}\u3002`;
+  }
+  const where = base === "" ? "(\u6700\u4E0A\u4F4D)" : base;
+  const description = error2?.parentSchema?.description ?? "\u7D22\u5F15\u306E\u6C7A\u307E\u308A\u306B\u5408\u3046\u5024\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+  const reason = `\u306E\u5024 ${JSON.stringify(error2?.data)} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002${description}`.replace(
+    /。$/,
+    ""
+  );
+  return `${path} \u306E ${where} ${reason}\u3002`;
+};
 var validateTemplatesIndex = (options) => {
   const { value, path } = options;
   validator2 ??= new import__2.Ajv2020({
@@ -80790,15 +83646,7 @@ var validateTemplatesIndex = (options) => {
     verbose: true
   }).compile(mdmark_templates_schema_default);
   if (!validator2(value)) {
-    const error2 = validator2.errors?.[0];
-    const params = error2?.params ?? {};
-    const base = whereOf2(error2?.instancePath ?? "");
-    const where = error2?.keyword === "required" ? [base, String(params.missingProperty)].filter((part) => part !== "").join(".") : error2?.keyword === "additionalProperties" ? [base, String(params.additionalProperty)].filter((part) => part !== "").join(".") : base === "" ? "(\u6700\u4E0A\u4F4D)" : base;
-    const reason = error2?.keyword === "required" ? "\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044" : error2?.keyword === "additionalProperties" ? "\u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044" : `\u306E\u5024 ${JSON.stringify(error2?.data)} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002${error2?.parentSchema?.description ?? "\u7D22\u5F15\u306E\u6C7A\u307E\u308A\u306B\u5408\u3046\u5024\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"}`.replace(
-      /。$/,
-      ""
-    );
-    return `${path} \u306E ${where} ${reason}\u3002`;
+    return describeSchemaError(validator2.errors?.[0], path);
   }
   const names2 = /* @__PURE__ */ new Set();
   const rows = value.templates;
@@ -80943,6 +83791,42 @@ var addTemplate = async (options) => {
 };
 var isDirectory2 = async (path) => (await stat5(path).catch(() => void 0))?.isDirectory() === true;
 var isFile2 = async (path) => (await stat5(path).catch(() => void 0))?.isFile() === true;
+var findDestination = async (options) => {
+  const { cwd, target } = options;
+  if (target !== void 0 && !await isDirectory2(target)) {
+    throw new CliError(
+      `\u914D\u7F6E\u5148\u306E\u30D5\u30A9\u30EB\u30C0 ${target} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u3042\u308B\u914D\u7F6E\u5148\u3092 dir \u306B\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const [config3] = await findConfigChain({
+    cwd: target ?? cwd,
+    cascade: false,
+    isFile: isFile2
+  });
+  if (target !== void 0) {
+    return { config: config3, destination: target };
+  }
+  if (config3 === void 0) {
+    throw new CliError(
+      `${cwd} \u3068\u305D\u306E\u4E0A\u306E\u30D5\u30A9\u30EB\u30C0\u306B mdmark.config.yaml \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u914D\u7F6E\u5148\u3092 dir \u306B\u6307\u5B9A\u3059\u308B\u304B\u3001mdmark init \u3067\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u3092\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  return { config: config3, destination: dirname10(config3) };
+};
+var copyTemplateCss = async (options) => {
+  const { path, css, overwrite } = options;
+  const existing = await readIfExists(path);
+  if (existing !== void 0 && !existing.equals(css) && !overwrite) {
+    throw new CliError(
+      `${path} \u306F\u65E2\u306B\u3042\u308A\u3001\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u3068\u4E2D\u8EAB\u304C\u9055\u3044\u307E\u3059\u3002\u7F6E\u304D\u63DB\u3048\u308B\u3068\u304D\u306F overwrite \u3092 true \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const replaced2 = existing !== void 0 && !existing.equals(css);
+  if (existing === void 0 || replaced2) {
+    await fs.writeFile(path, css);
+  }
+  return replaced2;
+};
 var applyTemplate = async (options) => {
   const { dir, name, cwd, target, overwrite } = options;
   const index = await readTemplatesIndex(dir);
@@ -80957,17 +83841,7 @@ var applyTemplate = async (options) => {
       `\u914D\u7F6E\u5148\u306E\u30D5\u30A9\u30EB\u30C0 ${target} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u3042\u308B\u914D\u7F6E\u5148\u3092 dir \u306B\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
-  const [config3] = await findConfigChain({
-    cwd: target ?? cwd,
-    cascade: false,
-    isFile: isFile2
-  });
-  if (target === void 0 && config3 === void 0) {
-    throw new CliError(
-      `${cwd} \u3068\u305D\u306E\u4E0A\u306E\u30D5\u30A9\u30EB\u30C0\u306B mdmark.config.yaml \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u914D\u7F6E\u5148\u3092 dir \u306B\u6307\u5B9A\u3059\u308B\u304B\u3001mdmark init \u3067\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u3092\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  const destination = target ?? dirname10(config3);
+  const { config: config3, destination } = await findDestination({ cwd, target });
   const path = join9(destination, `${name}.css`);
   const sourcePath = join9(dir, row.file);
   const css = await readIfExists(sourcePath);
@@ -80976,23 +83850,15 @@ var applyTemplate = async (options) => {
       `\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8 ${name} \u306E CSS ${sourcePath} \u304C\u3042\u308A\u307E\u305B\u3093\u3002add_template \u3067\u3082\u3046\u4E00\u5EA6\u767B\u9332\u3059\u308B\u304B\u3001\u7D22\u5F15\u306E\u884C\u3092\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
-  const existing = await readIfExists(path);
-  if (existing !== void 0 && !existing.equals(css) && !overwrite) {
-    throw new CliError(
-      `${path} \u306F\u65E2\u306B\u3042\u308A\u3001\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u3068\u4E2D\u8EAB\u304C\u9055\u3044\u307E\u3059\u3002\u7F6E\u304D\u63DB\u3048\u308B\u3068\u304D\u306F overwrite \u3092 true \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  const replaced = existing !== void 0 && !existing.equals(css);
-  if (existing === void 0 || replaced) {
-    await fs.writeFile(path, css);
-  }
+  const replaced2 = await copyTemplateCss({ path, css, overwrite });
   const theme = config3 === void 0 ? void 0 : `./${relative9(dirname10(config3), path).split("\\").join("/")}`;
-  return { path, theme, replaced };
+  return { path, theme, replaced: replaced2 };
 };
 
 // src/plugin/tools.ts
 var PROJECT_DIR_ARG = "project_dir";
 var PROJECT_DIR_ERROR_MESSAGE = "\u5F15\u6570 project_dir \u304C\u7121\u3044\u304B\u3001\u3042\u308B\u4F5C\u696D\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u7D76\u5BFE\u30D1\u30B9\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002mdmark \u306E\u30D7\u30E9\u30B0\u30A4\u30F3\u3092\u5165\u308C\u305F Claude Code \u306E\u30BB\u30C3\u30B7\u30E7\u30F3\u304B\u3089\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002";
+var KEEP_TRACES_DESCRIPTION = "true \u306E\u3068\u304D\u3001\u958B\u767A\u7528\u306B mdmark \u306E\u540D\u524D\u30FBHTML \u306E\u30B3\u30E1\u30F3\u30C8\u30FB\u30D0\u30FC\u30B8\u30E7\u30F3\u3092\u6B8B\u3057\u3066\u66F8\u304D\u51FA\u3059\u3002\u7701\u304F\u3068 mdmark \u3092\u4F7F\u7528\u3057\u3066\u3044\u308B\u3053\u3068\u3092\u96A0\u3057\u3066\u66F8\u304D\u51FA\u3059";
 var CONFIG_DESCRIPTION = "\u4F7F\u7528\u3059\u308B\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u3002\u7701\u304F\u3068\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u306E\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u4E0A\u3078 mdmark.config.yaml \u3092\u63A2\u3059";
 async function runExportHtml(args, context) {
   const { out, warnings } = await exportDocument({
@@ -81000,7 +83866,8 @@ async function runExportHtml(args, context) {
     file: args.file,
     out: args.out,
     config: args.config,
-    distDir: context.distDir
+    distDir: context.distDir,
+    keepTraces: args.keep_traces
   });
   return { json: { out, warnings } };
 }
@@ -81008,7 +83875,8 @@ async function runBuildSite(args, context) {
   const { out, docs, warnings } = await buildSite({
     cwd: context.projectDir,
     config: args.config,
-    distDir: context.distDir
+    distDir: context.distDir,
+    keepTraces: args.keep_traces
   });
   return { json: { out, docs, warnings } };
 }
@@ -81071,7 +83939,8 @@ var TOOLS = [
           description: "\u66F8\u304D\u51FA\u3059 Markdown \u306E\u30D1\u30B9"
         },
         out: { type: "string", description: "\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9" },
-        config: { type: "string", description: CONFIG_DESCRIPTION }
+        config: { type: "string", description: CONFIG_DESCRIPTION },
+        keep_traces: { type: "boolean", description: KEEP_TRACES_DESCRIPTION }
       },
       required: ["file"],
       additionalProperties: false
@@ -81087,7 +83956,8 @@ var TOOLS = [
     inputSchema: {
       type: "object",
       properties: {
-        config: { type: "string", description: CONFIG_DESCRIPTION }
+        config: { type: "string", description: CONFIG_DESCRIPTION },
+        keep_traces: { type: "boolean", description: KEEP_TRACES_DESCRIPTION }
       },
       required: [],
       additionalProperties: false
@@ -81343,6 +84213,19 @@ var readUnitName = (settings) => {
   const unit = readServeValue(settings, "systemdUnit");
   return typeof unit === "string" ? unit : DEFAULT_UNIT_NAME;
 };
+var parseYaml = (text2, path) => {
+  try {
+    return parse7(text2);
+  } catch (error2) {
+    if (error2 instanceof YAMLParseError5) {
+      const line = error2.linePos?.[0].line ?? 1;
+      throw new SetupError(
+        `${path} \u306E ${line} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002${error2.message.split("\n")[0] ?? ""}`
+      );
+    }
+    throw error2;
+  }
+};
 var readYamlFile = async (options) => {
   let text2;
   try {
@@ -81353,18 +84236,7 @@ var readYamlFile = async (options) => {
     }
     throw error2;
   }
-  let raw;
-  try {
-    raw = parse7(text2);
-  } catch (error2) {
-    if (error2 instanceof YAMLParseError5) {
-      const line = error2.linePos?.[0].line ?? 1;
-      throw new SetupError(
-        `${options.path} \u306E ${line} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002${error2.message.split("\n")[0] ?? ""}`
-      );
-    }
-    throw error2;
-  }
+  const raw = parseYaml(text2, options.path);
   if (raw === null || raw === void 0) {
     return { text: text2, raw: {} };
   }
@@ -81541,35 +84413,46 @@ var VERSION_LINE_PATTERN = /^version: .*$/m;
 function reasonOf2(error2) {
   return error2 instanceof Error ? error2.message : String(error2);
 }
+var writeError = (path, error2) => new CliError(
+  `${path} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002\u914D\u7F6E\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+);
+async function placeTemplate(options) {
+  const { target, path, content } = options;
+  try {
+    await mkdir4(dirname11(target), { recursive: true });
+  } catch (error2) {
+    throw writeError(path, error2);
+  }
+  try {
+    await writeFile3(target, content, { flag: "wx" });
+    return true;
+  } catch (error2) {
+    if (error2 instanceof Error && "code" in error2 && error2.code === "EEXIST") {
+      return false;
+    }
+    throw writeError(path, error2);
+  }
+}
 async function runInit(options, io) {
   const { dir, js, templatesDir: templatesDir2, version: version2 } = options;
   const wanted = js ? "js" : "ts";
-  for (const template of TEMPLATE_FILES) {
-    if (template.language !== void 0 && template.language !== wanted) {
-      continue;
-    }
-    const target = join12(dir, template.path);
+  const templates = TEMPLATE_FILES.filter(
+    (template) => template.language === void 0 || template.language === wanted
+  );
+  for (const template of templates) {
     const source = await readFile12(join12(templatesDir2, template.source), "utf8");
-    const content = template.path === CONFIG_TEMPLATE ? source.replace(VERSION_LINE_PATTERN, `version: ${version2}`) : source;
-    try {
-      await mkdir4(dirname11(target), { recursive: true });
-    } catch (error2) {
-      throw new CliError(
-        `${template.path} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002\u914D\u7F6E\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-    try {
-      await writeFile3(target, content, { flag: "wx" });
-      io.stdout(`\u914D\u7F6E\u3057\u305F: ${template.path}`);
-    } catch (error2) {
-      if (error2 instanceof Error && "code" in error2 && error2.code === "EEXIST") {
-        io.stdout(`\u914D\u7F6E\u3057\u306A\u304B\u3063\u305F\uFF08\u65E2\u306B\u3042\u308B\uFF09: ${template.path}`);
-        continue;
-      }
-      throw new CliError(
-        `${template.path} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002\u914D\u7F6E\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
+    const content = template.path === CONFIG_TEMPLATE ? source.replace(
+      VERSION_LINE_PATTERN,
+      `version: ${localVersionOf(version2)}`
+    ) : source;
+    const placed = await placeTemplate({
+      target: join12(dir, template.path),
+      path: template.path,
+      content
+    });
+    io.stdout(
+      placed ? `\u914D\u7F6E\u3057\u305F: ${template.path}` : `\u914D\u7F6E\u3057\u306A\u304B\u3063\u305F\uFF08\u65E2\u306B\u3042\u308B\uFF09: ${template.path}`
+    );
   }
   return 0;
 }
@@ -81685,12 +84568,22 @@ async function restoreBackup(options) {
 }
 
 // src/cli/changelog.ts
-var CHANGELOG_FILE = "docs/guide/\u5909\u66F4\u5C65\u6B74.md";
+var CHANGELOG_FILE = "docs/guide/\u5909\u66F4\u5C65\u6B74.mark.md";
 var HEADER_PATTERN = /^\|\s*バージョン\s*\|\s*PR\s*\|\s*変更\s*\|\s*$/;
 var LINK_TEXT_PATTERN = /^\[([^\]]*)\]/;
 function splitCells(line) {
   const body = line.trim().replace(/^\|/, "").replace(/\|$/, "");
   return body.split(/(?<!\\)\|/).map((cell) => cell.trim());
+}
+function rowOf(line) {
+  const [version2 = "", pr = "", change = ""] = splitCells(line);
+  if (parseVersion(version2) === void 0) {
+    return void 0;
+  }
+  return { version: version2, pr: LINK_TEXT_PATTERN.exec(pr)?.[1] ?? pr, change };
+}
+function inRange(version2, range) {
+  return compareVersions(version2, range.from) > 0 && compareVersions(version2, range.to) <= 0;
 }
 function changelogRows(options) {
   const lines = options.text.split("\n");
@@ -81703,16 +84596,9 @@ function changelogRows(options) {
     if (!line.trim().startsWith("|")) {
       break;
     }
-    const [version2 = "", pr = "", change = ""] = splitCells(line);
-    if (parseVersion(version2) === void 0) {
-      continue;
-    }
-    if (compareVersions(version2, options.from) > 0 && compareVersions(version2, options.to) <= 0) {
-      rows.push({
-        version: version2,
-        pr: LINK_TEXT_PATTERN.exec(pr)?.[1] ?? pr,
-        change
-      });
+    const row = rowOf(line);
+    if (row && inRange(row.version, options)) {
+      rows.push(row);
     }
   }
   return rows;
@@ -81758,6 +84644,110 @@ function reasonOf4(error2) {
 function isFilled2(value) {
   return typeof value === "string" && value !== "";
 }
+function checkSetDefault(check2) {
+  const { item, where, problem, requireString, requireStepFile } = check2;
+  requireStepFile();
+  requireString("key");
+  const hasValue = "value" in item;
+  const hasAsk = item.ask !== void 0;
+  if (hasValue === hasAsk) {
+    problem(
+      `${where}.value`,
+      "value \u304B ask \u306E\u3069\u3061\u3089\u304B 1 \u3064\u3060\u3051\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  if (hasAsk) {
+    requireString("ask");
+  }
+}
+function checkMapValues2(check2) {
+  const { item, where, problem, requireString, requireStepFile } = check2;
+  requireStepFile();
+  requireString("key");
+  const mapping = item.mapping;
+  if (!isRecord8(mapping)) {
+    problem(
+      `${where}.mapping`,
+      "mapping \u306F\u5143\u306E\u5024\u3068\u65B0\u3057\u3044\u5024\u306E\u8868\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+    return;
+  }
+  for (const [from, to] of Object.entries(mapping)) {
+    if (typeof to === "string" && Object.hasOwn(mapping, to)) {
+      problem(
+        `${where}.mapping`,
+        `${from} \u306E\u65B0\u3057\u3044\u5024 ${to} \u304C\u5143\u306E\u5024\u306B\u3082\u3042\u308A\u307E\u3059\u3002\u3082\u3046\u4E00\u5EA6\u9069\u7528\u3057\u3066\u3082\u5909\u308F\u3089\u306A\u3044\u3088\u3046\u3001\u65B0\u3057\u3044\u5024\u306F\u5143\u306E\u5024\u306B\u3057\u306A\u3044\u3067\u304F\u3060\u3055\u3044\u3002`
+      );
+    }
+  }
+}
+function checkReplaceMark(check2) {
+  const { item, where, problem, requireString } = check2;
+  requireString("from");
+  requireString("to");
+  if (isFilled2(item.from) && isFilled2(item.to) && item.to.includes(item.from)) {
+    problem(
+      `${where}.to`,
+      "to \u304C from \u3092\u542B\u307F\u307E\u3059\u3002\u3082\u3046\u4E00\u5EA6\u9069\u7528\u3057\u3066\u3082\u5909\u308F\u3089\u306A\u3044\u3088\u3046\u3001to \u306F from \u3092\u542B\u307E\u306A\u3044\u3088\u3046\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+}
+function checkCall(check2) {
+  const { item, where, problem, requireString } = check2;
+  requireString("script");
+  const script = item.script;
+  if (isFilled2(script) && !SCRIPT_EXTENSIONS.some((extension) => script.endsWith(extension))) {
+    problem(
+      `${where}.script`,
+      `script \u306E\u62E1\u5F35\u5B50\u306F ${SCRIPT_EXTENSIONS.join(" \u304B ")} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002TypeScript \u306F JavaScript \u306B\u3057\u305F\u3082\u306E\u3092\u914D\u7F6E\u3057\u307E\u3059\u3002`
+    );
+  }
+  const files = item.files;
+  const valid = Array.isArray(files) && files.length > 0 && files.every(
+    (file) => typeof file === "string" && CALL_FILES.includes(file)
+  );
+  if (!valid) {
+    problem(
+      `${where}.files`,
+      "files \u306F config\u30FBindex\u30FBdocuments \u306E\u3046\u3061 1 \u3064\u4EE5\u4E0A\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+}
+var STEP_CHECKS = {
+  rename_key: ({ requireString, requireStepFile }) => {
+    requireStepFile();
+    requireString("from");
+    requireString("to");
+  },
+  set_default: checkSetDefault,
+  map_values: checkMapValues2,
+  replace_mark: checkReplaceMark,
+  call: checkCall
+};
+function checkCommonKeys(check2, op) {
+  const { item, where, problem } = check2;
+  if (!isFilled2(item.description)) {
+    problem(
+      `${where}.description`,
+      "description \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  if (item.destructive !== void 0 && typeof item.destructive !== "boolean") {
+    problem(
+      `${where}.destructive`,
+      "destructive \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  const allowed = [...COMMON_KEYS, ...STEP_KEYS2[op]];
+  for (const key of Object.keys(item)) {
+    if (!allowed.includes(key)) {
+      problem(
+        `${where}.${key}`,
+        `${op} \u304C\u6301\u305F\u306A\u3044\u30AD\u30FC\u3067\u3059\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+    }
+  }
+}
 function validateStep(item, where, problem) {
   if (!isRecord8(item)) {
     problem(where, "\u624B\u9806\u306F\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
@@ -81772,112 +84762,29 @@ function validateStep(item, where, problem) {
     return;
   }
   const kind = op;
-  if (!isFilled2(item.description)) {
-    problem(
-      `${where}.description`,
-      "description \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  if (item.destructive !== void 0 && typeof item.destructive !== "boolean") {
-    problem(
-      `${where}.destructive`,
-      "destructive \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  const allowed = [...COMMON_KEYS, ...STEP_KEYS2[kind]];
-  for (const key of Object.keys(item)) {
-    if (!allowed.includes(key)) {
-      problem(
-        `${where}.${key}`,
-        `${op} \u304C\u6301\u305F\u306A\u3044\u30AD\u30FC\u3067\u3059\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-  }
-  const requireString = (key) => {
-    if (!isFilled2(item[key])) {
-      problem(`${where}.${key}`, `${key} \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
+  const check2 = {
+    item,
+    where,
+    problem,
+    requireString: (key) => {
+      if (!isFilled2(item[key])) {
+        problem(
+          `${where}.${key}`,
+          `${key} \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        );
+      }
+    },
+    requireStepFile: () => {
+      if (typeof item.file !== "string" || !STEP_FILES.includes(item.file)) {
+        problem(
+          `${where}.file`,
+          "file \u306F config \u304B index \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+        );
+      }
     }
   };
-  const requireStepFile = () => {
-    if (typeof item.file !== "string" || !STEP_FILES.includes(item.file)) {
-      problem(`${where}.file`, "file \u306F config \u304B index \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-    }
-  };
-  switch (kind) {
-    case "rename_key":
-      requireStepFile();
-      requireString("from");
-      requireString("to");
-      break;
-    case "set_default": {
-      requireStepFile();
-      requireString("key");
-      const hasValue = "value" in item;
-      const hasAsk = item.ask !== void 0;
-      if (hasValue === hasAsk) {
-        problem(
-          `${where}.value`,
-          "value \u304B ask \u306E\u3069\u3061\u3089\u304B 1 \u3064\u3060\u3051\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        );
-      }
-      if (hasAsk) {
-        requireString("ask");
-      }
-      break;
-    }
-    case "map_values": {
-      requireStepFile();
-      requireString("key");
-      const mapping = item.mapping;
-      if (!isRecord8(mapping)) {
-        problem(
-          `${where}.mapping`,
-          "mapping \u306F\u5143\u306E\u5024\u3068\u65B0\u3057\u3044\u5024\u306E\u8868\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        );
-        break;
-      }
-      for (const [from, to] of Object.entries(mapping)) {
-        if (typeof to === "string" && Object.hasOwn(mapping, to)) {
-          problem(
-            `${where}.mapping`,
-            `${from} \u306E\u65B0\u3057\u3044\u5024 ${to} \u304C\u5143\u306E\u5024\u306B\u3082\u3042\u308A\u307E\u3059\u3002\u3082\u3046\u4E00\u5EA6\u9069\u7528\u3057\u3066\u3082\u5909\u308F\u3089\u306A\u3044\u3088\u3046\u3001\u65B0\u3057\u3044\u5024\u306F\u5143\u306E\u5024\u306B\u3057\u306A\u3044\u3067\u304F\u3060\u3055\u3044\u3002`
-          );
-        }
-      }
-      break;
-    }
-    case "replace_mark":
-      requireString("from");
-      requireString("to");
-      if (isFilled2(item.from) && isFilled2(item.to) && item.to.includes(item.from)) {
-        problem(
-          `${where}.to`,
-          "to \u304C from \u3092\u542B\u307F\u307E\u3059\u3002\u3082\u3046\u4E00\u5EA6\u9069\u7528\u3057\u3066\u3082\u5909\u308F\u3089\u306A\u3044\u3088\u3046\u3001to \u306F from \u3092\u542B\u307E\u306A\u3044\u3088\u3046\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        );
-      }
-      break;
-    case "call": {
-      requireString("script");
-      if (isFilled2(item.script) && !SCRIPT_EXTENSIONS.some(
-        (extension) => item.script.endsWith(extension)
-      )) {
-        problem(
-          `${where}.script`,
-          `script \u306E\u62E1\u5F35\u5B50\u306F ${SCRIPT_EXTENSIONS.join(" \u304B ")} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002TypeScript \u306F JavaScript \u306B\u3057\u305F\u3082\u306E\u3092\u914D\u7F6E\u3057\u307E\u3059\u3002`
-        );
-      }
-      const files = item.files;
-      if (!Array.isArray(files) || files.length === 0 || !files.every(
-        (file) => typeof file === "string" && CALL_FILES.includes(file)
-      )) {
-        problem(
-          `${where}.files`,
-          "files \u306F config\u30FBindex\u30FBdocuments \u306E\u3046\u3061 1 \u3064\u4EE5\u4E0A\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        );
-      }
-      break;
-    }
-  }
+  checkCommonKeys(check2, kind);
+  STEP_CHECKS[kind](check2);
 }
 function validateSteps(raw, file) {
   const problems = [];
@@ -82035,36 +84942,29 @@ function mapValues(doc, key, mapping) {
 function replaceMark(text2, from, to) {
   return text2.split(from).join(to);
 }
+function stepTouches(step) {
+  switch (step.op) {
+    case "replace_mark":
+      return { index: false, documents: true };
+    case "call":
+      return {
+        index: step.files.includes("index"),
+        documents: step.files.includes("documents")
+      };
+    default:
+      return { index: step.file === "index", documents: false };
+  }
+}
 function stepFiles(versions, target) {
   const files = /* @__PURE__ */ new Set([target.configPath]);
-  const addIndex = () => {
-    if (target.indexPath !== void 0) {
+  for (const step of versions.flatMap(({ steps }) => steps)) {
+    const touches = stepTouches(step);
+    if (touches.index && target.indexPath !== void 0) {
       files.add(target.indexPath);
     }
-  };
-  const addDocuments = () => {
-    for (const document2 of target.documents) {
-      files.add(document2);
-    }
-  };
-  for (const { steps } of versions) {
-    for (const step of steps) {
-      switch (step.op) {
-        case "replace_mark":
-          addDocuments();
-          break;
-        case "call":
-          if (step.files.includes("index")) {
-            addIndex();
-          }
-          if (step.files.includes("documents")) {
-            addDocuments();
-          }
-          break;
-        default:
-          if (step.file === "index") {
-            addIndex();
-          }
+    if (touches.documents) {
+      for (const document2 of target.documents) {
+        files.add(document2);
       }
     }
   }
@@ -82085,57 +84985,72 @@ async function editYaml(path, edit) {
 function outputLines(output) {
   return typeof output === "string" ? output.split(/\r?\n/).filter((line) => line.trim() !== "") : [];
 }
+async function replaceDocumentMarks(step, documents) {
+  for (const path of documents) {
+    const text2 = await readFile13(path, "utf8");
+    const replaced2 = replaceMark(text2, step.from, step.to);
+    if (replaced2 !== text2) {
+      await writeFile5(path, replaced2);
+    }
+  }
+}
+async function runCallStep(options) {
+  const { step, version: version2, target, onStderr } = options;
+  const script = resolve14(version2.dir, step.script);
+  try {
+    const { stdout } = await execFileAsync2(
+      process.execPath,
+      [script, "--config", target.configPath],
+      { cwd: dirname13(target.configPath) }
+    );
+    return outputLines(stdout);
+  } catch (error2) {
+    onStderr(isRecord8(error2) ? outputLines(error2.stderr) : []);
+    const code2 = isRecord8(error2) && typeof error2.code === "number" ? `\u7D42\u4E86\u30B3\u30FC\u30C9 ${error2.code} \u3067\u7D42\u308F\u308A\u307E\u3057\u305F` : reasonOf4(error2);
+    throw new Error(`\u30B9\u30AF\u30EA\u30D7\u30C8 ${step.script} \u304C${code2}`);
+  }
+}
+async function editStepYaml(step, target) {
+  const path = step.file === "config" ? target.configPath : target.indexPath;
+  if (path === void 0) {
+    return;
+  }
+  await editYaml(path, (doc) => {
+    switch (step.op) {
+      case "rename_key":
+        return renameKey(doc, step.from, step.to);
+      case "map_values":
+        return mapValues(doc, step.key, step.mapping);
+      case "set_default": {
+        if (step.ask === void 0) {
+          return setDefault(doc, step.key, step.value);
+        }
+        const answer = target.answers.get(step);
+        return answer === void 0 ? false : setDefault(doc, step.key, parse8(answer));
+      }
+    }
+  });
+}
 async function applyStep(options) {
   const { step, version: version2, target } = options;
   let stderrLines = [];
   try {
     switch (step.op) {
       case "replace_mark":
-        for (const path of target.documents) {
-          const text2 = await readFile13(path, "utf8");
-          const replaced = replaceMark(text2, step.from, step.to);
-          if (replaced !== text2) {
-            await writeFile5(path, replaced);
-          }
-        }
+        await replaceDocumentMarks(step, target.documents);
         return [];
-      case "call": {
-        const script = resolve14(version2.dir, step.script);
-        try {
-          const { stdout } = await execFileAsync2(
-            process.execPath,
-            [script, "--config", target.configPath],
-            { cwd: dirname13(target.configPath) }
-          );
-          return outputLines(stdout);
-        } catch (error2) {
-          stderrLines = isRecord8(error2) ? outputLines(error2.stderr) : [];
-          const code2 = isRecord8(error2) && typeof error2.code === "number" ? `\u7D42\u4E86\u30B3\u30FC\u30C9 ${error2.code} \u3067\u7D42\u308F\u308A\u307E\u3057\u305F` : reasonOf4(error2);
-          throw new Error(`\u30B9\u30AF\u30EA\u30D7\u30C8 ${step.script} \u304C${code2}`);
-        }
-      }
-      default: {
-        const path = step.file === "config" ? target.configPath : target.indexPath;
-        if (path === void 0) {
-          return [];
-        }
-        await editYaml(path, (doc) => {
-          switch (step.op) {
-            case "rename_key":
-              return renameKey(doc, step.from, step.to);
-            case "map_values":
-              return mapValues(doc, step.key, step.mapping);
-            case "set_default": {
-              if (step.ask === void 0) {
-                return setDefault(doc, step.key, step.value);
-              }
-              const answer = target.answers.get(step);
-              return answer === void 0 ? false : setDefault(doc, step.key, parse8(answer));
-            }
+      case "call":
+        return await runCallStep({
+          step,
+          version: version2,
+          target,
+          onStderr: (lines) => {
+            stderrLines = lines;
           }
         });
+      default:
+        await editStepYaml(step, target);
         return [];
-      }
     }
   } catch (error2) {
     throw new CliError(
@@ -82194,17 +85109,11 @@ async function writeConfigVersion(configPath, version2) {
   }
   await writeFile6(configPath, doc.toString({ flowCollectionPadding: false }));
 }
-async function createTarget(options) {
-  const { configPath, raw } = options;
-  const dir = dirname14(configPath);
-  const file = basename9(configPath);
-  const { config: config3 } = validateConfig(raw, file);
-  const loaded = { path: configPath, dir, config: config3 };
+async function targetDocuments(loaded) {
+  const { dir, config: config3 } = loaded;
   const documents = /* @__PURE__ */ new Set();
-  if (config3.build) {
-    for (const path of await collectBuildDocuments(dir, config3.build)) {
-      documents.add(resolve15(dir, path));
-    }
+  for (const path of config3.build ? await collectBuildDocuments(dir, config3.build) : []) {
+    documents.add(resolve15(dir, path));
   }
   try {
     const read = await readIndexWithDocuments(loaded);
@@ -82216,11 +85125,24 @@ async function createTarget(options) {
       throw error2;
     }
   }
-  const indexPath = config3.index === void 0 ? void 0 : resolve15(dir, config3.index);
+  return [...documents];
+}
+async function existingIndex(dir, index) {
+  if (index === void 0) {
+    return void 0;
+  }
+  const indexPath = resolve15(dir, index);
+  return await isFile4(indexPath) ? indexPath : void 0;
+}
+async function createTarget(options) {
+  const { configPath, raw } = options;
+  const dir = dirname14(configPath);
+  const file = basename9(configPath);
+  const { config: config3 } = validateConfig(raw, file);
   return {
     configPath,
-    indexPath: indexPath !== void 0 && await isFile4(indexPath) ? indexPath : void 0,
-    documents: [...documents],
+    indexPath: await existingIndex(dir, config3.index),
+    documents: await targetDocuments({ path: configPath, dir, config: config3 }),
     answers: /* @__PURE__ */ new Map()
   };
 }
@@ -82252,31 +85174,33 @@ async function printPlan(options) {
     }
   }
 }
+async function askValue(options) {
+  const { step, target, ask } = options;
+  if (step.op !== "set_default" || step.ask === void 0) {
+    return;
+  }
+  const path = step.file === "config" ? target.configPath : target.indexPath;
+  if (path === void 0) {
+    return;
+  }
+  const doc = parseDocument5(await readFile14(path, "utf8"));
+  if (doc.hasIn(step.key.split("."))) {
+    return;
+  }
+  const answer = await askRequired(ask, step.ask);
+  try {
+    parse9(answer);
+  } catch {
+    throw new CliError(
+      `\u300C${step.ask}\u300D\u306E\u56DE\u7B54 ${answer} \u3092 YAML \u306E\u5024\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u4F55\u3082\u66F8\u304D\u63DB\u3048\u3066\u3044\u307E\u305B\u3093\u3002`
+    );
+  }
+  target.answers.set(step, answer);
+}
 async function askValues(options) {
   const { versions, target, ask } = options;
-  for (const { steps } of versions) {
-    for (const step of steps) {
-      if (step.op !== "set_default" || step.ask === void 0) {
-        continue;
-      }
-      const path = step.file === "config" ? target.configPath : target.indexPath;
-      if (path === void 0) {
-        continue;
-      }
-      const doc = parseDocument5(await readFile14(path, "utf8"));
-      if (doc.hasIn(step.key.split("."))) {
-        continue;
-      }
-      const answer = await askRequired(ask, step.ask);
-      try {
-        parse9(answer);
-      } catch {
-        throw new CliError(
-          `\u300C${step.ask}\u300D\u306E\u56DE\u7B54 ${answer} \u3092 YAML \u306E\u5024\u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u4F55\u3082\u66F8\u304D\u63DB\u3048\u3066\u3044\u307E\u305B\u3093\u3002`
-        );
-      }
-      target.answers.set(step, answer);
-    }
+  for (const step of versions.flatMap(({ steps }) => steps)) {
+    await askValue({ step, target, ask });
   }
 }
 async function collectSettingsIssues(path) {
@@ -82287,17 +85211,106 @@ async function collectSettingsIssues(path) {
     ...validateSettingsKeys(raw, file)
   ];
 }
-async function runUpgrade(options, io, ask) {
+async function upgradeConfigPath(options, cwd) {
   if (options.settings && options.config !== void 0) {
     throw new CliError("--config \u3068 --settings \u306F\u4E00\u7DD2\u306B\u6307\u5B9A\u3067\u304D\u307E\u305B\u3093\u3002");
   }
-  const configPath = options.settings ? resolveSettingsPath({ env: process.env, home: homedir5() }) : await findConfigFile(io.cwd, options.config);
+  return options.settings ? resolveSettingsPath({ env: process.env, home: homedir5() }) : await findConfigFile(cwd, options.config);
+}
+async function localVersion(raw, ask) {
+  const value = isRecord9(raw) && raw.version !== void 0 ? raw.version : await askRequired(ask, VERSION_QUESTION);
+  if (value === DEVELOP_VERSION) {
+    throw new CliError(
+      `\u624B\u5143\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u304C ${DEVELOP_VERSION} \u306E\u305F\u3081\u3001\u79FB\u884C\u306E\u624B\u9806\u3092\u9078\u3079\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E version \u306B\u4ECA\u306E\u6587\u66F8\u304C\u5408\u308F\u305B\u3066\u3042\u308B\u30D0\u30FC\u30B8\u30E7\u30F3\u3092 v{MAJOR}.{MINOR}.{PATCH} \u3067\u8A18\u8F09\u3057\u3066\u304B\u3089\u3001\u3082\u3046\u4E00\u5EA6\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  return assertVersion(value);
+}
+async function assertNoUnreleasedSteps(packageDir, cliVersion2) {
+  if (!isDevelopBuild(cliVersion2)) {
+    return;
+  }
+  const text2 = await readFile14(
+    join15(packageDir, "migrations", "next", "steps.yaml"),
+    "utf8"
+  ).catch(() => void 0);
+  const steps = text2 === void 0 ? void 0 : parse9(text2)?.steps;
+  if (Array.isArray(steps) && steps.length > 0) {
+    throw new CliError(
+      `\u3053\u306E develop \u306E\u30D3\u30EB\u30C9\uFF08${cliVersion2}\uFF09\u306F\u3001\u51FA\u3057\u3066\u3044\u306A\u3044\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u79FB\u884C\u306E\u624B\u9806\u3092\u6301\u3061\u307E\u3059\u3002npx github:shuhei1101/mdmark#${releaseVersionOf(cliVersion2)} upgrade \u306E\u3088\u3046\u306B\u3001\u30BF\u30B0\u3092\u6307\u5B9A\u3057\u305F mdmark \u3067\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+}
+function settingsVersions(versions) {
+  return versions.map((version2) => ({
+    ...version2,
+    steps: version2.steps.filter(
+      (step) => step.op === "call" ? step.files.length > 0 && step.files.every((file) => file === "config") : "file" in step && step.file === "config"
+    )
+  }));
+}
+async function confirmDestructive(options) {
+  const { steps, yes, ask } = options;
+  if (yes || !steps.some((step) => step.destructive === true)) {
+    return;
+  }
+  const answer = await askRequired(ask, CONFIRM_QUESTION);
+  if (answer !== CONFIRM_ANSWER) {
+    throw new CliError(
+      "\u4F55\u3082\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093\u3002\u78BA\u8A8D\u305B\u305A\u306B\u9069\u7528\u3059\u308B\u3068\u304D\u306F --yes \u3092\u4ED8\u3051\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+}
+async function applyVersions(options) {
+  const { versions, target, io } = options;
+  for (const version2 of versions) {
+    for (const step of version2.steps) {
+      const lines = await applyStep({ step, version: version2, target });
+      if (lines.length === 0) {
+        continue;
+      }
+      io.stdout(`${version2.version} \u306E\u624B\u9806\u300C${step.description}\u300D:`);
+      for (const line of lines) {
+        io.stdout(`  ${line}`);
+      }
+    }
+  }
+}
+async function upgradeIssues(configPath, settings) {
+  if (settings) {
+    return collectSettingsIssues(configPath);
+  }
+  const issues = await collectCheckIssues(configPath, { unknownMarks: false });
+  return issues.filter((issue2) => issue2.kind !== "legacy_mark");
+}
+async function applyAndCheck(options) {
+  const { versions, target, settings, backup, io } = options;
+  try {
+    await applyVersions({ versions, target, io });
+    const issues = await upgradeIssues(target.configPath, settings);
+    if (issues.length === 0) {
+      return true;
+    }
+    await restoreBackup(backup);
+    for (const issue2 of issues) {
+      io.stderr(formatCheckIssue(issue2));
+    }
+    io.stderr(
+      `\u70B9\u691C\u306E\u305A\u308C\u304C ${issues.length} \u4EF6\u3042\u308B\u305F\u3081\u3001\u30B3\u30D4\u30FC\u304B\u3089\u623B\u3057\u307E\u3057\u305F\u3002\u30D0\u30FC\u30B8\u30E7\u30F3\u306F\u66F8\u304D\u63DB\u3048\u3066\u3044\u307E\u305B\u3093\u3002`
+    );
+    return false;
+  } catch (error2) {
+    await restoreBackup(backup);
+    throw error2;
+  }
+}
+async function runUpgrade(options, io, ask) {
+  const configPath = await upgradeConfigPath(options, io.cwd);
   const loaded = await loadConfig(configPath);
   const dir = loaded.dir;
-  const local = assertVersion(
-    isRecord9(loaded.raw) && loaded.raw.version !== void 0 ? loaded.raw.version : await askRequired(ask, VERSION_QUESTION)
-  );
-  const target = options.cliVersion;
+  const local = await localVersion(loaded.raw, ask);
+  await assertNoUnreleasedSteps(options.packageDir, options.cliVersion);
+  const target = releaseVersionOf(options.cliVersion);
   io.stdout(`\u624B\u5143\u306E\u30D0\u30FC\u30B8\u30E7\u30F3: ${local}`);
   io.stdout(`\u76EE\u6A19\u306E\u30D0\u30FC\u30B8\u30E7\u30F3: ${target}`);
   const order = compareVersions(local, target);
@@ -82317,12 +85330,7 @@ async function runUpgrade(options, io, ask) {
     from: local,
     to: target
   });
-  const versions = options.settings ? loadedVersions.map((version2) => ({
-    ...version2,
-    steps: version2.steps.filter(
-      (step) => step.op === "call" ? step.files.length > 0 && step.files.every((file) => file === "config") : "file" in step && step.file === "config"
-    )
-  })) : loadedVersions;
+  const versions = options.settings ? settingsVersions(loadedVersions) : loadedVersions;
   const migrationTarget = options.settings ? { configPath, indexPath: void 0, documents: [], answers: /* @__PURE__ */ new Map() } : await createTarget({ configPath, raw: loaded.raw });
   await printPlan({
     versions,
@@ -82336,52 +85344,25 @@ async function runUpgrade(options, io, ask) {
     return 0;
   }
   await askValues({ versions, target: migrationTarget, ask });
-  const steps = versions.flatMap((version2) => version2.steps);
-  if (!options.yes && steps.some((step) => step.destructive === true)) {
-    const answer = await askRequired(ask, CONFIRM_QUESTION);
-    if (answer !== CONFIRM_ANSWER) {
-      throw new CliError(
-        "\u4F55\u3082\u9069\u7528\u3057\u3066\u3044\u307E\u305B\u3093\u3002\u78BA\u8A8D\u305B\u305A\u306B\u9069\u7528\u3059\u308B\u3068\u304D\u306F --yes \u3092\u4ED8\u3051\u3066\u304F\u3060\u3055\u3044\u3002"
-      );
-    }
-  }
+  await confirmDestructive({
+    steps: versions.flatMap((version2) => version2.steps),
+    yes: options.yes,
+    ask
+  });
   const backupDir = await takeBackup({
     dir,
     files: stepFiles(versions, migrationTarget),
     now: options.now
   });
-  try {
-    for (const version2 of versions) {
-      for (const step of version2.steps) {
-        const lines = await applyStep({
-          step,
-          version: version2,
-          target: migrationTarget
-        });
-        if (lines.length > 0) {
-          io.stdout(`${version2.version} \u306E\u624B\u9806\u300C${step.description}\u300D:`);
-          for (const line of lines) {
-            io.stdout(`  ${line}`);
-          }
-        }
-      }
-    }
-    const issues = options.settings ? await collectSettingsIssues(configPath) : (await collectCheckIssues(configPath, {
-      unknownMarks: false
-    })).filter((issue2) => issue2.kind !== "legacy_mark");
-    if (issues.length > 0) {
-      await restoreBackup({ dir, backupDir });
-      for (const issue2 of issues) {
-        io.stderr(formatCheckIssue(issue2));
-      }
-      io.stderr(
-        `\u70B9\u691C\u306E\u305A\u308C\u304C ${issues.length} \u4EF6\u3042\u308B\u305F\u3081\u3001\u30B3\u30D4\u30FC\u304B\u3089\u623B\u3057\u307E\u3057\u305F\u3002\u30D0\u30FC\u30B8\u30E7\u30F3\u306F\u66F8\u304D\u63DB\u3048\u3066\u3044\u307E\u305B\u3093\u3002`
-      );
-      return 1;
-    }
-  } catch (error2) {
-    await restoreBackup({ dir, backupDir });
-    throw error2;
+  const passed = await applyAndCheck({
+    versions,
+    target: migrationTarget,
+    settings: options.settings,
+    backup: { dir, backupDir },
+    io
+  });
+  if (!passed) {
+    return 1;
   }
   await writeConfigVersion(configPath, target);
   io.stdout(`\u30B3\u30D4\u30FC: ${toPosix5(relative12(dir, backupDir))}`);
@@ -82426,101 +85407,112 @@ function findPackageRoot(from) {
   }
   return dir;
 }
+var ARG_OPTIONS = {
+  out: { type: "string" },
+  config: { type: "string" },
+  base: { type: "string" },
+  text: { type: "string" },
+  file: { type: "string" },
+  key: { type: "string" },
+  js: { type: "boolean" },
+  plan: { type: "boolean" },
+  yes: { type: "boolean" },
+  settings: { type: "boolean" },
+  "keep-traces": { type: "boolean" },
+  version: { type: "boolean" }
+};
+var COMMANDS = {
+  init: ({ values, rest: rest2, root, io }) => runInit(
+    {
+      dir: resolve16(io.cwd, rest2[0] ?? "."),
+      js: values.js === true,
+      templatesDir: join16(root, "templates"),
+      version: cliVersion()
+    },
+    io
+  ),
+  check: async ({ values, io }) => runCheck(
+    {
+      config: values.config,
+      base: values.base,
+      text: values.text === STDIN_TEXT ? await readStdin() : values.text,
+      file: values.file,
+      key: values.key
+    },
+    io
+  ),
+  export: ({ values, rest: rest2, root, io }) => {
+    const file = rest2[0];
+    if (file === void 0) {
+      throw new CliError("export \u306B\u306F\u66F8\u304D\u51FA\u3059\u6587\u66F8\u306E\u30D1\u30B9\u304C\u8981\u308A\u307E\u3059\u3002");
+    }
+    return runExport(
+      {
+        file,
+        out: values.out,
+        config: values.config,
+        distDir: join16(root, "dist"),
+        keepTraces: values["keep-traces"] === true
+      },
+      io
+    );
+  },
+  build: ({ values, root, io }) => runBuild(
+    {
+      config: values.config,
+      distDir: join16(root, "dist"),
+      keepTraces: values["keep-traces"] === true
+    },
+    io
+  ),
+  upgrade: ({ values, root, io, ask }) => runUpgrade(
+    {
+      config: values.config,
+      settings: values.settings === true,
+      plan: values.plan === true,
+      yes: values.yes === true,
+      packageDir: root,
+      cliVersion: cliVersion(),
+      now: /* @__PURE__ */ new Date()
+    },
+    io,
+    ask
+  ),
+  serve: ({ root, io }) => {
+    const controller = new AbortController();
+    process.once("SIGINT", () => controller.abort());
+    process.once("SIGTERM", () => controller.abort());
+    return runServe({
+      env: process.env,
+      packageDir: root,
+      version: cliVersion(),
+      signal: controller.signal,
+      stdout: io.stdout,
+      stderr: io.stderr
+    });
+  }
+};
 async function main(argv, io, ask) {
   try {
     const { values, positionals } = parseArgs({
       args: argv,
-      options: {
-        out: { type: "string" },
-        config: { type: "string" },
-        base: { type: "string" },
-        text: { type: "string" },
-        file: { type: "string" },
-        key: { type: "string" },
-        js: { type: "boolean" },
-        plan: { type: "boolean" },
-        yes: { type: "boolean" },
-        settings: { type: "boolean" }
-      },
+      options: ARG_OPTIONS,
       allowPositionals: true
     });
     const [command, ...rest2] = positionals;
-    const root = findPackageRoot(import.meta.dirname);
-    switch (command) {
-      case "init":
-        return await runInit(
-          {
-            dir: resolve16(io.cwd, rest2[0] ?? "."),
-            js: values.js === true,
-            templatesDir: join16(root, "templates"),
-            version: cliVersion()
-          },
-          io
-        );
-      case "check":
-        return await runCheck(
-          {
-            config: values.config,
-            base: values.base,
-            text: values.text === STDIN_TEXT ? await readStdin() : values.text,
-            file: values.file,
-            key: values.key
-          },
-          io
-        );
-      case "export": {
-        const file = rest2[0];
-        if (file === void 0) {
-          throw new CliError("export \u306B\u306F\u66F8\u304D\u51FA\u3059\u6587\u66F8\u306E\u30D1\u30B9\u304C\u8981\u308A\u307E\u3059\u3002");
-        }
-        return await runExport(
-          {
-            file,
-            out: values.out,
-            config: values.config,
-            distDir: join16(root, "dist")
-          },
-          io
-        );
-      }
-      case "build":
-        return await runBuild(
-          { config: values.config, distDir: join16(root, "dist") },
-          io
-        );
-      case "upgrade":
-        return await runUpgrade(
-          {
-            config: values.config,
-            settings: values.settings === true,
-            plan: values.plan === true,
-            yes: values.yes === true,
-            packageDir: root,
-            cliVersion: cliVersion(),
-            now: /* @__PURE__ */ new Date()
-          },
-          io,
-          ask
-        );
-      case "serve": {
-        const controller = new AbortController();
-        process.once("SIGINT", () => controller.abort());
-        process.once("SIGTERM", () => controller.abort());
-        return await runServe({
-          env: process.env,
-          packageDir: root,
-          version: cliVersion(),
-          signal: controller.signal,
-          stdout: io.stdout,
-          stderr: io.stderr
-        });
-      }
-      default:
-        throw new CliError(
-          `\u77E5\u3089\u306A\u3044\u30B3\u30DE\u30F3\u30C9\u3067\u3059: ${command ?? "\uFF08\u306A\u3057\uFF09"}
-${USAGE.join("\n")}`
-        );
+    if (values.version === true && command === void 0) {
+      io.stdout(cliVersion());
+      return 0;
     }
+    const root = findPackageRoot(import.meta.dirname);
+    const run = command !== void 0 && Object.hasOwn(COMMANDS, command) ? COMMANDS[command] : void 0;
+    if (!run) {
+      throw new CliError(
+        `\u77E5\u3089\u306A\u3044\u30B3\u30DE\u30F3\u30C9\u3067\u3059: ${command ?? "\uFF08\u306A\u3057\uFF09"}
+${USAGE.join("\n")}`
+      );
+    }
+    return await run({ values, rest: rest2, root, io, ask });
   } catch (error2) {
     if (error2 instanceof CliError) {
       io.stderr(error2.message);

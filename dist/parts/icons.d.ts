@@ -21,6 +21,8 @@ declare const ICONS: {
     plug: IconNode;
     database: IconNode;
     globe: IconNode;
+    cloud: IconNode;
+    "hard-drive": IconNode;
     "circle-question-mark": IconNode;
     wrench: IconNode;
     flag: IconNode;
