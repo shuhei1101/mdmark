@@ -239,6 +239,9 @@ data_models:
       - name: terms
         type: Record<string, string> | undefined
         description: 用語から意味への対応
+      - name: pair
+        type: string | undefined
+        description: ブロック図で 2 つ目に選んだブロックか入れ子のブロック。指定すると 2 つと間の線だけを残す（構成図のノードの 2 つの選択と同じ）
 functions:
   - name: renderMapFlow
     title: mapの構成図のHTML
@@ -871,7 +874,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapの軸と格子の配置の図』。項目を構成図のノードと同じ `div.mdmark-diagram-node`（`map-axis-item`・`data-node` に `stateKey`・`data-shape`）で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。軸の目盛り・section の見出しと枠・ブランチの線とブランチ名のボタン・つながりの線・今日の線を SVG と `div` で重ね、section と入れ子のブロックに開閉の `button[data-map-section-toggle]` と中へ入る `button[data-map-section-enter]` を付ける。中へ入ったときは図の上端に「全体 › {名前}」の `nav.map-axis-trail` を出す。選択と強調で残さないものに `map-dim` を付ける
+    summary: 部品設計『mapの軸と格子の配置の図』。項目を構成図のノードと同じ `div.mdmark-diagram-node`（`map-axis-item`・`data-node` に `stateKey`・`data-shape`）で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。軸の目盛り・section の見出しと枠・ブランチの線とブランチ名のボタン・つながりの線・今日の線を SVG と `div` で重ね、section と入れ子のブロックに開閉の `button[data-map-section-toggle]` と中へ入る `button[data-map-section-enter]` を付け、ブロック図の入れ子のブロックの名前を選ぶ `button[data-map-section-select]`（`aria-pressed`）にする。中へ入ったときは図の上端に「全体 › {名前}」の `nav.map-axis-trail` を出す。選択と強調で残さないものに `map-dim` を付ける
     description: 形状・棒・顔のマーカー・格子の見た目は CSS（`src/index.css`。モックの `docs/mock/refs/653/assets/axis-grid.css`）で決める
     scope: public
     args:
