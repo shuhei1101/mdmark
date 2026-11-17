@@ -33,6 +33,8 @@ export declare const mermaidThemeVariables: (options: {
 }) => Record<string, string | boolean>;
 /** SVG の `g.actor-man` の棒人間を、子の属性から求めたノードの中央の lucide の `user` のアイコンに替える */
 export declare const replaceMermaidActors: (svg: SVGSVGElement) => void;
+/** mermaid が `click`・`link` の URL の行のノードを囲んだ `a` に、許す URL なら `href` と class を付けて `target` を削除し、`xlink:href` を持たないか許さない URL なら `a` だけを削除する */
+export declare const finishMermaidNodeLinks: (svg: SVGSVGElement) => void;
 /** 1 つのソースを、今の配色と（暗い配色なら）明るい配色のテーマで描き、図の枠の HTML を返却する。解釈できなければ例外のメッセージの 1 行目を返却する */
 export declare const drawMermaidDiagram: (options: {
     mermaid: MermaidModule;

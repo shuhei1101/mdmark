@@ -14867,6 +14867,12 @@ var mdmark_config_schema_default = {
           type: "boolean",
           default: true
         },
+        annotations: {
+          title: "\u6CE8\u8A18\u306E\u6A5F\u80FD",
+          description: "\u884C\u982D\u306E `\u203B[ID]: \u672C\u6587` \u3067\u5B9A\u7FA9\u3057\u305F\u6CE8\u8A18\u3092\u3001\u672C\u6587\u30FB\u8868\u306E\u30BB\u30EB\u306E `\u203B[ID]` \u3068 map \u306E\u88DC\u8DB3\u306E `notes.{ID}.annotations` \u304B\u3089\u53C2\u7167\u3057\u3001`\u203B` \u3068\u756A\u53F7\u306E\u30DE\u30FC\u30AB\u30FC\u30FB\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u30FB\u672B\u5C3E\u306E\u6CE8\u8A18\u306E\u4E00\u89A7\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
+          type: "boolean",
+          default: true
+        },
         code: {
           title: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u98FE\u308B\u6A5F\u80FD",
           description: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306B\u3001\u76F4\u524D\u306E `<!-- code: -->` \u306E\u30BF\u30A4\u30C8\u30EB\u30FB\u884C\u756A\u53F7\u30FB\u884C\u306E\u5F37\u8ABF\u3068\u3001\u884C\u672B\u306E\u30B3\u30FC\u30C9\u306E\u884C\u306E\u30DE\u30FC\u30AB\u30FC\uFF08`[!code ++]`\u30FB`[!code --]`\u30FB`[!code highlight]`\uFF09\u3092\u9069\u7528\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30BF\u30A4\u30C8\u30EB\u30FB\u884C\u756A\u53F7\u30FB\u884C\u306E\u5F37\u8ABF\u3092\u4ED8\u3051\u305A\u3001\u30B3\u30FC\u30C9\u306E\u884C\u306E\u30DE\u30FC\u30AB\u30FC\u306F\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
@@ -14911,7 +14917,7 @@ var mdmark_config_schema_default = {
         },
         diagrams: {
           title: "\u56F3\u306E\u90E8\u54C1\u306E\u6A5F\u80FD",
-          description: "`<!-- chart -->`\u30FB`<!-- param -->`\u30FB`<!-- er -->` \u306E\u7BC4\u56F2\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u304B\u3089\u56F3\u3068\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u3092\u63CF\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u5B9A\u7FA9\u3092 JSON \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`<!-- chart -->`\u30FB`<!-- param -->` \u306E\u7BC4\u56F2\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u304B\u3089\u30B0\u30E9\u30D5\u3068\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u3092\u63CF\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u5B9A\u7FA9\u3092 JSON \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
@@ -15054,6 +15060,7 @@ var mdmark_config_schema_default = {
         tree: true,
         badge: true,
         footnotes: true,
+        annotations: true,
         code: true,
         syntax: true,
         toc: true,
@@ -15111,7 +15118,7 @@ var mdmark_config_schema_default = {
         },
         diagramPlacement: {
           title: "\u56F3\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u51FA\u3059\u5834\u6240",
-          description: "\u56F3\u306E\u7DDA\u30FB\u30CE\u30FC\u30C9\u30FB\u67A0\u3068\u5C64\u306E\u30BF\u30A4\u30C8\u30EB\u30FB\u30B0\u30E9\u30D5\u306E\u9805\u76EE\u30FBER \u56F3\u306E\u30C6\u30FC\u30D6\u30EB\u3068\u3001\u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E\u30D2\u30F3\u30C8\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u3001\u6301\u3061\u4E3B\u306E\u4E0A\u3068\u4E0B\u306E\u3069\u3061\u3089\u306B\u5148\u306B\u51FA\u3059\u304B\u3002`bottom` \u306F\u4E0B\u306B\u51FA\u3057\u3001\u4E0B\u306B\u53CE\u307E\u3089\u305A\u4E0A\u306B\u53CE\u307E\u308B\u3068\u304D\u3060\u3051\u4E0A\u306B\u51FA\u3059\u3002`top` \u306F\u4E0A\u306B\u51FA\u3057\u3001\u4E0A\u306B\u53CE\u307E\u3089\u306A\u3044\u3068\u304D\u3060\u3051\u4E0B\u306B\u51FA\u3059\u3002`mount` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `bottom` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
+          description: "\u56F3\u306E\u7DDA\u30FB\u30CE\u30FC\u30C9\u30FB\u67A0\u3068\u5C64\u306E\u30BF\u30A4\u30C8\u30EB\u30FB\u30B0\u30E9\u30D5\u306E\u9805\u76EE\u3068\u3001\u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E\u30D2\u30F3\u30C8\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u3001\u6301\u3061\u4E3B\u306E\u4E0A\u3068\u4E0B\u306E\u3069\u3061\u3089\u306B\u5148\u306B\u51FA\u3059\u304B\u3002`bottom` \u306F\u4E0B\u306B\u51FA\u3057\u3001\u4E0B\u306B\u53CE\u307E\u3089\u305A\u4E0A\u306B\u53CE\u307E\u308B\u3068\u304D\u3060\u3051\u4E0A\u306B\u51FA\u3059\u3002`top` \u306F\u4E0A\u306B\u51FA\u3057\u3001\u4E0A\u306B\u53CE\u307E\u3089\u306A\u3044\u3068\u304D\u3060\u3051\u4E0B\u306B\u51FA\u3059\u3002`mount` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `bottom` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
           enum: ["top", "bottom"],
           default: "bottom"
         }
@@ -15527,19 +15534,23 @@ var collectKeys = (options) => {
       push(path, node2);
     }
   }
-  if (schema.additionalProperties !== void 0 && schema.additionalProperties !== false) {
-    const here = getIn(current, prefix);
-    if (typeof here === "object" && here !== null) {
-      for (const name of Object.keys(here)) {
-        if (!(name in properties)) {
-          push(
-            [...prefix, name],
-            typeof schema.additionalProperties === "object" ? schema.additionalProperties : void 0
-          );
-        }
-      }
-    }
+  for (const name of additionalKeys({ properties, prefix, schema, current })) {
+    push(
+      [...prefix, name],
+      typeof schema.additionalProperties === "object" ? schema.additionalProperties : void 0
+    );
   }
+};
+var additionalKeys = (options) => {
+  const { properties, prefix, schema, current } = options;
+  if (schema.additionalProperties === void 0 || schema.additionalProperties === false) {
+    return [];
+  }
+  const here = getIn(current, prefix);
+  if (typeof here !== "object" || here === null) {
+    return [];
+  }
+  return Object.keys(here).filter((name) => !(name in properties));
 };
 var listConfigKeys = (options) => {
   const properties = mergeProperties(options.schema, options.resolveRef);
@@ -15790,28 +15801,29 @@ function titleOf(error2) {
   const parent = error2.parentSchema;
   return parent?.title ?? "";
 }
+function requiredMessage(error2, where) {
+  const name = String(
+    error2.params.missingProperty
+  );
+  const child = error2.parentSchema?.properties?.[name]?.title;
+  return `\`${where}\` \u306B \`${name}\`${child === void 0 ? "" : `\uFF08${child}\uFF09`}\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+}
+var KEYWORD_MESSAGES = {
+  type: (where, label, params) => `\`${where}\`${label}\u306F${TYPE_NAMES[String(params.type)] ?? String(params.type)}\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  minLength: (where, label) => `\`${where}\`${label}\u304C\u7A7A\u3067\u3059\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  minItems: (where, label) => `\`${where}\`${label}\u304C\u7A7A\u3067\u3059\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  enum: (where, label, params) => `\`${where}\`${label}\u306F ${params.allowedValues.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+  additionalProperties: (where, _, params) => `\`${where}\` \u306E \`${String(params.additionalProperty)}\` \u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+};
 function messageOf(error2, where) {
+  if (error2.keyword === "required") {
+    return requiredMessage(error2, where);
+  }
   const title = titleOf(error2);
   const label = title === "" ? "" : `\uFF08${title}\uFF09`;
   const params = error2.params;
-  switch (error2.keyword) {
-    case "required": {
-      const name = String(params.missingProperty);
-      const child = error2.parentSchema?.properties?.[name]?.title;
-      return `\`${where}\` \u306B \`${name}\`${child === void 0 ? "" : `\uFF08${child}\uFF09`}\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    }
-    case "type":
-      return `\`${where}\`${label}\u306F${TYPE_NAMES[String(params.type)] ?? String(params.type)}\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "minLength":
-    case "minItems":
-      return `\`${where}\`${label}\u304C\u7A7A\u3067\u3059\u3002\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "enum":
-      return `\`${where}\`${label}\u306F ${params.allowedValues.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "additionalProperties":
-      return `\`${where}\` \u306E \`${String(params.additionalProperty)}\` \u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    default:
-      return `\`${where}\`${label}\u304C Schema \u306B\u5408\u3044\u307E\u305B\u3093\uFF08${error2.message ?? ""}\uFF09\u3002`;
-  }
+  const message = Object.hasOwn(KEYWORD_MESSAGES, error2.keyword) ? KEYWORD_MESSAGES[error2.keyword] : void 0;
+  return message ? message(where, label, params) : `\`${where}\`${label}\u304C Schema \u306B\u5408\u3044\u307E\u305B\u3093\uFF08${error2.message ?? ""}\uFF09\u3002`;
 }
 function validateAliasRows(rows, file) {
   const validate2 = getValidator();
@@ -15864,6 +15876,42 @@ function isStringArray(value) {
 function schemaIssue(file, where, message) {
   return { file, where, kind: "schema", message };
 }
+var BUILD_RULES = [
+  ({ include }) => {
+    if (include === void 0) {
+      return {
+        where: "build",
+        message: "`build.include` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B Markdown \u306E glob \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      };
+    }
+    return isStringArray(include) && include.length > 0 ? void 0 : {
+      where: "build.include",
+      message: "`build.include` \u306F 1 \u3064\u4EE5\u4E0A\u306E glob \u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    };
+  },
+  ({ out }) => {
+    if (out === void 0) {
+      return {
+        where: "build",
+        message: "`build.out` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      };
+    }
+    return typeof out === "string" && out.endsWith(".html") ? void 0 : {
+      where: "build.out",
+      message: "`build.out` \u306F\u62E1\u5F35\u5B50 `.html` \u306E\u30D1\u30B9\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    };
+  },
+  ...["exclude", "glossary"].map(
+    (key) => (value) => value[key] === void 0 || isStringArray(value[key]) ? void 0 : {
+      where: `build.${key}`,
+      message: `\`build.${key}\` \u306F\u6587\u5B57\u5217\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    }
+  ),
+  ({ entry }) => entry === void 0 || typeof entry === "string" ? void 0 : {
+    where: "build.entry",
+    message: "`build.entry` \u306F\u6587\u66F8\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+  }
+];
 function validateBuild(value, file, issues) {
   if (!isRecord(value)) {
     issues.push(
@@ -15872,62 +15920,153 @@ function validateBuild(value, file, issues) {
     return void 0;
   }
   const before = issues.length;
-  if (value.include === void 0) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build",
-        "`build.include` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B Markdown \u306E glob \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-  } else if (!isStringArray(value.include) || value.include.length === 0) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build.include",
-        "`build.include` \u306F 1 \u3064\u4EE5\u4E0A\u306E glob \u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
+  for (const rule of BUILD_RULES) {
+    const found = rule(value);
+    if (found) {
+      issues.push(schemaIssue(file, found.where, found.message));
+    }
   }
-  if (value.out === void 0) {
+  return issues.length === before ? value : void 0;
+}
+function typed(test, message) {
+  return (value, { key, file, issues }) => {
+    if (test(value)) {
+      return { value };
+    }
+    issues.push(schemaIssue(file, key, message));
+    return void 0;
+  };
+}
+function kept(valid) {
+  return (value, { file, issues }) => valid(value, file, issues) ? { value } : void 0;
+}
+function replaced(validate2) {
+  return (value, { file, issues }) => {
+    const checked = validate2(value, file, issues);
+    return checked === void 0 ? void 0 : { value: checked };
+  };
+}
+var validateFeatures = (value, { file, issues }) => {
+  if (!isRecord(value)) {
     issues.push(
       schemaIssue(
         file,
-        "build",
-        "`build.out` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+        "features",
+        "`features` \u306F\u6A5F\u80FD\u540D\u3068 true / false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
-  } else if (typeof value.out !== "string" || !value.out.endsWith(".html")) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build.out",
-        "`build.out` \u306F\u62E1\u5F35\u5B50 `.html` \u306E\u30D1\u30B9\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
+    return void 0;
   }
-  for (const key of ["exclude", "glossary"]) {
-    if (value[key] !== void 0 && !isStringArray(value[key])) {
+  const features = {};
+  for (const [name, enabled] of Object.entries(value)) {
+    if (typeof enabled === "boolean") {
+      features[name] = enabled;
+    } else {
       issues.push(
         schemaIssue(
           file,
-          `build.${key}`,
-          `\`build.${key}\` \u306F\u6587\u5B57\u5217\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+          `features.${name}`,
+          `\`features.${name}\` \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         )
       );
     }
   }
-  if (value.entry !== void 0 && typeof value.entry !== "string") {
+  return { value: features };
+};
+var validateLibraries = (value, { file, issues }) => {
+  if (!isRecord(value)) {
     issues.push(
       schemaIssue(
         file,
-        "build.entry",
-        "`build.entry` \u306F\u6587\u66F8\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+        "libraries",
+        "`libraries` \u306F\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
+    return void 0;
   }
-  return issues.length === before ? value : void 0;
-}
+  const libraries = {};
+  for (const [name, url2] of Object.entries(value)) {
+    if (!MARK_NAME_PATTERN.test(name) || typeof url2 !== "string") {
+      issues.push(
+        schemaIssue(
+          file,
+          `libraries.${name}`,
+          `\`libraries.${name}\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        )
+      );
+    } else {
+      libraries[name] = url2;
+    }
+  }
+  return { value: libraries };
+};
+var validateAliases = (value, { file, issues }) => {
+  if (!Array.isArray(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "aliases",
+        "`aliases` \u306F\u30A8\u30A4\u30EA\u30A2\u30B9\u306E\u5143\u306E\u884C\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return void 0;
+  }
+  const checked = validateAliasRows(value, file);
+  issues.push(...checked.issues);
+  return { value: checked.rows };
+};
+var isString = (value) => typeof value === "string";
+var CONFIG_KEY_VALIDATORS = [
+  ["features", validateFeatures],
+  ["libraries", validateLibraries],
+  [
+    "version",
+    typed(
+      (value) => typeof value === "string" && VERSION_PATTERN.test(value),
+      "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  ],
+  [
+    "index",
+    typed(isString, "`index` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002")
+  ],
+  [
+    "theme",
+    typed(isString, "`theme` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002")
+  ],
+  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が通知する）
+  [
+    "colorTheme",
+    typed(isString, "`colorTheme` \u306F\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002")
+  ],
+  // 知らない値はここでは拒まず、設定に残す（`mdmark check` が通知する）
+  [
+    "colorScheme",
+    typed(
+      isString,
+      "`colorScheme` \u306F `light`\u30FB`dark`\u30FB`auto` \u306E\u3069\u308C\u304B\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  ],
+  [
+    "extensions",
+    typed(
+      isStringArray,
+      "`extensions` \u306F\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  ],
+  ["build", replaced(validateBuild)],
+  ["tooltips", kept(isValidTooltips)],
+  ["labels", kept(isValidLabels)],
+  ["syntax", kept(isValidSyntax)],
+  ["html-scripts", kept(isValidHtmlScripts)],
+  ["mermaid", kept(isValidMermaid)],
+  ["assets", kept(isValidAssets)],
+  ["side-toc", kept(isValidSideToc)],
+  ["table", kept(isValidTable)],
+  ["map", kept(isValidMap)],
+  ["aliases", validateAliases],
+  ["check", replaced(validateCheck)]
+];
 function validateConfig(raw, file) {
   const issues = [];
   if (!isRecord(raw)) {
@@ -15941,173 +16080,15 @@ function validateConfig(raw, file) {
     return { config: {}, issues };
   }
   const config2 = { ...raw };
-  if (raw.features !== void 0) {
-    const features = {};
-    if (isRecord(raw.features)) {
-      for (const [name, value] of Object.entries(raw.features)) {
-        if (typeof value === "boolean") {
-          features[name] = value;
-        } else {
-          issues.push(
-            schemaIssue(
-              file,
-              `features.${name}`,
-              `\`features.${name}\` \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-            )
-          );
-        }
-      }
-      config2.features = features;
+  for (const [key, validate2] of CONFIG_KEY_VALIDATORS) {
+    if (raw[key] === void 0) {
+      continue;
+    }
+    const checked = validate2(raw[key], { key, file, issues });
+    if (checked) {
+      config2[key] = checked.value;
     } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "features",
-          "`features` \u306F\u6A5F\u80FD\u540D\u3068 true / false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config2.features;
-    }
-  }
-  if (raw.libraries !== void 0) {
-    if (isRecord(raw.libraries)) {
-      const libraries = {};
-      for (const [name, url2] of Object.entries(raw.libraries)) {
-        if (!MARK_NAME_PATTERN.test(name) || typeof url2 !== "string") {
-          issues.push(
-            schemaIssue(
-              file,
-              `libraries.${name}`,
-              `\`libraries.${name}\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-            )
-          );
-        } else {
-          libraries[name] = url2;
-        }
-      }
-      config2.libraries = libraries;
-    } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "libraries",
-          "`libraries` \u306F\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config2.libraries;
-    }
-  }
-  if (raw.version !== void 0) {
-    if (typeof raw.version !== "string" || !VERSION_PATTERN.test(raw.version)) {
-      issues.push(
-        schemaIssue(
-          file,
-          "version",
-          "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config2.version;
-    }
-  }
-  for (const key of ["index", "theme"]) {
-    if (raw[key] !== void 0 && typeof raw[key] !== "string") {
-      issues.push(
-        schemaIssue(
-          file,
-          key,
-          `\`${key}\` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-        )
-      );
       delete config2[key];
-    }
-  }
-  if (raw.colorTheme !== void 0 && typeof raw.colorTheme !== "string") {
-    issues.push(
-      schemaIssue(
-        file,
-        "colorTheme",
-        "`colorTheme` \u306F\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    delete config2.colorTheme;
-  }
-  if (raw.colorScheme !== void 0 && typeof raw.colorScheme !== "string") {
-    issues.push(
-      schemaIssue(
-        file,
-        "colorScheme",
-        "`colorScheme` \u306F `light`\u30FB`dark`\u30FB`auto` \u306E\u3069\u308C\u304B\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    delete config2.colorScheme;
-  }
-  if (raw.extensions !== void 0 && !isStringArray(raw.extensions)) {
-    issues.push(
-      schemaIssue(
-        file,
-        "extensions",
-        "`extensions` \u306F\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-      )
-    );
-    delete config2.extensions;
-  }
-  if (raw.build !== void 0) {
-    const build2 = validateBuild(raw.build, file, issues);
-    if (build2) {
-      config2.build = build2;
-    } else {
-      delete config2.build;
-    }
-  }
-  if (raw.tooltips !== void 0 && !isValidTooltips(raw.tooltips, file, issues)) {
-    delete config2.tooltips;
-  }
-  if (raw.labels !== void 0 && !isValidLabels(raw.labels, file, issues)) {
-    delete config2.labels;
-  }
-  if (raw.syntax !== void 0 && !isValidSyntax(raw.syntax, file, issues)) {
-    delete config2.syntax;
-  }
-  if (raw["html-scripts"] !== void 0 && !isValidHtmlScripts(raw["html-scripts"], file, issues)) {
-    delete config2["html-scripts"];
-  }
-  if (raw.mermaid !== void 0 && !isValidMermaid(raw.mermaid, file, issues)) {
-    delete config2.mermaid;
-  }
-  if (raw.assets !== void 0 && !isValidAssets(raw.assets, file, issues)) {
-    delete config2.assets;
-  }
-  if (raw["side-toc"] !== void 0 && !isValidSideToc(raw["side-toc"], file, issues)) {
-    delete config2["side-toc"];
-  }
-  if (raw.table !== void 0 && !isValidTable(raw.table, file, issues)) {
-    delete config2.table;
-  }
-  if (raw.map !== void 0 && !isValidMap(raw.map, file, issues)) {
-    delete config2.map;
-  }
-  if (raw.aliases !== void 0) {
-    if (Array.isArray(raw.aliases)) {
-      const checked = validateAliasRows(raw.aliases, file);
-      issues.push(...checked.issues);
-      config2.aliases = checked.rows;
-    } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "aliases",
-          "`aliases` \u306F\u30A8\u30A4\u30EA\u30A2\u30B9\u306E\u5143\u306E\u884C\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-        )
-      );
-      delete config2.aliases;
-    }
-  }
-  if (raw.check !== void 0) {
-    const check = validateCheck(raw.check, file, issues);
-    if (check) {
-      config2.check = check;
-    } else {
-      delete config2.check;
     }
   }
   return { config: config2, issues };
@@ -16552,6 +16533,19 @@ var resolveUnitPath = (options) => {
   const config2 = options.env.XDG_CONFIG_HOME ? expandHome(options.env.XDG_CONFIG_HOME, home) : join2(home, ".config");
   return join2(config2, "systemd", "user", `${options.unit}.service`);
 };
+var parseYaml = (text, path) => {
+  try {
+    return (0, import_yaml2.parse)(text);
+  } catch (error2) {
+    if (error2 instanceof import_yaml2.YAMLParseError) {
+      const line = error2.linePos?.[0].line ?? 1;
+      throw new SetupError(
+        `${path} \u306E ${line} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002${error2.message.split("\n")[0] ?? ""}`
+      );
+    }
+    throw error2;
+  }
+};
 var readYamlFile = async (options) => {
   let text;
   try {
@@ -16562,18 +16556,7 @@ var readYamlFile = async (options) => {
     }
     throw error2;
   }
-  let raw;
-  try {
-    raw = (0, import_yaml2.parse)(text);
-  } catch (error2) {
-    if (error2 instanceof import_yaml2.YAMLParseError) {
-      const line = error2.linePos?.[0].line ?? 1;
-      throw new SetupError(
-        `${options.path} \u306E ${line} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002${error2.message.split("\n")[0] ?? ""}`
-      );
-    }
-    throw error2;
-  }
+  const raw = parseYaml(text, options.path);
   if (raw === null || raw === void 0) {
     return { text, raw: {} };
   }
@@ -40364,6 +40347,23 @@ var hasUnitExited = (state) => state.nRestarts >= 1 || state.subState === "auto-
 // src/plugin/setup/status.ts
 var hasTmux = async (run) => (await run("tmux", ["-V"])).code === 0;
 var hasSession = async (options) => (await options.run("tmux", ["has-session", "-t", `=${options.session}`])).code === 0;
+var settingsStatus = (options) => {
+  const { paths, settings, targetVersion } = options;
+  const version2 = settings?.raw.version;
+  return {
+    path: paths.settingsPath,
+    default_path: paths.defaultPath,
+    exists: settings !== void 0,
+    version: typeof version2 === "string" ? version2 : null,
+    target_version: targetVersion
+  };
+};
+var resolveLauncher = (setting, systemdAvailable) => {
+  if (setting !== "auto") {
+    return setting;
+  }
+  return systemdAvailable ? "systemd" : "tmux";
+};
 var readTerminalStatus = async (options) => {
   const paths = resolveSetupPaths(options.env);
   const settings = await readYamlFile({
@@ -40376,15 +40376,12 @@ var readTerminalStatus = async (options) => {
   const available = await hasTmux(options.run);
   const systemdAvailable = await hasSystemd(options.run);
   const unitState = systemdAvailable ? await readUnitState({ run: options.run, unit }) : void 0;
-  const version2 = settings?.raw.version;
   return {
-    settings: {
-      path: paths.settingsPath,
-      default_path: paths.defaultPath,
-      exists: settings !== void 0,
-      version: typeof version2 === "string" ? version2 : null,
-      target_version: options.version
-    },
+    settings: settingsStatus({
+      paths,
+      settings,
+      targetVersion: options.version
+    }),
     server: {
       port: paths.port,
       session,
@@ -40400,10 +40397,7 @@ var readTerminalStatus = async (options) => {
     },
     tmux: { available },
     systemd: { available: systemdAvailable },
-    launcher: {
-      setting,
-      resolved: setting === "auto" ? systemdAvailable ? "systemd" : "tmux" : setting
-    },
+    launcher: { setting, resolved: resolveLauncher(setting, systemdAvailable) },
     state: { dir: paths.stateDir, log: paths.logPath }
   };
 };
@@ -40497,7 +40491,7 @@ var readTimeoutSec = (env) => {
 var portInUse = (port, detail) => new SetupError(
   `\u30DD\u30FC\u30C8 ${port} \u3067 ${detail}\u3002\u307B\u304B\u306E\u30D7\u30ED\u30BB\u30B9\u304C\u4F7F\u7528\u3057\u3066\u3044\u308B\u3068\u304D\u306F\u3001~/.claude/settings.json \u306E env \u306E MDMARK_PORT \u3092\u7A7A\u3044\u305F\u30DD\u30FC\u30C8\u306B\u5909\u3048\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u3092\u3082\u3046\u4E00\u5EA6\u958B\u3044\u3066 /mdmark:global-setup \u3092\u3082\u3046\u4E00\u5EA6\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
 );
-var resolveLauncher = (options) => {
+var resolveLauncher2 = (options) => {
   const fromSetting = options.setting === "auto" ? options.systemdAvailable ? "systemd" : "tmux" : options.setting;
   const launcher = options.argument ?? fromSetting;
   const usable = launcher === "systemd" ? options.systemdAvailable : options.tmuxAvailable;
@@ -40543,10 +40537,8 @@ var waitForPortReleased = async (options) => {
 var startWithSystemd = async (options) => {
   const { paths, unit, run, sleep: sleep2 } = options;
   const changes = [];
-  if (options.migrate && await hasSession({ run, session: options.session })) {
-    await run("tmux", ["kill-session", "-t", `=${options.session}`]);
+  if (await closeTmuxSession(options)) {
     changes.push("tmux_session_closed");
-    await waitForPortReleased({ port: paths.port, sleep: sleep2 });
   }
   const unitPath = resolveUnitPath({ env: options.env, unit });
   const content = buildUnitFile({
@@ -40563,29 +40555,24 @@ var startWithSystemd = async (options) => {
     port: paths.port,
     timeoutMs: CONNECT_TIMEOUT_MS
   });
-  if (active && same && listening) {
-    if (!state.enabled) {
-      await run("systemctl", ["--user", "enable", unit]);
-    }
+  if (await isUnitRunning({
+    state,
+    same,
+    listening,
+    run,
+    unit,
+    port: paths.port
+  })) {
     return { result: "already_running", changes, launcher: "systemd" };
   }
-  if (!active && listening) {
-    throw portInUse(
-      paths.port,
-      `unit ${unit} \u306E\u5916\u306E\u30D7\u30ED\u30BB\u30B9\u304C\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u305F\u3081\u3001\u8D77\u52D5\u3057\u3066\u3044\u307E\u305B\u3093`
-    );
-  }
   if (!same) {
-    await mkdir(dirname2(unitPath), { recursive: true });
-    await options.writeFile(unitPath, content);
-    await run("systemctl", ["--user", "daemon-reload"]);
+    await writeUnitFile({ ...options, unitPath, content });
     changes.push("unit_written");
   }
-  if (active) {
-    await run("systemctl", ["--user", "restart", unit]);
-  } else {
-    await run("systemctl", ["--user", "enable", "--now", unit]);
-  }
+  await run(
+    "systemctl",
+    active ? ["--user", "restart", unit] : ["--user", "enable", "--now", unit]
+  );
   const waited = await waitForListening({
     port: paths.port,
     timeoutSec: readTimeoutSec(options.env),
@@ -40599,6 +40586,41 @@ var startWithSystemd = async (options) => {
       launcher: "systemd"
     };
   }
+  return await failSystemdStart({ waited, run, unit });
+};
+var isUnitRunning = async (options) => {
+  const { state, same, listening, run, unit } = options;
+  const active = state.activeState === "active";
+  if (active && same && listening) {
+    if (!state.enabled) {
+      await run("systemctl", ["--user", "enable", unit]);
+    }
+    return true;
+  }
+  if (!active && listening) {
+    throw portInUse(
+      options.port,
+      `unit ${unit} \u306E\u5916\u306E\u30D7\u30ED\u30BB\u30B9\u304C\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u305F\u3081\u3001\u8D77\u52D5\u3057\u3066\u3044\u307E\u305B\u3093`
+    );
+  }
+  return false;
+};
+var writeUnitFile = async (options) => {
+  await mkdir(dirname2(options.unitPath), { recursive: true });
+  await options.writeFile(options.unitPath, options.content);
+  await options.run("systemctl", ["--user", "daemon-reload"]);
+};
+var closeTmuxSession = async (options) => {
+  const { paths, session, run, sleep: sleep2 } = options;
+  if (!options.migrate || !await hasSession({ run, session })) {
+    return false;
+  }
+  await run("tmux", ["kill-session", "-t", `=${session}`]);
+  await waitForPortReleased({ port: paths.port, sleep: sleep2 });
+  return true;
+};
+var failSystemdStart = async (options) => {
+  const { waited, run, unit } = options;
   await run("systemctl", ["--user", "disable", "--now", unit]);
   const journal = await readJournalTail({ run, unit });
   if (waited === "exited") {
@@ -40616,18 +40638,16 @@ ${journal}
   );
 };
 var startWithTmux = async (options) => {
-  const { paths, unit, session, run, sleep: sleep2 } = options;
+  const { paths, session, run, sleep: sleep2 } = options;
   const changes = [];
   const listening = () => isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
   if (options.systemdAvailable) {
-    const state = await readUnitState({ run, unit });
-    const active = state.activeState === "active";
-    if (options.migrate && (active || state.enabled)) {
-      await run("systemctl", ["--user", "disable", "--now", unit]);
-      changes.push("unit_disabled");
-      await waitForPortReleased({ port: paths.port, sleep: sleep2 });
-    } else if (!options.migrate && active && await listening()) {
+    const unitStep = await settleUnit({ ...options, listening });
+    if (unitStep === "running") {
       return { result: "already_running", changes, launcher: "systemd" };
+    }
+    if (unitStep === "disabled") {
+      changes.push("unit_disabled");
     }
   }
   let result = "started";
@@ -40665,20 +40685,48 @@ var startWithTmux = async (options) => {
   if (waited === "listening") {
     return { result, changes, launcher: "tmux" };
   }
+  return await failTmuxStart({ waited, run, session, logPath: paths.logPath });
+};
+var settleUnit = async (options) => {
+  const { paths, unit, run, sleep: sleep2 } = options;
+  const state = await readUnitState({ run, unit });
+  const active = state.activeState === "active";
+  if (options.migrate && (active || state.enabled)) {
+    await run("systemctl", ["--user", "disable", "--now", unit]);
+    await waitForPortReleased({ port: paths.port, sleep: sleep2 });
+    return "disabled";
+  }
+  if (!options.migrate && active && await options.listening()) {
+    return "running";
+  }
+  return "none";
+};
+var failTmuxStart = async (options) => {
+  const { waited, run, session, logPath } = options;
   if (waited === "exited") {
     throw new SetupError(
-      `mdmark serve \u304C\u7D42\u308F\u308A\u307E\u3057\u305F\u3002${paths.logPath} \u306E\u672B\u5C3E:
-${await readLogTail(paths.logPath)}
+      `mdmark serve \u304C\u7D42\u308F\u308A\u307E\u3057\u305F\u3002${logPath} \u306E\u672B\u5C3E:
+${await readLogTail(logPath)}
 \u30DD\u30FC\u30C8\u304C\u4F7F\u7528\u3055\u308C\u3066\u3044\u308B\u3068\u304D\u306F\u3001~/.claude/settings.json \u306E env \u306E MDMARK_PORT \u3092\u7A7A\u3044\u305F\u30DD\u30FC\u30C8\u306B\u5909\u3048\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u3092\u3082\u3046\u4E00\u5EA6\u958B\u3044\u3066 /mdmark:global-setup \u3092\u3082\u3046\u4E00\u5EA6\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
     );
   }
   await run("tmux", ["kill-session", "-t", `=${session}`]);
   throw new SetupError(
-    `\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u304C\u5F85\u3061\u53D7\u3051\u308B\u307E\u3067\u306E\u4E0A\u9650\u3092\u8D85\u3048\u305F\u305F\u3081\u3001\u30BB\u30C3\u30B7\u30E7\u30F3 ${session} \u3092\u9589\u3058\u307E\u3057\u305F\u3002${paths.logPath} \u306E\u672B\u5C3E:
-${await readLogTail(paths.logPath)}
+    `\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u304C\u5F85\u3061\u53D7\u3051\u308B\u307E\u3067\u306E\u4E0A\u9650\u3092\u8D85\u3048\u305F\u305F\u3081\u3001\u30BB\u30C3\u30B7\u30E7\u30F3 ${session} \u3092\u9589\u3058\u307E\u3057\u305F\u3002${logPath} \u306E\u672B\u5C3E:
+${await readLogTail(logPath)}
 \u53D6\u5F97\u306B\u6642\u9593\u304C\u304B\u304B\u3063\u3066\u3044\u308B\u306E\u3067\u3001\u3082\u3046\u4E00\u5EA6 /mdmark:global-setup \u3092\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`,
     3
   );
+};
+var listServerTools = async (port) => {
+  try {
+    return await listToolNames({ port });
+  } catch (error2) {
+    throw portInUse(
+      port,
+      `\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u30D7\u30ED\u30BB\u30B9\u304B\u3089 MCP \u306E\u30C4\u30FC\u30EB\u306E\u4E00\u89A7\u3092\u53D7\u3051\u53D6\u308C\u307E\u305B\u3093\uFF08${error2 instanceof Error ? error2.message : String(error2)}\uFF09`
+    );
+  }
 };
 var startServer = async (options) => {
   const { env, run, sleep: sleep2 } = options;
@@ -40691,7 +40739,7 @@ var startServer = async (options) => {
   const unit = readUnitName(settings?.raw);
   const session = readSessionName(settings?.raw);
   const systemdAvailable = await hasSystemd(run);
-  const choice = resolveLauncher({
+  const choice = resolveLauncher2({
     argument: options.launcher,
     setting: readLauncherSetting(settings?.raw),
     systemdAvailable,
@@ -40710,15 +40758,7 @@ var startServer = async (options) => {
     sleep: sleep2
   };
   const outcome = choice.launcher === "systemd" ? await startWithSystemd({ ...launch, writeFile: options.writeFile }) : await startWithTmux({ ...launch, systemdAvailable });
-  let tools;
-  try {
-    tools = await listToolNames({ port: paths.port });
-  } catch (error2) {
-    throw portInUse(
-      paths.port,
-      `\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u30D7\u30ED\u30BB\u30B9\u304B\u3089 MCP \u306E\u30C4\u30FC\u30EB\u306E\u4E00\u89A7\u3092\u53D7\u3051\u53D6\u308C\u307E\u305B\u3093\uFF08${error2 instanceof Error ? error2.message : String(error2)}\uFF09`
-    );
-  }
+  const tools = await listServerTools(paths.port);
   const bySystemd = outcome.launcher === "systemd";
   return {
     result: outcome.result,
@@ -40868,6 +40908,44 @@ var resolveRef = (ref) => {
   }
   return schema;
 };
+var listKeys = async (options) => {
+  const { env, target, dir } = options;
+  const read = (path) => readYamlFile({ path, readFile: (file) => readFile4(file, "utf8") });
+  const settings = (await read(resolveSetupPaths(env).settingsPath))?.raw ?? {};
+  if (target === "settings") {
+    return {
+      keys: listConfigKeys({
+        target: "settings",
+        schema: resolveRef("mdmark.settings.schema.json"),
+        resolveRef,
+        current: settings
+      })
+    };
+  }
+  if (target === "config" && dir) {
+    const current = (await read(join5(dir, "mdmark.config.yaml")))?.raw ?? {};
+    return {
+      keys: listConfigKeys({
+        target: "config",
+        schema: resolveRef("mdmark.config.schema.json"),
+        resolveRef,
+        current,
+        inherited: settings
+      })
+    };
+  }
+  throw new SetupError(
+    "keys \u306F --target settings \u304B\u3001--target config \u3068 --dir {\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0} \u3067\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002"
+  );
+};
+var checkLauncher = (launcher) => {
+  if (launcher === void 0 || launcher === "systemd" || launcher === "tmux") {
+    return launcher;
+  }
+  throw new SetupError(
+    `start-server \u306E --launcher \u306B\u306F systemd \u304B tmux \u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\uFF08${launcher}\uFF09\u3002${USAGE}`
+  );
+};
 var runCommand = async (options) => {
   const { values, positionals } = parseArgs({
     args: options.argv,
@@ -40888,46 +40966,18 @@ var runCommand = async (options) => {
   switch (positionals[0]) {
     case "status":
       return await readTerminalStatus({ ...base, run: options.run });
-    case "keys": {
-      const read = (path) => readYamlFile({ path, readFile: (file) => readFile4(file, "utf8") });
-      const settings = (await read(resolveSetupPaths(options.env).settingsPath))?.raw ?? {};
-      if (values.target === "settings") {
-        return {
-          keys: listConfigKeys({
-            target: "settings",
-            schema: resolveRef("mdmark.settings.schema.json"),
-            resolveRef,
-            current: settings
-          })
-        };
-      }
-      if (values.target === "config" && values.dir) {
-        const current = (await read(join5(values.dir, "mdmark.config.yaml")))?.raw ?? {};
-        return {
-          keys: listConfigKeys({
-            target: "config",
-            schema: resolveRef("mdmark.config.schema.json"),
-            resolveRef,
-            current,
-            inherited: settings
-          })
-        };
-      }
-      throw new SetupError(
-        "keys \u306F --target settings \u304B\u3001--target config \u3068 --dir {\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0} \u3067\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002"
-      );
-    }
+    case "keys":
+      return await listKeys({
+        env: options.env,
+        target: values.target,
+        dir: values.dir
+      });
     case "write-settings":
       return await writeSettings({ ...base, sets });
     case "start-server":
-      if (values.launcher !== void 0 && values.launcher !== "systemd" && values.launcher !== "tmux") {
-        throw new SetupError(
-          `start-server \u306E --launcher \u306B\u306F systemd \u304B tmux \u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\uFF08${values.launcher}\uFF09\u3002${USAGE}`
-        );
-      }
       return await startServer({
         ...base,
-        launcher: values.launcher,
+        launcher: checkLauncher(values.launcher),
         run: options.run,
         sleep: (ms) => new Promise((resolve2) => setTimeout(resolve2, ms)),
         writeFile: (path, data) => writeFile2(path, data, "utf8")
@@ -40976,7 +41026,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: "v0.13.0",
+    version: "v0.14.0",
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)
