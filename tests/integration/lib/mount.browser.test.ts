@@ -18774,8 +18774,12 @@ test("test_normal_when_map_mindmap_drawn", async () => {
   expect(find(figure, ".mdmark-diagram-title").textContent).toBe("企画の論点");
   expect(mermaidLoads()).toBe(before);
   expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
-  // 検証: 根の左右に 2 つずつの枝があり、子は親より根から遠い側・記載順に上から並ぶ
+  // 検証: 最初に根が表示する枠の横の中央にある（説明のマーカーにフォーカスして枠の中がスクロールする前に確かめる）
   const [rootX] = mapCenter(mapNode(figure, "root"));
+  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
+  const box = viewport.getBoundingClientRect();
+  expect(Math.abs(rootX - (box.left + box.width / 2))).toBeLessThan(4);
+  // 検証: 根の左右に 2 つずつの枝があり、子は親より根から遠い側・記載順に上から並ぶ
   const branches = ["a1", "体制", "予算", "スケジュール"];
   const sides = branches.map(
     (key) => mapCenter(mapNode(figure, key))[0] > rootX,
@@ -18855,10 +18859,6 @@ test("test_normal_when_map_mindmap_drawn", async () => {
       "利用者の数と、続けて使う割合の 2 つで測る",
     );
   });
-  // 検証: 最初に根が表示する枠の横の中央にある
-  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
-  const box = viewport.getBoundingClientRect();
-  expect(Math.abs(rootX - (box.left + box.width / 2))).toBeLessThan(4);
 });
 
 // map のマインドマップの枝を開閉し、中へ入って戻る（正常系（map のマインドマップの枝を開閉する・中へ入る））
@@ -18866,13 +18866,19 @@ test("test_normal_when_map_mindmap_toggled", async () => {
   // 準備
   const { el, figures } = await mountMap(MAP_MINDMAP_MARKDOWN);
   const figure = () => figures()[0] as HTMLElement;
-  const placed = () =>
-    Object.fromEntries(
-      mindmapKeys(figure()).map((key) => [
-        key,
-        mapCenter(mapNode(figure(), key)),
-      ]),
+  /** 項目の中心（図の中身の左上から。表示する枠のスクロールに依らない） */
+  const placed = () => {
+    const stage = find<HTMLElement>(
+      figure(),
+      ".mdmark-diagram-stage",
+    ).getBoundingClientRect();
+    return Object.fromEntries(
+      mindmapKeys(figure()).map((key) => {
+        const [x, y] = mapCenter(mapNode(figure(), key));
+        return [key, [x - stage.left, y - stage.top]];
+      }),
     );
+  };
   const initial = placed();
   // 実行・検証: 「体制」を閉じる
   mindmapButton(figure(), "体制", "toggle").click();
