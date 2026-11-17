@@ -7424,7 +7424,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: mermaid のコードブロックを持つ Markdown
-        description: 言語 `mermaid` の flowchart（front matter の `title` を持つ）と sequenceDiagram（`actor` を持つ）のコードブロックを 1 つずつ持つ文書
+        description: '言語 `mermaid` の flowchart（front matter の `title` を持つ）と sequenceDiagram（`actor` を持つ）のコードブロックを 1 つずつ持つ文書（どちらも `%%{init: {}}%%` の設定の行を持ち、範囲の外の map の図にしない。mermaid の図を確かめるほかの流れも同じ）'
       - name: 設定
         description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
       - name: Mock
@@ -9078,6 +9078,91 @@ flows:
     test: test_normal_when_map_class_arch_walked
     refs:
       - SC-472-41#scenarios[正常シナリオ（追加した種類を案内する）]
+  - name: 正常系（範囲の外の map の図）
+    summary: 範囲の外の純粋な Mermaid のうち map が描く種類は補足の無い map の図、ほかの種類は mermaid の図にする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 範囲の外の純粋な Mermaid を持つ Markdown
+        description: map の範囲の外に、flowchart・`actor` を持つ sequenceDiagram・gantt の言語 `mermaid` のコードブロックを 1 つずつ持つ文書
+      - name: 設定
+        description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>M: flowchart と sequenceDiagram を範囲の外の map の図にする
+        M->>X: gantt を render(ソース)
+        X-->>M: SVG
+        M->>P: map の図 2 つと mermaid の図 1 つを描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`figure.mdmark-diagram[data-diagram="map"]` が 2 つ、`figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つ'
+      - map の図のタイトルが `フローチャート`・`シーケンス図`
+      - 記載の警告が無い
+      - '`actor` の参加者の種類の行に人のアイコンの `svg` がある'
+    test: test_normal_when_plain_mermaid_map
+  - name: 異常系（map が読めない行を持つ）
+    summary: map で同じ図にできない純粋な Mermaid は、警告を出さずに mermaid の図で描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 見た目を指定する行を持つ Markdown
+        description: '`style A fill:#f9f` の行を持つ flowchart と、読める行だけの flowchart のコードブロックを持つ文書'
+      - name: 設定
+        description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as mermaid
+        P->>M: mount(el, { markdown, config })
+        M->>M: 2 つを範囲の外の map の図にし、1 つ目を mermaid のコードブロックに戻す
+        M->>X: render(ソース)
+        X-->>M: SVG
+        M->>P: mermaid の図 1 つと map の図 1 つを描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つ、`figure.mdmark-diagram[data-diagram="map"]` が 1 つ'
+      - 記載の警告が無い
+    test: test_error_when_plain_map_cannot_read
+  - name: 正常系（参加者の行を留める）
+    summary: 範囲の外のシーケンス図の参加者の行を、文書をスクロールしたときも画面の上端（`--mdmark-sticky-top`）に留める
+    setup:
+      - name: 配布物を読み込んだページ
+        description: '描く先の要素に `--mdmark-sticky-top: 48px`。文書の後ろに高さ 3000px の要素を置き、画面をスクロールできるようにする'
+      - name: 参加者 2 人とメッセージ 30 件の Markdown
+        description: map の範囲の外に sequenceDiagram の言語 `mermaid` のコードブロックを 1 つ持つ文書
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 範囲の外の map のシーケンス図を描く
+        U->>P: 文書をスクロールする
+        M->>P: 参加者の行を画面の上端から 48px の位置に留める
+      ```
+
+      <!-- /map -->
+    expected:
+      - 参加者の行が `is-stuck` を持ち、上端が画面の上端から 48px（±2px）の位置
+    test: test_normal_when_plain_sequence_heads_stuck
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
