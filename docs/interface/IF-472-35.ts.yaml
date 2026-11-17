@@ -6845,7 +6845,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 許さないリンク先を持つ map の Markdown
-        description: 'flowchart の map の範囲 1 つを持ち、ノード `c` に `click c "javascript:alert(1)"`、`d` に `click d "id:spec#items"` の行を持たせ、図の後に段落を持つ文書'
+        description: 'flowchart の map の範囲 1 つを持ち、ノード `c` に `click c "javascript:alert(1)"`、`d` に `click d "id:spec#items"` の行を持たせ、図の後に段落を持つ文書。`opts.resolveIdLink` は指定しない'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -9084,7 +9084,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 範囲の外の純粋な Mermaid を持つ Markdown
-        description: map の範囲の外に、flowchart・`actor` を持つ sequenceDiagram・`::icon()` と `:::` を持たない mindmap・gantt の言語 `mermaid` のコードブロックを 1 つずつ持つ文書
+        description: map の範囲の外に、flowchart・`actor` を持つ sequenceDiagram・`::icon()` と `:::` を持たない mindmap・pie の言語 `mermaid` のコードブロックを 1 つずつ持つ文書
       - name: 設定
         description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
     flow: |-
@@ -9097,7 +9097,7 @@ flows:
         participant X as mermaid
         P->>M: mount(el, { markdown, config })
         M->>M: flowchart・sequenceDiagram・mindmap を範囲の外の map の図にする
-        M->>X: gantt を render(ソース)
+        M->>X: pie を render(ソース)
         X-->>M: SVG
         M->>P: map の図 3 つと mermaid の図 1 つを描く
       ```
@@ -9331,6 +9331,448 @@ flows:
     test: test_normal_when_map_mindmap_walked
     refs:
       - SC-472-41#scenarios[正常シナリオ（マインドマップを案内する）]
+  - name: 正常系（map のガントチャートを描く）
+    summary: map の場所の `gantt` を、日付の軸に沿ってタスクを 1 行ずつの棒で描き、今日の線を出す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ。ページの今日の日付を 2026-11-12 に固定する
+      - name: ガントチャートの map を持つ Markdown
+        description: モック `docs/mock/refs/653/assets/samples.js` の `GANTT` と `GANTT_DATA` を map の範囲に記載した文書と、同じ `GANTT` に `todayMarker off` を足した map の範囲を持つ文書
+        notes: section 4 つ（うち 2 つが名前「準備」）・タスク 8 つ。`done`・`active`・`crit`・`milestone`・`after`・終了日・期間を持ち、`excludes weekends`。補足の `notes` は ID `imp` とタスク名「手順書を書く」
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: section とタスクを読み、開始日と終了日を決める
+        M->>M: 日付の軸に沿ってタスクを 1 行ずつ配置する
+        M-->>U: 図の枠に入れた map のガントチャート
+      ```
+
+      <!-- /map -->
+    expected:
+      - map の場所が `figure.mdmark-diagram[data-diagram="map"]` で、タイトルが Mermaid の `title` の「リリースの計画」になり、mermaid のライブラリへの要求が 0 件で、書き方の警告が無い
+      - 上に 2026-11-02 から最後の終了日までの 1 日ごとの目盛りがあり、「設計する」の棒の左端が「要件を決める」の棒の右端と同じ x 座標で、土日の目盛りを期間に数えない
+      - '`done` の「要件を決める」は薄い色、`active` の「設計する」は濃い色、`crit` の「実装する」は `red` の縁、`milestone` の「リリース判定」はひし形の棒で、棒の色が section ごとに分かれる'
+      - タスク名が左の列にあり、棒の中には見えない。棒の押せる要素のスクリーンリーダー向けの名前がタスク名
+      - 2026-11-12 の位置に縦の今日の線と「今日」があり、`todayMarker off` の文書には無い
+      - '`imp` と「手順書を書く」の棒にだけ説明のマーカーがあり、フォーカスすると説明と開始日・終了日が図のツールチップに出る'
+    test: test_normal_when_map_gantt_drawn
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（ガントチャート）]
+  - name: 正常系（map のタイムラインを描く）
+    summary: map の場所の `timeline` を、期間を記載順に横の軸に並べ、出来事を期間の下に並べて描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: タイムラインの map を持つ Markdown
+        description: モック `docs/mock/refs/653/assets/samples.js` の `TIMELINE` と `TIMELINE_DATA` を、印に `title` を持たない map の範囲に記載した文書
+        notes: section 2 つ・期間 6 つ（うち 1 つは section の前）・出来事 9 つ。「2026-05」は出来事を 3 つ持つ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: section・期間・出来事を読み、期間を記載順に横の軸に配置する
+        M-->>U: 図の枠に入れた map のタイムライン
+      ```
+
+      <!-- /map -->
+    expected:
+      - 図の枠のタイトルが Mermaid の `title` の「mdmark の歩み」で、書き方の警告が無い
+      - 6 つの期間の左端の x 座標が記載順に大きくなり、「2026-05」の下に「表のマーカー」「注意書き」「タブ」が記載順に上から並ぶ
+      - section 「記法を作る」「図を広げる」の期間がそれぞれ見出しを持つ枠の中にあり、「2026-04」はどの枠にも入らない
+      - どの 2 つの期間・出来事も重ならない
+      - 「2026-08」と「マインドマップ」に説明のマーカーがある
+    test: test_normal_when_map_timeline_drawn
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（タイムライン）]
+  - name: 正常系（map の Git グラフを描く）
+    summary: map の場所の `gitGraph` を、ブランチごとの横の線に commit を記載順に並べて描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: Git グラフの map を持つ Markdown
+        description: モック `docs/mock/refs/653/assets/samples.js` の `GIT_GRAPH` と `GIT_GRAPH_DATA` を map の範囲に記載した文書
+        notes: ブランチ main・develop・feat。commit 10 個（merge 2・cherry-pick 1 を含む）。`id:`・`msg:`・`tag:`・`HIGHLIGHT`・`REVERSE` と、`id:` も `msg:` も持たない 6 個目の commit を持つ。補足の `notes` は `axis`・`README を書く`・`c6`・`feat`
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: ブランチ・commit・merge・cherry-pick を記載順に読み、ブランチの線に配置する
+        M-->>U: 図の枠に入れた map の Git グラフ
+      ```
+
+      <!-- /map -->
+    expected:
+      - main・develop・feat の線が上から作った順に並び、左端に `aria-pressed="false"` のブランチ名のボタンが 3 つあり、線の色がブランチごとに分かれる
+      - commit の丸の x 座標が記載順に大きくなり、`id:` の「map」は丸の下に、`tag:` の「v0.10.0」は丸の上の札に出る
+      - '`HIGHLIGHT` の「axis」は四角、`REVERSE` は × の丸、merge は塗った丸、cherry-pick は破線の丸で下に「← map」が出る'
+      - 6 個目の commit の下に文字が無く、Mermaid が振る乱数の ID がどこにも出ない
+      - 「README を書く」の文字が省略記号で切れず、develop へ分かれる線と重ならない
+      - '`axis`・`README を書く`・`c6` の commit に説明のマーカーがある'
+    test: test_normal_when_map_git_graph_drawn
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（Git グラフ）]
+  - name: 正常系（map のジャーニーを描く）
+    summary: map の場所の `journey` を、タスクを記載順に点数の高さへ顔の印で並べ、人の凡例を出す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: ジャーニーの map を持つ Markdown
+        description: モック `docs/mock/refs/653/assets/samples.js` の `JOURNEY` と `JOURNEY_DATA` を map の範囲に記載した文書
+        notes: section 3 つ・タスク 7 つ・人 3 人（作成者・AI・読者）。点数は 1〜5 を全て含む
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: section・タスク・点数・人を読み、タスクを記載順に点数の高さへ配置する
+        M-->>U: 図の枠に入れた map のジャーニーと人の凡例
+      ```
+
+      <!-- /map -->
+    expected:
+      - タスクの印の x 座標が記載順に大きくなり、点数 5 の「文書を開く」が最も上、点数 1 の「ずれを直す」が最も下にある
+      - 隣のタスクの印が線でつながり、左に点数 1〜5 の目盛りがある
+      - section ごとにタスクの上の帯の色が分かれる
+      - 「図を辿る」の下に人の丸が 3 つあり、図の枠の下に `aria-pressed="false"` の凡例のボタンが 3 つある
+      - 「ずれを直す」に説明のマーカーがあり、ツールチップに説明と「点数 1」が出る
+    test: test_normal_when_map_journey_drawn
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（ジャーニー）]
+  - name: 正常系（map のブロック図を描く）
+    summary: map の場所の `block-beta` を、`columns` の格子に記載順に並べて描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: ブロック図の map を持つ Markdown
+        description: モック `docs/mock/refs/653/assets/samples.js` の `BLOCK` と `BLOCK_DATA` を map の範囲に記載した文書
+        notes: '`columns 3`。「利用側のページ」は幅 `:2`、`space` 1 つ、入れ子 `core`（`columns 2`、中にブロック 2 つ）、線 3 本（うち 1 本はラベル「描く」）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: columns・ブロック・幅・入れ子を読み、格子に記載順に配置する
+        M-->>U: 図の枠に入れた map のブロック図
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 行目に「利用側のページ」（幅がほかのブロック 2 つと間の分）と「CDN」、次の行に「mdmark」・空き・入れ子「core」が並ぶ
+      - 「core」の枠の中に「読み取り」「配置」が横に並び、左上に名前の見出しがある
+      - 「mdmark」は丸、「CDN」と「キャッシュ」は円柱、「配置」は角の丸い四角で描かれる
+      - 3 本の線が矢じりを持ち、「描く」のラベルが線の上にあり、線がほかのブロックを横切らない
+      - 「core」に説明のマーカーがある
+    test: test_normal_when_map_block_drawn
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（ブロック図）]
+  - name: 正常系（map のガントチャート・タイムライン・ジャーニーの section を開閉する・中へ入る）
+    summary: section を持ち手のボタンで種類ごとの 1 つの項目に閉じ、中へ入ってその section の項目だけを配置し直し、状態を同じタブで保つ
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 3 つの図の map を持つ Markdown
+        description: 正常系（map のガントチャートを描く）・正常系（map のタイムラインを描く）・正常系（map のジャーニーを描く）の 3 つの map の範囲を、この順に 1 つの文書に記載したもの
+        notes: ガントチャートの 1 つ目と 3 つ目の section が名前「準備」を持つ
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 3 つの図で section の開閉のボタンを押す
+        M-->>U: section を種類ごとの 1 つの項目に閉じる
+        U->>M: もう一度開閉のボタンを押してから、section の中へ入るボタンを押す
+        M-->>U: その section の項目だけを配置し直す
+        U->>M: Esc を押し、ガントチャートの 2 つ目の「準備」の中へ入ってから、同じタブでページを読み込み直す
+        M-->>U: 全体の図に戻した後、2 つ目の「準備」の中から描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - ガントチャートの閉じた section は「{名前}（タスク {数} 件）」の 1 行で、棒の左端が section の最初の開始日、右端が最後の終了日の x 座標にあり、日付の目盛りは閉じる前と同じ
+      - タイムラインの閉じた section は「{名前}（期間 {数} 件）」の期間 1 つ分の幅の箱で、後ろの期間の左端が詰めた位置にある
+      - ジャーニーの閉じた section は「{名前}（タスク {数} 件）」のマーカー 1 つで、高さが中のタスクの点数の平均で、前後のタスクのマーカーと線でつながる
+      - 開閉のボタンは `aria-expanded` を持ち、名前が「{section の名前}を開く」「{section の名前}を閉じる」。section を持たない項目には開閉と中へ入るボタンが無い
+      - 中へ入ると、その section の項目だけが描かれ、図の上端のパンくずに「{図のタイトル} › {section の名前}」が出る。ガントチャートの日付の目盛りはその section の最初の開始日から最後の終了日まで、ジャーニーの点数の目盛りは 1〜5 のまま
+      - クエリ文字列に `map-1=s3` が入り、読み込み直した後も 2 つ目の「準備」の中から描かれる。同じ名前を持たない section のキーは section の名前
+      - Esc・戻るボタンで全体の図に戻り、入る前と同じ配置になる。開くと閉じる前と同じ配置になる。全て開く・全て閉じるは今の図の全ての section に適用される
+    test: test_normal_when_map_section_toggled
+    refs:
+      - SC-472-39#scenarios[正常シナリオ（ガントチャート・タイムライン・ジャーニーの section を開閉する）]
+  - name: 正常系（map のブロック図の入れ子のブロックを開閉する・中へ入る）
+    summary: 入れ子のブロックを記載した幅のまま 1 行の高さに閉じ、中へ入ってその中だけを配置し直す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: ブロック図の map を持つ Markdown
+        description: 正常系（map のブロック図を描く）と同じ
+        notes: 入れ子 `core` は 2 行目の 3 列目にあり、中にブロック 2 つを持ち、「mdmark」から「描く」の線を受ける
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 「core」の開閉のボタンを押す
+        M-->>U: 記載した幅のまま 1 行の高さに閉じる
+        U->>M: もう一度開閉のボタンを押してから、「core」の中へ入るボタンを押す
+        M-->>U: 「core」の中だけを配置し直す
+        U->>M: Esc を押す
+        M-->>U: 全体の図に戻す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 閉じた「core」は「core（ブロック 2 件）」を出し、幅が閉じる前と同じで、高さがほかのブロック 1 行分
+      - 閉じた後も「mdmark」・空き・「文書」・「キャッシュ」の左端の x 座標が閉じる前と同じ
+      - 「描く」の線が閉じた「core」の縁につながる
+      - 中へ入ると「読み取り」「配置」だけが `columns 2` の格子で描かれ、パンくずに「ブロック図 › core」が出て、クエリ文字列に `map-1=core` が入る
+      - Esc で全体の図に戻り、開くと閉じる前と同じ配置になる。開閉のボタンは `aria-expanded` を持つ
+    test: test_normal_when_map_block_toggled
+    refs:
+      - SC-472-39#scenarios[正常シナリオ（ブロック図の入れ子のブロックに入る・開閉する）]
+  - name: 正常系（map の軸と格子の配置の図に補足の layout を適用する）
+    summary: 軸と格子の配置の図で補足の `layout` の `color` と `collapsed` だけを適用し、座標と並び順は書き方の警告にして、項目をドラッグしても動かさない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: layout を持つ軸と格子の配置の図の Markdown
+        description: 'モック `docs/mock/refs/653/assets/samples.js` の `GANTT` と `GANTT_LAYOUT_DATA`、`BLOCK` と `BLOCK_LAYOUT_DATA`、`GIT_GRAPH` と、`GIT_GRAPH_DATA` に `layout` の `axis: { color: teal, order: 1 }` を追加した補足を、map の範囲 3 つに記載した文書'
+        notes: 'ガントチャートは「リリース判定」（`rel`）の `color: purple`・section「公開」の `collapsed: true`・「結合テスト」（`tst`）の `pos`。ブロック図は「mdmark」の `color: green`・`core` の `collapsed: true`・「文書」（`doc`）の `pos`'
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: 色と閉じた状態を適用した 3 つの図と、座標と並び順の書き方の警告
+        U->>M: ガントチャートの「設計する」を右へ 100px ドラッグする
+        M-->>U: 項目を動かさず、図の枠の中をスクロールする
+      ```
+
+      <!-- /map -->
+    expected:
+      - section「公開」と `core` が閉じた状態で描かれる（正常系（map のガントチャート・タイムライン・ジャーニーの section を開閉する・中へ入る）・正常系（map のブロック図の入れ子のブロックを開閉する・中へ入る）の閉じた見え方と同じ）
+      - 「公開」を開くと「リリース判定」が `purple`、「mdmark」が `green`、commit `axis` が `teal` の面と縁の配色で描かれる
+      - 3 つの図の枠の前の書き方の警告に、`tst` と `doc` の `pos` と `axis` の `order` の 3 つの項目があり、軸と格子の配置の図では適用しない旨と、`order` の項目に並び順は Mermaid の行の順で変える旨がある
+      - 「結合テスト」・「文書」・commit `axis` の位置が `layout` を持たないときと同じ
+      - ドラッグの後も「設計する」の位置は変わらず、「配置と選択を元に戻す」は押せないまま
+    test: test_normal_when_map_axis_grid_layout
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（軸と格子の配置の図に補足の layout を適用する）]
+  - name: 正常系（map のガントチャート・タイムライン・ジャーニーの項目を選ぶ）
+    summary: タスク・期間・出来事・人を押して、種類ごとのつながりを残してほかを薄くし、Esc で解く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 3 つの図の map を持つ Markdown
+        description: 正常系（map のガントチャート・タイムライン・ジャーニーの section を開閉する・中へ入る）と同じ
+        notes: 「設計する」は `after req` で「要件を決める」につながり、「実装する」から `after des` で指される。「2026-05」は出来事を 3 つ持つ。「AI」は「図を書く」「mdmark check を流す」「図を辿る」の 3 つのタスクにいる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 「設計する」の棒を押す
+        M-->>U: 前後の after のタスクのほかを薄くし、つながりの線を出す
+        U->>M: 「2026-05」、その下の「注意書き」、凡例の「AI」を順に押す
+        M-->>U: 選んだ項目とそのつながりのほかを薄くする
+        U->>M: Esc を押す
+        M-->>U: 選択を解く
+      ```
+
+      <!-- /map -->
+    expected:
+      - 「設計する」を選ぶと、「要件を決める」「設計する」「実装する」の表示は変わらず、ほかのタスクが `opacity` 0.25 になり、「要件を決める」の右端から「設計する」の左端、「設計する」の右端から「実装する」の左端へ矢じりの線が出る
+      - 「2026-05」を選ぶとその期間と 3 つの出来事だけが残り、「注意書き」を選ぶと「注意書き」と「2026-05」だけが残る
+      - 「AI」を選ぶと 3 つのタスクだけが残り、その 3 つのタスクのマーカーだけが記載順に線でつながり、凡例のボタンが `aria-pressed="true"` になる
+      - Esc・「配置と選択を元に戻す」・選んだ項目をもう一度押すのどれかで選択が解け、つながりの線が消える
+      - タスク・期間・出来事・凡例の人は Tab でフォーカスを受け、Enter で選ばれ、選択中は押せる要素のスクリーンリーダー向けの名前が「{名前}（選択中）」になる
+    test: test_normal_when_map_axis_items_selected
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（ガントチャートのタスクを選んで強調する）]
+      - SC-472-8#scenarios[正常シナリオ（タイムラインの期間を選んで強調する）]
+      - SC-472-8#scenarios[正常シナリオ（ジャーニーの人を選んで強調する）]
+  - name: 正常系（map の Git グラフ・ブロック図の項目を選ぶ）
+    summary: ブランチ・commit・ブロックを押して、ブランチと祖先・矢印の相手を残してほかを薄くする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 2 つの図の map を持つ Markdown
+        description: 正常系（map の Git グラフを描く）・正常系（map のブロック図を描く）の 2 つの map の範囲を 1 つの文書に記載したもの
+        notes: feat は「gantt を足す」と「axis」を持ち、develop へ merge される。「map」は main へ cherry-pick される。「mdmark」は「利用側のページ」から線を受け、「core」へ「描く」の線を出す。「文書」は線を持たない
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: ブランチ名「feat」、commit「axis」を順に押す
+        M-->>U: ブランチの commit・祖先の commit のほかを薄くする
+        U->>M: ブロック図の「mdmark」を押し、「core」も押してから、「文書」を押す
+        M-->>U: 矢印でつながる相手・2 つの間の線・そのブロックのほかを薄くする
+      ```
+
+      <!-- /map -->
+    expected:
+      - 「feat」を選ぶと、feat の線と「gantt を足す」「axis」の表示は変わらず、ほかの commit と線が薄くなり、ブランチ名のボタンが `aria-pressed="true"` になる。main を選ぶと cherry-pick で入った commit と、merge で入った develop の commit も残る
+      - 「axis」を選ぶと、「axis」から親をたどった「gantt を足す」「map」「README を書く」「init」とその線だけが残る
+      - 「mdmark」を選ぶと「利用側のページ」「core」と 2 本の線だけが残り、「core」も選ぶと「描く」の線と両端だけが残る（構成図のノードの 2 つの選択と同じ）
+      - 線を持たない「文書」を選ぶと「文書」のほかが薄くなる
+      - Esc・「配置と選択を元に戻す」で選択が解け、ブランチ名・commit・ブロックは Tab でフォーカスを受け、Enter で選ばれ、選択中はスクリーンリーダー向けの名前が「{名前}（選択中）」になる
+    test: test_normal_when_map_git_block_selected
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（Git グラフのブランチを選んで強調する）]
+      - SC-472-8#scenarios[正常シナリオ（ブロック図のブロックを選んで強調する）]
+  - name: 正常系（map の時系列の図を再生する）
+    summary: 補足の `walkthroughs` を持たないガントチャート・タイムライン・Git グラフ・ジャーニーで、シーケンス図の再生と同じ帯で項目を 1 つずつ強調する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 4 つの図の map を持つ Markdown
+        description: 正常系（map のガントチャートを描く）・正常系（map のタイムラインを描く）・正常系（map の Git グラフを描く）・正常系（map のジャーニーを描く）の 4 つの map の範囲と、ガントチャートの補足に `walkthroughs`（手順 1 つ）を追加した map の範囲を 1 つの文書に記載したもの
+        notes: ガントチャートの開始日の順の 2 つ目のタスクは「設計する」。Git グラフの commit は 10 個
+      - name: Mock
+        description: 差し替える依存は無い。自動で進める間隔はテストの時計で進める
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: ガントチャートの再生の帯の次へを 2 回押す
+        M-->>U: 開始日の順の 2 つ目のタスクを強調する
+        U->>M: Git グラフの再生の帯の自動で進めるを押す
+        M-->>U: commit を記載順に 1 つずつ強調する
+        U->>M: 停止を押す
+        M-->>U: 強調を解除する
+      ```
+
+      <!-- /map -->
+    expected:
+      - 4 つの図の枠の下に、シーケンス図の再生と同じ帯があり、手順の数がガントチャート `–/8`・タイムライン `–/6`・Git グラフ `–/10`・ジャーニー `–/7` で、前へ・停止・自動で進める・次への 4 つのボタンがある
+      - ガントチャートの手順 2 で「設計する」だけが残ってほかが薄くなり、帯の 1 行目にタスク名と開始日・終了日が出る
+      - Git グラフの自動で進めるで commit が記載順に 1 つずつ強調され、帯にブランチ名と commit の ID（`id:` を持たない commit は `msg:` の文字、どちらも持たない commit は「commit 6」）が出る。補足の説明を持つ commit では帯に説明の文が出る
+      - 強調する項目が閉じた section の中にあるときは、その section を強調する
+      - 停止で強調が解除され、前へ・次へ・矢印キーの動きは構成図の案内と同じ
+      - '`walkthroughs` を持つガントチャートの帯は案内の手順を進め、手順の数が `–/1` で、再生の手順を出さない'
+    test: test_normal_when_map_time_series_played
+    refs:
+      - SC-472-41#scenarios[正常シナリオ（時系列の図を再生する）]
+  - name: 正常系（範囲の外の軸と格子の配置の図）
+    summary: 範囲の外の gantt・timeline・gitGraph・journey・block-beta のコードブロックを、mermaid を読み込まずに補足の無い map の図にする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 範囲の外の 5 種類の Mermaid を持つ Markdown
+        description: map の範囲の外に、`title` を持たない gantt・timeline・gitGraph・journey・block-beta の言語 `mermaid` のコードブロックを 1 つずつ持つ文書
+      - name: 設定
+        description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>M: 5 つのコードブロックを範囲の外の map の図にする
+        M->>P: mermaid を読み込まずに map の図 5 つを描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`figure.mdmark-diagram[data-diagram="map"]` が 5 つで、`figure.mdmark-diagram[data-diagram="mermaid"]` が無く、mermaid のライブラリへの要求が 0 件'
+      - map の図のタイトルが `ガントチャート`・`タイムライン`・`Git グラフ`・`ジャーニー`・`ブロック図`
+      - 図の `data-map-kind` が `gantt`・`timeline`・`gitGraph`・`journey`・`block` で、書き方の警告が無い
+    test: test_normal_when_plain_axis_grid_map
+    refs:
+      - SC-472-11#scenarios[正常シナリオ（軸と格子の配置の種類のコードブロックだけを持つ）]
+  - name: '正常系（map のノードの id: のリンク先を URL に変える）'
+    summary: '`opts.resolveIdLink` で、map の flowchart の `click` の `id:` と本文の `[名前](id:...)` を URL に変えてリンクにする'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 'id: のリンク先を持つ map の Markdown'
+        description: flowchart の map の範囲 1 つと段落 1 つを持つ文書。ノード `a` に `click a "id:SC-1#scenarios[正常シナリオ]"`、`b` に `click b href "id:SC-2"`、`c` に `click c "id:unknown"`、`d` に `click d "id:bad"` の行を持たせる。段落は `[仕様](id:SC-1)` のリンクを持つ
+      - name: 設定
+        description: '`opts.resolveIdLink` に、`SC-` で始まる参照を `https://docs.example.com/{参照}` に、`bad` を `javascript:alert(1)` に変え、ほかは `undefined` を返す関数'
+      - name: Mock
+        description: リンク先への遷移を手元の応答で受け、開いた URL を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, resolveIdLink })
+        M->>P: resolveIdLink(参照)
+        P-->>M: URL か undefined
+        M->>M: 返却された URL を本文のリンクと同じ許可で確認する
+        M-->>U: ノードのリンクと本文のリンク、書き方の警告
+        U->>M: ノード a を押す
+        M-->>U: 変えた URL を開く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`resolveIdLink` が `SC-1#scenarios[正常シナリオ]`・`SC-2`・`unknown`・`bad`・`SC-1` を受け取り、参照は `id:` を除いた文字'
+      - ノード `a`・`b` がそれぞれ `href` が `https://docs.example.com/SC-1#scenarios[正常シナリオ]`・`https://docs.example.com/SC-2` のリンクの中にあり、`a` を押すとその URL が開く
+      - 段落の `[仕様](id:SC-1)` の `href` が `https://docs.example.com/SC-1`
+      - ノード `c`・`d` はリンクの中に無く、図の場所の書き方の警告に `c` と `id:unknown`、`d` と `id:bad` が記載される
+      - リンクのノードの Tab でのフォーカス・Enter・ドラッグの動きは、正常系（リンク先を持つノードを開く）と同じ
+    test: test_normal_when_map_node_id_link_resolved
+    refs:
+      - 'SC-472-8#scenarios[正常シナリオ（id: のリンク先を持つノード）]'
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -9672,6 +10114,14 @@ request:
     description: Mermaid の矢印（`-->`・`-.->`・`==>`）ごとと、補足の `layout` の `line` で指す名前ごとの線の種類
     constraints: 知らない模様・太さ・矢じり・色の名前は無視して既定にする。補足の `layout` の `line` の名前が `map.lines` に無い線は既定の線で描き、図の前の書き方の警告に記載する。凡例は出さない
     example: '{ "-.->": { "dash": "dashed", "head": "open" }, "back": { "dash": "dotted" } }'
+  - name: opts.resolveIdLink
+    type: '(ref: string) => string | undefined'
+    required: false
+    location: argument
+    default: なし（`id:` のリンク先を許可しないリンク先として扱う）
+    description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）にも適用する'
+    notes: '確認ログ『map の flowchart の click の id: をどこで URL に変えるか』'
+    example: (ref) => `https://docs.example.com/${ref.slice(3)}`
 request_example: |-
   ```json
   {
@@ -10604,7 +11054,7 @@ constraints:
 
       対象を文書の順に `render` し、返った SVG を図の枠（部品設計『図の枠』の種類 `mermaid`）の表示する枠に入れて、対象のコードブロックと置き換える。
 
-      図の枠のタイトルは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（`flowchart`・`graph` → フローチャート／`sequenceDiagram` → シーケンス図／`classDiagram` → クラス図／`stateDiagram`・`stateDiagram-v2` → 状態遷移図／`erDiagram` → ER 図／`gantt` → ガントチャート／`pie` → 円グラフ／ほか → 図）にし、front matter の `title` は図の中に重ねて描かない。
+      図の枠のタイトルは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（`flowchart`・`graph` → フローチャート／`sequenceDiagram` → シーケンス図／`classDiagram` → クラス図／`stateDiagram`・`stateDiagram-v2` → 状態遷移図／`erDiagram` → ER 図／`gantt` → ガントチャート／`timeline` → タイムライン／`gitGraph` → Git グラフ／`journey` → ジャーニー／`block-beta` → ブロック図／`pie` → 円グラフ／ほか → 図）にし、front matter の `title` は図の中に重ねて描かない。
 
       範囲・更新日は出さない。
 
@@ -10646,7 +11096,7 @@ constraints:
   - item: フロントマター
     constraint: インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じく、文書の先頭のフロントマターを除外して描き、機能 `frontmatter` がオンのときだけ本文の先頭に閉じた折りたたみを描く。右側の目次・目次・セクションの開閉はフロントマターとその表示を対象にしない。折りたたみの開閉は、印刷の前に開く折り畳みに含める。`update` は差し替えた本文のフロントマターでもう一度決め、折りたたみの開閉は制約「描き直しで部品の開閉を保つ」のとおりに描く
   - item: map の図
-    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図、`erDiagram` はテーブルを列の行を持つノードにした ER 図（制約『map の ER 図』）、`stateDiagram-v2`・`stateDiagram` は状態をノードにした状態遷移図（制約『map の状態遷移図』）、`classDiagram` はクラスをメンバーの行を持つノードにしたクラス図（制約『map のクラス図』）、`architecture-beta` は service をアイコンを持つノードにしたアーキテクチャ図（制約『map のアーキテクチャ図』）、`C4Context` は要素を種類の行と説明を持つノードにした C4 図（制約『map の C4 図』）、`mindmap` は根を中央に置いて枝を左右の外へ広げる木の配置のマインドマップ（制約『map のマインドマップ』）にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す。種類を持たないノードは種類の行の高さを空けず、名前をノードの上下の中央に描く。シーケンス図の `actor` の参加者は、設定の `map.kinds.actor` があればその種類で、無ければ lucide の人のアイコンを持つ既定の種類で描く。`data-map-plain` を持つ範囲の外の map の図も、この制約と map の制約を範囲と同じく当てる'
+    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図、`erDiagram` はテーブルを列の行を持つノードにした ER 図（制約『map の ER 図』）、`stateDiagram-v2`・`stateDiagram` は状態をノードにした状態遷移図（制約『map の状態遷移図』）、`classDiagram` はクラスをメンバーの行を持つノードにしたクラス図（制約『map のクラス図』）、`architecture-beta` は service をアイコンを持つノードにしたアーキテクチャ図（制約『map のアーキテクチャ図』）、`C4Context` は要素を種類の行と説明を持つノードにした C4 図（制約『map の C4 図』）、`mindmap` は根を中央に置いて枝を左右の外へ広げる木の配置のマインドマップ（制約『map のマインドマップ』）、`gantt` は日付の軸に沿ったガントチャート（制約『map のガントチャート』）、`timeline` は記載順の軸に沿ったタイムライン（制約『map のタイムライン』）、`gitGraph` はブランチの横の線に commit を記載順に並べた Git グラフ（制約『map の Git グラフ』）、`journey` はタスクを記載順に点数の高さへ並べたジャーニー（制約『map のジャーニー』）、`block-beta` は `columns` の格子に記載順に並べたブロック図（制約『map のブロック図』）にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す。種類を持たないノードは種類の行の高さを空けず、名前をノードの上下の中央に描く。シーケンス図の `actor` の参加者は、設定の `map.kinds.actor` があればその種類で、無ければ lucide の人のアイコンを持つ既定の種類で描く。`data-map-plain` を持つ範囲の外の map の図も、この制約と map の制約を範囲と同じく当てる'
     notes: 外観はモック `docs/mock/pages/document/445/a-map/` と `docs/mock/components/map-kinds/`（確認ログ）。配置の方式はライブラリ本体.md の `## PoC 結果`
   - item: map の強調
     constraint: 線のホバー・案内・再生・ノードと参加者の選択では、強調する要素の表示は変えず、ほかのノード・線・ラベル・ライフラインを `opacity` 0.25 にし、強調する線の上をデータの印が流れ続ける（両向きの線は両方へ）。選択の強調は案内・再生の強調より優先する。読者が始めたデータの印は `prefers-reduced-motion` でも流し、自動で始める再生は動きを減らす設定では止めて始める
@@ -10660,14 +11110,14 @@ constraints:
     constraint: 印の引数は shuhei1101/mdmark#451 の資料 A-128 の構成の JSON のオブジェクトで、`title`（図の枠と折りたたみの見出し）・`focus`（最初に入るグループの ID）・`play`（`"autoplay"` で、図が画面に入ったら押さずに再生か案内を始める。動きを減らす設定では始めず止めた帯で出す）・`interval`（自動で進める間隔の秒。正の数。省くと 2）・`collapse`（A-128 の共通の折り畳み。`open`・`title`）だけを読む。知らないキーは無視し、型の合わない値は既定にする（どちらも点検が通知する。型の合わない値は書き方の警告にもする）。最初に入るグループは、クエリ文字列の `map-{図の番号}` → sessionStorage → `focus` の順で決める（無いグループの ID は飛ばす）
     notes: 記載の警告は文書をHTML文字列にする.ts の制約『map の書き方の誤り』
   - item: map の書き方の警告
-    constraint: Mermaid の読めない行（行番号・行の文字・直し方）・閉じの無い `subgraph` と複合フラグメント・補足の JSON の読めない箇所（行と原因）・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・`--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前・マインドマップの 2 つ目の根の行と適用しない `layout` のキー（並び順は Mermaid の行の順で変える旨を添える）・ID を持たない同じ文字の 2 つ以上の項目を指す補足のキー（その項目に ID を記載して ID で指す修正の方法を添える）を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を足す
+    constraint: Mermaid の読めない行（行番号・行の文字・直し方）・閉じの無い `subgraph` と複合フラグメント・補足の JSON の読めない箇所（行と原因）・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・`--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前・マインドマップの 2 つ目の根の行と適用しない `layout` のキー（並び順は Mermaid の行の順で変える旨を添える）・ID を持たない同じ文字の 2 つ以上の項目と同じ名前の 2 つ以上の section を指す補足のキー（項目は ID を記載して ID で指す、section は名前を分ける修正の方法を添える）・軸と格子の配置の図で適用しない `layout` のキー（制約『map の軸と格子の配置の図の補足』）・`opts.resolveIdLink` が URL を返さなかった `id:` のリンク先を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を足す
     notes: '`render` が確かめる範囲の形は文書をHTML文字列にする.ts の制約『map の書き方の誤り』'
   - item: map の用語の下線
     constraint: 文書をHTML文字列にする.ts の制約『map の範囲』の `data-map-terms` の用語を、構成図のノードの名前と、シーケンス図の参加者の名前・メッセージの文・ノートの文の中で見つけ、今の図のノードの用語と同じく `span.mdmark-term`（フォーカスでき、図のツールチップに意味を出す）にする。用語の文字は、文字を逃がした名前の中に置き、名前の文字の選択とコピーを妨げない。構成図のツールチップ（ノード・線・グループの補足の `notes` の説明）の文の中の用語は、フォーカスを持たない下線（`tabindex` とツールチップの持ち主を持たない `span.mdmark-term`）にし、そのツールチップの末尾に用語ごとに「{用語}：{意味}」の行を並べる。押せる要素の中の文字（グループのタイトルのボタン・ツールチップを持つ線のラベル）と、案内と再生の帯の文には付けない（今の図と同じく、押せる要素とツールチップの中に、フォーカスできる用語を入れ子にしない）。同じ図の構成図のノードの説明（補足の `notes`）のツールチップも、図の枠のツールチップの層に配置する
   - item: map のノードのリンク
     constraint: '構成図の Mermaid の `click {ID} "{リンク先}"` の行（`href` を省いた形と、`"{リンク先}" "{ツールチップ}"`・`_blank` などの後ろの値は読んで捨てる）を、そのノードのリンク先にする。
 
-      リンク先を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{リンク先}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素に class `has-link` を付ける。
+      `id:` で始まるリンク先は `opts.resolveIdLink` が返した文字に置き換えてから（関数を指定しない・文字を返さないときは許さないリンク先として扱う）、リンク先を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{リンク先}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素に class `has-link` を付ける。
 
       説明のマーカーはリンクの中に入れず、リンクの後ろに配置する。
 
@@ -10677,7 +11127,7 @@ constraints:
 
       コールバックの関数を指す `click {ID} {関数名}` の形は読んで捨てる'
     decided_by: SC-472-8#scenarios[正常シナリオ（リンク先を持つノード）]
-    notes: '`id:` などの参照は利用側が URL に変えてから記載する。確認ログ『map のノードのリンクをこの PR の要件に追加するか』'
+    notes: '`id:` の対応表は利用側が持ち、`opts.resolveIdLink` で解き方を指定する（確認ログ『map の flowchart の click の id: をどこで URL に変えるか』で、確認ログ『map のノードのリンクをこの PR の要件に追加するか』の「利用側が URL に変えてから記載する」を置き換えた）'
   - item: map のグループの説明
     constraint: 補足の `notes` のキーが構成図の `subgraph` の ID のとき、そのグループのタイトルの右に、ノードの説明と同じマーカー（フォーカスでき、`aria-describedby` で説明のツールチップを指す）を配置し、ポインターを乗せるかフォーカスしたときに説明を図のツールチップで出す。閉じたグループのノードと、中へ入ったグループの押せないタイトルにも同じマーカーを配置する。マーカーはタイトルのボタンの外に置き、押してもグループの中へ入らない・開閉しない
     decided_by: SC-472-40#scenarios[正常シナリオ]
@@ -10790,6 +11240,7 @@ constraints:
       | ノード・グループ・線を動かす、参加者の並べ替え（制約『map の操作の分け方』） | 付く | 付く |
       | グループの開閉・中へ入る | 付く | 付く |
       | シーケンス図の再生のバー | 付く | 付く |
+      | ガントチャート・タイムライン・Git グラフ・ジャーニーの再生のバー（制約『map の時系列の図の再生』） | 付く | 付く |
       | 状態の保存（制約『map の状態の保存』） | 付く | 付く |
       | `click`・`link` の行のノード・クラスのリンク | 付く | 付く |
       | ノード・線・グループ・メッセージの説明と注記のツールチップ（補足の `notes`） | 付かない | 付く |
@@ -10798,6 +11249,38 @@ constraints:
   - item: map のマインドマップ
     constraint: '`mindmap` を、字下げで親子を決めた項目の木にし、入れ子の自動配置を使用せずに木の配置で描く。根を図の中央に配置し、根の子（1 レイヤー目の枝）を記載順に、子孫の高さの合計が小さい側へ左右に振り分け、深いレイヤーほど根から外へ並べる。同じ親の子は記載順に上から並べ、親は子の並びの縦の中央に配置する。項目は記載した形状（`[ ]` は四角、`( )` は角の丸い四角、`(( ))` は丸、`)) ((` はバン、`) (` は雲、`{{ }}` は六角形、形状の指定の無い項目は枠線の無い文字に下線）で描き、`{ID}[名前]` のように記号の前に記載した文字を項目の ID にする。`::icon()` の行と `:::` のクラスは描かず、書き方の警告にもしない。親と子は曲線でつなぎ、1 レイヤー目の枝ごとに、その枝の項目の縁と線を色の名前の順（`blue`・`green`・`orange`・`purple`・`red`・`yellow`）で分ける。色は中へ入っても全体の図の根からの枝で決める。子を持つ項目（今の図の根を除く）は、子の側の辺に開閉と中へ入るボタン（どちらも 28px 以上）を並べた持ち手を付け、子への線は持ち手の先から出す。閉じた項目は子孫とその線を描かず、開閉のボタンに子孫の項目の数を出す。中へ入ると、その項目を根にして子孫だけを同じ配置で描き直し、根からその項目までの名前を図の上端に薄く並べる（戻るボタンと Esc で 1 つ外へ戻る）。項目を選ぶと、根からその項目までの項目と線、その項目の子孫を残してほかを `opacity` 0.25 にする。選べる場所は名前の周りの余白と枠線（形状の指定の無い項目は下線）で、名前の文字の上と説明のマーカー・持ち手のボタンでは選ばない。項目は、構成図のノードと同じく項目の全体を覆う押せる要素が代わりにフォーカスを受け（項目の中にフォーカスできる要素を入れ子にしない）、Enter・Space で選び、選んだかをスクリーンリーダー向けの名前の末尾の「（選択中）」で伝える。描き直してもフォーカスを押したボタンか項目へ戻し、消えたときは表示する枠へ移す。補足の `notes`・`walkthroughs` の `nodes` と `enter`・`layout`・印の `focus` のキーは、項目の ID か ID を持たない項目の表示する文字。制約『map の状態の保存』のキーも同じで、ID を持たない同じ文字の項目が 2 つ以上あるときは、その項目だけ根を 0 とした記載順の `n{番号}` にする。補足と印の `focus` のキーが、ID を持たない同じ文字の 2 つ以上の項目を指すときは、そのキーをどの項目にも適用しない（制約『map の書き方の警告』）。補足の `layout` は `color`（その色の名前の面と縁）と `collapsed` だけを適用し、ほかのキーは書き方の警告にする。項目はドラッグで動かさず、項目の上のドラッグは図の枠の中のスクロールにする。「配置と選択を元に戻す」は選んだときだけ押せる。根より浅いか同じ字下げの行（2 つ目の根）は読めない行として書き方の警告にし、読み飛ばす。最初に描いたときは、根が表示する枠の中央に来るように枠の中をスクロールする'
     notes: 外観はモック `docs/mock/components/map-mindmap/`（確認ログ『map のマインドマップのモック（map-mindmap）の描き方と操作への合意』）。`layout` の適用範囲は確認ログ『マインドマップに補足の `layout` とノードのドラッグをどこまで適用するか』
+  - item: map の軸と格子の配置の図の補足
+    constraint: ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図では、入れ子の自動配置を使用せず、各制約の軸か格子の配置で描く。補足の `layout` は `color` と `collapsed`（section・入れ子のブロック）だけを適用し、`pos`・`order`・`rank`・`width`・`align` は適用せずに書き方の警告（並び順は Mermaid の行の順で変える旨を添える）にし、項目はドラッグで動かさない（項目の上のドラッグは図の枠の中をスクロールする）。補足の `notes`・`walkthroughs` の `nodes` と `enter`・`layout`・印の `focus` のキーは、ID を記載した項目（gantt のタスクの ID・gitGraph の `id:`・block-beta のブロックの ID）は ID、記載しない項目は表示する文字（gantt のタスク名・timeline の期間と出来事の文・gitGraph の `msg:`・journey のタスク名）、`id:` も `msg:` も持たない commit は記載順の `c{番号}`（1 から）、gitGraph のブランチはブランチ名、section は section の名前にする。同じ文字の 2 つ以上の項目・同じ名前の 2 つ以上の section を指すキーはどの項目にも適用せず書き方の警告にする。状態の保存のキーは同じキーで、同じ文字の項目は記載順の `n{番号}`、同じ名前の section は記載順の `s{番号}`（1 から）にする。項目は構成図のノードと同じく項目の全体を覆う押せる要素がフォーカスを受け、Enter・Space で選び、選んだかをスクリーンリーダー向けの名前の末尾の「（選択中）」で伝える。選択は Esc・「配置と選択を元に戻す」・選んだ項目をもう一度押すのどれかで解く。説明のマーカーは、`notes` で説明を持つ項目にだけ付ける
+    decided_by: SC-472-8#scenarios[正常シナリオ（軸と格子の配置の図に補足の layout を適用する）]
+    notes: 外観はモック `docs/mock/components/map-axis-grid/`（確認ログ『map の軸と格子の配置の図のモック（map-axis-grid）の描き方と操作への合意』）
+  - item: map の section の開閉と中へ入る
+    constraint: ガントチャート・タイムライン・ジャーニーの section と、ブロック図の入れ子のブロックは、構成図のグループと同じく開閉と中へ入るができる（24px 以上の開閉のボタンと中へ入るボタン。開閉のボタンは `aria-expanded` を持つ）。閉じた section と入れ子のブロックは「{名前}（{種類} {数} 件）」（種類はタスク・期間・ブロック）を持つ 1 つの項目にする。中へ入るとその中の項目だけを同じ配置で描き直してほかを描かず、図の上端のパンくずに「全体 › {名前}」を出す。戻るボタンと Esc・全て開く・全て閉じる・状態の保存（制約『map の状態の保存』。キーは制約『map の軸と格子の配置の図の補足』）は構成図のグループと同じに動き、開く・戻ると閉じる前・入る前と同じ配置に戻る。section を持たない項目には開閉と中へ入るボタンを付けない
+    decided_by: SC-472-39#scenarios[正常シナリオ（ガントチャート・タイムライン・ジャーニーの section を開閉する）]
+    notes: 確認ログ『ガントチャート・タイムライン・ジャーニーの閉じた section と中へ入った section の見え方』『ブロック図の閉じた入れ子のブロックの大きさと、ほかのブロックの列の位置』
+  - item: map のガントチャート
+    constraint: '`gantt` の `dateFormat`（`YYYY-MM-DD`）・`axisFormat`・`excludes weekends`・`todayMarker`・`title`・`section` と、タスクの行（`{名前} :{タグ,}{ID,}{開始},{終了か期間}`。タグは `done`・`active`・`crit`・`milestone`、開始は日付か `after {ID}`、終了は日付か `{数}d`）を読む。`after {ID}` はそのタスクの終了日から始め、`excludes weekends` のときは土日を期間に数えない。上に `axisFormat` の書式の日付の軸（1 日ごとの目盛り。土日は面を薄くする）、左にタスク名の列を置き、タスクを記載順に 1 行ずつ、開始日から終了日までの棒で描く（タスク名は棒の中に出さず、棒のスクリーンリーダー向けの名前にする）。section は見出しの行と帯にまとめ、section ごとに色の名前の順（制約『map のマインドマップ』と同じ並び）で棒の色を分ける。`done` は薄い色、`active` は濃い色、`crit` は `red` の縁、`milestone` はひし形で描く。今日の日付が期間の中にあり `todayMarker off` が無ければ、今日の日付に縦の破線と下端の「今日」を描く。説明を持つタスクのツールチップには、説明の後ろに開始日と終了日を出す。閉じた section は最初の開始日から最後の終了日までの 1 本の棒にし、名前と数は見出しの行に出す（日付の軸は変えない）。section の中へ入ると、日付の軸をその section の最初の開始日から最後の終了日までに縮める。タスクを選ぶと、そのタスクと `after` でつながる前と後ろのタスクを残してほかを `opacity` 0.25 にし、前のタスクの終わりから選んだタスクの始まり、選んだタスクの終わりから後ろのタスクの始まりへ、矢じりの線を出す。開始と終了を読めないタスクの行は書き方の警告にして読み飛ばす'
+    decided_by: SC-472-8#scenarios[正常シナリオ（ガントチャート）]
+    notes: 外観はモック `docs/mock/components/map-axis-grid/`
+  - item: map のタイムライン
+    constraint: '`timeline` の `title`・`section` と期間の行（`{期間} : {出来事} : {出来事}…`）を読み、期間を記載順に左から右へ横の軸の上に並べ、期間の下に出来事を記載順に縦に並べて、期間から出来事へ線でつなぐ。section の期間は section の名前の見出しを持つ枠で囲み、section ごとに色を分ける。section の前の期間は枠の外に置き、`gray` で描く。Mermaid の `title` を図の枠のタイトルにする（印の `title` を先に使用する）。閉じた section は期間 1 つ分の幅の項目にし、1 行目に名前、2 行目に「（期間 {数} 件）」を出して、後ろの期間を詰める。期間を選ぶとその期間と出来事を、出来事を選ぶとその出来事と期間を残して、ほかを `opacity` 0.25 にする'
+    decided_by: SC-472-8#scenarios[正常シナリオ（タイムライン）]
+    notes: 外観はモック `docs/mock/components/map-axis-grid/`
+  - item: map の Git グラフ
+    constraint: '`gitGraph` の `commit`（`id:`・`msg:`・`tag:`・`type: NORMAL | REVERSE | HIGHLIGHT`）・`branch`・`checkout`・`merge`・`cherry-pick id:` を記載順に読み、ブランチごとの横の線を作った順に上から並べ、commit を記載順に左から右へ、そのブランチの線の上の丸で描く。ブランチごとに色の名前の順で色を分け、左端にブランチ名のボタン（`aria-pressed`）を置く。分かれる線は元の commit の丸の右から出し、次の commit との中間で曲げて新しいブランチの線へつなぐ。merge は取り込むブランチの先頭から曲線で合流する塗った丸、cherry-pick は破線の丸で、丸の下に「← {元の ID}」を出す。`type: HIGHLIGHT` は塗った四角、`type: REVERSE` は × の入った丸で描く。丸の下に `id:`（無ければ `msg:`）を、隣の commit との間に収まる幅で折り返して出し、`tag:` は丸の上の札に出す。`id:` を持たない commit は Mermaid が振る乱数の ID を出さない。ブランチ名を押すと、そのブランチの線と commit、merge と cherry-pick でそのブランチへ入った commit を残し、commit を選ぶと、親をたどった全ての祖先の commit と線を残して、ほかを `opacity` 0.25 にする。ブランチと commit の選択はどちらか 1 つだけで、片方を選ぶともう片方を解く'
+    decided_by: SC-472-8#scenarios[正常シナリオ（Git グラフ）]
+    notes: 外観はモック `docs/mock/components/map-axis-grid/`
+  - item: map のジャーニー
+    constraint: '`journey` の `title`・`section` とタスクの行（`{タスク名}: {点数 1〜5}: {人}, {人}…`）を読み、タスクを記載順に左から右へ、点数が高いほど上に置いて、点数に合った表情の顔の印（1・2 は口を下げ、3 は横、4・5 は上げる）で描く。隣のタスクの印を線でつなぎ、左に点数 1〜5 の目盛りを置く。section はタスクの上の帯にして section ごとに色を分ける。タスク名は目盛りの下に、その下にタスクの人の色の丸を並べ、図の枠の下に人の名前と色の凡例を押せるボタン（`aria-pressed`）で並べる。人の色は出てくる順に `blue`・`orange`・`green` から割り当てる。閉じた section は、中のタスクの点数の平均の高さの破線の印 1 つにし、タスク名の場所に 1 行目に名前、2 行目に「（タスク {数} 件）」を出す。section の中へ入っても点数の目盛りは変えない。凡例の人を押すと、その人を持つタスクを残してほかを `opacity` 0.25 にし、その人のタスクの印だけを記載順にその人の色の線でつなぐ。タスクの印を押すとそのタスクを残す。人とタスクの選択はどちらか 1 つだけにする。説明を持つタスクのツールチップには、説明の後ろに点数を出す'
+    decided_by: SC-472-8#scenarios[正常シナリオ（ジャーニー）]
+    notes: 外観はモック `docs/mock/components/map-axis-grid/`
+  - item: map のブロック図
+    constraint: '`block-beta` の `columns {数}`・ブロック（`{ID}["名前"]` は四角、`{ID}("名前")` は角の丸い四角、`{ID}(("名前"))` は丸、`{ID}[("名前")]` は円柱。後ろの `:{数}` は幅）・`space`・入れ子の `block:{ID}` 〜 `end`（中に `columns` を持てる）・線（`{ID} --> {ID}`・`{ID} -- "{ラベル}" --> {ID}`）を読み、ブロックを記載順に、`columns` の列の数の格子へ左から右に並べ、列の数を超えると次の行へ移る。幅 `:{数}` のブロックはその列数分の幅で描き、`space` の場所は空ける。入れ子のブロックは中の格子を囲む枠と、左上の名前の見出しで描く。行の間は、閉じた入れ子のブロックの開閉のボタンを上に置ける高さを空ける。線は両端のブロック（閉じた入れ子の中のブロックは入れ子）の辺から辺へ、横か縦に折れる線と矢じりで引き、ラベルは線の上に出す。閉じた入れ子のブロックは記載した幅のまま 1 行の高さにし、1 行目に名前、2 行目に「（ブロック {数} 件）」を出して、ほかのブロックの列の位置を変えない。中へ入るとその入れ子の格子だけを描き直す。ブロックの選択・2 つの選択・線を押したときの選択は、構成図のノードと同じ（制約『map の強調』）'
+    decided_by: SC-472-8#scenarios[正常シナリオ（ブロック図）]
+    notes: 外観はモック `docs/mock/components/map-axis-grid/`
+  - item: map の時系列の図の再生
+    constraint: ガントチャート・タイムライン・Git グラフ・ジャーニーは、補足の `walkthroughs` を持たないとき、図の枠の下にシーケンス図の再生と同じ帯（部品設計『案内の帯』）を出す。手順は、ガントチャートが開始日の順（同じ日は記載順）のタスク、タイムラインが記載順の期間、Git グラフが記載順の commit、ジャーニーが記載順のタスクで、手順ごとにその 1 つだけを強調してほかを `opacity` 0.25 にする。帯の 1 行目に、ガントチャートはタスク名、タイムラインは期間、Git グラフは「{ブランチ名} · {commit のキー}」、ジャーニーはタスク名を出し、2 行目に、ガントチャートは開始日と終了日、タイムラインは出来事、Git グラフは commit の文字、ジャーニーは点数と人を出し、補足の説明を持つ項目はその後ろに説明を出す。強調する項目が閉じた section の中にあるときは、その section を強調する。前へ・次へ・自動で進める・停止・矢印キーは構成図の案内と同じ。`walkthroughs` を持つ図では、帯が案内の手順を進め、再生は出さない
+    decided_by: SC-472-41#scenarios[正常シナリオ（時系列の図を再生する）]
+    notes: 外観はモック `docs/mock/components/map-axis-grid/`
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画
