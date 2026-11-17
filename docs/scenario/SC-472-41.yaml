@@ -132,6 +132,33 @@ scenarios:
     expected:
       - クラス図とアーキテクチャ図の案内の帯・手順の強調・中へ入る・停止で戻る動きが、構成図の案内と同じになる
     test: test_normal_when_added_kinds_walked
+  - name: 正常シナリオ（マインドマップを案内する）
+    setup:
+      - name: 図を描いたページ
+        description: 補足の `walkthroughs` に手順 2 つの案内を持つマインドマップを描いたページ
+        notes: 手順 1 は 1 レイヤー目の枝 2 つを強調する。手順 2 は枝の中へ入って項目 1 つを強調する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant D as マインドマップ
+        U->>D: 案内の帯の次へを押す
+        D-->>U: 手順 1 の 2 つの枝を強調し、説明を出す
+        U->>D: 次へを押す
+        D-->>U: 手順 2 の枝の中へ入り、項目を強調する
+        U->>D: 停止を押す
+        D-->>U: 強調を外し、全体の図に戻す
+      ```
+
+      <!-- /map -->
+    expected:
+      - マインドマップの案内の帯・手順の強調・枝の中へ入る・停止で戻る動きが、構成図の案内と同じになる
+      - 手順で強調する項目は、補足の `notes` と同じキー（ID か表示する文字）で指せる
+    test: test_normal_when_mindmap_walked
 tags:
   - name: topic:map
     main: true

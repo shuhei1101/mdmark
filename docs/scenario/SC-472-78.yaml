@@ -601,6 +601,36 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_added_kinds_map_data_drift
+  - name: 正常シナリオ（マインドマップの map の補足にずれがある）
+    setup:
+      - name: map の補足にずれを持つフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つマインドマップの map の範囲 1 つと、ずれの無いマインドマップの map の範囲 1 つを記載したもの
+        notes: ずれは、どの項目の ID にも表示する文字にも一致しない `notes` のキーと、ID を持たない 2 つの項目が同じ文字を持ち、その文字を指す `notes` のキーの 2 つ
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書の map の範囲の mindmap と補足を読み込み、補足のキーが指す項目を点検する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - ずれを持つ map の範囲の場所を指す行が 2 つある。一致しないキーの行は種類が `map_unknown_ref`、同じ文字の項目を指すキーの行は種類が `map_ambiguous_ref` で、内容に対象のキーと修正の方法（同じ文字の項目は ID を記載して ID で指す）が記載されている
+      - ずれの無いマインドマップの map の範囲を指す行が無い
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_mindmap_map_data_drift
 lead: 文書の作成者が `mdmark check` を実行し、設定ファイルと索引の構造・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らないマーカー・図の部品の定義のずれ・廃止した `flow`・`sequence` の範囲を、ファイル・場所・種類・内容の一覧で受け取る。
 primary_actor: 文書の作成者
 trigger: 文書や索引を書き換えた後、書き出す前にずれを確認する
