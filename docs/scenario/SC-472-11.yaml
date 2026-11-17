@@ -447,7 +447,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 1・2・4・5・6 つ目の場所に mermaid の図があり、3 つ目の場所に map の図がある。4 つ目のノード A の塗りは `style` の行で指定した色で、5 つ目の項目にはアイコンが出る
+      - 1・2・4・5・6 つ目の場所に mermaid の図があり、3 つ目の場所に map の図がある。4 つ目のノード A の塗りは `style` の行で指定した色
       - どの図の前にも書き方の警告が無い
       - mermaid の本体への要求が 1 件
     test: test_error_when_map_cannot_read
