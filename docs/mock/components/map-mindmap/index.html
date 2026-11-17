@@ -29,7 +29,7 @@
   <main class="map-catalog" id="catalog"><h1>map-mindmap</h1></main>
   <script type="module">
     import { createMindmap } from "../../refs/649/assets/mindmap.js";
-    import { MINDMAP, MINDMAP_DATA, MINDMAP_LAYOUT_DATA, MINDMAP_UNREADABLE, MINDMAP_WALK_DATA } from "../../refs/649/assets/samples.js";
+    import { MINDMAP, MINDMAP_DATA, MINDMAP_PLAIN, MINDMAP_LAYOUT_DATA, MINDMAP_UNREADABLE, MINDMAP_WALK_DATA } from "../../refs/649/assets/samples.js";
 
     /** 状態の見出し・補足・図の中身・初期状態 */
     const STATES = [
@@ -40,7 +40,7 @@
       ["形状の指定の無い項目を選ぶ", "形状の指定の無い項目は、名前の周りの余白か下線を押して選ぶ", { title: "企画の論点", source: MINDMAP, data: MINDMAP_DATA }, { selected: "利用者を増やす" }],
       ["補足の layout を適用する", "色（目的）と閉じた状態（予算）だけを適用し、座標と並び順の指定は書き方の警告にする", { title: "企画の論点", source: MINDMAP, data: MINDMAP_LAYOUT_DATA }, {}],
       ["案内（手順 2）", "案内の帯で手順を進める。手順 2 は体制の中へ入り、人手が足りないを強調する", { title: "企画の論点", source: MINDMAP, data: MINDMAP_WALK_DATA }, { step: 1 }],
-      ["範囲の外のコードブロック", "補足の無い map の図にする。図の枠のタイトルは「マインドマップ」", { source: MINDMAP, data: {} }, {}],
+      ["範囲の外のコードブロック", "見た目を指定する行（::icon() と :::）を持たないコードブロックは、補足の無い map の図にする。図の枠のタイトルは「マインドマップ」。見た目を指定する行を持つコードブロックは mermaid の図に戻す", { source: MINDMAP_PLAIN, data: {} }, {}],
       ["読めない行", "根が 2 つ以上ある行を書き方の警告にし、読めた部分の図を描く", { title: "企画の論点", source: MINDMAP_UNREADABLE, data: {} }, {}],
     ];
     const catalog = document.getElementById("catalog");

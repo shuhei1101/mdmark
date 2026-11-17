@@ -211,7 +211,7 @@ const layoutTree = (top, { collapsed, measured }) => {
 
 /* ---------- 描画 ---------- */
 
-/** 1 レイヤー目の枝の色（根の色は文字の色） */
+/** 全体の図の根からの 1 レイヤー目の枝の色（中へ入っても変えない。根の色は文字の色） */
 const branchColorOf = (item, top) => {
   if (item === top) return undefined;
   let branch = item;
@@ -347,7 +347,7 @@ export const createMindmap = (host, spec, initial = {}) => {
       const path = document.createElementNS(SVG, "path");
       path.setAttribute("d", `M${x1} ${y1} C${mid} ${y1} ${mid} ${y2} ${x2} ${y2}`);
       path.setAttribute("class", "mm-branch");
-      path.style.setProperty("--mm-color", `var(--mdmark-color-accent-${branchColorOf(p.item, top) ?? "gray"}-text)`);
+      path.style.setProperty("--mm-color", `var(--mdmark-color-accent-${branchColorOf(p.item, chart.root) ?? "gray"}-text)`);
       if (keep && !(keep.has(p.item) && keep.has(p.item.parent))) path.classList.add("mm-dim");
       svg.append(path);
     }
@@ -360,7 +360,7 @@ export const createMindmap = (host, spec, initial = {}) => {
       element.dataset.mmShape = item.shape;
       element.classList.add("mm-item");
       if (item === top) element.classList.add("mm-root");
-      const color = layoutData[item.key]?.color ?? branchColorOf(item, top);
+      const color = layoutData[item.key]?.color ?? branchColorOf(item, chart.root);
       if (color) {
         element.style.setProperty("--mm-color", `var(--mdmark-color-accent-${color}-text)`);
         element.style.setProperty("--mm-fill", `var(--mdmark-color-accent-${color}-bg)`);

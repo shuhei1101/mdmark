@@ -19,6 +19,11 @@ export const MINDMAP = `mindmap
       マイルストーン
       :::urgent`;
 
+/** 見た目を指定する行（::icon と :::）を持たないマインドマップ。範囲の外のコードブロックでも map の図にする */
+export const MINDMAP_PLAIN = MINDMAP.split("\n")
+  .filter((line) => !line.trim().startsWith("::icon(") && !line.trim().startsWith(":::"))
+  .join("\n");
+
 /** 補足: ID を持つ項目は ID、ID を持たない項目は表示する文字で指す */
 export const MINDMAP_DATA = {
   notes: {
