@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 純粋な Mermaid に操作を付ける方法
+    decision: 純粋な Mermaid のコードブロックを、補足の無い map の範囲として map の描画と操作の処理で描く。map が描けない種類は今の mermaid の描画のまま（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/630#discussion_r4591221761
