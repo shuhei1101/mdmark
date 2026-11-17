@@ -1054,6 +1054,30 @@ flows:
     test: test_normal_when_map_class_arch_c4_data_drift
     refs:
       - SC-472-78#scenarios[正常シナリオ（クラス図・アーキテクチャ図・C4 図の map の補足にずれがある）]
+  - name: 正常系（マインドマップの map の補足にずれがある）
+    summary: '`mindmap` の map の補足が指す無い項目と、同じ文字を持つ ID の無い項目を指すキーをずれにし、ずれの無い範囲はずれにしない'
+    setup:
+      - name: マインドマップの補足にずれを持つフォルダ
+        description: '`build.include` が該当する `docs/a.mark.md` だけを持つフォルダ。`docs/a.mark.md` は 3 行目から根「企画」・枝「体制」「予算」・それぞれの子に ID を持たない項目「課題」を 1 つずつ持つ `mindmap` と、12 行目の 1 行の補足（`notes` のキー `幽霊` と `課題`）を持ち、20 行目から根「旅行」・枝「行き先」「予算」を持つ `mindmap` と、26 行目の 1 行のずれの無い補足（`notes` のキー `行き先`）を持つ'
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: map の範囲の mindmap と補足を読み込む
+        C->>C: 補足のキーが指す項目を、項目の ID と ID を持たない項目の文字で確認する
+        C-->>W: map のずれの 2 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`docs/a.mark.md:12:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `notes.幽霊`）と、`map_ambiguous_ref` が 1 つ（内容に `notes.課題` と、その項目に ID を記載して ID で指す修正の方法）ある'
+      - ずれの無いマインドマップの範囲（20〜26 行目）を指す行が無い
+      - 最後の行が `ずれ 2 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_map_mindmap_data_drift
+    refs:
+      - SC-472-78#scenarios[正常シナリオ（マインドマップの map の補足にずれがある）]
 lead: 文書の作成者が、設定ファイルの構造・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らないマーカー・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を指定したときは、設定と索引の点検の代わりに、指定した Markdown を描いたときの記載の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -1225,7 +1249,7 @@ constraints:
   - item: map の点検
     constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。
 
-      Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、補足のスキーマに合わない値・`--` を含む値・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。
+      Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、マインドマップで ID を持たない 2 つ以上の項目が同じ文字を持ち、補足のキーがその文字のものは `map_ambiguous_ref`（内容に、その項目に ID を記載して ID で指す修正の方法）、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、補足のスキーマに合わない値・マインドマップに適用しない `layout` のキー（`color`・`collapsed` のほか）・`--` を含む値・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。
 
       ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。
 

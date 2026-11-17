@@ -55,7 +55,7 @@ tables:
         default: '`{}`'
         description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを当てたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
         example: '{"mount": {"text": "文書を描く公開関数", "annotations": ["cond"]}}'
-        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`、クラス図はクラス名・`{クラス名}.{メンバー名}`・`namespace` の ID・関係の記載順の `r{番号}`、アーキテクチャ図は service・group・junction の ID・線の記載順の `r{番号}`、C4 図は要素・境界の別名・関係の記載順の `r{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`。`annotations` の定義の無い注記の ID は `annotation_undefined`
+        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`、クラス図はクラス名・`{クラス名}.{メンバー名}`・`namespace` の ID・関係の記載順の `r{番号}`、アーキテクチャ図は service・group・junction の ID・線の記載順の `r{番号}`、C4 図は要素・境界の別名・関係の記載順の `r{番号}`、マインドマップは項目の ID（`{ID}[名前]` の `{ID}`）と、ID を持たない項目の表示する文字）。無い ID は `map_unknown_ref`。マインドマップで、ID を持たない 2 つ以上の項目が同じ文字を持ち、キーがその文字のときは `map_ambiguous_ref`（修正の方法は、その項目に ID を記載して ID で指す）。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`。`annotations` の定義の無い注記の ID は `annotation_undefined`
       - name: plays_over
         title: 再生を重ねる構成図
         source: DATA-472-2#fields[plays_over]
@@ -119,7 +119,7 @@ tables:
         source: DATA-472-4#fields[nodes]
         type: array
         default: '`[]`'
-        description: 強調するノードの ID
+        description: 強調するノードの ID（マインドマップは `notes` と同じキー）
         example: '["mount", "marker"]'
         foreign_key:
           table: Mermaid のノードの ID
@@ -150,24 +150,28 @@ tables:
         type: string
         description: 同じ段に置く相手の ID
         example: marker
+        notes: マインドマップの項目では適用せず、書き方の警告と点検の `map_invalid_value` にする（マインドマップに適用するのは `color` と `collapsed` だけ）
       - name: order
         title: 並び順
         source: DATA-472-5#fields[order]
         type: integer
         description: 段の中の並び順（小さいほど先）
         example: '1'
+        notes: マインドマップの項目では適用せず、書き方の警告と点検の `map_invalid_value` にする。並び順は Mermaid の行の順で変える
       - name: pos
         title: 座標
         source: DATA-472-5#fields[pos]
         type: object
         description: 親の中身の左上からの座標で固定する（`{ x, y }`）
         example: '{"x": 0, "y": 120}'
+        notes: マインドマップの項目では適用せず、書き方の警告と点検の `map_invalid_value` にする
       - name: width
         title: 幅
         source: DATA-472-5#fields[width]
         type: integer
         description: ノードの幅（px）
         example: '260'
+        notes: マインドマップの項目では適用せず、書き方の警告と点検の `map_invalid_value` にする
       - name: color
         title: 色
         source: DATA-472-5#fields[color]
@@ -196,6 +200,7 @@ tables:
         default: '`center`'
         description: ノード・グループの ID のときだけ。段が親の中身より短いときに、段の中で寄せる側（`start` は左か上、`end` は右か下）
         example: start
+        notes: マインドマップの項目では適用せず、書き方の警告と点検の `map_invalid_value` にする
       - name: ends
         title: 線の端の辺
         source: DATA-472-5#fields[ends]
@@ -213,7 +218,7 @@ tables:
         source: DATA-472-5#fields[collapsed]
         type: boolean
         default: '`false`'
-        description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界）の ID と、ER 図のテーブル名・クラス図のクラス名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを閉じて描く
+        description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界）の ID と、ER 図のテーブル名・クラス図のクラス名・マインドマップの子を持つ項目のキー（`notes` と同じ）のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを、マインドマップの項目は子孫を閉じて描く
         example: 'true'
 refs:
   - IF-472-34#constraints[map の範囲]
