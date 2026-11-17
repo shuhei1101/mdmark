@@ -867,7 +867,7 @@ const mindmapStorySize = (label: string, shape: string) => {
   const pad = { bang: 48, hexagon: 40, cloud: 32 }[shape] ?? 0;
   const inner = Math.min(text, 200 - 48 - pad);
   const rows = Math.max(1, Math.ceil(text / (200 - 48 - pad)));
-  const width = Math.max(72, inner + 52 + pad);
+  const width = Math.max(72, inner + 60 + pad);
   const height = rows * 20 + 16 + (shape === "bang" ? 24 : 0);
   return shape === "circle"
     ? { width: Math.max(width, height), height: Math.max(width, height) }

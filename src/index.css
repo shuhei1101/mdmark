@@ -10691,6 +10691,17 @@
     &:not(:has(.mdmark-diagram-info)) {
       padding-inline-end: 20px;
     }
+    /* 説明のマーカーは押せる大きさの 24px にし、名前と項目の右端から離す */
+    &:has(.mdmark-diagram-info) {
+      padding-inline-end: 34px;
+    }
+    & .mdmark-diagram-info {
+      width: 24px;
+      height: 24px;
+      inset-block-start: 50%;
+      inset-inline-end: 4px;
+      translate: 0 -50%;
+    }
     & .mdmark-diagram-node-name {
       cursor: text;
       user-select: text;

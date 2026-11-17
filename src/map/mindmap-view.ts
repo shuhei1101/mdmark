@@ -142,6 +142,24 @@ const focusSelectorOf = (element: Element | null): string | undefined => {
   return `.map-mindmap-item[data-node="${CSS.escape(item.dataset.node ?? "")}"] > .mdmark-diagram-node-hit`;
 };
 
+/** 今の図の根（無ければ全体の根）の子孫のうち、子を持つ項目の `stateKey` */
+const collapsibleKeys = (
+  mindmap: Mindmap,
+  entered: string | undefined,
+): string[] => {
+  const top =
+    mindmap.items.find((item) => item.stateKey === entered) ?? mindmap.root;
+  const keys: string[] = [];
+  const visit = (order: number) => {
+    const item = mindmap.items[order];
+    if (!item || item.children.length === 0) return;
+    keys.push(item.stateKey);
+    for (const child of item.children) visit(child);
+  };
+  for (const child of top?.children ?? []) visit(child);
+  return keys;
+};
+
 /** 範囲の図の番号・Mermaid・補足を読む */
 const readMindmapRange = (range: HTMLElement) => ({
   index: Number(range.dataset.map ?? "1"),
@@ -355,11 +373,8 @@ export const attachMapMindmap = (
     if (state.selected.length > 0) change({ ...state, selected: [] });
     else escapeEntered();
   };
-  /** 今の図の根の子のうち、子を持つ項目 */
-  const collapsibles = () =>
-    tree.items.flatMap((item) =>
-      item.hasChildren && item.side !== "root" ? [item.stateKey] : [],
-    );
+  /** 今の図の子を持つ全ての項目（今の図の根を除く。閉じて描いていない子孫も含む） */
+  const collapsibles = () => collapsibleKeys(mindmap, state.entered);
   const runTool = (name: string | undefined) => {
     if (name === "back") escapeEntered();
     else if (name === "expandAll") change({ ...state, collapsed: [] });
