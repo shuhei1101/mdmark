@@ -587,6 +587,7 @@ flows:
       - 設定に `map.kinds`・`map.lines` が加わり、ほかのキーとコメント・キーの並びが変わっていない
       - '標準出力の手順の行の下に、`{文書の相対パス}:{行}: {マーカーの名前}: {項目}: {理由}` の構造の移行の報告の行が、写せない値（範囲・更新日・`stickyTitles`）ごとと、読めない定義の範囲ごとに 1 つずつある'
       - 書き換えた文書を `mount` で描くと、範囲の場所に map の図が描かれ、書き方の警告が無い
+      - 元の `sub` の `--` を持つノードの補足の説明は、2 つ目の `-` が JSON の Unicode エスケープで記載され、点検の `map_invalid_value` にならない
       - 設定の `version` が目標のバージョン
     test: test_normal_when_retired_diagrams_migrated
     refs:

@@ -775,17 +775,55 @@ test("test_normal_when_retired_diagrams_migrated", async () => {
     "<!-- /flow -->",
     "",
   ].join("\n");
+  const hyphen = [
+    "# C",
+    "",
+    "<!-- flow -->",
+    "",
+    "```json",
+    JSON.stringify({
+      title: "起動",
+      width: 300,
+      height: 100,
+      nodes: [
+        {
+          id: "run",
+          kind: "script",
+          x: 10,
+          y: 10,
+          w: 200,
+          h: 60,
+          name: "起動",
+          sub: "コンテナの中・--mcp-config",
+        },
+      ],
+      wires: [],
+    }),
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
   await writeFiles(dir, {
     "docs/a.md": RETIRED_DOCUMENT,
     "docs/b.md": unreadable,
+    "docs/c.md": hyphen,
+    "docs/index.yaml": `${WORK_FILES["docs/index.yaml"]}  - id: c\n    path: c.md\n    title: C\n`,
   });
   // 実行
   const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
   // 検証
   expect(result.code, result.stderr).toBe(0);
+  expect(result.stdout).not.toContain("map_invalid_value");
   const read = (path: string) => readFile(join(dir, path), "utf8");
   expect(await read("docs/a.md")).toBe(RETIRED_DOCUMENT_CONVERTED);
   expect(await read("docs/b.md")).toBe(unreadable);
+  const converted = await read("docs/c.md");
+  const data = converted
+    .split("\n")
+    .find((line) => line.startsWith("<!-- map-data: "));
+  expect(data).toContain("コンテナの中・-\\u002dmcp-config");
+  expect(data).not.toContain("--mcp-config");
   const configText = await read("mdmark.config.yaml");
   const config = parse(configText) as {
     version: string;
@@ -826,6 +864,9 @@ test("test_normal_when_retired_diagrams_migrated", async () => {
   const html = render(await read("docs/a.md"));
   expect(html.match(/class="mdmark-map"/g)).toHaveLength(3);
   expect(html).not.toContain("mdmark-syntax-warning");
+  const hyphenHtml = render(converted);
+  expect(hyphenHtml).toContain('class="mdmark-map"');
+  expect(hyphenHtml).not.toContain("mdmark-syntax-warning");
 });
 
 // ER 図の部品の範囲を map の ER 図の範囲へ書き換える call の手順を当て、写さない値と書き換えない範囲を移行の報告に出す（正常系（ER 図の部品の範囲を map へ書き換える））

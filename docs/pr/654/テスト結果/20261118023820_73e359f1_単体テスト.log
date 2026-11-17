@@ -1,0 +1,40 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/data.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-upgrade-map-text-double-hyphen
+
+ ❯ |unit| tests/unit/src/map/data.test.ts (8 tests | 1 failed) 42ms
+   × test_parse_map_data_when_escaped_double_hyphen 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_escaped_double_hyphen
+AssertionError: expected [ { kind: 'map_invalid_value', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid_value",
++     "line": 0,
++     "message": "補足の `notes.a.text` に `--` があります。HTML コメントを閉じてしまうため、`--` を含めずに記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/data.test.ts:109:20
+    107|   );
+    108|   // 検証
+    109|   expect(problems).toEqual([]);
+       |                    ^
+    110|   expect(data.notes.a).toEqual({ text: "a --b" });
+    111| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 7 passed (8)
+   Start at  02:38:14
+   Duration  269ms (transform 53%, tests 30%, import 11%, worker 5%)
+

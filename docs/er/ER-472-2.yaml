@@ -2,7 +2,7 @@ id: ER-472-2
 visibility: internal
 title: 'ER 図: map の補足'
 lead: 'map の範囲の `<!-- map-data: {JSON のオブジェクト} -->` に記載する補足の構造。'
-overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`・`groups`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値に `--` を含めない（HTML コメントを閉じてしまう）
+overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`・`groups`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値は、HTML コメントの中に `--` をそのまま記載しない（HTML コメントを閉じてしまう）。`--` を値に持つときは、2 つ目の `-` を JSON の Unicode エスケープで記載する
 er:
   entities:
     - name: 補足
