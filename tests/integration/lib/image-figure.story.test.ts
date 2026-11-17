@@ -70,6 +70,10 @@ async function open(id: string) {
 test("test_caption", async () => {
   // 準備・実行
   const { page, layout } = await open("caption");
+  const { image, caption } = layout;
+  if (!image || !caption) {
+    throw new Error("画像かキャプションが無い");
+  }
   // 検証
   await expect(
     page.locator("figure.mdmark-image figcaption").innerText(),
@@ -83,9 +87,7 @@ test("test_caption", async () => {
   );
   const icon = button.locator(".mdmark-image-open-icon");
   await expect(icon.getAttribute("aria-hidden")).resolves.toBe("true");
-  expect(layout.caption?.top ?? 0).toBeGreaterThanOrEqual(
-    (layout.image?.bottom ?? 0) - 1,
-  );
+  expect(caption.top).toBeGreaterThanOrEqual(image.bottom - 1);
   // ポインターを乗せると、右上にアイコンが出る
   await button.hover();
   const iconBox = await icon.evaluate((element) => {
@@ -97,9 +99,9 @@ test("test_caption", async () => {
     };
   });
   expect(iconBox.opacity).toBe("1");
-  expect(iconBox.right).toBeLessThanOrEqual(layout.image?.right ?? 0);
-  expect(iconBox.right).toBeGreaterThan((layout.image?.right ?? 0) - 16);
-  expect(iconBox.top).toBeLessThan((layout.image?.top ?? 0) + 16);
+  expect(iconBox.right).toBeLessThanOrEqual(image.right);
+  expect(iconBox.right).toBeGreaterThan(image.right - 16);
+  expect(iconBox.top).toBeLessThan(image.top + 16);
 });
 
 // title を持たない画像は、キャプションを出さない（NoCaption）

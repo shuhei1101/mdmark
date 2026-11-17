@@ -71,6 +71,33 @@ const alternativesOf = (node: SchemaNode, root: SchemaNode): SchemaNode[] => {
 const segmentsOf = (path: string): string[] =>
   path.match(/\{[^}]+\}|\[\]|[^.[\]{}]+/g) ?? [];
 
+/** 候補の節から区切り 1 つ分だけ下の節と、名前のキーで辿ったときはそのキーを持つ節を返却する */
+const childOf = (
+  candidate: SchemaNode,
+  segment: string,
+): { next: SchemaNode | undefined; owner?: SchemaNode } => {
+  if (segment === "[]") {
+    return { next: isRecord(candidate.items) ? candidate.items : undefined };
+  }
+  if (segment.startsWith("{")) {
+    if (isRecord(candidate.additionalProperties)) {
+      return { next: candidate.additionalProperties };
+    }
+    // 名前を列挙したオブジェクト（表の `features`）は最初の名前の節で照らす
+    return {
+      next: isRecord(candidate.properties)
+        ? Object.values(candidate.properties).find(isRecord)
+        : undefined,
+    };
+  }
+  const named = isRecord(candidate.properties)
+    ? candidate.properties[segment]
+    : undefined;
+  return isRecord(named)
+    ? { next: named, owner: candidate }
+    : { next: undefined };
+};
+
 /** キーのパスの節と、その節を持つ親の節を辿る */
 const nodeAt = (
   schema: SchemaNode,
@@ -80,37 +107,15 @@ const nodeAt = (
   let parent: SchemaNode = schema;
   let key = "";
   for (const segment of segmentsOf(path)) {
-    const candidates = alternativesOf(node, schema);
-    let next: SchemaNode | undefined;
-    let owner: SchemaNode | undefined;
-    for (const candidate of candidates) {
-      if (segment === "[]" && isRecord(candidate.items)) {
-        next = candidate.items;
-      } else if (
-        segment.startsWith("{") &&
-        isRecord(candidate.additionalProperties)
-      ) {
-        next = candidate.additionalProperties;
-      } else if (segment.startsWith("{") && isRecord(candidate.properties)) {
-        // 名前を列挙したオブジェクト（表の `features`）は最初の名前の節で照らす
-        next = Object.values(candidate.properties).find(isRecord);
-      } else if (
-        isRecord(candidate.properties) &&
-        isRecord(candidate.properties[segment])
-      ) {
-        next = candidate.properties[segment];
-        owner = candidate;
-      }
-      if (next) {
-        break;
-      }
-    }
-    if (!next) {
+    const step = alternativesOf(node, schema)
+      .map((candidate) => childOf(candidate, segment))
+      .find((child) => child.next !== undefined);
+    if (!step?.next) {
       return undefined;
     }
-    parent = owner ?? parent;
+    parent = step.owner ?? parent;
     key = segment;
-    node = next;
+    node = step.next;
   }
   return { node, parent, key };
 };
@@ -237,6 +242,52 @@ test("test_validate_mark_options_when_no_schema", async () => {
   expect(result.unknownKeys).toEqual([]);
 });
 
+/** ER 図の 1 列とスキーマの節の、型・選べる値・必須の食い違い */
+const columnMismatches = ({
+  name,
+  schema,
+  column,
+}: {
+  name: string;
+  schema: SchemaNode;
+  column: ErColumn;
+}): string[] => {
+  const found = nodeAt(schema, column.name);
+  if (!found) {
+    return [`${name}: ${column.name} がスキーマにありません`];
+  }
+  const mismatches: string[] = [];
+  const erTypes = column.type
+    .split("/")
+    .map((type) => type.trim())
+    .sort();
+  const types = typesOf(found.node, schema);
+  if (types.join(",") !== erTypes.join(",")) {
+    mismatches.push(
+      `${name}: ${column.name} の型 ${types} と ER 図の ${erTypes}`,
+    );
+  }
+  const erEnum = [...(column.enum_values ?? "").matchAll(/`([^`]+)`/g)]
+    .map((match) => match[1] ?? "")
+    .sort();
+  const values = enumOf(found.node, schema);
+  if (erEnum.length > 0 && values.join(",") !== erEnum.join(",")) {
+    mismatches.push(
+      `${name}: ${column.name} の選べる値 ${values} と ER 図の ${erEnum}`,
+    );
+  }
+  const required = Array.isArray(found.parent.required)
+    ? found.parent.required.includes(found.key)
+    : false;
+  const isNamedKey = !found.key.startsWith("{") && found.key !== "[]";
+  if (isNamedKey && required !== Boolean(column.not_null)) {
+    mismatches.push(
+      `${name}: ${column.name} の必須 ${required} と ER 図の ${Boolean(column.not_null)}`,
+    );
+  }
+  return mismatches;
+};
+
 // 全てのマーカーのスキーマが ER 図と一致し、読まないキーワードを持たない（正常系）
 test("test_mark_schemas_match_er", async () => {
   // 準備
@@ -245,58 +296,21 @@ test("test_mark_schemas_match_er", async () => {
   const files = readdirSync(ER_DIR).filter((file) =>
     /^ER-477-\d+\.yaml$/.test(file),
   );
-  const mismatches: string[] = [];
   // 実行
-  for (const file of files) {
+  const mismatches = files.flatMap((file) => {
     const er = parse(readFileSync(join(ER_DIR, file), "utf8")) as {
       tables: { name: string; columns: ErColumn[] }[];
     };
-    for (const table of er.tables) {
+    return er.tables.flatMap((table) => {
       const name = table.name.replaceAll("_", "-");
       const schema = schemas[name];
-      if (!schema) {
-        continue;
-      }
-      for (const column of table.columns) {
-        const found = nodeAt(schema, column.name);
-        if (!found) {
-          mismatches.push(`${name}: ${column.name} がスキーマにありません`);
-          continue;
-        }
-        const erTypes = column.type
-          .split("/")
-          .map((type) => type.trim())
-          .sort();
-        const types = typesOf(found.node, schema);
-        if (types.join(",") !== erTypes.join(",")) {
-          mismatches.push(
-            `${name}: ${column.name} の型 ${types} と ER 図の ${erTypes}`,
-          );
-        }
-        const erEnum = [...(column.enum_values ?? "").matchAll(/`([^`]+)`/g)]
-          .map((match) => match[1] ?? "")
-          .sort();
-        const values = enumOf(found.node, schema);
-        if (erEnum.length > 0 && values.join(",") !== erEnum.join(",")) {
-          mismatches.push(
-            `${name}: ${column.name} の選べる値 ${values} と ER 図の ${erEnum}`,
-          );
-        }
-        const required = Array.isArray(found.parent.required)
-          ? found.parent.required.includes(found.key)
-          : false;
-        if (
-          !found.key.startsWith("{") &&
-          found.key !== "[]" &&
-          required !== Boolean(column.not_null)
-        ) {
-          mismatches.push(
-            `${name}: ${column.name} の必須 ${required} と ER 図の ${Boolean(column.not_null)}`,
-          );
-        }
-      }
-    }
-  }
+      return schema
+        ? table.columns.flatMap((column) =>
+            columnMismatches({ name, schema, column }),
+          )
+        : [];
+    });
+  });
   const unknownKeywords = Object.entries(schemas).flatMap(([name, schema]) =>
     unknownKeywordsOf(schema).map((path) => `${name}${path}`),
   );

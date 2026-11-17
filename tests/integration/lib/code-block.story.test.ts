@@ -291,12 +291,15 @@ test("test_long_file_name", async () => {
     const copy = element
       .querySelector(".mdmark-code-copy")
       ?.getBoundingClientRect();
+    if (!file) {
+      throw new Error("ファイル名の要素が無い");
+    }
     return {
       height: rect.height,
-      fileFits: (file?.scrollWidth ?? 1) <= (file?.clientWidth ?? 0),
+      fileFits: file.scrollWidth <= file.clientWidth,
       fileWraps:
-        (file?.getBoundingClientRect().height ?? 0) >
-        Number.parseFloat(getComputedStyle(file as Element).lineHeight) * 1.5,
+        file.getBoundingClientRect().height >
+        Number.parseFloat(getComputedStyle(file).lineHeight) * 1.5,
       copyRight: copy ? rect.right - copy.right : undefined,
       copyInside: copy
         ? copy.left >= rect.left && copy.right <= rect.right

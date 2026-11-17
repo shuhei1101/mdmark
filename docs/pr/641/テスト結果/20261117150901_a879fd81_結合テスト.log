@@ -1,0 +1,1210 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/bundle.test.ts tests/integration/lib/chart.story.test.ts tests/integration/lib/code-block.story.test.ts tests/integration/lib/comment-marker.story.test.ts tests/integration/lib/diff-lines.story.test.ts tests/integration/lib/image-figure.story.test.ts tests/integration/lib/lightbox.story.test.ts tests/integration/lib/map-er.story.test.ts tests/integration/lib/map-sequence.story.test.ts tests/integration/lib/map-state.story.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/render.test.ts tests/integration/lib/row-detail.story.test.ts tests/integration/lib/table.story.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests
+
+2:59:59 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+50 |  `))+(t.length>0?`
+51 |  `:"");let i=s?Ii({foldLines:t.map(a=>a.foldLines),folded:t.map(a=>a.folded===!0)}):new Set;return t.map((a,l)=>WP({li...
+52 |  ...tribute:i}):`<pre${i}${a.slice(4)}`}var QP;var e2=e=>import(e);function Uk(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+53 |  ${t}
+54 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+2:59:59 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+50 |  `))+(t.length>0?`
+51 |  `:"");let i=s?Ii({foldLines:t.map(a=>a.foldLines),folded:t.map(a=>a.folded===!0)}):new Set;return t.map((a,l)=>WP({li...
+52 |  ...3066\u3044\u307E\u3059\u3002</p></div>',a2;var l2=e=>import(e);function d2(e){let{cache:t,importModule:n}=e,r=new ...
+   |                                                                 ^
+53 |  ${t}
+54 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+2:59:59 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+53 |  ${t}
+54 |  });
+55 |  ...:l});f&&d.push(f)}return y2(d)}var T2="1.59.0",v2=e=>import(e),C2=e=>fetch(e,{method:"HEAD"}),bu=e=>`https://cdn.j...
+   |                                                                 ^
+56 |  `):(t.textContent??"").replace(/\n$/,"")}function ku(e,t){let n=document.createElement("template");n.innerHTML=Hi({st...
+57 |  `)return;let S=document.createElement("span");return S.className="mdmark-code-break",T.replaceWith(S),S.append(T),S})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+2:59:59 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+58 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+59 |  `);return(t.textContent??"").split(`
+60 |  ...l.remove()}}}var RN="data-mdmark-drawn",Vu;var LN=e=>import(e);async function Hy(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+61 |  ${o}
+62 |  ---
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+2:59:59 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+61 |  ${o}
+62 |  ---
+63 |  ...-theme-light",zy;var Uy=Promise.resolve(),Yu=0,qN=e=>import(e),Gy=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+   |                                                                 ^
+64 |  `)[0]?.trim()??"",ZN=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+65 |  ${i===void 0?"":Vw(c)}`),f=[Y(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+2:59:59 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+62 |  ---
+63 |  `)+e.slice(t[0].length)}},HN=e=>{let t=ON.exec(e);return t&&Wy(t[1]??"")||void 0},kr=e=>{let t=PN(e),n=t?.body??e,r=t...
+64 |  ...nts"],map:["attachMap"]},eB=new Map,Xy=new Map,tB=e=>import(e);function nB(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+65 |  ${i===void 0?"":Vw(c)}`),f=[Y(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+66 |  `).filter(t=>_q.test(t)).length}function Bq(e){return`${e?`\u8A00\u8A9E \`${e}\` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-EhgMEr/dist/index.js
+3:00:00 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+50 |  `))+(t.length>0?`
+51 |  `:"");let i=s?Ii({foldLines:t.map(a=>a.foldLines),folded:t.map(a=>a.folded===!0)}):new Set;return t.map((a,l)=>WP({li...
+52 |  ...tribute:i}):`<pre${i}${a.slice(4)}`}var QP;var e2=e=>import(e);function Uk(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+53 |  ${t}
+54 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+3:00:00 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+50 |  `))+(t.length>0?`
+51 |  `:"");let i=s?Ii({foldLines:t.map(a=>a.foldLines),folded:t.map(a=>a.folded===!0)}):new Set;return t.map((a,l)=>WP({li...
+52 |  ...3066\u3044\u307E\u3059\u3002</p></div>',a2;var l2=e=>import(e);function d2(e){let{cache:t,importModule:n}=e,r=new ...
+   |                                                                 ^
+53 |  ${t}
+54 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+3:00:00 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+53 |  ${t}
+54 |  });
+55 |  ...:l});f&&d.push(f)}return y2(d)}var T2="1.59.0",v2=e=>import(e),C2=e=>fetch(e,{method:"HEAD"}),bu=e=>`https://cdn.j...
+   |                                                                 ^
+56 |  `):(t.textContent??"").replace(/\n$/,"")}function ku(e,t){let n=document.createElement("template");n.innerHTML=Hi({st...
+57 |  `)return;let S=document.createElement("span");return S.className="mdmark-code-break",T.replaceWith(S),S.append(T),S})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+3:00:00 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+58 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+59 |  `);return(t.textContent??"").split(`
+60 |  ...l.remove()}}}var RN="data-mdmark-drawn",Vu;var LN=e=>import(e);async function Hy(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+61 |  ${o}
+62 |  ---
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+3:00:00 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+61 |  ${o}
+62 |  ---
+63 |  ...-theme-light",zy;var Uy=Promise.resolve(),Yu=0,qN=e=>import(e),Gy=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+   |                                                                 ^
+64 |  `)[0]?.trim()??"",ZN=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+65 |  ${i===void 0?"":Vw(c)}`),f=[Y(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+3:00:00 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+62 |  ---
+63 |  `)+e.slice(t[0].length)}},HN=e=>{let t=ON.exec(e);return t&&Wy(t[1]??"")||void 0},kr=e=>{let t=PN(e),n=t?.body??e,r=t...
+64 |  ...nts"],map:["attachMap"]},eB=new Map,Xy=new Map,tB=e=>import(e);function nB(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+65 |  ${i===void 0?"":Vw(c)}`),f=[Y(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+66 |  `).filter(t=>_q.test(t)).length}function Bq(e){return`${e?`\u8A00\u8A9E \`${e}\` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-4hcDC1/dist/index.js
+
+ Test Files  17 passed (17)
+      Tests  602 passed | 287 skipped (889)
+   Start at  14:59:40
+   Duration  73.27s (tests 94%, worker 2%, import 2%, transform 2%)
+
+（終了コード 0）
+
+----
+
+$ xvfb-run -a npm --prefix vscode run test:integration
+
+> mdmark-vscode@0.1.4 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+- Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+- Downloading (343.79 MB)
+✔ Downloaded VS Code (286f582d285a0bc8cb4c5cf3217fc5811544b39a) into /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[90m[main 2026-11-17T06:02:47.001Z][0m [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[90m[main 2026-11-17T06:02:47.032Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-11-17T06:02:47.088Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-11-17T06:02:47.088Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[29742:1117/150247.098371:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[90m[main 2026-11-17T06:02:47.109Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-11-17T06:02:47.110Z][0m update#setState disabled
+[90m[main 2026-11-17T06:02:47.110Z][0m update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[90m[main 2026-11-17T06:02:47.699Z][0m AgentHostProcessManager: agent host started
+[91m[main 2026-11-17T06:02:47.979Z][0m [AgentHost:stderr] (node:29967) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[AgentHost:renderer] MessagePort acquired, creating client...
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=f6a1fc35-55f6-420b-ba6d-8ad48d1a9d23 requestId=1
+Started local extension host with pid 30041.
+[RemoteAgentHostProtocol] Initialized: address=local clientId=f6a1fc35-55f6-420b-ba6d-8ad48d1a9d23 durationMs=344
+[AgentHost:renderer] Protocol connection established; clientId=f6a1fc35-55f6-420b-ba6d-8ad48d1a9d23
+Started initializing default profile extensions in extensions installation folder. file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/extensions
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Completed initializing default profile extensions in extensions installation folder. file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/extensions
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+Settings Sync: Account status changed from uninitialized to unavailable
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+(node:30041) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (8348ms)
+    ✔ test_error_when_version_undecidable_on_export (3028ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (309ms)
+    ✔ test_normal_when_output_dir (323ms)
+    ✔ test_error_when_output_unwritable (96ms)
+    1) test_normal_when_relative_mermaid
+    ✔ test_normal_when_tooltips_and_relative_syntax (354ms)
+    ✔ test_normal_when_relative_libraries (1227ms)
+    ✔ test_normal_when_config_color_scheme (471ms)
+    ✔ test_normal_when_param_copy_label (391ms)
+  ブラウザで開く
+    ✔ test_normal (426ms)
+    ✔ test_error_when_output_unwritable (75ms)
+    ✔ test_normal_when_color_theme_selected (297ms)
+  PDF に印刷
+    ✔ test_normal (3353ms)
+    ✔ test_normal_when_wait_limit_reached (869ms)
+    ✔ test_normal_when_color_theme_selected (419ms)
+    ✔ test_error_when_output_unwritable (226ms)
+  設定ファイルを開く
+    ✔ test_normal (211ms)
+    ✔ test_normal_when_template_created (51ms)
+    ✔ test_error_when_template_declined
+  設定を開く
+    ✔ test_normal (714ms)
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで確認する
+    ✔ test_normal_when_opened_from_diff_view (428ms)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Unexpected SIGPIPE
+	at process.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/out/bootstrap-fork.js:4:1710)
+	at process.emit (node:events:514:28)
+    ✔ test_normal_when_commit_diff (372ms)
+    ✔ test_error_when_version_without_diff (300ms)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_modified_side_edited (1171ms)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Repository not initialized: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_preview (1423ms)
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (324ms)
+    ✔ test_normal_when_markdown_link (215ms)
+    ✔ test_normal_when_anchor_link (583ms)
+    ✔ test_normal_when_side_toc_link (721ms)
+    ✔ test_error_when_link_target_missing (1015ms)
+    ✔ test_normal_when_map_node_link (1127ms)
+  プレビューを開く
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3581ms)
+    2) test_normal_when_mermaid
+    ✔ test_normal_when_tooltips_and_relative_syntax (661ms)
+    ✔ test_normal_when_range_scripts (926ms)
+    ✔ test_normal_when_aliases (303ms)
+    ✔ test_error_when_aliases_missing (182ms)
+    ✔ test_normal_when_includes (384ms)
+    ✔ test_normal_when_same_column (368ms)
+    ✔ test_normal_when_already_open (333ms)
+    ✔ test_normal_when_version_pinned (3675ms)
+    ✔ test_normal_when_tags_unreachable (4791ms)
+    ✔ test_normal_when_theme_fixed (345ms)
+    ✔ test_normal_when_color_scheme (457ms)
+    ✔ test_normal_when_relative_image (366ms)
+    ✔ test_error_when_image_outside_workspace (816ms)
+    ✔ test_error_when_distribution_unreachable (268ms)
+    ✔ test_normal_when_loading_shown (12223ms)
+    ✔ test_error_when_version_missing (205ms)
+    ✔ test_error_when_not_markdown (522ms)
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-rLYmpP/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-rLYmpP/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1288ms)
+    ✔ test_error_when_unsupported_media (378ms)
+  プレビューをリロードする
+    ✔ test_normal (3168ms)
+    ✔ test_normal_when_from_command
+    ✔ test_error_when_no_preview (519ms)
+  プレビューを再描画する
+    ✔ test_normal (1335ms)
+    ✔ test_normal_when_live_update_off (1039ms)
+    ✔ test_normal_when_config_saved (605ms)
+    ✔ test_normal_when_param_copy_label_configured (546ms)
+    ✔ test_normal_when_map_configured (568ms)
+    ✔ test_normal_when_aliases_yaml_saved (471ms)
+    ✔ test_normal_when_include_target_saved (1086ms)
+    ✔ test_normal_when_config_missing (376ms)
+    ✔ test_normal_when_revealed (3251ms)
+    ✔ test_normal_when_diff_revealed (1521ms)
+    ✔ test_normal_when_relative_library (348ms)
+    ✔ test_error_when_config_unreadable (995ms)
+    ✔ test_normal_when_config_fixed (391ms)
+    ✔ test_normal_when_library_origin_added (515ms)
+    ✔ test_normal_when_color_theme_changed (552ms)
+  拡張機能の配布物を作る
+    ✔ test_normal (2214ms)
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_error_when_version_mismatch (230ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1486ms)
+    ✔ test_normal_when_from_preview (1079ms)
+    ✔ test_normal_when_sync_off (2978ms)
+    ✔ test_normal_when_in_closed_section (2048ms)
+    ✔ test_error_when_editor_hidden (917ms)
+  81 passing (3m)
+  2 failing
+  1) HTML に書き出す
+       test_normal_when_relative_mermaid:
+
+      AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert2.ok(config.mermaid?.url?.startsWith("data:text/javascript"))
+
+      + expected - actual
+
+      -false
+      +true
+      
+  	at Context.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/export.test.mjs:614:13)
+
+  2) プレビューを開く
+       test_normal_when_mermaid:
+     Error: mermaid の図を描かない
+  	at waitFor (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/preview-open.test.mjs:128:13)
+  	at async Context.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/preview-open.test.mjs:596:7)
+
+Error: 2 tests failed
+	at Module.run (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/index.mjs:18:11)
+[90m[main 2026-11-17T06:05:25.399Z][0m Extension host with pid 30041 exited with code: 0, signal: unknown.
+Exit code:   1
+TestRunFailedError: Test run failed with code 1
+    at ChildProcess.onProcessClosed (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/node_modules/@vscode/test-electron/out/runTest.js:125:24)
+    at ChildProcess.emit (node:events:508:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:294:12) {
+  code: 1,
+  signal: undefined
+}
+（終了コード 1）
+
+---- 切り分け: vscode/tests/integration/stub-server.ts だけを origin/develop の内容に戻して同じコマンドを実行（commit していない）
+
+$ （stub-server.ts を origin/develop の内容に戻して） xvfb-run -a npm --prefix vscode run test:integration
+
+> mdmark-vscode@0.1.4 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[90m[main 2026-11-17T06:05:54.616Z][0m [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[90m[main 2026-11-17T06:05:54.667Z][0m StorageMainService: creating application shared storage
+[90m[main 2026-11-17T06:05:54.722Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[90m[main 2026-11-17T06:05:54.722Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+[38340:1117/150554.732098:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[90m[main 2026-11-17T06:05:54.744Z][0m [shared storage] Fallback application storage initialized with 3 items
+[90m[main 2026-11-17T06:05:54.744Z][0m update#setState disabled
+[90m[main 2026-11-17T06:05:54.744Z][0m update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[90m[main 2026-11-17T06:05:55.324Z][0m AgentHostProcessManager: agent host started
+[AgentHost:renderer] MessagePort acquired, creating client...
+[91m[main 2026-11-17T06:05:55.608Z][0m [AgentHost:stderr] (node:38543) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+Started local extension host with pid 38608.
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=eefa8d4b-c4cf-40bd-8528-35b951a11342 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=eefa8d4b-c4cf-40bd-8528-35b951a11342 durationMs=322
+[AgentHost:renderer] Protocol connection established; clientId=eefa8d4b-c4cf-40bd-8528-35b951a11342
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+Settings Sync: Account status changed from uninitialized to unavailable
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Unknown channel: agentHostClientProxy
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+(node:38608) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (7766ms)
+    ✔ test_error_when_version_undecidable_on_export (3030ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (314ms)
+    ✔ test_normal_when_output_dir (351ms)
+    ✔ test_error_when_output_unwritable (91ms)
+    1) test_normal_when_relative_mermaid
+    ✔ test_normal_when_tooltips_and_relative_syntax (757ms)
+    ✔ test_normal_when_relative_libraries (1186ms)
+    ✔ test_normal_when_config_color_scheme (428ms)
+    ✔ test_normal_when_param_copy_label (399ms)
+  ブラウザで開く
+    ✔ test_normal (472ms)
+    ✔ test_error_when_output_unwritable (94ms)
+    ✔ test_normal_when_color_theme_selected (304ms)
+  PDF に印刷
+    ✔ test_normal (3360ms)
+    ✔ test_normal_when_wait_limit_reached (844ms)
+    ✔ test_normal_when_color_theme_selected (446ms)
+    ✔ test_error_when_output_unwritable (227ms)
+  設定ファイルを開く
+    ✔ test_normal (217ms)
+    ✔ test_normal_when_template_created (51ms)
+    ✔ test_error_when_template_declined
+  設定を開く
+    ✔ test_normal (717ms)
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで確認する
+    ✔ test_normal_when_opened_from_diff_view (486ms)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Unexpected SIGPIPE
+	at process.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/out/bootstrap-fork.js:4:1710)
+	at process.emit (node:events:514:28)
+    ✔ test_normal_when_commit_diff (319ms)
+    ✔ test_error_when_version_without_diff (364ms)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_modified_side_edited (1216ms)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Repository not initialized: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_preview (1442ms)
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (326ms)
+    ✔ test_normal_when_markdown_link (217ms)
+    ✔ test_normal_when_anchor_link (581ms)
+    ✔ test_normal_when_side_toc_link (141ms)
+    ✔ test_error_when_link_target_missing (1016ms)
+    ✔ test_normal_when_map_node_link (1130ms)
+  プレビューを開く
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3552ms)
+    2) test_normal_when_mermaid
+    ✔ test_normal_when_tooltips_and_relative_syntax (583ms)
+    ✔ test_normal_when_range_scripts (940ms)
+    ✔ test_normal_when_aliases (316ms)
+    ✔ test_error_when_aliases_missing (176ms)
+    ✔ test_normal_when_includes (313ms)
+    ✔ test_normal_when_same_column (357ms)
+    ✔ test_normal_when_already_open (293ms)
+    ✔ test_normal_when_version_pinned (4682ms)
+    ✔ test_normal_when_tags_unreachable (4661ms)
+    ✔ test_normal_when_theme_fixed (343ms)
+    ✔ test_normal_when_color_scheme (475ms)
+    ✔ test_normal_when_relative_image (366ms)
+    ✔ test_error_when_image_outside_workspace (813ms)
+    ✔ test_error_when_distribution_unreachable (253ms)
+    ✔ test_normal_when_loading_shown (11167ms)
+    ✔ test_error_when_version_missing (201ms)
+    ✔ test_error_when_not_markdown (523ms)
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-Oc06DM/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-Oc06DM/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1335ms)
+    ✔ test_error_when_unsupported_media (380ms)
+  プレビューをリロードする
+    ✔ test_normal (3088ms)
+    ✔ test_normal_when_from_command (341ms)
+    ✔ test_error_when_no_preview (519ms)
+  プレビューを再描画する
+    ✔ test_normal (1332ms)
+    ✔ test_normal_when_live_update_off (1037ms)
+    ✔ test_normal_when_config_saved (576ms)
+    ✔ test_normal_when_param_copy_label_configured (551ms)
+    ✔ test_normal_when_map_configured (530ms)
+    ✔ test_normal_when_aliases_yaml_saved (471ms)
+    ✔ test_normal_when_include_target_saved (1091ms)
+    ✔ test_normal_when_config_missing (382ms)
+    ✔ test_normal_when_revealed (3234ms)
+    ✔ test_normal_when_diff_revealed (1506ms)
+    ✔ test_normal_when_relative_library (341ms)
+    ✔ test_error_when_config_unreadable (967ms)
+    ✔ test_normal_when_config_fixed (376ms)
+    ✔ test_normal_when_library_origin_added (562ms)
+    ✔ test_normal_when_color_theme_changed (562ms)
+  拡張機能の配布物を作る
+    ✔ test_normal (1162ms)
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_error_when_version_mismatch (219ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1425ms)
+    ✔ test_normal_when_from_preview (1064ms)
+    ✔ test_normal_when_sync_off (2975ms)
+    ✔ test_normal_when_in_closed_section (2037ms)
+    ✔ test_error_when_editor_hidden (900ms)
+  81 passing (3m)
+  2 failing
+  1) HTML に書き出す
+       test_normal_when_relative_mermaid:
+
+      AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert2.ok(config.mermaid?.url?.startsWith("data:text/javascript"))
+
+      + expected - actual
+
+      -false
+      +true
+      
+  	at Context.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/export.test.mjs:614:13)
+
+  2) プレビューを開く
+       test_normal_when_mermaid:
+     Error: mermaid の図を描かない
+  	at waitFor (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/preview-open.test.mjs:128:13)
+  	at async Context.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/preview-open.test.mjs:596:7)
+
+Error: 2 tests failed
+	at Module.run (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/out/test/index.mjs:18:11)
+[90m[main 2026-11-17T06:08:31.307Z][0m Extension host with pid 38608 exited with code: 0, signal: unknown.
+Exit code:   1
+TestRunFailedError: Test run failed with code 1
+    at ChildProcess.onProcessClosed (/home/shuhei2441/repo/mdmark/.claude/worktrees/refactor-lint-complexity-tests/vscode/node_modules/@vscode/test-electron/out/runTest.js:125:24)
+    at ChildProcess.emit (node:events:508:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:294:12) {
+  code: 1,
+  signal: undefined
+}
+（終了コード 1）

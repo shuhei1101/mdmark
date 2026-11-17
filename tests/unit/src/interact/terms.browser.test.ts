@@ -174,23 +174,26 @@ test("test_attach_term_tips_copy_command", async () => {
     "button.mdmark-term-tip-copy",
   );
   const status = root.querySelector<HTMLElement>('[role="status"]');
+  if (!wrap || !button || !status) {
+    throw new Error("用語・コピーのボタン・通知の要素が無い");
+  }
   // 実行
   root.querySelector<HTMLElement>(".mdmark-term")?.focus();
-  button?.focus();
-  button?.click();
+  button.focus();
+  button.click();
   await vi.advanceTimersByTimeAsync(0);
   // 検証: 記載して、コピーしたことをボタンとスクリーンリーダー向けの要素で通知し、ツールチップを開いたままにする
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith("npm run test:unit");
-  expect(button?.dataset.state).toBe("copied");
-  expect(button?.textContent).toContain("コピーしました");
-  expect(status?.textContent).toBe("コマンドをコピーしました");
-  expect(wrap?.classList.contains("is-open")).toBe(true);
+  expect(button.dataset.state).toBe("copied");
+  expect(button.textContent).toContain("コピーしました");
+  expect(status.textContent).toBe("コマンドをコピーしました");
+  expect(wrap.classList.contains("is-open")).toBe(true);
   await vi.advanceTimersByTimeAsync(2000);
-  expect(button?.dataset.state).toBe("idle");
-  expect(button?.textContent).toContain("コピー");
-  expect(button?.textContent).not.toContain("コピーしました");
-  expect(status?.textContent).toBe("");
+  expect(button.dataset.state).toBe("idle");
+  expect(button.textContent).toContain("コピー");
+  expect(button.textContent).not.toContain("コピーしました");
+  expect(status.textContent).toBe("");
 });
 
 // コマンドを書き込めなければ failed にして残し、例外を外へ出さない（正常系）

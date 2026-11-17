@@ -729,12 +729,14 @@ test("test_attach_tables_when_no_sort", async () => {
   detachers.push(attachTables(root));
   const headers = [...root.querySelectorAll("thead th")];
   // 検証
-  expect(headers[2]?.querySelector("button.mdmark-sort")).toBeNull();
+  expect(
+    headers.map(
+      (header) => header.querySelector("button.mdmark-sort") !== null,
+    ),
+  ).toEqual([true, true, false]);
   expect(headers[2]?.querySelector("span.mdmark-th-label")?.textContent).toBe(
     "説明",
   );
-  expect(headers[0]?.querySelector("button.mdmark-sort")).not.toBeNull();
-  expect(headers[1]?.querySelector("button.mdmark-sort")).not.toBeNull();
   // 実行・検証: 説明の列の見出しを押しても並びが変わらない
   headers[2]?.querySelector<HTMLElement>(".mdmark-th-label")?.click();
   expect(columnTexts(root, 2)).toEqual(["x", "y", "z"]);
@@ -1555,6 +1557,17 @@ function nextFrames(): Promise<void> {
   });
 }
 
+/** 親の表の囲み・行の詳細の中の表の囲み・親の表を返却する */
+const nestedTableParts = (root: HTMLElement) => {
+  const parent = root.querySelector<HTMLElement>(".mdmark-table");
+  const nested = parent?.querySelector<HTMLElement>(".mdmark-table");
+  const parentTable = parent?.querySelector("table");
+  if (!parent || !nested || !parentTable) {
+    throw new Error("親の表か中の表が無い");
+  }
+  return { parent, nested, parentTable };
+};
+
 // 行の詳細の中の表の要素を、親の表の操作が取得しない（正常系）
 test("test_attach_tables_when_nested_table", async () => {
   // 準備
@@ -1595,11 +1608,10 @@ test("test_attach_tables_when_nested_table", async () => {
   setRootWidth(root, 320);
   detachers.push(attachSections({ root, sections: true, rowDetails: true }));
   detachers.push(attachTables(root));
-  const parent = root.querySelector<HTMLElement>(".mdmark-table");
-  const nested = parent?.querySelector<HTMLElement>(".mdmark-table");
-  const parentHead = parent?.querySelector("table")?.tHead?.rows[0];
-  if (!parent || !nested || !parentHead) {
-    throw new Error("親の表か中の表が無い");
+  const { parent, nested, parentTable } = nestedTableParts(root);
+  const parentHead = parentTable.tHead?.rows[0];
+  if (!parentHead) {
+    throw new Error("親の表の見出しが無い");
   }
   // 実行: 付けた後に描く先の要素の幅を変え、続けて親の表の囲みの幅だけを変えて、親の表の `ResizeObserver` にピン止めのボタンの表示を最後にもう一度決めせる
   setRootWidth(root, 300);
@@ -1607,18 +1619,12 @@ test("test_attach_tables_when_nested_table", async () => {
   parent.style.width = "250px";
   await nextFrames();
   // 検証: 親の表のピン止めのボタンは出て、中の表のピン止めのボタンは隠れたまま
-  const parentPins =
-    parentHead.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
-  expect(parentPins).toHaveLength(10);
-  for (const pin of parentPins) {
-    expect(pin.hasAttribute("hidden")).toBe(false);
-  }
-  const nestedPins =
-    nested.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
-  expect(nestedPins).toHaveLength(2);
-  for (const pin of nestedPins) {
-    expect(pin.hasAttribute("hidden")).toBe(true);
-  }
+  const hiddenOfPins = (element: HTMLElement) =>
+    [...element.querySelectorAll<HTMLButtonElement>("button.mdmark-pin")].map(
+      (pin) => pin.hasAttribute("hidden"),
+    );
+  expect(hiddenOfPins(parentHead)).toEqual(Array(10).fill(false));
+  expect(hiddenOfPins(nested)).toEqual([true, true]);
   // 実行: 親の表の 1 列目の絞り込みのボタンを押す
   const button = parentHead.querySelector<HTMLButtonElement>(
     "button.mdmark-filter",
@@ -1677,12 +1683,10 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
   );
   detachers.push(attachSections({ root, sections: true, rowDetails: true }));
   detachers.push(attachTables(root));
-  const parent = root.querySelector<HTMLElement>(".mdmark-table");
-  const nested = parent?.querySelector<HTMLElement>(".mdmark-table");
-  const parentTable = parent?.querySelector("table");
-  const nestedHead = nested?.querySelector("th");
-  if (!parentTable || !nested || !nestedHead) {
-    throw new Error("親の表か中の表が無い");
+  const { nested, parentTable } = nestedTableParts(root);
+  const nestedHead = nested.querySelector("th");
+  if (!nestedHead) {
+    throw new Error("中の表の見出しが無い");
   }
   // 実行: 中の表の 1 列目の並べ替えのボタンを押す
   findButtonLike(nestedHead, "button.mdmark-sort").click();

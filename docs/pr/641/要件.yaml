@@ -1,0 +1,24 @@
+use_cases: []
+docs:
+  - page: docs/library/LIB-472-12.yaml
+    new: false
+    change: コマンド `eslint -c tools/eslint/eslint.config.js --max-warnings 0` の purpose の、複雑さの規則を適用する範囲に `tests/`・`vscode/tests/` を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T05:27:50.501319+00:00'
+  - page: docs/test-procedure/TP-472-1.yaml
+    new: false
+    change: lint の説明の、ESLint が複雑さの規則を適用する範囲に `tests/`・`vscode/tests/` を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T05:27:50.501319+00:00'
+scope_out:
+  - item: テストコードへの、複雑さ以外の ESLint の規則（React・アクセシビリティ・import の向き・Tailwind・記載方法）の適用
+    reason: 要望は複雑さの 4 規則の適用だけで、他の規則は Webview だけに当てる設計（MOD-472-41 の適用の範囲）を変えない
+    plan: none
+  - item: テストコードに当てる閾値を src/ などと別の値にすること
+    reason: 要望は src/ などと同じ 4 規則・同じ閾値の適用で、閾値の根拠（MOD-472-41 の閾値）はテストコードでも変わらない
+    plan: none
+  - item: VS Code 拡張機能の結合テストの mermaid の 2 件（export.test.ts の test_normal_when_relative_mermaid・preview-open.test.ts の test_normal_when_mermaid）の fail
+    reason: origin/develop の stub-server.ts に戻しても同じ 2 件が fail する base ブランチの不具合で、この PR の変更によるものではない
+    plan: '#642'

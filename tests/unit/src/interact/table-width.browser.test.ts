@@ -56,10 +56,13 @@ const tableParts = (
   headCells: HTMLTableCellElement[];
 } => {
   const wrapper = root.querySelector<HTMLElement>(".mdmark-table");
-  const table = wrapper?.querySelector("table");
-  const scroller = wrapper?.querySelector<HTMLElement>(".mdmark-table-scroll");
+  if (!wrapper) {
+    throw new Error("表が無い");
+  }
+  const table = wrapper.querySelector("table");
+  const scroller = wrapper.querySelector<HTMLElement>(".mdmark-table-scroll");
   const head = table?.tHead?.rows;
-  if (!wrapper || !table || !scroller || !head) {
+  if (!table || !scroller || !head) {
     throw new Error("表が無い");
   }
   return {
@@ -126,9 +129,8 @@ test("test_measure_columns", async () => {
   const columns = measureColumns(table, headCells);
   // 検証
   expect(columns.map((column) => column.column)).toEqual([0, 1]);
-  expect(columns[0]?.longest).toBe(longest);
-  expect(columns[1]?.longestWord).toBe(longestWord);
-  expect(columns[0]?.em).toBe(14);
+  expect(columns[0]).toMatchObject({ longest, em: 14 });
+  expect(columns[1]).toMatchObject({ longestWord });
   expect(table.querySelector("span[style*='visibility']")).toBeNull();
 });
 

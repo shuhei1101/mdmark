@@ -78,22 +78,28 @@ test("test_current", async () => {
 
 // 閉じた中の箇所は、data-closed に種類を入れ、線を破線にし、スクリーンリーダー向けの名前に閉じた中であることを入れる
 test.each([
-  [
-    "test_closed_section",
-    "closed-section",
-    "section",
-    "閉じた箇所",
-    "閉じたセクションの中",
-  ],
-  [
-    "test_closed_tab",
-    "closed-tab",
-    "tab",
-    "タブの箇所",
-    "選ばれていないタブの中",
-  ],
-  ["test_closed_row", "closed-row", "row", "行の箇所", "閉じた行の詳細の中"],
-])("%s", async (_name, id, kind, quote, label) => {
+  {
+    name: "test_closed_section",
+    id: "closed-section",
+    kind: "section",
+    quote: "閉じた箇所",
+    label: "閉じたセクションの中",
+  },
+  {
+    name: "test_closed_tab",
+    id: "closed-tab",
+    kind: "tab",
+    quote: "タブの箇所",
+    label: "選ばれていないタブの中",
+  },
+  {
+    name: "test_closed_row",
+    id: "closed-row",
+    kind: "row",
+    quote: "行の箇所",
+    label: "閉じた行の詳細の中",
+  },
+])("$name", async ({ id, kind, quote, label }) => {
   // 準備・実行
   const page = await open(id);
   // 検証

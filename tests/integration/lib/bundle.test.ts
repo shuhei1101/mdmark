@@ -908,21 +908,18 @@ test("test_normal_when_back_restore_folds_and_tabs", async () => {
   await waitForScrollY(page, leftAt);
   await expect(
     page.evaluate(() => {
-      const section = document.querySelector(
-        "article .zq-section-toggle[aria-controls='section-導入']",
-      );
-      const body = document.querySelector('[id="section-導入"]');
+      const attributeOf = (selector: string, name: string) =>
+        document.querySelector(selector)?.getAttribute(name) ?? null;
+      const hasAttributeOf = (selector: string, name: string) =>
+        document.querySelector(selector)?.hasAttribute(name) ?? null;
       return {
-        section: section?.getAttribute("aria-expanded") ?? null,
-        hidden: body?.hasAttribute("hidden") ?? null,
-        table:
-          document
-            .querySelector("article details.zq-table-details")
-            ?.hasAttribute("open") ?? null,
-        tree:
-          document
-            .querySelector("article .zq-tree-toggle")
-            ?.getAttribute("aria-expanded") ?? null,
+        section: attributeOf(
+          "article .zq-section-toggle[aria-controls='section-導入']",
+          "aria-expanded",
+        ),
+        hidden: hasAttributeOf('[id="section-導入"]', "hidden"),
+        table: hasAttributeOf("article details.zq-table-details", "open"),
+        tree: attributeOf("article .zq-tree-toggle", "aria-expanded"),
         tab:
           [...document.querySelectorAll("article .zq-tab")]
             .find((tab) => tab.textContent?.includes("二つ目"))

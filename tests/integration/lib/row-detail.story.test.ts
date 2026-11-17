@@ -39,9 +39,12 @@ test("test_open", async () => {
     const detail = document
       .querySelector("#storybook-root tr.mdmark-row-detail")
       ?.getBoundingClientRect();
+    if (!row || !detail) {
+      return { below: false, sameWidth: false };
+    }
     return {
-      below: (detail?.top ?? 0) >= (row?.bottom ?? 0) - 1,
-      sameWidth: Math.abs((detail?.width ?? 0) - (row?.width ?? 1)) < 2,
+      below: detail.top >= row.bottom - 1,
+      sameWidth: Math.abs(detail.width - row.width) < 2,
     };
   });
   expect(layout.below).toBe(true);

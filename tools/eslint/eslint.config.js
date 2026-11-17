@@ -19,6 +19,8 @@ const COMPLEXITY_FILES = [
   "vscode/src/**/*.{ts,tsx}",
   "vscode/scripts/**/*.ts",
   "plugin/**/*.ts",
+  "tests/**/*.{ts,tsx}",
+  "vscode/tests/**/*.{ts,tsx}",
 ];
 
 export default defineConfig([
