@@ -18913,15 +18913,15 @@ test("test_normal_when_map_mindmap_toggled", async () => {
   await remountMap(el, MAP_MINDMAP_MARKDOWN);
   expect(mindmapKeys(figure()).sort()).toEqual(["n9", "見積もりが粗い"].sort());
   // 実行・検証: Esc で 1 つ外（「予算」の中）へ、もう 1 回で全体へ戻り、入る前と同じ配置
-  const escape = () =>
+  const pressEscape = () =>
     find<HTMLElement>(figure(), ".mdmark-diagram-viewport").dispatchEvent(
       new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
     );
-  escape();
+  pressEscape();
   expect(mindmapKeys(figure()).sort()).toEqual(
     ["予算", "n9", "見積もりが粗い"].sort(),
   );
-  escape();
+  pressEscape();
   expect(mindmapKeys(figure())).toHaveLength(14);
   const now = placed();
   for (const [key, at] of Object.entries(initial)) {
