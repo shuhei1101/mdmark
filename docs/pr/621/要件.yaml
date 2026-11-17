@@ -92,7 +92,7 @@ scope_out:
     plan: none
   - item: VS Code 拡張機能の設定 mdmark.version（既定 latest はタグ一覧の最新）で develop の最新を選べるようにするか
     reason: Issue が挙げる参照のしかた（jsDelivr・npx・mdmark.config.yaml の version）に含まれない。ただし拡張機能も jsDelivr から配布物を読むため、含めるかを単一 UC 設計のレビューで確定する。今の判断は含めない
-    plan: to_file
+    plan: '#638'
   - item: '#571（develop に次のタグを打つ）を打つか'
     reason: '本件で develop を参照できても #571 の報告そのものは直らず、打つかは本件の後にユーザーが決める'
     plan: '#571'
