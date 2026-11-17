@@ -1,0 +1,33 @@
+id: DATA-472-8
+visibility: internal
+title: 'データ: ガイドの行'
+lead: ガイドの名前 1 つと、その本文のページ。
+datastore: YAML
+fields:
+- key: name
+  title: 名前
+  type: string
+  description: ガイドの名前。索引の中で一意
+  required: true
+  example: notation
+  unique: 全体
+- key: when
+  title: 参照するとき
+  type: string
+  description: どんな作業のときに参照するか
+  required: true
+  example: マーカーと記法を記載するとき
+- key: summary
+  title: 概要
+  type: string
+  description: 1 文の概要
+  required: true
+  example: 表・注意書き・タブなどのマーカーの一覧
+- key: page
+  title: 本文のページ
+  type: string
+  description: 本文にするページ。リポジトリの直下からの相対パス。`docs/files.yaml` のこのページの行にタグ `topic:ガイド` を付ける
+  required: true
+  example: docs/guide/記法.mark.md
+refs:
+- ER-472-4#tables[guides]

@@ -1,0 +1,43 @@
+id: DATA-472-29
+visibility: internal
+title: 'データ: コードブロックの飾り'
+lead: コードブロックの飾りのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: title
+  title: コードブロックの上に出すタイトル
+  type: string
+  description: コードブロックの上に出すタイトル。空白を記載できる
+  example: src/app.ts の抜粋
+- key: lines
+  title: 行番号を出す
+  type: object
+  description: 行番号を出す。省くと出さない
+  example: '{}'
+- key: lines.start
+  title: 最初の行の番号
+  type: int
+  description: 最初の行の番号。省くと 1
+  example: '10'
+- key: highlight
+  title: 強調する行
+  type: array
+  description: 強調する行。要素は行の番号か、共通のオブジェクトの行の範囲
+  example: '[2, {"from": 4, "to": 6}]'
+- key: fold
+  title: 最初から畳む行
+  type: array
+  description: 最初から畳む行。記載方法は `highlight` と同じ
+  example: '[{"from": 10, "to": 20}]'
+- key: wrap
+  title: 長い行を折り返す
+  type: bool
+  description: 長い行を折り返す。省くと `false`
+  example: 'true'
+- key: tree_warning
+  title: 罫線のフォルダ構成の記載の警告を出す
+  type: bool
+  description: 罫線の行を 2 行以上持つ言語が `tree` でないコードブロックに、言語を `tree` にするよう案内する記載の警告を出すか。`false` で止める（罫線の例をそのまま見せるとき）。省くと `true`
+  example: 'false'
+refs:
+- ER-477-6#tables[code]

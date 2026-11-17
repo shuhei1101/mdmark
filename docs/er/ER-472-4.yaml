@@ -6,6 +6,7 @@ overview: 原本は Claude Code プラグインのフォルダの `plugin/guide-
 tables:
   - name: guides
     title: ガイドの行
+    source: DATA-472-8#
     datastore: YAML
     summary: ガイドの名前 1 つと、その本文のページ
     primary_key: name
@@ -14,6 +15,7 @@ tables:
     columns:
       - name: name
         title: 名前
+        source: DATA-472-8#fields[name]
         type: string
         not_null: true
         primary_key: true
@@ -23,6 +25,7 @@ tables:
         example: notation
       - name: when
         title: 参照するとき
+        source: DATA-472-8#fields[when]
         type: string
         not_null: true
         check: 空でない
@@ -30,6 +33,7 @@ tables:
         example: マーカーと記法を記載するとき
       - name: summary
         title: 概要
+        source: DATA-472-8#fields[summary]
         type: string
         not_null: true
         check: 空でない
@@ -37,6 +41,7 @@ tables:
         example: 表・注意書き・タブなどのマーカーの一覧
       - name: page
         title: 本文のページ
+        source: DATA-472-8#fields[page]
         type: string
         not_null: true
         check: '`docs/` で始まり `.md` で終わる。区切りは `/`'

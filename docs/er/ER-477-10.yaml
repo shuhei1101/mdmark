@@ -3,19 +3,21 @@ visibility: internal
 title: 'ER 図: 行の詳細のマーカーの設定'
 lead: '`<!-- row-detail: {JSON のオブジェクト} -->` の名前の後ろに記載する、行の詳細のマーカーの設定の構造。'
 tables:
-- name: row_detail
-  title: 行の詳細
-  datastore: JSON
-  access: 全件
-  scale: ~1
-  summary: 行の詳細のマーカー 1 つの設定
-  columns:
-  - name: at
-    title: 詳細を付ける行の位置
-    type: integer
-    description: 詳細を付ける行の位置。見出し行を除いて 1 から数える
-    not_null: true
-    example: '3'
+  - name: row_detail
+    title: 行の詳細
+    source: DATA-472-16#
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    summary: 行の詳細のマーカー 1 つの設定
+    columns:
+      - name: at
+        title: 詳細を付ける行の位置
+        source: DATA-472-16#fields[at]
+        type: integer
+        description: 詳細を付ける行の位置。見出し行を除いて 1 から数える
+        not_null: true
+        example: '3'
 notes:
   見本: |-
     ```html
@@ -26,12 +28,12 @@ notes:
     | --- | --- |
     | 行の位置 | `at` |
 refs:
-- ER-477-1#
+  - ER-477-1#
 decisions:
-- D-312
-- D-334
-- D-336
-- D-337
-- D-338
-- D-344
-- D-345
+  - D-312
+  - D-334
+  - D-336
+  - D-337
+  - D-338
+  - D-344
+  - D-345

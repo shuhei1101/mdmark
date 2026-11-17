@@ -3,18 +3,20 @@ visibility: internal
 title: 'ER 図: ステップのマーカーの設定'
 lead: '`<!-- steps: {JSON のオブジェクト} -->` の名前の後ろに記載する、ステップのマーカーの設定の構造。'
 tables:
-- name: steps
-  title: ステップ
-  datastore: JSON
-  access: 全件
-  scale: ~1
-  summary: ステップのマーカー 1 つの設定
-  columns:
-  - name: collapse
-    title: 共通のオブジェクトの折り畳み
-    type: object
-    description: 共通のオブジェクトの折り畳み
-    example: '{"open": false}'
+  - name: steps
+    title: ステップ
+    source: DATA-472-27#
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    summary: ステップのマーカー 1 つの設定
+    columns:
+      - name: collapse
+        title: 共通のオブジェクトの折り畳み
+        source: DATA-472-27#fields[collapse]
+        type: object
+        description: 共通のオブジェクトの折り畳み
+        example: '{"open": false}'
 notes:
   見本: |-
     ```html
@@ -25,12 +27,12 @@ notes:
     | --- | --- |
     | `closed`・`open`・`title=見出し` | `collapse.open` の `false`・`true` と `collapse.title` |
 refs:
-- ER-477-1#
+  - ER-477-1#
 decisions:
-- D-312
-- D-334
-- D-336
-- D-337
-- D-338
-- D-344
-- D-345
+  - D-312
+  - D-334
+  - D-336
+  - D-337
+  - D-338
+  - D-344
+  - D-345

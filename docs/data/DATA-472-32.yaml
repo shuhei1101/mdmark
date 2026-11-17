@@ -1,0 +1,13 @@
+id: DATA-472-32
+visibility: internal
+title: 'データ: wide の範囲'
+lead: wide の範囲のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: open
+  title: 広げた幅から始めるか
+  type: bool
+  description: 広げた幅から始めるか。省くと `true`
+  example: 'false'
+refs:
+- ER-477-9#tables[wide]

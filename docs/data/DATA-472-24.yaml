@@ -1,0 +1,33 @@
+id: DATA-472-24
+visibility: internal
+title: 'データ: map'
+lead: map のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: title
+  title: 図の枠と折りたたみの見出し
+  type: string
+  description: 図の枠と折りたたみの見出し
+  example: 全体の構成
+- key: focus
+  title: 最初に入るグループの ID
+  type: string
+  description: 最初に入るグループ（ER 図の分類・状態遷移図の入れ子の状態・クラス図の `namespace`・アーキテクチャ図の group・C4 図の境界を含む）の ID。クエリ文字列の `map-{図の番号}` と sessionStorage に記録があれば、そちらを先に使用する。無いグループの ID は飛ばす
+  example: app
+- key: play
+  title: 再生か案内を自動で始めるか
+  type: string
+  description: '`"autoplay"` で、図が画面に入ったら押さずに再生か案内を始める。動きを減らす設定では始めず止めた帯で出す'
+  example: autoplay
+- key: interval
+  title: 自動で進める間隔の秒
+  type: int
+  description: 自動で進める間隔の秒。正の数。省くと 2
+  example: '3'
+- key: collapse
+  title: 図を折り畳みに入れる
+  type: object
+  description: 共通のオブジェクトの折り畳み
+  example: '{"open": false}'
+refs:
+- ER-477-18#tables[map]

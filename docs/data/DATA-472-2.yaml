@@ -1,0 +1,24 @@
+id: DATA-472-2
+visibility: internal
+title: 'データ: 補足'
+lead: map の範囲 1 つの補足。
+datastore: JSON
+fields:
+- key: version
+  title: バージョン
+  type: int
+  description: 補足のバージョン
+  required: true
+  example: '1'
+- key: notes
+  title: 説明
+  type: object
+  description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを当てたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
+  example: '{"mount": {"text": "文書を描く公開関数", "annotations": ["cond"]}}'
+- key: plays_over
+  title: 再生を重ねる構成図
+  type: int
+  description: シーケンス図の補足だけが持つ。再生の強調を重ねる構成図の図の番号
+  example: '1'
+refs:
+- ER-472-2#tables[map_data]

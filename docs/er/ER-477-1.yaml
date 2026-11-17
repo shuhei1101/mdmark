@@ -22,63 +22,72 @@ overview: |-
   | 拡張のマーカー | JSON のオブジェクトを `options` として、拡張の `schema` と `draw` に `{options, definition}` を指定する。`args`・`keys` は無くす。今の書き方の拡張のマーカーは描かずに記載の警告を出し、移行を案内する |
   | 設定の `libraries` のマーカー | 拡張と同じく、`draw(slot, options)` に JSON のオブジェクトを指定する。今の書き方は描かずに記載の警告を出し、移行を案内する |
 tables:
-- name: collapse
-  title: 折り畳み
-  datastore: JSON
-  access: 全件
-  scale: ~1
-  summary: 表・タブ・ステップの範囲を入れる折り畳み
-  columns:
   - name: collapse
-    title: 範囲を折り畳みに入れる
-    type: object
-    description: 範囲を折り畳みに入れる。省くと折り畳まない。表・タブ・ステップで使用する
-    example: '{"open": false}'
-  - name: collapse.open
-    title: 描いた直後に開くか
-    type: boolean
-    description: 描いた直後に開くか。省くと `false`
-    default: '`false`'
-    example: 'true'
-  - name: collapse.title
-    title: 折り畳みの見出し
-    type: string
-    description: 折り畳みの見出し。省くとマーカーごとの既定の見出し
-    example: '"引数の一覧"'
-- name: line_range
-  title: 行の範囲
-  datastore: JSON
-  access: 全件
-  scale: ~1
-  summary: 行の位置の範囲
-  description: 表の `rows.colors[].at`、コードブロックの飾りの `highlight`・`fold` の要素、取り込みの `lines` で使用する。
-  columns:
-  - name: from
-    title: 最初の行
-    type: integer
-    description: 最初の行
-    not_null: true
-    example: '2'
-  - name: to
-    title: 最後の行
-    type: integer
-    description: 最後の行。省くと `from` の 1 行だけ
-    default: '`from`'
-    example: '4'
-- name: column_ref
-  title: 列を指す値
-  datastore: JSON
-  access: 全件
-  scale: ~1
-  summary: 表の列を見出しの文字で指す値
-  description: 表の `tree` の各キー・用語集の表の各キー・ビューの `board.group` で使用する
-  columns:
-  - name: column
-    title: 列の見出しの文字
-    type: string
-    not_null: true
-    description: 列の見出しの文字。多段の見出しは最下段の文字
-    example: 用語
+    title: 折り畳み
+    source: DATA-472-13#
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    summary: 表・タブ・ステップの範囲を入れる折り畳み
+    columns:
+      - name: collapse
+        title: 範囲を折り畳みに入れる
+        source: DATA-472-13#fields[collapse]
+        type: object
+        description: 範囲を折り畳みに入れる。省くと折り畳まない。表・タブ・ステップで使用する
+        example: '{"open": false}'
+      - name: collapse.open
+        title: 描いた直後に開くか
+        source: DATA-472-13#fields[collapse.open]
+        type: boolean
+        description: 描いた直後に開くか。省くと `false`
+        default: '`false`'
+        example: 'true'
+      - name: collapse.title
+        title: 折り畳みの見出し
+        source: DATA-472-13#fields[collapse.title]
+        type: string
+        description: 折り畳みの見出し。省くとマーカーごとの既定の見出し
+        example: '"引数の一覧"'
+  - name: line_range
+    title: 行の範囲
+    source: DATA-472-14#
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    summary: 行の位置の範囲
+    description: 表の `rows.colors[].at`、コードブロックの飾りの `highlight`・`fold` の要素、取り込みの `lines` で使用する。
+    columns:
+      - name: from
+        title: 最初の行
+        source: DATA-472-14#fields[from]
+        type: integer
+        description: 最初の行
+        not_null: true
+        example: '2'
+      - name: to
+        title: 最後の行
+        source: DATA-472-14#fields[to]
+        type: integer
+        description: 最後の行。省くと `from` の 1 行だけ
+        default: '`from`'
+        example: '4'
+  - name: column_ref
+    title: 列を指す値
+    source: DATA-472-15#
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    summary: 表の列を見出しの文字で指す値
+    description: 表の `tree` の各キー・用語集の表の各キー・ビューの `board.group` で使用する
+    columns:
+      - name: column
+        title: 列の見出しの文字
+        source: DATA-472-15#fields[column]
+        type: string
+        not_null: true
+        description: 列の見出しの文字。多段の見出しは最下段の文字
+        example: 用語
 notes:
   引数を持たないマーカー: |-
     `toc`・`pagebreak`・`columns`・`column`・`cards`・`html`・`flow`・`sequence`・`chart`・`param`・`er` は引数を持たない。図の部品（`flow`・`sequence`・`chart`・`param`・`er`）の定義は、今と同じく範囲の中の `json` のコードブロックに記載する。
@@ -120,29 +129,29 @@ notes:
     | `default=board`・`default=table` | `view` | `initial` |
     | `filter=列名:種類` | `view` | `columns.{列名}.filter.type` |
 refs:
-- ER-477-2#
-- ER-477-3#
-- ER-477-4#
-- ER-477-5#
-- ER-477-6#
-- ER-477-7#
-- ER-477-8#
-- ER-477-9#
-- ER-477-10#
-- ER-477-11#
-- ER-477-12#
-- ER-477-13#
-- ER-477-14#
-- ER-477-15#
-- ER-477-16#
-- ER-477-17#
-- ER-477-18#
+  - ER-477-2#
+  - ER-477-3#
+  - ER-477-4#
+  - ER-477-5#
+  - ER-477-6#
+  - ER-477-7#
+  - ER-477-8#
+  - ER-477-9#
+  - ER-477-10#
+  - ER-477-11#
+  - ER-477-12#
+  - ER-477-13#
+  - ER-477-14#
+  - ER-477-15#
+  - ER-477-16#
+  - ER-477-17#
+  - ER-477-18#
 decisions:
-- D-312
-- D-334
-- D-335
-- D-336
-- D-337
-- D-338
-- D-344
-- D-345
+  - D-312
+  - D-334
+  - D-335
+  - D-336
+  - D-337
+  - D-338
+  - D-344
+  - D-345

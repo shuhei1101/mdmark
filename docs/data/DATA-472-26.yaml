@@ -1,0 +1,18 @@
+id: DATA-472-26
+visibility: internal
+title: 'データ: タブ'
+lead: タブのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: group
+  title: タブの組の名前
+  type: string
+  description: タブの組の名前。1 文字以上。空の文字は記載の警告にし、組を持たないタブにする
+  example: os
+- key: collapse
+  title: 共通のオブジェクトの折り畳み
+  type: object
+  description: 共通のオブジェクトの折り畳み
+  example: '{"open": true}'
+refs:
+- ER-477-3#tables[tabs]

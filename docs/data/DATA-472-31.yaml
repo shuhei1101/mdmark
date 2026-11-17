@@ -1,0 +1,18 @@
+id: DATA-472-31
+visibility: internal
+title: 'データ: details の範囲'
+lead: details の範囲のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: title
+  title: 開閉するタイトル
+  type: string
+  description: 開閉するタイトル。行内の Markdown を記載できる。省くと `詳細`
+  example: 補足の手順
+- key: open
+  title: 開いた状態で始めるか
+  type: bool
+  description: 開いた状態で始めるか。省くと `false`
+  example: 'true'
+refs:
+- ER-477-8#tables[details]

@@ -1,0 +1,33 @@
+id: DATA-472-1
+visibility: internal
+title: 'データ: テンプレートの行'
+lead: CSS のテンプレート 1 つの名前・ファイル・説明・タグ。
+datastore: YAML
+fields:
+- key: name
+  title: 名前
+  type: string
+  description: テンプレートの名前。索引の中で一意
+  required: true
+  example: brand
+  unique: 全体
+- key: file
+  title: CSS のファイル名
+  type: string
+  description: テンプレートのフォルダの直下の CSS のファイル名。`list_templates`・`apply_template` はこの値で CSS を読み込む
+  required: true
+  example: brand.css
+- key: description
+  title: 説明
+  type: string
+  description: どんな外観にする CSS か・どんな文書に向くか
+  required: true
+  example: 見出しを社の色にする
+- key: tags
+  title: タグ
+  type: array
+  description: 探すときの単語
+  required: true
+  example: '["見出し", "色"]'
+refs:
+- ER-472-1#tables[templates]

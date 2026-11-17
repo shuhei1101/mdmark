@@ -1,0 +1,13 @@
+id: DATA-472-21
+visibility: internal
+title: 'データ: 機能のオン・オフ'
+lead: 機能のオン・オフのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: '{機能}'
+  title: 文書の機能を `true` でオン、`false` でオフにする
+  type: bool
+  description: 文書の機能を `true` でオン、`false` でオフにする。キーは設定の `features` の機能名（`side-toc`・`back-to-top` など）
+  example: 'false'
+refs:
+- ER-477-15#tables[features]

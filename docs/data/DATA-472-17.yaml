@@ -1,0 +1,14 @@
+id: DATA-472-17
+visibility: internal
+title: 'データ: 図と表の番号'
+lead: 図と表の番号のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: id
+  title: 図表の ID
+  type: string
+  description: 図表の ID
+  required: true
+  example: 構成
+refs:
+- ER-477-11#tables[fig]

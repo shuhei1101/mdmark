@@ -1,0 +1,54 @@
+id: DATA-472-22
+visibility: internal
+title: 'データ: 用語集の表'
+lead: 用語集の表のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: term
+  title: 用語の列
+  type: object
+  description: 用語の列
+  required: true
+  example: '{"column": "用語"}'
+- key: term.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: 用語
+- key: meaning
+  title: 意味の列
+  type: object
+  description: 意味の列
+  required: true
+  example: '{"column": "意味"}'
+- key: meaning.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: 意味
+- key: aliases
+  title: 別名の列
+  type: object
+  description: 別名の列
+  example: '{"column": "別名"}'
+- key: aliases.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: 別名
+- key: avoid
+  title: やめた言い方の列
+  type: object
+  description: やめた言い方の列
+  example: '{"column": "やめた言い方"}'
+- key: avoid.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: やめた言い方
+refs:
+- ER-477-16#tables[glossary]

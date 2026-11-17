@@ -1,0 +1,13 @@
+id: DATA-472-18
+visibility: internal
+title: 'データ: ギャラリー'
+lead: ギャラリーのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: columns
+  title: 列の数
+  type: int
+  description: 列の数（1〜6）。省くと 2
+  example: '3'
+refs:
+- ER-477-12#tables[gallery]

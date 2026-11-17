@@ -1,0 +1,37 @@
+id: DATA-472-12
+visibility: internal
+title: 'データ: 用語'
+lead: 索引に記載した用語 1 つ。本文に出たら意味のツールチップを付ける。
+datastore: YAML
+fields:
+- key: id
+  title: ID
+  type: string
+  description: 用語の ID。索引の `terms` の中で一意。セクションごとに最初の 1 回を数える単位
+  required: true
+  example: workspace
+  unique: 全体
+- key: term
+  title: 用語
+  type: string
+  description: 用語の単語
+  required: true
+  example: ワークスペース
+- key: aliases
+  title: 別名
+  type: array
+  description: 別名。本文に出たら用語と同じツールチップを出す
+  example: '[WS]'
+- key: meaning
+  title: 意味
+  type: string
+  description: 意味。ツールチップの「用語」に出す
+  required: true
+  example: 話し合いの記録を配置するフォルダ
+- key: avoid
+  title: やめた言い方
+  type: array
+  description: 使用しないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で通知し、描いた文書では波線のマーカーと「代わりの用語」のツールチップを出す
+  example: '[作業場]'
+refs:
+- ER-472-6#tables[terms]

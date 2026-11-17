@@ -3,26 +3,29 @@ visibility: internal
 title: 'ER 図: ファイルツリーのマーカーの設定'
 lead: '`<!-- tree: {JSON のオブジェクト} -->` の名前の後ろに記載する、ファイルツリーのマーカーの設定の構造。'
 tables:
-- name: tree
-  title: ファイルツリー
-  datastore: JSON
-  access: 全件
-  scale: ~1
-  summary: ファイルツリーのマーカー 1 つの設定
-  columns:
-  - name: depth
-    title: 開いて描く階層
-    type: string / integer
-    description: 開いて描く階層。整数は 1 以上で、ルートの深さを 0 として、その数より浅いフォルダを開く。省くと `"all"`（全てのフォルダを開く）
-    default: '`"all"`'
-    enum_values: '`all`'
-    example: '2'
-  - name: wrap
-    title: 長い名前を折り返す
-    type: boolean
-    description: 長い名前を折り返す。省くと `false`
-    default: '`false`'
-    example: 'true'
+  - name: tree
+    title: ファイルツリー
+    source: DATA-472-28#
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    summary: ファイルツリーのマーカー 1 つの設定
+    columns:
+      - name: depth
+        title: 開いて描く階層
+        source: DATA-472-28#fields[depth]
+        type: string / integer
+        description: 開いて描く階層。整数は 1 以上で、ルートの深さを 0 として、その数より浅いフォルダを開く。省くと `"all"`（全てのフォルダを開く）
+        default: '`"all"`'
+        enum_values: '`all`'
+        example: '2'
+      - name: wrap
+        title: 長い名前を折り返す
+        source: DATA-472-28#fields[wrap]
+        type: boolean
+        description: 長い名前を折り返す。省くと `false`
+        default: '`false`'
+        example: 'true'
 notes:
   見本: |-
     ```html
@@ -33,12 +36,12 @@ notes:
     | --- | --- |
     | `open=all`・`open=階層の数`・`wrap` | `depth`・`wrap` の `true` |
 refs:
-- ER-477-1#
+  - ER-477-1#
 decisions:
-- D-312
-- D-334
-- D-336
-- D-337
-- D-338
-- D-344
-- D-345
+  - D-312
+  - D-334
+  - D-336
+  - D-337
+  - D-338
+  - D-344
+  - D-345

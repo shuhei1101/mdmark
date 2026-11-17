@@ -1,0 +1,19 @@
+id: DATA-472-14
+visibility: internal
+title: 'データ: 行の範囲'
+lead: 行の位置の範囲。
+datastore: JSON
+fields:
+- key: from
+  title: 最初の行
+  type: int
+  description: 最初の行
+  required: true
+  example: '2'
+- key: to
+  title: 最後の行
+  type: int
+  description: 最後の行。省くと `from` の 1 行だけ
+  example: '4'
+refs:
+- ER-477-1#tables[line_range]

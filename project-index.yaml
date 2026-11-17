@@ -16,6 +16,19 @@ when:
   - mdmark の CLI・公開関数・設定・索引のキーを確認するとき
   - mdmark のライブラリ・CLI・VS Code 拡張機能・Claude Code プラグインの設計書・コード・テストを調べるとき
 documents:
+  - id: data
+    title: データ
+    paths: ["docs/data/**/*.yaml"]
+    exclude: [index.yaml]
+    schema:
+      source: knowledge
+      path: schemas/design/data.schema.yaml
+      ref: design-schemas/v8.4.0
+    writable: true
+    metadata:
+      name: title
+      description: lead
+      visibility: visibility
   # 設計書は種類ごとの行。index.yaml は目次なので exclude で除く
   - id: architecture
     title: アーキテクチャ図

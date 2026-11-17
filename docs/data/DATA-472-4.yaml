@@ -1,0 +1,34 @@
+id: DATA-472-4
+visibility: internal
+title: 'データ: 案内の手順'
+lead: 構成図の案内の 1 手順。
+datastore: JSON
+fields:
+- key: title
+  title: タイトル
+  type: string
+  description: 帯のタイトル
+  example: 記法を読む
+- key: text
+  title: 説明
+  type: string
+  description: 帯の説明の文（改行はそのまま）
+  required: true
+  example: map のマーカーを読み、範囲を 1 つの図にする
+- key: nodes
+  title: 強調するノード
+  type: array
+  description: 強調するノードの ID
+  example: '["mount", "marker"]'
+- key: edges
+  title: データの印を流す線
+  type: array
+  description: データの印を流す線の ID
+  example: '["e1"]'
+- key: enter
+  title: 中へ入るグループ
+  type: string
+  description: その手順で中へ入るグループの ID
+  example: place
+refs:
+- ER-472-2#tables[walkthroughs]

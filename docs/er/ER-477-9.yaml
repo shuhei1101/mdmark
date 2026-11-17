@@ -3,19 +3,21 @@ visibility: internal
 title: 'ER 図: wide の範囲のマーカーの設定'
 lead: '`<!-- wide: {JSON のオブジェクト} -->` の名前の後ろに記載する、wide の範囲のマーカーの設定の構造。'
 tables:
-- name: wide
-  title: wide の範囲
-  datastore: JSON
-  access: 全件
-  scale: ~1
-  summary: wide の範囲のマーカー 1 つの設定
-  columns:
-  - name: open
-    title: 広げた幅から始めるか
-    type: boolean
-    description: 広げた幅から始めるか。省くと `true`
-    default: '`true`'
-    example: 'false'
+  - name: wide
+    title: wide の範囲
+    source: DATA-472-32#
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    summary: wide の範囲のマーカー 1 つの設定
+    columns:
+      - name: open
+        title: 広げた幅から始めるか
+        source: DATA-472-32#fields[open]
+        type: boolean
+        description: 広げた幅から始めるか。省くと `true`
+        default: '`true`'
+        example: 'false'
 notes:
   見本: |-
     ```html
@@ -26,12 +28,12 @@ notes:
     | --- | --- |
     | `closed` | `open` の `false` |
 refs:
-- ER-477-1#
+  - ER-477-1#
 decisions:
-- D-312
-- D-334
-- D-336
-- D-337
-- D-338
-- D-344
-- D-345
+  - D-312
+  - D-334
+  - D-336
+  - D-337
+  - D-338
+  - D-344
+  - D-345

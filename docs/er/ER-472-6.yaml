@@ -16,6 +16,7 @@ er:
 tables:
   - name: docs
     title: 文書
+    source: DATA-472-11#
     datastore: YAML
     summary: 索引に記載した文書 1 つのメタデータ
     primary_key: id
@@ -24,6 +25,7 @@ tables:
     columns:
       - name: id
         title: ID
+        source: DATA-472-11#fields[id]
         type: string
         not_null: true
         primary_key: true
@@ -33,6 +35,7 @@ tables:
         example: arch
       - name: path
         title: パス
+        source: DATA-472-11#fields[path]
         type: string
         not_null: true
         unique: true
@@ -41,6 +44,7 @@ tables:
         example: 設計/arch.md
       - name: title
         title: タイトル
+        source: DATA-472-11#fields[title]
         type: string
         not_null: true
         check: 空でない
@@ -48,11 +52,13 @@ tables:
         example: アーキテクチャ
       - name: description
         title: 概要
+        source: DATA-472-11#fields[description]
         type: string
         description: 1 文の概要。ツールチップの関連文書に出す
         example: 全体の構成と依存の向き
       - name: aliases
         title: 別名
+        source: DATA-472-11#fields[aliases]
         type: array
         default: '`[]`'
         description: 本文での呼び名。本文に出たら、その単語のツールチップの関連文書にこの文書を出し、被参照にも数える
@@ -60,6 +66,7 @@ tables:
         notes: 要素は空でない文字列
       - name: tags
         title: タグ
+        source: DATA-472-11#fields[tags]
         type: array
         default: '`[]`'
         description: タグ。要素はタグの名前の文字列か、`name`（必須・空でない文字列）と `main`（主題のタグか。任意・既定 `false`）を持つオブジェクト
@@ -67,6 +74,7 @@ tables:
         notes: '文字列の要素は `main: false` と同じ。タグは語彙に突き合わせない自由な文字列'
       - name: related
         title: 関連する文書
+        source: DATA-472-11#fields[related]
         type: array
         default: '`[]`'
         foreign_key:
@@ -76,6 +84,7 @@ tables:
         notes: 関連は片側だけに記載し、逆向きは保存しない。`change_together` だけは両側に記載する。空でない文字列の要素も `type` と `when` を持たない関連として読み込め、`checkIndex` が `untyped_related` でオブジェクトへの書き換えを求める。索引に無い `to` は `broken_ref` で通知する
   - name: terms
     title: 用語
+    source: DATA-472-12#
     datastore: YAML
     summary: 索引に記載した用語 1 つ。本文に出たら意味のツールチップを付ける
     primary_key: id
@@ -84,6 +93,7 @@ tables:
     columns:
       - name: id
         title: ID
+        source: DATA-472-12#fields[id]
         type: string
         not_null: true
         primary_key: true
@@ -93,6 +103,7 @@ tables:
         example: workspace
       - name: term
         title: 用語
+        source: DATA-472-12#fields[term]
         type: string
         not_null: true
         check: 空でない
@@ -100,6 +111,7 @@ tables:
         example: ワークスペース
       - name: aliases
         title: 別名
+        source: DATA-472-12#fields[aliases]
         type: array
         default: '`[]`'
         description: 別名。本文に出たら用語と同じツールチップを出す
@@ -107,6 +119,7 @@ tables:
         notes: 要素は空でない文字列
       - name: meaning
         title: 意味
+        source: DATA-472-12#fields[meaning]
         type: string
         not_null: true
         check: 空でない
@@ -114,6 +127,7 @@ tables:
         example: 話し合いの記録を配置するフォルダ
       - name: avoid
         title: やめた言い方
+        source: DATA-472-12#fields[avoid]
         type: array
         default: '`[]`'
         description: 使用しないことにした言い方。索引の文書の本文に出たら `checkIndex` が `avoided_term` で通知し、描いた文書では波線のマーカーと「代わりの用語」のツールチップを出す

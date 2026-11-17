@@ -1,0 +1,28 @@
+id: DATA-472-20
+visibility: internal
+title: 'データ: ページの設定'
+lead: ページの設定のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: scheme
+  title: 配色の明暗
+  type: string
+  description: 配色の明暗
+  example: dark
+- key: theme
+  title: テーマの名前
+  type: string
+  description: テーマの名前
+  example: theme-slate
+- key: toc
+  title: 右側の目次
+  type: object
+  description: 右側の目次
+  example: '{"mode": "fixed"}'
+- key: toc.mode
+  title: 右側の目次の出し方
+  type: string
+  description: 右側の目次の出し方
+  example: fixed
+refs:
+- ER-477-14#tables[page]

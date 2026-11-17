@@ -1,0 +1,14 @@
+id: DATA-472-16
+visibility: internal
+title: 'データ: 行の詳細'
+lead: 行の詳細のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: at
+  title: 詳細を付ける行の位置
+  type: int
+  description: 詳細を付ける行の位置。見出し行を除いて 1 から数える
+  required: true
+  example: '3'
+refs:
+- ER-477-10#tables[row_detail]

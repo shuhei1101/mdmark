@@ -1,0 +1,214 @@
+id: DATA-472-25
+visibility: internal
+title: 'データ: 表'
+lead: 表のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: kind
+  title: 表の種類
+  type: string
+  description: 表の種類。省くと既定の種類
+  example: data
+- key: features
+  title: 種類の機能に追加する・削除する機能
+  type: object
+  description: 種類の機能に追加する・削除する機能。キーは `sort`・`pin`・`filter`・`resize`・`count`・`columns`・`reorder`・`total`・`copy`・`rowlink`。列の設定を記載した機能は、記載しなくても付く
+  example: '{"count": {}, "sort": {"enabled": false}}'
+- key: features.{機能}
+  title: キーを記載すると機能を追加する
+  type: object
+  description: キーを記載すると機能を追加する。機能ごとの設定は、このオブジェクトにキーを追加して持つ
+  example: '{}'
+- key: features.{機能}.enabled
+  title: '`false` で機能を削除する'
+  type: bool
+  description: '`false` で機能を削除する。省くと `true`。`false` にした機能の列の設定は適用せず、点検が通知する'
+  example: 'false'
+- key: columns
+  title: 列ごとの設定
+  type: object
+  description: 列ごとの設定。キーは表の見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列に適用する）
+  example: '{"金額": {"total": [{"calc": "sum"}]}}'
+- key: columns.{列名}.filter
+  title: この列に絞り込みを付ける
+  type: object
+  description: この列に絞り込みを付ける。`filter` の機能が付く
+  example: '{"type": "date"}'
+- key: columns.{列名}.filter.type
+  title: 絞り込みの種類
+  type: string
+  description: 絞り込みの種類。省くと、長文の列（改行で分けた 1 行が 20 文字以上のセルを持つ列）は `"text"`、ほかの列は `"select"`
+  example: text
+- key: columns.{列名}.hidden
+  title: 最初から隠す
+  type: bool
+  description: 最初から隠す。`columns` の機能（列の表示・非表示）が付く
+  example: 'true'
+- key: columns.{列名}.pinned
+  title: 描いた直後にピン止めする
+  type: bool
+  description: 描いた直後にピン止めする。`pin` の機能が付く。どの列にも記載しないと、行見出しの列（無ければ先頭の列）を留める。`false` は、その既定の列を留めない
+  example: 'true'
+- key: columns.{列名}.total
+  title: 集計の行の計算
+  type: array
+  description: 集計の行の計算。`total` の機能が付く
+  example: '[{"calc": "sum"}, {"calc": "avg"}]'
+- key: columns.{列名}.total_.calc
+  title: 計算の種類
+  type: string
+  description: 計算の種類
+  required: true
+  example: sum
+- key: columns.{列名}.width
+  title: 列の幅
+  type: object
+  description: 列の幅。省くと自動で計算する
+  example: '{"mode": "nowrap"}'
+- key: columns.{列名}.width.mode
+  title: '`"nowrap"` は折り返さず、値の長さの幅を取る'
+  type: string
+  description: '`"nowrap"` は折り返さず、値の長さの幅を取る。省くと `"auto"`（列の中身から折り返すかを決める。`wrap` とは既定が逆）'
+  example: nowrap
+- key: columns.{列名}.width.min
+  title: 最小の幅
+  type: int
+  description: 最小の幅（em）。記載した列は文字数によらず折り返す。省くと、部品設計『表』の注記「列の幅」の判定フローチャートで自動で計算する（長文の列は既定 45em）
+  example: '8'
+- key: columns.{列名}.width.max
+  title: 最大の幅
+  type: int
+  description: 最大の幅（em）。記載した列は文字数によらず折り返し、最小の幅もこの値を超えない。省くと上限を持たない
+  example: '24'
+- key: columns.{列名}.format
+  title: セルの出し方
+  type: object
+  description: セルの出し方
+  example: '{"type": "check"}'
+- key: columns.{列名}.format.type
+  title: '`"check"` は `true` を ✓、`false` を空欄で出す'
+  type: string
+  description: '`"check"` は `true` を ✓、`false` を空欄で出す'
+  required: true
+  example: check
+- key: columns.{列名}.highlight
+  title: 列を強調する
+  type: object
+  description: 列を強調する
+  example: '{"color": "green"}'
+- key: columns.{列名}.highlight.color
+  title: 色の名前
+  type: string
+  description: 色の名前。省くと `"blue"`
+  example: green
+- key: header
+  title: 見出しの行と列
+  type: object
+  description: 見出しの行と列
+  example: '{"rows": 2}'
+- key: header.rows
+  title: 先頭の何行を見出し行にするか
+  type: int
+  description: 先頭の何行を見出し行にするか。省くと 1
+  example: '2'
+- key: header.columns
+  title: 各行の先頭の何列を行見出しにするか
+  type: int
+  description: 各行の先頭の何列を行見出しにするか。省くと 0
+  example: '1'
+- key: rows
+  title: 行ごとの設定
+  type: object
+  description: 行ごとの設定
+- key: rows.colors
+  title: 行に色を付ける条件
+  type: array
+  description: 行に色を付ける条件。複数の要素が該当する行は、後ろの要素の色にする。要素は `column` と `value` の組か `at` のどちらかを記載する。両方を記載すると、両方に該当する行に適用する。`column` と `value` は両方を記載する。片方だけの要素と、`column`・`at` のどちらも無い要素は適用せず、点検が通知する
+- key: rows.colors_.column
+  title: 値を比べる列
+  type: string
+  description: 値を比べる列。`value` と一緒に記載する
+  example: 状態
+- key: rows.colors_.value
+  title: 一致させるセルの文字
+  type: string
+  description: 一致させるセルの文字
+  example: 完了
+- key: rows.colors_.at
+  title: 行の位置か、共通のオブジェクトの行の範囲
+  type: int
+  description: 行の位置か、共通のオブジェクトの行の範囲。見出し行を除いて 1 から数える
+  example: '{"from": 2, "to": 4}'
+- key: rows.colors_.color
+  title: 色の名前
+  type: string
+  description: 色の名前
+  required: true
+  example: green
+- key: tree
+  title: 行をキーの階層で出す
+  type: object
+  description: 行をキーの階層で出す
+- key: tree.key
+  title: キーのパスの列
+  type: object
+  description: キーのパスの列
+  required: true
+  example: '{"column": "キー"}'
+- key: tree.key.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: キー
+- key: tree.type
+  title: 型の列
+  type: object
+  description: 型の列
+  example: '{"column": "型"}'
+- key: tree.type.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: 型
+- key: tree.required
+  title: 必須の列
+  type: object
+  description: 必須の列
+  example: '{"column": "必須"}'
+- key: tree.required.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: 必須
+- key: tree.default
+  title: 既定の列
+  type: object
+  description: 既定の列
+  example: '{"column": "既定"}'
+- key: tree.default.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: 既定
+- key: tree.example
+  title: 表の下に YAML の見本を出す
+  type: object
+  description: 表の下に YAML の見本を出す
+  example: '{"heading": "見本"}'
+- key: tree.example.heading
+  title: YAML の見本にするタブの範囲の見出し
+  type: string
+  description: YAML の見本にするタブの範囲の見出し
+  required: true
+  example: 見本
+- key: collapse
+  title: 共通のオブジェクトの折り畳み
+  type: object
+  description: 共通のオブジェクトの折り畳み
+  example: '{"open": false}'
+refs:
+- ER-477-2#tables[table]

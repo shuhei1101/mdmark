@@ -1,0 +1,14 @@
+id: DATA-472-15
+visibility: internal
+title: 'データ: 列を指す値'
+lead: 表の列を見出しの文字で指す値。
+datastore: JSON
+fields:
+- key: column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字。多段の見出しは最下段の文字
+  required: true
+  example: 用語
+refs:
+- ER-477-1#tables[column_ref]
