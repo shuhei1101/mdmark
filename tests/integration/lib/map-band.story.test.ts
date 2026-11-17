@@ -148,6 +148,27 @@ test("test_state_playback", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+// Git グラフの commit の再生は、タイトルが「{ブランチ名} · {commit のキー}」で、ボタンの名前が commit の単位（CommitPlayback）
+test("test_commit_playback", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-mapband--commit-playback");
+  // 検証
+  await expect(page.locator(".map-band-count").innerText()).resolves.toBe(
+    "6/10",
+  );
+  await expect(page.locator(".map-band-title").innerText()).resolves.toBe(
+    "develop · c6",
+  );
+  const buttons = await bandButtons(page);
+  expect(buttons.map((button) => button.label)).toEqual([
+    "前の commit",
+    "再生をやめる",
+    "自動で進める",
+    "次の commit",
+  ]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
 // 幅 390px では、タイトルを番号とボタンの下の行に回す（Narrow）
 test("test_narrow", async () => {
   // 準備・実行

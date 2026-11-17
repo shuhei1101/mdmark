@@ -1640,3 +1640,151 @@ test("test_normal_when_map_mindmap_data_drift", async () => {
   expect(lines.at(-1)).toBe("ずれ 2 件");
   expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
 });
+
+// 軸と格子の配置の図の map の補足が指す無い項目・同じ名前の section・同じ文字の commit をずれにする（正常系（軸と格子の配置の図の map の補足にずれがある））
+test("test_normal_when_map_axis_grid_data_drift", async () => {
+  // 準備: 範囲の開きのマーカーを 3・20・32・44 行目、補足を 14・27・38・50 行目に置く
+  const a = [
+    "# A",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "gantt",
+    "  dateFormat YYYY-MM-DD",
+    "  section 準備",
+    "    要件を決める :req, 2026-11-02, 3d",
+    "  section 開発",
+    "    実装する :imp, after req, 2d",
+    "  section 準備",
+    "    手順書を書く :2026-11-09, 2d",
+    "```",
+    '<!-- map-data: {"version": 1, "notes": {"幽霊": {"text": "無い項目"}}, "layout": {"準備": {"collapsed": true}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+    "",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "gitGraph",
+    '  commit msg: "直す"',
+    '  commit msg: "直す"',
+    '  commit id: "x"',
+    "```",
+    '<!-- map-data: {"version": 1, "notes": {"直す": {"text": "どちらの commit か決まらない"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "block-beta",
+    "  columns 2",
+    '  a["A"] b["B"]',
+    "```",
+    '<!-- map-data: {"version": 1, "layout": {"ghost": {"color": "green"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+    "",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "timeline",
+    "  2026-04 : 構想を書く",
+    "  2026-05 : 記法を作る",
+    "```",
+    '<!-- map-data: {"version": 1, "notes": {"2026-04": {"text": "始まり"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+  ];
+  const opens = a.flatMap((line, index) =>
+    line === "<!-- map -->" ? [index + 1] : [],
+  );
+  expect(opens).toEqual([3, 20, 32, 44]);
+  const data = a.flatMap((line, index) =>
+    line.startsWith("<!-- map-data") ? [index + 1] : [],
+  );
+  expect(data).toEqual([14, 27, 38, 50]);
+  const dir = await createMapDir(a);
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const at = (line: number, kind: string) =>
+    lines.filter((item) => item.startsWith(`docs/a.mark.md:${line}: ${kind}:`));
+  const ghost = at(14, "map_unknown_ref");
+  expect(ghost).toHaveLength(1);
+  expect(ghost[0]).toContain("notes.幽霊");
+  const section = at(14, "map_ambiguous_ref");
+  expect(section).toHaveLength(1);
+  expect(section[0]).toContain("layout.準備");
+  expect(section[0]).toContain("section の名前を分け");
+  const commit = at(27, "map_ambiguous_ref");
+  expect(commit).toHaveLength(1);
+  expect(commit[0]).toContain("notes.直す");
+  expect(commit[0]).toContain("`id:` を記載");
+  const block = at(38, "map_unknown_ref");
+  expect(block).toHaveLength(1);
+  expect(block[0]).toContain("layout.ghost");
+  for (let line = 44; line <= 52; line += 1)
+    expect(
+      lines.some((item) => item.startsWith(`docs/a.mark.md:${line}:`)),
+      `${line} 行目`,
+    ).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 4 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});
+
+// map の flowchart のノードの id: のリンク先はずれにせず、許可しないリンク先だけをずれにする（正常系（map の flowchart のノードが id: のリンク先を持つ））
+test("test_normal_when_map_node_id_link_checked", async () => {
+  // 準備: click の行を 8・9・10 行目に置く
+  const a = [
+    "# A",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "flowchart LR",
+    "  A[仕様] --> B[実装]",
+    "  B --> C[公開]",
+    '  click A "id:SC-1#scenarios[正常シナリオ]"',
+    '  click B href "id:SC-2"',
+    '  click C "javascript:alert(1)"',
+    "```",
+    "",
+    "<!-- /map -->",
+    "",
+  ];
+  expect(a[9]).toContain("javascript:");
+  const dir = await createMapDir(a);
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const invalid = lines.filter((item) =>
+    item.startsWith("docs/a.mark.md:10: map_invalid_value:"),
+  );
+  expect(invalid).toHaveLength(1);
+  for (const text of [
+    "C",
+    "javascript:alert(1)",
+    "http",
+    "https",
+    "mailto",
+    "相対パス",
+    "`id:`",
+  ])
+    expect(invalid[0]).toContain(text);
+  for (const line of [8, 9])
+    expect(
+      lines.some((item) => item.startsWith(`docs/a.mark.md:${line}:`)),
+      `${line} 行目`,
+    ).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 1 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});

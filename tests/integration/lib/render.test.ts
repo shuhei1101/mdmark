@@ -4932,3 +4932,32 @@ test("test_normal_when_tree_lines_without_tree_language", async () => {
     startTags(html, "code").filter((tag) => tag.includes("language-text")),
   ).toHaveLength(4);
 });
+
+// id: のリンク先を利用側の関数で URL に変え、変えられないリンクと関数の無いときは href を持たせない（正常系（id: のリンク先を URL に変える関数を指定する））
+test("test_normal_when_id_link_resolved", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown =
+    "[一覧](id:SC-1#scenarios[正常シナリオ]) と [設計書](id:SC-2) と [不明](id:unknown)\n";
+  const resolveIdLink = (href: string) =>
+    href.startsWith("id:SC-")
+      ? `https://docs.example.com/${href.slice("id:".length)}`
+      : undefined;
+  // 実行
+  const html = render(markdown, { resolveIdLink });
+  const without = render(markdown);
+  // 検証
+  const anchor = (source: string, text: string) =>
+    [...source.matchAll(/(<a\b[^>]*>)([\s\S]*?)<\/a>/g)].find(
+      (match) => plainText(match[2] ?? "") === text,
+    )?.[1] ?? "";
+  const hrefOf = (tag: string) =>
+    /href="([^"]*)"/.exec(tag)?.[1]?.replaceAll("&amp;", "&");
+  expect(decodeURI(hrefOf(anchor(html, "一覧")) ?? "")).toBe(
+    "https://docs.example.com/SC-1#scenarios[正常シナリオ]",
+  );
+  expect(hrefOf(anchor(html, "設計書"))).toBe("https://docs.example.com/SC-2");
+  expect(anchor(html, "不明")).not.toContain("href=");
+  for (const text of ["一覧", "設計書", "不明"])
+    expect(anchor(without, text)).not.toContain("href=");
+});
