@@ -77,7 +77,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T20:45:54.644649+00:00'
   - process: 実装
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T20:49:01.858006+00:00'
   - process: 結合テスト作成
     status: todo
     note: tests/integration/ の import の修正
