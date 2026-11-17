@@ -1,0 +1,1 @@
+# map に gantt・timeline・gitGraph・journey・block-beta の Mermaid を追加し、flowchart の click で id: のリンク先をノードのリンクにする
