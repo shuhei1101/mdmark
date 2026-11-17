@@ -1,0 +1,14 @@
+配信元の設定の再読み込み:
+  説明: develop の worktree を最新化し、管理の MCP の check_project で違反が無いことを確かめてから reload で、project-index.yaml の nav を配信元 mdmark の配信へ入れる。dev-docs の画面のタブとサイドバーが nav のとおりになる
+  タグ: [配信元の設定, 再読み込み]
+  実行者: planner
+  時期: マージの後
+  回数: 1 回限り
+  可逆: true
+  疎通確認: 配信元の設定の再読み込み/疎通確認.py
+  実行: 配信元の設定の再読み込み/実行.py
+  確認: 配信元の設定の再読み込み/確認.py
+  切り戻し: null
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: project-index の GET /sources/mdmark/config の nav のタブが、はじめに・使い方・設計書・コード・リファレンス・用語集の 6 件で、dev-docs の配信元 mdmark の画面に同じ 6 件のタブが出ている
+  状態: "-"
