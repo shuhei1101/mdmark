@@ -42,6 +42,18 @@ export const StatePlayback: Story = {
   },
 };
 
+export const CommitPlayback: Story = {
+  name: "CommitPlayback",
+  parameters: { server: { id: "map-band" } },
+  args: {
+    mode: "playback",
+    unit: "commit",
+    index: 5,
+    total: 10,
+    title: "develop · c6",
+  },
+};
+
 export const Narrow: Story = {
   name: "Narrow",
   parameters: { server: { id: "map-band" } },
