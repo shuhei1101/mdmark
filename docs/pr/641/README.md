@@ -1,0 +1,1 @@
+# テストコード（tests/・vscode/tests/）に複雑さの lint を適用し、違反を修正する
