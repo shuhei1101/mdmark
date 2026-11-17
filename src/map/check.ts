@@ -449,7 +449,7 @@ const STYLE_LINE_RE = /^(classDef|style|linkStyle|cssClass)\b/;
 const CLASS_LINE_RE = /^class\s/;
 
 /** ノードの `:::` のクラスの指定 */
-const CLASS_SHORTHAND_RE = /\w:::\w/;
+const CLASS_SHORTHAND_RE = /:::[\w-]/;
 
 /** 範囲の外の map の図を mermaid の図に戻すか（map が読めない行か、読み捨てる見た目の指定を持つ） */
 export const needsMermaidFallback = (options: {
