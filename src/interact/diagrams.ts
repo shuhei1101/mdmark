@@ -1,3 +1,4 @@
+import { findScrollContainer } from "./scroller.ts";
 import type { TooltipPlacement } from "../config.ts";
 import { ZOOM } from "../diagram/geometry.ts";
 import { iconSvg } from "../parts/icons.ts";
@@ -13,7 +14,7 @@ const ZOOM_EPSILON = 0.001;
 
 // 文字を選べる所（ここではドラッグを始めない）
 const TEXT_SELECTOR =
-  ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
+  ".mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term, .mdmark-mermaid svg text, .mdmark-mermaid svg tspan, .mdmark-mermaid svg foreignObject *";
 
 // 操作を付けた回数の通し番号。`id` を重ならせないために使用する
 let attachCounter = 0;
@@ -94,12 +95,29 @@ function attachView(
   // リサイズハンドルで変えた高さ（変えていなければ `null`）
   let userHeight: number | null = null;
   /** シーケンス図の相手の名前の行を、表示する枠の上端に留める（図の座標で縦に動いた分だけ下げる） */
+  const scroller = modal || !heads ? undefined : findScrollContainer(figure);
   const stickHeads = (): void => {
     if (!heads) {
       return;
     }
-    heads.style.transform = `translateY(${viewport.scrollTop / scale}px)`;
-    heads.classList.toggle("is-stuck", viewport.scrollTop > 0);
+    let offset = viewport.scrollTop;
+    if (scroller) {
+      // 文書のスクロールで表示する枠の上端が留める位置より上へ出た分だけ下げ、表示する枠の下端より下へは出さない
+      const top = scroller.page
+        ? 0
+        : scroller.target.getBoundingClientRect().top;
+      const stickyTop =
+        Number.parseFloat(
+          getComputedStyle(figure).getPropertyValue("--mdmark-sticky-top"),
+        ) || 0;
+      const box = viewport.getBoundingClientRect();
+      const page = top + stickyTop - box.top;
+      const limit =
+        viewport.clientHeight - heads.clientHeight * scale + viewport.scrollTop;
+      offset = Math.max(offset, Math.min(viewport.scrollTop + page, limit));
+    }
+    heads.style.transform = `translateY(${Math.round(offset) / scale}px)`;
+    heads.classList.toggle("is-stuck", offset > 0);
   };
 
   /** 倍率が変わったとき: 文書の中では表示する枠の高さを合わせ、相手の名前の行をもう一度留める */
@@ -127,6 +145,13 @@ function attachView(
     passive: true,
     signal: controller.signal,
   });
+  if (scroller) {
+    (scroller.page ? window : scroller.target).addEventListener(
+      "scroll",
+      stickHeads,
+      { passive: true, signal: controller.signal },
+    );
+  }
   const zoom = attachZoom({
     viewport,
     content: stage,

@@ -184,6 +184,9 @@ const dimExceptMessage = (
 };
 
 /** シーケンス図を読み取り、状態を読んで表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける */
+/** 設定の `map.kinds.actor` が無いときの actor の種類（lucide の人のアイコンだけ） */
+const DEFAULT_ACTOR_KIND = { icon: "user" } as const;
+
 export const attachMapSequence = (
   range: HTMLElement,
   config: ResolvedConfig,
@@ -222,7 +225,7 @@ export const attachMapSequence = (
   const kinds = Object.fromEntries(
     sequence.participants.map((item) => [
       item.id,
-      item.actor ? config.map.kinds.actor : undefined,
+      item.actor ? (config.map.kinds.actor ?? DEFAULT_ACTOR_KIND) : undefined,
     ]),
   );
   const frameId = `map-${index}`;

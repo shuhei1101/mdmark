@@ -1,3 +1,5 @@
+import { needsMermaidFallback } from "../map/check.ts";
+import type { MapKindName } from "../map/structure.ts";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { MERMAID_ATTRIBUTE, SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "./index.ts";
@@ -53,16 +55,28 @@ export function usesMermaid(options: {
   config: MdmarkConfig;
 }): boolean {
   const config = resolveConfig({ config: options.config });
-  return options.markdowns.some((markdown, position) =>
-    MERMAID_PATTERN.test(
-      renderDocument({
-        markdown,
-        config,
-        includes: options.includes?.[position],
-      }).html,
-    ),
-  );
+  return options.markdowns.some((markdown, position) => {
+    const { html } = renderDocument({
+      markdown,
+      config,
+      includes: options.includes?.[position],
+    });
+    return MERMAID_PATTERN.test(html) || hasMermaidFallback(html);
+  });
 }
+
+/** 範囲の外の map の図（`data-map-plain`）の開きのタグと中のソース */
+const PLAIN_MAP_PATTERN =
+  /<div\b[^>]*class="mdmark-map"[^>]*data-map-kind="([^"]*)"[^>]*data-map-plain[^>]*>[\s\S]*?<code[^>]*>([\s\S]*?)<\/code>/g;
+
+/** 範囲の外の map の図のうち、mermaid の図に戻すものがあるか */
+const hasMermaidFallback = (html: string): boolean =>
+  [...html.matchAll(PLAIN_MAP_PATTERN)].some((match) =>
+    needsMermaidFallback({
+      kind: (match[1] ?? "") as MapKindName,
+      mermaid: unescapeHtml((match[2] ?? "").replace(/<[^>]+>/g, "")),
+    }),
+  );
 
 /** 色分けの対象の `code` が持つ属性から、言語のモジュール名を読み込む正規表現 */
 const SYNTAX_LANGUAGE_PATTERN = new RegExp(
