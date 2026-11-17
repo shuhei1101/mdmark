@@ -473,5 +473,7 @@ export const needsMermaidFallback = (options: {
     return true;
   }
   const { data } = parseMapData(undefined);
-  return mermaidIdsOf(kind, { mermaid, line: undefined, data }).problems.length > 0;
+  return (
+    mermaidIdsOf(kind, { mermaid, line: undefined, data }).problems.length > 0
+  );
 };

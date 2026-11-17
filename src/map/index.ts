@@ -1,8 +1,8 @@
 import type { ResolvedConfig } from "../config.ts";
+import { MERMAID_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
 import { attachMapArchitecture } from "./architecture-view.ts";
 import { attachMapC4 } from "./c4-view.ts";
-import { MERMAID_ATTRIBUTE } from "../parts/code-block.ts";
 import { collectMapProblems, needsMermaidFallback } from "./check.ts";
 import { attachMapClass } from "./class-view.ts";
 import { attachMapEr } from "./er-view.ts";
@@ -144,7 +144,8 @@ const FLOW_BASED: Record<
 const attachRange = (context: AttachContext, range: HTMLElement): void => {
   const { config, destroyers } = context;
   const source = sourceOf(range);
-  if (range.dataset.mapPlain === undefined) warnRange(range, { source, config });
+  if (range.dataset.mapPlain === undefined)
+    warnRange(range, { source, config });
   const { args } = parseMapArgs(range.dataset.mapArgs ?? "");
   collapseRange(range, args);
   const kind = range.dataset.mapKind ?? "";

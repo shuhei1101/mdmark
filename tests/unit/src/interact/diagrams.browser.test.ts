@@ -490,7 +490,9 @@ test("test_attach_diagrams_when_modal_heads", async () => {
   const stage = (dialog as HTMLDialogElement).querySelector<HTMLElement>(
     ".mdmark-diagram-stage",
   );
-  const scale = Number(/scale\(([\d.]+)\)/.exec(stage?.style.transform ?? "")?.[1] ?? "1");
+  const scale = Number(
+    /scale\(([\d.]+)\)/.exec(stage?.style.transform ?? "")?.[1] ?? "1",
+  );
   // 実行
   modalViewport.scrollTop = 120;
   modalViewport.dispatchEvent(new Event("scroll"));

@@ -1,6 +1,6 @@
+import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { needsMermaidFallback } from "../map/check.ts";
 import type { MapKindName } from "../map/structure.ts";
-import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { MERMAID_ATTRIBUTE, SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "./index.ts";
 import { MARK_PATTERN } from "./marks.ts";

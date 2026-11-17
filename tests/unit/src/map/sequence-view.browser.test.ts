@@ -170,7 +170,8 @@ test("test_attach_map_sequence_when_actor_default", async () => {
   const { attachMapSequence } = await loadSequenceView();
   const { parseMapArgs } = await loadSpec();
   const { resolveConfig } = await loadConfig();
-  const mermaid = "sequenceDiagram\n  actor U as 読者\n  participant P\n  U->>P: 開く\n";
+  const mermaid =
+    "sequenceDiagram\n  actor U as 読者\n  participant P\n  U->>P: 開く\n";
   const iconOf = (root: HTMLElement, id: string) =>
     root
       .querySelector(`[data-participant="${id}"] .mdmark-map-icon`)

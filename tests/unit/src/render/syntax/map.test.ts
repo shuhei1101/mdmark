@@ -142,8 +142,7 @@ test("test_build_map_ranges_when_annotations", () => {
 });
 
 /** 言語 mermaid のコードブロックの Markdown */
-const fence = (source: string): string =>
-  `\`\`\`mermaid\n${source}\n\`\`\`\n`;
+const fence = (source: string): string => `\`\`\`mermaid\n${source}\n\`\`\`\n`;
 
 // 範囲の外の純粋な Mermaid を map の図にする（正常系）
 test("test_build_map_ranges_when_plain", () => {
@@ -176,8 +175,7 @@ test("test_build_map_ranges_when_plain_front_matter", () => {
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  const open =
-    html.match(/<div class="mdmark-map"[^>]*>/)?.[0] ?? "";
+  const open = html.match(/<div class="mdmark-map"[^>]*>/)?.[0] ?? "";
   expect(open).toContain(
     'data-map-args="{&quot;title&quot;:&quot;受付&quot;}"',
   );
