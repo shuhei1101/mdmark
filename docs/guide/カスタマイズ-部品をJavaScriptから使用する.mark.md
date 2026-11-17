@@ -195,7 +195,7 @@ const [map, view, comments] = await Promise.all([load("mdmark-map"), load("mdmar
 mdmark.setPartModuleLoader("map", () => Promise.resolve(map));
 mdmark.setPartModuleLoader("view", () => Promise.resolve(view));
 mdmark.setPartModuleLoader("comments", () => Promise.resolve(comments));
-mdmark.mount(document.querySelector("#doc"), { markdown, commentStore, docId });
+mdmark.mount(document.querySelector("#doc"), { markdown, commentStore, docId, config: { features: { comments: true } } });
 ```
 
 `dist/index.js`・`dist/map.js`・`dist/view.js`・`dist/comments.js` は、`type="text/plain"` の `<script>` に同じタグの中身を入れる。
