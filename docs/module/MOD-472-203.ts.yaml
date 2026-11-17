@@ -475,9 +475,6 @@ functions:
     refs:
       - IF-472-35#exceptions[TypeError（比較元）]
     status: planned
-notes:
-  ブラウザのテストファイル: |-
-    - `tests/unit/src/mount-view.browser.test.ts`
 lead: '文書を要素に描く公開関数と描いた要素の記録を受け持ち、mount の描く流れを変えるときに参照する。'
 tags:
   - name: action:描画
