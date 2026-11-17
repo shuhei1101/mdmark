@@ -1,0 +1,21 @@
+use_cases: []
+docs:
+  - page: docs/layout/LAY-472-1.yaml
+    new: false
+    change: VS Code 拡張機能のテストを 2 つの置き場所に分ける理由を notes に記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T00:09:53.859436+00:00'
+scope_out:
+  - item: VS Code 拡張機能のテストの中身の修正
+    reason: 要望はテストの置き場所の統一で、テストの中身は変えない（#535・#563 がテストの中身を扱う）
+    plan: none
+  - item: tests/・vscode/tests/ の TypeScript への複雑さの lint の適用
+    reason: 目的が違う。#573 が移した後のパスで扱う
+    plan: '#573'
+  - item: src/ と単体テストの置き場所の組み直し
+    reason: 目的が違う。#583 が扱う
+    plan: '#583'
+  - item: 既存の docs/pr/ の計画書・テスト結果のログに残る移す前のテストのパス
+    reason: マージ済みの作業 PR の記録で、書き換えない
+    plan: none
