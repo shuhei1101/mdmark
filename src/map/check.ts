@@ -367,6 +367,17 @@ const mindmapLayoutProblems = (context: DataContext): MapProblem[] =>
       })),
   );
 
+/** マインドマップの、適用しない `layout` のキーとマーカーの引数の `focus` の項目 */
+const mindmapProblems = (
+  context: DataContext,
+  focus: string | undefined,
+): MapProblem[] => [
+  ...mindmapLayoutProblems(context),
+  ...(focus !== undefined && context.found.ambiguous.has(focus)
+    ? [ambiguousProblem("マーカーの引数の `focus`", focus, undefined)]
+    : []),
+];
+
 /** ID を持たない同じ文字の 2 つ以上の項目を指すキーの項目 */
 const ambiguousProblem = (
   where: string,
@@ -460,14 +471,8 @@ export const collectMapProblems = (
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
   checkLayout(context);
-  if (kind === "mindmap") {
-    problems.push(...mindmapLayoutProblems(context));
-    const focus = structure.args.args.focus;
-    if (focus !== undefined && found.ambiguous.has(focus))
-      problems.push(
-        ambiguousProblem("マーカーの引数の `focus`", focus, undefined),
-      );
-  }
+  if (kind === "mindmap")
+    problems.push(...mindmapProblems(context, structure.args.args.focus));
   problems.push(...found.linkProblems);
   for (const name of found.classes) {
     if (!(name in config.kinds)) {

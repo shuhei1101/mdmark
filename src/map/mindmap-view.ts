@@ -367,28 +367,31 @@ export const attachMapMindmap = (
       change({ ...state, collapsed: collapsibles() });
     else if (name === "reset") change({ ...state, selected: [] });
   };
+  /** 項目を開閉する */
+  const toggleCollapsed = (key: string) =>
+    change({
+      ...state,
+      collapsed: state.collapsed.includes(key)
+        ? state.collapsed.filter((item) => item !== key)
+        : [...state.collapsed, key],
+    });
+  /** 項目の中へ入る */
+  const enterItem = (key: string) =>
+    change({
+      ...state,
+      entered: key,
+      collapsed: state.collapsed.filter((item) => item !== key),
+    });
   /** 持ち手とツールのボタンなら操作し、`true` を返却する */
   const clickControl = (target: Element | undefined): boolean => {
     const toggle = target?.closest<HTMLElement>("[data-mindmap-toggle]");
     if (toggle) {
-      const key = toggle.dataset.mindmapToggle ?? "";
-      const closed = state.collapsed.includes(key);
-      change({
-        ...state,
-        collapsed: closed
-          ? state.collapsed.filter((item) => item !== key)
-          : [...state.collapsed, key],
-      });
+      toggleCollapsed(toggle.dataset.mindmapToggle ?? "");
       return true;
     }
     const enter = target?.closest<HTMLElement>("[data-mindmap-enter]");
     if (enter) {
-      const key = enter.dataset.mindmapEnter ?? "";
-      change({
-        ...state,
-        entered: key,
-        collapsed: state.collapsed.filter((item) => item !== key),
-      });
+      enterItem(enter.dataset.mindmapEnter ?? "");
       return true;
     }
     const tool = target?.closest<HTMLButtonElement>("[data-tool]");

@@ -88,38 +88,68 @@ const ambiguousLabels = (items: MindmapItem[]): Set<string> => {
   );
 };
 
+/** 読み取りの途中の値 */
+type ParseState = {
+  items: MindmapItem[];
+  problems: MapProblem[];
+  /** 字下げの浅い順に並べた、親になりうる項目と字下げ */
+  stack: Array<{ item: MindmapItem; indent: number }>;
+  rootIndent: number | undefined;
+};
+
+/** 項目の行でない（1 行目・空の行・コメント・`::icon()`・`:::`）か */
+const isSkipped = (line: number, text: string): boolean =>
+  line === 0 ||
+  text === "" ||
+  text.startsWith("%%") ||
+  SKIPPED_LINE_RE.test(text);
+
+/** 字下げがより浅い最も近い項目（より深いか同じ字下げの項目は親の候補から除く） */
+const parentAt = (
+  state: ParseState,
+  indent: number,
+): MindmapItem | undefined => {
+  while ((state.stack.at(-1)?.indent ?? -1) >= indent) state.stack.pop();
+  return state.stack.at(-1)?.item;
+};
+
+/** 項目の行 1 つを、直前までの項目のうち字下げがより浅い最も近い項目の子にする */
+const readItemLine = (state: ParseState, raw: string, line: number): void => {
+  const text = raw.trim();
+  if (isSkipped(line, text)) return;
+  const indent = raw.length - raw.trimStart().length;
+  if (state.rootIndent !== undefined && indent <= state.rootIndent) {
+    state.problems.push(secondRoot(line, text));
+    return;
+  }
+  const parent = parentAt(state, indent);
+  const shape = readShape(text);
+  const item: MindmapItem = {
+    order: state.items.length,
+    ...shape,
+    parent: parent?.order,
+    children: [],
+    key: shape.id ?? shape.label,
+    stateKey: shape.id ?? shape.label,
+  };
+  parent?.children.push(item.order);
+  state.rootIndent ??= indent;
+  state.items.push(item);
+  state.stack.push({ item, indent });
+};
+
 /** `mindmap` の Mermaid を、字下げで親子を決めた項目の木と、読めない行の項目に読む */
 export const parseMindmap = (source: string): Mindmap => {
-  const items: MindmapItem[] = [];
-  const problems: MapProblem[] = [];
-  /** 字下げの浅い順に並べた、親になりうる項目と字下げ */
-  const stack: Array<{ item: MindmapItem; indent: number }> = [];
-  let rootIndent: number | undefined;
+  const state: ParseState = {
+    items: [],
+    problems: [],
+    stack: [],
+    rootIndent: undefined,
+  };
   source.split(/\r?\n/).forEach((raw, line) => {
-    const text = raw.trim();
-    if (line === 0 || text === "" || text.startsWith("%%")) return;
-    if (SKIPPED_LINE_RE.test(text)) return;
-    const indent = raw.length - raw.trimStart().length;
-    if (rootIndent !== undefined && indent <= rootIndent) {
-      problems.push(secondRoot(line, text));
-      return;
-    }
-    while ((stack.at(-1)?.indent ?? -1) >= indent) stack.pop();
-    const parent = stack.at(-1)?.item;
-    const shape = readShape(text);
-    const item: MindmapItem = {
-      order: items.length,
-      ...shape,
-      parent: parent?.order,
-      children: [],
-      key: shape.id ?? shape.label,
-      stateKey: shape.id ?? shape.label,
-    };
-    parent?.children.push(item.order);
-    rootIndent ??= indent;
-    items.push(item);
-    stack.push({ item, indent });
+    readItemLine(state, raw, line);
   });
+  const { items, problems } = state;
   const ambiguous = ambiguousLabels(items);
   for (const item of items) {
     if (item.id === undefined && ambiguous.has(item.label))

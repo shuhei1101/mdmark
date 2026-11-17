@@ -1619,9 +1619,7 @@ test("test_render_map_mindmap_when_selected", async () => {
   expect(item("root")).not.toContain("map-dim");
   expect(item("人手が足りない")).not.toContain("map-dim");
   expect(item("a1")).toContain("map-dim");
-  expect(findTag(part.html, 'data-branch="root-&gt;a1"')).toContain(
-    "map-dim",
-  );
+  expect(findTag(part.html, 'data-branch="root-&gt;a1"')).toContain("map-dim");
 });
 
 // ヒントがオフなら説明のマーカーを作らず、注記の持ち主の id だけを残す（正常系）
