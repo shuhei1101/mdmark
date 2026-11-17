@@ -3255,6 +3255,8 @@ export type MapAxisGridArgs = {
   collapsed: string[];
   entered: string | undefined;
   selected: AxisGridSelection | undefined;
+  /** ブロック図で 2 つ目に選んだブロックか入れ子のブロック（2 つの選択はその 2 つと間の線を残す） */
+  pair?: string | undefined;
   focus: { nodes: string[] } | undefined;
   notes: Record<string, string>;
   annotations: Record<string, DiagramAnnotation[]>;
@@ -3338,23 +3340,33 @@ const axisGridBranchKept = (grid: AxisGrid, branch: string): string[] => {
   return [...keys, ...brought];
 };
 
+/** ジャーニーの人を持つタスク */
+const axisGridActorKept = (grid: AxisGrid, actor: string): string[] =>
+  grid.items
+    .filter(
+      (item) =>
+        item.detail.kind === "journey" && item.detail.actors.includes(actor),
+    )
+    .map((item) => item.stateKey);
+
+/** 選んだものの種類ごとの、残す項目 */
+const axisGridSelectionKept = (
+  args: MapAxisGridArgs,
+  selected: AxisGridSelection,
+): string[] => {
+  if (selected.kind === "branch")
+    return axisGridBranchKept(args.grid, selected.key);
+  if (selected.kind === "actor")
+    return axisGridActorKept(args.grid, selected.key);
+  return args.pair === undefined
+    ? axisGridItemKept(args.grid, selected.key)
+    : [selected.key, args.pair];
+};
+
 /** 選んだもののつながり、無ければ案内と再生で強調する項目。どちらも無ければ undefined */
 const axisGridKept = (args: MapAxisGridArgs): Set<string> | undefined => {
-  const { grid, selected } = args;
-  if (selected?.kind === "item")
-    return new Set(axisGridItemKept(grid, selected.key));
-  if (selected?.kind === "branch")
-    return new Set(axisGridBranchKept(grid, selected.key));
-  if (selected?.kind === "actor")
-    return new Set(
-      grid.items
-        .filter(
-          (item) =>
-            item.detail.kind === "journey" &&
-            item.detail.actors.includes(selected.key),
-        )
-        .map((item) => item.stateKey),
-    );
+  if (args.selected !== undefined)
+    return new Set(axisGridSelectionKept(args, args.selected));
   const nodes = args.focus?.nodes ?? [];
   return nodes.length === 0 ? undefined : new Set(nodes);
 };
@@ -3520,6 +3532,21 @@ const renderAxisGridControls = (
   return `${toggle}${enter}`;
 };
 
+/** section の名前。ブロック図の入れ子のブロックは、選ぶボタンにする */
+const axisGridFrameTitle = (
+  context: AxisGridContext,
+  section: AxisGridSection,
+): string => {
+  const label = escapeHtml(section.label);
+  if (context.args.grid.kind !== "block")
+    return `<span class="map-axis-frame-title">${label}</span>`;
+  const { selected, pair } = context.args;
+  const pressed =
+    (selected?.kind === "item" && selected.key === section.stateKey) ||
+    pair === section.stateKey;
+  return `<button class="map-axis-frame-title map-axis-frame-select" type="button" data-map-section-select="${escapeHtml(section.stateKey)}" aria-pressed="${pressed}">${label}</button>`;
+};
+
 /** section の見出しの行・枠と入れ子のブロックの枠 */
 const renderAxisGridFrame = (
   context: AxisGridContext,
@@ -3539,7 +3566,7 @@ const renderAxisGridFrame = (
   ]
     .filter((entry) => entry !== "")
     .join(";");
-  return `<div class="map-axis-frame" data-frame="${frame.kind}" data-section="${escapeHtml(frame.key)}"${frame.collapsed ? " data-collapsed" : ""} style="${style}"><div class="map-axis-frame-head">${renderAxisGridControls(context, section)}<span class="map-axis-frame-title">${escapeHtml(section.label)}</span>${axisGridInfo(context, { stateKey: section.stateKey, label: section.label })}</div></div>`;
+  return `<div class="map-axis-frame" data-frame="${frame.kind}" data-section="${escapeHtml(frame.key)}"${frame.collapsed ? " data-collapsed" : ""} style="${style}"><div class="map-axis-frame-head">${renderAxisGridControls(context, section)}${axisGridFrameTitle(context, section)}${axisGridInfo(context, { stateKey: section.stateKey, label: section.label })}</div></div>`;
 };
 
 /** 枠を持たない閉じた入れ子のブロックの、項目の上に置く開閉と中へ入るボタン */

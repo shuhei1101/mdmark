@@ -361,6 +361,7 @@ export const c4ToFlowchart = (
       groups,
       edges,
       links: {},
+      linkLines: {},
       problems: diagram.problems,
     },
     overrides,

@@ -57,6 +57,8 @@ export type Flowchart = {
   edges: FlowEdge[];
   /** `click {ID} "{リンク先}"` のノードの ID からリンク先（記載したまま） */
   links: Record<string, string>;
+  /** `click` の行のノードの ID から、ソースの行（0 から） */
+  linkLines: Record<string, number>;
   problems: MapProblem[];
 };
 
@@ -82,6 +84,10 @@ export const decodeEntities = (text: string): string =>
 const LINK_NOT_ALLOWED =
   "ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。";
 
+/** 点検の許可しないリンク先の項目の文（点検は `id:` のリンク先もずれにしない） */
+const LINK_NOT_ALLOWED_CHECK =
+  "ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto・相対パスと `id:` です。このノードはリンクにせずに描いています。";
+
 /** `id:` で始まるノードのリンク先の扱い（描くときは利用側の関数で URL に変え、点検は確かめない） */
 export type MapIdLinks =
   | { mode: "resolve"; resolveIdLink: ResolveIdLink | undefined }
@@ -91,8 +97,12 @@ export type MapIdLinks =
 export const mapLinkProblems = (options: {
   links: Record<string, string>;
   idLinks: MapIdLinks;
+  /** `click` の行のノードの ID から、ソースの行（指定すれば項目に行を持たせる） */
+  lines?: Record<string, number> | undefined;
 }): { allowed: Record<string, string>; problems: MapProblem[] } => {
-  const { links, idLinks } = options;
+  const { links, idLinks, lines } = options;
+  const notAllowed =
+    idLinks.mode === "skip" ? LINK_NOT_ALLOWED_CHECK : LINK_NOT_ALLOWED;
   const allowed: Record<string, string> = {};
   const problems: MapProblem[] = [];
   for (const [id, href] of Object.entries(links)) {
@@ -106,7 +116,8 @@ export const mapLinkProblems = (options: {
     }
     problems.push({
       kind: "map_invalid_value",
-      message: `${LINK_NOT_ALLOWED} ${id}: ${href}`,
+      line: lines?.[id],
+      message: `${notAllowed} ${id}: ${href}`,
     });
   }
   return { allowed, problems };
@@ -319,6 +330,7 @@ export const parseFlowchart = (source: string): Flowchart => {
   const groups: FlowGroup[] = [];
   const edges: FlowEdge[] = [];
   const links: Record<string, string> = {};
+  const linkLines: Record<string, number> = {};
   const problems: MapProblem[] = [];
   const stack: FlowGroup[] = [];
   const groupIds = new Set<string>();
@@ -398,7 +410,7 @@ export const parseFlowchart = (source: string): Flowchart => {
     return true;
   };
   /** `class` の行ならノードにクラスを足し、`click` の行ならリンク先にする */
-  const readClassOrClick = (text: string): boolean => {
+  const readClassOrClick = (text: string, line: number): boolean => {
     const classLine = /^class\s+([\w,\s]+?)\s+([\w-]+)$/.exec(text);
     if (classLine?.[1] && classLine[2]) {
       for (const id of classLine[1].split(",").map((part) => part.trim()))
@@ -408,6 +420,7 @@ export const parseFlowchart = (source: string): Flowchart => {
     const click = CLICK_RE.exec(text);
     if (click?.[1] && click[2] !== undefined) {
       links[click[1]] = click[2];
+      linkLines[click[1]] = line;
       return true;
     }
     return false;
@@ -441,7 +454,7 @@ export const parseFlowchart = (source: string): Flowchart => {
       readSubgraph(text) ||
       readEnd(text, line) ||
       readDirection(text, { line, raw }) ||
-      readClassOrClick(text) ||
+      readClassOrClick(text, line) ||
       IGNORED_RE.test(text)
     )
       return;
@@ -464,6 +477,7 @@ export const parseFlowchart = (source: string): Flowchart => {
     groups,
     edges,
     links,
+    linkLines,
     problems,
   };
 };

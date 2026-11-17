@@ -148,7 +148,11 @@ const flowchartIds = (
   const chart = parseFlowchart(mermaid);
   const found = emptyMermaidIds(shiftProblems(chart.problems, line));
   found.linkProblems.push(
-    ...mapLinkProblems({ links: chart.links, idLinks }).problems,
+    ...shiftProblems(
+      mapLinkProblems({ links: chart.links, idLinks, lines: chart.linkLines })
+        .problems,
+      line,
+    ),
   );
   for (const node of chart.nodes) {
     found.ids.add(node.id);

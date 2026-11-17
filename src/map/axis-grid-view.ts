@@ -127,6 +127,12 @@ const selectionOf = (state: MapState): AxisGridSelection | undefined => {
   };
 };
 
+/** ブロック図で 2 つ目に選んだもの（`item:{key}`） */
+const pairOf = (state: MapState): string | undefined => {
+  const second = state.selected[1];
+  return second?.startsWith("item:") ? second.slice("item:".length) : undefined;
+};
+
 /** 状態に保つ選択の文字 */
 const selectionText = (selection: AxisGridSelection): string =>
   `${selection.kind}:${selection.key}`;
@@ -137,6 +143,7 @@ const knownIds = (grid: AxisGrid): Set<string> =>
     ...grid.items.map((item) => item.stateKey),
     ...grid.sections.map((section) => section.stateKey),
     ...grid.items.map((item) => `item:${item.stateKey}`),
+    ...grid.sections.map((section) => `item:${section.stateKey}`),
     ...grid.branches.map((branch) => `branch:${branch}`),
     ...grid.actors.map((actor) => `actor:${actor}`),
   ]);
@@ -246,6 +253,7 @@ const focusSelectorOf = (element: Element | null): string | undefined => {
     "mapSectionEnter",
     "mapBranch",
     "mapActor",
+    "mapSectionSelect",
     "tool",
   ] as const) {
     const value = element.dataset[name];
@@ -324,6 +332,7 @@ const renderOf = (
     collapsed: view.state.collapsed,
     entered: view.state.entered,
     selected: selectionOf(view.state),
+    pair: pairOf(view.state),
     focus: view.focus === undefined ? undefined : { nodes: view.focus },
     notes: source.notes,
     annotations: source.annotations,
@@ -489,6 +498,22 @@ export const attachMapAxisGrid = (
       selected: state.selected[0] === text ? [] : [text],
     });
   };
+  /** ブロック図の項目と入れ子のブロックを選ぶ（構成図のノードと同じく、選んだものに足し、選んだものをもう一度押すと外す。3 つ目は前の 1 つを外す） */
+  const toggleBlockSelected = (key: string) => {
+    const text = selectionText({ kind: "item", key });
+    const next = state.selected.includes(text)
+      ? state.selected.filter((entry) => entry !== text)
+      : [
+          ...state.selected.filter((entry) => entry.startsWith("item:")),
+          text,
+        ].slice(-2);
+    change({ ...state, selected: next });
+  };
+  /** 項目を選ぶ（ブロック図は 2 つまで選べる） */
+  const selectItem = (key: string) =>
+    grid.kind === "block"
+      ? toggleBlockSelected(key)
+      : toggleSelected({ kind: "item", key });
   /** 1 つ外へ戻る */
   const escapeEntered = () => {
     if (state.entered !== undefined)
@@ -533,6 +558,7 @@ export const attachMapAxisGrid = (
     ["mapSectionEnter", enterSection],
     ["mapBranch", (key) => toggleSelected({ kind: "branch", key })],
     ["mapActor", (key) => toggleSelected({ kind: "actor", key })],
+    ["mapSectionSelect", toggleBlockSelected],
   ];
   /** 開閉・中へ入る・ブランチ・人・ツールのボタンなら操作し、`true` を返却する */
   const clickControl = (target: Element | undefined): boolean => {
@@ -561,7 +587,7 @@ export const attachMapAxisGrid = (
     if (clickControl(target)) return;
     pressed = null;
     const key = hitKey(target);
-    if (key !== undefined) toggleSelected({ kind: "item", key });
+    if (key !== undefined) selectItem(key);
   };
   const onKeyDown = (event: KeyboardEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
@@ -573,7 +599,7 @@ export const attachMapAxisGrid = (
     const key = hitKey(target);
     if (key === undefined) return;
     event.preventDefault();
-    toggleSelected({ kind: "item", key });
+    selectItem(key);
   };
   figure.addEventListener("click", onClick);
   figure.addEventListener("keydown", onKeyDown);

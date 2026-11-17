@@ -11141,6 +11141,22 @@
     height: 24px;
     translate: none;
   }
+  .map-axis-frame-select {
+    padding: 0 4px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+
+    &[aria-pressed="true"] {
+      outline: 2px solid var(--mdmark-color-link);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 2px;
+    }
+  }
   .map-axis-frame-title {
     color: var(--map-axis-color, var(--mdmark-color-text));
     font-size: 13px;
