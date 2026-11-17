@@ -54,7 +54,7 @@ functions:
       1. `parseMindmap`・`parseMapData` で参照し、補足の `notes`・`layout`・`walkthroughs` の `nodes` と `enter`・マーカーの引数の `focus` のキーを `mindmapItemOf` で項目の `stateKey` にする。`ambiguous`・`missing` のキーはどの項目にも適用しない。`layout` は `color` と `collapsed` だけを使用する
       2. `readMapState` に、全ての項目の `stateKey`・引数の `focus` の `stateKey`・`layout` の `collapsed` が `true` の `stateKey` を指定して状態を参照する
       3. `layoutMindmap`（`top` は `entered`）で配置し、`renderMapMindmap`（`readMapAnnotations` の注記、`hints` は `config.features.hints`）を部品『図の枠』（種類 `map`・凡例無し・`wide`・`fitMin` 1）に入れる。ツールのボタンは「枝の外へ戻る」（中へ入っているときだけ押せる）・「全ての枝を開く」・「全ての枝を閉じる」・「配置と選択を元に戻す」（選んだときだけ押せる）。図のツールチップと拡大と縮小・ドラッグでのスクロールは `attachDiagrams` で付け、描くたびに `linkAnnotationOwners` で注記の持ち主を合わせる。項目にはドラッグの操作を付けない（項目の上のドラッグは図の枠の中のスクロールになる）
-      4. 描いた項目の大きさを測り、`layoutMindmap` に指定した大きさと違う項目があれば、測った大きさで配置し直して描き直す。最初に描いたときは、今の図の根の中心が表示する枠の中央に来るように表示する枠の中をスクロールする
+      4. 描いた項目の大きさ（配置の幅を外した中身の幅。丸は幅と高さの大きいほうの正方形）を測り、`layoutMindmap` に指定した大きさと違う項目があれば、測った大きさで配置し直して描き直す。最初に描いたときは、今の図の根の中心が表示する枠の中央に来るように表示する枠の中をスクロールする
       5. 持ち手の開閉のボタン（`data-mindmap-toggle`）で `collapsed` を切り替え、中へ入るボタン（`data-mindmap-enter`）で `entered` をその項目にして `collapsed` から除外する。「枝の外へ戻る」で `entered` を親（親が全体の根なら無し）にする。「全ての枝を閉じる」は今の図の根の子のうち子を持つ項目を閉じる
       6. 項目の名前の周りの余白と枠線（押せる要素）を押すと、その項目だけを `selected` にする（選んだ項目を押すと選択を解除する）。名前の文字・説明のマーカー・持ち手のボタンでは選ばない。押せる要素にフォーカスして Enter か Space でも選ぶ。Esc は構成図と同じく、選んでいれば選択を解除し、選んでいなければ 1 つ外へ戻る
       7. 描き直した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
@@ -89,7 +89,7 @@ functions:
         summary: 補足の layout と同じ文字のキー
         condition: モックの `MINDMAP_LAYOUT_DATA` に、`notes` の `課題` を加えた範囲
         mock: なし
-        expected: 「目的」の枝の色が `purple` で面を持ち、「予算」が閉じている。2 つの「課題」に説明のマーカーが無い
+        expected: 「目的」の枝の色が `purple` で面を持ち、「予算」が閉じている。描いた「課題」（「予算」の中の「課題」は閉じて描かない）に説明のマーカーが無い
       - name: test_attach_map_mindmap_when_same_label_collapsed
         case: 正常
         summary: 同じ文字の項目の状態のキー
