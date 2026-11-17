@@ -110,3 +110,6 @@ scope_out:
   - item: map のクラス図の説明のマーカー（`.mdmark-diagram-info`）のタップ領域が axe の `target-size` に当たる
     reason: 既存のストーリー `parts-mapclass--default` でも出る、本 PR の変更と関係しない事象のため（reviewer の対象外の逸脱の報告）
     plan: none
+  - item: '`MOD-472-203` の単体テストの行のうち、2 つ目のテストファイル（`mount-view.browser.test.ts`）にあるテスト 2 件が、設計書の検証で「テスト関数がありません」と出る'
+    reason: '対応テストファイルの項目に 1 ファイルしか記載できないスキーマによる #472 からのずれで、本 PR の変更が起こしたものではなく、テストのファイルの組み替えが要るため'
+    plan: '#640'
