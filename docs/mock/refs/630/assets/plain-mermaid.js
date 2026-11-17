@@ -60,7 +60,8 @@ const fence = (source) => ["```mermaid", source, "```"].join("\n");
 const mapRange = (source, args) =>
   [args ? `<!-- map: ${JSON.stringify(args)} -->` : "<!-- map -->", "", fence(source), "", "<!-- /map -->"].join("\n");
 
-/** 1 つの見本: 今の描き方と案 A を見出しで分けて並べる */
+/** 1 つの見本: 今の描き方と案 A を見出しで分けて並べる。今の描き方は front matter の title を持たせ、案 A は範囲の引数に同じタイトルを持たせる */
+const withTitle = (source, args) => (args?.title ? ["---", `title: ${args.title}`, "---", source].join("\n") : source);
 const pair = (heading, lead, source, args) =>
   [
     `## ${heading}`,
@@ -69,7 +70,7 @@ const pair = (heading, lead, source, args) =>
     "",
     "### 今（mermaid の図）",
     "",
-    fence(source),
+    fence(withTitle(source, args)),
     "",
     "### 案 A（補足の無い map の図）",
     "",
@@ -80,6 +81,14 @@ const markdown = [
   "# map の範囲の外の mermaid のコードブロック",
   "",
   "同じ Mermaid を、今の描き方（mermaid の図）と案 A（補足の無い map の図）で並べた。記載するのは、どちらも言語 `mermaid` のコードブロックだけ。",
+  "",
+  "案 A で読者に見える変化と、案 A の図に適用する扱い（推奨。このモックの案 A の図は、今の配布物の map の範囲で描いたため、推奨の扱いをまだ適用していない）:",
+  "",
+  "| 変化 | 今 | 案 A（今の map） | 推奨の扱い |",
+  "| --- | --- | --- | --- |",
+  "| title の無い図の枠のタイトル | 図の種類の名前（シーケンス図・クラス図） | 空 | 今に合わせ、図の種類の名前を出す |",
+  "| sequenceDiagram の `actor` | 人のアイコンを持つ参加者 | アイコンの無い参加者 | 今に合わせ、人のアイコンを付ける |",
+  "| sequenceDiagram の再生のバー | 無い | メッセージを 1 通ずつ動かす再生のバーが出る | map の操作として付ける |",
   "",
   pair(
     "flowchart",

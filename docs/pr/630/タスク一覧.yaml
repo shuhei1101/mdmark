@@ -41,7 +41,7 @@ tasks:
     note: 案 A（確認ログ）で SC-472-11・SC-472-19・SC-472-42 を書き直した
   - process: モック作成
     status: todo
-    note: 'Mermaid の図の部品のモック（docs/mock/components/mermaid-diagram/）に、固定した参加者の行など見た目が変わる場面だけを足す（モック要否 Q3: 固定した行の見た目を Issue が決めていない）'
+    note: '同じ Mermaid を今の描き方と案 A で並べる部品のモック（docs/mock/components/plain-mermaid/）を作る（モック要否 Q3: 案 A で読者に見える変化を確認する）'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計
