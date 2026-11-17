@@ -70,23 +70,33 @@ docs:
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: 記法を記載しなくても純粋な Mermaid の図に付く操作（参加者の行の固定・文字の選択とコピー など）を追記する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: map の操作のうち、補足や map の範囲が無くても付くものと、map の範囲で囲むと増えるものの違いを追記する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: '`## mermaid のコードブロック` の節と一覧の行に、map の範囲が無くても付く操作を足す'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
   - page: docs/guide/設定.mark.md
     new: false
     change: '`mermaid.url` を読み込む条件と CLI の `export`・`build` が mermaid を埋める条件を「map が描けない種類のコードブロックがあるとき」に、`mermaid.theme`・`mermaid.themeVariables` を map が描けない種類の図にだけ当たる記載に、`features.mermaid`・`features.map` を範囲の外の純粋な Mermaid の扱い（map がオンなら map、オフなら mermaid で描く）を含む記載に修正する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
   - page: docs/guide/カスタマイズ-機能をオン・オフする.md
     new: false
     change: '`features.mermaid`・`features.map` の説明を、範囲の外の純粋な Mermaid の扱い（map がオンなら map、オフなら mermaid で描く）を含む記載に修正する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T03:58:03.257230+00:00'
 scope_out:
   - item: mermaid の図の要素への用語の下線・ツールチップ
     reason: 別の要望で、本 PR で描き方を揃えた後に着手する計画のため
