@@ -667,3 +667,64 @@ test("test_separate_wires_when_end_segment", async () => {
   expect(totalOverlap(result.wires)).toBe(0);
   expect(result.crowded).toBe(0);
 });
+
+// 長さが clearance 以下の端の区間（正常系）
+test("test_separate_wires_when_short_end", async () => {
+  // 準備（A の下の辺から 12px 進んで右へ折れる線と、B の上の辺から上へ出る線が、x = 50 の縦の区間で重なる）
+  const { separateWires } = await loadLayout();
+  const wires: TestWire[] = [
+    {
+      id: "A->C",
+      from: "A",
+      to: "C",
+      points: [
+        [50, 40],
+        [50, 52],
+        [300, 52],
+      ],
+    },
+    {
+      id: "B->D",
+      from: "B",
+      to: "D",
+      points: [
+        [50, 300],
+        [50, 47],
+        [300, 47],
+      ],
+    },
+  ];
+  const layout = layoutOf(
+    [
+      { id: "A", x: 0, y: 0, w: 100, h: 40 },
+      { id: "B", x: 0, y: 300, w: 100, h: 40 },
+      { id: "C", x: 300, y: 40, w: 60, h: 24 },
+      { id: "D", x: 380, y: 35, w: 60, h: 24 },
+    ],
+    wires,
+  );
+  // 実行
+  const result = separateWires(layout);
+  // 検証
+  for (const [k, wire] of result.wires.entries()) {
+    const original = wires[k] as TestWire;
+    expect(wire.points[0]).toEqual(original.points[0]);
+    expect(wire.points.at(-1)).toEqual(original.points.at(-1));
+    for (const [i, point] of wire.points.slice(1).entries()) {
+      const previous = wire.points[i] as Point;
+      expect(point, `${wire.id} の長さ 0 の区間`).not.toEqual(previous);
+      const next = wire.points[i + 2];
+      if (next === undefined) continue;
+      // 同じ直線の上で向きを戻さない
+      const axis = previous[0] === point[0] && point[0] === next[0] ? 1 : 0;
+      const sameLine =
+        axis === 1 || (previous[1] === point[1] && point[1] === next[1]);
+      if (sameLine)
+        expect(
+          Math.sign(point[axis] - previous[axis]),
+          `${wire.id} の折り返し`,
+        ).toBe(Math.sign(next[axis] - point[axis]));
+    }
+  }
+  expect(totalOverlap(result.wires)).toBe(0);
+});
