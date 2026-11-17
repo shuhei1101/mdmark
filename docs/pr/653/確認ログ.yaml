@@ -11,3 +11,21 @@ confirmations:
     approver: shuhei1101
     commit: b5fa2ccd
     thread: https://github.com/shuhei1101/mdmark/pull/653#discussion_r4601843124
+  - topic: map の軸と格子の配置の図のモック（map-axis-grid）の描き方と操作への合意
+    decision: モックのとおりで進める（推奨案 A。ガントチャートのタスク名は左の名前の列、Git グラフはブランチ名、ジャーニーは図の下の人の凡例を押して選ぶ）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 230679b3
+    thread: https://github.com/shuhei1101/mdmark/pull/653#discussion_r4602244176
+  - topic: ガントチャート・タイムライン・ジャーニーの閉じた section と中へ入った section の見え方
+    decision: 閉じた section は「{名前}（{種類} {数} 件）」の 1 つの項目（ガントチャートは 1 本の棒、タイムラインは期間 1 つ分の幅の箱、ジャーニーは点数の平均の印）にし、中へ入るとその section の項目だけを配置し直してパンくずを出す。ガントチャートは日付の軸をその section の期間に縮める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 230679b3
+    thread: https://github.com/shuhei1101/mdmark/pull/653#discussion_r4602247217
+  - topic: ブロック図の閉じた入れ子のブロックの大きさと、ほかのブロックの列の位置
+    decision: 記載した幅のまま 1 行の高さに縮め、「{名前}（ブロック {数} 件）」を出す。ほかのブロックの列の位置は変えない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 230679b3
+    thread: https://github.com/shuhei1101/mdmark/pull/653#discussion_r4602248506
