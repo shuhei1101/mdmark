@@ -1,0 +1,224 @@
+id: CMP-653-1
+visibility: internal
+title: mapの軸と格子の配置の図
+implementation: src/parts/map.ts#renderMapAxisGrid
+story: Parts/MapAxisGrid
+lead: map の `gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` を、日付の軸・記載順の軸・`columns` の格子に沿って配置した項目にして描き、section と入れ子のブロックの開閉と中へ入る持ち手、種類ごとのつながりを残す選択を持つ。
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: gantt・timeline・gitGraph・journey・block
+    description: 図の種類。`data-map-kind` の値にする
+  - name: grid
+    type: オブジェクト
+    required: true
+    description: 軸と格子の配置の結果。項目ごとの位置と大きさ・キー（補足の `notes` と同じ）・名前・section のキー・色の名前と、軸の目盛り（ガントチャートの日付・ジャーニーの点数）・ブランチの線・つながりの線の始点と終点
+  - name: grid.items[].shape
+    type: 列挙
+    required: true
+    choices: bar・milestone・period・event・commit・highlight・reverse・merge・cherryPick・face・square・rounded・circle・cylinder
+    description: 項目の形状。ガントチャートの棒とひし形、タイムラインの期間と出来事、Git グラフの commit の 5 種、ジャーニーの顔のマーカー、ブロック図の 4 種
+  - name: grid.items[].color
+    type: 文字列
+    required: false
+    default: なし（section・ブランチ・人の色）
+    description: 補足の `layout` の `color` の色の名前。指定した項目はその色の名前の面と縁で描く
+  - name: grid.today
+    type: 文字列
+    required: false
+    default: なし（今日の線を描かない）
+    enabled_when: '`kind` が `gantt` のとき'
+    description: 今日の日付（`YYYY-MM-DD`）。日付の軸の中にあれば縦の破線と「今日」を描く
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じた section と入れ子のブロックのキー。「{名前}（{種類} {数} 件）」の 1 つの項目にして描く
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入った section か入れ子のブロックのキー。その中の項目だけを描き、図の上端に「全体 › {名前}」を出す
+  - name: selected
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: '選んだ項目（`{ kind: item | branch | actor, key }`）。種類ごとのつながりを残してほかを `opacity` 0.25 にする'
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内か再生で強調する項目（`{ nodes }`。補足の `notes` と同じキー）。閉じた section の中の項目は section を強調する。選択を優先する
+  - name: hints
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`false` のとき、項目の説明のマーカーを配置しない'
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応。項目の名前の中の用語を `span.mdmark-term` にする
+events:
+  - name: 開閉する
+    when: section か入れ子のブロックの開閉のボタンを押す
+    value: section か入れ子のブロックのキー
+    description: '`mount` が `collapsed` を切り替え、配置し直す'
+  - name: 中へ入る
+    when: section か入れ子のブロックの中へ入るボタンを押す
+    value: section か入れ子のブロックのキー
+    description: '`mount` が `entered` をそのキーにし、その中だけを配置し直す。戻るボタンと Esc は構成図の部品と同じ'
+  - name: 選ぶ
+    when: 項目・ガントチャートのタスク名・Git グラフのブランチ名のボタン・ジャーニーの人の凡例のボタンを押す。押せる要素にフォーカスして Enter か Space を押す
+    value: '`{ kind, key }`'
+    description: '`mount` が `selected` を切り替える。説明のマーカー・持ち手のボタンでは選ばない'
+states:
+  - name: Gantt
+    description: ガントチャート。section 4 つ（2 つが同じ名前「準備」）・タスク 8 つ。今日の線を 2026-11-12 に描く
+    args:
+      - name: kind
+        value: gantt
+    notes:
+      定義: モックの `GANTT`・`GANTT_DATA`（`docs/mock/refs/653/assets/samples.js`）
+  - name: Timeline
+    description: タイムライン。section 2 つ・期間 6 つ・出来事 9 つ
+    args:
+      - name: kind
+        value: timeline
+    notes:
+      定義: モックの `TIMELINE`・`TIMELINE_DATA`
+  - name: GitGraph
+    description: Git グラフ。ブランチ 3 つ・commit 10 個。`id:`・`msg:` を持たない 6 個目の commit の下に文字が無い
+    args:
+      - name: kind
+        value: gitGraph
+    notes:
+      定義: モックの `GIT_GRAPH`・`GIT_GRAPH_DATA`
+  - name: Journey
+    description: ジャーニー。section 3 つ・タスク 7 つ・人 3 人と、図の下の人の凡例
+    args:
+      - name: kind
+        value: journey
+    notes:
+      定義: モックの `JOURNEY`・`JOURNEY_DATA`
+  - name: Block
+    description: ブロック図。`columns 3`・幅 `:2`・`space`・入れ子 `core`・線 3 本
+    args:
+      - name: kind
+        value: block
+    notes:
+      定義: モックの `BLOCK`・`BLOCK_DATA`
+  - name: GanttCollapsed
+    description: ガントチャートの section「開発」を閉じた。「開発（タスク 2 件）」の 1 行の 1 本の棒で、日付の軸は変わらない
+    args:
+      - name: kind
+        value: gantt
+      - name: collapsed
+        value: '["開発"]'
+  - name: TimelineCollapsed
+    description: タイムラインの section「記法を作る」を閉じた。期間 1 つ分の幅の項目で、後ろの期間が詰まる
+    args:
+      - name: kind
+        value: timeline
+      - name: collapsed
+        value: '["記法を作る"]'
+  - name: JourneyCollapsed
+    description: ジャーニーの section「点検する」を閉じた。点数の平均の高さの破線のマーカー 1 つ
+    args:
+      - name: kind
+        value: journey
+      - name: collapsed
+        value: '["点検する"]'
+  - name: BlockCollapsed
+    description: ブロック図の `core` を閉じた。記載した幅のまま 1 行の高さで「core（ブロック 2 件）」。ほかのブロックの列の位置は変わらない
+    args:
+      - name: kind
+        value: block
+      - name: collapsed
+        value: '["core"]'
+  - name: GanttEntered
+    description: ガントチャートの 2 つ目の「準備」の中へ入った。上端に「全体 › 準備」、日付の軸がその section の期間に縮む
+    args:
+      - name: kind
+        value: gantt
+      - name: entered
+        value: s3
+  - name: BlockEntered
+    description: ブロック図の `core` の中へ入った。「読み取り」「配置」だけを `columns 2` の格子で描き、上端に「全体 › core」
+    args:
+      - name: kind
+        value: block
+      - name: entered
+        value: core
+  - name: GanttSelected
+    description: 「設計する」を選んだ。`after` でつながる前後のタスクとつながりの矢じりの線のほかが薄い
+    args:
+      - name: kind
+        value: gantt
+      - name: selected
+        value: '{"kind": "item", "key": "des"}'
+  - name: GitBranchSelected
+    description: ブランチ feat を選んだ。feat の線と commit のほかが薄く、ブランチ名のボタンが押した状態
+    args:
+      - name: kind
+        value: gitGraph
+      - name: selected
+        value: '{"kind": "branch", "key": "feat"}'
+  - name: JourneyActorSelected
+    description: 人「AI」を選んだ。AI のタスクのほかが薄く、AI のタスクのマーカーだけが AI の色の線でつながる
+    args:
+      - name: kind
+        value: journey
+      - name: selected
+        value: '{"kind": "actor", "key": "AI"}'
+  - name: Played
+    description: Git グラフの再生の手順 6。6 個目の commit のほかが薄い
+    args:
+      - name: kind
+        value: gitGraph
+      - name: focus
+        value: '{"nodes": ["c6"]}'
+  - name: Colored
+    description: 補足の `layout` で「リリース判定」に `purple`、section「公開」に `collapsed` を持つガントチャート
+    args:
+      - name: kind
+        value: gantt
+    notes:
+      定義: モックの `GANTT_LAYOUT_DATA`。座標の書き方の警告は `mount` が図の枠の前に出すため、この部品の状態には含めない
+  - name: HintsOff
+    description: ヒントをオフにした。説明のマーカーが無い
+    args:
+      - name: kind
+        value: gantt
+      - name: hints
+        value: 'false'
+  - name: Narrow
+    description: 幅 390px の置き場所のガントチャート。等倍のまま、図の枠の中を横にスクロールできる
+    args:
+      - name: kind
+        value: gantt
+uses:
+  - component: CMP-472-5#
+    how: 項目のノードと押せる要素・説明のマーカー・強調の薄い表示・グループの開閉と中へ入るボタン・戻るボタンと Esc。入れ子の自動配置・ドラッグは使用しない
+  - component: CMP-472-38#
+    how: 項目の説明
+accessibility:
+  - 項目は構成図のノードと同じく、項目の全体を覆う押せる要素（`role="button"`・`tabindex="0"`）が項目の名前のスクリーンリーダー向けの名前を持ってフォーカスを受ける。ガントチャートの棒の名前はタスク名にする
+  - 選んだかを項目の `data-selected` と、スクリーンリーダー向けの名前の末尾の `（選択中）` で伝える。Git グラフのブランチ名とジャーニーの凡例のボタンは `aria-pressed` で伝える
+  - 開閉のボタンは `aria-expanded` と「{名前}を開く」「{名前}を閉じる」の名前を持ち、中へ入るボタンは「{名前}の中へ入る」の名前を持つ。どちらも 24px 以上にする
+  - 軸の目盛り・つながりの線・今日の線・パンくずの区切りの `›` は飾りとして `aria-hidden` にし、パンくずは `aria-label="全体からの道筋"` を持つ
+  - section・ブランチ・人を色だけで区別させず、見出し・ブランチ名・凡例の名前を出す
+refs:
+  - IF-472-35#constraints[map のガントチャート]
+  - IF-472-35#constraints[map のタイムライン]
+  - IF-472-35#constraints[map の Git グラフ]
+  - IF-472-35#constraints[map のジャーニー]
+  - IF-472-35#constraints[map のブロック図]
+  - IF-472-35#constraints[map の section の開閉と中へ入る]
+status: planned
+test_file: tests/integration/lib/map-axis-grid.story.test.ts
+tags:
+  - name: topic:map
+  - name: topic:図
+  - name: topic:ガントチャート

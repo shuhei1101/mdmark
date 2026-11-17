@@ -755,7 +755,7 @@ elements:
       - name: mode
         value: 構成図・ER 図・クラス図・アーキテクチャ図・C4 図・マインドマップは `walkthrough`、シーケンス図は `playback`、状態遷移図は補足に `walkthroughs` があれば `walkthrough`、無ければ `playback`
       - name: unit
-        value: 状態遷移図の再生は `transition`、ほかは `message`
+        value: 状態遷移図の再生は `transition`、ガントチャートとジャーニーの再生は `task`、タイムラインの再生は `period`、Git グラフの再生は `commit`、ほかは `message`
       - name: total
         value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数か、状態遷移図の再生では遷移の数
       - name: title
@@ -1955,6 +1955,37 @@ elements:
     refs:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map のマインドマップ]
+      - IF-472-35#constraints[map の状態の保存]
+    status: planned
+  - name: map の軸と格子の配置の図
+    id: map-axis-grid
+    kind: figure
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: '`map`'
+      - name: title
+        value: map のマーカーの `title`、無ければ Mermaid の `title`。どちらも無ければ「ガントチャート」「タイムライン」「Git グラフ」「ジャーニー」「ブロック図」
+      - name: legend
+        value: ジャーニーは人の名前と色（押せるボタン）、ほかは `[]`
+      - name: wide
+        value: "'true'"
+      - name: tools
+        value: 要素「map の構成図」と同じ（全て開く・全て閉じるは section か入れ子のブロックを持つとき、「配置と選択を元に戻す」は選んだときだけ押せる）
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+    slots:
+      - name: default
+        value: docs/component/CMP-653-1.ts#（`collapsed`・`entered`・`selected` は sessionStorage とクエリ文字列 `map-{図の番号}` の状態。section のキーは名前で、同じ名前の section だけ `s{番号}`）
+    position: 描く先の要素
+    description: map の範囲と範囲の外の `gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` を、日付の軸・記載順の軸・`columns` の格子に沿って配置した図。ガントチャート・タイムライン・Git グラフ・ジャーニーは、図の枠の下に要素「map の案内の帯」を配置する（補足に `walkthroughs` が無ければ再生）
+    visible_when: '`map` がオンで、map の範囲に 5 種類の mermaid のブロックがあるとき。範囲の外の 5 種類のコードブロックも同じ'
+    action: 要素「map の構成図」と同じ図の枠の操作に加え、section と入れ子のブロックを持ち手のボタンで開閉し、中へ入る。項目を押すと種類ごとのつながりを残す。項目はドラッグで動かない
+    refs:
+      - IF-472-35#constraints[map の図]
+      - IF-472-35#constraints[map の軸と格子の配置の図の補足]
+      - IF-472-35#constraints[map の section の開閉と中へ入る]
+      - IF-472-35#constraints[map の時系列の図の再生]
       - IF-472-35#constraints[map の状態の保存]
     status: planned
 mock: docs/mock/pages/ui-canvas/80/side-by-side/
