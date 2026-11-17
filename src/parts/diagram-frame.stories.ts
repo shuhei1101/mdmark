@@ -78,3 +78,15 @@ export const TouchActive: Story = {
   parameters: { server: { id: "diagram-frame" } },
   args: { zoom: 1.25, touchActive: true },
 };
+
+export const PlainMap: Story = {
+  name: "PlainMap",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { kind: "map", title: "シーケンス図" },
+};
+
+export const SequenceHeadsStuck: Story = {
+  name: "SequenceHeadsStuck",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { kind: "map" },
+};

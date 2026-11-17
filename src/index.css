@@ -10442,6 +10442,12 @@
     justify-content: flex-start;
     padding-right: 28px;
   }
+  /* 種類を持たないノードは種類の行を描かず、名前をノードの上下の中央に置く */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node:has(> .mdmark-diagram-node-kind.is-empty) {
+    justify-content: center;
+  }
   /* シーケンス図の参加者の箱は、名前が 2 行になっても詰まらないよう高さを中身に合わせる */
   .mdmark-diagram[data-diagram="map"] .map-participant {
     height: auto;

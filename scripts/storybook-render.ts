@@ -811,6 +811,21 @@ const MAP_SEQUENCE_TALL = `sequenceDiagram
   B-->>A: 描いた文書
 `;
 
+/** map のシーケンス図の、`actor` の参加者を持つ見本 */
+const MAP_SEQUENCE_ACTOR = `sequenceDiagram
+  actor U as 読者
+  participant P as 利用側のページ
+  U->>P: 文書を開く
+  P-->>U: 描いた文書
+`;
+
+/** 範囲の外の純粋な Mermaid の、種類を持たないノードだけの構成図の見本 */
+const MAP_FLOW_PLAIN = `flowchart LR
+  A[問い合わせを受ける] --> B{担当がいるか}
+  B -->|いる| C[担当へ回す]
+  B -->|いない| D[一次回答を返却する]
+`;
+
 /** ストーリーの args の配列（JSON の文字でも、Storybook が配列にした値でもよい。無ければ空） */
 const jsonList = (value: unknown): string[] =>
   Array.isArray(value)
@@ -847,6 +862,61 @@ const mapFrame = (
     { kind: "map", title, legend: [], wide: true, tools: [], id: "story-map" },
     { ...part, ...size },
   );
+
+/** 部品『mapのシーケンス図』のストーリー（`source` で見本、`title` で図の枠のタイトルを選ぶ） */
+function mapSequenceStory(args: PartArgs): string {
+  const sequence = parseSequence(
+    args.source === "arrows"
+      ? MAP_SEQUENCE_ARROWS
+      : args.source === "tall"
+        ? MAP_SEQUENCE_TALL
+        : args.source === "actor"
+          ? MAP_SEQUENCE_ACTOR
+          : MAP_SEQUENCE,
+  );
+  const collapsed = jsonList(args.collapsed).map(Number);
+  // 問い合わせの値は数に読み替わって届く
+  const entered =
+    args.entered === undefined || args.entered === ""
+      ? undefined
+      : Number(args.entered);
+  const rows = sequenceRows(sequence, {
+    order:
+      jsonList(args.order).length > 0
+        ? jsonList(args.order)
+        : sequence.participants.map((item) => item.id),
+    collapsed,
+    entered,
+  });
+  const part = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed,
+    entered,
+    selected: jsonList(args.selected),
+    focus: jsonObject<{ message: number }>(args.focus),
+    id: "story-map-seq",
+    notes: jsonObject<Record<string, string>>(args.notes),
+    terms: jsonObject<Record<string, string>>(args.terms),
+    hints: hintsOf(args.hints),
+    // actor の参加者は、設定の map.kinds.actor が無いときの既定の種類（mount の attachMapSequence と同じ）
+    kinds: Object.fromEntries(
+      sequence.participants
+        .filter((item) => item.actor)
+        .map((item) => [item.id, { icon: "user" }]),
+    ),
+  });
+  const width = Number(/<svg[^>]*\swidth="([\d.]+)"/.exec(part.html)?.[1] ?? 0);
+  const height = Number(
+    /<svg[^>]*\sheight="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
+  );
+  return mapFrame(
+    typeof args.title === "string" ? args.title : "文書を描くまで",
+    part,
+    { width, height },
+  );
+}
 
 /** 見本のグラフの部品の定義を、引数の見本・種類・系列の数から選ぶ */
 function chartStoryDefinition(args: PartArgs): MdmarkChartDefinition {
@@ -969,7 +1039,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const collapsed = jsonList(args.collapsed);
     const { data } = parseMapData(MAP_DATA);
     const layout = layoutMap(
-      parseFlowchart(args.source === "long" ? MAP_FLOW_LONG : MAP_FLOW),
+      parseFlowchart(
+        args.source === "long"
+          ? MAP_FLOW_LONG
+          : args.source === "plain"
+            ? MAP_FLOW_PLAIN
+            : MAP_FLOW,
+      ),
       { collapsed, entered },
       {
         overrides:
@@ -987,10 +1063,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         layout,
         kinds: MAP_CONFIG.kinds,
         lines: MAP_CONFIG.lines,
-        notes: {
-          ...noteTexts(data.notes),
-          ...jsonObject<Record<string, string>>(args.notes),
-        },
+        // 範囲の外の純粋な Mermaid は補足を持たない
+        notes:
+          args.source === "plain"
+            ? {}
+            : {
+                ...noteTexts(data.notes),
+                ...jsonObject<Record<string, string>>(args.notes),
+              },
         links: jsonObject<Record<string, string>>(args.links),
         hints: hintsOf(args.hints),
         collapsed,
@@ -1139,6 +1219,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       kinds: MAP_CLASS_KINDS,
       lines: {},
       notes: noteTexts(data.notes),
+      links: jsonObject<Record<string, string>>(args.links),
       hints: args.hints !== false,
       collapsed,
       entered,
@@ -1262,49 +1343,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     });
     return mapFrame(diagram.title ?? "", part, layout);
   },
-  "map-sequence": (args) => {
-    const sequence = parseSequence(
-      args.source === "arrows"
-        ? MAP_SEQUENCE_ARROWS
-        : args.source === "tall"
-          ? MAP_SEQUENCE_TALL
-          : MAP_SEQUENCE,
-    );
-    const collapsed = jsonList(args.collapsed).map(Number);
-    // 問い合わせの値は数に読み替わって届く
-    const entered =
-      args.entered === undefined || args.entered === ""
-        ? undefined
-        : Number(args.entered);
-    const rows = sequenceRows(sequence, {
-      order:
-        jsonList(args.order).length > 0
-          ? jsonList(args.order)
-          : sequence.participants.map((item) => item.id),
-      collapsed,
-      entered,
-    });
-    const part = renderMapSequence({
-      sequence,
-      rows: rows.rows,
-      participants: rows.participants,
-      collapsed,
-      entered,
-      selected: jsonList(args.selected),
-      focus: jsonObject<{ message: number }>(args.focus),
-      id: "story-map-seq",
-      notes: jsonObject<Record<string, string>>(args.notes),
-      terms: jsonObject<Record<string, string>>(args.terms),
-      hints: hintsOf(args.hints),
-    });
-    const width = Number(
-      /<svg[^>]*\swidth="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
-    );
-    const height = Number(
-      /<svg[^>]*\sheight="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
-    );
-    return mapFrame("文書を描くまで", part, { width, height });
-  },
+  "map-sequence": (args) => mapSequenceStory(args),
   "map-band": (args) =>
     renderMapBand({
       mode: args.mode === "playback" ? "playback" : "walkthrough",
@@ -1713,6 +1752,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       current: args.current as string | undefined,
     }),
   "diagram-frame": (args) => {
+    if (args.kind === "map") {
+      return mapSequenceStory(args);
+    }
     if (args.kind === "mermaid") {
       return fitted(
         renderMermaidStory({

@@ -49,3 +49,9 @@ export const Narrow: Story = {
   parameters: { server: { id: "map-class" } },
   args: { frameWidth: "390px" },
 };
+
+export const LinkedClass: Story = {
+  name: "LinkedClass",
+  parameters: { server: { id: "map-class" } },
+  args: { links: '{"図面": "https://example.com/drawing"}' },
+};
