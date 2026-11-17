@@ -1,0 +1,101 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: 配信元の定義（ER 図と管理用の YAML の行の検査の参照）とルール索引の置き場所を変えるため、ガイドのページを受け取る流れが壊れていないかを確かめる。Claude Code の操作と受け取るページは変わらない
+    depends_on: []
+docs:
+  - page: ai-monitor-version.ini
+    new: false
+    change: 準拠バージョンを `v0.4.0` にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
+  - page: ai-monitor-theme.yaml
+    new: false
+    change: '`import-site` が書く控えの `version` を `v0.4.0` にする'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
+  - page: docs/_theme/llms.txt
+    new: false
+    change: '`import-site --version v0.4.0` で `docs/_theme/` の共通の部品（`_layouts/`・`_includes/`・`_data/nav.yml`・`assets/`・`llms.txt`・`search.json`）を v0.4.0 の内容にする（`nav.project.yml` は変えない）。実行した結果、`docs/_theme/` は既に v0.4.0 と一致しており、書き換わったのは控えだけだった'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
+  - page: docs/_config.yml
+    new: false
+    change: 配布元の v0.4.0 で増えた `exclude` の行のうち mdmark にあるフォルダ（`data/`・`layout/` 等）を足し、`rules.yaml` の行をルール索引の移動に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
+  - page: docs/rules.yaml
+    new: false
+    change: 反映作業『プロジェクトの索引の移動』で直下の `rules.yaml` へ移し、エントリの `rule` の相対パスを直す。反映作業『配布先の規約のパスの追従』で AI Monitor の規約の .md のパスを YAML のパスに直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
+  - page: docs/_root/files.yml
+    new: false
+    change: '`rules.yaml` の行を、ルール索引の移動に合わせる'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
+  - page: project-index.yaml
+    new: false
+    change: ER 図の行の `schema` を knowledge の `schemas/design/er.schema.yaml` の参照へ、管理用の YAML の行の `schema` を `schemas/knowledge-files.schema.yaml` の参照へ切り替える。反映作業『配布先のデータの設計書の作成』で `docs/data/` の行を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
+  - page: schemas/files.schema.yaml
+    new: false
+    change: AI Monitor から配られたコピーのため削除する（`files.schema.yaml`・`index.schema.yaml`・`er.schema.yaml`・`common.schema.yaml`）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
+  - page: schemas/files.yaml
+    new: false
+    change: 削除した Schema のコピーの行を外す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
+  - page: src/files.yaml
+    new: false
+    change: 1 行目の `$schema` を、削除した `files.schema.yaml` から knowledge の `knowledge-files.schema.yaml` へ向ける（ほかの各フォルダの `files.yaml`・`files.yml` の 1 行目も同じ）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: 管理用の YAML のスキーマを `schemas/files.schema.yaml` と記載している箇所を、knowledge の `knowledge-files.schema.yaml` に直す。`notes[フォルダの役割]` の `schemas/` の行から、設計書の種類ごとの Schema と「設計書の Schema は届けない」を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:11:52.903319+00:00'
+  - page: docs/layout/LAY-472-1.yaml
+    new: false
+    change: '`docs/_theme/` の `generated_from.source` を `shuhei1101/ai-monitor@v0.4.0` にし、`schemas/` のエントリから削除した Schema のコピーを外し、`rules.yaml` の置き場所と `docs/data/` のエントリを合わせる'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T07:20:13.816545+00:00'
+  - page: docs/er/ER-472-1.yaml
+    new: false
+    change: 反映作業『配布先のデータの設計書の作成』で、`source` を持たないテーブルとカラムにデータの設計書を指す `source` を付ける（`docs/er/` の他の ER 図も同じ）。knowledge の `er.schema.yaml` の検査に合格させる。ER-472-1・ER-472-4 の `tables[].introduced`（knowledge のスキーマで削除された項目）を外す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
+  - page: docs/data/index.yaml
+    new: true
+    change: 反映作業『配布先のデータの設計書の作成』で、ER 図のテーブルのカラムが保存するキーを並べたデータの設計書（`DATA-*.yaml`）とその目次を作る
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T10:09:35.152201+00:00'
+scope_out:
+  - item: ER 図を除く設計書 13 種類の Schema の切り替え、設計書の Schema のコピー 14 件の削除、検査への合格、`instructions` の「書式は `schemas/{種類}.schema.yaml` が持つ」の修正
+    reason: '#290 の作業 PR #610 が引き取り、develop へ入っている'
+    plan: '#290'
+  - item: AI Monitor v0.5.0 の配布物への追従
+    reason: 別の版の追従で、起点 Issue の範囲（v0.3.0..v0.4.0）に含まれない
+    plan: '#625'
+  - item: ER-472-3・ER-472-6 の `relations[0]` に `from_column`・`to_column` が無い
+    reason: 規約『ドキュメント管理』の YAML の設計書（knowledge の Schema の検査に合格させる）から外れている。develop の時点からの違反で、今回の要望に含まれない
+    plan: '#646'

@@ -1,0 +1,60 @@
+id: DATA-472-23
+visibility: internal
+title: 'データ: ビュー'
+lead: ビューのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: board
+  title: ボード表示
+  type: object
+  description: ボード表示。省くと表形式だけを描く
+  example: '{"group": {"column": "状態"}}'
+- key: board.group
+  title: ボード表示で列に分ける列
+  type: object
+  description: ボード表示で列に分ける列
+  required: true
+  example: '{"column": "状態"}'
+- key: board.group.column
+  title: 列の見出しの文字
+  type: string
+  description: 列の見出しの文字
+  required: true
+  example: 状態
+- key: board.values
+  title: '`group` の列の値ごとの設定'
+  type: object
+  description: '`group` の列の値ごとの設定。キーは `group` の列の値'
+  example: '{"完了": {"icon": "inbox"}}'
+- key: board.values.{値}.icon
+  title: ボードの列の見出しのアイコンの名前
+  type: string
+  description: ボードの列の見出しのアイコンの名前
+  example: inbox
+- key: initial
+  title: 描いた直後に出すビュー
+  type: string
+  description: 描いた直後に出すビュー。省くと、`board` があれば `"board"`
+  example: table
+- key: columns
+  title: 表形式のビューの列ごとの設定
+  type: object
+  description: 表形式のビューの列ごとの設定。キーは表の見出しの文字。記載できるのは `filter` と `sort`
+  example: '{"担当": {"filter": {}}}'
+- key: columns.{列名}.filter
+  title: この列に絞り込みを付ける
+  type: object
+  description: この列に絞り込みを付ける
+  example: '{"type": "text"}'
+- key: columns.{列名}.filter.type
+  title: 絞り込みの種類
+  type: string
+  description: 絞り込みの種類。省くと `"select"`
+  example: text
+- key: columns.{列名}.sort
+  title: この列に並べ替えを付けるか
+  type: bool
+  description: '`true` で長文の列にも並べ替えを付け、`false` で並べ替えを付けない。省くと、長文の列には付けず、ほかの列には付ける（表のマーカーの `columns.{列名}.sort` と同じ）'
+  example: 'false'
+refs:
+- ER-477-17#tables[view]

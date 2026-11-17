@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: integration/ClaudeCodeプラグイン/build-site.test.ts
     description: インターフェース定義『複数の文書を1枚のHTML にまとめる』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。

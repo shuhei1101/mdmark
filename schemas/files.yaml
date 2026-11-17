@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: alias-inject/v0.3.0/aliases.schema.json
     description: モジュール構成『ライブラリ本体 / CLI』のうち「取り込んだ alias-inject の行の Schema」を受け持つ。CLI のコマンドの振る舞いを変えるときに参照する。
@@ -36,18 +36,6 @@ files:
     related:
       - to: MOD-472-30
         type: implements
-  - path: er.schema.yaml
-    description: ER 図の設計書のスキーマ。データストアの構造（DB・JSON・YAML）を分類ごとに記載する。ER 図の設計書を記載するときや項目を確認するときに参照する。
-    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
-  - path: files.schema.yaml
-    description: dev-docs の管理用の YAML（files.yaml）の 1 行の項目を定めるスキーマ。AI Monitor の配布物（visibility と分類を足したもの）。files.yaml に記載する項目を確認するときに参照する。
-    tags: [topic:スキーマ, topic:テンプレート, topic:メタデータ, tool:dev-docs, tool:jsonschema]
-  - path: index.schema.yaml
-    description: フォルダの直下の目次（index.yaml）のスキーマ。README はここから作る。目次の行を追加・変更するときに参照する。
-    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
-  - path: common.schema.yaml
-    description: 種別をまたいで使用する型（本文・参照・共通の項目・状態遷移・フローチャート・ER 図）のスキーマ。複数の種別に有効になる項目を変えるときに参照する。
-    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
   - path: marks/code.schema.json
     description: コードブロックの飾りのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
     tags: [topic:マーカー, topic:スキーマ]

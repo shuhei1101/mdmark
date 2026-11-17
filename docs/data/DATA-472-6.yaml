@@ -1,0 +1,47 @@
+id: DATA-472-6
+visibility: internal
+title: 'データ: エイリアスの元の行'
+lead: どの YAML のどの列からエイリアスを作るかを決める行。`mdmark.config.yaml` の `aliases` に並べる。
+datastore: YAML
+fields:
+- key: id
+  title: 行の ID
+  type: string
+  description: 行の主キー。`aliases` の中で一意（重なりは `mdmark check` の `duplicate_alias_row_id`）
+  required: true
+  example: terms
+  unique: 全体
+- key: enabled
+  title: 有効
+  type: bool
+  description: '`false` のとき、この行からエイリアスを作らない'
+  example: 'true'
+- key: paths
+  title: 読み込む YAML
+  type: array
+  description: 読み込む YAML のパスか glob。設定ファイルのあるフォルダからの相対パスで、ファイルと glob を混ぜてよい。並びは記載した順、glob の中はパスの順
+  required: true
+  example: '[terms/*.yaml]'
+- key: alias_type
+  title: 引用の種類
+  type: string
+  description: 行の全レコードのエイリアスの種類（エイリアスの `alias_type`）
+  required: true
+  example: term
+- key: records
+  title: 文書の並びのキー
+  type: string
+  description: ファイルの中のこのキーの配列の要素ごとに 1 件のエイリアスを作る。記載しないとき、各ファイルを 1 件にする
+  example: terms
+- key: body_file
+  title: 本文のファイルの列
+  type: string
+  description: レコードの本文のファイルのパスを持つ列の名前。`name` が空のレコードの名前に、その列の値のファイル名から拡張子を除いたものを使用する
+  example: path
+- key: metadata
+  title: エイリアスのキーの列
+  type: object
+  description: エイリアスのキーごとに、値を取るレコードの列の名前を文字列で配置する。入れ子の列は `meta.summary` のように `.` でつなぐ。記載しないキーは同じ名前の列から取る
+  example: '{name: term, description: meta.meaning}'
+refs:
+- ER-472-3#tables[aliases]

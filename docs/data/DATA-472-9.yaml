@@ -1,0 +1,70 @@
+id: DATA-472-9
+visibility: internal
+title: 'データ: 移行の手順'
+lead: 1 つのバージョンで適用する移行の手順の並び。最上位は `steps`（手順の並び、必須）だけを持ち、この表の行は `steps` の要素 1 つ。
+datastore: YAML
+fields:
+- key: op
+  title: 種類
+  type: string
+  description: 手順の種類
+  required: true
+  example: rename_key
+- key: description
+  title: 説明
+  type: string
+  description: 何をどう変えるかの 1 文。`--plan` と適用した手順の出力に出す
+  required: true
+  example: '`build.out` を `build.output` に改める'
+- key: destructive
+  title: 壊すマーカー
+  type: bool
+  description: 適用すると値が失われる手順か。`true` の手順が 1 つでもあれば、`--yes` が無いとき適用する前に確認する
+  example: 'false'
+- key: file
+  title: 対象のファイル
+  type: string
+  description: '`rename_key`・`set_default`・`map_values` が書き換える YAML。`config` は設定ファイル、`index` は設定の `index` が指す索引'
+  example: config
+- key: from
+  title: 元のキー・マーカー
+  type: string
+  description: '`rename_key` は元のキーのパス（`.` でつなぐ）、`replace_mark` は書き換える前のマーカーの文字列'
+  example: build.out
+- key: to
+  title: 新しいキー・マーカー
+  type: string
+  description: '`rename_key` は新しいキーのパス、`replace_mark` は書き換えた後のマーカーの文字列'
+  example: build.output
+- key: key
+  title: キー
+  type: string
+  description: '`set_default`・`map_values` が扱うキーのパス（`.` でつなぐ）'
+  example: features.diff
+- key: value
+  title: 追加する値
+  type: string
+  description: '`set_default` が追加する値。YAML の値としてそのまま記載する'
+  example: 'true'
+- key: ask
+  title: 聞く質問
+  type: string
+  description: '`set_default` が利用者に値を聞くときの質問の文。回答した 1 行を YAML の値として追加する'
+  example: 書き出す HTML のタイトルを入れてください
+- key: mapping
+  title: 解釈しの表
+  type: object
+  description: '`map_values` の元の値から新しい値への表。表に無い値は変えない'
+  example: '{ "dist/docs.html": "dist/index.html" }'
+- key: script
+  title: スクリプト
+  type: string
+  description: '`call` が実行するスクリプトのパス。`steps.yaml` のあるフォルダからの相対パス'
+  example: move-terms.mjs
+- key: files
+  title: 書き換えるもの
+  type: array
+  description: '`call` のスクリプトが書き換えうるもの。適用する前にコピーを取る対象になる'
+  example: '[index]'
+refs:
+- ER-472-5#tables[migrations/{バージョン}/steps.yaml]

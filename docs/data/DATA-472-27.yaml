@@ -1,0 +1,13 @@
+id: DATA-472-27
+visibility: internal
+title: 'データ: ステップ'
+lead: ステップのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: collapse
+  title: 共通のオブジェクトの折り畳み
+  type: object
+  description: 共通のオブジェクトの折り畳み
+  example: '{"open": false}'
+refs:
+- ER-477-4#tables[steps]

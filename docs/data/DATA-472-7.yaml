@@ -1,0 +1,80 @@
+id: DATA-472-7
+visibility: internal
+title: 'データ: エイリアス'
+lead: 元の行の `metadata` を適用して作ったエイリアス 1 件。`buildAliases` が返却し、`mount`・`render`・`collectMatches` の `aliases` に並べて指定する。
+datastore: JSON
+fields:
+- key: alias_type
+  title: 種類
+  type: string
+  description: エイリアスの種類。ツールチップの区分と、照合したときの扱いを決める
+  required: true
+- key: id
+  title: ID
+  type: string
+  description: エイリアスの ID。指定したエイリアスの中で一意。セクションごとに最初の 1 回を数える単位
+  required: true
+  example: unit-test
+  unique: 全体
+- key: name
+  title: 名前
+  type: string
+  description: 照合する単語で、ツールチップに太字で出す名前。`avoid` の種類ではやめた言い方
+  required: true
+  example: 単体テスト
+- key: aliases
+  title: 別名
+  type: array
+  description: 名前と同じく照合する単語
+  example: '[ユニットテスト]'
+- key: description
+  title: 説明
+  type: string
+  description: ツールチップの説明。`term`・`doc` では必須
+  example: ライブラリ本体の単体テストを実行する
+- key: related
+  title: 関連
+  type: array
+  description: '`term` の関連する単語。ツールチップには出さない'
+- key: command
+  title: コマンド
+  type: string
+  description: '`command` の種類のコマンド。ツールチップにコードとコピーのボタンで出す'
+  example: npm run test:unit
+- key: cwd
+  title: 実行場所
+  type: string
+  description: '`command` の種類の実行場所'
+  example: リポジトリの直下
+- key: url
+  title: URL
+  type: string
+  description: '`url` の種類の URL。http・https だけをリンクにし、ほかは文字で出す'
+  example: https://github.com/shuhei1101/mdmark/issues
+- key: skill
+  title: スキル名
+  type: string
+  description: '`skill` の種類のスキル名'
+  example: mindstella:session
+- key: tool
+  title: ツール名
+  type: string
+  description: '`tool` の種類のツール名'
+  example: check
+- key: path
+  title: パス
+  type: string
+  description: '`path` の種類のパス'
+  example: mdmark.config.yaml
+- key: avoid
+  title: やめた言い方
+  type: array
+  description: '`term` の種類の、使用しないことにした言い方。索引の `terms[].avoid` と同じく、代わりの用語としてこのエイリアスを出す'
+  example: '[枝]'
+- key: replacement
+  title: 置き換え先
+  type: string
+  description: '`avoid` の種類の置き換え先の単語'
+  example: ワークスペース
+refs:
+- ER-472-3#tables[MdmarkAlias]

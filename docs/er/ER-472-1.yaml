@@ -6,6 +6,7 @@ overview: 原本は、端末の設定のファイルと同じフォルダの `te
 tables:
   - name: templates
     title: テンプレートの行
+    source: DATA-472-1#
     datastore: YAML
     summary: CSS のテンプレート 1 つの名前・ファイル・説明・タグ
     primary_key: name
@@ -14,6 +15,7 @@ tables:
     columns:
       - name: name
         title: 名前
+        source: DATA-472-1#fields[name]
         type: string
         not_null: true
         primary_key: true
@@ -23,6 +25,7 @@ tables:
         example: brand
       - name: file
         title: CSS のファイル名
+        source: DATA-472-1#fields[file]
         type: string
         not_null: true
         check: '`.css` で終わるファイル名。`/` と `..` を含まない'
@@ -31,6 +34,7 @@ tables:
         example: brand.css
       - name: description
         title: 説明
+        source: DATA-472-1#fields[description]
         type: string
         not_null: true
         check: 空でない
@@ -38,14 +42,13 @@ tables:
         example: 見出しを社の色にする
       - name: tags
         title: タグ
+        source: DATA-472-1#fields[tags]
         type: string[]
         not_null: true
         check: 要素は空でない文字列。省くと空の並び
         description: 探すときの単語
         example: '["見出し", "色"]'
     status: planned
-    introduced:
-      pr: 353
 refs:
   - IF-472-1#
   - IF-472-2#

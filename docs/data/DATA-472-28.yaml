@@ -1,0 +1,18 @@
+id: DATA-472-28
+visibility: internal
+title: 'データ: ファイルツリー'
+lead: ファイルツリーのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: depth
+  title: 開いて描く階層
+  type: int
+  description: 開いて描く階層。整数は 1 以上で、ルートの深さを 0 として、その数より浅いフォルダを開く。省くと `"all"`（全てのフォルダを開く）
+  example: '2'
+- key: wrap
+  title: 長い名前を折り返す
+  type: bool
+  description: 長い名前を折り返す。省くと `false`
+  example: 'true'
+refs:
+- ER-477-5#tables[tree]

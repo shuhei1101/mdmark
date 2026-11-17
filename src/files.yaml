@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: bundle-module.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「指定した esbuild の build でモジュールを 1 つにまとめる処理と URL を読み込む関数の記録」を受け持ち、CLI と VS Code 拡張機能が同じ指定でまとめる。まとめ方を変えるときに参照する。

@@ -1,0 +1,24 @@
+id: DATA-472-19
+visibility: internal
+title: 'データ: 取り込み'
+lead: 取り込みのマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: path
+  title: 取り込むファイルのパス
+  type: string
+  description: 取り込むファイルのパス
+  required: true
+  example: 共通/手順.md
+- key: heading
+  title: 取り込む見出しの ID
+  type: string
+  description: 取り込む見出しの ID。`lines` と同時に記載できない
+  example: 実行
+- key: lines
+  title: 取り込む行
+  type: object
+  description: 取り込む行。共通のオブジェクトの行の範囲。Markdown 以外のファイルにだけ記載できる。Markdown のファイルに記載したとき・`heading` と両方を記載したときは、取り込まずに記載の警告を出す
+  example: '{"from": 3, "to": 10}'
+refs:
+- ER-477-13#tables[include]

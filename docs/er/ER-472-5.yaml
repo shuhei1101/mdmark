@@ -5,6 +5,7 @@ lead: mdmark の開発者がバージョンごとに記載し、`mdmark upgrade`
 tables:
   - name: migrations/{バージョン}/steps.yaml
     title: 移行の手順
+    source: DATA-472-9#
     datastore: YAML
     summary: 1 つのバージョンで適用する移行の手順の並び。最上位は `steps`（手順の並び、必須）だけを持ち、この表の行は `steps` の要素 1 つ
     scale: ~20
@@ -15,6 +16,7 @@ tables:
     columns:
       - name: op
         title: 種類
+        source: DATA-472-9#fields[op]
         type: string
         not_null: true
         description: 手順の種類
@@ -22,6 +24,7 @@ tables:
         example: rename_key
       - name: description
         title: 説明
+        source: DATA-472-9#fields[description]
         type: string
         not_null: true
         check: 空でない
@@ -29,12 +32,14 @@ tables:
         example: '`build.out` を `build.output` に改める'
       - name: destructive
         title: 壊すマーカー
+        source: DATA-472-9#fields[destructive]
         type: boolean
         default: 'false'
         description: 適用すると値が失われる手順か。`true` の手順が 1 つでもあれば、`--yes` が無いとき適用する前に確認する
         example: 'false'
       - name: file
         title: 対象のファイル
+        source: DATA-472-9#fields[file]
         type: string
         description: '`rename_key`・`set_default`・`map_values` が書き換える YAML。`config` は設定ファイル、`index` は設定の `index` が指す索引'
         enum_values: "'config' / 'index'"
@@ -42,6 +47,7 @@ tables:
         notes: '`rename_key`・`set_default`・`map_values` で必須。`index` を指したのに設定に `index` が無ければ、その手順は何もしない'
       - name: from
         title: 元のキー・マーカー
+        source: DATA-472-9#fields[from]
         type: string
         check: 空でない
         description: '`rename_key` は元のキーのパス（`.` でつなぐ）、`replace_mark` は書き換える前のマーカーの文字列'
@@ -49,6 +55,7 @@ tables:
         notes: '`rename_key`・`replace_mark` で必須'
       - name: to
         title: 新しいキー・マーカー
+        source: DATA-472-9#fields[to]
         type: string
         check: 空でない。`replace_mark` は `from` を含まない
         description: '`rename_key` は新しいキーのパス、`replace_mark` は書き換えた後のマーカーの文字列'
@@ -56,6 +63,7 @@ tables:
         notes: '`rename_key`・`replace_mark` で必須'
       - name: key
         title: キー
+        source: DATA-472-9#fields[key]
         type: string
         check: 空でない
         description: '`set_default`・`map_values` が扱うキーのパス（`.` でつなぐ）'
@@ -63,12 +71,14 @@ tables:
         notes: '`set_default`・`map_values` で必須'
       - name: value
         title: 追加する値
+        source: DATA-472-9#fields[value]
         type: string
         description: '`set_default` が追加する値。YAML の値としてそのまま記載する'
         example: 'true'
         notes: '`set_default` で `value` か `ask` のどちらか 1 つを持つ'
       - name: ask
         title: 聞く質問
+        source: DATA-472-9#fields[ask]
         type: string
         check: 空でない
         description: '`set_default` が利用者に値を聞くときの質問の文。回答した 1 行を YAML の値として追加する'
@@ -76,12 +86,14 @@ tables:
         notes: キーが既にあれば聞かない
       - name: mapping
         title: 解釈しの表
+        source: DATA-472-9#fields[mapping]
         type: object
         description: '`map_values` の元の値から新しい値への表。表に無い値は変えない'
         example: '{ "dist/docs.html": "dist/index.html" }'
         notes: '`map_values` で必須。新しい値に元の値を配置しない（もう一度適用しても変わらないようにする）'
       - name: script
         title: スクリプト
+        source: DATA-472-9#fields[script]
         type: string
         description: '`call` が実行するスクリプトのパス。`steps.yaml` のあるフォルダからの相対パス'
         example: move-terms.mjs
@@ -89,6 +101,7 @@ tables:
         check: 拡張子が `.js` か `.mjs`（`schemas/mdmark.steps.schema.json` の pattern で縛る）
       - name: files
         title: 書き換えるもの
+        source: DATA-472-9#fields[files]
         type: array
         description: '`call` のスクリプトが書き換えうるもの。適用する前にコピーを取る対象になる'
         enum_values: "'config' / 'index' / 'documents'（設定の `build` の対象と索引の文書）"
@@ -96,6 +109,7 @@ tables:
         notes: '`call` で必須'
   - name: migrations/no-steps.yaml
     title: 手順なしの一覧
+    source: DATA-472-10#
     datastore: YAML
     summary: 設定・索引の JSON Schema を広げるだけで移行の手順が要らない変更の並び。最上位は `entries`（必須）だけを持ち、この表の行は `entries` の要素 1 つ
     primary_key: (version, schema)
@@ -107,6 +121,7 @@ tables:
     columns:
       - name: version
         title: バージョン
+        source: DATA-472-10#fields[version]
         type: string
         not_null: true
         check: '`next` か `^v\d+\.\d+\.\d+$`'
@@ -114,6 +129,7 @@ tables:
         example: next
       - name: schema
         title: Schema
+        source: DATA-472-10#fields[schema]
         type: string
         not_null: true
         description: 変えた JSON Schema のファイル名（`schemas/` の直下）
@@ -121,6 +137,7 @@ tables:
         example: mdmark.config.schema.json
       - name: sha256
         title: SHA-256
+        source: DATA-472-10#fields[sha256]
         type: string
         not_null: true
         check: 64 桁の小文字の 16 進数
@@ -128,6 +145,7 @@ tables:
         example: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
       - name: reason
         title: 理由
+        source: DATA-472-10#fields[reason]
         type: string
         not_null: true
         check: 空でない

@@ -1,0 +1,63 @@
+id: DATA-472-5
+visibility: internal
+title: 'データ: 配置の上書き'
+lead: ノード・グループ・線の ID ごとの配置と見た目の上書き（キーが ID）。
+datastore: JSON
+fields:
+- key: align
+  title: 揃える相手
+  type: string
+  description: 同じ段に置く相手の ID
+  example: marker
+- key: order
+  title: 並び順
+  type: int
+  description: 段の中の並び順（小さいほど先）
+  example: '1'
+- key: pos
+  title: 座標
+  type: object
+  description: 親の中身の左上からの座標で固定する（`{ x, y }`）
+  example: '{"x": 0, "y": 120}'
+- key: width
+  title: 幅
+  type: int
+  description: ノードの幅（px）
+  example: '260'
+- key: color
+  title: 色
+  type: string
+  description: グループ・ノード・線の色の名前
+  example: blue
+- key: line
+  title: 線の種類の名前
+  type: string
+  description: 線の ID のときだけ。設定の `map.lines` の名前
+  example: back
+- key: packet
+  title: データの印
+  type: object
+  description: 線の ID のときだけ。データの印の色と形状（`{ color, shape }`。`shape` は `circle`・`square`・`diamond`）
+  example: '{"color": "orange", "shape": "square"}'
+- key: justify
+  title: 寄せる
+  type: string
+  description: ノード・グループの ID のときだけ。段が親の中身より短いときに、段の中で寄せる側（`start` は左か上、`end` は右か下）
+  example: start
+- key: ends
+  title: 線の端の辺
+  type: object
+  description: '線の ID のときだけ。元の端（`from`）と先の端（`to`）をつなぐノードの辺（`{ "from": { "side": … }, "to": { "side": … } }`。`side` は `top`・`right`・`bottom`・`left`）。無い端は自動で決める'
+  example: '{"from": {"side": "bottom"}, "to": {"side": "top"}}'
+- key: via
+  title: 経由点
+  type: array
+  description: 線の ID のときだけ。線が順に通る点（`{ "x", "y" }`）。両端のノードの共通の祖先のグループ（無ければ図の全体）の中身の左上からの座標
+  example: '[{"x": 240, "y": 80}]'
+- key: collapsed
+  title: 最初に閉じる
+  type: bool
+  description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界）の ID と、ER 図のテーブル名・クラス図のクラス名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを閉じて描く
+  example: 'true'
+refs:
+- ER-472-2#tables[layout]

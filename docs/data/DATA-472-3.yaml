@@ -1,0 +1,25 @@
+id: DATA-472-3
+visibility: internal
+title: 'データ: 分類'
+lead: ER 図だけが持つ。テーブルをまとめる分類の箱 1 つ（キーが分類の ID）。
+datastore: JSON
+fields:
+- key: title
+  title: タイトル
+  type: string
+  description: 分類の箱のタイトル
+  required: true
+  example: 記録
+- key: tables
+  title: テーブル
+  type: array
+  description: 箱に入れるテーブル名。1 つのテーブルは 1 つの分類にだけ入る
+  required: true
+  example: '["注文", "明細", "支払い"]'
+- key: parent
+  title: 親の分類
+  type: string
+  description: 入れ子にするときの外の分類の ID
+  example: 業務
+refs:
+- ER-472-2#tables[groups]

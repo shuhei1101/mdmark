@@ -34,6 +34,7 @@ er:
 tables:
   - name: map_data
     title: 補足
+    source: DATA-472-2#
     summary: map の範囲 1 つの補足
     datastore: JSON
     access: 全件
@@ -41,6 +42,7 @@ tables:
     columns:
       - name: version
         title: バージョン
+        source: DATA-472-2#fields[version]
         type: integer
         not_null: true
         check: '`1`'
@@ -48,6 +50,7 @@ tables:
         example: '1'
       - name: notes
         title: 説明
+        source: DATA-472-2#fields[notes]
         type: object
         default: '`{}`'
         description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを当てたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
@@ -55,12 +58,14 @@ tables:
         notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`、クラス図はクラス名・`{クラス名}.{メンバー名}`・`namespace` の ID・関係の記載順の `r{番号}`、アーキテクチャ図は service・group・junction の ID・線の記載順の `r{番号}`、C4 図は要素・境界の別名・関係の記載順の `r{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`。`annotations` の定義の無い注記の ID は `annotation_undefined`
       - name: plays_over
         title: 再生を重ねる構成図
+        source: DATA-472-2#fields[plays_over]
         type: integer
         description: シーケンス図の補足だけが持つ。再生の強調を重ねる構成図の図の番号
         example: '1'
         notes: 無い番号は `map_unknown_ref`
   - name: groups
     title: 分類
+    source: DATA-472-3#
     summary: ER 図だけが持つ。テーブルをまとめる分類の箱 1 つ（キーが分類の ID）
     datastore: JSON
     access: 全件
@@ -68,12 +73,14 @@ tables:
     columns:
       - name: title
         title: タイトル
+        source: DATA-472-3#fields[title]
         type: string
         not_null: true
         description: 分類の箱のタイトル
         example: 記録
       - name: tables
         title: テーブル
+        source: DATA-472-3#fields[tables]
         type: array
         not_null: true
         description: 箱に入れるテーブル名。1 つのテーブルは 1 つの分類にだけ入る
@@ -81,12 +88,14 @@ tables:
         notes: 無いテーブル名は `map_unknown_ref`、2 つの分類に入るテーブルと、テーブル名と同じ分類の ID は `map_invalid_value`
       - name: parent
         title: 親の分類
+        source: DATA-472-3#fields[parent]
         type: string
         description: 入れ子にするときの外の分類の ID
         example: 業務
         notes: 無い ID と循環は `map_unknown_ref`
   - name: walkthroughs
     title: 案内の手順
+    source: DATA-472-4#
     summary: 構成図の案内の 1 手順
     datastore: JSON
     access: 全件
@@ -94,17 +103,20 @@ tables:
     columns:
       - name: title
         title: タイトル
+        source: DATA-472-4#fields[title]
         type: string
         description: 帯のタイトル
         example: 記法を読む
       - name: text
         title: 説明
+        source: DATA-472-4#fields[text]
         type: string
         not_null: true
         description: 帯の説明の文（改行はそのまま）
         example: map のマーカーを読み、範囲を 1 つの図にする
       - name: nodes
         title: 強調するノード
+        source: DATA-472-4#fields[nodes]
         type: array
         default: '`[]`'
         description: 強調するノードの ID
@@ -113,17 +125,20 @@ tables:
           table: Mermaid のノードの ID
       - name: edges
         title: データの印を流す線
+        source: DATA-472-4#fields[edges]
         type: array
         default: 強調するノードどうしの線
         description: データの印を流す線の ID
         example: '["e1"]'
       - name: enter
         title: 中へ入るグループ
+        source: DATA-472-4#fields[enter]
         type: string
         description: その手順で中へ入るグループの ID
         example: place
   - name: layout
     title: 配置の上書き
+    source: DATA-472-5#
     summary: ノード・グループ・線の ID ごとの配置と見た目の上書き（キーが ID）
     datastore: JSON
     access: 全件
@@ -131,43 +146,51 @@ tables:
     columns:
       - name: align
         title: 揃える相手
+        source: DATA-472-5#fields[align]
         type: string
         description: 同じ段に置く相手の ID
         example: marker
       - name: order
         title: 並び順
+        source: DATA-472-5#fields[order]
         type: integer
         description: 段の中の並び順（小さいほど先）
         example: '1'
       - name: pos
         title: 座標
+        source: DATA-472-5#fields[pos]
         type: object
         description: 親の中身の左上からの座標で固定する（`{ x, y }`）
         example: '{"x": 0, "y": 120}'
       - name: width
         title: 幅
+        source: DATA-472-5#fields[width]
         type: integer
         description: ノードの幅（px）
         example: '260'
       - name: color
         title: 色
+        source: DATA-472-5#fields[color]
         type: string
         description: グループ・ノード・線の色の名前
         example: blue
         notes: 知らない名前は `map_invalid_value`
       - name: line
         title: 線の種類の名前
+        source: DATA-472-5#fields[line]
         type: string
         description: 線の ID のときだけ。設定の `map.lines` の名前
         example: back
         notes: '`map.lines` に無い名前は `map_unknown_line`'
       - name: packet
         title: データの印
+        source: DATA-472-5#fields[packet]
         type: object
         description: 線の ID のときだけ。データの印の色と形状（`{ color, shape }`。`shape` は `circle`・`square`・`diamond`）
         example: '{"color": "orange", "shape": "square"}'
       - name: justify
         title: 寄せる
+        source: DATA-472-5#fields[justify]
         type: string
         check: '`start`・`center`・`end`'
         default: '`center`'
@@ -175,16 +198,19 @@ tables:
         example: start
       - name: ends
         title: 線の端の辺
+        source: DATA-472-5#fields[ends]
         type: object
         description: '線の ID のときだけ。元の端（`from`）と先の端（`to`）をつなぐノードの辺（`{ "from": { "side": … }, "to": { "side": … } }`。`side` は `top`・`right`・`bottom`・`left`）。無い端は自動で決める'
         example: '{"from": {"side": "bottom"}, "to": {"side": "top"}}'
       - name: via
         title: 経由点
+        source: DATA-472-5#fields[via]
         type: array
         description: 線の ID のときだけ。線が順に通る点（`{ "x", "y" }`）。両端のノードの共通の祖先のグループ（無ければ図の全体）の中身の左上からの座標
         example: '[{"x": 240, "y": 80}]'
       - name: collapsed
         title: 最初に閉じる
+        source: DATA-472-5#fields[collapsed]
         type: boolean
         default: '`false`'
         description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界）の ID と、ER 図のテーブル名・クラス図のクラス名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを閉じて描く

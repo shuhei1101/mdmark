@@ -94,15 +94,16 @@ exclude:
   - architecture/
   - component/
   - config/
+  - data/
   - design-policy.md
   - dev-command/
   - er/
   - external-api/
   - interface/
+  - layout/
   - library/
   - module/
   - nonfunctional/
-  - rules.yaml
   - scenario/
   - screen/
   - test-procedure/

@@ -1,0 +1,3 @@
+dev-docs.yaml に schema.ref を持つ er の行がありません
+前提確認: failed
+exit=1

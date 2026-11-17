@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: preview-head.html
     description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画のインターフェースの CSS を読み込む link」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。

@@ -1,0 +1,48 @@
+id: DATA-472-11
+visibility: internal
+title: 'データ: 文書'
+lead: 索引に記載した文書 1 つのメタデータ。
+datastore: YAML
+fields:
+- key: id
+  title: ID
+  type: string
+  description: 文書の ID。索引の `docs` の中で一意
+  required: true
+  example: arch
+  unique: 全体
+- key: path
+  title: パス
+  type: string
+  description: 文書のパス。索引のファイルからの相対パス
+  required: true
+  example: 設計/arch.md
+  unique: 全体
+- key: title
+  title: タイトル
+  type: string
+  description: 文書のタイトル。関連文書のリンクの文字に出す
+  required: true
+  example: アーキテクチャ
+- key: description
+  title: 概要
+  type: string
+  description: 1 文の概要。ツールチップの関連文書に出す
+  example: 全体の構成と依存の向き
+- key: aliases
+  title: 別名
+  type: array
+  description: 本文での呼び名。本文に出たら、その単語のツールチップの関連文書にこの文書を出し、被参照にも数える
+  example: '[構成図]'
+- key: tags
+  title: タグ
+  type: array
+  description: タグ。要素はタグの名前の文字列か、`name`（必須・空でない文字列）と `main`（主題のタグか。任意・既定 `false`）を持つオブジェクト
+  example: '[設計, {name: topic:mcp, main: true}]'
+- key: related
+  title: 関連する文書
+  type: array
+  description: この文書から他の文書への関連。要素は `to`（相手の文書の `id`・必須）・`type`（`requires` / `references` / `replaces` / `part_of` / `change_together`・必須）・`when`（いつ読み込むかの 1 文・必須・空にできない）・`paths`（関連が該当するファイルの glob の並び・任意）を持ち、他のキーを持たないオブジェクト。件数の上限は配置しない。`to` をこの文書からその文書への参照として数える
+  example: '[{to: arch, type: requires, when: 公開関数の前提の構成を確認するとき}]'
+refs:
+- ER-472-6#tables[docs]

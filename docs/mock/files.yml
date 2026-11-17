@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: assets/style.css
     description: 'モック『assets』の外観: 採用スタイル（開発者ツール × スイス）の変数の値: mindstella の本文（13px）より 1 段大きい 14px の文字と、mindstella と同じ行間・角丸。このモックの外観を変えるときに参照する。'

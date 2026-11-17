@@ -1,0 +1,32 @@
+id: DATA-472-10
+visibility: internal
+title: 'データ: 手順なしの一覧'
+lead: 設定・索引の JSON Schema を広げるだけで移行の手順が要らない変更の並び。最上位は `entries`（必須）だけを持ち、この表の行は `entries` の要素 1 つ。
+datastore: YAML
+fields:
+- key: version
+  title: バージョン
+  type: string
+  description: その変更を出すバージョン。出していないバージョンは `next` と記載し、release で `migrations/next/` を移す commit で `v{バージョン}` に書き換える
+  required: true
+  example: next
+- key: schema
+  title: Schema
+  type: string
+  description: 変えた JSON Schema のファイル名（`schemas/` の直下）
+  required: true
+  example: mdmark.config.schema.json
+- key: sha256
+  title: SHA-256
+  type: string
+  description: 変えた後の Schema のファイルの SHA-256。ビルドの時点の Schema と合わなければ、その行は無いものとして扱う（記載した後に Schema を又変えた変更を経由しない）
+  required: true
+  example: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+- key: reason
+  title: 理由
+  type: string
+  description: 手順が要らない理由。広げたキーと、古い設定・索引がそのまま新しい Schema に合うこと
+  required: true
+  example: 省いてよい `version` を追加しただけで、古い設定も合う
+refs:
+- ER-472-5#tables[migrations/no-steps.yaml]

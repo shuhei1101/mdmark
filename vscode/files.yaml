@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: .vscodeignore
     description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「.vsix に入れないもの（src/・tests/・scripts/・out/・node_modules/）」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに参照する。

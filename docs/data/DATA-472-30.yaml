@@ -1,0 +1,13 @@
+id: DATA-472-30
+visibility: internal
+title: 'データ: セクションの開閉'
+lead: セクションの開閉のマーカー 1 つの設定。
+datastore: JSON
+fields:
+- key: open
+  title: セクションを開いた状態で始めるか
+  type: bool
+  description: セクションを開いた状態で始めるか。省くと `true`
+  example: 'false'
+refs:
+- ER-477-7#tables[section]

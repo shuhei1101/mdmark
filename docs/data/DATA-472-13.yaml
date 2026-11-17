@@ -1,0 +1,23 @@
+id: DATA-472-13
+visibility: internal
+title: 'データ: 折り畳み'
+lead: 表・タブ・ステップの範囲を入れる折り畳み。
+datastore: JSON
+fields:
+- key: collapse
+  title: 範囲を折り畳みに入れる
+  type: object
+  description: 範囲を折り畳みに入れる。省くと折り畳まない。表・タブ・ステップで使用する
+  example: '{"open": false}'
+- key: collapse.open
+  title: 描いた直後に開くか
+  type: bool
+  description: 描いた直後に開くか。省くと `false`
+  example: 'true'
+- key: collapse.title
+  title: 折り畳みの見出し
+  type: string
+  description: 折り畳みの見出し。省くとマーカーごとの既定の見出し
+  example: 引数の一覧
+refs:
+- ER-477-1#tables[collapse]

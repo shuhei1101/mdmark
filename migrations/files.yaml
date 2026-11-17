@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: no-steps.yaml
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「移行の手順が要らないスキーマの変更の一覧」を受け持つ。mdmark upgrade の移行の流れを変えるときに参照する。

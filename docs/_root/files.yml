@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: ../_theme/_includes/sidebar-source.html
     visibility: public
@@ -20,7 +20,7 @@ files:
     visibility: public
     description: 公開ドキュメントのサイトの全ページで読み込む共通の外観。サイトの外観を変えるときに参照する。
     tags: [topic:スタイル, tool:css]
-  - path: ../rules.yaml
+  - path: ../../rules.yaml
     visibility: internal
     description: 公開ドキュメントに適用する rule-inject のルールの設定（適用する契機と、ルールの一覧）。公開ドキュメントを記載するときに案内するルールを変えるときに参照する。
     tags: [topic:ルール, tool:rule-inject]

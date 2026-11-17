@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: workflows/vscode-release.yml
     description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「vscode-v* のタグで .vsix を作り Release に添える」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに参照する。
