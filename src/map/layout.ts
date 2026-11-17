@@ -1767,8 +1767,12 @@ const keepEnd = (
   // 端点を含む区間が伸びる向き（0 は横、1 は縦）と、端点から離れる向き
   const axis = end[1] === next[1] ? 0 : 1;
   const sign = Math.sign(next[axis] - end[axis]) || 1;
+  // 区間が clearance 以下の長さなら、区間の中ほどで折る
+  const length = Math.abs(next[axis] - end[axis]);
+  const step =
+    length > MAP_LAYOUT.clearance ? MAP_LAYOUT.clearance : length / 2;
   const bend: [number, number] = [end[0], end[1]];
-  bend[axis] += sign * MAP_LAYOUT.clearance;
+  bend[axis] += sign * step;
   const shifted: [number, number] = [moved[0], moved[1]];
   shifted[axis] = bend[axis];
   return [[end[0], end[1]], bend, shifted, ...points.slice(1)];
