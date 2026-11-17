@@ -3,10 +3,6 @@ docs:
     new: false
     change: 層ごとに判定フローチャート『テストの実行場所』で決めた location を記載し、runner の層に run_runner を追加する
     status: todo
-  - page: project-index.yaml
-    new: false
-    change: テスト実行方法とインターフェース定義の Schema の参照を location・run_runner と workflow のインターフェース定義を持つバージョンにする（範囲は要件.md の未確定）
-    status: todo
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: 外部システム「GitHub Actions と GitHub Releases」の目的・プロトコルにテストを回す workflow を追加する
@@ -19,10 +15,4 @@ scope_out:
   - item: 全件実行のコマンドが未確定の層（非機能要件・E2E・結合（バック）・単体（バック）・外部疎通）の実行場所
     reason: 全件実行のコマンドが無く、テンプレートが実行場所を決めるまで記載しないとしている
     plan: none
-  - item: テスト実行方法とインターフェース定義以外の種類の Schema の参照のバージョン上げ
-    reason: 要望が求めるのは 2 つの種類の Schema の更新。含めるかはインターフェース定義設計のレビューで確定する（要件.md の未確定）
-    plan: to_file
-  - item: ランナーでの初回の実行と、ランナーと手元の skip の件数の照合
-    reason: workflow_dispatch は develop にある workflow だけを起動できるため、この作業 PR の中ではランナーで回せない。develop へ入った後の作業 PR で初回に照合する
-    plan: to_file
 use_cases: []
