@@ -303,12 +303,18 @@ suite("プレビューを再描画する", () => {
         "",
       ].join("\n");
     const node = '[data-diagram="map"] .mdmark-diagram-node[data-node="doc"]';
-    let before = renders(record).length;
+    // 最後に送信した render の store の形状
+    const lastShape = () =>
+      (
+        renders(record).at(-1)?.config.map as
+          | { kinds?: { store?: { shape?: string } } }
+          | undefined
+      )?.kinds?.store?.shape;
     // 実行
     await writeFixture("mdmark.config.yaml", config("rect"));
-    // 検証
-    await waitFor(() => renders(record).length > before, {
-      message: "再描画されない",
+    // 検証: 書き込んだ形状の render を待つ（書き込みの前後の余分な再描画を数えない）
+    await waitFor(() => lastShape() === "rect", {
+      message: "rect の render が送信されない",
     });
     assert.deepStrictEqual(renders(record).at(-1)?.config.map, {
       kinds: { store: { label: "保存先", icon: "database", shape: "rect" } },
@@ -326,17 +332,12 @@ suite("プレビューを再描画する", () => {
     );
     assert.ok(wire?.attributes["stroke-dasharray"]);
     // 実行: 知らない形状にする
-    before = renders(record).length;
     const sentBefore = record.sent.length;
     await writeFixture("mdmark.config.yaml", config("hexagon"));
     // 検証: その値のまま送り、設定の誤りを送らず、角の丸い四角で描く
-    await waitFor(() => renders(record).length > before, {
-      message: "再描画されない",
+    await waitFor(() => lastShape() === "hexagon", {
+      message: "hexagon の render が送信されない",
     });
-    const map = renders(record).at(-1)?.config.map as
-      | { kinds?: { store?: { shape?: string } } }
-      | undefined;
-    assert.strictEqual(map?.kinds?.store?.shape, "hexagon");
     assert.ok(
       !record.sent
         .slice(sentBefore)
