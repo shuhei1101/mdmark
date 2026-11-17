@@ -1,0 +1,26 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: none
+    detail: 記法の変換の設計書の置き場所が増えるだけで、文書を描く流れは変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-13.yaml
+    impact: none
+    detail: まとめた HTML の起動の設計書の置き場所が増えるだけで、文書を行き来する流れは変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: none
+    detail: 拡張機能の設計書の置き場所が増えるだけで、プレビューを開く流れは変わらない
+    depends_on: []
+docs:
+  - page: src/files.yaml
+    new: false
+    change: render/syntax/blocks.ts・render/syntax/tokens.ts・viewer/includes.ts・viewer/viewer.css の行の implements を、新しく作る物理ファイルごとのモジュール構成へ向ける（description の受け持ちも合わせる）
+    status: todo
+  - page: vscode/files.yaml
+    new: false
+    change: src/escape.ts・src/workspace.ts の行の implements を、新しく作る物理ファイルごとのモジュール構成へ向ける（description の受け持ちも合わせる）
+    status: todo
+scope_out: []
