@@ -3129,7 +3129,7 @@ request:
     location: argument
     default: なし（`id:` のリンク先を許可しないスキームとして扱う）
     description: '`id:` で始まるリンク先（`id:` を含む値）を受けて、開く URL を返す関数。本文のリンクの `href` に適用する（`mount` では map のノードのリンクにも適用する）'
-    constraints: 返った文字も制約「URL のスキーム」の許可で確認する。文字以外を返したときは URL を返さなかったものとして扱う
+    constraints: 返った文字も制約「URL のスキーム」の許可で確認する。文字以外を返したときと例外を投げたときは URL を返却しなかったものとして扱い（`href` を落とす）、描画を続ける
     notes: '確認ログ『map の flowchart の click の id: をどこで URL に変えるか』'
     example: (ref) => `https://docs.example.com/${ref.slice(3)}`
 response:
@@ -3187,7 +3187,7 @@ constraints:
       図の部品が定義から出した要素だけに、`svg` とその中の `defs`・`marker`・`pattern`・`g`・`path`・`rect`・`circle`・`ellipse`・`line`・`polyline`・`polygon`・`text`、`button`・`output`・`label`・`input type="range"`、属性の `role`・`hidden`・`tabindex`・`aria-describedby`・`aria-label`・`aria-labelledby`・`aria-hidden`・`type`・`min`・`max`・`step`・`value`・`for`・`abbr` の `title` と svg の描画の属性（`d`・`viewBox`・`marker-end`・塗りの模様の `patternUnits` など。一覧はモジュール構成設計）を許し、記法の class・`data-*` と同じ見分けで出力の全体を sanitize-html に経由する（記法のアイコンは CSS で付ける）'
     notes: docs/library/LIB-472-23
   - item: URL のスキーム
-    constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す。`id:` で始まる `href`（本文の `[名前](id:{ID}#{項目のパス})`）は、`opts.resolveIdLink` を指定したときだけ、`id:` を含む値を渡して返った文字に置き換え、置き換えた値を同じ許可で確認する。関数を指定しない・関数が文字を返さないときは、ほかの許さないスキームと同じく `href` を落とす（確認ログ『map の flowchart の click の id: をどこで URL に変えるか』）'
+    constraint: '`href`・`src` は `http`・`https`・`mailto` と相対 URL だけを残す。`id:` で始まる `href`（本文の `[名前](id:{ID}#{項目のパス})`）は、`opts.resolveIdLink` を指定したときだけ、`id:` を含む値を渡して返った文字に置き換え、置き換えた値を同じ許可で確認する。関数を指定しない・関数が文字を返さない・関数が例外を投げるときは、ほかの許さないスキームと同じく `href` を落とし、描画を続ける（確認ログ『map の flowchart の click の id: をどこで URL に変えるか』）'
   - item: 列の配置
     constraint: 表の列の配置は `text-align` の値（`left`・`center`・`right`）だけを class `mdmark-align-{値}` に移す
   - item: 表のセルの列名

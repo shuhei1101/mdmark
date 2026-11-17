@@ -9525,7 +9525,7 @@ flows:
       - タイムラインの閉じた section は「{名前}（期間 {数} 件）」の期間 1 つ分の幅の箱で、後ろの期間の左端が詰めた位置にある
       - ジャーニーの閉じた section は「{名前}（タスク {数} 件）」のマーカー 1 つで、高さが中のタスクの点数の平均で、前後のタスクのマーカーと線でつながる
       - 開閉のボタンは `aria-expanded` を持ち、名前が「{section の名前}を開く」「{section の名前}を閉じる」。section を持たない項目には開閉と中へ入るボタンが無い
-      - 中へ入ると、その section の項目だけが描かれ、図の上端のパンくずに「{図のタイトル} › {section の名前}」が出る。ガントチャートの日付の目盛りはその section の最初の開始日から最後の終了日まで、ジャーニーの点数の目盛りは 1〜5 のまま
+      - 中へ入ると、その section の項目だけが描かれ、図の上端のパンくずに「全体 › {section の名前}」が出る。ガントチャートの日付の目盛りはその section の最初の開始日から最後の終了日まで、ジャーニーの点数の目盛りは 1〜5 のまま
       - クエリ文字列に `map-1=s3` が入り、読み込み直した後も 2 つ目の「準備」の中から描かれる。同じ名前を持たない section のキーは section の名前
       - Esc・戻るボタンで全体の図に戻り、入る前と同じ配置になる。開くと閉じる前と同じ配置になる。全て開く・全て閉じるは今の図の全ての section に適用される
     test: test_normal_when_map_section_toggled
@@ -9561,7 +9561,7 @@ flows:
       - 閉じた「core」は「core（ブロック 2 件）」を出し、幅が閉じる前と同じで、高さがほかのブロック 1 行分
       - 閉じた後も「mdmark」・空き・「文書」・「キャッシュ」の左端の x 座標が閉じる前と同じ
       - 「描く」の線が閉じた「core」の縁につながる
-      - 中へ入ると「読み取り」「配置」だけが `columns 2` の格子で描かれ、パンくずに「ブロック図 › core」が出て、クエリ文字列に `map-1=core` が入る
+      - 中へ入ると「読み取り」「配置」だけが `columns 2` の格子で描かれ、パンくずに「全体 › core」が出て、クエリ文字列に `map-1=core` が入る
       - Esc で全体の図に戻り、開くと閉じる前と同じ配置になる。開閉のボタンは `aria-expanded` を持つ
     test: test_normal_when_map_block_toggled
     refs:
@@ -9699,7 +9699,7 @@ flows:
     expected:
       - 4 つの図の枠の下に、シーケンス図の再生と同じ帯があり、手順の数がガントチャート `–/8`・タイムライン `–/6`・Git グラフ `–/10`・ジャーニー `–/7` で、前へ・停止・自動で進める・次への 4 つのボタンがある
       - ガントチャートの手順 2 で「設計する」だけが残ってほかが薄くなり、帯の 1 行目にタスク名と開始日・終了日が出る
-      - Git グラフの自動で進めるで commit が記載順に 1 つずつ強調され、帯にブランチ名と commit の ID（`id:` を持たない commit は `msg:` の文字、どちらも持たない commit は「commit 6」）が出る。補足の説明を持つ commit では帯に説明の文が出る
+      - Git グラフの自動で進めるで commit が記載順に 1 つずつ強調され、帯の 1 行目に「{ブランチ名} · {commit のキー}」（`id:` を持たない commit は `msg:` の文字、どちらも持たない 6 個目の commit は「develop · c6」）が出る。補足の説明を持つ commit では帯に説明の文が出る
       - 強調する項目が閉じた section の中にあるときは、その section を強調する
       - 停止で強調が解除され、前へ・次へ・矢印キーの動きは構成図の案内と同じ
       - '`walkthroughs` を持つガントチャートの帯は案内の手順を進め、手順の数が `–/1` で、再生の手順を出さない'
@@ -9741,9 +9741,9 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系（map の構成図を描く）と同じ
       - name: 'id: のリンク先を持つ map の Markdown'
-        description: flowchart の map の範囲 1 つと段落 1 つを持つ文書。ノード `a` に `click a "id:SC-1#scenarios[正常シナリオ]"`、`b` に `click b href "id:SC-2"`、`c` に `click c "id:unknown"`、`d` に `click d "id:bad"` の行を持たせる。段落は `[仕様](id:SC-1)` のリンクを持つ
+        description: flowchart の map の範囲 1 つと段落 1 つを持つ文書。ノード `a` に `click a "id:SC-1#scenarios[正常シナリオ]"`、`b` に `click b href "id:SC-2"`、`c` に `click c "id:unknown"`、`d` に `click d "id:bad"`、`e` に `click e "id:boom"` の行を持たせる。段落は `[仕様](id:SC-1)` のリンクを持つ
       - name: 設定
-        description: '`opts.resolveIdLink` に、`SC-` で始まる参照を `https://docs.example.com/{参照}` に、`bad` を `javascript:alert(1)` に変え、ほかは `undefined` を返す関数'
+        description: '`opts.resolveIdLink` に、`id:SC-` で始まる値を `https://docs.example.com/{id: の後ろ}` に、`id:bad` を `javascript:alert(1)` に変え、`id:boom` では例外を投げ、ほかは `undefined` を返す関数'
       - name: Mock
         description: リンク先への遷移を手元の応答で受け、開いた URL を記録する
     flow: |-
@@ -9765,10 +9765,10 @@ flows:
 
       <!-- /map -->
     expected:
-      - '`resolveIdLink` が `SC-1#scenarios[正常シナリオ]`・`SC-2`・`unknown`・`bad`・`SC-1` を受け取り、参照は `id:` を除いた文字'
+      - '`resolveIdLink` が `id:SC-1#scenarios[正常シナリオ]`・`id:SC-2`・`id:unknown`・`id:bad`・`id:boom`・`id:SC-1` を受け取り、受け取る値は `id:` を含む'
       - ノード `a`・`b` がそれぞれ `href` が `https://docs.example.com/SC-1#scenarios[正常シナリオ]`・`https://docs.example.com/SC-2` のリンクの中にあり、`a` を押すとその URL が開く
       - 段落の `[仕様](id:SC-1)` の `href` が `https://docs.example.com/SC-1`
-      - ノード `c`・`d` はリンクの中に無く、図の場所の書き方の警告に `c` と `id:unknown`、`d` と `id:bad` が記載される
+      - ノード `c`・`d`・`e` はリンクの中に無く、図の場所の書き方の警告に `c` と `id:unknown`、`d` と `id:bad`、`e` と `id:boom` が記載される。例外を投げても図と段落は描かれる
       - リンクのノードの Tab でのフォーカス・Enter・ドラッグの動きは、正常系（リンク先を持つノードを開く）と同じ
     test: test_normal_when_map_node_id_link_resolved
     refs:
@@ -10119,7 +10119,7 @@ request:
     required: false
     location: argument
     default: なし（`id:` のリンク先を許可しないリンク先として扱う）
-    description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）にも適用する'
+    description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）にも適用する。例外を投げたときも URL を返却しなかったものとして扱い（本文のリンクは `href` を落とし、map のノードは書き方の警告にする）、描画を続ける'
     notes: '確認ログ『map の flowchart の click の id: をどこで URL に変えるか』'
     example: (ref) => `https://docs.example.com/${ref.slice(3)}`
 request_example: |-
@@ -11117,7 +11117,7 @@ constraints:
   - item: map のノードのリンク
     constraint: '構成図の Mermaid の `click {ID} "{リンク先}"` の行（`href` を省いた形と、`"{リンク先}" "{ツールチップ}"`・`_blank` などの後ろの値は読んで捨てる）を、そのノードのリンク先にする。
 
-      `id:` で始まるリンク先は `opts.resolveIdLink` が返した文字に置き換えてから（関数を指定しない・文字を返さないときは許さないリンク先として扱う）、リンク先を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{リンク先}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素に class `has-link` を付ける。
+      `id:` で始まるリンク先は `opts.resolveIdLink` が返した文字に置き換えてから（関数を指定しない・文字を返さない・例外を投げるときは許さないリンク先として扱い、描画を続ける）、リンク先を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{リンク先}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素に class `has-link` を付ける。
 
       説明のマーカーはリンクの中に入れず、リンクの後ろに配置する。
 
