@@ -224,12 +224,8 @@ scenarios:
     test: test_normal_when_state
   - name: 正常シナリオ（読めない行と知らないキーがある）
     setup:
-      - name: 図を描くページ
-        description: 正常シナリオと同じ
       - name: 書き方を誤った map の Markdown
-        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印の JSON のオブジェクトに知らないキーを 1 つ足したものと、正常シナリオ（クラス図）・正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）・正常シナリオ（マインドマップ）・正常シナリオ（ガントチャート）・正常シナリオ（タイムライン）・正常シナリオ（Git グラフ）・正常シナリオ（ジャーニー）・正常シナリオ（ブロック図）の文書の mermaid のブロックに、それぞれ読めない行を 1 行ずつ足したもの
-      - name: Mock
-        description: 正常シナリオと同じ
+        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印の JSON のオブジェクトに知らないキーを 1 つ足したものと、正常シナリオ（クラス図）・正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）・正常シナリオ（C4 のコンテナ図・コンポーネント図・動的図・配置図）・正常シナリオ（マインドマップ）・正常シナリオ（ガントチャート）・正常シナリオ（タイムライン）・正常シナリオ（Git グラフ）・正常シナリオ（ジャーニー）・正常シナリオ（ブロック図）の文書の mermaid のブロックに、それぞれ読めない行を 1 行ずつ足したもの
     flow: |-
       <!-- map -->
 
@@ -247,8 +243,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 図の枠の上に書き方の警告があり、読めない行と補足の知らないキーの 2 つを指す。印の知らないキーは警告に出さない（点検が通知する）
-      - 読めた部分のノードと線で図が描かれている。クラス図・アーキテクチャ図・C4 図・マインドマップ・ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の文書でも、図の枠の上に読めない行を指す書き方の警告があり、読めた部分の図が描かれている
-      - 図の後ろの本文が描かれている
+      - 読めた部分のノードと線で図が描かれている。クラス図・アーキテクチャ図・C4 図（C4Context と、コンテナ図・コンポーネント図・動的図・配置図）・マインドマップ・ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の文書でも、図の枠の上に読めない行を指す書き方の警告があり、読めた部分の図が描かれている
     test: test_normal_when_unreadable
   - name: 正常シナリオ（描かない図の種類）
     setup:
@@ -274,9 +269,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - '`pie` の範囲に、描かない図の種類である旨と、描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta`）の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
-      - mermaid のブロックが無い範囲に、mermaid のブロックが無い旨の書き方の警告がある
-      - どちらの範囲でも、補足の文字が出ていない
+      - '`pie` の範囲に、描かない図の種類である旨と、描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta`）の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
     test: test_normal_when_unsupported_kind
   - name: 正常シナリオ（印の引数で図を閉じておく）
     setup:
@@ -671,9 +664,7 @@ scenarios:
   - name: 正常シナリオ（アーキテクチャ図・C4 図の項目を選んで強調する）
     setup:
       - name: 図を描いたページ
-        description: 正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）の図を描いたページ
-      - name: Mock
-        description: 正常シナリオと同じ
+        description: 正常シナリオ（アーキテクチャ図）・正常シナリオ（C4 図）・正常シナリオ（C4 のコンテナ図・コンポーネント図・動的図・配置図）の図を描いたページ
     flow: |-
       <!-- map -->
 
@@ -689,7 +680,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 2 つの種類とも、項目の選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる
+      - どの図も、項目の選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる。C4 の配置図の配置先のノードは、構成図のグループと同じく選択の対象にしない
     test: test_normal_when_architecture_c4_selected
   - name: 正常シナリオ（マインドマップ）
     setup:
@@ -1155,6 +1146,40 @@ scenarios:
       - ブロックの選択・2 つの選択・線を押したときの選択・「配置と選択を元に戻す」と Esc の動きが、正常シナリオ（ノードを選んで強調する）の構成図と同じになる
       - 線を持たないブロックを選ぶと、そのブロックのほかが薄くなる
     test: test_normal_when_block_selected
+  - name: 正常シナリオ（C4 のコンテナ図・コンポーネント図・動的図・配置図）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: C4 の 4 種類の map を持つ Markdown
+        description: C4Container・C4Component・C4Dynamic・C4Deployment の mermaid のブロックを 1 つずつ、それぞれ補足とともに持つ map の範囲の文書
+        notes: C4Container は `Person`・`Container`・`ContainerDb`・`ContainerQueue`・`Container_Ext`・`System_Ext` と、それらを囲む `Container_Boundary` を持つ。C4Component は `Component`・`ComponentDb`・`ComponentQueue`・`Component_Ext` と `Container_Boundary` を持つ。C4Dynamic は番号を持たない `Rel` 3 本と `RelIndex` 1 本を持つ。C4Deployment は 3 レイヤーの入れ子の `Deployment_Node` と、`Node_L`・`Node_R` の中の `Container`・`ContainerDb` を持つ。どの図も 1 つの要素に技術と説明の引数を持ち、補足の `notes` で 1 つの要素に説明を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 4 種類の境界・配置先のノード・要素・関係を読み込む
+        M->>M: C4Context と同じく境界と配置先のノードの内側から配置する
+        M-->>P: 図の枠に入れた 4 つの C4 図
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - '4 つの図とも、要素が種類の行・名前・説明を持つ箱で描かれ、種類の行は技術の引数を持つ要素で `[Container: {技術}]`・`[Component: {技術}]` のように種類と技術を出す。`*Db` はデータベースのアイコン、`*Queue` は角の丸い横長の形、`_Ext` の要素は種類の行が `[External Container]` のように `External` を付けて灰色の面で描かれる（正常シナリオ（C4 図）と同じ描き分け）'
+      - '`Container_Boundary` が名前と種類のタイトルを持つ破線の枠で中の要素を囲む'
+      - C4Dynamic の関係の線のラベルの前に、記載の順の番号（`RelIndex` はその第 1 引数の番号）が出る
+      - C4Deployment の `Deployment_Node`・`Node`・`Node_L`・`Node_R` は、名前と種類の引数（`Ubuntu 22.04` など）をタイトルに持つ実線の枠で中の配置先のノードと要素を囲み、入れ子の配置先のノードは外の配置先のノードの中に描かれる。`Node_L`・`Node_R` は兄弟の配置先のノードの左・右に置かれる
+      - 要素と境界・配置先のノードが重ならず、関係の線が両端とその祖先以外を横切らない
+      - 説明を持つ要素にツールチップのマーカーがあり、フォーカスかポインターで補足の説明が出る。補足の `notes` のキー・`layout` の指定・ドラッグ・案内は、正常シナリオ（C4 図）と同じ規則で当たる
+      - mermaid のライブラリへの要求が 0 件
+    test: test_normal_when_c4_other_kinds
 tags:
   - name: topic:map
     main: true
