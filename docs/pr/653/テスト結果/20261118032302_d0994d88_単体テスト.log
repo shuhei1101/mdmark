@@ -1,0 +1,490 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links
+
+ ❯ |unit| tests/unit/src/map/structure.test.ts (11 tests | 1 failed) 175ms
+   × test_collect_map_structure_when_axis_grid 8ms
+ ❯ |unit| tests/unit/src/map/axis-grid-layout.test.ts (6 tests | 6 failed) 198ms
+   × test_layout_axis_grid_when_gantt 43ms
+   × test_layout_axis_grid_when_gantt_collapsed_entered 14ms
+   × test_layout_axis_grid_when_timeline 98ms
+   × test_layout_axis_grid_when_git_graph 11ms
+   × test_layout_axis_grid_when_journey 11ms
+   × test_layout_axis_grid_when_block 20ms
+ ❯ |unit| tests/unit/src/map/axis-grid.test.ts (8 tests | 8 failed) 252ms
+   × test_parse_axis_grid_when_gantt 38ms
+   × test_parse_axis_grid_when_timeline 15ms
+   × test_parse_axis_grid_when_git_graph 34ms
+   × test_parse_axis_grid_when_journey 56ms
+   × test_parse_axis_grid_when_block 23ms
+   × test_parse_axis_grid_when_first_word 7ms
+   × test_parse_axis_grid_when_unreadable 20ms
+   × test_axis_grid_item_of 52ms
+ ❯ |unit| tests/unit/src/render/sanitize.test.ts (24 tests | 1 failed) 212ms
+   × test_resolve_id_href 5ms
+ ❯ |unit| tests/unit/src/map/flowchart.test.ts (11 tests | 2 failed) 50ms
+   × test_map_link_problems 7ms
+   × test_map_link_problems_when_id_links 1ms
+ ❯ |unit| tests/unit/src/map/check.test.ts (23 tests | 2 failed) 2307ms
+   × test_collect_map_problems_when_axis_grid 15ms
+   × test_collect_map_problems_when_id_link 3ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (51 tests | 4 failed) 2813ms
+   × test_render_map_axis_grid 33ms
+   × test_render_map_axis_grid_when_collapsed 56ms
+   × test_render_map_axis_grid_when_entered 35ms
+   × test_render_map_axis_grid_when_selected 21ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts (11 tests | 2 failed) 1710ms
+   × test_attach_map_when_axis_grid 518ms
+   × test_attach_map_when_id_link 501ms
+ ❯ |unit| tests/unit/src/render/parser.test.ts (17 tests | 1 failed) 4561ms
+   × test_resolve_id_links 7ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts (5 tests | 5 failed) 4218ms
+   × test_attach_map_axis_grid 692ms
+   × test_attach_map_axis_grid_when_section_toggled 361ms
+   × test_attach_map_axis_grid_when_selected 395ms
+   × test_attach_map_axis_grid_when_layout 627ms
+   × test_attach_map_axis_grid_when_played 2142ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 32 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_gantt
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
+     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     21| }) {
+     22|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     23|   const { layoutAxisGrid } = await loadLayout();
+     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:45:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_gantt_collapsed_entered
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
+     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     21| }) {
+     22|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     23|   const { layoutAxisGrid } = await loadLayout();
+     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:66:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_timeline
+Error: Cannot find module '/src/map/axis-grid-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:90:32
+     88| test("test_layout_axis_grid_when_timeline", async () => {
+     89|   // 準備
+     90|   const { AXIS_GRID_LAYOUT } = await loadLayout();
+       |                                ^
+     91|   // 実行
+     92|   const open = await layOut({ kind: "timeline", source: TIMELINE });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_git_graph
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
+     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     21| }) {
+     22|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     23|   const { layoutAxisGrid } = await loadLayout();
+     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:117:36
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_journey
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
+ ❯ layOut tests/unit/src/map/axis-grid-layout.test.ts:22:29
+     20|   selected?: { kind: "item" | "branch" | "actor"; key: string };
+     21| }) {
+     22|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     23|   const { layoutAxisGrid } = await loadLayout();
+     24|   const grid = parseAxisGrid({ kind: options.kind, source: options.sou…
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:140:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid-layout.test.ts > test_layout_axis_grid_when_block
+Error: Cannot find module '/src/map/axis-grid-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid-layout.test.ts
+ ❯ tests/unit/src/map/axis-grid-layout.test.ts:167:32
+    165| test("test_layout_axis_grid_when_block", async () => {
+    166|   // 準備
+    167|   const { AXIS_GRID_LAYOUT } = await loadLayout();
+       |                                ^
+    168|   // 実行
+    169|   const open = await layOut({ kind: "block", source: BLOCK });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_gantt
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:17:29
+     15| test("test_parse_axis_grid_when_gantt", async () => {
+     16|   // 準備
+     17|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     18|   // 実行
+     19|   const grid = parseAxisGrid({ kind: "gantt", source: GANTT });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_timeline
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:47:29
+     45| test("test_parse_axis_grid_when_timeline", async () => {
+     46|   // 準備
+     47|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     48|   // 実行
+     49|   const grid = parseAxisGrid({ kind: "timeline", source: TIMELINE });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_git_graph
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:68:29
+     66| test("test_parse_axis_grid_when_git_graph", async () => {
+     67|   // 準備
+     68|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     69|   // 実行
+     70|   const grid = parseAxisGrid({ kind: "gitGraph", source: GIT_GRAPH });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_journey
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:90:29
+     88| test("test_parse_axis_grid_when_journey", async () => {
+     89|   // 準備
+     90|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+     91|   // 実行
+     92|   const grid = parseAxisGrid({ kind: "journey", source: JOURNEY });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_block
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:109:29
+    107| test("test_parse_axis_grid_when_block", async () => {
+    108|   // 準備
+    109|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+    110|   // 実行
+    111|   const grid = parseAxisGrid({ kind: "block", source: BLOCK });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_first_word
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:128:29
+    126| test("test_parse_axis_grid_when_first_word", async () => {
+    127|   // 準備
+    128|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+    129|   // 実行
+    130|   const block = parseAxisGrid({ kind: "block", source: BLOCK });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_unreadable
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:140:29
+    138| test("test_parse_axis_grid_when_unreadable", async () => {
+    139|   // 準備
+    140|   const { parseAxisGrid } = await loadAxisGrid();
+       |                             ^
+    141|   // 実行
+    142|   const grid = parseAxisGrid({ kind: "gantt", source: GANTT_UNREADABLE…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_axis_grid_item_of
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/map/axis-grid.test.ts
+ ❯ tests/unit/src/map/axis-grid.test.ts:154:45
+    152| test("test_axis_grid_item_of", async () => {
+    153|   // 準備
+    154|   const { parseAxisGrid, axisGridItemOf } = await loadAxisGrid();
+       |                                             ^
+    155|   const gantt = parseAxisGrid({ kind: "gantt", source: GANTT });
+    156|   const git = parseAxisGrid({ kind: "gitGraph", source: GIT_GRAPH });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_axis_grid
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/map/check.test.ts:503:19
+    501|     problems.filter((problem) => problem.kind === kind);
+    502|   const unknown = of("map_unknown_ref");
+    503|   expect(unknown).toHaveLength(2);
+       |                   ^
+    504|   expect(unknown[0]?.message).toContain("notes.幽霊");
+    505|   expect(unknown[1]?.message).toContain("layout.ghost");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_id_link
+AssertionError: expected [ 'map_invalid_value', …(1) ] to deeply equal [ 'map_invalid_value' ]
+
+- Expected
++ Received
+
+  [
+    "map_invalid_value",
++   "map_invalid_value",
+  ]
+
+ ❯ tests/unit/src/map/check.test.ts:530:50
+    528|   });
+    529|   // 検証
+    530|   expect(skipped.map((problem) => problem.kind)).toEqual(["map_invalid…
+       |                                                  ^
+    531|   expect(skipped[0]?.message).toContain("C");
+    532|   expect(resolved.map((problem) => problem.kind)).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_map_link_problems
+AssertionError: expected { links: { …(5) }, idLinks: { …(2) } } to deeply equal { a: 'https://example.com/spec', …(2) }
+
+- Expected
++ Received
+
+  {
++   "idLinks": {
++     "mode": "resolve",
++     "resolveIdLink": undefined,
++   },
++   "links": {
+      "a": "https://example.com/spec",
+      "b": "./other.md",
+      "c": "mailto:a@example.com",
++     "d": "javascript:alert(1)",
++     "e": "id:spec#items",
++   },
+  }
+
+ ❯ tests/unit/src/map/flowchart.test.ts:183:26
+    181|   });
+    182|   // 検証
+    183|   expect(result.allowed).toEqual({
+       |                          ^
+    184|     a: "https://example.com/spec",
+    185|     b: "./other.md",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_map_link_problems_when_id_links
+AssertionError: expected { links: { a: 'id:SC-1', …(1) }, …(1) } to deeply equal { a: 'https://docs.example.com/SC-1' }
+
+- Expected
++ Received
+
+  {
+-   "a": "https://docs.example.com/SC-1",
++   "idLinks": {
++     "mode": "resolve",
++     "resolveIdLink": [Function resolveIdLink],
++   },
++   "links": {
++     "a": "id:SC-1",
++     "b": "id:unknown",
++   },
+  }
+
+ ❯ tests/unit/src/map/flowchart.test.ts:220:28
+    218|   const skipped = mapLinkProblems({ links, idLinks: { mode: "skip" } }…
+    219|   // 検証
+    220|   expect(resolved.allowed).toEqual({ a: "https://docs.example.com/SC-1…
+       |                            ^
+    221|   expect(resolved.problems).toHaveLength(1);
+    222|   expect(resolved.problems[0]?.message).toContain("b: id:unknown");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/32]⎯
+
+ FAIL  |unit| tests/unit/src/map/structure.test.ts > test_collect_map_structure_when_axis_grid
+AssertionError: expected [ { kind: 'map_invalid', …(1) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "message": "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`mindmap` です。`gantt` の図はコードブロックのまま表示しています。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/structure.test.ts:194:57
+    192|   );
+    193|   // 検証
+    194|   for (const result of results) expect(result.problems).toEqual([]);
+       |                                                         ^
+    195|   expect(results.map((result) => result.kind)).toEqual([
+    196|     "gantt",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/32]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_axis_grid
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/parts/map.test.ts
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/32]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_axis_grid_when_collapsed
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/parts/map.test.ts
+ ❯ axisGridArgs tests/unit/src/parts/map.test.ts:1670:29
+    1668| ) {
+    1669|   const samples = await import("../../helpers/map.ts");
+    1670|   const { parseAxisGrid } = await import("../../../../src/map/axis-gri…
+       |                             ^
+    1671|   const { layoutAxisGrid } = await import(
+    1672|     "../../../../src/map/axis-grid-layout.ts"
+ ❯ tests/unit/src/parts/map.test.ts:1744:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/32]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_axis_grid_when_entered
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/parts/map.test.ts
+ ❯ axisGridArgs tests/unit/src/parts/map.test.ts:1670:29
+    1668| ) {
+    1669|   const samples = await import("../../helpers/map.ts");
+    1670|   const { parseAxisGrid } = await import("../../../../src/map/axis-gri…
+       |                             ^
+    1671|   const { layoutAxisGrid } = await import(
+    1672|     "../../../../src/map/axis-grid-layout.ts"
+ ❯ tests/unit/src/parts/map.test.ts:1766:34
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/32]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_axis_grid_when_selected
+Error: Cannot find module '/src/map/axis-grid.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/tests/unit/src/parts/map.test.ts
+ ❯ axisGridArgs tests/unit/src/parts/map.test.ts:1670:29
+    1668| ) {
+    1669|   const samples = await import("../../helpers/map.ts");
+    1670|   const { parseAxisGrid } = await import("../../../../src/map/axis-gri…
+       |                             ^
+    1671|   const { layoutAxisGrid } = await import(
+    1672|     "../../../../src/map/axis-grid-layout.ts"
+ ❯ tests/unit/src/parts/map.test.ts:1781:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/32]⎯
+
+ FAIL  |unit| tests/unit/src/render/parser.test.ts > test_resolve_id_links
+AssertionError: expected '<a>' to contain 'href="https://docs.example.com/SC-1"'
+
+Expected: "href="https://docs.example.com/SC-1""
+Received: "<a>"
+
+ ❯ tests/unit/src/render/parser.test.ts:287:22
+    285|   const anchors = html.match(/<a\b[^>]*>/g) ?? [];
+    286|   expect(anchors).toHaveLength(2);
+    287|   expect(anchors[0]).toContain('href="https://docs.example.com/SC-1"');
+       |                      ^
+    288|   expect(anchors[1]).not.toContain("href=");
+    289| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/32]⎯
+
+ FAIL  |unit| tests/unit/src/render/sanitize.test.ts > test_resolve_id_href
+TypeError: resolveIdHref is not a function
+ ❯ tests/unit/src/render/sanitize.test.ts:486:19
+    484|     "id:boom",
+    485|     "id:unknown",
+    486|   ].map((href) => resolveIdHref({ href, resolveIdLink }));
+       |                   ^
+    487|   const withoutFunction = resolveIdHref({
+    488|     href: "id:SC-1",
+ ❯ tests/unit/src/render/sanitize.test.ts:486:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/32]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid_when_section_toggled
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid_when_selected
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid_when_layout
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/axis-grid-view.browser.test.ts > test_attach_map_axis_grid_when_played
+TypeError: Failed to fetch dynamically imported module: http://localhost:63315/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/map/axis-grid-view.ts?import
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/axis-grid-view.browser.test.ts/test_attach_map_axis_grid.png
+  - .vitest/attachments/failure-screenshots/axis-grid-view.browser.test.ts/test_attach_map_axis_grid_when_section_toggled.png
+  - .vitest/attachments/failure-screenshots/axis-grid-view.browser.test.ts/test_attach_map_axis_grid_when_selected.png
+  - .vitest/attachments/failure-screenshots/axis-grid-view.browser.test.ts/test_attach_map_axis_grid_when_layout.png
+  - .vitest/attachments/failure-screenshots/axis-grid-view.browser.test.ts/test_attach_map_axis_grid_when_played.png
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/32]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_axis_grid
+AssertionError: expected [] to have a length of 5 but got +0
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_axis_grid.png
+
+- Expected
++ Received
+
+- 5
++ 0
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=e46747da:2635:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=e46747da:2435:14
+ ❯ tests/unit/src/map/index.browser.test.ts:239:19
+    237|     ),
+    238|   ];
+    239|   expect(figures).toHaveLength(5);
+       |                   ^
+    240|   expect(
+    241|     figures.map(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=e46747da:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/32]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_id_link
+AssertionError: expected undefined to be 'https://docs.example.com/SC-1' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_id_link.png
+
+- Expected:
+"https://docs.example.com/SC-1"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/index.browser.test.ts:279:5
+    277|       .querySelector('[data-node="A"] a.mdmark-diagram-node-link')
+    278|       ?.getAttribute("href"),
+    279|   ).toBe("https://docs.example.com/SC-1");
+       |     ^
+    280|   expect(
+    281|     root.querySelector('[data-node="B"] a.mdmark-diagram-node-link'),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=e46747da:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/32]⎯
+
+
+ Test Files  10 failed | 296 passed (306)
+      Tests  32 failed | 2327 passed (2359)
+   Start at  03:22:15
+   Duration  28.89s (worker 82%, tests 12%, import 6%, transform 1%)
+
+exit=1
