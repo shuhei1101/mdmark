@@ -35,7 +35,7 @@ constraints:
     notes: テスト実行方法の層の `run_all`・`run_one` と同じコマンド
   - item: 結合テストの道具
     constraint: '`integration` のときだけ、apt で `tmux`・`xvfb` を入れ、`loginctl enable-linger` で systemd のユーザーのマネージャーを起動して、`XDG_RUNTIME_DIR` を後の step の環境変数に指定する'
-    notes: '`tmux`・`systemctl --user` が無いと、Claude Code プラグインの結合テストが skip になる'
+    notes: '`tmux`・`systemctl --user` が無いと、Claude Code プラグインの結合テストが skip になる。bus のソケットを 1 秒ごとに確認し、10 秒でできなければ失敗で終える（ランナーの実測は待たずにソケットがあり、1 秒の刻みで 1 回未満。その 10 倍）'
   - item: 同時に実行するファイルの数
     constraint: Vitest の設定のまま（CPU 数の半分）
     notes: ランナーの 4 コアで 2
