@@ -1,0 +1,1 @@
+# VS Code 拡張機能の結合テスト test_normal_when_map_configured・test_normal_when_version_pinned を、確認する描画・要求が揃うまで待つように修正する
