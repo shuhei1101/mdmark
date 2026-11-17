@@ -8132,7 +8132,7 @@ flows:
     expected:
       - 中へ入ると、そのグループの中のノードだけが配置し直され、外のノードは薄く（`map-faded`）残り、入っているグループのタイトルがボタンでない文字になり、戻るボタンが押せる
       - 中へ入ると、クエリ文字列に `map-1=read` が入り、`history.length` が増えない。戻るボタンで全体に戻ると値が `lib` になり、もう一度戻るとキーが消える
-      - 閉じたグループが、左上に開くボタンを持つ 1 つのノードになり、名前の行の下に「ノード 3 件」の行があって 2 つの行の矩形が重ならず、同じグループどうしの線が 1 本にまとまり、本数とラベルを出さない
+      - 閉じたグループが、左上に開くボタンを持つ 1 つのノードになり、名前の行の下に「ノード 2 件」の行があって 2 つの行の矩形が重ならず、同じグループどうしの線が 1 本にまとまり、本数とラベルを出さない
       - Shift を押しながら山形を押すと、そのグループと中のグループが全て開閉する
       - もう一度 mount した後も、閉じた状態で描かれる。`map-1=read` を付けた URL で sessionStorage を空にして mount すると「記法の読み取り」の中から描かれ、無いグループの ID は無視される
       - 全て開く・全て閉じるで、中のグループが全て開く・閉じる。操作しても図の倍率と表示する枠の高さが変わらない
@@ -8924,8 +8924,8 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系（map の構成図を描く）と同じ
       - name: アーキテクチャ図の map を持つ Markdown
-        description: 'モック `docs/mock/refs/596/assets/samples.js` の `ARCH` と `ARCH_DATA` を、印 `{"title": "配置の構成"}` の map の範囲に記載した文書'
-        notes: 'group 2 つ（「アプリ」は「クラウド」の中）・service 6 つ（アイコン `cloud`・`database`・`disk`・`internet`・`server`）・junction 1 つ・線 6 本（`-->` 2 本・`--` 4 本。`api:B -- T:worker` と `hub:B -- T:files` は上下の辺。`api{group}:R -- L:hub` は「アプリ」の枠の右の辺から出る）。「アプリ」の 2 つの service から、「アプリ」の外の service へ 1 本ずつ出る線を持つ。補足の `layout` は service `web` の座標 `{x: 0, y: 120}` と、線 `r2`（`cdn:R --> L:api`）の `ends.to.side` `top`'
+        description: 'モック `docs/mock/refs/596/assets/samples.js` の `ARCH` に「アプリ」の外へ出る線 2 本を足した記法と `ARCH_DATA` を、印 `{"title": "配置の構成"}` の map の範囲に記載した文書'
+        notes: 'group 2 つ（「アプリ」は「クラウド」の中）・service 6 つ（アイコン `cloud`・`database`・`disk`・`internet`・`server`）・junction 1 つ・線 8 本（`-->` 2 本・`--` 6 本。`api:B -- T:worker` と `hub:B -- T:files` は上下の辺。`api{group}:R -- L:hub` は「アプリ」の枠の右の辺から出る）。`api:R -- L:files` と `worker:R -- L:files` の 2 本で、「アプリ」の 2 つの service から「アプリ」の外の service へ 1 本ずつ出る線を持つ。補足の `layout` は service `web` の座標 `{x: 0, y: 120}` と、線 `r2`（`cdn:R --> L:api`）の `ends.to.side` `top`'
       - name: Mock
         description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
     flow: |-
@@ -8947,7 +8947,7 @@ flows:
       - service のノードが 5 種類のアイコンをそれぞれ持ち、group のタイトルがアイコンと名前を持ち、「アプリ」は「クラウド」の中にある
       - junction のノードが 16px の点で、名前と種類の行を出さない
       - どの線も、元の端が指定の辺の中ほど、先の端が指定の辺の中ほどにある。「API サーバー」の下に「ジョブ」、junction の下に「ファイル置き場」、junction の右の段に「データベース」がある。「アプリ」の 2 つの service から出る線は、同じ向きの区間が同じ直線の上で重ならない
-      - '`-->` の 2 本だけが矢じりを持ち、`--` の 4 本は矢じりを持たない'
+      - '`-->` の 2 本だけが矢じりを持ち、`--` の 6 本は矢じりを持たない'
       - 'service `api` と線 `r3` の説明は、構成図のノード・線の説明と同じツールチップで出る。`api{group}:R -- L:hub` の線は「アプリ」の枠の右の辺の中ほどから出る。service `web` は図の中身の `{x: 0, y: 120}` に描かれ、`layout` の `ends` を持つ線 `r2` は Mermaid の辺の指定（`L`）に代えて「API サーバー」の上の辺の中ほどへ入る。service をドラッグすると構成図のノードと同じ規則で動き、線は辺の指定のまま引き直される'
     test: test_normal_when_map_architecture_drawn
   - name: 正常系（map の C4 図を描く）
