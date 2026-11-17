@@ -277,7 +277,7 @@ functions:
     container: src/render/parser.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`link_open` の `href` が `id:` で始まるものを `resolveIdHref`（`env.resolveIdLink`）で URL に置き換える。`undefined` のときはそのままにし、`sanitize` がほかの許可しないスキームと同じく `href` を落とす
+    summary: コアルール。`link_open` の `href` が `id:` で始まるものを markdown-it の URL エンコードを `normalizeLinkText` で戻してから `resolveIdHref`（`env.resolveIdLink`）で URL に置き換える。`undefined` のときはそのままにし、`sanitize` がほかの許可しないスキームと同じく `href` を落とす
     args:
       - name: state
         type: StateCore
@@ -297,6 +297,12 @@ functions:
         condition: '`[仕様](id:SC-1)`・`[無い](id:unknown)` を、`id:SC-` だけを `https://docs.example.com/` に変える関数を `env.resolveIdLink` に入れて描く'
         mock: なし
         expected: 1 つ目の `href` が `https://docs.example.com/SC-1`、2 つ目の `a` が `href` を持たない
+      - name: test_resolve_id_links_when_encoded_characters
+        case: 正常
+        summary: 記載した文字のまま関数に指定する
+        condition: '`[一覧](id:SC-1#scenarios[正常シナリオ])` を、受け取った値を記録する関数を `env.resolveIdLink` に入れて描く'
+        mock: なし
+        expected: 関数が受け取った値が `id:SC-1#scenarios[正常シナリオ]`（markdown-it の URL エンコードを戻した値）
 lead: 'markdown-it の解析器と追加するコアルールを受け持ち、Markdown の解析を変えるときに参照する。'
 tags:
   - name: action:描画
