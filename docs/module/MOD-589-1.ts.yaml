@@ -1,6 +1,8 @@
 id: MOD-589-1
 visibility: internal
 title: ライブラリ本体 / map / 点検 / structure.ts
+test_files:
+  - tests/unit/src/map/structure.test.ts
 lead: map の範囲の中身の型と、Mermaid と補足の中身を参照せずに範囲の構造（ブロックの数・図の種類・マーカーの引数）を確認する処理。`dist/index.js`・`dist/map.js` と CLI が使用する。
 data_models:
   - name: MapRangeSource
