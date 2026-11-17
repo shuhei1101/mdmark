@@ -1616,10 +1616,10 @@ test("test_render_map_mindmap_when_selected", async () => {
   expect(innerHtml(part.html, 'data-node="体制"')).toContain(
     'aria-label="体制（選択中）"',
   );
-  expect(item("企画の論点")).not.toContain("map-dim");
+  expect(item("root")).not.toContain("map-dim");
   expect(item("人手が足りない")).not.toContain("map-dim");
   expect(item("a1")).toContain("map-dim");
-  expect(findTag(part.html, 'data-branch="企画の論点->a1"')).toContain(
+  expect(findTag(part.html, 'data-branch="root-&gt;a1"')).toContain(
     "map-dim",
   );
 });

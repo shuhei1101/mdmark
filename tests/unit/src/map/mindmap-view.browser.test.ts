@@ -228,7 +228,7 @@ test("test_attach_map_mindmap_when_initial_scroll", async () => {
   const viewport = root.querySelector(
     ".mdmark-diagram-viewport",
   ) as HTMLElement;
-  const rootItem = itemOf(root, "企画の論点") as HTMLElement;
+  const rootItem = itemOf(root, "root") as HTMLElement;
   expect(viewport.scrollLeft).toBeGreaterThan(0);
   const box = viewport.getBoundingClientRect();
   const item = rootItem.getBoundingClientRect();
