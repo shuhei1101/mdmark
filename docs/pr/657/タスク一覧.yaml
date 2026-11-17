@@ -72,8 +72,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T20:37:55.046677+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
     note: tests/unit/src/ の置き場所と import の修正
+    updated_by: planner
+    updated_at: '2026-11-17T20:45:54.644649+00:00'
   - process: 実装
     status: todo
   - process: 結合テスト作成
