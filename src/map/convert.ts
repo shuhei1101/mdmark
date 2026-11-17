@@ -1,5 +1,5 @@
 import { parseDefinitionJson } from "../diagram/definition.ts";
-import { findDiagramBlocks } from "../render/syntax/diagrams.ts";
+import { findDiagramBlocks } from "../diagram/diagram.syntax.ts";
 import type { MapKind, MapLine } from "./spec.ts";
 
 /** 廃止したフロー図の定義（変換が参照する項目だけ） */

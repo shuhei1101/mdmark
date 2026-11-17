@@ -1,7 +1,6 @@
 import type { ResolvedConfig } from "../config.ts";
-import { attachDiagrams } from "../interact/diagrams.ts";
-import { renderDiagramFrame } from "../parts/diagram.ts";
-import { renderMapSequence, renderPackets } from "../parts/map.ts";
+import { attachDiagrams } from "../diagram/diagram.interact.ts";
+import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import { attachBand, type BandHandle } from "./band.ts";
 import { noteTexts, parseMapData } from "./data.ts";
@@ -12,6 +11,7 @@ import {
   sessionStorageOf,
   termsOf,
 } from "./flow-view.ts";
+import { renderMapSequence, renderPackets } from "./map.part.ts";
 import { parseSequence, SEQ_ARROW_STYLES, type Sequence } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
 import type { MapArgs } from "./spec.ts";

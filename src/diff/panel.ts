@@ -1,13 +1,13 @@
-import { renderDiffLines } from "../parts/diff-lines.ts";
-import { renderDiffMessage } from "../parts/diff-message.ts";
-import { renderDiffToggle } from "../parts/diff-toggle.ts";
-import { renderNotice } from "../parts/notice.ts";
+import { renderNotice } from "../shared/notice.part.ts";
+import { computeDiff, type DiffBlock } from "./compute.ts";
+import { renderDiffLines } from "./diff-lines.part.ts";
+import { renderDiffMessage } from "./diff-message.part.ts";
+import { renderDiffToggle } from "./diff-toggle.part.ts";
+import { attachMinimap } from "./minimap.ts";
 import {
   describeRevision,
   renderRevisionPicker,
-} from "../parts/revision-picker.ts";
-import { computeDiff, type DiffBlock } from "./compute.ts";
-import { attachMinimap } from "./minimap.ts";
+} from "./revision-picker.part.ts";
 import {
   checkRevisions,
   type DiffRevision,

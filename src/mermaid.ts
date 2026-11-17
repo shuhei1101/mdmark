@@ -1,20 +1,20 @@
+import { MERMAID_ATTRIBUTE } from "./code-block/code-block.part.ts";
 import type { ResolvedConfig, TooltipPlacement } from "./config.ts";
+import { attachDiagrams } from "./diagram/diagram.interact.ts";
+import { renderDiagramFrame } from "./diagram/diagram.part.ts";
+import { renderMermaidDiagram } from "./diagram/mermaid.part.ts";
 import type { SyntaxImport } from "./highlight.ts";
-import { attachDiagrams } from "./interact/diagrams.ts";
 import {
   MERMAID_FIXED_THEME_VARIABLES,
   MERMAID_THEME_COLORS,
   mermaidKindName,
   splitMermaidTitle,
 } from "./mermaid-source.ts";
-import { MERMAID_ATTRIBUTE } from "./parts/code-block.ts";
-import { renderDiagramFrame } from "./parts/diagram.ts";
-import { renderEmbed } from "./parts/embed.ts";
-import { bundledIconNode } from "./parts/icons.ts";
-import { renderMermaidDiagram } from "./parts/mermaid.ts";
-import { renderNotice } from "./parts/notice.ts";
-import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
 import { isAllowedUrl } from "./render/sanitize.ts";
+import { renderEmbed } from "./shared/embed.part.ts";
+import { bundledIconNode } from "./shared/icons.part.ts";
+import { renderNotice } from "./shared/notice.part.ts";
+import { renderSyntaxWarning } from "./shared/syntax-warning.part.ts";
 
 /** `import()` で読み込んだ mermaid の ES モジュールが既定のエクスポートで持つ構造 */
 export type MermaidModule = {

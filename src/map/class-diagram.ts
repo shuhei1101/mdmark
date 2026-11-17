@@ -1,11 +1,11 @@
+import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
+import type { MapOverride } from "./layout.ts";
 import {
   type MapClassEnd,
   type MapClassNode,
   mapClassNodeSize,
   mapClosedGroupSize,
-} from "../parts/map.ts";
-import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
-import type { MapOverride } from "./layout.ts";
+} from "./map.part.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
 
 /** クラスのメンバー */

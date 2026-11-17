@@ -2,7 +2,7 @@ import { ASSET_SCHEME, type ExportPayload } from "../cli/html.ts";
 import type { MdmarkConfig } from "../config.ts";
 import { MAP_QUERY_PREFIX } from "../map/state.ts";
 import { type MountHandle, mount } from "../mount.ts";
-import { renderDocList } from "../parts/doc-list.ts";
+import { renderDocList } from "./doc-list.part.ts";
 import { includesOf, knowledgeOptions } from "./includes.ts";
 import { DOC_HASH_PREFIX, resolveRoute, rewriteLinks } from "./route.ts";
 import {

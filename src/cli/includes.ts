@@ -9,15 +9,15 @@ import {
 } from "node:path";
 import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
-import { readMarkArgs } from "../render/mark-options.ts";
-import { MARK_PATTERN } from "../render/marks.ts";
 import {
   isMarkdownPath,
   resolveIncludePath,
   selectHeadingSection,
   selectLines,
   writtenOf,
-} from "../render/syntax/includes.ts";
+} from "../render/includes.ts";
+import { readMarkArgs } from "../render/mark-options.ts";
+import { MARK_PATTERN } from "../render/marks.ts";
 
 /** 取り込めない include のマーカー 1 つ */
 export type IncludeProblem = {

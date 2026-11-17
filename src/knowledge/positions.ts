@@ -1,11 +1,11 @@
 import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
+import { PART_PATTERN } from "../embedded-html/embedded-html.syntax.ts";
 import {
   DIAGRAM_ONLY_TAGS,
   EMBEDDED_NON_TEXT_TAGS,
   TEXT_FILTER_SKIP_TAGS,
 } from "../render/sanitize.ts";
-import { PART_PATTERN } from "../render/syntax/html.ts";
 import { matchableChildren } from "./dictionary.ts";
 
 /** 実体参照（`&amp;`・`&#x30EF;`・`&#12527;`）を戻す markdown-it の関数 */

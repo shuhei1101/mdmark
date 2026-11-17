@@ -4,15 +4,68 @@ import type {
   Token,
 } from "markdown-it";
 import MarkdownIt from "markdown-it";
+import { buildCallouts } from "../callout/callout.syntax.ts";
+import { buildCards } from "../card/card.syntax.ts";
+import { buildCardGrid } from "../card/card-grid.syntax.ts";
+import { buildCodeBlocks } from "../code-block/code-block.syntax.ts";
 import type { LibraryEntry, PageSettings } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import { buildDiagrams } from "../diagram/diagram.syntax.ts";
+import { buildEmbeddedHtml } from "../embedded-html/embedded-html.syntax.ts";
+import { numberFigures } from "../figure/figure.syntax.ts";
+import {
+  type AnnotationState,
+  buildAnnotationList,
+  collectAnnotations,
+  takeAnnotationDefinitions,
+  useAnnotations,
+} from "../footnote/annotations.syntax.ts";
+import {
+  buildFootnoteList,
+  collectFootnotes,
+  type FootnoteState,
+  takeFootnoteDefinitions,
+  useFootnotes,
+} from "../footnote/footnote.syntax.ts";
+import { insertFrontmatter } from "../frontmatter/frontmatter.syntax.ts";
+import { buildBadges } from "../inline/badge.syntax.ts";
+import { useHighlight } from "../inline/highlight.syntax.ts";
+import { buildInlineIcons } from "../inline/inline-icon.syntax.ts";
+import { buildKbds } from "../inline/kbd.syntax.ts";
+import { buildTextColors } from "../inline/text-color.syntax.ts";
+import { backlinksRule } from "../knowledge/backlinks.syntax.ts";
+import { glossaryRule } from "../knowledge/glossary.syntax.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type {
   MdmarkGlossaryEntry,
   MdmarkReferences,
 } from "../knowledge/references.ts";
-import { escapeHtml } from "../parts/escape.ts";
-import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import { termsRule } from "../knowledge/term.syntax.ts";
+import { buildDetailsRanges } from "../layout/details.syntax.ts";
+import { buildLayoutColumns } from "../layout/layout-columns.syntax.ts";
+import { buildPagebreaks } from "../layout/pagebreak.syntax.ts";
+import { buildWideRanges } from "../layout/wide.syntax.ts";
+import { buildMapRanges } from "../map/map.syntax.ts";
+import { buildGallery } from "../media/gallery.syntax.ts";
+import { buildImageFigures, readImages } from "../media/image.syntax.ts";
+import { assignHeadingIds } from "../section/heading.syntax.ts";
+import { wrapSections } from "../section/section.syntax.ts";
+import { buildToc } from "../section/toc.syntax.ts";
+import { escapeHtml } from "../shared/escape.logic.ts";
+import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
+import {
+  type CollectedWarning,
+  collectWarningsRule,
+} from "../shared/syntax-warning.syntax.ts";
+import { buildSteps } from "../steps/steps.syntax.ts";
+import { buildCsvTables } from "../table/csv.syntax.ts";
+import { attachRowDetails } from "../table/row-detail.syntax.ts";
+import { decorateTables } from "../table/table.syntax.ts";
+import { linkTreeExamples } from "../table/table-tree.syntax.ts";
+import { buildTabs } from "../tabs/tabs.syntax.ts";
+import { buildFileTrees } from "../tree/tree.syntax.ts";
+import { buildViews } from "../views/view.syntax.ts";
+import { expandIncludes } from "./includes.ts";
 import type { MarkOptions } from "./mark-options.ts";
 import type { MarkNote } from "./mark-schema.ts";
 import {
@@ -24,59 +77,6 @@ import {
   takeMarks,
 } from "./marks.ts";
 import { type ResolveIdLink, resolveIdHref } from "./sanitize.ts";
-import {
-  type AnnotationState,
-  buildAnnotationList,
-  collectAnnotations,
-  takeAnnotationDefinitions,
-  useAnnotations,
-} from "./syntax/annotations.ts";
-import { backlinksRule } from "./syntax/backlinks.ts";
-import { buildBadges } from "./syntax/badges.ts";
-import { buildCallouts } from "./syntax/callouts.ts";
-import { buildCardGrid } from "./syntax/card-grid.ts";
-import { buildCards } from "./syntax/cards.ts";
-import { buildCodeBlocks } from "./syntax/code-blocks.ts";
-import { buildCsvTables } from "./syntax/csv.ts";
-import { buildDetailsRanges } from "./syntax/details.ts";
-import { buildDiagrams } from "./syntax/diagrams.ts";
-import { numberFigures } from "./syntax/figures.ts";
-import {
-  buildFootnoteList,
-  collectFootnotes,
-  type FootnoteState,
-  takeFootnoteDefinitions,
-  useFootnotes,
-} from "./syntax/footnotes.ts";
-import { insertFrontmatter } from "./syntax/frontmatter.ts";
-import { buildGallery } from "./syntax/gallery.ts";
-import { glossaryRule } from "./syntax/glossary.ts";
-import { assignHeadingIds } from "./syntax/headings.ts";
-import { useHighlight } from "./syntax/highlight.ts";
-import { buildEmbeddedHtml } from "./syntax/html.ts";
-import { buildImageFigures, readImages } from "./syntax/images.ts";
-import { expandIncludes } from "./syntax/includes.ts";
-import { buildInlineIcons } from "./syntax/inline-icons.ts";
-import { buildKbds } from "./syntax/kbd.ts";
-import { buildLayoutColumns } from "./syntax/layout-columns.ts";
-import { buildMapRanges } from "./syntax/map.ts";
-import { buildPagebreaks } from "./syntax/pagebreak.ts";
-import { attachRowDetails } from "./syntax/row-details.ts";
-import { wrapSections } from "./syntax/sections.ts";
-import { buildSteps } from "./syntax/steps.ts";
-import { linkTreeExamples } from "./syntax/table-tree.ts";
-import { decorateTables } from "./syntax/tables.ts";
-import { buildTabs } from "./syntax/tabs.ts";
-import { termsRule } from "./syntax/terms.ts";
-import { buildTextColors } from "./syntax/text-color.ts";
-import { buildToc } from "./syntax/toc.ts";
-import { buildFileTrees } from "./syntax/tree.ts";
-import { buildViews } from "./syntax/views.ts";
-import {
-  type CollectedWarning,
-  collectWarningsRule,
-} from "./syntax/warnings.ts";
-import { buildWideRanges } from "./syntax/wide.ts";
 
 /** markdown-it の `env` としてコアルールに指定する値と、コアルールが取得したマーカー */
 export type RenderEnv = {

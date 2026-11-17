@@ -1,7 +1,4 @@
-import {
-  type CommentClosedKind,
-  renderCommentMarker,
-} from "../parts/comment.ts";
+import { type CommentClosedKind, renderCommentMarker } from "./comment.part.ts";
 
 /** 箇所の行の上端の差がこの値以下なら、同じ行として 1 つのマーカーにまとめる（px） */
 export const SAME_LINE_PX = 4;

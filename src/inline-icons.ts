@@ -1,6 +1,6 @@
-import { iconNodeSvg, type MdmarkIconNode } from "./parts/inline-icon.ts";
-import { renderNotice } from "./parts/notice.ts";
-import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
+import { iconNodeSvg, type MdmarkIconNode } from "./shared/icon-node.logic.ts";
+import { renderNotice } from "./shared/notice.part.ts";
+import { renderSyntaxWarning } from "./shared/syntax-warning.part.ts";
 
 declare const __MDMARK_LUCIDE_VERSION__: string;
 

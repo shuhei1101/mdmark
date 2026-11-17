@@ -1,0 +1,240 @@
+import { rowIdFromHash } from "../shared/row-hash.logic.ts";
+import { findScrollContainer } from "../shared/scroller.interact.ts";
+
+// 矢印キーで移る向き
+const ARROW_STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
+
+/** 選んだタブ名を残す localStorage のキーの頭。キーは `{頭}{group}` */
+export const TAB_CHOICE_KEY_PREFIX = "mdmark-tabs:";
+
+// タブの id を文書の中で重ならせないための通し番号
+let tabsCounter = 0;
+
+/** 操作を付けた `mdmark-tabs` から、タブ名でタブを選ぶ関数を参照する記録し。別の `mount` のタブも同じ記録しから参照して統一する */
+const tabSelectors = new WeakMap<HTMLElement, (name: string) => void>();
+
+/** 操作を付けた `mdmark-tabs` から、中身（`mdmark-tab-panel`）を指定してそのタブを選ぶ関数を参照する記録し。選んだタブ名は残さず、同じ組のほかのタブ群も切り替えない */
+const tabPanelSelectors = new WeakMap<
+  HTMLElement,
+  (panel: HTMLElement) => void
+>();
+
+/** localStorage に残したタブ名を読み込む。取り出しと読み込み出しで例外が出たら `console.warn` に出して `undefined` を返却する */
+export function loadTabChoice(group: string): string | undefined {
+  try {
+    return (
+      window.localStorage.getItem(`${TAB_CHOICE_KEY_PREFIX}${group}`) ??
+      undefined
+    );
+  } catch (error) {
+    console.warn("選んだタブを読み込めませんでした", error);
+    return undefined;
+  }
+}
+
+/** 選んだタブ名を localStorage に残す。取り出しと書き込みで例外が出たら `console.warn` に出して続ける */
+export function saveTabChoice(choice: { group: string; name: string }): void {
+  try {
+    window.localStorage.setItem(
+      `${TAB_CHOICE_KEY_PREFIX}${choice.group}`,
+      choice.name,
+    );
+  } catch (error) {
+    console.warn("選んだタブを残せませんでした", error);
+  }
+}
+
+/** ページの中の、操作を付けた `group` の `mdmark-tabs`（`tabs` を除く）を同じタブ名へ切り替える。そのタブ名が無いタブは変えない */
+function syncTabGroup(options: {
+  tabs: HTMLElement;
+  group: string;
+  name: string;
+}): void {
+  const { tabs, group, name } = options;
+  // 組の名前に記号が入っても照合できるよう、セレクタに入れず dataset で絞る
+  for (const other of document.querySelectorAll<HTMLElement>(
+    ".mdmark-tabs[data-group]",
+  )) {
+    if (other !== tabs && other.dataset.group === group) {
+      tabSelectors.get(other)?.(name);
+    }
+  }
+}
+
+/** タブ 1 組に、タブの並びと切り替えを付け、削除する関数を返却する */
+function attachTabGroup(tabs: HTMLElement): () => void {
+  tabsCounter += 1;
+  const base = `mdmark-tabs-${tabsCounter}`;
+  const panels = [
+    ...tabs.querySelectorAll<HTMLElement>(":scope > .mdmark-tab-panel"),
+  ];
+  const tablist = document.createElement("div");
+  tablist.className = "mdmark-tablist";
+  tablist.setAttribute("role", "tablist");
+  const buttons = panels.map((panel, index) => {
+    const title = panel.querySelector(":scope > .mdmark-tab-title");
+    const button = document.createElement("button");
+    button.className = "mdmark-tab";
+    button.type = "button";
+    button.id = `${base}-tab-${index}`;
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-controls", `${base}-panel-${index}`);
+    // タブ名の強調（`strong`）を残すよう、タブ名の要素の子のノードのコピーを入れる。ボタンの中に対話的な要素を配置しないよう、リンクは中身の文字にする
+    button.append(
+      ...[...(title?.childNodes ?? [])].map((node) => node.cloneNode(true)),
+    );
+    for (const link of button.querySelectorAll("a")) {
+      link.replaceWith(...link.childNodes);
+    }
+    panel.id = `${base}-panel-${index}`;
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("aria-labelledby", button.id);
+    return button;
+  });
+  tablist.append(...buttons);
+  tabs.prepend(tablist);
+  const titles = buttons.map((button) => button.textContent ?? "");
+  const group = tabs.dataset.group;
+
+  /** タブを選び、選んだタブの中身だけを出す。`focus` が真ならフォーカスも移す */
+  const select = (selected: number, focus: boolean): void => {
+    buttons.forEach((button, index) => {
+      button.setAttribute("aria-selected", String(index === selected));
+      button.tabIndex = index === selected ? 0 : -1;
+      panels[index]?.toggleAttribute("hidden", index !== selected);
+    });
+    if (focus) {
+      buttons[selected]?.focus();
+    }
+  };
+  /** 読者が選んだタブを選び、組を持つなら同じ組のタブを統一して、タブ名を残す */
+  const choose = (selected: number): void => {
+    const pressed = buttons[selected];
+    const before = pressed?.getBoundingClientRect().top;
+    select(selected, true);
+    const name = titles[selected];
+    if (group !== undefined && name !== undefined) {
+      syncTabGroup({ tabs, group, name });
+      saveTabChoice({ group, name });
+    }
+    // 押したタブのボタンの画面の位置を、選ぶ前と同じに戻す（戻しきれない分はスクロール位置の上限で止まる）
+    if (pressed !== undefined && before !== undefined) {
+      const delta = pressed.getBoundingClientRect().top - before;
+      if (delta !== 0) {
+        const { target, page } = findScrollContainer(tabs);
+        if (page) {
+          window.scrollBy(0, delta);
+        } else {
+          target.scrollTop += delta;
+        }
+      }
+    }
+  };
+  /** 押したタブを選ぶ */
+  const onClick = (event: Event): void => {
+    const index = buttons.indexOf(
+      (event.target as HTMLElement).closest<HTMLButtonElement>(
+        "[role=tab]",
+      ) as HTMLButtonElement,
+    );
+    if (index >= 0) {
+      choose(index);
+    }
+  };
+  /** 左右の矢印・Home・End で、選ぶタブを移す */
+  const onKeydown = (event: KeyboardEvent): void => {
+    const current = buttons.indexOf(
+      (event.target as HTMLElement).closest<HTMLButtonElement>(
+        "[role=tab]",
+      ) as HTMLButtonElement,
+    );
+    if (current < 0) {
+      return;
+    }
+    let next: number | undefined;
+    const step = ARROW_STEPS[event.key];
+    if (step !== undefined) {
+      next = (current + step + buttons.length) % buttons.length;
+    } else if (event.key === "Home") {
+      next = 0;
+    } else if (event.key === "End") {
+      next = buttons.length - 1;
+    }
+    if (next !== undefined) {
+      event.preventDefault();
+      choose(next);
+    }
+  };
+  tablist.addEventListener("click", onClick);
+  tablist.addEventListener("keydown", onKeydown);
+  // 組を持つタブは、残したタブ名のタブ（無ければ 1 つ目）を選ぶ。描いたときの選択は残さない
+  const saved = group === undefined ? undefined : loadTabChoice(group);
+  select(Math.max(0, titles.indexOf(saved ?? "")), false);
+  tabPanelSelectors.set(tabs, (panel) => {
+    const position = panels.indexOf(panel);
+    if (position >= 0) {
+      select(position, false);
+    }
+  });
+  if (group !== undefined) {
+    // 統一して切り替えるときは、フォーカスを動かさず残しもしない
+    tabSelectors.set(tabs, (name) => {
+      const position = titles.indexOf(name);
+      if (position >= 0) {
+        select(position, false);
+      }
+    });
+  }
+  return () => {
+    tabSelectors.delete(tabs);
+    tabPanelSelectors.delete(tabs);
+    tablist.remove();
+    for (const panel of panels) {
+      panel.removeAttribute("role");
+      panel.removeAttribute("id");
+      panel.removeAttribute("aria-labelledby");
+      panel.removeAttribute("hidden");
+    }
+  };
+}
+
+/** 要素を含む `role="tabpanel"` を外側から順にたどり、その中身のタブを選ぶ。選んだタブ名は残さず、同じ組のタブも統一しない。タブの中に無ければ何もしない */
+export function revealTabTarget(target: Element): void {
+  const panels: HTMLElement[] = [];
+  for (
+    let panel = target.closest<HTMLElement>('[role="tabpanel"]');
+    panel;
+    panel =
+      panel.parentElement?.closest<HTMLElement>('[role="tabpanel"]') ?? null
+  ) {
+    panels.unshift(panel);
+  }
+  for (const panel of panels) {
+    const tabs = panel.parentElement;
+    if (tabs) {
+      tabPanelSelectors.get(tabs)?.(panel);
+    }
+  }
+}
+
+/** 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にして 1 つ目（組を持つなら残したタブ名のタブ）を選ぶ。URL の `#ID` が選ばれていない中身の中を指すときは、残したタブ名より先にそのタブを選んで要素へ移る。タブの並びを取り除き、中身を `render` の構造に戻す関数を返却する */
+export function attachTabs(root: HTMLElement): () => void {
+  const detachers = [...root.querySelectorAll<HTMLElement>(".mdmark-tabs")].map(
+    attachTabGroup,
+  );
+  const id = rowIdFromHash(location.hash);
+  const target = id
+    ? [...root.querySelectorAll<HTMLElement>("[id]")].find(
+        (element) => element.id === id,
+      )
+    : undefined;
+  if (target?.closest('[role="tabpanel"][hidden]')) {
+    revealTabTarget(target);
+    target.scrollIntoView();
+  }
+  return () => {
+    for (const detach of detachers) {
+      detach();
+    }
+  };
+}

@@ -49,8 +49,8 @@ export type {
 export { mount } from "./mount.ts";
 export { mountComments, mountView } from "./mount-parts.ts";
 export { setPartModuleLoader } from "./part-modules.ts";
-export type { MdmarkIconNode } from "./parts/inline-icon.ts";
 export { render } from "./render/index.ts";
+export type { MdmarkIconNode } from "./shared/icon-node.logic.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";
 export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";
 

@@ -2,8 +2,13 @@ import type { StateCore, Token } from "markdown-it";
 import { parseDefinitionJson } from "../diagram/definition.ts";
 import { extensionFor, type WarningItem } from "../extensions.ts";
 import { resolveFeatures } from "../features.ts";
-import { renderEmbed } from "../parts/embed.ts";
-import { markOwn } from "../parts/own.ts";
+import { renderEmbed } from "../shared/embed.part.ts";
+import { markOwn } from "../shared/own.logic.ts";
+import {
+  recordMarkNotes,
+  type SyntaxWarning,
+  warningBlock,
+} from "../shared/syntax-warning.syntax.ts";
 import { convertLegacyArgs } from "./legacy-marks.ts";
 import {
   hasUnclosedString,
@@ -18,11 +23,6 @@ import {
 } from "./mark-schema.ts";
 import { readPageSettings } from "./page.ts";
 import type { RenderEnv } from "./parser.ts";
-import {
-  recordMarkNotes,
-  type SyntaxWarning,
-  warningBlock,
-} from "./syntax/warnings.ts";
 
 /** 生の HTML の中のマーカー（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を取得する正規表現 */
 export const MARK_PATTERN =

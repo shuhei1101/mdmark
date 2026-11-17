@@ -1,12 +1,7 @@
 import type { ResolvedConfig } from "../config.ts";
-import { attachDiagrams } from "../interact/diagrams.ts";
+import { attachDiagrams } from "../diagram/diagram.interact.ts";
+import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import { mermaidKindName } from "../mermaid-source.ts";
-import { renderDiagramFrame } from "../parts/diagram.ts";
-import {
-  type MapBandUnit,
-  renderMapAxisGrid,
-  renderMapAxisGridLegend,
-} from "../parts/map.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
   type AxisGrid,
@@ -25,6 +20,11 @@ import {
   sessionStorageOf,
   termsOf,
 } from "./flow-view.ts";
+import {
+  type MapBandUnit,
+  renderMapAxisGrid,
+  renderMapAxisGridLegend,
+} from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 import {
   emptyMapState,

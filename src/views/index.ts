@@ -1,11 +1,7 @@
-import { attachTables } from "../interact/tables.ts";
-import { visibleText } from "../interact/text.ts";
-import {
-  renderView,
-  renderViewBoard,
-  renderViewSwitch,
-} from "../parts/view.ts";
+import { visibleText } from "../shared/text.interact.ts";
+import { attachTables } from "../table/table.interact.ts";
 import type { MdmarkViewOptions, ViewSpec } from "./spec.ts";
+import { renderView, renderViewBoard, renderViewSwitch } from "./view.part.ts";
 
 /** ビューの部品のモジュール（`dist/view.js`）が export する関数 */
 export type ViewPartModule = {

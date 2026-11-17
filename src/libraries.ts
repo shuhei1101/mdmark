@@ -6,9 +6,9 @@ import {
   type MdmarkMarkArgs,
   validateMarkArgs,
 } from "./extensions.ts";
-import { renderNotice } from "./parts/notice.ts";
-import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
 import { isMarkOptions } from "./render/mark-options.ts";
+import { renderNotice } from "./shared/notice.part.ts";
+import { renderSyntaxWarning } from "./shared/syntax-warning.part.ts";
 
 /** `import()` で読み込んだモジュールが名前付きで export する構造 */
 export type LibraryModule = {

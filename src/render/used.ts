@@ -1,10 +1,13 @@
+import {
+  MERMAID_ATTRIBUTE,
+  SYNTAX_ATTRIBUTE,
+} from "../code-block/code-block.part.ts";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
+import { unescapeHtml } from "../embedded-html/embedded-html.syntax.ts";
 import { needsMermaidFallback } from "../map/check.ts";
 import type { MapKindName } from "../map/structure.ts";
-import { MERMAID_ATTRIBUTE, SYNTAX_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderDocument } from "./index.ts";
 import { MARK_PATTERN } from "./marks.ts";
-import { unescapeHtml } from "./syntax/html.ts";
 
 /** 文書の Markdown からマーカーの名前を取得し、対応表にあるものだけを返却する */
 export function usedLibraryMarks(

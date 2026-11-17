@@ -1,4 +1,11 @@
 import {
+  COMMENT_EXCLUDED,
+  commentText,
+  draftFromRange,
+  locateComments,
+} from "./anchor.ts";
+import { attachCommentActions } from "./bubble.ts";
+import {
   COMMENT_HINT_ID,
   COMMENT_MESSAGES,
   renderCommentBubble,
@@ -6,14 +13,7 @@ import {
   renderCommentForm,
   renderCommentMark,
   renderCommentOrphans,
-} from "../parts/comment.ts";
-import {
-  COMMENT_EXCLUDED,
-  commentText,
-  draftFromRange,
-  locateComments,
-} from "./anchor.ts";
-import { attachCommentActions } from "./bubble.ts";
+} from "./comment.part.ts";
 import { attachMarginMarkers } from "./margin.ts";
 import {
   isComment,

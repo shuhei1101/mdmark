@@ -1,4 +1,4 @@
-import { type MapBandUnit, renderMapBand } from "../parts/map.ts";
+import { type MapBandUnit, renderMapBand } from "./map.part.ts";
 
 /** 帯が進める 1 つの手順 */
 export type BandStep = {

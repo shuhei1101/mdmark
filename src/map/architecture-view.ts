@@ -1,5 +1,4 @@
 import type { ResolvedConfig } from "../config.ts";
-import { renderMapArchitecture, rewireMapArchitecture } from "../parts/map.ts";
 import {
   ARCH_LUCIDE_ICONS,
   architectureToFlowchart,
@@ -13,6 +12,7 @@ import {
   neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
+import { renderMapArchitecture, rewireMapArchitecture } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
 /** `architecture-beta` を構成図の入力にし、構成図と同じ配置と操作に、アイコン・junction の点・辺の指定どおりの線を追加する */

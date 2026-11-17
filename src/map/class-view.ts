@@ -1,5 +1,4 @@
 import type { ResolvedConfig } from "../config.ts";
-import { renderMapClassDiagram, spreadMapEnds } from "../parts/map.ts";
 import {
   classPartInputs,
   classToFlowchart,
@@ -12,6 +11,7 @@ import {
   neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
+import { renderMapClassDiagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
 /** `classDiagram` を構成図の入力にし、構成図と同じ配置と操作に、メンバーの区画・注釈・関係の端の形と多重度・メンバーの開閉を追加する */

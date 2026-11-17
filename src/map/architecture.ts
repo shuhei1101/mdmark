@@ -1,10 +1,6 @@
-import {
-  MAP_ARCH,
-  type MapArchEdge,
-  mapClosedGroupSize,
-} from "../parts/map.ts";
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
+import { MAP_ARCH, type MapArchEdge, mapClosedGroupSize } from "./map.part.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
 
 /** architecture-beta のアイコンの名前 */
