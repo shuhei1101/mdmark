@@ -25,27 +25,6 @@ functions:
         expected: '`<span class="mdmark-inline-icon" data-icon="check" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24">…</svg></span>` と中が空の `span`'
         mock: なし
         summary: 構造があれば svg を入れる
-  - name: iconNodeSvg
-    title: IconNode を svg にする
-    container: src/inline/inline-icon.part.ts
-    summary: Lucide の IconNode を、`path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` の要素と描画の属性（`d`・`cx`・`cy`・`r`・`rx`・`ry`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`width`・`height`・`points`）だけを残した `svg.mdmark-icon` の文字にする。値はエスケープする
-    kind: 関数
-    scope: internal
-    args:
-      - name: node
-        type: MdmarkIconNode
-        required: true
-        description: Lucide の IconNode
-    returns:
-      type: string
-      description: '`<svg class="mdmark-icon"` で始まる HTML'
-    unit_tests:
-      - name: test_icon_node_svg
-        case: 正常
-        condition: '`[["path",{d:"M1 1"}],["script",{}],["circle",{cx:"1",onclick:"x"}]]`'
-        expected: '`path` と `cx` だけを持つ `circle` を持つ svg で、`script`・`onclick` が無い'
-        mock: なし
-        summary: 許す要素と属性だけを残す
 lead: '行内のアイコンの HTML とアイコンの svg を受け持ち、行内のアイコンの外観を変えるときに参照する。'
 tags:
   - name: topic:アイコン

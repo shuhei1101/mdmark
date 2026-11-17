@@ -13,7 +13,7 @@ notes:
     ├── text-color.syntax.ts  # 本文の文字の色
     ├── badge.part.ts         # バッジの renderBadge（色を含む）
     ├── highlight.part.ts     # 蛍光ペンの renderHighlight
-    ├── inline-icon.part.ts   # 行内のアイコンの renderInlineIcon と IconNode の svg の iconNodeSvg
+    ├── inline-icon.part.ts   # 行内のアイコンの renderInlineIcon
     ├── kbd.part.ts           # キーの renderKbd
     ├── text-color.part.ts    # 文字の色の renderTextColor
     └── {部品}.part.stories.ts  # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）

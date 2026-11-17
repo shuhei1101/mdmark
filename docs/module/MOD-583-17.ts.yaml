@@ -1,0 +1,32 @@
+id: MOD-583-17
+visibility: internal
+title: ライブラリ本体 / 記法の共通 / row-hash.logic.ts
+lead: URL の `#` から行の ID を読み込む処理を受け持ち、表・セクション・タブが URL の `#ID` で移る先の読み方を変えるときに参照する。
+test_files:
+  - tests/unit/src/shared/row-hash.logic.test.ts
+functions:
+  - name: rowIdFromHash
+    title: 'URL の # から行の ID を読み込む'
+    container: src/shared/row-hash.logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`location.hash` の最後の `#` の後ろを `decodeURIComponent` して返却する（読み込めないときはそのまま）。まとめた HTML の `#/{文書のパス}#{ID}` も同じように読み込む'
+    args:
+      - name: hash
+        type: string
+        required: true
+        description: '`location.hash`'
+    returns:
+      type: string
+      description: 行の ID（`#` が無ければ空文字）
+    unit_tests:
+      - name: test_row_id_from_hash
+        case: 正常
+        summary: '最後の # の後ろを戻した文字を返却する'
+        condition: '`#%E3%81%BF%E3%81%8B%E3%82%93`・`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93`・`#%E3%81`・空文字'
+        mock: なし
+        expected: '`みかん`・`みかん`・`%E3%81`・空文字'
+tags:
+  - name: topic:リンク
+    main: true
+  - name: action:読み取り

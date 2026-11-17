@@ -132,7 +132,7 @@ functions:
         mock: なし
         expected: 2 回目に付けた後、2 行目のボタンが `aria-expanded="true"` で詳細の行が `hidden` を持たない
     refs:
-      - 'MOD-472-218#functions[rowIdFromHash]'
+      - 'MOD-583-17#functions[rowIdFromHash]'
   - name: openEnclosing
     title: 要素を囲む閉じたものを開く
     container: src/section/section.interact.ts

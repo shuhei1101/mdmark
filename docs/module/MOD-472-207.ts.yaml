@@ -27,7 +27,7 @@ functions:
     side_effects: jsDelivr のモジュールを `import()` し、失敗した名前だけ `HEAD` を送信する。描く先の要素の中を書き換える。404 でなく読み込めなかった名前の URL を `console.error` に出す
     callees:
       - '#functions[lucideIconUrl]'
-      - MOD-472-334#functions[iconNodeSvg]
+      - MOD-589-3#functions[iconNodeSvg]
     unit_tests:
       - name: test_load_inline_icons
         case: 正常

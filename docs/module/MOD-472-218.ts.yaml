@@ -184,27 +184,6 @@ functions:
         condition: '`[["a\tb", "c\nd"]]`'
         mock: なし
         expected: '`a b\tc d`'
-  - name: rowIdFromHash
-    title: 'URL の # から行の ID を読み込む'
-    container: src/table/table.logic.ts
-    kind: 関数
-    scope: internal
-    summary: '`location.hash` の最後の `#` の後ろを `decodeURIComponent` して返却する（読み込めないときはそのまま）。まとめた HTML の `#/{文書のパス}#{ID}` も同じように読み込む'
-    args:
-      - name: hash
-        type: string
-        required: true
-        description: '`location.hash`'
-    returns:
-      type: string
-      description: 行の ID（`#` が無ければ空文字）
-    unit_tests:
-      - name: test_row_id_from_hash
-        case: 正常
-        summary: '最後の # の後ろを戻した文字を返却する'
-        condition: '`#%E3%81%BF%E3%81%8B%E3%82%93`・`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93`・`#%E3%81`・空文字'
-        mock: なし
-        expected: '`みかん`・`みかん`・`%E3%81`・空文字'
   - name: parseNumberCell
     title: セルを数として読み込む
     container: src/table/table.logic.ts
@@ -713,12 +692,12 @@ functions:
     kind: 関数
     scope: internal
     summary: 部品設計『表』の注記「列の幅」の 2 つ目の図で、列ごとの最小の幅・望む幅と表の見える幅から、列の幅（px）と横にスクロールするかを返却する
-    description: '最小の幅の合計が `available` を超えるときは各列を最小の幅にして `overflow` を `true` にする。望む幅の合計が `available` 以下なら望む幅にする。どちらでもなければ、`available` から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分け、最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りをほかの列へ分け直す（止める列が出なくなるまで繰り返す）。`fixed` の列（読者がつまみで幅を変えた列）は `wanted` の幅のまま分けない'
+    description: 最小の幅の合計が `available` を超えるときは各列を最小の幅にして `overflow` を `true` にする。望む幅の合計が `available` 以下なら望む幅にする。どちらでもなければ、`available` から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分け、最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りをほかの列へ分け直す（止める列が出なくなるまで繰り返す）。`fixed` の列（読者がつまみで幅を変えた列）は `wanted` の幅のまま分けない
     args:
       - name: columns
         type: '{ wraps: boolean; min: number; wanted: number; fixed?: boolean }[]'
         required: true
-        description: '列ごとの `columnBounds` の結果（読者が幅を変えた列は、その幅を `min`・`wanted` に入れて `fixed` を `true` にする）'
+        description: 列ごとの `columnBounds` の結果（読者が幅を変えた列は、その幅を `min`・`wanted` に入れて `fixed` を `true` にする）
       - name: available
         type: number
         required: true

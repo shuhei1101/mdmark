@@ -165,7 +165,7 @@ items:
 - page: MOD-472-348.ts.yaml
   summary: ライブラリ本体 / 記法の共通 / part-states.interact.ts
 - page: MOD-472-231.ts.yaml
-  summary: ライブラリ本体 / 記法の共通 / placement.interact.ts
+  summary: ライブラリ本体 / 記法の共通 / placement.logic.ts
 - page: MOD-472-234.ts.yaml
   summary: ライブラリ本体 / 記法の共通 / scroller.interact.ts
 - page: MOD-472-222.ts.yaml
@@ -307,7 +307,7 @@ items:
 - page: MOD-472-325.ts.yaml
   summary: ライブラリ本体 / 記法の共通 / collapsible.part.ts
 - page: MOD-472-312.ts.yaml
-  summary: ライブラリ本体 / 記法の共通 / colors.part.ts
+  summary: ライブラリ本体 / 記法の共通 / colors.logic.ts
 - page: MOD-472-163.ts.yaml
   summary: ライブラリ本体 / ビューとコメント / comment.part.ts
 - page: MOD-472-172.ts.yaml
@@ -329,11 +329,11 @@ items:
 - page: MOD-472-309.ts.yaml
   summary: ライブラリ本体 / 記法の共通 / embed.part.ts
 - page: MOD-472-313.ts.yaml
-  summary: ライブラリ本体 / 記法の共通 / escape.part.ts
+  summary: ライブラリ本体 / 記法の共通 / escape.logic.ts
 - page: MOD-589-2.ts.yaml
   summary: ライブラリ本体 / 埋め込んだHTML / embedded-html.part.ts
 - page: MOD-589-3.ts.yaml
-  summary: ライブラリ本体 / 記法の共通 / icon-node.part.ts
+  summary: ライブラリ本体 / 記法の共通 / icon-node.logic.ts
 - page: MOD-472-322.ts.yaml
   summary: ライブラリ本体 / 図表の番号 / figure.part.ts
 - page: MOD-472-333.ts.yaml
@@ -369,7 +369,7 @@ items:
 - page: MOD-472-310.ts.yaml
   summary: ライブラリ本体 / 記法の共通 / notice.part.ts
 - page: MOD-472-311.ts.yaml
-  summary: ライブラリ本体 / 記法の共通 / own.part.ts
+  summary: ライブラリ本体 / 記法の共通 / own.logic.ts
 - page: MOD-472-181.ts.yaml
   summary: ライブラリ本体 / 図 / param.part.ts
 - page: MOD-472-195.ts.yaml
@@ -465,7 +465,7 @@ items:
 - page: MOD-472-276.ts.yaml
   summary: ライブラリ本体 / コードブロック / code-block.syntax.ts
 - page: MOD-472-270.ts.yaml
-  summary: ライブラリ本体 / 記法の共通 / collapse.syntax.ts
+  summary: ライブラリ本体 / 記法の共通 / collapse.logic.ts
 - page: MOD-472-301.ts.yaml
   summary: ライブラリ本体 / 表 / csv.syntax.ts
 - page: MOD-472-297.ts.yaml
@@ -511,7 +511,7 @@ items:
 - page: MOD-472-283.ts.yaml
   summary: ライブラリ本体 / ステップ / steps.syntax.ts
 - page: MOD-472-273.ts.yaml
-  summary: ライブラリ本体 / 表 / table-cells.syntax.ts
+  summary: ライブラリ本体 / 表 / table-cells.logic.ts
 - page: MOD-472-292.ts.yaml
   summary: ライブラリ本体 / 表 / table-tree.syntax.ts
 - page: MOD-472-268.ts.yaml
@@ -767,7 +767,9 @@ items:
 - page: MOD-583-15.yaml
   summary: 画像の属性・ギャラリー・動画と音声・GIF・ライトボックスのコアルールと部品と、`mount` が付けるライトボックスと GIF の操作。操作だけはブラウザでだけ動く。
 - page: MOD-583-16.yaml
-  summary: 複数の機能のフォルダが使用する、コアルールの助け（トークン・範囲のマーカー・折り畳みの指定・記載の警告）、部品の助け（エスケープ・マーカー・アイコン・色・折り畳み・通知ブロック・読み込み中のブロック）、操作の助け（クリップボード・ツールチップの配置・スクロールする祖先・開閉の記録・要素の文字・拡大と縮小）。
+  summary: 複数の機能のフォルダが使用する、持ち主の機能が無い助け。コアルールの助け（トークン・範囲のマーカー・折り畳みの指定・記載の警告）、部品の助け（エスケープ・マーカー・アイコン・色・折り畳み・通知ブロック・読み込み中のブロック）、操作の助け（クリップボード・ツールチップの配置・スクロールする祖先・開閉の記録・要素の文字・拡大と縮小）、URL の `#` の読み込み。
+- page: MOD-583-17.ts.yaml
+  summary: ライブラリ本体 / 記法の共通 / row-hash.logic.ts
 - page: MOD-472-44.yaml
   summary: 利用側が指定する設定に既定を適用する処理と、設定の `features` に文書の `features` のマーカーを重ねて機能のオン・オフを決める処理。どちらも DOM に頼らず、ブラウザと Node で動く。
 - page: MOD-472-45.yaml

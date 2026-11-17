@@ -1,12 +1,12 @@
 id: MOD-472-270
 visibility: internal
-title: ライブラリ本体 / 記法の共通 / collapse.syntax.ts
+title: ライブラリ本体 / 記法の共通 / collapse.logic.ts
 test_files:
-  - tests/unit/src/shared/collapse.syntax.test.ts
+  - tests/unit/src/shared/collapse.logic.test.ts
 data_models:
   - name: CollapseSpec
     title: 折り畳みの指定
-    container: src/shared/collapse.syntax.ts
+    container: src/shared/collapse.logic.ts
     summary: 表・タブ・ステップのマーカーの `collapse` を読み込んだ結果
     properties:
       - name: collapse
@@ -19,7 +19,7 @@ data_models:
 functions:
   - name: readCollapse
     title: 折り畳みの指定を読み込む
-    container: src/shared/collapse.syntax.ts
+    container: src/shared/collapse.logic.ts
     summary: 表・タブ・ステップのマーカーの設定の `collapse`（共通のオブジェクトの折り畳み）を読み込み、`CollapseSpec` を作る
     kind: 関数
     scope: internal
@@ -53,7 +53,7 @@ functions:
     status: planned
   - name: titleTailOf
     title: title= の後ろの単語を参照する
-    container: src/shared/collapse.syntax.ts
+    container: src/shared/collapse.logic.ts
     kind: 関数
     scope: internal
     summary: 今の書き方のマーカーの引数の文字から、`title=値` の直後に空白を挟んで続く `キー=値` でない単語を返却する（空白を含むタイトルの続きとみなす単語）。無ければ `undefined`。`convertLegacyArgs` が使用し、今の書き方を参照しなくなるバージョンで削除する
@@ -75,7 +75,7 @@ functions:
     status: planned
   - name: titleTailItem
     title: title= の続きの警告の項目を作る
-    container: src/shared/collapse.syntax.ts
+    container: src/shared/collapse.logic.ts
     kind: 関数
     scope: internal
     summary: '`title=` の値の空白の後ろの単語を `label` にし、今の書き方のマーカーの引数は空白で区切るため `title=` の値に空白は記載できないことを伝える項目を返却する。`convertLegacyArgs` が `titleTailOf` の単語の書き出さない記載の理由に使用する'

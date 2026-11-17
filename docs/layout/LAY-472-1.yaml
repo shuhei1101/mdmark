@@ -1736,14 +1736,15 @@ notes:
     | `tests/unit/vscode/`・`tests/integration/vscode/` | 直下の Vitest | 直下の `package.json` の依存（Vitest・Playwright・Storybook）と、`tests/` が共有する補助のコードを使用する。単体と結合は、ほかの対象と同じ層の分け方にする |
     | `vscode/tests/integration/` | `vscode/` の mocha と `@vscode/test-electron` | `mocha`・`@vscode/test-electron` は `vscode/package.json` だけの依存で、Node は `vscode/` の外のファイルからは `vscode/node_modules/` を探さない。`vscode/scripts/build.ts` が `vscode/` の中の結合テストを `out/test/` にまとめる |
   src の機能のフォルダのファイル名: |-
-    記法の機能のフォルダ（`table/`・`tabs/` など）と、図・map・索引・ビュー・コメント・差分・書き出した HTML の起動のフォルダは、ファイル名の後ろに役割を付ける。
+    記法の機能のフォルダ（`table/`・`tabs/` など）と、図・map・索引・ビュー・コメント・差分・書き出した HTML の起動のフォルダは、ファイル名の後ろに中身の役割を付ける。
 
     | 役割 | ファイル名 | 中身 | 動く場所 |
     | --- | --- | --- | --- |
-    | 記法 | `{name}.syntax.ts` | markdown-it のコアルール | ブラウザと Node |
+    | 記法 | `{name}.syntax.ts` | markdown-it のコアルールと、コアルールが使用するトークンの助け | ブラウザと Node |
     | 部品 | `{name}.part.ts` | 部品の HTML 文字列を返却する関数 | ブラウザと Node |
     | ストーリー | `{name}.part.stories.ts` | 部品の状態ごとの Storybook のストーリー | Storybook |
-    | 操作 | `{name}.interact.ts` | `mount` が描いた文書に付ける読者の操作 | ブラウザ（単体テストは `*.browser.test.ts`） |
-    | 計算 | `{name}.logic.ts` | DOM もトークンも使用しない計算 | ブラウザと Node |
+    | 操作 | `{name}.interact.ts` | `mount` が描いた文書に付ける読者の操作と、操作が使用する DOM の助け | ブラウザ（単体テストは `*.browser.test.ts`） |
+    | 計算 | `{name}.logic.ts` | DOM もトークンも使用しない計算・定数 | ブラウザと Node |
 
-    2 つ以上の機能のフォルダが使用するものは `shared/` に配置する。
+    持ち主の機能が無い助け（どの機能の記法・部品・操作でもない関数・定数）は `shared/` に配置する。
+    ある機能の記法・部品・操作を別の機能が組み込むときは、持ち主の機能のフォルダに置いたまま import する。

@@ -1,12 +1,12 @@
 id: MOD-472-313
 visibility: internal
-title: ライブラリ本体 / 記法の共通 / escape.part.ts
+title: ライブラリ本体 / 記法の共通 / escape.logic.ts
 test_files:
-  - tests/unit/src/shared/escape.part.test.ts
+  - tests/unit/src/shared/escape.logic.test.ts
 functions:
   - name: escapeHtml
     title: HTML の特別な文字をエスケープする
-    container: src/shared/escape.part.ts
+    container: src/shared/escape.logic.ts
     kind: 関数
     scope: public
     summary: "`&`・`<`・`>`・`\"`・`'` を文字参照にする"

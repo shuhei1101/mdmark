@@ -43,7 +43,7 @@ functions:
       - '#functions[saveTabChoice]'
       - MOD-472-316#functions[renderTabs]
       - '#functions[revealTabTarget]'
-      - 'MOD-472-218#functions[rowIdFromHash]'
+      - 'MOD-583-17#functions[rowIdFromHash]'
       - MOD-472-234#functions[findScrollContainer]
     unit_tests:
       - name: test_attach_tabs

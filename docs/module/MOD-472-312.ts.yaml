@@ -1,12 +1,12 @@
 id: MOD-472-312
 visibility: internal
-title: ライブラリ本体 / 記法の共通 / colors.part.ts
+title: ライブラリ本体 / 記法の共通 / colors.logic.ts
 test_files:
-  - tests/unit/src/shared/colors.part.test.ts
+  - tests/unit/src/shared/colors.logic.test.ts
 constants:
   - name: COLOR_NAMES
     title: 色の名前
-    container: src/shared/colors.part.ts
+    container: src/shared/colors.logic.ts
     summary: 表の列と行・バッジ・本文の文字に記載できる色の名前。型 `ColorName` はこの要素の和。記載の警告の本文に並べる
     value: '["blue", "red", "green", "yellow", "orange", "purple", "gray"]'
     refs:
@@ -15,7 +15,7 @@ constants:
 functions:
   - name: isColorName
     title: 色の名前か
-    container: src/shared/colors.part.ts
+    container: src/shared/colors.logic.ts
     kind: 関数
     scope: internal
     summary: 文字が `COLOR_NAMES` のどれかと一致するか（大文字と小文字を区別する）を返却する
