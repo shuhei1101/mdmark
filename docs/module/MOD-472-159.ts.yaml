@@ -14,7 +14,7 @@ constants:
     container: src/part-modules.ts
     summary: '`setPartModuleLoader` で、部品のモジュールを返却する関数を入れる（書き出した HTML の起動の処理と利用側のページが呼ぶ）。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む'
     value: 'new Map<PartName, () => Promise<Record<string, unknown>>>()'
-    status: planned
+    status: implemented
   - name: partModules
     title: 読み込んだ部品のモジュール
     container: src/part-modules.ts

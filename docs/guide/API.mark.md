@@ -22,6 +22,7 @@
 | [拡張を登録する](#拡張を登録する) | `registerExtension(extension)` | 利用側が自分のマーカーと、そのマーカーを描くモジュールの読み込み方を登録する |
 | [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
 | [コメントを付ける](#コメントを付ける) | `mountComments(el, opts)` | 利用側の要素の中の選んだ箇所に、コメントを付けられるようにする |
+| [部品のモジュールを指定する](#部品のモジュールを指定する) | `setPartModuleLoader(name, loader)` | map・ビュー・コメントの部品のモジュールを返却する関数を指定し、配布物の隣から読み込まずにその関数で読み込ませる |
 | [テーマの CSS 変数](#テーマの-css-変数) | `--mdmark-*` | 外観の値を持つ変数。利用側が上書きする |
 
 <!-- /table -->
@@ -754,7 +755,7 @@ handle.destroy();
 
 列名と項目の値は文字として出し、HTML として解釈しない。
 同じ要素へもう一度 `mountView` を呼ぶと、前の `mountView` の `destroy` を先に行う。
-ビューの部品のモジュール（`dist/view.js`）は、初めて呼んだときか文書にビューのマーカーがあるときに 1 回だけ、`dist/index.js` の隣から読み込む。
+ビューの部品のモジュール（`dist/view.js`）は、初めて呼んだときか文書にビューのマーカーがあるときに 1 回だけ、`dist/index.js` の隣から読み込む（[部品のモジュールを指定する](#部品のモジュールを指定する) で指定したときは、その関数で読み込む）。
 型 `mountView`・`MdmarkViewOptions`・`MdmarkViewHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 
 ### レスポンス
@@ -798,7 +799,7 @@ handle.destroy();
 `el` の文字は変えない。
 コメントのボタン・入力欄・吹き出しは `document.body` に配置する。
 同じ要素へもう一度 `mountComments` を呼ぶと、前の `mountComments` の `destroy` を先に行う。
-コメントの部品のモジュール（`dist/comments.js`）は、初めて呼んだときか `mount` でコメントの機能がオンになったときに 1 回だけ、`dist/index.js` の隣から読み込む。
+コメントの部品のモジュール（`dist/comments.js`）は、初めて呼んだときか `mount` でコメントの機能がオンになったときに 1 回だけ、`dist/index.js` の隣から読み込む（[部品のモジュールを指定する](#部品のモジュールを指定する) で指定したときは、その関数で読み込む）。
 型 `mountComments`・`MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkCommentsHandle` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 
 ### レスポンス
@@ -816,6 +817,46 @@ handle.destroy();
 | `save` が reject する、または返却した値がコメントの構造に合わない | 例外を投げず、入力欄に記載した本文を残して通知を出し、マーカーを付けない。`save`・`docId`・元のエラーを `console.error` に出す |
 | `update`・`remove` が reject する | 例外を投げず、修正は入力欄と書き換えた本文を残し、削除はコメントとマーカーを残して削除の確認を開いたまま通知を出す。関数の名前・`docId`・コメントの `id`・元のエラーを `console.error` に出す |
 | コメントの部品のモジュールを読み込めない | `el` を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで reject する |
+
+## 部品のモジュールを指定する
+
+利用側のページが、map・ビュー・コメントの部品のモジュールを返却する関数を指定する。
+指定した部品は `dist/index.js` の隣へ要求せず、その関数で読み込む。
+配布物を 1 枚の HTML に埋め、Blob の URL などアドレスを持たない場所から読み込むページで使用する。
+手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.mark.md)。
+
+### リクエスト
+
+```js
+const mdmark = await import(URL.createObjectURL(new Blob([indexSource], { type: "text/javascript" })));
+const map = await import(URL.createObjectURL(new Blob([mapSource], { type: "text/javascript" })));
+mdmark.setPartModuleLoader("map", () => Promise.resolve(map));
+mdmark.mount(document.querySelector("#doc"), { markdown });
+```
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `name` | 必須 | 部品の名前。`"map"`・`"view"`・`"comments"` のどれか |
+| `loader` | 必須 | 部品のモジュールを返却する関数。部品の配布ファイル（`dist/map.js`・`dist/view.js`・`dist/comments.js`）を `import()` した結果を返却する。部品を初めて使用するときに 1 回だけ呼ぶ |
+
+部品を使用する `mount`・`mountView`・`mountComments` を呼ぶ前に呼ぶ。
+同じ名前にもう一度呼ぶと、後の `loader` で置き換える。その部品を読み込んだ後に呼んだときは、読み込み済みのモジュールを使用し続ける。
+指定しない部品は、`dist/index.js` の隣から読み込む。
+配布物を埋めたページでは、使用する部品を全て指定する。指定しない部品は隣の URL を作れず、読み込めない。
+型 `setPartModuleLoader` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+
+### レスポンス
+
+| 型 | 説明 |
+| --- | --- |
+| `undefined` | 返却しない |
+
+### エラー
+
+| 起きたこと | 動き |
+| --- | --- |
+| `name` が `"map"`・`"view"`・`"comments"` のどれでもない、`loader` が関数でない | `TypeError` を同期で投げる。指定は変えず、メッセージに誤った引数の名前を含める |
+| `loader` が reject する、返却したモジュールが部品の関数を export していない、指定しない部品の隣の URL を作れない | `setPartModuleLoader` は投げない。`mount` は部品の名前と元のエラーを `console.error` に出して、ほかの描画を続ける。`mountView`・`mountComments` は `Promise` を元のエラーで reject する |
 
 ## テーマの CSS 変数
 
