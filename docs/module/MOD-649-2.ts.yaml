@@ -1,0 +1,178 @@
+title: ライブラリ本体 / map / 配置 / mindmap-layout.ts
+visibility: internal
+lead: マインドマップの木の配置（根を中央に配置し、枝を左右の外へ広げる）と枝の色を受け持ち、map のマインドマップの配置を変えるときに参照する。
+test_files:
+  - tests/unit/src/map/mindmap-layout.test.ts
+data_models:
+  - name: MindmapLayout
+    title: マインドマップの配置
+    container: src/map/mindmap-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`layoutMindmap` の戻り値。部品設計『mapのマインドマップ』の `tree`'
+    properties:
+      - name: items
+        type: MindmapPlacement[]
+        description: 描く項目（今の図の根と、閉じた項目の子孫を除く子孫）
+      - name: curves
+        type: MindmapCurve[]
+        description: 親から子への曲線
+      - name: width
+        type: number
+        description: 図の幅（外周の余白を含む）
+      - name: height
+        type: number
+        description: 図の高さ（外周の余白を含む）
+  - name: MindmapPlacement
+    title: マインドマップの項目の配置
+    container: src/map/mindmap-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 項目 1 つの位置と描き方
+    properties:
+      - name: stateKey
+        type: string
+        description: 項目の `stateKey`
+      - name: x
+        type: number
+        description: 左端
+      - name: y
+        type: number
+        description: 上端
+      - name: width
+        type: number
+        description: 幅
+      - name: height
+        type: number
+        description: 高さ
+      - name: side
+        type: '"root" | "left" | "right"'
+        description: 今の図の根か、根の左右のどちらの側か
+      - name: color
+        type: string | undefined
+        description: 枝の色の名前（`mindmapBranchColor`）。全体の図の根は無い
+      - name: hasChildren
+        type: boolean
+        description: 子を持つか（持ち手を付けるか。今の図の根は `false`）
+      - name: descendants
+        type: number
+        description: 子孫の項目の数（閉じた項目の開閉のボタンに出す）
+  - name: MindmapCurve
+    title: マインドマップの枝の曲線
+    container: src/map/mindmap-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 親から子への曲線 1 本
+    properties:
+      - name: from
+        type: string
+        description: 親の `stateKey`
+      - name: to
+        type: string
+        description: 子の `stateKey`
+      - name: d
+        type: string
+        description: SVG の `path` の `d`。親が今の図の根なら根の子の側の辺の中央、それ以外は親の持ち手の先から、子の内側の辺の中央（`plain` の子は下線の高さ）への 3 次ベジェ曲線
+      - name: color
+        type: string | undefined
+        description: 子の枝の色の名前
+constants:
+  - name: MINDMAP_LAYOUT
+    title: マインドマップの配置の寸法
+    container: src/map/mindmap-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: モック map-mindmap の寸法（px）。レイヤーの間 `gapX`・兄弟の間 `gapY`・外周の余白 `margin`・持ち手の幅 `gripWidth`（ボタン 28px を 2 つと間 4px に余白を加えた幅）・測る前の項目の大きさ `itemWidth` × `itemHeight`
+    value: '{ gapX: 72, gapY: 16, margin: 32, gripWidth: 64, itemWidth: 120, itemHeight: 40 }'
+  - name: MINDMAP_BRANCH_COLORS
+    title: 枝の色の順
+    container: src/map/mindmap-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: 1 レイヤー目の枝に記載順で割り当てる色の名前。7 つ目からは先頭に戻る
+    value: '["blue", "green", "orange", "purple", "red", "yellow"]'
+functions:
+  - name: layoutMindmap
+    title: マインドマップを配置する
+    kind: 関数
+    container: src/map/mindmap-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 今の図の根を中央に配置し、根の子を左右に振り分け、深いレイヤーほど外へ並べる木の配置と、親から子への曲線を求める。入れ子の自動配置（`layout.ts`）は使用しない
+    scope: public
+    args:
+      - name: options
+        type: '{ mindmap: Mindmap; top: string | undefined; collapsed: ReadonlySet<string>; sizes: ReadonlyMap<string, { width: number; height: number }> }'
+        required: true
+        description: 読み取り結果・今の図の根の `stateKey`（無ければ全体の根）・閉じた項目の `stateKey`・項目の `stateKey` ごとの大きさ（描いた項目を測った大きさ。無い項目は `itemWidth` × `itemHeight`）
+    returns:
+      type: MindmapLayout
+      description: 配置。根が無いときは項目と曲線が空
+    process: |-
+      1. 項目ごとに、自分の高さと、閉じていなければ子の占める高さ（子の占める高さの合計と間の `gapY`）の大きいほうを、その項目の占める高さにする
+      2. 今の図の根の子を記載順に、占める高さの合計が小さい側（同じなら右）へ振り分ける
+      3. 側ごとに、レイヤーの項目の幅（子を持つ項目は `gripWidth` を加える）の最大を加算して、レイヤーの横の位置を決める。根からは `gapX`、レイヤーの間も `gapX` を空け、左の側は右端をその位置にそろえる
+      4. 同じ親の子を記載順に上から並べ、親を子の並びの縦の中央に配置する。根は左右の側の高いほうの縦の中央に配置し、低い側は縦の中央にそろえる
+      5. 全体を外周の余白 `margin` から始まる座標にずらし、子の側の持ち手も含めた幅と高さを求める
+      6. 親から子への曲線を、`MindmapCurve` の `d` のとおりに求める
+    callees:
+      - '#functions[mindmapBranchColor]'
+    unit_tests:
+      - name: test_layout_mindmap
+        case: 正常
+        summary: 根を中央に配置し、枝を左右に振り分ける
+        condition: モックの `MINDMAP` を、全ての項目の大きさ 100 × 40 で配置する
+        mock: なし
+        expected: 項目が 14・曲線が 13 で、根の `side` が `root`。「目的」が `right`、「体制」が `left` で、右の側の項目の `x` が根より大きく、左の側は小さい。「利用者を増やす」が「継続して使ってもらう」より上で、「目的」の縦の中央が 2 つの子の縦の中央の平均。枝の色が記載順に `blue`・`green`・`orange`・`purple`
+      - name: test_layout_mindmap_when_collapsed
+        case: 正常
+        summary: 閉じた枝
+        condition: 同じ配置で、`collapsed` に「体制」
+        mock: なし
+        expected: 項目が 11 で「人手が足りない」が無く、「体制」の `descendants` が 3・`hasChildren` が `true`
+      - name: test_layout_mindmap_when_entered
+        case: 正常
+        summary: 枝の中
+        condition: 同じ配置で、`top` が「体制」
+        mock: なし
+        expected: 項目が 4 で、「体制」の `side` が `root`・`hasChildren` が `false`・`color` が `green`。子孫の `color` も `green`
+      - name: test_layout_mindmap_when_curves
+        case: 正常
+        summary: 曲線の始点と終点
+        condition: 同じ配置
+        mock: なし
+        expected: 根から「目的」への曲線が根の右の辺の中央から始まる。「目的」から「利用者を増やす」（`plain`）への曲線が「目的」の右端より `gripWidth` 右から始まり、「利用者を増やす」の左端の下端で終わる
+    refs:
+      - IF-472-35#constraints[map のマインドマップ]
+  - name: mindmapBranchColor
+    title: 枝の色を決める
+    kind: 関数
+    container: src/map/mindmap-layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 項目が属する全体の図の根からの 1 レイヤー目の枝の記載順で、`MINDMAP_BRANCH_COLORS` の色の名前を返却する（中へ入っても変えない）
+    scope: public
+    args:
+      - name: options
+        type: '{ mindmap: Mindmap; item: MindmapItem }'
+        required: true
+        description: 読み取り結果と項目
+    returns:
+      type: string | undefined
+      description: 色の名前。全体の図の根は無い
+    unit_tests:
+      - name: test_mindmap_branch_color
+        case: 正常
+        summary: 枝ごとの色
+        condition: モックの `MINDMAP` で、根・「目的」・「人手が足りない」と、根の子が 7 つのマインドマップの 7 つ目の子
+        mock: なし
+        expected: 根が `undefined`、「目的」が `blue`、「人手が足りない」が `green`、7 つ目の子が `blue`
+refs:
+  - IF-472-35#constraints[map のマインドマップ]
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:マインドマップ
+  - name: topic:図
+  - name: action:配置
+id: MOD-649-2

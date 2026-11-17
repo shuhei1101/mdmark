@@ -43,6 +43,8 @@ constants:
         value: ガントチャート
       - key: pie
         value: 円グラフ
+      - key: mindmap
+        value: マインドマップ
     refs:
       - IF-472-35#constraints[mermaid の描き方]
   - name: MERMAID_THEME_COLORS

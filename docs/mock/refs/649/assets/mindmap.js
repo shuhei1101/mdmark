@@ -497,7 +497,7 @@ export const createMindmap = (host, spec, initial = {}) => {
         for (const kid of top.children) if (kid.children.length) state.collapsed.add(kid.stateKey);
         render();
       }),
-      toolButton("reset", "選択を元に戻す", () => {
+      toolButton("reset", "配置と選択を元に戻す", () => {
         state.selected = undefined;
         render();
       }, state.selected ? {} : { disabled: "" }),

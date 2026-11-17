@@ -31,7 +31,7 @@ functions:
     container: src/map/index.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`root` の中の `div.mdmark-map` ごとに、種類で構成図・シーケンス図・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図のどれかを付け、案内と再生をつなぎ、片付ける関数を返す'
+    summary: '`root` の中の `div.mdmark-map` ごとに、種類で構成図・シーケンス図・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図・マインドマップのどれかを付け、案内と再生をつなぎ、片付ける関数を返す'
     scope: public
     callees:
       - MOD-472-130#functions[attachMapFlow]
@@ -44,6 +44,7 @@ functions:
       - MOD-472-140#functions[parseMapArgs]
       - MOD-472-135#functions[collectMapProblems]
       - MOD-472-135#functions[needsMermaidFallback]
+      - MOD-649-3#functions[attachMapMindmap]
     args:
       - name: root
         type: HTMLElement
@@ -61,7 +62,7 @@ functions:
       type: () => void
       description: 付けた操作と観察を外す関数
     process: |-
-      1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind`（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram`・`classDiagram`・`architecture`・`C4Context`）で `attachMapFlow`・`attachMapSequence`・`attachMapEr`・`attachMapState`・`attachMapClass`・`attachMapArchitecture`・`attachMapC4` のどれかに引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
+      1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind`（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram`・`classDiagram`・`architecture`・`C4Context`・`mindmap`）で `attachMapFlow`・`attachMapSequence`・`attachMapEr`・`attachMapState`・`attachMapClass`・`attachMapArchitecture`・`attachMapC4`・`attachMapMindmap` のどれかに引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
       2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`。範囲が `data-map-annotations` を持てば、そのキーを定義のある注記の ID として指定する）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に足すか、無ければ図の枠の前に部品『書き方の警告』を配置する
       3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く。再生を自動で進め始めたら構成図の `resumeFollow`、自動で進めたら構成図の `follow` で送り手と受け手のノードへ構成図の表示する枠をスクロールする（構成図に無い相手のメッセージではスクロールしない）
       4. `data-map-plain` を持つ範囲は、`needsMermaidFallback` が `true` なら図を付けず、`data-map-front-matter` と中のコードブロックのソースをつないだ元の文字を `renderCodeBlock`（`mermaid: true`）の mermaid のコードブロックにして範囲と置き換え、置き換えた要素を全てまとめて `hooks.restoreMermaid` に指定する。`false` なら手順 1 のとおり図を付け、手順 2 の記載の警告を出さない（許可しないリンク先はリンクを持たないノードで描く）
@@ -114,6 +115,12 @@ functions:
         condition: '`data-map-front-matter` に `title: 受付` を持ち、`style A fill:#f9f` の行を持つ `data-map-plain` の flowchart の範囲と、読める行だけの `data-map-plain` の範囲。`hooks.restoreMermaid` に呼ばれた引数を記録する関数を指定する'
         mock: なし（jsdom）
         expected: 1 つ目の範囲が `data-mdmark-mermaid` を持つ要素に替わり、その `code` の文字が `---` から始まり `style A fill:#f9f` を含む。`restoreMermaid` が 1 回、その要素だけを持つ配列で呼ばれる。図の枠は 2 つ目の範囲の 1 つだけ
+      - name: test_attach_map_when_mindmap
+        case: 正常
+        summary: マインドマップ
+        condition: '`data-map-kind="mindmap"` の範囲と、`data-map-plain` を持ち `::icon()` の行を持つ mindmap の範囲'
+        mock: なし（jsdom）
+        expected: 1 つ目の範囲が `div.map-mindmap-item` を持つ図の枠になり、2 つ目の範囲が `data-mdmark-mermaid` を持つ要素に替わる
     refs:
       - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
       - IF-472-35#constraints[範囲の外の map の図に付く操作]

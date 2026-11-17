@@ -1,0 +1,121 @@
+title: ライブラリ本体 / map / 描画と操作 / mindmap-view.ts
+visibility: internal
+lead: map のマインドマップの描画と操作を受け持ち、map のマインドマップの操作を変えるときに参照する。
+test_files:
+  - tests/unit/src/map/mindmap-view.browser.test.ts
+data_models:
+  - name: MapMindmapHandle
+    title: マインドマップの操作の口
+    container: src/map/mindmap-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachMapMindmap` の戻り値'
+    properties:
+      - name: destroy
+        type: () => void
+        description: 時計と操作を外す
+functions:
+  - name: attachMapMindmap
+    title: マインドマップを付ける
+    kind: 関数
+    container: src/map/mindmap-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`mindmap` を読み取って木の配置で描き、枝の開閉・中へ入る・項目の選択・案内と、構成図と同じ状態の保存・ツールチップ・拡大と縮小を付ける。構成図の描画（`attachMapFlow`）には乗せない'
+    scope: public
+    callees:
+      - MOD-649-1#functions[parseMindmap]
+      - MOD-649-1#functions[mindmapItemOf]
+      - MOD-649-2#functions[layoutMindmap]
+      - MOD-472-133#functions[renderMapMindmap]
+      - MOD-472-139#functions[parseMapData]
+      - MOD-472-129#functions[readMapState]
+      - MOD-472-129#functions[writeMapState]
+      - MOD-472-132#functions[attachBand]
+      - MOD-562-2#functions[readMapAnnotations]
+      - MOD-562-2#functions[linkAnnotationOwners]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`（`data-map-kind="mindmap"`）'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: '`parseMapArgs` の結果'
+    returns:
+      type: MapMindmapHandle
+      description: 片付ける関数
+    process: |-
+      1. `parseMindmap`・`parseMapData` で参照し、補足の `notes`・`layout`・`walkthroughs` の `nodes` と `enter`・マーカーの引数の `focus` のキーを `mindmapItemOf` で項目の `stateKey` にする。`ambiguous`・`missing` のキーはどの項目にも適用しない。`layout` は `color` と `collapsed` だけを使用する
+      2. `readMapState` に、全ての項目の `stateKey`・引数の `focus` の `stateKey`・`layout` の `collapsed` が `true` の `stateKey` を指定して状態を参照する
+      3. `layoutMindmap`（`top` は `entered`）で配置し、`renderMapMindmap`（`readMapAnnotations` の注記、`hints` は `config.features.hints`）を部品『図の枠』（種類 `map`・凡例無し・`wide`・`fitMin` 1）に入れる。ツールのボタンは「枝の外へ戻る」（中へ入っているときだけ押せる）・「全ての枝を開く」・「全ての枝を閉じる」・「配置と選択を元に戻す」（選んだときだけ押せる）。図のツールチップと拡大と縮小・ドラッグでのスクロールは `attachDiagrams` で付け、描くたびに `linkAnnotationOwners` で注記の持ち主を合わせる。項目にはドラッグの操作を付けない（項目の上のドラッグは図の枠の中のスクロールになる）
+      4. 描いた項目の大きさを測り、`layoutMindmap` に指定した大きさと違う項目があれば、測った大きさで配置し直して描き直す。最初に描いたときは、今の図の根の中心が表示する枠の中央に来るように表示する枠の中をスクロールする
+      5. 持ち手の開閉のボタン（`data-mindmap-toggle`）で `collapsed` を切り替え、中へ入るボタン（`data-mindmap-enter`）で `entered` をその項目にして `collapsed` から除外する。「枝の外へ戻る」で `entered` を親（親が全体の根なら無し）にする。「全ての枝を閉じる」は今の図の根の子のうち子を持つ項目を閉じる
+      6. 項目の名前の周りの余白と枠線（押せる要素）を押すと、その項目だけを `selected` にする（選んだ項目を押すと選択を解除する）。名前の文字・説明のマーカー・持ち手のボタンでは選ばない。押せる要素にフォーカスして Enter か Space でも選ぶ。Esc は構成図と同じく、選んでいれば選択を解除し、選んでいなければ 1 つ外へ戻る
+      7. 描き直した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
+      8. 補足の `walkthroughs` があれば `attachBand`（モード `walkthrough`）の手順にし、手順を進めるたびに手順の `enter` を `entered` にして、手順の `nodes` を `focus` にして描き直す
+    unit_tests:
+      - name: test_attach_map_mindmap
+        case: 正常
+        summary: 木の配置で描く
+        condition: モックの `MINDMAP`・`MINDMAP_DATA` の範囲
+        mock: なし
+        expected: '`figure.mdmark-diagram[data-diagram=map]` に項目が 14 あり、「目的」と「人手が足りない」に説明のマーカーがある。「配置と選択を元に戻す」と「枝の外へ戻る」が `disabled`'
+      - name: test_attach_map_mindmap_when_toggled
+        case: 正常
+        summary: 枝を閉じる
+        condition: 「体制」の開閉のボタンを押す
+        mock: '`writeMapState`'
+        expected: '`writeMapState` の `collapsed` が `["体制"]` で、「人手が足りない」が無く、描き直した後の `document.activeElement` が「体制」の開閉のボタン'
+      - name: test_attach_map_mindmap_when_entered
+        case: 正常
+        summary: 枝の中へ入って戻る
+        condition: 「体制」の中へ入るボタンを押し、次に Esc を押す
+        mock: '`writeMapState`'
+        expected: 押した後は `entered` が `体制` で項目が 4、上端に「企画の論点 › 体制」。Esc の後は `entered` が無く、項目が 14
+      - name: test_attach_map_mindmap_when_selected
+        case: 正常
+        summary: 項目を選ぶ
+        condition: 「体制」の押せる要素を押し、次に「体制」の名前の文字を押す。次に「利用者を増やす」の押せる要素にフォーカスして Enter、最後に Esc
+        mock: '`writeMapState`'
+        expected: 1 回目は `selected` が `["体制"]` で「配置と選択を元に戻す」が押せる。名前の文字では変わらず、Enter の後は `["利用者を増やす"]`、Esc の後は `[]`
+      - name: test_attach_map_mindmap_when_layout
+        case: 正常
+        summary: 補足の layout と同じ文字のキー
+        condition: モックの `MINDMAP_LAYOUT_DATA` に、`notes` の `課題` を加えた範囲
+        mock: なし
+        expected: 「目的」の枝の色が `purple` で面を持ち、「予算」が閉じている。2 つの「課題」に説明のマーカーが無い
+      - name: test_attach_map_mindmap_when_same_label_collapsed
+        case: 正常
+        summary: 同じ文字の項目の状態のキー
+        condition: 1 つ目の「課題」の開閉のボタンを押す
+        mock: '`writeMapState`'
+        expected: '`collapsed` が 1 つ目の「課題」の `n{order}` だけで、2 つ目の「課題」は開いたまま'
+      - name: test_attach_map_mindmap_when_walked
+        case: 正常
+        summary: 案内
+        condition: モックの `MINDMAP_WALK_DATA` の範囲で、案内の帯の次へを 2 回押す
+        mock: なし
+        expected: 「体制」を根に描き、「人手が足りない」と「課題」「体制」のほかの項目が `map-dim` を持つ
+      - name: test_attach_map_mindmap_when_initial_scroll
+        case: 正常
+        summary: 最初に根を中央へスクロールする
+        condition: 幅 390px の置き場所にモックの `MINDMAP` の範囲を付ける
+        mock: なし
+        expected: 表示する枠の `scrollLeft` が 0 より大きく、根の中心が表示する枠の中央にある。倍率が 1
+    refs:
+      - IF-472-35#constraints[map のマインドマップ]
+refs:
+  - IF-472-35#constraints[map のマインドマップ]
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:マインドマップ
+  - name: topic:図
+  - name: action:描画
+id: MOD-649-3
