@@ -1,0 +1,1 @@
+# 利用側が dist/index.js を 1 枚の HTML に埋めて Blob の URL から読んでも、map・view・comments の部品を読み込めるようにする
