@@ -61,7 +61,7 @@ docs:
     updated_at: '2026-11-17T07:11:52.903319+00:00'
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
-    change: 管理用の YAML のスキーマを `schemas/files.schema.yaml` と記載している箇所を、knowledge の `knowledge-files.schema.yaml` に直す
+    change: 管理用の YAML のスキーマを `schemas/files.schema.yaml` と記載している箇所を、knowledge の `knowledge-files.schema.yaml` に直す。`notes[フォルダの役割]` の `schemas/` の行から、設計書の種類ごとの Schema と「設計書の Schema は届けない」を削除する
     status: done
     updated_by: planner
     updated_at: '2026-11-17T07:11:52.903319+00:00'
