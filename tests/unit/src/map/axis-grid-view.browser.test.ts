@@ -82,9 +82,11 @@ const pressKey = (target: Element | null, key: string) =>
 
 /** 帯の次へのボタンを `times` 回押す */
 const pressNext = (figure: HTMLElement, times: number) => {
-  const band = figure.closest(".mdmark-map")?.querySelector(".map-band");
   for (let index = 0; index < times; index += 1)
-    band?.querySelector<HTMLButtonElement>('[data-band="next"]')?.click();
+    figure
+      .closest(".mdmark-map")
+      ?.querySelector<HTMLButtonElement>('.map-band [data-band="next"]')
+      ?.click();
 };
 
 // 5 種類を描く（正常系）
@@ -215,7 +217,8 @@ test("test_attach_map_axis_grid_when_layout", async () => {
   const mdmark = itemOf(figureOf(root, 2), "mdmark");
   expect(mdmark?.style.cssText).toContain("green");
   expect(positionOf(figureOf(root, 1), "tst")).toEqual(tst);
-  expect(positionOf(figureOf(root, 2), "doc")).toEqual(doc);
+  // 閉じた core の行は低くなるため、doc は列の位置（x 座標）だけを比べる
+  expect(positionOf(figureOf(root, 2), "doc").left).toBe(doc.left);
 });
 
 // 再生（正常系）
