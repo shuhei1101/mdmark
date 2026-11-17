@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: test-${{ github.ref }}-${{ inputs.layer || 'unit' }}
+  group: test-${{ github.ref }}-${{ inputs.layer || 'integration' }}
   cancel-in-progress: true
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     # 入力は環境変数を経由して参照し、run のスクリプトに直接埋めない
     env:
-      LAYER: ${{ inputs.layer || 'unit' }}
+      LAYER: ${{ inputs.layer || 'integration' }}
       PATHS: ${{ inputs.paths }}
     steps:
       - name: ブランチを取得する
