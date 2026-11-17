@@ -1638,7 +1638,7 @@ test("test_render_map_mindmap_when_hints_off", async () => {
   expect(part.html).not.toContain("mdmark-diagram-info");
   expect(part.tips).not.toContain('role="tooltip"');
   expect(innerHtml(part.html, 'data-node="a1"')).toMatch(
-    /<span class="mdmark-diagram-node-hit"[^>]*id="mdmark-note-owner-map-1-a1"/,
+    /<span class="mdmark-diagram-node-hit"[^>]*id="mdmark-note-owner-1-a1"/,
   );
 });
 
