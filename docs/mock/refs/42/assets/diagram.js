@@ -4,7 +4,7 @@
 // モックの見本だけの指定: data-mock-zoom（開いたときの倍率）・data-mock-scroll（開いたときの位置。図の座標の "x,y"）・
 // data-mock-open（開いたままにするツールチップの持ち主。線の id・"node:{箱の id}"・"term:{語}"）・data-mock-copy（"copied" / "failed" の知らせを出したまま）・
 // data-mock-hints="off"（機能 hints をオフにした文書。figure か祖先に書く。線の詳細・箱の入力・処理・出力・箱の hint のツールチップと印を出さない）・
-// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
+// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-fit-min（全体が収まる倍率の下限。figure か祖先に書く。map の図は 1）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
 
 // sample.js・glossary.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -1029,8 +1029,11 @@
     };
     viewport.addEventListener("scroll", stickTitles, { passive: true });
 
-    /** 枠に図の全体が収まる倍率。文書の中は幅だけ（リサイズハンドルで高さを変えた後は幅と高さ）、モーダルの中は幅と高さで決める。 */
-    const fitScale = () => Math.min(1, viewport.clientWidth / state.width, modal || state.userHeight ? viewport.clientHeight / state.height : 1);
+    // 全体が収まる倍率の下限（data-mock-fit-min。map の図は等倍より縮めない）。指定が無ければ下限なし
+    const fitMin = Number(figure.closest("[data-mock-fit-min]")?.dataset.mockFitMin ?? 0);
+
+    /** 枠に図の全体が収まる倍率。文書の中は幅だけ（リサイズハンドルで高さを変えた後は幅と高さ）、モーダルの中は幅と高さで決める。下限は fitMin。 */
+    const fitScale = () => Math.max(fitMin, Math.min(1, viewport.clientWidth / state.width, modal || state.userHeight ? viewport.clientHeight / state.height : 1));
 
     /** 倍率を当て、ボタンの有効・無効と移動のボタンの有無を合わせる。 */
     const apply = (scale) => {
