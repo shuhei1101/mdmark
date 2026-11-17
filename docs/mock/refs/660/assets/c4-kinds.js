@@ -31,12 +31,16 @@ export const toContext = (source) => {
   const kinds = {};
   const nodes = new Set();
   const unreadable = [];
+  // Node_L・Node_R の左右の指定（同じ親の配置先のノードの中で、L を左・R を右に横へ並べる）
+  const sides = [];
+  const parents = [];
   let index = 0;
   const lines = ["C4Context"];
   rest.forEach((raw, line) => {
     const text = raw.trim();
     const call = /^(\w+)\((.*)\)\s*(\{)?$/.exec(text);
     if (!call) {
+      if (text === "}") parents.pop();
       lines.push(raw);
       return;
     }
@@ -57,11 +61,14 @@ export const toContext = (source) => {
       return;
     }
     if (fn === "Container_Boundary") {
+      if (open) parents.push(values[0]);
       lines.push(`${indent}Boundary(${values[0]}, ${q(`${values[1]} ［Container］`)}) ${open}`);
       return;
     }
     if (NODES.has(fn)) {
       nodes.add(values[0]);
+      if (fn === "Node_L" || fn === "Node_R") sides.push({ id: values[0], side: fn.at(-1), parent: parents.at(-1) });
+      if (open) parents.push(values[0]);
       lines.push(`${indent}Boundary(${values[0]}, ${q(values[2] ? `${values[1]} ［${values[2]}］` : values[1])}) ${open}`);
       return;
     }
@@ -76,12 +83,18 @@ export const toContext = (source) => {
     }
     lines.push(raw);
   });
-  return { source: lines.join("\n"), kinds, nodes, unreadable };
+  const layout = {};
+  for (const parent of new Set(sides.map((entry) => entry.parent))) {
+    const group = sides.filter((entry) => entry.parent === parent);
+    const [anchor] = group;
+    for (const entry of group) layout[entry.id] = { order: entry.side === "L" ? 0 : 2, ...(entry === anchor ? {} : { align: anchor.id }) };
+  }
+  return { source: lines.join("\n"), kinds, nodes, unreadable, layout };
 };
 
 /** 4 種類の C4 図の map */
 export const createC4KindMap = (host, spec, initial = {}) => {
-  const { source, kinds, nodes, unreadable } = toContext(spec.source);
+  const { source, kinds, nodes, unreadable, layout } = toContext(spec.source);
   const patch = () => {
     for (const [id, row] of Object.entries(kinds)) {
       const element = host.querySelector(`[data-node="${CSS.escape(id)}"] .mdmark-diagram-node-kind`);
@@ -102,6 +115,6 @@ export const createC4KindMap = (host, spec, initial = {}) => {
   }
   host.append(figure);
   new MutationObserver(patch).observe(figure, { childList: true, subtree: true });
-  createC4Map(figure, { ...spec, source: drawn }, initial);
+  createC4Map(figure, { ...spec, source: drawn, data: { ...spec.data, layout: { ...layout, ...(spec.data?.layout ?? {}) } } }, initial);
   patch();
 };

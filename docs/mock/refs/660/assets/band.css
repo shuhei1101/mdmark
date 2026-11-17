@@ -41,8 +41,8 @@
 /* 手順のバー: 高さ 24px の押せる範囲の中に、6px の区切りを並べる */
 .pb-steps { position: relative; display: flex; align-items: center; gap: 3px; height: 24px; margin-top: 2px; cursor: pointer; touch-action: manipulation; border-radius: var(--mdmark-radius); }
 .pb-seg { position: relative; flex: 1 1 0; min-width: 0; height: 6px; border-radius: 3px; background: var(--mdmark-color-border); overflow: hidden; }
-.pb-seg.is-done { background: var(--mdmark-color-muted); }
-.pb-seg.is-current { height: 10px; background: color-mix(in srgb, var(--mdmark-color-link) 25%, var(--mdmark-color-border)); box-shadow: 0 0 0 1px var(--mdmark-color-link); }
+span.pb-seg.is-done { background: var(--mdmark-color-muted); }
+span.pb-seg.is-current { height: 10px; background: color-mix(in srgb, var(--mdmark-color-link) 25%, var(--mdmark-color-border)); box-shadow: 0 0 0 1px var(--mdmark-color-link); }
 .pb-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--mdmark-color-link); }
 /* 案 B: 区切りごとのボタン（押せる範囲を 24px にする） */
 button.pb-seg { height: 24px; padding: 0; border: 0; background: transparent; box-shadow: none; overflow: visible; cursor: pointer; }

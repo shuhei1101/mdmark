@@ -55,7 +55,7 @@ export const renderBand = (state) => {
   const steps =
     state.segUi === "buttons"
       ? `<div class="pb-steps" role="toolbar" aria-label="${unit.name}の一覧">${Array.from({ length: state.total }, (_, i) => `<button type="button" class="${segClass(i)}" data-band="seg" data-index="${i}" tabindex="${i === (index ?? 0) ? 0 : -1}" aria-label="${unit.name} ${i + 1}: ${escape(titles[i] ?? "")}"${i === index ? ' aria-current="step"' : ""} title="${i + 1}. ${escape(titles[i] ?? "")}"></button>`).join("")}</div>`
-      : `<div class="pb-steps" role="slider" tabindex="0" data-band="steps" aria-label="${unit.name}" aria-valuemin="1" aria-valuemax="${state.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${started ? `${index + 1}/${state.total} ${escape(titles[index] ?? "")}` : "始める前"}">${Array.from({ length: state.total }, (_, i) => `<span class="${segClass(i)}" title="${i + 1}. ${escape(titles[i] ?? "")}">${fill(i)}</span>`).join("")}</div>`;
+      : `<div class="pb-steps" role="slider" tabindex="0" data-band="steps" aria-label="${unit.name}" aria-valuemin="0" aria-valuemax="${state.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${started ? `${index + 1}/${state.total} ${escape(titles[index] ?? "")}` : "始める前"}">${Array.from({ length: state.total }, (_, i) => `<span class="${segClass(i)}" title="${i + 1}. ${escape(titles[i] ?? "")}">${fill(i)}</span>`).join("")}</div>`;
   const count = `${started ? index + 1 : "–"}/${state.total}`;
   const title = `<strong class="pb-title"${state.title ? "" : " hidden"}>${escape(state.title ?? "")}</strong>`;
   const text = `<p class="pb-text" aria-live="polite"${state.text ? "" : " hidden"}>${escape(state.text ?? "")}</p>`;
@@ -180,7 +180,8 @@ export const createFigure = (host, { title, nodes }) => {
   const content = host.querySelector(".pb-content");
   const zoom = host.querySelector(".pb-zoom");
   const MARGIN = 32;
-  const MAX = 2;
+  // 倍率の上限は読者の拡大の上限（src/diagram/geometry.ts の ZOOM.max）と同じ絶対の倍率
+  const MAX = 3;
   const fitScale = () => Math.min(viewport.clientWidth / 960, viewport.clientHeight / 560);
   let touched = false;
   viewport.addEventListener("pointerdown", () => { touched = true; });
@@ -205,7 +206,7 @@ export const createFigure = (host, { title, nodes }) => {
     const top = Math.min(...boxes.map((n) => n.y)) - MARGIN;
     const right = Math.max(...boxes.map((n) => n.x + 156)) + MARGIN;
     const bottom = Math.max(...boxes.map((n) => n.y + 40)) + MARGIN;
-    const scale = Math.max(fitScale(), Math.min(MAX * fitScale(), viewport.clientWidth / (right - left), viewport.clientHeight / (bottom - top)));
+    const scale = Math.max(fitScale(), Math.min(MAX, viewport.clientWidth / (right - left), viewport.clientHeight / (bottom - top)));
     apply(scale, viewport.clientWidth / 2 - ((left + right) / 2) * scale, viewport.clientHeight / 2 - ((top + bottom) / 2) * scale);
   };
   reset();
