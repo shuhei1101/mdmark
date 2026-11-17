@@ -5,3 +5,9 @@ confirmations:
     approver: shuhei1101
     commit: 9fbc582a
     thread: https://github.com/shuhei1101/mdmark/pull/649#discussion_r4598541423
+  - topic: map のマインドマップのモック（map-mindmap）の描き方と操作への合意
+    decision: モックのとおりで進める（推奨案 A。左右の振り分けは子孫の高さの合計が小さい側、開閉と中へ入るボタンは子の側の辺の持ち手、中へ入ったときの道筋は図の上端のパンくず）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 9527aba4
+    thread: https://github.com/shuhei1101/mdmark/pull/649#discussion_r4600161143
