@@ -38,7 +38,7 @@ args:
     type: オブジェクト
     required: false
     default: なし（薄くしない）
-    description: 案内で強調する項目。強調する項目と根からの道筋のほかを薄くする。選択を優先する
+    description: 案内で強調する項目（`{ nodes }`。構成図の部品の `focus` と補足の `walkthroughs` と同じキー）。強調する項目と根からの道筋のほかを薄くする。選択を優先する
   - name: hints
     type: 真偽値
     required: false
@@ -97,7 +97,7 @@ states:
       - name: entered
         value: 体制
       - name: focus
-        value: '{"items": ["人手が足りない"]}'
+        value: '{"nodes": ["人手が足りない"]}'
   - name: HintsOff
     description: ヒントをオフにした。説明のマーカーが無い
     args:
