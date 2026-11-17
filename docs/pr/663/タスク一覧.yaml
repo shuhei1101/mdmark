@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T21:56:46.681690+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: SC-472-8・SC-472-39 の期待結果
+    updated_by: planner
+    updated_at: '2026-11-17T22:00:43.072470+00:00'
   - process: モック作成
     status: skipped
     reason: 既存の部品の重なりの不具合の修正で、新しい見た目を決めないため対象外
