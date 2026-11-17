@@ -442,6 +442,8 @@ items:
   summary: ライブラリ本体 / 索引と用語 / backlinks.ts
 - page: MOD-472-286.ts.yaml
   summary: ライブラリ本体 / 記法 / badges.ts
+- page: MOD-647-1.ts.yaml
+  summary: ライブラリ本体 / 記法 / blocks.ts
 - page: MOD-472-284.ts.yaml
   summary: ライブラリ本体 / 記法 / callouts.ts
 - page: MOD-472-296.ts.yaml
@@ -510,6 +512,8 @@ items:
   summary: ライブラリ本体 / 記法 / text-color.ts
 - page: MOD-472-288.ts.yaml
   summary: ライブラリ本体 / 記法 / toc.ts
+- page: MOD-647-2.ts.yaml
+  summary: ライブラリ本体 / 記法 / tokens.ts
 - page: MOD-472-285.ts.yaml
   summary: ライブラリ本体 / 記法 / tree.ts
 - page: MOD-472-290.ts.yaml
@@ -530,12 +534,16 @@ items:
   summary: ライブラリ本体 / 書き出したHTMLの起動 / bundle.ts
 - page: MOD-472-248.ts.yaml
   summary: ライブラリ本体 / 書き出したHTMLの起動 / index.ts
+- page: MOD-647-3.ts.yaml
+  summary: ライブラリ本体 / 書き出したHTMLの起動 / includes.ts
 - page: MOD-472-244.ts.yaml
   summary: ライブラリ本体 / 書き出したHTMLの起動 / modules.ts
 - page: MOD-472-246.ts.yaml
   summary: ライブラリ本体 / 書き出したHTMLの起動 / route.ts
 - page: MOD-472-245.ts.yaml
   summary: ライブラリ本体 / 書き出したHTMLの起動 / view-state.ts
+- page: MOD-647-4.css.yaml
+  summary: ライブラリ本体 / 書き出したHTMLの起動 / viewer.css
 - page: MOD-472-156.ts.yaml
   summary: ライブラリ本体 / ビューとコメント / index.ts
 - page: MOD-472-154.ts.yaml
@@ -560,6 +568,8 @@ items:
   summary: VS Code 拡張機能 / 設定 / config.ts
 - page: MOD-472-98.ts.yaml
   summary: VS Code 拡張機能 / 拡張機能の入口 / deps.ts
+- page: MOD-647-5.ts.yaml
+  summary: VS Code 拡張機能 / 拡張機能の入口 / escape.ts
 - page: MOD-472-102.ts.yaml
   summary: VS Code 拡張機能 / 書き出し / embed.ts
 - page: MOD-472-99.ts.yaml
@@ -574,6 +584,8 @@ items:
   summary: VS Code 拡張機能 / 設定 / extensions-bundle.ts
 - page: MOD-472-97.ts.yaml
   summary: VS Code 拡張機能 / 拡張機能の入口 / log.ts
+- page: MOD-647-6.ts.yaml
+  summary: VS Code 拡張機能 / 拡張機能の入口 / workspace.ts
 - page: MOD-472-52.ts.yaml
   summary: VS Code 拡張機能 / Webview / messages.ts
 - page: MOD-589-4.ts.yaml

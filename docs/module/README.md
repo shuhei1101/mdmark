@@ -229,6 +229,7 @@
 | [ライブラリ本体 / 描画 / scope-css.ts](./MOD-472-216.ts.yaml) | ライブラリ本体 / 描画 / scope-css.ts |
 | [ライブラリ本体 / 索引と用語 / backlinks.ts](./MOD-472-264.ts.yaml) | ライブラリ本体 / 索引と用語 / backlinks.ts |
 | [ライブラリ本体 / 記法 / badges.ts](./MOD-472-286.ts.yaml) | ライブラリ本体 / 記法 / badges.ts |
+| [ライブラリ本体 / 記法 / blocks.ts](./MOD-647-1.ts.yaml) | ライブラリ本体 / 記法 / blocks.ts |
 | [ライブラリ本体 / 記法 / callouts.ts](./MOD-472-284.ts.yaml) | ライブラリ本体 / 記法 / callouts.ts |
 | [ライブラリ本体 / 記法 / card-grid.ts](./MOD-472-296.ts.yaml) | ライブラリ本体 / 記法 / card-grid.ts |
 | [ライブラリ本体 / 記法 / cards.ts](./MOD-472-272.ts.yaml) | ライブラリ本体 / 記法 / cards.ts |
@@ -263,6 +264,7 @@
 | [ライブラリ本体 / 索引と用語 / terms.ts](./MOD-472-263.ts.yaml) | ライブラリ本体 / 索引と用語 / terms.ts |
 | [ライブラリ本体 / 記法 / text-color.ts](./MOD-472-291.ts.yaml) | ライブラリ本体 / 記法 / text-color.ts |
 | [ライブラリ本体 / 記法 / toc.ts](./MOD-472-288.ts.yaml) | ライブラリ本体 / 記法 / toc.ts |
+| [ライブラリ本体 / 記法 / tokens.ts](./MOD-647-2.ts.yaml) | ライブラリ本体 / 記法 / tokens.ts |
 | [ライブラリ本体 / 記法 / tree.ts](./MOD-472-285.ts.yaml) | ライブラリ本体 / 記法 / tree.ts |
 | [ライブラリ本体 / 記法 / views.ts](./MOD-472-290.ts.yaml) | ライブラリ本体 / 記法 / views.ts |
 | [ライブラリ本体 / 描画 / warnings.ts](./MOD-472-213.ts.yaml) | ライブラリ本体 / 描画 / warnings.ts |
@@ -273,9 +275,11 @@
 | [ライブラリ本体 / 操作 / tree-logic.ts](./MOD-472-239.ts.yaml) | ライブラリ本体 / 操作 / tree-logic.ts |
 | [ライブラリ本体 / 書き出したHTMLの起動 / bundle.ts](./MOD-472-247.ts.yaml) | ライブラリ本体 / 書き出したHTMLの起動 / bundle.ts |
 | [ライブラリ本体 / 書き出したHTMLの起動 / index.ts](./MOD-472-248.ts.yaml) | ライブラリ本体 / 書き出したHTMLの起動 / index.ts |
+| [ライブラリ本体 / 書き出したHTMLの起動 / includes.ts](./MOD-647-3.ts.yaml) | ライブラリ本体 / 書き出したHTMLの起動 / includes.ts |
 | [ライブラリ本体 / 書き出したHTMLの起動 / modules.ts](./MOD-472-244.ts.yaml) | ライブラリ本体 / 書き出したHTMLの起動 / modules.ts |
 | [ライブラリ本体 / 書き出したHTMLの起動 / route.ts](./MOD-472-246.ts.yaml) | ライブラリ本体 / 書き出したHTMLの起動 / route.ts |
 | [ライブラリ本体 / 書き出したHTMLの起動 / view-state.ts](./MOD-472-245.ts.yaml) | ライブラリ本体 / 書き出したHTMLの起動 / view-state.ts |
+| [ライブラリ本体 / 書き出したHTMLの起動 / viewer.css](./MOD-647-4.css.yaml) | ライブラリ本体 / 書き出したHTMLの起動 / viewer.css |
 | [ライブラリ本体 / ビューとコメント / index.ts](./MOD-472-156.ts.yaml) | ライブラリ本体 / ビューとコメント / index.ts |
 | [ライブラリ本体 / ビューとコメント / spec.ts](./MOD-472-154.ts.yaml) | ライブラリ本体 / ビューとコメント / spec.ts |
 | [ライブラリ本体 / 検査 / git-env.ts](./MOD-472-253.ts.yaml) | ライブラリ本体 / 検査 / git-env.ts |
@@ -288,6 +292,7 @@
 | [VS Code 拡張機能 / 設定 / config-file.ts](./MOD-472-105.ts.yaml) | VS Code 拡張機能 / 設定 / config-file.ts |
 | [VS Code 拡張機能 / 設定 / config.ts](./MOD-472-104.ts.yaml) | VS Code 拡張機能 / 設定 / config.ts |
 | [VS Code 拡張機能 / 拡張機能の入口 / deps.ts](./MOD-472-98.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / deps.ts |
+| [VS Code 拡張機能 / 拡張機能の入口 / escape.ts](./MOD-647-5.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / escape.ts |
 | [VS Code 拡張機能 / 書き出し / embed.ts](./MOD-472-102.ts.yaml) | VS Code 拡張機能 / 書き出し / embed.ts |
 | [VS Code 拡張機能 / 書き出し / export.ts](./MOD-472-99.ts.yaml) | VS Code 拡張機能 / 書き出し / export.ts |
 | [VS Code 拡張機能 / 書き出し / html.ts](./MOD-472-100.ts.yaml) | VS Code 拡張機能 / 書き出し / html.ts |
@@ -295,6 +300,7 @@
 | [VS Code 拡張機能 / 拡張機能の入口 / extension.ts](./MOD-472-96.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / extension.ts |
 | [VS Code 拡張機能 / 設定 / extensions-bundle.ts](./MOD-472-106.ts.yaml) | VS Code 拡張機能 / 設定 / extensions-bundle.ts |
 | [VS Code 拡張機能 / 拡張機能の入口 / log.ts](./MOD-472-97.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / log.ts |
+| [VS Code 拡張機能 / 拡張機能の入口 / workspace.ts](./MOD-647-6.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / workspace.ts |
 | [VS Code 拡張機能 / Webview / messages.ts](./MOD-472-52.ts.yaml) | VS Code 拡張機能 / Webview / messages.ts |
 | [VS Code 拡張機能 / Webview / vite-env.d.ts](./MOD-589-4.ts.yaml) | VS Code 拡張機能 / Webview / vite-env.d.ts |
 | [VS Code 拡張機能 / プレビュー / assets.ts](./MOD-472-94.ts.yaml) | VS Code 拡張機能 / プレビュー / assets.ts |

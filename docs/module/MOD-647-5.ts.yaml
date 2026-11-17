@@ -1,0 +1,25 @@
+id: MOD-647-5
+visibility: internal
+title: VS Code 拡張機能 / 拡張機能の入口 / escape.ts
+lead: HTML として特別な文字のエスケープを受け持ち、拡張機能が組み立てる HTML のエスケープを変えるときに参照する。
+functions:
+  - name: escapeHtml
+    title: HTML の特別な文字をエスケープする
+    kind: 関数
+    container: vscode/src/escape.ts
+    role: 変換
+    scope: public
+    summary: "`&`・`<`・`>`・`\"`・`'` を文字参照にする"
+    args:
+      - name: text
+        type: string
+        required: true
+        description: エスケープする文字列
+    returns:
+      type: string
+      description: 要素の中身にも属性の値にも配置できる文字列
+tags:
+  - name: tool:vscode
+    main: true
+  - name: tool:html
+  - name: topic:エントリポイント

@@ -1,0 +1,45 @@
+id: MOD-647-4
+visibility: internal
+title: ライブラリ本体 / 書き出したHTMLの起動 / viewer.css
+lead: まとめた HTML の画面と印刷の規則を受け持ち、まとめた HTML の文書の一覧・狭い幅のバー・パネル・印刷の外観を変えるときに参照する。
+styles:
+  - name: viewer
+    title: まとめたHTMLのCSS
+    container: src/viewer/viewer.css
+    summary: まとめた HTML の画面（文書の一覧・狭い幅のバー・一覧のパネル・開いている文書）と印刷の規則。全ての規則を `@layer mdmark` に入れ、配布物の CSS の後に埋める
+    values:
+      - class_name: .mdmark-bundle
+        target: 画面全体
+        value: '`grid`（左に `16rem` の文書の一覧、右に開いている文書）・`min-height: 100svh`・背景色 `--mdmark-color-bg`'
+      - class_name: .mdmark-bundle-side
+        target: 横の文書の一覧
+        value: '`position: sticky` で画面に留め、高さ `100svh`・縦にスクロール・右に `--mdmark-color-border` の線'
+      - class_name: .mdmark-bundle-main
+        target: 開いている文書の領域
+        value: '`min-width: 0`。中の `.mdmark` は中央に配置し、内側の余白 `--mdmark-padding`'
+      - class_name: .mdmark-bundle-bar
+        target: 狭い幅のバー（一覧を開くボタンと開いている文書のタイトル）
+        value: '上に留まるバー。既定は `display: none`。下に `--mdmark-color-border` の線、背景色は `--mdmark-color-bg-opaque`'
+      - class_name: .mdmark-bundle-bar-title
+        target: バーの中の開いている文書のタイトル
+        value: '1 行に収め、収まらない分は `text-overflow: ellipsis` で省く。`font-weight: 600`'
+      - class_name: .mdmark-bundle-button
+        target: バーとパネルのボタン
+        value: 高さ `2.25rem`・`--mdmark-color-border` の線と角丸 `--mdmark-radius`・背景色 `--mdmark-color-bg-opaque`。ホバーで `--mdmark-color-surface`、`:focus-visible` で `--mdmark-color-link` の 2px の輪郭。`.is-icon` は幅を高さに統一し、中の svg は `1em` 角・`currentColor` の線
+      - class_name: .mdmark-bundle-panel
+        target: 文書の一覧のパネル
+        value: 左の端から重ねて開く幅 `min(20rem, 85vw)`・高さ `100svh`。`::backdrop` は `rgb(0 0 0 / 0.4)`
+      - class_name: .mdmark-bundle-panel-head と .mdmark-bundle-panel-title
+        target: パネルの頭とタイトル
+        value: 'タイトルと閉じるボタンを両端に配置し、タイトルは `--mdmark-color-heading`・`1rem`・`font-weight: 600`'
+      - class_name: '@media (width < 60rem)'
+        target: 狭い幅
+        value: '画面全体を 1 列にし、横の一覧を出さずにバーを出す。開いている文書に `--mdmark-sticky-top: calc(3.25rem + 1px)` を指定し、右側の目次と表の見出し行をバーの下に留める。見出しの `scroll-margin-block-start` を `4.5rem` にする'
+      - class_name: '@media print'
+        target: 印刷
+        value: 画面全体を `block` にし、一覧・バー・パネルを出さない。開いている文書の余白を `0` にし、関連文書のリンクの後ろに `data-doc-path` の文書のパスを併記する
+tags:
+  - name: tool:html
+    main: true
+  - name: topic:ナビゲーション
+  - name: topic:書き出し

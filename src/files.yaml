@@ -1658,10 +1658,10 @@ files:
       - to: MOD-472-286
         type: implements
   - path: render/syntax/blocks.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「範囲の記法のマーカーの組み合わせと、ブロックの前への記載の警告の差し込み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / 記法 / blocks.ts』の、範囲の記法のマーカーの開きと閉じの組み合わせと、記載の警告のブロックの前への差し込みを受け持つ。範囲のマーカーの組み方や警告を差し込む位置を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
-      - to: MOD-472-43
+      - to: MOD-647-1
         type: implements
   - path: render/syntax/callouts.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「注意書き」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
@@ -1856,10 +1856,10 @@ files:
       - to: MOD-472-288
         type: implements
   - path: render/syntax/tokens.ts
-    description: モジュール構成『ライブラリ本体 / 記法』のうち「記法のコアルールが共有するトークンの助け（マーカーの読み取り・閉じのマーカーの探索・機能の判定）」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / 記法 / tokens.ts』の、記法のコアルールが共有するトークンの処理（マーカーの読み取り・閉じのマーカーの探索・機能の判定・mdmark が出した HTML のトークン）を受け持つ。マーカーの読み取りや閉じの探し方を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
     related:
-      - to: MOD-472-43
+      - to: MOD-647-2
         type: implements
   - path: render/syntax/tree.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「ファイルツリー」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
@@ -1910,10 +1910,10 @@ files:
       - to: MOD-472-247
         type: implements
   - path: viewer/includes.ts
-    description: モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「書き出しの中身から文書ごとの取り込む文書の表を作る処理」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / 書き出したHTMLの起動 / includes.ts』の、書き出しの中身からの取り込む文書の表と mount の索引・参照の引数の組み立てを受け持つ。まとめた HTML で文書を開くときに指定する値を変えるときに参照する。
     tags: [tool:html]
     related:
-      - to: MOD-472-40
+      - to: MOD-647-3
         type: implements
   - path: viewer/index.ts
     description: モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「入口。埋めた中身を読み込んで 1 文書かまとめた HTML を起動する」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。
@@ -1940,10 +1940,10 @@ files:
       - to: MOD-472-245
         type: implements
   - path: viewer/viewer.css
-    description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の画面と印刷の規則（層 mdmark）。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を指定し、右側の目次の帯と表の見出し行を上の帯の下に留める」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。'
+    description: 'モジュール構成『ライブラリ本体 / 書き出したHTMLの起動 / viewer.css』の、まとめた HTML の画面と印刷の規則（層 mdmark。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を指定する）を受け持つ。まとめた HTML の文書の一覧・狭い幅のバー・パネル・印刷の外観を変えるときに参照する。'
     tags: [topic:ナビゲーション, tool:html]
     related:
-      - to: MOD-472-40
+      - to: MOD-647-4
         type: implements
   - path: views/index.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「dist/view.js の入口。drawView・attachView」を受け持つ。ビューやコメントの部品を変えるときに参照する。
