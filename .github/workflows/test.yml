@@ -84,6 +84,9 @@ jobs:
         # 手元の全件実行の最長の実測（1,816 秒）の 10 倍
         timeout-minutes: 305
         shell: bash
+        # ランナーが設定する XDG_CONFIG_HOME を空にする。テストの端末は HOME だけを差し替えるため、残ると unit のパスがランナーの ~/.config を指す
+        env:
+          XDG_CONFIG_HOME: ""
         run: |
           if [ -z "$PATHS" ]; then
             npm run test:integration 2>&1 | tee test.log
