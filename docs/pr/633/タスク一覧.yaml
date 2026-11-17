@@ -63,9 +63,14 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T00:10:03.091403+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T00:14:25.450628+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: skipped
+    reason: MOD-472-166 の unit_tests は上限を引数で差し替えて検査を確かめており、定数の値の変更で新規・変更の構成要素が無い。既存の tests/unit/scripts/build.test.ts を実装の工程で実行する
+    updated_by: planner
+    updated_at: '2026-11-17T00:14:45.758561+00:00'
   - process: 実装
     status: todo
   - process: 結合テスト作成
