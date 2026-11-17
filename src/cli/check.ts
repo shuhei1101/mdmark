@@ -746,7 +746,7 @@ export function checkMaps(
       for (const problem of collectMapProblems(
         { ...range, annotationIds: annotations },
         config.map,
-        true,
+        { includeUnknownKeys: true, idLinks: { mode: "skip" } },
       )) {
         issues.push({
           file: document.path,

@@ -1,0 +1,102 @@
+id: MOD-653-3
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / axis-grid-view.ts
+lead: map の軸と格子の配置の図の描画と操作（開閉・中へ入る・選択・案内と再生）を受け持ち、map の軸と格子の配置の図の操作を変えるときに参照する。
+test_files:
+  - tests/unit/src/map/axis-grid-view.browser.test.ts
+data_models:
+  - name: MapAxisGridHandle
+    title: 軸と格子の配置の図の操作のインターフェース
+    container: src/map/axis-grid-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachMapAxisGrid` の戻り値'
+    properties:
+      - name: destroy
+        type: () => void
+        description: 時計と操作を外す
+functions:
+  - name: attachMapAxisGrid
+    title: 軸と格子の配置の図を付ける
+    kind: 関数
+    container: src/map/axis-grid-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 5 種類を読み取って軸と格子の配置で描き、section と入れ子のブロックの開閉・中へ入る・選択・案内と再生と、構成図と同じ状態の保存・ツールチップ・拡大と縮小を付ける。構成図の描画（`attachMapFlow`）には乗せない
+    scope: public
+    callees:
+      - MOD-653-1#functions[parseAxisGrid]
+      - MOD-653-1#functions[axisGridItemOf]
+      - MOD-653-2#functions[layoutAxisGrid]
+      - MOD-472-133#functions[renderMapAxisGrid]
+      - MOD-472-139#functions[parseMapData]
+      - MOD-472-129#functions[readMapState]
+      - MOD-472-129#functions[writeMapState]
+      - MOD-472-132#functions[attachBand]
+      - MOD-562-2#functions[readMapAnnotations]
+      - MOD-562-2#functions[linkAnnotationOwners]
+      - MOD-472-144#functions[mermaidKindName]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`（`data-map-kind` が `gantt`・`timeline`・`gitGraph`・`journey`・`block`）'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: options
+        type: '{ args: MapArgs; today?: () => string }'
+        required: true
+        description: '`parseMapArgs` の結果と、今日の日付を返却する関数（既定は端末の今日の `YYYY-MM-DD`。テストで差し替える）'
+    returns:
+      type: MapAxisGridHandle
+      description: 片付ける関数
+    process: |-
+      1. `parseAxisGrid`・`parseMapData` で参照し、補足の `notes`・`layout`・`walkthroughs` の `nodes` と `enter`・マーカーの引数の `focus` のキーを `axisGridItemOf` で `stateKey` にする。`ambiguous`・`missing` のキーはどの項目にも適用しない。`layout` は `color` と `collapsed` だけを使用する
+      2. `readMapState` に、section と入れ子のブロックの `stateKey`・引数の `focus` の `stateKey`・`layout` の `collapsed` が `true` の `stateKey` を指定して状態を参照する
+      3. `layoutAxisGrid` で配置し、`renderMapAxisGrid`（`readMapAnnotations` の注記、`hints` は `config.features.hints`）を部品『図の枠』（種類 `map`・タイトルはマーカーの `title`、無ければ `grid.title`、無ければ `mermaidKindName` に `grid.firstWord`（`block-beta` など Mermaid の 1 行目の単語）を指定した名前・ジャーニーは描くたびに `renderMapAxisGridLegend` を凡例の行に入れる・`wide`・`fitMin` 1）に入れる。ツールのボタンは「外へ戻る」（中へ入っているときだけ押せる）・「全て開く」「全て閉じる」（section か入れ子のブロックを持つときだけ）・「配置と選択を元に戻す」（選んだときだけ押せる）。図のツールチップと拡大と縮小・ドラッグでのスクロールは `attachDiagrams` で付け、描くたびに `linkAnnotationOwners` で注記の持ち主を合わせる。項目にはドラッグの操作を付けない
+      4. 開閉のボタン（`data-map-section-toggle`）で `collapsed` を切り替え、中へ入るボタン（`data-map-section-enter`）で `entered` をその section にして `collapsed` から除外する。「外へ戻る」と Esc（選んでいないとき）で `entered` を外の入れ子（無ければ無し）にする
+      5. 項目・ガントチャートのタスク名・Git グラフのブランチ名のボタン・ジャーニーの凡例のボタンを押すと `selected` をその `{kind}:{key}`（`item:des` など）の 1 件にし、同じものを押すと解除する。Enter・Space でも選ぶ。ブロック図は構成図と同じく、ブロックと入れ子のブロックの名前（`data-map-section-select`）を押すと選んだものに足し（`selected` に `item:{key}` を 2 つまで保つ。3 つ目は前の 1 つを外す）、選んだものをもう一度押すと外す。Esc は選んでいれば選択を解除する
+      6. 描き直した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
+      7. 補足の `walkthroughs` があれば `attachBand`（モード `walkthrough`）の手順にする。無くて種類がガントチャート・タイムライン・Git グラフ・ジャーニーなら、`attachBand`（モード `playback`、`unit` は `task`・`period`・`commit`・`task`）の手順を、ガントチャートは開始日の順（同じ日は記載順）のタスク、ほかは記載順の期間・commit・タスクで作る。手順のタイトルと説明は制約『map の時系列の図の再生』のとおりにする。手順を進めるたびに、強調する項目が閉じた section の中にあれば section を `focus` にして描き直す
+    unit_tests:
+      - name: test_attach_map_axis_grid
+        case: 正常
+        summary: 5 種類を描く
+        condition: モックの `GANTT`・`TIMELINE`・`GIT_GRAPH`・`JOURNEY`・`BLOCK` とそれぞれの補足の範囲、`today` が 2026-11-12
+        mock: なし
+        expected: '`figure.mdmark-diagram[data-diagram=map]` が 5 つで、それぞれ `data-map-kind` を持つ。補足の説明を持つ項目に説明のマーカーがある。ブロック図を除く 4 つの図の下に再生の帯がある。`title` を持たないブロック図と Git グラフの図の枠のタイトルが「ブロック図」「Git グラフ」'
+      - name: test_attach_map_axis_grid_when_section_toggled
+        case: 正常
+        summary: section を閉じて中へ入る
+        condition: ガントチャートの「開発」の開閉のボタンを押し、次に 2 つ目の「準備」の中へ入るボタンを押し、Esc を押す
+        mock: '`writeMapState`'
+        expected: 閉じた後は `collapsed` が `["開発"]` で「開発（タスク 2 件）」があり、フォーカスが開閉のボタン。入った後は `entered` が `s3` で「全体 › 準備」が出る。Esc の後は `entered` が無い
+      - name: test_attach_map_axis_grid_when_selected
+        case: 正常
+        summary: 項目・ブランチ・人を選ぶ
+        condition: ガントチャートの「設計する」、Git グラフのブランチ名「feat」、ジャーニーの凡例の「AI」をそれぞれ押し、最後に Esc
+        mock: '`writeMapState`'
+        expected: '保った `selected` がそれぞれ `["item:des"]`・`["branch:feat"]`・`["actor:AI"]` で、ブランチ名と凡例のボタンが `aria-pressed="true"`。Esc の後は無い'
+      - name: test_attach_map_axis_grid_when_layout
+        case: 正常
+        summary: 補足の layout
+        condition: モックの `GANTT_LAYOUT_DATA` と `BLOCK_LAYOUT_DATA` の範囲
+        mock: なし
+        expected: 「公開」と `core` が閉じて描かれ、「mdmark」が `green` の面を持つ。`tst` の位置と `doc` の x 座標は `layout` を持たないときと同じ（閉じた `core` の行は低くなるため `doc` の y 座標は変わる）
+      - name: test_attach_map_axis_grid_when_played
+        case: 正常
+        summary: 再生
+        condition: Git グラフの帯の次へを 6 回押す。ガントチャートの「公開」を閉じてから帯の次へを 7 回押す
+        mock: なし
+        expected: Git グラフは帯のタイトルが `develop · c6` で 6 個目の commit のほかが `map-dim` を持つ。ガントチャートは閉じた「公開」の項目のほかが `map-dim` を持つ
+    refs:
+      - IF-472-35#constraints[map の section の開閉と中へ入る]
+      - IF-472-35#constraints[map の時系列の図の再生]
+refs:
+  - IF-472-35#constraints[map の軸と格子の配置の図の補足]
+tags:
+  - name: topic:map
+  - name: topic:図
+  - name: action:描画

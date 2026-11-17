@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import type { MdmarkMarkArgs } from "../../../src/extensions.ts";
 import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
+import type { PartName } from "../../../src/part-modules.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../helpers/charts.ts";
 import { addStyles } from "../helpers/dom.ts";
 
@@ -403,13 +404,13 @@ const MERMAID_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
 /** mermaid の図を描き終えるまでの待ちの上限（全件を並べて実行すると、5MB の mermaid のモジュールの読み込みに 10 秒を超えることがある） */
 const MERMAID_WAIT_MS = 60_000;
 
-/** gantt の mermaid のコードブロックを 1 つ持つ文書（map が描く種類は map の図になる） */
+/** pie の mermaid のコードブロックを 1 つ持つ文書（map が描く種類は map の図になる） */
 const MERMAID_MARKDOWN = [
   "```mermaid",
-  "gantt",
-  "  dateFormat YYYY-MM-DD",
-  "  section 設計",
-  "  画面 :a1, 2026-01-01, 3d",
+  "pie",
+  "  title 予定",
+  '  "設計" : 3',
+  '  "実装" : 5',
   "```",
   "",
 ].join("\n");
@@ -1413,3 +1414,136 @@ test(
   },
   MERMAID_WAIT_MS * 2 + 30_000,
 );
+
+/** 代役の部品のモジュールが呼ばれたことを記録する場所 */
+type Recorder = { attached: Element[]; detached: number };
+
+/** 代役の部品のモジュールが書き込む記録の配置場所（グローバル） */
+declare global {
+  var __mdmarkMountTest: Recorder | undefined;
+}
+
+/** attachView が呼ばれた要素と削除した回数を記録する、ビューの代役のモジュールのコード */
+const VIEW_MODULE_CODE = `
+const rec = globalThis.__mdmarkMountTest;
+export function drawView() { return () => {}; }
+export function attachView(view) {
+  rec.attached.push(view);
+  return () => { rec.detached += 1; };
+}
+`;
+
+/** ビューのマーカーを持つ文書 */
+const VIEW_MARKDOWN = [
+  '<!-- view: {"board": {"group": {"column": "状態"}}} -->',
+  "",
+  "| タイトル | 状態 |",
+  "| --- | --- |",
+  "| a | 未着手 |",
+  "",
+  "<!-- /view -->",
+  "",
+].join("\n");
+
+/** attachComments が受けた root を記録する、コメントの代役のモジュールのコード */
+const COMMENTS_MODULE_CODE = `
+const rec = globalThis.__mdmarkMountTest;
+export async function attachComments({ root }) {
+  rec.attached.push(root);
+  return {
+    detach: () => { rec.detached += 1; },
+    reload: async () => {},
+    focus: () => {},
+  };
+}
+`;
+
+/** 部品の代役のモジュールを登録して `run` を実行し、後始末をする */
+async function withStubPart(
+  part: { name: PartName; code: string },
+  run: (record: Recorder) => Promise<void>,
+): Promise<void> {
+  const record: Recorder = { attached: [], detached: 0 };
+  globalThis.__mdmarkMountTest = record;
+  const { partModules, partModuleLoaders, setPartModuleLoader } =
+    await loadPartModules();
+  partModules.clear();
+  partModuleLoaders.clear();
+  const url = URL.createObjectURL(
+    new Blob([part.code], { type: "text/javascript" }),
+  );
+  setPartModuleLoader(part.name, () => import(/* @vite-ignore */ url));
+  try {
+    await run(record);
+  } finally {
+    for (const handle of handles.splice(0)) {
+      handle.destroy();
+    }
+    partModules.clear();
+    partModuleLoaders.clear();
+    URL.revokeObjectURL(url);
+    globalThis.__mdmarkMountTest = undefined;
+  }
+}
+
+// ビューのマーカーがあると部品を付け、再描画すると前の部品を削除する（正常系）
+test("test_mount_when_view_marked", async () => {
+  await withStubPart(
+    { name: "view", code: VIEW_MODULE_CODE },
+    async (record) => {
+      // 準備
+      const el = createElement();
+      // 実行
+      const handle = await mountTracked(el, { markdown: VIEW_MARKDOWN });
+      await vi.waitFor(() => expect(record.attached).toHaveLength(1));
+      // 検証
+      expect(record.attached[0]).toBe(el.querySelector("div.mdmark-view"));
+      expect(record.detached).toBe(0);
+      // 実行
+      handle.update("マーカーの無い文書\n");
+      // 検証
+      await vi.waitFor(() => expect(record.detached).toBe(1));
+    },
+  );
+});
+
+// 右側の目次が無くても、コメントの機能では本文を列に包む（正常系）
+test("test_mount_when_comments_without_side_toc", async () => {
+  await withStubPart(
+    { name: "comments", code: COMMENTS_MODULE_CODE },
+    async (record) => {
+      // 準備
+      addStyles();
+      const el = createElement();
+      // 実行
+      const handle = await mountTracked(el, {
+        markdown: "見出しの無い段落\n",
+        config: { features: { comments: true } },
+        commentStore: {
+          load: async () => [],
+          save: async ({ comment }) => ({ ...comment, id: "c1" }),
+        },
+        docId: "doc",
+      });
+      await vi.waitFor(() => expect(record.attached).toHaveLength(1));
+      // 検証
+      const content = el.firstElementChild as HTMLElement;
+      expect(content.matches("div.mdmark-content")).toBe(true);
+      expect(record.attached[0]).toBe(content);
+      // 実行
+      const margin = document.createElement("div");
+      margin.className = "mdmark-comment-margin";
+      margin.style.height = "20px";
+      content.after(margin);
+      // 検証
+      const contentRect = content.getBoundingClientRect();
+      const marginRect = margin.getBoundingClientRect();
+      expect(marginRect.top).toBeCloseTo(contentRect.top, 0);
+      expect(marginRect.left).toBeGreaterThan(contentRect.right);
+      // 実行
+      handle.destroy();
+      // 検証
+      expect(el.childNodes).toHaveLength(0);
+    },
+  );
+});

@@ -71,7 +71,7 @@ test("test_mermaid_kind_name", async () => {
   // 準備
   const { mermaidKindName } = await loadSource();
   // 実行
-  const names = ["stateDiagram-v2", "journey", "constructor"].map(
+  const names = ["stateDiagram-v2", "quadrantChart", "constructor"].map(
     mermaidKindName,
   );
   // 検証

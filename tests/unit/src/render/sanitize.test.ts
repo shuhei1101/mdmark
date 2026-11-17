@@ -465,3 +465,35 @@ test("test_is_allowed_url", async () => {
   // 検証
   expect(results).toEqual([true, true, true, true, false, false, false]);
 });
+
+// 返却した URL を許可で確認する（正常系）
+test("test_resolve_id_href", async () => {
+  // 準備
+  const { resolveIdHref } = await import("../../../../src/render/sanitize.ts");
+  const resolveIdLink = (href: string) => {
+    if (href === "id:boom") throw new Error("boom");
+    if (href === "id:bad") return "javascript:alert(1)";
+    return href.startsWith("id:SC-")
+      ? `https://docs.example.com/${href.slice("id:".length)}`
+      : undefined;
+  };
+  // 実行
+  const results = [
+    "id:SC-1#scenarios[正常シナリオ]",
+    "id:bad",
+    "id:boom",
+    "id:unknown",
+  ].map((href) => resolveIdHref({ href, resolveIdLink }));
+  const withoutFunction = resolveIdHref({
+    href: "id:SC-1",
+    resolveIdLink: undefined,
+  });
+  // 検証
+  expect(results).toEqual([
+    "https://docs.example.com/SC-1#scenarios[正常シナリオ]",
+    undefined,
+    undefined,
+    undefined,
+  ]);
+  expect(withoutFunction).toBeUndefined();
+});

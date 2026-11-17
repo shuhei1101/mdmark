@@ -285,6 +285,7 @@ export const erToFlowchart = (
     groups: flowGroups,
     edges,
     links: {},
+    linkLines: {},
     problems: er.problems,
   };
 };

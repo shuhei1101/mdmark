@@ -53,6 +53,13 @@ states:
         value: '1'
       - name: title
         value: 長い手順のタイトルで、1 行目に収まらない
+  - name: CommitPlayback
+    description: Git グラフの commit の再生。タイトルが「{ブランチ名} · {commit のキー}」で、ボタンの名前が前の commit・次の commit・再生をやめる
+    args:
+      - name: mode
+        value: playback
+      - name: unit
+        value: commit
 lead: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図）の帯。1 行目に番号・タイトル・前へ・停止・自動で進める・次への 4 つのボタンを置き、2 行目から説明の文を出す。
 args:
   - name: mode
@@ -65,8 +72,8 @@ args:
     type: 列挙
     required: false
     default: message
-    choices: '`message`・`transition`'
-    description: 再生で進める単位。`playback` のボタンの名前を、`message` ではメッセージ、`transition`（状態遷移図）では遷移にする
+    choices: '`message`・`transition`・`task`・`period`・`commit`'
+    description: 再生で進める単位。`playback` のボタンの名前を、`message` ではメッセージ、`transition`（状態遷移図）では遷移、`task`（ガントチャート・ジャーニー）ではタスク、`period`（タイムライン）では期間、`commit`（Git グラフ）では commit にする
   - name: total
     type: 整数
     required: true
@@ -115,7 +122,7 @@ uses:
     how: 前へ・停止・自動で進める（一時停止）・次へのアイコン
 accessibility:
   - 帯は `role="region"` と `aria-label`（引数 `label`）を持ち、文の要素は `aria-live="polite"`
-  - ボタンはアイコンだけで、スクリーンリーダー向けの名前と `title` を、案内では `前の手順`・`案内をやめる`・`自動で進める`（自動のときは `一時停止`）・`次の手順`、再生では `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`（`unit` が `transition` のときは `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`）にする
+  - ボタンはアイコンだけで、スクリーンリーダー向けの名前と `title` を、案内では `前の手順`・`案内をやめる`・`自動で進める`（自動のときは `一時停止`）・`次の手順`、再生では `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`（`unit` が `transition`・`task`・`period`・`commit` のときは、`前の遷移`・`次の遷移` と同じく `前の{単位}`・`次の{単位}`）にする
   - 番号は等幅の数字で出し、説明の文の行数によらずボタンの位置を変えない
 refs:
   - IF-472-35#

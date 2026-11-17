@@ -1045,6 +1045,18 @@ files:
   - path: refs/630/index.md
     description: '#630（map の範囲の外の mermaid のコードブロックにも map の図の操作を付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/653/assets/axis-grid.js
+    description: '#653 のモックの軸と格子の配置の図: gantt・timeline・gitGraph・journey・block-beta の Mermaid と補足を読み、日付・記載順の軸か columns の格子に沿って、今のフロー図の部品の上に項目・section と入れ子のブロックの開閉と中へ入るボタン・選択と強調・再生の帯・書き方の警告を描く処理。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/653/assets/axis-grid.css
+    description: '#653 のモックの軸と格子の配置の図の規則: ガントチャートの棒と日付の軸と今日の線・タイムラインの期間と出来事・Git グラフの線と commit の丸・ジャーニーの顔の印と人の丸・ブロック図の形状と線、section と入れ子の面と開閉のボタン、選択と薄くする表示、パンくず。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/653/assets/samples.js
+    description: '#653 のモックの見本: ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の Mermaid と補足（説明・layout）と、読めない行を持つ Mermaid。このモックの図の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/653/index.md
+    description: '#653（map で gantt・timeline・gitGraph・journey・block-beta を軸と格子に沿って描く）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/649/assets/mindmap.js
     description: '#649 のモックのマインドマップ: mindmap の Mermaid と補足を読み、根を中央に配置して枝を左右の外へ広げる木の配置で、今のフロー図の部品の上に項目の形状・枝の曲線・開閉と中へ入るボタン・選択と強調・案内の帯・書き方の警告を描く処理。このモックの振る舞いを変えるときに参照する。'
     tags: [topic:モック, topic:図]
@@ -1203,6 +1215,9 @@ files:
     tags: [topic:モック, topic:図]
   - path: components/plain-mermaid/index.html
     description: '部品『plain-mermaid』のモック: map の範囲の外の mermaid のコードブロックの、今の描き方（mermaid の図）と案 A（補足の無い map の図）の flowchart・sequenceDiagram・classDiagram と、map が描けない種類の gantt。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/map-axis-grid/index.html
+    description: '部品『map-axis-grid』のモック: map のガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の、軸と格子に沿った配置・section と入れ子のブロックの開閉と中へ入る・選択と強調・再生・補足の layout と書き方の警告・範囲の外のコードブロック・読めない行・狭い幅。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: components/map-mindmap/index.html
     description: '部品『map-mindmap』のモック: map のマインドマップの、根を中央に配置した木の配置・項目の形状と枝の色・枝の開閉と中へ入る・項目の選択と強調・補足の layout と書き方の警告・案内・範囲の外のコードブロック・読めない行・狭い幅。部品の外観や状態を決めるときに参照する。'

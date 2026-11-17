@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links
+
+
+ Test Files  306 passed (306)
+      Tests  2363 passed (2363)
+   Start at  04:11:26
+   Duration  34.14s (worker 83%, tests 10%, import 6%, transform 1%)
+
+exit=0

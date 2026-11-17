@@ -1109,14 +1109,6 @@ files:
     related:
       - to: src/mount-parts.ts
         type: tests
-  - path: unit/src/mount-view.browser.test.ts
-    description: mount が描いた文書のビューのマーカーを、部品のモジュールを読み込んでビューにする流れをブラウザで確認する単体テスト。mount からビューを描く流れを変えたときに参照する。
-    tags: [topic:単体テスト, tool:vitest, topic:ビュー]
-    related:
-      - to: src/mount.ts
-        type: tests
-      - to: src/part-modules.ts
-        type: tests
   - path: unit/src/mount.browser.test.ts
     description: src/mount.ts（「公開関数 mount と、描いた要素の記録」）を確認するブラウザで実行する単体テスト。mount.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:markdown]

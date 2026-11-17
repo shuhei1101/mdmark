@@ -363,11 +363,11 @@ test("test_build_code_blocks_when_mermaid", () => {
   // 準備
   const markdown = [
     "```mermaid",
-    "gantt",
+    "pie",
     "```",
     "",
     "```mermaid:a.mmd",
-    "gantt",
+    "pie",
     "```",
     "",
   ].join("\n");
@@ -388,7 +388,7 @@ test("test_build_code_blocks_when_mermaid_disabled", () => {
     '<!-- features: {"mermaid": false} -->',
     "",
     "```mermaid",
-    "gantt",
+    "pie",
     "```",
     "",
   ].join("\n");
@@ -402,7 +402,7 @@ test("test_build_code_blocks_when_mermaid_disabled", () => {
 // code がオフでも mermaid のコードブロックは帯を持たない部品にして属性を付ける（正常系）
 test("test_build_code_blocks_when_mermaid_without_code", () => {
   // 準備
-  const markdown = ["```mermaid", "gantt", "```", ""].join("\n");
+  const markdown = ["```mermaid", "pie", "```", ""].join("\n");
   // 実行
   const { html } = renderDoc(markdown, { code: false });
   // 検証

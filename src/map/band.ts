@@ -1,4 +1,4 @@
-import { renderMapBand } from "../parts/map.ts";
+import { type MapBandUnit, renderMapBand } from "../parts/map.ts";
 
 /** 帯が進める 1 つの手順 */
 export type BandStep = {
@@ -118,8 +118,8 @@ export const observeEnter: ObserveEnter = (target, onEnter) => {
 export const attachBand = (options: {
   figure: HTMLElement;
   mode: "walkthrough" | "playback";
-  /** 再生で進める単位（既定 message。状態遷移図は transition） */
-  unit?: "message" | "transition";
+  /** 再生で進める単位（既定 message。状態遷移図は transition、ガントチャートとジャーニーは task、タイムラインは period、Git グラフは commit） */
+  unit?: MapBandUnit;
   steps: BandStep[];
   /** 自動で進める間隔（秒） */
   interval: number;

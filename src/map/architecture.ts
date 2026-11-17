@@ -273,6 +273,7 @@ export const architectureToFlowchart = (
       groups,
       edges,
       links: {},
+      linkLines: {},
       problems: diagram.problems,
     },
     overrides,

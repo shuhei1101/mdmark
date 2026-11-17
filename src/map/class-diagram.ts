@@ -373,6 +373,7 @@ export const classToFlowchart = (diagram: ClassDiagram): Flowchart => {
     groups,
     edges,
     links: { ...diagram.links },
+    linkLines: {},
     problems: diagram.problems,
   };
 };

@@ -1,8 +1,19 @@
 import { expect, test } from "vitest";
-import { CONFIG, DATA, FLOW } from "../../helpers/map.ts";
+import {
+  BLOCK,
+  CONFIG,
+  DATA,
+  FLOW,
+  GANTT,
+  TIMELINE,
+  TIMELINE_DATA,
+} from "../../helpers/map.ts";
 
 /** map の点検を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCheck = () => import("../../../../src/map/check.ts");
+
+/** `id:` のノードのリンク先を確かめない扱い */
+const SKIP = { mode: "skip" } as const;
 
 /** 範囲を 1 つの mermaid のブロックと補足で組み立てる */
 const range = (mermaid: string, data?: string, args = "") => ({
@@ -18,7 +29,10 @@ test("test_collect_map_problems", async () => {
   // 準備
   const { collectMapProblems } = await loadCheck();
   // 実行
-  const problems = collectMapProblems(range(FLOW, DATA), CONFIG, true);
+  const problems = collectMapProblems(range(FLOW, DATA), CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: SKIP,
+  });
   // 検証
   expect(problems).toEqual([]);
 });
@@ -31,7 +45,7 @@ test("test_collect_map_problems_when_unknown_ref", async () => {
   const problems = collectMapProblems(
     range(FLOW, '{"version": 1, "notes": {"ghost": {"text": "無いノード"}}}'),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_unknown_ref"]);
@@ -49,7 +63,7 @@ test("test_collect_map_problems_when_group_note", async () => {
       '{"version": 1, "notes": {"lib": {"text": "記法を読み取る部分"}}}',
     ),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems).toEqual([]);
@@ -63,7 +77,7 @@ test("test_collect_map_problems_when_link_not_allowed", async () => {
   const problems = collectMapProblems(
     range('flowchart LR\n  a --> b\n  click a "javascript:alert(1)"\n'),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual([
@@ -84,7 +98,7 @@ test("test_collect_map_problems_when_wire_override_on_node", async () => {
       '{"version": 1, "layout": {"mount": {"via": [{"x": 0, "y": 0}]}}}',
     ),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual([
@@ -101,7 +115,7 @@ test("test_collect_map_problems_when_unknown_class", async () => {
   const problems = collectMapProblems(
     range("flowchart LR\n  A:::queue --> B\n"),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual([
@@ -121,7 +135,7 @@ test("test_collect_map_problems_when_unknown_line", async () => {
       '{"version": 1, "layout": {"A->B": {"line": "fast"}}}',
     ),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_unknown_line"]);
@@ -136,7 +150,7 @@ test("test_collect_map_problems_when_no_mermaid", async () => {
   const problems = collectMapProblems(
     { args: "", mermaid: undefined, mermaidCount: 0, data: DATA, dataCount: 1 },
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
@@ -147,7 +161,10 @@ test("test_collect_map_problems_when_unsupported_kind", async () => {
   // 準備
   const { collectMapProblems } = await loadCheck();
   // 実行
-  const problems = collectMapProblems(range('pie\n  "a": 1\n'), CONFIG, true);
+  const problems = collectMapProblems(range('pie\n  "a": 1\n'), CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: SKIP,
+  });
   // 検証
   expect(problems).toHaveLength(1);
   expect(problems[0]?.kind).toBe("map_invalid");
@@ -167,8 +184,14 @@ test("test_collect_map_problems_when_unknown_arg", async () => {
   const { collectMapProblems } = await loadCheck();
   const withArg = range("flowchart LR\n  A --> B\n", undefined, '{"mdoe": 1}');
   // 実行
-  const checked = collectMapProblems(withArg, CONFIG, true);
-  const drawn = collectMapProblems(withArg, CONFIG, false);
+  const checked = collectMapProblems(withArg, CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: SKIP,
+  });
+  const drawn = collectMapProblems(withArg, CONFIG, {
+    includeUnknownKeys: false,
+    idLinks: SKIP,
+  });
   // 検証
   expect(checked.map((problem) => problem.kind)).toEqual(["map_unknown_key"]);
   expect(checked[0]?.message).toContain("collapse");
@@ -216,7 +239,10 @@ test("test_collect_map_problems_when_er", async () => {
     },
   });
   // 実行
-  const problems = collectMapProblems(range(mermaid, data), CONFIG, true);
+  const problems = collectMapProblems(range(mermaid, data), CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: SKIP,
+  });
   // 検証
   expect(
     problems.filter((item) => item.kind === "map_unknown_ref"),
@@ -239,7 +265,7 @@ test("test_collect_map_problems_when_state", async () => {
   const problems = collectMapProblems(
     range("stateDiagram-v2\n  [*] --> 下書き\n", data),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems).toHaveLength(1);
@@ -258,17 +284,17 @@ test("test_collect_map_problems_when_class_architecture_c4", async () => {
     ...collectMapProblems(
       range(CLASS, data({ notes: { "図面.幽霊": { text: "a" } } })),
       CONFIG,
-      true,
+      { includeUnknownKeys: true, idLinks: SKIP },
     ),
     ...collectMapProblems(
       range(ARCH, data({ notes: { r9: { text: "a" } } })),
       CONFIG,
-      true,
+      { includeUnknownKeys: true, idLinks: SKIP },
     ),
     ...collectMapProblems(
       range(C4, data({ layout: { ghost: { color: "blue" } } })),
       CONFIG,
-      true,
+      { includeUnknownKeys: true, idLinks: SKIP },
     ),
   ];
   // 検証
@@ -367,7 +393,7 @@ test("test_collect_map_problems_when_mindmap", async () => {
   const problems = collectMapProblems(
     range(MINDMAP, data, '{"focus": "課題"}'),
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   const of = (kind: string) =>
@@ -405,7 +431,7 @@ test("test_collect_map_problems_when_mindmap_second_root", async () => {
   const problems = collectMapProblems(
     { ...range(MINDMAP_UNREADABLE), mermaidLine: 3 },
     CONFIG,
-    true,
+    { includeUnknownKeys: true, idLinks: SKIP },
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
@@ -428,4 +454,86 @@ test("test_needs_mermaid_fallback_when_mindmap", async () => {
   ];
   // 検証
   expect(results).toEqual([true, true, false]);
+});
+
+// 軸と格子の配置の図の補足のずれ（異常系）
+test("test_collect_map_problems_when_axis_grid", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const gitGraph = 'gitGraph\n  commit msg: "同じ"\n  commit msg: "同じ"\n';
+  const data = (body: object) => JSON.stringify({ version: 1, ...body });
+  // 実行
+  const problems = [
+    ...collectMapProblems(
+      range(
+        GANTT,
+        data({
+          notes: { 幽霊: { text: "無い" } },
+          layout: {
+            準備: { collapsed: true },
+            tst: { pos: { x: 1, y: 2 } },
+          },
+        }),
+      ),
+      CONFIG,
+      { includeUnknownKeys: true, idLinks: SKIP },
+    ),
+    ...collectMapProblems(
+      range(gitGraph, data({ notes: { 同じ: { text: "どちらか" } } })),
+      CONFIG,
+      { includeUnknownKeys: true, idLinks: SKIP },
+    ),
+    ...collectMapProblems(
+      range(BLOCK, data({ layout: { ghost: { color: "green" } } })),
+      CONFIG,
+      { includeUnknownKeys: true, idLinks: SKIP },
+    ),
+    ...collectMapProblems(range(TIMELINE, TIMELINE_DATA), CONFIG, {
+      includeUnknownKeys: true,
+      idLinks: SKIP,
+    }),
+  ];
+  // 検証
+  const of = (kind: string) =>
+    problems.filter((problem) => problem.kind === kind);
+  const unknown = of("map_unknown_ref");
+  expect(unknown).toHaveLength(2);
+  expect(unknown[0]?.message).toContain("notes.幽霊");
+  expect(unknown[1]?.message).toContain("layout.ghost");
+  const ambiguous = of("map_ambiguous_ref");
+  expect(ambiguous).toHaveLength(2);
+  expect(ambiguous[0]?.message).toContain("layout.準備");
+  expect(ambiguous[0]?.message).toContain("section");
+  expect(ambiguous[1]?.message).toContain("id:");
+  const invalid = of("map_invalid_value");
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]?.message).toContain("layout.tst.pos");
+  expect(problems).toHaveLength(5);
+});
+
+// id: のノードのリンク先（正常系）
+test("test_collect_map_problems_when_id_link", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const source =
+    'flowchart LR\n  A --> B\n  B --> C\n  click A "id:SC-1"\n  click C "javascript:alert(1)"\n';
+  // 実行
+  const skipped = collectMapProblems(range(source), CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: SKIP,
+  });
+  const resolved = collectMapProblems(range(source), CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: { mode: "resolve", resolveIdLink: undefined },
+  });
+  // 検証
+  expect(skipped.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(skipped[0]?.message).toContain("C");
+  expect(resolved.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+    "map_invalid_value",
+  ]);
+  expect(resolved.map((problem) => problem.message).join("\n")).toContain(
+    "A: id:SC-1",
+  );
 });

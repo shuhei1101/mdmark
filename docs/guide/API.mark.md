@@ -123,6 +123,7 @@ handle.destroy();
 | `opts.aliases` | 任意 | [`buildAliases`](#エイリアスを作る) が作ったエイリアスの並び（`MdmarkAlias[]`）。使用できないエイリアス（必須のキーが空・知らない種類・重なった `id`）は除いて使用し、`env` の種類は直接渡されても照合しない。`update` は描いたときのエイリアスを使用する。省くと、エイリアスを照合しない |
 | `opts.includes` | 任意 | 取り込む文書の表（`Record<string, string>`）。キーは描く文書のフォルダからのパス（区切りは `/`。`./`・`../` を解いた構造）、値はそのファイルの本文。[取り込み](./記法.mark.md#取り込み) のマーカーはこの表から参照する。mdmark はファイルを読み込まない。省くと、取り込みのマーカーの場所に記載の警告を出す |
 | `opts.icons` | 任意 | 配布物に入っていない名前の Lucide のアイコンの形状の表（`Record<string, IconNode>`）。表にある名前は jsDelivr から読み込まずにこの構造で描く。省くと、使用する名前だけを jsDelivr から読み込む |
+| `opts.resolveIdLink` | 任意 | `id:` で始まるリンク先（`id:` を含む値）を受け取り、開く URL を返却する関数（`(ref: string) => string \| undefined`）。本文の `[名前](id:...)` のリンクと、map の `flowchart` の `click` のノードのリンクに適用する。返却した URL も本文のリンクと同じ許可で確認する。省いたとき・URL を返却しないとき・例外を投げたときは、本文のリンクは `href` を持たず、ノードはリンクにせず記載の警告にする |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返却する取り出し元（`DiffSource`）。指定すると、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に指定する。省くと、差分の UI を付けない |
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を指定しないときは使用しない。知らない値は `button` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使用する。`opts.docId` と一緒に指定する。省くと、コメントを付けられない |
@@ -274,6 +275,7 @@ const html = render("# 見出し\n\n本文");
 | `opts.aliases` | 任意 | `mount` の `opts.aliases` と同じ |
 | `opts.includes` | 任意 | `mount` の `opts.includes` と同じ |
 | `opts.icons` | 任意 | `mount` の `opts.icons` と同じ。表に無いまとめていない名前は中が空の要素にする |
+| `opts.resolveIdLink` | 任意 | `mount` の `opts.resolveIdLink` と同じ。本文のリンクに適用する |
 
 <!-- /table -->
 

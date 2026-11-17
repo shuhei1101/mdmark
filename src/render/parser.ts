@@ -23,6 +23,7 @@ import {
   resolvePageSettings,
   takeMarks,
 } from "./marks.ts";
+import { type ResolveIdLink, resolveIdHref } from "./sanitize.ts";
 import {
   type AnnotationState,
   buildAnnotationList,
@@ -127,6 +128,8 @@ export type RenderEnv = {
   viewCount?: number;
   /** 取り込む文書の表（`render`・`mount` の `includes`） */
   includes?: Record<string, string> | undefined;
+  /** `id:` で始まる本文のリンク先を URL に変える、利用側の関数（`render`・`mount` の `resolveIdLink`） */
+  resolveIdLink?: ResolveIdLink | undefined;
   /** まとめていない名前のアイコンの形状の表（`render`・`mount` の `icons`） */
   icons?: Record<string, MdmarkIconNode> | undefined;
   /** 描いた記載の警告（最後のコアルール `collectWarningsRule` が入れる） */
@@ -343,12 +346,31 @@ export function findMarkTexts(markdown: string): FoundMark[] {
   return found;
 }
 
+/** コアルール: 本文のリンクの `id:` で始まるリンク先を、利用側の関数が返却した URL に置き換える（返却しなければそのままにし、`sanitize` が落とす） */
+function resolveIdLinks(state: StateCore): void {
+  const env = state.env as RenderEnv;
+  for (const token of state.tokens) {
+    for (const child of token.children ?? []) {
+      if (child.type !== "link_open") continue;
+      const raw = child.attrGet("href");
+      const href = raw === null ? "" : String(raw);
+      if (!href.startsWith("id:")) continue;
+      // markdown-it は `href` を URL エンコードして持つため、記載した文字に戻して利用側の関数に指定する
+      const url = resolveIdHref({
+        href: state.md.normalizeLinkText(href),
+        resolveIdLink: env.resolveIdLink,
+      });
+      if (url !== undefined) child.attrSet("href", url);
+    }
+  }
+}
+
 /** `html: true`・`linkify: true` の解析器に、追加するコアルールを登録して返却する */
 export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも取得させ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // マーカー → 機能の重ね合わせ → 取り込み → フロントマターの表示 → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 注記の番号と機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → map の範囲 → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 注記の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し → 注記の定義の取り出し
+  // マーカー → 機能の重ね合わせ → 取り込み → フロントマターの表示 → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 注記の番号と機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → map の範囲 → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 注記の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 本文の id: のリンク先 → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し → 注記の定義の取り出し
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
@@ -398,6 +420,7 @@ export function createParser(): MarkdownItParser {
     ["mdmark_backlinks", backlinksRule],
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
+    ["mdmark_resolve_id_links", resolveIdLinks],
     ["mdmark_drop_marks", dropMarks],
     ["mdmark_mark_source_lines", markSourceLines],
     ["mdmark_take_footnote_definitions", takeFootnoteDefinitions],

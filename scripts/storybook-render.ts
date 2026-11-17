@@ -23,6 +23,14 @@ import {
   MAP_ARCH_KINDS,
   parseArchitecture,
 } from "../src/map/architecture.ts";
+import {
+  type AxisGrid,
+  type AxisGridKind,
+  type AxisGridSelection,
+  axisGridItemOf,
+  parseAxisGrid,
+} from "../src/map/axis-grid.ts";
+import { layoutAxisGrid } from "../src/map/axis-grid-layout.ts";
 import { c4ToFlowchart, MAP_C4_KINDS, parseC4Context } from "../src/map/c4.ts";
 import {
   classPartInputs,
@@ -107,6 +115,8 @@ import { renderLightbox } from "../src/parts/lightbox.ts";
 import {
   type MapErFanout,
   renderMapArchitecture,
+  renderMapAxisGrid,
+  renderMapAxisGridLegend,
   renderMapBand,
   renderMapC4Diagram,
   renderMapClassDiagram,
@@ -149,6 +159,8 @@ import { warningsOf } from "../src/render/syntax/tables.ts";
 import {
   ARCH as MAP_ARCH,
   ARCH_DATA as MAP_ARCH_DATA,
+  BLOCK as MAP_BLOCK,
+  BLOCK_DATA as MAP_BLOCK_DATA,
   C4 as MAP_C4,
   C4_DATA as MAP_C4_DATA,
   CLASS as MAP_CLASS,
@@ -158,12 +170,21 @@ import {
   ER as MAP_ER,
   ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
+  GANTT as MAP_GANTT,
+  GANTT_DATA as MAP_GANTT_DATA,
+  GANTT_LAYOUT_DATA as MAP_GANTT_LAYOUT_DATA,
+  GIT_GRAPH as MAP_GIT_GRAPH,
+  GIT_GRAPH_DATA as MAP_GIT_GRAPH_DATA,
+  JOURNEY as MAP_JOURNEY,
+  JOURNEY_DATA as MAP_JOURNEY_DATA,
   MINDMAP as MAP_MINDMAP,
   MINDMAP_DATA as MAP_MINDMAP_DATA,
   MINDMAP_LAYOUT_DATA as MAP_MINDMAP_LAYOUT_DATA,
   SEQUENCE as MAP_SEQUENCE,
   STATE as MAP_STATE,
   STATE_DATA as MAP_STATE_DATA,
+  TIMELINE as MAP_TIMELINE,
+  TIMELINE_DATA as MAP_TIMELINE_DATA,
 } from "../tests/unit/helpers/map.ts";
 import { renderMediaError } from "../vscode/src/webview/shared/lib/media-error.ts";
 
@@ -886,6 +907,106 @@ const mindmapKeyed = <T>(
     }),
   );
 
+/** 部品『mapの軸と格子の配置の図』のストーリーの見本（Mermaid・補足・図の枠のタイトル） */
+const AXIS_GRID_SAMPLES: Record<
+  AxisGridKind,
+  { source: string; data: string; title: string }
+> = {
+  gantt: { source: MAP_GANTT, data: MAP_GANTT_DATA, title: "リリースの計画" },
+  timeline: {
+    source: MAP_TIMELINE,
+    data: MAP_TIMELINE_DATA,
+    title: "mdmark の歩み",
+  },
+  gitGraph: {
+    source: MAP_GIT_GRAPH,
+    data: MAP_GIT_GRAPH_DATA,
+    title: "Git グラフ",
+  },
+  journey: {
+    source: MAP_JOURNEY,
+    data: MAP_JOURNEY_DATA,
+    title: "文書を書いて読む",
+  },
+  block: { source: MAP_BLOCK, data: MAP_BLOCK_DATA, title: "ブロック図" },
+};
+
+/** 補足のキーを、軸と格子の配置の図の項目か section の `stateKey` にする（同じ文字の項目と無い項目は捨てる） */
+const axisGridKeyed = <T>(
+  grid: AxisGrid,
+  values: Record<string, T>,
+): Record<string, T> =>
+  Object.fromEntries(
+    Object.entries(values).flatMap(([key, value]) => {
+      const found = axisGridItemOf({ grid, key });
+      if (found.kind === "item") return [[found.item.stateKey, value]];
+      if (found.kind === "section") return [[found.section.stateKey, value]];
+      return [];
+    }),
+  );
+
+/** 部品『mapの軸と格子の配置の図』のストーリー（`kind` で種類、`layout: colored` でガントチャートの補足の layout を選ぶ） */
+function mapAxisGridStory(args: PartArgs): string {
+  const kind = (
+    typeof args.kind === "string" && args.kind in AXIS_GRID_SAMPLES
+      ? args.kind
+      : "gantt"
+  ) as AxisGridKind;
+  const sample = AXIS_GRID_SAMPLES[kind];
+  const grid = parseAxisGrid({ kind, source: sample.source });
+  const { data } = parseMapData(
+    kind === "gantt" && args.layout === "colored"
+      ? MAP_GANTT_LAYOUT_DATA
+      : sample.data,
+  );
+  const layout = axisGridKeyed(grid, data.layout);
+  const colors = Object.fromEntries(
+    Object.entries(layout).flatMap(([key, entry]) =>
+      entry.color === undefined ? [] : [[key, entry.color]],
+    ),
+  );
+  const collapsed = [
+    ...Object.entries(layout).flatMap(([key, entry]) =>
+      entry.collapsed === true ? [key] : [],
+    ),
+    ...jsonList(args.collapsed),
+  ];
+  const entered =
+    typeof args.entered === "string" && args.entered !== ""
+      ? args.entered
+      : undefined;
+  const selected = jsonObject<AxisGridSelection>(args.selected);
+  const placed = layoutAxisGrid({
+    grid,
+    entered,
+    collapsed: new Set(collapsed),
+    today: "2026-11-12",
+    selected,
+  });
+  const part = renderMapAxisGrid({
+    grid,
+    layout: placed,
+    filled: new Set(Object.keys(colors)),
+    colors,
+    collapsed,
+    entered,
+    selected,
+    focus: jsonObject<{ nodes: string[] }>(args.focus),
+    notes: noteTexts(axisGridKeyed(grid, data.notes)),
+    annotations: {},
+    hints: hintsOf(args.hints),
+    id: "story-map-axis-grid",
+    terms: undefined,
+  });
+  const html = mapFrame(sample.title, part, placed);
+  return kind === "journey"
+    ? html.replace(
+        /<ul class="mdmark-diagram-legend" aria-label="凡例" hidden="hidden"><\/ul>/,
+        `<ul class="mdmark-diagram-legend" aria-label="凡例">${renderMapAxisGridLegend({ grid, selected })}</ul>`,
+      )
+    : html;
+}
+
 /** map の部品を図の枠に入れる */
 const mapFrame = (
   title: string,
@@ -1429,10 +1550,17 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     });
     return mapFrame("企画の論点", part, tree);
   },
+  "map-axis-grid": mapAxisGridStory,
   "map-band": (args) =>
     renderMapBand({
       mode: args.mode === "playback" ? "playback" : "walkthrough",
-      unit: args.unit === "transition" ? "transition" : "message",
+      unit:
+        args.unit === "transition" ||
+        args.unit === "task" ||
+        args.unit === "period" ||
+        args.unit === "commit"
+          ? args.unit
+          : "message",
       total: typeof args.total === "number" ? args.total : 4,
       index: typeof args.index === "number" ? args.index : undefined,
       title: typeof args.title === "string" ? args.title : "",

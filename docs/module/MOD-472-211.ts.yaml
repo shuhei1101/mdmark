@@ -69,6 +69,9 @@ data_models:
       - name: markNotes
         type: 'Array<MarkNote & { line: number }>'
         description: 画面に出さないマーカーの注記（`recordMarkNotes` が追加し、`collectWarningsRule` が `warnings` に合わせる）
+      - name: resolveIdLink
+        type: ResolveIdLink | undefined
+        description: 利用側の `opts.resolveIdLink`（`renderDocument` が入れる）。コアルール `resolveIdLinks` が読み込む
   - name: FoundMark
     title: 取得したマーカー
     container: src/render/parser.ts
@@ -96,7 +99,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、追加するコアルールを登録して返却する'
-    description: 'コアルールは `inline` の後に次の順で登録する: マーカー（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ フロントマターの表示（`insertFrontmatter`。機能を決めた後、コードブロックの飾りより前）→ 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ 注記の番号と機能のオン・オフ（`collectAnnotations`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読み込むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ セクション → 目次 → 脚注の一覧（`buildFootnoteList`）→ 注記の一覧（`buildAnnotationList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残ったマーカー（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 注記の定義の取り出し（`takeAnnotationDefinitions`）→ 記載の警告を集める（`collectWarningsRule`）。
+    description: 'コアルールは `inline` の後に次の順で登録する: マーカー（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ フロントマターの表示（`insertFrontmatter`。機能を決めた後、コードブロックの飾りより前）→ 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ 注記の番号と機能のオン・オフ（`collectAnnotations`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読み込むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ セクション → 目次 → 脚注の一覧（`buildFootnoteList`）→ 注記の一覧（`buildAnnotationList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 本文の `id:` のリンク先（`resolveIdLinks`）→ 残ったマーカー（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 注記の定義の取り出し（`takeAnnotationDefinitions`）→ 記載の警告を集める（`collectWarningsRule`）。
 
       脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes`、注記の定義・参照のルールは `useAnnotations` で登録する。
 
@@ -269,6 +272,37 @@ functions:
     refs:
       - IF-472-34#constraints[元の行番号]
     status: planned
+  - name: resolveIdLinks
+    title: 本文のid:のリンク先をURLに変える
+    container: src/render/parser.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`link_open` の `href` が `id:` で始まるものを markdown-it の URL エンコードを `normalizeLinkText` で戻してから `resolveIdHref`（`env.resolveIdLink`）で URL に置き換える。`undefined` のときはそのままにし、`sanitize` がほかの許可しないスキームと同じく `href` を落とす
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態（`env` は `RenderEnv`）
+    returns:
+      type: void
+      description: トークンの `href` を書き換える
+    callees:
+      - MOD-472-214#functions[resolveIdHref]
+    refs:
+      - IF-472-34#constraints[URL のスキーム]
+    unit_tests:
+      - name: test_resolve_id_links
+        case: 正常
+        summary: '本文の id: のリンク'
+        condition: '`[仕様](id:SC-1)`・`[無い](id:unknown)` を、`id:SC-` だけを `https://docs.example.com/` に変える関数を `env.resolveIdLink` に入れて描く'
+        mock: なし
+        expected: 1 つ目の `href` が `https://docs.example.com/SC-1`、2 つ目の `a` が `href` を持たない
+      - name: test_resolve_id_links_when_encoded_characters
+        case: 正常
+        summary: 記載した文字のまま関数に指定する
+        condition: '`[一覧](id:SC-1#scenarios[正常シナリオ])` を、受け取った値を記録する関数を `env.resolveIdLink` に入れて描く'
+        mock: なし
+        expected: 関数が受け取った値が `id:SC-1#scenarios[正常シナリオ]`（markdown-it の URL エンコードを戻した値）
 lead: 'markdown-it の解析器と追加するコアルールを受け持ち、Markdown の解析を変えるときに参照する。'
 tags:
   - name: action:描画

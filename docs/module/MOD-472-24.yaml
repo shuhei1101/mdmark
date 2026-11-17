@@ -24,6 +24,9 @@ diagrams:
         n13["mindmapを読む"]
         n14["マインドマップを付ける"]
         n15["マインドマップを配置する"]
+        n16["軸と格子の配置の図を読む"]
+        n17["軸と格子の配置の図を付ける"]
+        n18["軸と格子の配置の図を配置する"]
         n1 -.-> n2
         n2 -.-> n3
         n2 -.-> n4
@@ -42,6 +45,12 @@ diagrams:
         n14 -.-> n15
         n14 -.-> n10
         n14 -.-> n11
+        n2 -.-> n16
+        n6 -.-> n17
+        n17 -.-> n16
+        n17 -.-> n18
+        n17 -.-> n10
+        n17 -.-> n11
       ```
 
       <!-- /map -->
@@ -63,12 +72,14 @@ notes:
     │   ├── architecture.ts    # architecture-beta の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
     │   ├── c4.ts              # C4Context の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
     │   ├── mindmap.ts         # mindmap の読み取りと、補足のキーが指す項目の解決（dist/map.js と CLI）
+    │   ├── axis-grid.ts       # gantt・timeline・gitGraph・journey・block-beta の読み取りと、補足のキーが指す項目の解決（dist/map.js と CLI）
     │   ├── data.ts            # 補足の JSON の読み取り（dist/map.js と CLI）
     │   ├── check.ts           # 書き方の誤りの項目を集める（dist/index.js・dist/map.js と CLI）
     │   ├── lucide-names.ts    # 点検が照らす lucide のアイコンの名前（点検で呼んだときだけ作る）
     │   ├── layout.ts          # 入れ子の自動配置と線の経路（dist/map.js と CLI）
     │   ├── sequence-rows.ts   # シーケンス図の表示する行（dist/map.js）
     │   ├── mindmap-layout.ts  # マインドマップの木の配置と枝の色（dist/map.js）
+    │   ├── axis-grid-layout.ts # 軸に沿った配置と格子の配置（dist/map.js）
     │   ├── state.ts           # sessionStorage とクエリ文字列の状態（dist/map.js）
     │   ├── flow-view.ts       # 構成図を描いて操作を付ける（dist/map.js）
     │   ├── sequence-view.ts   # シーケンス図を描いて操作を付ける（dist/map.js）
@@ -78,11 +89,12 @@ notes:
     │   ├── architecture-view.ts # アーキテクチャ図を構成図の上に描いて固有の操作を足す（dist/map.js）
     │   ├── c4-view.ts         # C4 図を構成図の上に描いて固有の操作を足す（dist/map.js）
     │   ├── mindmap-view.ts    # マインドマップを木の配置で描いて操作を付ける（dist/map.js）
+    │   ├── axis-grid-view.ts  # 軸と格子の配置の図を描いて操作を付ける（dist/map.js）
     │   ├── drag.ts            # ノード・グループ・線の区間のドラッグ（dist/map.js）
     │   ├── band.ts            # 案内と再生の進め方（dist/map.js）
     │   ├── index.ts           # dist/map.js の入口。attachMap
     │   └── convert.ts         # 廃止した flow・sequence の範囲を map の範囲へ書き換える（移行の手順のスクリプトがまとめて読み込む）
-    └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『mapのER図』『mapの状態遷移図』『mapのクラス図』『mapのアーキテクチャ図』『mapのC4図』『mapのマインドマップ』『案内の帯』の HTML（dist/map.js）
+    └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『mapのER図』『mapの状態遷移図』『mapのクラス図』『mapのアーキテクチャ図』『mapのC4図』『mapのマインドマップ』『mapの軸と格子の配置の図』『案内の帯』の HTML（dist/map.js）
     ```
 refs:
   - IF-472-35#

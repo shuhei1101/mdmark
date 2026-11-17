@@ -29,6 +29,9 @@ data_models:
       - name: problems
         type: MapProblem[]
         description: 読めない行と閉じの無い `subgraph`
+      - name: linkLines
+        type: Record<string, number>
+        description: '`click` の行のノードの ID から、ソースの行（0 から）'
 functions:
   - name: parseFlowchart
     title: flowchartを読む
@@ -131,18 +134,19 @@ functions:
     container: src/map/flowchart.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`links` のリンク先を `isAllowedUrl` で確かめ、許すものの対応と、許さないリンク先のノードの ID とリンク先の項目（`map_invalid_value`。書き方の警告に並べる）を返却する'
+    summary: '`links` のリンク先を確かめ、許可するものの対応と、許可しないリンク先のノードの ID とリンク先の項目（`map_invalid_value`。書き方の警告に並べる）を返却する（`lines` を指定すれば項目に `click` の行を持たせ、`skip` のときは使用できるリンク先に `id:` も並べる）。`id:` で始まるリンク先は、`idLinks.mode` が `resolve` なら `resolveIdHref` で URL に変え（変えられなければ許可しないリンク先）、`skip` なら許可も項目もしない（点検）。ほかは `isAllowedUrl` で確かめる'
     scope: public
     args:
-      - name: links
-        type: Record<string, string>
+      - name: options
+        type: '{ links: Record<string, string>; idLinks: { mode: "resolve"; resolveIdLink: ResolveIdLink | undefined } | { mode: "skip" }; lines?: Record<string, number> }'
         required: true
-        description: '`parseFlowchart` の `links`'
+        description: '`parseFlowchart` の `links` と、`id:` のリンク先の扱い（描くときは `resolve` と利用側の関数、点検は `skip`）'
     returns:
       type: '{ allowed: Record<string, string>; problems: MapProblem[] }'
       description: 許したリンク先と、許さないリンク先の項目（記載の順）
     callees:
       - MOD-472-214#functions[isAllowedUrl]
+      - MOD-472-214#functions[resolveIdHref]
     refs:
       - IF-472-35#constraints[map のノードのリンク]
     unit_tests:
@@ -152,6 +156,12 @@ functions:
         condition: '`https://example.com/spec`・`./other.md`・`mailto:a@example.com`・`javascript:alert(1)`・`id:spec#items` のリンク先を持つ 5 つのノード'
         mock: なし
         expected: '`allowed` が前の 3 つで、`problems` が `javascript:alert(1)` と `id:spec#items` の 2 件。本文が画面設計『文書』の map のノードの許さないリンク先の文言と、ノードの ID とリンク先を含む'
+      - name: test_map_link_problems_when_id_links
+        case: 正常
+        summary: 'id: のリンク先'
+        condition: '`id:SC-1`・`id:unknown` のリンク先を持つ 2 つのノードを、`id:SC-` だけを `https://docs.example.com/` に変える関数の `resolve` と、`skip` で確かめる'
+        mock: なし
+        expected: '`resolve` は `allowed` が `id:SC-1` のノードだけで URL が `https://docs.example.com/SC-1`、`problems` が `id:unknown` の 1 件。`skip` は `allowed` も `problems` も空'
 lead: 'Mermaid の flowchart の読み取りとノードのリンク先の確認を受け持ち、構成図の記法の読み取りを変えるときに参照する。'
 tags:
   - name: topic:map

@@ -299,6 +299,7 @@ export const stateToFlowchart = (
       groups,
       edges,
       links: {},
+      linkLines: {},
       problems: diagram.problems,
     },
     loops,

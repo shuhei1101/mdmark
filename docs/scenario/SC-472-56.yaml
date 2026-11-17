@@ -122,7 +122,7 @@ scenarios:
   - name: 正常シナリオ（mermaid のコードブロック）
     setup:
       - name: mermaid のコードブロックを持つ文書
-        description: 言語 `mermaid` の gantt（map が描けない種類）のコードブロックを 1 つ持つ文書 1 つと、設定
+        description: 言語 `mermaid` の pie（map が描けない種類）のコードブロックを 1 つ持つ文書 1 つと、設定
       - name: mermaid のコードブロックを持たない文書
         description: 段落だけを持つ文書 1 つ（同じ設定で別に書き出す）
       - name: Mock

@@ -6,6 +6,7 @@ Issue / PR ごとのモックへのリンク集。
 
 | 番号 | 概要 |
 | --- | --- |
+| [653](./653/) | map で gantt・timeline・gitGraph・journey・block-beta の Mermaid を、軸と格子に沿った配置と、ほかの種類と同じ記載方法と操作で描く |
 | [649](./649/) | map で mindmap の Mermaid を、根からの木の配置と、ほかの種類と同じ記載方法と操作で描く |
 | [630](./630/) | map の範囲の外の mermaid のコードブロックにも、map の図の操作を付ける |
 | [596](./596/) | map で classDiagram・architecture-beta・C4Context の Mermaid を、ER 図・状態遷移図と同じ記載方法と操作で描く |

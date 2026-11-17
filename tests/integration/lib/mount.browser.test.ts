@@ -25,6 +25,9 @@ import { erText, shopEr } from "../../unit/helpers/er.ts";
 import {
   ARCH as MAP_ARCH,
   ARCH_DATA as MAP_ARCH_DATA,
+  BLOCK as MAP_BLOCK,
+  BLOCK_DATA as MAP_BLOCK_DATA,
+  BLOCK_LAYOUT_DATA as MAP_BLOCK_LAYOUT_DATA,
   C4 as MAP_C4,
   C4_DATA as MAP_C4_DATA,
   CLASS as MAP_CLASS,
@@ -34,6 +37,13 @@ import {
   ER as MAP_ER,
   ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
+  GANTT as MAP_GANTT,
+  GANTT_DATA as MAP_GANTT_DATA,
+  GANTT_LAYOUT_DATA as MAP_GANTT_LAYOUT_DATA,
+  GIT_GRAPH as MAP_GIT_GRAPH,
+  GIT_GRAPH_DATA as MAP_GIT_GRAPH_DATA,
+  JOURNEY as MAP_JOURNEY,
+  JOURNEY_DATA as MAP_JOURNEY_DATA,
   MINDMAP as MAP_MINDMAP,
   MINDMAP_DATA as MAP_MINDMAP_DATA,
   MINDMAP_LAYOUT_DATA as MAP_MINDMAP_LAYOUT_DATA,
@@ -42,6 +52,8 @@ import {
   SEQUENCE as MAP_SEQUENCE,
   STATE as MAP_STATE,
   STATE_DATA as MAP_STATE_DATA,
+  TIMELINE as MAP_TIMELINE,
+  TIMELINE_DATA as MAP_TIMELINE_DATA,
   mapRange,
 } from "../../unit/helpers/map.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
@@ -18585,7 +18597,7 @@ test("test_normal_when_map_hints_off", async () => {
   ).toHaveLength(0);
 });
 
-/** 範囲の外の純粋な Mermaid（map が描く種類）と gantt を持つ文書（マインドマップは見た目を指定する行を持たない） */
+/** 範囲の外の純粋な Mermaid（map が描く種類）と pie を持つ文書（マインドマップは見た目を指定する行を持たない） */
 const PLAIN_MERMAID_MARKDOWN = [
   "```mermaid",
   "flowchart LR",
@@ -18604,10 +18616,9 @@ const PLAIN_MERMAID_MARKDOWN = [
   "```",
   "",
   "```mermaid",
-  "gantt",
-  "  dateFormat YYYY-MM-DD",
-  "  section 設計",
-  "  画面 :a1, 2026-01-01, 3d",
+  "pie",
+  '  "設計" : 3',
+  '  "実装" : 5',
   "```",
   "",
 ].join("\n");
@@ -19100,4 +19111,837 @@ test("test_normal_when_map_mindmap_walked", async () => {
   press("stop");
   expect(mindmapKeys(figure())).toHaveLength(14);
   expect(kept()).toHaveLength(14);
+});
+
+/** 軸と格子の配置の図の map を持つ Markdown */
+const axisGridRange = (mermaid: string, data?: string, args?: string) =>
+  mapRange({ mermaid, data, args });
+
+/** 軸と格子の配置の図の項目の要素 */
+const axisItem = (figure: Element, key: string): HTMLElement =>
+  find<HTMLElement>(figure, `.map-axis-item[data-node="${CSS.escape(key)}"]`);
+
+/** 軸と格子の配置の図の項目の押せる要素 */
+const axisHit = (figure: Element, key: string): HTMLElement =>
+  find<HTMLElement>(axisItem(figure, key), ".mdmark-diagram-node-hit");
+
+/** 軸と格子の配置の図の、薄くしていない項目の data-node（並べ替えた） */
+const axisKept = (figure: Element): string[] =>
+  [...figure.querySelectorAll<HTMLElement>(".map-axis-item")]
+    .filter((item) => !mapDimmed(item))
+    .map((item) => item.dataset.node ?? "")
+    .sort();
+
+/** 軸と格子の配置の図の、描いた項目の data-node */
+const axisKeys = (figure: Element): string[] =>
+  [...figure.querySelectorAll<HTMLElement>(".map-axis-item")].map(
+    (item) => item.dataset.node ?? "",
+  );
+
+/** 要素の矩形 */
+const rectOf = (element: Element): DOMRect => element.getBoundingClientRect();
+
+/** 図の枠の中のキー操作 */
+const pressIn = (target: Element, key: string) =>
+  target.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+
+/** ページの今日の日付を 2026-11-12 に固定する（時計は進めたまま） */
+const fixToday = () => {
+  vi.useFakeTimers({ toFake: ["Date"], shouldAdvanceTime: true });
+  vi.setSystemTime(new Date("2026-11-12T12:00:00"));
+};
+
+/** 説明のマーカーにフォーカスして、出たツールチップの文字 */
+async function tipText(owner: Element): Promise<string> {
+  const info = find<HTMLButtonElement>(owner, ".mdmark-diagram-info");
+  info.focus();
+  let text = "";
+  await vi.waitFor(() => {
+    const tip = document.getElementById(
+      info.getAttribute("aria-describedby") ?? "",
+    );
+    expect(tip?.hidden).toBe(false);
+    text = tip?.textContent ?? "";
+  });
+  return text;
+}
+
+// map のガントチャートを、日付の軸に沿ってタスクを 1 行ずつの棒で描き、今日の線を出す（正常系（map のガントチャートを描く））
+test("test_normal_when_map_gantt_drawn", async () => {
+  // 準備
+  fixToday();
+  const before = mermaidLoads();
+  const off = MAP_GANTT.replace(
+    "excludes weekends",
+    "excludes weekends\n  todayMarker off",
+  );
+  // 実行
+  const { el, figures } = await mountMap(
+    `${axisGridRange(MAP_GANTT, MAP_GANTT_DATA)}\n${axisGridRange(off)}`,
+  );
+  const [figure, noToday] = figures() as [HTMLElement, HTMLElement];
+  // 検証: タイトル・mermaid を読み込まない・書き方の警告が無い
+  expect(find(figure, ".mdmark-diagram-title").textContent).toBe(
+    "リリースの計画",
+  );
+  expect(mermaidLoads()).toBe(before);
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  // 検証: 日付の目盛りと、設計するの左端が要件を決めるの右端
+  const ticks = [...figure.querySelectorAll(".map-axis-tick")].map(
+    (tick) => tick.textContent,
+  );
+  expect(ticks[0]).toBe("2");
+  expect(figure.querySelectorAll(".map-axis-weekend").length).toBeGreaterThan(
+    0,
+  );
+  expect(
+    Math.abs(
+      rectOf(axisItem(figure, "des")).left -
+        rectOf(axisItem(figure, "req")).right,
+    ),
+  ).toBeLessThan(1);
+  // 検証: タグの見た目と section ごとの色
+  expect(axisItem(figure, "req").classList.contains("map-axis-done")).toBe(
+    true,
+  );
+  expect(axisItem(figure, "des").classList.contains("map-axis-active")).toBe(
+    true,
+  );
+  expect(axisItem(figure, "imp").classList.contains("map-axis-crit")).toBe(
+    true,
+  );
+  expect(axisItem(figure, "rel").dataset.shape).toBe("milestone");
+  const color = (key: string) =>
+    axisItem(figure, key).style.getPropertyValue("--map-axis-color");
+  expect(color("req")).not.toBe(color("imp"));
+  // 検証: タスク名は左の列にあり、棒の押せる要素の名前がタスク名
+  const names = [...figure.querySelectorAll(".map-axis-name")].map(
+    (name) => name.textContent,
+  );
+  expect(names).toContain("要件を決める");
+  expect(axisHit(figure, "req").getAttribute("aria-label")).toBe(
+    "要件を決める",
+  );
+  // 検証: 今日の線
+  expect(figure.querySelector(".map-axis-today")).not.toBeNull();
+  expect(figure.textContent).toContain("今日");
+  expect(noToday.querySelector(".map-axis-today")).toBeNull();
+  // 検証: 説明のマーカーとツールチップの開始日と終了日
+  const marked = axisKeys(figure).filter(
+    (key) =>
+      axisItem(figure, key).querySelector(".mdmark-diagram-info") !== null,
+  );
+  expect(marked.sort()).toEqual(["imp", "手順書を書く"].sort());
+  const text = await tipText(axisItem(figure, "imp"));
+  expect(text).toContain("map の 5 種類の読み取りと配置を実装する");
+  expect(text).toContain("11/11");
+});
+
+// map のタイムラインを、期間を記載順に横の軸に並べ、出来事を期間の下に並べて描く（正常系（map のタイムラインを描く））
+test("test_normal_when_map_timeline_drawn", async () => {
+  // 準備・実行
+  const { el, figures } = await mountMap(
+    axisGridRange(MAP_TIMELINE, MAP_TIMELINE_DATA),
+  );
+  const figure = figures()[0] as HTMLElement;
+  // 検証: タイトルと書き方の警告
+  expect(find(figure, ".mdmark-diagram-title").textContent).toBe(
+    "mdmark の歩み",
+  );
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  // 検証: 期間の左端が記載順に大きくなり、出来事が期間の下に記載順に並ぶ
+  const periods = [
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-08",
+    "2026-10",
+    "2026-11",
+  ];
+  const lefts = periods.map((key) => rectOf(axisItem(figure, key)).left);
+  for (let index = 1; index < lefts.length; index += 1)
+    expect(lefts[index]).toBeGreaterThan(lefts[index - 1] ?? 0);
+  const tops = ["表のマーカー", "注意書き", "タブ"].map(
+    (key) => rectOf(axisItem(figure, key)).top,
+  );
+  expect(tops[0]).toBeGreaterThan(rectOf(axisItem(figure, "2026-05")).bottom);
+  expect(tops[1]).toBeGreaterThan(tops[0] ?? 0);
+  expect(tops[2]).toBeGreaterThan(tops[1] ?? 0);
+  // 検証: section の枠に期間が入り、2026-04 はどの枠にも入らない
+  const frames = [...figure.querySelectorAll<HTMLElement>(".map-axis-frame")];
+  expect(frames.map((frame) => frame.dataset.section)).toEqual([
+    "記法を作る",
+    "図を広げる",
+  ]);
+  const inside = (key: string, frame: HTMLElement) => {
+    const a = rectOf(axisItem(figure, key));
+    const b = rectOf(frame);
+    return a.left >= b.left && a.right <= b.right;
+  };
+  expect(inside("2026-05", frames[0] as HTMLElement)).toBe(true);
+  expect(inside("2026-08", frames[1] as HTMLElement)).toBe(true);
+  expect(frames.some((frame) => inside("2026-04", frame))).toBe(false);
+  // 検証: 重ならない
+  const items = [...figure.querySelectorAll<HTMLElement>(".map-axis-item")];
+  for (const [i, a] of items.entries())
+    for (const b of items.slice(i + 1))
+      expect(
+        mapOverlaps(rectOf(a), rectOf(b)),
+        `${a.dataset.node} と ${b.dataset.node}`,
+      ).toBe(false);
+  // 検証: 説明のマーカー
+  for (const key of ["2026-08", "マインドマップ"])
+    expect(
+      axisItem(figure, key).querySelector(".mdmark-diagram-info"),
+    ).not.toBeNull();
+});
+
+// map の Git グラフを、ブランチごとの横の線に commit を記載順に並べて描く（正常系（map の Git グラフを描く））
+test("test_normal_when_map_git_graph_drawn", async () => {
+  // 準備・実行
+  const { el, figures } = await mountMap(
+    axisGridRange(MAP_GIT_GRAPH, MAP_GIT_GRAPH_DATA),
+  );
+  const figure = figures()[0] as HTMLElement;
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  // 検証: ブランチ名のボタンが上から作った順に 3 つ
+  const branches = [
+    ...figure.querySelectorAll<HTMLButtonElement>("[data-map-branch]"),
+  ];
+  expect(branches.map((button) => button.dataset.mapBranch)).toEqual([
+    "main",
+    "develop",
+    "feat",
+  ]);
+  for (const button of branches)
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+  const tops = branches.map((button) => rectOf(button).top);
+  expect(tops[1]).toBeGreaterThan(tops[0] ?? 0);
+  expect(tops[2]).toBeGreaterThan(tops[1] ?? 0);
+  const lanes = [
+    ...figure.querySelectorAll<SVGPathElement>('path[data-lane="branch"]'),
+  ];
+  expect(
+    new Set(
+      lanes.map((lane) => lane.style.getPropertyValue("--map-axis-color")),
+    ).size,
+  ).toBe(3);
+  // 検証: commit の x 座標が記載順に大きくなる
+  const keys = axisKeys(figure);
+  expect(keys).toHaveLength(10);
+  const xs = keys.map((key) => mapCenter(axisItem(figure, key))[0]);
+  for (let index = 1; index < xs.length; index += 1)
+    expect(xs[index]).toBeGreaterThan(xs[index - 1] ?? 0);
+  // 検証: 文字と札と形状
+  const captions = [...figure.querySelectorAll(".map-axis-caption")].map(
+    (caption) => caption.textContent,
+  );
+  expect(captions).toContain("map");
+  expect(captions).toContain("← map");
+  expect(figure.querySelector(".map-axis-tag")?.textContent).toBe("v0.10.0");
+  expect(axisItem(figure, "axis").dataset.shape).toBe("highlight");
+  expect(
+    figure.querySelectorAll('.map-axis-item[data-shape="merge"]'),
+  ).toHaveLength(2);
+  expect(
+    figure.querySelectorAll('.map-axis-item[data-shape="reverse"]'),
+  ).toHaveLength(1);
+  expect(
+    figure.querySelectorAll('.map-axis-item[data-shape="cherryPick"]'),
+  ).toHaveLength(1);
+  // 検証: 6 個目の commit の下に文字が無く、乱数の ID がどこにも無い
+  expect(captions).not.toContain("c6");
+  expect(figure.textContent ?? "").not.toMatch(/\b\d+-[0-9a-f]{7}\b/);
+  // 検証: 説明のマーカー
+  for (const key of ["axis", "README を書く", "c6"])
+    expect(
+      axisItem(figure, key).querySelector(".mdmark-diagram-info"),
+    ).not.toBeNull();
+});
+
+// map のジャーニーを、タスクを記載順に点数の高さへ顔の印で並べ、人の凡例を出す（正常系（map のジャーニーを描く））
+test("test_normal_when_map_journey_drawn", async () => {
+  // 準備・実行
+  const { figures } = await mountMap(
+    axisGridRange(MAP_JOURNEY, MAP_JOURNEY_DATA),
+  );
+  const figure = figures()[0] as HTMLElement;
+  // 検証: タスクの x が記載順に大きくなり、点数 5 が最も上・点数 1 が最も下
+  const keys = axisKeys(figure);
+  const centers = keys.map((key) => mapCenter(axisItem(figure, key)));
+  for (let index = 1; index < centers.length; index += 1)
+    expect(centers[index]?.[0]).toBeGreaterThan(centers[index - 1]?.[0] ?? 0);
+  const ys = centers.map((center) => center[1]);
+  expect(mapCenter(axisItem(figure, "文書を開く"))[1]).toBe(Math.min(...ys));
+  expect(mapCenter(axisItem(figure, "ずれを直す"))[1]).toBe(Math.max(...ys));
+  // 検証: 隣のタスクの線・点数の目盛り・section の帯の色
+  expect(figure.querySelectorAll('path[data-wire="step"]')).toHaveLength(6);
+  expect(
+    [...figure.querySelectorAll(".map-axis-score")].map(
+      (score) => score.textContent,
+    ),
+  ).toEqual(["1", "2", "3", "4", "5"]);
+  const bands = [
+    ...figure.querySelectorAll<HTMLElement>(
+      '.map-axis-frame[data-frame="band"]',
+    ),
+  ];
+  expect(
+    new Set(
+      bands.map((band) => band.style.getPropertyValue("--map-axis-color")),
+    ).size,
+  ).toBe(3);
+  // 検証: 人の丸と凡例のボタン
+  const trace = [...figure.querySelectorAll(".map-axis-task")].find((task) =>
+    task.textContent?.includes("図を辿る"),
+  );
+  expect(trace?.querySelectorAll(".map-axis-actor")).toHaveLength(3);
+  const legend = [
+    ...figure.querySelectorAll<HTMLButtonElement>("button[data-map-actor]"),
+  ];
+  expect(legend.map((button) => button.dataset.mapActor)).toEqual([
+    "作成者",
+    "AI",
+    "読者",
+  ]);
+  for (const button of legend)
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+  // 検証: 説明のマーカーとツールチップの点数
+  const text = await tipText(axisItem(figure, "ずれを直す"));
+  expect(text).toContain("直し方が分からない警告が残る");
+  expect(text).toContain("点数 1");
+});
+
+// map のブロック図を、columns の格子に記載順に並べて描く（正常系（map のブロック図を描く））
+test("test_normal_when_map_block_drawn", async () => {
+  // 準備・実行
+  const { el, figures } = await mountMap(
+    axisGridRange(MAP_BLOCK, MAP_BLOCK_DATA),
+  );
+  const figure = figures()[0] as HTMLElement;
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  // 検証: 1 行目に利用側のページ（2 つ分の幅）と CDN、2 行目に mdmark・空き・core
+  const page = rectOf(axisItem(figure, "page"));
+  const cdn = rectOf(axisItem(figure, "cdn"));
+  const mdmark = rectOf(axisItem(figure, "mdmark"));
+  const core = rectOf(find(figure, '.map-axis-frame[data-section="core"]'));
+  expect(Math.abs(page.top - cdn.top)).toBeLessThan(1);
+  expect(page.width).toBeGreaterThan(cdn.width * 2);
+  expect(mdmark.top).toBeGreaterThan(page.bottom);
+  expect(Math.abs(mdmark.left - page.left)).toBeLessThan(1);
+  expect(Math.abs(core.left - cdn.left)).toBeLessThan(1);
+  // 検証: core の枠の中に読み取りと配置が横に並ぶ
+  const parse = rectOf(axisItem(figure, "parse"));
+  const layout = rectOf(axisItem(figure, "layout"));
+  for (const box of [parse, layout]) {
+    expect(box.left).toBeGreaterThanOrEqual(core.left);
+    expect(box.right).toBeLessThanOrEqual(core.right);
+  }
+  expect(Math.abs(parse.top - layout.top)).toBeLessThan(1);
+  expect(
+    find(figure, '.map-axis-frame[data-section="core"] .map-axis-frame-title')
+      .textContent,
+  ).toBe("core");
+  // 検証: 形状
+  expect(axisItem(figure, "mdmark").dataset.shape).toBe("circle");
+  expect(axisItem(figure, "cdn").dataset.shape).toBe("cylinder");
+  expect(axisItem(figure, "cache").dataset.shape).toBe("cylinder");
+  expect(axisItem(figure, "layout").dataset.shape).toBe("rounded");
+  // 検証: 3 本の線が矢じりを持ち、描くのラベルがある
+  const wires = [
+    ...figure.querySelectorAll<SVGPathElement>('path[data-wire="arrow"]'),
+  ];
+  expect(wires).toHaveLength(3);
+  for (const wire of wires)
+    expect(wire.getAttribute("marker-end")).toContain("url(");
+  expect(find(figure, ".map-axis-wire-label").textContent).toBe("描く");
+  // 検証: core の説明のマーカー
+  expect(
+    figure.querySelector(
+      '.map-axis-frame[data-section="core"] .mdmark-diagram-info',
+    ),
+  ).not.toBeNull();
+});
+
+// map のガントチャート・タイムライン・ジャーニーの section を開閉し、中へ入って戻る（正常系（map のガントチャート・タイムライン・ジャーニーの section を開閉する・中へ入る））
+test("test_normal_when_map_section_toggled", async () => {
+  // 準備
+  const markdown = [
+    axisGridRange(MAP_GANTT, MAP_GANTT_DATA),
+    axisGridRange(MAP_TIMELINE, MAP_TIMELINE_DATA),
+    axisGridRange(MAP_JOURNEY, MAP_JOURNEY_DATA),
+  ].join("\n");
+  const { el, figures } = await mountMap(markdown);
+  const figure = (index: number) => figures()[index] as HTMLElement;
+  const toggle = (index: number, key: string) =>
+    find<HTMLButtonElement>(
+      figure(index),
+      `[data-map-section-toggle="${key}"]`,
+    );
+  const enter = (index: number, key: string) =>
+    find<HTMLButtonElement>(figure(index), `[data-map-section-enter="${key}"]`);
+  const ticksOf = () =>
+    [...figure(0).querySelectorAll(".map-axis-tick")].map(
+      (tick) => tick.textContent,
+    );
+  const ticks = ticksOf();
+  // 実行・検証: ガントチャートの開発を閉じる
+  expect(toggle(0, "開発").getAttribute("aria-label")).toBe("開発を閉じる");
+  toggle(0, "開発").click();
+  const dev = axisItem(figure(0), "開発");
+  expect(dev.textContent?.replace(/\s+/g, "")).toContain("開発（タスク2件）");
+  expect(ticksOf()).toEqual(ticks);
+  expect(toggle(0, "開発").getAttribute("aria-expanded")).toBe("false");
+  expect(toggle(0, "開発").getAttribute("aria-label")).toBe("開発を開く");
+  // 実行・検証: タイムラインの記法を作るを閉じると後ろの期間が詰まる
+  const after = rectOf(axisItem(figure(1), "2026-08")).left;
+  toggle(1, "記法を作る").click();
+  expect(axisItem(figure(1), "記法を作る").textContent).toContain(
+    "（期間 2 件）",
+  );
+  expect(rectOf(axisItem(figure(1), "2026-08")).left).toBeLessThan(after);
+  // 実行・検証: ジャーニーの点検するを閉じると平均の点数の高さ
+  toggle(2, "点検する").click();
+  expect(axisItem(figure(2), "点検する").textContent).toContain(
+    "（タスク 2 件）",
+  );
+  expect(
+    Math.abs(
+      mapCenter(axisItem(figure(2), "点検する"))[1] -
+        mapCenter(axisItem(figure(2), "記法を調べる"))[1],
+    ),
+  ).toBeLessThan(1);
+  // 検証: section を持たない項目に開閉のボタンが無い
+  expect(figure(0).querySelectorAll("[data-map-section-toggle]")).toHaveLength(
+    4,
+  );
+  // 実行・検証: 開くと閉じる前に戻り、2 つ目の準備の中へ入る
+  toggle(0, "開発").click();
+  expect(axisKeys(figure(0))).toContain("imp");
+  enter(0, "s3").click();
+  expect(axisKeys(figure(0)).sort()).toEqual(["env", "手順書を書く"].sort());
+  expect(
+    find(figure(0), ".map-axis-trail").textContent?.replace(/\s+/g, " "),
+  ).toContain("全体 › 準備");
+  expect(ticksOf()[0]).toBe("9");
+  expect(new URL(location.href).searchParams.get("map-1")).toBe("s3");
+  // 実行・検証: 読み込み直しても 2 つ目の準備の中から描く
+  await remountMap(el, markdown);
+  expect(axisKeys(figure(0)).sort()).toEqual(["env", "手順書を書く"].sort());
+  // 実行・検証: Esc で全体に戻る
+  pressIn(figure(0), "Escape");
+  expect(axisKeys(figure(0))).toHaveLength(8);
+  // 実行・検証: 全て閉じる・全て開く
+  find<HTMLButtonElement>(figure(0), '[data-tool="collapseAll"]').click();
+  expect(axisKeys(figure(0))).toHaveLength(4);
+  find<HTMLButtonElement>(figure(0), '[data-tool="expandAll"]').click();
+  expect(axisKeys(figure(0))).toHaveLength(8);
+});
+
+// map のブロック図の入れ子のブロックを開閉し、中へ入って戻る（正常系（map のブロック図の入れ子のブロックを開閉する・中へ入る））
+test("test_normal_when_map_block_toggled", async () => {
+  // 準備
+  const { figures } = await mountMap(axisGridRange(MAP_BLOCK, MAP_BLOCK_DATA));
+  const figure = () => figures()[0] as HTMLElement;
+  const lefts = () =>
+    ["mdmark", "doc", "cache"].map((key) => axisItem(figure(), key).style.left);
+  const before = lefts();
+  const width = rectOf(
+    find(figure(), '.map-axis-frame[data-section="core"]'),
+  ).width;
+  // 実行・検証: core を閉じる
+  find<HTMLButtonElement>(figure(), '[data-map-section-toggle="core"]').click();
+  const core = axisItem(figure(), "core");
+  expect(core.textContent?.replace(/\s+/g, "")).toContain(
+    "core（ブロック2件）",
+  );
+  expect(Math.abs(rectOf(core).width - width)).toBeLessThan(1);
+  expect(
+    Math.abs(rectOf(core).height - rectOf(axisItem(figure(), "mdmark")).height),
+  ).toBeLessThan(1);
+  expect(lefts()).toEqual(before);
+  expect(
+    find(figure(), '[data-map-section-toggle="core"]').getAttribute(
+      "aria-expanded",
+    ),
+  ).toBe("false");
+  // 検証: 描くの線が閉じた core の縁につながる
+  expect(figure().querySelectorAll('path[data-wire="arrow"]')).toHaveLength(3);
+  // 実行・検証: 開いてから core の中へ入る
+  find<HTMLButtonElement>(figure(), '[data-map-section-toggle="core"]').click();
+  find<HTMLButtonElement>(figure(), '[data-map-section-enter="core"]').click();
+  expect(axisKeys(figure()).sort()).toEqual(["layout", "parse"]);
+  expect(
+    find(figure(), ".map-axis-trail").textContent?.replace(/\s+/g, " "),
+  ).toContain("全体 › core");
+  expect(new URL(location.href).searchParams.get("map-1")).toBe("core");
+  // 実行・検証: Esc で全体に戻る
+  pressIn(figure(), "Escape");
+  expect(axisKeys(figure())).toHaveLength(7);
+  expect(lefts()).toEqual(before);
+});
+
+// 軸と格子の配置の図で補足の layout の色と閉じた状態だけを適用し、座標と並び順は書き方の警告にする（正常系（map の軸と格子の配置の図に補足の layout を適用する））
+test("test_normal_when_map_axis_grid_layout", async () => {
+  // 準備
+  const gitData = JSON.parse(MAP_GIT_GRAPH_DATA);
+  gitData.layout = { axis: { color: "red", order: 1 } };
+  const markdown = [
+    axisGridRange(MAP_GANTT, MAP_GANTT_LAYOUT_DATA),
+    axisGridRange(MAP_BLOCK, MAP_BLOCK_LAYOUT_DATA),
+    axisGridRange(MAP_GIT_GRAPH, JSON.stringify(gitData)),
+  ].join("\n");
+  const plain = await mountMap(
+    [
+      axisGridRange(MAP_GANTT),
+      axisGridRange(MAP_BLOCK),
+      axisGridRange(MAP_GIT_GRAPH),
+    ].join("\n"),
+  );
+  const position = (figure: Element, key: string) => {
+    const item = axisItem(figure, key);
+    return { left: item.style.left, top: item.style.top };
+  };
+  const [p0, p1, p2] = plain.figures() as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  const tst = position(p0, "tst");
+  const doc = position(p1, "doc");
+  const axis = position(p2, "axis");
+  // 実行
+  const { el, figures } = await mountMap(markdown);
+  const [gantt, block, git] = figures() as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  // 検証: 閉じた状態と色
+  expect(axisKeys(gantt)).toContain("公開");
+  expect(axisKeys(block)).toContain("core");
+  find<HTMLButtonElement>(gantt, '[data-map-section-toggle="公開"]').click();
+  expect(
+    axisItem(gantt, "rel").style.getPropertyValue("--map-axis-color"),
+  ).toContain("purple");
+  expect(
+    axisItem(block, "mdmark").style.getPropertyValue("--map-axis-color"),
+  ).toContain("green");
+  expect(
+    axisItem(git, "axis").style.getPropertyValue("--map-axis-color"),
+  ).toContain("red");
+  // 検証: 座標と並び順の書き方の警告
+  const warnings = [...el.querySelectorAll(".mdmark-syntax-warning")].map(
+    (warning) => warning.textContent ?? "",
+  );
+  const all = warnings.join("\n");
+  expect(all).toContain("layout.tst.pos");
+  expect(all).toContain("layout.doc.pos");
+  expect(all).toContain("layout.axis.order");
+  expect(all).toContain("Mermaid の行の順");
+  // 検証: 位置は layout を持たないときと同じ（閉じた core の行は低くなるため文書は x 座標だけ）
+  expect(position(gantt, "tst")).toEqual(tst);
+  expect(position(git, "axis")).toEqual(axis);
+  expect(position(block, "doc").left).toBe(doc.left);
+  // 実行・検証: 設計するをドラッグしても動かない
+  const des = axisItem(gantt, "des");
+  const start = des.style.left;
+  const viewport = find<HTMLElement>(gantt, ".mdmark-diagram-viewport");
+  const from = centerIn(viewport, des);
+  await dragViewport(viewport, from, { x: from.x + 100, y: from.y });
+  expect(axisItem(gantt, "des").style.left).toBe(start);
+});
+
+// map のガントチャート・タイムライン・ジャーニーの項目を選ぶ（正常系（map のガントチャート・タイムライン・ジャーニーの項目を選ぶ））
+test("test_normal_when_map_axis_items_selected", async () => {
+  // 準備
+  const { figures } = await mountMap(
+    [
+      axisGridRange(MAP_GANTT, MAP_GANTT_DATA),
+      axisGridRange(MAP_TIMELINE, MAP_TIMELINE_DATA),
+      axisGridRange(MAP_JOURNEY, MAP_JOURNEY_DATA),
+    ].join("\n"),
+  );
+  const figure = (index: number) => figures()[index] as HTMLElement;
+  // 実行・検証: 設計するを選ぶと前後のタスクとつながりの矢じりの線が残る
+  axisHit(figure(0), "des").click();
+  expect(axisKept(figure(0))).toEqual(["des", "imp", "req"]);
+  expect(figure(0).querySelectorAll('path[data-wire="after"]')).toHaveLength(2);
+  expect(axisHit(figure(0), "des").getAttribute("aria-label")).toBe(
+    "設計する（選択中）",
+  );
+  // 実行・検証: もう一度押すと解ける
+  axisHit(figure(0), "des").click();
+  expect(axisKept(figure(0))).toHaveLength(8);
+  expect(figure(0).querySelectorAll('path[data-wire="after"]')).toHaveLength(0);
+  // 実行・検証: 期間と出来事
+  axisHit(figure(1), "2026-05").click();
+  expect(axisKept(figure(1))).toEqual(
+    ["2026-05", "タブ", "注意書き", "表のマーカー"].sort(),
+  );
+  axisHit(figure(1), "注意書き").click();
+  expect(axisKept(figure(1))).toEqual(["2026-05", "注意書き"].sort());
+  pressIn(figure(1), "Escape");
+  expect(axisKept(figure(1))).toHaveLength(15);
+  // 実行・検証: 人を選ぶ
+  const ai = find<HTMLButtonElement>(figure(2), 'button[data-map-actor="AI"]');
+  ai.click();
+  expect(axisKept(figure(2))).toEqual(
+    ["mdmark check を流す", "図を書く", "図を辿る"].sort(),
+  );
+  expect(figure(2).querySelectorAll('path[data-lane="actor"]')).toHaveLength(1);
+  expect(
+    find(figure(2), 'button[data-map-actor="AI"]').getAttribute("aria-pressed"),
+  ).toBe("true");
+  find<HTMLButtonElement>(figure(2), '[data-tool="reset"]').click();
+  expect(axisKept(figure(2))).toHaveLength(7);
+  expect(figure(2).querySelectorAll('path[data-lane="actor"]')).toHaveLength(0);
+  // 実行・検証: Tab でフォーカスを受け、Enter で選ぶ
+  const hit = axisHit(figure(1), "2026-04");
+  expect(hit.tabIndex).toBe(0);
+  hit.focus();
+  pressIn(hit, "Enter");
+  expect(axisHit(figure(1), "2026-04").getAttribute("aria-label")).toBe(
+    "2026-04（選択中）",
+  );
+});
+
+// map の Git グラフ・ブロック図の項目を選ぶ（正常系（map の Git グラフ・ブロック図の項目を選ぶ））
+test("test_normal_when_map_git_block_selected", async () => {
+  // 準備
+  const { figures } = await mountMap(
+    [
+      axisGridRange(MAP_GIT_GRAPH, MAP_GIT_GRAPH_DATA),
+      axisGridRange(MAP_BLOCK, MAP_BLOCK_DATA),
+    ].join("\n"),
+  );
+  const git = () => figures()[0] as HTMLElement;
+  const block = () => figures()[1] as HTMLElement;
+  const branch = (name: string) =>
+    find<HTMLButtonElement>(git(), `button[data-map-branch="${name}"]`);
+  // 実行・検証: feat を選ぶ
+  branch("feat").click();
+  const feat = axisKept(git());
+  expect(feat).toHaveLength(2);
+  expect(feat).toContain("axis");
+  expect(branch("feat").getAttribute("aria-pressed")).toBe("true");
+  // 実行・検証: main を選ぶと cherry-pick の元と merge で入った commit も残る
+  branch("main").click();
+  const main = axisKept(git());
+  expect(main).toContain("map");
+  expect(main.length).toBeGreaterThan(5);
+  pressIn(git(), "Escape");
+  // 実行・検証: axis を選ぶと祖先だけが残る
+  axisHit(git(), "axis").click();
+  expect(axisKept(git())).toEqual(
+    ["README を書く", "axis", "gantt を足す", "init", "map"].sort(),
+  );
+  pressIn(axisHit(git(), "axis"), "Escape");
+  expect(axisKept(git())).toHaveLength(10);
+  // 実行・検証: mdmark を選ぶと線でつながる相手が残る
+  axisHit(block(), "mdmark").click();
+  expect(axisKept(block())).toEqual(["mdmark", "page"]);
+  const wires = () =>
+    [
+      ...block().querySelectorAll<SVGPathElement>('path[data-wire="arrow"]'),
+    ].filter((wire) => !mapDimmed(wire));
+  expect(wires()).toHaveLength(2);
+  // 実行・検証: core も選ぶと描くの線だけが残る
+  find<HTMLElement>(block(), '[data-map-section-select="core"]').click();
+  expect(wires()).toHaveLength(1);
+  find<HTMLButtonElement>(block(), '[data-tool="reset"]').click();
+  // 実行・検証: 線を持たない文書を選ぶ
+  axisHit(block(), "doc").click();
+  expect(axisKept(block())).toEqual(["doc"]);
+  expect(axisHit(block(), "doc").getAttribute("aria-label")).toBe(
+    "文書（選択中）",
+  );
+});
+
+// map の時系列の図を再生する（正常系（map の時系列の図を再生する））
+test("test_normal_when_map_time_series_played", async () => {
+  // 準備
+  const walk = JSON.parse(MAP_GANTT_DATA);
+  walk.walkthroughs = [{ title: "設計", text: "設計を見る", nodes: ["des"] }];
+  const { figures } = await mountMap(
+    [
+      axisGridRange(MAP_GANTT, MAP_GANTT_DATA),
+      axisGridRange(MAP_TIMELINE, MAP_TIMELINE_DATA),
+      axisGridRange(MAP_GIT_GRAPH, MAP_GIT_GRAPH_DATA),
+      axisGridRange(MAP_JOURNEY, MAP_JOURNEY_DATA),
+      axisGridRange(MAP_GANTT, JSON.stringify(walk)),
+    ].join("\n"),
+  );
+  const figure = (index: number) => figures()[index] as HTMLElement;
+  const press = (index: number, action: string) =>
+    find<HTMLButtonElement>(figure(index), `[data-band="${action}"]`).click();
+  // 検証: 帯と手順の数
+  expect(
+    [0, 1, 2, 3, 4].map(
+      (index) => find(figure(index), ".map-band-count").textContent,
+    ),
+  ).toEqual(["–/8", "–/6", "–/10", "–/7", "–/1"]);
+  expect(figure(0).querySelectorAll(".map-band [data-band]")).toHaveLength(4);
+  // 実行・検証: ガントチャートの手順 2 は設計する
+  press(0, "next");
+  press(0, "next");
+  expect(axisKept(figure(0))).toEqual(["des"]);
+  expect(find(figure(0), ".map-band-title").textContent).toBe("設計する");
+  expect(find(figure(0), ".map-band-text").textContent).toContain("11/05");
+  // 実行・検証: Git グラフの 6 個目の commit と説明の文
+  for (let step = 0; step < 6; step += 1) press(2, "next");
+  expect(find(figure(2), ".map-band-title").textContent).toBe("develop · c6");
+  expect(find(figure(2), ".map-band-text").textContent).toContain(
+    "develop の作業の続き",
+  );
+  // 実行・検証: 閉じた section の中の項目は section を強調する
+  find<HTMLButtonElement>(
+    figure(0),
+    '[data-map-section-toggle="公開"]',
+  ).click();
+  for (let step = 0; step < 5; step += 1) press(0, "next");
+  expect(axisKept(figure(0))).toEqual(["公開"]);
+  // 実行・検証: 停止で強調を解除し、矢印キーで進める
+  press(0, "stop");
+  expect(axisKept(figure(0)).length).toBeGreaterThan(1);
+  const holder = find<HTMLElement>(figure(1), ".map-band-holder");
+  holder.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+  );
+  expect(find(figure(1), ".map-band-count").textContent).toBe("1/6");
+  // 実行・検証: walkthroughs を持つ図は案内の手順を進める
+  press(4, "next");
+  expect(find(figure(4), ".map-band-title").textContent).toBe("設計");
+});
+
+// 範囲の外の gantt・timeline・gitGraph・journey・block-beta を補足の無い map の図にする（正常系（範囲の外の軸と格子の配置の図））
+test(
+  "test_normal_when_plain_axis_grid_map",
+  async () => {
+    // 準備
+    const strip = (source: string) =>
+      source
+        .split("\n")
+        .filter((line) => !line.trim().startsWith("title "))
+        .join("\n");
+    const markdown = [
+      MAP_GANTT,
+      MAP_TIMELINE,
+      MAP_GIT_GRAPH,
+      MAP_JOURNEY,
+      MAP_BLOCK,
+    ]
+      .map((source) => `\`\`\`mermaid\n${strip(source).trimEnd()}\n\`\`\`\n`)
+      .join("\n");
+    const before = mermaidLoads();
+    const el = createElement();
+    // 実行
+    await mountTracked(el, {
+      markdown,
+      config: { mermaid: { url: mermaidUrl("plain-axis-grid") } },
+    });
+    await vi.waitFor(
+      () =>
+        expect(
+          el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+        ).toHaveLength(5),
+      { timeout: MAP_WAIT_MS },
+    );
+    // 検証
+    expect(
+      el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+    ).toHaveLength(0);
+    expect(mermaidLoads()).toBe(before);
+    expect(
+      [
+        ...el.querySelectorAll(
+          'figure.mdmark-diagram[data-diagram="map"] .mdmark-diagram-title',
+        ),
+      ].map((title) => title.textContent),
+    ).toEqual([
+      "ガントチャート",
+      "タイムライン",
+      "Git グラフ",
+      "ジャーニー",
+      "ブロック図",
+    ]);
+    expect(
+      [...el.querySelectorAll<HTMLElement>(".mdmark-map")].map(
+        (range) => range.dataset.mapKind,
+      ),
+    ).toEqual(["gantt", "timeline", "gitGraph", "journey", "block"]);
+    expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  },
+  MERMAID_WAIT_MS,
+);
+
+// map のノードの id: のリンク先を、利用側の関数で URL に変える（正常系（map のノードの id: のリンク先を URL に変える））
+test("test_normal_when_map_node_id_link_resolved", async () => {
+  // 準備
+  const received: string[] = [];
+  const resolveIdLink = (href: string) => {
+    received.push(href);
+    if (href === "id:boom") throw new Error("boom");
+    if (href === "id:bad") return "javascript:alert(1)";
+    return href.startsWith("id:SC-")
+      ? `https://docs.example.com/${href.slice("id:".length)}`
+      : undefined;
+  };
+  vi.spyOn(console, "warn").mockImplementation(() => undefined);
+  const markdown = `${mapRange({
+    mermaid:
+      'flowchart LR\n  a --> b\n  b --> c\n  c --> d\n  d --> e\n  click a "id:SC-1#scenarios[正常シナリオ]"\n  click b href "id:SC-2"\n  click c "id:unknown"\n  click d "id:bad"\n  click e "id:boom"\n',
+  })}\n[仕様](id:SC-1)\n`;
+  sessionStorage.clear();
+  clearMapQuery();
+  const el = createElement();
+  el.style.width = "1200px";
+  const opened: string[] = [];
+  el.addEventListener("click", (event) => {
+    const anchor = (event.target as Element).closest("a[href]");
+    if (anchor && !event.defaultPrevented)
+      opened.push(anchor.getAttribute("href") ?? "");
+    event.preventDefault();
+  });
+  // 実行
+  await mountTracked(el, {
+    markdown,
+    config: { map: MAP_CONFIG },
+    resolveIdLink,
+  } as Parameters<Built["mount"]>[1]);
+  const figure = await vi.waitFor(
+    () => find<HTMLElement>(el, 'figure.mdmark-diagram[data-diagram="map"]'),
+    { timeout: MAP_WAIT_MS },
+  );
+  // 検証: 関数が受け取る値は id: を含む
+  for (const value of [
+    "id:SC-1#scenarios[正常シナリオ]",
+    "id:SC-2",
+    "id:unknown",
+    "id:bad",
+    "id:boom",
+    "id:SC-1",
+  ])
+    expect(received).toContain(value);
+  // 検証: a と b はリンクの中にあり、a を押すと開く
+  const link = (key: string) =>
+    mapNode(figure, key).querySelector<HTMLAnchorElement>(
+      "a.mdmark-diagram-node-link",
+    );
+  expect(decodeURI(link("a")?.getAttribute("href") ?? "")).toBe(
+    "https://docs.example.com/SC-1#scenarios[正常シナリオ]",
+  );
+  expect(link("b")?.getAttribute("href")).toBe("https://docs.example.com/SC-2");
+  link("a")?.click();
+  expect(opened).toHaveLength(1);
+  // 検証: 段落のリンク
+  const paragraph = [...el.querySelectorAll<HTMLAnchorElement>("p a")].find(
+    (anchor) => anchor.textContent === "仕様",
+  );
+  expect(paragraph?.getAttribute("href")).toBe("https://docs.example.com/SC-1");
+  // 検証: c・d・e はリンクにせず、書き方の警告に並ぶ
+  for (const key of ["c", "d", "e"]) expect(link(key)).toBeNull();
+  const warning = find(el, ".mdmark-syntax-warning").textContent ?? "";
+  for (const text of ["c: id:unknown", "d: id:bad", "e: id:boom"])
+    expect(warning).toContain(text);
 });

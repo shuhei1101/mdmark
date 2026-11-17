@@ -1,7 +1,9 @@
 import type { ResolvedConfig } from "../config.ts";
 import { MERMAID_ATTRIBUTE } from "../parts/code-block.ts";
 import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import { attachMapArchitecture } from "./architecture-view.ts";
+import { attachMapAxisGrid } from "./axis-grid-view.ts";
 import { attachMapC4 } from "./c4-view.ts";
 import { collectMapProblems, needsMermaidFallback } from "./check.ts";
 import { attachMapClass } from "./class-view.ts";
@@ -84,6 +86,8 @@ type AttachContext = {
   sequences: SequenceEntry[];
   /** 構成図の番号から、その構成図のノードの ID */
   flowIds: Map<number, Set<string>>;
+  /** 構成図のノードの `id:` のリンク先を URL に変える、利用側の関数 */
+  resolveIdLink: ResolveIdLink | undefined;
 };
 
 /** マーカーの引数 */
@@ -92,9 +96,13 @@ type MapArgs = ReturnType<typeof parseMapArgs>["args"];
 /** 範囲の書き方の誤りを、範囲の前の警告にする（render が出した誤りは除く） */
 const warnRange = (
   range: HTMLElement,
-  context: { source: MapRangeSource; config: ResolvedConfig },
+  context: {
+    source: MapRangeSource;
+    config: ResolvedConfig;
+    resolveIdLink: ResolveIdLink | undefined;
+  },
 ): void => {
-  const { source, config } = context;
+  const { source, config, resolveIdLink } = context;
   const structure = collectMapStructure(source);
   const known = new Set(structure.problems.map((item) => item.message));
   // render が定義のある注記の ID を入れた範囲だけ、定義の無い注記の参照を確かめる
@@ -110,7 +118,10 @@ const warnRange = (
             : new Set(Object.keys(JSON.parse(annotations) as object)),
       },
       config.map,
-      false,
+      {
+        includeUnknownKeys: false,
+        idLinks: { mode: "resolve", resolveIdLink },
+      },
     )
       .filter((item) => !known.has(item.message))
       .map((item) => item.message),
@@ -141,12 +152,25 @@ const FLOW_BASED: Record<
   C4Context: attachMapC4,
 };
 
+/** 軸と格子の配置で描く種類 */
+const AXIS_GRID_KINDS = new Set([
+  "gantt",
+  "timeline",
+  "gitGraph",
+  "journey",
+  "block",
+]);
+
 /** 範囲 1 つに、種類の図を付ける。シーケンス図は構成図を付け終えた後に付ける */
 const attachRange = (context: AttachContext, range: HTMLElement): void => {
   const { config, destroyers } = context;
   const source = sourceOf(range);
   if (range.dataset.mapPlain === undefined)
-    warnRange(range, { source, config });
+    warnRange(range, {
+      source,
+      config,
+      resolveIdLink: context.resolveIdLink,
+    });
   const { args } = parseMapArgs(range.dataset.mapArgs ?? "");
   collapseRange(range, args);
   const kind = range.dataset.mapKind ?? "";
@@ -155,6 +179,8 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
     context.sequences.push(sequenceEntry(context, { range, args, source }));
   } else if (kind === "mindmap") {
     destroyers.push(attachMapMindmap(range, config, args).destroy);
+  } else if (AXIS_GRID_KINDS.has(kind)) {
+    destroyers.push(attachMapAxisGrid(range, config, { args }).destroy);
   } else if (attach) {
     destroyers.push(attach(range, config, args).destroy);
   } else {
@@ -198,6 +224,7 @@ const attachFlowRange = (
   // 構成図の案内を始めたら、この構成図の上で再生しているシーケンス図の強調を解く（構成図の強調は残す）
   const handle = attachMapFlow(range, context.config, {
     args,
+    resolveIdLink: context.resolveIdLink,
     onWalk: () => {
       for (const entry of context.sequences) {
         if (entry.playsOver !== number || !entry.driving) continue;
@@ -270,10 +297,12 @@ const linkSequence = (context: AttachContext, entry: SequenceEntry): void => {
     ]);
 };
 
-/** map の図から戻したときに呼ぶ関数 */
+/** map の図を付けるときに利用側から受け取る関数 */
 export type MapHooks = {
   /** 戻した mermaid のコードブロック（`data-mdmark-mermaid` を持つ要素）を指定して呼ぶ */
   restoreMermaid?: (blocks: HTMLElement[]) => void;
+  /** `mount` の `resolveIdLink`。構成図のノードの `id:` のリンク先を URL に変える */
+  resolveIdLink?: ResolveIdLink;
 };
 
 /** 範囲の外の map の図を、front matter を含む元のソースの mermaid のコードブロックに戻す。戻さない図は `undefined` */
@@ -303,6 +332,7 @@ export const attachMap = (
     flows: new Map(),
     sequences: [],
     flowIds: new Map(),
+    resolveIdLink: hooks.resolveIdLink,
   };
   const restored: HTMLElement[] = [];
   for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map")) {

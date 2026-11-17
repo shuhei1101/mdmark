@@ -1656,3 +1656,150 @@ test("test_render_map_mindmap_when_terms", async () => {
     /<span class="mdmark-diagram-node-hit"[^>]*>[^<]*<span class="mdmark-term"/,
   );
 });
+
+/** 部品『mapの軸と格子の配置の図』の引数 */
+async function axisGridArgs(
+  options: {
+    kind?: "gantt" | "timeline" | "gitGraph" | "journey" | "block";
+    collapsed?: string[];
+    entered?: string;
+    selected?: { kind: "item" | "branch" | "actor"; key: string };
+  } = {},
+) {
+  const samples = await import("../../helpers/map.ts");
+  const { parseAxisGrid } = await import("../../../../src/map/axis-grid.ts");
+  const { layoutAxisGrid } = await import(
+    "../../../../src/map/axis-grid-layout.ts"
+  );
+  const kind = options.kind ?? "gantt";
+  const sources = {
+    gantt: samples.GANTT,
+    timeline: samples.TIMELINE,
+    gitGraph: samples.GIT_GRAPH,
+    journey: samples.JOURNEY,
+    block: samples.BLOCK,
+  };
+  const grid = parseAxisGrid({ kind, source: sources[kind] });
+  const collapsed = options.collapsed ?? [];
+  const layout = layoutAxisGrid({
+    grid,
+    entered: options.entered,
+    collapsed: new Set(collapsed),
+    today: "2026-11-12",
+    selected: options.selected,
+  });
+  return {
+    grid,
+    layout,
+    filled: new Set<string>(),
+    colors: {},
+    collapsed,
+    entered: options.entered,
+    selected: options.selected,
+    focus: undefined,
+    notes: {},
+    annotations: {},
+    hints: undefined,
+    id: "map-1",
+    terms: undefined,
+  };
+}
+
+/** 項目の開始タグ */
+const axisItems = (html: string) =>
+  matches(html, /<div class="[^"]*map-axis-item[^"]*"[^>]*>/g);
+
+// 5 種類の項目と押せる要素（正常系）
+test("test_render_map_axis_grid", async () => {
+  // 準備
+  const { renderMapAxisGrid } = await loadParts();
+  const kinds = ["gantt", "timeline", "gitGraph", "journey", "block"] as const;
+  // 実行
+  const parts = await Promise.all(
+    kinds.map(async (kind) => renderMapAxisGrid(await axisGridArgs({ kind }))),
+  );
+  // 検証
+  expect(parts.map((part) => axisItems(part.html).length)).toEqual([
+    8, 15, 10, 7, 7,
+  ]);
+  for (const part of parts) {
+    expect(part.html).toMatch(
+      /<div class="[^"]*map-axis-item[^"]*"[^>]*><span class="mdmark-diagram-node-hit" role="button" tabindex="0"/,
+    );
+  }
+  const git = parts[2]?.html ?? "";
+  const branches = matches(git, /<button[^>]*data-map-branch="[^"]*"[^>]*>/g);
+  expect(branches).toHaveLength(3);
+  for (const tag of branches) expect(tag).toContain('aria-pressed="false"');
+  expect(findTag(parts[0]?.html ?? "", 'class="map-axis-today"')).toContain(
+    'aria-hidden="true"',
+  );
+});
+
+// 閉じた section（正常系）
+test("test_render_map_axis_grid_when_collapsed", async () => {
+  // 準備
+  const { renderMapAxisGrid } = await loadParts();
+  // 実行
+  const gantt = renderMapAxisGrid(await axisGridArgs({ collapsed: ["開発"] }));
+  const block = renderMapAxisGrid(
+    await axisGridArgs({ kind: "block", collapsed: ["core"] }),
+  );
+  // 検証
+  expect(plainText(gantt.html)).toContain("開発（タスク 2 件）");
+  expect(plainText(block.html).replace(/\s+/g, "")).toContain(
+    "core（ブロック2件）",
+  );
+  expect(findTag(gantt.html, 'data-map-section-toggle="開発"')).toContain(
+    'aria-expanded="false"',
+  );
+  expect(findTag(block.html, 'data-map-section-toggle="core"')).toContain(
+    'aria-expanded="false"',
+  );
+});
+
+// 中へ入ったときの道筋（正常系）
+test("test_render_map_axis_grid_when_entered", async () => {
+  // 準備
+  const { renderMapAxisGrid } = await loadParts();
+  // 実行
+  const part = renderMapAxisGrid(await axisGridArgs({ entered: "s3" }));
+  // 検証
+  const trail = outerHtml(part.html, 'class="map-axis-trail"');
+  expect(trail).toContain('aria-label="全体からの道筋"');
+  expect(plainText(trail).replace(/\s+/g, " ")).toContain("全体 › 準備");
+});
+
+// 選んだもののつながりを残す（正常系）
+test("test_render_map_axis_grid_when_selected", async () => {
+  // 準備
+  const { renderMapAxisGrid } = await loadParts();
+  const kept = (html: string) =>
+    axisItems(html).filter((tag) => !tag.includes("map-dim")).length;
+  // 実行
+  const gantt = renderMapAxisGrid(
+    await axisGridArgs({ selected: { kind: "item", key: "des" } }),
+  );
+  const git = renderMapAxisGrid(
+    await axisGridArgs({
+      kind: "gitGraph",
+      selected: { kind: "branch", key: "feat" },
+    }),
+  );
+  const journey = renderMapAxisGrid(
+    await axisGridArgs({
+      kind: "journey",
+      selected: { kind: "actor", key: "AI" },
+    }),
+  );
+  // 検証
+  expect(kept(gantt.html)).toBe(3);
+  for (const key of ["req", "des", "imp"]) {
+    expect(findTag(gantt.html, `data-node="${key}"`)).not.toContain("map-dim");
+  }
+  expect(kept(git.html)).toBe(2);
+  expect(kept(journey.html)).toBe(3);
+  expect(innerHtml(gantt.html, 'data-node="des"')).toContain(
+    'aria-label="設計する（選択中）"',
+  );
+});

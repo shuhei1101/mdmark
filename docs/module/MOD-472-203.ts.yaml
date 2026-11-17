@@ -44,6 +44,9 @@ data_models:
       - name: onColumnsChange
         type: '((event: MdmarkColumnsChange) => void) | undefined'
         description: '`columns` の機能の表で列の表示を切り替えるたびに呼ぶ関数'
+      - name: resolveIdLink
+        type: ResolveIdLink | undefined
+        description: '`id:` で始まるリンク先（`id:` を含む値）を開く URL に変える関数。文書を描く処理（`renderDocument` の `resolveIdLink`）と、ビューとコメントの部品を付ける処理（`attachParts` の `resolveIdLink`。map のノードのリンク）に指定する。省くと `id:` のリンク先を許可しないリンク先として扱う'
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -472,9 +475,6 @@ functions:
     refs:
       - IF-472-35#exceptions[TypeError（比較元）]
     status: planned
-notes:
-  ブラウザのテストファイル: |-
-    - `tests/unit/src/mount-view.browser.test.ts`
 lead: '文書を要素に描く公開関数と描いた要素の記録を受け持ち、mount の描く流れを変えるときに参照する。'
 tags:
   - name: action:描画

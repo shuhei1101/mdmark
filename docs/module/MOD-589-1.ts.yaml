@@ -65,6 +65,21 @@ enums:
       - value: mindmap
         title: マインドマップ
         description: Mermaid の 1 行目が `mindmap`
+      - value: gantt
+        title: ガントチャート
+        description: Mermaid の 1 行目が `gantt`
+      - value: timeline
+        title: タイムライン
+        description: Mermaid の 1 行目が `timeline`
+      - value: gitGraph
+        title: Git グラフ
+        description: Mermaid の 1 行目が `gitGraph`
+      - value: journey
+        title: ジャーニー
+        description: Mermaid の 1 行目が `journey`
+      - value: block
+        title: ブロック図
+        description: Mermaid の 1 行目が `block-beta`
 functions:
   - name: mapKindOf
     title: 図の種類を決める
@@ -83,7 +98,7 @@ functions:
       type: MapKindName | undefined
       description: 図の種類。描けない種類のときは無い
     process: |-
-      1. 先頭の空白を除いた最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram`、`classDiagram`・`classDiagram-v2` なら `classDiagram`、`architecture-beta` なら `architecture`、`C4Context` なら `C4Context`、`mindmap` なら `mindmap` を返却する
+      1. 先頭の空白を除いた最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram`、`classDiagram`・`classDiagram-v2` なら `classDiagram`、`architecture-beta` なら `architecture`、`C4Context` なら `C4Context`、`mindmap` なら `mindmap`、`gantt`・`timeline`・`gitGraph`・`journey` ならそのまま、`block-beta` なら `block` を返却する
       2. ほかは無しを返却する
   - name: collectMapStructure
     title: 範囲の形を確かめる
@@ -145,6 +160,12 @@ functions:
         condition: 1 行目が `mindmap` の範囲
         mock: なし
         expected: 項目が空で、`kind` が `mindmap`
+      - name: test_collect_map_structure_when_axis_grid
+        case: 正常
+        summary: 軸と格子の配置の図
+        condition: 1 行目が `gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` の範囲
+        mock: なし
+        expected: 項目が空で、`kind` が `gantt`・`timeline`・`gitGraph`・`journey`・`block`
   - name: plainMapSourceOf
     title: 範囲の外のmapの図にするかを確かめる
     container: src/map/structure.ts
@@ -187,7 +208,7 @@ functions:
       - name: test_plain_map_source_of_when_other_kind
         case: 正常
         summary: map が描けない種類
-        condition: '`gantt` と `pie` のソース'
+        condition: '`pie` と `xychart-beta` のソース'
         mock: なし
         expected: どちらも `undefined`
 tags:

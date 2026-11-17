@@ -1,0 +1,104 @@
+$ npm run lint && npm run lint:eslint; npm run typecheck; npm run typecheck:vscode
+# 型検査の違反は全て実装（src/map/axis-grid*.ts 等）が無いことによるもの
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 914 files in 671ms. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/map/axis-grid-layout.test.ts(11,33): error TS2307: Cannot find module '../../../../src/map/axis-grid-layout.ts' or its corresponding type declarations.
+tests/unit/src/map/axis-grid-layout.test.ts(12,35): error TS2307: Cannot find module '../../../../src/map/axis-grid.ts' or its corresponding type declarations.
+tests/unit/src/map/axis-grid-layout.test.ts(39,22): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(43,8): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(64,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(85,41): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(128,38): error TS7006: Parameter 'lane' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(129,21): error TS7006: Parameter 'lane' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(131,6): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(132,26): error TS7006: Parameter 'placedItem' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(139,28): error TS7006: Parameter 'lane' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(157,41): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(161,6): error TS7006: Parameter 'lane' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(165,6): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(187,30): error TS7006: Parameter 'frame' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-layout.test.ts(191,31): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid-view.browser.test.ts(23,17): error TS2307: Cannot find module '../../../../src/map/axis-grid-view.ts' or its corresponding type declarations.
+tests/unit/src/map/axis-grid.test.ts(12,35): error TS2307: Cannot find module '../../../../src/map/axis-grid.ts' or its corresponding type declarations.
+tests/unit/src/map/axis-grid.test.ts(24,22): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(35,29): error TS7006: Parameter 'link' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(37,41): error TS7006: Parameter 'section' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(38,23): error TS7006: Parameter 'section' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(51,38): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(52,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(56,31): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(58,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(59,31): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(74,34): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(76,27): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(79,33): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(81,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(82,29): error TS7006: Parameter 'link' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(97,34): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(114,33): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(116,29): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(121,27): error TS7006: Parameter 'link' implicitly has an 'any' type.
+tests/unit/src/map/axis-grid.test.ts(148,26): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(32,72): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(46,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(65,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(80,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(102,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(120,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(141,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(157,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(172,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(193,61): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(194,60): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(242,75): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(266,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(286,7): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(292,7): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(298,7): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(398,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(437,5): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(483,7): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(489,7): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(495,7): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(497,73): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(524,67): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/check.test.ts(525,68): error TS2554: Expected 3 arguments, but got 4.
+tests/unit/src/map/flowchart.test.ts(173,5): error TS2322: Type '{ a: string; b: string; c: string; d: string; e: string; }' is not assignable to type 'string'.
+tests/unit/src/map/flowchart.test.ts(180,5): error TS2322: Type '{ mode: string; resolveIdLink: undefined; }' is not assignable to type 'string'.
+tests/unit/src/map/flowchart.test.ts(215,5): error TS2322: Type '{ a: string; b: string; }' is not assignable to type 'string'.
+tests/unit/src/map/flowchart.test.ts(216,5): error TS2322: Type '{ mode: string; resolveIdLink: (href: string) => string | undefined; }' is not assignable to type 'string'.
+tests/unit/src/map/flowchart.test.ts(218,37): error TS2322: Type '{ a: string; b: string; }' is not assignable to type 'string'.
+tests/unit/src/map/flowchart.test.ts(218,44): error TS2322: Type '{ mode: string; }' is not assignable to type 'string'.
+tests/unit/src/map/index.browser.test.ts(268,7): error TS2353: Object literal may only specify known properties, and 'resolveIdLink' does not exist in type 'MapHooks'.
+tests/unit/src/map/index.browser.test.ts(268,23): error TS7006: Parameter 'href' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1670,42): error TS2307: Cannot find module '../../../../src/map/axis-grid.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1672,5): error TS2307: Cannot find module '../../../../src/map/axis-grid-layout.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1715,11): error TS2339: Property 'renderMapAxisGrid' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1722,21): error TS7006: Parameter 'part' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1742,11): error TS2339: Property 'renderMapAxisGrid' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1764,11): error TS2339: Property 'renderMapAxisGrid' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1776,11): error TS2339: Property 'renderMapAxisGrid' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/parts/map")'.
+tests/unit/src/render/parser.test.ts(282,5): error TS2353: Object literal may only specify known properties, and 'resolveIdLink' does not exist in type '{ config?: MdmarkConfig | undefined; index?: MdmarkIndex | undefined; docId?: string | undefined; references?: MdmarkReferences | undefined; aliases?: MdmarkAlias[] | undefined; includes?: Record<...> | undefined; icons?: Record<...> | undefined; }'.
+tests/unit/src/render/sanitize.test.ts(472,11): error TS2339: Property 'resolveIdHref' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-axis-grid-kinds-and-id-links/src/render/sanitize")'.
+
+> typecheck:vscode
+> tsc --noEmit -p vscode
+

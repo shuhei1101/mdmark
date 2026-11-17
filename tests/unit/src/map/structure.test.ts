@@ -153,11 +153,11 @@ test("test_plain_map_source_of_when_other_kind", async () => {
   // 準備
   const { plainMapSourceOf } = await loadStructure();
   // 実行
-  const gantt = plainMapSourceOf("gantt\n  title 予定");
   const pie = plainMapSourceOf('pie\n  "A" : 1');
+  const xy = plainMapSourceOf("xychart-beta\n  bar [1, 2]");
   // 検証
-  expect(gantt).toBeUndefined();
   expect(pie).toBeUndefined();
+  expect(xy).toBeUndefined();
 });
 
 // マインドマップ（正常系）
@@ -174,4 +174,29 @@ test("test_collect_map_structure_when_mindmap", async () => {
   // 検証
   expect(result.problems).toEqual([]);
   expect(result.kind).toBe("mindmap");
+});
+
+// 軸と格子の配置の図（正常系）
+test("test_collect_map_structure_when_axis_grid", async () => {
+  // 準備
+  const { collectMapStructure } = await loadStructure();
+  const firstLines = ["gantt", "timeline", "gitGraph", "journey", "block-beta"];
+  // 実行
+  const results = firstLines.map((line) =>
+    collectMapStructure({
+      args: "",
+      mermaid: `${line}\n`,
+      mermaidCount: 1,
+      dataCount: 0,
+    }),
+  );
+  // 検証
+  for (const result of results) expect(result.problems).toEqual([]);
+  expect(results.map((result) => result.kind)).toEqual([
+    "gantt",
+    "timeline",
+    "gitGraph",
+    "journey",
+    "block",
+  ]);
 });

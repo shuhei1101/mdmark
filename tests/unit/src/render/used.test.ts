@@ -83,7 +83,7 @@ test("test_collect_range_scripts_when_off_or_no_script", async () => {
 test("test_uses_mermaid", async () => {
   // 準備
   const { usesMermaid } = await loadUsed();
-  const mermaid = ["```mermaid", "gantt", "```", ""].join("\n");
+  const mermaid = ["```mermaid", "pie", "```", ""].join("\n");
   const ts = ["```ts", "const a = 1;", "```", ""].join("\n");
   const disabled = `<!-- features: {"mermaid": false} -->\n\n${mermaid}`;
   // 実行
