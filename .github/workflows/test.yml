@@ -2,8 +2,6 @@
 name: test
 
 on:
-  push:
-    branches: [chore/test/runner-workflow]
   workflow_dispatch:
     inputs:
       layer:
@@ -22,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: test-${{ github.ref }}-${{ inputs.layer || 'integration' }}
+  group: test-${{ github.ref }}-${{ inputs.layer }}
   cancel-in-progress: true
 
 jobs:
@@ -30,8 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     # 入力は環境変数を経由して参照し、run のスクリプトに直接埋めない
     env:
-      LAYER: ${{ inputs.layer || 'integration' }}
-      PATHS: ${{ inputs.paths || 'tests/integration/ClaudeCodeプラグイン/ tests/integration/lib/init.test.ts' }}
+      LAYER: ${{ inputs.layer }}
+      PATHS: ${{ inputs.paths }}
     steps:
       - name: ブランチを取得する
         uses: actions/checkout@v4
@@ -58,16 +56,16 @@ jobs:
           sudo apt-get install -y tmux xvfb
           sudo loginctl enable-linger "$USER"
           uid=$(id -u)
+          # ランナーの実測（待たずにソケットがあった。1 秒の刻みで 1 回未満）の 10 倍
           n=0
           until [ -S "/run/user/$uid/bus" ]; do
             n=$((n+1))
-            if [ "$n" -ge 60 ]; then
-              echo "systemd のユーザーのマネージャーが 60 秒で起動しません" >&2
+            if [ "$n" -ge 10 ]; then
+              echo "systemd のユーザーのマネージャーが 10 秒で起動しません" >&2
               exit 1
             fi
             sleep 1
           done
-          echo "bus のソケットを待った回数: $n（1 秒ごと）"
           echo "XDG_RUNTIME_DIR=/run/user/$uid" >> "$GITHUB_ENV"
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" >> "$GITHUB_ENV"
 
