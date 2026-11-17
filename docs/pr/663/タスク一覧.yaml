@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T21:56:46.681690+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-141・MOD-472-133・MOD-472-130
+    updated_by: planner
+    updated_at: '2026-11-17T22:34:54.342874+00:00'
   - process: ドキュメント修正
     status: todo
     note: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md の線の経路の説明

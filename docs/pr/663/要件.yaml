@@ -18,7 +18,9 @@ docs:
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: 線の経路探索の手順に、先に引いた線が通った区間を後の線が避けることを足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T22:34:54.267990+00:00'
 scope_out:
   - item: クラス図で線のラベルがクラスに重なり、折り返したメンバーの行が次の行に重なる
     reason: 線のラベルとメンバーの行の重なりで、閉じたグループの数と線の区間の重なりとは別の事象
