@@ -451,6 +451,34 @@ scenarios:
       - どの図の前にも書き方の警告が無い
       - mermaid の本体への要求が 1 件
     test: test_error_when_map_cannot_read
+  - name: 正常シナリオ（軸と格子の配置の種類のコードブロックだけを持つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 軸と格子の配置の種類の mermaid のコードブロックだけを持つ Markdown
+        description: map の範囲の外に、言語 `mermaid` の gantt・timeline・gitGraph・journey・block-beta のコードブロックを 1 つずつ持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 5 つのコードブロックを、補足の無い map の範囲として描く
+        M-->>P: mermaid を読み込まずに、図の枠に入れた map の図を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - mermaid への要求が 0 件
+      - 5 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない。gantt は日付の軸、timeline・gitGraph・journey は記載順の軸、block-beta は `columns` の格子に沿って描かれる
+      - front matter の `title` を持たない図の枠のタイトルが、それぞれ「ガントチャート」「タイムライン」「Git グラフ」「ジャーニー」「ブロック図」
+    test: test_normal_when_only_axis_grid_kinds
 tags:
   - name: tool:mermaid
     main: true

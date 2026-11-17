@@ -374,6 +374,59 @@ scenarios:
         全体の図に戻ると、入る前と同じ配置になる
       - 読み込み直した後も、1 つ目ではなく 2 つ目の「課題」の枝の中が描かれる
     test: test_normal_when_mindmap_toggled
+  - name: 正常シナリオ（ガントチャート・タイムライン・ジャーニーの section を開閉する）
+    setup:
+      - name: 図を描いたページ
+        description: 『Mermaidと補足で図を描く』の正常シナリオ（ガントチャート）・正常シナリオ（タイムライン）・正常シナリオ（ジャーニー）の図を描いたページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        U->>D: ガントチャートの section の開閉のボタンを押す
+        D-->>U: section を最初の開始から最後の終了までの 1 本の棒に閉じる
+        U->>D: タイムラインの section の中へ入るボタンを押す
+        D-->>U: section の期間だけを配置し直す
+        U->>D: Esc を押してから、ジャーニーの section の開閉のボタンを押す
+        D-->>U: section を点数の平均の印 1 つに閉じる
+      ```
+
+      <!-- /map -->
+    expected:
+      - ガントチャートの閉じた section は、section の名前とタスクの数を持つ 1 行に、section の最初の開始日から最後の終了日までの 1 本の棒で描かれ、日付の軸は変わらない
+      - タイムラインの section の中へ入ると、その section の期間と出来事だけが配置し直され、ほかの期間は薄く残る
+      - ジャーニーの閉じた section は、section の名前とタスクの数を持ち、中のタスクの点数の平均の高さの印 1 つで描かれ、前後のタスクと線でつながる
+      - 3 つの種類とも、全て開く・全て閉じる・戻る・同じタブで読み込み直したときの状態の保持は、構成図のグループと同じに動き、開くと閉じる前と同じ配置に戻る。クエリ文字列のキーは section の名前
+    test: test_normal_when_section_toggled
+  - name: 正常シナリオ（ブロック図の入れ子のブロックに入る・開閉する）
+    setup:
+      - name: 図を描いたページ
+        description: 『Mermaidと補足で図を描く』の正常シナリオ（ブロック図）のブロック図を描いたページ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant D as ブロック図
+        U->>D: 入れ子のブロックのタイトルを押す
+        D-->>U: その中だけを配置し直し、外を薄く残す
+        U->>D: Esc を押してから開閉のボタンを押す
+        D-->>U: 入れ子のブロックを閉じ、中への線をまとめる
+      ```
+
+      <!-- /map -->
+    expected:
+      - 中へ入る・戻る・まとめた線のツールチップ・全て開く・全て閉じる・状態の保持が、構成図のグループと同じに動き、クエリ文字列のキーは入れ子のブロックの ID
+      - 閉じた入れ子のブロックは、記載した幅のまま 1 行の高さになり、中のブロックの数を出す。ほかのブロックの列の位置は変わらない
+      - 開くと閉じる前と同じ配置に戻る
+    test: test_normal_when_block_toggled
 tags:
   - name: topic:map
     main: true

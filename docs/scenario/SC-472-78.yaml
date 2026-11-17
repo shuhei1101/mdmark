@@ -631,6 +631,62 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_mindmap_map_data_drift
+  - name: 正常シナリオ（軸と格子の配置の図の map の補足にずれがある）
+    setup:
+      - name: map の補足にずれを持つフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つガントチャート・Git グラフ・ブロック図の map の範囲を 1 つずつと、ずれの無いタイムラインの map の範囲 1 つを記載したもの
+        notes: ずれは、ガントチャートのどのタスクの ID にもタスク名にも一致しない `notes` のキー、Git グラフの `id:` を持たず同じ `msg:` を持つ 2 つの commit を指す `notes` のキー、ブロック図のどのブロックの ID にも一致しない `layout` のキーの 3 つ
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書の map の範囲の gantt・gitGraph・block-beta・timeline と補足を読み込み、補足のキーが指す項目を点検する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - ずれを持つ map の範囲の場所を指す行が 3 つある。一致しないキーの 2 行は種類が `map_unknown_ref`、同じ `msg:` の commit を指すキーの行は種類が `map_ambiguous_ref` で、内容に対象のキーと修正の方法（同じ文字の commit は `id:` を記載して ID で指す）が記載されている
+      - ずれの無いタイムラインの map の範囲を指す行が無い
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_axis_grid_map_data_drift
+  - name: '正常シナリオ（map の flowchart のノードが id: のリンク先を持つ）'
+    setup:
+      - name: 'id: のリンク先を持つフォルダ'
+        description: 正常シナリオのフォルダの文書 1 つに、ノード 3 つの flowchart の map の範囲 1 つを記載したもの
+        notes: ノードは `click A "id:SC-1#scenarios[正常シナリオ]"`・`click B href "id:SC-2"`・`click C "javascript:alert(1)"` の行を持つ
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 文書の map の範囲のノードのリンク先を点検する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`javascript:alert(1)` のノード C を指す行が 1 つあり、種類が `map_invalid_value` で、内容にノードの ID とリンク先と、使用できるリンク先（http・https・mailto・相対パス・`id:`）が記載されている'
+      - '`id:` のリンク先を持つノード A・B を指す行が無い'
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_map_node_id_link
 lead: 文書の作成者が `mdmark check` を実行し、設定ファイルと索引の構造・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らないマーカー・図の部品の定義のずれ・廃止した `flow`・`sequence` の範囲を、ファイル・場所・種類・内容の一覧で受け取る。
 primary_actor: 文書の作成者
 trigger: 文書や索引を書き換えた後、書き出す前にずれを確認する
