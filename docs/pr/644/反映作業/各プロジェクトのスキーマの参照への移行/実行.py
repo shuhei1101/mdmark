@@ -1,5 +1,11 @@
 """配布先の dev-docs.yaml の schema を knowledge の参照に書き換え、AI Monitor から配ったスキーマのコピーを削除する。"""
 
+# 対象のリポジトリの場所が無ければ、作業ディレクトリ（叩いたブランチのリポジトリの直下）を対象にする
+import os as _os, sys as _sys  # noqa: E401, E402
+if not _sys.argv[1:] or _sys.argv[1].startswith("--"):
+    _sys.argv.insert(1, _os.getcwd())
+
+
 import difflib
 import shutil
 import sys

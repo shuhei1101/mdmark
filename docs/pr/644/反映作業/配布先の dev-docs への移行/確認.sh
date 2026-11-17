@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-REPO="${1:-}"
+REPO="${1:-$PWD}"
 CONFIG="$REPO/project-index.yaml"
 [ -f "$CONFIG" ] || CONFIG="$REPO/dev-docs.yaml"
 if [ -z "$REPO" ] || [ ! -f "$CONFIG" ]; then

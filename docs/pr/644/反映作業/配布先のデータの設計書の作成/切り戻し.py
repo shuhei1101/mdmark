@@ -1,5 +1,11 @@
 """実行.py が書き換えた配布先の ER 図・dev-docs.yaml・docs/data/ を、commit する前の状態へ戻す。"""
 
+# 対象のリポジトリの場所が無ければ、作業ディレクトリ（叩いたブランチのリポジトリの直下）を対象にする
+import os as _os, sys as _sys  # noqa: E401, E402
+if not _sys.argv[1:] or _sys.argv[1].startswith("--"):
+    _sys.argv.insert(1, _os.getcwd())
+
+
 import subprocess
 import sys
 from pathlib import Path

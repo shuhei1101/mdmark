@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 止まったマージ前の反映作業（プロジェクトの索引の移動が引数なしの実行で前提確認に失敗）の回し直し方
+    decision: 8 件のスクリプトを、第 1 引数が無いときは作業ディレクトリを対象にする形に修正し、reviewer の確認を受けてから tester へ依頼し直す（推奨案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/issues/587#issuecomment-6941897709

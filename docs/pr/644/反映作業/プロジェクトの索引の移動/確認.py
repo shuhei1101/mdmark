@@ -1,6 +1,12 @@
 """配布先のリポジトリの直下に rules.yaml があり、docs/rules.yaml が無いかを読むだけで確かめる。"""
 from __future__ import annotations
 
+# 対象のリポジトリの場所が無ければ、作業ディレクトリ（叩いたブランチのリポジトリの直下）を対象にする
+import os as _os, sys as _sys  # noqa: E401, E402
+if not _sys.argv[1:] or _sys.argv[1].startswith("--"):
+    _sys.argv.insert(1, _os.getcwd())
+
+
 import sys
 from pathlib import Path
 
