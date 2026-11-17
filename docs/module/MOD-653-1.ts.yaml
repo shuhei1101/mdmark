@@ -241,7 +241,7 @@ functions:
         summary: ガントチャート
         condition: モックの `GANTT`
         mock: なし
-        expected: タスク 8・section 4 で、「設計する」の開始日が「要件を決める」の終了日、「実装する」の終了日が土日を数えない 5 日後。`links` に `after` が 4 本、`ambiguous` が `準備` だけで 2 つの「準備」の `stateKey` が `s1`・`s3`。「手順書を書く」の `key` がタスク名。`problems` が空
+        expected: タスク 8・section 4 で、「設計する」の開始日が「要件を決める」の終了日、「実装する」の終了日が土日を数えない 5 日後。`links` に `after` が 5 本、`ambiguous` が `準備` だけで 2 つの「準備」の `stateKey` が `s1`・`s3`。「手順書を書く」の `key` がタスク名。`problems` が空
       - name: test_parse_axis_grid_when_timeline
         case: 正常
         summary: タイムライン
