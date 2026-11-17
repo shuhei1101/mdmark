@@ -1,0 +1,7 @@
+confirmations:
+  - topic: ライトボックスの画像のピンチの拡大・縮小を含めるか
+    decision: 含める。ライトボックスの画像も図と同じ倍率の範囲でピンチで拡大・縮小し、上のバーのボタンの配置は変えない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4606019766

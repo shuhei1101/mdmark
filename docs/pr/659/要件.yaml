@@ -6,8 +6,8 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-66.yaml
-    impact: run_only
-    detail: 画像の全画面の表示は図の全画面と操作を統一しているため、図の拡大・移動の変更が画像の拡大・移動を壊さないかを確かめる
+    impact: changed
+    detail: ライトボックスの画像も、図と同じ倍率の範囲でピンチで拡大・縮小する。上のバーのボタンの配置は変えない
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-19.yaml
@@ -59,6 +59,3 @@ scope_out:
   - item: ボタンのパネルの見た目を DynamicArchitectViewer に合わせること
     reason: 利用者の決まりで、機能だけを参考にし、見た目はモックで改めて決める
     plan: none
-  - item: ライトボックスの画像のピンチの拡大・縮小と、上の帯のボタンの配置
-    reason: Issue は図だけを対象にしており、含めるとスコープの追加になるため、ユーザーに確認する（推奨は含める。ライトボックスは図の全画面と操作を統一し、同じ拡大の処理（attachZoom）を使う）。上の帯のボタンの配置は変えない。回答が出たら決定事項に書き換える
-    plan: to_file
