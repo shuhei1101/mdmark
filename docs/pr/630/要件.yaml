@@ -107,3 +107,6 @@ scope_out:
   - item: 図以外の記法（表・コードブロック など）で、記法が無くても付けられる操作の洗い出しと追加
     reason: 純粋な Mermaid への操作の追加とは対象の記法が別で、本 PR がマージされなくても同じ内容で成り立つため
     plan: '#632'
+  - item: map のクラス図の説明のマーカー（`.mdmark-diagram-info`）のタップ領域が axe の `target-size` に当たる
+    reason: 既存のストーリー `parts-mapclass--default` でも出る、本 PR の変更と関係しない事象のため（reviewer の対象外の逸脱の報告）
+    plan: none
