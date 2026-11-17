@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { CliError, type CliIo } from "./errors.ts";
+import { localVersionOf } from "./versions.ts";
 
 /** 雛形 1 つ: 配置先のパスと、`templates/` の中の原本のパス */
 type TemplateFile = {
@@ -96,7 +97,10 @@ export async function runInit(
     const source = await readFile(join(templatesDir, template.source), "utf8");
     const content =
       template.path === CONFIG_TEMPLATE
-        ? source.replace(VERSION_LINE_PATTERN, `version: ${version}`)
+        ? source.replace(
+            VERSION_LINE_PATTERN,
+            `version: ${localVersionOf(version)}`,
+          )
         : source;
     const placed = await placeTemplate({
       target: join(dir, template.path),

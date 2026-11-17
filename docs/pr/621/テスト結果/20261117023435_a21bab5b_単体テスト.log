@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/chore-dist-develop-latest-reference
+
+
+ Test Files  301 passed (301)
+      Tests  2277 passed (2277)
+   Start at  02:33:38
+   Duration  29.25s (worker 82%, tests 11%, import 6%, transform 1%)
+

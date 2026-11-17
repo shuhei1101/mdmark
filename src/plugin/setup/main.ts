@@ -9,6 +9,7 @@ import settingsSchema from "../../../schemas/mdmark.settings.schema.json" with {
   type: "json",
 };
 import { CliError } from "../../cli/errors.ts";
+import { localVersionOf } from "../../cli/versions.ts";
 import { type JsonSchema, listConfigKeys } from "./keys.ts";
 import { readYamlFile, resolveSetupPaths, SetupError } from "./paths.ts";
 import { type RunCommand, startServer } from "./server.ts";
@@ -196,7 +197,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join(import.meta.dirname, ".."),
-    version: __MDMARK_VERSION__,
+    version: localVersionOf(__MDMARK_VERSION__),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line),

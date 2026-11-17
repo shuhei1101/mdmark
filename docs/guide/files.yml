@@ -53,7 +53,7 @@ files:
   - path: 導入-配布物を読み込む.md
     visibility: public
     category: 使用方法
-    description: バージョンを固定した URL で JavaScript と CSS を読み込む手順を説明し、利用側のページへ mdmark を組み込むときに参照する。
+    description: develop かバージョンのタグを指定した URL で JavaScript と CSS を読み込む手順を説明し、利用側のページへ mdmark を組み込むときに参照する。
     tags: [topic:セットアップ手順, topic:配布物, action:読み込み]
   - path: 導入-文書を描く.md
     visibility: public

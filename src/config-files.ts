@@ -2,7 +2,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { parse, YAMLParseError } from "yaml";
 import { validateAliasRows } from "./cli/alias-schema.ts";
 import type { CheckIssue } from "./cli/check.ts";
-import { VERSION_PATTERN } from "./cli/versions.ts";
+import { isLocalVersion } from "./cli/versions.ts";
 import { MARK_NAME_PATTERN, type MdmarkConfig } from "./config.ts";
 
 /** `mdmark build` が読み込む設定の `build` */
@@ -267,8 +267,8 @@ const CONFIG_KEY_VALIDATORS: Array<[string, KeyValidator]> = [
   [
     "version",
     typed(
-      (value) => typeof value === "string" && VERSION_PATTERN.test(value),
-      "`version` は v{MAJOR}.{MINOR}.{PATCH} の構造で記載してください。",
+      isLocalVersion,
+      "`version` は v{MAJOR}.{MINOR}.{PATCH} の構造か develop で記載してください。",
     ),
   ],
   [

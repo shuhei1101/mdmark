@@ -9,6 +9,16 @@ constants:
     container: src/cli/versions.ts
     summary: 手元のバージョン・パッケージのバージョン・移行の手順のフォルダ名が合うべき書式
     value: '`/^v(\d+)\.(\d+)\.(\d+)$/`'
+  - name: DEVELOP_VERSION
+    title: develop の最新を表す手元のバージョン
+    container: src/cli/versions.ts
+    summary: 設定・端末の設定の `version` と、develop のビルドの常駐サーバーの取り出し元に書く値
+    value: '`"develop"`'
+  - name: DEVELOP_BUILD_PATTERN
+    title: develop のビルドのバージョンの書式
+    container: src/cli/versions.ts
+    summary: ビルドが `--develop` で埋めたバージョン（ビルドメタデータ付き）
+    value: '`/^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/`'
 functions:
   - name: parseVersion
     title: バージョンを読み込む
@@ -91,6 +101,105 @@ functions:
         condition: '`__MDMARK_VERSION__` が `v0.5.0`'
         mock: '`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`'
         expected: '`v0.5.0`'
+    status: planned
+  - name: isDevelopBuild
+    title: develop のビルドか
+    container: src/cli/versions.ts
+    usecase: 共通
+    summary: 埋めたバージョンが `DEVELOP_BUILD_PATTERN` に合うか
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: version
+        type: string
+        required: true
+        description: 埋めたバージョン
+    returns:
+      type: boolean
+      description: develop のビルドなら `true`
+    unit_tests:
+      - name: test_is_develop_build
+        case: 正常
+        summary: ビルドメタデータの有無で分ける
+        condition: '`v0.5.0+develop.abc1234`・`v0.5.0`・`v0.5.0-develop.abc1234`'
+        mock: なし
+        expected: '`true`・`false`・`false`'
+    status: planned
+  - name: releaseVersionOf
+    title: ビルドの元のバージョン
+    container: src/cli/versions.ts
+    usecase: バージョンを上げる
+    summary: develop のビルドは `+` より前を、それ以外はそのまま返却する
+    description: upgrade の目標のバージョンと、`next/` に手順があるときに案内するタグに使う
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: version
+        type: string
+        required: true
+        description: 埋めたバージョン
+    returns:
+      type: string
+      description: '`v{MAJOR}.{MINOR}.{PATCH}`'
+    unit_tests:
+      - name: test_release_version_of
+        case: 正常
+        summary: ビルドメタデータを除く
+        condition: '`v0.5.0+develop.abc1234`・`v0.5.0`'
+        mock: なし
+        expected: どちらも `v0.5.0`
+    status: planned
+  - name: localVersionOf
+    title: 設定に書く手元のバージョン
+    container: src/cli/versions.ts
+    usecase: 共通
+    summary: develop のビルドは `DEVELOP_VERSION`、それ以外はそのまま返却する
+    description: '`init` が配置する設定・セットアップが作る端末の設定の `version`、状態の `target_version`、常駐サーバーの取り出し元に使う'
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: version
+        type: string
+        required: true
+        description: 埋めたバージョン
+    returns:
+      type: string
+      description: '`v{MAJOR}.{MINOR}.{PATCH}` か `develop`'
+    unit_tests:
+      - name: test_local_version_of
+        case: 正常
+        summary: develop のビルドだけ develop にする
+        condition: '`v0.5.0+develop.abc1234`・`v0.5.0`'
+        mock: なし
+        expected: '`develop`・`v0.5.0`'
+    status: planned
+  - name: isLocalVersion
+    title: 手元のバージョンとして受け付けるか
+    container: src/cli/versions.ts
+    usecase: 共通
+    summary: '`VERSION_PATTERN` に合うか `DEVELOP_VERSION` と等しいか'
+    description: 端末の設定の `version` の検査（`config-files.ts`）に使う
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 設定の `version` の値
+    returns:
+      type: boolean
+      description: 受け付けるなら `true`
+    unit_tests:
+      - name: test_is_local_version
+        case: 正常
+        summary: タグの書式と develop を受け付ける
+        condition: '`v0.5.0`・`develop`・`latest`・`v0.5.0+develop.abc1234`・`1`'
+        mock: なし
+        expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
 lead: 'バージョンの書式と比較を受け持ち、バージョンを上げるときのバージョンの扱いを変えるときに参照する。'
 tags:

@@ -47,3 +47,43 @@ test("test_cli_version", async () => {
   // 検証
   expect(version).toBe("v0.5.0");
 });
+
+// ビルドメタデータの有無で分ける（正常系）
+test("test_is_develop_build", async () => {
+  // 準備
+  const { isDevelopBuild } = await loadModule();
+  // 実行・検証
+  expect(isDevelopBuild("v0.5.0+develop.abc1234")).toBe(true);
+  expect(isDevelopBuild("v0.5.0")).toBe(false);
+  expect(isDevelopBuild("v0.5.0-develop.abc1234")).toBe(false);
+});
+
+// ビルドメタデータを除く（正常系）
+test("test_release_version_of", async () => {
+  // 準備
+  const { releaseVersionOf } = await loadModule();
+  // 実行・検証
+  expect(releaseVersionOf("v0.5.0+develop.abc1234")).toBe("v0.5.0");
+  expect(releaseVersionOf("v0.5.0")).toBe("v0.5.0");
+});
+
+// develop のビルドだけ develop にする（正常系）
+test("test_local_version_of", async () => {
+  // 準備
+  const { localVersionOf } = await loadModule();
+  // 実行・検証
+  expect(localVersionOf("v0.5.0+develop.abc1234")).toBe("develop");
+  expect(localVersionOf("v0.5.0")).toBe("v0.5.0");
+});
+
+// タグの書式と develop を受け付ける（正常系）
+test("test_is_local_version", async () => {
+  // 準備
+  const { isLocalVersion } = await loadModule();
+  // 実行・検証
+  expect(isLocalVersion("v0.5.0")).toBe(true);
+  expect(isLocalVersion("develop")).toBe(true);
+  expect(isLocalVersion("latest")).toBe(false);
+  expect(isLocalVersion("v0.5.0+develop.abc1234")).toBe(false);
+  expect(isLocalVersion(1)).toBe(false);
+});

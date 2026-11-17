@@ -79,6 +79,33 @@ scenarios:
       - '`theme.css`・索引の雛形・拡張のビルドの雛形がある'
       - 出力に配置しなかったファイルとして `mdmark.config.yaml` が出て、終了コードが 0
     test: test_normal_when_file_exists
+  - name: 正常シナリオ（develop のビルドの CLI で呼ぶ）
+    setup:
+      - name: 空のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを develop のビルドの `v0.5.0+develop.abc1234` に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark init
+        C->>F: 設定・theme.css・索引・TypeScript の拡張のビルドの雛形を書き込む（設定の version は develop）
+        C-->>W: 配置したファイルの一覧・終了コード 0
+        W->>C: mdmark check
+        C-->>W: ずれ 0 件・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 配置した `mdmark.config.yaml` の `version` が `develop`
+      - 配置した `mdmark.config.yaml` と索引が、設定と索引の JSON Schema に合う
+      - 続けて呼んだ `mdmark check` の出力が `ずれ 0 件` で、終了コードが 0
+    test: test_normal_when_cli_built_from_develop
 lead: 文書の作成者が `mdmark init` を実行し、設定・利用側の CSS・索引・拡張のビルドの雛形をフォルダに配置する。
 primary_actor: 文書の作成者
 trigger: 文書の作成者が、mdmark で文書を書き出すフォルダを用意する

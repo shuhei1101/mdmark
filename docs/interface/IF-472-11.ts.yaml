@@ -176,7 +176,7 @@ response:
     description: 端末の設定の `version`。ファイルか `version` が無ければ `null`
   - name: settings.target_version
     type: string
-    description: プラグインのビルドで埋めた mdmark のバージョン（ビルドのときの `version.ini` か `--version` の値）。移行の目標になる
+    description: プラグインのビルドで埋めた mdmark のバージョン（ビルドのときの `version.ini` か `--version` の値）。移行の目標になる。埋めたバージョンが `+develop.` を含む develop のビルドは `develop`
   - name: server.port
     type: number
     description: 常駐サーバーのポート

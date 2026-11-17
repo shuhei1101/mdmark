@@ -345,10 +345,10 @@ settings:
     file: mdmark.config.yaml
     type: string
     required: false
-    description: この設定・索引・文書が合わせてある mdmark のバージョン。`mdmark init` が呼んだ CLI のバージョンを記載し、`mdmark upgrade` が移行の手順を適用して点検が通った後に呼んだ CLI のバージョンへ書き換える。`mount`・`render`・`export`・`build`・`check` は値で振る舞いを変えない。端末の設定（`settings.yaml`）も同じキーを持ち、`global-setup` が作るときに記載し、`mdmark upgrade --settings` が書き換える
+    description: この設定・索引・文書が合わせてある mdmark のバージョン。`mdmark init` が呼んだ CLI のバージョン（develop のビルドの CLI は `develop`）を記載し、`mdmark upgrade` が移行の手順を適用して点検が通った後に呼んだ CLI のバージョンへ書き換える。`mount`・`render`・`export`・`build`・`check` は値で振る舞いを変えない。端末の設定（`settings.yaml`）も同じキーを持ち、`global-setup` が作るときに記載し、`mdmark upgrade --settings` が書き換える
     missing: '`mdmark upgrade` が利用者に手元のバージョンを聞く（v0.3.0 までの `init` が配置した設定）'
     reload: reload
-    allowed: '`^v\d+\.\d+\.\d+$`。合わないと `mdmark check` は `schema` のずれにする'
+    allowed: '`^v\d+\.\d+\.\d+$` か `develop`（develop の最新を参照している）。合わないと `mdmark check` は `schema` のずれにする'
     refs:
       - IF-472-28#
     status: planned
