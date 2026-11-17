@@ -1,0 +1,89 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: map の範囲に mindmap の Mermaid と補足を記載すると、根を中央に置いて枝を外へ広げる木の配置で描き、項目の形を描き分け、補足の説明を当てる。項目の選択で根からの道筋と子孫を強調し、読めない行を書き方の警告にし、描けない種類の案内の文言に mindmap を加える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: マインドマップの枝を開閉し、枝の中へ入ってその項目から下だけを読み、戻る
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: マインドマップでも補足の巡回の手順を前へ・次へで進め、枝の中へ入って項目を強調する
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: map の範囲の外の mindmap のコードブロックを、補足の無い map の図にする。mindmap だけの文書では mermaid のライブラリを読み込まない
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: マインドマップの map の補足が無い項目を指すとき・キーで指せない項目があるとき、点検のずれにする
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: ツールチップの記述は変わらないが、マインドマップの項目にも補足の説明を出すため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: 拡大・縮小・移動の記述は変わらないが、木の配置の図にも同じ操作を付けるため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: シーケンス図の参加者の選択の記述は変わらないが、選択と強調の処理を種類で共通にしているため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図の種類に依らない流れで記述は変わらないが、map の読み取り・配置・操作を広げるため壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: mindmap の記載方法と、枝の開閉・枝の中へ入る・選択の手順を追加する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: map の節の描ける Mermaid の種類に mindmap を加える
+    status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 入れ子の自動配置と別に持つ木の配置と、種類に依らない部分との分け方を追記する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: マインドマップで増える用語（枝・枝の中へ入る など）を追加する
+    status: todo
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: map の範囲の外の mindmap のコードブロックも map の図にすることを、map が描ける種類の一覧に加える
+    status: todo
+  - page: docs/guide/構成図の決まり.mark.md
+    new: false
+    change: 木の配置の見た目の決まり（根の置き場所・枝の線・左右の振り分け）を追加するかを確認する
+    status: todo
+  - page: docs/er/ER-472-2.yaml
+    new: false
+    change: notes のキーにマインドマップの項目を追加し、layout のうち木の配置で当てるキーを書く
+    status: todo
+scope_out:
+  - item: gantt・timeline・gitGraph・journey を map で描く（軸に沿った配置と再生）
+    reason: 'PR #596 のレビューで配置の処理ごとに切り出した別の Issue の範囲'
+    plan: '#598'
+  - item: block-beta を map で描く（columns の格子の配置）
+    reason: 'PR #596 のレビューで配置の処理ごとに切り出した別の Issue の範囲'
+    plan: '#599'
+  - item: map を Markdown へ書き出すときの mindmap の扱い
+    reason: '[mdmark の文書を、MCP と CLI で純粋な Markdown（GFM と Mermaid）に書き出す](https://github.com/shuhei1101/mdmark/issues/313) は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
+    plan: '#313'
