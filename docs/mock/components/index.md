@@ -41,6 +41,7 @@
 | [map-diagram](./map-diagram/index.html) | Mermaid と補足で書いた map の図（全体・グループの中・閉じたグループとまとめた線・案内の最初と最後・再生の一時停止・狭い幅） |
 | [map-er-state](./map-er-state/index.html) | map の ER 図・状態遷移図（テーブルの列と多重度・分類の箱・列と分類の開閉・状態遷移図の開始と終了と分岐・入れ子の状態・遷移の再生・狭い幅） |
 | [map-class-arch-c4](./map-class-arch-c4/index.html) | map のクラス図・アーキテクチャ図・C4 図（メンバーの行と関係の端の形・メンバーと namespace の開閉・service のアイコンと group と junction・要素の種類の行と境界・狭い幅） |
+| [map-mindmap](./map-mindmap/index.html) | map のマインドマップ（根を中央に配置した木の配置・項目の形状と枝の色・枝の開閉と中へ入る・項目の選択と強調・補足の layout と書き方の警告・案内・狭い幅） |
 | [map-kinds](./map-kinds/index.html) | map の図で使えるノードの種類・線の種類・グループ・データの点の一覧と、使う場面の例 |
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
 | [mermaid-diagram](./mermaid-diagram/index.html) | 言語 mermaid のコードブロックを図の枠に入れて描いた図（front matter の title のタイトル・タイトルが無いときの図の種類の名前・actor のアイコンの案・種類ごとの見本）と、mermaid を読み込めない通知ブロック・記法を解釈できない記載の警告・機能をオフにしたコードブロック |

@@ -1,0 +1,150 @@
+/* map のマインドマップのモックの規則（#649）。図の枠・案内の帯・書き方の警告は #445 の map-mock.css を使用する */
+
+/* 項目: 種類の行を出さず、名前を上下左右の中央に置く。縁と面は 1 レイヤー目の枝の色 */
+.mm-figure .mm-item {
+  display: grid;
+  place-items: center;
+  padding: 8px 28px 8px 20px;
+  border: 1.5px solid var(--mm-color, var(--mdmark-color-text));
+  border-radius: 8px;
+  background: var(--mdmark-color-bg);
+  text-align: center;
+  cursor: pointer;
+}
+.mm-figure .mm-item:not(:has(.mdmark-diagram-info)) {
+  padding-right: 20px;
+}
+.mm-figure .mm-item .mdmark-diagram-node-kind {
+  display: none;
+}
+.mm-figure .mm-item .mdmark-diagram-node-name {
+  cursor: text;
+  user-select: text;
+}
+/* 色を指定した項目（補足の layout）は、その色の面にする */
+.mm-figure .mm-item.mm-colored {
+  background: var(--mm-fill);
+}
+
+/* 根: 文字を大きく太く */
+.mm-figure .mm-root {
+  font-size: 16px;
+  font-weight: 700;
+  border-width: 2px;
+}
+
+/* 形状: 四角・角の丸い四角・丸・バン・雲・六角形。形状の指定の無い項目は枠線の無い文字に下線 */
+.mm-figure .mm-item[data-mm-shape="square"] { border-radius: 0; }
+.mm-figure .mm-item[data-mm-shape="rounded"] { border-radius: 16px; }
+.mm-figure .mm-item[data-mm-shape="circle"] { border-radius: 50%; }
+.mm-figure .mm-item[data-mm-shape="cloud"] { border-radius: 42% 58% 46% 54% / 60% 44% 56% 40%; }
+.mm-figure .mm-item:is([data-mm-shape="bang"], [data-mm-shape="hexagon"]) {
+  border: 0;
+  background: color-mix(in srgb, var(--mm-color) 16%, var(--mdmark-color-bg));
+}
+.mm-figure .mm-item[data-mm-shape="hexagon"] {
+  clip-path: polygon(12% 0, 88% 0, 100% 50%, 88% 100%, 12% 100%, 0 50%);
+}
+.mm-figure .mm-item[data-mm-shape="bang"] {
+  clip-path: polygon(0 20%, 12% 0, 30% 12%, 50% 0, 70% 12%, 88% 0, 100% 20%, 92% 50%, 100% 80%, 88% 100%, 70% 88%, 50% 100%, 30% 88%, 12% 100%, 0 80%, 8% 50%);
+}
+.mm-figure .mm-item[data-mm-shape="plain"] {
+  border: 0;
+  border-bottom: 2px solid var(--mm-color, var(--mdmark-color-text));
+  border-radius: 0;
+  background: transparent;
+}
+/* 切り抜く形状は説明のマーカーが角で欠けるため、内側へ寄せる */
+.mm-figure .mm-item:is([data-mm-shape="bang"], [data-mm-shape="hexagon"], [data-mm-shape="circle"]) .mdmark-diagram-info {
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+/* 枝の線: 1 レイヤー目の枝の色の曲線 */
+.mm-figure .mm-branch {
+  fill: none;
+  stroke: var(--mm-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* 選んだ項目: 枠の全体を太くし、選んでいない項目とつながりを薄くする */
+.mm-figure .mm-item.mm-selected {
+  outline: 3px solid var(--mdmark-color-link);
+  outline-offset: 2px;
+}
+.mm-figure .mm-dim {
+  opacity: 0.25;
+}
+/* 項目の全体を覆う押せる要素: フォーカスを受け、フォーカスの枠を項目の外側に出す。名前の文字と説明のマーカーはその上に重ねる */
+.mm-figure .mm-hit {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  cursor: pointer;
+}
+.mm-figure .mm-hit:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 4px;
+}
+.mm-figure .mm-item .mdmark-diagram-node-name {
+  position: relative;
+  z-index: 1;
+}
+.mm-figure .mm-item .mdmark-diagram-info {
+  z-index: 1;
+}
+
+/* 開閉と中へ入るボタンの持ち手: 項目の外側の辺に付け、枝の線は持ち手の先から出す */
+.mm-figure .mm-grip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 64px;
+  height: 28px;
+  justify-content: center;
+}
+.mm-figure :is(.mm-toggle, .mm-enter) {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 4px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 999px;
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-muted);
+  cursor: pointer;
+}
+.mm-figure :is(.mm-toggle, .mm-enter):hover {
+  color: var(--mdmark-color-text);
+}
+.mm-figure :is(.mm-toggle, .mm-enter) .mdmark-diagram-icon {
+  width: 14px;
+  height: 14px;
+}
+.mm-figure .mm-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mdmark-color-text);
+}
+
+/* 中へ入ったときの道筋: 図の上端に、根から入った枝までを薄く並べる */
+.mm-figure .mm-trail {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+}
+.mm-figure .mm-trail span:last-child {
+  color: var(--mdmark-color-text);
+  font-weight: 700;
+}

@@ -343,7 +343,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: map が描ける種類の mermaid のコードブロックだけを持つ Markdown
-        description: map の範囲の外に、言語 `mermaid` の flowchart と sequenceDiagram のコードブロックを 1 つずつ持つ文書
+        description: map の範囲の外に、言語 `mermaid` の flowchart・sequenceDiagram・mindmap のコードブロックを 1 つずつ持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -355,7 +355,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 2 つのコードブロックを、補足の無い map の範囲として描く
+        M->>M: 3 つのコードブロックを、補足の無い map の範囲として描く
         M-->>P: mermaid を読み込まずに、図の枠に入れた map の図を描く
         P-->>U: 文書を表示
       ```
@@ -363,7 +363,7 @@ scenarios:
       <!-- /map -->
     expected:
       - mermaid への要求が 0 件
-      - 2 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない
+      - 3 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない。mindmap は根を中央に配置したマインドマップで描かれる
     test: test_normal_when_only_map_kinds
   - name: 正常シナリオ（actor のアイコンを設定で変える）
     setup:
@@ -397,7 +397,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: title を持たない mermaid のコードブロックを持つ Markdown
-        description: map の範囲の外に、front matter の `title` を持たない言語 `mermaid` の flowchart・classDiagram・gantt のコードブロックを 1 つずつ持つ文書
+        description: map の範囲の外に、front matter の `title` を持たない言語 `mermaid` の flowchart・classDiagram・mindmap・gantt のコードブロックを 1 つずつ持つ文書
         notes: gantt は本文の `title` の行も持たない
       - name: Mock
         description: 正常シナリオと同じ
@@ -416,15 +416,15 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - flowchart・classDiagram（map の図）と gantt（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「ガントチャート」
+      - flowchart・classDiagram・mindmap（map の図）と gantt（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「マインドマップ」「ガントチャート」
     test: test_normal_when_untitled
   - name: 異常シナリオ（map が読めない行を持つ）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: map が読めない行を持つ mermaid のコードブロックの Markdown
-        description: map の範囲の外に、言語 `mermaid` の flowchart のコードブロックを 4 つ持つ文書
-        notes: '1 つ目は map が読めない行（`A --o B`）を持ち、2 つ目は 1 行目に `%%{init: {"theme": "forest"}}%%` を持ち、3 つ目は map が読める行だけを持ち、4 つ目はノードの塗りを指定する `style A fill:#f9f` の行を持つ'
+        description: map の範囲の外に、言語 `mermaid` の flowchart のコードブロックを 4 つと、mindmap のコードブロックを 2 つ持つ文書
+        notes: '1 つ目は map が読めない行（`A --o B`）を持ち、2 つ目は 1 行目に `%%{init: {"theme": "forest"}}%%` を持ち、3 つ目は map が読める行だけを持ち、4 つ目はノードの塗りを指定する `style A fill:#f9f` の行を持つ。5 つ目（mindmap）は項目の下に `::icon(fa fa-book)` の行を持ち、6 つ目（mindmap）は項目に `:::urgent` を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -437,17 +437,17 @@ scenarios:
         participant M as mdmark
         participant X as mermaid
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 2 つ目は設定の行を持つので mermaid の対象にし、1・3・4 つ目を範囲の外の map の図にする
-        M->>M: 1 つ目は map が読めない行、4 つ目は見た目を指定する行を持つので mermaid の対象に戻す
+        M->>M: 2 つ目は設定の行を持つので mermaid の対象にし、1・3・4・5・6 つ目を範囲の外の map の図にする
+        M->>M: 1 つ目は map が読めない行、4・5・6 つ目は見た目を指定する行を持つので mermaid の対象に戻す
         M->>X: 本体を要求
         X-->>M: 本体
-        M-->>P: 1・2・4 つ目は mermaid の図、3 つ目は map の図を描く
+        M-->>P: 1・2・4・5・6 つ目は mermaid の図、3 つ目は map の図を描く
         P-->>U: 文書を表示
       ```
 
       <!-- /map -->
     expected:
-      - 1・2・4 つ目の場所に mermaid の図があり、3 つ目の場所に map の図がある。4 つ目のノード A の塗りは `style` の行で指定した色
+      - 1・2・4・5・6 つ目の場所に mermaid の図があり、3 つ目の場所に map の図がある。4 つ目のノード A の塗りは `style` の行で指定した色
       - どの図の前にも書き方の警告が無い
       - mermaid の本体への要求が 1 件
     test: test_error_when_map_cannot_read

@@ -19,6 +19,7 @@ export const MERMAID_KIND_NAMES: Record<string, string> = {
   erDiagram: "ER 図",
   gantt: "ガントチャート",
   pie: "円グラフ",
+  mindmap: "マインドマップ",
 };
 
 /** テーマ `mdmark` で、mermaid の `base` テーマの変数ごとに元にする mdmark の CSS 変数 */

@@ -5,6 +5,7 @@ import { type MapData, parseMapData } from "./data.ts";
 import { parseErDiagram } from "./er.ts";
 import { mapLinkProblems, parseFlowchart } from "./flowchart.ts";
 import { lucideIconNames } from "./lucide-names.ts";
+import { parseMindmap } from "./mindmap.ts";
 import { parseSequence } from "./sequence.ts";
 import {
   MAP_ARG_KEYS,
@@ -39,6 +40,7 @@ const REF_HINTS = {
     "service・group・junction の ID か、線の記載順の `r{番号}` にしてください。",
   C4Context:
     "要素・境界の別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
+  mindmap: "項目の ID か、ID を持たない項目の表示する文字にしてください。",
 } as const satisfies Record<MapKindName, string>;
 
 /** ER 図の補足の groups の、無いテーブル・無い親・2 つの分類に入るテーブル・テーブル名と同じ分類の ID の項目 */
@@ -104,6 +106,8 @@ type MermaidIds = {
   classes: Set<string>;
   /** ER 図のテーブル名 */
   tables: Set<string>;
+  /** マインドマップの、ID を持たない 2 つ以上の項目が使う表示する文字 */
+  ambiguous: ReadonlySet<string>;
   /** Mermaid の読み取りの項目（範囲の開きのマーカーからの行） */
   problems: MapProblem[];
   /** ノードのリンク先の項目 */
@@ -116,6 +120,7 @@ const emptyMermaidIds = (problems: MapProblem[]): MermaidIds => ({
   edgeIds: new Set(),
   classes: new Set(),
   tables: new Set(),
+  ambiguous: new Set(),
   problems,
   linkProblems: [],
 });
@@ -226,6 +231,15 @@ const c4Ids = (mermaid: string, line: number | undefined): MermaidIds => {
   return found;
 };
 
+/** マインドマップの ID（項目の ID と、ID を持たない項目の表示する文字） */
+const mindmapIds = (mermaid: string, line: number | undefined): MermaidIds => {
+  const mindmap = parseMindmap(mermaid);
+  const found = emptyMermaidIds(shiftProblems(mindmap.problems, line));
+  for (const item of mindmap.items) found.ids.add(item.key);
+  found.ambiguous = mindmap.ambiguous;
+  return found;
+};
+
 /** シーケンス図の ID（参加者の ID と、メッセージ・ブロックの番号） */
 const sequenceIds = (mermaid: string, line: number | undefined): MermaidIds => {
   const sequence = parseSequence(mermaid);
@@ -257,6 +271,8 @@ const mermaidIdsOf = (
       return architectureIds(mermaid, line);
     case "C4Context":
       return c4Ids(mermaid, line);
+    case "mindmap":
+      return mindmapIds(mermaid, line);
     default:
       return sequenceIds(mermaid, line);
   }
@@ -313,7 +329,11 @@ const checkLayout = (context: DataContext): void => {
   for (const [id, entry] of Object.entries(data.layout)) {
     ref(`layout.${id}`, id);
     ref(`layout.${id}.align`, entry.align);
-    if (found.ids.has(id) && !found.edgeIds.has(id)) {
+    if (
+      context.kind !== "mindmap" &&
+      found.ids.has(id) &&
+      !found.edgeIds.has(id)
+    ) {
       problems.push(...edgeOnlyProblems({ id, entry, lineOf }));
     }
     if (
@@ -329,6 +349,45 @@ const checkLayout = (context: DataContext): void => {
     }
   }
 };
+
+/** マインドマップに適用する `layout` のキー */
+const MINDMAP_LAYOUT_KEYS = new Set(["color", "collapsed"]);
+
+/** マインドマップの `layout` の、適用しないキーの項目 */
+const mindmapLayoutProblems = (context: DataContext): MapProblem[] =>
+  Object.entries(context.data.layout).flatMap(([id, entry]) =>
+    Object.entries(entry)
+      .filter(
+        ([key, value]) => value !== undefined && !MINDMAP_LAYOUT_KEYS.has(key),
+      )
+      .map(([key]) => ({
+        kind: "map_invalid_value",
+        line: context.lineOf(`layout.${id}.${key}`),
+        message: `補足の \`layout.${id}.${key}\` はマインドマップには適用しません。マインドマップの \`layout\` は \`color\` と \`collapsed\` だけを適用します。並び順は Mermaid の行の順で変えてください。`,
+      })),
+  );
+
+/** マインドマップの、適用しない `layout` のキーとマーカーの引数の `focus` の項目 */
+const mindmapProblems = (
+  context: DataContext,
+  focus: string | undefined,
+): MapProblem[] => [
+  ...mindmapLayoutProblems(context),
+  ...(focus !== undefined && context.found.ambiguous.has(focus)
+    ? [ambiguousProblem("マーカーの引数の `focus`", focus, undefined)]
+    : []),
+];
+
+/** ID を持たない同じ文字の 2 つ以上の項目を指すキーの項目 */
+const ambiguousProblem = (
+  where: string,
+  key: string,
+  line: number | undefined,
+): MapProblem => ({
+  kind: "map_ambiguous_ref",
+  line,
+  message: `${where} の \`${key}\` は、ID を持たない 2 つ以上の項目の表示する文字のため、どの項目にも適用しません。指す項目に ID（\`{ID}[${key}]\` など）を記載し、ID で指してください。`,
+});
 
 /** ノードかグループの layout に、線の ID のときだけ記載できるキーがある項目 */
 const edgeOnlyProblems = (item: {
@@ -382,7 +441,9 @@ export const collectMapProblems = (
       : local + range.dataLine;
   };
   const ref = (path: string, id: string | undefined) => {
-    if (id !== undefined && !found.ids.has(id)) {
+    if (id !== undefined && found.ambiguous.has(id)) {
+      problems.push(ambiguousProblem(`補足の \`${path}\``, id, lineOf(path)));
+    } else if (id !== undefined && !found.ids.has(id)) {
       problems.push({
         kind: "map_unknown_ref",
         line: lineOf(path),
@@ -410,6 +471,8 @@ export const collectMapProblems = (
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
   checkLayout(context);
+  if (kind === "mindmap")
+    problems.push(...mindmapProblems(context, structure.args.args.focus));
   problems.push(...found.linkProblems);
   for (const name of found.classes) {
     if (!(name in config.kinds)) {
@@ -451,6 +514,9 @@ const CLASS_LINE_RE = /^class\s/;
 /** ノードの `:::` のクラスの指定 */
 const CLASS_SHORTHAND_RE = /:::[\w-]/;
 
+/** マインドマップの `::icon()` の行 */
+const ICON_LINE_RE = /^::icon\(/;
+
 /** 範囲の外の map の図を mermaid の図に戻すか（map が読めない行か、読み捨てる見た目の指定を持つ） */
 export const needsMermaidFallback = (options: {
   kind: MapKindName;
@@ -467,6 +533,7 @@ export const needsMermaidFallback = (options: {
       (line) =>
         STYLE_LINE_RE.test(line) ||
         CLASS_SHORTHAND_RE.test(line) ||
+        (kind === "mindmap" && ICON_LINE_RE.test(line)) ||
         (classLine && CLASS_LINE_RE.test(line)),
     )
   ) {

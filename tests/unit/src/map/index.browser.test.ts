@@ -193,3 +193,23 @@ test("test_attach_map_when_plain_fallback", async () => {
   expect(restored[0]).toEqual([blocks[0]]);
   expect(root.querySelectorAll("figure.mdmark-diagram")).toHaveLength(1);
 });
+
+// マインドマップ（正常系）
+test("test_attach_map_when_mindmap", async () => {
+  // 準備
+  const { MINDMAP_PLAIN } = await import("../../helpers/map.ts");
+  const withIcon = "mindmap\n  root\n    A\n      ::icon(fa fa-book)\n";
+  // 実行
+  const { root } = await attach(
+    `${mapRange({ mermaid: MINDMAP_PLAIN })}\n\`\`\`mermaid\n${withIcon}\`\`\`\n`,
+  );
+  // 検証
+  const figures = root.querySelectorAll("figure.mdmark-diagram");
+  expect(figures).toHaveLength(1);
+  expect(
+    figures[0]?.querySelectorAll(".map-mindmap-item").length,
+  ).toBeGreaterThan(0);
+  const blocks = root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]");
+  expect(blocks).toHaveLength(1);
+  expect(blocks[0]?.querySelector("code")?.textContent).toContain("::icon");
+});

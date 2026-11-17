@@ -42,6 +42,8 @@ import {
 import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap } from "../src/map/layout.ts";
+import { mindmapItemOf, parseMindmap } from "../src/map/mindmap.ts";
+import { layoutMindmap } from "../src/map/mindmap-layout.ts";
 import { parseSequence } from "../src/map/sequence.ts";
 import { sequenceRows } from "../src/map/sequence-rows.ts";
 import {
@@ -110,6 +112,7 @@ import {
   renderMapClassDiagram,
   renderMapErDiagram,
   renderMapFlow,
+  renderMapMindmap,
   renderMapSequence,
   renderMapStateDiagram,
   rewireMapArchitecture,
@@ -155,6 +158,9 @@ import {
   ER as MAP_ER,
   ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
+  MINDMAP as MAP_MINDMAP,
+  MINDMAP_DATA as MAP_MINDMAP_DATA,
+  MINDMAP_LAYOUT_DATA as MAP_MINDMAP_LAYOUT_DATA,
   SEQUENCE as MAP_SEQUENCE,
   STATE as MAP_STATE,
   STATE_DATA as MAP_STATE_DATA,
@@ -852,6 +858,34 @@ const MAP_FLOW_LONG = MAP_FLOW.replace(
   'layout["入れ子のグループを内側から順に自動配置して、グループの大きさを決める"]',
 );
 
+/** マインドマップの項目の大きさの見積もり（全角 14px・半角 8px の文字幅で、幅 200px までで折り返す） */
+const mindmapStorySize = (label: string, shape: string) => {
+  const text = [...label].reduce(
+    (sum, char) => sum + (/[\x20-\x7e]/.test(char) ? 8 : 14),
+    0,
+  );
+  const pad = { bang: 48, hexagon: 40, cloud: 32 }[shape] ?? 0;
+  const inner = Math.min(text, 200 - 48 - pad);
+  const rows = Math.max(1, Math.ceil(text / (200 - 48 - pad)));
+  const width = Math.max(72, inner + 60 + pad);
+  const height = rows * 20 + 16 + (shape === "bang" ? 24 : 0);
+  return shape === "circle"
+    ? { width: Math.max(width, height), height: Math.max(width, height) }
+    : { width, height };
+};
+
+/** マインドマップの補足のキーを `stateKey` にする（同じ文字の項目と無い項目は捨てる） */
+const mindmapKeyed = <T>(
+  mindmap: ReturnType<typeof parseMindmap>,
+  values: Record<string, T>,
+): Record<string, T> =>
+  Object.fromEntries(
+    Object.entries(values).flatMap(([key, value]) => {
+      const found = mindmapItemOf({ mindmap, key });
+      return found.kind === "found" ? [[found.item.stateKey, value]] : [];
+    }),
+  );
+
 /** map の部品を図の枠に入れる */
 const mapFrame = (
   title: string,
@@ -1348,6 +1382,53 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return mapFrame(diagram.title ?? "", part, layout);
   },
   "map-sequence": (args) => mapSequenceStory(args),
+  "map-mindmap": (args) => {
+    const mindmap = parseMindmap(MAP_MINDMAP);
+    const { data } = parseMapData(
+      args.layout === "colored" ? MAP_MINDMAP_LAYOUT_DATA : MAP_MINDMAP_DATA,
+    );
+    const layout = mindmapKeyed(mindmap, data.layout);
+    const colors = Object.fromEntries(
+      Object.entries(layout).flatMap(([key, entry]) =>
+        entry.color === undefined ? [] : [[key, entry.color]],
+      ),
+    );
+    const collapsed = [
+      ...jsonList(args.collapsed),
+      ...Object.entries(layout).flatMap(([key, entry]) =>
+        entry.collapsed === true ? [key] : [],
+      ),
+    ];
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const tree = layoutMindmap({
+      mindmap,
+      top: entered,
+      collapsed: new Set(collapsed),
+      sizes: new Map(
+        mindmap.items.map((item) => [
+          item.stateKey,
+          mindmapStorySize(item.label, item.shape),
+        ]),
+      ),
+    });
+    for (const item of tree.items)
+      item.color = colors[item.stateKey] ?? item.color;
+    const part = renderMapMindmap({
+      mindmap,
+      tree,
+      filled: new Set(Object.keys(colors)),
+      collapsed,
+      entered,
+      selected: typeof args.selected === "string" ? args.selected : undefined,
+      focus: jsonObject<{ nodes: string[] }>(args.focus),
+      notes: noteTexts(mindmapKeyed(mindmap, data.notes)),
+      annotations: {},
+      hints: hintsOf(args.hints),
+      id: "story-map-mindmap",
+      terms: undefined,
+    });
+    return mapFrame("企画の論点", part, tree);
+  },
   "map-band": (args) =>
     renderMapBand({
       mode: args.mode === "playback" ? "playback" : "walkthrough",

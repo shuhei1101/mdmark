@@ -139,6 +139,9 @@
 | [ライブラリ本体 / map / 描画と操作 / class-view.ts](./MOD-596-4.ts.yaml) | ライブラリ本体 / map / 描画と操作 / class-view.ts |
 | [ライブラリ本体 / map / 描画と操作 / architecture-view.ts](./MOD-596-5.ts.yaml) | ライブラリ本体 / map / 描画と操作 / architecture-view.ts |
 | [ライブラリ本体 / map / 描画と操作 / c4-view.ts](./MOD-596-6.ts.yaml) | ライブラリ本体 / map / 描画と操作 / c4-view.ts |
+| [ライブラリ本体 / map / 読み取り / mindmap.ts](./MOD-649-1.ts.yaml) | ライブラリ本体 / map / 読み取り / mindmap.ts |
+| [ライブラリ本体 / map / 配置 / mindmap-layout.ts](./MOD-649-2.ts.yaml) | ライブラリ本体 / map / 配置 / mindmap-layout.ts |
+| [ライブラリ本体 / map / 描画と操作 / mindmap-view.ts](./MOD-649-3.ts.yaml) | ライブラリ本体 / map / 描画と操作 / mindmap-view.ts |
 | [ライブラリ本体 / map / 読み取り / spec.ts](./MOD-472-140.ts.yaml) | ライブラリ本体 / map / 読み取り / spec.ts |
 | [ライブラリ本体 / map / 描画と操作 / state.ts](./MOD-472-129.ts.yaml) | ライブラリ本体 / map / 描画と操作 / state.ts |
 | [ライブラリ本体 / mermaid / mermaid-source.ts](./MOD-472-144.ts.yaml) | ライブラリ本体 / mermaid / mermaid-source.ts |

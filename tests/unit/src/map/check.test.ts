@@ -158,6 +158,7 @@ test("test_collect_map_problems_when_unsupported_kind", async () => {
   expect(problems[0]?.message).toContain("classDiagram");
   expect(problems[0]?.message).toContain("architecture-beta");
   expect(problems[0]?.message).toContain("C4Context");
+  expect(problems[0]?.message).toContain("mindmap");
 });
 
 // 知らない印の引数（異常系）
@@ -347,4 +348,84 @@ test("test_needs_mermaid_fallback_when_style", async () => {
   ];
   // 検証
   expect(results).toEqual([true, true, true, true, true]);
+});
+
+// マインドマップの補足とマーカーの引数のずれ（異常系）
+test("test_collect_map_problems_when_mindmap", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const { MINDMAP } = await import("../../helpers/map.ts");
+  const data = JSON.stringify({
+    version: 1,
+    notes: { 課題: { text: "a" }, 幽霊: { text: "b" } },
+    layout: {
+      マイルストーン: { pos: { x: 40, y: 40 } },
+      a1: { color: "purple" },
+    },
+  });
+  // 実行
+  const problems = collectMapProblems(
+    range(MINDMAP, data, '{"focus": "課題"}'),
+    CONFIG,
+    true,
+  );
+  // 検証
+  const of = (kind: string) =>
+    problems.filter((problem) => problem.kind === kind);
+  expect(of("map_ambiguous_ref")).toHaveLength(2);
+  expect(
+    of("map_ambiguous_ref")
+      .map((problem) => problem.message)
+      .join("\n"),
+  ).toContain("notes.課題");
+  expect(
+    of("map_ambiguous_ref")
+      .map((problem) => problem.message)
+      .join("\n"),
+  ).toContain("focus");
+  for (const problem of of("map_ambiguous_ref"))
+    expect(problem.message).toContain("ID");
+  expect(of("map_unknown_ref")).toHaveLength(1);
+  expect(of("map_unknown_ref")[0]?.message).toContain("notes.幽霊");
+  expect(of("map_invalid_value")).toHaveLength(1);
+  expect(of("map_invalid_value")[0]?.message).toContain(
+    "layout.マイルストーン.pos",
+  );
+  expect(
+    problems.some((problem) => problem.message.includes("layout.a1")),
+  ).toBe(false);
+});
+
+// マインドマップの 2 つ目の根（異常系）
+test("test_collect_map_problems_when_mindmap_second_root", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const { MINDMAP_UNREADABLE } = await import("../../helpers/map.ts");
+  // 実行
+  const problems = collectMapProblems(
+    { ...range(MINDMAP_UNREADABLE), mermaidLine: 3 },
+    CONFIG,
+    true,
+  );
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
+  expect(problems[0]?.line).toBeGreaterThan(3);
+});
+
+// マインドマップの見た目の指定（正常系）
+test("test_needs_mermaid_fallback_when_mindmap", async () => {
+  // 準備
+  const { needsMermaidFallback } = await loadCheck();
+  const { MINDMAP, MINDMAP_PLAIN } = await import("../../helpers/map.ts");
+  // 実行
+  const results = [
+    needsMermaidFallback({ kind: "mindmap", mermaid: MINDMAP }),
+    needsMermaidFallback({
+      kind: "mindmap",
+      mermaid: "mindmap\n  root\n    A\n      ::icon(fa fa-book)\n",
+    }),
+    needsMermaidFallback({ kind: "mindmap", mermaid: MINDMAP_PLAIN }),
+  ];
+  // 検証
+  expect(results).toEqual([true, true, false]);
 });

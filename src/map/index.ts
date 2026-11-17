@@ -8,6 +8,7 @@ import { attachMapClass } from "./class-view.ts";
 import { attachMapEr } from "./er-view.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
 import { parseFlowchart } from "./flowchart.ts";
+import { attachMapMindmap } from "./mindmap-view.ts";
 import { parseSequence, type SequenceMessage } from "./sequence.ts";
 import { attachMapSequence } from "./sequence-view.ts";
 import { parseMapArgs } from "./spec.ts";
@@ -152,6 +153,8 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
   const attach = FLOW_BASED[kind];
   if (kind === "sequenceDiagram") {
     context.sequences.push(sequenceEntry(context, { range, args, source }));
+  } else if (kind === "mindmap") {
+    destroyers.push(attachMapMindmap(range, config, args).destroy);
   } else if (attach) {
     destroyers.push(attach(range, config, args).destroy);
   } else {

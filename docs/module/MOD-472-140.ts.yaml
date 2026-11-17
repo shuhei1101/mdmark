@@ -12,7 +12,7 @@ data_models:
     summary: 読み取りと点検が返す 1 件
     properties:
       - name: kind
-        type: '"map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line"'
+        type: '"map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line" | "map_ambiguous_ref" | "annotation_undefined"'
         description: ずれの種類と同じ名前
       - name: line
         type: number | undefined

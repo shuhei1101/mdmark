@@ -1,0 +1,127 @@
+id: CMP-649-1
+visibility: internal
+title: mapのマインドマップ
+implementation: src/parts/map.ts#renderMapMindmap
+story: Parts/MapMindmap
+lead: map の `mindmap` を、根を中央に配置して枝を左右の外へ広げる木の配置で、記載した形状の項目と 1 レイヤー目の枝ごとの色の曲線にして描き、枝の開閉と中へ入る持ち手、根からの道筋と子孫を残す選択を持つ。
+args:
+  - name: tree
+    type: オブジェクト
+    required: true
+    description: 木の配置の結果。項目ごとの位置と大きさ・形状・側（`left`・`right`・`root`）・枝の色・子を持つか・子孫の数と、親から子への曲線の始点と終点（親の持ち手の先から、子の内側の辺へ。形状の指定の無い子は下線の高さへ）
+  - name: tree.items[].shape
+    type: 列挙
+    required: true
+    choices: square・rounded・circle・bang・cloud・hexagon・plain
+    description: 項目の形状。`plain` は枠線の無い文字に下線、`bang`・`hexagon` は切り抜いて枝の色を薄く混ぜた面で描く
+  - name: tree.items[].color
+    type: 文字列
+    required: false
+    default: なし（根は文字の色）
+    description: 縁と線の色の名前。全体の図の根からの 1 レイヤー目の枝で決める（`blue`・`green`・`orange`・`purple`・`red`・`yellow` の順）。補足の `layout` の `color` を持つ項目はその色の名前の面も付ける
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じた項目のキー。閉じた項目は子孫とその線を描かず、開閉のボタンに子孫の項目の数を出す
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入った項目のキー。その項目を根にした木だけを描き、図の上端に全体の根からその項目までの名前を並べる
+  - name: selected
+    type: 文字列
+    required: false
+    default: なし（薄くしない）
+    description: 選んだ項目のキー。根からその項目までの項目と線、その項目の子孫のほかを `opacity` 0.25 にする
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内で強調する項目（`{ nodes }`。構成図の部品の `focus` と補足の `walkthroughs` と同じキー）。強調する項目と根からの道筋のほかを薄くする。選択を優先する
+  - name: hints
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: '`false` のとき、項目の説明のマーカーを配置しない'
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応。項目の名前の中の用語を `span.mdmark-term` にする
+events:
+  - name: 開閉する
+    when: 子を持つ項目の持ち手の開閉のボタンを押す
+    value: 項目のキー
+    description: '`mount` が `collapsed` を切り替え、詰めて配置し直す'
+  - name: 中へ入る
+    when: 子を持つ項目の持ち手の中へ入るボタンを押す
+    value: 項目のキー
+    description: '`mount` が `entered` をその項目にし、その項目を根に描き直す。戻るボタンと Esc は構成図の部品と同じ'
+  - name: 選ぶ
+    when: 項目の名前の周りの余白と枠線（形状の指定の無い項目は下線）を押す。項目の押せる要素にフォーカスして Enter か Space を押す
+    value: 項目のキー
+    description: '`mount` が `selected` を切り替える。名前の文字の上・説明のマーカー・持ち手のボタンでは選ばない'
+states:
+  - name: Default
+    description: 根 1 つ・1 レイヤー目の枝 4 つ・項目 14 個。形状 6 種と形状の指定の無い項目、30 文字の名前、説明を持つ項目 2 つ
+    notes:
+      定義: モックの `MINDMAP`・`MINDMAP_DATA`（`docs/mock/refs/649/assets/samples.js`）
+  - name: Collapsed
+    description: 「体制」を閉じた。開閉のボタンに `3` が出て、子孫とその線が無い
+    args:
+      - name: collapsed
+        value: '["体制"]'
+  - name: Entered
+    description: 「体制」の中へ入った。「体制」を根に描き、上端に「企画の論点 › 体制」。枝の色は全体の図と同じ緑
+    args:
+      - name: entered
+        value: 体制
+  - name: Selected
+    description: 「体制」を選んだ。根からの道筋と子孫のほかが薄い
+    args:
+      - name: selected
+        value: 体制
+  - name: PlainSelected
+    description: 形状の指定の無い「利用者を増やす」を選んだ
+    args:
+      - name: selected
+        value: 利用者を増やす
+  - name: Colored
+    description: 補足の `layout` で「目的」に `purple`、「予算」に `collapsed` を持つ。「目的」は purple の面と縁、「予算」は閉じて描かれる
+    notes:
+      定義: モックの `MINDMAP_LAYOUT_DATA`。座標と並び順の書き方の警告は `mount` が図の枠の前に出すため、この部品の状態には含めない
+  - name: Walked
+    description: 案内の手順 2。「体制」の中で「人手が足りない」とそこまでの道筋のほかが薄い
+    args:
+      - name: entered
+        value: 体制
+      - name: focus
+        value: '{"nodes": ["人手が足りない"]}'
+  - name: HintsOff
+    description: ヒントをオフにした。説明のマーカーが無い
+    args:
+      - name: hints
+        value: 'false'
+  - name: Narrow
+    description: 幅 390px の置き場所。等倍のまま、根を表示する枠の中央にスクロールした状態
+uses:
+  - component: CMP-472-5#
+    how: 項目のノードと押せる要素・説明のマーカー・強調の薄い表示・戻るボタンと Esc。入れ子の自動配置・グループ・線の矢じり・ドラッグは使用しない
+  - component: CMP-472-38#
+    how: 項目の説明
+accessibility:
+  - 項目は構成図のノードと同じく、項目の `div` がフォーカスを受けず、項目の全体を覆う押せる要素（`role="button"`・`tabindex="0"`・`aria-roledescription="項目"`）が項目の名前のスクリーンリーダー向けの名前を持ってフォーカスを受ける。項目の中にフォーカスできる要素を入れ子にせず、説明のマーカーは押せる要素と兄弟にする。フォーカスの枠線を項目の外側に出す
+  - 選んだかを項目の `data-selected` と、スクリーンリーダー向けの名前の末尾の `（選択中）` で伝える（`aria-pressed` は付けない）
+  - 開閉のボタンは `aria-expanded` と、「{名前}の子孫を閉じる」「{名前}の子孫 {数} 件を開く」の名前を持ち、中へ入るボタンは「{名前}の中へ入る」の名前を持つ。どちらも 28px 以上で、間を 4px 空ける
+  - 枝の曲線と中へ入ったときの道筋の区切りの `›` は飾りとして `aria-hidden`、道筋は `aria-label="根からの道筋"` を持つ
+  - 枝の色だけで枝を区別させず、線で親子を示す
+refs:
+  - IF-472-35#constraints[map のマインドマップ]
+status: planned
+test_file: tests/integration/lib/map-mindmap.story.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:マインドマップ
+  - name: topic:図

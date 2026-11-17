@@ -4467,12 +4467,13 @@ test("test_normal_when_map_range", async () => {
     mapRange({ mermaid: MAP_CLASS }),
     mapRange({ mermaid: MAP_ARCH }),
     mapRange({ mermaid: MAP_C4 }),
+    mapRange({ mermaid: "mindmap\n  root((企画))\n    目的\n" }),
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const ranges = findTags(html, 'class="mdmark-map"');
-  expect(ranges).toHaveLength(8);
+  expect(ranges).toHaveLength(9);
   expect(ranges[0]).toContain('data-map="1"');
   expect(ranges[0]).toContain('data-map-kind="flowchart"');
   expect(ranges[0]).toContain(
@@ -4489,10 +4490,12 @@ test("test_normal_when_map_range", async () => {
   expect(ranges[5]).toContain('data-map-kind="classDiagram"');
   expect(ranges[6]).toContain('data-map-kind="architecture"');
   expect(ranges[7]).toContain('data-map-kind="C4Context"');
+  // マインドマップの範囲
+  expect(ranges[8]).toContain('data-map-kind="mindmap"');
   const codes = findTags(html, 'class="mdmark-code"');
-  expect(codes).toHaveLength(8);
+  expect(codes).toHaveLength(9);
   for (const code of codes) expect(code).not.toContain("data-mdmark-mermaid");
-  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(8);
+  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(9);
   const data = findTags(html, 'class="mdmark-map-data"');
   expect(data).toHaveLength(2);
   expect(data[0]).toMatch(/^<pre /);
@@ -4551,6 +4554,7 @@ test("test_normal_when_map_written_wrongly", async () => {
   expect(plainText(pieceAt(2))).toContain("classDiagram");
   expect(plainText(pieceAt(2))).toContain("architecture-beta");
   expect(plainText(pieceAt(2))).toContain("C4Context");
+  expect(plainText(pieceAt(2))).toContain("mindmap");
   expect(findTags(pieceAt(2), 'class="mdmark-map"')).toHaveLength(0);
   expect(findTags(pieceAt(2), "language-mermaid")).toHaveLength(1);
   // 4・5 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲

@@ -150,6 +150,49 @@ data_models:
       - name: card
         type: string | undefined
         description: 多重度
+  - name: MapMindmapArgs
+    title: mapのマインドマップの引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapのマインドマップ』の引数。項目は `stateKey` で指す
+    properties:
+      - name: mindmap
+        type: Mindmap
+        description: 読み取り結果（項目の名前・形状・全体の根から今の図の根までの道筋）
+      - name: tree
+        type: MindmapLayout
+        description: '`layoutMindmap` の配置'
+      - name: filled
+        type: ReadonlySet<string>
+        description: 補足の `layout` の `color` を持つ項目（その色の名前の面も付ける。色は `tree.items[].color` に入っている）
+      - name: collapsed
+        type: string[]
+        description: 閉じた項目
+      - name: entered
+        type: string | undefined
+        description: 中へ入った項目
+      - name: selected
+        type: string | undefined
+        description: 選んだ項目
+      - name: focus
+        type: '{ nodes: string[] } | undefined'
+        description: 案内で強調する項目
+      - name: notes
+        type: Record<string, string>
+        description: 項目の説明
+      - name: annotations
+        type: Record<string, MapAnnotation[]>
+        description: 項目の注記
+      - name: hints
+        type: boolean | undefined
+        description: '`false` のとき、説明のマーカーとツールチップを作らず、注記の持ち主の `id` だけを項目の押せる要素に付ける。既定は `true`'
+      - name: id
+        type: string
+        description: 図の ID（`map-{図の番号}`）
+      - name: terms
+        type: Record<string, string> | undefined
+        description: 用語から意味への対応
 functions:
   - name: renderMapFlow
     title: mapの構成図のHTML
@@ -714,6 +757,68 @@ functions:
         condition: '`mode: playback`・`unit: transition`'
         mock: なし
         expected: ボタンの名前が `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`
+  - name: renderMapMindmap
+    title: mapのマインドマップのHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのマインドマップ』。項目を構成図のノードと同じ `div.mdmark-diagram-node`（`map-mindmap-item`・`data-node` に `stateKey`・`data-shape`・`data-side`。今の図の根は `map-mindmap-root`、`filled` の項目は `map-mindmap-filled`）で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。子を持つ項目には子の側の辺に持ち手 `div.map-mindmap-grip`（開閉の `button[data-mindmap-toggle]` と中へ入る `button[data-mindmap-enter]`）を付け、枝の曲線を SVG の `path.map-mindmap-branch`（`aria-hidden`・`data-branch` に `{親}->{子}`）で描く。中へ入ったときは図の上端に根からの道筋 `nav.map-mindmap-trail` を出す。選択と案内の強調で残さない項目と曲線に `map-dim` を付ける
+    description: 色は色の名前の文字の色（`colorVar`）を項目と曲線の `--map-mindmap-color` に、`filled` の項目はその色の面の色を `--map-mindmap-fill` に入れ、形状・下線・持ち手・道筋の見た目は CSS（`src/index.css`。モックの `docs/mock/refs/649/assets/mindmap.css`）で決める
+    scope: public
+    args:
+      - name: args
+        type: MapMindmapArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: MapPart
+      description: 図の中身とツールチップの HTML
+    process: |-
+      1. 項目の押せる要素は `role="button"`・`tabindex="0"`・`aria-roledescription="項目"` と、名前のスクリーンリーダー向けの名前（選んだ項目は末尾に `（選択中）`）を持つ。選んだ項目は `data-selected` を持つ
+      2. 開閉のボタンは `aria-expanded` と、「{名前}の子孫を閉じる」・「{名前}の子孫 {数} 件を開く」の名前を持ち、閉じた項目では子孫の数を出す。中へ入るボタンは「{名前}の中へ入る」の名前を持つ
+      3. 道筋は `aria-label="根からの道筋"` を持ち、区切りの `›` は `aria-hidden`
+      4. 選んだ項目があれば、全体の根からその項目までの項目と曲線、その項目の子孫を残す。選んでおらず `focus` があれば、強調する項目と根からその項目までの項目と曲線を残す
+      5. `hints` が `false` のときは、説明のマーカーとツールチップを作らず、注記を持つ項目の押せる要素に持ち主の `id` を付ける
+    unit_tests:
+      - name: test_render_map_mindmap
+        case: 正常
+        summary: 項目・持ち手・曲線
+        condition: 部品の Default の引数（モックの `MINDMAP`・`MINDMAP_DATA` を全ての項目の大きさ 100 × 40 で配置）
+        mock: なし
+        expected: '`div.map-mindmap-item` が 14 で、それぞれ `tabindex` を持たず、先頭の子の `span.mdmark-diagram-node-hit` が `role="button"`・`tabindex="0"`・`aria-roledescription="項目"` を持つ。説明のマーカーが 2 つで押せる要素の中に無い。持ち手が 6 つ（根は持たない）で、「体制」の開閉のボタンが `aria-expanded="true"`・名前「体制の子孫を閉じる」、中へ入るボタンが「体制の中へ入る」。`path.map-mindmap-branch` が 13 で `aria-hidden` を持つ'
+      - name: test_render_map_mindmap_when_collapsed
+        case: 正常
+        summary: 閉じた項目
+        condition: '`collapsed` が `["体制"]` で配置した引数'
+        mock: なし
+        expected: 「体制」の開閉のボタンが `aria-expanded="false"`・文字 `3`・名前「体制の子孫 3 件を開く」で、「人手が足りない」が無い
+      - name: test_render_map_mindmap_when_entered
+        case: 正常
+        summary: 枝の中の道筋
+        condition: '`entered` が「体制」で配置した引数'
+        mock: なし
+        expected: '`div.map-mindmap-trail` が `aria-label="根からの道筋"` を持ち、文字が「企画の論点 › 体制」で `›` が `aria-hidden`。「体制」は持ち手を持たない'
+      - name: test_render_map_mindmap_when_selected
+        case: 正常
+        summary: 選んだ項目の道筋と子孫を残す
+        condition: '`selected` が「体制」の Default の引数'
+        mock: なし
+        expected: 「体制」が `data-selected` を持ち、押せる要素の名前が「体制（選択中）」。根・「人手が足りない」は `map-dim` を持たず、「目的」と根（ID `root`）から「目的」への曲線（`data-branch` が `root->a1`）は `map-dim` を持つ
+      - name: test_render_map_mindmap_when_hints_off
+        case: 正常
+        summary: ヒントがオフなら説明のマーカーを作らず、注記の持ち主の id だけを残す
+        condition: Default の引数で、`annotations` が「目的」に注記 1、`hints` が `false`
+        mock: なし
+        expected: '`.mdmark-diagram-info` が無く、`tips` に `role="tooltip"` が無い。「目的」の押せる要素が `id="mdmark-note-owner-1-a1"` を持つ'
+      - name: test_render_map_mindmap_when_terms
+        case: 正常
+        summary: 名前の用語を押せる要素の中に入れない
+        condition: 'Default の引数に、`terms` が `{"体制": "意味"}`'
+        mock: なし
+        expected: 「体制」の名前の中に `span.mdmark-term` があり、`span.mdmark-diagram-node-hit` の中に無い
+    refs:
+      - IF-472-35#constraints[map のマインドマップ]
 lead: 'map の構成図・シーケンス図・案内のバーの HTML を受け持ち、map の部品が返却する HTML を変えるときに参照する。'
 tags:
   - name: topic:map

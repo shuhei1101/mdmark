@@ -54,6 +54,8 @@ items:
   summary: map の architecture-beta を、アイコンを持つ service のノード・group のグループ・junction の点にし、線を指定の辺から引いたアーキテクチャ図
 - page: CMP-596-3.ts.yaml
   summary: map の C4Context を、種類の行と説明を持つ要素のノードと破線の境界のグループにし、外部の要素を描き分けた C4 図
+- page: CMP-649-1.ts.yaml
+  summary: map の mindmap を、根を中央に配置して枝を左右の外へ広げる木の配置にし、記載した形状の項目・枝ごとの色の曲線・開閉と中へ入る持ち手・道筋と子孫を残す選択を付けたマインドマップ
 - page: CMP-472-4.ts.yaml
   summary: map の sequenceDiagram を全ての記法で描き、ブロックの開閉と中だけを描く操作・参加者の選択と並べ替え・強調を付けたシーケンス図
 - page: CMP-472-50.ts.yaml

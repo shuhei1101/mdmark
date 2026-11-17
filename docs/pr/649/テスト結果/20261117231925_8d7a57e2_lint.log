@@ -1,0 +1,94 @@
+# 単体テスト作成の lint（commit a565181c の時点。テストコードの complexity の 3 件は 8d7a57e2 で修正済み）。型検査の違反は実装が無いことによるもの。biome の plugin/bin/setup.js の警告は base ブランチにもある
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 906 files in 986ms. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 7s
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/tests/unit/src/map/mindmap-layout.test.ts
+  44:38  error  Async arrow function has a complexity of 14. Maximum allowed is 10  complexity
+  98:50  error  Async arrow function has a complexity of 19. Maximum allowed is 10  complexity
+
+/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/tests/unit/src/map/mindmap-view.browser.test.ts
+  222:62  error  Async arrow function has a complexity of 13. Maximum allowed is 10  complexity
+
+✖ 3 problems (3 errors, 0 warnings)
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/map/check.test.ts(422,28): error TS2322: Type '"mindmap"' is not assignable to type 'MapKindName'.
+tests/unit/src/map/check.test.ts(424,7): error TS2322: Type '"mindmap"' is not assignable to type 'MapKindName'.
+tests/unit/src/map/check.test.ts(427,28): error TS2322: Type '"mindmap"' is not assignable to type 'MapKindName'.
+tests/unit/src/map/mindmap-layout.test.ts(5,33): error TS2307: Cannot find module '../../../../src/map/mindmap-layout.ts' or its corresponding type declarations.
+tests/unit/src/map/mindmap-layout.test.ts(6,34): error TS2307: Cannot find module '../../../../src/map/mindmap.ts' or its corresponding type declarations.
+tests/unit/src/map/mindmap-layout.test.ts(14,24): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-layout.test.ts(24,38): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-layout.test.ts(25,31): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-layout.test.ts(108,6): error TS7006: Parameter 'curve' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-layout.test.ts(111,6): error TS7006: Parameter 'curve' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-layout.test.ts(134,25): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-layout.test.ts(139,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-view.browser.test.ts(17,38): error TS2307: Cannot find module '../../../../src/map/mindmap-view.ts' or its corresponding type declarations.
+tests/unit/src/map/mindmap-view.browser.test.ts(18,34): error TS2307: Cannot find module '../../../../src/map/mindmap.ts' or its corresponding type declarations.
+tests/unit/src/map/mindmap-view.browser.test.ts(162,6): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-view.browser.test.ts(186,6): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap-view.browser.test.ts(205,6): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(5,34): error TS2307: Cannot find module '../../../../src/map/mindmap.ts' or its corresponding type declarations.
+tests/unit/src/map/mindmap.test.ts(21,25): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(29,42): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(33,8): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(47,40): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(53,36): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(58,39): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(69,32): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(76,27): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/mindmap.test.ts(89,25): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1507,41): error TS2307: Cannot find module '../../../../src/map/mindmap.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1509,5): error TS2307: Cannot find module '../../../../src/map/mindmap-layout.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(1518,26): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/parts/map.test.ts(1543,11): error TS2339: Property 'renderMapMindmap' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1579,11): error TS2339: Property 'renderMapMindmap' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1594,11): error TS2339: Property 'renderMapMindmap' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1609,11): error TS2339: Property 'renderMapMindmap' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1630,11): error TS2339: Property 'renderMapMindmap' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(1648,11): error TS2339: Property 'renderMapMindmap' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-mindmap/src/parts/map")'.
+vscode/src/extensions-bundle.ts(3,26): error TS2307: Cannot find module 'esbuild-wasm/lib/browser.js' or its corresponding type declarations.
+
+> mdmark-vscode@0.1.4 typecheck
+> tsc --noEmit
+
+error TS2688: Cannot find type definition file for 'mocha'.
+  The file is in the program because:
+    Entry point of type library 'mocha' specified in compilerOptions
+error TS2688: Cannot find type definition file for 'vscode'.
+  The file is in the program because:
+    Entry point of type library 'vscode' specified in compilerOptions

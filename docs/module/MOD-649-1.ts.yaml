@@ -1,0 +1,167 @@
+title: ライブラリ本体 / map / 読み取り / mindmap.ts
+visibility: internal
+lead: Mermaid の mindmap の読み取りと、補足とマーカーの引数の `focus` のキーが指す項目の解決を受け持ち、map のマインドマップの読み取りを変えるときに参照する。
+test_files:
+  - tests/unit/src/map/mindmap.test.ts
+data_models:
+  - name: Mindmap
+    title: マインドマップの読み取り結果
+    container: src/map/mindmap.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseMindmap` の戻り値'
+    properties:
+      - name: root
+        type: MindmapItem | undefined
+        description: 根の項目。項目の行が無ければ無い
+      - name: items
+        type: MindmapItem[]
+        description: 項目（記載の順。根が先頭）
+      - name: ambiguous
+        type: ReadonlySet<string>
+        description: ID を持たない 2 つ以上の項目が使う表示する文字（補足とマーカーの引数の `focus` で指すと、どの項目にも適用しない）
+      - name: problems
+        type: MapProblem[]
+        description: 読めない行（2 つ目の根）の `map_invalid`
+  - name: MindmapItem
+    title: マインドマップの項目
+    container: src/map/mindmap.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 項目 1 つ。親子は記載の順の番号で持つ
+    properties:
+      - name: order
+        type: number
+        description: 記載の順の番号（根が 0）
+      - name: id
+        type: string | undefined
+        description: 形状の記号の前に記載した文字（`a1[目的]` の `a1`）。無ければ無い
+      - name: label
+        type: string
+        description: 表示する文字（形状の記号の内側。形状の指定が無ければ行の文字）
+      - name: shape
+        type: MindmapShape
+        description: 形状
+      - name: parent
+        type: number | undefined
+        description: 親の `order`。根は無い
+      - name: children
+        type: number[]
+        description: 子の `order`（記載の順）
+      - name: key
+        type: string
+        description: 補足とマーカーの引数の `focus` が指すキー（`id`、無ければ `label`）
+      - name: stateKey
+        type: string
+        description: 状態の保存と描画が項目を区別するキー。`id`、無ければ `label`。ID を持たない同じ文字の項目が 2 つ以上あるときは、その項目だけ `n{order}`
+enums:
+  - name: MindmapShape
+    title: マインドマップの項目の形状
+    container: src/map/mindmap.ts
+    usecase: Mermaidと補足で図を描く
+    role: 型
+    summary: 項目の形状の記号ごとの値
+    values:
+      - value: square
+        title: 四角
+        description: '`[ ]`'
+      - value: rounded
+        title: 角の丸い四角
+        description: '`( )`'
+      - value: circle
+        title: 丸
+        description: '`(( ))`'
+      - value: bang
+        title: バン
+        description: '`)) ((`'
+      - value: cloud
+        title: 雲
+        description: '`) (`'
+      - value: hexagon
+        title: 六角形
+        description: '`{{ }}`'
+      - value: plain
+        title: 指定無し
+        description: 形状の記号を持たない項目
+functions:
+  - name: parseMindmap
+    title: mindmapを読む
+    kind: 関数
+    container: src/map/mindmap.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`mindmap` の Mermaid を、字下げで親子を決めた項目の木と、ID を持たない同じ表示する文字の集合と、読めない行の項目に読む'
+    scope: public
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のブロックの中身
+    returns:
+      type: Mindmap
+      description: 読み取り結果
+    process: |-
+      1. 1 行目（`mindmap`）・空の行・`%%` で始まる行・`::icon(` で始まる行・`:::` で始まる行を飛ばす（`::icon()` と `:::` は描かず、書き方の警告にもしない）
+      2. 最初の項目の行を根にする。根より浅いか同じ字下げの行は `map_invalid` の項目（行番号・行の文字・根を 1 つにする直し方）にして読み飛ばす
+      3. 行の文字を、外側の記号から `(( ))`・`)) ((`・`) (`・`{{ }}`・`( )`・`[ ]` の順に照らして形状と内側の文字にし、記号の前の文字を `id` にする。どれにも一致しなければ `plain` で行の文字を `label` にする
+      4. 直前までの項目のうち、字下げがその行より浅い最も近い項目を親にする（親より浅く戻る行は、その深さの直前の項目の兄弟になる）
+      5. ID を持たない項目の `label` を数え、2 つ以上の `label` を `ambiguous` に入れ、その項目の `stateKey` を `n{order}` にする
+    unit_tests:
+      - name: test_parse_mindmap
+        case: 正常
+        summary: モックのマインドマップ
+        condition: モックの `MINDMAP`
+        mock: なし
+        expected: 項目が 14 で、根が「企画の論点」の `circle`。「目的」の `id` が `a1`・`shape` が `square`、「体制」が `rounded`、「担当の割り当て」が `bang`、「予算」が `cloud`、「スケジュール」が `hexagon`、「利用者を増やす」が `plain`。根の `children` が 4 で、「人手が足りない」の親が 1 つ目の「課題」。`::icon(fa fa-book)` と `:::urgent` の行は項目にならず、`problems` が空
+      - name: test_parse_mindmap_when_same_label
+        case: 正常
+        summary: ID を持たない同じ文字の項目
+        condition: モックの `MINDMAP`（「課題」が 2 つ）
+        mock: なし
+        expected: '`ambiguous` が `課題` だけで、2 つの「課題」の `key` が `課題`、`stateKey` がそれぞれ `n{order}`。「人手が足りない」の `key` と `stateKey` が `人手が足りない`、「目的」がどちらも `a1`'
+      - name: test_parse_mindmap_when_second_root
+        case: 異常
+        summary: 2 つ目の根
+        condition: モックの `MINDMAP_UNREADABLE`
+        mock: なし
+        expected: '`map_invalid` が 1 件で、行番号と `二つ目の根` を含む。項目が 4 で、根が 1 つ'
+      - name: test_parse_mindmap_when_shallower_indent
+        case: 正常
+        summary: 親より浅く戻る行
+        condition: 根の子 A（字下げ 4）と A の子 B（字下げ 8）の後に、字下げ 6 の C
+        mock: なし
+        expected: C の親が A で B の兄弟になる。`problems` が空
+    refs:
+      - IF-472-35#constraints[map のマインドマップ]
+  - name: mindmapItemOf
+    title: キーが指す項目を探す
+    kind: 関数
+    container: src/map/mindmap.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 補足とマーカーの引数の `focus` のキー（項目の ID か、ID を持たない項目の表示する文字）が指す項目を探す
+    scope: public
+    args:
+      - name: options
+        type: '{ mindmap: Mindmap; key: string }'
+        required: true
+        description: 読み取り結果と、補足かマーカーの引数のキー
+    returns:
+      type: '{ kind: "found"; item: MindmapItem } | { kind: "ambiguous" } | { kind: "missing" }'
+      description: '`id` が一致する項目、無ければ `id` を持たない項目のうち `label` が一致する項目。キーが `ambiguous` にあれば `ambiguous`、どれにも一致しなければ `missing`'
+    unit_tests:
+      - name: test_mindmap_item_of
+        case: 正常
+        summary: ID と表示する文字
+        condition: モックの `MINDMAP` で、キー `a1`・`人手が足りない`・`課題`・`幽霊`
+        mock: なし
+        expected: '`a1` が「目的」、`人手が足りない` がその項目、`課題` が `ambiguous`、`幽霊` が `missing`'
+refs:
+  - IF-472-35#constraints[map のマインドマップ]
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:マインドマップ
+  - name: topic:図
+  - name: action:読み取り
+id: MOD-649-1
