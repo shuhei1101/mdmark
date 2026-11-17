@@ -3,7 +3,7 @@ import type {
   MdmarkIndex,
   MdmarkReferences,
 } from "../../../src/index.ts";
-import { iconSvg } from "../../../src/parts/icons.ts";
+import { iconSvg } from "../../../src/shared/icons.part.ts";
 
 /** 索引つきの `render` の結合テストが使用する索引: 文書 3 つと用語 1 つ */
 export const INDEX: MdmarkIndex = {
