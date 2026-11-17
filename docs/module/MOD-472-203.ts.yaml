@@ -439,9 +439,9 @@ functions:
       - name: test_mount_when_plain_mermaid_fallback
         case: 正常
         summary: map の図から戻したコードブロックを mermaid の図にする
-        condition: '`style A fill:#f9f` の行を持つ flowchart と、読める行だけの sequenceDiagram のコードブロックを持つ文書を描き、map と mermaid のモジュールの読み込みを待つ'
+        condition: '`style A fill:#f9f` の行を持つ flowchart と、読める行だけの sequenceDiagram のコードブロックを持つ文書を描き、map と mermaid のモジュールの読み込みを待つ。次に `update` で同じ本文に差し替え、もう一度読み込みを待つ'
         mock: mermaid のモジュール（`render` が固定の SVG を返す）
-        expected: '`figure.mdmark-diagram[data-diagram=mermaid]` が 1 つと `figure.mdmark-diagram[data-diagram=map]` が 1 つで、`destroy` の後にどちらも無い'
+        expected: '`figure.mdmark-diagram[data-diagram=mermaid]` が 1 つと `figure.mdmark-diagram[data-diagram=map]` が 1 つで、`update` の後もそれぞれ 1 つ（戻した図が二重にならない）、`destroy` の後にどちらも無い'
   - name: checkBaseMarkdown
     title: 比較元を検める
     container: src/mount.ts
