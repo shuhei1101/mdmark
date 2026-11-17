@@ -60,17 +60,22 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T21:47:49.152794+00:00'
   - process: モジュール構成設計
-    status: todo
-    note: VS Code の上で動かす結合テストの置き場所を決め、MOD-589-1 の test_files と、VS Code 拡張機能のテストのパスを持つモジュール構成を移した後のパスに合わせる
+    status: done
+    note: MOD-589-1 に test_files を記入し、VS Code 拡張機能のテストを 2 つの置き場所に分ける理由を LAY-472-1 に記載した
+    updated_by: planner
+    updated_at: '2026-11-17T00:09:57.197516+00:00'
   - process: ドキュメント修正
     status: todo
-    note: LAY-472-1・TP-472-1・CMP-472-29・35・63・LIB-472-18・19・21・22・27・28 のテストのパスと置き場所の理由
+    note: LAY-472-1 の notes はモジュール構成設計で反映済み
   - process: 単体テスト作成
     status: todo
-    note: collectMapStructure の単体テスト 5 件を tests/unit/src/map/structure.test.ts へ移す。tests/unit/vscode/ は置き場所が変わる場合だけ移す
+    note: collectMapStructure の単体テスト 5 件を tests/unit/src/map/structure.test.ts へ移す
   - process: 実装
     status: todo
-    note: vitest.config.ts・vscode/package.json・vscode/scripts/build.ts・tests/files.yaml・vscode/files.yaml を移した後のパスに合わせる
+    note: tests/files.yaml に unit/src/map/structure.test.ts の行を追加する
   - process: 結合テスト作成
-    status: todo
+    status: skipped
     note: VS Code の上で動かす結合テストを決めた置き場所へ移し、移す前と同じ件数で pass することを確かめる
+    reason: VS Code 拡張機能の結合テストは移さず、結合テストを追加・変更しない
+    updated_by: planner
+    updated_at: '2026-11-17T00:09:57.197516+00:00'

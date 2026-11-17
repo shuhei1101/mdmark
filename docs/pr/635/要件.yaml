@@ -2,48 +2,10 @@ use_cases: []
 docs:
   - page: docs/layout/LAY-472-1.yaml
     new: false
-    change: VS Code 拡張機能のテストのエントリを、まとめた後の置き場所にする。残す置き場所があれば、その理由を記載する
-    status: todo
-  - page: docs/test-procedure/TP-472-1.yaml
-    new: false
-    change: VS Code 拡張機能のテストの場所と実行のコマンドを、移した後のパスに合わせる
-    status: todo
-  - page: docs/component/CMP-472-29.ts.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/component/CMP-472-35.ts.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/component/CMP-472-63.ts.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/library/LIB-472-18.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/library/LIB-472-19.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/library/LIB-472-21.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/library/LIB-472-22.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/library/LIB-472-27.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
-  - page: docs/library/LIB-472-28.yaml
-    new: false
-    change: テストのパスを移した後のパスに合わせる
-    status: todo
+    change: VS Code 拡張機能のテストを 2 つの置き場所に分ける理由を notes に記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T00:09:53.859436+00:00'
 scope_out:
   - item: VS Code 拡張機能のテストの中身の修正
     reason: 要望はテストの置き場所の統一で、テストの中身は変えない（#535・#563 がテストの中身を扱う）
