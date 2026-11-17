@@ -25,7 +25,7 @@ docs:
 scope_out:
   - item: mermaid がオンのとき mermaid を jsDelivr から読み込む動き（通信を止めると描けない）
     reason: Issue のやりたいことは map・view・comments の部品に限る（受付の判断の補足）
-    plan: to_file
+    plan: '#656'
   - item: dist/index.js の大きさの上限超え
     reason: 部品の読み込みの手段の追加とは別の事象で、今回の変更で直らない
     plan: '#601'
