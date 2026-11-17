@@ -355,7 +355,11 @@ function resolveIdLinks(state: StateCore): void {
       const raw = child.attrGet("href");
       const href = raw === null ? "" : String(raw);
       if (!href.startsWith("id:")) continue;
-      const url = resolveIdHref({ href, resolveIdLink: env.resolveIdLink });
+      // markdown-it は `href` を URL エンコードして持つため、記載した文字に戻して利用側の関数に指定する
+      const url = resolveIdHref({
+        href: state.md.normalizeLinkText(href),
+        resolveIdLink: env.resolveIdLink,
+      });
       if (url !== undefined) child.attrSet("href", url);
     }
   }

@@ -10932,10 +10932,17 @@
       overflow: hidden;
       clip-path: inset(50%);
     }
+    /* 説明のマーカーは押せる要素と重ならず 24px 以上離れるよう、項目の右上の角の外に置く */
     & .mdmark-diagram-info {
-      inset-block-start: -14px;
-      inset-inline-end: -16px;
+      inset-block-start: -26px;
+      inset-inline-end: -26px;
       translate: none;
+    }
+    /* ガントチャートの棒は上下の行の棒と重ならないよう、棒の右の外に置く */
+    &:is([data-shape="bar"], [data-shape="milestone"]) .mdmark-diagram-info {
+      inset-block-start: 50%;
+      inset-inline-end: -28px;
+      translate: 0 -50%;
     }
   }
   /* ガントチャートの棒: section の色。done は薄く、active は濃く、crit は赤の縁、milestone はひし形 */
