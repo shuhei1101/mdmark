@@ -128,6 +128,15 @@ constants:
       - key: minGap
         value: '16'
         description: ドラッグで近づけられる間の下限
+      - key: usedCost
+        value: '60'
+        description: 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる）
+      - key: wireGap
+        value: '8'
+        description: 同じ区間を通る線を並べるときの線の間
+      - key: closedCount
+        value: '17'
+        description: 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ）
 functions:
   - name: layoutMap
     title: 入れ子を配置する
@@ -161,12 +170,16 @@ functions:
         type: '"height" | "width"'
         required: true
         description: 設定の `map.node_fit`
+      - name: options.spread
+        type: number | undefined
+        required: false
+        description: 段の中の間（`gapItem`）と段の間（`gapRank`）に足す幅（px）。`separateWires` が返した `crowded` を指定する。省くと 0
     returns:
       type: MapLayout
       description: 配置の結果
     process: |-
       1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ（表示する木を作る）
-      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める（グループの中を配置する）
+      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める。段の中の間と段の間には `spread` を足す。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
       3. 外側から座標を足して図の座標にし、線の経路を引く（線の経路を引く）
     unit_tests:
       - name: test_layout_map
@@ -229,6 +242,18 @@ functions:
         condition: '部品の Default の Mermaid で `collapsed: ["read", "lib"]`'
         mock: なし
         expected: 閉じた `lib` の `count` が、入れ子の `read`・`place` の中を含む 7。開いたグループは `count` を持たない
+      - name: test_layout_map_when_collapsed_height
+        case: 正常
+        summary: 閉じたグループの高さ
+        condition: '`collapsed: [store]`'
+        mock: なし
+        expected: 閉じた `store` の `h` が `groupTitle` + `closedCount` + 余白 上下 6px（59）以上
+      - name: test_layout_map_when_spread
+        case: 正常
+        summary: 間を広げる
+        condition: 'モックの `FLOW` を `spread` なしと `spread: 16` で配置する'
+        mock: なし
+        expected: '`spread: 16` のほうが、同じ段で隣り合う 2 つのノードの間と、隣の段の 2 つのノードの間がそれぞれ 16px 広い'
   - name: routeWires
     title: 線の経路を引く
     kind: 関数
@@ -255,8 +280,9 @@ functions:
       description: '`points` を持つ線'
     process: |-
       1. 端点とその祖先以外の矩形の内側の格子点を通れない点にする
-      2. 片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost` を足し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
+      2. 線を記載順に 1 本ずつ引き、片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost`、先に引いた線が通った同じ向きの格子の区間に `usedCost` を足し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
       3. 一直線に並ぶ点を除く（経由点は除かない）
+      4. 引いた線が通った格子の区間を、向きごとに次の線の重みへ渡す
     unit_tests:
       - name: test_route_wires
         case: 正常
@@ -282,6 +308,12 @@ functions:
         condition: '線に `via: [{ x: 240, y: 300 }]`'
         mock: なし
         expected: 線の点に図の座標にした経由点があり、矩形を横切らない
+      - name: test_route_wires_when_used
+        case: 正常
+        summary: 先に引いた線の区間を避ける
+        condition: 同じグループの同じ列に並ぶ 3 つのノード `a1`・`a2`・`a3` から、別のグループの `b3`・`b1`・`b2` へ 1 本ずつ出る線
+        mock: なし
+        expected: 後に引いた線が、先に引いた線と同じ向きで同じ直線の上に重なる区間の長さの合計が、`usedCost` を 0 にしたときより短い
   - name: wrapLabel
     title: 名前を折り返す
     kind: 関数
@@ -309,6 +341,45 @@ functions:
         condition: 220px
         mock: なし
         expected: 2 行以上で、各行の見積もりの幅が 220 - 20 以下
+  - name: separateWires
+    title: 同じ区間の線を並べる
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 同じ向きで同じ直線の上に重なる区間を持つ線を、区間と直角の向きに `wireGap` ずつずらして並べ、並べた線が矩形に入るときに広げる幅を返す
+    scope: public
+    args:
+      - name: layout
+        type: MapLayout
+        required: true
+        description: 配置の結果（アーキテクチャ図は `rewireMapArchitecture` で引き直した線）
+    returns:
+      type: '{ wires: PlacedWire[]; crowded: number }'
+      description: 並べた線と、並べた線が端点とその祖先以外の矩形に入る区間があるときに `layoutMap` の `spread` に指定する幅（入らなければ 0）
+    process: |-
+      1. 全ての線の縦と横の区間を、向きと直線の座標ごとに集め、範囲が重なる区間の束を作る（同じ点から出る・入る線の端の区間は束に入れない）
+      2. 束ごとに、中の n 本を記載順に並べ、束の中ほどが元の直線になるように `wireGap` ずつずらす。ずらした区間の前後の区間の端も同じ量だけ動かし、端点を含む区間は端点を辺に沿って動かす
+      3. ずらした区間が端点とその祖先以外の矩形（`clearance` を含めない）に入る束があれば、その束の幅（`wireGap` × (n − 1)）の最大を `crowded` にする
+    unit_tests:
+      - name: test_separate_wires
+        case: 正常
+        summary: 同じ区間の 3 本を並べる
+        condition: 同じ縦の直線の上で範囲が重なる区間を持つ 3 本の線と、間に十分な幅のある 2 つのノード
+        mock: なし
+        expected: 3 本のその区間の x 座標が元の x − 8・x・x + 8 で、どの 2 本も同じ向きの区間が同じ直線の上で重ならず、線は縦横の折れ線のまま。`crowded` が 0
+      - name: test_separate_wires_when_crowded
+        case: 正常
+        summary: 通り道の幅が足りない
+        condition: test_separate_wires の 3 本と、区間の右 4px に辺を持つノード
+        mock: なし
+        expected: '`crowded` が 16'
+      - name: test_separate_wires_when_shared_end
+        case: 正常
+        summary: 同じ点から出る線の端
+        condition: 同じノードの同じ辺の中央から出て、最初の区間だけが重なる 2 本の線
+        mock: なし
+        expected: 2 本の点の並びが引数のまま
 lead: '入れ子のグループの自動配置と線の経路を受け持ち、構成図の配置を変えるときに参照する。'
 tags:
   - name: topic:map
