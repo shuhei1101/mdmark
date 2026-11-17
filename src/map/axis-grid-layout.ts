@@ -586,10 +586,9 @@ const journeyOf = (item: AxisGridItem): { score: number; actors: string[] } =>
 /** 人の線（その人を持つタスクの印を記載順につなぐ） */
 const actorLane = (
   layout: AxisGridLayout,
-  items: AxisGridItem[],
-  actor: string,
-  color: string | undefined,
+  lane: { items: AxisGridItem[]; actor: string; color: string | undefined },
 ): AxisGridLane => {
+  const { items, actor, color } = lane;
   const members = items
     .filter((item) => journeyOf(item).actors.includes(actor))
     .map((item) => item.stateKey);
@@ -683,12 +682,11 @@ const layoutJourney = (options: LayoutOptions): AxisGridLayout => {
   if (selected?.kind === "actor") {
     const index = options.grid.actors.indexOf(selected.key);
     layout.lanes.push(
-      actorLane(
-        layout,
+      actorLane(layout, {
         items,
-        selected.key,
-        JOURNEY_ACTOR_COLORS[index % JOURNEY_ACTOR_COLORS.length],
-      ),
+        actor: selected.key,
+        color: JOURNEY_ACTOR_COLORS[index % JOURNEY_ACTOR_COLORS.length],
+      }),
     );
   }
   layout.baseline = scoreY(1) + row / 2 + gap;
@@ -849,6 +847,35 @@ const visibleBox = (context: BlockContext, key: string) => {
   return box === undefined ? undefined : { key: target, box };
 };
 
+/** 箱の位置と大きさ */
+type Box = { x: number; y: number; width: number; height: number };
+
+/** 横に離れた 2 つの箱の左右の辺をつなぐ、縦に折れる線 */
+const sideToSide = (a: Box, b: Box): string => {
+  const ay = a.y + a.height / 2;
+  const by = b.y + b.height / 2;
+  const right = a.x < b.x;
+  const x1 = right ? a.x + a.width : a.x;
+  const x2 = right ? b.x : b.x + b.width;
+  return `M${x1} ${ay} H${(x1 + x2) / 2} V${by} H${x2}`;
+};
+
+/** 縦に並んだ 2 つの箱の上下の辺をつなぐ、横に折れる線 */
+const topToBottom = (a: Box, b: Box): string => {
+  const ax = a.x + a.width / 2;
+  const bx = b.x + b.width / 2;
+  const down = a.y < b.y;
+  const y1 = down ? a.y + a.height : a.y;
+  const y2 = down ? b.y : b.y + b.height;
+  return `M${ax} ${y1} V${(y1 + y2) / 2} H${bx} V${y2}`;
+};
+
+/** 2 つの箱の辺から辺へ、横か縦に折れる線 */
+const blockWirePath = (a: Box, b: Box): string =>
+  b.x >= a.x + a.width || a.x >= b.x + b.width
+    ? sideToSide(a, b)
+    : topToBottom(a, b);
+
 /** ブロック図の線（両端の箱の辺から辺へ、横か縦に折れる線） */
 const blockWire = (
   context: BlockContext,
@@ -859,11 +886,7 @@ const blockWire = (
   if (!a || !b || a.key === b.key) return [];
   const ac = { x: a.box.x + a.box.width / 2, y: a.box.y + a.box.height / 2 };
   const bc = { x: b.box.x + b.box.width / 2, y: b.box.y + b.box.height / 2 };
-  const apart =
-    b.box.x >= a.box.x + a.box.width || a.box.x >= b.box.x + b.box.width;
-  const d = apart
-    ? `M${ac.x < bc.x ? a.box.x + a.box.width : a.box.x} ${ac.y} H${(ac.x + bc.x) / 2} V${bc.y} H${ac.x < bc.x ? b.box.x : b.box.x + b.box.width}`
-    : `M${ac.x} ${ac.y < bc.y ? a.box.y + a.box.height : a.box.y} V${(ac.y + bc.y) / 2} H${bc.x} V${ac.y < bc.y ? b.box.y : b.box.y + b.box.height}`;
+  const d = blockWirePath(a.box, b.box);
   const label =
     link.label === undefined
       ? undefined

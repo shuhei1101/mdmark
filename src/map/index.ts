@@ -118,8 +118,10 @@ const warnRange = (
             : new Set(Object.keys(JSON.parse(annotations) as object)),
       },
       config.map,
-      false,
-      { mode: "resolve", resolveIdLink },
+      {
+        includeUnknownKeys: false,
+        idLinks: { mode: "resolve", resolveIdLink },
+      },
     )
       .filter((item) => !known.has(item.message))
       .map((item) => item.message),

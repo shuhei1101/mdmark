@@ -527,21 +527,25 @@ export const attachMapAxisGrid = (
       selected: [],
       collapsed: state.collapsed.filter((item) => item !== key),
     });
+  /** ボタンの `data-*` の名前ごとの操作 */
+  const controls: Array<[keyof DOMStringMap, (value: string) => void]> = [
+    ["mapSectionToggle", toggleCollapsed],
+    ["mapSectionEnter", enterSection],
+    ["mapBranch", (key) => toggleSelected({ kind: "branch", key })],
+    ["mapActor", (key) => toggleSelected({ kind: "actor", key })],
+  ];
   /** 開閉・中へ入る・ブランチ・人・ツールのボタンなら操作し、`true` を返却する */
   const clickControl = (target: Element | undefined): boolean => {
     const button = target?.closest<HTMLButtonElement>("button");
-    const data = button?.dataset;
-    if (!button || !data) return false;
-    if (data.mapSectionToggle !== undefined)
-      toggleCollapsed(data.mapSectionToggle);
-    else if (data.mapSectionEnter !== undefined)
-      enterSection(data.mapSectionEnter);
-    else if (data.mapBranch !== undefined)
-      toggleSelected({ kind: "branch", key: data.mapBranch });
-    else if (data.mapActor !== undefined)
-      toggleSelected({ kind: "actor", key: data.mapActor });
-    else if (data.tool !== undefined && !button.disabled) runTool(data.tool);
-    else return false;
+    if (!button) return false;
+    for (const [name, run] of controls) {
+      const value = button.dataset[name];
+      if (value === undefined) continue;
+      run(value);
+      return true;
+    }
+    if (button.dataset.tool === undefined || button.disabled) return false;
+    runTool(button.dataset.tool);
     return true;
   };
   /** 押せる要素の項目の `stateKey`（閉じた section の項目は undefined） */

@@ -260,6 +260,19 @@ const mindmapIds = (mermaid: string, line: number | undefined): MermaidIds => {
   return found;
 };
 
+/** 軸と格子の配置で描く種類 */
+const AXIS_GRID_KINDS: ReadonlySet<string> = new Set([
+  "gantt",
+  "timeline",
+  "gitGraph",
+  "journey",
+  "block",
+]);
+
+/** 軸と格子の配置で描く種類か */
+const isAxisGridKind = (kind: MapKindName): kind is AxisGrid["kind"] =>
+  AXIS_GRID_KINDS.has(kind);
+
 /** 軸と格子の配置の図の ID（項目のキー・section の名前・ブランチ名） */
 const axisGridIds = (
   kind: AxisGrid["kind"],
@@ -302,6 +315,7 @@ const mermaidIdsOf = (
   },
 ): MermaidIds => {
   const { mermaid, line, data, idLinks } = source;
+  if (isAxisGridKind(kind)) return axisGridIds(kind, mermaid, line);
   switch (kind) {
     case "flowchart":
       return flowchartIds(mermaid, line, idLinks);
@@ -317,12 +331,6 @@ const mermaidIdsOf = (
       return c4Ids(mermaid, line);
     case "mindmap":
       return mindmapIds(mermaid, line);
-    case "gantt":
-    case "timeline":
-    case "gitGraph":
-    case "journey":
-    case "block":
-      return axisGridIds(kind, mermaid, line);
     default:
       return sequenceIds(mermaid, line);
   }
@@ -440,7 +448,12 @@ const colorLayoutKindProblems = (
   return [
     ...colorLayoutProblems(context, name),
     ...(focus !== undefined && context.found.ambiguous.has(focus)
-      ? [ambiguousProblem(context, "マーカーの引数の `focus`", focus)]
+      ? [
+          ambiguousProblem(context.found, {
+            where: "マーカーの引数の `focus`",
+            key: focus,
+          }),
+        ]
       : []),
   ];
 };
@@ -461,14 +474,12 @@ const ambiguousHint = (found: MermaidIds, key: string): string => {
 
 /** ID を持たない同じ文字の 2 つ以上の項目（同じ名前の 2 つ以上の section）を指すキーの項目 */
 const ambiguousProblem = (
-  context: { found: MermaidIds },
-  where: string,
-  key: string,
-  line?: number,
+  found: MermaidIds,
+  ref: { where: string; key: string; line?: number | undefined },
 ): MapProblem => ({
   kind: "map_ambiguous_ref",
-  line,
-  message: `${where} の \`${key}\` は、ID を持たない 2 つ以上の項目の表示する文字か 2 つ以上の section の名前のため、どの項目にも適用しません。${ambiguousHint(context.found, key)}`,
+  line: ref.line,
+  message: `${ref.where} の \`${ref.key}\` は、ID を持たない 2 つ以上の項目の表示する文字か 2 つ以上の section の名前のため、どの項目にも適用しません。${ambiguousHint(found, ref.key)}`,
 });
 
 /** ノードかグループの layout に、線の ID のときだけ記載できるキーがある項目 */
@@ -491,9 +502,9 @@ const edgeOnlyProblems = (item: {
 export const collectMapProblems = (
   range: MapRangeSource & { annotationIds?: ReadonlySet<string> | undefined },
   config: ResolvedMapConfig,
-  includeUnknownKeys: boolean,
-  idLinks: MapIdLinks,
+  options: { includeUnknownKeys: boolean; idLinks: MapIdLinks },
 ): MapProblem[] => {
+  const { includeUnknownKeys, idLinks } = options;
   const structure = collectMapStructure(range);
   if (structure.kind === undefined || range.mermaid === undefined)
     return structure.problems;
@@ -527,7 +538,11 @@ export const collectMapProblems = (
   const ref = (path: string, id: string | undefined) => {
     if (id !== undefined && found.ambiguous.has(id)) {
       problems.push(
-        ambiguousProblem({ found }, `補足の \`${path}\``, id, lineOf(path)),
+        ambiguousProblem(found, {
+          where: `補足の \`${path}\``,
+          key: id,
+          line: lineOf(path),
+        }),
       );
     } else if (id !== undefined && !found.ids.has(id)) {
       problems.push({

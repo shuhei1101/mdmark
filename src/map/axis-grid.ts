@@ -305,6 +305,37 @@ type GanttContext = {
   orders: Map<string, number>;
 };
 
+/** タスクの開始日と終了日（読めなければ undefined） */
+const ganttSpan = (
+  context: GanttContext,
+  task: GanttTask,
+): { from: Date; to: Date } | undefined => {
+  const from = ganttStart(task.start, context.ends);
+  if (from === undefined) return undefined;
+  const to = ganttEnd(
+    from,
+    task.end,
+    context.state.grid.options.excludesWeekends,
+  );
+  return to === undefined ? undefined : { from, to };
+};
+
+/** `after {ID}` のつながりを入れる */
+const addAfterLink = (
+  context: GanttContext,
+  link: { start: string; order: number },
+): void => {
+  if (!link.start.startsWith("after ")) return;
+  const target = context.orders.get(link.start.slice("after ".length).trim());
+  if (target !== undefined)
+    context.state.links.push({
+      from: target,
+      to: link.order,
+      kind: "after",
+      label: undefined,
+    });
+};
+
 /** タスクの行を項目にする（読めなければ項目を足す） */
 const readGanttTaskLine = (
   context: GanttContext,
@@ -312,13 +343,8 @@ const readGanttTaskLine = (
 ): void => {
   const { state } = context;
   const task = readGanttTask(line.text);
-  const from =
-    task === undefined ? undefined : ganttStart(task.start, context.ends);
-  const to =
-    task === undefined || from === undefined
-      ? undefined
-      : ganttEnd(from, task.end, state.grid.options.excludesWeekends);
-  if (task === undefined || from === undefined || to === undefined) {
+  const span = task === undefined ? undefined : ganttSpan(context, task);
+  if (task === undefined || span === undefined) {
     state.grid.problems.push(
       unreadable(
         line.index,
@@ -336,25 +362,16 @@ const readGanttTaskLine = (
     parent: undefined,
     detail: {
       kind: "gantt",
-      start: dateText(from),
-      end: dateText(to),
+      start: dateText(span.from),
+      end: dateText(span.to),
       tags: task.tags,
     },
   });
   if (task.id !== undefined) {
-    context.ends.set(task.id, to);
+    context.ends.set(task.id, span.to);
     context.orders.set(task.id, item.order);
   }
-  if (task.start.startsWith("after ")) {
-    const target = context.orders.get(task.start.slice("after ".length).trim());
-    if (target !== undefined)
-      state.links.push({
-        from: target,
-        to: item.order,
-        kind: "after",
-        label: undefined,
-      });
-  }
+  addAfterLink(context, { start: task.start, order: item.order });
 };
 
 /** ガントチャートの 1 行 */
@@ -519,6 +536,48 @@ const addCommit = (
   if (id !== undefined) context.ids.set(id, item.order);
 };
 
+/** ブランチを作る・移る行（読んだら true） */
+const readGitBranchLine = (
+  context: GitContext,
+  words: { command: string; name: string },
+): boolean => {
+  const { command, name } = words;
+  if (command === "branch" && name !== "") {
+    context.state.grid.branches.push(name);
+    context.heads.set(name, context.heads.get(context.current));
+    context.current = name;
+    return true;
+  }
+  if (
+    (command === "checkout" || command === "switch") &&
+    context.heads.has(name)
+  ) {
+    context.current = name;
+    return true;
+  }
+  return false;
+};
+
+/** commit・merge・cherry-pick の行（読んだら true） */
+const readGitCommitLine = (
+  context: GitContext,
+  words: { command: string; name: string; text: string },
+): boolean => {
+  const { command, name, text } = words;
+  if (command === "commit") {
+    addCommit(context, { command, text });
+    return true;
+  }
+  if (command === "merge" && context.heads.has(name)) {
+    addCommit(context, { command, text, from: context.heads.get(name) });
+    return true;
+  }
+  const source = attributeOf(text, "id") ?? "";
+  if (command !== "cherry-pick" || !context.ids.has(source)) return false;
+  addCommit(context, { command, text, from: context.ids.get(source), source });
+  return true;
+};
+
 /** Git グラフの 1 行 */
 const readGitLine = (
   context: GitContext,
@@ -526,39 +585,18 @@ const readGitLine = (
 ): void => {
   const { text } = line;
   const [command = "", name = ""] = text.split(/\s+/);
-  if (command === "branch" && name !== "") {
-    context.state.grid.branches.push(name);
-    context.heads.set(name, context.heads.get(context.current));
-    context.current = name;
-  } else if (
-    (command === "checkout" || command === "switch") &&
-    context.heads.has(name)
-  ) {
-    context.current = name;
-  } else if (command === "commit") {
-    addCommit(context, { command, text });
-  } else if (command === "merge" && context.heads.has(name)) {
-    addCommit(context, { command, text, from: context.heads.get(name) });
-  } else if (
-    command === "cherry-pick" &&
-    context.ids.has(attributeOf(text, "id") ?? "")
-  ) {
-    const source = attributeOf(text, "id") ?? "";
-    addCommit(context, {
-      command,
+  if (
+    readGitBranchLine(context, { command, name }) ||
+    readGitCommitLine(context, { command, name, text })
+  )
+    return;
+  context.state.grid.problems.push(
+    unreadable(
+      line.index,
       text,
-      from: context.ids.get(source),
-      source,
-    });
-  } else {
-    context.state.grid.problems.push(
-      unreadable(
-        line.index,
-        text,
-        '`commit`・`branch`・`checkout`・`merge {ブランチ}`・`cherry-pick id: "{ID}"` の行にし、ブランチと ID は前の行で作ったものにしてください。',
-      ),
-    );
-  }
+      '`commit`・`branch`・`checkout`・`merge {ブランチ}`・`cherry-pick id: "{ID}"` の行にし、ブランチと ID は前の行で作ったものにしてください。',
+    ),
+  );
 };
 
 /* ---------- ジャーニー ---------- */
@@ -658,22 +696,22 @@ const readBlockToken = (context: BlockContext, token: string): boolean => {
   return false;
 };
 
-/** ブロック図の 1 行 */
-const readBlockLine = (
+/** `columns`・入れ子の開きと閉じ・線の行（読んだら true） */
+const readBlockStructureLine = (
   context: BlockContext,
-  line: { text: string; index: number },
-): void => {
-  const { text } = line;
+  text: string,
+): boolean => {
   const { state } = context;
   const parent = context.stack.at(-1);
   const columns = /^columns\s+(\d+)$/.exec(text);
-  const nested = /^block:([\w-]+)(?::(\d+))?$/.exec(text);
-  const link = BLOCK_LINK_RE.exec(text);
   if (columns) {
     const section = state.sections[(parent ?? 0) - 1];
     if (section) section.columns = Number(columns[1]);
     else state.grid.options.columns = Number(columns[1]);
-  } else if (nested) {
+    return true;
+  }
+  const nested = /^block:([\w-]+)(?::(\d+))?$/.exec(text);
+  if (nested) {
     context.stack.push(
       addSection(state, {
         label: nested[1] ?? "",
@@ -681,17 +719,32 @@ const readBlockLine = (
         width: Number(nested[2] ?? "1"),
       }),
     );
-  } else if (text === "end" && parent !== undefined) {
+    return true;
+  }
+  if (text === "end" && parent !== undefined) {
     context.stack.pop();
-  } else if (link) {
-    state.links.push({
+    return true;
+  }
+  return false;
+};
+
+/** ブロック図の 1 行 */
+const readBlockLine = (
+  context: BlockContext,
+  line: { text: string; index: number },
+): void => {
+  const { text } = line;
+  const link = BLOCK_LINK_RE.exec(text);
+  if (readBlockStructureLine(context, text)) return;
+  if (link) {
+    context.state.links.push({
       from: link[1] ?? "",
       to: link[3] ?? "",
       kind: "arrow",
       label: link[2],
     });
   } else if (!readBlockTokens(context, text)) {
-    state.grid.problems.push(
+    context.state.grid.problems.push(
       unreadable(
         line.index,
         text,
