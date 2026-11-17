@@ -254,6 +254,12 @@ functions:
         condition: '部品の HintsOff の引数に、`annotations` でノード `marker` とグループ `lib` と線 `mount->marker` に注記 1 を加える'
         mock: なし
         expected: '`button.mdmark-diagram-info`・`button.mdmark-diagram-group-info` が無く、どの `.map-wire-hit` も `data-tip-owner` を持たず、`tips` に `role="tooltip"` が無い。`marker` の `span.mdmark-diagram-node-hit`・`lib` のタイトルのボタン・`mount->marker` の `.map-wire-hit` が `id="mdmark-note-owner-{図の ID}-{要素の ID}"` を持ち、ノードの名前・グループのタイトル・線のラベルは描かれる'
+      - name: test_render_map_flow_when_no_kind
+        case: 正常
+        summary: 種類を持たないノードは種類の行を空にする
+        condition: 種類を持つノード A と種類を持たないノード B の配置
+        mock: なし
+        expected: B の `.mdmark-diagram-node-kind` が `is-empty` を持ち、A は持たない（`is-empty` の行は CSS で描かず、名前をノードの上下の中央に置く）
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数
@@ -261,7 +267,7 @@ functions:
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる
-    description: 寸法は `MAP_SEQ` で決める
+    description: 寸法は `MAP_SEQ` で決める。参加者の行の背景は、CSS（`src/index.css`）で表示する枠の枠線とツールの行の線の内側に収める
     scope: public
     args:
       - name: args

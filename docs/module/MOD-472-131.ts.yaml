@@ -27,7 +27,7 @@ functions:
     container: src/map/sequence-view.ts
     usecase: シーケンス図の参加者を選んで強調する
     role: 処理
-    summary: シーケンス図を読み取り、状態を読んで表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける
+    summary: シーケンス図を読み取り、状態を読んで表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける。`actor` の参加者の種類は設定の `map.kinds.actor`、無ければ lucide の `user` のアイコンだけを持つ種類にする
     scope: public
     callees:
       - MOD-472-138#functions[parseSequence]
@@ -100,6 +100,12 @@ functions:
         condition: '`mount` の参加者の箱の名前の外を押す'
         mock: なし
         expected: '`mount` が送る・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'
+      - name: test_attach_map_sequence_when_actor_default
+        case: 正常
+        summary: 設定に無くても actor に人のアイコンを付ける
+        condition: '`actor U as 読者` と `participant P` を持つシーケンス図を、`map.kinds` に `actor` が無い設定で付ける。次に `map.kinds.actor` が `{ icon: "smile" }` の設定で付ける'
+        mock: なし（jsdom）
+        expected: 最初は U の参加者の種類の行に `data-icon="user"` があり、P には無い。次は U が `data-icon="smile"`
 lead: 'map のシーケンス図の描画と操作を受け持ち、シーケンス図の描画と操作を変えるときに参照する。'
 tags:
   - name: topic:map

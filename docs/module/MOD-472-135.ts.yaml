@@ -156,6 +156,42 @@ functions:
         condition: '`icon: no-such-icon`'
         mock: なし
         expected: 1 件で、キーが `map.kinds.store.icon`
+  - name: needsMermaidFallback
+    title: 範囲の外のmapの図をmermaidの図に戻すかを確かめる
+    container: src/map/check.ts
+    kind: 関数
+    scope: internal
+    summary: 範囲の外の map の図（`data-map-plain`）を mermaid の図に戻すかを返却する。図の種類の読み取りが返す Mermaid の書き方の項目（読めない行・閉じの無い `subgraph` と複合フラグメント）が 1 つでもあるか、map が読み捨てる見た目の指定（`classDef`・`style`・`linkStyle`・`cssClass` の行、flowchart と状態遷移図の `class` の行、ノードの `:::` のクラスの指定）が 1 つでもあれば `true`
+    description: '`collectMapProblems` と同じ図の種類ごとの読み取りで確かめ、補足と設定は確かめない。`dist/map.js` の `attachMap` と CLI の `usesMermaid` が同じ判定に使用する'
+    args:
+      - name: options
+        type: '{ kind: MapKindName; mermaid: string }'
+        required: true
+        description: 図の種類と、front matter を除いた Mermaid のソース
+    returns:
+      type: boolean
+      description: mermaid の図に戻すか
+    refs:
+      - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
+    unit_tests:
+      - name: test_needs_mermaid_fallback
+        case: 正常
+        summary: map が読める図は戻さない
+        condition: 読める行だけの flowchart と、`class 図面` の宣言を持つ classDiagram
+        mock: なし
+        expected: どちらも `false`
+      - name: test_needs_mermaid_fallback_when_unreadable
+        case: 正常
+        summary: 読めない行と閉じの無い subgraph で戻す
+        condition: '`A --o B` の行を持つ flowchart と、`end` の無い `subgraph` を持つ flowchart'
+        mock: なし
+        expected: どちらも `true`
+      - name: test_needs_mermaid_fallback_when_style
+        case: 正常
+        summary: 見た目の指定で戻す
+        condition: '`style A fill:#f9f` の flowchart、`A:::warn` の flowchart、`cssClass "図面" warn` の classDiagram、`class 待機 idle` の stateDiagram'
+        mock: なし
+        expected: どれも `true`
 lead: 'map の記載の誤りの収集と設定の点検を受け持ち、map の記載の警告と点検のずれを変えるときに参照する。'
 tags:
   - name: topic:map

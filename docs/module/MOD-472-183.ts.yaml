@@ -9,7 +9,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て（`data-fit-min` を持つ図は、その値より小さくしない）、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字とスクリーンリーダー向けの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を削除して読み込む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を適用するたびに `style.maxHeight` を定義の高さ × 今の倍率にする（利用側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を削除する。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を削除する。表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。図ごとに `attachDiagramTips` と `attachDiagramTouch` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て（`data-fit-min` を持つ図は、その値より小さくしない）、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字とスクリーンリーダー向けの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を削除して読み込む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を適用するたびに `style.maxHeight` を定義の高さ × 今の倍率にする（利用側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を削除する。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を削除する。表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。図ごとに `attachDiagramTips` と `attachDiagramTouch` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ。シーケンス図の参加者の行（`.mdmark-diagram-seq-heads`）は、表示する枠の `scroll` と、文書の中の図では表示する枠をスクロールさせる場所（`scrollParent`）の `scroll` で、表示する枠の上端からの下げ幅を、表示する枠の `scrollTop` と、スクロールする場所の上端に `--mdmark-sticky-top` の計算値を加算した位置から表示する枠の上端までの距離の大きいほうにし（表示する枠の下端から参加者の行の高さを引いた位置を上限にする）、図の座標に直して `transform` に入れ、下げたときは `is-stuck` を付ける。全画面のモーダルの中は表示する枠の `scrollTop` だけで決める。ドラッグを始めない要素は、map の図の文字と、mermaid の図の SVG の文字（`text`・`tspan`・`foreignObject` の中の要素）にする'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null; figures?: HTMLElement[] }'
@@ -84,6 +84,26 @@ functions:
         condition: 幅 300px の要素に、幅 1100 の mermaid の図と、`data-fit-min="0.75"` を持つ幅 1100 の図。`figures` に後者だけを指定する
         mock: なし
         expected: 後者の中身の `transform` が `scale(0.75)` で、拡大のボタンで倍率が変わる。前者の拡大のボタンを押しても倍率が変わらない
+      - name: test_attach_diagrams_when_page_scrolled
+        case: 正常
+        summary: 文書をスクロールすると参加者の行を画面の上端に留め、下端で押し上げる
+        condition: 高さ 600px のスクロールする場所に、高さ 400px の表示する枠の map のシーケンス図（参加者の行の高さ 60px）。`--mdmark-sticky-top` を `48px` にし、表示する枠の上端がスクロールする場所の上端より 100px 上に出るまでスクロールし、次に表示する枠の下端がスクロールする場所の上端から 80px の位置になるまでスクロールする
+        mock: なし
+        expected: 最初のスクロールの後に参加者の行の `transform` が `translateY(148px)` で `is-stuck` を持ち、次のスクロールの後に `translateY(340px)`（表示する枠の高さ − 参加者の行の高さ）
+      - name: test_attach_diagrams_when_modal_heads
+        case: 正常
+        summary: 全画面の中は表示する枠の上端だけに留める
+        condition: map のシーケンス図を全画面で開き、モーダルの表示する枠を 120px 縦に動かす
+        mock: なし
+        expected: モーダルの中の参加者の行の `transform` が `translateY(120px)`
+      - name: test_attach_diagrams_when_mermaid_text_drag
+        case: 正常
+        summary: mermaid の図の文字の上のドラッグは図を動かさない
+        condition: 拡大を 2 回押した mermaid の図で、ノードの `text` の上と、文字の無い余白の上から、それぞれ横に 80px ドラッグする
+        mock: なし
+        expected: 文字の上のドラッグでは `scrollLeft` が変わらず、余白のドラッグでは 80 変わる
+    refs:
+      - IF-472-35#constraints[シーケンス図の参加者の行を留める]
   - name: openDiagramDialog
     title: 図を全画面で開く
     container: src/interact/diagrams.ts

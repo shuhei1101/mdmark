@@ -144,7 +144,7 @@ functions:
          - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を適用した設定の `tooltips.placement` と `tooltips.diagramPlacement` を、表のピン止めの動きは `table.pin` を、長文の列の最小の幅は `table.longColumnMin` を指定する。`onColumnsChange` を指定したときはそれも指定する。手順 3 のセクションの開閉の記録と部品の開閉の記録を指定し、`revealHash` はこの描画が `update` から始まっていないときだけ `true` にする）、削除する関数を記録する
          - マーカーの場所に外部ライブラリと拡張を描かせる（マーカーの場所に外部ライブラリを描かせる）。今の世代と片付けたマーカーを確認する `isCurrent` を指定し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を適用した設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの記録（`Map`）を指定し、戻りの Promise は待たない
-         - 機能の `mermaid` がオンなら、前の mermaid の図を削除する関数を呼んでから mermaid の図を付ける（mermaid の図を付ける。描いた要素・`el`・この描画の設定・`mount` の通し番号・同じ `isCurrent`・`mount` ごとに 1 つ作る mermaid のモジュールの記録（`Map`）・既定を適用した設定の `tooltips.diagramPlacement` を指定する）。戻りの `ready` は待たず、`detach` を記録する。マーカーの場所に外部ライブラリを描かせる処理の後に呼ぶ（読み込み中のブロックをマーカーの場所として取得させない）
+         - 機能の `mermaid` がオンなら、前の mermaid の図を削除する関数を呼んでから mermaid の図を付ける（mermaid の図を付ける。描いた要素・`el`・この描画の設定・`mount` の通し番号・同じ `isCurrent`・`mount` ごとに 1 つ作る mermaid のモジュールの記録（`Map`）・既定を適用した設定の `tooltips.diagramPlacement` を指定する）。戻りの `ready` は待たず、`detach` を記録する。マーカーの場所に外部ライブラリを描かせる処理の後に呼ぶ（読み込み中のブロックをマーカーの場所として取得させない）。ビューとコメントの部品を付ける処理には、map の図を mermaid の図に戻したときに、戻したコードブロックだけを `blocks` に指定してもう一度 mermaid の図を付け、その `detach` も記録する関数を `restoreMermaid` に指定する（機能の `mermaid` がオフなら何もしない）
          - 機能の `html-scripts` がオンなら範囲のスクリプトを動かす（範囲のスクリプトを動かす。既定を適用した設定の `htmlScripts.url`・同じ `isCurrent`・`mount` ごとに 1 つ作る読み込みの記録を指定する）。戻りの Promise は待たず、解決した関数を範囲の `destroy` として記録し、再描画する前・`destroy`・同じ要素への 2 回目の `mount` で呼ぶ（解決する前に再描画したときは、解決したときに呼ぶ）
          - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を指定する）、戻りの `PartsHandle` を記録する。前の `PartsHandle` の `detach` は再描画する前に呼ぶ
          - `diffSource` を指定し、差分の出し方が `button` か `open` なら、前の差分を削除する関数を呼んでから差分を付け（差分を付ける。`open` には差分の出し方が `open` かを指定する。右側の目次を付けたときは `hideWith` にその要素を指定する。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に経由し、得た埋め込んだ HTML の範囲の中身と、配置した要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返却する関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを当て、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返却する）、削除する関数を記録する
@@ -436,6 +436,12 @@ functions:
         condition: '`location.hash` を `#注意` にして、閉じた `## 補足`（中に `### 注意`）を持つ文書を `diffMode: "blocks"` で描き、取り出し元は段落を 1 つ減らした前のリビジョンを返す'
         mock: 取り出し元の `revisions`・`content` を固定の値を返す関数にし、`Element.prototype.scrollIntoView` を記録する関数に差し替える
         expected: 2 回目の描画の後、`補足` の中身が `hidden` を持たず、その描画の `注意` で `scrollIntoView` が呼ばれる
+      - name: test_mount_when_plain_mermaid_fallback
+        case: 正常
+        summary: map の図から戻したコードブロックを mermaid の図にする
+        condition: '`style A fill:#f9f` の行を持つ flowchart と、読める行だけの sequenceDiagram のコードブロックを持つ文書を描き、map と mermaid のモジュールの読み込みを待つ'
+        mock: mermaid のモジュール（`render` が固定の SVG を返す）
+        expected: '`figure.mdmark-diagram[data-diagram=mermaid]` が 1 つと `figure.mdmark-diagram[data-diagram=map]` が 1 つで、`destroy` の後にどちらも無い'
   - name: checkBaseMarkdown
     title: 比較元を検める
     container: src/mount.ts

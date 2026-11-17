@@ -136,6 +136,51 @@ functions:
         condition: '引数 `{title: 全体}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、`kind` が `flowchart`'
+  - name: plainMapSourceOf
+    title: 範囲の外のmapの図にするかを確かめる
+    container: src/map/structure.ts
+    kind: 関数
+    scope: internal
+    summary: mermaid のコードブロックのソースから、front matter（先頭の `---` で囲んだ行）と `%%` で始まるコメントの行を飛ばした最初の単語を `mapKindOf` で図の種類にし、範囲の外の map の図にする中身を返却する。front matter に `config` を持つか `%%{` で始まる行を持つとき、図の種類が map で描けないときは `undefined`
+    description: タイトルは `splitMermaidTitle` の `title`（front matter の `title`、無ければ `accTitle` の値）。`body` は front matter を除いたソース、`frontMatter` は除いた front matter の行（`---` を含む。無ければ `undefined`）。`dist/index.js` の `render` と CLI が使用する
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のコードブロックのソース
+    returns:
+      type: '{ kind: MapKindName; body: string; frontMatter: string | undefined; title: string | undefined } | undefined'
+      description: 範囲の外の map の図にする中身。しないときは `undefined`
+    callees:
+      - '#functions[mapKindOf]'
+      - MOD-472-144#functions[splitMermaidTitle]
+    refs:
+      - IF-472-34#constraints[mermaid のコードブロック]
+    unit_tests:
+      - name: test_plain_map_source_of
+        case: 正常
+        summary: front matter とコメントの行を飛ばす
+        condition: '`---\ntitle: 受付\n---\n%% メモ\nflowchart LR\n  A --> B`'
+        mock: なし
+        expected: '`kind` が `flowchart`、`title` が `受付`、`body` が `%% メモ` から始まり `---` を含まない、`frontMatter` が `---\ntitle: 受付\n---`'
+      - name: test_plain_map_source_of_when_acc_title
+        case: 正常
+        summary: accTitle のタイトル
+        condition: '`sequenceDiagram\n  accTitle: 注文\n  A->>B: 送る`'
+        mock: なし
+        expected: '`kind` が `sequenceDiagram`、`title` が `注文`、`frontMatter` が `undefined`'
+      - name: test_plain_map_source_of_when_config
+        case: 正常
+        summary: 設定を持つと対象にしない
+        condition: 'front matter に `config:` を持つ flowchart と、1 行目が `%%{init: {"theme": "forest"}}%%` の flowchart'
+        mock: なし
+        expected: どちらも `undefined`
+      - name: test_plain_map_source_of_when_other_kind
+        case: 正常
+        summary: map が描けない種類
+        condition: '`gantt` と `pie` のソース'
+        mock: なし
+        expected: どちらも `undefined`
 tags:
   - name: topic:map
     main: true
