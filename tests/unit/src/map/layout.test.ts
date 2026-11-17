@@ -344,8 +344,11 @@ test("test_layout_map_when_rankless", async () => {
 
 // 閉じたグループの高さ（正常系）
 test("test_layout_map_when_collapsed_height", async () => {
-  // 準備・実行
-  const layout = await laid({ collapsed: ["store"] });
+  // 準備・実行（測った大きさの高さ 30px は、2 つの行が収まる高さに満たない）
+  const layout = await laid(
+    { collapsed: ["store"] },
+    { store: { size: { w: 120, h: 30 } } },
+  );
   // 検証（タイトルの行 36px + 数の行 17px + 余白 上下 6px）
   const store = layout.groups.find((group) => group.id === "store");
   expect(store?.collapsed).toBe(true);
@@ -615,4 +618,52 @@ test("test_separate_wires_when_shared_end", async () => {
   expect(result.wires.map((wire) => wire.points)).toEqual(
     wires.map((wire) => wire.points),
   );
+});
+
+// 端点を含む区間は端点を動かさずに並べる（正常系）
+test("test_separate_wires_when_end_segment", async () => {
+  // 準備（A の下の辺から下へ出る線と、B の上の辺から上へ出る線が、x = 50 の縦の区間で重なる）
+  const { separateWires } = await loadLayout();
+  const wires: TestWire[] = [
+    {
+      id: "A->C",
+      from: "A",
+      to: "C",
+      points: [
+        [50, 40],
+        [50, 250],
+        [300, 250],
+      ],
+    },
+    {
+      id: "B->D",
+      from: "B",
+      to: "D",
+      points: [
+        [50, 300],
+        [50, 100],
+        [300, 100],
+      ],
+    },
+  ];
+  const layout = layoutOf(
+    [
+      { id: "A", x: 0, y: 0, w: 100, h: 40 },
+      { id: "B", x: 0, y: 300, w: 100, h: 40 },
+      { id: "C", x: 300, y: 230, w: 60, h: 40 },
+      { id: "D", x: 300, y: 80, w: 60, h: 40 },
+    ],
+    wires,
+  );
+  // 実行
+  const result = separateWires(layout);
+  // 検証
+  for (const [k, wire] of result.wires.entries()) {
+    const original = wires[k] as TestWire;
+    expect(wire.points[0]).toEqual(original.points[0]);
+    expect(wire.points.at(-1)).toEqual(original.points.at(-1));
+    expect(orthogonal(wire.points)).toBe(true);
+  }
+  expect(totalOverlap(result.wires)).toBe(0);
+  expect(result.crowded).toBe(0);
 });
