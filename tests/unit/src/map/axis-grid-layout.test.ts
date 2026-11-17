@@ -11,6 +11,12 @@ import {
 const loadLayout = () => import("../../../../src/map/axis-grid-layout.ts");
 const loadAxisGrid = () => import("../../../../src/map/axis-grid.ts");
 
+/** 見つかった値を返し、無ければテストを失敗させる */
+const present = <T>(value: T | undefined): T => {
+  if (value === undefined) throw new Error("配置が見つかりません");
+  return value;
+};
+
 /** 読み取って配置する */
 async function layOut(options: {
   kind: "gantt" | "timeline" | "gitGraph" | "journey" | "block";
@@ -173,17 +179,16 @@ test("test_layout_axis_grid_when_block", async () => {
     collapsed: ["core"],
   });
   // 検証
-  const page = open.placed("page");
-  const cdn = open.placed("cdn");
-  const mdmark = open.placed("mdmark");
-  expect(page?.width).toBeGreaterThan((cdn?.width ?? 0) * 2);
-  expect(mdmark?.x).toBe(page?.x);
-  const openCore = open.layout.frames.find((frame) => frame.key === "core");
-  expect(openCore?.x).toBe(cdn?.x);
-  const closedCore = closed.layout.items.find(
-    (item) => item.stateKey === "core",
+  const page = present(open.placed("page"));
+  const cdn = present(open.placed("cdn"));
+  expect(page.width).toBeGreaterThan(cdn.width * 2);
+  expect(open.placed("mdmark")?.x).toBe(page.x);
+  const openCore = present(
+    open.layout.frames.find((frame) => frame.key === "core"),
   );
-  expect(closedCore?.width).toBe(openCore?.width);
-  expect(closedCore?.height).toBe(AXIS_GRID_LAYOUT.row);
+  expect(openCore.x).toBe(cdn.x);
+  expect(
+    closed.layout.items.find((item) => item.stateKey === "core"),
+  ).toMatchObject({ width: openCore.width, height: AXIS_GRID_LAYOUT.row });
   expect(closed.placed("doc")?.x).toBe(open.placed("doc")?.x);
 });
