@@ -56,6 +56,7 @@ scenarios:
       - 用語集の用語を含むラベルに用語の下線がある
       - mermaid のライブラリへの要求が 0 件
       - '`window.__mdmarkScriptRan` が `true` になっていない'
+      - グループをまたぐ複数の線が同じ区間を重ならずに通り、どの線もどのノードから出たかを辿れる
     test: test_normal
   - name: 正常シナリオ（配置と見た目を上書きする）
     setup:
