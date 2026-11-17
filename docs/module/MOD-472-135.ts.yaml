@@ -36,14 +36,10 @@ functions:
         type: ResolvedConfig["map"]
         required: true
         description: 既定を当てた設定の `map`
-      - name: includeUnknownKeys
-        type: boolean
+      - name: options
+        type: '{ includeUnknownKeys: boolean; idLinks: { mode: "resolve"; resolveIdLink: ResolveIdLink | undefined } | { mode: "skip" } }'
         required: true
-        description: 印の知らないキーを項目にするか（`checkMaps` は `true`、`buildMapRanges` は `false`）
-      - name: idLinks
-        type: '{ mode: "resolve"; resolveIdLink: ResolveIdLink | undefined } | { mode: "skip" }'
-        required: true
-        description: '`id:` のノードのリンク先の扱い（`checkMaps` は `skip`、`attachMap` は `resolve` と `hooks.resolveIdLink`）'
+        description: 印の知らないキーを項目にするか（`checkMaps` は `true`、`attachMap` は `false`）と、`id:` のノードのリンク先の扱い（`checkMaps` は `skip`、`attachMap` は `resolve` と `hooks.resolveIdLink`）
     returns:
       type: MapProblem[]
       description: 項目（範囲の行の順）
