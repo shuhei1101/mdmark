@@ -12,6 +12,8 @@ items:
   summary: 画面を持たずに Markdown を HTML 文字列にする（render）
 - page: IF-472-32.ts.yaml
   summary: 利用側が、自分のマーカーとそのマーカーを描くモジュールの読み込み方を登録する（registerExtension）
+- page: IF-655-1.ts.yaml
+  summary: 利用側のページが、map・ビュー・コメントの部品のモジュールを返却する関数を指定する（setPartModuleLoader）
 - page: IF-472-31.ts.yaml
   summary: 索引と全ての文書の本文から、被参照と用語集の表の用語をまとめた参照の表を作る（collectReferences）
 - page: IF-472-37.ts.yaml
