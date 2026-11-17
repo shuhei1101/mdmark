@@ -75,7 +75,6 @@ tasks:
     note: tests/files.yaml に unit/src/map/structure.test.ts の行を追加する
   - process: 結合テスト作成
     status: skipped
-    note:
     reason: VS Code 拡張機能の結合テストは移さず、結合テストを追加・変更しない
     updated_by: planner
     updated_at: '2026-11-17T00:09:57.197516+00:00'
