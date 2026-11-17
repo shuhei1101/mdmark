@@ -1756,6 +1756,39 @@ const placeBundle = (
   return { first: bundle.at - width / 2, lack: 0 };
 };
 
+/** ずらした線の端点を元の位置に戻し、端点から区間の向きへ clearance 進んだ点で折って、ずらした区間へつなぐ */
+const keepEnd = (
+  points: Array<[number, number]>,
+  original: { end: [number, number]; next: [number, number] },
+): Array<[number, number]> => {
+  const { end, next } = original;
+  const moved = points[0] as [number, number];
+  if (moved[0] === end[0] && moved[1] === end[1]) return points;
+  // 端点を含む区間が伸びる向き（0 は横、1 は縦）と、端点から離れる向き
+  const axis = end[1] === next[1] ? 0 : 1;
+  const sign = Math.sign(next[axis] - end[axis]) || 1;
+  const bend: [number, number] = [end[0], end[1]];
+  bend[axis] += sign * MAP_LAYOUT.clearance;
+  const shifted: [number, number] = [moved[0], moved[1]];
+  shifted[axis] = bend[axis];
+  return [[end[0], end[1]], bend, shifted, ...points.slice(1)];
+};
+
+/** 線の始点と終点を元の位置に保つ */
+const keepEnds = (
+  wire: PlacedWire,
+  original: Array<[number, number]>,
+): PlacedWire => {
+  const first = original[0];
+  const second = original[1];
+  const last = original.at(-1);
+  const beforeLast = original.at(-2);
+  if (!first || !second || !last || !beforeLast) return wire;
+  const head = keepEnd(wire.points, { end: first, next: second });
+  const tail = keepEnd([...head].reverse(), { end: last, next: beforeLast });
+  return { ...wire, points: tail.reverse() };
+};
+
 /** 同じ向きで同じ直線の上に重なる区間を持つ線を、区間と直角の向きに wireGap ずつずらして並べ、両側の矩形の間に収まらないときに広げる幅を返す */
 export const separateWires = (
   layout: MapLayout,
@@ -1799,5 +1832,10 @@ export const separateWires = (
       (points[member.index + 1] as [number, number])[cross] = value;
     }
   }
-  return { wires, crowded };
+  return {
+    wires: wires.map((wire, k) =>
+      keepEnds(wire, (layout.wires[k] as PlacedWire).points),
+    ),
+    crowded,
+  };
 };
