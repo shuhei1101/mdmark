@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../schemas/files.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: baseline.ts
     description: モジュール構成『ライブラリ本体 / ビルド』のうち「利用側のブラウザが読み込む JS を minify せずにまとめ、対応ブラウザの下限に無い API を取得する」を受け持つ。配布物のビルドや検査を変えるときに参照する。
