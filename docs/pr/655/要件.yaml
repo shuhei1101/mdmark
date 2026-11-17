@@ -1,0 +1,31 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-28.yaml
+    impact: changed
+    detail: 配布物を 1 枚の HTML に埋めてアドレスを持たない場所から読み込む利用側のページが、map・ビュー・コメントの部品も読み込んで描けるシナリオを追加する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: run_only
+    detail: 配布物の隣から部品を読み込む今の描き方は変えないが、部品の読み込みの変更が壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/API.mark.md
+    new: false
+    change: 部品のモジュールを利用側から指定する公開関数を追加し、`dist/index.js` の隣から読み込む旨の記述に、埋めて使うときの指定方法を添える
+    status: todo
+  - page: docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
+    new: false
+    change: 配布物を 1 枚の HTML に埋めて使うときに、部品のモジュールを指定してから描く手順を追加する
+    status: todo
+  - page: docs/guide/変更履歴.mark.md
+    new: false
+    change: 公開関数の追加を次のバージョンの変更に追加する
+    status: todo
+scope_out:
+  - item: mermaid がオンのとき mermaid を jsDelivr から読み込む動き（通信を止めると描けない）
+    reason: Issue のやりたいことは map・view・comments の部品に限る（受付の判断の補足）
+    plan: to_file
+  - item: dist/index.js の大きさの上限超え
+    reason: 部品の読み込みの手段の追加とは別の事象で、今回の変更で直らない
+    plan: '#601'
