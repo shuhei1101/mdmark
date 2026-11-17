@@ -1,0 +1,109 @@
+# テスト実行方法の実行場所が runner の層のテストを回し、ログを成果物に上げる（設計: docs/interface/IF-472-44.yaml）
+name: test
+
+on:
+  workflow_dispatch:
+    inputs:
+      layer:
+        description: 回す層（unit は単体テスト（フロント）、integration は結合テスト（フロント））
+        required: true
+        type: choice
+        options:
+          - unit
+          - integration
+      paths:
+        description: integration で回す結合テストのファイルかフォルダを空白で区切った並び（空なら層の全件）
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}-${{ inputs.layer }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # 入力は環境変数を経由して参照し、run のスクリプトに直接埋めない
+    env:
+      LAYER: ${{ inputs.layer }}
+      PATHS: ${{ inputs.paths }}
+    steps:
+      - name: ブランチを取得する
+        uses: actions/checkout@v4
+
+      - name: Node をインストールする
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # 単体テストの tests/unit/vscode/ も vscode/src/ を読み込むため、両方の層で vscode/ の依存も入れる
+      - name: 依存をインストールする
+        run: |
+          npm ci
+          npm --prefix vscode ci
+
+      - name: Chromium をインストールする
+        run: npx playwright install --with-deps chromium
+
+      # tmux と systemctl --user が無いと Claude Code プラグインの結合テストが skip になる
+      - name: 結合テストの道具を用意する
+        if: env.LAYER == 'integration'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tmux xvfb
+          sudo loginctl enable-linger "$USER"
+          uid=$(id -u)
+          n=0
+          until [ -S "/run/user/$uid/bus" ]; do
+            n=$((n+1))
+            if [ "$n" -ge 60 ]; then
+              echo "systemd のユーザーのマネージャーが 60 秒で起動しません" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "XDG_RUNTIME_DIR=/run/user/$uid" >> "$GITHUB_ENV"
+          echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" >> "$GITHUB_ENV"
+
+      - name: 単体テストを回す
+        if: env.LAYER == 'unit'
+        # 手元の全件実行の最長の実測（443 秒）の 10 倍
+        timeout-minutes: 75
+        # 明示すると pipefail が付き、tee の前のコマンドの終了コードで失敗になる
+        shell: bash
+        run: npm run test:unit 2>&1 | tee test.log
+
+      - name: 結合テストを回す
+        id: integration
+        if: env.LAYER == 'integration'
+        # 手元の全件実行の最長の実測（1,816 秒）の 10 倍
+        timeout-minutes: 305
+        shell: bash
+        run: |
+          if [ -z "$PATHS" ]; then
+            npm run test:integration 2>&1 | tee test.log
+          else
+            # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+            # shellcheck disable=SC2086
+            npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+          fi
+
+      - name: VS Code 拡張機能の結合テストを回す
+        if: >-
+          !cancelled() && env.LAYER == 'integration' && env.PATHS == ''
+          && (steps.integration.outcome == 'success' || steps.integration.outcome == 'failure')
+        # 手元の実行の最長の実測（5 分）の 10 倍
+        timeout-minutes: 50
+        shell: bash
+        run: xvfb-run -a npm --prefix vscode run test:integration 2>&1 | tee -a test.log
+
+      - name: ログを成果物に上げる
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log
+          path: test.log
+          if-no-files-found: ignore
