@@ -70,6 +70,7 @@ type Built = {
       aliases?: MdmarkAlias[];
       includes?: Record<string, string>;
       icons?: Record<string, Array<[string, Record<string, string>]>>;
+      resolveIdLink?: (ref: string) => string | undefined;
     },
   ) => string;
   registerExtension: (extension: MdmarkExtension) => void;
