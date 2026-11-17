@@ -139,14 +139,14 @@ data_models:
     title: 部品の開閉の記録
     container: src/interact/part-states.ts
     usecase: 利用側のページが文書を描く
-    summary: '読者が開閉した行の詳細・details の範囲・折りたたみの注意書き・フロントマターの折りたたみ・ER 図の列・ファイルツリーのフォルダ・コードの折りたたみ・階層の表の行の開閉を、`partKey` の鍵から引く `Map<string, { open: boolean; marker: string }>`。`mount` ごとに 1 つ作り、各部品の操作が読み書きする'
+    summary: '読者が開閉した行の詳細・details の範囲・折りたたみの注意書き・フロントマターの折りたたみ・ファイルツリーのフォルダ・コードの折りたたみ・階層の表の行の開閉を、`partKey` の鍵から引く `Map<string, { open: boolean; marker: string }>`。`mount` ごとに 1 つ作り、各部品の操作が読み書きする'
     properties:
       - name: open
         type: boolean
-        description: 開いているか（ER 図は全ての列を出しているか、コードの折りたたみは畳んでいないか）
+        description: 開いているか（コードの折りたたみは畳んでいないか）
       - name: marker
         type: string
-        description: 記録したときのマーカーの値（details・注意書き・フロントマターは `open`・`closed`、ER 図は `folded` の有無、ファイルツリーは `data-open`、コードの折りたたみは `data-folded` の有無。マーカーを持たない部品は空の文字列）
+        description: 記録したときのマーカーの値（details・注意書き・フロントマターは `open`・`closed`、ファイルツリーは `data-open`、コードの折りたたみは `data-folded` の有無。マーカーを持たない部品は空の文字列）
     status: planned
 lead: '部品の開閉の記録と、読者が変えた開閉の復元を受け持ち、再描画したときの部品の開閉の保ち方を変えるときに参照する。'
 tags:

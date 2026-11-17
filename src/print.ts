@@ -1,8 +1,7 @@
 import { setCodeFoldOpen } from "./interact/code-folds.ts";
-import { setErTableFolded } from "./interact/er-folds.ts";
 import { setFolderOpen } from "./interact/trees.ts";
 
-/** 印刷の前に開いた折り畳み・セクション・行の詳細・ファイルツリーのフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブル・タブの中身 */
+/** 印刷の前に開いた折り畳み・セクション・行の詳細・ファイルツリーのフォルダ・コードブロックの畳んだ行・タブの中身 */
 type Expanded = {
   details: HTMLDetailsElement[];
   sections: HTMLElement[];
@@ -11,7 +10,6 @@ type Expanded = {
   tabs: HTMLElement[];
   folders: Element[];
   codeFolds: Element[];
-  erTables: HTMLElement[];
 };
 
 /** 何も開いていない状態 */
@@ -24,11 +22,10 @@ function nothingExpanded(): Expanded {
     tabs: [],
     folders: [],
     codeFolds: [],
-    erTables: [],
   };
 }
 
-/** 要素の中の、閉じた折り畳み・閉じたセクション・行の詳細・タブの中身・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブル */
+/** 要素の中の、閉じた折り畳み・閉じたセクション・行の詳細・タブの中身・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行 */
 function collectClosed(root: HTMLElement): Expanded {
   return {
     details: [...root.querySelectorAll("details")].filter(
@@ -50,26 +47,16 @@ function collectClosed(root: HTMLElement): Expanded {
     codeFolds: [
       ...root.querySelectorAll('.mdmark-code-fold[aria-expanded="false"]'),
     ],
-    erTables: [
-      ...root.querySelectorAll<HTMLElement>(
-        '.mdmark-diagram-er-fold[aria-expanded="false"]',
-      ),
-    ]
-      .map((button) => button.closest<HTMLElement>(".mdmark-diagram-er-table"))
-      .filter((table): table is HTMLElement => table !== null),
   };
 }
 
-/** ファイルツリーのフォルダ・コードブロックの畳んだ行・ER 図のテーブルを開く・畳む */
+/** ファイルツリーのフォルダ・コードブロックの畳んだ行を開く・畳む */
 function setFoldsOpen(expanded: Expanded, open: boolean): void {
   for (const folder of expanded.folders) {
     setFolderOpen(folder, open);
   }
   for (const toggle of expanded.codeFolds) {
     setCodeFoldOpen(toggle, open);
-  }
-  for (const table of expanded.erTables) {
-    setErTableFolded({ table, folded: !open });
   }
 }
 
@@ -125,7 +112,7 @@ function setTreeHidden(
   }
 }
 
-/** 印刷の前に、要素の中の閉じた折り畳み・閉じたセクション・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブルを開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、削除する関数を返却する */
+/** 印刷の前に、要素の中の閉じた折り畳み・閉じたセクション・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行を開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、削除する関数を返却する */
 export function attachPrint(options: {
   /** 描いた要素 */
   root: HTMLElement;

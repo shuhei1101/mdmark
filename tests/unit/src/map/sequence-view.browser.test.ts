@@ -49,8 +49,9 @@ test("test_attach_map_sequence_when_reorder", async () => {
   // 準備
   const root = await setUp();
   const first = root.querySelector<HTMLElement>(
-    '[data-participant="user"]',
+    '.map-participant[data-participant="user"] .mdmark-diagram-node-hit',
   ) as HTMLElement;
+  first.focus();
   // 実行
   first.dispatchEvent(
     new KeyboardEvent("keydown", {
@@ -61,6 +62,27 @@ test("test_attach_map_sequence_when_reorder", async () => {
   );
   // 検証
   expect(saved().order?.slice(0, 2)).toEqual(["mount", "user"]);
+  expect(document.activeElement).toBe(
+    root.querySelector(
+      '.map-participant[data-participant="user"] .mdmark-diagram-node-hit',
+    ),
+  );
+});
+
+// Enter で参加者を選ぶ（正常系）
+test("test_attach_map_sequence_when_select_by_key", async () => {
+  // 準備
+  const root = await setUp();
+  const hit = root.querySelector<HTMLElement>(
+    '.map-participant[data-participant="mount"] .mdmark-diagram-node-hit',
+  ) as HTMLElement;
+  hit.focus();
+  // 実行
+  hit.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  // 検証
+  expect(saved().selected).toEqual(["mount"]);
 });
 
 // 中だけを描く（正常系）

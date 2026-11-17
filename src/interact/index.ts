@@ -94,7 +94,6 @@ function attachBlocks(context: InteractionContext): Array<() => void> {
       attachDiagrams({
         root,
         placement: context.diagramPlacement,
-        partStates,
       }),
     );
     detachers.push(attachParams(root, context.paramDefinitions));

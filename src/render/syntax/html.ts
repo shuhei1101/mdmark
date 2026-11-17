@@ -8,7 +8,7 @@ import {
 } from "../../diagram/definition.ts";
 import type { WarningItem } from "../../extensions.ts";
 import { buildDictionary } from "../../knowledge/dictionary.ts";
-import { renderDiagram, type TermLookup } from "../../parts/diagram.ts";
+import { renderDiagram } from "../../parts/diagram.ts";
 import { renderEmbeddedHtml } from "../../parts/embedded-html.ts";
 import { escapeHtml } from "../../parts/escape.ts";
 import { renderHintMarkup } from "../../parts/hint.ts";
@@ -144,17 +144,15 @@ function takeParts(options: {
   state: StateCore;
   /** この範囲の前にある操作できる部品の数（文書の中の並びで定義を差し込む位置） */
   paramsBefore: number;
-  lookup: TermLookup;
 }): {
   html: string;
   parts: string[];
   params: number;
   warnings: WarningMeta[];
 } {
-  const { source, state, paramsBefore, lookup } = options;
+  const { source, state, paramsBefore } = options;
   const env = envOf(state);
   const diagrams = featureOn(state, "diagrams");
-  const hints = featureOn(state, "hints");
   const resizable = featureOn(state, "diagram-resize");
   const parts: string[] = [];
   const warnings: WarningMeta[] = [];
@@ -204,8 +202,6 @@ function takeParts(options: {
             kind: directive,
             definition: definition as MdmarkChartDefinition,
             id: `${DIAGRAM_ID_PREFIX}-${count}`,
-            lookup,
-            hints,
             resizable,
           });
         }
@@ -386,16 +382,7 @@ function buildHtml(options: {
 }): { html: string; params: number; warnings: WarningMeta[] } {
   const { state, source, paramsBefore, scripts } = options;
   const env = envOf(state);
-  // ノードの中の `{{単語}}` の意味は、本文の用語と同じ辞書から参照する
-  const dictionary = buildDictionary({
-    index: env.index,
-    docId: env.docId,
-    ownGlossary: env.ownGlossary,
-    references: env.mdmarkReferences,
-    features: env.features,
-  });
-  const lookup: TermLookup = (word) => dictionary.term(word)?.meaning;
-  const taken = takeParts({ source, state, paramsBefore, lookup });
+  const taken = takeParts({ source, state, paramsBefore });
   const sanitized = sanitizeEmbedded(
     taken.html,
     termsFilter(state),

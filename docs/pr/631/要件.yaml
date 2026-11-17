@@ -1,0 +1,16 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: 参加者の箱でフォーカスを受ける要素を、名前の用語と入れ子にならない要素に変える。押す・Enter・Space での選択、ドラッグと Alt + 左右の矢印キーでの並べ替え、名前の文字の選択は変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: シーケンス図の参加者の名前の用語は、箱の中で入れ子にならない位置からツールチップを開閉する。下線・ツールチップの外観と内容は変わらない
+    depends_on: []
+scope_out:
+  - item: map のノードの説明のマーカーの押せる大きさ（24px 以上か、隣の押せる要素との間隔）
+    reason: 参加者の箱の入れ子とは別の事象（押せる大きさ）で、この作業 PR がマージされなくても同じ内容で成り立つ
+    plan: '#609'
+docs: []

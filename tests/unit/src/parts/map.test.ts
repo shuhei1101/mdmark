@@ -437,6 +437,61 @@ test("test_render_map_sequence_when_notes", async () => {
   expect(tip).not.toMatch(/mdmark-term"[^>]*tabindex/);
 });
 
+// 参加者の箱の名前の用語を、押せる要素の中に入れない（正常系）
+test("test_render_map_sequence_when_participant_hit", async () => {
+  // 準備
+  const { renderMapSequence } = await loadParts();
+  const { parseSequence } = await loadSequence();
+  const { sequenceRows } = await loadRows();
+  const sequence = parseSequence(SEQUENCE);
+  const rows = sequenceRows(sequence, {
+    order: sequence.participants.map((item) => item.id),
+    collapsed: [],
+    entered: undefined,
+  });
+  // 実行
+  const { html } = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed: [],
+    entered: undefined,
+    selected: ["mount"],
+    focus: undefined,
+    terms: { mount: "意味" },
+  });
+  // 検証
+  const needle = 'data-node="mount" data-participant="mount"';
+  const head = outerHtml(html, needle);
+  const div = findTag(head, needle);
+  expect(div).toContain("map-participant");
+  expect(div).not.toContain("tabindex");
+  expect(div).not.toContain("role=");
+  expect(div).not.toContain("aria-keyshortcuts");
+  expect(div).not.toContain("aria-label");
+  expect(div).toContain("data-selected");
+  expect(head).toMatch(
+    /^<div[^>]*><span class="mdmark-diagram-node-hit"[^>]*><\/span>/,
+  );
+  const hit = findTag(head, "mdmark-diagram-node-hit");
+  expect(hit).toContain('role="button"');
+  expect(hit).toContain('tabindex="0"');
+  expect(hit).toContain(
+    'aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight"',
+  );
+  expect(hit).toContain('aria-label="mount（選択中）"');
+  expect(head).toMatch(/<span class="mdmark-term"[^>]*>mount<\/span>/);
+  // 押せる要素は空で、中に用語を持たない
+  const hits = matches(
+    head,
+    /<span class="mdmark-diagram-node-hit"[^>]*>[\s\S]*?<\/span>/g,
+  );
+  expect(hits).toHaveLength(1);
+  expect(hits[0]).toMatch(
+    /^<span class="mdmark-diagram-node-hit"[^>]*><\/span>$/,
+  );
+});
+
 // ヒントがオフならメッセージの説明と注記のツールチップを作らず、注記の持ち主の id だけを残す（正常系）
 test("test_render_map_sequence_when_hints_off", async () => {
   // 準備

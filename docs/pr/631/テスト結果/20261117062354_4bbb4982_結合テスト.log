@@ -1,0 +1,10 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/map-sequence.story.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-sequence-participant-nested-interactive
+
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  06:23:19
+   Duration  10.74s (tests 96%, import 3%)
+

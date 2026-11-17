@@ -24,15 +24,6 @@ states:
         value: hint
       - name: open
         value: 'true'
-  - name: Table
-    description: ER 図のテーブルの説明のボタンで開いた。テーブルの下に、論理名と物理名・概要・`desc` を持つ列の名前と説明を出す
-    args:
-      - name: kind
-        value: table
-      - name: open
-        value: 'true'
-    notes:
-      定義: モックの `shop-er` の注文のテーブル（`docs/mock/components/er-diagram/` の「テーブルのツールチップ」）
   - name: Item
     description: '折れ線の点のツールチップを開いた。点の下に系列の名前と `{横の目盛り}: {値}` を出す'
     args:
@@ -82,12 +73,12 @@ states:
         value: '[{"number":1,"html":"条件を満たさないときは次の工程へ進む。"}]'
       - name: open
         value: 'true'
-lead: map の構成図の線・ノードのマーカー・グループのタイトルのマーカー、ER 図のテーブルの説明のボタン、グラフの項目、埋め込んだ HTML の `data-hint` に付くツールチップ。map の構成図は補足の `notes` の説明を、ER 図はテーブルの概要と列の説明を、グラフは系列か項目の名前と値を出す。ノードの中の用語は用語のツールチップを使用する。
+lead: map の構成図の線・ノードのマーカー・グループのタイトルのマーカー、グラフの項目、埋め込んだ HTML の `data-hint` に付くツールチップ。map の構成図は補足の `notes` の説明を、グラフは系列か項目の名前と値を出す。ノードの中の用語は用語のツールチップを使用する。
 args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`wire`（線の説明）・`hint`（ノードかグループの説明か、埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）・`item`（グラフの項目の系列か項目の名前と値）・`merged`（map の構成図で閉じたグループへまとめた線の元の線）。map の構成図の線の補足の `notes` は `wire`、ノードとグループの補足の `notes` は `hint`'
+    choices: '`wire`（線の説明）・`hint`（ノードかグループの説明か、埋め込んだ HTML の `data-hint` の文だけ）・`item`（グラフの項目の系列か項目の名前と値）・`merged`（map の構成図で閉じたグループへまとめた線の元の線）。map の構成図の線の補足の `notes` は `wire`、ノードとグループの補足の `notes` は `hint`'
     description: ツールチップの種類
   - name: label
     type: 文字列
@@ -110,11 +101,6 @@ args:
     required: false
     enabled_when: '`kind` が `hint` か `io` のとき'
     description: ノードの `hint` か `data-hint` の文。`io` と一緒に持つときは入力・処理・出力の後に出す
-  - name: table
-    type: オブジェクト
-    required: false
-    enabled_when: '`kind` が `table` のとき'
-    description: ER 図のテーブルの `{ name, label, desc, columns }`。タイトルを `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる
   - name: value
     type: 文字列
     required: false
@@ -138,9 +124,9 @@ uses:
   - component: CMP-472-53#
     how: ノードの中の用語の下線と意味はこの部品ではなく用語のツールチップで出す
 accessibility:
-  - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・ノードの右上のマーカーのボタン・グループのタイトルの右のマーカーのボタン・`tabindex="0"` を持つグラフの項目・ER 図のテーブルの説明のボタン）は `aria-describedby` でそれを指す。ノードのマーカーの外では開かない
+  - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・ノードの右上のマーカーのボタン・グループのタイトルの右のマーカーのボタン・`tabindex="0"` を持つグラフの項目）は `aria-describedby` でそれを指す。ノードのマーカーの外では開かない
   - ノードのマーカーのボタンは、`io` を持つとき `aria-label="「{ノードの名前}」の入力・処理・出力"`、`hint` だけを持つとき `aria-label="「{ノードの名前}」の説明"` を持つ
-  - ER 図のテーブルの説明のボタンは `aria-label="「{論理名}」の説明"` を持ち、ツールチップをテーブルの下（下に収まらないときは上）に出す。どの持ち主も `tooltips.diagramPlacement` に従う
+  - どの持ち主も `tooltips.diagramPlacement` に従う
   - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。ポインターの形状は変えない
   - 理解に必須のことは入れず、線とノードの要約だけで図を理解できるようにする。印刷では出さない
   - グループのタイトルのマーカーのボタンは `aria-label="「{タイトル}」の説明"` を持つ。グラフの項目はフォーカスしたときに輪で示す

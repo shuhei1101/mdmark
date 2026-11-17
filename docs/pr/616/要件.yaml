@@ -1,0 +1,203 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-43.yaml
+    impact: changed
+    detail: 正常シナリオ（ER 図）と異常シナリオ（ER 図の定義を読み込めない）を削除し、正常シナリオ（座標で書いた図の範囲）で `er` の範囲にも map へ変換できる旨の書き方の警告を出す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: changed
+    detail: 正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）を追加する。正常シナリオ（書き換えない記載を移行の報告に挙げる）に定義に無いテーブルを指す `er` の範囲を加える。異常シナリオ（適用した後の点検で図の定義にずれがある）のずれをグラフの定義に置き換える
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: 正常シナリオ（座標で書いた図がある）で `er` の範囲も map へ変換できる旨を知らせる。正常シナリオ（図の定義にずれがある）から ER 図の部品の定義を除き、グラフだけにする
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 正常シナリオ（ER 図）・（列の多いテーブルを畳む）・（描き直しても手で畳んだ列を保つ）を削除する。ドラッグと文字の選択は拡大した map の構成図（ノードの名前）で、矢印キーとボタンは移動のボタンを持つ mermaid の横に広い flowchart で確かめる形にする。map の ER 図の列の開閉は SC-472-39 が受け持つ
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: changed
+    detail: 正常シナリオ（ER 図のテーブル）を map の ER 図の補足の `notes` のテーブルと列の説明のツールチップに置き換える。`features.hints`・`tooltips.diagramPlacement` のシナリオはこの ER 図を使う
+    depends_on:
+      - docs/scenario/SC-472-43.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: map の ER 図を描く流れは変えないが、変換の先として使い、ER 図の部品を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: run_only
+    detail: map の ER 図の列と分類の箱の開閉は変えないが、ER 図の部品の列の開閉を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: run_only
+    detail: map の ER 図の巡回は変えないが、ER 図の部品を削る範囲を誤ると壊れる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-616-1.yaml
+    impact: new
+    detail: 統合する場合、部品の定義で書いた ER 図を、描いた文書の警告と点検の案内から移行の手順で map の ER 図へ書き換え、移せなかった図を手で記載し直して map の ER 図で描く
+    depends_on: []
+docs:
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 統合する場合、図の部品の `er` の行を削除し、map へ変換できる旨と変換の方法を案内する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 統合する場合、ER 図の部品の手順と例を削除し、ER 図は map で描く案内にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 統合する場合、今の ER 図の部品の定義から変換する手順を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/guide/API.mark.md
+    new: false
+    change: 統合する場合、ER 図の部品の型・CSS 変数の記述を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: 統合する場合、図の機能のキーの説明から `er` を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 統合する場合、ER 図の用語を map の ER 図の意味に修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/guide/index.yaml
+    new: false
+    change: 統合する場合、使い方集の索引の `summary` から ER 図の部品を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/mock/components/er-diagram/index.html
+    new: false
+    change: 統合する場合、ER 図の部品のモックを削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/mock/components/index.md
+    new: false
+    change: 統合する場合、ER 図の部品のモックの行を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/mock/files.yml
+    new: false
+    change: 統合する場合、削除したモックの行を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: src/files.yaml
+    new: false
+    change: 統合する場合、`diagram/er.ts`・`parts/er.ts`・`parts/er-diagram.stories.ts`・`interact/er-folds.ts` の行を削除し、変換のスクリプトの行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
+  - page: tests/files.yaml
+    new: false
+    change: 統合する場合、削除・追加したテストの行を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
+  - page: schemas/mdmark.config.schema.json
+    new: false
+    change: 統合する場合、図の機能のキーの description から `er` を削除する（`migrations/next/steps.yaml` に移行の手順を配置するため、`no-steps.yaml` の行は要らない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+  - page: docs/guide/HTMLの記載方法.mark.md
+    content: ER 図を map で描く用途に移す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: ER 図を map で描く用途に移す
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    content: リサイズハンドルの確認の題材を ER 図からグラフにする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: リサイズハンドルの確認の題材を ER 図からグラフにする
+  - page: docs/guide/導入-文書を描く.md
+    content: 読者の開閉を保つものから ER 図の列を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: 読者の開閉を保つものから ER 図の列を削除する
+  - page: docs/guide/コアコンセプト-共通の定義と固有の定義.md
+    content: 共通の定義の部品から ER 図を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: 共通の定義の部品から ER 図を削除する
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    content: ツールチップ・図の枠の部品の説明から ER 図の部品を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: ツールチップ・図の枠の部品の説明から ER 図の部品を削除する
+  - page: docs/guide/README.md
+    content: 図を描く の行の概要を index.yaml に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: 図を描く の行の概要を index.yaml に合わせる
+  - page: docs/guide/使用方法.md
+    content: 図を描く の行の概要を index.yaml に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: 図を描く の行の概要を index.yaml に合わせる
+  - page: docs/mock/refs/298/index.md
+    content: 削除した er-diagram のモックへのリンクを外す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: 削除した er-diagram のモックへのリンクを外す
+  - page: docs/config/CFG-472-3.yaml
+    content: tooltips.diagramPlacement の説明から ER 図のテーブルを削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T17:14:49.662732+00:00'
+    change: tooltips.diagramPlacement の説明から ER 図のテーブルを削除する
+  - page: migrations/files.yaml
+    change: 移行の手順のフォルダ next の steps.yaml・retired-er.mjs・retired-diagrams.js・THIRD_PARTY_LICENSES.txt の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
+  - page: docs/module/MOD-472-110.ts.yaml
+    change: test_check_diagrams_when_clean の題材を ER 図の部品からグラフに直す（ER 図の部品は廃止の警告になるため）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-16T20:32:32.424940+00:00'
+scope_out:
+  - item: mdmark を使用する各リポジトリ（dev-docs など）の `er` の図を、用意した変換で map へ書き換える移行
+    reason: 変換を使用する側の作業で、この Issue では変換と廃止までを扱う。このリポジトリの使い方集・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）。dev-docs の map への移行は dev-docs#201 で扱う
+    plan: none
+  - item: 今の図の部品の固定のノードの種類・線の名前・構成図の 3 層を、使う側の設定で作る形にすること（`src/diagram/er.ts` の `ER_TABLE_KINDS` を含む）
+    reason: 'この Issue の結論で #470 の範囲が決まる（統合する場合は `ER_TABLE_KINDS` が廃止で消える）。別の題材'
+    plan: '#470'
+  - item: 変換で座標（テーブルの `x`・`y` と図の `width`）を補足の `layout` の座標の固定へ写して元の配置を再現すること
+    reason: map は自動配置を既定にし、座標の固定は配置を上書きしたいときだけ使う（#534 の変換と同じ扱い）
+    plan: none
