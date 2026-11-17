@@ -56856,7 +56856,21 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0";
+  return "v0.13.0+develop.4737928";
+}
+var DEVELOP_VERSION = "develop";
+var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
+function isDevelopBuild(version2) {
+  return DEVELOP_BUILD_PATTERN.test(version2);
+}
+function releaseVersionOf(version2) {
+  return DEVELOP_BUILD_PATTERN.exec(version2)?.[1] ?? version2;
+}
+function localVersionOf(version2) {
+  return isDevelopBuild(version2) ? DEVELOP_VERSION : version2;
+}
+function isLocalVersion(value) {
+  return typeof value === "string" && (value === DEVELOP_VERSION || VERSION_PATTERN.test(value));
 }
 
 // src/table-logic.ts
@@ -57393,8 +57407,8 @@ var CONFIG_KEY_VALIDATORS = [
   [
     "version",
     typed(
-      (value) => typeof value === "string" && VERSION_PATTERN.test(value),
-      "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      isLocalVersion,
+      "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u304B develop \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
     )
   ],
   [
@@ -84427,7 +84441,10 @@ async function runInit(options, io) {
   );
   for (const template of templates) {
     const source = await readFile12(join12(templatesDir2, template.source), "utf8");
-    const content = template.path === CONFIG_TEMPLATE ? source.replace(VERSION_LINE_PATTERN, `version: ${version2}`) : source;
+    const content = template.path === CONFIG_TEMPLATE ? source.replace(
+      VERSION_LINE_PATTERN,
+      `version: ${localVersionOf(version2)}`
+    ) : source;
     const placed = await placeTemplate({
       target: join12(dir, template.path),
       path: template.path,
@@ -85201,9 +85218,28 @@ async function upgradeConfigPath(options, cwd) {
   return options.settings ? resolveSettingsPath({ env: process.env, home: homedir5() }) : await findConfigFile(cwd, options.config);
 }
 async function localVersion(raw, ask) {
-  return assertVersion(
-    isRecord9(raw) && raw.version !== void 0 ? raw.version : await askRequired(ask, VERSION_QUESTION)
-  );
+  const value = isRecord9(raw) && raw.version !== void 0 ? raw.version : await askRequired(ask, VERSION_QUESTION);
+  if (value === DEVELOP_VERSION) {
+    throw new CliError(
+      `\u624B\u5143\u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u304C ${DEVELOP_VERSION} \u306E\u305F\u3081\u3001\u79FB\u884C\u306E\u624B\u9806\u3092\u9078\u3079\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E version \u306B\u4ECA\u306E\u6587\u66F8\u304C\u5408\u308F\u305B\u3066\u3042\u308B\u30D0\u30FC\u30B8\u30E7\u30F3\u3092 v{MAJOR}.{MINOR}.{PATCH} \u3067\u8A18\u8F09\u3057\u3066\u304B\u3089\u3001\u3082\u3046\u4E00\u5EA6\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  return assertVersion(value);
+}
+async function assertNoUnreleasedSteps(packageDir, cliVersion2) {
+  if (!isDevelopBuild(cliVersion2)) {
+    return;
+  }
+  const text2 = await readFile14(
+    join15(packageDir, "migrations", "next", "steps.yaml"),
+    "utf8"
+  ).catch(() => void 0);
+  const steps = text2 === void 0 ? void 0 : parse9(text2)?.steps;
+  if (Array.isArray(steps) && steps.length > 0) {
+    throw new CliError(
+      `\u3053\u306E develop \u306E\u30D3\u30EB\u30C9\uFF08${cliVersion2}\uFF09\u306F\u3001\u51FA\u3057\u3066\u3044\u306A\u3044\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u79FB\u884C\u306E\u624B\u9806\u3092\u6301\u3061\u307E\u3059\u3002npx github:shuhei1101/mdmark#${releaseVersionOf(cliVersion2)} upgrade \u306E\u3088\u3046\u306B\u3001\u30BF\u30B0\u3092\u6307\u5B9A\u3057\u305F mdmark \u3067\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
 }
 function settingsVersions(versions) {
   return versions.map((version2) => ({
@@ -85273,7 +85309,8 @@ async function runUpgrade(options, io, ask) {
   const loaded = await loadConfig(configPath);
   const dir = loaded.dir;
   const local = await localVersion(loaded.raw, ask);
-  const target = options.cliVersion;
+  await assertNoUnreleasedSteps(options.packageDir, options.cliVersion);
+  const target = releaseVersionOf(options.cliVersion);
   io.stdout(`\u624B\u5143\u306E\u30D0\u30FC\u30B8\u30E7\u30F3: ${local}`);
   io.stdout(`\u76EE\u6A19\u306E\u30D0\u30FC\u30B8\u30E7\u30F3: ${target}`);
   const order = compareVersions(local, target);
@@ -85381,7 +85418,8 @@ var ARG_OPTIONS = {
   plan: { type: "boolean" },
   yes: { type: "boolean" },
   settings: { type: "boolean" },
-  "keep-traces": { type: "boolean" }
+  "keep-traces": { type: "boolean" },
+  version: { type: "boolean" }
 };
 var COMMANDS = {
   init: ({ values, rest: rest2, root, io }) => runInit(
@@ -85462,6 +85500,10 @@ async function main(argv, io, ask) {
       allowPositionals: true
     });
     const [command, ...rest2] = positionals;
+    if (values.version === true && command === void 0) {
+      io.stdout(cliVersion());
+      return 0;
+    }
     const root = findPackageRoot(import.meta.dirname);
     const run = command !== void 0 && Object.hasOwn(COMMANDS, command) ? COMMANDS[command] : void 0;
     if (!run) {

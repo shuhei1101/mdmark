@@ -14810,9 +14810,9 @@ var mdmark_config_schema_default = {
   properties: {
     version: {
       title: "\u624B\u5143\u306E\u30D0\u30FC\u30B8\u30E7\u30F3",
-      description: "\u3053\u306E\u8A2D\u5B9A\u30FB\u7D22\u5F15\u30FB\u6587\u66F8\u304C\u5408\u308F\u305B\u3066\u3042\u308B mdmark \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3002`mdmark init` \u304C\u547C\u3093\u3060 CLI \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3092\u8A18\u8F09\u3057\u3001`mdmark upgrade` \u304C\u79FB\u884C\u306E\u624B\u9806\u3092\u9069\u7528\u3057\u3066\u70B9\u691C\u304C\u901A\u3063\u305F\u5F8C\u306B\u547C\u3093\u3060 CLI \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3078\u66F8\u304D\u63DB\u3048\u308B\u3002",
+      description: "\u3053\u306E\u8A2D\u5B9A\u30FB\u7D22\u5F15\u30FB\u6587\u66F8\u304C\u5408\u308F\u305B\u3066\u3042\u308B mdmark \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3002`mdmark init` \u304C\u547C\u3093\u3060 CLI \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\uFF08develop \u306E\u30D3\u30EB\u30C9\u306E CLI \u306F `develop`\uFF09\u3092\u8A18\u8F09\u3057\u3001`mdmark upgrade` \u304C\u79FB\u884C\u306E\u624B\u9806\u3092\u9069\u7528\u3057\u3066\u70B9\u691C\u304C\u901A\u3063\u305F\u5F8C\u306B\u547C\u3093\u3060 CLI \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3078\u66F8\u304D\u63DB\u3048\u308B\u3002develop \u306E\u6700\u65B0\u3092\u53C2\u7167\u3057\u3066\u3044\u308B\u3068\u304D\u306F `develop`\u3002",
       type: "string",
-      pattern: "^v\\d+\\.\\d+\\.\\d+$"
+      pattern: "^(v\\d+\\.\\d+\\.\\d+|develop)$"
     },
     features: {
       title: "\u6A5F\u80FD\u306E\u30AA\u30F3\u30FB\u30AA\u30D5",
@@ -15489,6 +15489,20 @@ var mdmark_settings_schema_default = {
 var CliError = class extends Error {
 };
 
+// src/cli/versions.ts
+var VERSION_PATTERN = /^v(\d+)\.(\d+)\.(\d+)$/;
+var DEVELOP_VERSION = "develop";
+var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
+function isDevelopBuild(version2) {
+  return DEVELOP_BUILD_PATTERN.test(version2);
+}
+function localVersionOf(version2) {
+  return isDevelopBuild(version2) ? DEVELOP_VERSION : version2;
+}
+function isLocalVersion(value) {
+  return typeof value === "string" && (value === DEVELOP_VERSION || VERSION_PATTERN.test(value));
+}
+
 // src/plugin/setup/keys.ts
 var SETTINGS_ONLY_ROOTS = ["config", "serve"];
 var EXCLUDED_KEYS = ["version"];
@@ -15856,9 +15870,6 @@ function validateAliasRows(rows, file) {
   };
 }
 
-// src/cli/versions.ts
-var VERSION_PATTERN = /^v(\d+)\.(\d+)\.(\d+)$/;
-
 // src/table-logic.ts
 var collator = new Intl.Collator("ja", { numeric: true });
 var totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
@@ -16022,8 +16033,8 @@ var CONFIG_KEY_VALIDATORS = [
   [
     "version",
     typed(
-      (value) => typeof value === "string" && VERSION_PATTERN.test(value),
-      "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      isLocalVersion,
+      "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u304B develop \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
     )
   ],
   [
@@ -41026,7 +41037,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: "v0.14.0",
+    version: localVersionOf("v0.13.0+develop.4737928"),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

@@ -1,0 +1,44 @@
+# develop への push で配布物（dist/・plugin/ の生成物）を再作成し、差分があれば develop へ commit する
+name: develop-dist
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+
+# 後から来た push のビルドが最新の develop を作るため、前のビルドは止める
+concurrency:
+  group: develop-dist
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 移行の手順の点検が最新のバージョンのタグと比べるため、タグも取得する
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: 依存を入れる
+        run: npm ci
+      # 埋めるバージョンは version.ini の値に +develop.{ビルドの元の commit の短縮 SHA} を添えたもの
+      - name: 配布物をビルドする
+        run: npm run build -- --develop
+      # GITHUB_TOKEN の push は別のワークフローを起動しないため、この commit で再び動かない
+      - name: 差分があれば commit して push する
+        run: |
+          git add --all dist plugin migrations
+          if git diff --cached --quiet; then
+            echo "配布物に差分がありません"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "develop の配布物を再作成する（${GITHUB_SHA::7}）"
+          git push origin HEAD:develop

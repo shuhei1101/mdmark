@@ -80,6 +80,7 @@ const ARG_OPTIONS = {
   yes: { type: "boolean" },
   settings: { type: "boolean" },
   "keep-traces": { type: "boolean" },
+  version: { type: "boolean" },
 } as const;
 
 /** コマンドを動かすときに渡す、読み込んだ引数と入出力 */
@@ -186,6 +187,10 @@ export async function main(
       allowPositionals: true,
     });
     const [command, ...rest] = positionals;
+    if (values.version === true && command === undefined) {
+      io.stdout(cliVersion());
+      return 0;
+    }
     const root = findPackageRoot(import.meta.dirname);
     const run =
       command !== undefined && Object.hasOwn(COMMANDS, command)

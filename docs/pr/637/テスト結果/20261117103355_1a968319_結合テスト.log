@@ -1,0 +1,197 @@
+# VS Code 拡張機能の出す [AgentHostCustomizationMarketplace] の行（テストの結果と関係しない）は除いた
+# test_normal_when_map_configured・test_normal・test_normal_when_version_pinned だけを test.only にして 10 回実行（1 回で 1.141.0 と stable の 2 バージョン。作業ツリーは実行後に戻した）
+vscode/tests/integration/preview-open.test.ts:2
+vscode/tests/integration/preview-rerender.test.ts:1
+$ for i in $(seq 10); do xvfb-run -a npm --prefix vscode run test:integration | grep -E 'Validated version|✔ test_|^\s+[0-9]+\) |passing|failing|pending|Error|!=='; done
+=== 1 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3947ms)
+    ✔ test_normal_when_version_pinned (4712ms)
+    ✔ test_normal_when_map_configured (570ms)
+  3 passing (10s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3923ms)
+    ✔ test_normal_when_version_pinned (4718ms)
+    ✔ test_normal_when_map_configured (522ms)
+  3 passing (10s)
+=== 2 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3974ms)
+    ✔ test_normal_when_version_pinned (4725ms)
+    ✔ test_normal_when_map_configured (478ms)
+  3 passing (10s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4156ms)
+    ✔ test_normal_when_version_pinned (4593ms)
+    ✔ test_normal_when_map_configured (527ms)
+  3 passing (10s)
+=== 3 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3980ms)
+    ✔ test_normal_when_version_pinned (4746ms)
+    ✔ test_normal_when_map_configured (543ms)
+  3 passing (10s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4167ms)
+    ✔ test_normal_when_version_pinned (4546ms)
+    ✔ test_normal_when_map_configured (544ms)
+  3 passing (10s)
+=== 4 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (6100ms)
+    ✔ test_normal_when_version_pinned (6594ms)
+    ✔ test_normal_when_map_configured (523ms)
+  3 passing (15s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4893ms)
+    ✔ test_normal_when_version_pinned (4764ms)
+    ✔ test_normal_when_map_configured (525ms)
+  3 passing (11s)
+=== 5 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3884ms)
+    ✔ test_normal_when_version_pinned (4589ms)
+    ✔ test_normal_when_map_configured (543ms)
+  3 passing (9s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4185ms)
+    ✔ test_normal_when_version_pinned (4899ms)
+    ✔ test_normal_when_map_configured (613ms)
+  3 passing (10s)
+=== 6 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (4383ms)
+    ✔ test_normal_when_version_pinned (4583ms)
+    ✔ test_normal_when_map_configured (476ms)
+  3 passing (10s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4484ms)
+    ✔ test_normal_when_version_pinned (4881ms)
+    ✔ test_normal_when_map_configured (532ms)
+  3 passing (10s)
+=== 7 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (4085ms)
+    ✔ test_normal_when_version_pinned (4575ms)
+    ✔ test_normal_when_map_configured (586ms)
+  3 passing (10s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3964ms)
+    ✔ test_normal_when_version_pinned (4770ms)
+    ✔ test_normal_when_map_configured (482ms)
+  3 passing (10s)
+=== 8 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3900ms)
+    ✔ test_normal_when_version_pinned (4536ms)
+    ✔ test_normal_when_map_configured (534ms)
+  3 passing (9s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4209ms)
+    ✔ test_normal_when_version_pinned (4726ms)
+    ✔ test_normal_when_map_configured (525ms)
+  3 passing (10s)
+=== 9 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (4098ms)
+    ✔ test_normal_when_version_pinned (5313ms)
+    ✔ test_normal_when_map_configured (619ms)
+  3 passing (11s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4288ms)
+    ✔ test_normal_when_version_pinned (4816ms)
+    ✔ test_normal_when_map_configured (550ms)
+  3 passing (10s)
+=== 10 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (4018ms)
+    ✔ test_normal_when_version_pinned (4665ms)
+    ✔ test_normal_when_map_configured (529ms)
+  3 passing (10s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4219ms)
+    ✔ test_normal_when_version_pinned (4724ms)
+    ✔ test_normal_when_map_configured (530ms)
+  3 passing (10s)
+
+# preview-open.test.ts・preview-rerender.test.ts の suite だけを suite.only にして 1 回実行（作業ツリーは実行後に戻した）
+$ xvfb-run -a npm --prefix vscode run test:integration
+✔ Validated version: 1.141.0
+✔ Found existing install in /home/shuhei2441/repo/mdmark/.claude/worktrees/test-vscode-fix-flaky-preview-waits/vscode/.vscode-test/vscode-linux-x64-1.141.0
+    ✔ test_normal (4003ms)
+    ✔ test_normal_when_mermaid (553ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (586ms)
+    ✔ test_normal_when_range_scripts (957ms)
+    ✔ test_normal_when_aliases (240ms)
+    ✔ test_error_when_aliases_missing (180ms)
+    ✔ test_normal_when_includes (233ms)
+    ✔ test_normal_when_same_column (315ms)
+    ✔ test_normal_when_already_open (318ms)
+    ✔ test_normal_when_version_pinned (4699ms)
+    ✔ test_normal_when_tags_unreachable (4674ms)
+    ✔ test_normal_when_theme_fixed (343ms)
+    ✔ test_normal_when_color_scheme (440ms)
+    ✔ test_normal_when_relative_image (369ms)
+    ✔ test_error_when_image_outside_workspace (829ms)
+    ✔ test_error_when_distribution_unreachable (248ms)
+    ✔ test_normal_when_loading_shown (12253ms)
+    ✔ test_error_when_version_missing (547ms)
+    ✔ test_error_when_not_markdown (561ms)
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-WcMIXb/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-WcMIXb/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1187ms)
+    ✔ test_error_when_unsupported_media (937ms)
+    ✔ test_normal (1669ms)
+    ✔ test_normal_when_live_update_off (1417ms)
+    ✔ test_normal_when_config_saved (1096ms)
+    ✔ test_normal_when_param_copy_label_configured (711ms)
+    ✔ test_normal_when_map_configured (917ms)
+    ✔ test_normal_when_aliases_yaml_saved (752ms)
+    ✔ test_normal_when_include_target_saved (1363ms)
+    ✔ test_normal_when_config_missing (577ms)
+    ✔ test_normal_when_revealed (3254ms)
+    ✔ test_normal_when_diff_revealed (1565ms)
+    ✔ test_normal_when_relative_library (432ms)
+    ✔ test_error_when_config_unreadable (979ms)
+    ✔ test_normal_when_config_fixed (409ms)
+    ✔ test_normal_when_library_origin_added (574ms)
+    ✔ test_normal_when_color_theme_changed (587ms)
+  36 passing (58s)
+✔ Validated version: 1.146.0
+✔ Found existing install in /home/shuhei2441/repo/mdmark/.claude/worktrees/test-vscode-fix-flaky-preview-waits/vscode/.vscode-test/vscode-linux-x64-1.146.0
+    ✔ test_normal (4756ms)
+    ✔ test_normal_when_mermaid (806ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (1178ms)
+    ✔ test_normal_when_range_scripts (1226ms)
+    ✔ test_normal_when_aliases (471ms)
+    ✔ test_error_when_aliases_missing (299ms)
+    ✔ test_normal_when_includes (307ms)
+    ✔ test_normal_when_same_column (451ms)
+    ✔ test_normal_when_already_open (322ms)
+    ✔ test_normal_when_version_pinned (5185ms)
+    ✔ test_normal_when_tags_unreachable (4845ms)
+    ✔ test_normal_when_theme_fixed (352ms)
+    ✔ test_normal_when_color_scheme (514ms)
+    ✔ test_normal_when_relative_image (373ms)
+    ✔ test_error_when_image_outside_workspace (877ms)
+    ✔ test_error_when_distribution_unreachable (251ms)
+    ✔ test_normal_when_loading_shown (12075ms)
+    ✔ test_error_when_version_missing (260ms)
+    ✔ test_error_when_not_markdown (519ms)
+    ✔ test_normal_when_relative_media (1337ms)
+    ✔ test_error_when_unsupported_media (426ms)
+    ✔ test_normal (1341ms)
+    ✔ test_normal_when_live_update_off (1003ms)
+    ✔ test_normal_when_config_saved (498ms)
+    ✔ test_normal_when_param_copy_label_configured (591ms)
+    ✔ test_normal_when_map_configured (528ms)
+    ✔ test_normal_when_aliases_yaml_saved (464ms)
+    ✔ test_normal_when_include_target_saved (1143ms)
+    ✔ test_normal_when_config_missing (373ms)
+    ✔ test_normal_when_revealed (3098ms)
+    ✔ test_normal_when_diff_revealed (1542ms)
+    ✔ test_normal_when_relative_library (351ms)
+    ✔ test_error_when_config_unreadable (984ms)
+    ✔ test_normal_when_config_fixed (388ms)
+    ✔ test_normal_when_library_origin_added (614ms)
+    ✔ test_normal_when_color_theme_changed (563ms)
+  36 passing (56s)
