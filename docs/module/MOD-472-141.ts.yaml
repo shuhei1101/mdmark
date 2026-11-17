@@ -365,9 +365,9 @@ functions:
       - name: test_separate_wires
         case: 正常
         summary: 同じ区間の 3 本を並べる
-        condition: 同じ縦の直線の上で範囲が重なる区間を持つ 3 本の線と、間に十分な幅のある 2 つのノード
+        condition: 左のノードの右の辺から 40px の縦の直線の上で範囲が重なる区間を持つ 3 本の線と、左のノードの右の辺から 80px に左の辺を持つ右のノード（元の直線が、`clearance` を含めた通り道 12〜68px の中ほど）
         mock: なし
-        expected: 3 本のその区間の x 座標が元の x − 8・x・x + 8 で、どの 2 本も同じ向きの区間が同じ直線の上で重ならず、線は縦横の折れ線のまま。`crowded` が 0
+        expected: 3 本のその区間の x 座標が、左のノードの右の辺から 32・40・48px で、どの 2 本も同じ向きの区間が同じ直線の上で重ならず、線は縦横の折れ線のまま。`crowded` が 0
       - name: test_separate_wires_when_shared_end
         case: 正常
         summary: 同じ点から出る線の端
