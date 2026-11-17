@@ -412,3 +412,31 @@ test("test_participant_terms", async () => {
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// actor の参加者は、設定に map.kinds.actor が無くても人のアイコンを描く（ActorIcon）
+test("test_actor_icon", async () => {
+  // 準備・実行
+  const page = await openSequence("actor-icon");
+  // 検証
+  await expect(
+    page
+      .locator('[data-participant="U"] .mdmark-diagram-node-kind svg')
+      .count(),
+  ).resolves.toBe(1);
+  await expect(
+    page
+      .locator('[data-participant="P"] .mdmark-diagram-node-kind svg')
+      .count(),
+  ).resolves.toBe(0);
+});
+
+// 範囲の外の純粋な Mermaid のシーケンス図は、補足の説明のツールチップを持たず、タイトルが図の種類の名前（Plain）
+test("test_plain", async () => {
+  // 準備・実行
+  const page = await openSequence("plain");
+  // 検証
+  await expect(page.locator("figcaption").innerText()).resolves.toBe(
+    "シーケンス図",
+  );
+  await expect(page.locator("[aria-describedby]").count()).resolves.toBe(0);
+});

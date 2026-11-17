@@ -451,3 +451,26 @@ test("test_accessibility", async () => {
   );
   expect(contrastRatio(border, background)).toBeGreaterThanOrEqual(3);
 });
+
+// 範囲の外の純粋な Mermaid の構成図は、種類を持たないノードの名前を上下の中央に描く（Plain）
+test("test_plain", async () => {
+  // 準備・実行
+  const page = await openMap("plain");
+  // 検証
+  const offsets = await page
+    .locator(".mdmark-diagram-node[data-node]")
+    .evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const box = node.getBoundingClientRect();
+        const name = node
+          .querySelector(".mdmark-diagram-node-name")
+          ?.getBoundingClientRect();
+        return name === undefined
+          ? Number.POSITIVE_INFINITY
+          : Math.abs(name.top + name.height / 2 - (box.top + box.height / 2));
+      }),
+    );
+  expect(offsets.length).toBeGreaterThan(0);
+  for (const offset of offsets) expect(offset).toBeLessThanOrEqual(2);
+  await expect(page.locator(".mdmark-diagram-info").count()).resolves.toBe(0);
+});

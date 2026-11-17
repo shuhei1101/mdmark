@@ -4307,9 +4307,14 @@ test("test_normal_when_page_marker_and_card_grid", async () => {
 test("test_normal_when_mermaid_code_block", async () => {
   // 準備
   const render = await loadRender();
-  const block = ["```mermaid", "flowchart LR", "  A --> B", "```", ""].join(
-    "\n",
-  );
+  const block = [
+    "```mermaid",
+    "%%{init: {}}%%",
+    "flowchart LR",
+    "  A --> B",
+    "```",
+    "",
+  ].join("\n");
   // 実行
   const enabled = render(block);
   const disabled = render(`<!-- features: {"mermaid": false} -->\n\n${block}`);
