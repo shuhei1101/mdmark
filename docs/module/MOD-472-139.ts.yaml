@@ -49,7 +49,7 @@ functions:
     process: |-
       1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方。読めないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返す
       2. トップレベル・`walkthroughs` の手順・`layout` の値・`groups` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
-      3. 補足の文字の中で `--` をそのまま記載した文字の値は `map_invalid_value`（HTML コメントを閉じてしまうため、`--` をそのまま記載せずに 2 つ目の `-` を JSON の Unicode エスケープで記載する直し方）にする。値の `--` は、パスごとの行を求める走査で値の文字列の元の文字を確かめて判定し、JSON の Unicode エスケープで記載した `--` はずれにしない
+      3. 補足の文字の中で `--` をそのまま記載した文字の値は `map_invalid_value`（HTML コメントを閉じてしまうため、`--` をそのまま記載せずに 2 つ目の `-` を JSON の Unicode エスケープで記載する直し方）にする。値の `--` は、`jsonPaths` が返す元の文字に `--` をそのまま記載したパスで判定し、JSON の Unicode エスケープで記載した `--` はずれにしない
     unit_tests:
       - name: test_parse_map_data
         case: 正常
@@ -99,6 +99,38 @@ functions:
         condition: '`notes.a.text` の元の文字が、2 つ目の `-` を Unicode エスケープで記載した `a --b`'
         mock: なし
         expected: '`notes.a.text` が `a --b` で読め、`problems` が空'
+  - name: jsonPaths
+    title: 補足のパスを走査する
+    kind: 関数
+    container: src/map/data.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 補足の JSON の文字を走査し、オブジェクトのキーと配列の要素のパスごとの始まる行と、元の文字に `--` をそのまま記載した文字列の値のパスを返す
+    scope: public
+    args:
+      - name: source
+        type: string
+        required: true
+        description: '`JSON.parse` で読み込めた補足の文字'
+    returns:
+      type: '{ lines: Map<string, number>; hyphens: Set<string> }'
+      description: パス（`notes.ghost`・`walkthroughs[0]`）ごとの始まる行（0 から）と、元の文字に `--` をそのまま記載した文字列の値のパス
+    process: |-
+      1. 値・オブジェクトのキー・配列の要素を先頭から走査し、キーと要素のパスごとに始まる行を記録する
+      2. 文字列の値は、元の文字（エスケープを解く前）に `--` があればそのパスを記録する。JSON の Unicode エスケープで記載した `--` は記録しない
+    unit_tests:
+      - name: test_parse_map_data_when_double_hyphen
+        case: 異常
+        summary: -- を含む値
+        condition: '`parseMapData` の同名のテスト'
+        mock: なし
+        expected: '`walkthroughs[0].text` のパスが記録され、`parseMapData` が `map_invalid_value` にする'
+      - name: test_parse_map_data_when_escaped_double_hyphen
+        case: 正常
+        summary: Unicode エスケープで記載した -- を含む値
+        condition: '`parseMapData` の同名のテスト'
+        mock: なし
+        expected: '`notes.a.text` のパスが記録されず、`parseMapData` の `problems` が空'
 lead: 'map の補足の JSON の読み取りを受け持ち、補足のキーと読み取り方を変えるときに参照する。'
 tags:
   - name: topic:map
