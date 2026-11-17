@@ -1,0 +1,17 @@
+$ npm run test:unit
+# 結果: 全 pass
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mermaid-plain-mermaid-viewer-interactions
+
+
+ Test Files  300 passed (300)
+      Tests  2298 passed (2298)
+   Start at  13:21:20
+   Duration  19.61s (worker 83%, tests 12%, import 5%)
+
+exit=0
