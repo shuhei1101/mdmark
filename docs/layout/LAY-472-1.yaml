@@ -1669,7 +1669,7 @@ entries:
       - tool_config
   - type: file
     name: project-index.yaml
-    contents: dev-docs と project-index の配信元の設定（文書の種類ごとのパス・スキーマ）
+    contents: dev-docs と project-index の配信元の設定（文書の種類ごとのパス・スキーマと、dev-docs の画面のタブとサイドバーの構成）
     content_types:
       - tool_config
   - type: file

@@ -2,16 +2,28 @@ use_cases: []
 docs:
   - page: project-index.yaml
     new: false
-    change: 'nav を記載する（タブ: はじめに・使い方・設計書・規約・コード・リファレンス・用語集の順。設計書の種類と、コードのフォルダをサイドバーのグループにし、目次を並べない）'
-    status: todo
+    change: 'nav を記載する（タブ: はじめに・使い方・設計書・コード・リファレンス・用語集の順。規約の文書が配信元に無いため規約のタブは配置しない。設計書の種類と、コードのフォルダをサイドバーのグループにし、目次を並べない）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:58.303074+00:00'
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: リポジトリの構成の表の project-index.yaml の行の中身に、dev-docs の画面のタブとサイドバーの構成（nav）を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:58.303074+00:00'
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: project-index.yaml の contents に、dev-docs の画面のタブとサイドバーの構成を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:58.303074+00:00'
+  - page: docs/guide/files.yml
+    new: false
+    change: 各行に name を付け、サイドバーのページ名からグループ名の頭（「コアコンセプト-」など）と拡張子を除く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:59.173212+00:00'
 scope_out:
   - item: 配信元 mdmark の検索の対象（documents[]）とメタデータの見直し
     reason: 要望に含まれない。同じ project-index.yaml を変えるが目的が別
