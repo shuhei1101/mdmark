@@ -49,8 +49,6 @@ tables:
         example: docs/guide/記法.mark.md
         notes: 無いページを指すと配布物のビルドが止まる
     status: planned
-    introduced:
-      pr: 72
 refs:
   - SC-472-15#
   - IF-472-41#exceptions[ガイドの索引の誤り（終了コード 1）]

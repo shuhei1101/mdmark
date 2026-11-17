@@ -49,8 +49,6 @@ tables:
         description: 探すときの単語
         example: '["見出し", "色"]'
     status: planned
-    introduced:
-      pr: 353
 refs:
   - IF-472-1#
   - IF-472-2#
