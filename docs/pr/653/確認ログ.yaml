@@ -1,0 +1,13 @@
+confirmations:
+  - topic: 'map の flowchart の click の id: をどこで URL に変えるか'
+    decision: 'mount の設定に利用側が id: を URL に変える関数を指定できるようにし、map のノードのリンクと本文の [名前](id:...) の両方に適用する。関数を指定しないときは今の警告のままで、mdmark check は id: をずれにしない（推奨案 B。PR #534 の確認ログの決定を覆す）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b5fa2ccd
+    thread: https://github.com/shuhei1101/mdmark/pull/653#discussion_r4601842248
+  - topic: title を持たない図の枠のタイトルに出す timeline・gitGraph・journey・block-beta の種類の名前
+    decision: 「タイムライン」「Git グラフ」「ジャーニー」「ブロック図」にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b5fa2ccd
+    thread: https://github.com/shuhei1101/mdmark/pull/653#discussion_r4601843124
