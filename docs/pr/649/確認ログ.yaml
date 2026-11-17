@@ -1,0 +1,7 @@
+confirmations:
+  - topic: マインドマップに補足の `layout` とノードのドラッグをどこまで適用するか
+    decision: 色と閉じた状態（`collapsed`）だけを適用し、座標・並び順は書き方の警告にする。項目はドラッグで動かさない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 9fbc582a
+    thread: https://github.com/shuhei1101/mdmark/pull/649#discussion_r4598541423
