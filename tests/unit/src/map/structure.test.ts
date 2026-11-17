@@ -101,3 +101,61 @@ test("test_collect_map_structure_when_class_architecture_c4", async () => {
   ]);
   expect(container.kind).toBeUndefined();
 });
+
+// front matter とコメントの行を飛ばす（正常系）
+test("test_plain_map_source_of", async () => {
+  // 準備
+  const { plainMapSourceOf } = await loadStructure();
+  // 実行
+  const result = plainMapSourceOf(
+    "---\ntitle: 受付\n---\n%% メモ\nflowchart LR\n  A --> B",
+  );
+  // 検証
+  expect(result?.kind).toBe("flowchart");
+  expect(result?.title).toBe("受付");
+  expect(result?.body.startsWith("%% メモ")).toBe(true);
+  expect(result?.body).not.toContain("---");
+  expect(result?.frontMatter).toBe("---\ntitle: 受付\n---");
+});
+
+// accTitle のタイトル（正常系）
+test("test_plain_map_source_of_when_acc_title", async () => {
+  // 準備
+  const { plainMapSourceOf } = await loadStructure();
+  // 実行
+  const result = plainMapSourceOf(
+    "sequenceDiagram\n  accTitle: 注文\n  A->>B: 送る",
+  );
+  // 検証
+  expect(result?.kind).toBe("sequenceDiagram");
+  expect(result?.title).toBe("注文");
+  expect(result?.frontMatter).toBeUndefined();
+});
+
+// 設定を持つと対象にしない（正常系）
+test("test_plain_map_source_of_when_config", async () => {
+  // 準備
+  const { plainMapSourceOf } = await loadStructure();
+  // 実行
+  const withConfig = plainMapSourceOf(
+    "---\nconfig:\n  theme: forest\n---\nflowchart LR\n  A --> B",
+  );
+  const withInit = plainMapSourceOf(
+    '%%{init: {"theme": "forest"}}%%\nflowchart LR\n  A --> B',
+  );
+  // 検証
+  expect(withConfig).toBeUndefined();
+  expect(withInit).toBeUndefined();
+});
+
+// map が描けない種類（正常系）
+test("test_plain_map_source_of_when_other_kind", async () => {
+  // 準備
+  const { plainMapSourceOf } = await loadStructure();
+  // 実行
+  const gantt = plainMapSourceOf("gantt\n  title 予定");
+  const pie = plainMapSourceOf('pie\n  "A" : 1');
+  // 検証
+  expect(gantt).toBeUndefined();
+  expect(pie).toBeUndefined();
+});

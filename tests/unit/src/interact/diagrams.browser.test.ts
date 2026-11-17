@@ -418,3 +418,118 @@ test("test_attach_diagrams_when_figures_given", async () => {
   button(other, "拡大").click();
   expect(zoomText(other)).toBe(before);
 });
+
+/** 幅 600・高さ 1200 の図に高さ 60px の参加者の行を入れた、表示する枠が高さ 400px の map のシーケンス図の描く先の要素 */
+function createSequenceRoot(): HTMLElement {
+  const root = createSizedRoot({ width: 600, height: 1200 });
+  root.style.setProperty("--mdmark-diagram-max-height", "400px");
+  root.style.setProperty("--mdmark-sticky-top", "48px");
+  const figure = root.querySelector<HTMLElement>("figure.mdmark-diagram");
+  if (figure) figure.dataset.diagram = "map";
+  root
+    .querySelector(".mdmark-diagram-stage")
+    ?.insertAdjacentHTML(
+      "afterbegin",
+      '<div class="mdmark-diagram-seq-heads" style="width:600px;height:60px"></div>',
+    );
+  return root;
+}
+
+/** 参加者の行の `transform` */
+const headsTransform = (root: ParentNode): string =>
+  root.querySelector<HTMLElement>(".mdmark-diagram-seq-heads")?.style
+    .transform ?? "";
+
+// 文書をスクロールすると参加者の行を画面の上端に留め、下端で押し上げる（正常系）
+test("test_attach_diagrams_when_page_scrolled", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createSequenceRoot();
+  const spacer = document.createElement("div");
+  spacer.style.height = "3000px";
+  document.body.append(spacer);
+  detachers.push(() => spacer.remove());
+  detachers.push(attachDiagrams({ root, placement: "bottom" }));
+  const viewport = viewportOf(root);
+  const scrollBy = (target: number) => {
+    window.scrollBy(0, viewport.getBoundingClientRect().top - target);
+    window.dispatchEvent(new Event("scroll"));
+  };
+  // 実行: 表示する枠の上端を画面の上端より 100px 上に出す
+  scrollBy(-100);
+  // 検証
+  await vi.waitFor(() =>
+    expect(headsTransform(root)).toBe("translateY(148px)"),
+  );
+  expect(
+    root
+      .querySelector(".mdmark-diagram-seq-heads")
+      ?.classList.contains("is-stuck"),
+  ).toBe(true);
+  // 実行: 表示する枠の下端を画面の上端から 80px の位置にする
+  scrollBy(80 - viewport.clientHeight);
+  // 検証
+  await vi.waitFor(() =>
+    expect(headsTransform(root)).toBe("translateY(340px)"),
+  );
+  window.scrollTo(0, 0);
+});
+
+// 全画面の中は表示する枠の上端だけに留める（正常系）
+test("test_attach_diagrams_when_modal_heads", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createSequenceRoot();
+  detachers.push(attachDiagrams({ root, placement: "bottom" }));
+  button(root, "全画面で開く").click();
+  const dialog = document.querySelector<HTMLDialogElement>("dialog[open]");
+  const modalViewport = viewportOf(dialog as HTMLDialogElement);
+  // 実行
+  modalViewport.scrollTop = 120;
+  modalViewport.dispatchEvent(new Event("scroll"));
+  // 検証
+  await vi.waitFor(() =>
+    expect(headsTransform(dialog as HTMLDialogElement)).toBe(
+      "translateY(120px)",
+    ),
+  );
+});
+
+// mermaid の図の文字の上のドラッグは図を動かさない（正常系）
+test("test_attach_diagrams_when_mermaid_text_drag", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createDiagramRoot();
+  root
+    .querySelector("svg")
+    ?.insertAdjacentHTML(
+      "beforeend",
+      '<text x="40" y="40" class="nodeLabel">受付</text>',
+    );
+  detachers.push(attachDiagrams({ root, placement: "top" }));
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  const viewport = viewportOf(root);
+  const text = root.querySelector("svg text") as SVGTextElement;
+  const drag = (target: Element) => {
+    const point = { bubbles: true, pointerId: 1, button: 0, clientY: 100 };
+    target.dispatchEvent(
+      new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+    );
+    target.dispatchEvent(
+      new PointerEvent("pointermove", { ...point, clientX: 220 }),
+    );
+    target.dispatchEvent(
+      new PointerEvent("pointerup", { ...point, clientX: 220 }),
+    );
+  };
+  // 実行
+  const before = viewport.scrollLeft;
+  drag(text);
+  const afterText = viewport.scrollLeft;
+  drag(root.querySelector("svg rect") as Element);
+  // 検証
+  expect(afterText).toBe(before);
+  expect(viewport.scrollLeft - afterText).toBe(80);
+});

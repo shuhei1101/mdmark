@@ -148,3 +148,48 @@ test("test_attach_map_when_auto_follow", async () => {
   // 検証
   expect(scrollTo).not.toHaveBeenCalled();
 });
+
+// 範囲の外の map の図は警告を出さない（正常系）
+test("test_attach_map_when_plain", async () => {
+  // 準備・実行
+  const { root } = await attach(
+    '```mermaid\nflowchart LR\n  A[仕様] --> B[実装]\n  click A "javascript:alert(1)"\n```\n',
+  );
+  // 検証
+  expect(
+    root.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+  ).toHaveLength(1);
+  expect(root.querySelector(".mdmark-syntax-warning")).toBeNull();
+  expect(
+    root.querySelector('[data-node="A"] a.mdmark-diagram-node-link'),
+  ).toBeNull();
+  expect(root.querySelector("a.mdmark-diagram-node-link")).toBeNull();
+});
+
+// 見た目の指定を持つ図を mermaid のコードブロックに戻す（正常系）
+test("test_attach_map_when_plain_fallback", async () => {
+  // 準備
+  const { attachMap } = await loadMap();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(
+      "```mermaid\n---\ntitle: 受付\n---\nflowchart LR\n  A --> B\n  style A fill:#f9f\n```\n\n```mermaid\nflowchart LR\n  C --> D\n```\n",
+    ).html,
+  );
+  const restored: HTMLElement[][] = [];
+  // 実行
+  detachers.push(
+    attachMap(root, resolveConfig({ config: { map: CONFIG } }), {
+      restoreMermaid: (blocks) => restored.push(blocks),
+    }),
+  );
+  // 検証
+  const blocks = root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]");
+  expect(blocks).toHaveLength(1);
+  const code = blocks[0]?.querySelector("code")?.textContent ?? "";
+  expect(code.startsWith("---")).toBe(true);
+  expect(code).toContain("style A fill:#f9f");
+  expect(restored).toHaveLength(1);
+  expect(restored[0]).toEqual([blocks[0]]);
+  expect(root.querySelectorAll("figure.mdmark-diagram")).toHaveLength(1);
+});

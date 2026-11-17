@@ -281,3 +281,66 @@ test("test_collect_map_problems_when_class_architecture_c4", async () => {
   expect(messages).toContain("notes.r9");
   expect(messages).toContain("layout.ghost");
 });
+
+// map が読める図は戻さない（正常系）
+test("test_needs_mermaid_fallback", async () => {
+  // 準備
+  const { needsMermaidFallback } = await loadCheck();
+  // 実行
+  const flow = needsMermaidFallback({
+    kind: "flowchart",
+    mermaid: "flowchart LR\n  A[受付] --> B[回答]",
+  });
+  const classes = needsMermaidFallback({
+    kind: "classDiagram",
+    mermaid: "classDiagram\n  class 図面\n  図面 --> 図形",
+  });
+  // 検証
+  expect(flow).toBe(false);
+  expect(classes).toBe(false);
+});
+
+// 読めない行と閉じの無い subgraph で戻す（正常系）
+test("test_needs_mermaid_fallback_when_unreadable", async () => {
+  // 準備
+  const { needsMermaidFallback } = await loadCheck();
+  // 実行
+  const unreadable = needsMermaidFallback({
+    kind: "flowchart",
+    mermaid: "flowchart LR\n  A --o B",
+  });
+  const unclosed = needsMermaidFallback({
+    kind: "flowchart",
+    mermaid: "flowchart LR\n  subgraph G [まとめ]\n    A --> B",
+  });
+  // 検証
+  expect(unreadable).toBe(true);
+  expect(unclosed).toBe(true);
+});
+
+// 見た目の指定で戻す（正常系）
+test("test_needs_mermaid_fallback_when_style", async () => {
+  // 準備
+  const { needsMermaidFallback } = await loadCheck();
+  // 実行
+  const results = [
+    needsMermaidFallback({
+      kind: "flowchart",
+      mermaid: "flowchart LR\n  A --> B\n  style A fill:#f9f",
+    }),
+    needsMermaidFallback({
+      kind: "flowchart",
+      mermaid: "flowchart LR\n  A:::warn --> B",
+    }),
+    needsMermaidFallback({
+      kind: "classDiagram",
+      mermaid: 'classDiagram\n  class 図面\n  cssClass "図面" warn',
+    }),
+    needsMermaidFallback({
+      kind: "stateDiagram",
+      mermaid: "stateDiagram-v2\n  [*] --> 待機\n  class 待機 idle",
+    }),
+  ];
+  // 検証
+  expect(results).toEqual([true, true, true, true]);
+});
