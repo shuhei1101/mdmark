@@ -2,19 +2,20 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-11.yaml
     impact: changed
-    detail: map の範囲の外の言語 mermaid のコードブロックにも、記法が無くても付けられる操作（シーケンス図の参加者の行の固定・図の中の文字の選択とコピー など）を付ける
+    detail: map の範囲の外の言語 mermaid のコードブロックを、map が描ける種類は補足の無い map の図に、描けない種類は今の mermaid の図にする。map が描ける種類だけの文書では mermaid を読み込まない
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 図の中の文字の上で押してドラッグしたときに、図の移動ではなく文字の選択にする（ドラッグで図を動かす操作との分け方を決める）
+    detail: map が描けない種類（gantt）の mermaid の図で拡大・移動し、純粋な Mermaid の図の文字の上のドラッグを、図の移動ではなく文字の選択にする
     depends_on:
       - docs/scenario/SC-472-11.yaml
   - kind: single
     scenario: docs/scenario/SC-472-19.yaml
-    impact: run_only
-    detail: map のシーケンス図が既に持つ参加者の行の固定・選択・並べ替えが、純粋な Mermaid への操作の追加で変わらないことを確かめる
-    depends_on: []
+    impact: changed
+    detail: 純粋な Mermaid のシーケンス図でも、参加者を選んで強調し、並び順を変えられる
+    depends_on:
+      - docs/scenario/SC-472-11.yaml
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
     impact: run_only

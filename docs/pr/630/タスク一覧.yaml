@@ -35,10 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-16T17:37:32.437787+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-16T20:29:49.508077+00:00'
-    note: 操作を付ける方法（要件.md の案 A / B）をユーザーに確認して決めてから、要件.md の「案ごとに書き直す単一 UC」のとおり SC-472-11・SC-472-19 と要件.yaml の use_cases を書き直す
+    updated_at: '2026-11-17T01:14:06.740802+00:00'
+    note: 案 A（確認ログ）で SC-472-11・SC-472-19・SC-472-42 を書き直した
   - process: モック作成
     status: todo
     note: 'Mermaid の図の部品のモック（docs/mock/components/mermaid-diagram/）に、固定した参加者の行など見た目が変わる場面だけを足す（モック要否 Q3: 固定した行の見た目を Issue が決めていない）'
