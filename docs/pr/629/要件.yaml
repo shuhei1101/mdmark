@@ -17,3 +17,6 @@ scope_out:
   - item: 計画の Sprint のバージョンを 0.15.0 へ繰り上げる
     reason: 計画は task-planner が持つ（案 A の回答で、次の繰り上げで 0.15.0 にすると決まっている）
     plan: none
+  - item: develop の配布物の作り直し（.github/workflows/develop-dist.yml・scripts/build.ts）が、出したバージョンの migrations/v0.11.0・v0.13.0 を書き換えて commit する
+    reason: '出したバージョンの中身を変えない決まりから外れる #621 の不具合で、v0.14.0 のタグ打ちの要望に含まれない（#629 は取り込んだ後に戻して対処する）'
+    plan: '#639'
