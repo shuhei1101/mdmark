@@ -1,0 +1,6 @@
+steps:
+  - op: call
+    description: 文書の廃止した `er` の範囲を map の ER 図の範囲へ書き換える（写さない値と書き換えない範囲は移行の報告に挙げる）
+    destructive: true
+    script: retired-er.mjs
+    files: [documents]

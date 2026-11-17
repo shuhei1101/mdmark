@@ -1,0 +1,71 @@
+id: MOD-616-1
+visibility: internal
+title: ライブラリ本体 / バージョンを上げる / retired-er.mjs
+test_files:
+  - tests/unit/migrations/retired-er.test.ts
+lead: 移行の手順のスクリプト。文書の廃止した `er` の範囲を map の ER 図の範囲へ書き換える。
+functions:
+  - name: migrateRetiredEr
+    title: 廃止した ER 図の範囲を map の範囲へ書き換える
+    container: migrations/next/retired-er.mjs
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 廃止した ER 図の範囲を map の範囲へ書き換える移行の手順のスクリプトの処理
+    description: |-
+      `steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書の廃止した `er` の範囲を map の ER 図の範囲へ書き換える（写さない値と書き換えない範囲は移行の報告に挙げる）``）が実行する。
+
+      スクリプトとして呼ばれると、同じフォルダの `retired-diagrams.js`（`buildRetiredDiagrams` がまとめて commit したファイル）を動的に import し、その `loadConfig` で `--config` の設定を読み、`loadExtensionDirectives` で拡張の `directive` を取り、`convertRetiredEr` を `convert` に渡してこの関数を呼ぶ。
+
+      文書は `migrateRetiredDiagrams` と同じく、設定の `build` の対象と索引の文書を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに `convert` で書き換え、変わった文書だけを書き込む。設定は書き換えない。
+
+      `report` を `{文書の相対パス}:{行}: er: {項目}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書の ER 図を map の範囲へ書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。
+
+      単体テストは `migrations/*/retired-er.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む
+    args:
+      - name: options
+        type: '{ configPath: string; configDir: string; config: unknown; directives: Set<string>; convert: (options: { markdown: string; skip: Set<string> }) => { markdown: string; report: ConvertReportLine[] } }'
+        required: true
+        description: 設定ファイルを読み込んだ値・設定ファイルのパス・設定ファイルのあるフォルダの絶対パス・拡張の `directive`・文書の本文を書き換える関数（`convertRetiredEr`）
+    returns:
+      type: 'Promise<{ changed: string[]; report: string[]; problems: string[] }>'
+      description: 書き換えた文書の相対パス・移行の報告の行・読み込めない文書の修正方法
+    side_effects: 文書を書き換える
+    callees:
+      - MOD-477-5#functions[convertRetiredEr]
+      - MOD-472-110#functions[loadExtensionDirectives]
+    refs:
+      - IF-472-28#constraints[スクリプトの呼び方]
+      - IF-472-28#constraints[ER 図の部品の範囲の移行]
+    unit_tests:
+      - name: test_migrate_retired_er
+        case: 正常
+        summary: build の対象と索引の文書を書き換え、報告の行を出す
+        condition: シナリオ『バージョンを上げる』の「正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）」の文書を、`build.include` の文書と索引だけの文書に分けて持つ一時フォルダ
+        mock: 一時フォルダ
+        expected: 両方の文書がシナリオの期待値のとおりで、設定が変わらず、`report` が文書と行の順、`changed` が 2 つ
+      - name: test_migrate_retired_er_when_extension
+        case: 正常
+        summary: 拡張の名前の範囲を書き換えない
+        condition: '`<!-- er: {"target": "world"} -->` の範囲を持つ文書と、`directives` が `er`'
+        mock: 一時フォルダ
+        expected: 文書が変わらず、`report` が空
+      - name: test_migrate_retired_er_when_rerun
+        case: 正常
+        summary: もう一度適用しても書き換えない
+        condition: 1 つ目のテストの後の一時フォルダ
+        mock: 一時フォルダ
+        expected: '`changed` が空で、文書の更新日時が変わらない'
+      - name: test_migrate_retired_er_when_bundled
+        case: 正常
+        summary: 移行の手順のフォルダにまとめた書き換えの処理で、ソースの処理と同じに書き換える
+        condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `convertRetiredEr`、もう片方にスクリプトと同じフォルダの `retired-diagrams.js` の `convertRetiredEr` を渡す
+        mock: 一時フォルダ
+        expected: 戻り値と書き換えた文書が同じ（まとめたファイルが無い・古いときは失敗する）
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:図
+  - name: topic:er図

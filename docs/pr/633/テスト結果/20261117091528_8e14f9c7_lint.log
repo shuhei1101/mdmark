@@ -1,0 +1,3 @@
+$ npx biome check scripts/build.ts
+Checked 1 file in 36ms. No fixes applied.
+exit=0

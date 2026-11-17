@@ -1,0 +1,86 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があるため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 単体テストの移動と設計書の記入で、未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れを変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れを変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: インターフェースを変えない。docs/interface/ に VS Code 拡張機能のテストのパスは無い
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品の設計とテストのパスを変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-16T21:47:49.152794+00:00'
+  - process: モジュール構成設計
+    status: done
+    note: MOD-589-1 に test_files を記入し、VS Code 拡張機能のテストを 2 つの置き場所に分ける理由を LAY-472-1 に記載した
+    updated_by: planner
+    updated_at: '2026-11-17T00:09:57.197516+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: LAY-472-1 の notes はモジュール構成設計で反映済み
+    updated_by: planner
+    updated_at: '2026-11-17T00:20:47.131469+00:00'
+  - process: 単体テスト作成
+    status: done
+    note: collectMapStructure の単体テスト 5 件を tests/unit/src/map/structure.test.ts へ移す
+    updated_by: planner
+    updated_at: '2026-11-17T00:24:19.725953+00:00'
+  - process: 実装
+    status: done
+    note: tests/files.yaml に unit/src/map/structure.test.ts の行を追加する
+    updated_by: planner
+    updated_at: '2026-11-17T00:24:19.725953+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    reason: VS Code 拡張機能の結合テストは移さず、結合テストを追加・変更しない
+    updated_by: planner
+    updated_at: '2026-11-17T00:09:57.197516+00:00'

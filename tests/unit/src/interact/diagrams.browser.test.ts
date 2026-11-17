@@ -1,8 +1,16 @@
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { wrapDirective } from "../../helpers/diagrams.ts";
-import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
-import { erText, shopEr } from "../../helpers/er.ts";
+import type { MdmarkFlowDefinition } from "../../../../src/diagram/definition.ts";
+import {
+  renderDiagramFrame,
+  renderFlow,
+} from "../../../../src/parts/diagram.ts";
+import { renderMermaidDiagram } from "../../../../src/parts/mermaid.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 import { memoryStorage } from "../../helpers/storage.ts";
 
 /** 図の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -22,46 +30,73 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** 幅 1100 の ER 図（モックの `shop-er` の幅を広げたもの）の定義の JSON */
-const WIDE_TEXT = erText({ ...shopEr(), width: 1100 });
-
-/** 幅 `width`・高さ `height` の ER 図の定義の JSON（列 1 つのテーブルを、図の下端が `height` になる位置に配置する） */
-function sizedEr(width: number, height: number): string {
-  return erText({
-    title: "大きさを決めた図",
-    scope: "表示する枠の高さを確認する",
-    updated: "2026-11-05",
-    width,
-    tables: [
-      {
-        id: "items",
-        name: "items",
-        label: "項目",
-        x: 20,
-        // テーブルの高さ（見出し 44・列 26・枠 4）と図の下の余白 32 を引く
-        y: height - 106,
-        w: 140,
-        columns: [{ name: "id", type: "bigint", pk: true }],
-      },
-    ],
-    relations: [],
-  });
+/** 幅 `width`・高さ `height` の mermaid の図を図の枠に描いた HTML（枠の id は `id`） */
+function mermaidFigure(width: number, height: number, id: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="none"></rect></svg>`;
+  return renderDiagramFrame(
+    { kind: "mermaid", title: "大きさを決めた図", legend: [], id },
+    renderMermaidDiagram({ svg, width, height }),
+  );
 }
 
-/** 幅 600px の描く先の要素に、幅 1100 の ER 図を描く */
-function createDiagramRoot(): HTMLElement {
-  const { root } = createRoot(wrapDirective("er", WIDE_TEXT));
-  root.style.width = "600px";
+/** 幅 `rootWidth`px の描く先の要素に、幅 `width`・高さ `height` の mermaid の図を描く */
+function createSizedRoot(
+  size: { width: number; height: number },
+  rootWidth = 600,
+): HTMLElement {
+  const root = createRootFromHtml(mermaidFigure(size.width, size.height, "d1"));
+  root.style.width = `${rootWidth}px`;
   root.style.setProperty("--mdmark-padding", "0");
   return root;
 }
 
-/** 幅 600・高さ 1200 の ER 図の定義（全体が収まる倍率が 1 になる縦長の図） */
-const TALL_TEXT = sizedEr(600, 1200);
+/** 幅 600px の描く先の要素に、幅 1100 の mermaid の図を描く */
+function createDiagramRoot(): HTMLElement {
+  return createSizedRoot({ width: 1100, height: 400 });
+}
 
-/** 幅 600px の描く先の要素に、幅 600・高さ 1200 の ER 図を描く */
+/** 幅 600px の描く先の要素に、幅 600・高さ 1200 の mermaid の図（全体が収まる倍率が 1 になる縦長の図）を描く */
 function createTallDiagramRoot(): HTMLElement {
-  const { root } = createRoot(wrapDirective("er", TALL_TEXT));
+  return createSizedRoot({ width: 600, height: 1200 });
+}
+
+/** 説明を持つノード 2 つの map の構成図（幅 1100） */
+const TIP_FLOW: MdmarkFlowDefinition = {
+  width: 1100,
+  height: 160,
+  nodes: [
+    {
+      id: "recv",
+      name: "受け取り",
+      hint: "問い合わせのメールを 1 通ずつ読む",
+      x: 24,
+      y: 40,
+      w: 180,
+      h: 72,
+      style: { label: "処理", icon: "cog" },
+    },
+    {
+      id: "store",
+      name: "記録",
+      hint: "本文と送信者のアドレスを保存する",
+      x: 896,
+      y: 40,
+      w: 180,
+      h: 72,
+      style: { label: "保存先", icon: "database" },
+    },
+  ],
+  wires: [],
+};
+
+/** 幅 600px の描く先の要素に、説明を持つノード 2 つの map の構成図を描く */
+function createTipRoot(): HTMLElement {
+  const root = createRootFromHtml(
+    renderDiagramFrame(
+      { kind: "map", title: "問い合わせの処理", legend: [], id: "tips" },
+      renderFlow(TIP_FLOW, "tips", { hints: true }),
+    ),
+  );
   root.style.width = "600px";
   root.style.setProperty("--mdmark-padding", "0");
   return root;
@@ -281,7 +316,7 @@ test("test_open_diagram_dialog", async () => {
 test("test_open_diagram_dialog_when_tip_open", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
-  const root = createDiagramRoot();
+  const root = createTipRoot();
   detachers.push(attachDiagrams({ root, placement: "top" }));
   button(root, "全画面で開く").click();
   const dialog = root.querySelector("dialog");
@@ -307,9 +342,6 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
   }
 });
 
-/** 幅 500・高さ 1600 の ER 図の定義（全体が収まる倍率は幅で決まり 1 になる縦長の図） */
-const LONG_TEXT = sizedEr(500, 1600);
-
 /** 表示する枠の右下のリサイズハンドル */
 function handleOf(root: ParentNode): HTMLElement {
   const found = root.querySelector<HTMLElement>(".mdmark-diagram-resize");
@@ -324,9 +356,8 @@ test("test_attach_diagrams_when_handle_resized", async () => {
   // 準備
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const { attachDiagrams } = await loadDiagrams();
-  const { root } = createRoot(wrapDirective("er", LONG_TEXT));
-  root.style.width = "600px";
-  root.style.setProperty("--mdmark-padding", "0");
+  // 幅 500・高さ 1600 の図（全体が収まる倍率は幅で決まり 1 になる縦長の図）
+  const root = createSizedRoot({ width: 500, height: 1600 });
   const storage = memoryStorage();
   const detach = attachDiagrams({ root, placement: "bottom", storage });
   const viewport = viewportOf(root);
@@ -362,8 +393,8 @@ test("test_attach_diagrams_when_handle_resized", async () => {
 test("test_attach_diagrams_when_figures_given", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
-  const { root } = createRoot(
-    `${wrapDirective("er", WIDE_TEXT)}\n\n${wrapDirective("er", WIDE_TEXT)}`,
+  const root = createRootFromHtml(
+    `${mermaidFigure(1100, 400, "d1")}\n${mermaidFigure(1100, 400, "d2")}`,
   );
   root.style.width = "300px";
   root.style.setProperty("--mdmark-padding", "0");

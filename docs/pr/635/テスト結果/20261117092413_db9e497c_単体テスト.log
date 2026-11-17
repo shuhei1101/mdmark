@@ -1,0 +1,25 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/structure.test.ts tests/unit/src/map/check.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/test-tests-unify-test-locations
+
+
+ Test Files  2 passed (2)
+      Tests  20 passed (20)
+   Start at  09:21:58
+   Duration  427ms (tests 83%, transform 11%, import 5%, worker 2%)
+
+
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/test-tests-unify-test-locations
+
+
+ Test Files  300 passed (300)
+      Tests  2268 passed (2268)
+   Start at  09:23:44
+   Duration  16.45s (worker 82%, tests 12%, import 5%, transform 1%)
+

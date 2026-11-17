@@ -1495,3 +1495,11 @@ gitignore:
 refs:
   - ARCH-472-1#
   - CMD-472-1#
+notes:
+  VS Code 拡張機能のテストの置き場所: |-
+    VS Code 拡張機能のテストは、テストを実行する道具ごとに 2 つの置き場所に分ける。
+
+    | 置き場所 | 実行する道具 | 分ける理由 |
+    | --- | --- | --- |
+    | `tests/unit/vscode/`・`tests/integration/vscode/` | 直下の Vitest | 直下の `package.json` の依存（Vitest・Playwright・Storybook）と、`tests/` が共有する補助のコードを使用する。単体と結合は、ほかの対象と同じ層の分け方にする |
+    | `vscode/tests/integration/` | `vscode/` の mocha と `@vscode/test-electron` | `mocha`・`@vscode/test-electron` は `vscode/package.json` だけの依存で、Node は `vscode/` の外のファイルからは `vscode/node_modules/` を探さない。`vscode/scripts/build.ts` が `vscode/` の中の結合テストを `out/test/` にまとめる |

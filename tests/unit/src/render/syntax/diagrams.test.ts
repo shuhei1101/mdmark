@@ -30,18 +30,18 @@ afterEach(async () => {
 // 範囲を図にして、定義の JSON を残さない（正常系）
 test("test_build_diagrams", () => {
   // 準備
-  const markdown = wrapDirective("er", SHOP_ER_TEXT);
+  const markdown = wrapDirective("chart", REPLY_TIME_TEXT);
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
   expect(matches(html, /<figure[^>]*class="mdmark-diagram"/g)).toHaveLength(1);
-  expect(html).not.toContain('"tables"');
+  expect(html).not.toContain('"series"');
 });
 
 // 機能がオフなら、定義をコードブロックのまま描く（正常系）
 test("test_build_diagrams_when_disabled", () => {
   // 準備
-  const markdown = wrapDirective("er", SHOP_ER_TEXT);
+  const markdown = wrapDirective("chart", REPLY_TIME_TEXT);
   // 実行
   const { html } = renderDoc(markdown, { diagrams: false });
   // 検証
@@ -54,7 +54,7 @@ test("test_build_diagrams_when_extension_registered", async () => {
   // 準備
   const { registerExtension, resetExtensions } = await loadExtensions();
   const cases = [
-    { directive: "er", json: SHOP_ER_TEXT },
+    { directive: "chart", json: REPLY_TIME_TEXT },
     { directive: "flow", json: INQUIRY_TEXT },
   ];
   for (const { directive, json } of cases) {
@@ -98,6 +98,7 @@ test("test_build_diagrams_when_retired", () => {
   const markdown = [
     wrapDirective("flow", INQUIRY_TEXT),
     wrapDirective("sequence", INQUIRY_SEQ_TEXT),
+    wrapDirective("er", SHOP_ER_TEXT),
   ].join("\n");
   // 実行
   const results = [
@@ -110,17 +111,19 @@ test("test_build_diagrams_when_retired", () => {
       html,
       /<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g,
     ).map(plainText);
-    expect(warnings).toHaveLength(2);
+    expect(warnings).toHaveLength(3);
     expect(warnings[0]).toContain(
       "<!-- flow --> の図の記載方法は廃止しました。",
     );
     expect(warnings[1]).toContain(
       "<!-- sequence --> の図の記載方法は廃止しました。",
     );
+    expect(warnings[2]).toContain("<!-- er --> の図の記載方法は廃止しました。");
     for (const warning of warnings) {
       expect(warning).toContain("mdmark upgrade");
     }
     expect(html).not.toContain('"nodes"');
+    expect(html).not.toContain('"tables"');
     expect(html).not.toContain("mdmark-diagram");
   }
 });

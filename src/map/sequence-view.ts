@@ -439,7 +439,7 @@ export const attachMapSequence = (
     change({ ...state, order: list });
     figure
       .querySelector<HTMLElement>(
-        `[data-participant="${CSS.escape(id)}"].map-participant`,
+        `[data-participant="${CSS.escape(id)}"].map-participant > .mdmark-diagram-node-hit`,
       )
       ?.focus();
   };

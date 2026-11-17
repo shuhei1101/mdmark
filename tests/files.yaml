@@ -299,14 +299,6 @@ files:
         type: tests
       - to: CMP-472-40
         type: see_also
-  - path: integration/lib/er-diagram.story.test.ts
-    description: 部品設計『ER 図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
-    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
-    related:
-      - to: src/parts/diagram.ts
-        type: tests
-      - to: CMP-472-1
-        type: see_also
   - path: integration/lib/footnote.story.test.ts
     description: 部品設計『脚注の番号』『脚注の一覧』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
     tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:脚注]
@@ -547,6 +539,12 @@ files:
     related:
       - to: migrations/v0.13.0/retired-diagrams.mjs
         type: tests
+  - path: unit/migrations/retired-er.test.ts
+    description: migrations/next/retired-er.mjs（「文書の廃止した er の範囲を map の ER 図の範囲へ書き換える移行の手順」）を確認する単体テスト。retired-er.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:図]
+    related:
+      - to: migrations/next/retired-er.mjs
+        type: tests
   - path: unit/helpers/charts.ts
     description: 単体テストが使用する見本のグラフの定義（棒・円）の JSON を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
@@ -571,8 +569,11 @@ files:
   - path: unit/helpers/retired-document.ts
     description: 単体テストが使用する、廃止した図の範囲を持つ文書と、map の範囲へ書き換えた後の期待値を受け持つ。変換と移行の手順の単体テストの準備を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ, topic:移行]
+  - path: unit/helpers/retired-er-document.ts
+    description: 単体テストが使用する、廃止した ER 図の部品の範囲を持つ文書と、map の ER 図の範囲へ書き換えた後の期待値と移行の報告の項目を受け持つ。ER 図の部品の範囲の変換と移行の手順の単体テストの準備を変えるときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ, topic:移行]
   - path: unit/helpers/er.ts
-    description: 単体テストが使用する、ER 図の部品の定義の見本（モックの shop-er と、列の開閉を確認する定義）を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
+    description: 単体テストが使用する、廃止した ER 図の部品の定義の見本（モックの shop-er と、列の開閉を確認する定義）を受け持つ。ER 図の部品の範囲の移行と廃止の警告の単体テストの準備を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
   - path: unit/helpers/dom.ts
     description: 単体テストで、描いた文書の CSS と描く先の要素をページに配置する処理を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
@@ -826,12 +827,6 @@ files:
     related:
       - to: src/diagram/definition.ts
         type: tests
-  - path: unit/src/diagram/er.test.ts
-    description: src/diagram/er.ts（「ER 図のテーブルの高さ・関係の線の経路」）を確認する単体テスト。er.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
-    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
-    related:
-      - to: src/diagram/er.ts
-        type: tests
   - path: unit/src/diagram/geometry.test.ts
     description: src/diagram/geometry.ts（「収まる倍率・line jump・重なる線のずらし・軸の刻み」）を確認する単体テスト。geometry.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
@@ -939,12 +934,6 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:html]
     related:
       - to: src/interact/embedded-html.ts
-        type: tests
-  - path: unit/src/interact/er-folds.browser.test.ts
-    description: src/interact/er-folds.ts（「ER 図の列の開閉」）を確認するブラウザで実行する単体テスト。er-folds.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
-    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
-    related:
-      - to: src/interact/er-folds.ts
         type: tests
   - path: unit/src/interact/footnotes.browser.test.ts
     description: src/interact/footnotes.ts（「脚注のツールチップの開閉と、番号と末尾の一覧の行き来」）を確認するブラウザで実行する単体テスト。footnotes.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
@@ -1241,12 +1230,6 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
     related:
       - to: src/parts/embed.ts
-        type: tests
-  - path: unit/src/parts/er.test.ts
-    description: src/parts/er.ts（「ER 図のテーブルと多重度の記号」）を確認する単体テスト。er.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
-    tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
-    related:
-      - to: src/parts/er.ts
         type: tests
   - path: unit/src/parts/escape.test.ts
     description: src/parts/escape.ts（「HTML の特別な文字をエスケープする escapeHtml」）を確認する単体テスト。escape.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
@@ -2045,6 +2028,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:図]
     related:
       - to: src/map/check.ts
+        type: tests
+  - path: unit/src/map/structure.test.ts
+    description: src/map/structure.ts を確認する単体テスト。structure.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/structure.ts
         type: tests
   - path: unit/src/map/layout.test.ts
     description: src/map/layout.ts を確認する単体テスト。layout.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
