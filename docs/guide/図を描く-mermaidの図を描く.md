@@ -29,12 +29,12 @@ flowchart LR
 言語を `mermaid` にしたコードブロックが、図の枠に入った図になる。
 front matter の `title` が図の枠のタイトルになり、図の中には重ねて描かない。
 `title` が無ければ `accTitle`、どちらも無ければ図の種類の名前（`フローチャート`・`シーケンス図` など）がタイトルになる。
-`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context` は、map の範囲に入れなくても map の図で描く（機能 `map` がオフのときは mermaid の図で描く）。
+`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`mindmap` は、map の範囲に入れなくても map の図で描く（機能 `map` がオフのときは mermaid の図で描く）。
 説明のツールチップ・案内・配置の上書きを付けるときは、[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md) の map の範囲に入れて補足を記載する。
 次のどれかを持つコードブロックは、map の図にせず、警告を出さずに mermaid の図で描く。
 
 - map が読めない行（`A --o B` など）
-- 見た目を指定する行（`classDef`・`style`・`linkStyle`・`cssClass`・flowchart の `class`）とノードの `:::` のクラスの指定
+- 見た目を指定する行（`classDef`・`style`・`linkStyle`・`cssClass`・flowchart の `class`・mindmap の `::icon()`）とノードの `:::` のクラスの指定
 - `%%{` で始まる設定の行と、front matter の `config`
 
 `gantt`・`pie` など、ほかの種類は mermaid の図で描く。

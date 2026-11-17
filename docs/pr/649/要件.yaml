@@ -52,27 +52,39 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: mindmap の記載方法と、枝の開閉・枝の中へ入る・選択の手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T14:10:41.796936+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: map の節の描ける Mermaid の種類に mindmap を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T14:10:41.796936+00:00'
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: 入れ子の自動配置と別に持つ木の配置と、種類に依らない部分との分け方を追記する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T14:10:41.796936+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: マインドマップで増える用語（枝・枝の中へ入る など）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T14:10:41.796936+00:00'
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: map の範囲の外の mindmap のコードブロックも map の図にすることを、map が描ける種類の一覧に加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T14:10:41.796936+00:00'
   - page: docs/guide/構成図の決まり.mark.md
     new: false
-    change: 木の配置の見た目の決まり（根の置き場所・枝の線・左右の振り分け）を追加するかを確認する
-    status: todo
+    change: 作成者が選ぶ構成図の見た目の決まりのページで、マインドマップの木の配置は自動で作成者が選ぶ見た目が無いため、追加しない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T14:10:41.796936+00:00'
   - page: docs/er/ER-472-2.yaml
     new: false
     change: notes のキーにマインドマップの項目を追加し、layout のうち木の配置で当てるキーを書く
@@ -82,7 +94,9 @@ docs:
   - page: docs/guide/CLI.mark.md
     new: false
     change: ずれの種類の表に `map_ambiguous_ref`（補足のキーが、同じ文字を持つ 2 つ以上のマインドマップの項目を指す）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-17T14:10:41.796936+00:00'
 scope_out:
   - item: gantt・timeline・gitGraph・journey を map で描く（軸に沿った配置と再生）
     reason: 'PR #596 のレビューで配置の処理ごとに切り出した別の Issue の範囲'
