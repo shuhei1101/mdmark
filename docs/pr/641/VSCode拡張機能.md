@@ -31,5 +31,5 @@
 | [vscode/tests/integration/stub-server.ts](https://github.com/shuhei1101/mdmark/blob/e2d0e7d88db58a00b297bff6934c8a20b505fe57/vscode/tests/integration/stub-server.ts) | VS Code 拡張機能の結合テスト一式（VS Code 1.141.0） | 変更 | ❌ | 81 件 pass・2 件 fail（`export.test.ts` の `test_normal_when_relative_mermaid`・`preview-open.test.ts` の `test_normal_when_mermaid`）<br>`テスト結果/20261117150901_a879fd81_結合テスト.log` |
 
 fail した 2 件は、どちらも mermaid の読み込み・書き出しの確認で、代役のサーバーのタグ一覧・配布物の振り分けを通らない（mermaid は別の代役のサーバーと手元の `node_modules/mermaid` から読み込む）。
-`stub-server.ts` だけを origin/develop の内容に戻して同じコマンドを実行しても、同じ 2 件が同じエラーで fail した（ログの「切り分け」の節）。この 2 件は base ブランチの不具合で、この PR の変更によるものではないため、スコープ外に記載した。
+`stub-server.ts` だけを origin/develop の内容に戻して同じコマンドを実行しても、同じ 2 件が同じエラーで fail した（ログの「切り分け」の節）。この 2 件は base ブランチの不具合で、この PR の変更によるものではないため、[Issue #642](https://github.com/shuhei1101/mdmark/issues/642) に切り出してスコープ外に記載した。
 fail で 1.141.0 の実行が終わったため、stable の VS Code では実行していない。

@@ -19,3 +19,6 @@ scope_out:
   - item: テストコードに当てる閾値を src/ などと別の値にすること
     reason: 要望は src/ などと同じ 4 規則・同じ閾値の適用で、閾値の根拠（MOD-472-41 の閾値）はテストコードでも変わらない
     plan: none
+  - item: VS Code 拡張機能の結合テストの mermaid の 2 件（export.test.ts の test_normal_when_relative_mermaid・preview-open.test.ts の test_normal_when_mermaid）の fail
+    reason: origin/develop の stub-server.ts に戻しても同じ 2 件が fail する base ブランチの不具合で、この PR の変更によるものではない
+    plan: '#642'
