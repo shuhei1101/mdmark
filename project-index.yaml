@@ -444,7 +444,15 @@ nav:
             - auto: {document: interface}
         - group: モジュール構成
           items:
-            - auto: {document: module}
+            - group: ライブラリ本体
+              items:
+                - auto: {document: module, filter: {field: name, op: prefix, values: ['ライブラリ本体 /']}}
+            - group: VS Code 拡張機能
+              items:
+                - auto: {document: module, filter: {field: name, op: prefix, values: ['VS Code 拡張機能 /']}}
+            - group: Claude Code プラグイン
+              items:
+                - auto: {document: module, filter: {field: name, op: prefix, values: ['ClaudeCodeプラグイン /']}}
         - group: 部品設計
           items:
             - auto: {document: component}
@@ -453,7 +461,21 @@ nav:
             - auto: {document: screen}
         - group: モック
           items:
-            - auto: {document: mock}
+            - group: assets
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/assets/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: components
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/components/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: pages
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/pages/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: refs
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/refs/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: styles
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/styles/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
         - group: 設定
           items:
             - auto: {document: config}
@@ -479,7 +501,87 @@ nav:
       items:
         - group: ライブラリ本体
           items:
-            - auto: {document: src}
+            - group: 直下
+              items:
+                - auto: {document: src, filter: {field: id, op: regex, values: ['^src/[^/]+$']}}
+            - group: callout
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/callout/]}}
+            - group: card
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/card/]}}
+            - group: cli
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/cli/]}}
+            - group: code-block
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/code-block/]}}
+            - group: comments
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/comments/]}}
+            - group: diagram
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/diagram/]}}
+            - group: diff
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/diff/]}}
+            - group: embedded-html
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/embedded-html/]}}
+            - group: figure
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/figure/]}}
+            - group: footnote
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/footnote/]}}
+            - group: frontmatter
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/frontmatter/]}}
+            - group: inline
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/inline/]}}
+            - group: knowledge
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/knowledge/]}}
+            - group: layout
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/layout/]}}
+            - group: map
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/map/]}}
+            - group: media
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/media/]}}
+            - group: plugin
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/plugin/]}}
+            - group: render
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/render/]}}
+            - group: section
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/section/]}}
+            - group: shared
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/shared/]}}
+            - group: steps
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/steps/]}}
+            - group: table
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/table/]}}
+            - group: tabs
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/tabs/]}}
+            - group: tree
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/tree/]}}
+            - group: viewer
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/viewer/]}}
+            - group: views
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/views/]}}
         - group: VS Code 拡張機能
           items:
             - auto: {document: vscode}
@@ -497,7 +599,18 @@ nav:
             - auto: {document: init_templates}
         - group: テスト
           items:
-            - auto: {document: tests}
+            - group: 直下
+              items:
+                - auto: {document: tests, filter: {field: id, op: regex, values: ['^tests/[^/]+$']}}
+            - group: fixtures
+              items:
+                - auto: {document: tests, filter: {field: id, op: prefix, values: [tests/fixtures/]}}
+            - group: integration
+              items:
+                - auto: {document: tests, filter: {field: id, op: prefix, values: [tests/integration/]}}
+            - group: unit
+              items:
+                - auto: {document: tests, filter: {field: id, op: prefix, values: [tests/unit/]}}
         - group: Storybook の設定
           items:
             - auto: {document: storybook}
