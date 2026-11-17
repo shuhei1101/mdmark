@@ -16,8 +16,8 @@
   <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
   <!-- 図の部品の規則（#42 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
-  <!-- 図の枠を指で動かすときの規則（#508 で共有するアセット） -->
-  <link rel="stylesheet" href="../../refs/508/assets/touch.css">
+  <!-- 図の右上に重ねるボタンのパネルの規則（#659 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/659/assets/panel.css">
   <!-- 狭い枠の見本の幅（図の枠の部品のモックと同じ） -->
   <link rel="stylesheet" href="../diagram-frame/style.css">
   <!-- 配色の切り替え -->
@@ -26,8 +26,6 @@
   <script src="../../refs/42/assets/samples.js" defer></script>
   <script src="../../refs/308/assets/samples.js" defer></script>
   <script src="../../refs/42/assets/diagram.js" defer></script>
-  <!-- 図の余白のタップで操作中にする（#508 で共有するアセット） -->
-  <script src="../../refs/508/assets/touch.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: 配色の切り替え -->
@@ -42,28 +40,28 @@
     <div class="catalog">
       <h1 class="catalog-title">図の枠を指で動かす</h1>
 
-      <!-- タップする前: 縦の指のドラッグは文書のスクロール、横の指のドラッグは図の移動（今のまま） -->
-      <section aria-labelledby="state-before">
-        <h2 class="catalog-label" id="state-before">タップする前（縦のドラッグは文書のスクロール。横のドラッグは図を動かす）</h2>
-        <article class="mdmark catalog-narrow">
+      <!-- 開いたときの倍率: 縦の指のドラッグは文書のスクロール。横の指のドラッグは、枠に収まらない分だけ図を動かす -->
+      <section aria-labelledby="state-fit">
+        <h2 class="catalog-label" id="state-fit">開いたときの倍率（縦のドラッグは文書のスクロール。横のドラッグは枠に収まらない分だけ図を動かす）</h2>
+        <!-- [data-mock-panel]: panel.css がこの中の図のパネルを推奨の案 A にする（モックだけの指定） -->
+        <article class="mdmark catalog-narrow" data-mock-panel="a">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="0.6" data-mock-scroll="0,0"></figure>
+        </article>
+      </section>
+
+      <!-- 拡大した: 余白をタップしなくても、指 1 本で縦にも横にも図を動かす。枠線は変えない。指を離さずに図の端を越えた分は文書のスクロールになる -->
+      <section aria-labelledby="state-zoomed">
+        <h2 class="catalog-label" id="state-zoomed">拡大した（指 1 本で縦にも横にも図を動かす。枠線は変えない。指を離さずに図の端を越えた分は文書のスクロール）</h2>
+        <article class="mdmark catalog-narrow" data-mock-panel="a">
           <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
         </article>
       </section>
 
-      <!-- 操作中: 図の余白をタップした後。枠線を強い色にし、縦にも横にも指で図を動かす。図の外のタップで解く -->
-      <section aria-labelledby="state-active">
-        <h2 class="catalog-label" id="state-active">操作中（図の余白をタップした後。縦にも横にも指で図を動かす。図の外をタップすると解く）</h2>
-        <article class="mdmark catalog-narrow">
-          <!-- [data-mock-touch-active]: touch.js が描いた直後から操作中にする（モックだけの指定） -->
-          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90" data-mock-touch-active></figure>
-        </article>
-      </section>
-
-      <!-- 操作中（広い枠）: 同じ見た目を PC の幅でも確認する -->
-      <section aria-labelledby="state-active-wide">
-        <h2 class="catalog-label" id="state-active-wide">操作中（広い枠）</h2>
-        <article class="mdmark">
-          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90" data-mock-touch-active></figure>
+      <!-- ピンチで拡大した: 2 本の指の中点を保って倍率を変える。パネルの倍率の表示がピンチで変えた倍率に合う -->
+      <section aria-labelledby="state-pinched">
+        <h2 class="catalog-label" id="state-pinched">ピンチで拡大した（2 本の指の中点を保って倍率を変え、パネルの倍率の表示が合う）</h2>
+        <article class="mdmark catalog-narrow" data-mock-panel="a">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="2" data-mock-scroll="400,150"></figure>
         </article>
       </section>
     </div>

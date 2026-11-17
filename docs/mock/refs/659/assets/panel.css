@@ -1,0 +1,58 @@
+/* 図の右上に重ねるボタンのパネルのモックの規則（#659） */
+
+/* パネル: 拡大・縮小・倍率・全画面（拡大中は移動）のボタンを、表示する枠の右上に重ねる。
+   ボタンの行の下の線を描かず、パネルの線と角丸だけで区切る（入れ子の角丸は外側 = 内側 + 余白） */
+.mdmark-diagram-tools {
+  position: absolute;
+  inset-block-start: 0.375rem;
+  inset-inline-end: 0.375rem;
+  z-index: 2;
+  max-inline-size: calc(100% - 0.75rem);
+  gap: 0.125rem 0.375rem;
+  padding: 0.125rem;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: calc(var(--mdmark-radius) + 0.125rem);
+  background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
+}
+
+/* パネルの中のボタン: パネルの線で囲むので、ボタンごとの線を描かない（枠の中に枠を入れない） */
+.mdmark-diagram-tools .mdmark-diagram-tool {
+  border-color: transparent;
+  background: transparent;
+}
+
+/* パネルの中のまとまりの区切り: まとまりの間だけ 1px の線を引き、押せない隙間を作らない */
+.mdmark-diagram-tools-group + .mdmark-diagram-tools-group:not([hidden]) {
+  padding-inline-start: 0.375rem;
+  border-inline-start: 1px solid var(--mdmark-color-border);
+}
+
+/* 表示する枠: 角丸を上下とも枠に合わせる（上の行が無くなるため） */
+.mdmark-diagram-viewport {
+  border-radius: var(--mdmark-radius);
+}
+
+/* 案 A（図の上にパネルの高さの余白を取る）: 開いたときの倍率で図の内容がパネルに隠れない。拡大中は図がパネルの下を通る */
+[data-mock-panel="a"] .mdmark-diagram-sizer {
+  margin-block-start: 2.5rem;
+}
+
+/* 案 B（半透明のパネル）: パネルの下の図の内容を透かして見せる */
+[data-mock-panel="b"] .mdmark-diagram-tools {
+  background: color-mix(in srgb, var(--mdmark-color-bg-opaque, var(--mdmark-color-bg)) 72%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+/* 案 C（畳んだパネル）: 倍率の表示と、パネルを開くボタンだけを出す。開くと案 A と同じボタンを並べる */
+[data-mock-panel="c"] .mdmark-diagram-tools:not([data-mock-open]) .mdmark-diagram-tools-group:not([data-group="zoom"], [data-group="more"]),
+[data-mock-panel="c"] .mdmark-diagram-tools:not([data-mock-open]) [data-group="zoom"] .mdmark-diagram-tool:not(.mdmark-diagram-zoom) {
+  display: none;
+}
+
+[data-mock-panel="c"] .mdmark-diagram-tools-group[data-group="more"] {
+  display: flex;
+}
+
+.mdmark-diagram-tools-group[data-group="more"] {
+  display: none;
+}

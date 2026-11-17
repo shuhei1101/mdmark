@@ -21,7 +21,8 @@
 | [csv-table](./csv-table/index.html) | 言語 `csv` のコードブロックを描いた表と、右端の RAW のボタンで元の CSV に切り替えた状態・マーカーの無い csv・列の数がそろわない記載の警告 |
 | [details-range](./details-range/index.html) | `details` のマーカーで囲んだ範囲の折りたたみ（閉じた・開いた・長いタイトル）と、閉じのマーカーが無い記載の警告 |
 | [diagram-frame](./diagram-frame/index.html) | 図のタイトル・範囲・更新日・凡例と、右上の拡大・縮小のボタン、押すと戻る倍率のボタンと移動のボタン、2 種類以上ある種類だけの凡例と凡例の項目が無い図、右下のリサイズハンドルと高さを変えた図・機能がオフの図 |
-| [diagram-frame-touch](./diagram-frame-touch/index.html) | 図の枠を指で動かすときの、タップする前と、図の余白をタップした後の操作中（枠線を強い色の 2px にする） |
+| [diagram-frame-panel](./diagram-frame-panel/index.html) | 図の右上に重ねる拡大・縮小・倍率・全画面のボタンのパネルの案（図の上に余白を取る・半透明・畳む）と、拡大した図・最大の倍率・狭い枠・縦に長い図 |
+| [diagram-frame-touch](./diagram-frame-touch/index.html) | 図の枠を指で動かすときの、開いたときの倍率と、指 1 本で縦横に動かす拡大した図・ピンチで拡大した図 |
 | [diagram-tooltip](./diagram-tooltip/index.html) | 図の矢印の詳細・ノードの入力・処理・出力・ノードの hint・ノードの中の用語のツールチップと、ヒントを削除した図、システムの枠と層のタイトルの hint、グラフの点・棒・円・散布図の項目のツールチップ |
 | [diff-blocks](./diff-blocks/index.html) | 描いた文書の上の差分の色分けで、追加・変更したブロックと削除したブロックを段落・見出し・表の行・リストの項目・コードブロック・注意書き・長い URL ごとに、案 A（左の余白の記号）と案 B（枠と右上の札）で並べたもの |
 | [diff-html-switch](./diff-html-switch/index.html) | 差分の中の埋め込んだ HTML の範囲を、ソースの色分けとプレビューの前と後で切り替える見方のボタンと、片側にだけある・変えていない・スクリプトを記載した範囲 |
