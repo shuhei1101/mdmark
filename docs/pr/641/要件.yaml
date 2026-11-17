@@ -1,0 +1,17 @@
+use_cases: []
+docs:
+  - page: docs/library/LIB-472-12.yaml
+    new: false
+    change: コマンド `eslint -c tools/eslint/eslint.config.js --max-warnings 0` の purpose の、複雑さの規則を適用する範囲に `tests/`・`vscode/tests/` を足す
+    status: todo
+  - page: docs/test-procedure/TP-472-1.yaml
+    new: false
+    change: lint の説明の、ESLint が複雑さの規則を適用する範囲に `tests/`・`vscode/tests/` を足す
+    status: todo
+scope_out:
+  - item: テストコードへの、複雑さ以外の ESLint の規則（React・アクセシビリティ・import の向き・Tailwind・記載方法）の適用
+    reason: 要望は複雑さの 4 規則の適用だけで、他の規則は Webview だけに当てる設計（MOD-472-41 の適用の範囲）を変えない
+    plan: none
+  - item: テストコードに当てる閾値を src/ などと別の値にすること
+    reason: 要望は src/ などと同じ 4 規則・同じ閾値の適用で、閾値の根拠（MOD-472-41 の閾値）はテストコードでも変わらない
+    plan: none
