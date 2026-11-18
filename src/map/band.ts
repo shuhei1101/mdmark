@@ -81,15 +81,11 @@ export const createFollow = (
         )
         .filter((element): element is HTMLElement => element !== null);
       if (!zoom || elements.length === 0) return;
-      // 倍率を掛ける前の中身の座標にする
+      // 倍率を掛ける前の中身の座標にする（倍率を掛けた中身の矩形を基準にする）
+      const stage = viewport.querySelector<HTMLElement>("[style*='scale(']");
+      const base = (stage ?? viewport).getBoundingClientRect();
       const scale =
-        Number(
-          /scale\(([^)]+)\)/.exec(
-            viewport.querySelector<HTMLElement>("[style*='scale(']")?.style
-              .transform ?? "",
-          )?.[1] ?? "1",
-        ) || 1;
-      const view = viewport.getBoundingClientRect();
+        stage && stage.offsetWidth > 0 ? base.width / stage.offsetWidth : 1;
       const rects = elements.map((element) => element.getBoundingClientRect());
       const left = Math.min(...rects.map((r) => r.left));
       const top = Math.min(...rects.map((r) => r.top));
@@ -97,8 +93,8 @@ export const createFollow = (
       const bottom = Math.max(...rects.map((r) => r.bottom));
       zoom.focusRect(
         {
-          x: (left - view.left + viewport.scrollLeft) / scale,
-          y: (top - view.top + viewport.scrollTop) / scale,
+          x: (left - base.left) / scale,
+          y: (top - base.top) / scale,
           width: (right - left) / scale,
           height: (bottom - top) / scale,
         },

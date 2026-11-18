@@ -242,6 +242,9 @@ const argumentsOf = (text: string): string[] =>
     (match[1] ?? match[2] ?? "").trim(),
   );
 
+/** 別名として読める文字（空白・引用符を含まない） */
+const ALIAS_RE = /^[^\s"'(),{}]+$/;
+
 /** 読めない行の項目 */
 const unreadable = (line: number, raw: string): MapProblem => ({
   kind: "map_invalid",
@@ -262,7 +265,8 @@ type C4Call = { name: string; values: string[]; open: boolean; line: number };
 const readBoundary = (reading: C4Reading, call: C4Call): boolean => {
   const kind = BOUNDARIES[call.name];
   const [id, label, technology] = call.values;
-  if (kind === undefined || id === undefined) return false;
+  if (kind === undefined || id === undefined || !ALIAS_RE.test(id))
+    return false;
   const boundary: C4Boundary = {
     id,
     label: label ?? id,
@@ -288,7 +292,7 @@ const readElement = (reading: C4Reading, call: C4Call): boolean => {
   const technical =
     kind.startsWith("container") || kind.startsWith("component");
   const [id, label, third, fourth] = call.values;
-  if (id === undefined) return false;
+  if (id === undefined || !ALIAS_RE.test(id)) return false;
   reading.diagram.elements.push({
     id,
     label: label ?? id,
@@ -310,7 +314,14 @@ const readRelation = (reading: C4Reading, call: C4Call): boolean => {
   const values =
     relation?.[3] === undefined ? call.values : call.values.slice(1);
   const [from, to, label, technology] = values;
-  if (!relation || from === undefined || to === undefined) return false;
+  if (
+    !relation ||
+    from === undefined ||
+    to === undefined ||
+    !ALIAS_RE.test(from) ||
+    !ALIAS_RE.test(to)
+  )
+    return false;
   const { relations } = reading.diagram;
   relations.push({
     id: `r${relations.length + 1}`,
