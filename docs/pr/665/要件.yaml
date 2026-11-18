@@ -11,4 +11,4 @@ scope_out:
     plan: '#666'
   - item: map のストーリーの結合テスト（map-class・map-state・map-er・map-c4・map-architecture・map-mindmap・map-axis-grid）がそれぞれ持つ `Box`・`overlaps` を、`tests/integration/story.ts` に置いた共用のものへ寄せ替える
     reason: 説明のマーカーの大きさと関係の無いテストの整理で、寄せ替えると 7 ファイルの結合テストを実行範囲に加えることになる。この PR で追加した共用の `overlaps` を前提にする
-    plan: to_file
+    plan: '#667'
