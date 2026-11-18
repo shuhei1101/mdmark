@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import { renderTableTools } from "../../../../src/table/table.part.ts";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
 
 /** 列の幅を自動で決める処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
@@ -427,6 +428,18 @@ const expectHeadToolsFit = (headCells: HTMLTableCellElement[]): void => {
   }
 };
 
+/** 見出しのセルに、描いた後の表と同じ並べ替え・ピン止めのボタンとつまみを入れる（ピン止めのボタンは `hidden`） */
+const insertHeadTools = (headCells: HTMLTableCellElement[]): void => {
+  headCells.forEach((cell, column) => {
+    cell.innerHTML = renderTableTools({
+      id: "t",
+      column,
+      label: cell.textContent?.trim() ?? "",
+      features: ["sort", "pin", "resize"],
+    }).header;
+  });
+};
+
 /** ピン止めのボタンの `hidden` を外す（表がはみ出してボタンを出した状態にする） */
 const showPins = (root: HTMLElement): void => {
   for (const pin of root.querySelectorAll<HTMLElement>(".mdmark-pin")) {
@@ -441,8 +454,9 @@ test("test_attach_auto_column_widths_when_head_tools_wider", async () => {
   const { attachAutoColumnWidths } = await loadTableWidth();
   const { root } = createRoot(plainTable(10));
   setRootWidth(root, 320);
-  showPins(root);
   const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
+  showPins(root);
   // 実行
   const handle = attachAutoColumnWidths(table, {
     wrapper,
@@ -466,6 +480,7 @@ test("test_attach_auto_column_widths_when_pin_hidden", async () => {
   const { root } = createRoot(plainTable(3));
   setRootWidth(root, 1200);
   const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
   expect(
     [...root.querySelectorAll<HTMLElement>(".mdmark-pin")].every(
       (pin) => pin.hidden,
