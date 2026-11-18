@@ -106,7 +106,7 @@ functions:
         summary: 取り除く関数で変数と印を外す
         condition: 付けた後に `detach` を呼び、包む要素の幅を変える
         mock: なし
-        expected: 表と見出しのセルに `--mdmark-auto-width`・`--mdmark-auto-table-width`・`data-auto-width` が無く、幅を変えても入らない
+        expected: 表と見出しのセルに `--mdmark-auto-width`・`--mdmark-auto-table-width`・`--mdmark-column-head-width`・`data-auto-width` が無く、幅を変えても入らない
       - name: test_attach_auto_column_widths_when_head_tools_wider
         case: 正常
         summary: 見出しの列名・並べ替え・ピン止めのボタンが収まる幅より列を狭くしない
