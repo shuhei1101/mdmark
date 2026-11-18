@@ -4,17 +4,20 @@ files:
     description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「vscode-v* のタグで .vsix を作り Release に添える」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに参照する。
     tags: [tool:vscode, topic:ci]
     related:
-      - to: docs/module/MOD-472-83.yml
+      - to: MOD-472-83
         type: implements
   - path: workflows/develop-dist.yml
     description: develop への push で配布物（`dist/`・`plugin/` の生成物）を `--develop` でビルドし、差分があれば develop へ commit する。develop の配布物の作り方を変えるときに参照する。
     tags: [topic:ci, topic:配布物, action:ビルド]
     related:
-      - to: docs/interface/IF-472-41.ts.yaml
+      - to: IF-472-41
         type: implements
   - path: workflows/test.yml
     description: インターフェース定義『テストの全件実行』の workflow を受け持ち、テスト実行方法の実行場所が runner の層をランナーで回す方法を変えるときに参照する。
     tags: [topic:ci, topic:テスト, topic:単体テスト, topic:結合テスト, action:実行]
     related:
-      - to: docs/interface/IF-472-44.yaml
+      - to: IF-472-44
         type: implements
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []

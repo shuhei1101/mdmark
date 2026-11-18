@@ -221,3 +221,4 @@ requirements:
 tags:
   - name: topic:要件
     main: true
+lead: 外部の制約から逆算した mdmark の決定値（動作環境・上限・所要時間など）を定め、これらの値を決める・変えるときに参照する。

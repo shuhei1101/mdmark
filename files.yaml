@@ -1,0 +1,142 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
+files:
+  - path: .gitignore
+    visibility: internal
+    description: 依存・ビルドの成果物・テストの記録など、Git の追跡から除外するファイルの一覧を受け持つ。追跡しないファイルを追加・修正するときに参照する。
+    tags: [topic:gitignore, tool:git]
+    related:
+      - to: LAY-472-1
+        type: see_also
+  - path: CHANGELOG.md
+    visibility: internal
+    description: バージョンごとの変更の一覧を受け持つ。リリースで入った変更を確認するときに参照する。
+    tags: [topic:バージョン, topic:変更履歴]
+  - path: CLAUDE.md
+    visibility: internal
+    description: Claude Code のセッションに参照させるリポジトリの概要とドキュメントの場所・作業の決まりを受け持つ。エージェントへの案内を修正するときに参照する。
+    tags: [topic:エージェント, tool:claude-code]
+    related:
+      - to: LAY-472-1
+        type: see_also
+  - path: LICENSE
+    visibility: internal
+    description: mdmark のライセンスの条文を受け持つ。配布物の利用条件を確認するときに参照する。
+    tags: [topic:ライセンス]
+  - path: README.md
+    visibility: internal
+    description: mdmark の概要・導入・ドキュメントへのリンクを受け持つ。リポジトリの紹介の文を修正するときに参照する。
+    tags: [topic:readme]
+  - path: ai-monitor-theme.yaml
+    visibility: internal
+    description: 公開ドキュメントのサイトのテーマを AI Monitor の配布物から取り込む取り込み方とバージョンを受け持つ。サイトのテーマの取り込み元を変えるときに参照する。
+    tags: [topic:テーマ, tool:ai-monitor]
+  - path: ai-monitor-version.ini
+    visibility: internal
+    description: このリポジトリが追従している AI Monitor の配布物のバージョンを受け持つ。AI Monitor の配布物へ追従するときに参照する。
+    tags: [topic:バージョン, tool:ai-monitor]
+  - path: biome.json
+    visibility: internal
+    description: Biome の lint と formatter の設定を受け持つ。lint の規則や整形の決まりを変えるときに参照する。
+    tags: [topic:lint, tool:biome]
+    related:
+      - to: TP-472-1
+        type: see_also
+  - path: package.json
+    visibility: internal
+    description: ライブラリ本体と CLI の依存・npm のスクリプト・配布物のエントリーポイントを受け持つ。依存の追加・更新や開発のコマンドを変えるときに参照する。
+    tags: [topic:依存, tool:npm]
+    related:
+      - to: CMD-472-1
+        type: see_also
+  - path: project-index.yaml
+    visibility: internal
+    description: 配信元 mdmark の設定（検索の対象の文書の行・メタデータの取り出し方・dev-docs の画面のタブとサイドバー）を受け持つ。配信する文書の範囲や画面の並びを変えるときに参照する。
+    tags: [topic:配信, tool:project-index, tool:dev-docs]
+    related:
+      - to: LAY-472-1
+        type: see_also
+  - path: rules.yaml
+    visibility: internal
+    description: 公開ドキュメントに適用する rule-inject のルールの設定（適用する契機と、ルールの一覧）。公開ドキュメントを記載するときに案内するルールを変えるときに参照する。
+    tags: [topic:ルール, tool:rule-inject]
+  - path: tsconfig.dist.json
+    visibility: internal
+    description: 配布物の型の宣言を書き出す TypeScript の設定を受け持つ。配布物の型の宣言の出し方を変えるときに参照する。
+    tags: [tool:typescript, topic:ビルド]
+  - path: tsconfig.json
+    visibility: internal
+    description: ライブラリ本体・CLI・テストの型検査の TypeScript の設定を受け持つ。型検査の対象や厳しさを変えるときに参照する。
+    tags: [tool:typescript, topic:型]
+  - path: version.ini
+    visibility: internal
+    description: mdmark のバージョンを受け持つ。リリースでバージョンを上げるときに参照する。
+    tags: [topic:バージョン]
+  - path: vitest.config.ts
+    visibility: internal
+    description: Vitest の単体テストと結合テストのプロジェクト（Node とブラウザ）の設定を受け持つ。テストの実行の範囲や環境を変えるときに参照する。
+    tags: [topic:テスト, tool:vitest]
+    related:
+      - to: TP-472-1
+        type: see_also
+  - path: tools/eslint/eslint.config.js
+    visibility: internal
+    description: Biome で検査しない規則（依存の向き・アクセシビリティ・Tailwind のクラスなど）を ESLint で検査する設定を受け持つ。ESLint の規則を変えるときに参照する。
+    tags: [topic:lint, tool:eslint]
+    related:
+      - to: TP-472-1
+        type: see_also
+  - path: tools/eslint/package.json
+    visibility: internal
+    description: ESLint と規則のプラグインの依存を、ライブラリ本体の依存と分けて受け持つ。ESLint の依存を追加・更新するときに参照する。
+    tags: [topic:依存, tool:eslint, tool:npm]
+  - path: .claude-plugin/marketplace.json
+    visibility: internal
+    description: このリポジトリを Claude Code のマーケットプレイスとして追加したときに出す、プラグイン mdmark の一覧を受け持つ。プラグインの入れ方や説明を変えるときに参照する。
+    tags: [topic:プラグイン, tool:claude-code]
+  - path: docs/_theme/_includes/sidebar-source.html
+    visibility: public
+    description: 公開ドキュメントのサイトで、サイドバーの元になる目次の表を隠し要素として埋める Jekyll の部品。サイドバーに出す項目の決め方を変えるときに参照する。
+    tags: [topic:サイドバー, topic:ナビゲーション, tool:html]
+  - path: docs/_theme/_includes/tab-link.html
+    visibility: public
+    description: 公開ドキュメントのサイトで、上部のタブを 1 つ出す Jekyll の部品。タブの出し方や種別の決め方を変えるときに参照する。
+    tags: [topic:タブ, topic:ナビゲーション, tool:html]
+  - path: docs/_theme/_layouts/default.html
+    visibility: public
+    description: 公開ドキュメントのサイトの全ページに共通のレイアウト。ページの骨組み・読み込むスクリプトと CSS を変えるときに参照する。
+    tags: [topic:レイアウト, tool:html]
+  - path: docs/_theme/assets/app.js
+    visibility: public
+    description: 公開ドキュメントのサイトの全ページで読み込む共通のスクリプト。サイトのタブ・サイドバー・図の振る舞いを変えるときに参照する。
+    tags: [topic:ナビゲーション, tool:javascript]
+  - path: docs/_theme/assets/style.css
+    visibility: public
+    description: 公開ドキュメントのサイトの全ページで読み込む共通の外観。サイトの外観を変えるときに参照する。
+    tags: [topic:スタイル, tool:css]
+  - path: docs/index.md
+    visibility: public
+    description: 公開ドキュメントのサイトのトップページ。上タブの分類への入口を変えるときに参照する。
+    tags: [topic:ナビゲーション]
+  - path: docs/design-policy.md
+    visibility: internal
+    description: mdmark が描く文書の既定の外観に経由するデザインの方向性（採用スタイルと、外観の決まり）を受け持つ。部品やテーマの外観を決めるときに参照する。
+    tags: [topic:デザイン, topic:デザインスタイル, topic:テーマ]
+  - path: docs/_config.yml
+    visibility: internal
+    description: 公開ドキュメントのサイトを GitHub Pages の Jekyll で組み立てる設定（タイトル・baseurl・レイアウトの置き場所）を受け持つ。サイトの組み立て方を変えるときに参照する。
+    tags: [topic:設定, tool:jekyll]
+  - path: docs/_theme/_data/nav.yml
+    visibility: internal
+    description: 公開ドキュメントのサイトの上タブの並びと、実体を持たないタブの行き先を受け持つ。サイトのタブを変えるときに参照する。
+    tags: [topic:タブ, topic:ナビゲーション]
+  - path: docs/_theme/llms.txt
+    visibility: internal
+    description: 公開ドキュメントのサイトで、全ての目次の表からページのパスと概要を 1 行 1 ページで並べた llms.txt を組み立てる Jekyll のテンプレート。AI に渡すページの一覧の出し方を変えるときに参照する。
+    tags: [topic:ナビゲーション, tool:jekyll]
+  - path: docs/_theme/search.json
+    visibility: internal
+    description: 公開ドキュメントのサイトで、全ページの見出しごとの検索の項目を並べた JSON を組み立てる Jekyll のテンプレート。サイトの検索の対象を変えるときに参照する。
+    tags: [topic:検索, tool:jekyll]
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []

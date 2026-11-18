@@ -342,3 +342,6 @@ files:
     category: リファレンス
     description: マーカー・記法・テーマ・機能などの用語の意味の一覧を持ち、ガイドに出てくる用語の意味を確認するときに参照する。
     tags: [topic:リファレンス, topic:用語]
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []
