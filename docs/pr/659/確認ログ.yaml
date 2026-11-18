@@ -47,3 +47,8 @@ confirmations:
     approver: shuhei1101
     commit: '218e0448'
     thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4609171904
+  - topic: スマホ幅でライトボックスを拡大すると上のバーが折り返す件の扱い
+    decision: この PR でライトボックスの移動のボタンも削除し、拡大中の移動は図と同じくドラッグ（指を含む）と矢印キーで行う（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4610892503
