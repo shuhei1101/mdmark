@@ -15592,10 +15592,14 @@ test("test_normal_when_unmarked_table_sorted", async () => {
   // 検証
   expect(columnTexts(table, 0)).toEqual(["33", "10", "2"]);
   expect(itemAt(heads, 0).getAttribute("aria-sort")).toBe("descending");
-  // 実行・検証: 3 列目の見出しにポインターを乗せている間だけ見える
-  await userEvent.hover(itemAt(heads, 2));
+  // 実行・検証: 3 列目の見出しにポインターを乗せている間だけ見える（見出しの中の並べ替えのボタンに乗せる）
+  const thirdSort = find<HTMLButtonElement>(
+    itemAt(heads, 2),
+    "button.mdmark-sort",
+  );
+  await userEvent.hover(thirdSort);
   await vi.waitFor(() => expect(pinShown(third)).toBe(true));
-  await userEvent.unhover(itemAt(heads, 2));
+  await userEvent.unhover(thirdSort);
   await vi.waitFor(() => expect(pinShown(third)).toBe(false));
   // 実行・検証: 3 列目のピン止めにフォーカスがある間だけ見える
   third.focus();
