@@ -646,6 +646,50 @@ test("test_attach_zoom_when_wheel", async () => {
   expect(withCtrl.defaultPrevented).toBe(false);
 });
 
+// 拡大中の Shift＋ホイールは、縦の量のまま届いても表示する枠を横に動かす（正常系）
+test("test_attach_zoom_when_shift_wheel", async () => {
+  // 準備
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `<div class="scroller" style="height: 300px; overflow-y: auto"><div style="height: 2000px">${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 200px; overflow: auto"><div class="sizer"><div class="content" style="width: 600px; height: 200px"></div></div></div></div></div>`,
+  );
+  const scroller = root.querySelector(".scroller") as HTMLElement;
+  const tools = root.querySelector(".tools") as HTMLElement;
+  const viewport = root.querySelector(".viewport") as HTMLElement;
+  const content = root.querySelector(".content") as HTMLElement;
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 600, height: 200 },
+    tools,
+    wheelToScroller: true,
+  });
+  detachers.push(() => zoom.detach());
+  const wheel = (init: WheelEventInit) => {
+    const event = new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    });
+    viewport.dispatchEvent(event);
+    return event;
+  };
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  viewport.scrollLeft = 0;
+  const scrollerTop = scroller.scrollTop;
+  // 実行: 縦の量のまま届く Shift＋ホイールと、横の量で届く Shift＋ホイール
+  const vertical = wheel({ deltaY: 100, shiftKey: true });
+  const afterVertical = viewport.scrollLeft;
+  const horizontal = wheel({ deltaX: 50, shiftKey: true });
+  // 検証
+  expect(vertical.defaultPrevented).toBe(true);
+  expect(afterVertical).toBe(100);
+  expect(horizontal.defaultPrevented).toBe(true);
+  expect(viewport.scrollLeft).toBe(150);
+  expect(scroller.scrollTop).toBe(scrollerTop);
+});
+
 // 単位ごとに px に直す（正常系）
 test("test_wheel_delta", async () => {
   // 準備
