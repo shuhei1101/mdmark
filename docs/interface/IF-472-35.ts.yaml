@@ -9935,7 +9935,7 @@ flows:
     summary: マーカーの無い表に並べ替えを付け、ポインターを乗せられる端末では押していないピン止めのボタンを見出しにポインターかフォーカスがある間だけ見せる。列の最小幅を見出しの中身が収まる幅より狭くしない
     setup:
       - name: 配布物を読み込んだページ
-        description: '正常系と同じ。描く先の `div` の幅は 480px。ポインターを乗せられる端末（`(hover: hover)` が当たる）と、タッチの端末（`hasTouch`、`(hover: none)`）の 2 つで描く'
+        description: '正常系と同じ。描く先の `div` の幅は 480px。ポインターを乗せられる端末（`(hover: hover)` が当たる）で描く'
       - name: マーカーの無い表を持つ Markdown
         description: 'マーカーで囲まない、列名 `列 1`〜`列 10` の 10 列 3 行の表（1 列目は値 `10`・`2`・`33`、ほかは 20 文字未満の文字）と、`<!-- table: {"kind": "plain"} -->` で囲んだ同じ表を持つ文書'
       - name: Mock
@@ -9961,11 +9961,34 @@ flows:
       - 1 列目の並べ替えを押した後、1 列目が上から `33`・`10`・`2` の順で、見出しの `aria-sort` が `descending`
       - ポインターを乗せられる端末で、描いた直後は `aria-pressed` が `false` のピン止めのボタンが見えず（`opacity` の計算値が 0 で、`visibility` の計算値は `visible`、`display` は `none` でなく、`hidden` 属性を持たない。タブの順に残る）、`aria-pressed` が `true` の 1 列目のボタンは見える
       - 3 列目の見出しにポインターを乗せている間と、3 列目のピン止めにフォーカスがある間だけ、3 列目のピン止めのボタンが見え、ポインターを外した後は見えない
-      - タッチの端末では、押していないピン止めのボタンも描いた直後から見える
       - 各列の見出しのセルの幅が、列名・並べ替えのアイコン・ピン止めのボタン（`mdmark-th` の `scrollWidth`）が収まる幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない
       - 列の幅のつまみで 1 列目を狭めた後も、幅がその見出しの中身が収まる幅で止まる
       - '`plain` の表に並べ替えとピン止めのボタンが無い'
     test: test_normal_when_unmarked_table_sorted
+  - name: 正常系（タッチの端末でマーカーの無い表のピン止めのボタンを常に出す）
+    summary: ポインターを乗せられないタッチの端末では、マーカーの無い表の押していないピン止めのボタンも描いた直後から見せる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: '正常系と同じ。描く先の `div` の幅は 480px。タッチの端末（`hasTouch`、`(hover: none)`）で描く'
+      - name: マーカーの無い表を持つ Markdown
+        description: 正常系（マーカーの無い表を並べ替え、ピン止めのボタンをポインターとフォーカスで出す）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: マーカーの無い表の各列の見出しに、押していないピン止めのボタンも見える状態で出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表がはみ出してピン止めのボタンが `hidden` でなくなった後、`aria-pressed` が `false` のボタンを含む全てのピン止めのボタンの `opacity` の計算値が 0 より大きい
+    test: test_normal_when_unmarked_table_sorted_by_touch
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
