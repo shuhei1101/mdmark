@@ -21,20 +21,20 @@ functions:
       折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。
       表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。
 
-      #### 囲みと帯
-
       囲みには `hide`・`totals` を `data-hide`・`data-total`、`pin`・`unpin`（半角の空白で区切る）・`check` を `data-pin`・`data-unpin`・`data-check` で持たせる。
+
+      `rows` を指定したときは、次も描く。
 
       | 条件 | 描くもの |
       | --- | --- |
-      | `rows` を指定したとき | `renderTableBar` の帯とメニュー |
+      | 条件なし | `renderTableBar` の帯とメニュー |
       | `copyFallback` のとき | `renderCopyPanel` のパネル |
-      | 常に | `renderTotalRows` の集計の行 |
+      | 条件なし | `renderTotalRows` の集計の行 |
       | `rowIds` の行 | 行の `id` と行へのリンクと通知の要素 |
 
       集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。
 
-      #### セル
+      セルには次を付ける。
 
       | 対象 | 付けるもの |
       | --- | --- |
@@ -49,8 +49,6 @@ functions:
       `highlight`・`rowColors` は、`render` では記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する。
 
       `headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。
-
-      #### 留める列
 
       `pinned` を省いたときは `rowHeader` の全ての列を留める。
       留める列は `pinned` の位置のセルに `is-pinned-col` を付け、結合した見出しのセルはまたぐ列が全て `pinned` にあるときだけ付ける
@@ -250,14 +248,11 @@ functions:
     scope: internal
     summary: '表の上の帯と、テーブル設定のパネル・集計とコピーの形式のメニューの HTML を返却する'
     description: |-
-      帯には `count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の要素を並べる。
+      帯には `count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の要素として、件数・テーブル設定・`集計`・`表をコピー` と `mdmark-table-status` を並べる。
 
       | 帯の要素 | 中身 |
       | --- | --- |
-      | 件数 | 件数 |
       | テーブル設定 | アイコンだけのボタン（`settings-2`）。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label` |
-      | `集計` | 集計のボタン |
-      | `表をコピー` | コピーのボタン |
       | `mdmark-table-status` | スクリーンリーダーに使用する `role="status"` |
 
       | パネル・メニュー | 中身 |

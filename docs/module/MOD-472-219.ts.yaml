@@ -185,13 +185,9 @@ functions:
 
       項目を押したときは `href` を読み込まず（まとめた HTML は `rewriteLinks` で `href` を書き換える）、既定の動きは止めない。
 
-      #### 今いるセクション
-
       IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いるセクションをもう一度決める。
       もう一度決めるときは、祖先に `hidden` を持つ見出し（閉じたセクションの中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に指定する。
       決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を配置する。
-
-      #### hover で開く目次の枠の位置
 
       hover の出し方では、次のたびに、hover で開く目次の枠の位置と右端の線の位置を aside の CSS 変数に px で入れる。
 
