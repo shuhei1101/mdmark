@@ -1,0 +1,58 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 表のマーカーを記載していない表でも、記法が無くても付けられると一覧で決めた操作（並べ替え など）を読者が使用できる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: changed
+    detail: マーカーを記載していないコードブロックに付く操作と、マーカーで付く操作を分けて確かめる。記法が無くても付けられるのに付いていない操作があれば付ける（洗い出しの結果で影響を確定する）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-21.yaml
+    impact: run_only
+    detail: 見出しのセクションの開閉は記法が無くても付く。操作の一覧の追加で変わらないことを確かめる（洗い出しで付ける操作が見つかれば changed にする）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-66.yaml
+    impact: run_only
+    detail: 画像のライトボックスは記法が無くても付く。操作の一覧の追加で変わらないことを確かめる（洗い出しで付ける操作が見つかれば changed にする）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-71.yaml
+    impact: run_only
+    detail: 脚注のツールチップと一覧への移動は GitHub と同じ記法で付く。操作の一覧の追加で変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-29.yaml
+    impact: run_only
+    detail: ビューの表形式は表の部品で描く。既定の種類の表に操作を加えても、ビューの表形式の操作が変わらないことを確かめる
+    depends_on:
+      - docs/scenario/SC-472-73.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: run_only
+    detail: 既定の種類の表に増えたボタンが、印刷では出ないことを確かめる
+    depends_on:
+      - docs/scenario/SC-472-73.yaml
+docs:
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: マーカーの無い表に付く操作と、マーカーで種類・機能を指定したときだけ付く操作の違いを記載する
+    status: todo
+  - page: docs/guide/記載する-本文を部品で組む.mark.md
+    new: false
+    change: コードブロック・リストなど、記法が無くても付く操作を記載する（洗い出しで付ける操作がある記法だけ）
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 表の種類の既定の機能と、記法に対応しない表示での見え方を、既定の種類に加えた操作に合わせる
+    status: todo
+scope_out:
+  - item: 純粋な Mermaid の図に付く操作
+    reason: '#630 で扱い、インターフェース定義『文書を描く』に表を持つため'
+    plan: none
+  - item: AI Monitor の規約『ドキュメント管理』の表の種類の表（既定はピン止め）
+    reason: 別のリポジトリの規約で、mdmark の採用バージョンを上げるときに追従する。この PR の表の既定の機能が決まらないと中身が決まらない
+    plan: to_file
