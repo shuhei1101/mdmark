@@ -1,0 +1,38 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: changed
+    detail: 設定のバージョンに develop を記載したとき、タグ一覧を取らずに develop の最新の配布物を読み込んで描くケースを追加する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: changed
+    detail: ビルドが出したバージョンの移行の手順の配布物を書き換えず、出していないバージョンの分だけを作り直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: run_only
+    detail: 出したときの内容に戻した移行の手順の配布物で、バージョンを上げられることを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-50.yaml
+    impact: run_only
+    detail: 拡張機能の定義の設定の値の受け付けを変えるため、拡張機能の配布物を作って入れられることを確認する
+    depends_on: []
+docs:
+  - page: docs/guide/VSCode拡張機能.mark.md
+    new: false
+    change: '`## 設定` の表の `mdmark.version` に記載できる値 `develop` を追加する'
+    status: todo
+  - page: docs/guide/VSCodeで確認する-プレビューを開く.md
+    new: false
+    change: バージョンの選び方に `develop` を追加する
+    status: todo
+  - page: vscode/README.md
+    new: false
+    change: 設定の表の `mdmark.version` の説明に `develop` を追加する
+    status: todo
+scope_out:
+  - item: jsDelivr の @develop が develop の push の直後に古い配布物を返す間（jsDelivr のブランチの参照のキャッシュ）を縮める仕組み
+    reason: '要望は @develop を読み込めるようにすることで、@develop の更新の速さは #621 が決めた jsDelivr の扱いに従う。拡張機能だけで変えるものではない'
+    plan: none
