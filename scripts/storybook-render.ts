@@ -179,7 +179,13 @@ import {
   BLOCK as MAP_BLOCK,
   BLOCK_DATA as MAP_BLOCK_DATA,
   C4 as MAP_C4,
+  C4_COMPONENT as MAP_C4_COMPONENT,
+  C4_CONTAINER as MAP_C4_CONTAINER,
+  C4_CONTAINER_DATA as MAP_C4_CONTAINER_DATA,
   C4_DATA as MAP_C4_DATA,
+  C4_DEPLOYMENT as MAP_C4_DEPLOYMENT,
+  C4_DEPLOYMENT_DATA as MAP_C4_DEPLOYMENT_DATA,
+  C4_DYNAMIC as MAP_C4_DYNAMIC,
   CLASS as MAP_CLASS,
   CLASS_DATA as MAP_CLASS_DATA,
   CONFIG as MAP_CONFIG,
@@ -979,6 +985,30 @@ const axisGridKeyed = <T>(
     }),
   );
 
+/** 境界か配置先のノード `at` が `boundary` か、その中にあるか */
+function c4Under(
+  diagram: ReturnType<typeof parseC4>,
+  at: string | undefined,
+  boundary: string,
+): boolean {
+  for (
+    let id = at;
+    id !== undefined;
+    id = diagram.boundaries.find((item) => item.id === id)?.parent
+  )
+    if (id === boundary) return true;
+  return false;
+}
+
+/** mapのC4図のストーリーの見本（引数 `kind` で選ぶ） */
+const C4_SAMPLES: Record<string, { mermaid: string; data: string }> = {
+  context: { mermaid: MAP_C4, data: MAP_C4_DATA },
+  container: { mermaid: MAP_C4_CONTAINER, data: MAP_C4_CONTAINER_DATA },
+  component: { mermaid: MAP_C4_COMPONENT, data: '{"version": 1}' },
+  dynamic: { mermaid: MAP_C4_DYNAMIC, data: '{"version": 1}' },
+  deployment: { mermaid: MAP_C4_DEPLOYMENT, data: MAP_C4_DEPLOYMENT_DATA },
+};
+
 /** 案内の帯のストーリーの再生の単位（引数に無いか知らない値なら message） */
 function bandUnitOf(args: PartArgs): MapBandUnit {
   return args.unit === "transition" ||
@@ -1516,11 +1546,12 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return mapFrame("配置の構成", part, layout);
   },
   "map-c4": (args) => {
-    const diagram = parseC4(MAP_C4);
-    const { data } = parseMapData(MAP_C4_DATA);
+    const sample = C4_SAMPLES[String(args.kind ?? "")] ?? C4_SAMPLES.context;
+    const diagram = parseC4(sample.mermaid);
+    const { data } = parseMapData(sample.data);
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
-    const { chart, overrides, reversed } = c4ToFlowchart(diagram);
+    const { chart, overrides, reversed, kinds } = c4ToFlowchart(diagram);
     const placed = layoutMap(
       chart,
       { collapsed, entered },
@@ -1529,7 +1560,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = { ...placed, wires: spreadMapEnds(placed) };
     const part = renderMapC4Diagram({
       layout,
-      kinds: MAP_C4_KINDS,
+      kinds: { ...MAP_C4_KINDS, ...kinds },
       lines: {},
       notes: noteTexts(data.notes),
       collapsed,
@@ -1540,7 +1571,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       dragging: undefined,
       id: "story-map-c4",
       collapsedTag: (boundary) =>
-        `要素 ${diagram.elements.filter((item) => item.parent === boundary).length} 件`,
+        `要素 ${diagram.elements.filter((item) => c4Under(diagram, item.parent, boundary)).length} 件`,
       descriptions: Object.fromEntries(
         diagram.elements.map((item) => [item.id, item.description ?? ""]),
       ),
