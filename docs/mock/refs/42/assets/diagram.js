@@ -4,7 +4,7 @@
 // モックの見本だけの指定: data-mock-zoom（開いたときの倍率）・data-mock-scroll（開いたときの位置。図の座標の "x,y"）・
 // data-mock-open（開いたままにするツールチップの持ち主。線の id・"node:{箱の id}"・"term:{語}"）・data-mock-copy（"copied" / "failed" の知らせを出したまま）・
 // data-mock-hints="off"（機能 hints をオフにした文書。figure か祖先に書く。線の詳細・箱の入力・処理・出力・箱の hint のツールチップと印を出さない）・
-// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-fit-min（全体が収まる倍率の下限。figure か祖先に書く。map の図は 1）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
+// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-fit-min（全体が収まる倍率の下限。figure か祖先に書く。map の図は 1）・data-mock-touch="native"（指の 1 本のドラッグをブラウザのスクロール、ピンチを図の倍率にする。figure か祖先に書く）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
 
 // sample.js・glossary.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -1113,7 +1113,11 @@
     // 押した位置から DRAG_THRESHOLD を超えて動いたときだけドラッグにし（超えないうちはグラフの項目などのツールチップを優先する）、動かした後の離す操作ではリンク先を開かない
     let drag = null;
     let suppressClick = false;
+    // 指の操作をブラウザのスクロールとピンチの処理で受けるか（data-mock-touch="native"。figure か祖先に書く）
+    const nativeTouch = Boolean(figure.closest('[data-mock-touch="native"]'));
     viewport.addEventListener("pointerdown", (event) => {
+      // 指の 1 本のドラッグはブラウザのスクロールに任せる（Safari では指の動きを自分で動かすとスクロールに取り消される）
+      if (nativeTouch && event.pointerType === "touch") return;
       const onLink = event.target.closest(".mdmark-diagram-node-link");
       if (event.button !== 0 || (!onLink && event.target.closest(`${TEXT_SELECTOR}, ${CONTROL_SELECTOR}`))) return;
       drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop, id: event.pointerId, moved: false };
@@ -1159,6 +1163,58 @@
         state.atFit = false;
       }
     });
+
+    if (nativeTouch) {
+      // 2 本の指の中点の下の図の場所を保ったまま、倍率を変える
+      const zoomAt = (scale, clientX, clientY) => {
+        const next = Math.min(ZOOM_MAX, Math.max(state.fit, scale));
+        const rect = viewport.getBoundingClientRect();
+        const px = clientX - rect.left;
+        const py = clientY - rect.top;
+        const gx = (viewport.scrollLeft + px) / state.scale;
+        const gy = (viewport.scrollTop + py) / state.scale;
+        state.atFit = Math.abs(next - state.fit) < ZOOM_EPSILON;
+        apply(next);
+        viewport.scrollLeft = gx * next - px;
+        viewport.scrollTop = gy * next - py;
+      };
+      // ピンチ: 2 本の指の間隔の比で倍率を変え、ブラウザのページの拡大を止める（図の外のピンチはページの拡大のまま）
+      let pinch = null;
+      const distance = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+      const middle = (touches) => [(touches[0].clientX + touches[1].clientX) / 2, (touches[0].clientY + touches[1].clientY) / 2];
+      viewport.addEventListener(
+        "touchstart",
+        (event) => {
+          if (event.touches.length === 2) pinch = { distance: distance(event.touches), scale: state.scale };
+        },
+        { passive: true },
+      );
+      viewport.addEventListener(
+        "touchmove",
+        (event) => {
+          if (!pinch || event.touches.length !== 2) return;
+          event.preventDefault();
+          const [x, y] = middle(event.touches);
+          zoomAt(pinch.scale * (distance(event.touches) / pinch.distance), x, y);
+        },
+        { passive: false },
+      );
+      viewport.addEventListener("touchend", (event) => {
+        if (event.touches.length < 2) pinch = null;
+      });
+      // Safari の独自のピンチのイベント: 図の上ではページの拡大をさせない
+      for (const type of ["gesturestart", "gesturechange"]) viewport.addEventListener(type, (event) => event.preventDefault(), { passive: false });
+      // ホイール: 縦は文書のスクロールに渡す（Shift＋ホイールの横はそのまま図を動かす）
+      viewport.addEventListener(
+        "wheel",
+        (event) => {
+          if (event.shiftKey || event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+          event.preventDefault();
+          window.scrollBy(0, event.deltaY);
+        },
+        { passive: false },
+      );
+    }
 
     // 枠の大きさが変わったとき（画面の幅・ページの縦のスクロールバーの出入り・モーダルの高さ）: 全体が収まる倍率で見ていたなら、新しい大きさで全体が収まる倍率に合わせ直す。
     // 文書の中では高さは reset が決めるので、幅の変化だけを見る

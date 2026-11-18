@@ -56,3 +56,16 @@
 .mdmark-diagram-tools-group[data-group="more"] {
   display: none;
 }
+
+/* パネルを下に置く（[data-mock-panel-at="bottom"]）: 右下のリサイズハンドルの上に重ねる */
+[data-mock-panel-at="bottom"] .mdmark-diagram-tools {
+  inset-block-start: auto;
+  inset-block-end: 1.5rem;
+}
+
+/* 指の操作をブラウザに任せる（[data-mock-touch="native"]）: 表示する枠を縦横ともスクロールでき、指 1 本の縦横のドラッグをブラウザのスクロールにする。
+   全体が収まっている向きはスクロールが無いので、その向きの指の動きは文書のスクロールになる。ピンチは diagram.js が図の倍率にする */
+[data-mock-touch="native"] .mdmark-diagram-viewport {
+  overflow: auto;
+  touch-action: pan-x pan-y;
+}
