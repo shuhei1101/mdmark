@@ -184,6 +184,35 @@ test("test_attach_column_resize_when_clamped", async () => {
   stubPointerCapture();
   const { attachColumnResize } = await loadResize();
   const { table, headCells, handles } = resizableTable();
+  // 1 列目の見出しに並べ替え・ピン止めのボタンを並べ、収まる外側の幅を `--mdmark-column-head-width` に入れる
+  const first = headCells[0];
+  first
+    .querySelector(".mdmark-th")
+    ?.insertAdjacentHTML(
+      "beforeend",
+      '<span class="mdmark-sort-icon" style="display:inline-block;width:1em"></span><button class="mdmark-pin" type="button" aria-pressed="false" style="width:1.5em"></button>',
+    );
+  const label = first.querySelector<HTMLElement>(".mdmark-th-label");
+  if (label) {
+    label.textContent = "更新した日時の列";
+  }
+  const content = first.querySelector<HTMLElement>(".mdmark-th");
+  const style = getComputedStyle(first);
+  const inset =
+    Number.parseFloat(style.paddingLeft) +
+    Number.parseFloat(style.paddingRight) +
+    Number.parseFloat(style.borderLeftWidth) +
+    Number.parseFloat(style.borderRightWidth);
+  const probe = content?.cloneNode(true) as HTMLElement;
+  probe.style.cssText =
+    "position:absolute;visibility:hidden;white-space:nowrap;width:max-content";
+  first.append(probe);
+  const headWidth = Math.ceil(probe.getBoundingClientRect().width + inset);
+  probe.remove();
+  expect(headWidth).toBeGreaterThan(
+    6 * Number.parseFloat(style.fontSize) + inset,
+  );
+  first.style.setProperty("--mdmark-column-head-width", `${headWidth}px`);
   detachers.push(
     attachColumnResize(table, {
       headCells,
@@ -202,6 +231,7 @@ test("test_attach_column_resize_when_clamped", async () => {
   expect(String(headCells[0].offsetWidth)).toBe(
     handles[0].getAttribute("aria-valuemin"),
   );
+  expect(headCells[0].offsetWidth).toBeGreaterThanOrEqual(headWidth);
 });
 
 // タッチの 2 回のタップの間隔でダブルタップを見分け、ドラッグの終わりはタップに数えない（正常系）

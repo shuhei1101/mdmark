@@ -371,8 +371,125 @@ test("test_attach_auto_column_widths_when_detached", async () => {
   expect(table.style.getPropertyValue("--mdmark-auto-table-width")).toBe("");
   expect(
     headCells.every(
-      (cell) => cell.style.getPropertyValue("--mdmark-auto-width") === "",
+      (cell) =>
+        cell.style.getPropertyValue("--mdmark-auto-width") === "" &&
+        cell.style.getPropertyValue("--mdmark-column-head-width") === "",
     ),
   ).toBe(true);
   expect(onApply).not.toHaveBeenCalled();
+});
+
+/** 列名が `列 1`〜`列 {count}` で、値が 2 文字のマーカーの無い表 */
+const plainTable = (count: number): string => {
+  const columns = Array.from({ length: count }, (_, index) => `列 ${index + 1}`);
+  const line = (cells: string[]): string => `| ${cells.join(" | ")} |`;
+  return [
+    line(columns),
+    line(columns.map(() => "---")),
+    line(columns.map(() => "ab")),
+    "",
+  ].join("\n");
+};
+
+/** 見出しのセルの中身（`.mdmark-th`）が収まる外側の幅 */
+const headContentWidth = (cell: HTMLElement): number => {
+  const content = cell.querySelector<HTMLElement>(":scope > .mdmark-th");
+  if (!content) {
+    throw new Error("見出しの中身が無い");
+  }
+  const style = getComputedStyle(cell);
+  return (
+    content.scrollWidth +
+    Number.parseFloat(style.paddingLeft) +
+    Number.parseFloat(style.paddingRight) +
+    Number.parseFloat(style.borderLeftWidth) +
+    Number.parseFloat(style.borderRightWidth)
+  );
+};
+
+/** 見出しのセルごとに、幅が中身の収まる幅以上で、ピン止めのボタンがセルの右端を越えないことを確かめる */
+const expectHeadToolsFit = (headCells: HTMLTableCellElement[]): void => {
+  for (const cell of headCells) {
+    const width = headContentWidth(cell);
+    expect(cell.offsetWidth).toBeGreaterThanOrEqual(Math.floor(width));
+    expect(
+      Number.parseFloat(
+        cell.style.getPropertyValue("--mdmark-column-head-width"),
+      ),
+    ).toBeGreaterThanOrEqual(Math.floor(width));
+    const pin = cell.querySelector<HTMLElement>(".mdmark-pin");
+    if (!pin) {
+      throw new Error("ピン止めのボタンが無い");
+    }
+    expect(pin.getBoundingClientRect().right).toBeLessThanOrEqual(
+      cell.getBoundingClientRect().right + 0.5,
+    );
+  }
+};
+
+/** ピン止めのボタンの `hidden` を外す（表がはみ出してボタンを出した状態にする） */
+const showPins = (root: HTMLElement): void => {
+  for (const pin of root.querySelectorAll<HTMLElement>(".mdmark-pin")) {
+    pin.hidden = false;
+  }
+};
+
+// 見出しの列名・並べ替え・ピン止めのボタンが収まる幅より列を狭くしない（正常系）
+test("test_attach_auto_column_widths_when_head_tools_wider", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths } = await loadTableWidth();
+  const { root } = createRoot(plainTable(10));
+  setRootWidth(root, 320);
+  showPins(root);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  // 実行
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+  });
+  detachers.push(handle.detach);
+  // 検証
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  expectHeadToolsFit(headCells);
+});
+
+// ピン止めのボタンが hidden の間に測った最小幅も、ボタンを含む幅にする（正常系）
+test("test_attach_auto_column_widths_when_pin_hidden", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths } = await loadTableWidth();
+  const { root } = createRoot(plainTable(3));
+  setRootWidth(root, 1200);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  expect(
+    [...root.querySelectorAll<HTMLElement>(".mdmark-pin")].every(
+      (pin) => pin.hidden,
+    ),
+  ).toBe(true);
+  const onApply = vi.fn();
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+    onApply,
+  });
+  detachers.push(handle.detach);
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  // 実行: はみ出させてから、ピン止めのボタンを出す
+  onApply.mockClear();
+  setRootWidth(root, 120);
+  await vi.waitFor(() => {
+    expect(onApply).toHaveBeenCalled();
+  });
+  showPins(root);
+  // 検証
+  expectHeadToolsFit(headCells);
 });
