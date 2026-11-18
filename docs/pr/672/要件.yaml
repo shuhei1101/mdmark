@@ -1,0 +1,98 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: ガイドの公開ドキュメントの行（docs/guide/files.yml）のメタデータを見直すため、kind が docs でタグ topic:ガイド の文書をガイドとして受け取れることを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: none
+    detail: ガイドを参照する流れは変えない。ガイドの受け取りは単一 UC『ガイドを参照する』で確かめる
+    depends_on: []
+docs:
+  - page: src/files.yaml
+    new: false
+    change: '#627 の 17 ファイル（interact/・map/・parts/）の行を既存の行と同じ記載方法（description・tags・related の implements）で追加し、全ての行のメタデータを今の付け方で見直す'
+    status: todo
+  - page: project-index.yaml
+    new: false
+    change: documents[] を setup の推奨の範囲に合わせ、新しく置く管理用の YAML の行と exclude を追加・修正する
+    status: todo
+  - page: docs/layout/LAY-472-1.yaml
+    new: false
+    change: 配信しないと決めたフォルダ・ファイルとその理由を記載する
+    status: todo
+  - page: .github/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: .storybook/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: docs/_root/files.yml
+    new: false
+    change: docs/ 直下のファイル（README.md・index.md・design-policy.md など）の行を追加するか exclude に残すかを決め、行のメタデータを見直す
+    status: todo
+  - page: docs/guide/files.yml
+    new: false
+    change: 行のメタデータを今の付け方で見直す（topic:ガイド のタグは残す）
+    status: todo
+  - page: docs/mock/files.yml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: migrations/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: plugin/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: schemas/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: scripts/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: templates/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: tests/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: todo
+  - page: vscode/files.yaml
+    new: false
+    change: ファイルが無い行（icon.png）を直し、行のメタデータを今の付け方で見直す
+    status: todo
+  - page: files.yaml
+    new: true
+    change: 直下のファイル（package.json・tsconfig.json・README.md など）を受け持つ管理用の YAML を新設する
+    status: todo
+  - page: docs/_theme/files.yml
+    new: true
+    change: 文書の画面のテーマ（レイアウト・スクリプト・ナビの定義）を受け持つ管理用の YAML を新設する（取り込んだ vendor と生成物は exclude）
+    status: todo
+  - page: tools/files.yaml
+    new: true
+    change: tools/eslint/ の設定を受け持つ管理用の YAML を新設する（package-lock.json は exclude）
+    status: todo
+  - page: .claude-plugin/files.yaml
+    new: true
+    change: マーケットプレイスの定義（marketplace.json）を受け持つ管理用の YAML を新設する
+    status: todo
+scope_out:
+  - item: PR の資料（docs/pr/）を検索の対象に入れる
+    reason: 作業 PR ごとの一時の資料で、設計書・コードを探すときの雑音になる。project-index 自身の見直し（shuhei1101/project-index#132）も対象に入れていない
+    plan: none
+  - item: 新しく作る 6 ファイルのモジュール構成と、src/files.yaml のその行の implements
+    reason: モジュール構成の新設は別の Issue が扱う。この PR は既存のモジュール構成を指す implements だけを記載する
+    plan: '#590'
+  - item: src/map/ にこれから追加するファイルの行
+    reason: ファイルを追加する各 Issue が自分で行を追加する
+    plan: none
