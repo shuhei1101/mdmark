@@ -44,10 +44,10 @@ functions:
         expected: '`mdmark-lightbox-nav` が無い'
       - name: test_render_lightbox_when_max
         case: 正常
-        summary: 上限の倍率で拡大を押せなくし、移動のボタンを出す
+        summary: 上限の倍率で拡大を押せなくする
         condition: 部品設計の `Max`
         mock: なし
-        expected: 拡大が `disabled`、倍率の文字が `500%`、移動のまとまりが `hidden` を持たない
+        expected: 拡大が `disabled`、倍率の文字が `500%`、移動のまとまり（`data-group="pan"`）が無い
     status: planned
 lead: 'ライトボックスの HTML を受け持ち、ライトボックスの外観を変えるときに参照する。'
 tags:
