@@ -39,16 +39,16 @@ use_cases:
 docs:
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
-    change: マーカーの無い表に付く操作と、マーカーで種類・機能を指定したときだけ付く操作の違いを記載する
-    status: todo
-  - page: docs/guide/記載する-本文を部品で組む.mark.md
-    new: false
-    change: コードブロック・リストなど、記法が無くても付く操作を記載する（洗い出しで付ける操作がある記法だけ）
-    status: todo
+    change: マーカーの無い表に並べ替えが付くこと、押していないピンの出し方、列の最小の幅を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T12:58:17.992852+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: 表の種類の既定の機能と、記法に対応しない表示での見え方を、既定の種類に加えた操作に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T12:58:17.992852+00:00'
 scope_out:
   - item: 純粋な Mermaid の図に付く操作
     reason: '#630 で扱い、インターフェース定義『文書を描く』に表を持つため'
