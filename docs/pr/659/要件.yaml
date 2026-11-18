@@ -31,7 +31,7 @@ docs:
     status: todo
   - page: docs/guide/構成図の決まり.mark.md
     new: false
-    change: 操作の表の拡大・縮小・全画面の「右上のボタン」を図に重ねるパネルへ書き換え、指の移動とピンチを追加する
+    change: 操作の表の拡大・縮小・全画面の「右上のボタン」を図に重ねるパネルへ書き換え、指の移動とピンチを追加する。倍率の範囲を開いたときの倍率を 100% とした 25%〜500% に書き換え、移動の行から右上の移動のボタンを削除する
     status: todo
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
@@ -48,6 +48,14 @@ docs:
   - page: docs/guide/用語集.mark.md
     new: false
     change: 図に重ねるボタンのパネルの用語を追加する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: ライトボックスの動きの表の「`+`・`-`・`0` と縮小・倍率・拡大のボタン」の行に、ピンチの拡大・縮小と、開いたときの倍率を 100% とした 25%〜500% の範囲を追加する
+    status: todo
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    new: false
+    change: '`diagram-resize: false` の節の「右上の拡大・縮小のボタンは出る」を、右上のパネルに拡大・縮小のボタンがある記載に書き換える'
     status: todo
 scope_out:
   - item: 図の順番の再生の手順のバー・速度・なめらかな移動
