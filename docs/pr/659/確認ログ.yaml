@@ -11,3 +11,27 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4607367759
+  - topic: パネルを図の右上と右下のどちらに置くか
+    decision: 右上に置く（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608786131
+  - topic: パネルの移動のボタン（← ↑ ↓ →）の扱い
+    decision: 削除する。図は指とマウスのドラッグ・矢印キーで動かす（別案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608786912
+  - topic: スマホ幅のパネルのボタンを 1 行に並べるか
+    decision: 1 行に並べたままにする（推奨案 A）。移動のボタンの削除で、開いたパネルも 1 行に収まる
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4607368550
+  - topic: 指で動かす・ピンチで拡大するモックの動きと見た目
+    decision: この動きと見た目で進める（推奨案 A）。あわせて、倍率の範囲を 25%〜500% に広げる
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608787985
