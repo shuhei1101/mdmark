@@ -44,28 +44,45 @@ const relationSteps = (source, data) => {
   const names = Object.fromEntries([...source.matchAll(/^\s*\w+\((\w+),\s*"([^"]*)"/gm)].map((match) => [match[1], match[2]]));
   const relations = [...source.matchAll(/^\s*(RelIndex|BiRel|Rel)\((.*)\)\s*$/gm)].map((match) => {
     const values = [...match[2].matchAll(/"([^"]*)"|([^,\s][^,]*)/g)].map((item) => (item[1] ?? item[2]).trim());
-    const [from, to, label] = match[1] === "RelIndex" ? values.slice(1) : values;
-    return { from, to, label, both: match[1] === "BiRel" };
+    const [from, to, label, tech] = match[1] === "RelIndex" ? values.slice(1) : values;
+    return { from, to, label, tech, both: match[1] === "BiRel" };
   });
   return relations.map((relation, index) => ({
     title: `${index + 1}: ${names[relation.from]} ${relation.both ? "↔" : "→"} ${names[relation.to]}：${relation.label}`,
     text: data.notes?.[`L${index}`]?.text ?? "",
     highlight: [relation.from, relation.to],
     edge: `L${index}`,
+    wireLabel: `${index + 1}: ${relation.label}${relation.tech ? ` [${relation.tech}]` : ""}`,
   }));
 };
 
-/** 再生している関係の線だけを残し、ほかの線を薄くし、ほかのデータのマーカーを削除する */
-const keepEdge = (host, edge) => {
+/** 再生している関係の線だけを残し、ほかの線を薄くし、ほかのデータのマーカーを削除する。
+ * 配置する場所が無くて隠れていた再生中の関係のラベルは線の中ほどに出し、重なる薄くしたラベルを隠す */
+const keepEdge = (host, step) => {
   for (const wire of host.querySelectorAll("[data-wire]")) {
-    if (wire.dataset.wire === edge) continue;
+    if (wire.dataset.wire === step.edge) continue;
     wire.classList.add("map-dim");
   }
-  const kept = host.querySelector(`[data-wire="${CSS.escape(edge)}"]`);
+  const kept = host.querySelector(`.mdmark-diagram-wires [data-wire="${CSS.escape(step.edge)}"]`);
   const keptPath = kept?.matches("path") ? kept : kept?.querySelector("path");
   for (const packet of host.querySelectorAll(".map-packet")) {
     const href = packet.querySelector("mpath")?.getAttribute("href");
     if (!keptPath || href !== `#${keptPath.id}`) packet.remove();
+  }
+  if (!keptPath || host.querySelector(`.mdmark-diagram-label[data-wire="${CSS.escape(step.edge)}"]`)) return;
+  const stage = host.querySelector(".mdmark-diagram-stage");
+  const point = keptPath.getPointAtLength(keptPath.getTotalLength() / 2);
+  const label = document.createElement("span");
+  label.className = "mdmark-diagram-label c4p-playing-label";
+  label.dataset.wire = step.edge;
+  label.textContent = step.wireLabel;
+  label.style.left = `${point.x}px`;
+  label.style.top = `${point.y}px`;
+  stage.append(label);
+  const box = label.getBoundingClientRect();
+  for (const other of stage.querySelectorAll(".mdmark-diagram-label.map-dim")) {
+    const rect = other.getBoundingClientRect();
+    if (rect.left < box.right && box.left < rect.right && rect.top < box.bottom && box.top < rect.bottom) other.hidden = true;
   }
 };
 
@@ -74,7 +91,7 @@ const drawFigure = (host, spec, steps, walk, step) => {
   host.replaceChildren();
   const data = walk ? spec.data : { ...spec.data, walkthroughs: steps.map(({ title, text, highlight }) => ({ title, text, highlight })) };
   createC4KindMap(host, { id: spec.id, source: spec.source, data }, step === undefined ? {} : { step });
-  if (!walk && step !== undefined) keepEdge(host, steps[step].edge);
+  if (!walk && step !== undefined) keepEdge(host, steps[step]);
 };
 
 /** 帯の状態ごとの見本: 図と、その下の再生の帯を描く */

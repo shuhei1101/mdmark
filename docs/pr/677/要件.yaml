@@ -56,3 +56,6 @@ scope_out:
   - item: C4Context・C4Container・C4Component・C4Deployment の関係の再生
     reason: 番号を持つのは C4Dynamic の関係だけで、要望は番号の順の再生
     plan: none
+  - item: map の図の案内・再生で薄くした要素（.map-dim・.map-focus）の文字のコントラスト（docs/mock/refs/445/assets/map-mock.css・src/index.css）
+    reason: モック HTML のレビュー観点「文字色が薄すぎない」から外れているが、既存の薄くし方の問題で今回の要望に含まれない
+    plan: '#678'
