@@ -10,7 +10,8 @@
   color: var(--mdmark-color-muted);
 }
 
-/* 案の見出しの中身: 列名・並べ替えのアイコン・ピン止めのボタンが収まる幅より狭くせず、描く処理がその幅を列の最小の幅にする */
-.mdmark-table[data-features~="sort"] thead .mdmark-th {
-  min-width: max-content;
+/* 案の見出しのセル: 列名・並べ替えのアイコン・ピン止めのボタンが収まる幅（短い列名で 7em）より狭くしない。
+   実装では列の幅を決める処理が見出しの中身の幅を列の最小の幅にし、このモックでは決めた幅を下限で上書きして同じ見た目にする */
+.mdmark-table[data-features~="sort"] .mdmark-table-scroll > table[data-auto-width] thead th:not(.is-resized) {
+  width: max(var(--mdmark-auto-width, 0px), 7em);
 }
