@@ -1,0 +1,7 @@
+confirmations:
+  - topic: マーカーの無い表に増えるコピーのボタンの出し方
+    decision: マーカーの無い表にコピーを付けない（案 A / B のどちらでもなく、コピーを要件から除く）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/673#discussion_r4610255290

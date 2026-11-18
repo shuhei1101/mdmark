@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-73.yaml
     impact: changed
-    detail: 表のマーカーを記載していない表（既定の種類）でも、読者が列で並べ替え、表をコピーできる。絞り込み・件数・テーブル設定・集計・行へのリンクは、今のとおりマーカーで指定した表にだけ付く
+    detail: 表のマーカーを記載していない表（既定の種類）でも、読者が列で並べ替えられる。絞り込み・件数・テーブル設定・コピー・集計・行へのリンクは、今のとおりマーカーで指定した表にだけ付く。押したピンは、枠線と背景色の無い色の付いた塗りのピンで示す
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-17.yaml
