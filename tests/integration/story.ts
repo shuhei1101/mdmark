@@ -1,5 +1,5 @@
 import { type Browser, chromium, type Page } from "playwright";
-import { inject, onTestFinished } from "vitest";
+import { expect, inject, onTestFinished } from "vitest";
 import { CONNECT_TIMEOUT_MS } from "./storybook-setup.ts";
 
 // ストーリーを開く画面の大きさ（狭い幅で折り返しを確認する）
@@ -161,4 +161,134 @@ export function resolveLightColor(
     host.remove();
     return resolved;
   }, expression);
+}
+
+/** map の閉じたグループの、ノード・タイトルの行・数の行の矩形と数の行の文字 */
+export function closedGroupRows(page: Page, selector: string) {
+  return page.locator(selector).evaluate((element) => {
+    const box = (target: Element | null) => {
+      const rect = target?.getBoundingClientRect();
+      return {
+        top: rect?.top ?? Number.NaN,
+        bottom: rect?.bottom ?? Number.NaN,
+        left: rect?.left ?? Number.NaN,
+        right: rect?.right ?? Number.NaN,
+      };
+    };
+    const count = element.querySelector(".map-closed-count");
+    return {
+      node: box(element),
+      head: box(element.querySelector(".map-group-head")),
+      count: box(count),
+      text: count?.textContent ?? "",
+    };
+  });
+}
+
+/** 閉じたグループのタイトルの行の下に数の行があり、2 つの行が重ならず、どちらもノードに収まるかを確かめる */
+export async function expectCountBelowTitle(
+  page: Page,
+  selector: string,
+  text: string,
+): Promise<void> {
+  const rows = await closedGroupRows(page, selector);
+  expect(rows.text).toBe(text);
+  expect(rows.count.top).toBeGreaterThanOrEqual(rows.head.bottom - 0.5);
+  expect(rows.head.top).toBeGreaterThanOrEqual(rows.node.top - 0.5);
+  expect(rows.count.bottom).toBeLessThanOrEqual(rows.node.bottom + 0.5);
+}
+
+/** 要素の矩形（ページの座標） */
+export type Box = { left: number; top: number; right: number; bottom: number };
+
+/** 辺が接するだけは重ならない扱いで、2 つの矩形が重なるか */
+export const overlaps = (a: Box, b: Box): boolean =>
+  a.left < b.right - 0.5 &&
+  b.left < a.right - 0.5 &&
+  a.top < b.bottom - 0.5 &&
+  b.top < a.bottom - 0.5;
+
+/** 押せる要素の大きさの下限（WCAG 2.5.8・axe の target-size） */
+export const MIN_TARGET_SIZE = 24;
+
+/** セレクタに該当する押せる要素が 1 つ以上あり、どれも幅と高さが MIN_TARGET_SIZE 以上かを確認する */
+export async function expectTargetSize(
+  page: Page,
+  selector: string,
+): Promise<void> {
+  const sizes = await page.locator(selector).evaluateAll((elements) =>
+    elements.map((element) => {
+      const box = element.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    }),
+  );
+  expect(sizes.length).toBeGreaterThan(0);
+  for (const size of sizes) {
+    expect(size.width).toBeGreaterThanOrEqual(MIN_TARGET_SIZE);
+    expect(size.height).toBeGreaterThanOrEqual(MIN_TARGET_SIZE);
+  }
+}
+
+/** map の図の、同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」。同じ点から出る・入る線の端の区間は除く） */
+export function mapWireOverlaps(page: Page): Promise<string[]> {
+  return page
+    .locator(".map-wire-hits > .map-wire-hit[data-wire]")
+    .evaluateAll((paths) => {
+      type Segment = {
+        wire: string;
+        from: [number, number];
+        to: [number, number];
+      };
+      const pointsOf = (path: Element) =>
+        [
+          ...(path.getAttribute("d") ?? "").matchAll(
+            /[ML](-?[\d.]+) (-?[\d.]+)/g,
+          ),
+        ].map(
+          (match) => [Number(match[1]), Number(match[2])] as [number, number],
+        );
+      const ends = new Map<string, number>();
+      for (const points of paths.map(pointsOf))
+        for (const end of [points[0], points.at(-1)])
+          if (end) ends.set(`${end}`, (ends.get(`${end}`) ?? 0) + 1);
+      const sharedEnd = (end: [number, number]) =>
+        (ends.get(`${end}`) ?? 0) > 1;
+      const segments: Segment[] = paths.flatMap((path) => {
+        const points = pointsOf(path);
+        const last = points.length - 2;
+        return points
+          .slice(1)
+          .map((to, index) => ({
+            wire: path.getAttribute("data-wire") ?? "",
+            from: points[index] as [number, number],
+            to,
+            index,
+          }))
+          .filter(
+            (segment) =>
+              !(segment.index === 0 && sharedEnd(segment.from)) &&
+              !(segment.index === last && sharedEnd(segment.to)),
+          );
+      });
+      const axisOf = (s: Segment): number | undefined => {
+        if (s.from[1] === s.to[1] && s.from[0] !== s.to[0]) return 0;
+        if (s.from[0] === s.to[0] && s.from[1] !== s.to[1]) return 1;
+        return undefined;
+      };
+      const overlap = (a: Segment, b: Segment): number => {
+        const axis = axisOf(a);
+        if (axis === undefined || axis !== axisOf(b)) return 0;
+        const other = 1 - axis;
+        if (Math.abs(a.from[other] - b.from[other]) > 0.5) return 0;
+        const low = (s: Segment) => Math.min(s.from[axis], s.to[axis]);
+        const high = (s: Segment) => Math.max(s.from[axis], s.to[axis]);
+        return Math.min(high(a), high(b)) - Math.max(low(a), low(b));
+      };
+      const pairs = new Set<string>();
+      for (const [index, a] of segments.entries())
+        for (const b of segments.slice(index + 1))
+          if (a.wire !== b.wire && overlap(a, b) > 1)
+            pairs.add(`${a.wire} と ${b.wire}`);
+      return [...pairs];
+    });
 }

@@ -1,6 +1,10 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import {
+  createBrowserHolder,
+  expectTargetSize,
+  pageOverflows,
+} from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -38,6 +42,14 @@ test("test_block", async () => {
   await expect(
     page.locator(".mdmark-hint-mark").getAttribute("aria-label"),
   ).resolves.toBe("説明");
+});
+
+// ブロックの要素の右上のマーカーは、押せる大きさ 24px 四方以上で描く（Block）
+test("test_block_mark_size", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-hint--block");
+  // 検証
+  await expectTargetSize(page, ".mdmark-hint-mark");
 });
 
 // ブロックの要素のマーカーに乗せて開いた状態は、マーカーの上に文を出し、横にはみ出さない（BlockOpen）

@@ -1,0 +1,86 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があり、棚卸しは要らない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue でない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: project-index の nav（tabs・group・page・auto）で表せ、未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の流れが変わらない（配信の設定のナビゲーションだけを変える）
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: mdmark の画面を作らない（dev-docs の既存の画面のタブとサイドバーの中身だけを設定で変える）
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: mdmark の画面を作らない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れが変わらない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: モック作成
+    status: skipped
+    reason: mdmark の画面を作らない。確認は dev-docs の画面のスクリーンショットで行う
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: 公開関数・CLI・設定のキーを変えない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品を変えない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: mdmark の画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: コードを変えない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: project-index.yaml に nav を記載し、アーキテクチャ図とフォルダ構成の project-index.yaml の説明に画面のタブとサイドバーの構成を加える。記載後に dev-docs の画面をスクリーンショットで確認する
+    updated_by: planner
+    updated_at: '2026-11-17T21:26:52.842353+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: コードを変えない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 実装
+    status: skipped
+    reason: コードを変えない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    reason: コードを変えない
+    updated_by: planner
+    updated_at: '2026-11-17T21:13:35.730353+00:00'

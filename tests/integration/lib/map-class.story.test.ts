@@ -1,6 +1,10 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import {
+  createBrowserHolder,
+  expectCountBelowTitle,
+  pageOverflows,
+} from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -143,14 +147,16 @@ test("test_entered", async () => {
   expect(shown.sort()).toEqual(["図形", "基本図形", "円"].sort());
 });
 
-// namespace「形状」を閉じると、「クラス 3 件」を持つ 1 つのノードになる（NamespaceCollapsed）
+// namespace「形状」を閉じると、名前の行の下に「クラス 3 件」の行を持つ 1 つのノードになる（NamespaceCollapsed）
 test("test_namespace_collapsed", async () => {
   // 準備・実行
   const page = await openStory("namespace-collapsed");
   // 検証
-  await expect(
-    page.locator('.map-closed-group[data-group="形状"]').innerText(),
-  ).resolves.toContain("クラス 3 件");
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="形状"]',
+    "クラス 3 件",
+  );
 });
 
 // 「図面」と「円」を選ぶと、2 本の最短の経路のクラスと関係のほかが薄い（PathSelected）

@@ -5119,7 +5119,7 @@
 
       /* ツールチップを持つノード: 種類の行を右上のマーカーと重ねない */
       &.has-tip .mdmark-diagram-node-kind {
-        padding-inline-end: 22px;
+        padding-inline-end: 24px;
       }
     }
 
@@ -5165,8 +5165,8 @@
       inset-inline-end: 3px;
       display: grid;
       place-items: center;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       padding: 0;
       border: 0;
       border-radius: 4px;
@@ -5583,8 +5583,8 @@
       inset-inline-end: 3px;
       display: grid;
       place-items: center;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       padding: 0;
       border: 0;
       border-radius: 4px;
@@ -9792,8 +9792,8 @@
     .mdmark-diagram-info.mdmark-diagram-group-info {
       --node-color: var(--mdmark-color-muted);
       position: static;
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -9872,6 +9872,15 @@
   .mdmark-diagram[data-diagram="map"]
     .mdmark-diagram-stage
     > .mdmark-diagram-node.map-closed-group {
+    /* タイトルの行を中身の並びに置き、数の行をその下に描く（タイトルが折り返しても重ならず、高さを測れる） */
+    justify-content: flex-start;
+    padding: 4px 6px;
+  }
+  .map-closed-group > .map-group-head {
+    position: static;
+    align-items: flex-start;
+  }
+  .map-closed-group > .map-closed-count {
     padding-left: 30px;
   }
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-closed-group {

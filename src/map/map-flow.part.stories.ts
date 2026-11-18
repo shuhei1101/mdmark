@@ -86,3 +86,9 @@ export const Plain: Story = {
   parameters: { server: { id: "map-flow" } },
   args: { source: "plain" },
 };
+
+export const ParallelWires: Story = {
+  name: "ParallelWires",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "parallel" },
+};

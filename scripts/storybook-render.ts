@@ -113,7 +113,7 @@ import {
 } from "../src/map/er.ts";
 import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
-import { layoutMap } from "../src/map/layout.ts";
+import { layoutMap, separateWires } from "../src/map/layout.ts";
 import {
   type MapErFanout,
   renderMapArchitecture,
@@ -869,6 +869,23 @@ const MAP_FLOW_PLAIN = `flowchart LR
   B -->|いない| D[一次回答を返却する]
 `;
 
+/** 同じグループの同じ列に並ぶ 3 つのノードから、別のグループのノードへ 1 本ずつ線を引く構成図の見本 */
+const MAP_FLOW_PARALLEL = `flowchart LR
+  subgraph A [A]
+    a1
+    a2
+    a3
+  end
+  subgraph B [B]
+    b1
+    b2
+    b3
+  end
+  a1 --> b3
+  a2 --> b1
+  a3 --> b2
+`;
+
 /** ストーリーの args の配列（JSON の文字でも、Storybook が配列にした値でもよい。無ければ空） */
 const jsonList = (value: unknown): string[] =>
   Array.isArray(value)
@@ -1213,14 +1230,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const entered = typeof args.entered === "string" ? args.entered : undefined;
     const collapsed = jsonList(args.collapsed);
     const { data } = parseMapData(MAP_DATA);
-    const layout = layoutMap(
-      parseFlowchart(
-        args.source === "long"
-          ? MAP_FLOW_LONG
-          : args.source === "plain"
-            ? MAP_FLOW_PLAIN
-            : MAP_FLOW,
-      ),
+    const sources: Record<string, string> = {
+      long: MAP_FLOW_LONG,
+      plain: MAP_FLOW_PLAIN,
+      parallel: MAP_FLOW_PARALLEL,
+    };
+    const placed = layoutMap(
+      parseFlowchart(sources[String(args.source)] ?? MAP_FLOW),
       { collapsed, entered },
       {
         overrides:
@@ -1230,6 +1246,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         nodeFit: args.node_fit === "width" ? "width" : "height",
       },
     );
+    // 図に描くときと同じく、同じ区間を通る線を並べる
+    const layout = { ...placed, wires: separateWires(placed).wires };
     const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
     const selected = jsonList(args.selected);
     return mapFrame(

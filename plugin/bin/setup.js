@@ -15870,7 +15870,7 @@ function validateAliasRows(rows, file) {
   };
 }
 
-// src/table-logic.ts
+// src/table/table.logic.ts
 var collator = new Intl.Collator("ja", { numeric: true });
 var totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
 
@@ -41037,7 +41037,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: localVersionOf("v0.14.0+develop.67a6251"),
+    version: localVersionOf("v0.14.0+develop.0d0a635"),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

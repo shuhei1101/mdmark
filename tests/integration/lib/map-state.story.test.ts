@@ -1,6 +1,11 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import {
+  createBrowserHolder,
+  expectCountBelowTitle,
+  expectTargetSize,
+  pageOverflows,
+} from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -265,14 +270,27 @@ test("test_entered", async () => {
   ).resolves.toBe("実行中");
 });
 
-// 「実行中」を閉じると、「状態 2 件」を持つ 1 つのノードになる（Collapsed）
+// 「実行中」を閉じると、名前の行の下に「状態 2 件」の行を持つ 1 つのノードになる（Collapsed）
 test("test_collapsed", async () => {
   // 準備・実行
   const page = await openState("collapsed");
   // 検証
-  await expect(
-    page.locator('.map-closed-group[data-group="実行中"]').innerText(),
-  ).resolves.toContain("状態 2 件");
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="実行中"]',
+    "状態 2 件",
+  );
+});
+
+// ノードの説明のマーカーは、押せる大きさ 24px 四方以上で描く（Collapsed）
+test("test_collapsed_info_marker_size", async () => {
+  // 準備・実行
+  const page = await openState("collapsed");
+  // 検証
+  await expectTargetSize(
+    page,
+    ".mdmark-diagram-stage button.mdmark-diagram-info",
+  );
 });
 
 // 幅 390px の置き場所では、倍率 1 のまま表示する枠の中で横にスクロールし、ページははみ出さない（Narrow）

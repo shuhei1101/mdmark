@@ -9,7 +9,42 @@ functions:
     container: src/diagram/diagram.interact.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て（`data-fit-min` を持つ図は、その値より小さくしない）、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字とスクリーンリーダー向けの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を削除して読み込む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を適用するたびに `style.maxHeight` を定義の高さ × 今の倍率にする（利用側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を削除する。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を削除する。表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。図ごとに `attachDiagramTips` と `attachDiagramTouch` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ。シーケンス図の参加者の行（`.mdmark-diagram-seq-heads`）は、表示する枠の `scroll` と、文書の中の図では表示する枠をスクロールさせる場所（`scrollParent`）の `scroll` で、表示する枠の上端からの下げ幅を、表示する枠の `scrollTop` と、スクロールする場所の上端に `--mdmark-sticky-top` の計算値を加算した位置から表示する枠の上端までの距離の大きいほうにし（表示する枠の下端から参加者の行の高さを引いた位置を上限にする）、図の座標に直して `transform` に入れ、下げたときは `is-stuck` を付ける。全画面のモーダルの中は表示する枠の `scrollTop` だけで決める。ドラッグを始めない要素は、map の図の文字と、mermaid の図の SVG の文字（`text`・`tspan`・`foreignObject` の中の要素）にする'
+    summary: '`root` の中の図ごとに、拡大・縮小・移動・全画面の操作を付ける'
+    description: |-
+      `root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当てる（`data-fit-min` を持つ図は、その値より小さくしない）。
+      縮小・拡大・倍率のボタン・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。
+      倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字とスクリーンリーダー向けの名前を書き換える。
+      倍率は図の中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。
+      倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。
+      ホイールは受け取らない。
+
+      表示する枠の高さは次のように決める。
+
+      | 場面 | 高さ |
+      | --- | --- |
+      | 文書の中の表示する枠を開いたときと、開いたときの倍率に戻したとき | `style.height` を、定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を削除して読み込む `getComputedStyle` の `maxHeight`）の小さいほうにする |
+      | 倍率を適用するたび | `style.maxHeight` を定義の高さ × 今の倍率にする（利用側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる） |
+      | 全画面に写す枠 | `style.height` と `style.maxHeight` を削除する |
+      | 印刷 | CSS（`@media print .mdmark`）がインラインの高さと上限を削除する |
+
+      表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。
+      `fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。
+
+      図ごとに `attachDiagramTips` と `attachDiagramTouch` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。
+      `div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け、高さを変えたら `attachZoom` の `refit()` を呼ぶ。
+      `attachDiagramResize` のキーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。
+      保った高さがあればその高さで開く。
+
+      シーケンス図の参加者の行（`.mdmark-diagram-seq-heads`）は、表示する枠の `scroll` と、文書の中の図では表示する枠をスクロールさせる場所（`scrollParent`）の `scroll` で位置を決める。
+      表示する枠の上端からの下げ幅は、次の 2 つの大きいほうにする（表示する枠の下端から参加者の行の高さを引いた位置を上限にする）。
+
+      - 表示する枠の `scrollTop`
+      - スクロールする場所の上端に `--mdmark-sticky-top` の計算値を加算した位置から、表示する枠の上端までの距離
+
+      下げ幅は図の座標に直して `transform` に入れ、下げたときは `is-stuck` を付ける。
+      全画面のモーダルの中は表示する枠の `scrollTop` だけで決める。
+
+      ドラッグを始めない要素は、map の図の文字と、mermaid の図の SVG の文字（`text`・`tspan`・`foreignObject` の中の要素）にする
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null; figures?: HTMLElement[] }'

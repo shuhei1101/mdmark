@@ -1,15 +1,15 @@
 import type { MarkdownIt as MarkdownItParser, StateCore } from "markdown-it";
 import type { LibraryEntry, PageSettings } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import { type AnnotationState } from "../footnote/annotations.syntax.ts";
+import { type FootnoteState } from "../footnote/footnote.syntax.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkGlossaryEntry, MdmarkReferences } from "../knowledge/references.ts";
-import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
+import { type CollectedWarning } from "../shared/syntax-warning.syntax.ts";
 import type { MarkOptions } from "./mark-options.ts";
 import type { MarkNote } from "./mark-schema.ts";
 import { type ResolveIdLink } from "./sanitize.ts";
-import { type AnnotationState } from "./syntax/annotations.ts";
-import { type FootnoteState } from "./syntax/footnotes.ts";
-import { type CollectedWarning } from "./syntax/warnings.ts";
 /** markdown-it の `env` としてコアルールに指定する値と、コアルールが取得したマーカー */
 export type RenderEnv = {
     /** 対応表（どのマーカーをマーカーの場所の要素にするか） */

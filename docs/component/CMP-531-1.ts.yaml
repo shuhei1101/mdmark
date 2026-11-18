@@ -14,7 +14,7 @@ states:
       - name: collapsed
         value: '["注文"]'
   - name: GroupCollapsed
-    description: 分類のグループ「記録」を閉じた。「テーブル 3 件」を持つ 1 つのノードになり、中への関連が相手ごとに 1 本にまとまる
+    description: 分類のグループ「記録」を閉じた。名前の行の下に「テーブル 3 件」の行を持つ 1 つのノードになり、中への関連が相手ごとに 1 本にまとまる
     args:
       - name: collapsed
         value: '["記録"]'
@@ -67,7 +67,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 列を閉じたテーブル名と、閉じた分類の ID。閉じたテーブルはテーブル名と「列 {数}」の開閉のボタンの 1 行で描き、閉じた分類は名前の後ろに「テーブル {数} 件」を出す
+    description: 列を閉じたテーブル名と、閉じた分類の ID。閉じたテーブルはテーブル名と「列 {数}」の開閉のボタンの 1 行で描き、閉じた分類は名前の行の下の行に「テーブル {数} 件」を出す
   - name: entered
     type: 文字列
     required: false

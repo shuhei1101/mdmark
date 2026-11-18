@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.67a6251";
+  return "v0.14.0+develop.0d0a635";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -56873,7 +56873,7 @@ function isLocalVersion(value) {
   return typeof value === "string" && (value === DEVELOP_VERSION || VERSION_PATTERN.test(value));
 }
 
-// src/table-logic.ts
+// src/table/table.logic.ts
 var FILTER_KINDS = ["select", "text", "date"];
 function parseNumberCell(text2) {
   const normalized = text2.replaceAll(",", "").trim();
@@ -62977,329 +62977,26 @@ _defineProperty(MarkdownIt, "ParserInline", ParserInline);
 _defineProperty(MarkdownIt, "StateInline", StateInline);
 var MarkdownItCallable = callable(MarkdownIt);
 
-// src/knowledge/index-shape.ts
-var RELATION_TYPES = [
-  "requires",
-  "references",
-  "replaces",
-  "part_of",
-  "change_together"
-];
-var INDEX_SHAPE = {
-  root: {
-    schema: { type: "integer", required: true },
-    docs: { type: "array", required: true },
-    terms: { type: "array", required: false }
-  },
-  doc: {
-    id: { type: "string", required: true },
-    path: { type: "string", required: true },
-    title: { type: "string", required: true },
-    description: { type: "string", required: false },
-    aliases: { type: "string[]", required: false },
-    tags: { type: "doc_tags", required: false },
-    related: { type: "doc_related", required: false }
-  },
-  term: {
-    id: { type: "string", required: true },
-    term: { type: "string", required: true },
-    meaning: { type: "string", required: true },
-    aliases: { type: "string[]", required: false },
-    avoid: { type: "string[]", required: false }
-  }
-};
-var DOC_TAG_SHAPE = {
-  name: { type: "string", required: true },
-  main: { type: "boolean", required: false }
-};
-var DOC_RELATED_SHAPE = {
-  to: { type: "string", required: true },
-  type: { type: "string", required: true },
-  when: { type: "string", required: true },
-  paths: { type: "string[]", required: false }
-};
-var EMPTY_ALLOWED = /* @__PURE__ */ new Set(["description"]);
-var CURRENT_SCHEMA = 2;
-function isRecord4(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-function checkString(key, value) {
-  if (typeof value !== "string") {
-    return `${key} \u306F\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`;
-  }
-  return value === "" && !EMPTY_ALLOWED.has(key) ? `${key} \u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093` : void 0;
-}
-function checkType(key, value, shape) {
-  if (shape.type === "integer") {
-    return Number.isInteger(value) ? void 0 : `${key} \u306F\u6574\u6570\u306B\u3057\u307E\u3059`;
-  }
-  if (shape.type === "array") {
-    return Array.isArray(value) ? void 0 : `${key} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059`;
-  }
-  if (shape.type === "boolean") {
-    return typeof value === "boolean" ? void 0 : `${key} \u306F\u771F\u507D\u5024\u306B\u3057\u307E\u3059`;
-  }
-  if (shape.type === "string") {
-    return checkString(key, value);
-  }
-  const ok = Array.isArray(value) && value.every((item) => typeof item === "string" && item !== "");
-  return ok ? void 0 : `${key} \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u306E\u4E26\u3073\u306B\u3057\u307E\u3059`;
-}
-function checkDocTags(options) {
-  const { value, where, problems } = options;
-  if (!Array.isArray(value)) {
-    problems.push({ where, message: "tags \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
-    return false;
-  }
-  let valid = true;
-  value.forEach((tag, position) => {
-    const tagWhere = `${where}[${position}]`;
-    if (typeof tag === "string") {
-      if (tag === "") {
-        problems.push({
-          where: tagWhere,
-          message: "tags \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
-        });
-        valid = false;
-      }
-      return;
-    }
-    if (!isRecord4(tag)) {
-      problems.push({
-        where: tagWhere,
-        message: "tags \u306E\u8981\u7D20\u306F\u30BF\u30B0\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u304B\u3001name \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
-      });
-      valid = false;
-      return;
-    }
-    if (!checkItem({ item: tag, shape: DOC_TAG_SHAPE, where: tagWhere, problems })) {
-      valid = false;
-    }
-  });
-  return valid;
-}
-function checkDocRelated(options) {
-  const { value, where, problems } = options;
-  if (!Array.isArray(value)) {
-    problems.push({ where, message: "related \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
-    return false;
-  }
-  let valid = true;
-  value.forEach((related, position) => {
-    const relatedWhere = `${where}[${position}]`;
-    if (typeof related === "string") {
-      if (related === "") {
-        problems.push({
-          where: relatedWhere,
-          message: "related \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
-        });
-        valid = false;
-      }
-      return;
-    }
-    if (!isRecord4(related)) {
-      problems.push({
-        where: relatedWhere,
-        message: "related \u306E\u8981\u7D20\u306F\u6587\u66F8\u306E id \u306E\u6587\u5B57\u5217\u304B\u3001to\u30FBtype\u30FBwhen \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
-      });
-      valid = false;
-      return;
-    }
-    if (!checkItem({
-      item: related,
-      shape: DOC_RELATED_SHAPE,
-      where: relatedWhere,
-      problems
-    })) {
-      valid = false;
-    }
-    const { type } = related;
-    if (typeof type === "string" && type !== "" && !RELATION_TYPES.includes(type)) {
-      problems.push({
-        where: `${relatedWhere}.type`,
-        message: `type \u306F ${RELATION_TYPES.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u307E\u3059`
-      });
-      valid = false;
-    }
-  });
-  return valid;
-}
-function checkKey(options) {
-  const { value, key, shape, where, problems } = options;
-  if (value === void 0) {
-    if (shape.required) {
-      problems.push({ where, message: `${key} \u304C\u3042\u308A\u307E\u305B\u3093` });
-    }
-    return !shape.required;
-  }
-  if (shape.type === "doc_tags") {
-    return checkDocTags({ value, where, problems });
-  }
-  if (shape.type === "doc_related") {
-    return checkDocRelated({ value, where, problems });
-  }
-  const message = checkType(key, value, shape);
-  if (message) {
-    problems.push({ where, message });
-  }
-  return message === void 0;
-}
-function checkItem(options) {
-  const { item, shape, where, problems } = options;
-  if (!isRecord4(item)) {
-    problems.push({ where, message: `${where} \u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059` });
-    return false;
-  }
-  let valid = true;
-  for (const [key, keyShape] of Object.entries(shape)) {
-    const checked = checkKey({
-      value: item[key],
-      key,
-      shape: keyShape,
-      where: `${where}.${key}`,
-      problems
-    });
-    valid = checked && valid;
-  }
-  for (const key of Object.keys(item)) {
-    if (!Object.hasOwn(shape, key)) {
-      problems.push({
-        where: `${where}.${key}`,
-        message: `${key} \u306F\u7D22\u5F15\u306B\u8A18\u8F09\u3067\u304D\u306A\u3044\u30AD\u30FC\u3067\u3059`
-      });
-      valid = false;
-    }
-  }
-  return valid;
-}
-function checkList(options) {
-  const { list: list2, name, shape, unique, problems } = options;
-  const seen = new Map(
-    unique.map((key) => [key, /* @__PURE__ */ new Set()])
-  );
-  const items = [];
-  list2.forEach((item, position) => {
-    const where = `${name}[${position}]`;
-    if (!checkItem({ item, shape, where, problems })) {
-      return;
-    }
-    const record2 = item;
-    const duplicated = unique.filter((key) => seen.get(key)?.has(record2[key]));
-    for (const key of duplicated) {
-      problems.push({
-        where: `${where}.${key}`,
-        message: `${key} \u304C\u5148\u306E\u8981\u7D20\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059`
-      });
-    }
-    if (duplicated.length) {
-      return;
-    }
-    for (const key of unique) {
-      seen.get(key)?.add(record2[key]);
-    }
-    items.push(item);
-  });
-  return items;
-}
-function normalizeIndex(value) {
-  const problems = [];
-  const index = { schema: CURRENT_SCHEMA, docs: [] };
-  if (!isRecord4(value)) {
-    problems.push({ where: "", message: "\u7D22\u5F15\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
-    return { index, problems };
-  }
-  if (value.schema !== CURRENT_SCHEMA && Number.isInteger(value.schema)) {
-    problems.push({
-      where: "schema",
-      message: `schema \u306F ${CURRENT_SCHEMA} \u306B\u3057\u307E\u3059\u3002\u53E4\u3044\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u7D22\u5F15\u306F mdmark upgrade \u3067\u79FB\u3057\u3066\u304F\u3060\u3055\u3044`
-    });
-  }
-  const root = [];
-  checkItem({
-    item: { ...value, docs: [], terms: [] },
-    shape: INDEX_SHAPE.root,
-    where: "",
-    problems: root
-  });
-  for (const problem of root) {
-    const key = problem.where.slice(1);
-    if (key !== "docs" && key !== "terms") {
-      problems.push({ where: key, message: problem.message });
-    }
-  }
-  index.docs = checkTop({
-    list: value.docs,
-    name: "docs",
-    shape: INDEX_SHAPE.doc,
-    unique: ["id", "path"],
-    required: true,
-    problems
-  });
-  if (value.terms !== void 0) {
-    index.terms = checkTop({
-      list: value.terms,
-      name: "terms",
-      shape: INDEX_SHAPE.term,
-      unique: ["id"],
-      required: false,
-      problems
-    });
-  }
-  return { index, problems };
-}
-function checkTop(options) {
-  const { list: list2, name, required: required2, problems } = options;
-  if (list2 === void 0) {
-    if (required2) {
-      problems.push({ where: name, message: `${name} \u304C\u3042\u308A\u307E\u305B\u3093` });
-    }
-    return [];
-  }
-  if (!Array.isArray(list2)) {
-    problems.push({ where: name, message: `${name} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059` });
-    return [];
-  }
-  return checkList({ ...options, list: list2 });
-}
-function readRelated(item) {
-  if (typeof item === "string") {
-    return { to: item, type: null, when: null };
-  }
-  return item.paths === void 0 ? { to: item.to, type: item.type, when: item.when } : { to: item.to, type: item.type, when: item.when, paths: item.paths };
-}
-
-// src/render/frontmatter.ts
-var OPEN_LINE = /^---[ \t]*$/;
-var CLOSE_LINE = /^(?:---|\.\.\.)[ \t]*$/;
-var BOM = "\uFEFF";
-var blankOut = (text2) => text2.replace(/[^\r\n]/g, " ");
-var splitFrontmatter = (markdown) => {
-  const none = {
-    body: markdown,
-    content: void 0,
-    endLine: void 0
-  };
-  const text2 = markdown.startsWith(BOM) ? markdown.slice(BOM.length) : markdown;
-  const lines = text2.split("\n");
-  const stripCr = (line) => line.replace(/\r$/, "");
-  if (!OPEN_LINE.test(stripCr(lines[0] ?? ""))) {
-    return none;
-  }
-  const endLine = lines.findIndex(
-    (line, index) => index > 0 && CLOSE_LINE.test(stripCr(line))
-  );
-  if (endLine < 0) {
-    return none;
-  }
-  const content = lines.slice(1, endLine).map(stripCr).join("\n");
-  const rangeLength = markdown.length - text2.length + lines.slice(0, endLine + 1).join("\n").length;
-  const body = blankOut(markdown.slice(0, rangeLength)) + markdown.slice(rangeLength);
-  return { body, content, endLine };
-};
-
-// src/parts/escape.ts
+// src/shared/escape.logic.ts
 function escapeHtml2(text2) {
   return text2.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
+
+// src/shared/syntax-warning.part.ts
+var WARNING_TITLE = "\u8A18\u8F09\u306E\u8B66\u544A";
+function renderInline(text2) {
+  return text2.split("`").map(
+    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
+  ).join("");
+}
+function renderSyntaxWarning(options) {
+  const { mark = "", message, items = [], id } = options;
+  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
+  const list2 = items.length ? `<ul>${items.map(
+    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
+  ).join("")}</ul>` : "";
+  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
+  return `<div class="mdmark-syntax-warning" role="note"${idAttribute}><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list2}</div>`;
 }
 
 // src/diagram/definition.ts
@@ -63811,7 +63508,7 @@ function resolveFeatures2(options) {
   return features;
 }
 
-// src/parts/embed.ts
+// src/shared/embed.part.ts
 var LOADING_TEXT = "\u56F3\u3092\u8AAD\u307F\u8FBC\u3093\u3067\u3044\u307E\u3059";
 function renderEmbed(options) {
   const { name, options: markOptions = {}, definition } = options;
@@ -63819,7 +63516,7 @@ function renderEmbed(options) {
   return `<div class="mdmark-embed" data-mdmark-slot="${escapeHtml2(name)}" data-mdmark-args="${escapeHtml2(JSON.stringify(markOptions))}"${index} role="status">${LOADING_TEXT}</div>`;
 }
 
-// src/parts/own.ts
+// src/shared/own.logic.ts
 var SLOT_MARKER = "\0mdmark-slot\0";
 function markOwn(html, nonce) {
   return html.replace(
@@ -63831,21 +63528,7 @@ function splitSlots(html) {
   return html.split(SLOT_MARKER);
 }
 
-// src/parts/colors.ts
-var COLOR_NAMES = [
-  "blue",
-  "red",
-  "green",
-  "yellow",
-  "orange",
-  "purple",
-  "gray"
-];
-function isColorName(value) {
-  return COLOR_NAMES.includes(value);
-}
-
-// src/render/syntax/collapse.ts
+// src/shared/collapse.logic.ts
 function titleTailOf(text2) {
   const tail = /(?:^|\s)title=\S*\s+(\S+)/.exec(text2)?.[1];
   return tail === void 0 || tail.includes("=") ? void 0 : tail;
@@ -63859,10 +63542,793 @@ function readCollapse(options) {
   return { collapse: collapse.open === true ? "open" : "closed", title };
 }
 
-// src/parts/table.ts
+// src/shared/colors.logic.ts
+var COLOR_NAMES = [
+  "blue",
+  "red",
+  "green",
+  "yellow",
+  "orange",
+  "purple",
+  "gray"
+];
+function isColorName(value) {
+  return COLOR_NAMES.includes(value);
+}
+
+// src/shared/icons.part.ts
+var import_lucide = __toESM(require_lucide(), 1);
+var WideExpand = [
+  ["path", { d: "M3 5v14" }],
+  ["path", { d: "M21 5v14" }],
+  ["path", { d: "M7 12h10" }],
+  ["path", { d: "m10 9-3 3 3 3" }],
+  ["path", { d: "m14 9 3 3-3 3" }]
+];
+var WideShrink = [
+  ["path", { d: "M12 5v14" }],
+  ["path", { d: "M2 12h7" }],
+  ["path", { d: "m6 9 3 3-3 3" }],
+  ["path", { d: "M22 12h-7" }],
+  ["path", { d: "m18 9-3 3 3 3" }]
+];
+var ICONS = {
+  plus: import_lucide.Plus,
+  minus: import_lucide.Minus,
+  "rotate-ccw": import_lucide.RotateCcw,
+  expand: import_lucide.Expand,
+  x: import_lucide.X,
+  "chevron-left": import_lucide.ChevronLeft,
+  "chevron-right": import_lucide.ChevronRight,
+  "chevron-up": import_lucide.ChevronUp,
+  "chevron-down": import_lucide.ChevronDown,
+  bot: import_lucide.Bot,
+  split: import_lucide.Split,
+  square: import_lucide.Square,
+  "code-xml": import_lucide.CodeXml,
+  plug: import_lucide.Plug,
+  database: import_lucide.Database,
+  globe: import_lucide.Globe,
+  cloud: import_lucide.Cloud,
+  "hard-drive": import_lucide.HardDrive,
+  "circle-question-mark": import_lucide.CircleQuestionMark,
+  wrench: import_lucide.Wrench,
+  flag: import_lucide.Flag,
+  server: import_lucide.Server,
+  sigma: import_lucide.Sigma,
+  info: import_lucide.Info,
+  "grip-horizontal": import_lucide.GripHorizontal,
+  copy: import_lucide.Copy,
+  "corner-up-left": import_lucide.CornerUpLeft,
+  "columns-3": import_lucide.Columns3,
+  check: import_lucide.Check,
+  "circle-alert": import_lucide.CircleAlert,
+  lightbulb: import_lucide.Lightbulb,
+  "message-square-warning": import_lucide.MessageSquareWarning,
+  "triangle-alert": import_lucide.TriangleAlert,
+  user: import_lucide.User,
+  "octagon-alert": import_lucide.OctagonAlert,
+  pencil: import_lucide.Pencil,
+  pin: import_lucide.Pin,
+  "panel-right": import_lucide.PanelRight,
+  "panel-right-dashed": import_lucide.PanelRightDashed,
+  "chevrons-up-down": import_lucide.ChevronsUpDown,
+  "chevrons-down-up": import_lucide.ChevronsDownUp,
+  ellipsis: import_lucide.Ellipsis,
+  equal: import_lucide.Equal,
+  "arrow-up": import_lucide.ArrowUp,
+  "arrow-up-to-line": import_lucide.ArrowUpToLine,
+  "arrow-down": import_lucide.ArrowDown,
+  "arrow-right": import_lucide.ArrowRight,
+  funnel: import_lucide.Funnel,
+  link: import_lucide.Link,
+  file: import_lucide.File,
+  "file-diff": import_lucide.FileDiff,
+  folder: import_lucide.Folder,
+  menu: import_lucide.Menu,
+  "maximize-2": import_lucide.Maximize2,
+  pause: import_lucide.Pause,
+  play: import_lucide.Play,
+  table: import_lucide.Table,
+  "settings-2": import_lucide.Settings2,
+  "grip-vertical": import_lucide.GripVertical,
+  eye: import_lucide.Eye,
+  "eye-off": import_lucide.EyeOff,
+  "wide-expand": WideExpand,
+  "wide-shrink": WideShrink
+};
+var OWN_ICON_NAMES = /* @__PURE__ */ new Set(["wide-expand", "wide-shrink"]);
+var bundledIconNode = (name) => Object.hasOwn(ICONS, name) && !OWN_ICON_NAMES.has(name) ? ICONS[name] : void 0;
+function renderNode([tag, attributes]) {
+  const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
+  return `<${tag}${attrs}></${tag}>`;
+}
+function iconSvg(name) {
+  const body = ICONS[name].map(renderNode).join("");
+  return `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+}
+
+// src/footnote/footnote.part.ts
+var KINDS = {
+  footnote: {
+    label: "\u811A\u6CE8",
+    refId: "mdmark-fnref-",
+    tipId: "mdmark-fn-tip-",
+    itemId: "mdmark-fn-",
+    refClass: "",
+    listClass: ""
+  },
+  annotation: {
+    label: "\u6CE8\u8A18",
+    refId: "mdmark-noteref-",
+    tipId: "mdmark-note-tip-",
+    itemId: "mdmark-note-",
+    refClass: " mdmark-note-ref",
+    listClass: " mdmark-notes"
+  }
+};
+var NOTE_OWNER_PREFIX = "mdmark-note-owner-";
+var noteOwnerId = (prefix, elementId) => `${prefix}${elementId.replace(/\s/g, "_")}`;
+var FOOTNOTE_BODY_OPEN = '<span class="mdmark-fn-tip-body">';
+var BACK_LETTERS = "abcdefghijklmnopqrstuvwxyz";
+function hasLink(bodies) {
+  return bodies.some((body) => /<a\s/i.test(body));
+}
+function renderFootnoteRef(options) {
+  const {
+    number: number4,
+    refIndex = 0,
+    bodies,
+    below = false,
+    kind = "footnote",
+    afterRef = false
+  } = options;
+  const names2 = KINDS[kind];
+  const tipId = `${names2.tipId}${number4}-${refIndex}`;
+  const label = `${names2.label} ${number4}`;
+  const linked = hasLink(bodies);
+  const pointer = linked ? `aria-details="${tipId}"` : `aria-describedby="${tipId}"`;
+  const role = linked ? `role="group" aria-label="${label}"` : 'role="tooltip"';
+  const classes = `mdmark-fn-ref${names2.refClass}${below ? " is-below" : ""}${afterRef ? " is-after-ref" : ""}`;
+  const items = bodies.map((body) => `${FOOTNOTE_BODY_OPEN}${body}</span>`).join("");
+  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names2.refId}${number4}-${refIndex}" href="#${names2.itemId}${number4}" ${pointer}><span class="mdmark-visually-hidden">${names2.label} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-title">${label}</span>${items}</span></sup>`;
+}
+function renderBackLink(options) {
+  const { label: name, number: number4, index, count, ref } = options;
+  const several = count > 1;
+  const label = several ? `\u672C\u6587\u306E${name} ${number4} \u306E ${index + 1} \u3064\u76EE\u306E\u53C2\u7167\u3078\u623B\u308B` : `\u672C\u6587\u306E${name} ${number4} \u3078\u623B\u308B`;
+  const letter = several ? BACK_LETTERS[index] ?? String(index + 1) : "";
+  const owner = ref.owner === void 0 ? "" : ` data-note-owner="${escapeHtml2(ref.owner)}"`;
+  return `<a class="mdmark-fn-back" href="${escapeHtml2(ref.href)}"${owner} aria-label="${label}">${iconSvg("corner-up-left")}${letter}</a>`;
+}
+function renderFootnotes(options) {
+  const { items, open: open2 = false, kind = "footnote" } = options;
+  const names2 = KINDS[kind];
+  if (items.length === 0) {
+    return "";
+  }
+  const lis = items.map(({ number: number4, html, refCount, refs }) => {
+    const targets = refs ?? Array.from({ length: refCount }, (_, index) => ({
+      href: `#${names2.refId}${number4}-${index}`
+    }));
+    const backs = targets.map(
+      (ref, index) => renderBackLink({
+        label: names2.label,
+        number: number4,
+        index,
+        count: targets.length,
+        ref
+      })
+    ).join("");
+    const at = html.lastIndexOf("</p>");
+    const body = at < 0 ? `${html} ${backs}` : `${html.slice(0, at)} ${backs}${html.slice(at)}`;
+    return `<li class="mdmark-fn-item" id="${names2.itemId}${number4}">${body}</li>`;
+  }).join("");
+  return `<details class="mdmark-footnotes${names2.listClass}"${open2 ? " open" : ""}><summary>${names2.label}\uFF08${items.length} \u4EF6\uFF09</summary><ol class="mdmark-footnotes-list">${lis}</ol></details>`;
+}
+
+// src/footnote/footnote.syntax.ts
+var DEF_OPEN = "mdmark_footnote_def_open";
+var DEF_CLOSE = "mdmark_footnote_def_close";
+var ANNOTATION_DEF_OPEN = "mdmark_annotation_def_open";
+var ANNOTATION_DEF_CLOSE = "mdmark_annotation_def_close";
+var DEFINITION_CLOSES = {
+  [DEF_OPEN]: DEF_CLOSE,
+  [ANNOTATION_DEF_OPEN]: ANNOTATION_DEF_CLOSE
+};
+var REF = "mdmark_footnote_ref";
+var LIST = "mdmark_footnote_list";
+var INLINE_KEY_PREFIX = "\0inline:";
+var CONTINUATION_INDENT = 4;
+var TAB_WIDTH = 4;
+var OPEN_BRACKET = 91;
+var CLOSE_BRACKET = 93;
+var CARET = 94;
+var COLON = 58;
+var SPACE = 32;
+var TAB = 9;
+var NEWLINE = 10;
+function footnoteStateOf(env) {
+  env.mdmarkFootnotes ??= {
+    definitions: /* @__PURE__ */ new Map(),
+    notes: [],
+    numbers: /* @__PURE__ */ new Map()
+  };
+  return env.mdmarkFootnotes;
+}
+function isWhitespace(code2) {
+  return code2 === SPACE || code2 === TAB || code2 === NEWLINE;
+}
+function labelEnd(src, pos, max) {
+  for (let at = pos + 2; at < max; at++) {
+    const code2 = src.charCodeAt(at);
+    if (isWhitespace(code2)) {
+      return -1;
+    }
+    if (code2 === CLOSE_BRACKET) {
+      return at === pos + 2 ? -1 : at;
+    }
+  }
+  return -1;
+}
+function findDefinition(state, startLine) {
+  const src = state.src;
+  const start = (state.bMarks[startLine] ?? 0) + (state.tShift[startLine] ?? 0);
+  const max = state.eMarks[startLine] ?? 0;
+  if ((state.sCount[startLine] ?? 0) - state.blkIndent >= CONTINUATION_INDENT) {
+    return void 0;
+  }
+  if (src.charCodeAt(start) !== OPEN_BRACKET || src.charCodeAt(start + 1) !== CARET) {
+    return void 0;
+  }
+  const close = labelEnd(src, start, max);
+  if (close < 0 || src.charCodeAt(close + 1) !== COLON) {
+    return void 0;
+  }
+  return { start, close, max };
+}
+function skipIndent(src, from) {
+  let { pos, offset } = from;
+  while (pos < from.max) {
+    const code2 = src.charCodeAt(pos);
+    if (code2 === TAB) {
+      offset += TAB_WIDTH - offset % TAB_WIDTH;
+    } else if (code2 === SPACE) {
+      offset += 1;
+    } else {
+      break;
+    }
+    pos += 1;
+  }
+  return { pos, offset };
+}
+function tokenizeBody(state, range) {
+  const { startLine, endLine, start, afterColon, max } = range;
+  const oldBMark = state.bMarks[startLine] ?? 0;
+  const oldTShift = state.tShift[startLine] ?? 0;
+  const oldSCount = state.sCount[startLine] ?? 0;
+  const oldParentType = state.parentType;
+  const initial = oldSCount + afterColon - start;
+  const { pos, offset } = skipIndent(state.src, {
+    pos: afterColon,
+    max,
+    offset: initial
+  });
+  state.tShift[startLine] = pos - afterColon;
+  state.sCount[startLine] = offset - initial;
+  state.bMarks[startLine] = afterColon;
+  state.blkIndent += CONTINUATION_INDENT;
+  state.parentType = "footnote";
+  const sCount = state.sCount[startLine] ?? 0;
+  if (sCount < state.blkIndent) {
+    state.sCount[startLine] = sCount + state.blkIndent;
+  }
+  state.md.block.tokenize(state, startLine, endLine);
+  state.parentType = oldParentType;
+  state.blkIndent -= CONTINUATION_INDENT;
+  state.tShift[startLine] = oldTShift;
+  state.sCount[startLine] = oldSCount;
+  state.bMarks[startLine] = oldBMark;
+}
+function readFootnoteDefinition(...args) {
+  const [state, startLine, endLine, silent] = args;
+  const found = findDefinition(state, startLine);
+  if (!found) {
+    return false;
+  }
+  if (silent) {
+    return true;
+  }
+  const { start, close, max } = found;
+  const src = state.src;
+  const afterColon = close + 2;
+  const key = state.md.utils.normalizeReference(src.slice(start + 2, close));
+  const footnotes = footnoteStateOf(state.env);
+  const first = !footnotes.definitions.has(key);
+  if (first) {
+    footnotes.definitions.set(key, null);
+  }
+  const open2 = state.push(DEF_OPEN, "", 1);
+  open2.meta = {
+    key,
+    first,
+    source: `${src.slice(start, afterColon)} `
+  };
+  open2.map = [startLine, startLine];
+  tokenizeBody(state, { startLine, endLine, start, afterColon, max });
+  open2.map = [startLine, state.line];
+  state.push(DEF_CLOSE, "", -1);
+  return true;
+}
+function pushReference(state, id, source) {
+  const footnotes = footnoteStateOf(state.env);
+  const note = footnotes.notes[id];
+  if (note === void 0) {
+    throw new Error(`\u811A\u6CE8\u306E\u756A\u53F7\u304C\u7121\u3044: ${id}`);
+  }
+  const token = state.push(REF, "", 0);
+  token.meta = {
+    id,
+    refIndex: note.refCount,
+    source
+  };
+  note.refCount += 1;
+}
+function readFootnoteReference(state, silent) {
+  const { src, pos: start, posMax: max } = state;
+  if (src.charCodeAt(start) !== OPEN_BRACKET || src.charCodeAt(start + 1) !== CARET) {
+    return false;
+  }
+  const close = labelEnd(src, start, max);
+  if (close < 0) {
+    return false;
+  }
+  const key = state.md.utils.normalizeReference(src.slice(start + 2, close));
+  const footnotes = state.env.mdmarkFootnotes;
+  if (!footnotes?.definitions.has(key)) {
+    return false;
+  }
+  if (!silent) {
+    let id = footnotes.numbers.get(key);
+    if (id === void 0) {
+      id = footnotes.notes.length;
+      footnotes.notes.push({ key, inline: null, refCount: 0 });
+      footnotes.numbers.set(key, id);
+    }
+    pushReference(state, id, src.slice(start, close + 1));
+  }
+  state.pos = close + 1;
+  return true;
+}
+function readInlineFootnote(state, silent) {
+  const { src, pos: start } = state;
+  if (src.charCodeAt(start) !== CARET || src.charCodeAt(start + 1) !== OPEN_BRACKET) {
+    return false;
+  }
+  const close = state.md.helpers.parseLinkLabel(state, start + 1);
+  if (close < 0) {
+    return false;
+  }
+  if (!silent) {
+    const footnotes = footnoteStateOf(state.env);
+    const inline2 = [];
+    state.md.inline.parse(
+      src.slice(start + 2, close),
+      state.md,
+      state.env,
+      inline2
+    );
+    const id = footnotes.notes.length;
+    footnotes.notes.push({ key: null, inline: inline2, refCount: 0 });
+    pushReference(state, id, src.slice(start, close + 1));
+  }
+  state.pos = close + 1;
+  return true;
+}
+function findDefinitionClose(tokens, openIndex) {
+  const open2 = tokens[openIndex]?.type ?? "";
+  const close = DEFINITION_CLOSES[open2];
+  let depth = 0;
+  for (let index = openIndex; index < tokens.length; index++) {
+    const type = tokens[index]?.type;
+    if (type === open2) {
+      depth += 1;
+    } else if (type === close) {
+      depth -= 1;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+  throw new Error("\u811A\u6CE8\u306E\u5B9A\u7FA9\u306E\u9589\u3058\u304C\u7121\u3044");
+}
+function restoreDefinition(state, source, inner) {
+  const [first, second] = inner;
+  if (first?.type === "paragraph_open" && second?.type === "inline") {
+    const text3 = new state.Token("text", "", 0);
+    text3.content = source;
+    second.children = [text3, ...second.children ?? []];
+    second.content = `${source}${second.content}`;
+    return inner;
+  }
+  const open2 = new state.Token("paragraph_open", "p", 1);
+  const inline2 = new state.Token("inline", "", 0);
+  const text2 = new state.Token("text", "", 0);
+  text2.content = source.trimEnd();
+  inline2.content = text2.content;
+  inline2.children = [text2];
+  const close = new state.Token("paragraph_close", "p", -1);
+  return [open2, inline2, close, ...inner];
+}
+function restoreReferences(state, tokens) {
+  for (const token of tokens) {
+    if (token.type !== "inline" || !token.children) {
+      continue;
+    }
+    token.children = token.children.map((child) => {
+      if (child.type !== REF) {
+        return child;
+      }
+      const text2 = new state.Token("text", "", 0);
+      text2.content = child.meta.source;
+      return text2;
+    });
+  }
+}
+function collectFootnotes(state) {
+  const env = envOf(state);
+  const footnotes = env.mdmarkFootnotes;
+  if (footnotes === void 0) {
+    return;
+  }
+  if (featureOn(state, "footnotes")) {
+    footnotes.notes.forEach((note, id) => {
+      if (note.inline !== null) {
+        state.tokens.push(...inlineDefinition(state, note, id));
+      }
+    });
+    return;
+  }
+  const out = [];
+  for (let index = 0; index < state.tokens.length; index++) {
+    const token = state.tokens[index];
+    if (token === void 0) {
+      continue;
+    }
+    if (token.type !== DEF_OPEN) {
+      out.push(token);
+      continue;
+    }
+    const close = findDefinitionClose(state.tokens, index);
+    const meta2 = token.meta;
+    out.push(
+      ...restoreDefinition(
+        state,
+        meta2.source,
+        state.tokens.slice(index + 1, close)
+      )
+    );
+    index = close;
+  }
+  state.tokens = out;
+  restoreReferences(state, out);
+  delete env.mdmarkFootnotes;
+}
+function inlineDefinition(state, note, id) {
+  const key = `${INLINE_KEY_PREFIX}${id}`;
+  envOf(state).mdmarkFootnotes?.definitions.set(key, null);
+  const open2 = new state.Token(DEF_OPEN, "", 1);
+  open2.meta = { key, first: true, source: "" };
+  const paragraphOpen = new state.Token("paragraph_open", "p", 1);
+  paragraphOpen.block = true;
+  const inline2 = new state.Token("inline", "", 0);
+  inline2.children = note.inline;
+  inline2.content = (note.inline ?? []).map((child) => child.content).join("");
+  const paragraphClose = new state.Token("paragraph_close", "p", -1);
+  paragraphClose.block = true;
+  const close = new state.Token(DEF_CLOSE, "", -1);
+  note.key = key;
+  note.inline = null;
+  return [open2, paragraphOpen, inline2, paragraphClose, close];
+}
+function outsideFootnoteDefinitions(tokens) {
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token !== void 0 && token.type in DEFINITION_CLOSES) {
+      index = findDefinitionClose(tokens, index);
+    } else if (token !== void 0) {
+      out.push(token);
+    }
+  }
+  return out;
+}
+function takeFootnoteDefinitions(state) {
+  const footnotes = envOf(state).mdmarkFootnotes;
+  if (footnotes === void 0) {
+    return;
+  }
+  const out = [];
+  for (let index = 0; index < state.tokens.length; index++) {
+    const token = state.tokens[index];
+    if (token === void 0) {
+      continue;
+    }
+    if (token.type !== DEF_OPEN) {
+      out.push(token);
+      continue;
+    }
+    const close = findDefinitionClose(state.tokens, index);
+    const meta2 = token.meta;
+    if (meta2.first) {
+      footnotes.definitions.set(meta2.key, state.tokens.slice(index + 1, close));
+    }
+    index = close;
+  }
+  state.tokens = out;
+}
+function blockText(md, env, tokens) {
+  return md.renderer.render(tokens, md.options, env).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+function footnoteBodies(options) {
+  const { md, env, note } = options;
+  const tokens = (note.key === null ? null : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [];
+  return definitionBodies({ md, env, tokens });
+}
+function definitionBodies(options) {
+  const { md, env, tokens } = options;
+  const bodies = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token === void 0) {
+      continue;
+    }
+    if (token.type === "paragraph_open") {
+      const inline2 = tokens[index + 1];
+      bodies.push(
+        md.renderer.renderInline(inline2?.children ?? [], md.options, env)
+      );
+      index += 2;
+      continue;
+    }
+    let end = index;
+    for (let depth = token.nesting; depth > 0; ) {
+      end += 1;
+      depth += tokens[end]?.nesting ?? -depth;
+    }
+    const text2 = blockText(md, env, tokens.slice(index, end + 1));
+    if (text2 !== "") {
+      bodies.push(text2);
+    }
+    index = end;
+  }
+  return { bodies, html: md.renderer.render(tokens, md.options, env) };
+}
+function markOwnAroundBodies(html, fills, nonce) {
+  let cursor = 0;
+  let out = "";
+  for (const fill of fills) {
+    const at = html.indexOf(FOOTNOTE_BODY_OPEN, cursor) + FOOTNOTE_BODY_OPEN.length;
+    out += markOwn(html.slice(cursor, at), nonce) + fill;
+    cursor = at + fill.length;
+  }
+  return out + markOwn(html.slice(cursor), nonce);
+}
+function renderReference(md, token, env) {
+  const { id, refIndex } = token.meta;
+  const note = env.mdmarkFootnotes?.notes[id];
+  if (note === void 0) {
+    throw new Error(`\u811A\u6CE8\u306E\u756A\u53F7\u304C\u7121\u3044: ${id}`);
+  }
+  const { bodies } = footnoteBodies({ md, env, note });
+  const html = renderFootnoteRef({ number: id + 1, refIndex, bodies });
+  return markOwnAroundBodies(html, bodies, env.nonce);
+}
+function renderList(md, env) {
+  return renderDefinitionList({
+    md,
+    env,
+    kind: "footnote",
+    items: (env.mdmarkFootnotes?.notes ?? []).map((note, index) => ({
+      number: index + 1,
+      tokens: (note.key === null ? null : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [],
+      refCount: note.refCount
+    }))
+  });
+}
+function renderDefinitionList(options) {
+  const { md, env, kind } = options;
+  const fills = [];
+  const items = options.items.map(({ number: number4, tokens, refCount, refs }) => {
+    const { html } = definitionBodies({ md, env, tokens });
+    const at = html.lastIndexOf("</p>");
+    const back = refs === void 0 ? {} : { refs };
+    if (at < 0) {
+      fills.push(html);
+      return { number: number4, html: SLOT_MARKER, refCount, ...back };
+    }
+    fills.push(html.slice(0, at), html.slice(at + "</p>".length));
+    return {
+      number: number4,
+      html: `${SLOT_MARKER}</p>${SLOT_MARKER}`,
+      refCount,
+      ...back
+    };
+  });
+  return splitSlots(markOwn(renderFootnotes({ items, kind }), env.nonce)).map((part, index) => `${part}${fills[index] ?? ""}`).join("");
+}
+function buildFootnoteList(state) {
+  if ((envOf(state).mdmarkFootnotes?.notes.length ?? 0) === 0) {
+    return;
+  }
+  const token = new state.Token(LIST, "", 0);
+  token.block = true;
+  state.tokens.push(token);
+}
+function useFootnotes(parser3) {
+  parser3.block.ruler.before(
+    "reference",
+    "mdmark_footnote_def",
+    readFootnoteDefinition,
+    {
+      alt: ["paragraph", "reference"]
+    }
+  );
+  parser3.inline.ruler.after(
+    "image",
+    "mdmark_footnote_inline",
+    readInlineFootnote
+  );
+  parser3.inline.ruler.after(
+    "mdmark_footnote_inline",
+    "mdmark_footnote_ref",
+    readFootnoteReference
+  );
+  parser3.renderer.rules[LIST] = (...[_tokens, _index, _options, env]) => renderList(parser3, env);
+  parser3.renderer.rules[REF] = (...[tokens, index, _options, env]) => {
+    const token = tokens[index];
+    if (token === void 0) {
+      throw new Error("\u811A\u6CE8\u306E\u53C2\u7167\u306E\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u3044");
+    }
+    return renderReference(parser3, token, env);
+  };
+}
+
+// src/section/heading.syntax.ts
+function slugBase(text2) {
+  return text2.toLowerCase().trim().replace(/[^\p{L}\p{N}\p{M}_\- ]/gu, "").replaceAll(" ", "-");
+}
+function slugify2(text2, used) {
+  const base = slugBase(text2) || "heading";
+  const count = used.get(base);
+  if (count === void 0) {
+    used.set(base, 0);
+    return base;
+  }
+  used.set(base, count + 1);
+  return `${base}-${count + 1}`;
+}
+function assignHeadingIds(state) {
+  const env = envOf(state);
+  const used = /* @__PURE__ */ new Map();
+  const tokens = outsideFootnoteDefinitions(state.tokens);
+  for (let index = 0; index < tokens.length; index++) {
+    const open2 = tokens[index];
+    const inline2 = tokens[index + 1];
+    if (open2?.type !== "heading_open" || inline2?.type !== "inline") {
+      continue;
+    }
+    const text2 = textOf(inline2);
+    const id = slugify2(text2, used);
+    open2.attrSet("id", id);
+    open2.attrSet("data-mdmark-own", env.nonce);
+    env.headings.push({ level: Number(open2.tag.slice(1)), id, text: text2 });
+    if (featureOn(state, "anchors")) {
+      const anchor2 = new state.Token("html_inline", "", 0);
+      anchor2.content = markOwn(
+        `<a class="mdmark-anchor" href="#${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(text2)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>`,
+        env.nonce
+      );
+      anchor2.meta = { role: "heading-anchor" };
+      inline2.children?.push(anchor2);
+    }
+  }
+}
+
+// src/table/table.part.ts
 var import_lucide2 = __toESM(require_lucide(), 1);
 
-// src/tree-logic.ts
+// src/shared/icon-node.logic.ts
+function iconNodeBody(node2) {
+  return node2.map(([tag, attributes]) => {
+    const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
+    return `<${tag}${attrs}></${tag}>`;
+  }).join("");
+}
+function iconSvgOf(body) {
+  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+}
+var ALLOWED_ELEMENTS = /* @__PURE__ */ new Set([
+  "path",
+  "circle",
+  "rect",
+  "line",
+  "polyline",
+  "polygon",
+  "ellipse"
+]);
+var ALLOWED_ATTRIBUTES = /* @__PURE__ */ new Set([
+  "d",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "x",
+  "y",
+  "x1",
+  "y1",
+  "x2",
+  "y2",
+  "width",
+  "height",
+  "points"
+]);
+var iconNodeSvg = (node2) => {
+  const body = node2.filter(([tag]) => ALLOWED_ELEMENTS.has(tag)).map(([tag, attributes]) => {
+    const attrs = Object.entries(attributes).filter(
+      ([name, value]) => ALLOWED_ATTRIBUTES.has(name) && typeof value === "string"
+    ).map(([name, value]) => ` ${name}="${escapeHtml2(value)}"`).join("");
+    return `<${tag}${attrs}></${tag}>`;
+  }).join("");
+  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+};
+
+// src/shared/collapsible.part.ts
+function renderCollapsible(options) {
+  const { title, open: open2, body, className } = options;
+  const classes = className === void 0 ? "mdmark-collapsible" : `mdmark-collapsible ${className}`;
+  return `<details class="${classes}"${open2 ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${body}</details>`;
+}
+
+// src/tabs/tabs.part.ts
+function plainText(html) {
+  return html.replace(/<[^>]*>/g, "").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
+}
+function withoutLinks(html) {
+  return html.replace(/<\/?a\b[^>]*>/gi, "");
+}
+function renderTabs(options) {
+  const {
+    id,
+    titles,
+    panels,
+    selected,
+    group,
+    collapse = "none",
+    title
+  } = options;
+  const mounted = selected !== void 0;
+  const tablist = mounted ? `<div class="mdmark-tablist" role="tablist">${titles.map(
+    (title2, index) => `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml2(id)}-tab-${index}" aria-controls="${escapeHtml2(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${withoutLinks(title2)}</button>`
+  ).join("")}</div>` : "";
+  const body = panels.map((panel, index) => {
+    const attributes = mounted ? ` role="tabpanel" id="${escapeHtml2(id)}-panel-${index}" aria-labelledby="${escapeHtml2(id)}-tab-${index}"${index === selected ? "" : " hidden"}` : "";
+    return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${titles[index] ?? ""}</p>${panel}</div>`;
+  }).join("");
+  const groupAttribute = group === void 0 ? "" : ` data-group="${escapeHtml2(group)}"`;
+  const tabs = `<div class="mdmark-tabs"${groupAttribute}>${tablist}${body}</div>`;
+  if (collapse === "none") {
+    return tabs;
+  }
+  return renderCollapsible({
+    title: title ?? `\u30BF\u30D6\uFF08${titles.map(plainText).join("\u30FB")}\uFF09`,
+    open: collapse === "open",
+    body: tabs
+  });
+}
+
+// src/table/table-tree.logic.ts
 function splitKeyPath(path) {
   const names2 = path.split(".").filter((name) => name !== "");
   const parents = names2.slice(0, -1).map((_, index) => names2.slice(0, index + 1).join("."));
@@ -64001,154 +64467,7 @@ function yamlLinePaths(lines) {
   return paths;
 }
 
-// src/parts/icon-node.ts
-function iconNodeBody(node2) {
-  return node2.map(([tag, attributes]) => {
-    const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
-    return `<${tag}${attrs}></${tag}>`;
-  }).join("");
-}
-function iconSvgOf(body) {
-  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
-}
-
-// src/parts/icons.ts
-var import_lucide = __toESM(require_lucide(), 1);
-var WideExpand = [
-  ["path", { d: "M3 5v14" }],
-  ["path", { d: "M21 5v14" }],
-  ["path", { d: "M7 12h10" }],
-  ["path", { d: "m10 9-3 3 3 3" }],
-  ["path", { d: "m14 9 3 3-3 3" }]
-];
-var WideShrink = [
-  ["path", { d: "M12 5v14" }],
-  ["path", { d: "M2 12h7" }],
-  ["path", { d: "m6 9 3 3-3 3" }],
-  ["path", { d: "M22 12h-7" }],
-  ["path", { d: "m18 9-3 3 3 3" }]
-];
-var ICONS = {
-  plus: import_lucide.Plus,
-  minus: import_lucide.Minus,
-  "rotate-ccw": import_lucide.RotateCcw,
-  expand: import_lucide.Expand,
-  x: import_lucide.X,
-  "chevron-left": import_lucide.ChevronLeft,
-  "chevron-right": import_lucide.ChevronRight,
-  "chevron-up": import_lucide.ChevronUp,
-  "chevron-down": import_lucide.ChevronDown,
-  bot: import_lucide.Bot,
-  split: import_lucide.Split,
-  square: import_lucide.Square,
-  "code-xml": import_lucide.CodeXml,
-  plug: import_lucide.Plug,
-  database: import_lucide.Database,
-  globe: import_lucide.Globe,
-  cloud: import_lucide.Cloud,
-  "hard-drive": import_lucide.HardDrive,
-  "circle-question-mark": import_lucide.CircleQuestionMark,
-  wrench: import_lucide.Wrench,
-  flag: import_lucide.Flag,
-  server: import_lucide.Server,
-  sigma: import_lucide.Sigma,
-  info: import_lucide.Info,
-  "grip-horizontal": import_lucide.GripHorizontal,
-  copy: import_lucide.Copy,
-  "corner-up-left": import_lucide.CornerUpLeft,
-  "columns-3": import_lucide.Columns3,
-  check: import_lucide.Check,
-  "circle-alert": import_lucide.CircleAlert,
-  lightbulb: import_lucide.Lightbulb,
-  "message-square-warning": import_lucide.MessageSquareWarning,
-  "triangle-alert": import_lucide.TriangleAlert,
-  user: import_lucide.User,
-  "octagon-alert": import_lucide.OctagonAlert,
-  pencil: import_lucide.Pencil,
-  pin: import_lucide.Pin,
-  "panel-right": import_lucide.PanelRight,
-  "panel-right-dashed": import_lucide.PanelRightDashed,
-  "chevrons-up-down": import_lucide.ChevronsUpDown,
-  "chevrons-down-up": import_lucide.ChevronsDownUp,
-  ellipsis: import_lucide.Ellipsis,
-  equal: import_lucide.Equal,
-  "arrow-up": import_lucide.ArrowUp,
-  "arrow-up-to-line": import_lucide.ArrowUpToLine,
-  "arrow-down": import_lucide.ArrowDown,
-  "arrow-right": import_lucide.ArrowRight,
-  funnel: import_lucide.Funnel,
-  link: import_lucide.Link,
-  file: import_lucide.File,
-  "file-diff": import_lucide.FileDiff,
-  folder: import_lucide.Folder,
-  menu: import_lucide.Menu,
-  "maximize-2": import_lucide.Maximize2,
-  pause: import_lucide.Pause,
-  play: import_lucide.Play,
-  table: import_lucide.Table,
-  "settings-2": import_lucide.Settings2,
-  "grip-vertical": import_lucide.GripVertical,
-  eye: import_lucide.Eye,
-  "eye-off": import_lucide.EyeOff,
-  "wide-expand": WideExpand,
-  "wide-shrink": WideShrink
-};
-var OWN_ICON_NAMES = /* @__PURE__ */ new Set(["wide-expand", "wide-shrink"]);
-var bundledIconNode = (name) => Object.hasOwn(ICONS, name) && !OWN_ICON_NAMES.has(name) ? ICONS[name] : void 0;
-function renderNode([tag, attributes]) {
-  const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
-  return `<${tag}${attrs}></${tag}>`;
-}
-function iconSvg(name) {
-  const body = ICONS[name].map(renderNode).join("");
-  return `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
-}
-
-// src/parts/collapsible.ts
-function renderCollapsible(options) {
-  const { title, open: open2, body, className } = options;
-  const classes = className === void 0 ? "mdmark-collapsible" : `mdmark-collapsible ${className}`;
-  return `<details class="${classes}"${open2 ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${body}</details>`;
-}
-
-// src/parts/tabs.ts
-function plainText(html) {
-  return html.replace(/<[^>]*>/g, "").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
-}
-function withoutLinks(html) {
-  return html.replace(/<\/?a\b[^>]*>/gi, "");
-}
-function renderTabs(options) {
-  const {
-    id,
-    titles,
-    panels,
-    selected,
-    group,
-    collapse = "none",
-    title
-  } = options;
-  const mounted = selected !== void 0;
-  const tablist = mounted ? `<div class="mdmark-tablist" role="tablist">${titles.map(
-    (title2, index) => `<button class="mdmark-tab" type="button" role="tab" id="${escapeHtml2(id)}-tab-${index}" aria-controls="${escapeHtml2(id)}-panel-${index}" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}">${withoutLinks(title2)}</button>`
-  ).join("")}</div>` : "";
-  const body = panels.map((panel, index) => {
-    const attributes = mounted ? ` role="tabpanel" id="${escapeHtml2(id)}-panel-${index}" aria-labelledby="${escapeHtml2(id)}-tab-${index}"${index === selected ? "" : " hidden"}` : "";
-    return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${titles[index] ?? ""}</p>${panel}</div>`;
-  }).join("");
-  const groupAttribute = group === void 0 ? "" : ` data-group="${escapeHtml2(group)}"`;
-  const tabs = `<div class="mdmark-tabs"${groupAttribute}>${tablist}${body}</div>`;
-  if (collapse === "none") {
-    return tabs;
-  }
-  return renderCollapsible({
-    title: title ?? `\u30BF\u30D6\uFF08${titles.map(plainText).join("\u30FB")}\uFF09`,
-    open: collapse === "open",
-    body: tabs
-  });
-}
-
-// src/parts/table.ts
+// src/table/table.part.ts
 var renderRawBar = (pressed) => `<div class="mdmark-table-bar mdmark-raw-bar"><div class="mdmark-table-tools">${renderRawToggle(pressed)}</div></div>`;
 var renderRawToggle = (pressed) => `<button class="mdmark-raw-toggle" type="button" aria-label="\u5143\u306E CSV \u3092\u8868\u793A" aria-pressed="${pressed}">${iconSvgOf(iconNodeBody(import_lucide2.CodeXml))}</button>`;
 function plainText2(html) {
@@ -65154,648 +65473,7 @@ function hideTableOf(inner) {
   ) : inner.replace(/^<table(?=[\s>])/, "<table hidden");
 }
 
-// src/parts/footnote.ts
-var KINDS = {
-  footnote: {
-    label: "\u811A\u6CE8",
-    refId: "mdmark-fnref-",
-    tipId: "mdmark-fn-tip-",
-    itemId: "mdmark-fn-",
-    refClass: "",
-    listClass: ""
-  },
-  annotation: {
-    label: "\u6CE8\u8A18",
-    refId: "mdmark-noteref-",
-    tipId: "mdmark-note-tip-",
-    itemId: "mdmark-note-",
-    refClass: " mdmark-note-ref",
-    listClass: " mdmark-notes"
-  }
-};
-var NOTE_OWNER_PREFIX = "mdmark-note-owner-";
-var noteOwnerId = (prefix, elementId) => `${prefix}${elementId.replace(/\s/g, "_")}`;
-var FOOTNOTE_BODY_OPEN = '<span class="mdmark-fn-tip-body">';
-var BACK_LETTERS = "abcdefghijklmnopqrstuvwxyz";
-function hasLink(bodies) {
-  return bodies.some((body) => /<a\s/i.test(body));
-}
-function renderFootnoteRef(options) {
-  const {
-    number: number4,
-    refIndex = 0,
-    bodies,
-    below = false,
-    kind = "footnote",
-    afterRef = false
-  } = options;
-  const names2 = KINDS[kind];
-  const tipId = `${names2.tipId}${number4}-${refIndex}`;
-  const label = `${names2.label} ${number4}`;
-  const linked = hasLink(bodies);
-  const pointer = linked ? `aria-details="${tipId}"` : `aria-describedby="${tipId}"`;
-  const role = linked ? `role="group" aria-label="${label}"` : 'role="tooltip"';
-  const classes = `mdmark-fn-ref${names2.refClass}${below ? " is-below" : ""}${afterRef ? " is-after-ref" : ""}`;
-  const items = bodies.map((body) => `${FOOTNOTE_BODY_OPEN}${body}</span>`).join("");
-  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names2.refId}${number4}-${refIndex}" href="#${names2.itemId}${number4}" ${pointer}><span class="mdmark-visually-hidden">${names2.label} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-title">${label}</span>${items}</span></sup>`;
-}
-function renderBackLink(options) {
-  const { label: name, number: number4, index, count, ref } = options;
-  const several = count > 1;
-  const label = several ? `\u672C\u6587\u306E${name} ${number4} \u306E ${index + 1} \u3064\u76EE\u306E\u53C2\u7167\u3078\u623B\u308B` : `\u672C\u6587\u306E${name} ${number4} \u3078\u623B\u308B`;
-  const letter = several ? BACK_LETTERS[index] ?? String(index + 1) : "";
-  const owner = ref.owner === void 0 ? "" : ` data-note-owner="${escapeHtml2(ref.owner)}"`;
-  return `<a class="mdmark-fn-back" href="${escapeHtml2(ref.href)}"${owner} aria-label="${label}">${iconSvg("corner-up-left")}${letter}</a>`;
-}
-function renderFootnotes(options) {
-  const { items, open: open2 = false, kind = "footnote" } = options;
-  const names2 = KINDS[kind];
-  if (items.length === 0) {
-    return "";
-  }
-  const lis = items.map(({ number: number4, html, refCount, refs }) => {
-    const targets = refs ?? Array.from({ length: refCount }, (_, index) => ({
-      href: `#${names2.refId}${number4}-${index}`
-    }));
-    const backs = targets.map(
-      (ref, index) => renderBackLink({
-        label: names2.label,
-        number: number4,
-        index,
-        count: targets.length,
-        ref
-      })
-    ).join("");
-    const at = html.lastIndexOf("</p>");
-    const body = at < 0 ? `${html} ${backs}` : `${html.slice(0, at)} ${backs}${html.slice(at)}`;
-    return `<li class="mdmark-fn-item" id="${names2.itemId}${number4}">${body}</li>`;
-  }).join("");
-  return `<details class="mdmark-footnotes${names2.listClass}"${open2 ? " open" : ""}><summary>${names2.label}\uFF08${items.length} \u4EF6\uFF09</summary><ol class="mdmark-footnotes-list">${lis}</ol></details>`;
-}
-
-// src/render/syntax/tokens.ts
-function envOf(state) {
-  return state.env;
-}
-function featureOn(state, name) {
-  return envOf(state).features[name] === true;
-}
-function ownBlock(state, html, source) {
-  const token = new state.Token("html_block", "", 0);
-  token.block = true;
-  if (source?.map) {
-    token.map = [...source.map];
-  }
-  token.content = markOwn(html, envOf(state).nonce);
-  return token;
-}
-var TAB_BOUNDARY_KEY = "tabBoundary";
-function tabBoundaryBlock(options) {
-  const token = ownBlock(options.state, options.html, options.source);
-  token.meta = { [TAB_BOUNDARY_KEY]: options.boundary };
-  return token;
-}
-function tabBoundaryOf(token) {
-  const meta2 = token?.meta;
-  return token?.type === "html_block" ? meta2?.[TAB_BOUNDARY_KEY] : void 0;
-}
-function markOf(token) {
-  return token?.type === MARK_TOKEN ? token.meta : void 0;
-}
-function findClose(tokens, openIndex, name) {
-  const level = tokens[openIndex]?.level;
-  for (let index = openIndex + 1; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    if (mark?.closing && mark.name === name && token?.level === level) {
-      return index;
-    }
-  }
-  return -1;
-}
-function findNestedClose(tokens, openIndex) {
-  const open2 = tokens[openIndex];
-  for (let index = openIndex + 1; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token?.nesting === -1 && token.level === open2?.level && token.type === open2?.type.replace("_open", "_close")) {
-      return index;
-    }
-  }
-  return -1;
-}
-function textOf(token) {
-  return (token.children ?? []).filter((child) => child.type === "text" || child.type === "code_inline").map((child) => child.content).join("");
-}
-
-// src/render/syntax/footnotes.ts
-var DEF_OPEN = "mdmark_footnote_def_open";
-var DEF_CLOSE = "mdmark_footnote_def_close";
-var ANNOTATION_DEF_OPEN = "mdmark_annotation_def_open";
-var ANNOTATION_DEF_CLOSE = "mdmark_annotation_def_close";
-var DEFINITION_CLOSES = {
-  [DEF_OPEN]: DEF_CLOSE,
-  [ANNOTATION_DEF_OPEN]: ANNOTATION_DEF_CLOSE
-};
-var REF = "mdmark_footnote_ref";
-var LIST = "mdmark_footnote_list";
-var INLINE_KEY_PREFIX = "\0inline:";
-var CONTINUATION_INDENT = 4;
-var TAB_WIDTH = 4;
-var OPEN_BRACKET = 91;
-var CLOSE_BRACKET = 93;
-var CARET = 94;
-var COLON = 58;
-var SPACE = 32;
-var TAB = 9;
-var NEWLINE = 10;
-function footnoteStateOf(env) {
-  env.mdmarkFootnotes ??= {
-    definitions: /* @__PURE__ */ new Map(),
-    notes: [],
-    numbers: /* @__PURE__ */ new Map()
-  };
-  return env.mdmarkFootnotes;
-}
-function isWhitespace(code2) {
-  return code2 === SPACE || code2 === TAB || code2 === NEWLINE;
-}
-function labelEnd(src, pos, max) {
-  for (let at = pos + 2; at < max; at++) {
-    const code2 = src.charCodeAt(at);
-    if (isWhitespace(code2)) {
-      return -1;
-    }
-    if (code2 === CLOSE_BRACKET) {
-      return at === pos + 2 ? -1 : at;
-    }
-  }
-  return -1;
-}
-function findDefinition(state, startLine) {
-  const src = state.src;
-  const start = (state.bMarks[startLine] ?? 0) + (state.tShift[startLine] ?? 0);
-  const max = state.eMarks[startLine] ?? 0;
-  if ((state.sCount[startLine] ?? 0) - state.blkIndent >= CONTINUATION_INDENT) {
-    return void 0;
-  }
-  if (src.charCodeAt(start) !== OPEN_BRACKET || src.charCodeAt(start + 1) !== CARET) {
-    return void 0;
-  }
-  const close = labelEnd(src, start, max);
-  if (close < 0 || src.charCodeAt(close + 1) !== COLON) {
-    return void 0;
-  }
-  return { start, close, max };
-}
-function skipIndent(src, from) {
-  let { pos, offset } = from;
-  while (pos < from.max) {
-    const code2 = src.charCodeAt(pos);
-    if (code2 === TAB) {
-      offset += TAB_WIDTH - offset % TAB_WIDTH;
-    } else if (code2 === SPACE) {
-      offset += 1;
-    } else {
-      break;
-    }
-    pos += 1;
-  }
-  return { pos, offset };
-}
-function tokenizeBody(state, range) {
-  const { startLine, endLine, start, afterColon, max } = range;
-  const oldBMark = state.bMarks[startLine] ?? 0;
-  const oldTShift = state.tShift[startLine] ?? 0;
-  const oldSCount = state.sCount[startLine] ?? 0;
-  const oldParentType = state.parentType;
-  const initial = oldSCount + afterColon - start;
-  const { pos, offset } = skipIndent(state.src, {
-    pos: afterColon,
-    max,
-    offset: initial
-  });
-  state.tShift[startLine] = pos - afterColon;
-  state.sCount[startLine] = offset - initial;
-  state.bMarks[startLine] = afterColon;
-  state.blkIndent += CONTINUATION_INDENT;
-  state.parentType = "footnote";
-  const sCount = state.sCount[startLine] ?? 0;
-  if (sCount < state.blkIndent) {
-    state.sCount[startLine] = sCount + state.blkIndent;
-  }
-  state.md.block.tokenize(state, startLine, endLine);
-  state.parentType = oldParentType;
-  state.blkIndent -= CONTINUATION_INDENT;
-  state.tShift[startLine] = oldTShift;
-  state.sCount[startLine] = oldSCount;
-  state.bMarks[startLine] = oldBMark;
-}
-function readFootnoteDefinition(...args) {
-  const [state, startLine, endLine, silent] = args;
-  const found = findDefinition(state, startLine);
-  if (!found) {
-    return false;
-  }
-  if (silent) {
-    return true;
-  }
-  const { start, close, max } = found;
-  const src = state.src;
-  const afterColon = close + 2;
-  const key = state.md.utils.normalizeReference(src.slice(start + 2, close));
-  const footnotes = footnoteStateOf(state.env);
-  const first = !footnotes.definitions.has(key);
-  if (first) {
-    footnotes.definitions.set(key, null);
-  }
-  const open2 = state.push(DEF_OPEN, "", 1);
-  open2.meta = {
-    key,
-    first,
-    source: `${src.slice(start, afterColon)} `
-  };
-  open2.map = [startLine, startLine];
-  tokenizeBody(state, { startLine, endLine, start, afterColon, max });
-  open2.map = [startLine, state.line];
-  state.push(DEF_CLOSE, "", -1);
-  return true;
-}
-function pushReference(state, id, source) {
-  const footnotes = footnoteStateOf(state.env);
-  const note = footnotes.notes[id];
-  if (note === void 0) {
-    throw new Error(`\u811A\u6CE8\u306E\u756A\u53F7\u304C\u7121\u3044: ${id}`);
-  }
-  const token = state.push(REF, "", 0);
-  token.meta = {
-    id,
-    refIndex: note.refCount,
-    source
-  };
-  note.refCount += 1;
-}
-function readFootnoteReference(state, silent) {
-  const { src, pos: start, posMax: max } = state;
-  if (src.charCodeAt(start) !== OPEN_BRACKET || src.charCodeAt(start + 1) !== CARET) {
-    return false;
-  }
-  const close = labelEnd(src, start, max);
-  if (close < 0) {
-    return false;
-  }
-  const key = state.md.utils.normalizeReference(src.slice(start + 2, close));
-  const footnotes = state.env.mdmarkFootnotes;
-  if (!footnotes?.definitions.has(key)) {
-    return false;
-  }
-  if (!silent) {
-    let id = footnotes.numbers.get(key);
-    if (id === void 0) {
-      id = footnotes.notes.length;
-      footnotes.notes.push({ key, inline: null, refCount: 0 });
-      footnotes.numbers.set(key, id);
-    }
-    pushReference(state, id, src.slice(start, close + 1));
-  }
-  state.pos = close + 1;
-  return true;
-}
-function readInlineFootnote(state, silent) {
-  const { src, pos: start } = state;
-  if (src.charCodeAt(start) !== CARET || src.charCodeAt(start + 1) !== OPEN_BRACKET) {
-    return false;
-  }
-  const close = state.md.helpers.parseLinkLabel(state, start + 1);
-  if (close < 0) {
-    return false;
-  }
-  if (!silent) {
-    const footnotes = footnoteStateOf(state.env);
-    const inline2 = [];
-    state.md.inline.parse(
-      src.slice(start + 2, close),
-      state.md,
-      state.env,
-      inline2
-    );
-    const id = footnotes.notes.length;
-    footnotes.notes.push({ key: null, inline: inline2, refCount: 0 });
-    pushReference(state, id, src.slice(start, close + 1));
-  }
-  state.pos = close + 1;
-  return true;
-}
-function findDefinitionClose(tokens, openIndex) {
-  const open2 = tokens[openIndex]?.type ?? "";
-  const close = DEFINITION_CLOSES[open2];
-  let depth = 0;
-  for (let index = openIndex; index < tokens.length; index++) {
-    const type = tokens[index]?.type;
-    if (type === open2) {
-      depth += 1;
-    } else if (type === close) {
-      depth -= 1;
-      if (depth === 0) {
-        return index;
-      }
-    }
-  }
-  throw new Error("\u811A\u6CE8\u306E\u5B9A\u7FA9\u306E\u9589\u3058\u304C\u7121\u3044");
-}
-function restoreDefinition(state, source, inner) {
-  const [first, second] = inner;
-  if (first?.type === "paragraph_open" && second?.type === "inline") {
-    const text3 = new state.Token("text", "", 0);
-    text3.content = source;
-    second.children = [text3, ...second.children ?? []];
-    second.content = `${source}${second.content}`;
-    return inner;
-  }
-  const open2 = new state.Token("paragraph_open", "p", 1);
-  const inline2 = new state.Token("inline", "", 0);
-  const text2 = new state.Token("text", "", 0);
-  text2.content = source.trimEnd();
-  inline2.content = text2.content;
-  inline2.children = [text2];
-  const close = new state.Token("paragraph_close", "p", -1);
-  return [open2, inline2, close, ...inner];
-}
-function restoreReferences(state, tokens) {
-  for (const token of tokens) {
-    if (token.type !== "inline" || !token.children) {
-      continue;
-    }
-    token.children = token.children.map((child) => {
-      if (child.type !== REF) {
-        return child;
-      }
-      const text2 = new state.Token("text", "", 0);
-      text2.content = child.meta.source;
-      return text2;
-    });
-  }
-}
-function collectFootnotes(state) {
-  const env = envOf(state);
-  const footnotes = env.mdmarkFootnotes;
-  if (footnotes === void 0) {
-    return;
-  }
-  if (featureOn(state, "footnotes")) {
-    footnotes.notes.forEach((note, id) => {
-      if (note.inline !== null) {
-        state.tokens.push(...inlineDefinition(state, note, id));
-      }
-    });
-    return;
-  }
-  const out = [];
-  for (let index = 0; index < state.tokens.length; index++) {
-    const token = state.tokens[index];
-    if (token === void 0) {
-      continue;
-    }
-    if (token.type !== DEF_OPEN) {
-      out.push(token);
-      continue;
-    }
-    const close = findDefinitionClose(state.tokens, index);
-    const meta2 = token.meta;
-    out.push(
-      ...restoreDefinition(
-        state,
-        meta2.source,
-        state.tokens.slice(index + 1, close)
-      )
-    );
-    index = close;
-  }
-  state.tokens = out;
-  restoreReferences(state, out);
-  delete env.mdmarkFootnotes;
-}
-function inlineDefinition(state, note, id) {
-  const key = `${INLINE_KEY_PREFIX}${id}`;
-  envOf(state).mdmarkFootnotes?.definitions.set(key, null);
-  const open2 = new state.Token(DEF_OPEN, "", 1);
-  open2.meta = { key, first: true, source: "" };
-  const paragraphOpen = new state.Token("paragraph_open", "p", 1);
-  paragraphOpen.block = true;
-  const inline2 = new state.Token("inline", "", 0);
-  inline2.children = note.inline;
-  inline2.content = (note.inline ?? []).map((child) => child.content).join("");
-  const paragraphClose = new state.Token("paragraph_close", "p", -1);
-  paragraphClose.block = true;
-  const close = new state.Token(DEF_CLOSE, "", -1);
-  note.key = key;
-  note.inline = null;
-  return [open2, paragraphOpen, inline2, paragraphClose, close];
-}
-function outsideFootnoteDefinitions(tokens) {
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token !== void 0 && token.type in DEFINITION_CLOSES) {
-      index = findDefinitionClose(tokens, index);
-    } else if (token !== void 0) {
-      out.push(token);
-    }
-  }
-  return out;
-}
-function takeFootnoteDefinitions(state) {
-  const footnotes = envOf(state).mdmarkFootnotes;
-  if (footnotes === void 0) {
-    return;
-  }
-  const out = [];
-  for (let index = 0; index < state.tokens.length; index++) {
-    const token = state.tokens[index];
-    if (token === void 0) {
-      continue;
-    }
-    if (token.type !== DEF_OPEN) {
-      out.push(token);
-      continue;
-    }
-    const close = findDefinitionClose(state.tokens, index);
-    const meta2 = token.meta;
-    if (meta2.first) {
-      footnotes.definitions.set(meta2.key, state.tokens.slice(index + 1, close));
-    }
-    index = close;
-  }
-  state.tokens = out;
-}
-function blockText(md, env, tokens) {
-  return md.renderer.render(tokens, md.options, env).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-function footnoteBodies(options) {
-  const { md, env, note } = options;
-  const tokens = (note.key === null ? null : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [];
-  return definitionBodies({ md, env, tokens });
-}
-function definitionBodies(options) {
-  const { md, env, tokens } = options;
-  const bodies = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token === void 0) {
-      continue;
-    }
-    if (token.type === "paragraph_open") {
-      const inline2 = tokens[index + 1];
-      bodies.push(
-        md.renderer.renderInline(inline2?.children ?? [], md.options, env)
-      );
-      index += 2;
-      continue;
-    }
-    let end = index;
-    for (let depth = token.nesting; depth > 0; ) {
-      end += 1;
-      depth += tokens[end]?.nesting ?? -depth;
-    }
-    const text2 = blockText(md, env, tokens.slice(index, end + 1));
-    if (text2 !== "") {
-      bodies.push(text2);
-    }
-    index = end;
-  }
-  return { bodies, html: md.renderer.render(tokens, md.options, env) };
-}
-function markOwnAroundBodies(html, fills, nonce) {
-  let cursor = 0;
-  let out = "";
-  for (const fill of fills) {
-    const at = html.indexOf(FOOTNOTE_BODY_OPEN, cursor) + FOOTNOTE_BODY_OPEN.length;
-    out += markOwn(html.slice(cursor, at), nonce) + fill;
-    cursor = at + fill.length;
-  }
-  return out + markOwn(html.slice(cursor), nonce);
-}
-function renderReference(md, token, env) {
-  const { id, refIndex } = token.meta;
-  const note = env.mdmarkFootnotes?.notes[id];
-  if (note === void 0) {
-    throw new Error(`\u811A\u6CE8\u306E\u756A\u53F7\u304C\u7121\u3044: ${id}`);
-  }
-  const { bodies } = footnoteBodies({ md, env, note });
-  const html = renderFootnoteRef({ number: id + 1, refIndex, bodies });
-  return markOwnAroundBodies(html, bodies, env.nonce);
-}
-function renderList(md, env) {
-  return renderDefinitionList({
-    md,
-    env,
-    kind: "footnote",
-    items: (env.mdmarkFootnotes?.notes ?? []).map((note, index) => ({
-      number: index + 1,
-      tokens: (note.key === null ? null : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [],
-      refCount: note.refCount
-    }))
-  });
-}
-function renderDefinitionList(options) {
-  const { md, env, kind } = options;
-  const fills = [];
-  const items = options.items.map(({ number: number4, tokens, refCount, refs }) => {
-    const { html } = definitionBodies({ md, env, tokens });
-    const at = html.lastIndexOf("</p>");
-    const back = refs === void 0 ? {} : { refs };
-    if (at < 0) {
-      fills.push(html);
-      return { number: number4, html: SLOT_MARKER, refCount, ...back };
-    }
-    fills.push(html.slice(0, at), html.slice(at + "</p>".length));
-    return {
-      number: number4,
-      html: `${SLOT_MARKER}</p>${SLOT_MARKER}`,
-      refCount,
-      ...back
-    };
-  });
-  return splitSlots(markOwn(renderFootnotes({ items, kind }), env.nonce)).map((part, index) => `${part}${fills[index] ?? ""}`).join("");
-}
-function buildFootnoteList(state) {
-  if ((envOf(state).mdmarkFootnotes?.notes.length ?? 0) === 0) {
-    return;
-  }
-  const token = new state.Token(LIST, "", 0);
-  token.block = true;
-  state.tokens.push(token);
-}
-function useFootnotes(parser3) {
-  parser3.block.ruler.before(
-    "reference",
-    "mdmark_footnote_def",
-    readFootnoteDefinition,
-    {
-      alt: ["paragraph", "reference"]
-    }
-  );
-  parser3.inline.ruler.after(
-    "image",
-    "mdmark_footnote_inline",
-    readInlineFootnote
-  );
-  parser3.inline.ruler.after(
-    "mdmark_footnote_inline",
-    "mdmark_footnote_ref",
-    readFootnoteReference
-  );
-  parser3.renderer.rules[LIST] = (...[_tokens, _index, _options, env]) => renderList(parser3, env);
-  parser3.renderer.rules[REF] = (...[tokens, index, _options, env]) => {
-    const token = tokens[index];
-    if (token === void 0) {
-      throw new Error("\u811A\u6CE8\u306E\u53C2\u7167\u306E\u30C8\u30FC\u30AF\u30F3\u304C\u7121\u3044");
-    }
-    return renderReference(parser3, token, env);
-  };
-}
-
-// src/render/syntax/headings.ts
-function slugBase(text2) {
-  return text2.toLowerCase().trim().replace(/[^\p{L}\p{N}\p{M}_\- ]/gu, "").replaceAll(" ", "-");
-}
-function slugify2(text2, used) {
-  const base = slugBase(text2) || "heading";
-  const count = used.get(base);
-  if (count === void 0) {
-    used.set(base, 0);
-    return base;
-  }
-  used.set(base, count + 1);
-  return `${base}-${count + 1}`;
-}
-function assignHeadingIds(state) {
-  const env = envOf(state);
-  const used = /* @__PURE__ */ new Map();
-  const tokens = outsideFootnoteDefinitions(state.tokens);
-  for (let index = 0; index < tokens.length; index++) {
-    const open2 = tokens[index];
-    const inline2 = tokens[index + 1];
-    if (open2?.type !== "heading_open" || inline2?.type !== "inline") {
-      continue;
-    }
-    const text2 = textOf(inline2);
-    const id = slugify2(text2, used);
-    open2.attrSet("id", id);
-    open2.attrSet("data-mdmark-own", env.nonce);
-    env.headings.push({ level: Number(open2.tag.slice(1)), id, text: text2 });
-    if (featureOn(state, "anchors")) {
-      const anchor2 = new state.Token("html_inline", "", 0);
-      anchor2.content = markOwn(
-        `<a class="mdmark-anchor" href="#${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(text2)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>`,
-        env.nonce
-      );
-      anchor2.meta = { role: "heading-anchor" };
-      inline2.children?.push(anchor2);
-    }
-  }
-}
-
-// src/render/syntax/table-cells.ts
+// src/table/table-cells.logic.ts
 var MERGE_UP = "^^";
 var MERGE_LEFT = "<<";
 function mergeWarning(options) {
@@ -65895,110 +65573,7 @@ function headerGroupsOf(options) {
   });
 }
 
-// src/parts/syntax-warning.ts
-var WARNING_TITLE = "\u8A18\u8F09\u306E\u8B66\u544A";
-function renderInline(text2) {
-  return text2.split("`").map(
-    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
-  ).join("");
-}
-function renderSyntaxWarning(options) {
-  const { mark = "", message, items = [], id } = options;
-  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
-  const list2 = items.length ? `<ul>${items.map(
-    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
-  ).join("")}</ul>` : "";
-  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
-  return `<div class="mdmark-syntax-warning" role="note"${idAttribute}><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list2}</div>`;
-}
-
-// src/render/syntax/warnings.ts
-function plainMessage(warning) {
-  const strip = (text2) => text2.replaceAll("`", "");
-  return [
-    `${warning.mark ?? ""}${strip(warning.message)}`,
-    ...(warning.items ?? []).map(
-      (item) => `${item.label ? `${item.label}: ` : ""}${strip(item.message)}`
-    )
-  ].join(" ");
-}
-function makeWarningToken(state, warning, source) {
-  const { kind = "syntax_warning", includeTarget, ...view } = warning;
-  delete view.line;
-  const line = warning.line ?? source?.map?.[0];
-  const token = ownBlock(state, renderSyntaxWarning(view));
-  const meta2 = {
-    kind,
-    message: plainMessage(warning),
-    ...line === void 0 ? {} : { line },
-    ...includeTarget ? { includeTarget } : {}
-  };
-  token.meta = { ...token.meta ?? {}, warning: meta2 };
-  return token;
-}
-function pushWarning(state, index, warning) {
-  const { source, ...rest2 } = warning;
-  state.tokens.splice(index, 0, makeWarningToken(state, rest2, source));
-}
-function warningBlock(state, warning, source) {
-  return makeWarningToken(state, warning, source);
-}
-function warningLine(tokens, index, meta2) {
-  if (meta2.line !== void 0) {
-    return meta2.line;
-  }
-  const after = tokens.slice(index + 1).find((other) => other.map);
-  if (after?.map) {
-    return after.map[0];
-  }
-  const before = tokens.slice(0, index).reverse().find((other) => other.map);
-  return before?.map ? before.map[1] - 1 : 0;
-}
-function collectWarningsRule(state) {
-  const warnings = [];
-  state.tokens.forEach((token, index) => {
-    const metas = [
-      ...token.meta?.warning ? [token.meta.warning] : [],
-      ...token.meta?.warnings ?? []
-    ];
-    for (const meta2 of metas) {
-      warnings.push({
-        line: warningLine(state.tokens, index, meta2) + 1,
-        kind: meta2.kind,
-        message: meta2.message,
-        ...meta2.includeTarget ? { includeTarget: true } : {}
-      });
-    }
-  });
-  const env = envOf(state);
-  for (const note of env.markNotes) {
-    const at = warnings.findIndex((warning) => warning.line > note.line);
-    const item = {
-      line: note.line,
-      kind: note.kind,
-      message: note.message
-    };
-    if (at < 0) {
-      warnings.push(item);
-    } else {
-      warnings.splice(at, 0, item);
-    }
-  }
-  env.warnings = warnings;
-}
-function recordMarkNotes(env, options) {
-  for (const note of options.notes) {
-    env.markNotes.push({ ...note, line: options.line });
-  }
-}
-function unclosedWarning(mark) {
-  return {
-    mark: mark.raw,
-    message: `\u306E\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC \`<!-- /${mark.name} -->\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u7D42\u308F\u308A\u306B\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30DE\u30FC\u30AB\u30FC\u304B\u3089\u6587\u66F8\u306E\u7D42\u308F\u308A\u307E\u3067\u3092\u7BC4\u56F2\u306B\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-  };
-}
-
-// src/render/syntax/table-tree.ts
+// src/table/table-tree.syntax.ts
 var REQUIRED_VALUES = ["\u2713", "true"];
 var openCell = (walk, index) => {
   walk.cellOpen = index;
@@ -66367,7 +65942,7 @@ function linkTreeExamples(state) {
   }
 }
 
-// src/render/syntax/tables.ts
+// src/table/table.syntax.ts
 var TABLE_KINDS = {
   default: ["pin", "resize"],
   data: ["sort", "pin", "filter", "resize"],
@@ -69789,6 +69364,1226 @@ function dropMarks(state) {
   state.tokens = state.tokens.filter((token) => token.type !== MARK_TOKEN);
 }
 
+// src/shared/tokens.syntax.ts
+function envOf(state) {
+  return state.env;
+}
+function featureOn(state, name) {
+  return envOf(state).features[name] === true;
+}
+function ownBlock(state, html, source) {
+  const token = new state.Token("html_block", "", 0);
+  token.block = true;
+  if (source?.map) {
+    token.map = [...source.map];
+  }
+  token.content = markOwn(html, envOf(state).nonce);
+  return token;
+}
+var TAB_BOUNDARY_KEY = "tabBoundary";
+function tabBoundaryBlock(options) {
+  const token = ownBlock(options.state, options.html, options.source);
+  token.meta = { [TAB_BOUNDARY_KEY]: options.boundary };
+  return token;
+}
+function tabBoundaryOf(token) {
+  const meta2 = token?.meta;
+  return token?.type === "html_block" ? meta2?.[TAB_BOUNDARY_KEY] : void 0;
+}
+function markOf(token) {
+  return token?.type === MARK_TOKEN ? token.meta : void 0;
+}
+function findClose(tokens, openIndex, name) {
+  const level = tokens[openIndex]?.level;
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const token = tokens[index];
+    const mark = markOf(token);
+    if (mark?.closing && mark.name === name && token?.level === level) {
+      return index;
+    }
+  }
+  return -1;
+}
+function findNestedClose(tokens, openIndex) {
+  const open2 = tokens[openIndex];
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token?.nesting === -1 && token.level === open2?.level && token.type === open2?.type.replace("_open", "_close")) {
+      return index;
+    }
+  }
+  return -1;
+}
+function textOf(token) {
+  return (token.children ?? []).filter((child) => child.type === "text" || child.type === "code_inline").map((child) => child.content).join("");
+}
+
+// src/shared/syntax-warning.syntax.ts
+function plainMessage(warning) {
+  const strip = (text2) => text2.replaceAll("`", "");
+  return [
+    `${warning.mark ?? ""}${strip(warning.message)}`,
+    ...(warning.items ?? []).map(
+      (item) => `${item.label ? `${item.label}: ` : ""}${strip(item.message)}`
+    )
+  ].join(" ");
+}
+function makeWarningToken(state, warning, source) {
+  const { kind = "syntax_warning", includeTarget, ...view } = warning;
+  delete view.line;
+  const line = warning.line ?? source?.map?.[0];
+  const token = ownBlock(state, renderSyntaxWarning(view));
+  const meta2 = {
+    kind,
+    message: plainMessage(warning),
+    ...line === void 0 ? {} : { line },
+    ...includeTarget ? { includeTarget } : {}
+  };
+  token.meta = { ...token.meta ?? {}, warning: meta2 };
+  return token;
+}
+function pushWarning(state, index, warning) {
+  const { source, ...rest2 } = warning;
+  state.tokens.splice(index, 0, makeWarningToken(state, rest2, source));
+}
+function warningBlock(state, warning, source) {
+  return makeWarningToken(state, warning, source);
+}
+function warningLine(tokens, index, meta2) {
+  if (meta2.line !== void 0) {
+    return meta2.line;
+  }
+  const after = tokens.slice(index + 1).find((other) => other.map);
+  if (after?.map) {
+    return after.map[0];
+  }
+  const before = tokens.slice(0, index).reverse().find((other) => other.map);
+  return before?.map ? before.map[1] - 1 : 0;
+}
+function collectWarningsRule(state) {
+  const warnings = [];
+  state.tokens.forEach((token, index) => {
+    const metas = [
+      ...token.meta?.warning ? [token.meta.warning] : [],
+      ...token.meta?.warnings ?? []
+    ];
+    for (const meta2 of metas) {
+      warnings.push({
+        line: warningLine(state.tokens, index, meta2) + 1,
+        kind: meta2.kind,
+        message: meta2.message,
+        ...meta2.includeTarget ? { includeTarget: true } : {}
+      });
+    }
+  });
+  const env = envOf(state);
+  for (const note of env.markNotes) {
+    const at = warnings.findIndex((warning) => warning.line > note.line);
+    const item = {
+      line: note.line,
+      kind: note.kind,
+      message: note.message
+    };
+    if (at < 0) {
+      warnings.push(item);
+    } else {
+      warnings.splice(at, 0, item);
+    }
+  }
+  env.warnings = warnings;
+}
+function recordMarkNotes(env, options) {
+  for (const note of options.notes) {
+    env.markNotes.push({ ...note, line: options.line });
+  }
+}
+function unclosedWarning(mark) {
+  return {
+    mark: mark.raw,
+    message: `\u306E\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC \`<!-- /${mark.name} -->\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u7D42\u308F\u308A\u306B\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30DE\u30FC\u30AB\u30FC\u304B\u3089\u6587\u66F8\u306E\u7D42\u308F\u308A\u307E\u3067\u3092\u7BC4\u56F2\u306B\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+  };
+}
+
+// src/media/image.part.ts
+function renderImageOpener(options) {
+  const { alt, img, icon = true } = options;
+  const iconHtml = icon ? `<span class="mdmark-image-open-icon" aria-hidden="true">${iconSvg("maximize-2")}</span>` : "";
+  return `<button class="mdmark-image-open" type="button" aria-label="\u753B\u50CF\u3092\u62E1\u5927: ${escapeHtml2(alt)}">${img}${iconHtml}</button>`;
+}
+function figureAttributes(options) {
+  const { only, id, align, width } = options;
+  const className = `mdmark-figure mdmark-image${only ? ` mdmark-only-${only}` : ""}`;
+  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
+  const alignAttribute = align === void 0 ? "" : ` data-align="${align}"`;
+  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
+  return `class="${className}"${idAttribute}${alignAttribute}${style}`;
+}
+function renderFigcaption(options) {
+  const { label, caption } = options;
+  const head = label === void 0 ? "" : `<b>${escapeHtml2(label)}</b>`;
+  const text2 = caption === void 0 ? "" : escapeHtml2(caption);
+  return head === "" && text2 === "" ? "" : `<figcaption class="mdmark-figure-caption">${head}${text2}</figcaption>`;
+}
+function renderImageFigure(options) {
+  const {
+    src,
+    alt,
+    caption,
+    width,
+    align,
+    lightbox = true,
+    only,
+    id,
+    label,
+    opener = true,
+    gif = false
+  } = options;
+  const attributes = figureAttributes({ only, id, align, width });
+  const flags = `${lightbox ? "" : " data-nolightbox"}${gif ? " data-gif" : ""}`;
+  const img = `<img src="${escapeHtml2(src)}" alt="${escapeHtml2(alt)}"${flags}>`;
+  const body = opener && lightbox ? renderImageOpener({ alt, img, icon: !gif }) : img;
+  const figcaption = renderFigcaption({ label, caption });
+  return `<figure ${attributes}>${body}${figcaption}</figure>`;
+}
+
+// src/media/media.part.ts
+function mediaFlags(options) {
+  const { video, autoplay, muted, loop } = options;
+  return [
+    "controls",
+    autoplay ? "autoplay" : "",
+    autoplay || muted ? "muted" : "",
+    loop ? "loop" : "",
+    video ? "playsinline" : ""
+  ].filter((flag) => flag !== "").map((flag) => ` ${flag}`).join("");
+}
+function renderMediaCaption(caption) {
+  return caption === void 0 || caption === "" ? "" : `<figcaption class="mdmark-figure-caption">${escapeHtml2(caption)}</figcaption>`;
+}
+function renderMedia(options) {
+  const {
+    kind,
+    src,
+    alt,
+    caption,
+    width,
+    poster,
+    autoplay = false,
+    muted = false,
+    loop = false
+  } = options;
+  const video = kind === "video";
+  const flags = mediaFlags({ video, autoplay, muted, loop });
+  const posterUrl = video && poster !== void 0 ? escapeHtml2(poster) : "";
+  const posterAttribute = posterUrl === "" ? "" : ` poster="${posterUrl}"`;
+  const player = `<${kind} src="${escapeHtml2(src)}"${flags} preload="metadata" aria-label="${escapeHtml2(alt)}"${posterAttribute}></${kind}>`;
+  const print = posterUrl === "" ? "" : `<img class="mdmark-media-print" src="${posterUrl}" alt="">`;
+  const figcaption = renderMediaCaption(caption);
+  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
+  return `<figure class="mdmark-figure mdmark-media"${style}>${player}${print}${figcaption}</figure>`;
+}
+
+// src/media/image.syntax.ts
+var MEDIA_EXTENSIONS = {
+  video: ["mp4", "m4v", "webm", "mov", "ogv"],
+  audio: ["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac"]
+};
+var IMAGE_ATTRIBUTE_NAMES = [
+  "width",
+  "align",
+  "nolightbox",
+  "autoplay",
+  "muted",
+  "loop",
+  "poster"
+];
+var MEDIA_ONLY_ATTRIBUTES = ["autoplay", "muted", "loop", "poster"];
+var ALIGNS = ["left", "center", "right"];
+var MAX_WIDTH_PERCENT = 100;
+var ONLY_PATTERN = /#only-(dark|light)$/;
+var ATTRIBUTE_PATTERN = /^\{([^{}]*)\}/;
+function mediaKindOf(src) {
+  const path = src.split(/[?#]/)[0] ?? "";
+  const name = path.slice(path.lastIndexOf("/") + 1);
+  const dot = name.lastIndexOf(".");
+  const extension = dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
+  if (MEDIA_EXTENSIONS.video.includes(extension)) {
+    return "video";
+  }
+  if (MEDIA_EXTENSIONS.audio.includes(extension)) {
+    return "audio";
+  }
+  return extension === "gif" ? "gif" : "image";
+}
+function readWidth(value) {
+  const pixels = /^(\d+)(?:px)?$/.exec(value);
+  if (pixels && Number(pixels[1]) >= 1) {
+    return `${Number(pixels[1])}px`;
+  }
+  const percent = /^(\d+)%$/.exec(value);
+  const amount = Number(percent?.[1]);
+  if (percent && amount >= 1 && amount <= MAX_WIDTH_PERCENT) {
+    return `${amount}%`;
+  }
+  return void 0;
+}
+var unusable = (attribute) => ({
+  label: attribute.part,
+  message: "\u4F7F\u7528\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002"
+});
+var readWidthAttribute = (attributes, attribute) => {
+  if (attribute.value === void 0) {
+    return unusable(attribute);
+  }
+  const width = readWidth(attribute.value);
+  if (width === void 0) {
+    return {
+      label: attribute.part,
+      message: `\u5E45\u306F \`300\`\u30FB\`300px\` \u306E px \u304B\u3001\`1%\`\u301C\`${MAX_WIDTH_PERCENT}%\` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    };
+  }
+  attributes.width = width;
+  return void 0;
+};
+var readAlignAttribute = (attributes, attribute) => {
+  const { name, value, inline: inline2, part } = attribute;
+  if (inline2) {
+    return {
+      label: name,
+      message: "\u6587\u306E\u4E2D\u306E\u753B\u50CF\u306B\u306F\u8A18\u8F09\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    };
+  }
+  if (!ALIGNS.includes(value)) {
+    return {
+      label: part,
+      message: `\u914D\u7F6E\u306F ${codes(ALIGNS)} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    };
+  }
+  attributes.align = value;
+  return void 0;
+};
+var readFlagAttribute = (attributes, attribute) => {
+  const { part } = attribute;
+  if (part !== "autoplay" && part !== "muted" && part !== "loop") {
+    return unusable(attribute);
+  }
+  attributes[part] = true;
+  return void 0;
+};
+var ATTRIBUTE_READERS = {
+  width: readWidthAttribute,
+  align: readAlignAttribute,
+  nolightbox: (attributes, attribute) => {
+    if (attribute.part !== "nolightbox") {
+      return unusable(attribute);
+    }
+    attributes.lightbox = false;
+    return void 0;
+  },
+  autoplay: readFlagAttribute,
+  muted: readFlagAttribute,
+  loop: readFlagAttribute,
+  poster: (attributes, attribute) => {
+    if (attribute.kind === "video" && attribute.value) {
+      attributes.poster = attribute.value;
+      return void 0;
+    }
+    return {
+      label: attribute.part,
+      message: "\u52D5\u753B\u306B\u3060\u3051\u3001`poster=\u30D1\u30B9` \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002"
+    };
+  }
+};
+var readAttribute = (attributes, attribute) => {
+  const { kind, name, part } = attribute;
+  const media = kind === "video" || kind === "audio";
+  if (MEDIA_ONLY_ATTRIBUTES.includes(name) && !media) {
+    return { label: part, message: "\u52D5\u753B\u3068\u97F3\u58F0\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002" };
+  }
+  const read = Object.hasOwn(ATTRIBUTE_READERS, name) ? ATTRIBUTE_READERS[name] : void 0;
+  return read ? read(attributes, attribute) : unusable(attribute);
+};
+function readImageAttributes(text2, kind, inline2) {
+  const attributes = {
+    kind,
+    lightbox: true,
+    autoplay: false,
+    muted: false,
+    loop: false,
+    items: []
+  };
+  for (const part of text2.split(/\s+/).filter((item) => item !== "")) {
+    const equals = part.indexOf("=");
+    const unreadable8 = readAttribute(attributes, {
+      part,
+      name: equals < 0 ? part : part.slice(0, equals),
+      value: equals < 0 ? void 0 : part.slice(equals + 1),
+      kind,
+      inline: inline2
+    });
+    if (unreadable8) {
+      attributes.items.push(unreadable8);
+    }
+  }
+  if (attributes.autoplay) {
+    attributes.muted = true;
+  }
+  return attributes;
+}
+function imageAttributesOf(token) {
+  return token.meta?.mdmarkImage;
+}
+function soleImageOf(inline2) {
+  const rest2 = (inline2?.children ?? []).filter(
+    (child) => !(child.type === "text" && child.content.trim() === "")
+  );
+  const [only] = rest2;
+  return rest2.length === 1 && only?.type === "image" ? only : void 0;
+}
+function kindOf(state, src) {
+  const kind = mediaKindOf(src);
+  const media = kind === "video" || kind === "audio";
+  return media && !featureOn(state, "media") ? "image" : kind;
+}
+var ATTRIBUTE_LIST = codes(IMAGE_ATTRIBUTE_NAMES);
+function takeAttributeText(next) {
+  if (next?.type !== "text") {
+    return "";
+  }
+  const found = ATTRIBUTE_PATTERN.exec(next.content);
+  if (!found) {
+    return "";
+  }
+  next.content = next.content.slice(found[0].length);
+  return found[1] ?? "";
+}
+function readImage(state, image2) {
+  const { children, position, sole, images } = image2;
+  const child = children[position];
+  const kind = kindOf(state, String(child.attrGet("src") ?? ""));
+  const inline2 = child !== sole && !isSoleWithAttributes(children, position);
+  const text2 = images ? takeAttributeText(children[position + 1]) : "";
+  const attributes = readImageAttributes(text2, kind, inline2);
+  child.meta = { ...child.meta ?? {}, mdmarkImage: attributes };
+  if (kind === "gif") {
+    child.attrSet("data-gif", "");
+  }
+  if (inline2 && attributes.width !== void 0) {
+    child.attrSet("style", `--mdmark-image-width: ${attributes.width}`);
+    child.attrSet("data-mdmark-own", envOf(state).nonce);
+  }
+  return attributes.items;
+}
+function readImages(state) {
+  const images = featureOn(state, "images");
+  const warnings = [];
+  for (const [index, token] of state.tokens.entries()) {
+    const children = token.children;
+    if (token.type !== "inline" || !children) {
+      continue;
+    }
+    const sole = soleImageOf(token);
+    const items = children.flatMap(
+      (child, position) => child.type === "image" ? readImage(state, { children, position, sole, images }) : []
+    );
+    token.children = children.filter(
+      (child) => !(child.type === "text" && child.content === "")
+    );
+    if (items.length) {
+      warnings.push({ index, items });
+    }
+  }
+  for (const { index, items } of warnings.reverse()) {
+    state.tokens.splice(
+      blockStartOf(state.tokens, index),
+      0,
+      warningBlock(state, {
+        message: `\u753B\u50CF\u306E\u8AAD\u307F\u8FBC\u3081\u306A\u3044\u5C5E\u6027\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u306F ${ATTRIBUTE_LIST} \u3067\u3059\u3002`,
+        items
+      })
+    );
+  }
+}
+function isSoleWithAttributes(children, position) {
+  return children.every((child, at) => {
+    if (at === position) {
+      return true;
+    }
+    if (child.type !== "text") {
+      return false;
+    }
+    const content = at === position + 1 ? child.content.replace(ATTRIBUTE_PATTERN, "") : child.content;
+    return content.trim() === "";
+  });
+}
+function blockStartOf(tokens, index) {
+  let at = index;
+  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
+    at -= 1;
+  }
+  return at;
+}
+function altOf(image2) {
+  const children = image2.children ?? [];
+  return children.length ? children.map((child) => child.content).join("") : image2.content;
+}
+function onlyOf(src) {
+  return ONLY_PATTERN.exec(src)?.[1];
+}
+var captionOf = (image2) => {
+  const title = String(image2.attrGet("title") ?? "");
+  return title ? { caption: title } : {};
+};
+var figureAttributesOf = (attributes) => ({
+  ...attributes?.width === void 0 ? {} : { width: attributes.width },
+  ...attributes?.align === void 0 ? {} : { align: attributes.align },
+  lightbox: attributes?.lightbox ?? true
+});
+function imageFigureHtml(image2, extra = {}) {
+  const src = String(image2.attrGet("src") ?? "");
+  const attributes = imageAttributesOf(image2);
+  const only = onlyOf(src);
+  return renderImageFigure({
+    src,
+    alt: altOf(image2),
+    ...captionOf(image2),
+    ...figureAttributesOf(attributes),
+    ...only === void 0 ? {} : { only },
+    ...extra,
+    opener: false,
+    gif: attributes?.kind === "gif"
+  });
+}
+var mediaAttributesOf = (attributes) => ({
+  ...attributes?.width === void 0 ? {} : { width: attributes.width },
+  ...attributes?.poster === void 0 ? {} : { poster: attributes.poster },
+  ...playbackOf(attributes)
+});
+var playbackOf = (attributes) => ({
+  autoplay: attributes?.autoplay ?? false,
+  muted: attributes?.muted ?? false,
+  loop: attributes?.loop ?? false
+});
+function mediaHtml(image2, kind) {
+  return renderMedia({
+    kind,
+    src: String(image2.attrGet("src") ?? ""),
+    alt: altOf(image2),
+    ...captionOf(image2),
+    ...mediaAttributesOf(imageAttributesOf(image2))
+  });
+}
+function mediaKindOfToken(image2) {
+  const kind = imageAttributesOf(image2)?.kind;
+  return kind === "video" || kind === "audio" ? kind : void 0;
+}
+function soleFigure(state, paragraph2) {
+  const { token, inline: inline2, features } = paragraph2;
+  const sole = soleImageOf(inline2);
+  if (!sole) {
+    return void 0;
+  }
+  const soleMedia = mediaKindOfToken(sole);
+  if (soleMedia) {
+    return features.media ? ownBlock(state, mediaHtml(sole, soleMedia), token) : void 0;
+  }
+  return features.images ? ownBlock(state, imageFigureHtml(sole), token) : void 0;
+}
+function splitInlineMedia(state, paragraph2) {
+  const { token, inline: inline2, features } = paragraph2;
+  const after = [];
+  let linkDepth = 0;
+  const children = [];
+  for (const child of inline2.children ?? []) {
+    linkDepth += child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
+    const kind = child.type === "image" ? mediaKindOfToken(child) : void 0;
+    if (kind && features.media && linkDepth === 0) {
+      after.push(ownBlock(state, mediaHtml(child, kind), token));
+      continue;
+    }
+    markOnlyImage(state, { child, images: features.images });
+    children.push(child);
+  }
+  inline2.children = children;
+  return after;
+}
+function markOnlyImage(state, image2) {
+  const { child, images } = image2;
+  if (child.type !== "image" || !images) {
+    return;
+  }
+  const only = onlyOf(String(child.attrGet("src") ?? ""));
+  if (only) {
+    child.attrJoin("class", `mdmark-only-${only}`);
+    child.attrSet("data-mdmark-own", envOf(state).nonce);
+  }
+}
+function buildImageFigures(state) {
+  const features = {
+    images: featureOn(state, "images"),
+    media: featureOn(state, "media")
+  };
+  if (!features.images && !features.media) {
+    return;
+  }
+  const tokens = state.tokens;
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const inline2 = tokens[index + 1];
+    const close = tokens[index + 2];
+    if (token.type !== "paragraph_open" || inline2?.type !== "inline") {
+      out.push(token);
+      continue;
+    }
+    const paragraph2 = { token, inline: inline2, features };
+    const figure = soleFigure(state, paragraph2);
+    if (figure) {
+      out.push(figure);
+    } else {
+      const after = splitInlineMedia(state, paragraph2);
+      out.push(token, inline2, ...close ? [close] : [], ...after);
+    }
+    index += 2;
+  }
+  state.tokens = out;
+}
+
+// src/frontmatter/frontmatter.logic.ts
+var OPEN_LINE = /^---[ \t]*$/;
+var CLOSE_LINE = /^(?:---|\.\.\.)[ \t]*$/;
+var BOM = "\uFEFF";
+var blankOut = (text2) => text2.replace(/[^\r\n]/g, " ");
+var splitFrontmatter = (markdown) => {
+  const none = {
+    body: markdown,
+    content: void 0,
+    endLine: void 0
+  };
+  const text2 = markdown.startsWith(BOM) ? markdown.slice(BOM.length) : markdown;
+  const lines = text2.split("\n");
+  const stripCr = (line) => line.replace(/\r$/, "");
+  if (!OPEN_LINE.test(stripCr(lines[0] ?? ""))) {
+    return none;
+  }
+  const endLine = lines.findIndex(
+    (line, index) => index > 0 && CLOSE_LINE.test(stripCr(line))
+  );
+  if (endLine < 0) {
+    return none;
+  }
+  const content = lines.slice(1, endLine).map(stripCr).join("\n");
+  const rangeLength = markdown.length - text2.length + lines.slice(0, endLine + 1).join("\n").length;
+  const body = blankOut(markdown.slice(0, rangeLength)) + markdown.slice(rangeLength);
+  return { body, content, endLine };
+};
+
+// src/knowledge/index-shape.ts
+var RELATION_TYPES = [
+  "requires",
+  "references",
+  "replaces",
+  "part_of",
+  "change_together"
+];
+var INDEX_SHAPE = {
+  root: {
+    schema: { type: "integer", required: true },
+    docs: { type: "array", required: true },
+    terms: { type: "array", required: false }
+  },
+  doc: {
+    id: { type: "string", required: true },
+    path: { type: "string", required: true },
+    title: { type: "string", required: true },
+    description: { type: "string", required: false },
+    aliases: { type: "string[]", required: false },
+    tags: { type: "doc_tags", required: false },
+    related: { type: "doc_related", required: false }
+  },
+  term: {
+    id: { type: "string", required: true },
+    term: { type: "string", required: true },
+    meaning: { type: "string", required: true },
+    aliases: { type: "string[]", required: false },
+    avoid: { type: "string[]", required: false }
+  }
+};
+var DOC_TAG_SHAPE = {
+  name: { type: "string", required: true },
+  main: { type: "boolean", required: false }
+};
+var DOC_RELATED_SHAPE = {
+  to: { type: "string", required: true },
+  type: { type: "string", required: true },
+  when: { type: "string", required: true },
+  paths: { type: "string[]", required: false }
+};
+var EMPTY_ALLOWED = /* @__PURE__ */ new Set(["description"]);
+var CURRENT_SCHEMA = 2;
+function isRecord4(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function checkString(key, value) {
+  if (typeof value !== "string") {
+    return `${key} \u306F\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`;
+  }
+  return value === "" && !EMPTY_ALLOWED.has(key) ? `${key} \u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093` : void 0;
+}
+function checkType(key, value, shape) {
+  if (shape.type === "integer") {
+    return Number.isInteger(value) ? void 0 : `${key} \u306F\u6574\u6570\u306B\u3057\u307E\u3059`;
+  }
+  if (shape.type === "array") {
+    return Array.isArray(value) ? void 0 : `${key} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059`;
+  }
+  if (shape.type === "boolean") {
+    return typeof value === "boolean" ? void 0 : `${key} \u306F\u771F\u507D\u5024\u306B\u3057\u307E\u3059`;
+  }
+  if (shape.type === "string") {
+    return checkString(key, value);
+  }
+  const ok = Array.isArray(value) && value.every((item) => typeof item === "string" && item !== "");
+  return ok ? void 0 : `${key} \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u306E\u4E26\u3073\u306B\u3057\u307E\u3059`;
+}
+function checkDocTags(options) {
+  const { value, where, problems } = options;
+  if (!Array.isArray(value)) {
+    problems.push({ where, message: "tags \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
+    return false;
+  }
+  let valid = true;
+  value.forEach((tag, position) => {
+    const tagWhere = `${where}[${position}]`;
+    if (typeof tag === "string") {
+      if (tag === "") {
+        problems.push({
+          where: tagWhere,
+          message: "tags \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
+        });
+        valid = false;
+      }
+      return;
+    }
+    if (!isRecord4(tag)) {
+      problems.push({
+        where: tagWhere,
+        message: "tags \u306E\u8981\u7D20\u306F\u30BF\u30B0\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u304B\u3001name \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
+      });
+      valid = false;
+      return;
+    }
+    if (!checkItem({ item: tag, shape: DOC_TAG_SHAPE, where: tagWhere, problems })) {
+      valid = false;
+    }
+  });
+  return valid;
+}
+function checkDocRelated(options) {
+  const { value, where, problems } = options;
+  if (!Array.isArray(value)) {
+    problems.push({ where, message: "related \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
+    return false;
+  }
+  let valid = true;
+  value.forEach((related, position) => {
+    const relatedWhere = `${where}[${position}]`;
+    if (typeof related === "string") {
+      if (related === "") {
+        problems.push({
+          where: relatedWhere,
+          message: "related \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
+        });
+        valid = false;
+      }
+      return;
+    }
+    if (!isRecord4(related)) {
+      problems.push({
+        where: relatedWhere,
+        message: "related \u306E\u8981\u7D20\u306F\u6587\u66F8\u306E id \u306E\u6587\u5B57\u5217\u304B\u3001to\u30FBtype\u30FBwhen \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
+      });
+      valid = false;
+      return;
+    }
+    if (!checkItem({
+      item: related,
+      shape: DOC_RELATED_SHAPE,
+      where: relatedWhere,
+      problems
+    })) {
+      valid = false;
+    }
+    const { type } = related;
+    if (typeof type === "string" && type !== "" && !RELATION_TYPES.includes(type)) {
+      problems.push({
+        where: `${relatedWhere}.type`,
+        message: `type \u306F ${RELATION_TYPES.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u307E\u3059`
+      });
+      valid = false;
+    }
+  });
+  return valid;
+}
+function checkKey(options) {
+  const { value, key, shape, where, problems } = options;
+  if (value === void 0) {
+    if (shape.required) {
+      problems.push({ where, message: `${key} \u304C\u3042\u308A\u307E\u305B\u3093` });
+    }
+    return !shape.required;
+  }
+  if (shape.type === "doc_tags") {
+    return checkDocTags({ value, where, problems });
+  }
+  if (shape.type === "doc_related") {
+    return checkDocRelated({ value, where, problems });
+  }
+  const message = checkType(key, value, shape);
+  if (message) {
+    problems.push({ where, message });
+  }
+  return message === void 0;
+}
+function checkItem(options) {
+  const { item, shape, where, problems } = options;
+  if (!isRecord4(item)) {
+    problems.push({ where, message: `${where} \u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059` });
+    return false;
+  }
+  let valid = true;
+  for (const [key, keyShape] of Object.entries(shape)) {
+    const checked = checkKey({
+      value: item[key],
+      key,
+      shape: keyShape,
+      where: `${where}.${key}`,
+      problems
+    });
+    valid = checked && valid;
+  }
+  for (const key of Object.keys(item)) {
+    if (!Object.hasOwn(shape, key)) {
+      problems.push({
+        where: `${where}.${key}`,
+        message: `${key} \u306F\u7D22\u5F15\u306B\u8A18\u8F09\u3067\u304D\u306A\u3044\u30AD\u30FC\u3067\u3059`
+      });
+      valid = false;
+    }
+  }
+  return valid;
+}
+function checkList(options) {
+  const { list: list2, name, shape, unique, problems } = options;
+  const seen = new Map(
+    unique.map((key) => [key, /* @__PURE__ */ new Set()])
+  );
+  const items = [];
+  list2.forEach((item, position) => {
+    const where = `${name}[${position}]`;
+    if (!checkItem({ item, shape, where, problems })) {
+      return;
+    }
+    const record2 = item;
+    const duplicated = unique.filter((key) => seen.get(key)?.has(record2[key]));
+    for (const key of duplicated) {
+      problems.push({
+        where: `${where}.${key}`,
+        message: `${key} \u304C\u5148\u306E\u8981\u7D20\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059`
+      });
+    }
+    if (duplicated.length) {
+      return;
+    }
+    for (const key of unique) {
+      seen.get(key)?.add(record2[key]);
+    }
+    items.push(item);
+  });
+  return items;
+}
+function normalizeIndex(value) {
+  const problems = [];
+  const index = { schema: CURRENT_SCHEMA, docs: [] };
+  if (!isRecord4(value)) {
+    problems.push({ where: "", message: "\u7D22\u5F15\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
+    return { index, problems };
+  }
+  if (value.schema !== CURRENT_SCHEMA && Number.isInteger(value.schema)) {
+    problems.push({
+      where: "schema",
+      message: `schema \u306F ${CURRENT_SCHEMA} \u306B\u3057\u307E\u3059\u3002\u53E4\u3044\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u7D22\u5F15\u306F mdmark upgrade \u3067\u79FB\u3057\u3066\u304F\u3060\u3055\u3044`
+    });
+  }
+  const root = [];
+  checkItem({
+    item: { ...value, docs: [], terms: [] },
+    shape: INDEX_SHAPE.root,
+    where: "",
+    problems: root
+  });
+  for (const problem of root) {
+    const key = problem.where.slice(1);
+    if (key !== "docs" && key !== "terms") {
+      problems.push({ where: key, message: problem.message });
+    }
+  }
+  index.docs = checkTop({
+    list: value.docs,
+    name: "docs",
+    shape: INDEX_SHAPE.doc,
+    unique: ["id", "path"],
+    required: true,
+    problems
+  });
+  if (value.terms !== void 0) {
+    index.terms = checkTop({
+      list: value.terms,
+      name: "terms",
+      shape: INDEX_SHAPE.term,
+      unique: ["id"],
+      required: false,
+      problems
+    });
+  }
+  return { index, problems };
+}
+function checkTop(options) {
+  const { list: list2, name, required: required2, problems } = options;
+  if (list2 === void 0) {
+    if (required2) {
+      problems.push({ where: name, message: `${name} \u304C\u3042\u308A\u307E\u305B\u3093` });
+    }
+    return [];
+  }
+  if (!Array.isArray(list2)) {
+    problems.push({ where: name, message: `${name} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059` });
+    return [];
+  }
+  return checkList({ ...options, list: list2 });
+}
+function readRelated(item) {
+  if (typeof item === "string") {
+    return { to: item, type: null, when: null };
+  }
+  return item.paths === void 0 ? { to: item.to, type: item.type, when: item.when } : { to: item.to, type: item.type, when: item.when, paths: item.paths };
+}
+
+// src/callout/callout.part.ts
+var CALLOUT_KINDS = [
+  "note",
+  "tip",
+  "important",
+  "warning",
+  "caution"
+];
+var CALLOUT_TITLES = {
+  note: "\u88DC\u8DB3",
+  tip: "\u30D2\u30F3\u30C8",
+  important: "\u91CD\u8981",
+  warning: "\u8B66\u544A",
+  caution: "\u6CE8\u610F"
+};
+function renderCallout(options) {
+  const { kind, collapsed = false, open: open2 = false, body } = options;
+  const title = options.title === void 0 ? CALLOUT_TITLES[kind] : `<span class="mdmark-visually-hidden">${CALLOUT_TITLES[kind]}: </span>${options.title}`;
+  const classes = `markdown-alert markdown-alert-${kind}`;
+  if (collapsed) {
+    return `<details class="${classes}"${open2 ? " open" : ""}><summary class="markdown-alert-title">${title}</summary>${body}</details>`;
+  }
+  return `<div class="${classes}"><p class="markdown-alert-title">${title}</p>${body}</div>`;
+}
+
+// src/callout/callout.syntax.ts
+var CALLOUT_PATTERN = /^\[!([A-Za-z]+)\]([-+]?)(?:\s+|$)/;
+function firstLineOf(tokens, openIndex) {
+  const paragraph2 = tokens[openIndex + 1];
+  const inline2 = tokens[openIndex + 2];
+  if (paragraph2?.type !== "paragraph_open" || inline2?.type !== "inline") {
+    return [];
+  }
+  const children = inline2.children ?? [];
+  const lineEnd2 = children.findIndex((child) => child.type === "softbreak");
+  return children.slice(0, lineEnd2 < 0 ? children.length : lineEnd2);
+}
+function readCallout(options) {
+  const { state, tokens, openIndex } = options;
+  const [first, ...others] = firstLineOf(tokens, openIndex);
+  const match = first?.type === "text" ? CALLOUT_PATTERN.exec(first.content) : null;
+  if (!first || !match) {
+    return void 0;
+  }
+  const rest2 = new state.Token("text", "", 0);
+  rest2.content = first.content.slice(match[0].length);
+  const title = state.md.renderer.renderInline([rest2, ...others], state.md.options, state.env).trim();
+  return { ...calloutKindOf(match), ...title ? { title } : {} };
+}
+function calloutKindOf(match) {
+  const name = (match[1] ?? "").toLowerCase();
+  const sign = match[2] ?? "";
+  return {
+    kind: CALLOUT_KINDS.find((candidate) => candidate === name) ?? "note",
+    collapsed: sign !== "",
+    open: sign === "+"
+  };
+}
+function removeTitleLine(tokens, openIndex) {
+  const inline2 = tokens[openIndex + 2];
+  const children = inline2.children ?? [];
+  const lineEnd2 = children.findIndex((child) => child.type === "softbreak");
+  inline2.children = lineEnd2 < 0 ? [] : children.slice(lineEnd2 + 1);
+  inline2.content = inline2.content.replace(/^[^\n]*\n?/, "");
+  if (inline2.children.length > 0) {
+    return [];
+  }
+  return tokens.slice(openIndex + 1, openIndex + 4);
+}
+function buildCallouts(state) {
+  if (!featureOn(state, "callout")) {
+    return;
+  }
+  state.tokens = buildCalloutsIn(state, state.tokens);
+}
+function buildCalloutsIn(state, tokens) {
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (!token) {
+      continue;
+    }
+    const callout = token.type === "blockquote_open" ? readCallout({ state, tokens, openIndex: index }) : void 0;
+    const closeIndex = callout ? findNestedClose(tokens, index) : -1;
+    if (!callout || closeIndex < 0) {
+      out.push(token);
+      continue;
+    }
+    const emptied = removeTitleLine(tokens, index);
+    const html = renderCallout({ ...callout, body: SLOT_MARKER });
+    const [head = "", tail = ""] = html.split(SLOT_MARKER);
+    out.push(ownBlock(state, head, token));
+    const body = tokens.slice(index + 1, closeIndex).filter((inner) => !emptied.includes(inner));
+    out.push(...buildCalloutsIn(state, body));
+    out.push(ownBlock(state, tail));
+    index = closeIndex;
+  }
+  return out;
+}
+
+// src/card/card.part.ts
+function fileNameOf(href) {
+  const path = href.split(/[?#]/, 1)[0] ?? "";
+  return path.slice(path.lastIndexOf("/") + 1);
+}
+function renderCard(options) {
+  const { kind, href, title, fileKind } = options;
+  const name = fileNameOf(href);
+  const domain = kind === "link" ? new URL(href).host : name.slice(name.lastIndexOf(".") + 1).toUpperCase();
+  const url2 = kind === "link" ? href : name;
+  const fileAttribute = kind === "file" && fileKind !== void 0 ? ` data-file-kind="${fileKind}"` : "";
+  return `<a class="mdmark-card" data-card="${kind}"${fileAttribute} href="${escapeHtml2(href)}"><span class="mdmark-card-icon" aria-hidden="true"></span><span class="mdmark-card-title">${escapeHtml2(title)}</span><span class="mdmark-card-meta"><span class="mdmark-card-domain">${escapeHtml2(domain)}</span><span class="mdmark-card-url">${escapeHtml2(url2)}</span></span></a>`;
+}
+
+// src/card/card.syntax.ts
+var ATTACHMENT_KINDS = {
+  pdf: "pdf",
+  doc: "doc",
+  docx: "doc",
+  odt: "doc",
+  rtf: "doc",
+  xls: "sheet",
+  xlsx: "sheet",
+  ods: "sheet",
+  csv: "sheet",
+  tsv: "sheet",
+  ppt: "slide",
+  pptx: "slide",
+  odp: "slide",
+  key: "slide",
+  zip: "archive",
+  gz: "archive",
+  tar: "archive",
+  "7z": "archive",
+  txt: "text"
+};
+var WEB_URL_PATTERN = /^https?:\/\//i;
+var AUTOLINK_MARKUPS = ["linkify", "autolink"];
+function extensionOf(href) {
+  const path = href.split(/[?#]/, 1)[0] ?? "";
+  const name = path.slice(path.lastIndexOf("/") + 1);
+  const dot = name.lastIndexOf(".");
+  return dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
+}
+function cardOf(href, text2, autolinked) {
+  if (href.startsWith("#")) {
+    return void 0;
+  }
+  const fileKind = ATTACHMENT_KINDS[extensionOf(href)];
+  if (fileKind !== void 0) {
+    return { kind: "file", href, title: text2, fileKind };
+  }
+  if (!WEB_URL_PATTERN.test(href) || extensionOf(href) === "md") {
+    return void 0;
+  }
+  const title = autolinked ? text2.replace(WEB_URL_PATTERN, "") : text2;
+  return { kind: "link", href, title };
+}
+function soleLinkOf(inline2) {
+  const rest2 = (inline2?.children ?? []).filter(
+    (child) => !(child.type === "text" && child.content.trim() === "")
+  );
+  const open2 = rest2[0];
+  const close = rest2.at(-1);
+  if (open2?.type !== "link_open" || close?.type !== "link_close" || rest2.length < 2) {
+    return void 0;
+  }
+  const inner = rest2.slice(1, -1);
+  if (!inner.every((child) => child.type === "text")) {
+    return void 0;
+  }
+  return { open: open2, text: inner.map((child) => child.content).join("") };
+}
+function definitionStep(token) {
+  if (token.type === DEF_OPEN || token.type === ANNOTATION_DEF_OPEN) {
+    return 1;
+  }
+  return token.type === DEF_CLOSE || token.type === ANNOTATION_DEF_CLOSE ? -1 : 0;
+}
+function cardSpecOf(inline2) {
+  const link2 = soleLinkOf(inline2);
+  if (!link2) {
+    return void 0;
+  }
+  const autolinked = AUTOLINK_MARKUPS.includes(link2.open.markup);
+  if (autolinked && !WEB_URL_PATTERN.test(link2.text)) {
+    return void 0;
+  }
+  return cardOf(String(link2.open.attrGet("href") ?? ""), link2.text, autolinked);
+}
+function buildCards(state) {
+  if (!featureOn(state, "cards")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const out = [];
+  let definitionDepth = 0;
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    definitionDepth += definitionStep(token);
+    const spec = token.type === "paragraph_open" && definitionDepth === 0 ? cardSpecOf(tokens[index + 1]) : void 0;
+    if (!spec) {
+      out.push(token);
+      continue;
+    }
+    out.push(ownBlock(state, renderCard(spec), token));
+    index += 2;
+  }
+  state.tokens = out;
+}
+
+// src/shared/blocks.syntax.ts
+var blockStartOf2 = (tokens, index) => {
+  let at = index;
+  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
+    at -= 1;
+  }
+  return at;
+};
+var insertWarningsBeforeBlocks = (state, warnings) => {
+  for (const { index, warning } of [...warnings].reverse()) {
+    state.tokens.splice(
+      blockStartOf2(state.tokens, index),
+      0,
+      warningBlock(state, warning)
+    );
+  }
+};
+var pairRanges = (tokens, name) => {
+  const pairs = /* @__PURE__ */ new Map();
+  const stack = [];
+  for (const [index, token] of tokens.entries()) {
+    const mark = markOf(token);
+    if (mark?.name !== name) {
+      continue;
+    }
+    if (!mark.closing) {
+      stack.push(index);
+      continue;
+    }
+    const open2 = stack.pop();
+    if (open2 !== void 0) {
+      pairs.set(open2, index);
+    }
+  }
+  for (const open2 of stack) {
+    pairs.set(open2, -1);
+  }
+  return pairs;
+};
+var outermostRanges = (pairs, length) => {
+  const sorted = [...pairs].sort(([a], [b]) => a - b);
+  const result = [];
+  let end = -1;
+  for (const [open2, close] of sorted) {
+    if (open2 < end) {
+      continue;
+    }
+    result.push({ open: open2, close });
+    end = close < 0 ? length : close;
+  }
+  return result;
+};
+
+// src/inline/inline-icon.part.ts
+var renderInlineIcon = (options) => {
+  const svg = options.node === void 0 ? "" : iconNodeSvg(options.node);
+  return `<span class="mdmark-inline-icon" data-icon="${escapeHtml2(options.name)}" aria-hidden="true">${svg}</span>`;
+};
+
+// src/inline/inline-icon.syntax.ts
+var ICON_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
+var ICON_PREFIX = "icon:";
+var ESCAPED_PREFIX = "icon\\:";
+var iconNodeOf = (name, icons2) => bundledIconNode(name) ?? (icons2 && Object.hasOwn(icons2, name) ? icons2[name] : void 0);
+var buildInlineIcon = (child, env) => {
+  if (child.content.startsWith(ESCAPED_PREFIX)) {
+    child.content = `${ICON_PREFIX}${child.content.slice(ESCAPED_PREFIX.length)}`;
+    return void 0;
+  }
+  if (!child.content.startsWith(ICON_PREFIX)) {
+    return void 0;
+  }
+  const name = child.content.slice(ICON_PREFIX.length).trim();
+  if (name === "") {
+    return void 0;
+  }
+  if (!ICON_NAME_PATTERN.test(name)) {
+    return {
+      mark: child.content,
+      message: `\u306E \`${name}\` \u306F Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u306B\u306A\u308A\u307E\u305B\u3093\u3002\u540D\u524D\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\`-\` \u3067\u8A18\u8F09\u3057\u307E\u3059\uFF08\u4F8B: \`rocket\`\uFF09\u3002\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+    };
+  }
+  const node2 = iconNodeOf(name, env.icons);
+  child.type = "html_inline";
+  child.content = markOwn(renderInlineIcon({ name, node: node2 }), env.nonce);
+  return void 0;
+};
+var buildInlineIcons = (state) => {
+  if (!featureOn(state, "icon")) {
+    return;
+  }
+  const env = envOf(state);
+  const warnings = [];
+  for (const [index, token] of state.tokens.entries()) {
+    for (const child of token.children ?? []) {
+      const warning = child.type === "code_inline" ? buildInlineIcon(child, env) : void 0;
+      if (warning) {
+        warnings.push({ index, warning });
+      }
+    }
+  }
+  insertWarningsBeforeBlocks(state, warnings);
+};
+
 // src/render/sanitize.ts
 var import_sanitize_html = __toESM(require_sanitize_html(), 1);
 var ALIGN_VALUES = ["left", "center", "right"];
@@ -70310,60 +71105,191 @@ function sanitize(html, nonce) {
   });
 }
 
-// src/render/syntax/blocks.ts
-var blockStartOf = (tokens, index) => {
-  let at = index;
-  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
-    at -= 1;
-  }
-  return at;
+// src/card/card-grid.part.ts
+var INLINE_ICON_CLASS = 'class="mdmark-inline-icon"';
+var renderIcon = (name, icons2) => {
+  const node2 = bundledIconNode(name) ?? (icons2 && Object.hasOwn(icons2, name) ? icons2[name] : void 0);
+  return renderInlineIcon({ name, node: node2 }).replace(
+    INLINE_ICON_CLASS,
+    'class="mdmark-inline-icon mdmark-card-grid-icon"'
+  );
 };
-var insertWarningsBeforeBlocks = (state, warnings) => {
-  for (const { index, warning } of [...warnings].reverse()) {
-    state.tokens.splice(
-      blockStartOf(state.tokens, index),
-      0,
-      warningBlock(state, warning)
-    );
-  }
+var renderItem = (item, icons2) => {
+  const icon = item.icon === void 0 ? "" : renderIcon(item.icon, icons2);
+  const title = `<span class="mdmark-card-grid-title">${item.title}</span>`;
+  const description = item.description === void 0 || item.description === "" ? "" : `<p class="mdmark-card-grid-desc">${item.description}</p>`;
+  const inner = `${icon}${title}${description}`;
+  return item.href !== void 0 && isAllowedUrl(item.href) ? `<a class="mdmark-card-grid-item" href="${escapeHtml2(item.href)}">${inner}</a>` : `<div class="mdmark-card-grid-item">${inner}</div>`;
 };
-var pairRanges = (tokens, name) => {
-  const pairs = /* @__PURE__ */ new Map();
-  const stack = [];
-  for (const [index, token] of tokens.entries()) {
-    const mark = markOf(token);
-    if (mark?.name !== name) {
-      continue;
-    }
-    if (!mark.closing) {
-      stack.push(index);
-      continue;
-    }
-    const open2 = stack.pop();
-    if (open2 !== void 0) {
-      pairs.set(open2, index);
-    }
-  }
-  for (const open2 of stack) {
-    pairs.set(open2, -1);
-  }
-  return pairs;
-};
-var outermostRanges = (pairs, length) => {
-  const sorted = [...pairs].sort(([a], [b]) => a - b);
-  const result = [];
-  let end = -1;
-  for (const [open2, close] of sorted) {
-    if (open2 < end) {
-      continue;
-    }
-    result.push({ open: open2, close });
-    end = close < 0 ? length : close;
-  }
-  return result;
+var renderCardGrid = (options) => {
+  const items = options.items.map((item) => `<li>${renderItem(item, options.icons)}</li>`).join("");
+  return `<ul class="mdmark-card-grid">${items}</ul>`;
 };
 
-// src/render/syntax/annotations.ts
+// src/card/card-grid.syntax.ts
+var ICON_PREFIX2 = "icon:";
+var AUTOLINK_MARKUPS2 = ["linkify", "autolink"];
+var SCHEME_PATTERN2 = /^[a-z][a-z0-9+.-]*:\/\//i;
+var renderInline2 = (state, children) => state.md.renderer.renderInline(children, state.md.options, state.env).trim();
+var trimStart = (children) => {
+  const rest2 = [...children];
+  while (rest2[0] && (rest2[0].type === "softbreak" || rest2[0].type === "text" && rest2[0].content.trim() === "")) {
+    rest2.shift();
+  }
+  const [first] = rest2;
+  if (first?.type === "text") {
+    const trimmed = Object.assign(
+      Object.create(Object.getPrototypeOf(first)),
+      first
+    );
+    trimmed.content = first.content.trimStart();
+    rest2[0] = trimmed;
+  }
+  return rest2;
+};
+var takeIcon = (children) => {
+  const [head] = children;
+  if (head?.type !== "code_inline" || !head.content.startsWith(ICON_PREFIX2)) {
+    return { icon: void 0, rest: children };
+  }
+  const name = head.content.slice(ICON_PREFIX2.length).trim();
+  if (!ICON_NAME_PATTERN.test(name)) {
+    return { icon: void 0, rest: children };
+  }
+  return { icon: name, rest: trimStart(children.slice(1)) };
+};
+var readItem = (state, children) => {
+  const { icon, rest: rest2 } = takeIcon(trimStart(children));
+  const openIndex = rest2.findIndex((child) => child.type === "link_open");
+  const closeIndex = rest2.findIndex(
+    (child, index) => index > openIndex && child.type === "link_close"
+  );
+  if (openIndex >= 0 && closeIndex > openIndex) {
+    const open2 = rest2[openIndex];
+    const inner = rest2.slice(openIndex + 1, closeIndex);
+    const autolinked = AUTOLINK_MARKUPS2.includes(open2.markup);
+    const title = autolinked ? renderInline2(state, inner).replace(SCHEME_PATTERN2, "") : renderInline2(state, inner);
+    const description = renderInline2(
+      state,
+      [
+        ...rest2.slice(0, openIndex),
+        ...trimStart(rest2.slice(closeIndex + 1))
+      ].filter(
+        (child) => child.type !== "link_open" && child.type !== "link_close"
+      )
+    );
+    return {
+      title,
+      href: String(open2.attrGet("href") ?? ""),
+      icon,
+      description
+    };
+  }
+  const breakIndex = rest2.findIndex((child) => child.type === "softbreak");
+  const titleChildren = breakIndex < 0 ? rest2 : rest2.slice(0, breakIndex);
+  const descriptionChildren = breakIndex < 0 ? [] : trimStart(rest2.slice(breakIndex + 1));
+  return {
+    title: renderInline2(state, titleChildren),
+    icon,
+    description: renderInline2(state, descriptionChildren)
+  };
+};
+var cardGridBlock = (state, items, source) => {
+  const slots = [];
+  const frames = items.map((item) => {
+    slots.push(item.title);
+    const hasDescription = item.description !== void 0 && item.description !== "";
+    if (hasDescription) {
+      slots.push(item.description);
+    }
+    return {
+      ...item,
+      title: SLOT_MARKER,
+      description: hasDescription ? SLOT_MARKER : void 0
+    };
+  });
+  const token = ownBlock(
+    state,
+    renderCardGrid({ items: frames, icons: envOf(state).icons }),
+    source
+  );
+  const pieces = splitSlots(token.content);
+  token.content = pieces.map((piece, index) => `${piece}${slots[index] ?? ""}`).join("");
+  return token;
+};
+var collectItems = (tokens) => {
+  const items = [];
+  let current;
+  for (const token of tokens) {
+    if (token.type === "list_item_open" && token.level === 1) {
+      current = [];
+      items.push(current);
+    } else if (token.type === "inline" && current) {
+      if (current.length > 0) {
+        current.push(
+          Object.assign(Object.create(Object.getPrototypeOf(token)), {
+            ...token,
+            type: "softbreak",
+            children: null,
+            content: ""
+          })
+        );
+      }
+      current.push(...token.children ?? []);
+    }
+  }
+  return items;
+};
+var isSingleList = (inner) => {
+  const first = inner[0];
+  const last = inner.at(-1);
+  if (!first || !last || !["bullet_list_open", "ordered_list_open"].includes(first.type) || last.type !== first.type.replace("_open", "_close")) {
+    return false;
+  }
+  return inner.filter((token) => token.level === first.level).length === 2;
+};
+var buildCardGrid = (state) => {
+  if (!featureOn(state, "card-grid")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const mark = markOf(token);
+    if (mark?.name !== "cards" || mark.closing) {
+      out.push(token);
+      continue;
+    }
+    const closeIndex = findClose(tokens, index, "cards");
+    const inner = closeIndex < 0 ? [] : tokens.slice(index + 1, closeIndex);
+    if (closeIndex < 0 || !isSingleList(inner)) {
+      out.push(
+        warningBlock(
+          state,
+          {
+            mark: mark.raw,
+            message: "\u3067\u56F2\u3081\u308B\u306E\u306F\u30EA\u30B9\u30C8 1 \u3064\u3067\u3059\u3002\u30AB\u30FC\u30C9\u306E\u683C\u5B50\u306B\u305B\u305A\u306B\u3001\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u3068\u304A\u308A\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002"
+          },
+          token
+        )
+      );
+      continue;
+    }
+    const items = collectItems(
+      inner.map(
+        (child) => Object.assign(Object.create(Object.getPrototypeOf(child)), child, {
+          level: child.level - (inner[0]?.level ?? 0)
+        })
+      )
+    ).map((children) => readItem(state, children));
+    out.push(cardGridBlock(state, items, token));
+    index = closeIndex;
+  }
+  state.tokens = out;
+};
+
+// src/footnote/annotations.syntax.ts
 var REF2 = "mdmark_annotation_ref";
 var LIST2 = "mdmark_annotation_list";
 var FOOTNOTE_REF = "mdmark_footnote_ref";
@@ -70663,7 +71589,7 @@ function collectAnnotations(state) {
     }
     const undefinedRefs = [];
     collectInline({ state, inline: token, annotations, undefinedRefs });
-    const at = blockStartOf(state.tokens, index);
+    const at = blockStartOf2(state.tokens, index);
     for (const id of undefinedRefs) {
       inserts.push({ at, token: warningBlock(state, undefinedWarning(id)) });
     }
@@ -70787,770 +71713,6 @@ function useAnnotations(parser3) {
     }
     return renderReference2(parser3, token, env);
   };
-}
-
-// src/parts/backlinks.ts
-var BACKLINKS_TITLE = "\u95A2\u9023\u6587\u66F8";
-function renderBacklinks(props) {
-  const { id, docs } = props;
-  if (docs.length === 0) {
-    return "";
-  }
-  const items = docs.map(
-    (doc) => `<li><a href="${escapeHtml2(doc.href)}">${escapeHtml2(doc.title)}</a></li>`
-  ).join("");
-  const titleId = escapeHtml2(id);
-  return `<nav class="mdmark-backlinks" aria-labelledby="${titleId}"><p class="mdmark-backlinks-title" id="${titleId}">${BACKLINKS_TITLE}</p><ul>${items}</ul></nav>`;
-}
-
-// src/render/syntax/backlinks.ts
-var TITLE_ID = "mdmark-backlinks-title";
-function backlinksRule(state) {
-  const env = envOf(state);
-  const { index, docId } = env;
-  if (!featureOn(state, "backlinks") || !index || docId === void 0) {
-    return;
-  }
-  const ids = env.mdmarkReferences?.backlinks[docId] ?? index.docs.filter(
-    (doc) => (doc.related ?? []).some((item) => readRelated(item).to === docId)
-  ).map((doc) => doc.id);
-  const ownPath = index.docs.find((doc) => doc.id === docId)?.path;
-  const docs = [...new Set(ids)].filter((id) => id !== docId).flatMap((id) => index.docs.filter((doc) => doc.id === id)).map((doc) => ({
-    title: doc.title,
-    href: relativeHref(ownPath, doc.path)
-  }));
-  const html = renderBacklinks({ id: TITLE_ID, docs });
-  if (html !== "") {
-    state.tokens.push(ownBlock(state, html));
-  }
-}
-
-// src/parts/badge.ts
-function renderBadge(options) {
-  const color = options.color === void 0 ? "" : ` data-color="${options.color}"`;
-  return `<span class="mdmark-badge"${color}>${escapeHtml2(options.label)}</span>`;
-}
-
-// src/render/syntax/badges.ts
-var BADGE_PREFIX2 = "badge:";
-var ESCAPED_PREFIX = "badge\\:";
-function splitBadgeColor(text2) {
-  const at = text2.indexOf(":");
-  const head = text2.slice(0, at);
-  if (at < 0 || !isColorName(head)) {
-    return { label: text2 };
-  }
-  return { color: head, label: text2.slice(at + 1) };
-}
-function buildBadges(state) {
-  if (!featureOn(state, "badge")) {
-    return;
-  }
-  const nonce = envOf(state).nonce;
-  for (const token of state.tokens) {
-    for (const child of token.children ?? []) {
-      if (child.type !== "code_inline") {
-        continue;
-      }
-      const badge = child.content.startsWith(BADGE_PREFIX2) ? splitBadgeColor(child.content.slice(BADGE_PREFIX2.length)) : void 0;
-      if (badge !== void 0 && badge.label.trim() !== "") {
-        child.type = "html_inline";
-        child.content = markOwn(renderBadge(badge), nonce);
-      } else if (child.content.startsWith(ESCAPED_PREFIX)) {
-        child.content = `${BADGE_PREFIX2}${child.content.slice(ESCAPED_PREFIX.length)}`;
-      }
-    }
-  }
-}
-
-// src/parts/callout.ts
-var CALLOUT_KINDS = [
-  "note",
-  "tip",
-  "important",
-  "warning",
-  "caution"
-];
-var CALLOUT_TITLES = {
-  note: "\u88DC\u8DB3",
-  tip: "\u30D2\u30F3\u30C8",
-  important: "\u91CD\u8981",
-  warning: "\u8B66\u544A",
-  caution: "\u6CE8\u610F"
-};
-function renderCallout(options) {
-  const { kind, collapsed = false, open: open2 = false, body } = options;
-  const title = options.title === void 0 ? CALLOUT_TITLES[kind] : `<span class="mdmark-visually-hidden">${CALLOUT_TITLES[kind]}: </span>${options.title}`;
-  const classes = `markdown-alert markdown-alert-${kind}`;
-  if (collapsed) {
-    return `<details class="${classes}"${open2 ? " open" : ""}><summary class="markdown-alert-title">${title}</summary>${body}</details>`;
-  }
-  return `<div class="${classes}"><p class="markdown-alert-title">${title}</p>${body}</div>`;
-}
-
-// src/render/syntax/callouts.ts
-var CALLOUT_PATTERN = /^\[!([A-Za-z]+)\]([-+]?)(?:\s+|$)/;
-function firstLineOf(tokens, openIndex) {
-  const paragraph2 = tokens[openIndex + 1];
-  const inline2 = tokens[openIndex + 2];
-  if (paragraph2?.type !== "paragraph_open" || inline2?.type !== "inline") {
-    return [];
-  }
-  const children = inline2.children ?? [];
-  const lineEnd2 = children.findIndex((child) => child.type === "softbreak");
-  return children.slice(0, lineEnd2 < 0 ? children.length : lineEnd2);
-}
-function readCallout(options) {
-  const { state, tokens, openIndex } = options;
-  const [first, ...others] = firstLineOf(tokens, openIndex);
-  const match = first?.type === "text" ? CALLOUT_PATTERN.exec(first.content) : null;
-  if (!first || !match) {
-    return void 0;
-  }
-  const rest2 = new state.Token("text", "", 0);
-  rest2.content = first.content.slice(match[0].length);
-  const title = state.md.renderer.renderInline([rest2, ...others], state.md.options, state.env).trim();
-  return { ...calloutKindOf(match), ...title ? { title } : {} };
-}
-function calloutKindOf(match) {
-  const name = (match[1] ?? "").toLowerCase();
-  const sign = match[2] ?? "";
-  return {
-    kind: CALLOUT_KINDS.find((candidate) => candidate === name) ?? "note",
-    collapsed: sign !== "",
-    open: sign === "+"
-  };
-}
-function removeTitleLine(tokens, openIndex) {
-  const inline2 = tokens[openIndex + 2];
-  const children = inline2.children ?? [];
-  const lineEnd2 = children.findIndex((child) => child.type === "softbreak");
-  inline2.children = lineEnd2 < 0 ? [] : children.slice(lineEnd2 + 1);
-  inline2.content = inline2.content.replace(/^[^\n]*\n?/, "");
-  if (inline2.children.length > 0) {
-    return [];
-  }
-  return tokens.slice(openIndex + 1, openIndex + 4);
-}
-function buildCallouts(state) {
-  if (!featureOn(state, "callout")) {
-    return;
-  }
-  state.tokens = buildCalloutsIn(state, state.tokens);
-}
-function buildCalloutsIn(state, tokens) {
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (!token) {
-      continue;
-    }
-    const callout = token.type === "blockquote_open" ? readCallout({ state, tokens, openIndex: index }) : void 0;
-    const closeIndex = callout ? findNestedClose(tokens, index) : -1;
-    if (!callout || closeIndex < 0) {
-      out.push(token);
-      continue;
-    }
-    const emptied = removeTitleLine(tokens, index);
-    const html = renderCallout({ ...callout, body: SLOT_MARKER });
-    const [head = "", tail = ""] = html.split(SLOT_MARKER);
-    out.push(ownBlock(state, head, token));
-    const body = tokens.slice(index + 1, closeIndex).filter((inner) => !emptied.includes(inner));
-    out.push(...buildCalloutsIn(state, body));
-    out.push(ownBlock(state, tail));
-    index = closeIndex;
-  }
-  return out;
-}
-
-// src/parts/inline-icon.ts
-var ALLOWED_ELEMENTS = /* @__PURE__ */ new Set([
-  "path",
-  "circle",
-  "rect",
-  "line",
-  "polyline",
-  "polygon",
-  "ellipse"
-]);
-var ALLOWED_ATTRIBUTES = /* @__PURE__ */ new Set([
-  "d",
-  "cx",
-  "cy",
-  "r",
-  "rx",
-  "ry",
-  "x",
-  "y",
-  "x1",
-  "y1",
-  "x2",
-  "y2",
-  "width",
-  "height",
-  "points"
-]);
-var iconNodeSvg = (node2) => {
-  const body = node2.filter(([tag]) => ALLOWED_ELEMENTS.has(tag)).map(([tag, attributes]) => {
-    const attrs = Object.entries(attributes).filter(
-      ([name, value]) => ALLOWED_ATTRIBUTES.has(name) && typeof value === "string"
-    ).map(([name, value]) => ` ${name}="${escapeHtml2(value)}"`).join("");
-    return `<${tag}${attrs}></${tag}>`;
-  }).join("");
-  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
-};
-var renderInlineIcon = (options) => {
-  const svg = options.node === void 0 ? "" : iconNodeSvg(options.node);
-  return `<span class="mdmark-inline-icon" data-icon="${escapeHtml2(options.name)}" aria-hidden="true">${svg}</span>`;
-};
-
-// src/parts/card-grid.ts
-var INLINE_ICON_CLASS = 'class="mdmark-inline-icon"';
-var renderIcon = (name, icons2) => {
-  const node2 = bundledIconNode(name) ?? (icons2 && Object.hasOwn(icons2, name) ? icons2[name] : void 0);
-  return renderInlineIcon({ name, node: node2 }).replace(
-    INLINE_ICON_CLASS,
-    'class="mdmark-inline-icon mdmark-card-grid-icon"'
-  );
-};
-var renderItem = (item, icons2) => {
-  const icon = item.icon === void 0 ? "" : renderIcon(item.icon, icons2);
-  const title = `<span class="mdmark-card-grid-title">${item.title}</span>`;
-  const description = item.description === void 0 || item.description === "" ? "" : `<p class="mdmark-card-grid-desc">${item.description}</p>`;
-  const inner = `${icon}${title}${description}`;
-  return item.href !== void 0 && isAllowedUrl(item.href) ? `<a class="mdmark-card-grid-item" href="${escapeHtml2(item.href)}">${inner}</a>` : `<div class="mdmark-card-grid-item">${inner}</div>`;
-};
-var renderCardGrid = (options) => {
-  const items = options.items.map((item) => `<li>${renderItem(item, options.icons)}</li>`).join("");
-  return `<ul class="mdmark-card-grid">${items}</ul>`;
-};
-
-// src/render/syntax/inline-icons.ts
-var ICON_NAME_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
-var ICON_PREFIX = "icon:";
-var ESCAPED_PREFIX2 = "icon\\:";
-var iconNodeOf = (name, icons2) => bundledIconNode(name) ?? (icons2 && Object.hasOwn(icons2, name) ? icons2[name] : void 0);
-var buildInlineIcon = (child, env) => {
-  if (child.content.startsWith(ESCAPED_PREFIX2)) {
-    child.content = `${ICON_PREFIX}${child.content.slice(ESCAPED_PREFIX2.length)}`;
-    return void 0;
-  }
-  if (!child.content.startsWith(ICON_PREFIX)) {
-    return void 0;
-  }
-  const name = child.content.slice(ICON_PREFIX.length).trim();
-  if (name === "") {
-    return void 0;
-  }
-  if (!ICON_NAME_PATTERN.test(name)) {
-    return {
-      mark: child.content,
-      message: `\u306E \`${name}\` \u306F Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u306B\u306A\u308A\u307E\u305B\u3093\u3002\u540D\u524D\u306F\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\`-\` \u3067\u8A18\u8F09\u3057\u307E\u3059\uFF08\u4F8B: \`rocket\`\uFF09\u3002\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
-    };
-  }
-  const node2 = iconNodeOf(name, env.icons);
-  child.type = "html_inline";
-  child.content = markOwn(renderInlineIcon({ name, node: node2 }), env.nonce);
-  return void 0;
-};
-var buildInlineIcons = (state) => {
-  if (!featureOn(state, "icon")) {
-    return;
-  }
-  const env = envOf(state);
-  const warnings = [];
-  for (const [index, token] of state.tokens.entries()) {
-    for (const child of token.children ?? []) {
-      const warning = child.type === "code_inline" ? buildInlineIcon(child, env) : void 0;
-      if (warning) {
-        warnings.push({ index, warning });
-      }
-    }
-  }
-  insertWarningsBeforeBlocks(state, warnings);
-};
-
-// src/render/syntax/card-grid.ts
-var ICON_PREFIX2 = "icon:";
-var AUTOLINK_MARKUPS = ["linkify", "autolink"];
-var SCHEME_PATTERN2 = /^[a-z][a-z0-9+.-]*:\/\//i;
-var renderInline2 = (state, children) => state.md.renderer.renderInline(children, state.md.options, state.env).trim();
-var trimStart = (children) => {
-  const rest2 = [...children];
-  while (rest2[0] && (rest2[0].type === "softbreak" || rest2[0].type === "text" && rest2[0].content.trim() === "")) {
-    rest2.shift();
-  }
-  const [first] = rest2;
-  if (first?.type === "text") {
-    const trimmed = Object.assign(
-      Object.create(Object.getPrototypeOf(first)),
-      first
-    );
-    trimmed.content = first.content.trimStart();
-    rest2[0] = trimmed;
-  }
-  return rest2;
-};
-var takeIcon = (children) => {
-  const [head] = children;
-  if (head?.type !== "code_inline" || !head.content.startsWith(ICON_PREFIX2)) {
-    return { icon: void 0, rest: children };
-  }
-  const name = head.content.slice(ICON_PREFIX2.length).trim();
-  if (!ICON_NAME_PATTERN.test(name)) {
-    return { icon: void 0, rest: children };
-  }
-  return { icon: name, rest: trimStart(children.slice(1)) };
-};
-var readItem = (state, children) => {
-  const { icon, rest: rest2 } = takeIcon(trimStart(children));
-  const openIndex = rest2.findIndex((child) => child.type === "link_open");
-  const closeIndex = rest2.findIndex(
-    (child, index) => index > openIndex && child.type === "link_close"
-  );
-  if (openIndex >= 0 && closeIndex > openIndex) {
-    const open2 = rest2[openIndex];
-    const inner = rest2.slice(openIndex + 1, closeIndex);
-    const autolinked = AUTOLINK_MARKUPS.includes(open2.markup);
-    const title = autolinked ? renderInline2(state, inner).replace(SCHEME_PATTERN2, "") : renderInline2(state, inner);
-    const description = renderInline2(
-      state,
-      [
-        ...rest2.slice(0, openIndex),
-        ...trimStart(rest2.slice(closeIndex + 1))
-      ].filter(
-        (child) => child.type !== "link_open" && child.type !== "link_close"
-      )
-    );
-    return {
-      title,
-      href: String(open2.attrGet("href") ?? ""),
-      icon,
-      description
-    };
-  }
-  const breakIndex = rest2.findIndex((child) => child.type === "softbreak");
-  const titleChildren = breakIndex < 0 ? rest2 : rest2.slice(0, breakIndex);
-  const descriptionChildren = breakIndex < 0 ? [] : trimStart(rest2.slice(breakIndex + 1));
-  return {
-    title: renderInline2(state, titleChildren),
-    icon,
-    description: renderInline2(state, descriptionChildren)
-  };
-};
-var cardGridBlock = (state, items, source) => {
-  const slots = [];
-  const frames = items.map((item) => {
-    slots.push(item.title);
-    const hasDescription = item.description !== void 0 && item.description !== "";
-    if (hasDescription) {
-      slots.push(item.description);
-    }
-    return {
-      ...item,
-      title: SLOT_MARKER,
-      description: hasDescription ? SLOT_MARKER : void 0
-    };
-  });
-  const token = ownBlock(
-    state,
-    renderCardGrid({ items: frames, icons: envOf(state).icons }),
-    source
-  );
-  const pieces = splitSlots(token.content);
-  token.content = pieces.map((piece, index) => `${piece}${slots[index] ?? ""}`).join("");
-  return token;
-};
-var collectItems = (tokens) => {
-  const items = [];
-  let current;
-  for (const token of tokens) {
-    if (token.type === "list_item_open" && token.level === 1) {
-      current = [];
-      items.push(current);
-    } else if (token.type === "inline" && current) {
-      if (current.length > 0) {
-        current.push(
-          Object.assign(Object.create(Object.getPrototypeOf(token)), {
-            ...token,
-            type: "softbreak",
-            children: null,
-            content: ""
-          })
-        );
-      }
-      current.push(...token.children ?? []);
-    }
-  }
-  return items;
-};
-var isSingleList = (inner) => {
-  const first = inner[0];
-  const last = inner.at(-1);
-  if (!first || !last || !["bullet_list_open", "ordered_list_open"].includes(first.type) || last.type !== first.type.replace("_open", "_close")) {
-    return false;
-  }
-  return inner.filter((token) => token.level === first.level).length === 2;
-};
-var buildCardGrid = (state) => {
-  if (!featureOn(state, "card-grid")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    if (mark?.name !== "cards" || mark.closing) {
-      out.push(token);
-      continue;
-    }
-    const closeIndex = findClose(tokens, index, "cards");
-    const inner = closeIndex < 0 ? [] : tokens.slice(index + 1, closeIndex);
-    if (closeIndex < 0 || !isSingleList(inner)) {
-      out.push(
-        warningBlock(
-          state,
-          {
-            mark: mark.raw,
-            message: "\u3067\u56F2\u3081\u308B\u306E\u306F\u30EA\u30B9\u30C8 1 \u3064\u3067\u3059\u3002\u30AB\u30FC\u30C9\u306E\u683C\u5B50\u306B\u305B\u305A\u306B\u3001\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u3068\u304A\u308A\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002"
-          },
-          token
-        )
-      );
-      continue;
-    }
-    const items = collectItems(
-      inner.map(
-        (child) => Object.assign(Object.create(Object.getPrototypeOf(child)), child, {
-          level: child.level - (inner[0]?.level ?? 0)
-        })
-      )
-    ).map((children) => readItem(state, children));
-    out.push(cardGridBlock(state, items, token));
-    index = closeIndex;
-  }
-  state.tokens = out;
-};
-
-// src/parts/card.ts
-function fileNameOf(href) {
-  const path = href.split(/[?#]/, 1)[0] ?? "";
-  return path.slice(path.lastIndexOf("/") + 1);
-}
-function renderCard(options) {
-  const { kind, href, title, fileKind } = options;
-  const name = fileNameOf(href);
-  const domain = kind === "link" ? new URL(href).host : name.slice(name.lastIndexOf(".") + 1).toUpperCase();
-  const url2 = kind === "link" ? href : name;
-  const fileAttribute = kind === "file" && fileKind !== void 0 ? ` data-file-kind="${fileKind}"` : "";
-  return `<a class="mdmark-card" data-card="${kind}"${fileAttribute} href="${escapeHtml2(href)}"><span class="mdmark-card-icon" aria-hidden="true"></span><span class="mdmark-card-title">${escapeHtml2(title)}</span><span class="mdmark-card-meta"><span class="mdmark-card-domain">${escapeHtml2(domain)}</span><span class="mdmark-card-url">${escapeHtml2(url2)}</span></span></a>`;
-}
-
-// src/render/syntax/cards.ts
-var ATTACHMENT_KINDS = {
-  pdf: "pdf",
-  doc: "doc",
-  docx: "doc",
-  odt: "doc",
-  rtf: "doc",
-  xls: "sheet",
-  xlsx: "sheet",
-  ods: "sheet",
-  csv: "sheet",
-  tsv: "sheet",
-  ppt: "slide",
-  pptx: "slide",
-  odp: "slide",
-  key: "slide",
-  zip: "archive",
-  gz: "archive",
-  tar: "archive",
-  "7z": "archive",
-  txt: "text"
-};
-var WEB_URL_PATTERN = /^https?:\/\//i;
-var AUTOLINK_MARKUPS2 = ["linkify", "autolink"];
-function extensionOf(href) {
-  const path = href.split(/[?#]/, 1)[0] ?? "";
-  const name = path.slice(path.lastIndexOf("/") + 1);
-  const dot = name.lastIndexOf(".");
-  return dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
-}
-function cardOf(href, text2, autolinked) {
-  if (href.startsWith("#")) {
-    return void 0;
-  }
-  const fileKind = ATTACHMENT_KINDS[extensionOf(href)];
-  if (fileKind !== void 0) {
-    return { kind: "file", href, title: text2, fileKind };
-  }
-  if (!WEB_URL_PATTERN.test(href) || extensionOf(href) === "md") {
-    return void 0;
-  }
-  const title = autolinked ? text2.replace(WEB_URL_PATTERN, "") : text2;
-  return { kind: "link", href, title };
-}
-function soleLinkOf(inline2) {
-  const rest2 = (inline2?.children ?? []).filter(
-    (child) => !(child.type === "text" && child.content.trim() === "")
-  );
-  const open2 = rest2[0];
-  const close = rest2.at(-1);
-  if (open2?.type !== "link_open" || close?.type !== "link_close" || rest2.length < 2) {
-    return void 0;
-  }
-  const inner = rest2.slice(1, -1);
-  if (!inner.every((child) => child.type === "text")) {
-    return void 0;
-  }
-  return { open: open2, text: inner.map((child) => child.content).join("") };
-}
-function definitionStep(token) {
-  if (token.type === DEF_OPEN || token.type === ANNOTATION_DEF_OPEN) {
-    return 1;
-  }
-  return token.type === DEF_CLOSE || token.type === ANNOTATION_DEF_CLOSE ? -1 : 0;
-}
-function cardSpecOf(inline2) {
-  const link2 = soleLinkOf(inline2);
-  if (!link2) {
-    return void 0;
-  }
-  const autolinked = AUTOLINK_MARKUPS2.includes(link2.open.markup);
-  if (autolinked && !WEB_URL_PATTERN.test(link2.text)) {
-    return void 0;
-  }
-  return cardOf(String(link2.open.attrGet("href") ?? ""), link2.text, autolinked);
-}
-function buildCards(state) {
-  if (!featureOn(state, "cards")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  let definitionDepth = 0;
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    definitionDepth += definitionStep(token);
-    const spec = token.type === "paragraph_open" && definitionDepth === 0 ? cardSpecOf(tokens[index + 1]) : void 0;
-    if (!spec) {
-      out.push(token);
-      continue;
-    }
-    out.push(ownBlock(state, renderCard(spec), token));
-    index += 2;
-  }
-  state.tokens = out;
-}
-
-// src/code-fold-logic.ts
-function measureIndents(texts) {
-  const heads = texts.map(
-    (text2) => text2.trim() === "" ? void 0 : /^[ \t]*/.exec(text2)?.[0] ?? ""
-  );
-  const spaceCounts = heads.flatMap((head) => {
-    const spaces = head?.replaceAll("	", "").length ?? 0;
-    return spaces > 0 ? [spaces] : [];
-  });
-  const unit = spaceCounts.length > 0 ? Math.min(...spaceCounts) : 1;
-  return heads.map((head) => {
-    if (head === void 0) {
-      return void 0;
-    }
-    const spaces = head.replaceAll("	", "").length;
-    const tabs = head.length - spaces;
-    return tabs + Math.floor(spaces / unit);
-  });
-}
-function foldLinesOf(indents) {
-  return indents.map((indent, index) => {
-    if (indent === void 0) {
-      return void 0;
-    }
-    let last = index;
-    for (let next = index + 1; next < indents.length; next++) {
-      const level = indents[next];
-      if (level === void 0) {
-        continue;
-      }
-      if (level <= indent) {
-        break;
-      }
-      last = next;
-    }
-    return last > index ? last - index : void 0;
-  });
-}
-function hiddenLinesOf(options) {
-  const { foldLines, folded } = options;
-  const hidden = /* @__PURE__ */ new Set();
-  foldLines.forEach((count, index) => {
-    if (count === void 0 || !folded[index]) {
-      return;
-    }
-    for (let line = index + 1; line <= index + count; line++) {
-      hidden.add(line);
-    }
-  });
-  return hidden;
-}
-
-// src/parts/code-block.ts
-var SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
-var MERMAID_ATTRIBUTE = "data-mdmark-mermaid";
-function renderCodeFoldToggle(options) {
-  const { expanded, from, to, controls } = options;
-  const icon = expanded ? "chevron-down" : "chevron-right";
-  return `<button class="mdmark-code-fold" type="button" aria-expanded="${expanded}" aria-controls="${escapeHtml2(controls)}" aria-label="${from} \u884C\u76EE\u304B\u3089 ${to} \u884C\u76EE"><span class="mdmark-code-fold-icon" data-icon="${icon}">${iconSvg(icon)}</span></button>`;
-}
-function renderCodeFoldMore(options) {
-  const { from, to } = options;
-  return `<button class="mdmark-code-fold-more" type="button" aria-label="${from} \u884C\u76EE\u304B\u3089 ${to} \u884C\u76EE\u3092\u5C55\u958B">\u22EF</button>`;
-}
-function codeLineId(base, index) {
-  return `${base}-line-${index + 1}`;
-}
-function lineMarkAttributes(line, number4) {
-  return [
-    number4 === void 0 ? "" : ` data-line="${number4}"`,
-    line.kind === void 0 ? "" : ` data-kind="${line.kind}"`,
-    line.indent ? ` data-indent="${line.indent}"` : "",
-    line.foldLines === void 0 ? "" : ` data-fold-lines="${line.foldLines}"`,
-    line.folded ? ' data-folded="true"' : ""
-  ].join("");
-}
-function renderLine(options) {
-  const { line, number: number4, fold } = options;
-  const attributes = [
-    fold ? ` id="${escapeHtml2(fold.id)}"` : "",
-    lineMarkAttributes(line, number4),
-    fold?.hidden ? " hidden" : ""
-  ].join("");
-  return `<span class="mdmark-code-line"${attributes}>${fold?.toggle ?? ""}<span class="mdmark-code-text">${escapeHtml2(line.text)}</span>${fold?.more ?? ""}</span>`;
-}
-var COPY_LABELS = {
-  idle: { text: "\u30B3\u30D4\u30FC", icon: "copy" },
-  copied: { text: "\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F", icon: "check" },
-  failed: { text: "\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F", icon: "circle-alert" }
-};
-function renderCodeCopy(options) {
-  const { state } = options;
-  const { text: text2, icon } = COPY_LABELS[state];
-  const status = state === "idle" ? "" : `\u30B3\u30FC\u30C9\u3092${text2}`;
-  return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}">${iconSvg(icon)}${text2}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
-}
-function labelOf(options) {
-  const { title, fileName, language } = options;
-  const name = title || fileName || language;
-  return name ? `\u30B3\u30FC\u30C9: ${name}` : "\u30B3\u30FC\u30C9";
-}
-function renderLanguageLabel(options) {
-  const { language, fileName } = options;
-  if (!language) {
-    return "";
-  }
-  const file = fileName ? `<span class="mdmark-code-file">${escapeHtml2(fileName)}</span>` : "";
-  return `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">${escapeHtml2(language)}</span>${file}</span>`;
-}
-function isMarkedLine(line) {
-  return line.kind !== void 0 || Boolean(line.indent) || line.foldLines !== void 0;
-}
-function lineClasses(options) {
-  const { lines, lineNumbers, wrap, foldButtons } = options;
-  const has = (test) => lines.some(test);
-  return [
-    "mdmark-code-lines",
-    ...lineNumbers ? ["mdmark-code-numbered"] : [],
-    ...has((line) => line.kind === "add" || line.kind === "del") ? ["mdmark-code-signs"] : [],
-    ...has((line) => line.kind === "focus") ? ["mdmark-code-has-focus"] : [],
-    // 開閉のボタンを配置するときは、`mount` と同じく開閉のボタンの列の幅を取る
-    ...foldButtons && has((line) => line.foldLines !== void 0) ? ["mdmark-code-foldable"] : [],
-    ...wrap ? ["mdmark-code-wrap"] : []
-  ];
-}
-function codeAttributesOf(options) {
-  const { language, syntax, lineNumbers, lastNumber } = options;
-  return [
-    language ? `class="language-${escapeHtml2(language)}"` : "",
-    syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml2(syntax)}"` : "",
-    lineNumbers ? `style="--mdmark-code-digits: ${String(lastNumber).length}"` : ""
-  ].filter(Boolean).map((attribute) => ` ${attribute}`).join("");
-}
-function foldOf(line, index, hidden) {
-  const count = line.foldLines ?? 0;
-  const range = { from: index + 2, to: index + 1 + count };
-  const controls = Array.from(
-    { length: count },
-    (_, offset) => codeLineId("mdmark-code", index + 1 + offset)
-  ).join(" ");
-  return {
-    id: codeLineId("mdmark-code", index),
-    hidden: hidden.has(index),
-    toggle: count > 0 ? renderCodeFoldToggle({ expanded: !line.folded, ...range, controls }) : "",
-    more: count > 0 && line.folded ? renderCodeFoldMore(range) : ""
-  };
-}
-function codeBody(options) {
-  const { lines, split, lineNumbers, lineStart, foldButtons } = options;
-  if (!split) {
-    return escapeHtml2(lines.map((line) => line.text).join("\n")) + (lines.length > 0 ? "\n" : "");
-  }
-  const hidden = foldButtons ? hiddenLinesOf({
-    foldLines: lines.map((line) => line.foldLines),
-    folded: lines.map((line) => line.folded === true)
-  }) : /* @__PURE__ */ new Set();
-  return lines.map(
-    (line, index) => renderLine({
-      line,
-      number: lineNumbers ? lineStart + index : void 0,
-      fold: foldButtons ? foldOf(line, index, hidden) : void 0
-    })
-  ).join("\n");
-}
-function wrapWithBar(options) {
-  const { pre, language, fileName, title, copyState, mermaidAttribute } = options;
-  const barContent = renderLanguageLabel({ language, fileName }) + (title ? escapeHtml2(title) : "") + (copyState === void 0 ? "" : renderCodeCopy({ state: copyState }));
-  if (title) {
-    return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
-  }
-  return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
-}
-function renderPre(options) {
-  const { language, fileName, title, lineNumbers, lines, syntax } = options;
-  const { foldButtons } = options;
-  const wrap = options.wrap === true;
-  const lineStart = options.lineStart ?? 1;
-  const split = lineNumbers || wrap || lines.some(isMarkedLine);
-  const classes = split ? lineClasses({ lines, lineNumbers, wrap, foldButtons }) : [];
-  const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";
-  const label = escapeHtml2(labelOf({ title, fileName, language }));
-  const codeAttributes = codeAttributesOf({
-    language,
-    syntax,
-    lineNumbers,
-    lastNumber: lineStart + lines.length - 1
-  });
-  const body = codeBody({ lines, split, lineNumbers, lineStart, foldButtons });
-  const hoverAttribute = options.foldColumnHovered === true ? " data-fold-hover" : "";
-  return `<pre${preClass}${hoverAttribute} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
-}
-function renderCodeBlock(options) {
-  const { language, title } = options;
-  const { fileName = "", bar = true, copyState } = options;
-  const mermaidAttribute = options.mermaid === true ? ` ${MERMAID_ATTRIBUTE}` : "";
-  const pre = renderPre({ ...options, fileName });
-  if (!bar) {
-    return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
-  }
-  return wrapWithBar({
-    pre,
-    language,
-    fileName,
-    title,
-    copyState,
-    mermaidAttribute
-  });
 }
 
 // src/knowledge/aliases.ts
@@ -72382,7 +72544,7 @@ var collectMapStructure = (range) => {
   return { problems, kind, args: parsedArgs };
 };
 
-// src/render/syntax/map.ts
+// src/map/map.syntax.ts
 var MAP_MARK2 = "map";
 var DATA_MARK2 = "map-data";
 var MAP_SOURCE_META = "mdmarkMapSource";
@@ -72578,7 +72740,216 @@ var buildMapRanges = (state) => {
   state.tokens = out;
 };
 
-// src/render/syntax/code-blocks.ts
+// src/code-block/code-fold.logic.ts
+function measureIndents(texts) {
+  const heads = texts.map(
+    (text2) => text2.trim() === "" ? void 0 : /^[ \t]*/.exec(text2)?.[0] ?? ""
+  );
+  const spaceCounts = heads.flatMap((head) => {
+    const spaces = head?.replaceAll("	", "").length ?? 0;
+    return spaces > 0 ? [spaces] : [];
+  });
+  const unit = spaceCounts.length > 0 ? Math.min(...spaceCounts) : 1;
+  return heads.map((head) => {
+    if (head === void 0) {
+      return void 0;
+    }
+    const spaces = head.replaceAll("	", "").length;
+    const tabs = head.length - spaces;
+    return tabs + Math.floor(spaces / unit);
+  });
+}
+function foldLinesOf(indents) {
+  return indents.map((indent, index) => {
+    if (indent === void 0) {
+      return void 0;
+    }
+    let last = index;
+    for (let next = index + 1; next < indents.length; next++) {
+      const level = indents[next];
+      if (level === void 0) {
+        continue;
+      }
+      if (level <= indent) {
+        break;
+      }
+      last = next;
+    }
+    return last > index ? last - index : void 0;
+  });
+}
+function hiddenLinesOf(options) {
+  const { foldLines, folded } = options;
+  const hidden = /* @__PURE__ */ new Set();
+  foldLines.forEach((count, index) => {
+    if (count === void 0 || !folded[index]) {
+      return;
+    }
+    for (let line = index + 1; line <= index + count; line++) {
+      hidden.add(line);
+    }
+  });
+  return hidden;
+}
+
+// src/code-block/code-block.part.ts
+var SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
+var MERMAID_ATTRIBUTE = "data-mdmark-mermaid";
+function renderCodeFoldToggle(options) {
+  const { expanded, from, to, controls } = options;
+  const icon = expanded ? "chevron-down" : "chevron-right";
+  return `<button class="mdmark-code-fold" type="button" aria-expanded="${expanded}" aria-controls="${escapeHtml2(controls)}" aria-label="${from} \u884C\u76EE\u304B\u3089 ${to} \u884C\u76EE"><span class="mdmark-code-fold-icon" data-icon="${icon}">${iconSvg(icon)}</span></button>`;
+}
+function renderCodeFoldMore(options) {
+  const { from, to } = options;
+  return `<button class="mdmark-code-fold-more" type="button" aria-label="${from} \u884C\u76EE\u304B\u3089 ${to} \u884C\u76EE\u3092\u5C55\u958B">\u22EF</button>`;
+}
+function codeLineId(base, index) {
+  return `${base}-line-${index + 1}`;
+}
+function lineMarkAttributes(line, number4) {
+  return [
+    number4 === void 0 ? "" : ` data-line="${number4}"`,
+    line.kind === void 0 ? "" : ` data-kind="${line.kind}"`,
+    line.indent ? ` data-indent="${line.indent}"` : "",
+    line.foldLines === void 0 ? "" : ` data-fold-lines="${line.foldLines}"`,
+    line.folded ? ' data-folded="true"' : ""
+  ].join("");
+}
+function renderLine(options) {
+  const { line, number: number4, fold } = options;
+  const attributes = [
+    fold ? ` id="${escapeHtml2(fold.id)}"` : "",
+    lineMarkAttributes(line, number4),
+    fold?.hidden ? " hidden" : ""
+  ].join("");
+  return `<span class="mdmark-code-line"${attributes}>${fold?.toggle ?? ""}<span class="mdmark-code-text">${escapeHtml2(line.text)}</span>${fold?.more ?? ""}</span>`;
+}
+var COPY_LABELS = {
+  idle: { text: "\u30B3\u30D4\u30FC", icon: "copy" },
+  copied: { text: "\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F", icon: "check" },
+  failed: { text: "\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F", icon: "circle-alert" }
+};
+function renderCodeCopy(options) {
+  const { state } = options;
+  const { text: text2, icon } = COPY_LABELS[state];
+  const status = state === "idle" ? "" : `\u30B3\u30FC\u30C9\u3092${text2}`;
+  return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}">${iconSvg(icon)}${text2}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
+}
+function labelOf(options) {
+  const { title, fileName, language } = options;
+  const name = title || fileName || language;
+  return name ? `\u30B3\u30FC\u30C9: ${name}` : "\u30B3\u30FC\u30C9";
+}
+function renderLanguageLabel(options) {
+  const { language, fileName } = options;
+  if (!language) {
+    return "";
+  }
+  const file = fileName ? `<span class="mdmark-code-file">${escapeHtml2(fileName)}</span>` : "";
+  return `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">${escapeHtml2(language)}</span>${file}</span>`;
+}
+function isMarkedLine(line) {
+  return line.kind !== void 0 || Boolean(line.indent) || line.foldLines !== void 0;
+}
+function lineClasses(options) {
+  const { lines, lineNumbers, wrap, foldButtons } = options;
+  const has = (test) => lines.some(test);
+  return [
+    "mdmark-code-lines",
+    ...lineNumbers ? ["mdmark-code-numbered"] : [],
+    ...has((line) => line.kind === "add" || line.kind === "del") ? ["mdmark-code-signs"] : [],
+    ...has((line) => line.kind === "focus") ? ["mdmark-code-has-focus"] : [],
+    // 開閉のボタンを配置するときは、`mount` と同じく開閉のボタンの列の幅を取る
+    ...foldButtons && has((line) => line.foldLines !== void 0) ? ["mdmark-code-foldable"] : [],
+    ...wrap ? ["mdmark-code-wrap"] : []
+  ];
+}
+function codeAttributesOf(options) {
+  const { language, syntax, lineNumbers, lastNumber } = options;
+  return [
+    language ? `class="language-${escapeHtml2(language)}"` : "",
+    syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml2(syntax)}"` : "",
+    lineNumbers ? `style="--mdmark-code-digits: ${String(lastNumber).length}"` : ""
+  ].filter(Boolean).map((attribute) => ` ${attribute}`).join("");
+}
+function foldOf(line, index, hidden) {
+  const count = line.foldLines ?? 0;
+  const range = { from: index + 2, to: index + 1 + count };
+  const controls = Array.from(
+    { length: count },
+    (_, offset) => codeLineId("mdmark-code", index + 1 + offset)
+  ).join(" ");
+  return {
+    id: codeLineId("mdmark-code", index),
+    hidden: hidden.has(index),
+    toggle: count > 0 ? renderCodeFoldToggle({ expanded: !line.folded, ...range, controls }) : "",
+    more: count > 0 && line.folded ? renderCodeFoldMore(range) : ""
+  };
+}
+function codeBody(options) {
+  const { lines, split, lineNumbers, lineStart, foldButtons } = options;
+  if (!split) {
+    return escapeHtml2(lines.map((line) => line.text).join("\n")) + (lines.length > 0 ? "\n" : "");
+  }
+  const hidden = foldButtons ? hiddenLinesOf({
+    foldLines: lines.map((line) => line.foldLines),
+    folded: lines.map((line) => line.folded === true)
+  }) : /* @__PURE__ */ new Set();
+  return lines.map(
+    (line, index) => renderLine({
+      line,
+      number: lineNumbers ? lineStart + index : void 0,
+      fold: foldButtons ? foldOf(line, index, hidden) : void 0
+    })
+  ).join("\n");
+}
+function wrapWithBar(options) {
+  const { pre, language, fileName, title, copyState, mermaidAttribute } = options;
+  const barContent = renderLanguageLabel({ language, fileName }) + (title ? escapeHtml2(title) : "") + (copyState === void 0 ? "" : renderCodeCopy({ state: copyState }));
+  if (title) {
+    return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
+  }
+  return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
+}
+function renderPre(options) {
+  const { language, fileName, title, lineNumbers, lines, syntax } = options;
+  const { foldButtons } = options;
+  const wrap = options.wrap === true;
+  const lineStart = options.lineStart ?? 1;
+  const split = lineNumbers || wrap || lines.some(isMarkedLine);
+  const classes = split ? lineClasses({ lines, lineNumbers, wrap, foldButtons }) : [];
+  const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";
+  const label = escapeHtml2(labelOf({ title, fileName, language }));
+  const codeAttributes = codeAttributesOf({
+    language,
+    syntax,
+    lineNumbers,
+    lastNumber: lineStart + lines.length - 1
+  });
+  const body = codeBody({ lines, split, lineNumbers, lineStart, foldButtons });
+  const hoverAttribute = options.foldColumnHovered === true ? " data-fold-hover" : "";
+  return `<pre${preClass}${hoverAttribute} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
+}
+function renderCodeBlock(options) {
+  const { language, title } = options;
+  const { fileName = "", bar = true, copyState } = options;
+  const mermaidAttribute = options.mermaid === true ? ` ${MERMAID_ATTRIBUTE}` : "";
+  const pre = renderPre({ ...options, fileName });
+  if (!bar) {
+    return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
+  }
+  return wrapWithBar({
+    pre,
+    language,
+    fileName,
+    title,
+    copyState,
+    mermaidAttribute
+  });
+}
+
+// src/code-block/code-block.syntax.ts
 var LINE_MARK_KINDS = {
   "++": "add",
   "--": "del",
@@ -72954,208 +73325,6 @@ function buildCodeBlocks(state) {
   state.tokens = out;
 }
 
-// src/render/syntax/csv.ts
-var endRow = (reader) => {
-  reader.row.push(reader.value);
-  reader.rows.push(reader.row);
-  reader.row = [];
-  reader.value = "";
-};
-var readQuoted = (reader) => {
-  const char = reader.text[reader.at];
-  if (char === '"' && reader.text[reader.at + 1] === '"') {
-    reader.value += '"';
-    reader.at += 2;
-    return;
-  }
-  if (char === '"') {
-    reader.quoted = false;
-  } else {
-    reader.value += char;
-  }
-  reader.at += 1;
-};
-var readPlain = (reader) => {
-  const char = reader.text[reader.at];
-  if (char === '"') {
-    reader.quoted = true;
-  } else if (char === ",") {
-    reader.row.push(reader.value);
-    reader.value = "";
-  } else if (char === "\r" && reader.text[reader.at + 1] === "\n") {
-  } else if (char === "\n") {
-    endRow(reader);
-  } else {
-    reader.value += char;
-  }
-  reader.at += 1;
-};
-var parseCsv = (text2) => {
-  const reader = {
-    text: text2,
-    at: 0,
-    rows: [],
-    row: [],
-    value: "",
-    quoted: false
-  };
-  while (reader.at < text2.length) {
-    if (reader.quoted) {
-      readQuoted(reader);
-    } else {
-      readPlain(reader);
-    }
-  }
-  if (reader.value !== "" || reader.row.length > 0) {
-    endRow(reader);
-  }
-  return reader.rows;
-};
-var cellInline = (state, value) => {
-  const inline2 = new state.Token("inline", "", 0);
-  inline2.content = value;
-  inline2.children = value.split(/\r?\n/).flatMap((line, index) => {
-    const text2 = new state.Token("text", "", 0);
-    text2.content = line;
-    if (index === 0) {
-      return [text2];
-    }
-    const hardbreak = new state.Token("hardbreak", "br", 0);
-    return [hardbreak, text2];
-  });
-  return inline2;
-};
-var tableTokens = (options) => {
-  const { state, fence: fence2, rows } = options;
-  const level = fence2.level;
-  const tokens = [];
-  const push = (type, tag, place) => {
-    const token = new state.Token(type, tag, place.nesting);
-    token.block = true;
-    token.level = level + place.depth;
-    if (fence2.map && place.nesting === 1) {
-      token.map = [...fence2.map];
-    }
-    tokens.push(token);
-    return token;
-  };
-  const open2 = push("table_open", "table", { nesting: 1, depth: 0 });
-  open2.meta = { rawCsv: fence2.content };
-  const [head = [], ...body] = rows;
-  push("thead_open", "thead", { nesting: 1, depth: 1 });
-  push("tr_open", "tr", { nesting: 1, depth: 2 });
-  for (const value of head) {
-    push("th_open", "th", { nesting: 1, depth: 3 });
-    const inline2 = cellInline(state, value);
-    inline2.level = level + 4;
-    tokens.push(inline2);
-    push("th_close", "th", { nesting: -1, depth: 3 });
-  }
-  push("tr_close", "tr", { nesting: -1, depth: 2 });
-  push("thead_close", "thead", { nesting: -1, depth: 1 });
-  if (body.length) {
-    push("tbody_open", "tbody", { nesting: 1, depth: 1 });
-    for (const row2 of body) {
-      push("tr_open", "tr", { nesting: 1, depth: 2 });
-      for (const value of row2) {
-        push("td_open", "td", { nesting: 1, depth: 3 });
-        const inline2 = cellInline(state, value);
-        inline2.level = level + 4;
-        tokens.push(inline2);
-        push("td_close", "td", { nesting: -1, depth: 3 });
-      }
-      push("tr_close", "tr", { nesting: -1, depth: 2 });
-    }
-    push("tbody_close", "tbody", { nesting: -1, depth: 1 });
-  }
-  push("table_close", "table", { nesting: -1, depth: 0 });
-  return tokens;
-};
-var buildCsvTables = (state) => {
-  if (!featureOn(state, "csv")) {
-    return;
-  }
-  state.tokens = state.tokens.flatMap((token) => {
-    const language = token.info.trim().split(/\s+/)[0];
-    if (token.type !== "fence" || language !== "csv" || !token.content.trim()) {
-      return [token];
-    }
-    const rows = parseCsv(token.content);
-    const width = rows[0]?.length ?? 0;
-    const mismatched = [];
-    const fitted = rows.map((row2, index) => {
-      if (row2.length === width) {
-        return row2;
-      }
-      mismatched.push(index + 1);
-      return Array.from({ length: width }, (_, column) => row2[column] ?? "");
-    });
-    const tokens = tableTokens({ state, fence: token, rows: fitted });
-    if (mismatched.length === 0) {
-      return tokens;
-    }
-    const lines = mismatched.map((line) => `${line} \u884C\u76EE`).join("\u30FB");
-    return [
-      warningBlock(state, {
-        message: `CSV \u306E ${lines}\u306E\u5217\u306E\u6570\u304C\u3001\u898B\u51FA\u3057\u306E\u884C\u306E ${width} \u5217\u3068\u9055\u3044\u307E\u3059\u3002\u898B\u51FA\u3057\u306E\u5217\u306E\u6570\u306B\u305D\u308D\u3048\u3066\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
-      }),
-      ...tokens
-    ];
-  });
-};
-
-// src/render/syntax/details.ts
-var titleParser = new MarkdownItCallable();
-var DEFAULT_TITLE = "\u8A73\u7D30";
-var readDetailsOptions = (options) => ({
-  title: typeof options.title === "string" && options.title !== "" ? options.title : DEFAULT_TITLE,
-  open: options.open === true
-});
-var buildDetailsRanges = (state) => {
-  if (!featureOn(state, "details")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const pairs = pairRanges(tokens, "details");
-  const closes = /* @__PURE__ */ new Set([...pairs.values()]);
-  const out = [];
-  for (const [index, token] of tokens.entries()) {
-    const mark = markOf(token);
-    if (mark?.name !== "details") {
-      out.push(token);
-      continue;
-    }
-    if (mark.closing) {
-      if (closes.has(index)) {
-        out.push(
-          tabBoundaryBlock({
-            state,
-            html: "</details>",
-            boundary: "end",
-            source: token
-          })
-        );
-      }
-      continue;
-    }
-    if (pairs.get(index) === -1) {
-      out.push(warningBlock(state, unclosedWarning(mark)));
-      continue;
-    }
-    const { title, open: open2 } = readDetailsOptions(mark.options);
-    const summary = titleParser.renderInline(title);
-    out.push(
-      tabBoundaryBlock({
-        state,
-        html: `<details class="mdmark-collapsible"${open2 ? " open" : ""}><summary>${summary}</summary>`,
-        boundary: "start",
-        source: token
-      })
-    );
-  }
-  state.tokens = out;
-};
-
 // src/diagram/geometry.ts
 var ZOOM = { step: 1.25, max: 3, pan: 80 };
 var RESIZE = { step: 32, min: 120 };
@@ -73191,7 +73360,7 @@ function stackSeries(series) {
   );
 }
 
-// src/parts/chart.ts
+// src/diagram/chart.part.ts
 var ITEM_HIT_RADIUS = 12;
 function pointItemText(item) {
   const { type, definition } = item;
@@ -74020,7 +74189,7 @@ function renderChart(definition, id) {
   };
 }
 
-// src/parts/diagram.ts
+// src/diagram/diagram.part.ts
 var VIEWPORT_KEYS = "+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight";
 function num2(value) {
   return String(Number(value.toFixed(2)));
@@ -74199,7 +74368,7 @@ function renderDiagram(options) {
   );
 }
 
-// src/parts/param.ts
+// src/diagram/param.part.ts
 var COPY_MESSAGES = {
   copied: "\u30AF\u30EA\u30C3\u30D7\u30DC\u30FC\u30C9\u306B\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F",
   failed: "\u30AF\u30EA\u30C3\u30D7\u30DC\u30FC\u30C9\u3078\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u4E0B\u306E JSON \u3092\u9078\u3093\u3067\u30B3\u30D4\u30FC\u3057\u3066\u304F\u3060\u3055\u3044"
@@ -74243,7 +74412,7 @@ function renderParam(definition, state) {
   return `<div class="mdmark-param" role="group" aria-labelledby="${id}-title"><p class="mdmark-param-title" id="${id}-title">${escapeHtml2(definition.title)}</p><div class="mdmark-param-controls"><div class="mdmark-param-knob"><label for="${id}-knob">${escapeHtml2(knob.label)}</label><output for="${id}-knob" id="${id}-value">${value}</output><input type="range" id="${id}-knob" min="${knob.min}" max="${knob.max}" step="${knob.step}" value="${value}"><span class="mdmark-param-range" aria-hidden="true"><small>${knob.min}</small><small>${knob.max}</small></span></div><div class="mdmark-param-actions"><button class="mdmark-param-copy" type="button">${iconSvg("copy")}${escapeHtml2(state.copyLabel ?? DEFAULT_LABELS.paramCopy)}</button>${status}</div>${fallback}</div>${chart}</div>`;
 }
 
-// src/render/syntax/diagrams.ts
+// src/diagram/diagram.syntax.ts
 var DIAGRAM_ID_PREFIX = "mdmark-diagram";
 var PARAM_ID_PREFIX = "mdmark-param";
 var DIAGRAM_META = "diagram";
@@ -74436,1183 +74605,7 @@ function findDiagramBlocks(markdown) {
   return found;
 }
 
-// src/parts/figure.ts
-function renderFigure(options) {
-  const { kind, id, number: number4, caption = "", body } = options;
-  const idAttribute = id === void 0 ? "" : ` id="fig-${escapeHtml2(id)}"`;
-  const label = kind === "image" ? "\u56F3" : "\u8868";
-  const text2 = kind === "image" ? escapeHtml2(caption) : "";
-  const figcaption = `<figcaption class="mdmark-figure-caption"><b>${label} ${number4}</b>${text2}</figcaption>`;
-  const content = kind === "image" ? `${body}${figcaption}` : `${figcaption}${body}`;
-  return `<figure class="mdmark-figure"${idAttribute}>${content}</figure>`;
-}
-
-// src/parts/image.ts
-function renderImageOpener(options) {
-  const { alt, img, icon = true } = options;
-  const iconHtml = icon ? `<span class="mdmark-image-open-icon" aria-hidden="true">${iconSvg("maximize-2")}</span>` : "";
-  return `<button class="mdmark-image-open" type="button" aria-label="\u753B\u50CF\u3092\u62E1\u5927: ${escapeHtml2(alt)}">${img}${iconHtml}</button>`;
-}
-function figureAttributes(options) {
-  const { only, id, align, width } = options;
-  const className = `mdmark-figure mdmark-image${only ? ` mdmark-only-${only}` : ""}`;
-  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
-  const alignAttribute = align === void 0 ? "" : ` data-align="${align}"`;
-  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
-  return `class="${className}"${idAttribute}${alignAttribute}${style}`;
-}
-function renderFigcaption(options) {
-  const { label, caption } = options;
-  const head = label === void 0 ? "" : `<b>${escapeHtml2(label)}</b>`;
-  const text2 = caption === void 0 ? "" : escapeHtml2(caption);
-  return head === "" && text2 === "" ? "" : `<figcaption class="mdmark-figure-caption">${head}${text2}</figcaption>`;
-}
-function renderImageFigure(options) {
-  const {
-    src,
-    alt,
-    caption,
-    width,
-    align,
-    lightbox = true,
-    only,
-    id,
-    label,
-    opener = true,
-    gif = false
-  } = options;
-  const attributes = figureAttributes({ only, id, align, width });
-  const flags = `${lightbox ? "" : " data-nolightbox"}${gif ? " data-gif" : ""}`;
-  const img = `<img src="${escapeHtml2(src)}" alt="${escapeHtml2(alt)}"${flags}>`;
-  const body = opener && lightbox ? renderImageOpener({ alt, img, icon: !gif }) : img;
-  const figcaption = renderFigcaption({ label, caption });
-  return `<figure ${attributes}>${body}${figcaption}</figure>`;
-}
-
-// src/parts/media.ts
-function mediaFlags(options) {
-  const { video, autoplay, muted, loop } = options;
-  return [
-    "controls",
-    autoplay ? "autoplay" : "",
-    autoplay || muted ? "muted" : "",
-    loop ? "loop" : "",
-    video ? "playsinline" : ""
-  ].filter((flag) => flag !== "").map((flag) => ` ${flag}`).join("");
-}
-function renderMediaCaption(caption) {
-  return caption === void 0 || caption === "" ? "" : `<figcaption class="mdmark-figure-caption">${escapeHtml2(caption)}</figcaption>`;
-}
-function renderMedia(options) {
-  const {
-    kind,
-    src,
-    alt,
-    caption,
-    width,
-    poster,
-    autoplay = false,
-    muted = false,
-    loop = false
-  } = options;
-  const video = kind === "video";
-  const flags = mediaFlags({ video, autoplay, muted, loop });
-  const posterUrl = video && poster !== void 0 ? escapeHtml2(poster) : "";
-  const posterAttribute = posterUrl === "" ? "" : ` poster="${posterUrl}"`;
-  const player = `<${kind} src="${escapeHtml2(src)}"${flags} preload="metadata" aria-label="${escapeHtml2(alt)}"${posterAttribute}></${kind}>`;
-  const print = posterUrl === "" ? "" : `<img class="mdmark-media-print" src="${posterUrl}" alt="">`;
-  const figcaption = renderMediaCaption(caption);
-  const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
-  return `<figure class="mdmark-figure mdmark-media"${style}>${player}${print}${figcaption}</figure>`;
-}
-
-// src/render/syntax/images.ts
-var MEDIA_EXTENSIONS = {
-  video: ["mp4", "m4v", "webm", "mov", "ogv"],
-  audio: ["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac"]
-};
-var IMAGE_ATTRIBUTE_NAMES = [
-  "width",
-  "align",
-  "nolightbox",
-  "autoplay",
-  "muted",
-  "loop",
-  "poster"
-];
-var MEDIA_ONLY_ATTRIBUTES = ["autoplay", "muted", "loop", "poster"];
-var ALIGNS = ["left", "center", "right"];
-var MAX_WIDTH_PERCENT = 100;
-var ONLY_PATTERN = /#only-(dark|light)$/;
-var ATTRIBUTE_PATTERN = /^\{([^{}]*)\}/;
-function mediaKindOf(src) {
-  const path = src.split(/[?#]/)[0] ?? "";
-  const name = path.slice(path.lastIndexOf("/") + 1);
-  const dot = name.lastIndexOf(".");
-  const extension = dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
-  if (MEDIA_EXTENSIONS.video.includes(extension)) {
-    return "video";
-  }
-  if (MEDIA_EXTENSIONS.audio.includes(extension)) {
-    return "audio";
-  }
-  return extension === "gif" ? "gif" : "image";
-}
-function readWidth(value) {
-  const pixels = /^(\d+)(?:px)?$/.exec(value);
-  if (pixels && Number(pixels[1]) >= 1) {
-    return `${Number(pixels[1])}px`;
-  }
-  const percent = /^(\d+)%$/.exec(value);
-  const amount = Number(percent?.[1]);
-  if (percent && amount >= 1 && amount <= MAX_WIDTH_PERCENT) {
-    return `${amount}%`;
-  }
-  return void 0;
-}
-var unusable = (attribute) => ({
-  label: attribute.part,
-  message: "\u4F7F\u7528\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002"
-});
-var readWidthAttribute = (attributes, attribute) => {
-  if (attribute.value === void 0) {
-    return unusable(attribute);
-  }
-  const width = readWidth(attribute.value);
-  if (width === void 0) {
-    return {
-      label: attribute.part,
-      message: `\u5E45\u306F \`300\`\u30FB\`300px\` \u306E px \u304B\u3001\`1%\`\u301C\`${MAX_WIDTH_PERCENT}%\` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    };
-  }
-  attributes.width = width;
-  return void 0;
-};
-var readAlignAttribute = (attributes, attribute) => {
-  const { name, value, inline: inline2, part } = attribute;
-  if (inline2) {
-    return {
-      label: name,
-      message: "\u6587\u306E\u4E2D\u306E\u753B\u50CF\u306B\u306F\u8A18\u8F09\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    };
-  }
-  if (!ALIGNS.includes(value)) {
-    return {
-      label: part,
-      message: `\u914D\u7F6E\u306F ${codes(ALIGNS)} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    };
-  }
-  attributes.align = value;
-  return void 0;
-};
-var readFlagAttribute = (attributes, attribute) => {
-  const { part } = attribute;
-  if (part !== "autoplay" && part !== "muted" && part !== "loop") {
-    return unusable(attribute);
-  }
-  attributes[part] = true;
-  return void 0;
-};
-var ATTRIBUTE_READERS = {
-  width: readWidthAttribute,
-  align: readAlignAttribute,
-  nolightbox: (attributes, attribute) => {
-    if (attribute.part !== "nolightbox") {
-      return unusable(attribute);
-    }
-    attributes.lightbox = false;
-    return void 0;
-  },
-  autoplay: readFlagAttribute,
-  muted: readFlagAttribute,
-  loop: readFlagAttribute,
-  poster: (attributes, attribute) => {
-    if (attribute.kind === "video" && attribute.value) {
-      attributes.poster = attribute.value;
-      return void 0;
-    }
-    return {
-      label: attribute.part,
-      message: "\u52D5\u753B\u306B\u3060\u3051\u3001`poster=\u30D1\u30B9` \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002"
-    };
-  }
-};
-var readAttribute = (attributes, attribute) => {
-  const { kind, name, part } = attribute;
-  const media = kind === "video" || kind === "audio";
-  if (MEDIA_ONLY_ATTRIBUTES.includes(name) && !media) {
-    return { label: part, message: "\u52D5\u753B\u3068\u97F3\u58F0\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002" };
-  }
-  const read = Object.hasOwn(ATTRIBUTE_READERS, name) ? ATTRIBUTE_READERS[name] : void 0;
-  return read ? read(attributes, attribute) : unusable(attribute);
-};
-function readImageAttributes(text2, kind, inline2) {
-  const attributes = {
-    kind,
-    lightbox: true,
-    autoplay: false,
-    muted: false,
-    loop: false,
-    items: []
-  };
-  for (const part of text2.split(/\s+/).filter((item) => item !== "")) {
-    const equals = part.indexOf("=");
-    const unreadable8 = readAttribute(attributes, {
-      part,
-      name: equals < 0 ? part : part.slice(0, equals),
-      value: equals < 0 ? void 0 : part.slice(equals + 1),
-      kind,
-      inline: inline2
-    });
-    if (unreadable8) {
-      attributes.items.push(unreadable8);
-    }
-  }
-  if (attributes.autoplay) {
-    attributes.muted = true;
-  }
-  return attributes;
-}
-function imageAttributesOf(token) {
-  return token.meta?.mdmarkImage;
-}
-function soleImageOf(inline2) {
-  const rest2 = (inline2?.children ?? []).filter(
-    (child) => !(child.type === "text" && child.content.trim() === "")
-  );
-  const [only] = rest2;
-  return rest2.length === 1 && only?.type === "image" ? only : void 0;
-}
-function kindOf(state, src) {
-  const kind = mediaKindOf(src);
-  const media = kind === "video" || kind === "audio";
-  return media && !featureOn(state, "media") ? "image" : kind;
-}
-var ATTRIBUTE_LIST = codes(IMAGE_ATTRIBUTE_NAMES);
-function takeAttributeText(next) {
-  if (next?.type !== "text") {
-    return "";
-  }
-  const found = ATTRIBUTE_PATTERN.exec(next.content);
-  if (!found) {
-    return "";
-  }
-  next.content = next.content.slice(found[0].length);
-  return found[1] ?? "";
-}
-function readImage(state, image2) {
-  const { children, position, sole, images } = image2;
-  const child = children[position];
-  const kind = kindOf(state, String(child.attrGet("src") ?? ""));
-  const inline2 = child !== sole && !isSoleWithAttributes(children, position);
-  const text2 = images ? takeAttributeText(children[position + 1]) : "";
-  const attributes = readImageAttributes(text2, kind, inline2);
-  child.meta = { ...child.meta ?? {}, mdmarkImage: attributes };
-  if (kind === "gif") {
-    child.attrSet("data-gif", "");
-  }
-  if (inline2 && attributes.width !== void 0) {
-    child.attrSet("style", `--mdmark-image-width: ${attributes.width}`);
-    child.attrSet("data-mdmark-own", envOf(state).nonce);
-  }
-  return attributes.items;
-}
-function readImages(state) {
-  const images = featureOn(state, "images");
-  const warnings = [];
-  for (const [index, token] of state.tokens.entries()) {
-    const children = token.children;
-    if (token.type !== "inline" || !children) {
-      continue;
-    }
-    const sole = soleImageOf(token);
-    const items = children.flatMap(
-      (child, position) => child.type === "image" ? readImage(state, { children, position, sole, images }) : []
-    );
-    token.children = children.filter(
-      (child) => !(child.type === "text" && child.content === "")
-    );
-    if (items.length) {
-      warnings.push({ index, items });
-    }
-  }
-  for (const { index, items } of warnings.reverse()) {
-    state.tokens.splice(
-      blockStartOf2(state.tokens, index),
-      0,
-      warningBlock(state, {
-        message: `\u753B\u50CF\u306E\u8AAD\u307F\u8FBC\u3081\u306A\u3044\u5C5E\u6027\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u306F ${ATTRIBUTE_LIST} \u3067\u3059\u3002`,
-        items
-      })
-    );
-  }
-}
-function isSoleWithAttributes(children, position) {
-  return children.every((child, at) => {
-    if (at === position) {
-      return true;
-    }
-    if (child.type !== "text") {
-      return false;
-    }
-    const content = at === position + 1 ? child.content.replace(ATTRIBUTE_PATTERN, "") : child.content;
-    return content.trim() === "";
-  });
-}
-function blockStartOf2(tokens, index) {
-  let at = index;
-  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
-    at -= 1;
-  }
-  return at;
-}
-function altOf(image2) {
-  const children = image2.children ?? [];
-  return children.length ? children.map((child) => child.content).join("") : image2.content;
-}
-function onlyOf(src) {
-  return ONLY_PATTERN.exec(src)?.[1];
-}
-var captionOf = (image2) => {
-  const title = String(image2.attrGet("title") ?? "");
-  return title ? { caption: title } : {};
-};
-var figureAttributesOf = (attributes) => ({
-  ...attributes?.width === void 0 ? {} : { width: attributes.width },
-  ...attributes?.align === void 0 ? {} : { align: attributes.align },
-  lightbox: attributes?.lightbox ?? true
-});
-function imageFigureHtml(image2, extra = {}) {
-  const src = String(image2.attrGet("src") ?? "");
-  const attributes = imageAttributesOf(image2);
-  const only = onlyOf(src);
-  return renderImageFigure({
-    src,
-    alt: altOf(image2),
-    ...captionOf(image2),
-    ...figureAttributesOf(attributes),
-    ...only === void 0 ? {} : { only },
-    ...extra,
-    opener: false,
-    gif: attributes?.kind === "gif"
-  });
-}
-var mediaAttributesOf = (attributes) => ({
-  ...attributes?.width === void 0 ? {} : { width: attributes.width },
-  ...attributes?.poster === void 0 ? {} : { poster: attributes.poster },
-  ...playbackOf(attributes)
-});
-var playbackOf = (attributes) => ({
-  autoplay: attributes?.autoplay ?? false,
-  muted: attributes?.muted ?? false,
-  loop: attributes?.loop ?? false
-});
-function mediaHtml(image2, kind) {
-  return renderMedia({
-    kind,
-    src: String(image2.attrGet("src") ?? ""),
-    alt: altOf(image2),
-    ...captionOf(image2),
-    ...mediaAttributesOf(imageAttributesOf(image2))
-  });
-}
-function mediaKindOfToken(image2) {
-  const kind = imageAttributesOf(image2)?.kind;
-  return kind === "video" || kind === "audio" ? kind : void 0;
-}
-function soleFigure(state, paragraph2) {
-  const { token, inline: inline2, features } = paragraph2;
-  const sole = soleImageOf(inline2);
-  if (!sole) {
-    return void 0;
-  }
-  const soleMedia = mediaKindOfToken(sole);
-  if (soleMedia) {
-    return features.media ? ownBlock(state, mediaHtml(sole, soleMedia), token) : void 0;
-  }
-  return features.images ? ownBlock(state, imageFigureHtml(sole), token) : void 0;
-}
-function splitInlineMedia(state, paragraph2) {
-  const { token, inline: inline2, features } = paragraph2;
-  const after = [];
-  let linkDepth = 0;
-  const children = [];
-  for (const child of inline2.children ?? []) {
-    linkDepth += child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
-    const kind = child.type === "image" ? mediaKindOfToken(child) : void 0;
-    if (kind && features.media && linkDepth === 0) {
-      after.push(ownBlock(state, mediaHtml(child, kind), token));
-      continue;
-    }
-    markOnlyImage(state, { child, images: features.images });
-    children.push(child);
-  }
-  inline2.children = children;
-  return after;
-}
-function markOnlyImage(state, image2) {
-  const { child, images } = image2;
-  if (child.type !== "image" || !images) {
-    return;
-  }
-  const only = onlyOf(String(child.attrGet("src") ?? ""));
-  if (only) {
-    child.attrJoin("class", `mdmark-only-${only}`);
-    child.attrSet("data-mdmark-own", envOf(state).nonce);
-  }
-}
-function buildImageFigures(state) {
-  const features = {
-    images: featureOn(state, "images"),
-    media: featureOn(state, "media")
-  };
-  if (!features.images && !features.media) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const inline2 = tokens[index + 1];
-    const close = tokens[index + 2];
-    if (token.type !== "paragraph_open" || inline2?.type !== "inline") {
-      out.push(token);
-      continue;
-    }
-    const paragraph2 = { token, inline: inline2, features };
-    const figure = soleFigure(state, paragraph2);
-    if (figure) {
-      out.push(figure);
-    } else {
-      const after = splitInlineMedia(state, paragraph2);
-      out.push(token, inline2, ...close ? [close] : [], ...after);
-    }
-    index += 2;
-  }
-  state.tokens = out;
-}
-
-// src/render/syntax/figures.ts
-var FIGURE_HREF_PREFIX = "#fig-";
-function matchingClose(tokens, start, match) {
-  let depth = 0;
-  for (let index = start; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (match.isOpen(token)) {
-      depth += 1;
-    } else if (match.isClose(token)) {
-      depth -= 1;
-      if (depth === 0) {
-        return index;
-      }
-    }
-  }
-  return -1;
-}
-function isStillImageFigure(state, image2) {
-  const kind = imageAttributesOf(image2)?.kind;
-  return kind !== "video" && kind !== "audio" && featureOn(state, "images");
-}
-function imageParagraphTarget(state, start) {
-  const children = state.tokens[start + 1]?.children ?? [];
-  const image2 = children.find((child) => child.type === "image");
-  if (!image2 || !children.every((child) => child.type === "image")) {
-    return void 0;
-  }
-  return {
-    kind: "image",
-    end: start + 2,
-    caption: String(image2.attrGet("title") ?? ""),
-    ...children.length === 1 && isStillImageFigure(state, image2) ? { image: image2 } : {}
-  };
-}
-function tableTarget(tokens, start) {
-  const first = tokens[start];
-  const match = first?.meta?.role === "table-open" ? {
-    isOpen: (token) => token.meta?.role === "table-open",
-    isClose: (token) => token.meta?.role === "table-close"
-  } : first?.type === "table_open" ? {
-    isOpen: (token) => token.type === "table_open",
-    isClose: (token) => token.type === "table_close"
-  } : void 0;
-  if (!match) {
-    return void 0;
-  }
-  const end = matchingClose(tokens, start, match);
-  return end < 0 ? void 0 : { kind: "table", end, caption: "" };
-}
-function figureTarget(state, start) {
-  const first = state.tokens[start];
-  if (!first) {
-    return void 0;
-  }
-  const firstMark = markOf(first);
-  if (firstMark?.name === "gallery" && !firstMark.closing && featureOn(state, "gallery")) {
-    return { kind: "image", end: start, caption: "", gallery: first };
-  }
-  if (first.meta?.[DIAGRAM_META] === true) {
-    return { kind: "image", end: start, caption: "" };
-  }
-  if (first.type === "paragraph_open") {
-    return imageParagraphTarget(state, start);
-  }
-  return tableTarget(state.tokens, start);
-}
-function referencedId(value) {
-  const href = String(value ?? "");
-  if (!href.startsWith(FIGURE_HREF_PREFIX)) {
-    return void 0;
-  }
-  try {
-    return decodeURIComponent(href.slice(FIGURE_HREF_PREFIX.length));
-  } catch {
-    return href.slice(FIGURE_HREF_PREFIX.length);
-  }
-}
-function rewriteReferences(state, inline2, figures) {
-  const broken = [];
-  const children = inline2.children ?? [];
-  for (let index = 0; index < children.length; index++) {
-    const open2 = children[index];
-    if (open2?.type !== "link_open") {
-      continue;
-    }
-    const id = referencedId(open2.attrGet("href"));
-    if (id === void 0) {
-      continue;
-    }
-    const figure = figures.get(id);
-    if (!figure) {
-      broken.push(id);
-      continue;
-    }
-    const close = children.findIndex(
-      (child, position) => position > index && child.type === "link_close"
-    );
-    if (close < 0) {
-      continue;
-    }
-    const text2 = new state.Token("text", "", 0);
-    text2.content = `${figure.kind === "image" ? "\u56F3" : "\u8868"} ${figure.number}`;
-    children.splice(index + 1, close - index - 1, text2);
-  }
-  return broken;
-}
-function figMarkTarget(state, index) {
-  const mark = markOf(state.tokens[index]);
-  if (mark?.name !== "fig" || mark.closing) {
-    return void 0;
-  }
-  const id = mark.options.id;
-  if (typeof id !== "string" || id === "") {
-    return void 0;
-  }
-  const target = figureTarget(state, index + 1);
-  return target ? { mark, id, target } : void 0;
-}
-function registerFigure(registry2, figure) {
-  const { id, kind } = figure;
-  registry2.counts[kind] += 1;
-  const number4 = registry2.counts[kind];
-  if (registry2.figures.has(id)) {
-    return { number: number4, figureId: void 0 };
-  }
-  registry2.figures.set(id, { kind, number: number4 });
-  return { number: number4, figureId: id };
-}
-function wrapFigure(state, range, numbered) {
-  const { index, token, target } = range;
-  const { number: number4, figureId } = numbered;
-  if (target.gallery) {
-    target.gallery.meta = {
-      ...target.gallery.meta,
-      figure: { id: figureId, number: number4 }
-    };
-    return [];
-  }
-  if (target.image) {
-    return [
-      ownBlock(
-        state,
-        imageFigureHtml(target.image, {
-          ...figureId === void 0 ? {} : { id: `fig-${figureId}` },
-          label: `\u56F3 ${number4}`
-        }),
-        token
-      )
-    ];
-  }
-  const html = renderFigure({
-    kind: target.kind,
-    id: figureId,
-    number: number4,
-    caption: target.caption,
-    body: SLOT_MARKER
-  });
-  const [head = "", tail = ""] = html.split(SLOT_MARKER);
-  return [
-    ownBlock(state, head, token),
-    ...state.tokens.slice(index + 1, target.end + 1),
-    ownBlock(state, tail)
-  ];
-}
-function rewriteAllReferences(state, tokens, figures) {
-  const result = [];
-  let blockStart = 0;
-  for (const token of tokens) {
-    if (token.nesting === 1 && token.level === 0) {
-      blockStart = result.length;
-    }
-    if (token.type === "inline") {
-      const warnings = rewriteReferences(
-        state,
-        token,
-        figures
-      ).map((id) => ({
-        message: `\u30EA\u30F3\u30AF\u5148\u306E \`#fig-${id}\` \u306E\u56F3\u8868\u304C\u3042\u308A\u307E\u305B\u3093\u3002\`<!-- fig: ${id} -->\` \u3092\u56F3\u304B\u8868\u306E\u76F4\u524D\u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u30EA\u30F3\u30AF\u5148\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      }));
-      result.splice(
-        blockStart,
-        0,
-        ...warnings.map((warning) => warningBlock(state, warning))
-      );
-      blockStart += warnings.length;
-    }
-    result.push(token);
-  }
-  return result;
-}
-function numberFigures(state) {
-  if (!featureOn(state, "figures")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const registry2 = {
-    figures: /* @__PURE__ */ new Map(),
-    counts: { image: 0, table: 0 }
-  };
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const found = figMarkTarget(state, index);
-    if (!token || !found) {
-      if (token) {
-        out.push(token);
-      }
-      continue;
-    }
-    const { mark, id, target } = found;
-    const numbered = registerFigure(registry2, { id, kind: target.kind });
-    if (numbered.figureId === void 0) {
-      out.push(
-        warningBlock(
-          state,
-          {
-            mark: mark.raw,
-            message: `\u306E ID \`${id}\` \u306F\u3001\u524D\u306E\u56F3\u8868\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u5225\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u56F3\u306B\u306F\u756A\u53F7\u3060\u3051\u3092\u4ED8\u3051\u3001ID \u3092\u4ED8\u3051\u3066\u3044\u307E\u305B\u3093\u3002`
-          },
-          token
-        )
-      );
-    }
-    out.push(...wrapFigure(state, { index, token, target }, numbered));
-    if (!target.gallery) {
-      index = target.end;
-    }
-  }
-  state.tokens = rewriteAllReferences(state, out, registry2.figures);
-}
-
-// src/parts/frontmatter.ts
-var FRONTMATTER_TITLE = "\u30D5\u30ED\u30F3\u30C8\u30DE\u30BF\u30FC";
-var renderFrontmatter = (options) => renderCollapsible({
-  title: FRONTMATTER_TITLE,
-  open: options.open ?? false,
-  body: options.body,
-  className: "mdmark-frontmatter"
-});
-
-// src/render/syntax/frontmatter.ts
-var insertFrontmatter = (state) => {
-  const frontmatter = envOf(state).frontmatter;
-  if (frontmatter === void 0 || frontmatter.content.trim() === "" || !featureOn(state, "frontmatter")) {
-    return;
-  }
-  const [head = "", tail = ""] = renderFrontmatter({ body: SLOT_MARKER }).split(
-    SLOT_MARKER
-  );
-  const fence2 = new state.Token("fence", "code", 0);
-  fence2.block = true;
-  fence2.info = "yaml";
-  fence2.markup = "```";
-  fence2.content = `${frontmatter.content}
-`;
-  fence2.map = [1, frontmatter.endLine + 1];
-  state.tokens = [
-    ownBlock(state, head),
-    fence2,
-    ownBlock(state, tail),
-    ...state.tokens
-  ];
-};
-
-// src/parts/gallery.ts
-var DEFAULT_COLS = 2;
-function renderGallery(options) {
-  const { cols = DEFAULT_COLS, body } = options;
-  return `<div class="mdmark-gallery" style="--mdmark-gallery-cols: ${cols}"><div class="mdmark-gallery-grid">${body}</div></div>`;
-}
-
-// src/render/syntax/gallery.ts
-var GALLERY_COLS = { min: 1, max: 6, default: 2 };
-var SUBFIGURE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
-function readGalleryOptions(mark) {
-  const { columns } = mark.options;
-  return {
-    cols: typeof columns === "number" ? columns : GALLERY_COLS.default
-  };
-}
-function imagesIn(tokens) {
-  return tokens.flatMap(
-    (token) => (token.children ?? []).filter((child) => child.type === "image")
-  );
-}
-function galleryWarnings(mark, options) {
-  const warnings = [];
-  const max = SUBFIGURE_LETTERS.length;
-  const messages = [];
-  if (options.count === 0) {
-    messages.push(
-      "\u306E\u7BC4\u56F2\u306B\u753B\u50CF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u4E2D\u306B\u753B\u50CF\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  } else if (options.count > max) {
-    messages.push(
-      `\u306E\u7BC4\u56F2\u306E\u753B\u50CF\u304C ${options.count} \u679A\u3042\u308A\u307E\u3059\u3002\u753B\u50CF\u306F ${max} \u679A\u307E\u3067\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002${max + 1} \u679A\u76EE\u304B\u3089\u306F\u30B5\u30D6\u56F3\u306E\u756A\u53F7\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-    );
-  }
-  if (messages.length) {
-    warnings.push({ mark: mark.raw, message: messages.join("") });
-  }
-  if (!options.closed) {
-    warnings.push(unclosedWarning(mark));
-  }
-  return warnings;
-}
-function figureSlots(figure) {
-  if (!figure) {
-    return ["", ""];
-  }
-  const [head = "", tail = ""] = splitSlots(
-    renderFigure({
-      kind: "image",
-      ...figure.id === void 0 ? {} : { id: figure.id },
-      number: figure.number,
-      body: SLOT_MARKER
-    })
-  );
-  return [head, tail];
-}
-function subfigureOf(figure, position) {
-  const letter = figure ? SUBFIGURE_LETTERS[position] : void 0;
-  if (!figure || !letter) {
-    return {};
-  }
-  return {
-    ...figure.id === void 0 ? {} : { id: `fig-${figure.id}-${letter}` },
-    label: `\u56F3 ${figure.number}${letter}`
-  };
-}
-function galleryTokens(state, range) {
-  const { token, mark, images, closed } = range;
-  const out = galleryWarnings(mark, { count: images.length, closed }).map(
-    (warning) => warningBlock(state, warning, token)
-  );
-  const { cols } = readGalleryOptions(mark);
-  const figure = token.meta.figure;
-  const [figureHead, figureTail] = figureSlots(figure);
-  const [galleryHead = "", galleryTail = ""] = splitSlots(
-    renderGallery({ cols, body: SLOT_MARKER })
-  );
-  out.push(ownBlock(state, `${figureHead}${galleryHead}`, token));
-  for (const [position, image2] of images.entries()) {
-    out.push(
-      ownBlock(state, imageFigureHtml(image2, subfigureOf(figure, position)))
-    );
-  }
-  out.push(ownBlock(state, `${galleryTail}${figureTail}`));
-  return out;
-}
-function buildGallery(state) {
-  if (!featureOn(state, "gallery")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    if (mark?.name !== "gallery" || mark.closing) {
-      out.push(token);
-      continue;
-    }
-    const close = findClose(tokens, index, "gallery");
-    const end = close < 0 ? tokens.length : close;
-    out.push(
-      ...galleryTokens(state, {
-        token,
-        mark,
-        images: imagesIn(tokens.slice(index + 1, end)),
-        closed: close >= 0
-      })
-    );
-    index = end;
-  }
-  state.tokens = out;
-}
-
-// src/render/syntax/glossary.ts
-var ALIAS_SEPARATOR = /[、,]/;
-function splitCell(cell) {
-  return cell.split(ALIAS_SEPARATOR).map((word) => word.trim()).filter(Boolean);
-}
-function readStructure(reader, token) {
-  switch (token.type) {
-    case "table_open":
-      reader.table = { columns: [], rows: [] };
-      reader.tables.push(reader.table);
-      return true;
-    case "thead_open":
-      reader.inHead = true;
-      return true;
-    case "thead_close":
-      reader.inHead = false;
-      return true;
-    case "tr_open":
-      if (!reader.inHead) {
-        reader.row = { cells: [], line: (token.map?.[0] ?? 0) + 1 };
-        reader.table?.rows.push(reader.row);
-      }
-      return true;
-    default:
-      return false;
-  }
-}
-function readCell(reader, token, inline2) {
-  if (token.type !== "th_open" && token.type !== "td_open") {
-    return;
-  }
-  const text2 = inline2 ? textOf(inline2).trim() : "";
-  if (token.type === "th_open") {
-    reader.table?.columns.push(text2);
-  } else {
-    reader.row?.cells.push(text2);
-  }
-}
-function readTables(tokens) {
-  const reader = {
-    tables: [],
-    table: void 0,
-    inHead: false,
-    row: void 0
-  };
-  for (const [position, token] of tokens.entries()) {
-    if (!readStructure(reader, token)) {
-      readCell(reader, token, tokens[position + 1]);
-    }
-  }
-  return reader.tables;
-}
-function unknownColumnMessage(argName, name, columns) {
-  const list2 = columns.map((column) => `\`${column}\``).join("\u30FB");
-  return `\u306E \`${argName}.column\` \u306E\u5217 \`${name}\` \u304C\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${list2} \u3067\u3059\u3002\u5217\u540D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u8868\u304B\u3089\u306F\u7528\u8A9E\u3092\u5165\u308C\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`;
-}
-var GLOSSARY_COLUMNS = [
-  ["term", true],
-  ["meaning", true],
-  ["aliases", false],
-  ["avoid", false]
-];
-function columnPositions(spec, columns) {
-  const positions = {};
-  let problem;
-  for (const [argName, required2] of GLOSSARY_COLUMNS) {
-    const name = spec[argName]?.column;
-    if (typeof name !== "string" || name === "") {
-      if (required2) {
-        problem ??= "";
-      }
-      continue;
-    }
-    const position = columns.indexOf(name);
-    if (position === -1) {
-      problem ??= unknownColumnMessage(argName, name, columns);
-    } else {
-      positions[argName] = position;
-    }
-  }
-  return problem === void 0 ? { positions } : { problem };
-}
-function tableRows(table2, positions, docId) {
-  const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
-  return table2.rows.flatMap((row2) => {
-    const term = cellOf(row2.cells, "term");
-    const meaning = cellOf(row2.cells, "meaning");
-    if (term === "" || meaning === "") {
-      return [];
-    }
-    return [
-      {
-        entry: {
-          term,
-          aliases: splitCell(cellOf(row2.cells, "aliases")),
-          meaning,
-          docId,
-          avoid: splitCell(cellOf(row2.cells, "avoid"))
-        },
-        line: row2.line
-      }
-    ];
-  });
-}
-function readGlossaryRows(options) {
-  const { options: spec, tokens, docId } = options;
-  const rows = [];
-  let warning;
-  for (const table2 of readTables(tokens)) {
-    const read = columnPositions(spec, table2.columns);
-    if ("problem" in read) {
-      if (read.problem !== "") {
-        warning ??= read.problem;
-      }
-      continue;
-    }
-    rows.push(...tableRows(table2, read.positions, docId));
-  }
-  return warning === void 0 ? { rows } : { rows, warning };
-}
-function collectGlossary(state, range) {
-  const env = envOf(state);
-  const { token, mark, tokens, closed } = range;
-  const { rows, warning } = readGlossaryRows({
-    options: mark.options,
-    tokens,
-    docId: env.docId ?? ""
-  });
-  const out = [];
-  if (!closed) {
-    out.push(warningBlock(state, unclosedWarning(mark), token));
-  }
-  if (warning !== void 0) {
-    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
-  }
-  for (const row2 of rows) {
-    env.ownGlossary.push(row2.entry);
-    env.glossaryLines?.push(row2.line);
-  }
-  for (const inline2 of tokens) {
-    for (const child of inline2.children ?? []) {
-      child.meta = { ...child.meta, mdmarkNoTerms: true };
-    }
-  }
-  return out;
-}
-function glossaryRule(state) {
-  const enabled = featureOn(state, "glossary");
-  const tokens = state.tokens;
-  const out = [];
-  for (let position = 0; position < tokens.length; position++) {
-    const token = tokens[position];
-    const mark = markOf(token);
-    if (!token || mark?.name !== "glossary") {
-      if (token) {
-        out.push(token);
-      }
-      continue;
-    }
-    if (mark.closing) {
-      continue;
-    }
-    const close = findClose(tokens, position, "glossary");
-    const end = close === -1 ? tokens.length : close;
-    const range = tokens.slice(position + 1, end);
-    if (enabled) {
-      out.push(
-        ...collectGlossary(state, {
-          token,
-          mark,
-          tokens: range,
-          closed: close !== -1
-        })
-      );
-    }
-    out.push(...range);
-    position = end;
-  }
-  state.tokens = out;
-}
-
-// src/render/syntax/highlight.ts
-var EQUALS = 61;
-var COLOR_PATTERN = /^\{color=([^}]*)\}/;
-var COLOR_LIST = COLOR_NAMES.map((name) => `\`${name}\``).join("\u30FB");
-var tokenizeHighlight = (state, silent) => {
-  const start = state.pos;
-  if (silent || state.src.charCodeAt(start) !== EQUALS) {
-    return false;
-  }
-  const scanned = state.scanDelims(state.pos, true);
-  let length = scanned.length;
-  if (length < 2) {
-    return false;
-  }
-  if (length % 2 === 1) {
-    const token = state.push("text", "", 0);
-    token.content = "=";
-    length -= 1;
-  }
-  for (let at = 0; at < length; at += 2) {
-    const token = state.push("text", "", 0);
-    token.content = "==";
-    state.delimiters.push({
-      marker: EQUALS,
-      length: 0,
-      token: state.tokens.length - 1,
-      end: -1,
-      open: scanned.can_open,
-      close: scanned.can_close
-    });
-  }
-  state.pos += scanned.length;
-  return true;
-};
-var toMarkToken = (token, nesting) => {
-  token.type = nesting === 1 ? "mark_open" : "mark_close";
-  token.tag = "mark";
-  token.nesting = nesting;
-  token.markup = "==";
-  token.content = "";
-};
-var pairHighlight = (state, start, delimiters) => {
-  const end = start.end === -1 ? void 0 : delimiters[start.end];
-  const open2 = state.tokens[start.token];
-  const close = end ? state.tokens[end.token] : void 0;
-  if (start.marker !== EQUALS || !end || !open2 || !close) {
-    return void 0;
-  }
-  toMarkToken(open2, 1);
-  toMarkToken(close, -1);
-  const before = state.tokens[end.token - 1];
-  return before?.type === "text" && before.content === "=" ? end.token - 1 : void 0;
-};
-var moveLoneEquals = (state, lone) => {
-  for (const at of lone.reverse()) {
-    let swap = at;
-    while (state.tokens[swap + 1]?.type === "mark_close" && swap + 1 < state.tokens.length) {
-      const current = state.tokens[swap];
-      state.tokens[swap] = state.tokens[swap + 1];
-      state.tokens[swap + 1] = current;
-      swap += 1;
-    }
-  }
-};
-var pairHighlights = (state, delimiters) => {
-  const lone = delimiters.map((start) => pairHighlight(state, start, delimiters)).filter((at) => at !== void 0);
-  moveLoneEquals(state, lone);
-};
-var postProcessHighlight = (state) => {
-  pairHighlights(state, state.delimiters);
-  for (const meta2 of state.tokens_meta) {
-    if (meta2?.delimiters) {
-      pairHighlights(state, meta2.delimiters);
-    }
-  }
-  return true;
-};
-var textToken2 = (state, content) => {
-  const token = new state.Token("text", "", 0);
-  token.content = content;
-  return token;
-};
-var restoreHighlights = (state, children) => {
-  for (const [at, child] of children.entries()) {
-    if (child.type === "mark_open" || child.type === "mark_close") {
-      children[at] = textToken2(state, "==");
-    }
-  }
-};
-var applyColor = (next, open2) => {
-  const color = next?.type === "text" ? COLOR_PATTERN.exec(next.content) : null;
-  if (!next || !color) {
-    return void 0;
-  }
-  next.content = next.content.slice(color[0].length);
-  const name = color[1] ?? "";
-  if (!isColorName(name)) {
-    return name;
-  }
-  open2?.attrSet("data-color", name);
-  return void 0;
-};
-var applyHighlights = (children, nonce) => {
-  const opens = [];
-  const unknown2 = [];
-  for (const [at, child] of children.entries()) {
-    if (child.type === "mark_open") {
-      child.attrSet("data-mdmark-own", nonce);
-      child.attrSet("class", "mdmark-highlight");
-      opens.push(child);
-    } else if (child.type === "mark_close") {
-      const name = applyColor(children[at + 1], opens.pop());
-      if (name !== void 0) {
-        unknown2.push(name);
-      }
-    }
-  }
-  return unknown2;
-};
-var finishHighlights = (state) => {
-  const on = featureOn(state, "highlight");
-  const nonce = envOf(state).nonce;
-  const warnings = [];
-  for (const [index, token] of state.tokens.entries()) {
-    const children = token.children;
-    if (token.type !== "inline" || !children) {
-      continue;
-    }
-    if (!on) {
-      restoreHighlights(state, children);
-      continue;
-    }
-    const unknown2 = applyHighlights(children, nonce);
-    if (unknown2.length) {
-      const names2 = unknown2.map((name) => `\`${name}\``).join("\u30FB");
-      warnings.push({
-        index,
-        warning: {
-          message: `${names2} \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u8272\u306E\u540D\u524D\u306F ${COLOR_LIST} \u3067\u3059\u3002\u65E2\u5B9A\u306E\u8272\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-        }
-      });
-    }
-  }
-  insertWarningsBeforeBlocks(state, warnings);
-};
-var useHighlight = (md) => {
-  md.inline.ruler.before("emphasis", "mdmark_highlight", tokenizeHighlight);
-  md.inline.ruler2.before("emphasis", "mdmark_highlight", postProcessHighlight);
-  md.core.ruler.after(
-    "mdmark_expand_includes",
-    "mdmark_finish_highlights",
-    finishHighlights
-  );
-};
-
-// src/parts/embedded-html.ts
-function renderEmbeddedHtml(props) {
-  const { html, wide = false } = props;
-  return wide ? `<div class="mdmark-html is-wide" tabindex="0">${html}</div>` : `<div class="mdmark-html">${html}</div>`;
-}
-
-// src/parts/hint.ts
+// src/diagram/hint.part.ts
 var INLINE_TAGS = /* @__PURE__ */ new Set([
   "span",
   "a",
@@ -75667,160 +74660,7 @@ function renderHintMarkup(hint) {
   };
 }
 
-// src/render/scope-css.ts
-var NESTING_AT_RULES = /* @__PURE__ */ new Set(["media", "supports", "container", "layer"]);
-var KEPT_AT_RULES = /* @__PURE__ */ new Set(["keyframes", "font-face"]);
-var ROOT_LIKE_SELECTOR = /^(?::root|html|body)(?![\w-])/;
-function skipQuoted(css, start) {
-  const char = css[start];
-  if (char === '"' || char === "'") {
-    let index = start + 1;
-    while (index < css.length && css[index] !== char) {
-      index += css[index] === "\\" ? 2 : 1;
-    }
-    return index + 1;
-  }
-  if (css.startsWith("/*", start)) {
-    const end = css.indexOf("*/", start + 2);
-    return end === -1 ? css.length : end + 2;
-  }
-  return start;
-}
-function stripComments(css) {
-  let result = "";
-  let index = 0;
-  while (index < css.length) {
-    const next = skipQuoted(css, index);
-    if (next === index) {
-      result += css[index];
-      index += 1;
-    } else {
-      result += css.startsWith("/*", index) ? " " : css.slice(index, next);
-      index = next;
-    }
-  }
-  return result;
-}
-function findBlockEnd(css, bodyStart) {
-  let depth = 1;
-  let index = bodyStart;
-  while (index < css.length && depth > 0) {
-    const skipped = skipQuoted(css, index);
-    if (skipped !== index) {
-      index = skipped;
-      continue;
-    }
-    if (css[index] === "{") {
-      depth += 1;
-    } else if (css[index] === "}") {
-      depth -= 1;
-    }
-    index += 1;
-  }
-  return { bodyEnd: depth === 0 ? index - 1 : index, next: index };
-}
-function splitRules(css) {
-  const rules = [];
-  let preludeStart = 0;
-  let index = 0;
-  while (index < css.length) {
-    const next = skipQuoted(css, index);
-    if (next !== index) {
-      index = next;
-      continue;
-    }
-    const char = css[index];
-    if (char === ";") {
-      rules.push({ prelude: css.slice(preludeStart, index), body: void 0 });
-      preludeStart = index + 1;
-    } else if (char === "{") {
-      const bodyStart = index + 1;
-      const { bodyEnd, next: after } = findBlockEnd(css, bodyStart);
-      rules.push({
-        prelude: css.slice(preludeStart, index),
-        body: css.slice(bodyStart, bodyEnd)
-      });
-      preludeStart = after;
-      index = after;
-      continue;
-    }
-    index += 1;
-  }
-  return rules.filter(
-    (rule) => rule.body !== void 0 || rule.prelude.trim() !== ""
-  );
-}
-function splitSelectors(prelude) {
-  const selectors = [];
-  let depth = 0;
-  let start = 0;
-  let index = 0;
-  while (index < prelude.length) {
-    const next = skipQuoted(prelude, index);
-    if (next !== index) {
-      index = next;
-      continue;
-    }
-    const char = prelude[index];
-    if (char === "(" || char === "[") {
-      depth += 1;
-    } else if (char === ")" || char === "]") {
-      depth -= 1;
-    } else if (char === "," && depth === 0) {
-      selectors.push(prelude.slice(start, index));
-      start = index + 1;
-    }
-    index += 1;
-  }
-  selectors.push(prelude.slice(start));
-  return selectors.map((selector) => selector.trim()).filter(Boolean);
-}
-function scopeSelector(selector, root) {
-  const leading = ROOT_LIKE_SELECTOR.exec(selector);
-  if (leading) {
-    return `${root}${selector.slice(leading[0].length)}`;
-  }
-  if (selector.includes(":scope")) {
-    return selector.replaceAll(":scope", root);
-  }
-  return `${root} ${selector}`;
-}
-function scopeAtRule(rule, root) {
-  const { head, body } = rule;
-  const name = /^@([\w-]+)/.exec(head)?.[1]?.toLowerCase() ?? "";
-  if (NESTING_AT_RULES.has(name)) {
-    return body === void 0 ? `${head};` : `${head} { ${scopeRules(body, root)} }`;
-  }
-  if (KEPT_AT_RULES.has(name) && body !== void 0) {
-    return `${head} {${body}}`;
-  }
-  return void 0;
-}
-function scopeRule(rule, root) {
-  const head = rule.prelude.trim();
-  if (head.startsWith("@")) {
-    return scopeAtRule({ head, body: rule.body }, root);
-  }
-  if (rule.body === void 0) {
-    return void 0;
-  }
-  const selectors = splitSelectors(head).map(
-    (selector) => scopeSelector(selector, root)
-  );
-  return `${selectors.join(", ")} {${rule.body}}`;
-}
-function scopeRules(css, root) {
-  return splitRules(css).map((rule) => scopeRule(rule, root)).filter((part) => part !== void 0).join("\n");
-}
-function scopeCss(options) {
-  const root = `.mdmark-html[data-html-scope="${options.scope}"]`;
-  return scopeRules(stripComments(options.css), root).replace(
-    /<\/style/gi,
-    "<\\/style"
-  );
-}
-
-// src/parts/term-tip.ts
+// src/knowledge/term-tip.part.ts
 var ALIAS_HEADINGS = {
   term: "\u7528\u8A9E",
   doc: "\u6587\u66F8",
@@ -75997,7 +74837,7 @@ function aliasValueOf(alias) {
   }
 }
 
-// src/render/syntax/terms.ts
+// src/knowledge/term.syntax.ts
 var TIP_ID_PREFIX = "mdmark-term-";
 function matchWords(dictionary) {
   return dictionary.avoided.size === 0 ? dictionary.words : [.../* @__PURE__ */ new Set([...dictionary.words, ...dictionary.avoided.keys()])];
@@ -76142,7 +74982,7 @@ function termsRule(state) {
       }
       for (const segment of segments) {
         if (segment.kind === "text") {
-          rebuilt.push(textToken3(state, segment.content));
+          rebuilt.push(textToken2(state, segment.content));
         } else {
           const tip = new state.Token("html_inline", "", 0);
           tip.content = segment.html;
@@ -76153,13 +74993,172 @@ function termsRule(state) {
     inline2.children = rebuilt;
   });
 }
-function textToken3(state, content) {
+function textToken2(state, content) {
   const token = new state.Token("text", "", 0);
   token.content = content;
   return token;
 }
 
-// src/render/syntax/html.ts
+// src/embedded-html/embedded-html.part.ts
+function renderEmbeddedHtml(props) {
+  const { html, wide = false } = props;
+  return wide ? `<div class="mdmark-html is-wide" tabindex="0">${html}</div>` : `<div class="mdmark-html">${html}</div>`;
+}
+
+// src/embedded-html/scope-css.logic.ts
+var NESTING_AT_RULES = /* @__PURE__ */ new Set(["media", "supports", "container", "layer"]);
+var KEPT_AT_RULES = /* @__PURE__ */ new Set(["keyframes", "font-face"]);
+var ROOT_LIKE_SELECTOR = /^(?::root|html|body)(?![\w-])/;
+function skipQuoted(css, start) {
+  const char = css[start];
+  if (char === '"' || char === "'") {
+    let index = start + 1;
+    while (index < css.length && css[index] !== char) {
+      index += css[index] === "\\" ? 2 : 1;
+    }
+    return index + 1;
+  }
+  if (css.startsWith("/*", start)) {
+    const end = css.indexOf("*/", start + 2);
+    return end === -1 ? css.length : end + 2;
+  }
+  return start;
+}
+function stripComments(css) {
+  let result = "";
+  let index = 0;
+  while (index < css.length) {
+    const next = skipQuoted(css, index);
+    if (next === index) {
+      result += css[index];
+      index += 1;
+    } else {
+      result += css.startsWith("/*", index) ? " " : css.slice(index, next);
+      index = next;
+    }
+  }
+  return result;
+}
+function findBlockEnd(css, bodyStart) {
+  let depth = 1;
+  let index = bodyStart;
+  while (index < css.length && depth > 0) {
+    const skipped = skipQuoted(css, index);
+    if (skipped !== index) {
+      index = skipped;
+      continue;
+    }
+    if (css[index] === "{") {
+      depth += 1;
+    } else if (css[index] === "}") {
+      depth -= 1;
+    }
+    index += 1;
+  }
+  return { bodyEnd: depth === 0 ? index - 1 : index, next: index };
+}
+function splitRules(css) {
+  const rules = [];
+  let preludeStart = 0;
+  let index = 0;
+  while (index < css.length) {
+    const next = skipQuoted(css, index);
+    if (next !== index) {
+      index = next;
+      continue;
+    }
+    const char = css[index];
+    if (char === ";") {
+      rules.push({ prelude: css.slice(preludeStart, index), body: void 0 });
+      preludeStart = index + 1;
+    } else if (char === "{") {
+      const bodyStart = index + 1;
+      const { bodyEnd, next: after } = findBlockEnd(css, bodyStart);
+      rules.push({
+        prelude: css.slice(preludeStart, index),
+        body: css.slice(bodyStart, bodyEnd)
+      });
+      preludeStart = after;
+      index = after;
+      continue;
+    }
+    index += 1;
+  }
+  return rules.filter(
+    (rule) => rule.body !== void 0 || rule.prelude.trim() !== ""
+  );
+}
+function splitSelectors(prelude) {
+  const selectors = [];
+  let depth = 0;
+  let start = 0;
+  let index = 0;
+  while (index < prelude.length) {
+    const next = skipQuoted(prelude, index);
+    if (next !== index) {
+      index = next;
+      continue;
+    }
+    const char = prelude[index];
+    if (char === "(" || char === "[") {
+      depth += 1;
+    } else if (char === ")" || char === "]") {
+      depth -= 1;
+    } else if (char === "," && depth === 0) {
+      selectors.push(prelude.slice(start, index));
+      start = index + 1;
+    }
+    index += 1;
+  }
+  selectors.push(prelude.slice(start));
+  return selectors.map((selector) => selector.trim()).filter(Boolean);
+}
+function scopeSelector(selector, root) {
+  const leading = ROOT_LIKE_SELECTOR.exec(selector);
+  if (leading) {
+    return `${root}${selector.slice(leading[0].length)}`;
+  }
+  if (selector.includes(":scope")) {
+    return selector.replaceAll(":scope", root);
+  }
+  return `${root} ${selector}`;
+}
+function scopeAtRule(rule, root) {
+  const { head, body } = rule;
+  const name = /^@([\w-]+)/.exec(head)?.[1]?.toLowerCase() ?? "";
+  if (NESTING_AT_RULES.has(name)) {
+    return body === void 0 ? `${head};` : `${head} { ${scopeRules(body, root)} }`;
+  }
+  if (KEPT_AT_RULES.has(name) && body !== void 0) {
+    return `${head} {${body}}`;
+  }
+  return void 0;
+}
+function scopeRule(rule, root) {
+  const head = rule.prelude.trim();
+  if (head.startsWith("@")) {
+    return scopeAtRule({ head, body: rule.body }, root);
+  }
+  if (rule.body === void 0) {
+    return void 0;
+  }
+  const selectors = splitSelectors(head).map(
+    (selector) => scopeSelector(selector, root)
+  );
+  return `${selectors.join(", ")} {${rule.body}}`;
+}
+function scopeRules(css, root) {
+  return splitRules(css).map((rule) => scopeRule(rule, root)).filter((part) => part !== void 0).join("\n");
+}
+function scopeCss(options) {
+  const root = `.mdmark-html[data-html-scope="${options.scope}"]`;
+  return scopeRules(stripComments(options.css), root).replace(
+    /<\/style/gi,
+    "<\\/style"
+  );
+}
+
+// src/embedded-html/embedded-html.syntax.ts
 var DIAGRAM_ID_PREFIX2 = "mdmark-diagram";
 var PARAM_ID_PREFIX2 = "mdmark-param";
 var HINT_ID_PREFIX = "mdmark-hint-";
@@ -76512,7 +75511,2392 @@ function buildEmbeddedHtml(state) {
   state.tokens = out;
 }
 
-// src/render/syntax/includes.ts
+// src/figure/figure.part.ts
+function renderFigure(options) {
+  const { kind, id, number: number4, caption = "", body } = options;
+  const idAttribute = id === void 0 ? "" : ` id="fig-${escapeHtml2(id)}"`;
+  const label = kind === "image" ? "\u56F3" : "\u8868";
+  const text2 = kind === "image" ? escapeHtml2(caption) : "";
+  const figcaption = `<figcaption class="mdmark-figure-caption"><b>${label} ${number4}</b>${text2}</figcaption>`;
+  const content = kind === "image" ? `${body}${figcaption}` : `${figcaption}${body}`;
+  return `<figure class="mdmark-figure"${idAttribute}>${content}</figure>`;
+}
+
+// src/figure/figure.syntax.ts
+var FIGURE_HREF_PREFIX = "#fig-";
+function matchingClose(tokens, start, match) {
+  let depth = 0;
+  for (let index = start; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (match.isOpen(token)) {
+      depth += 1;
+    } else if (match.isClose(token)) {
+      depth -= 1;
+      if (depth === 0) {
+        return index;
+      }
+    }
+  }
+  return -1;
+}
+function isStillImageFigure(state, image2) {
+  const kind = imageAttributesOf(image2)?.kind;
+  return kind !== "video" && kind !== "audio" && featureOn(state, "images");
+}
+function imageParagraphTarget(state, start) {
+  const children = state.tokens[start + 1]?.children ?? [];
+  const image2 = children.find((child) => child.type === "image");
+  if (!image2 || !children.every((child) => child.type === "image")) {
+    return void 0;
+  }
+  return {
+    kind: "image",
+    end: start + 2,
+    caption: String(image2.attrGet("title") ?? ""),
+    ...children.length === 1 && isStillImageFigure(state, image2) ? { image: image2 } : {}
+  };
+}
+function tableTarget(tokens, start) {
+  const first = tokens[start];
+  const match = first?.meta?.role === "table-open" ? {
+    isOpen: (token) => token.meta?.role === "table-open",
+    isClose: (token) => token.meta?.role === "table-close"
+  } : first?.type === "table_open" ? {
+    isOpen: (token) => token.type === "table_open",
+    isClose: (token) => token.type === "table_close"
+  } : void 0;
+  if (!match) {
+    return void 0;
+  }
+  const end = matchingClose(tokens, start, match);
+  return end < 0 ? void 0 : { kind: "table", end, caption: "" };
+}
+function figureTarget(state, start) {
+  const first = state.tokens[start];
+  if (!first) {
+    return void 0;
+  }
+  const firstMark = markOf(first);
+  if (firstMark?.name === "gallery" && !firstMark.closing && featureOn(state, "gallery")) {
+    return { kind: "image", end: start, caption: "", gallery: first };
+  }
+  if (first.meta?.[DIAGRAM_META] === true) {
+    return { kind: "image", end: start, caption: "" };
+  }
+  if (first.type === "paragraph_open") {
+    return imageParagraphTarget(state, start);
+  }
+  return tableTarget(state.tokens, start);
+}
+function referencedId(value) {
+  const href = String(value ?? "");
+  if (!href.startsWith(FIGURE_HREF_PREFIX)) {
+    return void 0;
+  }
+  try {
+    return decodeURIComponent(href.slice(FIGURE_HREF_PREFIX.length));
+  } catch {
+    return href.slice(FIGURE_HREF_PREFIX.length);
+  }
+}
+function rewriteReferences(state, inline2, figures) {
+  const broken = [];
+  const children = inline2.children ?? [];
+  for (let index = 0; index < children.length; index++) {
+    const open2 = children[index];
+    if (open2?.type !== "link_open") {
+      continue;
+    }
+    const id = referencedId(open2.attrGet("href"));
+    if (id === void 0) {
+      continue;
+    }
+    const figure = figures.get(id);
+    if (!figure) {
+      broken.push(id);
+      continue;
+    }
+    const close = children.findIndex(
+      (child, position) => position > index && child.type === "link_close"
+    );
+    if (close < 0) {
+      continue;
+    }
+    const text2 = new state.Token("text", "", 0);
+    text2.content = `${figure.kind === "image" ? "\u56F3" : "\u8868"} ${figure.number}`;
+    children.splice(index + 1, close - index - 1, text2);
+  }
+  return broken;
+}
+function figMarkTarget(state, index) {
+  const mark = markOf(state.tokens[index]);
+  if (mark?.name !== "fig" || mark.closing) {
+    return void 0;
+  }
+  const id = mark.options.id;
+  if (typeof id !== "string" || id === "") {
+    return void 0;
+  }
+  const target = figureTarget(state, index + 1);
+  return target ? { mark, id, target } : void 0;
+}
+function registerFigure(registry2, figure) {
+  const { id, kind } = figure;
+  registry2.counts[kind] += 1;
+  const number4 = registry2.counts[kind];
+  if (registry2.figures.has(id)) {
+    return { number: number4, figureId: void 0 };
+  }
+  registry2.figures.set(id, { kind, number: number4 });
+  return { number: number4, figureId: id };
+}
+function wrapFigure(state, range, numbered) {
+  const { index, token, target } = range;
+  const { number: number4, figureId } = numbered;
+  if (target.gallery) {
+    target.gallery.meta = {
+      ...target.gallery.meta,
+      figure: { id: figureId, number: number4 }
+    };
+    return [];
+  }
+  if (target.image) {
+    return [
+      ownBlock(
+        state,
+        imageFigureHtml(target.image, {
+          ...figureId === void 0 ? {} : { id: `fig-${figureId}` },
+          label: `\u56F3 ${number4}`
+        }),
+        token
+      )
+    ];
+  }
+  const html = renderFigure({
+    kind: target.kind,
+    id: figureId,
+    number: number4,
+    caption: target.caption,
+    body: SLOT_MARKER
+  });
+  const [head = "", tail = ""] = html.split(SLOT_MARKER);
+  return [
+    ownBlock(state, head, token),
+    ...state.tokens.slice(index + 1, target.end + 1),
+    ownBlock(state, tail)
+  ];
+}
+function rewriteAllReferences(state, tokens, figures) {
+  const result = [];
+  let blockStart = 0;
+  for (const token of tokens) {
+    if (token.nesting === 1 && token.level === 0) {
+      blockStart = result.length;
+    }
+    if (token.type === "inline") {
+      const warnings = rewriteReferences(
+        state,
+        token,
+        figures
+      ).map((id) => ({
+        message: `\u30EA\u30F3\u30AF\u5148\u306E \`#fig-${id}\` \u306E\u56F3\u8868\u304C\u3042\u308A\u307E\u305B\u3093\u3002\`<!-- fig: ${id} -->\` \u3092\u56F3\u304B\u8868\u306E\u76F4\u524D\u306B\u8A18\u8F09\u3059\u308B\u304B\u3001\u30EA\u30F3\u30AF\u5148\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      }));
+      result.splice(
+        blockStart,
+        0,
+        ...warnings.map((warning) => warningBlock(state, warning))
+      );
+      blockStart += warnings.length;
+    }
+    result.push(token);
+  }
+  return result;
+}
+function numberFigures(state) {
+  if (!featureOn(state, "figures")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const registry2 = {
+    figures: /* @__PURE__ */ new Map(),
+    counts: { image: 0, table: 0 }
+  };
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const found = figMarkTarget(state, index);
+    if (!token || !found) {
+      if (token) {
+        out.push(token);
+      }
+      continue;
+    }
+    const { mark, id, target } = found;
+    const numbered = registerFigure(registry2, { id, kind: target.kind });
+    if (numbered.figureId === void 0) {
+      out.push(
+        warningBlock(
+          state,
+          {
+            mark: mark.raw,
+            message: `\u306E ID \`${id}\` \u306F\u3001\u524D\u306E\u56F3\u8868\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u5225\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u56F3\u306B\u306F\u756A\u53F7\u3060\u3051\u3092\u4ED8\u3051\u3001ID \u3092\u4ED8\u3051\u3066\u3044\u307E\u305B\u3093\u3002`
+          },
+          token
+        )
+      );
+    }
+    out.push(...wrapFigure(state, { index, token, target }, numbered));
+    if (!target.gallery) {
+      index = target.end;
+    }
+  }
+  state.tokens = rewriteAllReferences(state, out, registry2.figures);
+}
+
+// src/frontmatter/frontmatter.part.ts
+var FRONTMATTER_TITLE = "\u30D5\u30ED\u30F3\u30C8\u30DE\u30BF\u30FC";
+var renderFrontmatter = (options) => renderCollapsible({
+  title: FRONTMATTER_TITLE,
+  open: options.open ?? false,
+  body: options.body,
+  className: "mdmark-frontmatter"
+});
+
+// src/frontmatter/frontmatter.syntax.ts
+var insertFrontmatter = (state) => {
+  const frontmatter = envOf(state).frontmatter;
+  if (frontmatter === void 0 || frontmatter.content.trim() === "" || !featureOn(state, "frontmatter")) {
+    return;
+  }
+  const [head = "", tail = ""] = renderFrontmatter({ body: SLOT_MARKER }).split(
+    SLOT_MARKER
+  );
+  const fence2 = new state.Token("fence", "code", 0);
+  fence2.block = true;
+  fence2.info = "yaml";
+  fence2.markup = "```";
+  fence2.content = `${frontmatter.content}
+`;
+  fence2.map = [1, frontmatter.endLine + 1];
+  state.tokens = [
+    ownBlock(state, head),
+    fence2,
+    ownBlock(state, tail),
+    ...state.tokens
+  ];
+};
+
+// src/inline/badge.part.ts
+function renderBadge(options) {
+  const color = options.color === void 0 ? "" : ` data-color="${options.color}"`;
+  return `<span class="mdmark-badge"${color}>${escapeHtml2(options.label)}</span>`;
+}
+
+// src/inline/badge.syntax.ts
+var BADGE_PREFIX2 = "badge:";
+var ESCAPED_PREFIX2 = "badge\\:";
+function splitBadgeColor(text2) {
+  const at = text2.indexOf(":");
+  const head = text2.slice(0, at);
+  if (at < 0 || !isColorName(head)) {
+    return { label: text2 };
+  }
+  return { color: head, label: text2.slice(at + 1) };
+}
+function buildBadges(state) {
+  if (!featureOn(state, "badge")) {
+    return;
+  }
+  const nonce = envOf(state).nonce;
+  for (const token of state.tokens) {
+    for (const child of token.children ?? []) {
+      if (child.type !== "code_inline") {
+        continue;
+      }
+      const badge = child.content.startsWith(BADGE_PREFIX2) ? splitBadgeColor(child.content.slice(BADGE_PREFIX2.length)) : void 0;
+      if (badge !== void 0 && badge.label.trim() !== "") {
+        child.type = "html_inline";
+        child.content = markOwn(renderBadge(badge), nonce);
+      } else if (child.content.startsWith(ESCAPED_PREFIX2)) {
+        child.content = `${BADGE_PREFIX2}${child.content.slice(ESCAPED_PREFIX2.length)}`;
+      }
+    }
+  }
+}
+
+// src/inline/highlight.syntax.ts
+var EQUALS = 61;
+var COLOR_PATTERN = /^\{color=([^}]*)\}/;
+var COLOR_LIST = COLOR_NAMES.map((name) => `\`${name}\``).join("\u30FB");
+var tokenizeHighlight = (state, silent) => {
+  const start = state.pos;
+  if (silent || state.src.charCodeAt(start) !== EQUALS) {
+    return false;
+  }
+  const scanned = state.scanDelims(state.pos, true);
+  let length = scanned.length;
+  if (length < 2) {
+    return false;
+  }
+  if (length % 2 === 1) {
+    const token = state.push("text", "", 0);
+    token.content = "=";
+    length -= 1;
+  }
+  for (let at = 0; at < length; at += 2) {
+    const token = state.push("text", "", 0);
+    token.content = "==";
+    state.delimiters.push({
+      marker: EQUALS,
+      length: 0,
+      token: state.tokens.length - 1,
+      end: -1,
+      open: scanned.can_open,
+      close: scanned.can_close
+    });
+  }
+  state.pos += scanned.length;
+  return true;
+};
+var toMarkToken = (token, nesting) => {
+  token.type = nesting === 1 ? "mark_open" : "mark_close";
+  token.tag = "mark";
+  token.nesting = nesting;
+  token.markup = "==";
+  token.content = "";
+};
+var pairHighlight = (state, start, delimiters) => {
+  const end = start.end === -1 ? void 0 : delimiters[start.end];
+  const open2 = state.tokens[start.token];
+  const close = end ? state.tokens[end.token] : void 0;
+  if (start.marker !== EQUALS || !end || !open2 || !close) {
+    return void 0;
+  }
+  toMarkToken(open2, 1);
+  toMarkToken(close, -1);
+  const before = state.tokens[end.token - 1];
+  return before?.type === "text" && before.content === "=" ? end.token - 1 : void 0;
+};
+var moveLoneEquals = (state, lone) => {
+  for (const at of lone.reverse()) {
+    let swap = at;
+    while (state.tokens[swap + 1]?.type === "mark_close" && swap + 1 < state.tokens.length) {
+      const current = state.tokens[swap];
+      state.tokens[swap] = state.tokens[swap + 1];
+      state.tokens[swap + 1] = current;
+      swap += 1;
+    }
+  }
+};
+var pairHighlights = (state, delimiters) => {
+  const lone = delimiters.map((start) => pairHighlight(state, start, delimiters)).filter((at) => at !== void 0);
+  moveLoneEquals(state, lone);
+};
+var postProcessHighlight = (state) => {
+  pairHighlights(state, state.delimiters);
+  for (const meta2 of state.tokens_meta) {
+    if (meta2?.delimiters) {
+      pairHighlights(state, meta2.delimiters);
+    }
+  }
+  return true;
+};
+var textToken3 = (state, content) => {
+  const token = new state.Token("text", "", 0);
+  token.content = content;
+  return token;
+};
+var restoreHighlights = (state, children) => {
+  for (const [at, child] of children.entries()) {
+    if (child.type === "mark_open" || child.type === "mark_close") {
+      children[at] = textToken3(state, "==");
+    }
+  }
+};
+var applyColor = (next, open2) => {
+  const color = next?.type === "text" ? COLOR_PATTERN.exec(next.content) : null;
+  if (!next || !color) {
+    return void 0;
+  }
+  next.content = next.content.slice(color[0].length);
+  const name = color[1] ?? "";
+  if (!isColorName(name)) {
+    return name;
+  }
+  open2?.attrSet("data-color", name);
+  return void 0;
+};
+var applyHighlights = (children, nonce) => {
+  const opens = [];
+  const unknown2 = [];
+  for (const [at, child] of children.entries()) {
+    if (child.type === "mark_open") {
+      child.attrSet("data-mdmark-own", nonce);
+      child.attrSet("class", "mdmark-highlight");
+      opens.push(child);
+    } else if (child.type === "mark_close") {
+      const name = applyColor(children[at + 1], opens.pop());
+      if (name !== void 0) {
+        unknown2.push(name);
+      }
+    }
+  }
+  return unknown2;
+};
+var finishHighlights = (state) => {
+  const on = featureOn(state, "highlight");
+  const nonce = envOf(state).nonce;
+  const warnings = [];
+  for (const [index, token] of state.tokens.entries()) {
+    const children = token.children;
+    if (token.type !== "inline" || !children) {
+      continue;
+    }
+    if (!on) {
+      restoreHighlights(state, children);
+      continue;
+    }
+    const unknown2 = applyHighlights(children, nonce);
+    if (unknown2.length) {
+      const names2 = unknown2.map((name) => `\`${name}\``).join("\u30FB");
+      warnings.push({
+        index,
+        warning: {
+          message: `${names2} \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u8272\u306E\u540D\u524D\u306F ${COLOR_LIST} \u3067\u3059\u3002\u65E2\u5B9A\u306E\u8272\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+        }
+      });
+    }
+  }
+  insertWarningsBeforeBlocks(state, warnings);
+};
+var useHighlight = (md) => {
+  md.inline.ruler.before("emphasis", "mdmark_highlight", tokenizeHighlight);
+  md.inline.ruler2.before("emphasis", "mdmark_highlight", postProcessHighlight);
+  md.core.ruler.after(
+    "mdmark_expand_includes",
+    "mdmark_finish_highlights",
+    finishHighlights
+  );
+};
+
+// src/inline/kbd.part.ts
+var renderKbd = (options) => {
+  const keys = options.keys.map((key) => `<kbd class="mdmark-kbd">${escapeHtml2(key)}</kbd>`).join('<span class="mdmark-kbd-join">+</span>');
+  return `<span class="mdmark-kbd-group">${keys}</span>`;
+};
+
+// src/inline/kbd.syntax.ts
+var KBD_PREFIX = "kbd:";
+var ESCAPED_PREFIX3 = "kbd\\:";
+var splitKeys = (text2) => {
+  const keys = [];
+  let current = "";
+  for (let at = 0; at < text2.length; at++) {
+    const char = text2[at];
+    if (char !== "+") {
+      current += char;
+      continue;
+    }
+    if (current.trim() === "" && (at === 0 || text2[at - 1] === "+")) {
+      current = "+";
+      keys.push(current);
+      current = "";
+      continue;
+    }
+    keys.push(current);
+    current = "";
+  }
+  keys.push(current);
+  return keys.map((key) => key.trim()).filter((key) => key !== "");
+};
+var buildKbd = (child, nonce) => {
+  if (child.content.startsWith(ESCAPED_PREFIX3)) {
+    child.content = `${KBD_PREFIX}${child.content.slice(ESCAPED_PREFIX3.length)}`;
+    return;
+  }
+  if (!child.content.startsWith(KBD_PREFIX)) {
+    return;
+  }
+  const keys = splitKeys(child.content.slice(KBD_PREFIX.length));
+  if (keys.length === 0) {
+    return;
+  }
+  child.type = "html_inline";
+  child.content = markOwn(renderKbd({ keys }), nonce);
+};
+var buildKbds = (state) => {
+  if (!featureOn(state, "kbd")) {
+    return;
+  }
+  const nonce = envOf(state).nonce;
+  for (const token of state.tokens) {
+    for (const child of token.children ?? []) {
+      if (child.type === "code_inline") {
+        buildKbd(child, nonce);
+      }
+    }
+  }
+};
+
+// src/inline/text-color.part.ts
+function renderTextColor(options) {
+  return `<span class="mdmark-color" data-color="${options.color}">${options.text}</span>`;
+}
+
+// src/inline/text-color.syntax.ts
+var BRACKET_PATTERN = /\[|\]\{color=([^}]*)\}/g;
+var COLOR_LIST2 = COLOR_NAMES.map((name) => `\`${name}\``).join("\u30FB");
+function splitText(state, child, level) {
+  const pieces = [];
+  let last = 0;
+  for (const found of child.content.matchAll(BRACKET_PATTERN)) {
+    const at = found.index ?? 0;
+    if (at > last) {
+      pieces.push({
+        kind: "token",
+        token: textToken4(state, child.content.slice(last, at))
+      });
+    }
+    pieces.push(
+      found[1] === void 0 ? { kind: "open", level } : { kind: "close", level, color: found[1], raw: found[0] }
+    );
+    last = at + found[0].length;
+  }
+  if (last === 0) {
+    pieces.push({ kind: "token", token: child });
+  } else if (last < child.content.length) {
+    pieces.push({
+      kind: "token",
+      token: textToken4(state, child.content.slice(last))
+    });
+  }
+  return pieces;
+}
+function splitPieces(state, children) {
+  const pieces = [];
+  let level = 0;
+  let linkDepth = 0;
+  for (const child of children) {
+    if (child.type === "link_open") {
+      linkDepth += 1;
+    } else if (child.type === "link_close") {
+      linkDepth -= 1;
+    }
+    if (child.type !== "text" || linkDepth > 0) {
+      pieces.push({ kind: "token", token: child });
+      level += child.nesting;
+      continue;
+    }
+    pieces.push(...splitText(state, child, level));
+  }
+  return pieces;
+}
+function pairBrackets(pieces) {
+  const pairs = /* @__PURE__ */ new Map();
+  const opens = [];
+  for (const [index, piece] of pieces.entries()) {
+    if (piece.kind === "open") {
+      opens.push(index);
+    } else if (piece.kind === "close") {
+      let found = opens.length - 1;
+      while (found >= 0 && pieces[opens[found]].level !== piece.level) {
+        found -= 1;
+      }
+      if (found >= 0) {
+        const [openAt] = opens.splice(found);
+        pairs.set(openAt, index);
+      }
+    }
+  }
+  return pairs;
+}
+function pairedClose(bracket, context) {
+  const { at, piece } = bracket;
+  const { pieces, pairs, closes } = context;
+  const openAt = piece.kind === "open" ? at : closes.get(at);
+  const closeAt = piece.kind === "close" ? at : pairs.get(at);
+  const close = closeAt === void 0 ? void 0 : pieces[closeAt];
+  return openAt !== void 0 && close?.kind === "close" ? close : void 0;
+}
+function bracketToken(state, bracket, context) {
+  const { piece } = bracket;
+  const close = pairedClose(bracket, context);
+  if (close === void 0) {
+    return textToken4(state, piece.kind === "open" ? "[" : piece.raw);
+  }
+  if (!isColorName(close.color)) {
+    if (piece.kind === "open") {
+      context.unknown.push(close.color);
+    }
+    return void 0;
+  }
+  const [before, after] = splitSlots(
+    markOwn(
+      renderTextColor({ color: close.color, text: SLOT_MARKER }),
+      envOf(state).nonce
+    )
+  );
+  const html = new state.Token("html_inline", "", 0);
+  html.content = (piece.kind === "open" ? before : after) ?? "";
+  return html;
+}
+function colorChildren(state, pieces, pairs) {
+  const context = {
+    pieces,
+    pairs,
+    closes: new Map([...pairs].map(([open2, close]) => [close, open2])),
+    unknown: []
+  };
+  const children = [];
+  for (const [at, piece] of pieces.entries()) {
+    const token = piece.kind === "token" ? piece.token : bracketToken(state, { at, piece }, context);
+    if (token) {
+      children.push(token);
+    }
+  }
+  return { children, unknown: context.unknown };
+}
+function insertColorWarnings(state, warnings) {
+  for (const { index, unknown: unknown2 } of warnings.reverse()) {
+    const names2 = unknown2.map((name) => `\`${name}\``).join("\u30FB");
+    state.tokens.splice(
+      blockStartOf3(state.tokens, index),
+      0,
+      warningBlock(state, {
+        message: `${names2} \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u8272\u306E\u540D\u524D\u306F ${COLOR_LIST2} \u3067\u3059\u3002\u8272\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      })
+    );
+  }
+}
+function buildTextColors(state) {
+  if (!featureOn(state, "text-color")) {
+    return;
+  }
+  const warnings = [];
+  for (const [index, token] of state.tokens.entries()) {
+    if (token.type !== "inline" || !token.children?.length) {
+      continue;
+    }
+    const pieces = splitPieces(state, token.children);
+    const pairs = pairBrackets(pieces);
+    if (pairs.size === 0) {
+      continue;
+    }
+    const { children, unknown: unknown2 } = colorChildren(state, pieces, pairs);
+    token.children = children;
+    if (unknown2.length) {
+      warnings.push({ index, unknown: unknown2 });
+    }
+  }
+  insertColorWarnings(state, warnings);
+}
+function blockStartOf3(tokens, index) {
+  let at = index;
+  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
+    at -= 1;
+  }
+  return at;
+}
+function textToken4(state, content) {
+  const token = new state.Token("text", "", 0);
+  token.content = content;
+  return token;
+}
+
+// src/knowledge/backlinks.part.ts
+var BACKLINKS_TITLE = "\u95A2\u9023\u6587\u66F8";
+function renderBacklinks(props) {
+  const { id, docs } = props;
+  if (docs.length === 0) {
+    return "";
+  }
+  const items = docs.map(
+    (doc) => `<li><a href="${escapeHtml2(doc.href)}">${escapeHtml2(doc.title)}</a></li>`
+  ).join("");
+  const titleId = escapeHtml2(id);
+  return `<nav class="mdmark-backlinks" aria-labelledby="${titleId}"><p class="mdmark-backlinks-title" id="${titleId}">${BACKLINKS_TITLE}</p><ul>${items}</ul></nav>`;
+}
+
+// src/knowledge/backlinks.syntax.ts
+var TITLE_ID = "mdmark-backlinks-title";
+function backlinksRule(state) {
+  const env = envOf(state);
+  const { index, docId } = env;
+  if (!featureOn(state, "backlinks") || !index || docId === void 0) {
+    return;
+  }
+  const ids = env.mdmarkReferences?.backlinks[docId] ?? index.docs.filter(
+    (doc) => (doc.related ?? []).some((item) => readRelated(item).to === docId)
+  ).map((doc) => doc.id);
+  const ownPath = index.docs.find((doc) => doc.id === docId)?.path;
+  const docs = [...new Set(ids)].filter((id) => id !== docId).flatMap((id) => index.docs.filter((doc) => doc.id === id)).map((doc) => ({
+    title: doc.title,
+    href: relativeHref(ownPath, doc.path)
+  }));
+  const html = renderBacklinks({ id: TITLE_ID, docs });
+  if (html !== "") {
+    state.tokens.push(ownBlock(state, html));
+  }
+}
+
+// src/knowledge/glossary.syntax.ts
+var ALIAS_SEPARATOR = /[、,]/;
+function splitCell(cell) {
+  return cell.split(ALIAS_SEPARATOR).map((word) => word.trim()).filter(Boolean);
+}
+function readStructure(reader, token) {
+  switch (token.type) {
+    case "table_open":
+      reader.table = { columns: [], rows: [] };
+      reader.tables.push(reader.table);
+      return true;
+    case "thead_open":
+      reader.inHead = true;
+      return true;
+    case "thead_close":
+      reader.inHead = false;
+      return true;
+    case "tr_open":
+      if (!reader.inHead) {
+        reader.row = { cells: [], line: (token.map?.[0] ?? 0) + 1 };
+        reader.table?.rows.push(reader.row);
+      }
+      return true;
+    default:
+      return false;
+  }
+}
+function readCell(reader, token, inline2) {
+  if (token.type !== "th_open" && token.type !== "td_open") {
+    return;
+  }
+  const text2 = inline2 ? textOf(inline2).trim() : "";
+  if (token.type === "th_open") {
+    reader.table?.columns.push(text2);
+  } else {
+    reader.row?.cells.push(text2);
+  }
+}
+function readTables(tokens) {
+  const reader = {
+    tables: [],
+    table: void 0,
+    inHead: false,
+    row: void 0
+  };
+  for (const [position, token] of tokens.entries()) {
+    if (!readStructure(reader, token)) {
+      readCell(reader, token, tokens[position + 1]);
+    }
+  }
+  return reader.tables;
+}
+function unknownColumnMessage(argName, name, columns) {
+  const list2 = columns.map((column) => `\`${column}\``).join("\u30FB");
+  return `\u306E \`${argName}.column\` \u306E\u5217 \`${name}\` \u304C\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${list2} \u3067\u3059\u3002\u5217\u540D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u8868\u304B\u3089\u306F\u7528\u8A9E\u3092\u5165\u308C\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`;
+}
+var GLOSSARY_COLUMNS = [
+  ["term", true],
+  ["meaning", true],
+  ["aliases", false],
+  ["avoid", false]
+];
+function columnPositions(spec, columns) {
+  const positions = {};
+  let problem;
+  for (const [argName, required2] of GLOSSARY_COLUMNS) {
+    const name = spec[argName]?.column;
+    if (typeof name !== "string" || name === "") {
+      if (required2) {
+        problem ??= "";
+      }
+      continue;
+    }
+    const position = columns.indexOf(name);
+    if (position === -1) {
+      problem ??= unknownColumnMessage(argName, name, columns);
+    } else {
+      positions[argName] = position;
+    }
+  }
+  return problem === void 0 ? { positions } : { problem };
+}
+function tableRows(table2, positions, docId) {
+  const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
+  return table2.rows.flatMap((row2) => {
+    const term = cellOf(row2.cells, "term");
+    const meaning = cellOf(row2.cells, "meaning");
+    if (term === "" || meaning === "") {
+      return [];
+    }
+    return [
+      {
+        entry: {
+          term,
+          aliases: splitCell(cellOf(row2.cells, "aliases")),
+          meaning,
+          docId,
+          avoid: splitCell(cellOf(row2.cells, "avoid"))
+        },
+        line: row2.line
+      }
+    ];
+  });
+}
+function readGlossaryRows(options) {
+  const { options: spec, tokens, docId } = options;
+  const rows = [];
+  let warning;
+  for (const table2 of readTables(tokens)) {
+    const read = columnPositions(spec, table2.columns);
+    if ("problem" in read) {
+      if (read.problem !== "") {
+        warning ??= read.problem;
+      }
+      continue;
+    }
+    rows.push(...tableRows(table2, read.positions, docId));
+  }
+  return warning === void 0 ? { rows } : { rows, warning };
+}
+function collectGlossary(state, range) {
+  const env = envOf(state);
+  const { token, mark, tokens, closed } = range;
+  const { rows, warning } = readGlossaryRows({
+    options: mark.options,
+    tokens,
+    docId: env.docId ?? ""
+  });
+  const out = [];
+  if (!closed) {
+    out.push(warningBlock(state, unclosedWarning(mark), token));
+  }
+  if (warning !== void 0) {
+    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
+  }
+  for (const row2 of rows) {
+    env.ownGlossary.push(row2.entry);
+    env.glossaryLines?.push(row2.line);
+  }
+  for (const inline2 of tokens) {
+    for (const child of inline2.children ?? []) {
+      child.meta = { ...child.meta, mdmarkNoTerms: true };
+    }
+  }
+  return out;
+}
+function glossaryRule(state) {
+  const enabled = featureOn(state, "glossary");
+  const tokens = state.tokens;
+  const out = [];
+  for (let position = 0; position < tokens.length; position++) {
+    const token = tokens[position];
+    const mark = markOf(token);
+    if (!token || mark?.name !== "glossary") {
+      if (token) {
+        out.push(token);
+      }
+      continue;
+    }
+    if (mark.closing) {
+      continue;
+    }
+    const close = findClose(tokens, position, "glossary");
+    const end = close === -1 ? tokens.length : close;
+    const range = tokens.slice(position + 1, end);
+    if (enabled) {
+      out.push(
+        ...collectGlossary(state, {
+          token,
+          mark,
+          tokens: range,
+          closed: close !== -1
+        })
+      );
+    }
+    out.push(...range);
+    position = end;
+  }
+  state.tokens = out;
+}
+
+// src/layout/details.syntax.ts
+var titleParser = new MarkdownItCallable();
+var DEFAULT_TITLE = "\u8A73\u7D30";
+var readDetailsOptions = (options) => ({
+  title: typeof options.title === "string" && options.title !== "" ? options.title : DEFAULT_TITLE,
+  open: options.open === true
+});
+var buildDetailsRanges = (state) => {
+  if (!featureOn(state, "details")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const pairs = pairRanges(tokens, "details");
+  const closes = /* @__PURE__ */ new Set([...pairs.values()]);
+  const out = [];
+  for (const [index, token] of tokens.entries()) {
+    const mark = markOf(token);
+    if (mark?.name !== "details") {
+      out.push(token);
+      continue;
+    }
+    if (mark.closing) {
+      if (closes.has(index)) {
+        out.push(
+          tabBoundaryBlock({
+            state,
+            html: "</details>",
+            boundary: "end",
+            source: token
+          })
+        );
+      }
+      continue;
+    }
+    if (pairs.get(index) === -1) {
+      out.push(warningBlock(state, unclosedWarning(mark)));
+      continue;
+    }
+    const { title, open: open2 } = readDetailsOptions(mark.options);
+    const summary = titleParser.renderInline(title);
+    out.push(
+      tabBoundaryBlock({
+        state,
+        html: `<details class="mdmark-collapsible"${open2 ? " open" : ""}><summary>${summary}</summary>`,
+        boundary: "start",
+        source: token
+      })
+    );
+  }
+  state.tokens = out;
+};
+
+// src/layout/layout-columns.part.ts
+var renderLayoutColumns = (options) => {
+  const columns = options.columns.map((column) => `<div class="mdmark-layout-column">${column}</div>`).join("");
+  return `<div class="mdmark-layout-columns" data-count="${options.columns.length}">${columns}</div>`;
+};
+
+// src/layout/layout-columns.syntax.ts
+var MIN_COLUMNS = 2;
+var MAX_COLUMNS = 3;
+var openRange = (collector, index) => {
+  if (collector.current === void 0) {
+    collector.current = { open: index, close: -1, separators: [], nested: [] };
+  } else {
+    collector.current.nested.push(index);
+  }
+  collector.depth += 1;
+};
+var closeRange = (collector, index) => {
+  const current = collector.current;
+  if (!current) {
+    return;
+  }
+  collector.depth -= 1;
+  if (collector.depth === 0) {
+    current.close = index;
+    collector.ranges.push(current);
+    collector.current = void 0;
+  }
+};
+var collectRanges2 = (tokens) => {
+  const collector = {
+    ranges: [],
+    current: void 0,
+    depth: 0
+  };
+  for (const [index, token] of tokens.entries()) {
+    const mark = markOf(token);
+    if (mark?.name === "columns") {
+      if (mark.closing) {
+        closeRange(collector, index);
+      } else {
+        openRange(collector, index);
+      }
+    } else if (mark?.name === "column" && collector.depth === 1) {
+      collector.current?.separators.push(index);
+    }
+  }
+  if (collector.current) {
+    collector.ranges.push(collector.current);
+  }
+  return collector.ranges;
+};
+var countWarning = (mark, count) => ({
+  mark: mark.raw,
+  message: count < MIN_COLUMNS ? `\u306E\u7BC4\u56F2\u304C ${count} \u5217\u3067\u3059\u3002\u6A2A\u306B\u4E26\u3079\u3089\u308C\u308B\u306E\u306F ${MIN_COLUMNS}\u301C${MAX_COLUMNS} \u5217\u3067\u3059\u3002\`<!-- column -->\` \u3067\u533A\u5207\u3063\u3066\u304F\u3060\u3055\u3044\u3002\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002` : `\u306E\u7BC4\u56F2\u304C ${count} \u5217\u3067\u3059\u3002\u6A2A\u306B\u4E26\u3079\u3089\u308C\u308B\u306E\u306F ${MIN_COLUMNS}\u301C${MAX_COLUMNS} \u5217\u3067\u3059\u3002\`<!-- column -->\` \u3092\u6E1B\u3089\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+});
+var rangeProblem = (range, mark) => {
+  if (range.close < 0) {
+    return unclosedWarning(mark);
+  }
+  const count = range.separators.length + 1;
+  return count < MIN_COLUMNS || count > MAX_COLUMNS ? countWarning(mark, count) : void 0;
+};
+var columnsBoundaries = (state, range) => {
+  const tokens = state.tokens;
+  const count = range.separators.length + 1;
+  const pieces = splitSlots(
+    renderLayoutColumns({ columns: Array(count).fill(SLOT_MARKER) })
+  );
+  const boundary = (index, html, kind) => [
+    index,
+    [
+      tabBoundaryBlock({
+        state,
+        html,
+        boundary: kind,
+        source: tokens[index]
+      })
+    ]
+  ];
+  const between = pieces[1] ?? "";
+  return [
+    boundary(range.open, pieces[0] ?? "", "start"),
+    ...range.separators.map(
+      (separator) => boundary(separator, between, "between")
+    ),
+    boundary(range.close, pieces.at(-1) ?? "", "end")
+  ];
+};
+var rangeReplacements = (state, range) => {
+  const tokens = state.tokens;
+  const mark = markOf(tokens[range.open]);
+  const nested = range.nested.map((index) => [
+    index,
+    [
+      warningBlock(state, {
+        mark: markOf(tokens[index]).raw,
+        message: "\u306E columns \u306E\u7BC4\u56F2\u306F\u3001columns \u306E\u7BC4\u56F2\u306E\u4E2D\u306B\u5165\u308C\u5B50\u306B\u3067\u304D\u307E\u305B\u3093\u3002\u5185\u5074\u306E\u7BC4\u56F2\u306F\u6A2A\u306B\u4E26\u3079\u305A\u306B\u3001\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002"
+      })
+    ]
+  ]);
+  const problem = rangeProblem(range, mark);
+  if (problem === void 0) {
+    return [...nested, ...columnsBoundaries(state, range)];
+  }
+  return [
+    ...nested,
+    [range.open, [warningBlock(state, problem)]],
+    ...range.separators.map((separator) => [separator, []])
+  ];
+};
+var buildLayoutColumns = (state) => {
+  if (!featureOn(state, "columns")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const replace2 = new Map(
+    collectRanges2(tokens).flatMap((range) => rangeReplacements(state, range))
+  );
+  state.tokens = tokens.flatMap(
+    (token, index) => replace2.get(index) ?? [token]
+  );
+};
+
+// src/layout/pagebreak.syntax.ts
+var PAGEBREAK_HTML = '<div class="mdmark-pagebreak" aria-hidden="true"></div>';
+var buildPagebreaks = (state) => {
+  if (!featureOn(state, "pagebreak")) {
+    return;
+  }
+  state.tokens = state.tokens.map((token) => {
+    const mark = markOf(token);
+    return mark?.name === "pagebreak" && !mark.closing ? ownBlock(state, PAGEBREAK_HTML, token) : token;
+  });
+};
+
+// src/layout/wide.part.ts
+var renderWide = (options) => {
+  const { body, state, toggle } = options;
+  const bar = toggle ? renderWideBar(state === "wide") : "";
+  return `${bar}<div class="mdmark-wide-range" data-state="${state}">${body}</div>`;
+};
+var renderWideBar = (pressed) => {
+  const shrink = iconSvgOf(iconNodeBody(WideShrink));
+  const expand = iconSvgOf(iconNodeBody(WideExpand));
+  return `<div class="mdmark-wide-bar"><button class="mdmark-wide-toggle" type="button" aria-label="\u5E83\u3052\u3066\u8868\u793A" aria-pressed="${pressed}"><span class="mdmark-wide-icon-shrink">${shrink}</span><span class="mdmark-wide-icon-expand">${expand}</span></button></div>`;
+};
+
+// src/layout/wide.syntax.ts
+var buildWideRanges = (state) => {
+  if (!featureOn(state, "wide")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const ranges = outermostRanges(pairRanges(tokens, "wide"), tokens.length);
+  const opens = new Map(ranges.map((range) => [range.open, range.close]));
+  const closes = new Set(ranges.map((range) => range.close));
+  const out = [];
+  for (const [index, token] of tokens.entries()) {
+    const mark = markOf(token);
+    if (mark?.name !== "wide") {
+      out.push(token);
+    } else if (mark.closing) {
+      if (closes.has(index)) {
+        out.push(
+          tabBoundaryBlock({
+            state,
+            html: "</div>",
+            boundary: "end",
+            source: token
+          })
+        );
+      }
+    } else {
+      out.push(...wideOpen(state, { token, mark, close: opens.get(index) }));
+    }
+  }
+  state.tokens = out;
+};
+var wideOpen = (state, open2) => {
+  const { token, mark, close } = open2;
+  if (close === void 0) {
+    return [];
+  }
+  if (close === -1) {
+    return [warningBlock(state, unclosedWarning(mark))];
+  }
+  const rangeState = mark.options.open === false ? "narrow" : "wide";
+  const [head = ""] = splitSlots(
+    renderWide({ body: SLOT_MARKER, state: rangeState, toggle: false })
+  );
+  return [
+    tabBoundaryBlock({ state, html: head, boundary: "start", source: token })
+  ];
+};
+
+// src/media/gallery.part.ts
+var DEFAULT_COLS = 2;
+function renderGallery(options) {
+  const { cols = DEFAULT_COLS, body } = options;
+  return `<div class="mdmark-gallery" style="--mdmark-gallery-cols: ${cols}"><div class="mdmark-gallery-grid">${body}</div></div>`;
+}
+
+// src/media/gallery.syntax.ts
+var GALLERY_COLS = { min: 1, max: 6, default: 2 };
+var SUBFIGURE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
+function readGalleryOptions(mark) {
+  const { columns } = mark.options;
+  return {
+    cols: typeof columns === "number" ? columns : GALLERY_COLS.default
+  };
+}
+function imagesIn(tokens) {
+  return tokens.flatMap(
+    (token) => (token.children ?? []).filter((child) => child.type === "image")
+  );
+}
+function galleryWarnings(mark, options) {
+  const warnings = [];
+  const max = SUBFIGURE_LETTERS.length;
+  const messages = [];
+  if (options.count === 0) {
+    messages.push(
+      "\u306E\u7BC4\u56F2\u306B\u753B\u50CF\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u4E2D\u306B\u753B\u50CF\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  } else if (options.count > max) {
+    messages.push(
+      `\u306E\u7BC4\u56F2\u306E\u753B\u50CF\u304C ${options.count} \u679A\u3042\u308A\u307E\u3059\u3002\u753B\u50CF\u306F ${max} \u679A\u307E\u3067\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002${max + 1} \u679A\u76EE\u304B\u3089\u306F\u30B5\u30D6\u56F3\u306E\u756A\u53F7\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    );
+  }
+  if (messages.length) {
+    warnings.push({ mark: mark.raw, message: messages.join("") });
+  }
+  if (!options.closed) {
+    warnings.push(unclosedWarning(mark));
+  }
+  return warnings;
+}
+function figureSlots(figure) {
+  if (!figure) {
+    return ["", ""];
+  }
+  const [head = "", tail = ""] = splitSlots(
+    renderFigure({
+      kind: "image",
+      ...figure.id === void 0 ? {} : { id: figure.id },
+      number: figure.number,
+      body: SLOT_MARKER
+    })
+  );
+  return [head, tail];
+}
+function subfigureOf(figure, position) {
+  const letter = figure ? SUBFIGURE_LETTERS[position] : void 0;
+  if (!figure || !letter) {
+    return {};
+  }
+  return {
+    ...figure.id === void 0 ? {} : { id: `fig-${figure.id}-${letter}` },
+    label: `\u56F3 ${figure.number}${letter}`
+  };
+}
+function galleryTokens(state, range) {
+  const { token, mark, images, closed } = range;
+  const out = galleryWarnings(mark, { count: images.length, closed }).map(
+    (warning) => warningBlock(state, warning, token)
+  );
+  const { cols } = readGalleryOptions(mark);
+  const figure = token.meta.figure;
+  const [figureHead, figureTail] = figureSlots(figure);
+  const [galleryHead = "", galleryTail = ""] = splitSlots(
+    renderGallery({ cols, body: SLOT_MARKER })
+  );
+  out.push(ownBlock(state, `${figureHead}${galleryHead}`, token));
+  for (const [position, image2] of images.entries()) {
+    out.push(
+      ownBlock(state, imageFigureHtml(image2, subfigureOf(figure, position)))
+    );
+  }
+  out.push(ownBlock(state, `${galleryTail}${figureTail}`));
+  return out;
+}
+function buildGallery(state) {
+  if (!featureOn(state, "gallery")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const mark = markOf(token);
+    if (mark?.name !== "gallery" || mark.closing) {
+      out.push(token);
+      continue;
+    }
+    const close = findClose(tokens, index, "gallery");
+    const end = close < 0 ? tokens.length : close;
+    out.push(
+      ...galleryTokens(state, {
+        token,
+        mark,
+        images: imagesIn(tokens.slice(index + 1, end)),
+        closed: close >= 0
+      })
+    );
+    index = end;
+  }
+  state.tokens = out;
+}
+
+// src/section/section.part.ts
+function plainText3(html) {
+  return html.replace(/<[^>]*>/g, "");
+}
+function renderSection2(options) {
+  const {
+    level,
+    id,
+    title,
+    open: open2 = true,
+    toggle = true,
+    anchor: anchor2 = true,
+    body
+  } = options;
+  const escapedId = escapeHtml2(id);
+  const heading2 = toggle ? `<button class="mdmark-section-toggle" type="button" aria-expanded="${open2}" aria-controls="section-${escapedId}">${title}</button>` : title;
+  const anchorHtml = anchor2 ? `<a class="mdmark-anchor" href="#${escapedId}" aria-label="\u300C${plainText3(title)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>` : "";
+  const hidden = toggle && !open2 ? ' hidden="until-found"' : "";
+  return `<h${level} class="mdmark-heading" id="${escapedId}">${heading2}${anchorHtml}</h${level}><div class="mdmark-section-body" id="section-${escapedId}" data-section="${open2 ? "open" : "closed"}"${hidden}>${body}</div>`;
+}
+
+// src/section/section.syntax.ts
+var TITLE_MARKER = "\0mdmark-title\0";
+function closeBody(writer) {
+  const { levels, tabBases } = writer;
+  levels.pop();
+  writer.out.push(ownBlock(writer.state, "</div>"));
+  for (let i = 0; i < tabBases.length; i++) {
+    tabBases[i] = Math.min(tabBases[i] ?? 0, levels.length);
+  }
+}
+function readTabBoundary(writer, boundary) {
+  const { levels, tabBases } = writer;
+  if (boundary === "start") {
+    tabBases.push(levels.length);
+    return;
+  }
+  while (levels.length > (tabBases[tabBases.length - 1] ?? 0)) {
+    closeBody(writer);
+  }
+  if (boundary === "end") {
+    tabBases.pop();
+  }
+}
+function closeDeeper(writer, level) {
+  const { levels } = writer;
+  while (levels.length && (levels[levels.length - 1] ?? 0) >= level) {
+    closeBody(writer);
+  }
+}
+function openSection(writer, heading2, section) {
+  const { token, inline: inline2, level } = heading2;
+  const html = renderSection2({
+    level,
+    id: String(token.attrGet("id") ?? ""),
+    title: TITLE_MARKER,
+    open: section?.options.open !== false,
+    toggle: false,
+    anchor: false,
+    body: SLOT_MARKER
+  });
+  const [head = "", rest2 = ""] = html.split(TITLE_MARKER);
+  const [body = ""] = rest2.split(SLOT_MARKER);
+  writer.out.push(
+    ownBlock(writer.state, head, token),
+    inline2,
+    ownBlock(writer.state, body)
+  );
+  writer.levels.push(level);
+}
+function readHeading(writer, tokens, index) {
+  const token = tokens[index];
+  const level = Number(token.tag.slice(1));
+  closeDeeper(writer, level);
+  const inline2 = tokens[index + 1];
+  if (level > 4 || !inline2) {
+    writer.out.push(token);
+    return 0;
+  }
+  const mark = markOf(tokens[index + 3]);
+  const section = mark?.name === "section" ? mark : void 0;
+  openSection(
+    writer,
+    { token, inline: inline2, level },
+    section
+  );
+  return section ? 3 : 2;
+}
+function wrapSections(state) {
+  if (!featureOn(state, "sections")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const writer = { state, out: [], levels: [], tabBases: [] };
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const boundary = tabBoundaryOf(token);
+    if (boundary !== void 0) {
+      readTabBoundary(writer, boundary);
+    }
+    if (token.type !== "heading_open" || token.level !== 0) {
+      writer.out.push(token);
+      continue;
+    }
+    index += readHeading(writer, tokens, index);
+  }
+  while (writer.levels.length) {
+    closeBody(writer);
+  }
+  state.tokens = writer.out;
+}
+
+// src/section/toc.part.ts
+function renderLink(heading2) {
+  return `<a href="#${escapeHtml2(heading2.id)}">${escapeHtml2(heading2.text)}</a>`;
+}
+function renderToc(options) {
+  const items = [];
+  let children = [];
+  let current;
+  const flush = () => {
+    if (current) {
+      const nested = children.length ? `<ul>${children.join("")}</ul>` : "";
+      items.push(`<li>${renderLink(current)}${nested}</li>`);
+    }
+    current = void 0;
+    children = [];
+  };
+  for (const heading2 of options.headings) {
+    if (heading2.level === 2) {
+      flush();
+      current = heading2;
+    } else if (current) {
+      children.push(`<li>${renderLink(heading2)}</li>`);
+    } else {
+      items.push(`<li>${renderLink(heading2)}</li>`);
+    }
+  }
+  flush();
+  return `<nav class="mdmark-toc" aria-label="\u76EE\u6B21"><p class="mdmark-toc-title">\u76EE\u6B21</p><ul>${items.join("")}</ul></nav>`;
+}
+
+// src/section/toc.syntax.ts
+function buildToc(state) {
+  if (!featureOn(state, "toc")) {
+    return;
+  }
+  const headings = envOf(state).headings.filter((heading2) => heading2.level === 2 || heading2.level === 3).map((heading2) => ({ ...heading2 }));
+  state.tokens = state.tokens.map((token) => {
+    const mark = markOf(token);
+    if (mark?.name !== "toc" || mark.closing) {
+      return token;
+    }
+    return ownBlock(state, renderToc({ headings }));
+  });
+}
+
+// src/steps/steps.syntax.ts
+function readStepsOptions(mark) {
+  const { collapse, title } = readCollapse(mark.options);
+  return { collapse, ...title === void 0 ? {} : { title } };
+}
+function itemCount(tokens, listOpen) {
+  const level = tokens[listOpen]?.level ?? 0;
+  let count = 0;
+  for (let index = listOpen + 1; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token?.type === "ordered_list_close" && token.level === level) {
+      break;
+    }
+    if (token?.type === "list_item_open" && token.level === level + 1) {
+      count += 1;
+    }
+  }
+  return count;
+}
+function buildStepsAt(state, range) {
+  const { index, mark, out } = range;
+  const tokens = state.tokens;
+  const token = tokens[index];
+  const { collapse, title } = readStepsOptions(mark);
+  const closeIndex = findClose(tokens, index, "steps");
+  const end = closeIndex < 0 ? tokens.length : closeIndex;
+  if (closeIndex < 0) {
+    out.push(warningBlock(state, unclosedWarning(mark), token));
+  }
+  const listIndex = tokens.slice(index + 1, end).findIndex((candidate) => candidate.type === "ordered_list_open");
+  if (listIndex < 0) {
+    out.push(
+      warningBlock(
+        state,
+        {
+          message: "`<!-- steps -->` \u306E\u7BC4\u56F2\u306B\u3001\u624B\u9806\u306B\u3059\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u624B\u9806\u3092 `1.` \u304B\u3089\u59CB\u307E\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+        },
+        token
+      )
+    );
+    return index;
+  }
+  const listStart = index + 1 + listIndex;
+  const list2 = tokens[listStart];
+  list2.attrJoin("class", "mdmark-steps");
+  list2.attrSet("data-mdmark-own", envOf(state).nonce);
+  if (collapse === "none") {
+    return index;
+  }
+  const listClose = tokens.findIndex(
+    (candidate, position) => position > listStart && candidate.type === "ordered_list_close" && candidate.level === list2.level
+  );
+  const [head = "", tail = ""] = renderCollapsible({
+    title: title ?? `\u624B\u9806\uFF08${itemCount(tokens, listStart)} \u30B9\u30C6\u30C3\u30D7\uFF09`,
+    open: collapse === "open",
+    body: SLOT_MARKER
+  }).split(SLOT_MARKER);
+  out.push(...tokens.slice(index + 1, listStart));
+  out.push(ownBlock(state, head));
+  out.push(...tokens.slice(listStart, listClose + 1));
+  out.push(ownBlock(state, tail));
+  return listClose;
+}
+function buildSteps(state) {
+  if (!featureOn(state, "steps")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token) {
+      out.push(token);
+    }
+    const mark = markOf(token);
+    if (mark?.name !== "steps" || mark.closing) {
+      continue;
+    }
+    index = buildStepsAt(state, { index, mark, out });
+  }
+  state.tokens = out;
+}
+
+// src/table/csv.syntax.ts
+var endRow = (reader) => {
+  reader.row.push(reader.value);
+  reader.rows.push(reader.row);
+  reader.row = [];
+  reader.value = "";
+};
+var readQuoted = (reader) => {
+  const char = reader.text[reader.at];
+  if (char === '"' && reader.text[reader.at + 1] === '"') {
+    reader.value += '"';
+    reader.at += 2;
+    return;
+  }
+  if (char === '"') {
+    reader.quoted = false;
+  } else {
+    reader.value += char;
+  }
+  reader.at += 1;
+};
+var readPlain = (reader) => {
+  const char = reader.text[reader.at];
+  if (char === '"') {
+    reader.quoted = true;
+  } else if (char === ",") {
+    reader.row.push(reader.value);
+    reader.value = "";
+  } else if (char === "\r" && reader.text[reader.at + 1] === "\n") {
+  } else if (char === "\n") {
+    endRow(reader);
+  } else {
+    reader.value += char;
+  }
+  reader.at += 1;
+};
+var parseCsv = (text2) => {
+  const reader = {
+    text: text2,
+    at: 0,
+    rows: [],
+    row: [],
+    value: "",
+    quoted: false
+  };
+  while (reader.at < text2.length) {
+    if (reader.quoted) {
+      readQuoted(reader);
+    } else {
+      readPlain(reader);
+    }
+  }
+  if (reader.value !== "" || reader.row.length > 0) {
+    endRow(reader);
+  }
+  return reader.rows;
+};
+var cellInline = (state, value) => {
+  const inline2 = new state.Token("inline", "", 0);
+  inline2.content = value;
+  inline2.children = value.split(/\r?\n/).flatMap((line, index) => {
+    const text2 = new state.Token("text", "", 0);
+    text2.content = line;
+    if (index === 0) {
+      return [text2];
+    }
+    const hardbreak = new state.Token("hardbreak", "br", 0);
+    return [hardbreak, text2];
+  });
+  return inline2;
+};
+var tableTokens = (options) => {
+  const { state, fence: fence2, rows } = options;
+  const level = fence2.level;
+  const tokens = [];
+  const push = (type, tag, place) => {
+    const token = new state.Token(type, tag, place.nesting);
+    token.block = true;
+    token.level = level + place.depth;
+    if (fence2.map && place.nesting === 1) {
+      token.map = [...fence2.map];
+    }
+    tokens.push(token);
+    return token;
+  };
+  const open2 = push("table_open", "table", { nesting: 1, depth: 0 });
+  open2.meta = { rawCsv: fence2.content };
+  const [head = [], ...body] = rows;
+  push("thead_open", "thead", { nesting: 1, depth: 1 });
+  push("tr_open", "tr", { nesting: 1, depth: 2 });
+  for (const value of head) {
+    push("th_open", "th", { nesting: 1, depth: 3 });
+    const inline2 = cellInline(state, value);
+    inline2.level = level + 4;
+    tokens.push(inline2);
+    push("th_close", "th", { nesting: -1, depth: 3 });
+  }
+  push("tr_close", "tr", { nesting: -1, depth: 2 });
+  push("thead_close", "thead", { nesting: -1, depth: 1 });
+  if (body.length) {
+    push("tbody_open", "tbody", { nesting: 1, depth: 1 });
+    for (const row2 of body) {
+      push("tr_open", "tr", { nesting: 1, depth: 2 });
+      for (const value of row2) {
+        push("td_open", "td", { nesting: 1, depth: 3 });
+        const inline2 = cellInline(state, value);
+        inline2.level = level + 4;
+        tokens.push(inline2);
+        push("td_close", "td", { nesting: -1, depth: 3 });
+      }
+      push("tr_close", "tr", { nesting: -1, depth: 2 });
+    }
+    push("tbody_close", "tbody", { nesting: -1, depth: 1 });
+  }
+  push("table_close", "table", { nesting: -1, depth: 0 });
+  return tokens;
+};
+var buildCsvTables = (state) => {
+  if (!featureOn(state, "csv")) {
+    return;
+  }
+  state.tokens = state.tokens.flatMap((token) => {
+    const language = token.info.trim().split(/\s+/)[0];
+    if (token.type !== "fence" || language !== "csv" || !token.content.trim()) {
+      return [token];
+    }
+    const rows = parseCsv(token.content);
+    const width = rows[0]?.length ?? 0;
+    const mismatched = [];
+    const fitted = rows.map((row2, index) => {
+      if (row2.length === width) {
+        return row2;
+      }
+      mismatched.push(index + 1);
+      return Array.from({ length: width }, (_, column) => row2[column] ?? "");
+    });
+    const tokens = tableTokens({ state, fence: token, rows: fitted });
+    if (mismatched.length === 0) {
+      return tokens;
+    }
+    const lines = mismatched.map((line) => `${line} \u884C\u76EE`).join("\u30FB");
+    return [
+      warningBlock(state, {
+        message: `CSV \u306E ${lines}\u306E\u5217\u306E\u6570\u304C\u3001\u898B\u51FA\u3057\u306E\u884C\u306E ${width} \u5217\u3068\u9055\u3044\u307E\u3059\u3002\u898B\u51FA\u3057\u306E\u5217\u306E\u6570\u306B\u305D\u308D\u3048\u3066\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+      }),
+      ...tokens
+    ];
+  });
+};
+
+// src/table/row-detail.part.ts
+function renderRowDetail(options) {
+  const {
+    id,
+    row: row2,
+    columns,
+    label,
+    open: open2 = false,
+    toggle = true,
+    body
+  } = options;
+  const hidden = toggle && !open2 ? " hidden" : "";
+  return {
+    row: `<tr class="mdmark-row-detail" data-row="${row2}" id="${escapeHtml2(id)}"${hidden}><td colspan="${columns}">${body}</td></tr>`,
+    toggle: toggle ? `<button class="mdmark-row-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u8A73\u7D30"></button>` : ""
+  };
+}
+
+// src/table/row-detail.syntax.ts
+function rowLabel(tokens, rowStart, rowEnd) {
+  const first = tokens.slice(rowStart, rowEnd).find((token) => token.type === "inline");
+  return first ? textOf(first) : "";
+}
+function readTable(tokens, openIndex, closeIndex) {
+  let columns = 0;
+  const rows = [];
+  let inBody = false;
+  let rowStart = -1;
+  for (let index = openIndex; index <= closeIndex; index++) {
+    const type = tokens[index]?.type;
+    if (type === "th_open") {
+      columns += 1;
+    } else if (type === "tbody_open") {
+      inBody = true;
+    } else if (inBody && type === "tr_open") {
+      rowStart = index;
+    } else if (inBody && type === "tr_close") {
+      rows.push({ close: index, label: rowLabel(tokens, rowStart, index) });
+    }
+  }
+  return { columns, rows };
+}
+function findTableOpen(tokens, tableClose) {
+  const level = tokens[tableClose]?.level;
+  let tableOpen = tableClose;
+  while (tableOpen > 0 && !(tokens[tableOpen]?.type === "table_open" && tokens[tableOpen]?.level === level)) {
+    tableOpen -= 1;
+  }
+  return tableOpen;
+}
+function skipTableCloses(tokens, position) {
+  let at = position;
+  while (markOf(tokens[at])?.name === "table" && markOf(tokens[at])?.closing) {
+    at += 1;
+  }
+  return at;
+}
+function detailTokens(state, range, table2) {
+  const { position, end, row: row2 } = range;
+  const html = renderRowDetail({
+    id: table2.id,
+    row: row2,
+    columns: table2.columns,
+    label: table2.label,
+    toggle: false,
+    body: SLOT_MARKER
+  }).row;
+  const [head = "", tail = ""] = html.split(SLOT_MARKER);
+  return [
+    ownBlock(state, head, state.tokens[position]),
+    ...state.tokens.slice(position + 1, end),
+    ownBlock(state, tail)
+  ];
+}
+function attachRowDetail(state, edits, range) {
+  const tokens = state.tokens;
+  const { position, mark, table: table2 } = range;
+  const closeIndex = findClose(tokens, position, "row-detail");
+  const end = closeIndex < 0 ? tokens.length : closeIndex;
+  const row2 = Number(mark.options.at);
+  const target = Number.isInteger(row2) ? table2.rows[row2 - 1] : void 0;
+  edits.removed.add(position);
+  const warnings = [];
+  if (closeIndex >= 0) {
+    edits.removed.add(closeIndex);
+  } else {
+    warnings.push(warningBlock(state, unclosedWarning(mark), tokens[position]));
+  }
+  if (target) {
+    edits.counter += 1;
+    const detail = detailTokens(
+      state,
+      { position, end, row: row2 },
+      {
+        columns: table2.columns,
+        label: target.label,
+        id: `mdmark-detail-${edits.counter}`
+      }
+    );
+    for (let index = position + 1; index < end; index++) {
+      edits.removed.add(index);
+    }
+    edits.after.set(target.close, [
+      ...edits.after.get(target.close) ?? [],
+      ...detail
+    ]);
+  } else {
+    warnings.push(
+      warningBlock(
+        state,
+        {
+          mark: mark.raw,
+          message: `\u306E at \u306E ${String(mark.options.at ?? "")} \u884C\u76EE\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306F ${table2.rows.length} \u884C\u3067\u3059\u3002\u884C\u306E\u4F4D\u7F6E\u3092 1\u301C${table2.rows.length} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u8A73\u7D30\u306F\u8868\u306E\u5F8C\u306E\u672C\u6587\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+        },
+        tokens[position]
+      )
+    );
+  }
+  if (warnings.length) {
+    edits.before.set(position, warnings);
+  }
+  return end + 1;
+}
+function attachTableDetails(state, edits, tableClose) {
+  const tokens = state.tokens;
+  const table2 = readTable(
+    tokens,
+    findTableOpen(tokens, tableClose),
+    tableClose
+  );
+  let position = skipTableCloses(tokens, tableClose + 1);
+  let mark = markOf(tokens[position]);
+  while (mark?.name === "row-detail" && !mark.closing) {
+    position = skipTableCloses(
+      tokens,
+      attachRowDetail(state, edits, { position, mark, table: table2 })
+    );
+    mark = markOf(tokens[position]);
+  }
+}
+function attachRowDetails(state) {
+  if (!featureOn(state, "row-details")) {
+    return;
+  }
+  const tokens = state.tokens;
+  const edits = {
+    removed: /* @__PURE__ */ new Set(),
+    after: /* @__PURE__ */ new Map(),
+    before: /* @__PURE__ */ new Map(),
+    counter: 0
+  };
+  tokens.forEach((token, tableClose) => {
+    if (token.type === "table_close") {
+      attachTableDetails(state, edits, tableClose);
+    }
+  });
+  const out = [];
+  tokens.forEach((token, index) => {
+    out.push(...edits.before.get(index) ?? []);
+    if (!edits.removed.has(index)) {
+      out.push(token);
+    }
+    out.push(...edits.after.get(index) ?? []);
+  });
+  state.tokens = out;
+}
+
+// src/tabs/tabs.syntax.ts
+function readTabsOptions(mark) {
+  const { collapse, title } = readCollapse(mark.options);
+  const group = typeof mark.options.group === "string" ? mark.options.group : void 0;
+  return {
+    ...group === void 0 ? {} : { group },
+    collapse,
+    ...title === void 0 ? {} : { title }
+  };
+}
+function findTabsClose(tokens, openIndex) {
+  let depth = 0;
+  let nested = false;
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const mark = markOf(tokens[index]);
+    if (mark?.name !== "tabs") {
+      continue;
+    }
+    if (!mark.closing) {
+      depth += 1;
+      nested = true;
+    } else if (depth === 0) {
+      return { close: index, nested };
+    } else {
+      depth -= 1;
+    }
+  }
+  return { close: -1, nested };
+}
+function buildTabs(state) {
+  if (!featureOn(state, "tabs")) {
+    return;
+  }
+  state.tokens = buildTabsIn(state, state.tokens);
+}
+function buildTabsIn(state, tokens) {
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (!token) {
+      continue;
+    }
+    const mark = markOf(token);
+    if (mark?.name !== "tabs" || mark.closing) {
+      out.push(token);
+      continue;
+    }
+    const { close: closeIndex, nested } = findTabsClose(tokens, index);
+    if (closeIndex < 0) {
+      out.push(warningBlock(state, unclosedWarning(mark), token));
+    }
+    if (closeIndex < 0 && nested) {
+      out.push(
+        ...tokens.slice(index + 1).filter((candidate) => markOf(candidate)?.name !== "tabs")
+      );
+      break;
+    }
+    const end = closeIndex < 0 ? tokens.length : closeIndex;
+    const content = buildTabsIn(state, tokens.slice(index + 1, end));
+    out.push(...tabsTokens(state, { token, mark, content }));
+    index = end;
+  }
+  return out;
+}
+function tabTitleOf(state, inline2) {
+  if (!inline2) {
+    return "";
+  }
+  return state.md.renderer.renderInline(
+    (inline2.children ?? []).filter(
+      (child) => child.meta?.role !== "heading-anchor"
+    ),
+    state.md.options,
+    state.env
+  );
+}
+function tabsTokens(state, range) {
+  const { token, mark, content } = range;
+  const first = content.find((candidate) => candidate.type === "heading_open");
+  if (!first) {
+    return [
+      warningBlock(
+        state,
+        {
+          message: "`<!-- tabs -->` \u306E\u7BC4\u56F2\u306B\u3001\u30BF\u30D6\u540D\u306B\u3059\u308B\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30BF\u30D6\u306B\u3057\u305F\u3044\u4E2D\u8EAB\u3054\u3068\u306B\u898B\u51FA\u3057\uFF08`### macOS` \u306A\u3069\uFF09\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+        },
+        token
+      ),
+      ...content
+    ];
+  }
+  const separators = content.map((candidate, position) => ({ candidate, position })).filter(
+    ({ candidate }) => candidate.type === "heading_open" && candidate.tag === first.tag && candidate.level === first.level
+  );
+  const titles = separators.map(
+    ({ position }) => tabTitleOf(state, content[position + 1])
+  );
+  const env = envOf(state);
+  const ids = new Set(
+    separators.map(({ candidate }) => candidate.attrGet("id"))
+  );
+  env.headings = env.headings.filter((heading2) => !ids.has(heading2.id));
+  const pieces = renderTabs({
+    id: "mdmark-tabs",
+    titles,
+    panels: titles.map(() => SLOT_MARKER),
+    ...readTabsOptions(mark)
+  }).split(SLOT_MARKER);
+  return tabPanelTokens(state, { token, content, separators, pieces });
+}
+function tabPanelTokens(state, tabs) {
+  const { token, content, separators, pieces } = tabs;
+  const out = content.slice(0, separators[0]?.position ?? 0);
+  separators.forEach(({ position }, panel) => {
+    out.push(
+      tabBoundaryBlock({
+        state,
+        html: pieces[panel] ?? "",
+        boundary: panel === 0 ? "start" : "between",
+        source: panel === 0 ? token : void 0
+      })
+    );
+    const next = separators[panel + 1]?.position ?? content.length;
+    out.push(...content.slice(position + 3, next));
+  });
+  out.push(
+    tabBoundaryBlock({
+      state,
+      html: pieces[separators.length] ?? "",
+      boundary: "end"
+    })
+  );
+  return out;
+}
+
+// src/tree/tree.part.ts
+var TREE_MORE_NAME = "...";
+var ICON_BY_NAME = {
+  LICENSE: "file-text",
+  Dockerfile: "file-terminal",
+  Makefile: "file-terminal"
+};
+var EXTENSIONS_BY_ICON = {
+  "file-text": ["md", "mdx", "txt", "rst"],
+  "file-code": [
+    "ts",
+    "tsx",
+    "mts",
+    "cts",
+    "js",
+    "jsx",
+    "mjs",
+    "cjs",
+    "py",
+    "rb",
+    "go",
+    "rs",
+    "java",
+    "kt",
+    "swift",
+    "c",
+    "h",
+    "cpp",
+    "cs",
+    "php",
+    "css",
+    "scss",
+    "html",
+    "vue",
+    "svelte"
+  ],
+  "file-json": [
+    "json",
+    "jsonc",
+    "yaml",
+    "yml",
+    "toml",
+    "xml",
+    "ini",
+    "env",
+    "lock"
+  ],
+  "file-image": ["png", "jpg", "jpeg", "gif", "svg", "webp", "avif", "ico"],
+  "file-spreadsheet": ["csv", "tsv", "xlsx"],
+  "file-archive": ["zip", "gz", "tgz", "tar", "vsix"],
+  "file-terminal": ["sh", "bash", "zsh", "ps1", "bat"]
+};
+var ICON_BY_EXTENSION = new Map(
+  Object.entries(EXTENSIONS_BY_ICON).flatMap(
+    ([icon, extensions2]) => extensions2.map((extension) => [
+      extension,
+      icon
+    ])
+  )
+);
+var COPY_LABELS2 = {
+  idle: { icon: "copy", text: "\u30B3\u30D4\u30FC" },
+  copied: { icon: "check", text: "\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F" }
+};
+function fileIconOf(name) {
+  const byName = ICON_BY_NAME[name];
+  if (byName) {
+    return byName;
+  }
+  const dot = name.lastIndexOf(".");
+  const extension = dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
+  return ICON_BY_EXTENSION.get(extension) ?? "file";
+}
+function folderOpenByDefault(depth, open2) {
+  if (open2 === void 0 || open2 === "all") {
+    return true;
+  }
+  return depth < Number(open2);
+}
+function renderTreeCopyContent(state) {
+  const label = COPY_LABELS2[state];
+  return `${iconSvg(label.icon)}${label.text}`;
+}
+function renderTreeBar(options) {
+  const state = options.copyState ?? "idle";
+  return `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="${state}">${renderTreeCopyContent(state)}</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div>`;
+}
+function renderNode3(node2, context, position) {
+  const { depth, path } = position;
+  const note = node2.note ? `<span class="mdmark-tree-note">${node2.note}</span>` : "";
+  if (node2.name === TREE_MORE_NAME) {
+    return `<li class="mdmark-tree-more"><span class="mdmark-tree-row"><span class="mdmark-tree-name"><span class="mdmark-visually-hidden">\u307B\u304B\u306B\u3082\u3042\u308A\u307E\u3059</span></span>${note}</span></li>`;
+  }
+  const children = node2.children ?? [];
+  const name = `<span class="mdmark-tree-name">${escapeHtml2(node2.name)}</span>`;
+  if (!node2.name.endsWith("/") && children.length === 0) {
+    return `<li class="mdmark-tree-file" data-file-icon="${fileIconOf(node2.name)}"><span class="mdmark-tree-row">${name}${note}</span></li>`;
+  }
+  if (children.length === 0) {
+    return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span></li>`;
+  }
+  const nested = children.map(
+    (child, index) => renderNode3(child, context, {
+      depth: depth + 1,
+      path: `${path}-${index}`
+    })
+  ).join("");
+  if (!context.interactive) {
+    return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span><ul>${nested}</ul></li>`;
+  }
+  const listId = `${context.id}-${path}`;
+  const open2 = folderOpenByDefault(depth, context.open);
+  return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row"><button class="mdmark-tree-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(listId)}">${name}</button>${note}</span><ul id="${escapeHtml2(listId)}"${open2 ? "" : ' hidden="until-found"'}>${nested}</ul></li>`;
+}
+function renderTree(options) {
+  const {
+    nodes,
+    source,
+    open: open2,
+    interactive = false,
+    copyState,
+    copyFallback = false,
+    id = "mdmark-tree"
+  } = options;
+  const context = { interactive, open: open2, id };
+  const openAttribute = open2 === void 0 ? "" : ` data-open="${escapeHtml2(open2)}"`;
+  const bar = interactive ? renderTreeBar({ copyState: copyState ?? "idle" }) : "";
+  const list2 = `<ul class="mdmark-tree-list" aria-label="\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC">${nodes.map(
+    (node2, index) => renderNode3(node2, context, { depth: 0, path: String(index) })
+  ).join("")}</ul>`;
+  const panel = interactive && copyFallback ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source }) : "";
+  const holderClass = options.wrap ? "mdmark-tree mdmark-tree-wrap" : "mdmark-tree";
+  return `<div class="${holderClass}"${openAttribute} data-source="${escapeHtml2(source)}">${bar}${list2}${panel}</div>`;
+}
+
+// src/tree/tree.syntax.ts
+var INDENT_UNITS = ["\u2502   ", "|   ", "    "];
+var CONNECTORS = ["\u251C\u2500\u2500 ", "\u2514\u2500\u2500 ", "|-- ", "`-- "];
+var RULE_WIDTH = 4;
+var NOTE_SEPARATOR = /\s#/;
+function readLine(line) {
+  let depth = 0;
+  let position = 0;
+  while (INDENT_UNITS.some((unit) => line.startsWith(unit, position))) {
+    position += RULE_WIDTH;
+    depth += 1;
+  }
+  if (CONNECTORS.some((connector) => line.startsWith(connector, position))) {
+    position += RULE_WIDTH;
+    depth += 1;
+  }
+  return { depth, text: line.slice(position) };
+}
+function splitNote(text2, renderNote) {
+  const separator = NOTE_SEPARATOR.exec(text2);
+  if (!separator) {
+    return { name: text2.trim() };
+  }
+  const name = text2.slice(0, separator.index).trim();
+  const note = text2.slice(separator.index + separator[0].length).trim();
+  return note === "" ? { name } : { name, note: renderNote(note) };
+}
+function parseTree(source, renderNote = escapeHtml2) {
+  const nodes = [];
+  const stack = [];
+  const lines = source.split("\n").filter((line) => line.trim() !== "");
+  let previous = -1;
+  for (const [index, line] of lines.entries()) {
+    const { depth, text: text2 } = readLine(line);
+    if (depth > previous + 1) {
+      return { line: index + 1, depth: depth - previous };
+    }
+    const node2 = splitNote(text2, renderNote);
+    stack.length = depth;
+    const parent = stack[depth - 1];
+    if (parent) {
+      parent.children = [...parent.children ?? [], node2];
+    } else {
+      nodes.push(node2);
+    }
+    stack[depth] = node2;
+    previous = depth;
+  }
+  return { nodes };
+}
+function readTreeOptions(mark) {
+  const { depth, wrap } = mark.options;
+  const open2 = depth === "all" || typeof depth === "number" ? String(depth) : void 0;
+  return { ...open2 === void 0 ? {} : { open: open2 }, wrap: wrap === true };
+}
+function renderNoteInline(state, markdown) {
+  const env = state.env;
+  const own2 = `data-mdmark-own="${envOf(state).nonce}"`;
+  const children = (state.md.parseInline(markdown, env)[0]?.children ?? []).map(
+    (child) => {
+      if (child.type === "html_inline" && !child.content.includes(own2)) {
+        child.type = "text";
+      }
+      return child;
+    }
+  );
+  return state.md.renderer.renderInline(children, state.md.options, env);
+}
+function buildFileTrees(state) {
+  if (!featureOn(state, "tree")) {
+    return;
+  }
+  const out = [];
+  for (const [index, token] of state.tokens.entries()) {
+    const language = token.info.trim().split(/\s+/)[0];
+    if (token.type !== "fence" || language !== "tree") {
+      out.push(token);
+      continue;
+    }
+    const result = parseTree(
+      token.content,
+      (markdown) => renderNoteInline(state, markdown)
+    );
+    if (!("nodes" in result)) {
+      out.push(
+        warningBlock(state, {
+          message: `\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC\u306E ${result.line} \u884C\u76EE\u304C\u3001\u4E0A\u306E\u884C\u3088\u308A ${result.depth} \u968E\u5C64\u6DF1\u304F\u8A18\u8F09\u3055\u308C\u3066\u3044\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u7F6B\u7DDA\u306E\u968E\u5C64\u3092 1 \u968E\u5C64\u305A\u3064\u6DF1\u304F\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+        }),
+        token
+      );
+      continue;
+    }
+    const mark = markOf(state.tokens[index - 1]);
+    const options = mark?.name === "tree" && !mark.closing ? readTreeOptions(mark) : { wrap: false };
+    out.push(
+      ownBlock(
+        state,
+        renderTree({
+          nodes: result.nodes,
+          source: token.content.replace(/\n+$/, ""),
+          open: options.open,
+          wrap: options.wrap
+        })
+      )
+    );
+  }
+  state.tokens = out;
+}
+
+// src/views/view.syntax.ts
+var isObject3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+function readGroupColumn(state, context) {
+  const { mark, headers, groupName, warnings } = context;
+  if (typeof groupName !== "string") {
+    return { group: null, boardDisabled: "" };
+  }
+  const group = headers.indexOf(groupName);
+  if (group >= 0) {
+    return { group, boardDisabled: "" };
+  }
+  const env = envOf(state);
+  env.viewCount = (env.viewCount ?? 0) + 1;
+  const boardDisabled = `mdmark-view-warning-${env.nonce.slice(0, 8)}-${env.viewCount}`;
+  warnings.push({
+    mark: mark.raw,
+    message: `\u306E\u5217 \`${groupName}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${codes(headers)} \u3067\u3059\u3002\u30DC\u30FC\u30C9\u306B\u305B\u305A\u3001\u8868\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`,
+    id: boardDisabled
+  });
+  return { group: null, boardDisabled };
+}
+function readIcons(context) {
+  const { column, cells, values, groupName, items } = context;
+  const icons2 = {};
+  const present = [...new Set(cells.map((row2) => (row2[column] ?? "").trim()))];
+  for (const [value, settings] of Object.entries(values)) {
+    const icon = isObject3(settings) ? settings.icon : void 0;
+    if (!present.includes(value)) {
+      items.push({
+        label: `board.values.${value}`,
+        message: `\`${value}\` \u306F \`${String(groupName)}\` \u306E\u5217\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u306E\u5024\u306F ${codes(present)} \u3067\u3059\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+    } else if (typeof icon === "string") {
+      icons2[value] = icon;
+    }
+  }
+  return icons2;
+}
+function readViewFilters(context) {
+  const { mark, headers, items } = context;
+  const filters = [];
+  const columns = isObject3(mark.options.columns) ? mark.options.columns : {};
+  for (const [name, settings] of Object.entries(columns)) {
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      items.push({
+        label: `columns.${name}`,
+        message: `\u306E\u5217 \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${codes(headers)} \u3067\u3059\u3002\u5217\u540D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+      });
+      continue;
+    }
+    const filter2 = isObject3(settings) ? settings.filter : void 0;
+    if (!isObject3(filter2)) {
+      continue;
+    }
+    filters.push({
+      column,
+      kind: typeof filter2.type === "string" ? filter2.type : "select"
+    });
+  }
+  return filters;
+}
+function readViewSorts(context) {
+  const { mark, headers } = context;
+  const sorts = [];
+  const columns = isObject3(mark.options.columns) ? mark.options.columns : {};
+  for (const [name, settings] of Object.entries(columns)) {
+    const sort = isObject3(settings) ? settings.sort : void 0;
+    const column = headers.indexOf(name);
+    if (typeof sort === "boolean" && column >= 0) {
+      sorts.push({ column, sort });
+    }
+  }
+  return sorts;
+}
+function viewTableSpec(filters, sorts) {
+  return {
+    kind: "data",
+    features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
+    filters,
+    hide: [],
+    totals: [],
+    unpinned: [],
+    widths: [],
+    check: [],
+    sorts,
+    collapse: "none",
+    warnings: [],
+    headRows: 1,
+    rowHeader: 0
+  };
+}
+function readView(options) {
+  const { state, mark, headers, cells } = options;
+  const items = [];
+  const warnings = [];
+  const board = isObject3(mark.options.board) ? mark.options.board : void 0;
+  const groupName = board?.group?.column;
+  const { group, boardDisabled } = readGroupColumn(state, {
+    mark,
+    headers,
+    groupName,
+    warnings
+  });
+  const icons2 = group === null ? {} : readIcons({
+    column: group,
+    cells,
+    values: isObject3(board?.values) ? board.values : {},
+    groupName,
+    items
+  });
+  const filters = readViewFilters({ mark, headers, items });
+  const sorts = readViewSorts({ mark, headers });
+  const mode = group !== null && mark.options.initial !== "table" ? "board" : "table";
+  warnings.push(...warningsOf(mark.raw, items));
+  return {
+    tableSpec: viewTableSpec(filters, sorts),
+    viewSpec: { group, mode, boardDisabled, icons: icons2 },
+    warnings
+  };
+}
+function firstTable(tokens, from, to) {
+  for (let index = from; index < to; index++) {
+    if (tokens[index]?.type === "table_open") {
+      return index;
+    }
+  }
+  return -1;
+}
+function wrapView(state, range) {
+  const { open: open2, end, mark } = range;
+  const tokens = state.tokens;
+  const table2 = firstTable(tokens, open2 + 1, end);
+  const tableOpen = tokens[table2];
+  if (tableOpen === void 0) {
+    return [
+      {
+        mark: mark.raw,
+        message: "\u306E\u7BC4\u56F2\u306B\u3001\u9805\u76EE\u306B\u3059\u308B\u8868\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u4E2D\u306B Markdown \u306E\u8868\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
+      }
+    ];
+  }
+  const reading = readView({
+    state,
+    mark,
+    headers: headersOf(tokens, table2),
+    cells: bodyCellsOf(tokens, table2)
+  });
+  tableOpen.meta = { ...tableOpen.meta ?? {}, tableSpec: reading.tableSpec };
+  const wrapper = `<div class="mdmark-view" data-view="${escapeHtml2(JSON.stringify(reading.viewSpec))}">`;
+  tokens.splice(end, 0, ownBlock(state, "</div>"));
+  tokens.splice(open2 + 1, 0, ownBlock(state, wrapper));
+  return reading.warnings;
+}
+function buildViews(state) {
+  if (!featureOn(state, "views")) {
+    return;
+  }
+  const tokens = state.tokens;
+  for (let open2 = tokens.length - 1; open2 >= 0; open2--) {
+    const mark = markOf(tokens[open2]);
+    if (mark?.name !== "view" || mark.closing) {
+      continue;
+    }
+    const close = findClose(tokens, open2, "view");
+    const end = close < 0 ? tokens.length : close;
+    const warnings = [];
+    if (close < 0) {
+      warnings.push(unclosedWarning(mark));
+    }
+    warnings.unshift(...wrapView(state, { open: open2, end, mark }));
+    const source = tokens[open2];
+    for (const [offset, warning] of warnings.entries()) {
+      pushWarning(state, open2 + offset, { ...warning, source });
+    }
+  }
+}
+
+// src/render/includes.ts
 var MARKDOWN_PATTERN = /\.(?:md|markdown)$/i;
 var LINES_PATTERN = /^L(\d+)(?:-L(\d+))?$/;
 var isMarkdownPath = (path) => MARKDOWN_PATTERN.test(path);
@@ -76755,1390 +78139,6 @@ var expandIncludes = (state) => {
     fromPath: "",
     chain: []
   });
-};
-
-// src/parts/kbd.ts
-var renderKbd = (options) => {
-  const keys = options.keys.map((key) => `<kbd class="mdmark-kbd">${escapeHtml2(key)}</kbd>`).join('<span class="mdmark-kbd-join">+</span>');
-  return `<span class="mdmark-kbd-group">${keys}</span>`;
-};
-
-// src/render/syntax/kbd.ts
-var KBD_PREFIX = "kbd:";
-var ESCAPED_PREFIX3 = "kbd\\:";
-var splitKeys = (text2) => {
-  const keys = [];
-  let current = "";
-  for (let at = 0; at < text2.length; at++) {
-    const char = text2[at];
-    if (char !== "+") {
-      current += char;
-      continue;
-    }
-    if (current.trim() === "" && (at === 0 || text2[at - 1] === "+")) {
-      current = "+";
-      keys.push(current);
-      current = "";
-      continue;
-    }
-    keys.push(current);
-    current = "";
-  }
-  keys.push(current);
-  return keys.map((key) => key.trim()).filter((key) => key !== "");
-};
-var buildKbd = (child, nonce) => {
-  if (child.content.startsWith(ESCAPED_PREFIX3)) {
-    child.content = `${KBD_PREFIX}${child.content.slice(ESCAPED_PREFIX3.length)}`;
-    return;
-  }
-  if (!child.content.startsWith(KBD_PREFIX)) {
-    return;
-  }
-  const keys = splitKeys(child.content.slice(KBD_PREFIX.length));
-  if (keys.length === 0) {
-    return;
-  }
-  child.type = "html_inline";
-  child.content = markOwn(renderKbd({ keys }), nonce);
-};
-var buildKbds = (state) => {
-  if (!featureOn(state, "kbd")) {
-    return;
-  }
-  const nonce = envOf(state).nonce;
-  for (const token of state.tokens) {
-    for (const child of token.children ?? []) {
-      if (child.type === "code_inline") {
-        buildKbd(child, nonce);
-      }
-    }
-  }
-};
-
-// src/parts/layout-columns.ts
-var renderLayoutColumns = (options) => {
-  const columns = options.columns.map((column) => `<div class="mdmark-layout-column">${column}</div>`).join("");
-  return `<div class="mdmark-layout-columns" data-count="${options.columns.length}">${columns}</div>`;
-};
-
-// src/render/syntax/layout-columns.ts
-var MIN_COLUMNS = 2;
-var MAX_COLUMNS = 3;
-var openRange = (collector, index) => {
-  if (collector.current === void 0) {
-    collector.current = { open: index, close: -1, separators: [], nested: [] };
-  } else {
-    collector.current.nested.push(index);
-  }
-  collector.depth += 1;
-};
-var closeRange = (collector, index) => {
-  const current = collector.current;
-  if (!current) {
-    return;
-  }
-  collector.depth -= 1;
-  if (collector.depth === 0) {
-    current.close = index;
-    collector.ranges.push(current);
-    collector.current = void 0;
-  }
-};
-var collectRanges2 = (tokens) => {
-  const collector = {
-    ranges: [],
-    current: void 0,
-    depth: 0
-  };
-  for (const [index, token] of tokens.entries()) {
-    const mark = markOf(token);
-    if (mark?.name === "columns") {
-      if (mark.closing) {
-        closeRange(collector, index);
-      } else {
-        openRange(collector, index);
-      }
-    } else if (mark?.name === "column" && collector.depth === 1) {
-      collector.current?.separators.push(index);
-    }
-  }
-  if (collector.current) {
-    collector.ranges.push(collector.current);
-  }
-  return collector.ranges;
-};
-var countWarning = (mark, count) => ({
-  mark: mark.raw,
-  message: count < MIN_COLUMNS ? `\u306E\u7BC4\u56F2\u304C ${count} \u5217\u3067\u3059\u3002\u6A2A\u306B\u4E26\u3079\u3089\u308C\u308B\u306E\u306F ${MIN_COLUMNS}\u301C${MAX_COLUMNS} \u5217\u3067\u3059\u3002\`<!-- column -->\` \u3067\u533A\u5207\u3063\u3066\u304F\u3060\u3055\u3044\u3002\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002` : `\u306E\u7BC4\u56F2\u304C ${count} \u5217\u3067\u3059\u3002\u6A2A\u306B\u4E26\u3079\u3089\u308C\u308B\u306E\u306F ${MIN_COLUMNS}\u301C${MAX_COLUMNS} \u5217\u3067\u3059\u3002\`<!-- column -->\` \u3092\u6E1B\u3089\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
-});
-var rangeProblem = (range, mark) => {
-  if (range.close < 0) {
-    return unclosedWarning(mark);
-  }
-  const count = range.separators.length + 1;
-  return count < MIN_COLUMNS || count > MAX_COLUMNS ? countWarning(mark, count) : void 0;
-};
-var columnsBoundaries = (state, range) => {
-  const tokens = state.tokens;
-  const count = range.separators.length + 1;
-  const pieces = splitSlots(
-    renderLayoutColumns({ columns: Array(count).fill(SLOT_MARKER) })
-  );
-  const boundary = (index, html, kind) => [
-    index,
-    [
-      tabBoundaryBlock({
-        state,
-        html,
-        boundary: kind,
-        source: tokens[index]
-      })
-    ]
-  ];
-  const between = pieces[1] ?? "";
-  return [
-    boundary(range.open, pieces[0] ?? "", "start"),
-    ...range.separators.map(
-      (separator) => boundary(separator, between, "between")
-    ),
-    boundary(range.close, pieces.at(-1) ?? "", "end")
-  ];
-};
-var rangeReplacements = (state, range) => {
-  const tokens = state.tokens;
-  const mark = markOf(tokens[range.open]);
-  const nested = range.nested.map((index) => [
-    index,
-    [
-      warningBlock(state, {
-        mark: markOf(tokens[index]).raw,
-        message: "\u306E columns \u306E\u7BC4\u56F2\u306F\u3001columns \u306E\u7BC4\u56F2\u306E\u4E2D\u306B\u5165\u308C\u5B50\u306B\u3067\u304D\u307E\u305B\u3093\u3002\u5185\u5074\u306E\u7BC4\u56F2\u306F\u6A2A\u306B\u4E26\u3079\u305A\u306B\u3001\u4E2D\u8EAB\u3092\u8A18\u8F09\u3057\u305F\u9806\u306B\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002"
-      })
-    ]
-  ]);
-  const problem = rangeProblem(range, mark);
-  if (problem === void 0) {
-    return [...nested, ...columnsBoundaries(state, range)];
-  }
-  return [
-    ...nested,
-    [range.open, [warningBlock(state, problem)]],
-    ...range.separators.map((separator) => [separator, []])
-  ];
-};
-var buildLayoutColumns = (state) => {
-  if (!featureOn(state, "columns")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const replace2 = new Map(
-    collectRanges2(tokens).flatMap((range) => rangeReplacements(state, range))
-  );
-  state.tokens = tokens.flatMap(
-    (token, index) => replace2.get(index) ?? [token]
-  );
-};
-
-// src/render/syntax/pagebreak.ts
-var PAGEBREAK_HTML = '<div class="mdmark-pagebreak" aria-hidden="true"></div>';
-var buildPagebreaks = (state) => {
-  if (!featureOn(state, "pagebreak")) {
-    return;
-  }
-  state.tokens = state.tokens.map((token) => {
-    const mark = markOf(token);
-    return mark?.name === "pagebreak" && !mark.closing ? ownBlock(state, PAGEBREAK_HTML, token) : token;
-  });
-};
-
-// src/parts/row-detail.ts
-function renderRowDetail(options) {
-  const {
-    id,
-    row: row2,
-    columns,
-    label,
-    open: open2 = false,
-    toggle = true,
-    body
-  } = options;
-  const hidden = toggle && !open2 ? " hidden" : "";
-  return {
-    row: `<tr class="mdmark-row-detail" data-row="${row2}" id="${escapeHtml2(id)}"${hidden}><td colspan="${columns}">${body}</td></tr>`,
-    toggle: toggle ? `<button class="mdmark-row-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(id)}" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u8A73\u7D30"></button>` : ""
-  };
-}
-
-// src/render/syntax/row-details.ts
-function rowLabel(tokens, rowStart, rowEnd) {
-  const first = tokens.slice(rowStart, rowEnd).find((token) => token.type === "inline");
-  return first ? textOf(first) : "";
-}
-function readTable(tokens, openIndex, closeIndex) {
-  let columns = 0;
-  const rows = [];
-  let inBody = false;
-  let rowStart = -1;
-  for (let index = openIndex; index <= closeIndex; index++) {
-    const type = tokens[index]?.type;
-    if (type === "th_open") {
-      columns += 1;
-    } else if (type === "tbody_open") {
-      inBody = true;
-    } else if (inBody && type === "tr_open") {
-      rowStart = index;
-    } else if (inBody && type === "tr_close") {
-      rows.push({ close: index, label: rowLabel(tokens, rowStart, index) });
-    }
-  }
-  return { columns, rows };
-}
-function findTableOpen(tokens, tableClose) {
-  const level = tokens[tableClose]?.level;
-  let tableOpen = tableClose;
-  while (tableOpen > 0 && !(tokens[tableOpen]?.type === "table_open" && tokens[tableOpen]?.level === level)) {
-    tableOpen -= 1;
-  }
-  return tableOpen;
-}
-function skipTableCloses(tokens, position) {
-  let at = position;
-  while (markOf(tokens[at])?.name === "table" && markOf(tokens[at])?.closing) {
-    at += 1;
-  }
-  return at;
-}
-function detailTokens(state, range, table2) {
-  const { position, end, row: row2 } = range;
-  const html = renderRowDetail({
-    id: table2.id,
-    row: row2,
-    columns: table2.columns,
-    label: table2.label,
-    toggle: false,
-    body: SLOT_MARKER
-  }).row;
-  const [head = "", tail = ""] = html.split(SLOT_MARKER);
-  return [
-    ownBlock(state, head, state.tokens[position]),
-    ...state.tokens.slice(position + 1, end),
-    ownBlock(state, tail)
-  ];
-}
-function attachRowDetail(state, edits, range) {
-  const tokens = state.tokens;
-  const { position, mark, table: table2 } = range;
-  const closeIndex = findClose(tokens, position, "row-detail");
-  const end = closeIndex < 0 ? tokens.length : closeIndex;
-  const row2 = Number(mark.options.at);
-  const target = Number.isInteger(row2) ? table2.rows[row2 - 1] : void 0;
-  edits.removed.add(position);
-  const warnings = [];
-  if (closeIndex >= 0) {
-    edits.removed.add(closeIndex);
-  } else {
-    warnings.push(warningBlock(state, unclosedWarning(mark), tokens[position]));
-  }
-  if (target) {
-    edits.counter += 1;
-    const detail = detailTokens(
-      state,
-      { position, end, row: row2 },
-      {
-        columns: table2.columns,
-        label: target.label,
-        id: `mdmark-detail-${edits.counter}`
-      }
-    );
-    for (let index = position + 1; index < end; index++) {
-      edits.removed.add(index);
-    }
-    edits.after.set(target.close, [
-      ...edits.after.get(target.close) ?? [],
-      ...detail
-    ]);
-  } else {
-    warnings.push(
-      warningBlock(
-        state,
-        {
-          mark: mark.raw,
-          message: `\u306E at \u306E ${String(mark.options.at ?? "")} \u884C\u76EE\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306F ${table2.rows.length} \u884C\u3067\u3059\u3002\u884C\u306E\u4F4D\u7F6E\u3092 1\u301C${table2.rows.length} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u8A73\u7D30\u306F\u8868\u306E\u5F8C\u306E\u672C\u6587\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-        },
-        tokens[position]
-      )
-    );
-  }
-  if (warnings.length) {
-    edits.before.set(position, warnings);
-  }
-  return end + 1;
-}
-function attachTableDetails(state, edits, tableClose) {
-  const tokens = state.tokens;
-  const table2 = readTable(
-    tokens,
-    findTableOpen(tokens, tableClose),
-    tableClose
-  );
-  let position = skipTableCloses(tokens, tableClose + 1);
-  let mark = markOf(tokens[position]);
-  while (mark?.name === "row-detail" && !mark.closing) {
-    position = skipTableCloses(
-      tokens,
-      attachRowDetail(state, edits, { position, mark, table: table2 })
-    );
-    mark = markOf(tokens[position]);
-  }
-}
-function attachRowDetails(state) {
-  if (!featureOn(state, "row-details")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const edits = {
-    removed: /* @__PURE__ */ new Set(),
-    after: /* @__PURE__ */ new Map(),
-    before: /* @__PURE__ */ new Map(),
-    counter: 0
-  };
-  tokens.forEach((token, tableClose) => {
-    if (token.type === "table_close") {
-      attachTableDetails(state, edits, tableClose);
-    }
-  });
-  const out = [];
-  tokens.forEach((token, index) => {
-    out.push(...edits.before.get(index) ?? []);
-    if (!edits.removed.has(index)) {
-      out.push(token);
-    }
-    out.push(...edits.after.get(index) ?? []);
-  });
-  state.tokens = out;
-}
-
-// src/parts/section.ts
-function plainText3(html) {
-  return html.replace(/<[^>]*>/g, "");
-}
-function renderSection2(options) {
-  const {
-    level,
-    id,
-    title,
-    open: open2 = true,
-    toggle = true,
-    anchor: anchor2 = true,
-    body
-  } = options;
-  const escapedId = escapeHtml2(id);
-  const heading2 = toggle ? `<button class="mdmark-section-toggle" type="button" aria-expanded="${open2}" aria-controls="section-${escapedId}">${title}</button>` : title;
-  const anchorHtml = anchor2 ? `<a class="mdmark-anchor" href="#${escapedId}" aria-label="\u300C${plainText3(title)}\u300D\u3078\u306E\u30EA\u30F3\u30AF"></a>` : "";
-  const hidden = toggle && !open2 ? ' hidden="until-found"' : "";
-  return `<h${level} class="mdmark-heading" id="${escapedId}">${heading2}${anchorHtml}</h${level}><div class="mdmark-section-body" id="section-${escapedId}" data-section="${open2 ? "open" : "closed"}"${hidden}>${body}</div>`;
-}
-
-// src/render/syntax/sections.ts
-var TITLE_MARKER = "\0mdmark-title\0";
-function closeBody(writer) {
-  const { levels, tabBases } = writer;
-  levels.pop();
-  writer.out.push(ownBlock(writer.state, "</div>"));
-  for (let i = 0; i < tabBases.length; i++) {
-    tabBases[i] = Math.min(tabBases[i] ?? 0, levels.length);
-  }
-}
-function readTabBoundary(writer, boundary) {
-  const { levels, tabBases } = writer;
-  if (boundary === "start") {
-    tabBases.push(levels.length);
-    return;
-  }
-  while (levels.length > (tabBases[tabBases.length - 1] ?? 0)) {
-    closeBody(writer);
-  }
-  if (boundary === "end") {
-    tabBases.pop();
-  }
-}
-function closeDeeper(writer, level) {
-  const { levels } = writer;
-  while (levels.length && (levels[levels.length - 1] ?? 0) >= level) {
-    closeBody(writer);
-  }
-}
-function openSection(writer, heading2, section) {
-  const { token, inline: inline2, level } = heading2;
-  const html = renderSection2({
-    level,
-    id: String(token.attrGet("id") ?? ""),
-    title: TITLE_MARKER,
-    open: section?.options.open !== false,
-    toggle: false,
-    anchor: false,
-    body: SLOT_MARKER
-  });
-  const [head = "", rest2 = ""] = html.split(TITLE_MARKER);
-  const [body = ""] = rest2.split(SLOT_MARKER);
-  writer.out.push(
-    ownBlock(writer.state, head, token),
-    inline2,
-    ownBlock(writer.state, body)
-  );
-  writer.levels.push(level);
-}
-function readHeading(writer, tokens, index) {
-  const token = tokens[index];
-  const level = Number(token.tag.slice(1));
-  closeDeeper(writer, level);
-  const inline2 = tokens[index + 1];
-  if (level > 4 || !inline2) {
-    writer.out.push(token);
-    return 0;
-  }
-  const mark = markOf(tokens[index + 3]);
-  const section = mark?.name === "section" ? mark : void 0;
-  openSection(
-    writer,
-    { token, inline: inline2, level },
-    section
-  );
-  return section ? 3 : 2;
-}
-function wrapSections(state) {
-  if (!featureOn(state, "sections")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const writer = { state, out: [], levels: [], tabBases: [] };
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const boundary = tabBoundaryOf(token);
-    if (boundary !== void 0) {
-      readTabBoundary(writer, boundary);
-    }
-    if (token.type !== "heading_open" || token.level !== 0) {
-      writer.out.push(token);
-      continue;
-    }
-    index += readHeading(writer, tokens, index);
-  }
-  while (writer.levels.length) {
-    closeBody(writer);
-  }
-  state.tokens = writer.out;
-}
-
-// src/render/syntax/steps.ts
-function readStepsOptions(mark) {
-  const { collapse, title } = readCollapse(mark.options);
-  return { collapse, ...title === void 0 ? {} : { title } };
-}
-function itemCount(tokens, listOpen) {
-  const level = tokens[listOpen]?.level ?? 0;
-  let count = 0;
-  for (let index = listOpen + 1; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token?.type === "ordered_list_close" && token.level === level) {
-      break;
-    }
-    if (token?.type === "list_item_open" && token.level === level + 1) {
-      count += 1;
-    }
-  }
-  return count;
-}
-function buildStepsAt(state, range) {
-  const { index, mark, out } = range;
-  const tokens = state.tokens;
-  const token = tokens[index];
-  const { collapse, title } = readStepsOptions(mark);
-  const closeIndex = findClose(tokens, index, "steps");
-  const end = closeIndex < 0 ? tokens.length : closeIndex;
-  if (closeIndex < 0) {
-    out.push(warningBlock(state, unclosedWarning(mark), token));
-  }
-  const listIndex = tokens.slice(index + 1, end).findIndex((candidate) => candidate.type === "ordered_list_open");
-  if (listIndex < 0) {
-    out.push(
-      warningBlock(
-        state,
-        {
-          message: "`<!-- steps -->` \u306E\u7BC4\u56F2\u306B\u3001\u624B\u9806\u306B\u3059\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u624B\u9806\u3092 `1.` \u304B\u3089\u59CB\u307E\u308B\u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-        },
-        token
-      )
-    );
-    return index;
-  }
-  const listStart = index + 1 + listIndex;
-  const list2 = tokens[listStart];
-  list2.attrJoin("class", "mdmark-steps");
-  list2.attrSet("data-mdmark-own", envOf(state).nonce);
-  if (collapse === "none") {
-    return index;
-  }
-  const listClose = tokens.findIndex(
-    (candidate, position) => position > listStart && candidate.type === "ordered_list_close" && candidate.level === list2.level
-  );
-  const [head = "", tail = ""] = renderCollapsible({
-    title: title ?? `\u624B\u9806\uFF08${itemCount(tokens, listStart)} \u30B9\u30C6\u30C3\u30D7\uFF09`,
-    open: collapse === "open",
-    body: SLOT_MARKER
-  }).split(SLOT_MARKER);
-  out.push(...tokens.slice(index + 1, listStart));
-  out.push(ownBlock(state, head));
-  out.push(...tokens.slice(listStart, listClose + 1));
-  out.push(ownBlock(state, tail));
-  return listClose;
-}
-function buildSteps(state) {
-  if (!featureOn(state, "steps")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token) {
-      out.push(token);
-    }
-    const mark = markOf(token);
-    if (mark?.name !== "steps" || mark.closing) {
-      continue;
-    }
-    index = buildStepsAt(state, { index, mark, out });
-  }
-  state.tokens = out;
-}
-
-// src/render/syntax/tabs.ts
-function readTabsOptions(mark) {
-  const { collapse, title } = readCollapse(mark.options);
-  const group = typeof mark.options.group === "string" ? mark.options.group : void 0;
-  return {
-    ...group === void 0 ? {} : { group },
-    collapse,
-    ...title === void 0 ? {} : { title }
-  };
-}
-function findTabsClose(tokens, openIndex) {
-  let depth = 0;
-  let nested = false;
-  for (let index = openIndex + 1; index < tokens.length; index++) {
-    const mark = markOf(tokens[index]);
-    if (mark?.name !== "tabs") {
-      continue;
-    }
-    if (!mark.closing) {
-      depth += 1;
-      nested = true;
-    } else if (depth === 0) {
-      return { close: index, nested };
-    } else {
-      depth -= 1;
-    }
-  }
-  return { close: -1, nested };
-}
-function buildTabs(state) {
-  if (!featureOn(state, "tabs")) {
-    return;
-  }
-  state.tokens = buildTabsIn(state, state.tokens);
-}
-function buildTabsIn(state, tokens) {
-  const out = [];
-  for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (!token) {
-      continue;
-    }
-    const mark = markOf(token);
-    if (mark?.name !== "tabs" || mark.closing) {
-      out.push(token);
-      continue;
-    }
-    const { close: closeIndex, nested } = findTabsClose(tokens, index);
-    if (closeIndex < 0) {
-      out.push(warningBlock(state, unclosedWarning(mark), token));
-    }
-    if (closeIndex < 0 && nested) {
-      out.push(
-        ...tokens.slice(index + 1).filter((candidate) => markOf(candidate)?.name !== "tabs")
-      );
-      break;
-    }
-    const end = closeIndex < 0 ? tokens.length : closeIndex;
-    const content = buildTabsIn(state, tokens.slice(index + 1, end));
-    out.push(...tabsTokens(state, { token, mark, content }));
-    index = end;
-  }
-  return out;
-}
-function tabTitleOf(state, inline2) {
-  if (!inline2) {
-    return "";
-  }
-  return state.md.renderer.renderInline(
-    (inline2.children ?? []).filter(
-      (child) => child.meta?.role !== "heading-anchor"
-    ),
-    state.md.options,
-    state.env
-  );
-}
-function tabsTokens(state, range) {
-  const { token, mark, content } = range;
-  const first = content.find((candidate) => candidate.type === "heading_open");
-  if (!first) {
-    return [
-      warningBlock(
-        state,
-        {
-          message: "`<!-- tabs -->` \u306E\u7BC4\u56F2\u306B\u3001\u30BF\u30D6\u540D\u306B\u3059\u308B\u898B\u51FA\u3057\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30BF\u30D6\u306B\u3057\u305F\u3044\u4E2D\u8EAB\u3054\u3068\u306B\u898B\u51FA\u3057\uFF08`### macOS` \u306A\u3069\uFF09\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-        },
-        token
-      ),
-      ...content
-    ];
-  }
-  const separators = content.map((candidate, position) => ({ candidate, position })).filter(
-    ({ candidate }) => candidate.type === "heading_open" && candidate.tag === first.tag && candidate.level === first.level
-  );
-  const titles = separators.map(
-    ({ position }) => tabTitleOf(state, content[position + 1])
-  );
-  const env = envOf(state);
-  const ids = new Set(
-    separators.map(({ candidate }) => candidate.attrGet("id"))
-  );
-  env.headings = env.headings.filter((heading2) => !ids.has(heading2.id));
-  const pieces = renderTabs({
-    id: "mdmark-tabs",
-    titles,
-    panels: titles.map(() => SLOT_MARKER),
-    ...readTabsOptions(mark)
-  }).split(SLOT_MARKER);
-  return tabPanelTokens(state, { token, content, separators, pieces });
-}
-function tabPanelTokens(state, tabs) {
-  const { token, content, separators, pieces } = tabs;
-  const out = content.slice(0, separators[0]?.position ?? 0);
-  separators.forEach(({ position }, panel) => {
-    out.push(
-      tabBoundaryBlock({
-        state,
-        html: pieces[panel] ?? "",
-        boundary: panel === 0 ? "start" : "between",
-        source: panel === 0 ? token : void 0
-      })
-    );
-    const next = separators[panel + 1]?.position ?? content.length;
-    out.push(...content.slice(position + 3, next));
-  });
-  out.push(
-    tabBoundaryBlock({
-      state,
-      html: pieces[separators.length] ?? "",
-      boundary: "end"
-    })
-  );
-  return out;
-}
-
-// src/parts/text-color.ts
-function renderTextColor(options) {
-  return `<span class="mdmark-color" data-color="${options.color}">${options.text}</span>`;
-}
-
-// src/render/syntax/text-color.ts
-var BRACKET_PATTERN = /\[|\]\{color=([^}]*)\}/g;
-var COLOR_LIST2 = COLOR_NAMES.map((name) => `\`${name}\``).join("\u30FB");
-function splitText(state, child, level) {
-  const pieces = [];
-  let last = 0;
-  for (const found of child.content.matchAll(BRACKET_PATTERN)) {
-    const at = found.index ?? 0;
-    if (at > last) {
-      pieces.push({
-        kind: "token",
-        token: textToken4(state, child.content.slice(last, at))
-      });
-    }
-    pieces.push(
-      found[1] === void 0 ? { kind: "open", level } : { kind: "close", level, color: found[1], raw: found[0] }
-    );
-    last = at + found[0].length;
-  }
-  if (last === 0) {
-    pieces.push({ kind: "token", token: child });
-  } else if (last < child.content.length) {
-    pieces.push({
-      kind: "token",
-      token: textToken4(state, child.content.slice(last))
-    });
-  }
-  return pieces;
-}
-function splitPieces(state, children) {
-  const pieces = [];
-  let level = 0;
-  let linkDepth = 0;
-  for (const child of children) {
-    if (child.type === "link_open") {
-      linkDepth += 1;
-    } else if (child.type === "link_close") {
-      linkDepth -= 1;
-    }
-    if (child.type !== "text" || linkDepth > 0) {
-      pieces.push({ kind: "token", token: child });
-      level += child.nesting;
-      continue;
-    }
-    pieces.push(...splitText(state, child, level));
-  }
-  return pieces;
-}
-function pairBrackets(pieces) {
-  const pairs = /* @__PURE__ */ new Map();
-  const opens = [];
-  for (const [index, piece] of pieces.entries()) {
-    if (piece.kind === "open") {
-      opens.push(index);
-    } else if (piece.kind === "close") {
-      let found = opens.length - 1;
-      while (found >= 0 && pieces[opens[found]].level !== piece.level) {
-        found -= 1;
-      }
-      if (found >= 0) {
-        const [openAt] = opens.splice(found);
-        pairs.set(openAt, index);
-      }
-    }
-  }
-  return pairs;
-}
-function pairedClose(bracket, context) {
-  const { at, piece } = bracket;
-  const { pieces, pairs, closes } = context;
-  const openAt = piece.kind === "open" ? at : closes.get(at);
-  const closeAt = piece.kind === "close" ? at : pairs.get(at);
-  const close = closeAt === void 0 ? void 0 : pieces[closeAt];
-  return openAt !== void 0 && close?.kind === "close" ? close : void 0;
-}
-function bracketToken(state, bracket, context) {
-  const { piece } = bracket;
-  const close = pairedClose(bracket, context);
-  if (close === void 0) {
-    return textToken4(state, piece.kind === "open" ? "[" : piece.raw);
-  }
-  if (!isColorName(close.color)) {
-    if (piece.kind === "open") {
-      context.unknown.push(close.color);
-    }
-    return void 0;
-  }
-  const [before, after] = splitSlots(
-    markOwn(
-      renderTextColor({ color: close.color, text: SLOT_MARKER }),
-      envOf(state).nonce
-    )
-  );
-  const html = new state.Token("html_inline", "", 0);
-  html.content = (piece.kind === "open" ? before : after) ?? "";
-  return html;
-}
-function colorChildren(state, pieces, pairs) {
-  const context = {
-    pieces,
-    pairs,
-    closes: new Map([...pairs].map(([open2, close]) => [close, open2])),
-    unknown: []
-  };
-  const children = [];
-  for (const [at, piece] of pieces.entries()) {
-    const token = piece.kind === "token" ? piece.token : bracketToken(state, { at, piece }, context);
-    if (token) {
-      children.push(token);
-    }
-  }
-  return { children, unknown: context.unknown };
-}
-function insertColorWarnings(state, warnings) {
-  for (const { index, unknown: unknown2 } of warnings.reverse()) {
-    const names2 = unknown2.map((name) => `\`${name}\``).join("\u30FB");
-    state.tokens.splice(
-      blockStartOf3(state.tokens, index),
-      0,
-      warningBlock(state, {
-        message: `${names2} \u306F\u8272\u306E\u540D\u524D\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u8272\u306E\u540D\u524D\u306F ${COLOR_LIST2} \u3067\u3059\u3002\u8272\u3092\u4ED8\u3051\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      })
-    );
-  }
-}
-function buildTextColors(state) {
-  if (!featureOn(state, "text-color")) {
-    return;
-  }
-  const warnings = [];
-  for (const [index, token] of state.tokens.entries()) {
-    if (token.type !== "inline" || !token.children?.length) {
-      continue;
-    }
-    const pieces = splitPieces(state, token.children);
-    const pairs = pairBrackets(pieces);
-    if (pairs.size === 0) {
-      continue;
-    }
-    const { children, unknown: unknown2 } = colorChildren(state, pieces, pairs);
-    token.children = children;
-    if (unknown2.length) {
-      warnings.push({ index, unknown: unknown2 });
-    }
-  }
-  insertColorWarnings(state, warnings);
-}
-function blockStartOf3(tokens, index) {
-  let at = index;
-  while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
-    at -= 1;
-  }
-  return at;
-}
-function textToken4(state, content) {
-  const token = new state.Token("text", "", 0);
-  token.content = content;
-  return token;
-}
-
-// src/parts/toc.ts
-function renderLink(heading2) {
-  return `<a href="#${escapeHtml2(heading2.id)}">${escapeHtml2(heading2.text)}</a>`;
-}
-function renderToc(options) {
-  const items = [];
-  let children = [];
-  let current;
-  const flush = () => {
-    if (current) {
-      const nested = children.length ? `<ul>${children.join("")}</ul>` : "";
-      items.push(`<li>${renderLink(current)}${nested}</li>`);
-    }
-    current = void 0;
-    children = [];
-  };
-  for (const heading2 of options.headings) {
-    if (heading2.level === 2) {
-      flush();
-      current = heading2;
-    } else if (current) {
-      children.push(`<li>${renderLink(heading2)}</li>`);
-    } else {
-      items.push(`<li>${renderLink(heading2)}</li>`);
-    }
-  }
-  flush();
-  return `<nav class="mdmark-toc" aria-label="\u76EE\u6B21"><p class="mdmark-toc-title">\u76EE\u6B21</p><ul>${items.join("")}</ul></nav>`;
-}
-
-// src/render/syntax/toc.ts
-function buildToc(state) {
-  if (!featureOn(state, "toc")) {
-    return;
-  }
-  const headings = envOf(state).headings.filter((heading2) => heading2.level === 2 || heading2.level === 3).map((heading2) => ({ ...heading2 }));
-  state.tokens = state.tokens.map((token) => {
-    const mark = markOf(token);
-    if (mark?.name !== "toc" || mark.closing) {
-      return token;
-    }
-    return ownBlock(state, renderToc({ headings }));
-  });
-}
-
-// src/parts/tree.ts
-var TREE_MORE_NAME = "...";
-var ICON_BY_NAME = {
-  LICENSE: "file-text",
-  Dockerfile: "file-terminal",
-  Makefile: "file-terminal"
-};
-var EXTENSIONS_BY_ICON = {
-  "file-text": ["md", "mdx", "txt", "rst"],
-  "file-code": [
-    "ts",
-    "tsx",
-    "mts",
-    "cts",
-    "js",
-    "jsx",
-    "mjs",
-    "cjs",
-    "py",
-    "rb",
-    "go",
-    "rs",
-    "java",
-    "kt",
-    "swift",
-    "c",
-    "h",
-    "cpp",
-    "cs",
-    "php",
-    "css",
-    "scss",
-    "html",
-    "vue",
-    "svelte"
-  ],
-  "file-json": [
-    "json",
-    "jsonc",
-    "yaml",
-    "yml",
-    "toml",
-    "xml",
-    "ini",
-    "env",
-    "lock"
-  ],
-  "file-image": ["png", "jpg", "jpeg", "gif", "svg", "webp", "avif", "ico"],
-  "file-spreadsheet": ["csv", "tsv", "xlsx"],
-  "file-archive": ["zip", "gz", "tgz", "tar", "vsix"],
-  "file-terminal": ["sh", "bash", "zsh", "ps1", "bat"]
-};
-var ICON_BY_EXTENSION = new Map(
-  Object.entries(EXTENSIONS_BY_ICON).flatMap(
-    ([icon, extensions2]) => extensions2.map((extension) => [
-      extension,
-      icon
-    ])
-  )
-);
-var COPY_LABELS2 = {
-  idle: { icon: "copy", text: "\u30B3\u30D4\u30FC" },
-  copied: { icon: "check", text: "\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F" }
-};
-function fileIconOf(name) {
-  const byName = ICON_BY_NAME[name];
-  if (byName) {
-    return byName;
-  }
-  const dot = name.lastIndexOf(".");
-  const extension = dot < 0 ? "" : name.slice(dot + 1).toLowerCase();
-  return ICON_BY_EXTENSION.get(extension) ?? "file";
-}
-function folderOpenByDefault(depth, open2) {
-  if (open2 === void 0 || open2 === "all") {
-    return true;
-  }
-  return depth < Number(open2);
-}
-function renderTreeCopyContent(state) {
-  const label = COPY_LABELS2[state];
-  return `${iconSvg(label.icon)}${label.text}`;
-}
-function renderTreeBar(options) {
-  const state = options.copyState ?? "idle";
-  return `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="${state}">${renderTreeCopyContent(state)}</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div>`;
-}
-function renderNode3(node2, context, position) {
-  const { depth, path } = position;
-  const note = node2.note ? `<span class="mdmark-tree-note">${node2.note}</span>` : "";
-  if (node2.name === TREE_MORE_NAME) {
-    return `<li class="mdmark-tree-more"><span class="mdmark-tree-row"><span class="mdmark-tree-name"><span class="mdmark-visually-hidden">\u307B\u304B\u306B\u3082\u3042\u308A\u307E\u3059</span></span>${note}</span></li>`;
-  }
-  const children = node2.children ?? [];
-  const name = `<span class="mdmark-tree-name">${escapeHtml2(node2.name)}</span>`;
-  if (!node2.name.endsWith("/") && children.length === 0) {
-    return `<li class="mdmark-tree-file" data-file-icon="${fileIconOf(node2.name)}"><span class="mdmark-tree-row">${name}${note}</span></li>`;
-  }
-  if (children.length === 0) {
-    return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span></li>`;
-  }
-  const nested = children.map(
-    (child, index) => renderNode3(child, context, {
-      depth: depth + 1,
-      path: `${path}-${index}`
-    })
-  ).join("");
-  if (!context.interactive) {
-    return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span><ul>${nested}</ul></li>`;
-  }
-  const listId = `${context.id}-${path}`;
-  const open2 = folderOpenByDefault(depth, context.open);
-  return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row"><button class="mdmark-tree-toggle" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(listId)}">${name}</button>${note}</span><ul id="${escapeHtml2(listId)}"${open2 ? "" : ' hidden="until-found"'}>${nested}</ul></li>`;
-}
-function renderTree(options) {
-  const {
-    nodes,
-    source,
-    open: open2,
-    interactive = false,
-    copyState,
-    copyFallback = false,
-    id = "mdmark-tree"
-  } = options;
-  const context = { interactive, open: open2, id };
-  const openAttribute = open2 === void 0 ? "" : ` data-open="${escapeHtml2(open2)}"`;
-  const bar = interactive ? renderTreeBar({ copyState: copyState ?? "idle" }) : "";
-  const list2 = `<ul class="mdmark-tree-list" aria-label="\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC">${nodes.map(
-    (node2, index) => renderNode3(node2, context, { depth: 0, path: String(index) })
-  ).join("")}</ul>`;
-  const panel = interactive && copyFallback ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source }) : "";
-  const holderClass = options.wrap ? "mdmark-tree mdmark-tree-wrap" : "mdmark-tree";
-  return `<div class="${holderClass}"${openAttribute} data-source="${escapeHtml2(source)}">${bar}${list2}${panel}</div>`;
-}
-
-// src/render/syntax/tree.ts
-var INDENT_UNITS = ["\u2502   ", "|   ", "    "];
-var CONNECTORS = ["\u251C\u2500\u2500 ", "\u2514\u2500\u2500 ", "|-- ", "`-- "];
-var RULE_WIDTH = 4;
-var NOTE_SEPARATOR = /\s#/;
-function readLine(line) {
-  let depth = 0;
-  let position = 0;
-  while (INDENT_UNITS.some((unit) => line.startsWith(unit, position))) {
-    position += RULE_WIDTH;
-    depth += 1;
-  }
-  if (CONNECTORS.some((connector) => line.startsWith(connector, position))) {
-    position += RULE_WIDTH;
-    depth += 1;
-  }
-  return { depth, text: line.slice(position) };
-}
-function splitNote(text2, renderNote) {
-  const separator = NOTE_SEPARATOR.exec(text2);
-  if (!separator) {
-    return { name: text2.trim() };
-  }
-  const name = text2.slice(0, separator.index).trim();
-  const note = text2.slice(separator.index + separator[0].length).trim();
-  return note === "" ? { name } : { name, note: renderNote(note) };
-}
-function parseTree(source, renderNote = escapeHtml2) {
-  const nodes = [];
-  const stack = [];
-  const lines = source.split("\n").filter((line) => line.trim() !== "");
-  let previous = -1;
-  for (const [index, line] of lines.entries()) {
-    const { depth, text: text2 } = readLine(line);
-    if (depth > previous + 1) {
-      return { line: index + 1, depth: depth - previous };
-    }
-    const node2 = splitNote(text2, renderNote);
-    stack.length = depth;
-    const parent = stack[depth - 1];
-    if (parent) {
-      parent.children = [...parent.children ?? [], node2];
-    } else {
-      nodes.push(node2);
-    }
-    stack[depth] = node2;
-    previous = depth;
-  }
-  return { nodes };
-}
-function readTreeOptions(mark) {
-  const { depth, wrap } = mark.options;
-  const open2 = depth === "all" || typeof depth === "number" ? String(depth) : void 0;
-  return { ...open2 === void 0 ? {} : { open: open2 }, wrap: wrap === true };
-}
-function renderNoteInline(state, markdown) {
-  const env = state.env;
-  const own2 = `data-mdmark-own="${envOf(state).nonce}"`;
-  const children = (state.md.parseInline(markdown, env)[0]?.children ?? []).map(
-    (child) => {
-      if (child.type === "html_inline" && !child.content.includes(own2)) {
-        child.type = "text";
-      }
-      return child;
-    }
-  );
-  return state.md.renderer.renderInline(children, state.md.options, env);
-}
-function buildFileTrees(state) {
-  if (!featureOn(state, "tree")) {
-    return;
-  }
-  const out = [];
-  for (const [index, token] of state.tokens.entries()) {
-    const language = token.info.trim().split(/\s+/)[0];
-    if (token.type !== "fence" || language !== "tree") {
-      out.push(token);
-      continue;
-    }
-    const result = parseTree(
-      token.content,
-      (markdown) => renderNoteInline(state, markdown)
-    );
-    if (!("nodes" in result)) {
-      out.push(
-        warningBlock(state, {
-          message: `\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC\u306E ${result.line} \u884C\u76EE\u304C\u3001\u4E0A\u306E\u884C\u3088\u308A ${result.depth} \u968E\u5C64\u6DF1\u304F\u8A18\u8F09\u3055\u308C\u3066\u3044\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u7F6B\u7DDA\u306E\u968E\u5C64\u3092 1 \u968E\u5C64\u305A\u3064\u6DF1\u304F\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-        }),
-        token
-      );
-      continue;
-    }
-    const mark = markOf(state.tokens[index - 1]);
-    const options = mark?.name === "tree" && !mark.closing ? readTreeOptions(mark) : { wrap: false };
-    out.push(
-      ownBlock(
-        state,
-        renderTree({
-          nodes: result.nodes,
-          source: token.content.replace(/\n+$/, ""),
-          open: options.open,
-          wrap: options.wrap
-        })
-      )
-    );
-  }
-  state.tokens = out;
-}
-
-// src/render/syntax/views.ts
-var isObject3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-function readGroupColumn(state, context) {
-  const { mark, headers, groupName, warnings } = context;
-  if (typeof groupName !== "string") {
-    return { group: null, boardDisabled: "" };
-  }
-  const group = headers.indexOf(groupName);
-  if (group >= 0) {
-    return { group, boardDisabled: "" };
-  }
-  const env = envOf(state);
-  env.viewCount = (env.viewCount ?? 0) + 1;
-  const boardDisabled = `mdmark-view-warning-${env.nonce.slice(0, 8)}-${env.viewCount}`;
-  warnings.push({
-    mark: mark.raw,
-    message: `\u306E\u5217 \`${groupName}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${codes(headers)} \u3067\u3059\u3002\u30DC\u30FC\u30C9\u306B\u305B\u305A\u3001\u8868\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`,
-    id: boardDisabled
-  });
-  return { group: null, boardDisabled };
-}
-function readIcons(context) {
-  const { column, cells, values, groupName, items } = context;
-  const icons2 = {};
-  const present = [...new Set(cells.map((row2) => (row2[column] ?? "").trim()))];
-  for (const [value, settings] of Object.entries(values)) {
-    const icon = isObject3(settings) ? settings.icon : void 0;
-    if (!present.includes(value)) {
-      items.push({
-        label: `board.values.${value}`,
-        message: `\`${value}\` \u306F \`${String(groupName)}\` \u306E\u5217\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u306E\u5024\u306F ${codes(present)} \u3067\u3059\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-    } else if (typeof icon === "string") {
-      icons2[value] = icon;
-    }
-  }
-  return icons2;
-}
-function readViewFilters(context) {
-  const { mark, headers, items } = context;
-  const filters = [];
-  const columns = isObject3(mark.options.columns) ? mark.options.columns : {};
-  for (const [name, settings] of Object.entries(columns)) {
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      items.push({
-        label: `columns.${name}`,
-        message: `\u306E\u5217 \`${name}\` \u306F\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${codes(headers)} \u3067\u3059\u3002\u5217\u540D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-      });
-      continue;
-    }
-    const filter2 = isObject3(settings) ? settings.filter : void 0;
-    if (!isObject3(filter2)) {
-      continue;
-    }
-    filters.push({
-      column,
-      kind: typeof filter2.type === "string" ? filter2.type : "select"
-    });
-  }
-  return filters;
-}
-function readViewSorts(context) {
-  const { mark, headers } = context;
-  const sorts = [];
-  const columns = isObject3(mark.options.columns) ? mark.options.columns : {};
-  for (const [name, settings] of Object.entries(columns)) {
-    const sort = isObject3(settings) ? settings.sort : void 0;
-    const column = headers.indexOf(name);
-    if (typeof sort === "boolean" && column >= 0) {
-      sorts.push({ column, sort });
-    }
-  }
-  return sorts;
-}
-function viewTableSpec(filters, sorts) {
-  return {
-    kind: "data",
-    features: filters.length > 0 ? ["sort", "filter"] : ["sort"],
-    filters,
-    hide: [],
-    totals: [],
-    unpinned: [],
-    widths: [],
-    check: [],
-    sorts,
-    collapse: "none",
-    warnings: [],
-    headRows: 1,
-    rowHeader: 0
-  };
-}
-function readView(options) {
-  const { state, mark, headers, cells } = options;
-  const items = [];
-  const warnings = [];
-  const board = isObject3(mark.options.board) ? mark.options.board : void 0;
-  const groupName = board?.group?.column;
-  const { group, boardDisabled } = readGroupColumn(state, {
-    mark,
-    headers,
-    groupName,
-    warnings
-  });
-  const icons2 = group === null ? {} : readIcons({
-    column: group,
-    cells,
-    values: isObject3(board?.values) ? board.values : {},
-    groupName,
-    items
-  });
-  const filters = readViewFilters({ mark, headers, items });
-  const sorts = readViewSorts({ mark, headers });
-  const mode = group !== null && mark.options.initial !== "table" ? "board" : "table";
-  warnings.push(...warningsOf(mark.raw, items));
-  return {
-    tableSpec: viewTableSpec(filters, sorts),
-    viewSpec: { group, mode, boardDisabled, icons: icons2 },
-    warnings
-  };
-}
-function firstTable(tokens, from, to) {
-  for (let index = from; index < to; index++) {
-    if (tokens[index]?.type === "table_open") {
-      return index;
-    }
-  }
-  return -1;
-}
-function wrapView(state, range) {
-  const { open: open2, end, mark } = range;
-  const tokens = state.tokens;
-  const table2 = firstTable(tokens, open2 + 1, end);
-  const tableOpen = tokens[table2];
-  if (tableOpen === void 0) {
-    return [
-      {
-        mark: mark.raw,
-        message: "\u306E\u7BC4\u56F2\u306B\u3001\u9805\u76EE\u306B\u3059\u308B\u8868\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u4E2D\u306B Markdown \u306E\u8868\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7BC4\u56F2\u306E\u4E2D\u8EAB\u306F\u305D\u306E\u307E\u307E\u63CF\u3044\u3066\u3044\u307E\u3059\u3002"
-      }
-    ];
-  }
-  const reading = readView({
-    state,
-    mark,
-    headers: headersOf(tokens, table2),
-    cells: bodyCellsOf(tokens, table2)
-  });
-  tableOpen.meta = { ...tableOpen.meta ?? {}, tableSpec: reading.tableSpec };
-  const wrapper = `<div class="mdmark-view" data-view="${escapeHtml2(JSON.stringify(reading.viewSpec))}">`;
-  tokens.splice(end, 0, ownBlock(state, "</div>"));
-  tokens.splice(open2 + 1, 0, ownBlock(state, wrapper));
-  return reading.warnings;
-}
-function buildViews(state) {
-  if (!featureOn(state, "views")) {
-    return;
-  }
-  const tokens = state.tokens;
-  for (let open2 = tokens.length - 1; open2 >= 0; open2--) {
-    const mark = markOf(tokens[open2]);
-    if (mark?.name !== "view" || mark.closing) {
-      continue;
-    }
-    const close = findClose(tokens, open2, "view");
-    const end = close < 0 ? tokens.length : close;
-    const warnings = [];
-    if (close < 0) {
-      warnings.push(unclosedWarning(mark));
-    }
-    warnings.unshift(...wrapView(state, { open: open2, end, mark }));
-    const source = tokens[open2];
-    for (const [offset, warning] of warnings.entries()) {
-      pushWarning(state, open2 + offset, { ...warning, source });
-    }
-  }
-}
-
-// src/parts/wide.ts
-var renderWide = (options) => {
-  const { body, state, toggle } = options;
-  const bar = toggle ? renderWideBar(state === "wide") : "";
-  return `${bar}<div class="mdmark-wide-range" data-state="${state}">${body}</div>`;
-};
-var renderWideBar = (pressed) => {
-  const shrink = iconSvgOf(iconNodeBody(WideShrink));
-  const expand = iconSvgOf(iconNodeBody(WideExpand));
-  return `<div class="mdmark-wide-bar"><button class="mdmark-wide-toggle" type="button" aria-label="\u5E83\u3052\u3066\u8868\u793A" aria-pressed="${pressed}"><span class="mdmark-wide-icon-shrink">${shrink}</span><span class="mdmark-wide-icon-expand">${expand}</span></button></div>`;
-};
-
-// src/render/syntax/wide.ts
-var buildWideRanges = (state) => {
-  if (!featureOn(state, "wide")) {
-    return;
-  }
-  const tokens = state.tokens;
-  const ranges = outermostRanges(pairRanges(tokens, "wide"), tokens.length);
-  const opens = new Map(ranges.map((range) => [range.open, range.close]));
-  const closes = new Set(ranges.map((range) => range.close));
-  const out = [];
-  for (const [index, token] of tokens.entries()) {
-    const mark = markOf(token);
-    if (mark?.name !== "wide") {
-      out.push(token);
-    } else if (mark.closing) {
-      if (closes.has(index)) {
-        out.push(
-          tabBoundaryBlock({
-            state,
-            html: "</div>",
-            boundary: "end",
-            source: token
-          })
-        );
-      }
-    } else {
-      out.push(...wideOpen(state, { token, mark, close: opens.get(index) }));
-    }
-  }
-  state.tokens = out;
-};
-var wideOpen = (state, open2) => {
-  const { token, mark, close } = open2;
-  if (close === void 0) {
-    return [];
-  }
-  if (close === -1) {
-    return [warningBlock(state, unclosedWarning(mark))];
-  }
-  const rangeState = mark.options.open === false ? "narrow" : "wide";
-  const [head = ""] = splitSlots(
-    renderWide({ body: SLOT_MARKER, state: rangeState, toggle: false })
-  );
-  return [
-    tabBoundaryBlock({ state, html: head, boundary: "start", source: token })
-  ];
 };
 
 // src/render/parser.ts
@@ -79009,7 +79009,13 @@ var MAP_LAYOUT = {
   /** 祖先でないグループの枠を出入りする 1 回の重み。最短より出入りを増やさないために大きくする */
   borderCost: 1e5,
   /** ドラッグで近づけられる間の下限 */
-  minGap: 16
+  minGap: 16,
+  /** 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる） */
+  usedCost: 60,
+  /** 同じ区間を通る線を並べるときの線の間 */
+  wireGap: 8,
+  /** 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ） */
+  closedCount: 17
 };
 
 // src/map/flowchart.ts
@@ -79571,7 +79577,7 @@ var parseSequence = (source) => {
   };
 };
 
-// src/parts/map.ts
+// src/map/map.part.ts
 var MAP_ER = {
   width: 240,
   /** テーブル名の行（種類の行と名前）の高さ */

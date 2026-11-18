@@ -14,7 +14,7 @@ states:
       - name: entered
         value: app
   - name: GroupCollapsed
-    description: group「アプリ」を閉じた。「service 2 件」を持ち、group の辺から出ていた線は閉じたノードの同じ辺から出る
+    description: group「アプリ」を閉じた。名前の行の下に「service 2 件」の行を持ち、group の辺から出ていた線は閉じたノードの同じ辺から出る
     args:
       - name: collapsed
         value: '["app"]'
@@ -58,7 +58,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 閉じた group の ID。名前の後ろに「service {数} 件」を出し、中の service の線は閉じたノードの同じ辺から引く
+    description: 閉じた group の ID。名前の行の下の行に「service {数} 件」を出し、中の service の線は閉じたノードの同じ辺から引く
   - name: entered
     type: 文字列
     required: false

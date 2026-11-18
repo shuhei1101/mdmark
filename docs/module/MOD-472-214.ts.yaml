@@ -12,7 +12,20 @@ constants:
   - name: SANITIZE_OPTIONS
     title: 落とす設定
     container: src/render/sanitize.ts
-    summary: sanitize-html に指定する設定。記法の要素と属性を許し（mdmark が出した `style.mdmark-html-style` と `template.mdmark-html-script`・`data-html-scope`・`data-lang` を含む。文書に記載した `style`・`template` は落とす）、誰が出したかは `sanitize` の `transformTags` が見分ける。`allowedTags` に `nav`・`figure`・`figcaption` を追加し、`allowedAttributes`・`allowedClasses` に記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`）を追加する。今の値は下の entries。記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す（文書に記載した `video`・`audio`・`source` は `sanitize` が落とす）
+    summary: sanitize-html に指定する設定
+    description: |-
+      記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。
+      許す要素と属性は、mdmark が出した `style.mdmark-html-style` と `template.mdmark-html-script`・`data-html-scope`・`data-lang` を含む。
+      文書に記載した `style`・`template` は落とす。
+
+      | 設定 | 追加する値 |
+      | --- | --- |
+      | `allowedTags` | `nav`・`figure`・`figcaption` |
+      | `allowedAttributes`・`allowedClasses` | 記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`） |
+
+      今の値は下の entries。
+      記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す。
+      文書に記載した `video`・`audio`・`source` は `sanitize` が落とす
     value: 下の entries
     entries:
       - key: allowedTags
