@@ -1,5 +1,7 @@
 import type { ResolvedConfig } from "../config.ts";
-import { c4ToFlowchart, MAP_C4_KINDS, parseC4 } from "./c4.ts";
+import { type C4Diagram, c4ToFlowchart, MAP_C4_KINDS, parseC4 } from "./c4.ts";
+import { type MapNote, type MapStep, parseMapData } from "./data.ts";
+import type { Flowchart } from "./flowchart.ts";
 import {
   attachMapFlow,
   type MapFlowHandle,
@@ -9,7 +11,79 @@ import {
 import { renderMapC4Diagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
-/** C4 の 5 種類の図を構成図の入力にし、構成図と同じ配置と操作に、要素の説明・境界の破線の枠と種類・外部の要素の描き分けを追加する */
+/** 再生している関係のために出したラベルと、隠したラベルの印 */
+const PLAYING_LABEL = "map-c4-playing-label";
+const HIDDEN_BY_PLAYING = "data-c4-hidden-by-playing";
+
+/** `C4Dynamic` の線にした関係を、番号の順に 1 本ずつ進める再生の手順にする */
+const relationSteps = (
+  diagram: C4Diagram,
+  chart: Flowchart,
+  notes: Record<string, MapNote>,
+): MapStep[] => {
+  const names = new Map<string, string>([
+    ...diagram.elements.map((item) => [item.id, item.label] as const),
+    ...diagram.boundaries.map((item) => [item.id, item.label] as const),
+  ]);
+  const drawn = new Set(chart.edges.map((edge) => edge.id));
+  return diagram.relations
+    .filter((relation) => drawn.has(relation.id))
+    .map((relation) => ({
+      title: `${relation.index ?? ""}: ${names.get(relation.from) ?? relation.from} ${relation.both ? "↔" : "→"} ${names.get(relation.to) ?? relation.to}${relation.label === undefined ? "" : `：${relation.label}`}`,
+      text: notes[relation.id]?.text ?? "",
+      nodes: [relation.from, relation.to],
+      edges: [relation.id],
+      enter: undefined,
+    }));
+};
+
+/** 再生している関係の線のラベルが描かれていなければ、線の中ほどに出し、重なる薄くしたラベルを隠す */
+const showPlayingLabel = (figure: HTMLElement, label: string | undefined) => {
+  for (const item of figure.querySelectorAll(`.${PLAYING_LABEL}`))
+    item.remove();
+  for (const item of figure.querySelectorAll<HTMLElement>(
+    `[${HIDDEN_BY_PLAYING}]`,
+  )) {
+    item.hidden = false;
+    item.removeAttribute(HIDDEN_BY_PLAYING);
+  }
+  if (label === undefined) return;
+  const wire = figure.querySelector<SVGPathElement>(
+    ".mdmark-diagram-wire[data-wire]:not(.map-dim)",
+  );
+  const id = wire?.getAttribute("data-wire");
+  if (!wire || !id) return;
+  if (
+    figure.querySelector(`.mdmark-diagram-label[data-wire="${CSS.escape(id)}"]`)
+  )
+    return;
+  const stage = figure.querySelector(".mdmark-diagram-stage");
+  if (!stage) return;
+  const point = wire.getPointAtLength(wire.getTotalLength() / 2);
+  const shown = document.createElement("span");
+  shown.className = `mdmark-diagram-label ${PLAYING_LABEL}`;
+  shown.dataset.wire = id;
+  shown.textContent = label;
+  shown.style.left = `${point.x}px`;
+  shown.style.top = `${point.y}px`;
+  stage.append(shown);
+  const box = shown.getBoundingClientRect();
+  for (const other of figure.querySelectorAll<HTMLElement>(
+    ".mdmark-diagram-label.map-dim",
+  )) {
+    const rect = other.getBoundingClientRect();
+    const apart =
+      rect.right < box.left ||
+      rect.left > box.right ||
+      rect.bottom < box.top ||
+      rect.top > box.bottom;
+    if (apart) continue;
+    other.hidden = true;
+    other.setAttribute(HIDDEN_BY_PLAYING, "");
+  }
+};
+
+/** C4 の 5 種類の図を構成図の入力にし、構成図と同じ配置と操作に、要素の説明・境界の破線の枠と種類・外部の要素の描き分けと、`C4Dynamic` の関係の再生を追加する */
 export const attachMapC4 = (
   range: HTMLElement,
   config: ResolvedConfig,
@@ -17,6 +91,14 @@ export const attachMapC4 = (
 ): MapFlowHandle => {
   const diagram = parseC4(range.querySelector("code")?.textContent ?? "");
   const { chart, overrides, reversed, kinds } = c4ToFlowchart(diagram);
+  const { data } = parseMapData(
+    range.querySelector(".mdmark-map-data")?.textContent ?? undefined,
+  );
+  const playback =
+    diagram.kind === "C4Dynamic" && data.walkthroughs.length === 0
+      ? relationSteps(diagram, chart, data.notes)
+      : undefined;
+  const labels = new Map(chart.edges.map((edge) => [edge.id, edge.label]));
   const externals = diagram.elements
     .filter((element) => element.external)
     .map((element) => element.id);
@@ -45,6 +127,23 @@ export const attachMapC4 = (
       title: diagram.title,
       overrides: () => overrides,
       collapsedTag: (boundary) => `要素 ${elementsUnder(boundary)} 件`,
+      ...(playback === undefined
+        ? {}
+        : {
+            walkthroughs: playback,
+            bandMode: "playback" as const,
+            bandUnit: "relation" as const,
+            afterRender: (figure, _layout, view) => {
+              const edge =
+                view.step === undefined
+                  ? undefined
+                  : playback[view.step]?.edges?.[0];
+              showPlayingLabel(
+                figure,
+                edge === undefined ? undefined : labels.get(edge),
+              );
+            },
+          }),
       rewire: (layout) => spreadMapEnds(layout),
       render: (flowArgs) =>
         renderMapC4Diagram({
