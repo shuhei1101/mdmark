@@ -13,6 +13,28 @@
   border: 1px solid var(--mdmark-color-border);
   border-radius: calc(var(--mdmark-radius) + 0.125rem);
   background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
+  flex-wrap: nowrap;
+}
+
+/* 狭い図の枠: パネルを 1 行のまま収めるため、ボタンを 24px（指で押せる下限）まで小さくし、間を詰める */
+@container (width < 30rem) {
+  .mdmark-diagram-tools {
+    gap: 0.125rem 0.25rem;
+  }
+
+  .mdmark-diagram-tools .mdmark-diagram-tool {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .mdmark-diagram-tools .mdmark-diagram-tool.mdmark-diagram-zoom {
+    min-width: 2.5rem;
+    width: auto;
+  }
+
+  [data-mock-panel="c"] .mdmark-diagram-tools {
+    padding-inline-end: calc(1.5rem + 0.375rem);
+  }
 }
 
 /* パネルの中のボタン: パネルの線で囲むので、ボタンごとの線を描かない（枠の中に枠を入れない） */
@@ -49,7 +71,7 @@
   display: none;
 }
 
-/* 案 C の開閉のボタン: 畳んだときも開いたときもパネルの端（上に置くときは右上、下に置くときは右下）に固定し、ほかのボタンをその手前に並べる。入りきらない分は 2 行目へ折り返す */
+/* 案 C の開閉のボタン: 畳んだときも開いたときもパネルの端（上に置くときは右上、下に置くときは右下）に固定し、ほかのボタンをその手前に 1 行で並べる */
 [data-mock-panel="c"] .mdmark-diagram-tools {
   padding-inline-end: calc(1.75rem + 0.5rem);
 }

@@ -41,3 +41,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608947734
+  - topic: map の図の戻るボタンを畳んだパネルに出すか
+    decision: グループの中にいる間だけ、畳んだパネルにも戻るボタンを出す（推奨案 A）。スマホでもパネルを 2 行にせず、ボタンを小さくして 1 行に収める
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: '218e0448'
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4609171904
