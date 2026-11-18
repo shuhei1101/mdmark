@@ -1,13 +1,13 @@
 import type { ResolvedConfig } from "../config.ts";
 import { type C4Diagram, c4ToFlowchart, MAP_C4_KINDS, parseC4 } from "./c4.ts";
 import { type MapNote, type MapStep, parseMapData } from "./data.ts";
-import type { Flowchart } from "./flowchart.ts";
 import {
   attachMapFlow,
   type MapFlowHandle,
   neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
+import type { Flowchart } from "./flowchart.ts";
 import { renderMapC4Diagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
@@ -37,8 +37,8 @@ const relationSteps = (
     }));
 };
 
-/** 再生している関係の線のラベルが描かれていなければ、線の中ほどに出し、重なる薄くしたラベルを隠す */
-const showPlayingLabel = (figure: HTMLElement, label: string | undefined) => {
+/** 再生のために出したラベルを外し、隠したラベルを戻す */
+const clearPlayingLabel = (figure: HTMLElement) => {
   for (const item of figure.querySelectorAll(`.${PLAYING_LABEL}`))
     item.remove();
   for (const item of figure.querySelectorAll<HTMLElement>(
@@ -47,27 +47,23 @@ const showPlayingLabel = (figure: HTMLElement, label: string | undefined) => {
     item.hidden = false;
     item.removeAttribute(HIDDEN_BY_PLAYING);
   }
-  if (label === undefined) return;
+};
+
+/** 強調している線のうち、ラベルが描かれていない線（無ければ undefined） */
+const unlabeledWireOf = (figure: HTMLElement): SVGPathElement | undefined => {
   const wire = figure.querySelector<SVGPathElement>(
     ".mdmark-diagram-wire[data-wire]:not(.map-dim)",
   );
-  const id = wire?.getAttribute("data-wire");
-  if (!wire || !id) return;
-  if (
-    figure.querySelector(`.mdmark-diagram-label[data-wire="${CSS.escape(id)}"]`)
-  )
-    return;
-  const stage = figure.querySelector(".mdmark-diagram-stage");
-  if (!stage) return;
-  const point = wire.getPointAtLength(wire.getTotalLength() / 2);
-  const shown = document.createElement("span");
-  shown.className = `mdmark-diagram-label ${PLAYING_LABEL}`;
-  shown.dataset.wire = id;
-  shown.textContent = label;
-  shown.style.left = `${point.x}px`;
-  shown.style.top = `${point.y}px`;
-  stage.append(shown);
-  const box = shown.getBoundingClientRect();
+  const id = wire?.getAttribute("data-wire") ?? "";
+  if (!wire || id === "") return undefined;
+  const labeled = figure.querySelector(
+    `.mdmark-diagram-label[data-wire="${CSS.escape(id)}"]`,
+  );
+  return labeled ? undefined : wire;
+};
+
+/** 矩形と重なる薄くしたラベルを隠す */
+const hideOverlapped = (figure: HTMLElement, box: DOMRect) => {
   for (const other of figure.querySelectorAll<HTMLElement>(
     ".mdmark-diagram-label.map-dim",
   )) {
@@ -81,6 +77,24 @@ const showPlayingLabel = (figure: HTMLElement, label: string | undefined) => {
     other.hidden = true;
     other.setAttribute(HIDDEN_BY_PLAYING, "");
   }
+};
+
+/** 再生している関係の線のラベルが描かれていなければ、線の中ほどに出し、重なる薄くしたラベルを隠す */
+const showPlayingLabel = (figure: HTMLElement, label: string | undefined) => {
+  clearPlayingLabel(figure);
+  if (label === undefined) return;
+  const wire = unlabeledWireOf(figure);
+  const stage = figure.querySelector(".mdmark-diagram-stage");
+  if (!wire || !stage) return;
+  const point = wire.getPointAtLength(wire.getTotalLength() / 2);
+  const shown = document.createElement("span");
+  shown.className = `mdmark-diagram-label ${PLAYING_LABEL}`;
+  shown.dataset.wire = wire.getAttribute("data-wire") ?? "";
+  shown.textContent = label;
+  shown.style.left = `${point.x}px`;
+  shown.style.top = `${point.y}px`;
+  stage.append(shown);
+  hideOverlapped(figure, shown.getBoundingClientRect());
 };
 
 /** C4 の 5 種類の図を構成図の入力にし、構成図と同じ配置と操作に、要素の説明・境界の破線の枠と種類・外部の要素の描き分けと、`C4Dynamic` の関係の再生を追加する */
