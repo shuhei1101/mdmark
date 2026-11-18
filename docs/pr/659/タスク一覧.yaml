@@ -35,9 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-17T21:09:36.774151+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-18T03:25:43.354910+00:00'
+    updated_at: '2026-11-18T03:58:25.763643+00:00'
     note: モックの確認でパネルを畳む案 C に決まったため、SC-472-42 のボタンの記載を畳んだパネルと開くボタンの手順へ直す（パネルの位置・移動のボタンの回答の後）
   - process: モック作成
     status: done
