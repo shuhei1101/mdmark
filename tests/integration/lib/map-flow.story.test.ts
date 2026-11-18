@@ -6,6 +6,7 @@ import {
   expectCountBelowTitle,
   expectTargetSize,
   mapWireOverlaps,
+  overlaps,
   pageOverflows,
   resolveColorIn,
 } from "../story.ts";
@@ -361,6 +362,59 @@ test("test_group_note_info_marker_size", async () => {
     page,
     ".mdmark-diagram-stage button.mdmark-diagram-info:not(.mdmark-diagram-group-info)",
   );
+});
+
+// 説明を持つノードの右上のマーカーは、ノードの種類の行の文字（アイコンと種類の名前）と名前の文字に重ならない（GroupNote）
+test("test_group_note_info_marker_not_overlapping", async () => {
+  // 準備・実行
+  const page = await openMap("group-note");
+  // 検証
+  const nodes = await page
+    .locator(".mdmark-diagram-stage .mdmark-diagram-node[data-node]")
+    .evaluateAll((elements) => {
+      const toBox = (rect: DOMRect) => ({
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+      });
+      // 要素の中身（文字とアイコン）の範囲。描かれない要素は null
+      const contentOf = (element: Element | null) => {
+        if (!element || getComputedStyle(element).display === "none") {
+          return null;
+        }
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        const rect = range.getBoundingClientRect();
+        return rect.width > 0 ? toBox(rect) : null;
+      };
+      return elements.flatMap((node) => {
+        const marker = node.querySelector("button.mdmark-diagram-info");
+        if (!marker) {
+          return [];
+        }
+        return [
+          {
+            id: node.getAttribute("data-node") ?? "",
+            marker: toBox(marker.getBoundingClientRect()),
+            kind: contentOf(node.querySelector(".mdmark-diagram-node-kind")),
+            name: contentOf(node.querySelector(".mdmark-diagram-node-name")),
+          },
+        ];
+      });
+    });
+  expect(nodes.length).toBeGreaterThan(0);
+  for (const node of nodes) {
+    expect(node.name, node.id).not.toBeNull();
+    if (node.kind) {
+      expect(overlaps(node.marker, node.kind), `${node.id} の種類の行`).toBe(
+        false,
+      );
+    }
+    if (node.name) {
+      expect(overlaps(node.marker, node.name), `${node.id} の名前`).toBe(false);
+    }
+  }
 });
 
 // hints が false なら、説明を持つノード・グループ・線にマーカーとツールチップが無く、線のラベル・ノードの名前・グループのタイトルは描く（HintsOff）

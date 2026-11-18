@@ -282,7 +282,7 @@ test("test_collapsed", async () => {
   );
 });
 
-// 閉じたグループのタイトルの行とノードの説明のマーカーは、押せる大きさ 24px 四方以上で描く（Collapsed）
+// ノードの説明のマーカーは、押せる大きさ 24px 四方以上で描く（Collapsed）
 test("test_collapsed_info_marker_size", async () => {
   // 準備・実行
   const page = await openState("collapsed");

@@ -198,6 +198,16 @@ export async function expectCountBelowTitle(
   expect(rows.count.bottom).toBeLessThanOrEqual(rows.node.bottom + 0.5);
 }
 
+/** 要素の矩形（ページの座標） */
+export type Box = { left: number; top: number; right: number; bottom: number };
+
+/** 辺が接するだけは重ならない扱いで、2 つの矩形が重なるか */
+export const overlaps = (a: Box, b: Box): boolean =>
+  a.left < b.right - 0.5 &&
+  b.left < a.right - 0.5 &&
+  a.top < b.bottom - 0.5 &&
+  b.top < a.bottom - 0.5;
+
 /** 押せる要素の大きさの下限（WCAG 2.5.8・axe の target-size） */
 export const MIN_TARGET_SIZE = 24;
 
