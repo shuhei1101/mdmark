@@ -51,13 +51,38 @@ data_models:
     properties:
       - name: reveal
         type: '(ids: string[]) => void'
-        description: ノードか参加者の中心へ表示する枠をスクロールする（読者が触った後は `resume` まで何もしない）
+        description: ノードか参加者を囲む矩形と `FOCUS_MARGIN_PX` の余白が表示する枠に収まる倍率と位置へ、`zoomControlOf` の `focusRect` で図を移す（読者が触った後は `resume` まで何もしない）
       - name: resume
         type: () => void
-        description: 読者が触って止めたスクロールを再開する
+        description: 読者が触って止めた移動を再開する
       - name: destroy
         type: () => void
         description: 表示する枠のイベントを外す
+constants:
+  - name: STEP_MS
+    title: 手順の 1 周の時間
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    summary: 手順を繰り返すときの 1 周の時間（ミリ秒）。今の区切りをこの時間で塗り、塗り終えたら最初から塗り直す
+    value: '2000'
+  - name: BAND_DENSE_PX
+    title: 細い区切りの幅
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    summary: 区切りの幅がこの px より細いとき、手順のバーに `is-dense` を付けて今の区切りを広げる
+    value: '12'
+  - name: FOCUS_MARGIN_PX
+    title: 手順へ移すときの余白
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    summary: 強調するノードを囲む矩形の周りに残す、表示する枠の中の余白（px）
+    value: '32'
+  - name: FOCUS_MS
+    title: 手順へ移す時間
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    summary: 強調するノードへ図の倍率と位置を移す時間（ミリ秒）。動きを減らす設定では 0
+    value: '300'
 functions:
   - name: attachBand
     title: 案内と再生を進める
@@ -65,77 +90,78 @@ functions:
     container: src/map/band.ts
     usecase: 図を巡回する
     role: 処理
-    summary: 図の枠の下に案内の帯を配置し、前へ・次へ・停止・自動で進めると強調・データの印・スクロールを付ける
+    summary: 図の枠の下に案内の帯を配置し、区切り・左右の矢印のボタン・キーで選んだ手順を停止するまで繰り返し、帯のバーと矢印のボタンの外・図の枠の空いた場所・Esc で停止する
     scope: public
     args:
       - name: options
-        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; unit?: "message" | "transition" | "task" | "period" | "commit"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void; follow?: { start: () => void; step: (step: BandStep) => void } }'
+        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; unit?: "message" | "transition" | "task" | "period" | "commit"; steps: BandStep[]; apply: (step: BandStep | undefined) => void; onStep?: (step: BandStep, index: number) => void }'
         required: true
-        description: 図の枠・モード・再生で進める単位（既定 `message`。`renderMapBand` の `unit` に渡す）・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）・自動で進め始めたとき（`start`）と自動で次の手順へ進めたとき（`step`）に呼ぶ関数
+        description: 図の枠・モード・再生で進める単位（既定 `message`。`renderMapBand` の `unit` に渡す）・手順・強調を当てる関数・手順へ移ったときに呼ぶ関数（図の移動に使う）
     returns:
       type: BandHandle
       description: 止める関数と片付ける関数
     process: |-
-      1. `renderMapBand` で帯を描き、前へ・次へは端で反対の端へ回し、`apply` で強調を当てる
-      2. 自動で進めるの間は `interval` 秒ごとに次へ進め、強調するノードの中心へ表示する枠をスクロールする。スクロールは `createFollow` で行い、自動で進め始めたら `resume` を呼ぶ。自動で進め始めたときに `follow.start`、自動で次の手順へ進めたときに `follow.step` を呼ぶ（前へ・次へでは呼ばない）
-      3. 停止で `apply(undefined)` を呼び、始めた段に戻す。`update` で手順を差し替えたときは、自動で進めるを止めて番号を `–` に戻す
-      4. `autoplay` が `true` なら `observe` で図の枠が画面に入るのを待ち、入ったら `reducedMotion` が `false` のときだけ自動で進めるを始める（`true` のときは止めた帯のまま）
+      1. `renderMapBand`（`titles` は手順の `title`）で帯を描き、手順のバーの幅を `ResizeObserver` で見て、区切りの幅（バーの幅から区切りの間を引いて手順の数で割った幅）が `BAND_DENSE_PX` より細いときだけバーに `is-dense` を付ける
+      2. 区切りの押下・左右の矢印のボタン・バーの ← → Home End で手順へ移る（矢印のボタンと ← → は端で反対の端へ回し、始める前の左は最後、右は最初）。移ったら `apply` で強調を当てて `onStep` を呼び、`requestAnimationFrame` で今の区切りを `STEP_MS` の 1 周で塗り、塗り終えたら最初から塗り直す（次の手順へは進めない）。今の手順の区切りを押したときは、塗りを最初からにして `apply` を呼び直す
+      3. 描き直す前にフォーカスが帯の中にあれば、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへ、描き直した後にフォーカスを戻す
+      4. 帯の中のバーと矢印のボタンの外の押下・バーの Esc・図の枠の表示する枠の中でノード（`[data-node]`・`[data-participant]`）・線の押せる帯（`.map-wire-hit`）・ボタン・リンクの外を押して `DRAG_THRESHOLD` 以下の動きで離したときに停止する。停止で塗りを止め、`apply(undefined)` を呼び、始めた段に戻して帯をバーと矢印のボタンだけにする
+      5. `update` で手順を差し替えたときは、塗りを止めて番号を無しに戻す（`apply` は呼ばない）
     unit_tests:
-      - name: test_attach_band_when_next
+      - name: test_attach_band_when_segment
         case: 正常
-        summary: 次へ
-        condition: 4 手順で次へを 5 回押す
+        summary: 区切りで手順へ移る
+        condition: 4 手順で 3 つ目の区切りを押す
+        mock: '`apply`・`onStep`'
+        expected: '`apply` と `onStep` に手順 2 が 1 回ずつ渡り、バーの `aria-valuenow` が 3、帯が `is-idle` を持たない'
+      - name: test_attach_band_when_loop
+        case: 正常
+        summary: 手順を繰り返す
+        condition: 3 つ目の区切りを押し、時計を `STEP_MS` の 1.5 倍進める
+        mock: '`requestAnimationFrame`・時計'
+        expected: '`apply` が手順 2 の 1 回だけで、今の区切りの塗りが 50%'
+      - name: test_attach_band_when_repressed
+        case: 正常
+        summary: 同じ区切りをもう一度押す
+        condition: 3 つ目の区切りを押し、時計を `STEP_MS` の半分進めてから、同じ区切りを押す
+        mock: '`requestAnimationFrame`・時計・`apply`'
+        expected: '`apply` に手順 2 が 2 回渡り、塗りが 0% に戻る'
+      - name: test_attach_band_when_arrows
+        case: 正常
+        summary: 左右の矢印のボタン
+        condition: 4 手順で、始める前に左の矢印のボタンを押し、次に右の矢印のボタンを押す
         mock: '`apply`'
-        expected: '`apply` に手順 0・1・2・3・0 が渡る'
-      - name: test_attach_band_when_auto
+        expected: '`apply` に手順 3・0 が渡り、描き直した後もフォーカスが右の矢印のボタンにある'
+      - name: test_attach_band_when_keys
         case: 正常
-        summary: 自動で進める
-        condition: '`interval: 3` で自動で進めるを押し、時計を 6 秒進める'
-        mock: 時計（fake timers）・`scrollTo`
-        expected: 手順 0・1 まで進み、表示する枠の `scrollTo` を 2 回呼ぶ
-      - name: test_attach_band_when_user_scrolls
+        summary: バーのキー
+        condition: バーにフォーカスして → を 2 回、Home、Esc を押す
+        mock: '`apply`'
+        expected: '`apply` に手順 0・1・0 と `undefined` が渡り、描き直した後もフォーカスがバーにある'
+      - name: test_attach_band_when_stopped_outside
         case: 正常
-        summary: 読者が触る
-        condition: 自動で進める間に表示する枠でホイールを回す
-        mock: 時計・`scrollTo`
-        expected: 以降の手順で `scrollTo` を呼ばない
-      - name: test_attach_band_when_autoplay
-        case: 正常
-        summary: 画面に入ったら始める
-        condition: '`autoplay: true`・`reducedMotion: false`。`observe` の `onEnter` を呼ぶ'
-        mock: '`observe`・時計'
-        expected: '`onEnter` の前は `apply` を呼ばず、呼んだ後に手順 0 が渡り、自動で進めるの `aria-pressed` が `true`'
+        summary: バーの外と図の枠の空いた場所で停止する
+        condition: 手順を始めて、帯のタイトルを押す。もう一度始めて、図の枠の空いた場所で 2px 動かして離す。もう一度始めて、空いた場所で 10px 動かして離し、ノードの上で押して離す
+        mock: '`apply`'
+        expected: タイトルと 2px の後に `apply(undefined)` を呼び、10px とノードの上では呼ばない
       - name: test_attach_band_when_update
         case: 正常
         summary: 手順の差し替え
-        condition: 4 手順で次へを 2 回押してから、2 手順に `update` する
+        condition: 4 手順で 2 つ目の区切りを押してから、2 手順に `update` する
         mock: '`apply`'
-        expected: 帯の番号が `–/2` になり、`update` で `apply` を呼ばない
-      - name: test_attach_band_when_autoplay_reduced
+        expected: 区切りが 2 つでバーの `aria-valuenow` が 0、`update` で `apply` を呼ばない
+      - name: test_attach_band_when_dense
         case: 正常
-        summary: 動きを減らす設定
-        condition: '`autoplay: true`・`reducedMotion: true`。`onEnter` を呼ぶ'
-        mock: '`observe`'
-        expected: '`apply` を呼ばず、帯の番号が `–` のまま'
-      - name: test_attach_band_when_keys_kept_focus
-        case: 正常
-        summary: 矢印キーで続けて進める
-        condition: 帯の次へのボタンにフォーカスして → を 2 回
-        mock: なし（jsdom）
-        expected: 番号が 2 つ進み、描き直した後もフォーカスが帯の次へのボタンにある
-      - name: test_attach_band_when_follow
-        case: 正常
-        summary: 自動で進める間の follow
-        condition: '`interval: 3` で自動で進めるを押し、時計を 6 秒進め、一時停止して次へを押す'
-        mock: 時計・`follow`
-        expected: '`follow.start` を 1 回、`follow.step` を手順 1・2 で 2 回呼び、次へでは呼ばない'
+        summary: 細い区切り
+        condition: 40 手順の帯を、幅 390px と幅 1280px の図の枠で描く
+        mock: なし
+        expected: 幅 390px ではバーが `is-dense` を持ち、幅 1280px では持たない
   - name: createFollow
     title: 表示する枠をノードへスクロールする
     kind: 関数
     container: src/map/band.ts
     usecase: 図を巡回する
     role: 処理
-    summary: 図の枠の表示する枠を、指定したノードか参加者の中心へスクロールし、読者が表示する枠を触ったら `resume` まで止める
+    summary: 図の枠の中を、指定したノードか参加者を囲む矩形が収まる倍率と位置へ移し、読者が表示する枠を触ったら `resume` まで止める
     scope: public
     args:
       - name: figure
@@ -145,21 +171,29 @@ functions:
       - name: reducedMotion
         type: boolean
         required: true
-        description: 動きを減らす設定（`true` なら滑らかにスクロールしない）
+        description: 動きを減らす設定（`true` なら時間をかけずに移す）
     returns:
       type: FollowHandle
-      description: スクロールする関数・再開する関数・片付ける関数
+      description: 移す関数・再開する関数・片付ける関数
     process: |-
-      1. `reveal` は、指定した ID の `[data-node]`・`[data-participant]` を囲む矩形の中心が表示する枠の中央に来るように、表示する枠の `scrollTo` を呼ぶ（倍率と文書のスクロールは変えない）
-      2. 読者が表示する枠でホイール・`pointerdown`・キー・タッチをしたら、`resume` まで `reveal` でスクロールしない
+      1. `reveal` は、指定した ID の `[data-node]`・`[data-participant]`（シーケンス図の線は `.map-wire-hit[data-message]`）を囲む矩形を、倍率を掛ける前の中身の座標で求め、表示する枠の `zoomControlOf` の `focusRect`（余白 `FOCUS_MARGIN_PX`、時間は `reducedMotion` なら 0、そうでなければ `FOCUS_MS`）を呼ぶ
+      2. 読者が表示する枠でホイール・`pointerdown`・キー・タッチをしたら、`resume` まで `reveal` で移さない
     unit_tests:
       - name: test_create_follow_when_touched
         case: 正常
         summary: 読者が触る
         condition: '`reveal` を呼び、表示する枠でホイールを回して `reveal`、`resume` の後に `reveal` を呼ぶ'
-        mock: 表示する枠の `scrollTo`
-        expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
-lead: '案内と再生のバーの手順の進め方と、表示ブロックのスクロールを受け持ち、案内と再生のバーの操作を変えるときに参照する。'
+        mock: '`zoomControlOf` が返す `focusRect`'
+        expected: '`focusRect` を 1 回目と 3 回目だけ呼ぶ'
+      - name: test_create_follow_when_reduced_motion
+        case: 正常
+        summary: 動きを減らす設定
+        condition: '`reducedMotion: true` で 2 つのノードの `reveal` を呼ぶ'
+        mock: '`focusRect`'
+        expected: '`focusRect` に 2 つのノードを囲む矩形と、余白 32・時間 0 が渡る'
+    callees:
+      - MOD-472-177#functions[zoomControlOf]
+lead: '案内と再生のバーの手順の選び方と繰り返し・停止と、手順へ図を移す処理を受け持ち、案内と再生のバーの操作を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true

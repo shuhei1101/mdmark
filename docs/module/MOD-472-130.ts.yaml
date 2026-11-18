@@ -22,10 +22,10 @@ data_models:
         description: 操作と観察を外す
       - name: follow
         type: '(nodes: string[]) => void'
-        description: ノードの中心へ表示する枠をスクロールする（シーケンス図の再生を自動で進めている間。`createFollow` の `reveal`）
+        description: ノードを囲む矩形が収まる倍率と位置へ図を移す（シーケンス図の再生でメッセージへ移ったとき。`createFollow` の `reveal`）
       - name: resumeFollow
         type: () => void
-        description: 読者が触って止めたスクロールを再開する（`createFollow` の `resume`）
+        description: 読者が触って止めた移動を再開する（`createFollow` の `resume`）
   - name: MapFlowExtension
     title: 構成図の種類ごとの差し込み
     container: src/map/flow-view.ts
@@ -178,9 +178,8 @@ functions:
       1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み、`extension.kinds`・`extension.lines` を設定の `map.kinds`・`map.lines` に重ね、印に `title` が無ければ `extension.title` を図の枠のタイトルにし、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
       2. `extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を引き直し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・引き直し・並べるを 1 回だけやり直す（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」をやり直すことを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確かめた `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
       3. ノードと閉じたグループ（`.map-closed-group[data-group]`）の中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
-      4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順を進めるたびに `onWalk` を呼び、停止で案内を始めたときに中へ入っていたグループに戻す
+      4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順へ移るたびに `onWalk` を呼び、`onStep` で `resumeFollow` と手順の `nodes` の `follow` を呼んで図を移し、停止で案内を始めたときに中へ入っていたグループと倍率に戻す
       4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）
-      5. 補足に `walkthroughs` があれば `attachBand`（印の `interval`・`play`）で案内の帯を付ける
     unit_tests:
       - name: test_attach_map_flow_when_drag_cancelled
         case: 正常
@@ -227,15 +226,15 @@ functions:
       - name: test_attach_map_flow_when_walk_leaves_group
         case: 正常
         summary: 中へ入る手順の後の手順
-        condition: '手順 3 だけが `enter: place` の案内で、次へを 3 回押してから前へを押す'
+        condition: '手順 3 だけが `enter: place` の案内で、3 つ目の区切りを押してから左の矢印のボタンを押す'
         mock: なし（jsdom）
-        expected: 手順 3 では `place` の中に入り、前へで手順 2 に戻ると、案内を始めた段（全体）の図に戻る（今入っているグループのタイトルが無い）
+        expected: 手順 3 では `place` の中に入り、左の矢印のボタンで手順 2 に移ると、案内を始めた段（全体）の図に戻る（今入っているグループのタイトルが無い）
       - name: test_attach_map_flow_when_follow
         case: 正常
-        summary: 外からスクロールする
+        summary: 外から図を移す
         condition: '`follow([mount, marker])` を呼ぶ。表示する枠でホイールを回してからもう一度呼ぶ。`resumeFollow` の後にもう一度呼ぶ'
-        mock: 表示する枠の `scrollTo`
-        expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
+        mock: 表示する枠の `zoomControlOf` の `focusRect`
+        expected: '`focusRect` を 1 回目と 3 回目だけ呼ぶ'
       - name: test_attach_map_flow_when_crowded
         case: 正常
         summary: 並べた線が矩形に入るときは間を広げて配置し直す

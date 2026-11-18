@@ -402,5 +402,6 @@
 | [ライブラリ本体 / バージョンを上げる / marker-json.mjs](./MOD-477-4.mjs.yaml) | ライブラリ本体 / バージョンを上げる / marker-json.mjs |
 | [ライブラリ本体 / map / convert.ts](./MOD-477-5.ts.yaml) | ライブラリ本体 / map / convert.ts |
 | [ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs](./MOD-477-6.mjs.yaml) | ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs |
+| [ライブラリ本体 / バージョンを上げる / retired-map-options.mjs](./MOD-660-1.mjs.yaml) | ライブラリ本体 / バージョンを上げる / retired-map-options.mjs |
 
 <!-- /table -->

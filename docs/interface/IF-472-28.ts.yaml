@@ -633,6 +633,42 @@ flows:
     refs:
       - SC-472-27#scenarios[正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]
       - SC-472-27#scenarios[正常シナリオ（書き換えない記載を移行の報告に挙げる）]
+  - name: 正常系（map の印の廃止した引数を削除する）
+    summary: map の印から廃止した `play`・`interval` を削除する `call` の手順を当て、ほかの引数とコードブロックの中の印を変えない
+    setup:
+      - name: 廃止した引数を持つフォルダ
+        description: シナリオ『バージョンを上げる』の「正常シナリオ（map の印の廃止した引数を削除する）」の文書を、設定の `build.include` に該当させたフォルダ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
+        notes: '`--yes` を指定する'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant S as スクリプト
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 設定・索引・文書を写す
+        C->>S: node {map の印の引数を削除するスクリプト} --config {設定ファイル}
+        S->>F: map の印から play・interval を削除する
+        C->>C: mdmark check と同じ点検（ずれ 0 件）
+        C->>F: 設定の version を目標のバージョンにする
+        C-->>W: 書き換えた文書の数の行・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0
+      - '1 つ目の文書の印が `<!-- map: {"title": "全体の構成"} -->`、2 つ目の文書の印が `<!-- map -->` になり、閉じのマーカー・コードブロックの中の印・マーカーの外の本文が変わっていない'
+      - 標準出力の手順の行の下に、書き換えた文書の数（2 件）の行がある
+      - もう一度適用しても文書が変わらない
+      - 設定の `version` が目標のバージョン
+    test: test_normal_when_retired_map_options_migrated
+    refs:
+      - SC-472-27#scenarios[正常シナリオ（map の印の廃止した引数を削除する）]
   - name: 異常系（手元のバージョンが develop・終了コード 1）
     summary: 手元が `develop` のときは手順を選ばずに止める
     setup:
@@ -913,6 +949,10 @@ constraints:
       写さない値と書き換えない範囲は、移行の報告の行（`{文書の相対パス}:{行}: er: {項目}: {理由}`）を標準出力に 1 つずつ書く
     decided_by: SC-472-27#scenarios[正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）]
     notes: 確認ログ『ER 図の部品を map の ER 図へ統合して廃止するか』。関数の分け方と、flow・sequence の移行のスクリプトと共通にする範囲はモジュール構成設計
+  - item: map の印の廃止した引数の移行
+    constraint: 'map の印の `play`・`interval` を廃止したバージョンの移行の手順は、`files` が `[documents]` の `call` の手順 1 つ（壊す手順ではない）で、制約「文書」の文書の `<!-- map: {JSON のオブジェクト} -->`（コードブロックと行内のコードの中を除く）から `play`・`interval` のキーを削除し、ほかのキーの値と並びを変えずに、`:` と `,` の後ろに空白を 1 つ置いた 1 行の JSON で書き戻す。キーが無くなる印は `<!-- map -->` にする。JSON として読めない引数の印と、`play`・`interval` を持たない印は書き換えない。報告の行は出さず、書き換えた文書の数を書く'
+    decided_by: SC-472-27#scenarios[正常シナリオ（map の印の廃止した引数を削除する）]
+    notes: 確認ログ『連続再生の廃止に、今ある自動で進める機能とマーカーの引数 play・interval を含めるか』
 test_file: tests/integration/lib/upgrade.test.ts
 tags:
   - name: topic:バージョン

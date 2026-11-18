@@ -39,14 +39,18 @@ functions:
       `fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。
       `refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態をもう一度求める。
       図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使用する
+
+      `focusRect(rect, { margin, duration })` は、倍率を掛ける前の中身の座標の矩形と周りの `margin` が表示する枠に収まる倍率（全体が収まる倍率以上・`ZOOM.max` 以下）と、矩形の中心が表示する枠の中央に来る位置へ、`duration` ミリ秒かけて `requestAnimationFrame` で倍率と位置を変える（`duration` が 0 なら 1 回で変える。文書のスクロールは変えない）。移している間に読者がホイール・ドラッグ・キー・ボタンで操作したら、移すのを止める。
+
+      付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を消す
     args:
       - name: options
         type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content"; fitMin?: number }'
         required: true
         description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）
     returns:
-      type: '{ reset(): void; fit(): number; refit(): void; detach(): void }'
-      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・付けた操作を削除する関数
+      type: 'ZoomControl'
+      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を求め直す関数・矩形が収まる倍率と位置へ移す関数・付けた操作を削除する関数
     callees:
       - 'MOD-472-173#functions[fitScale]'
     unit_tests:
@@ -104,6 +108,45 @@ functions:
         condition: 拡大を 2 回押し、中身の `a.mdmark-diagram-node-link` に `dragstart` を出す
         mock: なし
         expected: '`dragstart` が `defaultPrevented`'
+      - name: test_attach_zoom_when_focus_rect
+        case: 正常
+        summary: 矩形が収まる倍率と位置へ移す
+        condition: '幅 600px・高さ 400px の枠に幅 1200・高さ 800 の中身。`focusRect({ x: 500, y: 300, width: 200, height: 100 }, { margin: 32, duration: 0 })`'
+        mock: なし
+        expected: 倍率が `min((600 - 64) / 200, (400 - 64) / 100)` を `ZOOM.max` で抑えた 2.68 で、矩形の中心 `(600, 350)` が表示する枠の中央にある
+      - name: test_attach_zoom_when_focus_rect_wide
+        case: 正常
+        summary: 収まる倍率より小さくしない
+        condition: 同じ枠で、中身の全体を囲む矩形を指定する
+        mock: なし
+        expected: 倍率が全体が収まる倍率
+      - name: test_attach_zoom_when_focus_rect_animated
+        case: 正常
+        summary: 時間をかけて移し、読者の操作で止める
+        condition: '`duration: 300` で `focusRect` を呼び、時計を 150 ミリ秒進めてからホイールを回し、さらに 300 ミリ秒進める'
+        mock: '`requestAnimationFrame`・時計'
+        expected: 150 ミリ秒の時点の倍率が始めの倍率と目標の倍率の間にあり、ホイールの後は目標の倍率にならない
+      - name: test_zoom_control_of
+        case: 正常
+        summary: 表示する枠から操作を引く
+        condition: '`attachZoom` の後と `detach` の後に `zoomControlOf(viewport)` を呼ぶ'
+        mock: なし
+        expected: 後の前は戻り値と同じ操作、`detach` の後は `undefined`
+    status: planned
+  - name: zoomControlOf
+    title: 表示する枠の拡大・縮小の操作を引く
+    container: src/shared/zoom.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`attachZoom` を付けた表示する枠の `ZoomControl` を返却する（付けていなければ `undefined`）'
+    args:
+      - name: viewport
+        type: HTMLElement
+        required: true
+        description: 表示する枠
+    returns:
+      type: ZoomControl | undefined
+      description: 付けた操作
     status: planned
 lead: '表示ブロックの中身の拡大・縮小・移動（ボタン・キー・ドラッグ）を受け持ち、図とライトボックスの拡大・縮小の操作を変えるときに参照する。'
 tags:
