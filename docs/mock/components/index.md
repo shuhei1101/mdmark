@@ -23,6 +23,7 @@
 | [diagram-frame](./diagram-frame/index.html) | 図のタイトル・範囲・更新日・凡例と、右上の拡大・縮小のボタン、押すと戻る倍率のボタンと移動のボタン、2 種類以上ある種類だけの凡例と凡例の項目が無い図、右下のリサイズハンドルと高さを変えた図・機能がオフの図 |
 | [diagram-frame-panel](./diagram-frame-panel/index.html) | 図の右上に重ねる拡大・縮小・倍率・全画面のボタンのパネルの案（図の上に余白を取る・半透明・畳む）と、拡大した図・最大の倍率・狭い枠・縦に長い図 |
 | [diagram-frame-touch](./diagram-frame-touch/index.html) | 図の枠を指で動かすときの、開いたときの倍率と、指 1 本で縦横に動かす拡大した図・ピンチで拡大した図 |
+| [diagram-minimap](./diagram-minimap/index.html) | 拡大した図の表示する枠の右下に重ねるミニマップ（全体が収まるときは出さない・拡大した・パネルのミニマップのボタン・ボタンで隠した・左下に配置する案・グラフ・縦に長い図・狭い枠・最初は出さない案） |
 | [diagram-tooltip](./diagram-tooltip/index.html) | 図の矢印の詳細・ノードの入力・処理・出力・ノードの hint・ノードの中の用語のツールチップと、ヒントを削除した図、システムの枠と層のタイトルの hint、グラフの点・棒・円・散布図の項目のツールチップ |
 | [diff-blocks](./diff-blocks/index.html) | 描いた文書の上の差分の色分けで、追加・変更したブロックと削除したブロックを段落・見出し・表の行・リストの項目・コードブロック・注意書き・長い URL ごとに、案 A（左の余白の記号）と案 B（枠と右上の札）で並べたもの |
 | [diff-html-switch](./diff-html-switch/index.html) | 差分の中の埋め込んだ HTML の範囲を、ソースの色分けとプレビューの前と後で切り替える見方のボタンと、片側にだけある・変えていない・スクリプトを記載した範囲 |
@@ -42,6 +43,7 @@
 | [map-diagram](./map-diagram/index.html) | Mermaid と補足で書いた map の図（全体・グループの中・閉じたグループとまとめた線・案内の最初と最後・再生の一時停止・狭い幅） |
 | [map-er-state](./map-er-state/index.html) | map の ER 図・状態遷移図（テーブルの列と多重度・分類の箱・列と分類の開閉・状態遷移図の開始と終了と分岐・入れ子の状態・遷移の再生・狭い幅） |
 | [map-class-arch-c4](./map-class-arch-c4/index.html) | map のクラス図・アーキテクチャ図・C4 図（メンバーの行と関係の端の形・メンバーと namespace の開閉・service のアイコンと group と junction・要素の種類の行と境界・狭い幅） |
+| [map-c4-dynamic-play](./map-c4-dynamic-play/index.html) | map の C4Dynamic の番号つきの関係の再生（実演・始める前・説明を持つ関係・閉じた境界の中の要素・両向きの関係・案内の手順を持つ図・帯を出さないコンテナ図・狭い幅） |
 | [map-c4-kinds](./map-c4-kinds/index.html) | map の C4 のコンテナ図・コンポーネント図・動的図・配置図（種類と技術の行・Container_Boundary・関係の番号・配置先のノードの実線の枠と開閉と中へ入る・読めない行・狭い幅） |
 | [map-axis-grid](./map-axis-grid/index.html) | map の軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の配置・section と入れ子のブロックの開閉と中へ入る・選択と強調・再生・補足の layout と書き方の警告・範囲の外のコードブロック・読めない行・狭い幅） |
 | [map-band](./map-band/index.html) | map の案内・再生の帯（手順のバーだけの帯・区切りを押した手順の再生と再生し直し・バー以外を押して停止・なめらかな移動の実演・手順が多いとき・狭い幅） |

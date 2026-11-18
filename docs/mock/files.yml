@@ -1385,6 +1385,30 @@ files:
     visibility: internal
     description: '#630（map の範囲の外の mermaid のコードブロックにも map の図の操作を付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: components/diagram-minimap/index.html
+    visibility: internal
+    description: '部品『diagram-minimap』のモック: 拡大した図の表示する枠の右下に重ねるミニマップの、全体が収まるときは出さない・拡大した・パネルのミニマップのボタン・ボタンで隠した・左下に配置する案・グラフ・縦に長い図・狭い枠・最初は出さない案。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/map-c4-dynamic-play/index.html
+    visibility: internal
+    description: '部品『map-c4-dynamic-play』のモック: map の C4Dynamic の番号つきの関係を番号の順に再生の帯で再生する実演と、始める前・説明を持つ関係・閉じた境界の中の要素・両向きの関係・案内の手順を持つ図・帯を出さないコンテナ図・狭い幅。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/677/assets/minimap.js
+    visibility: internal
+    description: '#677 のモックのミニマップ: 図の枠のパネルにミニマップのボタンを追加し、表示する枠の隅に図の全体の複製と見えている範囲の枠線を重ね、押した位置への移動と枠線のドラッグ・全画面への引き継ぎを付ける処理。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/677/assets/minimap.css
+    visibility: internal
+    description: '#677 のモックのミニマップの規則: ミニマップの配置・面と線・見えている範囲の枠線と、パネルのミニマップのボタンの押している見た目。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図, tool:css]
+  - path: refs/677/assets/c4-dynamic-play.js
+    visibility: internal
+    description: '#677 のモックの C4Dynamic の再生: 番号つきの関係を番号の順の手順にし、#660 の再生の帯で選んだ関係の線と両端の要素のほかを薄くしてその線だけにデータのマーカーを流す処理と見本の Mermaid・補足。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/677/index.md
+    visibility: internal
+    description: '#677（拡大した図のミニマップと、map の C4Dynamic の関係の再生）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/660/assets/band.js
     visibility: internal
     description: '#660 のモックの案内・再生の帯: 手順のバーとタイトル・説明の文だけを持つ帯の HTML と、区切りを押した手順の再生・バー以外を押した停止と、図をなめらかに移す実演の処理。このモックの振る舞いを変えるときに参照する。'

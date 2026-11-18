@@ -1,0 +1,62 @@
+/* 拡大した図のミニマップのモックの規則（#677） */
+
+/* ミニマップ: 表示する枠の右下の隅に、図の全体を縮めて重ねる。リサイズハンドルの上に出し、パネルと同じ不透明な面・線・角丸で区切る */
+.mdmark-diagram-minimap {
+  position: absolute;
+  inset-inline-end: 6px;
+  z-index: 2;
+  box-sizing: content-box;
+  overflow: hidden;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--mdmark-color-text) 16%, transparent);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.mdmark-diagram-minimap[hidden] {
+  display: none;
+}
+
+/* 左下に配置する案（[data-at="start"]） */
+.mdmark-diagram-minimap[data-at="start"] {
+  inset-inline-start: 6px;
+  inset-inline-end: auto;
+}
+
+/* 図の中身の複製: 押せる要素・ツールチップ・データのマーカーを持たない絵として薄く描く */
+.mdmark-diagram-minimap-copy {
+  position: absolute;
+  inset: 0;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.mdmark-diagram-minimap-copy > * {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  transform-origin: 0 0;
+}
+
+/* 今見えている範囲: リンクの色の 2px の枠線と、薄い面 */
+.mdmark-diagram-minimap-view {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid var(--mdmark-color-link);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent);
+  cursor: grab;
+}
+
+.mdmark-diagram-minimap.is-dragging .mdmark-diagram-minimap-view {
+  cursor: grabbing;
+}
+
+/* パネルのミニマップのボタン: 押しているときは面の色で、押していないときと見分ける */
+.mdmark-diagram-tools .mdmark-diagram-minimap-tool[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--mdmark-color-link) 16%, transparent);
+  color: var(--mdmark-color-link);
+}
