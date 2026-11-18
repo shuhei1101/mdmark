@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.10e400d";
+  return "v0.14.0+develop.c9f1ef5";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -79009,7 +79009,13 @@ var MAP_LAYOUT = {
   /** 祖先でないグループの枠を出入りする 1 回の重み。最短より出入りを増やさないために大きくする */
   borderCost: 1e5,
   /** ドラッグで近づけられる間の下限 */
-  minGap: 16
+  minGap: 16,
+  /** 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる） */
+  usedCost: 60,
+  /** 同じ区間を通る線を並べるときの線の間 */
+  wireGap: 8,
+  /** 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ） */
+  closedCount: 17
 };
 
 // src/map/flowchart.ts
