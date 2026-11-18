@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.d79beb4";
+  return "v0.14.0+develop.1a113b7";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -73316,7 +73316,7 @@ function buildCodeBlocks(state) {
 }
 
 // src/diagram/geometry.ts
-var ZOOM = { step: 1.25, max: 3, pan: 80 };
+var ZOOM = { step: 1.25, minRatio: 0.25, maxRatio: 5, pan: 80 };
 var RESIZE = { step: 32, min: 120 };
 var STEP_BASES = [1, 2, 5, 10];
 var TICK_TARGET = 5;
@@ -74180,6 +74180,9 @@ function renderChart(definition, id) {
 }
 
 // src/diagram/diagram.part.ts
+var PANEL_OPEN_LABEL = "\u8868\u793A\u306E\u64CD\u4F5C\u3092\u958B\u304F";
+var PANEL_CLOSE_LABEL = "\u8868\u793A\u306E\u64CD\u4F5C\u3092\u9589\u3058\u308B";
+var ZOOM_EPSILON = 1e-3;
 var VIEWPORT_KEYS = "+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight";
 function num2(value) {
   return String(Number(value.toFixed(2)));
@@ -74294,17 +74297,14 @@ function renderTools(frame) {
   const extra = frame.tools === void 0 || frame.tools.length === 0 ? "" : `<div class="mdmark-diagram-tools-group" data-group="map">${frame.tools.map(
     (item) => `<button class="mdmark-diagram-tool" type="button" data-tool="${escapeHtml2(item.name)}" aria-label="${escapeHtml2(item.label)}" title="${escapeHtml2(item.label)}"${item.disabled ? ' disabled="disabled"' : ""}>${iconSvg(MAP_TOOL_ICONS[item.name] ?? "ellipsis")}</button>`
   ).join("")}</div>`;
-  const pan = [
-    tool("left", { label: "\u5DE6\u3078\u52D5\u304B\u3059", icon: "chevron-left" }),
-    tool("up", { label: "\u4E0A\u3078\u52D5\u304B\u3059", icon: "chevron-up" }),
-    tool("down", { label: "\u4E0B\u3078\u52D5\u304B\u3059", icon: "chevron-down" }),
-    tool("right", { label: "\u53F3\u3078\u52D5\u304B\u3059", icon: "chevron-right" })
-  ].join("");
   const screen = frame.modal ? tool("close", { label: "\u5168\u753B\u9762\u3092\u9589\u3058\u308B", icon: "x" }) : tool("fullscreen", { label: "\u5168\u753B\u9762\u3067\u958B\u304F", icon: "expand" });
   const percent = `${Math.round(zoom / fit * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="\u500D\u7387 ${percent}\u3002\u5168\u4F53\u304C\u53CE\u307E\u308B\u500D\u7387\u306B\u623B\u3059">${percent}</button>`;
-  const panGroup = frame.kind === "map" ? "" : `<div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div>`;
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "\u7E2E\u5C0F", icon: "minus" }, zoom <= fit)}${zoomButton}${tool("in", { label: "\u62E1\u5927", icon: "plus" }, zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  const open2 = frame.panelOpen === true;
+  const more = `<button class="mdmark-diagram-tool" type="button" data-tool="more" aria-expanded="${open2}" aria-label="${open2 ? PANEL_CLOSE_LABEL : PANEL_OPEN_LABEL}">${iconSvg("ellipsis")}</button>`;
+  const atMin = zoom <= fit * ZOOM.minRatio + ZOOM_EPSILON;
+  const atMax = zoom >= fit * ZOOM.maxRatio - ZOOM_EPSILON;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A"${open2 ? " data-open" : ""}>${extra}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "\u7E2E\u5C0F", icon: "minus" }, atMin)}${zoomButton}${tool("in", { label: "\u62E1\u5927", icon: "plus" }, atMax)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div><div class="mdmark-diagram-tools-group" data-group="more">${more}</div></div>`;
 }
 function resizeHandle(frame, fitHeight) {
   if (frame.resizable === false || frame.modal === true) return "";
@@ -74325,8 +74325,8 @@ function renderDiagramFrame(frame, body) {
   const sizer = `width:${num2(body.width * zoom)}px;height:${num2(body.height * zoom)}px`;
   const stage = `width:${num2(body.width)}px;height:${num2(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num2(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
-  const touchActive = frame.touchActive === true ? " data-touch-active" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
+  const atFit = zoom <= (frame.fit ?? 1) + ZOOM_EPSILON ? " data-at-fit" : "";
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport"${atFit} tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 function renderDiagram(options) {
   const {
@@ -74336,7 +74336,7 @@ function renderDiagram(options) {
     zoom,
     fit,
     modal,
-    touchActive,
+    panelOpen,
     resizable = true
   } = options;
   const part = renderChart(definition, id);
@@ -74352,7 +74352,7 @@ function renderDiagram(options) {
       ...zoom === void 0 ? {} : { zoom },
       ...fit === void 0 ? {} : { fit },
       ...modal === void 0 ? {} : { modal },
-      ...touchActive === void 0 ? {} : { touchActive }
+      ...panelOpen === void 0 ? {} : { panelOpen }
     },
     part
   );

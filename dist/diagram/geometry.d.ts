@@ -3,10 +3,11 @@ import type { MdmarkDiagramWire } from "./definition.ts";
 export declare const JUMP_RADIUS = 6;
 /** 同じ向きで重なる線をずらす幅（px） */
 export declare const OVERLAP_OFFSET = 4;
-/** 拡大・縮小と移動の量: 1 回の倍率・上限・1 回の移動量（px） */
+/** 拡大・縮小と移動の量: 1 回の倍率・全体が収まる倍率に対する下限と上限の比・1 回の移動量（px） */
 export declare const ZOOM: {
     step: number;
-    max: number;
+    minRatio: number;
+    maxRatio: number;
     pan: number;
 };
 /** リサイズハンドルの量: キー 1 回で変える高さと、表示する枠の高さの下限（px） */

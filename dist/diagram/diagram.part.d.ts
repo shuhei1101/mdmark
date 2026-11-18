@@ -1,5 +1,9 @@
 import { type IconName } from "../shared/icons.part.ts";
 import type { MdmarkChartDefinition, MdmarkFlowDefinition } from "./definition.ts";
+/** 開閉のボタンのスクリーンリーダー向けの名前（畳んだとき） */
+export declare const PANEL_OPEN_LABEL = "\u8868\u793A\u306E\u64CD\u4F5C\u3092\u958B\u304F";
+/** 開閉のボタンのスクリーンリーダー向けの名前（開いたとき） */
+export declare const PANEL_CLOSE_LABEL = "\u8868\u793A\u306E\u64CD\u4F5C\u3092\u9589\u3058\u308B";
 /** 凡例の項目 */
 export type DiagramLegendItem = {
     /** 見本の種類: `series-{n}`・`fill-{n}`・`point-{n}`・`bubble`・`info`・`underline` */
@@ -31,9 +35,9 @@ export type DiagramFrame = {
     fitMin?: number;
     /** 置き場所の幅いっぱいに広げるか（`figure` に `data-wide="true"`。map の図） */
     wide?: boolean;
-    /** 指で図を動かす操作中か（表示するノードに `data-touch-active` を付ける。ストーリーの状態だけが指定する） */
-    touchActive?: boolean;
-    /** 右上の帯の先頭に並べるボタン（map の図）。`name` は `MAP_TOOL_ICONS` のキー */
+    /** 右上のパネルを開いた状態で描くか（パネルに `data-open` を付ける。ストーリーの状態だけが指定する） */
+    panelOpen?: boolean;
+    /** 右上のパネルの先頭に並べるボタン（map の図）。`name` は `MAP_TOOL_ICONS` のキー */
     tools?: Array<{
         name: string;
         label: string;
@@ -145,7 +149,7 @@ type LegendDefinition = MdmarkChartDefinition;
 export declare function legendFor(definition: LegendDefinition): DiagramLegendItem[];
 /** 凡例の項目の並び（`ul` の中身）。`id` はグラフの塗りの模様の見本が指す `id` の頭 */
 export declare function renderLegendItems(id: string, items: DiagramLegendItem[]): string;
-/** 図の枠を描く: タイトル・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
+/** 図の枠を描く: タイトル・表示するノード（パネルと表示する枠）・ツールチップの中身・凡例を並べる */
 export declare function renderDiagramFrame(frame: DiagramFrame, body: DiagramBody): string;
 /** 図の種類 */
 export type DiagramKind = Exclude<DiagramFrame["kind"], "mermaid" | "map">;
@@ -160,7 +164,7 @@ export declare function renderDiagram(options: {
     zoom?: number;
     fit?: number;
     modal?: boolean;
-    /** 指で図を動かす操作中か（ストーリーの状態だけが指定する） */
-    touchActive?: boolean;
+    /** 右上のパネルを開いた状態で描くか（ストーリーの状態だけが指定する） */
+    panelOpen?: boolean;
 }): string;
 export {};
