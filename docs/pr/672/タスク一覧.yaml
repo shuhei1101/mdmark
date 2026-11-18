@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-18T06:06:03.140121+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: project-index.yaml の documents[]・管理用の YAML（既存 13 と新設分）・フォルダ構成 LAY-472-1
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:55.127109+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えない

@@ -12,8 +12,8 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | `plugin/files.yaml` | `/project-index:setup` で行のメタデータを今の付け方で見直す | ビルドした `*.js` は今の `exclude` のまま |
-| `.claude-plugin/` | `.claude-plugin/files.yaml` を新設し、`project-index.yaml` の `documents[]` に行を追加する | - |
+| `.claude-plugin/` | 直下の `files.yaml` に `marketplace.json` の行を記載する | - |
 
 ## テスト結果
 
-なし（コードを変えない）
+コードを変えないため、単体・結合テストは対象が無い。索引の同期は [ライブラリ本体](./ライブラリ本体.md) の `## テスト結果` に記載する。
