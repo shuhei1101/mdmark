@@ -54,14 +54,13 @@ const clearPlayingLabel = (figure: HTMLElement) => {
 const unlabeledWireOf = (
   figure: HTMLElement,
   layout: MapLayout,
-  ends: { from: string; to: string },
-  relation: string,
+  playing: { relation: string; from: string; to: string },
 ): SVGPathElement | undefined => {
   const drawn =
-    layout.wires.find((wire) => wire.id === relation) ??
+    layout.wires.find((wire) => wire.id === playing.relation) ??
     layout.wires.find((wire) =>
       wire.merged?.some(
-        (item) => item.from === ends.from && item.to === ends.to,
+        (item) => item.from === playing.from && item.to === playing.to,
       ),
     );
   if (drawn === undefined) return undefined;
@@ -103,7 +102,7 @@ const showPlayingLabel = (
 ) => {
   clearPlayingLabel(figure);
   if (playing === undefined) return;
-  const wire = unlabeledWireOf(figure, layout, playing, playing.relation);
+  const wire = unlabeledWireOf(figure, layout, playing);
   const stage = figure.querySelector(".mdmark-diagram-stage");
   if (!wire || !stage) return;
   const point = wire.getPointAtLength(wire.getTotalLength() / 2);
