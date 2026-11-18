@@ -412,6 +412,34 @@ test("test_attach_zoom_when_focus_rect_animated", async () => {
   expect(scale()).not.toBeCloseTo(2.68, 2);
 });
 
+// ボタンを持つ要素の中のツールでない要素を押しても止めない（正常系）
+test("test_attach_zoom_when_focus_rect_other_click", async () => {
+  // 準備
+  vi.useFakeTimers({
+    toFake: [
+      "requestAnimationFrame",
+      "cancelAnimationFrame",
+      "performance",
+      "Date",
+    ],
+  });
+  const { zoom, scale } = await setUpFocus();
+  const tools = document.querySelector(".tools") as HTMLElement;
+  const other = document.createElement("span");
+  tools.append(other);
+  // 実行
+  zoom.focusRect(
+    { x: 500, y: 300, width: 200, height: 100 },
+    { margin: 32, duration: 300 },
+  );
+  vi.advanceTimersByTime(150);
+  other.click();
+  vi.advanceTimersByTime(300);
+  vi.useRealTimers();
+  // 検証
+  expect(scale()).toBeCloseTo(2.68, 2);
+});
+
 // 表示する枠から操作を引く（正常系）
 test("test_zoom_control_of", async () => {
   // 準備

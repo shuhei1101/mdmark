@@ -132,6 +132,12 @@ functions:
         condition: '`attachZoom` の後と `detach` の後に `zoomControlOf(viewport)` を呼ぶ'
         mock: なし
         expected: 後の前は戻り値と同じ操作、`detach` の後は `undefined`
+      - name: test_attach_zoom_when_focus_rect_other_click
+        case: 正常
+        summary: ボタンを持つ要素の中のツールでない要素の押下では止めない
+        condition: '`duration: 300` で `focusRect` を呼び、時計を 150 ミリ秒進めてから、ボタンを持つ要素の中の `data-tool` を持たない要素を押し、さらに 300 ミリ秒進める'
+        mock: '`requestAnimationFrame`・時計'
+        expected: 目標の倍率になる
     status: planned
   - name: zoomControlOf
     title: 表示する枠の拡大・縮小の操作を引く
