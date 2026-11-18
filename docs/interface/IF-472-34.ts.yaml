@@ -3201,7 +3201,7 @@ constraints:
       表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。
       種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。
       種類は引数の `kind`。
-      機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`・`sort` の `true`）を記載した機能（`filter`・`columns`・`pin`・`total`・`sort`）を加えたものを空白で並べる。
+      機能は種類の機能（`default` は `sort`・`pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`・`sort` の `true`）を記載した機能（`filter`・`columns`・`pin`・`total`・`sort`）を加えたものを空白で並べる。
       `enabled` を `false` にした機能の列の設定は適用しない。
       列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。
       `columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。
