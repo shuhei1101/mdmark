@@ -270,3 +270,66 @@ test("test_accessibility", async () => {
     page.locator('[data-node="pay"]').innerText(),
   ).resolves.toContain("External");
 });
+
+/** データの印を流す線と、両方へ流すか */
+function packetsOf(page: Page) {
+  return page.locator(".map-packet").evaluateAll((elements) =>
+    elements.map((element) => ({
+      wire: element.getAttribute("data-wire") ?? "",
+      backward:
+        element.querySelector("animateMotion")?.getAttribute("keyPoints") ===
+        "1;0",
+    })),
+  );
+}
+
+// C4Dynamic の 2 本目の関係の再生（DynamicPlaying）
+test("test_dynamic_playing", async () => {
+  // 準備・実行
+  const page = await openStory("dynamic-playing");
+  // 検証
+  const marks = await dimsOf(page);
+  for (const id of ["web", "api", "r2"])
+    expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(false);
+  for (const id of ["customer", "r1", "r3", "r5"])
+    expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(true);
+  const packets = await packetsOf(page);
+  expect(packets.length).toBeGreaterThan(0);
+  expect(packets.every((packet) => packet.wire === "r2")).toBe(true);
+  expect(packets.some((packet) => packet.backward)).toBe(false);
+});
+
+// C4Dynamic の閉じた境界の中の要素への関係の再生（DynamicPlayingBoundary）
+test("test_dynamic_playing_boundary", async () => {
+  // 準備・実行
+  const page = await openStory("dynamic-playing-boundary");
+  // 検証
+  const store = page.locator('.map-closed-group[data-group="store"]');
+  await expect(
+    store.evaluate((element) => element.classList.contains("map-dim")),
+  ).resolves.toBe(false);
+  const marks = await dimsOf(page);
+  for (const id of ["api", "api->store"])
+    expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(false);
+  for (const id of ["customer", "web", "r2"])
+    expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(true);
+  const packets = await packetsOf(page);
+  expect(packets.length).toBeGreaterThan(0);
+  expect(packets.every((packet) => packet.wire === "api->store")).toBe(true);
+});
+
+// C4Dynamic の両向きの関係の再生（DynamicPlayingBiRel）
+test("test_dynamic_playing_bi_rel", async () => {
+  // 準備・実行
+  const page = await openStory("dynamic-playing-bi-rel");
+  // 検証
+  const marks = await dimsOf(page);
+  for (const id of ["web", "customer", "r5"])
+    expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(false);
+  for (const id of ["api", "r1"])
+    expect(marks.find((mark) => mark.id === id)?.dim, id).toBe(true);
+  const packets = await packetsOf(page);
+  expect(packets.every((packet) => packet.wire === "r5")).toBe(true);
+  expect(packets.some((packet) => packet.backward)).toBe(true);
+  expect(packets.some((packet) => !packet.backward)).toBe(true);
+});

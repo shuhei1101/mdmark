@@ -167,6 +167,27 @@ test("test_state_playback", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+// C4Dynamic の関係の再生は、タイトルが「{番号}: {元の要素} → {先の要素}：{ラベル}」で、バーと矢印の名前が関係（RelationPlayback）
+test("test_relation_playback", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-mapband--relation-playback");
+  // 検証
+  await expect(page.locator(".map-band-title").innerText()).resolves.toBe(
+    "2: 注文の画面 → 注文の API：注文を送る",
+  );
+  await expect(page.locator(".map-band-text").innerText()).resolves.toBe(
+    "画面の入力を JSON にして API へ送る",
+  );
+  await expect(sliderOf(page)).resolves.toMatchObject({
+    label: "関係",
+    max: "5",
+    now: "2",
+  });
+  const arrows = await arrowButtons(page);
+  expect(arrows.map((arrow) => arrow.label)).toEqual(["前の関係", "次の関係"]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
 // Git グラフの commit の再生は、タイトルが「{ブランチ名} · {commit のキー}」で、バーと矢印の名前が commit（CommitPlayback）
 test("test_commit_playback", async () => {
   // 準備・実行
