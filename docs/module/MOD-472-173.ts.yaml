@@ -7,12 +7,14 @@ constants:
   - name: ZOOM
     title: 拡大・縮小と移動の量
     container: src/diagram/geometry.ts
-    summary: 1 回の倍率・上限・1 回の移動量
+    summary: 1 回の倍率・全体が収まる倍率に対する下限と上限の比・1 回の移動量
     entries:
       - key: step
         value: '1.25'
-      - key: max
-        value: '3'
+      - key: minRatio
+        value: '0.25'
+      - key: maxRatio
+        value: '5'
       - key: pan
         value: '80'
   - name: JUMP_RADIUS

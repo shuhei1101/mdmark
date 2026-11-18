@@ -80,7 +80,6 @@
 | [ライブラリ本体 / コードブロック / code-fold.interact.ts](./MOD-472-225.ts.yaml) | ライブラリ本体 / コードブロック / code-fold.interact.ts |
 | [ライブラリ本体 / 表 / csv.interact.ts](./MOD-472-243.ts.yaml) | ライブラリ本体 / 表 / csv.interact.ts |
 | [ライブラリ本体 / 図 / diagram-resize.interact.ts](./MOD-472-179.ts.yaml) | ライブラリ本体 / 図 / diagram-resize.interact.ts |
-| [ライブラリ本体 / 図 / diagram-touch.interact.ts](./MOD-472-346.ts.yaml) | ライブラリ本体 / 図 / diagram-touch.interact.ts |
 | [ライブラリ本体 / 図 / diagram-tips.interact.ts](./MOD-472-184.ts.yaml) | ライブラリ本体 / 図 / diagram-tips.interact.ts |
 | [ライブラリ本体 / 図 / diagram.interact.ts](./MOD-472-183.ts.yaml) | ライブラリ本体 / 図 / diagram.interact.ts |
 | [ライブラリ本体 / 埋め込んだHTML / embedded-html.interact.ts](./MOD-472-230.ts.yaml) | ライブラリ本体 / 埋め込んだHTML / embedded-html.interact.ts |

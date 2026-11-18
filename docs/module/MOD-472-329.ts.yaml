@@ -9,7 +9,7 @@ functions:
     container: src/media/lightbox.part.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『ライトボックス』の `dialog` の HTML を返却する。`total` が `1` のときは切り替えのボタンと枚数を出さず、`index` が端のときは端の切り替えのボタンを `disabled` にする。`zoom` が全体の収まる倍率（`fit`）のときは縮小を、`ZOOM.max` のときは拡大を `disabled` にし、`fit` より大きいときだけ移動のボタンのまとまりの `hidden` を削除する。アイコンは `iconSvg`（`chevron-left`・`chevron-right`・`minus`・`plus`・`x` と移動の矢印）
+    summary: 部品設計『ライトボックス』の `dialog` の HTML を返却する。`total` が `1` のときは切り替えのボタンと枚数を出さず、`index` が端のときは端の切り替えのボタンを `disabled` にする。`zoom` が下限（全体の収まる倍率 `fit` × `ZOOM.minRatio`）のときは縮小を、上限（`fit` × `ZOOM.maxRatio`）のときは拡大を `disabled` にし、`fit` より大きいときだけ移動のボタンのまとまりの `hidden` を削除する。アイコンは `iconSvg`（`chevron-left`・`chevron-right`・`minus`・`plus`・`x` と移動の矢印）
     args:
       - name: options
         type: '{ src: string; alt: string; caption?: string; index: number; total: number; zoom?: number; fit?: number }'
@@ -47,7 +47,7 @@ functions:
         summary: 上限の倍率で拡大を押せなくし、移動のボタンを出す
         condition: 部品設計の `Max`
         mock: なし
-        expected: 拡大が `disabled`、倍率の文字が `300%`、移動のまとまりが `hidden` を持たない
+        expected: 拡大が `disabled`、倍率の文字が `500%`、移動のまとまりが `hidden` を持たない
     status: planned
 lead: 'ライトボックスの HTML を受け持ち、ライトボックスの外観を変えるときに参照する。'
 tags:
