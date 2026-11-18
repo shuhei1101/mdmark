@@ -56,7 +56,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-18T07:12:35.125553+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T07:23:48.152943+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成
