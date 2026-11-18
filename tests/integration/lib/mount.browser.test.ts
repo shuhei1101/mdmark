@@ -15291,9 +15291,11 @@ test("test_normal_when_column_resized_by_keyboard", async () => {
   // 検証
   expect(head.offsetWidth).toBe(opened + 32);
   expect(handle.getAttribute("aria-valuenow")).toBe(String(opened + 32));
-  // 実行・検証: ← キーを 1 回押す
+  // 実行・検証: ← キーを 1 回押す（広げて表がはみ出し、ピン止めのボタンを出したときは、ボタンを含む見出しの中身の幅で止まる）
   await userEvent.keyboard("{ArrowLeft}");
-  expect(head.offsetWidth).toBe(opened + 16);
+  expect(head.offsetWidth).toBe(
+    Math.max(opened + 16, Number(handle.getAttribute("aria-valuemin"))),
+  );
   // 実行・検証: Enter で描いた直後の幅に戻り、フォーカスはつまみに残る
   await userEvent.keyboard("{Enter}");
   expect(head.offsetWidth).toBe(opened);
