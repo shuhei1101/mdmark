@@ -70,7 +70,24 @@ states:
         value: '1'
       - name: title
         value: 長い手順のタイトルで、1 行目に収まらない
-lead: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図・状態遷移図・時系列の図）の帯。手順の数に区切った手順のバーと左右の矢印のボタンを 1 行に置き、始めた後はその下に手順のタイトルと説明の文を出す。
+  - name: RelationPlayback
+    description: 'C4Dynamic の関係の再生。タイトルが「{番号}: {元の要素} → {先の要素}：{ラベル}」（`BiRel` は ↔）で、バーと矢印のボタンの名前が関係。説明の文は補足の `r{番号}` の説明'
+    args:
+      - name: mode
+        value: playback
+      - name: unit
+        value: relation
+      - name: index
+        value: '1'
+      - name: total
+        value: '5'
+      - name: playing
+        value: 'true'
+      - name: title
+        value: '2: 注文の画面 → 注文の API：注文を送る'
+      - name: text
+        value: 画面の入力を JSON にして API へ送る
+lead: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図・状態遷移図・時系列の図・C4Dynamic）の帯。手順の数に区切った手順のバーと左右の矢印のボタンを 1 行に置き、始めた後はその下に手順のタイトルと説明の文を出す。
 args:
   - name: mode
     type: 列挙
@@ -82,8 +99,8 @@ args:
     type: 列挙
     required: false
     default: message
-    choices: '`message`・`transition`・`task`・`period`・`commit`'
-    description: 再生で進める単位。`playback` の単位の名前を、`message` ではメッセージ、`transition`（状態遷移図）では遷移、`task`（ガントチャート・ジャーニー）ではタスク、`period`（タイムライン）では期間、`commit`（Git グラフ）では commit にする
+    choices: '`message`・`transition`・`task`・`period`・`commit`・`relation`'
+    description: 再生で進める単位。`playback` の単位の名前を、`message` ではメッセージ、`transition`（状態遷移図）では遷移、`task`（ガントチャート・ジャーニー）ではタスク、`period`（タイムライン）では期間、`commit`（Git グラフ）では commit、`relation`（C4Dynamic）では関係にする
   - name: total
     type: 整数
     required: true

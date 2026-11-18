@@ -48,6 +48,18 @@ states:
         value: '["region"]'
     notes:
       定義: モックの `DEPLOYMENT`・`DEPLOYMENT_DATA`
+  - name: DynamicPlaying
+    description: '`C4Dynamic` の 2 本目の関係を再生している。その線と「注文の画面」「注文の API」のほかが薄く、3 本目の逆向きの線も薄く、2 本目の線だけにデータの印を流す'
+    notes:
+      定義: モックの `DYNAMIC`・`DYNAMIC_DATA`（`docs/mock/refs/677/assets/c4-dynamic-play.js`）
+  - name: DynamicPlayingBoundary
+    description: '`C4Dynamic` の 4 本目の関係を再生している。先の「注文のデータベース」は閉じた境界「注文の保存」の中にあるため、境界を強調する'
+    notes:
+      定義: モックの `DYNAMIC`・`DYNAMIC_DATA`
+  - name: DynamicPlayingBiRel
+    description: '`C4Dynamic` の 5 本目の `BiRel` を再生している。データの印を線の両方へ流し、重なりで隠れていたラベル「5: 結果を確かめる」を線の中ほどに出す'
+    notes:
+      定義: モックの `DYNAMIC`・`DYNAMIC_DATA`
 lead: map の `C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment` を、要素を種類の行・名前・説明を持つノード、境界を破線のグループ、配置先のノードを実線のグループにして構成図の部品の上に描き、外部の要素を灰色の面と種類の行で描き分ける。
 args:
   - name: layout
@@ -98,12 +110,12 @@ args:
     type: オブジェクト
     required: false
     default: なし（薄くしない）
-    description: 案内・線のホバーで強調する要素と関係。構成図の部品と同じ
+    description: 案内・再生・線のホバーで強調する要素と関係。構成図の部品と同じ。C4Dynamic の関係の再生では、再生している関係の線と両端の要素（閉じた境界の中の要素はその境界）を強調し、同じ 2 つの要素の間のほかの線も薄くする。その関係のラベルがほかのラベルとの重なりで隠れていたときは、線の中ほどに出し、重なる薄くしたラベルを隠す
   - name: packets
     type: オブジェクトの配列
     required: false
     default: '[]'
-    description: データの印を流す関係（線）。構成図の部品と同じ
+    description: データの印を流す関係（線）。構成図の部品と同じ。`BiRel` は両方へ流す
   - name: hints
     type: 真偽値
     required: false
