@@ -6,7 +6,7 @@ story: Parts/Lightbox
 test_file: tests/integration/lib/lightbox.story.test.ts
 states:
   - name: Middle
-    description: 15 枚の 3 枚目。全体が収まる倍率で、前後のボタンを押せ、縮小を押せず、移動のボタンを出さない
+    description: 15 枚の 3 枚目。全体が収まる倍率で、前後のボタンと縮小を押せ、移動のボタンを出さない
     args:
       - name: src
         value: step-2.svg
