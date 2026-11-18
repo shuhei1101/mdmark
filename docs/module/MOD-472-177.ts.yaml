@@ -27,7 +27,7 @@ functions:
     summary: '表示する枠と中身に、拡大・縮小・ピンチと拡大中の移動の操作を付ける'
     description: |-
       拡大・縮小は、全体が収まる倍率（`fitScale` の倍率。`fitMin` より小さくしない）の `ZOOM.minRatio` 倍から `ZOOM.maxRatio` 倍までで、縮小・拡大・倍率のボタンと `+`・`-`・`0`、表示する枠の上のピンチで操作する。
-      拡大中の移動は、矢印キー・移動のボタン（ライトボックスだけが持つ）・ドラッグで操作する。
+      拡大中の移動は、矢印キーとドラッグで操作する。
       指（`pointerType` が `touch`）の移動は `touchPan` で決める。`native` は指のポインターではドラッグを始めず、表示する枠のスクロールとしてブラウザに任せる。`pointer` は指もマウスと同じドラッグで動かす。
       倍率は中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。
 
@@ -35,7 +35,6 @@ functions:
 
       - 端のボタンの `disabled`（縮小は下限、拡大は上限）
       - 倍率の文字とスクリーンリーダー向けの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）
-      - 移動のボタンのまとまりの `hidden`（中身がはみ出している間だけ出す）
       - 表示する枠の `data-at-fit`（倍率が全体が収まる倍率以下の間だけ付ける）
 
       ピンチは、表示する枠の `touchstart`・`touchmove`（`passive: false`）で指が 2 本の間、始めの 2 本の指の距離と倍率を覚え、`touchmove` ごとに「始めの倍率 × 今の距離 ÷ 始めの距離」を下限・上限に収め、今の 2 本の指の中点の下の中身の点が中点の下に残る位置へ倍率と位置を変えて `preventDefault` する。指が 2 本の間はドラッグを止める。表示する枠の上の Safari の `gesturestart`・`gesturechange` は `preventDefault` する。
@@ -75,10 +74,10 @@ functions:
         expected: 倍率の文字が `55%` で縮小が `disabled` を持たず、拡大の後に `68%`、`0` の後に `55%`、`onChange` が倍率ごとに呼ばれる
       - name: test_attach_zoom_when_panned
         case: 正常
-        summary: 拡大中だけ移動のボタンを出し、矢印キーとドラッグで動かす
+        summary: 拡大中は矢印キーとドラッグで動かす
         condition: 拡大を 2 回押し、枠で `ArrowRight` を押してから左へ 40px ドラッグ
         mock: なし
-        expected: 移動のまとまりが `hidden` を持たず、`scrollLeft` が 80 増えた後に 40 増える
+        expected: '`scrollLeft` が 80 増えた後に 40 増える'
       - name: test_attach_zoom_when_detached
         case: 正常
         summary: 削除すると操作が有効にならない
