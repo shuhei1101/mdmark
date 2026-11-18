@@ -6,15 +6,14 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
-    impact: changed
-    detail: C4Dynamic の図の下に再生の帯を出し、番号つきの関係を番号の順に 1 本ずつ選んで繰り返し再生する。手順ごとにその関係と両端の要素のほかを薄くし、データの印を流す
+    impact: run_only
+    detail: C4Dynamic を描く記載方法と見た目は変わらないが、C4 図の描画と操作に再生の帯を加えるため壊していないかを確かめる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-41.yaml
     impact: changed
-    detail: 補足に案内の手順を記載した C4Dynamic で、関係の再生と案内の手順のどちらを帯で進めるか（状態遷移図と同じく案内を優先するか）を単一ユースケース設計で決めて記載する
-    depends_on:
-      - docs/scenario/SC-472-8.yaml
+    detail: C4Dynamic の図の下に再生の帯を出し、番号つきの関係を番号の順に 1 本ずつ選んで繰り返し再生する。手順ごとにその関係と両端の要素のほかを薄くし、データの印を流す。補足に案内の手順があるときは、状態遷移図と同じく案内を進める
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-18.yaml
     impact: run_only

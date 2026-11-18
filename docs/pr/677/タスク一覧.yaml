@@ -35,7 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-18T12:00:19.829650+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    note: SC-472-42 にミニマップのシナリオ、SC-472-41 に C4Dynamic の関係の再生のシナリオを追加。ミニマップを最初から出すかは推奨の案で記載し、モック作成で確定する
+    updated_by: planner
+    updated_at: '2026-11-18T12:07:11.016158+00:00'
   - process: モック作成
     status: todo
   - process: インターフェース定義設計
