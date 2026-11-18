@@ -492,20 +492,28 @@ test("test_attach_zoom_when_at_fit", async () => {
 });
 
 /** 表示する枠の上の点に指を置いた Touch を作る */
-function touchAt(target: Element, id: number, x: number, y: number): Touch {
-  return new Touch({ identifier: id, target, clientX: x, clientY: y });
+function touchAt(
+  target: Element,
+  finger: { id: number; x: number; y: number },
+): Touch {
+  return new Touch({
+    identifier: finger.id,
+    target,
+    clientX: finger.x,
+    clientY: finger.y,
+  });
 }
 
-/** 中点 (cx, cy) を挟んで横に gap だけ離した 2 本の指の touch のイベントを発火し、イベントを返却する */
+/** 中点 `center` を挟んで横に `gap` だけ離した 2 本の指の touch のイベントを発火し、イベントを返却する */
 function pinch(
   target: Element,
   type: "touchstart" | "touchmove",
-  center: { x: number; y: number },
-  gap: number,
+  fingers: { center: { x: number; y: number }; gap: number },
 ): TouchEvent {
+  const { center, gap } = fingers;
   const touches = [
-    touchAt(target, 1, center.x - gap / 2, center.y),
-    touchAt(target, 2, center.x + gap / 2, center.y),
+    touchAt(target, { id: 1, x: center.x - gap / 2, y: center.y }),
+    touchAt(target, { id: 2, x: center.x + gap / 2, y: center.y }),
   ];
   const event = new TouchEvent(type, {
     bubbles: true,
@@ -530,15 +538,15 @@ test("test_attach_zoom_when_pinched", async () => {
     y: (viewport.scrollTop + 200) / start,
   };
   // 実行
-  pinch(viewport, "touchstart", center, 100);
-  const move = pinch(viewport, "touchmove", center, 200);
+  pinch(viewport, "touchstart", { center, gap: 100 });
+  const move = pinch(viewport, "touchmove", { center, gap: 200 });
   // 検証
   expect(scale()).toBeCloseTo(start * 2, 3);
   expect((viewport.scrollLeft + 300) / scale()).toBeCloseTo(pointBefore.x, 0);
   expect((viewport.scrollTop + 200) / scale()).toBeCloseTo(pointBefore.y, 0);
   expect(move.defaultPrevented).toBe(true);
   // 実行
-  pinch(viewport, "touchmove", center, 1);
+  pinch(viewport, "touchmove", { center, gap: 1 });
   // 検証
   expect(scale()).toBeCloseTo(zoom.fit() * 0.25, 3);
 });
