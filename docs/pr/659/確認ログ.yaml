@@ -35,3 +35,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608787985
+  - topic: 倍率の範囲 25%〜500% の基準
+    decision: パネルの数字（開いたときの倍率を 100% とした値）で 25%〜500%。開いたときの倍率の 0.25 倍〜5 倍（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608947734
