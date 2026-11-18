@@ -303,6 +303,7 @@ test("test_open_diagram_dialog", async () => {
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
   detachers.push(attachDiagrams({ root, placement: "top" }));
+  button(root, "表示の操作を開く").click();
   const opener = button(root, "全画面で開く");
   // 実行
   opener.click();
@@ -319,6 +320,7 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
   const { attachDiagrams } = await loadDiagrams();
   const root = createTipRoot();
   detachers.push(attachDiagrams({ root, placement: "top" }));
+  button(root, "表示の操作を開く").click();
   button(root, "全画面で開く").click();
   const dialog = root.querySelector("dialog");
   if (!dialog) {
@@ -332,7 +334,8 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
   expect(owners.length).toBeGreaterThanOrEqual(2);
   // 実行・検証
   for (const owner of owners.slice(0, 2)) {
-    await userEvent.hover(owner);
+    // 右上のパネルが重なるマーカーもあるため、フォーカスでツールチップを開く
+    owner.focus();
     const tip = document.getElementById(
       owner.getAttribute("aria-describedby") ?? "",
     );
