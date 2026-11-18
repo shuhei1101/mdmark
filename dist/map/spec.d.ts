@@ -1,5 +1,5 @@
 /** map の書き方の誤りの項目の種類（点検のずれの種類と同じ名前） */
-export type MapProblemKind = "map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_retired_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line" | "map_ambiguous_ref" | "annotation_undefined";
+export type MapProblemKind = "map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line" | "map_ambiguous_ref" | "annotation_undefined";
 /** 読み取りと点検が返す、書き方の誤り 1 件 */
 export type MapProblem = {
     kind: MapProblemKind;
@@ -35,15 +35,17 @@ export type ResolvedMapConfig = {
 export type MapArgs = {
     title?: string | undefined;
     focus?: string | undefined;
+    play?: "autoplay" | undefined;
+    interval: number;
     collapse?: {
         open: boolean;
         title: string | undefined;
     } | undefined;
 };
 /** マーカーの JSON のオブジェクトで読むキー */
-export declare const MAP_ARG_KEYS: readonly ["title", "focus", "collapse"];
-/** 読まずに map_retired_key の項目にするマーカーのキー */
-export declare const RETIRED_MAP_ARG_KEYS: readonly ["play", "interval"];
+export declare const MAP_ARG_KEYS: readonly ["title", "focus", "play", "interval", "collapse"];
+/** マーカーに interval が無いか型が合わないときの、自動で進める間隔（秒） */
+export declare const DEFAULT_MAP_INTERVAL = 2;
 /** マーカーの引数の文字を JSON のオブジェクトとして読み、知っているキーだけを MapArgs にする */
 export declare const parseMapArgs: (source: string) => {
     args: MapArgs;
