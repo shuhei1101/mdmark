@@ -1,0 +1,58 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 表のマーカーを記載していない表（既定の種類）でも、読者が列で並べ替えられる。絞り込み・件数・テーブル設定・コピー・集計・行へのリンクは、今のとおりマーカーで指定した表にだけ付く。押したピンは、枠線と背景色の無い色の付いた塗りのピンで示す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: run_only
+    detail: マーカーを記載していないコードブロックには、今もコピーと行の開閉が付き、タイトル・行番号・行の強調・折り返しは作成者が記載する中身で、記法が無いと付けられない。操作の一覧の追加で変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-21.yaml
+    impact: run_only
+    detail: 見出しのセクションの開閉は記法が無くても付く。操作の一覧の追加で変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-66.yaml
+    impact: run_only
+    detail: 画像のライトボックスは記法が無くても付く。操作の一覧の追加で変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-71.yaml
+    impact: run_only
+    detail: 脚注のツールチップと一覧への移動は GitHub と同じ記法で付く。操作の一覧の追加で変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-29.yaml
+    impact: run_only
+    detail: ビューの表形式は表の部品で描く。既定の種類の表に操作を加えても、ビューの表形式の操作が変わらないことを確かめる
+    depends_on:
+      - docs/scenario/SC-472-73.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: run_only
+    detail: 既定の種類の表に増えたボタンが、印刷では出ないことを確かめる
+    depends_on:
+      - docs/scenario/SC-472-73.yaml
+docs:
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: マーカーの無い表に並べ替えが付くこと、押していないピンの出し方、列の最小の幅を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T12:58:17.992852+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 表の種類の既定の機能と、記法に対応しない表示での見え方を、既定の種類に加えた操作に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T12:58:17.992852+00:00'
+scope_out:
+  - item: 純粋な Mermaid の図に付く操作
+    reason: '#630 で扱い、インターフェース定義『文書を描く』に表を持つため'
+    plan: none
+  - item: AI Monitor の規約『ドキュメント管理』の表の種類の表（既定はピン止め）
+    reason: 別のリポジトリの規約で、mdmark の採用バージョンを上げるときに追従する。この PR の表の既定の機能が決まらないと中身が決まらない
+    plan: shuhei1101/ai-monitor#3642

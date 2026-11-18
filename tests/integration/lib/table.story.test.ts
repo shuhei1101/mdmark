@@ -1,4 +1,4 @@
-import type { Page } from "playwright";
+import type { Locator, Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import {
   contrastRatio,
@@ -273,6 +273,27 @@ test("test_filter_date_open", async () => {
   );
 });
 
+/** ボタンの枠線と背景色が透明で、文字の色が指定した色の変数の色かを返却する */
+const toolLook = (
+  button: Locator,
+  colorVariable: "--mdmark-color-link" | "--mdmark-color-muted",
+): Promise<{ border: string; background: string; matches: boolean }> =>
+  button.evaluate((el, variable) => {
+    const style = getComputedStyle(el);
+    const probe = document.createElement("span");
+    probe.style.color = `var(${variable})`;
+    el.append(probe);
+    const expected = getComputedStyle(probe).color;
+    probe.remove();
+    return {
+      border: style.borderTopColor,
+      background: style.backgroundColor,
+      matches: style.color === expected,
+    };
+  }, colorVariable);
+
+const TRANSPARENT = "rgba(0, 0, 0, 0)";
+
 // 名前の列を絞り込むと、ボタンが絞り込み中の外観になる（Filtered）
 test("test_filtered", async () => {
   // 準備・実行
@@ -285,6 +306,12 @@ test("test_filtered", async () => {
   await expect(
     button.locator(".mdmark-visually-hidden").innerText(),
   ).resolves.toBe("（絞り込み中）");
+  // 枠線と背景色を付けず、リンクの色で塗った漏斗にする
+  await expect(toolLook(button, "--mdmark-color-link")).resolves.toEqual({
+    border: TRANSPARENT,
+    background: TRANSPARENT,
+    matches: true,
+  });
   await expect(
     page.locator(".mdmark-filter-drawer:not([hidden])").count(),
   ).resolves.toBe(0);
@@ -309,7 +336,7 @@ test("test_no_match", async () => {
   await expect(empty.innerText()).resolves.toBe("一致する行がありません");
 });
 
-// 幅からはみ出す既定の種類の表は、各列にピン止めのボタンが出て、表の中で横にスクロールする（DefaultOverflow）
+// 幅からはみ出す既定の種類の表は、各列に並べ替えとピン止めのボタンが出て、表の中で横にスクロールする（DefaultOverflow）
 test("test_default_overflow", async () => {
   // 準備・実行
   const page = await open("default-overflow");
@@ -326,6 +353,17 @@ test("test_default_overflow", async () => {
     page.locator("button.mdmark-pin").first().getAttribute("aria-pressed"),
   ).resolves.toBe("true");
   await expect(pinnedColumns(page)).resolves.toEqual([0]);
+  await expect(page.locator("thead button.mdmark-sort").count()).resolves.toBe(
+    10,
+  );
+  // 押した先頭の列のピンは、枠線と背景色を付けず、リンクの色で塗る
+  await expect(
+    toolLook(page.locator("button.mdmark-pin").first(), "--mdmark-color-link"),
+  ).resolves.toEqual({
+    border: TRANSPARENT,
+    background: TRANSPARENT,
+    matches: true,
+  });
 });
 
 // -pin ではみ出す表は、ピン止めのボタンを出さず、どの列も留めない（NoPin）
@@ -555,12 +593,17 @@ test("test_pinned_overflow_each", async () => {
   expect(states[8]?.label).toBe(label);
   expect(states[8]?.title).toBe(label);
   expect(states[0]?.title).toBeNull();
-  // 検証: 破線の枠線
+  // 検証: 枠線と背景色を付けず、薄い色のピンにする
   await expect(
-    page
-      .locator("#storybook-root thead button.mdmark-pin.is-unpinned")
-      .evaluate((button) => getComputedStyle(button).borderTopStyle),
-  ).resolves.toBe("dashed");
+    toolLook(
+      page.locator("#storybook-root thead button.mdmark-pin.is-unpinned"),
+      "--mdmark-color-muted",
+    ),
+  ).resolves.toEqual({
+    border: TRANSPARENT,
+    background: TRANSPARENT,
+    matches: true,
+  });
 });
 
 // pinMode: through で 3 列目までを押し、unpinned の 3 列目を留めず、押した 3 列目のボタンだけを破線のピンにする（PinnedOverflowThrough）
@@ -627,7 +670,7 @@ test("test_pinned_under_merged_header", async () => {
   });
 });
 
-// 幅に収まる既定の種類の表は、ピン止めのボタンを出さない（DefaultFits）
+// 幅に収まる既定の種類の表は、並べ替えのボタンを出し、ピン止めのボタンを出さない（DefaultFits）
 test("test_default_fits", async () => {
   // 準備・実行
   const page = await open("default-fits");
@@ -637,7 +680,10 @@ test("test_default_fits", async () => {
   );
   await expect(
     page.locator(".mdmark-table").getAttribute("data-features"),
-  ).resolves.toBe("pin");
+  ).resolves.toBe("sort pin");
+  await expect(page.locator("thead button.mdmark-sort").count()).resolves.toBe(
+    2,
+  );
 });
 
 // plain の種類は、機能を付けず、縦の罫線と面を削除する（Plain）

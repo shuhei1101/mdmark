@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import { renderTableTools } from "../../../../src/table/table.part.ts";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
 
 /** 列の幅を自動で決める処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
@@ -350,6 +351,7 @@ test("test_attach_auto_column_widths_when_detached", async () => {
   const { root } = createRoot(CONTENT_TABLE);
   setRootWidth(root, 1280);
   const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
   const onApply = vi.fn();
   const handle = attachAutoColumnWidths(table, {
     wrapper,
@@ -361,18 +363,164 @@ test("test_attach_auto_column_widths_when_detached", async () => {
   await vi.waitFor(() => {
     expect(table.hasAttribute("data-auto-width")).toBe(true);
   });
-  // 実行
+  // 実行: 取り除いた後に、包む要素の幅とピン止めのボタンの hidden を変える
   handle.detach();
   onApply.mockClear();
   setRootWidth(root, 900);
+  showPins(root);
   await nextFrames();
   // 検証
   expect(table.hasAttribute("data-auto-width")).toBe(false);
   expect(table.style.getPropertyValue("--mdmark-auto-table-width")).toBe("");
   expect(
     headCells.every(
-      (cell) => cell.style.getPropertyValue("--mdmark-auto-width") === "",
+      (cell) =>
+        cell.style.getPropertyValue("--mdmark-auto-width") === "" &&
+        cell.style.getPropertyValue("--mdmark-column-head-width") === "",
     ),
   ).toBe(true);
   expect(onApply).not.toHaveBeenCalled();
+});
+
+/** 列名が `列 1`〜`列 {count}` で、値が 2 文字のマーカーの無い表 */
+const plainTable = (count: number): string => {
+  const columns = Array.from(
+    { length: count },
+    (_, index) => `列 ${index + 1}`,
+  );
+  const line = (cells: string[]): string => `| ${cells.join(" | ")} |`;
+  return [
+    line(columns),
+    line(columns.map(() => "---")),
+    line(columns.map(() => "ab")),
+    "",
+  ].join("\n");
+};
+
+/** 見出しのセルの中身（`.mdmark-th`）が収まる外側の幅 */
+const headContentWidth = (cell: HTMLElement): number => {
+  const content = cell.querySelector<HTMLElement>(":scope > .mdmark-th");
+  if (!content) {
+    throw new Error("見出しの中身が無い");
+  }
+  const style = getComputedStyle(cell);
+  return (
+    content.scrollWidth +
+    Number.parseFloat(style.paddingLeft) +
+    Number.parseFloat(style.paddingRight) +
+    Number.parseFloat(style.borderLeftWidth) +
+    Number.parseFloat(style.borderRightWidth)
+  );
+};
+
+/** 見出しのセルごとに、幅が中身の収まる幅以上で、ピン止めのボタンがセルの右端を越えないことを確かめる */
+const expectHeadToolsFit = (headCells: HTMLTableCellElement[]): void => {
+  for (const cell of headCells) {
+    const width = headContentWidth(cell);
+    expect(cell.offsetWidth).toBeGreaterThanOrEqual(Math.floor(width));
+    expect(
+      Number.parseFloat(
+        cell.style.getPropertyValue("--mdmark-column-head-width"),
+      ),
+    ).toBeGreaterThanOrEqual(Math.floor(width));
+    const pin = cell.querySelector<HTMLElement>(".mdmark-pin");
+    if (!pin) {
+      throw new Error("ピン止めのボタンが無い");
+    }
+    expect(pin.getBoundingClientRect().right).toBeLessThanOrEqual(
+      cell.getBoundingClientRect().right + 0.5,
+    );
+  }
+};
+
+/** 見出しのセルに、描いた後の表と同じ並べ替え・ピン止めのボタンとつまみを入れる（ピン止めのボタンは `hidden`） */
+const insertHeadTools = (headCells: HTMLTableCellElement[]): void => {
+  headCells.forEach((cell, column) => {
+    cell.innerHTML = renderTableTools({
+      id: "t",
+      column,
+      label: cell.textContent?.trim() ?? "",
+      features: ["sort", "pin", "resize"],
+    }).header;
+  });
+};
+
+/** ピン止めのボタンの `hidden` を外す（表がはみ出してボタンを出した状態にする） */
+const showPins = (root: HTMLElement): void => {
+  for (const pin of root.querySelectorAll<HTMLElement>(".mdmark-pin")) {
+    pin.hidden = false;
+  }
+};
+
+// 見出しの列名・並べ替え・ピン止めのボタンが収まる幅より列を狭くしない（正常系）
+test("test_attach_auto_column_widths_when_head_tools_wider", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths } = await loadTableWidth();
+  const { root } = createRoot(plainTable(10));
+  setRootWidth(root, 320);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
+  showPins(root);
+  // 実行
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+  });
+  detachers.push(handle.detach);
+  // 検証
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  expectHeadToolsFit(headCells);
+});
+
+// ピン止めのボタンが hidden の間に測った最小幅も、ボタンを含む幅にする（正常系）
+test("test_attach_auto_column_widths_when_pin_hidden", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths } = await loadTableWidth();
+  const { root } = createRoot(plainTable(3));
+  setRootWidth(root, 1200);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
+  expect(
+    [...root.querySelectorAll<HTMLElement>(".mdmark-pin")].every(
+      (pin) => pin.hidden,
+    ),
+  ).toBe(true);
+  const onApply = vi.fn();
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+    onApply,
+  });
+  detachers.push(handle.detach);
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  // 検証: ボタンを出す前の最小幅は、ボタンを含まない
+  const before = headCells.map((cell) =>
+    Number.parseFloat(
+      cell.style.getPropertyValue("--mdmark-column-head-width"),
+    ),
+  );
+  // 実行: はみ出させてから、ピン止めのボタンを出す
+  onApply.mockClear();
+  setRootWidth(root, 120);
+  await vi.waitFor(() => {
+    expect(onApply).toHaveBeenCalled();
+  });
+  showPins(root);
+  // 検証: 測り直し、最小幅がボタンを含む
+  await vi.waitFor(() => {
+    expectHeadToolsFit(headCells);
+  });
+  headCells.forEach((cell, index) => {
+    expect(before[index]).toBeLessThan(Math.floor(headContentWidth(cell)));
+  });
 });

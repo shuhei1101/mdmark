@@ -56,7 +56,7 @@ export { FILTER_KINDS };
 /** 表の種類ごとの既定の機能 */
 export const TABLE_KINDS: Readonly<Record<TableKind, readonly TableFeature[]>> =
   {
-    default: ["pin", "resize"],
+    default: ["sort", "pin", "resize"],
     data: ["sort", "pin", "filter", "resize"],
     plain: [],
   };

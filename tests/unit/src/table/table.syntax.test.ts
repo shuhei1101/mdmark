@@ -140,7 +140,7 @@ test("test_decorate_tables", () => {
     'data-kind="data" data-features="sort pin filter resize" data-filter="0:select"',
   );
   expect(html).toContain('<details class="mdmark-table-details">');
-  expect(html).toContain('data-kind="default" data-features="pin resize"');
+  expect(html).toContain('data-kind="default" data-features="sort pin resize"');
 });
 
 // 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む（正常系）

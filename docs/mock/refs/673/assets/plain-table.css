@@ -1,0 +1,17 @@
+/* 案の押したピン: 枠線と背景色を付けず、リンクの色で塗ったピンだけで、押す前の線のピンと見分ける */
+.mdmark-table[data-features~="sort"] .mdmark-pin[aria-pressed="true"] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--mdmark-color-link);
+}
+
+/* 案の押したまま留まっていないピン: 枠線と背景色を付けず、薄い色の破線のピンで示す */
+.mdmark-table[data-features~="sort"] .mdmark-pin[aria-pressed="true"].is-unpinned {
+  color: var(--mdmark-color-muted);
+}
+
+/* 案の見出しのセル: 列名・並べ替えのアイコン・ピン止めのボタンが収まる幅（短い列名で 7em）より狭くしない。
+   実装では列の幅を決める処理が見出しの中身の幅を列の最小の幅にし、このモックでは決めた幅を下限で上書きして同じ見た目にする */
+.mdmark-table[data-features~="sort"] .mdmark-table-scroll > table[data-auto-width] thead th:not(.is-resized) {
+  width: max(var(--mdmark-auto-width, 0px), 7em);
+}
