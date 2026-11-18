@@ -1,0 +1,6 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: 図のノード・グループの説明のマーカーを押してツールチップを開く操作は変わらないが、マーカーの大きさと位置を変えるため、押して開けることを確認する
+    depends_on: []
