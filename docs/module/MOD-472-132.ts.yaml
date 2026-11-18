@@ -104,7 +104,7 @@ functions:
       1. `renderMapBand`（`titles` は手順の `title`）で帯を描き、手順のバーの幅を `ResizeObserver` で見て、区切りの幅（バーの幅から区切りの間を引いて手順の数で割った幅）が `BAND_DENSE_PX` より細いときだけバーに `is-dense` を付ける
       2. 区切りの押下・左右の矢印のボタン・バーの ← → Home End で手順へ移る（矢印のボタンと ← → は端で反対の端へ回し、始める前の左は最後、右は最初）。移ったら `apply` で強調を当てて `onStep` を呼び、`requestAnimationFrame` で今の区切りを `STEP_MS` の 1 周で塗り、塗り終えたら最初から塗り直す（次の手順へは進めない）。今の手順の区切りを押したときは、塗りを最初からにして `apply` を呼び直す
       3. 描き直す前にフォーカスが帯の中にあれば、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへ、描き直した後にフォーカスを戻す
-      4. 帯の中のバーと矢印のボタンの外の押下・バーの Esc・図の枠の表示する枠の中でノード（`[data-node]`・`[data-participant]`）・線の押せる帯（`.map-wire-hit`）・ボタン・リンクの外を押して `DRAG_THRESHOLD` 未満の動きで離したときに停止する。停止で塗りを止め、`apply(undefined)` を呼び、始めた段に戻して帯をバーと矢印のボタンだけにする
+      4. 帯の中のバーと矢印のボタンの外の押下・バーの Esc・図の枠の表示する枠の中でノード（`[data-node]`・`[data-participant]`）・線の押せる帯（`.map-wire-hit`）・ボタン・リンクの外を押して `DRAG_THRESHOLD` 未満の動きで離したときに停止する。停止で塗りを止め、`apply(undefined)` を呼び、始めた段に戻して帯をバーと矢印のボタンだけにし、始めたときに表示する枠に見えていた範囲へ `zoomControlOf` の `focusRect`（余白 0・時間 0）で倍率と位置を戻す
       5. `update` で手順を差し替えたときは、塗りを止めて番号を無しに戻す（`apply` は呼ばない）
     unit_tests:
       - name: test_attach_band_when_segment

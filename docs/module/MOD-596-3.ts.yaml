@@ -108,8 +108,8 @@ functions:
         required: true
         description: 読み取り結果
     returns:
-      type: '{ chart: Flowchart; overrides: Record<string, MapOverride>; reversed: string[] }'
-      description: '線の ID は `r{番号}`、ラベルは「{ラベル} [{技術}]」、`BiRel` は両向きの矢じり。`reversed` は矢じりを線の元の側に描く線（`Rel_U` と `Rel_Back`。`BiRel` を除く）。`Rel_U` は先を元にして引き、`Rel_L`・`Rel_R` は `rankless` にして先に `align`（同じ段）と、`Rel_R` なら元より後・`Rel_L` なら前の `order` を指定する。要素の大きさは、幅 `MAP_C4.width` と、名前の行に説明の行の数（`MAP_C4.descriptionChars` 文字ごとに 1 行）を足した高さの見積もり（描いた後に測り直す）。閉じた境界のノードは、種類を含むタイトルが収まる `mapClosedGroupSize` の大きさ。種類の行は技術の引数を持つ要素で `[Container: {技術}]` のようにする。`C4Dynamic` の線のラベルは「{index}: {ラベル}」。配置先のノードのグループのタイトルは「{名前}［{種類}］」。`Node_L`・`Node_R` の兄弟は、`Node_L` が前・`Node_R` が後の `order` と同じ段の `align` にする'
+      type: '{ chart: Flowchart; overrides: Record<string, MapOverride>; reversed: string[]; kinds: Record<string, MapKind> }'
+      description: '線の ID は `r{番号}`、ラベルは「{ラベル} [{技術}]」、`BiRel` は両向きの矢じり。`reversed` は矢じりを線の元の側に描く線（`Rel_U` と `Rel_Back`。`BiRel` を除く）。`Rel_U` は先を元にして引き、`Rel_L`・`Rel_R` は `rankless` にして先に `align`（同じ段）と、`Rel_R` なら元より後・`Rel_L` なら前の `order` を指定する。要素の大きさは、幅 `MAP_C4.width` と、名前の行に説明の行の数（`MAP_C4.descriptionChars` 文字ごとに 1 行）を足した高さの見積もり（描いた後に測り直す）。閉じた境界のノードは、種類を含むタイトルが収まる `mapClosedGroupSize` の大きさ。種類の行は技術の引数を持つ要素で `[Container: {技術}]` のようにし、その要素の種類を `kinds`（`mdmark-c4-{種類}--{別名}` から `MapKind`）に入れて返す。`C4Dynamic` の線のラベルは「{index}: {ラベル}」。配置先のノードのグループのタイトルは「{名前}［{種類}］」。`Node_L`・`Node_R` の兄弟は、`Node_L` が前・`Node_R` が後の `order` と同じ段の `align` にする'
     unit_tests:
       - name: test_c4_to_flowchart
         case: 正常

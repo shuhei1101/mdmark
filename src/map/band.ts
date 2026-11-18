@@ -1,4 +1,8 @@
-import { DRAG_THRESHOLD, zoomControlOf } from "../shared/zoom.interact.ts";
+import {
+  DRAG_THRESHOLD,
+  type FocusRect,
+  zoomControlOf,
+} from "../shared/zoom.interact.ts";
 import { type MapBandUnit, renderMapBand } from "./map.part.ts";
 
 /** 帯が進める 1 つの手順 */
@@ -55,6 +59,28 @@ const TOUCH_EVENTS = ["wheel", "pointerdown", "keydown", "touchstart"] as const;
 const NOT_BLANK_SELECTOR =
   "[data-node], [data-participant], .map-wire-hit, button, a, input";
 
+/** 倍率を掛けた中身（transform で倍率を掛けた要素）と、その倍率 */
+const stageOf = (viewport: HTMLElement): { base: DOMRect; scale: number } => {
+  const stage = viewport.querySelector<HTMLElement>("[style*='scale(']");
+  const base = (stage ?? viewport).getBoundingClientRect();
+  return {
+    base,
+    scale: stage && stage.offsetWidth > 0 ? base.width / stage.offsetWidth : 1,
+  };
+};
+
+/** 表示する枠に見えている範囲（倍率を掛ける前の中身の座標） */
+const visibleRectOf = (viewport: HTMLElement): FocusRect => {
+  const { base, scale } = stageOf(viewport);
+  const view = viewport.getBoundingClientRect();
+  return {
+    x: (view.left - base.left) / scale,
+    y: (view.top - base.top) / scale,
+    width: viewport.clientWidth / scale,
+    height: viewport.clientHeight / scale,
+  };
+};
+
 /** 図の枠の中を、指定したノードか参加者を囲む矩形が収まる倍率と位置へ移し、読者が表示する枠を触ったら resume まで止める */
 export const createFollow = (
   figure: HTMLElement,
@@ -82,10 +108,7 @@ export const createFollow = (
         .filter((element): element is HTMLElement => element !== null);
       if (!zoom || elements.length === 0) return;
       // 倍率を掛ける前の中身の座標にする（倍率を掛けた中身の矩形を基準にする）
-      const stage = viewport.querySelector<HTMLElement>("[style*='scale(']");
-      const base = (stage ?? viewport).getBoundingClientRect();
-      const scale =
-        stage && stage.offsetWidth > 0 ? base.width / stage.offsetWidth : 1;
+      const { base, scale } = stageOf(viewport);
       const rects = elements.map((element) => element.getBoundingClientRect());
       const left = Math.min(...rects.map((r) => r.left));
       const top = Math.min(...rects.map((r) => r.top));
@@ -193,7 +216,10 @@ export const attachBand = (options: {
     if (frame !== undefined) cancelAnimationFrame(frame);
     frame = undefined;
   };
+  // 始めたときに表示していた範囲（停止でその倍率と位置へ戻す）
+  let shown: FocusRect | undefined;
   const play = (next: number) => {
+    if (index === undefined && viewport) shown = visibleRectOf(viewport);
     stopFrame();
     index = next;
     started = performance.now();
@@ -208,6 +234,9 @@ export const attachBand = (options: {
     index = undefined;
     apply(undefined);
     render();
+    if (viewport && shown)
+      zoomControlOf(viewport)?.focusRect(shown, { margin: 0, duration: 0 });
+    shown = undefined;
   };
   /** 前の手順の位置（始めていないか先頭なら最後） */
   const prevIndex = () =>
