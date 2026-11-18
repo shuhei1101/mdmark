@@ -4,4 +4,4 @@
 
 | 見るもの | リンク |
 | --- | --- |
-| マーカーの無い表（既定の種類）の、今の機能（ピン止め・列の幅の変更）と案 A（並べ替え・コピーを加える）の 3 行の表とはみ出す表、`data`・`plain` の種類 | [plain-table](../../components/plain-table/index.html) |
+| マーカーの無い表（既定の種類）の、今の機能（ピン止め・列の幅の変更）と案（並べ替えを加え、押したピンを色の付いた塗りにする）の 3 行の表とはみ出す表、`data`・`plain` の種類 | [plain-table](../../components/plain-table/index.html) |

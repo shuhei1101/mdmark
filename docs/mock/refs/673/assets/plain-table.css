@@ -1,0 +1,6 @@
+/* 案の押したピン: 枠線と地を付けず、リンクの色で塗ったピンだけで、押す前の線のピンと見分ける */
+.mdmark-table[data-features~="sort"] .mdmark-pin[aria-pressed="true"] {
+  border-color: transparent;
+  background: transparent;
+  color: var(--mdmark-color-link);
+}
