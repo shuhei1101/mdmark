@@ -122,7 +122,7 @@ const listenStops = (options: {
   );
 };
 
-/** ホイール: `enabled` のとき、拡大して縦にスクロールできる間は、表示する枠をスクロールさせず、縦の量を祖先のスクロールにする */
+/** ホイール: `enabled` のとき、拡大して縦にスクロールできる間は、表示する枠をスクロールさせず、縦の量を祖先のスクロールに、横の量（Shift を押しながらの縦の量を含む）を表示する枠の横のスクロールにする */
 const listenWheelToScroller = (options: {
   viewport: HTMLElement;
   enabled: boolean;
@@ -148,8 +148,10 @@ const listenWheelToScroller = (options: {
         event,
         page: { width: viewport.clientWidth, height: scroller.clientHeight },
       });
-      scroller.scrollTop += delta.y;
-      viewport.scrollLeft += delta.x;
+      // Shift＋ホイールを縦の量のまま送るブラウザでは、縦の量を横に動かす量にする
+      const sideways = event.shiftKey && delta.x === 0;
+      scroller.scrollTop += sideways ? 0 : delta.y;
+      viewport.scrollLeft += sideways ? delta.y : delta.x;
     },
     { passive: false, signal },
   );
