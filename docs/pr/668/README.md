@@ -1,0 +1,1 @@
+# モジュール構成の functions[].summary・constants[].summary に入った詳細を description へ移し、summary を 1 行の概要にする
