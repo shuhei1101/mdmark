@@ -9,3 +9,8 @@
 .mdmark-table[data-features~="sort"] .mdmark-pin[aria-pressed="true"].is-unpinned {
   color: var(--mdmark-color-muted);
 }
+
+/* 案の見出しの中身: 列名・並べ替えのアイコン・ピン止めのボタンが収まる幅より狭くせず、描く処理がその幅を列の最小の幅にする */
+.mdmark-table[data-features~="sort"] thead .mdmark-th {
+  min-width: max-content;
+}
