@@ -5,3 +5,21 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/673#discussion_r4610255290
+  - topic: マーカーの無い表のモック（並べ替えの追加・押したピン・留まっていない列のピン・見出しの列の最小の幅）への合意
+    decision: モックのとおり進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/673#discussion_r4613373885
+  - topic: 絞り込み中のボタンの外観もピンにそろえるか
+    decision: 絞り込み中のボタンも、枠線と背景色を付けず、リンクの色で塗った漏斗にそろえる（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/673#discussion_r4613375094
+  - topic: ピン止めのボタンの出し方と、列の幅を狭めたときの最小の幅（モックへの追加の要望）
+    decision: PC の幅では、押していないピン止めのボタンを見出しにポインターが乗ったときかフォーカスが当たったときだけ出し、スマホの幅では常に出す。列の幅のつまみで狭めるときも、列名・並べ替え・ピン止め・絞り込みのアイコンが収まる幅を最小の幅にする。モックは直さず、ユーザーへの再確認もしない
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/673#discussion_r4613888163
