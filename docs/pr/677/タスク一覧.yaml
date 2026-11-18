@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-18T12:00:19.829650+00:00'
   - process: PoC 検証
     status: skipped
-    reason: ミニマップは今の拡大・縮小（src/shared/zoom.interact.ts の transform の倍率と表示する枠のスクロール）から今の位置を算出して描き、押した位置へ表示する枠を移す変更で、C4Dynamic の再生は状態遷移図と同じ案内の帯（src/map/band.ts）に手順を渡す変更のため、未検証の技術機構に依存しない
+    reason: C4Dynamic の再生は状態遷移図と同じ案内の帯（src/map/band.ts）に手順を渡す変更のため、未検証の技術機構に依存しない
     updated_by: planner
     updated_at: '2026-11-18T12:00:19.829650+00:00'
   - process: 複合ユースケース設計
@@ -31,16 +31,19 @@ tasks:
     updated_at: '2026-11-18T12:00:19.829650+00:00'
   - process: 画面一覧・画面遷移
     status: skipped
-    reason: 画面の追加・削除と画面遷移の変更が無い（文書の中の図の枠にミニマップを加え、C4Dynamic に再生を加えるだけ）
+    reason: 画面の追加・削除と画面遷移の変更が無い（文書の中の C4Dynamic の図に再生を加えるだけ）
     updated_by: planner
     updated_at: '2026-11-18T12:00:19.829650+00:00'
   - process: 単一ユースケース設計
     status: done
-    note: SC-472-42 にミニマップのシナリオ、SC-472-41 に C4Dynamic の関係の再生のシナリオを追加。ミニマップを最初から出すかは推奨の案で記載し、モック作成で確定する
+    note: SC-472-41 に C4Dynamic の関係の再生のシナリオを追加。ミニマップ（SC-472-42）はユーザーの判断でスコープから外し、develop の内容へ戻した
     updated_by: planner
     updated_at: '2026-11-18T12:07:11.016158+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    note: map-c4-dynamic-play のモックでユーザーと合意。ミニマップのモックはスコープから外して削除した
+    updated_by: planner
+    updated_at: '2026-11-18T14:11:49.865671+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計
