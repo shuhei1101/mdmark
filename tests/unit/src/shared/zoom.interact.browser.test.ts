@@ -387,7 +387,12 @@ test("test_attach_zoom_when_focus_rect_wide", async () => {
 test("test_attach_zoom_when_focus_rect_animated", async () => {
   // 準備
   vi.useFakeTimers({
-    toFake: ["requestAnimationFrame", "performance", "Date"],
+    toFake: [
+      "requestAnimationFrame",
+      "cancelAnimationFrame",
+      "performance",
+      "Date",
+    ],
   });
   const { viewport, zoom, scale } = await setUpFocus();
   const start = scale();

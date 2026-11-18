@@ -1578,9 +1578,7 @@ test("test_render_map_architecture", async () => {
 // C4 図の部品（正常系）
 test("test_render_map_c4_diagram", async () => {
   // 準備
-  const { parseC4, c4ToFlowchart } = await import(
-    "../../../../src/map/c4.ts"
-  );
+  const { parseC4, c4ToFlowchart } = await import("../../../../src/map/c4.ts");
   const { layoutMap } = await loadLayout();
   const { renderMapC4Diagram, spreadMapEnds } = await loadParts();
   const { C4 } = await import("../../helpers/map.ts");

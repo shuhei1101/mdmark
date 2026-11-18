@@ -142,16 +142,18 @@ test("test_attach_map_when_played_follow", async () => {
     throw new Error("拡大・縮小が付いていない");
   }
   const focusRect = vi.spyOn(zoom, "focusRect").mockImplementation(() => {});
-  const segments = seq
-    ?.closest(".mdmark-map")
-    ?.querySelectorAll<HTMLElement>(".map-band-seg");
+  /** 帯を描き直した後の区切りを引く */
+  const segment = (index: number) =>
+    seq?.closest(".mdmark-map")?.querySelectorAll<HTMLElement>(".map-band-seg")[
+      index
+    ];
   // 実行
-  segments?.[0]?.click();
+  segment(0)?.click();
   // 検証
   expect(focusRect).toHaveBeenCalledTimes(1);
   // 実行
   viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
-  segments?.[1]?.click();
+  segment(1)?.click();
   // 検証
   expect(focusRect).toHaveBeenCalledTimes(2);
 });
