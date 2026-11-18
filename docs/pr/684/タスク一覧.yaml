@@ -48,9 +48,15 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-18T15:52:06.466825+00:00'
   - process: 部品設計
-    status: todo
+    status: skipped
+    reason: CMP-472-29 の「存在するバージョンか latest に修正して」は、無いバージョンを記載したときの直し方として今のままで足り、develop を加えても引数・状態は変わらない
+    updated_by: planner
+    updated_at: '2026-11-18T15:55:16.779041+00:00'
   - process: 画面設計
-    status: todo
+    status: skipped
+    reason: SCR-472-1 の `mdmark.version` の記載は `latest` でタグ一覧を取れないときの通知だけで、develop では出ないため変わらない
+    updated_by: planner
+    updated_at: '2026-11-18T15:55:16.779041+00:00'
   - process: モジュール構成設計
     status: todo
   - process: ドキュメント修正
