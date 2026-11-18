@@ -15715,6 +15715,17 @@ test("test_normal_when_map_walkthrough_played", async () => {
     ],
   });
   try {
+    // 検証: 始める前は帯の枠線と面が無く、バーは 4 つの区切りのスライダー
+    expect(band().classList.contains("is-idle")).toBe(true);
+    expect(getComputedStyle(band()).borderTopColor).toBe("rgba(0, 0, 0, 0)");
+    expect(getComputedStyle(band()).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    const slider = bandSlider(figure());
+    expect(
+      ["aria-valuemin", "aria-valuemax", "aria-valuenow"].map((name) =>
+        slider.getAttribute(name),
+      ),
+    ).toEqual(["0", "4", "0"]);
+    expect(figure().querySelectorAll(".map-band-seg")).toHaveLength(4);
     // 実行: 1 つ目の区切りを押す
     pressSegment(figure(), 1);
     // 検証: 手順 1 のタイトル・帯の枠線と面・強調・データの印
@@ -15763,6 +15774,15 @@ test("test_normal_when_map_walkthrough_played", async () => {
     expect(document.activeElement).toBe(
       find(figure(), '.map-band [data-band="step"][data-dir="1"]'),
     );
+    // 検証: 済んだ手順・今の手順・残りの手順の区切りを描き分ける
+    const segments = [...figure().querySelectorAll(".map-band-seg")];
+    expect(segments[0]?.classList.contains("is-done")).toBe(true);
+    expect(segments[1]?.classList.contains("is-current")).toBe(true);
+    for (const segment of segments.slice(2))
+      expect(
+        segment.classList.contains("is-done") ||
+          segment.classList.contains("is-current"),
+      ).toBe(false);
     // 検証: 手順 2 のノードが収まる位置と倍率へ、時間をかけて移る。文書のスクロールは変わらない
     const before = mapScale(figure());
     vi.advanceTimersByTime(MAP_FOCUS_MS / 2);
@@ -15794,10 +15814,27 @@ test("test_normal_when_map_walkthrough_played", async () => {
       ).opacity,
     ).not.toBe("0");
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
-    // 実行・検証: 最後の次で最初へ回る
-    pressArrow(figure(), 1, 2);
-    expect(bandStep(figure())).toBe(1);
+    pressArrow(figure(), 1);
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    // 実行・検証: 最後の次で最初へ回る
+    pressArrow(figure(), 1);
+    expect(bandStep(figure())).toBe(1);
+    // 実行・検証: 移す途中で読者が図の枠をキーで動かすと、次にボタンを押すまで移さない
+    vi.advanceTimersByTime(MAP_FOCUS_MS / 3);
+    const touched = () => [
+      mapScale(figure()),
+      viewport().scrollLeft,
+      viewport().scrollTop,
+    ];
+    viewport().dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Shift", bubbles: true }),
+    );
+    const held = touched();
+    vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    expect(touched()).toEqual(held);
+    pressSegment(figure(), 1);
+    vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    expect(touched()).not.toEqual(held);
     // 実行・検証: 図の枠の空いた場所で 4px 以上動かした操作は停止しない
     pressBlank(figure(), 6);
     expect(bandStep(figure())).toBe(1);
@@ -15812,6 +15849,11 @@ test("test_normal_when_map_walkthrough_played", async () => {
     // 実行・検証: 始める前の左の矢印で最後の手順へ回り、帯のタイトルを押すと停止する
     pressArrow(figure(), -1);
     expect(bandStep(figure())).toBe(4);
+    find<HTMLElement>(band(), ".map-band-title").click();
+    expect(bandStep(figure())).toBe(0);
+    // 実行・検証: 始める前の右の矢印で最初の手順へ移る
+    pressArrow(figure(), 1);
+    expect(bandStep(figure())).toBe(1);
     find<HTMLElement>(band(), ".map-band-title").click();
     expect(bandStep(figure())).toBe(0);
     // 実行・検証: バーのキーの ← → で移り、Esc で停止する
