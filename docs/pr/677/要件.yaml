@@ -1,0 +1,59 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 拡大した図で、全体の中の今見えている範囲をミニマップで確かめ、ミニマップを押して表示する位置を移す。ミニマップの表示は図のパネルのボタンで切り替える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: C4Dynamic の図の下に再生の帯を出し、番号つきの関係を番号の順に 1 本ずつ選んで繰り返し再生する。手順ごとにその関係と両端の要素のほかを薄くし、データの印を流す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: 補足に案内の手順を記載した C4Dynamic で、関係の再生と案内の手順のどちらを帯で進めるか（状態遷移図と同じく案内を優先するか）を単一ユースケース設計で決めて記載する
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: シーケンス図の再生は変わらないが、同じ再生の帯を C4Dynamic と共用するため壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図を辿って読む流れは変わらないが、図の枠と再生の帯を変えるため壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-89.yaml
+    impact: run_only
+    detail: 埋め込んだ HTML のチャートの拡大・縮小・移動は変わらないが、図の枠にミニマップを加えるため壊していないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 図の拡大・縮小・移動の節に、ミニマップの表示の切り替えと、ミニマップを押して表示する位置を移す操作を追加する
+    status: todo
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: C4Dynamic の行と、選択と強調・再生のバーの表に、番号つきの関係を番号の順に再生の帯で再生することを追加する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 図の部品の操作と map の節に、ミニマップと C4Dynamic の再生を追加する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 図のパネルの用語にミニマップの切り替えのボタンを加え、図のミニマップの用語を追加する（差分のミニマップと区別する）
+    status: todo
+scope_out:
+  - item: 差分の表示のミニマップ（src/diff/minimap.ts）の見た目と振る舞いの変更
+    reason: 要望は図のミニマップの追加で、差分のミニマップは変えない。部品を共用するかはモジュール構成設計で決め、共用しても差分の見た目と振る舞いは変えない
+    plan: none
+  - item: ライトボックス（画像の全画面の拡大）へのミニマップの追加
+    reason: 要望は図の拡大で、画像のライトボックスは対象に含まれない
+    plan: none
+  - item: C4Context・C4Container・C4Component・C4Deployment の関係の再生
+    reason: 番号を持つのは C4Dynamic の関係だけで、要望は番号の順の再生
+    plan: none
