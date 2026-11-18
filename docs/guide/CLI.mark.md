@@ -238,6 +238,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `map_unknown_ref` | map の補足（`notes`・`walkthroughs`・`layout`・`plays_over`）が、Mermaid に無いノード・線・グループの ID を指している |
 | `map_ambiguous_ref` | map のマインドマップ・ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の補足のキーかマーカーの引数の `focus` が、ID を持たない同じ文字の 2 つ以上の項目か同じ名前の 2 つ以上の section を指している。内容に、その項目に ID を記載して ID で指すか、section の名前を分ける修正の方法を含む |
 | `map_unknown_key` | map の補足か、マーカーの JSON のオブジェクトに知らないキーがある。内容に使用できるキーの一覧を含む。マーカーの知らないキーは、描くときは警告を出さずに無視する |
+| `map_retired_key` | map のマーカーに、廃止した `play`・`interval` がある。内容は廃止したキーと、`mdmark upgrade` で削除できること。場所はマーカーの行 |
 | `map_invalid_value` | map の補足の値がスキーマに合わないか、`--` をそのまま記載しているか（Unicode エスケープで記載した `--` は含めない）、マインドマップ・ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図に適用しない `layout` のキー（`color`・`collapsed` のほか）がある、許可しないノードのリンク先がある（`id:` のリンク先はずれにしない）、またはマーカーの引数が JSON のオブジェクトとして読めないか、値の型が合わない |
 | `map_unknown_icon` | 設定の `map.kinds` の `icon` が Lucide に無い名前。場所はキーのパス（`map.kinds.store.icon`） |
 | `map_unknown_class` | map の範囲のノードのクラスが、設定の `map.kinds` に無い |

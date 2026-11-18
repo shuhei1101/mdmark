@@ -40,27 +40,39 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 案内・再生の帯を手順のバーの使い方（区切りを押してその手順を再生・もう一度押して再生し直し・バー以外と図の空いた場所を押して停止・← → と Esc・なめらかな移動）に書き換え、自動で進める・`play`・`interval` の記述を削除する。C4Container・C4Component・C4Dynamic・C4Deployment の書き方を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: map の描ける種類に C4 の 4 種類を追加し、map の引数の表から `play`・`interval` を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: 「案内」「再生」の意味を、帯の前へ・次へ・自動で進めるから手順のバーの区切りを押して再生する形に書き換え、手順のバーの用語を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: map の範囲に入れなくても map の図で描く種類に C4 の 4 種類を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: マーカーの引数の行から「自動で進めるか・間隔」を削除し、案内・再生を手順のバーで辿る形に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
   - page: docs/guide/CLI.mark.md
     new: false
     change: 点検のずれの種類の表に `map_retired_key`（map のマーカーの廃止したキー `play`・`interval`。`mdmark upgrade` で削除できる）の行を追加し、`map_unknown_key` の行が使用できるキーを挙げていれば `play`・`interval` を除外する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
 scope_out:
   - item: スマホで拡大した図を指で動かす・ピンチで拡大する操作と、拡大のボタンの配置
     reason: 要望に含まれない（#603 の関係する Issue。なめらかな移動で図の動かし方を変える場合は設計で合わせて検討する）
