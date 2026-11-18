@@ -68,6 +68,10 @@ files:
     visibility: internal
     description: 'モック『diagram-frame』の外観: 図の枠の部品のモックの固有の規則: 狭い枠の見本の幅。このモックの外観を変えるときに参照する。'
     tags: [topic:モック, topic:図, tool:css]
+  - path: components/diagram-frame-panel/index.html
+    visibility: internal
+    description: '部品『diagram-frame-panel』のモック: 図の右上に重ねる拡大・縮小・倍率・全画面のボタンのパネルの案（図の上に余白を取る・半透明・畳む）と、拡大した図・最大の倍率・狭い枠・縦に長い図。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
   - path: components/diagram-tooltip/index.html
     visibility: internal
     description: '部品『diagram-tooltip』のモック: 図の矢マーカーの詳細・ノードの入力・処理・出力・ノードの hint・ノードの中の用語のツールチップと、ヒントを削除した図、システムの枠と層のタイトルの hint、グラフの点・棒・円・散布図の項目のツールチップ。部品の外観や状態を決めるときに参照する。'
@@ -1722,7 +1726,7 @@ files:
     tags: [topic:モック]
   - path: components/diagram-frame-touch/index.html
     visibility: internal
-    description: '部品『diagram-frame-touch』のモック: 図の余白をタップして操作中にし、指のドラッグで図の枠を動かす状態と、図の外をタップして解いた状態。部品の外観や状態を決めるときに参照する。'
+    description: '部品『diagram-frame-touch』のモック: 開いたときの倍率の図と、指 1 本で縦横に動かす拡大した図・ピンチで拡大した図。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: components/panel-alert/index.html
     visibility: internal
@@ -1791,6 +1795,18 @@ files:
   - path: refs/508/index.md
     visibility: internal
     description: '#508（map の図のタッチでのドラッグと、罫線のコードブロックの点検の警告を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/659/assets/panel.css
+    visibility: internal
+    description: '#659 のモックが共通で読み込む素材: 図の右上に重ねるボタンのパネルの位置・線・角丸と、案ごとのパネルの下の図の見せ方の規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, topic:図, tool:css]
+  - path: refs/659/assets/panel.js
+    visibility: internal
+    description: '#659 のモックが共通で読み込む素材: 案 C のパネルを開閉するボタンを追加する処理。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, topic:図, tool:javascript]
+  - path: refs/659/index.md
+    visibility: internal
+    description: '#659（スマホで拡大した図を指で縦横に動かし、ピンチで拡大・縮小し、ボタンを図に重ねるパネルにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック, topic:図]
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166

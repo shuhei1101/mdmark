@@ -6,8 +6,8 @@ export const JUMP_RADIUS = 6;
 /** 同じ向きで重なる線をずらす幅（px） */
 export const OVERLAP_OFFSET = 4;
 
-/** 拡大・縮小と移動の量: 1 回の倍率・上限・1 回の移動量（px） */
-export const ZOOM = { step: 1.25, max: 3, pan: 80 };
+/** 拡大・縮小と移動の量: 1 回の倍率・全体が収まる倍率に対する下限と上限の比・1 回の移動量（px） */
+export const ZOOM = { step: 1.25, minRatio: 0.25, maxRatio: 5, pan: 80 };
 
 /** リサイズハンドルの量: キー 1 回で変える高さと、表示する枠の高さの下限（px） */
 export const RESIZE = { step: 32, min: 120 };

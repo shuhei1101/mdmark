@@ -15,15 +15,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** 図の帯と同じ並びの、移動・拡大と縮小のボタン（`data-tool` で見分ける） */
+/** 図のパネルと同じ並びの、拡大と縮小のボタン（`data-tool` で見分ける） */
 const TOOLS_HTML = [
   '<div class="tools">',
-  '<div data-group="pan" hidden>',
-  '<button type="button" data-tool="left" aria-label="左へ動かす"></button>',
-  '<button type="button" data-tool="up" aria-label="上へ動かす"></button>',
-  '<button type="button" data-tool="down" aria-label="下へ動かす"></button>',
-  '<button type="button" data-tool="right" aria-label="右へ動かす"></button>',
-  "</div>",
   '<div data-group="zoom">',
   '<button type="button" data-tool="out" aria-label="縮小"></button>',
   '<button type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す">100%</button>',
@@ -82,7 +76,7 @@ test("test_attach_zoom", async () => {
   const { root, viewport } = await setUp(onChange);
   // 検証: 収まる倍率で始める
   expect(zoomText(root)).toBe("55%");
-  expect(button(root, "縮小").disabled).toBe(true);
+  expect(button(root, "縮小").disabled).toBe(false);
   // 実行
   button(root, "拡大").click();
   // 検証
@@ -111,12 +105,11 @@ test("test_attach_zoom_when_percent_base_fit", async () => {
   ).toBe("倍率 125%。全体が収まる倍率に戻す");
 });
 
-// 拡大中だけ移動のボタンを出し、矢印キーとドラッグで動かす（正常系）
+// 拡大中は矢印キーとドラッグで動かす（正常系）
 test("test_attach_zoom_when_panned", async () => {
   // 準備
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const { root, viewport } = await setUp();
-  const panGroup = root.querySelector<HTMLElement>('[data-group="pan"]');
   button(root, "拡大").click();
   button(root, "拡大").click();
   const before = viewport.scrollLeft;
@@ -124,7 +117,6 @@ test("test_attach_zoom_when_panned", async () => {
   viewport.focus();
   await userEvent.keyboard("{ArrowRight}");
   // 検証
-  expect(panGroup?.hidden).toBe(false);
   expect(viewport.scrollLeft - before).toBe(80);
   // 実行: 左へ 40px ドラッグ
   const afterKey = viewport.scrollLeft;
@@ -322,16 +314,16 @@ test("test_attach_zoom_when_refit", async () => {
   });
   detachers.push(() => zoom.detach());
   const fitBefore = zoom.fit();
-  const outBefore = button(root, "縮小").disabled;
+  const atFitBefore = viewport.hasAttribute("data-at-fit");
   // 実行
   useHeight = true;
   zoom.refit();
   // 検証
   expect(fitBefore).toBe(1);
-  expect(outBefore).toBe(true);
+  expect(atFitBefore).toBe(true);
   expect(zoom.fit()).toBeCloseTo(viewport.clientHeight / 1600, 5);
   expect(zooms.at(-1) ?? 1).toBe(1);
-  expect(button(root, "縮小").disabled).toBe(false);
+  expect(viewport.hasAttribute("data-at-fit")).toBe(false);
 });
 
 /** 幅 600px・高さ 400px の表示する枠に、幅 1200・高さ 800 の中身を配置して拡大・縮小を付ける */
@@ -365,9 +357,9 @@ test("test_attach_zoom_when_focus_rect", async () => {
     { margin: 32, duration: 0 },
   );
   // 検証
-  expect(scale()).toBeCloseTo(2.68, 2);
-  expect(viewport.scrollLeft + 300).toBeCloseTo(600 * 2.68, -1);
-  expect(viewport.scrollTop + 200).toBeCloseTo(350 * 2.68, -1);
+  expect(scale()).toBeCloseTo(2.5, 2);
+  expect(viewport.scrollLeft + 300).toBeCloseTo(600 * 2.5, -1);
+  expect(viewport.scrollTop + 200).toBeCloseTo(350 * 2.5, -1);
 });
 
 // 収まる倍率より小さくしない（正常系）
@@ -408,8 +400,8 @@ test("test_attach_zoom_when_focus_rect_animated", async () => {
   vi.useRealTimers();
   // 検証
   expect(middle).toBeGreaterThan(start);
-  expect(middle).toBeLessThan(2.68);
-  expect(scale()).not.toBeCloseTo(2.68, 2);
+  expect(middle).toBeLessThan(2.5);
+  expect(scale()).not.toBeCloseTo(2.5, 2);
 });
 
 // ボタンを持つ要素の中のツールでない要素を押しても止めない（正常系）
@@ -437,7 +429,7 @@ test("test_attach_zoom_when_focus_rect_other_click", async () => {
   vi.advanceTimersByTime(300);
   vi.useRealTimers();
   // 検証
-  expect(scale()).toBeCloseTo(2.68, 2);
+  expect(scale()).toBeCloseTo(2.5, 2);
 });
 
 // 表示する枠から操作を引く（正常系）
@@ -452,4 +444,268 @@ test("test_zoom_control_of", async () => {
   // 検証
   expect(attached).toBe(zoom);
   expect(detached).toBeUndefined();
+});
+
+// 全体が収まる倍率の 0.25 倍と 5 倍で止める（正常系）
+test("test_attach_zoom_when_bounds", async () => {
+  // 準備
+  const { root } = await setUp(undefined, "fit");
+  // 実行
+  for (let i = 0; i < 10; i += 1) {
+    button(root, "縮小").click();
+  }
+  // 検証
+  expect(zoomText(root)).toBe("25%");
+  expect(button(root, "縮小").disabled).toBe(true);
+  // 実行
+  for (let i = 0; i < 20; i += 1) {
+    button(root, "拡大").click();
+  }
+  // 検証
+  expect(zoomText(root)).toBe("500%");
+  expect(button(root, "拡大").disabled).toBe(true);
+});
+
+// 全体が収まる倍率以下の間だけ data-at-fit を付ける（正常系）
+test("test_attach_zoom_when_at_fit", async () => {
+  // 準備
+  const { root, viewport } = await setUp();
+  const opened = viewport.hasAttribute("data-at-fit");
+  // 実行
+  button(root, "拡大").click();
+  const zoomed = viewport.hasAttribute("data-at-fit");
+  viewport.focus();
+  await userEvent.keyboard("0");
+  button(root, "縮小").click();
+  // 検証
+  expect(opened).toBe(true);
+  expect(zoomed).toBe(false);
+  expect(viewport.hasAttribute("data-at-fit")).toBe(true);
+});
+
+/** 表示する枠の上の点に指を置いた Touch を作る */
+function touchAt(
+  target: Element,
+  finger: { id: number; x: number; y: number },
+): Touch {
+  return new Touch({
+    identifier: finger.id,
+    target,
+    clientX: finger.x,
+    clientY: finger.y,
+  });
+}
+
+/** 中点 `center` を挟んで横に `gap` だけ離した 2 本の指の touch のイベントを発火し、イベントを返却する */
+function pinch(
+  target: Element,
+  type: "touchstart" | "touchmove",
+  fingers: { center: { x: number; y: number }; gap: number },
+): TouchEvent {
+  const { center, gap } = fingers;
+  const touches = [
+    touchAt(target, { id: 1, x: center.x - gap / 2, y: center.y }),
+    touchAt(target, { id: 2, x: center.x + gap / 2, y: center.y }),
+  ];
+  const event = new TouchEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    touches,
+    targetTouches: touches,
+    changedTouches: touches,
+  });
+  target.dispatchEvent(event);
+  return event;
+}
+
+// 2 本の指の間隔の変化で、中点を保って倍率を変える（正常系）
+test("test_attach_zoom_when_pinched", async () => {
+  // 準備
+  const { viewport, zoom, scale } = await setUpFocus();
+  const rect = viewport.getBoundingClientRect();
+  const center = { x: rect.left + 300, y: rect.top + 200 };
+  const start = scale();
+  const pointBefore = {
+    x: (viewport.scrollLeft + 300) / start,
+    y: (viewport.scrollTop + 200) / start,
+  };
+  // 実行
+  pinch(viewport, "touchstart", { center, gap: 100 });
+  const move = pinch(viewport, "touchmove", { center, gap: 200 });
+  // 検証
+  expect(scale()).toBeCloseTo(start * 2, 3);
+  expect((viewport.scrollLeft + 300) / scale()).toBeCloseTo(pointBefore.x, 0);
+  expect((viewport.scrollTop + 200) / scale()).toBeCloseTo(pointBefore.y, 0);
+  expect(move.defaultPrevented).toBe(true);
+  // 実行
+  pinch(viewport, "touchmove", { center, gap: 1 });
+  // 検証
+  expect(scale()).toBeCloseTo(zoom.fit() * 0.25, 3);
+});
+
+// touchPan が native のとき、指のポインターでは動かさない（正常系）
+test("test_attach_zoom_when_native_touch", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 400px; overflow: auto"><div class="sizer"><div class="content" style="width: 1100px; height: 300px"></div></div></div>`,
+  );
+  const tools = root.querySelector(".tools") as HTMLElement;
+  const viewport = root.querySelector(".viewport") as HTMLElement;
+  const content = root.querySelector(".content") as HTMLElement;
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 1100, height: 300 },
+    tools,
+    touchPan: "native",
+  });
+  detachers.push(() => zoom.detach());
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  viewport.scrollLeft = 200;
+  /** pointerType の指で 40px 左へ動かす */
+  const drag = (pointerType: string) => {
+    const point = {
+      bubbles: true,
+      pointerId: 1,
+      button: 0,
+      clientY: 100,
+      pointerType,
+    };
+    content.dispatchEvent(
+      new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+    );
+    content.dispatchEvent(
+      new PointerEvent("pointermove", { ...point, clientX: 260 }),
+    );
+    content.dispatchEvent(
+      new PointerEvent("pointerup", { ...point, clientX: 260 }),
+    );
+  };
+  // 実行
+  drag("touch");
+  const afterTouch = viewport.scrollLeft;
+  drag("mouse");
+  // 検証
+  expect(afterTouch).toBe(200);
+  expect(viewport.scrollLeft - afterTouch).toBe(40);
+});
+
+// 拡大して縦にスクロールできる間だけ、ホイールをスクロールする祖先へ渡す（正常系）
+test("test_attach_zoom_when_wheel", async () => {
+  // 準備
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `<div class="scroller" style="height: 300px; overflow-y: auto"><div style="height: 2000px">${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 200px; overflow: auto"><div class="sizer"><div class="content" style="width: 600px; height: 200px"></div></div></div></div></div>`,
+  );
+  const scroller = root.querySelector(".scroller") as HTMLElement;
+  const tools = root.querySelector(".tools") as HTMLElement;
+  const viewport = root.querySelector(".viewport") as HTMLElement;
+  const content = root.querySelector(".content") as HTMLElement;
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 600, height: 200 },
+    tools,
+    wheelToScroller: true,
+  });
+  detachers.push(() => zoom.detach());
+  const wheel = (init: WheelEventInit) => {
+    const event = new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    });
+    viewport.dispatchEvent(event);
+    return event;
+  };
+  // 実行: 開いた直後
+  const atFit = wheel({ deltaY: 100 });
+  // 実行: 拡大を 2 回押した後
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  const viewportTop = viewport.scrollTop;
+  const scrollerTop = scroller.scrollTop;
+  const zoomed = wheel({ deltaY: 100 });
+  const withCtrl = wheel({ deltaY: 100, ctrlKey: true });
+  // 検証
+  expect(atFit.defaultPrevented).toBe(false);
+  expect(zoomed.defaultPrevented).toBe(true);
+  expect(viewport.scrollTop).toBe(viewportTop);
+  expect(scroller.scrollTop - scrollerTop).toBe(100);
+  expect(withCtrl.defaultPrevented).toBe(false);
+});
+
+// 拡大中の Shift＋ホイールは、縦の量のまま届いても表示する枠を横に動かす（正常系）
+test("test_attach_zoom_when_shift_wheel", async () => {
+  // 準備
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `<div class="scroller" style="height: 300px; overflow-y: auto"><div style="height: 2000px">${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 200px; overflow: auto"><div class="sizer"><div class="content" style="width: 600px; height: 200px"></div></div></div></div></div>`,
+  );
+  const scroller = root.querySelector(".scroller") as HTMLElement;
+  const tools = root.querySelector(".tools") as HTMLElement;
+  const viewport = root.querySelector(".viewport") as HTMLElement;
+  const content = root.querySelector(".content") as HTMLElement;
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 600, height: 200 },
+    tools,
+    wheelToScroller: true,
+  });
+  detachers.push(() => zoom.detach());
+  const wheel = (init: WheelEventInit) => {
+    const event = new WheelEvent("wheel", {
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    });
+    viewport.dispatchEvent(event);
+    return event;
+  };
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  viewport.scrollLeft = 0;
+  const scrollerTop = scroller.scrollTop;
+  // 実行: 縦の量のまま届く Shift＋ホイールと、横の量で届く Shift＋ホイール
+  const vertical = wheel({ deltaY: 100, shiftKey: true });
+  const afterVertical = viewport.scrollLeft;
+  const horizontal = wheel({ deltaX: 50, shiftKey: true });
+  // 検証
+  expect(vertical.defaultPrevented).toBe(true);
+  expect(afterVertical).toBe(100);
+  expect(horizontal.defaultPrevented).toBe(true);
+  expect(viewport.scrollLeft).toBe(150);
+  expect(scroller.scrollTop).toBe(scrollerTop);
+});
+
+// 単位ごとに px に直す（正常系）
+test("test_wheel_delta", async () => {
+  // 準備
+  const { wheelDelta } = await loadZoom();
+  const page = { width: 600, height: 800 };
+  // 実行
+  const results = [0, 1, 2].map(
+    (deltaMode) =>
+      wheelDelta({ event: { deltaX: 0, deltaY: 3, deltaMode }, page }).y,
+  );
+  // 検証
+  expect(results).toEqual([3, 48, 2400]);
+});
+
+// 縦にスクロールする最も近い祖先を返却する（正常系）
+test("test_scroll_parent_of", async () => {
+  // 準備
+  const { scrollParentOf } = await loadZoom();
+  const root = createRootFromHtml(
+    '<div class="scroller" style="height: 100px; overflow-y: auto"><div style="height: 500px"><div class="inner"></div></div></div><div class="outer"></div>',
+  );
+  const inner = root.querySelector(".inner") as HTMLElement;
+  const outer = root.querySelector(".outer") as HTMLElement;
+  // 実行・検証
+  expect(scrollParentOf(inner)).toBe(root.querySelector(".scroller"));
+  expect(scrollParentOf(outer)).toBe(document.scrollingElement);
 });

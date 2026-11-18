@@ -1,0 +1,54 @@
+confirmations:
+  - topic: ライトボックスの画像のピンチの拡大・縮小を含めるか
+    decision: 含める。ライトボックスの画像も図と同じ倍率の範囲でピンチで拡大・縮小し、上のバーのボタンの配置は変えない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4606019766
+  - topic: 開いたときにパネルの下に重なる図の部分の見せ方
+    decision: パネルを畳み、倍率の表示と開くボタンだけを出す。押すとほかのボタンを並べる（別案 C）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4607367759
+  - topic: パネルを図の右上と右下のどちらに置くか
+    decision: 右上に置く（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608786131
+  - topic: パネルの移動のボタン（← ↑ ↓ →）の扱い
+    decision: 削除する。図は指とマウスのドラッグ・矢印キーで動かす（別案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608786912
+  - topic: スマホ幅のパネルのボタンを 1 行に並べるか
+    decision: 1 行に並べたままにする（推奨案 A）。移動のボタンの削除で、開いたパネルも 1 行に収まる
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4607368550
+  - topic: 指で動かす・ピンチで拡大するモックの動きと見た目
+    decision: この動きと見た目で進める（推奨案 A）。あわせて、倍率の範囲を 25%〜500% に広げる
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608787985
+  - topic: 倍率の範囲 25%〜500% の基準
+    decision: パネルの数字（開いたときの倍率を 100% とした値）で 25%〜500%。開いたときの倍率の 0.25 倍〜5 倍（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4608947734
+  - topic: map の図の戻るボタンを畳んだパネルに出すか
+    decision: グループの中にいる間だけ、畳んだパネルにも戻るボタンを出す（推奨案 A）。スマホでもパネルを 2 行にせず、ボタンを小さくして 1 行に収める
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: '218e0448'
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4609171904
+  - topic: スマホ幅でライトボックスを拡大すると上のバーが折り返す件の扱い
+    decision: この PR でライトボックスの移動のボタンも削除し、拡大中の移動は図と同じくドラッグ（指を含む）と矢印キーで行う（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4610892503

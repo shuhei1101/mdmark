@@ -1,5 +1,24 @@
 /** 押した位置からこの px を超えて動いたときだけ図を動かしたことにし、リンク先を開かない。超えないうちはグラフの項目のツールチップを優先する */
 export declare const DRAG_THRESHOLD = 4;
+/** `deltaMode` が行（`1`）の `wheel` を px に直すときの 1 行の量（px） */
+export declare const WHEEL_LINE = 16;
+/** ホイールの量を px に直す。行は `WHEEL_LINE` 倍、ページは横を `page.width`・縦を `page.height` 倍にする */
+export declare const wheelDelta: (input: {
+    event: {
+        deltaX: number;
+        deltaY: number;
+        deltaMode: number;
+    };
+    page: {
+        width: number;
+        height: number;
+    };
+}) => {
+    x: number;
+    y: number;
+};
+/** 祖先のうち縦にスクロールする最も近い要素を返却する。無ければ文書のスクロールする要素 */
+export declare const scrollParentOf: (element: HTMLElement) => Element;
 /** 倍率が変わったときに呼ぶ関数 */
 export type ZoomChange = (zoom: number, fit: number) => void;
 /** `attachZoom` が返却する操作 */
@@ -27,7 +46,7 @@ export type FocusRect = {
 };
 /** `attachZoom` を付けた表示する枠の操作を返却する（付けていなければ `undefined`） */
 export declare const zoomControlOf: (viewport: HTMLElement) => ZoomControl | undefined;
-/** 表示する枠と中身に、全体が収まる倍率から `ZOOM.max` までの拡大・縮小と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
+/** 表示する枠と中身に、全体が収まる倍率の `ZOOM.minRatio` 倍から `ZOOM.maxRatio` 倍までの拡大・縮小（ボタン・キー・ピンチ）と、拡大中の移動（キー・ドラッグ）を付ける */
 export declare function attachZoom(options: {
     /** 表示する枠 */
     viewport: HTMLElement;
@@ -38,7 +57,7 @@ export declare function attachZoom(options: {
         width: number;
         height: number;
     };
-    /** `data-tool` のボタンと `data-group="pan"` のまとまりを持つ要素 */
+    /** `data-tool` のボタンを持つ要素 */
     tools: HTMLElement;
     /** 倍率が変わったときに呼ぶ関数（ボタンの状態を書き換える前に呼ぶ） */
     onChange?: ZoomChange;
@@ -54,4 +73,8 @@ export declare function attachZoom(options: {
     percentBase?: "fit" | "content";
     /** 全体が収まる倍率の下限（既定は下限なし） */
     fitMin?: number;
+    /** 指の移動の扱い（`native` は表示する枠のスクロールとしてブラウザに任せ、`pointer` は指もドラッグで動かす。既定 `pointer`） */
+    touchPan?: "native" | "pointer";
+    /** 拡大して縦にスクロールできる間のホイールを、縦にスクロールする祖先へ渡すか（既定 `false`） */
+    wheelToScroller?: boolean;
 }): ZoomControl;

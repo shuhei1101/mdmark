@@ -25,7 +25,6 @@ async function readTools(page: Page) {
       dialog.querySelector(`[data-tool="${name}"]`) as HTMLButtonElement | null;
     const visible = (element: Element | null) =>
       element !== null && (element as HTMLElement).offsetParent !== null;
-    const pan = dialog.querySelector('[data-group="pan"]');
     const stage = dialog.querySelector(".mdmark-lightbox-stage");
     const disabledOf = (name: string) => tool(name)?.disabled ?? null;
     const textOf = (selector: string) =>
@@ -42,7 +41,7 @@ async function readTools(page: Page) {
       inDisabled: disabledOf("in"),
       zoomText: tool("fit")?.textContent ?? null,
       zoomLabel: labelOf(tool("fit")),
-      panVisible: visible(pan),
+      panCount: dialog.querySelectorAll('[data-group="pan"]').length,
       closeLabel: labelOf(tool("close")),
       stageZoomed: stage?.classList.contains("is-zoomed") ?? false,
       stageLabel: labelOf(stage),
@@ -51,7 +50,7 @@ async function readTools(page: Page) {
   });
 }
 
-// 15 枚の 3 枚目は、全体が収まる倍率で前後のボタンを押せ、縮小を押せず、移動のボタンを出さない（Middle）
+// 15 枚の 3 枚目は、全体が収まる倍率で前後のボタンと縮小を押せ、移動のボタンを出さない（Middle）
 test("test_middle", async () => {
   // 準備・実行
   const page = await open("middle");
@@ -61,10 +60,10 @@ test("test_middle", async () => {
   expect(tools.count).toBe("3 / 15");
   expect(tools.prevDisabled).toBe(false);
   expect(tools.nextDisabled).toBe(false);
-  expect(tools.outDisabled).toBe(true);
+  expect(tools.outDisabled).toBe(false);
   expect(tools.inDisabled).toBe(false);
   expect(tools.zoomText).toBe("100%");
-  expect(tools.panVisible).toBe(false);
+  expect(tools.panCount).toBe(0);
   expect(tools.closeLabel).toBe("拡大を閉じる");
   expect(tools.caption).toBe("幅 240px");
   await expect(
@@ -120,7 +119,7 @@ test("test_single", async () => {
   expect(tools.caption).toBe("中央に配置した画面");
 });
 
-// 250% に拡大したときは、移動のボタンを出し、画像の場所にスクリーンリーダー向けの名前を付ける（Zoomed）
+// 250% に拡大したときは、上の帯のボタンの並びを Middle と同じにし、画像の場所にスクリーンリーダー向けの名前を付ける（Zoomed）
 test("test_zoomed", async () => {
   // 準備・実行
   const page = await open("zoomed");
@@ -130,30 +129,35 @@ test("test_zoomed", async () => {
   expect(tools.zoomLabel).toBe("倍率 250%。全体が収まる倍率に戻す");
   expect(tools.outDisabled).toBe(false);
   expect(tools.inDisabled).toBe(false);
-  expect(tools.panVisible).toBe(true);
+  expect(tools.panCount).toBe(0);
   expect(tools.stageZoomed).toBe(true);
   expect(tools.stageLabel).toBe("拡大した画像。ドラッグか矢印キーで動かす");
   await expect(
     page
-      .locator('[data-group="pan"] button')
+      .locator('[role="toolbar"] button')
       .evaluateAll((buttons) =>
         buttons.map((button) => button.getAttribute("aria-label")),
       ),
-  ).resolves.toEqual(["左へ動かす", "上へ動かす", "下へ動かす", "右へ動かす"]);
+  ).resolves.toEqual([
+    "縮小",
+    "倍率 250%。全体が収まる倍率に戻す",
+    "拡大",
+    "拡大を閉じる",
+  ]);
   await expect(
     page.locator(".mdmark-lightbox-stage").getAttribute("tabindex"),
   ).resolves.toBe("0");
 });
 
-// 上限の 300% では、拡大を押せない（Max）
+// 上限（全体が収まる倍率の 5 倍）の 500% では、拡大を押せない（Max）
 test("test_max", async () => {
   // 準備・実行
   const tools = await readTools(await open("max"));
   // 検証
-  expect(tools.zoomText).toBe("300%");
+  expect(tools.zoomText).toBe("500%");
   expect(tools.inDisabled).toBe(true);
   expect(tools.outDisabled).toBe(false);
-  expect(tools.panVisible).toBe(true);
+  expect(tools.panCount).toBe(0);
 });
 
 // 長いキャプションは、画面の幅の中で折り返す（LongCaption）

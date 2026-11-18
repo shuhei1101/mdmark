@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>diagram-frame-panel | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- 図の右上に重ねるボタンのパネルの規則（#659 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/659/assets/panel.css">
+  <!-- 狭い枠の見本の幅（図の枠の部品のモックと同じ） -->
+  <link rel="stylesheet" href="../diagram-frame/style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <script src="../../refs/308/assets/samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+  <!-- 案 C のパネルを開閉するボタン（#659 で共有するアセット） -->
+  <script src="../../refs/659/assets/panel.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <!-- [data-scheme-set]: sample.js が押されたボタンの値を html の data-scheme に適用する -->
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">図の右上に重ねるボタンのパネル</h1>
+
+      <!-- 案 A（推奨）: 図の上にパネルの高さの余白を取る。開いたときの倍率で図の内容がパネルに隠れない。拡大すると図がパネルの下を通る -->
+      <section aria-labelledby="state-a-fit">
+        <h2 class="catalog-label" id="state-a-fit">案 A（推奨）開いたとき（図の上にパネルの高さの余白を取り、図の内容を隠さない）</h2>
+        <!-- [data-mock-panel]: panel.css がこの中の図のパネルの案を切り替える。[data-mock-fit-min]: map の図の実装と同じく等倍より縮めない（どちらもモックだけの指定） -->
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="a">
+          <!-- [data-mock-diagram]: diagram.js が samples.js の同じ名前の定義から図を描く -->
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <!-- 案 B: 半透明のパネル。図の内容の上にパネルが重なり、下の内容を透かして見せる -->
+      <section aria-labelledby="state-b-fit">
+        <h2 class="catalog-label" id="state-b-fit">案 B 開いたとき（半透明のパネル。下の図の内容を透かして見せる）</h2>
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="b">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <!-- 案 C: 畳んだパネル。倍率の表示と開くボタンだけを出し、押すとほかのボタンを並べる -->
+      <section aria-labelledby="state-c-fit">
+        <h2 class="catalog-label" id="state-c-fit">案 C 上に置く 開いたとき（倍率の表示と、パネルを開くボタンだけを出す）</h2>
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <section aria-labelledby="state-c-open">
+        <h2 class="catalog-label" id="state-c-open">案 C 上に置いて、パネルを開いた</h2>
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
+          <!-- [data-mock-open]: panel.js がこの図のパネルを開いた状態で描く（モックだけの指定） -->
+          <figure data-mock-diagram="inquiry" data-mock-open></figure>
+        </article>
+      </section>
+
+      <section aria-labelledby="state-c-narrow-open">
+        <h2 class="catalog-label" id="state-c-narrow-open">狭い枠 案 C 上に置いて、パネルを開いた（開閉のボタンは右上のまま）</h2>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
+          <figure data-mock-diagram="inquiry" data-mock-open></figure>
+        </article>
+      </section>
+
+      <!-- 案 C を下に置く: パネルを右下のリサイズハンドルの上に重ねる。上に置く案（上の 2 つ）と見比べる -->
+      <section aria-labelledby="state-c-bottom">
+        <h2 class="catalog-label" id="state-c-bottom">案 C 下に置く（右下のリサイズハンドルの上に重ねる）</h2>
+        <!-- [data-mock-panel-at]: panel.css がこの中の図のパネルを下に置く（モックだけの指定） -->
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+      </section>
+
+      <section aria-labelledby="state-c-bottom-open">
+        <h2 class="catalog-label" id="state-c-bottom-open">案 C 下に置いて、パネルを開いた</h2>
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
+          <figure data-mock-diagram="inquiry" data-mock-open></figure>
+        </article>
+      </section>
+
+      <section aria-labelledby="state-c-bottom-narrow">
+        <h2 class="catalog-label" id="state-c-bottom-narrow">狭い枠 案 C 下に置く（開いたとき・パネルを開いた。開閉のボタンは右下のまま）</h2>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
+          <figure data-mock-diagram="inquiry" data-mock-open></figure>
+        </article>
+      </section>
+
+      <!-- 拡大した（案 A）: 図が枠からはみ出すと、拡大・縮小のボタンの左に移動のボタンがパネルの中に出る。図はパネルの下を通る -->
+      <section aria-labelledby="state-zoomed">
+        <h2 class="catalog-label" id="state-zoomed">案 A 拡大した（パネルの中に移動のボタンが出る。図はパネルの下を通る）</h2>
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="a">
+          <!-- [data-mock-zoom] [data-mock-scroll]: 開いたときの倍率と位置（図の座標）を変えて見せる（モックだけの指定） -->
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
+        </article>
+      </section>
+
+      <!-- 最大の倍率（案 A）: 拡大のボタンは押せない -->
+      <section aria-labelledby="state-max">
+        <h2 class="catalog-label" id="state-max">案 A 最大の倍率（拡大のボタンは押せない）</h2>
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="a">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="3" data-mock-scroll="560,170"></figure>
+        </article>
+      </section>
+
+      <!-- 狭い枠: スマホ幅の文書。案ごとに、開いたときと拡大したときを並べる -->
+      <section aria-labelledby="state-narrow-a">
+        <h2 class="catalog-label" id="state-narrow-a">狭い枠 案 A（開いたとき・拡大した）</h2>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="a">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="a">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
+        </article>
+      </section>
+
+      <section aria-labelledby="state-narrow-b">
+        <h2 class="catalog-label" id="state-narrow-b">狭い枠 案 B（開いたとき・拡大した）</h2>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="b">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="b">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
+        </article>
+      </section>
+
+      <section aria-labelledby="state-narrow-c">
+        <h2 class="catalog-label" id="state-narrow-c">狭い枠 案 C（開いたとき・拡大した）</h2>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
+          <figure data-mock-diagram="inquiry"></figure>
+        </article>
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
+        </article>
+      </section>
+
+      <!-- リサイズハンドル（案 A）: 下端のハンドルとパネルが重ならない -->
+      <section aria-labelledby="state-resize">
+        <h2 class="catalog-label" id="state-resize">案 A 縦に長い図（下端のリサイズハンドルとパネルが重ならない）</h2>
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="a">
+          <figure data-mock-diagram="tall-flow"></figure>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

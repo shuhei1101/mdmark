@@ -11,23 +11,35 @@ constants:
     entries:
       - key: px
         value: '4'
+  - name: WHEEL_LINE
+    title: ホイールの 1 行の量
+    container: src/shared/zoom.interact.ts
+    summary: '`deltaMode` が行（`1`）の `wheel` を px に直すときの 1 行の量'
+    entries:
+      - key: px
+        value: '16'
 functions:
   - name: attachZoom
     title: 拡大・縮小・移動を付ける
     container: src/shared/zoom.interact.ts
     kind: 関数
     scope: internal
-    summary: '表示する枠と中身に、拡大・縮小と拡大中の移動の操作を付ける'
+    summary: '表示する枠と中身に、拡大・縮小・ピンチと拡大中の移動の操作を付ける'
     description: |-
-      拡大・縮小は `fitScale` の倍率から `ZOOM.max` までで、縮小・拡大・倍率のボタンと `+`・`-`・`0` で操作する。
-      拡大中の移動は、移動のボタン・矢印キー・ドラッグで操作する。
+      拡大・縮小は、全体が収まる倍率（`fitScale` の倍率。`fitMin` より小さくしない）の `ZOOM.minRatio` 倍から `ZOOM.maxRatio` 倍までで、縮小・拡大・倍率のボタンと `+`・`-`・`0`、表示する枠の上のピンチで操作する。
+      拡大中の移動は、矢印キーとドラッグで操作する。
+      指（`pointerType` が `touch`）の移動は `touchPan` で決める。`native` は指のポインターではドラッグを始めず、表示する枠のスクロールとしてブラウザに任せる。`pointer` は指もマウスと同じドラッグで動かす。
       倍率は中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。
 
       倍率が変わるたびに次を書き換え、`onChange` に倍率を通知する。
 
-      - 端のボタンの `disabled`
+      - 端のボタンの `disabled`（縮小は下限、拡大は上限）
       - 倍率の文字とスクリーンリーダー向けの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）
-      - 移動のボタンのまとまりの `hidden`
+      - 表示する枠の `data-at-fit`（倍率が全体が収まる倍率以下の間だけ付ける）
+
+      ピンチは、表示する枠の `touchstart`・`touchmove`（`passive: false`）で指が 2 本の間、始めの 2 本の指の距離と倍率を覚え、`touchmove` ごとに「始めの倍率 × 今の距離 ÷ 始めの距離」を下限・上限に収め、今の 2 本の指の中点の下の中身の点が中点の下に残る位置へ倍率と位置を変えて `preventDefault` する。指が 2 本の間はドラッグを止める。表示する枠の上の Safari の `gesturestart`・`gesturechange` は `preventDefault` する。
+
+      `wheelToScroller` が `true` のとき、表示する枠を縦にスクロールできる間（`data-at-fit` を持たず `scrollHeight` が `clientHeight` より大きい）は、`ctrlKey` を持たない `wheel`（`passive: false`）を `preventDefault` し、`wheelDelta` で px に直した縦の量を `scrollParentOf` の要素の `scrollBy` に、横の量を表示する枠の `scrollLeft` に加える。縦にスクロールできない間は `wheel` を受け取らない。
 
       `.mdmark-diagram-node-link` の上からもドラッグを始める（文字を選ばせず、リンクの `dragstart` を `preventDefault` してブラウザのリンクのドラッグを始めない）。
       `DRAG_THRESHOLD` を超えて動いたときだけ動かしたことにする。
@@ -37,17 +49,17 @@ functions:
       `pointercancel` では受け取りを付けず、`detach` でも解除する。
 
       `fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。
-      `refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態をもう一度求める。
+      `refit()` は今の倍率と位置を保ったまま、全体が収まる倍率と、下限・上限・ボタンの状態をもう一度求める（倍率が新しい範囲の外なら範囲に収める）。
       図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使用する
 
-      `focusRect(rect, { margin, duration })` は、倍率を掛ける前の中身の座標の矩形と周りの `margin` が表示する枠に収まる倍率（全体が収まる倍率以上・`ZOOM.max` 以下）と、矩形の中心が表示する枠の中央に来る位置へ、`duration` ミリ秒かけて `requestAnimationFrame` で倍率と位置を変える（`duration` が 0 なら 1 回で変える。文書のスクロールは変えない）。移している間に読者がホイール・ドラッグ・キー・ツールのボタン（`data-tool`）で操作したら、移すのを止める（ボタンを持つ要素の中の帯の区切りなど、ほかの押下では止めない）。
+      `focusRect(rect, { margin, duration })` は、倍率を掛ける前の中身の座標の矩形と周りの `margin` が表示する枠に収まる倍率（全体が収まる倍率以上・上限以下）と、矩形の中心が表示する枠の中央に来る位置へ、`duration` ミリ秒かけて `requestAnimationFrame` で倍率と位置を変える（`duration` が 0 なら 1 回で変える。文書のスクロールは変えない）。移している間に読者がホイール・ドラッグ・キー・ツールのボタン（`data-tool`）で操作したら、移すのを止める（ボタンを持つ要素の中の帯の区切りなど、ほかの押下では止めない）。
 
       付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を消す
     args:
       - name: options
-        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content"; fitMin?: number }'
+        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content"; fitMin?: number; touchPan?: "native" | "pointer"; wheelToScroller?: boolean }'
         required: true
-        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）
+        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）・指の移動の扱い（既定 `pointer`。`attachDiagrams` は `native`）・拡大中のホイールをスクロールする祖先へ渡すか（既定 `false`。`attachDiagrams` は `true`）
     returns:
       type: 'ZoomControl'
       description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を求め直す関数・矩形が収まる倍率と位置へ移す関数・付けた操作を削除する関数
@@ -59,13 +71,13 @@ functions:
         summary: 収まる倍率で始め、拡大・縮小と戻す
         condition: 幅 600px の枠に幅 1100 の中身
         mock: なし
-        expected: 倍率の文字が `55%` で縮小が `disabled`、拡大の後に `68%`、`0` の後に `55%`、`onChange` が倍率ごとに呼ばれる
+        expected: 倍率の文字が `55%` で縮小が `disabled` を持たず、拡大の後に `68%`、`0` の後に `55%`、`onChange` が倍率ごとに呼ばれる
       - name: test_attach_zoom_when_panned
         case: 正常
-        summary: 拡大中だけ移動のボタンを出し、矢印キーとドラッグで動かす
+        summary: 拡大中は矢印キーとドラッグで動かす
         condition: 拡大を 2 回押し、枠で `ArrowRight` を押してから左へ 40px ドラッグ
         mock: なし
-        expected: 移動のまとまりが `hidden` を持たず、`scrollLeft` が 80 増えた後に 40 増える
+        expected: '`scrollLeft` が 80 増えた後に 40 増える'
       - name: test_attach_zoom_when_detached
         case: 正常
         summary: 削除すると操作が有効にならない
@@ -101,7 +113,7 @@ functions:
         summary: '`fitHeight` の関数が `true` を返却するようになった後の `refit()` で、倍率を保ち下限を高さでもう一度求める'
         condition: 幅 600px・高さ 400px の枠に幅 500・高さ 1600 の中身。始めは `fitHeight` が `false` を返却し、`true` を返却するようにして `refit()` を呼ぶ
         mock: なし
-        expected: '`refit()` の前後で倍率が `1` のままで、`fit()` が `1` から `0.25` になり、縮小のボタンが `disabled` でなくなる'
+        expected: '`refit()` の前後で倍率が `1` のままで、`fit()` が `1` から `0.25` になり、表示する枠が `data-at-fit` を持たなくなる'
       - name: test_attach_zoom_when_link_dragstart
         case: 正常
         summary: ノードのリンクの上の押下で、ブラウザのリンクのドラッグを始めない
@@ -113,7 +125,7 @@ functions:
         summary: 矩形が収まる倍率と位置へ移す
         condition: '幅 600px・高さ 400px の枠に幅 1200・高さ 800 の中身。`focusRect({ x: 500, y: 300, width: 200, height: 100 }, { margin: 32, duration: 0 })`'
         mock: なし
-        expected: 倍率が `min((600 - 64) / 200, (400 - 64) / 100)` を `ZOOM.max` で抑えた 2.68 で、矩形の中心 `(600, 350)` が表示する枠の中央にある
+        expected: 倍率が `min((600 - 64) / 200, (400 - 64) / 100)` を上限（全体が収まる倍率 0.5 × `ZOOM.maxRatio` = 2.5）で抑えた 2.5 で、矩形の中心 `(600, 350)` が表示する枠の中央にある
       - name: test_attach_zoom_when_focus_rect_wide
         case: 正常
         summary: 収まる倍率より小さくしない
@@ -138,6 +150,42 @@ functions:
         condition: '`duration: 300` で `focusRect` を呼び、時計を 150 ミリ秒進めてから、ボタンを持つ要素の中の `data-tool` を持たない要素を押し、さらに 300 ミリ秒進める'
         mock: '`requestAnimationFrame`・時計'
         expected: 目標の倍率になる
+      - name: test_attach_zoom_when_bounds
+        case: 正常
+        summary: 全体が収まる倍率の 0.25 倍と 5 倍で止める
+        condition: 幅 600px の枠に幅 1100 の中身、`percentBase` が `fit`。縮小を 10 回押してから、拡大を 20 回押す
+        mock: なし
+        expected: 縮小の後に倍率の文字が `25%` で縮小が `disabled`、拡大の後に `500%` で拡大が `disabled`
+      - name: test_attach_zoom_when_at_fit
+        case: 正常
+        summary: 全体が収まる倍率以下の間だけ `data-at-fit` を付ける
+        condition: 開いた直後、拡大を 1 回押した後、`0` の後に縮小を 1 回押した後
+        mock: なし
+        expected: 表示する枠が `data-at-fit` を持ち、拡大の後に持たず、縮小の後に持つ
+      - name: test_attach_zoom_when_pinched
+        case: 正常
+        summary: 2 本の指の間隔の変化で、中点を保って倍率を変える
+        condition: 幅 600px・高さ 400px の枠に幅 1200・高さ 800 の中身。表示する枠に指 2 本の `touchstart`（間隔 100px）と、同じ中点で間隔 200px の `touchmove` を発火し、続けて間隔 1px の `touchmove` を発火する
+        mock: '`Touch` を作る関数'
+        expected: 1 つ目の `touchmove` の後に倍率が始めの 2 倍で、中点の下の中身の点が変わらず、`touchmove` が `defaultPrevented`。2 つ目の後に倍率が下限（全体が収まる倍率 × `ZOOM.minRatio`）
+      - name: test_attach_zoom_when_native_touch
+        case: 正常
+        summary: '`touchPan` が `native` のとき、指のポインターでは動かさない'
+        condition: '`touchPan: "native"` で拡大を 2 回押し、`pointerType` が `touch` の `pointerdown` → 40px の `pointermove` → `pointerup`、続けて同じ動きを `mouse` で'
+        mock: なし
+        expected: '`touch` の後は `scrollLeft` が変わらず、`mouse` の後は 40 変わる'
+      - name: test_attach_zoom_when_wheel
+        case: 正常
+        summary: 拡大して縦にスクロールできる間だけ、ホイールをスクロールする祖先へ渡す
+        condition: '`wheelToScroller: true`、`overflow-y: auto` で中身があふれる要素の中の表示する枠。開いた直後と、拡大を 2 回押した後に、表示する枠へ `deltaY: 100` の `wheel` を発火し、最後に `ctrlKey` を持つ `wheel` を発火する'
+        mock: なし
+        expected: 開いた直後の `wheel` は `defaultPrevented` でない。拡大の後の `wheel` は `defaultPrevented` で、表示する枠の `scrollTop` が変わらず、祖先の要素の `scrollTop` が 100 増える。`ctrlKey` の `wheel` は `defaultPrevented` でない
+      - name: test_attach_zoom_when_shift_wheel
+        case: 正常
+        summary: 拡大中の Shift＋ホイールは、縦の量のまま届いても表示する枠を横に動かす
+        condition: '`test_attach_zoom_when_wheel` と同じ表示する枠で拡大を 2 回押し、`scrollLeft` を 0 にしてから、`shiftKey` と `deltaY: 100` の `wheel`、続けて `shiftKey` と `deltaX: 50` の `wheel` を発火する'
+        mock: なし
+        expected: どちらの `wheel` も `defaultPrevented` で、表示する枠の `scrollLeft` が 100、続けて 150 になり、祖先の要素の `scrollTop` は変わらない
     status: planned
   - name: zoomControlOf
     title: 表示する枠の拡大・縮小の操作を引く
@@ -154,7 +202,51 @@ functions:
       type: ZoomControl | undefined
       description: 付けた操作
     status: planned
-lead: '表示ブロックの中身の拡大・縮小・移動（ボタン・キー・ドラッグ）を受け持ち、図とライトボックスの拡大・縮小の操作を変えるときに参照する。'
+  - name: wheelDelta
+    title: ホイールの量を px に直す
+    container: src/shared/zoom.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`deltaMode` が px（`0`）ならそのまま、行（`1`）なら `WHEEL_LINE` 倍、ページ（`2`）なら横は `page.width`、縦は `page.height` 倍にした量を返却する'
+    args:
+      - name: input
+        type: '{ event: { deltaX: number; deltaY: number; deltaMode: number }; page: { width: number; height: number } }'
+        required: true
+        description: '`wheel` の量と単位、ページ単位のときの 1 ページの幅と高さ（スクロールする要素の高さと表示する枠の幅）'
+    returns:
+      type: '{ x: number; y: number }'
+      description: 横と縦の px
+    unit_tests:
+      - name: test_wheel_delta
+        case: 正常
+        summary: 単位ごとに px に直す
+        condition: '`deltaY: 3` で `deltaMode` が `0`・`1`・`2`、`page` が `{ width: 600, height: 800 }`'
+        mock: なし
+        expected: '`y` がそれぞれ `3`・`48`・`2400`'
+    status: planned
+  - name: scrollParentOf
+    title: 縦にスクロールする祖先を引く
+    container: src/shared/zoom.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`element` の祖先のうち、`overflow-y` の計算値が `auto` か `scroll` で `scrollHeight` が `clientHeight` より大きい最も近い要素を返却する。無ければ `document.scrollingElement` を返却する'
+    args:
+      - name: element
+        type: HTMLElement
+        required: true
+        description: 表示する枠
+    returns:
+      type: Element
+      description: ホイールを渡す要素
+    unit_tests:
+      - name: test_scroll_parent_of
+        case: 正常
+        summary: 縦にスクロールする最も近い祖先を返却する
+        condition: '`overflow-y: auto` で中身があふれる要素の中の表示する枠と、その外の表示する枠'
+        mock: なし
+        expected: 中の表示する枠はその要素、外の表示する枠は `document.scrollingElement`
+    status: planned
+lead: '表示ブロックの中身の拡大・縮小・移動（ボタン・キー・ドラッグ・ピンチ・ホイール）を受け持ち、図とライトボックスの拡大・縮小の操作を変えるときに参照する。'
 tags:
   - name: topic:拡大
     main: true

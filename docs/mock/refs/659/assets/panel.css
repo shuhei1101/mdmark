@@ -1,0 +1,118 @@
+/* 図の右上に重ねるボタンのパネルのモックの規則（#659） */
+
+/* パネル: 拡大・縮小・倍率・全画面（拡大中は移動）のボタンを、表示する枠の右上に重ねる。
+   ボタンの行の下の線を描かず、パネルの線と角丸だけで区切る（入れ子の角丸は外側 = 内側 + 余白） */
+.mdmark-diagram-tools {
+  position: absolute;
+  inset-block-start: 0.375rem;
+  inset-inline-end: 0.375rem;
+  z-index: 2;
+  max-inline-size: calc(100% - 0.75rem);
+  gap: 0.125rem 0.375rem;
+  padding: 0.125rem;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: calc(var(--mdmark-radius) + 0.125rem);
+  background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
+  flex-wrap: nowrap;
+}
+
+/* 狭い図の枠: パネルを 1 行のまま収めるため、ボタンを 24px（指で押せる下限）まで小さくし、間を詰める */
+@container (width < 30rem) {
+  .mdmark-diagram-tools {
+    gap: 0.125rem 0.25rem;
+  }
+
+  .mdmark-diagram-tools .mdmark-diagram-tool {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .mdmark-diagram-tools .mdmark-diagram-tool.mdmark-diagram-zoom {
+    min-width: 2.5rem;
+    width: auto;
+  }
+
+  [data-mock-panel="c"] .mdmark-diagram-tools {
+    padding-inline-end: calc(1.5rem + 0.375rem);
+  }
+}
+
+/* パネルの中のボタン: パネルの線で囲むので、ボタンごとの線を描かない（枠の中に枠を入れない） */
+.mdmark-diagram-tools .mdmark-diagram-tool {
+  border-color: transparent;
+  background: transparent;
+}
+
+/* パネルの中のまとまりの区切り: まとまりの間だけ 1px の線を引き、押せない隙間を作らない */
+.mdmark-diagram-tools-group + .mdmark-diagram-tools-group:not([hidden]) {
+  padding-inline-start: 0.375rem;
+  border-inline-start: 1px solid var(--mdmark-color-border);
+}
+
+/* 表示する枠: 角丸を上下とも枠に合わせる（上の行が無くなるため） */
+.mdmark-diagram-viewport {
+  border-radius: var(--mdmark-radius);
+}
+
+/* 案 A（図の上にパネルの高さの余白を取る）: 開いたときの倍率で図の内容がパネルに隠れない。拡大中は図がパネルの下を通る */
+[data-mock-panel="a"] .mdmark-diagram-sizer {
+  margin-block-start: 2.5rem;
+}
+
+/* 案 B（半透明のパネル）: パネルの下の図の内容を透かして見せる */
+[data-mock-panel="b"] .mdmark-diagram-tools {
+  background: color-mix(in srgb, var(--mdmark-color-bg-opaque, var(--mdmark-color-bg)) 72%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+/* 案 C（畳んだパネル）: 倍率の表示と、パネルを開くボタンだけを出す。開くと案 A と同じボタンを並べる */
+[data-mock-panel="c"] .mdmark-diagram-tools:not([data-mock-open]) .mdmark-diagram-tools-group:not([data-group="zoom"], [data-group="more"]),
+[data-mock-panel="c"] .mdmark-diagram-tools:not([data-mock-open]) [data-group="zoom"] .mdmark-diagram-tool:not(.mdmark-diagram-zoom) {
+  display: none;
+}
+
+/* 案 C の開閉のボタン: 畳んだときも開いたときもパネルの端（上に置くときは右上、下に置くときは右下）に固定し、ほかのボタンをその手前に 1 行で並べる */
+[data-mock-panel="c"] .mdmark-diagram-tools {
+  padding-inline-end: calc(1.75rem + 0.5rem);
+}
+
+[data-mock-panel="c"] .mdmark-diagram-tools-group[data-group="more"] {
+  display: flex;
+  position: absolute;
+  inset-block-start: 0.125rem;
+  inset-inline-end: 0.125rem;
+  padding-inline-start: 0.125rem;
+  border-inline-start: 1px solid var(--mdmark-color-border);
+}
+
+[data-mock-panel="c"][data-mock-panel-at="bottom"] .mdmark-diagram-tools-group[data-group="more"] {
+  inset-block-start: auto;
+  inset-block-end: 0.125rem;
+}
+
+.mdmark-diagram-tools-group[data-group="more"] {
+  display: none;
+}
+
+/* パネルを下に置く（[data-mock-panel-at="bottom"]）: 右下のリサイズハンドルの上に重ねる */
+[data-mock-panel-at="bottom"] .mdmark-diagram-tools {
+  inset-block-start: auto;
+  inset-block-end: 1.5rem;
+}
+
+/* 指の操作をブラウザに任せる（[data-mock-touch="native"]）: 表示する枠を縦横ともスクロールでき、指 1 本の縦横のドラッグをブラウザのスクロールにする。
+   全体が収まっている向きはスクロールが無いので、その向きの指の動きは文書のスクロールになる。ピンチは diagram.js が図の倍率にする */
+[data-mock-touch="native"] .mdmark-diagram-viewport {
+  overflow: auto;
+  touch-action: pan-x pan-y;
+}
+
+/* 開いたときの倍率（[data-at-fit]）: 縦のスクロールを止め、縦に長い図の上の縦の指の動きも文書のスクロールにする */
+[data-mock-touch="native"] .mdmark-diagram-viewport[data-at-fit] {
+  overflow-y: hidden;
+}
+
+/* 案 C では移動のボタン（← ↑ ↓ →）を出さない。図は指とマウスのドラッグ・矢印キーで動かす */
+[data-mock-panel="c"] .mdmark-diagram-tools-group[data-group="pan"] {
+  display: none;
+}

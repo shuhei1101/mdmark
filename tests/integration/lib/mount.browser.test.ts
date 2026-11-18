@@ -3280,10 +3280,10 @@ function zoomText(figure: Element): string {
   return zoomButton(figure).textContent ?? "";
 }
 
-// 図を収まる倍率で描き、右上のボタンとキーで拡大・縮小・戻す。ホイールは受け取らない（正常系）
+// 図を収まる倍率で描き、右上に重ねたパネルを開いてボタンとキーで拡大・縮小・戻す。倍率は収まる倍率の 0.25 倍から 5 倍まで。ホイールは文書のスクロールにする（正常系）
 test("test_normal_when_diagram_zoomed", async () => {
   // 準備
-  const { figure, viewport } = await mountWideMermaid("zoomed");
+  const { el, figure, viewport } = await mountWideMermaid("zoomed");
   const sizer = find<HTMLElement>(figure, ".mdmark-diagram-sizer");
   // 描いた直後の倍率は収まる倍率で、倍率のボタンは 100% と出し、図の幅が表示する枠の幅を超えない
   await vi.waitFor(() => {
@@ -3294,18 +3294,36 @@ test("test_normal_when_diagram_zoomed", async () => {
   expect(sizer.getBoundingClientRect().width).toBeLessThanOrEqual(
     viewport.clientWidth + 1,
   );
-  // 右上のボタンは縮小・倍率・拡大・全画面の 4 つで、戻すのボタンは無い。縮小だけが押せない
-  const tools = [
-    ...figure.querySelectorAll<HTMLButtonElement>(
-      '[data-group="zoom"] button, [data-group="screen"] button',
-    ),
-  ];
+  // 右上のパネルは表示する枠に重なり、倍率のボタンと開閉のボタンだけに畳んでいる
+  const panel = find<HTMLElement>(figure, ".mdmark-diagram-tools");
+  expect(panel.getAttribute("role")).toBe("toolbar");
   expect(
-    tools.map((tool) => tool.getAttribute("aria-label")?.split("。")[0]),
-  ).toEqual(["縮小", `倍率 ${zoomText(figure)}`, "拡大", "全画面で開く"]);
-  expect(tools.filter((tool) => tool.disabled)).toEqual([
-    buttonOf(figure, "縮小"),
+    Math.abs(
+      panel.getBoundingClientRect().top - viewport.getBoundingClientRect().top,
+    ),
+  ).toBeLessThanOrEqual(8);
+  const more = find<HTMLButtonElement>(figure, '[data-tool="more"]');
+  expect(visibleToolNames(figure)).toEqual([
+    `倍率 ${zoomText(figure)}`,
+    "表示の操作を開く",
   ]);
+  expect(more.getAttribute("aria-expanded")).toBe("false");
+  const corner = more.getBoundingClientRect();
+  // 実行・検証: 開閉のボタンで、縮小・倍率・拡大・全画面・開閉のボタンが 1 行に並ぶ
+  more.click();
+  expect(visibleToolNames(figure)).toEqual([
+    "縮小",
+    `倍率 ${zoomText(figure)}`,
+    "拡大",
+    "全画面で開く",
+    "表示の操作を閉じる",
+  ]);
+  expect(new Set(visibleToolTops(figure)).size).toBe(1);
+  expect(more.getAttribute("aria-expanded")).toBe("true");
+  expect(more.getBoundingClientRect().top).toBe(corner.top);
+  expect(more.getBoundingClientRect().right).toBe(corner.right);
+  expect(figure.querySelector('[data-group="pan"]')).toBeNull();
+  expect(figure.querySelector('[data-tool="reset"]')).toBeNull();
   expect(figure.querySelector('[data-tool="fit"]')).toBe(zoomButton(figure));
   expect(zoomButton(figure).getAttribute("aria-label")).toBe(
     `倍率 ${zoomText(figure)}。全体が収まる倍率に戻す`,
@@ -3332,16 +3350,6 @@ test("test_normal_when_diagram_zoomed", async () => {
   expect(zoomButton(figure).getAttribute("aria-label")).toContain(
     zoomText(figure),
   );
-  // ホイールは倍率を変えず、既定の動きも止めない
-  const before = scaleOf(figure);
-  const wheel = new WheelEvent("wheel", {
-    deltaY: -100,
-    bubbles: true,
-    cancelable: true,
-  });
-  viewport.dispatchEvent(wheel);
-  expect(scaleOf(figure)).toBe(before);
-  expect(wheel.defaultPrevented).toBe(false);
   // 0 で、描いた直後の倍率と位置に戻る
   await userEvent.keyboard("0");
   expect(scaleOf(figure)).toBeCloseTo(fit, 4);
@@ -3355,7 +3363,119 @@ test("test_normal_when_diagram_zoomed", async () => {
   expect(scaleOf(figure)).toBeCloseTo(fit, 4);
   expect(viewport.scrollLeft).toBe(0);
   expect(viewport.scrollTop).toBe(0);
+  // 縮小のボタンは収まる倍率の 0.25 倍、拡大のボタンは 5 倍で押せなくなる
+  for (
+    let index = 0;
+    index < 20 && !buttonOf(figure, "縮小").disabled;
+    index++
+  ) {
+    buttonOf(figure, "縮小").click();
+  }
+  expect(buttonOf(figure, "縮小").disabled).toBe(true);
+  expect(scaleOf(figure) / fit).toBeCloseTo(0.25, 2);
+  expect(zoomText(figure)).toBe("25%");
+  for (
+    let index = 0;
+    index < 40 && !buttonOf(figure, "拡大").disabled;
+    index++
+  ) {
+    buttonOf(figure, "拡大").click();
+  }
+  expect(buttonOf(figure, "拡大").disabled).toBe(true);
+  expect(scaleOf(figure) / fit).toBeCloseTo(5, 2);
+  expect(zoomText(figure)).toBe("500%");
+  // 実行・検証: 開閉のボタンをもう一度押すと、倍率のボタンと開閉のボタンだけに戻る
+  more.click();
+  expect(visibleToolNames(figure)).toEqual([
+    `倍率 ${zoomText(figure)}`,
+    "表示の操作を開く",
+  ]);
+  expect(more.getAttribute("aria-expanded")).toBe("false");
+  // 実行・検証: ホイールは倍率を変えず、文書のスクロールにする
+  await expectWheelScrollsDocument({ el, figure, viewport });
 });
+
+/** 右上のパネルの見えているボタンの、スクリーンリーダー向けの名前（「。」より前。DOM の順） */
+function visibleToolNames(figure: Element): string[] {
+  return visibleTools(figure).map(
+    (tool) => tool.getAttribute("aria-label")?.split("。")[0] ?? "",
+  );
+}
+
+/** 右上のパネルの見えているボタンの上端（px） */
+function visibleToolTops(figure: Element): number[] {
+  return visibleTools(figure).map((tool) =>
+    Math.round(tool.getBoundingClientRect().top),
+  );
+}
+
+/** 右上のパネルの見えているボタン */
+function visibleTools(figure: Element): HTMLButtonElement[] {
+  return [
+    ...figure.querySelectorAll<HTMLButtonElement>(
+      ".mdmark-diagram-tools button",
+    ),
+  ].filter((tool) => tool.getClientRects().length > 0);
+}
+
+/** 収まる倍率のときのホイールは何もせず、拡大して縦にはみ出している図の上のホイールは、倍率と表示する枠を変えずに文書をスクロールすることを確かめる */
+async function expectWheelScrollsDocument(view: {
+  el: HTMLElement;
+  figure: HTMLElement;
+  viewport: HTMLElement;
+}): Promise<void> {
+  const { el, figure, viewport } = view;
+  // 準備: 図の下に文書をスクロールできる余白を置き、収まる倍率に戻す
+  viewport.focus();
+  await userEvent.keyboard("0");
+  const spacer = document.createElement("div");
+  spacer.style.height = "6000px";
+  el.after(spacer);
+  try {
+    const fit = scaleOf(figure);
+    window.scrollTo(0, 0);
+    const wheel = (init: WheelEventInit) => {
+      const event = new WheelEvent("wheel", {
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      viewport.dispatchEvent(event);
+      return event;
+    };
+    // 実行・検証: 収まる倍率のときのホイールは、倍率を変えず、既定の動きも止めない
+    const atFit = wheel({ deltaY: 100 });
+    expect(scaleOf(figure)).toBe(fit);
+    expect(atFit.defaultPrevented).toBe(false);
+    // 実行・検証: 拡大して縦にはみ出したら、ホイールは倍率と表示する枠を変えず、文書をスクロールする
+    buttonOf(figure, "拡大").click();
+    expect(viewport.scrollHeight).toBeGreaterThan(viewport.clientHeight);
+    const zoomed = scaleOf(figure);
+    const top = viewport.scrollTop;
+    const results = [
+      { init: { deltaY: 100 }, delta: 100 },
+      { init: { deltaY: 3, deltaMode: 1 }, delta: 48 },
+      { init: { deltaY: 1, deltaMode: 2 }, delta: window.innerHeight },
+    ].map(({ init, delta }) => {
+      const before = window.scrollY;
+      const event = wheel(init);
+      return {
+        prevented: event.defaultPrevented,
+        moved: window.scrollY - before,
+        delta,
+      };
+    });
+    for (const result of results) {
+      expect(result.prevented).toBe(true);
+      expect(result.moved).toBe(result.delta);
+    }
+    expect(scaleOf(figure)).toBe(zoomed);
+    expect(viewport.scrollTop).toBe(top);
+  } finally {
+    spacer.remove();
+    window.scrollTo(0, 0);
+  }
+}
 
 /** 表示する枠の中で、ノード・線・ボタンの上でない位置（表示する枠の左上からの px）。左へ 100px 動かせるよう、左端から 100px より右を探す */
 function blankPointOf(viewport: HTMLElement): { x: number; y: number } {
@@ -3377,14 +3497,12 @@ function blankPointOf(viewport: HTMLElement): { x: number; y: number } {
   throw new Error("表示する枠に余白が無い");
 }
 
-// 拡大した図を、余白のドラッグ・矢印キー・移動のボタンで動かし、文字の上では動かさず文字を選ばせる（正常系）
+// 拡大した図を、余白のドラッグと矢印キーで動かし、文字の上では動かさず文字を選ばせる（正常系）
 test("test_normal_when_diagram_panned", async () => {
   // 準備
   const { figure, viewport } = await mountWideMermaid("panned");
   buttonOf(figure, "拡大").click();
   buttonOf(figure, "拡大").click();
-  const panGroup = find<HTMLElement>(figure, '[data-group="pan"]');
-  expect(panGroup.hidden).toBe(false);
   // 余白を 100px 左へドラッグすると、図が 100px 動き、文字は選ばれない
   const start = viewport.scrollLeft;
   const blank = blankPointOf(viewport);
@@ -3440,18 +3558,19 @@ test("test_normal_when_diagram_panned", async () => {
   const selected = getSelection()?.toString() ?? "";
   expect(selected).not.toBe("");
   expect(name.textContent).toContain(selected.trim());
-  // 矢印キーで 80px、下の移動のボタンで縦に 80px
+  // → で横に 80px、↓ で縦に 80px
   getSelection()?.removeAllRanges();
   viewport.focus();
   viewport.scrollLeft = 0;
   await userEvent.keyboard("{ArrowRight}");
   expect(viewport.scrollLeft).toBe(80);
   const top = viewport.scrollTop;
-  buttonOf(figure, "下へ動かす").click();
+  await userEvent.keyboard("{ArrowDown}");
   expect(viewport.scrollTop - top).toBe(80);
-  // 収まる倍率に戻すと、移動のボタンが出ない
-  zoomButton(figure).click();
-  expect(panGroup.hidden).toBe(true);
+  // パネルを開いても、移動のボタンが無い
+  buttonOf(figure, "表示の操作を開く").click();
+  expect(visibleToolNames(figure)).not.toContain("下へ動かす");
+  expect(figure.querySelector('[data-group="pan"]')).toBeNull();
 });
 
 /** 持ち主が指すツールチップ */
@@ -3499,6 +3618,8 @@ test("test_normal_when_diagram_fullscreen", async () => {
       );
     },
   );
+  // 全画面のボタンは畳んだパネルの中にあるので、先にパネルを開く
+  buttonOf(figure, "表示の操作を開く").click();
   const opener = buttonOf(figure, "全画面で開く");
   // 実行
   opener.click();
@@ -3751,9 +3872,9 @@ const WIDE_MAP = mapRange({
   ).join("\n")}\n`,
 });
 
-// タッチでは余白をタップするまで縦のドラッグを文書のスクロールにし、タップした後は図の外をタップするまで縦にも横にも図を動かす（正常系）
+// タッチの指 1 本の移動は表示する枠のスクロールとしてブラウザに任せ、収まる倍率以下の図では縦のスクロールを止めて文書のスクロールにする（正常系）
 test("test_normal_when_diagram_touch_drag", async () => {
-  // 準備: 画面の幅を 390px にし、表示する枠より広い map の構成図を拡大して描く
+  // 準備: 画面の幅を 390px にし、表示する枠より広い map の構成図を描く
   await withViewport(390, async () => {
     const el = createElement();
     await mountTracked(el, {
@@ -3765,63 +3886,234 @@ test("test_normal_when_diagram_touch_drag", async () => {
     );
     const box = find<HTMLElement>(el, ".mdmark-diagram-box");
     const viewport = find<HTMLElement>(el, ".mdmark-diagram-viewport");
+    const style = () => {
+      const computed = getComputedStyle(viewport);
+      return {
+        touchAction: computed.touchAction,
+        overflowX: computed.overflowX,
+        overflowY: computed.overflowY,
+        atFit: viewport.hasAttribute("data-at-fit"),
+      };
+    };
+    // 検証: 描いた直後は縦横にスクロールできる枠で、収まる倍率の間は縦のスクロールを止める
+    expect(style()).toEqual({
+      touchAction: "pan-x pan-y",
+      overflowX: "auto",
+      overflowY: "hidden",
+      atFit: true,
+    });
+    // 実行・検証: 拡大すると、縦にもスクロールできる
     buttonOf(el, "拡大").click();
-    buttonOf(el, "拡大").click();
-    const outside = find<HTMLElement>(el, ":scope > p");
-    const node = find<HTMLElement>(el, ".mdmark-diagram-node[data-node]");
+    expect(style()).toEqual({
+      touchAction: "pan-x pan-y",
+      overflowX: "auto",
+      overflowY: "auto",
+      atFit: false,
+    });
+    // 実行・検証: 指のポインターのイベントでは図を動かさない（指の移動はブラウザのスクロールに任せる）
     const rect = viewport.getBoundingClientRect();
-    // 余白: 表示する枠の中で、ノード・線・ボタンの上でない位置
-    const blank = (() => {
-      for (let y = rect.top + 8; y < rect.bottom - 8; y += 8) {
-        for (let x = rect.left + 8; x < rect.right - 8; x += 8) {
-          const hit = document.elementFromPoint(x, y);
-          if (
-            hit &&
-            viewport.contains(hit) &&
-            !hit.closest(
-              "[data-node], .mdmark-diagram-wire, [data-tip-owner], button, a",
-            )
-          ) {
-            return { x, y };
-          }
-        }
-      }
-      throw new Error("表示する枠に余白が無い");
-    })();
-    // 検証: 描いた直後は縦のドラッグが文書のスクロール
-    expect(getComputedStyle(viewport).touchAction).toBe("pan-y");
-    expect(box.hasAttribute("data-touch-active")).toBe(false);
-    // ノードの上のタップでは操作中にしない
-    const nodeRect = node.getBoundingClientRect();
-    const onNode = { x: nodeRect.left + 4, y: nodeRect.top + 4 };
-    fireTouchAt(node, "pointerdown", onNode);
-    fireTouchAt(node, "pointerup", onNode);
-    expect(box.hasAttribute("data-touch-active")).toBe(false);
-    // mouse のクリックでは操作中にしない
-    firePointer(viewport, "pointerdown", "mouse");
-    firePointer(viewport, "pointerup", "mouse");
-    expect(box.hasAttribute("data-touch-active")).toBe(false);
-    // 余白のタップで操作中にする
-    fireTouchAt(viewport, "pointerdown", blank);
-    fireTouchAt(viewport, "pointerup", blank);
-    expect(box.hasAttribute("data-touch-active")).toBe(true);
-    expect(getComputedStyle(viewport).touchAction).toBe("none");
-    const linkColor = getComputedStyle(box)
-      .getPropertyValue("--mdmark-color-link")
-      .trim();
-    expect(linkColor).not.toBe("");
-    expect(getComputedStyle(box).boxShadow).toContain("2px inset");
-    // 操作中のドラッグで縦にも横にも動く（合成のイベントはブラウザのポインターを持たないため、捕まえる処理を差し替える）
-    vi.spyOn(viewport, "setPointerCapture").mockImplementation(() => {});
+    const center = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
     const before = { left: viewport.scrollLeft, top: viewport.scrollTop };
-    fireTouchAt(viewport, "pointerdown", blank);
-    fireTouchAt(viewport, "pointermove", { x: blank.x - 40, y: blank.y - 40 });
-    fireTouchAt(viewport, "pointerup", { x: blank.x - 40, y: blank.y - 40 });
-    expect(viewport.scrollLeft).toBeGreaterThan(before.left);
-    expect(viewport.scrollTop).toBeGreaterThan(before.top);
-    // 図の外の段落のタップで操作中を解く
-    fireTouchAt(outside, "pointerdown", { x: 1, y: 1 });
+    fireTouchAt(viewport, "pointerdown", center);
+    fireTouchAt(viewport, "pointermove", {
+      x: center.x - 40,
+      y: center.y - 40,
+    });
+    fireTouchAt(viewport, "pointerup", { x: center.x - 40, y: center.y - 40 });
+    expect({ left: viewport.scrollLeft, top: viewport.scrollTop }).toEqual(
+      before,
+    );
+    // 余白のタップの後も、操作中のマーカーを付けない
     expect(box.hasAttribute("data-touch-active")).toBe(false);
+    // 実行・検証: 0 で収まる倍率に戻すと、縦のスクロールを止める
+    viewport.focus();
+    await userEvent.keyboard("0");
+    expect(style()).toEqual({
+      touchAction: "pan-x pan-y",
+      overflowX: "auto",
+      overflowY: "hidden",
+      atFit: true,
+    });
+  });
+});
+
+/** テストの文書の上の点を、CDP の入力の座標（いちばん外のページの座標）に直す */
+function toPagePoint(point: { x: number; y: number }): {
+  x: number;
+  y: number;
+} {
+  let { x, y } = point;
+  let view: Window = window;
+  while (view.frameElement) {
+    const frame = view.frameElement as HTMLElement;
+    const rect = frame.getBoundingClientRect();
+    const scale = rect.width / view.innerWidth;
+    x = rect.left + x * scale;
+    y = rect.top + y * scale;
+    view = view.parent;
+  }
+  return { x, y };
+}
+
+/** CDP の Input.dispatchTouchEvent で、指（`points` の並びが指の ID）を置く・動かす・離す */
+async function dispatchTouch(
+  type: "touchStart" | "touchMove" | "touchEnd",
+  points: Array<{ x: number; y: number }>,
+): Promise<void> {
+  await cdp().send("Input.dispatchTouchEvent", {
+    type,
+    touchPoints: points.map((point, id) => ({ ...toPagePoint(point), id })),
+  });
+}
+
+/** 中点 `center` を挟んで横に並べた 2 本の指を、`gaps` の間隔の順に置いて動かし、離す */
+async function pinchAt(
+  center: { x: number; y: number },
+  gaps: number[],
+): Promise<void> {
+  const fingers = (gap: number) => [
+    { x: center.x - gap / 2, y: center.y },
+    { x: center.x + gap / 2, y: center.y },
+  ];
+  const [first, ...rest] = gaps;
+  await dispatchTouch("touchStart", fingers(first ?? 0));
+  for (const gap of rest) {
+    await dispatchTouch("touchMove", fingers(gap));
+  }
+  await dispatchTouch("touchEnd", []);
+}
+
+/** `run` を実行し（タッチのエミュレーションは有効にしない。有効にすると後のテストのホバーが効かなくなる）、文書に届いた touchmove の指の数と `defaultPrevented` を記録して渡す。記録した後は取り消し、ページを拡大させない */
+async function withTouch(
+  run: (
+    moves: Array<{
+      touches: number;
+      prevented: boolean;
+      target: EventTarget | null;
+    }>,
+  ) => Promise<void>,
+): Promise<void> {
+  const moves: Array<{
+    touches: number;
+    prevented: boolean;
+    target: EventTarget | null;
+  }> = [];
+  const record = (event: TouchEvent) => {
+    moves.push({
+      touches: event.touches.length,
+      prevented: event.defaultPrevented,
+      target: event.target,
+    });
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+  };
+  window.addEventListener("touchmove", record, { passive: false });
+  try {
+    await run(moves);
+  } finally {
+    window.removeEventListener("touchmove", record);
+  }
+}
+
+// 図の上の 2 本の指の間隔の変化を中点を保った倍率の変更にし、図の上だけブラウザのページの拡大を止める（正常系）
+test("test_normal_when_diagram_pinched", async () => {
+  // 準備: 画面の幅を 390px にし、指で図を動かす正常系と同じ文書を描く
+  await withViewport(390, async () => {
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: `${WIDE_MAP}\n図の外の段落。`,
+    });
+    const figure = await vi.waitFor(
+      () => find<HTMLElement>(el, 'figure.mdmark-diagram[data-diagram="map"]'),
+      { timeout: MAP_WAIT_MS },
+    );
+    const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
+    const outside = find<HTMLElement>(el, ":scope > p");
+    figure.scrollIntoView({ block: "center" });
+    const fit = scaleOf(figure);
+    const rect = viewport.getBoundingClientRect();
+    const center = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+    /** 画面の点の下の、図の座標の点 */
+    const contentAt = (point: { x: number; y: number }) => {
+      const box = viewport.getBoundingClientRect();
+      const scale = scaleOf(figure);
+      return {
+        x:
+          (viewport.scrollLeft + point.x - box.left - viewport.clientLeft) /
+          scale,
+        y:
+          (viewport.scrollTop + point.y - box.top - viewport.clientTop) / scale,
+      };
+    };
+    /** 図の座標の点の、画面の点 */
+    const screenOf = (point: { x: number; y: number }) => {
+      const box = viewport.getBoundingClientRect();
+      const scale = scaleOf(figure);
+      return {
+        x:
+          box.left +
+          viewport.clientLeft +
+          point.x * scale -
+          viewport.scrollLeft,
+        y: box.top + viewport.clientTop + point.y * scale - viewport.scrollTop,
+      };
+    };
+    await withTouch(async (moves) => {
+      // 実行: 図の上で 2 本の指の間を 2 倍に広げる
+      const anchor = contentAt(center);
+      await pinchAt(center, [100, 150, 200]);
+      // 検証: 中点を保って倍率が 2 倍になり、ページは拡大しない
+      expect(Math.abs(scaleOf(figure) / fit - 2)).toBeLessThanOrEqual(0.02);
+      expect(zoomText(figure)).toBe("200%");
+      const kept = screenOf(anchor);
+      expect(Math.abs(kept.x - center.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(kept.y - center.y)).toBeLessThanOrEqual(2);
+      const onDiagram = moves.filter((move) => move.touches === 2);
+      expect(onDiagram.length).toBeGreaterThan(0);
+      expect(onDiagram.every((move) => move.prevented)).toBe(true);
+      expect(window.visualViewport?.scale ?? 1).toBe(1);
+      // 実行・検証: 2 本の指の間を狭め続けると、収まる倍率の 0.25 倍で止まる
+      await pinchAt(center, [200, 150, 100, 50, 20, 10]);
+      expect(scaleOf(figure) / fit).toBeCloseTo(0.25, 2);
+      expect(zoomText(figure)).toBe("25%");
+      buttonOf(figure, "表示の操作を開く").click();
+      expect(buttonOf(figure, "縮小").disabled).toBe(true);
+      // 実行・検証: 図の外の段落の上のピンチは取り消さず、図の倍率も変えない
+      const before = scaleOf(figure);
+      outside.scrollIntoView({ block: "center" });
+      const paragraph = outside.getBoundingClientRect();
+      moves.length = 0;
+      await pinchAt(
+        {
+          x: paragraph.left + paragraph.width / 2,
+          y: paragraph.top + paragraph.height / 2,
+        },
+        [60, 120],
+      );
+      expect(moves.length).toBeGreaterThan(0);
+      expect(moves.every((move) => !move.prevented)).toBe(true);
+      expect(scaleOf(figure)).toBe(before);
+      // 実行・検証: 図の上の 1 本の指の touchmove は取り消さない
+      figure.scrollIntoView({ block: "center" });
+      const box = viewport.getBoundingClientRect();
+      const point = {
+        x: box.left + box.width / 2,
+        y: box.top + box.height / 2,
+      };
+      moves.length = 0;
+      await dispatchTouch("touchStart", [point]);
+      await dispatchTouch("touchMove", [{ x: point.x - 20, y: point.y }]);
+      await dispatchTouch("touchEnd", []);
+      expect(moves.length).toBeGreaterThan(0);
+      expect(moves.every((move) => !move.prevented)).toBe(true);
+    });
   });
 });
 
@@ -8424,26 +8716,25 @@ test("test_normal_when_lightbox_zoomed", async () => {
   const dialog = openLightbox(el) as HTMLDialogElement;
   const stage = find<HTMLElement>(dialog, ".mdmark-lightbox-stage");
   const zoomButton = find(dialog, '[data-tool="fit"]');
-  const pan = find<HTMLElement>(dialog, '[data-group="pan"]');
+  const toolLabels = () =>
+    [...dialog.querySelectorAll<HTMLButtonElement>("button[data-tool]")].map(
+      (tool) => tool.dataset.tool,
+    );
   const fit = Math.min(1, stage.clientWidth / 1600, stage.clientHeight / 1000);
-  // 検証: 収まる倍率で出し、移動のボタンを出さない
+  // 検証: 収まる倍率で出す
   await vi.waitFor(() =>
     expect(zoomButton.textContent).toBe(`${Math.round(fit * 100)}%`),
   );
-  expect(pan.hidden).toBe(true);
-  // 実行・検証: + を 2 回押すと 1.25 倍ずつ上がり、移動のボタンを出す
+  const opened = toolLabels();
+  // 実行・検証: + を 2 回押すと 1.25 倍ずつ上がり、上のバーに移動のボタンが無く、並びは開いた直後と同じ
   await userEvent.keyboard("+");
   expect(zoomButton.textContent).toBe(`${Math.round(fit * 1.25 * 100)}%`);
   await userEvent.keyboard("+");
   expect(zoomButton.textContent).toBe(
     `${Math.round(fit * 1.25 * 1.25 * 100)}%`,
   );
-  expect(pan.hidden).toBe(false);
-  expect(
-    [...pan.querySelectorAll("button")].map((button) =>
-      button.getAttribute("aria-label"),
-    ),
-  ).toEqual(["左へ動かす", "上へ動かす", "下へ動かす", "右へ動かす"]);
+  expect(dialog.querySelector('[data-group="pan"]')).toBeNull();
+  expect(toolLabels()).toEqual(opened);
   // 実行・検証: 拡大中の右の矢印キーは画像を動かし、送信しない
   const before = stage.scrollLeft;
   await userEvent.keyboard("{ArrowRight}");
@@ -8456,7 +8747,78 @@ test("test_normal_when_lightbox_zoomed", async () => {
   await vi.waitFor(() =>
     expect(zoomButton.textContent).toBe(`${Math.round(fit * 100)}%`),
   );
-  expect(pan.hidden).toBe(true);
+});
+
+// ライトボックスの画像の上の 2 本の指の間隔の変化を、図と同じ範囲の倍率の変更にし、上のバーのボタンの並びは変えない（正常系）
+test("test_normal_when_lightbox_pinched", async () => {
+  // 準備: 画面の幅を 390px にし、ライトボックスで拡大・移動する正常系と同じ文書を描く
+  await withViewport(390, async () => {
+    const a = pngUrl({ width: 1600, height: 1000, color: "#0f766e" });
+    const b = pngUrl({ width: 1600, height: 1000, color: "#b45309" });
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: `![画像 a](${a})\n\n![画像 b](${b})\n`,
+    });
+    // 実行: 1 つ目の画像を押す
+    await userEvent.click(find(el, "button.mdmark-image-open"));
+    const dialog = openLightbox(el) as HTMLDialogElement;
+    const stage = find<HTMLElement>(dialog, ".mdmark-lightbox-stage");
+    const img = find<HTMLImageElement>(stage, "img");
+    const zoomButton = find(dialog, '[data-tool="fit"]');
+    const scale = () =>
+      Number(/scale\(([\d.]+)\)/.exec(img.style.transform)?.[1] ?? Number.NaN);
+    await vi.waitFor(() => expect(scale()).toBeGreaterThan(0));
+    const fit = scale();
+    const toolNames = () =>
+      [...dialog.querySelectorAll<HTMLButtonElement>("button[data-tool]")]
+        .filter((tool) => tool.getClientRects().length > 0)
+        .map((tool) => tool.dataset.tool);
+    const opened = toolNames();
+    const head = find<HTMLElement>(dialog, ".mdmark-lightbox-head");
+    const headHeight = head.getBoundingClientRect().height;
+    /** 画像の座標の点の、画面の点 */
+    const screenOf = (point: { x: number; y: number }) => {
+      const box = img.getBoundingClientRect();
+      return {
+        x: box.left + point.x * scale(),
+        y: box.top + point.y * scale(),
+      };
+    };
+    await withTouch(async (moves) => {
+      // 2 本の指の中点は画像の中心（画像が表示する枠より小さい向きは中央に置くため、中心の点だけが保てる）
+      const rect = img.getBoundingClientRect();
+      const center = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      };
+      // 実行: 画像の上で 2 本の指の間を 2 倍に広げる
+      const anchorOnImage = {
+        x: (center.x - img.getBoundingClientRect().left) / fit,
+        y: (center.y - img.getBoundingClientRect().top) / fit,
+      };
+      await pinchAt(center, [100, 150, 200]);
+      // 検証: 中点を保って倍率が 2 倍になり、倍率のボタンの文字が合う
+      expect(Math.abs(scale() / fit - 2)).toBeLessThanOrEqual(0.02);
+      expect(zoomButton.textContent).toBe(`${Math.round(scale() * 100)}%`);
+      const kept = screenOf(anchorOnImage);
+      expect(Math.abs(kept.x - center.x)).toBeLessThanOrEqual(2);
+      expect(Math.abs(kept.y - center.y)).toBeLessThanOrEqual(2);
+      const onImage = moves.filter((move) => move.touches === 2);
+      expect(onImage.length).toBeGreaterThan(0);
+      expect(onImage.every((move) => move.prevented)).toBe(true);
+      // 実行・検証: 2 本の指の間を狭め続けると、収まる倍率の 0.25 倍で止まり、縮小を押せない
+      await pinchAt(center, [200, 150, 100, 50, 20, 10]);
+      expect(scale() / fit).toBeCloseTo(0.25, 2);
+      expect(
+        find<HTMLButtonElement>(dialog, '[data-tool="out"]').disabled,
+      ).toBe(true);
+      // 上のバーのボタンの並びと高さは開いた直後と同じ（1 行のまま）
+      expect(toolNames()).toEqual(opened);
+      expect(head.getBoundingClientRect().height).toBe(headHeight);
+    });
+    await userEvent.keyboard("{Escape}");
+    await vi.waitFor(() => expect(openLightbox(el)).toBeUndefined());
+  });
 });
 
 // nolightbox の画像を拡大のボタンで包まず、切り替えの並びから除外する（正常系）
@@ -14646,6 +15008,12 @@ test(
       expect(opened).toEqual(["./a.md"]);
       // 実行・検証: A のノードの上で押したまま 100px 動かして離すと、図が動き、記録が増えない
       const viewport = find<HTMLElement>(flowchart, ".mdmark-diagram-viewport");
+      await userEvent.click(
+        find<HTMLButtonElement>(
+          flowchart,
+          'button[aria-label="表示の操作を開く"]',
+        ),
+      );
       for (let index = 0; index < 4; index++) {
         await userEvent.click(
           find<HTMLButtonElement>(flowchart, 'button[aria-label="拡大"]'),
@@ -15593,9 +15961,19 @@ test("test_normal_when_map_group_entered_and_collapsed", async () => {
   const { el, figures } = await mountMap(markdown);
   const figure = () => figures()[0] as HTMLElement;
   const before = history.length;
+  // 検証: パネルを畳んだまま、全体の図では戻るボタンが見えない
+  expect(visibleToolNames(figure())).toEqual([
+    `倍率 ${zoomText(figure())}`,
+    "表示の操作を開く",
+  ]);
   // 実行: 中へ入る
   find<HTMLButtonElement>(figure(), '[data-group-enter="read"]').click();
-  // 検証
+  // 検証: 畳んだパネルに戻るボタンが倍率のボタンの前に出て、全て開く・全て閉じるは出ない
+  expect(visibleToolNames(figure())).toEqual([
+    "外へ戻る",
+    `倍率 ${zoomText(figure())}`,
+    "表示の操作を開く",
+  ]);
   expect(
     find<HTMLElement>(figure(), '[data-node="mount"]').classList.contains(
       "map-faded",
@@ -16343,6 +16721,80 @@ test("test_normal_when_map_items_moved", async () => {
     }),
   );
   expect(order()).toEqual(["user", "mount", "layout", "marker", "mermaid"]);
+  // 検証: 参加者の箱の名前の文字の外は、指の縦の動きを文書のスクロールに残す
+  const layoutKind = find<HTMLElement>(
+    mapNode(seq(), "layout"),
+    ".mdmark-diagram-node-kind",
+  );
+  expect(
+    getComputedStyle(layoutKind.closest(".map-participant") as HTMLElement)
+      .touchAction,
+  ).toBe("pan-y");
+  // 実行・検証: 指のポインターで左へ動かしても列を移る
+  const touch = { ...base, pointerType: "touch" };
+  const [layoutX, layoutY] = mapCenter(mapNode(seq(), "layout"));
+  const [mountX] = mapCenter(mapNode(seq(), "mount"));
+  layoutKind.dispatchEvent(
+    new PointerEvent("pointerdown", {
+      ...touch,
+      clientX: layoutX,
+      clientY: layoutY,
+    }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointermove", {
+      ...touch,
+      clientX: mountX,
+      clientY: layoutY,
+    }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointerup", {
+      ...touch,
+      clientX: mountX,
+      clientY: layoutY,
+    }),
+  );
+  expect(order()).toEqual(["user", "layout", "mount", "marker", "mermaid"]);
+  mapNode(seq(), "layout").dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key: "ArrowRight",
+      altKey: true,
+      bubbles: true,
+    }),
+  );
+  // 実行・検証: 構成図のノードは、指のポインターで動かしても位置が変わらない
+  const touched = box("route");
+  const routeKind = find<HTMLElement>(
+    mapNode(flow(), "route"),
+    ".mdmark-diagram-node-kind",
+  );
+  const [routeX, routeY] = mapCenter(mapNode(flow(), "route"));
+  routeKind.dispatchEvent(
+    new PointerEvent("pointerdown", {
+      ...touch,
+      clientX: routeX,
+      clientY: routeY,
+    }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointermove", {
+      ...touch,
+      clientX: routeX,
+      clientY: routeY + 40,
+    }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointerup", {
+      ...touch,
+      clientX: routeX,
+      clientY: routeY + 40,
+    }),
+  );
+  expect(Math.abs(box("route").top - touched.top)).toBeLessThanOrEqual(1);
+  flow().dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
   // 実行・検証: もう一度 mount しても、動かした位置と並び順のまま描かれる
   const kept = box("route");
   await remountMap(el, MAP_BOTH);

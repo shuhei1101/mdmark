@@ -2458,12 +2458,6 @@ files:
     related:
       - to: src/diagram/diagram-resize.interact.ts
         type: tests
-  - path: unit/src/diagram/diagram-touch.interact.browser.test.ts
-    description: 'src/diagram/diagram-touch.interact.ts（「指で図を動かす操作中」）を確認するブラウザで実行する単体テスト。diagram-touch.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
-    tags: [topic:単体テスト, tool:vitest, topic:図]
-    related:
-      - to: src/diagram/diagram-touch.interact.ts
-        type: tests
   - path: unit/src/shared/part-states.interact.browser.test.ts
     description: 'src/shared/part-states.interact.ts を確認するブラウザで実行する単体テスト。part-states.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
     tags: [topic:単体テスト, tool:vitest]
