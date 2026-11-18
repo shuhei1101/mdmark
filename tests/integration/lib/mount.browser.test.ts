@@ -3986,7 +3986,7 @@ async function pinchAt(
   await dispatchTouch("touchEnd", []);
 }
 
-/** タッチのエミュレーションを有効にして `run` を実行し、文書に届いた touchmove の指の数と `defaultPrevented` を記録して渡す。記録した後は取り消し、ページを拡大させない */
+/** `run` を実行し（タッチのエミュレーションは有効にしない。有効にすると後のテストのホバーが効かなくなる）、文書に届いた touchmove の指の数と `defaultPrevented` を記録して渡す。記録した後は取り消し、ページを拡大させない */
 async function withTouch(
   run: (
     moves: Array<{
@@ -4012,14 +4012,9 @@ async function withTouch(
     }
   };
   window.addEventListener("touchmove", record, { passive: false });
-  await cdp().send("Emulation.setTouchEmulationEnabled", {
-    enabled: true,
-    maxTouchPoints: 5,
-  });
   try {
     await run(moves);
   } finally {
-    await cdp().send("Emulation.setTouchEmulationEnabled", { enabled: false });
     window.removeEventListener("touchmove", record);
   }
 }
