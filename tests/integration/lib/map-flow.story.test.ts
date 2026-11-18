@@ -4,6 +4,7 @@ import {
   contrastRatio,
   createBrowserHolder,
   expectCountBelowTitle,
+  expectTargetSize,
   mapWireOverlaps,
   pageOverflows,
   resolveColorIn,
@@ -348,6 +349,18 @@ test("test_group_note", async () => {
     '.map-group[data-group="lib"] button.mdmark-diagram-group-info',
   );
   expect(mark.left).toBeGreaterThanOrEqual(title.right - 1);
+});
+
+// ノードの右上とグループのタイトルの右の説明のマーカーは、押せる大きさ 24px 四方以上で描く（GroupNote）
+test("test_group_note_info_marker_size", async () => {
+  // 準備・実行
+  const page = await openMap("group-note");
+  // 検証
+  await expectTargetSize(page, "button.mdmark-diagram-group-info");
+  await expectTargetSize(
+    page,
+    ".mdmark-diagram-stage button.mdmark-diagram-info:not(.mdmark-diagram-group-info)",
+  );
 });
 
 // hints が false なら、説明を持つノード・グループ・線にマーカーとツールチップが無く、線のラベル・ノードの名前・グループのタイトルは描く（HintsOff）

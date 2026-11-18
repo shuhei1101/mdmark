@@ -198,6 +198,27 @@ export async function expectCountBelowTitle(
   expect(rows.count.bottom).toBeLessThanOrEqual(rows.node.bottom + 0.5);
 }
 
+/** 押せる要素の大きさの下限（WCAG 2.5.8・axe の target-size） */
+export const MIN_TARGET_SIZE = 24;
+
+/** セレクタに該当する押せる要素が 1 つ以上あり、どれも幅と高さが MIN_TARGET_SIZE 以上かを確認する */
+export async function expectTargetSize(
+  page: Page,
+  selector: string,
+): Promise<void> {
+  const sizes = await page.locator(selector).evaluateAll((elements) =>
+    elements.map((element) => {
+      const box = element.getBoundingClientRect();
+      return { width: box.width, height: box.height };
+    }),
+  );
+  expect(sizes.length).toBeGreaterThan(0);
+  for (const size of sizes) {
+    expect(size.width).toBeGreaterThanOrEqual(MIN_TARGET_SIZE);
+    expect(size.height).toBeGreaterThanOrEqual(MIN_TARGET_SIZE);
+  }
+}
+
 /** map の図の、同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」。同じ点から出る・入る線の端の区間は除く） */
 export function mapWireOverlaps(page: Page): Promise<string[]> {
   return page
