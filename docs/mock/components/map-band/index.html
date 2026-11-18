@@ -28,7 +28,7 @@
   <main class="map-catalog" id="catalog">
     <h1>map-band</h1>
     <h2>実演</h2>
-    <p class="state-note">バーの区切りを押すと、その手順を 1 回再生し、強調するノードが表示する枠に収まる位置と倍率へ図がなめらかに移る。同じ区切りをもう一度押すと再生し直す。帯のバー以外か、図のノード以外の空いた場所を押すと停止する。キーボードはバーで ← → で移って再生、Esc で停止。図を動かした後は、次にバーを押すまで図を移さない。動きを減らす設定では時間をかけずに移す</p>
+    <p class="state-note">何もしていないときはバーだけを出す。バーの区切りを押すと、停止するまでその手順を繰り返し再生し、強調するノードが表示する枠に収まる位置と倍率へ図がなめらかに移る。同じ区切りをもう一度押すと最初から再生し直す。帯のバー以外か、図のノード以外の空いた場所を押すと停止する。キーボードはバーで ← → で移って再生、Esc で停止。図を動かした後は、次にバーを押すまで図を移さない。動きを減らす設定では時間をかけずに移す</p>
     <div id="live-figure"></div>
     <div id="live-band"></div>
   </main>
@@ -58,11 +58,14 @@
     const base = { total: 4, titles: TITLES, label: "文書を描く流れの案内" };
     /** 状態の見出し・補足・帯の状態 */
     const STATES = [
-      ["始める前", "バーだけを出し、どの区切りも線の色（残りの手順）で描く。タイトルと説明の文の行は無い", { ...base }],
-      ["手順 2（再生し終えた）", "済んだ区切りは文字の色、残りの区切りは線の色、今の区切りは高くしてマーカーの色の縁を付ける。バーの下にタイトルと説明の文", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る", fill: 1 }],
-      ["手順 2（再生の途中）", "今の区切りを再生の間（2 秒）をかけてマーカーの色で塗る", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る", playing: true, fill: 0.45 }],
+      ["始める前", "バーだけを出し、帯の枠線と面も出さない。どの区切りも線の色（残りの手順）で描く。タイトルと説明の文の行は無い", { ...base }],
+      ["手順 2（繰り返し再生の 1 周目の終わり）", "済んだ区切りは文字の色、残りの区切りは線の色、今の区切りは高くしてマーカーの色の縁を付ける。バーの下にタイトルと説明の文。塗り終えたら最初から塗り直す", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る", playing: true, fill: 1 }],
+      ["手順 2（再生の途中）", "今の区切りを 1 周の間（2 秒）をかけてマーカーの色で塗る", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る", playing: true, fill: 0.45 }],
       ["シーケンス図の再生", "単位がメッセージのとき、バーの読み上げの名前は「メッセージ」", { total: 9, titles: Array.from({ length: 9 }, (_, i) => `メッセージ ${i + 1}`), index: 2, unit: "message", title: "mount を呼ぶ", fill: 1, label: "シーケンス図の再生" }],
-      ["手順が多い（40）", "区切りは幅に合わせて細くなる。押した位置に近い手順を再生する", { total: 40, titles: Array.from({ length: 40 }, (_, i) => `手順 ${i + 1}`), index: 23, title: "手順 24", fill: 1, label: "案内" }],
+      ["手順が多い（40）案 A: そのまま細くする", "区切りは幅に合わせて細くなる。押した位置に近い手順を再生する", { total: 40, titles: Array.from({ length: 40 }, (_, i) => `手順 ${i + 1}`), index: 23, title: "手順 24", fill: 1, label: "案内" }],
+      ["手順が多い（40）案 B: 折り返して 2 段以上にする", "区切りの幅を 16px 以上に保ち、入らない分を次の行へ折り返す", { total: 40, titles: Array.from({ length: 40 }, (_, i) => `手順 ${i + 1}`), index: 23, title: "手順 24", fill: 1, label: "案内", many: "wrap" }],
+      ["手順が多い（40）案 C: 横スクロールにする", "区切りの幅を 16px に保ち、入らない分を横スクロールで出す。今の手順が見える位置へスクロールする", { total: 40, titles: Array.from({ length: 40 }, (_, i) => `手順 ${i + 1}`), index: 23, title: "手順 24", fill: 1, label: "案内", many: "scroll" }],
+      ["手順が多い（40）案 D: 10 個ずつと左右の矢印", "区切りを 10 個ずつ出し、バーの左右の矢印で前後の 10 個へ送る", { total: 40, titles: Array.from({ length: 40 }, (_, i) => `手順 ${i + 1}`), index: 23, title: "手順 24", fill: 1, label: "案内", many: "arrows" }],
     ];
     const catalog = document.getElementById("catalog");
     const add = (title, note, state, narrow = false) => {
@@ -72,11 +75,15 @@
       if (narrow) host.className = "narrow";
       host.innerHTML = renderBand({ ...state, label: `${state.label}（${title}）` });
       catalog.append(host);
+      // 案 C: 今の手順の区切りが見える位置へ、バーの中を横にスクロールする
+      const scroller = host.querySelector(".pb-steps.is-scroll");
+      const current = scroller?.querySelector(".is-current");
+      if (scroller && current) scroller.scrollLeft = current.offsetLeft - scroller.clientWidth / 2;
     };
     catalog.append(Object.assign(document.createElement("h2"), { textContent: "状態" }));
     for (const [title, note, state] of STATES) add(title, note, state);
     catalog.append(Object.assign(document.createElement("h2"), { textContent: "狭い幅" }));
-    add("狭い幅（390px）", "タイトルは番号とボタンの下の行に回す。手順のバーは帯の幅いっぱい", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る" }, true);
+    add("狭い幅（390px）", "手順のバーは帯の幅いっぱい。タイトルと説明の文はバーの下で折り返す", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る" }, true);
   </script>
 </body>
 </html>

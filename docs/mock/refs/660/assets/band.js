@@ -1,17 +1,17 @@
 // #660 のモックの案内・再生の帯: 手順のバーと、手順のタイトル・説明の文だけを持つ帯の HTML と、帯で動かす実演の図
-// 区切りを押すとその手順を 1 回再生し、もう一度押すと再生し直す。バー以外（帯の中・図の空いた場所）を押すと停止する
+// 区切りを押すとその手順を最初から繰り返し再生し、もう一度押すと最初から再生し直す。バー以外（帯の中・図の空いた場所）を押すと停止する。何もしていないときはバーだけを出す
 
 /** 単位ごとの名前（バーの読み上げの名前に使用する） */
 const UNITS = { walkthrough: "手順", message: "メッセージ", transition: "遷移", task: "タスク", commit: "commit" };
 
-/** 1 つの手順を再生する時間（ミリ秒）。マーカーの引数 interval は廃止し、固定にする */
+/** 1 つの手順を 1 周再生する時間（ミリ秒）。マーカーの引数 interval は廃止し、固定にする */
 export const STEP_MS = 2000;
 
 const escape = (text) => String(text).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
 /**
  * 帯の HTML
- * state: { unit, total, index, title, text, titles, playing, fill, label }
+ * state: { unit, total, index, title, text, titles, playing, fill, label, many: "fit" | "wrap" | "scroll" | "arrows", page }
  */
 export const renderBand = (state) => {
   const unit = UNITS[state.unit ?? "walkthrough"];
@@ -20,10 +20,17 @@ export const renderBand = (state) => {
   const titles = state.titles ?? [];
   const segClass = (i) => ["pb-seg", started && i < index ? "is-done" : "", i === index ? "is-current" : "", i === index && state.playing ? "is-playing" : ""].filter(Boolean).join(" ");
   const fill = (i) => (i === index ? `<span class="pb-fill" style="width:${Math.round((state.fill ?? 0) * 100)}%"></span>` : "");
-  const steps = `<div class="pb-steps" role="slider" tabindex="0" data-band="steps" aria-label="${unit}" aria-valuemin="0" aria-valuemax="${state.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${started ? `${unit} ${index + 1}/${state.total} ${escape(titles[index] ?? "")}` : "始める前"}" aria-keyshortcuts="ArrowLeft ArrowRight Escape">${Array.from({ length: state.total }, (_, i) => `<span class="${segClass(i)}" title="${i + 1}. ${escape(titles[i] ?? "")}">${fill(i)}</span>`).join("")}</div>`;
+  const many = state.many ?? "fit";
+  // 案 D（矢印）: 10 個ずつの区切りを出し、左右の矢印で前後の 10 個へ送る
+  const PAGE = 10;
+  const page = state.page ?? Math.floor((index ?? 0) / PAGE);
+  const shown = many === "arrows" ? Array.from({ length: Math.min(PAGE, state.total - page * PAGE) }, (_, k) => page * PAGE + k) : Array.from({ length: state.total }, (_, i) => i);
+  const segs = shown.map((i) => `<span class="${segClass(i)}" data-index="${i}" title="${i + 1}. ${escape(titles[i] ?? "")}">${fill(i)}</span>`).join("");
+  const arrow = (dir, label, path, disabled) => `<button type="button" class="pb-page" data-band="page" data-dir="${dir}" aria-label="${label}" title="${label}"${disabled ? " disabled" : ""}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg></button>`;
+  const steps = `${many === "arrows" ? `<div class="pb-paged">${arrow(-1, `前の ${PAGE} 個の${unit}`, "m15 18-6-6 6-6", page === 0)}` : ""}<div class="pb-steps is-${many}" role="slider" tabindex="0" data-band="steps" aria-label="${unit}" aria-valuemin="0" aria-valuemax="${state.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${started ? `${unit} ${index + 1}/${state.total} ${escape(titles[index] ?? "")}` : "始める前"}" aria-keyshortcuts="ArrowLeft ArrowRight Escape">${segs}</div>${many === "arrows" ? `${arrow(1, `次の ${PAGE} 個の${unit}`, "m9 18 6-6-6-6", (page + 1) * PAGE >= state.total)}</div>` : ""}`;
   const title = `<strong class="pb-title"${state.title ? "" : " hidden"}>${escape(state.title ?? "")}</strong>`;
   const text = `<p class="pb-text" aria-live="polite"${state.text ? "" : " hidden"}>${escape(state.text ?? "")}</p>`;
-  return `<div class="pb-band" role="region" aria-label="${escape(state.label ?? "図の案内")}">${steps}${title}${text}</div>`;
+  return `<div class="pb-band${started ? "" : " is-idle"}" role="region" aria-label="${escape(state.label ?? "図の案内")}">${steps}${title}${text}</div>`;
 };
 
 /** 帯を描き、押した区切りの手順を再生する。figure は手順の移動と停止で呼ぶ（無ければ帯だけ） */
@@ -44,14 +51,14 @@ export const createBand = (host, options, figure) => {
     state.fill = Math.min(1, (performance.now() - started) / STEP_MS);
     const fillEl = host.querySelector(".pb-fill");
     if (fillEl) fillEl.style.width = `${Math.round(state.fill * 100)}%`;
+    // 停止するまで、同じ手順を最初から繰り返し再生する
     if (state.fill >= 1) {
-      state.playing = false;
-      draw();
-      return;
+      started = performance.now();
+      figure?.show(steps[state.index]);
     }
     timer = requestAnimationFrame(tick);
   };
-  /** その手順を最初から 1 回再生する（再生中の手順でも最初から） */
+  /** その手順を最初から繰り返し再生する（再生中の手順でも最初から） */
   const play = (index) => {
     cancelAnimationFrame(timer);
     state.index = (index + state.total) % state.total;
@@ -74,6 +81,11 @@ export const createBand = (host, options, figure) => {
     const bar = event.target.closest(".pb-steps");
     if (!bar) {
       stop();
+      return;
+    }
+    const seg = event.target.closest("[data-index]");
+    if (seg) {
+      play(Number(seg.dataset.index));
       return;
     }
     const rect = bar.getBoundingClientRect();

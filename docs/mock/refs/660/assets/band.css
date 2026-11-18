@@ -1,4 +1,4 @@
-/* #660 のモックの案内・再生の帯: 1 行目は手順のバー、2 行目に手順のタイトル、3 行目から説明の文 */
+/* #660 のモックの案内・再生の帯: 1 行目は手順のバー、2 行目に手順のタイトル、3 行目から説明の文。何もしていないときはバーだけで枠線と面を出さない */
 
 .pb-band {
   margin-top: 4px;
@@ -10,6 +10,7 @@
   font-size: 14px;
   cursor: default;
 }
+.pb-band.is-idle { border-color: transparent; background: transparent; }
 
 /* 手順のバー: 高さ 24px の押せる範囲の中に、6px の区切りを並べる。帯の面と 3:1 以上の色で、残りの区切り（線の色）・済んだ区切り（文字の色）・今の区切り（マーカーの色）を描き分ける */
 .pb-steps { display: flex; align-items: center; gap: 3px; height: 24px; cursor: pointer; touch-action: manipulation; border-radius: var(--mdmark-radius); }
@@ -18,6 +19,19 @@
 .pb-seg.is-done { background: var(--mdmark-color-text); }
 .pb-seg.is-current { height: 10px; background: var(--mdmark-color-bg); box-shadow: 0 0 0 1.5px var(--mdmark-color-link); }
 .pb-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--mdmark-color-link); }
+
+/* 手順が多いとき: 案 B は折り返し、案 C は横スクロール（区切りの幅を 16px 以上に保つ）、案 D は 10 個ずつと左右の矢印 */
+.pb-steps.is-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(16px, 1fr)); align-items: center; height: auto; column-gap: 3px; row-gap: 0; }
+.pb-steps.is-wrap .pb-seg, .pb-steps.is-scroll .pb-seg { margin: 9px 0; }
+.pb-steps.is-wrap .pb-seg.is-current, .pb-steps.is-scroll .pb-seg.is-current { margin: 7px 0; }
+.pb-steps.is-scroll { overflow-x: auto; scrollbar-width: thin; }
+.pb-steps.is-scroll .pb-seg { flex: 0 0 16px; }
+.pb-paged { display: flex; align-items: center; gap: 4px; }
+.pb-paged .pb-steps { flex: 1; min-width: 0; }
+.pb-page { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: var(--mdmark-radius); background: transparent; color: var(--mdmark-color-text); cursor: pointer; }
+.pb-page:disabled { color: var(--mdmark-color-muted); opacity: 0.5; cursor: default; }
+.pb-page:focus-visible { outline: 2px solid var(--mdmark-color-link); outline-offset: 2px; }
+.pb-page svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 .pb-title { display: block; margin-top: 2px; overflow-wrap: anywhere; }
 .pb-text { margin: 2px 0 0; white-space: pre-line; }
