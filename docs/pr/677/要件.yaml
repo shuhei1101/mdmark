@@ -23,11 +23,15 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: C4Dynamic の行と、選択と強調・再生のバーの表に、番号つきの関係を番号の順に再生の帯で再生することを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T15:51:53.890374+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: map の節に、C4Dynamic の番号つきの関係の再生を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T15:51:53.890374+00:00'
 scope_out:
   - item: C4Context・C4Container・C4Component・C4Deployment の関係の再生
     reason: 番号を持つのは C4Dynamic の関係だけで、要望は番号の順の再生
