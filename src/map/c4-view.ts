@@ -8,6 +8,7 @@ import {
   shortestPathKept,
 } from "./flow-view.ts";
 import type { Flowchart } from "./flowchart.ts";
+import type { MapLayout } from "./layout.ts";
 import { renderMapC4Diagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
@@ -49,15 +50,28 @@ const clearPlayingLabel = (figure: HTMLElement) => {
   }
 };
 
-/** 強調している線のうち、ラベルが描かれていない線（無ければ undefined） */
-const unlabeledWireOf = (figure: HTMLElement): SVGPathElement | undefined => {
+/** 再生している関係を描いた線（閉じた境界への線にまとめた線を含む）。薄くしている間とラベルを描いた線は undefined */
+const unlabeledWireOf = (
+  figure: HTMLElement,
+  layout: MapLayout,
+  ends: { from: string; to: string },
+  relation: string,
+): SVGPathElement | undefined => {
+  const drawn =
+    layout.wires.find((wire) => wire.id === relation) ??
+    layout.wires.find((wire) =>
+      wire.merged?.some(
+        (item) => item.from === ends.from && item.to === ends.to,
+      ),
+    );
+  if (drawn === undefined) return undefined;
+  const id = CSS.escape(drawn.id);
   const wire = figure.querySelector<SVGPathElement>(
-    ".mdmark-diagram-wire[data-wire]:not(.map-dim)",
+    `.mdmark-diagram-wire[data-wire="${id}"]`,
   );
-  const id = wire?.getAttribute("data-wire") ?? "";
-  if (!wire || id === "") return undefined;
+  if (!wire || wire.classList.contains("map-dim")) return undefined;
   const labeled = figure.querySelector(
-    `.mdmark-diagram-label[data-wire="${CSS.escape(id)}"]`,
+    `.mdmark-diagram-label[data-wire="${id}"]`,
   );
   return labeled ? undefined : wire;
 };
@@ -80,17 +94,23 @@ const hideOverlapped = (figure: HTMLElement, box: DOMRect) => {
 };
 
 /** 再生している関係の線のラベルが描かれていなければ、線の中ほどに出し、重なる薄くしたラベルを隠す */
-const showPlayingLabel = (figure: HTMLElement, label: string | undefined) => {
+const showPlayingLabel = (
+  figure: HTMLElement,
+  layout: MapLayout,
+  playing:
+    | { relation: string; from: string; to: string; label: string }
+    | undefined,
+) => {
   clearPlayingLabel(figure);
-  if (label === undefined) return;
-  const wire = unlabeledWireOf(figure);
+  if (playing === undefined) return;
+  const wire = unlabeledWireOf(figure, layout, playing, playing.relation);
   const stage = figure.querySelector(".mdmark-diagram-stage");
   if (!wire || !stage) return;
   const point = wire.getPointAtLength(wire.getTotalLength() / 2);
   const shown = document.createElement("span");
   shown.className = `mdmark-diagram-label ${PLAYING_LABEL}`;
   shown.dataset.wire = wire.getAttribute("data-wire") ?? "";
-  shown.textContent = label;
+  shown.textContent = playing.label;
   shown.style.left = `${point.x}px`;
   shown.style.top = `${point.y}px`;
   stage.append(shown);
@@ -112,7 +132,6 @@ export const attachMapC4 = (
     diagram.kind === "C4Dynamic" && data.walkthroughs.length === 0
       ? relationSteps(diagram, chart, data.notes)
       : undefined;
-  const labels = new Map(chart.edges.map((edge) => [edge.id, edge.label]));
   const externals = diagram.elements
     .filter((element) => element.external)
     .map((element) => element.id);
@@ -147,14 +166,23 @@ export const attachMapC4 = (
             walkthroughs: playback,
             bandMode: "playback" as const,
             bandUnit: "relation" as const,
-            afterRender: (figure, _layout, view) => {
-              const edge =
-                view.step === undefined
-                  ? undefined
-                  : playback[view.step]?.edges?.[0];
+            afterRender: (figure, layout, view) => {
+              const step =
+                view.step === undefined ? undefined : playback[view.step];
+              const edge = chart.edges.find(
+                (item) => item.id === step?.edges?.[0],
+              );
               showPlayingLabel(
                 figure,
-                edge === undefined ? undefined : labels.get(edge),
+                layout,
+                edge === undefined
+                  ? undefined
+                  : {
+                      relation: edge.id,
+                      from: edge.from,
+                      to: edge.to,
+                      label: edge.label ?? "",
+                    },
               );
             },
           }),
