@@ -333,3 +333,90 @@ test("test_attach_zoom_when_refit", async () => {
   expect(zooms.at(-1) ?? 1).toBe(1);
   expect(button(root, "縮小").disabled).toBe(false);
 });
+
+/** 幅 600px・高さ 400px の表示する枠に、幅 1200・高さ 800 の中身を配置して拡大・縮小を付ける */
+async function setUpFocus() {
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 400px; overflow: auto"><div class="sizer"><div class="content" style="width: 1200px; height: 800px"></div></div></div>`,
+  );
+  const tools = root.querySelector(".tools") as HTMLElement;
+  const viewport = root.querySelector(".viewport") as HTMLElement;
+  const content = root.querySelector(".content") as HTMLElement;
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 1200, height: 800 },
+    tools,
+  });
+  detachers.push(() => zoom.detach());
+  const scale = () =>
+    Number(/scale\(([^)]+)\)/.exec(content.style.transform)?.[1] ?? "1");
+  return { viewport, zoom, scale };
+}
+
+// 矩形が収まる倍率と位置へ移す（正常系）
+test("test_attach_zoom_when_focus_rect", async () => {
+  // 準備
+  const { viewport, zoom, scale } = await setUpFocus();
+  // 実行
+  zoom.focusRect(
+    { x: 500, y: 300, width: 200, height: 100 },
+    { margin: 32, duration: 0 },
+  );
+  // 検証
+  expect(scale()).toBeCloseTo(2.68, 2);
+  expect(viewport.scrollLeft + 300).toBeCloseTo(600 * 2.68, -1);
+  expect(viewport.scrollTop + 200).toBeCloseTo(350 * 2.68, -1);
+});
+
+// 収まる倍率より小さくしない（正常系）
+test("test_attach_zoom_when_focus_rect_wide", async () => {
+  // 準備
+  const { zoom, scale } = await setUpFocus();
+  // 実行
+  zoom.focusRect(
+    { x: 0, y: 0, width: 1200, height: 800 },
+    { margin: 32, duration: 0 },
+  );
+  // 検証
+  expect(scale()).toBeCloseTo(zoom.fit(), 3);
+});
+
+// 時間をかけて移し、読者の操作で止める（正常系）
+test("test_attach_zoom_when_focus_rect_animated", async () => {
+  // 準備
+  vi.useFakeTimers({
+    toFake: ["requestAnimationFrame", "performance", "Date"],
+  });
+  const { viewport, zoom, scale } = await setUpFocus();
+  const start = scale();
+  // 実行
+  zoom.focusRect(
+    { x: 500, y: 300, width: 200, height: 100 },
+    { margin: 32, duration: 300 },
+  );
+  vi.advanceTimersByTime(150);
+  const middle = scale();
+  viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
+  vi.advanceTimersByTime(300);
+  vi.useRealTimers();
+  // 検証
+  expect(middle).toBeGreaterThan(start);
+  expect(middle).toBeLessThan(2.68);
+  expect(scale()).not.toBeCloseTo(2.68, 2);
+});
+
+// 表示する枠から操作を引く（正常系）
+test("test_zoom_control_of", async () => {
+  // 準備
+  const { zoomControlOf } = await loadZoom();
+  const { viewport, zoom } = await setUpFocus();
+  // 実行
+  const attached = zoomControlOf(viewport);
+  zoom.detach();
+  const detached = zoomControlOf(viewport);
+  // 検証
+  expect(attached).toBe(zoom);
+  expect(detached).toBeUndefined();
+});

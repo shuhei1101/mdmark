@@ -124,10 +124,12 @@ test("test_attach_map_when_missing_participant", async () => {
   ).toBeTruthy();
 });
 
-// 再生で構成図をスクロールする（正常系）
-test("test_attach_map_when_auto_follow", async () => {
+// 再生で構成図を移す（正常系）
+test("test_attach_map_when_played_follow", async () => {
   // 準備
-  vi.useFakeTimers();
+  const { zoomControlOf } = await import(
+    "../../../../src/shared/zoom.interact.ts"
+  );
   const { root } = await attach(
     `${mapRange({ mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: SEQUENCE, data: '{"version": 1, "plays_over": 1}' })}`,
   );
@@ -135,18 +137,23 @@ test("test_attach_map_when_auto_follow", async () => {
   const viewport = flow?.querySelector(
     ".mdmark-diagram-viewport",
   ) as HTMLElement;
-  const scrollTo = vi.spyOn(viewport, "scrollTo").mockImplementation(() => {});
+  const zoom = zoomControlOf(viewport);
+  if (!zoom) {
+    throw new Error("拡大・縮小が付いていない");
+  }
+  const focusRect = vi.spyOn(zoom, "focusRect").mockImplementation(() => {});
+  const segments = seq
+    ?.closest(".mdmark-map")
+    ?.querySelectorAll<HTMLElement>(".map-band-seg");
   // 実行
-  seq?.querySelector<HTMLButtonElement>('[data-band="auto"]')?.click();
-  vi.advanceTimersByTime(2000);
+  segments?.[0]?.click();
   // 検証
-  expect(scrollTo).toHaveBeenCalledTimes(1);
+  expect(focusRect).toHaveBeenCalledTimes(1);
   // 実行
   viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
-  scrollTo.mockClear();
-  vi.advanceTimersByTime(2000);
+  segments?.[1]?.click();
   // 検証
-  expect(scrollTo).not.toHaveBeenCalled();
+  expect(focusRect).toHaveBeenCalledTimes(2);
 });
 
 // 範囲の外の map の図は警告を出さない（正常系）

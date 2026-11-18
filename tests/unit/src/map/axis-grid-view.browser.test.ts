@@ -80,13 +80,12 @@ const hitOf = (scope: HTMLElement, key: string) =>
 const pressKey = (target: Element | null, key: string) =>
   target?.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 
-/** 帯の次へのボタンを `times` 回押す */
-const pressNext = (figure: HTMLElement, times: number) => {
-  for (let index = 0; index < times; index += 1)
-    figure
-      .closest(".mdmark-map")
-      ?.querySelector<HTMLButtonElement>('.map-band [data-band="next"]')
-      ?.click();
+/** 帯の手順のバーの `ordinal` つ目（1 から）の区切りを押す */
+const pressSegment = (figure: HTMLElement, ordinal: number) => {
+  figure
+    .closest(".mdmark-map")
+    ?.querySelectorAll<HTMLElement>(".map-band .map-band-seg")
+    [ordinal - 1]?.click();
 };
 
 // 5 種類を描く（正常系）
@@ -229,7 +228,7 @@ test("test_attach_map_axis_grid_when_played", async () => {
     { mermaid: GANTT, data: GANTT_DATA },
   ]);
   // 実行
-  pressNext(figureOf(root, 1), 6);
+  pressSegment(figureOf(root, 1), 6);
   // 検証
   const git = figureOf(root, 1);
   expect(
@@ -242,7 +241,7 @@ test("test_attach_map_axis_grid_when_played", async () => {
   figureOf(root, 2)
     .querySelector<HTMLButtonElement>('[data-map-section-toggle="公開"]')
     ?.click();
-  pressNext(figureOf(root, 2), 7);
+  pressSegment(figureOf(root, 2), 7);
   const gantt = figureOf(root, 2);
   for (const item of gantt.querySelectorAll<HTMLElement>(".map-axis-item")) {
     expect(item.classList.contains("map-dim")).toBe(

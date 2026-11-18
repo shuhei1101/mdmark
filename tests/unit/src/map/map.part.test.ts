@@ -177,14 +177,48 @@ test("test_render_map_band", async () => {
     mode: "walkthrough",
     total: 4,
     index: undefined,
+    titles: [],
     title: "",
     text: "",
-    auto: false,
+    playing: false,
+    fill: 0,
     label: "全体の構成の案内",
   });
   // 検証
-  expect(html).toContain("–/4");
-  expect(html).toMatch(/<button[^>]*aria-label="案内をやめる"[^>]*disabled/);
+  expect(html).toMatch(/class="map-band[^"]*\bis-idle\b/);
+  expect(matches(html, /class="map-band-seg[^"]*"/g)).toHaveLength(4);
+  expect(html).toMatch(/role="slider"[^>]*aria-valuenow="0"/);
+  expect(html).toMatch(/aria-valuetext="始める前"/);
+  expect(html).toMatch(/<button[^>]*data-dir="-1"[^>]*aria-label="前の手順"/);
+  expect(html).toMatch(/<button[^>]*data-dir="1"[^>]*aria-label="次の手順"/);
+  expect(html).toMatch(/class="map-band-title"[^>]*hidden/);
+  expect(html).toMatch(/class="map-band-text"[^>]*hidden/);
+});
+
+// 繰り返している途中（正常系）
+test("test_render_map_band_when_playing", async () => {
+  // 準備
+  const { renderMapBand } = await loadParts();
+  // 実行
+  const html = renderMapBand({
+    mode: "walkthrough",
+    total: 4,
+    index: 1,
+    titles: ["全体を見る", "記法を読む", "配置する", "描く"],
+    title: "記法を読む",
+    text: "",
+    playing: true,
+    fill: 0.5,
+    label: "全体の構成の案内",
+  });
+  // 検証
+  const segments = matches(html, /class="map-band-seg[^"]*"/g);
+  expect(segments[0]).toContain("is-done");
+  expect(segments[1]).toContain("is-current");
+  expect(segments[1]).toContain("is-playing");
+  expect(html).toMatch(/class="map-band-fill" style="width: ?50%/);
+  expect(html).toContain('aria-valuetext="手順 2/4 記法を読む"');
+  expect(html).not.toMatch(/class="map-band[^"-]*\bis-idle\b/);
 });
 
 // 再生（正常系）
@@ -196,22 +230,20 @@ test("test_render_map_band_when_playback", async () => {
     mode: "playback",
     total: 7,
     index: 2,
+    titles: [],
     title: "mount を呼ぶ",
     text: "",
-    auto: false,
+    playing: true,
+    fill: 0,
     label: "文書を描くまでの再生",
   });
   // 検証
+  expect(html).toMatch(/role="slider"[^>]*aria-label="メッセージ"/);
   const labels = matches(html, /aria-label="([^"]+)"/g).map((item) =>
     item.replace(/^aria-label="|"$/g, ""),
   );
   expect(labels).toEqual(
-    expect.arrayContaining([
-      "前のメッセージ",
-      "再生をやめる",
-      "自動で進める",
-      "次のメッセージ",
-    ]),
+    expect.arrayContaining(["前のメッセージ", "次のメッセージ"]),
   );
 });
 
@@ -628,23 +660,18 @@ test("test_render_map_band_when_transition", async () => {
     unit: "transition",
     total: 13,
     index: 5,
+    titles: [],
     title: "判定 → 差し戻しの理由を確認する：差し戻し",
     text: "",
-    auto: false,
+    playing: true,
+    fill: 0,
     label: "作業の状態の再生",
   });
   // 検証
   const labels = matches(html, /aria-label="([^"]+)"/g).map((item) =>
     item.replace(/^aria-label="|"$/g, ""),
   );
-  expect(labels).toEqual(
-    expect.arrayContaining([
-      "前の遷移",
-      "再生をやめる",
-      "自動で進める",
-      "次の遷移",
-    ]),
-  );
+  expect(labels).toEqual(expect.arrayContaining(["前の遷移", "次の遷移"]));
   expect(labels).not.toContain("前のメッセージ");
 });
 

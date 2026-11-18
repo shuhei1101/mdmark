@@ -9,14 +9,12 @@ test("test_parse_map_args", async () => {
   const { parseMapArgs } = await loadSpec();
   // 実行
   const result = parseMapArgs(
-    '{"title": "全体", "focus": "read", "play": "autoplay", "interval": 3, "collapse": {"open": false}}',
+    '{"title": "全体", "focus": "read", "collapse": {"open": false}}',
   );
   // 検証
   expect(result.args).toEqual({
     title: "全体",
     focus: "read",
-    play: "autoplay",
-    interval: 3,
     collapse: { open: false, title: undefined },
   });
   expect(result.problems).toEqual([]);
@@ -30,7 +28,7 @@ test("test_parse_map_args_when_empty", async () => {
   // 実行
   const result = parseMapArgs("");
   // 検証
-  expect(result.args).toEqual({ interval: 2 });
+  expect(result.args).toEqual({});
   expect(result.normalized).toBe("{}");
 });
 
@@ -56,7 +54,7 @@ test("test_parse_map_args_when_not_json", async () => {
   expect(result.problems.map((problem) => problem.kind)).toEqual([
     "map_invalid_value",
   ]);
-  expect(result.args).toEqual({ interval: 2 });
+  expect(result.args).toEqual({});
 });
 
 // 型の合わない値（異常系）
@@ -64,10 +62,28 @@ test("test_parse_map_args_when_wrong_type", async () => {
   // 準備
   const { parseMapArgs } = await loadSpec();
   // 実行
-  const result = parseMapArgs('{"interval": "abc"}');
+  const result = parseMapArgs('{"collapse": "abc"}');
   // 検証
   expect(result.problems.map((problem) => problem.kind)).toEqual([
     "map_invalid_value",
   ]);
-  expect(result.args.interval).toBe(2);
+  expect(result.args.collapse).toBeUndefined();
+});
+
+// 廃止したキー（正常系）
+test("test_parse_map_args_when_retired", async () => {
+  // 準備
+  const { parseMapArgs } = await loadSpec();
+  // 実行
+  const result = parseMapArgs(
+    '{"title": "再生", "play": "autoplay", "interval": 3}',
+  );
+  // 検証
+  expect(result.problems.map((problem) => problem.kind)).toEqual([
+    "map_retired_key",
+  ]);
+  expect(result.problems[0]?.message).toContain("play・interval");
+  expect(result.problems[0]?.message).toContain("mdmark upgrade");
+  expect(result.unknownKeys).toEqual([]);
+  expect(result.normalized).toBe('{"title":"再生"}');
 });

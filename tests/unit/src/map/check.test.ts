@@ -175,6 +175,13 @@ test("test_collect_map_problems_when_unsupported_kind", async () => {
   expect(problems[0]?.message).toContain("classDiagram");
   expect(problems[0]?.message).toContain("architecture-beta");
   expect(problems[0]?.message).toContain("C4Context");
+  for (const kind of [
+    "C4Container",
+    "C4Component",
+    "C4Dynamic",
+    "C4Deployment",
+  ])
+    expect(problems[0]?.message).toContain(kind);
   expect(problems[0]?.message).toContain("mindmap");
 });
 

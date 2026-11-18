@@ -6,7 +6,7 @@ import { renderDoc } from "../../helpers/render.ts";
 // 2 つの範囲（正常系）
 test("test_build_map_ranges", () => {
   // 準備
-  const markdown = `${mapRange({ args: '{"title": "全体の構成", "interval": 3}', mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: SEQUENCE })}`;
+  const markdown = `${mapRange({ args: '{"title": "全体の構成", "focus": "read"}', mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: SEQUENCE })}`;
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -15,7 +15,7 @@ test("test_build_map_ranges", () => {
   expect(opens[0]).toContain('data-map="1"');
   expect(opens[0]).toContain('data-map-kind="flowchart"');
   expect(opens[0]).toContain(
-    'data-map-args="{&quot;title&quot;:&quot;全体の構成&quot;,&quot;interval&quot;:3}"',
+    'data-map-args="{&quot;title&quot;:&quot;全体の構成&quot;,&quot;focus&quot;:&quot;read&quot;}"',
   );
   expect(opens[1]).toContain('data-map="2"');
   expect(opens[1]).toContain('data-map-kind="sequenceDiagram"');
