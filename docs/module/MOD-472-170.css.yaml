@@ -28,7 +28,7 @@ styles:
         value: '`text-align: left` / `center` / `right`。`center` の見出しのセルは `.mdmark-th` も中央に配置する'
       - class_name: .mdmark .mdmark-pin.is-unpinned
         target: 表の見えている幅に収まらず留まっていない列のピン止めのボタン
-        value: 押した状態の地のまま、枠線を破線にし、色を `--mdmark-color-muted` にする。ピンのアイコンは塗らない破線（押していない状態のピンを `stroke-dasharray` の破線にした `mask-image`）にする。値は `docs/mock/refs/533/assets/table.css` の案 A
+        value: 枠線と背景色を付けず（`border-color`・`background` を `transparent`）、色を `--mdmark-color-muted` にする。ピンのアイコンは塗らない破線（押していない状態のピンを `stroke-dasharray` の破線にした `mask-image`）にする。値は `docs/mock/refs/533/assets/table.css` の案 A
       - class_name: .mdmark .mdmark-table :is(th, td).mdmark-wide と .mdmark-check
         target: 広く取る列と真偽値の ✓
         value: '`mdmark-wide` は `white-space: nowrap`。`mdmark-check` は `inline-flex` で、中の `.mdmark-icon` を `1.1em` 角・塗り無し・`currentcolor` の太さ 3 の線にする。値は `docs/mock/refs/283/assets/table.css`'
@@ -330,6 +330,12 @@ styles:
       - class_name: .mdmark-diagram[data-diagram="map"] .map-participant
         target: シーケンス図の参加者の箱
         value: '`touch-action: pan-y`（指の横の移動を並べ替えのドラッグにし、縦は図と文書のスクロールにする）'
+      - class_name: .mdmark :is(.mdmark-pin[aria-pressed="true"], .mdmark-filter.is-active)
+        target: 押したピン止めのボタンと絞り込み中のボタン
+        value: 枠線と背景色を付けず（`border-color`・`background` を `transparent`）、色を `--mdmark-color-link` にする。アイコンは今の塗ったピン・塗った漏斗の `mask-image` のまま。`.is-unpinned` の規則を後ろに置き、留まっていないピンの色を優先する
+      - class_name: .mdmark .mdmark-table thead th .mdmark-pin[aria-pressed="false"]
+        target: ポインターを乗せられる端末の押していないピン止めのボタン
+        value: '`@media (hover: hover)` の中で `opacity: 0` にし、見出しのセルが `:hover` か `:focus-within` の間だけ `opacity: 1` にする。`visibility`・`display` は変えず、タブの順に残す。`(hover: none)` の端末と印刷では当てない'
     refs:
       - SCR-472-4#
       - CMP-472-65#

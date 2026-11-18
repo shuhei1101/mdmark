@@ -76,9 +76,9 @@ functions:
       - name: test_attach_column_resize_when_clamped
         case: 正常
         summary: 列の最小幅と上限で止める
-        condition: '`maxWidth` が `200` を返す表で、1 列目のつまみを 2000px 右へ、続けて 2000px 左へドラッグする'
+        condition: '`maxWidth` が `200` を返し、見出しのセルの `--mdmark-column-min-width` が 6em より広い（列名・並べ替え・ピン止めのボタンが収まる幅を入れた）表で、1 列目のつまみを 2000px 右へ、続けて 2000px 左へドラッグする'
         mock: なし
-        expected: 右へ動かした後の `offsetWidth` が 200、左へ動かした後の `offsetWidth` が `aria-valuemin`
+        expected: 右へ動かした後の `offsetWidth` が 200、左へ動かした後の `offsetWidth` が `aria-valuemin` で、その値が見出しの `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上
       - name: test_attach_column_resize_when_double_tap
         case: 正常
         summary: タッチの 2 回のタップの間隔でダブルタップを見分ける

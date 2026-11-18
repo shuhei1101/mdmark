@@ -93,7 +93,7 @@ constants:
     summary: 種類ごとの既定の機能
     entries:
       - key: default
-        value: '["pin", "resize"]'
+        value: '["sort", "pin", "resize"]'
       - key: data
         value: '["sort", "pin", "filter", "resize"]'
       - key: plain
@@ -291,7 +291,7 @@ functions:
         summary: 表のマーカーの表を指定どおりに囲み、囲まない表を default にする
         condition: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}, "collapse": {"open": false}} -->` 〜 `<!-- /table -->` の表と、マーカーの無い表'
         mock: なし
-        expected: 1 つ目が `data-kind="data" data-features="sort pin filter resize" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="pin resize"`
+        expected: 1 つ目が `data-kind="data" data-features="sort pin filter resize" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="sort pin resize"`
       - name: test_decorate_tables_when_range_not_closed
         case: 正常
         summary: 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む
