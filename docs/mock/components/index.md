@@ -49,6 +49,7 @@
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
 | [mermaid-diagram](./mermaid-diagram/index.html) | 言語 mermaid のコードブロックを図の枠に入れて描いた図（front matter の title のタイトル・タイトルが無いときの図の種類の名前・actor のアイコンの案・種類ごとの見本）と、mermaid を読み込めない通知ブロック・記法を解釈できない記載の警告・機能をオフにしたコードブロック |
 | [plain-mermaid](./plain-mermaid/index.html) | map の範囲の外の mermaid のコードブロックを、今の描き方（mermaid の図）と案 A（補足の無い map の図）で並べた flowchart・sequenceDiagram・classDiagram と、map が描けない種類の gantt |
+| [plain-table](./plain-table/index.html) | マーカーの無い表（既定の種類）を、今の機能（ピン止め・列の幅の変更）と案 A（並べ替え・コピーを加える）で並べた 3 行の表とはみ出す表、`data`・`plain` の種類 |
 | [notice](./notice/index.html) | 外部ライブラリを読み込めない箇所に出す通知ブロックと、読み込み中のマーカーの場所、VS Code のプレビューで再生できない動画・音声の通知ブロック |
 | [panel-alert](./panel-alert/index.html) | VS Code のプレビューのパネルに出す shadcn/ui の Alert（warning）・Button（default・outline）・Spinner と、その状態（通常・ホバー・フォーカス・狭い列・長いパス） |
 | [param-control](./param-control/index.html) | スライダー・グラフ・今の値を写すボタンを組み合わせた操作できる部品と、コピーした・写せなかったの通知 |
