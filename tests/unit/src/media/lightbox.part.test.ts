@@ -35,7 +35,7 @@ test("test_render_lightbox", async () => {
   expect(plainText(innerHtml(html, 'class="mdmark-lightbox-count"'))).toBe(
     "3 / 15",
   );
-  expect(findTag(html, 'data-group="pan"')).toMatch(/\shidden\b/);
+  expect(html).not.toContain('data-group="pan"');
 });
 
 // 端の切り替えのボタンを押せなくする（正常系）
@@ -78,7 +78,7 @@ test("test_render_lightbox_when_single", async () => {
   expect(findTags(html, "mdmark-lightbox-nav")).toHaveLength(0);
 });
 
-// 上限の倍率で拡大を押せなくし、移動のボタンを出す（正常系）
+// 上限の倍率で拡大を押せなくする（正常系）
 test("test_render_lightbox_when_max", async () => {
   // 準備
   const { renderLightbox } = await loadLightbox();
@@ -95,5 +95,5 @@ test("test_render_lightbox_when_max", async () => {
   expect(plainText(innerHtml(html, 'class="mdmark-lightbox-zoom"'))).toBe(
     "500%",
   );
-  expect(findTag(html, 'data-group="pan"')).not.toMatch(/\shidden\b/);
+  expect(html).not.toContain('data-group="pan"');
 });

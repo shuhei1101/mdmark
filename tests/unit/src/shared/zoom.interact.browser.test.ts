@@ -15,15 +15,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** 図の帯と同じ並びの、移動・拡大と縮小のボタン（`data-tool` で見分ける） */
+/** 図のパネルと同じ並びの、拡大と縮小のボタン（`data-tool` で見分ける） */
 const TOOLS_HTML = [
   '<div class="tools">',
-  '<div data-group="pan" hidden>',
-  '<button type="button" data-tool="left" aria-label="左へ動かす"></button>',
-  '<button type="button" data-tool="up" aria-label="上へ動かす"></button>',
-  '<button type="button" data-tool="down" aria-label="下へ動かす"></button>',
-  '<button type="button" data-tool="right" aria-label="右へ動かす"></button>',
-  "</div>",
   '<div data-group="zoom">',
   '<button type="button" data-tool="out" aria-label="縮小"></button>',
   '<button type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す">100%</button>',
@@ -111,12 +105,11 @@ test("test_attach_zoom_when_percent_base_fit", async () => {
   ).toBe("倍率 125%。全体が収まる倍率に戻す");
 });
 
-// 拡大中だけ移動のボタンを出し、矢印キーとドラッグで動かす（正常系）
+// 拡大中は矢印キーとドラッグで動かす（正常系）
 test("test_attach_zoom_when_panned", async () => {
   // 準備
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const { root, viewport } = await setUp();
-  const panGroup = root.querySelector<HTMLElement>('[data-group="pan"]');
   button(root, "拡大").click();
   button(root, "拡大").click();
   const before = viewport.scrollLeft;
@@ -124,7 +117,6 @@ test("test_attach_zoom_when_panned", async () => {
   viewport.focus();
   await userEvent.keyboard("{ArrowRight}");
   // 検証
-  expect(panGroup?.hidden).toBe(false);
   expect(viewport.scrollLeft - before).toBe(80);
   // 実行: 左へ 40px ドラッグ
   const afterKey = viewport.scrollLeft;
