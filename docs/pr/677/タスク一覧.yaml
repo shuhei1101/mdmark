@@ -45,7 +45,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-18T14:11:49.865671+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    note: IF-472-35 の制約『map の案内と再生の帯』『map の C4 図』に C4Dynamic の関係の再生を追加し、テストケース『正常系（map の C4Dynamic の関係を再生する）』を追加した
+    updated_by: planner
+    updated_at: '2026-11-18T14:16:16.006303+00:00'
   - process: 部品設計
     status: todo
   - process: 画面設計
