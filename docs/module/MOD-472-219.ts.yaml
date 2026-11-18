@@ -170,7 +170,52 @@ functions:
   - name: attachSideToc
     title: 右側の目次を付ける
     container: src/section/side-toc.interact.ts
-    summary: 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を配置して操作を付ける。見出しが無ければ何も配置せず `content` に `el` を返却する。目次を出すボタンで `data-open` と `aria-expanded`、ピン止めで `data-pinned` と `aria-pressed` を切り替えて `state` に記録する。出したパネルで Esc を押すとパネルを隠して目次を出すボタンへフォーカスを戻す。すべて展開・すべて折りたたみで `foldAllSections` を呼ぶ。項目を押すと、リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り（`href` は読み込まない。まとめた HTML は `rewriteLinks` で `href` を書き換える）（既定の動きは止めない）、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す。IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いるセクションをもう一度決める。もう一度決めるときは、祖先に `hidden` を持つ見出し（閉じたセクションの中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に指定し、決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を配置する。hover の出し方では、付けたときと、`findScrollContainer` のスクロールする場所と画面の `scroll`・`resize` と、`document.body` の子の追加・削除（`MutationObserver`。差分のミニマップの帯の出し入れ）のたびに、hover で開く目次の枠の位置を aside の `--mdmark-side-toc-panel-top`（見えている枠の上端 = スクロールする場所が画面全体なら 0、要素ならその上端に、`--mdmark-sticky-top` と `--mdmark-space` を加算した位置）・`--mdmark-side-toc-panel-end`（右端の線と枠の右端。画面の右端から、スクロールする場所のスクロールバーを除いた右端（画面全体なら `document.documentElement.clientWidth`、要素ならその左端に `clientLeft` と `clientWidth` を加算した位置。画面からはみ出す分は画面の端）までの幅に `SIDE_TOC_EDGE_GAP_REM` を追加した値。`document.body` の子の `.mdmark-diff-minimap` のうち、幅が 0 でなく、その右端から左へパネルの幅までの横の範囲と重なるものがあれば、画面の右端からその左端までの幅に `SIDE_TOC_AVOID_GAP_PX` を追加した値。描く先の要素の位置は使用しない。aside は CSS の `min-width` で線の幅を取ったままにし、ピン止めの有無で本文の列の幅を変えない）・`--mdmark-side-toc-panel-min-height`（右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を追加した位置までの高さ。0 未満は 0）と、右端の線の位置を `--mdmark-side-toc-rail-top`（aside の上端と `--mdmark-side-toc-panel-top` の大きい方。右端の線の上端はこの値で決める）・`--mdmark-side-toc-rail-height`（画面の下端・スクロールする要素の下端・描く先の要素の下端のうち最も小さい位置から、`--mdmark-side-toc-rail-top` と `--mdmark-space` を減算した高さ。0 未満は 0）に px で入れる。その高さが 0 のとき（描く先の要素の下端が線の上端より上にある）は aside に `data-rail-outside` を付け、それ以外は削除する。削除する関数は包む前の子の並びへ戻し、位置を決める受け取りを解除する
+    summary: 描く先の要素に右側の目次を配置して操作を付ける
+    description: |-
+      描く先の要素の子を本文の列（`div.mdmark-content`）に包み、その後ろに `renderSideToc` の右側の目次を配置する。
+      見出しが無ければ何も配置せず `content` に `el` を返却する。
+
+      | 操作 | 動き |
+      | --- | --- |
+      | 目次を出すボタン | `data-open` と `aria-expanded` を切り替えて `state` に記録する |
+      | ピン止め | `data-pinned` と `aria-pressed` を切り替えて `state` に記録する |
+      | 出したパネルで Esc | パネルを隠して目次を出すボタンへフォーカスを戻す |
+      | すべて展開・すべて折りたたみ | `foldAllSections` を呼ぶ |
+      | 項目を押す | リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す |
+
+      項目を押したときは `href` を読み込まず（まとめた HTML は `rewriteLinks` で `href` を書き換える）、既定の動きは止めない。
+
+      #### 今いるセクション
+
+      IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いるセクションをもう一度決める。
+      もう一度決めるときは、祖先に `hidden` を持つ見出し（閉じたセクションの中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に指定する。
+      決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を配置する。
+
+      #### hover で開く目次の枠の位置
+
+      hover の出し方では、次のたびに、hover で開く目次の枠の位置と右端の線の位置を aside の CSS 変数に px で入れる。
+
+      - 付けたとき
+      - `findScrollContainer` のスクロールする場所と画面の `scroll`・`resize`
+      - `document.body` の子の追加・削除（`MutationObserver`。差分のミニマップの帯の出し入れ）
+
+      | CSS 変数 | 値 |
+      | --- | --- |
+      | `--mdmark-side-toc-panel-top` | 見えている枠の上端（スクロールする場所が画面全体なら 0、要素ならその上端）に、`--mdmark-sticky-top` と `--mdmark-space` を加算した位置 |
+      | `--mdmark-side-toc-panel-end` | 右端の線と枠の右端。表の下の段落で決める |
+      | `--mdmark-side-toc-panel-min-height` | 右端の線の上端に `SIDE_TOC_RAIL_COVER_REM` を追加した位置までの高さ。0 未満は 0 |
+      | `--mdmark-side-toc-rail-top` | aside の上端と `--mdmark-side-toc-panel-top` の大きい方。右端の線の上端はこの値で決める |
+      | `--mdmark-side-toc-rail-height` | 画面の下端・スクロールする要素の下端・描く先の要素の下端のうち最も小さい位置から、`--mdmark-side-toc-rail-top` と `--mdmark-space` を減算した高さ。0 未満は 0 |
+
+      `--mdmark-side-toc-panel-end` は、画面の右端から、スクロールする場所のスクロールバーを除いた右端までの幅に `SIDE_TOC_EDGE_GAP_REM` を追加した値にする。
+      スクロールバーを除いた右端は、画面全体なら `document.documentElement.clientWidth`、要素ならその左端に `clientLeft` と `clientWidth` を加算した位置で、画面からはみ出す分は画面の端にする。
+      `document.body` の子の `.mdmark-diff-minimap` のうち、幅が 0 でなく、その右端から左へパネルの幅までの横の範囲と重なるものがあれば、画面の右端からその左端までの幅に `SIDE_TOC_AVOID_GAP_PX` を追加した値にする。
+      描く先の要素の位置は使用しない。
+      aside は CSS の `min-width` で線の幅を取ったままにし、ピン止めの有無で本文の列の幅を変えない。
+
+      `--mdmark-side-toc-rail-height` が 0 のとき（描く先の要素の下端が線の上端より上にある）は aside に `data-rail-outside` を付け、それ以外は削除する。
+
+      削除する関数は包む前の子の並びへ戻し、位置を決める受け取りを解除する
     kind: 関数
     scope: internal
     side_effects: '`el` の子を本文の列へ移し、右側の目次の要素を追加し、`state` を書き換える'

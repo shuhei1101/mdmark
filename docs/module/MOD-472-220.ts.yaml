@@ -28,7 +28,23 @@ functions:
     container: src/tabs/tabs.interact.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。中身の選び方を `tabPanelSelectors` に登録し、付けたときに URL の `#ID`（`rowIdFromHash` で読み込む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から参照した関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す。タブのボタンにはタブ名の要素の子のノードのコピーを入れ（`strong` を残す）、組の統一と残すタブ名にはその文字を使用する。入れ子の `mdmark-tabs` はそれぞれ別の並びにし、キーの移動と選択はその並びの中だけで行う。読者が押すかキーで選ぶときは、選ぶ前に押したタブのボタンの `getBoundingClientRect().top` を測り、選んで同じ組を統一した後にもう一度測って、`findScrollContainer` の要素（画面全体なら `window.scrollBy`）を差の分だけスクロールする（文書が縮んで戻しきれない分はブラウザがスクロール位置の上限で止める）。付けたときの選択と `revealTabTarget` の選択ではスクロールしない
+    summary: 各 `mdmark-tabs` にタブの並びを配置し、タブを選ぶ操作を付ける
+    description: |-
+      各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にする。
+      `data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。
+      中身の選び方を `tabPanelSelectors` に登録する。
+      付けたときに URL の `#ID`（`rowIdFromHash` で読み込む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。
+
+      押すと左右の矢印・Home・End で選ぶ。
+      `data-group` を持つときは、ページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から参照した関数で同じタブ名へ切り替え、`saveTabChoice` で残す。
+      切り替えるときは、組の名前をセレクタに入れず、`tabSelectors` に無いものは飛ばし、フォーカスは動かさず、そのタブ名が無ければ変えない。
+
+      タブのボタンにはタブ名の要素の子のノードのコピーを入れ（`strong` を残す）、組の統一と残すタブ名にはその文字を使用する。
+      入れ子の `mdmark-tabs` はそれぞれ別の並びにし、キーの移動と選択はその並びの中だけで行う。
+
+      読者が押すかキーで選ぶときは、選ぶ前に押したタブのボタンの `getBoundingClientRect().top` を測り、選んで同じ組を統一した後にもう一度測る。
+      `findScrollContainer` の要素（画面全体なら `window.scrollBy`）を差の分だけスクロールする（文書が縮んで戻しきれない分はブラウザがスクロール位置の上限で止める）。
+      付けたときの選択と `revealTabTarget` の選択ではスクロールしない
     args:
       - name: root
         type: HTMLElement

@@ -22,7 +22,28 @@ functions:
     container: src/diagram/chart.part.ts
     kind: 関数
     scope: internal
-    summary: '`type` ごとに svg に描く。`line` は軸・目盛り・系列の折れ線と点、`bar` は目盛りごとに系列の棒を並べ、`scatter` は横と縦の数値の軸に点を配置し、`pie` は 12 時から時計回りに扇形を並べて扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を配置する。`area` は折れ線の下を系列の塗りで塗り、`stacked-bar`・`stacked-area` は `stackSeries` で積み上げ（負の値は 0 から下へ追加し、`stacked-bar` は棒の上に合計を配置する）、`horizontal-bar` は項目を縦に並べて値を横の長さにし、`donut` は `pie` の中を空けて中央に合計と `合計{unit}` を配置し、`radar` は `x.ticks` の軸を放射状に並べて系列を多角形にし、`bubble` は `size` の値を円の面積にし、`combo` は系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の軸で描く。系列と円の項目は位置で `SERIES_STYLES` の色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（svg の `pattern`）・点の形状の組を決める。縦の軸の範囲を省いた定義は `niceTicks` で切る。点・棒・扇形・バブルの項目ごとに、`chartItemText` の文で `renderDiagramTip`（`kind: item`）の中身を `tips` に追加し、項目に `tabindex="0"`・`aria-describedby`・`data-tip-owner` を付ける。点は点の形状の上に半径 `ITEM_HIT_RADIUS` の透明の `circle.mdmark-diagram-item-hit` を重ね、そちらに属性を付ける。項目はどれも Tab で止まる（矢印キーは図の移動に使用するため、ロービング tabindex にしない）'
+    summary: 'グラフを `type` ごとに svg に描く'
+    description: |-
+      | `type` | 描き方 |
+      | --- | --- |
+      | `line` | 軸・目盛り・系列の折れ線と点 |
+      | `bar` | 目盛りごとに系列の棒を並べる |
+      | `scatter` | 横と縦の数値の軸に点を配置する |
+      | `pie` | 12 時から時計回りに扇形を並べ、扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を配置する |
+      | `area` | 折れ線の下を系列の塗りで塗る |
+      | `stacked-bar`・`stacked-area` | `stackSeries` で積み上げる（負の値は 0 から下へ追加し、`stacked-bar` は棒の上に合計を配置する） |
+      | `horizontal-bar` | 項目を縦に並べて値を横の長さにする |
+      | `donut` | `pie` の中を空けて中央に合計と `合計{unit}` を配置する |
+      | `radar` | `x.ticks` の軸を放射状に並べて系列を多角形にする |
+      | `bubble` | `size` の値を円の面積にする |
+      | `combo` | 系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の軸で描く |
+
+      系列と円の項目は位置で `SERIES_STYLES` の色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（svg の `pattern`）・点の形状の組を決める。
+      縦の軸の範囲を省いた定義は `niceTicks` で切る。
+
+      点・棒・扇形・バブルの項目ごとに、`chartItemText` の文で `renderDiagramTip`（`kind: item`）の中身を `tips` に追加し、項目に `tabindex="0"`・`aria-describedby`・`data-tip-owner` を付ける。
+      点は点の形状の上に半径 `ITEM_HIT_RADIUS` の透明の `circle.mdmark-diagram-item-hit` を重ね、そちらに属性を付ける。
+      項目はどれも Tab で止まる（矢印キーは図の移動に使用するため、ロービング tabindex にしない）
     args:
       - name: definition
         type: MdmarkChartDefinition
