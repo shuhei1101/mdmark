@@ -55,4 +55,4 @@ scope_out:
     plan: none
   - item: AI Monitor の規約『ドキュメント管理』の表の種類の表（既定はピン止め）
     reason: 別のリポジトリの規約で、mdmark の採用バージョンを上げるときに追従する。この PR の表の既定の機能が決まらないと中身が決まらない
-    plan: to_file
+    plan: shuhei1101/ai-monitor#3642
