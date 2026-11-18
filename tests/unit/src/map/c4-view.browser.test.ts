@@ -191,9 +191,7 @@ test("test_attach_map_c4_when_dynamic_played", async () => {
   );
   expect(dimmed(root, '.mdmark-diagram-node[data-node="web"]')).toBe(false);
   expect(dimmed(root, '.mdmark-diagram-node[data-node="api"]')).toBe(false);
-  expect(dimmed(root, '.mdmark-diagram-node[data-node="customer"]')).toBe(
-    true,
-  );
+  expect(dimmed(root, '.mdmark-diagram-node[data-node="customer"]')).toBe(true);
   expect(dimmed(root, '.mdmark-diagram-wire[data-wire="r2"]')).toBe(false);
   expect(dimmed(root, '.mdmark-diagram-wire[data-wire="r3"]')).toBe(true);
   const packets = [...root.querySelectorAll(".map-packet")];
@@ -241,8 +239,7 @@ test("test_attach_map_c4_when_dynamic_both", async () => {
   );
   const packets = [...root.querySelectorAll('.map-packet[data-wire="r5"]')];
   const backward = (packet: Element) =>
-    packet.querySelector("animateMotion")?.getAttribute("keyPoints") ===
-    "1;0";
+    packet.querySelector("animateMotion")?.getAttribute("keyPoints") === "1;0";
   expect(packets.some(backward)).toBe(true);
   expect(packets.some((packet) => !backward(packet))).toBe(true);
 });
