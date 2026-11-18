@@ -5,6 +5,7 @@ import {
 } from "../diagram/diagram.interact.ts";
 import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import type { ResolveIdLink } from "../render/sanitize.ts";
+import { zoomControlOf } from "../shared/zoom.interact.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
   attachBand,
@@ -1066,10 +1067,17 @@ export const attachMapFlow = (
       figure,
       ...bandModeOf(extension),
       steps,
-      interval: args.interval,
-      autoplay: args.play === "autoplay",
-      reducedMotion: prefersReducedMotion(),
-      apply: (step) => applyStep(step, steps),
+      apply: (step) => {
+        applyStep(step, steps);
+        const viewport = figure.querySelector<HTMLElement>(
+          ".mdmark-diagram-viewport",
+        );
+        if (step === undefined && viewport) zoomControlOf(viewport)?.reset();
+      },
+      onStep: (step) => {
+        follower.resume();
+        follower.reveal(step.nodes);
+      },
     });
   }
 

@@ -71,7 +71,7 @@ type SequenceEntry = {
   source: string;
   attach: (
     onStep: (message: number | undefined) => void,
-    follow: { start: () => void; step: (message: number) => void },
+    follow: (message: number) => void,
   ) => void;
   /** 構成図の上を強調しているか */
   driving: boolean;
@@ -150,6 +150,10 @@ const FLOW_BASED: Record<
   classDiagram: attachMapClass,
   architecture: attachMapArchitecture,
   C4Context: attachMapC4,
+  C4Container: attachMapC4,
+  C4Component: attachMapC4,
+  C4Dynamic: attachMapC4,
+  C4Deployment: attachMapC4,
 };
 
 /** 軸と格子の配置で描く種類 */
@@ -272,14 +276,13 @@ const linkSequence = (context: AttachContext, entry: SequenceEntry): void => {
         flow.focus({ nodes: [item.from, item.to], wires: [] });
       }
     },
-    // 自動で進めている間は、構成図の図の枠の中も送り手と受け手のノードへスクロールする（構成図に無い相手のメッセージは除く）
-    {
-      start: () => targetOf()?.resumeFollow(),
-      step: (message) => {
-        const item = sequence.messages[message];
-        if (item === undefined || outside(item)) return;
-        targetOf()?.follow([item.from, item.to]);
-      },
+    // メッセージへ移ったら、構成図の図の枠の中も送り手と受け手のノードが収まる倍率と位置へ移す（構成図に無い相手のメッセージは除く）
+    (message) => {
+      const item = sequence.messages[message];
+      if (item === undefined || outside(item)) return;
+      const target = targetOf();
+      target?.resumeFollow();
+      target?.follow([item.from, item.to]);
     },
   );
   // plays_over で指した構成図に無い参加者を、シーケンス図の前の書き方の警告にする

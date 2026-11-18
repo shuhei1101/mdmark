@@ -23,6 +23,10 @@ export type MapKindName =
   | "classDiagram"
   | "architecture"
   | "C4Context"
+  | "C4Container"
+  | "C4Component"
+  | "C4Dynamic"
+  | "C4Deployment"
   | "mindmap"
   | "gantt"
   | "timeline"
@@ -42,6 +46,10 @@ const KIND_OF_FIRST_WORD: Record<string, MapKindName> = {
   "classDiagram-v2": "classDiagram",
   "architecture-beta": "architecture",
   C4Context: "C4Context",
+  C4Container: "C4Container",
+  C4Component: "C4Component",
+  C4Dynamic: "C4Dynamic",
+  C4Deployment: "C4Deployment",
   mindmap: "mindmap",
   gantt: "gantt",
   timeline: "timeline",
@@ -116,7 +124,7 @@ export const collectMapStructure = (range: MapRangeSource) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `この版の map で描ける図の種類は \`flowchart\`・\`sequenceDiagram\`・\`erDiagram\`・\`stateDiagram-v2\`・\`classDiagram\`・\`architecture-beta\`・\`C4Context\`・\`mindmap\`・\`gantt\`・\`timeline\`・\`gitGraph\`・\`journey\`・\`block-beta\` です。\`${first}\` の図はコードブロックのまま表示しています。`,
+      message: `この版の map で描ける図の種類は \`flowchart\`・\`sequenceDiagram\`・\`erDiagram\`・\`stateDiagram-v2\`・\`classDiagram\`・\`architecture-beta\`・\`C4Context\`・\`C4Container\`・\`C4Component\`・\`C4Dynamic\`・\`C4Deployment\`・\`mindmap\`・\`gantt\`・\`timeline\`・\`gitGraph\`・\`journey\`・\`block-beta\` です。\`${first}\` の図はコードブロックのまま表示しています。`,
     });
   }
   return { problems, kind, args: parsedArgs };

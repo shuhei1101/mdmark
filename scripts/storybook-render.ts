@@ -95,7 +95,7 @@ import {
   parseAxisGrid,
 } from "../src/map/axis-grid.ts";
 import { layoutAxisGrid } from "../src/map/axis-grid-layout.ts";
-import { c4ToFlowchart, MAP_C4_KINDS, parseC4Context } from "../src/map/c4.ts";
+import { c4ToFlowchart, MAP_C4_KINDS, parseC4 } from "../src/map/c4.ts";
 import {
   classPartInputs,
   classToFlowchart,
@@ -1498,7 +1498,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return mapFrame("配置の構成", part, layout);
   },
   "map-c4": (args) => {
-    const diagram = parseC4Context(MAP_C4);
+    const diagram = parseC4(MAP_C4);
     const { data } = parseMapData(MAP_C4_DATA);
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
@@ -1597,9 +1597,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           : "message",
       total: typeof args.total === "number" ? args.total : 4,
       index: typeof args.index === "number" ? args.index : undefined,
+      titles: Array.isArray(args.titles)
+        ? args.titles.map(String)
+        : Array.from(
+            { length: typeof args.total === "number" ? args.total : 4 },
+            (_, i) => `手順 ${i + 1}`,
+          ),
       title: typeof args.title === "string" ? args.title : "",
       text: typeof args.text === "string" ? args.text : "",
-      auto: args.auto === true,
+      playing: args.playing === true,
+      fill: typeof args.fill === "number" ? args.fill : 0,
       label: "全体の構成の案内",
     }),
   "diff-toggle": (args) =>

@@ -892,71 +892,68 @@ export type MapBandArgs = {
   mode: "walkthrough" | "playback";
   /** 再生で進める単位（既定 message。transition は状態遷移図の遷移、task はガントチャートとジャーニーのタスク、period はタイムラインの期間、commit は Git グラフの commit） */
   unit?: MapBandUnit | undefined;
+  /** 手順の数（区切りの数） */
   total: number;
+  /** 今の番号（始める前は無し） */
   index: number | undefined;
+  /** 手順ごとのタイトル（区切りの title 属性とバーの読み上げの値） */
+  titles: string[];
   title: string;
   text: string;
-  auto: boolean;
+  /** 今の手順を繰り返しているか */
+  playing: boolean;
+  /** 今の手順の 1 周の進み（0〜1） */
+  fill: number;
   label: string;
 };
 
-/** モードごとのボタンのスクリーンリーダー向けの名前 */
-const NAMES = {
-  walkthrough: { prev: "前の手順", stop: "案内をやめる", next: "次の手順" },
-  playback: {
-    prev: "前のメッセージ",
-    stop: "再生をやめる",
-    next: "次のメッセージ",
-  },
-  transition: {
-    prev: "前の遷移",
-    stop: "再生をやめる",
-    next: "次の遷移",
-  },
-  task: { prev: "前のタスク", stop: "再生をやめる", next: "次のタスク" },
-  period: { prev: "前の期間", stop: "再生をやめる", next: "次の期間" },
-  commit: { prev: "前の commit", stop: "再生をやめる", next: "次の commit" },
+/** 単位ごとの名前（バーの名前と矢印のボタンの名前） */
+const UNIT_NAMES = {
+  walkthrough: "手順",
+  message: "メッセージ",
+  transition: "遷移",
+  task: "タスク",
+  period: "期間",
+  commit: "commit",
 } as const;
 
-/** 案内の帯のボタン */
-const bandButton = (button: {
-  action: string;
-  label: string;
-  icon: Parameters<typeof iconSvg>[0];
-  extra?: string;
-}): string =>
-  `<button class="mdmark-diagram-tool" type="button" data-band="${button.action}" aria-label="${escapeHtml(button.label)}" title="${escapeHtml(button.label)}"${button.extra ?? ""}>${iconSvg(button.icon)}</button>`;
+/** 案内の帯の左右の矢印のボタン */
+const bandArrow = (dir: -1 | 1, label: string): string =>
+  `<button class="map-band-step" type="button" data-band="step" data-dir="${dir}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${iconSvg(dir < 0 ? "chevron-left" : "chevron-right")}</button>`;
 
 /** 部品『案内の帯』の HTML */
 export const renderMapBand = (args: MapBandArgs): string => {
-  const names =
-    NAMES[
-      args.mode === "playback" &&
-      args.unit !== undefined &&
-      args.unit !== "message"
-        ? args.unit
-        : args.mode
+  const unit =
+    UNIT_NAMES[
+      args.mode === "playback" ? (args.unit ?? "message") : "walkthrough"
     ];
-  const count = `${args.index === undefined ? "–" : args.index + 1}/${args.total}`;
+  const { index } = args;
+  const started = index !== undefined;
+  const segClass = (i: number): string =>
+    [
+      "map-band-seg",
+      started && i < index ? "is-done" : "",
+      i === index ? "is-current" : "",
+      i === index && args.playing ? "is-playing" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const fill = (i: number): string =>
+    i === index && args.playing
+      ? `<span class="map-band-fill" style="width: ${Math.round(Math.min(1, Math.max(0, args.fill)) * 100)}%"></span>`
+      : "";
+  const segments = Array.from(
+    { length: args.total },
+    (_, i) =>
+      `<span class="${segClass(i)}" data-index="${i}" title="${escapeHtml(`${i + 1}. ${args.titles[i] ?? ""}`)}">${fill(i)}</span>`,
+  ).join("");
+  const valueText = started
+    ? `${unit} ${index + 1}/${args.total} ${args.titles[index] ?? args.title}`.trimEnd()
+    : "始める前";
+  const bar = `<div class="map-band-steps" role="slider" tabindex="0" data-band="steps" aria-label="${escapeHtml(unit)}" aria-valuemin="0" aria-valuemax="${args.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${escapeHtml(valueText)}" aria-keyshortcuts="ArrowLeft ArrowRight Home End Escape">${segments}</div>`;
   const title = `<strong class="map-band-title"${args.title === "" ? " hidden" : ""}>${escapeHtml(args.title)}</strong>`;
   const text = `<p class="map-band-text" aria-live="polite"${args.text === "" ? " hidden" : ""}>${escapeHtml(args.text)}</p>`;
-  const actions = [
-    bandButton({ action: "prev", label: names.prev, icon: "chevron-left" }),
-    bandButton({
-      action: "stop",
-      label: names.stop,
-      icon: "square",
-      extra: args.index === undefined ? ' disabled="disabled"' : "",
-    }),
-    bandButton({
-      action: "auto",
-      label: args.auto ? "一時停止" : "自動で進める",
-      icon: args.auto ? "pause" : "play",
-      extra: ` aria-pressed="${args.auto}"`,
-    }),
-    bandButton({ action: "next", label: names.next, icon: "chevron-right" }),
-  ].join("");
-  return `<div class="map-band" role="region" aria-label="${escapeHtml(args.label)}" data-mode="${args.mode}"><div class="map-band-head"><span class="map-band-count">${count}</span>${title}<div class="map-band-actions">${actions}</div></div>${text}</div>`;
+  return `<div class="map-band${started ? "" : " is-idle"}" role="region" aria-label="${escapeHtml(args.label)}" data-mode="${args.mode}"><div class="map-band-bar">${bandArrow(-1, `前の${unit}`)}${bar}${bandArrow(1, `次の${unit}`)}</div>${title}${text}</div>`;
 };
 
 /** 部品『mapのシーケンス図』の引数 */
@@ -3006,7 +3003,9 @@ export const mapC4BoundaryTitle = (
 const C4_BOUNDARY_NAMES = {
   enterprise: "［Enterprise］",
   system: "［Software System］",
+  container: "［Container］",
   boundary: "",
+  deployment: "",
 } as const;
 
 /** 部品『mapのC4図』の引数 */
@@ -3053,10 +3052,10 @@ export const renderMapC4Diagram = (args: MapC4Args): MapPart => {
   };
   const flow = renderMapFlow({ ...args, layout, nodeParts });
   let html = flow.html;
-  for (const id of Object.keys(args.boundaries))
+  for (const [id, kind] of Object.entries(args.boundaries))
     html = html.replace(
       new RegExp(`class="(map-group[^"]*)"( data-group="${regExpValue(id)}")`),
-      'class="$1 map-c4-boundary"$2',
+      `class="$1 ${kind === "deployment" ? "map-c4-deployment" : "map-c4-boundary"}"$2`,
     );
   for (const id of args.externals)
     html = addClass(html, {

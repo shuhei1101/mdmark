@@ -4,17 +4,44 @@ import { mapC4BoundaryTitle, mapClosedGroupSize } from "./map.part.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
 
 /** 境界の種類 */
-export type C4BoundaryKind = "enterprise" | "system" | "boundary";
+export type C4BoundaryKind =
+  | "enterprise"
+  | "system"
+  | "container"
+  | "boundary"
+  | "deployment";
+
+/** 図の種類（Mermaid の 1 行目） */
+export type C4DiagramKind =
+  | "C4Context"
+  | "C4Container"
+  | "C4Component"
+  | "C4Dynamic"
+  | "C4Deployment";
 
 /** 要素の種類 */
-export type C4ElementKind = "person" | "system" | "system_db" | "system_queue";
+export type C4ElementKind =
+  | "person"
+  | "system"
+  | "system_db"
+  | "system_queue"
+  | "container"
+  | "container_db"
+  | "container_queue"
+  | "component"
+  | "component_db"
+  | "component_queue";
 
-/** 境界 */
+/** 境界と配置先のノード */
 export type C4Boundary = {
   id: string;
   label: string;
   kind: C4BoundaryKind;
+  /** 配置先のノードの種類の引数 */
+  technology?: string | undefined;
   parent: string | undefined;
+  /** `Node_L` は left、`Node_R` は right */
+  side?: "left" | "right" | undefined;
 };
 
 /** 要素 */
@@ -22,6 +49,8 @@ export type C4Element = {
   id: string;
   label: string;
   description: string | undefined;
+  /** コンテナ・コンポーネントの技術の引数 */
+  technology?: string | undefined;
   kind: C4ElementKind;
   external: boolean;
   parent: string | undefined;
@@ -39,10 +68,13 @@ export type C4Relation = {
   technology: string | undefined;
   both: boolean;
   direction: C4Direction | undefined;
+  /** `C4Dynamic` の記載順の番号（1 から） */
+  index?: number | undefined;
 };
 
-/** parseC4Context の戻り値 */
+/** parseC4 の戻り値 */
 export type C4Diagram = {
+  kind: C4DiagramKind;
   title: string | undefined;
   boundaries: C4Boundary[];
   elements: C4Element[];
@@ -75,6 +107,8 @@ const elementSize = (element: C4Element): { w: number; h: number } => {
 const C4_LABELS = {
   person: "[Person]",
   system: "[Software System]",
+  container: "[Container]",
+  component: "[Component]",
 } as const;
 
 /** C4 図のノードの種類（設定の map.kinds に重ねる。キーは設定と重ならない名前） */
@@ -113,13 +147,51 @@ export const MAP_C4_KINDS = {
     shape: "pill",
     color: "gray",
   },
+  ...Object.fromEntries(
+    (["container", "component"] as const).flatMap((base) =>
+      (
+        [
+          ["", { shape: "rect" }],
+          ["_db", { icon: "database", shape: "rect" }],
+          ["_queue", { shape: "pill" }],
+        ] as const
+      ).flatMap(([suffix, look]) => [
+        [`mdmark-c4-${base}${suffix}`, { label: C4_LABELS[base], ...look }],
+        [
+          `mdmark-c4-${base}${suffix}-ext`,
+          {
+            label: C4_LABELS[base].replace("[", "[External "),
+            ...look,
+            color: "gray",
+          },
+        ],
+      ]),
+    ),
+  ),
 } satisfies Record<string, MapKind>;
+
+/** 技術の引数を持つ要素の種類の行（`[Container: Node.js]`） */
+const kindLabelOf = (element: C4Element): string | undefined => {
+  const base = element.kind.split("_")[0];
+  if (
+    element.technology === undefined ||
+    (base !== "container" && base !== "component")
+  )
+    return undefined;
+  const label = C4_LABELS[base].slice(1, -1);
+  return `[${element.external ? "External " : ""}${label}: ${element.technology}]`;
+};
 
 /** 境界の関数ごとの種類 */
 const BOUNDARIES: Record<string, C4BoundaryKind> = {
   Enterprise_Boundary: "enterprise",
   System_Boundary: "system",
+  Container_Boundary: "container",
   Boundary: "boundary",
+  Deployment_Node: "deployment",
+  Node: "deployment",
+  Node_L: "deployment",
+  Node_R: "deployment",
 };
 
 /** 要素の関数ごとの種類 */
@@ -128,7 +200,22 @@ const ELEMENTS: Record<string, C4ElementKind> = {
   System: "system",
   SystemDb: "system_db",
   SystemQueue: "system_queue",
+  Container: "container",
+  ContainerDb: "container_db",
+  ContainerQueue: "container_queue",
+  Component: "component",
+  ComponentDb: "component_db",
+  ComponentQueue: "component_queue",
 };
+
+/** 図の種類（1 行目の最初の単語） */
+const DIAGRAM_KINDS = new Set<string>([
+  "C4Context",
+  "C4Container",
+  "C4Component",
+  "C4Dynamic",
+  "C4Deployment",
+]);
 
 /** 関係の関数の向きの名前ごとの向き */
 const DIRECTIONS: Record<string, C4Direction> = {
@@ -144,7 +231,7 @@ const DIRECTIONS: Record<string, C4Direction> = {
 };
 
 const CALL_RE = /^(\w+)\((.*)\)\s*(\{)?$/;
-const RELATION_RE = /^(Bi)?Rel(?:_(U|Up|D|Down|L|Left|R|Right|Back))?$/;
+const RELATION_RE = /^(Bi)?Rel(?:_(U|Up|D|Down|L|Left|R|Right|Back)|(Index))?$/;
 /** 読んで捨てる行 */
 const IGNORED_RE =
   /^(accTitle|accDescr|UpdateLayoutConfig|UpdateElementStyle|UpdateRelStyle|UpdateBoundaryStyle|AddElementTag|AddRelTag)\b/;
@@ -159,7 +246,7 @@ const argumentsOf = (text: string): string[] =>
 const unreadable = (line: number, raw: string): MapProblem => ({
   kind: "map_invalid",
   line,
-  message: `${line + 1} 行目 \`${raw.trim()}\` を読めません。Mermaid の C4Context の記法（\`Person(…)\`・\`System(…)\`・\`Rel(…)\` など）で記載してください。`,
+  message: `${line + 1} 行目 \`${raw.trim()}\` を読めません。Mermaid の C4 の記法（\`Person(…)\`・\`Container(…)\`・\`Rel(…)\` など）で記載してください。`,
 });
 
 /** 読み取りの途中の状態 */
@@ -174,14 +261,19 @@ type C4Call = { name: string; values: string[]; open: boolean; line: number };
 /** 境界の関数なら境界を足し、`{` で開いていれば境界の中に入る。読めた行なら `true` */
 const readBoundary = (reading: C4Reading, call: C4Call): boolean => {
   const kind = BOUNDARIES[call.name];
-  const [id, label] = call.values;
+  const [id, label, technology] = call.values;
   if (kind === undefined || id === undefined) return false;
-  const boundary = {
+  const boundary: C4Boundary = {
     id,
     label: label ?? id,
     kind,
     parent: reading.stack.at(-1)?.boundary.id,
   };
+  if (kind === "deployment") {
+    boundary.technology = technology;
+    if (call.name === "Node_L") boundary.side = "left";
+    if (call.name === "Node_R") boundary.side = "right";
+  }
   reading.diagram.boundaries.push(boundary);
   if (call.open) reading.stack.push({ boundary, line: call.line });
   return true;
@@ -191,12 +283,19 @@ const readBoundary = (reading: C4Reading, call: C4Call): boolean => {
 const readElement = (reading: C4Reading, call: C4Call): boolean => {
   const external = call.name.endsWith("_Ext");
   const kind = ELEMENTS[external ? call.name.slice(0, -4) : call.name];
-  const [id, label, description] = call.values;
-  if (kind === undefined || id === undefined) return false;
+  if (kind === undefined) return false;
+  // コンテナ・コンポーネントは別名・名前・技術・説明、ほかは別名・名前・説明
+  const technical =
+    kind.startsWith("container") || kind.startsWith("component");
+  const [id, label, third, fourth] = call.values;
+  if (id === undefined) return false;
   reading.diagram.elements.push({
     id,
     label: label ?? id,
-    description,
+    description: technical ? fourth : third,
+    ...(technical && third !== undefined && third !== ""
+      ? { technology: third }
+      : {}),
     kind,
     external,
     parent: reading.stack.at(-1)?.boundary.id,
@@ -207,7 +306,10 @@ const readElement = (reading: C4Reading, call: C4Call): boolean => {
 /** 関係の関数なら関係を足す。読めた行なら `true` */
 const readRelation = (reading: C4Reading, call: C4Call): boolean => {
   const relation = RELATION_RE.exec(call.name);
-  const [from, to, label, technology] = call.values;
+  // RelIndex の第 1 引数（番号）は Mermaid と同じく読まない
+  const values =
+    relation?.[3] === undefined ? call.values : call.values.slice(1);
+  const [from, to, label, technology] = values;
   if (!relation || from === undefined || to === undefined) return false;
   const { relations } = reading.diagram;
   relations.push({
@@ -218,6 +320,9 @@ const readRelation = (reading: C4Reading, call: C4Call): boolean => {
     technology,
     both: relation[1] !== undefined,
     direction: relation[2] === undefined ? undefined : DIRECTIONS[relation[2]],
+    ...(reading.diagram.kind === "C4Dynamic"
+      ? { index: relations.length + 1 }
+      : {}),
   });
   return true;
 };
@@ -246,10 +351,12 @@ const readLine = (reading: C4Reading, text: string, line: number): boolean => {
   });
 };
 
-/** `C4Context` の Mermaid を、タイトル・境界・要素・関係と読めない行の項目に読む */
-export const parseC4Context = (source: string): C4Diagram => {
+/** C4 の 5 種類の図の Mermaid を、種類・タイトル・境界と配置先のノード・要素・関係と読めない行の項目に読む */
+export const parseC4 = (source: string): C4Diagram => {
+  const first = source.trimStart().split(/\s/, 1)[0] ?? "";
   const reading: C4Reading = {
     diagram: {
+      kind: (DIAGRAM_KINDS.has(first) ? first : "C4Context") as C4DiagramKind,
       title: undefined,
       boundaries: [],
       elements: [],
@@ -268,7 +375,7 @@ export const parseC4Context = (source: string): C4Diagram => {
     reading.diagram.problems.push({
       kind: "map_invalid",
       line: open.line,
-      message: `境界 \`${open.boundary.id}\` の \`{\` に対応する \`}\` がありません。境界の最後の行の後に \`}\` を記載してください。`,
+      message: `${open.boundary.kind === "deployment" ? "配置先のノード" : "境界"} \`${open.boundary.id}\` の \`{\` に対応する \`}\` がありません。境界の最後の行の後に \`}\` を記載してください。`,
     });
   return reading.diagram;
 };
@@ -280,17 +387,35 @@ export const c4ToFlowchart = (
   chart: Flowchart;
   overrides: Record<string, MapOverride>;
   reversed: string[];
+  /** 技術の引数を持つ要素ごとの種類（種類の行を `[Container: {技術}]` にする） */
+  kinds: Record<string, MapKind>;
 } => {
-  const nodes: FlowNode[] = diagram.elements.map((element) => ({
-    id: element.id,
-    label: element.label,
-    shape: "rect",
-    classes: [`mdmark-c4-${element.kind}${element.external ? "-ext" : ""}`],
-    parent: element.parent,
-  }));
+  const kinds: Record<string, MapKind> = {};
+  const nodes: FlowNode[] = diagram.elements.map((element) => {
+    const base = `mdmark-c4-${element.kind}${element.external ? "-ext" : ""}`;
+    const label = kindLabelOf(element);
+    const name = label === undefined ? base : `${base}--${element.id}`;
+    if (label !== undefined)
+      kinds[name] = {
+        ...MAP_C4_KINDS[base as keyof typeof MAP_C4_KINDS],
+        label,
+      };
+    return {
+      id: element.id,
+      label: element.label,
+      shape: "rect",
+      classes: [name],
+      parent: element.parent,
+    };
+  });
   const groups: FlowGroup[] = diagram.boundaries.map((boundary) => ({
     id: boundary.id,
-    title: boundary.label,
+    title:
+      boundary.kind === "deployment" &&
+      boundary.technology !== undefined &&
+      boundary.technology !== ""
+        ? `${boundary.label}［${boundary.technology}］`
+        : boundary.label,
     parent: boundary.parent,
     direction: "TB",
   }));
@@ -337,6 +462,7 @@ export const c4ToFlowchart = (
       };
     }
     const label = [
+      relation.index === undefined ? undefined : `${relation.index}:`,
       relation.label,
       relation.technology === undefined
         ? undefined
@@ -354,7 +480,23 @@ export const c4ToFlowchart = (
       label: label === "" ? undefined : label,
     };
   });
+  // Node_L・Node_R の兄弟の配置先のノードは、Node_L を前・Node_R を後の同じ段に並べる
+  for (const left of diagram.boundaries.filter((item) => item.side === "left"))
+    for (const right of diagram.boundaries.filter(
+      (item) => item.side === "right" && item.parent === left.parent,
+    )) {
+      overrides[left.id] = {
+        ...overrides[left.id],
+        order: overrides[left.id]?.order ?? order++,
+      };
+      overrides[right.id] = {
+        ...overrides[right.id],
+        align: left.id,
+        order: order++,
+      };
+    }
   return {
+    kinds,
     chart: {
       direction: "TB",
       nodes,

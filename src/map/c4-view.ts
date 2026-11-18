@@ -1,5 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
-import { c4ToFlowchart, MAP_C4_KINDS, parseC4Context } from "./c4.ts";
+import { c4ToFlowchart, MAP_C4_KINDS, parseC4 } from "./c4.ts";
 import {
   attachMapFlow,
   type MapFlowHandle,
@@ -9,16 +9,14 @@ import {
 import { renderMapC4Diagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
-/** `C4Context` を構成図の入力にし、構成図と同じ配置と操作に、要素の説明・境界の破線の枠と種類・外部の要素の描き分けを追加する */
+/** C4 の 5 種類の図を構成図の入力にし、構成図と同じ配置と操作に、要素の説明・境界の破線の枠と種類・外部の要素の描き分けを追加する */
 export const attachMapC4 = (
   range: HTMLElement,
   config: ResolvedConfig,
   args: MapArgs,
 ): MapFlowHandle => {
-  const diagram = parseC4Context(
-    range.querySelector("code")?.textContent ?? "",
-  );
-  const { chart, overrides, reversed } = c4ToFlowchart(diagram);
+  const diagram = parseC4(range.querySelector("code")?.textContent ?? "");
+  const { chart, overrides, reversed, kinds } = c4ToFlowchart(diagram);
   const externals = diagram.elements
     .filter((element) => element.external)
     .map((element) => element.id);
@@ -43,7 +41,7 @@ export const attachMapC4 = (
     args,
     extension: {
       chart,
-      kinds: MAP_C4_KINDS,
+      kinds: { ...MAP_C4_KINDS, ...kinds },
       title: diagram.title,
       overrides: () => overrides,
       collapsedTag: (boundary) => `要素 ${elementsUnder(boundary)} 件`,
