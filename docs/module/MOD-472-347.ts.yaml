@@ -54,7 +54,7 @@ functions:
     scope: internal
     summary: '`measureColumns` で測った幅を `columnBounds`・`distributeColumnWidths` に渡して列の幅を決め、見出しのセルの `--mdmark-auto-width`（外側の幅）と表の `--mdmark-auto-table-width` に入れ、表に `data-auto-width` を付ける。入れた幅より広く描かれた列（見出しのボタンの幅など）は、描かれた幅を最小の幅にして 1 回だけ分け直す'
     description: |-
-      どの列も、`measureColumns` が測った見出しのセルの中身（`.mdmark-th`。列名・並べ替えのアイコン・ピン止めと絞り込みのボタン）の幅を `columnBounds` の `min` の下限にし、つまみの最小幅として見出しのセルの `--mdmark-column-min-width` にも入れる。囲みの `data-long`（長文の列）と `data-width`（`{位置}:{min}-{max}`。空の側は持たない）を読み、列ごとに `columnBounds` を呼ぶ。最下段の見出しのセルが `mdmark-wide` の列は `nowrap`。見出しのセルが `is-resized` の列（読者がつまみで幅を変えた列）は、その `offsetWidth` を `min`・`wanted` に入れて `fixed` にする。`distributeColumnWidths` の `available` は、表を包む要素（`div.mdmark-table-scroll`）の `clientWidth` から、表の左右の枠線と列の数の 1px を引いた幅。
+      どの列も、`measureColumns` が測った見出しのセルの中身（`.mdmark-th`。列名・並べ替えのアイコン・ピン止めと絞り込みのボタン）の幅を `columnBounds` の `min` の下限にし、つまみの最小幅として見出しのセルのインラインの `--mdmark-column-head-width`（その幅に左右の余白と罫線を足した外側の幅。`{幅}px`）にも入れる（`--mdmark-column-min-width` は、描いたときの幅とつまみで入れた幅を持つため使用しない）。囲みの `data-long`（長文の列）と `data-width`（`{位置}:{min}-{max}`。空の側は持たない）を読み、列ごとに `columnBounds` を呼ぶ。最下段の見出しのセルが `mdmark-wide` の列は `nowrap`。見出しのセルが `is-resized` の列（読者がつまみで幅を変えた列）は、その `offsetWidth` を `min`・`wanted` に入れて `fixed` にする。`distributeColumnWidths` の `available` は、表を包む要素（`div.mdmark-table-scroll`）の `clientWidth` から、表の左右の枠線と列の数の 1px を引いた幅。
 
       決めた幅は、表示している列だけで決め（`hidden` の列は数えない）、`fixed` でない列の見出しのセルのインラインの `--mdmark-auto-width`（`{幅}px`）と、表のインラインの `--mdmark-auto-table-width`（幅の合計）に入れる。CSS は `data-auto-width` の表を `table-layout: fixed` にして、この 2 つの変数を `width` に使用する（印刷の媒体では使用しない）。読者がつまみで入れたインラインの `width` は変数より優先される。
 
@@ -112,13 +112,13 @@ functions:
         summary: 見出しの列名・並べ替え・ピン止めのボタンが収まる幅より列を狭くしない
         condition: 幅 320px の要素に `data-features="sort pin resize"` の、列名 `列 1`〜`列 10`・値が 2 文字の 10 列の表を付ける
         mock: なし
-        expected: 各列の見出しのセルの `offsetWidth` が、その `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない。`--mdmark-column-min-width` がその幅以上
+        expected: 各列の見出しのセルの `offsetWidth` が、その `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない。`--mdmark-column-head-width` がその幅以上
       - name: test_attach_auto_column_widths_when_pin_hidden
         case: 正常
         summary: ピン止めのボタンが `hidden` の間に測った最小幅も、ボタンを含む幅にする
         condition: 幅 1200px の要素に、幅に収まる `data-features="sort pin resize"` の 3 列の表（列名 `列 1`〜`列 3`、ピン止めのボタンが `hidden`）を付け、包む要素の幅を 120px にしてはみ出させ、ピン止めのボタンの `hidden` を外す
         mock: なし
-        expected: 各列の見出しのセルの `--mdmark-column-min-width` と `offsetWidth` が、ピン止めのボタンを含む `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない
+        expected: 各列の見出しのセルの `--mdmark-column-head-width` と `offsetWidth` が、ピン止めのボタンを含む `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない
     status: planned
 refs:
   - IF-472-35#constraints[列の幅]
