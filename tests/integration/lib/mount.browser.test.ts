@@ -18812,6 +18812,13 @@ test("test_normal_when_map_c4_dynamic_played", async () => {
   expect(band().querySelectorAll(".map-band-seg")).toHaveLength(5);
   expect(band().querySelectorAll('button[data-band="step"]')).toHaveLength(2);
   expect(bandOf(container)).toBeNull();
+  // 準備: 始める前の倍率とスクロールの位置を控える
+  const viewport = find<HTMLElement>(play, ".mdmark-diagram-viewport");
+  const before = {
+    zoom: zoomText(play),
+    left: viewport.scrollLeft,
+    top: viewport.scrollTop,
+  };
   // 実行・検証: 2 本目の関係
   pressSegment(play, 2);
   expect(band().querySelector(".map-band-title")?.textContent).toBe(
@@ -18865,6 +18872,14 @@ test("test_normal_when_map_c4_dynamic_played", async () => {
   // 実行・検証: 図の枠の空いた場所を押すと停止し、強調が解ける
   pressBlank(play);
   expect(play.querySelectorAll(".map-dim")).toHaveLength(0);
+  // 検証: 始めた倍率とスクロールの位置に戻る
+  await vi.waitFor(() =>
+    expect({
+      zoom: zoomText(play),
+      left: viewport.scrollLeft,
+      top: viewport.scrollTop,
+    }).toEqual(before),
+  );
   // 実行・検証: 2 つ目の帯は案内の手順 2 つで、右の矢印で手順 1 を強調する
   // 帯は手順へ移るたびに描き直すため、毎回引き直す
   const walkBand = () => bandOf(walk) as HTMLElement;
