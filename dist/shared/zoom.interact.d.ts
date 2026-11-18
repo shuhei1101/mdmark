@@ -10,9 +10,23 @@ export type ZoomControl = {
     fit(): number;
     /** 今の倍率と位置を保ったまま、全体が収まる倍率とボタンの状態をもう一度求める */
     refit(): void;
+    /** 中身の座標の矩形と周りの余白が表示する枠に収まる倍率と位置へ、`duration` ミリ秒かけて移す */
+    focusRect(rect: FocusRect, options: {
+        margin: number;
+        duration: number;
+    }): void;
     /** 付けた操作と監視を解除する */
     detach(): void;
 };
+/** 倍率を掛ける前の中身の座標の矩形 */
+export type FocusRect = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+/** `attachZoom` を付けた表示する枠の操作を返却する（付けていなければ `undefined`） */
+export declare const zoomControlOf: (viewport: HTMLElement) => ZoomControl | undefined;
 /** 表示する枠と中身に、全体が収まる倍率から `ZOOM.max` までの拡大・縮小と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
 export declare function attachZoom(options: {
     /** 表示する枠 */

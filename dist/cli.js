@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.0d0a635";
+  return "v0.14.0";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -72379,14 +72379,8 @@ var splitMermaidTitle = (source) => {
 var mermaidKindName = (kind) => Object.hasOwn(MERMAID_KIND_NAMES, kind) ? MERMAID_KIND_NAMES[kind] ?? "\u56F3" : "\u56F3";
 
 // src/map/spec.ts
-var MAP_ARG_KEYS = [
-  "title",
-  "focus",
-  "play",
-  "interval",
-  "collapse"
-];
-var DEFAULT_MAP_INTERVAL = 2;
+var MAP_ARG_KEYS = ["title", "focus", "collapse"];
+var RETIRED_MAP_ARG_KEYS = ["play", "interval"];
 var invalidArg = (key, expected) => ({
   kind: "map_invalid_value",
   message: `\u30DE\u30FC\u30AB\u30FC\u306E\u5F15\u6570 \`${key}\` \u306F${expected}\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u65E2\u5B9A\u306E\u5024\u3067\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
@@ -72418,23 +72412,6 @@ var MAP_ARG_READERS = {
       return true;
     }
   },
-  play: {
-    expected: ' `"autoplay"` ',
-    read: (item, args) => {
-      if (item !== "autoplay") return false;
-      args.play = "autoplay";
-      return true;
-    }
-  },
-  interval: {
-    expected: "\u6B63\u306E\u6570\uFF08\u79D2\uFF09",
-    read: (item, args) => {
-      if (typeof item !== "number" || !Number.isFinite(item) || item <= 0)
-        return false;
-      args.interval = item;
-      return true;
-    }
-  },
   collapse: {
     expected: ' `{"open": false, "title": "\u898B\u51FA\u3057"}` \u306E\u69CB\u9020',
     read: (item, args) => {
@@ -72448,7 +72425,7 @@ var MAP_ARG_READERS = {
   }
 };
 var parseMapArgs = (source) => {
-  const args = { interval: DEFAULT_MAP_INTERVAL };
+  const args = {};
   const problems = [];
   const unknownKeys = [];
   const known = {};
@@ -72464,7 +72441,16 @@ var parseMapArgs = (source) => {
     });
     return { args, normalized: "{}", problems, unknownKeys };
   }
+  const retired = Object.keys(value).filter(
+    (key) => RETIRED_MAP_ARG_KEYS.includes(key)
+  );
+  if (retired.length > 0)
+    problems.push({
+      kind: "map_retired_key",
+      message: `<!-- map --> \u306E\u5F15\u6570 ${retired.join("\u30FB")} \u306F\u5EC3\u6B62\u3057\u307E\u3057\u305F\u3002mdmark upgrade \u3092\u5B9F\u884C\u3059\u308B\u3068\u524A\u9664\u3057\u307E\u3059\u3002\u3053\u306E\u5F15\u6570\u3092\u8AAD\u307E\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    });
   for (const [key, item] of Object.entries(value)) {
+    if (retired.includes(key)) continue;
     if (!Object.hasOwn(MAP_ARG_READERS, key)) {
       unknownKeys.push(key);
       continue;
@@ -72488,6 +72474,10 @@ var KIND_OF_FIRST_WORD = {
   "classDiagram-v2": "classDiagram",
   "architecture-beta": "architecture",
   C4Context: "C4Context",
+  C4Container: "C4Container",
+  C4Component: "C4Component",
+  C4Dynamic: "C4Dynamic",
+  C4Deployment: "C4Deployment",
   mindmap: "mindmap",
   gantt: "gantt",
   timeline: "timeline",
@@ -72538,7 +72528,7 @@ var collectMapStructure = (range) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\`\u30FB\`classDiagram\`\u30FB\`architecture-beta\`\u30FB\`C4Context\`\u30FB\`mindmap\`\u30FB\`gantt\`\u30FB\`timeline\`\u30FB\`gitGraph\`\u30FB\`journey\`\u30FB\`block-beta\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\`\u30FB\`classDiagram\`\u30FB\`architecture-beta\`\u30FB\`C4Context\`\u30FB\`C4Container\`\u30FB\`C4Component\`\u30FB\`C4Dynamic\`\u30FB\`C4Deployment\`\u30FB\`mindmap\`\u30FB\`gantt\`\u30FB\`timeline\`\u30FB\`gitGraph\`\u30FB\`journey\`\u30FB\`block-beta\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
     });
   }
   return { problems, kind, args: parsedArgs };
@@ -79734,7 +79724,9 @@ var parseArchitecture = (source) => {
 // src/map/c4.ts
 var C4_LABELS = {
   person: "[Person]",
-  system: "[Software System]"
+  system: "[Software System]",
+  container: "[Container]",
+  component: "[Component]"
 };
 var MAP_C4_KINDS = {
   "mdmark-c4-person": {
@@ -79770,19 +79762,56 @@ var MAP_C4_KINDS = {
     label: "[External Software System]",
     shape: "pill",
     color: "gray"
-  }
+  },
+  ...Object.fromEntries(
+    ["container", "component"].flatMap(
+      (base) => [
+        ["", { shape: "rect" }],
+        ["_db", { icon: "database", shape: "rect" }],
+        ["_queue", { shape: "pill" }]
+      ].flatMap(([suffix, look]) => [
+        [`mdmark-c4-${base}${suffix}`, { label: C4_LABELS[base], ...look }],
+        [
+          `mdmark-c4-${base}${suffix}-ext`,
+          {
+            label: C4_LABELS[base].replace("[", "[External "),
+            ...look,
+            color: "gray"
+          }
+        ]
+      ])
+    )
+  )
 };
 var BOUNDARIES = {
   Enterprise_Boundary: "enterprise",
   System_Boundary: "system",
-  Boundary: "boundary"
+  Container_Boundary: "container",
+  Boundary: "boundary",
+  Deployment_Node: "deployment",
+  Node: "deployment",
+  Node_L: "deployment",
+  Node_R: "deployment"
 };
 var ELEMENTS = {
   Person: "person",
   System: "system",
   SystemDb: "system_db",
-  SystemQueue: "system_queue"
+  SystemQueue: "system_queue",
+  Container: "container",
+  ContainerDb: "container_db",
+  ContainerQueue: "container_queue",
+  Component: "component",
+  ComponentDb: "component_db",
+  ComponentQueue: "component_queue"
 };
+var DIAGRAM_KINDS = /* @__PURE__ */ new Set([
+  "C4Context",
+  "C4Container",
+  "C4Component",
+  "C4Dynamic",
+  "C4Deployment"
+]);
 var DIRECTIONS = {
   U: "up",
   Up: "up",
@@ -79795,26 +79824,33 @@ var DIRECTIONS = {
   Back: "back"
 };
 var CALL_RE = /^(\w+)\((.*)\)\s*(\{)?$/;
-var RELATION_RE = /^(Bi)?Rel(?:_(U|Up|D|Down|L|Left|R|Right|Back))?$/;
+var RELATION_RE = /^(Bi)?Rel(?:_(U|Up|D|Down|L|Left|R|Right|Back)|(Index))?$/;
 var IGNORED_RE4 = /^(accTitle|accDescr|UpdateLayoutConfig|UpdateElementStyle|UpdateRelStyle|UpdateBoundaryStyle|AddElementTag|AddRelTag)\b/;
 var argumentsOf = (text2) => [...text2.matchAll(/"([^"]*)"|([^,\s][^,]*)/g)].map(
   (match) => (match[1] ?? match[2] ?? "").trim()
 );
+var ALIAS_RE = /^[^\s"'(),{}]+$/;
 var unreadable4 = (line, raw) => ({
   kind: "map_invalid",
   line,
-  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E C4Context \u306E\u8A18\u6CD5\uFF08\`Person(\u2026)\`\u30FB\`System(\u2026)\`\u30FB\`Rel(\u2026)\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E C4 \u306E\u8A18\u6CD5\uFF08\`Person(\u2026)\`\u30FB\`Container(\u2026)\`\u30FB\`Rel(\u2026)\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
 });
 var readBoundary = (reading, call) => {
   const kind = BOUNDARIES[call.name];
-  const [id, label] = call.values;
-  if (kind === void 0 || id === void 0) return false;
+  const [id, label, technology] = call.values;
+  if (kind === void 0 || id === void 0 || !ALIAS_RE.test(id))
+    return false;
   const boundary = {
     id,
     label: label ?? id,
     kind,
     parent: reading.stack.at(-1)?.boundary.id
   };
+  if (kind === "deployment") {
+    boundary.technology = technology;
+    if (call.name === "Node_L") boundary.side = "left";
+    if (call.name === "Node_R") boundary.side = "right";
+  }
   reading.diagram.boundaries.push(boundary);
   if (call.open) reading.stack.push({ boundary, line: call.line });
   return true;
@@ -79822,22 +79858,31 @@ var readBoundary = (reading, call) => {
 var readElement = (reading, call) => {
   const external = call.name.endsWith("_Ext");
   const kind = ELEMENTS[external ? call.name.slice(0, -4) : call.name];
-  const [id, label, description] = call.values;
-  if (kind === void 0 || id === void 0) return false;
+  const [id, label] = call.values;
+  if (kind === void 0 || id === void 0 || !ALIAS_RE.test(id))
+    return false;
   reading.diagram.elements.push({
     id,
     label: label ?? id,
-    description,
+    ...detailsOf(kind, call.values),
     kind,
     external,
     parent: reading.stack.at(-1)?.boundary.id
   });
   return true;
 };
+var detailsOf = (kind, values) => {
+  const [, , third, fourth] = values;
+  if (!kind.startsWith("container") && !kind.startsWith("component"))
+    return { description: third };
+  return third === void 0 || third === "" ? { description: fourth } : { description: fourth, technology: third };
+};
 var readRelation = (reading, call) => {
   const relation = RELATION_RE.exec(call.name);
-  const [from, to, label, technology] = call.values;
-  if (!relation || from === void 0 || to === void 0) return false;
+  const values = relation?.[3] === void 0 ? call.values : call.values.slice(1);
+  const [from, to, label, technology] = values;
+  if (!relation || from === void 0 || to === void 0 || !ALIAS_RE.test(from) || !ALIAS_RE.test(to))
+    return false;
   const { relations } = reading.diagram;
   relations.push({
     id: `r${relations.length + 1}`,
@@ -79846,7 +79891,8 @@ var readRelation = (reading, call) => {
     label,
     technology,
     both: relation[1] !== void 0,
-    direction: relation[2] === void 0 ? void 0 : DIRECTIONS[relation[2]]
+    direction: relation[2] === void 0 ? void 0 : DIRECTIONS[relation[2]],
+    ...reading.diagram.kind === "C4Dynamic" ? { index: relations.length + 1 } : {}
   });
   return true;
 };
@@ -79867,9 +79913,11 @@ var readLine2 = (reading, text2, line) => {
     line
   });
 };
-var parseC4Context = (source) => {
+var parseC4 = (source) => {
+  const first = source.trimStart().split(/\s/, 1)[0] ?? "";
   const reading = {
     diagram: {
+      kind: DIAGRAM_KINDS.has(first) ? first : "C4Context",
       title: void 0,
       boundaries: [],
       elements: [],
@@ -79888,7 +79936,7 @@ var parseC4Context = (source) => {
     reading.diagram.problems.push({
       kind: "map_invalid",
       line: open2.line,
-      message: `\u5883\u754C \`${open2.boundary.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5883\u754C\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      message: `${open2.boundary.kind === "deployment" ? "\u914D\u7F6E\u5148\u306E\u30CE\u30FC\u30C9" : "\u5883\u754C"} \`${open2.boundary.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5883\u754C\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     });
   return reading.diagram;
 };
@@ -80739,7 +80787,7 @@ var parseMindmap = (source) => {
 // src/map/state-diagram.ts
 var ID3 = "[A-Za-z0-9_\\u0080-\\uffff]+";
 var DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
-var ALIAS_RE = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID3})$`);
+var ALIAS_RE2 = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID3})$`);
 var CHOICE_RE = new RegExp(`^state\\s+(${ID3})\\s+<<choice>>$`);
 var OPEN_RE = new RegExp(`^state\\s+(?:"([^"]+)"\\s+as\\s+)?(${ID3})\\s*\\{$`);
 var NOTE_RE3 = new RegExp(
@@ -80793,7 +80841,7 @@ var parseStateDiagram = (source) => {
     return true;
   };
   const readAlias = (text2) => {
-    const alias = ALIAS_RE.exec(text2);
+    const alias = ALIAS_RE2.exec(text2);
     if (!alias?.[1] || !alias[2]) return false;
     ensure(alias[2]).label = alias[1];
     return true;
@@ -80893,6 +80941,10 @@ var REF_HINTS = {
   classDiagram: "\u30AF\u30E9\u30B9\u540D\u30FB`{\u30AF\u30E9\u30B9\u540D}.{\u30E1\u30F3\u30D0\u30FC\u540D}`\u30FB`namespace` \u306E ID\u30FB\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   architecture: "service\u30FBgroup\u30FBjunction \u306E ID \u304B\u3001\u7DDA\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   C4Context: "\u8981\u7D20\u30FB\u5883\u754C\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  C4Container: "\u8981\u7D20\u30FB\u5883\u754C\u30FB\u914D\u7F6E\u5148\u306E\u30CE\u30FC\u30C9\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  C4Component: "\u8981\u7D20\u30FB\u5883\u754C\u30FB\u914D\u7F6E\u5148\u306E\u30CE\u30FC\u30C9\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  C4Dynamic: "\u8981\u7D20\u30FB\u5883\u754C\u30FB\u914D\u7F6E\u5148\u306E\u30CE\u30FC\u30C9\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  C4Deployment: "\u8981\u7D20\u30FB\u5883\u754C\u30FB\u914D\u7F6E\u5148\u306E\u30CE\u30FC\u30C9\u306E\u5225\u540D\uFF08\u7B2C 1 \u5F15\u6570\uFF09\u304B\u3001\u95A2\u4FC2\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   mindmap: "\u9805\u76EE\u306E ID \u304B\u3001ID \u3092\u6301\u305F\u306A\u3044\u9805\u76EE\u306E\u8868\u793A\u3059\u308B\u6587\u5B57\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   gantt: "\u30BF\u30B9\u30AF\u306E ID \u304B\u3001ID \u3092\u6301\u305F\u306A\u3044\u30BF\u30B9\u30AF\u306E\u540D\u524D\u304B\u3001section \u306E\u540D\u524D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   timeline: "\u671F\u9593\u304B\u51FA\u6765\u4E8B\u306E\u6587\u304B\u3001section \u306E\u540D\u524D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
@@ -81028,7 +81080,7 @@ var architectureIds = (mermaid, line) => {
   return found;
 };
 var c4Ids = (mermaid, line) => {
-  const diagram = parseC4Context(mermaid);
+  const diagram = parseC4(mermaid);
   const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
   for (const item of [...diagram.elements, ...diagram.boundaries])
     found.ids.add(item.id);
@@ -81079,6 +81131,7 @@ var sequenceIds = (mermaid, line) => {
 var mermaidIdsOf = (kind, source) => {
   const { mermaid, line, data, idLinks } = source;
   if (isAxisGridKind(kind)) return axisGridIds(kind, mermaid, line);
+  if (kind.startsWith("C4")) return c4Ids(mermaid, line);
   switch (kind) {
     case "flowchart":
       return flowchartIds(mermaid, line, idLinks);
@@ -81090,8 +81143,6 @@ var mermaidIdsOf = (kind, source) => {
       return classIds(mermaid, line);
     case "architecture":
       return architectureIds(mermaid, line);
-    case "C4Context":
-      return c4Ids(mermaid, line);
     case "mindmap":
       return mindmapIds(mermaid, line);
     default:

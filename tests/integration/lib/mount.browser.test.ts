@@ -15769,21 +15769,6 @@ test("test_normal_when_map_walkthrough_played", async () => {
     const middle = mapScale(figure());
     vi.advanceTimersByTime(MAP_FOCUS_MS);
     const after = mapScale(figure());
-    console.log(
-      "DEBUG",
-      fit,
-      before,
-      middle,
-      after,
-      viewport().scrollLeft,
-      viewport().scrollTop,
-      viewport().clientWidth,
-      viewport().clientHeight,
-      find<HTMLElement>(figure(), ".mdmark-diagram-viewport [style*='scale(']")
-        .className,
-      find<HTMLElement>(figure(), ".mdmark-diagram-viewport [style*='scale(']")
-        .style.cssText,
-    );
     expect(after).not.toBeCloseTo(before, 3);
     expect(Math.abs(middle - before)).toBeGreaterThan(0);
     expect(Math.abs(after - middle)).toBeGreaterThan(0);
