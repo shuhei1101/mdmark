@@ -328,6 +328,7 @@ const mermaidIdsOf = (
 ): MermaidIds => {
   const { mermaid, line, data, idLinks } = source;
   if (isAxisGridKind(kind)) return axisGridIds(kind, mermaid, line);
+  if (kind.startsWith("C4")) return c4Ids(mermaid, line);
   switch (kind) {
     case "flowchart":
       return flowchartIds(mermaid, line, idLinks);
@@ -339,12 +340,6 @@ const mermaidIdsOf = (
       return classIds(mermaid, line);
     case "architecture":
       return architectureIds(mermaid, line);
-    case "C4Context":
-    case "C4Container":
-    case "C4Component":
-    case "C4Dynamic":
-    case "C4Deployment":
-      return c4Ids(mermaid, line);
     case "mindmap":
       return mindmapIds(mermaid, line);
     default:

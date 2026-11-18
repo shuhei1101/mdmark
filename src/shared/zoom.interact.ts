@@ -60,6 +60,22 @@ const controls = new WeakMap<HTMLElement, ZoomControl>();
 export const zoomControlOf = (viewport: HTMLElement): ZoomControl | undefined =>
   controls.get(viewport);
 
+// 読者が操作したとみなすイベント（矩形へ移している途中で止める）
+const STOP_EVENTS = ["wheel", "pointerdown", "keydown", "touchstart"] as const;
+
+/** 表示する枠の操作とボタンの押下で `stop` を呼ぶ */
+const listenStops = (options: {
+  viewport: HTMLElement;
+  tools: HTMLElement;
+  stop: () => void;
+  signal: AbortSignal;
+}): void => {
+  const { viewport, tools, stop, signal } = options;
+  for (const type of STOP_EVENTS)
+    viewport.addEventListener(type, stop, { passive: true, signal });
+  tools.addEventListener("click", stop, { signal });
+};
+
 /** 表示する枠と中身に、全体が収まる倍率から `ZOOM.max` までの拡大・縮小と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
 export function attachZoom(options: {
   /** 表示する枠 */
@@ -389,10 +405,7 @@ export function attachZoom(options: {
       moving = undefined;
     }
   };
-  for (const type of ["wheel", "pointerdown", "keydown", "touchstart"]) {
-    viewport.addEventListener(type, stopMoving, { passive: true, signal });
-  }
-  tools.addEventListener("click", stopMoving, { signal });
+  listenStops({ viewport, tools, stop: stopMoving, signal });
 
   /** 倍率と、表示する枠の中央に来る中身の座標を当てる */
   const place = (scale: number, cx: number, cy: number): void => {

@@ -150,15 +150,24 @@ export const attachBand = (options: {
     index === undefined
       ? 0
       : ((performance.now() - started) % STEP_MS) / STEP_MS;
+  /** 帯の中でフォーカスしている要素 */
+  const focusedInBand = (): HTMLElement | undefined =>
+    document.activeElement instanceof HTMLElement &&
+    holder.contains(document.activeElement)
+      ? document.activeElement
+      : undefined;
+  /** 描き直した後に、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへフォーカスを戻す */
+  const restoreFocus = (dir: string | undefined) =>
+    (dir === undefined
+      ? holder.querySelector<HTMLElement>(".map-band-steps")
+      : holder.querySelector<HTMLElement>(
+          `[data-band="step"][data-dir="${CSS.escape(dir)}"]`,
+        )
+    )?.focus();
   const render = () => {
     const step = index === undefined ? undefined : steps[index];
     // 描き直す前にフォーカスしていた要素（矢印のボタンかバー）へ、描き直した後もフォーカスを戻す
-    const active =
-      document.activeElement instanceof HTMLElement &&
-      holder.contains(document.activeElement)
-        ? document.activeElement
-        : undefined;
-    const dir = active?.dataset.dir;
+    const active = focusedInBand();
     holder.innerHTML = renderMapBand({
       mode,
       unit: options.unit,
@@ -172,13 +181,7 @@ export const attachBand = (options: {
       label,
     });
     applyDensity();
-    if (active)
-      (dir === undefined
-        ? holder.querySelector<HTMLElement>(".map-band-steps")
-        : holder.querySelector<HTMLElement>(
-            `[data-band="step"][data-dir="${CSS.escape(dir)}"]`,
-          )
-      )?.focus();
+    if (active) restoreFocus(active.dataset.dir);
   };
   /** 今の区切りの塗りだけを書き換える（描き直さない） */
   const paint = () => {
@@ -212,18 +215,19 @@ export const attachBand = (options: {
   /** 次の手順の位置（始めていなければ先頭、最後なら先頭へ戻る） */
   const nextIndex = () =>
     index === undefined ? 0 : (index + 1) % steps.length;
+  /** 押した区切りか矢印のボタンが指す手順（どちらでもなければ無し） */
+  const pressedIndex = (target: Element): number | undefined => {
+    const segment = target.closest<HTMLElement>(".map-band-seg");
+    if (segment) return Number(segment.dataset.index);
+    const arrow = target.closest<HTMLElement>('[data-band="step"]');
+    if (!arrow) return undefined;
+    return arrow.dataset.dir === "-1" ? prevIndex() : nextIndex();
+  };
   const onClick = (event: Event) => {
-    const target = event.target instanceof Element ? event.target : null;
-    const segment = target?.closest<HTMLElement>(".map-band-seg");
-    const arrow = target?.closest<HTMLElement>('[data-band="step"]');
-    if (segment) play(Number(segment.dataset.index));
-    else if (arrow)
-      play(arrow.dataset.dir === "-1" ? prevIndex() : nextIndex());
-    else if (
-      index !== undefined &&
-      !target?.closest(".map-band-steps") &&
-      holder.contains(target)
-    )
+    if (!(event.target instanceof Element)) return;
+    const next = pressedIndex(event.target);
+    if (next !== undefined) play(next);
+    else if (index !== undefined && !event.target.closest(".map-band-steps"))
       stop();
   };
   const onKey = (event: KeyboardEvent) => {

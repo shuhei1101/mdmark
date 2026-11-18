@@ -287,24 +287,31 @@ const readBoundary = (reading: C4Reading, call: C4Call): boolean => {
 const readElement = (reading: C4Reading, call: C4Call): boolean => {
   const external = call.name.endsWith("_Ext");
   const kind = ELEMENTS[external ? call.name.slice(0, -4) : call.name];
-  if (kind === undefined) return false;
-  // コンテナ・コンポーネントは別名・名前・技術・説明、ほかは別名・名前・説明
-  const technical =
-    kind.startsWith("container") || kind.startsWith("component");
-  const [id, label, third, fourth] = call.values;
-  if (id === undefined || !ALIAS_RE.test(id)) return false;
+  const [id, label] = call.values;
+  if (kind === undefined || id === undefined || !ALIAS_RE.test(id))
+    return false;
   reading.diagram.elements.push({
     id,
     label: label ?? id,
-    description: technical ? fourth : third,
-    ...(technical && third !== undefined && third !== ""
-      ? { technology: third }
-      : {}),
+    ...detailsOf(kind, call.values),
     kind,
     external,
     parent: reading.stack.at(-1)?.boundary.id,
   });
   return true;
+};
+
+/** 要素の 3 つ目からの引数（コンテナ・コンポーネントは技術・説明、ほかは説明） */
+const detailsOf = (
+  kind: C4ElementKind,
+  values: string[],
+): { description: string | undefined; technology?: string } => {
+  const [, , third, fourth] = values;
+  if (!kind.startsWith("container") && !kind.startsWith("component"))
+    return { description: third };
+  return third === undefined || third === ""
+    ? { description: fourth }
+    : { description: fourth, technology: third };
 };
 
 /** 関係の関数なら関係を足す。読めた行なら `true` */
@@ -391,6 +398,16 @@ export const parseC4 = (source: string): C4Diagram => {
   return reading.diagram;
 };
 
+/** 関係の線のラベル（`C4Dynamic` は前に番号、後ろに技術） */
+const relationLabel = (relation: C4Relation): string =>
+  [
+    relation.index === undefined ? undefined : `${relation.index}:`,
+    relation.label,
+    relation.technology === undefined ? undefined : `[${relation.technology}]`,
+  ]
+    .filter((part) => part !== undefined && part !== "")
+    .join(" ");
+
 /** 要素をノード、境界をグループ、関係を線にした上から下の構成図の入力と、段と並びの上書き */
 export const c4ToFlowchart = (
   diagram: C4Diagram,
@@ -452,35 +469,23 @@ export const c4ToFlowchart = (
     )
     .map((relation) => relation.id);
   let order = 0;
+  /** `first` の後ろの同じ段に `second` を並べる */
+  const placeAfter = (first: string, second: string) => {
+    overrides[first] = {
+      ...overrides[first],
+      order: overrides[first]?.order ?? order++,
+    };
+    overrides[second] = { ...overrides[second], align: first, order: order++ };
+  };
   const edges: FlowEdge[] = diagram.relations.map((relation) => {
-    const sideways =
-      relation.direction === "left" || relation.direction === "right";
-    if (sideways) {
+    if (relation.direction === "left" || relation.direction === "right") {
       // 左右の向きの関係は同じ段に並べ、`Rel_R` は先を元の右、`Rel_L` は左に置く
-      const [first, second] =
-        relation.direction === "right"
-          ? [relation.from, relation.to]
-          : [relation.to, relation.from];
       overrides[relation.id] = { rankless: true };
-      overrides[first] = {
-        ...overrides[first],
-        order: overrides[first]?.order ?? order++,
-      };
-      overrides[second] = {
-        ...overrides[second],
-        align: first,
-        order: order++,
-      };
+      if (relation.direction === "right")
+        placeAfter(relation.from, relation.to);
+      else placeAfter(relation.to, relation.from);
     }
-    const label = [
-      relation.index === undefined ? undefined : `${relation.index}:`,
-      relation.label,
-      relation.technology === undefined
-        ? undefined
-        : `[${relation.technology}]`,
-    ]
-      .filter((part) => part !== undefined && part !== "")
-      .join(" ");
+    const label = relationLabel(relation);
     const up = relation.direction === "up";
     return {
       id: relation.id,
@@ -495,17 +500,8 @@ export const c4ToFlowchart = (
   for (const left of diagram.boundaries.filter((item) => item.side === "left"))
     for (const right of diagram.boundaries.filter(
       (item) => item.side === "right" && item.parent === left.parent,
-    )) {
-      overrides[left.id] = {
-        ...overrides[left.id],
-        order: overrides[left.id]?.order ?? order++,
-      };
-      overrides[right.id] = {
-        ...overrides[right.id],
-        align: left.id,
-        order: order++,
-      };
-    }
+    ))
+      placeAfter(left.id, right.id);
   return {
     kinds,
     chart: {

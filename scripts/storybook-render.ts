@@ -115,6 +115,7 @@ import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap, separateWires } from "../src/map/layout.ts";
 import {
+  type MapBandUnit,
   type MapErFanout,
   renderMapArchitecture,
   renderMapAxisGrid,
@@ -978,6 +979,23 @@ const axisGridKeyed = <T>(
     }),
   );
 
+/** 案内の帯のストーリーの再生の単位（引数に無いか知らない値なら message） */
+function bandUnitOf(args: PartArgs): MapBandUnit {
+  return args.unit === "transition" ||
+    args.unit === "task" ||
+    args.unit === "period" ||
+    args.unit === "commit"
+    ? args.unit
+    : "message";
+}
+
+/** 案内の帯のストーリーの手順ごとのタイトル（引数に無ければ「手順 {番号}」を手順の数だけ並べる） */
+function bandTitlesOf(args: PartArgs): string[] {
+  if (Array.isArray(args.titles)) return args.titles.map(String);
+  const total = typeof args.total === "number" ? args.total : 4;
+  return Array.from({ length: total }, (_, i) => `手順 ${i + 1}`);
+}
+
 /** 部品『mapの軸と格子の配置の図』のストーリー（`kind` で種類、`layout: colored` でガントチャートの補足の layout を選ぶ） */
 function mapAxisGridStory(args: PartArgs): string {
   const kind = (
@@ -1588,21 +1606,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "map-band": (args) =>
     renderMapBand({
       mode: args.mode === "playback" ? "playback" : "walkthrough",
-      unit:
-        args.unit === "transition" ||
-        args.unit === "task" ||
-        args.unit === "period" ||
-        args.unit === "commit"
-          ? args.unit
-          : "message",
+      unit: bandUnitOf(args),
       total: typeof args.total === "number" ? args.total : 4,
       index: typeof args.index === "number" ? args.index : undefined,
-      titles: Array.isArray(args.titles)
-        ? args.titles.map(String)
-        : Array.from(
-            { length: typeof args.total === "number" ? args.total : 4 },
-            (_, i) => `手順 ${i + 1}`,
-          ),
+      titles: bandTitlesOf(args),
       title: typeof args.title === "string" ? args.title : "",
       text: typeof args.text === "string" ? args.text : "",
       playing: args.playing === true,
