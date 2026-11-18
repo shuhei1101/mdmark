@@ -23,7 +23,6 @@ notes:
     ├── {部品}.part.stories.ts       # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
     ├── diagram-resize.interact.ts # 表示する枠の高さを変えるリサイズハンドルと高さの保持
     ├── diagram-tips.interact.ts   # 図のツールチップ
-    ├── diagram-touch.interact.ts  # 指で図を動かす操作中
     ├── diagram.interact.ts        # 拡大・縮小・移動・全画面
     ├── param.interact.ts          # 操作できる部品の値と写す
     ├── definition.ts              # 定義の型・JSON の読み取り・構造の確認と、廃止した図の部品のマーカー

@@ -32,9 +32,9 @@ styles:
       - class_name: .mdmark .mdmark-table :is(th, td).mdmark-wide と .mdmark-check
         target: 広く取る列と真偽値の ✓
         value: '`mdmark-wide` は `white-space: nowrap`。`mdmark-check` は `inline-flex` で、中の `.mdmark-icon` を `1.1em` 角・塗り無し・`currentcolor` の太さ 3 の線にする。値は `docs/mock/refs/283/assets/table.css`'
-      - class_name: .mdmark .mdmark-diagram-box[data-touch-active]
-        target: 指で図を動かす操作中の図の枠
-        value: '枠線（表示するノードの `box-shadow` の内側の線）をリンクの色の 2px にする（`inset 0 0 0 2px var(--mdmark-color-link)`）。中の `.mdmark-diagram-viewport` の `touch-action` を `pan-y` から `none` にする。値は `docs/mock/refs/508/assets/touch.css`'
+      - class_name: .mdmark .mdmark-diagram-viewport
+        target: 図の表示する枠
+        value: '`overflow-x: auto`・`overflow-y: auto`（`[data-at-fit]` の間は `overflow-y: hidden`）・`touch-action: pan-x pan-y`、角丸を上下とも `--mdmark-radius` にする。値は `docs/mock/refs/659/assets/panel.css` の `[data-mock-touch="native"]`'
       - class_name: .mdmark .mdmark-embed:not([data-mdmark-drawn])
         target: 読み込み中のブロック
         value: '`min-height: 12rem`・`--mdmark-color-border` の破線・角丸 `--mdmark-radius`・文字を中央に `--mdmark-color-muted` で配置する'
@@ -321,6 +321,15 @@ styles:
           印刷ではリサイズハンドルを隠す。
 
           値は `docs/mock/refs/42/assets/diagram.css`'
+      - class_name: .mdmark .mdmark-diagram-tools
+        target: 図の右上に重ねるボタンのパネル
+        value: '表示するノードの右上に `position: absolute`（上と右から 0.375rem・`z-index: 2`・幅の上限は表示するノードの幅から 0.75rem を引いた値）で重ね、`flex-wrap: nowrap`・余白 0.125rem・1px の `--mdmark-color-border` の線・角丸 `--mdmark-radius` + 0.125rem・地を `--mdmark-color-bg-opaque` にする。中のボタンは線と地を持たず、まとまりの間だけ 1px の線で区切る。`data-open` を持たない間は、倍率のボタン・開閉のボタン・押せる外へ戻るのボタン（`[data-tool="back"]:not(:disabled)`）のほかを隠す。開閉のボタンのまとまりはパネルの右上の角に `position: absolute` で固定し、パネルの右の余白をその幅だけ取る。値は `docs/mock/refs/659/assets/panel.css` の案 C'
+      - class_name: .mdmark .mdmark-diagram-tools（図の枠の幅が 30rem 未満）
+        target: 狭い図の枠のパネル
+        value: '`figure.mdmark-diagram` の `@container (width < 30rem)` で、ボタンを 1.5rem 四方（倍率のボタンは幅 2.5rem 以上）にし、まとまりの間を 0.25rem、ボタンの間を 0.125rem に詰めて 1 行に収める。値は `docs/mock/refs/659/assets/panel.css`'
+      - class_name: .mdmark-diagram[data-diagram="map"] .map-participant
+        target: シーケンス図の参加者の箱
+        value: '`touch-action: pan-y`（指の横の移動を並べ替えのドラッグにし、縦は図と文書のスクロールにする）'
     refs:
       - SCR-472-4#
       - CMP-472-65#

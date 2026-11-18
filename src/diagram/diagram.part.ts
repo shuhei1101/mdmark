@@ -21,6 +21,15 @@ import { jumpPaths, RESIZE, ZOOM } from "./geometry.ts";
 /** 矢じりの大きさ（px） */
 const HEAD_SIZE = 9;
 
+/** 開閉のボタンのスクリーンリーダー向けの名前（畳んだとき） */
+export const PANEL_OPEN_LABEL = "表示の操作を開く";
+
+/** 開閉のボタンのスクリーンリーダー向けの名前（開いたとき） */
+export const PANEL_CLOSE_LABEL = "表示の操作を閉じる";
+
+// 倍率を比べるときの誤差
+const ZOOM_EPSILON = 0.001;
+
 /** 図の表示する枠のキー操作 */
 const VIEWPORT_KEYS = "+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight";
 
@@ -61,9 +70,9 @@ export type DiagramFrame = {
   fitMin?: number;
   /** 置き場所の幅いっぱいに広げるか（`figure` に `data-wide="true"`。map の図） */
   wide?: boolean;
-  /** 指で図を動かす操作中か（表示するノードに `data-touch-active` を付ける。ストーリーの状態だけが指定する） */
-  touchActive?: boolean;
-  /** 右上の帯の先頭に並べるボタン（map の図）。`name` は `MAP_TOOL_ICONS` のキー */
+  /** 右上のパネルを開いた状態で描くか（パネルに `data-open` を付ける。ストーリーの状態だけが指定する） */
+  panelOpen?: boolean;
+  /** 右上のパネルの先頭に並べるボタン（map の図）。`name` は `MAP_TOOL_ICONS` のキー */
   tools?: Array<{ name: string; label: string; disabled?: boolean }>;
   /** ツールチップと矢じりの `id` の頭 */
   id: string;
@@ -692,7 +701,7 @@ function renderLegendItem(id: string, item: DiagramLegendItem): string {
   return `<li class="mdmark-diagram-legend-item">${legendSample(id, item.sample)}<span>${label}</span></li>`;
 }
 
-/** 右上のボタンの帯（移動・拡大と縮小・全画面）。モーダルの中では全画面のボタンの代わりに閉じるボタンを配置する */
+/** 右上に重ねるパネル（map のボタン・縮小と倍率と拡大・全画面・開閉のボタン）。モーダルの中では全画面のボタンの代わりに閉じるボタンを配置する */
 function renderTools(frame: DiagramFrame): string {
   const zoom = frame.zoom ?? 1;
   const fit = frame.fit ?? 1;
@@ -711,22 +720,16 @@ function renderTools(frame: DiagramFrame): string {
               `<button class="mdmark-diagram-tool" type="button" data-tool="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.label)}" title="${escapeHtml(item.label)}"${item.disabled ? ' disabled="disabled"' : ""}>${iconSvg(MAP_TOOL_ICONS[item.name] ?? "ellipsis")}</button>`,
           )
           .join("")}</div>`;
-  const pan = [
-    tool("left", { label: "左へ動かす", icon: "chevron-left" }),
-    tool("up", { label: "上へ動かす", icon: "chevron-up" }),
-    tool("down", { label: "下へ動かす", icon: "chevron-down" }),
-    tool("right", { label: "右へ動かす", icon: "chevron-right" }),
-  ].join("");
   const screen = frame.modal
     ? tool("close", { label: "全画面を閉じる", icon: "x" })
     : tool("fullscreen", { label: "全画面で開く", icon: "expand" });
   const percent = `${Math.round((zoom / fit) * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="倍率 ${percent}。全体が収まる倍率に戻す">${percent}</button>`;
-  const panGroup =
-    frame.kind === "map"
-      ? ""
-      : `<div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div>`;
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "縮小", icon: "minus" }, zoom <= fit)}${zoomButton}${tool("in", { label: "拡大", icon: "plus" }, zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  const open = frame.panelOpen === true;
+  const more = `<button class="mdmark-diagram-tool" type="button" data-tool="more" aria-expanded="${open}" aria-label="${open ? PANEL_CLOSE_LABEL : PANEL_OPEN_LABEL}">${iconSvg("ellipsis")}</button>`;
+  const atMin = zoom <= fit * ZOOM.minRatio + ZOOM_EPSILON;
+  const atMax = zoom >= fit * ZOOM.maxRatio - ZOOM_EPSILON;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"${open ? " data-open" : ""}>${extra}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "縮小", icon: "minus" }, atMin)}${zoomButton}${tool("in", { label: "拡大", icon: "plus" }, atMax)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div><div class="mdmark-diagram-tools-group" data-group="more">${more}</div></div>`;
 }
 
 /** 図の枠の高さを変えるつまみ（変えられないかモーダルの中なら空）。高さの値は `mount` が測って書き換えるまでの初めの値 */
@@ -751,7 +754,7 @@ function frameAttributes(frame: DiagramFrame): string {
   return `${fitMin}${wide}`;
 }
 
-/** 図の枠を描く: タイトル・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
+/** 図の枠を描く: タイトル・表示するノード（パネルと表示する枠）・ツールチップの中身・凡例を並べる */
 export function renderDiagramFrame(
   frame: DiagramFrame,
   body: DiagramBody,
@@ -761,8 +764,8 @@ export function renderDiagramFrame(
   const sizer = `width:${num(body.width * zoom)}px;height:${num(body.height * zoom)}px`;
   const stage = `width:${num(body.width)}px;height:${num(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
-  const touchActive = frame.touchActive === true ? " data-touch-active" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
+  const atFit = zoom <= (frame.fit ?? 1) + ZOOM_EPSILON ? " data-at-fit" : "";
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport"${atFit} tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 
 /** 図の種類 */
@@ -779,8 +782,8 @@ export function renderDiagram(options: {
   zoom?: number;
   fit?: number;
   modal?: boolean;
-  /** 指で図を動かす操作中か（ストーリーの状態だけが指定する） */
-  touchActive?: boolean;
+  /** 右上のパネルを開いた状態で描くか（ストーリーの状態だけが指定する） */
+  panelOpen?: boolean;
 }): string {
   const {
     kind,
@@ -789,7 +792,7 @@ export function renderDiagram(options: {
     zoom,
     fit,
     modal,
-    touchActive,
+    panelOpen,
     resizable = true,
   } = options;
   const part = renderChart(definition, id);
@@ -805,7 +808,7 @@ export function renderDiagram(options: {
       ...(zoom === undefined ? {} : { zoom }),
       ...(fit === undefined ? {} : { fit }),
       ...(modal === undefined ? {} : { modal }),
-      ...(touchActive === undefined ? {} : { touchActive }),
+      ...(panelOpen === undefined ? {} : { panelOpen }),
     },
     part,
   );

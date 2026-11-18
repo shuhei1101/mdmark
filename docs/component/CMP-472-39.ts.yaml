@@ -5,26 +5,34 @@ implementation: "src/diagram/diagram.part.ts#renderDiagramFrame"
 story: "Parts/DiagramFrame"
 states:
   - name: Fit
-    description: 開いたとき。全体が収まる倍率（倍率のボタンは 100%）で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない
+    description: 開いたとき。全体が収まる倍率（倍率のボタンは 100%）で、右上のパネルは畳んで倍率のボタンと開閉のボタンだけを出す。表示する枠は `data-at-fit` を持ち、縦にスクロールしない
     notes:
       定義: 部品設計『グラフ』の SixSeries と同じグラフの定義
   - name: Zoomed
-    description: 1 段拡大して位置を動かした。移動のボタンが出る
+    description: 1 段拡大して位置を動かし、パネルを開いた。縮小・倍率・拡大・全画面・開閉のボタンが 1 行に並び、表示する枠は縦にもスクロールできる
     args:
       - name: zoom
         value: '1.25'
+      - name: panelOpen
+        value: 'true'
   - name: Max
-    description: 上限（定義の大きさの 3 倍）。拡大は押せない
+    description: 上限（全体が収まる倍率の 5 倍。倍率のボタンは 500%）でパネルを開いた。拡大は押せない
     args:
       - name: zoom
-        value: '3'
+        value: '5'
+      - name: panelOpen
+        value: 'true'
+    notes:
+      定義: 全体が収まる倍率が 1 の図で描く（`zoom` は定義の大きさを 1 とする値のため）
   - name: Narrow
-    description: 狭い枠で拡大した。凡例を折り返し、ボタンの帯は間を詰めて移動のボタンまで 1 行に収める（1 行に収まらない約 266px 未満の枠では折り返す）
+    description: 狭い枠（幅 30rem 未満）で拡大してパネルを開いた。凡例を折り返し、パネルはボタンを 1.5rem 四方にして間を詰め、折り返さず 1 行に収める
     args:
       - name: zoom
         value: '0.6'
       - name: fit
         value: '0.48'
+      - name: panelOpen
+        value: 'true'
   - name: Fullscreen
     description: 全画面のモーダルの中。全画面のボタンの位置に閉じるボタンがある
     args:
@@ -65,14 +73,16 @@ states:
     notes:
       定義: 部品設計『mermaid の図』の Flowchart と同じ SVG
   - name: Map
-    description: 種類 `map`。タイトルは題名だけで範囲と更新日と凡例が無く、置き場所の幅いっぱいで、右上の帯の先頭に外へ戻る（押せない）・全て開く・全て閉じる・配置と選択を元に戻す（押せない）が並ぶ
+    description: 種類 `map`。タイトルは題名だけで範囲と更新日と凡例が無く、置き場所の幅いっぱいで、開いたパネルの先頭に外へ戻る（押せない）・全て開く・全て閉じる・配置と選択を元に戻す（押せない）が並ぶ
     args:
       - name: kind
         value: map
       - name: legend
-        value: '''[]'''
+        value: "'[]'"
       - name: wide
-        value: '''true'''
+        value: "'true'"
+      - name: panelOpen
+        value: 'true'
     notes:
       定義: 部品設計『mapの構成図』の Default
   - name: ResizedToFit
@@ -80,15 +90,17 @@ states:
     args:
       - name: zoom
         value: '1.25'
-  - name: TouchActive
-    description: 指で図を動かす操作中（タッチで表示する枠の余白をタップした後）。表示するノードの枠線がリンクの色の 2px になり、表示する枠の `touch-action` が `none` になる
+  - name: MapInGroup
+    description: 種類 `map` で外のグループの中へ入った。畳んだパネルに、外へ戻る（押せる）・倍率・開閉のボタンが並ぶ
     args:
-      - name: zoom
-        value: '1.25'
-      - name: touchActive
-        value: 'true'
+      - name: kind
+        value: map
+      - name: legend
+        value: "'[]'"
+      - name: wide
+        value: "'true'"
     notes:
-      定義: モック `docs/mock/components/diagram-frame-touch/` の「操作中」。確認ログ『図の枠を指で動かすときの操作中の見せ方』
+      定義: 部品設計『mapの構成図』の Default を、外のグループの中へ入った状態で描く。`tools` の外へ戻るは `disabled` が `false`
   - name: PlainMap
     description: 種類 `map` で、map の範囲の外の純粋な Mermaid を描いた図（`data-map-plain`）。front matter の `title` も `accTitle` も無いので、タイトルが図の種類の名前（シーケンス図）
     args:
@@ -110,9 +122,18 @@ states:
     screenshot: false
     notes:
       定義: 部品設計『mapのシーケンス図』の HeadsStuck
+  - name: Min
+    description: 下限（全体が収まる倍率の 0.25 倍。倍率のボタンは 25%）でパネルを開いた。縮小は押せず、表示する枠は `data-at-fit` を持つ
+    args:
+      - name: zoom
+        value: '0.25'
+      - name: panelOpen
+        value: 'true'
+    notes:
+      定義: 全体が収まる倍率が 1 の図で描く（`zoom` は定義の大きさを 1 とする値のため）
 lead: |-
-  図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に配置し、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
-  右上のボタンの帯と表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
+  図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、表示する枠の右上に重ねたボタンのパネルと、拡大・縮小・移動・ピンチ・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
+  パネルと表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方（図の枠の幅が 30rem 未満のとき 1.5rem）、パネルの余白は 0.125rem。
 args:
   - name: kind
     type: 列挙
@@ -138,7 +159,7 @@ args:
   - name: zoom
     type: 数値
     default: 全体が収まる倍率
-    description: 今の倍率（定義の大きさを 1 とする）。全体が収まる倍率より大きいときだけ移動のボタンを出す
+    description: 今の倍率（定義の大きさを 1 とする）。全体が収まる倍率の 0.25 倍から 5 倍まで。全体が収まる倍率以下のときは表示する枠に `data-at-fit` を付け、縦にスクロールさせない
   - name: fit
     type: 数値
     default: '1'
@@ -160,14 +181,14 @@ args:
     type: 真偽値
     default: 'false'
     description: 置き場所の幅いっぱいに広げるか（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前まで）。`true` のときは本文の幅との切り替えのボタンを出さず、倍率を 1 より小さくしない。種類 `map` は `true`
-  - name: touchActive
+  - name: panelOpen
     type: 真偽値
-    default: 'false'
-    description: 指で図を動かす操作中か。`true` のときは表示するノード（`.mdmark-diagram-box`）に `data-touch-active` を付け、枠線をリンクの色の 2px にして、表示する枠の `touch-action` を `pan-y` から `none` にする
+    default: '''false'''
+    description: 右上のパネルを開いているか。`false` のときは倍率のボタンと開閉のボタン（グループの中では外へ戻るも）だけを出し、`true` のときは `tools`・縮小・倍率・拡大・全画面・開閉のボタンを 1 行に並べる。開閉のボタンの `aria-expanded` に入れる
   - name: tools
     type: オブジェクトの配列
     default: '[]'
-    description: 右上のボタンの帯の先頭に並べるボタン（`{ name, label, disabled }`。`name` はアイコン、`label` はスクリーンリーダー向けの名前と `title`）。種類 `map` は、構成図では外へ戻る・全て開く・全て閉じる・配置と選択を元に戻す、シーケンス図では外へ戻る・全て開く・全て閉じる・参加者の並び順と選択を元に戻す
+    description: パネルの先頭に並べるボタン（`{ name, label, disabled }`。`name` はアイコン、`label` はスクリーンリーダー向けの名前と `title`）。`panelOpen` が `true` のときだけ出し、外へ戻るは `disabled` が `false` の間は畳んだパネルにも出す。種類 `map` は、構成図では外へ戻る・全て開く・全て閉じる・配置と選択を元に戻す、シーケンス図では外へ戻る・全て開く・全て閉じる・参加者の並び順と選択を元に戻す
 slots:
   - name: default
     description: 表示する枠の中に配置する図の本体
@@ -182,13 +203,13 @@ events:
     value: 倍率のボタンの文字とスクリーンリーダー向けの名前
     description: '`mount` が倍率を 1.25 倍ずつ変え（倍率のボタンと `0` は開いたときの倍率と位置に戻す）、ボタンの `disabled` と倍率のボタンの文字・スクリーンリーダー向けの名前と、文書の中の表示する枠の高さの上限（定義の高さ × 今の倍率。`kind` が `map` の図は上限を持たず、リサイズハンドルで図の高さを越えて広げられる）を付け替える'
   - name: 動かす
-    when: 余白をドラッグする、矢印キーを押す、移動のボタンを押す
+    when: 余白をマウスでドラッグする、矢印キーを押す、指で表示する枠をスクロールする
     value: 表示する枠の `scrollLeft`・`scrollTop`
-    description: '`mount` が表示する枠をスクロールさせる'
-  - name: 指で動かす操作中にする・解く
-    when: タッチで表示する枠の余白（ノード・線・グラフの項目・ボタン・リンクの外）をタップする。図の外をタップする
-    value: '`touchActive`'
-    description: '`mount` が `touchActive` を切り替える。操作中でない間の指のドラッグは横だけを図の移動にし、縦は文書のスクロールにする'
+    description: '`mount` が表示する枠をスクロールさせる。指の移動はブラウザのスクロールで、ポインターのイベントでは動かさない（表示する枠の `touch-action` は `pan-x pan-y`）'
+  - name: ピンチで拡大・縮小する
+    when: 表示する枠の上で 2 本の指の間隔を変える
+    value: '倍率のボタンの文字とスクリーンリーダー向けの名前'
+    description: '`mount` が 2 本の指の中点の下の図の点を保って倍率を変え、`touchmove` と Safari の `gesturestart`・`gesturechange` を取り消してページの拡大を止める'
   - name: 全画面で開く・閉じる
     when: 全画面のボタンを押す。閉じるボタンか Esc を押す
     value: '`dialog` の `open`'
@@ -197,11 +218,15 @@ events:
     when: リサイズハンドルをドラッグする、フォーカスして `↑`・`↓` を押す。ダブルクリックする
     value: 表示する枠の高さとリサイズハンドルの `aria-valuenow`
     description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px 以上で上限は持たない）、全体が収まる倍率をもう一度求める。ダブルクリックで倍率を変えずに、今の倍率の図の全体が収まる高さにする'
+  - name: パネルを開く・畳む
+    when: 開閉のボタンを押す
+    value: '`panelOpen`（開閉のボタンの `aria-expanded`）'
+    description: '`mount` が `panelOpen` を切り替え、開閉のボタンのスクリーンリーダー向けの名前を書き換える'
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: 右上のボタンと全画面のモーダルの地の色
+    description: 右上のパネルと全画面のモーダルの地の色
   - name: --mdmark-diagram-max-height
     syntax: <length>
     default: 36rem
@@ -212,7 +237,7 @@ css_properties:
     description: 表示するノードの線（`box-shadow` の値）。既定値は `:root` に配置せず `var()` のフォールバックで持ち、描く先の要素で変えた `--mdmark-color-border` に追従する。利用側は枠を持つ面で `none` を指定して線を削除する。操作できる部品の中は mdmark が `none` にし、全画面のモーダルの中はこの値を受け継がず既定の線で描く
 accessibility:
   - タイトルは `figcaption` で、表示する枠は `role="group"`・`aria-roledescription="図"`・`aria-labelledby`（タイトル）・`aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"`・`tabindex="0"` を持ち、フォーカスの枠を見せる
-  - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、スクリーンリーダー向けの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
+  - パネルは `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・開閉のボタンはアイコンだけで、スクリーンリーダー向けの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`表示の操作を開く`（開いたとき `表示の操作を閉じる`）にする。開閉のボタンは `aria-expanded` を持ち、畳んだときも開いたときもパネルの右上の同じ位置にある。ボタンは 24px 四方を下回らない
   - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の構造（等幅の数字）で出し、スクリーンリーダー向けの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
   - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に置く枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`

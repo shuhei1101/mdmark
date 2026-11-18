@@ -5,12 +5,12 @@ import {
   type ScrollContainer,
 } from "../shared/scroller.interact.ts";
 import { attachZoom } from "../shared/zoom.interact.ts";
+import { PANEL_CLOSE_LABEL, PANEL_OPEN_LABEL } from "./diagram.part.ts";
 import {
   attachDiagramResize,
   diagramHeightKey,
 } from "./diagram-resize.interact.ts";
 import { attachDiagramTips } from "./diagram-tips.interact.ts";
-import { attachDiagramTouch } from "./diagram-touch.interact.ts";
 import { ZOOM } from "./geometry.ts";
 
 export { ZOOM };
@@ -119,6 +119,25 @@ function headsOffset(target: {
   );
 }
 
+/** 開閉のボタン: 押すたびにパネルを開閉し、開閉のボタンの状態とスクリーンリーダー向けの名前を合わせる */
+function attachPanelToggle(figure: HTMLElement, signal: AbortSignal): void {
+  const panel = figure.querySelector<HTMLElement>(".mdmark-diagram-tools");
+  const more = figure.querySelector<HTMLButtonElement>('[data-tool="more"]');
+  more?.addEventListener(
+    "click",
+    () => {
+      const open = !panel?.hasAttribute("data-open");
+      panel?.toggleAttribute("data-open", open);
+      more.setAttribute("aria-expanded", String(open));
+      more.setAttribute(
+        "aria-label",
+        open ? PANEL_CLOSE_LABEL : PANEL_OPEN_LABEL,
+      );
+    },
+    { signal },
+  );
+}
+
 /** 図 1 つの倍率と位置の操作（右上のボタン・キー・ドラッグ・リサイズハンドル）と、グループのタイトルを上端に留める処理を付け、操作と監視を解除する関数を返却する */
 function attachView(
   figure: HTMLElement,
@@ -197,6 +216,8 @@ function attachView(
     dragIgnore: TEXT_SELECTOR,
     keyTargets: [box],
     percentBase: "fit",
+    touchPan: "native",
+    wheelToScroller: true,
     ...(figure.dataset.fitMin === undefined
       ? {}
       : { fitMin: Number(figure.dataset.fitMin) }),
@@ -225,6 +246,8 @@ function attachView(
       zoom.reset();
     }
   }
+
+  attachPanelToggle(figure, controller.signal);
 
   return () => {
     detachResize();
@@ -378,13 +401,6 @@ export function attachDiagrams(options: {
       figure.removeEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
       tips.detach();
     });
-    const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
-    const viewport = figure.querySelector<HTMLElement>(
-      ".mdmark-diagram-viewport",
-    );
-    if (box && viewport) {
-      detachers.push(attachDiagramTouch({ box, viewport }));
-    }
     const opener = figure.querySelector<HTMLButtonElement>(
       '[data-tool="fullscreen"]',
     );

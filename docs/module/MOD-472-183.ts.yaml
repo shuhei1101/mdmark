@@ -15,8 +15,9 @@ functions:
       縮小・拡大・倍率のボタン・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。
       倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字とスクリーンリーダー向けの名前を書き換える。
       倍率は図の中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。
-      倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。
-      ホイールは受け取らない。
+      倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ・ピンチ・ホイール）は `attachZoom` に `percentBase: "fit"`・`touchPan: "native"`・`wheelToScroller: true` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。
+      ホイールで倍率は変えず、拡大して縦にスクロールできる間だけ文書かスクロールする祖先へ渡す。
+      開閉のボタン（`data-tool="more"`）を押すたびに、パネル（`.mdmark-diagram-tools`）の `data-open` と、開閉のボタンの `aria-expanded`・スクリーンリーダー向けの名前（`表示の操作を開く`・`表示の操作を閉じる`）を切り替える。
 
       表示する枠の高さは次のように決める。
 
@@ -30,7 +31,7 @@ functions:
       表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。
       `fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。
 
-      図ごとに `attachDiagramTips` と `attachDiagramTouch` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。
+      図ごとに `attachDiagramTips` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。
       `div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け、高さを変えたら `attachZoom` の `refit()` を呼ぶ。
       `attachDiagramResize` のキーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。
       保った高さがあればその高さで開く。
@@ -57,30 +58,29 @@ functions:
       - 'MOD-472-173#functions[fitScale]'
       - '#functions[openDiagramDialog]'
       - 'MOD-472-177#functions[attachZoom]'
-      - 'MOD-472-346#functions[attachDiagramTouch]'
     unit_tests:
       - name: test_attach_diagrams
         case: 正常
         summary: 収まる倍率で開き、拡大と戻す
         condition: 幅 600px の要素に幅 1100 の mermaid の図
         mock: なし
-        expected: 倍率の表示が `100%` で縮小が `disabled`、拡大の後に `125%`、`0` の後に `100%`
+        expected: 倍率の表示が `100%` で縮小が `disabled` を持たず、拡大の後に `125%`、`0` の後に `100%`
       - name: test_attach_diagrams_when_max
         case: 正常
         summary: 上限で拡大を押せなくする
         condition: 拡大を 10 回押す
         mock: なし
-        expected: 倍率の表示が `550%`（定義の大きさの 3 倍）で拡大が `disabled`
+        expected: 倍率の表示が `500%`（全体が収まる倍率の 5 倍）で拡大が `disabled`
       - name: test_attach_diagrams_when_panned
         case: 正常
-        summary: 拡大した間だけ移動のボタンを出し、矢印キーで動かす
+        summary: 拡大した間だけ表示する枠の `data-at-fit` を外し、矢印キーで動かす
         condition: 拡大を 2 回押して表示する枠で `ArrowRight`
         mock: なし
-        expected: 移動のボタンのまとまりが `hidden` を持たず、`scrollLeft` が 80 増える
+        expected: 表示する枠が `data-at-fit` を持たず、移動のボタンのまとまりが無く、`scrollLeft` が 80 増える
       - name: test_attach_diagrams_when_wheel
         case: 正常
-        summary: ホイールで倍率を変えない
-        condition: 表示する枠に `wheel`
+        summary: ホイールで倍率を変えず、開いたときの倍率では受け取らない
+        condition: 開いた直後の表示する枠に `wheel`
         mock: なし
         expected: 倍率が変わらず `defaultPrevented` が `false`
       - name: test_attach_diagrams_when_cleaned_up
@@ -137,6 +137,12 @@ functions:
         condition: 拡大を 2 回押した mermaid の図で、ノードの `text` の上と、文字の無い余白の上から、それぞれ横に 80px ドラッグする
         mock: なし
         expected: 文字の上のドラッグでは `scrollLeft` が変わらず、余白のドラッグでは 80 変わる
+      - name: test_attach_diagrams_when_panel_toggled
+        case: 正常
+        summary: 開閉のボタンでパネルを開き、もう一度押すと畳む
+        condition: 幅 600px の要素に幅 1100 の mermaid の図。開閉のボタンを 2 回押す
+        mock: なし
+        expected: 1 回目の後にパネルが `data-open` を持ち、開閉のボタンが `aria-expanded="true"`・`aria-label="表示の操作を閉じる"`。2 回目の後に `data-open` を持たず、`aria-expanded="false"`・`aria-label="表示の操作を開く"`
     refs:
       - IF-472-35#constraints[シーケンス図の参加者の行を留める]
   - name: openDiagramDialog

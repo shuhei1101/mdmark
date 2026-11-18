@@ -16,19 +16,25 @@ export const Fit: Story = {
 export const Zoomed: Story = {
   name: "Zoomed",
   parameters: { server: { id: "diagram-frame" } },
-  args: { zoom: 1.25 },
+  args: { zoom: 1.25, panelOpen: true },
 };
 
 export const Max: Story = {
   name: "Max",
   parameters: { server: { id: "diagram-frame" } },
-  args: { zoom: 3 },
+  args: { zoom: 5, panelOpen: true },
+};
+
+export const Min: Story = {
+  name: "Min",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { zoom: 0.25, panelOpen: true },
 };
 
 export const Narrow: Story = {
   name: "Narrow",
   parameters: { server: { id: "diagram-frame" } },
-  args: { zoom: 0.6, fit: 0.48 },
+  args: { zoom: 0.6, fit: 0.48, panelOpen: true },
 };
 
 export const Fullscreen: Story = {
@@ -73,10 +79,16 @@ export const Mermaid: Story = {
   args: { kind: "mermaid", title: "問い合わせの受付", legend: "[]" },
 };
 
-export const TouchActive: Story = {
-  name: "TouchActive",
+export const MapTools: Story = {
+  name: "Map",
   parameters: { server: { id: "diagram-frame" } },
-  args: { zoom: 1.25, touchActive: true },
+  args: { kind: "map", mapTools: true, panelOpen: true },
+};
+
+export const MapInGroup: Story = {
+  name: "MapInGroup",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { kind: "map", mapTools: true, entered: 0 },
 };
 
 export const PlainMap: Story = {

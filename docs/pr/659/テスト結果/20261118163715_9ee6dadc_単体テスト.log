@@ -1,0 +1,1546 @@
+$ gh workflow run test.yml --ref fix/diagram/touch-pinch-overlay-tools -f layer=unit  # run 44260041758（commit 9ee6dadc）
+
+# 結果: Red（20 件 fail。どれも実装が無いことによる fail）
+# 実装の前から pass した変更・追加のテスト:
+#   - test_render_lightbox_when_max: 倍率の文字（zoom を百分率にした 500%）と、拡大の disabled（今の ZOOM.max = 3 以上）が src/media/lightbox.part.ts の renderLightbox に既にある（commit 4c455f92 で今の場所に入った）
+#   - test_attach_zoom_when_focus_rect_animated: 読者の操作で移すのを止める振る舞いが src/shared/zoom.interact.ts の listenStops に既にある（commit 21ccdc7d で入った）
+
+﻿2026-11-18T07:35:18.6806217Z Current runner version: '2.338.2'
+2026-11-18T07:35:18.6837981Z ##[group]Runner Image Provisioner
+2026-11-18T07:35:18.6838995Z Hosted Compute Agent
+2026-11-18T07:35:18.6839821Z Version: 20261103.629
+2026-11-18T07:35:18.6840697Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+2026-11-18T07:35:18.6842380Z Build Date: 2026-11-03T17:26:59Z
+2026-11-18T07:35:18.6843478Z Worker ID: {efa707f4-c5c9-469a-8b76-653dfbc9d97c}
+2026-11-18T07:35:18.6844417Z Region: eastus
+2026-11-18T07:35:18.6845118Z Cloud: Azure
+2026-11-18T07:35:18.6845764Z ##[endgroup]
+2026-11-18T07:35:18.6847484Z ##[group]Operating System
+2026-11-18T07:35:18.6848320Z Ubuntu
+2026-11-18T07:35:18.6849071Z 26.04.1
+2026-11-18T07:35:18.6849718Z LTS
+2026-11-18T07:35:18.6850434Z ##[endgroup]
+2026-11-18T07:35:18.6851136Z ##[group]Runner Image
+2026-11-18T07:35:18.6851916Z Image: ubuntu-26.04
+2026-11-18T07:35:18.6852690Z Version: 20261111.196.1
+2026-11-18T07:35:18.6854481Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261111.196/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-18T07:35:18.6856798Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261111.196
+2026-11-18T07:35:18.6858111Z ##[endgroup]
+2026-11-18T07:35:18.6859500Z ##[group]GITHUB_TOKEN Permissions
+2026-11-18T07:35:18.6862595Z Contents: read
+2026-11-18T07:35:18.6863515Z Metadata: read
+2026-11-18T07:35:18.6864290Z ##[endgroup]
+2026-11-18T07:35:18.6866788Z Secret source: Actions
+2026-11-18T07:35:18.6868314Z Cache mode: write
+2026-11-18T07:35:18.6870250Z Prepare workflow directory
+2026-11-18T07:35:18.7517563Z Prepare all required actions
+2026-11-18T07:35:18.7590652Z Getting action download info
+2026-11-18T07:35:18.9645358Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-18T07:35:19.0663918Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-11-18T07:35:19.1371287Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-18T07:35:19.3393368Z Complete job name: test
+﻿2026-11-18T07:35:19.4039544Z ##[group]Run actions/checkout@v4
+2026-11-18T07:35:19.4040212Z with:
+2026-11-18T07:35:19.4040573Z   repository: shuhei1101/mdmark
+2026-11-18T07:35:19.4043937Z   token: ***
+2026-11-18T07:35:19.4044292Z   ssh-strict: true
+2026-11-18T07:35:19.4044652Z   ssh-user: git
+2026-11-18T07:35:19.4045009Z   persist-credentials: true
+2026-11-18T07:35:19.4045394Z   clean: true
+2026-11-18T07:35:19.4045748Z   sparse-checkout-cone-mode: true
+2026-11-18T07:35:19.4046182Z   fetch-depth: 1
+2026-11-18T07:35:19.4046531Z   fetch-tags: false
+2026-11-18T07:35:19.4046885Z   show-progress: true
+2026-11-18T07:35:19.4047242Z   lfs: false
+2026-11-18T07:35:19.4047571Z   submodules: false
+2026-11-18T07:35:19.4047927Z   set-safe-directory: true
+2026-11-18T07:35:19.4048324Z   allow-unsafe-pr-checkout: false
+2026-11-18T07:35:19.4048873Z env:
+2026-11-18T07:35:19.4049192Z   LAYER: unit
+2026-11-18T07:35:19.4049520Z   PATHS: 
+2026-11-18T07:35:19.4049865Z ##[endgroup]
+2026-11-18T07:35:19.5829932Z Syncing repository: shuhei1101/mdmark
+2026-11-18T07:35:19.5832472Z ##[group]Getting Git version info
+2026-11-18T07:35:19.5833578Z Working directory is '/home/runner/work/mdmark/mdmark'
+2026-11-18T07:35:19.5834867Z [command]/usr/bin/git version
+2026-11-18T07:35:19.5837143Z git version 2.56.1
+2026-11-18T07:35:19.5853136Z ##[endgroup]
+2026-11-18T07:35:19.5864501Z Temporarily overriding HOME='/home/runner/work/_temp/82f44ae0-fb6d-4abc-8a4b-e94a93fa24ca' before making global git config changes
+2026-11-18T07:35:19.5865645Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-18T07:35:19.5868312Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+2026-11-18T07:35:19.5918659Z Deleting the contents of '/home/runner/work/mdmark/mdmark'
+2026-11-18T07:35:19.5921380Z ##[group]Initializing the repository
+2026-11-18T07:35:19.5924320Z [command]/usr/bin/git init /home/runner/work/mdmark/mdmark
+2026-11-18T07:35:19.5992235Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-18T07:35:19.5993679Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-18T07:35:19.5994603Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-18T07:35:19.5995191Z hint: call:
+2026-11-18T07:35:19.5995533Z hint:
+2026-11-18T07:35:19.5996123Z hint: 	git config --global init.defaultBranch <name>
+2026-11-18T07:35:19.5996662Z hint:
+2026-11-18T07:35:19.5997284Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-18T07:35:19.5998149Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-18T07:35:19.5999114Z hint:
+2026-11-18T07:35:19.5999680Z hint: 	git branch -m <name>
+2026-11-18T07:35:19.6000327Z hint:
+2026-11-18T07:35:19.6001150Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-18T07:35:19.6002088Z Initialized empty Git repository in /home/runner/work/mdmark/mdmark/.git/
+2026-11-18T07:35:19.6007908Z [command]/usr/bin/git remote add origin https://github.com/shuhei1101/mdmark
+2026-11-18T07:35:19.6046350Z ##[endgroup]
+2026-11-18T07:35:19.6046997Z ##[group]Disabling automatic garbage collection
+2026-11-18T07:35:19.6048637Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-18T07:35:19.6074744Z ##[endgroup]
+2026-11-18T07:35:19.6075357Z ##[group]Setting up auth
+2026-11-18T07:35:19.6079087Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-18T07:35:19.6104635Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-18T07:35:19.6437305Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-18T07:35:19.6481574Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-18T07:35:19.6720742Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-18T07:35:19.6754568Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-18T07:35:19.7012545Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-18T07:35:19.7048514Z ##[endgroup]
+2026-11-18T07:35:19.7049177Z ##[group]Fetching the repository
+2026-11-18T07:35:19.7060877Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9ee6dadc386aa59709a6da524c578a3781e5e9f7:refs/remotes/origin/fix/diagram/touch-pinch-overlay-tools
+2026-11-18T07:35:21.5800182Z From https://github.com/shuhei1101/mdmark
+2026-11-18T07:35:21.5812271Z  * [new ref]         9ee6dadc386aa59709a6da524c578a3781e5e9f7 -> origin/fix/diagram/touch-pinch-overlay-tools
+2026-11-18T07:35:21.5823225Z ##[endgroup]
+2026-11-18T07:35:21.5824224Z ##[group]Determining the checkout info
+2026-11-18T07:35:21.5825346Z ##[endgroup]
+2026-11-18T07:35:21.5826035Z [command]/usr/bin/git sparse-checkout disable
+2026-11-18T07:35:21.5861113Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-18T07:35:21.5890298Z ##[group]Checking out the ref
+2026-11-18T07:35:21.5893823Z [command]/usr/bin/git checkout --progress --force -B fix/diagram/touch-pinch-overlay-tools refs/remotes/origin/fix/diagram/touch-pinch-overlay-tools
+2026-11-18T07:35:21.9052466Z Switched to a new branch 'fix/diagram/touch-pinch-overlay-tools'
+2026-11-18T07:35:21.9055453Z branch 'fix/diagram/touch-pinch-overlay-tools' set up to track 'origin/fix/diagram/touch-pinch-overlay-tools'.
+2026-11-18T07:35:21.9075610Z ##[endgroup]
+2026-11-18T07:35:21.9121946Z [command]/usr/bin/git log -1 --format=%H
+2026-11-18T07:35:21.9144972Z 9ee6dadc386aa59709a6da524c578a3781e5e9f7
+﻿2026-11-18T07:35:21.9443769Z ##[group]Run actions/setup-node@v4
+2026-11-18T07:35:21.9444118Z with:
+2026-11-18T07:35:21.9444324Z   node-version: 24
+2026-11-18T07:35:21.9444540Z   always-auth: false
+2026-11-18T07:35:21.9444748Z   check-latest: false
+2026-11-18T07:35:21.9447017Z   token: ***
+2026-11-18T07:35:21.9447215Z env:
+2026-11-18T07:35:21.9447398Z   LAYER: unit
+2026-11-18T07:35:21.9447597Z   PATHS: 
+2026-11-18T07:35:21.9447787Z ##[endgroup]
+2026-11-18T07:35:22.0581364Z (node:2190) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-18T07:35:22.0582161Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-18T07:35:22.0583791Z Found in cache @ /opt/hostedtoolcache/node/24.22.2/x64
+2026-11-18T07:35:22.0584308Z ##[group]Environment details
+2026-11-18T07:35:22.3686286Z node: v24.22.2
+2026-11-18T07:35:22.3687241Z npm: 11.19.1
+2026-11-18T07:35:22.3687534Z yarn: 1.22.22
+2026-11-18T07:35:22.3688379Z ##[endgroup]
+﻿2026-11-18T07:35:22.3822653Z ##[group]Run npm ci
+2026-11-18T07:35:22.3823109Z ^[[36;1mnpm ci^[[0m
+2026-11-18T07:35:22.3823357Z ^[[36;1mnpm --prefix vscode ci^[[0m
+2026-11-18T07:35:22.3877007Z shell: /usr/bin/bash -e {0}
+2026-11-18T07:35:22.3877242Z env:
+2026-11-18T07:35:22.3877405Z   LAYER: unit
+2026-11-18T07:35:22.3877577Z   PATHS: 
+2026-11-18T07:35:22.3877740Z ##[endgroup]
+2026-11-18T07:35:34.7987911Z 
+2026-11-18T07:35:34.7994834Z added 550 packages, and audited 557 packages in 12s
+2026-11-18T07:35:34.7995287Z 
+2026-11-18T07:35:34.7995615Z 109 packages are looking for funding
+2026-11-18T07:35:34.7995896Z   run `npm fund` for details
+2026-11-18T07:35:34.8370941Z 
+2026-11-18T07:35:34.8371589Z 17 vulnerabilities (9 moderate, 8 high)
+2026-11-18T07:35:34.8371900Z 
+2026-11-18T07:35:34.8374466Z To address issues that do not require attention, run:
+2026-11-18T07:35:34.8374952Z   npm audit fix
+2026-11-18T07:35:34.8375414Z 
+2026-11-18T07:35:34.8375735Z To address all issues (including breaking changes), run:
+2026-11-18T07:35:34.8376105Z   npm audit fix --force
+2026-11-18T07:35:34.8376293Z 
+2026-11-18T07:35:34.8376417Z Run `npm audit` for details.
+2026-11-18T07:35:34.8379892Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+2026-11-18T07:35:34.8380657Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+2026-11-18T07:35:34.8380994Z npm warn install-scripts
+2026-11-18T07:35:34.8381475Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+2026-11-18T07:35:41.9449155Z 
+2026-11-18T07:35:41.9450213Z added 307 packages, and audited 314 packages in 7s
+2026-11-18T07:35:41.9474119Z 
+2026-11-18T07:35:41.9474776Z 93 packages are looking for funding
+2026-11-18T07:35:41.9475333Z   run `npm fund` for details
+2026-11-18T07:35:41.9606744Z 
+2026-11-18T07:35:41.9607328Z 12 vulnerabilities (3 moderate, 9 high)
+2026-11-18T07:35:41.9615628Z npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+2026-11-18T07:35:41.9616264Z 
+2026-11-18T07:35:41.9616566Z To address issues that do not require attention, run:
+2026-11-18T07:35:41.9617021Z   npm audit fix
+2026-11-18T07:35:41.9617185Z 
+2026-11-18T07:35:41.9617480Z To address all issues (including breaking changes), run:
+2026-11-18T07:35:41.9617917Z   npm audit fix --force
+2026-11-18T07:35:41.9618114Z 
+2026-11-18T07:35:41.9618264Z Run `npm audit` for details.
+2026-11-18T07:35:41.9618993Z npm warn install-scripts   @vscode/vsce-sign@2.1.1 (postinstall: node ./src/postinstall.js)
+2026-11-18T07:35:41.9619813Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+2026-11-18T07:35:41.9620333Z npm warn install-scripts
+2026-11-18T07:35:41.9621130Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+﻿2026-11-18T07:35:42.0104972Z ##[group]Run npx playwright install --with-deps chromium
+2026-11-18T07:35:42.0105349Z ^[[36;1mnpx playwright install --with-deps chromium^[[0m
+2026-11-18T07:35:42.0158075Z shell: /usr/bin/bash -e {0}
+2026-11-18T07:35:42.0158511Z env:
+2026-11-18T07:35:42.0158672Z   LAYER: unit
+2026-11-18T07:35:42.0158853Z   PATHS: 
+2026-11-18T07:35:42.0159012Z ##[endgroup]
+2026-11-18T07:35:42.6051864Z Installing dependencies...
+2026-11-18T07:35:42.6123478Z Switching to root user to install dependencies...
+2026-11-18T07:35:42.6989389Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-11-18T07:35:42.7275231Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+2026-11-18T07:35:42.7280012Z Get:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease [3964 B]
+2026-11-18T07:35:42.7302380Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease [137 kB]
+2026-11-18T07:35:42.7353833Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease [137 kB]
+2026-11-18T07:35:42.7370764Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease [137 kB]
+2026-11-18T07:35:42.7507534Z Get:7 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main arm64 Packages [151 kB]
+2026-11-18T07:35:42.7669817Z Get:12 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main amd64 Packages [165 kB]
+2026-11-18T07:35:42.7685505Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main amd64v3 Packages [874 kB]
+2026-11-18T07:35:42.7760722Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main Translation-en [196 kB]
+2026-11-18T07:35:42.7813834Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe amd64v3 Packages [391 kB]
+2026-11-18T07:35:42.7843946Z Get:11 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe Translation-en [123 kB]
+2026-11-18T07:35:42.8124198Z Get:13 http://azure.archive.ubuntu.com/ubuntu resolute-security/main amd64v3 Packages [719 kB]
+2026-11-18T07:35:42.8175025Z Get:14 http://azure.archive.ubuntu.com/ubuntu resolute-security/main Translation-en [158 kB]
+2026-11-18T07:35:42.8197606Z Get:15 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe amd64v3 Packages [221 kB]
+2026-11-18T07:35:42.8215140Z Get:16 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe Translation-en [72.6 kB]
+2026-11-18T07:35:42.8228282Z Get:17 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted amd64v3 Packages [590 kB]
+2026-11-18T07:35:42.8262550Z Get:18 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted Translation-en [122 kB]
+2026-11-18T07:35:45.2931025Z Fetched 4197 kB in 0s (14.7 MB/s)
+2026-11-18T07:35:45.8366207Z Reading package lists...
+2026-11-18T07:35:45.8592567Z Reading package lists...
+2026-11-18T07:35:45.9971600Z Building dependency tree...
+2026-11-18T07:35:45.9978023Z Reading state information...
+2026-11-18T07:35:46.0262783Z libasound2t64 is already the newest version (1.2.15.3-1ubuntu1.1).
+2026-11-18T07:35:46.0263496Z libasound2t64 set to manually installed.
+2026-11-18T07:35:46.0264047Z libatk-bridge2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+2026-11-18T07:35:46.0264544Z libatk-bridge2.0-0t64 set to manually installed.
+2026-11-18T07:35:46.0265078Z libatk1.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+2026-11-18T07:35:46.0265525Z libatk1.0-0t64 set to manually installed.
+2026-11-18T07:35:46.0265990Z libatspi2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+2026-11-18T07:35:46.0266433Z libatspi2.0-0t64 set to manually installed.
+2026-11-18T07:35:46.0266831Z libcairo2 is already the newest version (1.18.4-3).
+2026-11-18T07:35:46.0267221Z libcairo2 set to manually installed.
+2026-11-18T07:35:46.0267671Z libcups2t64 is already the newest version (2.4.16-1ubuntu1.3).
+2026-11-18T07:35:46.0268097Z libcups2t64 set to manually installed.
+2026-11-18T07:35:46.0268528Z libdbus-1-3 is already the newest version (1.16.2-2ubuntu4).
+2026-11-18T07:35:46.0268937Z libdbus-1-3 set to manually installed.
+2026-11-18T07:35:46.0269315Z libdrm2 is already the newest version (2.4.131-1).
+2026-11-18T07:35:46.0270255Z libdrm2 set to manually installed.
+2026-11-18T07:35:46.0270664Z libgbm1 is already the newest version (26.0.8-1ubuntu0.3).
+2026-11-18T07:35:46.0271253Z libgbm1 set to manually installed.
+2026-11-18T07:35:46.0271682Z libglib2.0-0t64 is already the newest version (2.88.0-1ubuntu0.1).
+2026-11-18T07:35:46.0272127Z libglib2.0-0t64 set to manually installed.
+2026-11-18T07:35:46.0272671Z libnspr4 is already the newest version (2:4.38.2-1ubuntu1).
+2026-11-18T07:35:46.0273206Z libnspr4 set to manually installed.
+2026-11-18T07:35:46.0273632Z libnss3 is already the newest version (2:3.120-1ubuntu2.2).
+2026-11-18T07:35:46.0274035Z libnss3 set to manually installed.
+2026-11-18T07:35:46.0274434Z libpango-1.0-0 is already the newest version (1.57.0-1).
+2026-11-18T07:35:46.0274839Z libpango-1.0-0 set to manually installed.
+2026-11-18T07:35:46.0275269Z libx11-6 is already the newest version (2:1.8.13-1ubuntu0.1).
+2026-11-18T07:35:46.0275674Z libx11-6 set to manually installed.
+2026-11-18T07:35:46.0276082Z libxcb1 is already the newest version (1.17.0-2ubuntu1).
+2026-11-18T07:35:46.0276470Z libxcb1 set to manually installed.
+2026-11-18T07:35:46.0276902Z libxcomposite1 is already the newest version (1:0.4.6-1build1).
+2026-11-18T07:35:46.0277334Z libxcomposite1 set to manually installed.
+2026-11-18T07:35:46.0277741Z libxdamage1 is already the newest version (1:1.1.7-1).
+2026-11-18T07:35:46.0278138Z libxdamage1 set to manually installed.
+2026-11-18T07:35:46.0278582Z libxext6 is already the newest version (2:1.3.4-1build3).
+2026-11-18T07:35:46.0278977Z libxext6 set to manually installed.
+2026-11-18T07:35:46.0279389Z libxfixes3 is already the newest version (1:6.0.0-2build2).
+2026-11-18T07:35:46.0279799Z libxfixes3 set to manually installed.
+2026-11-18T07:35:46.0280202Z libxkbcommon0 is already the newest version (1.13.1-1).
+2026-11-18T07:35:46.0280607Z libxkbcommon0 set to manually installed.
+2026-11-18T07:35:46.0281036Z libxrandr2 is already the newest version (2:1.5.4-1build1).
+2026-11-18T07:35:46.0281445Z libxrandr2 set to manually installed.
+2026-11-18T07:35:46.0281854Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+2026-11-18T07:35:46.0282385Z fonts-noto-color-emoji is already the newest version (2.051-1build1).
+2026-11-18T07:35:46.0283107Z libfontconfig1 is already the newest version (2.17.1-3ubuntu1).
+2026-11-18T07:35:46.0283546Z libfontconfig1 set to manually installed.
+2026-11-18T07:35:46.0284015Z libfreetype6 is already the newest version (2.14.2+dfsg-1ubuntu0.2).
+2026-11-18T07:35:46.0284458Z libfreetype6 set to manually installed.
+2026-11-18T07:35:46.0284914Z fonts-liberation is already the newest version (1:2.1.5-3build1).
+2026-11-18T07:35:46.0285362Z fonts-liberation set to manually installed.
+2026-11-18T07:35:46.0736823Z Solving dependencies...
+2026-11-18T07:35:46.1501547Z The following additional packages will be installed:
+2026-11-18T07:35:46.1502245Z   xfonts-encodings xfonts-utils
+2026-11-18T07:35:46.1505678Z Recommended packages:
+2026-11-18T07:35:46.1506068Z   fonts-ipafont-mincho fonts-tlwg-loma
+2026-11-18T07:35:46.1786368Z The following NEW packages will be installed:
+2026-11-18T07:35:46.1787078Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+2026-11-18T07:35:46.1791391Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+2026-11-18T07:35:46.1791893Z   xfonts-utils
+2026-11-18T07:35:46.1967766Z 0 upgraded, 9 newly installed, 0 to remove and 29 not upgraded.
+2026-11-18T07:35:46.1968285Z Need to get 21.9 MB of archives.
+2026-11-18T07:35:46.1968617Z After this operation, 80.2 MB of additional disk space will be used.
+2026-11-18T07:35:46.1968996Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-11-18T07:35:46.2287065Z Get:2 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-ipafont-gothic all 00303-23ubuntu1 [3703 kB]
+2026-11-18T07:35:46.2610982Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 fonts-freefont-ttf all 20211204+svn4273-4build1 [5656 kB]
+2026-11-18T07:35:46.3006385Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-tlwg-loma-otf all 1:0.7.3-1build1 [106 kB]
+2026-11-18T07:35:46.3159101Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-unifont all 1:16.0.04-1build1 [3169 kB]
+2026-11-18T07:35:46.3449373Z Get:6 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-wqy-zenhei all 0.9.45-8build1 [7863 kB]
+2026-11-18T07:35:46.3988741Z Get:7 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-encodings all 1:1.0.5-0ubuntu3 [576 kB]
+2026-11-18T07:35:46.4474460Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-utils amd64 1:7.7+7build1 [97.3 kB]
+2026-11-18T07:35:46.4621564Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-cyrillic all 1:1.0.5+nmu1build1 [384 kB]
+2026-11-18T07:35:46.4784102Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-scalable all 1:1.0.3-1.3build1 [304 kB]
+2026-11-18T07:35:46.7416310Z Fetched 21.9 MB in 0s (74.4 MB/s)
+2026-11-18T07:35:46.7641751Z Selecting previously unselected package fonts-ipafont-gothic.
+2026-11-18T07:35:46.7839374Z (Reading database ... 
+2026-11-18T07:35:46.7839772Z (Reading database ... 5%
+2026-11-18T07:35:46.7840004Z (Reading database ... 10%
+2026-11-18T07:35:46.7840209Z (Reading database ... 15%
+2026-11-18T07:35:46.7840800Z (Reading database ... 20%
+2026-11-18T07:35:46.7841234Z (Reading database ... 25%
+2026-11-18T07:35:46.7841643Z (Reading database ... 30%
+2026-11-18T07:35:46.7841917Z (Reading database ... 35%
+2026-11-18T07:35:46.7842110Z (Reading database ... 40%
+2026-11-18T07:35:46.7842307Z (Reading database ... 45%
+2026-11-18T07:35:46.7842499Z (Reading database ... 50%
+2026-11-18T07:35:46.8792352Z (Reading database ... 55%
+2026-11-18T07:35:47.0368350Z (Reading database ... 60%
+2026-11-18T07:35:47.1799115Z (Reading database ... 65%
+2026-11-18T07:35:47.3805008Z (Reading database ... 70%
+2026-11-18T07:35:47.5423784Z (Reading database ... 75%
+2026-11-18T07:35:47.7291049Z (Reading database ... 80%
+2026-11-18T07:35:47.9347756Z (Reading database ... 85%
+2026-11-18T07:35:48.1237889Z (Reading database ... 90%
+2026-11-18T07:35:48.2834488Z (Reading database ... 95%
+2026-11-18T07:35:48.2834843Z (Reading database ... 100%
+2026-11-18T07:35:48.2835187Z (Reading database ... 213946 files and directories currently installed.)
+2026-11-18T07:35:48.2879918Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-23ubuntu1_all.deb ...
+2026-11-18T07:35:48.3039789Z Unpacking fonts-ipafont-gothic (00303-23ubuntu1) ...
+2026-11-18T07:35:48.4002415Z Selecting previously unselected package fonts-freefont-ttf.
+2026-11-18T07:35:48.4128048Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-4build1_all.deb ...
+2026-11-18T07:35:48.4134154Z Unpacking fonts-freefont-ttf (20211204+svn4273-4build1) ...
+2026-11-18T07:35:48.5217489Z Selecting previously unselected package fonts-tlwg-loma-otf.
+2026-11-18T07:35:48.5341703Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1build1_all.deb ...
+2026-11-18T07:35:48.5347265Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+2026-11-18T07:35:48.5539517Z Selecting previously unselected package fonts-unifont.
+2026-11-18T07:35:48.5662807Z Preparing to unpack .../3-fonts-unifont_1%3a16.0.04-1build1_all.deb ...
+2026-11-18T07:35:48.5668046Z Unpacking fonts-unifont (1:16.0.04-1build1) ...
+2026-11-18T07:35:48.7852396Z Selecting previously unselected package fonts-wqy-zenhei.
+2026-11-18T07:35:48.7978383Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8build1_all.deb ...
+2026-11-18T07:35:48.8104340Z Unpacking fonts-wqy-zenhei (0.9.45-8build1) ...
+2026-11-18T07:35:48.9773263Z Selecting previously unselected package xfonts-encodings.
+2026-11-18T07:35:48.9898403Z Preparing to unpack .../5-xfonts-encodings_1%3a1.0.5-0ubuntu3_all.deb ...
+2026-11-18T07:35:48.9903923Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu3) ...
+2026-11-18T07:35:49.0171945Z Selecting previously unselected package xfonts-utils.
+2026-11-18T07:35:49.0319740Z Preparing to unpack .../6-xfonts-utils_1%3a7.7+7build1_amd64v3.deb ...
+2026-11-18T07:35:49.0326357Z Unpacking xfonts-utils (1:7.7+7build1) ...
+2026-11-18T07:35:49.0898209Z Selecting previously unselected package xfonts-cyrillic.
+2026-11-18T07:35:49.1021896Z Preparing to unpack .../7-xfonts-cyrillic_1%3a1.0.5+nmu1build1_all.deb ...
+2026-11-18T07:35:49.1030805Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+2026-11-18T07:35:49.1306993Z Selecting previously unselected package xfonts-scalable.
+2026-11-18T07:35:49.1431947Z Preparing to unpack .../8-xfonts-scalable_1%3a1.0.3-1.3build1_all.deb ...
+2026-11-18T07:35:49.1437621Z Unpacking xfonts-scalable (1:1.0.3-1.3build1) ...
+2026-11-18T07:35:49.2032862Z Setting up fonts-wqy-zenhei (0.9.45-8build1) ...
+2026-11-18T07:35:49.2157649Z Setting up fonts-freefont-ttf (20211204+svn4273-4build1) ...
+2026-11-18T07:35:49.2170555Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+2026-11-18T07:35:49.2184405Z Setting up xfonts-encodings (1:1.0.5-0ubuntu3) ...
+2026-11-18T07:35:49.2197795Z Setting up fonts-ipafont-gothic (00303-23ubuntu1) ...
+2026-11-18T07:35:49.2248053Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+2026-11-18T07:35:49.2259100Z Setting up fonts-unifont (1:16.0.04-1build1) ...
+2026-11-18T07:35:49.2271856Z Setting up xfonts-utils (1:7.7+7build1) ...
+2026-11-18T07:35:49.2335446Z Setting up xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+2026-11-18T07:35:49.2712602Z Setting up xfonts-scalable (1:1.0.3-1.3build1) ...
+2026-11-18T07:35:49.3064527Z Processing triggers for man-db (2.13.1-1build1) ...
+2026-11-18T07:35:49.3112177Z Not building database; man-db/auto-update is not 'true'.
+2026-11-18T07:35:49.3124633Z Processing triggers for fontconfig (2.17.1-3ubuntu1) ...
+2026-11-18T07:35:49.8874400Z 
+2026-11-18T07:35:49.8875008Z Running kernel seems to be up-to-date.
+2026-11-18T07:35:49.8875311Z 
+2026-11-18T07:35:49.8875452Z Restarting services...
+2026-11-18T07:35:49.8956136Z 
+2026-11-18T07:35:49.8956701Z Service restarts being deferred:
+2026-11-18T07:35:49.8958191Z  systemctl restart hosted-compute-agent.service
+2026-11-18T07:35:49.8958462Z 
+2026-11-18T07:35:49.8959178Z No containers need to be restarted.
+2026-11-18T07:35:49.8959326Z 
+2026-11-18T07:35:49.8959494Z No user sessions are running outdated binaries.
+2026-11-18T07:35:49.8959722Z 
+2026-11-18T07:35:49.8960021Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-11-18T07:35:50.7598790Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+2026-11-18T07:35:51.0623740Z |                                                                                |   0% of 191.1 MiB
+2026-11-18T07:35:51.2633522Z |■■■■■■■■                                                                        |  10% of 191.1 MiB
+2026-11-18T07:35:51.3388843Z |■■■■■■■■■■■■■■■■                                                                |  20% of 191.1 MiB
+2026-11-18T07:35:51.4145433Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 191.1 MiB
+2026-11-18T07:35:51.4672244Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 191.1 MiB
+2026-11-18T07:35:51.5277429Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 191.1 MiB
+2026-11-18T07:35:51.5905898Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 191.1 MiB
+2026-11-18T07:35:51.6319936Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 191.1 MiB
+2026-11-18T07:35:51.7027886Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 191.1 MiB
+2026-11-18T07:35:51.7590628Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 191.1 MiB
+2026-11-18T07:35:51.8217717Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 191.1 MiB
+2026-11-18T07:35:54.2112588Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+2026-11-18T07:35:54.2116611Z Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+2026-11-18T07:35:54.4966718Z |                                                                                |   0% of 2.2 MiB
+2026-11-18T07:35:54.5009041Z |■■■■■■■■                                                                        |  10% of 2.2 MiB
+2026-11-18T07:35:54.5027205Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+2026-11-18T07:35:54.5045541Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+2026-11-18T07:35:54.5059149Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+2026-11-18T07:35:54.5069855Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+2026-11-18T07:35:54.5079930Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+2026-11-18T07:35:54.5089908Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+2026-11-18T07:35:54.5112165Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+2026-11-18T07:35:54.5113359Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+2026-11-18T07:35:54.5116435Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+2026-11-18T07:35:54.5564990Z FFmpeg (playwright ffmpeg v1013) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1013
+2026-11-18T07:35:54.5567260Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+2026-11-18T07:35:54.8804553Z |                                                                                |   0% of 120 MiB
+2026-11-18T07:35:55.0250818Z |■■■■■■■■                                                                        |  10% of 120 MiB
+2026-11-18T07:35:55.0936306Z |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+2026-11-18T07:35:55.1467599Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+2026-11-18T07:35:55.2118049Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+2026-11-18T07:35:55.2505025Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+2026-11-18T07:35:55.2769232Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+2026-11-18T07:35:55.3202756Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+2026-11-18T07:35:55.3598917Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+2026-11-18T07:35:55.4061018Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+2026-11-18T07:35:55.4409840Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+2026-11-18T07:35:57.1662573Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+﻿2026-11-18T07:35:57.2050874Z ##[group]Run npm run test:unit 2>&1 | tee test.log
+2026-11-18T07:35:57.2051207Z ^[[36;1mnpm run test:unit 2>&1 | tee test.log^[[0m
+2026-11-18T07:35:57.2097670Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-18T07:35:57.2097951Z env:
+2026-11-18T07:35:57.2098107Z   LAYER: unit
+2026-11-18T07:35:57.2098267Z   PATHS: 
+2026-11-18T07:35:57.2098424Z ##[endgroup]
+2026-11-18T07:35:57.2967468Z 
+2026-11-18T07:35:57.2967968Z > test:unit
+2026-11-18T07:35:57.2968319Z > vitest run --project 'unit*'
+2026-11-18T07:35:57.2968515Z 
+2026-11-18T07:35:57.9151789Z 
+2026-11-18T07:35:57.9153430Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.4 ^[[39m^[[90m/home/runner/work/mdmark/mdmark^[[39m
+2026-11-18T07:35:57.9153920Z 
+2026-11-18T07:35:59.4270473Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table.part.test.ts ^[[2m(^[[22m^[[2m38 tests^[[22m^[[2m)^[[22m^[[33m 380^[[2mms^[[22m^[[39m
+2026-11-18T07:35:59.4271734Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_table^[[33m 345^[[2mms^[[22m^[[39m
+2026-11-18T07:36:01.1581600Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/map.part.test.ts ^[[2m(^[[22m^[[2m53 tests^[[22m^[[2m)^[[22m^[[33m 2018^[[2mms^[[22m^[[39m
+2026-11-18T07:36:01.1582803Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_map_flow^[[33m 604^[[2mms^[[22m^[[39m
+2026-11-18T07:36:01.1583555Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_map_er^[[33m 458^[[2mms^[[22m^[[39m
+2026-11-18T07:36:02.1220176Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/section/side-toc.interact.browser.test.ts ^[[2m(^[[22m^[[2m27 tests^[[22m^[[2m)^[[22m^[[33m 913^[[2mms^[[22m^[[39m
+2026-11-18T07:36:03.3585392Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table.syntax.test.ts ^[[2m(^[[22m^[[2m34 tests^[[22m^[[2m)^[[22m^[[32m 253^[[2mms^[[22m^[[39m
+2026-11-18T07:36:03.5945553Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table.interact.browser.test.ts ^[[2m(^[[22m^[[2m79 tests^[[22m^[[2m)^[[22m^[[33m 2490^[[2mms^[[22m^[[39m
+2026-11-18T07:36:04.1986627Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/code-block/code-block.syntax.test.ts ^[[2m(^[[22m^[[2m38 tests^[[22m^[[2m)^[[22m^[[32m 197^[[2mms^[[22m^[[39m
+2026-11-18T07:36:04.9514666Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/config-files.test.ts ^[[2m(^[[22m^[[2m44 tests^[[22m^[[2m)^[[22m^[[33m 345^[[2mms^[[22m^[[39m
+2026-11-18T07:36:05.0510630Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/check.test.ts ^[[2m(^[[22m^[[2m37 tests^[[22m^[[2m)^[[22m^[[33m 5771^[[2mms^[[22m^[[39m
+2026-11-18T07:36:05.0511758Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_check^[[33m 4013^[[2mms^[[22m^[[39m
+2026-11-18T07:36:05.0523677Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_check_when_base_given^[[33m 817^[[2mms^[[22m^[[39m
+2026-11-18T07:36:05.5195171Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/mount.browser.test.ts ^[[2m(^[[22m^[[2m48 tests^[[22m^[[2m)^[[22m^[[33m 4377^[[2mms^[[22m^[[39m
+2026-11-18T07:36:05.5218280Z    ^[[33m^[[2m✓^[[22m^[[39m test_mount_when_mermaid^[[33m 825^[[2mms^[[22m^[[39m
+2026-11-18T07:36:05.5251300Z    ^[[33m^[[2m✓^[[22m^[[39m test_mount_when_plain_mermaid_fallback^[[33m 1667^[[2mms^[[22m^[[39m
+2026-11-18T07:36:05.9744859Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/matches.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[33m 358^[[2mms^[[22m^[[39m
+2026-11-18T07:36:06.1334259Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/mermaid.browser.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[33m 3563^[[2mms^[[22m^[[39m
+2026-11-18T07:36:06.1335366Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_mermaid^[[33m 1590^[[2mms^[[22m^[[39m
+2026-11-18T07:36:06.1351017Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_mermaid_when_scheme_changed^[[33m 430^[[2mms^[[22m^[[39m
+2026-11-18T07:36:06.5501819Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/section/section.interact.browser.test.ts ^[[2m(^[[22m^[[2m21 tests^[[22m^[[2m)^[[22m^[[33m 497^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0593719Z  ^[[31m❯^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts ^[[2m(^[[22m^[[2m21 tests^[[22m^[[2m | ^[[22m^[[31m11 failed^[[39m^[[2m)^[[22m^[[33m 2798^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0658288Z ^[[31m   ^[[31m×^[[31m test_attach_zoom^[[39m^[[33m 560^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0704280Z    ^[[32m✓^[[39m test_attach_zoom_when_percent_base_fit^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0710676Z    ^[[32m✓^[[39m test_attach_zoom_when_panned^[[32m 37^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0711533Z    ^[[32m✓^[[39m test_attach_zoom_when_detached^[[32m 2^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0723619Z    ^[[32m✓^[[39m test_attach_zoom_when_dragged_on_link^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0773797Z    ^[[32m✓^[[39m test_attach_zoom_when_link_dragstart^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0774811Z    ^[[32m✓^[[39m test_attach_zoom_when_link_pressed^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0783779Z    ^[[32m✓^[[39m test_attach_zoom_when_drag_threshold^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0786043Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_refit^[[39m^[[32m 215^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0786935Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_focus_rect^[[39m^[[32m 104^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0805068Z    ^[[32m✓^[[39m test_attach_zoom_when_focus_rect_wide^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0807465Z    ^[[32m✓^[[39m test_attach_zoom_when_focus_rect_animated^[[32m 15^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0808976Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_focus_rect_other_click^[[39m^[[33m 323^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0809851Z    ^[[32m✓^[[39m test_zoom_control_of^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0812446Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_bounds^[[39m^[[33m 341^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0813546Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_at_fit^[[39m^[[32m 257^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0814822Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_pinched^[[39m^[[32m 272^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0815720Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_native_touch^[[39m^[[32m 163^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0824999Z ^[[31m   ^[[31m×^[[31m test_attach_zoom_when_wheel^[[39m^[[32m 179^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0825836Z ^[[31m   ^[[31m×^[[31m test_wheel_delta^[[39m^[[32m 118^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0826599Z ^[[31m   ^[[31m×^[[31m test_scroll_parent_of^[[39m^[[32m 181^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.0827866Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/index.browser.test.ts ^[[2m(^[[22m^[[2m17 tests^[[22m^[[2m)^[[22m^[[33m 734^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.3783532Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/export.test.ts ^[[2m(^[[22m^[[2m26 tests^[[22m^[[2m)^[[22m^[[33m 2164^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.3789180Z    ^[[33m^[[2m✓^[[22m^[[39m test_prepare_embeds^[[33m 1182^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.3839677Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_export_when_document_missing^[[33m 388^[[2mms^[[22m^[[39m
+2026-11-18T07:36:07.7652227Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diff/blocks.browser.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 134^[[2mms^[[22m^[[39m
+2026-11-18T07:36:08.2685134Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/check.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[32m 124^[[2mms^[[22m^[[39m
+2026-11-18T07:36:08.7462316Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diff/panel.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[33m 1051^[[2mms^[[22m^[[39m
+2026-11-18T07:36:08.7464134Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_diff_when_h1_section^[[33m 345^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.2691981Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/layout.test.ts ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[32m 286^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5021295Z  ^[[31m❯^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram.interact.browser.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m | ^[[22m^[[31m4 failed^[[39m^[[2m)^[[22m^[[33m 2626^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5090930Z ^[[31m   ^[[31m×^[[31m test_attach_diagrams^[[39m^[[32m 211^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5177170Z ^[[31m   ^[[31m×^[[31m test_attach_diagrams_when_max^[[39m^[[32m 223^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5245498Z ^[[31m   ^[[31m×^[[31m test_attach_diagrams_when_panned^[[39m^[[32m 223^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5284274Z    ^[[32m✓^[[39m test_attach_diagrams_when_zoom_button^[[32m 62^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5364233Z    ^[[32m✓^[[39m test_attach_diagrams_when_wheel^[[32m 17^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5386113Z    ^[[32m✓^[[39m test_attach_diagrams_when_tall^[[32m 15^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5514269Z    ^[[32m✓^[[39m test_attach_diagrams_when_resized^[[32m 47^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5544128Z    ^[[32m✓^[[39m test_attach_diagrams_when_cleaned_up^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5573971Z    ^[[32m✓^[[39m test_open_diagram_dialog^[[32m 77^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5634069Z    ^[[33m^[[2m✓^[[22m^[[39m test_open_diagram_dialog_when_tip_open^[[33m 1376^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5694080Z    ^[[32m✓^[[39m test_attach_diagrams_when_handle_resized^[[32m 148^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5704920Z    ^[[32m✓^[[39m test_attach_diagrams_when_figures_given^[[32m 13^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5764154Z    ^[[32m✓^[[39m test_attach_diagrams_when_page_scrolled^[[32m 10^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5824132Z    ^[[32m✓^[[39m test_attach_diagrams_when_modal_heads^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5854053Z    ^[[32m✓^[[39m test_attach_diagrams_when_mermaid_text_drag^[[32m 11^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.5914228Z ^[[31m   ^[[31m×^[[31m test_attach_diagrams_when_panel_toggled^[[39m^[[32m 167^[[2mms^[[22m^[[39m
+2026-11-18T07:36:09.6025045Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/tabs/tabs.interact.browser.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 275^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.0715651Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/footnote/footnote.interact.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 129^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.1644872Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram-tips.interact.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 167^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.2274918Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/convert.test.ts ^[[2m(^[[22m^[[2m22 tests^[[22m^[[2m)^[[22m^[[33m 310^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3000774Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/server.test.ts ^[[2m(^[[22m^[[2m17 tests^[[22m^[[2m)^[[22m^[[33m 3844^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3054831Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_tmux_args^[[33m 351^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3058690Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_with_tmux^[[33m 1397^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3060252Z    ^[[33m^[[2m✓^[[22m^[[39m test_list_tool_names^[[33m 1613^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3468262Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/build.test.ts ^[[2m(^[[22m^[[2m30 tests^[[22m^[[2m)^[[22m^[[33m 8896^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3477891Z    ^[[33m^[[2m✓^[[22m^[[39m test_main^[[33m 1375^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3479004Z    ^[[33m^[[2m✓^[[22m^[[39m test_main_when_version_given^[[33m 807^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3480048Z    ^[[33m^[[2m✓^[[22m^[[39m test_main_when_dist_file_too_large^[[33m 505^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3482559Z    ^[[33m^[[2m✓^[[22m^[[39m test_main_when_guide_index_invalid^[[33m 353^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3483880Z    ^[[33m^[[2m✓^[[22m^[[39m test_main_when_api_missing_in_baseline_browser^[[33m 416^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3484684Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_dist^[[33m 474^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3485419Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_dist_when_nested_css^[[33m 380^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3486271Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_dist_when_postcss_imported^[[33m 372^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3487092Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_dist_when_cli_and_viewer^[[33m 358^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3487909Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_dist_when_cli_bundles_package^[[33m 355^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.3488674Z    ^[[33m^[[2m✓^[[22m^[[39m test_emit_declarations^[[33m 2936^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8090715Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/mount-parts.browser.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 612^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8225567Z  ^[[31m❯^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.part.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m | ^[[22m^[[31m4 failed^[[39m^[[2m)^[[22m^[[32m 217^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8256606Z ^[[31m   ^[[31m×^[[31m test_render_diagram_frame^[[39m^[[32m 62^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8261751Z    ^[[32m✓^[[39m test_render_diagram_frame_when_modal^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8327750Z    ^[[32m✓^[[39m test_render_flow^[[32m 125^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8329008Z    ^[[32m✓^[[39m test_render_flow_when_text_escaped^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8332327Z    ^[[32m✓^[[39m test_render_diagram_tip^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8334763Z    ^[[32m✓^[[39m test_render_diagram_tip_when_hint^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8378629Z    ^[[32m✓^[[39m test_render_diagram_tip_when_annotations^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8402888Z ^[[31m   ^[[31m×^[[31m test_render_diagram_frame_when_zoom_button^[[39m^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8440199Z    ^[[32m✓^[[39m test_render_flow_when_hint^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8464755Z    ^[[32m✓^[[39m test_legend_for_when_chart_types_added^[[32m 4^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8493891Z    ^[[32m✓^[[39m test_render_flow_when_node_link^[[32m 2^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8500263Z    ^[[32m✓^[[39m test_render_diagram_frame_when_resizable^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8518856Z    ^[[32m✓^[[39m test_render_diagram_frame_when_no_legend^[[32m 0^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8541941Z    ^[[32m✓^[[39m test_render_diagram_frame_when_mermaid^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8545865Z    ^[[32m✓^[[39m test_render_diagram_frame_when_map^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8546641Z    ^[[32m✓^[[39m test_render_diagram_frame_when_resize_strip^[[32m 1^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8547491Z    ^[[32m✓^[[39m test_render_diagram_tip_when_item^[[32m 0^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8548467Z ^[[31m   ^[[31m×^[[31m test_render_diagram_frame_when_panel_open^[[39m^[[32m 2^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.8549451Z ^[[31m   ^[[31m×^[[31m test_render_diagram_frame_when_bounds^[[39m^[[32m 3^[[2mms^[[22m^[[39m
+2026-11-18T07:36:10.9283686Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/templates.test.ts ^[[2m(^[[22m^[[2m30 tests^[[22m^[[2m)^[[22m^[[33m 376^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.0759881Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/dictionary.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[33m 340^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.4351952Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 2425^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.4375356Z    ^[[33m^[[2m✓^[[22m^[[39m test_panel_screen_when_rendered^[[33m 616^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.4403969Z    ^[[33m^[[2m✓^[[22m^[[39m test_panel_screen_when_config_error^[[33m 359^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.5909361Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/knowledge/term.interact.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 263^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.7695054Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/libraries.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 64^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.8464970Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/config.test.ts ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[33m 517^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.9385006Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/embed.test.ts ^[[2m(^[[22m^[[2m25 tests^[[22m^[[2m)^[[22m^[[33m 711^[[2mms^[[22m^[[39m
+2026-11-18T07:36:11.9434173Z    ^[[33m^[[2m✓^[[22m^[[39m test_used_parts^[[33m 361^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.3194717Z ^[[90mstderr^[[2m | tests/unit/src/render/sanitize.test.ts^[[2m > ^[[22m^[[2mtest_resolve_id_href
+2026-11-18T07:36:12.3215478Z ^[[22m^[[39m[mdmark] resolveIdLink が例外を投げました Error: boom
+2026-11-18T07:36:12.3225237Z     at resolveIdLink ^[[90m(/home/runner/work/mdmark/mdmark/^[[39mtests/unit/src/render/sanitize.test.ts:474:35^[[90m)^[[39m
+2026-11-18T07:36:12.3277550Z     at resolveIdHref ^[[90m(/home/runner/work/mdmark/mdmark/^[[39msrc/render/sanitize.ts:354:16^[[90m)^[[39m
+2026-11-18T07:36:12.3303874Z     at ^[[90m/home/runner/work/mdmark/mdmark/^[[39mtests/unit/src/render/sanitize.test.ts:486:19
+2026-11-18T07:36:12.3348600Z     at Array.map (<anonymous>)
+2026-11-18T07:36:12.3373609Z     at ^[[90m/home/runner/work/mdmark/mdmark/^[[39mtests/unit/src/render/sanitize.test.ts:486:5
+2026-11-18T07:36:12.3403967Z ^[[90m    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)^[[39m
+2026-11-18T07:36:12.3434044Z     at async ^[[90mfile:///home/runner/work/mdmark/mdmark/^[[39mnode_modules/^[[4mvitest^[[24m/dist/chunks/run.Cm2sd7-x.js:2794:20
+2026-11-18T07:36:12.3463314Z 
+2026-11-18T07:36:12.3464195Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/sanitize.test.ts ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[32m 118^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.3894216Z  ^[[31m❯^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/flow-view.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m | ^[[22m^[[31m1 failed^[[39m^[[2m)^[[22m^[[33m 1187^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4016018Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_map_flow_when_toggle^[[33m 321^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4054269Z    ^[[32m✓^[[39m test_attach_map_flow_when_select_wire^[[32m 50^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4119645Z    ^[[32m✓^[[39m test_attach_map_flow_when_escape^[[32m 38^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4154629Z    ^[[32m✓^[[39m test_attach_map_flow_when_packets^[[32m 33^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4214399Z    ^[[32m✓^[[39m test_attach_map_flow_when_walk_leaves_group^[[32m 107^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4304375Z    ^[[32m✓^[[39m test_attach_map_flow_when_follow^[[32m 70^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4355180Z ^[[31m   ^[[31m×^[[31m test_attach_map_flow_when_drag_cancelled^[[39m^[[33m 398^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4424272Z    ^[[32m✓^[[39m test_attach_map_flow_when_node_link^[[32m 60^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4497447Z    ^[[32m✓^[[39m test_attach_map_flow_when_node_hit_keys^[[32m 58^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4594269Z    ^[[32m✓^[[39m test_attach_map_flow_when_crowded^[[32m 29^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.4613946Z    ^[[32m✓^[[39m test_attach_map_flow_when_closed_group_measured^[[32m 24^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.7081872Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-width.interact.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 598^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.8929266Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/upgrade.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[33m 1750^[[2mms^[[22m^[[39m
+2026-11-18T07:36:12.8944227Z    ^[[33m^[[2m✓^[[22m^[[39m test_write_config_version^[[33m 476^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.1636930Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[33m 1086^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.1654155Z    ^[[33m^[[2m✓^[[22m^[[39m test_inspect_when_play^[[33m 1022^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.3418496Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/tree/tree.interact.browser.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 78^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.4024433Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/check.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[32m 230^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.4187691Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/migrations.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[33m 1235^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.4247847Z    ^[[33m^[[2m✓^[[22m^[[39m test_load_migration_versions_when_steps_invalid^[[33m 838^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.4986719Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/bubble.browser.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 411^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.8186987Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/highlight.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 68^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.8258366Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/code-block/code-block.part.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m)^[[22m^[[32m 118^[[2mms^[[22m^[[39m
+2026-11-18T07:36:13.8650580Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/chart.part.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[32m 151^[[2mms^[[22m^[[39m
+2026-11-18T07:36:14.1641125Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/tools.test.ts ^[[2m(^[[22m^[[2m20 tests^[[22m^[[2m)^[[22m^[[33m 1526^[[2mms^[[22m^[[39m
+2026-11-18T07:36:14.1677129Z    ^[[33m^[[2m✓^[[22m^[[39m test_call_tool^[[33m 433^[[2mms^[[22m^[[39m
+2026-11-18T07:36:14.1678912Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_check_tool_when_base_given^[[33m 575^[[2mms^[[22m^[[39m
+2026-11-18T07:36:14.3424991Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/aliases.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 78^[[2mms^[[22m^[[39m
+2026-11-18T07:36:14.5693142Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diff/minimap.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 310^[[2mms^[[22m^[[39m
+2026-11-18T07:36:14.7013788Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/term.syntax.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 134^[[2mms^[[22m^[[39m
+2026-11-18T07:36:14.7577320Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/config.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 45^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.0827515Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/term-tip.part.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 113^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.2284900Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/marks.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m)^[[22m^[[33m 519^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.2347273Z    ^[[33m^[[2m✓^[[22m^[[39m test_take_marks^[[33m 367^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.2985841Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/code-block/code-fold.interact.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 63^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.2996794Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/index.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 814^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.6424436Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/footnote/footnote.syntax.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m)^[[22m^[[32m 219^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.7188481Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/mark-schema.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 166^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.8047414Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/bundle.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 1853^[[2mms^[[22m^[[39m
+2026-11-18T07:36:15.8095469Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_bundle^[[33m 1146^[[2mms^[[22m^[[39m
+2026-11-18T07:36:17.8525639Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/embedded-html/embedded-html.syntax.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 163^[[2mms^[[22m^[[39m
+2026-11-18T07:36:18.0545085Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/index-shape.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 43^[[2mms^[[22m^[[39m
+2026-11-18T07:36:18.2765171Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/interact.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 305^[[2mms^[[22m^[[39m
+2026-11-18T07:36:18.4895484Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/html-scripts.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 2650^[[2mms^[[22m^[[39m
+2026-11-18T07:36:18.4929242Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_html_scripts^[[33m 2608^[[2mms^[[22m^[[39m
+2026-11-18T07:36:18.6684832Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/baseline.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[33m 819^[[2mms^[[22m^[[39m
+2026-11-18T07:36:18.9745081Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-resize.interact.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 200^[[2mms^[[22m^[[39m
+2026-11-18T07:36:19.0785959Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/footnote/annotations.syntax.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 166^[[2mms^[[22m^[[39m
+2026-11-18T07:36:19.1398223Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 105^[[2mms^[[22m^[[39m
+2026-11-18T07:36:19.1806232Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/comment.part.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 123^[[2mms^[[22m^[[39m
+2026-11-18T07:36:19.5750089Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tree/tree.part.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 138^[[2mms^[[22m^[[39m
+2026-11-18T07:36:19.6415137Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/mindmap-view.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 429^[[2mms^[[22m^[[39m
+2026-11-18T07:36:19.8586229Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/parser.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[33m 484^[[2mms^[[22m^[[39m
+2026-11-18T07:36:19.8619975Z    ^[[33m^[[2m✓^[[22m^[[39m test_create_parser_when_task_list^[[33m 352^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.1439043Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/axis-grid-view.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 314^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.2035439Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/band.browser.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 199^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.2097245Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/part-states.interact.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 21^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.2820398Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tabs/tabs.syntax.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 102^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.5645041Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/compute.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 58^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.6175167Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/storybook-render.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 2385^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.6176207Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_part_when_notice^[[33m 2190^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.6695642Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/index.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 486^[[2mms^[[22m^[[39m
+2026-11-18T07:36:20.6714299Z    ^[[33m^[[2m✓^[[22m^[[39m test_render^[[33m 326^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.2495175Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/section/back-to-top.interact.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 324^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.2804897Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/positions.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 171^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.4505253Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/glossary.syntax.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 484^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.4541632Z    ^[[33m^[[2m✓^[[22m^[[39m test_read_glossary_table^[[33m 376^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.6805654Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/media/lightbox.interact.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 647^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.6834067Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_lightbox_when_closed^[[33m 319^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.7175104Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/footnote/footnote.part.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 117^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.8228494Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-tree.interact.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 630^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.8304675Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_table_tree_when_folded^[[33m 330^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.9796887Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/build.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 1186^[[2mms^[[22m^[[39m
+2026-11-18T07:36:21.9834161Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_build^[[33m 682^[[2mms^[[22m^[[39m
+2026-11-18T07:36:22.2150024Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/print.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 293^[[2mms^[[22m^[[39m
+2026-11-18T07:36:22.2686836Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/build-plugin.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 159^[[2mms^[[22m^[[39m
+2026-11-18T07:36:22.3433712Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/markdown-check.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 620^[[2mms^[[22m^[[39m
+2026-11-18T07:36:22.3474211Z    ^[[33m^[[2m✓^[[22m^[[39m test_check_markdown_source^[[33m 526^[[2mms^[[22m^[[39m
+2026-11-18T07:36:22.5797805Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/image.syntax.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 95^[[2mms^[[22m^[[39m
+2026-11-18T07:36:22.7236077Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/definition.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 25^[[2mms^[[22m^[[39m
+2026-11-18T07:36:22.9744966Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/view-state.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 309^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.3243501Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/margin.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 419^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.3246169Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/map.syntax.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 143^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.6122605Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-settings.interact.browser.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 367^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.7122876Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/drag.browser.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 48^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.7671097Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/retired-diagrams.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 1099^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.7725454Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_retired_diagrams^[[33m 499^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.7740531Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_retired_diagrams_when_bundled^[[33m 473^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.7765441Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/guide-notice.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 81^[[2mms^[[22m^[[39m
+2026-11-18T07:36:23.9216250Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/views/index.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 200^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.0689313Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/export/embed.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 1076^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.0761698Z    ^[[33m^[[2m✓^[[22m^[[39m test_embed_local_libraries^[[33m 992^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.1850131Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/legacy-marks.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 185^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.5564319Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/code-block/code-block.interact.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 49^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.5945035Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/flowchart.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 97^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.7020192Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/alias-rows.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 278^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.9325213Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/c4-view.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 357^[[2mms^[[22m^[[39m
+2026-11-18T07:36:24.9946329Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/sequence-view.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 392^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.0679774Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/version.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 225^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.2554959Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/c4.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 242^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.3099468Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/http.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 872^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.3152377Z    ^[[33m^[[2m✓^[[22m^[[39m test_route_request^[[33m 638^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.4674086Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/state.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 20^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.5104707Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/class-view.browser.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 263^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.5669141Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/axis-grid.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 39^[[2mms^[[22m^[[39m
+2026-11-18T07:36:25.8554965Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/export/html.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 33^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.4685373Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/migrations.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 680^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.4700143Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-sticky.interact.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 819^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.4701379Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_sticky_rows_when_script^[[33m 336^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.4702724Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/er-view.browser.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 216^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.5303144Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram-resize.interact.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 303^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.6085931Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/write.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 425^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.6167285Z    ^[[33m^[[2m✓^[[22m^[[39m test_parse_set_args^[[33m 375^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.6593997Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/retired-er.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 858^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.6595808Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_retired_er^[[33m 324^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.6596539Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_retired_er_when_bundled^[[33m 480^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.8433376Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/extensions.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 45^[[2mms^[[22m^[[39m
+2026-11-18T07:36:26.9288273Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/html.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 146^[[2mms^[[22m^[[39m
+2026-11-18T07:36:27.0517926Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/axis-grid-layout.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 35^[[2mms^[[22m^[[39m
+2026-11-18T07:36:27.2614908Z ^[[90mstderr^[[2m | tests/unit/src/inline-icons.browser.test.ts^[[2m > ^[[22m^[[2mtest_load_inline_icons_when_offline
+2026-11-18T07:36:27.2650503Z ^[[22m^[[39mmdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/sailboat.mjs
+2026-11-18T07:36:27.2698508Z ^[[90mstderr^[[2m | tests/unit/src/inline-icons.browser.test.ts^[[2m > ^[[22m^[[2mtest_load_inline_icons_when_offline
+2026-11-18T07:36:27.2754746Z ^[[22m^[[39mmdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/anchor.mjs
+2026-11-18T07:36:27.2805656Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/inline-icons.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 49^[[2mms^[[22m^[[39m
+2026-11-18T07:36:27.3578567Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/structure.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 37^[[2mms^[[22m^[[39m
+2026-11-18T07:36:27.3965320Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/side-toc.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 115^[[2mms^[[22m^[[39m
+2026-11-18T07:36:27.4010869Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/assets.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 283^[[2mms^[[22m^[[39m
+2026-11-18T07:36:27.6617921Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/state-view.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 329^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.0159893Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/architecture-view.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 339^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.1260619Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/media/gif.interact.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 135^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.1628051Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/views/view.syntax.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 103^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.1984932Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.syntax.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 103^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.3577275Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/anchor.browser.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.4275323Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 348^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.7691292Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/includes.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 93^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.8111356Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/used.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 411^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.8114245Z    ^[[33m^[[2m✓^[[22m^[[39m test_used_library_marks^[[33m 306^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.8488881Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/param.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 103^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.8542331Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/marker-json.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 891^[[2mms^[[22m^[[39m
+2026-11-18T07:36:28.8597484Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_document_marks^[[33m 640^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.0905900Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 221^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.1254795Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/mindmap-layout.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 26^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.2435219Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/annotations.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.3773529Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 35^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.4465374Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table-tree.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 119^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.4827477Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tree/tree.syntax.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 82^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.6023450Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/class-diagram.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 226^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.7640193Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/layout/wide.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 58^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.7893399Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 1268^[[2mms^[[22m^[[39m
+2026-11-18T07:36:29.7902052Z    ^[[33m^[[2m✓^[[22m^[[39m test_use_link_clicks^[[33m 848^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.1060386Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/viewer/modules.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 291^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.1879301Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/arguments.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 490^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.1928180Z    ^[[33m^[[2m✓^[[22m^[[39m test_check_arguments^[[33m 482^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.2265295Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/embedded-html/embedded-html.interact.browser.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 135^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.3204092Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 452^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.3835777Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 204^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.4515599Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/part-modules.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 25^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.5255305Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/references.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 187^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.6294284Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/clipboard.interact.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 20^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.6461107Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/retired-map-options.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 807^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.6524551Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_retired_map_options^[[33m 410^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.6564183Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_retired_map_options_when_rerun^[[33m 341^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.8548381Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/data.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 44^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.8940951Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/traces.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 71^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.9645345Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/scroller.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+2026-11-18T07:36:30.9747557Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 29^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.0595066Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/index.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[33m 619^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.0617187Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_viewer^[[33m 601^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.1861986Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/views/view.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 203^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.4051657Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/aliases.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 302^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.4590790Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/systemd.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 31^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.4625487Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/callout/callout.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 78^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.6255807Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 51^[[2mms^[[22m^[[39m
+2026-11-18T07:36:31.8735348Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/er.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 168^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.0454605Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/drop-tag-vocabulary.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 160^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.2005225Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/csv.interact.browser.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 29^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.2047152Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/figure/figure.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 112^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.2935567Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/text.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.3197083Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tabs/tabs.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 19^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.4610109Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/app/app.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 813^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.4649453Z    ^[[33m^[[2m✓^[[22m^[[39m test_app_when_render_error^[[33m 813^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.4769357Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/route.browser.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.5455056Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/gallery.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 92^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.8252534Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/init.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 78^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.8648173Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 125^[[2mms^[[22m^[[39m
+2026-11-18T07:36:32.9561550Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/mindmap.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 18^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.0263236Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/knowledge/dictionary.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 71^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.0579143Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/main.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 340^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.0594238Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_preview_when_no_root^[[33m 338^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.1132540Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/image.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 61^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.1937789Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/documents.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 654^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.1939797Z    ^[[33m^[[2m✓^[[22m^[[39m test_read_index_with_documents_when_missing^[[33m 591^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.2722753Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/geometry.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.6467820Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/steps/steps.syntax.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 78^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.7587195Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/syntax-warning.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 63^[[2mms^[[22m^[[39m
+2026-11-18T07:36:33.9182308Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table-tree.logic.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:34.0934984Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card-grid.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 68^[[2mms^[[22m^[[39m
+2026-11-18T07:36:34.2783842Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/session-start.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 27^[[2mms^[[22m^[[39m
+2026-11-18T07:36:34.7607625Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/backup.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 629^[[2mms^[[22m^[[39m
+2026-11-18T07:36:34.7609991Z    ^[[33m^[[2m✓^[[22m^[[39m test_take_backup_when_outside^[[33m 596^[[2mms^[[22m^[[39m
+2026-11-18T07:36:34.7895820Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/git.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 302^[[2mms^[[22m^[[39m
+2026-11-18T07:36:35.1796672Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/section.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 64^[[2mms^[[22m^[[39m
+2026-11-18T07:36:35.5164695Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/html.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 80^[[2mms^[[22m^[[39m
+2026-11-18T07:36:35.5664959Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/mcp.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 500^[[2mms^[[22m^[[39m
+2026-11-18T07:36:35.5714294Z    ^[[33m^[[2m✓^[[22m^[[39m test_create_mcp_server^[[33m 480^[[2mms^[[22m^[[39m
+2026-11-18T07:36:35.7209037Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/code-block/code-fold.logic.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.0132875Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/scripts/build.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[33m 2869^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.0139895Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_extension^[[33m 1728^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.0140978Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_extension_when_tests^[[33m 1139^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.1543212Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/pre-tool-use.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 294^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.1813948Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/config.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 408^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.1845515Z    ^[[33m^[[2m✓^[[22m^[[39m test_find_config_file_when_missing^[[33m 313^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.2437019Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/mark-options.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.3652227Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/sequence.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 47^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.4073154Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/status.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 105^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.4428283Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/notice.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.5150607Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table-cells.logic.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 11^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.5782316Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/embedded-html/scope-css.logic.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.6152181Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/frontmatter/frontmatter.logic.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.7156859Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/lightbox.part.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 48^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.7780303Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/spec.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.8046136Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 42^[[2mms^[[22m^[[39m
+2026-11-18T07:36:36.9882828Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/alias-schema.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 123^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.0506789Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/revision-picker.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 75^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.2725265Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/paths.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 94^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.3772771Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/includes.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 166^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.4434749Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/versions.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.5514359Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/port.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 20^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.6330604Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/main.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 691^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.6331789Z    ^[[33m^[[2m✓^[[22m^[[39m test_main^[[33m 485^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.7079112Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-blocks.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.7695235Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/highlight-lines.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:37.8471277Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/eslint.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.0194840Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/icons.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 117^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.0635266Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/anchor.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.3794736Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/mermaid-source.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.4246342Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/extensions-bundle.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[33m 791^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.4251619Z    ^[[33m^[[2m✓^[[22m^[[39m test_bundle_extensions^[[33m 466^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.5164707Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-html.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.5898842Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/spec.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.7447085Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/guide.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.9000932Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-lines.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.9538514Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/csv.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 49^[[2mms^[[22m^[[39m
+2026-11-18T07:36:38.9895554Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 51^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.1351574Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/media.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.3035056Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/heading.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 36^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.4845705Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/backlinks.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 50^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.5155151Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/text-color.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 52^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.5827717Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/state-diagram.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 117^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.6797652Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/source.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.8292158Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/viewer/doc-list.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.9445375Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/frontmatter/frontmatter.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 167^[[2mms^[[22m^[[39m
+2026-11-18T07:36:39.9875085Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/badge.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 40^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.0860469Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/gif.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 53^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.2296549Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/views/spec.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 18^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.2668143Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/param.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 88^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.3015288Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/architecture.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 142^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.4018653Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.4634938Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/settings.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.5037312Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/sequence-rows.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 57^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.6303219Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/section.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.7730828Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/wide.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 54^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.9137595Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/details.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 39^[[2mms^[[22m^[[39m
+2026-11-18T07:36:40.9663221Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/callout/callout.part.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.0382048Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/layout-columns.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 37^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.1401187Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/keys.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 14^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.1714941Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/paths.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.2521404Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/export/write.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 25^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.3389960Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations-dir.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 16^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.3938650Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card-grid.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 91^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.4417621Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/placement.logic.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.4983193Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/mermaid.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.6075641Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/viewer/route.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.6699065Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/collapse.logic.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.7794965Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/diff-target.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.8115084Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/inline-icon.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 58^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.8704938Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/features.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.9371440Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/collapsible.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:41.9854865Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/scroll-guard.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 14^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.0965196Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/syntax-warning.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.1550694Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/changelog.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.2513924Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/scripts/release-check.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.2885163Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/main.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 228^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.4093064Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/margin.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 75^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.5198570Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/hint.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 65^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.5973165Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/steps/steps.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.6717545Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/row-detail.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 39^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.7312396Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/prompt.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.7816967Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-minimap.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.8393979Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/backlinks.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.9285008Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-message.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:42.9564034Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/back-to-top.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 46^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.0097472Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/links.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.0751290Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/issues.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.1456280Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/includes.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 11^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.1772009Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/embed.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 31^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.2320140Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.3259573Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/figure/figure.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.3574644Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/wide.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 51^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.5132562Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/assets.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.6365510Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/kbd.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 30^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.6770718Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/highlight.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 35^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.7355282Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/page.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.7985156Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/gallery.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.8566334Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/shared/lib/media-error.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.9050165Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/inline-icon.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:43.9580555Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/toc.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.0067661Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/badge.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.0984999Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/layout-columns.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.1714582Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.2924605Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-toggle.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 57^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.3167311Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/toc.syntax.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 41^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.3784401Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/row-detail.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.4429356Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/icon-node.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.5333602Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/highlight.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.5761299Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/icons.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 89^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.6190164Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/frontmatter/frontmatter.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.6890636Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/git-env.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.7480810Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/own.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.7844846Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/row-hash.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.8380128Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/text-color.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.9218658Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/kbd.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+2026-11-18T07:36:44.9904814Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/colors.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+2026-11-18T07:36:45.1262775Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/pagebreak.syntax.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 42^[[2mms^[[22m^[[39m
+2026-11-18T07:36:45.1448873Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/escape.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+2026-11-18T07:36:45.4594835Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/index.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 393^[[2mms^[[22m^[[39m
+2026-11-18T07:36:45.4595858Z    ^[[33m^[[2m✓^[[22m^[[39m test_version^[[33m 392^[[2mms^[[22m^[[39m
+2026-11-18T07:36:45.4662096Z 
+2026-11-18T07:36:45.4663424Z ^[[31m⎯⎯⎯⎯⎯⎯^[[39m^[[1m^[[41m Failed Tests 20 ^[[49m^[[22m^[[31m⎯⎯⎯⎯⎯⎯⎯^[[39m
+2026-11-18T07:36:45.4663966Z 
+2026-11-18T07:36:45.4674565Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.part.test.ts^[[2m > ^[[22mtest_render_diagram_frame
+2026-11-18T07:36:45.4676212Z ^[[31m^[[1mAssertionError^[[22m: expected '<figure class="mdmark-diagram" data-d…' not to contain 'data-group="pan"'^[[39m
+2026-11-18T07:36:45.4676986Z 
+2026-11-18T07:36:45.4677354Z Expected: ^[[32m"data-group="pan""^[[39m
+2026-11-18T07:36:45.4712758Z Received: ^[[31m"<figure class="mdmark-diagram" data-diagram="chart"><figcaption class="mdmark-diagram-head" id="d1-title"><span class="mdmark-diagram-title">問い合わせへの自動返信の構成</span><span class="mdmark-diagram-meta">範囲: メールを受け取ってから返信するまで・更新日: <time datetime="2026-10-17">2026-10-17</time></span></figcaption><div class="mdmark-diagram-box"><div class="mdmark-diagram-tools" role="toolbar" aria-label="「問い合わせへの自動返信の構成」の表示"><div class="mdmark-diagram-tools-group" data-group="pan" hidden="hidden"><button class="mdmark-diagram-tool" type="button" data-tool="left" aria-label="左へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><button class="mdmark-diagram-tool" type="button" data-tool="up" aria-label="上へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button><button class="mdmark-diagram-tool" type="button" data-tool="down" aria-label="下へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><button class="mdmark-diagram-tool" type="button" data-tool="right" aria-label="右へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="mdmark-diagram-tools-group" data-group="zoom"><button class="mdmark-diagram-tool" type="button" data-tool="out" aria-label="縮小" disabled="disabled"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button><button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す">100%</button><button class="mdmark-diagram-tool" type="button" data-tool="in" aria-label="拡大"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button></div><div class="mdmark-diagram-tools-group" data-group="screen"><button class="mdmark-diagram-tool" type="button" data-tool="fullscreen" aria-label="全画面で開く"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 15 6 6"></path><path d="m15 9 6-6"></path><path d="M21 16v5h-5"></path><path d="M21 8V3h-5"></path><path d="M3 16v5h5"></path><path d="m3 21 6-6"></path><path d="M3 8V3h5"></path><path d="M9 9 3 3"></path></svg></button></div></div><div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="d1-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"><div class="mdmark-diagram-sizer" style="width:1100px;height:560px"><div class="mdmark-diagram-stage" style="width:1100px;height:560px"><svg class="mdmark-diagram-wires"></svg></div></div></div><div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「問い合わせへの自動返信の構成」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="560" aria-valuemin="120" aria-valuemax="560" aria-valuetext="560px" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" x2="19" y1="9" y2="9"></line><line x1="5" x2="19" y1="15" y2="15"></line></svg></div></div><ul class="mdmark-diagram-legend" aria-label="凡例"><li class="mdmark-diagram-legend-item"><svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-series" data-series="1" d="M1,6 H33"></path><g data-series="1"><circle class="mdmark-diagram-point" cx="17" cy="6" r="4.5"></circle></g></svg><span>自動返信</span></li><li class="mdmark-diagram-legend-item"><svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-series" data-series="2" d="M1,6 H33"></path><g data-series="2"><rect class="mdmark-diagram-point" x="12.5" y="1.5" width="9" height="9"></rect></g></svg><span>担当者</span></li></ul></figure>"^[[39m
+2026-11-18T07:36:45.4746101Z 
+2026-11-18T07:36:45.4746721Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.part.test.ts:^[[2m142:20^[[22m^[[39m
+2026-11-18T07:36:45.4810508Z     ^[[90m140|^[[39m   const box = outerHtml(html, 'class="mdmark-diagram-box"');
+2026-11-18T07:36:45.4811690Z     ^[[90m141|^[[39m   expect(box).toContain('role="toolbar"');
+2026-11-18T07:36:45.4812427Z     ^[[90m142|^[[39m   expect(html).not.toContain('data-group="pan"');
+2026-11-18T07:36:45.4813206Z     ^[[90m   |^[[39m                    ^[[31m^^[[39m
+2026-11-18T07:36:45.4813944Z     ^[[90m143|^[[39m   expect(html).not.toContain('aria-label="左へ動かす"');
+2026-11-18T07:36:45.4814582Z     ^[[90m144|^[[39m   const more = findTag(
+2026-11-18T07:36:45.4814979Z 
+2026-11-18T07:36:45.4815384Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4815760Z 
+2026-11-18T07:36:45.4816716Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.part.test.ts^[[2m > ^[[22mtest_render_diagram_frame_when_zoom_button
+2026-11-18T07:36:45.4818244Z ^[[31m^[[1mAssertionError^[[22m: expected [ '縮小', '倍率 125%。全体が収まる倍率に戻す', …(2) ] to deeply equal [ '縮小', '倍率 125%。全体が収まる倍率に戻す', …(3) ]^[[39m
+2026-11-18T07:36:45.4818913Z 
+2026-11-18T07:36:45.4819186Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.4819617Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.4819895Z 
+2026-11-18T07:36:45.4820136Z ^[[2m  [^[[22m
+2026-11-18T07:36:45.4820529Z ^[[2m    "縮小",^[[22m
+2026-11-18T07:36:45.4821028Z ^[[2m    "倍率 125%。全体が収まる倍率に戻す",^[[22m
+2026-11-18T07:36:45.4821489Z ^[[2m    "拡大",^[[22m
+2026-11-18T07:36:45.4821916Z ^[[2m    "全画面で開く",^[[22m
+2026-11-18T07:36:45.4822583Z ^[[32m-   "表示の操作を開く",^[[39m
+2026-11-18T07:36:45.4823122Z ^[[2m  ]^[[22m
+2026-11-18T07:36:45.4823387Z 
+2026-11-18T07:36:45.4823933Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.part.test.ts:^[[2m342:17^[[22m^[[39m
+2026-11-18T07:36:45.4824794Z     ^[[90m340|^[[39m     /aria-label="(?:縮小|倍率 125%。全体が収まる倍率に戻す|拡大|全画面で開く|表示の操作を開く)"/g,
+2026-11-18T07:36:45.4825568Z     ^[[90m341|^[[39m   ).map((attribute) => attribute.slice('aria-label="'.length, -1));
+2026-11-18T07:36:45.4826210Z     ^[[90m342|^[[39m   expect(names).toEqual([
+2026-11-18T07:36:45.4826712Z     ^[[90m   |^[[39m                 ^[[31m^^[[39m
+2026-11-18T07:36:45.4827155Z     ^[[90m343|^[[39m     "縮小",
+2026-11-18T07:36:45.4827576Z     ^[[90m344|^[[39m     zoomName,
+2026-11-18T07:36:45.4827869Z 
+2026-11-18T07:36:45.4828220Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4830688Z 
+2026-11-18T07:36:45.4831780Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.part.test.ts^[[2m > ^[[22mtest_render_diagram_frame_when_panel_open
+2026-11-18T07:36:45.4833491Z ^[[31m^[[1mAssertionError^[[22m: expected '<div class="mdmark-diagram-tools" rol…' to contain 'data-open'^[[39m
+2026-11-18T07:36:45.4834142Z 
+2026-11-18T07:36:45.4834468Z Expected: ^[[32m"data-open"^[[39m
+2026-11-18T07:36:45.4835343Z Received: ^[[31m"<div class="mdmark-diagram-tools" role="toolbar" aria-label="「タイトル」の表示">"^[[39m
+2026-11-18T07:36:45.4835918Z 
+2026-11-18T07:36:45.4836507Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.part.test.ts:^[[2m632:62^[[22m^[[39m
+2026-11-18T07:36:45.4837562Z     ^[[90m630|^[[39m   const html = renderDiagramFrame(frame, BODY);
+2026-11-18T07:36:45.4838139Z     ^[[90m631|^[[39m   // 検証
+2026-11-18T07:36:45.4838866Z     ^[[90m632|^[[39m   expect(findTag(html, '<div class="mdmark-diagram-tools"')).toContain(
+2026-11-18T07:36:45.4839731Z     ^[[90m   |^[[39m                                                              ^[[31m^^[[39m
+2026-11-18T07:36:45.4840332Z     ^[[90m633|^[[39m     "data-open",
+2026-11-18T07:36:45.4840800Z     ^[[90m634|^[[39m   );
+2026-11-18T07:36:45.4841085Z 
+2026-11-18T07:36:45.4841487Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4841844Z 
+2026-11-18T07:36:45.4842814Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.part.test.ts^[[2m > ^[[22mtest_render_diagram_frame_when_bounds
+2026-11-18T07:36:45.4844274Z ^[[31m^[[1mAssertionError^[[22m: expected { out: true, in: false, atFit: false } to deeply equal { out: true, in: false, atFit: true }^[[39m
+2026-11-18T07:36:45.4844905Z 
+2026-11-18T07:36:45.4845136Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.4845871Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.4846199Z 
+2026-11-18T07:36:45.4846416Z ^[[2m  {^[[22m
+2026-11-18T07:36:45.4846846Z ^[[32m-   "atFit": true,^[[39m
+2026-11-18T07:36:45.4847327Z ^[[31m+   "atFit": false,^[[39m
+2026-11-18T07:36:45.4847843Z ^[[2m    "in": false,^[[22m
+2026-11-18T07:36:45.4848538Z ^[[2m    "out": true,^[[22m
+2026-11-18T07:36:45.4849096Z ^[[2m  }^[[22m
+2026-11-18T07:36:45.4849433Z 
+2026-11-18T07:36:45.4850400Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.part.test.ts:^[[2m669:25^[[22m^[[39m
+2026-11-18T07:36:45.4851350Z     ^[[90m667|^[[39m   };
+2026-11-18T07:36:45.4851957Z     ^[[90m668|^[[39m   // 実行・検証
+2026-11-18T07:36:45.4853216Z     ^[[90m669|^[[39m   expect(stateAt(0.25)).toEqual({ out: true, in: false, atFit: true });
+2026-11-18T07:36:45.4854201Z     ^[[90m   |^[[39m                         ^[[31m^^[[39m
+2026-11-18T07:36:45.4866462Z     ^[[90m670|^[[39m   expect(stateAt(1.25)).toEqual({ out: false, in: false, atFit: false …
+2026-11-18T07:36:45.4867734Z     ^[[90m671|^[[39m   expect(stateAt(5)).toEqual({ out: false, in: true, atFit: false });
+2026-11-18T07:36:45.4868279Z 
+2026-11-18T07:36:45.4868712Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4869117Z 
+2026-11-18T07:36:45.4870168Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram.interact.browser.test.ts^[[2m > ^[[22mtest_attach_diagrams
+2026-11-18T07:36:45.4871545Z ^[[31m^[[1mAssertionError^[[22m: expected true to be false // Object.is equality^[[39m
+2026-11-18T07:36:45.4872226Z 
+2026-11-18T07:36:45.4872492Z Failure screenshot:
+2026-11-18T07:36:45.4873594Z   - ^[[2m.vitest/attachments/failure-screenshots/diagram.interact.browser.test.ts/test_attach_diagrams.png^[[22m
+2026-11-18T07:36:45.4874369Z 
+2026-11-18T07:36:45.4874680Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.4875024Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.4875192Z 
+2026-11-18T07:36:45.4875332Z ^[[32m- false^[[39m
+2026-11-18T07:36:45.4875583Z ^[[31m+ true^[[39m
+2026-11-18T07:36:45.4875677Z 
+2026-11-18T07:36:45.4876041Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.interact.browser.test.ts:^[[2m153:39^[[22m^[[39m
+2026-11-18T07:36:45.4888697Z     ^[[90m151|^[[39m   // 検証
+2026-11-18T07:36:45.4889208Z     ^[[90m152|^[[39m   expect(zoomText(root)).toBe("100%");
+2026-11-18T07:36:45.4889807Z     ^[[90m153|^[[39m   expect(button(root, "縮小").disabled).toBe(false);
+2026-11-18T07:36:45.4890407Z     ^[[90m   |^[[39m                                       ^[[31m^^[[39m
+2026-11-18T07:36:45.4890945Z     ^[[90m154|^[[39m   button(root, "拡大").click();
+2026-11-18T07:36:45.4891455Z     ^[[90m155|^[[39m   expect(zoomText(root)).toBe("125%");
+2026-11-18T07:36:45.4892725Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4896045Z 
+2026-11-18T07:36:45.4896456Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4896950Z 
+2026-11-18T07:36:45.4897997Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram.interact.browser.test.ts^[[2m > ^[[22mtest_attach_diagrams_when_max
+2026-11-18T07:36:45.4899242Z ^[[31m^[[1mAssertionError^[[22m: expected '550%' to be '500%' // Object.is equality^[[39m
+2026-11-18T07:36:45.4899652Z 
+2026-11-18T07:36:45.4899783Z Failure screenshot:
+2026-11-18T07:36:45.4900652Z   - ^[[2m.vitest/attachments/failure-screenshots/diagram.interact.browser.test.ts/test_attach_diagrams_when_max.png^[[22m
+2026-11-18T07:36:45.4901286Z 
+2026-11-18T07:36:45.4901537Z Expected: ^[[32m"5^[[7m0^[[27m0%"^[[39m
+2026-11-18T07:36:45.4901973Z Received: ^[[31m"5^[[7m5^[[27m0%"^[[39m
+2026-11-18T07:36:45.4902189Z 
+2026-11-18T07:36:45.4902755Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.interact.browser.test.ts:^[[2m172:26^[[22m^[[39m
+2026-11-18T07:36:45.4903511Z     ^[[90m170|^[[39m   }
+2026-11-18T07:36:45.4903842Z     ^[[90m171|^[[39m   // 検証
+2026-11-18T07:36:45.4904283Z     ^[[90m172|^[[39m   expect(zoomText(root)).toBe("500%");
+2026-11-18T07:36:45.4904816Z     ^[[90m   |^[[39m                          ^[[31m^^[[39m
+2026-11-18T07:36:45.4905393Z     ^[[90m173|^[[39m   expect(button(root, "拡大").disabled).toBe(true);
+2026-11-18T07:36:45.4905850Z     ^[[90m174|^[[39m });
+2026-11-18T07:36:45.4906954Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4907651Z 
+2026-11-18T07:36:45.4907956Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4908442Z 
+2026-11-18T07:36:45.4909441Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram.interact.browser.test.ts^[[2m > ^[[22mtest_attach_diagrams_when_panned
+2026-11-18T07:36:45.4910710Z ^[[31m^[[1mAssertionError^[[22m: expected false to be true // Object.is equality^[[39m
+2026-11-18T07:36:45.4911122Z 
+2026-11-18T07:36:45.4911261Z Failure screenshot:
+2026-11-18T07:36:45.4912123Z   - ^[[2m.vitest/attachments/failure-screenshots/diagram.interact.browser.test.ts/test_attach_diagrams_when_panned.png^[[22m
+2026-11-18T07:36:45.4912763Z 
+2026-11-18T07:36:45.4913122Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.4913438Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.4913607Z 
+2026-11-18T07:36:45.4913747Z ^[[32m- true^[[39m
+2026-11-18T07:36:45.4914038Z ^[[31m+ false^[[39m
+2026-11-18T07:36:45.4914184Z 
+2026-11-18T07:36:45.4914744Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.interact.browser.test.ts:^[[2m182:56^[[22m^[[39m
+2026-11-18T07:36:45.4915464Z     ^[[90m180|^[[39m   const root = createDiagramRoot();
+2026-11-18T07:36:45.4916122Z     ^[[90m181|^[[39m   detachers.push(attachDiagrams({ root, placement: "top" }));
+2026-11-18T07:36:45.4916896Z     ^[[90m182|^[[39m   expect(viewportOf(root).hasAttribute("data-at-fit")).toBe(true);
+2026-11-18T07:36:45.4917582Z     ^[[90m   |^[[39m                                                        ^[[31m^^[[39m
+2026-11-18T07:36:45.4918096Z     ^[[90m183|^[[39m   button(root, "拡大").click();
+2026-11-18T07:36:45.4918557Z     ^[[90m184|^[[39m   button(root, "拡大").click();
+2026-11-18T07:36:45.4919718Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4920411Z 
+2026-11-18T07:36:45.4920700Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4920940Z 
+2026-11-18T07:36:45.4921978Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram.interact.browser.test.ts^[[2m > ^[[22mtest_attach_diagrams_when_panel_toggled
+2026-11-18T07:36:45.4923141Z ^[[31m^[[1mError^[[22m: パネルか開閉のボタンが無い^[[39m
+2026-11-18T07:36:45.4923363Z 
+2026-11-18T07:36:45.4923483Z Failure screenshot:
+2026-11-18T07:36:45.4924398Z   - ^[[2m.vitest/attachments/failure-screenshots/diagram.interact.browser.test.ts/test_attach_diagrams_when_panel_toggled.png^[[22m
+2026-11-18T07:36:45.4925025Z 
+2026-11-18T07:36:45.4925573Z ^[[36m ^[[2m❯^[[22m tests/unit/src/diagram/diagram.interact.browser.test.ts:^[[2m562:11^[[22m^[[39m
+2026-11-18T07:36:45.4926347Z     ^[[90m560|^[[39m   );
+2026-11-18T07:36:45.4926716Z     ^[[90m561|^[[39m   if (!panel || !more) {
+2026-11-18T07:36:45.4927207Z     ^[[90m562|^[[39m     throw new Error("パネルか開閉のボタンが無い");
+2026-11-18T07:36:45.4927666Z     ^[[90m   |^[[39m           ^[[31m^^[[39m
+2026-11-18T07:36:45.4928020Z     ^[[90m563|^[[39m   }
+2026-11-18T07:36:45.4928329Z     ^[[90m564|^[[39m   // 実行
+2026-11-18T07:36:45.4929435Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4930143Z 
+2026-11-18T07:36:45.4930425Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4930678Z 
+2026-11-18T07:36:45.4931634Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/flow-view.browser.test.ts^[[2m > ^[[22mtest_attach_map_flow_when_drag_cancelled
+2026-11-18T07:36:45.4932758Z ^[[31m^[[1mAssertionError^[[22m: expected { x: +0, y: 186 } to be undefined^[[39m
+2026-11-18T07:36:45.4933287Z 
+2026-11-18T07:36:45.4933423Z Failure screenshot:
+2026-11-18T07:36:45.4934261Z   - ^[[2m.vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_drag_cancelled.png^[[22m
+2026-11-18T07:36:45.4936009Z 
+2026-11-18T07:36:45.4936299Z ^[[32m- Expected:^[[39m
+2026-11-18T07:36:45.4936663Z undefined
+2026-11-18T07:36:45.4936880Z 
+2026-11-18T07:36:45.4937131Z ^[[31m+ Received:^[[39m
+2026-11-18T07:36:45.4937482Z {
+2026-11-18T07:36:45.4937786Z   "x": 0,
+2026-11-18T07:36:45.4938307Z   "y": 186,
+2026-11-18T07:36:45.4938616Z }
+2026-11-18T07:36:45.4938814Z 
+2026-11-18T07:36:45.4939383Z ^[[36m ^[[2m❯^[[22m tests/unit/src/map/flow-view.browser.test.ts:^[[2m241:36^[[22m^[[39m
+2026-11-18T07:36:45.4947770Z     ^[[90m239|^[[39m   window.dispatchEvent(new PointerEvent("pointerup", point(80)));
+2026-11-18T07:36:45.4948298Z     ^[[90m240|^[[39m   // 検証
+2026-11-18T07:36:45.4948698Z     ^[[90m241|^[[39m   expect(saved().positions?.mount).toBeUndefined();
+2026-11-18T07:36:45.4949268Z     ^[[90m   |^[[39m                                    ^[[31m^^[[39m
+2026-11-18T07:36:45.4949652Z     ^[[90m242|^[[39m   expect(afterMove).toBe(before);
+2026-11-18T07:36:45.4949922Z     ^[[90m243|^[[39m   expect(
+2026-11-18T07:36:45.4950871Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4951600Z 
+2026-11-18T07:36:45.4951931Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4952203Z 
+2026-11-18T07:36:45.4953255Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom
+2026-11-18T07:36:45.4954438Z ^[[31m^[[1mAssertionError^[[22m: expected true to be false // Object.is equality^[[39m
+2026-11-18T07:36:45.4954857Z 
+2026-11-18T07:36:45.4954994Z Failure screenshot:
+2026-11-18T07:36:45.4955733Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom.png^[[22m
+2026-11-18T07:36:45.4956493Z 
+2026-11-18T07:36:45.4956678Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.4957005Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.4957170Z 
+2026-11-18T07:36:45.4957342Z ^[[32m- false^[[39m
+2026-11-18T07:36:45.4957623Z ^[[31m+ true^[[39m
+2026-11-18T07:36:45.4957737Z 
+2026-11-18T07:36:45.4958066Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m85:39^[[22m^[[39m
+2026-11-18T07:36:45.4975415Z     ^[[90m 83|^[[39m   // 検証: 収まる倍率で始める
+2026-11-18T07:36:45.4975895Z     ^[[90m 84|^[[39m   expect(zoomText(root)).toBe("55%");
+2026-11-18T07:36:45.4976470Z     ^[[90m 85|^[[39m   expect(button(root, "縮小").disabled).toBe(false);
+2026-11-18T07:36:45.4977045Z     ^[[90m   |^[[39m                                       ^[[31m^^[[39m
+2026-11-18T07:36:45.4977333Z     ^[[90m 86|^[[39m   // 実行
+2026-11-18T07:36:45.4977596Z     ^[[90m 87|^[[39m   button(root, "拡大").click();
+2026-11-18T07:36:45.4978317Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4978770Z 
+2026-11-18T07:36:45.4978949Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4979114Z 
+2026-11-18T07:36:45.4979679Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_refit
+2026-11-18T07:36:45.4980398Z ^[[31m^[[1mAssertionError^[[22m: expected false to be true // Object.is equality^[[39m
+2026-11-18T07:36:45.4980648Z 
+2026-11-18T07:36:45.4980741Z Failure screenshot:
+2026-11-18T07:36:45.4981241Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_refit.png^[[22m
+2026-11-18T07:36:45.4981607Z 
+2026-11-18T07:36:45.4981726Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.4981937Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.4982036Z 
+2026-11-18T07:36:45.4982128Z ^[[32m- true^[[39m
+2026-11-18T07:36:45.4982317Z ^[[31m+ false^[[39m
+2026-11-18T07:36:45.4982421Z 
+2026-11-18T07:36:45.4984003Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m331:23^[[22m^[[39m
+2026-11-18T07:36:45.4984402Z     ^[[90m329|^[[39m   // 検証
+2026-11-18T07:36:45.4984675Z     ^[[90m330|^[[39m   expect(fitBefore).toBe(1);
+2026-11-18T07:36:45.4984988Z     ^[[90m331|^[[39m   expect(atFitBefore).toBe(true);
+2026-11-18T07:36:45.4985288Z     ^[[90m   |^[[39m                       ^[[31m^^[[39m
+2026-11-18T07:36:45.4985673Z     ^[[90m332|^[[39m   expect(zoom.fit()).toBeCloseTo(viewport.clientHeight / 1600, 5);
+2026-11-18T07:36:45.4986318Z     ^[[90m333|^[[39m   expect(zooms.at(-1) ?? 1).toBe(1);
+2026-11-18T07:36:45.4987091Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4987765Z 
+2026-11-18T07:36:45.4988070Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4988360Z 
+2026-11-18T07:36:45.4988979Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_focus_rect
+2026-11-18T07:36:45.4989892Z ^[[31m^[[1mAssertionError^[[22m: expected 2.68 to be close to 2.5, received difference is 0.18000000000000016, but expected 0.005^[[39m
+2026-11-18T07:36:45.4990228Z 
+2026-11-18T07:36:45.4990338Z Failure screenshot:
+2026-11-18T07:36:45.4990850Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_focus_rect.png^[[22m
+2026-11-18T07:36:45.4991221Z 
+2026-11-18T07:36:45.4991549Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m368:19^[[22m^[[39m
+2026-11-18T07:36:45.4991911Z     ^[[90m366|^[[39m   );
+2026-11-18T07:36:45.4992120Z     ^[[90m367|^[[39m   // 検証
+2026-11-18T07:36:45.4992404Z     ^[[90m368|^[[39m   expect(scale()).toBeCloseTo(2.5, 2);
+2026-11-18T07:36:45.4992718Z     ^[[90m   |^[[39m                   ^[[31m^^[[39m
+2026-11-18T07:36:45.4993323Z     ^[[90m369|^[[39m   expect(viewport.scrollLeft + 300).toBeCloseTo(600 * 2.5, -1);
+2026-11-18T07:36:45.4994153Z     ^[[90m370|^[[39m   expect(viewport.scrollTop + 200).toBeCloseTo(350 * 2.5, -1);
+2026-11-18T07:36:45.4994947Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.4995625Z 
+2026-11-18T07:36:45.4995943Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.4996185Z 
+2026-11-18T07:36:45.4997057Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_focus_rect_other_click
+2026-11-18T07:36:45.4997973Z ^[[31m^[[1mAssertionError^[[22m: expected 2.68 to be close to 2.5, received difference is 0.18000000000000016, but expected 0.005^[[39m
+2026-11-18T07:36:45.4998317Z 
+2026-11-18T07:36:45.4998402Z Failure screenshot:
+2026-11-18T07:36:45.4999141Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_focus_rect_other_click.png^[[22m
+2026-11-18T07:36:45.4999614Z 
+2026-11-18T07:36:45.5000115Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m440:19^[[22m^[[39m
+2026-11-18T07:36:45.5000527Z     ^[[90m438|^[[39m   vi.useRealTimers();
+2026-11-18T07:36:45.5000776Z     ^[[90m439|^[[39m   // 検証
+2026-11-18T07:36:45.5001065Z     ^[[90m440|^[[39m   expect(scale()).toBeCloseTo(2.5, 2);
+2026-11-18T07:36:45.5001368Z     ^[[90m   |^[[39m                   ^[[31m^^[[39m
+2026-11-18T07:36:45.5001606Z     ^[[90m441|^[[39m });
+2026-11-18T07:36:45.5001796Z     ^[[90m442|^[[39m
+2026-11-18T07:36:45.5002668Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5003321Z 
+2026-11-18T07:36:45.5003596Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5003750Z 
+2026-11-18T07:36:45.5004314Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_bounds
+2026-11-18T07:36:45.5005017Z ^[[31m^[[1mAssertionError^[[22m: expected '100%' to be '25%' // Object.is equality^[[39m
+2026-11-18T07:36:45.5005260Z 
+2026-11-18T07:36:45.5005385Z Failure screenshot:
+2026-11-18T07:36:45.5006017Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_bounds.png^[[22m
+2026-11-18T07:36:45.5006359Z 
+2026-11-18T07:36:45.5006505Z Expected: ^[[32m"^[[7m25^[[27m%"^[[39m
+2026-11-18T07:36:45.5006771Z Received: ^[[31m"^[[7m100^[[27m%"^[[39m
+2026-11-18T07:36:45.5007033Z 
+2026-11-18T07:36:45.5007338Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m466:26^[[22m^[[39m
+2026-11-18T07:36:45.5007684Z     ^[[90m464|^[[39m   }
+2026-11-18T07:36:45.5007892Z     ^[[90m465|^[[39m   // 検証
+2026-11-18T07:36:45.5008165Z     ^[[90m466|^[[39m   expect(zoomText(root)).toBe("25%");
+2026-11-18T07:36:45.5008482Z     ^[[90m   |^[[39m                          ^[[31m^^[[39m
+2026-11-18T07:36:45.5008844Z     ^[[90m467|^[[39m   expect(button(root, "縮小").disabled).toBe(true);
+2026-11-18T07:36:45.5009186Z     ^[[90m468|^[[39m   // 実行
+2026-11-18T07:36:45.5009953Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5010373Z 
+2026-11-18T07:36:45.5010553Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5010701Z 
+2026-11-18T07:36:45.5011255Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_at_fit
+2026-11-18T07:36:45.5011952Z ^[[31m^[[1mAssertionError^[[22m: expected false to be true // Object.is equality^[[39m
+2026-11-18T07:36:45.5012197Z 
+2026-11-18T07:36:45.5012286Z Failure screenshot:
+2026-11-18T07:36:45.5012761Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_at_fit.png^[[22m
+2026-11-18T07:36:45.5013256Z 
+2026-11-18T07:36:45.5013368Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.5013712Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.5013817Z 
+2026-11-18T07:36:45.5013902Z ^[[32m- true^[[39m
+2026-11-18T07:36:45.5014097Z ^[[31m+ false^[[39m
+2026-11-18T07:36:45.5014198Z 
+2026-11-18T07:36:45.5014510Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m489:18^[[22m^[[39m
+2026-11-18T07:36:45.5014907Z     ^[[90m487|^[[39m   button(root, "縮小").click();
+2026-11-18T07:36:45.5015167Z     ^[[90m488|^[[39m   // 検証
+2026-11-18T07:36:45.5015432Z     ^[[90m489|^[[39m   expect(opened).toBe(true);
+2026-11-18T07:36:45.5015728Z     ^[[90m   |^[[39m                  ^[[31m^^[[39m
+2026-11-18T07:36:45.5016020Z     ^[[90m490|^[[39m   expect(zoomed).toBe(false);
+2026-11-18T07:36:45.5016390Z     ^[[90m491|^[[39m   expect(viewport.hasAttribute("data-at-fit")).toBe(true);
+2026-11-18T07:36:45.5017153Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5017565Z 
+2026-11-18T07:36:45.5017747Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5017905Z 
+2026-11-18T07:36:45.5018456Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_pinched
+2026-11-18T07:36:45.5019240Z ^[[31m^[[1mAssertionError^[[22m: expected 0.5 to be close to 1, received difference is 0.5, but expected 0.0005^[[39m
+2026-11-18T07:36:45.5019631Z 
+2026-11-18T07:36:45.5019762Z Failure screenshot:
+2026-11-18T07:36:45.5020290Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_pinched.png^[[22m
+2026-11-18T07:36:45.5020645Z 
+2026-11-18T07:36:45.5020966Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m536:19^[[22m^[[39m
+2026-11-18T07:36:45.5021480Z     ^[[90m534|^[[39m   const move = pinch(viewport, "touchmove", center, 200);
+2026-11-18T07:36:45.5021797Z     ^[[90m535|^[[39m   // 検証
+2026-11-18T07:36:45.5022200Z     ^[[90m536|^[[39m   expect(scale()).toBeCloseTo(start * 2, 3);
+2026-11-18T07:36:45.5022724Z     ^[[90m   |^[[39m                   ^[[31m^^[[39m
+2026-11-18T07:36:45.5023383Z     ^[[90m537|^[[39m   expect((viewport.scrollLeft + 300) / scale()).toBeCloseTo(pointBefor…
+2026-11-18T07:36:45.5023906Z     ^[[90m538|^[[39m   expect((viewport.scrollTop + 200) / scale()).toBeCloseTo(pointBefore…
+2026-11-18T07:36:45.5024840Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5025439Z 
+2026-11-18T07:36:45.5025625Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5025788Z 
+2026-11-18T07:36:45.5026358Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_native_touch
+2026-11-18T07:36:45.5027055Z ^[[31m^[[1mAssertionError^[[22m: expected 240 to be 200 // Object.is equality^[[39m
+2026-11-18T07:36:45.5027285Z 
+2026-11-18T07:36:45.5027385Z Failure screenshot:
+2026-11-18T07:36:45.5027892Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_native_touch.png^[[22m
+2026-11-18T07:36:45.5028450Z 
+2026-11-18T07:36:45.5028628Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.5028968Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.5029127Z 
+2026-11-18T07:36:45.5029265Z ^[[32m- 200^[[39m
+2026-11-18T07:36:45.5029519Z ^[[31m+ 240^[[39m
+2026-11-18T07:36:45.5029616Z 
+2026-11-18T07:36:45.5029929Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m592:22^[[22m^[[39m
+2026-11-18T07:36:45.5030349Z     ^[[90m590|^[[39m   drag("mouse");
+2026-11-18T07:36:45.5030590Z     ^[[90m591|^[[39m   // 検証
+2026-11-18T07:36:45.5030860Z     ^[[90m592|^[[39m   expect(afterTouch).toBe(200);
+2026-11-18T07:36:45.5031236Z     ^[[90m   |^[[39m                      ^[[31m^^[[39m
+2026-11-18T07:36:45.5031634Z     ^[[90m593|^[[39m   expect(viewport.scrollLeft - afterTouch).toBe(40);
+2026-11-18T07:36:45.5031931Z     ^[[90m594|^[[39m });
+2026-11-18T07:36:45.5033312Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5033877Z 
+2026-11-18T07:36:45.5034106Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5034266Z 
+2026-11-18T07:36:45.5034819Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_attach_zoom_when_wheel
+2026-11-18T07:36:45.5035607Z ^[[31m^[[1mAssertionError^[[22m: expected false to be true // Object.is equality^[[39m
+2026-11-18T07:36:45.5035872Z 
+2026-11-18T07:36:45.5035959Z Failure screenshot:
+2026-11-18T07:36:45.5036447Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_wheel.png^[[22m
+2026-11-18T07:36:45.5036900Z 
+2026-11-18T07:36:45.5037094Z ^[[32m- Expected^[[39m
+2026-11-18T07:36:45.5037370Z ^[[31m+ Received^[[39m
+2026-11-18T07:36:45.5037474Z 
+2026-11-18T07:36:45.5037561Z ^[[32m- true^[[39m
+2026-11-18T07:36:45.5037759Z ^[[31m+ false^[[39m
+2026-11-18T07:36:45.5037862Z 
+2026-11-18T07:36:45.5038177Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m635:35^[[22m^[[39m
+2026-11-18T07:36:45.5038532Z     ^[[90m633|^[[39m   // 検証
+2026-11-18T07:36:45.5038841Z     ^[[90m634|^[[39m   expect(atFit.defaultPrevented).toBe(false);
+2026-11-18T07:36:45.5039342Z     ^[[90m635|^[[39m   expect(zoomed.defaultPrevented).toBe(true);
+2026-11-18T07:36:45.5039897Z     ^[[90m   |^[[39m                                   ^[[31m^^[[39m
+2026-11-18T07:36:45.5040533Z     ^[[90m636|^[[39m   expect(viewport.scrollTop).toBe(viewportTop);
+2026-11-18T07:36:45.5041049Z     ^[[90m637|^[[39m   expect(scroller.scrollTop - scrollerTop).toBe(100);
+2026-11-18T07:36:45.5041815Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5042228Z 
+2026-11-18T07:36:45.5042405Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5042576Z 
+2026-11-18T07:36:45.5043270Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_wheel_delta
+2026-11-18T07:36:45.5043912Z ^[[31m^[[1mTypeError^[[22m: wheelDelta is not a function^[[39m
+2026-11-18T07:36:45.5044201Z 
+2026-11-18T07:36:45.5044303Z Failure screenshot:
+2026-11-18T07:36:45.5044749Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_wheel_delta.png^[[22m
+2026-11-18T07:36:45.5045072Z 
+2026-11-18T07:36:45.5045384Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m649:7^[[22m^[[39m
+2026-11-18T07:36:45.5045811Z     ^[[90m647|^[[39m   const results = [0, 1, 2].map(
+2026-11-18T07:36:45.5046093Z     ^[[90m648|^[[39m     (deltaMode) =>
+2026-11-18T07:36:45.5046489Z     ^[[90m649|^[[39m       wheelDelta({ event: { deltaX: 0, deltaY: 3, deltaMode }, page })…
+2026-11-18T07:36:45.5046846Z     ^[[90m   |^[[39m       ^[[31m^^[[39m
+2026-11-18T07:36:45.5047081Z     ^[[90m650|^[[39m   );
+2026-11-18T07:36:45.5047285Z     ^[[90m651|^[[39m   // 検証
+2026-11-18T07:36:45.5047696Z ^[[90m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m647:29^[[22m^[[39m
+2026-11-18T07:36:45.5048486Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5048898Z 
+2026-11-18T07:36:45.5049069Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5049224Z 
+2026-11-18T07:36:45.5049760Z ^[[41m^[[1m FAIL ^[[22m^[[49m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts^[[2m > ^[[22mtest_scroll_parent_of
+2026-11-18T07:36:45.5050359Z ^[[31m^[[1mTypeError^[[22m: scrollParentOf is not a function^[[39m
+2026-11-18T07:36:45.5050556Z 
+2026-11-18T07:36:45.5050640Z Failure screenshot:
+2026-11-18T07:36:45.5051100Z   - ^[[2m.vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_scroll_parent_of.png^[[22m
+2026-11-18T07:36:45.5051564Z 
+2026-11-18T07:36:45.5051946Z ^[[36m ^[[2m❯^[[22m tests/unit/src/shared/zoom.interact.browser.test.ts:^[[2m665:10^[[22m^[[39m
+2026-11-18T07:36:45.5052659Z     ^[[90m663|^[[39m   const outer = root.querySelector(".outer") as HTMLElement;
+2026-11-18T07:36:45.5053173Z     ^[[90m664|^[[39m   // 実行・検証
+2026-11-18T07:36:45.5053555Z     ^[[90m665|^[[39m   expect(scrollParentOf(inner)).toBe(root.querySelector(".scroller"));
+2026-11-18T07:36:45.5053914Z     ^[[90m   |^[[39m          ^[[31m^^[[39m
+2026-11-18T07:36:45.5054291Z     ^[[90m666|^[[39m   expect(scrollParentOf(outer)).toBe(document.scrollingElement);
+2026-11-18T07:36:45.5054627Z     ^[[90m667|^[[39m });
+2026-11-18T07:36:45.5055632Z ^[[90m ^[[2m❯^[[22m node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:^[[2m5230:20^[[22m^[[39m
+2026-11-18T07:36:45.5056060Z 
+2026-11-18T07:36:45.5056251Z ^[[31m^[[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/20]⎯^[[22m^[[39m
+2026-11-18T07:36:45.5056418Z 
+2026-11-18T07:36:45.5056423Z 
+2026-11-18T07:36:45.5056766Z ^[[2m Test Files ^[[22m ^[[1m^[[31m4 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m303 passed^[[39m^[[22m^[[90m (307)^[[39m
+2026-11-18T07:36:45.5057357Z ^[[2m      Tests ^[[22m ^[[1m^[[31m20 failed^[[39m^[[22m^[[2m | ^[[22m^[[1m^[[32m2384 passed^[[39m^[[22m^[[90m (2404)^[[39m
+2026-11-18T07:36:45.5057778Z ^[[2m   Start at ^[[22m 07:35:57
+2026-11-18T07:36:45.5058199Z ^[[2m   Duration ^[[22m 47.52s^[[2m (worker 91%, tests 6%, import 3%, transform 1%)^[[22m
+2026-11-18T07:36:45.5061682Z 
+2026-11-18T07:36:45.5083708Z 
+2026-11-18T07:36:45.5145400Z ##[error]AssertionError: expected '<figure class="mdmark-diagram" data-d…' not to contain 'data-group="pan"'
+
+Expected: "data-group="pan""
+Received: "<figure class="mdmark-diagram" data-diagram="chart"><figcaption class="mdmark-diagram-head" id="d1-title"><span class="mdmark-diagram-title">問い合わせへの自動返信の構成</span><span class="mdmark-diagram-meta">範囲: メールを受け取ってから返信するまで・更新日: <time datetime="2026-10-17">2026-10-17</time></span></figcaption><div class="mdmark-diagram-box"><div class="mdmark-diagram-tools" role="toolbar" aria-label="「問い合わせへの自動返信の構成」の表示"><div class="mdmark-diagram-tools-group" data-group="pan" hidden="hidden"><button class="mdmark-diagram-tool" type="button" data-tool="left" aria-label="左へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><button class="mdmark-diagram-tool" type="button" data-tool="up" aria-label="上へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button><button class="mdmark-diagram-tool" type="button" data-tool="down" aria-label="下へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><button class="mdmark-diagram-tool" type="button" data-tool="right" aria-label="右へ動かす"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="mdmark-diagram-tools-group" data-group="zoom"><button class="mdmark-diagram-tool" type="button" data-tool="out" aria-label="縮小" disabled="disabled"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button><button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="倍率 100%。全体が収まる倍率に戻す">100%</button><button class="mdmark-diagram-tool" type="button" data-tool="in" aria-label="拡大"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button></div><div class="mdmark-diagram-tools-group" data-group="screen"><button class="mdmark-diagram-tool" type="button" data-tool="fullscreen" aria-label="全画面で開く"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 15 6 6"></path><path d="m15 9 6-6"></path><path d="M21 16v5h-5"></path><path d="M21 8V3h-5"></path><path d="M3 16v5h5"></path><path d="m3 21 6-6"></path><path d="M3 8V3h5"></path><path d="M9 9 3 3"></path></svg></button></div></div><div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="d1-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"><div class="mdmark-diagram-sizer" style="width:1100px;height:560px"><div class="mdmark-diagram-stage" style="width:1100px;height:560px"><svg class="mdmark-diagram-wires"></svg></div></div></div><div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「問い合わせへの自動返信の構成」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="560" aria-valuemin="120" aria-valuemax="560" aria-valuetext="560px" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" x2="19" y1="9"
+2026-11-18T07:36:45.5170161Z 
+2026-11-18T07:36:45.5172789Z ##[error]AssertionError: expected [ '縮小', '倍率 125%。全体が収まる倍率に戻す', …(2) ] to deeply equal [ '縮小', '倍率 125%。全体が収まる倍率に戻す', …(3) ]
+
+- Expected
++ Received
+
+  [
+    "縮小",
+    "倍率 125%。全体が収まる倍率に戻す",
+    "拡大",
+    "全画面で開く",
+-   "表示の操作を開く",
+  ]
+
+ ❯ tests/unit/src/diagram/diagram.part.test.ts:342:17
+
+
+2026-11-18T07:36:45.5174589Z 
+2026-11-18T07:36:45.5177219Z ##[error]AssertionError: expected '<div class="mdmark-diagram-tools" rol…' to contain 'data-open'
+
+Expected: "data-open"
+Received: "<div class="mdmark-diagram-tools" role="toolbar" aria-label="「タイトル」の表示">"
+
+ ❯ tests/unit/src/diagram/diagram.part.test.ts:632:62
+
+
+2026-11-18T07:36:45.5178891Z 
+2026-11-18T07:36:45.5181275Z ##[error]AssertionError: expected { out: true, in: false, atFit: false } to deeply equal { out: true, in: false, atFit: true }
+
+- Expected
++ Received
+
+  {
+-   "atFit": true,
++   "atFit": false,
+    "in": false,
+    "out": true,
+  }
+
+ ❯ tests/unit/src/diagram/diagram.part.test.ts:669:25
+
+
+2026-11-18T07:36:45.5182782Z 
+2026-11-18T07:36:45.5185527Z ##[error]AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/diagram/diagram.interact.browser.test.ts:153:39
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5187249Z 
+2026-11-18T07:36:45.5189973Z ##[error]AssertionError: expected '550%' to be '500%' // Object.is equality
+
+Expected: "500%"
+Received: "550%"
+
+ ❯ tests/unit/src/diagram/diagram.interact.browser.test.ts:172:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5191903Z 
+2026-11-18T07:36:45.5194877Z ##[error]AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/diagram/diagram.interact.browser.test.ts:182:56
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5196654Z 
+2026-11-18T07:36:45.5198662Z ##[error]Error: パネルか開閉のボタンが無い
+ ❯ tests/unit/src/diagram/diagram.interact.browser.test.ts:562:11
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5200035Z 
+2026-11-18T07:36:45.5202628Z ##[error]AssertionError: expected { x: +0, y: 186 } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "x": 0,
+  "y": 186,
+}
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:241:36
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5204840Z 
+2026-11-18T07:36:45.5207015Z ##[error]AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:85:39
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5208200Z 
+2026-11-18T07:36:45.5209953Z ##[error]AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:331:23
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5211134Z 
+2026-11-18T07:36:45.5213464Z ##[error]AssertionError: expected 2.68 to be close to 2.5, received difference is 0.18000000000000016, but expected 0.005
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:368:19
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5214778Z 
+2026-11-18T07:36:45.5216595Z ##[error]AssertionError: expected 2.68 to be close to 2.5, received difference is 0.18000000000000016, but expected 0.005
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:440:19
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5217985Z 
+2026-11-18T07:36:45.5220269Z ##[error]AssertionError: expected '100%' to be '25%' // Object.is equality
+
+Expected: "25%"
+Received: "100%"
+
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:466:26
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5222115Z 
+2026-11-18T07:36:45.5225024Z ##[error]AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:489:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5226805Z 
+2026-11-18T07:36:45.5229491Z ##[error]AssertionError: expected 0.5 to be close to 1, received difference is 0.5, but expected 0.0005
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:536:19
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5231193Z 
+2026-11-18T07:36:45.5234093Z ##[error]AssertionError: expected 240 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 240
+
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:592:22
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5236100Z 
+2026-11-18T07:36:45.5238969Z ##[error]AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:635:35
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5240811Z 
+2026-11-18T07:36:45.5243868Z ##[error]TypeError: wheelDelta is not a function
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:649:7
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:647:29
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.5245831Z 
+2026-11-18T07:36:45.5248313Z ##[error]TypeError: scrollParentOf is not a function
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:665:10
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=0816fc83:5230:20
+
+
+2026-11-18T07:36:45.7321739Z ##[error]Process completed with exit code 1.
+﻿2026-11-18T07:36:45.7411828Z ##[group]Run actions/upload-artifact@v4
+2026-11-18T07:36:45.7412082Z with:
+2026-11-18T07:36:45.7412249Z   name: test-log
+2026-11-18T07:36:45.7412418Z   path: test.log
+2026-11-18T07:36:45.7412584Z   if-no-files-found: ignore
+2026-11-18T07:36:45.7412781Z   compression-level: 6
+2026-11-18T07:36:45.7413250Z   overwrite: false
+2026-11-18T07:36:45.7413434Z   include-hidden-files: false
+2026-11-18T07:36:45.7413626Z env:
+2026-11-18T07:36:45.7413794Z   LAYER: unit
+2026-11-18T07:36:45.7413953Z   PATHS: 
+2026-11-18T07:36:45.7414110Z ##[endgroup]
+2026-11-18T07:36:45.8770111Z (node:5277) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-18T07:36:45.8770799Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-18T07:36:45.8808131Z With the provided path, there will be 1 file uploaded
+2026-11-18T07:36:45.8811635Z Artifact name is valid!
+2026-11-18T07:36:45.8812318Z Root directory input is valid!
+2026-11-18T07:36:46.1429223Z Beginning upload of artifact content to blob storage
+2026-11-18T07:36:46.4139933Z (node:5277) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-18T07:36:46.4482694Z Uploaded bytes 12108
+2026-11-18T07:36:46.4624901Z Finished uploading artifact content to blob storage!
+2026-11-18T07:36:46.4626087Z SHA256 digest of uploaded artifact zip is 4e335c9546f29b662b091d5e3cda35e1a7da310277af26d4953d03fa5f37c237
+2026-11-18T07:36:46.4626845Z Finalizing artifact upload
+2026-11-18T07:36:46.8285546Z Artifact test-log.zip successfully finalized. Artifact ID 14407298928
+2026-11-18T07:36:46.8286620Z Artifact test-log has been successfully uploaded! Final size is 12108 bytes. Artifact ID is 14407298928
+2026-11-18T07:36:46.8292472Z Artifact download URL: https://github.com/shuhei1101/mdmark/actions/runs/44260041758/artifacts/14407298928
+﻿2026-11-18T07:36:46.8496480Z Post job cleanup.
+2026-11-18T07:36:46.9157962Z [command]/usr/bin/git version
+2026-11-18T07:36:46.9191838Z git version 2.56.1
+2026-11-18T07:36:46.9218878Z Temporarily overriding HOME='/home/runner/work/_temp/cd28abf6-6afc-4e2e-914d-c9858977aaff' before making global git config changes
+2026-11-18T07:36:46.9219944Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-18T07:36:46.9222903Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+2026-11-18T07:36:46.9254824Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-18T07:36:46.9284017Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-18T07:36:46.9530648Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-18T07:36:46.9551288Z http.https://github.com/.extraheader
+2026-11-18T07:36:46.9560450Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-18T07:36:46.9589064Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-18T07:36:46.9824114Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-18T07:36:46.9852120Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+﻿2026-11-18T07:36:47.0228746Z Cleaning up orphan processes
+2026-11-18T07:36:47.0530207Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
