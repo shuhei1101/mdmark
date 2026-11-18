@@ -65,3 +65,36 @@ export const DeploymentCollapsed: Story = {
   parameters: { server: { id: "map-c4" } },
   args: { kind: "deployment", collapsed: '["region"]' },
 };
+
+export const DynamicPlaying: Story = {
+  name: "DynamicPlaying",
+  parameters: { server: { id: "map-c4" } },
+  args: {
+    kind: "dynamic-play",
+    collapsed: '["store"]',
+    focus: '{"nodes": ["web", "api"], "wires": ["r2"]}',
+    packets: '[{"wire": "r2", "direction": "forward"}]',
+  },
+};
+
+export const DynamicPlayingBoundary: Story = {
+  name: "DynamicPlayingBoundary",
+  parameters: { server: { id: "map-c4" } },
+  args: {
+    kind: "dynamic-play",
+    collapsed: '["store"]',
+    focus: '{"nodes": ["api", "store"], "wires": ["r4"]}',
+    packets: '[{"wire": "r4", "direction": "forward"}]',
+  },
+};
+
+export const DynamicPlayingBiRel: Story = {
+  name: "DynamicPlayingBiRel",
+  parameters: { server: { id: "map-c4" } },
+  args: {
+    kind: "dynamic-play",
+    collapsed: '["store"]',
+    focus: '{"nodes": ["web", "customer"], "wires": ["r5"]}',
+    packets: '[{"wire": "r5", "direction": "both"}]',
+  },
+};

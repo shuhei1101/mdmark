@@ -186,6 +186,8 @@ import {
   C4_DEPLOYMENT as MAP_C4_DEPLOYMENT,
   C4_DEPLOYMENT_DATA as MAP_C4_DEPLOYMENT_DATA,
   C4_DYNAMIC as MAP_C4_DYNAMIC,
+  C4_DYNAMIC_PLAY as MAP_C4_DYNAMIC_PLAY,
+  C4_DYNAMIC_PLAY_DATA as MAP_C4_DYNAMIC_PLAY_DATA,
   CLASS as MAP_CLASS,
   CLASS_DATA as MAP_CLASS_DATA,
   CONFIG as MAP_CONFIG,
@@ -1006,6 +1008,10 @@ const C4_SAMPLES: Record<string, { mermaid: string; data: string }> = {
   container: { mermaid: MAP_C4_CONTAINER, data: MAP_C4_CONTAINER_DATA },
   component: { mermaid: MAP_C4_COMPONENT, data: '{"version": 1}' },
   dynamic: { mermaid: MAP_C4_DYNAMIC, data: '{"version": 1}' },
+  "dynamic-play": {
+    mermaid: MAP_C4_DYNAMIC_PLAY,
+    data: MAP_C4_DYNAMIC_PLAY_DATA,
+  },
   deployment: { mermaid: MAP_C4_DEPLOYMENT, data: MAP_C4_DEPLOYMENT_DATA },
 };
 
@@ -1014,7 +1020,8 @@ function bandUnitOf(args: PartArgs): MapBandUnit {
   return args.unit === "transition" ||
     args.unit === "task" ||
     args.unit === "period" ||
-    args.unit === "commit"
+    args.unit === "commit" ||
+    args.unit === "relation"
     ? args.unit
     : "message";
 }
@@ -1593,6 +1600,26 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       { overrides, nodeFit: "height" },
     );
     const layout = { ...placed, wires: spreadMapEnds(placed) };
+    // 閉じた境界の中の要素への関係は、境界へまとめた線に付け替える（mount の attachMapFlow と同じ）
+    const drawnWire = (id: string): string => {
+      if (layout.wires.some((wire) => wire.id === id)) return id;
+      const edge = chart.edges.find((item) => item.id === id);
+      return (
+        layout.wires.find((wire) =>
+          wire.merged?.some(
+            (item) => item.from === edge?.from && item.to === edge?.to,
+          ),
+        )?.id ?? id
+      );
+    };
+    const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
+    const packets =
+      typeof args.packets === "string" && args.packets !== ""
+        ? (JSON.parse(args.packets) as Array<{
+            wire: string;
+            direction: "forward" | "both";
+          }>)
+        : [];
     const part = renderMapC4Diagram({
       layout,
       kinds: { ...MAP_C4_KINDS, ...kinds },
@@ -1601,8 +1628,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       collapsed,
       entered,
       selected: jsonList(args.selected),
-      focus: undefined,
-      packets: [],
+      focus:
+        focus === undefined
+          ? undefined
+          : { nodes: focus.nodes, wires: focus.wires.map(drawnWire) },
+      packets: packets.map((packet) => ({
+        wire: drawnWire(packet.wire),
+        direction: packet.direction,
+        color: undefined,
+        shape: "circle" as const,
+      })),
       dragging: undefined,
       id: "story-map-c4",
       collapsedTag: (boundary) =>

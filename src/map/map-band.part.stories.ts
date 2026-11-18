@@ -49,6 +49,20 @@ export const StatePlayback: Story = {
   },
 };
 
+export const RelationPlayback: Story = {
+  name: "RelationPlayback",
+  parameters: { server: { id: "map-band" } },
+  args: {
+    mode: "playback",
+    unit: "relation",
+    index: 1,
+    total: 5,
+    playing: true,
+    title: "2: 注文の画面 → 注文の API：注文を送る",
+    text: "画面の入力を JSON にして API へ送る",
+  },
+};
+
 export const CommitPlayback: Story = {
   name: "CommitPlayback",
   parameters: { server: { id: "map-band" } },
