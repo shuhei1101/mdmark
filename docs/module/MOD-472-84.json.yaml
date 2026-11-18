@@ -47,7 +47,7 @@ constants:
         value: '`mdmark.openPreviewToSide` に `shift+alt+d`（`mac`: `shift+alt+d`）、`when`: `editorLangId == markdown`'
         description: 既定のショートカット（Mac は `Shift+Option+D`）
       - key: contributes.configuration
-        value: 設定『VS Code 拡張機能』の `settings.json` のキー。`mdmark.version` は `pattern` `^(latest|v\d+\.\d+\.\d+)$`、`mdmark.preview.updateDelayMs` は `minimum` 0・`maximum` 5000、`mdmark.preview.theme` は `enum`、`mdmark.colorTheme` は `enum`（`""`・`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`）と `enumItemLabels`（`""` は「（設定ファイルに従う）」、他は名前のまま）
+        value: 設定『VS Code 拡張機能』の `settings.json` のキー。`mdmark.version` は `pattern` `^(latest|develop|v\d+\.\d+\.\d+)$`・`patternErrorMessage` 「latest・develop・v{X}.{Y}.{Z} のどれかで記載してください」・`description` 「読み込む mdmark のバージョン。latest のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から最新の v{X}.{Y}.{Z} を選ぶ。develop のときは develop の最新の配布物を読み込む。バージョンを記載するとそのバージョンに固定する」、`mdmark.preview.updateDelayMs` は `minimum` 0・`maximum` 5000、`mdmark.preview.theme` は `enum`、`mdmark.colorTheme` は `enum`（`""`・`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`）と `enumItemLabels`（`""` は「（設定ファイルに従う）」、他は名前のまま）
         description: 既定は `SETTING_DEFAULTS` と同じ値
     refs:
       - SCR-472-1#

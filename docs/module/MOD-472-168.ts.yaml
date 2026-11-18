@@ -14,7 +14,7 @@ functions:
     title: 最新のバージョンのタグを参照する
     container: scripts/migrations.ts
     summary: '`git tag --list v*` のうち `VERSION_PATTERN` に合う最も新しいバージョンを返却する'
-    description: git は `execFile` で引数を配列にして呼ぶ。git の作業ツリーでないとき・タグが無いときは `undefined`。比較は `compareVersions`
+    description: '`versionTags` のタグのうち最も新しいものを返却する。git の作業ツリーでないとき・タグが無いときは `undefined`。比較は `compareVersions`'
     kind: 関数
     scope: public
     is_async: true
@@ -41,6 +41,7 @@ functions:
         expected: どちらも `undefined`
     refs:
       - MOD-472-148#functions[compareVersions]
+      - '#functions[versionTags]'
     status: planned
   - name: checkMigrations
     title: 移行の手順を点検する
@@ -93,6 +94,36 @@ functions:
       - '#functions[latestVersionTag]'
       - MOD-472-146#functions[validateSteps]
       - ER-472-5#
+    status: planned
+  - name: versionTags
+    title: バージョンのタグの一覧を参照する
+    container: scripts/migrations.ts
+    summary: '`git tag --list v*` のうち `VERSION_PATTERN` に合うタグを返却する'
+    description: git は `execFile` で引数を配列にして呼ぶ。git の作業ツリーでないときは空の一覧を返却する。`latestVersionTag` と、ビルドの出したバージョンの判定（MOD-472-166 の `unreleasedMigrationFolders`）が使用する
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: root
+        type: string
+        required: true
+        description: 作業ツリーの直下
+    returns:
+      type: Promise<string[]>
+      description: バージョンの書式に合うタグ（順不同）
+    unit_tests:
+      - name: test_version_tags
+        case: 正常
+        summary: バージョンの書式に合うタグだけを返却する
+        condition: '`v0.9.0`・`v0.10.0`・`vscode-v0.1.0`・`foo` のタグ'
+        mock: 一時フォルダの git のリポジトリ
+        expected: '`v0.9.0` と `v0.10.0` の 2 つ'
+      - name: test_version_tags_when_not_git
+        case: 正常
+        summary: git のリポジトリでなければ空
+        condition: git のリポジトリでないフォルダ
+        mock: 一時フォルダ
+        expected: 空の配列
     status: planned
 lead: 'スキーマを変えたバージョンに移行の手順があるかの点検を受け持ち、移行の手順の点検を変えるときに参照する。'
 tags:

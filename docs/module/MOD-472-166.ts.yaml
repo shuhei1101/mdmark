@@ -170,7 +170,7 @@ functions:
     is_async: true
     summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks`・`buildRetiredDiagrams` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
-    side_effects: '`dist/` と、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を書き換える'
+    side_effects: '`dist/` と、`migrations/` の中の出していないバージョンのフォルダのうち、`marker-json.mjs` を持つフォルダの `legacy-marks.js`・`retired-diagrams.mjs` か `retired-er.mjs` を持つフォルダの `retired-diagrams.js` と、それぞれの `THIRD_PARTY_LICENSES.txt` を書き換える'
     args:
       - name: version
         type: string
@@ -224,9 +224,9 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: '`src/render/legacy-marks.ts` を依存を含めて Node で動く 1 つのファイルにまとめ、`migrations/` の中の `marker-json.mjs` を持つフォルダごとに `legacy-marks.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込む'
+    summary: '`src/render/legacy-marks.ts` を依存を含めて Node で動く 1 つのファイルにまとめ、`unreleasedMigrationFolders` が返却する `marker-json.mjs` を持つ出していないバージョンのフォルダごとに `legacy-marks.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込む'
     description: '`entryPoints: ["src/render/legacy-marks.ts"]`・`bundle: true`・`minify: true`・`format: esm`・`platform: node`・`target: NODE_TARGET`・`plugins: [postcssStubPlugin]`・`define`・`metafile: true` で、フォルダごとに `outfile` を変えてまとめ、その `metafile` を `writeThirdPartyLicenses` に指定する。`src/render/legacy-marks.ts` か `migrations/` が無ければ何も書き込まない。書き込んだファイルは移行の手順と一緒に commit し、release で `migrations/next/` をバージョンのフォルダへ移すと一緒に移る。今の書き方を読む処理（`src/render/legacy-marks.ts`）を消した後は書き込まず、commit 済みのファイルで、古いバージョンから上げる利用者に移行の手順が動く。配布物ではないため、配布ファイル 1 つの上限を検めない'
-    side_effects: '`migrations/{フォルダ}/legacy-marks.js` と `migrations/{フォルダ}/{LICENSES_FILE}` を書き換える'
+    side_effects: '出していないバージョンの `migrations/{フォルダ}/legacy-marks.js` と `migrations/{フォルダ}/{LICENSES_FILE}` を書き換える'
     args:
       - name: version
         type: string
@@ -241,6 +241,7 @@ functions:
       - ER-472-5#tables[migrations/{バージョン}/steps.yaml]
     callees:
       - '#functions[writeThirdPartyLicenses]'
+      - '#functions[unreleasedMigrationFolders]'
     unit_tests:
       - name: test_build_legacy_marks
         case: 正常
@@ -260,15 +261,21 @@ functions:
         condition: '`src/render/legacy-marks.ts` が無く、`migrations/v0.11.0/` が `marker-json.mjs` と書き込み済みの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を持つ'
         mock: 一時フォルダ
         expected: 戻り値が空で、`legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` の中身が変わらない
+      - name: test_build_legacy_marks_when_released
+        case: 正常
+        summary: 出したバージョンのフォルダは書き換えない
+        condition: '`src/render/legacy-marks.ts` があり、`migrations/v0.3.0/` と `migrations/next/` が `marker-json.mjs` を持ち、`migrations/v0.3.0/` は書き込み済みの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` も持つ。`v0.3.0` のタグがある'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 戻り値が `["migrations/next/legacy-marks.js"]` で、`migrations/v0.3.0/` の `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` の中身が変わらない
   - name: buildRetiredDiagrams
     title: 移行の手順のフォルダに廃止した図の書き換えの処理をまとめる
     container: scripts/build.ts
     kind: 関数
     scope: public
     is_async: true
-    summary: '`src/map/convert.ts` の `convertRetiredDiagrams`・`convertRetiredEr` と、`src/cli/check.ts` の `loadExtensionDirectives`・`src/cli/config.ts` の `loadConfig` を、Node で動く 1 つのファイルにまとめ、`migrations/` の中の `retired-diagrams.mjs` か `retired-er.mjs` を持つフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込む'
+    summary: '`src/map/convert.ts` の `convertRetiredDiagrams`・`convertRetiredEr` と、`src/cli/check.ts` の `loadExtensionDirectives`・`src/cli/config.ts` の `loadConfig` を、Node で動く 1 つのファイルにまとめ、`unreleasedMigrationFolders` が返却する `retired-diagrams.mjs` か `retired-er.mjs` を持つ出していないバージョンのフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込む'
     description: 'esbuild の `stdin`（4 つの関数を re-export する文字）・`bundle: true`・`minify: true`・`format: esm`・`platform: node`・`target: NODE_TARGET`・`plugins: [postcssStubPlugin]`・`define`・`metafile: true`・`external: ["esbuild", "yaml"]`（拡張をまとめる esbuild と YAML の読み書きは、`npx` が入れた依存をそのまま import する）で、フォルダごとに `outfile` を変えてまとめ、その `metafile` を `writeThirdPartyLicenses` に指定する（同じフォルダが `marker-json.mjs` も持つときは、`buildLegacyMarks` の `metafile` と合わせて書き込む）。`src/map/convert.ts` か `migrations/` が無ければ何も書き込まない。書き込んだファイルは移行の手順と一緒に commit する。配布物ではないため、配布ファイル 1 つの上限を検めない'
-    side_effects: '`migrations/{フォルダ}/retired-diagrams.js` と `migrations/{フォルダ}/{LICENSES_FILE}` を書き換える'
+    side_effects: '出していないバージョンの `migrations/{フォルダ}/retired-diagrams.js` と `migrations/{フォルダ}/{LICENSES_FILE}` を書き換える'
     args:
       - name: version
         type: string
@@ -284,6 +291,7 @@ functions:
       - IF-472-28#constraints[廃止した図の範囲の移行]
     callees:
       - '#functions[writeThirdPartyLicenses]'
+      - '#functions[unreleasedMigrationFolders]'
     unit_tests:
       - name: test_build_retired_diagrams
         case: 正常
@@ -297,6 +305,12 @@ functions:
         condition: '`src/map/convert.ts` があり、`migrations/next/` は `retired-er.mjs` だけを、`migrations/v0.13.0/` は `retired-diagrams.mjs` を持つ'
         mock: 一時フォルダ
         expected: 戻り値が `["migrations/next/retired-diagrams.js", "migrations/v0.13.0/retired-diagrams.js"]` で、どちらも `convertRetiredEr` を export する
+      - name: test_build_retired_diagrams_when_released
+        case: 正常
+        summary: 出したバージョンのフォルダは書き換えない
+        condition: '`src/map/convert.ts` があり、`migrations/v0.13.0/` と `migrations/next/` が `retired-diagrams.mjs` を持ち、`migrations/v0.13.0/` は書き込み済みの `retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` も持つ。`v0.13.0` のタグがある'
+        mock: 一時フォルダの git のリポジトリ
+        expected: 戻り値が `["migrations/next/retired-diagrams.js"]` で、`migrations/v0.13.0/` の `retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` の中身が変わらない
   - name: writeThirdPartyLicenses
     title: まとめた依存のライセンスを記載する
     container: scripts/build.ts
@@ -403,6 +417,38 @@ functions:
         mock: なし
         expected: メッセージに `tsc` のエラーを含む例外
 
+  - name: unreleasedMigrationFolders
+    title: 出していないバージョンの移行の手順のフォルダを選ぶ
+    container: scripts/build.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: '`migrations/` の直下のフォルダのうち、`scripts` のどれかを持ち、フォルダの名前が `versionTags` のタグに無いフォルダを、`migrations/{名前}` のパスで名前の順に返却する'
+    description: タグの一覧は 1 回だけ参照する。git の作業ツリーでないときは `versionTags` が空を返却し、全てのフォルダを出していないバージョンとして返却する。`--develop` の有無で変えない
+    args:
+      - name: options
+        type: '{ root: string; scripts: readonly string[] }'
+        description: 作業ツリーの直下と、フォルダを選ぶ移行のスクリプトのファイル名（`LEGACY_MIGRATION_SCRIPT` か `RETIRED_MIGRATION_SCRIPTS`）
+    returns:
+      type: Promise<string[]>
+      description: 作業ツリーの直下からのフォルダのパス
+    callees:
+      - MOD-472-168#functions[versionTags]
+    refs:
+      - IF-472-41#constraints[移行の手順の配布物の書き込み先]
+    unit_tests:
+      - name: test_unreleased_migration_folders
+        case: 正常
+        summary: タグがあるフォルダとスクリプトを持たないフォルダを除く
+        condition: '`migrations/v0.3.0/`・`migrations/v0.4.0/`・`migrations/next/` が `marker-json.mjs` を、`migrations/v0.1.0/` が `steps.yaml` だけを持ち、`v0.3.0` のタグがある。`scripts` は `["marker-json.mjs"]`'
+        mock: 一時フォルダの git のリポジトリ
+        expected: '`["migrations/next", "migrations/v0.4.0"]`'
+      - name: test_unreleased_migration_folders_when_not_git
+        case: 正常
+        summary: git の作業ツリーでなければスクリプトを持つ全てのフォルダを返却する
+        condition: '`migrations/v0.3.0/` と `migrations/next/` が `marker-json.mjs` を持つ'
+        mock: 一時フォルダ（git のリポジトリでない）
+        expected: '`["migrations/next", "migrations/v0.3.0"]`'
 lead: '配布物のビルドと、移行のスクリプトが読み込む書き換えの処理のまとめを受け持ち、配布物のビルドの流れを変えるときに参照する。'
 tags:
   - name: topic:バンドル
