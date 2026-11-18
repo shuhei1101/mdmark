@@ -20,7 +20,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 表示している列ごとに、見出しのセルと先頭から `MEASURE_ROWS` 行までの本文のセルを改行（`br`・`li`・`p`）で行に分け、最も長い行の幅と最も長い半角の単語の幅を測って返却する
-    description: '行の文字は、セルの中に `position: absolute`・`visibility: hidden`・`white-space: nowrap` の `span` を一時的に配置して入れ、`getBoundingClientRect().width` で測ってすぐ取り除く（セルの文字の大きさと書体で測るため）。見出しのセルは、中身（`.mdmark-th`。列名とボタン）を同じ見えない要素として折り返さずに置いて測る。測った幅にセルの左右の余白と罫線の幅と端数の 2px を足し、切り上げる。半角の単語は `[\x21-\x7e]+` の連なり。行の詳細の行・`一致する行がありません` の行・集計の行のように、列と 1 対 1 でない行は測らない。`hidden` の列は返却しない'
+    description: '行の文字は、セルの中に `position: absolute`・`visibility: hidden`・`white-space: nowrap` の `span` を一時的に配置して入れ、`getBoundingClientRect().width` で測ってすぐ取り除く（セルの文字の大きさと書体で測るため）。見出しのセルは、中身（`.mdmark-th`。列名とボタン）を同じ見えない要素として折り返さずに置いて測る。複製した中身の中のピン止めのボタン（`.mdmark-pin`）からは `hidden` を外し、表がはみ出していない間に測ってもボタンを含めた幅にする（後ではみ出してボタンを出したときも、測り直さずに最小幅がボタンを含む）。測った幅にセルの左右の余白と罫線の幅と端数の 2px を足し、切り上げる。半角の単語は `[\x21-\x7e]+` の連なり。行の詳細の行・`一致する行がありません` の行・集計の行のように、列と 1 対 1 でない行は測らない。`hidden` の列は返却しない'
     args:
       - name: table
         type: HTMLTableElement
@@ -113,6 +113,12 @@ functions:
         condition: 幅 320px の要素に `data-features="sort pin resize"` の、列名 `列 1`〜`列 10`・値が 2 文字の 10 列の表を付ける
         mock: なし
         expected: 各列の見出しのセルの `offsetWidth` が、その `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない。`--mdmark-column-min-width` がその幅以上
+      - name: test_attach_auto_column_widths_when_pin_hidden
+        case: 正常
+        summary: ピン止めのボタンが `hidden` の間に測った最小幅も、ボタンを含む幅にする
+        condition: 幅 1200px の要素に、幅に収まる `data-features="sort pin resize"` の 3 列の表（列名 `列 1`〜`列 3`、ピン止めのボタンが `hidden`）を付け、包む要素の幅を 120px にしてはみ出させ、ピン止めのボタンの `hidden` を外す
+        mock: なし
+        expected: 各列の見出しのセルの `--mdmark-column-min-width` と `offsetWidth` が、ピン止めのボタンを含む `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない
     status: planned
 refs:
   - IF-472-35#constraints[列の幅]
