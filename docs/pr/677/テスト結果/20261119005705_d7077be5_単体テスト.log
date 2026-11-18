@@ -1,0 +1,126 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/c4-view.browser.test.ts tests/unit/src/map/flow-view.browser.test.ts tests/unit/src/map/map.part.test.ts
+
+# 実装の前から pass した追加のテスト
+# - test_attach_map_c4_when_dynamic_walkthroughs: 補足の walkthroughs を帯の案内にする振る舞いは src/map/flow-view.ts の attachMapFlow（readFlowRange と bandStepsOf）に既にある（C4 図への適用は 413825ab #596）
+# - test_attach_map_c4_when_container_no_playback: C4Container を再生しない振る舞いは src/map/c4-view.ts の attachMapC4 が extension.walkthroughs を渡さないことによる（413825ab #596）
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-diagram-minimap-and-c4-dynamic-playback
+
+ ❯ |unit| tests/unit/src/map/map.part.test.ts (54 tests | 1 failed) 899ms
+   × test_render_map_band_when_relation 5ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (12 tests | 1 failed) 346ms
+   × test_attach_map_flow_when_walk_into_closed_group 110ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts (10 tests | 3 failed) 556ms
+   × test_attach_map_c4_when_dynamic_played 126ms
+   × test_attach_map_c4_when_dynamic_boundary 93ms
+   × test_attach_map_c4_when_dynamic_both 81ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_band_when_relation
+TypeError: Cannot read properties of undefined (reading 'replaceAll')
+ ❯ escapeHtml src/shared/escape.logic.ts:4:6
+      2| export function escapeHtml(text: string): string {
+      3|   return text
+      4|     .replaceAll("&", "&amp;")
+       |      ^
+      5|     .replaceAll("<", "&lt;")
+      6|     .replaceAll(">", "&gt;")
+ ❯ renderMapBand src/map/map.part.ts:953:103
+ ❯ tests/unit/src/map/map.part.test.ts:683:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts > test_attach_map_c4_when_dynamic_played
+TypeError: Cannot read properties of null (reading 'getAttribute')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/c4-view.browser.test.ts/test_attach_map_c4_when_dynamic_played.png
+
+ ❯ tests/unit/src/map/c4-view.browser.test.ts:180:15
+    178|   // 検証
+    179|   const band = root.querySelector<HTMLElement>(".map-band") as HTMLEle…
+    180|   expect(band.getAttribute("data-mode")).toBe("playback");
+       |               ^
+    181|   expect(band.querySelectorAll(".map-band-seg")).toHaveLength(5);
+    182|   const labels = [...band.querySelectorAll("button")].map((button) =>
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a46d0e0b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts > test_attach_map_c4_when_dynamic_boundary
+AssertionError: expected undefined to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/c4-view.browser.test.ts/test_attach_map_c4_when_dynamic_boundary.png
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/c4-view.browser.test.ts:222:51
+    220|   const label = () =>
+    221|     root.querySelector('.mdmark-diagram-label[data-wire="api->store"]'…
+    222|   expect(label()?.textContent?.startsWith("4: ")).toBe(true);
+       |                                                   ^
+    223|   // 実行・検証: 手順を止めると、出したラベルが無くなる
+    224|   root
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a46d0e0b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/c4-view.browser.test.ts > test_attach_map_c4_when_dynamic_both
+AssertionError: expected undefined to be '5: 注文の画面 ↔ 顧客：結果を確かめる' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/c4-view.browser.test.ts/test_attach_map_c4_when_dynamic_both.png
+
+- Expected:
+"5: 注文の画面 ↔ 顧客：結果を確かめる"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/c4-view.browser.test.ts:239:72
+    237|   pressSegment(root, 4);
+    238|   // 検証
+    239|   expect(root.querySelector(".map-band .map-band-title")?.textContent)…
+       |                                                                        ^
+    240|     "5: 注文の画面 ↔ 顧客：結果を確かめる",
+    241|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a46d0e0b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_walk_into_closed_group
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_walk_into_closed_group.png
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:479:5
+    477|       .querySelector('.mdmark-diagram-wire[data-wire="store->data"]')
+    478|       ?.classList.contains("map-dim"),
+    479|   ).toBe(false);
+       |     ^
+    480|   expect(
+    481|     root.querySelectorAll('.map-packet[data-wire="store->data"]').leng…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a46d0e0b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  5 failed | 71 passed (76)
+   Start at  00:56:45
+   Duration  1.35s (tests 67%, import 24%, worker 7%, transform 2%)
+
