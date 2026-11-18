@@ -1614,12 +1614,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     };
     const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
     const packets =
-      typeof args.packets === "string" && args.packets !== ""
-        ? (JSON.parse(args.packets) as Array<{
-            wire: string;
-            direction: "forward" | "both";
-          }>)
-        : [];
+      jsonObject<Array<{ wire: string; direction: "forward" | "both" }>>(
+        args.packets,
+      ) ?? [];
     const part = renderMapC4Diagram({
       layout,
       kinds: { ...MAP_C4_KINDS, ...kinds },
