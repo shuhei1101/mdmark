@@ -2,8 +2,8 @@ $ gh workflow run test.yml --ref fix/diagram/touch-pinch-overlay-tools -f layer=
 
 # 結果: Red（20 件 fail。どれも実装が無いことによる fail）
 # 実装の前から pass した変更・追加のテスト:
-#   - test_render_lightbox_when_max: 倍率の文字（zoom を百分率にした 500%）と、拡大の disabled（今の ZOOM.max = 3 以上）が src/media/lightbox.part.ts の renderLightbox に既にある（commit 1f814d57 より前から）
-#   - test_attach_zoom_when_focus_rect_animated: 読者の操作で移すのを止める振る舞いが src/shared/zoom.interact.ts の listenStops に既にある
+#   - test_render_lightbox_when_max: 倍率の文字（zoom を百分率にした 500%）と、拡大の disabled（今の ZOOM.max = 3 以上）が src/media/lightbox.part.ts の renderLightbox に既にある（commit 4c455f92 で今の場所に入った）
+#   - test_attach_zoom_when_focus_rect_animated: 読者の操作で移すのを止める振る舞いが src/shared/zoom.interact.ts の listenStops に既にある（commit 21ccdc7d で入った）
 
 ﻿2026-11-18T07:35:18.6806217Z Current runner version: '2.338.2'
 2026-11-18T07:35:18.6837981Z ##[group]Runner Image Provisioner
