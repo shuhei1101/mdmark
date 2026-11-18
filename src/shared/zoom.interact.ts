@@ -157,7 +157,7 @@ const listenWheelToScroller = (options: {
   );
 };
 
-/** 表示する枠と中身に、全体が収まる倍率の `ZOOM.minRatio` 倍から `ZOOM.maxRatio` 倍までの拡大・縮小（ボタン・キー・ピンチ）と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
+/** 表示する枠と中身に、全体が収まる倍率の `ZOOM.minRatio` 倍から `ZOOM.maxRatio` 倍までの拡大・縮小（ボタン・キー・ピンチ）と、拡大中の移動（キー・ドラッグ）を付ける */
 export function attachZoom(options: {
   /** 表示する枠 */
   viewport: HTMLElement;
@@ -165,7 +165,7 @@ export function attachZoom(options: {
   content: HTMLElement;
   /** 中身の大きさ */
   size: { width: number; height: number };
-  /** `data-tool` のボタンと `data-group="pan"` のまとまりを持つ要素 */
+  /** `data-tool` のボタンを持つ要素 */
   tools: HTMLElement;
   /** 倍率が変わったときに呼ぶ関数（ボタンの状態を書き換える前に呼ぶ） */
   onChange?: ZoomChange;
@@ -203,7 +203,6 @@ export function attachZoom(options: {
   } = options;
   const sizer = content.parentElement ?? content;
   const zoomText = tools.querySelector<HTMLElement>('[data-tool="fit"]');
-  const panGroup = tools.querySelector<HTMLElement>('[data-group="pan"]');
   const button = (name: ZoomAction): HTMLButtonElement | null =>
     tools.querySelector<HTMLButtonElement>(`[data-tool="${name}"]`);
   const state = { scale: 1, fit: 1, atFit: true };
@@ -241,7 +240,7 @@ export function attachZoom(options: {
     size.width * state.scale > viewport.clientWidth + 1 ||
     size.height * state.scale > viewport.clientHeight + 1;
 
-  /** 倍率を当て、ボタンの有効・無効と倍率の文字と移動のボタンの有無を合わせる */
+  /** 倍率を当て、ボタンの有効・無効と倍率の文字を合わせる */
   const apply = (scale: number): void => {
     state.scale = scale;
     content.style.transform = `scale(${scale})`;
@@ -258,10 +257,6 @@ export function attachZoom(options: {
       zoomIn.disabled = scale >= ceil() - ZOOM_EPSILON;
     }
     viewport.toggleAttribute("data-at-fit", scale <= state.fit + ZOOM_EPSILON);
-    // 全体が見えている間は、移動のボタンは何も動かさないので出さない
-    if (panGroup) {
-      panGroup.hidden = !overflows();
-    }
     keepFocus();
   };
   /** 倍率の文字とスクリーンリーダー向けの名前を合わせる */
@@ -276,13 +271,13 @@ export function attachZoom(options: {
       `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`,
     );
   };
-  /** 押したボタンが押せなくなった・消えたときは、フォーカスを表示する枠へ移して失わせない */
+  /** 押したボタンが押せなくなったときは、フォーカスを表示する枠へ移して失わせない */
   const keepFocus = (): void => {
     const active = document.activeElement;
     if (
       active instanceof HTMLButtonElement &&
       tools.contains(active) &&
-      (active.disabled || (panGroup?.contains(active) && panGroup.hidden))
+      active.disabled
     ) {
       viewport.focus({ preventScroll: true });
     }
