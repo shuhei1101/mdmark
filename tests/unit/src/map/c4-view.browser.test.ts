@@ -9,6 +9,9 @@ import {
   C4_DEPLOYMENT,
   C4_DEPLOYMENT_DATA,
   C4_DYNAMIC,
+  C4_DYNAMIC_PLAY,
+  C4_DYNAMIC_PLAY_DATA,
+  C4_DYNAMIC_WALK_DATA,
   mapRange,
 } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
@@ -156,4 +159,110 @@ test("test_attach_map_c4_when_deployment_collapsed", async () => {
   const closed = root.querySelector('.map-closed-group[data-group="region"]');
   expect(closed?.textContent).toContain("要素 2 件");
   expect(root.querySelector('.map-group[data-group="cloud"]')).not.toBeNull();
+});
+
+/** 帯の手順のバーの区切りを押す（0 始まり） */
+const pressSegment = (root: HTMLElement, index: number) =>
+  root.querySelectorAll<HTMLElement>(".map-band-seg")[index]?.click();
+
+/** 要素が薄くなっているか */
+const dimmed = (root: HTMLElement, selector: string) =>
+  root.querySelector(selector)?.classList.contains("map-dim");
+
+// C4Dynamic の関係の再生（正常系）
+test("test_attach_map_c4_when_dynamic_played", async () => {
+  // 準備
+  const root = await setUp(undefined, C4_DYNAMIC_PLAY, C4_DYNAMIC_PLAY_DATA);
+  // 実行
+  pressSegment(root, 1);
+  // 検証
+  const band = root.querySelector<HTMLElement>(".map-band") as HTMLElement;
+  expect(band.getAttribute("data-mode")).toBe("playback");
+  expect(band.querySelectorAll(".map-band-seg")).toHaveLength(5);
+  const labels = [...band.querySelectorAll("button")].map((button) =>
+    button.getAttribute("aria-label"),
+  );
+  expect(labels).toEqual(expect.arrayContaining(["前の関係", "次の関係"]));
+  expect(band.querySelector(".map-band-title")?.textContent).toBe(
+    "2: 注文の画面 → 注文の API：注文を送る",
+  );
+  expect(band.querySelector(".map-band-text")?.textContent).toBe(
+    "画面の入力を JSON にして API へ送る",
+  );
+  expect(dimmed(root, '.mdmark-diagram-node[data-node="web"]')).toBe(false);
+  expect(dimmed(root, '.mdmark-diagram-node[data-node="api"]')).toBe(false);
+  expect(dimmed(root, '.mdmark-diagram-node[data-node="customer"]')).toBe(
+    true,
+  );
+  expect(dimmed(root, '.mdmark-diagram-wire[data-wire="r2"]')).toBe(false);
+  expect(dimmed(root, '.mdmark-diagram-wire[data-wire="r3"]')).toBe(true);
+  const packets = [...root.querySelectorAll(".map-packet")];
+  expect(packets.length).toBeGreaterThan(0);
+  expect(
+    packets.every((packet) => packet.getAttribute("data-wire") === "r2"),
+  ).toBe(true);
+});
+
+// 閉じた境界の中の要素への関係（正常系）
+test("test_attach_map_c4_when_dynamic_boundary", async () => {
+  // 準備
+  const root = await setUp(undefined, C4_DYNAMIC_PLAY, C4_DYNAMIC_PLAY_DATA);
+  // 実行
+  pressSegment(root, 3);
+  // 検証
+  expect(
+    root
+      .querySelector('[data-group="store"]')
+      ?.classList.contains("map-closed-group"),
+  ).toBe(true);
+  expect(dimmed(root, '.map-closed-group[data-group="store"]')).toBe(false);
+  expect(dimmed(root, '.mdmark-diagram-node[data-node="api"]')).toBe(false);
+  const label = () =>
+    root.querySelector('.mdmark-diagram-label[data-wire="api->store"]');
+  expect(label()?.textContent?.startsWith("4: ")).toBe(true);
+  // 実行・検証: 手順を止めると、出したラベルが無くなる
+  root
+    .querySelector<HTMLElement>('.map-band [role="slider"]')
+    ?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+  expect(label()).toBeNull();
+});
+
+// 両向きの関係（正常系）
+test("test_attach_map_c4_when_dynamic_both", async () => {
+  // 準備
+  const root = await setUp(undefined, C4_DYNAMIC_PLAY, C4_DYNAMIC_PLAY_DATA);
+  // 実行
+  pressSegment(root, 4);
+  // 検証
+  expect(root.querySelector(".map-band .map-band-title")?.textContent).toBe(
+    "5: 注文の画面 ↔ 顧客：結果を確かめる",
+  );
+  const packets = [...root.querySelectorAll('.map-packet[data-wire="r5"]')];
+  const backward = (packet: Element) =>
+    packet.querySelector("animateMotion")?.getAttribute("keyPoints") ===
+    "1;0";
+  expect(packets.some(backward)).toBe(true);
+  expect(packets.some((packet) => !backward(packet))).toBe(true);
+});
+
+// 案内の手順を持つ C4Dynamic（正常系）
+test("test_attach_map_c4_when_dynamic_walkthroughs", async () => {
+  // 準備・実行
+  const root = await setUp(undefined, C4_DYNAMIC_PLAY, C4_DYNAMIC_WALK_DATA);
+  // 検証
+  const band = root.querySelector<HTMLElement>(".map-band") as HTMLElement;
+  expect(band.getAttribute("data-mode")).toBe("walkthrough");
+  expect(band.querySelectorAll(".map-band-seg")).toHaveLength(2);
+});
+
+// ほかの種類の図は再生しない（正常系）
+test("test_attach_map_c4_when_container_no_playback", async () => {
+  // 準備・実行
+  const root = await setUp(undefined, C4_CONTAINER, C4_CONTAINER_DATA);
+  // 検証
+  expect(root.querySelector(".map-band")?.getAttribute("data-mode")).not.toBe(
+    "playback",
+  );
 });
