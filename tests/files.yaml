@@ -72,6 +72,12 @@ files:
   - path: fixtures/mermaid-svg/state.svg
     description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（state）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/flowchart-link.svg
+    description: 'scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-link）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:図]
+  - path: fixtures/mermaid-svg/flowchart-styled.svg
+    description: 'scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-styled）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:図]
   - path: integration/fixtures-plugin.ts
     description: 結合テストが使用する外部ライブラリと拡張のモジュールの代役を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:拡張, topic:モック]
@@ -534,16 +540,16 @@ files:
       - to: migrations/v0.10.0/drop-tag-vocabulary.mjs
         type: tests
   - path: unit/migrations/retired-diagrams.test.ts
-    description: migrations/next/retired-diagrams.mjs（「文書の廃止した flow・sequence の範囲を map の範囲へ書き換える移行の手順」）を確認する単体テスト。retired-diagrams.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
+    description: migrations/v0.13.0/retired-diagrams.mjs（「文書の廃止した flow・sequence の範囲を map の範囲へ書き換える移行の手順」）を確認する単体テスト。retired-diagrams.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:図]
     related:
       - to: migrations/v0.13.0/retired-diagrams.mjs
         type: tests
   - path: unit/migrations/retired-er.test.ts
-    description: migrations/next/retired-er.mjs（「文書の廃止した er の範囲を map の ER 図の範囲へ書き換える移行の手順」）を確認する単体テスト。retired-er.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
+    description: migrations/v0.14.0/retired-er.mjs（「文書の廃止した er の範囲を map の ER 図の範囲へ書き換える移行の手順」）を確認する単体テスト。retired-er.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:図]
     related:
-      - to: migrations/next/retired-er.mjs
+      - to: migrations/v0.14.0/retired-er.mjs
         type: tests
   - path: unit/helpers/charts.ts
     description: 単体テストが使用する見本のグラフの定義（棒・円）の JSON を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
@@ -2347,6 +2353,28 @@ files:
         type: tests
       - to: CMP-472-7
         type: see_also
+  - path: integration/lib/map-axis-grid.story.test.ts
+    description: '部品設計『mapの軸と格子の配置の図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/map/map.part.ts
+        type: tests
+      - to: CMP-653-1
+        type: see_also
+  - path: integration/lib/map-mindmap.story.test.ts
+    description: '部品設計『mapのマインドマップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
+    related:
+      - to: src/map/map.part.ts
+        type: tests
+      - to: CMP-649-1
+        type: see_also
+  - path: integration/lib/set-part-module-loader.browser.test.ts
+    description: 'インターフェース定義『部品のモジュールを指定する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。'
+    tags: [topic:結合テスト, tool:vitest, topic:api]
+    related:
+      - to: IF-655-1
+        type: tests
   - path: integration/terminal.ts
     description: '結合テストが使用する一時の端末（環境変数・端末の設定と状態の配置場所・settings.json のパス）と、tmux・systemd --user が使用できるかの確認を受け持つ。結合テストの準備や確認方法を変えるときに参照する。'
     tags: [topic:結合テスト, tool:vitest, tool:claude-code]
@@ -2369,6 +2397,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:markdown]
     related:
       - to: migrations/v0.11.0/marker-json.mjs
+        type: tests
+  - path: unit/migrations/retired-map-options.test.ts
+    description: 'migrations/next/retired-map-options.mjs（「文書の map のマーカーから廃止した play・interval を削除する移行のスクリプト」）を確認する単体テスト。retired-map-options.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:map]
+    related:
+      - to: migrations/next/retired-map-options.mjs
         type: tests
   - path: unit/src/cli/markdown-check.test.ts
     description: 'src/cli/markdown-check.ts（「指定した Markdown の文字列とファイルの YAML のキーの値の記法の点検 checkMarkdownSource」）を確認する単体テスト。markdown-check.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
@@ -2496,6 +2530,42 @@ files:
   - path: unit/src/map/state-view.browser.test.ts
     description: 'src/map/state-view.ts を確認するブラウザで実行する単体テスト。state-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
     tags: [topic:単体テスト, tool:vitest]
+  - path: unit/src/map/axis-grid-layout.test.ts
+    description: 'src/map/axis-grid-layout.ts を確認する単体テスト。axis-grid-layout.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+    related:
+      - to: src/map/axis-grid-layout.ts
+        type: tests
+  - path: unit/src/map/axis-grid-view.browser.test.ts
+    description: 'src/map/axis-grid-view.ts を確認するブラウザで実行する単体テスト。axis-grid-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+    related:
+      - to: src/map/axis-grid-view.ts
+        type: tests
+  - path: unit/src/map/axis-grid.test.ts
+    description: 'src/map/axis-grid.ts を確認する単体テスト。axis-grid.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+    related:
+      - to: src/map/axis-grid.ts
+        type: tests
+  - path: unit/src/map/mindmap-layout.test.ts
+    description: 'src/map/mindmap-layout.ts を確認する単体テスト。mindmap-layout.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+    related:
+      - to: src/map/mindmap-layout.ts
+        type: tests
+  - path: unit/src/map/mindmap-view.browser.test.ts
+    description: 'src/map/mindmap-view.ts を確認するブラウザで実行する単体テスト。mindmap-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+    related:
+      - to: src/map/mindmap-view.ts
+        type: tests
+  - path: unit/src/map/mindmap.test.ts
+    description: 'src/map/mindmap.ts を確認する単体テスト。mindmap.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest]
+    related:
+      - to: src/map/mindmap.ts
+        type: tests
   - path: unit/src/section/back-to-top.part.test.ts
     description: 'src/section/back-to-top.part.ts（「先頭へ戻るボタンの renderBackToTop」）を確認する単体テスト。back-to-top.part.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html]
@@ -2658,3 +2728,6 @@ files:
     related:
       - to: src/shared/icon-node.logic.ts
         type: tests
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []

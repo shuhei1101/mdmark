@@ -95,3 +95,4 @@ tags:
   - name: topic:テスト
     main: true
   - name: action:実行
+lead: テストの層ごとの実行コマンドと前提を定め、単体・結合・E2E のテストや lint を実行するときに参照する。

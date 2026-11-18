@@ -12,9 +12,6 @@ files:
   - path: icon.svg
     description: VS Code 拡張機能のアイコンの原本（.vsix に入れない）。アイコンの図案を変えるときに参照する。
     tags: [tool:vscode, topic:アイコン]
-  - path: icon.png
-    description: icon.svg から書き出した 256×256px の拡張機能のアイコンで、package.json の icon が指す。Marketplace と拡張機能のビューに表示するアイコンを確認するときに参照する。
-    tags: [tool:vscode, topic:アイコン]
   - path: README.md
     description: VS Code 拡張機能のマーケットプレイスと .vsix に載る説明（機能・使用方法・設定）。拡張機能の紹介の文を変えるときに参照する。
     tags: [tool:vscode, topic:readme]
@@ -479,3 +476,6 @@ files:
     related:
       - to: MOD-472-16
         type: implements
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []

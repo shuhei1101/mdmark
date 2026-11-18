@@ -224,10 +224,10 @@ documents:
       tags: tags[].name
       main_tags: tags[main].name
   # YAML の設計書でないファイルは、フォルダごとの管理用の YAML が 1 ファイル 1 行で持つ
-  - id: files_root
-    title: docs の直下の Markdown と Pages の共通レイアウト
-    paths: [docs/_root/files.yml]
-    exclude: [README.md, index.yaml, nav.yml, nav.project.yml, llms.txt, search.json, _config.yml]
+  - id: files_top
+    title: リポジトリの直下と docs/ の直下のファイル
+    paths: [files.yaml]
+    exclude: ["docs/pr/**", "dist/**", "tmp/**", package-lock.json, docs/README.md, docs/index.yaml, "docs/*/README.md", "docs/*/index.yaml", docs/_theme/_data/nav.project.yml, "docs/_theme/assets/vendor/**"]
     records: files
     body_file: path
     schema:
@@ -434,7 +434,7 @@ nav:
               title: 非機能要件
             - page: layout
               title: フォルダ構成
-            - page: files_root/docs/design-policy.md
+            - page: files_top/docs/design-policy.md
               title: デザイン方針
         - group: シナリオ
           items:
@@ -620,9 +620,12 @@ nav:
         - group: ワークフロー
           items:
             - auto: {document: workflows}
+        - group: リポジトリの直下
+          items:
+            - auto: {document: files_top, filter: {not: {field: id, op: prefix, values: [docs/]}}}
         - group: 公開ドキュメントのサイト
           items:
-            - auto: {document: files_root, filter: {not: {field: id, op: eq, values: [docs/design-policy.md]}}}
+            - auto: {document: files_top, filter: {and: [{field: id, op: prefix, values: [docs/]}, {not: {field: id, op: eq, values: [docs/design-policy.md]}}]}}
     - title: リファレンス
       items:
         - group: 書き方
