@@ -215,15 +215,6 @@ entries:
         content_types:
           - design_doc
       - type: folder
-        name: _root
-        contents: '`docs/` の直下の Markdown と Pages の共通レイアウトの管理用の YAML'
-        content_types:
-          - file_list
-        children:
-          - type: file
-            name: files.yml
-            contents: '`docs/` の直下と `_theme/` のファイルの一覧（project-index の files の行）'
-      - type: folder
         name: _theme
         contents: 公開ドキュメントの GitHub Pages のレイアウト・外観・スクリプト（AI Monitor から取り込む）
         content_types:
@@ -1669,7 +1660,7 @@ entries:
       - tool_config
   - type: file
     name: project-index.yaml
-    contents: dev-docs と project-index の配信元の設定（文書の種類ごとのパス・スキーマ）
+    contents: dev-docs と project-index の配信元の設定（文書の種類ごとのパス・スキーマと、dev-docs の画面のタブとサイドバーの構成）
     content_types:
       - tool_config
   - type: file
@@ -1701,6 +1692,11 @@ entries:
   - type: file
     name: .gitignore
     contents: Git で管理しないもののパターン
+  - type: file
+    name: files.yaml
+    contents: 直下・`docs/` の直下・`docs/_theme/`・`tools/`・`.claude-plugin/` のファイルの概要文・タグ・関連の一覧（project-index の files の行）
+    content_types:
+      - file_list
 gitignore:
   - pattern: docs/generated/
     reason: AI Monitor が YAML の設計書から生成する Markdown（生成物）
@@ -1748,3 +1744,18 @@ notes:
 
     持ち主の機能が無い助け（どの機能の記法・部品・操作でもない関数・定数）は `shared/` に配置する。
     ある機能の記法・部品・操作を別の機能が組み込むときは、持ち主の機能のフォルダに置いたまま import する。
+  配信しないファイル: |-
+    project-index の検索の対象はリポジトリの全てのファイルで、次のファイルだけを配信しない（`project-index.yaml` の `files_top` の行の `exclude`）。
+
+    | パス | 配信しない理由 |
+    | --- | --- |
+    | `dist/` | `src/` からビルドした配布物。中身は `src/` の行で参照できる |
+    | `docs/pr/` | 作業 PR ごとの計画書・テスト結果・反映作業。設計書とコードを探すときの雑音になる |
+    | `tmp/` | 手元の一時ファイル。管理しているのは中身を無視する `.gitignore` だけ |
+    | `package-lock.json` | `package.json` から生成する依存のロック |
+    | `docs/README.md`・`docs/*/README.md` | 目次の `index.yaml` から生成する |
+    | `docs/index.yaml`・`docs/*/index.yaml` | フォルダの目次。文書は設計書の種類の行で配信し、dev-docs の画面の並びは `nav` が持つ |
+    | `docs/_theme/_data/nav.project.yml` | `docs/guide/` の文書の分類から生成する |
+    | `docs/_theme/assets/vendor/` | mdmark と mermaid の配布物のコピー |
+
+    バイナリのファイル（画像・動画）は project-index が管理用の YAML の対象にしない。

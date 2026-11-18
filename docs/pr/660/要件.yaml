@@ -1,0 +1,94 @@
+use_cases:
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図を辿って読む流れの記述は変わらないが、再生の帯の操作と C4 図の描画が変わるため E2E で流す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: 案内で、手順の全体と今の位置が分かり、離れた手順へ 1 回の操作で移り、この手順だけの再生・全ての再生・速度を選べ、手順を進めたときに関係するノードが収まる位置へなめらかに移る
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: changed
+    detail: シーケンスの再生で、手順の全体と今の位置・離れたメッセージへの移動・この手順だけの再生・全ての再生・速度・なめらかな移動を使える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: C4Container・C4Component・C4Dynamic・C4Deployment を C4Context と同じ記載方法で描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: C4 の 4 種類の境界（Container_Boundary や配置先のノード）の中へ入る・開閉する
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: なめらかな移動が図の倍率と表示する枠の位置を動かすため、読者の拡大・縮小・移動の操作が壊れていないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: map の範囲の外の C4 の 4 種類の mermaid のコードブロックも、C4Context と同じく補足の無い map の図で描く
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 案内・再生の帯を手順のバーの使い方（区切りを押してその手順を再生・もう一度押して再生し直し・バー以外と図の空いた場所を押して停止・← → と Esc・なめらかな移動）に書き換え、自動で進める・`play`・`interval` の記述を削除する。C4Container・C4Component・C4Dynamic・C4Deployment の書き方を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: map の描ける種類に C4 の 4 種類を追加し、map の引数の表から `play`・`interval` を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 「案内」「再生」の意味を、帯の前へ・次へ・自動で進めるから手順のバーの区切りを押して再生する形に書き換え、手順のバーの用語を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: map の範囲に入れなくても map の図で描く種類に C4 の 4 種類を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: マーカーの引数の行から「自動で進めるか・間隔」を削除し、案内・再生を手順のバーで辿る形に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
+  - page: docs/guide/CLI.mark.md
+    new: false
+    change: 点検のずれの種類の表に `map_retired_key`（map のマーカーの廃止したキー `play`・`interval`。`mdmark upgrade` で削除できる）の行を追加し、`map_unknown_key` の行が使用できるキーを挙げていれば `play`・`interval` を除外する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T04:31:05.908668+00:00'
+scope_out:
+  - item: スマホで拡大した図を指で動かす・ピンチで拡大する操作と、拡大のボタンの配置
+    reason: 要望に含まれない（#603 の関係する Issue。なめらかな移動で図の動かし方を変える場合は設計で合わせて検討する）
+    plan: '#602'
+  - item: 拡大した図のミニマップ
+    reason: 要望に含まれない
+    plan: '#604'
+  - item: デザインを DynamicArchitectViewer に合わせること
+    reason: 機能だけを参考にし、見た目は改めて考える（#603 の利用者の決まり）
+    plan: none
+  - item: C4Dynamic の番号つきの関係を、番号の順に再生のバーで 1 歩ずつ進める再生
+    reason: 要望は C4Context と同じ操作（再生を含まない）で、番号は線のラベルに出すだけにする（単一ユースケース設計のレビューで確定）
+    plan: '#670'
+  - item: map の図のモックで、中へ入ったときに薄く残す外のノードの文字のコントラスト（docs/mock/refs/445/assets/map-mock.css の .map-faded）
+    reason: モック HTML のレビュー観点「文字色が薄すぎない」から外れているが、今回の要望に含まれない（reviewer の対象外の逸脱の報告）
+    plan: '#664'
+  - item: 全ての手順の連続再生と速度の切り替え（#603 の「全ての再生・速度を選べる」）
+    reason: ユーザーが廃止を決めた（確認ログ『案内・再生の帯をバーだけにするか』『連続再生の廃止に…』）
+    plan: none

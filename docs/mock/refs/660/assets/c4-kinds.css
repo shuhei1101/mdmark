@@ -1,0 +1,4 @@
+/* #660 のモックの C4 の 4 種類の規則。要素・境界・外部の要素は #596 の class-arch-c4.css を使用する */
+
+/* 配置図の配置先のノード: 境界の破線と描き分けて実線の枠にする */
+.map-figure .map-group.cac-boundary.c4k-node { border-style: solid; border-width: 1.5px; }

@@ -12,7 +12,7 @@ data_models:
     summary: 読み取りと点検が返す 1 件
     properties:
       - name: kind
-        type: '"map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line" | "map_ambiguous_ref" | "annotation_undefined"'
+        type: '"map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_retired_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line" | "map_ambiguous_ref" | "annotation_undefined"'
         description: ずれの種類と同じ名前
       - name: line
         type: number | undefined
@@ -71,12 +71,6 @@ data_models:
       - name: focus
         type: string | undefined
         description: 最初に入るグループの ID
-      - name: play
-        type: '"autoplay" | undefined'
-        description: 画面に入ったら押さずに再生か案内を始める
-      - name: interval
-        type: number
-        description: 自動で進める間隔の秒（既定 2）
       - name: collapse
         type: '{ open: boolean; title: string | undefined } | undefined'
         description: 図を折りたたみに入れる（A-128 の共通の折り畳み）
@@ -86,13 +80,13 @@ constants:
     container: src/map/spec.ts
     usecase: Mermaidと補足で図を描く
     summary: 印の JSON のオブジェクトで読むキー
-    value: '["title", "focus", "play", "interval", "collapse"]'
-  - name: DEFAULT_MAP_INTERVAL
-    title: 自動で進める間隔の既定
+    value: '["title", "focus", "collapse"]'
+  - name: RETIRED_MAP_ARG_KEYS
+    title: 廃止した印の引数のキー
     container: src/map/spec.ts
-    usecase: 図を巡回する
-    summary: 印に `interval` が無いか型が合わないときの間隔（秒）
-    value: '2'
+    usecase: Mermaidと補足で図を描く
+    summary: 読まずに `map_retired_key` の項目にする印のキー
+    value: '["play", "interval"]'
 functions:
   - name: parseMapArgs
     title: 印の引数を読む
@@ -101,7 +95,7 @@ functions:
     usecase: Mermaidと補足で図を描く
     role: 処理
     scope: public
-    summary: 印の引数の文字を JSON のオブジェクトとして読み、`MAP_ARG_KEYS` のキーだけを `MapArgs` にし、知らないキーと読めない・型の合わない値を項目にする
+    summary: 印の引数の文字を JSON のオブジェクトとして読み、`MAP_ARG_KEYS` のキーだけを `MapArgs` にし、廃止したキーと読めない・型の合わない値を項目にし、知らないキーを返す
     args:
       - name: source
         type: string
@@ -113,13 +107,14 @@ functions:
     process: |-
       1. 空なら既定の `MapArgs` を返す
       2. `JSON.parse` で読み、オブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方）の項目にして既定を返す
-      3. `MAP_ARG_KEYS` に無いキーを `unknownKeys` に入れて捨てる
-      4. 型の合わない値（`play` が `autoplay` でない・`interval` が正の数でない・`collapse` がオブジェクトでない など）を `map_invalid_value` の項目にして既定にする
+      3. `RETIRED_MAP_ARG_KEYS` のキーを捨て、あれば記載したキーを `・` でつないだ `map_retired_key`（`mdmark upgrade` で削除できる旨）の項目を 1 つにする
+      4. `MAP_ARG_KEYS` にも `RETIRED_MAP_ARG_KEYS` にも無いキーを `unknownKeys` に入れて捨てる
+      5. 型の合わない値（`collapse` がオブジェクトでない など）を `map_invalid_value` の項目にして既定にする
     unit_tests:
       - name: test_parse_map_args
         case: 正常
         summary: 全てのキー
-        condition: '`{"title": "全体", "focus": "read", "play": "autoplay", "interval": 3, "collapse": {"open": false}}`'
+        condition: '`{"title": "全体", "focus": "read", "collapse": {"open": false}}`'
         mock: なし
         expected: 全てのキーが読め、`problems`・`unknownKeys` が空
       - name: test_parse_map_args_when_empty
@@ -127,7 +122,7 @@ functions:
         summary: 引数なし
         condition: 空の文字
         mock: なし
-        expected: '`interval` が 2 で、ほかのキーが無い'
+        expected: 'どのキーも無い'
       - name: test_parse_map_args_when_unknown_key
         case: 正常
         summary: 知らないキー
@@ -143,9 +138,15 @@ functions:
       - name: test_parse_map_args_when_wrong_type
         case: 異常
         summary: 型の合わない値
-        condition: '`{"interval": "abc"}`'
+        condition: '`{"collapse": "abc"}`'
         mock: なし
-        expected: '`map_invalid_value` が 1 件で、`interval` が 2'
+        expected: '`map_invalid_value` が 1 件で、`collapse` が無い'
+      - name: test_parse_map_args_when_retired
+        case: 正常
+        summary: 廃止したキー
+        condition: '`{"title": "再生", "play": "autoplay", "interval": 3}`'
+        mock: なし
+        expected: '`problems` が `map_retired_key` の 1 件で内容に `play・interval` と `mdmark upgrade` があり、`unknownKeys` が空、`normalized` が `{"title":"再生"}`'
 lead: 'map のマーカーの引数の読み取りと map の型を受け持ち、マーカーの引数を変えるときに参照する。'
 tags:
   - name: topic:map

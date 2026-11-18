@@ -1,0 +1,231 @@
+﻿2026-11-18T05:49:56.4071994Z ##[group]Run if [ -z "$PATHS" ]; then
+2026-11-18T05:49:56.4072466Z ^[[36;1mif [ -z "$PATHS" ]; then^[[0m
+2026-11-18T05:49:56.4072864Z ^[[36;1m  npm run test:integration 2>&1 | tee test.log^[[0m
+2026-11-18T05:49:56.4073289Z ^[[36;1melse^[[0m
+2026-11-18T05:49:56.4073625Z ^[[36;1m  # PATHS は空白で区切った並びのため、引用符で囲まずに分ける^[[0m
+2026-11-18T05:49:56.4074011Z ^[[36;1m  # shellcheck disable=SC2086^[[0m
+2026-11-18T05:49:56.4074536Z ^[[36;1m  npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log^[[0m
+2026-11-18T05:49:56.4075005Z ^[[36;1mfi^[[0m
+2026-11-18T05:49:56.4110635Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-18T05:49:56.4111081Z env:
+2026-11-18T05:49:56.4111484Z   LAYER: integration
+2026-11-18T05:49:56.4111895Z   PATHS: tests/integration/lib/mount.browser.test.ts
+2026-11-18T05:49:56.4112324Z   XDG_RUNTIME_DIR: /run/user/1001
+2026-11-18T05:49:56.4112764Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+2026-11-18T05:49:56.4113169Z   XDG_CONFIG_HOME: 
+2026-11-18T05:49:56.4113526Z ##[endgroup]
+2026-11-18T05:49:57.3667005Z 
+2026-11-18T05:49:57.3689592Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.4 ^[[39m^[[90m/home/runner/work/mdmark/mdmark^[[39m
+2026-11-18T05:49:57.3707742Z 
+2026-11-18T05:50:11.4038104Z ^[[2m5:50:11 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:11.4039498Z ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[33m
+2026-11-18T05:50:11.4040889Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:50:11.4042489Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:50:11.4043878Z 52 |  ...:n,ignoreIllegals:!0});return n2(o)}var r2;var o2=e=>import(e);function Kk(e,t,n){console.error(`${e}\u3092\u8AAD\...
+2026-11-18T05:50:11.4044878Z    |                                                                 ^
+2026-11-18T05:50:11.4045445Z 53 |  ${t}
+2026-11-18T05:50:11.4045964Z 54 |  });^[[0m^[[33m
+2026-11-18T05:50:11.4046711Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:11.4048802Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:11.4050123Z ^[[33m^[[39m
+2026-11-18T05:50:11.4050678Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:11.4051573Z   File: ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[39m
+2026-11-18T05:50:11.4052715Z ^[[2m5:50:11 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:11.4053674Z ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[33m
+2026-11-18T05:50:11.4055029Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:50:11.4056688Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:50:11.4058140Z 52 |  ...3066\u3044\u307E\u3059\u3002</p></div>',u2;var f2=e=>import(e);function m2(e){let{cache:t,importModule:n}=e,r=new ...
+2026-11-18T05:50:11.4059098Z    |                                                                 ^
+2026-11-18T05:50:11.4059649Z 53 |  ${t}
+2026-11-18T05:50:11.4060099Z 54 |  });^[[0m^[[33m
+2026-11-18T05:50:11.4060729Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:11.4062743Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:11.4064141Z ^[[33m^[[39m
+2026-11-18T05:50:11.4065049Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:11.4065832Z   File: ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[39m
+2026-11-18T05:50:11.4069625Z ^[[2m5:50:11 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:11.4070924Z ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[33m
+2026-11-18T05:50:11.4071607Z ^[[0m53 |  ${t}
+2026-11-18T05:50:11.4071992Z 54 |  });
+2026-11-18T05:50:11.4072885Z 55 |  ...:l});f&&d.push(f)}return C2(d)}var M2="1.59.0",E2=e=>import(e),A2=e=>fetch(e,{method:"HEAD"}),ku=e=>`https://cdn.j...
+2026-11-18T05:50:11.4073920Z    |                                                                 ^
+2026-11-18T05:50:11.4074993Z 56 |  `):(t.textContent??"").replace(/\n$/,"")}function xu(e,t){let n=document.createElement("template");n.innerHTML=Fi({st...
+2026-11-18T05:50:11.4076798Z 57 |  `)return;let S=document.createElement("span");return S.className="mdmark-code-break",T.replaceWith(S),S.append(T),S})...^[[0m^[[33m
+2026-11-18T05:50:11.4077902Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:11.4079895Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:11.4081340Z ^[[33m^[[39m
+2026-11-18T05:50:11.4081842Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:11.4082627Z   File: ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[39m
+2026-11-18T05:50:11.4086087Z ^[[2m5:50:11 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:11.4087353Z ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[33m
+2026-11-18T05:50:11.4088278Z ^[[0m58 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+2026-11-18T05:50:11.4089445Z 59 |  `);return(t.textContent??"").split(`
+2026-11-18T05:50:11.4090551Z 60 |  ...verse())r()}}var uN="data-mdmark-drawn",Vu;var fN=e=>import(e);async function Ey(e){let{root:t,libraries:n,isCurre...
+2026-11-18T05:50:11.4091540Z    |                                                                 ^
+2026-11-18T05:50:11.4092070Z 61 |  ${o}
+2026-11-18T05:50:11.4092567Z 62 |  ---^[[0m^[[33m
+2026-11-18T05:50:11.4093098Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:11.4095063Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:11.4096591Z ^[[33m^[[39m
+2026-11-18T05:50:11.4097137Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:11.4097910Z   File: ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[39m
+2026-11-18T05:50:11.4102190Z ^[[2m5:50:11 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:11.4103182Z ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[33m
+2026-11-18T05:50:11.4103832Z ^[[0m61 |  ${o}
+2026-11-18T05:50:11.4104325Z 62 |  ---
+2026-11-18T05:50:11.4105290Z 63 |  ...-theme-light",Iy;var Oy=Promise.resolve(),Yu=0,vN=e=>import(e),Py=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+2026-11-18T05:50:11.4106272Z    |                                                                 ^
+2026-11-18T05:50:11.4107537Z 64 |  `)[0]?.trim()??"",IN=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+2026-11-18T05:50:11.4109095Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...^[[0m^[[33m
+2026-11-18T05:50:11.4110178Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:11.4112226Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:11.4113672Z ^[[33m^[[39m
+2026-11-18T05:50:11.4114494Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:11.4115266Z   File: ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[39m
+2026-11-18T05:50:11.4119330Z ^[[2m5:50:11 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:11.4120756Z ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[33m
+2026-11-18T05:50:11.4121442Z ^[[0m62 |  ---
+2026-11-18T05:50:11.4122308Z 63 |  `)+e.slice(t[0].length)}},xN=e=>{let t=bN.exec(e);return t&&Dy(t[1]??"")||void 0},kr=e=>{let t=kN(e),n=t?.body??e,r=t...
+2026-11-18T05:50:11.4123580Z 64 |  ...nts"],map:["attachMap"]},By=new Map,Ny=new Map,PN=e=>import(e);function qy(e,t){return e instanceof Error?(e.cause...
+2026-11-18T05:50:11.4124551Z    |                                                                 ^
+2026-11-18T05:50:11.4125596Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+2026-11-18T05:50:11.4127402Z 66 |  `).filter(t=>fq.test(t)).length}function yq(e){return`${e?`\u8A00\u8A9E \`${e}\` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED...^[[0m^[[33m
+2026-11-18T05:50:11.4128510Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:11.4130650Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:11.4132196Z ^[[33m^[[39m
+2026-11-18T05:50:11.4132722Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:11.4133535Z   File: ^[[36m/tmp/mdmark-integration-dist-2uhJDS/dist/index.js^[[39m
+2026-11-18T05:50:12.0536250Z ^[[2m5:50:12 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:12.0537669Z ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[33m
+2026-11-18T05:50:12.0539136Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:50:12.0540633Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:50:12.0542106Z 52 |  ...:n,ignoreIllegals:!0});return n2(o)}var r2;var o2=e=>import(e);function Kk(e,t,n){console.error(`${e}\u3092\u8AAD\...
+2026-11-18T05:50:12.0543104Z    |                                                                 ^
+2026-11-18T05:50:12.0543800Z 53 |  ${t}
+2026-11-18T05:50:12.0544261Z 54 |  });^[[0m^[[33m
+2026-11-18T05:50:12.0544822Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:12.0547078Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:12.0548553Z ^[[33m^[[39m
+2026-11-18T05:50:12.0549159Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:12.0549891Z   File: ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[39m
+2026-11-18T05:50:12.0552174Z ^[[2m5:50:12 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:12.0553226Z ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[33m
+2026-11-18T05:50:12.0554571Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:50:12.0556069Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:50:12.0557592Z 52 |  ...3066\u3044\u307E\u3059\u3002</p></div>',u2;var f2=e=>import(e);function m2(e){let{cache:t,importModule:n}=e,r=new ...
+2026-11-18T05:50:12.0558565Z    |                                                                 ^
+2026-11-18T05:50:12.0559214Z 53 |  ${t}
+2026-11-18T05:50:12.0559768Z 54 |  });^[[0m^[[33m
+2026-11-18T05:50:12.0560363Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:12.0562368Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:12.0564605Z ^[[33m^[[39m
+2026-11-18T05:50:12.0565178Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:12.0566030Z   File: ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[39m
+2026-11-18T05:50:12.0578255Z ^[[2m5:50:12 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:12.0579387Z ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[33m
+2026-11-18T05:50:12.0580310Z ^[[0m53 |  ${t}
+2026-11-18T05:50:12.0580766Z 54 |  });
+2026-11-18T05:50:12.0581674Z 55 |  ...:l});f&&d.push(f)}return C2(d)}var M2="1.59.0",E2=e=>import(e),A2=e=>fetch(e,{method:"HEAD"}),ku=e=>`https://cdn.j...
+2026-11-18T05:50:12.0582631Z    |                                                                 ^
+2026-11-18T05:50:12.0583792Z 56 |  `):(t.textContent??"").replace(/\n$/,"")}function xu(e,t){let n=document.createElement("template");n.innerHTML=Fi({st...
+2026-11-18T05:50:12.0585448Z 57 |  `)return;let S=document.createElement("span");return S.className="mdmark-code-break",T.replaceWith(S),S.append(T),S})...^[[0m^[[33m
+2026-11-18T05:50:12.0586816Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:12.0588595Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:12.0589564Z ^[[33m^[[39m
+2026-11-18T05:50:12.0589973Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:12.0590540Z   File: ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[39m
+2026-11-18T05:50:12.0591294Z ^[[2m5:50:12 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:12.0591941Z ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[33m
+2026-11-18T05:50:12.0592551Z ^[[0m58 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+2026-11-18T05:50:12.0593059Z 59 |  `);return(t.textContent??"").split(`
+2026-11-18T05:50:12.0593788Z 60 |  ...verse())r()}}var uN="data-mdmark-drawn",Vu;var fN=e=>import(e);async function Ey(e){let{root:t,libraries:n,isCurre...
+2026-11-18T05:50:12.0594475Z    |                                                                 ^
+2026-11-18T05:50:12.0594860Z 61 |  ${o}
+2026-11-18T05:50:12.0595227Z 62 |  ---^[[0m^[[33m
+2026-11-18T05:50:12.0595763Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:12.0597528Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:12.0598504Z ^[[33m^[[39m
+2026-11-18T05:50:12.0598894Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:12.0599465Z   File: ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[39m
+2026-11-18T05:50:12.0600158Z ^[[2m5:50:12 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:12.0600837Z ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[33m
+2026-11-18T05:50:12.0601318Z ^[[0m61 |  ${o}
+2026-11-18T05:50:12.0601614Z 62 |  ---
+2026-11-18T05:50:12.0602295Z 63 |  ...-theme-light",Iy;var Oy=Promise.resolve(),Yu=0,vN=e=>import(e),Py=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+2026-11-18T05:50:12.0602944Z    |                                                                 ^
+2026-11-18T05:50:12.0603699Z 64 |  `)[0]?.trim()??"",IN=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+2026-11-18T05:50:12.0604701Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...^[[0m^[[33m
+2026-11-18T05:50:12.0605428Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:12.0607353Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:12.0608632Z ^[[33m^[[39m
+2026-11-18T05:50:12.0609030Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:12.0609568Z   File: ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[39m
+2026-11-18T05:50:12.0610303Z ^[[2m5:50:12 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:50:12.0610927Z ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[33m
+2026-11-18T05:50:12.0611397Z ^[[0m62 |  ---
+2026-11-18T05:50:12.0612020Z 63 |  `)+e.slice(t[0].length)}},xN=e=>{let t=bN.exec(e);return t&&Dy(t[1]??"")||void 0},kr=e=>{let t=kN(e),n=t?.body??e,r=t...
+2026-11-18T05:50:12.0612893Z 64 |  ...nts"],map:["attachMap"]},By=new Map,Ny=new Map,PN=e=>import(e);function qy(e,t){return e instanceof Error?(e.cause...
+2026-11-18T05:50:12.0613572Z    |                                                                 ^
+2026-11-18T05:50:12.0614275Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+2026-11-18T05:50:12.0615337Z 66 |  `).filter(t=>fq.test(t)).length}function yq(e){return`${e?`\u8A00\u8A9E \`${e}\` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED...^[[0m^[[33m
+2026-11-18T05:50:12.0616024Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:50:12.0617448Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:50:12.0618418Z ^[[33m^[[39m
+2026-11-18T05:50:12.0618823Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:50:12.0619360Z   File: ^[[36m/tmp/mdmark-integration-dist-Z9HceG/dist/index.js^[[39m
+2026-11-18T05:50:12.5606966Z  ^[[32m✓^[[39m ^[[30m^[[43m integration-browser-touch (chromium) ^[[49m^[[39m tests/integration/lib/mount.browser.test.ts ^[[2m(^[[22m^[[2m307 tests^[[22m^[[2m | ^[[22m^[[33m306 skipped^[[39m^[[2m)^[[22m^[[33m 804^[[2mms^[[22m^[[39m
+2026-11-18T05:50:12.5609355Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_column_resized_by_touch^[[33m 710^[[2mms^[[22m^[[39m
+2026-11-18T05:50:22.6134411Z ^[[90mstderr^[[2m | tests/integration/lib/mount.browser.test.ts^[[2m > ^[[22m^[[2mtest_normal_when_diagram_zoomed
+2026-11-18T05:50:22.6135865Z ^[[22m^[[39m[Error: ResizeObserver loop completed with undelivered notifications.]
+2026-11-18T05:50:23.1936836Z ^[[90mstderr^[[2m | tests/integration/lib/mount.browser.test.ts^[[2m > ^[[22m^[[2mtest_normal_when_diagram_panned
+2026-11-18T05:50:23.1938344Z ^[[22m^[[39m[Error: ResizeObserver loop completed with undelivered notifications.]
+2026-11-18T05:51:02.1907898Z  ^[[32m✓^[[39m ^[[30m^[[46m integration-browser (chromium) ^[[49m^[[39m tests/integration/lib/mount.browser.test.ts ^[[2m(^[[22m^[[2m307 tests^[[22m^[[2m | ^[[22m^[[33m1 skipped^[[39m^[[2m)^[[22m^[[33m 51010^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1909543Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 767^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1910889Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_pinned^[[33m 568^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1911828Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_pin_and_wide^[[33m 617^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1912980Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_header_stuck^[[33m 4729^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1915072Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_code_copied^[[33m 2130^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1916095Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_zoomed^[[33m 645^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1917414Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_panned^[[33m 833^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1918393Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_fullscreen^[[33m 498^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1919346Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_tooltip^[[33m 603^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1920235Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_tooltip_touch^[[33m 461^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1921556Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_destroyed_while_waiting^[[33m 1105^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1922443Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diff_blocks_updated^[[33m 933^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1923639Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_part_module_unavailable^[[33m 328^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1924573Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_tooltip_placement_bottom^[[33m 351^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1925992Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_no_syntax_target^[[33m 308^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1927276Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_hovered_and_pinned^[[33m 351^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1928534Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_focused^[[33m 383^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1929575Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_back_to_top_pressed^[[33m 637^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1930526Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_back_to_top_in_scroll_container^[[33m 679^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1931727Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_back_to_top_avoids_side_parts^[[33m 524^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1932777Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_gif_toggled^[[33m 2053^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1933734Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_gif_reduced_motion^[[33m 686^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1934721Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_over_table^[[33m 889^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1935665Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_scrolled_to_end^[[33m 301^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1937871Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_at_scroll_edge^[[33m 560^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1938881Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_glossary_touch^[[33m 455^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1939750Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_pinned_through^[[33m 450^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1940744Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_placement_top^[[33m 555^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1941585Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_chart_item_tooltip^[[33m 717^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1942465Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_resized^[[33m 945^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1943313Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_block_spacing^[[33m 788^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1944217Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_drawn^[[33m 488^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1945363Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_scheme_changed^[[33m 545^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1946383Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_printed^[[33m 947^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1947564Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_theme_configured^[[33m 461^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1948564Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_no_mermaid_target^[[33m 306^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1949490Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_mermaid_syntax_invalid^[[33m 428^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1950547Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_node_link^[[33m 1107^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1951585Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_pinned_column_resized^[[33m 501^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1952637Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_pinned_columns_exceed_visible_width^[[33m 437^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1953771Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_pinned_through_exceed_visible_width^[[33m 304^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1954733Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_hints_off^[[33m 486^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1955698Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_plain_map_cannot_read^[[33m 415^[[2mms^[[22m^[[39m
+2026-11-18T05:51:02.1967752Z 
+2026-11-18T05:51:02.1968624Z ^[[2m Test Files ^[[22m ^[[1m^[[32m2 passed^[[39m^[[22m^[[90m (2)^[[39m
+2026-11-18T05:51:02.1969552Z ^[[2m      Tests ^[[22m ^[[1m^[[32m307 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m307 skipped^[[39m^[[90m (614)^[[39m
+2026-11-18T05:51:02.1970424Z ^[[2m   Start at ^[[22m 05:49:57
+2026-11-18T05:51:02.1971012Z ^[[2m   Duration ^[[22m 64.80s^[[2m (tests 96%, worker 3%, import 1%)^[[22m
+2026-11-18T05:51:02.1979071Z 

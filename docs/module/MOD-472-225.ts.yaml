@@ -16,7 +16,21 @@ functions:
     container: src/code-block/code-fold.interact.ts
     kind: 関数
     scope: internal
-    summary: '`data-fold-lines` の行に `renderCodeFoldToggle` のボタンを配置し（`data-folded` の行は畳んだ状態）、押すと行の畳んだ状態を切り替えて `hiddenLinesOf` の行に `hidden` を付与・解除し、畳んだ行の末尾に `renderCodeFoldMore` を配置する。Shift を押しながらの押下（Enter・Space を含む）は範囲の中の畳める行も同じ状態にする。`⋯` を押すとその行を開く。`pointerover`・`pointerout` で `guideRangeOf` の範囲の行に `data-guide-active` を付与・解除する。畳める行を持つ `pre` の `pointermove` で、ポインターの横の位置が開閉のボタンの列（コードブロックの最初の開閉のボタンの `getBoundingClientRect()` の左端から右端まで）にあれば `pre` に `data-fold-hover` を付け、無ければ外し、`pointerleave` で外す（行の高さに関わらず、ボタンを持たない行の上でも列に乗れば付ける）。開閉を切り替える関数を `codeFoldSetters` に登録する'
+    summary: 'コードブロックの畳める行に、畳む・開く操作を付ける'
+    description: |-
+      `data-fold-lines` の行に `renderCodeFoldToggle` のボタンを配置する（`data-folded` の行は畳んだ状態）。
+
+      | 操作 | 動き |
+      | --- | --- |
+      | ボタンを押す | 行の畳んだ状態を切り替えて `hiddenLinesOf` の行に `hidden` を付与・解除し、畳んだ行の末尾に `renderCodeFoldMore` を配置する |
+      | Shift を押しながらの押下（Enter・Space を含む） | 範囲の中の畳める行も同じ状態にする |
+      | `⋯` を押す | その行を開く |
+      | `pointerover`・`pointerout` | `guideRangeOf` の範囲の行に `data-guide-active` を付与・解除する |
+
+      畳める行を持つ `pre` の `pointermove` で、ポインターの横の位置が開閉のボタンの列にあれば `pre` に `data-fold-hover` を付け、無ければ外し、`pointerleave` で外す。
+      開閉のボタンの列は、コードブロックの最初の開閉のボタンの `getBoundingClientRect()` の左端から右端まで。
+      行の高さに関わらず、ボタンを持たない行の上でも列に乗れば付ける。
+      開閉を切り替える関数を `codeFoldSetters` に登録する
     args:
       - name: root
         type: HTMLElement

@@ -28,6 +28,12 @@ export const MAP_LAYOUT = {
   borderCost: 100000,
   /** ドラッグで近づけられる間の下限 */
   minGap: 16,
+  /** 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる） */
+  usedCost: 60,
+  /** 同じ区間を通る線を並べるときの線の間 */
+  wireGap: 8,
+  /** 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ） */
+  closedCount: 17,
 };
 
 /** 見せ方（中へ入る・閉じる） */
@@ -363,6 +369,13 @@ const fadedIdsOf = (
   return fadedIds;
 };
 
+/** 閉じたグループの高さ（タイトルの行の下に数の行が収まる高さ以上） */
+const closedGroupHeight = (estimated: number): number =>
+  Math.max(
+    estimated,
+    MAP_LAYOUT.groupTitle + MAP_LAYOUT.closedCount + LABEL_METRICS.padY,
+  );
+
 /** 描く木の葉（ノードか閉じたグループ） */
 const makeLeaf = (
   context: ViewContext,
@@ -375,8 +388,10 @@ const makeLeaf = (
     width: override?.width,
     size: override?.size,
   });
-  const above = collapsedGroup ? 0 : (override?.above ?? 0);
-  const aside = collapsedGroup ? 0 : (override?.aside ?? 0);
+  // 閉じたグループは上と左右を空けず、タイトルの行の下に数の行が収まる高さにする
+  const { above, aside, h } = collapsedGroup
+    ? { above: 0, aside: 0, h: closedGroupHeight(size.h) }
+    : { above: override?.above ?? 0, aside: override?.aside ?? 0, h: size.h };
   return {
     kind: "leaf",
     id,
@@ -385,7 +400,7 @@ const makeLeaf = (
     collapsed: collapsedGroup,
     ...size,
     w: size.w + aside * 2,
-    h: size.h + above,
+    h: h + above,
     above,
     aside,
   };
@@ -562,6 +577,8 @@ type BoxContext = {
   overrides: Record<string, MapOverride>;
   /** 箱の ID ごとの、箱の中身の配置 */
   placed: Map<string, Local[]>;
+  /** 段の中の間と段の間に足す幅 */
+  spread: number;
 };
 
 /** 子孫の線を、箱の直下の子どうしの線に持ち上げる */
@@ -682,16 +699,19 @@ const placeRows = (
     rows: string[][];
     overrides: Record<string, MapOverride>;
     vertical: boolean;
+    spread: number;
   },
 ): Local[] => {
-  const { rows, overrides, vertical } = context;
+  const { rows, overrides, vertical, spread } = context;
+  const gapItem = MAP_LAYOUT.gapItem + spread;
+  const gapRank = MAP_LAYOUT.gapRank + spread;
   const byId = new Map(box.children.map((child) => [child.id, child]));
   const main = (item: ViewItem): number => (vertical ? item.h : item.w);
   const cross = (item: ViewItem): number => (vertical ? item.w : item.h);
   const rowCross = rows.map(
     (row) =>
       row.reduce((sum, id) => sum + cross(byId.get(id) as ViewItem), 0) +
-      Math.max(0, row.length - 1) * MAP_LAYOUT.gapItem,
+      Math.max(0, row.length - 1) * gapItem,
   );
   const widest = Math.max(0, ...rowCross);
   const locals: Local[] = [];
@@ -713,9 +733,9 @@ const placeRows = (
         ? { x: at, y: along + offset }
         : { x: along + offset, y: at };
       locals.push({ item, ...p });
-      at += cross(item) + MAP_LAYOUT.gapItem;
+      at += cross(item) + gapItem;
     }
-    along += depth + MAP_LAYOUT.gapRank;
+    along += depth + gapRank;
   });
   return locals;
 };
@@ -830,7 +850,7 @@ const layoutBox = (box: ViewBox, context: BoxContext): void => {
       layoutBox(child, context);
     }
   }
-  const { links, overrides, placed } = context;
+  const { links, overrides, placed, spread } = context;
   const lifted = liftLinks(box, links);
   const rows = rankRows(
     box.children.map((child) => child.id),
@@ -838,7 +858,7 @@ const layoutBox = (box: ViewBox, context: BoxContext): void => {
   );
   orderRows(rows, { lifted, overrides });
   const vertical = box.direction === "TB";
-  const locals = placeRows(box, { rows, overrides, vertical });
+  const locals = placeRows(box, { rows, overrides, vertical, spread });
   pinLocals(locals, { overrides, vertical });
   storeBox(box, { locals, placed });
 };
@@ -1107,7 +1127,22 @@ const bySide = (list: Port[], side: MapSide | undefined): Port[] => {
 };
 
 /** 線 1 本の経路を探すときに引く値 */
-type Routing = { grid: Grid; cells: Cells; edgeId: string };
+type Routing = { grid: Grid; cells: Cells; edgeId: string; used: UsedSteps };
+
+/** 先に引いた線が通った格子の区間（点から右へ・下へ進む区間を、その点の番号で持つ） */
+type UsedSteps = { right: Uint8Array; down: Uint8Array };
+
+/** 点から向き d へ 1 つ進む区間が、先に引いた線に使われているか */
+const isUsed = (
+  used: UsedSteps,
+  step: { point: number; next: number; d: number },
+): boolean => {
+  const { point, next, d } = step;
+  if (d === 0) return used.right[point] === 1;
+  if (d === 2) return used.right[next] === 1;
+  if (d === 1) return used.down[point] === 1;
+  return used.down[next] === 1;
+};
 
 /** 経路の区間 1 つ（着く点・着く点の祖先の箱のビット・着く先の中心と大きさ） */
 type Leg = {
@@ -1167,7 +1202,13 @@ const visitSteps = (
       bitCount(
         (cells.maskAt[point] as number) ^ (cells.maskAt[next] as number),
       ) * MAP_LAYOUT.borderCost;
-    visit(next * 4 + d, length + (d === dir ? 0 : MAP_LAYOUT.bendCost) + cross);
+    const reuse = isUsed(routing.used, { point, next, d })
+      ? MAP_LAYOUT.usedCost
+      : 0;
+    visit(
+      next * 4 + d,
+      length + (d === dir ? 0 : MAP_LAYOUT.bendCost) + cross + reuse,
+    );
   }
 };
 
@@ -1300,6 +1341,24 @@ type RouteContext = {
   vias: Map<string, Array<[number, number]>>;
   grid: Grid;
   ancestorsOf: Map<string, string[]>;
+  used: UsedSteps;
+};
+
+/** 引いた線が通った格子の区間を、次の線の重みへ記録する */
+const markUsed = (
+  grid: Grid,
+  context: { used: UsedSteps; path: Array<[number, number]> },
+): void => {
+  const { used, path } = context;
+  for (const [k, [x, y]] of path.slice(1).entries()) {
+    const [px, py] = path[k] as [number, number];
+    const i = grid.xIndex.get(Math.min(x, px));
+    const j = grid.yIndex.get(Math.min(y, py));
+    if (i === undefined || j === undefined) continue;
+    const point = j * grid.nx + i;
+    if (py === y && px !== x) used.right[point] = 1;
+    if (px === x && py !== y) used.down[point] = 1;
+  }
 };
 
 /** 線 1 本を引く */
@@ -1311,7 +1370,12 @@ const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
     from: context.ancestorsOf.get(edge.from) ?? [],
     to: context.ancestorsOf.get(edge.to) ?? [],
   });
-  const routing: Routing = { grid, cells, edgeId: edge.id };
+  const routing: Routing = {
+    grid,
+    cells,
+    edgeId: edge.id,
+    used: context.used,
+  };
   const sides = overrides[edge.id]?.ends;
   const starts = bySide(portsOf(grid, { leaf: source, cells }), sides?.from);
   const goals = bySide(portsOf(grid, { leaf: target, cells }), sides?.to);
@@ -1322,6 +1386,7 @@ const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
     starts,
     legs: legsOf(routing, { via, goals, target }),
   });
+  markUsed(grid, { used: context.used, path });
   const first = path[0];
   const startPort = starts.find(
     (start) => first !== undefined && start.point === pointIndex(grid, first),
@@ -1377,13 +1442,19 @@ const routeEdges = (
     ...boxes.map((box) => ({ ...box, leaf: false })),
     ...reserved.map((rect) => ({ ...rect, leaf: true })),
   ];
+  const grid = gridOf(rects, vias);
   const context: RouteContext = {
     leaves,
     overrides,
     vias,
-    grid: gridOf(rects, vias),
+    grid,
     ancestorsOf: new Map(leaves.map((leaf) => [leaf.id, leaf.ancestors])),
+    used: {
+      right: new Uint8Array(grid.nx * grid.ny),
+      down: new Uint8Array(grid.nx * grid.ny),
+    },
   };
+  // 記載順に 1 本ずつ引き、引いた線の区間を次の線の重みにする
   return edges.map((edge) => routeEdge(context, edge));
 };
 
@@ -1394,9 +1465,11 @@ export const layoutMap = (
   options: {
     overrides: Record<string, MapOverride>;
     nodeFit: "height" | "width";
+    /** 段の中の間と段の間に足す幅（separateWires の crowded） */
+    spread?: number | undefined;
   },
 ): MapLayout => {
-  const { overrides, nodeFit } = options;
+  const { overrides, nodeFit, spread = 0 } = options;
   const maxWidth =
     nodeFit === "width" ? MAP_LAYOUT.maxWidthWide : MAP_LAYOUT.maxWidth;
   const { root, edges } = buildView(chart, view, { overrides, maxWidth });
@@ -1407,7 +1480,7 @@ export const layoutMap = (
     )
     .map((edge): [string, string] => [edge.from, edge.to]);
   const placed = new Map<string, Local[]>();
-  layoutBox(root, { links, overrides, placed });
+  layoutBox(root, { links, overrides, placed, spread });
   const leaves: InnerLeaf[] = [];
   const boxes: Array<PlacedGroup> = [];
   /** ノードの上に空けた場所 */
@@ -1519,5 +1592,254 @@ export const layoutMap = (
     nodes,
     groups,
     wires,
+  };
+};
+
+/** 線の縦か横の区間 1 つ（`axis` は区間が伸びる向き。0 は横、1 は縦） */
+type Segment = {
+  wire: number;
+  index: number;
+  axis: 0 | 1;
+  /** 区間と直角の向きの座標（縦の区間は x、横の区間は y） */
+  at: number;
+  low: number;
+  high: number;
+};
+
+/** 同じ向きで同じ直線の上にあり、範囲が重なる区間の束 */
+type Bundle = {
+  axis: 0 | 1;
+  at: number;
+  low: number;
+  high: number;
+  members: Segment[];
+};
+
+const pointKey = (point: [number, number]): string => `${point[0]},${point[1]}`;
+
+/** 線の端の点ごとの、その点を端に持つ線の本数 */
+const endCountsOf = (wires: PlacedWire[]): Map<string, number> => {
+  const counts = new Map<string, number>();
+  for (const wire of wires) {
+    for (const point of [wire.points[0], wire.points.at(-1)]) {
+      if (point === undefined) continue;
+      const key = pointKey(point);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  return counts;
+};
+
+/** 2 点の間の縦か横の区間（斜め・長さ 0 は undefined） */
+const segmentOf = (
+  [p, q]: [[number, number], [number, number]],
+  at: { wire: number; index: number },
+): Segment | undefined => {
+  if (p[0] === q[0] && p[1] === q[1]) return undefined;
+  if (p[1] !== q[1] && p[0] !== q[0]) return undefined;
+  const axis = p[1] === q[1] ? 0 : 1;
+  return {
+    ...at,
+    axis,
+    at: axis === 0 ? p[1] : p[0],
+    low: Math.min(p[axis], q[axis]),
+    high: Math.max(p[axis], q[axis]),
+  };
+};
+
+/** 区間が、ほかの線と同じ点から出る・入る線の端の区間か */
+const isSharedEnd = (
+  points: Array<[number, number]>,
+  context: { index: number; shared: Map<string, number> },
+): boolean => {
+  const { index, shared } = context;
+  const ends = [
+    index === 0 ? points[0] : undefined,
+    index === points.length - 2 ? points.at(-1) : undefined,
+  ];
+  return ends.some(
+    (end) => end !== undefined && (shared.get(pointKey(end)) ?? 0) > 1,
+  );
+};
+
+/** 線の縦と横の区間（同じ点から出る・入る線の端の区間を除く） */
+const segmentsOf = (wires: PlacedWire[]): Segment[] => {
+  const shared = endCountsOf(wires);
+  return wires.flatMap(({ points }, wire) =>
+    points.slice(1).flatMap((q, index) => {
+      if (isSharedEnd(points, { index, shared })) return [];
+      const segment = segmentOf([points[index] as [number, number], q], {
+        wire,
+        index,
+      });
+      return segment ? [segment] : [];
+    }),
+  );
+};
+
+/** 区間を、同じ向き・同じ直線ごとに範囲が重なる束にまとめる（2 本以上の線を持つ束だけ） */
+const bundlesOf = (segments: Segment[]): Bundle[] => {
+  const lines = new Map<string, Segment[]>();
+  for (const segment of segments) {
+    const key = `${segment.axis}:${segment.at}`;
+    lines.set(key, [...(lines.get(key) ?? []), segment]);
+  }
+  const bundles: Bundle[] = [];
+  for (const list of lines.values()) {
+    const sorted = [...list].sort((a, b) => a.low - b.low);
+    let current: Bundle | undefined;
+    for (const segment of sorted) {
+      if (current && segment.low < current.high) {
+        current.members.push(segment);
+        current.high = Math.max(current.high, segment.high);
+        continue;
+      }
+      current = { ...segment, members: [segment] };
+      bundles.push(current);
+    }
+  }
+  return bundles.filter(
+    (bundle) => new Set(bundle.members.map((member) => member.wire)).size > 1,
+  );
+};
+
+/** 矩形が束のどちら側にあるか（束の範囲にかからなければ undefined） */
+const sideOf = (
+  bundle: Bundle,
+  rect: Rect,
+): { side: "low" | "high"; edge: number } | undefined => {
+  const vertical = bundle.axis === 1;
+  const along = vertical ? rect.y : rect.x;
+  const length = vertical ? rect.h : rect.w;
+  if (along >= bundle.high || along + length <= bundle.low) return undefined;
+  const start = vertical ? rect.x : rect.y;
+  const size = vertical ? rect.w : rect.h;
+  if (start + size <= bundle.at) return { side: "low", edge: start + size };
+  if (start >= bundle.at) return { side: "high", edge: start };
+  return undefined;
+};
+
+/** 束の両側の矩形（束の線の端点とその祖先を除き、clearance を含める）の間の通り道 */
+const corridorOf = (
+  bundle: Bundle,
+  context: { rects: Array<Rect & { id: string }>; skipped: Set<string> },
+): { low: number | undefined; high: number | undefined } => {
+  const m = MAP_LAYOUT.clearance;
+  const sides = context.rects
+    .filter((rect) => !context.skipped.has(rect.id))
+    .flatMap((rect) => sideOf(bundle, rect) ?? []);
+  const lows = sides.filter((s) => s.side === "low").map((s) => s.edge + m);
+  const highs = sides.filter((s) => s.side === "high").map((s) => s.edge - m);
+  return {
+    low: lows.length > 0 ? Math.max(...lows) : undefined,
+    high: highs.length > 0 ? Math.min(...highs) : undefined,
+  };
+};
+
+/** 束の線を並べる最初の座標と、通り道に足りない幅 */
+const placeBundle = (
+  bundle: Bundle,
+  corridor: { low: number | undefined; high: number | undefined },
+): { first: number; lack: number } => {
+  const width =
+    MAP_LAYOUT.wireGap * (new Set(bundle.members.map((m) => m.wire)).size - 1);
+  const { low, high } = corridor;
+  if (low !== undefined && high !== undefined)
+    return {
+      first: (low + high) / 2 - width / 2,
+      lack: Math.max(0, width - (high - low)),
+    };
+  // 片側にだけ矩形があるときは、矩形のある側から遠ざかる向きへ並べる
+  if (low !== undefined) return { first: Math.max(bundle.at, low), lack: 0 };
+  if (high !== undefined)
+    return { first: Math.min(bundle.at, high) - width, lack: 0 };
+  return { first: bundle.at - width / 2, lack: 0 };
+};
+
+/** ずらした線の端点を元の位置に戻し、端点から区間の向きへ clearance 進んだ点で折って、ずらした区間へつなぐ */
+const keepEnd = (
+  points: Array<[number, number]>,
+  original: { end: [number, number]; next: [number, number] },
+): Array<[number, number]> => {
+  const { end, next } = original;
+  const moved = points[0] as [number, number];
+  if (moved[0] === end[0] && moved[1] === end[1]) return points;
+  // 端点を含む区間が伸びる向き（0 は横、1 は縦）と、端点から離れる向き
+  const axis = end[1] === next[1] ? 0 : 1;
+  const sign = Math.sign(next[axis] - end[axis]) || 1;
+  // 区間が clearance 以下の長さなら、区間の中ほどで折る
+  const length = Math.abs(next[axis] - end[axis]);
+  const step =
+    length > MAP_LAYOUT.clearance ? MAP_LAYOUT.clearance : length / 2;
+  const bend: [number, number] = [end[0], end[1]];
+  bend[axis] += sign * step;
+  const shifted: [number, number] = [moved[0], moved[1]];
+  shifted[axis] = bend[axis];
+  return [[end[0], end[1]], bend, shifted, ...points.slice(1)];
+};
+
+/** 線の始点と終点を元の位置に保つ */
+const keepEnds = (
+  wire: PlacedWire,
+  original: Array<[number, number]>,
+): PlacedWire => {
+  const first = original[0];
+  const second = original[1];
+  const last = original.at(-1);
+  const beforeLast = original.at(-2);
+  if (!first || !second || !last || !beforeLast) return wire;
+  const head = keepEnd(wire.points, { end: first, next: second });
+  const tail = keepEnd([...head].reverse(), { end: last, next: beforeLast });
+  return { ...wire, points: tail.reverse() };
+};
+
+/** 同じ向きで同じ直線の上に重なる区間を持つ線を、区間と直角の向きに wireGap ずつずらして並べ、両側の矩形の間に収まらないときに広げる幅を返す */
+export const separateWires = (
+  layout: MapLayout,
+): { wires: PlacedWire[]; crowded: number } => {
+  const wires = layout.wires.map((wire) => ({
+    ...wire,
+    points: wire.points.map((point): [number, number] => [point[0], point[1]]),
+  }));
+  const rects = [...layout.nodes, ...layout.groups];
+  const ancestorsOf = new Map(rects.map((rect) => [rect.id, rect.ancestors]));
+  let crowded = 0;
+  for (const bundle of bundlesOf(segmentsOf(wires))) {
+    const skipped = new Set(
+      bundle.members.flatMap((member) => {
+        const wire = wires[member.wire] as PlacedWire;
+        return [wire.from, wire.to].flatMap((id) => [
+          id,
+          ...(ancestorsOf.get(id) ?? []),
+        ]);
+      }),
+    );
+    // 束の直線を中に持つグループは通り道の側にしない
+    const sides = rects.filter((rect) => {
+      const start = bundle.axis === 0 ? rect.y : rect.x;
+      const size = bundle.axis === 0 ? rect.h : rect.w;
+      return !(start < bundle.at && bundle.at < start + size);
+    });
+    const { first, lack } = placeBundle(
+      bundle,
+      corridorOf(bundle, { rects: sides, skipped }),
+    );
+    crowded = Math.max(crowded, lack);
+    const order = [
+      ...new Set(bundle.members.map((member) => member.wire)),
+    ].sort((a, b) => a - b);
+    const cross = bundle.axis === 0 ? 1 : 0;
+    for (const member of bundle.members) {
+      const value = first + order.indexOf(member.wire) * MAP_LAYOUT.wireGap;
+      const points = (wires[member.wire] as PlacedWire).points;
+      (points[member.index] as [number, number])[cross] = value;
+      (points[member.index + 1] as [number, number])[cross] = value;
+    }
+  }
+  return {
+    wires: wires.map((wire, k) =>
+      keepEnds(wire, (layout.wires[k] as PlacedWire).points),
+    ),
+    crowded,
   };
 };

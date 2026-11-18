@@ -15,19 +15,25 @@ export const Idle: Story = {
 export const Step: Story = {
   name: "Step",
   parameters: { server: { id: "map-band" } },
-  args: { index: 1, title: "記法を読む", text: "1 行目\n2 行目\n3 行目" },
-};
-
-export const Auto: Story = {
-  name: "Auto",
-  parameters: { server: { id: "map-band" } },
-  args: { index: 0, auto: true },
+  args: {
+    index: 1,
+    playing: true,
+    fill: 0.5,
+    title: "記法を読む",
+    text: "1 行目\n2 行目\n3 行目",
+  },
 };
 
 export const Playback: Story = {
   name: "Playback",
   parameters: { server: { id: "map-band" } },
-  args: { mode: "playback", index: 2, total: 9, title: "mount を呼ぶ" },
+  args: {
+    mode: "playback",
+    index: 2,
+    total: 9,
+    playing: true,
+    title: "mount を呼ぶ",
+  },
 };
 
 export const StatePlayback: Story = {
@@ -38,6 +44,7 @@ export const StatePlayback: Story = {
     unit: "transition",
     index: 5,
     total: 13,
+    playing: true,
     title: "判定 → 差し戻しの理由を確認する：差し戻し",
   },
 };
@@ -50,8 +57,15 @@ export const CommitPlayback: Story = {
     unit: "commit",
     index: 5,
     total: 10,
+    playing: true,
     title: "develop · c6",
   },
+};
+
+export const Dense: Story = {
+  name: "Dense",
+  parameters: { server: { id: "map-band" } },
+  args: { index: 19, total: 40, playing: true },
 };
 
 export const Narrow: Story = {

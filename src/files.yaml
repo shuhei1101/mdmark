@@ -534,7 +534,7 @@ files:
       - to: MOD-472-204
         type: implements
   - path: map/band.ts
-    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「案内と再生の帯の attachBand・observeEnter」を受け持つ。案内と再生の帯の操作を変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「案内と再生のバーの手順の選び方と繰り返し・停止と、手順へ図を移す処理」を受け持つ。案内と再生のバーの操作を変えるときに参照する。
     tags: [topic:図, topic:map]
     related:
       - to: MOD-472-132
@@ -570,7 +570,7 @@ files:
       - to: MOD-472-134
         type: implements
   - path: map/flow-view.ts
-    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「構成図の attachMapFlow」を受け持つ。構成図の描画と操作を変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「構成図の描画と、選んだノードの線と経路の強調」を受け持つ。構成図の描画と操作を変えるときに参照する。
     tags: [topic:図, topic:map]
     related:
       - to: MOD-472-130
@@ -1196,7 +1196,7 @@ files:
       - to: CMP-472-4
         type: implements
   - path: map/map.part.ts
-    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「部品『mapの構成図』『mapのシーケンス図』『案内の帯』の HTML」を受け持つ。map の部品が返却する HTML を変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「部品『mapの構成図』『mapのシーケンス図』と案内のバーの HTML」を受け持つ。map の部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, topic:map, tool:html]
     related:
       - to: MOD-472-133
@@ -1789,6 +1789,144 @@ files:
     related:
       - to: MOD-472-303
         type: implements
+  - path: map/architecture-view.ts
+    description: 'map のアーキテクチャ図の描画と操作を受け持ち、map のアーキテクチャ図の操作を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-596-5
+        type: implements
+  - path: map/architecture.ts
+    description: 'Mermaid の architecture-beta の読み取りと構成図の入力への変換を受け持ち、map のアーキテクチャ図の読み取りを変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-596-2
+        type: implements
+  - path: map/axis-grid-layout.ts
+    description: 'ガントチャート・タイムライン・Git グラフ・ジャーニーの軸に沿った配置と、ブロック図の格子の配置を受け持ち、map の軸と格子の配置の図の配置を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-653-2
+        type: implements
+  - path: map/axis-grid-view.ts
+    description: 'map の軸と格子の配置の図の描画と操作（開閉・中へ入る・選択・案内と再生）を受け持ち、map の軸と格子の配置の図の操作を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-653-3
+        type: implements
+  - path: map/axis-grid.ts
+    description: 'Mermaid の gantt・timeline・gitGraph・journey・block-beta の読み取りと、補足とマーカーの引数のキーが指す項目の解決を受け持ち、map の軸と格子の配置の図の読み取りを変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-653-1
+        type: implements
+  - path: map/c4-view.ts
+    description: 'map の C4 図（C4 の 5 種類）の描画と操作を受け持ち、map の C4 図の操作を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-596-6
+        type: implements
+  - path: map/c4.ts
+    description: 'Mermaid の C4 の 5 種類の図の読み取りと構成図の入力への変換を受け持ち、map の C4 図の読み取りを変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-596-3
+        type: implements
+  - path: map/class-diagram.ts
+    description: 'Mermaid の classDiagram の読み取りと構成図の入力への変換を受け持ち、map のクラス図の読み取りを変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-596-1
+        type: implements
+  - path: map/class-view.ts
+    description: 'map のクラス図の描画と操作を受け持ち、map のクラス図の操作を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-596-4
+        type: implements
+  - path: map/er-view.ts
+    description: 'map の ER 図の描画と操作を受け持ち、map の ER 図の操作を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-531-3
+        type: implements
+  - path: map/er.ts
+    description: 'Mermaid の erDiagram の読み取りと構成図の入力への変換を受け持ち、map の ER 図の読み取りを変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-531-1
+        type: implements
+  - path: map/mindmap-layout.ts
+    description: 'マインドマップの木の配置（根を中央に配置し、枝を左右の外へ広げる）と枝の色を受け持ち、map のマインドマップの配置を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-649-2
+        type: implements
+  - path: map/mindmap-view.ts
+    description: 'map のマインドマップの描画と操作を受け持ち、map のマインドマップの操作を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-649-3
+        type: implements
+  - path: map/mindmap.ts
+    description: 'Mermaid の mindmap の読み取りと、補足とマーカーの引数の focus のキーが指す項目の解決を受け持ち、map のマインドマップの読み取りを変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-649-1
+        type: implements
+  - path: map/state-diagram.ts
+    description: 'Mermaid の stateDiagram の読み取りと構成図の入力への変換を受け持ち、map の状態遷移図の読み取りを変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-531-2
+        type: implements
+  - path: map/state-view.ts
+    description: 'map の状態遷移図の描画と操作を受け持ち、map の状態遷移図の操作を変えるときに参照する。'
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-531-4
+        type: implements
+  - path: map/map-architecture.part.stories.ts
+    description: '部品設計『mapのアーキテクチャ図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: CMP-596-2
+        type: implements
+  - path: map/map-axis-grid.part.stories.ts
+    description: '部品設計『mapの軸と格子の配置の図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: CMP-653-1
+        type: implements
+  - path: map/map-c4.part.stories.ts
+    description: '部品設計『mapのC4図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: CMP-596-3
+        type: implements
+  - path: map/map-class.part.stories.ts
+    description: '部品設計『mapのクラス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: CMP-596-1
+        type: implements
+  - path: map/map-er.part.stories.ts
+    description: '部品設計『mapのER図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: CMP-531-1
+        type: implements
+  - path: map/map-mindmap.part.stories.ts
+    description: '部品設計『mapのマインドマップ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: CMP-649-1
+        type: implements
+  - path: map/map-state.part.stories.ts
+    description: '部品設計『mapの状態遷移図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。'
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: CMP-531-2
+        type: implements
   - path: layout/pagebreak.syntax.ts
     description: モジュール構成『ライブラリ本体 / 範囲の記法』のうち「改ページ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:印刷]
@@ -1903,6 +2041,12 @@ files:
     related:
       - to: MOD-472-239
         type: implements
+  - path: table/table-width.interact.ts
+    description: '表を描いた直後と見える幅が変わったときの、列ごとの中身の幅の測定と列の幅の決定を受け持ち、表の列の幅の決め方を変えるときに参照する。'
+    tags: [topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: MOD-472-347
+        type: implements
   - path: viewer/bundle.ts
     description: モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の文書の行き来と一覧のパネル」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。
     tags: [topic:ナビゲーション, tool:html]
@@ -1975,3 +2119,12 @@ files:
     related:
       - to: MOD-583-17
         type: implements
+  - path: shared/part-states.interact.ts
+    description: '部品の開閉の記録と、読者が変えた開閉の復元を受け持ち、再描画したときの部品の開閉の保ち方を変えるときに参照する。'
+    tags: [topic:dom, topic:イベント, topic:部品]
+    related:
+      - to: MOD-472-348
+        type: implements
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []

@@ -892,71 +892,70 @@ export type MapBandArgs = {
   mode: "walkthrough" | "playback";
   /** 再生で進める単位（既定 message。transition は状態遷移図の遷移、task はガントチャートとジャーニーのタスク、period はタイムラインの期間、commit は Git グラフの commit） */
   unit?: MapBandUnit | undefined;
+  /** 手順の数（区切りの数） */
   total: number;
+  /** 今の番号（始める前は無し） */
   index: number | undefined;
+  /** 手順ごとのタイトル（区切りの title 属性とバーの読み上げの値） */
+  titles: string[];
   title: string;
   text: string;
-  auto: boolean;
+  /** 今の手順を繰り返しているか */
+  playing: boolean;
+  /** 今の手順の 1 周の進み（0〜1） */
+  fill: number;
   label: string;
 };
 
-/** モードごとのボタンのスクリーンリーダー向けの名前 */
-const NAMES = {
-  walkthrough: { prev: "前の手順", stop: "案内をやめる", next: "次の手順" },
-  playback: {
-    prev: "前のメッセージ",
-    stop: "再生をやめる",
-    next: "次のメッセージ",
-  },
-  transition: {
-    prev: "前の遷移",
-    stop: "再生をやめる",
-    next: "次の遷移",
-  },
-  task: { prev: "前のタスク", stop: "再生をやめる", next: "次のタスク" },
-  period: { prev: "前の期間", stop: "再生をやめる", next: "次の期間" },
-  commit: { prev: "前の commit", stop: "再生をやめる", next: "次の commit" },
+/** 単位ごとの名前（バーの名前と矢印のボタンの名前） */
+const UNIT_NAMES = {
+  walkthrough: "手順",
+  message: "メッセージ",
+  transition: "遷移",
+  task: "タスク",
+  period: "期間",
+  commit: "commit",
 } as const;
 
-/** 案内の帯のボタン */
-const bandButton = (button: {
-  action: string;
-  label: string;
-  icon: Parameters<typeof iconSvg>[0];
-  extra?: string;
-}): string =>
-  `<button class="mdmark-diagram-tool" type="button" data-band="${button.action}" aria-label="${escapeHtml(button.label)}" title="${escapeHtml(button.label)}"${button.extra ?? ""}>${iconSvg(button.icon)}</button>`;
+/** 案内の帯の左右の矢印のボタン */
+const bandArrow = (dir: -1 | 1, label: string): string =>
+  `<button class="map-band-step" type="button" data-band="step" data-dir="${dir}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${iconSvg(dir < 0 ? "chevron-left" : "chevron-right")}</button>`;
 
 /** 部品『案内の帯』の HTML */
 export const renderMapBand = (args: MapBandArgs): string => {
-  const names =
-    NAMES[
-      args.mode === "playback" &&
-      args.unit !== undefined &&
-      args.unit !== "message"
-        ? args.unit
-        : args.mode
+  const unit =
+    UNIT_NAMES[
+      args.mode === "playback" ? (args.unit ?? "message") : "walkthrough"
     ];
-  const count = `${args.index === undefined ? "–" : args.index + 1}/${args.total}`;
+  const { index } = args;
+  const started = index !== undefined;
+  const segClass = (i: number): string =>
+    [
+      "map-band-seg",
+      started && i < index ? "is-done" : "",
+      i === index ? "is-current" : "",
+      i === index && args.playing ? "is-playing" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const fill = (i: number): string =>
+    i === index && args.playing
+      ? `<span class="map-band-fill" style="width: ${Math.round(Math.min(1, Math.max(0, args.fill)) * 100)}%"></span>`
+      : "";
+  const segments = Array.from(
+    { length: args.total },
+    (_, i) =>
+      `<span class="${segClass(i)}" data-index="${i}" title="${escapeHtml(`${i + 1}. ${args.titles[i] ?? ""}`)}">${fill(i)}</span>`,
+  ).join("");
+  const valueText = started
+    ? `${unit} ${index + 1}/${args.total} ${args.titles[index] ?? args.title}`.trimEnd()
+    : "始める前";
+  const bar = `<div class="map-band-steps" role="slider" tabindex="0" data-band="steps" aria-label="${escapeHtml(unit)}" aria-valuemin="0" aria-valuemax="${args.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${escapeHtml(valueText)}" aria-keyshortcuts="ArrowLeft ArrowRight Home End Escape">${segments}</div>`;
   const title = `<strong class="map-band-title"${args.title === "" ? " hidden" : ""}>${escapeHtml(args.title)}</strong>`;
   const text = `<p class="map-band-text" aria-live="polite"${args.text === "" ? " hidden" : ""}>${escapeHtml(args.text)}</p>`;
-  const actions = [
-    bandButton({ action: "prev", label: names.prev, icon: "chevron-left" }),
-    bandButton({
-      action: "stop",
-      label: names.stop,
-      icon: "square",
-      extra: args.index === undefined ? ' disabled="disabled"' : "",
-    }),
-    bandButton({
-      action: "auto",
-      label: args.auto ? "一時停止" : "自動で進める",
-      icon: args.auto ? "pause" : "play",
-      extra: ` aria-pressed="${args.auto}"`,
-    }),
-    bandButton({ action: "next", label: names.next, icon: "chevron-right" }),
-  ].join("");
-  return `<div class="map-band" role="region" aria-label="${escapeHtml(args.label)}" data-mode="${args.mode}"><div class="map-band-head"><span class="map-band-count">${count}</span>${title}<div class="map-band-actions">${actions}</div></div>${text}</div>`;
+  // 英字で始まる単位（commit）は「の」との間に空白を置く
+  const gap = /^[A-Za-z]/.test(unit) ? " " : "";
+  return `<div class="map-band${started ? "" : " is-idle"}" role="region" aria-label="${escapeHtml(args.label)}" data-mode="${args.mode}"><div class="map-band-bar">${bandArrow(-1, `前の${gap}${unit}`)}${bar}${bandArrow(1, `次の${gap}${unit}`)}</div>${title}${text}</div>`;
 };
 
 /** 部品『mapのシーケンス図』の引数 */
@@ -1873,10 +1872,10 @@ const erMarkOf = (points: Point[]): { label: Point; vertical: boolean } => {
 
 /**
  * 行が増える関連のマーカーの置き場所。両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、
- * ラベルの反対側を試し、次にラベルの側を試して、どのノードの矩形（左右に空ける幅を含む）とも重ならない最初の置き場所にする。
+ * ラベルの反対側を試し、次にラベルの側を試して、避ける矩形（ノードの左右に空ける幅を含む矩形と、多重度・ラベルの文字の矩形）のどれとも重ならない最初の置き場所にする。
  * 全て重なるときは最も長い区間の中ほどのラベルの反対側
  */
-const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
+const fanoutMarkOf = (points: Point[], avoid: Rect[]): Point => {
   const inner = points.slice(1, -1);
   const segments: Array<[Point, Point]> =
     inner.length >= 2
@@ -1889,12 +1888,12 @@ const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
   );
   const half = MAP_ER.fanoutSize / 2;
   const free = ([x, y]: Point) =>
-    nodes.every(
-      (node) =>
-        x + half <= node.x - MAP_ER.aside ||
-        node.x + node.w + MAP_ER.aside <= x - half ||
-        y + half <= node.y ||
-        node.y + node.h <= y - half,
+    avoid.every(
+      (rect) =>
+        x + half <= rect.x ||
+        rect.x + rect.w <= x - half ||
+        y + half <= rect.y ||
+        rect.y + rect.h <= y - half,
     );
   /** 区間の位置 t の、ラベルの反対側（`away`）かラベルの側の点 */
   const at = ([a, b]: [Point, Point], t: number, away: boolean): Point => {
@@ -2000,18 +1999,26 @@ const placeLabel = (
   return [x, y];
 };
 
-/** 関連の両端の多重度とラベルの SVG。文字は `data-wire-mark` に関連の ID を持ち、薄くする関連は `map-dim` */
-export const renderMapErMarks = (args: {
-  layout: MapLayout;
-  relations: MapErRelation[];
-  dim: ReadonlySet<string>;
-}): string => {
-  const relations = new Map(args.relations.map((item) => [item.id, item]));
-  const texts: string[] = [];
+/** 配置した多重度・ラベルの文字 */
+type ErMark = {
+  wire: string;
+  at: Point;
+  value: string;
+  className: "map-er-cardinality" | "map-er-label";
+  anchor: "start" | "middle" | "end";
+};
+
+/** 関連の両端の多重度と、両端を除いた最も長い区間の中ほどのラベルの置き場所 */
+const placeErMarks = (
+  layout: MapLayout,
+  relations: MapErRelation[],
+): ErMark[] => {
+  const byId = new Map(relations.map((item) => [item.id, item]));
+  const marks: ErMark[] = [];
   const cardinalities: PlacedText[] = [];
   const labels: PlacedText[] = [];
-  for (const wire of args.layout.wires) {
-    const relation = relations.get(wire.id);
+  for (const wire of layout.wires) {
+    const relation = byId.get(wire.id);
     const points = wire.points as Point[];
     if (!relation || points.length < 2) continue;
     for (const [[x, y], [nx], value] of erEnds(wire, relation)) {
@@ -2021,15 +2028,13 @@ export const renderMapErMarks = (args: {
         nx,
         value,
       });
-      texts.push(
-        erMarkText(args.dim, {
-          wire: wire.id,
-          at,
-          value,
-          className: "map-er-cardinality",
-          anchor: right ? "start" : "end",
-        }),
-      );
+      marks.push({
+        wire: wire.id,
+        at,
+        value,
+        className: "map-er-cardinality",
+        anchor: right ? "start" : "end",
+      });
     }
     if (relation.label === undefined) continue;
     const place = erMarkOf(points);
@@ -2038,32 +2043,64 @@ export const renderMapErMarks = (args: {
       vertical: place.vertical,
       width: relation.label.length * MAP_ER.labelChar,
     });
-    texts.push(
-      erMarkText(args.dim, {
-        wire: wire.id,
-        at,
-        value: relation.label,
-        className: "map-er-label",
-        anchor: place.vertical ? "start" : "middle",
-      }),
-    );
+    marks.push({
+      wire: wire.id,
+      at,
+      value: relation.label,
+      className: "map-er-label",
+      anchor: place.vertical ? "start" : "middle",
+    });
   }
+  return marks;
+};
+
+/** 多重度・ラベルの文字の矩形（文字の幅と高さの見積もり） */
+const erMarkRect = (mark: ErMark): Rect => {
+  const label = mark.className === "map-er-label";
+  const w =
+    mark.value.length * (label ? MAP_ER.labelChar : MAP_ER.cardinalityChar);
+  const h = label ? MAP_ER.labelLine : MAP_ER.cardinalityLine;
+  const [x, y] = mark.at;
+  const left =
+    mark.anchor === "middle" ? x - w / 2 : mark.anchor === "end" ? x - w : x;
+  return { x: left, y: y - h, w, h };
+};
+
+/** 関連の両端の多重度とラベルの SVG。文字は `data-wire-mark` に関連の ID を持ち、薄くする関連は `map-dim` */
+export const renderMapErMarks = (args: {
+  layout: MapLayout;
+  relations: MapErRelation[];
+  dim: ReadonlySet<string>;
+}): string => {
+  const texts = placeErMarks(args.layout, args.relations).map((mark) =>
+    erMarkText(args.dim, mark),
+  );
   return `<svg class="map-er-marks" width="${args.layout.width}" height="${args.layout.height}" aria-hidden="true">${texts.join("")}</svg>`;
 };
 
 /** 行が増える関連のマーカー（`button.map-er-fanout`）と、その説明のツールチップ */
 export const renderMapErFanouts = (args: {
   layout: MapLayout;
+  relations: MapErRelation[];
   fanouts: MapErFanout[];
   /** ツールチップの id の頭 */
   id: string;
 }): MapPart => {
   const tips = createTips(`${args.id}-fanout`);
+  const avoid: Rect[] = [
+    ...args.layout.nodes.map((node) => ({
+      x: node.x - MAP_ER.aside,
+      y: node.y,
+      w: node.w + MAP_ER.aside * 2,
+      h: node.h,
+    })),
+    ...placeErMarks(args.layout, args.relations).map(erMarkRect),
+  ];
   const html = args.fanouts
     .flatMap((fanout, index) => {
       const wire = args.layout.wires.find((item) => item.id === fanout.wire);
       if (!wire || wire.points.length < 2) return [];
-      const mark = fanoutMarkOf(wire.points as Point[], args.layout.nodes);
+      const mark = fanoutMarkOf(wire.points as Point[], avoid);
       const owner = `fanout:${index}`;
       const tip = tips.add({
         kind: "wire",
@@ -2155,6 +2192,7 @@ export const renderMapErDiagram = (args: MapErArgs): MapPart => {
   });
   const fanouts = renderMapErFanouts({
     layout: args.layout,
+    relations: args.relations,
     fanouts: args.fanouts,
     id,
   });
@@ -2967,7 +3005,9 @@ export const mapC4BoundaryTitle = (
 const C4_BOUNDARY_NAMES = {
   enterprise: "［Enterprise］",
   system: "［Software System］",
+  container: "［Container］",
   boundary: "",
+  deployment: "",
 } as const;
 
 /** 部品『mapのC4図』の引数 */
@@ -3014,10 +3054,10 @@ export const renderMapC4Diagram = (args: MapC4Args): MapPart => {
   };
   const flow = renderMapFlow({ ...args, layout, nodeParts });
   let html = flow.html;
-  for (const id of Object.keys(args.boundaries))
+  for (const [id, kind] of Object.entries(args.boundaries))
     html = html.replace(
       new RegExp(`class="(map-group[^"]*)"( data-group="${regExpValue(id)}")`),
-      'class="$1 map-c4-boundary"$2',
+      `class="$1 ${kind === "deployment" ? "map-c4-deployment" : "map-c4-boundary"}"$2`,
     );
   for (const id of args.externals)
     html = addClass(html, {

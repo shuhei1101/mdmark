@@ -70,7 +70,7 @@ notes:
         ├── state-diagram.ts   # stateDiagram-v2 の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
         ├── class-diagram.ts   # classDiagram の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
         ├── architecture.ts    # architecture-beta の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
-        ├── c4.ts              # C4Context の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
+        ├── c4.ts              # C4 の 5 種類の図の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
         ├── mindmap.ts         # mindmap の読み取りと、補足のキーが指す項目の解決（dist/map.js と CLI）
         ├── axis-grid.ts       # gantt・timeline・gitGraph・journey・block-beta の読み取りと、補足のキーが指す項目の解決（dist/map.js と CLI）
         ├── data.ts            # 補足の JSON の読み取り（dist/map.js と CLI）

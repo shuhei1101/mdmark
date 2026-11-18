@@ -224,10 +224,10 @@ documents:
       tags: tags[].name
       main_tags: tags[main].name
   # YAML の設計書でないファイルは、フォルダごとの管理用の YAML が 1 ファイル 1 行で持つ
-  - id: files_root
-    title: docs の直下の Markdown と Pages の共通レイアウト
-    paths: [docs/_root/files.yml]
-    exclude: [README.md, index.yaml, nav.yml, nav.project.yml, llms.txt, search.json, _config.yml]
+  - id: files_top
+    title: リポジトリの直下と docs/ の直下のファイル
+    paths: [files.yaml]
+    exclude: ["docs/pr/**", "dist/**", "tmp/**", package-lock.json, docs/README.md, docs/index.yaml, "docs/*/README.md", "docs/*/index.yaml", docs/_theme/_data/nav.project.yml, "docs/_theme/assets/vendor/**"]
     records: files
     body_file: path
     schema:
@@ -355,3 +355,297 @@ documents:
       source: knowledge
       path: schemas/knowledge-files.schema.yaml
       ref: design-schemas/v8.4.0
+# dev-docs の画面のタブとサイドバー。タブの並びとグループは knowledge の規約『開発ドキュメントのナビゲーション』に従う
+nav:
+  tabs:
+    - title: はじめに
+      items:
+        - group: コアコンセプト
+          items:
+            - page: docs/docs/guide/コアコンセプト-文書を描く仕組み.md
+            - page: docs/docs/guide/コアコンセプト-共通の定義と固有の定義.md
+            - page: docs/docs/guide/コアコンセプト-索引と被参照.md
+            - page: docs/docs/guide/コアコンセプト-1枚にまとめる仕組み.md
+            - page: docs/docs/guide/コアコンセプト-設定を重ねて読み込む仕組み.mark.md
+            - page: docs/docs/guide/コアコンセプト-バージョンを上げる仕組み.md
+            - page: docs/docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+            - page: docs/docs/guide/コアコンセプト-差分を表示する仕組み.md
+            - page: docs/docs/guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
+        - page: docs/docs/guide/変更履歴.mark.md
+    - title: 使い方
+      items:
+        - group: 導入
+          items:
+            - page: docs/docs/guide/導入-配布物を読み込む.md
+            - page: docs/docs/guide/導入-文書を描く.md
+            - page: docs/docs/guide/導入-バージョンを上げる.md
+            - page: docs/docs/guide/導入-差分を表示する.md
+        - group: 記載する
+          items:
+            - page: docs/docs/guide/記載する-文書の記載方法.md
+            - page: docs/docs/guide/記載する-表に機能を付ける.md
+            - page: docs/docs/guide/記載する-本文を部品で組む.mark.md
+            - page: docs/docs/guide/記載する-索引と用語集を記載する.mark.md
+            - page: docs/docs/guide/記載する-色で強調する.md
+            - page: docs/docs/guide/記載する-画像と動画を配置する.md
+            - page: docs/docs/guide/記載する-図と表に番号を付ける.md
+            - page: docs/docs/guide/記載する-ビューとコメントを使用する.mark.md
+        - group: 図を描く
+          items:
+            - page: docs/docs/guide/図を描く-図を描く.md
+            - page: docs/docs/guide/図を描く-操作できる部品を作る.md
+            - page: docs/docs/guide/図を描く-Mermaidと補足で図を描く.md
+            - page: docs/docs/guide/図を描く-mermaidの図を描く.md
+            - page: docs/docs/guide/図を描く-コードブロックのHTMLを描く.md
+            - page: docs/docs/guide/図を描く-描いた図を確認する.mark.md
+            - page: docs/docs/guide/図を描く-固有の部品とCSSを適用する.md
+            - page: docs/docs/guide/図を描く-見本.mark.md
+        - group: カスタマイズ
+          items:
+            - page: docs/docs/guide/カスタマイズ-テーマを上書きする.md
+            - page: docs/docs/guide/カスタマイズ-機能をオン・オフする.md
+            - page: docs/docs/guide/カスタマイズ-拡張を登録する.md
+            - page: docs/docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
+            - page: docs/docs/guide/カスタマイズ-印刷する.mark.md
+        - group: 書き出す
+          items:
+            - page: docs/docs/guide/書き出す-雛形を配置する.md
+            - page: docs/docs/guide/書き出す-文書を書き出す.mark.md
+            - page: docs/docs/guide/書き出す-文書を1枚にまとめる.md
+            - page: docs/docs/guide/書き出す-点検する.mark.md
+        - group: VS Code で確認する
+          items:
+            - page: docs/docs/guide/VSCodeで確認する-プレビューを開く.md
+            - page: docs/docs/guide/VSCodeで確認する-差分をプレビューで確認する.md
+            - page: docs/docs/guide/VSCodeで確認する-HTMLとPDFにする.md
+        - group: Claude Code で使用する
+          items:
+            - page: docs/docs/guide/ClaudeCodeで使用する-プラグインを入れる.mark.md
+            - page: docs/docs/guide/ClaudeCodeで使用する-セットアップする.mark.md
+            - page: docs/docs/guide/ClaudeCodeで使用する-MCPサーバーを起動する.mark.md
+            - page: docs/docs/guide/ClaudeCodeで使用する-MCPのツールを使用する.md
+    - title: 設計書
+      items:
+        - group: 全体
+          items:
+            - page: architecture
+              title: アーキテクチャ図
+            - page: nonfunctional
+              title: 非機能要件
+            - page: layout
+              title: フォルダ構成
+            - page: files_top/docs/design-policy.md
+              title: デザイン方針
+        - group: シナリオ
+          items:
+            - auto: {document: scenario}
+        - group: インターフェース定義
+          items:
+            - auto: {document: interface}
+        - group: モジュール構成
+          items:
+            - group: ライブラリ本体
+              items:
+                - auto: {document: module, filter: {field: name, op: prefix, values: ['ライブラリ本体 /']}}
+            - group: VS Code 拡張機能
+              items:
+                - auto: {document: module, filter: {field: name, op: prefix, values: ['VS Code 拡張機能 /']}}
+            - group: Claude Code プラグイン
+              items:
+                - auto: {document: module, filter: {field: name, op: prefix, values: ['ClaudeCodeプラグイン /']}}
+        - group: 部品設計
+          items:
+            - auto: {document: component}
+        - group: 画面設計
+          items:
+            - auto: {document: screen}
+        - group: モック
+          items:
+            - group: assets
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/assets/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: components
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/components/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: pages
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/pages/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: refs
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/refs/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+            - group: styles
+              items:
+                - auto: {document: mock, filter: {and: [{field: id, op: prefix, values: [docs/mock/styles/]}, {not: {field: id, op: suffix, values: [/index.md]}}]}}
+        - group: 設定
+          items:
+            - auto: {document: config}
+        - group: ER 図
+          items:
+            - auto: {document: er}
+        - group: データ
+          items:
+            - auto: {document: data}
+        - group: 外部 API
+          items:
+            - auto: {document: external_api}
+        - group: 外部ライブラリ
+          items:
+            - auto: {document: library}
+        - group: 開発
+          items:
+            - page: test_procedure
+              title: テスト実行方法
+            - page: dev_command
+              title: 開発コマンド
+    - title: コード
+      items:
+        - group: ライブラリ本体
+          items:
+            - group: 直下
+              items:
+                - auto: {document: src, filter: {field: id, op: regex, values: ['^src/[^/]+$']}}
+            - group: callout
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/callout/]}}
+            - group: card
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/card/]}}
+            - group: cli
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/cli/]}}
+            - group: code-block
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/code-block/]}}
+            - group: comments
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/comments/]}}
+            - group: diagram
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/diagram/]}}
+            - group: diff
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/diff/]}}
+            - group: embedded-html
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/embedded-html/]}}
+            - group: figure
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/figure/]}}
+            - group: footnote
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/footnote/]}}
+            - group: frontmatter
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/frontmatter/]}}
+            - group: inline
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/inline/]}}
+            - group: knowledge
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/knowledge/]}}
+            - group: layout
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/layout/]}}
+            - group: map
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/map/]}}
+            - group: media
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/media/]}}
+            - group: plugin
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/plugin/]}}
+            - group: render
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/render/]}}
+            - group: section
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/section/]}}
+            - group: shared
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/shared/]}}
+            - group: steps
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/steps/]}}
+            - group: table
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/table/]}}
+            - group: tabs
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/tabs/]}}
+            - group: tree
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/tree/]}}
+            - group: viewer
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/viewer/]}}
+            - group: views
+              items:
+                - auto: {document: src, filter: {field: id, op: prefix, values: [src/views/]}}
+        - group: VS Code 拡張機能
+          items:
+            - auto: {document: vscode}
+        - group: Claude Code プラグイン
+          items:
+            - auto: {document: plugin}
+        - group: Schema
+          items:
+            - auto: {document: schemas}
+        - group: 移行の手順
+          items:
+            - auto: {document: migrations}
+        - group: 雛形
+          items:
+            - auto: {document: init_templates}
+        - group: テスト
+          items:
+            - group: 直下
+              items:
+                - auto: {document: tests, filter: {field: id, op: regex, values: ['^tests/[^/]+$']}}
+            - group: fixtures
+              items:
+                - auto: {document: tests, filter: {field: id, op: prefix, values: [tests/fixtures/]}}
+            - group: integration
+              items:
+                - auto: {document: tests, filter: {field: id, op: prefix, values: [tests/integration/]}}
+            - group: unit
+              items:
+                - auto: {document: tests, filter: {field: id, op: prefix, values: [tests/unit/]}}
+        - group: Storybook の設定
+          items:
+            - auto: {document: storybook}
+        - group: 開発のスクリプト
+          items:
+            - auto: {document: scripts}
+        - group: ワークフロー
+          items:
+            - auto: {document: workflows}
+        - group: リポジトリの直下・tools・.claude-plugin
+          items:
+            - auto: {document: files_top, filter: {not: {field: id, op: prefix, values: [docs/]}}}
+        - group: 公開ドキュメントのサイト
+          items:
+            - auto: {document: files_top, filter: {and: [{field: id, op: prefix, values: [docs/]}, {not: {field: id, op: eq, values: [docs/design-policy.md]}}]}}
+    - title: リファレンス
+      items:
+        - group: 書き方
+          items:
+            - page: docs/docs/guide/記法.mark.md
+            - page: docs/docs/guide/構成図の決まり.mark.md
+            - page: docs/docs/guide/フローチャートの決まり.md
+            - page: docs/docs/guide/HTMLの記載方法.mark.md
+              title: HTML の記載方法
+        - group: 設定と索引
+          items:
+            - page: docs/docs/guide/設定.mark.md
+            - page: docs/docs/guide/索引.mark.md
+        - group: 呼び出し方
+          items:
+            - page: docs/docs/guide/API.mark.md
+            - page: docs/docs/guide/CLI.mark.md
+            - page: docs/docs/guide/MCP.mark.md
+            - page: docs/docs/guide/VSCode拡張機能.mark.md
+              title: VS Code 拡張機能
+    - title: 用語集
+      items:
+        - page: docs/docs/guide/用語集.mark.md

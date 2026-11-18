@@ -79,32 +79,22 @@ test("test_attach_map_state", async () => {
 test("test_attach_map_state_when_played", async () => {
   // 準備
   const root = await setUp();
-  const band = root.querySelector<HTMLElement>(".map-band") as HTMLElement;
   // 実行
-  for (let index = 0; index < 6; index++) {
-    root
-      .querySelector<HTMLButtonElement>(
-        '.map-band button[aria-label="次の遷移"]',
-      )
-      ?.click();
-  }
+  root.querySelectorAll<HTMLElement>(".map-band-seg")[5]?.click();
   // 検証
-  const text = root.querySelector<HTMLElement>(".map-band")?.textContent ?? "";
-  expect(text).toContain("6/13");
-  expect(text).toContain("判定 → 差し戻しの理由を確認する：差し戻し");
-  expect(text).toContain("差し戻しの理由はコメントに残る");
+  const band = root.querySelector<HTMLElement>(".map-band") as HTMLElement;
+  expect(
+    band.querySelector('[role="slider"]')?.getAttribute("aria-valuenow"),
+  ).toBe("6");
+  expect(band.querySelector(".map-band-title")?.textContent).toBe(
+    "判定 → 差し戻しの理由を確認する：差し戻し",
+  );
+  expect(band.textContent).toContain("差し戻しの理由はコメントに残る");
   expect(band.getAttribute("aria-label")).toBe("作業の状態の再生");
-  const labels = [...root.querySelectorAll(".map-band button")].map((button) =>
+  const labels = [...band.querySelectorAll("button")].map((button) =>
     button.getAttribute("aria-label"),
   );
-  expect(labels).toEqual(
-    expect.arrayContaining([
-      "前の遷移",
-      "再生をやめる",
-      "自動で進める",
-      "次の遷移",
-    ]),
-  );
+  expect(labels).toEqual(expect.arrayContaining(["前の遷移", "次の遷移"]));
 });
 
 // 案内を持つ（正常系）
@@ -120,5 +110,5 @@ test("test_attach_map_state_when_walkthroughs", async () => {
     }),
   );
   // 検証
-  expect(root.querySelector(".map-band")?.textContent).toContain("–/2");
+  expect(root.querySelectorAll(".map-band .map-band-seg")).toHaveLength(2);
 });

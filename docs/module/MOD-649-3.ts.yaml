@@ -99,7 +99,7 @@ functions:
       - name: test_attach_map_mindmap_when_walked
         case: 正常
         summary: 案内
-        condition: モックの `MINDMAP_WALK_DATA` の範囲で、案内の帯の次へを 2 回押す
+        condition: モックの `MINDMAP_WALK_DATA` の範囲で、案内の帯の右の矢印のボタンを 2 回押す
         mock: なし
         expected: 「体制」を根に描き、「人手が足りない」と「課題」「体制」のほかの項目が `map-dim` を持つ
       - name: test_attach_map_mindmap_when_initial_scroll

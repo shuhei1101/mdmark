@@ -3,6 +3,10 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import {
   contrastRatio,
   createBrowserHolder,
+  expectCountBelowTitle,
+  expectTargetSize,
+  mapWireOverlaps,
+  overlaps,
   pageOverflows,
   resolveColorIn,
 } from "../story.ts";
@@ -133,7 +137,7 @@ test("test_entered", async () => {
   );
 });
 
-// グループを閉じると、開くボタンを持つ二重の枠線のノードにし、そこへの線を 1 本にまとめて本数とラベルを出さない（Collapsed）
+// グループを閉じると、開くボタンを持つ二重の枠線のノードにし、タイトルの行の下に数の行を重ねずに置き、そこへの線を 1 本にまとめて本数とラベルを出さない（Collapsed）
 test("test_collapsed", async () => {
   // 準備・実行
   const page = await openMap("collapsed");
@@ -147,6 +151,11 @@ test("test_collapsed", async () => {
   await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("false");
   await expect(toggle.getAttribute("aria-label")).resolves.toBe(
     "記法の読み取りを開く",
+  );
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="read"]',
+    "ノード 3 件",
   );
   for (const id of ["marker", "mermaid", "data"]) {
     await expect(
@@ -343,6 +352,71 @@ test("test_group_note", async () => {
   expect(mark.left).toBeGreaterThanOrEqual(title.right - 1);
 });
 
+// ノードの右上とグループのタイトルの右の説明のマーカーは、押せる大きさ 24px 四方以上で描く（GroupNote）
+test("test_group_note_info_marker_size", async () => {
+  // 準備・実行
+  const page = await openMap("group-note");
+  // 検証
+  await expectTargetSize(page, "button.mdmark-diagram-group-info");
+  await expectTargetSize(
+    page,
+    ".mdmark-diagram-stage button.mdmark-diagram-info:not(.mdmark-diagram-group-info)",
+  );
+});
+
+// 説明を持つノードの右上のマーカーは、ノードの種類の行の文字（アイコンと種類の名前）と名前の文字に重ならない（GroupNote）
+test("test_group_note_info_marker_not_overlapping", async () => {
+  // 準備・実行
+  const page = await openMap("group-note");
+  // 検証
+  const nodes = await page
+    .locator(".mdmark-diagram-stage .mdmark-diagram-node[data-node]")
+    .evaluateAll((elements) => {
+      const toBox = (rect: DOMRect) => ({
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+      });
+      // 要素の中身（文字とアイコン）の範囲。描かれない要素は null
+      const contentOf = (element: Element | null) => {
+        if (!element || getComputedStyle(element).display === "none") {
+          return null;
+        }
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        const rect = range.getBoundingClientRect();
+        return rect.width > 0 ? toBox(rect) : null;
+      };
+      return elements.flatMap((node) => {
+        const marker = node.querySelector("button.mdmark-diagram-info");
+        if (!marker) {
+          return [];
+        }
+        return [
+          {
+            id: node.getAttribute("data-node") ?? "",
+            marker: toBox(marker.getBoundingClientRect()),
+            kind: contentOf(node.querySelector(".mdmark-diagram-node-kind")),
+            name: contentOf(node.querySelector(".mdmark-diagram-node-name")),
+          },
+        ];
+      });
+    });
+  expect(nodes.length).toBeGreaterThan(0);
+  for (const node of nodes) {
+    expect(node.name, node.id).not.toBeNull();
+    if (node.kind) {
+      expect(overlaps(node.marker, node.kind), `${node.id} の種類の行`).toBe(
+        false,
+      );
+    }
+    if (node.name) {
+      expect(overlaps(node.marker, node.name), `${node.id} の名前`).toBe(false);
+    }
+  }
+});
+
 // hints が false なら、説明を持つノード・グループ・線にマーカーとツールチップが無く、線のラベル・ノードの名前・グループのタイトルは描く（HintsOff）
 test("test_hints_off", async () => {
   // 準備・実行
@@ -450,6 +524,21 @@ test("test_accessibility", async () => {
     "var(--mdmark-color-bg)",
   );
   expect(contrastRatio(border, background)).toBeGreaterThanOrEqual(3);
+});
+
+// 同じ列の 3 つのノードから別のグループへ出る 3 本の線は、同じ向きの区間が同じ直線の上で重ならない（ParallelWires）
+test("test_parallel_wires", async () => {
+  // 準備・実行
+  const page = await openMap("parallel-wires");
+  // 検証
+  const wires = await page
+    .locator(".map-wire-hits > .map-wire-hit[data-wire]")
+    .evaluateAll((paths) =>
+      paths.map((path) => path.getAttribute("data-wire") ?? ""),
+    );
+  expect(wires.sort()).toEqual(["a1->b3", "a2->b1", "a3->b2"]);
+  await expect(mapWireOverlaps(page)).resolves.toEqual([]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
 // 範囲の外の純粋な Mermaid の構成図は、種類を持たないノードの名前を上下の中央に描く（Plain）

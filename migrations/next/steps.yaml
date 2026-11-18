@@ -1,0 +1,6 @@
+steps:
+  - op: call
+    description: 文書の map のマーカーから廃止した `play`・`interval` を削除する
+    destructive: false
+    script: retired-map-options.mjs
+    files: [documents]

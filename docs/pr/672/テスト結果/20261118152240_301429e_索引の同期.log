@@ -1,0 +1,50 @@
+$ check_project（管理の MCP。path: project-index.yaml の絶対パス）
+/home/shuhei2441/repo/mdmark/.claude/worktrees/docs-project-index-source-metadata-review（未登録）
+設定のバージョン: 3（current）
+違反: なし
+エイリアスのスキーマ: v0.3.0
+索引の同期: ずれなし
+
+$ ai_monitor.design_docs validate --root {worktree}（head）
+docs/er/ER-472-2.yaml:er.relations[0].from_column: 実体に無い列: 補足.walkthroughs
+docs/er/ER-472-2.yaml:er.relations[0].to_column: 実体に無い列: 案内の手順.index
+docs/er/ER-472-2.yaml:er.relations[1].from_column: 実体に無い列: 補足.layout
+docs/er/ER-472-2.yaml:er.relations[1].to_column: 実体に無い列: 配置の上書き.id
+docs/er/ER-472-2.yaml:er.relations[2].from_column: 実体に無い列: 補足.groups
+docs/er/ER-472-2.yaml:er.relations[2].to_column: 実体に無い列: 分類.id
+docs/er/ER-472-3.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-3.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/module/MOD-472-161.ts.yaml:functions[commentText].unit_tests[test_comment_text].name: テスト関数がありません: test_comment_text
+docs/module/MOD-472-161.ts.yaml:functions[draftFromRange].unit_tests[test_draft_from_range].name: テスト関数がありません: test_draft_from_range
+docs/module/MOD-472-161.ts.yaml:functions[draftFromRange].unit_tests[test_draft_from_range_when_block_end].name: テスト関数がありません: test_draft_from_range_when_block_end
+docs/module/MOD-472-161.ts.yaml:functions[draftFromRange].unit_tests[test_draft_from_range_when_spaces].name: テスト関数がありません: test_draft_from_range_when_spaces
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers].name: テスト関数がありません: test_attach_margin_markers
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_changed].name: テスト関数がありません: test_attach_margin_markers_when_changed
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_closed].name: テスト関数がありません: test_attach_margin_markers_when_closed
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_detached].name: テスト関数がありません: test_attach_margin_markers_when_detached
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_no_opener].name: テスト関数がありません: test_attach_margin_markers_when_no_opener
+docs/module/MOD-472-246.ts.yaml:functions[rewriteLinks].unit_tests[test_rewrite_links].name: テスト関数がありません: test_rewrite_links
+
+$ ai_monitor.design_docs validate --root {develop の worktree 64e0e64f}（base）
+docs/er/ER-472-2.yaml:er.relations[0].from_column: 実体に無い列: 補足.walkthroughs
+docs/er/ER-472-2.yaml:er.relations[0].to_column: 実体に無い列: 案内の手順.index
+docs/er/ER-472-2.yaml:er.relations[1].from_column: 実体に無い列: 補足.layout
+docs/er/ER-472-2.yaml:er.relations[1].to_column: 実体に無い列: 配置の上書き.id
+docs/er/ER-472-2.yaml:er.relations[2].from_column: 実体に無い列: 補足.groups
+docs/er/ER-472-2.yaml:er.relations[2].to_column: 実体に無い列: 分類.id
+docs/er/ER-472-3.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-3.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/module/MOD-472-161.ts.yaml:functions[commentText].unit_tests[test_comment_text].name: テスト関数がありません: test_comment_text
+docs/module/MOD-472-161.ts.yaml:functions[draftFromRange].unit_tests[test_draft_from_range].name: テスト関数がありません: test_draft_from_range
+docs/module/MOD-472-161.ts.yaml:functions[draftFromRange].unit_tests[test_draft_from_range_when_block_end].name: テスト関数がありません: test_draft_from_range_when_block_end
+docs/module/MOD-472-161.ts.yaml:functions[draftFromRange].unit_tests[test_draft_from_range_when_spaces].name: テスト関数がありません: test_draft_from_range_when_spaces
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers].name: テスト関数がありません: test_attach_margin_markers
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_changed].name: テスト関数がありません: test_attach_margin_markers_when_changed
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_closed].name: テスト関数がありません: test_attach_margin_markers_when_closed
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_detached].name: テスト関数がありません: test_attach_margin_markers_when_detached
+docs/module/MOD-472-162.ts.yaml:functions[attachMarginMarkers].unit_tests[test_attach_margin_markers_when_no_opener].name: テスト関数がありません: test_attach_margin_markers_when_no_opener
+docs/module/MOD-472-246.ts.yaml:functions[rewriteLinks].unit_tests[test_rewrite_links].name: テスト関数がありません: test_rewrite_links

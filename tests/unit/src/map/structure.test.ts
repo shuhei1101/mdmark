@@ -87,19 +87,29 @@ test("test_collect_map_structure_when_class_architecture_c4", async () => {
     kindOf("classDiagram\n  class A\n"),
     kindOf("architecture-beta\n  service a(server)[A]\n"),
     kindOf('C4Context\n  Person(a, "A")\n'),
+    kindOf('C4Container\n  Person(a, "A")\n'),
+    kindOf('C4Deployment\n  Deployment_Node(a, "A")\n'),
   ];
-  const container = kindOf('C4Container\n  Person(a, "A")\n');
+  const unknown = kindOf('C4Foo\n  Person(a, "A")\n');
   // 検証
-  expect(results.map((result) => result.problems)).toEqual([[], [], []]);
+  expect(results.map((result) => result.problems)).toEqual([
+    [],
+    [],
+    [],
+    [],
+    [],
+  ]);
   expect(results.map((result) => result.kind)).toEqual([
     "classDiagram",
     "architecture",
     "C4Context",
+    "C4Container",
+    "C4Deployment",
   ]);
-  expect(container.problems.map((problem) => problem.kind)).toEqual([
+  expect(unknown.problems.map((problem) => problem.kind)).toEqual([
     "map_invalid",
   ]);
-  expect(container.kind).toBeUndefined();
+  expect(unknown.kind).toBeUndefined();
 });
 
 // front matter とコメントの行を飛ばす（正常系）

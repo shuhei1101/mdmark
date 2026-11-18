@@ -10,10 +10,10 @@ functions:
     container: src/map/c4-view.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`C4Context` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・選択・案内・強調を付けたうえで、要素の説明・境界の破線の枠と種類・外部の要素の描き分けを追加する'
+    summary: 'C4 の 5 種類の図を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・選択・案内・強調を付けたうえで、要素の説明・境界の破線と配置先のノードの実線の枠と種類・外部の要素の描き分けを追加する'
     scope: public
     callees:
-      - MOD-596-3#functions[parseC4Context]
+      - MOD-596-3#functions[parseC4]
       - MOD-596-3#functions[c4ToFlowchart]
       - MOD-472-130#functions[attachMapFlow]
       - MOD-472-130#functions[neighborKept]
@@ -24,7 +24,7 @@ functions:
       - name: range
         type: HTMLElement
         required: true
-        description: '`div.mdmark-map`（`data-map-kind="C4Context"`）'
+        description: '`div.mdmark-map`（`data-map-kind` が `C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`）'
       - name: config
         type: ResolvedConfig
         required: true
@@ -37,11 +37,11 @@ functions:
       type: MapFlowHandle
       description: 構成図と同じ操作の口
     process: |-
-      1. `parseC4Context` と `c4ToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
+      1. `parseC4` と `c4ToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と一緒に指定する
       2. `extension.title` に `title` の行、`extension.kinds` に `MAP_C4_KINDS`、`extension.overrides` に `c4ToFlowchart` の上書きを指定する
-      3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類・`reversed` を指定した `renderMapC4Diagram` を指定する
+      3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類・`reversed` を指定した `renderMapC4Diagram`（配置先のノードは `c4Boundary` が `deployment`、要素は `technology`）を指定する
       4. `extension.selectionOf` で、要素を 1 つ選べば `neighborKept` の関係と相手、2 つ選べば `shortestPathKept` の経路を残す
-      5. `extension.collapsedTag` で、閉じた境界に「要素 {数} 件」を返却する
+      5. `extension.collapsedTag` で、閉じた境界と配置先のノードに、中（入れ子の配置先のノードの中を含む）の要素の数の「要素 {数} 件」を返却する
     unit_tests:
       - name: test_attach_map_c4
         case: 正常
@@ -61,9 +61,21 @@ functions:
         condition: '`Rel_U(a, b)` だけの範囲'
         mock: なし
         expected: '`b` が `a` より上にあり、`r1` の線の終点（矢じり）が `b` の下の辺'
+      - name: test_attach_map_c4_when_kinds
+        case: 正常
+        summary: 4 種類
+        condition: モックの `CONTAINER`・`COMPONENT`・`DYNAMIC`・`DEPLOYMENT` の範囲を、引数なしのマーカーで描く
+        mock: なし
+        expected: '`api` の種類の行が `[Container: Node.js]`、`shop` のタイトルが `注文のシステム［Container］`、動的図の `r3` のラベルが `3: 注文を保存する [SQL]`、配置図の `cloud` のグループが `.map-c4-deployment` を持ち、`app` が `dbnode` の左にある'
+      - name: test_attach_map_c4_when_deployment_collapsed
+        case: 正常
+        summary: 配置先のノードを閉じる
+        condition: 配置図の `region` の開閉のボタンを押す
+        mock: なし
+        expected: '`region` の閉じたノードの名前の下の行が `要素 2 件` で、`cloud` は開いたまま'
 refs:
   - IF-472-35#constraints[map の C4 図]
-lead: 'map の C4 図の描画と操作を受け持ち、map の C4 図の操作を変えるときに参照する。'
+lead: 'map の C4 図（C4 の 5 種類）の描画と操作を受け持ち、map の C4 図の操作を変えるときに参照する。'
 tags:
   - name: topic:map
     main: true

@@ -4,32 +4,35 @@ files:
     description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「描画のインターフェースの CSS を読み込む link」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:html]
     related:
-      - to: docs/module/MOD-472-47
+      - to: MOD-472-47
         type: implements
   - path: main.ts
     description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「Storybook の設定（@storybook/react-vite・addon-a11y・ストーリーの場所・/render の中継・Tailwind）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook]
     related:
-      - to: docs/module/MOD-472-341.ts
+      - to: MOD-472-341
         type: implements
   - path: preview.tsx
     description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「MSW の読み込み・デコレータ・配色の切り替え・a11y の検査の水準・部品の操作の再付与」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:react]
     related:
-      - to: docs/module/MOD-472-342.tsx
+      - to: MOD-472-342
         type: implements
   - path: server-html.tsx
     description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「withServerHtml・ServerHtml（描画のインターフェースの HTML をストーリーに出す）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:react]
     related:
-      - to: docs/module/MOD-472-345.tsx
+      - to: MOD-472-345
         type: implements
   - path: vscode-theme.tsx
     description: モジュール構成『ライブラリ本体 / 部品の描画』のうち「withVsCodeTheme（VS Code の --vscode-* の色をストーリーに適用する）」を受け持つ。Storybook で部品を確認する仕組みを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, tool:vscode]
     related:
-      - to: docs/module/MOD-472-343.tsx
+      - to: MOD-472-343
         type: implements
   - path: public/mockServiceWorker.js
     description: MSW が生成した Service Worker（Storybook と Vitest のブラウザが配信する）。MSW を上げたときに再作成する。
     tags: [topic:ストーリー, tool:storybook]
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []

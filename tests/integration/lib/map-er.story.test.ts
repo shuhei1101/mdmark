@@ -1,6 +1,10 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import {
+  createBrowserHolder,
+  expectCountBelowTitle,
+  pageOverflows,
+} from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -251,13 +255,16 @@ test("test_columns_collapsed", async () => {
   ).resolves.toBe("明細の列を閉じる");
 });
 
-// 分類「記録」を閉じると、「テーブル 3 件」を持つ 1 つのノードになり、中への関連が相手ごとに 1 本にまとまる（GroupCollapsed）
+// 分類「記録」を閉じると、名前の行の下に「テーブル 3 件」の行を持つ 1 つのノードになり、中への関連が相手ごとに 1 本にまとまる（GroupCollapsed）
 test("test_group_collapsed", async () => {
   // 準備・実行
   const page = await openEr("group-collapsed");
   // 検証
-  const closed = page.locator('.map-closed-group[data-group="記録"]');
-  await expect(closed.innerText()).resolves.toContain("テーブル 3 件");
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="記録"]',
+    "テーブル 3 件",
+  );
   const wires = await page
     .locator("path.mdmark-diagram-wire[data-wire]")
     .evaluateAll((paths) =>

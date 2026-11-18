@@ -9,7 +9,49 @@ functions:
     container: src/table/table.part.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返却する。`render` は表を `SLOT_MARKER` にして囲みだけを使用し、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`unpinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`autoWidths`）で操作を付けた後の外観を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を指定したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと通知の要素も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する）。`headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の全ての列を留める。留める列は `pinned` の位置のセルに `is-pinned-col` を付け、結合した見出しのセルはまたぐ列が全て `pinned` にあるときだけ付ける。囲みには `pin`・`unpin`（半角の空白で区切る）・`check` を `data-pin`・`data-unpin`・`data-check` で持たせる。`rows` を指定したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
+    summary: 部品設計『表』の HTML を返却する
+    description: |-
+      | 呼び出し元 | 使い方 |
+      | --- | --- |
+      | `render` | 表を `SLOT_MARKER` にして囲みだけを使用する |
+      | Storybook | `columns`・`rows` と状態の引数で、操作を付けた後の外観を作る |
+
+      Storybook の状態の引数は `sort`・`overflow`・`pinned`・`unpinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`autoWidths`。
+
+      折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。
+      表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。
+
+      囲みには `hide`・`totals` を `data-hide`・`data-total`、`pin`・`unpin`（半角の空白で区切る）・`check` を `data-pin`・`data-unpin`・`data-check` で持たせる。
+
+      `rows` を指定したときは、次も描く。
+
+      | 条件 | 描くもの |
+      | --- | --- |
+      | 条件なし | `renderTableBar` の帯とメニュー |
+      | `copyFallback` のとき | `renderCopyPanel` のパネル |
+      | 条件なし | `renderTotalRows` の集計の行 |
+      | `rowIds` の行 | 行の `id` と行へのリンクと通知の要素 |
+
+      集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。
+
+      セルには次を付ける。
+
+      | 対象 | 付けるもの |
+      | --- | --- |
+      | `highlight` の列の `th`・`td` | class `mdmark-col-highlight` と `data-color` |
+      | `rowColors` の行の `tr` | `data-color` |
+      | `rowHeader` の列のセル | `<th scope="row">` にする |
+      | `mergeColumns` の列 | 表示する行から `mergeSpans` で結合を決めて、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` |
+      | `rows` を指定したときの `wide` の列の `th`・`td` | class `mdmark-wide` |
+      | `rows` を指定したときの `check` の列の `th`・`td` | class `mdmark-align-center` |
+      | `rows` を指定したときの `check` の列の `true`・`false` のセル | `data-value` と `renderCheckCell` の中身にする |
+
+      `highlight`・`rowColors` は、`render` では記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する。
+
+      `headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。
+
+      `pinned` を省いたときは `rowHeader` の全ての列を留める。
+      留める列は `pinned` の位置のセルに `is-pinned-col` を付け、結合した見出しのセルはまたぐ列が全て `pinned` にあるときだけ付ける
     args:
       - name: options
         type: TableOptions
@@ -204,7 +246,28 @@ functions:
     container: src/table/table.part.ts
     kind: 関数
     scope: internal
-    summary: '`count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の帯（件数・テーブル設定のアイコンだけのボタン（`settings-2`。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label`）・`集計`・`表をコピー` と、スクリーンリーダーに使用する `role="status"` の `mdmark-table-status`）と、テーブル設定のパネル（`renderTableSettings`）・集計のメニュー（タイトル `表示する集計` と、集計する計算の `value` を持つチェックボックス）・コピーの形式のメニュー（`Markdown の表`・`TSV` の形式の名前と用途）の HTML を返却する。`集計` のボタンは出さない計算があれば `is-active` にし、スクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を加える。テーブル設定と `表をコピー` のボタンは class `is-icon-only` でアイコンだけを見せ、`title` を持つ。`表をコピー` は `mdmark-visually-hidden` のスクリーンリーダー向けの名前（`copyState` の文言）を持つ。列を隠しているときはテーブル設定のボタンに `is-active` を付ける。アイコンは lucide の `settings-2`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/shared/icons.part.ts` に追加する）。`mount` が描いた表に追加するのにも使用する'
+    summary: '表の上の帯と、テーブル設定のパネル・集計とコピーの形式のメニューの HTML を返却する'
+    description: |-
+      帯には `count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の要素として、件数・テーブル設定・`集計`・`表をコピー` と `mdmark-table-status` を並べる。
+
+      | 帯の要素 | 中身 |
+      | --- | --- |
+      | テーブル設定 | アイコンだけのボタン（`settings-2`）。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label` |
+      | `mdmark-table-status` | スクリーンリーダーに使用する `role="status"` |
+
+      | パネル・メニュー | 中身 |
+      | --- | --- |
+      | テーブル設定のパネル | `renderTableSettings` |
+      | 集計のメニュー | タイトル `表示する集計` と、集計する計算の `value` を持つチェックボックス |
+      | コピーの形式のメニュー | `Markdown の表`・`TSV` の形式の名前と用途 |
+
+      `集計` のボタンは出さない計算があれば `is-active` にし、スクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を加える。
+      テーブル設定と `表をコピー` のボタンは class `is-icon-only` でアイコンだけを見せ、`title` を持つ。
+      `表をコピー` は `mdmark-visually-hidden` のスクリーンリーダー向けの名前（`copyState` の文言）を持つ。
+      列を隠しているときはテーブル設定のボタンに `is-active` を付ける。
+
+      アイコンは lucide の `settings-2`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/shared/icons.part.ts` に追加する）。
+      `mount` が描いた表に追加するのにも使用する
     args:
       - name: options
         type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean }'
@@ -272,7 +335,21 @@ functions:
   - name: renderCopyPanel
     title: 表のコピーできないときのパネルを描く
     container: src/table/table.part.ts
-    summary: クリップボードに書き込めなかったときに帯の直後へ配置する `<div class="mdmark-copy-panel" role="group" aria-labelledby>` を返却する。タイトル `クリップボードにコピーできませんでした`（`circle-alert` のアイコン付き）・閉じるボタン（`x` のアイコン、`aria-label="閉じる"`）・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`（`tree` は `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`）・`text` を入れた `<textarea class="mdmark-copy-panel-text" readonly rows="6">` を持つ。形式の名前は `markdown` が `Markdown の表`、`tsv` が `TSV`
+    summary: クリップボードに書き込めなかったときに帯の直後へ配置するパネルの HTML を返却する
+    description: |-
+      パネルは `<div class="mdmark-copy-panel" role="group" aria-labelledby>` で、次を持つ。
+
+      | 要素 | 中身 |
+      | --- | --- |
+      | タイトル | `クリップボードにコピーできませんでした`（`circle-alert` のアイコン付き） |
+      | 閉じるボタン | `x` のアイコン、`aria-label="閉じる"` |
+      | 案内 | `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`（`tree` は `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`） |
+      | テキスト | `text` を入れた `<textarea class="mdmark-copy-panel-text" readonly rows="6">` |
+
+      | 形式 | 形式の名前 |
+      | --- | --- |
+      | `markdown` | `Markdown の表` |
+      | `tsv` | `TSV` |
     kind: 関数
     scope: internal
     args:

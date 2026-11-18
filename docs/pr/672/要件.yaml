@@ -1,0 +1,136 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: ガイドの公開ドキュメントの行（docs/guide/files.yml）のメタデータを見直すため、kind が docs でタグ topic:ガイド の文書をガイドとして受け取れることを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: none
+    detail: ガイドを参照する流れは変えない。ガイドの受け取りは単一 UC『ガイドを参照する』で確かめる
+    depends_on: []
+docs:
+  - page: src/files.yaml
+    new: false
+    change: '#657 の後のパス（map/・shared/・table/）で #627 の 17 件とその後に増えた 8 件の行（計 25 件）を既存の行と同じ記載方法（description・tags・related の implements）で追加し、設計書の受け持ちが変わった 3 行の description を設計書に合わせる'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: project-index.yaml
+    new: false
+    change: documents[] を setup の推奨の範囲に合わせ、新しく置く管理用の YAML の行と exclude を追加・修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: docs/layout/LAY-472-1.yaml
+    new: false
+    change: 配信しないと決めたフォルダ・ファイルとその理由を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: .github/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: .storybook/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: docs/_root/files.yml
+    new: false
+    change: 行を直下の `files.yaml` へ移して削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: docs/guide/files.yml
+    new: false
+    change: 行のメタデータを今の付け方で見直す（topic:ガイド のタグは残す）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: docs/mock/files.yml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: migrations/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: plugin/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: schemas/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: scripts/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: templates/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: tests/files.yaml
+    new: false
+    change: 行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: vscode/files.yaml
+    new: false
+    change: ファイルが無い行（icon.png）を直し、行のメタデータを今の付け方で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: files.yaml
+    new: true
+    change: 直下・`docs/` の直下・`docs/_theme/`・`tools/`・`.claude-plugin/` のファイルを受け持つ管理用の YAML を新設する（`docs/_root/files.yml` の行を移す）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:52.419001+00:00'
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: metadata の列が無い lead を書く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:54.076112+00:00'
+  - page: docs/nonfunctional/NFR-472-1.yaml
+    new: false
+    change: metadata の列が無い lead を書く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:54.076112+00:00'
+  - page: docs/test-procedure/TP-472-1.yaml
+    new: false
+    change: metadata の列が無い lead を書く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T06:21:54.076112+00:00'
+scope_out:
+  - item: PR の資料（docs/pr/）を検索の対象に入れる
+    reason: 作業 PR ごとの一時の資料で、設計書・コードを探すときの雑音になる。project-index 自身の見直し（shuhei1101/project-index#132）も対象に入れていない
+    plan: none
+  - item: src/map/ にこれから追加するファイルの行
+    reason: ファイルを追加する各 Issue が自分で行を追加する
+    plan: none
+  - item: project-index.yaml の 1 行目のスキーマの URL を project-index のバージョンのタグ（v0.1.0）に揃える（setup の手順 4 の候補）
+    reason: v0.1.0 のタグの commit に schemas/project-index.schema.json が無く、URL が 404 になる。今の commit 固定の URL は 200 で引けるため、そのまま残す。project-index の setup の候補の出し方の問題で、この配信元では直さない
+    plan: none

@@ -53,7 +53,7 @@ items:
 - page: CMP-596-2.ts.yaml
   summary: map の architecture-beta を、アイコンを持つ service のノード・group のグループ・junction の点にし、線を指定の辺から引いたアーキテクチャ図
 - page: CMP-596-3.ts.yaml
-  summary: map の C4Context を、種類の行と説明を持つ要素のノードと破線の境界のグループにし、外部の要素を描き分けた C4 図
+  summary: map の C4Context・C4Container・C4Component・C4Dynamic・C4Deployment を、種類の行と説明を持つ要素のノード・破線の境界と実線の配置先のノードのグループにし、外部の要素を描き分けた C4 図
 - page: CMP-649-1.ts.yaml
   summary: map の mindmap を、根を中央に配置して枝を左右の外へ広げる木の配置にし、記載した形状の項目・枝ごとの色の曲線・開閉と中へ入る持ち手・道筋と子孫を残す選択を付けたマインドマップ
 - page: CMP-653-1.ts.yaml
@@ -61,7 +61,7 @@ items:
 - page: CMP-472-4.ts.yaml
   summary: map の sequenceDiagram を全ての記法で描き、ブロックの開閉と中だけを描く操作・参加者の選択と並べ替え・強調を付けたシーケンス図
 - page: CMP-472-50.ts.yaml
-  summary: 図の枠の下に常に出し、番号・タイトル・説明の文と、前へ・停止・自動で進める・次へのボタンで案内と再生を進める帯
+  summary: 図の枠の下に常に出し、手順のバーの区切りと左右の矢印で手順を選んで繰り返し再生し、手順のタイトルと説明の文を出す案内と再生の帯
 - page: CMP-472-38.ts.yaml
   summary: 図の線の入力の詳細と、ノードの入力・処理・出力・ヒントと、グラフの項目の名前と値を出すツールチップ
 - page: CMP-472-47.ts.yaml

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-band（案内・再生の帯の手順のバー） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- 案内・再生の帯の規則（#660 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/660/assets/band.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと帯を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 24px; margin: 48px 0 8px; }
+    .map-catalog h3 { font-size: 18px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0 0 4px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-band
+  </nav>
+  <main class="map-catalog" id="catalog">
+    <h1>map-band</h1>
+    <h2>実演</h2>
+    <p class="state-note">何もしていないときはバーと左右の矢印だけを出す。バーの区切りか左右の矢印を押すと、停止するまでその手順を繰り返し再生し、強調するノードが表示する枠に収まる位置と倍率へ図がなめらかに移る。同じ区切りをもう一度押すと最初から再生し直す。帯のバー以外か、図のノード以外の空いた場所を押すと停止する。キーボードはバーで ← → で移って再生、Esc で停止。図を動かした後は、次にバーを押すまで図を移さない。動きを減らす設定では時間をかけずに移す</p>
+    <div id="live-figure"></div>
+    <div id="live-band"></div>
+  </main>
+  <script type="module">
+    import { applyDensity, createBand, createFigure, renderBand } from "../../refs/660/assets/band.js";
+
+    /** 実演の図のノードと、案内の手順 */
+    const NODES = [
+      { id: "doc", label: "文書の作成者", x: 40, y: 40 },
+      { id: "md", label: "Markdown", x: 260, y: 40 },
+      { id: "parse", label: "記法を読む", x: 480, y: 40 },
+      { id: "map", label: "map の範囲", x: 480, y: 200 },
+      { id: "layout", label: "自動で配置する", x: 700, y: 200 },
+      { id: "render", label: "図を描く", x: 700, y: 360 },
+      { id: "reader", label: "読者", x: 260, y: 460 },
+    ];
+    const STEPS = [
+      { title: "文書を書く", text: "作成者が Markdown に map の範囲を書く", nodes: ["doc", "md"] },
+      { title: "記法を読む", text: "mdmark が記法と範囲を読み取る", nodes: ["parse", "map"] },
+      { title: "配置する", text: "入れ子のグループを自動で配置する", nodes: ["layout"] },
+      { title: "図を描く", text: "図の枠に描き、読者が辿って読む\n2 行目の説明", nodes: ["render", "reader"] },
+    ];
+    const figure = createFigure(document.getElementById("live-figure"), { title: "文書を描く流れ", nodes: NODES });
+    createBand(document.getElementById("live-band"), { steps: STEPS, label: "文書を描く流れの案内" }, figure);
+
+    const TITLES = STEPS.map((step) => step.title);
+    const base = { total: 4, titles: TITLES, label: "文書を描く流れの案内" };
+    /** 状態の見出し・補足・帯の状態 */
+    const STATES = [
+      ["始める前", "バーだけを出し、帯の枠線と面も出さない。どの区切りも線の色（残りの手順）で描く。タイトルと説明の文の行は無い", { ...base }],
+      ["手順 2（繰り返し再生の 1 周目の終わり）", "済んだ区切りは文字の色、残りの区切りは線の色、今の区切りは高くしてマーカーの色の縁を付ける。バーの下にタイトルと説明の文。塗り終えたら最初から塗り直す", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る", playing: true, fill: 1 }],
+      ["手順 2（再生の途中）", "今の区切りを 1 周の間（2 秒）をかけてマーカーの色で塗る", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る", playing: true, fill: 0.45 }],
+      ["シーケンス図の再生", "単位がメッセージのとき、バーの読み上げの名前は「メッセージ」", { total: 9, titles: Array.from({ length: 9 }, (_, i) => `メッセージ ${i + 1}`), index: 2, unit: "message", title: "mount を呼ぶ", fill: 1, label: "シーケンス図の再生" }],
+      ["手順が多い（40）", "区切りは 1 行で幅に合わせて細くし、12px より細くなったときだけ今の区切りを 24px に広げる。左右の矢印で前・次の手順へ移る", { total: 40, titles: Array.from({ length: 40 }, (_, i) => `手順 ${i + 1}`), index: 23, title: "手順 24", playing: true, fill: 0.5, label: "案内" }],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (title, note, state, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h3"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      host.innerHTML = renderBand({ ...state, label: `${state.label}（${title}）` });
+      catalog.append(host);
+      applyDensity(host);
+    };
+    catalog.append(Object.assign(document.createElement("h2"), { textContent: "状態" }));
+    for (const [title, note, state] of STATES) add(title, note, state);
+    catalog.append(Object.assign(document.createElement("h2"), { textContent: "狭い幅" }));
+    add("狭い幅（390px）", "手順のバーは帯の幅いっぱい。タイトルと説明の文はバーの下で折り返す", { ...base, index: 1, title: "記法を読む", text: "mdmark が記法と範囲を読み取る" }, true);
+  </script>
+</body>
+</html>

@@ -35,3 +35,33 @@ export const Narrow: Story = {
   parameters: { server: { id: "map-c4" } },
   args: { frameWidth: "390px" },
 };
+
+export const Container: Story = {
+  name: "Container",
+  parameters: { server: { id: "map-c4" } },
+  args: { kind: "container" },
+};
+
+export const Component: Story = {
+  name: "Component",
+  parameters: { server: { id: "map-c4" } },
+  args: { kind: "component" },
+};
+
+export const Dynamic: Story = {
+  name: "Dynamic",
+  parameters: { server: { id: "map-c4" } },
+  args: { kind: "dynamic" },
+};
+
+export const Deployment: Story = {
+  name: "Deployment",
+  parameters: { server: { id: "map-c4" } },
+  args: { kind: "deployment" },
+};
+
+export const DeploymentCollapsed: Story = {
+  name: "DeploymentCollapsed",
+  parameters: { server: { id: "map-c4" } },
+  args: { kind: "deployment", collapsed: '["region"]' },
+};

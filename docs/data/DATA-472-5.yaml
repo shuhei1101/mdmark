@@ -57,7 +57,7 @@ fields:
 - key: collapsed
   title: 最初に閉じる
   type: bool
-  description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界）の ID と、ER 図のテーブル名・クラス図のクラス名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを閉じて描く
+  description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界と配置先のノード）の ID と、ER 図のテーブル名・クラス図のクラス名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを閉じて描く
   example: 'true'
 refs:
 - ER-472-2#tables[layout]

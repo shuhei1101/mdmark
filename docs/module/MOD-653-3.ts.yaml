@@ -88,7 +88,7 @@ functions:
       - name: test_attach_map_axis_grid_when_played
         case: 正常
         summary: 再生
-        condition: Git グラフの帯の次へを 6 回押す。ガントチャートの「公開」を閉じてから帯の次へを 7 回押す
+        condition: Git グラフの帯の 6 つ目の区切りを押す。ガントチャートの「公開」を閉じてから帯の 7 つ目の区切りを押す
         mock: なし
         expected: Git グラフは帯のタイトルが `develop · c6` で 6 個目の commit のほかが `map-dim` を持つ。ガントチャートは閉じた「公開」の項目のほかが `map-dim` を持つ
     refs:

@@ -1,6 +1,16 @@
 import { afterEach, expect, test } from "vitest";
 import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
-import { C4, C4_DATA, mapRange } from "../../helpers/map.ts";
+import {
+  C4,
+  C4_COMPONENT,
+  C4_CONTAINER,
+  C4_CONTAINER_DATA,
+  C4_DATA,
+  C4_DEPLOYMENT,
+  C4_DEPLOYMENT_DATA,
+  C4_DYNAMIC,
+  mapRange,
+} from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** C4 図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -18,12 +28,12 @@ afterEach(() => {
 });
 
 /** C4 図を描いて付ける */
-async function setUp(args?: string, mermaid = C4) {
+async function setUp(args?: string, mermaid = C4, data = C4_DATA) {
   const { attachMapC4 } = await loadC4View();
   const { parseMapArgs } = await loadSpec();
   const { resolveConfig } = await loadConfig();
   const root = createRootFromHtml(
-    renderDoc(mapRange({ args, mermaid, data: C4_DATA })).html,
+    renderDoc(mapRange({ args, mermaid, data })).html,
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
   handles.push(
@@ -95,4 +105,55 @@ test("test_attach_map_c4_when_up", async () => {
       ?.map(Number) ?? [];
   const endY = numbers.at(-1) ?? Number.NaN;
   expect(Math.abs(endY - (top("b") + height("b")))).toBeLessThan(3);
+});
+
+// 4 種類（正常系）
+test("test_attach_map_c4_when_kinds", async () => {
+  // 準備・実行
+  const container = await setUp(undefined, C4_CONTAINER, C4_CONTAINER_DATA);
+  const component = await setUp(undefined, C4_COMPONENT, '{"version": 1}');
+  const dynamic = await setUp(undefined, C4_DYNAMIC, '{"version": 1}');
+  const deployment = await setUp(undefined, C4_DEPLOYMENT, C4_DEPLOYMENT_DATA);
+  // 検証
+  const kindRow = (root: HTMLElement, id: string) =>
+    root
+      .querySelector(`[data-node="${id}"] .mdmark-diagram-node-kind`)
+      ?.textContent?.trim();
+  const groupTitle = (root: HTMLElement, id: string) =>
+    root.querySelector(`.map-group[data-group="${id}"] .map-group-title`)
+      ?.textContent ?? "";
+  expect(kindRow(container, "api")).toBe("[Container: Node.js]");
+  expect(groupTitle(container, "shop")).toContain(
+    "注文のシステム［Container］",
+  );
+  expect(kindRow(component, "router")).toBe("[Component: Express]");
+  expect(
+    dynamic.querySelector('.mdmark-diagram-label[data-wire="r3"]')?.textContent,
+  ).toBe("3: 注文を保存する [SQL]");
+  expect(
+    deployment
+      .querySelector('.map-group[data-group="cloud"]')
+      ?.classList.contains("map-c4-deployment"),
+  ).toBe(true);
+  const left = (id: string) =>
+    Number.parseFloat(
+      deployment
+        .querySelector<HTMLElement>(`.map-group[data-group="${id}"]`)
+        ?.style.getPropertyValue("left") ?? "",
+    );
+  expect(left("app")).toBeLessThan(left("dbnode"));
+});
+
+// 配置先のノードを閉じる（正常系）
+test("test_attach_map_c4_when_deployment_collapsed", async () => {
+  // 準備
+  const root = await setUp(undefined, C4_DEPLOYMENT, C4_DEPLOYMENT_DATA);
+  // 実行
+  root
+    .querySelector<HTMLButtonElement>('button[data-group-toggle="region"]')
+    ?.click();
+  // 検証
+  const closed = root.querySelector('.map-closed-group[data-group="region"]');
+  expect(closed?.textContent).toContain("要素 2 件");
+  expect(root.querySelector('.map-group[data-group="cloud"]')).not.toBeNull();
 });

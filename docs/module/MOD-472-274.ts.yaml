@@ -56,7 +56,14 @@ functions:
     container: src/footnote/footnote.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'block のルール。行頭（字下げ 3 まで）の `[^ラベル]:`（ラベルは空白を含まない。`normalizeReference` で正規化する）を読み込み、`:` の後ろから字下げ 4 で続く行までを `blkIndent` を 4 増やして `state.md.block.tokenize` で解析し、`mdmark_footnote_def_open`（`meta.key`・`meta.first`・`meta.source`）と `mdmark_footnote_def_close` で囲む。最初に出たラベルだけ `FootnoteState.definitions` にキーを入れる。書き換えた `bMarks`・`tShift`・`sCount`・`blkIndent`・`parentType` は戻す。`meta.source` は行頭の `[^ラベル]: ` の文字（機能のオフで記載した文字に戻すため）'
+    summary: 'block のルール。脚注の定義を読み込み、定義のトークンで囲む'
+    description: |-
+      行頭（字下げ 3 まで）の `[^ラベル]:` を読み込む。
+      ラベルは空白を含まず、`normalizeReference` で正規化する。
+      `:` の後ろから字下げ 4 で続く行までを `blkIndent` を 4 増やして `state.md.block.tokenize` で解析し、`mdmark_footnote_def_open`（`meta.key`・`meta.first`・`meta.source`）と `mdmark_footnote_def_close` で囲む。
+      最初に出たラベルだけ `FootnoteState.definitions` にキーを入れる。
+      書き換えた `bMarks`・`tShift`・`sCount`・`blkIndent`・`parentType` は戻す。
+      `meta.source` は行頭の `[^ラベル]: ` の文字（機能のオフで記載した文字に戻すため）
     args:
       - name: state
         type: StateBlock

@@ -5119,7 +5119,7 @@
 
       /* ツールチップを持つノード: 種類の行を右上のマーカーと重ねない */
       &.has-tip .mdmark-diagram-node-kind {
-        padding-inline-end: 22px;
+        padding-inline-end: 24px;
       }
     }
 
@@ -5165,8 +5165,8 @@
       inset-inline-end: 3px;
       display: grid;
       place-items: center;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       padding: 0;
       border: 0;
       border-radius: 4px;
@@ -5583,8 +5583,8 @@
       inset-inline-end: 3px;
       display: grid;
       place-items: center;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       padding: 0;
       border: 0;
       border-radius: 4px;
@@ -9792,8 +9792,8 @@
     .mdmark-diagram-info.mdmark-diagram-group-info {
       --node-color: var(--mdmark-color-muted);
       position: static;
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
     }
   }
 
@@ -9872,6 +9872,15 @@
   .mdmark-diagram[data-diagram="map"]
     .mdmark-diagram-stage
     > .mdmark-diagram-node.map-closed-group {
+    /* タイトルの行を中身の並びに置き、数の行をその下に描く（タイトルが折り返しても重ならず、高さを測れる） */
+    justify-content: flex-start;
+    padding: 4px 6px;
+  }
+  .map-closed-group > .map-group-head {
+    position: static;
+    align-items: flex-start;
+  }
+  .map-closed-group > .map-closed-count {
     padding-left: 30px;
   }
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-closed-group {
@@ -9984,32 +9993,95 @@
     stroke: color-mix(in srgb, var(--mdmark-color-link) 40%, transparent);
   }
 
-  /* 案内と再生の帯: 図の枠の下。1 行目は番号（左）と操作のボタン（右）、2 行目からが説明の文 */
+  /* 案内と再生の帯: 図の枠の下。1 行目は左右の矢印のボタンと手順のバー、2 行目に手順のタイトル、3 行目から説明の文。始める前はバーと矢印だけで枠線と面を出さない */
   .map-band {
     margin-top: 4px;
-    padding: 4px 8px 6px 12px;
+    padding: 2px 12px 6px;
     border: 1px solid var(--mdmark-color-border);
     border-radius: calc(var(--mdmark-radius) * 2);
     background: var(--mdmark-color-surface);
   }
-  .map-band-head {
+  .map-band.is-idle {
+    border-color: transparent;
+    background: transparent;
+  }
+  .map-band-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .map-band-actions {
-    display: flex;
     gap: 4px;
   }
-  .map-band-count {
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
-    color: var(--mdmark-color-muted);
+  /* 手順のバー: 高さ 24px の押せる範囲に 6px の区切りを並べ、残り（線の色）・済み（文字の色）・今（面と縁）を描き分ける */
+  .map-band-steps {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    height: 24px;
+    border-radius: var(--mdmark-radius);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .map-band-steps:focus-visible,
+  .map-band-step:focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+  .map-band-seg {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--mdmark-color-diagram-line);
+  }
+  .map-band-seg.is-done {
+    background: var(--mdmark-color-text);
+  }
+  .map-band-seg.is-current {
+    height: 10px;
+    background: var(--mdmark-color-bg);
+    box-shadow: 0 0 0 1.5px var(--mdmark-color-link);
+  }
+  /* 区切りが細いバー（is-dense）では、今の区切りだけを 24px に広げる */
+  .map-band-steps.is-dense .map-band-seg.is-current {
+    flex: 0 0 24px;
+  }
+  .map-band-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--mdmark-color-link);
+  }
+  .map-band-step {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--mdmark-radius);
+    background: transparent;
+    color: var(--mdmark-color-text);
+    cursor: pointer;
+  }
+  .map-band-step svg {
+    width: 16px;
+    height: 16px;
+  }
+  .map-band-title {
+    display: block;
+    margin-top: 2px;
+    font-size: 14px;
+    overflow-wrap: anywhere;
   }
   .map-band-text {
-    margin: 4px 0 0;
+    margin: 2px 0 0;
     white-space: pre-line;
+  }
+  .map-band-title[hidden] {
+    display: none;
   }
 
   .mdmark-diagram[data-diagram="map"] .map-participant.is-dragging {
@@ -10336,6 +10408,11 @@
     border-style: dashed;
     background: transparent;
   }
+  /* C4 の配置図の配置先のノード: 境界と分けて実線の枠にする */
+  .mdmark-diagram[data-diagram="map"] .map-group.map-c4-deployment {
+    border-style: solid;
+    background: transparent;
+  }
 
   /* 書き方の警告: 今の記載の警告と同じ破線の枠 */
   .map-warning {
@@ -10351,29 +10428,6 @@
   .map-warning ul {
     margin: 0;
     padding-left: 1.2em;
-  }
-
-  /* 手順のタイトル: 1 行目の番号とボタンの間。狭い幅では番号とボタンの下の行に回す */
-  .map-band {
-    container-type: inline-size;
-  }
-  .map-band-title {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    font-size: 14px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  @container (max-width: 420px) {
-    .map-band-head {
-      flex-wrap: wrap;
-    }
-    .map-band-title {
-      flex-basis: 100%;
-      order: 3;
-      white-space: normal;
-    }
   }
 
   /* シーケンス図の見出しと注記の行に渡した空のメッセージ */

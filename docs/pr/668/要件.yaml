@@ -1,0 +1,7 @@
+scope_out:
+  - item: 400 字以下か 4 文以下の summary（functions・constants・data_models で 200 字を超える約 100 項目。MOD-472-213 の pushWarning 554 字 3 文・MOD-562-1 の useAnnotations 620 字 4 文 等）
+    reason: Issue の基準（400 字超かつ 5 文以上）の外。今回の作業 PR がマージされなくても同じ内容で成り立つため別 Issue にした（reviewer の合格で確定）
+    plan: '#669'
+  - item: '#612 の報告（summary の中の文の削除と AI slop の修正・エイリアスと用語の登録）'
+    reason: '受付の判断で #612 を #614 の後ろへ回した。移した詳細の文の削除・言い換えは #612 が扱う'
+    plan: '#612'

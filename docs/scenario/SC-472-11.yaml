@@ -479,6 +479,33 @@ scenarios:
       - 5 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない。gantt は日付の軸、timeline・gitGraph・journey は記載順の軸、block-beta は `columns` の格子に沿って描かれる
       - front matter の `title` を持たない図の枠のタイトルが、それぞれ「ガントチャート」「タイムライン」「Git グラフ」「ジャーニー」「ブロック図」
     test: test_normal_when_only_axis_grid_kinds
+  - name: 正常シナリオ（C4 の図のコードブロックだけを持つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: C4 の図の mermaid のコードブロックだけを持つ Markdown
+        description: map の範囲の外に、言語 `mermaid` の C4Container・C4Component・C4Dynamic・C4Deployment のコードブロックを 1 つずつ持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 4 つのコードブロックを、補足の無い map の範囲として描く
+        M-->>P: mermaid を読み込まずに、図の枠に入れた map の図を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - mermaid への要求が 0 件
+      - 4 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない。同じ Mermaid を補足の無い map の範囲で囲んだ文書と同じ要素・境界・配置先のノード・関係で描かれる
+    test: test_normal_when_only_c4_kinds
 tags:
   - name: tool:mermaid
     main: true

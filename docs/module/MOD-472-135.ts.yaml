@@ -20,7 +20,7 @@ functions:
       - MOD-531-2#functions[parseStateDiagram]
       - MOD-596-1#functions[parseClassDiagram]
       - MOD-596-2#functions[parseArchitecture]
-      - MOD-596-3#functions[parseC4Context]
+      - MOD-596-3#functions[parseC4]
       - MOD-472-139#functions[parseMapData]
       - MOD-472-140#functions[parseMapArgs]
       - MOD-472-137#functions[mapLinkProblems]
@@ -46,7 +46,7 @@ functions:
     process: |-
       1. `collectMapStructure` で範囲の形を確かめ、`kind` が無ければその項目を返して終える
       2. 印の引数の`unknownKeys` は `includeUnknownKeys` が `true` のとき（点検）だけ `map_unknown_key` にする（描くときは警告にしない）
-      3. 種類ごとに `parseFlowchart`・`parseSequence`・`parseErDiagram`・`parseStateDiagram`・`parseClassDiagram`・`parseArchitecture`・`parseC4Context`・`parseMindmap`・`parseAxisGrid` のどれかと `parseMapData` の項目を合わせる
+      3. 種類ごとに `parseFlowchart`・`parseSequence`・`parseErDiagram`・`parseStateDiagram`・`parseClassDiagram`・`parseArchitecture`・`parseC4`（C4 の 5 種類）・`parseMindmap`・`parseAxisGrid` のどれかと `parseMapData` の項目を合わせる
       4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする。`notes.{ID}.annotations` が指す注記の ID のうち、文書に定義が無いもの（呼び出し元が指定する、文書の注記の定義の ID の集合に無いもの）を `annotation_undefined` にする。`ends`・`via` を持つノード・グループの ID は `map_invalid_value` にする（`notes` はノード・線・`subgraph` の ID を指せる）
       5. ER 図は、補足の `notes` のキーのうちテーブル名・`{テーブル}.{列}`・関連の `r{番号}`・分類の ID に無いものと、`groups` の `tables` に無いテーブルと `parent` に無い分類を `map_unknown_ref`、2 つの分類に入るテーブル・テーブル名と同じ分類の ID・`r{番号}` と同じテーブル名を `map_invalid_value` にする。状態遷移図は、`notes` のキーのうち状態の ID・遷移の `t{番号}` に無いものを `map_unknown_ref`、`t{番号}` と同じ状態の ID を `map_invalid_value` にする。クラス図は、`notes` のキーのうちクラス名・`{クラス名}.{メンバー名}`・関係の `r{番号}`・`namespace` の ID に無いものを、アーキテクチャ図は service・group・junction の ID・線の `r{番号}` に無いものを、C4 図は要素・境界の別名・関係の `r{番号}` に無いものを `map_unknown_ref` にする。マインドマップは、補足のキーのうち項目の ID と ID を持たない項目の表示する文字に無いものを `map_unknown_ref`、補足とマーカーの引数の `focus` のキーのうち `parseMindmap` の `ambiguous` にあるものを `map_ambiguous_ref`（その項目に ID を記載して ID で指す修正の方法を添える）、`layout` の `color`・`collapsed` のほかのキーを `map_invalid_value`（並び順は Mermaid の行の順で変える旨を添える）にする。ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図は、補足とマーカーの引数の `focus` のキーを `axisGridItemOf` で照らし、`missing` を `map_unknown_ref`、`ambiguous` を `map_ambiguous_ref`（項目に ID を記載して ID で指すか、section の名前を分ける修正の方法を添える）、`layout` の `color`・`collapsed` のほかのキーをマインドマップと同じく `map_invalid_value` にする
       6. `flowchart` の `links` を `mapLinkProblems`（`idLinks` は引数の `idLinks`）で確かめ、許さないリンク先を `map_invalid_value` にする
@@ -105,7 +105,7 @@ functions:
         summary: 描けない種類
         condition: '`pie` のブロック'
         mock: なし
-        expected: '`map_invalid` が 1 件で、`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` を含む'
+        expected: '`map_invalid` が 1 件で、`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` を含む'
       - name: test_collect_map_problems_when_unknown_arg
         case: 異常
         summary: 印の知らないキー

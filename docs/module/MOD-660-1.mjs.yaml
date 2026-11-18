@@ -1,0 +1,98 @@
+id: MOD-660-1
+visibility: internal
+title: ライブラリ本体 / バージョンを上げる / retired-map-options.mjs
+test_files:
+  - tests/unit/migrations/retired-map-options.test.ts
+lead: 移行の手順のスクリプト。文書の map の印から廃止した `play`・`interval` を削除する。
+constants:
+  - name: RETIRED_KEYS
+    title: 削除する印のキー
+    container: migrations/next/retired-map-options.mjs
+    usecase: バージョンを上げる
+    summary: map の印から削除するキー
+    value: '["play", "interval"]'
+functions:
+  - name: removeRetiredMapOptions
+    title: 文書の map の印から廃止した引数を削除する
+    container: migrations/next/retired-map-options.mjs
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: public
+    summary: '文書の本文の `<!-- map: {JSON のオブジェクト} -->` から `RETIRED_KEYS` のキーを削除した本文を返す'
+    process: |-
+      1. 本文を行ごとに見て、コードブロック（` ``` `・`~~~` の囲み）の中と行内のコードの中を飛ばし、`<!-- map:` で始まり `-->` で終わる印を探す
+      2. 印の引数を `JSON.parse` で読み、オブジェクトで `RETIRED_KEYS` のキーを持つときだけ、そのキーを削除する。残ったキーがあれば、キーの並びと値を変えずに `:` と `,` の後ろに空白を 1 つ置いた 1 行の JSON で `<!-- map: {…} -->` に書き戻し、無ければ `<!-- map -->` にする
+      3. JSON として読めない印と、`RETIRED_KEYS` のキーを持たない印は書き換えない
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の本文
+    returns:
+      type: '{ markdown: string; changed: boolean }'
+      description: 書き換えた本文と、書き換えたか
+    refs:
+      - IF-472-28#constraints[map の印の廃止した引数の移行]
+    unit_tests:
+      - name: test_remove_retired_map_options
+        case: 正常
+        summary: 引数を削除し、無くなった印を引数なしにする
+        condition: シナリオ『バージョンを上げる』の「正常シナリオ（map の印の廃止した引数を削除する）」の 2 つの文書の本文
+        mock: なし
+        expected: '1 つ目が `<!-- map: {"title": "全体の構成"} -->`、2 つ目が `<!-- map -->` で、コードブロックの中の印・閉じのマーカー・ほかの本文が変わらず、どちらも `changed` が `true`'
+      - name: test_remove_retired_map_options_when_untouched
+        case: 正常
+        summary: 書き換えない印
+        condition: '`<!-- map: {"title": "全体", "focus": "read"} -->` と、JSON として読めない `<!-- map: {play: 1} -->` を持つ本文'
+        mock: なし
+        expected: 本文が変わらず、`changed` が `false`
+  - name: migrateRetiredMapOptions
+    title: 文書の map の印の廃止した引数を削除する
+    container: migrations/next/retired-map-options.mjs
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 制約『文書』の文書ごとに `removeRetiredMapOptions` を当て、変わった文書だけを書き込む移行の手順のスクリプトの処理
+    description: |-
+      `steps.yaml` の `call`（`files: [documents]`。`description` は ``文書の map の印から廃止した `play`・`interval` を削除する``。壊す手順ではない）が実行する。
+
+      スクリプトとして呼ばれると、`--config` の設定を `yaml` の `parse` で読み、この関数を呼ぶ。ほかのファイルを import せず、このファイルだけで動く。
+
+      文書は `marker-json.mjs` と同じく、設定の `build` の対象と索引の文書を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。
+
+      `{書き換えた文書の数} 件の文書の map の印から play・interval を削除しました。` を標準出力に書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。
+
+      単体テストは `migrations/*/retired-map-options.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む
+    args:
+      - name: options
+        type: '{ configPath: string; configDir: string; config: unknown }'
+        required: true
+        description: 設定ファイルのパス・設定ファイルのあるフォルダの絶対パス・設定ファイルを読み込んだ値
+    returns:
+      type: 'Promise<{ changed: string[]; problems: string[] }>'
+      description: 書き換えた文書の相対パスと、読み込めない文書の修正方法
+    side_effects: 文書を書き換える
+    callees:
+      - MOD-660-1#functions[removeRetiredMapOptions]
+    refs:
+      - IF-472-28#constraints[スクリプトの呼び方]
+      - IF-472-28#constraints[map の印の廃止した引数の移行]
+    unit_tests:
+      - name: test_migrate_retired_map_options
+        case: 正常
+        summary: build の対象と索引の文書を書き換える
+        condition: シナリオの 2 つの文書を、`build.include` の文書と索引だけの文書に分けて持つ一時フォルダ
+        mock: 一時フォルダ
+        expected: 両方の文書がシナリオの期待値のとおりで、設定が変わらず、`changed` が 2 つ
+      - name: test_migrate_retired_map_options_when_rerun
+        case: 正常
+        summary: もう一度適用しても書き換えない
+        condition: 1 つ目のテストの後の一時フォルダ
+        mock: 一時フォルダ
+        expected: '`changed` が空で、文書の更新日時が変わらない'
+tags:
+  - name: topic:バージョン
+    main: true
+  - name: topic:移行
+  - name: topic:map

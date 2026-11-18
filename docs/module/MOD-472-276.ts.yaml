@@ -171,7 +171,31 @@ functions:
     container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次の処理をする。`code` がオンのときは `readLineMarks` で行を読み込み、直前のトークンが `code` のマーカーなら `readCodeSpec` で指定を読み込み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・タイトル・行番号と最初の行の番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語。`copyState` は指定しない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行のマーカーを削除せず中身の行をそのまま使用し、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の単語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の単語を削除する）。`mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず部品に置き換え（`code` がオフなら `bar: false`）、`mermaid: true` を指定し、色分けの言語を指定しない。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold` の畳んだ状態を付けてから部品へ指定する。`readCodeSpec` と `readLineMarks` と `readFolds` の読み込めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` のマーカーの場所にも警告を差し込む（`code` がオンのときだけ）。`code` がオンで、mermaid のコードブロックでなく、`readCodeSpec` の `treeWarning` が `true` のコードブロックのうち、`countTreeLines` が `TREE_WARNING_MIN_LINES` 以上のものの前に、罫線のフォルダ構成の記載の警告（画面設計『文書』の記載の警告の文言。言語が空なら `言語の無いコードブロックに`）を差し込む。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の単語との一致で `fence` でなくしているため該当せず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
+    summary: 'コアルール。残っている `fence` のトークンを、機能のオン・オフに合わせてコードブロックの部品に置き換える'
+    description: |-
+      `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次の処理をする。
+
+      | 条件 | 処理 |
+      | --- | --- |
+      | `code` がオン | `readLineMarks` で行を読み込み、直前のトークンが `code` のマーカーなら `readCodeSpec` で指定を読み込み、全てのコードブロックを部品『コードブロック』の `ownBlock` に置き換える |
+      | `code` がオフ | 行のマーカーを削除せず中身の行をそのまま使用し、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の単語を言語に書き換える |
+      | `mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` | `code` のオン・オフによらず部品に置き換え（`code` がオフなら `bar: false`）、`mermaid: true` を指定し、色分けの言語を指定しない |
+
+      `code` がオンのときに部品へ指定するのは、言語・ファイル名・タイトル・行番号と最初の行の番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語。
+      `copyState` は指定しない。
+      帯の右端のコピーのボタンは `mount` が付ける。
+      `code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold` の畳んだ状態を付けてから部品へ指定する。
+
+      `code` がオフで言語に書き換えるときは、`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の単語を削除する。
+
+      次の場所に警告を差し込む。
+
+      - `readCodeSpec` と `readLineMarks` と `readFolds` の読み込めない指定は、コードブロックの前
+      - 後ろが `fence` でない `code` のマーカーの場所（`code` がオンのときだけ）
+      - `code` がオンで、mermaid のコードブロックでなく、`readCodeSpec` の `treeWarning` が `true` のコードブロックのうち、`countTreeLines` が `TREE_WARNING_MIN_LINES` 以上のものの前。罫線のフォルダ構成の記載の警告で、文言は画面設計『文書』の記載の警告の文言（言語が空なら `言語の無いコードブロックに`）
+
+      言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の単語との一致で `fence` でなくしているため該当しない。
+      `tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く
     args:
       - name: state
         type: StateCore

@@ -177,14 +177,48 @@ test("test_render_map_band", async () => {
     mode: "walkthrough",
     total: 4,
     index: undefined,
+    titles: [],
     title: "",
     text: "",
-    auto: false,
+    playing: false,
+    fill: 0,
     label: "全体の構成の案内",
   });
   // 検証
-  expect(html).toContain("–/4");
-  expect(html).toMatch(/<button[^>]*aria-label="案内をやめる"[^>]*disabled/);
+  expect(html).toMatch(/class="map-band[^"]*\bis-idle\b/);
+  expect(matches(html, /class="map-band-seg[^"]*"/g)).toHaveLength(4);
+  expect(html).toMatch(/role="slider"[^>]*aria-valuenow="0"/);
+  expect(html).toMatch(/aria-valuetext="始める前"/);
+  expect(html).toMatch(/<button[^>]*data-dir="-1"[^>]*aria-label="前の手順"/);
+  expect(html).toMatch(/<button[^>]*data-dir="1"[^>]*aria-label="次の手順"/);
+  expect(html).toMatch(/class="map-band-title"[^>]*hidden/);
+  expect(html).toMatch(/class="map-band-text"[^>]*hidden/);
+});
+
+// 繰り返している途中（正常系）
+test("test_render_map_band_when_playing", async () => {
+  // 準備
+  const { renderMapBand } = await loadParts();
+  // 実行
+  const html = renderMapBand({
+    mode: "walkthrough",
+    total: 4,
+    index: 1,
+    titles: ["全体を見る", "記法を読む", "配置する", "描く"],
+    title: "記法を読む",
+    text: "",
+    playing: true,
+    fill: 0.5,
+    label: "全体の構成の案内",
+  });
+  // 検証
+  const segments = matches(html, /class="map-band-seg[^"]*"/g);
+  expect(segments[0]).toContain("is-done");
+  expect(segments[1]).toContain("is-current");
+  expect(segments[1]).toContain("is-playing");
+  expect(html).toMatch(/class="map-band-fill" style="width: ?50%/);
+  expect(html).toContain('aria-valuetext="手順 2/4 記法を読む"');
+  expect(html).not.toMatch(/class="map-band[^"-]*\bis-idle\b/);
 });
 
 // 再生（正常系）
@@ -196,22 +230,20 @@ test("test_render_map_band_when_playback", async () => {
     mode: "playback",
     total: 7,
     index: 2,
+    titles: [],
     title: "mount を呼ぶ",
     text: "",
-    auto: false,
+    playing: true,
+    fill: 0,
     label: "文書を描くまでの再生",
   });
   // 検証
+  expect(html).toMatch(/role="slider"[^>]*aria-label="メッセージ"/);
   const labels = matches(html, /aria-label="([^"]+)"/g).map((item) =>
     item.replace(/^aria-label="|"$/g, ""),
   );
   expect(labels).toEqual(
-    expect.arrayContaining([
-      "前のメッセージ",
-      "再生をやめる",
-      "自動で進める",
-      "次のメッセージ",
-    ]),
+    expect.arrayContaining(["前のメッセージ", "次のメッセージ"]),
   );
 });
 
@@ -628,23 +660,18 @@ test("test_render_map_band_when_transition", async () => {
     unit: "transition",
     total: 13,
     index: 5,
+    titles: [],
     title: "判定 → 差し戻しの理由を確認する：差し戻し",
     text: "",
-    auto: false,
+    playing: true,
+    fill: 0,
     label: "作業の状態の再生",
   });
   // 検証
   const labels = matches(html, /aria-label="([^"]+)"/g).map((item) =>
     item.replace(/^aria-label="|"$/g, ""),
   );
-  expect(labels).toEqual(
-    expect.arrayContaining([
-      "前の遷移",
-      "再生をやめる",
-      "自動で進める",
-      "次の遷移",
-    ]),
-  );
+  expect(labels).toEqual(expect.arrayContaining(["前の遷移", "次の遷移"]));
   expect(labels).not.toContain("前のメッセージ");
 });
 
@@ -858,6 +885,155 @@ test("test_render_map_er_diagram", async () => {
       ).toBe(true);
   expect(part.tips).toContain("下書き・確定・発送済み・取り消し");
   expect(part.tips).toContain("行が増える関連");
+});
+
+/** 矩形（左・右・上・下） */
+type Box = { left: number; right: number; top: number; bottom: number };
+
+/** 2 つの矩形が重ならないか（辺が接するだけは重ならない） */
+const apart = (a: Box, b: Box): boolean =>
+  a.right <= b.left ||
+  b.right <= a.left ||
+  a.bottom <= b.top ||
+  b.bottom <= a.top;
+
+/** ER 図の単体テストのテーブルのノード（100×40） */
+const erNode = (id: string, x: number, y: number) => ({
+  id,
+  x,
+  y,
+  w: 100,
+  h: 40,
+  lines: [id],
+  faded: false,
+  ancestors: [],
+});
+
+/** ER 図の単体テストの関連の線 */
+const erWire = (wire: {
+  id: string;
+  from: string;
+  to: string;
+  points: Array<[number, number]>;
+}) => ({ ...wire, label: undefined, merged: undefined });
+
+/** ER 図の単体テストの関連（多重度 `1`・`0..n`、ラベル「テスト」） */
+const erRelation = (id: string, from: string, to: string) => ({
+  id,
+  from,
+  to,
+  fromCardinality: "1",
+  toCardinality: "0..n",
+  label: "テスト",
+  fromColumn: undefined,
+  toColumn: undefined,
+});
+
+/** `renderMapErMarks` の文字の矩形（文字の幅と高さの見積もり） */
+async function erTextBoxes(
+  svg: string,
+): Promise<Array<Box & { name: string }>> {
+  const { MAP_ER } = await loadParts();
+  return [
+    ...svg.matchAll(
+      /<text class="(map-er-label|map-er-cardinality)"[^>]*x="([-\d.]+)" y="([-\d.]+)" text-anchor="(\w+)">([^<]*)<\/text>/g,
+    ),
+  ].map(([, className, x, y, anchor, value]) => {
+    const label = className === "map-er-label";
+    const width =
+      (value ?? "").length *
+      (label ? MAP_ER.labelChar : MAP_ER.cardinalityChar);
+    const shift = { middle: width / 2, end: width }[anchor ?? ""] ?? 0;
+    const left = Number(x) - shift;
+    return {
+      name: `${className} ${value} (${x}, ${y})`,
+      left,
+      right: left + width,
+      top: Number(y) - (label ? MAP_ER.labelLine : MAP_ER.cardinalityLine),
+      bottom: Number(y),
+    };
+  });
+}
+
+// 行が増える関連のマーカーを、ほかの関連のラベルの文字と重ならない場所に置く（正常系）
+test("test_render_map_er_fanouts_when_label_nearby", async () => {
+  // 準備: r1 のラベルの反対側の中ほど（マーカーの最初の候補）に、r2 のラベルの文字が来る配置
+  const { MAP_ER, renderMapErFanouts, renderMapErMarks } = await loadParts();
+  const layout = {
+    width: 600,
+    height: 240,
+    nodes: [
+      erNode("A", 0, 0),
+      erNode("B", 500, 0),
+      erNode("C", 0, 200),
+      erNode("D", 500, 200),
+    ],
+    groups: [],
+    wires: [
+      erWire({
+        id: "r1",
+        from: "A",
+        to: "B",
+        points: [
+          [100, 20],
+          [130, 20],
+          [130, 100],
+          [470, 100],
+          [470, 20],
+          [500, 20],
+        ],
+      }),
+      erWire({
+        id: "r2",
+        from: "C",
+        to: "D",
+        points: [
+          [100, 220],
+          [130, 220],
+          [130, 140],
+          [470, 140],
+          [470, 220],
+          [500, 220],
+        ],
+      }),
+    ],
+  };
+  const relations = [erRelation("r1", "A", "B"), erRelation("r2", "C", "D")];
+  // 実行
+  const part = renderMapErFanouts({
+    layout,
+    relations,
+    fanouts: [{ wire: "r1", from: "A", to: "B" }],
+    id: "er",
+  });
+  // 検証: マーカーの矩形が、ノードの矩形とも、多重度・ラベルの文字の矩形とも重ならない
+  const match = part.html.match(
+    /class="map-er-fanout"[^>]*style="left:([-\d.]+)px;top:([-\d.]+)px"/,
+  );
+  expect(match).not.toBeNull();
+  const half = MAP_ER.fanoutSize / 2;
+  const [x, y] = [Number(match?.[1]), Number(match?.[2])];
+  const box = {
+    left: x - half,
+    right: x + half,
+    top: y - half,
+    bottom: y + half,
+  };
+  for (const node of layout.nodes)
+    expect(
+      apart(box, {
+        left: node.x - MAP_ER.aside,
+        right: node.x + node.w + MAP_ER.aside,
+        top: node.y,
+        bottom: node.y + node.h,
+      }),
+      node.id,
+    ).toBe(true);
+  const texts = await erTextBoxes(
+    renderMapErMarks({ layout, relations, dim: new Set() }),
+  );
+  expect(texts).toHaveLength(6);
+  for (const text of texts) expect(apart(box, text), text.name).toBe(true);
 });
 
 // テーブルのノードの列の行とボタンを、押せる要素の中に入れない（正常系）
@@ -1402,14 +1578,12 @@ test("test_render_map_architecture", async () => {
 // C4 図の部品（正常系）
 test("test_render_map_c4_diagram", async () => {
   // 準備
-  const { parseC4Context, c4ToFlowchart } = await import(
-    "../../../../src/map/c4.ts"
-  );
+  const { parseC4, c4ToFlowchart } = await import("../../../../src/map/c4.ts");
   const { layoutMap } = await loadLayout();
   const { renderMapC4Diagram, spreadMapEnds } = await loadParts();
   const { C4 } = await import("../../helpers/map.ts");
   const { MAP_C4_KINDS } = await import("../../../../src/map/c4.ts");
-  const diagram = parseC4Context(C4);
+  const diagram = parseC4(C4);
   const { chart, overrides, reversed } = c4ToFlowchart(diagram);
   const layout = layoutMap(
     chart,

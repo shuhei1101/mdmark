@@ -29,7 +29,7 @@ states:
       - name: entered
         value: 実行中
   - name: Collapsed
-    description: 「実行中」を閉じた。「状態 2 件」を持つ 1 つのノードになる
+    description: 「実行中」を閉じた。名前の行の下に「状態 2 件」の行を持つ 1 つのノードになる
     args:
       - name: collapsed
         value: '["実行中"]'
@@ -54,7 +54,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 閉じた入れ子の状態の ID。名前の後ろに「状態 {数} 件」を出す
+    description: 閉じた入れ子の状態の ID。名前の行の下の行に「状態 {数} 件」を出す
   - name: entered
     type: 文字列
     required: false

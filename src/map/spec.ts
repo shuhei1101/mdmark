@@ -3,6 +3,7 @@ export type MapProblemKind =
   | "map_invalid"
   | "map_unknown_ref"
   | "map_unknown_key"
+  | "map_retired_key"
   | "map_invalid_value"
   | "map_unknown_icon"
   | "map_unknown_class"
@@ -50,22 +51,14 @@ export type ResolvedMapConfig = {
 export type MapArgs = {
   title?: string | undefined;
   focus?: string | undefined;
-  play?: "autoplay" | undefined;
-  interval: number;
   collapse?: { open: boolean; title: string | undefined } | undefined;
 };
 
 /** マーカーの JSON のオブジェクトで読むキー */
-export const MAP_ARG_KEYS = [
-  "title",
-  "focus",
-  "play",
-  "interval",
-  "collapse",
-] as const;
+export const MAP_ARG_KEYS = ["title", "focus", "collapse"] as const;
 
-/** マーカーに interval が無いか型が合わないときの、自動で進める間隔（秒） */
-export const DEFAULT_MAP_INTERVAL = 2;
+/** 読まずに map_retired_key の項目にするマーカーのキー */
+export const RETIRED_MAP_ARG_KEYS = ["play", "interval"] as const;
 
 /** 値の型が合わないときの項目 */
 const invalidArg = (key: string, expected: string): MapProblem => ({
@@ -122,23 +115,6 @@ const MAP_ARG_READERS = {
       return true;
     },
   },
-  play: {
-    expected: ' `"autoplay"` ',
-    read: (item, args) => {
-      if (item !== "autoplay") return false;
-      args.play = "autoplay";
-      return true;
-    },
-  },
-  interval: {
-    expected: "正の数（秒）",
-    read: (item, args) => {
-      if (typeof item !== "number" || !Number.isFinite(item) || item <= 0)
-        return false;
-      args.interval = item;
-      return true;
-    },
-  },
   collapse: {
     expected: ' `{"open": false, "title": "見出し"}` の構造',
     read: (item, args) => {
@@ -161,7 +137,7 @@ export const parseMapArgs = (
   problems: MapProblem[];
   unknownKeys: string[];
 } => {
-  const args: MapArgs = { interval: DEFAULT_MAP_INTERVAL };
+  const args: MapArgs = {};
   const problems: MapProblem[] = [];
   const unknownKeys: string[] = [];
   const known: Record<string, unknown> = {};
@@ -177,7 +153,16 @@ export const parseMapArgs = (
     });
     return { args, normalized: "{}", problems, unknownKeys };
   }
+  const retired = Object.keys(value).filter((key) =>
+    (RETIRED_MAP_ARG_KEYS as readonly string[]).includes(key),
+  );
+  if (retired.length > 0)
+    problems.push({
+      kind: "map_retired_key",
+      message: `<!-- map --> の引数 ${retired.join("・")} は廃止しました。mdmark upgrade を実行すると削除します。この引数を読まずに描いています。`,
+    });
   for (const [key, item] of Object.entries(value)) {
+    if (retired.includes(key)) continue;
     if (!Object.hasOwn(MAP_ARG_READERS, key)) {
       unknownKeys.push(key);
       continue;
