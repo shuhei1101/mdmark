@@ -415,6 +415,39 @@ scenarios:
       - 出力の移行の報告に、適用されていない `total=数量:sum` の記載が、文書のファイルと行と理由（`+total` が無い）つきで挙がる
       - 設定の `version` が目標のバージョンで、終了コードが 0
     test: test_normal_when_document_marks
+  - name: 正常シナリオ（map の印の廃止した引数を削除する）
+    setup:
+      - name: 廃止した引数を持つフォルダ
+        description: |-
+          手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 2 つを持つフォルダ。
+          1 つ目の文書は `<!-- map: {"title": "全体の構成", "play": "autoplay", "interval": 3} -->` 〜 `<!-- /map -->` の範囲を持つ。
+          2 つ目の文書は `<!-- map: {"interval": 1} -->` 〜 `<!-- /map -->` の範囲と、`markdown` のコードブロックの中に記載した `<!-- map: {"play": "autoplay"} -->` を持つ
+      - name: Mock
+        description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
+        notes: '`--yes` を付ける'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 書き換えうるファイルをコピーのフォルダへ写す
+        C->>F: map の印から play・interval を削除する
+        C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を目標のバージョンにする
+        C-->>W: 適用した手順・コピーのフォルダの場所・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - '1 つ目の文書の印が `<!-- map: {"title": "全体の構成"} -->` になる'
+      - 2 つ目の文書の印が、引数を持たない `<!-- map -->` になる
+      - コードブロックの中の印・閉じのマーカー・マーカーの外の本文が変わっていない
+      - 設定の `version` が目標のバージョンで、終了コードが 0
+    test: test_normal_when_retired_map_options
   - name: 正常シナリオ（座標で書いた図を map へ書き換える）
     setup:
       - name: 座標で書いた図を持つフォルダ
