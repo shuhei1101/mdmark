@@ -109,7 +109,12 @@ export const attachMapEr = (
         );
         for (const element of old) element.remove();
         if (view.selected.size !== 2) fanouts = [];
-        const part = renderMapErFanouts({ layout, fanouts, id: frameId });
+        const part = renderMapErFanouts({
+          layout,
+          relations,
+          fanouts,
+          id: frameId,
+        });
         stage.insertAdjacentHTML("beforeend", part.html);
         box.insertAdjacentHTML("beforeend", part.tips);
         // 図のツールチップを、追加・削除したマーカーの説明に付け替える

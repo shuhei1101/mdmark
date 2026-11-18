@@ -26,7 +26,12 @@ import {
   mapLinkProblems,
   parseFlowchart,
 } from "./flowchart.ts";
-import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
+import {
+  layoutMap,
+  type MapLayout,
+  type MapOverride,
+  separateWires,
+} from "./layout.ts";
 import {
   type MapFlowArgs,
   type MapPacketMark,
@@ -541,8 +546,8 @@ export const attachMapFlow = (
   let focus: { nodes: string[]; wires: string[] } | undefined;
   /** 指している線の ID */
   let hovered: string | undefined;
-  /** 状態から自動配置し、拡張があれば線を引き直す */
-  const place = (): MapLayout => {
+  /** 状態から自動配置し、拡張があれば線を引き直し、同じ区間の線を並べる */
+  const placeOnce = (spread: number) => {
     const placed = layoutMap(
       chart,
       { collapsed: state.collapsed, entered: state.entered },
@@ -552,14 +557,25 @@ export const attachMapFlow = (
           base: extension?.overrides?.({ collapsed: new Set(state.collapsed) }),
         }),
         nodeFit: config.map.node_fit,
+        spread,
       },
     );
-    return extension?.rewire
+    const rewired: MapLayout = extension?.rewire
       ? {
           ...placed,
           wires: extension.rewire(placed, { collapsed: state.collapsed }),
         }
       : placed;
+    const separated = separateWires(rewired);
+    return {
+      layout: { ...rewired, wires: separated.wires },
+      crowded: separated.crowded,
+    };
+  };
+  /** 配置する: 並べた線が通り道に収まらなければ、足りない幅だけ間を広げて 1 回だけ配置し直す */
+  const place = (): MapLayout => {
+    const first = placeOnce(0);
+    return first.crowded > 0 ? placeOnce(first.crowded).layout : first.layout;
   };
   let layout: MapLayout = place();
   /** 帯で今出している手順の番号 */
@@ -679,7 +695,7 @@ export const attachMapFlow = (
     if (!resizeObserver) return;
     resizeObserver.disconnect();
     for (const element of figure.querySelectorAll(
-      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+      ".mdmark-diagram-stage > .mdmark-diagram-node:is([data-node], .map-closed-group)",
     ))
       resizeObserver.observe(element);
   };
@@ -744,18 +760,24 @@ export const attachMapFlow = (
     save();
     emphasize();
   };
-  /** 描いたノードの中身を測り、見積もりより大きいノードを測った大きさにして配置し直す */
+  /** 描いたノードと閉じたグループの中身を測り、見積もりより大きいものを測った大きさにして配置し直す */
   const measure = () => {
     let changed = false;
-    for (const node of layout.nodes) {
+    const measured = [
+      ...layout.nodes.map((node) => ({ item: node, attribute: "data-node" })),
+      ...layout.groups
+        .filter((group) => group.collapsed)
+        .map((group) => ({ item: group, attribute: "data-group" })),
+    ];
+    for (const { item, attribute } of measured) {
       const element = figure.querySelector<HTMLElement>(
-        `.mdmark-diagram-node[data-node="${CSS.escape(node.id)}"]`,
+        `.mdmark-diagram-node[${attribute}="${CSS.escape(item.id)}"]`,
       );
       if (!element) continue;
       // 枠線を含む高さに、中身があふれた分を足す
       const over = Math.ceil(element.scrollHeight - element.clientHeight);
       if (over > 1) {
-        sizes[node.id] = { w: node.w, h: node.h + over };
+        sizes[item.id] = { w: item.w, h: item.h + over };
         changed = true;
       }
     }

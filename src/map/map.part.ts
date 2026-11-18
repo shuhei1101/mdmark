@@ -1873,10 +1873,10 @@ const erMarkOf = (points: Point[]): { label: Point; vertical: boolean } => {
 
 /**
  * 行が増える関連のマーカーの置き場所。両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、
- * ラベルの反対側を試し、次にラベルの側を試して、どのノードの矩形（左右に空ける幅を含む）とも重ならない最初の置き場所にする。
+ * ラベルの反対側を試し、次にラベルの側を試して、避ける矩形（ノードの左右に空ける幅を含む矩形と、多重度・ラベルの文字の矩形）のどれとも重ならない最初の置き場所にする。
  * 全て重なるときは最も長い区間の中ほどのラベルの反対側
  */
-const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
+const fanoutMarkOf = (points: Point[], avoid: Rect[]): Point => {
   const inner = points.slice(1, -1);
   const segments: Array<[Point, Point]> =
     inner.length >= 2
@@ -1889,12 +1889,12 @@ const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
   );
   const half = MAP_ER.fanoutSize / 2;
   const free = ([x, y]: Point) =>
-    nodes.every(
-      (node) =>
-        x + half <= node.x - MAP_ER.aside ||
-        node.x + node.w + MAP_ER.aside <= x - half ||
-        y + half <= node.y ||
-        node.y + node.h <= y - half,
+    avoid.every(
+      (rect) =>
+        x + half <= rect.x ||
+        rect.x + rect.w <= x - half ||
+        y + half <= rect.y ||
+        rect.y + rect.h <= y - half,
     );
   /** 区間の位置 t の、ラベルの反対側（`away`）かラベルの側の点 */
   const at = ([a, b]: [Point, Point], t: number, away: boolean): Point => {
@@ -2000,18 +2000,26 @@ const placeLabel = (
   return [x, y];
 };
 
-/** 関連の両端の多重度とラベルの SVG。文字は `data-wire-mark` に関連の ID を持ち、薄くする関連は `map-dim` */
-export const renderMapErMarks = (args: {
-  layout: MapLayout;
-  relations: MapErRelation[];
-  dim: ReadonlySet<string>;
-}): string => {
-  const relations = new Map(args.relations.map((item) => [item.id, item]));
-  const texts: string[] = [];
+/** 配置した多重度・ラベルの文字 */
+type ErMark = {
+  wire: string;
+  at: Point;
+  value: string;
+  className: "map-er-cardinality" | "map-er-label";
+  anchor: "start" | "middle" | "end";
+};
+
+/** 関連の両端の多重度と、両端を除いた最も長い区間の中ほどのラベルの置き場所 */
+const placeErMarks = (
+  layout: MapLayout,
+  relations: MapErRelation[],
+): ErMark[] => {
+  const byId = new Map(relations.map((item) => [item.id, item]));
+  const marks: ErMark[] = [];
   const cardinalities: PlacedText[] = [];
   const labels: PlacedText[] = [];
-  for (const wire of args.layout.wires) {
-    const relation = relations.get(wire.id);
+  for (const wire of layout.wires) {
+    const relation = byId.get(wire.id);
     const points = wire.points as Point[];
     if (!relation || points.length < 2) continue;
     for (const [[x, y], [nx], value] of erEnds(wire, relation)) {
@@ -2021,15 +2029,13 @@ export const renderMapErMarks = (args: {
         nx,
         value,
       });
-      texts.push(
-        erMarkText(args.dim, {
-          wire: wire.id,
-          at,
-          value,
-          className: "map-er-cardinality",
-          anchor: right ? "start" : "end",
-        }),
-      );
+      marks.push({
+        wire: wire.id,
+        at,
+        value,
+        className: "map-er-cardinality",
+        anchor: right ? "start" : "end",
+      });
     }
     if (relation.label === undefined) continue;
     const place = erMarkOf(points);
@@ -2038,32 +2044,64 @@ export const renderMapErMarks = (args: {
       vertical: place.vertical,
       width: relation.label.length * MAP_ER.labelChar,
     });
-    texts.push(
-      erMarkText(args.dim, {
-        wire: wire.id,
-        at,
-        value: relation.label,
-        className: "map-er-label",
-        anchor: place.vertical ? "start" : "middle",
-      }),
-    );
+    marks.push({
+      wire: wire.id,
+      at,
+      value: relation.label,
+      className: "map-er-label",
+      anchor: place.vertical ? "start" : "middle",
+    });
   }
+  return marks;
+};
+
+/** 多重度・ラベルの文字の矩形（文字の幅と高さの見積もり） */
+const erMarkRect = (mark: ErMark): Rect => {
+  const label = mark.className === "map-er-label";
+  const w =
+    mark.value.length * (label ? MAP_ER.labelChar : MAP_ER.cardinalityChar);
+  const h = label ? MAP_ER.labelLine : MAP_ER.cardinalityLine;
+  const [x, y] = mark.at;
+  const left =
+    mark.anchor === "middle" ? x - w / 2 : mark.anchor === "end" ? x - w : x;
+  return { x: left, y: y - h, w, h };
+};
+
+/** 関連の両端の多重度とラベルの SVG。文字は `data-wire-mark` に関連の ID を持ち、薄くする関連は `map-dim` */
+export const renderMapErMarks = (args: {
+  layout: MapLayout;
+  relations: MapErRelation[];
+  dim: ReadonlySet<string>;
+}): string => {
+  const texts = placeErMarks(args.layout, args.relations).map((mark) =>
+    erMarkText(args.dim, mark),
+  );
   return `<svg class="map-er-marks" width="${args.layout.width}" height="${args.layout.height}" aria-hidden="true">${texts.join("")}</svg>`;
 };
 
 /** 行が増える関連のマーカー（`button.map-er-fanout`）と、その説明のツールチップ */
 export const renderMapErFanouts = (args: {
   layout: MapLayout;
+  relations: MapErRelation[];
   fanouts: MapErFanout[];
   /** ツールチップの id の頭 */
   id: string;
 }): MapPart => {
   const tips = createTips(`${args.id}-fanout`);
+  const avoid: Rect[] = [
+    ...args.layout.nodes.map((node) => ({
+      x: node.x - MAP_ER.aside,
+      y: node.y,
+      w: node.w + MAP_ER.aside * 2,
+      h: node.h,
+    })),
+    ...placeErMarks(args.layout, args.relations).map(erMarkRect),
+  ];
   const html = args.fanouts
     .flatMap((fanout, index) => {
       const wire = args.layout.wires.find((item) => item.id === fanout.wire);
       if (!wire || wire.points.length < 2) return [];
-      const mark = fanoutMarkOf(wire.points as Point[], args.layout.nodes);
+      const mark = fanoutMarkOf(wire.points as Point[], avoid);
       const owner = `fanout:${index}`;
       const tip = tips.add({
         kind: "wire",
@@ -2155,6 +2193,7 @@ export const renderMapErDiagram = (args: MapErArgs): MapPart => {
   });
   const fanouts = renderMapErFanouts({
     layout: args.layout,
+    relations: args.relations,
     fanouts: args.fanouts,
     id,
   });

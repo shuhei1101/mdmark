@@ -9,7 +9,7 @@ states:
     notes:
       定義: モックの `C4`・`C4_DATA`（`docs/mock/refs/596/assets/samples.js`）
   - name: BoundaryCollapsed
-    description: 境界「通販」を閉じた。「要素 3 件」を持つ 1 つのノードになり、中への関係が相手ごとに 1 本にまとまる
+    description: 境界「通販」を閉じた。名前の行の下に「要素 3 件」の行を持つ 1 つのノードになり、中への関係が相手ごとに 1 本にまとまる
     args:
       - name: collapsed
         value: '["shop"]'
@@ -55,7 +55,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 閉じた境界の ID。名前の後ろに「要素 {数} 件」を出す
+    description: 閉じた境界の ID。名前の行の下の行に「要素 {数} 件」を出す
   - name: entered
     type: 文字列
     required: false

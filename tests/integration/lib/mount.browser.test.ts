@@ -15235,6 +15235,24 @@ const MAP_WAIT_MS = 10_000;
 /** map の図の見本の構成図（見本の Mermaid に太い線を 1 本足す） */
 const MAP_FLOW_THICK = `${MAP_FLOW}  mount ==> frame\n`;
 
+/** 太い線を足した見本の構成図に、同じグループの同じ列に並ぶ 3 つのノードから別のグループのノードへ 1 本ずつ出る線を足す */
+const MAP_FLOW_PARALLEL = `${MAP_FLOW_THICK}  subgraph from [送り元]
+    direction TB
+    a1["送り元 1"]:::step
+    a2["送り元 2"]:::step
+    a3["送り元 3"]:::step
+  end
+  subgraph to [送り先]
+    direction TB
+    b1["送り先 1"]:::step
+    b2["送り先 2"]:::step
+    b3["送り先 3"]:::step
+  end
+  a1 --> b3
+  a2 --> b1
+  a3 --> b2
+`;
+
 /** 矩形 */
 type MapRect = { left: number; top: number; right: number; bottom: number };
 
@@ -15354,7 +15372,7 @@ test("test_normal_when_map_flowchart_drawn", async () => {
   const { figures } = await mountMap(
     mapRange({
       args: '{"title": "全体の構成"}',
-      mermaid: MAP_FLOW_THICK,
+      mermaid: MAP_FLOW_PARALLEL,
       data: MAP_DATA,
     }),
   );
@@ -15376,7 +15394,7 @@ test("test_normal_when_map_flowchart_drawn", async () => {
       ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
     ),
   ];
-  expect(nodes.length).toBe(10);
+  expect(nodes.length).toBe(16);
   for (const [i, a] of nodes.entries()) {
     for (const b of nodes.slice(i + 1)) {
       expect(
@@ -15393,6 +15411,13 @@ test("test_normal_when_map_flowchart_drawn", async () => {
     );
     expect(kind.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);
   }
+  // 検証: 同じ列の 3 つのノードから出る線を含め、同じ向きの区間が同じ直線の上で重ならない
+  for (const id of ["a1->b3", "a2->b1", "a3->b2"])
+    expect(
+      figure.querySelector(`.map-wire-hit[data-wire="${id}"]`),
+      id,
+    ).not.toBeNull();
+  expect(mapWireOverlaps(figure)).toEqual([]);
   // 検証: 種類の行と形・色
   const store = find<HTMLElement>(figure, '[data-node="index"]');
   expect(store.dataset.shape).toBe("rect");
@@ -15517,6 +15542,7 @@ test("test_normal_when_map_group_entered_and_collapsed", async () => {
   expect(
     closed.querySelector('button[aria-label="データを開く"]'),
   ).not.toBeNull();
+  expectCountBelowTitle(closed, "ノード 2 件");
   const toStore = [
     ...figure().querySelectorAll<SVGPathElement>(
       ".mdmark-diagram-wire[data-wire]",
@@ -16649,6 +16675,85 @@ const MAP_STATE_MARKDOWN = mapRange({
   data: MAP_STATE_DATA,
 });
 
+/** 同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」。同じ点から出る・入る線の端の区間は除く） */
+function mapWireOverlaps(figure: Element): string[] {
+  const paths = [
+    ...figure.querySelectorAll<SVGPathElement>(
+      ".map-wire-hits > .map-wire-hit[data-wire]",
+    ),
+  ];
+  const pointsOf = (path: SVGPathElement) =>
+    [
+      ...(path.getAttribute("d") ?? "").matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g),
+    ].map((match) => [Number(match[1]), Number(match[2])] as const);
+  const ends = new Map<string, number>();
+  for (const points of paths.map(pointsOf))
+    for (const end of [points[0], points.at(-1)])
+      if (end) ends.set(`${end}`, (ends.get(`${end}`) ?? 0) + 1);
+  const sharedEnd = (end: readonly [number, number] | undefined) =>
+    end !== undefined && (ends.get(`${end}`) ?? 0) > 1;
+  const segments = paths.flatMap((path) => {
+    const points = pointsOf(path);
+    const last = points.length - 2;
+    return points
+      .slice(1)
+      .map((end, index) => ({
+        wire: path.dataset.wire ?? "",
+        from: points[index] as readonly [number, number],
+        to: end,
+        index,
+      }))
+      .filter(
+        (segment) =>
+          !(segment.index === 0 && sharedEnd(segment.from)) &&
+          !(segment.index === last && sharedEnd(segment.to)),
+      );
+  });
+  const overlap = (
+    a: (typeof segments)[number],
+    b: (typeof segments)[number],
+  ): number => {
+    const axis = a.from[1] === a.to[1] ? 0 : 1;
+    const other = 1 - axis;
+    const straight = (s: typeof a) =>
+      s.from[other] === s.to[other] && s.from[axis] !== s.to[axis];
+    if (
+      !straight(a) ||
+      !straight(b) ||
+      (b.from[1] === b.to[1]) !== (axis === 0)
+    )
+      return 0;
+    if (Math.abs(a.from[other] - b.from[other]) > 0.5) return 0;
+    const range = (s: typeof a) => [
+      Math.min(s.from[axis], s.to[axis]),
+      Math.max(s.from[axis], s.to[axis]),
+    ];
+    const [aMin, aMax] = range(a) as [number, number];
+    const [bMin, bMax] = range(b) as [number, number];
+    return Math.min(aMax, bMax) - Math.max(aMin, bMin);
+  };
+  const pairs = new Set<string>();
+  for (const [index, a] of segments.entries())
+    for (const b of segments.slice(index + 1))
+      if (a.wire !== b.wire && overlap(a, b) > 1)
+        pairs.add(`${a.wire} と ${b.wire}`);
+  return [...pairs];
+}
+
+/** 閉じたグループのタイトルの行の下に数の行があり、2 つの行の矩形が重ならず、どちらもノードに収まるかを確かめる */
+function expectCountBelowTitle(closed: Element, count: string): void {
+  const head = find<HTMLElement>(closed, ".map-group-head");
+  const row = find<HTMLElement>(closed, ".map-closed-count");
+  expect(row.textContent).toBe(count);
+  const box = closed.getBoundingClientRect();
+  const headBox = head.getBoundingClientRect();
+  const rowBox = row.getBoundingClientRect();
+  expect(rowBox.top).toBeGreaterThanOrEqual(headBox.bottom - 0.5);
+  expect(mapOverlaps(headBox, rowBox)).toBe(false);
+  expect(rowBox.bottom).toBeLessThanOrEqual(box.bottom + 0.5);
+  expect(headBox.top).toBeGreaterThanOrEqual(box.top - 0.5);
+}
+
 /** 線の終わりの点（画面の座標） */
 function mapWireEnd(figure: Element, wire: string): { x: number; y: number } {
   const path = find<SVGPathElement>(
@@ -16690,6 +16795,8 @@ test("test_normal_when_map_er_drawn", async () => {
     }),
   );
   const figure = figures()[0] as HTMLElement;
+  // 検証: 分類の外の「顧客」「商品」から中へ出る線を含め、同じ向きの区間が同じ直線の上で重ならない
+  expect(mapWireOverlaps(figure)).toEqual([]);
   // 検証: タイトル
   expect(find(figure, ".mdmark-diagram-title").textContent).toBe("記録の構造");
   // 検証: テーブルの列の行と、ノード・グループの重なり
@@ -16900,6 +17007,8 @@ test("test_normal_when_map_state_played", async () => {
   // 準備・実行
   const { figures } = await mountMap(MAP_STATE_MARKDOWN);
   const figure = () => figures()[0] as HTMLElement;
+  // 検証: 外の状態から「実行中」とその中へ入る遷移を含め、同じ向きの区間が同じ直線の上で重ならない
+  expect(mapWireOverlaps(figure())).toEqual([]);
   // 検証: 開始・終了・分岐の形状と、as で付けた名前
   expect(mapNode(figure(), "start_root").dataset.shape).toBe("start");
   expect(mapNode(figure(), "end_root").dataset.shape).toBe("end");
@@ -17136,9 +17245,10 @@ test("test_normal_when_map_er_state_toggled", async () => {
   expect(end.y).toBeLessThanOrEqual(row.bottom);
   // 実行・検証: 分類を閉じると「テーブル 3 件」が出て、中への関連が相手ごとに 1 本にまとまる
   find<HTMLButtonElement>(er(), 'button[aria-label="記録を閉じる"]').click();
-  expect(
-    find<HTMLElement>(er(), '.map-closed-group[data-group="記録"]').textContent,
-  ).toContain("テーブル 3 件");
+  expectCountBelowTitle(
+    find<HTMLElement>(er(), '.map-closed-group[data-group="記録"]'),
+    "テーブル 3 件",
+  );
   const into = [
     ...er().querySelectorAll<SVGPathElement>(".mdmark-diagram-wire[data-wire]"),
   ]
@@ -17177,10 +17287,10 @@ test("test_normal_when_map_er_state_toggled", async () => {
     state(),
     'button[aria-label="実行中を閉じる"]',
   ).click();
-  expect(
-    find<HTMLElement>(state(), '.map-closed-group[data-group="実行中"]')
-      .textContent,
-  ).toContain("状態 2 件");
+  expectCountBelowTitle(
+    find<HTMLElement>(state(), '.map-closed-group[data-group="実行中"]'),
+    "状態 2 件",
+  );
 });
 
 /** クラス図の map を持つ Markdown */
@@ -17194,6 +17304,13 @@ const MAP_CLASS_MARKDOWN = mapRange({
 const MAP_ARCH_MARKDOWN = mapRange({
   args: '{"title": "配置の構成"}',
   mermaid: MAP_ARCH,
+  data: MAP_ARCH_DATA,
+});
+
+/** アーキテクチャ図の記法の末尾に、「アプリ」の 2 つの service から外の「ファイル置き場」へ 1 本ずつ出る線を足した map を持つ Markdown */
+const MAP_ARCH_PARALLEL_MARKDOWN = mapRange({
+  args: '{"title": "配置の構成"}',
+  mermaid: `${MAP_ARCH}  api:R -- L:files\n  worker:R -- L:files\n`,
   data: MAP_ARCH_DATA,
 });
 
@@ -17252,6 +17369,8 @@ test("test_normal_when_map_class_drawn", async () => {
   // 検証: タイトルと、mermaid のライブラリを読み込まない
   expect(find(figure, ".mdmark-diagram-title").textContent).toBe("型の構成");
   expect(mermaidLoads()).toBe(before);
+  // 検証: 「形状」の外のクラスから中へ出る線を含め、同じ向きの区間が同じ直線の上で重ならない
+  expect(mapWireOverlaps(figure)).toEqual([]);
   // 検証: 注釈・型の引数・区画・静的と抽象
   expect(
     find(mapNode(figure, "図形"), ".map-class-annotation").textContent,
@@ -17449,7 +17568,7 @@ test("test_normal_when_map_class_path_selected", async () => {
 test("test_normal_when_map_architecture_drawn", async () => {
   // 準備・実行
   const before = mermaidLoads();
-  const { figures } = await mountMap(MAP_ARCH_MARKDOWN);
+  const { figures } = await mountMap(MAP_ARCH_PARALLEL_MARKDOWN);
   const figure = figures()[0] as HTMLElement;
   expect(mermaidLoads()).toBe(before);
   // 検証: service のアイコン・group のタイトルのアイコン・入れ子
@@ -17500,14 +17619,19 @@ test("test_normal_when_map_architecture_drawn", async () => {
   expect(rect("worker").top).toBeGreaterThan(rect("api").bottom);
   expect(rect("files").top).toBeGreaterThan(rect("hub").bottom);
   expect(rect("db").left).toBeGreaterThan(rect("hub").right);
+  // 検証: 「アプリ」の 2 つの service から出る線を含め、同じ向きの区間が同じ直線の上で重ならない
+  expect(atSideMiddle(mapWireStart(figure, "r7"), rect("api"), "right")).toBe(
+    true,
+  );
+  expect(
+    atSideMiddle(mapWireStart(figure, "r8"), rect("worker"), "right"),
+  ).toBe(true);
+  expect(mapWireOverlaps(figure)).toEqual([]);
   // 検証: `-->` の 2 本だけが矢じりを持つ
   expect(["r1", "r2"].map((id) => hasHead(figure, id))).toEqual([true, true]);
-  expect(["r3", "r4", "r5", "r6"].map((id) => hasHead(figure, id))).toEqual([
-    false,
-    false,
-    false,
-    false,
-  ]);
+  expect(
+    ["r3", "r4", "r5", "r6", "r7", "r8"].map((id) => hasHead(figure, id)),
+  ).toEqual([false, false, false, false, false, false]);
   // 検証: 説明のツールチップと、補足の layout の座標
   const info = find<HTMLButtonElement>(
     mapNode(figure, "api"),
@@ -17548,6 +17672,8 @@ test("test_normal_when_map_c4_drawn", async () => {
   const before = mermaidLoads();
   const { figures } = await mountMap(MAP_C4_MARKDOWN);
   const figure = figures()[0] as HTMLElement;
+  // 検証: 「自社」の外の 2 つの要素から境界の中へ出る線を含め、同じ向きの区間が同じ直線の上で重ならない
+  expect(mapWireOverlaps(figure)).toEqual([]);
   // 検証: タイトルは Mermaid の title
   expect(figure.querySelector(".mdmark-diagram-title")?.textContent).toBe(
     "注文のシステムの全体",
@@ -17664,7 +17790,7 @@ test("test_normal_when_map_class_arch_c4_toggled", async () => {
     arch(),
     '.map-closed-group[data-group="app"]',
   );
-  expect(closedApp.textContent).toContain("service 2 件");
+  expectCountBelowTitle(closedApp, "service 2 件");
   expect(
     atSideMiddle(
       mapWireStart(arch(), "app->hub"),
@@ -17682,9 +17808,10 @@ test("test_normal_when_map_class_arch_c4_toggled", async () => {
   expect(hasHead(arch(), "app->hub")).toBe(false);
   // 実行・検証: 境界「通販」を閉じる
   find<HTMLButtonElement>(c4(), 'button[data-group-toggle="shop"]').click();
-  expect(
-    find<HTMLElement>(c4(), '.map-closed-group[data-group="shop"]').textContent,
-  ).toContain("要素 3 件");
+  expectCountBelowTitle(
+    find<HTMLElement>(c4(), '.map-closed-group[data-group="shop"]'),
+    "要素 3 件",
+  );
   const into = [
     ...c4().querySelectorAll<SVGPathElement>(".mdmark-diagram-wire[data-wire]"),
   ]

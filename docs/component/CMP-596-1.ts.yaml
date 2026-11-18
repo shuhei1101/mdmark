@@ -19,7 +19,7 @@ states:
       - name: entered
         value: 形状
   - name: NamespaceCollapsed
-    description: namespace「形状」を閉じた。「クラス 3 件」を持つ 1 つのノードになる
+    description: namespace「形状」を閉じた。名前の行の下に「クラス 3 件」の行を持つ 1 つのノードになる
     args:
       - name: collapsed
         value: '["形状"]'
@@ -65,7 +65,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 閉じた namespace とメンバーを閉じたクラスの ID。閉じた namespace は「クラス {数} 件」、閉じたクラスは名前と「メンバー {数}」の開閉のボタンの 1 行
+    description: 閉じた namespace とメンバーを閉じたクラスの ID。閉じた namespace は名前の行の下の行に「クラス {数} 件」、閉じたクラスは名前と「メンバー {数}」の開閉のボタンの 1 行
   - name: entered
     type: 文字列
     required: false

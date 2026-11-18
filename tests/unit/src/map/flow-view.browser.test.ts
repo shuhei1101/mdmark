@@ -1,10 +1,27 @@
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, expect, onTestFinished, test, vi } from "vitest";
 import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 import { CONFIG, DATA, FLOW, mapRange } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
+// 配置と並べる処理の呼び出しを数えられるようにする（既定は実際の処理を呼ぶ）
+vi.mock("../../../../src/map/layout.ts", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../../../src/map/layout.ts")>();
+  const separate = (actual as Record<string, unknown>).separateWires as
+    | ((layout: unknown) => unknown)
+    | undefined;
+  return {
+    ...actual,
+    layoutMap: vi.fn(actual.layoutMap),
+    separateWires: vi.fn((layout: { wires: unknown[] }) =>
+      separate ? separate(layout) : { wires: layout.wires, crowded: 0 },
+    ),
+  };
+});
+
 /** 構成図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadFlowView = () => import("../../../../src/map/flow-view.ts");
+const loadLayout = () => import("../../../../src/map/layout.ts");
 const loadSpec = () => import("../../../../src/map/spec.ts");
 const loadConfig = () => import("../../../../src/config.ts");
 
@@ -320,4 +337,90 @@ test("test_attach_map_flow_when_node_hit_keys", async () => {
     `#${CSS.escape(info.getAttribute("aria-describedby") ?? "")}`,
   );
   expect(tip?.hidden).toBe(false);
+});
+
+// 並べた線が矩形に入るときは間を広げて配置し直す（正常系）
+test("test_attach_map_flow_when_crowded", async () => {
+  // 準備
+  const layout = await loadLayout();
+  const layoutMap = vi.mocked(layout.layoutMap);
+  const separateWires = vi.mocked(
+    (
+      layout as unknown as {
+        separateWires: (value: { wires: Array<{ id: string }> }) => unknown;
+      }
+    ).separateWires,
+  );
+  layoutMap.mockClear();
+  separateWires.mockClear();
+  const marked: Array<[number, number]> = [
+    [3, 3],
+    [3, 7],
+  ];
+  const original = separateWires.getMockImplementation();
+  // 2 回目以降（広げて配置し直した後と、描いた後に測り直したとき）は印の点の線を返す
+  separateWires
+    .mockImplementation((value) => ({
+      wires: value.wires.map((wire, index) =>
+        index === 0 ? { ...wire, points: marked } : wire,
+      ),
+      crowded: 0,
+    }))
+    .mockImplementationOnce((value) => ({ wires: value.wires, crowded: 16 }));
+  onTestFinished(() => {
+    if (original) separateWires.mockImplementation(original);
+  });
+  // 実行
+  const root = await setUp();
+  // 検証
+  expect(layoutMap.mock.calls.length).toBeGreaterThanOrEqual(2);
+  expect(
+    (layoutMap.mock.calls[1]?.[2] as { spread?: number } | undefined)?.spread,
+  ).toBe(16);
+  const first = (
+    layoutMap.mock.results[1]?.value as {
+      wires: Array<{ id: string }>;
+    }
+  )?.wires[0]?.id;
+  const hit = root.querySelector(
+    `.map-wire-hit[data-wire="${CSS.escape(first ?? "")}"]`,
+  );
+  expect(hit?.getAttribute("d")).toBe("M3 3L3 7");
+});
+
+// 閉じたグループの中身を測る（正常系）
+test("test_attach_map_flow_when_closed_group_measured", async () => {
+  // 準備（store を閉じた状態を保ち、閉じたグループの中身を 10px あふれさせる）
+  const layout = await loadLayout();
+  const layoutMap = vi.mocked(layout.layoutMap);
+  layoutMap.mockClear();
+  sessionStorage.setItem(
+    `mdmark-map:${location.pathname}#1`,
+    JSON.stringify({ collapsed: ["store"] }),
+  );
+  const original = Object.getOwnPropertyDescriptor(
+    Element.prototype,
+    "scrollHeight",
+  ) as PropertyDescriptor;
+  vi.spyOn(Element.prototype, "scrollHeight", "get").mockImplementation(
+    function (this: Element) {
+      const height = original.get?.call(this) as number;
+      return this.classList.contains("map-closed-group")
+        ? (this as HTMLElement).clientHeight + 10
+        : height;
+    },
+  );
+  // 実行
+  await setUp();
+  // 検証
+  const firstStore = (
+    layoutMap.mock.results[0]?.value as
+      | { groups: Array<{ id: string; h: number }> }
+      | undefined
+  )?.groups.find((group) => group.id === "store");
+  const second = layoutMap.mock.calls[1]?.[2] as
+    | { overrides: Record<string, { size?: { h: number } }> }
+    | undefined;
+  expect(firstStore).toBeDefined();
+  expect(second?.overrides.store?.size?.h).toBe((firstStore?.h ?? 0) + 10);
 });

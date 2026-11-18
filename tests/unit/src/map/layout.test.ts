@@ -341,3 +341,390 @@ test("test_layout_map_when_rankless", async () => {
   const wire = layout.wires.find((item) => item.id === "a->b");
   expect(wire?.points.length ?? 0).toBeGreaterThanOrEqual(2);
 });
+
+// 閉じたグループの高さ（正常系）
+test("test_layout_map_when_collapsed_height", async () => {
+  // 準備・実行（測った大きさの高さ 30px は、2 つの行が収まる高さに満たない）
+  const layout = await laid(
+    { collapsed: ["store"] },
+    { store: { size: { w: 120, h: 30 } } },
+  );
+  // 検証（タイトルの行 36px + 数の行 17px + 余白 上下 6px）
+  const store = layout.groups.find((group) => group.id === "store");
+  expect(store?.collapsed).toBe(true);
+  expect(store?.h ?? 0).toBeGreaterThanOrEqual(59);
+});
+
+// 間を広げる（正常系）
+test("test_layout_map_when_spread", async () => {
+  // 準備
+  const { layoutMap } = await loadLayout();
+  const { parseFlowchart } = await loadFlowchart();
+  const chart = parseFlowchart("flowchart LR\n  A --> B\n  A --> C\n");
+  const place = (spread?: number) =>
+    layoutMap(
+      chart,
+      { collapsed: [] },
+      { overrides: {}, nodeFit: "height", spread },
+    );
+  // 実行
+  const plain = place();
+  const spread = place(16);
+  // 検証（左から右の図の同じ段は縦に、隣の段は横に並ぶ）
+  const nodeOf = (layout: typeof plain, id: string) =>
+    layout.nodes.find((node) => node.id === id) as Rect;
+  const gaps = (layout: typeof plain) => {
+    const a = nodeOf(layout, "A");
+    const b = nodeOf(layout, "B");
+    const c = nodeOf(layout, "C");
+    const [upper, lower] = b.y < c.y ? [b, c] : [c, b];
+    return {
+      item: lower.y - (upper.y + upper.h),
+      rank: b.x - (a.x + a.w),
+    };
+  };
+  expect(gaps(spread).item).toBe(gaps(plain).item + 16);
+  expect(gaps(spread).rank).toBe(gaps(plain).rank + 16);
+});
+
+type Point = [number, number];
+
+/** 2 本の線の、同じ向きで同じ直線の上に重なる区間の長さの合計 */
+const collinearOverlap = (a: Point[], b: Point[]): number => {
+  let total = 0;
+  for (const [i, p] of a.slice(1).entries()) {
+    const p0 = a[i] as Point;
+    for (const [j, q] of b.slice(1).entries()) {
+      const q0 = b[j] as Point;
+      // 縦の区間どうしは x、横の区間どうしは y が同じときに重なる範囲を測る
+      const axis =
+        p0[0] === p[0] && q0[0] === q[0] && p0[0] === q0[0]
+          ? 1
+          : p0[1] === p[1] && q0[1] === q[1] && p0[1] === q0[1]
+            ? 0
+            : undefined;
+      if (axis === undefined) continue;
+      const low = Math.max(
+        Math.min(p0[axis], p[axis]),
+        Math.min(q0[axis], q[axis]),
+      );
+      const high = Math.min(
+        Math.max(p0[axis], p[axis]),
+        Math.max(q0[axis], q[axis]),
+      );
+      total += Math.max(0, high - low);
+    }
+  }
+  return total;
+};
+
+/** 全ての 2 本の組の、同じ向きで同じ直線の上に重なる区間の長さの合計 */
+const totalOverlap = (wires: Array<{ points: Point[] }>): number =>
+  wires
+    .flatMap((a, i) =>
+      wires.slice(i + 1).map((b) => collinearOverlap(a.points, b.points)),
+    )
+    .reduce((sum, value) => sum + value, 0);
+
+// 先に引いた線の区間を避ける（正常系）
+test("test_route_wires_when_used", async () => {
+  // 準備
+  const { MAP_LAYOUT } = await loadLayout();
+  const source =
+    "flowchart LR\n  subgraph A [A]\n    a1\n    a2\n    a3\n  end\n  subgraph B [B]\n    b1\n    b2\n    b3\n  end\n  a1 --> b3\n  a2 --> b1\n  a3 --> b2\n";
+  const options = { nodeFit: "height" as const, source };
+  const weights = MAP_LAYOUT as Record<string, number>;
+  const saved = weights.usedCost;
+  // 実行
+  weights.usedCost = 0;
+  const free = await laid({}, {}, options);
+  if (saved === undefined) delete weights.usedCost;
+  else weights.usedCost = saved;
+  const used = await laid({}, {}, options);
+  // 検証
+  expect(totalOverlap(used.wires)).toBeLessThan(totalOverlap(free.wires));
+});
+
+type TestWire = { id: string; from: string; to: string; points: Point[] };
+
+/** 並べる処理に渡す配置（ノードと線だけを持つ） */
+const layoutOf = (nodes: Array<Rect & { id: string }>, wires: TestWire[]) => ({
+  width: 1000,
+  height: 1000,
+  nodes: nodes.map((node) => ({
+    ...node,
+    lines: [node.id],
+    faded: false,
+    ancestors: [],
+  })),
+  groups: [],
+  wires: wires.map((wire) => ({
+    ...wire,
+    label: undefined,
+    merged: undefined,
+  })),
+});
+
+/** 左右の 2 つのノード L・R の間を縦に通る n 本の線（上のノード S{i} から下のノード T{i} へ） */
+const corridorLayout = (options: {
+  n: number;
+  lineX: number;
+  rightX: number;
+}) => {
+  const { n, lineX, rightX } = options;
+  const nodes: Array<Rect & { id: string }> = [
+    { id: "L", x: 0, y: 0, w: 100, h: 300 },
+    { id: "R", x: rightX, y: 0, w: 100, h: 300 },
+  ];
+  const wires: TestWire[] = [];
+  for (let i = 1; i <= n; i += 1) {
+    // 上下の横の区間は線ごとに y を変え、縦の区間だけを x = lineX に重ねる
+    const top = -10 - 8 * i;
+    const bottom = 310 + 8 * i;
+    const sx = -200 + 40 * i;
+    const tx = rightX + 140 + 40 * i;
+    nodes.push(
+      { id: `S${i}`, x: sx - 10, y: -100, w: 20, h: 40 },
+      { id: `T${i}`, x: tx - 10, y: 360, w: 20, h: 40 },
+    );
+    wires.push({
+      id: `S${i}->T${i}`,
+      from: `S${i}`,
+      to: `T${i}`,
+      points: [
+        [sx, -60],
+        [sx, top],
+        [lineX, top],
+        [lineX, bottom],
+        [tx, bottom],
+        [tx, 360],
+      ],
+    });
+  }
+  return layoutOf(nodes, wires);
+};
+
+/** 線ごとの、L・R の間（y が 0〜300）にかかる縦の区間の x 座標（小さい順） */
+const corridorXs = (wires: Array<{ points: Point[] }>): number[] =>
+  wires
+    .map((wire) => {
+      const k = wire.points.findIndex((p, index) => {
+        const previous = wire.points[index - 1];
+        return (
+          previous !== undefined &&
+          previous[0] === p[0] &&
+          Math.min(previous[1], p[1]) < 300 &&
+          Math.max(previous[1], p[1]) > 0
+        );
+      });
+      return (wire.points[k] as Point)[0];
+    })
+    .sort((a, b) => a - b);
+
+/** 線が縦横の折れ線か */
+const orthogonal = (points: Point[]): boolean =>
+  points.slice(1).every((p, index) => {
+    const previous = points[index] as Point;
+    return previous[0] === p[0] || previous[1] === p[1];
+  });
+
+// 同じ区間の 3 本を並べる（正常系）
+test("test_separate_wires", async () => {
+  // 準備（L の右の辺から 40px の線。通り道は clearance を含めて 112〜168px）
+  const { separateWires } = await loadLayout();
+  const layout = corridorLayout({ n: 3, lineX: 140, rightX: 180 });
+  // 実行
+  const result = separateWires(layout);
+  // 検証
+  expect(corridorXs(result.wires)).toEqual([132, 140, 148]);
+  expect(totalOverlap(result.wires)).toBe(0);
+  for (const wire of result.wires) expect(orthogonal(wire.points)).toBe(true);
+  expect(result.crowded).toBe(0);
+});
+
+// 辺から 12px の格子の線を通る束（正常系）
+test("test_separate_wires_when_grid_line", async () => {
+  // 準備（L の右の辺から 12px の線。通り道は 112〜168px で、中ほどは 140px）
+  const { separateWires } = await loadLayout();
+  const layout = corridorLayout({ n: 5, lineX: 112, rightX: 180 });
+  const left = layout.nodes.find((node) => node.id === "L") as Rect;
+  const right = layout.nodes.find((node) => node.id === "R") as Rect;
+  // 実行
+  const result = separateWires(layout);
+  // 検証
+  expect(corridorXs(result.wires)).toEqual([124, 132, 140, 148, 156]);
+  for (const wire of result.wires) {
+    for (const [k, point] of wire.points.slice(1).entries()) {
+      const previous = wire.points[k] as Point;
+      expect(segmentCrosses(previous, point, left)).toBe(false);
+      expect(segmentCrosses(previous, point, right)).toBe(false);
+    }
+  }
+  expect(result.crowded).toBe(0);
+});
+
+// 通り道の幅が足りない（正常系）
+test("test_separate_wires_when_crowded", async () => {
+  // 準備（通り道は 112〜128px の 16px で、束の幅 32px に 16px 足りない）
+  const { separateWires } = await loadLayout();
+  const narrow = corridorLayout({ n: 5, lineX: 112, rightX: 140 });
+  // spread: 16 で配置し直すと、R が 16px 右へ動く
+  const widened = corridorLayout({ n: 5, lineX: 112, rightX: 156 });
+  // 実行
+  const crowded = separateWires(narrow).crowded;
+  const after = separateWires(widened).crowded;
+  // 検証
+  expect(crowded).toBe(16);
+  expect(after).toBe(0);
+});
+
+// 同じ点から出る線の端（正常系）
+test("test_separate_wires_when_shared_end", async () => {
+  // 準備（N の下の辺の中央から出て、最初の区間だけが重なる 2 本）
+  const { separateWires } = await loadLayout();
+  const wires: TestWire[] = [
+    {
+      id: "N->P",
+      from: "N",
+      to: "P",
+      points: [
+        [50, 40],
+        [50, 100],
+        [200, 100],
+      ],
+    },
+    {
+      id: "N->Q",
+      from: "N",
+      to: "Q",
+      points: [
+        [50, 40],
+        [50, 100],
+        [-100, 100],
+      ],
+    },
+  ];
+  const layout = layoutOf(
+    [
+      { id: "N", x: 0, y: 0, w: 100, h: 40 },
+      { id: "P", x: 200, y: 80, w: 60, h: 40 },
+      { id: "Q", x: -160, y: 80, w: 60, h: 40 },
+    ],
+    wires,
+  );
+  // 実行
+  const result = separateWires(layout);
+  // 検証
+  expect(result.wires.map((wire) => wire.points)).toEqual(
+    wires.map((wire) => wire.points),
+  );
+});
+
+// 端点を含む区間は端点を動かさずに並べる（正常系）
+test("test_separate_wires_when_end_segment", async () => {
+  // 準備（A の下の辺から下へ出る線と、B の上の辺から上へ出る線が、x = 50 の縦の区間で重なる）
+  const { separateWires } = await loadLayout();
+  const wires: TestWire[] = [
+    {
+      id: "A->C",
+      from: "A",
+      to: "C",
+      points: [
+        [50, 40],
+        [50, 250],
+        [300, 250],
+      ],
+    },
+    {
+      id: "B->D",
+      from: "B",
+      to: "D",
+      points: [
+        [50, 300],
+        [50, 100],
+        [300, 100],
+      ],
+    },
+  ];
+  const layout = layoutOf(
+    [
+      { id: "A", x: 0, y: 0, w: 100, h: 40 },
+      { id: "B", x: 0, y: 300, w: 100, h: 40 },
+      { id: "C", x: 300, y: 230, w: 60, h: 40 },
+      { id: "D", x: 300, y: 80, w: 60, h: 40 },
+    ],
+    wires,
+  );
+  // 実行
+  const result = separateWires(layout);
+  // 検証
+  for (const [k, wire] of result.wires.entries()) {
+    const original = wires[k] as TestWire;
+    expect(wire.points[0]).toEqual(original.points[0]);
+    expect(wire.points.at(-1)).toEqual(original.points.at(-1));
+    expect(orthogonal(wire.points)).toBe(true);
+  }
+  expect(totalOverlap(result.wires)).toBe(0);
+  expect(result.crowded).toBe(0);
+});
+
+// 長さが clearance 以下の端の区間（正常系）
+test("test_separate_wires_when_short_end", async () => {
+  // 準備（A の下の辺から 12px 進んで右へ折れる線と、B の上の辺から上へ出る線が、x = 50 の縦の区間で重なる）
+  const { separateWires } = await loadLayout();
+  const wires: TestWire[] = [
+    {
+      id: "A->C",
+      from: "A",
+      to: "C",
+      points: [
+        [50, 40],
+        [50, 52],
+        [300, 52],
+      ],
+    },
+    {
+      id: "B->D",
+      from: "B",
+      to: "D",
+      points: [
+        [50, 300],
+        [50, 47],
+        [300, 47],
+      ],
+    },
+  ];
+  const layout = layoutOf(
+    [
+      { id: "A", x: 0, y: 0, w: 100, h: 40 },
+      { id: "B", x: 0, y: 300, w: 100, h: 40 },
+      { id: "C", x: 300, y: 40, w: 60, h: 24 },
+      { id: "D", x: 380, y: 35, w: 60, h: 24 },
+    ],
+    wires,
+  );
+  // 実行
+  const result = separateWires(layout);
+  // 検証
+  for (const [k, wire] of result.wires.entries()) {
+    const original = wires[k] as TestWire;
+    expect(wire.points[0]).toEqual(original.points[0]);
+    expect(wire.points.at(-1)).toEqual(original.points.at(-1));
+    for (const [i, point] of wire.points.slice(1).entries()) {
+      const previous = wire.points[i] as Point;
+      expect(point, `${wire.id} の長さ 0 の区間`).not.toEqual(previous);
+      const next = wire.points[i + 2];
+      if (next === undefined) continue;
+      // 同じ直線の上で向きを戻さない
+      const axis = previous[0] === point[0] && point[0] === next[0] ? 1 : 0;
+      const sameLine =
+        axis === 1 || (previous[1] === point[1] && point[1] === next[1]);
+      if (sameLine)
+        expect(
+          Math.sign(point[axis] - previous[axis]),
+          `${wire.id} の折り返し`,
+        ).toBe(Math.sign(next[axis] - point[axis]));
+    }
+  }
+  expect(totalOverlap(result.wires)).toBe(0);
+});

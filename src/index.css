@@ -9872,6 +9872,15 @@
   .mdmark-diagram[data-diagram="map"]
     .mdmark-diagram-stage
     > .mdmark-diagram-node.map-closed-group {
+    /* タイトルの行を中身の並びに置き、数の行をその下に描く（タイトルが折り返しても重ならず、高さを測れる） */
+    justify-content: flex-start;
+    padding: 4px 6px;
+  }
+  .map-closed-group > .map-group-head {
+    position: static;
+    align-items: flex-start;
+  }
+  .map-closed-group > .map-closed-count {
     padding-left: 30px;
   }
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-closed-group {

@@ -483,16 +483,23 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 行が増える関連ごとに `button.map-er-fanout`（「×n」）と、その説明のツールチップを描く。置き場所は、両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、ラベルの反対側 → ラベルの側の順に試し、どのノードの矩形（`MAP_ER.aside` を含む）とも重ならない最初の場所
+    summary: 行が増える関連ごとに `button.map-er-fanout`（「×n」）と、その説明のツールチップを描く。置き場所は、両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、ラベルの反対側 → ラベルの側の順に試し、どのノードの矩形（`MAP_ER.aside` を含む）とも、`renderMapErMarks` と同じ手順で配置する多重度・ラベルの文字の矩形とも重ならない最初の場所
     scope: public
     args:
       - name: args
-        type: '{ layout: MapLayout; fanouts: MapErFanout[]; id: string }'
+        type: '{ layout: MapLayout; relations: MapErRelation[]; fanouts: MapErFanout[]; id: string }'
         required: true
-        description: 配置の結果・行が増える関連・ツールチップの id の頭
+        description: 配置の結果・関連（多重度とラベルの置き場所を求める）・行が増える関連・ツールチップの id の頭
     returns:
       type: MapPart
       description: マーカーとツールチップの HTML
+    unit_tests:
+      - name: test_render_map_er_fanouts_when_label_nearby
+        case: 正常
+        summary: ラベルの文字を避けたマーカーの置き場所
+        condition: 両端を除いた区間が横の 1 本だけの関連で、ラベルの反対側の中ほどにほかの関連のラベルの文字が来る配置
+        mock: なし
+        expected: マーカーの矩形（`MAP_ER.fanoutSize` の四方）が、どのノードの矩形とも、`renderMapErMarks` が配置する多重度・ラベルの文字の矩形とも重ならない
   - name: renderMapStateDiagram
     title: mapの状態遷移図のHTML
     kind: 関数

@@ -1,6 +1,10 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import { createBrowserHolder, pageOverflows } from "../story.ts";
+import {
+  createBrowserHolder,
+  expectCountBelowTitle,
+  pageOverflows,
+} from "../story.ts";
 
 const holder = createBrowserHolder();
 
@@ -104,13 +108,17 @@ test("test_default", async () => {
   }
 });
 
-// 境界「通販」を閉じると、「要素 3 件」を持つ 1 つのノードになり、タイトルが収まる（BoundaryCollapsed）
+// 境界「通販」を閉じると、名前の行の下に「要素 3 件」の行を持つ 1 つのノードになり、タイトルが収まる（BoundaryCollapsed）
 test("test_boundary_collapsed", async () => {
   // 準備・実行
   const page = await openStory("boundary-collapsed");
   // 検証
   const closed = page.locator('.map-closed-group[data-group="shop"]');
-  await expect(closed.innerText()).resolves.toContain("要素 3 件");
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="shop"]',
+    "要素 3 件",
+  );
   const size = await closed.evaluate((element) => ({
     scroll: element.scrollWidth,
     client: element.clientWidth,
