@@ -73,6 +73,12 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-18T07:27:30.686066+00:00'
+  - page: docs/guide/図を描く-描いた図を確認する.mark.md
+    new: false
+    change: 経由する操作の表の「開く」「拡大」「縮小」「ホイール」の期待を、パネル・25%〜500%・拡大中のホイールに合わせ、パネルの開閉とタッチの指 1 本のドラッグ・ピンチの行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T07:30:33.742418+00:00'
 scope_out:
   - item: 図の順番の再生の手順のバー・速度・なめらかな移動
     reason: 同じ調査 R-17 から別の Issue として起票されている
