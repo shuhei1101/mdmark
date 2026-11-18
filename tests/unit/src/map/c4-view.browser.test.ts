@@ -263,3 +263,16 @@ test("test_attach_map_c4_when_container_no_playback", async () => {
     "playback",
   );
 });
+
+// 再生中に別の線を指したときは、再生中の関係のラベルを出さない（正常系）
+test("test_attach_map_c4_when_dynamic_other_wire_pointed", async () => {
+  // 準備（2 本目の関係を再生する）
+  const root = await setUp(undefined, C4_DYNAMIC_PLAY, C4_DYNAMIC_PLAY_DATA);
+  pressSegment(root, 1);
+  // 実行（ラベルを持たない、閉じた境界への線を指す）
+  root
+    .querySelector('.map-wire-hit[data-wire="api->store"]')
+    ?.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+  // 検証
+  expect(root.querySelectorAll(".map-c4-playing-label")).toHaveLength(0);
+});
