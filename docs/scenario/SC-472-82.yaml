@@ -229,6 +229,38 @@ scenarios:
       - '`dist/` に配布物が残っていない'
       - 出力に `Intl.Segmenter`・`dist/index.js`・Firefox 98 が出る
     test: test_error_when_api_missing_in_baseline_browser
+  - name: 正常シナリオ（出したバージョンの移行の手順を書き換えない）
+    setup:
+      - name: 出したバージョンの移行の手順を持つ作業ツリー
+        description: '`npm ci` を実行し、バージョンのタグを取ってある作業ツリー。`migrations/v0.3.0/` と `migrations/next/` がどちらも `marker-json.mjs` を持ち、`migrations/v0.3.0/` は `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` も持って commit 済み'
+        notes: 最新のバージョンのタグは `v0.3.0`、`version.ini` は `v0.3.0`。`migrations/v0.3.0/legacy-marks.js` は今のソースからビルドした内容と違う
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        participant M as migrations/
+        D->>B: npm run build -- --develop
+        B->>G: バージョンのタグを読み込む
+        B->>B: v0.3.0 はタグがあるため出したバージョン、next は出していないバージョンに分ける
+        B->>M: next/ にだけ legacy-marks.js と THIRD_PARTY_LICENSES.txt を書き込む
+        B-->>D: 終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0
+      - '`migrations/v0.3.0/` の `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` が commit した内容のまま（`git status` に出ない）'
+      - '`migrations/next/legacy-marks.js` が今のソースからビルドした内容になっている'
+      - '`--develop` を付けずにビルドしても同じ'
+    test: test_normal_when_released_migrations_kept
+    notes:
+      出したバージョン: '`migrations/` のフォルダの名前と同じ `v{X}.{Y}.{Z}` のタグがあるバージョン。タグを打つ手順で `migrations/next/` を `migrations/v{バージョン}/` へ移した後のビルドは、まだタグが無いため、そのフォルダへ書き込む。'
 lead: 開発者が、クローンしたリポジトリで依存の導入・lint・型検査・ビルド・テストを順に実行し、バージョンを埋めた配布物を `dist/` に得る。
 primary_actor: mdmark の開発者
 trigger: リポジトリをクローンした直後か、変更を commit する前
@@ -243,3 +275,4 @@ tags:
     main: true
   - name: action:ビルド
   - name: topic:検査
+  - name: topic:移行
