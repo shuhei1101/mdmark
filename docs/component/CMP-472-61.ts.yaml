@@ -163,10 +163,10 @@ states:
       - name: pinMode
         value: through
   - name: DefaultFits
-    description: 既定の種類で幅に収まる表。ピン止めのボタンを出さない
+    description: 既定の種類で幅に収まる表。各列に並べ替えのボタンが出て、ピン止めのボタンは出さない
     args:
       - name: features
-        value: '["pin"]'
+        value: '["sort","pin"]'
       - name: columns
         value: '["用語","意味"]'
       - name: rows
