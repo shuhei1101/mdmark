@@ -20,12 +20,8 @@
 .pb-seg.is-current { height: 10px; background: var(--mdmark-color-bg); box-shadow: 0 0 0 1.5px var(--mdmark-color-link); }
 .pb-fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--mdmark-color-link); }
 
-/* 手順が多いとき: 案 B は折り返し、案 C は横スクロール（区切りの幅を 16px 以上に保つ）、案 D は 10 個ずつと左右の矢印 */
-.pb-steps.is-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(16px, 1fr)); align-items: center; height: auto; column-gap: 3px; row-gap: 0; }
-.pb-steps.is-wrap .pb-seg, .pb-steps.is-scroll .pb-seg { margin: 9px 0; }
-.pb-steps.is-wrap .pb-seg.is-current, .pb-steps.is-scroll .pb-seg.is-current { margin: 7px 0; }
-.pb-steps.is-scroll { overflow-x: auto; scrollbar-width: thin; }
-.pb-steps.is-scroll .pb-seg { flex: 0 0 16px; }
+/* 手順が多いとき: 区切りが 12px より細いバー（is-dense）では、今の区切りだけを 24px に広げる */
+.pb-steps.is-dense .pb-seg.is-current { flex: 0 0 24px; }
 .pb-paged { display: flex; align-items: center; gap: 4px; }
 .pb-paged .pb-steps { flex: 1; min-width: 0; }
 .pb-page { display: inline-grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: var(--mdmark-radius); background: transparent; color: var(--mdmark-color-text); cursor: pointer; }

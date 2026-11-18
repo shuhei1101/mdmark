@@ -17,3 +17,15 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4607217717
+  - topic: 帯のモックの修正（何もしていないときはバーだけ・押した手順を繰り返し再生）
+    decision: 何もしていないときは帯の枠線と面を出さずバーだけ。区切りを押すと停止するまでその手順を繰り返し再生し、もう一度押すとその手順の最初から再生し直す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4608837639
+  - topic: 手順が多いときの対策
+    decision: バーの左右に矢印（案 D の見た目）を常に出し、前・次の手順へ移る。区切りは 1 行で幅に合わせて細くし、一定より細くなったときだけ今の区切りを少し広くする（別案。ユーザーの提案）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4608836969
