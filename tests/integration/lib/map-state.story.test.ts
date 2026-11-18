@@ -3,6 +3,7 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import {
   createBrowserHolder,
   expectCountBelowTitle,
+  expectTargetSize,
   pageOverflows,
 } from "../story.ts";
 
@@ -278,6 +279,17 @@ test("test_collapsed", async () => {
     page,
     '.map-closed-group[data-group="実行中"]',
     "状態 2 件",
+  );
+});
+
+// ノードの説明のマーカーは、押せる大きさ 24px 四方以上で描く（Collapsed）
+test("test_collapsed_info_marker_size", async () => {
+  // 準備・実行
+  const page = await openState("collapsed");
+  // 検証
+  await expectTargetSize(
+    page,
+    ".mdmark-diagram-stage button.mdmark-diagram-info",
   );
 });
 
