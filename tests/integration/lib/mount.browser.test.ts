@@ -15265,42 +15265,44 @@ test("test_normal_when_column_resized", async () => {
 
 // つまみにフォーカスした ←・→ キーで 16px ずつ幅を変え、Enter で描いた直後の幅に戻し、つまみの値を今の幅にする（正常系（キーボードで列の幅を変える））
 test("test_normal_when_column_resized_by_keyboard", async () => {
-  // 準備
-  const el = createElement();
-  await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
-  const table = find<HTMLElement>(el, ".mdmark-table");
-  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
-  const { heads, handles } = resizeParts(table);
-  const head = heads[0] as HTMLTableCellElement;
-  const handle = handles[0] as HTMLElement;
-  const opened = head.offsetWidth;
-  // 検証: つまみの値
-  expect(handle.getAttribute("aria-valuenow")).toBe(String(opened));
-  expect(handle.getAttribute("aria-valuetext")).toBe(`${opened}px`);
-  const min = Number(handle.getAttribute("aria-valuemin"));
-  expect(min).toBeGreaterThan(0);
-  expect(min).toBeLessThanOrEqual(opened);
-  expect(handle.getAttribute("aria-valuemax")).toBe(
-    String(Math.floor(scroller.clientWidth)),
-  );
-  const scrollLeft = scroller.scrollLeft;
-  const scrollX = window.scrollX;
-  // 実行: つまみにフォーカスし、→ キーを 2 回押す
-  handle.focus();
-  await userEvent.keyboard("{ArrowRight}{ArrowRight}");
-  // 検証
-  expect(head.offsetWidth).toBe(opened + 32);
-  expect(handle.getAttribute("aria-valuenow")).toBe(String(opened + 32));
-  // 実行・検証: ← キーを 1 回押す
-  await userEvent.keyboard("{ArrowLeft}");
-  expect(head.offsetWidth).toBe(opened + 16);
-  // 実行・検証: Enter で描いた直後の幅に戻り、フォーカスはつまみに残る
-  await userEvent.keyboard("{Enter}");
-  expect(head.offsetWidth).toBe(opened);
-  expect(document.activeElement).toBe(handle);
-  // 検証: キーで表とページがスクロールしない
-  expect(scroller.scrollLeft).toBe(scrollLeft);
-  expect(window.scrollX).toBe(scrollX);
+  await withViewport(1280, async () => {
+    // 準備: → キー 2 回で表がはみ出さない幅（はみ出すとピン止めのボタンが出て、最小幅がボタンを含む幅になる）
+    const el = createElement();
+    await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
+    const table = find<HTMLElement>(el, ".mdmark-table");
+    const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+    const { heads, handles } = resizeParts(table);
+    const head = heads[0] as HTMLTableCellElement;
+    const handle = handles[0] as HTMLElement;
+    const opened = head.offsetWidth;
+    // 検証: つまみの値
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(opened));
+    expect(handle.getAttribute("aria-valuetext")).toBe(`${opened}px`);
+    const min = Number(handle.getAttribute("aria-valuemin"));
+    expect(min).toBeGreaterThan(0);
+    expect(min).toBeLessThanOrEqual(opened);
+    expect(handle.getAttribute("aria-valuemax")).toBe(
+      String(Math.floor(scroller.clientWidth)),
+    );
+    const scrollLeft = scroller.scrollLeft;
+    const scrollX = window.scrollX;
+    // 実行: つまみにフォーカスし、→ キーを 2 回押す
+    handle.focus();
+    await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+    // 検証
+    expect(head.offsetWidth).toBe(opened + 32);
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(opened + 32));
+    // 実行・検証: ← キーを 1 回押す
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(head.offsetWidth).toBe(opened + 16);
+    // 実行・検証: Enter で描いた直後の幅に戻り、フォーカスはつまみに残る
+    await userEvent.keyboard("{Enter}");
+    expect(head.offsetWidth).toBe(opened);
+    expect(document.activeElement).toBe(handle);
+    // 検証: キーで表とページがスクロールしない
+    expect(scroller.scrollLeft).toBe(scrollLeft);
+    expect(window.scrollX).toBe(scrollX);
+  });
 });
 
 // 留めた列の幅を変えるたびに留める位置を計算し直し、留めた列の幅の合計が見えている幅に収まる幅で止める（正常系（留めた列の幅を変える））
@@ -15503,6 +15505,143 @@ test("test_normal_when_pinned_through_exceed_visible_width", async () => {
   const secondRect = (firstRow.cells[1] as HTMLElement).getBoundingClientRect();
   expect(Math.round(secondRect.left)).toBe(Math.round(firstRect.right));
 });
+
+/** 列名 `列 1`〜`列 10`・3 行のマーカーの無い表と、同じ表を plain で囲んだ文書 */
+function unmarkedTableMarkdown(): string {
+  const headers = Array.from({ length: 10 }, (_, i) => `列 ${i + 1}`);
+  const rows = ["10", "2", "33"].map(
+    (first, row) =>
+      `| ${[first, ...headers.slice(1).map((_, i) => `値 ${row + 1}-${i + 2}`)].join(" | ")} |`,
+  );
+  const table = [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows,
+  ];
+  return [
+    ...table,
+    "",
+    '<!-- table: {"kind": "plain"} -->',
+    "",
+    ...table,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 見出しのセルの中身（`.mdmark-th`）が収まる外側の幅 */
+function headContentWidth(head: HTMLElement): number {
+  const style = getComputedStyle(head);
+  return (
+    find<HTMLElement>(head, ":scope > .mdmark-th").scrollWidth +
+    Number.parseFloat(style.paddingLeft) +
+    Number.parseFloat(style.paddingRight) +
+    Number.parseFloat(style.borderLeftWidth) +
+    Number.parseFloat(style.borderRightWidth)
+  );
+}
+
+/** ピン止めのボタンが見えているか（`opacity` で隠す間も、`visibility`・`display`・`hidden` はそのまま） */
+function pinShown(pin: HTMLElement): boolean {
+  return Number(getComputedStyle(pin).opacity) > 0;
+}
+
+// マーカーの無い表に並べ替えを付け、ポインターを乗せられる端末では押していないピン止めのボタンを見出しにポインターかフォーカスがある間だけ見せ、列の最小幅を見出しの中身が収まる幅より狭くしない（正常系（マーカーの無い表を並べ替え、ピン止めのボタンをポインターとフォーカスで出す））
+test("test_normal_when_unmarked_table_sorted", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  expect(matchMedia("(hover: hover)").matches).toBe(true);
+  const el = createElement();
+  el.style.width = "480px";
+  await mountTracked(el, { markdown: unmarkedTableMarkdown() });
+  const [table, plain] = [...el.querySelectorAll<HTMLElement>(".mdmark-table")];
+  if (!table || !plain) {
+    throw new Error("表が 2 つ無い");
+  }
+  const { heads, handles } = resizeParts(table);
+  const pins = [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => expect(itemAt(pins, 2).hidden).toBe(false));
+  // 検証: 既定の種類で、並べ替えのボタンがあり、絞り込みのボタンと表の上の帯が無い
+  expect(table.dataset.kind).toBe("default");
+  expect(table.dataset.features).toBe("sort pin resize");
+  expect(
+    heads.every((head) => head.querySelector("button.mdmark-sort") !== null),
+  ).toBe(true);
+  expect(table.querySelector(".mdmark-filter")).toBeNull();
+  expect(table.querySelector(".mdmark-table-bar")).toBeNull();
+  // 検証: 押していないピンは見えないが、タブの順に残り、押した 1 列目のピンは見える
+  const third = itemAt(pins, 2);
+  expect(itemAt(pins, 0).getAttribute("aria-pressed")).toBe("true");
+  expect(pinShown(itemAt(pins, 0))).toBe(true);
+  expect(third.getAttribute("aria-pressed")).toBe("false");
+  expect(pinShown(third)).toBe(false);
+  expect(getComputedStyle(third).visibility).toBe("visible");
+  expect(getComputedStyle(third).display).not.toBe("none");
+  // 検証: 見出しのセルは中身が収まる幅以上で、ピンがセルの右端を越えない
+  for (const [index, head] of heads.entries()) {
+    expect(head.offsetWidth).toBeGreaterThanOrEqual(
+      Math.floor(headContentWidth(head)),
+    );
+    expect(
+      itemAt(pins, index).getBoundingClientRect().right,
+    ).toBeLessThanOrEqual(head.getBoundingClientRect().right + 0.5);
+  }
+  // 実行: 1 列目の並べ替えを押す
+  find<HTMLButtonElement>(itemAt(heads, 0), "button.mdmark-sort").click();
+  // 検証
+  expect(columnTexts(table, 0)).toEqual(["33", "10", "2"]);
+  expect(itemAt(heads, 0).getAttribute("aria-sort")).toBe("descending");
+  // 実行・検証: 3 列目の見出しにポインターを乗せている間だけ見える（見出しの中の並べ替えのボタンに乗せる）
+  const thirdSort = find<HTMLButtonElement>(
+    itemAt(heads, 2),
+    "button.mdmark-sort",
+  );
+  await userEvent.hover(thirdSort);
+  await vi.waitFor(() => expect(pinShown(third)).toBe(true));
+  await userEvent.unhover(thirdSort);
+  await vi.waitFor(() => expect(pinShown(third)).toBe(false));
+  // 実行・検証: 3 列目のピン止めにフォーカスがある間だけ見える
+  third.focus();
+  await vi.waitFor(() => expect(pinShown(third)).toBe(true));
+  third.blur();
+  await vi.waitFor(() => expect(pinShown(third)).toBe(false));
+  // 実行: 1 列目のつまみを左へ大きくドラッグする
+  dragResizeHandle(itemAt(handles, 0), -5000);
+  // 検証: 見出しの中身が収まる幅で止まる
+  expect(itemAt(heads, 0).offsetWidth).toBeGreaterThanOrEqual(
+    Math.floor(headContentWidth(itemAt(heads, 0))),
+  );
+  expect(itemAt(pins, 0).getBoundingClientRect().right).toBeLessThanOrEqual(
+    itemAt(heads, 0).getBoundingClientRect().right + 0.5,
+  );
+  // 検証: plain の表には並べ替えとピン止めのボタンが無い
+  expect(plain.querySelector(".mdmark-sort")).toBeNull();
+  expect(plain.querySelector(".mdmark-pin")).toBeNull();
+});
+
+// タッチの端末では、マーカーの無い表の押していないピン止めのボタンも描いた直後から見える（正常系（マーカーの無い表を並べ替え、ピン止めのボタンをポインターとフォーカスで出す））
+// タッチの点がある結合テストのプロジェクト（integration-browser-touch）だけで動かす
+test.runIf(navigator.maxTouchPoints > 0)(
+  "test_normal_when_unmarked_table_sorted_by_touch",
+  async () => {
+    // 準備
+    expect(matchMedia("(hover: none)").matches).toBe(true);
+    const el = createElement();
+    el.style.width = "480px";
+    await mountTracked(el, { markdown: unmarkedTableMarkdown() });
+    const table = find<HTMLElement>(el, ".mdmark-table");
+    const pins = [
+      ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+    ];
+    await vi.waitFor(() => expect(itemAt(pins, 2).hidden).toBe(false));
+    // 検証
+    expect(itemAt(pins, 2).getAttribute("aria-pressed")).toBe("false");
+    expect(pins.every((pin) => pinShown(pin))).toBe(true);
+  },
+);
 
 // タッチのドラッグで幅を変え、ダブルタップで描いた直後の幅に戻し、ポインターが粗い画面ではつまみを常に出す（正常系（タッチで列の幅を変える））
 // タッチの点がある結合テストのプロジェクト（integration-browser-touch）だけで動かす

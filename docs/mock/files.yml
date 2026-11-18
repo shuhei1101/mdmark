@@ -1385,6 +1385,18 @@ files:
     visibility: internal
     description: '#630（map の範囲の外の mermaid のコードブロックにも map の図の操作を付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/673/assets/plain-table.js
+    visibility: internal
+    description: '#673 のモックの見本: マーカーの無い表を今の機能と、並べ替えを加え押したピンを色の付いた塗りにした案で並べ、配布物の mount で描く処理。このモックの表の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:テーブル]
+  - path: refs/673/assets/plain-table.css
+    visibility: internal
+    description: '#673 のモックの案の押したピンの外観: 枠線と地を付けず、リンクの色で塗ったピンにする上書き。このモックの押したピンの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:テーブル]
+  - path: refs/673/index.md
+    visibility: internal
+    description: '#673（マーカーの無い表など、図以外の記法にも記法が無くても付けられるビュワーの操作を付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/660/assets/band.js
     visibility: internal
     description: '#660 のモックの案内・再生の帯: 手順のバーとタイトル・説明の文だけを持つ帯の HTML と、区切りを押した手順の再生・バー以外を押した停止と、図をなめらかに移す実演の処理。このモックの振る舞いを変えるときに参照する。'
@@ -1636,6 +1648,10 @@ files:
     visibility: internal
     description: '部品『plain-mermaid』のモック: map の範囲の外の mermaid のコードブロックの、今の描き方（mermaid の図）と案 A（補足の無い map の図）の flowchart・sequenceDiagram・classDiagram と、map が描けない種類の gantt。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: components/plain-table/index.html
+    visibility: internal
+    description: '部品『plain-table』のモック: マーカーの無い表（既定の種類）の、今の機能（ピン止め・列の幅の変更）と案（並べ替えを加え、押したピンを色の付いた塗りにする）の 3 行の表とはみ出す表と、data・plain の種類。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:テーブル]
   - path: components/map-band/index.html
     visibility: internal
     description: '部品『map-band』のモック: map の案内・再生の帯の、手順のバーだけの帯・区切りを押した手順の再生と再生し直し・バー以外を押して停止・なめらかな移動の実演・手順が多いとき・狭い幅。部品の外観や状態を決めるときに参照する。'

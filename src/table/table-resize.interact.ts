@@ -12,6 +12,9 @@ export const TAP_MOVE_TOLERANCE_PX = 8;
 /** 描く処理が見出しのセルに入れる、描いたときの幅の変数 */
 const MIN_WIDTH_VARIABLE = "--mdmark-column-min-width";
 
+/** 列の幅を決める処理が見出しのセルに入れる、見出しの中身が収まる外側の幅の変数 */
+const HEAD_WIDTH_VARIABLE = "--mdmark-column-head-width";
+
 /** つまみの class */
 const HANDLE_CLASS = "mdmark-col-resize";
 
@@ -58,7 +61,7 @@ const insetOf = (cell: HTMLElement): number => {
   ].reduce((sum, value) => sum + Number.parseFloat(value), 0);
 };
 
-/** 見出しのセルのインラインの幅の指定を除いて測った、列の最小幅（外側の幅。px） */
+/** 見出しのセルのインラインの幅の指定を除いて測った幅と、見出しの中身が収まる幅の大きい方の、列の最小幅（外側の幅。px） */
 const minWidthOf = (cell: HTMLElement): number => {
   const minWidth = cell.style.minWidth;
   const variable = cell.style.getPropertyValue(MIN_WIDTH_VARIABLE);
@@ -69,7 +72,9 @@ const minWidthOf = (cell: HTMLElement): number => {
   if (variable) {
     cell.style.setProperty(MIN_WIDTH_VARIABLE, variable);
   }
-  return value + insetOf(cell);
+  const head =
+    Number.parseFloat(cell.style.getPropertyValue(HEAD_WIDTH_VARIABLE)) || 0;
+  return Math.max(value + insetOf(cell), head);
 };
 
 /** 見出しのセルの内側の幅を `width`・`min-width`・`--mdmark-column-min-width` に入れる */

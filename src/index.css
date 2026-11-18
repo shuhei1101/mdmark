@@ -1950,11 +1950,11 @@
       width: 1.5rem;
       height: 1.5rem;
 
-      /* 絞り込み中の列・押した後のピン: 本文の地と線と塗ったアイコンで、押す前と見分ける */
+      /* 絞り込み中の列・押した後のピン: 枠線と地を付けず、リンクの色で塗ったアイコンで、押す前の線のアイコンと見分ける */
       &:is(.is-active, [aria-pressed="true"]) {
-        border-color: var(--mdmark-color-border);
-        background: var(--mdmark-color-bg-opaque);
-        color: var(--mdmark-color-text);
+        border-color: transparent;
+        background: transparent;
+        color: var(--mdmark-color-link);
       }
 
       /* 表がはみ出さないときのピン止め: 押しても何も変わらないので出さない（hidden を描く処理が付与・解除する） */
@@ -1963,10 +1963,22 @@
       }
     }
 
-    /* 表の見えている幅に収まらず留まっていない列のピン止め: 押した状態の地のまま、枠線を破線にし、色を薄くする */
+    /* 表の見えている幅に収まらず留まっていない列のピン止め: 枠線と地を付けず、薄い色の破線のピンにする */
     .mdmark-pin.is-unpinned {
-      border-style: dashed;
+      border-color: transparent;
+      background: transparent;
       color: var(--mdmark-color-muted);
+    }
+
+    /* ポインターを乗せられる端末の押していないピン止め: 見出しにポインターかフォーカスがある間だけ見せる（タブの順には残す） */
+    @media (hover: hover) {
+      .mdmark-table thead th .mdmark-pin[aria-pressed="false"] {
+        opacity: 0;
+      }
+
+      .mdmark-table thead th:is(:hover, :focus-within) .mdmark-pin {
+        opacity: 1;
+      }
     }
 
     /* plain の種類: 外側の枠・表と見出し行の面・縦の罫線を削除し、行の区切りの線だけにする */

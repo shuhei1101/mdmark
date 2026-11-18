@@ -127,7 +127,7 @@ export const DefaultOverflow: Story = {
   name: "DefaultOverflow",
   parameters: { server: { id: "table" } },
   args: {
-    features: '["pin"]',
+    features: '["sort","pin"]',
     columns:
       '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]',
     rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]',
@@ -206,7 +206,7 @@ export const DefaultFits: Story = {
   name: "DefaultFits",
   parameters: { server: { id: "table" } },
   args: {
-    features: '["pin"]',
+    features: '["sort","pin"]',
     columns: '["用語","意味"]',
     rows: '[["マーカー","HTML コメントで記載する目印"]]',
   },
