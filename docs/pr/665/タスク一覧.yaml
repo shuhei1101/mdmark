@@ -50,8 +50,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-18T00:12:23.066094+00:00'
   - process: 部品設計
-    status: todo
-    note: CMP-472-5 の accessibility に説明のマーカーの押せる大きさを記載し、グループの説明のマーカーの大きさと間隔を決める
+    status: done
+    note: CMP-472-5 の accessibility に説明のマーカーの押せる大きさ（24px 四方以上）を記載
+    updated_by: planner
+    updated_at: '2026-11-18T00:18:45.096188+00:00'
   - process: 画面設計
     status: skipped
     reason: docs/screen に説明のマーカーの大きさの記載が無く、部品設計で扱うため対象外
