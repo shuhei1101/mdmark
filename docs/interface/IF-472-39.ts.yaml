@@ -234,7 +234,7 @@ flows:
     summary: 文書のマーカーの知らないキー・型の誤り・削除した機能の列の設定・map の印の廃止したキーを、文書と行を指す行にして終了コード 1 で終わる
     setup:
       - name: マーカーの設定のずれを持つフォルダ
-        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（マーカーの設定にずれがある）」と同じ。`a.mark.md` の 1 行目に `<!-- code: {"title": "app.ts", "color": "red"} -->`、5 行目に `<!-- section: {"open": "no"} -->`、9 行目に `<!-- table: {"features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->`、13 行目から `<!-- map: {"title": "全体の構成", "play": "autoplay", "interval": 3} -->` 〜 `<!-- /map -->` の範囲（`flowchart LR` の mermaid のブロックだけを持つ）を記載する'
+        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（マーカーの設定にずれがある）」と同じ。`a.mark.md` の 1 行目に `<!-- code: {"title": "app.ts", "color": "red"} -->`、5 行目に `<!-- section: {"open": "no"} -->`、9 行目に `<!-- table: {"features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->`、17 行目から `<!-- map: {"title": "全体の構成", "play": "autoplay", "interval": 3} -->` 〜 `<!-- /map -->` の範囲（`flowchart LR` の mermaid のブロックだけを持つ）を記載する'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -252,7 +252,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - '`a.mark.md:1: unknown_mark_arg:` で始まり `color` を含む行、`a.mark.md:5: mark_option_invalid:` で始まり `open` を含む行、`a.mark.md:9: mark_option_unapplied:` で始まり `columns.数量.total` を含む行、`a.mark.md:13: map_retired_key:` で始まり `play`・`interval` と `mdmark upgrade` を含む行が 1 つずつある'
+      - '`a.mark.md:1: unknown_mark_arg:` で始まり `color` を含む行、`a.mark.md:5: mark_option_invalid:` で始まり `open` を含む行、`a.mark.md:9: mark_option_unapplied:` で始まり `columns.数量.total` を含む行、`a.mark.md:17: map_retired_key:` で始まり `play`・`interval` と `mdmark upgrade` を含む行が 1 つずつある'
       - 最後の行が `ずれ 4 件`
     test: test_normal_when_mark_options_drift
     refs:

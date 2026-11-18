@@ -34,6 +34,10 @@ import {
 import {
   ARCH as MAP_ARCH,
   C4 as MAP_C4,
+  C4_COMPONENT as MAP_C4_COMPONENT,
+  C4_CONTAINER as MAP_C4_CONTAINER,
+  C4_DEPLOYMENT as MAP_C4_DEPLOYMENT,
+  C4_DYNAMIC as MAP_C4_DYNAMIC,
   CLASS as MAP_CLASS,
   DATA as MAP_DATA,
   ER as MAP_ER,
@@ -4457,7 +4461,7 @@ test("test_normal_when_map_range", async () => {
   const render = await loadRender();
   const markdown = [
     mapRange({
-      args: '{"title": "全体の構成", "interval": 3}',
+      args: '{"title": "全体の構成", "focus": "read"}',
       mermaid: MAP_FLOW,
       data: MAP_DATA,
     }),
@@ -4469,16 +4473,20 @@ test("test_normal_when_map_range", async () => {
     mapRange({ mermaid: MAP_ARCH }),
     mapRange({ mermaid: MAP_C4 }),
     mapRange({ mermaid: "mindmap\n  root((企画))\n    目的\n" }),
+    mapRange({ mermaid: MAP_C4_CONTAINER }),
+    mapRange({ mermaid: MAP_C4_COMPONENT }),
+    mapRange({ mermaid: MAP_C4_DYNAMIC }),
+    mapRange({ mermaid: MAP_C4_DEPLOYMENT }),
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const ranges = findTags(html, 'class="mdmark-map"');
-  expect(ranges).toHaveLength(9);
+  expect(ranges).toHaveLength(13);
   expect(ranges[0]).toContain('data-map="1"');
   expect(ranges[0]).toContain('data-map-kind="flowchart"');
   expect(ranges[0]).toContain(
-    'data-map-args="{&quot;title&quot;:&quot;全体の構成&quot;,&quot;interval&quot;:3}"',
+    'data-map-args="{&quot;title&quot;:&quot;全体の構成&quot;,&quot;focus&quot;:&quot;read&quot;}"',
   );
   expect(ranges[1]).toContain('data-map="2"');
   expect(ranges[1]).toContain('data-map-kind="sequenceDiagram"');
@@ -4493,10 +4501,15 @@ test("test_normal_when_map_range", async () => {
   expect(ranges[7]).toContain('data-map-kind="C4Context"');
   // マインドマップの範囲
   expect(ranges[8]).toContain('data-map-kind="mindmap"');
+  // C4 図のほかの種類の範囲
+  expect(ranges[9]).toContain('data-map-kind="C4Container"');
+  expect(ranges[10]).toContain('data-map-kind="C4Component"');
+  expect(ranges[11]).toContain('data-map-kind="C4Dynamic"');
+  expect(ranges[12]).toContain('data-map-kind="C4Deployment"');
   const codes = findTags(html, 'class="mdmark-code"');
-  expect(codes).toHaveLength(9);
+  expect(codes).toHaveLength(13);
   for (const code of codes) expect(code).not.toContain("data-mdmark-mermaid");
-  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(9);
+  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(13);
   const data = findTags(html, 'class="mdmark-map-data"');
   expect(data).toHaveLength(2);
   expect(data[0]).toMatch(/^<pre /);
@@ -4520,6 +4533,10 @@ test("test_normal_when_map_written_wrongly", async () => {
       data: '{"version": 1, "layuot": {}}',
     }),
     mapRange({ args: "{title: 全体}", mermaid: "flowchart LR\n  A --> B\n" }),
+    mapRange({
+      args: '{"title": "再生", "play": "autoplay", "interval": 3}',
+      mermaid: "flowchart LR\n  A --> B\n",
+    }),
     mapRange({ mermaid: 'pie\n  "a" : 1\n' }),
     mapRange({}),
     `<!-- map -->\n\n\`\`\`mermaid\nflowchart LR\n  A --> B\n\`\`\`\n\n<!-- map-data: {"version": 1} -->\n\n<!-- map-data: {"version": 1} -->\n\n<!-- /map -->\n`,
@@ -4531,7 +4548,7 @@ test("test_normal_when_map_written_wrongly", async () => {
   const html = render(`${markdown}\n段落 END\n`);
   // 検証: 範囲ごとに切り分ける
   const pieces = html.split(/<p[^>]*>段落 P\d<\/p>/).slice(1);
-  expect(pieces).toHaveLength(5);
+  expect(pieces).toHaveLength(6);
   const pieceAt = (at: number) => pieces[at] ?? "";
   const warning = (piece: string) =>
     matches(piece, /class="mdmark-syntax-warning[" ]/g).length;
@@ -4546,20 +4563,36 @@ test("test_normal_when_map_written_wrongly", async () => {
   const second = findTags(pieceAt(1), 'class="mdmark-map"');
   expect(second).toHaveLength(1);
   expect(second[0]).not.toContain("title");
-  // 3 つ目: 描かない図の種類
+  // 3 つ目: 廃止した印のキー
   expect(warning(pieceAt(2))).toBe(1);
-  expect(plainText(pieceAt(2))).toContain("flowchart");
-  expect(plainText(pieceAt(2))).toContain("sequenceDiagram");
-  expect(plainText(pieceAt(2))).toContain("erDiagram");
-  expect(plainText(pieceAt(2))).toContain("stateDiagram-v2");
-  expect(plainText(pieceAt(2))).toContain("classDiagram");
-  expect(plainText(pieceAt(2))).toContain("architecture-beta");
-  expect(plainText(pieceAt(2))).toContain("C4Context");
-  expect(plainText(pieceAt(2))).toContain("mindmap");
-  expect(findTags(pieceAt(2), 'class="mdmark-map"')).toHaveLength(0);
-  expect(findTags(pieceAt(2), "language-mermaid")).toHaveLength(1);
-  // 4・5 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲
-  for (const piece of [pieceAt(3), pieceAt(4)]) {
+  expect(plainText(pieceAt(2))).toContain("play・interval");
+  expect(plainText(pieceAt(2))).toContain("mdmark upgrade");
+  const retired = findTags(pieceAt(2), 'class="mdmark-map"');
+  expect(retired).toHaveLength(1);
+  expect(retired[0]).toContain(
+    'data-map-args="{&quot;title&quot;:&quot;再生&quot;}"',
+  );
+  // 4 つ目: 描かない図の種類
+  expect(warning(pieceAt(3))).toBe(1);
+  for (const kind of [
+    "flowchart",
+    "sequenceDiagram",
+    "erDiagram",
+    "stateDiagram-v2",
+    "classDiagram",
+    "architecture-beta",
+    "C4Context",
+    "C4Container",
+    "C4Component",
+    "C4Dynamic",
+    "C4Deployment",
+    "mindmap",
+  ])
+    expect(plainText(pieceAt(3))).toContain(kind);
+  expect(findTags(pieceAt(3), 'class="mdmark-map"')).toHaveLength(0);
+  expect(findTags(pieceAt(3), "language-mermaid")).toHaveLength(1);
+  // 5・6 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲
+  for (const piece of [pieceAt(4), pieceAt(5)]) {
     expect(warning(piece)).toBe(1);
     expect(findTags(piece, 'class="mdmark-map"')).toHaveLength(0);
   }

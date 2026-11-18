@@ -940,6 +940,109 @@ test("test_normal_when_retired_er_migrated", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
+/** map の印の廃止した引数を持つ 1 つ目の文書（シナリオ『バージョンを上げる』） */
+const RETIRED_MAP_FIRST = [
+  "# A",
+  "",
+  '<!-- map: {"title": "全体の構成", "play": "autoplay", "interval": 3} -->',
+  "",
+  "```mermaid",
+  "flowchart LR",
+  "  A --> B",
+  "```",
+  "",
+  "<!-- /map -->",
+  "",
+].join("\n");
+
+/** map の印の廃止した引数を持つ 2 つ目の文書（コードブロックの中に印を持つ） */
+const RETIRED_MAP_SECOND = [
+  "# B",
+  "",
+  '<!-- map: {"interval": 1} -->',
+  "",
+  "```mermaid",
+  "sequenceDiagram",
+  "  A->>B: 送信する",
+  "```",
+  "",
+  "<!-- /map -->",
+  "",
+  "````markdown",
+  '<!-- map: {"play": "autoplay"} -->',
+  "````",
+  "",
+].join("\n");
+
+// map の印から廃止した play・interval を削除する call の手順を当て、ほかの引数とコードブロックの中の印を変えない（正常系（map の印の廃止した引数を削除する））
+test("test_normal_when_retired_map_options_migrated", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  const next = migrationsDirOf("retired-map-options.mjs");
+  const files: Record<string, string> = {};
+  for (const name of await readdir(next)) {
+    files[`migrations/v0.5.0/${name}`] = await readFile(
+      join(next, name),
+      "utf8",
+    );
+  }
+  await setMigrations(pkg, {
+    ...files,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
+  });
+  const dir = await createWork();
+  await writeFiles(dir, {
+    "docs/a.md": RETIRED_MAP_FIRST,
+    "docs/b.md": RETIRED_MAP_SECOND,
+  });
+  // 実行
+  const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+  // 検証
+  expect(result.code, result.stderr).toBe(0);
+  const read = (path: string) => readFile(join(dir, path), "utf8");
+  expect(await read("docs/a.md")).toBe(
+    RETIRED_MAP_FIRST.replace(
+      '<!-- map: {"title": "全体の構成", "play": "autoplay", "interval": 3} -->',
+      '<!-- map: {"title": "全体の構成"} -->',
+    ),
+  );
+  expect(await read("docs/b.md")).toBe(
+    RETIRED_MAP_SECOND.replace('<!-- map: {"interval": 1} -->', "<!-- map -->"),
+  );
+  const lines = linesOf(result.stdout).map((line) => line.trim());
+  const step = lines.findIndex((line) =>
+    line.includes("文書の map のマーカーから廃止した"),
+  );
+  expect(step).toBeGreaterThanOrEqual(0);
+  expect(
+    lines
+      .slice(step + 1)
+      .some((line) =>
+        line.startsWith(
+          "2 件の文書の map のマーカーから play・interval を削除しました",
+        ),
+      ),
+  ).toBe(true);
+  expect(parse(await read("mdmark.config.yaml")).version).toBe("v0.5.0");
+  // 手元のバージョンを戻してもう一度適用しても、文書が変わらない
+  const configPath = join(dir, "mdmark.config.yaml");
+  await writeFile(
+    configPath,
+    (await readFile(configPath, "utf8")).replace(
+      /^version: .*$/m,
+      "version: v0.3.0",
+    ),
+  );
+  const rerun = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+  expect(rerun.code, rerun.stderr).toBe(0);
+  expect(linesOf(rerun.stdout).map((line) => line.trim())).toContain(
+    "0 件の文書の map のマーカーから play・interval を削除しました。",
+  );
+  expect(await read("docs/b.md")).toBe(
+    RETIRED_MAP_SECOND.replace('<!-- map: {"interval": 1} -->', "<!-- map -->"),
+  );
+});
+
 /** 文書のマーカーを JSON の記載へ書き換える移行の、書き換える前の文書（シナリオ『バージョンを上げる』の 2 つの正常シナリオの文書） */
 const LEGACY_MARK_DOCS = {
   "docs/a.md": [
