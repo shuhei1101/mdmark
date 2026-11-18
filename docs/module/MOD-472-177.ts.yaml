@@ -181,6 +181,12 @@ functions:
         condition: '`wheelToScroller: true`、`overflow-y: auto` で中身があふれる要素の中の表示する枠。開いた直後と、拡大を 2 回押した後に、表示する枠へ `deltaY: 100` の `wheel` を発火し、最後に `ctrlKey` を持つ `wheel` を発火する'
         mock: なし
         expected: 開いた直後の `wheel` は `defaultPrevented` でない。拡大の後の `wheel` は `defaultPrevented` で、表示する枠の `scrollTop` が変わらず、祖先の要素の `scrollTop` が 100 増える。`ctrlKey` の `wheel` は `defaultPrevented` でない
+      - name: test_attach_zoom_when_shift_wheel
+        case: 正常
+        summary: 拡大中の Shift＋ホイールは、縦の量のまま届いても表示する枠を横に動かす
+        condition: '`test_attach_zoom_when_wheel` と同じ表示する枠で拡大を 2 回押し、`scrollLeft` を 0 にしてから、`shiftKey` と `deltaY: 100` の `wheel`、続けて `shiftKey` と `deltaX: 50` の `wheel` を発火する'
+        mock: なし
+        expected: どちらの `wheel` も `defaultPrevented` で、表示する枠の `scrollLeft` が 100、続けて 150 になり、祖先の要素の `scrollTop` は変わらない
     status: planned
   - name: zoomControlOf
     title: 表示する枠の拡大・縮小の操作を引く
