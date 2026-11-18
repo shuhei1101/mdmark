@@ -94,7 +94,7 @@ export const createC4DynamicStill = (host, spec, state = {}) => {
     text: step?.text,
     playing: state.index !== undefined,
     fill: state.fill ?? 0,
-    label: walk ? `「${spec.title}」の案内` : `「${spec.title}」の再生`,
+    label: spec.label ?? (walk ? `「${spec.title}」の案内` : `「${spec.title}」の再生`),
   });
   applyDensity(bandHost);
 };

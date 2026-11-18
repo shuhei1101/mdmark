@@ -65,7 +65,7 @@
       note(text);
       const host = document.createElement("div");
       catalog.append(host);
-      createC4DynamicStill(host, { id: `c4p-${index}`, title: TITLE, source: DYNAMIC, data }, state);
+      createC4DynamicStill(host, { id: `c4p-${index}`, title: TITLE, label: `「${TITLE}」の${data.walkthroughs ? "案内" : "再生"}（${title}）`, source: DYNAMIC, data }, state);
     });
     heading("h3", "C4Dynamic 以外の C4 の図（コンテナ図）");
     note("関係を再生しないため、補足に案内の手順を持たない図には帯を出さない");
@@ -78,7 +78,7 @@
     const narrow = document.createElement("div");
     narrow.className = "narrow";
     catalog.append(narrow);
-    createC4DynamicStill(narrow, { id: "c4p-narrow", title: TITLE, source: DYNAMIC, data: DYNAMIC_DATA }, { index: 1, fill: 0.45 });
+    createC4DynamicStill(narrow, { id: "c4p-narrow", title: TITLE, label: `「${TITLE}」の再生（狭い幅）`, source: DYNAMIC, data: DYNAMIC_DATA }, { index: 1, fill: 0.45 });
   </script>
 </body>
 </html>

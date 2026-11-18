@@ -64,6 +64,8 @@ const attachMinimap = (box) => {
   if (figure.closest('[data-mock-minimap-at="start"]')) map.dataset.at = "start";
   const copy = document.createElement("div");
   copy.className = "mdmark-diagram-minimap-copy";
+  // 複製の中のボタン・リンク・フォーカスできる要素を、フォーカスと読み上げの対象から除く
+  copy.inert = true;
   const view = document.createElement("div");
   view.className = "mdmark-diagram-minimap-view";
   map.append(copy, view);
