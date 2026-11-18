@@ -46,11 +46,13 @@ export const createBand = (host, options, figure) => {
   let timer;
   let started = 0;
   const draw = () => {
-    const focused = host.contains(document.activeElement);
+    // 描き直す前にフォーカスしていた要素（矢印のボタンかバー）へ、描き直した後もフォーカスを戻す
+    const active = host.contains(document.activeElement) ? document.activeElement : undefined;
+    const dir = active?.dataset.dir;
     const step = state.index === undefined ? undefined : steps[state.index];
     host.innerHTML = renderBand({ ...state, title: step?.title, text: step?.text });
     applyDensity(host);
-    if (focused) host.querySelector(".pb-steps")?.focus();
+    if (active) (dir ? host.querySelector(`[data-band="step"][data-dir="${dir}"]`) : host.querySelector(".pb-steps"))?.focus();
   };
   const tick = () => {
     state.fill = Math.min(1, (performance.now() - started) / STEP_MS);
