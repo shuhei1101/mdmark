@@ -4,7 +4,7 @@
 // モックの見本だけの指定: data-mock-zoom（開いたときの倍率）・data-mock-scroll（開いたときの位置。図の座標の "x,y"）・
 // data-mock-open（開いたままにするツールチップの持ち主。線の id・"node:{箱の id}"・"term:{語}"）・data-mock-copy（"copied" / "failed" の知らせを出したまま）・
 // data-mock-hints="off"（機能 hints をオフにした文書。figure か祖先に書く。線の詳細・箱の入力・処理・出力・箱の hint のツールチップと印を出さない）・
-// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-fit-min（全体が収まる倍率の下限。figure か祖先に書く。map の図は 1）・data-mock-touch="native"（指の 1 本のドラッグをブラウザのスクロール、ピンチを図の倍率にする。figure か祖先に書く）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
+// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-fit-min（全体が収まる倍率の下限。figure か祖先に書く。map の図は 1）・data-mock-touch="native"（指の 1 本のドラッグをブラウザのスクロール、ピンチを図の倍率にする。figure か祖先に書く）・data-mock-zoom-range（倍率の範囲 "{下限},{上限}"。figure か祖先に書く）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
 
 // sample.js・glossary.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -1029,6 +1029,11 @@
     };
     viewport.addEventListener("scroll", stickTitles, { passive: true });
 
+    // 倍率の範囲（data-mock-zoom-range="{下限},{上限}"。figure か祖先に書く）。指定が無ければ、下限は全体が収まる倍率、上限は ZOOM_MAX
+    const [rangeMin, rangeMax] = (figure.closest("[data-mock-zoom-range]")?.dataset.mockZoomRange ?? "").split(",").map(Number);
+    const zoomMax = rangeMax || ZOOM_MAX;
+    const zoomFloor = () => (rangeMin ? Math.min(state.fit, rangeMin) : state.fit);
+
     // 全体が収まる倍率の下限（data-mock-fit-min。map の図は等倍より縮めない）。指定が無ければ下限なし
     const fitMin = Number(figure.closest("[data-mock-fit-min]")?.dataset.mockFitMin ?? 0);
 
@@ -1049,8 +1054,8 @@
       // 今の倍率のボタン: 全体が収まる倍率を 100% とした倍率を出し、押すと開いたときの倍率と位置に戻ることを読み上げの名前に書く
       zoomText.textContent = `${Math.round((scale / state.fit) * 100)}%`;
       zoomText.setAttribute("aria-label", `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`);
-      button("out").disabled = scale <= state.fit + ZOOM_EPSILON;
-      button("in").disabled = scale >= ZOOM_MAX - ZOOM_EPSILON;
+      button("out").disabled = scale <= zoomFloor() + ZOOM_EPSILON;
+      button("in").disabled = scale >= zoomMax - ZOOM_EPSILON;
       // 図の全体が見えている間は、移動のボタンは何も動かさないので出さない
       panGroup.hidden = state.width * scale <= viewport.clientWidth + 1 && state.height * scale <= viewport.clientHeight + 1;
       // 押したボタンが押せなくなった・消えたときは、フォーカスを表示枠へ移して失わせない
@@ -1073,7 +1078,7 @@
 
     /** 表示枠の中央を保ったまま倍率を変える。 */
     const zoomTo = (scale) => {
-      const next = Math.min(ZOOM_MAX, Math.max(state.fit, scale));
+      const next = Math.min(zoomMax, Math.max(zoomFloor(), scale));
       const cx = (viewport.scrollLeft + viewport.clientWidth / 2) / state.scale;
       const cy = (viewport.scrollTop + viewport.clientHeight / 2) / state.scale;
       state.atFit = Math.abs(next - state.fit) < ZOOM_EPSILON;
@@ -1169,7 +1174,7 @@
     if (nativeTouch) {
       // 2 本の指の中点の下の図の場所を保ったまま、倍率を変える
       const zoomAt = (scale, clientX, clientY) => {
-        const next = Math.min(ZOOM_MAX, Math.max(state.fit, scale));
+        const next = Math.min(zoomMax, Math.max(zoomFloor(), scale));
         const rect = viewport.getBoundingClientRect();
         const px = clientX - rect.left;
         const py = clientY - rect.top;

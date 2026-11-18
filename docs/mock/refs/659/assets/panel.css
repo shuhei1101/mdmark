@@ -89,3 +89,8 @@
 [data-mock-touch="native"] .mdmark-diagram-viewport[data-at-fit] {
   overflow-y: hidden;
 }
+
+/* 案 C では移動のボタン（← ↑ ↓ →）を出さない。図は指とマウスのドラッグ・矢印キーで動かす */
+[data-mock-panel="c"] .mdmark-diagram-tools-group[data-group="pan"] {
+  display: none;
+}

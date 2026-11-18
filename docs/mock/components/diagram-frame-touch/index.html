@@ -45,8 +45,8 @@
       <!-- 開いたときの倍率: 縦の指のドラッグは文書のスクロール。横の指のドラッグは、枠に収まらない分だけ図を動かす -->
       <section aria-labelledby="state-fit">
         <h2 class="catalog-label" id="state-fit">開いたときの倍率（縦のドラッグは文書のスクロール。横のドラッグは枠に収まらない分だけ図を動かす）</h2>
-        <!-- [data-mock-panel]: panel.css がこの中の図のパネルを案 C（畳んだパネル）にする。[data-mock-fit-min]: map の図の実装と同じく等倍より縮めない。[data-mock-touch="native"]: 指 1 本のドラッグをブラウザのスクロール、ピンチを図の倍率にする（どれもモックだけの指定。スマホの実機で指の操作を確かめられる） -->
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-touch="native">
+        <!-- [data-mock-panel]: panel.css がこの中の図のパネルを案 C（畳んだパネル）にする。[data-mock-fit-min]: map の図の実装と同じく等倍より縮めない。[data-mock-touch="native"]: 指 1 本のドラッグをブラウザのスクロール、ピンチを図の倍率にする。[data-mock-zoom-range]: 倍率の範囲を 25%〜500% にする（どれもモックだけの指定。スマホの実機で指の操作を確かめられる） -->
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-touch="native">
           <figure data-mock-diagram="inquiry"></figure>
         </article>
       </section>
@@ -54,7 +54,7 @@
       <!-- 拡大した: 余白をタップしなくても、指 1 本で縦にも横にも図を動かす。枠線は変えない。指を離さずに図の端を越えた分は文書のスクロールになる -->
       <section aria-labelledby="state-zoomed">
         <h2 class="catalog-label" id="state-zoomed">拡大した（指 1 本で縦にも横にも図を動かす。枠線は変えない。指を離さずに図の端を越えた分は文書のスクロール）</h2>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-touch="native">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-touch="native">
           <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
         </article>
       </section>
@@ -62,14 +62,14 @@
       <!-- ピンチで拡大した: 2 本の指の中点を保って倍率を変える。パネルの倍率の表示がピンチで変えた倍率に合う -->
       <section aria-labelledby="state-pinched">
         <h2 class="catalog-label" id="state-pinched">ピンチで拡大した（2 本の指の中点を保って倍率を変え、パネルの倍率の表示が合う）</h2>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-touch="native">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-touch="native">
           <figure data-mock-diagram="inquiry" data-mock-zoom="2" data-mock-scroll="400,150"></figure>
         </article>
       </section>
       <!-- 縦に長い図: 開いたときの倍率では図の縦のスクロールを止め、縦の指の動きを文書のスクロールにする -->
       <section aria-labelledby="state-tall">
         <h2 class="catalog-label" id="state-tall">縦に長い図（開いたときの倍率では、縦のドラッグは文書のスクロール）</h2>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-touch="native">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-touch="native">
           <figure data-mock-diagram="tall-flow"></figure>
         </article>
       </section>

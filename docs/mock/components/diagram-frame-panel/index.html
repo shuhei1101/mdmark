@@ -64,14 +64,14 @@
       <!-- 案 C: 畳んだパネル。倍率の表示と開くボタンだけを出し、押すとほかのボタンを並べる -->
       <section aria-labelledby="state-c-fit">
         <h2 class="catalog-label" id="state-c-fit">案 C 上に置く 開いたとき（倍率の表示と、パネルを開くボタンだけを出す）</h2>
-        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c">
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
           <figure data-mock-diagram="inquiry"></figure>
         </article>
       </section>
 
       <section aria-labelledby="state-c-open">
         <h2 class="catalog-label" id="state-c-open">案 C 上に置いて、パネルを開いた</h2>
-        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c">
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
           <!-- [data-mock-open]: panel.js がこの図のパネルを開いた状態で描く（モックだけの指定） -->
           <figure data-mock-diagram="inquiry" data-mock-open></figure>
         </article>
@@ -79,7 +79,7 @@
 
       <section aria-labelledby="state-c-narrow-open">
         <h2 class="catalog-label" id="state-c-narrow-open">狭い枠 案 C 上に置いて、パネルを開いた（開閉のボタンは右上のまま）</h2>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
           <figure data-mock-diagram="inquiry" data-mock-open></figure>
         </article>
       </section>
@@ -88,24 +88,24 @@
       <section aria-labelledby="state-c-bottom">
         <h2 class="catalog-label" id="state-c-bottom">案 C 下に置く（右下のリサイズハンドルの上に重ねる）</h2>
         <!-- [data-mock-panel-at]: panel.css がこの中の図のパネルを下に置く（モックだけの指定） -->
-        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-panel-at="bottom">
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
           <figure data-mock-diagram="inquiry"></figure>
         </article>
       </section>
 
       <section aria-labelledby="state-c-bottom-open">
         <h2 class="catalog-label" id="state-c-bottom-open">案 C 下に置いて、パネルを開いた</h2>
-        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-panel-at="bottom">
+        <article class="mdmark" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
           <figure data-mock-diagram="inquiry" data-mock-open></figure>
         </article>
       </section>
 
       <section aria-labelledby="state-c-bottom-narrow">
         <h2 class="catalog-label" id="state-c-bottom-narrow">狭い枠 案 C 下に置く（開いたとき・パネルを開いた。開閉のボタンは右下のまま）</h2>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-panel-at="bottom">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
           <figure data-mock-diagram="inquiry"></figure>
         </article>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-panel-at="bottom">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5" data-mock-panel-at="bottom">
           <figure data-mock-diagram="inquiry" data-mock-open></figure>
         </article>
       </section>
@@ -150,10 +150,10 @@
 
       <section aria-labelledby="state-narrow-c">
         <h2 class="catalog-label" id="state-narrow-c">狭い枠 案 C（開いたとき・拡大した）</h2>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
           <figure data-mock-diagram="inquiry"></figure>
         </article>
-        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c">
+        <article class="mdmark catalog-narrow" data-mock-fit-min="1" data-mock-panel="c" data-mock-zoom-range="0.25,5">
           <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
         </article>
       </section>
