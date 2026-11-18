@@ -620,7 +620,7 @@ nav:
         - group: ワークフロー
           items:
             - auto: {document: workflows}
-        - group: リポジトリの直下
+        - group: リポジトリの直下・tools・.claude-plugin
           items:
             - auto: {document: files_top, filter: {not: {field: id, op: prefix, values: [docs/]}}}
         - group: 公開ドキュメントのサイト

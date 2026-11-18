@@ -12,7 +12,7 @@ use_cases:
 docs:
   - page: src/files.yaml
     new: false
-    change: '#627 の 17 ファイル（interact/・map/・parts/）の行を既存の行と同じ記載方法（description・tags・related の implements）で追加し、全ての行のメタデータを今の付け方で見直す'
+    change: '#657 の後のパス（map/・shared/・table/）で #627 の 17 件とその後に増えた 8 件の行（計 25 件）を既存の行と同じ記載方法（description・tags・related の implements）で追加し、設計書の受け持ちが変わった 3 行の description を設計書に合わせる'
     status: done
     updated_by: planner
     updated_at: '2026-11-18T06:21:52.419001+00:00'
@@ -128,9 +128,6 @@ scope_out:
   - item: PR の資料（docs/pr/）を検索の対象に入れる
     reason: 作業 PR ごとの一時の資料で、設計書・コードを探すときの雑音になる。project-index 自身の見直し（shuhei1101/project-index#132）も対象に入れていない
     plan: none
-  - item: 新しく作る 6 ファイルのモジュール構成と、src/files.yaml のその行の implements
-    reason: モジュール構成の新設は別の Issue が扱う。この PR は既存のモジュール構成を指す implements だけを記載する
-    plan: '#590'
   - item: src/map/ にこれから追加するファイルの行
     reason: ファイルを追加する各 Issue が自分で行を追加する
     plan: none
