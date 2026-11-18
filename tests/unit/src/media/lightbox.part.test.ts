@@ -88,12 +88,12 @@ test("test_render_lightbox_when_max", async () => {
     alt: "手順 2 の画面",
     index: 3,
     total: 15,
-    zoom: 3,
+    zoom: 5,
   });
   // 検証
   expect(isDisabled(toolTag(html, "拡大"))).toBe(true);
   expect(plainText(innerHtml(html, 'class="mdmark-lightbox-zoom"'))).toBe(
-    "300%",
+    "500%",
   );
   expect(findTag(html, 'data-group="pan"')).not.toMatch(/\shidden\b/);
 });

@@ -109,7 +109,7 @@ function inOrder(html: string, needles: string[]): boolean {
   return true;
 }
 
-// タイトル・ボタンの帯・凡例をこの順に出す（正常系）
+// タイトル・パネル・凡例をこの順に出す（正常系）
 test("test_render_diagram_frame", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
@@ -137,8 +137,21 @@ test("test_render_diagram_frame", async () => {
       'aria-label="凡例"',
     ]),
   ).toBe(true);
-  expect(html).toMatch(
-    /<[a-z]+[^>]*\bhidden\b[^>]*>[\s\S]*?aria-label="左へ動かす"/,
+  const box = outerHtml(html, 'class="mdmark-diagram-box"');
+  expect(box).toContain('role="toolbar"');
+  expect(html).not.toContain('data-group="pan"');
+  expect(html).not.toContain('aria-label="左へ動かす"');
+  const more = findTag(
+    html,
+    '<button class="mdmark-diagram-tool" type="button" data-tool="more"',
+  );
+  expect(more).toContain('aria-expanded="false"');
+  expect(more).toContain('aria-label="表示の操作を開く"');
+  expect(findTag(html, '<div class="mdmark-diagram-tools"')).not.toContain(
+    "data-open",
+  );
+  expect(findTag(html, '<div class="mdmark-diagram-viewport"')).toContain(
+    "data-at-fit",
   );
   expect(html).toContain("問い合わせへの自動返信の構成");
   expect(html).toContain("2026-10-17");
@@ -324,9 +337,15 @@ test("test_render_diagram_frame_when_zoom_button", async () => {
   // 検証
   const names = matches(
     html,
-    /aria-label="(?:縮小|倍率 125%。全体が収まる倍率に戻す|拡大|全画面で開く)"/g,
+    /aria-label="(?:縮小|倍率 125%。全体が収まる倍率に戻す|拡大|全画面で開く|表示の操作を開く)"/g,
   ).map((attribute) => attribute.slice('aria-label="'.length, -1));
-  expect(names).toEqual(["縮小", zoomName, "拡大", "全画面で開く"]);
+  expect(names).toEqual([
+    "縮小",
+    zoomName,
+    "拡大",
+    "全画面で開く",
+    "表示の操作を開く",
+  ]);
   const zoomButton = outerHtml(html, `aria-label="${zoomName}"`);
   expect(zoomButton.startsWith("<button")).toBe(true);
   expect(plainText(zoomButton)).toBe("125%");
@@ -543,6 +562,11 @@ test("test_render_diagram_frame_when_map", async () => {
   const toolbar =
     /<div[^>]*class="mdmark-diagram-tools"[^>]*>([\s\S]*)/.exec(html)?.[1] ??
     "";
+  expect(
+    toolbar
+      .trimStart()
+      .startsWith('<div class="mdmark-diagram-tools-group" data-group="map"'),
+  ).toBe(true);
   const names = matches(toolbar, /aria-label="([^"]+)"/g)
     .slice(0, 4)
     .map((item) => item.replace(/^aria-label="|"$/g, ""));
@@ -587,4 +611,62 @@ test("test_render_diagram_tip_when_item", async () => {
   expect(inOrder(html, ["担当者", "2月: 38"])).toBe(true);
   expect(html).toContain('role="tooltip"');
   expect(html).toMatch(/\bhidden\b/);
+});
+
+// パネルを開いた状態で描く（正常系）
+test("test_render_diagram_frame_when_panel_open", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const frame = {
+    kind: "chart" as const,
+    title: "タイトル",
+    scope: "範囲",
+    updated: "2026-10-17",
+    legend: [],
+    panelOpen: true,
+    id: "d1",
+  };
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  expect(findTag(html, '<div class="mdmark-diagram-tools"')).toContain(
+    "data-open",
+  );
+  const more = findTag(
+    html,
+    '<button class="mdmark-diagram-tool" type="button" data-tool="more"',
+  );
+  expect(more).toContain('aria-expanded="true"');
+  expect(more).toContain('aria-label="表示の操作を閉じる"');
+});
+
+// 下限と上限で端のボタンを押せなくし、全体が収まる倍率より拡大したときだけ data-at-fit を外す（正常系）
+test("test_render_diagram_frame_when_bounds", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  /** 倍率 zoom で描いた枠の縮小・拡大の disabled と、表示する枠の data-at-fit */
+  const stateAt = (zoom: number) => {
+    const html = renderDiagramFrame(
+      {
+        kind: "chart" as const,
+        title: "タイトル",
+        legend: [],
+        zoom,
+        fit: 1,
+        id: "d1",
+      },
+      BODY,
+    );
+    return {
+      out: findTag(html, 'data-tool="out"').includes("disabled"),
+      in: findTag(html, 'data-tool="in"').includes("disabled"),
+      atFit: findTag(html, '<div class="mdmark-diagram-viewport"').includes(
+        "data-at-fit",
+      ),
+    };
+  };
+  // 実行・検証
+  expect(stateAt(0.25)).toEqual({ out: true, in: false, atFit: true });
+  expect(stateAt(1.25)).toEqual({ out: false, in: false, atFit: false });
+  expect(stateAt(5)).toEqual({ out: false, in: true, atFit: false });
 });

@@ -213,7 +213,7 @@ test("test_attach_map_flow_when_follow", async () => {
   expect(focusRect).toHaveBeenCalledTimes(2);
 });
 
-// 指のドラッグを pointercancel で止めたとき、動かす前の配置を保ち、受け取りを残さない（正常系）
+// 指の押下ではノードを動かさず、受け取りを残さない（正常系）
 test("test_attach_map_flow_when_drag_cancelled", async () => {
   // 準備
   const root = await setUp();
@@ -230,16 +230,16 @@ test("test_attach_map_flow_when_drag_cancelled", async () => {
     clientX: box.x + 4,
     clientY: box.y + 4 + dy,
   });
-  // 実行: 下へ 40px 動かしてから pointercancel、続けてさらに下へ 40px
+  // 実行: 指で押して下へ 40px・80px 動かして離す
   node.dispatchEvent(new PointerEvent("pointerdown", point(0)));
   window.dispatchEvent(new PointerEvent("pointermove", point(40)));
-  window.dispatchEvent(new PointerEvent("pointercancel", point(40)));
-  const afterCancel = root.querySelector<HTMLElement>('[data-node="mount"]')
+  const afterMove = root.querySelector<HTMLElement>('[data-node="mount"]')
     ?.style.cssText;
   window.dispatchEvent(new PointerEvent("pointermove", point(80)));
+  window.dispatchEvent(new PointerEvent("pointerup", point(80)));
   // 検証
   expect(saved().positions?.mount).toBeUndefined();
-  expect(afterCancel).toBe(before);
+  expect(afterMove).toBe(before);
   expect(
     root.querySelector<HTMLElement>('[data-node="mount"]')?.style.cssText,
   ).toBe(before);

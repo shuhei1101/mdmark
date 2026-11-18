@@ -150,7 +150,7 @@ test("test_attach_diagrams", async () => {
   detachers.push(attachDiagrams({ root, placement: "top" }));
   // 検証
   expect(zoomText(root)).toBe("100%");
-  expect(button(root, "縮小").disabled).toBe(true);
+  expect(button(root, "縮小").disabled).toBe(false);
   button(root, "拡大").click();
   expect(zoomText(root)).toBe("125%");
   viewportOf(root).focus();
@@ -169,18 +169,17 @@ test("test_attach_diagrams_when_max", async () => {
     button(root, "拡大").click();
   }
   // 検証
-  expect(zoomText(root)).toBe("550%");
+  expect(zoomText(root)).toBe("500%");
   expect(button(root, "拡大").disabled).toBe(true);
 });
 
-// 拡大した間だけ移動のボタンを出し、矢印キーで動かす（正常系）
+// 拡大した間だけ表示する枠の data-at-fit を外し、矢印キーで動かす（正常系）
 test("test_attach_diagrams_when_panned", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const root = createDiagramRoot();
   detachers.push(attachDiagrams({ root, placement: "top" }));
-  const panGroup = button(root, "右へ動かす").parentElement;
-  expect(panGroup?.hidden).toBe(true);
+  expect(viewportOf(root).hasAttribute("data-at-fit")).toBe(true);
   button(root, "拡大").click();
   button(root, "拡大").click();
   const viewport = viewportOf(root);
@@ -189,7 +188,8 @@ test("test_attach_diagrams_when_panned", async () => {
   viewport.focus();
   await userEvent.keyboard("{ArrowRight}");
   // 検証
-  expect(panGroup?.hidden).toBe(false);
+  expect(viewport.hasAttribute("data-at-fit")).toBe(false);
+  expect(root.querySelector('[data-group="pan"]')).toBeNull();
   expect(viewport.scrollLeft - before).toBe(80);
 });
 
@@ -223,7 +223,7 @@ test("test_attach_diagrams_when_zoom_button", async () => {
   expect(zoomText(root)).toBe("100%");
 });
 
-// ホイールで倍率を変えない（正常系）
+// ホイールで倍率を変えず、開いたときの倍率では受け取らない（正常系）
 test("test_attach_diagrams_when_wheel", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
@@ -546,4 +546,31 @@ test("test_attach_diagrams_when_mermaid_text_drag", async () => {
   // 検証
   expect(afterText).toBe(before);
   expect(viewport.scrollLeft - afterText).toBe(80);
+});
+
+// 開閉のボタンでパネルを開き、もう一度押すと畳む（正常系）
+test("test_attach_diagrams_when_panel_toggled", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createDiagramRoot();
+  detachers.push(attachDiagrams({ root, placement: "top" }));
+  const panel = root.querySelector<HTMLElement>(".mdmark-diagram-tools");
+  const more = root.querySelector<HTMLButtonElement>(
+    'button[data-tool="more"]',
+  );
+  if (!panel || !more) {
+    throw new Error("パネルか開閉のボタンが無い");
+  }
+  // 実行
+  more.click();
+  // 検証
+  expect(panel.hasAttribute("data-open")).toBe(true);
+  expect(more.getAttribute("aria-expanded")).toBe("true");
+  expect(more.getAttribute("aria-label")).toBe("表示の操作を閉じる");
+  // 実行
+  more.click();
+  // 検証
+  expect(panel.hasAttribute("data-open")).toBe(false);
+  expect(more.getAttribute("aria-expanded")).toBe("false");
+  expect(more.getAttribute("aria-label")).toBe("表示の操作を開く");
 });
