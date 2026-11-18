@@ -57,6 +57,9 @@ docs:
     new: false
     change: マーカーの引数の行から「自動で進めるか・間隔」を削除し、案内・再生を手順のバーで辿る形に合わせる
     status: todo
+  - page: docs/guide/CLI.mark.md
+    change: 点検のずれの種類の表に `map_retired_key`（map のマーカーの廃止したキー `play`・`interval`。`mdmark upgrade` で削除できる）の行を追加し、`map_unknown_key` の行が使用できるキーを挙げていれば `play`・`interval` を除外する
+    status: todo
 scope_out:
   - item: スマホで拡大した図を指で動かす・ピンチで拡大する操作と、拡大のボタンの配置
     reason: 要望に含まれない（#603 の関係する Issue。なめらかな移動で図の動かし方を変える場合は設計で合わせて検討する）
