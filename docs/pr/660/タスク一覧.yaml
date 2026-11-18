@@ -40,7 +40,9 @@ tasks:
     updated_at: '2026-11-17T23:44:51.936910+00:00'
     note: 帯をバーだけにし自動で進める・play・interval を廃止する決定（確認ログ）に合わせ、SC-472-41・SC-472-18 と play・interval を持つシナリオを書き直す
   - process: モック作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T03:48:46.720787+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計

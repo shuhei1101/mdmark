@@ -29,3 +29,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4608836969
+  - topic: 手順が多いときの対策を反映したモックへの合意
+    decision: バーの左右に矢印を常に出して前・次の手順へ移り、その手順を繰り返し再生する（端では反対の端へ移る）。区切りは 1 行で幅に合わせて細くし、12px より細くなったときだけ今の区切りを 24px に広げる
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 49f0bc87
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4608939196
