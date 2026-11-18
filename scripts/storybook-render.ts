@@ -1088,15 +1088,16 @@ function mapAxisGridStory(args: PartArgs): string {
     : html;
 }
 
-/** map の部品を図の枠に入れる */
+/** map の部品を図の枠に入れる（`frame` は部品の大きさと、パネルのツール・開いているか） */
 const mapFrame = (
   title: string,
   part: { html: string; tips: string },
-  size: { width: number; height: number },
-  panel: {
+  frame: {
+    width: number;
+    height: number;
     tools?: Array<{ name: string; label: string; disabled?: boolean }>;
     panelOpen?: boolean;
-  } = {},
+  },
 ): string =>
   renderDiagramFrame(
     {
@@ -1104,11 +1105,11 @@ const mapFrame = (
       title,
       legend: [],
       wide: true,
-      tools: panel.tools ?? [],
-      ...(panel.panelOpen === true ? { panelOpen: true } : {}),
+      tools: frame.tools ?? [],
+      ...(frame.panelOpen === true ? { panelOpen: true } : {}),
       id: "story-map",
     },
-    { ...part, ...size },
+    { ...part, width: frame.width, height: frame.height },
   );
 
 /** 図の枠のストーリーの map の図のツール（`entered` のときは外へ戻るを押せる） */
@@ -1176,15 +1177,21 @@ function mapSequenceStory(args: PartArgs): string {
   return mapFrame(
     typeof args.title === "string" ? args.title : "文書を描くまで",
     part,
-    { width, height },
-    {
-      ...(args.mapTools === true
-        ? { tools: mapStoryTools(entered !== undefined) }
-        : {}),
-      ...(args.panelOpen === true ? { panelOpen: true } : {}),
-    },
+    { width, height, ...mapStoryPanel(args, entered !== undefined) },
   );
 }
+
+/** ストーリーの引数 `mapTools`・`panelOpen` から、map の図のパネルのツールと開いているかを決める */
+const mapStoryPanel = (
+  args: PartArgs,
+  entered: boolean,
+): {
+  tools?: Array<{ name: string; label: string; disabled?: boolean }>;
+  panelOpen?: boolean;
+} => ({
+  ...(args.mapTools === true ? { tools: mapStoryTools(entered) } : {}),
+  ...(args.panelOpen === true ? { panelOpen: true } : {}),
+});
 
 /** 見本のグラフの部品の定義を、引数の見本・種類・系列の数から選ぶ */
 function chartStoryDefinition(args: PartArgs): MdmarkChartDefinition {

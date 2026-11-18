@@ -119,6 +119,25 @@ function headsOffset(target: {
   );
 }
 
+/** 開閉のボタン: 押すたびにパネルを開閉し、開閉のボタンの状態とスクリーンリーダー向けの名前を合わせる */
+function attachPanelToggle(figure: HTMLElement, signal: AbortSignal): void {
+  const panel = figure.querySelector<HTMLElement>(".mdmark-diagram-tools");
+  const more = figure.querySelector<HTMLButtonElement>('[data-tool="more"]');
+  more?.addEventListener(
+    "click",
+    () => {
+      const open = !panel?.hasAttribute("data-open");
+      panel?.toggleAttribute("data-open", open);
+      more.setAttribute("aria-expanded", String(open));
+      more.setAttribute(
+        "aria-label",
+        open ? PANEL_CLOSE_LABEL : PANEL_OPEN_LABEL,
+      );
+    },
+    { signal },
+  );
+}
+
 /** 図 1 つの倍率と位置の操作（右上のボタン・キー・ドラッグ・リサイズハンドル）と、グループのタイトルを上端に留める処理を付け、操作と監視を解除する関数を返却する */
 function attachView(
   figure: HTMLElement,
@@ -228,22 +247,7 @@ function attachView(
     }
   }
 
-  // 開閉のボタン: 押すたびにパネルを開閉し、開閉のボタンの状態とスクリーンリーダー向けの名前を合わせる
-  const panel = figure.querySelector<HTMLElement>(".mdmark-diagram-tools");
-  const more = figure.querySelector<HTMLButtonElement>('[data-tool="more"]');
-  more?.addEventListener(
-    "click",
-    () => {
-      const open = !panel?.hasAttribute("data-open");
-      panel?.toggleAttribute("data-open", open);
-      more.setAttribute("aria-expanded", String(open));
-      more.setAttribute(
-        "aria-label",
-        open ? PANEL_CLOSE_LABEL : PANEL_OPEN_LABEL,
-      );
-    },
-    { signal: controller.signal },
-  );
+  attachPanelToggle(figure, controller.signal);
 
   return () => {
     detachResize();

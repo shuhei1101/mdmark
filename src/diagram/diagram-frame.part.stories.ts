@@ -79,7 +79,7 @@ export const Mermaid: Story = {
   args: { kind: "mermaid", title: "問い合わせの受付", legend: "[]" },
 };
 
-export const Map: Story = {
+export const MapTools: Story = {
   name: "Map",
   parameters: { server: { id: "diagram-frame" } },
   args: { kind: "map", mapTools: true, panelOpen: true },

@@ -122,6 +122,39 @@ const listenStops = (options: {
   );
 };
 
+/** ホイール: `enabled` のとき、拡大して縦にスクロールできる間は、表示する枠をスクロールさせず、縦の量を祖先のスクロールにする */
+const listenWheelToScroller = (options: {
+  viewport: HTMLElement;
+  enabled: boolean;
+  signal: AbortSignal;
+}): void => {
+  const { viewport, enabled, signal } = options;
+  if (!enabled) {
+    return;
+  }
+  viewport.addEventListener(
+    "wheel",
+    (event) => {
+      if (
+        event.ctrlKey ||
+        viewport.hasAttribute("data-at-fit") ||
+        viewport.scrollHeight <= viewport.clientHeight
+      ) {
+        return;
+      }
+      event.preventDefault();
+      const scroller = scrollParentOf(viewport);
+      const delta = wheelDelta({
+        event,
+        page: { width: viewport.clientWidth, height: scroller.clientHeight },
+      });
+      scroller.scrollTop += delta.y;
+      viewport.scrollLeft += delta.x;
+    },
+    { passive: false, signal },
+  );
+};
+
 /** 表示する枠と中身に、全体が収まる倍率の `ZOOM.minRatio` 倍から `ZOOM.maxRatio` 倍までの拡大・縮小（ボタン・キー・ピンチ）と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
 export function attachZoom(options: {
   /** 表示する枠 */
@@ -163,8 +196,8 @@ export function attachZoom(options: {
     keyTargets = [viewport, tools],
     percentBase = "content",
     fitMin = 0,
-    touchPan = "pointer",
-    wheelToScroller = false,
+    touchPan,
+    wheelToScroller,
   } = options;
   const sizer = content.parentElement ?? content;
   const zoomText = tools.querySelector<HTMLElement>('[data-tool="fit"]');
@@ -492,30 +525,11 @@ export function attachZoom(options: {
   viewport.addEventListener("gesturestart", preventGesture, { signal });
   viewport.addEventListener("gesturechange", preventGesture, { signal });
 
-  // ホイール: 拡大して縦にスクロールできる間は、表示する枠をスクロールさせず、縦の量を祖先のスクロールにする
-  if (wheelToScroller) {
-    viewport.addEventListener(
-      "wheel",
-      (event) => {
-        if (
-          event.ctrlKey ||
-          viewport.hasAttribute("data-at-fit") ||
-          viewport.scrollHeight <= viewport.clientHeight
-        ) {
-          return;
-        }
-        event.preventDefault();
-        const scroller = scrollParentOf(viewport);
-        const delta = wheelDelta({
-          event,
-          page: { width: viewport.clientWidth, height: scroller.clientHeight },
-        });
-        scroller.scrollTop += delta.y;
-        viewport.scrollLeft += delta.x;
-      },
-      { passive: false, signal },
-    );
-  }
+  listenWheelToScroller({
+    viewport,
+    enabled: wheelToScroller === true,
+    signal,
+  });
 
   // スクロール: Shift＋ホイールなどで動いたときも、全体が収まる位置から削除されたことにする
   viewport.addEventListener(
