@@ -25,22 +25,50 @@ states:
         value: '["store", "stock"]'
   - name: Narrow
     description: 幅 390px の置き場所
-lead: map の `C4Context` を、要素を種類の行・名前・説明を持つノード、境界を破線のグループにして構成図の部品の上に描き、外部の要素を灰色の面と種類の行で描き分ける。
+  - name: Container
+    description: '`C4Container`。種類と技術の行（`[Container: Node.js]`）を持つ要素・`ContainerDb`・`ContainerQueue`・外部のコンテナ・`Container_Boundary` の破線のグループ'
+    notes:
+      定義: モックの `CONTAINER`・`CONTAINER_DATA`（`docs/mock/refs/660/assets/samples.js`）
+  - name: Component
+    description: '`C4Component`。`Component`・`ComponentDb`・`ComponentQueue`・`Component_Ext` と `Container_Boundary`'
+    notes:
+      定義: モックの `COMPONENT`・`COMPONENT_DATA`
+  - name: Dynamic
+    description: '`C4Dynamic`。関係のラベルの前に記載の順の番号「{番号}: 」を持ち、`RelIndex` の第 1 引数を番号にしない'
+    notes:
+      定義: モックの `DYNAMIC`・`DYNAMIC_DATA`
+  - name: Deployment
+    description: '`C4Deployment`。3 レイヤーの入れ子の配置先のノードを実線のグループで描き、`Node_L` を `Node_R` の左に置く'
+    notes:
+      定義: モックの `DEPLOYMENT`・`DEPLOYMENT_DATA`
+  - name: DeploymentCollapsed
+    description: 配置先のノード「東京のリージョン」を閉じた。名前の行の下に「要素 2 件」の行を持つ 1 つのノードになる
+    args:
+      - name: collapsed
+        value: '["region"]'
+    notes:
+      定義: モックの `DEPLOYMENT`・`DEPLOYMENT_DATA`
+lead: map の `C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment` を、要素を種類の行・名前・説明を持つノード、境界を破線のグループ、配置先のノードを実線のグループにして構成図の部品の上に描き、外部の要素を灰色の面と種類の行で描き分ける。
 args:
   - name: layout
     type: オブジェクト
     required: true
-    description: 自動配置の結果（`MapLayout`）。要素はノード、境界はグループ。関係のラベルは「{ラベル} [{技術}]」
+    description: '自動配置の結果（`MapLayout`）。要素はノード、境界と配置先のノードはグループ。関係のラベルは「{ラベル} [{技術}]」で、`C4Dynamic` は前に「{番号}: 」を付ける'
   - name: layout.nodes[].c4Kind
     type: 列挙
     required: true
-    choices: person・system・system_db・system_queue
-    description: 要素の種類。`person` は人のアイコン、`system_db` はデータベースのアイコン、`system_queue` は角の丸い横長の形状
+    choices: person・system・system_db・system_queue・container・container_db・container_queue・component・component_db・component_queue
+    description: 要素の種類。`person` は人のアイコン、`*_db` はデータベースのアイコン、`*_queue` は角の丸い横長の形状。種類の行は `[Person]`・`[Software System]`・`[Container]`・`[Component]`
+  - name: layout.nodes[].technology
+    type: 文字列
+    required: false
+    default: なし（種類の行に技術を出さない）
+    description: 'コンテナ・コンポーネントの技術の引数。種類の行を `[Container: {技術}]` のように種類と技術にする'
   - name: layout.nodes[].external
     type: 真偽値
     required: false
     default: 'false'
-    description: '`_Ext` の要素。灰色の面で描き、種類の行を `[External Person]`・`[External Software System]` にする'
+    description: '`_Ext` の要素。灰色の面で描き、種類の行を `[External Person]`・`[External Container: {技術}]` のように `External` を付ける'
   - name: layout.nodes[].description
     type: 文字列
     required: false
@@ -49,13 +77,13 @@ args:
   - name: layout.groups[].c4Boundary
     type: 列挙
     required: true
-    choices: enterprise・system・boundary
-    description: 境界の種類。破線の枠で描き、タイトルの後ろに `enterprise` は `［Enterprise］`、`system` は `［Software System］` を付ける。`boundary` は種類を付けない
+    choices: enterprise・system・container・boundary・deployment
+    description: 境界の種類。`deployment`（`Deployment_Node`・`Node`・`Node_L`・`Node_R`）は実線、ほかは破線の枠で描き、タイトルの後ろに `enterprise` は `［Enterprise］`、`system` は `［Software System］`、`container` は `［Container］`、`deployment` は種類の引数を「［{種類}］」で付ける（種類の引数が無ければ付けない）。`boundary` は種類を付けない
   - name: collapsed
     type: 配列
     required: false
     default: '[]'
-    description: 閉じた境界の ID。名前の行の下の行に「要素 {数} 件」を出す
+    description: 閉じた境界・配置先のノードの ID。名前の行の下の行に「要素 {数} 件」（入れ子の配置先のノードの中の要素を含む）を出す
   - name: entered
     type: 文字列
     required: false
@@ -106,7 +134,7 @@ uses:
     how: 要素・境界・関係の説明
 accessibility:
   - 要素のノードは構成図のノードと同じく押せる要素がフォーカスを受け、種類の行・名前・説明を読み上げの対象にする。外部の要素を灰色だけでなく種類の行の `External` でも伝える
-  - 境界の破線の枠は種類をタイトルの「［{種類}］」で伝える
+  - 境界の破線の枠と配置先のノードの実線の枠は、種類をタイトルの「［{種類}］」でも伝える
   - 関係の押せる帯は `aria-label="{元}から{先}への線"`（`BiRel` は「{元}と{先}の間の線」）を持つ
 refs:
   - IF-472-35#constraints[map の C4 図]

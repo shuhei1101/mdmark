@@ -5,25 +5,22 @@ implementation: src/map/map.part.ts#renderMapBand
 story: Parts/MapBand
 states:
   - name: Idle
-    description: 始める前。番号は `–/4`、停止は押せず、タイトルと文の行が無い
+    description: 始める前。帯の枠線と面を出さず、4 つの区切りの手順のバーと左右の矢印のボタンだけ。タイトルと文の要素は `hidden`
   - name: Step
-    description: 2 つ目の手順。番号 `2/4`・手順のタイトル・3 行の説明の文。ボタンの位置は Idle と同じ
+    description: 2 つ目の手順を繰り返している途中。手順 1 の区切りが済んだ手順、手順 2 の区切りが半分まで塗られ、帯の枠線と面・手順のタイトル・3 行の説明の文が出る。バーと矢印のボタンの位置は Idle と同じ
     args:
       - name: index
         value: '1'
+      - name: playing
+        value: 'true'
+      - name: fill
+        value: '0.5'
       - name: title
         value: 記法を読む
       - name: text
         value: '"1 行目\n2 行目\n3 行目"'
-  - name: Auto
-    description: 自動で進めている。自動で進めるのボタンが一時停止のアイコンになり、`aria-pressed` が `true`
-    args:
-      - name: index
-        value: '0'
-      - name: auto
-        value: 'true'
   - name: Playback
-    description: シーケンス図の再生。タイトルがメッセージの文で、ボタンの名前が前のメッセージ・次のメッセージ・再生をやめる
+    description: シーケンス図の再生。タイトルがメッセージの文で、バーと矢印のボタンの名前がメッセージ
     args:
       - name: mode
         value: playback
@@ -31,10 +28,12 @@ states:
         value: '2'
       - name: total
         value: '9'
+      - name: playing
+        value: 'true'
       - name: title
         value: mount を呼ぶ
   - name: StatePlayback
-    description: 状態遷移図の遷移の再生。タイトルが「{遷移元} → {遷移先}：{ラベル}」で、ボタンの名前が前の遷移・次の遷移・再生をやめる
+    description: 状態遷移図の遷移の再生。タイトルが「{遷移元} → {遷移先}：{ラベル}」で、バーと矢印のボタンの名前が遷移
     args:
       - name: mode
         value: playback
@@ -44,47 +43,74 @@ states:
         value: '5'
       - name: total
         value: '13'
+      - name: playing
+        value: 'true'
       - name: title
         value: 判定 → 差し戻しの理由を確認する：差し戻し
-  - name: Narrow
-    description: 幅 390px。タイトルは番号とボタンの下の行に回る
-    args:
-      - name: index
-        value: '1'
-      - name: title
-        value: 長い手順のタイトルで、1 行目に収まらない
   - name: CommitPlayback
-    description: Git グラフの commit の再生。タイトルが「{ブランチ名} · {commit のキー}」で、ボタンの名前が前の commit・次の commit・再生をやめる
+    description: Git グラフの commit の再生。タイトルが「{ブランチ名} · {commit のキー}」で、バーと矢印のボタンの名前が commit
     args:
       - name: mode
         value: playback
       - name: unit
         value: commit
-lead: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図）の帯。1 行目に番号・タイトル・前へ・停止・自動で進める・次への 4 つのボタンを置き、2 行目から説明の文を出す。
+  - name: Dense
+    description: 手順 40 で幅 390px。区切りが 12px より細く、手順のバーが `is-dense` を持ち、今の手順（20）の区切りだけが 24px
+    args:
+      - name: total
+        value: '40'
+      - name: index
+        value: '19'
+      - name: playing
+        value: 'true'
+  - name: Narrow
+    description: 幅 390px。長いタイトルと説明の文が折り返し、バーと矢印のボタンは 1 行のまま
+    args:
+      - name: index
+        value: '1'
+      - name: title
+        value: 長い手順のタイトルで、1 行目に収まらない
+lead: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図・状態遷移図・時系列の図）の帯。手順の数に区切った手順のバーと左右の矢印のボタンを 1 行に置き、始めた後はその下に手順のタイトルと説明の文を出す。
 args:
   - name: mode
     type: 列挙
     required: false
     default: walkthrough
     choices: '`walkthrough`・`playback`'
-    description: 構成図の案内か、シーケンス図の再生か。ボタンのスクリーンリーダー向けの名前を変える
+    description: 構成図の案内か、シーケンス図などの再生か。`walkthrough` では単位を手順にする
   - name: unit
     type: 列挙
     required: false
     default: message
     choices: '`message`・`transition`・`task`・`period`・`commit`'
-    description: 再生で進める単位。`playback` のボタンの名前を、`message` ではメッセージ、`transition`（状態遷移図）では遷移、`task`（ガントチャート・ジャーニー）ではタスク、`period`（タイムライン）では期間、`commit`（Git グラフ）では commit にする
+    description: 再生で進める単位。`playback` の単位の名前を、`message` ではメッセージ、`transition`（状態遷移図）では遷移、`task`（ガントチャート・ジャーニー）ではタスク、`period`（タイムライン）では期間、`commit`（Git グラフ）では commit にする
   - name: total
     type: 整数
     required: true
     choices: 1 以上
-    description: 手順かメッセージの数
+    description: 手順かメッセージの数。手順のバーの区切りの数
   - name: index
     type: 整数
     required: false
-    default: なし（始める前。番号は `–`）
+    default: なし（始める前。帯の枠線と面を出さない）
     choices: 0 から `total - 1`
     description: 今の手順かメッセージの番号
+  - name: titles
+    type: 文字列の配列
+    required: false
+    default: '[]'
+    description: 手順ごとのタイトル。区切りの `title` 属性「{番号}. {タイトル}」と、バーの読み上げの値に使う
+  - name: playing
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 今の手順を繰り返しているか。今の区切りに塗りを出す
+  - name: fill
+    type: 数値
+    required: false
+    default: '0'
+    choices: 0 から 1
+    description: 今の手順の 1 周の進み。今の区切りの塗りの幅の割合
   - name: title
     type: 文字列
     required: false
@@ -95,39 +121,35 @@ args:
     required: false
     default: 空（文の要素に `hidden`）
     description: 手順の説明の文。改行はそのまま出す
-  - name: auto
-    type: 真偽値
-    required: false
-    default: 'false'
-    description: 自動で進めているか
   - name: label
     type: 文字列
     required: true
     description: 帯のスクリーンリーダー向けの名前（`{図のタイトル}の案内`・`{図のタイトル}の再生`）
 events:
-  - name: 前へ・次へ
-    when: 前へ・次へのボタンを押すか、帯にフォーカスして ← ・ → を押す
-    value: 次の番号（端では反対の端）
-    description: '`mount` が手順を進め、強調を付け替える。図の枠の中のスクロールは変えない'
+  - name: 手順へ移る
+    when: 手順のバーの区切りを押す。左右の矢印のボタンを押す。バーにフォーカスして ← ・ → ・ Home ・ End を押す
+    value: 移る先の番号（矢印のボタンと ← → は端で反対の端。始める前の左は最後、右は最初）
+    description: '`mount` が手順を移し、停止するまでその手順の強調とデータの印を繰り返し、今の区切りを 1 周の時間に合わせて塗り直し、強調するノードが収まる位置と倍率へ図の枠の中をなめらかに移す。今の手順の区切りを押したときは、その手順の最初から塗り直す'
   - name: 停止
-    when: 停止のボタンを押す
+    when: 帯の中のバーと矢印のボタンの外を押す。バーにフォーカスして Esc を押す
     value: なし
-    description: '`mount` が強調を解き、始めた段の図に戻し、`index` を無しにする'
-  - name: 自動で進める・一時停止
-    when: 自動で進めるのボタンを押す
-    value: '`aria-pressed`'
-    description: '`mount` が印の `interval` 秒ごとに次へ進め、強調するノードの中心へ図の枠の中をスクロールする。読者が図の枠を触ったらスクロールを止める'
+    description: '`mount` が強調を解き、始めた段と倍率・スクロールの位置の図に戻し、`index` を無しにする。図の枠の中の空いた場所での停止は `mount` が図の枠で受ける'
 uses:
   - component: CMP-472-8#
-    how: 前へ・停止・自動で進める（一時停止）・次へのアイコン
+    how: 左右の矢印のアイコン
 accessibility:
   - 帯は `role="region"` と `aria-label`（引数 `label`）を持ち、文の要素は `aria-live="polite"`
-  - ボタンはアイコンだけで、スクリーンリーダー向けの名前と `title` を、案内では `前の手順`・`案内をやめる`・`自動で進める`（自動のときは `一時停止`）・`次の手順`、再生では `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`（`unit` が `transition`・`task`・`period`・`commit` のときは、`前の遷移`・`次の遷移` と同じく `前の{単位}`・`次の{単位}`）にする
-  - 番号は等幅の数字で出し、説明の文の行数によらずボタンの位置を変えない
+  - 手順のバーは `role="slider"`・`tabindex="0"`・`aria-label`（単位の名前）・`aria-valuemin` 0・`aria-valuemax`（`total`）・`aria-valuenow`（今の番号。始める前は 0）・`aria-valuetext`（「{単位} {番号}/{total} {タイトル}」。始める前は「始める前」）・`aria-keyshortcuts`（`ArrowLeft ArrowRight Escape`）を持つ
+  - 左右の矢印のボタンは 24px 以上のアイコンだけのボタンで、スクリーンリーダー向けの名前と `title` を `前の{単位}`・`次の{単位}`（案内では `前の手順`・`次の手順`）にする。押した後に描き直しても、フォーカスを同じ向きのボタンに戻す
+  - 済んだ手順・今の手順・残りの手順の区切りを色だけでなく面と縁でも描き分け、今の区切りは 1.5px の縁を持つ
+  - 区切りが 12px より細くなる幅では、手順のバーに `is-dense` を付けて今の区切りを 24px にし、ほかの区切りが残りの幅を分ける
+  - 説明の文の行数によらず、バーと矢印のボタンの位置を変えない
 refs:
-  - IF-472-35#
+  - IF-472-35#constraints[map の案内と再生の帯]
 status: planned
 test_file: tests/integration/lib/map-band.story.test.ts
+notes:
+  外観: モック `docs/mock/components/map-band/`（確認ログ『帯のモックの修正』『手順が多いときの対策を反映したモックへの合意』）
 tags:
   - name: topic:案内
     main: true
