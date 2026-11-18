@@ -1,0 +1,462 @@
+﻿2026-11-18T05:37:19.3106572Z ##[group]Run if [ -z "$PATHS" ]; then
+2026-11-18T05:37:19.3106957Z ^[[36;1mif [ -z "$PATHS" ]; then^[[0m
+2026-11-18T05:37:19.3107311Z ^[[36;1m  npm run test:integration 2>&1 | tee test.log^[[0m
+2026-11-18T05:37:19.3107666Z ^[[36;1melse^[[0m
+2026-11-18T05:37:19.3107911Z ^[[36;1m  # PATHS は空白で区切った並びのため、引用符で囲まずに分ける^[[0m
+2026-11-18T05:37:19.3108247Z ^[[36;1m  # shellcheck disable=SC2086^[[0m
+2026-11-18T05:37:19.3108686Z ^[[36;1m  npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log^[[0m
+2026-11-18T05:37:19.3109109Z ^[[36;1mfi^[[0m
+2026-11-18T05:37:19.3160537Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-18T05:37:19.3160974Z env:
+2026-11-18T05:37:19.3161208Z   LAYER: integration
+2026-11-18T05:37:19.3164471Z   PATHS: tests/integration/lib/build.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/lightbox.story.test.ts tests/integration/lib/map-axis-grid.story.test.ts tests/integration/lib/map-band.story.test.ts tests/integration/lib/map-c4.story.test.ts tests/integration/lib/map-er.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/map-mindmap.story.test.ts tests/integration/lib/map-sequence.story.test.ts tests/integration/lib/map-state.story.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/render.test.ts tests/integration/lib/upgrade.test.ts
+2026-11-18T05:37:19.3167955Z   XDG_RUNTIME_DIR: /run/user/1001
+2026-11-18T05:37:19.3168335Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+2026-11-18T05:37:19.3168725Z   XDG_CONFIG_HOME: 
+2026-11-18T05:37:19.3168975Z ##[endgroup]
+2026-11-18T05:37:20.3604433Z 
+2026-11-18T05:37:20.3625513Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.4 ^[[39m^[[90m/home/runner/work/mdmark/mdmark^[[39m
+2026-11-18T05:37:20.3644610Z 
+2026-11-18T05:37:50.1508980Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.1515500Z ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[33m
+2026-11-18T05:37:50.1517433Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:37:50.1519409Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:37:50.1521435Z 52 |  ...:n,ignoreIllegals:!0});return n2(o)}var r2;var o2=e=>import(e);function Kk(e,t,n){console.error(`${e}\u3092\u8AAD\...
+2026-11-18T05:37:50.1522866Z    |                                                                 ^
+2026-11-18T05:37:50.1523696Z 53 |  ${t}
+2026-11-18T05:37:50.1524574Z 54 |  });^[[0m^[[33m
+2026-11-18T05:37:50.1525368Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.1528148Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.1562542Z ^[[33m^[[39m
+2026-11-18T05:37:50.1584659Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.1590522Z   File: ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[39m
+2026-11-18T05:37:50.1592051Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.1593335Z ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[33m
+2026-11-18T05:37:50.1595338Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:37:50.1597270Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:37:50.1599155Z 52 |  ...3066\u3044\u307E\u3059\u3002</p></div>',u2;var f2=e=>import(e);function m2(e){let{cache:t,importModule:n}=e,r=new ...
+2026-11-18T05:37:50.1600489Z    |                                                                 ^
+2026-11-18T05:37:50.1601261Z 53 |  ${t}
+2026-11-18T05:37:50.1601933Z 54 |  });^[[0m^[[33m
+2026-11-18T05:37:50.1603246Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.1606131Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.1608116Z ^[[33m^[[39m
+2026-11-18T05:37:50.1609341Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.1610592Z   File: ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[39m
+2026-11-18T05:37:50.1612029Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.1613287Z ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[33m
+2026-11-18T05:37:50.1614347Z ^[[0m53 |  ${t}
+2026-11-18T05:37:50.1615315Z 54 |  });
+2026-11-18T05:37:50.1616402Z 55 |  ...:l});f&&d.push(f)}return C2(d)}var M2="1.59.0",E2=e=>import(e),A2=e=>fetch(e,{method:"HEAD"}),ku=e=>`https://cdn.j...
+2026-11-18T05:37:50.1617594Z    |                                                                 ^
+2026-11-18T05:37:50.1619071Z 56 |  `):(t.textContent??"").replace(/\n$/,"")}function xu(e,t){let n=document.createElement("template");n.innerHTML=Fi({st...
+2026-11-18T05:37:50.1621337Z 57 |  `)return;let S=document.createElement("span");return S.className="mdmark-code-break",T.replaceWith(S),S.append(T),S})...^[[0m^[[33m
+2026-11-18T05:37:50.1622896Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.1625967Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.1627897Z ^[[33m^[[39m
+2026-11-18T05:37:50.1628685Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.1636115Z   File: ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[39m
+2026-11-18T05:37:50.1637324Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.1638394Z ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[33m
+2026-11-18T05:37:50.1639371Z ^[[0m58 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+2026-11-18T05:37:50.1640093Z 59 |  `);return(t.textContent??"").split(`
+2026-11-18T05:37:50.1641329Z 60 |  ...verse())r()}}var uN="data-mdmark-drawn",Vu;var fN=e=>import(e);async function Ey(e){let{root:t,libraries:n,isCurre...
+2026-11-18T05:37:50.1642451Z    |                                                                 ^
+2026-11-18T05:37:50.1642991Z 61 |  ${o}
+2026-11-18T05:37:50.1643455Z 62 |  ---^[[0m^[[33m
+2026-11-18T05:37:50.1644254Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.1646730Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.1648654Z ^[[33m^[[39m
+2026-11-18T05:37:50.1649189Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.1650036Z   File: ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[39m
+2026-11-18T05:37:50.1651183Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.1652222Z ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[33m
+2026-11-18T05:37:50.1652879Z ^[[0m61 |  ${o}
+2026-11-18T05:37:50.1653224Z 62 |  ---
+2026-11-18T05:37:50.1654533Z 63 |  ...-theme-light",Iy;var Oy=Promise.resolve(),Yu=0,vN=e=>import(e),Py=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+2026-11-18T05:37:50.1655600Z    |                                                                 ^
+2026-11-18T05:37:50.1656801Z 64 |  `)[0]?.trim()??"",IN=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+2026-11-18T05:37:50.1658653Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...^[[0m^[[33m
+2026-11-18T05:37:50.1660228Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.1662659Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.1664806Z ^[[33m^[[39m
+2026-11-18T05:37:50.1665295Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.1665869Z   File: ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[39m
+2026-11-18T05:37:50.1666535Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.1667255Z ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[33m
+2026-11-18T05:37:50.1667625Z ^[[0m62 |  ---
+2026-11-18T05:37:50.1668416Z 63 |  `)+e.slice(t[0].length)}},xN=e=>{let t=bN.exec(e);return t&&Dy(t[1]??"")||void 0},kr=e=>{let t=kN(e),n=t?.body??e,r=t...
+2026-11-18T05:37:50.1669296Z 64 |  ...nts"],map:["attachMap"]},By=new Map,Ny=new Map,PN=e=>import(e);function qy(e,t){return e instanceof Error?(e.cause...
+2026-11-18T05:37:50.1669894Z    |                                                                 ^
+2026-11-18T05:37:50.1670561Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+2026-11-18T05:37:50.1671540Z 66 |  `).filter(t=>fq.test(t)).length}function yq(e){return`${e?`\u8A00\u8A9E \`${e}\` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED...^[[0m^[[33m
+2026-11-18T05:37:50.1672179Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.1673494Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.1675291Z ^[[33m^[[39m
+2026-11-18T05:37:50.1675771Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.1676554Z   File: ^[[36m/tmp/mdmark-integration-dist-LyFaVQ/dist/index.js^[[39m
+2026-11-18T05:37:50.9232902Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.9259970Z ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[33m
+2026-11-18T05:37:50.9287759Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:37:50.9308931Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:37:50.9341233Z 52 |  ...:n,ignoreIllegals:!0});return n2(o)}var r2;var o2=e=>import(e);function Kk(e,t,n){console.error(`${e}\u3092\u8AAD\...
+2026-11-18T05:37:50.9354359Z    |                                                                 ^
+2026-11-18T05:37:50.9366359Z 53 |  ${t}
+2026-11-18T05:37:50.9393700Z 54 |  });^[[0m^[[33m
+2026-11-18T05:37:50.9431398Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.9447372Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.9475071Z ^[[33m^[[39m
+2026-11-18T05:37:50.9486446Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.9487595Z   File: ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[39m
+2026-11-18T05:37:50.9489232Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.9490518Z ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[33m
+2026-11-18T05:37:50.9492433Z ^[[0m50 |  `)}function e2(e){let{pre:t,language:n,fileName:r,title:o,copyState:s,mermaidAttribute:i}=e,a=VP({language:n,fileName...
+2026-11-18T05:37:50.9494698Z 51 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+2026-11-18T05:37:50.9496684Z 52 |  ...3066\u3044\u307E\u3059\u3002</p></div>',u2;var f2=e=>import(e);function m2(e){let{cache:t,importModule:n}=e,r=new ...
+2026-11-18T05:37:50.9498683Z    |                                                                 ^
+2026-11-18T05:37:50.9499457Z 53 |  ${t}
+2026-11-18T05:37:50.9500105Z 54 |  });^[[0m^[[33m
+2026-11-18T05:37:50.9500903Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.9503617Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.9505868Z ^[[33m^[[39m
+2026-11-18T05:37:50.9506579Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.9507926Z   File: ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[39m
+2026-11-18T05:37:50.9509702Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.9510935Z ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[33m
+2026-11-18T05:37:50.9511856Z ^[[0m53 |  ${t}
+2026-11-18T05:37:50.9512412Z 54 |  });
+2026-11-18T05:37:50.9513594Z 55 |  ...:l});f&&d.push(f)}return C2(d)}var M2="1.59.0",E2=e=>import(e),A2=e=>fetch(e,{method:"HEAD"}),ku=e=>`https://cdn.j...
+2026-11-18T05:37:50.9515119Z    |                                                                 ^
+2026-11-18T05:37:50.9516622Z 56 |  `):(t.textContent??"").replace(/\n$/,"")}function xu(e,t){let n=document.createElement("template");n.innerHTML=Fi({st...
+2026-11-18T05:37:50.9518898Z 57 |  `)return;let S=document.createElement("span");return S.className="mdmark-code-break",T.replaceWith(S),S.append(T),S})...^[[0m^[[33m
+2026-11-18T05:37:50.9520499Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.9523217Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.9526708Z ^[[33m^[[39m
+2026-11-18T05:37:50.9527533Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.9528710Z   File: ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[39m
+2026-11-18T05:37:50.9530129Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.9531382Z ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[33m
+2026-11-18T05:37:50.9532674Z ^[[0m58 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+2026-11-18T05:37:50.9533706Z 59 |  `);return(t.textContent??"").split(`
+2026-11-18T05:37:50.9535404Z 60 |  ...verse())r()}}var uN="data-mdmark-drawn",Vu;var fN=e=>import(e);async function Ey(e){let{root:t,libraries:n,isCurre...
+2026-11-18T05:37:50.9536745Z    |                                                                 ^
+2026-11-18T05:37:50.9537491Z 61 |  ${o}
+2026-11-18T05:37:50.9538145Z 62 |  ---^[[0m^[[33m
+2026-11-18T05:37:50.9538943Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.9541688Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.9543679Z ^[[33m^[[39m
+2026-11-18T05:37:50.9544706Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.9545882Z   File: ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[39m
+2026-11-18T05:37:50.9547257Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.9548547Z ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[33m
+2026-11-18T05:37:50.9549505Z ^[[0m61 |  ${o}
+2026-11-18T05:37:50.9550093Z 62 |  ---
+2026-11-18T05:37:50.9551366Z 63 |  ...-theme-light",Iy;var Oy=Promise.resolve(),Yu=0,vN=e=>import(e),Py=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+2026-11-18T05:37:50.9552713Z    |                                                                 ^
+2026-11-18T05:37:50.9555646Z 64 |  `)[0]?.trim()??"",IN=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+2026-11-18T05:37:50.9559019Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...^[[0m^[[33m
+2026-11-18T05:37:50.9560474Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.9563216Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.9565452Z ^[[33m^[[39m
+2026-11-18T05:37:50.9566222Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.9567241Z   File: ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[39m
+2026-11-18T05:37:50.9568952Z ^[[2m5:37:50 AM^[[22m ^[[33m^[[1m[vite]^[[22m^[[39m ^[[33m^[[2m(client)^[[22m^[[39m ^[[33mwarning: 
+2026-11-18T05:37:50.9570412Z ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[33m
+2026-11-18T05:37:50.9571382Z ^[[0m62 |  ---
+2026-11-18T05:37:50.9572747Z 63 |  `)+e.slice(t[0].length)}},xN=e=>{let t=bN.exec(e);return t&&Dy(t[1]??"")||void 0},kr=e=>{let t=kN(e),n=t?.body??e,r=t...
+2026-11-18T05:37:50.9574916Z 64 |  ...nts"],map:["attachMap"]},By=new Map,Ny=new Map,PN=e=>import(e);function qy(e,t){return e instanceof Error?(e.cause...
+2026-11-18T05:37:50.9576334Z    |                                                                 ^
+2026-11-18T05:37:50.9577890Z 65 |  ${i===void 0?"":Iw(c)}`),f=[X(e,`<div class="mdmark-map" data-map="${l}" data-map-kind="${a.kind}" data-map-args="${d...
+2026-11-18T05:37:50.9580112Z 66 |  `).filter(t=>fq.test(t)).length}function yq(e){return`${e?`\u8A00\u8A9E \`${e}\` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED...^[[0m^[[33m
+2026-11-18T05:37:50.9581624Z The above dynamic import cannot be analyzed by Vite.
+2026-11-18T05:37:50.9584677Z See ^[[34mhttps://vite.dev/guide/features#dynamic-import^[[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+2026-11-18T05:37:50.9586837Z ^[[33m^[[39m
+2026-11-18T05:37:50.9587667Z   Plugin: ^[[35mvite:import-analysis^[[39m
+2026-11-18T05:37:50.9588954Z   File: ^[[36m/tmp/mdmark-integration-dist-W2hN66/dist/index.js^[[39m
+2026-11-18T05:37:51.7426981Z  ^[[32m✓^[[39m ^[[30m^[[43m integration-browser-touch (chromium) ^[[49m^[[39m tests/integration/lib/mount.browser.test.ts ^[[2m(^[[22m^[[2m307 tests^[[22m^[[2m | ^[[22m^[[33m306 skipped^[[39m^[[2m)^[[22m^[[33m 1862^[[2mms^[[22m^[[39m
+2026-11-18T05:37:51.7435839Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_column_resized_by_touch^[[33m 1677^[[2mms^[[22m^[[39m
+2026-11-18T05:37:54.4256990Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-node ^[[49m^[[39m tests/integration/lib/render.test.ts ^[[2m(^[[22m^[[2m104 tests^[[22m^[[2m)^[[22m^[[33m 5116^[[2mms^[[22m^[[39m
+2026-11-18T05:37:54.4279235Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 816^[[2mms^[[22m^[[39m
+2026-11-18T05:37:54.4317658Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_gfm_extensions^[[33m 509^[[2mms^[[22m^[[39m
+2026-11-18T05:37:54.4342141Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_syntax^[[33m 606^[[2mms^[[22m^[[39m
+2026-11-18T05:37:54.4365424Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_no_intl_segmenter^[[33m 830^[[2mms^[[22m^[[39m
+2026-11-18T05:38:06.8486025Z ^[[90mstderr^[[2m | tests/integration/lib/mount.browser.test.ts^[[2m > ^[[22m^[[2mtest_normal_when_printed_with_syntax
+2026-11-18T05:38:06.8487933Z ^[[22m^[[39m[Error: ResizeObserver loop completed with undelivered notifications.]
+2026-11-18T05:38:08.5099878Z ^[[90mstderr^[[2m | tests/integration/lib/mount.browser.test.ts^[[2m > ^[[22m^[[2mtest_normal_when_diagram_zoomed
+2026-11-18T05:38:08.5104128Z ^[[22m^[[39m[Error: ResizeObserver loop completed with undelivered notifications.]
+2026-11-18T05:38:09.9761034Z ^[[90mstderr^[[2m | tests/integration/lib/mount.browser.test.ts^[[2m > ^[[22m^[[2mtest_normal_when_diagram_panned
+2026-11-18T05:38:09.9775328Z ^[[22m^[[39m[Error: ResizeObserver loop completed with undelivered notifications.]
+2026-11-18T05:38:30.7669982Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-node ^[[49m^[[39m tests/integration/lib/check-config.test.ts ^[[2m(^[[22m^[[2m39 tests^[[22m^[[2m)^[[22m^[[33m 40972^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7672766Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 946^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7676499Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_drift^[[33m 1074^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7695981Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_no_documents^[[33m 865^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7697185Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_config_missing^[[33m 342^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7698282Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_config_unreadable^[[33m 377^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7699516Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_unknown_mark^[[33m 989^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7706300Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_plain_md_has_marks^[[33m 1072^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7707628Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_extension_hint_disabled^[[33m 1077^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7708937Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_known_extension_and_ignored_mark^[[33m 1301^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7711874Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_extension_unloadable^[[33m 1503^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7713098Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_base_given^[[33m 2184^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7714378Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_base_unknown^[[33m 1228^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7715669Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_alias_drift^[[33m 1183^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7717058Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_unknown_color_theme^[[33m 1639^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7718573Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_unknown_color_scheme^[[33m 2494^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7720069Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_files_missing^[[33m 646^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7721447Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_drift^[[33m 1444^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7732942Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_retired_diagram^[[33m 1416^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7734462Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_text^[[33m 1054^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7736913Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_text_warnings^[[33m 1022^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7738279Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_text_unknown_mark_args^[[33m 654^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7784996Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_yaml_key^[[33m 1067^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7815150Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_text_extension_mark^[[33m 703^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7825025Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_key_missing^[[33m 732^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7845151Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_include_targets_missing^[[33m 365^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7849211Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_include_circular_or_outside^[[33m 456^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7850790Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_placement_invalid^[[33m 3539^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7852244Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_data_drift^[[33m 999^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7853618Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_er_state_data_drift^[[33m 855^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7855360Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_class_arch_c4_data_drift^[[33m 813^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7856725Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_text_map_warnings^[[33m 753^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7858161Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_config_drift^[[33m 876^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7859612Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_legacy_mark^[[33m 840^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7860768Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mark_options_drift^[[33m 828^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7862068Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_text_legacy_mark^[[33m 670^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7864499Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_text_mark_args_not_json^[[33m 707^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7865660Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_mindmap_data_drift^[[33m 725^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7866764Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_axis_grid_data_drift^[[33m 788^[[2mms^[[22m^[[39m
+2026-11-18T05:38:30.7867828Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_node_id_link_checked^[[33m 743^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6615759Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-node ^[[49m^[[39m tests/integration/lib/upgrade.test.ts ^[[2m(^[[22m^[[2m25 tests^[[22m^[[2m)^[[22m^[[33m 46921^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6617081Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 467^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6617987Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_settings^[[33m 333^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6619219Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_plan^[[33m 370^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6620138Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_value_asked^[[33m 410^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6621227Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_version_missing^[[33m 801^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6622220Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_up_to_date^[[33m 345^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6623240Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_destructive_with_yes^[[33m 430^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6624393Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_reapplied^[[33m 892^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6625087Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_tag_vocabulary_dropped^[[33m 708^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6625780Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_destructive_declined^[[33m 459^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6626407Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_step_fails^[[33m 489^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6627010Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_check_fails^[[33m 520^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6627654Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_local_version_newer^[[33m 488^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6628319Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_version_format_invalid^[[33m 534^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6628942Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_answer_missing^[[33m 611^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6629506Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_steps_invalid^[[33m 712^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6630083Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_config_missing^[[33m 670^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6630657Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_diagram_drift^[[33m 758^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6631276Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_retired_diagrams_migrated^[[33m 1762^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6631913Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_retired_er_migrated^[[33m 749^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6632578Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_retired_map_options_migrated^[[33m 1258^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6633247Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_document_marks_migrated^[[33m 901^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6634345Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_local_version_develop^[[33m 435^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6635574Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_cli_built_from_develop^[[33m 415^[[2mms^[[22m^[[39m
+2026-11-18T05:38:42.6636847Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_develop_build_has_unreleased_steps^[[33m 453^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5622195Z  ^[[32m✓^[[39m ^[[30m^[[46m integration-browser (chromium) ^[[49m^[[39m tests/integration/lib/mount.browser.test.ts ^[[2m(^[[22m^[[2m307 tests^[[22m^[[2m | ^[[22m^[[33m1 skipped^[[39m^[[2m)^[[22m^[[33m 82174^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5626269Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 1528^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5636924Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_pinned^[[33m 897^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5638275Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_pin_and_wide^[[33m 1007^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5639648Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_header_stuck^[[33m 9020^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5641500Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_code_copied^[[33m 2127^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5654930Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_parts_kept_on_update^[[33m 330^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5704705Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_printed_with_syntax^[[33m 329^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5714779Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_notation_differs^[[33m 347^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5735030Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_zoomed^[[33m 1111^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5736634Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_panned^[[33m 1953^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5738070Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_fullscreen^[[33m 576^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5740042Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_tooltip^[[33m 770^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5741447Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_tooltip_touch^[[33m 503^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5742898Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_destroyed_while_waiting^[[33m 1107^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5747379Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diff_blocks_updated^[[33m 949^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5748970Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_part_module_unavailable^[[33m 408^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5750453Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_tooltip_above^[[33m 410^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5752014Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_tooltip_placement_bottom^[[33m 437^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5753631Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_bg_transparent_with_opaque^[[33m 429^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5755310Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_no_syntax_target^[[33m 310^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5756834Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_hovered_and_pinned^[[33m 663^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5758306Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_focused^[[33m 556^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5759793Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_into_closed_section^[[33m 369^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5761261Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_back_to_top_pressed^[[33m 677^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5762800Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_back_to_top_in_scroll_container^[[33m 741^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5764586Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_back_to_top_avoids_side_parts^[[33m 821^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5766120Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_lightbox_opened^[[33m 326^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5767437Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_gif_toggled^[[33m 2137^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5768763Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_gif_reduced_motion^[[33m 714^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5770213Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_over_table^[[33m 1848^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5771726Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_scrolled_to_end^[[33m 481^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5773160Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_side_toc_at_scroll_edge^[[33m 919^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5774726Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_node_link_opened^[[33m 451^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5775741Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_wide_toggled^[[33m 323^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5776734Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_wide_with_side_toc^[[33m 821^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5777744Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_glossary_touch^[[33m 465^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5778508Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_columns_reordered^[[33m 316^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5779174Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_reordered_within_groups^[[33m 430^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5779833Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_table_pinned_through^[[33m 809^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5780474Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_placement_top^[[33m 692^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5781413Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_chart_item_tooltip^[[33m 929^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5781997Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_resized^[[33m 1657^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5782555Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_range_scripts^[[33m 357^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5783122Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_range_script_invalid^[[33m 340^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5783718Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_block_spacing^[[33m 2129^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5784965Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_drawn^[[33m 1200^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5786065Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_scheme_changed^[[33m 1229^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5787461Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_printed^[[33m 2073^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5788607Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_theme_configured^[[33m 882^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5789804Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_no_mermaid_target^[[33m 330^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5790936Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_mermaid_syntax_invalid^[[33m 875^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5792060Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_mermaid_node_link^[[33m 1947^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5793205Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_pinned_column_resized^[[33m 1247^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5794714Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_pinned_columns_exceed_visible_width^[[33m 856^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5796074Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_pinned_through_exceed_visible_width^[[33m 653^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5797331Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_walkthrough_played^[[33m 468^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5798414Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_items_moved^[[33m 358^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5799657Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_diagram_and_frontmatter_kept_on_update^[[33m 502^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5800868Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_args^[[33m 396^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5801840Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_terms^[[33m 508^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5802933Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_hints_off^[[33m 623^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5804366Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_plain_mermaid_map^[[33m 695^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5805817Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_plain_map_cannot_read^[[33m 1012^[[2mms^[[22m^[[39m
+2026-11-18T05:39:11.5807183Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_map_axis_grid_layout^[[33m 441^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3857015Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-flow.story.test.ts ^[[2m(^[[22m^[[2m17 tests^[[22m^[[2m)^[[22m^[[33m 33565^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3895058Z    ^[[33m^[[2m✓^[[22m^[[39m test_default^[[33m 2431^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3917459Z    ^[[33m^[[2m✓^[[22m^[[39m test_entered^[[33m 1874^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3935797Z    ^[[33m^[[2m✓^[[22m^[[39m test_collapsed^[[33m 2020^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3936842Z    ^[[33m^[[2m✓^[[22m^[[39m test_selected_one^[[33m 2462^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3937809Z    ^[[33m^[[2m✓^[[22m^[[39m test_selected_two^[[33m 2431^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3938727Z    ^[[33m^[[2m✓^[[22m^[[39m test_focused^[[33m 2263^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3939718Z    ^[[33m^[[2m✓^[[22m^[[39m test_wire_reattached^[[33m 2490^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3940726Z    ^[[33m^[[2m✓^[[22m^[[39m test_node_fit_width^[[33m 1752^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3941694Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 2002^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3943148Z    ^[[33m^[[2m✓^[[22m^[[39m test_linked_node^[[33m 2571^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3944284Z    ^[[33m^[[2m✓^[[22m^[[39m test_group_note^[[33m 2210^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3945763Z    ^[[33m^[[2m✓^[[22m^[[39m test_group_note_info_marker_size^[[33m 1891^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3947076Z    ^[[33m^[[2m✓^[[22m^[[39m test_group_note_info_marker_not_overlapping^[[33m 1886^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3948253Z    ^[[33m^[[2m✓^[[22m^[[39m test_hints_off^[[33m 1900^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3949250Z    ^[[33m^[[2m✓^[[22m^[[39m test_accessibility^[[33m 1191^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3950292Z    ^[[33m^[[2m✓^[[22m^[[39m test_parallel_wires^[[33m 1088^[[2mms^[[22m^[[39m
+2026-11-18T05:39:17.3951264Z    ^[[33m^[[2m✓^[[22m^[[39m test_plain^[[33m 1040^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5807388Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-er.story.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 13493^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5810081Z    ^[[33m^[[2m✓^[[22m^[[39m test_default^[[33m 1151^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5811178Z    ^[[33m^[[2m✓^[[22m^[[39m test_columns_collapsed^[[33m 1059^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5812281Z    ^[[33m^[[2m✓^[[22m^[[39m test_group_collapsed^[[33m 1761^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5813395Z    ^[[33m^[[2m✓^[[22m^[[39m test_entered^[[33m 1950^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5814739Z    ^[[33m^[[2m✓^[[22m^[[39m test_table_selected^[[33m 2087^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5815809Z    ^[[33m^[[2m✓^[[22m^[[39m test_path_selected^[[33m 1836^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5816828Z    ^[[33m^[[2m✓^[[22m^[[39m test_fanout_tip^[[33m 1463^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5817782Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 981^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.5833386Z    ^[[33m^[[2m✓^[[22m^[[39m test_accessibility^[[33m 1152^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6207500Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-node ^[[49m^[[39m tests/integration/lib/build.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 60129^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6218993Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 13493^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6229416Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_version_given^[[33m 14473^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6230949Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_version_format_invalid^[[33m 1133^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6232313Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_dist_file_too_large^[[33m 4223^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6233666Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_api_missing_in_baseline_browser^[[33m 11949^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6235247Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_schema_changed_without_steps^[[33m 885^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6236481Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_next_steps_left_in_release^[[33m 993^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6237640Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_steps_invalid^[[33m 980^[[2mms^[[22m^[[39m
+2026-11-18T05:39:31.6238758Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_develop^[[33m 11657^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3304623Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-sequence.story.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[33m 18096^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3306722Z    ^[[33m^[[2m✓^[[22m^[[39m test_default^[[33m 2060^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3310201Z    ^[[33m^[[2m✓^[[22m^[[39m test_arrows^[[33m 1165^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3311675Z    ^[[33m^[[2m✓^[[22m^[[39m test_tall_participants^[[33m 1103^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3312771Z    ^[[33m^[[2m✓^[[22m^[[39m test_block_collapsed^[[33m 1276^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3314004Z    ^[[33m^[[2m✓^[[22m^[[39m test_block_entered^[[33m 1178^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3315154Z    ^[[33m^[[2m✓^[[22m^[[39m test_participant_selected^[[33m 1207^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3316194Z    ^[[33m^[[2m✓^[[22m^[[39m test_playing^[[33m 1263^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3324278Z    ^[[33m^[[2m✓^[[22m^[[39m test_reordering^[[33m 1820^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3325369Z    ^[[33m^[[2m✓^[[22m^[[39m test_hints_off^[[33m 1415^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3327084Z    ^[[33m^[[2m✓^[[22m^[[39m test_accessibility^[[33m 1058^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3328291Z    ^[[33m^[[2m✓^[[22m^[[39m test_participant_terms^[[33m 1297^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3329732Z    ^[[33m^[[2m✓^[[22m^[[39m test_actor_icon^[[33m 2019^[[2mms^[[22m^[[39m
+2026-11-18T05:39:50.3330703Z    ^[[33m^[[2m✓^[[22m^[[39m test_plain^[[33m 1180^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1946314Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/diagram-frame.story.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 23891^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1954236Z    ^[[33m^[[2m✓^[[22m^[[39m test_fit^[[33m 1299^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1978396Z    ^[[33m^[[2m✓^[[22m^[[39m test_zoomed^[[33m 1109^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1979734Z    ^[[33m^[[2m✓^[[22m^[[39m test_max^[[33m 1841^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1980602Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 1193^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1981539Z    ^[[33m^[[2m✓^[[22m^[[39m test_fullscreen^[[33m 1237^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1982497Z    ^[[33m^[[2m✓^[[22m^[[39m test_in_framed_surface^[[33m 1237^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1983642Z    ^[[33m^[[2m✓^[[22m^[[39m test_in_framed_surface_fullscreen^[[33m 1201^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1985080Z    ^[[33m^[[2m✓^[[22m^[[39m test_fit_when_resized^[[33m 2346^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1986117Z    ^[[33m^[[2m✓^[[22m^[[39m test_fit_when_printed^[[33m 2058^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1987067Z    ^[[33m^[[2m✓^[[22m^[[39m test_resized^[[33m 1251^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1988015Z    ^[[33m^[[2m✓^[[22m^[[39m test_resize_handle_focused^[[33m 2166^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1988962Z    ^[[33m^[[2m✓^[[22m^[[39m test_resize_off^[[33m 1094^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1989820Z    ^[[33m^[[2m✓^[[22m^[[39m test_mermaid^[[33m 2083^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1990688Z    ^[[33m^[[2m✓^[[22m^[[39m test_touch_active^[[33m 1906^[[2mms^[[22m^[[39m
+2026-11-18T05:39:56.1991565Z    ^[[33m^[[2m✓^[[22m^[[39m test_plain_map^[[33m 1825^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8780363Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-state.story.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 17023^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8810259Z    ^[[33m^[[2m✓^[[22m^[[39m test_default^[[33m 2162^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8820047Z    ^[[33m^[[2m✓^[[22m^[[39m test_playing^[[33m 2029^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8824105Z    ^[[33m^[[2m✓^[[22m^[[39m test_self_transition_playing^[[33m 1635^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8825187Z    ^[[33m^[[2m✓^[[22m^[[39m test_state_selected^[[33m 1913^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8826087Z    ^[[33m^[[2m✓^[[22m^[[39m test_entered^[[33m 1845^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8826962Z    ^[[33m^[[2m✓^[[22m^[[39m test_collapsed^[[33m 1914^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8827962Z    ^[[33m^[[2m✓^[[22m^[[39m test_collapsed_info_marker_size^[[33m 1899^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8828905Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 1548^[[2mms^[[22m^[[39m
+2026-11-18T05:40:13.8829920Z    ^[[33m^[[2m✓^[[22m^[[39m test_accessibility^[[33m 1999^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9032987Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-axis-grid.story.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[33m 38879^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9035576Z    ^[[33m^[[2m✓^[[22m^[[39m test_gantt^[[33m 1851^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9037320Z    ^[[33m^[[2m✓^[[22m^[[39m test_timeline^[[33m 1783^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9038689Z    ^[[33m^[[2m✓^[[22m^[[39m test_git_graph^[[33m 1822^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9039927Z    ^[[33m^[[2m✓^[[22m^[[39m test_journey^[[33m 1979^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9041151Z    ^[[33m^[[2m✓^[[22m^[[39m test_block^[[33m 2029^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9075312Z    ^[[33m^[[2m✓^[[22m^[[39m test_gantt_collapsed^[[33m 3632^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9086659Z    ^[[33m^[[2m✓^[[22m^[[39m test_timeline_collapsed^[[33m 3781^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9104888Z    ^[[33m^[[2m✓^[[22m^[[39m test_journey_collapsed^[[33m 1825^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9113407Z    ^[[33m^[[2m✓^[[22m^[[39m test_block_collapsed^[[33m 3494^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9114847Z    ^[[33m^[[2m✓^[[22m^[[39m test_gantt_entered^[[33m 1781^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9116241Z    ^[[33m^[[2m✓^[[22m^[[39m test_block_entered^[[33m 1847^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9117336Z    ^[[33m^[[2m✓^[[22m^[[39m test_gantt_selected^[[33m 1891^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9118458Z    ^[[33m^[[2m✓^[[22m^[[39m test_git_branch_selected^[[33m 1848^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9119623Z    ^[[33m^[[2m✓^[[22m^[[39m test_journey_actor_selected^[[33m 1871^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9120685Z    ^[[33m^[[2m✓^[[22m^[[39m test_played^[[33m 1829^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9121653Z    ^[[33m^[[2m✓^[[22m^[[39m test_colored^[[33m 1817^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9122580Z    ^[[33m^[[2m✓^[[22m^[[39m test_hints_off^[[33m 1863^[[2mms^[[22m^[[39m
+2026-11-18T05:40:29.9123501Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 1872^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5558162Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-c4.story.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 19008^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5559117Z    ^[[33m^[[2m✓^[[22m^[[39m test_default^[[33m 1913^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5559648Z    ^[[33m^[[2m✓^[[22m^[[39m test_container^[[33m 1737^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5560105Z    ^[[33m^[[2m✓^[[22m^[[39m test_component^[[33m 1897^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5560544Z    ^[[33m^[[2m✓^[[22m^[[39m test_dynamic^[[33m 1873^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5560987Z    ^[[33m^[[2m✓^[[22m^[[39m test_deployment^[[33m 1929^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5561486Z    ^[[33m^[[2m✓^[[22m^[[39m test_deployment_collapsed^[[33m 1679^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5562023Z    ^[[33m^[[2m✓^[[22m^[[39m test_boundary_collapsed^[[33m 1849^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5562760Z    ^[[33m^[[2m✓^[[22m^[[39m test_entered^[[33m 1478^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5563330Z    ^[[33m^[[2m✓^[[22m^[[39m test_element_selected^[[33m 1706^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5564266Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 1155^[[2mms^[[22m^[[39m
+2026-11-18T05:40:33.5565566Z    ^[[33m^[[2m✓^[[22m^[[39m test_accessibility^[[33m 1741^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1711738Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-band.story.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 13582^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1756114Z    ^[[33m^[[2m✓^[[22m^[[39m test_idle^[[33m 1888^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1793186Z    ^[[33m^[[2m✓^[[22m^[[39m test_step^[[33m 3157^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1817162Z    ^[[33m^[[2m✓^[[22m^[[39m test_playback^[[33m 1710^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1867431Z    ^[[33m^[[2m✓^[[22m^[[39m test_state_playback^[[33m 1693^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1910218Z    ^[[33m^[[2m✓^[[22m^[[39m test_commit_playback^[[33m 1777^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1911667Z    ^[[33m^[[2m✓^[[22m^[[39m test_dense^[[33m 1659^[[2mms^[[22m^[[39m
+2026-11-18T05:40:44.1913065Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 1649^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1281406Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/lightbox.story.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 12784^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1290214Z    ^[[33m^[[2m✓^[[22m^[[39m test_middle^[[33m 1785^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1292105Z    ^[[33m^[[2m✓^[[22m^[[39m test_first^[[33m 1759^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1293080Z    ^[[33m^[[2m✓^[[22m^[[39m test_last^[[33m 1720^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1294534Z    ^[[33m^[[2m✓^[[22m^[[39m test_single^[[33m 1690^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1295406Z    ^[[33m^[[2m✓^[[22m^[[39m test_zoomed^[[33m 1698^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1296361Z    ^[[33m^[[2m✓^[[22m^[[39m test_max^[[33m 1668^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1297442Z    ^[[33m^[[2m✓^[[22m^[[39m test_long_caption^[[33m 1198^[[2mms^[[22m^[[39m
+2026-11-18T05:40:47.1298301Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 1214^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3046825Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-storybook ^[[49m^[[39m tests/integration/lib/map-mindmap.story.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 9439^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3051626Z    ^[[33m^[[2m✓^[[22m^[[39m test_default^[[33m 1159^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3053130Z    ^[[33m^[[2m✓^[[22m^[[39m test_collapsed^[[33m 1151^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3055300Z    ^[[33m^[[2m✓^[[22m^[[39m test_entered^[[33m 1037^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3056727Z    ^[[33m^[[2m✓^[[22m^[[39m test_selected^[[33m 882^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3058120Z    ^[[33m^[[2m✓^[[22m^[[39m test_plain_selected^[[33m 877^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3059324Z    ^[[33m^[[2m✓^[[22m^[[39m test_colored^[[33m 878^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3084818Z    ^[[33m^[[2m✓^[[22m^[[39m test_walked^[[33m 813^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3088159Z    ^[[33m^[[2m✓^[[22m^[[39m test_hints_off^[[33m 873^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3089316Z    ^[[33m^[[2m✓^[[22m^[[39m test_narrow^[[33m 823^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3090173Z    ^[[33m^[[2m✓^[[22m^[[39m test_accessibility^[[33m 871^[[2mms^[[22m^[[39m
+2026-11-18T05:40:54.3129297Z 
+2026-11-18T05:40:54.3138046Z ^[[2m Test Files ^[[22m ^[[1m^[[32m16 passed^[[39m^[[22m^[[90m (16)^[[39m
+2026-11-18T05:40:54.3144712Z ^[[2m      Tests ^[[22m ^[[1m^[[32m601 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m307 skipped^[[39m^[[90m (908)^[[39m
+2026-11-18T05:40:54.3150449Z ^[[2m   Start at ^[[22m 05:37:20
+2026-11-18T05:40:54.3165509Z ^[[2m   Duration ^[[22m 213.85s^[[2m (tests 97%, import 2%, transform 1%)^[[22m
+2026-11-18T05:40:54.3194454Z 
