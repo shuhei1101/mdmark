@@ -4,3 +4,5 @@ use_cases:
     impact: run_only
     detail: 図のノード・グループの説明のマーカーを押してツールチップを開く操作は変わらないが、マーカーの大きさと位置を変えるため、押して開けることを確認する
     depends_on: []
+docs: []
+scope_out: []
