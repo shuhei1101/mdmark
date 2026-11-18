@@ -134,3 +134,6 @@ scope_out:
   - item: src/map/ にこれから追加するファイルの行
     reason: ファイルを追加する各 Issue が自分で行を追加する
     plan: none
+  - item: project-index.yaml の 1 行目のスキーマの URL を project-index のバージョンのタグ（v0.1.0）に揃える（setup の手順 4 の候補）
+    reason: v0.1.0 のタグの commit に schemas/project-index.schema.json が無く、URL が 404 になる。今の commit 固定の URL は 200 で引けるため、そのまま残す。project-index の setup の候補の出し方の問題で、この配信元では直さない
+    plan: none
