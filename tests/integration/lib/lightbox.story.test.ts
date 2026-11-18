@@ -51,7 +51,7 @@ async function readTools(page: Page) {
   });
 }
 
-// 15 枚の 3 枚目は、全体が収まる倍率で前後のボタンを押せ、縮小を押せず、移動のボタンを出さない（Middle）
+// 15 枚の 3 枚目は、全体が収まる倍率で前後のボタンと縮小を押せ、移動のボタンを出さない（Middle）
 test("test_middle", async () => {
   // 準備・実行
   const page = await open("middle");
@@ -61,7 +61,7 @@ test("test_middle", async () => {
   expect(tools.count).toBe("3 / 15");
   expect(tools.prevDisabled).toBe(false);
   expect(tools.nextDisabled).toBe(false);
-  expect(tools.outDisabled).toBe(true);
+  expect(tools.outDisabled).toBe(false);
   expect(tools.inDisabled).toBe(false);
   expect(tools.zoomText).toBe("100%");
   expect(tools.panVisible).toBe(false);
@@ -145,12 +145,12 @@ test("test_zoomed", async () => {
   ).resolves.toBe("0");
 });
 
-// 上限の 300% では、拡大を押せない（Max）
+// 上限（全体が収まる倍率の 5 倍）の 500% では、拡大を押せない（Max）
 test("test_max", async () => {
   // 準備・実行
   const tools = await readTools(await open("max"));
   // 検証
-  expect(tools.zoomText).toBe("300%");
+  expect(tools.zoomText).toBe("500%");
   expect(tools.inDisabled).toBe(true);
   expect(tools.outDisabled).toBe(false);
   expect(tools.panVisible).toBe(true);

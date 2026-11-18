@@ -55,7 +55,32 @@ function tool(page: Page, name: string) {
   return page.locator(`button[aria-label="${name}"]`);
 }
 
-// 開いたときは全体が収まる倍率で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない（Fit）
+/** 右上のパネルの見えているボタンの、スクリーンリーダー向けの名前（「。」より前）・上端・大きさ（DOM の順） */
+function visibleTools(page: Page) {
+  return page.locator(".mdmark-diagram-tools button").evaluateAll((buttons) =>
+    buttons
+      .filter((button) => button.getClientRects().length > 0)
+      .map((button) => {
+        const rect = button.getBoundingClientRect();
+        return {
+          name: button.getAttribute("aria-label")?.split("。")[0] ?? "",
+          top: Math.round(rect.top),
+          width: rect.width,
+          height: rect.height,
+        };
+      }),
+  );
+}
+
+/** 表示する枠が `data-at-fit` を持つかと、縦のはみ出しの計算値 */
+function viewportState(page: Page) {
+  return page.locator(".mdmark-diagram-viewport").evaluate((viewport) => ({
+    atFit: viewport.hasAttribute("data-at-fit"),
+    overflowY: getComputedStyle(viewport).overflowY,
+  }));
+}
+
+// 開いたときは全体が収まる倍率で、右上のパネルは倍率のボタンと開閉のボタンだけに畳み（倍率のボタンは押せるが何も変わらない）、縦にスクロールしない（Fit）
 test("test_fit", async () => {
   // 準備・実行
   const page = await openFrame("fit", true);
@@ -63,13 +88,18 @@ test("test_fit", async () => {
   await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
     "100%",
   );
-  const size = await tool(page, "拡大").evaluate((button) => {
-    const rect = button.getBoundingClientRect();
-    return { width: rect.width, height: rect.height };
+  const shownTools = await visibleTools(page);
+  expect(shownTools.map((item) => item.name)).toEqual([
+    "倍率 100%",
+    "表示の操作を開く",
+  ]);
+  await expect(
+    tool(page, "表示の操作を開く").getAttribute("aria-expanded"),
+  ).resolves.toBe("false");
+  await expect(viewportState(page)).resolves.toEqual({
+    atFit: true,
+    overflowY: "hidden",
   });
-  expect(size).toEqual({ width: 28, height: 28 });
-  await expect(tool(page, "縮小").isDisabled()).resolves.toBe(true);
-  await expect(tool(page, "拡大").isDisabled()).resolves.toBe(false);
   // 戻すのボタンは倍率のボタンにまとまり、今の名前の一部で探せる
   const zoom = page.getByRole("button", { name: "全体が収まる倍率に戻す" });
   await expect(zoom.count()).resolves.toBe(1);
@@ -80,15 +110,13 @@ test("test_fit", async () => {
   );
   await zoom.click();
   await expect(zoom.innerText()).resolves.toBe(shown);
-  await expect(page.locator('[data-group="pan"]').isVisible()).resolves.toBe(
-    false,
-  );
+  await expect(page.locator('[data-group="pan"]').count()).resolves.toBe(0);
   await expect(pageOverflows(page)).resolves.toBe(false);
   // 面に包まない表示するノードは、既定の線で描く
   await expect(boxShadow(page)).resolves.toBe(await defaultBoxShadow(page));
 });
 
-// 1 段拡大して動かした状態は、移動のボタンを出す（Zoomed）
+// 1 段拡大してパネルを開いた状態は、縮小・倍率・拡大・全画面・開閉のボタンを 1 行に並べ、縦にもスクロールできる（Zoomed）
 test("test_zoomed", async () => {
   // 準備・実行
   const page = await openFrame("zoomed", false);
@@ -96,24 +124,55 @@ test("test_zoomed", async () => {
   await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
     "125%",
   );
-  await expect(page.locator('[data-group="pan"]').isVisible()).resolves.toBe(
-    true,
-  );
+  const shownTools = await visibleTools(page);
+  expect(shownTools.map((item) => item.name)).toEqual([
+    "縮小",
+    "倍率 125%",
+    "拡大",
+    "全画面で開く",
+    "表示の操作を閉じる",
+  ]);
+  expect(new Set(shownTools.map((item) => item.top)).size).toBe(1);
+  await expect(
+    tool(page, "表示の操作を閉じる").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+  await expect(page.locator('[data-group="pan"]').count()).resolves.toBe(0);
+  await expect(viewportState(page)).resolves.toEqual({
+    atFit: false,
+    overflowY: "auto",
+  });
   await expectResizeValues(page);
 });
 
-// 上限（定義の大きさの 3 倍）では、拡大を押せない（Max）
+// 上限（全体が収まる倍率の 5 倍）では、拡大を押せない（Max）
 test("test_max", async () => {
   // 準備・実行
   const page = await openFrame("max", false);
   // 検証
   await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
-    "300%",
+    "500%",
   );
   await expect(tool(page, "拡大").isDisabled()).resolves.toBe(true);
+  await expect(tool(page, "縮小").isDisabled()).resolves.toBe(false);
 });
 
-// 狭い枠では、凡例が折り返し、ボタンの帯は移動のボタンまで 1 行に収め、横にはみ出さない（Narrow）
+// 下限（全体が収まる倍率の 0.25 倍）では、縮小を押せず、表示する枠は data-at-fit を持つ（Min）
+test("test_min", async () => {
+  // 準備・実行
+  const page = await openFrame("min", false);
+  // 検証
+  await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
+    "25%",
+  );
+  await expect(tool(page, "縮小").isDisabled()).resolves.toBe(true);
+  await expect(tool(page, "拡大").isDisabled()).resolves.toBe(false);
+  await expect(viewportState(page)).resolves.toEqual({
+    atFit: true,
+    overflowY: "hidden",
+  });
+});
+
+// 狭い枠では、凡例が折り返し、パネルはボタンを 24px 四方にして 1 行に収め、横にはみ出さない（Narrow）
 test("test_narrow", async () => {
   // 準備・実行
   const page = await openFrame("narrow", false);
@@ -122,17 +181,14 @@ test("test_narrow", async () => {
   await expect(page.locator(".mdmark-diagram-zoom").innerText()).resolves.toBe(
     "125%",
   );
-  const rows = await page
-    .locator(".mdmark-diagram-tools button")
-    .evaluateAll(
-      (buttons) =>
-        new Set(
-          buttons
-            .filter((button) => button.getClientRects().length > 0)
-            .map((button) => Math.round(button.getBoundingClientRect().top)),
-        ).size,
-    );
-  expect(rows).toBe(1);
+  const shownTools = await visibleTools(page);
+  expect(shownTools).toHaveLength(5);
+  expect(new Set(shownTools.map((item) => item.top)).size).toBe(1);
+  expect(
+    shownTools
+      .filter((item) => !item.name.startsWith("倍率"))
+      .map(({ width, height }) => ({ width, height })),
+  ).toEqual(Array(4).fill({ width: 24, height: 24 }));
   const legend = await page
     .locator(".mdmark-diagram-legend")
     .evaluate((element) => ({
@@ -187,6 +243,7 @@ function viewportHeights(page: Page) {
 test("test_fit_when_resized", async () => {
   // 準備: 定義の高さ × 倍率が 36rem を超えるまで拡大する
   const page = await openFrame("fit", true);
+  await tool(page, "表示の操作を開く").click();
   for (let i = 0; i < 10; i += 1) {
     if ((await viewportHeights(page)).content > MAX_HEIGHT_PX) {
       break;
@@ -216,6 +273,7 @@ test("test_fit_when_printed", async () => {
   const opened = await viewport.evaluate((element) =>
     Number.parseFloat(element.style.height),
   );
+  await tool(page, "表示の操作を開く").click();
   for (let i = 0; i < 10; i += 1) {
     if ((await viewportHeights(page)).content > opened + 1) {
       break;
@@ -319,22 +377,38 @@ test("test_mermaid", async () => {
   await expect(figure.locator(".mdmark-mermaid svg").count()).resolves.toBe(1);
 });
 
-// 指で図を動かす操作中は、表示するノードの線がリンクの色の 2px で、表示する枠の touch-action が none（TouchActive）
-test("test_touch_active", async () => {
+// 種類 map で開いたパネルは、先頭に外へ戻る（押せない）・全て開く・全て閉じる・配置と選択を元に戻す（押せない）を並べ、1 行に収める（Map）
+test("test_map", async () => {
   // 準備・実行
-  const page = await openFrame("touch-active", false);
+  const page = await openFrame("map-tools", false);
   // 検証
-  const link = await resolveColor(page, "var(--mdmark-color-link)");
-  await expect(boxShadow(page)).resolves.toBe(`${link} 0px 0px 0px 2px inset`);
-  await expect(
-    page
-      .locator(".mdmark-diagram-viewport")
-      .evaluate((viewport) => getComputedStyle(viewport).touchAction),
-  ).resolves.toBe("none");
-  await expect(
-    page.locator(".mdmark-diagram-box").getAttribute("data-touch-active"),
-  ).resolves.toBe("");
-  await expectResizeValues(page);
+  const shownTools = await visibleTools(page);
+  expect(shownTools.map((item) => item.name).slice(0, 4)).toEqual([
+    "外へ戻る",
+    "全て開く",
+    "全て閉じる",
+    "配置と選択を元に戻す",
+  ]);
+  expect(new Set(shownTools.map((item) => item.top)).size).toBe(1);
+  await expect(tool(page, "外へ戻る").isDisabled()).resolves.toBe(true);
+  await expect(tool(page, "配置と選択を元に戻す").isDisabled()).resolves.toBe(
+    true,
+  );
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 種類 map で外のグループの中へ入った状態は、畳んだパネルに外へ戻る（押せる）・倍率・開閉のボタンを並べる（MapInGroup）
+test("test_map_in_group", async () => {
+  // 準備・実行
+  const page = await openFrame("map-in-group", false);
+  // 検証
+  const shownTools = await visibleTools(page);
+  expect(shownTools.map((item) => item.name)).toEqual([
+    "外へ戻る",
+    expect.stringMatching(/^倍率 \d+%$/),
+    "表示の操作を開く",
+  ]);
+  await expect(tool(page, "外へ戻る").isDisabled()).resolves.toBe(false);
 });
 
 // 範囲の外の純粋な Mermaid を描いた map の図は、タイトルが図の種類の名前（PlainMap）
