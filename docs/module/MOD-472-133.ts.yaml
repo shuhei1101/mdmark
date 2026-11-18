@@ -95,8 +95,8 @@ data_models:
         type: '"walkthrough" | "playback"'
         description: モード
       - name: unit
-        type: '"message" | "transition" | "task" | "period" | "commit" | undefined'
-        description: 再生で進める単位（既定 `message`）。`transition` では単位の名前を `遷移`、`task`・`period`・`commit` では `タスク`・`期間`・`commit` にする
+        type: '"message" | "transition" | "task" | "period" | "commit" | "relation" | undefined'
+        description: 再生で進める単位（既定 `message`）。`transition` では単位の名前を `遷移`、`task`・`period`・`commit`・`relation` では `タスク`・`期間`・`commit`・`関係` にする
       - name: total
         type: number
         description: 手順の数（区切りの数）
@@ -850,6 +850,12 @@ functions:
         condition: '`mode: playback`・`unit: transition`'
         mock: なし
         expected: 矢印のボタンの名前が `前の遷移`・`次の遷移`
+      - name: test_render_map_band_when_relation
+        case: 正常
+        summary: C4Dynamic の関係の再生
+        condition: '`mode: playback`・`unit: relation`'
+        mock: なし
+        expected: バーの `aria-label` が `関係` で、矢印のボタンの名前が `前の関係`・`次の関係`
   - name: renderMapMindmap
     title: mapのマインドマップのHTML
     kind: 関数
