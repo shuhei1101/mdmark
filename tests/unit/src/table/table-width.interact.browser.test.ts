@@ -351,6 +351,7 @@ test("test_attach_auto_column_widths_when_detached", async () => {
   const { root } = createRoot(CONTENT_TABLE);
   setRootWidth(root, 1280);
   const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
   const onApply = vi.fn();
   const handle = attachAutoColumnWidths(table, {
     wrapper,
@@ -362,10 +363,11 @@ test("test_attach_auto_column_widths_when_detached", async () => {
   await vi.waitFor(() => {
     expect(table.hasAttribute("data-auto-width")).toBe(true);
   });
-  // 実行
+  // 実行: 取り除いた後に、包む要素の幅とピン止めのボタンの hidden を変える
   handle.detach();
   onApply.mockClear();
   setRootWidth(root, 900);
+  showPins(root);
   await nextFrames();
   // 検証
   expect(table.hasAttribute("data-auto-width")).toBe(false);
@@ -501,6 +503,12 @@ test("test_attach_auto_column_widths_when_pin_hidden", async () => {
   await vi.waitFor(() => {
     expect(table.hasAttribute("data-auto-width")).toBe(true);
   });
+  // 検証: ボタンを出す前の最小幅は、ボタンを含まない
+  const before = headCells.map((cell) =>
+    Number.parseFloat(
+      cell.style.getPropertyValue("--mdmark-column-head-width"),
+    ),
+  );
   // 実行: はみ出させてから、ピン止めのボタンを出す
   onApply.mockClear();
   setRootWidth(root, 120);
@@ -508,6 +516,11 @@ test("test_attach_auto_column_widths_when_pin_hidden", async () => {
     expect(onApply).toHaveBeenCalled();
   });
   showPins(root);
-  // 検証
-  expectHeadToolsFit(headCells);
+  // 検証: 測り直し、最小幅がボタンを含む
+  await vi.waitFor(() => {
+    expectHeadToolsFit(headCells);
+  });
+  headCells.forEach((cell, index) => {
+    expect(before[index]).toBeLessThan(Math.floor(headContentWidth(cell)));
+  });
 });
