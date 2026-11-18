@@ -38,3 +38,4 @@
 | --- | --- | --- |
 | 単一ユースケース設計 | `05a79a26..a8b140e6` | SC-472-10 に develop を読み込むケースを追加 |
 | インターフェース定義設計 | `3ad08f5f..cab60972` | IF-472-22 に develop を読み込むフロー、CFG-472-2 の `mdmark.version` に `develop` を追加 |
+| モジュール構成設計 | `c1b6d177..8ec11ad5` | MOD-472-22 に develop の単体テスト、MOD-472-84 の `mdmark.version` の `pattern` に `develop` を追加 |
