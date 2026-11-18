@@ -15265,44 +15265,44 @@ test("test_normal_when_column_resized", async () => {
 
 // つまみにフォーカスした ←・→ キーで 16px ずつ幅を変え、Enter で描いた直後の幅に戻し、つまみの値を今の幅にする（正常系（キーボードで列の幅を変える））
 test("test_normal_when_column_resized_by_keyboard", async () => {
-  // 準備
-  const el = createElement();
-  await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
-  const table = find<HTMLElement>(el, ".mdmark-table");
-  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
-  const { heads, handles } = resizeParts(table);
-  const head = heads[0] as HTMLTableCellElement;
-  const handle = handles[0] as HTMLElement;
-  const opened = head.offsetWidth;
-  // 検証: つまみの値
-  expect(handle.getAttribute("aria-valuenow")).toBe(String(opened));
-  expect(handle.getAttribute("aria-valuetext")).toBe(`${opened}px`);
-  const min = Number(handle.getAttribute("aria-valuemin"));
-  expect(min).toBeGreaterThan(0);
-  expect(min).toBeLessThanOrEqual(opened);
-  expect(handle.getAttribute("aria-valuemax")).toBe(
-    String(Math.floor(scroller.clientWidth)),
-  );
-  const scrollLeft = scroller.scrollLeft;
-  const scrollX = window.scrollX;
-  // 実行: つまみにフォーカスし、→ キーを 2 回押す
-  handle.focus();
-  await userEvent.keyboard("{ArrowRight}{ArrowRight}");
-  // 検証
-  expect(head.offsetWidth).toBe(opened + 32);
-  expect(handle.getAttribute("aria-valuenow")).toBe(String(opened + 32));
-  // 実行・検証: ← キーを 1 回押す（広げて表がはみ出し、ピン止めのボタンを出したときは、ボタンを含む見出しの中身の幅で止まる）
-  await userEvent.keyboard("{ArrowLeft}");
-  expect(head.offsetWidth).toBe(
-    Math.max(opened + 16, Number(handle.getAttribute("aria-valuemin"))),
-  );
-  // 実行・検証: Enter で描いた直後の幅に戻り、フォーカスはつまみに残る
-  await userEvent.keyboard("{Enter}");
-  expect(head.offsetWidth).toBe(opened);
-  expect(document.activeElement).toBe(handle);
-  // 検証: キーで表とページがスクロールしない
-  expect(scroller.scrollLeft).toBe(scrollLeft);
-  expect(window.scrollX).toBe(scrollX);
+  await withViewport(1280, async () => {
+    // 準備: → キー 2 回で表がはみ出さない幅（はみ出すとピン止めのボタンが出て、最小幅がボタンを含む幅になる）
+    const el = createElement();
+    await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
+    const table = find<HTMLElement>(el, ".mdmark-table");
+    const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+    const { heads, handles } = resizeParts(table);
+    const head = heads[0] as HTMLTableCellElement;
+    const handle = handles[0] as HTMLElement;
+    const opened = head.offsetWidth;
+    // 検証: つまみの値
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(opened));
+    expect(handle.getAttribute("aria-valuetext")).toBe(`${opened}px`);
+    const min = Number(handle.getAttribute("aria-valuemin"));
+    expect(min).toBeGreaterThan(0);
+    expect(min).toBeLessThanOrEqual(opened);
+    expect(handle.getAttribute("aria-valuemax")).toBe(
+      String(Math.floor(scroller.clientWidth)),
+    );
+    const scrollLeft = scroller.scrollLeft;
+    const scrollX = window.scrollX;
+    // 実行: つまみにフォーカスし、→ キーを 2 回押す
+    handle.focus();
+    await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+    // 検証
+    expect(head.offsetWidth).toBe(opened + 32);
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(opened + 32));
+    // 実行・検証: ← キーを 1 回押す
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(head.offsetWidth).toBe(opened + 16);
+    // 実行・検証: Enter で描いた直後の幅に戻り、フォーカスはつまみに残る
+    await userEvent.keyboard("{Enter}");
+    expect(head.offsetWidth).toBe(opened);
+    expect(document.activeElement).toBe(handle);
+    // 検証: キーで表とページがスクロールしない
+    expect(scroller.scrollLeft).toBe(scrollLeft);
+    expect(window.scrollX).toBe(scrollX);
+  });
 });
 
 // 留めた列の幅を変えるたびに留める位置を計算し直し、留めた列の幅の合計が見えている幅に収まる幅で止める（正常系（留めた列の幅を変える））
