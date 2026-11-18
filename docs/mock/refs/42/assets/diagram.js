@@ -1038,6 +1038,8 @@
     /** 倍率を当て、ボタンの有効・無効と移動のボタンの有無を合わせる。 */
     const apply = (scale) => {
       state.scale = scale;
+      // 開いたときの倍率かを表示する枠に写す（data-mock-touch="native" の CSS が縦のスクロールを止めるのに使う）
+      viewport.toggleAttribute("data-at-fit", scale <= state.fit + ZOOM_EPSILON);
       stage.style.transform = `scale(${scale})`;
       sizer.style.width = `${state.width * scale}px`;
       sizer.style.height = `${state.height * scale}px`;

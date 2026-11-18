@@ -49,8 +49,23 @@
   display: none;
 }
 
+/* 案 C の開閉のボタン: 畳んだときも開いたときもパネルの端（上に置くときは右上、下に置くときは右下）に固定し、ほかのボタンをその手前に並べる。入りきらない分は 2 行目へ折り返す */
+[data-mock-panel="c"] .mdmark-diagram-tools {
+  padding-inline-end: calc(1.75rem + 0.5rem);
+}
+
 [data-mock-panel="c"] .mdmark-diagram-tools-group[data-group="more"] {
   display: flex;
+  position: absolute;
+  inset-block-start: 0.125rem;
+  inset-inline-end: 0.125rem;
+  padding-inline-start: 0.125rem;
+  border-inline-start: 1px solid var(--mdmark-color-border);
+}
+
+[data-mock-panel="c"][data-mock-panel-at="bottom"] .mdmark-diagram-tools-group[data-group="more"] {
+  inset-block-start: auto;
+  inset-block-end: 0.125rem;
 }
 
 .mdmark-diagram-tools-group[data-group="more"] {
@@ -68,4 +83,9 @@
 [data-mock-touch="native"] .mdmark-diagram-viewport {
   overflow: auto;
   touch-action: pan-x pan-y;
+}
+
+/* 開いたときの倍率（[data-at-fit]）: 縦のスクロールを止め、縦に長い図の上の縦の指の動きも文書のスクロールにする */
+[data-mock-touch="native"] .mdmark-diagram-viewport[data-at-fit] {
+  overflow-y: hidden;
 }
