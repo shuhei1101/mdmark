@@ -71,10 +71,6 @@ const headWidth = (cell: HTMLElement): number => {
     return Math.max(0, ...linesOf(cell).map((line) => textWidth(cell, line)));
   }
   const probe = content.cloneNode(true) as HTMLElement;
-  // はみ出していない間は隠しているピン止めのボタンも、後で出したときのために幅に含める
-  for (const pin of probe.querySelectorAll<HTMLElement>(".mdmark-pin")) {
-    pin.hidden = false;
-  }
   probe.style.cssText =
     "position:absolute;visibility:hidden;white-space:nowrap;width:max-content";
   cell.append(probe);
@@ -207,6 +203,17 @@ export const attachAutoColumnWidths = (
   const assigned = new Map<number, number>();
   let lastWidth: number | undefined;
 
+  /** 見出しのセルの中身が収まる外側の幅を測り、列の最小の幅の下限と `--mdmark-column-head-width` に入れる */
+  const measureHead = (column: number): void => {
+    const head = headCells[column];
+    if (!head) {
+      return;
+    }
+    const width = headOuterWidth(head);
+    headMins.set(column, width);
+    head.style.setProperty(HEAD_WIDTH_VARIABLE, `${width}px`);
+  };
+
   /** 表示している列の測った値を返却する。まだ測っていない列があれば測る */
   const shownMeasures = (): ColumnMeasure[] => {
     const shown = headCells.flatMap((head, column) =>
@@ -216,12 +223,7 @@ export const attachAutoColumnWidths = (
       for (const measure of measureColumns(table, headCells)) {
         if (!measures.has(measure.column)) {
           measures.set(measure.column, measure);
-          const head = headCells[measure.column];
-          if (head) {
-            const width = headOuterWidth(head);
-            headMins.set(measure.column, width);
-            head.style.setProperty(HEAD_WIDTH_VARIABLE, `${width}px`);
-          }
+          measureHead(measure.column);
         }
       }
     }
@@ -392,6 +394,30 @@ export const attachAutoColumnWidths = (
     apply();
   });
   observer.observe(scroller);
+  // ピン止めのボタンを出した・隠したときは、見出しの中身の幅だけを測り直して決め直す
+  const pinObserver = new MutationObserver((records) => {
+    // 同じ値を入れ直しただけの記録（ピン止めの位置を決め直すたびに出る）では測り直さない
+    const changed = records.some(
+      (record) =>
+        record.target instanceof Element &&
+        record.target.classList.contains("mdmark-pin") &&
+        record.oldValue !== record.target.getAttribute("hidden"),
+    );
+    if (!changed || !table.hasAttribute(AUTO_WIDTH_ATTRIBUTE)) {
+      return;
+    }
+    for (const column of headMins.keys()) {
+      measureHead(column);
+    }
+    apply();
+  });
+  for (const head of headCells) {
+    pinObserver.observe(head, {
+      subtree: true,
+      attributeFilter: ["hidden"],
+      attributeOldValue: true,
+    });
+  }
   apply();
 
   return {
@@ -399,6 +425,7 @@ export const attachAutoColumnWidths = (
     columnsChanged,
     detach: () => {
       observer.disconnect();
+      pinObserver.disconnect();
       for (const head of headCells) {
         head.style.removeProperty(AUTO_WIDTH_VARIABLE);
         head.style.removeProperty(HEAD_WIDTH_VARIABLE);
