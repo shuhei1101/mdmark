@@ -382,7 +382,10 @@ test("test_attach_auto_column_widths_when_detached", async () => {
 
 /** 列名が `列 1`〜`列 {count}` で、値が 2 文字のマーカーの無い表 */
 const plainTable = (count: number): string => {
-  const columns = Array.from({ length: count }, (_, index) => `列 ${index + 1}`);
+  const columns = Array.from(
+    { length: count },
+    (_, index) => `列 ${index + 1}`,
+  );
   const line = (cells: string[]): string => `| ${cells.join(" | ")} |`;
   return [
     line(columns),
