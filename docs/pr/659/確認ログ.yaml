@@ -5,3 +5,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4606019766
+  - topic: 開いたときにパネルの下に重なる図の部分の見せ方
+    decision: パネルを畳み、倍率の表示と開くボタンだけを出す。押すとほかのボタンを並べる（別案 C）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/659#discussion_r4607367759
