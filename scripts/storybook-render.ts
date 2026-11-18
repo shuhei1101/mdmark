@@ -488,11 +488,11 @@ function diagramArgs(args: PartArgs): {
   fit?: number;
   modal?: boolean;
   resizable?: boolean;
-  touchActive?: boolean;
+  panelOpen?: boolean;
 } {
   return {
     ...(args.resizable === false ? { resizable: false } : {}),
-    ...(args.touchActive === true ? { touchActive: true } : {}),
+    ...(args.panelOpen === true ? { panelOpen: true } : {}),
     ...(typeof args.zoom === "number" ? { zoom: args.zoom } : {}),
     ...(typeof args.fit === "number" ? { fit: args.fit } : {}),
     ...(args.modal === true ? { modal: true } : {}),
@@ -1093,11 +1093,33 @@ const mapFrame = (
   title: string,
   part: { html: string; tips: string },
   size: { width: number; height: number },
+  panel: {
+    tools?: Array<{ name: string; label: string; disabled?: boolean }>;
+    panelOpen?: boolean;
+  } = {},
 ): string =>
   renderDiagramFrame(
-    { kind: "map", title, legend: [], wide: true, tools: [], id: "story-map" },
+    {
+      kind: "map",
+      title,
+      legend: [],
+      wide: true,
+      tools: panel.tools ?? [],
+      ...(panel.panelOpen === true ? { panelOpen: true } : {}),
+      id: "story-map",
+    },
     { ...part, ...size },
   );
+
+/** 図の枠のストーリーの map の図のツール（`entered` のときは外へ戻るを押せる） */
+const mapStoryTools = (
+  entered: boolean,
+): Array<{ name: string; label: string; disabled?: boolean }> => [
+  { name: "back", label: "外へ戻る", disabled: !entered },
+  { name: "expandAll", label: "全て開く" },
+  { name: "collapseAll", label: "全て閉じる" },
+  { name: "reset", label: "配置と選択を元に戻す", disabled: true },
+];
 
 /** ストーリーの引数 `source` の、シーケンス図の見本の Mermaid */
 const SEQUENCE_SOURCES: Record<string, string> = {
@@ -1155,6 +1177,12 @@ function mapSequenceStory(args: PartArgs): string {
     typeof args.title === "string" ? args.title : "文書を描くまで",
     part,
     { width, height },
+    {
+      ...(args.mapTools === true
+        ? { tools: mapStoryTools(entered !== undefined) }
+        : {}),
+      ...(args.panelOpen === true ? { panelOpen: true } : {}),
+    },
   );
 }
 

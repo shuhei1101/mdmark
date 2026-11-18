@@ -30,6 +30,42 @@ const KEY_ACTIONS: Record<string, ZoomAction> = {
 /** 矢印キーとボタンで動かす向き */
 const PAN_ACTIONS = new Set<ZoomAction>(["left", "right", "up", "down"]);
 
+/** `deltaMode` が行（`1`）の `wheel` を px に直すときの 1 行の量（px） */
+export const WHEEL_LINE = 16;
+
+/** ホイールの量を px に直す。行は `WHEEL_LINE` 倍、ページは横を `page.width`・縦を `page.height` 倍にする */
+export const wheelDelta = (input: {
+  event: { deltaX: number; deltaY: number; deltaMode: number };
+  page: { width: number; height: number };
+}): { x: number; y: number } => {
+  const { event, page } = input;
+  if (event.deltaMode === 1) {
+    return { x: event.deltaX * WHEEL_LINE, y: event.deltaY * WHEEL_LINE };
+  }
+  if (event.deltaMode === 2) {
+    return { x: event.deltaX * page.width, y: event.deltaY * page.height };
+  }
+  return { x: event.deltaX, y: event.deltaY };
+};
+
+/** 祖先のうち縦にスクロールする最も近い要素を返却する。無ければ文書のスクロールする要素 */
+export const scrollParentOf = (element: HTMLElement): Element => {
+  for (
+    let parent = element.parentElement;
+    parent;
+    parent = parent.parentElement
+  ) {
+    const overflow = getComputedStyle(parent).overflowY;
+    if (
+      (overflow === "auto" || overflow === "scroll") &&
+      parent.scrollHeight > parent.clientHeight
+    ) {
+      return parent;
+    }
+  }
+  return document.scrollingElement ?? document.documentElement;
+};
+
 /** 倍率が変わったときに呼ぶ関数 */
 export type ZoomChange = (zoom: number, fit: number) => void;
 
@@ -86,7 +122,7 @@ const listenStops = (options: {
   );
 };
 
-/** 表示する枠と中身に、全体が収まる倍率から `ZOOM.max` までの拡大・縮小と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
+/** 表示する枠と中身に、全体が収まる倍率の `ZOOM.minRatio` 倍から `ZOOM.maxRatio` 倍までの拡大・縮小（ボタン・キー・ピンチ）と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
 export function attachZoom(options: {
   /** 表示する枠 */
   viewport: HTMLElement;
@@ -110,6 +146,10 @@ export function attachZoom(options: {
   percentBase?: "fit" | "content";
   /** 全体が収まる倍率の下限（既定は下限なし） */
   fitMin?: number;
+  /** 指の移動の扱い（`native` は表示する枠のスクロールとしてブラウザに任せ、`pointer` は指もドラッグで動かす。既定 `pointer`） */
+  touchPan?: "native" | "pointer";
+  /** 拡大して縦にスクロールできる間のホイールを、縦にスクロールする祖先へ渡すか（既定 `false`） */
+  wheelToScroller?: boolean;
 }): ZoomControl {
   const {
     viewport,
@@ -123,6 +163,8 @@ export function attachZoom(options: {
     keyTargets = [viewport, tools],
     percentBase = "content",
     fitMin = 0,
+    touchPan = "pointer",
+    wheelToScroller = false,
   } = options;
   const sizer = content.parentElement ?? content;
   const zoomText = tools.querySelector<HTMLElement>('[data-tool="fit"]');
@@ -151,6 +193,14 @@ export function attachZoom(options: {
           }),
         );
 
+  /** 倍率の下限（全体が収まる倍率の `ZOOM.minRatio` 倍） */
+  const floor = (): number => state.fit * ZOOM.minRatio;
+  /** 倍率の上限（全体が収まる倍率の `ZOOM.maxRatio` 倍） */
+  const ceil = (): number => state.fit * ZOOM.maxRatio;
+  /** 倍率を下限と上限の間に収める */
+  const clamp = (scale: number): number =>
+    Math.min(ceil(), Math.max(floor(), scale));
+
   /** 中身が表示する枠からはみ出しているか */
   const overflows = (): boolean =>
     size.width * state.scale > viewport.clientWidth + 1 ||
@@ -167,11 +217,12 @@ export function attachZoom(options: {
     const out = button("out");
     const zoomIn = button("in");
     if (out) {
-      out.disabled = scale <= state.fit + ZOOM_EPSILON;
+      out.disabled = scale <= floor() + ZOOM_EPSILON;
     }
     if (zoomIn) {
-      zoomIn.disabled = scale >= ZOOM.max - ZOOM_EPSILON;
+      zoomIn.disabled = scale >= ceil() - ZOOM_EPSILON;
     }
+    viewport.toggleAttribute("data-at-fit", scale <= state.fit + ZOOM_EPSILON);
     // 全体が見えている間は、移動のボタンは何も動かさないので出さない
     if (panGroup) {
       panGroup.hidden = !overflows();
@@ -213,7 +264,7 @@ export function attachZoom(options: {
 
   /** 表示する枠の中央を保ったまま倍率を変える */
   const zoomTo = (scale: number): void => {
-    const next = Math.min(ZOOM.max, Math.max(state.fit, scale));
+    const next = clamp(scale);
     if (Math.abs(next - state.fit) < ZOOM_EPSILON) {
       reset();
       return;
@@ -224,6 +275,20 @@ export function attachZoom(options: {
     apply(next);
     viewport.scrollLeft = cx * next - viewport.clientWidth / 2;
     viewport.scrollTop = cy * next - viewport.clientHeight / 2;
+  };
+
+  /** 表示する枠の中の点（`clientX`・`clientY`）の下の中身の点を保ったまま倍率を変える */
+  const zoomAt = (scale: number, clientX: number, clientY: number): void => {
+    const next = clamp(scale);
+    const rect = viewport.getBoundingClientRect();
+    const offsetX = clientX - rect.left;
+    const offsetY = clientY - rect.top;
+    const px = (viewport.scrollLeft + offsetX) / state.scale;
+    const py = (viewport.scrollTop + offsetY) / state.scale;
+    state.atFit = Math.abs(next - state.fit) < ZOOM_EPSILON;
+    apply(next);
+    viewport.scrollLeft = px * next - offsetX;
+    viewport.scrollTop = py * next - offsetY;
   };
 
   /** 中身を動かす（右・下が正） */
@@ -272,6 +337,8 @@ export function attachZoom(options: {
   const ignore = dragIgnore
     ? `${dragIgnore}, ${CONTROL_SELECTOR}`
     : CONTROL_SELECTOR;
+  // ピンチの始めの 2 本の指の距離と倍率（2 本の指の間はドラッグを始めない）
+  let pinch: { distance: number; scale: number } | undefined;
   let drag:
     | {
         x: number;
@@ -305,6 +372,8 @@ export function attachZoom(options: {
     (event) => {
       const target = event.target as Element;
       if (
+        pinch ||
+        (touchPan === "native" && event.pointerType === "touch") ||
         event.button !== 0 ||
         (!target.closest(NODE_LINK_SELECTOR) && target.closest(ignore))
       ) {
@@ -367,6 +436,87 @@ export function attachZoom(options: {
   viewport.addEventListener("pointerup", endDrag, { signal });
   viewport.addEventListener("pointercancel", endDrag, { signal });
 
+  // ピンチ: 2 本の指の間隔の変化を、中点の下の中身の点を保った倍率の変更にし、ブラウザのページの拡大を止める
+  /** 2 本の指の距離と中点 */
+  const fingers = (
+    touches: TouchList,
+  ): { distance: number; x: number; y: number } | undefined => {
+    const first = touches[0];
+    const second = touches[1];
+    if (touches.length !== 2 || !first || !second) {
+      return undefined;
+    }
+    return {
+      distance: Math.hypot(
+        second.clientX - first.clientX,
+        second.clientY - first.clientY,
+      ),
+      x: (first.clientX + second.clientX) / 2,
+      y: (first.clientY + second.clientY) / 2,
+    };
+  };
+  viewport.addEventListener(
+    "touchstart",
+    (event) => {
+      const pair = fingers(event.touches);
+      if (!pair || pair.distance === 0) {
+        return;
+      }
+      pinch = { distance: pair.distance, scale: state.scale };
+      drag = undefined;
+      viewport.classList.remove("is-dragging");
+    },
+    { passive: true, signal },
+  );
+  viewport.addEventListener(
+    "touchmove",
+    (event) => {
+      const pair = fingers(event.touches);
+      if (!pinch || !pair) {
+        return;
+      }
+      event.preventDefault();
+      zoomAt((pinch.scale * pair.distance) / pinch.distance, pair.x, pair.y);
+    },
+    { passive: false, signal },
+  );
+  const endPinch = (event: TouchEvent): void => {
+    if (event.touches.length < 2) {
+      pinch = undefined;
+    }
+  };
+  viewport.addEventListener("touchend", endPinch, { signal });
+  viewport.addEventListener("touchcancel", endPinch, { signal });
+  // Safari のジェスチャーでページを拡大させない
+  const preventGesture = (event: Event): void => event.preventDefault();
+  viewport.addEventListener("gesturestart", preventGesture, { signal });
+  viewport.addEventListener("gesturechange", preventGesture, { signal });
+
+  // ホイール: 拡大して縦にスクロールできる間は、表示する枠をスクロールさせず、縦の量を祖先のスクロールにする
+  if (wheelToScroller) {
+    viewport.addEventListener(
+      "wheel",
+      (event) => {
+        if (
+          event.ctrlKey ||
+          viewport.hasAttribute("data-at-fit") ||
+          viewport.scrollHeight <= viewport.clientHeight
+        ) {
+          return;
+        }
+        event.preventDefault();
+        const scroller = scrollParentOf(viewport);
+        const delta = wheelDelta({
+          event,
+          page: { width: viewport.clientWidth, height: scroller.clientHeight },
+        });
+        scroller.scrollTop += delta.y;
+        viewport.scrollLeft += delta.x;
+      },
+      { passive: false, signal },
+    );
+  }
+
   // スクロール: Shift＋ホイールなどで動いたときも、全体が収まる位置から削除されたことにする
   viewport.addEventListener(
     "scroll",
@@ -392,7 +542,7 @@ export function attachZoom(options: {
       reset();
     } else {
       state.fit = computeFit();
-      apply(Math.max(state.fit, state.scale));
+      apply(clamp(state.scale));
     }
   });
   observer.observe(viewport);
@@ -402,7 +552,7 @@ export function attachZoom(options: {
   /** 今の倍率と位置を保ったまま、全体が収まる倍率をもう一度求める（倍率が新しい下限より小さいときは下限にする） */
   const refit = (): void => {
     state.fit = computeFit();
-    const scale = Math.max(state.fit, state.scale);
+    const scale = clamp(state.scale);
     state.atFit = Math.abs(scale - state.fit) < ZOOM_EPSILON;
     apply(scale);
   };
@@ -434,7 +584,7 @@ export function attachZoom(options: {
       (viewport.clientWidth - margin * 2) / Math.max(rect.width, 1),
       (viewport.clientHeight - margin * 2) / Math.max(rect.height, 1),
     );
-    const target = Math.min(ZOOM.max, Math.max(state.fit, fit));
+    const target = Math.min(ceil(), Math.max(state.fit, fit));
     const to = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
     if (duration <= 0) {
       place(target, to.x, to.y);

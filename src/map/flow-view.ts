@@ -5,6 +5,7 @@ import {
 } from "../diagram/diagram.interact.ts";
 import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import type { ResolveIdLink } from "../render/sanitize.ts";
+import { DRAG_THRESHOLD } from "../shared/zoom.interact.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
   attachBand,
@@ -899,6 +900,21 @@ export const attachMapFlow = (
     const start = dragStartOf(event);
     if (!start) return;
     const { node, wire } = start;
+    // 指ではノード・グループ・線の区間を動かさず、指の移動を表示する枠のスクロールに任せる。動かさずに離したら選ぶ
+    if (event.pointerType === "touch") {
+      const from = { x: event.clientX, y: event.clientY };
+      const release = (up: PointerEvent) => {
+        window.removeEventListener("pointerup", release);
+        window.removeEventListener("pointercancel", release);
+        const distance = Math.hypot(up.clientX - from.x, up.clientY - from.y);
+        if (up.type !== "pointerup" || distance > DRAG_THRESHOLD) return;
+        if (node) select([node]);
+        else if (wire) selectWire(wire);
+      };
+      window.addEventListener("pointerup", release);
+      window.addEventListener("pointercancel", release);
+      return;
+    }
     event.preventDefault();
     // 動かした後の click ではノードのリンクを開かない（動かさずに押したときだけ開く）
     let moved = true;
