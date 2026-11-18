@@ -885,7 +885,8 @@ export type MapBandUnit =
   | "transition"
   | "task"
   | "period"
-  | "commit";
+  | "commit"
+  | "relation";
 
 /** 部品『案内の帯』の引数 */
 export type MapBandArgs = {
@@ -915,6 +916,7 @@ const UNIT_NAMES = {
   task: "タスク",
   period: "期間",
   commit: "commit",
+  relation: "関係",
 } as const;
 
 /** 案内の帯の左右の矢印のボタン */

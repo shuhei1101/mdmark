@@ -1,0 +1,44 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: C4Dynamic を描く記載方法と見た目は変わらないが、C4 図の描画と操作に再生の帯を加えるため壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: C4Dynamic の図の下に再生の帯を出し、番号つきの関係を番号の順に 1 本ずつ選んで繰り返し再生する。手順ごとにその関係と両端の要素のほかを薄くし、データの印を流す。補足に案内の手順があるときは、状態遷移図と同じく案内を進める
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: シーケンス図の再生は変わらないが、同じ再生の帯を C4Dynamic と共用するため壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図を辿って読む流れは変わらないが、再生の帯を C4Dynamic でも使うため壊していないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: C4Dynamic の行と、選択と強調・再生のバーの表に、番号つきの関係を番号の順に再生の帯で再生することを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T15:51:53.890374+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: map の節に、C4Dynamic の番号つきの関係の再生を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T15:51:53.890374+00:00'
+scope_out:
+  - item: C4Context・C4Container・C4Component・C4Deployment の関係の再生
+    reason: 番号を持つのは C4Dynamic の関係だけで、要望は番号の順の再生
+    plan: none
+  - item: map の図の案内・再生で薄くした要素（.map-dim・.map-focus）の文字のコントラスト（docs/mock/refs/445/assets/map-mock.css・src/index.css）
+    reason: モック HTML のレビュー観点「文字色が薄すぎない」から外れているが、既存の薄くし方の問題で今回の要望に含まれない
+    plan: '#678'
+  - item: 拡大した図のミニマップ（#604）
+    reason: モックの確認でユーザーがミニマップは要らないと判断した（https://github.com/shuhei1101/mdmark/pull/677#discussion_r4615263791）
+    plan: none

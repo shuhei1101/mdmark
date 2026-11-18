@@ -388,6 +388,28 @@ export const C4_DYNAMIC = `C4Dynamic
   Rel(api, web, "受付の番号を返す")
 `;
 
+/** 関係を再生する C4 の動的図（#677 のモックの `DYNAMIC` と同じ） */
+export const C4_DYNAMIC_PLAY = `C4Dynamic
+  title 注文の流れ
+  Person(customer, "顧客")
+  Container(web, "注文の画面", "React")
+  Container(api, "注文の API", "Node.js")
+  Container_Boundary(store, "注文の保存") {
+    ContainerDb(db, "注文のデータベース", "PostgreSQL")
+  }
+  Rel(customer, web, "注文を入力する")
+  Rel(web, api, "注文を送る", "JSON/HTTPS")
+  RelIndex(7, api, web, "受付の番号を返す")
+  Rel(api, db, "注文を保存する", "SQL")
+  BiRel(web, customer, "結果を確かめる")
+`;
+
+/** 関係を再生する C4 の動的図の補足（#677 のモックの `DYNAMIC_DATA` の `notes` のキーを `r2` にしたもの） */
+export const C4_DYNAMIC_PLAY_DATA = `{"version": 1, "notes": {"r2": {"text": "画面の入力を JSON にして API へ送る"}}, "layout": {"store": {"collapsed": true}}}`;
+
+/** 関係を再生する C4 の動的図に、手順 2 つの案内を加えた補足（#677 のモックの `DYNAMIC_WALK_DATA`） */
+export const C4_DYNAMIC_WALK_DATA = `{"version": 1, "notes": {}, "layout": {}, "walkthroughs": [{"title": "注文を受け付ける", "text": "顧客の入力を画面が受け、API へ送る", "nodes": ["customer", "web", "api"]}, {"title": "注文を保存する", "text": "API が注文をデータベースに保存する", "nodes": ["api", "db"]}]}`;
+
 /** C4 の配置図（モックの `DEPLOYMENT` と同じ） */
 export const C4_DEPLOYMENT = `C4Deployment
   title 注文のシステムの配置

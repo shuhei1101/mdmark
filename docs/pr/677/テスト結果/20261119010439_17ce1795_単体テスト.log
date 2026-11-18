@@ -1,0 +1,16 @@
+$ npm run test:unit
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-diagram-minimap-and-c4-dynamic-playback
+
+
+ Test Files  307 passed (307)
+      Tests  2414 passed (2414)
+   Start at  01:03:27
+   Duration  21.73s (worker 82%, tests 12%, import 5%, transform 1%)
+
+rc=0

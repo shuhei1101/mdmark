@@ -1,0 +1,81 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-18T12:00:19.829650+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 図の枠・案内の帯・C4 図の設計書が develop にあり、棚卸しは要らない
+    updated_by: planner
+    updated_at: '2026-11-18T12:00:19.829650+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-18T12:00:19.829650+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: C4Dynamic の再生は状態遷移図と同じ案内の帯（src/map/band.ts）に手順を渡す変更のため、未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-18T12:00:19.829650+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 複合ユースケース『Mermaidと補足で書いた図を辿って読む』『コードブロックのHTMLでチャートとヒントを読み取る』は図の操作の細部に依らない流れで、記述が変わらない（run_only）
+    updated_by: planner
+    updated_at: '2026-11-18T12:00:19.829650+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: docs/design-policy.md があり、見た目の方向を変える Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-18T12:00:19.829650+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更が無い（文書の中の C4Dynamic の図に再生を加えるだけ）
+    updated_by: planner
+    updated_at: '2026-11-18T12:00:19.829650+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    note: SC-472-41 に C4Dynamic の関係の再生のシナリオを追加。ミニマップ（SC-472-42）はユーザーの判断でスコープから外し、develop の内容へ戻した
+    updated_by: planner
+    updated_at: '2026-11-18T12:07:11.016158+00:00'
+  - process: モック作成
+    status: done
+    note: map-c4-dynamic-play のモックでユーザーと合意。ミニマップのモックはスコープから外して削除した
+    updated_by: planner
+    updated_at: '2026-11-18T14:11:49.865671+00:00'
+  - process: インターフェース定義設計
+    status: done
+    note: IF-472-35 の制約『map の案内と再生の帯』『map の C4 図』に C4Dynamic の関係の再生を追加し、テストケース『正常系（map の C4Dynamic の関係を再生する）』を追加した
+    updated_by: planner
+    updated_at: '2026-11-18T14:16:16.006303+00:00'
+  - process: 部品設計
+    status: done
+    note: CMP-472-50 に再生の単位 relation と状態 RelationPlayback、CMP-596-3 に C4Dynamic の再生中の状態 3 つを追加
+    updated_by: planner
+    updated_at: '2026-11-18T14:25:49.717397+00:00'
+  - process: 画面設計
+    status: done
+    note: SCR-472-4 の要素『map の C4 図』『map の案内の帯』に C4Dynamic の関係の再生を追加
+    updated_by: planner
+    updated_at: '2026-11-18T14:25:49.717397+00:00'
+  - process: モジュール構成設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T15:47:20.848758+00:00'
+  - process: ドキュメント修正
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T15:51:55.057724+00:00'
+  - process: 単体テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T15:58:27.753668+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T16:06:28.049480+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-18T16:37:18.676962+00:00'

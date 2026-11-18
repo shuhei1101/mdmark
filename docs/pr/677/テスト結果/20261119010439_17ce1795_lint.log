@@ -1,0 +1,27 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+# 終了コード 0（警告の plugin/bin/setup.js の大きさは develop と同じで、作業 PR が触れていない）
+
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 922 files in 829ms. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.4 typecheck
+> tsc --noEmit
+

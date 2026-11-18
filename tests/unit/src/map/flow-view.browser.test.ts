@@ -433,3 +433,51 @@ test("test_attach_map_flow_when_closed_group_measured", async () => {
   expect(firstStore).toBeDefined();
   expect(second?.overrides.store?.size?.h).toBe((firstStore?.h ?? 0) + 10);
 });
+
+// 閉じたグループの中のノードを指す手順（正常系）
+test("test_attach_map_flow_when_walk_into_closed_group", async () => {
+  // 準備（store を閉じた状態を保ち、store の中の index と、そこから出る線を指す手順だけの案内にする）
+  sessionStorage.setItem(
+    `mdmark-map:${location.pathname}#1`,
+    JSON.stringify({ collapsed: ["store"] }),
+  );
+  const { attachMapFlow } = await loadFlowView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const data = JSON.stringify({
+    version: 1,
+    walkthroughs: [
+      {
+        title: "索引を読む",
+        text: "",
+        nodes: ["index", "data"],
+        edges: ["index->data"],
+      },
+    ],
+  });
+  const root = createRootFromHtml(
+    renderDoc(mapRange({ mermaid: FLOW, data })).html,
+  );
+  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+  handles.push(
+    attachMapFlow(range, resolveConfig({ config: { map: CONFIG } }), {
+      args: parseMapArgs("").args,
+    }),
+  );
+  // 実行
+  root.querySelectorAll<HTMLElement>(".map-band-seg")[0]?.click();
+  // 検証
+  expect(
+    root
+      .querySelector('.map-closed-group[data-group="store"]')
+      ?.classList.contains("map-dim"),
+  ).toBe(false);
+  expect(
+    root
+      .querySelector('.mdmark-diagram-wire[data-wire="store->data"]')
+      ?.classList.contains("map-dim"),
+  ).toBe(false);
+  expect(
+    root.querySelectorAll('.map-packet[data-wire="store->data"]').length,
+  ).toBeGreaterThan(0);
+});

@@ -675,6 +675,33 @@ test("test_render_map_band_when_transition", async () => {
   expect(labels).not.toContain("前のメッセージ");
 });
 
+// C4Dynamic の関係の再生（正常系）
+test("test_render_map_band_when_relation", async () => {
+  // 準備
+  const { renderMapBand } = await loadParts();
+  // 実行
+  const html = renderMapBand({
+    mode: "playback",
+    unit: "relation",
+    total: 5,
+    index: 1,
+    titles: [],
+    title: "2: 注文の画面 → 注文の API：注文を送る",
+    text: "画面の入力を JSON にして API へ送る",
+    playing: true,
+    fill: 0,
+    label: "注文の流れの再生",
+  });
+  // 検証
+  const labels = matches(html, /aria-label="([^"]+)"/g).map((item) =>
+    item.replace(/^aria-label="|"$/g, ""),
+  );
+  expect(labels).toEqual(
+    expect.arrayContaining(["関係", "前の関係", "次の関係"]),
+  );
+  expect(labels).not.toContain("前のメッセージ");
+});
+
 /** 部品『mapのER図』の Default の「注文」 */
 async function orderTable(collapsed: boolean) {
   const { parseErDiagram } = await import("../../../../src/map/er.ts");
