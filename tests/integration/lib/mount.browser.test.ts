@@ -8721,26 +8721,25 @@ test("test_normal_when_lightbox_zoomed", async () => {
   const dialog = openLightbox(el) as HTMLDialogElement;
   const stage = find<HTMLElement>(dialog, ".mdmark-lightbox-stage");
   const zoomButton = find(dialog, '[data-tool="fit"]');
-  const pan = find<HTMLElement>(dialog, '[data-group="pan"]');
+  const toolLabels = () =>
+    [...dialog.querySelectorAll<HTMLButtonElement>("button[data-tool]")].map(
+      (tool) => tool.dataset.tool,
+    );
   const fit = Math.min(1, stage.clientWidth / 1600, stage.clientHeight / 1000);
-  // 検証: 収まる倍率で出し、移動のボタンを出さない
+  // 検証: 収まる倍率で出す
   await vi.waitFor(() =>
     expect(zoomButton.textContent).toBe(`${Math.round(fit * 100)}%`),
   );
-  expect(pan.hidden).toBe(true);
-  // 実行・検証: + を 2 回押すと 1.25 倍ずつ上がり、移動のボタンを出す
+  const opened = toolLabels();
+  // 実行・検証: + を 2 回押すと 1.25 倍ずつ上がり、上のバーに移動のボタンが無く、並びは開いた直後と同じ
   await userEvent.keyboard("+");
   expect(zoomButton.textContent).toBe(`${Math.round(fit * 1.25 * 100)}%`);
   await userEvent.keyboard("+");
   expect(zoomButton.textContent).toBe(
     `${Math.round(fit * 1.25 * 1.25 * 100)}%`,
   );
-  expect(pan.hidden).toBe(false);
-  expect(
-    [...pan.querySelectorAll("button")].map((button) =>
-      button.getAttribute("aria-label"),
-    ),
-  ).toEqual(["左へ動かす", "上へ動かす", "下へ動かす", "右へ動かす"]);
+  expect(dialog.querySelector('[data-group="pan"]')).toBeNull();
+  expect(toolLabels()).toEqual(opened);
   // 実行・検証: 拡大中の右の矢印キーは画像を動かし、送信しない
   const before = stage.scrollLeft;
   await userEvent.keyboard("{ArrowRight}");
@@ -8753,7 +8752,6 @@ test("test_normal_when_lightbox_zoomed", async () => {
   await vi.waitFor(() =>
     expect(zoomButton.textContent).toBe(`${Math.round(fit * 100)}%`),
   );
-  expect(pan.hidden).toBe(true);
 });
 
 // ライトボックスの画像の上の 2 本の指の間隔の変化を、図と同じ範囲の倍率の変更にし、上のバーのボタンの並びは変えない（正常系）
@@ -8781,6 +8779,8 @@ test("test_normal_when_lightbox_pinched", async () => {
         .filter((tool) => tool.getClientRects().length > 0)
         .map((tool) => tool.dataset.tool);
     const opened = toolNames();
+    const head = find<HTMLElement>(dialog, ".mdmark-lightbox-head");
+    const headHeight = head.getBoundingClientRect().height;
     /** 画像の座標の点の、画面の点 */
     const screenOf = (point: { x: number; y: number }) => {
       const box = img.getBoundingClientRect();
@@ -8817,8 +8817,9 @@ test("test_normal_when_lightbox_pinched", async () => {
       expect(
         find<HTMLButtonElement>(dialog, '[data-tool="out"]').disabled,
       ).toBe(true);
-      // 上のバーのボタンの並びは開いた直後と同じ
+      // 上のバーのボタンの並びと高さは開いた直後と同じ（1 行のまま）
       expect(toolNames()).toEqual(opened);
+      expect(head.getBoundingClientRect().height).toBe(headHeight);
     });
     await userEvent.keyboard("{Escape}");
     await vi.waitFor(() => expect(openLightbox(el)).toBeUndefined());
