@@ -1,0 +1,1 @@
+# VS Code 拡張機能の mdmark.version で develop を選べるようにし、develop の配布物の作り直しが出したバージョンの migrations/v*/ を書き換えないようにする
