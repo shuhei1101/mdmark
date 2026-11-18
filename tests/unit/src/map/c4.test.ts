@@ -196,3 +196,13 @@ test("test_c4_to_flowchart_when_deployment", async () => {
     overrides.app?.order ?? 0,
   );
 });
+
+// 読めない行の要素を指す関係（異常系）
+test("test_c4_to_flowchart_when_unreadable", async () => {
+  // 準備
+  const { parseC4, c4ToFlowchart } = await loadC4();
+  // 実行
+  const { chart } = c4ToFlowchart(parseC4(C4_UNREADABLE));
+  // 検証
+  expect(chart.edges.map((edge) => edge.id)).toEqual(["r1"]);
+});

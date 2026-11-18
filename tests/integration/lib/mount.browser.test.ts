@@ -15384,13 +15384,16 @@ function pressSegment(figure: Element, step: number): void {
   find<HTMLElement>(figure, `.map-band-seg[data-index="${step - 1}"]`).click();
 }
 
-/** 帯の左右の矢印のボタンを押す */
+/** 帯の左右の矢印のボタンを押す（押したボタンにフォーカスを移してから押す） */
 function pressArrow(figure: Element, dir: -1 | 1, times = 1): void {
-  for (let i = 0; i < times; i++)
-    find<HTMLButtonElement>(
+  for (let i = 0; i < times; i++) {
+    const arrow = find<HTMLButtonElement>(
       figure,
       `.map-band [data-band="step"][data-dir="${dir}"]`,
-    ).click();
+    );
+    arrow.focus({ preventScroll: true });
+    arrow.click();
+  }
 }
 
 /** 帯の手順のバー（スライダー） */
@@ -15766,6 +15769,21 @@ test("test_normal_when_map_walkthrough_played", async () => {
     const middle = mapScale(figure());
     vi.advanceTimersByTime(MAP_FOCUS_MS);
     const after = mapScale(figure());
+    console.log(
+      "DEBUG",
+      fit,
+      before,
+      middle,
+      after,
+      viewport().scrollLeft,
+      viewport().scrollTop,
+      viewport().clientWidth,
+      viewport().clientHeight,
+      find<HTMLElement>(figure(), ".mdmark-diagram-viewport [style*='scale(']")
+        .className,
+      find<HTMLElement>(figure(), ".mdmark-diagram-viewport [style*='scale(']")
+        .style.cssText,
+    );
     expect(after).not.toBeCloseTo(before, 3);
     expect(Math.abs(middle - before)).toBeGreaterThan(0);
     expect(Math.abs(after - middle)).toBeGreaterThan(0);
@@ -15860,7 +15878,7 @@ test("test_normal_when_map_walkthrough_dense", async () => {
   const tops = () =>
     new Set(
       [...figure().querySelectorAll<HTMLElement>(".map-band-seg")].map(
-        (segment) => Math.round(segment.getBoundingClientRect().top),
+        (segment) => Math.round(mapCenter(segment)[1]),
       ),
     );
   const resize = async (width: number) => {
@@ -18233,9 +18251,12 @@ test("test_normal_when_map_class_arch_c4_toggled", async () => {
   expect(
     deployment().querySelector(".map-group-title.is-current")?.textContent,
   ).toContain("クラウド");
-  expect(mapNode(deployment(), "web").classList.contains("map-faded")).toBe(
-    true,
-  );
+  expect(
+    find(
+      deployment(),
+      '.map-closed-group[data-group="browser"]',
+    ).classList.contains("map-faded"),
+  ).toBe(true);
   find<HTMLButtonElement>(deployment(), '[data-tool="back"]').click();
   // 実行・検証: 全て開く・全て閉じるはクラスのメンバーと namespace の両方
   find<HTMLButtonElement>(cls(), '[data-tool="collapseAll"]').click();

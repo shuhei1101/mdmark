@@ -40,7 +40,7 @@ functions:
       `refit()` は今の倍率と位置を保ったまま、全体が収まる倍率（下限）とボタンの状態をもう一度求める。
       図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使用する
 
-      `focusRect(rect, { margin, duration })` は、倍率を掛ける前の中身の座標の矩形と周りの `margin` が表示する枠に収まる倍率（全体が収まる倍率以上・`ZOOM.max` 以下）と、矩形の中心が表示する枠の中央に来る位置へ、`duration` ミリ秒かけて `requestAnimationFrame` で倍率と位置を変える（`duration` が 0 なら 1 回で変える。文書のスクロールは変えない）。移している間に読者がホイール・ドラッグ・キー・ボタンで操作したら、移すのを止める。
+      `focusRect(rect, { margin, duration })` は、倍率を掛ける前の中身の座標の矩形と周りの `margin` が表示する枠に収まる倍率（全体が収まる倍率以上・`ZOOM.max` 以下）と、矩形の中心が表示する枠の中央に来る位置へ、`duration` ミリ秒かけて `requestAnimationFrame` で倍率と位置を変える（`duration` が 0 なら 1 回で変える。文書のスクロールは変えない）。移している間に読者がホイール・ドラッグ・キー・ツールのボタン（`data-tool`）で操作したら、移すのを止める（ボタンを持つ要素の中の帯の区切りなど、ほかの押下では止めない）。
 
       付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を消す
     args:

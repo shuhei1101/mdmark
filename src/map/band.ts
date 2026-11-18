@@ -179,14 +179,14 @@ export const attachBand = (options: {
     holder.contains(document.activeElement)
       ? document.activeElement
       : undefined;
-  /** 描き直した後に、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへフォーカスを戻す */
+  /** 描き直した後に、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへフォーカスを戻す（文書をスクロールしない） */
   const restoreFocus = (dir: string | undefined) =>
     (dir === undefined
       ? holder.querySelector<HTMLElement>(".map-band-steps")
       : holder.querySelector<HTMLElement>(
           `[data-band="step"][data-dir="${CSS.escape(dir)}"]`,
         )
-    )?.focus();
+    )?.focus({ preventScroll: true });
   const render = () => {
     const step = index === undefined ? undefined : steps[index];
     // 描き直す前にフォーカスしていた要素（矢印のボタンかバー）へ、描き直した後もフォーカスを戻す

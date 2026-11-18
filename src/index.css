@@ -10080,6 +10080,9 @@
     margin: 2px 0 0;
     white-space: pre-line;
   }
+  .map-band-title[hidden] {
+    display: none;
+  }
 
   .mdmark-diagram[data-diagram="map"] .map-participant.is-dragging {
     z-index: 3;

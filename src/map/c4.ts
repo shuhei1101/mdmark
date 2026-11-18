@@ -460,8 +460,16 @@ export const c4ToFlowchart = (
         mapC4BoundaryTitle(boundary.label, boundary.kind),
       ),
     };
+  // 両端が読めた要素か境界の関係だけを線にする（読めない行の要素を指す関係は描かない）
+  const ids = new Set([
+    ...diagram.elements.map((element) => element.id),
+    ...diagram.boundaries.map((boundary) => boundary.id),
+  ]);
+  const relations = diagram.relations.filter(
+    (relation) => ids.has(relation.from) && ids.has(relation.to),
+  );
   // 矢じりを線の元の側に描く線（`Rel_U` は段のために元と先を入れ替え、`Rel_Back` は元へ向ける）
-  const reversed = diagram.relations
+  const reversed = relations
     .filter(
       (relation) =>
         !relation.both &&
@@ -477,7 +485,7 @@ export const c4ToFlowchart = (
     };
     overrides[second] = { ...overrides[second], align: first, order: order++ };
   };
-  const edges: FlowEdge[] = diagram.relations.map((relation) => {
+  const edges: FlowEdge[] = relations.map((relation) => {
     if (relation.direction === "left" || relation.direction === "right") {
       // 左右の向きの関係は同じ段に並べ、`Rel_R` は先を元の右、`Rel_L` は左に置く
       overrides[relation.id] = { rankless: true };

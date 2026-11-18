@@ -953,7 +953,9 @@ export const renderMapBand = (args: MapBandArgs): string => {
   const bar = `<div class="map-band-steps" role="slider" tabindex="0" data-band="steps" aria-label="${escapeHtml(unit)}" aria-valuemin="0" aria-valuemax="${args.total}" aria-valuenow="${started ? index + 1 : 0}" aria-valuetext="${escapeHtml(valueText)}" aria-keyshortcuts="ArrowLeft ArrowRight Home End Escape">${segments}</div>`;
   const title = `<strong class="map-band-title"${args.title === "" ? " hidden" : ""}>${escapeHtml(args.title)}</strong>`;
   const text = `<p class="map-band-text" aria-live="polite"${args.text === "" ? " hidden" : ""}>${escapeHtml(args.text)}</p>`;
-  return `<div class="map-band${started ? "" : " is-idle"}" role="region" aria-label="${escapeHtml(args.label)}" data-mode="${args.mode}"><div class="map-band-bar">${bandArrow(-1, `前の${unit}`)}${bar}${bandArrow(1, `次の${unit}`)}</div>${title}${text}</div>`;
+  // 英字で始まる単位（commit）は「の」との間に空白を置く
+  const gap = /^[A-Za-z]/.test(unit) ? " " : "";
+  return `<div class="map-band${started ? "" : " is-idle"}" role="region" aria-label="${escapeHtml(args.label)}" data-mode="${args.mode}"><div class="map-band-bar">${bandArrow(-1, `前の${gap}${unit}`)}${bar}${bandArrow(1, `次の${gap}${unit}`)}</div>${title}${text}</div>`;
 };
 
 /** 部品『mapのシーケンス図』の引数 */

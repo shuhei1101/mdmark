@@ -63,7 +63,7 @@ export const zoomControlOf = (viewport: HTMLElement): ZoomControl | undefined =>
 // 読者が操作したとみなすイベント（矩形へ移している途中で止める）
 const STOP_EVENTS = ["wheel", "pointerdown", "keydown", "touchstart"] as const;
 
-/** 表示する枠の操作とボタンの押下で `stop` を呼ぶ */
+/** 表示する枠の操作とツールのボタン（`data-tool`）の押下で `stop` を呼ぶ（帯の区切りなど、ほかの押下では止めない） */
 const listenStops = (options: {
   viewport: HTMLElement;
   tools: HTMLElement;
@@ -73,7 +73,17 @@ const listenStops = (options: {
   const { viewport, tools, stop, signal } = options;
   for (const type of STOP_EVENTS)
     viewport.addEventListener(type, stop, { passive: true, signal });
-  tools.addEventListener("click", stop, { signal });
+  tools.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-tool]")
+      )
+        stop();
+    },
+    { signal },
+  );
 };
 
 /** 表示する枠と中身に、全体が収まる倍率から `ZOOM.max` までの拡大・縮小と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
