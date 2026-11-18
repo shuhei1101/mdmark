@@ -95,7 +95,7 @@ import {
   parseAxisGrid,
 } from "../src/map/axis-grid.ts";
 import { layoutAxisGrid } from "../src/map/axis-grid-layout.ts";
-import { c4ToFlowchart, MAP_C4_KINDS, parseC4Context } from "../src/map/c4.ts";
+import { c4ToFlowchart, MAP_C4_KINDS, parseC4 } from "../src/map/c4.ts";
 import {
   classPartInputs,
   classToFlowchart,
@@ -115,6 +115,7 @@ import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap, separateWires } from "../src/map/layout.ts";
 import {
+  type MapBandUnit,
   type MapErFanout,
   renderMapArchitecture,
   renderMapAxisGrid,
@@ -178,7 +179,13 @@ import {
   BLOCK as MAP_BLOCK,
   BLOCK_DATA as MAP_BLOCK_DATA,
   C4 as MAP_C4,
+  C4_COMPONENT as MAP_C4_COMPONENT,
+  C4_CONTAINER as MAP_C4_CONTAINER,
+  C4_CONTAINER_DATA as MAP_C4_CONTAINER_DATA,
   C4_DATA as MAP_C4_DATA,
+  C4_DEPLOYMENT as MAP_C4_DEPLOYMENT,
+  C4_DEPLOYMENT_DATA as MAP_C4_DEPLOYMENT_DATA,
+  C4_DYNAMIC as MAP_C4_DYNAMIC,
   CLASS as MAP_CLASS,
   CLASS_DATA as MAP_CLASS_DATA,
   CONFIG as MAP_CONFIG,
@@ -978,6 +985,47 @@ const axisGridKeyed = <T>(
     }),
   );
 
+/** 境界か配置先のノード `at` が `boundary` か、その中にあるか */
+function c4Under(
+  diagram: ReturnType<typeof parseC4>,
+  at: string | undefined,
+  boundary: string,
+): boolean {
+  for (
+    let id = at;
+    id !== undefined;
+    id = diagram.boundaries.find((item) => item.id === id)?.parent
+  )
+    if (id === boundary) return true;
+  return false;
+}
+
+/** mapのC4図のストーリーの見本（引数 `kind` で選ぶ） */
+const C4_SAMPLES: Record<string, { mermaid: string; data: string }> = {
+  context: { mermaid: MAP_C4, data: MAP_C4_DATA },
+  container: { mermaid: MAP_C4_CONTAINER, data: MAP_C4_CONTAINER_DATA },
+  component: { mermaid: MAP_C4_COMPONENT, data: '{"version": 1}' },
+  dynamic: { mermaid: MAP_C4_DYNAMIC, data: '{"version": 1}' },
+  deployment: { mermaid: MAP_C4_DEPLOYMENT, data: MAP_C4_DEPLOYMENT_DATA },
+};
+
+/** 案内の帯のストーリーの再生の単位（引数に無いか知らない値なら message） */
+function bandUnitOf(args: PartArgs): MapBandUnit {
+  return args.unit === "transition" ||
+    args.unit === "task" ||
+    args.unit === "period" ||
+    args.unit === "commit"
+    ? args.unit
+    : "message";
+}
+
+/** 案内の帯のストーリーの手順ごとのタイトル（引数に無ければ「手順 {番号}」を手順の数だけ並べる） */
+function bandTitlesOf(args: PartArgs): string[] {
+  if (Array.isArray(args.titles)) return args.titles.map(String);
+  const total = typeof args.total === "number" ? args.total : 4;
+  return Array.from({ length: total }, (_, i) => `手順 ${i + 1}`);
+}
+
 /** 部品『mapの軸と格子の配置の図』のストーリー（`kind` で種類、`layout: colored` でガントチャートの補足の layout を選ぶ） */
 function mapAxisGridStory(args: PartArgs): string {
   const kind = (
@@ -1498,11 +1546,12 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return mapFrame("配置の構成", part, layout);
   },
   "map-c4": (args) => {
-    const diagram = parseC4Context(MAP_C4);
-    const { data } = parseMapData(MAP_C4_DATA);
+    const sample = C4_SAMPLES[String(args.kind ?? "")] ?? C4_SAMPLES.context;
+    const diagram = parseC4(sample.mermaid);
+    const { data } = parseMapData(sample.data);
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
-    const { chart, overrides, reversed } = c4ToFlowchart(diagram);
+    const { chart, overrides, reversed, kinds } = c4ToFlowchart(diagram);
     const placed = layoutMap(
       chart,
       { collapsed, entered },
@@ -1511,7 +1560,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = { ...placed, wires: spreadMapEnds(placed) };
     const part = renderMapC4Diagram({
       layout,
-      kinds: MAP_C4_KINDS,
+      kinds: { ...MAP_C4_KINDS, ...kinds },
       lines: {},
       notes: noteTexts(data.notes),
       collapsed,
@@ -1522,7 +1571,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       dragging: undefined,
       id: "story-map-c4",
       collapsedTag: (boundary) =>
-        `要素 ${diagram.elements.filter((item) => item.parent === boundary).length} 件`,
+        `要素 ${diagram.elements.filter((item) => c4Under(diagram, item.parent, boundary)).length} 件`,
       descriptions: Object.fromEntries(
         diagram.elements.map((item) => [item.id, item.description ?? ""]),
       ),
@@ -1588,18 +1637,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "map-band": (args) =>
     renderMapBand({
       mode: args.mode === "playback" ? "playback" : "walkthrough",
-      unit:
-        args.unit === "transition" ||
-        args.unit === "task" ||
-        args.unit === "period" ||
-        args.unit === "commit"
-          ? args.unit
-          : "message",
+      unit: bandUnitOf(args),
       total: typeof args.total === "number" ? args.total : 4,
       index: typeof args.index === "number" ? args.index : undefined,
+      titles: bandTitlesOf(args),
       title: typeof args.title === "string" ? args.title : "",
       text: typeof args.text === "string" ? args.text : "",
-      auto: args.auto === true,
+      playing: args.playing === true,
+      fill: typeof args.fill === "number" ? args.fill : 0,
       label: "全体の構成の案内",
     }),
   "diff-toggle": (args) =>

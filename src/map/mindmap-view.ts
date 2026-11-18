@@ -6,7 +6,12 @@ import {
   type MapAnnotation,
   readMapAnnotations,
 } from "./annotations.ts";
-import { attachBand, type BandHandle, type BandStep } from "./band.ts";
+import {
+  attachBand,
+  type BandHandle,
+  type BandStep,
+  createFollow,
+} from "./band.ts";
 import { type MapData, noteTexts, parseMapData } from "./data.ts";
 import {
   prefersReducedMotion,
@@ -305,6 +310,7 @@ export const attachMapMindmap = (
   );
   linkAnnotationOwners(range);
   const figure = range.querySelector("figure") as HTMLElement;
+  const follower = createFollow(figure, prefersReducedMotion());
   const stage = figure.querySelector(".mdmark-diagram-stage") as HTMLElement;
   const sizer = figure.querySelector(".mdmark-diagram-sizer") as HTMLElement;
   const detachDiagrams = attachDiagrams({
@@ -449,9 +455,10 @@ export const attachMapMindmap = (
       figure,
       mode: "walkthrough",
       steps,
-      interval: args.interval,
-      autoplay: args.play === "autoplay",
-      reducedMotion: prefersReducedMotion(),
+      onStep: (step) => {
+        follower.resume();
+        follower.reveal(step.nodes);
+      },
       apply: (step) => {
         if (!walking) before = state.entered;
         walking = step !== undefined;
@@ -470,6 +477,7 @@ export const attachMapMindmap = (
   return {
     destroy: () => {
       band?.destroy();
+      follower.destroy();
       detachDiagrams();
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("keydown", onKeyDown);

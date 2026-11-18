@@ -207,7 +207,9 @@ test("test_attach_map_mindmap_when_walked", async () => {
   );
   // 実行
   for (let i = 0; i < 2; i += 1)
-    root.querySelector<HTMLButtonElement>('[data-band="next"]')?.click();
+    root
+      .querySelector<HTMLButtonElement>('[data-band="step"][data-dir="1"]')
+      ?.click();
   // 検証
   const items = [...root.querySelectorAll<HTMLElement>(".map-mindmap-item")];
   expect(items).toHaveLength(4);

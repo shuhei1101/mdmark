@@ -62,6 +62,18 @@ enums:
       - value: C4Context
         title: C4 図
         description: Mermaid の 1 行目が `C4Context`
+      - value: C4Container
+        title: C4 のコンテナ図
+        description: Mermaid の 1 行目が `C4Container`
+      - value: C4Component
+        title: C4 のコンポーネント図
+        description: Mermaid の 1 行目が `C4Component`
+      - value: C4Dynamic
+        title: C4 の動的図
+        description: Mermaid の 1 行目が `C4Dynamic`
+      - value: C4Deployment
+        title: C4 の配置図
+        description: Mermaid の 1 行目が `C4Deployment`
       - value: mindmap
         title: マインドマップ
         description: Mermaid の 1 行目が `mindmap`
@@ -98,7 +110,7 @@ functions:
       type: MapKindName | undefined
       description: 図の種類。描けない種類のときは無い
     process: |-
-      1. 先頭の空白を除いた最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram`、`classDiagram`・`classDiagram-v2` なら `classDiagram`、`architecture-beta` なら `architecture`、`C4Context` なら `C4Context`、`mindmap` なら `mindmap`、`gantt`・`timeline`・`gitGraph`・`journey` ならそのまま、`block-beta` なら `block` を返却する
+      1. 先頭の空白を除いた最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram`、`classDiagram`・`classDiagram-v2` なら `classDiagram`、`architecture-beta` なら `architecture`、`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment` ならそのまま、`mindmap` なら `mindmap`、`gantt`・`timeline`・`gitGraph`・`journey` ならそのまま、`block-beta` なら `block` を返却する
       2. ほかは無しを返却する
   - name: collectMapStructure
     title: 範囲の形を確かめる
@@ -139,9 +151,9 @@ functions:
       - name: test_collect_map_structure_when_class_architecture_c4
         case: 正常
         summary: クラス図・アーキテクチャ図・C4 図
-        condition: 1 行目が `classDiagram`・`architecture-beta`・`C4Context` の範囲と、`C4Container` の範囲
+        condition: 1 行目が `classDiagram`・`architecture-beta`・`C4Context`・`C4Container`・`C4Deployment` の範囲と、`C4Foo` の範囲
         mock: なし
-        expected: 前の 3 つは項目が空で、`kind` が `classDiagram`・`architecture`・`C4Context`。`C4Container` は `map_invalid` が 1 件で `kind` が無い
+        expected: 前の 5 つは項目が空で、`kind` が `classDiagram`・`architecture`・`C4Context`・`C4Container`・`C4Deployment`。`C4Foo` は `map_invalid` が 1 件で `kind` が無い
       - name: test_collect_map_structure_when_two_blocks
         case: 異常
         summary: mermaid のブロックが 2 つ

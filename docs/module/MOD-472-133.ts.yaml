@@ -96,10 +96,10 @@ data_models:
         description: モード
       - name: unit
         type: '"message" | "transition" | "task" | "period" | "commit" | undefined'
-        description: 再生で進める単位（既定 `message`）。`transition` では再生のボタンの名前を `前の遷移`・`次の遷移`、`task`・`period`・`commit` では `前のタスク`・`前の期間`・`前の commit` と `次の…` にする
+        description: 再生で進める単位（既定 `message`）。`transition` では単位の名前を `遷移`、`task`・`period`・`commit` では `タスク`・`期間`・`commit` にする
       - name: total
         type: number
-        description: 手順の数
+        description: 手順の数（区切りの数）
       - name: index
         type: number | undefined
         description: 今の番号
@@ -109,9 +109,15 @@ data_models:
       - name: text
         type: string
         description: 説明の文
-      - name: auto
+      - name: titles
+        type: string[]
+        description: 手順ごとのタイトル（区切りの `title` 属性とバーの読み上げの値）
+      - name: playing
         type: boolean
-        description: 自動で進めているか
+        description: 今の手順を繰り返しているか
+      - name: fill
+        type: number
+        description: 今の手順の 1 周の進み（0〜1）
       - name: label
         type: string
         description: 帯の名前
@@ -825,19 +831,25 @@ functions:
         summary: 始める前
         condition: '`total: 4`'
         mock: なし
-        expected: 番号が `–/4` で、停止の `button` が `disabled`
+        expected: '`.map-band` が `is-idle` を持ち、区切り `.map-band-seg` が 4 つ、`role="slider"` のバーの `aria-valuenow` が 0 で `aria-valuetext` が `始める前`、左右の矢印のボタンの名前が `前の手順`・`次の手順`、タイトルと文の要素が `hidden`'
+      - name: test_render_map_band_when_playing
+        case: 正常
+        summary: 繰り返している途中
+        condition: '`index: 1`・`playing: true`・`fill: 0.5`・`titles` の 2 つ目が `記法を読む`'
+        mock: なし
+        expected: 1 つ目の区切りが `is-done`、2 つ目が `is-current` と `is-playing` で塗りの幅が 50%、バーの `aria-valuetext` が `手順 2/4 記法を読む`、帯が `is-idle` を持たない
       - name: test_render_map_band_when_playback
         case: 正常
         summary: 再生
         condition: '`mode: playback`'
         mock: なし
-        expected: ボタンの名前が `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`
+        expected: バーの `aria-label` が `メッセージ` で、矢印のボタンの名前が `前のメッセージ`・`次のメッセージ`
       - name: test_render_map_band_when_transition
         case: 正常
         summary: 状態遷移図の再生
         condition: '`mode: playback`・`unit: transition`'
         mock: なし
-        expected: ボタンの名前が `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`
+        expected: 矢印のボタンの名前が `前の遷移`・`次の遷移`
   - name: renderMapMindmap
     title: mapのマインドマップのHTML
     kind: 関数

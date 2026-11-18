@@ -52,15 +52,15 @@ functions:
       - name: test_attach_map_state_when_played
         case: 正常
         summary: 遷移の再生
-        condition: 帯の次へを 6 回押す
+        condition: 帯の手順のバーの 6 つ目の区切りを押す
         mock: なし
-        expected: 帯の文字が `6/13` と `判定 → 差し戻しの理由を確認する：差し戻し` で、説明が `差し戻しの理由はコメントに残る`。帯の `aria-label` が `作業の状態の再生` で、ボタンの名前が `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`
+        expected: 帯のバーの `aria-valuenow` が 6 で、帯のタイトルが `判定 → 差し戻しの理由を確認する：差し戻し` で、説明が `差し戻しの理由はコメントに残る`。帯の `aria-label` が `作業の状態の再生` で、ボタンの名前が `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`
       - name: test_attach_map_state_when_walkthroughs
         case: 正常
         summary: 案内を持つ
         condition: 補足に手順 2 つの `walkthroughs`
         mock: なし
-        expected: 帯の文字が `–/2`
+        expected: 帯の手順のバーの区切りが 2 つ
 refs:
   - IF-472-35#constraints[map の状態遷移図]
 lead: 'map の状態遷移図の描画と操作を受け持ち、map の状態遷移図の操作を変えるときに参照する。'

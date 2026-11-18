@@ -1150,8 +1150,9 @@ test("test_normal_when_map_data_drift", async () => {
   const mark = lines.filter((item) => item.startsWith("docs/a.mark.md:3:"));
   expect(mark).toHaveLength(1);
   expect(mark[0]).toMatch(/^docs\/a\.mark\.md:3: map_unknown_key: .*mdoe/);
-  for (const key of ["title", "focus", "play", "interval", "collapse"])
+  for (const key of ["title", "focus", "collapse"])
     expect(mark[0]).toContain(key);
+  expect(mark[0]).not.toContain("interval");
   expect(lines.some((line) => line.startsWith("docs/a.mark.md:20:"))).toBe(
     false,
   );
@@ -1458,7 +1459,7 @@ test("test_normal_when_legacy_mark", async () => {
   expect(await snapshot(dir)).toEqual(before);
 });
 
-// 文書のマーカーの知らないキー・型の誤り・削除した機能の列の設定を、文書と行を指す行にして終了コード 1 で終わる（正常系（マーカーの設定にずれがある））
+// 文書のマーカーの知らないキー・型の誤り・削除した機能の列の設定・map の印の廃止したキーを、文書と行を指す行にして終了コード 1 で終わる（正常系（マーカーの設定にずれがある））
 test("test_normal_when_mark_options_drift", async () => {
   // 準備
   const dir = await createCleanDir();
@@ -1479,6 +1480,15 @@ test("test_normal_when_mark_options_drift", async () => {
       "| a | 1 |",
       "",
       "<!-- /table -->",
+      "",
+      '<!-- map: {"title": "全体の構成", "play": "autoplay", "interval": 3} -->',
+      "",
+      "```mermaid",
+      "flowchart LR",
+      "  A --> B",
+      "```",
+      "",
+      "<!-- /map -->",
       "",
     ].join("\n"),
   });
@@ -1502,7 +1512,14 @@ test("test_normal_when_mark_options_drift", async () => {
   );
   expect(unapplied).toHaveLength(1);
   expect(unapplied[0]).toContain("columns.数量.total");
-  expect(lines.at(-1)).toBe("ずれ 3 件");
+  const retired = lines.filter((line) =>
+    line.startsWith("a.mark.md:17: map_retired_key:"),
+  );
+  expect(retired).toHaveLength(1);
+  expect(retired[0]).toContain("play");
+  expect(retired[0]).toContain("interval");
+  expect(retired[0]).toContain("mdmark upgrade");
+  expect(lines.at(-1)).toBe("ずれ 4 件");
 });
 
 // 文字列の今の書き方のマーカーを、行を指す legacy_mark のずれにして終了コード 1 で終わる（正常系（文字列に今の書き方のマーカーがある））

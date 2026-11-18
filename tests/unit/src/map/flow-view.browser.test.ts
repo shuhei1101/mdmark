@@ -168,24 +168,29 @@ test("test_attach_map_flow_when_packets", async () => {
 test("test_attach_map_flow_when_walk_leaves_group", async () => {
   // 準備
   const root = await setUp();
-  const press = (action: string) =>
-    root.querySelector<HTMLButtonElement>(`[data-band="${action}"]`)?.click();
   // 実行
-  for (let i = 0; i < 3; i += 1) press("next");
+  root.querySelectorAll<HTMLElement>(".map-band-seg")[2]?.click();
   // 検証
   expect(root.querySelector(".map-group-title.is-current")?.textContent).toBe(
     "配置",
   );
-  // 実行・検証: 前へで手順 2 に戻ると、案内を始めた全体の図に戻る
-  press("prev");
-  expect(root.querySelector(".map-band-count")?.textContent).toBe("2/4");
+  // 実行・検証: 左の矢印のボタンで手順 2 に移ると、案内を始めた全体の図に戻る
+  root
+    .querySelector<HTMLButtonElement>('button[data-band="step"][data-dir="-1"]')
+    ?.click();
+  expect(
+    root.querySelector('[role="slider"]')?.getAttribute("aria-valuenow"),
+  ).toBe("2");
   expect(root.querySelector(".map-group-title.is-current")).toBeNull();
 });
 
-// 外からスクロールする（正常系）
+// 外から図を移す（正常系）
 test("test_attach_map_flow_when_follow", async () => {
   // 準備
   const root = await setUp();
+  const { zoomControlOf } = await import(
+    "../../../../src/shared/zoom.interact.ts"
+  );
   const handle = handles.at(-1) as unknown as {
     follow: (nodes: string[]) => void;
     resumeFollow: () => void;
@@ -193,7 +198,11 @@ test("test_attach_map_flow_when_follow", async () => {
   const viewport = root.querySelector(
     ".mdmark-diagram-viewport",
   ) as HTMLElement;
-  const scrollTo = vi.spyOn(viewport, "scrollTo").mockImplementation(() => {});
+  const zoom = zoomControlOf(viewport);
+  if (!zoom) {
+    throw new Error("拡大・縮小が付いていない");
+  }
+  const focusRect = vi.spyOn(zoom, "focusRect").mockImplementation(() => {});
   // 実行
   handle.follow(["mount", "marker"]);
   viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
@@ -201,7 +210,7 @@ test("test_attach_map_flow_when_follow", async () => {
   handle.resumeFollow();
   handle.follow(["mount", "marker"]);
   // 検証
-  expect(scrollTo).toHaveBeenCalledTimes(2);
+  expect(focusRect).toHaveBeenCalledTimes(2);
 });
 
 // 指のドラッグを pointercancel で止めたとき、動かす前の配置を保ち、受け取りを残さない（正常系）

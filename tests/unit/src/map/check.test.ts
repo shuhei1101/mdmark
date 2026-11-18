@@ -168,14 +168,22 @@ test("test_collect_map_problems_when_unsupported_kind", async () => {
   // 検証
   expect(problems).toHaveLength(1);
   expect(problems[0]?.kind).toBe("map_invalid");
-  expect(problems[0]?.message).toContain("flowchart");
-  expect(problems[0]?.message).toContain("sequenceDiagram");
-  expect(problems[0]?.message).toContain("erDiagram");
-  expect(problems[0]?.message).toContain("stateDiagram-v2");
-  expect(problems[0]?.message).toContain("classDiagram");
-  expect(problems[0]?.message).toContain("architecture-beta");
-  expect(problems[0]?.message).toContain("C4Context");
-  expect(problems[0]?.message).toContain("mindmap");
+  const message = problems[0]?.message ?? "";
+  for (const kind of [
+    "flowchart",
+    "sequenceDiagram",
+    "erDiagram",
+    "stateDiagram-v2",
+    "classDiagram",
+    "architecture-beta",
+    "C4Context",
+    "C4Container",
+    "C4Component",
+    "C4Dynamic",
+    "C4Deployment",
+    "mindmap",
+  ])
+    expect(message).toContain(kind);
 });
 
 // 知らない印の引数（異常系）

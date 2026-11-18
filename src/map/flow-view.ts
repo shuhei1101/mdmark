@@ -1066,10 +1066,13 @@ export const attachMapFlow = (
       figure,
       ...bandModeOf(extension),
       steps,
-      interval: args.interval,
-      autoplay: args.play === "autoplay",
-      reducedMotion: prefersReducedMotion(),
-      apply: (step) => applyStep(step, steps),
+      apply: (step) => {
+        applyStep(step, steps);
+      },
+      onStep: (step) => {
+        follower.resume();
+        follower.reveal(step.nodes);
+      },
     });
   }
 

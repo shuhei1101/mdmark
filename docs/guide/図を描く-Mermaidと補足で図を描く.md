@@ -39,7 +39,7 @@ flowchart LR
 
 `<!-- map -->` 〜 `<!-- /map -->` の範囲の `mermaid` のブロックが、座標を記載しなくても自動で配置した図になる。
 `subgraph` はグループになり、入れ子の内側から配置する。
-描くのは Mermaid の 1 行目が `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`（`stateDiagram`）・`classDiagram`・`architecture-beta`・`C4Context`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` の図。
+描くのは Mermaid の 1 行目が `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`（`stateDiagram`）・`classDiagram`・`architecture-beta`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` の図。
 範囲に入れない同じ種類の `mermaid` のコードブロックも、補足の無い map の図で描く（[mermaidの図を描く](./図を描く-mermaidの図を描く.md)）。
 範囲で囲むと、補足とマーカーの引数を前提にする操作が増える。
 
@@ -50,10 +50,10 @@ flowchart LR
 | `click`・`link` の行のリンク | ✓ | ✓ |
 | 説明と注記のツールチップ（補足の `notes`） |  | ✓ |
 | 案内（補足の `tour`）・構成図の上の再生（補足の `plays_over`） |  | ✓ |
-| 配置と色の上書き（補足の `layout`）・マーカーの引数の `focus`・`play`・`collapse` |  | ✓ |
+| 配置と色の上書き（補足の `layout`）・マーカーの引数の `focus`・`collapse` |  | ✓ |
 
 グループの分け方は [構成図の決まり](./構成図の決まり.mark.md#グループにするかの判定) の判定フローチャートで決める。
-マーカーの引数（`title`・`focus`・`play`・`interval`・`collapse`）は [map の引数](./記法.mark.md#map)。
+マーカーの引数（`title`・`focus`・`collapse`）は [map の引数](./記法.mark.md#map)。
 
 ### ノードと線の種類を設定で作る
 
@@ -96,7 +96,7 @@ mdmark はノードの種類と線の種類を持たない。
 | キー | 付くもの |
 | --- | --- |
 | `notes` | ノード・線・グループのタイトルのマーカーにポインターを当てたときのツールチップと、再生の帯の説明。`annotations` に注記の ID を並べると、ツールチップの説明の下に注記を出す |
-| `walkthroughs` | 図の下の帯で前へ・次へ・自動で進める案内。手順ごとにノードを強調し、強調するノードどうしの線にデータの印を流す |
+| `walkthroughs` | 図の下の手順のバーで手順を選んで繰り返す案内。手順ごとにノードを強調し、強調するノードどうしの線にデータの印を流す |
 | `layout` | ノード・グループ・線の ID ごとの色・並び・寄せ方・座標・幅・最初に閉じるか・線の種類・データの印・線の端の辺・経由点 |
 
 上書きの無い部分は自動の配置のまま。
@@ -150,7 +150,7 @@ Mermaid の記法で記載できない名前を持つ範囲と、物理名が重
 ### シーケンス図を構成図の上で再生する
 
 ````markdown
-<!-- map: {"title": "描くまでの流れ", "interval": 3} -->
+<!-- map: {"title": "描くまでの流れ"} -->
 
 ```mermaid
 sequenceDiagram
@@ -168,7 +168,7 @@ sequenceDiagram
 <!-- /map -->
 ````
 
-図の下の帯でメッセージを 1 通ずつ進め、`plays_over` で指した構成図（文書の中の map の番号）の、同じ ID のノードの上でも強調する。
+図の下の手順のバーでメッセージを 1 通ずつ選んで繰り返し再生し、`plays_over` で指した構成図（文書の中の map の番号）の、同じ ID のノードの上でも強調する。
 `rect` の直前に `%% block: 名前` を記載すると、名前の無いブロックに名前を付けられる。
 
 ### ER 図を描く
@@ -325,8 +325,32 @@ C4Context
 別の境界にある 2 つは、同じ段に並ばない場合がある。
 関係のラベルの後ろに `[{技術}]` を出す。
 `title` の行は、マーカーに `title` が無いときの図の枠のタイトルになる。
-補足の ID は、要素・境界の別名（第 1 引数）・関係の記載順の `r{番号}`。
-描くのは `C4Context` だけ。
+補足の ID は、要素・境界・配置先のノードの別名（第 1 引数）・関係の記載順の `r{番号}`。
+
+1 行目を `C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment` にした図も、同じ記載方法と操作で描く。
+
+```mermaid
+C4Deployment
+  title 注文のシステムの配置
+  Deployment_Node(cloud, "クラウド", "AWS") {
+    Node_L(app, "アプリのサーバー", "ECS Fargate") {
+      Container(api, "注文の API", "Node.js", "注文と支払いを受け付ける")
+    }
+    Node_R(dbnode, "データベースのサーバー", "RDS") {
+      ContainerDb(db, "注文のデータベース", "PostgreSQL")
+    }
+  }
+  Rel(api, db, "保存する", "SQL")
+```
+
+| 種類 | 加わる記載 | 描き方 |
+| --- | --- | --- |
+| `C4Container` | `Container`・`ContainerDb`・`ContainerQueue` とその `_Ext`、`Container_Boundary` | 種類の行に技術の引数を `[Container: Node.js]` のように出す。`Container_Boundary` は「{名前}［Container］」の破線のグループ |
+| `C4Component` | `Component`・`ComponentDb`・`ComponentQueue` とその `_Ext` | 種類の行を `[Component: {技術}]` にする |
+| `C4Dynamic` | `RelIndex` | 関係のラベルの前に記載の順の番号を出す。`RelIndex` の第 1 引数は Mermaid と同じく番号にしない |
+| `C4Deployment` | `Deployment_Node`・`Node`・`Node_L`・`Node_R` | 配置先のノードを「{名前}［{種類}］」の実線のグループにし、入れ子にできる。`Node_L`・`Node_R` は兄弟の左・右に置く |
+
+読めない行は描くのを止めずに読み飛ばし、図の前の書き方の警告に行番号と行の文字を出す。
 
 ### マインドマップを描く
 
@@ -416,7 +440,8 @@ gantt
 | 開閉のボタンを押す | グループを閉じて 1 つのノードにし、中への線を 1 本にまとめる。Shift を押すと中のグループもまとめて開閉する |
 | ノード・線を押す | そのノードと線のほかを薄くし、線にデータの印を流す |
 | ノード・グループのタイトルの行・線の区間をドラッグする | 位置を変える。右上の「配置と選択を元に戻す」で自動の配置に戻す |
-| 帯の前へ・自動で進める・次へを押す | 案内・再生を進める。状態遷移図は遷移を 1 本ずつ進める |
+| 帯の手順のバーの区切りか左右の矢印を押す | その手順へ移り、停止するまで繰り返す。強調するノードが収まる位置と倍率へ図がなめらかに移る。同じ区切りをもう一度押すと、その手順の最初から。状態遷移図は遷移を 1 本ずつ選ぶ |
+| 帯のバーの外・図の空いた場所を押すか、バーで Esc を押す | 案内・再生を止めて、始めた図と倍率に戻す。図の空いた場所で 4px 以上動かしたときは止めない |
 | ER 図のテーブルの開閉のボタンを押す | 列を閉じて、テーブル名と列の数の 1 行にする |
 | ER 図のテーブルを 2 つ押す | 2 つをつなぐ最短の経路を全て残し、1 の側から多の側へたどる関連に「×n」のマーカーを付ける。マーカーにフォーカスすると、行が増える理由を出す |
 | 状態遷移図の状態を押す | その状態に入る遷移と出る遷移のほかを薄くする |

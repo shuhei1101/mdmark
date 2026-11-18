@@ -1,0 +1,37 @@
+confirmations:
+  - topic: 案内・再生の帯をバーだけにするか
+    decision: 前へ・次へ・番号・停止と再生のボタン・速度を無くし、手順のバーとタイトル・説明の文だけにする。区切りを押すとその手順を 1 回再生、もう一度押すと再生し直し、バー以外を押すと停止。全ての手順の連続再生は廃止。キーボードは← → で移って再生、Esc で停止（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4607215782
+  - topic: 連続再生の廃止に、今ある自動で進める機能とマーカーの引数 play・interval を含めるか
+    decision: 自動で進める機能とマーカーの引数 play・interval も廃止する。既存の文書の引数は書き方の警告にし、移行の手順で引数を削除する（別案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4607216871
+  - topic: 「バー以外をタップで停止」の範囲
+    decision: 帯の中のバー以外の場所と、図の枠の中のノード・線・ボタン以外の空いた場所（ 4px 以上動かしたらドラッグとして止めない）（推奨案 A と B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4607217717
+  - topic: 帯のモックの修正（何もしていないときはバーだけ・押した手順を繰り返し再生）
+    decision: 何もしていないときは帯の枠線と面を出さずバーだけ。区切りを押すと停止するまでその手順を繰り返し再生し、もう一度押すとその手順の最初から再生し直す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4608837639
+  - topic: 手順が多いときの対策
+    decision: バーの左右に矢印（案 D の見た目）を常に出し、前・次の手順へ移る。区切りは 1 行で幅に合わせて細くし、一定より細くなったときだけ今の区切りを少し広くする（別案。ユーザーの提案）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4608836969
+  - topic: 手順が多いときの対策を反映したモックへの合意
+    decision: バーの左右に矢印を常に出して前・次の手順へ移り、その手順を繰り返し再生する（端では反対の端へ移る）。区切りは 1 行で幅に合わせて細くし、12px より細くなったときだけ今の区切りを 24px に広げる
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 49f0bc87
+    thread: https://github.com/shuhei1101/mdmark/pull/660#discussion_r4608939196

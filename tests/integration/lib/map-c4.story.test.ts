@@ -108,6 +108,101 @@ test("test_default", async () => {
   }
 });
 
+// コンテナ図は、種類の行に技術を出し、Container_Boundary を「{名前}［Container］」の破線の枠にする（Container）
+test("test_container", async () => {
+  // 準備・実行
+  const page = await openStory("container");
+  // 検証
+  await expectNoOverlap(page);
+  await expect(
+    page.locator('[data-node="api"] .mdmark-diagram-node-kind').innerText(),
+  ).resolves.toContain("[Container: Node.js]");
+  await expect(
+    page.locator('[data-node="mail"] .mdmark-diagram-node-kind').innerText(),
+  ).resolves.toContain("[External Container: SendGrid]");
+  const shop = page.locator('.map-group[data-group="shop"]');
+  await expect(shop.innerText()).resolves.toContain(
+    "注文のシステム［Container］",
+  );
+  await expect(
+    shop.evaluate((element) => getComputedStyle(element).borderTopStyle),
+  ).resolves.toBe("dashed");
+});
+
+// コンポーネント図は、種類の行を [Component: {技術}] にする（Component）
+test("test_component", async () => {
+  // 準備・実行
+  const page = await openStory("component");
+  // 検証
+  await expectNoOverlap(page);
+  await expect(
+    page.locator('[data-node="router"] .mdmark-diagram-node-kind').innerText(),
+  ).resolves.toContain("[Component: Express]");
+  await expect(
+    page.locator('[data-node="pay"] .mdmark-diagram-node-kind').innerText(),
+  ).resolves.toContain("[External Component: Stripe]");
+});
+
+// 動的図は、関係のラベルの前に記載の順の番号を出し、RelIndex の第 1 引数を番号にしない（Dynamic）
+test("test_dynamic", async () => {
+  // 準備・実行
+  const page = await openStory("dynamic");
+  // 検証
+  const labels = await page
+    .locator(".mdmark-diagram-label[data-wire]")
+    .evaluateAll((elements) =>
+      Object.fromEntries(
+        elements.map((element) => [
+          element.getAttribute("data-wire"),
+          element.textContent?.trim(),
+        ]),
+      ),
+    );
+  expect(labels.r1).toBe("1: 注文を入力する");
+  expect(labels.r3).toBe("3: 注文を保存する [SQL]");
+});
+
+// 配置図は、配置先のノードを「{名前}［{種類}］」の実線の枠にして入れ子にし、Node_L を Node_R の左に置く（Deployment）
+test("test_deployment", async () => {
+  // 準備・実行
+  const page = await openStory("deployment");
+  // 検証
+  await expectNoOverlap(page);
+  const cloud = page.locator('.map-group[data-group="cloud"]');
+  await expect(cloud.innerText()).resolves.toContain("クラウド［AWS］");
+  await expect(
+    cloud.evaluate((element) => getComputedStyle(element).borderTopStyle),
+  ).resolves.toBe("solid");
+  const rect = (id: string) =>
+    page
+      .locator(`.map-group[data-group="${id}"]`)
+      .evaluate((element) => element.getBoundingClientRect().toJSON());
+  const [outer, inner, app, db] = await Promise.all([
+    rect("cloud"),
+    rect("region"),
+    rect("app"),
+    rect("dbnode"),
+  ]);
+  expect(inner.left).toBeGreaterThanOrEqual(outer.left);
+  expect(inner.right).toBeLessThanOrEqual(outer.right);
+  expect(app.right).toBeLessThanOrEqual(db.left);
+});
+
+// 配置先のノード「東京のリージョン」を閉じると、名前の行の下に「要素 2 件」の行を持つ 1 つのノードになる（DeploymentCollapsed）
+test("test_deployment_collapsed", async () => {
+  // 準備・実行
+  const page = await openStory("deployment-collapsed");
+  // 検証
+  await expectCountBelowTitle(
+    page,
+    '.map-closed-group[data-group="region"]',
+    "要素 2 件",
+  );
+  await expect(
+    page.locator('.map-group[data-group="cloud"]').count(),
+  ).resolves.toBe(1);
+});
+
 // 境界「通販」を閉じると、名前の行の下に「要素 3 件」の行を持つ 1 つのノードになり、タイトルが収まる（BoundaryCollapsed）
 test("test_boundary_collapsed", async () => {
   // 準備・実行

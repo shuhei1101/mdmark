@@ -1,6 +1,6 @@
 import { parseArchitecture } from "./architecture.ts";
 import { type AxisGrid, parseAxisGrid } from "./axis-grid.ts";
-import { parseC4Context } from "./c4.ts";
+import { parseC4 } from "./c4.ts";
 import { parseClassDiagram } from "./class-diagram.ts";
 import { type MapData, parseMapData } from "./data.ts";
 import { parseErDiagram } from "./er.ts";
@@ -45,6 +45,14 @@ const REF_HINTS = {
     "service・group・junction の ID か、線の記載順の `r{番号}` にしてください。",
   C4Context:
     "要素・境界の別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
+  C4Container:
+    "要素・境界・配置先のノードの別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
+  C4Component:
+    "要素・境界・配置先のノードの別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
+  C4Dynamic:
+    "要素・境界・配置先のノードの別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
+  C4Deployment:
+    "要素・境界・配置先のノードの別名（第 1 引数）か、関係の記載順の `r{番号}` にしてください。",
   mindmap: "項目の ID か、ID を持たない項目の表示する文字にしてください。",
   gantt:
     "タスクの ID か、ID を持たないタスクの名前か、section の名前にしてください。",
@@ -244,7 +252,7 @@ const architectureIds = (
 
 /** C4 図の ID（要素・境界の別名・関係） */
 const c4Ids = (mermaid: string, line: number | undefined): MermaidIds => {
-  const diagram = parseC4Context(mermaid);
+  const diagram = parseC4(mermaid);
   const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
   for (const item of [...diagram.elements, ...diagram.boundaries])
     found.ids.add(item.id);
@@ -320,6 +328,7 @@ const mermaidIdsOf = (
 ): MermaidIds => {
   const { mermaid, line, data, idLinks } = source;
   if (isAxisGridKind(kind)) return axisGridIds(kind, mermaid, line);
+  if (kind.startsWith("C4")) return c4Ids(mermaid, line);
   switch (kind) {
     case "flowchart":
       return flowchartIds(mermaid, line, idLinks);
@@ -331,8 +340,6 @@ const mermaidIdsOf = (
       return classIds(mermaid, line);
     case "architecture":
       return architectureIds(mermaid, line);
-    case "C4Context":
-      return c4Ids(mermaid, line);
     case "mindmap":
       return mindmapIds(mermaid, line);
     default:

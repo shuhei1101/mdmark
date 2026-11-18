@@ -707,7 +707,7 @@ items:
 - page: MOD-472-26.yaml
   summary: map の範囲の読み取りの項目に、補足が指す ID と設定の `map` の種類・線・アイコンの照合を加え、書き方の警告と点検のずれにする項目を集める。
 - page: MOD-472-27.yaml
-  summary: map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
+  summary: map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
 - page: MOD-472-28.yaml
   summary: 構成図を、表示するノードとグループの集合を決めてから入れ子の内側から配置し、線の経路を引く。シーケンス図の表示する行を決める。
 - page: MOD-472-29.yaml
@@ -788,3 +788,5 @@ items:
   summary: ライブラリ本体 / map / convert.ts
 - page: MOD-477-6.mjs.yaml
   summary: ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs
+- page: MOD-660-1.mjs.yaml
+  summary: ライブラリ本体 / バージョンを上げる / retired-map-options.mjs

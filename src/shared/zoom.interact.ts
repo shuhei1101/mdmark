@@ -41,8 +41,49 @@ export type ZoomControl = {
   fit(): number;
   /** 今の倍率と位置を保ったまま、全体が収まる倍率とボタンの状態をもう一度求める */
   refit(): void;
+  /** 中身の座標の矩形と周りの余白が表示する枠に収まる倍率と位置へ、`duration` ミリ秒かけて移す */
+  focusRect(
+    rect: FocusRect,
+    options: { margin: number; duration: number },
+  ): void;
   /** 付けた操作と監視を解除する */
   detach(): void;
+};
+
+/** 倍率を掛ける前の中身の座標の矩形 */
+export type FocusRect = { x: number; y: number; width: number; height: number };
+
+// 付けた表示する枠ごとの操作
+const controls = new WeakMap<HTMLElement, ZoomControl>();
+
+/** `attachZoom` を付けた表示する枠の操作を返却する（付けていなければ `undefined`） */
+export const zoomControlOf = (viewport: HTMLElement): ZoomControl | undefined =>
+  controls.get(viewport);
+
+// 読者が操作したとみなすイベント（矩形へ移している途中で止める）
+const STOP_EVENTS = ["wheel", "pointerdown", "keydown", "touchstart"] as const;
+
+/** 表示する枠の操作とツールのボタン（`data-tool`）の押下で `stop` を呼ぶ（帯の区切りなど、ほかの押下では止めない） */
+const listenStops = (options: {
+  viewport: HTMLElement;
+  tools: HTMLElement;
+  stop: () => void;
+  signal: AbortSignal;
+}): void => {
+  const { viewport, tools, stop, signal } = options;
+  for (const type of STOP_EVENTS)
+    viewport.addEventListener(type, stop, { passive: true, signal });
+  tools.addEventListener(
+    "click",
+    (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-tool]")
+      )
+        stop();
+    },
+    { signal },
+  );
 };
 
 /** 表示する枠と中身に、全体が収まる倍率から `ZOOM.max` までの拡大・縮小と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
@@ -366,14 +407,73 @@ export function attachZoom(options: {
     apply(scale);
   };
 
-  return {
+  // 矩形へ移している途中のアニメーション（読者の操作で止める）
+  let moving: number | undefined;
+  const stopMoving = (): void => {
+    if (moving !== undefined) {
+      cancelAnimationFrame(moving);
+      moving = undefined;
+    }
+  };
+  listenStops({ viewport, tools, stop: stopMoving, signal });
+
+  /** 倍率と、表示する枠の中央に来る中身の座標を当てる */
+  const place = (scale: number, cx: number, cy: number): void => {
+    state.atFit = Math.abs(scale - state.fit) < ZOOM_EPSILON;
+    apply(scale);
+    viewport.scrollLeft = cx * scale - viewport.clientWidth / 2;
+    viewport.scrollTop = cy * scale - viewport.clientHeight / 2;
+  };
+
+  const focusRect = (
+    rect: FocusRect,
+    { margin, duration }: { margin: number; duration: number },
+  ): void => {
+    stopMoving();
+    const fit = Math.min(
+      (viewport.clientWidth - margin * 2) / Math.max(rect.width, 1),
+      (viewport.clientHeight - margin * 2) / Math.max(rect.height, 1),
+    );
+    const target = Math.min(ZOOM.max, Math.max(state.fit, fit));
+    const to = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    if (duration <= 0) {
+      place(target, to.x, to.y);
+      return;
+    }
+    const from = {
+      scale: state.scale,
+      x: (viewport.scrollLeft + viewport.clientWidth / 2) / state.scale,
+      y: (viewport.scrollTop + viewport.clientHeight / 2) / state.scale,
+    };
+    const start = performance.now();
+    const step = (now: number): void => {
+      const progress = Math.min(1, (now - start) / duration);
+      // 始めと終わりをゆるやかにする
+      const eased =
+        progress < 0.5 ? 2 * progress ** 2 : 1 - (-2 * progress + 2) ** 2 / 2;
+      place(
+        from.scale + (target - from.scale) * eased,
+        from.x + (to.x - from.x) * eased,
+        from.y + (to.y - from.y) * eased,
+      );
+      moving = progress < 1 ? requestAnimationFrame(step) : undefined;
+    };
+    moving = requestAnimationFrame(step);
+  };
+
+  const control: ZoomControl = {
     reset,
     fit: () => state.fit,
     refit,
+    focusRect,
     detach: () => {
+      stopMoving();
       releaseClick?.();
       observer.disconnect();
       controller.abort();
+      controls.delete(viewport);
     },
   };
+  controls.set(viewport, control);
+  return control;
 }

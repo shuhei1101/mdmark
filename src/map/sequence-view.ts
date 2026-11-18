@@ -2,7 +2,7 @@ import type { ResolvedConfig } from "../config.ts";
 import { attachDiagrams } from "../diagram/diagram.interact.ts";
 import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
-import { attachBand, type BandHandle } from "./band.ts";
+import { attachBand, type BandHandle, createFollow } from "./band.ts";
 import { noteTexts, parseMapData } from "./data.ts";
 import { DRAG_THRESHOLD_PX } from "./drag.ts";
 import {
@@ -193,7 +193,8 @@ export const attachMapSequence = (
   options: {
     args: MapArgs;
     onStep?: (message: number | undefined) => void;
-    follow?: { start: () => void; step: (message: number) => void };
+    /** 再生でメッセージへ移ったときに呼ぶ関数（メッセージの番号） */
+    follow?: (message: number) => void;
   },
 ): MapSequenceHandle => {
   const { args, onStep, follow } = options;
@@ -292,6 +293,7 @@ export const attachMapSequence = (
   );
   linkAnnotationOwners(range);
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
+  const follower = createFollow(figure, prefersReducedMotion());
   const detachDiagrams = attachDiagrams({
     root: range,
     placement: config.tooltips.diagramPlacement,
@@ -587,9 +589,6 @@ export const attachMapSequence = (
       figure,
       mode: "playback",
       steps: stepsOf(shown),
-      interval: args.interval,
-      autoplay: args.play === "autoplay",
-      reducedMotion: prefersReducedMotion(),
       apply: (step) => {
         current =
           step === undefined ? undefined : Number(step.wires[0] ?? Number.NaN);
@@ -597,17 +596,13 @@ export const attachMapSequence = (
         refresh();
         onStep?.(current);
       },
-      ...(follow === undefined
-        ? {}
-        : {
-            follow: {
-              start: follow.start,
-              step: (step) => {
-                const message = Number(step.wires[0] ?? Number.NaN);
-                if (!Number.isNaN(message)) follow.step(message);
-              },
-            },
-          }),
+      onStep: (step) => {
+        const message = Number(step.wires[0] ?? Number.NaN);
+        if (Number.isNaN(message)) return;
+        follower.resume();
+        follower.reveal([String(message)]);
+        follow?.(message);
+      },
     });
   }
 
@@ -616,6 +611,7 @@ export const attachMapSequence = (
     clear: () => band?.stop(),
     destroy: () => {
       band?.destroy();
+      follower.destroy();
       detachDiagrams();
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("pointerdown", onPointerDown);

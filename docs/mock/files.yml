@@ -1045,6 +1045,24 @@ files:
   - path: refs/630/index.md
     description: '#630（map の範囲の外の mermaid のコードブロックにも map の図の操作を付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/660/assets/band.js
+    description: '#660 のモックの案内・再生の帯: 手順のバーとタイトル・説明の文だけを持つ帯の HTML と、区切りを押した手順の再生・バー以外を押した停止と、図をなめらかに移す実演の処理。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/660/assets/band.css
+    description: '#660 のモックの案内・再生の帯の規則: 手順のバーの区切りの描き分けと塗り、タイトルと説明の文、実演の図の倍率と位置の移り方。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/660/assets/c4-kinds.js
+    description: '#660 のモックの C4 の 4 種類: C4Container・C4Component・C4Dynamic・C4Deployment の Mermaid を #596 の C4 図のモックの入力へ読み替え、種類と技術の行・配置先のノード・関係の番号・読めない行の書き方の警告を当てる処理。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/660/assets/c4-kinds.css
+    description: '#660 のモックの C4 の 4 種類の規則: 配置先のノードの実線の枠。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/660/assets/samples.js
+    description: '#660 のモックの見本: C4Container・C4Component・C4Dynamic・C4Deployment の Mermaid と補足と、読めない行を持つ Mermaid。このモックの図の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/660/index.md
+    description: '#660（map の順番の再生の手順のバー・なめらかな移動と、C4 の 4 種類）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/653/assets/axis-grid.js
     description: '#653 のモックの軸と格子の配置の図: gantt・timeline・gitGraph・journey・block-beta の Mermaid と補足を読み、日付・記載順の軸か columns の格子に沿って、今のフロー図の部品の上に項目・section と入れ子のブロックの開閉と中へ入るボタン・選択と強調・再生の帯・書き方の警告を描く処理。このモックの振る舞いを変えるときに参照する。'
     tags: [topic:モック, topic:図]
@@ -1215,6 +1233,12 @@ files:
     tags: [topic:モック, topic:図]
   - path: components/plain-mermaid/index.html
     description: '部品『plain-mermaid』のモック: map の範囲の外の mermaid のコードブロックの、今の描き方（mermaid の図）と案 A（補足の無い map の図）の flowchart・sequenceDiagram・classDiagram と、map が描けない種類の gantt。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/map-band/index.html
+    description: '部品『map-band』のモック: map の案内・再生の帯の、手順のバーだけの帯・区切りを押した手順の再生と再生し直し・バー以外を押して停止・なめらかな移動の実演・手順が多いとき・狭い幅。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/map-c4-kinds/index.html
+    description: '部品『map-c4-kinds』のモック: map の C4 のコンテナ図・コンポーネント図・動的図・配置図の、種類と技術の行・Container_Boundary・関係の番号・配置先のノードの実線の枠と開閉と中へ入る・読めない行・狭い幅。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: components/map-axis-grid/index.html
     description: '部品『map-axis-grid』のモック: map のガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の、軸と格子に沿った配置・section と入れ子のブロックの開閉と中へ入る・選択と強調・再生・補足の layout と書き方の警告・範囲の外のコードブロック・読めない行・狭い幅。部品の外観や状態を決めるときに参照する。'
