@@ -258,9 +258,42 @@ flows:
       - '`dist/index.js` の `version()` が `v0.0.0+develop.{短縮 SHA}` を返却し、短縮 SHA がビルドした作業ツリーの HEAD の `git rev-parse --short=7 HEAD` と一致する'
       - '`node dist/cli.js --version` の出力が同じ値'
     test: test_normal_when_develop
+  - name: 正常系（出したバージョンの移行の手順を書き換えない）
+    summary: タグがあるバージョンのフォルダへ移行の手順の配布物を書き込まず、出していないバージョンのフォルダにだけ書き込む
+    setup:
+      - name: 出したバージョンの移行の手順を持つ作業ツリー
+        description: 作業ツリーをコピーした一時フォルダを git のリポジトリにして、`migrations/v0.3.0/` に `marker-json.mjs`・`retired-diagrams.mjs` と、今のソースからビルドした内容と違う `legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` を配置して commit し、`v0.3.0` のタグを打った後、`migrations/next/` に `marker-json.mjs`・`retired-diagrams.mjs` を配置したもの
+        notes: '`version.ini` は `v0.3.0`。`--develop` を付けた実行と付けない実行の 2 回'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor D as 開発者
+        participant B as ビルド
+        participant G as git
+        participant F as ファイル
+        D->>B: npm run build -- --develop
+        B->>G: v{MAJOR}.{MINOR}.{PATCH} のタグの一覧を読み込む
+        B->>B: タグ v0.3.0 がある migrations/v0.3.0/ を出したバージョンとして除外する
+        B->>F: migrations/next/ に legacy-marks.js・retired-diagrams.js・THIRD_PARTY_LICENSES.txt を書き込む
+        B-->>D: 終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0
+      - '`migrations/v0.3.0/` の `legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` が commit した内容のまま（`git status --porcelain migrations/v0.3.0` の出力が空）'
+      - '`migrations/next/` に `legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` がある'
+      - '`--develop` を付けない実行でも同じ'
+    test: test_normal_when_released_migrations_kept
+    refs:
+      - SC-472-82#scenarios[正常シナリオ（出したバージョンの移行の手順を書き換えない）]
 lead: '`src/` の TypeScript と CSS を、バージョンを埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` と、Node で動く CLI の `dist/cli.js` と、CLI が書き出す HTML に埋める起動の処理 `dist/viewer.js`・`dist/viewer.css` にビルドする。'
 idempotent: true
-side_effects: '`dist/` と、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js` と `retired-diagrams.mjs` を持つフォルダの `retired-diagrams.js`、それぞれのフォルダの `THIRD_PARTY_LICENSES.txt` を書き換える'
+side_effects: '`dist/` と、`migrations/` の中の出していないバージョンのフォルダのうち、`marker-json.mjs` を持つフォルダの `legacy-marks.js` と `retired-diagrams.mjs` を持つフォルダの `retired-diagrams.js`、それぞれのフォルダの `THIRD_PARTY_LICENSES.txt` を書き換える。出したバージョンのフォルダは書き換えない'
 callers:
   - SC-472-82#
 request:
@@ -336,6 +369,9 @@ constraints:
     constraint: 配布物を書き込んだ後に、配布ファイルのサイズの検査と並べて実行する。利用側のブラウザが読み込む JS と同じ入口・同じ target で minify せずにまとめた JS を、MDN の browser-compat-data で対応ブラウザの下限のバージョンと照らす。確認の束は一時フォルダに書き込み、`dist/` には配置しない。`if` のブロックの中の使用も数え、同じ API の `typeof` で確認する `if` のブロックの中と、その `typeof` の式の中の参照だけを数えない。ネットワークには接続しない
     decided_by: NFR-472-1#requirements[対応ブラウザ]
     notes: 照らすバージョンは制約『出力の対象のブラウザ』と同じ値から取る。minify した配布ファイルは `if` のブロックが式に畳まれ、有無を確認した箇所も報告に出るため照らさない。`dist/cli.js` は対象外
+  - item: 移行の手順の配布物の書き込み先
+    constraint: '`migrations/` の直下のフォルダのうち、フォルダの名前と同じ `v{MAJOR}.{MINOR}.{PATCH}` のタグが `git tag` にあるフォルダを出したバージョンとし、`legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` を書き込まない。`migrations/next/` と、タグがまだ無い `migrations/v{MAJOR}.{MINOR}.{PATCH}/` には書き込む。`--develop` の有無で変えない'
+    notes: タグを打つ手順で `migrations/next/` を移した `migrations/v{バージョン}/` は、タグを打つ前のビルドでは書き込み先になり、その commit に入る（CMD-472-1 の管理作業）。git の作業ツリーでないときはタグを参照できないため、全てのフォルダを出していないバージョンとして扱う
 test_file: tests/integration/lib/build.test.ts
 tags:
   - name: topic:配布物
