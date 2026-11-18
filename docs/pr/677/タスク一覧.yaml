@@ -50,9 +50,15 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-18T14:16:16.006303+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    note: CMP-472-50 に再生の単位 relation と状態 RelationPlayback、CMP-596-3 に C4Dynamic の再生中の状態 3 つを追加
+    updated_by: planner
+    updated_at: '2026-11-18T14:25:49.717397+00:00'
   - process: 画面設計
-    status: todo
+    status: done
+    note: SCR-472-4 の要素『map の C4 図』『map の案内の帯』に C4Dynamic の関係の再生を追加
+    updated_by: planner
+    updated_at: '2026-11-18T14:25:49.717397+00:00'
   - process: モジュール構成設計
     status: todo
   - process: ドキュメント修正
