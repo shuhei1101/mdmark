@@ -13,6 +13,9 @@ const AUTO_WIDTH_VARIABLE = "--mdmark-auto-width";
 /** 表に入れる、自動で決めた列の幅の合計の変数 */
 const AUTO_TABLE_WIDTH_VARIABLE = "--mdmark-auto-table-width";
 
+/** 見出しのセルに入れる、見出しの中身が収まる外側の幅の変数（列の幅のつまみの最小幅） */
+const HEAD_WIDTH_VARIABLE = "--mdmark-column-head-width";
+
 /** 自動で決めた幅を当てた表の属性 */
 const AUTO_WIDTH_ATTRIBUTE = "data-auto-width";
 
@@ -68,6 +71,10 @@ const headWidth = (cell: HTMLElement): number => {
     return Math.max(0, ...linesOf(cell).map((line) => textWidth(cell, line)));
   }
   const probe = content.cloneNode(true) as HTMLElement;
+  // はみ出していない間は隠しているピン止めのボタンも、後で出したときのために幅に含める
+  for (const pin of probe.querySelectorAll<HTMLElement>(".mdmark-pin")) {
+    pin.hidden = false;
+  }
   probe.style.cssText =
     "position:absolute;visibility:hidden;white-space:nowrap;width:max-content";
   cell.append(probe);
@@ -75,6 +82,10 @@ const headWidth = (cell: HTMLElement): number => {
   probe.remove();
   return width;
 };
+
+/** 見出しのセルの中身（列名とボタン）が収まる外側の幅（px） */
+const headOuterWidth = (cell: HTMLElement): number =>
+  Math.ceil(headWidth(cell) + paddingOf(cell) + MEASURE_SLACK_PX);
 
 /** セルの左右の余白と罫線の幅（px） */
 const paddingOf = (cell: HTMLElement): number => {
@@ -118,9 +129,7 @@ export const measureColumns = (
         return cell ? [cell] : [];
       }),
     ];
-    let longest = Math.ceil(
-      headWidth(head) + paddingOf(head) + MEASURE_SLACK_PX,
-    );
+    let longest = headOuterWidth(head);
     let longestWord = 0;
     for (const cell of cells.slice(1)) {
       const padding = paddingOf(cell) + MEASURE_SLACK_PX;
@@ -192,6 +201,8 @@ export const attachAutoColumnWidths = (
   const ranges = readWidthRanges(wrapper.dataset.width);
   // 元の列の位置ごとの測った値。隠していて測れなかった列は、表示したときに測る
   const measures = new Map<number, ColumnMeasure>();
+  // 元の列の位置ごとの、見出しの中身が収まる外側の幅（px）。列の最小の幅の下限にする
+  const headMins = new Map<number, number>();
   // 元の列の位置ごとに自動で決めた幅（外側の幅。px）。つまみで変えた列は、戻したときのために前の幅を残す
   const assigned = new Map<number, number>();
   let lastWidth: number | undefined;
@@ -205,6 +216,12 @@ export const attachAutoColumnWidths = (
       for (const measure of measureColumns(table, headCells)) {
         if (!measures.has(measure.column)) {
           measures.set(measure.column, measure);
+          const head = headCells[measure.column];
+          if (head) {
+            const width = headOuterWidth(head);
+            headMins.set(measure.column, width);
+            head.style.setProperty(HEAD_WIDTH_VARIABLE, `${width}px`);
+          }
         }
       }
     }
@@ -231,7 +248,7 @@ export const attachAutoColumnWidths = (
         return { wraps: false, min: width, wanted: width, fixed: true };
       }
       const range = ranges.get(column);
-      return columnBounds({
+      const bound = columnBounds({
         nowrap: head?.classList.contains("mdmark-wide") === true,
         long: long.has(column),
         ...(range ? { range } : {}),
@@ -240,6 +257,12 @@ export const attachAutoColumnWidths = (
         em,
         longColumnMin,
       });
+      const headMin = headMins.get(column) ?? 0;
+      return {
+        ...bound,
+        min: Math.max(bound.min, headMin),
+        wanted: Math.max(bound.wanted, headMin),
+      };
     });
 
   /** 表の幅を、表示している列の幅（つまみで変えた列はその幅）の合計にする */
@@ -378,6 +401,7 @@ export const attachAutoColumnWidths = (
       observer.disconnect();
       for (const head of headCells) {
         head.style.removeProperty(AUTO_WIDTH_VARIABLE);
+        head.style.removeProperty(HEAD_WIDTH_VARIABLE);
       }
       table.style.removeProperty(AUTO_TABLE_WIDTH_VARIABLE);
       table.removeAttribute(AUTO_WIDTH_ATTRIBUTE);
