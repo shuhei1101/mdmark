@@ -9,7 +9,34 @@ functions:
     container: src/diagram/diagram.part.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『図の枠』の HTML。タイトル・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` とスクリーンリーダー向けの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさのノードと中身の `scale()` に使用する。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`resizable` が `true`（既定。`modal` のときは配置しない）なら表示するノードの右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`。`aria-valuenow`・`aria-valuemax` は図の全体が収まる高さ（`body.height × zoom` を `RESIZE.min` 以上にして丸めた値）、`aria-valuemin` は `RESIZE.min`、`aria-valuetext` は `{aria-valuenow}px` を初めの値に持ち、`mount` が表示する枠の高さを測って書き換える）を配置し、`legend` が空なら凡例の `ul` に `hidden` を付ける。`scope`・`updated` を持たない（種類 `mermaid`）ときは、タイトルに範囲と更新日を出さない。`fitMin` を指定したときは `figure` に `data-fit-min` を付ける。`id` は `render` の中の通し番号で文書の中で一意にする
+    summary: 部品設計『図の枠』の HTML を返却する
+    description: |-
+      タイトル・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。
+      ボタンの帯は縮小・倍率・拡大・全画面のボタンを持つ。
+
+      `zoom` は定義の大きさを 1 とする倍率で、大きさのノードと中身の `scale()` に使用する。
+      `fit` は省くと 1。
+
+      | ボタンの帯の値 | 決め方 |
+      | --- | --- |
+      | 倍率のボタンの文字 | `zoom / fit` を、全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` にする |
+      | 倍率のボタンのスクリーンリーダー向けの名前 | `倍率 {倍率}%。全体が収まる倍率に戻す` |
+      | 縮小の `disabled` と移動のボタンの有無 | `zoom <= fit` |
+      | 拡大の `disabled` | `zoom >= ZOOM.max` |
+
+      `resizable` が `true`（既定。`modal` のときは配置しない）なら、表示するノードの右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`）を配置する。
+      リサイズハンドルは次の初めの値を持ち、`mount` が表示する枠の高さを測って書き換える。
+
+      | 属性 | 初めの値 |
+      | --- | --- |
+      | `aria-valuenow`・`aria-valuemax` | 図の全体が収まる高さ（`body.height × zoom` を `RESIZE.min` 以上にして丸めた値） |
+      | `aria-valuemin` | `RESIZE.min` |
+      | `aria-valuetext` | `{aria-valuenow}px` |
+
+      `legend` が空なら凡例の `ul` に `hidden` を付ける。
+      `scope`・`updated` を持たない（種類 `mermaid`）ときは、タイトルに範囲と更新日を出さない。
+      `fitMin` を指定したときは `figure` に `data-fit-min` を付ける。
+      `id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
         type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; wide?: boolean; touchActive?: boolean; tools?: Array<{ name: string; label: string; disabled?: boolean }>; id: string }'

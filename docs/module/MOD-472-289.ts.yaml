@@ -7,8 +7,28 @@ functions:
   - name: buildEmbeddedHtml
     title: 埋め込んだ HTML を描く
     container: src/embedded-html/embedded-html.syntax.ts
-    summary: コアルール。`html` がオンのとき、`<!-- html -->` の範囲ごとに言語 `html` の `fence` を数え、1 つなら範囲のトークンを `html_block` 1 つに置き換える。`html-scripts` がオンのときは、範囲の言語 `css`・`ts`・`js` の `fence` も読み込み（`readRangeScripts`）、`css` を `scopeCss` で根の要素に限った `style.mdmark-html-style` を根の要素の先頭に、`ts`・`js` をエスケープした文字の `template.mdmark-html-script`（`data-lang`）を末尾に配置し、根の要素に文書の中の範囲の通し番号を `data-html-scope` で付ける（どれも `markOwn`）。オフのときは `css`・`ts`・`js` の `fence` を範囲の `html_block` の後ろにそのまま残す。`ts` と `js` を両方持つ範囲と同じ言語を 2 つ持つ範囲は記載の警告を差し込み、`template` を配置しない。0 ・ 2 つ以上なら `pushWarning` で記載の警告を差し込み、範囲の中身はそのまま残す。オフのときは何もしない（マーカーは `dropMarks` が取り除く）
+    summary: コアルール。`html` がオンのとき、`<!-- html -->` の範囲を埋め込んだ HTML に置き換える
     description: |-
+      `<!-- html -->` の範囲ごとに言語 `html` の `fence` を数える。
+
+      | 言語 `html` の `fence` の数 | 扱い |
+      | --- | --- |
+      | 1 つ | 範囲のトークンを `html_block` 1 つに置き換える |
+      | 0・2 つ以上 | `pushWarning` で記載の警告を差し込み、範囲の中身はそのまま残す |
+
+      `html-scripts` がオンのときは、範囲の言語 `css`・`ts`・`js` の `fence` も読み込む（`readRangeScripts`）。
+
+      | 言語 | 配置 |
+      | --- | --- |
+      | `css` | `scopeCss` で根の要素に限った `style.mdmark-html-style` を根の要素の先頭に配置する |
+      | `ts`・`js` | エスケープした文字の `template.mdmark-html-script`（`data-lang`）を末尾に配置する |
+
+      根の要素に文書の中の範囲の通し番号を `data-html-scope` で付ける（どれも `markOwn`）。
+      `ts` と `js` を両方持つ範囲と同じ言語を 2 つ持つ範囲は記載の警告を差し込み、`template` を配置しない。
+      `html-scripts` がオフのときは `css`・`ts`・`js` の `fence` を範囲の `html_block` の後ろにそのまま残す。
+
+      `html` がオフのときは何もしない（マーカーは `dropMarks` が取り除く）。
+
       置き換える HTML は次の順で作る。
 
       1. 中身の `<mdmark-chart>`・`<mdmark-param>` を正規表現で取得し、中身の文字を `readDefinition` に指定する（`diagrams` がオフなら要素を中身ごと削除する）。`<mdmark-flow>`・`<mdmark-sequence>` は中身ごと削除し、廃止した図の要素の記載の警告（`retiredElementMessage`）の HTML を預ける。読み込めたら図の部品の HTML（`buildDiagrams` と同じ作りで、`renderParam` に `env.labels?.paramCopy` を指定し、`markOwn` を掛ける）、読み込めなければ記載の警告の HTML を、その場所へ一時的なマーカー（`<!--mdmark-part:{n}-->`）で預ける

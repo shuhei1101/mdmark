@@ -9,7 +9,17 @@ functions:
     container: src/figure/figure.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`figures` がオンなら、`fig` のマーカーの直後の画像の段落と表を部品『図表の番号』で囲み、種類ごとに番号を付ける。`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID（2 つ目に ID を付けない）は警告を差し込む。囲む表の終わりは、表の囲みの `table-open`・`table-close`（`table` がオフなら `table_open`・`table_close`）の入れ子の数を数え、自分の開きに対応する閉じにする。`images` がオンなら、`fig` のマーカーの直後の画像の段落を部品『図表の番号』の代わりに部品『画像の図』（`opener: false`、`id` は `fig-{ID}`、`label` は `図 {番号}`）にし、`meta.mdmarkImage` の属性を適用する。`fig` のマーカーの直後がギャラリーの開きのマーカーなら、`図` の番号を付けて開きのマーカーの `meta.figure` に `{ id, number }` を配置し、囲むのは `buildGallery` に任せる'
+    summary: 'コアルール。`figures` がオンなら、`fig` のマーカーの直後の図表を囲んで種類ごとに番号を付ける'
+    description: |-
+      `fig` のマーカーの直後の画像の段落と表を部品『図表の番号』で囲み、種類ごとに番号を付ける。
+      `#fig-{ID}` へのリンクの文字を番号に替える。
+      切れた参照と重なった ID（2 つ目に ID を付けない）は警告を差し込む。
+      囲む表の終わりは、表の囲みの `table-open`・`table-close`（`table` がオフなら `table_open`・`table_close`）の入れ子の数を数え、自分の開きに対応する閉じにする。
+
+      | `fig` のマーカーの直後 | 扱い |
+      | --- | --- |
+      | 画像の段落（`images` がオンのとき） | 部品『図表の番号』の代わりに部品『画像の図』（`opener: false`、`id` は `fig-{ID}`、`label` は `図 {番号}`）にし、`meta.mdmarkImage` の属性を適用する |
+      | ギャラリーの開きのマーカー | `図` の番号を付けて開きのマーカーの `meta.figure` に `{ id, number }` を配置し、囲むのは `buildGallery` に任せる |
     args:
       - name: state
         type: StateCore

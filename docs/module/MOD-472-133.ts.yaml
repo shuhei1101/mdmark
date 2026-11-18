@@ -249,7 +249,32 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。`notes` に説明を持つグループ（閉じたグループのノードを含む）は、タイトルの右にノードと同じマーカー（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`。タイトルのボタンの外）とツールチップの中身を配置する。ノードと線を押す場所はフォーカスできるボタンにし（リンク先を持たず形状が開始・終了・分岐でないノードは、ノードの `div` に `tabindex`・`role` を付けず、ノードの `div` の先頭にノードの全体を覆う `span.mdmark-diagram-node-hit` を入れて `role="button"`・`tabindex="0"`・`aria-roledescription="ノード"`・`aria-keyshortcuts`・`aria-label`（ノードの名前。選んでいれば末尾に `（選択中）`）を付ける。種類の行・名前・説明のマーカー・`nodeParts` の中身はその後ろの兄弟として重ね、押せる要素の中に入れない。選んだノードの `div` には今と同じく `data-selected` を付ける）、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
+    summary: 部品設計『mapの構成図』の HTML を返却する
+    description: |-
+      ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。
+      中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く。
+
+      `notes` に説明を持つグループ（閉じたグループのノードを含む）は、タイトルの右にノードと同じマーカーとツールチップの中身を配置する。
+
+      | 項目 | 値 |
+      | --- | --- |
+      | マーカー | `button.mdmark-diagram-info.mdmark-diagram-group-info` |
+      | `aria-label` | `「{タイトル}」の説明` |
+      | 置き場所 | タイトルのボタンの外 |
+
+      ノードと線を押す場所はフォーカスできるボタンにする。
+      リンク先を持たず形状が開始・終了・分岐でないノードは、ノードの `div` に `tabindex`・`role` を付けず、ノードの `div` の先頭にノードの全体を覆う `span.mdmark-diagram-node-hit` を入れる。
+
+      | `span.mdmark-diagram-node-hit` の属性 | 値 |
+      | --- | --- |
+      | `role` | `button` |
+      | `tabindex` | `0` |
+      | `aria-roledescription` | `ノード` |
+      | `aria-keyshortcuts` | 付ける |
+      | `aria-label` | ノードの名前。選んでいれば末尾に `（選択中）` |
+
+      種類の行・名前・説明のマーカー・`nodeParts` の中身はその後ろの兄弟として重ね、押せる要素の中に入れない。
+      選んだノードの `div` には今と同じく `data-selected` を付ける。
     scope: public
     callees:
       - MOD-472-172#functions[renderFlow]
@@ -819,8 +844,22 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのマインドマップ』。項目を構成図のノードと同じ `div.mdmark-diagram-node`（`map-mindmap-item`・`data-node` に `stateKey`・`data-shape`・`data-side`。今の図の根は `map-mindmap-root`、`filled` の項目は `map-mindmap-filled`）で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。子を持つ項目には子の側の辺に持ち手 `div.map-mindmap-grip`（開閉の `button[data-mindmap-toggle]` と中へ入る `button[data-mindmap-enter]`）を付け、枝の曲線を SVG の `path.map-mindmap-branch`（`aria-hidden`・`data-branch` に `{親}->{子}`）で描く。中へ入ったときは図の上端に根からの道筋 `nav.map-mindmap-trail` を出す。選択と案内の強調で残さない項目と曲線に `map-dim` を付ける
-    description: 色は色の名前の文字の色（`colorVar`）を項目と曲線の `--map-mindmap-color` に、`filled` の項目はその色の面の色を `--map-mindmap-fill` に入れ、形状・下線・持ち手・道筋の見た目は CSS（`src/index.css`。モックの `docs/mock/refs/649/assets/mindmap.css`）で決める
+    summary: 部品設計『mapのマインドマップ』の HTML を返却する
+    description: |-
+      項目を構成図のノードと同じ `div.mdmark-diagram-node` で描き、押せる要素 `span.mdmark-diagram-node-hit`・名前・説明のマーカーを兄弟に並べる。
+
+      | 項目の class・属性 | 付ける項目 |
+      | --- | --- |
+      | `map-mindmap-item`・`data-node`（`stateKey`）・`data-shape`・`data-side` | 全ての項目 |
+      | `map-mindmap-root` | 今の図の根 |
+      | `map-mindmap-filled` | `filled` の項目 |
+
+      子を持つ項目には子の側の辺に持ち手 `div.map-mindmap-grip`（開閉の `button[data-mindmap-toggle]` と中へ入る `button[data-mindmap-enter]`）を付ける。
+      枝の曲線を SVG の `path.map-mindmap-branch`（`aria-hidden`・`data-branch` に `{親}->{子}`）で描く。
+      中へ入ったときは図の上端に根からの道筋 `nav.map-mindmap-trail` を出す。
+      選択と案内の強調で残さない項目と曲線に `map-dim` を付ける。
+
+      色は色の名前の文字の色（`colorVar`）を項目と曲線の `--map-mindmap-color` に、`filled` の項目はその色の面の色を `--map-mindmap-fill` に入れ、形状・下線・持ち手・道筋の見た目は CSS（`src/index.css`。モックの `docs/mock/refs/649/assets/mindmap.css`）で決める
     scope: public
     args:
       - name: args

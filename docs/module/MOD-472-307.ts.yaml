@@ -26,7 +26,32 @@ functions:
   - name: renderSideToc
     title: 右側の目次を描く
     container: src/section/side-toc.part.ts
-    summary: 部品設計『右側の目次』の HTML を返却する。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。`changed` の見出しは、項目のリンクに `data-changed` と `aria-label="{text}（変更）"` を付けてリンクの文字の後ろに `<span class="mdmark-side-toc-changed" aria-hidden="true"></span>` を配置し、右端の線に `data-changed` を付ける。`sections` が `false` ならすべて展開・すべて折りたたむを配置しない。目次の頭にはタイトルを配置せず、まとめて開閉するボタンの並び（`sections` が `true` のとき）とピン止めのボタンをこの順に配置する。ピン止めのボタンには押す前のアイコン（`panel-right-dashed`、`mdmark-side-toc-pin-off`）と押した後のアイコン（`panel-right`、`mdmark-side-toc-pin-on`）を両方置き、CSS が `aria-pressed` で片方を出す。アイコンは lucide の ellipsis・panel-right-dashed・panel-right・chevrons-up-down・chevrons-down-up（`src/shared/icons.part.ts` に PanelRightDashed と PanelRight を追加する。`pin` は表のピン止めで使用するため残す）
+    summary: 部品設計『右側の目次』の HTML を返却する
+    description: |-
+      深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる。
+      項目のリンクは `href="#{id}"` と、見出しの ID を持つ `data-heading-id` を持つ。
+
+      `changed` の見出しには、次を付ける。
+
+      | 対象 | 付けるもの |
+      | --- | --- |
+      | 項目のリンク | `data-changed` と `aria-label="{text}（変更）"` |
+      | リンクの文字の後ろ | `<span class="mdmark-side-toc-changed" aria-hidden="true"></span>` |
+      | 右端の線 | `data-changed` |
+
+      目次の頭にはタイトルを配置せず、まとめて開閉するボタンの並び（`sections` が `true` のとき）とピン止めのボタンをこの順に配置する。
+      `sections` が `false` ならすべて展開・すべて折りたたむを配置しない。
+
+      ピン止めのボタンには次の 2 つのアイコンを両方置き、CSS が `aria-pressed` で片方を出す。
+
+      | 状態 | アイコン | class |
+      | --- | --- | --- |
+      | 押す前 | `panel-right-dashed` | `mdmark-side-toc-pin-off` |
+      | 押した後 | `panel-right` | `mdmark-side-toc-pin-on` |
+
+      アイコンは lucide の ellipsis・panel-right-dashed・panel-right・chevrons-up-down・chevrons-down-up。
+      `src/shared/icons.part.ts` に PanelRightDashed と PanelRight を追加する。
+      `pin` は表のピン止めで使用するため残す
     kind: 関数
     scope: internal
     args:

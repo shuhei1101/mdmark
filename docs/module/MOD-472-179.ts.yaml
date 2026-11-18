@@ -16,7 +16,21 @@ functions:
     container: src/diagram/diagram-resize.interact.ts
     kind: 関数
     scope: internal
-    summary: リサイズハンドルの `pointerdown`（`setPointerCapture`）から `pointerup` までの縦の移動だけ表示する枠の `style.height` を変え、フォーカスの間の `ArrowUp`・`ArrowDown` で `RESIZE.step` ずつ変え、`dblclick` で倍率を変えずに `fit()`（今の倍率の図の全体が収まる高さ）にする。高さは `clampDiagramHeight` で収め、変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax`（今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext`（`{高さ}px`）を書き換え、`onResize` を呼ぶ。変えた高さを `storage` の `key` に整数の文字で記載し、戻したらキーを削除する。`storage` の読み込みと保存の例外は捕まえて保たない。読み込んだ値が正の整数でなければ使用しない。ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
+    summary: リサイズハンドルで表示する枠の高さを変える操作を付ける
+    description: |-
+      | 操作 | 高さの変え方 |
+      | --- | --- |
+      | `pointerdown`（`setPointerCapture`）から `pointerup` まで | 縦の移動だけ表示する枠の `style.height` を変える |
+      | フォーカスの間の `ArrowUp`・`ArrowDown` | `RESIZE.step` ずつ変える |
+      | `dblclick` | 倍率を変えずに `fit()`（今の倍率の図の全体が収まる高さ）にする |
+
+      高さは `clampDiagramHeight` で収める。
+      変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax`（今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext`（`{高さ}px`）を書き換え、`onResize` を呼ぶ。
+
+      変えた高さを `storage` の `key` に整数の文字で記載し、戻したらキーを削除する。
+      `storage` の読み込みと保存の例外は捕まえて保たない。
+      読み込んだ値が正の整数でなければ使用しない。
+      ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
     args:
       - name: options
         type: '{ viewport: HTMLElement; handle: HTMLElement; key: string; storage: Storage | null; fit: () => number; onResize: (height: number | null) => void }'
