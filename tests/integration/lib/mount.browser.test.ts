@@ -16617,6 +16617,8 @@ test("test_normal_when_map_walkthrough_played", async () => {
       '.mdmark-diagram-label[data-wire="marker->mermaid"]',
     );
     expect(mapDimmed(label)).toBe(true);
+    expect(getComputedStyle(label).opacity).toBe("1");
+    expect(dimmedTextContrast(label)).toBeGreaterThanOrEqual(4.5);
     expect(
       figure().querySelectorAll('.map-packet[data-wire="user->mount"]').length,
     ).toBeGreaterThan(0);

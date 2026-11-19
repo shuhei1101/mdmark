@@ -133,7 +133,7 @@ test("test_entered", async () => {
   }
   for (const { id, ratio } of await textContrastsOf(
     page,
-    ".mdmark-diagram-stage .map-faded",
+    ".mdmark-diagram-stage :is(.map-faded, .mdmark-diagram-label.map-dim)",
   )) {
     expect(ratio, id).toBeGreaterThanOrEqual(4.5);
   }
@@ -203,7 +203,7 @@ test("test_selected_one", async () => {
   }
   for (const { id, ratio } of await textContrastsOf(
     page,
-    ".mdmark-diagram-stage .mdmark-diagram-node.map-dim[data-node]",
+    ".mdmark-diagram-stage :is(.mdmark-diagram-node[data-node], .mdmark-diagram-label).map-dim",
   )) {
     expect(ratio, id).toBeGreaterThanOrEqual(4.5);
   }

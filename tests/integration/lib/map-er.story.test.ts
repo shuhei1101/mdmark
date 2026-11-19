@@ -300,13 +300,18 @@ test("test_table_selected", async () => {
   const kept = new Set(["明細", "注文", "商品", "r2", "r3"]);
   for (const mark of marks) {
     expect(mark.dim, mark.id).toBe(!kept.has(mark.id));
-    if (mark.dim && !mark.mark)
-      expect(mark.opacity, mark.id).toBeCloseTo(mark.node ? 1 : 0.25, 2);
+    if (mark.dim)
+      expect(mark.opacity, mark.id).toBeCloseTo(
+        mark.node || mark.mark ? 1 : 0.25,
+        2,
+      );
   }
-  for (const { id, ratio } of await textContrastsOf(
+  const texts = await textContrastsOf(
     page,
-    ".mdmark-diagram-stage .mdmark-diagram-node.map-dim[data-node]",
-  )) {
+    ".mdmark-diagram-stage :is(.mdmark-diagram-node[data-node], .mdmark-diagram-label, text[data-wire-mark]).map-dim",
+  );
+  expect(texts.some(({ id }) => id.startsWith("r"))).toBe(true);
+  for (const { id, ratio } of texts) {
     expect(ratio, id).toBeGreaterThanOrEqual(4.5);
   }
 });

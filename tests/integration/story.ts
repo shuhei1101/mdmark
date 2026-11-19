@@ -145,7 +145,7 @@ export function contrastRatio(first: string, second: string): number {
   return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
 }
 
-/** `selector` に該当する HTML の要素のうち表示した文字を持つものごとの、文字の色と、その下の面（透明なら外側の要素の面）の色のコントラスト比 */
+/** `selector` に該当する要素のうち表示した文字を持つものごとの、文字の色（SVG の文字は `fill`）と、その下の面（透明なら外側の要素の面）の色のコントラスト比 */
 export const textContrastsOf = async (
   page: Page,
   selector: string,
@@ -180,8 +180,14 @@ export const textContrastsOf = async (
         id:
           element.getAttribute("data-node") ??
           element.getAttribute("data-group") ??
+          element.getAttribute("data-wire") ??
+          element.getAttribute("data-wire-mark") ??
           "",
-        text: channels(getComputedStyle(text).color).rgb,
+        text: channels(
+          text instanceof SVGElement
+            ? getComputedStyle(text).fill
+            : getComputedStyle(text).color,
+        ).rgb,
         surface: background.alpha === 0 ? "rgb(255, 255, 255)" : background.rgb,
       };
     });
