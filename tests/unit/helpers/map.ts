@@ -276,6 +276,30 @@ export const CLASS_DATA = `{
 }
 `;
 
+/** 長いメンバー・型の引数・長いラベル・namespace・ノートを持つクラス図（インターフェース定義の正常系（map のクラス図で長いメンバーとラベルを重ねずに描く）と同じ） */
+export const LONG_CLASS = `classDiagram
+  namespace 変換 {
+    class 応答変換
+    class 時間範囲 {
+      +時間範囲(期間) tuple~int, int~
+    }
+  }
+  class 検索 {
+    +検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict
+  }
+  class 設定 {
+    +エージェント: str | None
+    +対応: dict~str, list~int~~
+  }
+  検索 ..> 応答変換 : 応答の変換
+  検索 ..> 時間範囲 : 期間の解決
+  検索 ..> 設定 : ASGI アプリの生成
+  note for 検索 "絞り込みと期間から結果を返す"
+`;
+
+/** LONG_CLASS の補足（「設定」の幅 320） */
+export const LONG_CLASS_DATA = `{"version": 1, "layout": {"設定": {"width": 320}}}`;
+
 /** アーキテクチャ図（group 2・service 6・junction 1・線 6。モックの `ARCH` と同じ） */
 export const ARCH = `architecture-beta
   group cloud(cloud)[クラウド]

@@ -230,3 +230,66 @@ test("test_linked_class", async () => {
     page.locator("a.mdmark-diagram-node-link").count(),
   ).resolves.toBe(1);
 });
+
+/** セレクタに当たる全ての要素の矩形（ページの座標） */
+function rectsOf(page: Page, selector: string): Promise<Box[]> {
+  return page.locator(selector).evaluateAll((elements) =>
+    elements.map((element) => {
+      const box = element.getBoundingClientRect();
+      return {
+        left: box.left,
+        top: box.top,
+        right: box.right,
+        bottom: box.bottom,
+      };
+    }),
+  );
+}
+
+/** クラスのメンバーの文字が、行とクラスのノードの中に収まる */
+async function expectMembersInside(page: Page, id: string): Promise<void> {
+  const node = await rectOf(page, `.mdmark-diagram-node[data-node="${id}"]`);
+  const rows = await page
+    .locator(`[data-node="${id}"] .map-class-member`)
+    .evaluateAll((elements) =>
+      elements.map((element) => {
+        const row = element.getBoundingClientRect();
+        const text = (
+          element.querySelector(".map-class-text") as HTMLElement
+        ).getBoundingClientRect();
+        return { row: row.bottom, text: text.bottom, right: text.right };
+      }),
+    );
+  expect(rows.length).toBeGreaterThan(0);
+  for (const row of rows) {
+    expect(row.text).toBeLessThanOrEqual(row.row + 0.5);
+    expect(row.text).toBeLessThanOrEqual(node.bottom + 0.5);
+    expect(row.right).toBeLessThanOrEqual(node.right + 0.5);
+  }
+}
+
+// 長いメンバー・型の引数・補足の幅・長いラベルを、クラス・ノート・namespace のタイトルと重ねずに描く（LongMembers）
+test("test_long_members", async () => {
+  // 準備・実行
+  const page = await openStory("long-members");
+  // 検証
+  await expectNoOverlap(page);
+  for (const id of ["検索", "時間範囲", "設定"])
+    await expectMembersInside(page, id);
+  const texts = await page.locator(".map-class-text").allTextContents();
+  expect(texts).toContain("時間範囲(期間) tuple<int, int>");
+  expect(texts).toContain("対応: dict<str, list<int>>");
+  const setting = await rectOf(page, '.mdmark-diagram-node[data-node="設定"]');
+  expect(setting.right - setting.left).toBeCloseTo(320, 0);
+  const avoid = [
+    ...(await rectsOf(page, ".mdmark-diagram-node[data-node]")),
+    ...(await rectsOf(page, '[data-group="変換"] .map-group-head')),
+  ];
+  const labels = await rectsOf(page, "text.map-class-label");
+  expect(labels).toHaveLength(3);
+  for (const [i, label] of labels.entries()) {
+    for (const other of avoid) expect(overlaps(label, other)).toBe(false);
+    for (const other of labels.slice(i + 1))
+      expect(overlaps(label, other)).toBe(false);
+  }
+});

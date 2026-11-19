@@ -113,7 +113,7 @@ import {
 } from "../src/map/er.ts";
 import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
-import { layoutMap, separateWires } from "../src/map/layout.ts";
+import { layoutMap, MAP_LAYOUT, separateWires } from "../src/map/layout.ts";
 import {
   type MapBandUnit,
   type MapErFanout,
@@ -202,6 +202,8 @@ import {
   GIT_GRAPH_DATA as MAP_GIT_GRAPH_DATA,
   JOURNEY as MAP_JOURNEY,
   JOURNEY_DATA as MAP_JOURNEY_DATA,
+  LONG_CLASS as MAP_LONG_CLASS,
+  LONG_CLASS_DATA as MAP_LONG_CLASS_DATA,
   MINDMAP as MAP_MINDMAP,
   MINDMAP_DATA as MAP_MINDMAP_DATA,
   MINDMAP_LAYOUT_DATA as MAP_MINDMAP_LAYOUT_DATA,
@@ -1476,11 +1478,22 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return mapFrame("作業の状態", part, layout);
   },
   "map-class": (args) => {
-    const diagram = parseClassDiagram(MAP_CLASS);
-    const { data } = parseMapData(MAP_CLASS_DATA);
+    // `sample` が `long` なら、長いメンバーとラベルのクラス図
+    const long = args.sample === "long";
+    const diagram = parseClassDiagram(long ? MAP_LONG_CLASS : MAP_CLASS);
+    const { data } = parseMapData(long ? MAP_LONG_CLASS_DATA : MAP_CLASS_DATA);
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
-    const inputs = classPartInputs(diagram, new Set(collapsed));
+    const widths = Object.fromEntries(
+      Object.entries(data.layout).flatMap(([id, entry]) =>
+        entry.width === undefined ? [] : [[id, entry.width]],
+      ),
+    );
+    const inputs = classPartInputs(diagram, {
+      collapsed: new Set(collapsed),
+      widths,
+      maxWidth: MAP_LAYOUT.maxWidth,
+    });
     const chart = classToFlowchart(diagram);
     const selected = jsonList(args.selected);
     // 2 つのクラスを選んだときは、つなぐ最短の経路を残す（mount の attachMapClass の選び方）

@@ -74,6 +74,8 @@ export type MapFlowExtension = {
   /** 補足の layout の前に重ねる配置の上書き（ノードの幅・大きさ・上に空ける高さ） */
   overrides?: (view: {
     collapsed: ReadonlySet<string>;
+    /** 補足の layout の width を持つ ID から幅 */
+    widths: Record<string, number>;
   }) => Record<string, MapOverride>;
   /** 補足の walkthroughs の代わりに帯で進める手順 */
   walkthroughs?: MapStep[] | undefined;
@@ -587,7 +589,14 @@ export const attachMapFlow = (
       {
         overrides: overridesOf(data, state, {
           sizes,
-          base: extension?.overrides?.({ collapsed: new Set(state.collapsed) }),
+          base: extension?.overrides?.({
+            collapsed: new Set(state.collapsed),
+            widths: Object.fromEntries(
+              Object.entries(data.layout).flatMap(([id, entry]) =>
+                entry.width === undefined ? [] : [[id, entry.width]],
+              ),
+            ),
+          }),
         }),
         nodeFit: config.map.node_fit,
         spread,

@@ -54,6 +54,8 @@ import {
   GIT_GRAPH_DATA as MAP_GIT_GRAPH_DATA,
   JOURNEY as MAP_JOURNEY,
   JOURNEY_DATA as MAP_JOURNEY_DATA,
+  LONG_CLASS as MAP_LONG_CLASS,
+  LONG_CLASS_DATA as MAP_LONG_CLASS_DATA,
   MINDMAP as MAP_MINDMAP,
   MINDMAP_DATA as MAP_MINDMAP_DATA,
   MINDMAP_LAYOUT_DATA as MAP_MINDMAP_LAYOUT_DATA,
@@ -21306,4 +21308,105 @@ test("test_normal_when_map_node_id_link_resolved", async () => {
   const warning = find(el, ".mdmark-syntax-warning").textContent ?? "";
   for (const text of ["c: id:unknown", "d: id:bad", "e: id:boom"])
     expect(warning).toContain(text);
+});
+
+/** 文字の矩形が別の矩形と重なるか */
+const boxesOverlap = (a: DOMRect, b: DOMRect): boolean =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/** 矩形が外側の矩形の中に収まる */
+function expectBoxInside(box: DOMRect, outer: DOMRect): void {
+  expect(box.left).toBeGreaterThanOrEqual(outer.left - 0.5);
+  expect(box.top).toBeGreaterThanOrEqual(outer.top - 0.5);
+  expect(box.right).toBeLessThanOrEqual(outer.right + 0.5);
+  expect(box.bottom).toBeLessThanOrEqual(outer.bottom + 0.5);
+}
+
+/** クラスのメンバーの行が、名前の行・他の行と重ならずにノードの中に収まり、文字が行の中に収まる */
+function expectClassMembersInside(figure: HTMLElement, id: string): void {
+  const element = mapNode(figure, id);
+  const node = element.getBoundingClientRect();
+  const name = find<HTMLElement>(
+    element,
+    ".mdmark-diagram-node-name",
+  ).getBoundingClientRect();
+  const rows = [
+    ...element.querySelectorAll<HTMLElement>(".map-class-member"),
+  ].map((row) => row.getBoundingClientRect());
+  expect(rows.length).toBeGreaterThan(0);
+  for (const [index, row] of rows.entries()) {
+    expectBoxInside(row, node);
+    expect(boxesOverlap(row, name)).toBe(false);
+    for (const other of rows.slice(index + 1))
+      expect(boxesOverlap(row, other)).toBe(false);
+  }
+  for (const text of element.querySelectorAll<HTMLElement>(".map-class-text"))
+    expectBoxInside(
+      text.getBoundingClientRect(),
+      (
+        text.closest(".map-class-member") as HTMLElement
+      ).getBoundingClientRect(),
+    );
+}
+
+// 折り返すメンバー・型の引数・長いラベルを持つクラス図を、クラス・メンバーの行・ラベルを重ねずに描く（正常系）
+test("test_normal_when_map_class_long_members_drawn", async () => {
+  // 準備・実行
+  const { figures } = await mountMap(
+    mapRange({ mermaid: MAP_LONG_CLASS, data: MAP_LONG_CLASS_DATA }),
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(1));
+  const figure = figures()[0] as HTMLElement;
+  // 検証: メンバーの型の ~ は <> で描かれる
+  const texts = [...figure.querySelectorAll(".map-class-text")].map(
+    (text) => text.textContent ?? "",
+  );
+  expect(texts).toContain("時間範囲(期間) tuple<int, int>");
+  expect(texts).toContain("対応: dict<str, list<int>>");
+  expect(texts.some((text) => text.includes("~"))).toBe(false);
+  // 検証: メンバーの行の文字が行とクラスの中に収まる
+  for (const id of ["検索", "時間範囲", "設定"])
+    expectClassMembersInside(figure, id);
+  // 検証: 補足の幅
+  expect(mapNode(figure, "設定").getBoundingClientRect().width).toBeCloseTo(
+    320,
+    0,
+  );
+  // 検証: ラベルはクラス・ノート・namespace のタイトル・他のラベルと重ならない
+  const avoid = [
+    ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-node[data-node]"),
+    ...figure.querySelectorAll<HTMLElement>(
+      '[data-group="変換"] .map-group-head',
+    ),
+  ].map((element) => element.getBoundingClientRect());
+  const labels = [
+    ...figure.querySelectorAll<SVGTextElement>("text.map-class-label"),
+  ].map((label) => label.getBoundingClientRect());
+  expect(labels).toHaveLength(3);
+  for (const [index, label] of labels.entries()) {
+    for (const other of avoid) expect(boxesOverlap(label, other)).toBe(false);
+    for (const other of labels.slice(index + 1))
+      expect(boxesOverlap(label, other)).toBe(false);
+  }
+  // 検証: どの 2 つのクラスのノードも重ならない
+  const nodes = [
+    ...figure.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+    ),
+  ].map((node) => node.getBoundingClientRect());
+  for (const [index, a] of nodes.entries())
+    for (const b of nodes.slice(index + 1))
+      expect(boxesOverlap(a, b)).toBe(false);
+  // 検証: 全てのクラスのノードが図の中身（配置で決めた stage の大きさ）に収まる
+  const stage = find<HTMLElement>(figure, ".mdmark-diagram-stage");
+  for (const node of figure.querySelectorAll<HTMLElement>(
+    ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+  )) {
+    expect(node.offsetLeft + node.offsetWidth).toBeLessThanOrEqual(
+      stage.offsetWidth,
+    );
+    expect(node.offsetTop + node.offsetHeight).toBeLessThanOrEqual(
+      stage.offsetHeight,
+    );
+  }
 });

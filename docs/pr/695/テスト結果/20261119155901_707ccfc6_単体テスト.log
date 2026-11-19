@@ -1,0 +1,839 @@
+$ run_url=$(gh workflow run test.yml --ref fix/map/class-diagram-overlap -f layer=unit ...) # 実行 44475926664（commit 0defe5b7。コードは 707ccfc6 と同じ）
+
+test	Set up job	﻿2026-11-19T06:57:20.9667372Z Current runner version: '2.338.2'
+test	Set up job	2026-11-19T06:57:20.9685468Z ##[group]Runner Image Provisioner
+test	Set up job	2026-11-19T06:57:20.9686204Z Hosted Compute Agent
+test	Set up job	2026-11-19T06:57:20.9686666Z Version: 20261103.629
+test	Set up job	2026-11-19T06:57:20.9687050Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+test	Set up job	2026-11-19T06:57:20.9687481Z Build Date: 2026-11-03T17:26:59Z
+test	Set up job	2026-11-19T06:57:20.9687953Z Worker ID: {52ed9a72-1c31-4591-a444-d7b00d180ea5}
+test	Set up job	2026-11-19T06:57:20.9688368Z Region: centralus
+test	Set up job	2026-11-19T06:57:20.9688750Z Cloud: Azure
+test	Set up job	2026-11-19T06:57:20.9689084Z ##[endgroup]
+test	Set up job	2026-11-19T06:57:20.9689877Z ##[group]Operating System
+test	Set up job	2026-11-19T06:57:20.9690301Z Ubuntu
+test	Set up job	2026-11-19T06:57:20.9690617Z 26.04.1
+test	Set up job	2026-11-19T06:57:20.9690975Z LTS
+test	Set up job	2026-11-19T06:57:20.9691297Z ##[endgroup]
+test	Set up job	2026-11-19T06:57:20.9691615Z ##[group]Runner Image
+test	Set up job	2026-11-19T06:57:20.9692283Z Image: ubuntu-26.04
+test	Set up job	2026-11-19T06:57:20.9692622Z Version: 20261111.196.1
+test	Set up job	2026-11-19T06:57:20.9693292Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261111.196/images/ubuntu/Ubuntu2604-Readme.md
+test	Set up job	2026-11-19T06:57:20.9694313Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261111.196
+test	Set up job	2026-11-19T06:57:20.9694914Z ##[endgroup]
+test	Set up job	2026-11-19T06:57:20.9695589Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2026-11-19T06:57:20.9697108Z Contents: read
+test	Set up job	2026-11-19T06:57:20.9697459Z Metadata: read
+test	Set up job	2026-11-19T06:57:20.9697831Z ##[endgroup]
+test	Set up job	2026-11-19T06:57:20.9699183Z Secret source: Actions
+test	Set up job	2026-11-19T06:57:20.9699832Z Cache mode: write
+test	Set up job	2026-11-19T06:57:20.9700258Z Prepare workflow directory
+test	Set up job	2026-11-19T06:57:21.0024563Z Prepare all required actions
+test	Set up job	2026-11-19T06:57:21.0057334Z Getting action download info
+test	Set up job	2026-11-19T06:57:21.2340941Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+test	Set up job	2026-11-19T06:57:21.3477645Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+test	Set up job	2026-11-19T06:57:21.4409005Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+test	Set up job	2026-11-19T06:57:21.5636036Z Complete job name: test
+test	ブランチを取得する	﻿2026-11-19T06:57:21.6125053Z ##[group]Run actions/checkout@v4
+test	ブランチを取得する	2026-11-19T06:57:21.6125708Z with:
+test	ブランチを取得する	2026-11-19T06:57:21.6126233Z   repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T06:57:21.6128690Z   token: ***
+test	ブランチを取得する	2026-11-19T06:57:21.6128931Z   ssh-strict: true
+test	ブランチを取得する	2026-11-19T06:57:21.6129177Z   ssh-user: git
+test	ブランチを取得する	2026-11-19T06:57:21.6129422Z   persist-credentials: true
+test	ブランチを取得する	2026-11-19T06:57:21.6129691Z   clean: true
+test	ブランチを取得する	2026-11-19T06:57:21.6129941Z   sparse-checkout-cone-mode: true
+test	ブランチを取得する	2026-11-19T06:57:21.6130233Z   fetch-depth: 1
+test	ブランチを取得する	2026-11-19T06:57:21.6130469Z   fetch-tags: false
+test	ブランチを取得する	2026-11-19T06:57:21.6130713Z   show-progress: true
+test	ブランチを取得する	2026-11-19T06:57:21.6130959Z   lfs: false
+test	ブランチを取得する	2026-11-19T06:57:21.6131190Z   submodules: false
+test	ブランチを取得する	2026-11-19T06:57:21.6131476Z   set-safe-directory: true
+test	ブランチを取得する	2026-11-19T06:57:21.6131757Z   allow-unsafe-pr-checkout: false
+test	ブランチを取得する	2026-11-19T06:57:21.6132158Z env:
+test	ブランチを取得する	2026-11-19T06:57:21.6132375Z   LAYER: unit
+test	ブランチを取得する	2026-11-19T06:57:21.6132607Z   PATHS: 
+test	ブランチを取得する	2026-11-19T06:57:21.6132843Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:21.8726328Z Syncing repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T06:57:21.8728282Z ##[group]Getting Git version info
+test	ブランチを取得する	2026-11-19T06:57:21.8728955Z Working directory is '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-19T06:57:21.8729906Z [command]/usr/bin/git version
+test	ブランチを取得する	2026-11-19T06:57:21.8737295Z git version 2.56.1
+test	ブランチを取得する	2026-11-19T06:57:21.8749058Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:21.8759800Z Temporarily overriding HOME='/home/runner/work/_temp/67f4a652-7d9c-4c05-ab7a-595b49a3b1cd' before making global git config changes
+test	ブランチを取得する	2026-11-19T06:57:21.8761254Z Adding repository directory to the temporary git global config as a safe directory
+test	ブランチを取得する	2026-11-19T06:57:21.8762626Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-19T06:57:21.8814101Z Deleting the contents of '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-19T06:57:21.8816952Z ##[group]Initializing the repository
+test	ブランチを取得する	2026-11-19T06:57:21.8818819Z [command]/usr/bin/git init /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-19T06:57:21.8899129Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	ブランチを取得する	2026-11-19T06:57:21.8899860Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test	ブランチを取得する	2026-11-19T06:57:21.8900591Z hint: to use in all of your new repositories, which will suppress this warning,
+test	ブランチを取得する	2026-11-19T06:57:21.8901267Z hint: call:
+test	ブランチを取得する	2026-11-19T06:57:21.8901554Z hint:
+test	ブランチを取得する	2026-11-19T06:57:21.8901894Z hint: 	git config --global init.defaultBranch <name>
+test	ブランチを取得する	2026-11-19T06:57:21.8902268Z hint:
+test	ブランチを取得する	2026-11-19T06:57:21.8902640Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	ブランチを取得する	2026-11-19T06:57:21.8903196Z hint: 'development'. The just-created branch can be renamed via this command:
+test	ブランチを取得する	2026-11-19T06:57:21.8903639Z hint:
+test	ブランチを取得する	2026-11-19T06:57:21.8903982Z hint: 	git branch -m <name>
+test	ブランチを取得する	2026-11-19T06:57:21.8904337Z hint:
+test	ブランチを取得する	2026-11-19T06:57:21.8904718Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	ブランチを取得する	2026-11-19T06:57:21.8910194Z Initialized empty Git repository in /home/runner/work/mdmark/mdmark/.git/
+test	ブランチを取得する	2026-11-19T06:57:21.8917029Z [command]/usr/bin/git remote add origin https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T06:57:21.8960293Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:21.8960815Z ##[group]Disabling automatic garbage collection
+test	ブランチを取得する	2026-11-19T06:57:21.8962496Z [command]/usr/bin/git config --local gc.auto 0
+test	ブランチを取得する	2026-11-19T06:57:21.8988106Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:21.8988569Z ##[group]Setting up auth
+test	ブランチを取得する	2026-11-19T06:57:21.8992463Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	ブランチを取得する	2026-11-19T06:57:21.9017959Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	ブランチを取得する	2026-11-19T06:57:21.9407614Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	ブランチを取得する	2026-11-19T06:57:21.9433712Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	ブランチを取得する	2026-11-19T06:57:21.9654453Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	ブランチを取得する	2026-11-19T06:57:21.9681597Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	ブランチを取得する	2026-11-19T06:57:21.9896811Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	ブランチを取得する	2026-11-19T06:57:21.9929417Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:21.9930048Z ##[group]Fetching the repository
+test	ブランチを取得する	2026-11-19T06:57:21.9939684Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0defe5b7be65927153d6be535d56b2b3fe3c3b05:refs/remotes/origin/fix/map/class-diagram-overlap
+test	ブランチを取得する	2026-11-19T06:57:24.1100945Z From https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T06:57:24.1104043Z  * [new ref]         0defe5b7be65927153d6be535d56b2b3fe3c3b05 -> origin/fix/map/class-diagram-overlap
+test	ブランチを取得する	2026-11-19T06:57:24.1107202Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:24.1108112Z ##[group]Determining the checkout info
+test	ブランチを取得する	2026-11-19T06:57:24.1109319Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:24.1109929Z [command]/usr/bin/git sparse-checkout disable
+test	ブランチを取得する	2026-11-19T06:57:24.1152699Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	ブランチを取得する	2026-11-19T06:57:24.1182386Z ##[group]Checking out the ref
+test	ブランチを取得する	2026-11-19T06:57:24.1184865Z [command]/usr/bin/git checkout --progress --force -B fix/map/class-diagram-overlap refs/remotes/origin/fix/map/class-diagram-overlap
+test	ブランチを取得する	2026-11-19T06:57:24.4084717Z Switched to a new branch 'fix/map/class-diagram-overlap'
+test	ブランチを取得する	2026-11-19T06:57:24.4089318Z branch 'fix/map/class-diagram-overlap' set up to track 'origin/fix/map/class-diagram-overlap'.
+test	ブランチを取得する	2026-11-19T06:57:24.4108563Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T06:57:24.4150204Z [command]/usr/bin/git log -1 --format=%H
+test	ブランチを取得する	2026-11-19T06:57:24.4171291Z 0defe5b7be65927153d6be535d56b2b3fe3c3b05
+test	Node をインストールする	﻿2026-11-19T06:57:24.4441793Z ##[group]Run actions/setup-node@v4
+test	Node をインストールする	2026-11-19T06:57:24.4442379Z with:
+test	Node をインストールする	2026-11-19T06:57:24.4442609Z   node-version: 24
+test	Node をインストールする	2026-11-19T06:57:24.4442845Z   always-auth: false
+test	Node をインストールする	2026-11-19T06:57:24.4443106Z   check-latest: false
+test	Node をインストールする	2026-11-19T06:57:24.4444806Z   token: ***
+test	Node をインストールする	2026-11-19T06:57:24.4444953Z env:
+test	Node をインストールする	2026-11-19T06:57:24.4445085Z   LAYER: unit
+test	Node をインストールする	2026-11-19T06:57:24.4445227Z   PATHS: 
+test	Node をインストールする	2026-11-19T06:57:24.4445370Z ##[endgroup]
+test	Node をインストールする	2026-11-19T06:57:24.5428573Z (node:2194) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Node をインストールする	2026-11-19T06:57:24.5429318Z Found in cache @ /opt/hostedtoolcache/node/24.22.2/x64
+test	Node をインストールする	2026-11-19T06:57:24.5429628Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Node をインストールする	2026-11-19T06:57:24.5430398Z ##[group]Environment details
+test	Node をインストールする	2026-11-19T06:57:24.9259097Z node: v24.22.2
+test	Node をインストールする	2026-11-19T06:57:24.9259484Z npm: 11.19.1
+test	Node をインストールする	2026-11-19T06:57:24.9259706Z yarn: 1.22.22
+test	Node をインストールする	2026-11-19T06:57:24.9260239Z ##[endgroup]
+test	依存をインストールする	﻿2026-11-19T06:57:24.9373747Z ##[group]Run npm ci
+test	依存をインストールする	2026-11-19T06:57:24.9373979Z ^[[36;1mnpm ci^[[0m
+test	依存をインストールする	2026-11-19T06:57:24.9374118Z ^[[36;1mnpm --prefix vscode ci^[[0m
+test	依存をインストールする	2026-11-19T06:57:24.9478993Z shell: /usr/bin/bash -e {0}
+test	依存をインストールする	2026-11-19T06:57:24.9479167Z env:
+test	依存をインストールする	2026-11-19T06:57:24.9479284Z   LAYER: unit
+test	依存をインストールする	2026-11-19T06:57:24.9479400Z   PATHS: 
+test	依存をインストールする	2026-11-19T06:57:24.9479515Z ##[endgroup]
+test	依存をインストールする	2026-11-19T06:57:32.5306721Z 
+test	依存をインストールする	2026-11-19T06:57:32.5312225Z added 550 packages, and audited 557 packages in 8s
+test	依存をインストールする	2026-11-19T06:57:32.5312660Z 
+test	依存をインストールする	2026-11-19T06:57:32.5312862Z 109 packages are looking for funding
+test	依存をインストールする	2026-11-19T06:57:32.5313152Z   run `npm fund` for details
+test	依存をインストールする	2026-11-19T06:57:32.5538630Z 
+test	依存をインストールする	2026-11-19T06:57:32.5539391Z 11 moderate severity vulnerabilities
+test	依存をインストールする	2026-11-19T06:57:32.5539628Z 
+test	依存をインストールする	2026-11-19T06:57:32.5539826Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-19T06:57:32.5540130Z   npm audit fix
+test	依存をインストールする	2026-11-19T06:57:32.5540245Z 
+test	依存をインストールする	2026-11-19T06:57:32.5540445Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-19T06:57:32.5540760Z   npm audit fix --force
+test	依存をインストールする	2026-11-19T06:57:32.5541016Z 
+test	依存をインストールする	2026-11-19T06:57:32.5541138Z Run `npm audit` for details.
+test	依存をインストールする	2026-11-19T06:57:32.5545364Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-19T06:57:32.5546138Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-19T06:57:32.5546507Z npm warn install-scripts
+test	依存をインストールする	2026-11-19T06:57:32.5547049Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-19T06:57:36.8971984Z 
+test	依存をインストールする	2026-11-19T06:57:36.8972768Z added 307 packages, and audited 314 packages in 4s
+test	依存をインストールする	2026-11-19T06:57:36.8972957Z 
+test	依存をインストールする	2026-11-19T06:57:36.8973330Z 93 packages are looking for funding
+test	依存をインストールする	2026-11-19T06:57:36.8973685Z   run `npm fund` for details
+test	依存をインストールする	2026-11-19T06:57:36.9107407Z npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-19T06:57:36.9107830Z 
+test	依存をインストールする	2026-11-19T06:57:36.9108560Z npm warn install-scripts   @vscode/vsce-sign@2.1.1 (postinstall: node ./src/postinstall.js)
+test	依存をインストールする	2026-11-19T06:57:36.9109553Z 6 vulnerabilities (4 moderate, 2 high)
+test	依存をインストールする	2026-11-19T06:57:36.9110151Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-19T06:57:36.9110585Z 
+test	依存をインストールする	2026-11-19T06:57:36.9110844Z npm warn install-scripts
+test	依存をインストールする	2026-11-19T06:57:36.9111163Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-19T06:57:36.9111872Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-19T06:57:36.9112421Z   npm audit fix
+test	依存をインストールする	2026-11-19T06:57:36.9112685Z 
+test	依存をインストールする	2026-11-19T06:57:36.9112985Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-19T06:57:36.9113378Z   npm audit fix --force
+test	依存をインストールする	2026-11-19T06:57:36.9113628Z 
+test	依存をインストールする	2026-11-19T06:57:36.9113854Z Run `npm audit` for details.
+test	Chromium をインストールする	﻿2026-11-19T06:57:36.9808935Z ##[group]Run npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-19T06:57:36.9809343Z ^[[36;1mnpx playwright install --with-deps chromium^[[0m
+test	Chromium をインストールする	2026-11-19T06:57:36.9852309Z shell: /usr/bin/bash -e {0}
+test	Chromium をインストールする	2026-11-19T06:57:36.9852466Z env:
+test	Chromium をインストールする	2026-11-19T06:57:36.9852798Z   LAYER: unit
+test	Chromium をインストールする	2026-11-19T06:57:36.9852915Z   PATHS: 
+test	Chromium をインストールする	2026-11-19T06:57:36.9853030Z ##[endgroup]
+test	Chromium をインストールする	2026-11-19T06:57:37.5319540Z Installing dependencies...
+test	Chromium をインストールする	2026-11-19T06:57:37.5412335Z Switching to root user to install dependencies...
+test	Chromium をインストールする	2026-11-19T06:57:37.6308497Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-19T06:57:37.6620628Z Get:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease [3964 B]
+test	Chromium をインストールする	2026-11-19T06:57:37.6719647Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	Chromium をインストールする	2026-11-19T06:57:37.6737354Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease [137 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.6782984Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease [137 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.6790687Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease [137 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.6945979Z Get:7 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main arm64 Packages [151 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7195277Z Get:8 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main amd64 Packages [165 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7286880Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main amd64v3 Packages [875 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7337104Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main Translation-en [196 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7394055Z Get:11 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe amd64v3 Packages [394 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7398191Z Get:12 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe Translation-en [124 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7496977Z Get:13 http://azure.archive.ubuntu.com/ubuntu resolute-security/main amd64v3 Packages [721 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7529467Z Get:14 http://azure.archive.ubuntu.com/ubuntu resolute-security/main Translation-en [158 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7558021Z Get:15 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe amd64v3 Packages [222 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7576915Z Get:16 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe Translation-en [72.7 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7593560Z Get:17 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted amd64v3 Packages [590 kB]
+test	Chromium をインストールする	2026-11-19T06:57:37.7612642Z Get:18 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted Translation-en [122 kB]
+test	Chromium をインストールする	2026-11-19T06:57:39.8852365Z Fetched 4207 kB in 0s (13.9 MB/s)
+test	Chromium をインストールする	2026-11-19T06:57:40.3125134Z Reading package lists...
+test	Chromium をインストールする	2026-11-19T06:57:40.3379938Z Reading package lists...
+test	Chromium をインストールする	2026-11-19T06:57:40.4613941Z Building dependency tree...
+test	Chromium をインストールする	2026-11-19T06:57:40.4619892Z Reading state information...
+test	Chromium をインストールする	2026-11-19T06:57:40.4880294Z libasound2t64 is already the newest version (1.2.15.3-1ubuntu1.1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4880795Z libasound2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4881226Z libatk-bridge2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4881648Z libatk-bridge2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4882072Z libatk1.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4882433Z libatk1.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4882803Z libatspi2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4883166Z libatspi2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4883497Z libcairo2 is already the newest version (1.18.4-3).
+test	Chromium をインストールする	2026-11-19T06:57:40.4883835Z libcairo2 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4884188Z libcups2t64 is already the newest version (2.4.16-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-19T06:57:40.4884530Z libcups2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4884868Z libdbus-1-3 is already the newest version (1.16.2-2ubuntu4).
+test	Chromium をインストールする	2026-11-19T06:57:40.4885207Z libdbus-1-3 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4885509Z libdrm2 is already the newest version (2.4.131-1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4886602Z libdrm2 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4886924Z libgbm1 is already the newest version (26.0.8-1ubuntu0.3).
+test	Chromium をインストールする	2026-11-19T06:57:40.4887243Z libgbm1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4887742Z libglib2.0-0t64 is already the newest version (2.88.0-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4888101Z libglib2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4888456Z libnspr4 is already the newest version (2:4.38.2-1ubuntu1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4888834Z libnspr4 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4889166Z libnss3 is already the newest version (2:3.120-1ubuntu2.2).
+test	Chromium をインストールする	2026-11-19T06:57:40.4889491Z libnss3 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4889815Z libpango-1.0-0 is already the newest version (1.57.0-1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4890137Z libpango-1.0-0 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4890479Z libx11-6 is already the newest version (2:1.8.13-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4890798Z libx11-6 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4891119Z libxcb1 is already the newest version (1.17.0-2ubuntu1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4891425Z libxcb1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4891778Z libxcomposite1 is already the newest version (1:0.4.6-1build1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4892135Z libxcomposite1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4892463Z libxdamage1 is already the newest version (1:1.1.7-1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4892781Z libxdamage1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4893111Z libxext6 is already the newest version (2:1.3.4-1build3).
+test	Chromium をインストールする	2026-11-19T06:57:40.4893422Z libxext6 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4893751Z libxfixes3 is already the newest version (1:6.0.0-2build2).
+test	Chromium をインストールする	2026-11-19T06:57:40.4894076Z libxfixes3 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4894399Z libxkbcommon0 is already the newest version (1.13.1-1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4894715Z libxkbcommon0 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4895055Z libxrandr2 is already the newest version (2:1.5.4-1build1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4895380Z libxrandr2 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4895710Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-19T06:57:40.4896231Z fonts-noto-color-emoji is already the newest version (2.051-1build1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4896670Z libfontconfig1 is already the newest version (2.17.1-3ubuntu1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4897015Z libfontconfig1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4897384Z libfreetype6 is already the newest version (2.14.2+dfsg-1ubuntu0.2).
+test	Chromium をインストールする	2026-11-19T06:57:40.4897745Z libfreetype6 set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.4898108Z fonts-liberation is already the newest version (1:2.1.5-3build1).
+test	Chromium をインストールする	2026-11-19T06:57:40.4898468Z fonts-liberation set to manually installed.
+test	Chromium をインストールする	2026-11-19T06:57:40.5277796Z Solving dependencies...
+test	Chromium をインストールする	2026-11-19T06:57:40.5949138Z The following additional packages will be installed:
+test	Chromium をインストールする	2026-11-19T06:57:40.5949712Z   xfonts-encodings xfonts-utils
+test	Chromium をインストールする	2026-11-19T06:57:40.5955993Z Recommended packages:
+test	Chromium をインストールする	2026-11-19T06:57:40.5956323Z   fonts-ipafont-mincho fonts-tlwg-loma
+test	Chromium をインストールする	2026-11-19T06:57:40.6204653Z The following NEW packages will be installed:
+test	Chromium をインストールする	2026-11-19T06:57:40.6205299Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+test	Chromium をインストールする	2026-11-19T06:57:40.6210996Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+test	Chromium をインストールする	2026-11-19T06:57:40.6211423Z   xfonts-utils
+test	Chromium をインストールする	2026-11-19T06:57:40.6387665Z 0 upgraded, 9 newly installed, 0 to remove and 32 not upgraded.
+test	Chromium をインストールする	2026-11-19T06:57:40.6388071Z Need to get 21.9 MB of archives.
+test	Chromium をインストールする	2026-11-19T06:57:40.6388320Z After this operation, 80.2 MB of additional disk space will be used.
+test	Chromium をインストールする	2026-11-19T06:57:40.6388598Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-19T06:57:40.7225506Z Get:2 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-ipafont-gothic all 00303-23ubuntu1 [3703 kB]
+test	Chromium をインストールする	2026-11-19T06:57:40.7941561Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 fonts-freefont-ttf all 20211204+svn4273-4build1 [5656 kB]
+test	Chromium をインストールする	2026-11-19T06:57:40.8791032Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-tlwg-loma-otf all 1:0.7.3-1build1 [106 kB]
+test	Chromium をインストールする	2026-11-19T06:57:40.9169930Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-unifont all 1:16.0.04-1build1 [3169 kB]
+test	Chromium をインストールする	2026-11-19T06:57:40.9959081Z Get:6 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-wqy-zenhei all 0.9.45-8build1 [7863 kB]
+test	Chromium をインストールする	2026-11-19T06:57:41.1210860Z Get:7 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-encodings all 1:1.0.5-0ubuntu3 [576 kB]
+test	Chromium をインストールする	2026-11-19T06:57:41.1518994Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-utils amd64 1:7.7+7build1 [97.3 kB]
+test	Chromium をインストールする	2026-11-19T06:57:41.1800534Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-cyrillic all 1:1.0.5+nmu1build1 [384 kB]
+test	Chromium をインストールする	2026-11-19T06:57:41.2092790Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-scalable all 1:1.0.3-1.3build1 [304 kB]
+test	Chromium をインストールする	2026-11-19T06:57:41.4674122Z Fetched 21.9 MB in 1s (37.5 MB/s)
+test	Chromium をインストールする	2026-11-19T06:57:41.4862430Z Selecting previously unselected package fonts-ipafont-gothic.
+test	Chromium をインストールする	2026-11-19T06:57:41.5218114Z (Reading database ... 
+test	Chromium をインストールする	2026-11-19T06:57:41.5218374Z (Reading database ... 5%
+test	Chromium をインストールする	2026-11-19T06:57:41.5218634Z (Reading database ... 10%
+test	Chromium をインストールする	2026-11-19T06:57:41.5218857Z (Reading database ... 15%
+test	Chromium をインストールする	2026-11-19T06:57:41.5219081Z (Reading database ... 20%
+test	Chromium をインストールする	2026-11-19T06:57:41.5219513Z (Reading database ... 25%
+test	Chromium をインストールする	2026-11-19T06:57:41.5219730Z (Reading database ... 30%
+test	Chromium をインストールする	2026-11-19T06:57:41.5219945Z (Reading database ... 35%
+test	Chromium をインストールする	2026-11-19T06:57:41.5220184Z (Reading database ... 40%
+test	Chromium をインストールする	2026-11-19T06:57:41.5220373Z (Reading database ... 45%
+test	Chromium をインストールする	2026-11-19T06:57:41.5220512Z (Reading database ... 50%
+test	Chromium をインストールする	2026-11-19T06:57:41.6403385Z (Reading database ... 55%
+test	Chromium をインストールする	2026-11-19T06:57:41.7929291Z (Reading database ... 60%
+test	Chromium をインストールする	2026-11-19T06:57:41.9429144Z (Reading database ... 65%
+test	Chromium をインストールする	2026-11-19T06:57:42.1127523Z (Reading database ... 70%
+test	Chromium をインストールする	2026-11-19T06:57:42.2926825Z (Reading database ... 75%
+test	Chromium をインストールする	2026-11-19T06:57:42.4560922Z (Reading database ... 80%
+test	Chromium をインストールする	2026-11-19T06:57:42.6398927Z (Reading database ... 85%
+test	Chromium をインストールする	2026-11-19T06:57:42.8933983Z (Reading database ... 90%
+test	Chromium をインストールする	2026-11-19T06:57:43.0502867Z (Reading database ... 95%
+test	Chromium をインストールする	2026-11-19T06:57:43.0503284Z (Reading database ... 100%
+test	Chromium をインストールする	2026-11-19T06:57:43.0503661Z (Reading database ... 213946 files and directories currently installed.)
+test	Chromium をインストールする	2026-11-19T06:57:43.0541529Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-23ubuntu1_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:43.1791716Z Unpacking fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-19T06:57:43.4985079Z Selecting previously unselected package fonts-freefont-ttf.
+test	Chromium をインストールする	2026-11-19T06:57:43.5095448Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-4build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:43.5179451Z Unpacking fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:44.2477829Z Selecting previously unselected package fonts-tlwg-loma-otf.
+test	Chromium をインストールする	2026-11-19T06:57:44.2586930Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:44.2667530Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:44.3429449Z Selecting previously unselected package fonts-unifont.
+test	Chromium をインストールする	2026-11-19T06:57:44.3545013Z Preparing to unpack .../3-fonts-unifont_1%3a16.0.04-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:44.3584391Z Unpacking fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:44.7756402Z Selecting previously unselected package fonts-wqy-zenhei.
+test	Chromium をインストールする	2026-11-19T06:57:44.7872692Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:44.8073108Z Unpacking fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.0337587Z Selecting previously unselected package xfonts-encodings.
+test	Chromium をインストールする	2026-11-19T06:57:45.0451097Z Preparing to unpack .../5-xfonts-encodings_1%3a1.0.5-0ubuntu3_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:45.0538610Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.1845241Z Selecting previously unselected package xfonts-utils.
+test	Chromium をインストールする	2026-11-19T06:57:45.1963931Z Preparing to unpack .../6-xfonts-utils_1%3a7.7+7build1_amd64v3.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:45.2133803Z Unpacking xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.3425927Z Selecting previously unselected package xfonts-cyrillic.
+test	Chromium をインストールする	2026-11-19T06:57:45.3540442Z Preparing to unpack .../7-xfonts-cyrillic_1%3a1.0.5+nmu1build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:45.3835035Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.5230996Z Selecting previously unselected package xfonts-scalable.
+test	Chromium をインストールする	2026-11-19T06:57:45.5348883Z Preparing to unpack .../8-xfonts-scalable_1%3a1.0.3-1.3build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T06:57:45.5432019Z Unpacking xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.7289931Z Setting up fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.8114460Z Setting up fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.8171723Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.8213414Z Setting up xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.8282764Z Setting up fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.8356997Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+test	Chromium をインストールする	2026-11-19T06:57:45.8776308Z Setting up fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.8905614Z Setting up xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.9012841Z Setting up xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:45.9605678Z Setting up xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:46.1815891Z Processing triggers for man-db (2.13.1-1build1) ...
+test	Chromium をインストールする	2026-11-19T06:57:46.1936177Z Not building database; man-db/auto-update is not 'true'.
+test	Chromium をインストールする	2026-11-19T06:57:46.2012523Z Processing triggers for fontconfig (2.17.1-3ubuntu1) ...
+test	Chromium をインストールする	2026-11-19T06:57:46.9354722Z 
+test	Chromium をインストールする	2026-11-19T06:57:46.9355375Z Running kernel seems to be up-to-date.
+test	Chromium をインストールする	2026-11-19T06:57:46.9355615Z 
+test	Chromium をインストールする	2026-11-19T06:57:46.9355713Z Restarting services...
+test	Chromium をインストールする	2026-11-19T06:57:46.9431084Z 
+test	Chromium をインストールする	2026-11-19T06:57:46.9431575Z Service restarts being deferred:
+test	Chromium をインストールする	2026-11-19T06:57:46.9434378Z  systemctl restart hosted-compute-agent.service
+test	Chromium をインストールする	2026-11-19T06:57:46.9434552Z 
+test	Chromium をインストールする	2026-11-19T06:57:46.9435254Z No containers need to be restarted.
+test	Chromium をインストールする	2026-11-19T06:57:46.9435467Z 
+test	Chromium をインストールする	2026-11-19T06:57:46.9435633Z No user sessions are running outdated binaries.
+test	Chromium をインストールする	2026-11-19T06:57:46.9436070Z 
+test	Chromium をインストールする	2026-11-19T06:57:46.9436321Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+test	Chromium をインストールする	2026-11-19T06:57:47.8159140Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+test	Chromium をインストールする	2026-11-19T06:57:48.1469635Z |                                                                                |   0% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.3224520Z |■■■■■■■■                                                                        |  10% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.4020510Z |■■■■■■■■■■■■■■■■                                                                |  20% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.4680949Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.5124026Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.5760424Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.6246203Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.6633376Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.7319086Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.7921043Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:48.8647500Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T06:57:50.9661349Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+test	Chromium をインストールする	2026-11-19T06:57:50.9665689Z Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+test	Chromium をインストールする	2026-11-19T06:57:51.2512491Z |                                                                                |   0% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2713551Z |■■■■■■■■                                                                        |  10% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2797494Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2849833Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2880597Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2904976Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2924278Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2945065Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2969628Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2983904Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.2991044Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.3387244Z FFmpeg (playwright ffmpeg v1013) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1013
+test	Chromium をインストールする	2026-11-19T06:57:51.3389350Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+test	Chromium をインストールする	2026-11-19T06:57:51.6434243Z |                                                                                |   0% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.7625998Z |■■■■■■■■                                                                        |  10% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.8247590Z |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.9073856Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:51.9706682Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:52.0337224Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:52.1011189Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:52.1588251Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:52.2148358Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:52.2833023Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:52.3624110Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+test	Chromium をインストールする	2026-11-19T06:57:53.8944359Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+test	単体テストを回す	﻿2026-11-19T06:57:53.9261448Z ##[group]Run npm run test:unit 2>&1 | tee test.log
+test	単体テストを回す	2026-11-19T06:57:53.9261698Z ^[[36;1mnpm run test:unit 2>&1 | tee test.log^[[0m
+test	単体テストを回す	2026-11-19T06:57:53.9304088Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	単体テストを回す	2026-11-19T06:57:53.9304301Z env:
+test	単体テストを回す	2026-11-19T06:57:53.9304414Z   LAYER: unit
+test	単体テストを回す	2026-11-19T06:57:53.9304534Z   PATHS: 
+test	単体テストを回す	2026-11-19T06:57:53.9304647Z ##[endgroup]
+test	単体テストを回す	2026-11-19T06:57:53.9969384Z 
+test	単体テストを回す	2026-11-19T06:57:53.9969682Z > test:unit
+test	単体テストを回す	2026-11-19T06:57:53.9969954Z > vitest run --project 'unit*'
+test	単体テストを回す	2026-11-19T06:57:53.9970087Z 
+test	単体テストを回す	2026-11-19T06:57:54.4806323Z 
+test	単体テストを回す	2026-11-19T06:57:54.4811228Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.4 ^[[39m^[[90m/home/runner/work/mdmark/mdmark^[[39m
+test	単体テストを回す	2026-11-19T06:57:54.4811593Z 
+test	単体テストを回す	2026-11-19T06:57:55.6822667Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table.part.test.ts ^[[2m(^[[22m^[[2m38 tests^[[22m^[[2m)^[[22m^[[33m 673^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:57:55.6824486Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_table^[[33m 644^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:57:56.9780100Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/map.part.test.ts ^[[2m(^[[22m^[[2m59 tests^[[22m^[[2m)^[[22m^[[33m 1516^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:57:56.9797442Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_map_flow^[[33m 521^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:57:56.9830912Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_map_mindmap^[[33m 480^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:57:58.6526599Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/section/side-toc.interact.browser.test.ts ^[[2m(^[[22m^[[2m27 tests^[[22m^[[2m)^[[22m^[[33m 926^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:00.2117944Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table.syntax.test.ts ^[[2m(^[[22m^[[2m34 tests^[[22m^[[2m)^[[22m^[[32m 297^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:00.8977787Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table.interact.browser.test.ts ^[[2m(^[[22m^[[2m79 tests^[[22m^[[2m)^[[22m^[[33m 3080^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:01.2066237Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/code-block/code-block.syntax.test.ts ^[[2m(^[[22m^[[2m38 tests^[[22m^[[2m)^[[22m^[[32m 143^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:01.6250553Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/check.test.ts ^[[2m(^[[22m^[[2m37 tests^[[22m^[[2m)^[[22m^[[33m 5698^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:01.6277793Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_check^[[33m 4242^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:01.8067834Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/config-files.test.ts ^[[2m(^[[22m^[[2m44 tests^[[22m^[[2m)^[[22m^[[32m 192^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:01.9466529Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/zoom.interact.browser.test.ts ^[[2m(^[[22m^[[2m22 tests^[[22m^[[2m)^[[22m^[[32m 184^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.3603646Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/mount.browser.test.ts ^[[2m(^[[22m^[[2m48 tests^[[22m^[[2m)^[[22m^[[33m 4573^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.3606524Z    ^[[33m^[[2m✓^[[22m^[[39m test_mount_when_mermaid^[[33m 752^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.3630820Z    ^[[33m^[[2m✓^[[22m^[[39m test_mount_when_plain_mermaid_fallback^[[33m 1648^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.5808130Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/build.test.ts ^[[2m(^[[22m^[[2m34 tests^[[22m^[[2m)^[[22m^[[33m 7667^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.5827520Z    ^[[33m^[[2m✓^[[22m^[[39m test_main^[[33m 1488^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.5858115Z    ^[[33m^[[2m✓^[[22m^[[39m test_main_when_api_missing_in_baseline_browser^[[33m 334^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.5865632Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_dist_when_nested_css^[[33m 317^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.5866704Z    ^[[33m^[[2m✓^[[22m^[[39m test_emit_declarations^[[33m 2970^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.5867341Z    ^[[33m^[[2m✓^[[22m^[[39m test_emit_declarations_when_type_error^[[33m 347^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.6311602Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/matches.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[32m 292^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:02.9490867Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/section/section.interact.browser.test.ts ^[[2m(^[[22m^[[2m21 tests^[[22m^[[2m)^[[22m^[[33m 501^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.0394254Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/mermaid.browser.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[33m 4009^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.0450420Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_mermaid^[[33m 1888^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.0464800Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_mermaid_when_scheme_changed^[[33m 500^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.0508251Z    ^[[33m^[[2m✓^[[22m^[[39m test_draw_mermaid_diagram_when_end_in_name^[[33m 372^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.0965249Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/check.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[32m 85^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.5141682Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/index.browser.test.ts ^[[2m(^[[22m^[[2m17 tests^[[22m^[[2m)^[[22m^[[33m 943^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.5448076Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/layout.test.ts ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[32m 189^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:03.6720827Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diff/blocks.browser.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 153^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:04.4407695Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram.interact.browser.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m)^[[22m^[[33m 912^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:04.6920156Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/convert.test.ts ^[[2m(^[[22m^[[2m22 tests^[[22m^[[2m)^[[22m^[[32m 290^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:04.7606558Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/export.test.ts ^[[2m(^[[22m^[[2m26 tests^[[22m^[[2m)^[[22m^[[33m 2780^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:04.7636753Z    ^[[33m^[[2m✓^[[22m^[[39m test_prepare_embeds^[[33m 1346^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:04.7677776Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_export_when_document_missing^[[33m 974^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:04.9577981Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diff/panel.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[33m 689^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:04.9902050Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/tabs/tabs.interact.browser.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 215^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:05.2034919Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.part.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[32m 157^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:05.2877574Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/templates.test.ts ^[[2m(^[[22m^[[2m30 tests^[[22m^[[2m)^[[22m^[[33m 318^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:05.6050915Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/footnote/footnote.interact.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 124^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:05.6659187Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/dictionary.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[32m 134^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.1289610Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram-tips.interact.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 136^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.1408324Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/server.test.ts ^[[2m(^[[22m^[[2m17 tests^[[22m^[[2m)^[[22m^[[33m 3248^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.1463999Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_tmux_args^[[33m 546^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.1465451Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_with_tmux^[[33m 1360^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.1498325Z    ^[[33m^[[2m✓^[[22m^[[39m test_list_tool_names^[[33m 917^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.2177302Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-width.interact.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 752^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.4650452Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 2230^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.4679245Z    ^[[33m^[[2m✓^[[22m^[[39m test_panel_screen_when_rendered^[[33m 386^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.4715973Z    ^[[33m^[[2m✓^[[22m^[[39m test_panel_screen_when_reload_clicked^[[33m 310^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.5378926Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/embed.test.ts ^[[2m(^[[22m^[[2m25 tests^[[22m^[[2m)^[[22m^[[33m 563^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.6878524Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/config.test.ts ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[33m 319^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.7357901Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/upgrade.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[33m 1164^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.7429853Z    ^[[33m^[[2m✓^[[22m^[[39m test_write_config_version^[[33m 369^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:06.9833355Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/mount-parts.browser.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 569^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.0949432Z ^[[90mstderr^[[2m | tests/unit/src/render/sanitize.test.ts^[[2m > ^[[22m^[[2mtest_resolve_id_href
+test	単体テストを回す	2026-11-19T06:58:07.1017371Z ^[[22m^[[39m[mdmark] resolveIdLink が例外を投げました Error: boom
+test	単体テストを回す	2026-11-19T06:58:07.1052011Z     at resolveIdLink ^[[90m(/home/runner/work/mdmark/mdmark/^[[39mtests/unit/src/render/sanitize.test.ts:474:35^[[90m)^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.1054245Z     at resolveIdHref ^[[90m(/home/runner/work/mdmark/mdmark/^[[39msrc/render/sanitize.ts:354:16^[[90m)^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.1060139Z     at ^[[90m/home/runner/work/mdmark/mdmark/^[[39mtests/unit/src/render/sanitize.test.ts:486:19
+test	単体テストを回す	2026-11-19T06:58:07.1061111Z     at Array.map (<anonymous>)
+test	単体テストを回す	2026-11-19T06:58:07.1061952Z     at ^[[90m/home/runner/work/mdmark/mdmark/^[[39mtests/unit/src/render/sanitize.test.ts:486:5
+test	単体テストを回す	2026-11-19T06:58:07.1067728Z ^[[90m    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.1068827Z     at async ^[[90mfile:///home/runner/work/mdmark/mdmark/^[[39mnode_modules/^[[4mvitest^[[24m/dist/chunks/run.Cm2sd7-x.js:2794:20
+test	単体テストを回す	2026-11-19T06:58:07.1069474Z 
+test	単体テストを回す	2026-11-19T06:58:07.1069962Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/sanitize.test.ts ^[[2m(^[[22m^[[2m24 tests^[[22m^[[2m)^[[22m^[[32m 115^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.4560833Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/libraries.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 65^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.7115417Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/migrations.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[33m 788^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.7191001Z    ^[[33m^[[2m✓^[[22m^[[39m test_load_migration_versions_when_steps_invalid^[[33m 485^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.7767120Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/check.test.ts ^[[2m(^[[22m^[[2m23 tests^[[22m^[[2m)^[[22m^[[33m 309^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:07.8418447Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/knowledge/term.interact.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 349^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.1701957Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/code-block/code-block.part.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m)^[[22m^[[32m 130^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.2388391Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/chart.part.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[32m 153^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.3051613Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/flow-view.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[33m 841^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.3069107Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_map_flow_when_toggle^[[33m 357^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.3688017Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/tools.test.ts ^[[2m(^[[22m^[[2m20 tests^[[22m^[[2m)^[[22m^[[33m 1267^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.3736089Z    ^[[33m^[[2m✓^[[22m^[[39m test_call_tool^[[33m 461^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.5668316Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/tree/tree.interact.browser.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 110^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.6247480Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/aliases.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 88^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.7514492Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[33m 1092^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.7577379Z    ^[[33m^[[2m✓^[[22m^[[39m test_inspect_when_play^[[33m 1020^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:08.8291216Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/term.syntax.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 155^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.0198091Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/config.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[32m 77^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.0943631Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/marks.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m)^[[22m^[[33m 403^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.1562937Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/bubble.browser.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 516^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.2438338Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/term-tip.part.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 66^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.5197833Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/mark-schema.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 109^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.5876604Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/highlight.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 151^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.8753260Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/footnote/footnote.syntax.test.ts ^[[2m(^[[22m^[[2m16 tests^[[22m^[[2m)^[[22m^[[32m 281^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:09.9810178Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/embedded-html/embedded-html.syntax.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 124^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:10.1896941Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/index-shape.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:10.2335294Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/bundle.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 1241^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:10.2348376Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_bundle^[[33m 526^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:10.3787943Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-resize.interact.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 105^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:10.8252936Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/footnote/annotations.syntax.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 116^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:10.9761677Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diff/minimap.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 464^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:11.0836866Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/baseline.test.ts ^[[2m(^[[22m^[[2m19 tests^[[22m^[[2m)^[[22m^[[33m 851^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:11.2322288Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/comment.part.test.ts ^[[2m(^[[22m^[[2m14 tests^[[22m^[[2m)^[[22m^[[32m 95^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:11.2996554Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/c4-view.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 407^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:11.5836997Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/class-diagram.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 185^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:11.8418039Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/index.browser.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 766^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:11.9116399Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/parser.test.ts ^[[2m(^[[22m^[[2m18 tests^[[22m^[[2m)^[[22m^[[33m 400^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:11.9532931Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tree/tree.part.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 121^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:12.0430539Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/interact.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 242^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:12.1139503Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/code-block/code-fold.interact.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 230^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.0263680Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/storybook-render.test.ts ^[[2m(^[[22m^[[2m15 tests^[[22m^[[2m)^[[22m^[[33m 2268^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.0283671Z    ^[[33m^[[2m✓^[[22m^[[39m test_render_part_when_notice^[[33m 2094^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.0678238Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tabs/tabs.syntax.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 77^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.0680098Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/index.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 359^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.3627738Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/compute.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 50^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.4014015Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 148^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.6727758Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/html-scripts.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 2277^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.6770647Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_html_scripts^[[33m 2206^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.8234328Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/positions.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 142^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:14.9112397Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/glossary.syntax.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 294^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.1830309Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/footnote/footnote.part.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 98^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.2508227Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/band.browser.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 203^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.4568987Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/mindmap-view.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 866^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.4744407Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_map_mindmap^[[33m 388^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.5337720Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/build.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 1087^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.5428081Z    ^[[33m^[[2m✓^[[22m^[[39m test_run_build^[[33m 636^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.6147066Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/build-plugin.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 139^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.6687220Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/axis-grid-view.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 283^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.8618861Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/part-states.interact.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 20^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.9553725Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/markdown-check.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 608^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:15.9576654Z    ^[[33m^[[2m✓^[[22m^[[39m test_check_markdown_source^[[33m 490^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.1528738Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/image.syntax.test.ts ^[[2m(^[[22m^[[2m12 tests^[[22m^[[2m)^[[22m^[[32m 92^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.2629998Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/definition.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 34^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.6716387Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/retired-diagrams.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 754^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.6769642Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_retired_diagrams_when_bundled^[[33m 389^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.7121224Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/map.syntax.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[32m 139^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.7166982Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/version.test.ts ^[[2m(^[[22m^[[2m13 tests^[[22m^[[2m)^[[22m^[[32m 155^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.7902809Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/class-view.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 381^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:16.7926994Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_map_class^[[33m 328^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.1000988Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/guide-notice.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 71^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.2349629Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-tree.interact.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 567^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.4992661Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/media/lightbox.interact.browser.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 620^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.4996570Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_lightbox_when_closed^[[33m 321^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.5278741Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/legacy-marks.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 168^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.5683364Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/export/embed.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[33m 711^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.5722574Z    ^[[33m^[[2m✓^[[22m^[[39m test_embed_local_libraries^[[33m 671^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.6302067Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/section/back-to-top.interact.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 285^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.7372827Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/migrations.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[33m 720^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:17.7874173Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/print.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 181^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.0670189Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/flowchart.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 121^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.1138976Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/alias-rows.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 197^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.4617557Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/state.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 21^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.5934246Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/c4.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 243^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.6527521Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/http.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 730^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.6556945Z    ^[[33m^[[2m✓^[[22m^[[39m test_route_request^[[33m 426^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.7431959Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-settings.interact.browser.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 367^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.7545679Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/margin.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 369^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.7870002Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/view-state.browser.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 254^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.8018172Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/axis-grid.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 38^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:18.9395544Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/export/html.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.1679279Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/views/index.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 212^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.2308621Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/html.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 57^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.2771717Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/write.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 207^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.3671175Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/drag.browser.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 42^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.6193169Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/extensions.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 52^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.6626428Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/axis-grid-layout.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 23^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.6657542Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/retired-er.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 665^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:19.9328736Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/code-block/code-block.interact.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 117^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.0111527Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/side-toc.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 113^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.0597091Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/structure.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[32m 22^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.0627316Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/assets.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 261^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.4487778Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/sequence-view.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 470^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.4510057Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_map_sequence_when_reorder^[[33m 301^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.6209986Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/er-view.browser.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 262^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.6742437Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/views/view.syntax.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 132^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:20.8296199Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/diagram.syntax.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 210^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.0242102Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/table-sticky.interact.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 872^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.0258145Z    ^[[33m^[[2m✓^[[22m^[[39m test_attach_sticky_rows_when_script^[[33m 315^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.0637873Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/marker-json.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 495^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.0657505Z    ^[[33m^[[2m✓^[[22m^[[39m test_migrate_document_marks_when_bundled^[[33m 350^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.5137231Z ^[[90mstderr^[[2m | tests/unit/src/inline-icons.browser.test.ts^[[2m > ^[[22m^[[2mtest_load_inline_icons_when_offline
+test	単体テストを回す	2026-11-19T06:58:21.5167289Z ^[[22m^[[39mmdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/sailboat.mjs
+test	単体テストを回す	2026-11-19T06:58:21.5168264Z ^[[90mstderr^[[2m | tests/unit/src/inline-icons.browser.test.ts^[[2m > ^[[22m^[[2mtest_load_inline_icons_when_offline
+test	単体テストを回す	2026-11-19T06:58:21.5206851Z ^[[22m^[[39mmdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/anchor.mjs
+test	単体テストを回す	2026-11-19T06:58:21.5228633Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/inline-icons.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 56^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.6201473Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/diagram-resize.interact.browser.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 91^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.6340949Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/includes.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 90^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.6934125Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/used.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 491^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.6947069Z    ^[[33m^[[2m✓^[[22m^[[39m test_used_library_marks^[[33m 411^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.7515576Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tree/tree.syntax.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 49^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:21.9951174Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/mindmap-layout.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 28^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.0487281Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/architecture-view.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 275^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.1891591Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table-tree.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 105^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.2638080Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/state-view.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 206^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.5235522Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/arguments.test.ts ^[[2m(^[[22m^[[2m11 tests^[[22m^[[2m)^[[22m^[[33m 434^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.5249018Z    ^[[33m^[[2m✓^[[22m^[[39m test_check_arguments^[[33m 424^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.5593012Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/retired-map-options.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 144^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.8251846Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/media/gif.interact.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 158^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.8447801Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/part-modules.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 67^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.8896919Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/references.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 145^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.9432408Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/viewer/modules.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 516^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:22.9469019Z    ^[[33m^[[2m✓^[[22m^[[39m test_prepare_modules^[[33m 476^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.0375454Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 427^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.0559725Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/data.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 13^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.1315403Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/comments/anchor.browser.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 65^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.1941382Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/traces.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 69^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.2465599Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/views/view.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 81^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.4500085Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/aliases.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 122^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.4793566Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/systemd.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 18^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.6761308Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/callout/callout.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 70^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.7857206Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 1141^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.7901146Z    ^[[33m^[[2m✓^[[22m^[[39m test_use_link_clicks^[[33m 706^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.8756879Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/er.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 131^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:23.8829087Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/diagram/param.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 204^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.0913259Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/figure/figure.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 102^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.1938578Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations/drop-tag-vocabulary.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 166^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.2998432Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 338^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.3078586Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 131^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.3299150Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/tabs/tabs.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 24^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.4151182Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/map/annotations.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 16^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.4898019Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/gallery.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 81^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.7386108Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/mindmap.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 18^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:24.7957827Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/init.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 99^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.0126838Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/documents.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[33m 581^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.0128457Z    ^[[33m^[[2m✓^[[22m^[[39m test_read_index_with_documents_when_missing^[[33m 497^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.0909535Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/image.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 63^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.2008080Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/embedded-html/embedded-html.interact.browser.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 173^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.2165528Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/geometry.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 16^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.3979851Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 533^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.3996681Z    ^[[33m^[[2m✓^[[22m^[[39m test_config_band_when_clicked^[[33m 351^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.7628114Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 124^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.8101035Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/steps/steps.syntax.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 82^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.8830723Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/syntax-warning.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 106^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:25.9605905Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/layout/wide.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 178^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.1148358Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table-tree.logic.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.1559605Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/clipboard.interact.browser.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 20^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.3383275Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card-grid.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 85^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.3978391Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/index.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[33m 714^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.4008450Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_viewer^[[33m 691^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.4230015Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/scroller.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.5336681Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 102^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:26.7677864Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/session-start.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 121^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.0347993Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/backup.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 694^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.0393324Z    ^[[33m^[[2m✓^[[22m^[[39m test_take_backup_when_outside^[[33m 650^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.1820201Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/table/csv.interact.browser.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 20^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.4477286Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/git.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 438^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.5045464Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 92^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.7012638Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/shared/text.interact.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 21^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.7757940Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/app/app.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 585^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.7787097Z    ^[[33m^[[2m✓^[[22m^[[39m test_app_when_render_error^[[33m 585^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.8768049Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/viewer/route.browser.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:27.9057881Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/section.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 113^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.3037781Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/html.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 64^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.5030486Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/mcp.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[33m 643^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.5107564Z    ^[[33m^[[2m✓^[[22m^[[39m test_create_mcp_server^[[33m 614^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.6007709Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/src/knowledge/dictionary.browser.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 82^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.6037266Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 156^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.6159681Z  ^[[32m✓^[[39m ^[[30m^[[45m unit-browser (chromium) ^[[49m^[[39m tests/unit/vscode/src/webview/main.browser.test.tsx ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 474^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.6188177Z    ^[[33m^[[2m✓^[[22m^[[39m test_start_preview_when_no_root^[[33m 474^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.6261024Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/code-block/code-fold.logic.test.ts ^[[2m(^[[22m^[[2m9 tests^[[22m^[[2m)^[[22m^[[32m 15^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.7796844Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/scripts/build.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[33m 3702^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.7798199Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_extension^[[33m 2506^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.7798944Z    ^[[33m^[[2m✓^[[22m^[[39m test_build_extension_when_tests^[[33m 1194^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:28.9277967Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/mark-options.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.0879785Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/config.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 389^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.0881440Z    ^[[33m^[[2m✓^[[22m^[[39m test_find_config_file_when_missing^[[33m 307^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.1210206Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/pre-tool-use.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[33m 322^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.1569426Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/status.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 79^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.2729947Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/notice.part.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.3025145Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/sequence.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 51^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.3584681Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/table-cells.logic.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.4219818Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/embedded-html/scope-css.logic.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.4744392Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/frontmatter/frontmatter.logic.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.5473874Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 33^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.6072101Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/spec.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.6390680Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/lightbox.part.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 48^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.8198228Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/alias-schema.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 112^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:29.8538846Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/revision-picker.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 54^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.0336104Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/paths.test.ts ^[[2m(^[[22m^[[2m7 tests^[[22m^[[2m)^[[22m^[[32m 79^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.1085982Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/includes.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 108^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.1927474Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/versions.test.ts ^[[2m(^[[22m^[[2m8 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.2827782Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/port.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 18^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.3484195Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/main.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[33m 611^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.3489337Z    ^[[33m^[[2m✓^[[22m^[[39m test_main^[[33m 431^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.4307885Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-blocks.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.5191266Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/highlight-lines.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.6827792Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/scripts/eslint.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 56^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.8518060Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/extensions-bundle.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[33m 496^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.8537290Z    ^[[33m^[[2m✓^[[22m^[[39m test_bundle_extensions^[[33m 412^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:30.9641740Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/icons.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 168^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.0114861Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/anchor.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 14^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.0753599Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/mermaid-source.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.1312366Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-html.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.1704676Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/spec.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.3219148Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/guide.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.4415302Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/csv.syntax.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 34^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.4803187Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 42^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.5437411Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-lines.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.6129332Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/media.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.8228720Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/heading.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 31^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.8854558Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/backlinks.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 33^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:31.9825882Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/text-color.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 41^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.0448010Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/source.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.0808082Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/state-diagram.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 108^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.2255201Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/viewer/doc-list.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.3377756Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/badge.syntax.test.ts ^[[2m(^[[22m^[[2m5 tests^[[22m^[[2m)^[[22m^[[32m 33^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.3768300Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/frontmatter/frontmatter.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 156^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.4808056Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/gif.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 50^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.5859583Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/param.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 57^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.6218154Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/architecture.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 101^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.6848483Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/views/spec.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 17^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.7434662Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.8198287Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/map/sequence-rows.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 39^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.8586334Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/settings.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 40^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:32.9580550Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/section.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.1243473Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/wide.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 45^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.2358013Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/details.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 53^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.3349936Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/callout/callout.part.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.3768205Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/layout-columns.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 45^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.4466343Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/keys.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 14^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.5127787Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/paths.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.5673065Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/export/write.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 21^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.6567719Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/migrations-dir.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.6864278Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/card/card-grid.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 80^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.7385462Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/placement.logic.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.8023671Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/mermaid.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.9268462Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/viewer/route.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 33^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:33.9847445Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/collapse.logic.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.0640407Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/diff-target.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.0929764Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/inline-icon.syntax.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 37^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.1623226Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/features.test.ts ^[[2m(^[[22m^[[2m4 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.2208740Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/collapsible.part.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.2715203Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/scroll-guard.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 9^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.3638205Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/syntax-warning.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.4164831Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/changelog.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.5167624Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/scripts/release-check.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 10^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.5930612Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/plugin/setup/main.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 264^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.6363085Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/comments/margin.test.ts ^[[2m(^[[22m^[[2m3 tests^[[22m^[[2m)^[[22m^[[32m 69^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.7738114Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/steps/steps.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.8028384Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diagram/hint.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 55^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.9089457Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/row-detail.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 46^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:34.9103086Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/prompt.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.0021662Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-minimap.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.0644005Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/knowledge/backlinks.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.1310114Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-message.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.1637823Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/back-to-top.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 44^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.2300096Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/links.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 12^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.2917754Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/issues.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 7^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.3397445Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/includes.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 15^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.3967753Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/embed.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.4619468Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.5337933Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/figure/figure.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.5733843Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/wide.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 46^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.7402177Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/preview/assets.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 25^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.8269184Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/kbd.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 32^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.8857837Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/render/page.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.9155876Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/highlight.syntax.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 34^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:35.9872970Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/media/gallery.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.0752194Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/inline-icon.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.1076516Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/shared/lib/media-error.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 6^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.1624098Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/toc.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.2210322Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/badge.part.test.ts ^[[2m(^[[22m^[[2m2 tests^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.2978918Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/layout-columns.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.3647983Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.4659420Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/section/toc.syntax.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 26^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.4957143Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/diff/diff-toggle.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 49^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.5589520Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/table/row-detail.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.6267910Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/icon-node.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.7226232Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/highlight.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.7607964Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/cli/icons.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 93^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.8115252Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/frontmatter/frontmatter.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 5^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.8782463Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/git-env.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 8^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.9179364Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/own.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:36.9811106Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/row-hash.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 11^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.0431305Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/text-color.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.1108671Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/inline/kbd.part.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 4^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.1799654Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/colors.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.3019125Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/layout/pagebreak.syntax.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 42^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.3200124Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/shared/escape.logic.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[32m 3^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.6267908Z  ^[[32m✓^[[39m ^[[30m^[[42m unit ^[[49m^[[39m tests/unit/src/index.test.ts ^[[2m(^[[22m^[[2m1 test^[[22m^[[2m)^[[22m^[[33m 379^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.6268703Z    ^[[33m^[[2m✓^[[22m^[[39m test_version^[[33m 378^[[2mms^[[22m^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.6371360Z 
+test	単体テストを回す	2026-11-19T06:58:37.6378953Z ^[[2m Test Files ^[[22m ^[[1m^[[32m307 passed^[[39m^[[22m^[[90m (307)^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.6393416Z ^[[2m      Tests ^[[22m ^[[1m^[[32m2433 passed^[[39m^[[22m^[[90m (2433)^[[39m
+test	単体テストを回す	2026-11-19T06:58:37.6396516Z ^[[2m   Start at ^[[22m 06:57:54
+test	単体テストを回す	2026-11-19T06:58:37.6402069Z ^[[2m   Duration ^[[22m 43.14s^[[2m (worker 91%, tests 6%, import 3%, transform 1%)^[[22m
+test	単体テストを回す	2026-11-19T06:58:37.6415616Z 
+test	ログを成果物に上げる	﻿2026-11-19T06:58:37.9151296Z ##[group]Run actions/upload-artifact@v4
+test	ログを成果物に上げる	2026-11-19T06:58:37.9151501Z with:
+test	ログを成果物に上げる	2026-11-19T06:58:37.9151622Z   name: test-log
+test	ログを成果物に上げる	2026-11-19T06:58:37.9151746Z   path: test.log
+test	ログを成果物に上げる	2026-11-19T06:58:37.9151872Z   if-no-files-found: ignore
+test	ログを成果物に上げる	2026-11-19T06:58:37.9152018Z   compression-level: 6
+test	ログを成果物に上げる	2026-11-19T06:58:37.9152151Z   overwrite: false
+test	ログを成果物に上げる	2026-11-19T06:58:37.9152281Z   include-hidden-files: false
+test	ログを成果物に上げる	2026-11-19T06:58:37.9152429Z env:
+test	ログを成果物に上げる	2026-11-19T06:58:37.9152540Z   LAYER: unit
+test	ログを成果物に上げる	2026-11-19T06:58:37.9152659Z   PATHS: 
+test	ログを成果物に上げる	2026-11-19T06:58:37.9152770Z ##[endgroup]
+test	ログを成果物に上げる	2026-11-19T06:58:38.0391329Z (node:5307) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	ログを成果物に上げる	2026-11-19T06:58:38.0392049Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	ログを成果物に上げる	2026-11-19T06:58:38.0425148Z With the provided path, there will be 1 file uploaded
+test	ログを成果物に上げる	2026-11-19T06:58:38.0428577Z Artifact name is valid!
+test	ログを成果物に上げる	2026-11-19T06:58:38.0442236Z Root directory input is valid!
+test	ログを成果物に上げる	2026-11-19T06:58:38.3227153Z Beginning upload of artifact content to blob storage
+test	ログを成果物に上げる	2026-11-19T06:58:38.3452584Z (node:5307) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+test	ログを成果物に上げる	2026-11-19T06:58:38.4874717Z Uploaded bytes 5745
+test	ログを成果物に上げる	2026-11-19T06:58:38.5261849Z Finished uploading artifact content to blob storage!
+test	ログを成果物に上げる	2026-11-19T06:58:38.5262401Z SHA256 digest of uploaded artifact zip is 572010b888db7109017b3f467795c3795331492fdc80df589acd7e24f0f0bd3c
+test	ログを成果物に上げる	2026-11-19T06:58:38.5264074Z Finalizing artifact upload
+test	ログを成果物に上げる	2026-11-19T06:58:38.8556080Z Artifact test-log.zip successfully finalized. Artifact ID 14506391375
+test	ログを成果物に上げる	2026-11-19T06:58:38.8556792Z Artifact test-log has been successfully uploaded! Final size is 5745 bytes. Artifact ID is 14506391375
+test	ログを成果物に上げる	2026-11-19T06:58:38.8561178Z Artifact download URL: https://github.com/shuhei1101/mdmark/actions/runs/44475926664/artifacts/14506391375
+test	Post Node をインストールする	﻿2026-11-19T06:58:38.8745556Z Post job cleanup.
+test	Post Node をインストールする	2026-11-19T06:58:38.9660650Z (node:5319) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Post Node をインストールする	2026-11-19T06:58:38.9661186Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Post ブランチを取得する	﻿2026-11-19T06:58:38.9803482Z Post job cleanup.
+test	Post ブランチを取得する	2026-11-19T06:58:39.0417509Z [command]/usr/bin/git version
+test	Post ブランチを取得する	2026-11-19T06:58:39.0451399Z git version 2.56.1
+test	Post ブランチを取得する	2026-11-19T06:58:39.0477216Z Temporarily overriding HOME='/home/runner/work/_temp/07225138-dcb3-4b8e-a69b-f518e2e44ced' before making global git config changes
+test	Post ブランチを取得する	2026-11-19T06:58:39.0478107Z Adding repository directory to the temporary git global config as a safe directory
+test	Post ブランチを取得する	2026-11-19T06:58:39.0481211Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	Post ブランチを取得する	2026-11-19T06:58:39.0517338Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post ブランチを取得する	2026-11-19T06:58:39.0574473Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post ブランチを取得する	2026-11-19T06:58:39.0839473Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post ブランチを取得する	2026-11-19T06:58:39.0865035Z http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-19T06:58:39.0875267Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-19T06:58:39.0910423Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Post ブランチを取得する	2026-11-19T06:58:39.1171898Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Post ブランチを取得する	2026-11-19T06:58:39.1204974Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Complete job	﻿2026-11-19T06:58:39.1600315Z Cleaning up orphan processes
+test	Complete job	2026-11-19T06:58:39.1865292Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

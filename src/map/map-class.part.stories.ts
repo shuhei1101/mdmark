@@ -55,3 +55,9 @@ export const LinkedClass: Story = {
   parameters: { server: { id: "map-class" } },
   args: { links: '{"図面": "https://example.com/drawing"}' },
 };
+
+export const LongMembers: Story = {
+  name: "LongMembers",
+  parameters: { server: { id: "map-class" } },
+  args: { sample: "long" },
+};
