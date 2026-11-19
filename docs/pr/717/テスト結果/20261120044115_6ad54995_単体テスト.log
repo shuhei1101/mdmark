@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-class-diagram-note-size
+
+
+ Test Files  322 passed (322)
+      Tests  2571 passed (2571)
+   Start at  04:40:02
+   Duration  31.95s (worker 82%, tests 13%, import 5%, transform 1%)
+
