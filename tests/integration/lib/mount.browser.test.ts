@@ -21688,13 +21688,12 @@ test("test_normal_when_class_node_id_link_resolved", async () => {
       );
       expect(decodeURI(anchor.getAttribute("href") ?? "")).toBe(href);
     }
-    // 検証: 不明・予約はリンクを持たず、不明は書き方の警告に並ぶ
+    // 検証: 不明・予約はリンクを持たず、範囲の外の map の図のため書き方の警告にしない
     for (const id of ["不明", "予約"]) {
       expect(mapNode(figure, id).classList.contains("has-link")).toBe(false);
       expect(mapNode(figure, id).querySelector("a")).toBeNull();
     }
-    const warning = find(el, ".mdmark-syntax-warning").textContent ?? "";
-    expect(warning).toContain("不明: id:unknown");
+    expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
     // 実行: 受付を動かさずに押して離す
     await userEvent.click(
       find<HTMLAnchorElement>(
