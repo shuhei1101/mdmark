@@ -31,6 +31,7 @@ declare const ICONS: {
     info: IconNode;
     "grip-horizontal": IconNode;
     copy: IconNode;
+    download: IconNode;
     "corner-up-left": IconNode;
     "columns-3": IconNode;
     check: IconNode;

@@ -39,7 +39,8 @@ functions:
       | リンクの文字の後ろ | `<span class="mdmark-side-toc-changed" aria-hidden="true"></span>` |
       | 右端の線 | `data-changed` |
 
-      目次の頭にはタイトルを配置せず、まとめて開閉するボタンの並び（`sections` が `true` のとき）とピン止めのボタンをこの順に配置する。
+      目次の頭にはタイトルを配置せず、まとめて開閉するボタンの並び（`sections` が `true` のとき）、Markdown のボタンの並び（`markdownButtons` が `true` のとき）、ピン止めのボタンをこの順に配置する。
+      Markdown のボタンの並びは部品設計『右側の目次』の補足の HTML で、コピーのボタンのアイコンは `markdownCopy` が idle なら `copy`、copied なら `check`、failed なら `circle-alert`。failed のときは頭の後ろに `renderCopyPanel`（`format: "document"`・`reason: markdownCopyReason`・`text: markdownText`）を配置する。
       `sections` が `false` ならすべて展開・すべて折りたたむを配置しない。
 
       ピン止めのボタンには次の 2 つのアイコンを両方置き、CSS が `aria-pressed` で片方を出す。
@@ -56,7 +57,7 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ headings: SideTocHeading[]; mode?: SideTocMode; sections?: boolean; open?: boolean; pinned?: boolean; current?: string; panelId?: string }'
+        type: '{ headings: SideTocHeading[]; mode?: SideTocMode; sections?: boolean; markdownButtons?: boolean; markdownCopy?: "idle" | "copied" | "failed"; markdownCopyReason?: string; markdownText?: string; open?: boolean; pinned?: boolean; current?: string; panelId?: string }'
         required: true
         description: 部品設計の引数と、パネルの ID（既定 `mdmark-side-toc-panel`。目次を出すボタンの `aria-controls` に写す）
     returns:
@@ -101,6 +102,24 @@ functions:
         condition: '`text: "<b>太字</b>"`、`id: "a\"b"` の見出し'
         mock: なし
         expected: '`&lt;b&gt;太字&lt;/b&gt;` と `href="#a&quot;b"` と `data-heading-id="a&quot;b"` を含み、`<b>` を含まない'
+      - name: test_render_side_toc_when_markdown_buttons
+        case: 正常
+        summary: 頭の並びに Markdown のボタンを入れる
+        condition: '`markdownButtons: true`・`sections: true`'
+        mock: なし
+        expected: 頭の子が `mdmark-side-toc-actions`・`mdmark-side-toc-markdown`・`mdmark-side-toc-pin` の順で、ボタンの `aria-label` が `Markdown でコピー`・`Markdown でエクスポート`
+      - name: test_render_side_toc_when_markdown_copy_failed
+        case: 正常
+        summary: コピーできなかったときのアイコンとパネル
+        condition: '`markdownCopy: "failed"`・`markdownCopyReason: "許可されていません"`・`markdownText: "# 見出し"`'
+        mock: なし
+        expected: コピーのボタンが `circle-alert` のアイコンで、頭の後ろの `mdmark-copy-panel` のタイトルに `（許可されていません）` があり、`textarea` が `# 見出し`
+      - name: test_render_side_toc_when_markdown_buttons_off
+        case: 正常
+        summary: オフのときは配置しない
+        condition: '`markdownButtons: false`'
+        mock: なし
+        expected: '`mdmark-side-toc-markdown` が無い'
     refs:
       - CMP-472-37#
     status: planned

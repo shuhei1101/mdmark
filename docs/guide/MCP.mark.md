@@ -18,6 +18,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 | 名前 | ツール | 説明 |
 | --- | --- | --- |
 | [文書を HTML に書き出す](#文書を-html-に書き出す) | `export_html` | `mdmark export` と同じ処理で、Markdown を 1 つ、1 枚の HTML に書き出す |
+| [文書を Markdown に書き出す](#文書を-markdown-に書き出す) | `export_markdown` | `mdmark export-markdown` と同じ処理で、mdmark の文書を 1 つ、純粋な Markdown と図の SVG に書き出す |
 | [複数の文書を 1 枚の HTML にまとめる](#複数の文書を-1-枚の-html-にまとめる) | `build_site` | `mdmark build` と同じ処理で、設定の `build` の文書を 1 枚にまとめる |
 | [設定と索引を点検する](#設定と索引を点検する) | `check` | `mdmark check` と同じ点検をして、ずれの一覧を返却する |
 | [CSS のテンプレートの一覧を返却する](#css-のテンプレートの一覧を返却する) | `list_templates` | 端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・パスつきで返却する |
@@ -90,6 +91,47 @@ dev-docs が無い、または配信元 `mdmark` が登録されていないと�
 | --- | --- |
 | `file` のファイルが無い | 無いパス。HTML は記載しない |
 | 設定ファイルが無い・読み込めない、書き出せない | `mdmark export` が終了コード 1 で終わるときと同じ文 |
+
+## 文書を Markdown に書き出す
+
+`mdmark export-markdown` と同じ処理で、mdmark の文書を 1 つ、純粋な Markdown（GFM と Mermaid）と、`chart`・`param`・埋め込んだ HTML の SVG に書き出す。
+出力のフォルダの `{名前}.md` は上書きし、`images/` は空にしてから書き込む。
+書き出しの形は [Markdown に書き出す](./書き出す-文書を書き出す.mark.md#markdown-に書き出す)。
+
+### リクエスト
+
+```json
+{ "file": "docs/guide.mark.md" }
+```
+
+| フィールド | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `file` | 必須 | 書き出す mdmark の文書のパス |
+| `out` | 任意 | 出力のフォルダ。省くと、文書と同じフォルダの `{名前}-markdown` |
+| `config` | 任意 | 使用する設定ファイルのパス |
+
+### レスポンス
+
+```json
+{
+  "out": "/home/user/docs/guide-markdown/guide.md",
+  "images": ["/home/user/docs/guide-markdown/images/figure-1.svg"],
+  "warnings": []
+}
+```
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `out` | 文字列 | 書き出した Markdown の絶対パス |
+| `images` | 文字列の並び | 書き出した SVG の絶対パス（図の順） |
+| `warnings` | 文字列の並び | `mdmark export-markdown` が標準エラーに出す警告の文 |
+
+### エラー
+
+| 発生条件 | 内容 |
+| --- | --- |
+| `file` のファイルが無い | 無いパス。Markdown も SVG も記載しない |
+| 設定ファイルが無い・読み込めない、出力のフォルダへ書き込めない | `mdmark export-markdown` が終了コード 1 で終わるときと同じ文 |
 
 ## 複数の文書を 1 枚の HTML にまとめる
 

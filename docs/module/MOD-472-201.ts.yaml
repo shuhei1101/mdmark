@@ -43,6 +43,9 @@ data_models:
       - name: schema
         type: StandardSchemaV1<MdmarkMarkArgs> | undefined
         description: 引数を検査する Standard Schema
+      - name: toMarkdown
+        type: '((value: MdmarkMarkArgs) => string | Promise<string>) | undefined'
+        description: 書き出しのフック。`toPureMarkdown` だけが呼ぶ
   - name: WarningItem
     title: 警告の項目
     container: src/extensions.ts
@@ -73,7 +76,7 @@ functions:
     kind: 関数
     scope: public
     summary: 拡張の構造を確認して登録表に追加する公開関数
-    description: '`name` が空・`directive` が `MARK_NAME_PATTERN` に合わない・`load` が関数でない・`schema` が `~standard.validate` を持たないときは `TypeError`（メッセージに項目名）。`directive` が `RESERVED_DIRECTIVES` か登録済みのときは `Error`（メッセージに名前）。どちらも登録しない'
+    description: '`name` が空・`directive` が `MARK_NAME_PATTERN` に合わない・`load` が関数でない・`schema` が `~standard.validate` を持たない・`toMarkdown` が関数でないときは `TypeError`（メッセージに項目名）。`directive` が `RESERVED_DIRECTIVES` か登録済みのときは `Error`（メッセージに名前）。どちらも登録しない'
     args:
       - name: extension
         type: MdmarkExtension
@@ -102,6 +105,13 @@ functions:
         condition: '`directive` が `table` の拡張と、`greet` を 2 回'
         mock: なし
         expected: どちらも `Error`（メッセージに名前）を投げ、最初の `greet` が残る
+      - name: test_register_extension_when_to_markdown_invalid
+        case: 異常
+        summary: 関数でない toMarkdown は TypeError
+        condition: '`toMarkdown` が文字列の拡張'
+        mock: なし（各テストの前に `resetExtensions`）
+        exception: TypeError
+        expected: '`TypeError` を投げ、メッセージに `toMarkdown` が入り、登録されない'
   - name: extensionFor
     title: 拡張を参照する
     container: src/extensions.ts

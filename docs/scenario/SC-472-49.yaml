@@ -184,6 +184,38 @@ scenarios:
       - マーカーの場所に、定義のタイトルと項目の数 3 が描かれている
       - 部品の定義の JSON は本文にそのまま出ていない
     test: test_normal_when_definition
+  - name: 正常シナリオ（Markdown に書き出す）
+    setup:
+      - name: 書き出しのフックを持つ拡張を登録するページ
+        description: 正常シナリオと同じページで、`registerExtension` に書き出しのフックも指定して登録する
+        notes: フックの名前と引数はインターフェース定義設計で決める
+      - name: 拡張のマーカーを持つ Markdown
+        description: 正常シナリオと同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ。書き出しのフックは、受けた `options` の `target` を太字にした行を返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant X as 拡張
+        P->>M: registerExtension で書き出しのフックを持つ拡張を登録する
+        P->>M: Markdown を純粋な Markdown に変換させる
+        M->>X: 書き出しのフックを options と definition を指定して呼ぶ
+        X-->>M: Markdown の文字列
+        M-->>P: マーカーの場所をフックの文字列にした純粋な Markdown
+      ```
+
+      <!-- /map -->
+    expected:
+      - マーカーの場所に `**world**` があり、`<!-- greet` が残っていない
+      - マーカーの前後の段落が残っている
+      - 描くためのモジュール（`load`）への要求が 0 件
+    test: test_normal_when_markdown_export
+    refs:
+      - SC-472-101#scenarios[正常シナリオ（拡張のマーカー）]
 lead: 利用側が `registerExtension({ name, directive, load, schema })` で自分のマーカーを追加する。mdmark は文書にそのマーカーがあるときだけ `load` でモジュールを読み込み、マーカーの JSON のオブジェクトを `options` に、部品の定義を `definition` にしてマーカーの場所に描かせる。
 primary_actor: 利用側のアプリの開発者
 stakeholders:

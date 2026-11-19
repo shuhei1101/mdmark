@@ -200,3 +200,16 @@ test("test_format_issue_when_no_position", async () => {
   expect(onlyOptions).toEqual({ label: "", message: "合わない" });
   expect(noPath).toEqual({ label: "", message: "合わない" });
 });
+
+// 関数でない toMarkdown は TypeError で登録しない（異常系）
+test("test_register_extension_when_to_markdown_invalid", async () => {
+  // 準備
+  const { registerExtension, extensionFor } = await loadExtensions();
+  const extension = createExtension({
+    toMarkdown: "x" as unknown as MdmarkExtension["toMarkdown"],
+  });
+  // 実行・検証
+  expect(() => registerExtension(extension)).toThrow(TypeError);
+  expect(() => registerExtension(extension)).toThrow(/toMarkdown/);
+  expect(extensionFor("greet")).toBeUndefined();
+});

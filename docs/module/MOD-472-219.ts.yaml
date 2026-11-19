@@ -181,6 +181,8 @@ functions:
       | ピン止め | `data-pinned` と `aria-pressed` を切り替えて `state` に記録する |
       | 出したパネルで Esc | パネルを隠して目次を出すボタンへフォーカスを戻す |
       | すべて展開・すべて折りたたみ | `foldAllSections` を呼ぶ |
+      | Markdown でコピー | 描いている Markdown を `toPureMarkdown`（`opts.figure` 無し）で変換し `writeClipboard` で書き込む。書き込めたらアイコンを `check` にし、頭の見えない `role="status"` に `Markdown をコピーしました` を入れ、2 秒でどちらも戻す。書き込めないときはアイコンを `circle-alert` にし、頭の後ろに理由つきの `renderCopyPanel` を配置して入力欄を全て選択する。閉じるボタンでパネルを削除し、アイコンを戻してコピーのボタンへフォーカスを戻す |
+      | Markdown でエクスポート | 変換した文字列を `text/markdown` の Blob にし、`markdownFileName` の名前の `a[download]` を押して保存させる |
       | 項目を押す | リンクの `data-heading-id` の ID の見出しを `revealTarget` で開いて移り、`el` の幅が `NARROW_WIDTH_REM` 未満ならパネルを隠す |
 
       項目を押したときは `href` を読み込まず（まとめた HTML は `rewriteLinks` で `href` を書き換える）、既定の動きは止めない。
@@ -217,9 +219,9 @@ functions:
     side_effects: '`el` の子を本文の列へ移し、右側の目次の要素を追加し、`state` を書き換える'
     args:
       - name: options
-        type: '{ el: HTMLElement; mode: SideTocMode; sections: boolean; state: SideTocState }'
+        type: '{ el: HTMLElement; mode: SideTocMode; sections: boolean; markdownButtons: boolean; pureMarkdown: () => Promise<PureMarkdownResult>; state: SideTocState }'
         required: true
-        description: 描く先の要素・出し方・すべて展開とすべて折りたたみを出すか（`features.sections`）・`mount` が保つ状態
+        description: 描く先の要素・出し方・すべて展開とすべて折りたたみを出すか（`features.sections`）・Markdown のボタンを出すか（`features.markdown-buttons`）・描いている Markdown を `toPureMarkdown` で変換する関数（`mount` が `update` の後の Markdown と `opts` を入れる）・`mount` が保つ状態
     returns:
       type: '{ content: HTMLElement; aside?: HTMLElement; detach: () => void }'
       description: 本文の列（見出しが無ければ `el`）・右側の目次の要素・削除する関数
@@ -332,7 +334,49 @@ functions:
         condition: '左端を画面の左端に配置し、幅を画面より 100px 広くした縦にスクロールする要素の中に、見出しが 3 つの長い本文を描いた要素を配置して `mode: "hover"` で付ける'
         mock: なし
         expected: '`--mdmark-side-toc-panel-end` が `SIDE_TOC_EDGE_GAP_REM`（rem）を px にした値（スクロールする要素の右端ではなく `document.documentElement.clientWidth` を右端にする）'
+      - name: test_attach_side_toc_when_markdown_copied
+        case: 正常
+        summary: 変換した Markdown をクリップボードへ書き込み、アイコンと読み上げの文を戻す
+        condition: 目次のマーカーを持つ文書で Markdown でコピーを押す
+        mock: '`navigator.clipboard.writeText` を記録する関数に差し替え、タイマーを偽の時計にする'
+        expected: 記録した文字列に `<!--` が無く、押した直後に `check` と `role="status"` の `Markdown をコピーしました`、2 秒後に `copy` と空
+      - name: test_attach_side_toc_when_markdown_clipboard_denied
+        case: 異常
+        summary: 書き込めないときは理由つきのパネルを出し、閉じると戻す
+        condition: Markdown でコピーを押し、パネルの閉じるボタンを押す
+        mock: '`navigator.clipboard.writeText` が `NotAllowedError` で reject する'
+        expected: パネルのタイトルに許可されていないことがあり、入力欄が全て選択され、閉じた後はパネルが無くフォーカスがコピーのボタン
+      - name: test_attach_side_toc_when_markdown_exported
+        case: 正常
+        summary: 最初の h1 を名前にして保存させる
+        condition: 最初の h1 が `返信/の手順` の文書で Markdown でエクスポートを押す
+        mock: '`URL.createObjectURL` と `HTMLAnchorElement.prototype.click` を記録する関数に差し替える'
+        expected: 押されたリンクの `download` が `返信_の手順.md` で、Blob の種類が `text/markdown`
     status: planned
+  - name: markdownFileName
+    title: エクスポートのファイルの名前を作る
+    container: src/section/side-toc.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 最初の h1 の文字の `/`・`\`・`:`・`*`・`?`・`"`・`<`・`>`・`|` と制御文字を `_` に置き換え、前後の空白と末尾の `.` を除いて `.md` を付ける。空なら `document.md`
+    args:
+      - name: heading
+        type: string | undefined
+        required: true
+        description: 最初の h1 の文字
+    returns:
+      type: string
+      description: ファイルの名前
+    refs:
+      - IF-472-35#constraints[Markdown のコピーとエクスポートのボタン]
+    status: planned
+    unit_tests:
+      - name: test_markdown_file_name
+        case: 正常
+        summary: 使用できない文字と空の見出し
+        condition: '`返信/の手順`・` 手順. `・`undefined`・`***`'
+        mock: なし
+        expected: '`返信_の手順.md`・`手順.md`・`document.md`・`___.md`'
 lead: '右側の目次の配置・ピン止め・項目から移る操作・今いるセクションの表示を受け持ち、右側の目次の操作を変えるときに参照する。'
 tags:
   - name: topic:目次

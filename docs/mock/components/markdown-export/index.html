@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>components / markdown-export（Markdown のコピーとエクスポートのボタン） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- モック専用の操作列とカタログの並び（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- カタログの見本の並び（#320 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/320/assets/catalog.css">
+  <!-- この PR の案（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/700/assets/markdown-export.css">
+  <!-- 案ごとに、ボタンの状態と目次の頭の並びを並べる -->
+  <script type="module" src="../../refs/700/assets/markdown-export.js"></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え。[data-scene-axis] [data-scene-value]: markdown-export.js が行き先の URL と今の配色の aria-current を適用する -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <span class="mock-bar-label">配色</span>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="light">ライト</a>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="dark">ダーク</a>
+    </div>
+  </div>
+
+  <main class="catalog-page">
+    <nav class="crumbs" aria-label="パンくずリスト">
+      <a href="../index.md">components</a> / markdown-export
+    </nav>
+    <div class="catalog" id="catalog">
+      <section>
+        <h1 class="catalog-title">Markdown のコピーとエクスポートのボタン</h1>
+        <p class="catalog-note">描いた文書とまとめた HTML の右側の目次の頭に、開いている文書を純粋な Markdown にしてクリップボードへコピーするボタンと、<code>.md</code> のファイルに保存するボタンを配置する。案ごとに、ボタンの状態と頭の並びを比べる。</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

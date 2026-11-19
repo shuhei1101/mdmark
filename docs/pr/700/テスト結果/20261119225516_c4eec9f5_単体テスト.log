@@ -1,0 +1,659 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown
+
+ ❯ |unit| tests/unit/src/table/table.part.test.ts (39 tests | 1 failed) 1242ms
+   × test_render_copy_panel_when_document_with_reason 17ms
+ ❯ |unit-browser (chromium)| tests/unit/src/section/side-toc.interact.browser.test.ts (31 tests | 4 failed) 3197ms
+   × test_attach_side_toc_when_markdown_copied 611ms
+   × test_attach_side_toc_when_markdown_clipboard_denied 591ms
+   × test_attach_side_toc_when_markdown_exported 281ms
+   × test_markdown_file_name 468ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (21 tests | 1 failed) 1837ms
+   × test_run_export_markdown_tool 20ms
+ ❯ |unit| tests/unit/src/section/side-toc.part.test.ts (9 tests | 2 failed) 98ms
+   × test_render_side_toc_when_markdown_buttons 47ms
+   × test_render_side_toc_when_markdown_copy_failed 7ms
+ ❯ |unit| tests/unit/src/markdown/pure-markdown.test.ts (8 tests | 8 failed) 390ms
+   × test_to_pure_markdown 89ms
+   × test_to_pure_markdown_when_figure_given 14ms
+   × test_to_pure_markdown_when_extension_marks 9ms
+   × test_to_pure_markdown_when_hook_throws 23ms
+   × test_to_pure_markdown_when_markdown_not_string 11ms
+   × test_figure_of_chart 18ms
+   × test_figure_of_param 39ms
+   × test_figure_of_html_with_scripts 186ms
+ ❯ |unit| tests/unit/src/cli/export-markdown.test.ts (8 tests | 8 failed) 314ms
+   × test_run_export_markdown 75ms
+   × test_run_export_markdown_when_document_missing 131ms
+   × test_run_export_markdown_when_output_unwritable 32ms
+   × test_markdown_out_dir 31ms
+   × test_export_markdown_files_figure_lines 3ms
+   × test_export_markdown_files_when_extension_unloadable 22ms
+   × test_write_markdown_files_replaces_images 5ms
+   × test_write_markdown_files_when_dir_is_file 11ms
+ ❯ |unit| tests/unit/src/extensions.test.ts (10 tests | 1 failed) 128ms
+   × test_register_extension_when_to_markdown_invalid 19ms
+ ❯ |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts (8 tests | 8 failed) 221ms
+   × test_split_pure_blocks 118ms
+   × test_split_pure_blocks_when_feature_off 21ms
+   × test_convert_pure_block_marks_removed 7ms
+   × test_convert_pure_block_map 20ms
+   × test_convert_pure_block_code_decoration 7ms
+   × test_convert_pure_block_raw_html 7ms
+   × test_convert_pure_block_when_off 23ms
+   × test_toc_list 17ms
+ ❯ |unit| tests/unit/src/cli/figure-svg.test.ts (4 tests | 4 failed) 267ms
+   × test_figure_to_svg_chart 158ms
+   × test_figure_to_svg_html_foreign_object 36ms
+   × test_figure_to_svg_restores_case 61ms
+   × test_prune_css 11ms
+ ❯ |unit| tests/unit/src/cli/main.test.ts (6 tests | 1 failed) 1396ms
+   × test_main_when_export_markdown 97ms
+ ❯ |unit| tests/unit/src/markdown/pure-inline.logic.test.ts (7 tests | 7 failed) 24ms
+   × test_convert_pure_inline_comments_and_html 10ms
+   × test_convert_pure_inline_badge 7ms
+   × test_convert_pure_inline_figure_number 1ms
+   × test_convert_pure_inline_inside_code 1ms
+   × test_convert_pure_inline_annotation 1ms
+   × test_convert_pure_inline_footnotes 1ms
+   × test_convert_pure_inline_image_attributes 2ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 45 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/extensions.test.ts > test_register_extension_when_to_markdown_invalid
+AssertionError: expected function to throw an error, but it didn't
+ ❯ tests/unit/src/extensions.test.ts:212:46
+    210|   });
+    211|   // 実行・検証
+    212|   expect(() => registerExtension(extension)).toThrow(TypeError);
+       |                                              ^
+    213|   expect(() => registerExtension(extension)).toThrow(/toMarkdown/);
+    214|   expect(extensionFor("greet")).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_run_export_markdown
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:44:33
+     42| test("test_run_export_markdown", async () => {
+     43|   // 準備
+     44|   const { runExportMarkdown } = await loadExportMarkdown();
+       |                                 ^
+     45|   const dir = await createTempDir();
+     46|   await writeFiles(dir, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_run_export_markdown_when_document_missing
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:66:33
+     64| test("test_run_export_markdown_when_document_missing", async () => {
+     65|   // 準備
+     66|   const { runExportMarkdown } = await loadExportMarkdown();
+       |                                 ^
+     67|   const { CliError } = await loadMain();
+     68|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_run_export_markdown_when_output_unwritable
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:82:33
+     80| test("test_run_export_markdown_when_output_unwritable", async () => {
+     81|   // 準備
+     82|   const { runExportMarkdown } = await loadExportMarkdown();
+       |                                 ^
+     83|   const { CliError } = await loadMain();
+     84|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_markdown_out_dir
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:110:30
+    108| test("test_markdown_out_dir", async () => {
+    109|   // 準備
+    110|   const { markdownOutDir } = await loadExportMarkdown();
+       |                              ^
+    111|   // 実行・検証
+    112|   expect(markdownOutDir("/d/guide.mark.md")).toEqual({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_export_markdown_files_figure_lines
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:125:35
+    123| test("test_export_markdown_files_figure_lines", async () => {
+    124|   // 準備
+    125|   const { exportMarkdownFiles } = await loadExportMarkdown();
+       |                                   ^
+    126|   const dir = await createTempDir();
+    127|   await writeFiles(dir, { "guide.mark.md": CHART_DOCUMENT });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_export_markdown_files_when_extension_unloadable
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:149:35
+    147| test("test_export_markdown_files_when_extension_unloadable", async () …
+    148|   // 準備
+    149|   const { exportMarkdownFiles } = await loadExportMarkdown();
+       |                                   ^
+    150|   const dir = await createTempDir();
+    151|   await writeFiles(dir, { "guide.mark.md": "# 文書\n" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_write_markdown_files_replaces_images
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:174:34
+    172| test("test_write_markdown_files_replaces_images", async () => {
+    173|   // 準備
+    174|   const { writeMarkdownFiles } = await loadExportMarkdown();
+       |                                  ^
+    175|   const dir = await createTempDir();
+    176|   await writeFiles(dir, { "out/images/figure-2.svg": "<svg></svg>" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export-markdown.test.ts > test_write_markdown_files_when_dir_is_file
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/export-markdown.test.ts
+ ❯ tests/unit/src/cli/export-markdown.test.ts:193:34
+    191| test("test_write_markdown_files_when_dir_is_file", async () => {
+    192|   // 準備
+    193|   const { writeMarkdownFiles } = await loadExportMarkdown();
+       |                                  ^
+    194|   const { CliError } = await loadMain();
+    195|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/figure-svg.test.ts > test_figure_to_svg_chart
+Error: Cannot find module '/src/cli/figure-svg.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/figure-svg.test.ts
+ ❯ tests/unit/src/cli/figure-svg.test.ts:38:27
+     36| test("test_figure_to_svg_chart", async () => {
+     37|   // 準備
+     38|   const { figureToSvg } = await loadFigureSvg();
+       |                           ^
+     39|   const html = render(wrapDirective("chart", INQUIRY_COUNT_TEXT));
+     40|   const dir = await createTempDir();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/figure-svg.test.ts > test_figure_to_svg_html_foreign_object
+Error: Cannot find module '/src/cli/figure-svg.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/figure-svg.test.ts
+ ❯ tests/unit/src/cli/figure-svg.test.ts:60:27
+     58| test("test_figure_to_svg_html_foreign_object", async () => {
+     59|   // 準備
+     60|   const { figureToSvg } = await loadFigureSvg();
+       |                           ^
+     61|   const dir = await createTempDir();
+     62|   await writeFiles(dir, { "pic.png": PNG });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/figure-svg.test.ts > test_figure_to_svg_restores_case
+Error: Cannot find module '/src/cli/figure-svg.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/figure-svg.test.ts
+ ❯ tests/unit/src/cli/figure-svg.test.ts:82:27
+     80| test("test_figure_to_svg_restores_case", async () => {
+     81|   // 準備
+     82|   const { figureToSvg } = await loadFigureSvg();
+       |                           ^
+     83|   const html =
+     84|     '<div class="mdmark-chart"><svg viewbox="0 0 10 10"><defs><pattern…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/figure-svg.test.ts > test_prune_css
+Error: Cannot find module '/src/cli/figure-svg.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/cli/figure-svg.test.ts
+ ❯ tests/unit/src/cli/figure-svg.test.ts:101:24
+     99| test("test_prune_css", async () => {
+    100|   // 準備
+    101|   const { pruneCss } = await loadFigureSvg();
+       |                        ^
+    102|   const css = [
+    103|     ".mdmark-chart { color: red; }",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/45]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main_when_export_markdown
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/src/cli/main.test.ts:119:16
+    117|   );
+    118|   // 検証
+    119|   expect(code).toBe(0);
+       |                ^
+    120|   expect(runExportMarkdown).toHaveBeenCalledTimes(1);
+    121|   expect(runExportMarkdown.mock.calls[0]?.[0]).toMatchObject({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_split_pure_blocks
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:38:31
+     36| test("test_split_pure_blocks", async () => {
+     37|   // 準備
+     38|   const { splitPureBlocks } = await loadBlocks();
+       |                               ^
+     39|   // 実行
+     40|   const blocks = splitPureBlocks({ markdown: DOCUMENT, features: {} });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_split_pure_blocks_when_feature_off
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:63:31
+     61| test("test_split_pure_blocks_when_feature_off", async () => {
+     62|   // 準備
+     63|   const { splitPureBlocks } = await loadBlocks();
+       |                               ^
+     64|   // 実行
+     65|   const blocks = splitPureBlocks({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_convert_pure_block_marks_removed
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ convertFirst tests/unit/src/markdown/pure-blocks.logic.test.ts:77:49
+     75| /** 1 つ目のブロックを変換した行 */
+     76| async function convertFirst(markdown: string, features = {}) {
+     77|   const { splitPureBlocks, convertPureBlock } = await loadBlocks();
+       |                                                 ^
+     78|   const [block] = splitPureBlocks({ markdown, features });
+     79|   if (block === undefined) {
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:88:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_convert_pure_block_map
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ convertFirst tests/unit/src/markdown/pure-blocks.logic.test.ts:77:49
+     75| /** 1 つ目のブロックを変換した行 */
+     76| async function convertFirst(markdown: string, features = {}) {
+     77|   const { splitPureBlocks, convertPureBlock } = await loadBlocks();
+       |                                                 ^
+     78|   const [block] = splitPureBlocks({ markdown, features });
+     79|   if (block === undefined) {
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:126:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_convert_pure_block_code_decoration
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ convertFirst tests/unit/src/markdown/pure-blocks.logic.test.ts:77:49
+     75| /** 1 つ目のブロックを変換した行 */
+     76| async function convertFirst(markdown: string, features = {}) {
+     77|   const { splitPureBlocks, convertPureBlock } = await loadBlocks();
+       |                                                 ^
+     78|   const [block] = splitPureBlocks({ markdown, features });
+     79|   if (block === undefined) {
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:139:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_convert_pure_block_raw_html
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ convertFirst tests/unit/src/markdown/pure-blocks.logic.test.ts:77:49
+     75| /** 1 つ目のブロックを変換した行 */
+     76| async function convertFirst(markdown: string, features = {}) {
+     77|   const { splitPureBlocks, convertPureBlock } = await loadBlocks();
+       |                                                 ^
+     78|   const [block] = splitPureBlocks({ markdown, features });
+     79|   if (block === undefined) {
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:161:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_convert_pure_block_when_off
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ convertFirst tests/unit/src/markdown/pure-blocks.logic.test.ts:77:49
+     75| /** 1 つ目のブロックを変換した行 */
+     76| async function convertFirst(markdown: string, features = {}) {
+     77|   const { splitPureBlocks, convertPureBlock } = await loadBlocks();
+       |                                                 ^
+     78|   const [block] = splitPureBlocks({ markdown, features });
+     79|   if (block === undefined) {
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:169:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-blocks.logic.test.ts > test_toc_list
+Error: Cannot find module '/src/markdown/pure-blocks.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-blocks.logic.test.ts
+ ❯ tests/unit/src/markdown/pure-blocks.logic.test.ts:181:23
+    179| test("test_toc_list", async () => {
+    180|   // 準備
+    181|   const { tocList } = await loadBlocks();
+       |                       ^
+    182|   // 実行
+    183|   const lines = tocList([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-inline.logic.test.ts > test_convert_pure_inline_comments_and_html
+Error: Cannot find module '/src/markdown/pure-inline.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-inline.logic.test.ts
+ ❯ convert tests/unit/src/markdown/pure-inline.logic.test.ts:9:33
+      7| /** 番号の表と機能を空にして 1 行を変換する */
+      8| async function convert(line: string, numbers = new Map<string, string>…
+      9|   const { convertPureInline } = await loadInline();
+       |                                 ^
+     10|   return convertPureInline({ line, numbers, features: {} });
+     11| }
+ ❯ tests/unit/src/markdown/pure-inline.logic.test.ts:16:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-inline.logic.test.ts > test_convert_pure_inline_badge
+Error: Cannot find module '/src/markdown/pure-inline.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-inline.logic.test.ts
+ ❯ convert tests/unit/src/markdown/pure-inline.logic.test.ts:9:33
+      7| /** 番号の表と機能を空にして 1 行を変換する */
+      8| async function convert(line: string, numbers = new Map<string, string>…
+      9|   const { convertPureInline } = await loadInline();
+       |                                 ^
+     10|   return convertPureInline({ line, numbers, features: {} });
+     11| }
+ ❯ tests/unit/src/markdown/pure-inline.logic.test.ts:26:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-inline.logic.test.ts > test_convert_pure_inline_figure_number
+Error: Cannot find module '/src/markdown/pure-inline.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-inline.logic.test.ts
+ ❯ convert tests/unit/src/markdown/pure-inline.logic.test.ts:9:33
+      7| /** 番号の表と機能を空にして 1 行を変換する */
+      8| async function convert(line: string, numbers = new Map<string, string>…
+      9|   const { convertPureInline } = await loadInline();
+       |                                 ^
+     10|   return convertPureInline({ line, numbers, features: {} });
+     11| }
+ ❯ tests/unit/src/markdown/pure-inline.logic.test.ts:32:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-inline.logic.test.ts > test_convert_pure_inline_inside_code
+Error: Cannot find module '/src/markdown/pure-inline.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-inline.logic.test.ts
+ ❯ convert tests/unit/src/markdown/pure-inline.logic.test.ts:9:33
+      7| /** 番号の表と機能を空にして 1 行を変換する */
+      8| async function convert(line: string, numbers = new Map<string, string>…
+      9|   const { convertPureInline } = await loadInline();
+       |                                 ^
+     10|   return convertPureInline({ line, numbers, features: {} });
+     11| }
+ ❯ tests/unit/src/markdown/pure-inline.logic.test.ts:43:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-inline.logic.test.ts > test_convert_pure_inline_annotation
+Error: Cannot find module '/src/markdown/pure-inline.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-inline.logic.test.ts
+ ❯ convert tests/unit/src/markdown/pure-inline.logic.test.ts:9:33
+      7| /** 番号の表と機能を空にして 1 行を変換する */
+      8| async function convert(line: string, numbers = new Map<string, string>…
+      9|   const { convertPureInline } = await loadInline();
+       |                                 ^
+     10|   return convertPureInline({ line, numbers, features: {} });
+     11| }
+ ❯ tests/unit/src/markdown/pure-inline.logic.test.ts:51:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-inline.logic.test.ts > test_convert_pure_inline_footnotes
+Error: Cannot find module '/src/markdown/pure-inline.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-inline.logic.test.ts
+ ❯ convert tests/unit/src/markdown/pure-inline.logic.test.ts:9:33
+      7| /** 番号の表と機能を空にして 1 行を変換する */
+      8| async function convert(line: string, numbers = new Map<string, string>…
+      9|   const { convertPureInline } = await loadInline();
+       |                                 ^
+     10|   return convertPureInline({ line, numbers, features: {} });
+     11| }
+ ❯ tests/unit/src/markdown/pure-inline.logic.test.ts:60:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-inline.logic.test.ts > test_convert_pure_inline_image_attributes
+Error: Cannot find module '/src/markdown/pure-inline.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-inline.logic.test.ts
+ ❯ convert tests/unit/src/markdown/pure-inline.logic.test.ts:9:33
+      7| /** 番号の表と機能を空にして 1 行を変換する */
+      8| async function convert(line: string, numbers = new Map<string, string>…
+      9|   const { convertPureInline } = await loadInline();
+       |                                 ^
+     10|   return convertPureInline({ line, numbers, features: {} });
+     11| }
+ ❯ tests/unit/src/markdown/pure-inline.logic.test.ts:67:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_to_pure_markdown
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:91:30
+     89| test("test_to_pure_markdown", async () => {
+     90|   // 準備
+     91|   const { toPureMarkdown } = await loadPureMarkdown();
+       |                              ^
+     92|   // 実行
+     93|   const result = await toPureMarkdown(DOCUMENT);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_to_pure_markdown_when_figure_given
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:107:30
+    105| test("test_to_pure_markdown_when_figure_given", async () => {
+    106|   // 準備
+    107|   const { toPureMarkdown } = await loadPureMarkdown();
+       |                              ^
+    108|   const figure = vi.fn(
+    109|     (f: { kind: string; index: number }) => `![${f.kind}](f-${f.index}…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_to_pure_markdown_when_extension_marks
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:128:30
+    126| test("test_to_pure_markdown_when_extension_marks", async () => {
+    127|   // 準備
+    128|   const { toPureMarkdown } = await loadPureMarkdown();
+       |                              ^
+    129|   const { registerExtension } = await loadExtensions();
+    130|   const load = vi.fn(async () => ({ draw: () => {} }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_to_pure_markdown_when_hook_throws
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:155:30
+    153| test("test_to_pure_markdown_when_hook_throws", async () => {
+    154|   // 準備
+    155|   const { toPureMarkdown } = await loadPureMarkdown();
+       |                              ^
+    156|   const { registerExtension } = await loadExtensions();
+    157|   registerExtension({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_to_pure_markdown_when_markdown_not_string
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:176:30
+    174| test("test_to_pure_markdown_when_markdown_not_string", async () => {
+    175|   // 準備
+    176|   const { toPureMarkdown } = await loadPureMarkdown();
+       |                              ^
+    177|   // 実行・検証
+    178|   await expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_figure_of_chart
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:198:24
+    196| test("test_figure_of_chart", async () => {
+    197|   // 準備
+    198|   const { figureOf } = await loadPureMarkdown();
+       |                        ^
+    199|   const block = await firstFigureBlock(
+    200|     wrapDirective("chart", INQUIRY_COUNT_TEXT),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_figure_of_param
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:218:24
+    216| test("test_figure_of_param", async () => {
+    217|   // 準備
+    218|   const { figureOf } = await loadPureMarkdown();
+       |                        ^
+    219|   const block = await firstFigureBlock(wrapDirective("param", STRENGTH…
+    220|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/45]⎯
+
+ FAIL  |unit| tests/unit/src/markdown/pure-markdown.test.ts > test_figure_of_html_with_scripts
+Error: Cannot find module '/src/markdown/pure-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/markdown/pure-markdown.test.ts
+ ❯ tests/unit/src/markdown/pure-markdown.test.ts:233:24
+    231| test("test_figure_of_html_with_scripts", async () => {
+    232|   // 準備
+    233|   const { figureOf } = await loadPureMarkdown();
+       |                        ^
+    234|   const config = { features: { "html-scripts": true } };
+    235|   const block = await firstFigureBlock(HTML_WITH_SCRIPT, config.featur…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/45]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_run_export_markdown_tool
+Error: Cannot find module '/src/cli/export-markdown.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown/tests/unit/src/plugin/tools.test.ts
+ ❯ tests/unit/src/plugin/tools.test.ts:550:41
+    548|   // 準備
+    549|   const { runExportMarkdown } = await loadTools();
+    550|   const { runExportMarkdown: runCli } = await import(
+       |                                         ^
+    551|     "../../../../src/cli/export-markdown.ts"
+    552|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/45]⎯
+
+ FAIL  |unit| tests/unit/src/section/side-toc.part.test.ts > test_render_side_toc_when_markdown_buttons
+AssertionError: expected '<div class="mdmark-side-toc-actions">…' to match /…/div><div class="mdmark-side-toc-markdown"[\s\S]*<\
+
+- Expected:
+/^<div class="mdmark-side-toc-actions">[\s\S]*<\/div><div class="mdmark-side-toc-markdown"[\s\S]*<\/div><button class="mdmark-side-toc-pin"[\s\S]*<\/button>$/
+
++ Received:
+"<div class=\"mdmark-side-toc-actions\"><button class=\"mdmark-fold-all\" type=\"button\" data-fold-all=\"open\" aria-label=\"すべて展開\" title=\"すべて展開\"><svg class=\"mdmark-diagram-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m7 15 5 5 5-5\"></path><path d=\"m7 9 5-5 5 5\"></path></svg></button><button class=\"mdmark-fold-all\" type=\"button\" data-fold-all=\"close\" aria-label=\"すべて折りたたむ\" title=\"すべて折りたたむ\"><svg class=\"mdmark-diagram-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m7 20 5-5 5 5\"></path><path d=\"m7 4 5 5 5-5\"></path></svg></button></div><button class=\"mdmark-side-toc-pin\" type=\"button\" aria-pressed=\"false\" aria-label=\"目次をピン止め\" title=\"目次をピン止め\"><span class=\"mdmark-side-toc-pin-off\"><svg class=\"mdmark-diagram-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"></rect><path d=\"M15 14v1\"></path><path d=\"M15 19v2\"></path><path d=\"M15 3v2\"></path><path d=\"M15 9v1\"></path></svg></span><span class=\"mdmark-side-toc-pin-on\"><svg class=\"mdmark-diagram-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"></rect><path d=\"M15 3v18\"></path></svg></span></button>"
+
+ ❯ tests/unit/src/section/side-toc.part.test.ts:169:51
+    167|   });
+    168|   // 検証
+    169|   expect(innerHtml(html, "mdmark-side-toc-head")).toMatch(
+       |                                                   ^
+    170|     /^<div class="mdmark-side-toc-actions">[\s\S]*<\/div><div class="m…
+    171|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/45]⎯
+
+ FAIL  |unit| tests/unit/src/section/side-toc.part.test.ts > test_render_side_toc_when_markdown_copy_failed
+Error: 開始タグが無い: data-markdown="copy"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ outerHtml tests/unit/helpers/html.ts:48:15
+ ❯ tests/unit/src/section/side-toc.part.test.ts:199:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/45]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_copy_panel_when_document_with_reason
+TypeError: Cannot read properties of undefined (reading 'name')
+ ❯ renderCopyPanel src/table/table.part.ts:955:34
+
+ ❯ tests/unit/src/table/table.part.test.ts:1181:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/45]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/section/side-toc.interact.browser.test.ts > test_attach_side_toc_when_markdown_copied
+Error: 要素が無い: button[data-markdown="copy"]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.interact.browser.test.ts/test_attach_side_toc_when_markdown_copied.png
+
+ ❯ find tests/unit/src/section/side-toc.interact.browser.test.ts:64:11
+     62|   const element = aside.querySelector<T>(selector);
+     63|   if (!element) {
+     64|     throw new Error(`要素が無い: ${selector}`);
+       |           ^
+     65|   }
+     66|   return element;
+ ❯ tests/unit/src/section/side-toc.interact.browser.test.ts:975:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=2b506d39:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/45]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/section/side-toc.interact.browser.test.ts > test_attach_side_toc_when_markdown_clipboard_denied
+Error: 要素が無い: button[data-markdown="copy"]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.interact.browser.test.ts/test_attach_side_toc_when_markdown_clipboard_denied.png
+
+ ❯ find tests/unit/src/section/side-toc.interact.browser.test.ts:64:11
+     62|   const element = aside.querySelector<T>(selector);
+     63|   if (!element) {
+     64|     throw new Error(`要素が無い: ${selector}`);
+       |           ^
+     65|   }
+     66|   return element;
+ ❯ tests/unit/src/section/side-toc.interact.browser.test.ts:1005:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=2b506d39:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/45]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/section/side-toc.interact.browser.test.ts > test_attach_side_toc_when_markdown_exported
+Error: 要素が無い: button[data-markdown="export"]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.interact.browser.test.ts/test_attach_side_toc_when_markdown_exported.png
+
+ ❯ find tests/unit/src/section/side-toc.interact.browser.test.ts:64:11
+     62|   const element = aside.querySelector<T>(selector);
+     63|   if (!element) {
+     64|     throw new Error(`要素が無い: ${selector}`);
+       |           ^
+     65|   }
+     66|   return element;
+ ❯ tests/unit/src/section/side-toc.interact.browser.test.ts:1047:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=2b506d39:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/45]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/section/side-toc.interact.browser.test.ts > test_markdown_file_name
+TypeError: markdownFileName is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.interact.browser.test.ts/test_markdown_file_name.png
+
+ ❯ tests/unit/src/section/side-toc.interact.browser.test.ts:1062:10
+    1060|   const { markdownFileName } = await loadSideToc();
+    1061|   // 実行・検証
+    1062|   expect(markdownFileName("返信/の手順")).toBe("返信_の手順.md");
+       |          ^
+    1063|   expect(markdownFileName(" 手順. ")).toBe("手順.md");
+    1064|   expect(markdownFileName(undefined)).toBe("document.md");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=2b506d39:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/45]⎯
+
+
+ Test Files  11 failed | 301 passed (312)
+      Tests  45 failed | 2451 passed (2496)
+   Start at  22:54:30
+   Duration  33.04s (worker 79%, tests 11%, import 7%, transform 3%)
+

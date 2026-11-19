@@ -542,3 +542,49 @@ test("test_run_apply_template", async () => {
   expect(existsSync(join(context.projectDir, "brand.css"))).toBe(true);
   vi.unstubAllEnvs();
 });
+
+// CLI と同じ中身を書き出して絶対パスを返却する（正常系）
+test("test_run_export_markdown_tool", async () => {
+  // 準備
+  const { runExportMarkdown } = await loadTools();
+  const { runExportMarkdown: runCli } = await import(
+    "../../../../src/cli/export-markdown.ts"
+  );
+  const { INQUIRY_COUNT_TEXT } = await import("../../helpers/charts.ts");
+  const { wrapDirective } = await import("../../helpers/diagrams.ts");
+  const context = await createContext();
+  const document = [
+    "# 件数",
+    "",
+    wrapDirective("chart", INQUIRY_COUNT_TEXT),
+  ].join("\n");
+  await writeFiles(context.projectDir, {
+    "mdmark.config.yaml": "features:\n  print: true\n",
+    "guide.mark.md": document,
+    "cli/mdmark.config.yaml": "features:\n  print: true\n",
+    "cli/guide.mark.md": document,
+  });
+  await writeDist(context.packageDir);
+  // 実行
+  const result = await runExportMarkdown({ file: "guide.mark.md" }, context);
+  await runCli(
+    { file: "guide.mark.md", distDir: context.distDir },
+    {
+      cwd: join(context.projectDir, "cli"),
+      stdout: () => {},
+      stderr: () => {},
+    },
+  );
+  // 検証
+  const out = `${context.projectDir}/guide-markdown/guide.md`;
+  expect(result.json?.out).toBe(out);
+  expect(result.json?.images).toEqual([
+    `${context.projectDir}/guide-markdown/images/figure-1.svg`,
+  ]);
+  expect(await readFile(out, "utf8")).toBe(
+    await readFile(
+      join(context.projectDir, "cli", "guide-markdown", "guide.md"),
+      "utf8",
+    ),
+  );
+});

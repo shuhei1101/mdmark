@@ -24,6 +24,7 @@ import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { embeddedLibraries, loadLibraries } from "./libraries.ts";
+import { toPureMarkdown } from "./markdown/pure-markdown.ts";
 import { attachMermaid } from "./mermaid.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import { attachPrint } from "./print.ts";
@@ -342,6 +343,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   /** 右側の目次を付け、以降の操作と部品を付ける本文の列を返却する。コメントの余白の列を本文の列の右に配置するため、右側の目次が包んでいなければ本文の列に包む */
   const layoutBody = (
     drawn: ResolvedConfig,
+    markdown: string,
   ): { body: HTMLElement; aside: HTMLElement | undefined } => {
     const sideToc =
       features["side-toc"] === true
@@ -349,6 +351,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
             el,
             mode: drawn.sideToc.mode,
             sections: features.sections === true,
+            markdownButtons: features["markdown-buttons"] === true,
+            pureMarkdown: () =>
+              toPureMarkdown(markdown, {
+                config: opts.config,
+                index: opts.index,
+                docId: opts.docId,
+                includes,
+              }),
             state: sideTocState,
           })
         : undefined;
@@ -498,7 +508,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     const drawn = applyPageSettings({ config, page: rendered.page });
     applyAppearance(drawn);
     features = rendered.features;
-    const { body, aside } = layoutBody(drawn);
+    const { body, aside } = layoutBody(drawn, markdown);
     detachers.interactions = attachInteractions({
       root: body,
       features,

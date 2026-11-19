@@ -7060,12 +7060,16 @@ test("test_normal_when_side_toc_hovered_and_pinned", async () => {
       actions.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(actions.querySelectorAll("[data-fold-all]")).toHaveLength(2);
-    // 目次の頭: タイトルを配置せず、まとめて開閉するボタンの並び → ピン止めの順
+    // 目次の頭: タイトルを配置せず、まとめて開閉するボタンの並び → Markdown のボタンの並び → ピン止めの順
     expect(
       [...find(panel, ".mdmark-side-toc-head").children].map(
         (child) => child.className,
       ),
-    ).toEqual(["mdmark-side-toc-actions", "mdmark-side-toc-pin"]);
+    ).toEqual([
+      "mdmark-side-toc-actions",
+      "mdmark-side-toc-markdown",
+      "mdmark-side-toc-pin",
+    ]);
     expect(panel.textContent).not.toContain("目次");
     // 開いた枠は画面に固定し、見えている枠（画面）の上端から --mdmark-space 下に出す
     const space =
@@ -21715,4 +21719,181 @@ test("test_normal_when_map_class_long_members_drawn", async () => {
       stage.offsetHeight,
     );
   }
+});
+
+/** 見出し・目次のマーカー・chart・div の生の HTML を持つ文書（Markdown のボタンの試験） */
+const MARKDOWN_BUTTON_DOCUMENT = [
+  "# 手引き",
+  "",
+  "<!-- toc -->",
+  "",
+  "## 導入",
+  "",
+  "本文。",
+  "",
+  wrapDirective("chart", INQUIRY_COUNT_TEXT),
+  '<div class="note">生の HTML</div>',
+  "",
+].join("\n");
+
+/** Markdown のボタンを持つ右側の目次を fixed の出し方で開いて描き、頭のボタンと読み上げの要素を返却する */
+async function mountMarkdownButtons(
+  markdown: string,
+  config: Parameters<Built["mount"]>[1]["config"] = {},
+) {
+  const el = createElement();
+  await mountTracked(el, {
+    markdown,
+    config: { ...config, "side-toc": { mode: "fixed" } },
+  });
+  const aside = find<HTMLElement>(el, "aside.mdmark-side-toc");
+  find<HTMLButtonElement>(aside, ".mdmark-side-toc-toggle").click();
+  return { el, aside };
+}
+
+// 頭のボタンの並び・書き込む文字列・2 秒で戻るアイコンを確かめる（正常系（Markdown でコピーする））
+test("test_normal_when_markdown_copied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { toPureMarkdown } = await loadBuilt();
+  const { aside } = await mountMarkdownButtons(MARKDOWN_BUTTON_DOCUMENT);
+  const head = find<HTMLElement>(aside, ".mdmark-side-toc-head");
+  const copy = find<HTMLButtonElement>(head, 'button[data-markdown="copy"]');
+  const idleIcon = copy.innerHTML;
+  const resourcesBefore = performance.getEntriesByType("resource").length;
+  // 検証: 頭のボタンの並び
+  expect(
+    [...head.querySelectorAll("button")].map(
+      (button) =>
+        button.dataset.foldAll ??
+        button.dataset.markdown ??
+        (button.classList.contains("mdmark-side-toc-pin") ? "pin" : ""),
+    ),
+  ).toEqual(["open", "close", "copy", "export", "pin"]);
+  // 実行
+  copy.click();
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  await vi.advanceTimersByTimeAsync(0);
+  // 検証: 書き込んだ文字列と押した後のアイコン
+  const { markdown } = await toPureMarkdown(MARKDOWN_BUTTON_DOCUMENT);
+  expect(firstCopiedText(writeText)).toBe(markdown);
+  expect(firstCopiedText(writeText)).not.toMatch(/<!--|<div/);
+  expect(copy.innerHTML).not.toBe(idleIcon);
+  expect(copy.querySelector("svg")?.outerHTML).toBeTruthy();
+  expect(aside.querySelector(".mdmark-copy-panel")).toBeNull();
+  expect(
+    getComputedStyle(find(head, '.mdmark-side-toc-markdown [role="status"]'))
+      .position,
+  ).toBe("absolute");
+  // 実行・検証: 2 秒後に戻る
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(copy.innerHTML).toBe(idleIcon);
+  expect(performance.getEntriesByType("resource").length).toBe(resourcesBefore);
+});
+
+// 最初の h1 の文字の名前と、h1 が無い文書の document.md で保存させる（正常系（Markdown でエクスポートする））
+test("test_normal_when_markdown_exported", async () => {
+  // 準備
+  const { toPureMarkdown } = await loadBuilt();
+  const blobs: Blob[] = [];
+  vi.spyOn(URL, "createObjectURL").mockImplementation((blob) => {
+    blobs.push(blob as Blob);
+    return "blob:mdmark-test";
+  });
+  vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+  const names: string[] = [];
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement,
+  ) {
+    names.push(this.download);
+  });
+  const withH1 = "# 返信/の手順\n\n## 導入\n\n本文。\n";
+  const withoutH1 = "## 導入\n\n本文。\n";
+  const first = await mountMarkdownButtons(withH1);
+  const second = await mountMarkdownButtons(withoutH1);
+  // 実行
+  find<HTMLButtonElement>(
+    first.aside,
+    'button[data-markdown="export"]',
+  ).click();
+  await vi.waitFor(() => {
+    expect(names).toHaveLength(1);
+  });
+  find<HTMLButtonElement>(
+    second.aside,
+    'button[data-markdown="export"]',
+  ).click();
+  await vi.waitFor(() => {
+    expect(names).toHaveLength(2);
+  });
+  // 検証
+  expect(names).toEqual(["返信_の手順.md", "document.md"]);
+  expect(await blobs[0]?.text()).toBe((await toPureMarkdown(withH1)).markdown);
+  expect(blobs[0]?.type).toContain("text/markdown");
+});
+
+// 書き込めないときは理由と全文を選択したパネルを出し、閉じても本文を変えない（正常系（クリップボードへ書き込めない））
+test("test_normal_when_markdown_clipboard_denied", async () => {
+  // 準備
+  stubClipboard(() =>
+    Promise.reject(new DOMException("denied", "NotAllowedError")),
+  );
+  const rejections: PromiseRejectionEvent[] = [];
+  const onRejection = (event: PromiseRejectionEvent): void => {
+    rejections.push(event);
+  };
+  window.addEventListener("unhandledrejection", onRejection);
+  const { toPureMarkdown } = await loadBuilt();
+  const { el, aside } = await mountMarkdownButtons(MARKDOWN_BUTTON_DOCUMENT);
+  const content = find<HTMLElement>(el, ".mdmark-content").innerHTML;
+  const copy = find<HTMLButtonElement>(aside, 'button[data-markdown="copy"]');
+  const idleIcon = copy.innerHTML;
+  try {
+    // 実行
+    copy.click();
+    await vi.waitFor(() => {
+      expect(aside.querySelector(".mdmark-copy-panel")).not.toBeNull();
+    });
+    // 検証
+    const panel = find<HTMLElement>(aside, ".mdmark-copy-panel");
+    expect(copy.innerHTML).not.toBe(idleIcon);
+    expect(find(aside, ".mdmark-side-toc-head").nextElementSibling).toBe(panel);
+    expect(find(panel, ".mdmark-copy-panel-title").textContent).toContain(
+      "許可されていません",
+    );
+    const textarea = find<HTMLTextAreaElement>(panel, "textarea");
+    expect(textarea.value).toBe(
+      (await toPureMarkdown(MARKDOWN_BUTTON_DOCUMENT)).markdown,
+    );
+    expect(textarea.selectionStart).toBe(0);
+    expect(textarea.selectionEnd).toBe(textarea.value.length);
+    // 実行・検証: 閉じる
+    find<HTMLButtonElement>(panel, ".mdmark-copy-panel-close").click();
+    expect(aside.querySelector(".mdmark-copy-panel")).toBeNull();
+    expect(find<HTMLElement>(el, ".mdmark-content").innerHTML).toBe(content);
+    expect(rejections).toEqual([]);
+  } finally {
+    window.removeEventListener("unhandledrejection", onRejection);
+  }
+});
+
+// 機能をオフにした文書と見出しの無い文書には Markdown のボタンを配置しない（正常系（Markdown のボタンを配置しない））
+test("test_normal_when_markdown_buttons_off", async () => {
+  // 準備・実行
+  const off = await mountMarkdownButtons("# 手引き\n\n## 導入\n\n本文。\n", {
+    features: { "markdown-buttons": false },
+  });
+  const plain = createElement();
+  await mountTracked(plain, { markdown: "段落だけ。\n" });
+  // 検証
+  expect(off.aside.querySelector("[data-markdown]")).toBeNull();
+  expect(off.aside.querySelectorAll(".mdmark-fold-all")).toHaveLength(2);
+  expect(off.aside.querySelector(".mdmark-side-toc-pin")).not.toBeNull();
+  expect(plain.querySelector("[data-markdown]")).toBeNull();
 });

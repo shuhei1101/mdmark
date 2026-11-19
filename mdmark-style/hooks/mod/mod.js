@@ -18157,6 +18157,7 @@ var DEFAULT_FEATURES = {
   "html-scripts": false,
   "side-toc": true,
   "back-to-top": true,
+  "markdown-buttons": true,
   "text-color": true,
   images: true,
   gallery: true,

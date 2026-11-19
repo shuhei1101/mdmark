@@ -21,6 +21,8 @@ export type MdmarkExtension = {
     load: () => Promise<MdmarkExtensionModule>;
     /** 引数を検査する Standard Schema */
     schema?: StandardSchemaV1<MdmarkMarkArgs> | undefined;
+    /** 書き出しのフック。`toPureMarkdown` だけが呼び、返却した Markdown をマーカーの場所に入れる */
+    toMarkdown?: ((value: MdmarkMarkArgs) => string | Promise<string>) | undefined;
 };
 /** 記載の警告に並べる 1 項目 */
 export type WarningItem = {

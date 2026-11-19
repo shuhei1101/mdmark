@@ -42,6 +42,13 @@ export { collectMatches } from "./knowledge/matches.ts";
 export type { MdmarkReferences } from "./knowledge/references.ts";
 export { collectReferences } from "./knowledge/references.ts";
 export type {
+  FigureToMarkdown,
+  MdmarkFigure,
+  PureMarkdownOptions,
+  PureMarkdownResult,
+} from "./markdown/pure-markdown.ts";
+export { toPureMarkdown } from "./markdown/pure-markdown.ts";
+export type {
   MdmarkColumnsChange,
   MountHandle,
   MountOptions,

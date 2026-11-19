@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import type { SideTocState } from "../../../../src/section/side-toc.interact.ts";
 import { wrapHtml } from "../../helpers/charts.ts";
+import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
 import {
   addStyles,
   createRoot,
@@ -931,4 +932,135 @@ test("test_collect_side_toc_headings_when_changed", async () => {
     { level: 2, id: "導入", text: "導入" },
     { level: 2, id: "使用方法", text: "使用方法", changed: true },
   ]);
+});
+
+/** 目次のマーカーを持つ文書 */
+const MARKDOWN_DOCUMENT = "# 手引き\n\n<!-- toc -->\n\n## 導入\n\n本文。\n";
+
+/** 変換する関数が返却する純粋な Markdown（変換そのものは `toPureMarkdown` の単体テストで確かめる） */
+const CONVERTED = "# 手引き\n\n- [導入](#導入)\n\n## 導入\n\n本文。\n";
+
+/** Markdown のボタンを出して右側の目次を付ける。変換する関数は CONVERTED を返却する */
+async function attachWithMarkdownButtons(markdown: string) {
+  const { attachSideToc } = await loadSideToc();
+  const { root } = createRoot(markdown);
+  const pureMarkdown = vi.fn(async () => ({
+    markdown: CONVERTED,
+    warnings: [],
+  }));
+  const result = attachSideToc({
+    el: root,
+    mode: "fixed",
+    sections: true,
+    markdownButtons: true,
+    pureMarkdown,
+    state: createState({ open: true }),
+  });
+  track(result.detach);
+  if (!result.aside) {
+    throw new Error("右側の目次が無い");
+  }
+  return { root, aside: result.aside, pureMarkdown };
+}
+
+// 変換した Markdown をクリップボードへ書き込み、アイコンと読み上げの文を戻す（正常系）
+test("test_attach_side_toc_when_markdown_copied", async () => {
+  // 準備
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const { aside } = await attachWithMarkdownButtons(MARKDOWN_DOCUMENT);
+  const button = find<HTMLButtonElement>(aside, 'button[data-markdown="copy"]');
+  const status = find(aside, '.mdmark-side-toc-markdown [role="status"]');
+  const idleIcon = button.innerHTML;
+  try {
+    // 実行
+    button.click();
+    await vi.advanceTimersByTimeAsync(0);
+    // 検証: 書き込んだ文字列とコピーした後のアイコン・読み上げの文
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(writeText).toHaveBeenCalledWith(CONVERTED);
+    expect(button.innerHTML).not.toBe(idleIcon);
+    expect(status.textContent).toBe("Markdown をコピーしました");
+    expect(aside.querySelector(".mdmark-copy-panel")).toBeNull();
+    // 実行・検証: 2 秒たつと戻る
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(button.innerHTML).toBe(idleIcon);
+    expect(status.textContent).toBe("");
+  } finally {
+    vi.useRealTimers();
+    restoreClipboard();
+  }
+});
+
+// 書き込めないときは理由つきのパネルを出し、閉じると戻す（異常系）
+test("test_attach_side_toc_when_markdown_clipboard_denied", async () => {
+  // 準備
+  stubClipboard(() =>
+    Promise.reject(new DOMException("denied", "NotAllowedError")),
+  );
+  const { aside } = await attachWithMarkdownButtons(MARKDOWN_DOCUMENT);
+  const button = find<HTMLButtonElement>(aside, 'button[data-markdown="copy"]');
+  try {
+    // 実行
+    button.click();
+    await vi.waitFor(() => {
+      expect(aside.querySelector(".mdmark-copy-panel")).not.toBeNull();
+    });
+    // 検証
+    const panel = find(aside, ".mdmark-copy-panel");
+    expect(panel.textContent).toContain("許可されていません");
+    const text = find<HTMLTextAreaElement>(panel, "textarea");
+    expect(text.selectionStart).toBe(0);
+    expect(text.selectionEnd).toBe(text.value.length);
+    expect(text.value).toBe(CONVERTED);
+    // 実行・検証: 閉じるとパネルが無くなり、フォーカスがコピーのボタンへ戻る
+    find<HTMLButtonElement>(panel, ".mdmark-copy-panel-close").click();
+    expect(aside.querySelector(".mdmark-copy-panel")).toBeNull();
+    expect(document.activeElement).toBe(button);
+  } finally {
+    restoreClipboard();
+  }
+});
+
+// 最初の h1 を名前にして保存させる（正常系）
+test("test_attach_side_toc_when_markdown_exported", async () => {
+  // 準備
+  const blobs: Blob[] = [];
+  vi.spyOn(URL, "createObjectURL").mockImplementation((blob) => {
+    blobs.push(blob as Blob);
+    return "blob:mdmark-test";
+  });
+  vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+  const clicked: HTMLAnchorElement[] = [];
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement,
+  ) {
+    clicked.push(this);
+  });
+  const { aside } = await attachWithMarkdownButtons(
+    "# 返信/の手順\n\n## 導入\n\n本文。\n",
+  );
+  // 実行
+  find<HTMLButtonElement>(aside, 'button[data-markdown="export"]').click();
+  await vi.waitFor(() => {
+    expect(clicked).toHaveLength(1);
+  });
+  // 検証
+  expect(clicked[0]?.download).toBe("返信_の手順.md");
+  expect(blobs[0]?.type).toContain("text/markdown");
+  expect(await blobs[0]?.text()).toBe(CONVERTED);
+});
+
+// 使用できない文字と空の見出し（正常系）
+test("test_markdown_file_name", async () => {
+  // 準備
+  const { markdownFileName } = await loadSideToc();
+  // 実行・検証
+  expect(markdownFileName("返信/の手順")).toBe("返信_の手順.md");
+  expect(markdownFileName(" 手順. ")).toBe("手順.md");
+  expect(markdownFileName(undefined)).toBe("document.md");
+  expect(markdownFileName("***")).toBe("___.md");
 });

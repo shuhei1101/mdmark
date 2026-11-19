@@ -341,9 +341,9 @@ functions:
 
       | 要素 | 中身 |
       | --- | --- |
-      | タイトル | `クリップボードにコピーできませんでした`（`circle-alert` のアイコン付き） |
+      | タイトル | `クリップボードにコピーできませんでした`（`circle-alert` のアイコン付き。`reason` があれば後ろに `（{reason}）`） |
       | 閉じるボタン | `x` のアイコン、`aria-label="閉じる"` |
-      | 案内 | `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`（`tree` は `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`） |
+      | 案内 | `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`（`tree` は `ツリーのテキストを選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`、`document` は `Markdown を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`） |
       | テキスト | `text` を入れた `<textarea class="mdmark-copy-panel-text" readonly rows="6">` |
 
       | 形式 | 形式の名前 |
@@ -354,9 +354,9 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ id: string; format: "markdown" | "tsv" | "tree"; text: string }'
+        type: '{ id: string; format: "markdown" | "tsv" | "tree" | "document"; text: string; reason?: string }'
         required: true
-        description: タイトルの id の頭、コピーする形式（`tree` はファイルツリーの元の罫線のテキスト）、コピーする文字
+        description: タイトルの id の頭、コピーする形式（`tree` はファイルツリーの元の罫線のテキスト、`document` は文書を変換した純粋な Markdown）、コピーする文字、タイトルに添える理由
     returns:
       type: string
       description: '`<div class="mdmark-copy-panel"` で始まる HTML'
@@ -373,6 +373,12 @@ functions:
         condition: '`format: tree`、`text: "src/\n└── index.ts"`'
         mock: なし
         expected: 案内が `ツリーのテキストを選択しています。` で始まり、`textarea` の中身が `src/\n└── index.ts`
+      - name: test_render_copy_panel_when_document_with_reason
+        case: 正常
+        summary: 文書の Markdown のパネルに理由を添える
+        condition: '`format: "document"`・`reason: "許可されていません"`・`text: "# a"`'
+        mock: なし
+        expected: タイトルが `クリップボードにコピーできませんでした（許可されていません）`、案内が `Markdown を選択しています。` で始まる
     callees:
       - 'MOD-472-313#functions[escapeHtml]'
     status: planned

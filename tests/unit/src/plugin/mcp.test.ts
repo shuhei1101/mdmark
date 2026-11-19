@@ -51,7 +51,7 @@ test("test_create_mcp_server", async () => {
   expect(tools.map((tool) => tool.name).sort()).toEqual(
     TOOLS.map((tool) => tool.name).sort(),
   );
-  expect(tools).toHaveLength(6);
+  expect(tools).toHaveLength(7);
   for (const tool of tools) {
     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain(
       "project_dir",

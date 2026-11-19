@@ -1,0 +1,75 @@
+id: MOD-472-365
+visibility: internal
+title: ライブラリ本体 / CLI / figure-svg.ts
+lead: '`render` が返す図の HTML を、ほかのファイル・URL を参照しない 1 つの SVG にする処理を受け持ち、書き出す SVG の作り方を変えるときに参照する。'
+test_files:
+  - tests/unit/src/cli/figure-svg.test.ts
+functions:
+  - name: figureToSvg
+    title: 図を SVG にする
+    container: src/cli/figure-svg.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: '`chart`・`param` は HTML の中の図の部品の `svg` を取り出し、埋め込んだ HTML は文字の幅の見積もりで大きさを決めて `foreignObject` に包み、`pruneCss` の CSS と不透明の背景を置いた SVG の文字列を返却する'
+    description: HTML の読み取りは htmlparser2・dom-serializer（sanitize-html の依存）。sanitize が小文字にした `viewBox`・`patternUnits` を戻し、`foreignObject` の中の入れ子の `svg` に `xmlns` を付ける。図のパネルのボタンと高さのハンドルは除く。相対パスの画像は文書のフォルダから読み込んで `data:` の URL にし、`https` の画像は除いて警告を返却する。1 行のブロックは折り返さず、見積もりの幅に 1 文字分の余白を加える
+    args:
+      - name: options
+        type: '{ figure: MdmarkFigure; css: string; baseDir: string }'
+        required: true
+        description: 図・配布物の CSS・文書のフォルダ
+    returns:
+      type: 'Promise<{ svg: string; warnings: string[] }>'
+      description: SVG と警告
+    callees:
+      - '#functions[pruneCss]'
+    refs:
+      - IF-472-49#constraints[SVG の作り方]
+    status: planned
+    unit_tests:
+      - name: test_figure_to_svg_chart
+        case: 正常
+        summary: chart の svg を取り出し、外を参照しない
+        condition: '`render` した棒グラフの `chart` の図'
+        mock: 短くした配布物の CSS
+        expected: '`<svg` で始まり、`viewBox` を持ち、`href`・`src`・`url(` の値が `data:` か `#` だけ'
+      - name: test_figure_to_svg_html_foreign_object
+        case: 正常
+        summary: 埋め込んだ HTML を foreignObject に包み、画像を埋める
+        condition: 表と相対パスの画像と `https` の画像を持つ埋め込んだ HTML
+        mock: 一時フォルダの画像
+        expected: '`foreignObject` を持ち、相対パスの画像が `data:image/` で、`https` の画像が無く、`warnings` にその URL が 1 件'
+      - name: test_figure_to_svg_restores_case
+        case: 正常
+        summary: 小文字にされた属性名を戻す
+        condition: '`viewbox`・`patternunits` を持つ図の HTML'
+        mock: なし
+        expected: '`viewBox`・`patternUnits` になっている'
+  - name: pruneCss
+    title: 図に当たる CSS だけを残す
+    container: src/cli/figure-svg.ts
+    kind: 関数
+    scope: internal
+    summary: 配布物の CSS を postcss で読み、入れ子の `&` を親のセレクタに展開して、図の中にあるクラスとタグに当たる規則と、明るい配色の CSS 変数だけを残す
+    description: ダークの配色・テーマ・`vscode` のセレクタと `@media print` は除く
+    args:
+      - name: options
+        type: '{ css: string; classes: Set<string>; tags: Set<string> }'
+        required: true
+        description: 配布物の CSS と、図の中のクラスとタグ
+    returns:
+      type: string
+      description: 残した CSS
+    status: planned
+    unit_tests:
+      - name: test_prune_css
+        case: 正常
+        summary: 図に無いクラスとダークの規則を除く
+        condition: '`.mdmark-chart`・`.mdmark-table`・`.mdmark-theme-dark .mdmark-chart` の規則を持つ CSS と、`mdmark-chart` だけの図'
+        mock: なし
+        expected: '`.mdmark-chart` の規則だけが残る'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:cli
+  - name: tool:svg
