@@ -1,5 +1,9 @@
 import { afterEach, expect, test } from "vitest";
-import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 import { CLASS, CLASS_DATA, mapRange } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
@@ -178,11 +182,15 @@ test("test_attach_map_class_when_linked", async () => {
 // 長いメンバー・補足の幅・長いラベル（正常系）
 test("test_attach_map_class_when_long_members", async () => {
   // 準備・実行
+  addStyles();
   const root = await setUp(
     [
       "classDiagram",
       "  class 検索 {",
       "    +検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict",
+      "  }",
+      "  class 単語 {",
+      "    +aaaa bbbbbbbbbbbbbbbbbbbb cccccccccccccccccccc dd",
       "  }",
       "  class 設定 {",
       "    +名前: str",
@@ -193,18 +201,20 @@ test("test_attach_map_class_when_long_members", async () => {
     '{"version": 1, "layout": {"設定": {"width": 320}}}',
   );
   // 検証
-  const search = nodeOf(root, "検索").getBoundingClientRect();
-  const texts = [
-    ...nodeOf(root, "検索").querySelectorAll<HTMLElement>(".map-class-text"),
-  ];
-  expect(texts.length).toBeGreaterThan(0);
-  for (const text of texts) {
-    const box = text.getBoundingClientRect();
-    expect(box.top).toBeGreaterThanOrEqual(search.top - 0.5);
-    expect(box.bottom).toBeLessThanOrEqual(search.bottom + 0.5);
-    expect(box.right).toBeLessThanOrEqual(search.right + 0.5);
-    const row = text.closest(".map-class-member")?.getBoundingClientRect();
-    expect(box.bottom).toBeLessThanOrEqual((row?.bottom ?? 0) + 0.5);
+  for (const id of ["検索", "単語"]) {
+    const node = nodeOf(root, id).getBoundingClientRect();
+    const texts = [
+      ...nodeOf(root, id).querySelectorAll<HTMLElement>(".map-class-text"),
+    ];
+    expect(texts.length).toBeGreaterThan(0);
+    for (const text of texts) {
+      const box = text.getBoundingClientRect();
+      expect(box.top).toBeGreaterThanOrEqual(node.top - 0.5);
+      expect(box.bottom).toBeLessThanOrEqual(node.bottom + 0.5);
+      expect(box.right).toBeLessThanOrEqual(node.right + 0.5);
+      const row = text.closest(".map-class-member")?.getBoundingClientRect();
+      expect(box.bottom).toBeLessThanOrEqual((row?.bottom ?? 0) + 0.5);
+    }
   }
   expect(nodeOf(root, "設定").getBoundingClientRect().width).toBeCloseTo(
     320,
