@@ -28,8 +28,8 @@ constants:
   - name: mermaidByLoader
     title: 関数で読み込んだ mermaid
     container: src/part-modules.ts
-    summary: '`mermaid` の `loader` を呼んだ Promise。ページの中で 1 回だけ呼ぶ（失敗も記録し、呼び直さない）。`mount` ごとに記録する URL の mermaid と分けて持つ'
-    value: 'let mermaidByLoader: Promise<Record<string, unknown>> | undefined'
+    summary: '`mermaid` の名前から、`loader` を呼んだ Promise を参照する。ページの中で 1 回だけ呼ぶ（失敗も記録し、呼び直さない）。`mount` ごとに記録する URL の mermaid と分けて持ち、`partModules` と同じく export して単体テストが `clear()` で空にする'
+    value: 'new Map<"mermaid", Promise<Record<string, unknown>>>()'
 functions:
   - name: loadPartModule
     title: 部品のモジュールを読み込む
@@ -153,9 +153,9 @@ functions:
       type: Promise<Record<string, unknown>> | undefined
       description: 関数が返却したモジュールを待つ Promise。関数が拒否するか同期で投げたときは元のエラーで reject する。構造の確認は呼ぶ側（mermaid.ts）がする
     process: |-
-      1. `mermaidByLoader` があればそれを返却する
+      1. `mermaidByLoader` に `mermaid` があればその Promise を返却する
       2. `partModuleLoaders` に `mermaid` が無ければ `undefined` を返却する（記録しない）
-      3. その関数を Promise の中で呼ぶ（同期で投げた例外も reject にする）。その Promise を `mermaidByLoader` に記録して返却する
+      3. その関数を Promise の中で呼ぶ（同期で投げた例外も reject にする）。その Promise を `mermaidByLoader` に `mermaid` の名前で記録して返却する
     unit_tests:
       - name: test_load_mermaid_by_loader
         case: 正常
@@ -166,15 +166,15 @@ functions:
       - name: test_load_mermaid_by_loader_when_not_set
         case: 正常
         summary: 指定が無ければ undefined を返却する
-        condition: '`mermaid` を指定せずに呼ぶ。その後 `setPartModuleLoader("mermaid", 関数)` してもう一度呼ぶ'
+        condition: '`mermaidByLoader`・`partModuleLoaders` を `clear()` してから、`mermaid` を指定せずに呼ぶ。その後 `setPartModuleLoader("mermaid", 関数)` してもう一度呼ぶ'
         mock: '関数は `{ default: {} }` を返却する'
         expected: 1 回目は `undefined`、2 回目は関数の Promise を返却する
       - name: test_load_mermaid_by_loader_when_rejected
         case: 異常
         summary: 拒否した関数は元のエラーで reject し、呼び直さない
-        condition: 拒否する関数と、同期で投げる関数をそれぞれ指定して 2 回ずつ呼ぶ
+        condition: 拒否する関数と、同期で投げる関数をそれぞれ指定して 2 回ずつ呼ぶ。それぞれの前に `mermaidByLoader`・`partModuleLoaders` を `clear()` する
         mock: 関数は呼ばれた回数を数え、`Error("missing")` で拒否するか投げる
-        expected: どちらも例外を投げずに Promise を返却し、2 回とも `missing` のエラーで reject する。関数は 1 回だけ呼ばれる
+        expected: どちらも例外を投げずに Promise を返却し、2 回とも `missing` のエラーで reject する。それぞれの関数は 1 回だけ呼ばれる
     refs:
       - IF-655-1#flows[正常系（mermaid のモジュールを指定する）]
       - IF-655-1#flows[異常系（mermaid のモジュールを読み込めない・console.error）]

@@ -156,13 +156,13 @@ functions:
       - name: test_attach_mermaid_when_loader_set
         case: 正常
         summary: 関数で指定した mermaid で描き、URL もまとめたモジュールも読み込まない
-        condition: '`setEmbeddedMermaid({})` と `setPartModuleLoader("mermaid", 関数)` の後に mermaid のコードブロックの要素。終えたら指定と記録を戻す'
+        condition: '`setEmbeddedMermaid({})` と `setPartModuleLoader("mermaid", 関数)` の後に mermaid のコードブロックの要素。終えたら `setEmbeddedMermaid(undefined)` と、`partModuleLoaders`・`mermaidByLoader` の `clear()` で戻す'
         mock: 関数は呼ばれた回数を数え、mermaid のモジュールを返却する。`importModule` を見張る
         expected: '`ready` の後に各対象が SVG の図の枠になり、関数は 1 回だけ呼ばれ、`importModule` は呼ばれない'
       - name: test_attach_mermaid_when_loader_fails
         case: 異常
         summary: 関数が拒否するか構造が合わないときは通知ブロックにし、URL へ要求しない
-        condition: '`setPartModuleLoader("mermaid", 関数)` の後に mermaid のコードブロックの要素。関数を拒否するものと `{ default: {} }` を返却するもので 1 回ずつ。終えたら指定と記録を戻す'
+        condition: '`setPartModuleLoader("mermaid", 関数)` の後に mermaid のコードブロックの要素。関数を拒否するものと `{ default: {} }` を返却するもので 1 回ずつ。それぞれの前と終えた後に `partModuleLoaders`・`mermaidByLoader` を `clear()` する'
         mock: '`importModule` を見張る。`console.error` を記録する関数で包む'
         expected: どちらも各読み込み中のブロックが通知ブロックになり、コードブロックが表示に戻る。`console.error` の引数に `mermaid` を含み、`importModule` は呼ばれない
   - name: drawMermaidDiagram
