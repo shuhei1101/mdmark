@@ -219,7 +219,7 @@ functions:
     container: src/cli/upgrade.ts
     usecase: バージョンを上げる
     summary: '`call` のスクリプトと同じ集め方で、検める前の設定の `build` の対象と索引の `docs[].path` の文書の絶対パスを集める'
-    description: 検める前の設定の `build.include`・`build.exclude` を文字の並びにし（文字 1 つは並び 1 つ。並びの中の文字でない要素と、文字でも並びでもない値は飛ばす）、設定ファイルのフォルダを基準に `node:fs/promises` の `glob` で `include` に該当し `exclude` に該当しないファイルを集める（拡張子で絞らない）。設定の `index` が文字なら索引を YAML として読み込み、`docs[].path` が文字の行を索引のファイルのフォルダを基準に解決して、ファイルがあるものを加える。索引を読み込めないときは索引の文書を集めない。重なりを除いて返却する。集め方は `migrations/v0.11.0/marker-json.mjs` の `buildDocuments`・`indexDocuments` と同じ
+    description: 検める前の設定の `build.include`・`build.exclude` を文字の並びにし（文字 1 つは並び 1 つ。並びの中の文字でない要素と、文字でも並びでもない値は飛ばす）、設定ファイルのフォルダを基準に `node:fs/promises` の `glob` で `include` に該当し `exclude` に該当しないファイルを集める（拡張子で絞らない。`exclude` は、`exclude` の glob で集めたパスと一致するものだけを除き、`glob` の `exclude` オプションと `globFiles` は使用しない。フォルダに該当する `exclude` でも、その下のファイルは除かない）。設定の `index` が文字なら索引を YAML として読み込み、`docs[].path` が文字の行を索引のファイルのフォルダを基準に解決して、ファイルがあるものを加える。索引を読み込めないときは索引の文書を集めない。重なりを除いて返却する。集め方は `migrations/v0.11.0/marker-json.mjs` の `buildDocuments`・`indexDocuments` と同じ
     kind: 関数
     scope: internal
     is_async: true
