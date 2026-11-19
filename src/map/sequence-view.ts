@@ -208,6 +208,24 @@ const dimExceptParticipant = (
   }
 };
 
+/** 参加者が送る・受けるメッセージの線に、指している間のデータの印を流す */
+const addParticipantPackets = (
+  figure: HTMLElement,
+  participant: { id: string; messages: Sequence["messages"] },
+): void => {
+  const { id, messages } = participant;
+  for (const hit of figure.querySelectorAll<SVGPathElement>(
+    ".map-wire-hit[data-message]",
+  )) {
+    const at = Number(hit.dataset.message);
+    const message = messages[at];
+    if (message?.from !== id && message?.to !== id) continue;
+    hit.ownerSVGElement?.append(
+      hoverPacketLayer(hit, { at, both: SEQ_ARROW_STYLES[message.arrow].both }),
+    );
+  }
+};
+
 /** 要素が属する参加者（参加者の箱の中か、ライフラインの判定の線） */
 const participantAt = (node: EventTarget | null): string | undefined => {
   if (!(node instanceof Element)) return undefined;
@@ -584,36 +602,23 @@ export const attachMapSequence = (
       element.classList.remove("map-dim", HOVER_DIM_CLASS);
   };
   /** 参加者を指している間は、その参加者を 1 人選んだときと同じ強調にする（選択・再生の強調があるときは出さない） */
+  /** 選択・再生・並べ替えの間と、選択を解いた直後の参加者は、ポインターの強調を出さない */
+  const hoverBlocked = (id: string) =>
+    reordering ||
+    state.selected.length > 0 ||
+    current !== undefined ||
+    suppressed === id;
   const hoverParticipant = (id: string, pointerType: string) => {
     if (pointerType === "touch" || pointed === id) return;
     pointed = id;
-    if (reordering || state.selected.length > 0 || current !== undefined)
-      return;
-    if (suppressed === id) return;
+    if (hoverBlocked(id)) return;
     clearHover();
-    dimExceptParticipant(figure, { id, messages: sequence.messages });
-    for (const hit of figure.querySelectorAll<SVGPathElement>(
-      ".map-wire-hit[data-message]",
-    )) {
-      const at = Number(hit.dataset.message);
-      const message = sequence.messages[at];
-      if (!message || (message.from !== id && message.to !== id)) continue;
-      hit.ownerSVGElement?.append(
-        hoverPacketLayer(hit, {
-          at,
-          both: SEQ_ARROW_STYLES[message.arrow].both,
-        }),
-      );
-    }
+    const participant = { id, messages: sequence.messages };
+    dimExceptParticipant(figure, participant);
+    addParticipantPackets(figure, participant);
   };
   // メッセージの線を指している間は、その線にデータの印を流す（選択・再生で流している線には重ねない）
-  const onPointerOver = (event: PointerEvent) => {
-    const target = event.target instanceof Element ? event.target : undefined;
-    const participant = participantAt(target ?? null);
-    if (participant !== undefined) {
-      hoverParticipant(participant, event.pointerType);
-      return;
-    }
+  const hoverMessage = (target: Element | undefined) => {
     const hit = target?.closest<SVGPathElement>(".map-wire-hit[data-message]");
     const at = Number(hit?.dataset.message);
     const message = sequence.messages[at];
@@ -626,6 +631,12 @@ export const attachMapSequence = (
     // 選択と再生の強調が無いときは、その線と送り手・受け手のほかを薄くする
     if (state.selected.length > 0 || current !== undefined) return;
     dimExceptMessage(figure, { at, from: message.from, to: message.to });
+  };
+  const onPointerOver = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const participant = participantAt(target ?? null);
+    if (participant === undefined) hoverMessage(target);
+    else hoverParticipant(participant, event.pointerType);
   };
   const onPointerOut = (event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
