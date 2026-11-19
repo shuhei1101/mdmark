@@ -105,3 +105,14 @@ VS Code 拡張機能の結合テストは TL-3 の補足「VS Code 拡張機能�
 | `vscode/tests/integration/release.test.ts` | R2 | `vscode/tests/integration/release.test.ts` | - |
 
 `vscode/tests/integration/` の他のファイルは `mdmark.version` を `latest`・`v{X}.{Y}.{Z}` で使い、今回の変更で振る舞いが変わらないため実行しない。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `vscode/tests/integration/preview-open.test.ts` | `test_normal_when_develop` | 新規 | ✅ | `vscode/tests/integration/stub-server.ts` の配布物の代役が `@develop` にも配布物を返却するようにした<br>`テスト結果/20261119100349_65875236_結合テスト_VSCode拡張機能.log` |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/05a79a26b04f557433469db12794a274629f3079/vscode/tests/integration/preview-open.test.ts) | 全実行 | 実行のみ | ❌ | 21 件 pass・1 件 fail。fail は `test_normal_when_mermaid`（`mermaid の図を描かない`）で、origin/develop でも同じく fail する既知の事象（[#642](https://github.com/shuhei1101/mdmark/issues/642)。スコープ外）<br>`テスト結果/20261119100349_65875236_結合テスト_VSCode拡張機能.log` |
+| `vscode/tests/integration/release.test.ts` | 全実行 | 変更 | ✅ | 2 件。バージョン 0.2.0 の .vsix を作る<br>`テスト結果/20261119100349_65875236_結合テスト_VSCode拡張機能.log` |
+
+VS Code 1.141.0 の実行が #642 の fail で終わるため、stable の VS Code の実行には進んでいない。
+
