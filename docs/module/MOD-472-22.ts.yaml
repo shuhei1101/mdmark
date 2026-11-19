@@ -173,7 +173,7 @@ functions:
     kind: 関数
     container: vscode/src/version.ts
     usecase: 共通
-    summary: '`mdmark.version` が `latest` ならタグ一覧の最新を、取れなければ前回のバージョンを、`latest` でなければ記載したバージョンを使用する'
+    summary: '`mdmark.version` が `latest` ならタグ一覧の最新を、取れなければ前回のバージョンを、`latest` でなければ（`develop` か `v{X}.{Y}.{Z}`）記載した値を使用する'
     scope: public
     is_async: true
     args:
@@ -217,6 +217,12 @@ functions:
         condition: '`setting` が `latest`、`fetchLatest` が `undefined`、`lastVersion` が `undefined`'
         mock: '`fetchLatest` を代役にする'
         expected: '`{ kind: "undecidable" }`'
+      - name: test_decide_version_when_develop
+        case: 正常
+        summary: develop はそのまま使用し、タグ一覧を取らない
+        condition: '`setting` が `develop`、`lastVersion` が `v0.6.0`'
+        mock: '`fetchLatest` を呼ばれたら記録する代役にする'
+        expected: '`{ kind: "decided", version: "develop", fetched: false }`。`fetchLatest` が呼ばれない'
     refs:
       - IF-472-22#constraints[前回のバージョン]
     status: planned

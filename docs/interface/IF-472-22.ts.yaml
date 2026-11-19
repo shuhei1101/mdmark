@@ -720,6 +720,36 @@ flows:
     test: test_normal_when_tooltips_and_relative_syntax
     refs:
       - SC-472-10#scenarios[正常シナリオ（ツールチップの位置と相対パスの色分けのライブラリ）]
+  - name: 正常系（develop を読み込む）
+    summary: '`mdmark.version` が `develop` のとき、タグ一覧を取らずに `@develop` の配布物を読み込む'
+    setup:
+      - name: 見本のワークスペース
+        description: 正常系と同じ。ワークスペースの設定で `mdmark.version` を `develop` にする。`mdmark.lastVersion` は `v0.6.0`
+      - name: Mock
+        description: 正常系と同じ。配布物の代役は `@develop/dist/` にもこのブランチでビルドした配布物を返却する。タグ一覧の代役は呼ばれた回数を数える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant U as 文書の作成者
+        participant EX as 拡張機能
+        participant PV as Webview
+        participant CDN as jsDelivr
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: develop で HTML を入れる
+        PV-->>CDN: develop の index.js・index.css・map.js
+        PV->>EX: rendered
+      ```
+
+      <!-- /map -->
+    expected:
+      - 配布物の要求が `@develop/dist/` の `index.js`・`index.css`・`map.js` の 3 つ
+      - タグ一覧の代役が 1 回も呼ばれない
+      - '`mdmark.lastVersion` が `v0.6.0` のまま'
+    test: test_normal_when_develop
+    refs:
+      - SC-472-10#scenarios[正常シナリオ（develop を読み込む）]
 lead: 文書の作成者が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読み込む mdmark のバージョンを決め、Webview に jsDelivr の配布物を読み込ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み込み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
 side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだバージョンを拡張機能の `globalState` の `mdmark.lastVersion` に記載する。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読み込む。設定に `aliases` があるときは、その行の `paths` の YAML を読み込む。Markdown・設定ファイル・Git のリポジトリは書き換えない
@@ -766,10 +796,10 @@ exceptions:
     notes: 変更後の文書だけを描いた表示は出さない。Markdown と差分ビューは変えない
 constraints:
   - item: 配布物の URL
-    constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{バージョン}/dist/index.js` と `.../dist/index.css`。バージョンなしの URL と `@latest` は使用しない'
+    constraint: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{バージョン}/dist/index.js` と `.../dist/index.css`。`{バージョン}` は `v{X}.{Y}.{Z}` か `develop`。バージョンなしの URL と `@latest` は使用しない'
     notes: docs/external-api/API-472-2
   - item: バージョンの決め方
-    constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` を header `Link` の `rel="next"` が無くなるまで辿って全てのページを読み込み、その名前から `^v\d+\.\d+\.\d+$` に合うものだけを取得し、数で比べて最大を選ぶ（`vscode-` で始まるタグは取得しない）。`latest` でないときは記載したバージョンをそのまま使用し、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、再描画するたびには取らない'
+    constraint: '`mdmark.version` が `latest` のときは GitHub の `GET /repos/shuhei1101/mdmark/tags?per_page=100` を header `Link` の `rel="next"` が無くなるまで辿って全てのページを読み込み、その名前から `^v\d+\.\d+\.\d+$` に合うものだけを取得し、数で比べて最大を選ぶ（`vscode-` で始まるタグは取得しない）。`latest` でないとき（`develop` か `v{X}.{Y}.{Z}`）は記載した値をそのまま使用し、タグ一覧を取らない。タグ一覧はプレビューを開くときとリロードしたときだけ取り、再描画するたびには取らない'
     notes: docs/external-api/API-472-1
   - item: タグ一覧の待ち
     constraint: 待ちの上限は全てのページを読み込み終えるまでの合計にかけ、超えたら要求を打ち切る。上限を超えたとき・ネットワークのエラー・200 以外（上限を超えた 403・429 を含む）・合うタグが 0 件のときは、取れなかったものとして前回のバージョンを使用する。再試行しない

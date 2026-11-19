@@ -62,7 +62,7 @@ async function readVsix(path: string, name: string): Promise<string> {
 }
 
 suite("拡張機能の配布物を作る", () => {
-  const vsix = join(EXTENSION_DIR, "mdmark-0.1.4.vsix");
+  const vsix = join(EXTENSION_DIR, "mdmark-0.2.0.vsix");
 
   teardown(async () => {
     await rm(vsix, { force: true });
@@ -75,9 +75,9 @@ suite("拡張機能の配布物を作る", () => {
     const manifest = JSON.parse(
       await readFile(join(EXTENSION_DIR, "package.json"), "utf8"),
     ) as { version: string };
-    assert.strictEqual(manifest.version, "0.1.4");
+    assert.strictEqual(manifest.version, "0.2.0");
     // 実行
-    const check = await runScript("release:check", ["vscode-v0.1.4"]);
+    const check = await runScript("release:check", ["vscode-v0.2.0"]);
     const packaged = await runScript("package");
     // 検証
     assert.strictEqual(check.code, 0);
@@ -86,7 +86,7 @@ suite("拡張機能の配布物を作る", () => {
     const packageJson = JSON.parse(
       await readVsix(vsix, "extension/package.json"),
     ) as { version: string; icon: string };
-    assert.strictEqual(packageJson.version, "0.1.4");
+    assert.strictEqual(packageJson.version, "0.2.0");
     assert.ok(files.includes(`extension/${packageJson.icon}`));
     assert.ok(!files.some((name) => name.endsWith(".svg")));
     const vsixManifest = await readVsix(vsix, "extension.vsixmanifest");
@@ -136,12 +136,12 @@ suite("拡張機能の配布物を作る", () => {
   // タグと package.json のバージョンが違うとき、バージョンの比較で止める
   test("test_error_when_version_mismatch", async () => {
     // 実行
-    const mismatch = await runScript("release:check", ["vscode-v0.2.0"]);
-    const malformed = await runScript("release:check", ["vscode-0.1.4"]);
+    const mismatch = await runScript("release:check", ["vscode-v0.3.0"]);
+    const malformed = await runScript("release:check", ["vscode-0.2.0"]);
     // 検証
     assert.strictEqual(mismatch.code, 1);
+    assert.ok(mismatch.stderr.includes("0.3.0"));
     assert.ok(mismatch.stderr.includes("0.2.0"));
-    assert.ok(mismatch.stderr.includes("0.1.4"));
     assert.strictEqual(malformed.code, 1);
   });
 });

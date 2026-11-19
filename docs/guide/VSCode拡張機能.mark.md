@@ -226,7 +226,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 
 | 設定 | 型 | 既定 | 許す値 | 説明 | 反映 |
 | --- | --- | --- | --- | --- | --- |
-| `mdmark.version` | 文字列 | `latest` | `latest` か `v{X}.{Y}.{Z}` | `latest` のときは、プレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。バージョンを記載するとそのバージョンに固定し、タグ一覧を取らない | プレビューをもう一度開くかリロードしたとき |
+| `mdmark.version` | 文字列 | `latest` | `latest`・`develop`・`v{X}.{Y}.{Z}` | `latest` のときは、プレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。`develop` のときは、タグ一覧を取らずに develop の最新の配布物を読み込む。バージョンを記載するとそのバージョンに固定し、タグ一覧を取らない | プレビューをもう一度開くかリロードしたとき |
 | `mdmark.configPath` | 文字列 | 空 | 空・相対パス・絶対パス | 拡張機能が読み込む YAML のパス。空のときは Markdown のフォルダから上へ `mdmark.config.yaml` を探して端末の設定と重ねる。値を記載したときは上へ探さず、そのファイルと端末の設定だけを重ねる。相対パスは Markdown を含むワークスペースのフォルダから（ワークスペースの外の Markdown は Markdown のフォルダから）解決する | 即時 |
 | `mdmark.preview.liveUpdate` | 真偽値 | `true` | `true`・`false` | `true` のときは Markdown を打つたびに再描画する。`false` のときは保存したときだけ再描画する | 即時 |
 | `mdmark.preview.updateDelayMs` | 整数 | `300` | 0〜5000 | 最後に打ってから再描画するまでのミリ秒。範囲の外の値は既定の値として扱う | 即時 |
@@ -244,7 +244,7 @@ PDF は、そのダイアログの送信先で「PDF に保存」を選んで作
 
 ### エラー
 
-`mdmark.version` が `v{X}.{Y}.{Z}` の構造でないと、VS Code が設定の入力欄で警告する。
+`mdmark.version` が `latest`・`develop`・`v{X}.{Y}.{Z}` のどれでもないと、VS Code が設定の入力欄で警告する。
 `mdmark.preview.updateDelayMs` が範囲の外のときは、既定の 300 として扱う。
 
 ## 設定ファイルのキー

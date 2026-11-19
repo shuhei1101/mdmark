@@ -630,6 +630,41 @@ suite("プレビューを開く", () => {
     assert.ok((await distRequests()).includes(distPath("v0.7.0", "index.js")));
   });
 
+  // mdmark.version が develop のとき、タグ一覧を取らずに @develop の配布物を読み込む
+  test("test_normal_when_develop", async () => {
+    // 準備: 前回のバージョンを v0.6.0 にする
+    await stub.setTags(["v0.6.0"]);
+    await writeFixture("guide.md", await guideMarkdown());
+    await openMarkdown("guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    await waitForRendered(lastPanel());
+    await closePreviews();
+    await setSetting("version", "develop");
+    await stub.clear();
+    await openMarkdown("guide.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証
+    const expected = [
+      distPath("develop", "index.css"),
+      distPath("develop", "index.js"),
+      distPath("develop", "map.js"),
+    ];
+    assert.deepStrictEqual(await settledDistRequests(expected), expected);
+    assert.strictEqual(await tagRequestCount(), 0);
+    // 前回のバージョンが v0.6.0 のままであることを、develop を削除してタグ一覧が応えない状態で開いて確認する
+    await closePreviews();
+    await setSetting("version", undefined);
+    await stub.setMode({ tags: "hang", dist: "ok" });
+    await stub.clear();
+    await openMarkdown("guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    await waitForRendered(lastPanel());
+    assert.ok((await distRequests()).includes(distPath("v0.6.0", "index.js")));
+  });
+
   // タグ一覧が待ちの上限まで返らないとき、前回のバージョンで描く
   test("test_normal_when_tags_unreachable", async () => {
     // 準備: 前回のバージョンを v0.6.0 にする

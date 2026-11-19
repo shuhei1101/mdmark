@@ -1,0 +1,7 @@
+confirmations:
+  - topic: VS Code の設定の画面に出る `mdmark.version` の説明と書式が違うときのエラーの文面
+    decision: 説明に「develop のときは develop の最新の配布物を読み込む。」を加え、エラーを「latest・develop・v{X}.{Y}.{Z} のどれかで記載してください」にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 0686c43138aa04b16eaf25059923f7847f8c169b
+    thread: https://github.com/shuhei1101/mdmark/pull/684#discussion_r4617001555

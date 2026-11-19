@@ -61,22 +61,25 @@ async function git(root: string, args: string[]): Promise<string> {
   return stdout;
 }
 
-/** `git tag --list v*` のうちバージョンの書式に合う最も新しいバージョンを返却する。git の作業ツリーでないとき・タグが無いときは `undefined` */
-export async function latestVersionTag(
-  root: string,
-): Promise<string | undefined> {
+/** `git tag --list v*` のうちバージョンの書式に合うタグを返却する。git の作業ツリーでないときは空 */
+export async function versionTags(root: string): Promise<string[]> {
   let output: string;
   try {
     output = await git(root, ["tag", "--list", "v*"]);
   } catch {
-    return undefined;
+    return [];
   }
   return output
     .split("\n")
     .map((line) => line.trim())
-    .filter((tag) => VERSION_PATTERN.test(tag))
-    .sort(compareVersions)
-    .at(-1);
+    .filter((tag) => VERSION_PATTERN.test(tag));
+}
+
+/** `versionTags` のうち最も新しいバージョンを返却する。git の作業ツリーでないとき・タグが無いときは `undefined` */
+export async function latestVersionTag(
+  root: string,
+): Promise<string | undefined> {
+  return (await versionTags(root)).sort(compareVersions).at(-1);
 }
 
 /** `no-steps.yaml` の 1 行の構造の誤りを、場所と文の組で返却する */

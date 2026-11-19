@@ -19,9 +19,9 @@ settings:
     type: string
     required: false
     default: latest
-    description: '`latest` のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。バージョンを記載するとそのバージョンに固定する'
+    description: '`latest` のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から `v{X}.{Y}.{Z}` の最新を選ぶ。`develop` のときはタグ一覧を取らず、develop の最新の配布物を読み込む。バージョンを記載するとそのバージョンに固定する'
     reload: reload
-    allowed: '`latest` か `v{X}.{Y}.{Z}`（`package.json` の `pattern`）'
+    allowed: '`latest`・`develop`・`v{X}.{Y}.{Z}` のどれか（`package.json` の `pattern`）'
     refs:
       - IF-472-22#constraints[バージョンの決め方]
     status: planned

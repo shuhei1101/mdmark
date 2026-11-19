@@ -116,6 +116,31 @@ test("test_latest_version_tag_when_none", async () => {
   expect(outsideRepo).toBeUndefined();
 });
 
+// バージョンの書式に合うタグだけを返却する（正常系）
+test("test_version_tags", async () => {
+  // 準備
+  const { versionTags } = await loadModule();
+  const root = await createRepo({ tag: "v0.9.0" });
+  await git(root, ["tag", "v0.10.0"]);
+  await git(root, ["tag", "vscode-v0.1.0"]);
+  await git(root, ["tag", "foo"]);
+  // 実行
+  const tags = await versionTags(root);
+  // 検証
+  expect([...tags].sort()).toEqual(["v0.10.0", "v0.9.0"]);
+});
+
+// git のリポジトリでなければ空（正常系）
+test("test_version_tags_when_not_git", async () => {
+  // 準備
+  const { versionTags } = await loadModule();
+  const notRepo = await createTempDir();
+  // 実行
+  const tags = await versionTags(notRepo);
+  // 検証
+  expect(tags).toEqual([]);
+});
+
 // スキーマを変えて next に手順があれば誤り 0 件（正常系）
 test("test_check_migrations", async () => {
   // 準備

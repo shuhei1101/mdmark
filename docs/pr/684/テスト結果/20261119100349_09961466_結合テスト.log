@@ -1,0 +1,64 @@
+$ run_url=$(gh workflow run test.yml --ref "feat/vscode/develop-version-and-keep-released-migrations" -f layer=integration -f paths="tests/integration/lib/build.test.ts tests/integration/lib/upgrade.test.ts" ...)  # TP-472-1 の TL-3 の run_runner（実行 44433690664、commit 09961466）
+
+# 前回の実行（44432874127、commit 65875236）は test_normal_when_released_migrations_kept の準備で migrations/ のフォルダに steps.yaml を置いておらず、移行の手順の点検で終了コード 1 になった。テストコードを直して回し直した（09961466）
+
+﻿2026-11-19T01:02:26.4493167Z ##[group]Run if [ -z "$PATHS" ]; then
+2026-11-19T01:02:26.4493594Z ^[[36;1mif [ -z "$PATHS" ]; then^[[0m
+2026-11-19T01:02:26.4494004Z ^[[36;1m  npm run test:integration 2>&1 | tee test.log^[[0m
+2026-11-19T01:02:26.4494379Z ^[[36;1melse^[[0m
+2026-11-19T01:02:26.4494686Z ^[[36;1m  # PATHS は空白で区切った並びのため、引用符で囲まずに分ける^[[0m
+2026-11-19T01:02:26.4495060Z ^[[36;1m  # shellcheck disable=SC2086^[[0m
+2026-11-19T01:02:26.4495492Z ^[[36;1m  npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log^[[0m
+2026-11-19T01:02:26.4496158Z ^[[36;1mfi^[[0m
+2026-11-19T01:02:26.4530058Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-19T01:02:26.4530485Z env:
+2026-11-19T01:02:26.4530800Z   LAYER: integration
+2026-11-19T01:02:26.4531285Z   PATHS: tests/integration/lib/build.test.ts tests/integration/lib/upgrade.test.ts
+2026-11-19T01:02:26.4531761Z   XDG_RUNTIME_DIR: /run/user/1001
+2026-11-19T01:02:26.4532158Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+2026-11-19T01:02:26.4532546Z   XDG_CONFIG_HOME: 
+2026-11-19T01:02:26.4532984Z ##[endgroup]
+2026-11-19T01:02:27.3347577Z 
+2026-11-19T01:02:27.3379753Z ^[[1m^[[30m^[[46m RUN ^[[49m^[[39m^[[22m ^[[36mv5.0.4 ^[[39m^[[90m/home/runner/work/mdmark/mdmark^[[39m
+2026-11-19T01:02:27.3380657Z 
+2026-11-19T01:03:09.9528314Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-node ^[[49m^[[39m tests/integration/lib/upgrade.test.ts ^[[2m(^[[22m^[[2m25 tests^[[22m^[[2m)^[[22m^[[33m 35575^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9529708Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 483^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9530276Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_settings^[[33m 476^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9530917Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_plan^[[33m 472^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9531503Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_value_asked^[[33m 478^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9532145Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_version_missing^[[33m 744^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9532737Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_up_to_date^[[33m 364^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9533365Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_destructive_with_yes^[[33m 489^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9533976Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_reapplied^[[33m 1005^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9534635Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_tag_vocabulary_dropped^[[33m 767^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9535258Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_destructive_declined^[[33m 348^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9535844Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_step_fails^[[33m 330^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9548714Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_check_fails^[[33m 526^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9563628Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_local_version_newer^[[33m 311^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9564894Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_version_format_invalid^[[33m 324^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9565867Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_answer_missing^[[33m 333^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9567088Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_diagram_drift^[[33m 390^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9568102Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_retired_diagrams_migrated^[[33m 1242^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9569137Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_retired_er_migrated^[[33m 549^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9570180Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_retired_map_options_migrated^[[33m 907^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9571201Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_document_marks_migrated^[[33m 674^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9572528Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_local_version_develop^[[33m 437^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9573558Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_cli_built_from_develop^[[33m 635^[[2mms^[[22m^[[39m
+2026-11-19T01:03:09.9574587Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_develop_build_has_unreleased_steps^[[33m 433^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1677561Z  ^[[32m✓^[[39m ^[[30m^[[45m integration-node ^[[49m^[[39m tests/integration/lib/build.test.ts ^[[2m(^[[22m^[[2m10 tests^[[22m^[[2m)^[[22m^[[33m 51158^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1679693Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 11473^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1680674Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_version_given^[[33m 9432^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1681829Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_version_format_invalid^[[33m 1362^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1682736Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_dist_file_too_large^[[33m 2288^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1683545Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_api_missing_in_baseline_browser^[[33m 7212^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1684331Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_schema_changed_without_steps^[[33m 608^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1685378Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_next_steps_left_in_release^[[33m 628^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1686465Z    ^[[33m^[[2m✓^[[22m^[[39m test_error_when_steps_invalid^[[33m 601^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1687589Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_released_migrations_kept^[[33m 11646^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1688677Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal_when_develop^[[33m 5730^[[2mms^[[22m^[[39m
+2026-11-19T01:03:25.1717344Z 
+2026-11-19T01:03:25.1727677Z ^[[2m Test Files ^[[22m ^[[1m^[[32m2 passed^[[39m^[[22m^[[90m (2)^[[39m
+2026-11-19T01:03:25.1728647Z ^[[2m      Tests ^[[22m ^[[1m^[[32m35 passed^[[39m^[[22m^[[90m (35)^[[39m
+2026-11-19T01:03:25.1729542Z ^[[2m   Start at ^[[22m 01:02:27
+2026-11-19T01:03:25.1730229Z ^[[2m   Duration ^[[22m 57.80s^[[2m (tests 99%, import 1%)^[[22m
+2026-11-19T01:03:25.1743101Z 

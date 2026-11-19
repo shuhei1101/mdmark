@@ -66,6 +66,17 @@ Markdown を開き、`Shift+Alt+D`（Mac は `Shift+Option+D`）を押す。
 `settings.json` に書き込む。
 固定したバージョンはそのまま読み込み、タグ一覧を取らない。
 
+#### develop の最新を読み込む
+
+```json
+{
+  "mdmark.version": "develop"
+}
+```
+
+`settings.json` に書き込む。
+タグ一覧を取らず、jsDelivr の `@develop` から develop の最新の配布物を読み込む。
+
 ### 描けないときに修正する
 
 配布物を読み込めないときと、バージョンを決められないときは、文書の代わりに理由と「リロード」のボタンが出る。
