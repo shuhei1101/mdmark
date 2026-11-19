@@ -1,0 +1,1 @@
+# PoC: chart・param・埋め込んだ HTML をブラウザなしで自己完結した SVG にする
