@@ -124,3 +124,83 @@ test("test_set_part_module_loader_when_replaced", async () => {
   expect(second).toHaveBeenCalledTimes(1);
   expect(first).not.toHaveBeenCalled();
 });
+
+/** 読み込んだ記録・読み込みの差し替え・関数で読み込んだ mermaid の記録を空にした、部品のモジュールを読み込む処理を返却する */
+async function freshMermaidLoader() {
+  const partModules = await freshPartModules();
+  partModules.mermaidByLoader.clear();
+  return partModules;
+}
+
+/** mermaid の `loader` が返却するモジュール */
+const MERMAID_MODULE = { default: {} };
+
+// `mermaid` の名前を受け付ける（正常系）
+test("test_set_part_module_loader_when_mermaid", async () => {
+  // 準備
+  const { setPartModuleLoader, partModuleLoaders } = await freshMermaidLoader();
+  const loader = async () => MERMAID_MODULE;
+  // 実行・検証
+  expect(() => setPartModuleLoader("mermaid", loader)).not.toThrow();
+  expect(partModuleLoaders.get("mermaid")).toBe(loader);
+});
+
+// 指定した関数を 1 回だけ呼ぶ（正常系）
+test("test_load_mermaid_by_loader", async () => {
+  // 準備
+  const { loadMermaidByLoader, setPartModuleLoader } =
+    await freshMermaidLoader();
+  const loader = vi.fn(async () => MERMAID_MODULE);
+  setPartModuleLoader("mermaid", loader);
+  // 実行
+  const first = loadMermaidByLoader();
+  const second = loadMermaidByLoader();
+  // 検証
+  expect(loader).toHaveBeenCalledTimes(1);
+  expect(second).toBe(first);
+  await expect(first).resolves.toBe(MERMAID_MODULE);
+});
+
+// 指定が無ければ undefined を返却する（正常系）
+test("test_load_mermaid_by_loader_when_not_set", async () => {
+  // 準備
+  const { loadMermaidByLoader, setPartModuleLoader } =
+    await freshMermaidLoader();
+  // 実行: 指定せずに呼ぶ
+  const before = loadMermaidByLoader();
+  // 実行: 指定してから呼ぶ
+  setPartModuleLoader("mermaid", async () => MERMAID_MODULE);
+  const after = loadMermaidByLoader();
+  // 検証
+  expect(before).toBeUndefined();
+  expect(after).toBeInstanceOf(Promise);
+  await expect(after).resolves.toBe(MERMAID_MODULE);
+});
+
+// 拒否した関数は元のエラーで reject し、呼び直さない（異常系）
+test("test_load_mermaid_by_loader_when_rejected", async () => {
+  const error = new Error("missing");
+  const rejecting = vi.fn(async (): Promise<Record<string, unknown>> => {
+    throw error;
+  });
+  const throwing = vi.fn((): Promise<Record<string, unknown>> => {
+    throw error;
+  });
+  for (const loader of [rejecting, throwing]) {
+    // 準備
+    const { loadMermaidByLoader, setPartModuleLoader } =
+      await freshMermaidLoader();
+    setPartModuleLoader("mermaid", loader);
+    // 実行
+    let first: Promise<Record<string, unknown>> | undefined;
+    let second: Promise<Record<string, unknown>> | undefined;
+    expect(() => {
+      first = loadMermaidByLoader();
+      second = loadMermaidByLoader();
+    }).not.toThrow();
+    // 検証
+    await expect(first).rejects.toBe(error);
+    await expect(second).rejects.toBe(error);
+    expect(loader).toHaveBeenCalledTimes(1);
+  }
+});

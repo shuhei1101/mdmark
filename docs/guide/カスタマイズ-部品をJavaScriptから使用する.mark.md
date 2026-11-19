@@ -203,6 +203,19 @@ mdmark.mount(document.querySelector("#doc"), { markdown, commentStore, docId, co
 文書に出ない部品は、埋めずに指定しなくてよい。
 指定しない部品を使用する文書を描くと、その部品は読み込めず、`console.error` に出てほかを描く。
 
+#### mermaid のモジュールも指定する
+
+mermaid のコードブロックを図にする文書を描くときは、mermaid のモジュールも埋め、`setPartModuleLoader` で `"mermaid"` とモジュールを返却する関数を指定する。
+指定しないと、設定の `mermaid.url`（既定は jsDelivr）へ要求する。
+
+```js
+const mermaid = await load("mermaid");
+mdmark.setPartModuleLoader("mermaid", () => Promise.resolve(mermaid));
+```
+
+埋める mermaid は、利用側のビルド（esbuild・Vite など）で npm の `mermaid` を 1 つの ES モジュールにまとめたものにする。
+jsDelivr の `mermaid.esm.min.mjs` は分割したファイルを読み込むため、そのまま埋めても読み込めない。
+
 ## 反映
 
 即時。
@@ -210,6 +223,7 @@ mdmark.mount(document.querySelector("#doc"), { markdown, commentStore, docId, co
 部品のモジュール（`dist/view.js`・`dist/comments.js`）は、初めて呼んだときに 1 回だけ読み込む。
 配布物を読み込んだ URL の隣から読み込むため、同じタグの `dist/` を配信しておく。
 `setPartModuleLoader` で指定した部品は、指定した関数で読み込む。
+`setPartModuleLoader` で指定した mermaid は、mermaid のコードブロックがある文書を初めて描くときに 1 回だけ、指定した関数で読み込む。
 
 ## 確認
 
@@ -250,6 +264,7 @@ document.querySelector("#tasks").childElementCount
 
 ブラウザの開発者ツールのネットワークのタブを開いてページを再読み込みする。
 `map.js`・`view.js`・`comments.js` への要求が無く、map・ビュー・コメントのボタンが出る。
+mermaid のモジュールも指定したときは、`mermaid.url` への要求が無く、mermaid のコードブロックが図になる。
 
 #### 型検査が通る
 

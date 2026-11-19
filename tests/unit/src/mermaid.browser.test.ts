@@ -284,6 +284,91 @@ test("test_attach_mermaid_when_embedded_without_module", async () => {
   }
 });
 
+/** 部品のモジュールの読み込みを差し替える処理を読み込み、読み込みの差し替えと関数で読み込んだ mermaid の記録を空にして返却する */
+const freshPartModules = async () => {
+  const partModules = await import("../../../src/part-modules.ts");
+  partModules.partModuleLoaders.clear();
+  partModules.mermaidByLoader.clear();
+  return partModules;
+};
+
+// 関数で指定した mermaid で描き、URL もまとめたモジュールも読み込まない（正常系）
+test("test_attach_mermaid_when_loader_set", async () => {
+  // 準備
+  const { attachMermaid, setEmbeddedMermaid } = await loadMermaid();
+  const { setPartModuleLoader } = await freshPartModules();
+  setEmbeddedMermaid({});
+  const mermaid = await importMermaid();
+  const loader = vi.fn(async () => mermaid as Record<string, unknown>);
+  setPartModuleLoader("mermaid", loader);
+  const root = createMermaidRoot();
+  const importModule = vi.fn<SyntaxImport>(importMermaid);
+  try {
+    // 実行
+    const handle = attachMermaid(attachOptions(root, { importModule }));
+    detachers.push(handle.detach);
+    await handle.ready;
+    // 検証
+    expect(
+      root.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
+    ).toHaveLength(2);
+    expect(loader).toHaveBeenCalledTimes(1);
+    expect(importModule).not.toHaveBeenCalled();
+  } finally {
+    await freshPartModules();
+  }
+});
+
+// 関数が拒否するか構造が合わないときは通知ブロックにし、URL へ要求しない（異常系）
+test("test_attach_mermaid_when_loader_fails", async () => {
+  const loaders = [
+    async (): Promise<Record<string, unknown>> => {
+      throw new Error("missing");
+    },
+    async (): Promise<Record<string, unknown>> => ({ default: {} }),
+  ];
+  for (const loader of loaders) {
+    // 準備
+    const { attachMermaid } = await loadMermaid();
+    const { setPartModuleLoader } = await freshPartModules();
+    setPartModuleLoader("mermaid", loader);
+    const root = createMermaidRoot();
+    const importModule = vi.fn<SyntaxImport>(importMermaid);
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    try {
+      // 実行
+      const handle = attachMermaid(attachOptions(root, { importModule }));
+      detachers.push(handle.detach);
+      await handle.ready;
+      // 検証
+      const blocks = [
+        ...root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]"),
+      ];
+      expect(blocks).toHaveLength(2);
+      for (const block of blocks) {
+        expect(block.hidden).toBe(false);
+        expect(
+          block.previousElementSibling?.classList.contains("mdmark-notice"),
+        ).toBe(true);
+      }
+      const logged = consoleError.mock.calls.flat();
+      expect(logged.some((value) => String(value).includes("mermaid"))).toBe(
+        true,
+      );
+      expect(importModule).not.toHaveBeenCalled();
+    } finally {
+      consoleError.mockRestore();
+      for (const detach of detachers.splice(0)) {
+        detach();
+      }
+      removeRoots();
+      await freshPartModules();
+    }
+  }
+});
+
 // 祖先の明暗の class が変わったら再描画し、変わらなければ再描画しない（正常系）
 test("test_attach_mermaid_when_scheme_changed", async () => {
   // 準備

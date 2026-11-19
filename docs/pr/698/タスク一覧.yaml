@@ -1,0 +1,94 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 分け方（`TMUX`・`TMUX_PANE` の除外と `TMUX_TMPDIR`）はテストのコードで既に動いており、未検証の機構に依存しない（実測は ドキュメント修正 で LIB-472-29 の verification として取り直す）
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 複合 UC の流れは変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を持たない変更
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を持たない変更
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    note: SC-472-22・SC-472-69 の前提（setup）の tmux サーバーの分け方を修正する
+    updated_by: planner
+    updated_at: '2026-11-19T06:58:38.833019+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を持たない変更
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: データ設計
+    status: skipped
+    reason: データの構造は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: インターフェース定義設計
+    status: done
+    note: IF-472-7・IF-472-11・IF-472-12・IF-472-14 の前提の tmux サーバーの分け方を修正する
+    updated_by: planner
+    updated_at: '2026-11-19T07:03:42.468010+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品を持たない変更
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を持たない変更
+    updated_by: planner
+    updated_at: '2026-11-19T06:55:26.745170+00:00'
+  - process: モジュール構成設計
+    status: done
+    note: MOD-472-12 の test_start_with_tmux の mock の記載を修正する
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: LIB-472-29 の verification を、手元の tmux サーバーから分けたサーバーで取り直す
+    updated_by: planner
+    updated_at: '2026-11-19T07:11:54.907111+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    note: tests/unit/src/plugin/setup/server.test.ts を -L / -S へ書き換えるかは設計で決める。書き換えない設計なら skipped にする
+    reason: server.test.ts は環境を一時の端末の変数だけで組み立て、既に設計書の分け方で動いている
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
+  - process: 実装
+    status: skipped
+    note: src は変えない見込み。テストの共通の準備（tests/integration/plugin.ts・terminal.ts）を書き換える設計なら対象にし、無ければ skipped にする
+    reason: src もテストの共通の準備も変えない分け方にした
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    note: tests/integration/plugin.ts・terminal.ts を -L / -S へ書き換えるかは設計で決める。書き換えない設計なら skipped にする
+    reason: tests/integration/plugin.ts・terminal.ts は `TMUX`・`TMUX_PANE` を除外しており、既に設計書の分け方で動いている
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
