@@ -555,6 +555,112 @@ test("test_build_legacy_marks_when_source_removed", async () => {
   ).toBe("書き込み済みのライセンス\n");
 });
 
+/** 一時フォルダを git のリポジトリにして全てのファイルを commit し、`tags` のタグを打つ */
+async function commitAndTag(root: string, tags: string[]): Promise<void> {
+  const git = (args: string[]) =>
+    execFileAsync(
+      "git",
+      [
+        "-c",
+        "user.name=test",
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "commit.gpgsign=false",
+        ...args,
+      ],
+      { cwd: root },
+    );
+  await git(["init", "--quiet"]);
+  await git(["add", "."]);
+  await git(["commit", "--quiet", "-m", "初期"]);
+  for (const tag of tags) {
+    await git(["tag", tag]);
+  }
+}
+
+/** 一時フォルダに相対パスと本文の組のファイルを書き込む */
+async function writeTree(
+  root: string,
+  files: Record<string, string>,
+): Promise<void> {
+  for (const [path, text] of Object.entries(files)) {
+    await mkdir(join(root, path, ".."), { recursive: true });
+    await writeFile(join(root, path), text);
+  }
+}
+
+// 出したバージョンのフォルダは書き換えない（正常系）
+test("test_build_legacy_marks_when_released", async () => {
+  // 準備
+  const { buildLegacyMarks } = await loadBuild();
+  const root = await createRoot("v0.3.0\n");
+  await writeTree(root, {
+    "src/render/legacy-marks.ts":
+      'export const rewriteLegacyMarks = (markdown: string): string => markdown + "!";\n',
+    "migrations/v0.3.0/marker-json.mjs": "\n",
+    "migrations/v0.3.0/legacy-marks.js": "// 出したときの内容\n",
+    "migrations/v0.3.0/THIRD_PARTY_LICENSES.txt": "出したときのライセンス\n",
+    "migrations/next/marker-json.mjs": "\n",
+  });
+  await commitAndTag(root, ["v0.3.0"]);
+  // 実行
+  const written = await buildLegacyMarks("v0.3.0", root);
+  // 検証
+  expect(written).toEqual(["migrations/next/legacy-marks.js"]);
+  expect(
+    await readFile(
+      join(root, "migrations", "v0.3.0", "legacy-marks.js"),
+      "utf8",
+    ),
+  ).toBe("// 出したときの内容\n");
+  expect(
+    await readFile(
+      join(root, "migrations", "v0.3.0", "THIRD_PARTY_LICENSES.txt"),
+      "utf8",
+    ),
+  ).toBe("出したときのライセンス\n");
+});
+
+// タグがあるフォルダとスクリプトを持たないフォルダを除く（正常系）
+test("test_unreleased_migration_folders", async () => {
+  // 準備
+  const { unreleasedMigrationFolders } = await loadBuild();
+  const root = await createRoot("v0.4.0\n");
+  await writeTree(root, {
+    "migrations/v0.3.0/marker-json.mjs": "\n",
+    "migrations/v0.4.0/marker-json.mjs": "\n",
+    "migrations/next/marker-json.mjs": "\n",
+    "migrations/v0.1.0/steps.yaml": "steps: []\n",
+  });
+  await commitAndTag(root, ["v0.3.0"]);
+  // 実行
+  const folders = await unreleasedMigrationFolders({
+    root,
+    scripts: ["marker-json.mjs"],
+  });
+  // 検証
+  expect(folders).toEqual(["migrations/next", "migrations/v0.4.0"]);
+});
+
+// git の作業ツリーでなければスクリプトを持つ全てのフォルダを返却する（正常系）
+test("test_unreleased_migration_folders_when_not_git", async () => {
+  // 準備
+  const { unreleasedMigrationFolders } = await loadBuild();
+  const root = await createRoot("v0.3.0\n");
+  await writeTree(root, {
+    "migrations/v0.3.0/marker-json.mjs": "\n",
+    "migrations/next/marker-json.mjs": "\n",
+  });
+  // 実行
+  const folders = await unreleasedMigrationFolders({
+    root,
+    scripts: ["marker-json.mjs"],
+  });
+  // 検証
+  expect(folders).toEqual(["migrations/next", "migrations/v0.3.0"]);
+});
+
 /** 廃止した図の書き換えの処理と、拡張・設定の読み込みのソース（`convertRetiredDiagrams` は `!`、`convertRetiredEr` は `?` を付ける） */
 const retiredSources = (): Record<string, string> => ({
   "src/map/convert.ts": [
@@ -640,6 +746,37 @@ test("test_build_retired_diagrams_when_er", async () => {
     };
     expect(module.convertRetiredEr({ markdown: "a" }).markdown).toBe("a?");
   }
+});
+
+// 出したバージョンのフォルダは書き換えない（正常系）
+test("test_build_retired_diagrams_when_released", async () => {
+  // 準備
+  const { buildRetiredDiagrams } = await loadBuild();
+  const root = await createRoot("v0.13.0\n");
+  await writeTree(root, {
+    ...retiredSources(),
+    "migrations/v0.13.0/retired-diagrams.mjs": "\n",
+    "migrations/v0.13.0/retired-diagrams.js": "// 出したときの内容\n",
+    "migrations/v0.13.0/THIRD_PARTY_LICENSES.txt": "出したときのライセンス\n",
+    "migrations/next/retired-diagrams.mjs": "\n",
+  });
+  await commitAndTag(root, ["v0.13.0"]);
+  // 実行
+  const written = await buildRetiredDiagrams("v0.13.0", root);
+  // 検証
+  expect(written).toEqual(["migrations/next/retired-diagrams.js"]);
+  expect(
+    await readFile(
+      join(root, "migrations", "v0.13.0", "retired-diagrams.js"),
+      "utf8",
+    ),
+  ).toBe("// 出したときの内容\n");
+  expect(
+    await readFile(
+      join(root, "migrations", "v0.13.0", "THIRD_PARTY_LICENSES.txt"),
+      "utf8",
+    ),
+  ).toBe("出したときのライセンス\n");
 });
 
 // CLI にまとめたパッケージのライセンスも記載する（正常系）

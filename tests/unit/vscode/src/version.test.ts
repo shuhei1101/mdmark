@@ -202,6 +202,27 @@ test("test_decide_version_when_pinned", async () => {
   expect(fetchLatest).not.toHaveBeenCalled();
 });
 
+// develop はそのまま使用し、タグ一覧を取らない（正常系）
+test("test_decide_version_when_develop", async () => {
+  // 準備
+  const { decideVersion } = await loadVersion();
+  const fetchLatest = vi.fn(async () => "v0.10.0");
+  // 実行
+  const decision = await decideVersion({
+    setting: "develop",
+    lastVersion: "v0.6.0",
+    fetchLatest,
+    log: createLog(),
+  });
+  // 検証
+  expect(decision).toEqual({
+    kind: "decided",
+    version: "develop",
+    fetched: false,
+  });
+  expect(fetchLatest).not.toHaveBeenCalled();
+});
+
 // タグ一覧を取れなければ前回のバージョンを使用する（正常系）
 test("test_decide_version_when_fetch_failed", async () => {
   // 準備
