@@ -22,13 +22,22 @@ afterEach(() => {
 });
 
 /** クラス図を描いて付ける */
-async function setUp(mermaid = CLASS, data = CLASS_DATA) {
+async function setUp(
+  mermaid = CLASS,
+  data = CLASS_DATA,
+  resolveIdLink?: (href: string) => string | undefined,
+) {
   const { attachMapClass } = await loadClassView();
   const { parseMapArgs } = await loadSpec();
   const { resolveConfig } = await loadConfig();
   const root = createRootFromHtml(renderDoc(mapRange({ mermaid, data })).html);
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
-  handles.push(attachMapClass(range, resolveConfig({}), parseMapArgs("").args));
+  handles.push(
+    attachMapClass(range, resolveConfig({}), {
+      args: parseMapArgs("").args,
+      resolveIdLink,
+    }),
+  );
   return root;
 }
 
@@ -177,6 +186,37 @@ test("test_attach_map_class_when_linked", async () => {
     expect(nodeOf(root, id).classList.contains("has-link")).toBe(false);
     expect(nodeOf(root, id).querySelector("a")).toBeNull();
   }
+});
+
+test("test_attach_map_class_when_id_link", async () => {
+  // 準備
+  const source = [
+    "classDiagram",
+    "  class 受付",
+    "  class 台帳",
+    '  click 受付 href "id:SC-1"',
+    '  link 台帳 "id:unknown"',
+    "",
+  ].join("\n");
+  const resolveIdLink = (href: string) =>
+    href.startsWith("id:SC-")
+      ? `https://docs.example.com/${href.slice("id:".length)}`
+      : undefined;
+  // 実行
+  const root = await setUp(
+    source,
+    JSON.stringify({ version: 1 }),
+    resolveIdLink,
+  );
+  // 検証
+  expect(nodeOf(root, "受付").classList.contains("has-link")).toBe(true);
+  expect(
+    nodeOf(root, "受付")
+      .querySelector("a.mdmark-diagram-node-link")
+      ?.getAttribute("href"),
+  ).toBe("https://docs.example.com/SC-1");
+  expect(nodeOf(root, "台帳").classList.contains("has-link")).toBe(false);
+  expect(nodeOf(root, "台帳").querySelector("a")).toBeNull();
 });
 
 /** 矩形どうしが重なるか */

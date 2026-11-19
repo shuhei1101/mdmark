@@ -27,7 +27,9 @@ async function setUp() {
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
   handles.push(
-    attachMapArchitecture(range, resolveConfig({}), parseMapArgs("").args),
+    attachMapArchitecture(range, resolveConfig({}), {
+      args: parseMapArgs("").args,
+    }),
   );
   return root;
 }

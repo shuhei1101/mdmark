@@ -40,7 +40,9 @@ async function setUp(args?: string, mermaid = C4, data = C4_DATA) {
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
   handles.push(
-    attachMapC4(range, resolveConfig({}), parseMapArgs(args ?? "").args),
+    attachMapC4(range, resolveConfig({}), {
+      args: parseMapArgs(args ?? "").args,
+    }),
   );
   return root;
 }
