@@ -9,3 +9,8 @@ confirmations:
     decided_by: reply
     approver: shuhei1101
     thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633098912
+  - topic: 既存の文書の言語 markdown・md のコードブロックの見え方
+    decision: このリポジトリの docs/guide/ の書き方の例にだけ、既定を元の Markdown にする code のマーカーを追加する。利用者の文書の移行の手順は追加しない（案 B。推奨案 C ではない）
+    decided_by: reply
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633530979
