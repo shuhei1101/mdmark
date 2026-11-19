@@ -89,6 +89,12 @@ export const HeadsStuck: Story = {
   args: {},
 };
 
+export const ParticipantHovered: Story = {
+  name: "ParticipantHovered",
+  parameters: { server: { id: "map-sequence" } },
+  args: {},
+};
+
 export const Plain: Story = {
   name: "Plain",
   parameters: { server: { id: "map-sequence" } },
