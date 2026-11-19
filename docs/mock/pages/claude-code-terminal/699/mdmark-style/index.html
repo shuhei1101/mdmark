@@ -75,9 +75,9 @@
           </ul>
           <p>&lt;!-- table: {"kind": "data"} --&gt;</p>
           <table class="ms-table">
-            <tr><th>名前</th><th>種類</th></tr>
-            <tr><td>WS</td><td>用語</td></tr>
-            <tr><td>WSL</td><td>Windows の機能</td></tr>
+            <tr><th>名前</th><th>種類</th><th>説明</th></tr>
+            <tr><td>WS</td><td>用語</td><td>話し合いの記録を配置するフォルダで、mdmark.config.yaml の用語集に登録されている</td></tr>
+            <tr><td>WSL</td><td>Windows の機能</td><td>Windows の上で Linux を動かす機能で、用語集には登録されていない</td></tr>
           </table>
           <p>&gt; [!NOTE]<br>&gt; 用語は mdmark.config.yaml から取ります</p>
           <pre class="ms-code">const answer = 42</pre>
@@ -99,19 +99,28 @@
           </ul>
           <!-- 表の部品をオフにした場面: Claude Code の標準の表（マーカーの行は出さない） -->
           <table class="ms-table" data-scene="table-off">
-            <tr><th>名前</th><th>種類</th></tr>
-            <tr><td>WS</td><td>用語</td></tr>
-            <tr><td>WSL</td><td>Windows の機能</td></tr>
+            <tr><th>名前</th><th>種類</th><th>説明</th></tr>
+            <tr><td>WS</td><td>用語</td><td>話し合いの記録を配置するフォルダで、mdmark.config.yaml の用語集に登録されている</td></tr>
+            <tr><td>WSL</td><td>Windows の機能</td><td>Windows の上で Linux を動かす機能で、用語集には登録されていない</td></tr>
           </table>
           <table class="ms-table is-data" data-scene="styled hover glossary-error">
-            <tr><th>名前</th><th>種類</th></tr>
-            <tr><td>WS</td><td>用語</td></tr>
-            <tr><td>WSL</td><td>Windows の機能</td></tr>
+            <tr><th>名前</th><th>種類</th><th>説明</th></tr>
+            <tr><td>WS</td><td>用語</td><td>話し合いの記録を配置するフォルダで、mdmark.config.yaml の用語集に登録されている</td></tr>
+            <tr><td>WSL</td><td>Windows の機能</td><td>Windows の上で Linux を動かす機能で、用語集には登録されていない</td></tr>
           </table>
           <div class="ms-callout is-note" role="note">
             <p><span class="ms-callout-label">NOTE</span>用語は mdmark.config.yaml から取ります</p>
           </div>
-          <pre class="ms-code"><span class="kw">const</span> answer = <span class="num">42</span></pre>
+          <!-- コードブロック: 背景の面と言語のラベルで本文と分ける -->
+          <div class="ms-code-block">
+            <span class="ms-code-lang">ts</span>
+            <pre class="ms-code"><span class="kw">const</span> answer = <span class="num">42</span></pre>
+          </div>
+          <!-- 開閉の範囲（details の範囲・セクションの開閉・注意書きの closed）: 押すと開く Button -->
+          <details class="ms-fold">
+            <summary>[ <span class="ms-fold-icon" aria-hidden="true"></span> 用語を読み込む場所 ]</summary>
+            <p>mdmark.config.yaml の index・aliases と、用語集の表から読み込みます。</p>
+          </details>
           <p class="ms-footnotes" data-scene="styled hover table-off">[1] WS: 話し合いの記録を配置するフォルダ<br>[2] mdmark: Markdown 文書の表示を各アプリで共通に使用するライブラリ</p>
         </div>
       </div>

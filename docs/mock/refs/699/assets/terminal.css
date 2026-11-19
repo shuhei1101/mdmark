@@ -23,6 +23,7 @@
   --term-note: #7aa2ff;
   --term-warning: #fbbf24;
   --term-term-line: #c4a7ff;
+  --term-code-bg: #2a2d33;
 
   font-family: ui-monospace, "Cascadia Mono", "Consolas", "Menlo", monospace;
   font-size: 14px;
@@ -47,6 +48,7 @@ body.vscode-light .term {
   --term-note: #1d4ed8;
   --term-warning: #b45309;
   --term-term-line: #6d28d9;
+  --term-code-bg: #eef1f5;
 }
 
 .term p,
@@ -278,4 +280,57 @@ body.vscode-light .ms-code .num {
 /* 場面の切り替え（hidden）を、端末の外の見本にも効かせる */
 .term-debug[hidden] {
   display: none;
+}
+
+/* コードブロック: 本文と分ける背景の面と、右上の言語のラベル（mod では Box の backgroundColor と Text） */
+.ms-code-block {
+  position: relative;
+  margin-block: 0.5lh;
+  background: var(--term-code-bg);
+}
+
+.ms-code-block .ms-code {
+  margin: 0;
+  padding: 0.5lh 2ch;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.ms-code-lang {
+  position: absolute;
+  top: 0;
+  right: 1ch;
+  color: var(--term-dim);
+}
+
+/* 開閉の範囲: 端末の Button の [ ▸ ラベル ] の見た目。押すと開き、▾ に変わる */
+.ms-fold {
+  margin-block: 0.5lh;
+}
+
+.ms-fold summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--term-link);
+}
+
+.ms-fold summary::-webkit-details-marker {
+  display: none;
+}
+
+.ms-fold-icon::before {
+  content: "▸";
+}
+
+.ms-fold[open] .ms-fold-icon::before {
+  content: "▾";
+}
+
+.ms-fold > p {
+  padding-left: 2ch;
+}
+
+/* 狭い端末の表: 列の幅を端末の幅に収め、セルの中で折り返す */
+.ms-table td {
+  white-space: normal;
 }
