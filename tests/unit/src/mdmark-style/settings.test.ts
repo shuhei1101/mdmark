@@ -78,6 +78,16 @@ test("test_merge_settings_when_project_matched", async () => {
   expect(settings.parts.callout).toBe(true);
   expect(settings.parts.fold).toBe(true);
   expect(settings.parts.terms).toBe(true);
+  for (const name of [
+    "row_detail",
+    "steps",
+    "tree",
+    "inline",
+    "stack",
+    "figure",
+  ] as const) {
+    expect(settings.parts[name]).toBe(true);
+  }
 });
 
 // 相対パスを解決する（正常系）

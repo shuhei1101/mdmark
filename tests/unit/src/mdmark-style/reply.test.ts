@@ -29,6 +29,12 @@ const ALL_PARTS = {
   terms: true,
   hover_card: true,
   footnote: true,
+  row_detail: true,
+  steps: true,
+  tree: true,
+  inline: true,
+  stack: true,
+  figure: true,
 };
 
 /** `next(e)` の代わりに返却する、元の描画の参照 */
@@ -371,4 +377,131 @@ test("test_count_tree_when_deep", async () => {
   }
   // 実行・検証
   expect(countTree(node).over).toBe(true);
+});
+
+/** 2 列の表のブロック */
+const tableOf = (
+  rows: string[][],
+  extra: Record<string, unknown> = {},
+) => ({
+  kind: "table" as const,
+  line: 1,
+  table: {
+    kind: "default" as const,
+    header: ["名前", "値"],
+    rows,
+    align: ["left" as const, "left" as const],
+    ...extra,
+  },
+});
+
+// 表の番号と行の詳細の Button（正常系）
+test("test_render_block_table_when_figure_and_detail", async () => {
+  // 準備
+  const { renderBlock } = await loadReply();
+  const $ = createFakeEngine();
+  const block = tableOf(
+    [
+      ["りんご", "10"],
+      ["みかん", "2"],
+    ],
+    {
+      figure: 1,
+      details: [
+        {
+          row: 0,
+          body: [
+            { kind: "markdown" as const, line: 6, markdown: "青森県から届く" },
+          ],
+        },
+      ],
+    },
+  );
+  // 実行
+  const node = renderBlock({ block, context: contextOf($) });
+  // 検証
+  const text = textOf(node);
+  expect(text).toContain("表 1");
+  expect(text.indexOf("表 1")).toBeLessThan(text.indexOf("名前"));
+  const [button] = findNodes(
+    node,
+    (n) => n.type === "Button" && textOf(n).includes("[ ▸ ]"),
+  );
+  expect(button).toBeDefined();
+  const toggleAt = text.indexOf("[ ▸ ]");
+  expect(toggleAt).toBeGreaterThan(text.indexOf("名前"));
+  expect(toggleAt).toBeLessThan(text.indexOf("りんご"));
+  expect(text).not.toContain("青森県から届く");
+});
+
+// 行内の記法を含む段落は Text で描く（正常系）
+test("test_render_block_when_inline_marks", async () => {
+  // 準備
+  const { renderBlock } = await loadReply();
+  const { styleColor } = await loadTokens();
+  const $ = createFakeEngine();
+  const block = {
+    kind: "markdown" as const,
+    line: 1,
+    markdown: "状態は `badge:green:完了` です",
+  };
+  // 実行
+  const node = renderBlock({ block, context: contextOf($) });
+  // 検証
+  expect(findNodes(node, (n) => n.type === "Markdown")).toEqual([]);
+  const badges = findNodes(
+    node,
+    (n) =>
+      n.type === "Text" &&
+      n.props.backgroundColor ===
+        styleColor({ name: "accentGreenBg", theme: "dark" }),
+  );
+  expect(badges.map((badge) => textOf(badge).trim())).toEqual(["完了"]);
+  expect(textOf(node)).not.toContain("badge:");
+});
+
+// 表のセルと見出しの行内の記法を描く（正常系）
+test("test_render_block_table_when_inline_marks", async () => {
+  // 準備
+  const { renderBlock } = await loadReply();
+  const { styleColor } = await loadTokens();
+  const $ = createFakeEngine();
+  const borders = (node: unknown) =>
+    findNodes(
+      node as FakeNode,
+      (n) => n.type === "Text" && textOf(n).includes("─"),
+    ).map(textOf);
+  // 実行
+  const node = renderBlock({
+    block: tableOf([["a", "`badge:green:完了`"]]),
+    context: contextOf($),
+  });
+  const plain = renderBlock({
+    block: tableOf([["a", "abcdef"]]),
+    context: contextOf($),
+  });
+  const heading = renderBlock({
+    block: {
+      kind: "heading" as const,
+      line: 1,
+      heading: { level: 2 as const, text: "`kbd:Ctrl+C` で止める" },
+    },
+    context: contextOf($),
+  });
+  // 検証
+  const badges = findNodes(
+    node,
+    (n) =>
+      n.type === "Text" &&
+      n.props.backgroundColor ===
+        styleColor({ name: "accentGreenBg", theme: "dark" }),
+  );
+  expect(badges.map(textOf)).toEqual([" 完了 "]);
+  expect(textOf(node)).not.toContain("badge:");
+  expect(borders(node)).toEqual(borders(plain));
+  const keys = findNodes(
+    heading,
+    (n) => n.type === "Text" && n.props.bold === true && textOf(n) === "[Ctrl]",
+  );
+  expect(keys).toHaveLength(1);
 });

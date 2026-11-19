@@ -82,3 +82,14 @@ test("test_style_colors_match_css", async () => {
     expect([color.css, color.dark]).toEqual([color.css, theme.dark(color.css)]);
   }
 });
+
+// 色の名前の色（正常系）
+test("test_style_color_accent", async () => {
+  // 準備
+  const { styleColor } = await loadTokens();
+  // 実行・検証
+  expect(styleColor({ name: "accentGreenBg", theme: "light" })).toBe(
+    "#cbf2d2",
+  );
+  expect(styleColor({ name: "accentGreenBg", theme: "dark" })).toBe("#1a3821");
+});
