@@ -23,15 +23,21 @@ docs:
   - page: docs/guide/VSCode拡張機能.mark.md
     new: false
     change: '`## 設定` の表の `mdmark.version` に記載できる値 `develop` を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T00:30:59.132965+00:00'
   - page: docs/guide/VSCodeで確認する-プレビューを開く.md
     new: false
     change: バージョンの選び方に `develop` を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T00:30:59.132965+00:00'
   - page: vscode/README.md
     new: false
     change: 設定の表の `mdmark.version` の説明に `develop` を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T00:30:59.132965+00:00'
 scope_out:
   - item: jsDelivr の @develop が develop の push の直後に古い配布物を返す間（jsDelivr のブランチの参照のキャッシュ）を縮める仕組み
     reason: '要望は @develop を読み込めるようにすることで、@develop の更新の速さは #621 が決めた jsDelivr の扱いに従う。拡張機能だけで変えるものではない'
