@@ -7,7 +7,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-99.yaml
     impact: changed
-    detail: セッションの開始に渡すマーカーの記載方法の説明に、新しく描く部品のマーカーの書き方を加える（加える範囲は単一ユースケース設計で決める）
+    detail: セッションの開始に追加するマーカーの記載方法の説明に、ステップ・ファイルツリー・バッジの記載方法を加える
     depends_on:
       - docs/scenario/SC-472-97.yaml
   - kind: single
