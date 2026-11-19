@@ -1,0 +1,38 @@
+/*
+ * #707 のモック: map の図で薄くした要素の文字のコントラストを 4.5:1 以上に保つ薄め方の案。
+ * 案ごとの規則は、案の見出しの下の囲み（.dim-a / .dim-b）の中にだけ適用する。
+ * 囲みの外は #445・#531・#596 の今の薄め方（opacity 0.25・0.4）のまま。
+ */
+
+/* 案 A: opacity を残し、薄くした要素の文字（--mdmark-color-muted）が背景に対して 4.5:1 以上になる 0.8 まで上げる */
+.dim-a .map-figure .map-dim,
+.dim-a .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline):not(.map-keep),
+.dim-a .map-figure .map-faded,
+.dim-a .map-figure :is(.er-card, .er-label, .er-self, .cac-end).map-dim {
+  opacity: 0.8;
+}
+
+/*
+ * 案 B: 文字を持つ要素（ノード・グループ・線のラベル・多重度・関連のラベル）は opacity で薄くせず、
+ * 文字を --mdmark-color-muted にし、枠と面の色を背景の色と混ぜて薄く見せる。
+ * 文字を持たない線・ライフライン・関係の端の形状は、今の opacity 0.25 のまま薄くする。
+ */
+.dim-b .map-figure :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group, .er-card).map-dim,
+.dim-b .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep),
+.dim-b .map-figure :is(.mdmark-diagram-node, .map-group).map-faded {
+  opacity: 1;
+  color: var(--mdmark-color-muted);
+  border-color: color-mix(in srgb, var(--map-ink, var(--node-color, var(--mdmark-color-border))) 35%, var(--mdmark-color-bg));
+  background: color-mix(in srgb, var(--map-fill, var(--mdmark-color-bg-opaque)) 30%, var(--mdmark-color-bg-opaque));
+}
+/* 中の名前・種類の行・説明の文字も、薄くした要素の文字の色にそろえる */
+.dim-b .map-figure :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group, .er-card).map-dim *,
+.dim-b .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) *,
+.dim-b .map-figure :is(.mdmark-diagram-node, .map-group).map-faded * {
+  color: var(--mdmark-color-muted);
+}
+/* SVG の文字（ER 図の関連のラベル）は塗りの色を変える */
+.dim-b .map-figure .er-label.map-dim {
+  opacity: 1;
+  fill: var(--mdmark-color-muted);
+}
