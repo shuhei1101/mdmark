@@ -2,12 +2,17 @@
    端末の等幅の文字の格子を、1 文字 = 1ch・1 行 = 1lh で再現する。
    色・罫線の色は採用スタイルの変数（mdmark の共通スタイル）から取る。 */
 
+/* 場面の切り替え（preview.js が付ける hidden）を、行の display より優先する */
+.term [hidden] {
+  display: none !important;
+}
+
 /* ---- 端末の枠 ---- */
 .term {
   /* 端末の配色: 地は暗い面、文字は明るい灰。明るい端末のテーマのときは反転する */
   --term-bg: #1e1e1e;
   --term-fg: #d4d4d4;
-  --term-dim: #8a8a8a;
+  --term-dim: #a8a8a8;
   --term-user-band: #373737;
   --term-card-bg: #2b2b2b;
   --term-rule: #5a5a5a;
@@ -27,13 +32,12 @@
   border-radius: 8px;
   padding: 1lh 2ch;
   max-width: 100ch;
-  overflow-x: auto;
 }
 
 body.vscode-light .term {
   --term-bg: #fafafa;
   --term-fg: #1f2328;
-  --term-dim: #6e7781;
+  --term-dim: #57606a;
   --term-user-band: #e8e8e8;
   --term-card-bg: #ffffff;
   --term-rule: #b0b7c0;
@@ -49,6 +53,16 @@ body.vscode-light .term {
 .term ul,
 .term pre {
   margin: 0;
+}
+
+/* 画面の題: 読み上げにだけ渡す（見た目は端末の画面のまま） */
+.term-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* ---- 行の種類 ---- */
@@ -68,6 +82,7 @@ body.vscode-light .term {
 .term-body {
   min-width: 0;
   flex: 1;
+  overflow-wrap: anywhere;
 }
 
 /* 自分の発言: 標準の描画と同じ背景の帯 */
@@ -181,22 +196,27 @@ body.vscode-light .ms-code .num {
 }
 
 /* ---- 用語のマーカー ---- */
-.ms-term {
+/* カードの起点は用語ではなく行（段落）の頭。行のすぐ下に出し、端末の右端を越えない */
+.term p {
   position: relative;
+}
+
+.ms-term {
   text-decoration: underline;
   text-decoration-color: var(--term-term-line);
   text-underline-offset: 0.2em;
 }
 
-/* hover で開くカード: 背景で後ろの行を隠し、いちばん手前に出す。下の行へ出すときは 1 行下から */
+/* hover で開くカード: 背景で後ろの行を隠し、いちばん手前に出す */
 .ms-term-card {
   position: absolute;
-  top: 1lh;
+  top: 100%;
   left: 0;
   z-index: 1;
   display: none;
   width: max-content;
-  max-width: 48ch;
+  /* カードの幅は 48 桁までで、行の幅（端末の幅）を超えない */
+  max-width: min(48ch, 100%);
   padding: 0 1ch;
   background: var(--term-card-bg);
   border: 1px solid var(--term-rule);
@@ -240,4 +260,5 @@ body.vscode-light .ms-code .num {
   padding: 0.5lh 1ch;
   border: 1px dashed var(--term-rule);
   color: var(--term-dim);
+  overflow-wrap: anywhere;
 }
