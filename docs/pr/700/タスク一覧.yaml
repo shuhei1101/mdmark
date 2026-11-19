@@ -63,8 +63,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T13:27:45.798314+00:00'
   - process: ドキュメント修正
-    status: todo
-    note: docs/guide の CLI・MCP・API・用語集・書き出すの手順・コアコンセプト
+    status: done
+    note: 実装で中身が定まる 7 行（CLI・MCP・API・用語集・書き出す手順・Claude Code・コアコンセプト）は実装の工程の『関連ドキュメントの修正』で修正する
+    updated_by: planner
+    updated_at: '2026-11-19T13:37:28.011922+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
