@@ -93,7 +93,7 @@ functions:
     container: src/mdmark-style/user-message.tsx
     usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
     summary: 1 行の文字列を、用語ごとに keyed Box に分けた Text の並びにする。用語には下線・脚注の番号・カードを付ける
-    description: '返答の段落・箇条書き・注意書きもこの関数で描く。太字・行内のコード・リンクは Text の属性で描く。カードは `position: "absolute"`・`top: 1`・`left: 0`・`display: "none"`・`hover: { display: "flex" }` の Box で、罫線 `round` と背景色を持ち、幅は `CARD_MAX_WIDTH` と行の幅の短い方'
+    description: '返答の段落・箇条書き・注意書きもこの関数で描く。太字・行内のコード・リンクは Text の属性で描く。返答で `parts.inline` が真のときは行内の記法を分け、バッジは前後に 1 桁の空白を付けた色の名前の `backgroundColor` と `color`（色が無いときは `surface` と `text`）、文字の色は色の名前の `color` の太字、蛍光ペンは色の名前の `backgroundColor`、キーは `[キー]` の太字と `dimColor` の `+` の Text で描く。カードは `position: "absolute"`・`top: 1`・`left: 0`・`display: "none"`・`hover: { display: "flex" }` の Box で、罫線 `round` と背景色を持ち、幅は `CARD_MAX_WIDTH` と行の幅の短い方'
     scope: public
     is_async: false
     args:
@@ -121,8 +121,15 @@ functions:
         condition: '`parts.hover_card` が偽'
         mock: '`h`'
         expected: '下線と `[1]` はあり、`position: "absolute"` の Box が無い'
+      - name: test_render_term_text_when_inline_marks
+        case: 正常
+        summary: 行内の記法を描く
+        condition: 行に行内のコード `badge:green:完了`・行内のコード `badge:v1`・`==決め手==`・行内のコード `kbd:Ctrl+C`、`parts.inline` が真、`theme` が `dark`
+        mock: '`h`'
+        expected: '` 完了 ` が `accentGreenBg` の背景色と `accentGreenText` の文字色、` v1 ` が `surface` と `text`、`決め手` が `accentYellowBg` の背景色、`[Ctrl]`・`[C]` が太字で間の `+` が `dimColor` の Text'
     callees:
       - MOD-472-359#functions[styleColor]
+      - MOD-472-366#functions[splitInlineMarks]
     refs:
       - IF-472-46#constraints[カード]
       - IF-472-46#constraints[脚注]

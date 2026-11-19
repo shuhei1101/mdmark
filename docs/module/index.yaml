@@ -814,6 +814,10 @@ items:
   summary: ClaudeCodeプラグイン / mdmark-style / user-message.tsx
 - page: MOD-472-358.ts.yaml
   summary: ClaudeCodeプラグイン / mdmark-style / marker-guide.ts
+- page: MOD-472-366.ts.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / inline-marks.ts
+- page: MOD-472-367.tsx.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / document-parts.tsx
 - page: MOD-472-359.ts.yaml
   summary: ライブラリ本体 / 記法の共通 / style-tokens.logic.ts
 - page: MOD-472-360.ts.yaml

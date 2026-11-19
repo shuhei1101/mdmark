@@ -28,7 +28,7 @@ constants:
     container: src/mdmark-style/settings.ts
     usecase: 共通
     summary: 設定ファイルが無いときと、記載の無いキーに使う値
-    value: '{ enabled: true, targets: ["assistant", "user"], parts: { table: true, heading: true, callout: true, code: true, fold: true, terms: true, hover_card: true, footnote: true }, glossary: undefined, inject_marker_guide: true }'
+    value: '{ enabled: true, targets: ["assistant", "user"], parts: { table: true, heading: true, callout: true, code: true, fold: true, terms: true, hover_card: true, footnote: true, row_detail: true, steps: true, tree: true, inline: true, stack: true, figure: true }, glossary: undefined, inject_marker_guide: true }'
     refs:
       - CFG-472-4#
     status: planned
@@ -46,7 +46,7 @@ data_models:
         type: ("assistant" | "user")[]
         description: 描き換える場所
       - name: parts
-        type: Record<"table" | "heading" | "callout" | "code" | "fold" | "terms" | "hover_card" | "footnote", boolean>
+        type: Record<"table" | "heading" | "callout" | "code" | "fold" | "terms" | "hover_card" | "footnote" | "row_detail" | "steps" | "tree" | "inline" | "stack" | "figure", boolean>
         description: 部品ごとのオン・オフ
       - name: glossary
         type: string | undefined
