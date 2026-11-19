@@ -25,6 +25,7 @@
 | 開閉の範囲 | details の範囲・セクションの開閉・注意書きの `closed` を、押すと開閉の状態を切り替えて描き直す Button で描く | Button の押下と描き直しは PoC 結果の「開閉の範囲」の行で確認済み |
 | 描けない部品 | 図（mermaid・map）・埋め込んだ HTML は描き換えない | - |
 | 既存のプラグイン mdmark | 変えない | - |
+| 配布物のワークフロー | 実装の工程で `.github/workflows/develop-dist.yml` の `git add --all dist plugin migrations` に `mdmark-style` を加え、develop への push でビルドした `mdmark-style/hooks/mod/mod.js` を commit する | アーキテクチャ図 ARCH-472-1 の `mdmark-style/`・`.github/workflows/` の行 |
 
 ## mdmark の機能との対応
 
