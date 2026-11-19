@@ -22,7 +22,7 @@ scenarios:
         description: ターミナル版の Claude Code を tmux の手元と別のソケットで起動し、ビルドしたこのリポジトリの mdmark-style を `--plugin-dir` で読み込む。`MDMARK_STYLE_CONFIG` で一時フォルダの設定ファイルを指す
         notes: 設定ファイルの `global.glossary` に一時フォルダの `mdmark.config.yaml` を指定する
       - name: 用語を持つ mdmark.config.yaml
-        description: 索引の `terms[]` に用語 1 つ、`aliases` に用語 1 つを持つ `mdmark.config.yaml`
+        description: 索引の `terms[]` に用語 `WS`、`aliases` に用語 1 つ、用語集の表（`<!-- glossary -->` のマーカーを付けた表を持つ Markdown）に用語 1 つを持つ `mdmark.config.yaml`。発言と返答には、`WS` を先頭に含む別の単語 `WSL` も出す
       - name: Mock
         description: なし（実際の Claude Code とモデルで、2 つの用語を含む発言をし、同じ用語を含む固定の返答をさせる）
     flow: |-
@@ -44,10 +44,10 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 発言と返答の、索引の用語とエイリアスの単語に下線が付く
+      - 発言と返答の、索引の `terms[]`・`aliases`・用語集の表のそれぞれから取った 3 つの単語に下線が付く
       - 用語にポインターを乗せると用語の名前と意味のカードが出て、範囲外へ動かすと消える
       - 発言と返答の末尾に、出た用語ごとの番号つきの脚注（名前と意味）が出る
-      - 用語の照合は、mdmark のライブラリ本体の用語の集め方・照合と同じ結果になる
+      - '`WS` に下線が付き、`WSL` には付かない'
     test: test_normal
   - name: 正常シナリオ（用語集を指定していない）
     setup:
@@ -120,17 +120,18 @@ scenarios:
         participant M as mdmark-style
         U->>C: 用語を含む発言
         C->>M: ui.render（UserMessage と発言の本文）
-        M->>M: mdmark.config.yaml を読めず例外を投げる
-        C-->>U: Claude Code の元の描画の発言
+        M->>M: mdmark.config.yaml を読めず、用語のマーカーだけを付けない
+        M-->>C: 用語のマーカーの無い部品の木
+        C-->>U: 用語のマーカーの無い発言と、共通スタイルで描き換えた返答
       ```
 
       <!-- /map -->
     expected:
-      - 発言が Claude Code の元の描画で描かれる
+      - 発言と返答に用語の下線・カード・脚注が出ず、返答の表・注意書き・見出し・コードは共通スタイルで描き換えられる
       - Claude Code のデバッグログに、mdmark-style の名前と `mdmark.config.yaml` を読めなかった理由の行がある
     test: test_error_when_glossary_unreadable
 success_guarantee: 発言と返答に出た用語・エイリアスに下線が付き、ポインターで意味のカードを開け、末尾の脚注でも意味を確認できる。用語は `mdmark.config.yaml` の索引・`aliases`・用語集の表から取り、YAML の文書・MCP は参照しない。
-minimal_guarantee: 用語を取れないときも、発言と返答は Claude Code の元の描画で出て、セッションは続く。
+minimal_guarantee: 用語を取れないときも、用語のマーカーだけを付けずに発言と返答を描き、返答のそのほかの描き換えは続ける。セッションは続く。
 test_file: tests/e2e/単一ユースケース/ClaudeCodeの発言と返答の用語にマーカーを付ける.spec.ts
 tags:
   - name: topic:用語
