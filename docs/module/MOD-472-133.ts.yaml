@@ -706,7 +706,7 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 関係の端の形（白抜きの三角・黒と白のひし形・開いた矢じり）と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの `svg.map-class-ends`。形と文字は `aria-hidden` で、`data-wire-mark` に関係の ID を持つ。多重度とラベルの重なりは `renderMapErMarks` と同じくずらす
+    summary: 関係の端の形（白抜きの三角・黒と白のひし形・開いた矢じり）と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの `svg.map-class-ends`。形と文字は `aria-hidden` で、`data-wire-mark` に関係の ID を持つ。多重度とラベルの重なりは `renderMapErMarks` と同じくずらす。ラベルは、両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、縦の区間なら右 → 左、横の区間なら上 → 下を試し、避ける矩形（`layout` のクラス・ノートのノードの矩形と、グループのタイトルの行の矩形（グループの上端から `MAP_LAYOUT.groupTitle` の高さ）、先に配置した多重度・ラベルの文字の矩形）のどれとも重ならない最初の置き場所にする。全て重なるときは、最も長い区間の中ほどから他のラベルと重ならないまで 1 行ずつ下へずらす（今の `placeLabel`）
     scope: public
     args:
       - name: args
@@ -716,6 +716,13 @@ functions:
     returns:
       type: string
       description: SVG の HTML
+    unit_tests:
+      - name: test_render_map_class_ends_when_label_near_nodes
+        case: 正常
+        summary: ラベルがノードとタイトルを避ける
+        condition: 縦の区間の右にノートのノード、左にクラスのノードが接し、中ほどの高さにグループのタイトルの行がある、ラベル「応答の変換」を持つ関係の `layout`
+        mock: なし
+        expected: ラベルの文字の矩形（文字数 × `MAP_ER.labelChar` の幅）が、どのノードの矩形とタイトルの行の矩形とも重ならず、線のいずれかの区間の周りにある
   - name: spreadMapEnds
     title: 同じ点の線の端をずらす
     kind: 関数

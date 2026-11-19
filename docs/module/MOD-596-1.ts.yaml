@@ -123,7 +123,7 @@ functions:
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの大きさと左右に空ける幅を指定する配置の上書きを作る。クラスの幅は `widths` の幅、無ければ名前とメンバーの文字の幅（`mapClassTextWidth`）が収まる幅を `MAP_CLASS.width` から `maxWidth` までの間で決め、メンバーごとにその幅で折り返す行の数（`mapClassMemberLines`）を求めて、高さを `mapClassNodeSize` で決める。ラベルを持つ関係がつながるクラスは、`aside` を、つながる関係の最も長いラベルの幅（文字数 × `MAP_ER.labelChar`）と前後の `MAP_CLASS.labelGap` が、列の間 `MAP_LAYOUT.gapRank` と両側の `aside` に収まる幅（`ceil(max(0, ラベルの幅 + labelGap × 2 - gapRank) / 2)`）にする。閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
+    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの大きさと左右に空ける幅を指定する配置の上書きを作る。クラスの幅は `widths` の幅、無ければ名前の文字の幅と、メンバーの文字の幅（`mapClassTextWidth`）に可視性・説明のボタンの列と `MAP_CLASS.memberInset` を加えた幅が収まる幅を `MAP_CLASS.width` から `maxWidth` までの間で決め、メンバーごとにその幅で折り返す行の数（`mapClassMemberLines`）を求めて、高さを `mapClassNodeSize` で決める。ラベルを持つ関係がつながるクラスは、`aside` を、つながる関係の最も長いラベルの幅（文字数 × `MAP_ER.labelChar`）と前後の `MAP_CLASS.labelGap` が、要素の間（図の全体の LR の段の間 `MAP_LAYOUT.gapRank` と、namespace の TB の中で横に並ぶ要素の間 `MAP_LAYOUT.gapItem` の小さい方）と両側の `aside` に収まる幅（`ceil(max(0, ラベルの幅 + labelGap × 2 - min(gapRank, gapItem)) / 2)`）にする。`aside` はラベルをずらす量を小さくするためのもので、重なりの回避は `renderMapClassEnds` が行う。閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
     scope: public
     args:
       - name: diagram
@@ -159,9 +159,9 @@ functions:
       - name: test_class_part_inputs_when_labels
         case: 正常
         summary: ラベルを持つ関係のクラスの左右を空ける
-        condition: '`メイン ..> アプリ組み立て : ASGI アプリの生成` と、ラベルを持たない `アプリ組み立て ..> 設定` のクラス図'
+        condition: '`メイン ..> アプリ組み立て : ASGI アプリの生成` と、ラベルを持たない `アプリ組み立て ..> 設定` のクラス図。別の呼び出しで、`namespace 変換` の中の「応答変換」「時間範囲」をラベル「期間の解決」の関係でつないだクラス図'
         mock: なし
-        expected: 「メイン」と「アプリ組み立て」の上書きの `aside` が等しく、`gapRank + aside × 2` がラベルの幅と `labelGap × 2` の和以上。「設定」は `aside` を持たない
+        expected: 「メイン」と「アプリ組み立て」の上書きの `aside` が等しく、`min(gapRank, gapItem) + aside × 2` がラベルの幅と `labelGap × 2` の和以上。「設定」は `aside` を持たない。namespace の中の「応答変換」「時間範囲」も、`gapItem + aside × 2` が「期間の解決」の幅と `labelGap × 2` の和以上
 refs:
   - IF-472-35#constraints[map のクラス図]
 lead: 'Mermaid の classDiagram の読み取りと構成図の入力への変換を受け持ち、map のクラス図の読み取りを変えるときに参照する。'
