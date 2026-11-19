@@ -232,7 +232,7 @@ entries:
                 name: nav.yml
                 contents: AI Monitor の共通のナビゲーション
                 generated_from:
-                  source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/_data/nav.yml
+                  source: shuhei1101/ai-monitor@v0.5.0:docs/_theme/_data/nav.yml
                   tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
               - type: file
                 name: nav.project.yml
@@ -244,7 +244,7 @@ entries:
               - theme
               - pages
             generated_from:
-              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/_includes/
+              source: shuhei1101/ai-monitor@v0.5.0:docs/_theme/_includes/
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: folder
             name: _layouts
@@ -253,28 +253,28 @@ entries:
               - theme
               - pages
             generated_from:
-              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/_layouts/
+              source: shuhei1101/ai-monitor@v0.5.0:docs/_theme/_layouts/
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: folder
             name: assets
-            contents: 全ページで読み込むスクリプト・CSS と、取り込んだ mdmark・mermaid の配布物
+            contents: 全ページで読み込むスクリプト・CSS と、取り込んだ mermaid の配布物
             content_types:
               - theme
               - pages
             generated_from:
-              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/assets/
+              source: shuhei1101/ai-monitor@v0.5.0:docs/_theme/assets/
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: file
             name: llms.txt
             contents: LLM 向けのページの一覧を出す Jekyll のテンプレート
             generated_from:
-              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/llms.txt
+              source: shuhei1101/ai-monitor@v0.5.0:docs/_theme/llms.txt
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
           - type: file
             name: search.json
             contents: サイト内の検索の索引を出す Jekyll のテンプレート
             generated_from:
-              source: shuhei1101/ai-monitor@v0.4.0:docs/_theme/search.json
+              source: shuhei1101/ai-monitor@v0.5.0:docs/_theme/search.json
               tracked: GitHub Pages が `docs/` から Jekyll でサイトを作る
       - type: folder
         name: architecture
@@ -1756,6 +1756,6 @@ notes:
     | `docs/README.md`・`docs/*/README.md` | 目次の `index.yaml` から生成する |
     | `docs/index.yaml`・`docs/*/index.yaml` | フォルダの目次。文書は設計書の種類の行で配信し、dev-docs の画面の並びは `nav` が持つ |
     | `docs/_theme/_data/nav.project.yml` | `docs/guide/` の文書の分類から生成する |
-    | `docs/_theme/assets/vendor/` | mdmark と mermaid の配布物のコピー |
+    | `docs/_theme/assets/vendor/` | mermaid の配布物のコピー |
 
     バイナリのファイル（画像・動画）は project-index が管理用の YAML の対象にしない。
