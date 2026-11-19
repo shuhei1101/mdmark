@@ -36,6 +36,9 @@ import {
   C4_DEPLOYMENT as MAP_C4_DEPLOYMENT,
   C4_DEPLOYMENT_DATA as MAP_C4_DEPLOYMENT_DATA,
   C4_DYNAMIC as MAP_C4_DYNAMIC,
+  C4_DYNAMIC_PLAY as MAP_C4_DYNAMIC_PLAY,
+  C4_DYNAMIC_PLAY_DATA as MAP_C4_DYNAMIC_PLAY_DATA,
+  C4_DYNAMIC_WALK_DATA as MAP_C4_DYNAMIC_WALK_DATA,
   C4_UNREADABLE as MAP_C4_UNREADABLE,
   CLASS as MAP_CLASS,
   CLASS_DATA as MAP_CLASS_DATA,
@@ -18774,6 +18777,119 @@ test("test_normal_when_map_c4_other_kinds_drawn", async () => {
   expect(
     Number.parseFloat(mapNode(container, "mail").style.left),
   ).toBeGreaterThan(leftBefore);
+});
+
+// map の C4Dynamic の関係を再生する（正常系）
+test("test_normal_when_map_c4_dynamic_played", async () => {
+  // 準備・実行
+  const { figures } = await mountMap(
+    [
+      mapRange({
+        mermaid: MAP_C4_DYNAMIC_PLAY,
+        data: MAP_C4_DYNAMIC_PLAY_DATA,
+      }),
+      mapRange({
+        mermaid: MAP_C4_DYNAMIC_PLAY,
+        data: MAP_C4_DYNAMIC_WALK_DATA,
+      }),
+      mapRange({ mermaid: MAP_C4_CONTAINER, data: MAP_C4_CONTAINER_DATA }),
+    ].join("\n"),
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(3), {
+    timeout: MAP_WAIT_MS,
+  });
+  const [play, walk, container] = figures() as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  const bandOf = (figure: HTMLElement) =>
+    (figure.parentElement as HTMLElement).querySelector<HTMLElement>(
+      ".map-band",
+    );
+  const band = () => bandOf(play) as HTMLElement;
+  // 検証: 1 つ目の帯は最初から図の枠の下にあり、5 の区切りと左右の矢印のボタンを持つ。コンテナ図には帯が出ない
+  expect(band().querySelectorAll(".map-band-seg")).toHaveLength(5);
+  expect(band().querySelectorAll('button[data-band="step"]')).toHaveLength(2);
+  expect(bandOf(container)).toBeNull();
+  // 準備: 始める前の倍率とスクロールの位置を控える
+  const viewport = find<HTMLElement>(play, ".mdmark-diagram-viewport");
+  const before = {
+    zoom: zoomText(play),
+    left: viewport.scrollLeft,
+    top: viewport.scrollTop,
+  };
+  // 実行・検証: 2 本目の関係
+  pressSegment(play, 2);
+  expect(band().querySelector(".map-band-title")?.textContent).toBe(
+    "2: 注文の画面 → 注文の API：注文を送る",
+  );
+  expect(band().querySelector(".map-band-text")?.textContent).toBe(
+    "画面の入力を JSON にして API へ送る",
+  );
+  expect(wireDimmed(play, "r2")).toBe(false);
+  expect(wireDimmed(play, "r3")).toBe(true);
+  expect(wireDimmed(play, "r1")).toBe(true);
+  for (const id of ["web", "api"])
+    expect(mapDimmed(mapNode(play, id)), id).toBe(false);
+  expect(mapDimmed(mapNode(play, "customer"))).toBe(true);
+  const packets = (id: string) => [
+    ...play.querySelectorAll(`.map-packet[data-wire="${id}"]`),
+  ];
+  const backward = (packet: Element) =>
+    packet.querySelector("animateMotion")?.getAttribute("keyPoints") === "1;0";
+  expect(packets("r2").length).toBeGreaterThan(0);
+  expect(packets("r2").some(backward)).toBe(false);
+  expect(
+    play.querySelectorAll('.map-packet:not([data-wire="r2"])'),
+  ).toHaveLength(0);
+  // 実行・検証: 3 本目（RelIndex）は第 1 引数の 7 を番号にしない
+  pressSegment(play, 3);
+  expect(band().querySelector(".map-band-title")?.textContent).toBe(
+    "3: 注文の API → 注文の画面：受付の番号を返す",
+  );
+  // 実行・検証: 4 本目は、閉じた境界「注文の保存」を強調する
+  pressSegment(play, 4);
+  const store = find<HTMLElement>(
+    play,
+    '.map-closed-group[data-group="store"]',
+  );
+  expect(mapDimmed(store)).toBe(false);
+  expect(mapDimmed(mapNode(play, "api"))).toBe(false);
+  // 実行・検証: 5 本目（BiRel）は ↔ で、データの印が両方へ流れ、ラベルが線の上に出る
+  pressSegment(play, 5);
+  expect(band().querySelector(".map-band-title")?.textContent).toBe(
+    "5: 注文の画面 ↔ 顧客：結果を確かめる",
+  );
+  expect(packets("r5").some(backward)).toBe(true);
+  expect(packets("r5").some((packet) => !backward(packet))).toBe(true);
+  const label = find<HTMLElement>(
+    play,
+    '.mdmark-diagram-label[data-wire="r5"]',
+  );
+  expect(label.hidden).toBe(false);
+  expect(label.textContent?.trim()).toBe("5: 結果を確かめる");
+  // 実行・検証: 図の枠の空いた場所を押すと停止し、強調が解ける
+  pressBlank(play);
+  expect(play.querySelectorAll(".map-dim")).toHaveLength(0);
+  // 検証: 始めた倍率とスクロールの位置に戻る
+  await vi.waitFor(() =>
+    expect({
+      zoom: zoomText(play),
+      left: viewport.scrollLeft,
+      top: viewport.scrollTop,
+    }).toEqual(before),
+  );
+  // 実行・検証: 2 つ目の帯は案内の手順 2 つで、右の矢印で手順 1 を強調する
+  // 帯は手順へ移るたびに描き直すため、毎回引き直す
+  const walkBand = () => bandOf(walk) as HTMLElement;
+  expect(walkBand().querySelectorAll(".map-band-seg")).toHaveLength(2);
+  expect(walkBand().getAttribute("data-mode")).toBe("walkthrough");
+  pressArrow(walk, 1);
+  expect(walkBand().querySelector(".map-band-title")?.textContent).toBe(
+    "注文を受け付ける",
+  );
+  expect(mapDimmed(mapNode(walk, "web"))).toBe(false);
 });
 
 // map のクラス図・アーキテクチャ図・C4 図を開閉する・中へ入る（正常系）

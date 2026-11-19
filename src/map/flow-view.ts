@@ -80,7 +80,7 @@ export type MapFlowExtension = {
   /** 帯のモード（既定 walkthrough） */
   bandMode?: "walkthrough" | "playback";
   /** 再生で進める単位（既定 message） */
-  bandUnit?: "message" | "transition";
+  bandUnit?: "message" | "transition" | "relation";
   /** 全て閉じるで閉じる、グループのほかの ID（ER 図のテーブル） */
   collapsibles?: string[];
   /** 自動配置の後に、線の経路を引き直す */
@@ -486,7 +486,10 @@ const bandStepsOf = (walkthroughs: MapStep[]): BandStep[] =>
 /** 案内の帯の出し方（拡張が無ければ案内） */
 const bandModeOf = (
   extension: MapFlowExtension | undefined,
-): { mode: "walkthrough" | "playback"; unit?: "message" | "transition" } => ({
+): {
+  mode: "walkthrough" | "playback";
+  unit?: "message" | "transition" | "relation";
+} => ({
   mode: extension?.bandMode ?? "walkthrough",
   ...(extension?.bandUnit === undefined ? {} : { unit: extension.bandUnit }),
 });
@@ -500,6 +503,35 @@ const focusOf = (
   wires:
     target.wires.length > 0 ? target.wires : wiresBetween(layout, target.nodes),
 });
+
+/** 閉じたグループの中のノードを最も外の閉じたグループに、描いていない線を両端を同じく付け替えた描いた線にする */
+const visibleTargetOf = (
+  context: { chart: Flowchart; layout: MapLayout; collapsed: string[] },
+  target: { nodes: string[]; wires: string[] },
+): { nodes: string[]; wires: string[] } => {
+  const { chart, layout } = context;
+  const closed = new Set(context.collapsed);
+  const visible = (id: string): string => {
+    let shown = id;
+    let at =
+      chart.nodes.find((node) => node.id === id)?.parent ?? parentOf(chart, id);
+    for (; at !== undefined; at = parentOf(chart, at))
+      if (closed.has(at)) shown = at;
+    return shown;
+  };
+  const drawn = new Set(layout.wires.map((wire) => wire.id));
+  const wires = target.wires.flatMap((id) => {
+    if (drawn.has(id)) return [id];
+    const edge = chart.edges.find((item) => item.id === id);
+    if (!edge) return [];
+    const from = visible(edge.from);
+    const to = visible(edge.to);
+    return layout.wires
+      .filter((wire) => wire.from === from && wire.to === to)
+      .map((wire) => wire.id);
+  });
+  return { nodes: [...new Set(target.nodes.map(visible))], wires };
+};
 
 /** 構成図を読み取り、状態を読んで配置し、描いて測った大きさで配置し直し、操作を付ける */
 export const attachMapFlow = (
@@ -1064,7 +1096,10 @@ export const attachMapFlow = (
       // 手順の enter のグループへ入り、enter を持たない手順は案内を始めた段の図で出す
       const entered = step.enter ?? walkFrom.entered;
       if (entered !== state.entered) state = { ...state, entered };
-      focus = focusOf(layout, step);
+      focus = focusOf(
+        layout,
+        visibleTargetOf({ chart, layout, collapsed: state.collapsed }, step),
+      );
     }
     refresh();
   };

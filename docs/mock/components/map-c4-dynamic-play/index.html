@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-c4-dynamic-play（map の C4Dynamic の関係の再生） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <!-- 列の行・開閉のボタン・説明のマーカー（#531 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/531/assets/er-state.css">
+  <!-- C4 図の要素・境界・外部の要素（#596 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/596/assets/class-arch-c4.css">
+  <!-- C4 の 4 種類に固有の規則と、案内・再生の帯の手順のバー（#660 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/660/assets/c4-kinds.css">
+  <link rel="stylesheet" href="../../refs/660/assets/band.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 24px; margin: 48px 0 8px; }
+    .map-catalog h3 { font-size: 18px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0 0 4px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+    /* #445 のモックの帯は、#660 の手順のバーの帯に置き換えたため出さない */
+    .map-catalog .map-band { display: none; }
+    /* 配置する場所が無くて隠れていた再生中の関係のラベル: 線の中ほどを中心に配置する */
+    .c4p-playing-label { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-c4-dynamic-play
+  </nav>
+  <main class="map-catalog" id="catalog">
+    <h1>map-c4-dynamic-play</h1>
+    <h2>実演</h2>
+    <p class="state-note">図の下に再生の帯（手順のバーと左右の矢印）を出す。区切りか左右の矢印を押すと、その番号の関係と両端の要素のほかを薄くし、その線だけにデータのマーカーを流して、停止するまで繰り返し再生する。帯のタイトルは「{番号}: 元の要素 → 先の要素：ラベル」。図の空いた場所か帯のバー以外を押すと停止する</p>
+    <div id="live"></div>
+  </main>
+  <script type="module">
+    import { createC4DynamicPlay, createC4DynamicStill, DYNAMIC, DYNAMIC_DATA, DYNAMIC_WALK_DATA } from "../../refs/677/assets/c4-dynamic-play.js";
+    import { CONTAINER, CONTAINER_DATA } from "../../refs/660/assets/samples.js";
+    import { createC4KindMap } from "../../refs/660/assets/c4-kinds.js";
+
+    const TITLE = "注文の流れ";
+    createC4DynamicPlay(document.getElementById("live"), { id: "c4p-live", title: TITLE, source: DYNAMIC, data: DYNAMIC_DATA });
+
+    /** 状態の見出し・補足・補足のデータ・帯の状態 */
+    const STATES = [
+      ["始める前", "関係の数（5）に区切った手順のバーと左右の矢印だけを出し、図はどこも薄くしない", DYNAMIC_DATA, {}],
+      ["番号 2 の関係（説明を持つ）", "注文の画面と注文の API のほかを薄くし、2 本目の線だけにデータのマーカーを流す。逆向きの 3 本目の線は薄くする。帯に補足の notes の説明の文を出す", DYNAMIC_DATA, { index: 1, fill: 0.45 }],
+      ["番号 4 の関係（先の要素が閉じた境界の中）", "先の注文のデータベースは閉じた「注文の保存」の境界の中にあるため、境界を強調する", DYNAMIC_DATA, { index: 3, fill: 0.7 }],
+      ["番号 5 の両向きの関係（BiRel）", "両向きの関係は、データのマーカーを両方へ流す。帯のタイトルの向きは ↔", DYNAMIC_DATA, { index: 4, fill: 1 }],
+      ["補足に案内の手順を持つ図", "帯は案内の手順（2）を進め、関係の再生は出さない", DYNAMIC_WALK_DATA, { index: 0, fill: 0.5 }],
+    ];
+    const catalog = document.getElementById("catalog");
+    const heading = (tag, text) => catalog.append(Object.assign(document.createElement(tag), { textContent: text }));
+    const note = (text) => catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: text }));
+    heading("h2", "状態");
+    STATES.forEach(([title, text, data, state], index) => {
+      heading("h3", title);
+      note(text);
+      const host = document.createElement("div");
+      catalog.append(host);
+      createC4DynamicStill(host, { id: `c4p-${index}`, title: TITLE, label: `「${TITLE}」の${data.walkthroughs ? "案内" : "再生"}（${title}）`, source: DYNAMIC, data }, state);
+    });
+    heading("h3", "C4Dynamic 以外の C4 の図（コンテナ図）");
+    note("関係を再生しないため、補足に案内の手順を持たない図には帯を出さない");
+    const container = document.createElement("div");
+    catalog.append(container);
+    createC4KindMap(container, { id: "c4p-container", source: CONTAINER, data: CONTAINER_DATA });
+    heading("h2", "狭い幅");
+    heading("h3", "狭い幅（390px）");
+    note("番号 2 の関係。手順のバーは帯の幅いっぱいで、タイトルと説明の文はバーの下で折り返す");
+    const narrow = document.createElement("div");
+    narrow.className = "narrow";
+    catalog.append(narrow);
+    createC4DynamicStill(narrow, { id: "c4p-narrow", title: TITLE, label: `「${TITLE}」の再生（狭い幅）`, source: DYNAMIC, data: DYNAMIC_DATA }, { index: 1, fill: 0.45 });
+  </script>
+</body>
+</html>

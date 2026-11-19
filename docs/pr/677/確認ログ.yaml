@@ -1,0 +1,7 @@
+confirmations:
+  - topic: モックへの合意（ミニマップと C4Dynamic の再生）
+    decision: ミニマップは要らないためスコープから外す。C4Dynamic の再生はモックのとおりに進める（別案）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/677#discussion_r4615229809

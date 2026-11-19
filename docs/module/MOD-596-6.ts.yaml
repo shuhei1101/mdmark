@@ -10,7 +10,7 @@ functions:
     container: src/map/c4-view.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 'C4 の 5 種類の図を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・選択・案内・強調を付けたうえで、要素の説明・境界の破線と配置先のノードの実線の枠と種類・外部の要素の描き分けを追加する'
+    summary: 'C4 の 5 種類の図を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・選択・案内・強調を付けたうえで、要素の説明・境界の破線と配置先のノードの実線の枠と種類・外部の要素の描き分けと、`C4Dynamic` の関係の再生を追加する'
     scope: public
     callees:
       - MOD-596-3#functions[parseC4]
@@ -20,6 +20,7 @@ functions:
       - MOD-472-130#functions[shortestPathKept]
       - MOD-472-133#functions[spreadMapEnds]
       - MOD-472-133#functions[renderMapC4Diagram]
+      - MOD-472-139#functions[parseMapData]
     args:
       - name: range
         type: HTMLElement
@@ -42,6 +43,8 @@ functions:
       3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類・`reversed` を指定した `renderMapC4Diagram`（配置先のノードは `c4Boundary` が `deployment`、要素は `technology`）を指定する
       4. `extension.selectionOf` で、要素を 1 つ選べば `neighborKept` の関係と相手、2 つ選べば `shortestPathKept` の経路を残す
       5. `extension.collapsedTag` で、閉じた境界と配置先のノードに、中（入れ子の配置先のノードの中を含む）の要素の数の「要素 {数} 件」を返却する
+      6. 図が `C4Dynamic` で、`parseMapData` で読んだ補足が `walkthroughs` を持たなければ、線にした関係を番号の順の手順（`title` は「{番号}: {元の要素} → {先の要素}：{ラベル}」で `BiRel` は `↔`、`text` は補足の `r{番号}` の説明、`nodes` は元と先の要素、`edges` はその関係）にして `extension.walkthroughs` に指定し、`bandMode` を `playback`、`bandUnit` を `relation` にする。`walkthroughs` を持つ図とほかの種類の図は、手順を指定しない
+      7. `extension.afterRender` で、再生している関係の線のラベルの要素（`.mdmark-diagram-label[data-wire]`）が無ければ（閉じた境界への線にまとめてラベルを描いていない）、描いた線の中ほどにその関係のラベル（`c4ToFlowchart` の線の `label`）を出し、その矩形と重なる `map-dim` のラベルを隠す。手順を止めたら、出したラベルを外して隠したラベルを戻す
     unit_tests:
       - name: test_attach_map_c4
         case: 正常
@@ -73,6 +76,36 @@ functions:
         condition: 配置図の `region` の開閉のボタンを押す
         mock: なし
         expected: '`region` の閉じたノードの名前の下の行が `要素 2 件` で、`cloud` は開いたまま'
+      - name: test_attach_map_c4_when_dynamic_played
+        case: 正常
+        summary: C4Dynamic の関係の再生
+        condition: モック `docs/mock/refs/677/assets/c4-dynamic-play.js` の `DYNAMIC` と、`notes` のキーを `r2` にした `DYNAMIC_DATA` の範囲を描き、帯の手順のバーの 2 つ目の区切りを押す
+        mock: なし
+        expected: '帯の `data-mode` が `playback` で、区切りが 5 つ、左右の矢印のボタンの名前が `前の関係`・`次の関係`。帯のタイトルが `2: 注文の画面 → 注文の API：注文を送る`、文が `画面の入力を JSON にして API へ送る`。`web`・`api` のノードと `r2` の線のほかが `map-dim` を持ち、`r3` の線も `map-dim` を持つ。`r2` の線の上にだけ `.map-packet` がある'
+      - name: test_attach_map_c4_when_dynamic_boundary
+        case: 正常
+        summary: 閉じた境界の中の要素への関係
+        condition: test_attach_map_c4_when_dynamic_played と同じ範囲を描き、4 つ目の区切りを押す
+        mock: なし
+        expected: '閉じた `store` のノードと `api` のノードが `map-dim` を持たず、`api->store` の線のラベルの要素の文字が `4: ` で始まる。手順を止めると、そのラベルの要素が無くなる'
+      - name: test_attach_map_c4_when_dynamic_both
+        case: 正常
+        summary: 両向きの関係
+        condition: test_attach_map_c4_when_dynamic_played と同じ範囲を描き、5 つ目の区切りを押す
+        mock: なし
+        expected: '帯のタイトルが `5: 注文の画面 ↔ 顧客：結果を確かめる` で、`r5` の線の `.map-packet` が両方へ流れる印を持つ'
+      - name: test_attach_map_c4_when_dynamic_walkthroughs
+        case: 正常
+        summary: 案内の手順を持つ C4Dynamic
+        condition: 同じモックの `DYNAMIC` と `DYNAMIC_WALK_DATA` の範囲を描く
+        mock: なし
+        expected: 帯の `data-mode` が `walkthrough` で、区切りが 2 つ
+      - name: test_attach_map_c4_when_container_no_playback
+        case: 正常
+        summary: ほかの種類の図は再生しない
+        condition: モック `docs/mock/refs/660/assets/samples.js` の `CONTAINER` と `CONTAINER_DATA` の範囲を描く
+        mock: なし
+        expected: 帯の `data-mode` が `playback` でない
 refs:
   - IF-472-35#constraints[map の C4 図]
 lead: 'map の C4 図（C4 の 5 種類）の描画と操作を受け持ち、map の C4 図の操作を変えるときに参照する。'
