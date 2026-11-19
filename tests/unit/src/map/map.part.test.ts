@@ -1369,9 +1369,9 @@ test("test_render_map_class_diagram_when_linked", async () => {
     /<a class="mdmark-diagram-node-link" href="\.\/circle\.md"/,
   );
   expect(circle).toContain('class="map-class-members"');
-  expect(matches(part.html, /<a class="mdmark-diagram-node-link"/g)).toHaveLength(
-    1,
-  );
+  expect(
+    matches(part.html, /<a class="mdmark-diagram-node-link"/g),
+  ).toHaveLength(1);
 });
 
 /** モックの「基本図形」 */
