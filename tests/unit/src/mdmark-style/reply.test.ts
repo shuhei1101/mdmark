@@ -233,6 +233,62 @@ test("test_render_block_callout", async () => {
   );
 });
 
+/** 用語 `WS` の一致を作る */
+const wsMark = (line: number, start: number) => ({
+  line,
+  start,
+  end: start + 2,
+  title: "WS",
+  description: "ワークスペース",
+  footnote: 1,
+});
+
+/** 下線を付けた Text の文字 */
+const underlined = (node: unknown) =>
+  findNodes(
+    node as FakeNode,
+    (n) => n.type === "Text" && n.props.underline === true,
+  ).map(textOf);
+
+// 注意書きの中の用語に下線を付ける（正常系）
+test("test_render_block_when_term_in_callout", async () => {
+  // 準備
+  const { renderBlock } = await loadReply();
+  const { splitBlocks } = await import(
+    "../../../../src/mdmark-style/blocks.ts"
+  );
+  const $ = createFakeEngine();
+  const [block] = splitBlocks({
+    text: ["> [!NOTE]", "> WS を作る"].join("\n"),
+    parts: ALL_PARTS,
+  });
+  // 実行
+  const node = renderBlock({
+    block: block as NonNullable<typeof block>,
+    context: contextOf($, { marks: [wsMark(2, 2)] }),
+  });
+  // 検証
+  expect(underlined(node)).toEqual(["WS"]);
+});
+
+// 行内のマーカーの後ろの用語に下線を付ける（正常系）
+test("test_render_block_when_term_after_inline_marker", async () => {
+  // 準備
+  const { renderBlock } = await loadReply();
+  const { splitBlocks } = await import(
+    "../../../../src/mdmark-style/blocks.ts"
+  );
+  const $ = createFakeEngine();
+  const [block] = splitBlocks({ text: "a <!-- x --> WS", parts: ALL_PARTS });
+  // 実行
+  const node = renderBlock({
+    block: block as NonNullable<typeof block>,
+    context: contextOf($, { marks: [wsMark(1, 13)] }),
+  });
+  // 検証
+  expect(underlined(node)).toEqual(["WS"]);
+});
+
 // 閉じた範囲を押すと開く（正常系）
 test("test_render_fold", async () => {
   // 準備

@@ -142,6 +142,38 @@ test("test_split_blocks_when_inline_marker", async () => {
   ]);
 });
 
+// 注意書きの中のブロックの行と文字の位置を返答の本文に合わせる（正常系）
+test("test_split_blocks_when_callout_columns", async () => {
+  // 準備
+  const { splitBlocks } = await loadBlocks();
+  // 実行
+  const blocks = splitBlocks({
+    text: ["> [!NOTE]", "> WS を作る"].join("\n"),
+    parts: ALL_PARTS,
+  });
+  // 検証
+  expect(blocks[0]?.callout?.body).toEqual([
+    expect.objectContaining({
+      kind: "markdown",
+      line: 2,
+      markdown: "WS を作る",
+      columns: [[2, 3, 4, 5, 6, 7]],
+    }),
+  ]);
+});
+
+// 行内のマーカーの後ろの文字の位置を元の行に合わせる（正常系）
+test("test_split_blocks_when_inline_marker_columns", async () => {
+  // 準備
+  const { splitBlocks } = await loadBlocks();
+  // 実行
+  const blocks = splitBlocks({ text: "a <!-- x --> WS", parts: ALL_PARTS });
+  // 検証
+  expect(blocks).toEqual([
+    expect.objectContaining({ markdown: "a WS", columns: [[0, 1, 13, 14]] }),
+  ]);
+});
+
 // 図はコードブロックにする（正常系）
 test("test_split_blocks_when_diagram", async () => {
   // 準備
