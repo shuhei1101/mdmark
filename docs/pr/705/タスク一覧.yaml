@@ -54,10 +54,9 @@ tasks:
   - process: 部品設計
     status: todo
   - process: 画面設計
-    status: skipped
-    reason: 画面設計『文書』の項目は変わらず、見出し行の留め方は部品『表』とインターフェース定義『文書を描く』が持つ
+    status: todo
     updated_by: planner
-    updated_at: '2026-11-19T11:03:11.636772+00:00'
+    updated_at: '2026-11-19T11:28:09.419195+00:00'
   - process: モジュール構成設計
     status: todo
   - process: ドキュメント修正
