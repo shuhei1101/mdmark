@@ -1,0 +1,23 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: シナリオの記述は変わらない。map のクラス図で、関係のラベル・折り返したメンバーの行・クラスが重ならず図の幅に収まり、メンバーの型の型引数が山括弧で描かれるように描き方を修正する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: 言語 mermaid のコードブロックの classDiagram も同じ map のクラス図で描くため、描き方の修正が及ぶ
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 260 行の classDiagram の描き方（`~T~` は名前の `<T>`）を、メンバーの型の `~T~` も `<T>` で描く記述にする
+    status: todo
+scope_out:
+  - item: 構成図の線どうしが同じ通り道に重なる件（線の経路の重み）
+    reason: 線の経路の不具合で、この PR の線のラベルの置き場所とノードの大きさとは別の事象
+    plan: '#613'
+  - item: map の ER 図の関連のラベルがテーブルに重なるかの確認
+    reason: ER 図も両端を除いた最も長い区間の中ほどにラベルを置く同じ型の処理を持つが、報告はクラス図だけで、ER 図で重なるかは未確認。今の判断は、設計の段でクラス図と同じ原因だと分かればこの PR に含め、別の原因なら起票する（レビューで確定する）
+    plan: to_file
