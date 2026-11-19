@@ -236,6 +236,7 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `docs/screen/README.md` | R7 | なし（実行するコードを変えない） | - |
 | `docs/screen/SCR-472-5.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/screen/index.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/test-procedure/TP-472-1.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `mdmark-style/.claude-plugin/plugin.json` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
 | `mdmark-style/THIRD_PARTY_LICENSES.txt` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
 | `mdmark-style/hooks/hooks.json` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
