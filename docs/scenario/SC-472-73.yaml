@@ -2084,7 +2084,7 @@ scenarios:
       <!-- /map -->
     expected:
       - つまみにフォーカスが移るとつまみが出る
-      - つまみが `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` と、`名前` を含む `aria-label` を持ち、`aria-valuenow` が名前の列の今の幅（px）、`aria-valuemin` が列の最小幅（px）、`aria-valuemax` が名前の列を広げられる上限の幅（px。表の見える幅から、ほかの留めた列の幅の合計を引いた幅）、`aria-valuetext` が「{今の幅}px」
+      - つまみが `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` と、`名前` を含む `aria-label` を持ち、`aria-valuenow` が名前の列の今の幅（px）、`aria-valuemin` が列の最小幅（px。今の幅が最小幅より狭いときは今の幅）、`aria-valuemax` が名前の列を広げられる上限の幅（px。表の見える幅から、ほかの留めた列の幅の合計を引いた幅。上限が今の幅より狭いときは今の幅）、`aria-valuetext` が「{今の幅}px」
       - つまみを持つ見出しのセルの、並べ替え・ピン止め・絞り込みのボタンの Tab の順は、つまみより前
       - → キーを 2 回押した後、名前の列の幅が押す前より 32px 広く、`aria-valuenow` と `aria-valuetext` が広げた後の幅になり、説明・更新日の列の幅は押す前と同じ
       - ← キーを 1 回押した後、名前の列の幅が → キー 1 回分だけ狭まる
