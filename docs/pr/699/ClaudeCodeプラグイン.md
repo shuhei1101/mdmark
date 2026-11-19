@@ -210,6 +210,7 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `docs/module/README.md` | R7 | なし（実行するコードを変えない） | - |
 | `docs/module/index.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/ClaudeCodeプラグイン.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/nonfunctional/NFR-472-1.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/README.md` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/タスク一覧.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119213541_904d912b_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
