@@ -1,5 +1,7 @@
 summary: mdmark が描く画面の要素と、使用する部品へ指定する値
 items:
+- page: SCR-472-5.tsx.yaml
+  summary: mod のプラグイン mdmark-style が描き換える Claude Code の返答と発言の部品・ボタン・用語のカード
 - page: SCR-472-4.ts.yaml
   summary: 描く先の要素の中に描く文書と、mdmark が追加する UI の項目
 - page: SCR-472-3.ts.yaml

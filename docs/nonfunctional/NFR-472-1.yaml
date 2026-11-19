@@ -139,14 +139,14 @@ requirements:
     external_constraint: プラグイン・フック・MCP の挙動は Claude Code のバージョンで変わる。バージョンは利用側の手元のものを使用し、mdmark は固定しない
     source_kind: 外部ライブラリの制限
     source: LIB-472-1#version
-    value: 2.1.309
-    rationale: '[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確認したバージョン。これより新しいバージョンと古いバージョンは確認していない'
-    measurement: Claude Code の実機で、プラグインを入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確認する
+    value: 2.1.309（プラグイン mdmark）・2.1.328（mod のプラグイン mdmark-style）
+    rationale: '[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確認したバージョン。これより新しいバージョンと古いバージョンは確認していない。mod のプラグイン mdmark-style は、PoC（[#701](https://github.com/shuhei1101/mdmark/pull/701)）と `claude plugin test` の結合テスト（[#699](https://github.com/shuhei1101/mdmark/pull/699)）で 2.1.328 を確認した。2.1.328 より古いバージョンは確認していない'
+    measurement: Claude Code の実機で、プラグイン mdmark を入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確認する。mod のプラグイン mdmark-style は、`claude plugin validate` と `claude plugin test`（結合テスト）に合格するかと、実機で返答・発言が描き換わるかを確認する
     status: planned
     verification:
       device: ユーザーの手元の Claude Code（WSL2）
-      version: Claude Code 2.1.316
-      date: '2026-10-31'
+      version: Claude Code 2.1.316（プラグイン mdmark）・2.1.328（mod のプラグイン mdmark-style）
+      date: '2026-11-19'
       result: 合格
   - id: NFR-12
     name: MCP サーバーの接続の待ち

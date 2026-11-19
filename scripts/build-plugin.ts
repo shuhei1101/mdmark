@@ -11,6 +11,7 @@ import {
   NODE_MODULES_SEGMENT,
   NODE_TARGET,
   packageNameAfter,
+  postcssStubPlugin,
   readEmbeddedLicenseBlock,
   readLicenseBlock,
 } from "./bundle.ts";
@@ -28,7 +29,16 @@ const PLUGIN_OUTPUTS = [
   "plugin/bin",
   "plugin/templates",
   "plugin/THIRD_PARTY_LICENSES.txt",
+  "mdmark-style/hooks/mod",
+  "mdmark-style/THIRD_PARTY_LICENSES.txt",
 ];
+/** mod のプラグイン mdmark-style の入口と記載する先 */
+const MDMARK_STYLE_ENTRY = {
+  from: "src/mdmark-style/mod.tsx",
+  to: "mdmark-style/hooks/mod/mod.js",
+};
+/** mod にまとめたパッケージのライセンスを記載する、プラグインの直下のファイル名 */
+const MDMARK_STYLE_LICENSES_FILE = "mdmark-style/THIRD_PARTY_LICENSES.txt";
 /** `setup` のスキルが使用する `mdmark.config.yaml` の雛形の原本と、プラグインに写す先 */
 const CONFIG_TEMPLATE = {
   from: "templates/mdmark.config.yaml",
@@ -122,16 +132,18 @@ export async function writePluginLicenses(options: {
   metafile: Metafile;
   /** 作業ツリーの場所 */
   root: string;
+  /** 記載するファイルの、作業ツリーの直下からのパス */
+  file?: string;
 }): Promise<void> {
-  const { metafile, root } = options;
+  const { metafile, root, file = PLUGIN_LICENSES_FILE } = options;
   const blocks = listBundledPackages(metafile).map((name) =>
     readLicenseBlock({ root, name }),
   );
   for (const name of listEmbeddedPackages({ metafile, root })) {
     blocks.push(readEmbeddedLicenseBlock({ root, name }));
   }
-  await mkdir(dirname(join(root, PLUGIN_LICENSES_FILE)), { recursive: true });
-  await writeFile(join(root, PLUGIN_LICENSES_FILE), blocks.join("\n\n"));
+  await mkdir(dirname(join(root, file)), { recursive: true });
+  await writeFile(join(root, file), blocks.join("\n\n"));
 }
 
 /** `PLUGIN_OUTPUTS` を削除する。無いものは飛ばす */
@@ -175,5 +187,38 @@ export async function buildPlugin(options: {
     join(root, CONFIG_TEMPLATE.to),
   );
   await writePluginLicenses({ metafile: result.metafile, root });
+  if (existsSync(join(root, MDMARK_STYLE_ENTRY.from))) {
+    const style = await buildMdmarkStyle({ root, version });
+    await writePluginLicenses({
+      metafile: style,
+      root,
+      file: MDMARK_STYLE_LICENSES_FILE,
+    });
+  }
   return [];
+}
+
+/** mod のプラグイン mdmark-style を、Node・DOM の無い mod の環境で読み込める ES モジュールの 1 ファイルにまとめる */
+async function buildMdmarkStyle(options: {
+  root: string;
+  version: string;
+}): Promise<Metafile> {
+  const result = await build({
+    absWorkingDir: options.root,
+    entryPoints: [MDMARK_STYLE_ENTRY.from],
+    outfile: MDMARK_STYLE_ENTRY.to,
+    bundle: true,
+    format: "esm",
+    platform: "neutral",
+    // neutral は mainFields が空になるため、依存の package.json の入口を明示する
+    mainFields: ["module", "main"],
+    target: "es2022",
+    external: ["claude-code"],
+    // 用語の照合が読み込む sanitize-html の postcss は Node の機能を使用するため、配布物と同じく空の部品にする
+    plugins: [postcssStubPlugin],
+    define: bundleDefines(options.version),
+    metafile: true,
+    logLevel: "silent",
+  });
+  return result.metafile;
 }

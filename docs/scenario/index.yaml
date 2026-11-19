@@ -128,6 +128,12 @@ items:
   summary: 利用側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る
 - page: SC-472-4.yaml
   summary: 文書の作成者が mdmark のリポジトリをマーケットプレイスとして追加し、mdmark のプラグインを Claude Code に入れる
+- page: SC-472-97.yaml
+  summary: mdmark-style を入れた Claude Code の画面で、返答の表・注意書き・見出し・コードを共通スタイルの部品で描き、マーカーは描き方に使用して画面に出さない
+- page: SC-472-98.yaml
+  summary: mdmark-style を入れた Claude Code の画面で、発言と返答の用語に下線・hover のカード・脚注を付ける
+- page: SC-472-99.yaml
+  summary: mdmark-style を入れた Claude Code のセッションの開始で、マーカーの記載方法の短い説明を additionalContext で受け取る
 - page: SC-472-15.yaml
   summary: Claude Code が dev-docs の `search_docs` で、mdmark の配信元からガイドのページを受け取る
 - page: SC-472-3.yaml

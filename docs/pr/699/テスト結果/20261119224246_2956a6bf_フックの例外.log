@@ -1,0 +1,30 @@
+# claude 2.1.328 (Claude Code)
+# 設定ファイル（global: [）を読めず、mod の ui.render のフックが SettingsError を投げるときの claude plugin test の結果
+$ npm run test:mdmark-style -- throw.test.tsx
+| import { expect, test } from "claude-code/testing";
+| import { CONFIG_PATH, installWorld } from "./world.ts";
+| 
+| // mod のフックが例外を投げたときの claude plugin test の扱いを確認する
+| test("hook_throws", async ($, on) => {
+|   installWorld(on, { files: { [CONFIG_PATH]: "global: [" } });
+|   const result = await $.ui.render({
+|     surface: "terminal",
+|     component: "AssistantMessage",
+|     requestId: "m",
+|     props: { text: "# a", isFirstOfReply: true },
+|   } as never);
+|   console.log("RESULT", JSON.stringify(result));
+|   expect(result).toEqual({ type: "engine", ref: 1 });
+| });
+tests/throw.test.tsx:
+(fail) hook_throws [364.05ms]
+  mdmark-style: mdmark-style の設定ファイルを YAML として読めない: /home/u/.config/mdmark-style/settings.yaml（Flow sequence in block collection must be sufficiently indented and end with a ] at line 1, column 10:）
+  
+  in mdmark-style's ui.render hook
+  
+  the engine reported:
+    mdmark-style's ui.render hook was skipped: mdmark-style: mdmark-style の設定ファイルを YAML として読めない: /home/u/.config/mdmark-style/settings.yaml（Flow sequence in block collection must be sufficiently indented and end with a ] at line 1, column 10:）
+
+ 0 pass
+ 1 fail
+Ran 1 test across 1 file. [0.55s]

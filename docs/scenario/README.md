@@ -72,6 +72,9 @@
 | [PDFに印刷する](./SC-472-9.yaml) | 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする |
 | [本文に出た用語と文書の参照を取り出す](./SC-472-60.yaml) | 利用側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る |
 | [ClaudeCodeにプラグインを入れる](./SC-472-4.yaml) | 文書の作成者が mdmark のリポジトリをマーケットプレイスとして追加し、mdmark のプラグインを Claude Code に入れる |
+| [ClaudeCodeの返答を共通スタイルで描く](./SC-472-97.yaml) | mdmark-style を入れた Claude Code の画面で、返答の表・注意書き・見出し・コードを共通スタイルの部品で描き、マーカーは描き方に使用して画面に出さない |
+| [ClaudeCodeの発言と返答の用語にマーカーを付ける](./SC-472-98.yaml) | mdmark-style を入れた Claude Code の画面で、発言と返答の用語に下線・hover のカード・脚注を付ける |
+| [ClaudeCodeのセッションの開始でマーカーの記載方法を受け取る](./SC-472-99.yaml) | mdmark-style を入れた Claude Code のセッションの開始で、マーカーの記載方法の短い説明を additionalContext で受け取る |
 | [ガイドを参照する](./SC-472-15.yaml) | Claude Code が dev-docs の `search_docs` で、mdmark の配信元からガイドのページを受け取る |
 | [ClaudeCodeから点検と書き出しを呼ぶ](./SC-472-3.yaml) | Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ |
 | [MCPサーバーを起動・停止する](./SC-472-7.yaml) | 文書の作成者が `mdmark serve` で MCP の常駐サーバーを起動し、接続先を確認し、使用し終えたら止める |

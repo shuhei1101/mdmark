@@ -86,6 +86,8 @@ items:
   summary: 開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する手順
 - page: ClaudeCodeで使用する-プラグインを入れる.mark.md
   summary: マーケットプレイスを追加してプラグインを入れ、次のセッションからツールとガイドへの動線を受け取る手順
+- page: ClaudeCodeで使用する-画面を共通スタイルで描く.md
+  summary: mod のプラグイン mdmark-style で、Claude Code の返答と発言を共通スタイルで描く
 - page: ClaudeCodeで使用する-セットアップする.mark.md
   summary: プラグインのスキルで、端末の設定と常駐サーバー、文書のフォルダの設定を、項目ごとに確認しながら用意する手順
 - page: ClaudeCodeで使用する-MCPサーバーを起動する.mark.md

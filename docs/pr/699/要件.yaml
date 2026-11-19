@@ -1,0 +1,114 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-4.yaml
+    impact: changed
+    detail: マーケットプレイスに mdmark-style が加わり、文書の作成者が mdmark と別に mdmark-style を選んで入れられるようになる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-97.yaml
+    impact: new
+    detail: （返答を共通スタイルで描く）Claude Code の画面で、アシスタントの返答の表・見出し・注意書き・コードを mdmark の共通スタイルの部品で描き、返答に書かれた mdmark のマーカーは描き方に使って画面に出さない。部品ごとと描き換える場所（返答・発言）ごとに設定でオン・オフする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-98.yaml
+    impact: new
+    detail: （発言と返答の用語に印を付ける）利用者の発言とアシスタントの返答に出た用語・エイリアスに下線を付け、ポインターを乗せると意味のカードを開き、マウスを使えないときのために脚注も出す。用語は設定で指定した mdmark.config.yaml の索引・aliases・用語集の表から取る
+    depends_on:
+      - docs/scenario/SC-472-97.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-99.yaml
+    impact: new
+    detail: （セッションの開始でマーカーの書き方を受け取る）セッションの開始で、モデルが返答に mdmark のマーカーを書けるよう、マーカーの書き方の短い説明を 1 セッション 1 回だけ受け取る。設定で止められる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-25.yaml
+    impact: run_only
+    detail: 共通スタイルの値の定義を Web と mod の両方から読む形に移すため、既定の外観と利用側の上書きが変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-64.yaml
+    impact: run_only
+    detail: 注意書きの種類・色の定義を共通にするため、Web の注意書きの見た目が変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-65.yaml
+    impact: run_only
+    detail: 用語の取り出しを mdmark-style と共通に使うため、Web の用語のツールチップが変わらないことを確かめる
+    depends_on: []
+docs:
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: mdmark-style（Claude Code の画面を描く mod のプラグイン）をサブシステムと構成図に加え、Claude Code との境界（ui.render・session.start）を書き足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T12:22:29.635880+00:00'
+  - page: docs/layout/LAY-472-1.yaml
+    new: false
+    change: mdmark-style のフォルダと、共通スタイルの定義の TypeScript のモジュール、marketplace.json の行を書き足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T12:22:29.635880+00:00'
+  - page: docs/library/LIB-472-1.yaml
+    new: false
+    change: mod の API（ui.render の AssistantMessage・UserMessage、session.start）と部品・上限、HTML コメントの表示（R-35）を記録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T12:22:29.635880+00:00'
+  - page: docs/nonfunctional/NFR-472-1.yaml
+    new: false
+    change: 「確かめた Claude Code のバージョン」を mod が動くバージョンの確認で見直す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T14:07:39.132489+00:00'
+  - page: docs/config/CFG-472-4.yaml
+    new: true
+    change: mdmark-style の設定（MDMARK_STYLE_CONFIG・settings.yaml の global・projects と enabled・parts.*・targets・glossary・inject_marker_guide）の設計書を新しく作る
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T09:48:05.713843+00:00'
+  - page: docs/guide/ClaudeCodeで使用する-画面を共通スタイルで描く.md
+    new: true
+    change: mdmark-style を入れ、設定で部品・場所・用語集を指定する使い方のページを作る
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
+  - page: docs/guide/コアコンセプト-共通の定義と固有の定義.md
+    new: false
+    change: 共通スタイルの定義を TypeScript のモジュールにして Web の描画と mod の両方が読む仕組みを書き足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: mdmark-style の設定のキーと既定を書き足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: mdmark-style・mod の用語を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
+  - page: docs/guide/ClaudeCodeで使用する-プラグインを入れる.mark.md
+    new: false
+    change: マーケットプレイスから mdmark-style を別に入れる手順を書き足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
+scope_out:
+  - item: 図（mermaid・map）・埋め込んだ HTML・文字の大きさ・任意の CSS を Claude Code の画面で描くこと
+    reason: mod は決まった部品だけで描き、描けないものは描かないと D-76 で決めた
+    plan: none
+  - item: ツールの結果の描き換え
+    reason: ツールの結果は畳まれていることが多く効果が小さいため、D-75 で見送った
+    plan: none
+  - item: 用語を YAML の文書の MCP（dev-docs・project-index）から取ること
+    reason: mdmark-style は YAML の文書・MCP に依存しないと D-85・D-117 で決めた（用語は mdmark.config.yaml から取る）
+    plan: none
+  - item: 既存のプラグイン mdmark（plugin/）の MCP・フックの変更
+    reason: mdmark-style は単独のプラグインと D-83 で決め、既存のプラグインは変えない
+    plan: none
+  - item: 行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブ・段組み・カードの格子・wide の範囲・ビュー・CSV の表・図と表の番号を Claude Code の画面で描くこと
+    reason: 利用者が別の Issue に切り出す案 B を選んだ（確認ログ）
+    plan: '#702'

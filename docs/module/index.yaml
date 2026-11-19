@@ -798,3 +798,23 @@ items:
   summary: ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs
 - page: MOD-660-1.mjs.yaml
   summary: ライブラリ本体 / バージョンを上げる / retired-map-options.mjs
+- page: MOD-472-351.tsx.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / mod.tsx
+- page: MOD-472-352.ts.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / settings.ts
+- page: MOD-472-353.ts.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / blocks.ts
+- page: MOD-472-354.ts.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / table-layout.ts
+- page: MOD-472-355.tsx.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / reply.tsx
+- page: MOD-472-356.ts.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / terms.ts
+- page: MOD-472-357.tsx.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / user-message.tsx
+- page: MOD-472-358.ts.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / marker-guide.ts
+- page: MOD-472-359.ts.yaml
+  summary: ライブラリ本体 / 記法の共通 / style-tokens.logic.ts
+- page: MOD-472-360.ts.yaml
+  summary: ClaudeCodeプラグイン / mdmark-style / test-mdmark-style.ts

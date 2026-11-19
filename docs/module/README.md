@@ -407,5 +407,15 @@
 | [ライブラリ本体 / map / convert.ts](./MOD-477-5.ts.yaml) | ライブラリ本体 / map / convert.ts |
 | [ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs](./MOD-477-6.mjs.yaml) | ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs |
 | [ライブラリ本体 / バージョンを上げる / retired-map-options.mjs](./MOD-660-1.mjs.yaml) | ライブラリ本体 / バージョンを上げる / retired-map-options.mjs |
+| [ClaudeCodeプラグイン / mdmark-style / mod.tsx](./MOD-472-351.tsx.yaml) | ClaudeCodeプラグイン / mdmark-style / mod.tsx |
+| [ClaudeCodeプラグイン / mdmark-style / settings.ts](./MOD-472-352.ts.yaml) | ClaudeCodeプラグイン / mdmark-style / settings.ts |
+| [ClaudeCodeプラグイン / mdmark-style / blocks.ts](./MOD-472-353.ts.yaml) | ClaudeCodeプラグイン / mdmark-style / blocks.ts |
+| [ClaudeCodeプラグイン / mdmark-style / table-layout.ts](./MOD-472-354.ts.yaml) | ClaudeCodeプラグイン / mdmark-style / table-layout.ts |
+| [ClaudeCodeプラグイン / mdmark-style / reply.tsx](./MOD-472-355.tsx.yaml) | ClaudeCodeプラグイン / mdmark-style / reply.tsx |
+| [ClaudeCodeプラグイン / mdmark-style / terms.ts](./MOD-472-356.ts.yaml) | ClaudeCodeプラグイン / mdmark-style / terms.ts |
+| [ClaudeCodeプラグイン / mdmark-style / user-message.tsx](./MOD-472-357.tsx.yaml) | ClaudeCodeプラグイン / mdmark-style / user-message.tsx |
+| [ClaudeCodeプラグイン / mdmark-style / marker-guide.ts](./MOD-472-358.ts.yaml) | ClaudeCodeプラグイン / mdmark-style / marker-guide.ts |
+| [ライブラリ本体 / 記法の共通 / style-tokens.logic.ts](./MOD-472-359.ts.yaml) | ライブラリ本体 / 記法の共通 / style-tokens.logic.ts |
+| [ClaudeCodeプラグイン / mdmark-style / test-mdmark-style.ts](./MOD-472-360.ts.yaml) | ClaudeCodeプラグイン / mdmark-style / test-mdmark-style.ts |
 
 <!-- /table -->

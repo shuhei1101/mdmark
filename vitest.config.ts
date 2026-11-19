@@ -83,6 +83,8 @@ export default defineConfig({
           exclude: [
             "tests/integration/**/*.browser.test.ts",
             "tests/integration/**/*.story.test.ts",
+            // claude plugin test で実行する mod の結合テスト（scripts/test-mdmark-style.ts）
+            "tests/integration/ClaudeCodeプラグイン/mdmark-style/**",
           ],
           globalSetup: ["tests/integration/global-setup.ts"],
           maxWorkers: INTEGRATION_MAX_WORKERS,

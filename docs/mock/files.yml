@@ -1848,6 +1848,30 @@ files:
     visibility: internal
     description: '#659（スマホで拡大した図を指で縦横に動かし、ピンチで拡大・縮小し、ボタンを図に重ねるパネルにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: pages/claude-code-terminal/index.md
+    visibility: internal
+    description: 画面『claude-code-terminal』（mdmark-style を入れた Claude Code のターミナル版の画面）のモックの番号の一覧。この画面のモックを探すときに参照する。
+    tags: [topic:モック, tool:claude-code]
+  - path: pages/claude-code-terminal/699/index.md
+    visibility: internal
+    description: '#699 の画面『claude-code-terminal』のモックの案の一覧。この PR の画面の案を探すときに参照する。'
+    tags: [topic:モック, tool:claude-code]
+  - path: pages/claude-code-terminal/699/mdmark-style/index.html
+    visibility: internal
+    description: '画面『claude-code-terminal』のモック: mdmark-style が返答の表・注意書き・見出し・コードを共通スタイルで描き、段落と箇条書きを標準の描き方のまま残し、発言と返答の用語に下線・カード・脚注を付けた画面と、表の部品をオフ・用語集を読めない場面、mdmark-style なしの比較。画面の見え方を決めるときに参照する。'
+    tags: [topic:モック, tool:claude-code, topic:用語, topic:テーブル, topic:注意書き]
+  - path: components/claude-code-term-card/index.html
+    visibility: internal
+    description: '部品『claude-code-term-card』のモック: Claude Code の画面の用語の下線と、ポインターで開くカード（後ろの行を隠して手前に出る・長い意味の折り返し）と、本文の後ろの番号つきの脚注、カードをオフにした状態。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, tool:claude-code, topic:用語, topic:脚注]
+  - path: refs/699/index.md
+    visibility: internal
+    description: '#699（Claude Code の画面を共通スタイルで描く mod）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/699/assets/terminal.css
+    visibility: internal
+    description: 'モック『699』の外観: Claude Code のターミナル版の画面（等幅の文字の格子・発言の背景の帯・返答の部品・用語のカード）の規則。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, tool:css]
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
   reviewed: []

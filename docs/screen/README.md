@@ -6,6 +6,7 @@ mdmark が描く画面の要素と、使用する部品へ指定する値
 
 | ページ | 概要 |
 | --- | --- |
+| [ClaudeCodeの返答と発言](./SCR-472-5.tsx.yaml) | mod のプラグイン mdmark-style が描き換える Claude Code の返答と発言の部品・ボタン・用語のカード |
 | [文書](./SCR-472-4.ts.yaml) | 描く先の要素の中に描く文書と、mdmark が追加する UI の項目 |
 | [まとめたHTML](./SCR-472-3.ts.yaml) | mdmark build が書き出す 1 枚の HTML の文書の一覧・開いている文書・一覧のパネル |
 | [VSCodeのプレビュー](./SCR-472-2.ts.yaml) | VS Code 拡張機能のプレビューのパネルの、描いた文書と状態の表示 |

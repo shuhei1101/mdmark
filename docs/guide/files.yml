@@ -258,6 +258,12 @@ files:
     category: 使用方法
     description: マーケットプレイスを追加してプラグインを入れ、次のセッションからツールとガイドへの動線を受け取る手順を説明し、Claude Code に mdmark を入れるときに参照する。
     tags: [tool:claude-code, topic:プラグイン, topic:セットアップ]
+  - path: ClaudeCodeで使用する-画面を共通スタイルで描く.md
+    name: 画面を共通スタイルで描く
+    visibility: public
+    category: 使用方法
+    description: mod のプラグイン mdmark-style を入れ、Claude Code の返答と発言を mdmark の共通スタイルで描く手順と描き換えるものを説明し、Claude Code の画面に mdmark の外観を適用するときに参照する。
+    tags: [tool:claude-code, topic:プラグイン, topic:スタイル, topic:用語]
   - path: ClaudeCodeで使用する-セットアップする.mark.md
     name: セットアップする
     visibility: public

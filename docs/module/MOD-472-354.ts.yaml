@@ -1,0 +1,127 @@
+id: MOD-472-354
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / table-layout.ts
+lead: 表の列の幅を端末の表示幅（全角の文字を 2 つ分）で数え、描く幅に収まらないときは列の幅を縮めてセルの中で折り返す。
+test_files:
+  - tests/unit/src/mdmark-style/table-layout.test.ts
+functions:
+  - name: displayWidth
+    title: 表示幅を数える
+    kind: 関数
+    container: src/mdmark-style/table-layout.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 文字列の端末の表示幅を、East Asian Width が `W`・`F` の文字と絵文字を 2、結合文字を 0、そのほかを 1 として数える
+    scope: public
+    is_async: false
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 数える文字列
+    returns:
+      type: number
+      description: 表示幅
+    process: 1. 書記素ごとに幅を足し合わせる
+    unit_tests:
+      - name: test_display_width
+        case: 正常
+        summary: 全角と半角を数える
+        condition: '`用語ab`'
+        mock: なし
+        expected: '6'
+    status: planned
+  - name: wrapCell
+    title: セルを折り返す
+    kind: 関数
+    container: src/mdmark-style/table-layout.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: セルの文字列を列の幅に収まる行に折り返す。折り返す位置は空白と全角の文字の間で、1 つの単語が列の幅を超えるときだけ単語の途中で折り返す
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ text: string; width: number }'
+        required: true
+        description: セルの文字列と列の幅
+    returns:
+      type: string[]
+      description: 折り返した行。どの行も表示幅が `width` 以下
+    process: |-
+      1. 空白と全角の文字の境で単語に分ける
+      2. 行に単語を足し、幅を超えるときは次の行へ送る
+      3. 1 つで `width` を超える単語は `width` ごとに分ける
+    unit_tests:
+      - name: test_wrap_cell
+        case: 正常
+        summary: 空白で折り返す
+        condition: '`text` が `read the config file`、`width` が 10'
+        mock: なし
+        expected: '`["read the", "config", "file"]`'
+      - name: test_wrap_cell_when_long_word
+        case: 正常
+        summary: 列の幅を超える単語だけ途中で切る
+        condition: '`text` が `a mdmark.config.yaml`、`width` が 8'
+        mock: なし
+        expected: '`["a", "mdmark.c", "onfig.ya", "ml"]`'
+      - name: test_wrap_cell_when_wide
+        case: 正常
+        summary: 全角の文字の間で折り返す
+        condition: '`text` が `用語を読み込む`、`width` が 6'
+        mock: なし
+        expected: '`["用語を", "読み込", "む"]`'
+    callees:
+      - '#functions[displayWidth]'
+    refs:
+      - SCR-472-5#elements[表].constraints
+    status: planned
+  - name: fitColumns
+    title: 列の幅を決める
+    kind: 関数
+    container: src/mdmark-style/table-layout.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 列ごとの中身の幅から列の幅を決める。罫線を含めた幅が `columns` を超えるときは、広い列から縮めて収める
+    description: '`columns` が無いとき（`e.viewport` が無い）と `wrap` が偽のとき（デスクトップ版）は中身の幅のまま。列の幅はその列の最も長い単語の幅と 4 の小さい方よりは縮めない'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ cells: string[][]; columns?: number; wrap: boolean }'
+        required: true
+        description: 見出しの行を含めたセル、描く幅の文字数、折り返すか
+    returns:
+      type: number[]
+      description: 列ごとの幅
+    process: |-
+      1. 列ごとにセルの表示幅の最大を取る
+      2. `wrap` が真で、列の幅の合計に罫線と余白（列の数 × 3 + 1）を足した幅が `columns` を超えるとき、最も広い列を 1 ずつ縮めることを収まるまで繰り返す
+      3. どの列も縮められなくなったらその幅で返却する
+    unit_tests:
+      - name: test_fit_columns
+        case: 正常
+        summary: 収まる表は中身の幅
+        condition: '`cells` が `[["ab", "用語"]]`、`columns` が 80、`wrap` が真'
+        mock: なし
+        expected: '`[2, 4]`'
+      - name: test_fit_columns_when_narrow
+        case: 正常
+        summary: 狭い幅では広い列から縮める
+        condition: 2 列で中身の幅が 10 と 40、`columns` が 40、`wrap` が真
+        mock: なし
+        expected: 幅の合計に 7 を足した値が 40 以下で、1 列目が 10
+      - name: test_fit_columns_when_desktop
+        case: 正常
+        summary: 折り返さないときは中身の幅
+        condition: 上と同じセルで `wrap` が偽
+        mock: なし
+        expected: '`[10, 40]`'
+    callees:
+      - '#functions[displayWidth]'
+    refs:
+      - IF-472-45#constraints[表]
+    status: planned
+tags:
+  - name: topic:テーブル
+    main: true
+  - name: tool:claude-code
+  - name: topic:折り返し
+  - name: topic:幅

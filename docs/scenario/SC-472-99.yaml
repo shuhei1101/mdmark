@@ -1,0 +1,106 @@
+id: SC-472-99
+visibility: internal
+title: ClaudeCodeのセッションの開始でマーカーの記載方法を受け取る
+lead: mdmark-style を入れた Claude Code のセッションの開始で、モデルが返答に mdmark のマーカーを記載できるよう、マーカーの記載方法の短い説明を受け取る。
+primary_actor: Claude Code
+trigger: Claude Code のセッションの開始（起動・再開・`/clear`・圧縮の後）
+preconditions:
+  - Claude Code に mdmark-style を入れている
+stakeholders:
+  - name: Claude Code を使用する人
+    interest: 返答の表・注意書きが、マーカーで選んだ描き方で描かれる
+  - name: Claude Code
+    interest: 説明が 1 回の開始につき 1 回だけ入り、文脈を余分に使わない
+scenarios:
+  - name: 正常シナリオ
+    decisions:
+      - D-94
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: ターミナル版の Claude Code を tmux の手元と別のソケットで起動し、ビルドしたこのリポジトリの mdmark-style を `--plugin-dir` で読み込む
+        notes: 設定ファイルは配置せず、既定値で動かす
+      - name: Mock
+        description: なし（実際の Claude Code とモデルで、説明に入っているマーカーの書式を問う発言をする）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: セッションを開く
+        C->>M: classic.SessionStart（source: startup）
+        M-->>C: additionalContext にマーカーの記載方法の説明
+        U->>C: 表の種類のマーカーの書式を問う発言
+        C-->>U: 説明のとおりのマーカーの書式
+      ```
+
+      <!-- /map -->
+    expected:
+      - SessionStart の結果の `additionalContext` に、マーカーの記載方法の説明が 1 つだけ入る
+      - モデルが、説明のとおりのマーカーの書式を回答する
+    test: test_normal
+  - name: 正常シナリオ（/clear の後）
+    decisions:
+      - D-94
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: 正常シナリオと同じ。正常シナリオの後に `/clear` を実行する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: /clear
+        C->>M: classic.SessionStart（source: clear）
+        M-->>C: additionalContext にマーカーの記載方法の説明
+        U->>C: 表の種類のマーカーの書式を問う発言
+        C-->>U: 説明のとおりのマーカーの書式
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`/clear` の後の SessionStart でも、`additionalContext` に説明が 1 つだけ入る'
+      - モデルが、説明のとおりのマーカーの書式を回答する
+    test: test_normal_when_cleared
+  - name: 正常シナリオ（注入をオフにしている）
+    decisions:
+      - D-93
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: 正常シナリオと同じ。`MDMARK_STYLE_CONFIG` で一時フォルダの設定ファイルを指す
+        notes: 設定ファイルの `global.inject_marker_guide` を `false` にする
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: セッションを開く
+        C->>M: classic.SessionStart（source: startup）
+        M-->>C: 説明を追加しない
+      ```
+
+      <!-- /map -->
+    expected:
+      - SessionStart の結果の `additionalContext` に、マーカーの記載方法の説明が入らない
+    test: test_normal_when_injection_disabled
+success_guarantee: セッションの開始ごとに、マーカーの記載方法の説明がモデルの文脈に 1 つだけ入り、モデルが返答にマーカーを記載できる。
+minimal_guarantee: mdmark-style の SessionStart の処理が失敗しても、セッションの開始は止まらず、他のプラグインの `additionalContext` はそのまま入る。
+test_file: tests/e2e/単一ユースケース/ClaudeCodeのセッションの開始でマーカーの記載方法を受け取る.spec.ts
+tags:
+  - name: topic:マーカー
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: topic:フック
