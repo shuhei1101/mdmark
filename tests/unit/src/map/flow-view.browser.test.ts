@@ -399,10 +399,13 @@ test("test_attach_map_flow_when_crowded", async () => {
 
 /** 絶対配置でない子要素 */
 const inFlowChildren = (element: Element): Element[] =>
-  [...element.children].filter(
-    (child) =>
-      !["absolute", "fixed"].includes(getComputedStyle(child).position),
-  );
+  [...element.children].filter((child) => {
+    const style = getComputedStyle(child);
+    return (
+      !["absolute", "fixed"].includes(style.position) &&
+      style.display !== "none"
+    );
+  });
 
 /**
  * 選んだノードの中身の上端と下端を、上下の枠線と余白を除いた内側の上端・下端から、指定した量だけ外へずらした位置に描かれたことにする。
@@ -585,4 +588,21 @@ test("test_attach_map_flow_when_walk_into_closed_group", async () => {
   expect(
     root.querySelectorAll('.map-packet[data-wire="store->data"]').length,
   ).toBeGreaterThan(0);
+});
+
+// 隠した種類の行を中身に数えない（正常系）
+test("test_attach_map_flow_when_kind_row_hidden", async () => {
+  // 準備（描いた文書の CSS と同じく押せる要素を絶対配置にして種類の行を隠し、表示している中身の下端を内側の下端より 2px 上にする）
+  await clearLayoutCalls();
+  const style = document.createElement("style");
+  style.textContent =
+    ".mdmark-diagram-node-hit { position: absolute; } .mdmark-diagram-node-kind { display: none; }";
+  document.head.append(style);
+  onTestFinished(() => style.remove());
+  placeContent(".mdmark-diagram-node", { above: 0, below: -2 });
+  // 実行
+  await setUp();
+  // 検証
+  const layout = await loadLayout();
+  expect(vi.mocked(layout.layoutMap)).toHaveBeenCalledTimes(1);
 });
