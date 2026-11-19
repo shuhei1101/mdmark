@@ -249,3 +249,5 @@ tags:
   - name: topic:タブ
   - name: topic:色
   - name: topic:図表の番号
+notes:
+  モックの照合: 本文の部品より前の要素（注意書き・コードブロックとコピーボタン・開閉のボタン・用語の下線とカードと脚注・発言の背景の帯）は、`docs/mock/pages/claude-code-terminal/699/mdmark-style/` のモックで照合する
