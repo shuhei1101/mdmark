@@ -17,7 +17,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 記法を持つ文書
-        description: 目次のマーカー・表のマーカーで囲んだ表・注意書き・タブ・番号を付けた表と、その番号を出すリンク・map の範囲（Mermaid と補足）・棒グラフの `chart`・`param`・表と色を持つ埋め込んだ HTML を持つ文書 1 つと、設定
+        description: 目次のマーカー・表のマーカーで囲んだ表・注意書き・タブ・バッジ・タイトルと行末の `[!code ++]` を持つコードブロック・番号を付けた表と、その番号を出すリンク・map の範囲（Mermaid と補足）・棒グラフの `chart`・`param`・表と色を持つ埋め込んだ HTML を持つ文書 1 つと、設定
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -34,7 +34,7 @@ scenarios:
         C->>C: chart・param・埋め込んだ HTML を SVG にする
         C->>F: Markdown と SVG のファイルを書き込む
         C-->>W: 書き出したパス・終了コード 0
-        R->>F: GitHub に配置した Markdown を開く
+        R->>F: 書き出した Markdown を mdmark を読み込まない手元の表示で開く
         F-->>R: 記法の文字の無い文書と画像の図
       ```
 
@@ -46,8 +46,12 @@ scenarios:
       - map の範囲は Mermaid のコードブロックだけが残り、補足が残っていない
       - '`chart`・`param` の場所は、タイトルの太字の行・SVG の画像のリンク・凡例の系列の名前の箇条書きになっている'
       - SVG のファイルの `href`・`src`・`url(` の値に、`data:` と SVG の中の `#` で始まる参照のほかが 0 件
-      - GitHub の Markdown の表示で、全ての画像が空でない大きさで出る
+      - 注意書きは GitHub の注意書きの記法のまま、タブはタブ名の見出しと中身が残り、バッジは頭の `badge:` を除いた行内のコードになっている
+      - コードブロックは、タイトルが直前の太字の行になり、行末の `[!code ++]` が残っていない
+      - 書き出した Markdown を mdmark を読み込まない Markdown の変換で HTML にして Chromium で開くと、全ての `img` の `naturalWidth` が 0 より大きく、外への要求が 0 件
     test: test_normal
+    notes:
+      表示先での表示: GitHub と VS Code の標準のプレビューで画像が出て読めることは、PoC 検証で確認済み。E2E は外部のサービスへ配置せず、手元の表示で確認する
   - name: 正常シナリオ（書き出せない中身を持つ埋め込んだ HTML）
     setup:
       - name: 書き出せない中身を持つ文書
