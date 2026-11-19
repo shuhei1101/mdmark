@@ -126,11 +126,11 @@ functions:
     summary: '部品に指定するクラスのメンバー・注釈・関係の端と、クラス・ノート・閉じた namespace の配置の上書きを作る'
     description: |-
       部品に指定するクラスのメンバー・注釈・関係の端と、クラスの大きさと左右に空ける幅を指定する配置の上書きを作る。
-      クラスの幅は `widths` の幅、無ければ名前の文字の幅と、メンバーの文字の幅（`mapClassTextWidth`）に可視性・説明のボタンの列と `MAP_CLASS.memberInset` を加えた幅が収まる幅を `MAP_CLASS.width` から `maxWidth` までの間で決め、メンバーごとにその幅で折り返す行の数（`mapClassMemberLines`）を求めて、高さを `mapClassNodeSize` で決める。
+      クラスの幅は `widths` の幅、無ければ `measureText` で測った名前の幅に左の余白 `LABEL_METRICS.padX`・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅と、メンバーの文字の幅（`mapClassTextWidth`）に可視性・説明のボタンの列と `MAP_CLASS.memberInset` を加えた幅が収まる幅を `MAP_CLASS.width` から `maxWidth` までの間で決め、メンバーごとにその幅で折り返す行の数（`mapClassMemberLines`）を求めて、高さを `mapClassNodeSize` で決める。
       ラベルを持つ関係がつながるクラスは、`aside` を、つながる関係の最も長いラベルの幅（文字数 × `MAP_ER.labelChar`）と前後の `MAP_CLASS.labelGap` が、要素の間（図の全体の LR の段の間 `MAP_LAYOUT.gapRank` と、namespace の TB の中で横に並ぶ要素の間 `MAP_LAYOUT.gapItem` の小さい方）と両側の `aside` に収まる幅（`ceil(max(0, ラベルの幅 + labelGap × 2 - min(gapRank, gapItem)) / 2)`）にする。
       `aside` はラベルをずらす量を小さくするためのもので、重なりの回避は `renderMapClassEnds` が行う。
       閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする。
-      ノートのノードは、文の幅（`layout.ts` の `textWidth` に `LABEL_METRICS.nameSize`）に左の余白 `LABEL_METRICS.padX`・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅を、`MAP_LAYOUT.minWidth` から `maxWidth` までの間で幅にする。その幅から左右の余白と枠線を引いた幅で文を行に分け（`layout.ts` の `splitLines`）、行の数から構成図の既定の見積もりと同じ `layout.ts` の `leafHeight` で高さを決める
+      ノートのノードは、`measureText` で測った文の幅（`layout.ts` の `textWidth`）に左の余白 `LABEL_METRICS.padX`・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅を、`MAP_LAYOUT.minWidth` から `maxWidth` までの間で幅にする。その幅から左右の余白と枠線を引いた幅で、文を `measureText` で測って行に分け（`layout.ts` の `splitLines`）、行の数から構成図の既定の見積もりと同じ `layout.ts` の `leafHeight` で高さを決める
     scope: public
     args:
       - name: diagram
@@ -138,9 +138,9 @@ functions:
         required: true
         description: 読み取り結果
       - name: view
-        type: '{ collapsed: ReadonlySet<string>; widths: Record<string, number>; maxWidth: number }'
+        type: '{ collapsed: ReadonlySet<string>; widths: Record<string, number>; maxWidth: number; measureText: (text: string) => number }'
         required: true
-        description: 閉じたグループとメンバーを閉じたクラス、補足の `layout` の幅、幅の上限（設定 `map.node_fit` が `width` なら `MAP_LAYOUT.maxWidthWide`、それ以外は `MAP_LAYOUT.maxWidth`）
+        description: 閉じたグループとメンバーを閉じたクラス、補足の `layout` の幅、幅の上限（設定 `map.node_fit` が `width` なら `MAP_LAYOUT.maxWidthWide`、それ以外は `MAP_LAYOUT.maxWidth`）、クラスの名前とノートの文の 1 行の幅を測る関数（`layoutMap` の `measureText` と同じ）
     returns:
       type: '{ classes: MapClassNode[]; ends: MapClassEnd[]; overrides: Record<string, MapOverride> }'
       description: クラスごとのメンバー（折り返す行の数 `lines` つき）と注釈、関係の端（`{ wire, at, shape, card }`）、配置の上書き
@@ -181,6 +181,12 @@ functions:
         condition: '`note for 検索 "短い"` だけを持つクラス図、`maxWidth` が 220'
         mock: なし
         expected: '`note_1` の上書きの幅が `MAP_LAYOUT.minWidth`、高さが `leafHeight(1)`（構成図の既定の見積もりと同じ）'
+      - name: test_class_part_inputs_when_measured_name
+        case: 正常
+        summary: 測った名前の幅でクラスの幅を決める
+        condition: メンバーを持たないクラス `MarkdownDocumentRenderer`（半角 24 文字）とノート「Markdown を描く」、`maxWidth` が 360、1 文字を 10px と測る `measureText`
+        mock: '`measureText`'
+        expected: クラスの上書きの幅が 281（240 + 10 + 28 + 1.5 × 2）、ノートの上書きの幅が 161（12 文字 × 10 + 41）で高さが `leafHeight(1)`
 refs:
   - IF-472-35#constraints[map のクラス図]
 lead: 'Mermaid の classDiagram の読み取りと構成図の入力への変換を受け持ち、map のクラス図の読み取りを変えるときに参照する。'

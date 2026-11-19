@@ -37,8 +37,8 @@ data_models:
         type: Flowchart
         description: '`parseFlowchart` の代わりに配置するノード・グループ・線'
       - name: overrides
-        type: '(view: { collapsed: ReadonlySet<string>; widths: Record<string, number> }) => Record<string, MapOverride>'
-        description: 補足の `layout` の前に重ねる配置の上書き（ノードの幅・大きさ・上と左右に空ける幅）。配置するたびに、閉じた ID と、補足の `layout` の `width` を持つ ID から幅への対応で呼ぶ（クラス図は、補足の幅でメンバーの折り返しと高さを決める）
+        type: '(view: { collapsed: ReadonlySet<string>; widths: Record<string, number>; measureText: (text: string) => number }) => Record<string, MapOverride>'
+        description: 補足の `layout` の前に重ねる配置の上書き（ノードの幅・大きさ・上と左右に空ける幅）。配置するたびに、閉じた ID と、補足の `layout` の `width` を持つ ID から幅への対応と、`layoutMap` に指定するのと同じ名前の幅を測る関数で呼ぶ（クラス図は、補足の幅でメンバーの折り返しと高さを決め、名前とノートの文の幅を測る）
       - name: collapsibles
         type: string[]
         description: 全て閉じるで閉じる、グループのほかの ID（ER 図のテーブル）
@@ -176,7 +176,7 @@ functions:
       description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
     process: |-
       1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み、`extension.kinds`・`extension.lines` を設定の `map.kinds`・`map.lines` に重ね、印に `title` が無ければ `extension.title` を図の枠のタイトルにし、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
-      2. `extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を引き直し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・引き直し・並べるを 1 回だけやり直す（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」をやり直すことを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確かめた `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
+      2. 名前の幅を測る関数を作る。範囲の要素の計算値の `font-family` と `LABEL_METRICS.nameSize`・太字（700）のフォントで、canvas の 2D の文脈の `measureText` で 1 行の幅を測り、同じ文字の列の幅は覚えて使い回す。この関数を `layoutMap` の `measureText` と `extension.overrides` の `measureText` に指定する。上書きには、ノードの種類（`classes` のうち重ねた `map.kinds` にある最初の種類）の形状が `pill` のノードに `padLeft`（`LABEL_METRICS.padPill`）を加える。`extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を引き直し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・引き直し・並べるを 1 回だけやり直す（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」をやり直すことを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確かめた `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
       3. ノードと閉じたグループ（`.map-closed-group[data-group]`）の中身を測り、中身が入る高さ（絶対配置でなく、`display` が `none` でない子要素の、最初の子要素の上端から `margin-top` を引いた位置から、最後の子要素の下端に `margin-bottom` を加えた位置までの高さに、上下の余白と上下の枠線を加えた高さ）が、ノードの高さを 1px より大きく越えるノードを、越えた分を高さに加えた `size` にして配置し直す。中身を上寄せにするノードも上下の中央に配置するノードも、1 回の測り直しで中身が上下の余白の内側に入る。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
       4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順へ移るたびに `onWalk` を呼び、`onStep` で `resumeFollow` と手順の `nodes` の `follow` を呼んで図を移し、停止で案内を始めたときに中へ入っていたグループと倍率に戻す。手順の `nodes` のうち閉じたグループの中のノードはそのグループに、`edges` のうち描いていない線（閉じたグループへの線にまとめた線）は、両端を同じく付け替えた描いた線に置き換えて、強調とデータの印を当てる
       4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ（`pointerType` が `touch` の押下ではノード・グループ・線の区間を動かさず、指の移動を表示する枠のスクロールに任せる）、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）
@@ -277,6 +277,12 @@ functions:
         condition: '全てのノードの種類の行（`.mdmark-diagram-node-kind`）を `display: none` にしたモックの `FLOW` を描き、表示している中身の下端を、下の枠線と下の余白を除いた下端より 2 上にする'
         mock: '`layoutMap`'
         expected: '`layoutMap` を 1 回だけ呼ぶ（隠した種類の行の全て 0 の矩形を中身の上端にしない）'
+      - name: test_attach_map_flow_when_measured_name
+        case: 正常
+        summary: 描くフォントで測った名前の幅で配置する
+        condition: 「文書の Markdown」のノード（`:::step`）と、設定の `map.kinds` で形状が `pill` の種類の「利用側のページ」のノードを持つ範囲を描く
+        mock: なし
+        expected: どちらのノードも名前が 1 行（名前の要素の高さが 14px × 1.35 以下）で、ノードの幅が名前の要素の幅に左右の余白（「文書の Markdown」は 10px・28px、「利用側のページ」は 16px・28px）と枠線 3px を加えた幅から 1px 以内
 lead: 'map の構成図の描画と、選んだノードの線と経路の強調を受け持ち、構成図の描画と操作を変えるときに参照する。'
 tags:
   - name: topic:map
