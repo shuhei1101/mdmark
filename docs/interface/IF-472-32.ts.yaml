@@ -383,6 +383,14 @@ request:
     default: なし（引数を検査しない）
     location: argument
     description: '`{ options, definition }` を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま指定できる'
+  - name: extension.toMarkdown
+    type: '(value: MdmarkMarkArgs) => string | Promise<string>'
+    required: false
+    location: argument
+    default: なし（`toPureMarkdown` はその拡張のマーカーと範囲を取り除く）
+    description: 書き出しのフック。検査を通ったマーカーの引数を受け、その場所に入れる純粋な Markdown を返却する
+    constraints: 関数。それ以外は `TypeError`
+    notes: DOM を使用せず、ブラウザと Node の両方で動く関数にする
 request_example: |-
   ```ts
   import { registerExtension } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.2.0/dist/index.js";
@@ -459,7 +467,7 @@ constraints:
     constraint: 拡張の `draw` は、配布物が出す `mountView`・`mountComments` を `slot` に対して呼んで、マーカーの場所に mdmark の部品を描ける。`draw` が部品の Promise を待つと、`mount` はその後にマーカーの場所を描き終えたものとして扱う。`update`・`destroy` でマーカーの場所を片付けるとき、その中の部品の `destroy` も行う
     notes: docs/interface/IF-472-30.ts・docs/interface/IF-472-27.ts
   - item: 書き出しのフック
-    constraint: '拡張のモジュールは、省略できる `toMarkdown(value: MdmarkMarkArgs): string | Promise<string>` を名前付きで export できる。`toPureMarkdown` はその拡張のマーカーごとに、検査を通った `{ options, definition }` で呼び、返した文字列をそのままマーカーと範囲の場所に入れる。`mount`・`render` は呼ばない。例外を送出したときはフックが無いときと同じく取り除き、警告に拡張の名前を出す'
+    constraint: '書き出しのフックは `registerExtension` の省略できる引数 `extension.toMarkdown` で指定し、拡張のモジュール（`load`）には持たせない。`toPureMarkdown` はその拡張のマーカーごとに、検査を通った `{ options, definition }` で呼び、返した文字列をそのままマーカーと範囲の場所に入れる。`load` は呼ばない。`mount`・`render` はフックを呼ばない。例外を送出したときはフックが無いときと同じく取り除き、警告に拡張の名前を出す'
     notes: 変換の制約はインターフェース定義『文書を純粋なMarkdownにする』
 tags:
   - name: topic:拡張

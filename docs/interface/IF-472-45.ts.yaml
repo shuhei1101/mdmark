@@ -6,7 +6,7 @@ entry:
   kind: operation
   value: '`toPureMarkdown(markdown, opts)`（配布物 `dist/index.js` の公開関数）'
 idempotent: true
-side_effects: なし（拡張のモジュールを読み込むだけで、ファイル・画面・外部へ書き込まない）
+side_effects: なし（ファイル・画面・外部へ書き込まず、拡張のモジュール（`load`）も読み込まない）
 callers:
   - SC-472-97#scenarios[正常シナリオ]
   - SC-472-98#scenarios[正常シナリオ（コピーする）]
@@ -71,7 +71,7 @@ request:
     type: string[]
     required: false
     location: argument
-    description: '`opts.figure` が受ける `chart` の凡例の系列の名前の並び'
+    description: '`opts.figure` が受ける `chart`・`param` の凡例の系列の名前の並び（`param` は今の値と既定の値）'
 request_example: |-
   ```js
   const { markdown, warnings } = await toPureMarkdown(source, {
@@ -94,8 +94,8 @@ exceptions:
     condition: 変換できた
   - name: TypeError
     condition: '`markdown` が文字列でない、または `opts.figure` が関数でない'
-  - name: なし（拡張のモジュールを読み込めない）
-    condition: 書き出しのフックを持つかを確かめる拡張のモジュールを読み込めない
+  - name: なし（書き出しのフックが例外を送出する）
+    condition: 拡張の `toMarkdown` が例外を送出するか、文字列でない値を返却する
     notes: そのマーカーを取り除き、`warnings` に拡張の名前と場所を入れる
 constraints:
   - item: HTML のコメント
@@ -121,7 +121,7 @@ constraints:
   - item: chart・param・埋め込んだ HTML
     constraint: '`opts.figure` が返す Markdown に置き換える。指定が無いか `undefined` を返したら取り除く。`chart`・`param` のタイトルと凡例は `opts.figure` の返す Markdown に含めず、呼ぶ側が決める'
   - item: 拡張のマーカー
-    constraint: 拡張のモジュールが書き出しのフック（`toMarkdown`）を持てば、その戻り値をマーカーの場所に入れる。持たなければマーカーと範囲の定義を取り除き、`warnings` に入れる
+    constraint: 登録した拡張が書き出しのフック（`registerExtension` の `toMarkdown`）を持てば、その戻り値をマーカーの場所に入れる。持たなければマーカーと範囲の定義を取り除き、`warnings` に入れる。拡張のモジュール（`load`）は読み込まない
     notes: フックの入出力はインターフェース定義『拡張を登録する』
   - item: そのほかの記法
     constraint: 色の名前・アイコン・キー・ルビ・蛍光ペン・脚注・注記・画像の属性・カードなど mdmark だけの書き方は、mdmark の無い表示で読める文字（ルビは親文字、キーはキーの名前の行内のコード、カードはリンク）だけを残す
@@ -179,14 +179,14 @@ flows:
       <!-- /map -->
     expected:
       - '`opts.figure` が 3 回、文書の順に `index` 1〜3 で呼ばれる'
-      - '`chart` の呼び出しの `title`・`legend` が、定義のタイトルと系列の名前'
+      - '`chart`・`param` の呼び出しの `title`・`legend` が、定義のタイトルと系列の名前（`param` は今の値と既定の値）'
       - '`markdown` の図の場所に、関数が返した画像のリンクがある'
     test: test_normal_when_figure_given
   - name: 正常系（拡張のマーカー）
     summary: 書き出しのフックを持つ拡張はその戻り値に、持たない拡張は取り除く
     setup:
       - name: 拡張
-        description: 書き出しのフックを持つ拡張と持たない拡張を `registerExtension` で登録する
+        description: 書き出しのフックを指定した拡張と指定しない拡張を `registerExtension` で登録する。どちらの `load` も呼ばれたら記録する
       - name: Mock
         description: 書き出しのフックは、マーカーの JSON のオブジェクトの `target` を太字にした行を返す
     flow: |-
@@ -196,9 +196,9 @@ flows:
       sequenceDiagram
         participant C as 呼ぶ側
         participant IF as toPureMarkdown
-        participant X as 拡張のモジュール
+        participant X as 拡張の toMarkdown
         C->>IF: markdown
-        IF->>X: toMarkdown（options・definition）
+        IF->>X: options・definition
         X-->>IF: Markdown の文字列
         IF-->>C: markdown・warnings
       ```
@@ -208,6 +208,7 @@ flows:
       - フックを持つ拡張のマーカーの場所に、フックが返した太字の行がある
       - フックを持たない拡張のマーカーと範囲の定義が残っていない
       - '`warnings` に、フックを持たない拡張の名前とマーカーの行番号が 1 件ある'
+      - どちらの拡張の `load` も呼ばれていない
     test: test_normal_when_extension_marks
   - name: 正常系（書き出せない中身を持つ埋め込んだ HTML）
     summary: 範囲のスクリプトを除いた HTML を `opts.figure` に渡し、取り除いたことを警告に入れる

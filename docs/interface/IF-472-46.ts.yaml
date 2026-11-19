@@ -143,10 +143,11 @@ flows:
       sequenceDiagram
         participant W as 文書の作成者
         participant C as mdmark CLI
-        participant X as 拡張のモジュール
+        participant X as 拡張の toMarkdown
         participant F as 出力のフォルダ
         W->>C: export-markdown
-        C->>X: toMarkdown
+        C->>C: 設定の extensions の拡張を登録する
+        C->>X: options・definition
         X-->>C: Markdown の文字列
         C->>F: Markdown を書き込む
         C-->>W: 終了コード 0
