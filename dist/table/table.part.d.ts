@@ -384,8 +384,8 @@ export declare function renderTotalRows(options: {
     /** 列名（`data-label`） */
     labels: string[];
 }): string;
-/** 手でコピーさせるパネルの形式。`tree` はファイルツリーの元の罫線のテキスト */
-export type CopyPanelFormat = CopyFormat | "tree";
+/** 手でコピーさせるパネルの形式。`tree` はファイルツリーの元の罫線のテキスト、`document` は文書を変換した純粋な Markdown */
+export type CopyPanelFormat = CopyFormat | "tree" | "document";
 /** クリップボードに書き込めなかったときに、帯の直後へ配置する手でコピーさせるパネルの HTML を返却する */
 export declare function renderCopyPanel(options: {
     /** タイトルの id の頭 */
@@ -394,6 +394,8 @@ export declare function renderCopyPanel(options: {
     format: CopyPanelFormat;
     /** コピーする文字 */
     text: string;
+    /** タイトルに添える理由 */
+    reason?: string | undefined;
 }): string;
 /** 行へのリンクのマーカーを持つ先頭のセルの HTML を返却する。`content` は先頭のセルの中身（`SLOT_MARKER` を指定して前後に分けられる）。`notice` を指定すると、URL をコピーした結果をマーカーの横の通知に出す */
 export declare function renderRowLink(options: {
