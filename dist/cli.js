@@ -63092,7 +63092,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.e0d9c6b";
+  return "v0.14.0+develop.fb021a8";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -87376,9 +87376,15 @@ var addEdgeIds = (found, ids) => {
     found.edgeIds.add(id);
   }
 };
-var classIds = (mermaid, line) => {
+var classIds = (mermaid, line, idLinks) => {
   const diagram = parseClassDiagram(mermaid);
   const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  found.linkProblems.push(
+    ...shiftProblems(
+      mapLinkProblems({ links: diagram.links, idLinks }).problems,
+      line
+    )
+  );
   for (const item of diagram.classes) {
     found.ids.add(item.id);
     for (const member of item.members)
@@ -87463,7 +87469,7 @@ var mermaidIdsOf = (kind, source) => {
     case "stateDiagram":
       return stateIds(mermaid, line);
     case "classDiagram":
-      return classIds(mermaid, line);
+      return classIds(mermaid, line, idLinks);
     case "architecture":
       return architectureIds(mermaid, line);
     case "mindmap":
