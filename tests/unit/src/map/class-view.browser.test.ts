@@ -188,6 +188,7 @@ test("test_attach_map_class_when_long_members", async () => {
       "    +名前: str",
       "  }",
       "  検索 ..> 設定 : ASGI アプリの生成",
+      "",
     ].join("\n"),
     '{"version": 1, "layout": {"設定": {"width": 320}}}',
   );
