@@ -15,6 +15,7 @@
 | [文書を描く](#文書を描く) | `mount(el, opts)` | 要素の中に Markdown を HTML として描く |
 | [差分の出し方を読み込む](#差分の出し方を読み込む) | `diffModes` | `mount` の `opts.diffMode` に指定できる差分の出し方の一覧を持つ |
 | [文書を HTML 文字列にする](#文書を-html-文字列にする) | `render(markdown, opts)` | 画面を持たずに Markdown を HTML 文字列にする |
+| [文書を純粋な Markdown にする](#文書を純粋な-markdown-にする) | `toPureMarkdown(markdown, opts)` | 画面を持たずに mdmark の文書を、mdmark の無い表示で読める純粋な Markdown（GFM と Mermaid）にする |
 | [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返却する |
 | [本文の参照を取り出す](#本文の参照を取り出す) | `collectMatches(input)` | 索引と文書の本文から、本文に出た用語・文書の別名の一致を、参照先と本文の位置つきで返却する |
 | [索引を点検する](#索引を点検する) | `checkIndex(input)` | 索引と文書のずれの一覧を返却する |
@@ -308,6 +309,65 @@ VS Code のエディタの行番号（0 始まり）とそのまま比べられ�
 外部ライブラリは読み込まず、対応表にあるマーカーと登録した拡張のマーカーは読み込み中のブロックに置き換えて返却する。
 記法のマーカーに読み込めない指定がある箇所には、[記載の警告](./記法.mark.md#記載の警告) を配置する。
 索引が Schema に合わないときも、合わない文書・用語の項目を除いて文字列を返却する。
+
+## 文書を純粋な Markdown にする
+
+画面を持たずに mdmark の文書を、GitHub・VS Code の標準のプレビューなど mdmark の無い表示で読める純粋な Markdown（GFM と Mermaid）にする。
+DOM を使用しないため、Node の処理でも同じ文字列を返却する。
+`mdmark export-markdown`・MCP の `export_markdown`・右側の目次の Markdown のボタンが使用する。
+記法ごとの書き出しの形は [Markdown に書き出す](./書き出す-文書を書き出す.mark.md#markdown-に書き出す)。
+
+### リクエスト
+
+```js
+import { toPureMarkdown } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const { markdown, warnings } = await toPureMarkdown(source, {
+  figure: async (f) => `![${f.title ?? "図"}](images/figure-${f.index}.svg)`,
+});
+```
+
+<!-- table: {"kind": "data"} -->
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `markdown` | 必須 | 純粋な Markdown にする mdmark の文書 |
+| `opts.config` | 任意 | `render` の `opts.config` と同じ。読み込むのは `features`。オフの機能の記法は変換せずに記載した文字のまま残し、マーカーだけを取り除く |
+| `opts.index` | 任意 | `render` の `opts.index` と同じ |
+| `opts.docId` | 任意 | `render` の `opts.docId` と同じ |
+| `opts.includes` | 任意 | `render` の `opts.includes` と同じ。取り込む文書を純粋な Markdown にして、include のマーカーの場所に入れる。省くと include のマーカーを取り除く |
+| `opts.figure` | 任意 | `chart`・`param`・埋め込んだ HTML ごとに文書の順に 1 回ずつ呼び、返却した Markdown をその場所に入れる関数。`undefined` を返却した図と、省いたときの全ての図は取り除く |
+
+<!-- /table -->
+
+`opts.figure` が受ける図（型 `MdmarkFigure`）は次のフィールドを持つ。
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `kind` | `"chart" \| "param" \| "html"` | 図の種類（`html` は埋め込んだ HTML） |
+| `index` | 数 | 文書の中で何番目の図か（1 から） |
+| `html` | 文字列 | `render` がその図に返却する HTML。埋め込んだ HTML は範囲のスクリプト（`ts`・`js`）を除いた HTML |
+| `title` | 文字列か `undefined` | `chart`・`param` のタイトル |
+| `legend` | 文字列の並び | `chart`・`param` の凡例の系列の名前（`param` は今の値と既定の値）。埋め込んだ HTML は空 |
+
+### レスポンス
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `markdown` | 文字列 | 純粋な Markdown。HTML のコメントと生の HTML を含まない |
+| `warnings` | 文字列の並び | 取り除いた中身（範囲のスクリプト・書き出しのフックの無い拡張のマーカー・取り込めない include のマーカー）と元の行番号の文 |
+
+同じ `markdown`・`opts` には同じ `markdown` を返却する。
+拡張のモジュール（`load`）は読み込まない。
+登録した拡張のマーカーは、[`registerExtension`](#拡張を登録する) の `toMarkdown` を持てばその戻り値に、持たなければ取り除いて `warnings` に入れる。
+
+### エラー
+
+| 例外 | 発生条件 |
+| --- | --- |
+| `TypeError` | `markdown` が文字列でない、または `opts.figure` が関数でない。返却した `Promise` を reject する |
+
+拡張の `toMarkdown` が例外を投げるか文字列でない値を返却したときは、例外を外へ出さず、そのマーカーを取り除いて `warnings` に拡張の名前と行番号を入れる。
 
 ## 参照の表を作る
 
@@ -679,6 +739,7 @@ registerExtension({
 | `extension.directive` | 必須 | 拡張のマーカーの名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`・`view`）と、登録済みの拡張の `directive` は使用できない。設定の `libraries` や図の部品のマーカー（`chart`・`param`・`er`）、廃止した `flow`・`sequence` に同じ名前があるときは、拡張を優先する |
 | `extension.load` | 必須 | 拡張のモジュールを読み込む関数。文書にマーカーがあるときだけ、`mount` と `update` が描くごとに 1 回呼ぶ。同じ文書の同じ拡張のマーカーでは 1 回だけ呼ぶ |
 | `extension.schema` | 任意 | マーカーの引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま指定できる。省くと検査しない |
+| `extension.toMarkdown` | 任意 | 書き出しのフック。[`toPureMarkdown`](#文書を純粋な-markdown-にする) だけが `value`（`draw` と同じ `{ options; definition? }`）で呼び、返却した Markdown の文字列（`Promise` でもよい）をマーカーの場所に入れる。省くと書き出しでそのマーカーを取り除く |
 
 拡張のモジュールは、`draw(slot, value)` を名前付きで export する。
 `slot` はマーカーの場所の要素、`value` は `{ options: Record<string, unknown>; definition?: unknown }`。
@@ -708,7 +769,7 @@ JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit`
 
 | 例外 | 発生条件 |
 | --- | --- |
-| `TypeError` | `name` が空、`directive` がマーカーの名前の書式に合わない、`load` が関数でない、または `schema` が `~standard` を持たない。メッセージに合わない項目の名前を含める |
+| `TypeError` | `name` が空、`directive` がマーカーの名前の書式に合わない、`load` が関数でない、`schema` が `~standard` を持たない、または `toMarkdown` が関数でない。メッセージに合わない項目の名前を含める |
 | `Error` | `directive` が `features` か記法のマーカー、または登録済みの拡張の `directive` と同じ。メッセージに重なった名前を含める |
 
 描くときは例外を投げず、そのマーカーの場所だけを替えて、ほかは描く。

@@ -70,6 +70,16 @@ docs/guide.md を 1 枚の HTML に書き出して
 `export_html` が `mdmark export`、`build_site` が `mdmark build` と同じ処理で HTML を書き込み、書き込んだパスと警告を返却する。
 同じ文書・設定では、CLI と同じ中身の HTML になる。
 
+#### `export_markdown` を呼ばせる
+
+```text
+docs/guide.mark.md を GitHub で読める Markdown に書き出して
+```
+
+`export_markdown` が `mdmark export-markdown` と同じ処理で、純粋な Markdown（GFM と Mermaid）と `chart`・`param`・埋め込んだ HTML の SVG を書き込み、Markdown と SVG のパスと警告を返却する。
+出力のフォルダを変えるときは、そのパスを `out` に指定するよう頼む。
+書き出しの形は [Markdown に書き出す](./書き出す-文書を書き出す.mark.md#markdown-に書き出す)。
+
 ### CSS のテンプレートを使用する
 
 #### 作った CSS を登録させる
@@ -100,7 +110,7 @@ brand.css を、見出しを社の色にする CSS としてテンプレート�
 ## 反映
 
 ツールを呼ぶたびに、その場の設定・索引・文書を読み込む。
-`export_html`・`build_site` は HTML を書き込む。
+`export_html`・`build_site` は HTML を、`export_markdown` は Markdown と SVG を書き込む。
 `add_template` はテンプレートのフォルダに CSS と索引を、`apply_template` は配置先に CSS を書き込む。
 
 ## 確認
@@ -112,6 +122,7 @@ brand.css を、見出しを社の色にする CSS としてテンプレート�
 #### 書き出した HTML がある
 
 `export_html` と `build_site` が返却した `out` のファイルがある。
+`export_markdown` が返却した `out` と `images` のファイルがあり、`out` の Markdown に `<!--` が無い。
 
 #### テンプレートが登録され、配置されている
 
@@ -121,5 +132,6 @@ brand.css を、見出しを社の色にする CSS としてテンプレート�
 
 `check` は何も書き換えない。
 書き出した HTML は、`out` のファイルを削除する。
+Markdown に書き出したときは、`out` の Markdown のフォルダを削除する。
 登録したテンプレートは、テンプレートのフォルダの CSS と索引の行を削除する。
 配置した CSS は、`path` のファイルを削除し、設定の `theme` から除外する。
