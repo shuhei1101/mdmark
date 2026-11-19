@@ -10012,11 +10012,11 @@
   }
   /* 文字を持つ要素は opacity で薄くせず、文字を本文の文字色と背景の色を 68% : 32% で混ぜた色にする（mdmark のテーマで背景に対して 4.5:1 以上） */
   .mdmark-diagram[data-diagram="map"]
-    :is(.map-dim, .map-faded):not(
-      svg *,
-      .mdmark-diagram-wire,
-      .mdmark-diagram-lifeline
-    ),
+  :is(.map-dim, .map-faded):not(
+    svg *,
+    .mdmark-diagram-wire,
+    .mdmark-diagram-lifeline
+  ),
   .mdmark-diagram[data-diagram="map"]
     :is(.map-dim, .map-faded):not(
       svg *,
@@ -10039,10 +10039,10 @@
   }
   /* ノード・グループ・線のラベルは、枠と面の色も背景の色と混ぜる */
   .mdmark-diagram[data-diagram="map"]
-    :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group):is(
-      .map-dim,
-      .map-faded
-    ),
+  :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group):is(
+    .map-dim,
+    .map-faded
+  ),
   .mdmark-diagram[data-diagram="map"]
     .map-focus
     :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) {
@@ -10060,7 +10060,11 @@
   /* SVG の文字（ER 図の多重度と関連のラベル・状態遷移図とクラス図のラベル）は opacity で薄くせず、塗りの色を変える */
   .mdmark-diagram[data-diagram="map"] svg :is(text.map-dim, .map-dim text) {
     opacity: 1;
-    fill: color-mix(in srgb, var(--mdmark-color-text) 68%, var(--mdmark-color-bg));
+    fill: color-mix(
+      in srgb,
+      var(--mdmark-color-text) 68%,
+      var(--mdmark-color-bg)
+    );
   }
   .mdmark-diagram[data-diagram="map"] .map-focus .map-keep {
     opacity: 1;
