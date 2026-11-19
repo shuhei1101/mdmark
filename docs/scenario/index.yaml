@@ -62,6 +62,10 @@ items:
   summary: 文書の作成者が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを指定し、描いたときの記載の警告と同じずれを受け取る
 - page: SC-472-56.yaml
   summary: 文書の作成者が `mdmark export` で 1 文書を、外を読み込まない 1 枚の HTML に書き出す
+- page: SC-472-97.yaml
+  summary: 文書の作成者が CLI で文書を純粋な Markdown と SVG の画像に書き出し、mdmark の無い表示で読めるようにする
+- page: SC-472-98.yaml
+  summary: 読者が描いた文書とまとめた HTML のボタンで、開いている文書を純粋な Markdown にしてコピー・保存する
 - page: SC-472-76.yaml
   summary: 文書の作成者が `mdmark build` で、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる
 - page: SC-472-13.yaml

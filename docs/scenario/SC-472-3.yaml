@@ -276,17 +276,46 @@ scenarios:
     refs:
       - SC-472-56#scenarios[正常シナリオ（隠さない書き出しを指定する）]
       - SC-472-76#scenarios[正常シナリオ（隠さない書き出しを指定する）]
+  - name: 正常シナリオ（Markdown に書き出す）
+    setup:
+      - name: 記法を持つ文書のある作業のフォルダ
+        description: 正常シナリオのフォルダに、『文書をMarkdownに書き出す』の正常シナリオと同じ文書を 1 つ加えたもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: Markdown に書き出すツール（文書のパス）
+        S->>F: 文書と設定を読み込む
+        S->>F: Markdown と SVG のファイルを書き込む
+        S-->>C: 書き出した Markdown と SVG のパス・警告
+      ```
+
+      <!-- /map -->
+    expected:
+      - Markdown に書き出すツールが、書き出した Markdown と SVG のパスを返却する
+      - 書き出した Markdown と SVG が、同じ文書で CLI の Markdown に書き出すコマンドを実行して書き出したものと同じ
+      - ツールの一覧で得た説明文に、純粋な Markdown に書き出すことが記載されている
+    test: test_normal_when_markdown
+    refs:
+      - SC-472-97#scenarios[正常シナリオ]
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
 primary_actor: Claude Code
 trigger: Claude Code が文書と索引を書き込み終え、点検してから配れる構造にしたくなる
 preconditions:
   - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
-success_guarantee: '`check` が `mdmark check` と同じずれの一覧を返却し、`export_html`・`build_site` が CLI と同じ HTML を書き込んで、書き出したパスを返却する。隠さない書き出しの指定も CLI と同じ意味で、指定しなければ mdmark を使用していることを隠す。'
+success_guarantee: '`check` が `mdmark check` と同じずれの一覧を返却し、`export_html`・`build_site` が CLI と同じ HTML を、Markdown に書き出すツールが CLI と同じ Markdown と SVG を書き込んで、書き出したパスを返却する。隠さない書き出しの指定も CLI と同じ意味で、指定しなければ mdmark を使用していることを隠す。'
 minimal_guarantee: '`check` は設定・索引・文書を書き換えない。設定ファイルが無いときは、何も書き込まずに、無いことと `mdmark init` で配置できることを返却する。'
 refs:
   - SC-472-78#
   - SC-472-56#
   - SC-472-76#
+  - SC-472-97#
 test_file: tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts
 tags:
   - name: tool:mcp

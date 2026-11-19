@@ -1,0 +1,141 @@
+id: SC-472-97
+visibility: internal
+title: 文書をMarkdownに書き出す
+lead: 文書の作成者が CLI で mdmark の文書を純粋な Markdown（GFM と Mermaid）に書き出し、`chart`・`param`・埋め込んだ HTML を SVG の画像にして、mdmark の無い表示（GitHub・VS Code の標準のプレビュー）で読める Markdown と画像のファイルを得る。
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 文書の作成者
+    interest: マーカーを手で削除せずに、GitHub などに配置できる Markdown と画像が 1 回のコマンドでそろう
+  - name: 読者
+    interest: mdmark の無い表示で、HTML のコメント・マーカー・定義の JSON が見えず、図を含めて内容が読める
+trigger: 文書の作成者が、mdmark の文書を mdmark の無い表示で読ませたくなる
+preconditions:
+  - 文書の作成者の手元に Node 24 以降と、ビルドしたこのリポジトリの mdmark の CLI がある
+success_guarantee: 出力のフォルダに、HTML のコメントを含まない Markdown が 1 つと、`chart`・`param`・埋め込んだ HTML ごとの SVG のファイルがあり、Markdown が SVG を相対パスの画像のリンクで指す。SVG はほかのファイル・URL を参照しない。
+minimal_guarantee: 書き出せない中身（範囲のスクリプト・外部の画像）は取り除き、取り除いた場所を警告に出す。出力先へ書き込めないときは何も書き込まず、書き込めないパスと修正方法を出す。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 記法を持つ文書
+        description: 目次のマーカー・表のマーカーで囲んだ表・注意書き・タブ・番号を付けた表と、その番号を出すリンク・map の範囲（Mermaid と補足）・棒グラフの `chart`・`param`・表と色を持つ埋め込んだ HTML を持つ文書 1 つと、設定
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as 出力のフォルダ
+        actor R as 読者
+        W->>C: Markdown に書き出すコマンド（文書のパス・出力のフォルダ）
+        C->>C: 設定・文書を読み込み、記法ごとに純粋な Markdown へ変換する
+        C->>C: chart・param・埋め込んだ HTML を SVG にする
+        C->>F: Markdown と SVG のファイルを書き込む
+        C-->>W: 書き出したパス・終了コード 0
+        R->>F: GitHub に配置した Markdown を開く
+        F-->>R: 記法の文字の無い文書と画像の図
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 で、出力のフォルダに Markdown が 1 つと、`chart`・`param`・埋め込んだ HTML の数だけ SVG のファイルがある
+      - Markdown に `<!--` が 0 件で、定義の JSON のコードブロックが残っていない
+      - 目次は見出しへのリンクの箇条書き、番号を出すリンクの文字は `表 1` になっている
+      - map の範囲は Mermaid のコードブロックだけが残り、補足が残っていない
+      - '`chart`・`param` の場所は、タイトルの太字の行・SVG の画像のリンク・凡例の系列の名前の箇条書きになっている'
+      - SVG のファイルの `href`・`src`・`url(` の値に、`data:` と SVG の中の `#` で始まる参照のほかが 0 件
+      - GitHub の Markdown の表示で、全ての画像が空でない大きさで出る
+    test: test_normal
+  - name: 正常シナリオ（書き出せない中身を持つ埋め込んだ HTML）
+    setup:
+      - name: 書き出せない中身を持つ文書
+        description: '`html-scripts` をオンにした文書に、範囲の `ts` で中身を作る埋め込んだ HTML と、`mdmark-chart`・相対パスの画像・`https` の画像を含む埋め込んだ HTML を 1 つずつ持つ'
+      - name: Mock
+        description: 差し替える依存は無い。外へのネットワークの要求を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as 出力のフォルダ
+        W->>C: Markdown に書き出すコマンド（文書のパス）
+        C->>C: 範囲のスクリプトと https の画像を取り除き、相対パスの画像を埋める
+        C->>F: Markdown と SVG のファイルを書き込む
+        C-->>W: 取り除いた場所の警告・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 で、出力の警告に、範囲のスクリプトを除いた埋め込んだ HTML の場所と、取り除いた `https` の画像の URL が 1 件ずつ出る
+      - スクリプトを持つ範囲の SVG は、スクリプトを除いた HTML の中身を描く
+      - '`mdmark-chart` を含む範囲の SVG は、グラフ・タイトル・凡例を描き、図のパネルのボタンと高さのハンドルを描かない'
+      - 相対パスの画像が SVG の中に `data:` の URL で埋まっている
+      - 書き出しの間の外へのネットワークの要求が 0 件
+    test: test_normal_when_unexportable_contents
+  - name: 正常シナリオ（拡張のマーカー）
+    setup:
+      - name: 拡張を記載した設定
+        description: '`extensions` に、書き出しのフックを持つ拡張と持たない拡張を 1 つずつ記載した設定'
+      - name: 拡張のマーカーを持つ文書
+        description: 2 つの拡張のマーカーを 1 つずつ持つ文書
+      - name: Mock
+        description: 書き出しのフックは、マーカーの JSON のオブジェクトの `target` を太字にした行を返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant X as 拡張のモジュール
+        participant F as 出力のフォルダ
+        W->>C: Markdown に書き出すコマンド（文書のパス）
+        C->>X: 書き出しのフックを持つ拡張のフックを呼ぶ
+        X-->>C: Markdown の文字列
+        C->>F: フックの文字列を配置し、フックの無い拡張のマーカーを取り除いた Markdown を書き込む
+        C-->>W: 終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 書き出しのフックを持つ拡張のマーカーの場所に、フックが返却した太字の行がある
+      - 書き出しのフックを持たない拡張のマーカーと、その範囲の定義が Markdown に残っていない
+      - マーカーの前後の段落が残っている
+    test: test_normal_when_extension_marks
+  - name: 異常シナリオ（出力先へ書き込めない）
+    setup:
+      - name: 書き込めない出力先
+        description: 出力のフォルダのパスがファイルを指す
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: Markdown に書き出すコマンド（書き込めない出力先を指定）
+        C-->>W: 書き込めない出力先と修正方法・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 以外
+      - 出力に書き込めなかったパスと修正方法が出る
+      - Markdown と SVG のファイルがどこにも書き込まれていない
+    test: test_error_when_output_unwritable
+refs:
+  - SC-472-56#
+  - SC-472-49#
+test_file: tests/e2e/単一ユースケース/文書をMarkdownに書き出す.spec.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:cli
+  - name: topic:markdown
+  - name: tool:svg
