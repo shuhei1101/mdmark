@@ -23,3 +23,9 @@ confirmations:
     approver: shuhei1101
     commit: c014b0dd
     thread: https://github.com/shuhei1101/mdmark/pull/716#discussion_r4633020556
+  - topic: mdmark-style の設定に追加する parts のキー
+    decision: 'A（Issue の表の行ごとに 1 つ: row_detail・steps・tree・inline・stack・figure。既定は true）'
+    decided_by: 👍
+    approver: shuhei1101
+    commit: cf1f4ff9
+    thread: https://github.com/shuhei1101/mdmark/pull/716#discussion_r4633188543
