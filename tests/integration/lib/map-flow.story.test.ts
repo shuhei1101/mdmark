@@ -577,3 +577,45 @@ test("test_plain", async () => {
   for (const offset of offsets) expect(offset).toBeLessThanOrEqual(2);
   await expect(page.locator(".mdmark-diagram-info").count()).resolves.toBe(0);
 });
+
+/** ノードの名前の行の数と、名前の最後の行の下端がノードの下の余白より上にあるか */
+function nameFitOf(page: Page, node: string) {
+  return page
+    .locator(`.mdmark-diagram-node[data-node="${node}"]`)
+    .evaluate((element) => {
+      const name = element.querySelector(".mdmark-diagram-node-name");
+      const range = document.createRange();
+      if (name) range.selectNodeContents(name);
+      const rects = [...range.getClientRects()];
+      const box = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      const limit =
+        box.bottom -
+        Number.parseFloat(style.borderBottomWidth) -
+        Number.parseFloat(style.paddingBottom);
+      return {
+        width: box.width,
+        lines: new Set(rects.map((rect) => Math.round(rect.top))).size,
+        fits: Math.max(...rects.map((rect) => rect.bottom)) <= limit + 0.5,
+        kind:
+          element.querySelector(".mdmark-diagram-node-kind")?.textContent ?? "",
+      };
+    });
+}
+
+// 種類の行を持ち名前が折り返すノードは、名前の行が全て入り、最後の行が下の余白より上にある（WrappedName）
+test("test_wrapped_name", async () => {
+  // 準備・実行
+  const page = await openMap("wrapped-name");
+  // 検証
+  const first = await nameFitOf(page, "total");
+  expect(first.kind).toContain("処理");
+  expect(first.width).toBeLessThanOrEqual(220.5);
+  expect(first.lines).toBeGreaterThanOrEqual(2);
+  expect(first.fits).toBe(true);
+  const second = await nameFitOf(page, "save");
+  expect(second.kind).toContain("処理");
+  expect(second.width).toBeLessThanOrEqual(220.5);
+  expect(second.lines).toBe(1);
+  expect(second.fits).toBe(true);
+});
