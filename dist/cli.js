@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.7517e26";
+  return "v0.14.0+develop.93b5e7b";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -79985,6 +79985,20 @@ var splitSign = (text2) => {
     sign: marker[3]
   };
 };
+var genericText = (text2) => {
+  const chars = [...text2];
+  const open2 = [];
+  for (const [at, char] of chars.entries()) {
+    if (char !== "~") continue;
+    const next = chars[at + 1];
+    const closes = open2.length > 0 && (next === void 0 || next === "~" || next === "," || next === ")" || /\s/.test(next));
+    if (closes) {
+      chars[open2.pop()] = "<";
+      chars[at] = ">";
+    } else open2.push(at);
+  }
+  return chars.join("");
+};
 var parseMember = (text2) => {
   const trimmed = text2.trim();
   const visibility = /^[+\-#~]/.test(trimmed) ? trimmed.slice(0, 1) : "";
@@ -79998,7 +80012,9 @@ var parseMember = (text2) => {
     return {
       visibility,
       name,
-      text: `${name}(${method[2] ?? ""})${type === "" ? "" : ` ${type}`}`,
+      text: genericText(
+        `${name}(${method[2] ?? ""})${type === "" ? "" : ` ${type}`}`
+      ),
       method: true,
       isStatic,
       isAbstract
@@ -80006,8 +80022,8 @@ var parseMember = (text2) => {
   }
   return {
     visibility,
-    name: body.split(/\s+/, 1)[0] ?? body,
-    text: body,
+    name: body.split(/\s+|:/, 1)[0] ?? body,
+    text: genericText(body),
     method: false,
     isStatic,
     isAbstract
