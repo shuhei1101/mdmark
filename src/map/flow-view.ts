@@ -240,12 +240,15 @@ const parentOf = (chart: Flowchart, id: string): string | undefined =>
 export const sessionStorageOf = (): Storage | undefined =>
   typeof sessionStorage === "undefined" ? undefined : sessionStorage;
 
-/** 絶対配置でない子要素 */
+/** 絶対配置でなく、`display` が `none` でない子要素 */
 const inFlowChildren = (element: HTMLElement): Element[] =>
-  [...element.children].filter(
-    (child) =>
-      !["absolute", "fixed"].includes(getComputedStyle(child).position),
-  );
+  [...element.children].filter((child) => {
+    const style = getComputedStyle(child);
+    return (
+      !["absolute", "fixed"].includes(style.position) &&
+      style.display !== "none"
+    );
+  });
 
 /**
  * ノードの中身が上下の余白と枠線の内側に入る高さから、ノードの高さを引いた量（px。配置の座標の単位）。
