@@ -13,7 +13,9 @@ docs:
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: 読者ができることに、参加者のノードとライフラインにポインターを合わせたときの強調を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T17:58:58.245647+00:00'
 scope_out:
   - item: 構成図（flowchart）のノードにポインターを合わせたときの強調
     reason: 要望はシーケンス図の参加者とライフラインだけを挙げている
