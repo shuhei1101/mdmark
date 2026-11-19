@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, relative, sep } from "node:path";
 import { afterEach, expect, test, vi } from "vitest";
 import { parse } from "yaml";
 import {
@@ -666,4 +666,225 @@ test("test_run_upgrade_when_develop_build_has_unreleased_steps", async () => {
     "npx github:shuhei1101/mdmark#v0.5.0 upgrade",
   );
   expect(await fixture.read("mdmark.config.yaml")).toBe(OLD_CONFIG);
+});
+
+/** `build` の `include` に該当する文書の `<!-- note -->` を `<!-- callout -->` に書き換える `call` のスクリプト（設定を Schema で検めずに読む `call` のスクリプトの代わり） */
+const REWRITE_BUILD_DOCUMENTS = [
+  'import { glob, readFile, writeFile } from "node:fs/promises";',
+  'for await (const path of glob("docs/*.md")) {',
+  '  const text = await readFile(path, "utf8");',
+  '  await writeFile(path, text.replace("<!-- note -->", "<!-- callout -->"));',
+  "}",
+  "",
+].join("\n");
+
+/** 文書を書き換える `call` の手順（`files: [documents]`） */
+const CALL_DOCUMENTS_STEPS = (script: string) =>
+  [
+    "steps:",
+    "  - op: call",
+    "    description: 文書をスクリプトで書き換える",
+    `    script: ${script}`,
+    "    files: [documents]",
+    "",
+  ].join("\n");
+
+/** 集めた絶対パスを、基準のフォルダからの相対パスにして並べる */
+const relativeSorted = (dir: string, paths: string[]) =>
+  paths.map((path) => relative(dir, path).split(sep).join("/")).sort();
+
+// Schema に合わない build の include から集める（正常系）
+test("test_collect_script_documents", async () => {
+  // 準備
+  const { collectScriptDocuments } = await loadModule();
+  const work = await createTempDir();
+  await writeFiles(work, {
+    "docs/a.md": "# A\n",
+    "docs/b.md": "# B\n",
+  });
+  const raw = { version: "v0.3.0", build: { include: ["docs/*.md"] } };
+  // 実行
+  const paths = await collectScriptDocuments(work, raw);
+  // 検証
+  expect(relativeSorted(work, paths)).toEqual(["docs/a.md", "docs/b.md"]);
+});
+
+// 文字 1 つの値を並びにし、文字でない要素を飛ばす（正常系）
+test("test_collect_script_documents_when_values_not_strings", async () => {
+  // 準備
+  const { collectScriptDocuments } = await loadModule();
+  const work = await createTempDir();
+  await writeFiles(work, {
+    "docs/a.md": "# A\n",
+    "docs/b.md": "# B\n",
+  });
+  const raw = { build: { include: ["docs/*.md", 1], exclude: "docs/b.md" } };
+  // 実行
+  const paths = await collectScriptDocuments(work, raw);
+  // 検証
+  expect(relativeSorted(work, paths)).toEqual(["docs/a.md"]);
+});
+
+// 索引のフォルダの外を指す docs[].path も集める（正常系）
+test("test_collect_script_documents_when_index_points_outside", async () => {
+  // 準備
+  const { collectScriptDocuments } = await loadModule();
+  const work = await createTempDir();
+  await writeFiles(work, {
+    "docs/index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: c",
+      "    path: ../notes/c.md",
+      "    title: C",
+      "",
+    ].join("\n"),
+    "notes/c.md": "# C\n",
+  });
+  const raw = { index: "docs/index.yaml" };
+  // 実行
+  const paths = await collectScriptDocuments(work, raw);
+  // 検証
+  expect(relativeSorted(work, paths)).toContain("notes/c.md");
+});
+
+// 無いファイルを指す docs[].path は飛ばす（正常系）
+test("test_collect_script_documents_when_index_path_missing", async () => {
+  // 準備
+  const { collectScriptDocuments } = await loadModule();
+  const work = await createTempDir();
+  await writeFiles(work, {
+    "docs/index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: missing",
+      "    path: missing.md",
+      "    title: Missing",
+      "",
+    ].join("\n"),
+  });
+  const raw = { index: "docs/index.yaml" };
+  // 実行
+  const paths = await collectScriptDocuments(work, raw);
+  // 検証
+  expect(relativeSorted(work, paths)).not.toContain("docs/missing.md");
+});
+
+// YAML として読めない索引は飛ばし、build の文書だけを集める（正常系）
+test("test_collect_script_documents_when_index_unreadable", async () => {
+  // 準備
+  const { collectScriptDocuments } = await loadModule();
+  const work = await createTempDir();
+  await writeFiles(work, {
+    "docs/index.yaml": "docs: [\n  - : :\n",
+    "docs/a.md": "# A\n",
+    "docs/b.md": "# B\n",
+  });
+  const raw = {
+    index: "docs/index.yaml",
+    build: { include: ["docs/*.md"] },
+  };
+  // 実行
+  const paths = await collectScriptDocuments(work, raw);
+  // 検証
+  expect(relativeSorted(work, paths)).toEqual(["docs/a.md", "docs/b.md"]);
+});
+
+// build が Schema に合わない設定でも、点検のずれで文書を戻す（異常系）
+test("test_run_upgrade_when_build_out_of_schema", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const fixture = await createFixture({
+    config: [
+      "version: v0.3.0",
+      "legacy: 1",
+      "build:",
+      '  include: ["docs/*.md"]',
+      "",
+    ].join("\n"),
+    stepsV050: CALL_DOCUMENTS_STEPS("rewrite.mjs"),
+    packageFiles: { "migrations/v0.5.0/rewrite.mjs": REWRITE_BUILD_DOCUMENTS },
+  });
+  const { io, stderr } = createIo(fixture.work);
+  // 実行
+  const code = await runUpgrade(
+    {
+      plan: false,
+      yes: false,
+      packageDir: fixture.packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(1);
+  expect(
+    stderr.some(
+      (line) =>
+        line.includes("mdmark.config.yaml:build:") && line.includes("schema"),
+    ),
+  ).toBe(true);
+  expect(await fixture.read("docs/a.md")).toBe("# A\n\n<!-- note -->\n");
+  expect(await fixture.read("docs/b.md")).toBe("# B\n\n<!-- note -->\n");
+  expect(
+    existsSync(join(fixture.work, ".mdmark/backup/20261017120000/docs/a.md")),
+  ).toBe(true);
+});
+
+// 設定ファイルのフォルダの外の文書を指す索引なら、何も書き換えずに CliError（異常系）
+test("test_run_upgrade_when_document_outside_config_dir", async () => {
+  // 準備
+  const { runUpgrade } = await loadModule();
+  const { CliError } = await loadMain();
+  const root = await createTempDir();
+  const packageDir = await createTempDir();
+  const work = join(root, "work");
+  await writeFiles(root, {
+    "work/mdmark.config.yaml": OLD_CONFIG,
+    "work/docs/index.yaml": [
+      CLEAN_INDEX.trimEnd(),
+      "  - id: outside",
+      "    path: ../../outside.md",
+      "    title: Outside",
+      "",
+    ].join("\n"),
+    "work/docs/a.md": "# A\n\n<!-- note -->\n",
+    "work/docs/b.md": "# B\n\n<!-- note -->\n",
+    "outside.md": "# Outside\n\n<!-- note -->\n",
+  });
+  await writeFiles(packageDir, {
+    "migrations/v0.4.0/steps.yaml": STEPS_V040,
+    "migrations/v0.5.0/steps.yaml": CALL_DOCUMENTS_STEPS("rewrite.mjs"),
+    "migrations/v0.5.0/rewrite.mjs": REWRITE_BUILD_DOCUMENTS,
+    "docs/guide/変更履歴.mark.md": CHANGELOG,
+  });
+  const { io } = createIo(work);
+  // 実行
+  const result = runUpgrade(
+    {
+      plan: false,
+      yes: false,
+      packageDir,
+      cliVersion: "v0.5.0",
+      now: NOW,
+    },
+    io,
+    failingAsk,
+  );
+  // 検証
+  await expect(result).rejects.toBeInstanceOf(CliError);
+  await expect(result).rejects.toThrow("outside.md");
+  await expect(result).rejects.toThrow("設定ファイルのフォルダの外");
+  expect(await readFile(join(work, "mdmark.config.yaml"), "utf8")).toBe(
+    OLD_CONFIG,
+  );
+  expect(await readFile(join(work, "docs/a.md"), "utf8")).toBe(
+    "# A\n\n<!-- note -->\n",
+  );
+  expect(await readFile(join(root, "outside.md"), "utf8")).toBe(
+    "# Outside\n\n<!-- note -->\n",
+  );
+  expect(existsSync(join(work, ".mdmark"))).toBe(false);
 });
