@@ -67,6 +67,9 @@
 | --- | --- | --- | --- | --- |
 | `tests/unit/src/mdmark-style/inline-marks.test.ts` | 全実行 | 新規 | ✅ | 8 テスト pass<br>`テスト結果/20261120042208_30bc9d4d_単体テスト.log` |
 | `tests/unit/src/mdmark-style/document-parts.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/world.ts` | R7（4 ファイルが読み込む共通の準備） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
 | `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 17 テスト pass |
 | `tests/unit/src/mdmark-style/reply.test.ts` | 全実行 | 変更 | ✅ | - |
 | `tests/unit/src/mdmark-style/user-message.test.ts` | 全実行 | 変更 | ✅ | - |
@@ -121,6 +124,8 @@ Vitest の結合テスト（`integration-*`）から読み込む変更は無い�
 | `docs/pr/716/テスト結果/20261120041311_d3c3aa83_単体テスト.log` | R7（文書で、実装から参照しない） | - | - |
 | `docs/pr/716/テスト結果/20261120041942_30bc9d4d_lint.log` | R7（文書で、実装から参照しない） | - | - |
 | `docs/pr/716/テスト結果/20261120042208_30bc9d4d_単体テスト.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120043423_dca35a36_lint.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120043423_dca35a36_結合テスト.log` | R7（文書で、実装から参照しない） | - | - |
 | `docs/pr/716/ライブラリ本体.mark.md` | R7（文書で、実装から参照しない） | - | - |
 | `docs/pr/716/確認ログ.yaml` | R7（文書で、実装から参照しない） | - | - |
 | `docs/pr/716/要件.mark.md` | R7（文書で、実装から参照しない） | - | - |
@@ -148,8 +153,12 @@ Vitest の結合テスト（`integration-*`）から読み込む変更は無い�
 <!-- /table -->
 
 実行する結合テスト（合わせた範囲）: `render-reply.test.tsx`・`screen.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`（`tests/integration/ClaudeCodeプラグイン/mdmark-style/` の 4 ファイル。それぞれ変更したモジュールを読み込むため）。
-`render-reply.test.tsx` の追加のフロー（`test_normal_when_document_parts`・`test_normal_when_row_detail_pressed`・`test_normal_when_document_part_disabled`・`test_normal_when_tree_unreadable`）と、`screen.test.tsx` の追加の要素のテストは、結合テスト作成の工程で作る。
 
 ### 結合
 
-なし（結合テスト作成の工程で実行する）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | 全実行 | 変更 | ✅ | 13 テスト pass（追加: `test_normal_when_document_parts`・`test_normal_when_row_detail_pressed`・`test_normal_when_document_part_disabled`・`test_normal_when_tree_unreadable`）<br>`テスト結果/20261120043423_dca35a36_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | 全実行 | 変更 | ✅ | 7 テスト pass（追加: `test_document_part_elements`・`test_document_part_elements_when_parts_disabled`） |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | 全実行 | 実行のみ | ✅ | 5 テスト pass |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | 全実行 | 実行のみ | ✅ | 4 テスト pass |
