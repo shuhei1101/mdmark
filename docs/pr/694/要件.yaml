@@ -1,0 +1,33 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-28.yaml
+    impact: changed
+    detail: 配布物を 1 枚の HTML に埋めてアドレスを持たない場所から読み込む利用側のページが、mermaid のモジュールも埋めて指定し、外部へ要求せずに mermaid の図を描けるシナリオを追加する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: 設定の mermaid.url から mermaid を読み込む今の描き方は変えないが、mermaid の読み込み先の決め方の変更が壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: run_only
+    detail: 書き出した HTML が埋めた mermaid で図を描く動きは変えないが、同じ読み込み先の指定を使用するため壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/API.mark.md
+    new: false
+    change: mermaid のモジュールを利用側から指定する公開の手段を、部品のモジュールを指定する節か新しい節に追加する
+    status: todo
+  - page: docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
+    new: false
+    change: 配布物を 1 枚の HTML に埋めて使用する手順に、mermaid のモジュールを埋めて指定してから描く手順を追加する
+    status: todo
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: mermaid の設定の mermaid.url の説明に、利用側が mermaid のモジュールを指定したときは url を読み込まない旨を添える
+    status: todo
+scope_out:
+  - item: mermaid を dist/ の配布ファイルとして同梱して配ること
+    reason: mermaid は 5 MB ほどあり、配布ファイル 1 つのサイズの上限（NFR-472-1）に掛かる。利用側は mermaid を自分のビルドで 1 つのモジュールにして埋める
+    plan: none
