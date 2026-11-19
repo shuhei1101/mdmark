@@ -10,8 +10,12 @@ functions:
     container: src/markdown/pure-inline.logic.ts
     kind: 関数
     scope: internal
-    summary: 行内のコードの外で、HTML のコメント・行内の生の HTML のタグを取り除き、バッジ・ルビ・キー・アイコン・色の名前・蛍光ペン・図と表の番号を出すリンクを読める文字にする
-    description: バッジは頭の `badge:` を除いた行内のコード、ルビは親文字、キーはキーの名前の行内のコード、アイコンは取り除き、色の名前と蛍光ペンは内側の文字だけを残す。図と表の番号を出すリンクは `numbers` の番号で文字を `図 {n}`・`表 {n}` にする。打ち消した書き方（`\`）は `\` を外した文字にする
+    summary: 行内のコードの外で、HTML のコメント・行内の生の HTML のタグを取り除き、バッジ・ルビ・キー・アイコン・色の名前・蛍光ペン・注記・行内の脚注・画像の属性・図と表の番号を出すリンクを読める文字にする
+    description: |-
+      バッジは頭の `badge:` を除いた行内のコード、ルビは親文字、キーはキーの名前の行内のコード、アイコンは取り除き、色の名前と蛍光ペンは内側の文字だけを残す。
+      注記は GFM の脚注にし、参照の `※[ID]` を `[^note-ID]`、行頭の定義 `※[ID]: 本文` を `[^note-ID]: 本文` にする（脚注のラベルと重ならないように `note-` を付ける）。
+      GFM の脚注（`[^ラベル]` とその定義）はそのまま残し、行内の脚注 `^[中身]` は `（中身）` にする。
+      画像の直後の属性 `{…}` は取り除く。図と表の番号を出すリンクは `numbers` の番号で文字を `図 {n}`・`表 {n}` にする。打ち消した書き方（`\`）は `\` を外した文字にする
     args:
       - name: options
         type: '{ line: string; numbers: Map<string, string>; features: Record<string, boolean> }'
@@ -46,6 +50,24 @@ functions:
         condition: '``書き方は `<!-- toc -->` です``'
         mock: なし
         expected: 入力と同じ
+      - name: test_convert_pure_inline_annotation
+        case: 正常
+        summary: 注記の参照と定義を GFM の脚注にする
+        condition: '`進む※[cond]。` と `※[cond]: 条件を満たさないとき` の 2 行'
+        mock: なし
+        expected: '`進む[^note-cond]。` と `[^note-cond]: 条件を満たさないとき`'
+      - name: test_convert_pure_inline_footnotes
+        case: 正常
+        summary: GFM の脚注は残し、行内の脚注は括弧にする
+        condition: '`本文[^1] と補足^[例]` '
+        mock: なし
+        expected: '`本文[^1] と補足（例）`'
+      - name: test_convert_pure_inline_image_attributes
+        case: 正常
+        summary: 画像の属性を取り除く
+        condition: '`![グラフ](chart.png "売上"){width=300 align=center}`'
+        mock: なし
+        expected: '`![グラフ](chart.png "売上")`'
 tags:
   - name: topic:書き出し
     main: true

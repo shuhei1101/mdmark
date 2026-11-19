@@ -21,7 +21,7 @@ request:
     required: false
     location: argument
     default: なし（全ての機能をオンとして変換する）
-    description: '`render` の `opts.config` と同じ。この操作が読み込むのは `features`（オフの機能の記法は、その機能を描かないときと同じ文字のまま残す）'
+    description: '`render` の `opts.config` と同じ。この操作が読み込むのは `features`。オフの機能の記法は変換せずに元の文字のまま残すが、マーカー（HTML のコメント）は取り除く'
   - name: opts.index
     type: MdmarkIndex
     required: false
@@ -124,7 +124,7 @@ constraints:
     constraint: 登録した拡張が書き出しのフック（`registerExtension` の `toMarkdown`）を持てば、その戻り値をマーカーの場所に入れる。持たなければマーカーと範囲の定義を取り除き、`warnings` に入れる。拡張のモジュール（`load`）は読み込まない
     notes: フックの入出力はインターフェース定義『拡張を登録する』
   - item: そのほかの記法
-    constraint: 色の名前・アイコン・キー・ルビ・蛍光ペン・脚注・注記・画像の属性・カードなど mdmark だけの書き方は、mdmark の無い表示で読める文字（ルビは親文字、キーはキーの名前の行内のコード、カードはリンク）だけを残す
+    constraint: 色の名前・アイコン・キー・ルビ・蛍光ペン・脚注・注記・画像の属性・カードなど mdmark だけの書き方は、mdmark の無い表示で読める文字（ルビは親文字、キーはキーの名前の行内のコード、カードはリンク、画像は属性 `{…}` を除いた画像）だけを残す。注記は GFM の脚注（`[^note-{ID}]`）にし、GFM の脚注はそのまま、行内の脚注 `^[中身]` は `（中身）` にする
   - item: フロントマター
     constraint: そのまま残す
   - item: 動く環境

@@ -24,6 +24,9 @@ data_models:
       - name: mark
         type: '{ name: string; options: Record<string, unknown>; definition?: unknown } | undefined'
         description: '`mark`・`figure`・`extension` のマーカーの名前と引数'
+      - name: off
+        type: boolean
+        description: '`mark` のマーカーの機能がオフか'
 functions:
   - name: splitPureBlocks
     title: 文書をブロックに分ける
@@ -31,7 +34,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`render` と同じ設定の markdown-it でトークンに分け、行の範囲（`map`）で元の行を `PureBlock` の並びにする'
-    description: マーカーの取り出しは `findMarkTexts` と同じ規則。範囲を持つマーカー（`<!-- 名前 -->` 〜 `<!-- /名前 -->`）は閉じるマーカーまでを 1 つのブロックにする。範囲の最初の `json` のコードブロックは `definition` に読み込む。拡張の判定は `extensionFor`、機能がオフの記法のマーカーは元の文字のまま `text` にする
+    description: マーカーの取り出しは `findMarkTexts` と同じ規則。範囲を持つマーカー（`<!-- 名前 -->` 〜 `<!-- /名前 -->`）は閉じるマーカーまでを 1 つのブロックにする。範囲の最初の `json` のコードブロックは `definition` に読み込む。拡張の判定は `extensionFor`、機能がオフの記法のマーカーも `mark` にし、`off` を `true` にする
     args:
       - name: options
         type: '{ markdown: string; features: Record<string, boolean> }'
@@ -56,14 +59,14 @@ functions:
         summary: 機能がオフのマーカーは普通の行にする
         condition: '`features.table` が `false` で表のマーカーを持つ文書'
         mock: なし
-        expected: 表のマーカーが `mark` にならず `html` になる
+        expected: '表のマーカーのブロックが `kind: "mark"`・`off: true` になる'
   - name: convertPureBlock
     title: ブロックを純粋な Markdown にする
     container: src/markdown/pure-blocks.logic.ts
     kind: 関数
     scope: internal
     summary: '`text`・`fence`・`html`・`mark` のブロックを、インターフェース定義『文書を純粋なMarkdownにする』の制約の形の行にする'
-    description: '`html` は空にする。`fence` は飾りの引数と行末の `[!code …]` を取り除き、タイトルを直前の太字の行にし、言語 `tree` を外す。`mark` は名前で分ける: `toc` は `tocList`、`map` は Mermaid のコードブロックだけ、`features`・`page`・`map-data` は空、それ以外（`table`・`tabs`・`steps`・`section`・`row-detail`・`glossary`・`view`・`details`・`columns`・`wide`・`cards` など）はマーカーの行を除いた中身。`text`・中身の行は呼ぶ側が行内を変換する'
+    description: '`html` は空にする。`fence` は飾りの引数と行末の `[!code …]` を取り除き、タイトルを直前の太字の行にし、言語 `tree` を外す。`off` が `true` の `mark` は、名前によらずマーカーの行を除いた中身をそのまま返却する（マーカーの HTML のコメントは取り除き、記法の変換はしない）。それ以外の `mark` は名前で分ける: `toc` は `tocList`、`map` は Mermaid のコードブロックだけ、`features`・`page`・`map-data` は空、それ以外（`table`・`tabs`・`steps`・`section`・`row-detail`・`glossary`・`view`・`details`・`columns`・`wide`・`cards` など）はマーカーの行を除いた中身。`text`・中身の行は呼ぶ側が行内を変換する'
     args:
       - name: options
         type: '{ block: PureBlock; headings: Array<{ level: number; text: string }> }'
@@ -100,6 +103,12 @@ functions:
         condition: '`<div>…</div>` の `html` のブロック'
         mock: なし
         expected: 空の配列
+      - name: test_convert_pure_block_when_off
+        case: 正常
+        summary: 機能がオフのマーカーの行を除き中身をそのまま残す
+        condition: '`off: true` の `toc` と、`off: true` の map の範囲（Mermaid と `map-data`）'
+        mock: なし
+        expected: '`toc` は空、map は Mermaid のコードブロックの行がそのまま残り、どちらにも `<!--` が無い'
   - name: tocList
     title: 目次の箇条書きを作る
     container: src/markdown/pure-blocks.logic.ts
