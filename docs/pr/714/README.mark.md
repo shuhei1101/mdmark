@@ -1,0 +1,1 @@
+# モジュール構成の 200 字を超え 2 文以上を持つ summary の詳細を description へ移し、summary を 1 行の概要にする
