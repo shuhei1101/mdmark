@@ -6,7 +6,7 @@
 
 | 分類 | ページ / ファイル | 概要 | 補足 |
 | --- | --- | --- | --- |
-| ドキュメント | [docs/scenario/SC-472-97.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/scenario/SC-472-97.yaml) | 返答を共通スタイルで描く | 追加する部品の期待と、部品をオフにしたときの期待を追加する |
+| ドキュメント | [docs/scenario/SC-472-97.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/scenario/SC-472-97.yaml) | 返答を共通スタイルで描く | 追加する部品の期待を追加する |
 | ドキュメント | [docs/scenario/SC-472-99.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/scenario/SC-472-99.yaml) | セッションの開始でマーカーの記載方法を受け取る | 追加する部品のマーカーの記載方法を説明に含める |
 | ドキュメント | [docs/scenario/SC-472-98.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/scenario/SC-472-98.yaml) | 発言と返答の用語にマーカーを付ける | 実行のみ |
 | ドキュメント | [docs/interface/IF-472-45.tsx.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/interface/IF-472-45.tsx.yaml) | 返答を共通スタイルで描く | 制約の「描き換えるブロック」に部品を追加し、部品ごとの制約とフローを追加する |

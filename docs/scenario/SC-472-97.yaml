@@ -1,7 +1,7 @@
 id: SC-472-97
 visibility: internal
 title: ClaudeCodeの返答を共通スタイルで描く
-lead: Claude Code を使用する人が、mdmark-style を入れた Claude Code の画面で、アシスタントの返答の表・注意書き・見出し・コードを mdmark の共通スタイルの部品で確認する。返答に記載された mdmark のマーカーは描き方に使用し、画面には出さない。
+lead: Claude Code を使用する人が、mdmark-style を入れた Claude Code の画面で、アシスタントの返答の表・注意書き・見出し・コードと、行の詳細・ステップなどの本文の部品を mdmark の共通スタイルの部品で確認する。返答に記載された mdmark のマーカーは描き方に使用し、画面には出さない。
 primary_actor: Claude Code を使用する人
 trigger: アシスタントの返答が Claude Code の画面に描かれる
 preconditions:
@@ -177,7 +177,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 設定ファイルは配置せず、既定値で動かす
       - name: 本文の部品の返答
-        description: '`<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の詳細を持つ表・`<!-- steps -->` の 2 項目の番号付きリスト・注釈（`# ソース`）を持つ言語 `tree` のコードブロック・行内の `badge:green:完了`・`[注意]{color=red}`・`==決め手==`・`kbd:Ctrl+C`・見出し `macOS`・`Windows` で区切った `<!-- tabs -->` の範囲・`<!-- column -->` で 2 列に区切った `<!-- columns -->` の範囲・2 項目の `<!-- cards -->` のリスト・`<!-- view -->` の範囲の表・言語 `csv` のコードブロック・`<!-- fig: {"id": "price"} -->` を付けた表を持つ Markdown をファイルに配置し、その中身だけを返答させる発言'
+        description: '`<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の詳細を持つ表・`<!-- steps -->` の 2 項目の番号付きリスト・注釈（`# ソース`）を持つ言語 `tree` のコードブロック・行内の `badge:green:完了`・`[注意]{color=red}`・`==決め手==`・`kbd:Ctrl+C`・見出し `macOS`・`Windows` で区切った `<!-- tabs -->` の範囲・`<!-- column -->` で 2 列に区切った `<!-- columns -->` の範囲・2 項目の `<!-- cards -->` のリスト・`<!-- view -->` の範囲の表・`<!-- wide -->` 〜 `<!-- /wide -->` で囲んだ表・言語 `csv` のコードブロック・`<!-- fig: {"id": "price"} -->` を付けた表を持つ Markdown をファイルに配置し、その中身だけを返答させる発言'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -208,7 +208,7 @@ scenarios:
       - キーが `[Ctrl]+[C]` の囲みで描かれ、`kbd:` の文字は出ない
       - タブの `macOS`・`Windows` が見出しとして描かれ、それぞれの下に中身が順に縦に並ぶ
       - 段組みの 2 列の中身とカードの 2 項目が、横に並ばずに記載した順に縦に並ぶ
-      - ビューの範囲の表と CSV のコードブロックが、正常シナリオの表と同じ罫線の表で描かれ、CSV は 1 行目が見出しの行になる
+      - ビューの範囲の表・wide の範囲の表・CSV のコードブロックが、正常シナリオの表と同じ罫線の表で描かれ、CSV は 1 行目が見出しの行になる。ビュー・wide・CSV の切り替えのボタンは描かれない
       - 番号を付けた表の上に `表 1` が描かれる
       - 画面に `<!--` の文字が 0 件
     test: test_normal_when_document_parts
