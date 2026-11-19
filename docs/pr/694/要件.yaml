@@ -18,15 +18,21 @@ docs:
   - page: docs/guide/API.mark.md
     new: false
     change: mermaid のモジュールを利用側から指定する公開の手段を、部品のモジュールを指定する節か新しい節に追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T06:10:44.667029+00:00'
   - page: docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
     new: false
     change: 配布物を 1 枚の HTML に埋めて使用する手順に、mermaid のモジュールを埋めて指定してから描く手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T06:10:44.667029+00:00'
   - page: docs/guide/設定.mark.md
     new: false
     change: mermaid の設定の mermaid.url の説明に、利用側が mermaid のモジュールを指定したときは url を読み込まない旨を添える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T06:10:44.667029+00:00'
 scope_out:
   - item: mermaid を dist/ の配布ファイルとして同梱して配ること
     reason: mermaid は 5 MB ほどあり、配布ファイル 1 つのサイズの上限（NFR-472-1）に掛かる。利用側は mermaid を自分のビルドで 1 つのモジュールにして埋める
