@@ -1,0 +1,1 @@
+# map のクラス図などの構成図の上で描く種類でも、click・link の id: のリンク先を resolveIdLink で URL にしてリンクにする
