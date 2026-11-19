@@ -5,13 +5,13 @@
 | 分類 | ページ / ファイル | 概要 | 補足 |
 | --- | --- | --- | --- |
 | ドキュメント | [docs/library/LIB-472-29.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/library/LIB-472-29.yaml) | tmux の利用範囲と実測 | `verification` が手元の tmux サーバーでの結果 |
-| ドキュメント | [docs/interface/IF-472-7.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-7.ts.yaml) | 常駐サーバーの起動のインターフェース | 前提が `TMUX_TMPDIR` だけで分ける |
-| ドキュメント | [docs/interface/IF-472-11.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-11.ts.yaml) | インターフェース定義 | 同上 |
-| ドキュメント | [docs/interface/IF-472-12.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-12.ts.yaml) | インターフェース定義 | 同上 |
-| ドキュメント | [docs/interface/IF-472-14.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-14.ts.yaml) | インターフェース定義 | 同上 |
+| ドキュメント | [docs/interface/IF-472-7.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-7.ts.yaml) | 常駐サーバーを起動する | 前提が `TMUX_TMPDIR` だけで分ける |
+| ドキュメント | [docs/interface/IF-472-11.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-11.ts.yaml) | 端末の状態を調べる | 同上 |
+| ドキュメント | [docs/interface/IF-472-12.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-12.ts.yaml) | 端末の設定を書き込む | 同上 |
+| ドキュメント | [docs/interface/IF-472-14.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-14.ts.yaml) | 設定のキーの一覧を返却する | 同上 |
 | ドキュメント | [docs/scenario/SC-472-22.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/scenario/SC-472-22.yaml) | セッションの開始で常駐サーバーの状態を受け取る | 同上 |
 | ドキュメント | [docs/scenario/SC-472-69.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/scenario/SC-472-69.yaml) | 端末に mdmark をセットアップする | 同上 |
-| ドキュメント | [docs/module/MOD-472-12.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/module/MOD-472-12.ts.yaml) | `src/plugin/setup/` のモジュール構成 | `test_start_with_tmux` の mock が `TMUX_TMPDIR` だけを記載 |
+| ドキュメント | [docs/module/MOD-472-12.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/module/MOD-472-12.ts.yaml) | 常駐サーバーの起動の `server.ts` のモジュール構成 | `test_start_with_tmux` の mock が `TMUX_TMPDIR` だけを記載 |
 | テスト | [tests/integration/plugin.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/plugin.ts) | 結合テストの共通の準備 | `TMUX`・`TMUX_PANE` を子プロセスの環境から削除している |
 | テスト | [tests/integration/terminal.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/integration/terminal.ts) | 一時の端末と tmux サーバー | 同上 |
 | テスト | [tests/unit/src/plugin/setup/server.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/src/plugin/setup/server.test.ts) | 常駐サーバーの起動の単体テスト | 環境を `HOME`・`PATH`・`MDMARK_*`・`TMUX_TMPDIR` だけで組み立て、`TMUX` を渡さない |
