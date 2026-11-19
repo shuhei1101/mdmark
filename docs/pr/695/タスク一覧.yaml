@@ -67,7 +67,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T06:28:00.156174+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: docs/guide/図を描く-Mermaidと補足で図を描く.md の classDiagram の `~T~` の説明
+    updated_by: planner
+    updated_at: '2026-11-19T06:43:04.282390+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装

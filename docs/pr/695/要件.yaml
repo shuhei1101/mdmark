@@ -13,7 +13,9 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 260 行の classDiagram の描き方（`~T~` は名前の `<T>`）を、メンバーの型の `~T~` も `<T>` で描く記述にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T06:43:02.044782+00:00'
 scope_out:
   - item: 構成図の線どうしが同じ通り道に重なる件（線の経路の重み）
     reason: 線の経路の不具合で、この PR の線のラベルの置き場所とノードの大きさとは別の事象
