@@ -11,12 +11,12 @@ functions:
     scope: internal
     summary: 機能がオンの記法の操作を付け、まとめて削除する関数を返却する
     description: |-
-      機能がオンの記法だけ、次の関数を呼ぶ。
+      機能がオンの記法だけ、次の関数を呼ぶ。`attachStickyRows` だけは機能のオン・オフによらず呼ぶ（全ての表の見出し行を留めるため）。
 
       | 機能 | 呼ぶ関数 |
       | --- | --- |
       | 記法の機能 | `attachSections`・`attachTables`・`attachTabs` の順 |
-      | `table` | `attachTables` の後に `attachStickyRows` |
+      | `table` | `attachTables`。`attachStickyRows` は `table` のオン・オフによらず、`attachTables` の後（オフなら `attachTables` を呼ばずに）呼ぶ |
       | `code` | `attachCodeCopy` と `attachCodeFolds` |
       | `tree` | `attachFileTrees` |
       | `footnotes` か `annotations` | `attachFootnotes` |
@@ -71,10 +71,10 @@ functions:
         expected: どちらも、`もも` の行の `scrollIntoView` が呼ばれたときにセクションの中身が `hidden` を持たず、行が `data-target` を持つ
       - name: test_attach_interactions_when_code_off
         case: 正常
-        summary: code がオフならコードブロックにコピーのボタンを付けず、table がオフなら行を留めない
+        summary: code がオフならコードブロックにコピーのボタンを付けず、table がオフでも行を留める
         condition: 帯を持つコードブロックと表を描いた要素、`features` の `code` と `table` が `false`
         mock: なし
-        expected: '`mdmark-code-copy` が無く、`table` が `data-mdmark-sticky` を持たない'
+        expected: '`mdmark-code-copy` が無く、`table` が `data-mdmark-sticky` を持つ'
       - name: test_attach_interactions_when_tree_off
         case: 正常
         summary: tree がオフならファイルツリーに開閉とコピーを付けない

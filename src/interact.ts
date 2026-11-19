@@ -69,8 +69,9 @@ function attachLayouts(context: InteractionContext): Array<() => void> {
         partStates,
       }),
     );
-    detachers.push(attachStickyRows(root));
   }
+  // 見出し行は表の機能のオン・オフによらず、全ての表で留める
+  detachers.push(attachStickyRows(root));
   // RAW のボタンは、表の操作の帯ができてからその帯に追加する
   if (features.csv === true) {
     detachers.push(attachCsvRaw(root));

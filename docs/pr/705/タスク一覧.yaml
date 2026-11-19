@@ -1,0 +1,91 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が揃っている既存の機能の不具合の修正のため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: view-timeline・transform で留める機構は develop で動いており、未検証の技術に依存しない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 単一ユースケースの連鎖は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 新しい画面・外観を作らない不具合の修正
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面と遷移は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    note: SC-472-73 に正常シナリオ 2 件、SC-472-25 に正常シナリオ 1 件を追加
+    updated_by: planner
+    updated_at: '2026-11-19T11:21:40.109077+00:00'
+  - process: モック作成
+    status: skipped
+    reason: '見出し行を留める外観はモック #151 で合意済みで、外観を変えない'
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: データ設計
+    status: skipped
+    reason: 利用者と決めるデータの構造は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: インターフェース定義設計
+    status: done
+    note: IF-472-35 の制約 3 つを修正し、正常系を 2 件追加。`features.table` がオフの表は案 A
+    updated_by: planner
+    updated_at: '2026-11-19T11:33:33.038641+00:00'
+  - process: 部品設計
+    status: done
+    note: CMP-472-61 の lead・plain・--mdmark-sticky-top を修正し、ストーリー StickyRowsPlain を追加
+    updated_by: planner
+    updated_at: '2026-11-19T11:40:21.858849+00:00'
+  - process: 画面設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T11:40:21.858849+00:00'
+    note: SCR-472-4 の要素 table を修正
+  - process: モジュール構成設計
+    status: done
+    note: MOD-472-221・MOD-472-227・MOD-472-170・MOD-472-218 を修正
+    updated_by: planner
+    updated_at: '2026-11-19T11:44:57.331179+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: docs/guide の 5 ページ
+    updated_by: planner
+    updated_at: '2026-11-19T11:51:33.012492+00:00'
+  - process: 単体テスト作成
+    status: done
+    note: table-sticky.interact.browser.test.ts に 2 件追加・3 件改修、interact.browser.test.ts の 1 件を改修。Red で 5 件 fail
+    updated_by: planner
+    updated_at: '2026-11-19T11:58:19.632066+00:00'
+  - process: 実装
+    status: done
+    note: src/table/table-sticky.interact.ts・src/interact.ts・src/index.css
+    updated_by: planner
+    updated_at: '2026-11-19T12:02:26.089303+00:00'
+  - process: 結合テスト作成
+    status: done
+    note: mount.browser.test.ts に 2 件追加・1 件変更、table.story.test.ts に 1 件追加。表の範囲の 3 ファイルで全 pass
+    updated_by: planner
+    updated_at: '2026-11-19T12:36:55.209473+00:00'

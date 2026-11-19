@@ -1,0 +1,28 @@
+# ランナーで回せなかった理由: https://github.com/shuhei1101/mdmark/actions/runs/44521855719 の「Chromium をインストールする」の step が、Ubuntu の配布元の 503 で依存を取得できずに失敗し、テストの step まで進まなかった
+
+$ run_url=$(gh workflow run test.yml --ref "fix/table/sticky-head-in-mount" -f layer=unit ...) && gh run watch ... && gh run view "$run_id" --log
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/f/fonts-wqy-zenhei/fonts-wqy-zenhei_0.9.45-8build1_all.deb  Could not wait for server fd - select (11: Resource temporarily unavailable) [IP: 185.125.190.81 443]
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/main/x/xfonts-encodings/xfonts-encodings_1.0.5-0ubuntu3_all.deb  Could not wait for server fd - select (11: Resource temporarily unavailable) [IP: 185.125.190.81 443]
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-cyrillic/xfonts-cyrillic_1.0.5%2bnmu1build1_all.deb  Could not wait for server fd - select (11: Resource temporarily unavailable) [IP: 91.189.92.23 443]
+E: Failed to fetch https://security.ubuntu.com/ubuntu/pool/universe/x/xfonts-scalable/xfonts-scalable_1.0.3-1.3build1_all.deb  Could not wait for server fd - select (11: Resource temporarily unavailable) [IP: 91.189.92.23 443]
+E: Unable to fetch some archives, maybe run apt update or try with --fix-missing?
+Failed to install browsers
+Error: Installation process exited with code: 100
+##[error]Process completed with exit code 1.
+exit=1
+
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-table-sticky-head-in-mount
+
+
+ Test Files  307 passed (307)
+      Tests  2450 passed (2450)
+   Start at  21:19:04
+   Duration  35.61s (worker 80%, tests 12%, import 6%, transform 3%)
+
+exit=0
