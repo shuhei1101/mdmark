@@ -84,6 +84,18 @@ files:
     related:
       - to: MOD-472-120
         type: implements
+  - path: cli/export-markdown.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「mdmark export-markdown」を受け持つ。Markdown への書き出しのコマンドの振る舞いを変えるときに参照する。
+    tags: [topic:cli, topic:書き出し, topic:markdown]
+    related:
+      - to: MOD-472-364
+        type: implements
+  - path: cli/figure-svg.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち、図の HTML を 1 つの SVG にする処理を受け持つ。書き出す SVG の作り方を変えるときに参照する。
+    tags: [topic:cli, topic:書き出し, tool:svg]
+    related:
+      - to: MOD-472-365
+        type: implements
   - path: cli/git.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「比べる基準から変わったファイルの引き出し」を受け持つ。CLI のコマンドの振る舞いを変えるときに参照する。
     tags: [topic:cli]
@@ -526,6 +538,24 @@ files:
     tags: [topic:dom, topic:markdown]
     related:
       - to: MOD-472-204
+        type: implements
+  - path: markdown/pure-blocks.logic.ts
+    description: モジュール構成『ライブラリ本体 / 純粋な Markdown』のうち、文書のブロックへの分け方と記法ごとのブロックの変換を受け持つ。記法の書き出しの形を変えるときに参照する。
+    tags: [topic:書き出し, topic:markdown]
+    related:
+      - to: MOD-472-362
+        type: implements
+  - path: markdown/pure-inline.logic.ts
+    description: モジュール構成『ライブラリ本体 / 純粋な Markdown』のうち、行内の記法と生の HTML の変換を受け持つ。行内の記法の書き出しの形を変えるときに参照する。
+    tags: [topic:書き出し, topic:markdown]
+    related:
+      - to: MOD-472-363
+        type: implements
+  - path: markdown/pure-markdown.ts
+    description: モジュール構成『ライブラリ本体 / 純粋な Markdown』のうち、公開関数 toPureMarkdown を受け持つ。純粋な Markdown への変換の入口を変えるときに参照する。
+    tags: [topic:書き出し, topic:markdown]
+    related:
+      - to: MOD-472-361
         type: implements
   - path: map/band.ts
     description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「案内と再生のバーの手順の選び方と繰り返し・停止と、手順へ図を移す処理」を受け持つ。案内と再生のバーの操作を変えるときに参照する。
