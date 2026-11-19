@@ -7,6 +7,7 @@ import {
   expectTargetSize,
   overlaps,
   pageOverflows,
+  textContrastsOf,
 } from "../story.ts";
 
 const holder = createBrowserHolder();
@@ -47,6 +48,7 @@ function dimsOf(page: Page) {
           element.getAttribute("data-node") ??
           element.getAttribute("data-wire") ??
           "",
+        node: element.hasAttribute("data-node"),
         dim: element.classList.contains("map-dim"),
         opacity: Number(getComputedStyle(element).opacity),
       })),
@@ -204,7 +206,14 @@ test("test_playing", async () => {
   const kept = new Set(["判定", "s1", "t6"]);
   for (const mark of await dimsOf(page)) {
     expect(mark.dim, mark.id).toBe(!kept.has(mark.id));
-    if (mark.dim) expect(mark.opacity, mark.id).toBeCloseTo(0.25, 2);
+    if (mark.dim)
+      expect(mark.opacity, mark.id).toBeCloseTo(mark.node ? 1 : 0.25, 2);
+  }
+  for (const { id, ratio } of await textContrastsOf(
+    page,
+    ".mdmark-diagram-stage :is(.mdmark-diagram-node[data-node], .mdmark-diagram-label).map-dim",
+  )) {
+    expect(ratio, id).toBeGreaterThanOrEqual(4.5);
   }
 });
 

@@ -1,0 +1,89 @@
+docs:
+  - page: docs/mock/refs/445/assets/map-mock.css
+    new: false
+    change: .map-dim・.map-focus の強調しない要素・.map-faded の薄め方を、文字のコントラスト 4.5:1 以上を保つ形に変える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T14:00:40.140318+00:00'
+  - page: docs/mock/refs/531/assets/er-state.css
+    new: false
+    change: ER 図・状態遷移図の .map-dim の薄め方を map-mock.css と同じ形に変える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T14:00:40.140318+00:00'
+  - page: docs/mock/refs/596/assets/class-arch-c4.css
+    new: false
+    change: 変更は無い（`.cac-end.map-dim` は関係の端の形状で文字を持たないため `opacity` 0.25 のまま。クラスの文字は map-mock.css の文字を持つ要素の規則で薄くする）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T14:00:40.140318+00:00'
+  - page: docs/mock/refs/449/assets/table-resize.js
+    new: false
+    change: 列の幅のつまみの aria-valuemax を、aria-valuemin・aria-valuenow を下回らない値にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T14:00:40.140318+00:00'
+  - page: docs/component/CMP-472-5.ts.yaml
+    new: false
+    change: 強調しない要素・中へ入ったグループの外の薄め方と CSS 変数 --mdmark-map-dim-opacity の記載を、文字のコントラスト 4.5:1 以上を保つ形に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
+  - page: docs/component/CMP-472-4.ts.yaml
+    new: false
+    change: 記載の変更は無い（`map-dim` を付ける対象だけを記載し、薄め方は CMP-472-5 の強調しない要素の記載に従う）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
+  - page: docs/component/CMP-472-61.ts.yaml
+    new: false
+    change: 列の幅のつまみの aria-valuemax を、上限・今の幅・最小の幅から決める形に変える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
+  - page: docs/interface/IF-472-35.ts.yaml
+    new: false
+    change: 列の幅のつまみの aria-valuemax の記載と結合テストの期待、map の図で薄くした要素のコントラストの記載を合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:48:06.845769+00:00'
+  - page: docs/module/MOD-472-226.ts.yaml
+    new: false
+    change: updateValues が aria-valuemin <= aria-valuenow <= aria-valuemax を満たす値を入れる形に変え、上限が今の幅より狭い場合と、今の幅が最小幅より狭い場合（配置の前に付けて offsetWidth が 0 になる 等）の単体テストのケースを足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:56:15.117886+00:00'
+  - page: docs/module/MOD-472-228.ts.yaml
+    new: false
+    change: 単体テスト test_attach_tables_when_resized_with_unpinned の期待を、今の幅が上限より大きい 3 列目の aria-valuemax が今の幅と同じになる形に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T14:00:40.140318+00:00'
+  - page: docs/screen/SCR-472-4.ts.yaml
+    new: false
+    change: 列の幅のつまみの制約の aria-valuemax の記載を合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
+  - page: docs/component/CMP-649-1.ts.yaml
+    new: false
+    change: マインドマップで選んだときのほかの項目の opacity 0.25 の記載を、制約『map の強調』の薄い表示に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
+  - page: docs/component/CMP-653-1.ts.yaml
+    new: false
+    change: 軸と格子の配置の図で選んだときのほかの項目の opacity 0.25 の記載を、制約『map の強調』の薄い表示に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
+scope_out:
+  - item: 図の枠のリサイズハンドル（diagram-resize.interact.ts）と案内の帯の手順のバーの aria-valuemin・aria-valuenow・aria-valuemax の大小
+    reason: 同じ型の不具合は無い。図の枠のリサイズハンドルは aria-valuemax を最小・収まる高さ・今の高さの最大にし、手順のバーは 0 から手順の数の範囲に aria-valuenow が収まる
+    plan: none
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 列の幅のつまみが読み上げる幅の範囲で、今の幅が最小の幅以上・上限以下に収まるよう、上限の決め方を変える
+    depends_on: []

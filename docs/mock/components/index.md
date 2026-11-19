@@ -44,6 +44,7 @@
 | [map-er-state](./map-er-state/index.html) | map の ER 図・状態遷移図（テーブルの列と多重度・分類の箱・列と分類の開閉・状態遷移図の開始と終了と分岐・入れ子の状態・遷移の再生・狭い幅） |
 | [map-class-arch-c4](./map-class-arch-c4/index.html) | map のクラス図・アーキテクチャ図・C4 図（メンバーの行と関係の端の形・メンバーと namespace の開閉・service のアイコンと group と junction・要素の種類の行と境界・狭い幅） |
 | [map-c4-dynamic-play](./map-c4-dynamic-play/index.html) | map の C4Dynamic の番号つきの関係の再生（実演・始める前・説明を持つ関係・閉じた境界の中の要素・両向きの関係・案内の手順を持つ図・帯を出さないコンテナ図・狭い幅） |
+| [map-dim-contrast](./map-dim-contrast/index.html) | map の図で薄くした要素の文字のコントラスト（案 A・B の薄め方・C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダーク） |
 | [map-c4-kinds](./map-c4-kinds/index.html) | map の C4 のコンテナ図・コンポーネント図・動的図・配置図（種類と技術の行・Container_Boundary・関係の番号・配置先のノードの実線の枠と開閉と中へ入る・読めない行・狭い幅） |
 | [markdown-export](./markdown-export/index.html) | Markdown のコピーとエクスポートのボタン（右側の目次の頭に 2 つのボタンを配置する案と 1 つのメニューのボタンの案、ボタンの状態、コピーした後とコピーできなかったときの表示） |
 | [map-axis-grid](./map-axis-grid/index.html) | map の軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の配置・section と入れ子のブロックの開閉と中へ入る・選択と強調・再生・補足の layout と書き方の警告・範囲の外のコードブロック・読めない行・狭い幅） |

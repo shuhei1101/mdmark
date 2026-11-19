@@ -295,3 +295,56 @@ test("test_attach_column_resize_when_detached", async () => {
   expect(headCells[0].style.minWidth).toBe("");
   expect(headCells[0].offsetWidth).toBe(before);
 });
+
+// 上限が今の幅より小さい列でも、aria-valuemax を今の幅にして大小の順を保つ（正常系）
+test("test_attach_column_resize_when_max_below_width", async () => {
+  // 準備
+  addStyles();
+  const { attachColumnResize } = await loadResize();
+  const { table, headCells, handles } = resizableTable();
+  const width = headCells[0].offsetWidth;
+  // 実行
+  detachers.push(
+    attachColumnResize(table, {
+      headCells,
+      maxWidth: () => width - 40,
+      onResize: () => undefined,
+    }),
+  );
+  // 検証
+  const now = Number(handles[0].getAttribute("aria-valuenow"));
+  expect(now).toBe(width);
+  expect(Number(handles[0].getAttribute("aria-valuemax"))).toBe(now);
+  expect(Number(handles[0].getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+    now,
+  );
+});
+
+// 配置の前で今の幅が 0 のときも、aria-valuemin を今の幅にして大小の順を保つ（正常系）
+test("test_attach_column_resize_when_not_laid_out", async () => {
+  // 準備: 表を display: none の要素の中に配置し、見出しのセルの offsetWidth を 0 にする
+  addStyles();
+  const { attachColumnResize } = await loadResize();
+  const { table, headCells, handles } = resizableTable();
+  const root = table.closest<HTMLElement>(".mdmark");
+  if (!root) {
+    throw new Error("描く先の要素が無い");
+  }
+  root.style.display = "none";
+  // 実行
+  detachers.push(
+    attachColumnResize(table, {
+      headCells,
+      maxWidth: () => table.parentElement?.clientWidth ?? 0,
+      onResize: () => undefined,
+    }),
+  );
+  // 検証
+  for (const handle of handles) {
+    expect(handle.getAttribute("aria-valuenow")).toBe("0");
+    expect(handle.getAttribute("aria-valuemin")).toBe("0");
+    expect(Number(handle.getAttribute("aria-valuemax"))).toBeGreaterThanOrEqual(
+      0,
+    );
+  }
+});
