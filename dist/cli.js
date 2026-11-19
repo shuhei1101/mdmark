@@ -33124,8 +33124,8 @@ var require_sanitize_html = __commonJS({
         }
         classes = classes.split(/\s+/);
         return classes.filter(function(clss) {
-          return allowed.indexOf(clss) !== -1 || allowedGlobs.some(function(glob2) {
-            return glob2.test(clss);
+          return allowed.indexOf(clss) !== -1 || allowedGlobs.some(function(glob3) {
+            return glob3.test(clss);
           });
         }).join(" ");
       }
@@ -56856,7 +56856,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.7bb3d27";
+  return "v0.14.0+develop.093063c";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -85475,7 +85475,7 @@ function createLinePrompter(options) {
 }
 
 // src/cli/upgrade.ts
-import { readFile as readFile14, stat as stat8, writeFile as writeFile6 } from "node:fs/promises";
+import { glob as glob2, readFile as readFile14, stat as stat8, writeFile as writeFile6 } from "node:fs/promises";
 import { homedir as homedir5 } from "node:os";
 import { basename as basename9, dirname as dirname14, join as join15, relative as relative12, resolve as resolve15, sep as sep9 } from "node:path";
 import { isMap as isMap3, parse as parse9, parseDocument as parseDocument5 } from "yaml";
@@ -86118,6 +86118,69 @@ async function targetDocuments(loaded) {
   }
   return [...documents];
 }
+function stringsOf(value) {
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === "string");
+  }
+  return typeof value === "string" ? [value] : [];
+}
+async function globPaths(dir, patterns) {
+  const found = [];
+  for (const pattern of patterns) {
+    for await (const path of glob2(pattern, { cwd: dir })) {
+      found.push(toPosix5(path));
+    }
+  }
+  return found;
+}
+async function scriptBuildDocuments(dir, build5) {
+  const settings = isRecord9(build5) ? build5 : {};
+  const excluded = new Set(await globPaths(dir, stringsOf(settings.exclude)));
+  const found = [];
+  for (const path of await globPaths(dir, stringsOf(settings.include))) {
+    const absolute = resolve15(dir, path);
+    if (!excluded.has(path) && await isFile4(absolute)) {
+      found.push(absolute);
+    }
+  }
+  return found;
+}
+async function readRawIndex(indexPath) {
+  try {
+    return parse9(await readFile14(indexPath, "utf8"));
+  } catch {
+    return void 0;
+  }
+}
+async function scriptIndexDocuments(dir, index) {
+  if (typeof index !== "string") {
+    return [];
+  }
+  const indexPath = resolve15(dir, index);
+  const read = await readRawIndex(indexPath);
+  const docs = isRecord9(read) && Array.isArray(read.docs) ? read.docs : [];
+  const found = [];
+  for (const doc of docs) {
+    const path = isRecord9(doc) ? doc.path : void 0;
+    if (typeof path !== "string") {
+      continue;
+    }
+    const absolute = resolve15(dirname14(indexPath), path);
+    if (await isFile4(absolute)) {
+      found.push(absolute);
+    }
+  }
+  return found;
+}
+async function collectScriptDocuments(dir, raw) {
+  const settings = isRecord9(raw) ? raw : {};
+  return [
+    .../* @__PURE__ */ new Set([
+      ...await scriptBuildDocuments(dir, settings.build),
+      ...await scriptIndexDocuments(dir, settings.index)
+    ])
+  ];
+}
 async function existingIndex(dir, index) {
   if (index === void 0) {
     return void 0;
@@ -86133,7 +86196,13 @@ async function createTarget(options) {
   return {
     configPath,
     indexPath: await existingIndex(dir, config3.index),
-    documents: await targetDocuments({ path: configPath, dir, config: config3 }),
+    // 手順のスクリプトは設定を検めずに読み込んで文書を集めるため、同じ集め方の文書も合わせる
+    documents: [
+      .../* @__PURE__ */ new Set([
+        ...await targetDocuments({ path: configPath, dir, config: config3 }),
+        ...await collectScriptDocuments(dir, raw)
+      ])
+    ],
     answers: /* @__PURE__ */ new Map()
   };
 }
