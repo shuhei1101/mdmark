@@ -70,7 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T11:44:57.331179+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: docs/guide の 5 ページ
+    updated_by: planner
+    updated_at: '2026-11-19T11:51:33.012492+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
