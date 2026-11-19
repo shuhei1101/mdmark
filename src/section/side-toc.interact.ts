@@ -1,9 +1,13 @@
 import type { SideTocMode } from "../config.ts";
+import type { PureMarkdownResult } from "../markdown/pure-markdown.ts";
+import { COPIED_NOTICE_MS } from "../shared/clipboard.interact.ts";
+import { iconSvg } from "../shared/icons.part.ts";
 import {
   findScrollContainer,
   type ScrollContainer,
 } from "../shared/scroller.interact.ts";
 import { visibleText } from "../shared/text.interact.ts";
+import { renderCopyPanel } from "../table/table.part.ts";
 import { foldAllSections, revealTarget } from "./section.interact.ts";
 import { renderSideToc, type SideTocHeading } from "./side-toc.part.ts";
 
@@ -48,6 +52,64 @@ const RAIL_GAP = "var(--mdmark-space)";
 
 /** 今いるセクションを決める線の帯だけを確認する `IntersectionObserver` の余白（画面の上から線までを帯にする） */
 const LINE_BAND_MARGIN = `0px 0px -${(1 - CURRENT_LINE_RATIO) * 100}% 0px`;
+
+/** 使用できないファイル名の記号（`/`・`\\`・`:`・`*`・`?`・`"`・`<`・`>`・`|`） */
+const UNSAFE_FILE_NAME_PATTERN = /[/\\:*?"<>|]/g;
+
+/** 制御文字の符号位置の上限（この値より小さい文字と DEL を `_` に置き換える） */
+const CONTROL_CHAR_LIMIT = 0x20;
+
+/** DEL の符号位置 */
+const DELETE_CHAR = 0x7f;
+
+/** 見出しが無いときのエクスポートのファイルの名前 */
+const DEFAULT_FILE_NAME = "document.md";
+
+/** Markdown をコピーしたときの読み上げの文 */
+const COPIED_STATUS = "Markdown をコピーしました";
+
+/** エクスポートする Markdown の Blob の種類 */
+const MARKDOWN_TYPE = "text/markdown;charset=utf-8";
+
+/** 最初の h1 の文字から、エクスポートのファイルの名前を作る */
+export function markdownFileName(heading: string | undefined): string {
+  const name = [...(heading ?? "").replace(UNSAFE_FILE_NAME_PATTERN, "_")]
+    .map((char) => {
+      const code = char.codePointAt(0) ?? 0;
+      return code < CONTROL_CHAR_LIMIT || code === DELETE_CHAR ? "_" : char;
+    })
+    .join("")
+    .trim()
+    .replace(/\.+$/, "")
+    .trim();
+  return name === "" ? DEFAULT_FILE_NAME : `${name}.md`;
+}
+
+/** クリップボードへ書き込み、書き込めなければ理由を返却する */
+async function writeMarkdown(text: string): Promise<string | undefined> {
+  if (navigator.clipboard === undefined) {
+    return "クリップボードを使用できません";
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    return undefined;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "NotAllowedError") {
+      return "許可されていません";
+    }
+    return error instanceof Error ? error.message : String(error);
+  }
+}
+
+/** 変換した Markdown を、ファイルとして保存させる */
+function saveMarkdown(text: string, name: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type: MARKDOWN_TYPE }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 /** パネルの ID に続ける通し番号 */
 let serial = 0;
@@ -261,10 +323,16 @@ export function attachSideToc(options: {
   mode: SideTocMode;
   /** すべて展開とすべて折りたたむを出すか */
   sections: boolean;
+  /** Markdown でコピー・Markdown でエクスポートのボタンを出すか（`pureMarkdown` が無ければ出さない） */
+  markdownButtons?: boolean;
+  /** 描いている Markdown を純粋な Markdown に変換する関数 */
+  pureMarkdown?: () => Promise<PureMarkdownResult>;
   /** `mount` が保つ状態 */
   state: SideTocState;
 }): { content: HTMLElement; aside?: HTMLElement; detach: () => void } {
-  const { el, mode, sections, state } = options;
+  const { el, mode, sections, state, pureMarkdown } = options;
+  const markdownButtons =
+    options.markdownButtons === true && pureMarkdown !== undefined;
   const headings = collectSideTocHeadings(el);
   if (headings.length === 0) {
     return { content: el, detach: () => {} };
@@ -278,6 +346,7 @@ export function attachSideToc(options: {
     headings,
     mode,
     sections,
+    markdownButtons,
     open: state.open,
     pinned: state.pinned,
     panelId: `mdmark-side-toc-panel-${serial}`,
@@ -386,6 +455,15 @@ export function attachSideToc(options: {
     }
   };
 
+  const markdownActions = markdownButtons
+    ? attachMarkdownButtons({
+        aside,
+        convert: pureMarkdown,
+        fileName: () => headings.find((heading) => heading.level === 1)?.text,
+        panelId: `mdmark-side-toc-panel-${serial}-markdown`,
+      })
+    : undefined;
+
   const onKeyDown = (event: KeyboardEvent): void => {
     if (event.key === "Escape" && state.open) {
       setOpen(false);
@@ -417,6 +495,7 @@ export function attachSideToc(options: {
     aside,
     detach: () => {
       unfollow();
+      markdownActions?.detach();
       aside.removeEventListener("click", onClick);
       aside.removeEventListener("keydown", onKeyDown);
       content.removeEventListener("click", requestUpdate);
@@ -428,6 +507,98 @@ export function attachSideToc(options: {
       cancelAnimationFrame(frame);
       content.replaceWith(...content.childNodes);
       aside.remove();
+    },
+  };
+}
+
+/** Markdown でコピー・Markdown でエクスポートのボタンに操作を付ける。削除する関数はタイマーと操作を外す */
+function attachMarkdownButtons(options: {
+  /** 右側の目次 */
+  aside: HTMLElement;
+  /** 描いている Markdown を純粋な Markdown に変換する関数 */
+  convert: () => Promise<PureMarkdownResult>;
+  /** 最初の h1 の文字を返却する関数 */
+  fileName: () => string | undefined;
+  /** 手でコピーさせるパネルの id の頭 */
+  panelId: string;
+}): { detach: () => void } {
+  const { aside, convert, fileName, panelId } = options;
+  const copy = aside.querySelector<HTMLButtonElement>(
+    'button[data-markdown="copy"]',
+  ) as HTMLButtonElement;
+  const status = aside.querySelector(
+    '.mdmark-side-toc-markdown [role="status"]',
+  ) as HTMLElement;
+  const head = aside.querySelector(".mdmark-side-toc-head") as HTMLElement;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  /** アイコンと読み上げの文を戻し、手でコピーさせるパネルを削除する */
+  const reset = (): void => {
+    clearTimeout(timer);
+    timer = undefined;
+    copy.innerHTML = iconSvg("copy");
+    status.textContent = "";
+    aside.querySelector(".mdmark-copy-panel")?.remove();
+  };
+
+  /** 書き込めなかった理由つきのパネルを頭の後ろに配置し、入力欄を全て選択する */
+  const showPanel = (text: string, reason: string): void => {
+    copy.innerHTML = iconSvg("circle-alert");
+    const template = document.createElement("template");
+    template.innerHTML = renderCopyPanel({
+      id: panelId,
+      format: "document",
+      text,
+      reason,
+    });
+    const panel = template.content.firstElementChild as HTMLElement;
+    head.after(panel);
+    const field = panel.querySelector("textarea") as HTMLTextAreaElement;
+    field.focus();
+    field.select();
+  };
+
+  const onCopy = async (): Promise<void> => {
+    reset();
+    const { markdown } = await convert();
+    const reason = await writeMarkdown(markdown);
+    if (reason !== undefined) {
+      showPanel(markdown, reason);
+      return;
+    }
+    copy.innerHTML = iconSvg("check");
+    status.textContent = COPIED_STATUS;
+    timer = setTimeout(reset, COPIED_NOTICE_MS);
+  };
+
+  const onExport = async (): Promise<void> => {
+    const { markdown } = await convert();
+    saveMarkdown(markdown, markdownFileName(fileName()));
+  };
+
+  const onClick = (event: MouseEvent): void => {
+    if (!(event.target instanceof Element)) {
+      return;
+    }
+    if (event.target.closest(".mdmark-copy-panel-close")) {
+      reset();
+      copy.focus();
+      return;
+    }
+    const action =
+      event.target.closest<HTMLElement>("[data-markdown]")?.dataset.markdown;
+    if (action === "copy") {
+      void onCopy();
+    } else if (action === "export") {
+      void onExport();
+    }
+  };
+
+  aside.addEventListener("click", onClick);
+  return {
+    detach: () => {
+      clearTimeout(timer);
+      aside.removeEventListener("click", onClick);
     },
   };
 }

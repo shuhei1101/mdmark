@@ -58,6 +58,9 @@ const MAX_WIDTH = 760;
 /** 半角の文字の幅の、全角の文字の幅に対する割合 */
 const HALF_WIDTH_RATIO = 0.6;
 
+/** 半角として幅を見積もる文字の符号位置の上限（Latin-1 の終わり） */
+const LATIN1_LAST = 0xff;
+
 /** 行内として横に並べる要素の名前 */
 const INLINE_TAGS = new Set([
   "span",
@@ -409,7 +412,10 @@ async function prepareHtml(root: AnyNode, baseDir: string): Promise<string[]> {
 function textWidth(text: string): number {
   let width = 0;
   for (const char of text.replace(/\s+/g, " ")) {
-    width += /[\u0000-ÿ]/.test(char) ? FONT * HALF_WIDTH_RATIO : FONT;
+    width +=
+      (char.codePointAt(0) ?? 0) <= LATIN1_LAST
+        ? FONT * HALF_WIDTH_RATIO
+        : FONT;
   }
   return width;
 }

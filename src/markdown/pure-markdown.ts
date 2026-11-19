@@ -1,4 +1,4 @@
-import type { Token } from "markdown-it";
+import type { MarkdownIt as MarkdownItParser, Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { extensionFor } from "../extensions.ts";
@@ -85,7 +85,7 @@ type Context = {
 };
 
 /** 見出しと番号を集める解析器 */
-let parser: MarkdownIt | undefined;
+let parser: MarkdownItParser | undefined;
 
 /** 文書をトークンにする */
 function parse(markdown: string): Token[] {
@@ -140,16 +140,20 @@ function headingsOf(
   });
 }
 
+/** 機能がオンの `fig` のマーカーの ID。それ以外のブロックは `undefined` */
+function figIdOf(block: PureBlock): string | undefined {
+  const id = block.mark?.options.id;
+  const fig = block.kind === "mark" && !block.off && block.mark?.name === "fig";
+  return fig && typeof id === "string" && id !== "" ? id : undefined;
+}
+
 /** `fig` のマーカーの ID に、直後のブロックの種類ごとの番号を振る */
 function numbersOf(blocks: PureBlock[]): Map<string, string> {
   const numbers = new Map<string, string>();
   const counts = { 図: 0, 表: 0 };
   blocks.forEach((block, index) => {
-    const id = block.mark?.options.id;
-    if (block.kind !== "mark" || block.off || block.mark?.name !== "fig") {
-      return;
-    }
-    if (typeof id !== "string" || id === "") {
+    const id = figIdOf(block);
+    if (id === undefined) {
       return;
     }
     const next = blocks[index + 1];
@@ -247,14 +251,17 @@ function legendOf(kind: MdmarkFigure["kind"], definition: unknown): string[] {
 
 /** 図の範囲の Markdown を `render` で HTML にし、`chart`・`param` は定義からタイトルと凡例を取り出す */
 export function figureOf(options: {
-  /** 図の範囲 */
-  block: PureFigureBlock;
+  /** 図の範囲（`splitPureBlocks` の `figure` のブロック） */
+  block: PureBlock;
   /** 文書の中で何番目の図か（1 から） */
   index: number;
   /** 設定 */
   config?: MdmarkConfig | undefined;
 }): { figure: MdmarkFigure; warnings: string[] } {
   const { block, index, config } = options;
+  if (block.mark === undefined) {
+    throw new TypeError("figureOf: 図の範囲のブロックを指定してください。");
+  }
   const kind = block.mark.name as MdmarkFigure["kind"];
   const warnings: string[] = [];
   let lines = block.lines;
@@ -365,6 +372,28 @@ function headingSection(text: string, id: string): string | undefined {
   return lines.slice(found.start, next?.start ?? lines.length).join("\n");
 }
 
+/** Markdown 以外の取り込むファイルを、拡張子を言語にしたコードブロックの行にする。行の範囲が無ければ `undefined` */
+function includedFileLines(file: {
+  key: string;
+  text: string;
+  target: ReturnType<typeof resolveIncludePath>["target"];
+}): string[] | undefined {
+  const { key, text, target } = file;
+  const selected =
+    target.kind === "lines"
+      ? selectLines(text, target.from, target.to)
+      : { text };
+  if (!("text" in selected)) {
+    return undefined;
+  }
+  const language = /\.([^./]+)$/.exec(key)?.[1] ?? "";
+  return [
+    `\`\`\`${language}`,
+    ...selected.text.replace(/\n$/, "").split("\n"),
+    "```",
+  ];
+}
+
 /** 取り込みのマーカーを、取り込む文書を純粋な Markdown にした行にする */
 async function convertInclude(
   block: PureFigureBlock,
@@ -385,24 +414,15 @@ async function convertInclude(
     return [];
   }
   if (!isMarkdownPath(key)) {
-    const selected =
-      target.kind === "lines"
-        ? selectLines(text, target.from, target.to)
-        : { text };
-    if (!("text" in selected)) {
+    const lines = includedFileLines({ key, text, target });
+    if (lines === undefined) {
       warn(
         context,
         block.line,
         `取り込み先 ${written} の行の範囲が無いため、取り除きました`,
       );
-      return [];
     }
-    const language = /\.([^./]+)$/.exec(key)?.[1] ?? "";
-    return [
-      "```" + language,
-      ...selected.text.replace(/\n$/, "").split("\n"),
-      "```",
-    ];
+    return lines ?? [];
   }
   const section =
     target.kind === "heading" ? headingSection(text, target.id) : text;

@@ -1,4 +1,4 @@
-import type { Token } from "markdown-it";
+import type { MarkdownIt as MarkdownItParser, Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { extensionFor, RESERVED_DIRECTIVES } from "../extensions.ts";
 import { readMarkArgs } from "../render/mark-options.ts";
@@ -65,7 +65,7 @@ const CODE_NOTATION_PATTERN =
 const FENCE_OPEN_PATTERN = /^(\s*)(`{3,}|~{3,})(.*)$/;
 
 /** ブロックの構造だけを参照する解析器 */
-let parser: MarkdownIt | undefined;
+let parser: MarkdownItParser | undefined;
 
 /** 文書をトークンにする */
 function parse(markdown: string): Token[] {
@@ -95,7 +95,7 @@ function leadingMark(
   }
   const content = range.token.content.trim();
   const match = new RegExp(MARK_PATTERN.source, "s").exec(content);
-  if (!match || match.index !== 0) {
+  if (match?.index !== 0) {
     return undefined;
   }
   return {

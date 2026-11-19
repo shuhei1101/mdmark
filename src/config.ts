@@ -170,6 +170,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   "html-scripts": false,
   "side-toc": true,
   "back-to-top": true,
+  "markdown-buttons": true,
   "text-color": true,
   images: true,
   gallery: true,
