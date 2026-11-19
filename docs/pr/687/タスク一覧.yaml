@@ -75,7 +75,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T01:17:27.822060+00:00'
   - process: 実装
-    status: todo
+    status: done
+    note: 反映作業のスクリプトの対象のリポジトリを省略できる形にし、dry-run と lint を流す
+    updated_by: planner
+    updated_at: '2026-11-19T01:21:33.907194+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: ソースコードを変えない
