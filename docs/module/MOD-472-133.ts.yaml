@@ -135,8 +135,8 @@ data_models:
         type: string | undefined
         description: '`<<…>>` の中身'
       - name: members
-        type: 'Array<{ visibility: string; name: string; text: string; method: boolean; isStatic: boolean; isAbstract: boolean }>'
-        description: メンバー（記載の順）
+        type: 'Array<{ visibility: string; name: string; text: string; method: boolean; isStatic: boolean; isAbstract: boolean; lines: number }>'
+        description: メンバー（記載の順）。`lines` はクラスの幅で折り返した行の数（1 以上）
   - name: MapClassEnd
     title: クラス図の関係の端
     container: src/map/map.part.ts
@@ -677,7 +677,7 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのクラス図』のクラスのノードの中身。属性とメソッドの区画（`role="list"`。区切り線で分ける）に、可視性・名前と型・説明のボタンの行（`role="listitem"`。静的は下線、抽象は斜体）を `MAP_CLASS.row` の高さで並べ、名前の行にメンバーの開閉のボタン（`data-node-toggle`）を描く
+    summary: 部品設計『mapのクラス図』のクラスのノードの中身。属性とメソッドの区画（`role="list"`。区切り線で分ける）に、可視性・名前と型・説明のボタンの行（`role="listitem"`。静的は下線、抽象は斜体）を、行ごとに `MAP_CLASS.row` と折り返す行の数（`lines`）の残り × `MAP_CLASS.line` の高さで並べ（メソッドの区画の上端は、属性の行の高さの和で決める）、名前の行にメンバーの開閉のボタン（`data-node-toggle`）を描く
     scope: public
     args:
       - name: item
@@ -1008,6 +1008,75 @@ functions:
       description: 凡例の `li` の HTML
     refs:
       - IF-472-35#constraints[map のジャーニー]
+  - name: mapClassTextWidth
+    title: クラス図の文字の幅
+    kind: 関数
+    container: src/map/map.part.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: メンバーの等幅の文字の幅を、全角の文字を `MAP_CLASS.charWide`、半角の文字を `MAP_CLASS.charNarrow` として見積もる（DOM を使用しない）
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: メンバーの文字（可視性を除く）
+    returns:
+      type: number
+      description: 見積もった幅（px）
+    unit_tests:
+      - name: test_map_class_text_width
+        case: 正常
+        summary: 全角と半角
+        condition: '`検索(a)`'
+        mock: なし
+        expected: '`charWide × 2 + charNarrow × 3`'
+  - name: mapClassMemberLines
+    title: クラス図のメンバーの行の数
+    kind: 関数
+    container: src/map/map.part.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: メンバーの文字を、クラスの幅から可視性・説明のボタンの列と左右の余白（`MAP_CLASS.memberInset`）を除いた幅で折り返した行の数を、`mapClassTextWidth` の見積もりで求める
+    scope: public
+    args:
+      - name: member
+        type: '{ text: string; width: number }'
+        required: true
+        description: メンバーの文字とクラスの幅
+    returns:
+      type: number
+      description: 行の数（1 以上）
+    unit_tests:
+      - name: test_map_class_member_lines
+        case: 正常
+        summary: 収まる行と折り返す行
+        condition: '幅 220 で `数: int` と `検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict`'
+        mock: なし
+        expected: 1 と、2 以上
+  - name: mapClassNodeSize
+    title: クラス図のクラスの大きさ
+    kind: 関数
+    container: src/map/map.part.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: クラスのノードの幅と高さ。高さは、メンバーを閉じたクラスとメンバーを持たないクラスは `MAP_CLASS.head`、それ以外は `head` と、メンバーごとの `row + (lines - 1) × line` の和と、区切り線 2 本と `foot`
+    scope: public
+    args:
+      - name: args
+        type: '{ width: number; lines: number[]; collapsed: boolean }'
+        required: true
+        description: クラスの幅、メンバーごとの行の数（属性とメソッドの並び）、メンバーを閉じているか
+    returns:
+      type: '{ w: number; h: number }'
+      description: ノードの大きさ
+    unit_tests:
+      - name: test_map_class_node_size
+        case: 正常
+        summary: 折り返した行の高さ
+        condition: '`lines` が `[1, 3]` と `[1, 1]`、幅 220'
+        mock: なし
+        expected: '`[1, 3]` の高さが `[1, 1]` より `MAP_CLASS.line × 2` 大きく、幅がどちらも 220。`collapsed` が `true` なら高さが `MAP_CLASS.head`'
 lead: 'map の構成図・シーケンス図・案内のバーの HTML を受け持ち、map の部品が返却する HTML を変えるときに参照する。'
 tags:
   - name: topic:map

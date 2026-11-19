@@ -52,7 +52,7 @@ functions:
       description: 読み取り結果
     process: |-
       1. 行ごとに、`namespace {ID} {`・`class {ID}[~T~] {`（`}` までをメンバーの区間）・`class {ID}`・`<<{注釈}>> {ID}`・区間の中の `<<{注釈}>>`・`{ID} : {メンバー}`・`note for {ID} "{文}"`・関係の行（`{元} ["{多重度}"] {記号} ["{多重度}"] {先} [: {ラベル}]`）・`}`・`%%`・空の行に分けて読む
-      2. メンバーは、先頭の `+`・`-`・`#`・`~` を可視性、末尾の `$` を静的、`*` を抽象、`(` を持てばメソッドにする
+      2. メンバーは、先頭の `+`・`-`・`#`・`~` を可視性、末尾の `$` を静的、`*` を抽象、`(` を持てばメソッドにする。可視性を外した残りの `~` は左から順に、直後が `~`・`,`・空白・`)`・文字列の終わりで閉じを待つ開きがある `~` を `>`、それ以外を開きにして、組になった開きを `<` にした文字を `text` にする（組にならない開きは `~` のまま。`name` は置き換えない）
       3. 関係の記号（`<|--`・`--|>`・`*--`・`--*`・`o--`・`--o`・`-->`・`<--`・`..>`・`<..`・`..|>`・`<|..`・`--`・`..`）を、記号の側の端の形と `..` の破線にする
          - 読めない行・閉じの無いクラスと `namespace` は `map_invalid` の項目（行番号・行の文字・直し方）にする
     unit_tests:
@@ -80,6 +80,12 @@ functions:
         condition: '`click 図面 href "./drawing.md"`・`click 円 "https://example.com"`・`link 線 "./line.md"` の行を持つ classDiagram'
         mock: なし
         expected: '`links` が `{"図面":"./drawing.md","円":"https://example.com","線":"./line.md"}` で、読めない行の項目が無い'
+      - name: test_parse_class_diagram_when_member_generics
+        case: 正常
+        summary: メンバーの型の `~`
+        condition: '`+時間範囲(期間) tuple~int, int~`・`+対応: dict~str, list~int~~`・`+一覧: list~dict~str, int~~`・`+孤立: x~y` のメンバーを持つクラス'
+        mock: なし
+        expected: '`text` が順に `時間範囲(期間) tuple<int, int>`・`対応: dict<str, list<int>>`・`一覧: list<dict<str, int>>`・`孤立: x~y` で、`name` が `時間範囲`・`対応`・`一覧`・`孤立`'
     refs:
       - IF-472-35#constraints[map のクラス図]
   - name: classToFlowchart
@@ -117,20 +123,20 @@ functions:
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの幅を `MAP_CLASS.width` にし、メンバーの行の数と開閉で決まる大きさを指定する配置の上書きを作る。閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
+    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの大きさと左右に空ける幅を指定する配置の上書きを作る。クラスの幅は `widths` の幅、無ければ名前とメンバーの文字の幅（`mapClassTextWidth`）が収まる幅を `MAP_CLASS.width` から `maxWidth` までの間で決め、メンバーごとにその幅で折り返す行の数（`mapClassMemberLines`）を求めて、高さを `mapClassNodeSize` で決める。ラベルを持つ関係がつながるクラスは、`aside` を、つながる関係の最も長いラベルの幅（文字数 × `MAP_ER.labelChar`）と前後の `MAP_CLASS.labelGap` が、列の間 `MAP_LAYOUT.gapRank` と両側の `aside` に収まる幅（`ceil(max(0, ラベルの幅 + labelGap × 2 - gapRank) / 2)`）にする。閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
     scope: public
     args:
       - name: diagram
         type: ClassDiagram
         required: true
         description: 読み取り結果
-      - name: collapsed
-        type: ReadonlySet<string>
+      - name: view
+        type: '{ collapsed: ReadonlySet<string>; widths: Record<string, number>; maxWidth: number }'
         required: true
-        description: 閉じたグループとメンバーを閉じたクラス
+        description: 閉じたグループとメンバーを閉じたクラス、補足の `layout` の幅、幅の上限（設定 `map.node_fit` が `width` なら `MAP_LAYOUT.maxWidthWide`、それ以外は `MAP_LAYOUT.maxWidth`）
     returns:
       type: '{ classes: MapClassNode[]; ends: MapClassEnd[]; overrides: Record<string, MapOverride> }'
-      description: クラスごとのメンバーと注釈、関係の端（`{ wire, at, shape, card }`）、配置の上書き
+      description: クラスごとのメンバー（折り返す行の数 `lines` つき）と注釈、関係の端（`{ wire, at, shape, card }`）、配置の上書き
     unit_tests:
       - name: test_class_part_inputs
         case: 正常
@@ -138,6 +144,24 @@ functions:
         condition: モックの `CLASS` と、`collapsed` に「基本図形」
         mock: なし
         expected: 端の形が 6（`--` の `r7` は形を持たない）・多重度が 2 で、「基本図形」の上書きの高さが名前の行と開閉のボタンの 1 行、「描画器」の高さがメンバー 2 行と区切り線 2 本の分
+      - name: test_class_part_inputs_when_long_members
+        case: 正常
+        summary: 幅に収まらないメンバーを折り返す
+        condition: メソッド `+検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict` だけを持つクラス「検索」、`maxWidth` が 220
+        mock: なし
+        expected: 「検索」のメンバーの `lines` が 2 以上で、上書きの幅が 220、高さが 1 行のときより `(lines - 1) × MAP_CLASS.line` だけ大きい
+      - name: test_class_part_inputs_when_width
+        case: 正常
+        summary: 補足の幅と幅の上限
+        condition: 'test_class_part_inputs_when_long_members のクラスで、`widths` に `{検索: 480}`。別の呼び出しで `widths` が空、`maxWidth` が 360'
+        mock: なし
+        expected: 一つ目の上書きの幅が 480 でメンバーの `lines` が 1。二つ目の幅が 220 より大きく 360 以下
+      - name: test_class_part_inputs_when_labels
+        case: 正常
+        summary: ラベルを持つ関係のクラスの左右を空ける
+        condition: '`メイン ..> アプリ組み立て : ASGI アプリの生成` と、ラベルを持たない `アプリ組み立て ..> 設定` のクラス図'
+        mock: なし
+        expected: 「メイン」と「アプリ組み立て」の上書きの `aside` が等しく、`gapRank + aside × 2` がラベルの幅と `labelGap × 2` の和以上。「設定」は `aside` を持たない
 refs:
   - IF-472-35#constraints[map のクラス図]
 lead: 'Mermaid の classDiagram の読み取りと構成図の入力への変換を受け持ち、map のクラス図の読み取りを変えるときに参照する。'
