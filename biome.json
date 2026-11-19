@@ -16,6 +16,7 @@
       "!vscode/node_modules",
       "!vscode/.vscode-test",
       "!plugin/scripts",
+      "!mdmark-style/hooks/mod",
       "!plugin/guide",
       "!node_modules",
       "!package-lock.json",
