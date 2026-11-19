@@ -1,0 +1,79 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 既にある map のリンクの描き方をクラス図へ渡す修正で、未検証の技術に依存しない
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 複合 UC の流れは変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面の見た目を新しく作らない（リンクの見た目は部品設計 CMP-596-1 が既に持つ）
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を追加・変更しない
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: SC-472-11 の記述は変わらず、定めた振る舞いに実装を戻す修正
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を追加・変更しない
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: データ設計
+    status: skipped
+    reason: データの構造を変えない
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: IF-472-35 の制約は既にクラス図の click・link を map のノードのリンクと同じ描き方にしている
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: CMP-596-1 は links の引数とリンクを持つクラスの状態を既に持つ
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を持たないライブラリの部品の修正
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: skipped
+    reason: 使い方・リファレンスの記述は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T05:03:13.285012+00:00'
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo
