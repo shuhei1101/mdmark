@@ -135,5 +135,26 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `tests/unit/src/mdmark-style/terms.test.ts` | `loadGlossary` の引数を、`claude plugin validate` が求める `$` を先頭にした形（`loadGlossary($, { configPath })`）に合わせた |
 | `tests/unit/src/mdmark-style/reply.test.ts` の `test_render_block_table_when_desktop` | 表の行の Text の中にセルの Text を入れ子にするため、同じ文字列を持つ Text が 2 つ数えられた。最も長い行に全てのセルの文字があることを確かめる形にした |
 | `tests/unit/src/mdmark-style/fake-engine.ts`・`reply.test.ts` | Button の `onPress` を呼ぶ補助 `pressButton` を足し、biome の `noUnsafeOptionalChaining` を解消した |
+| `tests/unit/src/mdmark-style/blocks.test.ts`（bcb7ff1e） | ESLint の `complexity` の上限（10）を超えたため、`?.` の並びを `toMatchObject` にした。確かめる値は変えていない |
+| `tests/unit/src/shared/style-tokens.logic.test.ts`（206edd94） | レビューの細部で、`light-daltonized` の発言の背景が `rgb(220, 220, 220)` と分かったため、`test_style_color` を `light` で確かめる形にし、テーマごとの値の `test_style_color_when_theme_override` を足した（設計書 MOD-472-359 の `unit_tests` も同じ commit で修正） |
+
+### 単体テスト
+
+| 対象 | 結果 | ログ |
+| --- | --- | --- |
+| `npm run test:unit`（全件） | 2,492 件 pass | [20261119221300_f73f5649_単体テスト.log](テスト結果/20261119221300_f73f5649_単体テスト.log) |
+| lint（biome・ESLint・tsc・vscode の tsc・actionlint） | 違反なし（biome の 1 件の警告は作業 PR が変えない `plugin/bin/setup.js` の大きさ） | [20261119221300_f73f5649_lint.log](テスト結果/20261119221300_f73f5649_lint.log) |
+
+### 結合テストの実行範囲
+
+判定は `judge_integration_scope`（層 TL-3、結合テストのフォルダ `tests/integration`）。全てのファイルが R7（実行に影響しないパス・全件にするパス・フォルダの対応表のどれにも無い）。
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無い入口 |
+| --- | --- | --- | --- |
+| `src/mdmark-style/*`・`mdmark-style/*`・`src/shared/style-tokens.logic.ts` | R7 | 新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`（`npm run test:mdmark-style` で実行） | - |
+| `scripts/build-plugin.ts` | R7 | `tests/integration/lib/build.test.ts`（`scripts/build.ts` の `main` を実行し、プラグインのビルドを通る） | - |
+| `scripts/test-mdmark-style.ts` | R7 | 上の 4 ファイル（このスクリプトで実行する） | - |
+| `.claude-plugin/marketplace.json`・`.github/workflows/develop-dist.yml`・`package.json`・`vitest.config.ts`・`biome.json` | R7 | なし（参照する結合テストが無い。`vitest.config.ts` は mod の結合テストのフォルダを除いただけ） | - |
+| `src/files.yaml`・`tests/files.yaml`・`scripts/files.yaml`・`docs/**`・`tests/unit/**` | R7 | なし（実行するコードを変えない） | - |
 
 ドキュメント修正（アーキテクチャ図 ARCH-472-1・フォルダ構成 LAY-472-1・外部ライブラリ LIB-472-1）では、規約『V字モデル』の対応表で関係する単体・結合テストが無い（設計書の YAML だけを変え、コードを変えない）ため、テストを回していない。

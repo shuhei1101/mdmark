@@ -67,23 +67,33 @@ docs:
   - page: docs/guide/ClaudeCodeで使用する-画面を共通スタイルで描く.md
     new: true
     change: mdmark-style を入れ、設定で部品・場所・用語集を指定する使い方のページを作る
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
   - page: docs/guide/コアコンセプト-共通の定義と固有の定義.md
     new: false
     change: 共通スタイルの定義を TypeScript のモジュールにして Web の描画と mod の両方が読む仕組みを書き足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
   - page: docs/guide/設定.mark.md
     new: false
     change: mdmark-style の設定のキーと既定を書き足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: mdmark-style・mod の用語を足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
   - page: docs/guide/ClaudeCodeで使用する-プラグインを入れる.mark.md
     new: false
     change: マーケットプレイスから mdmark-style を別に入れる手順を書き足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:13:38.038863+00:00'
 scope_out:
   - item: 図（mermaid・map）・埋め込んだ HTML・文字の大きさ・任意の CSS を Claude Code の画面で描くこと
     reason: mod は決まった部品だけで描き、描けないものは描かないと D-76 で決めた
