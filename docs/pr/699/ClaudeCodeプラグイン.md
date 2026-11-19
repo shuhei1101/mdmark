@@ -22,7 +22,7 @@
 | マーカーの記載方法の注入 | mod の `classic.SessionStart` の結果の `additionalContext` で、マーカーの記載方法の短い説明を注入する。SessionStart は起動・再開・`/clear`・圧縮の後に発火するため、発火ごとに 1 回注入する（`/clear`・圧縮でモデルの文脈から消えた説明を入れ直す） | `inject_marker_guide: false` で止める。`session.start` の戻り値は文脈を変えないため使用しない |
 | 設定 | `MDMARK_STYLE_CONFIG` が指す `settings.yaml`（無ければ `~/.config/mdmark-style/settings.yaml`）の `global`・`projects` を、knowledge の規約『Claude プラグインルール』の `## 設定ファイル` のとおりに重ねて参照する | 設定の設計書は新規の `docs/config/CFG-472-4.yaml` |
 | 狭い画面の表 | デスクトップ版は表の Box を `overflowX: "scroll"` にし、ターミナル版・VS Code は端末の幅から列の幅を決めてセルの中で折り返す | mod の型定義では、ターミナル版・VS Code は横にスクロールできず、`overflowX: "scroll"` だと端で文字を切る。画面の種類の見分け方はインターフェース定義設計で決める |
-| 開閉の範囲 | details の範囲・セクションの開閉・注意書きの `closed` を、押すと開閉の状態を切り替えて描き直す Button で描く | Button を押して描き直す動きは、インターフェース定義設計の前に手元の Claude Code で確かめる |
+| 開閉の範囲 | details の範囲・セクションの開閉・注意書きの `closed` を、押すと開閉の状態を切り替えて描き直す Button で描く | Button の押下と描き直しは PoC 結果の「開閉の範囲」の行で確認済み |
 | 描けない部品 | 図（mermaid・map）・埋め込んだ HTML は描き換えない | - |
 | 既存のプラグイン mdmark | 変えない | - |
 
@@ -79,6 +79,7 @@ Claude Code 2.1.328 のターミナル版（tmux の 160 列）に `--plugin-dir
 | hover のカード（tmux） | `ESC[?1003h` が有効で、用語の座標への移動でカードが出て、範囲外の座標への移動で消える | ✅ 出る・消える | 同上 | `evidence/mouse-modes.txt`・`hover-on.txt`・`hover-off.txt` |
 | hover のカード（利用者の端末） | WSL の Windows Terminal・VS Code の統合ターミナルでカードが出る | ✅ VS Code の統合ターミナルで出る（Windows Terminal は未確認） | 同上 | 利用者が確認した（[確認の結果](https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626225053)）。カードの上の枠線が欠け、後ろの行と透けて重なる。発言の背景の帯と、返答の太字・箇条書き・行内のコードが消える |
 | マーカーの記載方法の注入 | `classic.SessionStart` の `additionalContext` の固定の単語を回答でき、`/clear` の後も回答できる | ✅ 2 回とも回答 | 同上 | SessionStart は `startup` と `clear` で 1 回ずつ発火（`evidence/session-start.txt`） |
+| 開閉の範囲（Button の押下と描き直し） | `UserMessage` の keyed Box の中の Button を押すと、`onPress` で開閉の状態を切り替えて `$.ui.invalidate("ui.render")` で描き直し、範囲が開く・閉じる | ✅ 開く・閉じる | - | ターミナル版（tmux の 120 列）に `--plugin-dir` で確認用の mod を読み込み、SGR のマウスの押下で確かめた（2026-11-19）。ターミナル版は Button を `[ ▸ ラベル ]` で描く |
 | 元の描画への切り替え | mod が例外を投げたとき、元の描画で返答が出る | ✅ 元の描画で出る | 同上 | 画面に `ui.render hook skipped: threw Error` の 1 行が出る（`--plugin-dir` で読み込んだとき） |
 
 結論は成立。
