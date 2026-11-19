@@ -1,0 +1,150 @@
+id: SCR-472-5
+visibility: internal
+title: ClaudeCodeの返答と発言
+lead: mod のプラグイン mdmark-style が描き換える Claude Code の返答と利用者の発言。返答の表・見出し・注意書き・コードブロック・開閉の範囲と、発言と返答の用語の下線・カード・脚注を、Claude Code の Box・Text・Button で描く。
+mock: docs/mock/pages/claude-code-terminal/699/mdmark-style/
+screen: mdmark-style/hooks/mod.tsx
+test_file: tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx
+elements:
+  - name: 表
+    id: reply-table
+    kind: table
+    io: 表示
+    position: 返答
+    description: 返答の Markdown の表。罫線で囲み、`kind` が `data` の表は見出しの行を太字にする
+    visible_when: '`parts.table` が `true` のとき'
+    constraints: 表の幅が端末の幅を超えるとき、デスクトップ版は表の中で横にスクロールし、ターミナル版・VS Code はセルの中で折り返す。折り返す位置は空白で、1 つの単語が列の幅を超えるときだけ単語の途中で折り返す
+    refs:
+      - IF-472-45#constraints[表]
+      - CMP-472-61#
+    status: planned
+  - name: 見出し
+    id: reply-heading
+    kind: label
+    io: 表示
+    position: 返答
+    description: '`#`〜`######` の見出しの文字。`#` の記号は描かない'
+    visible_when: '`parts.heading` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[見出し]
+    status: planned
+  - name: 注意書き
+    id: reply-callout
+    kind: label
+    io: 表示
+    position: 返答
+    description: '`> [!NOTE]` などの 5 種の注意書き。種類の色の縦線と、先頭の種類のラベルの後ろに中身を描く'
+    label: '種類のラベル: `NOTE`・`TIP`・`IMPORTANT`・`WARNING`・`CAUTION`（種類の後ろにタイトルを記載したときはタイトル）'
+    visible_when: '`parts.callout` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[注意書き]
+      - CMP-472-52#
+    status: planned
+  - name: コードブロック
+    id: reply-code
+    kind: code
+    io: 表示
+    position: 返答
+    description: 背景の面の中に、言語の色分けつきのコードを描く。`code` のマーカーの `title`・`lines`・`highlight` と行末の `[!code …]` を、タイトルの行・行番号・行の色で描く
+    label: '右上の言語のラベル: コードブロックの言語（例 `ts`）'
+    visible_when: '`parts.code` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[コードブロック]
+      - CMP-472-18#
+    status: planned
+  - name: コピーボタン
+    id: reply-code-copy
+    kind: button
+    io: 入力
+    position: 返答 > コードブロック > タイトルの行の右端
+    description: コードブロックのコードをクリップボードへコピーする
+    label: コピー
+    visible_when: '`parts.code` が `true` のとき'
+    action: 押すと `$.ui.copy` でマーカーを除いたコードをコピーする
+    action_ref: IF-472-45#constraints[コードブロック]
+    status: planned
+  - name: 開閉のボタン
+    id: reply-fold-toggle
+    kind: button
+    io: 入力
+    position: 返答 > 開閉の範囲の先頭
+    description: details の範囲・`closed` の見出しのセクション・`closed` の注意書きの、タイトルと開閉の状態
+    label: 閉じているとき `▸ {タイトル}`、開いているとき `▾ {タイトル}`
+    initial_value: 閉じた状態
+    visible_when: '`parts.fold` が `true` のとき'
+    action: 押すと開閉の状態を反転して返答を描き直す。開いているときはボタンの下に中身を描く
+    action_ref: IF-472-45#constraints[開閉の範囲]
+    refs:
+      - CMP-472-3#
+      - CMP-472-21#
+    status: planned
+  - name: 用語の下線
+    id: term-underline
+    kind: label
+    io: 表示
+    position: 発言・返答の段落・箇条書き・注意書き
+    description: メッセージごとに用語の最初の出現に、共通スタイルの用語の下線の色で下線を付ける
+    visible_when: '`parts.terms` が `true` で、`glossary` の用語が本文にあるとき'
+    refs:
+      - IF-472-46#constraints[下線]
+      - CMP-472-53#
+    status: planned
+  - name: 用語のカード
+    id: term-card
+    kind: tooltip
+    io: 表示
+    position: 用語の下線 > 用語の次の行
+    description: 用語の名前（太字）と意味。罫線と背景色で後ろの行を隠して手前に出す
+    width: 48 桁と行の幅の短い方
+    visible_when: '`parts.hover_card` が `true` で、ポインターを用語に乗せている間'
+    refs:
+      - IF-472-46#constraints[カード]
+      - CMP-472-53#
+    status: planned
+  - name: 脚注の番号
+    id: term-footnote-ref
+    kind: label
+    io: 表示
+    position: 用語の下線の後ろ
+    description: 用語の出た順の番号を薄い色で描く
+    label: '`[{番号}]`'
+    visible_when: '`parts.footnote` が `true` のとき'
+    refs:
+      - IF-472-46#constraints[脚注]
+      - CMP-472-58#
+    status: planned
+  - name: 脚注の一覧
+    id: term-footnotes
+    kind: label
+    io: 表示
+    position: 発言・返答の本文の後ろ
+    description: 脚注の番号ごとの用語の名前と意味を薄い色で並べる
+    label: '`[{番号}] {名前}: {意味}`'
+    visible_when: '`parts.footnote` が `true` のとき'
+    refs:
+      - IF-472-46#constraints[脚注]
+      - CMP-472-57#
+    status: planned
+  - name: 発言の背景の帯
+    id: user-band
+    kind: label
+    io: 表示
+    position: 発言
+    description: 用語のマーカーを付けた発言を、Claude Code の標準の発言と同じ背景の帯と行頭の `❯` で描く
+    visible_when: 用語のマーカーを付けた発言
+    refs:
+      - IF-472-46#constraints[背景の帯]
+    status: planned
+refs:
+  - IF-472-45#
+  - IF-472-46#
+  - CFG-472-4#
+tags:
+  - name: tool:claude-code
+    main: true
+  - name: topic:プラグイン
+  - name: topic:テーブル
+  - name: topic:注意書き
+  - name: topic:コードブロック
+  - name: topic:用語
+  - name: topic:脚注
