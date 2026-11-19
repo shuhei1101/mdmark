@@ -299,7 +299,7 @@ functions:
         case: 正常
         summary: 起動して待ち受けを待つ
         condition: 一時の端末、`MDMARK_SERVE_COMMAND` に空いたポートで待ち受ける `node -e` のサーバー、`systemdAvailable` が偽
-        mock: '`run` は実際の tmux（`TMUX_TMPDIR` は一時フォルダ）'
+        mock: '`run` は実際の tmux（`TMUX_TMPDIR` は一時フォルダ。環境は一時の端末の変数だけで組み立て、`TMUX`・`TMUX_PANE` を含めない）'
         expected: '`result` が `started`、`changes` が空'
       - name: test_start_with_tmux_when_migrating
         case: 正常

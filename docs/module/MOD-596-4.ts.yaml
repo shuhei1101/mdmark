@@ -40,7 +40,7 @@ functions:
     process: |-
       1. `parseClassDiagram` と `classToFlowchart` で `Flowchart` を作り、`attachMapFlow` に `extension` と一緒に指定する
       2. `extension.kinds` に `MAP_CLASS_KINDS`、`extension.lines` に矢じりを持たない線の種類を指定する
-      3. `extension.overrides` に `classPartInputs` の上書き、`extension.collapsibles` にクラスの ID（メンバーを閉じた状態は `collapsed` に持つ）、`extension.rewire` に `spreadMapEnds`、`extension.render` に、`attachMapFlow` が渡す構成図の部品の引数（`mapLinkProblems` が許した `links` を含む）に `classPartInputs` のメンバー・注釈・端を加えて呼ぶ `renderMapClassDiagram` を指定する
+      3. `extension.overrides` に、`attachMapFlow` が渡す閉じた ID と補足の幅、設定 `map.node_fit` から決めた幅の上限で呼ぶ `classPartInputs` の上書き、`extension.collapsibles` にクラスの ID（メンバーを閉じた状態は `collapsed` に持つ）、`extension.rewire` に `spreadMapEnds`、`extension.render` に、`attachMapFlow` が渡す構成図の部品の引数（`mapLinkProblems` が許した `links` を含む）に `classPartInputs` のメンバー・注釈・端を加えて呼ぶ `renderMapClassDiagram` を指定する
       4. `extension.selectable` で、ノート（`note_{番号}`）を選ばない。`extension.selectionOf` で、クラスを 1 つ選べば `neighborKept` の関係と相手、2 つ選べば `shortestPathKept` の経路を残す。メンバーの区画（`.map-class-members`）を押しても選ばない
       5. `extension.collapsedTag` で、閉じた `namespace` に「クラス {数} 件」を返却する
     unit_tests:
@@ -74,6 +74,12 @@ functions:
         condition: '`click 受付 href "./doc-2"`・`link 台帳 "./doc-3"`・`click 危険 href "javascript:alert(1)"` の行と、行を持たないクラス `予約` を持つ `classDiagram` の範囲'
         mock: なし
         expected: '`受付`・`台帳` のノードが `has-link` と、記載した `href` の `a.mdmark-diagram-node-link` を持つ。`危険`・`予約` のノードは `a` 要素と `has-link` を持たない'
+      - name: test_attach_map_class_when_long_members
+        case: 正常
+        summary: 長いメンバー・補足の幅・長いラベル
+        condition: 'メソッド `+検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict` の「検索」、補足の `layout` に `{設定: {width: 320}}`、`検索 ..> 設定 : ASGI アプリの生成` の範囲'
+        mock: なし
+        expected: 「検索」のメンバーの行の矩形がノードの矩形の中に収まり、「設定」のノードの幅が 320px、ラベル「ASGI アプリの生成」の矩形がどのノードとも重ならない
 refs:
   - IF-472-35#constraints[map のクラス図]
 lead: 'map のクラス図の描画と操作を受け持ち、map のクラス図の操作を変えるときに参照する。'

@@ -1293,7 +1293,11 @@ async function classArgs(hints?: boolean) {
   const { CLASS } = await import("../../helpers/map.ts");
   const diagram = parseClassDiagram(CLASS);
   const chart = classToFlowchart(diagram);
-  const { classes, ends, overrides } = classPartInputs(diagram, new Set());
+  const { classes, ends, overrides } = classPartInputs(diagram, {
+    collapsed: new Set(),
+    widths: {},
+    maxWidth: 220,
+  });
   const layout = layoutMap(
     chart,
     { collapsed: [] },
@@ -1386,6 +1390,7 @@ const BASE_SHAPE = {
       method: false,
       isStatic: false,
       isAbstract: false,
+      lines: 1,
     },
     {
       visibility: "+",
@@ -1394,6 +1399,7 @@ const BASE_SHAPE = {
       method: true,
       isStatic: false,
       isAbstract: true,
+      lines: 1,
     },
     {
       visibility: "+",
@@ -1402,6 +1408,7 @@ const BASE_SHAPE = {
       method: false,
       isStatic: true,
       isAbstract: false,
+      lines: 1,
     },
   ],
 };
@@ -2022,4 +2029,148 @@ test("test_render_map_axis_grid_when_selected", async () => {
   expect(innerHtml(gantt.html, 'data-node="des"')).toContain(
     'aria-label="設計する（選択中）"',
   );
+});
+
+// 全角と半角（正常系）
+test("test_map_class_text_width", async () => {
+  // 準備
+  const { mapClassTextWidth, MAP_CLASS } = await loadParts();
+  // 実行
+  const width = mapClassTextWidth("検索(a)");
+  // 検証
+  expect(width).toBeCloseTo(MAP_CLASS.charWide * 2 + MAP_CLASS.charNarrow * 3);
+});
+
+// 収まる行と折り返す行（正常系）
+test("test_map_class_member_lines", async () => {
+  // 準備
+  const { mapClassMemberLines } = await loadParts();
+  // 実行
+  const short = mapClassMemberLines({ text: "数: int", width: 220 });
+  const long = mapClassMemberLines({
+    text: "検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict",
+    width: 220,
+  });
+  // 検証
+  expect(short).toBe(1);
+  expect(long).toBeGreaterThanOrEqual(2);
+});
+
+// 折り返した行の高さ（正常系）
+test("test_map_class_node_size", async () => {
+  // 準備
+  const { mapClassNodeSize, MAP_CLASS } = await loadParts();
+  // 実行
+  const wrapped = mapClassNodeSize({
+    width: 220,
+    lines: [1, 3],
+    collapsed: false,
+  });
+  const plain = mapClassNodeSize({
+    width: 220,
+    lines: [1, 1],
+    collapsed: false,
+  });
+  const closed = mapClassNodeSize({
+    width: 220,
+    lines: [1, 3],
+    collapsed: true,
+  });
+  // 検証
+  expect(plain.h).toBe(
+    MAP_CLASS.head + MAP_CLASS.row * 2 + MAP_CLASS.divider * 2 + MAP_CLASS.foot,
+  );
+  expect(wrapped.h - plain.h).toBe(MAP_CLASS.line * 2);
+  expect(wrapped.w).toBe(220);
+  expect(plain.w).toBe(220);
+  expect(closed.h).toBe(MAP_CLASS.head);
+});
+
+/** 矩形どうしが重なるか */
+const overlapsRect = (
+  a: { x: number; y: number; w: number; h: number },
+  b: { x: number; y: number; w: number; h: number },
+): boolean =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+
+// ラベルがノードとタイトルを避ける（正常系）
+test("test_render_map_class_ends_when_label_near_nodes", async () => {
+  // 準備
+  const { renderMapClassEnds, MAP_ER } = await loadParts();
+  const { MAP_LAYOUT } = await loadLayout();
+  const node = (
+    id: string,
+    rect: { x: number; y: number; w: number; h: number },
+  ) => ({
+    id,
+    ...rect,
+    lines: [id],
+    faded: false,
+    ancestors: [],
+  });
+  // 縦の区間（x=132、y=100〜300）の左にクラス、右上にノート、中ほどの高さにグループのタイトルの行
+  const nodes = [
+    node("左", { x: 0, y: 0, w: 128, h: 400 }),
+    node("note_1", { x: 136, y: 60, w: 200, h: 120 }),
+    node("右", { x: 164, y: 280, w: 120, h: 60 }),
+  ];
+  const groups = [
+    {
+      id: "変換",
+      title: "変換",
+      ancestors: [],
+      collapsed: false,
+      faded: false,
+      x: 136,
+      y: 196,
+      w: 300,
+      h: 200,
+    },
+  ];
+  const layout = {
+    width: 500,
+    height: 420,
+    nodes,
+    groups,
+    wires: [
+      {
+        id: "r1",
+        from: "左",
+        to: "右",
+        label: "応答の変換",
+        merged: undefined,
+        points: [
+          [128, 100],
+          [132, 100],
+          [132, 300],
+          [164, 300],
+        ] as Array<[number, number]>,
+      },
+    ],
+  };
+  // 実行
+  const svg = renderMapClassEnds({
+    layout,
+    ends: [],
+    labels: { r1: "応答の変換" },
+    dim: new Set(),
+  });
+  // 検証
+  const text =
+    /<text class="map-class-label"[^>]*x="([\d.-]+)" y="([\d.-]+)" text-anchor="(\w+)"/.exec(
+      svg,
+    );
+  expect(text).not.toBeNull();
+  const x = Number(text?.[1]);
+  const y = Number(text?.[2]);
+  const anchor = text?.[3];
+  const w = "応答の変換".length * MAP_ER.labelChar;
+  const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
+  const rect = { x: left, y: y - MAP_ER.labelLine + 4, w, h: MAP_ER.labelLine };
+  for (const item of nodes) expect(overlapsRect(rect, item)).toBe(false);
+  const title = { x: 136, y: 196, w: 300, h: MAP_LAYOUT.groupTitle };
+  expect(overlapsRect(rect, title)).toBe(false);
+  // 線のいずれかの区間の周り（区間から 1 文字の幅と 1 行の高さの内側）にある
+  const near = Math.abs(left - 132) <= w + MAP_ER.labelChar;
+  expect(near).toBe(true);
 });

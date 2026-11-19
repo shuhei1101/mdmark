@@ -1,5 +1,10 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRoot,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 
 /** 見出し行と集計の行を留める処理を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadSticky = (): Promise<
@@ -61,6 +66,24 @@ function stickyMode(root: HTMLElement): string | null {
   );
 }
 
+/** 表を包む横のスクロールの要素の留め方の属性を返却する（包む要素が無ければ null） */
+function wrapperMode(root: HTMLElement): string | null {
+  return (
+    root
+      .querySelector(".mdmark-table-scroll")
+      ?.getAttribute("data-mdmark-sticky") ?? null
+  );
+}
+
+/** 表の部品で包まない、行の数だけ本文の行を持つ表の HTML */
+function bareTable(rows: number): string {
+  const body = Array.from(
+    { length: rows },
+    (_, i) => `<tr><td>${i + 1}</td><td>${i + 1}</td></tr>`,
+  ).join("");
+  return `<table><thead><tr><th>番号</th><th>数量</th></tr></thead><tbody>${body}</tbody></table>`;
+}
+
 /** 表の見出し行の最初のセルを返却する */
 function headCell(root: HTMLElement): HTMLElement {
   const cell = root.querySelector<HTMLElement>("thead th");
@@ -90,8 +113,9 @@ test("test_attach_sticky_rows_when_timeline", async () => {
   detachers.push(attachTables(root));
   // 実行
   const detach = attachStickyRows(root);
-  // 検証: 付けた後は動く範囲が入る
-  expect(stickyMode(root)).toBe("timeline");
+  // 検証: 付けた後は表を包む要素が属性を持ち、動く範囲が入る
+  expect(wrapperMode(root)).toBe("timeline");
+  expect(root.hasAttribute("data-mdmark-sticky")).toBe(false);
   expect(
     Number.parseFloat(stickyVar(root, "--mdmark-sticky-head-max")),
   ).toBeGreaterThan(0);
@@ -121,7 +145,8 @@ test("test_attach_sticky_rows_when_script", async () => {
   window.scrollTo(0, headTop + 300);
   await nextFrame();
   // 検証
-  expect(stickyMode(root)).toBe("script");
+  expect(wrapperMode(root)).toBe("script");
+  expect(root.hasAttribute("data-mdmark-sticky")).toBe(false);
   await vi.waitFor(() => {
     expect(stickyVar(root, "--mdmark-sticky-head-shift")).toBe("300px");
   });
@@ -152,4 +177,93 @@ test("test_attach_sticky_rows_when_detached", async () => {
   // 検証
   expect(stickyMode(root)).toBeNull();
   expect(stickyVar(root, "--mdmark-sticky-head-shift")).toBe("");
+});
+
+// スクロールする区画の中の表は、区画の上端からずれの分だけ下・区画の下端を基準にずらす量を入れる（正常系）
+test("test_attach_sticky_rows_when_in_scroller", async () => {
+  // 準備: 上端が画面の 100px の位置にある高さ 400px のスクロールする区画の中に表を描く
+  addStyles();
+  vi.spyOn(CSS, "supports").mockReturnValue(false);
+  const { attachStickyRows } = await loadSticky();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(longTable(60));
+  const scroller = document.createElement("div");
+  scroller.style.cssText =
+    "position: fixed; top: 100px; left: 0; width: 800px; height: 400px; overflow: auto; --mdmark-sticky-top: 40px";
+  document.body.append(scroller);
+  scroller.append(root);
+  detachers.push(() => scroller.remove());
+  detachers.push(attachTables(root));
+  const head = headCell(root);
+  const headOffset =
+    head.getBoundingClientRect().top -
+    scroller.getBoundingClientRect().top +
+    scroller.scrollTop;
+  detachers.push(attachStickyRows(root));
+  // 実行: 見出し行の上端が区画の上端より 300px 上になるまで区画をスクロールする
+  scroller.scrollTop = headOffset + 300;
+  scroller.dispatchEvent(new Event("scroll"));
+  await nextFrame();
+  // 検証: 見出し行は区画の上端 + 40px、集計の行は区画の下端に留まる
+  await vi.waitFor(() => {
+    expect(
+      Math.abs(head.getBoundingClientRect().top - 140),
+    ).toBeLessThanOrEqual(1);
+  });
+  const foot = root.querySelector<HTMLElement>("tfoot td");
+  expect(
+    Math.abs((foot?.getBoundingClientRect().bottom ?? 0) - 500),
+  ).toBeLessThanOrEqual(1);
+});
+
+// 表の部品で包まない表も、table に属性を付けて留める（正常系）
+test("test_attach_sticky_rows_when_unwrapped", async () => {
+  // 準備
+  addStyles();
+  vi.spyOn(CSS, "supports").mockReturnValue(false);
+  const { attachStickyRows } = await loadSticky();
+  const root = createRootFromHtml(bareTable(60));
+  const table = root.querySelector<HTMLTableElement>("table");
+  if (!table) {
+    throw new Error("表が無い");
+  }
+  const headTop = headCell(root).getBoundingClientRect().top + window.scrollY;
+  detachers.push(attachStickyRows(root));
+  // 実行: 見出し行の上端が画面の上端より 300px 上になるまでスクロールする
+  window.scrollTo(0, headTop + 300);
+  await nextFrame();
+  // 検証
+  expect(table.getAttribute("data-mdmark-sticky")).toBe("script");
+  await vi.waitFor(() => {
+    expect(table.style.getPropertyValue("--mdmark-sticky-head-shift")).toBe(
+      "300px",
+    );
+  });
+});
+
+// 横にだけスクロールする要素の中の表は、画面を基準にし、animation-timeline を持つブラウザでも JS でずらす（正常系）
+test("test_attach_sticky_rows_when_in_wide_range", async () => {
+  // 準備: 横にだけスクロールする要素（縦にははみ出さない）の中に表を描く
+  addStyles();
+  vi.spyOn(CSS, "supports").mockReturnValue(true);
+  const { attachStickyRows } = await loadSticky();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(longTable(60));
+  const range = document.createElement("div");
+  range.style.overflowX = "auto";
+  range.append(...root.childNodes);
+  root.append(range);
+  detachers.push(attachTables(root));
+  const head = headCell(root);
+  const headTop = head.getBoundingClientRect().top + window.scrollY;
+  detachers.push(attachStickyRows(root));
+  // 実行: 見出し行の上端が画面の上端より 300px 上になるまでページをスクロールする
+  window.scrollTo(0, headTop + 300);
+  await nextFrame();
+  // 検証
+  expect(wrapperMode(root)).toBe("script");
+  await vi.waitFor(() => {
+    expect(stickyVar(root, "--mdmark-sticky-head-shift")).toBe("300px");
+  });
+  expect(Math.abs(head.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
 });

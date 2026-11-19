@@ -7,28 +7,35 @@ constants:
   - name: STICKY_MODE_ATTRIBUTE
     title: 行の留め方の属性
     container: src/table/table-sticky.interact.ts
-    summary: '`attachStickyRows` が表の `table` に付ける属性。値は `timeline`（`animation-timeline` でずらす）か `script`（JS でずらす量を入れる）で、CSS はこの属性で適用する規則を分ける'
+    summary: '`attachStickyRows` が表ごとの留める要素（表を包む横のスクロールの要素 `.mdmark-table-scroll`。包む要素が無い表は `table`）に付ける属性。値は `timeline`（`animation-timeline` でずらす）か `script`（JS でずらす量を入れる）で、CSS はこの属性で適用する規則を分ける'
     value: '"data-mdmark-sticky"'
     status: planned
 functions:
   - name: attachStickyRows
     title: 表の見出し行と集計の行を留める
     container: src/table/table-sticky.interact.ts
-    summary: '各 `mdmark-table` の見出し行と集計の行を、表が画面にかかっている間だけ画面の端に留める'
+    summary: '`root` の中の本文の行を持つ全ての `table`（表の部品で包まない表を含む）の見出し行と集計の行を、表がスクロールする場所にかかっている間だけ、その端に留める'
     description: |-
-      見出し行を画面の上端（`--mdmark-sticky-top`）に、集計の行を画面の下端に留める（`docs/mock/refs/151/assets/table.js`・`table.css`）。
+      見出し行をスクロールする場所の上端（から `--mdmark-sticky-top` だけ下）に、集計の行をスクロールする場所の下端に留める（`docs/mock/refs/151/assets/table.js`・`table.css`）。
 
-      | `CSS.supports("(animation-timeline: view()) and (animation-range: 0% 100%)")` | `root` の `data-mdmark-sticky` | 表ごとに入れる値 |
+      対象は `root` の中の `thead` を持ち本文の行（`tBodies[0].rows`）が 1 つ以上ある全ての `table` で、表の部品（`.mdmark-table`）で包むかを問わない。
+      表ごとの留める要素は、表を包む `.mdmark-table-scroll` があればそれ、無ければ `table`。属性と `view-timeline` は留める要素に付け、CSS 変数は `table` に入れる。
+      スクロールする場所は、留める要素の親から祖先へたどって最初に `overflow-y` の計算値が `auto`・`scroll`・`hidden` で `scrollHeight > clientHeight` の要素で、無ければ画面（インターフェース定義『文書を描く』の制約『見出し行と集計の行を留める』）。横にだけスクロールする `.mdmark-wide-range`・`.mdmark-html` などは縦にはみ出さないため選ばない。
+      留め方は表ごとに決める。`CSS.supports(...)` が真で、留める要素の親から最初に `overflow-y` の計算値が `visible`・`clip` でない祖先（`view-timeline` が従う要素。無ければ画面）がスクロールする場所と同じ表だけ `timeline`、それ以外は `script` にする。
+      スクロールする場所と留め方は、付けたときと `ResizeObserver` の通知のたびに選び直し、留め方が変わった表は前の留め方の CSS 変数を取り除く。
+
+      | 表ごとの留め方 | 留める要素の `data-mdmark-sticky` | 表ごとに入れる値 |
       | --- | --- | --- |
       | 真 | `timeline` | `stickyRange` の値を `--mdmark-sticky-head-start`・`--mdmark-sticky-head-max`・`--mdmark-sticky-foot-max`・`--mdmark-sticky-foot-end` に入れ、動かすのは CSS のスクロール連動のアニメーションに任せる |
-      | 偽 | `script` | `stickyShift` の値を `--mdmark-sticky-head-shift`・`--mdmark-sticky-foot-shift` に入れ、集計の行を上げている間だけ `--mdmark-sticky-foot-reach` を `2px`（それ以外は `0px`）にする |
+      | 偽 | `script` | スクロールする場所の上端（要素なら `getBoundingClientRect().top + clientTop`、画面なら 0）に `--mdmark-sticky-top` を加算した値を `stickyTop`、下端（要素なら上端 + `clientHeight`、画面なら `document.documentElement.clientHeight`）を `viewportBottom` にした `stickyShift` の値を `--mdmark-sticky-head-shift`・`--mdmark-sticky-foot-shift` に入れ、集計の行を上げている間だけ `--mdmark-sticky-foot-reach` を `2px`（それ以外は `0px`）にする |
 
-      値は付けたときと、各表の `ResizeObserver`（絞り込み・集計の出し入れ・幅の変化で表の高さが変わったとき）でもう一度求める。
-      `script` では `window` の `scroll`（capture・passive。もう一度求めるのは `requestAnimationFrame` で 1 フレームに 1 回）と `resize` でももう一度求める。
+      `timeline` は `view-timeline` が留める要素の最も近いスクロールする祖先に従うため、スクロールする場所を求めない。
+      値は付けたときと、各表とスクロールする場所の要素の `ResizeObserver`（絞り込み・集計の出し入れ・幅の変化で表や区画の高さが変わったとき）でもう一度求める。
+      `script` の表が 1 つでもあり得るため、`window` の `scroll`（capture・passive のため、スクロールする場所の要素の `scroll` も受け取る。もう一度求めるのは `requestAnimationFrame` で 1 フレームに 1 回）と `resize` でももう一度求める。
       本文の行が 1 つもない表は留めない
     kind: 関数
     scope: internal
-    side_effects: '`root` の属性と表の CSS 変数を書き換え、`window` の `scroll`・`resize` を受け取る'
+    side_effects: '留める要素の属性と表の CSS 変数を書き換え、`window` の `scroll`・`resize` を受け取る'
     args:
       - name: root
         type: HTMLElement
@@ -36,26 +43,44 @@ functions:
         description: 描いた要素
     returns:
       type: () => void
-      description: 受け取りと `ResizeObserver` を削除し、`data-mdmark-sticky` と CSS 変数を取り除く関数
+      description: 受け取りと `ResizeObserver` を削除し、留める要素の `data-mdmark-sticky` と表の CSS 変数を取り除く関数
     unit_tests:
       - name: test_attach_sticky_rows_when_timeline
         case: 正常
         summary: animation-timeline を持つブラウザでは動く範囲を CSS 変数に入れる
         condition: 本文 30 行と集計の行を持つ表（集計の行は先に `attachTables` で配置する）を付け、削除する
         mock: '`CSS.supports` を`true` を返却する関数に差し替える'
-        expected: 付けた後は `root` が `data-mdmark-sticky="timeline"`、表の `--mdmark-sticky-head-max` と `--mdmark-sticky-foot-max` が 0px より大きい。削除した後は属性と CSS 変数が無い
+        expected: 付けた後は表を包む `.mdmark-table-scroll` が `data-mdmark-sticky="timeline"` で `root` は属性を持たず、表の `--mdmark-sticky-head-max` と `--mdmark-sticky-foot-max` が 0px より大きい。削除した後は属性と CSS 変数が無い
       - name: test_attach_sticky_rows_when_script
         case: 正常
         summary: animation-timeline を持たないブラウザではスクロールに合わせてずらす量を入れる
         condition: 画面より高い本文 60 行と集計の行を持つ表（集計の行は先に `attachTables` で配置する）を付け、見出し行の上端が画面の上端より 300px 上になるまでスクロールして 1 フレーム待つ
         mock: '`CSS.supports` を `false` を返却する関数に差し替える'
-        expected: '`root` が `data-mdmark-sticky="script"`、表の `--mdmark-sticky-head-shift` が 300px、`--mdmark-sticky-foot-reach` が `2px`、見出し行の上端が画面の上端と一致し、集計の行の下端が画面の下端と一致する'
+        expected: '表を包む `.mdmark-table-scroll` が `data-mdmark-sticky="script"`、表の `--mdmark-sticky-head-shift` が 300px、`--mdmark-sticky-foot-reach` が `2px`、見出し行の上端が画面の上端と一致し、集計の行の下端が画面の下端と一致する'
       - name: test_attach_sticky_rows_when_detached
         case: 正常
         summary: 削除した後はスクロールしても書き換えない
         condition: '`test_attach_sticky_rows_when_script` の表を付けて削除し、スクロールして 1 フレーム待つ'
         mock: '`CSS.supports` を `false` を返却する関数に差し替える'
-        expected: '`root` に `data-mdmark-sticky` が無く、表に `--mdmark-sticky-head-shift` が無い'
+        expected: '`root` の中のどの要素にも `data-mdmark-sticky` が無く、表に `--mdmark-sticky-head-shift` が無い'
+      - name: test_attach_sticky_rows_when_in_scroller
+        case: 正常
+        summary: スクロールする区画の中の表は、区画の上端からずれの分だけ下・区画の下端を基準にずらす量を入れる
+        condition: '上端が画面の 100px の位置にある高さ 400px の `overflow: auto` の要素の中に、本文 60 行と集計の行を持つ表を配置し、要素に `--mdmark-sticky-top: 40px` を適用して付け、見出し行の上端が要素の上端より 300px 上になるまで要素をスクロールして 1 フレーム待つ'
+        mock: '`CSS.supports` を `false` を返却する関数に差し替える'
+        expected: 見出し行の上端が画面の 140px（要素の上端 + 40px）±1px、集計の行の下端が画面の 500px（要素の下端）±1px
+      - name: test_attach_sticky_rows_when_in_wide_range
+        case: 正常
+        summary: 横にだけスクロールする要素の中の表は、画面を基準にし、animation-timeline を持つブラウザでも JS でずらす
+        condition: '`overflow-x: auto` の要素（縦にははみ出さない）の中に本文 60 行の表を配置して付け、見出し行の上端が画面の上端より 300px 上になるまでページをスクロールして 1 フレーム待つ'
+        mock: '`CSS.supports` を `true` を返却する関数に差し替える'
+        expected: '表を包む `.mdmark-table-scroll` が `data-mdmark-sticky="script"`、表の `--mdmark-sticky-head-shift` が 300px、見出し行の上端が画面の上端 ±1px'
+      - name: test_attach_sticky_rows_when_unwrapped
+        case: 正常
+        summary: 表の部品で包まない表も、table に属性を付けて留める
+        condition: '`.mdmark-table` で包まない、本文 60 行の `table` を付け、見出し行の上端が画面の上端より 300px 上になるまでスクロールして 1 フレーム待つ'
+        mock: '`CSS.supports` を `false` を返却する関数に差し替える'
+        expected: '`table` が `data-mdmark-sticky="script"`、`--mdmark-sticky-head-shift` が 300px'
     callees:
       - 'MOD-472-218#functions[stickyShift]'
       - 'MOD-472-218#functions[stickyRange]'

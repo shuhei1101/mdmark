@@ -2326,9 +2326,18 @@ export const MAP_CLASS = {
   /** 名前の行（種類の行と名前）の高さ */
   head: 56,
   row: 22,
+  /** 折り返したメンバーの 2 行目からの 1 行の高さ（メンバーの文字の line-height） */
+  line: 16,
   /** 属性とメソッドの区画を分ける区切り線の分の高さ */
   divider: 6,
   foot: 6,
+  /** メンバーの等幅の文字の 1 文字の幅（全角・半角）の見積もり */
+  charWide: 12,
+  charNarrow: 7.2,
+  /** メンバーの行の、文字の列の外の幅（ノードの枠線・左右の余白・可視性の列・説明のボタンの列・列の間） */
+  memberInset: 66,
+  /** 関係のラベルの前後に空ける幅 */
+  labelGap: 8,
   /** 同じ点から出る・入る線の端をずらす間隔 */
   endGap: 16,
   /** 端の形の長さと、幅の半分 */
@@ -2336,18 +2345,57 @@ export const MAP_CLASS = {
   endHalf: 6,
 } as const;
 
+/** 全角の文字か */
+const isWideChar = (char: string): boolean => {
+  const code = char.codePointAt(0) ?? 0;
+  return !(code <= 0x7e || (code >= 0xff61 && code <= 0xff9f));
+};
+
+/** メンバーの等幅の文字の幅の見積もり（全角を `charWide`、半角を `charNarrow`） */
+export const mapClassTextWidth = (text: string): number =>
+  [...text].reduce(
+    (sum, char) =>
+      sum + (isWideChar(char) ? MAP_CLASS.charWide : MAP_CLASS.charNarrow),
+    0,
+  );
+
+/** メンバーの文字を、クラスの幅から文字の列の外の幅を除いた幅で折り返した行の数 */
+export const mapClassMemberLines = (member: {
+  text: string;
+  width: number;
+}): number => {
+  const room = Math.max(1, member.width - MAP_CLASS.memberInset);
+  let lines = 1;
+  let used = 0;
+  for (const char of member.text) {
+    const advance = isWideChar(char)
+      ? MAP_CLASS.charWide
+      : MAP_CLASS.charNarrow;
+    if (used > 0 && used + advance > room) {
+      lines += 1;
+      used = 0;
+    }
+    used += advance;
+  }
+  return lines;
+};
+
+/** メンバーの行 1 つの高さ */
+const classRowHeight = (lines: number): number =>
+  MAP_CLASS.row + (lines - 1) * MAP_CLASS.line;
+
 /** クラスのノードの大きさ（メンバーを閉じたクラスと、メンバーを持たないクラスは名前の行だけ） */
 export const mapClassNodeSize = (args: {
-  attributes: number;
-  methods: number;
+  width: number;
+  lines: number[];
   collapsed: boolean;
 }): { w: number; h: number } => ({
-  w: MAP_CLASS.width,
+  w: args.width,
   h:
-    args.collapsed || args.attributes + args.methods === 0
+    args.collapsed || args.lines.length === 0
       ? MAP_CLASS.head
       : MAP_CLASS.head +
-        (args.attributes + args.methods) * MAP_CLASS.row +
+        args.lines.reduce((sum, lines) => sum + classRowHeight(lines), 0) +
         MAP_CLASS.divider * 2 +
         MAP_CLASS.foot,
 });
@@ -2363,6 +2411,8 @@ export type MapClassNode = {
     method: boolean;
     isStatic: boolean;
     isAbstract: boolean;
+    /** クラスの幅で折り返した行の数（1 以上） */
+    lines: number;
   }>;
 };
 
@@ -2466,9 +2516,11 @@ export const renderMapClassMembers = (
   const attributes = node.members.filter((member) => !member.method);
   const methods = node.members.filter((member) => member.method);
   const list = (items: MapClassNode["members"], top: number): string =>
-    `<div class="map-class-members" role="list" style="top:${top}px;grid-auto-rows:${MAP_CLASS.row}px">${items.map((member) => renderMapClassMember(args, { member, tips })).join("")}</div>`;
+    `<div class="map-class-members" role="list" style="top:${top}px;grid-template-rows:${items.map((member) => `${classRowHeight(member.lines)}px`).join(" ")}">${items.map((member) => renderMapClassMember(args, { member, tips })).join("")}</div>`;
   const second =
-    MAP_CLASS.head + attributes.length * MAP_CLASS.row + MAP_CLASS.divider;
+    MAP_CLASS.head +
+    attributes.reduce((sum, member) => sum + classRowHeight(member.lines), 0) +
+    MAP_CLASS.divider;
   return {
     toggle,
     members: `${list(attributes, MAP_CLASS.head)}${list(methods, second)}`,
@@ -2556,6 +2608,82 @@ const classEndMarks = (
   ];
 };
 
+/** 配置した文字の矩形（ベースラインから上へ 1 行の高さ） */
+const textRect = (text: PlacedText): Rect => ({
+  x: text.x,
+  y: text.y - MAP_ER.labelLine + 4,
+  w: text.w,
+  h: MAP_ER.labelLine,
+});
+
+/**
+ * 関係のラベルの置き場所。両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、
+ * 縦の区間なら右 → 左、横の区間なら上 → 下を試し、避ける矩形のどれとも重ならない最初の置き場所にする。全て重なるときは無し
+ */
+const classLabelPlace = (
+  points: Point[],
+  label: { width: number; avoid: Rect[] },
+):
+  | { at: Point; left: number; anchor: "start" | "middle" | "end" }
+  | undefined => {
+  const inner = points.slice(1, -1);
+  const segments: Array<[Point, Point]> =
+    inner.length >= 2
+      ? inner.slice(0, -1).map((a, at) => [a, inner[at + 1] as Point])
+      : [[points[0] as Point, points[points.length - 1] as Point]];
+  segments.sort(
+    ([a, b], [c, d]) =>
+      Math.hypot(d[0] - c[0], d[1] - c[1]) -
+      Math.hypot(b[0] - a[0], b[1] - a[1]),
+  );
+  const { width } = label;
+  const gap = MAP_CLASS.labelGap;
+  for (const [a, b] of segments) {
+    const vertical = a[0] === b[0];
+    for (const t of [0.5, 0.25, 0.75]) {
+      const x = a[0] + (b[0] - a[0]) * t;
+      const y = a[1] + (b[1] - a[1]) * t;
+      const options = vertical
+        ? [
+            {
+              at: [x + gap, y + 4] as Point,
+              left: x + gap,
+              anchor: "start" as const,
+            },
+            {
+              at: [x - gap, y + 4] as Point,
+              left: x - gap - width,
+              anchor: "end" as const,
+            },
+          ]
+        : [
+            {
+              at: [x, y - gap] as Point,
+              left: x - width / 2,
+              anchor: "middle" as const,
+            },
+            {
+              at: [x, y + gap + MAP_ER.labelLine - 4] as Point,
+              left: x - width / 2,
+              anchor: "middle" as const,
+            },
+          ];
+      const found = options.find((option) => {
+        const rect = textRect({ x: option.left, y: option.at[1], w: width });
+        return label.avoid.every(
+          (other) =>
+            rect.x + rect.w <= other.x ||
+            other.x + other.w <= rect.x ||
+            rect.y + rect.h <= other.y ||
+            other.y + other.h <= rect.y,
+        );
+      });
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
+
 /** 関係の端の形と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの SVG */
 export const renderMapClassEnds = (args: {
   layout: MapLayout;
@@ -2567,6 +2695,13 @@ export const renderMapClassEnds = (args: {
     (args.layout.wires.find((item) => item.id === id)?.points ?? []) as Point[];
   const cardinalities: PlacedText[] = [];
   const labels: PlacedText[] = [];
+  // ラベルが避ける、クラス・ノートのノードとグループのタイトルの行
+  const avoid: Rect[] = [
+    ...args.layout.nodes.map(({ x, y, w, h }) => ({ x, y, w, h })),
+    ...args.layout.groups
+      .filter((group) => !group.collapsed)
+      .map(({ x, y, w }) => ({ x, y, w, h: MAP_LAYOUT.groupTitle })),
+  ];
   const parts = [
     ...args.ends.flatMap((end) => {
       const points = pointsOf(end.wire);
@@ -2577,11 +2712,28 @@ export const renderMapClassEnds = (args: {
     ...Object.entries(args.labels ?? {}).flatMap(([id, label]) => {
       const points = pointsOf(id);
       if (points.length < 2) return [];
+      const width = label.length * MAP_ER.labelChar;
+      const free = classLabelPlace(points, {
+        width,
+        avoid: [...avoid, ...[...cardinalities, ...labels].map(textRect)],
+      });
+      if (free) {
+        labels.push({ x: free.left, y: free.at[1], w: width });
+        return [
+          erMarkText(args.dim, {
+            wire: id,
+            at: free.at,
+            value: label,
+            className: "map-class-label",
+            anchor: free.anchor,
+          }),
+        ];
+      }
       const place = erMarkOf(points);
       const at = placeLabel(labels, {
         at: place.label,
         vertical: place.vertical,
-        width: label.length * MAP_ER.labelChar,
+        width,
       });
       return [
         erMarkText(args.dim, {

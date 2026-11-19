@@ -266,7 +266,7 @@ functions:
       - name: options
         type: '{ stickyTop: number; viewportBottom: number; headTop: number; headBottom: number; bodyTop: number; bodyBottom: number; footTop?: number; footBottom?: number }'
         required: true
-        description: 留める上端（`--mdmark-sticky-top` の計算値）、画面の下端、ずらす前の見出し行・本文の行のまとまり（`tBodies[0]`）・集計の行の上端と下端（集計の行が無ければ `footTop`・`footBottom` を省く）。どれも `getBoundingClientRect` の丸めない px
+        description: 留める上端（スクロールする場所の上端に `--mdmark-sticky-top` の計算値を加算した値）、スクロールする場所の下端（`viewportBottom`）、ずらす前の見出し行・本文の行のまとまり（`tBodies[0]`）・集計の行の上端と下端（集計の行が無ければ `footTop`・`footBottom` を省く）。どれも `getBoundingClientRect` の丸めない px
     returns:
       type: '{ head: number; foot: number }'
       description: 見出し行を下げる量（0 以上）と集計の行を動かす量（0 以下。集計の行が無ければ 0）

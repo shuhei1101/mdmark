@@ -202,6 +202,38 @@ scenarios:
       - 本文の段落の幅が `40rem` を超えない
       - 表の途中を出したとき、見出し行の上端が画面の上端から 48px の位置にあり、固定のヘッダーに隠れていない
     test: test_normal_when_layout_overridden
+  - name: 正常シナリオ（スクロールする区画の中で見出し行の位置を変える）
+    setup:
+      - name: スクロールする区画を持つページ
+        description: '画面の上端に高さ 48px の固定のヘッダーを配置し、その下に縦にスクロールする区画（`overflow: auto`）を配置して、区画の中に区画の上端に固定した高さ 40px のバーと、文書を描く要素を配置する HTML'
+        notes: 利用側の CSS は、見出し行を留める位置のずれの CSS カスタムプロパティを `40px` にする。ページ全体はスクロールしない
+      - name: 大きい表を持つ Markdown
+        description: 正常シナリオ（見出し行の位置と本文の幅を変える）と同じ
+        notes: '-'
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: 区画の中の要素に文書を描かせる
+        M-->>P: 層の中の CSS が該当した本文
+        P->>P: 層の外の利用側の CSS が該当する
+        U->>P: 区画を縦にスクロールして表の途中を出す
+        P-->>U: 区画の中のバーの下に見出し行を留めた表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表の途中を出したとき、見出し行の上端が区画の上端から 40px（画面の上端から 88px）の位置にあり、区画の中のバーにも固定のヘッダーにも隠れていない
+      - どのブラウザで開いても、見出し行の位置が同じ
+    test: test_normal_when_sticky_top_in_scroller
   - name: 正常シナリオ（既定の本文の幅）
     setup:
       - name: mdmark だけを読み込むページ
