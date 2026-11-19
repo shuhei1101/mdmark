@@ -136,7 +136,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 図の範囲の Markdown を `render` で HTML にし、`chart`・`param` は定義からタイトルと凡例の系列の名前を取り出して `MdmarkFigure` にする
-    description: 埋め込んだ HTML は範囲の `ts`・`js` のコードブロックを除いてから `render` に渡し、除いたときは警告を返却する。`param` の凡例は `今の値（…）`・`既定の値（…）` の 2 つ
+    description: 埋め込んだ HTML は範囲の `ts`・`js` のコードブロックを除いてから `render` に渡し、除いたときは警告を返却する。`param` の凡例は、描く側の `paramChart`（今の値は既定の値）の系列の名前 `今の値（{既定の値}）`・`既定の値（{既定の値}）` の 2 つ
     args:
       - name: options
         type: '{ block: PureFigureBlock; index: number; config?: MdmarkConfig }'
@@ -160,7 +160,7 @@ functions:
         summary: param の凡例は今の値と既定の値
         condition: '`param` 1 つ'
         mock: なし
-        expected: '`legend` の 2 つが `今の値` と `既定の値` で始まる'
+        expected: '`legend` が `["今の値（{knob.value}）", "既定の値（{knob.value}）"]`'
       - name: test_figure_of_html_with_scripts
         case: 正常
         summary: 範囲のスクリプトを除いて警告を返却する
