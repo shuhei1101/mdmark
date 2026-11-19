@@ -18,15 +18,21 @@ docs:
   - page: docs/component/CMP-472-5.ts.yaml
     new: false
     change: 強調しない要素・中へ入ったグループの外の薄め方と CSS 変数 --mdmark-map-dim-opacity の記載を、文字のコントラスト 4.5:1 以上を保つ形に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
   - page: docs/component/CMP-472-4.ts.yaml
     new: false
-    change: シーケンス図で map-dim を付けた要素の薄め方を CMP-472-5 に合わせる
-    status: todo
+    change: 記載の変更は無い（`map-dim` を付ける対象だけを記載し、薄め方は CMP-472-5 の強調しない要素の記載に従う）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
   - page: docs/component/CMP-472-61.ts.yaml
     new: false
     change: 列の幅のつまみの aria-valuemax を、上限・今の幅・最小の幅から決める形に変える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
   - page: docs/interface/IF-472-35.ts.yaml
     new: false
     change: 列の幅のつまみの aria-valuemax の記載と結合テストの期待、map の図で薄くした要素のコントラストの記載を合わせる
@@ -44,15 +50,21 @@ docs:
   - page: docs/screen/SCR-472-4.ts.yaml
     new: false
     change: 列の幅のつまみの制約の aria-valuemax の記載を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
   - page: docs/component/CMP-649-1.ts.yaml
     new: false
     change: マインドマップで選んだときのほかの項目の opacity 0.25 の記載を、制約『map の強調』の薄い表示に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
   - page: docs/component/CMP-653-1.ts.yaml
     new: false
     change: 軸と格子の配置の図で選んだときのほかの項目の opacity 0.25 の記載を、制約『map の強調』の薄い表示に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:52:32.379606+00:00'
 scope_out:
   - item: 図の枠のリサイズハンドル（diagram-resize.interact.ts）と案内の帯の手順のバーの aria-valuemin・aria-valuenow・aria-valuemax の大小
     reason: 同じ型の不具合は無い。図の枠のリサイズハンドルは aria-valuemax を最小・収まる高さ・今の高さの最大にし、手順のバーは 0 から手順の数の範囲に aria-valuenow が収まる
