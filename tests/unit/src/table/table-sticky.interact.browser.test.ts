@@ -206,9 +206,9 @@ test("test_attach_sticky_rows_when_in_scroller", async () => {
   await nextFrame();
   // 検証: 見出し行は区画の上端 + 40px、集計の行は区画の下端に留まる
   await vi.waitFor(() => {
-    expect(Math.abs(head.getBoundingClientRect().top - 140)).toBeLessThanOrEqual(
-      1,
-    );
+    expect(
+      Math.abs(head.getBoundingClientRect().top - 140),
+    ).toBeLessThanOrEqual(1);
   });
   const foot = root.querySelector<HTMLElement>("tfoot td");
   expect(
