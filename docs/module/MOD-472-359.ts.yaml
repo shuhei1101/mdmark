@@ -9,7 +9,7 @@ constants:
     title: 共通スタイルの色
     container: src/shared/style-tokens.logic.ts
     usecase: 共通
-    summary: 色の名前から `{ light, dark }` の 16 進の色。`css` は同じ値を持つ既定のテーマの CSS 変数（無い色は持たない）
+    summary: 色の名前から `{ light, dark }` の 16 進の色。`css` は同じ値を持つ既定のテーマの CSS 変数（無い色は持たない）。`themes` はテーマの名前ごとに `light`・`dark` と違う値
     entries:
       - key: calloutNote / calloutTip / calloutImportant / calloutWarning / calloutCaution
         value: '`src/index.css` の既定のテーマの値'
@@ -27,7 +27,7 @@ constants:
         value: 明るい配色 `#eef1f5`、暗い配色 `#2a2d33`
         description: コードブロックの背景の面。合意したモックの値
       - key: userBand
-        value: 暗い配色 `#3a3a3a`、明るい配色 `#f0f0f0`（Claude Code 2.1.328 の配布物の明るいテーマの `userMessageBackground` の `rgb(240, 240, 240)`。取った箇所は `docs/pr/699/テスト結果/20261119215519_73687ecc_発言の背景の色.log`）
+        value: 暗い配色 `#3a3a3a`、明るい配色 `#f0f0f0`、`themes` の `light-daltonized` が `#dcdcdc`（Claude Code 2.1.328 の配布物の明るいテーマの `userMessageBackground` の `rgb(240, 240, 240)`。取った箇所は `docs/pr/699/テスト結果/20261119215519_73687ecc_発言の背景の色.log`）
         description: Claude Code の標準の発言の背景の帯の色。`css` を持たない
     refs:
       - IF-472-45#constraints[色]
@@ -39,7 +39,7 @@ functions:
     kind: 関数
     container: src/shared/style-tokens.logic.ts
     usecase: 共通
-    summary: 色の名前と Claude Code のテーマの名前から、16 進の色を返却する。テーマが `light` で始まるときは明るい配色、それ以外は暗い配色
+    summary: 色の名前と Claude Code のテーマの名前から、16 進の色を返却する。`themes` にそのテーマの値があればその値、無ければテーマが `light` で始まるときは明るい配色、それ以外は暗い配色
     scope: public
     is_async: false
     args:
@@ -55,7 +55,7 @@ functions:
       - name: test_style_color
         case: 正常
         summary: 明るいテーマと暗いテーマ
-        condition: '`userBand` を `theme` が `light-daltonized` と `dark` で取る'
+        condition: '`userBand` を `theme` が `light` と `dark` で取る'
         mock: なし
         expected: 明るい配色の値と `#3a3a3a`
       - name: test_style_colors_match_css
@@ -64,6 +64,12 @@ functions:
         condition: '`src/index.css` の既定のテーマの明るい配色と暗い配色の宣言を読み込む'
         mock: なし
         expected: '`css` を持つ色は全て、対応する CSS 変数の値と `light`・`dark` が等しい'
+      - name: test_style_color_when_theme_override
+        case: 正常
+        summary: テーマごとの値を優先する
+        condition: '`userBand` を `theme` が `light-daltonized` と `light` で取る'
+        mock: なし
+        expected: '`#dcdcdc` と `#f0f0f0`'
     status: planned
 tags:
   - name: topic:色

@@ -46,10 +46,21 @@ test("test_style_color", async () => {
   // 準備
   const { STYLE_COLORS, styleColor } = await loadTokens();
   // 実行・検証
-  expect(styleColor({ name: "userBand", theme: "light-daltonized" })).toBe(
+  expect(styleColor({ name: "userBand", theme: "light" })).toBe(
     STYLE_COLORS.userBand.light,
   );
   expect(styleColor({ name: "userBand", theme: "dark" })).toBe("#3a3a3a");
+});
+
+// テーマごとの値を優先する（正常系）
+test("test_style_color_when_theme_override", async () => {
+  // 準備
+  const { styleColor } = await loadTokens();
+  // 実行・検証
+  expect(styleColor({ name: "userBand", theme: "light-daltonized" })).toBe(
+    "#dcdcdc",
+  );
+  expect(styleColor({ name: "userBand", theme: "light" })).toBe("#f0f0f0");
 });
 
 // Web の CSS 変数と同じ値（正常系）

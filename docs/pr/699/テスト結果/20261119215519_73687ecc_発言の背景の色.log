@@ -12,3 +12,17 @@ offset 312585402: userMessageBackground=rgb(55, 55, 55)  直前の text=rgb(255,
 
 text が rgb(0,0,0) で userMessageBackground が rgb(240, 240, 240) の定義を明るいテーマ（light）、rgb(255,255,255) と rgb(55, 55, 55) の定義を暗いテーマとして読んだ。
 暗い配色の #3a3a3a は、ターミナルで tmux capture-pane -e が返した 256 色の 237（rgb(55, 55, 55) に最も近い 256 色）の値。明るい配色は rgb(240, 240, 240) を #f0f0f0 にした。
+
+## テーマの名前との対応（レビューの細部の確認）
+
+配布物の中で各定義を代入した変数を、`case"{テーマの名前}":return {変数}` で引いた結果:
+
+| userMessageBackground | テーマ |
+| --- | --- |
+| rgb(240, 240, 240) | light |
+| ansi:white | light-ansi |
+| ansi:blackBright | dark-ansi |
+| rgb(220, 220, 220) | light-daltonized |
+| rgb(55, 55, 55)（2 つ目） | dark-daltonized |
+
+light-daltonized の値 rgb(220, 220, 220) を #dcdcdc として、共通スタイルの定義の `themes` に追加した。ansi の 2 つのテーマは端末の 16 色の名前で、16 進の値が決まらないため、light・dark の値のまま描く。
