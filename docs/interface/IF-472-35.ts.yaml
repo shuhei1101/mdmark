@@ -10282,6 +10282,42 @@ flows:
       - 機能をオフにした文書の右側の目次の頭に、`Markdown でコピー`・`Markdown でエクスポート` のボタンが無く、ほかのボタンはある
       - 見出しを持たない文書の `el` の中に、どちらのボタンも無い
     test: test_normal_when_markdown_buttons_off
+  - name: '正常系（map のクラス図のクラスの id: のリンク先を URL に変える）'
+    summary: '`opts.resolveIdLink` で、言語 `mermaid` のコードブロックの `classDiagram` の `click`・`link` の行の `id:` を URL に変えてクラスをリンクにする'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 'id: のリンク先を持つクラス図の Markdown'
+        description: 言語 `mermaid` のコードブロック 1 つを持つ文書。`classDiagram` のクラス `受付` に `click 受付 href "id:SC-1#scenarios[正常シナリオ]"`、メンバーを持つクラス `台帳` に `link 台帳 "id:SC-2"`、`不明` に `click 不明 href "id:unknown"` の行を持ち、クラス `予約` は `click`・`link` の行を持たない
+      - name: 設定
+        description: '`opts.resolveIdLink` に、`id:SC-` で始まる値を `https://docs.example.com/{id: の後ろ}` に変え、ほかは `undefined` を返す関数'
+      - name: Mock
+        description: リンク先への遷移を Playwright の route で手元の応答に差し替え、開いた URL を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, resolveIdLink })
+        M->>P: resolveIdLink(参照)
+        P-->>M: URL か undefined
+        M->>M: 返却された URL を本文のリンクと同じ許可で確認する
+        M-->>U: クラスのリンクと書き方の警告
+        U->>M: 受付を動かさずに押して離す
+        M-->>U: 変えた URL を開く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`resolveIdLink` が `id:SC-1#scenarios[正常シナリオ]`・`id:SC-2`・`id:unknown` を受け取る'
+      - '`受付`・`台帳` のノードが class `has-link` と、`href` が `https://docs.example.com/SC-1#scenarios[正常シナリオ]`・`https://docs.example.com/SC-2` の `a.mdmark-diagram-node-link` を持ち、`受付` を押すと `https://docs.example.com/SC-1#scenarios[正常シナリオ]` が開く'
+      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たず、図の枠の前の書き方の警告に `不明` と `id:unknown` が記載される'
+    test: test_normal_when_class_node_id_link_resolved
+    refs:
+      - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
