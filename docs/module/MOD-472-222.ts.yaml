@@ -176,7 +176,11 @@ functions:
   - name: revealTarget
     title: 要素へ移る
     container: src/section/section.interact.ts
-    summary: 要素を囲む閉じたセクションを外側から `sectionSetters` の関数で開き、要素がセクションの見出し（`sectionSetters` に記録した見出しの要素）なら、続けて見出し自身の閉じたセクションも開く。選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する
+    summary: '要素を囲む閉じたセクションとタブを開き、要素へスクロールする'
+    description: |-
+      要素を囲む閉じたセクションを外側から `sectionSetters` の関数で開き、要素がセクションの見出し（`sectionSetters` に記録した見出しの要素）なら、続けて見出し自身の閉じたセクションも開く。
+      選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、表の行（`tr`）でなければ `scrollIntoView` する。
+      URL の `#ID` で移るときと右側の目次の項目で移るときに使用する
     kind: 関数
     scope: internal
     side_effects: セクションの中身の `hidden`・タブの選択を書き換え、スクロールする

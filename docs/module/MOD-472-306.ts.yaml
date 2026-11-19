@@ -178,7 +178,12 @@ functions:
   - name: renderCodeCopy
     title: コードのコピーのボタンを描く
     container: src/code-block/code-block.part.ts
-    summary: コードブロックの帯の右端に配置する `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{状態}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>` を返却する。文言とアイコンは `idle` が `コピー`（`copy`）、`copied` が `コピーしました`（`check`）、`failed` が `コピーできませんでした`（`circle-alert`）。`copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる。`mount` が帯に付けるときと状態を切り替えるときにも使用する
+    summary: 'コードブロックの帯の右端に配置するコピーのボタンと状態の表示の HTML を返却する'
+    description: |-
+      コードブロックの帯の右端に配置する `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{状態}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>` を返却する。
+      文言とアイコンは `idle` が `コピー`（`copy`）、`copied` が `コピーしました`（`check`）、`failed` が `コピーできませんでした`（`circle-alert`）。
+      `copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる。
+      `mount` が帯に付けるときと状態を切り替えるときにも使用する
     kind: 関数
     scope: internal
     args:

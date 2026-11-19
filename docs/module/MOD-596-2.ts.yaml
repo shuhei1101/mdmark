@@ -29,7 +29,10 @@ constants:
     container: src/map/architecture.ts
     usecase: Mermaidと補足で図を描く
     role: 定数
-    summary: アイコンごとの service（`cloud`・`database`・`disk`・`internet`・`server` を Lucide の `cloud`・`database`・`hard-drive`・`globe`・`server` にする。種類の行は空）とアイコンの無い service の `MapKind`。キーは `mdmark-arch-{アイコン}`・`mdmark-arch-service`
+    summary: 'アーキテクチャ図の service の種類ごとの `MapKind`'
+    description: |-
+      アイコンごとの service（`cloud`・`database`・`disk`・`internet`・`server` を Lucide の `cloud`・`database`・`hard-drive`・`globe`・`server` にする。種類の行は空）とアイコンの無い service の `MapKind`。
+      キーは `mdmark-arch-{アイコン}`・`mdmark-arch-service`
 functions:
   - name: parseArchitecture
     title: architecture-betaを読む

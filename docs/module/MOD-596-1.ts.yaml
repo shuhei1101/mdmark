@@ -123,7 +123,13 @@ functions:
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品に指定するクラスのメンバー・注釈・関係の端と、クラスの大きさと左右に空ける幅を指定する配置の上書きを作る。クラスの幅は `widths` の幅、無ければ名前の文字の幅と、メンバーの文字の幅（`mapClassTextWidth`）に可視性・説明のボタンの列と `MAP_CLASS.memberInset` を加えた幅が収まる幅を `MAP_CLASS.width` から `maxWidth` までの間で決め、メンバーごとにその幅で折り返す行の数（`mapClassMemberLines`）を求めて、高さを `mapClassNodeSize` で決める。ラベルを持つ関係がつながるクラスは、`aside` を、つながる関係の最も長いラベルの幅（文字数 × `MAP_ER.labelChar`）と前後の `MAP_CLASS.labelGap` が、要素の間（図の全体の LR の段の間 `MAP_LAYOUT.gapRank` と、namespace の TB の中で横に並ぶ要素の間 `MAP_LAYOUT.gapItem` の小さい方）と両側の `aside` に収まる幅（`ceil(max(0, ラベルの幅 + labelGap × 2 - min(gapRank, gapItem)) / 2)`）にする。`aside` はラベルをずらす量を小さくするためのもので、重なりの回避は `renderMapClassEnds` が行う。閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
+    summary: '部品に指定するクラスのメンバー・注釈・関係の端と、配置の上書きを作る'
+    description: |-
+      部品に指定するクラスのメンバー・注釈・関係の端と、クラスの大きさと左右に空ける幅を指定する配置の上書きを作る。
+      クラスの幅は `widths` の幅、無ければ名前の文字の幅と、メンバーの文字の幅（`mapClassTextWidth`）に可視性・説明のボタンの列と `MAP_CLASS.memberInset` を加えた幅が収まる幅を `MAP_CLASS.width` から `maxWidth` までの間で決め、メンバーごとにその幅で折り返す行の数（`mapClassMemberLines`）を求めて、高さを `mapClassNodeSize` で決める。
+      ラベルを持つ関係がつながるクラスは、`aside` を、つながる関係の最も長いラベルの幅（文字数 × `MAP_ER.labelChar`）と前後の `MAP_CLASS.labelGap` が、要素の間（図の全体の LR の段の間 `MAP_LAYOUT.gapRank` と、namespace の TB の中で横に並ぶ要素の間 `MAP_LAYOUT.gapItem` の小さい方）と両側の `aside` に収まる幅（`ceil(max(0, ラベルの幅 + labelGap × 2 - min(gapRank, gapItem)) / 2)`）にする。
+      `aside` はラベルをずらす量を小さくするためのもので、重なりの回避は `renderMapClassEnds` が行う。
+      閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする
     scope: public
     args:
       - name: diagram

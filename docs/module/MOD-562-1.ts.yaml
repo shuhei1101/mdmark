@@ -27,7 +27,10 @@ functions:
     container: src/footnote/annotations.syntax.ts
     kind: 関数
     scope: internal
-    summary: '解析器に、block の `mdmark_annotation_def`（`mdmark_footnote_def` の後・`reference` の前。`alt` は `paragraph`・`reference`）と、inline の `mdmark_annotation_ref`（`link` と `mdmark_footnote_ref` の後。`※` は markdown-it の `text` のルールの区切りの文字ではないため、ルールは `[` の位置で動く。`link` が先に試されるので、インラインのリンクと、リンクの参照の定義があるときの省略形・完全形・簡略形は markdown-it がリンクにし、このルールは呼ばれない）を登録し、`mdmark_annotation_ref`（マーカーとツールチップ）と `mdmark_annotation_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に配置する。コアルールの `collectAnnotations`（`collectFootnotes` の後）・`buildAnnotationList`（`buildFootnoteList` の後・関連文書の一覧の前）・`takeAnnotationDefinitions`（`takeFootnoteDefinitions` の後）は `createParser` が登録する'
+    summary: '注記の block と inline のルールとトークンの描き方を解析器に登録する'
+    description: |-
+      解析器に、block の `mdmark_annotation_def`（`mdmark_footnote_def` の後・`reference` の前。`alt` は `paragraph`・`reference`）と、inline の `mdmark_annotation_ref`（`link` と `mdmark_footnote_ref` の後。`※` は markdown-it の `text` のルールの区切りの文字ではないため、ルールは `[` の位置で動く。`link` が先に試されるので、インラインのリンクと、リンクの参照の定義があるときの省略形・完全形・簡略形は markdown-it がリンクにし、このルールは呼ばれない）を登録し、`mdmark_annotation_ref`（マーカーとツールチップ）と `mdmark_annotation_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に配置する。
+      コアルールの `collectAnnotations`（`collectFootnotes` の後）・`buildAnnotationList`（`buildFootnoteList` の後・関連文書の一覧の前）・`takeAnnotationDefinitions`（`takeFootnoteDefinitions` の後）は `createParser` が登録する
     args:
       - name: parser
         type: MarkdownIt
@@ -64,7 +67,11 @@ functions:
     container: src/footnote/annotations.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'block のルール。行頭（字下げ 3 まで）の `※[ID]:`（ID は英数字・`-`・`_`）を読み込み、`:` の後ろから字下げ 4 で続く行までを `blkIndent` を 4 増やして解析し、`mdmark_annotation_def_open`（`meta.id`・`meta.line`・`meta.source`）と `mdmark_annotation_def_close` で囲む。最初に出た ID は `AnnotationState.definitions` に、2 つ目以降は `duplicates` に記録する。書き換えた行の位置は戻す（`readFootnoteDefinition` と同じ）'
+    summary: 'block のルール。`※[ID]:` の注記の定義を読み込み、定義のトークンで囲む'
+    description: |-
+      行頭（字下げ 3 まで）の `※[ID]:`（ID は英数字・`-`・`_`）を読み込み、`:` の後ろから字下げ 4 で続く行までを `blkIndent` を 4 増やして解析し、`mdmark_annotation_def_open`（`meta.id`・`meta.line`・`meta.source`）と `mdmark_annotation_def_close` で囲む。
+      最初に出た ID は `AnnotationState.definitions` に、2 つ目以降は `duplicates` に記録する。
+      書き換えた行の位置は戻す（`readFootnoteDefinition` と同じ）
     args:
       - name: state
         type: StateBlock
@@ -103,7 +110,10 @@ functions:
     container: src/footnote/annotations.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'inline のルール。`[` の位置で、`state.pending` の末尾が `※` のときだけ `[ID]`（ID は英数字・`-`・`_`）を読み込み、`pending` の末尾の `※` を取り除いて `mdmark_annotation_ref`（`meta.id`）のトークンにする。リンクになる `[ID]` は、先に登録された `link` が読み込むため、このルールでは判定しない'
+    summary: 'inline のルール。`※[ID]` を注記の参照のトークンにする'
+    description: |-
+      `[` の位置で、`state.pending` の末尾が `※` のときだけ `[ID]`（ID は英数字・`-`・`_`）を読み込み、`pending` の末尾の `※` を取り除いて `mdmark_annotation_ref`（`meta.id`）のトークンにする。
+      リンクになる `[ID]` は、先に登録された `link` が読み込むため、このルールでは判定しない
     args:
       - name: state
         type: StateInline
@@ -140,7 +150,12 @@ functions:
     container: src/footnote/annotations.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。本文の参照のトークンを文書の順にたどり、定義のある ID に最初に参照した順の番号を振って `meta.number`・`meta.refIndex` を入れ、`refs` に戻り先を追加する。文字を挟まずに脚注か注記の参照の直後に続く参照は `meta.afterRef` を `true` にする。map の範囲の補足の `notes.{ID}.annotations` も、範囲の位置の順に参照として数え、戻り先を持ち主の `id` にする。定義の無い参照は記載した文字のトークンに戻し、定義の無い参照・参照されていない定義・`duplicates` に記載の警告（種類 `annotation_undefined`・`annotation_unused`・`annotation_duplicate`）を追加する'
+    summary: 'コアルール。注記の参照に番号を振り、定義の無い参照・使われない定義・重なる定義を記載の警告にする'
+    description: |-
+      本文の参照のトークンを文書の順にたどり、定義のある ID に最初に参照した順の番号を振って `meta.number`・`meta.refIndex` を入れ、`refs` に戻り先を追加する。
+      文字を挟まずに脚注か注記の参照の直後に続く参照は `meta.afterRef` を `true` にする。
+      map の範囲の補足の `notes.{ID}.annotations` も、範囲の位置の順に参照として数え、戻り先を持ち主の `id` にする。
+      定義の無い参照は記載した文字のトークンに戻し、定義の無い参照・参照されていない定義・`duplicates` に記載の警告（種類 `annotation_undefined`・`annotation_unused`・`annotation_duplicate`）を追加する
     args:
       - name: state
         type: StateCore

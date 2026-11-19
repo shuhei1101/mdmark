@@ -7,7 +7,10 @@ constants:
   - name: PART_SELECTORS
     title: 開閉を記録する部品のセレクタ
     container: src/shared/part-states.interact.ts
-    summary: '`partKey` の種類ごとに、同じセクションの中の何番目かを数える部品の要素のセレクタ。`details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ）。`frontmatter` は class に `mdmark-frontmatter` を加えたフロントマターの折りたたみで、`details` には当たらない'
+    summary: '`partKey` の種類ごとに、セクションの中の何番目かを数える部品の要素のセレクタ'
+    description: |-
+      `details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ）。
+      `frontmatter` は class に `mdmark-frontmatter` を加えたフロントマターの折りたたみで、`details` には当たらない
     value: '`{ "row-detail": "table:has(tr.mdmark-row-detail)", details: "details[class=\"mdmark-collapsible\"]", callout: "details.markdown-alert", frontmatter: "details.mdmark-frontmatter", er: "figure.mdmark-diagram[data-diagram=\"er\"]", tree: "div.mdmark-tree", code: "pre:has([data-fold-lines])", "table-tree": "div.mdmark-table[data-tree]" }`'
     status: planned
 functions:
@@ -94,7 +97,11 @@ functions:
     container: src/shared/part-states.interact.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `PART_SELECTORS` の `details`・`callout`・`frontmatter` に当たる `details` ごとに、`partKey`（`inner` 無し）の鍵で `startOpen`（マーカーは `open` 属性の有無を `open`・`closed` にしたもの）の開閉にする。`summary` の `click`（Enter・Space を含む）で押した `details` を控え、その `details` の次の `toggle` で `recordOpen` に書き込む（印刷の前後など、`summary` を押さずに変わった開閉は書き込まない）。マーカーは付けたときの `open` 属性の有無で決め、記録の照合と書き込みに使用する'
+    summary: '折りたたみの `details` の開閉を記録から戻し、押して変えた開閉を記録する'
+    description: |-
+      `root` の中の `PART_SELECTORS` の `details`・`callout`・`frontmatter` に当たる `details` ごとに、`partKey`（`inner` 無し）の鍵で `startOpen`（マーカーは `open` 属性の有無を `open`・`closed` にしたもの）の開閉にする。
+      `summary` の `click`（Enter・Space を含む）で押した `details` を控え、その `details` の次の `toggle` で `recordOpen` に書き込む（印刷の前後など、`summary` を押さずに変わった開閉は書き込まない）。
+      マーカーは付けたときの `open` 属性の有無で決め、記録の照合と書き込みに使用する
     args:
       - name: options
         type: '{ root: HTMLElement; states: PartStates }'

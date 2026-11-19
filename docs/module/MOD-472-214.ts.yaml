@@ -73,7 +73,12 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
-    summary: '`SANITIZE_OPTIONS` に `nonce` を確認する `transformTags` を追加して sanitize-html を呼ぶ。`data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを削除し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id`・`hidden`・`colspan`・`rowspan`・`scope` を落とす。`data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。`video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす'
+    summary: '`SANITIZE_OPTIONS` と `nonce` で HTML を sanitize し、mdmark が出した要素の記法の属性だけを残す'
+    description: |-
+      `SANITIZE_OPTIONS` に `nonce` を確認する `transformTags` を追加して sanitize-html を呼ぶ。
+      `data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを削除し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id`・`hidden`・`colspan`・`rowspan`・`scope` を落とす。
+      `data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。
+      `video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす
     args:
       - name: html
         type: string
@@ -168,7 +173,11 @@ functions:
   - name: sanitizeEmbedded
     title: 埋め込んだ HTML を落とす
     container: src/render/sanitize.ts
-    summary: 埋め込んだ HTML の中身を `SANITIZE_OPTIONS` に `button`・`data-hint`・`style` を追加した設定で落とし、`style` は `transformTags` で `filterEmbeddedStyle` に経由する。`button` は `type="button"` にもう一度付け `form` で始まる属性を落とし、記載した人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` を落とす。`textFilter` で文字を `onText` に指定し、返った HTML に置き換える（用語の下線。`a`・`code`・`pre`・見出しの中は指定しない）
+    summary: '埋め込んだ HTML の中身を sanitize し、ボタン・ヒント・style と用語の下線を扱う'
+    description: |-
+      埋め込んだ HTML の中身を `SANITIZE_OPTIONS` に `button`・`data-hint`・`style` を追加した設定で落とし、`style` は `transformTags` で `filterEmbeddedStyle` に経由する。
+      `button` は `type="button"` にもう一度付け `form` で始まる属性を落とし、記載した人の class・`id`・`data-hint` 以外の `data-*`・`role`・`aria-*` を落とす。
+      `textFilter` で文字を `onText` に指定し、返った HTML に置き換える（用語の下線。`a`・`code`・`pre`・見出しの中は指定しない）
     kind: 関数
     scope: internal
     args:

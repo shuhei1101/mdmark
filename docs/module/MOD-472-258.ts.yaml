@@ -248,8 +248,13 @@ functions:
     container: src/knowledge/matches.ts
     kind: 関数
     scope: internal
-    summary: 図の部品（`chart`・`param`）の範囲の定義と、埋め込んだ HTML の中の custom element（`<mdmark-chart>`・`<mdmark-param>`）の定義の `{{単語}}` のうち、意味のある用語の位置を返却する。廃止した `flow`・`sequence`・`er` の範囲と `<mdmark-flow>`・`<mdmark-sequence>` は照合しない
-    description: 範囲の見つけ方は `buildDiagrams`（マーカーの範囲の `json` のコードブロック）と `takeParts`（`PART_PATTERN`）と同じ。定義の JSON の文字列を戻して `{{単語}}` を探し、単語を `dictionary.term` で正規化して参照した用語の意味が空でないものだけを返却する（`lookup` と同じ。文書の別名は参照しない）。位置は JSON のエスケープ（`\"`・`ア`）を数えて本文の位置へ戻す
+    summary: '図の部品の定義と custom element の定義の `{{単語}}` のうち、意味のある用語の位置を返却する'
+    description: |-
+      図の部品（`chart`・`param`）の範囲の定義と、埋め込んだ HTML の中の custom element（`<mdmark-chart>`・`<mdmark-param>`）の定義の `{{単語}}` のうち、意味のある用語の位置を返却する。
+      廃止した `flow`・`sequence`・`er` の範囲と `<mdmark-flow>`・`<mdmark-sequence>` は照合しない。
+      範囲の見つけ方は `buildDiagrams`（マーカーの範囲の `json` のコードブロック）と `takeParts`（`PART_PATTERN`）と同じ。
+      定義の JSON の文字列を戻して `{{単語}}` を探し、単語を `dictionary.term` で正規化して参照した用語の意味が空でないものだけを返却する（`lookup` と同じ。文書の別名は参照しない）。
+      位置は JSON のエスケープ（`\"`・`ア`）を数えて本文の位置へ戻す
     args:
       - name: options
         type: '{ body: string; tokens: Token[]; dictionary: Dictionary; html: boolean }'

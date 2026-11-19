@@ -24,7 +24,10 @@ functions:
     container: src/tree/tree.part.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『ファイルツリー』の HTML を返却する。`div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。`interactive` のときは `renderTreeBar` の帯を配置し、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを配置する
+    summary: '部品設計『ファイルツリー』の HTML を返却する'
+    description: |-
+      `div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。
+      `interactive` のときは `renderTreeBar` の帯を配置し、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを配置する
     args:
       - name: options
         type: '{ nodes: TreeNode[]; source: string; open?: string; wrap?: boolean; interactive?: boolean; copyState?: "idle" | "copied"; copyFallback?: boolean; id?: string }'
@@ -95,7 +98,11 @@ functions:
   - name: renderTreeBar
     title: ファイルツリーの帯を描く
     container: src/tree/tree.part.ts
-    summary: ツリーの上に配置する `<div class="mdmark-tree-bar">`（種類 `tree`・`mdmark-tree-copy` のボタン・`role="status"` の `mdmark-tree-status`）を返却する。ボタンは `copyState` を `data-state` に持ち、`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`。`mount` が描いたツリーに追加するのにも使用する
+    summary: 'ツリーの上に配置するコピーのボタンの帯の HTML を返却する'
+    description: |-
+      ツリーの上に配置する `<div class="mdmark-tree-bar">`（種類 `tree`・`mdmark-tree-copy` のボタン・`role="status"` の `mdmark-tree-status`）を返却する。
+      ボタンは `copyState` を `data-state` に持ち、`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`。
+      `mount` が描いたツリーに追加するのにも使用する
     kind: 関数
     scope: internal
     args:

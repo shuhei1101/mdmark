@@ -9,7 +9,11 @@ functions:
     container: src/section/section.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`sections` がオンなら h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『セクション』の中身の要素（`toggle: false`）で囲む。部品『タブ』の中身の中で開いたセクションは、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いたセクションはタブをまたいで続く）。見出しの直後の `section` のマーカーの `open`（省くと `true`）で `data-section` を `open`・`closed` にする'
+    summary: 'コアルール。見出しの後ろを部品『セクション』で囲む'
+    description: |-
+      `sections` がオンなら h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『セクション』の中身の要素（`toggle: false`）で囲む。
+      部品『タブ』の中身の中で開いたセクションは、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いたセクションはタブをまたいで続く）。
+      見出しの直後の `section` のマーカーの `open`（省くと `true`）で `data-section` を `open`・`closed` にする
     args:
       - name: state
         type: StateCore

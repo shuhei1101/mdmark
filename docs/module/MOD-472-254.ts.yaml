@@ -82,7 +82,12 @@ constants:
   - name: INDEX_SHAPE
     title: 索引の構造
     container: src/knowledge/index-shape.ts
-    summary: 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`・`doc_tags`・`doc_related`）と必須か。`doc_tags` は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクトの並び。`doc_related` は、空でない文字列か、`to`（必須・空でない文字列）・`type`（必須・`MdmarkRelationType` の値）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクトの並びで、件数の上限を配置しない。`normalizeIndex` がこれで検査する
+    summary: '索引の要素ごとの、キーと型と必須かの表'
+    description: |-
+      索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`・`doc_tags`・`doc_related`）と必須か。
+      `doc_tags` は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクトの並び。
+      `doc_related` は、空でない文字列か、`to`（必須・空でない文字列）・`type`（必須・`MdmarkRelationType` の値）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクトの並びで、件数の上限を配置しない。
+      `normalizeIndex` がこれで検査する
     value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "doc_related", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } } }'
     refs:
       - ER-472-6#

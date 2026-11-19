@@ -87,7 +87,10 @@ functions:
     container: src/card/card.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`cards` がオンなら、段落の `inline` の子が前後の空白の `text` を除いて `link_open`・文字・`link_close` だけのものを `cardOf` で見分け、カードになるものは段落を部品『カード』の `html_block` に置き換える。脚注の定義の囲み（`mdmark_footnote_def_open`〜`close`）の中の段落は、ツールチップでリンクのまま読み込めるようカードにしない
+    summary: 'コアルール。リンクだけの段落を部品『カード』に置き換える'
+    description: |-
+      `cards` がオンなら、段落の `inline` の子が前後の空白の `text` を除いて `link_open`・文字・`link_close` だけのものを `cardOf` で見分け、カードになるものは段落を部品『カード』の `html_block` に置き換える。
+      脚注の定義の囲み（`mdmark_footnote_def_open`〜`close`）の中の段落は、ツールチップでリンクのまま読み込めるようカードにしない
     args:
       - name: state
         type: StateCore

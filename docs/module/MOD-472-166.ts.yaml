@@ -168,8 +168,12 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks`・`buildRetiredDiagrams` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
-    description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
+    summary: 'esbuild で配布物・書き出しの起動の処理・CLI・移行の手順の書き換えをまとめ、型定義とライセンスを書き込む'
+    description: |-
+      esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。
+      続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks`・`buildRetiredDiagrams` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む。
+      `format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。
+      続けて `metafile` を指定してまとめた依存のライセンスを記載する。
     side_effects: '`dist/` と、`migrations/` の中の出していないバージョンのフォルダのうち、`marker-json.mjs` を持つフォルダの `legacy-marks.js`・`retired-diagrams.mjs` か `retired-er.mjs` を持つフォルダの `retired-diagrams.js` と、それぞれの `THIRD_PARTY_LICENSES.txt` を書き換える'
     args:
       - name: version

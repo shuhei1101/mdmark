@@ -308,7 +308,12 @@ functions:
     container: src/table/table.part.ts
     kind: 関数
     scope: internal
-    summary: '`totals` が持つ計算ごとに 1 行（`sum`・`avg`・`count` の順）の `<tr class="mdmark-table-total" data-total-kind="{計算}">` を、`<tfoot>` に入れて返却する。行は列の数だけセルを持ち、先頭のセルに計算の名前（`TOTAL_LABELS` の `合計`・`平均`・`件数`）の `mdmark-total-name` を配置し、その計算を持つ列のセルは `data-total="{計算}"` と値の `mdmark-total-value` を持つ（先頭の列を集計する行は名前と値を同じセルに配置する）。隠している列のセルと、`shown` に含まない計算の行は `hidden` を持つ。`mount` がもう一度集計するときにも使用する'
+    summary: '`totals` の計算ごとの集計の行を `<tfoot>` に入れて返却する'
+    description: |-
+      `totals` が持つ計算ごとに 1 行（`sum`・`avg`・`count` の順）の `<tr class="mdmark-table-total" data-total-kind="{計算}">` を、`<tfoot>` に入れて返却する。
+      行は列の数だけセルを持ち、先頭のセルに計算の名前（`TOTAL_LABELS` の `合計`・`平均`・`件数`）の `mdmark-total-name` を配置し、その計算を持つ列のセルは `data-total="{計算}"` と値の `mdmark-total-value` を持つ（先頭の列を集計する行は名前と値を同じセルに配置する）。
+      隠している列のセルと、`shown` に含まない計算の行は `hidden` を持つ。
+      `mount` がもう一度集計するときにも使用する
     args:
       - name: options
         type: '{ columns: number; totals: Array<{ column: number; calc: TotalCalc; value: string }>; shown?: TotalCalc[]; hiddenColumns: number[]; labels: string[] }'

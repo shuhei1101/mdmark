@@ -44,7 +44,12 @@ functions:
     container: src/media/gallery.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`gallery` がオンなら、ギャラリーのマーカーの範囲を部品『ギャラリー』の開きと閉じで挟み、範囲の中の画像をそれぞれ部品『画像の図』（`opener: false`）の `html_block` にして、画像以外のトークンを除く。開きのマーカーの `meta.figure`（`numberFigures` が配置する `{ id, number }`）があれば、範囲を部品『図表の番号』で囲み、中の画像に `id="fig-{ID}-{文字}"` と `label` の `図 {番号}{文字}` を `SUBFIGURE_LETTERS` の順に付ける。画像が 0 枚・27 枚以上なら範囲の前に 1 つの記載の警告を差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む'
+    summary: 'コアルール。ギャラリーのマーカーの範囲を部品『ギャラリー』にする'
+    description: |-
+      `gallery` がオンなら、ギャラリーのマーカーの範囲を部品『ギャラリー』の開きと閉じで挟み、範囲の中の画像をそれぞれ部品『画像の図』（`opener: false`）の `html_block` にして、画像以外のトークンを除く。
+      開きのマーカーの `meta.figure`（`numberFigures` が配置する `{ id, number }`）があれば、範囲を部品『図表の番号』で囲み、中の画像に `id="fig-{ID}-{文字}"` と `label` の `図 {番号}{文字}` を `SUBFIGURE_LETTERS` の順に付ける。
+      画像が 0 枚・27 枚以上なら範囲の前に 1 つの記載の警告を差し込む。
+      閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む
     args:
       - name: state
         type: StateCore

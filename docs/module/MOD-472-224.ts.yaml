@@ -40,7 +40,13 @@ functions:
     container: src/media/lightbox.interact.ts
     kind: 関数
     scope: internal
-    summary: '`LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む（`img[data-gif]` は `icon: false`）。押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に配置して `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送信し（端では切り替えない）、送信するたびに画像・キャプション・枚数・切り替えのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。閉じたら `close` で受け取りと `attachZoom` を削除して `dialog` を削除し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする'
+    summary: '画像を拡大のボタンで包み、押すとライトボックスで開いて送信・拡大・縮小を付ける'
+    description: |-
+      `LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む（`img[data-gif]` は `icon: false`）。
+      押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に配置して `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。
+      前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送信し（端では切り替えない）、送信するたびに画像・キャプション・枚数・切り替えのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。
+      `closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。
+      閉じたら `close` で受け取りと `attachZoom` を削除して `dialog` を削除し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする
     args:
       - name: root
         type: HTMLElement

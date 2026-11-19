@@ -123,7 +123,11 @@ functions:
     container: src/table/table.logic.ts
     kind: 関数
     scope: internal
-    summary: セルの文字を集計して表示する文字にする。`sum`・`avg` は `parseNumberCell` で数として読み込めるセルだけ（空のセルと読み込めないセルを除く）、`count` は空でないセルを数える。値は `Intl.NumberFormat`（`ja`、小数は 2 桁まで）で整え、平均する値が無いときは `—`。読み込めないセルを持つ列のセルを空にするのは呼ぶ側（`findUnreadableTotals`）
+    summary: '列のセルの文字を集計して表示する文字にする'
+    description: |-
+      `sum`・`avg` は `parseNumberCell` で数として読み込めるセルだけ（空のセルと読み込めないセルを除く）、`count` は空でないセルを数える。
+      値は `Intl.NumberFormat`（`ja`、小数は 2 桁まで）で整え、平均する値が無いときは `—`。
+      読み込めないセルを持つ列のセルを空にするのは呼ぶ側（`findUnreadableTotals`）
     args:
       - name: cells
         type: string[]
@@ -259,7 +263,10 @@ functions:
   - name: stickyShift
     title: 行をずらす量を求める
     container: src/table/table.logic.ts
-    summary: '`animation-timeline` を持たないブラウザで、見出し行と集計の行をずらす量を画面の中の位置から求める（`docs/mock/refs/151/assets/table.js` の案 C）。見出し行は `stickyTop - headTop` を 0 以上、`bodyBottom - headBottom`（負なら 0）以下に収めた量だけ下げ、集計の行は `viewportBottom - footBottom` を 0 以下、`bodyTop - footTop` 以上に収めた量だけ上げる（値はずらす前の位置）'
+    summary: '`animation-timeline` を持たないブラウザで、見出し行と集計の行をずらす量を求める'
+    description: |-
+      `animation-timeline` を持たないブラウザで、見出し行と集計の行をずらす量を画面の中の位置から求める（`docs/mock/refs/151/assets/table.js` の案 C）。
+      見出し行は `stickyTop - headTop` を 0 以上、`bodyBottom - headBottom`（負なら 0）以下に収めた量だけ下げ、集計の行は `viewportBottom - footBottom` を 0 以下、`bodyTop - footTop` 以上に収めた量だけ上げる（値はずらす前の位置）
     kind: 関数
     scope: internal
     args:
@@ -293,7 +300,10 @@ functions:
   - name: stickyRange
     title: 行をずらせる範囲を求める
     container: src/table/table.logic.ts
-    summary: '`animation-timeline` を持つブラウザで、CSS のアニメーションが使用する動く範囲を求める（`docs/mock/refs/151/assets/table.js` の案 D）。`headStart` は表の上端から見出し行の上端まで、`headMax` は見出し行の下端から本文の行のまとまりの下端まで（負なら 0）、`footMax` は本文の行のまとまりの上端から集計の行の上端まで、`footEnd` は集計の行の下端から表の下端まで'
+    summary: '`animation-timeline` を持つブラウザで、見出し行と集計の行の CSS のアニメーションが動く範囲を求める'
+    description: |-
+      `animation-timeline` を持つブラウザで、CSS のアニメーションが使用する動く範囲を求める（`docs/mock/refs/151/assets/table.js` の案 D）。
+      `headStart` は表の上端から見出し行の上端まで、`headMax` は見出し行の下端から本文の行のまとまりの下端まで（負なら 0）、`footMax` は本文の行のまとまりの上端から集計の行の上端まで、`footEnd` は集計の行の下端から表の下端まで
     kind: 関数
     scope: internal
     args:

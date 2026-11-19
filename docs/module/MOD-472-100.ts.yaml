@@ -68,8 +68,14 @@ functions:
     kind: 関数
     container: vscode/src/export/html.ts
     usecase: HTMLに書き出す
-    summary: '`<base>`・そのバージョンの `index.css` の `<link>`・`theme` の CSS の `<style>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで拡張を `registerExtension` で登録してから `mount(document.querySelector("main"), { markdown, config })` を呼ぶ `<script type="module">` を持つ HTML を組む。`aliases` があるときは JSON に埋め、`mount` の `opts.aliases` に指定する'
-    description: '`print` が `true` のときだけ、`mount` の後に「外部ライブラリのマーカーの場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。`PRINT_WAIT_MS` を超えたらそのまま呼ぶ」処理を追加する。マーカーの場所は `MutationObserver` で待つ。`title` は Markdown のファイル名をエスケープして入れる。拡張のコードは `moduleDataUrl` で `data:` の URL にする'
+    summary: '書き出す HTML を、配布物と本文・設定を読み込んで mount を呼ぶ 1 枚に組む'
+    description: |-
+      `<base>`・そのバージョンの `index.css` の `<link>`・`theme` の CSS の `<style>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで拡張を `registerExtension` で登録してから `mount(document.querySelector("main"), { markdown, config })` を呼ぶ `<script type="module">` を持つ HTML を組む。
+      `aliases` があるときは JSON に埋め、`mount` の `opts.aliases` に指定する。
+      `print` が `true` のときだけ、`mount` の後に「外部ライブラリのマーカーの場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。`PRINT_WAIT_MS` を超えたらそのまま呼ぶ」処理を追加する。
+      マーカーの場所は `MutationObserver` で待つ。
+      `title` は Markdown のファイル名をエスケープして入れる。
+      拡張のコードは `moduleDataUrl` で `data:` の URL にする
     scope: public
     args:
       - name: options

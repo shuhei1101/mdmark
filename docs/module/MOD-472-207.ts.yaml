@@ -13,7 +13,10 @@ functions:
   - name: loadInlineIcons
     title: まとめていないアイコンを読み込む
     container: src/inline-icons.ts
-    summary: '中が空の `span.mdmark-inline-icon` の名前ごとに、`opts.icons` に無ければ `lucideIconUrl` の URL を 1 回だけ `import()` し、`iconNodeSvg` の svg を同じ名前の全ての場所に入れる。失敗した名前だけ `HEAD` の `fetch` で 404 かを確認し、404 は行内のコードに戻して記載の警告を配置し、それ以外は行内のコードに戻して文書の先頭に通知ブロック（`source: "icons"`）を 1 つだけ配置する'
+    summary: '行内のアイコンの名前ごとに Lucide のアイコンを読み込んで描き、失敗した名前を戻す'
+    description: |-
+      中が空の `span.mdmark-inline-icon` の名前ごとに、`opts.icons` に無ければ `lucideIconUrl` の URL を 1 回だけ `import()` し、`iconNodeSvg` の svg を同じ名前の全ての場所に入れる。
+      失敗した名前だけ `HEAD` の `fetch` で 404 かを確認し、404 は行内のコードに戻して記載の警告を配置し、それ以外は行内のコードに戻して文書の先頭に通知ブロック（`source: "icons"`）を 1 つだけ配置する
     kind: 関数
     scope: internal
     args:
