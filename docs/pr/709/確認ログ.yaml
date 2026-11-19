@@ -1,0 +1,11 @@
+confirmations:
+  - topic: 言語 markdown のコードブロックの切り替えのボタンの置き場所
+    decision: 帯のコピーボタンの左に、アイコンと文字のボタンを配置する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633060613
+  - topic: 言語 markdown のコードブロックの既定の表示と切り替えのボタンの文言
+    decision: 既定は描いた結果の表示にし、ボタンは「Raw」で押すと元の Markdown を出す。マーカーでコードブロックごとに既定を元の Markdown にできる（ユーザーの返信による変更。既定をソースの表示にしていた要件 No.2 を置き換える）
+    decided_by: reply
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633098912

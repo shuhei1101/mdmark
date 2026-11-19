@@ -4,4 +4,4 @@ map の手順の再生で倍率を変えず、言語が markdown のコードブ
 
 | 確認するもの | リンク |
 | --- | --- |
-| コードブロックの帯の切り替えのボタンの案 A（アイコンと文字のボタン）・B（セグメント）・C（アイコンだけのボタン）と、押す前・ホバー・フォーカス・押した後、言語・タイトル・コピー・機能をオフにした文書・狭い幅の見え方 | [markdown-preview](../../components/markdown-preview/index.html) |
+| 言語 markdown のコードブロックの既定の描いた結果と帯の Raw のボタンの、押す前・ホバー・フォーカス・押した後、言語・タイトル・マーカー・コピー・機能をオフにした文書・狭い幅の見え方 | [markdown-preview](../../components/markdown-preview/index.html) |

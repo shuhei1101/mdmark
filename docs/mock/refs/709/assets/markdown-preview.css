@@ -3,7 +3,7 @@
 
 @layer mdmark {
   .mdmark {
-    /* 案 A・C の切り替えのボタン: コピーのボタンと同じ寸法・同じ枠を持たない見た目にする */
+    /* Raw のボタン: コピーのボタンと同じ寸法・同じ枠を持たない見た目にする */
     .mock-preview-toggle {
       display: inline-flex;
       gap: 0.3em;
@@ -21,10 +21,6 @@
       white-space: nowrap;
       cursor: pointer;
 
-      &[data-icon-only] {
-        padding: 0;
-      }
-
       &:hover,
       &.is-hover {
         border-color: var(--mdmark-color-border);
@@ -38,45 +34,11 @@
         outline-offset: 1px;
       }
 
-      /* 押した後: 押す前と別物に見えるよう、リンクの色の文字と今の場所の面にする */
+      /* 押した後（元の Markdown を出している）: 押す前と別物に見えるよう、リンクの色の文字と今の場所の面にする */
       &[aria-pressed="true"] {
         border-color: color-mix(in oklab, var(--mdmark-color-link) 40%, transparent);
         background: var(--mdmark-color-current-bg);
         color: var(--mdmark-color-link);
-      }
-    }
-
-    /* 案 B のソースとプレビューの切り替え: 2 つの区画を 1 つの枠に並べ、選んだ区画を面で示す */
-    .mock-preview-segment {
-      display: inline-flex;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: calc(var(--mdmark-radius) - 2px);
-      overflow: hidden;
-
-      button {
-        min-height: 1.625rem;
-        padding: 0 0.6em;
-        border: 0;
-        background: none;
-        color: var(--mdmark-color-muted);
-        font-family: var(--mdmark-font-body);
-        font-size: 0.75rem;
-        white-space: nowrap;
-        cursor: pointer;
-
-        & + button {
-          border-inline-start: 1px solid var(--mdmark-color-border);
-        }
-
-        &:focus-visible {
-          outline: 2px solid var(--mdmark-color-link);
-          outline-offset: -2px;
-        }
-
-        &[aria-pressed="true"] {
-          background: var(--mdmark-color-current-bg);
-          color: var(--mdmark-color-link);
-        }
       }
     }
 
@@ -121,7 +83,7 @@
       }
     }
 
-    /* 描いた結果を出している間はソースの pre を隠す */
+    /* 描いた結果を出している間は元の Markdown の pre を隠し、元の Markdown を出している間は描いた結果を隠す */
     .mdmark-code[data-preview="on"] > pre,
     .mdmark-code:not([data-preview="on"]) > .mock-preview-body {
       display: none;

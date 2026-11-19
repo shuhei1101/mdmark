@@ -1395,15 +1395,15 @@ files:
     tags: [topic:モック]
   - path: refs/709/assets/markdown-preview.js
     visibility: internal
-    description: '#709 のモックの見本: 配布物の mount で言語 markdown のコードブロックを描き、帯に切り替えのボタンの案を差し込んで、案・言語・タイトル・機能・幅ごとに並べる処理。このモックの見本の中身を変えるときに参照する。'
+    description: '#709 のモックの見本: 配布物の mount で言語 markdown のコードブロックを描き、既定で描いた結果を出して帯に Raw のボタンを差し込み、言語・タイトル・マーカー・機能・幅ごとに並べる処理。このモックの見本の中身を変えるときに参照する。'
     tags: [topic:モック, topic:ボタン, topic:コードブロック]
   - path: refs/709/assets/markdown-preview.css
     visibility: internal
-    description: '#709 のモックの案の外観: コードブロックの帯の切り替えのボタン・セグメント・描いた結果の入れ物の規則。このモックのボタンの外観を変えるときに参照する。'
+    description: '#709 のモックの案の外観: コードブロックの帯の Raw のボタンと描いた結果の入れ物の規則。このモックのボタンの外観を変えるときに参照する。'
     tags: [topic:モック, topic:ボタン, topic:コードブロック]
   - path: components/markdown-preview/index.html
     visibility: internal
-    description: '部品『markdown-preview』のモック: 言語 markdown・md のコードブロックの帯に配置するソースと描いた結果の切り替えのボタンの案（アイコンと文字のボタン・セグメント・アイコンだけのボタン）と、押す前・ホバー・フォーカス・押した後、言語・タイトル・コピー・機能をオフにした文書・狭い幅の見え方。部品の外観や状態を決めるときに参照する。'
+    description: '部品『markdown-preview』のモック: 言語 markdown・md のコードブロックを既定で描いた結果にし、帯の Raw のボタンで元の Markdown に切り替える見え方（押す前・ホバー・フォーカス・押した後、言語・タイトル・マーカーで既定を元の Markdown にしたブロック・コピー・機能をオフにした文書・狭い幅）。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:ボタン, topic:コードブロック]
   - path: refs/707/assets/dim-contrast.css
     visibility: internal
