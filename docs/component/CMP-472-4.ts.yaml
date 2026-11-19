@@ -56,9 +56,6 @@ states:
     description: map の範囲の外の純粋な Mermaid のシーケンス図（`data-map-plain`）。補足が無く、メッセージの説明のツールチップを持たない
   - name: SelfMessage
     description: 自分へのメッセージ（送り手と受け手が同じ参加者）が補足の `notes` の説明を持つ。線はライフラインから右へ折り返し、メッセージのラベルの札は折り返しの左右の中央の上に、札の下端と折り返しの上の辺のあいだを 6px 空けて描かれる。ほかの参加者へのメッセージのラベルの位置は変わらず、折り返しの線の押せる帯は説明のツールチップを持つ
-  - name: ParticipantHovered
-    description: 参加者を選んでおらず再生していないときに、3 人目の参加者のライフラインにポインターを合わせている。ParticipantSelected と同じく、その参加者のメッセージとライフラインのほかが薄くなり、その線の上をデータの印が流れる。箱に `data-selected` は付かない
-    screenshot: false
 lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・ノート・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
   - name: sequence
