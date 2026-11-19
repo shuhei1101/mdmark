@@ -45,7 +45,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T01:49:31.919575+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
   - process: 部品設計
     status: skipped
     reason: 部品を変えないため対象外
@@ -57,15 +59,24 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T01:49:31.919575+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: skipped
+    reason: '原因は結合テストのフィクスチャが #630 の仕様に追従していないことで、実装とモジュール構成は変えないため対象外'
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 利用者の操作・設定・用語を変えず、設計書のほかに更新するページが無いため対象外
     updated_by: planner
     updated_at: '2026-11-19T01:49:31.919575+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: skipped
+    reason: 実装を変えず、単体テストの対象が無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
   - process: 実装
-    status: todo
+    status: skipped
+    reason: 原因は結合テストのフィクスチャで、実装のコードは変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
   - process: 結合テスト作成
     status: todo

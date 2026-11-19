@@ -16,17 +16,15 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 書き出しの `test_normal_when_relative_mermaid` | `config.mermaid.url` が `data:` の URL にならない原因（`bundle` の失敗・`usesMermaid` の判定・相対パスの解決のどれか）をログで特定し、誤っている側を直す | `未確定`: テストと実装のどちらを直すか（決める段: インターフェース定義設計） |
-| プレビューの `test_normal_when_mermaid` | mermaid の配信のスタブ・CSP・Webview での mermaid の読み込みのどこで止まるかを特定し、誤っている側を直す | `未確定`: テストと実装のどちらを直すか（決める段: インターフェース定義設計） |
+| 原因 | [#630](https://github.com/shuhei1101/mdmark/pull/630)（[4d38ecc2](https://github.com/shuhei1101/mdmark/commit/4d38ecc2)）から、純粋な mermaid のコードブロックは map の図で描き、map で同じ図にできないときだけ mermaid の図に戻す。2 件のテストのフィクスチャの `flowchart LR` は map で描けるため mermaid の対象にならず、書き出しは `usesMermaid` が `false` を返して `mermaid.url` を削除し、プレビューは mermaid の図を描かない | 実装は #630 で決めた仕様どおりで、誤っているのはテストの前提 |
+| インターフェース定義 | IF-472-15・IF-472-22 の 2 ケースの見本のワークスペースに、コードブロックの先頭の行に `%%{init: {}}%%` を記載すると書き足す | #630 がライブラリ本体のテスト（`tests/integration/lib/export.test.ts`・`bundle.test.ts`）で mermaid の図に戻すために使った行と同じ |
+| 結合テスト | `export.test.ts` の `test_normal_when_relative_mermaid` と `preview-open.test.ts` の `test_normal_when_mermaid` のフィクスチャの `flowchart LR` の前に `%%{init: {}}%%` の行を足す | 実装は変えない |
 
-| 案 | 内容 |
-| --- | --- |
-| A | 実装を直し、テストの期待（インターフェース定義のケース）は変えない |
-| B | テストの期待が誤っていれば、インターフェース定義のケースとテストを直す |
+## 設計書の確定コミット
 
-推奨: A
-
-インターフェース定義のケースは利用者が期待する振る舞いを表すため、ケースに沿って動かない実装を先に疑う。
+| 工程 | 範囲 | 補足 |
+| --- | --- | --- |
+| インターフェース定義設計 | `942f69e1..10b2a3f4` | - |
 
 ## テスト結果
 
