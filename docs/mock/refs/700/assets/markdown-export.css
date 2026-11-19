@@ -125,3 +125,16 @@
   margin: 0.375rem;
   width: auto;
 }
+
+/* モックの操作列の「ダーク」: OS の設定によらず、既定のテーマのダークの値を当てる（#320 の proposal.css と同じ値） */
+:root[data-scheme="dark"] {
+  --mdmark-color-bg: #131316;
+  --mdmark-color-text: #ededef;
+  --mdmark-color-heading: #ededef;
+  --mdmark-color-muted: #b4b4bc;
+  --mdmark-color-link: #2dd4bf;
+  --mdmark-color-border: #26262b;
+  --mdmark-color-surface: #1b1b1f;
+  --mdmark-color-current-bg: #10302c;
+  color-scheme: dark;
+}
