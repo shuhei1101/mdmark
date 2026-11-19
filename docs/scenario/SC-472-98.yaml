@@ -92,6 +92,7 @@ scenarios:
     expected:
       - クリップボードに、開いている 2 つ目の文書だけの純粋な Markdown が入る
       - ボタンを押してからコピーしたことが出るまでの外への要求が 0 件
+      - クリップボードの Markdown は、同じ文書を CLI で書き出した Markdown から `chart`・`param`・埋め込んだ HTML の場所を取り除いたものと同じ
     test: test_normal_when_bundle
   - name: 正常シナリオ（ボタンを消す）
     setup:

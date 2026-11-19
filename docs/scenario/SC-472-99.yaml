@@ -1,17 +1,15 @@
 id: SC-472-99
 visibility: internal
 title: Markdownに書き出してmdmarkの無い表示で読む
-lead: 文書の作成者が mdmark の文書を点検してから純粋な Markdown に書き出すか、まとめた HTML を読んでいる読者が開いている文書を Markdown でコピーして、mdmark の無い表示で記法の文字が見えずに読める Markdown を得る。
+lead: 文書の作成者が mdmark の文書を点検してから純粋な Markdown に書き出し、mdmark の無い表示で記法の文字が見えずに読める Markdown と画像を得る。
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
-    interest: 書き出す前に文書のずれを直してから、mdmark の無い表示で読める Markdown と画像をそろえられる
-  - name: 読者
-    interest: まとめた HTML で読んでいる文書を、マーカーや定義の JSON を手で削除せずにほかのツールへ貼り付けられる
-trigger: 文書の作成者か読者が、mdmark の文書を mdmark の無い表示やほかのツールで読みたくなる
+    interest: 書き出す前に文書のずれを修正してから、mdmark の無い表示で読める Markdown と画像をそろえられる
+trigger: 文書の作成者が、mdmark の文書を mdmark の無い表示で読ませたくなる
 preconditions:
   - 文書の作成者の手元に Node 24 以降と、ビルドしたこのリポジトリの mdmark の CLI がある
-success_guarantee: 書き出した Markdown とコピーした Markdown に HTML のコメントが無く、mdmark の無い表示で内容が読める。
+success_guarantee: 書き出した Markdown に HTML のコメントが無く、mdmark の無い表示で画像を含めて内容が読める。
 minimal_guarantee: 点検でずれが見つかっても、設定・索引・文書は書き換えられない。
 scenarios:
   - name: 正常シナリオ（点検してから CLI で書き出す）
@@ -40,31 +38,6 @@ scenarios:
     uses:
       - SC-472-78#scenarios[正常シナリオ]
       - SC-472-97#scenarios[正常シナリオ]
-  - name: 正常シナリオ（まとめた HTML からコピーする）
-    setup:
-      - name: 記法を持つ文書のあるフォルダ
-        description: 正常シナリオ（点検してから CLI で書き出す）のフォルダに、設定の `build` で 2 つの文書を指す行を加えたもの
-      - name: Mock
-        description: クリップボードへの書き込みを許可したブラウザーで、まとめた HTML を file:// で開く
-    flow: |-
-      <!-- map -->
-
-      ```mermaid
-      flowchart TD
-        A[複数の文書を1枚のHTMLにまとめる:正常シナリオ] --> B[ビュワーからMarkdownでコピー・エクスポートする:正常シナリオ（まとめた HTML）]
-        click A "id:SC-472-76#scenarios[正常シナリオ]"
-        click B "id:SC-472-98#scenarios[正常シナリオ（まとめた HTML）]"
-      ```
-
-      <!-- /map -->
-    expected:
-      - まとめた HTML で開いている文書の Markdown でコピーするボタンを押すと、クリップボードにその文書だけの純粋な Markdown が入る
-      - クリップボードの Markdown は、同じ文書を CLI で書き出した Markdown から `chart`・`param`・埋め込んだ HTML の場所を取り除いたものと同じ
-      - まとめてからコピーするまでの外への要求が 0 件
-    test: test_normal_when_copy_from_bundle
-    uses:
-      - SC-472-76#scenarios[正常シナリオ]
-      - SC-472-98#scenarios[正常シナリオ（まとめた HTML）]
 test_file: tests/e2e/複合ユースケース/Markdownに書き出してmdmarkの無い表示で読む.spec.ts
 tags:
   - name: topic:書き出し

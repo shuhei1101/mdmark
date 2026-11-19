@@ -199,7 +199,7 @@ items:
 - page: SC-472-91.yaml
   summary: 文書の作成者がプラグインを入れ、global-setup で端末の設定と常駐サーバーを、setup で文書のフォルダの設定を用意して、MCP のツールで点検と書き出しを呼ぶ
 - page: SC-472-99.yaml
-  summary: 文書の作成者が点検してから Markdown に書き出すか、読者がまとめた HTML から Markdown でコピーして、mdmark の無い表示で読める Markdown を得る
+  summary: 文書の作成者が点検してから Markdown に書き出し、mdmark の無い表示で読める Markdown と画像を得る
 - page: SC-472-84.yaml
   summary: 文書の作成者が CSS を端末の設定のフォルダのテンプレートに登録し、別のリポジトリで一覧から選んで配置し、theme に記載して書き出した HTML に適用する
 - page: SC-472-87.yaml
