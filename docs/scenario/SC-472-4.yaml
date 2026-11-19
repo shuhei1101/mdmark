@@ -105,6 +105,39 @@ scenarios:
       - 新しい `installPath` のスキルが、追加した commit の内容になる
       - '`claude plugin marketplace update mdmark` だけでは、入れたプラグインのバージョンは変わらない'
     test: test_normal_when_commit_added
+  - name: 正常シナリオ（mdmark-style を入れる）
+    decisions:
+      - D-83
+    setup:
+      - name: 空の設定のフォルダ
+        description: 正常シナリオと同じ
+      - name: push したブランチ
+        description: 正常シナリオと同じ。mdmark-style のプラグインのフォルダと、`marketplace.json` の mdmark-style の行を含む
+      - name: Mock
+        description: なし（GitHub から実際に入れる。モデルは使用しない）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as Claude Code
+        participant R as GitHub の mdmark のリポジトリ
+        W->>C: claude plugin marketplace add shuhei1101/mdmark#{ブランチ}
+        C->>R: .claude-plugin/marketplace.json を読み込む
+        R-->>C: プラグイン mdmark と mdmark-style の行
+        W->>C: claude plugin install mdmark-style@mdmark
+        C->>C: mdmark-style のフォルダをキャッシュへ写す
+        C-->>W: プラグインを入れた・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`claude plugin install mdmark-style@mdmark` が終了コード 0 で終わり、`claude plugin list --json` に `mdmark-style@mdmark` だけが有効として出て `mdmark@mdmark` は入らない'
+      - '`mdmark-style@mdmark` のバージョンがブランチの commit の短縮 SHA（`plugin.json` が `version` を持たない）'
+      - '`installPath` に `.claude-plugin/plugin.json`・`hooks/hooks.json`・`settings.sample.yaml` と、`hooks/hooks.json` の `modules` が指すフックのモジュールがあり、`.mcp.json` が無い'
+      - '`claude plugin validate` を `installPath` で実行すると、フックのモジュールが `classic.SessionStart`・`ui.render{component=AssistantMessage}`・`ui.render{component=UserMessage}` を登録し、誤りが無い'
+    test: test_normal_when_style_plugin_installed
 lead: 文書の作成者が、mdmark のリポジトリを Claude Code のマーケットプレイスとして追加し、mdmark のプラグインを入れる。
 primary_actor: 文書の作成者
 trigger: Claude Code で mdmark の文書を記載し始める前

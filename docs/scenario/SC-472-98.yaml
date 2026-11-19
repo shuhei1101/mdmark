@@ -1,0 +1,142 @@
+id: SC-472-98
+visibility: internal
+title: ClaudeCodeの発言と返答の用語にマーカーを付ける
+lead: Claude Code を使用する人が、mdmark-style を入れた Claude Code の画面で、自分の発言とアシスタントの返答に出た用語・エイリアスの下線を見て、ポインターを乗せて意味のカードを開くか、末尾の脚注で意味を確認する。
+primary_actor: Claude Code を使用する人
+trigger: 利用者の発言かアシスタントの返答が Claude Code の画面に描かれる
+preconditions:
+  - Claude Code に mdmark-style を入れている
+  - mdmark-style の設定の `glossary` が、索引・`aliases`・用語集の表を持つ `mdmark.config.yaml` を指す
+stakeholders:
+  - name: Claude Code を使用する人
+    interest: 発言と返答の用語の意味を、別の画面を開かずに読める。マウスを使えない端末でも意味を確認できる
+scenarios:
+  - name: 正常シナリオ
+    decisions:
+      - D-75
+      - D-76
+      - D-117
+      - D-119
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: ターミナル版の Claude Code を tmux の手元と別のソケットで起動し、ビルドしたこのリポジトリの mdmark-style を `--plugin-dir` で読み込む。`MDMARK_STYLE_CONFIG` で一時フォルダの設定ファイルを指す
+        notes: 設定ファイルの `global.glossary` に一時フォルダの `mdmark.config.yaml` を指定する
+      - name: 用語を持つ mdmark.config.yaml
+        description: 索引の `terms[]` に用語 1 つ、`aliases` に用語 1 つを持つ `mdmark.config.yaml`
+      - name: Mock
+        description: なし（実際の Claude Code とモデルで、2 つの用語を含む発言をし、同じ用語を含む固定の返答をさせる）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: 用語を含む発言
+        C->>M: ui.render（UserMessage と発言の本文）
+        M->>M: mdmark.config.yaml から用語を集め、本文の用語を照合する
+        M-->>C: 用語に下線とカードと脚注を付けた部品の木
+        C-->>U: 用語に下線の付いた発言と脚注
+        U->>C: 用語にポインターを乗せる
+        C-->>U: 用語の意味のカード
+      ```
+
+      <!-- /map -->
+    expected:
+      - 発言と返答の、索引の用語とエイリアスの単語に下線が付く
+      - 用語にポインターを乗せると用語の名前と意味のカードが出て、範囲外へ動かすと消える
+      - 発言と返答の末尾に、出た用語ごとの番号つきの脚注（名前と意味）が出る
+      - 用語の照合は、mdmark のライブラリ本体の用語の集め方・照合と同じ結果になる
+    test: test_normal
+  - name: 正常シナリオ（用語集を指定していない）
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: 正常シナリオと同じ。設定ファイルは配置しない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: 用語を含む発言
+        C->>M: ui.render（UserMessage と発言の本文）
+        M-->>C: 用語のマーカーを付けない
+        C-->>U: 下線と脚注の無い発言
+      ```
+
+      <!-- /map -->
+    expected:
+      - 発言と返答に用語の下線・カード・脚注が出ない
+    test: test_normal_when_glossary_not_set
+  - name: 正常シナリオ（hover のカードをオフにしている）
+    decisions:
+      - D-93
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: 正常シナリオと同じ
+        notes: 設定ファイルの `global.parts.hover_card` を `false` にする
+      - name: 用語を持つ mdmark.config.yaml
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: 用語を含む発言
+        C->>M: ui.render（UserMessage と発言の本文）
+        M-->>C: 下線と脚注だけを付けた部品の木
+        U->>C: 用語にポインターを乗せる
+        C-->>U: カードを出さない
+      ```
+
+      <!-- /map -->
+    expected:
+      - 用語に下線と脚注が付き、ポインターを乗せてもカードが出ない
+    test: test_normal_when_hover_card_disabled
+  - name: 異常シナリオ（用語集の設定ファイルを読めない）
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: 正常シナリオと同じ
+        notes: 設定ファイルの `global.glossary` に、存在しないパスを指定する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: 用語を含む発言
+        C->>M: ui.render（UserMessage と発言の本文）
+        M->>M: mdmark.config.yaml を読めず例外を投げる
+        C-->>U: Claude Code の元の描画の発言
+      ```
+
+      <!-- /map -->
+    expected:
+      - 発言が Claude Code の元の描画で描かれる
+      - Claude Code のデバッグログに、mdmark-style の名前と `mdmark.config.yaml` を読めなかった理由の行がある
+    test: test_error_when_glossary_unreadable
+success_guarantee: 発言と返答に出た用語・エイリアスに下線が付き、ポインターで意味のカードを開け、末尾の脚注でも意味を確認できる。用語は `mdmark.config.yaml` の索引・`aliases`・用語集の表から取り、YAML の文書・MCP は参照しない。
+minimal_guarantee: 用語を取れないときも、発言と返答は Claude Code の元の描画で出て、セッションは続く。
+test_file: tests/e2e/単一ユースケース/ClaudeCodeの発言と返答の用語にマーカーを付ける.spec.ts
+tags:
+  - name: topic:用語
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: topic:ツールチップ
+  - name: topic:脚注
+  - name: topic:索引
