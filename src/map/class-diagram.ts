@@ -465,11 +465,11 @@ const labelAsides = (diagram: ClassDiagram): Map<string, number> => {
 
 /** ノートのノードの大きさ（文の幅と左右の余白が収まる幅を minWidth から maxWidth の間で決め、その幅で折り返した行が全て入る高さ） */
 const noteSize = (text: string, maxWidth: number): { w: number; h: number } => {
-  const { nameSize, padX, padRight } = LABEL_METRICS;
-  const inset = padX + padRight;
+  const { nameSize, padX, padRight, border } = LABEL_METRICS;
+  const inset = padX + padRight + border * 2;
   const w = Math.min(
     maxWidth,
-    Math.max(MAP_LAYOUT.minWidth, Math.ceil(textWidth(text, nameSize)) + inset),
+    Math.max(MAP_LAYOUT.minWidth, Math.ceil(textWidth(text, nameSize) + inset)),
   );
   return { w, h: leafHeight(splitLines(text, nameSize, w - inset).length) };
 };
