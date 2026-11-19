@@ -1,0 +1,82 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 対象の設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めの依頼ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: CSS の大きさの修正で、未検証の技術機構に依存しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 業務の流れが変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 既存の部品のアクセシビリティの修正で、デザインスタイルを変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を追加・変更しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 読者の操作と期待結果（SC-472-39 のブロックの開閉）が変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 開閉のボタンの大きさの修正で、新規の見た目を決めないため対象外。既存のモックの CSS は実装で製品に合わせる
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: データ設計
+    status: skipped
+    reason: データの構造（設定・索引・状態）が変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:48.556971+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: 文書を描くインターフェースの入出力と制約が変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: skipped
+    reason: docs/screen に開閉のボタンの大きさの記載が無く、部品設計で扱うため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: CSS の値の修正で、モジュールの受け持ちと関数が変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: ドキュメント修正
+    status: skipped
+    reason: 公開ドキュメントに開閉のボタンの大きさの記載が無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: CSS の値の修正で、単体テストで確認する関数の振る舞いが変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T05:04:41.528189+00:00'
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo

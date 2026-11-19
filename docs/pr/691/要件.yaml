@@ -1,0 +1,8 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: run_only
+    detail: シーケンス図のブロックをタブの山形で開閉し、名前で中だけを見る操作は変わらないが、山形のボタンの大きさとタブの高さを変えるため、押して開閉できることを確認する
+    depends_on: []
+docs: []
+scope_out: []
