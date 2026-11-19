@@ -23,3 +23,9 @@ confirmations:
     approver: shuhei1101
     commit: '42631341'
     thread: https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626704888
+  - topic: mdmark-style の設定のキー（CFG-472-4）
+    decision: A（起点 Issue で決めたキーに parts.fold と projects[].match を加えた構成で進める）
+    decided_by: 👍
+    approver: shuhei1101
+    commit: 0ddccfbc
+    thread: https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626999580
