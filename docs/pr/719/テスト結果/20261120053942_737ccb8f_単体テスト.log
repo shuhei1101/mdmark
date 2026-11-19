@@ -1,0 +1,170 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/layout.test.ts tests/unit/src/map/flow-view.browser.test.ts
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-leaf-size-right-padding
+
+ ❯ |unit| tests/unit/src/map/layout.test.ts (27 tests | 3 failed) 1266ms
+   × test_layout_map_when_name_fits_with_right_padding 4ms
+   × test_layout_map_when_name_wraps_with_right_padding 1ms
+   × test_layout_map_when_width_with_right_padding 2ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (15 tests | 4 failed) 622ms
+   × test_attach_map_flow_when_closed_group_measured 104ms
+   × test_attach_map_flow_when_content_in_bottom_padding 65ms
+   × test_attach_map_flow_when_content_above_bottom_padding 67ms
+   × test_attach_map_flow_when_centered_content_overflows 63ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_name_fits_with_right_padding
+AssertionError: expected 120 to be 122 // Object.is equality
+
+- Expected
++ Received
+
+- 122
++ 120
+
+ ❯ tests/unit/src/map/layout.test.ts:286:19
+    284|   // 検証
+    285|   const node = layout.nodes.find((item) => item.id === "A");
+    286|   expect(node?.w).toBe(122);
+       |                   ^
+    287|   expect(node?.h).toBe(leafHeight(1));
+    288|   expect(node?.lines).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_name_wraps_with_right_padding
+AssertionError: expected 216 to be 220 // Object.is equality
+
+- Expected
++ Received
+
+- 220
++ 216
+
+ ❯ tests/unit/src/map/layout.test.ts:304:19
+    302|   // 検証
+    303|   const node = layout.nodes.find((item) => item.id === "A");
+    304|   expect(node?.w).toBe(220);
+       |                   ^
+    305|   expect(node?.lines).toHaveLength(2);
+    306|   expect(node?.h).toBe(leafHeight(2));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_width_with_right_padding
+AssertionError: expected [ 'ああああああああああああ' ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/src/map/layout.test.ts:323:23
+    321|   const node = layout.nodes.find((item) => item.id === "A");
+    322|   expect(node?.w).toBe(200);
+    323|   expect(node?.lines).toHaveLength(2);
+       |                       ^
+    324|   expect(node?.h).toBe(leafHeight(2));
+    325| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_closed_group_measured
+AssertionError: expected undefined to be 73 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_closed_group_measured.png
+
+- Expected:
+73
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:485:17
+    483|   const { before, after } = await measuredHeights("store");
+    484|   expect(before).toBeDefined();
+    485|   expect(after).toBe((before ?? 0) + 10);
+       |                 ^
+    486| });
+    487|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=708b9db1:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_content_in_bottom_padding
+AssertionError: expected undefined to be 69 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_content_in_bottom_padding.png
+
+- Expected:
+69
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:509:17
+    507|   const { before, after } = await measuredHeights("mount");
+    508|   expect(before).toBeDefined();
+    509|   expect(after).toBe((before ?? 0) + 6);
+       |                 ^
+    510| });
+    511|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=708b9db1:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_content_above_bottom_padding
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_content_above_bottom_padding.png
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:521:39
+    519|   // 検証
+    520|   const layout = await loadLayout();
+    521|   expect(vi.mocked(layout.layoutMap)).toHaveBeenCalledTimes(1);
+       |                                       ^
+    522| });
+    523|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=708b9db1:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_centered_content_overflows
+AssertionError: expected 166 to be 83 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_centered_content_overflows.png
+
+- Expected
++ Received
+
+- 83
++ 166
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:534:17
+    532|   const { before, after } = await measuredHeights("user");
+    533|   expect(before).toBeDefined();
+    534|   expect(after).toBe((before ?? 0) + 20);
+       |                 ^
+    535| });
+    536|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=708b9db1:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 35 passed (42)
+   Start at  05:39:13
+   Duration  3.52s (worker 43%, tests 41%, import 10%, transform 6%)
+
+
+# 実装の前の Red。fail した 7 件は、どれも新しい振る舞い（右の余白を見積もる葉の大きさ・中身が入る高さで測る measure）が無いことによる。
+# - layout.test.ts の 3 件: 幅を名前の幅 + 10px + 28px にしていない（120 と 122、216 と 220）・右の余白を除いた幅で折り返していない（1 行と 2 行）
+# - flow-view.browser.test.ts の 4 件: measure が中身の子要素の位置でなく scrollHeight で測るため、子要素の位置を動かしても大きさの上書きが入らない・期待と違う量になる
