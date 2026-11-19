@@ -69,6 +69,7 @@ functions:
       2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`attachBand` の `onStep` で、シーケンス図の図を今のメッセージの線へ `createFollow` の `reveal` で移し、`follow` に手順のメッセージの番号を指定する
       3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない。`pointercancel` では並び順を変えず、縦の線と箱の移動を戻して、`window` の `pointermove`・`pointerup`・`pointercancel` の受け取りを削除する
       4. 参加者の箱の押せる要素（`span.mdmark-diagram-node-hit`）にフォーカスして Enter か Space を押すとその参加者を選び、Alt + 左右の矢印キーで 1 列ずつ移して、描き直した後に移した参加者の押せる要素へフォーカスを戻す（中だけを描いているときは移さない）
+      5. 参加者の箱の押せる要素かライフラインの判定の線（`.map-lifeline-hit`）の `pointerover` で、参加者を選んでおらず再生していないときだけ、その参加者が送る・受けるメッセージの線とラベル・その参加者の箱とライフラインのほかに `map-dim`（と指している間だけの class）を付け、そのメッセージの線に指している間のデータの印の層（`.map-packets-hover`）を追加する。`pointerout` でポインターが同じ参加者の箱と判定の線の外へ出たら解く。`writeMapState` は呼ばない。`pointerType` が `touch` のときと、並べ替えのドラッグの間は付けない。選択を解いたときにポインターがいた参加者を記録し、ポインターがその参加者の箱と判定の線の外へ出るまで、その参加者の強調を付けない
     unit_tests:
       - name: test_attach_map_sequence_when_reorder_cancelled
         case: 正常
@@ -106,6 +107,30 @@ functions:
         condition: '`actor U as 読者` と `participant P` を持つシーケンス図を、`map.kinds` に `actor` が無い設定で付ける。次に `map.kinds.actor` が `{ icon: "smile" }` の設定で付ける'
         mock: なし（jsdom）
         expected: 最初は U の参加者の種類の行に `data-icon="user"` があり、P には無い。次は U が `data-icon="smile"`
+      - name: test_attach_map_sequence_when_participant_hovered
+        case: 正常
+        summary: ライフラインのポインターの強調
+        condition: '`mount` の `.map-lifeline-hit` に `pointerType` が `mouse` の `pointerover` を発火し、次に図の外への `pointerout` を発火する'
+        mock: '`writeMapState`'
+        expected: 最初は `mount` を `selected` の 1 人にして描いたときと同じ要素が `map-dim` を持ち、`mount` が送る・受けるメッセージの線の数だけ `.map-packets-hover` がある。次は `map-dim` と `.map-packets-hover` が無い。`writeMapState` は呼ばれない
+      - name: test_attach_map_sequence_when_hovered_while_selected
+        case: 正常
+        summary: 選んでいる間はポインターで変えない
+        condition: '`selected` が `["M"]` の状態で、ほかの参加者の箱の押せる要素に `pointerover` を発火する'
+        mock: '`writeMapState`'
+        expected: '`map-dim` を持つ要素が発火の前と同じで、`.map-packets-hover` が無い'
+      - name: test_attach_map_sequence_when_hovered_after_unselect
+        case: 正常
+        summary: 選択を解いた直後は出さない
+        condition: '`mount` の箱の名前の外を押して選び、もう一度押して解き、同じ箱に `pointerover` を発火する。次に図の外への `pointerout` と、同じ箱への `pointerover` を発火する'
+        mock: なし
+        expected: 解いた直後の `pointerover` では `map-dim` を持つ要素が無く、外へ出て戻った後は、`mount` を 1 人選んだときと同じ要素が `map-dim` を持つ
+      - name: test_attach_map_sequence_when_hovered_by_touch
+        case: 正常
+        summary: タッチでは出さない
+        condition: '`mount` の `.map-lifeline-hit` に `pointerType` が `touch` の `pointerover` を発火する'
+        mock: なし
+        expected: '`map-dim` を持つ要素と `.map-packets-hover` が無い'
 lead: 'map のシーケンス図の描画と操作を受け持ち、シーケンス図の描画と操作を変えるときに参照する。'
 tags:
   - name: topic:map
