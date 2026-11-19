@@ -240,3 +240,30 @@ test("test_attach_sticky_rows_when_unwrapped", async () => {
     );
   });
 });
+
+// 横にだけスクロールする要素の中の表は、画面を基準にし、animation-timeline を持つブラウザでも JS でずらす（正常系）
+test("test_attach_sticky_rows_when_in_wide_range", async () => {
+  // 準備: 横にだけスクロールする要素（縦にははみ出さない）の中に表を描く
+  addStyles();
+  vi.spyOn(CSS, "supports").mockReturnValue(true);
+  const { attachStickyRows } = await loadSticky();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(longTable(60));
+  const range = document.createElement("div");
+  range.style.overflowX = "auto";
+  range.append(...root.childNodes);
+  root.append(range);
+  detachers.push(attachTables(root));
+  const head = headCell(root);
+  const headTop = head.getBoundingClientRect().top + window.scrollY;
+  detachers.push(attachStickyRows(root));
+  // 実行: 見出し行の上端が画面の上端より 300px 上になるまでページをスクロールする
+  window.scrollTo(0, headTop + 300);
+  await nextFrame();
+  // 検証
+  expect(wrapperMode(root)).toBe("script");
+  await vi.waitFor(() => {
+    expect(stickyVar(root, "--mdmark-sticky-head-shift")).toBe("300px");
+  });
+  expect(Math.abs(head.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
+});
