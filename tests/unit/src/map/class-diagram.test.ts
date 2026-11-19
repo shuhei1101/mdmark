@@ -222,7 +222,7 @@ test("test_class_part_inputs_when_long_members", async () => {
   // 検証
   const lines = inputs.classes[0]?.members[0]?.lines ?? 0;
   expect(lines).toBeGreaterThanOrEqual(2);
-  const size = inputs.overrides["検索"]?.size;
+  const size = inputs.overrides.検索?.size;
   expect(size?.w).toBe(220);
   const oneLine =
     MAP_CLASS.head + MAP_CLASS.row + MAP_CLASS.divider * 2 + MAP_CLASS.foot;
@@ -246,9 +246,9 @@ test("test_class_part_inputs_when_width", async () => {
     maxWidth: 360,
   });
   // 検証
-  expect(given.overrides["検索"]?.size?.w).toBe(480);
+  expect(given.overrides.検索?.size?.w).toBe(480);
   expect(given.classes[0]?.members[0]?.lines).toBe(1);
-  const w = wide.overrides["検索"]?.size?.w ?? 0;
+  const w = wide.overrides.検索?.size?.w ?? 0;
   expect(w).toBeGreaterThan(220);
   expect(w).toBeLessThanOrEqual(360);
 });
@@ -283,10 +283,10 @@ test("test_class_part_inputs_when_labels", async () => {
   const need = (label: string) =>
     label.length * MAP_ER.labelChar + MAP_CLASS.labelGap * 2;
   const gap = Math.min(MAP_LAYOUT.gapRank, MAP_LAYOUT.gapItem);
-  const main = top["メイン"]?.aside ?? 0;
-  expect(top["アプリ組み立て"]?.aside).toBe(main);
+  const main = top.メイン?.aside ?? 0;
+  expect(top.アプリ組み立て?.aside).toBe(main);
   expect(gap + main * 2).toBeGreaterThanOrEqual(need("ASGI アプリの生成"));
-  expect(top["設定"]?.aside ?? 0).toBe(0);
+  expect(top.設定?.aside ?? 0).toBe(0);
   for (const id of ["応答変換", "時間範囲"]) {
     const aside = nested[id]?.aside ?? 0;
     expect(MAP_LAYOUT.gapItem + aside * 2).toBeGreaterThanOrEqual(
