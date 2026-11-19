@@ -41,7 +41,11 @@ functions:
     container: src/section/heading.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。脚注の定義の囲みの外（`outsideFootnoteDefinitions`。定義の中の見出しを目次と右側の目次に記載しないため）の全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを追加する。見出しの ID と文字を `env.headings` に追加する。class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
+    summary: 'コアルール。見出しに ID とアンカーを付け、`env.headings` に追加する'
+    description: |-
+      脚注の定義の囲みの外（`outsideFootnoteDefinitions`。定義の中の見出しを目次と右側の目次に記載しないため）の全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを追加する。
+      見出しの ID と文字を `env.headings` に追加する。
+      class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
     args:
       - name: state
         type: StateCore

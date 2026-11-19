@@ -10,7 +10,10 @@ functions:
     kind: 関数
     scope: internal
     usecase: mermaidの図を描く
-    summary: '部品設計『mermaid の図』の HTML。`<div class="mdmark-mermaid">` に `svg` を入れ、`printSvg` があれば `<div class="mdmark-mermaid-print" aria-hidden="true">` に入れて後ろに配置し、包む要素に `mdmark-mermaid-has-print` を付ける。図の枠の `body` に指定する大きさも返却する'
+    summary: '部品設計『mermaid の図』の HTML。図の svg と印刷用の svg を包み、図の枠の大きさを返却する'
+    description: |-
+      `<div class="mdmark-mermaid">` に `svg` を入れ、`printSvg` があれば `<div class="mdmark-mermaid-print" aria-hidden="true">` に入れて後ろに配置し、包む要素に `mdmark-mermaid-has-print` を付ける。
+      図の枠の `body` に指定する大きさも返却する
     args:
       - name: options
         type: '{ svg: string; printSvg?: string; width: number; height: number }'

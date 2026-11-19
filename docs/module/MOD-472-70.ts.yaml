@@ -64,7 +64,11 @@ functions:
     kind: 関数
     container: vscode/src/webview/features/preview/panel/assets.ts
     usecase: プレビューのリンクと画像を開く
-    summary: 描いた文書の `video`・`audio` の `error` を受け、要素（`figure.mdmark-media` の中なら `figure`）を `renderMediaError` の枠に替える。枠の「既定のアプリで開く」の押下は `useLinkClicks` が受け、`openAsset` を送信する。替える前の要素が記載したパスは `data-mdmark-src` に記録する（`applyAssetUrls` が `src` を替えるため）
+    summary: '動画と音声の読み込みの失敗を受け、要素を「既定のアプリで開く」の枠に替える'
+    description: |-
+      描いた文書の `video`・`audio` の `error` を受け、要素（`figure.mdmark-media` の中なら `figure`）を `renderMediaError` の枠に替える。
+      枠の「既定のアプリで開く」の押下は `useLinkClicks` が受け、`openAsset` を送信する。
+      替える前の要素が記載したパスは `data-mdmark-src` に記録する（`applyAssetUrls` が `src` を替えるため）
     scope: public
     side_effects: 要素を枠に置き換える
     args:

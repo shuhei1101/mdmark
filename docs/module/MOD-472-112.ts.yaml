@@ -167,8 +167,15 @@ functions:
     title: 画像を埋める
     container: src/cli/embed.ts
     usecase: 共通
-    summary: Markdown の画像（`![]()` と HTML の `img`）の相対パスを、文書のフォルダを基準に読み込んだ `data:` URL に替える。`options.assetsRoot` があれば `resolveAssetFile` の順で探し、フラグメントは `data:` URL の後ろに残す。画像の属性の `poster=` も替え、動画・音声は替えない（`copyMedia` が扱う）。`options.assets` を指定したとき（`build`）は `data:` URL の代わりに `mdmark-asset:{キー}` に替え、同じファイルを同じキーにして `options.assets` に `data:` URL を入れる
-    description: 画像の場所は markdown-it のトークン（`image` と `html_inline`・`html_block` の `src`）から取得し、その文字列だけを置き換える。MIME は拡張子（png・jpg・jpeg・gif・webp・svg）で決める。読み込めない画像は記載したまま残して警告に、絶対 URL の画像は読み込まずに残して警告にする
+    summary: 'Markdown の画像の相対パスを、読み込んだ `data:` URL かアセットのキーに替える'
+    description: |-
+      Markdown の画像（`![]()` と HTML の `img`）の相対パスを、文書のフォルダを基準に読み込んだ `data:` URL に替える。
+      `options.assetsRoot` があれば `resolveAssetFile` の順で探し、フラグメントは `data:` URL の後ろに残す。
+      画像の属性の `poster=` も替え、動画・音声は替えない（`copyMedia` が扱う）。
+      `options.assets` を指定したとき（`build`）は `data:` URL の代わりに `mdmark-asset:{キー}` に替え、同じファイルを同じキーにして `options.assets` に `data:` URL を入れる。
+      画像の場所は markdown-it のトークン（`image` と `html_inline`・`html_block` の `src`）から取得し、その文字列だけを置き換える。
+      MIME は拡張子（png・jpg・jpeg・gif・webp・svg）で決める。
+      読み込めない画像は記載したまま残して警告に、絶対 URL の画像は読み込まずに残して警告にする
     kind: 関数
     scope: public
     is_async: true

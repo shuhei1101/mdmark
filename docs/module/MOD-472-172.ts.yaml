@@ -117,7 +117,12 @@ functions:
     container: src/diagram/diagram.part.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『mapの構成図』が自動配置の結果から作ったノードと線を描く。ノードは座標に配置し、`style`（設定の `map.kinds` の値）の種類の行（アイコンと名前）・形・色で描き、`hint` を持つノードの右上にマーカーとツールチップの中身（`hints` がオフなら配置しない）、`href` を持つノードに class `has-link` と、名前の後ろ・右上のマーカーの前にノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}" aria-label="{name}">` を配置する。線は `jumpPaths` のパスで svg に描き、`style`（設定の `map.lines` の値）の模様・太さ・矢じり・色を当て、線のラベルを配置する。ノードの中の名前は `renderText` に経由する
+    summary: '部品設計『mapの構成図』の自動配置の結果から、ノードと線を描く'
+    description: |-
+      部品設計『mapの構成図』が自動配置の結果から作ったノードと線を描く。
+      ノードは座標に配置し、`style`（設定の `map.kinds` の値）の種類の行（アイコンと名前）・形・色で描き、`hint` を持つノードの右上にマーカーとツールチップの中身（`hints` がオフなら配置しない）、`href` を持つノードに class `has-link` と、名前の後ろ・右上のマーカーの前にノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}" aria-label="{name}">` を配置する。
+      線は `jumpPaths` のパスで svg に描き、`style`（設定の `map.lines` の値）の模様・太さ・矢じり・色を当て、線のラベルを配置する。
+      ノードの中の名前は `renderText` に経由する
     args:
       - name: definition
         type: MdmarkFlowDefinition

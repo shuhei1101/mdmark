@@ -1,0 +1,7 @@
+scope_out:
+  - item: 200 字以下の 2 文以上を持つ summary
+    reason: 受付の判断で対象外にした（1 行の概要として読める長さ）
+    plan: none
+  - item: '#612 の報告（summary・description の中の文の削除と AI slop の修正）'
+    reason: '受付の判断で #612 を #669 の後ろへ回した。移した詳細の文の削除・言い換えは #612 が扱う'
+    plan: '#612'

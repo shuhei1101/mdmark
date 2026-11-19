@@ -39,7 +39,10 @@ functions:
   - name: iconNodeSvg
     title: IconNode を svg にする
     container: src/shared/icon-node.logic.ts
-    summary: Lucide の IconNode を、`path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` の要素と描画の属性（`d`・`cx`・`cy`・`r`・`rx`・`ry`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`width`・`height`・`points`）だけを残した `svg.mdmark-icon` の文字にする。値はエスケープする
+    summary: 'Lucide の IconNode を、描画の要素と属性だけを残した `svg.mdmark-icon` の文字にする'
+    description: |-
+      Lucide の IconNode を、`path`・`circle`・`rect`・`line`・`polyline`・`polygon`・`ellipse` の要素と描画の属性（`d`・`cx`・`cy`・`r`・`rx`・`ry`・`x`・`y`・`x1`・`y1`・`x2`・`y2`・`width`・`height`・`points`）だけを残した `svg.mdmark-icon` の文字にする。
+      値はエスケープする
     kind: 関数
     scope: internal
     args:

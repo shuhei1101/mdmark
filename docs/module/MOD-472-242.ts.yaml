@@ -7,7 +7,11 @@ functions:
   - name: attachWideToggles
     title: wide の範囲の切り替えを付ける
     container: src/layout/wide.interact.ts
-    summary: '`div.mdmark-wide-range` の直前に部品『wide の範囲』の帯とボタンを配置し、押すたびに `data-state` と `aria-pressed` を入れ替える。広げられる幅（右側の目次が本文の右に並ぶときは描く先の要素の内側から目次を除いた幅、それ以外は描く先の要素の親の内側の幅。どちらも画面の幅まで）を描く先の要素と親の `ResizeObserver` で確認して、本文の幅以下なら帯を隠す。広い幅の `hover` でピン止めしていない右側の目次があるときは、範囲の右端を右端の線の左までに収める CSS 変数を範囲に入れる'
+    summary: 'wide の範囲に広げるボタンの帯を配置し、広げられないときは帯を隠す'
+    description: |-
+      `div.mdmark-wide-range` の直前に部品『wide の範囲』の帯とボタンを配置し、押すたびに `data-state` と `aria-pressed` を入れ替える。
+      広げられる幅（右側の目次が本文の右に並ぶときは描く先の要素の内側から目次を除いた幅、それ以外は描く先の要素の親の内側の幅。どちらも画面の幅まで）を描く先の要素と親の `ResizeObserver` で確認して、本文の幅以下なら帯を隠す。
+      広い幅の `hover` でピン止めしていない右側の目次があるときは、範囲の右端を右端の線の左までに収める CSS 変数を範囲に入れる
     kind: 関数
     scope: internal
     args:

@@ -53,7 +53,11 @@ functions:
     container: src/tree/tree.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み込み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。直前に `tree` のマーカーがあれば `readTreeOptions` で読み込み、`open` と `wrap` を部品へ指定する。罫線を読み込めなければ警告を差し込み、コードブロックのままにする
+    summary: 'コアルール。言語 `tree` のコードブロックを部品『ファイルツリー』にする'
+    description: |-
+      `tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み込み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。
+      直前に `tree` のマーカーがあれば `readTreeOptions` で読み込み、`open` と `wrap` を部品へ指定する。
+      罫線を読み込めなければ警告を差し込み、コードブロックのままにする
     args:
       - name: state
         type: StateCore

@@ -9,7 +9,12 @@ functions:
     container: src/steps/steps.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`steps` がオンなら、`steps` の範囲の最初の番号付きリスト（入れ子は除く）の `ol` に class `mdmark-steps` を付ける。マーカーの設定は `readStepsOptions` で読み込む。`collapse` が `closed`・`open` なら、その `ol` を `renderCollapsible` の折り畳み（見出しは `title` か `手順（{入れ子を除く項目の数} ステップ）`）に入れる。番号付きリストが無ければ警告を差し込む
+    summary: 'コアルール。`steps` の範囲の番号付きリストを手順にする'
+    description: |-
+      `steps` がオンなら、`steps` の範囲の最初の番号付きリスト（入れ子は除く）の `ol` に class `mdmark-steps` を付ける。
+      マーカーの設定は `readStepsOptions` で読み込む。
+      `collapse` が `closed`・`open` なら、その `ol` を `renderCollapsible` の折り畳み（見出しは `title` か `手順（{入れ子を除く項目の数} ステップ）`）に入れる。
+      番号付きリストが無ければ警告を差し込む
     args:
       - name: state
         type: StateCore
