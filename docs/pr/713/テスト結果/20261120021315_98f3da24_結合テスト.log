@@ -1,0 +1,44 @@
+$ run_url=$(gh workflow run test.yml --ref "$(git branch --show-current)" -f layer=integration -f paths="tests/integration/lib/map-sequence.story.test.ts" ...) # TP-472-1 の TL-3 の run_runner（commit 98f3da24）
+
+﻿2026-11-19T17:12:30.0507593Z ##[group]Run if [ -z "$PATHS" ]; then
+2026-11-19T17:12:30.0507945Z if [ -z "$PATHS" ]; then
+2026-11-19T17:12:30.0508257Z   npm run test:integration 2>&1 | tee test.log
+2026-11-19T17:12:30.0508581Z else
+2026-11-19T17:12:30.0508809Z   # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+2026-11-19T17:12:30.0509111Z   # shellcheck disable=SC2086
+2026-11-19T17:12:30.0509501Z   npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+2026-11-19T17:12:30.0509875Z fi
+2026-11-19T17:12:30.0560141Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-19T17:12:30.0560510Z env:
+2026-11-19T17:12:30.0560718Z   LAYER: integration
+2026-11-19T17:12:30.0561016Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+2026-11-19T17:12:30.0561369Z   XDG_RUNTIME_DIR: /run/user/1001
+2026-11-19T17:12:30.0561683Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+2026-11-19T17:12:30.0562001Z   XDG_CONFIG_HOME: 
+2026-11-19T17:12:30.0562215Z ##[endgroup]
+2026-11-19T17:12:31.0694531Z 
+2026-11-19T17:12:31.0725604Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+2026-11-19T17:12:31.0726692Z 
+2026-11-19T17:12:51.8120967Z  ✓  integration-storybook  tests/integration/lib/map-sequence.story.test.ts (16 tests) 12868ms
+2026-11-19T17:12:51.8122947Z    ✓ test_default 849ms
+2026-11-19T17:12:51.8135216Z    ✓ test_arrows 827ms
+2026-11-19T17:12:51.8136533Z    ✓ test_tall_participants 775ms
+2026-11-19T17:12:51.8137896Z    ✓ test_block_collapsed 792ms
+2026-11-19T17:12:51.8139321Z    ✓ test_block_tab_target_size_default 796ms
+2026-11-19T17:12:51.8140979Z    ✓ test_block_tab_target_size_block-collapsed 859ms
+2026-11-19T17:12:51.8142785Z    ✓ test_block_entered 870ms
+2026-11-19T17:12:51.8144249Z    ✓ test_participant_selected 756ms
+2026-11-19T17:12:51.8145501Z    ✓ test_playing 713ms
+2026-11-19T17:12:51.8146702Z    ✓ test_reordering 826ms
+2026-11-19T17:12:51.8148033Z    ✓ test_self_message 903ms
+2026-11-19T17:12:51.8149332Z    ✓ test_hints_off 702ms
+2026-11-19T17:12:51.8150807Z    ✓ test_accessibility 785ms
+2026-11-19T17:12:51.8152300Z    ✓ test_participant_terms 751ms
+2026-11-19T17:12:51.8153478Z    ✓ test_actor_icon 778ms
+2026-11-19T17:12:51.8155058Z    ✓ test_plain 848ms
+2026-11-19T17:12:51.8206356Z 
+2026-11-19T17:12:51.8218161Z  Test Files  1 passed (1)
+2026-11-19T17:12:51.8219347Z       Tests  16 passed (16)
+2026-11-19T17:12:51.8220226Z    Start at  17:12:31
+2026-11-19T17:12:51.8221118Z    Duration  20.69s (tests 97%, import 3%)
+2026-11-19T17:12:51.8232449Z 

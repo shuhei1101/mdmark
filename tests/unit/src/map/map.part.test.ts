@@ -404,6 +404,75 @@ test("test_render_map_sequence_when_terms", async () => {
   expect(tips).toContain("map の範囲の上書きと説明");
 });
 
+// 自分へのメッセージのラベル（正常系）
+test("test_render_map_sequence_when_self_message", async () => {
+  // 準備
+  const { renderMapSequence } = await loadParts();
+  const { parseSequence } = await loadSequence();
+  const { sequenceRows } = await loadRows();
+  const sequence = parseSequence(`sequenceDiagram
+  participant node as 動画作成ノード
+  participant am as aituber の MCP
+  node->>am: request_job
+  node->>node: 完了ファイルを待つ
+  node->>am: get（ジョブ）`);
+  const rows = sequenceRows(sequence, {
+    order: sequence.participants.map((item) => item.id),
+    collapsed: [],
+    entered: undefined,
+  });
+  // 実行
+  const { html } = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    notes: { "2": "待つ上限の時間は、進め方の文書で決定する" },
+  });
+  // 検証
+  /** メッセージの線の d と、ラベルの札の中心の left・top */
+  const wireOf = (message: number) =>
+    html.match(
+      new RegExp(
+        `<path class="mdmark-diagram-wire[^"]*"[^>]* data-message="${message}" d="([^"]+)"`,
+      ),
+    )?.[1] ?? "";
+  const labelOf = (message: number) => {
+    const style =
+      html.match(
+        new RegExp(
+          `<span class="mdmark-diagram-label[^"]*" data-message="${message}" style="left:([-\\d.]+)px;top:([-\\d.]+)px"`,
+        ),
+      ) ?? [];
+    return { left: Number(style[1]), top: Number(style[2]) };
+  };
+  const self = wireOf(1).match(
+    /^M([\d.]+) ([\d.]+)H([\d.]+)V([\d.]+)H([\d.]+)$/,
+  );
+  expect(self).not.toBeNull();
+  const [, startX, loopTop, rightX] = (self ?? []).map(Number);
+  const selfLabel = labelOf(1);
+  // 札の中心の左右は折り返しの左右の中央
+  expect(selfLabel.left).toBe(((startX ?? 0) + (rightX ?? 0)) / 2);
+  // 札（高さ 20px、中心で配置）の下端は折り返しの上の辺の 6px 上
+  expect(selfLabel.top + 10).toBe((loopTop ?? 0) - 6);
+  // ほかの参加者へのメッセージのラベルは線の中点の 14px 上のまま
+  const other = wireOf(0).match(/^M([\d.]+) ([\d.]+)H([\d.]+)$/);
+  const [, fromX, lineY, toX] = (other ?? []).map(Number);
+  const otherLabel = labelOf(0);
+  expect(otherLabel.top).toBe((lineY ?? 0) - 14);
+  expect(
+    Math.abs(otherLabel.left - ((fromX ?? 0) + (toX ?? 0)) / 2),
+  ).toBeLessThanOrEqual(1);
+  // 説明を持つ自分へのメッセージの線の押せる帯は、ツールチップの持ち主になる
+  expect(html).toMatch(
+    /<path class="map-wire-hit" data-message="1"[^>]*data-tip-owner="message:1"/,
+  );
+});
+
 // 説明の中の用語（正常系）
 test("test_render_map_flow_when_note_terms", async () => {
   // 準備
