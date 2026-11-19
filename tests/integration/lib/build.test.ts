@@ -425,6 +425,53 @@ test("test_error_when_steps_invalid", async () => {
   expect(stderr).toContain("to");
 });
 
+// 出したバージョンのフォルダへ移行の手順の配布物を書き込まず、出していないバージョンのフォルダにだけ書き込む（正常系（出したバージョンの移行の手順を書き換えない））
+test("test_normal_when_released_migrations_kept", {
+  timeout: BUILD_TIMEOUT_MS * 2,
+}, async () => {
+  // 準備
+  const root = await createWorkTree("v0.3.0\n");
+  const released = join(root, "migrations", "v0.3.0");
+  const next = join(root, "migrations", "next");
+  const committed: Record<string, string> = {
+    "legacy-marks.js": "// 出したときの legacy-marks.js\n",
+    "retired-diagrams.js": "// 出したときの retired-diagrams.js\n",
+    "THIRD_PARTY_LICENSES.txt": "出したときのライセンス\n",
+  };
+  await mkdir(released, { recursive: true });
+  await writeFile(join(root, "migrations", "no-steps.yaml"), "entries: []\n");
+  await writeFile(join(released, "marker-json.mjs"), "\n");
+  await writeFile(join(released, "retired-diagrams.mjs"), "\n");
+  for (const [name, text] of Object.entries(committed)) {
+    await writeFile(join(released, name), text);
+  }
+  await git(root, ["init", "--quiet"]);
+  await git(root, ["add", "schemas", "migrations", "version.ini"]);
+  await git(root, ["commit", "--quiet", "-m", "v0.3.0 を出す"]);
+  await git(root, ["tag", "v0.3.0"]);
+  await mkdir(next, { recursive: true });
+  await writeFile(join(next, "marker-json.mjs"), "\n");
+  await writeFile(join(next, "retired-diagrams.mjs"), "\n");
+  for (const args of [["--develop"], []]) {
+    // 実行（配布ファイルの上限の超過は #601 で扱うため、上限を差し替えて呼ぶ）
+    const code = await main(args, { root, maxBytes: 20 * 1024 * 1024 });
+    // 検証
+    expect(code).toBe(0);
+    const { stdout } = await execFileAsync(
+      "git",
+      ["status", "--porcelain", "migrations/v0.3.0"],
+      { cwd: root },
+    );
+    expect(stdout).toBe("");
+    for (const [name, text] of Object.entries(committed)) {
+      expect(await readFile(join(released, name), "utf8")).toBe(text);
+    }
+    for (const name of Object.keys(committed)) {
+      expect(existsSync(join(next, name))).toBe(true);
+    }
+  }
+});
+
 // --develop でビルドメタデータを添えたバージョンを埋める（正常系（develop のビルド））
 test("test_normal_when_develop", { timeout: BUILD_TIMEOUT_MS }, async () => {
   // 準備

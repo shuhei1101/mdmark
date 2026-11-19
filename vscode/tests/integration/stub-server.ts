@@ -68,13 +68,13 @@ const NO_DIFF_VERSION = "v0.8.0";
 const NO_DIFF_DIST_JS =
   "export function mount() { return { update() {}, destroy() {} }; }\n";
 
-/** 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` を、どのバージョンでも `distDir` のファイルに参照する。`MISSING_VERSION` だけ 404 を返却し、`NO_DIFF_VERSION` の `index.js` は差分に対応しない配布物を返却する */
+/** 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` を、どのバージョンと `develop` でも `distDir` のファイルに参照する。`MISSING_VERSION` だけ 404 を返却し、`NO_DIFF_VERSION` の `index.js` は差分に対応しない配布物を返却する */
 async function serveDist(
   path: string,
   distDir: string,
   response: ServerResponse,
 ): Promise<void> {
-  const match = /^\/mdmark@(v[^/]+)\/dist\/([^/]+)$/.exec(path);
+  const match = /^\/mdmark@(v[^/]+|develop)\/dist\/([^/]+)$/.exec(path);
   const file = match?.[2];
   if (match === null || file === undefined || match[1] === MISSING_VERSION) {
     response.writeHead(404);
