@@ -55,7 +55,9 @@ docs:
   - page: docs/config/CFG-472-4.yaml
     new: true
     change: mdmark-style の設定（MDMARK_STYLE_CONFIG・settings.yaml の global・projects と enabled・parts.*・targets・glossary・inject_marker_guide）の設計書を新しく作る
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T09:48:05.713843+00:00'
   - page: docs/guide/ClaudeCodeで使用する-画面を共通スタイルで描く.md
     new: true
     change: mdmark-style を入れ、設定で部品・場所・用語集を指定する使い方のページを作る
