@@ -10,7 +10,7 @@ use_cases:
     detail: 読者が描いた文書とまとめた HTML のボタンで、純粋な Markdown をクリップボードへコピーし、ファイルに保存する
     depends_on: []
   - kind: composite
-    scenario: docs/scenario/Markdownに書き出してmdmarkの無い表示で読む.yaml
+    scenario: docs/scenario/SC-472-99.yaml
     impact: new
     detail: 文書の作成者が書き出した Markdown を、GitHub などの mdmark の無い表示で、記法の文字が見えずに図を含めて読む
     depends_on:
