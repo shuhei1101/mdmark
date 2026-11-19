@@ -18,9 +18,9 @@ export type InlineSegment = {
 /** 行内のコード（同じ数の逆引用符で囲んだ範囲） */
 const CODE_SPAN = /(`+)([\s\S]*?[^`])\1(?!`)/g;
 
-/** 本文の文字の色 `[文字]{color=名前}` と、蛍光ペン `==文字==`（色の指定を含む） */
+/** 本文の文字の色 `[文字]{color=名前}` と、蛍光ペン `==文字==`（色の指定を含む。開きの直後と閉じの直前が空白のものは除く） */
 const TEXT_MARK =
-  /\[([^\]]*)\]\{color=([^}]*)\}|==([^=]+)==(?:\{color=([^}]*)\})?/g;
+  /\[([^\]]*)\]\{color=([^}]*)\}|==(?!\s)([^=]*[^=\s])==(?:\{color=([^}]*)\})?/g;
 
 /** 蛍光ペンの色を省いたときの色 */
 const HIGHLIGHT_COLOR: ColorName = "yellow";
@@ -82,13 +82,15 @@ const textSegments = (
           : { kind: "text", text: colored, start },
       );
     } else {
-      const name = highlightName ?? HIGHLIGHT_COLOR;
-      append(
-        segments,
-        isColorName(name)
-          ? { kind: "highlight", text: highlighted ?? "", color: name, start }
-          : { kind: "text", text: highlighted ?? "", start },
-      );
+      append(segments, {
+        kind: "highlight",
+        text: highlighted ?? "",
+        color:
+          highlightName !== undefined && isColorName(highlightName)
+            ? highlightName
+            : HIGHLIGHT_COLOR,
+        start,
+      });
     }
     from = match.index + match[0].length;
   }

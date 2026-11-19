@@ -168,7 +168,7 @@ const renderTable = (block: ReplyBlock, context: RenderContext): UiNode => {
     wrap,
   });
   const border = styleColor({ name: "border", theme: context.theme });
-  /** 1 行の、セルごとの部品。行内の記法と行の詳細の Button は 1 行に収まるセルだけに描く */
+  /** 1 行の、セルごとの部品。行内の記法は 1 行に収まるセルだけに描き、行の詳細の Button は行の 1 行目の先頭のセルに描く */
   const cellNodes = (options: {
     raw: string[] | undefined;
     columns: string[];
@@ -179,6 +179,17 @@ const renderTable = (block: ReplyBlock, context: RenderContext): UiNode => {
     const nodes = options.columns.map((cell, index) => {
       const raw = options.raw?.[index];
       const toggle = index === 0 ? options.toggle : undefined;
+      if (raw === undefined && toggle !== undefined) {
+        rich = true;
+        const rest = cell.startsWith(ROW_TOGGLE_TEXT)
+          ? cell.slice(ROW_TOGGLE_TEXT.length)
+          : cell;
+        return [
+          toggle,
+          h(Text, null, " "),
+          h(Text, options.bold ? { bold: true } : null, rest),
+        ];
+      }
       if (
         raw === undefined ||
         (toggle === undefined && !hasInline(raw, context))
@@ -246,7 +257,7 @@ const renderTable = (block: ReplyBlock, context: RenderContext): UiNode => {
       lineNode(`${options.key}-${index}`, columns, {
         bold: options.bold,
         ...(single ? { raw: options.raw } : {}),
-        ...(single && options.toggle !== undefined
+        ...(index === 0 && options.toggle !== undefined
           ? { toggle: options.toggle }
           : {}),
       }),
