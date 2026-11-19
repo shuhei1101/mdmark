@@ -55,6 +55,7 @@
 | 画面設計 | `e9ab35d8..c9cc15d6` | レビューの指摘（モックの照合）の修正 |
 | モジュール構成設計 | `c9cc15d6..ed0a14b2` | MOD-472-352・353・355・357・358・359・366・367 |
 | モジュール構成設計 | `c514d718..01a94fbf` | レビューの指摘（tree・fig・row-detail・セルの行内の記法）の修正 |
+| モジュール構成設計 | `0d16b1f5..30bc9d4d` | 実装のレビューの指摘（蛍光ペンの空白と知らない色・折り返した行の行の詳細）の手順と単体テストの行の修正 |
 
 ## テスト結果
 
@@ -64,19 +65,21 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/src/mdmark-style/inline-marks.test.ts` | 全実行 | 新規 | ✅ | 6 テスト pass<br>`テスト結果/20261120041311_d3c3aa83_単体テスト.log` |
+| `tests/unit/src/mdmark-style/inline-marks.test.ts` | 全実行 | 新規 | ✅ | 8 テスト pass<br>`テスト結果/20261120042208_30bc9d4d_単体テスト.log` |
 | `tests/unit/src/mdmark-style/document-parts.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass |
 | `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 17 テスト pass |
 | `tests/unit/src/mdmark-style/reply.test.ts` | 全実行 | 変更 | ✅ | - |
 | `tests/unit/src/mdmark-style/user-message.test.ts` | 全実行 | 変更 | ✅ | - |
 | `tests/unit/src/mdmark-style/settings.test.ts` | 全実行 | 変更 | ✅ | - |
-| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | 2586 テスト pass（ランナー） |
+| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | 2589 テスト pass（ランナー） |
 
 <!-- /table -->
 
 直したテスト: `test_split_blocks_when_tree_note_escaped`（[a2ec5860](https://github.com/shuhei1101/mdmark/commit/a2ec5860)）。
 ライブラリ本体の `parseTree` はルートの行が無いツリー（1 行目から `|-- ` で始まる）を「上の行より 2 階層深い」と返し、設計書（MOD-472-353 の手順 6）はそのときコードブロックにするため、テストの入力にルートの行 `src/` を足し、`rule` の期待値に空のルートの行を加えた。
 設計書のテストの行も同じ内容に直した。
+
+レビューの指摘で追加したテスト（[30bc9d4d](https://github.com/shuhei1101/mdmark/commit/30bc9d4d)）: `test_split_inline_marks_when_spaced_equals`・`test_split_inline_marks_when_highlight_unknown_color`・`test_render_block_table_when_detail_row_wrapped`。設計書（MOD-472-366・355）のテストの行にも追加した。
 
 ### 結合テストの実行範囲
 
