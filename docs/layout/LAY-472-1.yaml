@@ -1697,6 +1697,11 @@ entries:
     contents: 直下・`docs/` の直下・`docs/_theme/`・`tools/`・`.claude-plugin/` のファイルの概要文・タグ・関連の一覧（project-index の files の行）
     content_types:
       - file_list
+  - type: file
+    name: mdmark.config.yaml
+    contents: このリポジトリの文書を描く設定（AI Monitor が生成する図のノードの種類・線の種類）
+    content_types:
+      - tool_config
 gitignore:
   - pattern: docs/generated/
     reason: AI Monitor が YAML の設計書から生成する Markdown（生成物）
