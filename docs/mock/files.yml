@@ -1393,6 +1393,22 @@ files:
     visibility: internal
     description: '#677 のモックの C4Dynamic の再生: 番号つきの関係を番号の順の手順にし、#660 の再生の帯で選んだ関係の線と両端の要素のほかを薄くしてその線だけにデータのマーカーを流す処理と見本の Mermaid・補足。このモックの振る舞いを変えるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: refs/700/index.md
+    visibility: internal
+    description: '#700（mdmark の文書を MCP・CLI・ビュワーのボタンで純粋な Markdown に書き出す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/700/assets/markdown-export.js
+    visibility: internal
+    description: '#700 のモックの見本: Markdown のコピーとエクスポートのボタンを、右側の目次の頭に配置する案ごとに状態と頭の並びで並べる処理。このモックの見本の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
+  - path: refs/700/assets/markdown-export.css
+    visibility: internal
+    description: '#700 のモックの案の外観: Markdown のコピーとエクスポートのボタン・メニュー・コピーした後の通知の規則。このモックのボタンの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
+  - path: components/markdown-export/index.html
+    visibility: internal
+    description: '部品『markdown-export』のモック: Markdown のコピーとエクスポートのボタンを右側の目次の頭に配置する案と 1 つのメニューのボタンの案の、ボタンの状態・頭の並び・コピーした後とコピーできなかったときの表示。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
   - path: refs/677/index.md
     visibility: internal
     description: '#677（map の C4Dynamic の関係の再生）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'

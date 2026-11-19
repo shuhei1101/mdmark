@@ -1,0 +1,127 @@
+/* Markdown のコピーとエクスポートのボタンの案（mdmark の層の外） */
+
+/* 案 A のボタンの並び: まとめて開閉するボタンとピン止めの間に置き、ピン止めを右端に残す */
+.mock-md-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+/* アイコンだけのボタン: ピン止めのボタンと同じ大きさ・枠・色にする */
+.mock-md-button {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: calc(var(--mdmark-radius) - 2px);
+  background: transparent;
+  color: var(--mdmark-color-muted);
+  font-size: 0.9375rem;
+  cursor: pointer;
+
+  &:hover,
+  &.is-hover {
+    border-color: var(--mdmark-color-border);
+    color: var(--mdmark-color-text);
+  }
+
+  &:focus-visible,
+  &.is-focus {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 1px;
+  }
+
+  /* コピーした後とコピーできなかったときのアイコンの色 */
+  &[aria-label$="しました"] {
+    color: var(--mdmark-color-link);
+  }
+
+  &[aria-label$="できませんでした"] {
+    color: var(--mdmark-color-callout-caution);
+  }
+
+  /* 案 B のメニューを開いた状態: 選択中の背景で開いていることを示す */
+  &[aria-expanded="true"] {
+    border-color: var(--mdmark-color-border);
+    background: var(--mdmark-color-surface);
+    color: var(--mdmark-color-text);
+  }
+}
+
+/* 案 B のメニューのボタン: 案 A のボタンの並びの位置に置く */
+.mock-md-menu-button {
+  margin-inline-start: auto;
+
+  + .mdmark-side-toc-pin {
+    margin-inline-start: 0;
+  }
+}
+
+/* 案 A のボタンの並びがあるときは、ピン止めを右端に寄せる余白を並びに移す */
+.mock-md-actions + .mdmark-side-toc-pin {
+  margin-inline-start: 0;
+}
+
+.mdmark-side-toc-head .mock-md-actions {
+  margin-inline-start: auto;
+}
+
+/* 案 B の開いたメニュー: 頭の下に重ねて出すボタンの並び（見本では並びの中に置く） */
+.mock-md-menu {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0.25rem 0.375rem;
+  padding: 0.25rem;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg-opaque);
+
+  button {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    border: 0;
+    border-radius: calc(var(--mdmark-radius) - 2px);
+    background: transparent;
+    color: var(--mdmark-color-text);
+    font: inherit;
+    font-size: 0.875rem;
+    text-align: start;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--mdmark-color-surface);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: -2px;
+    }
+  }
+}
+
+/* コピーした後の通知: 頭の下に 1 行で出す */
+.mock-md-status {
+  display: flex;
+  gap: 0.375rem;
+  align-items: center;
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  border-block-end: 1px solid var(--mdmark-color-border);
+  color: var(--mdmark-color-text);
+  font-size: 0.8125rem;
+
+  svg {
+    color: var(--mdmark-color-link);
+  }
+}
+
+/* コピーできなかったときのパネル: 目次の幅に合わせる */
+.mock-md-panel {
+  margin: 0.375rem;
+  width: auto;
+}
