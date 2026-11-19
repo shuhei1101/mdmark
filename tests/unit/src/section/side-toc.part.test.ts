@@ -78,7 +78,11 @@ test("test_render_side_toc_when_without_sections", async () => {
   // 準備
   const { renderSideToc } = await loadSideToc();
   // 実行
-  const html = renderSideToc({ headings: [...HEADINGS], sections: false });
+  const html = renderSideToc({
+    headings: [...HEADINGS],
+    sections: false,
+    markdownButtons: false,
+  });
   // 検証
   expect(html).not.toContain("data-fold-all");
   expect(innerHtml(html, "mdmark-side-toc-head")).toMatch(
