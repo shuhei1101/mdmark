@@ -285,6 +285,11 @@ const estimate = (node: AnyNode, maxWidth: number): Size => {
   let inlineH = 0;
   const flush = () => {
     if (inline > 0) {
+      // 1 行に収まる見積もりの行は、表示する側のフォントの幅の違いで折り返して切れないよう、折り返さず 1 文字の幅を余らせる
+      if (inline + FONT <= inner) {
+        node.attribs.style = `${node.attribs.style ?? ""};white-space:nowrap`;
+        inline += FONT;
+      }
       w = Math.max(w, Math.min(inline, inner));
       h += Math.max(Math.ceil(inline / inner) * LINE, inlineH);
     }
