@@ -36,6 +36,35 @@ const PARAGRAPH = "埋めた配布物から描いた段落。";
 /** map の図の枠 */
 const MAP_FIGURE = 'figure.mdmark-diagram[data-diagram="map"]';
 
+/** map が描けない種類（pie）の mermaid のコードブロック */
+const PIE_MARKDOWN = [
+  "```mermaid",
+  "pie title 比率",
+  '  "A" : 1',
+  '  "B" : 2',
+  "```",
+].join("\n");
+
+/** mermaid の図の枠 */
+const MERMAID_FIGURE = 'figure.mdmark-diagram[data-diagram="mermaid"]';
+
+/** mermaid の図が描かれるまで待つ時間（mermaid の描画を含む） */
+const MERMAID_WAIT_MS = 20_000;
+
+/** 手元の mermaid の ES モジュール（依存の mermaid の dist）。利用側が 1 つのモジュールにまとめて埋めた mermaid の代わりに、テストの前に読み込んでおく */
+const MERMAID_MODULE_URL = "/node_modules/mermaid/dist/mermaid.esm.min.mjs";
+
+/** ページが設定の `mermaid.url`（`mermaid.esm.min.mjs`）か、ページと別のオリジンへ要求した回数を数える。手元の mermaid が図の種類ごとに読み込む分割したファイル（`dist/chunks/`）は、利用側が 1 つにまとめた mermaid には無いため数えない */
+const mermaidUrlRequests = (): number =>
+  performance
+    .getEntriesByType("resource")
+    .map((entry) => new URL(entry.name))
+    .filter(
+      (url) =>
+        url.pathname.endsWith("/mermaid.esm.min.mjs") ||
+        url.origin !== location.origin,
+    ).length;
+
 const elements: HTMLElement[] = [];
 const handles: MountHandle[] = [];
 
@@ -80,7 +109,7 @@ const createElement = (): HTMLElement => {
 /** `console.error` の呼び出しに、部品の名前と条件に合うエラーがあるか */
 const reportedError = (
   calls: unknown[][],
-  name: PartName,
+  name: PartName | "mermaid",
   matches: (error: Error) => boolean,
 ): boolean =>
   calls.some(
@@ -269,4 +298,60 @@ test("test_error_when_args_invalid", async () => {
   await vi.waitFor(() => expect(el.querySelector(MAP_FIGURE)).not.toBeNull(), {
     timeout: MAP_WAIT_MS,
   });
+});
+
+// 指定した関数で mermaid を読み込み、mermaid.url へ要求せずに mermaid の図を描く（正常系）
+test("test_normal_when_mermaid_set", async () => {
+  // 準備
+  const mdmark = await importAsBlob<Built>("index.js");
+  const mermaid = (await import(
+    /* @vite-ignore */ MERMAID_MODULE_URL
+  )) as PartModule;
+  const loader = vi.fn(async () => mermaid);
+  performance.clearResourceTimings();
+  const el = createElement();
+  // 実行
+  mdmark.setPartModuleLoader("mermaid", loader);
+  handles.push(
+    mdmark.mount(el, { markdown: `${PIE_MARKDOWN}\n\n${PARAGRAPH}\n` }),
+  );
+  // 検証
+  await vi.waitFor(
+    () => expect(el.querySelector(MERMAID_FIGURE)).not.toBeNull(),
+    { timeout: MERMAID_WAIT_MS },
+  );
+  expect(el.querySelector(`${MERMAID_FIGURE} svg`)).not.toBeNull();
+  expect(loader).toHaveBeenCalledTimes(1);
+  expect(mermaidUrlRequests()).toBe(0);
+});
+
+// mermaid の loader が拒否するか構造が合わないときは、mermaid を読み込めないときと同じく描き、mermaid.url へ要求しない（異常系）
+test("test_error_when_mermaid_loader_fails", async () => {
+  const loaders = [
+    () => Promise.reject(new Error("missing")),
+    async () => ({ default: {} }),
+  ];
+  for (const loader of loaders) {
+    // 準備: ページごとに別の配布物を読み込む
+    const mdmark = await importAsBlob<Built>("index.js");
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    performance.clearResourceTimings();
+    const el = createElement();
+    // 実行
+    mdmark.setPartModuleLoader("mermaid", loader);
+    mountWithoutThrow(mdmark, el, `${PIE_MARKDOWN}\n\n${PARAGRAPH}\n`);
+    // 検証
+    expect(el.textContent).toContain(PARAGRAPH);
+    await vi.waitFor(() => {
+      const block = el.querySelector<HTMLElement>("[data-mdmark-mermaid]");
+      expect(block?.hidden).toBe(false);
+      expect(
+        block?.previousElementSibling?.classList.contains("mdmark-notice"),
+      ).toBe(true);
+    });
+    expect(reportedError(error.mock.calls, "mermaid", () => true)).toBe(true);
+    expect(el.querySelector(MERMAID_FIGURE)).toBeNull();
+    expect(mermaidUrlRequests()).toBe(0);
+    error.mockRestore();
+  }
 });
