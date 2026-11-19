@@ -63,7 +63,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T18:56:41.469308+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T19:26:01.734141+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 使い方・リファレンスにノートのノードの大きさの記述が無く（ガイドの『Mermaidと補足で図を描く』は note for がノートのノードになることだけを書く）、直すページが無いため対象外
