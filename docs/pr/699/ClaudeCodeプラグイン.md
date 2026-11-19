@@ -16,9 +16,9 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | プラグインの配置先 | リポジトリの直下に mdmark-style のフォルダを作り、`marketplace.json` の `plugins` に行を追加する。`plugin.json`・`plugins[]` に `version` を持たせない | フォルダ名はモジュール構成設計で決める |
-| 返答の描き換え | `ui.render` の `AssistantMessage` で、返答の Markdown を解析して表・見出し・注意書き・コードを共通スタイルの部品の木にする | 部品の木の上限（20,000 ノード・深さ 32・100,000 文字）を超えるときは元の描画に任せる |
+| 返答の描き換え | `ui.render` の `AssistantMessage` で、返答の Markdown を解析して表・見出し・注意書き・コードを共通スタイルの部品の木にし、ほかのブロック（段落・箇条書き）は `Markdown` 部品で Claude Code の標準の返答と同じ描き方にする | 部品の木の上限（20,000 ノード・深さ 32・100,000 文字）を超えるときは元の描画に任せる |
 | マーカー | 返答の `<!-- ... -->` の mdmark のマーカーを参照して描き方（表の種類・注意書き 等）に使用し、マーカーの行と行内のマーカーを画面に出さない | 対応するマーカーの一覧は単一ユースケース設計で決める。`AssistantMessage.text` は画面が隠す部分を除いた本文のため、マーカーが残って届くかを PoC で確認する |
-| 用語のマーカー | `AssistantMessage`・`UserMessage` の本文の用語に下線を付け、hover で開くカードと、本文の後ろの脚注を出す | カードと脚注の状態と引数は部品設計・画面設計で決める |
+| 用語のマーカー | `AssistantMessage`・`UserMessage` の本文の用語に下線を付け、hover で開くカードと、本文の後ろの脚注を出す。カードは背景色で後ろの行を隠し、枠線が欠けない位置に出す。発言は標準の描画の背景の帯を残す（`next(e)` の描画を包むか、同じ背景色で描く） | カードと脚注の状態と引数は部品設計・画面設計で決める |
 | マーカーの記載方法の注入 | mod の `classic.SessionStart` の結果の `additionalContext` で、マーカーの記載方法の短い説明を注入する。SessionStart は起動・再開・`/clear`・圧縮の後に発火するため、発火ごとに 1 回注入する（`/clear`・圧縮でモデルの文脈から消えた説明を入れ直す） | `inject_marker_guide: false` で止める。`session.start` の戻り値は文脈を変えないため使用しない |
 | 設定 | `MDMARK_STYLE_CONFIG` が指す `settings.yaml`（無ければ `~/.config/mdmark-style/settings.yaml`）の `global`・`projects` を、knowledge の規約『Claude プラグインルール』の `## 設定ファイル` のとおりに重ねて参照する | 設定の設計書は新規の `docs/config/CFG-472-4.yaml` |
 | 描けない部品 | 図（mermaid・map）・埋め込んだ HTML は描き換えない | - |
@@ -43,7 +43,7 @@ Claude Code 2.1.328 のターミナル版（tmux の 160 列）に `--plugin-dir
 | マーカーを画面に出さない | `<!--` の文字が画面に 0 件 | ✅ 0 件 | 同上 | 同上 |
 | 発言の描き換え | `UserMessage` の固定の 1 単語に下線が付く | ✅ 下線（`ESC[4m`） | 同上 | 脚注の行も描かれる |
 | hover のカード（tmux） | `ESC[?1003h` が有効で、用語の座標への移動でカードが出て、範囲外の座標への移動で消える | ✅ 出る・消える | 同上 | `evidence/mouse-modes.txt`・`hover-on.txt`・`hover-off.txt` |
-| hover のカード（利用者の端末） | WSL の Windows Terminal・VS Code の統合ターミナルでカードが出る | 未確認 | 同上 | 利用者の手元の確認を、設計の確認事項と合わせて依頼する |
+| hover のカード（利用者の端末） | WSL の Windows Terminal・VS Code の統合ターミナルでカードが出る | ✅ VS Code の統合ターミナルで出る（Windows Terminal は未確認） | 同上 | 利用者が確認した（[確認の結果](https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626225053)）。カードの上の枠線が欠け、後ろの行と透けて重なる。発言の背景の帯と、返答の太字・箇条書き・行内のコードが消える |
 | マーカーの記載方法の注入 | `classic.SessionStart` の `additionalContext` の固定の単語を回答でき、`/clear` の後も回答できる | ✅ 2 回とも回答 | 同上 | SessionStart は `startup` と `clear` で 1 回ずつ発火（`evidence/session-start.txt`） |
 | 元の描画への切り替え | mod が例外を投げたとき、元の描画で返答が出る | ✅ 元の描画で出る | 同上 | 画面に `ui.render hook skipped: threw Error` の 1 行が出る（`--plugin-dir` で読み込んだとき） |
 
