@@ -17060,6 +17060,37 @@ test("test_normal_when_map_items_selected", async () => {
   ).toEqual(["marker", "mount"]);
   find<HTMLButtonElement>(seq(), '[data-tool="reset"]').click();
   expect(seq().querySelectorAll(".is-selected")).toHaveLength(0);
+  // 実行: 別の参加者のライフラインにポインターを合わせる
+  const lifelineHit = find(seq(), '.map-lifeline-hit[data-lifeline="marker"]');
+  lifelineHit.dispatchEvent(
+    new PointerEvent("pointerover", { bubbles: true, pointerType: "mouse" }),
+  );
+  // 検証: その参加者を選んだときと同じ要素が強調され、選択は変わらない
+  const lifeline = (id: string) =>
+    find(seq(), `.mdmark-diagram-lifeline[data-lifeline="${id}"]`);
+  expect(mapDimmed(lifeline("marker"))).toBe(false);
+  expect(mapDimmed(lifeline("mount"))).toBe(true);
+  expect(mapDimmed(find(seq(), '.mdmark-diagram-wire[data-message="1"]'))).toBe(
+    false,
+  );
+  expect(mapDimmed(find(seq(), '.mdmark-diagram-wire[data-message="0"]'))).toBe(
+    true,
+  );
+  expect(seq().querySelectorAll(".map-packets-hover").length).toBeGreaterThan(
+    0,
+  );
+  expect(seq().querySelectorAll(".is-selected")).toHaveLength(0);
+  expect(seqReset()).toBe(true);
+  // 実行・検証: 図の外へ動かすと元の表示に戻る
+  lifelineHit.dispatchEvent(
+    new PointerEvent("pointerout", {
+      bubbles: true,
+      pointerType: "mouse",
+      relatedTarget: document.body,
+    }),
+  );
+  expect(seq().querySelectorAll(".map-dim")).toHaveLength(0);
+  expect(seq().querySelectorAll(".map-packets-hover")).toHaveLength(0);
 });
 
 // map のノード・グループ・線を動かす（正常系）

@@ -101,6 +101,40 @@ test("test_default", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+// 参加者ごとに、ライフラインと同じ位置にポインターを合わせられる幅の判定の線を描く（Default）
+test("test_lifeline_hits", async () => {
+  // 準備・実行
+  const page = await openSequence("default");
+  // 検証
+  const hits = await page
+    .locator("line.map-lifeline-hit")
+    .evaluateAll((lines) =>
+      lines.map((line) => {
+        const style = getComputedStyle(line);
+        const lifeline = line.ownerSVGElement?.querySelector(
+          `.mdmark-diagram-lifeline[data-lifeline="${line.getAttribute("data-lifeline")}"]`,
+        );
+        return {
+          id: line.getAttribute("data-lifeline"),
+          width: style.strokeWidth,
+          events: style.pointerEvents,
+          stroke: style.stroke,
+          x: line.getAttribute("x1"),
+          lifelineX: lifeline?.getAttribute("x1"),
+        };
+      }),
+    );
+  expect(hits.map((hit) => hit.id).sort()).toEqual(
+    (await participantOrder(page)).sort(),
+  );
+  for (const hit of hits) {
+    expect(hit.width).toBe("14px");
+    expect(hit.events).toBe("stroke");
+    expect(hit.stroke).toBe("rgba(0, 0, 0, 0)");
+    expect(hit.x).toBe(hit.lifelineX);
+  }
+});
+
 // 全ての矢印の種類を、点線・塗った矢じり・× ・非同期の開いた矢じり・両向きの矢じりで描き、ラベルの頭に番号を付ける（Arrows）
 test("test_arrows", async () => {
   // 準備・実行
