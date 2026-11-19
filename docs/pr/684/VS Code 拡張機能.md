@@ -52,6 +52,7 @@
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
 | `tests/unit/vscode/src/version.test.ts` | `test_decide_version_when_develop` | 新規 | ✅（実装の前から pass） | `decideVersion` が `latest` 以外をそのまま返却する（[7fb28e4d](https://github.com/shuhei1101/mdmark/commit/7fb28e4d)）<br>`テスト結果/20261119093735_1297cb8b_単体テスト.log` |
+| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | 307 ファイル pass<br>`テスト結果/20261119094827_195cdb0b_単体テスト.log` |
 
 ### 実装中に直したテスト
 
