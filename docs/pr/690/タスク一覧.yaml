@@ -50,10 +50,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T05:03:13.285012+00:00'
   - process: インターフェース定義設計
-    status: skipped
-    reason: IF-472-35 の制約は既にクラス図の click・link を map のノードのリンクと同じ描き方にしている
+    status: todo
     updated_by: planner
-    updated_at: '2026-11-19T05:03:13.285012+00:00'
+    updated_at: '2026-11-19T05:10:20.362571+00:00'
+    note: 確認ログの決着（推奨案 B）で、IF-472-35 に純粋な Mermaid のクラス図の click のリンクの結合テストのフローを追加する
   - process: 部品設計
     status: skipped
     reason: CMP-596-1 は links の引数とリンクを持つクラスの状態を既に持つ
