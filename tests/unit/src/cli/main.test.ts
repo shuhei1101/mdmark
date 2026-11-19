@@ -101,7 +101,7 @@ test("test_main_when_upgrade", async () => {
 // export-markdown を runExportMarkdown に振り分ける（正常系）
 test("test_main_when_export_markdown", async () => {
   // 準備
-  const runExportMarkdown = vi.fn(async () => 0 as const);
+  const runExportMarkdown = vi.fn(async (_options: unknown) => 0 as const);
   vi.resetModules();
   vi.doMock("../../../../src/cli/export-markdown.ts", () => ({
     runExportMarkdown,
