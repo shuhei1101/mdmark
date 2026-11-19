@@ -1,0 +1,55 @@
+docs:
+  - page: docs/mock/refs/445/assets/map-mock.css
+    new: false
+    change: .map-dim・.map-focus の強調しない要素・.map-faded の薄め方を、文字のコントラスト 4.5:1 以上を保つ形に変える
+    status: todo
+  - page: docs/mock/refs/531/assets/er-state.css
+    new: false
+    change: ER 図・状態遷移図の .map-dim の薄め方を map-mock.css と同じ形に変える
+    status: todo
+  - page: docs/mock/refs/596/assets/class-arch-c4.css
+    new: false
+    change: クラス図の .map-dim の薄め方を map-mock.css と同じ形に変える
+    status: todo
+  - page: docs/mock/refs/449/assets/table-resize.js
+    new: false
+    change: 列の幅のつまみの aria-valuemax を、aria-valuemin・aria-valuenow を下回らない値にする
+    status: todo
+  - page: docs/component/CMP-472-5.ts.yaml
+    new: false
+    change: 強調しない要素・中へ入ったグループの外の薄め方と CSS 変数 --mdmark-map-dim-opacity の記載を、文字のコントラスト 4.5:1 以上を保つ形に合わせる
+    status: todo
+  - page: docs/component/CMP-472-4.ts.yaml
+    new: false
+    change: シーケンス図で map-dim を付けた要素の薄め方を CMP-472-5 に合わせる
+    status: todo
+  - page: docs/component/CMP-472-61.ts.yaml
+    new: false
+    change: 列の幅のつまみの aria-valuemax を、上限・今の幅・最小の幅から決める形に変える
+    status: todo
+  - page: docs/interface/IF-472-35.ts.yaml
+    new: false
+    change: 列の幅のつまみの aria-valuemax の記載と結合テストの期待、map の図で薄くした要素のコントラストの記載を合わせる
+    status: todo
+  - page: docs/module/MOD-472-226.ts.yaml
+    new: false
+    change: updateValues が aria-valuemin <= aria-valuenow <= aria-valuemax を満たす値を入れる形に変え、単体テストのケースを足す
+    status: todo
+  - page: docs/module/MOD-472-228.ts.yaml
+    new: false
+    change: ピン止めとの組み合わせの期待の aria-valuemax を、新しい決め方に合わせる
+    status: todo
+  - page: docs/screen/SCR-472-4.ts.yaml
+    new: false
+    change: 列の幅のつまみの制約の aria-valuemax の記載を合わせる
+    status: todo
+scope_out:
+  - item: 図の枠のリサイズハンドル（diagram-resize.interact.ts）と案内の帯の手順のバーの aria-valuemin・aria-valuenow・aria-valuemax の大小
+    reason: '同じ ARIA の値の型だが、子 Issue #686 の対象は表の列の幅のつまみだけ。不正な組み合わせになるかは設計で確かめ、該当すれば起票するかをレビューで確定する'
+    plan: to_file
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 列の幅のつまみが読み上げる幅の範囲で、今の幅が最小の幅以上・上限以下に収まるよう、上限の決め方を変える
+    depends_on: []
