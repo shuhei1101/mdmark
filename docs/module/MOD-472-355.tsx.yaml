@@ -156,6 +156,12 @@ functions:
         condition: セルに行内のコード `badge:green:完了` を持つ 2 列の表と、行内のコード `kbd:Ctrl+C` を含む見出し、`parts.inline` が真
         mock: '`h`'
         expected: セルに `green` の背景色の ` 完了 ` の Text があり、その列の幅が ` 完了 ` の表示幅で数えられ、見出しに太字の `[Ctrl]` の Text がある
+      - name: test_render_block_table_when_detail_row_wrapped
+        case: 正常
+        summary: 折り返した行にも行の詳細の Button を描く
+        condition: '`details` が `row` 0 で、その行の先頭のセルが折り返される `columns` が 24 の表。Button の `onPress` を呼んでからもう一度描く'
+        mock: '`h`・`$.ui.invalidate`'
+        expected: 1 回目に `[ ▸ ]` の Button があって詳細が無く、2 回目に詳細の文字がある
     callees:
       - MOD-472-354#functions[fitColumns]
       - MOD-472-354#functions[wrapCell]

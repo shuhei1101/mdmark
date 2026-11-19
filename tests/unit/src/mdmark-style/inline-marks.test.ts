@@ -100,3 +100,27 @@ test("test_inline_plain_text", async () => {
   // 検証
   expect(text).toBe(" 完了  と [Ctrl]+[C]");
 });
+
+// 空白で囲んだ `==` は蛍光ペンにしない（正常系）
+test("test_split_inline_marks_when_spaced_equals", async () => {
+  // 準備
+  const { splitInlineMarks } = await loadInline();
+  // 実行
+  const segments = splitInlineMarks("a == b == c");
+  // 検証
+  expect(segments).toEqual([
+    expect.objectContaining({ kind: "text", text: "a == b == c" }),
+  ]);
+});
+
+// 知らない色の名前の蛍光ペンは黄色にする（正常系）
+test("test_split_inline_marks_when_highlight_unknown_color", async () => {
+  // 準備
+  const { splitInlineMarks } = await loadInline();
+  // 実行
+  const segments = splitInlineMarks("==x=={color=pink}");
+  // 検証
+  expect(segments).toEqual([
+    expect.objectContaining({ kind: "highlight", text: "x", color: "yellow" }),
+  ]);
+});

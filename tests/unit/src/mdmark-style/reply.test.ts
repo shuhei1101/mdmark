@@ -502,3 +502,38 @@ test("test_render_block_table_when_inline_marks", async () => {
   );
   expect(keys).toHaveLength(1);
 });
+
+// 折り返した行にも行の詳細の Button を描く（正常系）
+test("test_render_block_table_when_detail_row_wrapped", async () => {
+  // 準備
+  const { renderBlock } = await loadReply();
+  const $ = createFakeEngine();
+  const block = tableOf([["word ".repeat(8).trim(), "10"]], {
+    details: [
+      {
+        row: 0,
+        body: [
+          { kind: "markdown" as const, line: 5, markdown: "折り返しの詳細" },
+        ],
+      },
+    ],
+  });
+  const context = contextOf($, { columns: 24, blockKey: "r1:wrapped" });
+  // 実行
+  const closed = renderBlock({ block, context });
+  const [button] = findNodes(
+    closed,
+    (n) => n.type === "Button" && textOf(n).includes("[ ▸ ]"),
+  );
+  await pressButton(button);
+  const opened = renderBlock({ block, context });
+  // 検証
+  expect(
+    findNodes(closed, (n) => n.type === "Text").filter((n) =>
+      textOf(n).includes("word"),
+    ).length,
+  ).toBeGreaterThan(1);
+  expect(button).toBeDefined();
+  expect(textOf(closed)).not.toContain("折り返しの詳細");
+  expect(textOf(opened)).toContain("折り返しの詳細");
+});
