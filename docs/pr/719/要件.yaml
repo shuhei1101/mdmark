@@ -1,0 +1,10 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: map の構成図・状態遷移図を描く流れと期待結果は変わらない。折り返したノードの名前がノードに収まるようになるだけ
+    depends_on: []
+scope_out:
+  - item: 'map のノードの右の余白（src/index.css の padding-right: 28px）そのものを変えること'
+    reason: 要望は見積もりを描画に合わせることで、右上の i と開閉の山形の置き場所は変えない
+    plan: none
