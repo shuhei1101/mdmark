@@ -1,0 +1,87 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/文書をMarkdownに書き出す.yaml
+    impact: new
+    detail: 文書の作成者が CLI で mdmark の文書を純粋な Markdown に書き出し、図を Mermaid と SVG の画像にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/ビュワーからMarkdownでコピー・エクスポートする.yaml
+    impact: new
+    detail: 読者が描いた文書とまとめた HTML のボタンで、純粋な Markdown をクリップボードへコピーし、ファイルに保存する
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/Markdownに書き出してmdmarkの無い表示で読む.yaml
+    impact: new
+    detail: 文書の作成者が書き出した Markdown を、GitHub などの mdmark の無い表示で、記法の文字が見えずに図を含めて読む
+    depends_on:
+      - docs/scenario/文書をMarkdownに書き出す.yaml
+      - docs/scenario/ビュワーからMarkdownでコピー・エクスポートする.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: changed
+    detail: Claude Code から Markdown への書き出しを呼ぶ流れを追加する
+    depends_on:
+      - docs/scenario/文書をMarkdownに書き出す.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-49.yaml
+    impact: changed
+    detail: 拡張が書き出しの形を持つときに、その形で Markdown に書き出す
+    depends_on:
+      - docs/scenario/文書をMarkdownに書き出す.yaml
+  - kind: composite
+    scenario: docs/scenario/SC-472-91.yaml
+    impact: following
+    detail: MCP のツールで呼ぶ書き出しに Markdown を追加する
+    depends_on:
+      - docs/scenario/SC-472-3.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: run_only
+    detail: 設定とアセットの読み込みを共有しても HTML への書き出しが変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-57.yaml
+    impact: run_only
+    detail: 記法の読み取りを共有しても HTML 文字列が変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-13.yaml
+    impact: run_only
+    detail: まとめた HTML にボタンを追加しても文書の行き来が変わらない
+    depends_on: []
+docs:
+  - page: docs/guide/CLI.mark.md
+    new: false
+    change: Markdown に書き出すコマンドの引数・出力・終了コードを追加する
+    status: todo
+  - page: docs/guide/MCP.mark.md
+    new: false
+    change: Markdown に書き出すツールの引数・戻り値・エラーを追加する
+    status: todo
+  - page: docs/guide/API.mark.md
+    new: false
+    change: 純粋な Markdown に変換する公開関数と、registerExtension の書き出しのフックを追加する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 純粋な Markdown・書き出しのフックの用語を追加する
+    status: todo
+  - page: docs/guide/書き出す-文書を書き出す.mark.md
+    new: false
+    change: Markdown に書き出す手順と、記法ごとの書き出しの形を追加する
+    status: todo
+  - page: docs/guide/ClaudeCodeで使用する-MCPのツールを使用する.md
+    new: false
+    change: Claude Code から Markdown に書き出す手順を追加する
+    status: todo
+  - page: docs/guide/コアコンセプト-文書を描く仕組み.md
+    new: false
+    change: 同じ記法の読み取りから HTML と純粋な Markdown を作る流れを追加する
+    status: todo
+scope_out:
+  - item: VS Code 拡張機能のコマンドからの Markdown への書き出し
+    reason: 要望は MCP・CLI・ビュワーのボタンに限る。プレビューは mount で描くため、ボタンが出るかは画面設計で確かめる
+    plan: none
+  - item: 複数の文書を 1 つの Markdown にまとめる書き出し（build の Markdown 版）
+    reason: 要望は 1 文書の書き出しに限る
+    plan: none
