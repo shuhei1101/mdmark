@@ -16,8 +16,8 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-50.yaml
-    impact: run_only
-    detail: 拡張機能の定義の設定の値の受け付けを変えるため、拡張機能の配布物を作って入れられることを確認する
+    impact: changed
+    detail: 拡張機能の定義の設定の値の受け付けを変えるため、拡張機能のバージョンを 0.2.0 に上げ、配布物を作って公開するバージョンを 0.2.0 にする
     depends_on: []
 docs:
   - page: docs/guide/VSCode拡張機能.mark.md

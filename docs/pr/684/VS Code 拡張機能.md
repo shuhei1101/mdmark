@@ -39,9 +39,22 @@
 | 単一ユースケース設計 | `05a79a26..a8b140e6` | SC-472-10 に develop を読み込むケースを追加 |
 | インターフェース定義設計 | `3ad08f5f..cab60972` | IF-472-22 に develop を読み込むフロー、CFG-472-2 の `mdmark.version` に `develop` を追加 |
 | モジュール構成設計 | `c1b6d177..8ec11ad5` | MOD-472-22 に develop の単体テスト、MOD-472-84 の `mdmark.version` の `pattern` に `develop` を追加 |
+| 実装中の設計の修正 | `a34accef..4806fa23` | 規約『VS Code 拡張機能の配布』に従い `package.json` の `contributes` を変えたため `version` を 0.2.0 に上げ、IF-472-23・SC-472-50 のバージョンを合わせた |
 
 ## テスト結果
 
 ### ドキュメント修正
 
 なし（ガイド 2 ページと `vscode/README.md` の文書だけの修正で、規約『V字モデル』の対応表で対応する単体・結合テストが無い）
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/vscode/src/version.test.ts` | `test_decide_version_when_develop` | 新規 | ✅（実装の前から pass） | `decideVersion` が `latest` 以外をそのまま返却する（[7fb28e4d](https://github.com/shuhei1101/mdmark/commit/7fb28e4d)）<br>`テスト結果/20261119093735_1297cb8b_単体テスト.log` |
+
+### 実装中に直したテスト
+
+| ファイル | 理由 |
+| --- | --- |
+| `vscode/tests/integration/release.test.ts` | 拡張機能のバージョンを 0.2.0 に上げたため、期待値のバージョンを 0.2.0 に、バージョンが違うときの確認のタグを `vscode-v0.3.0` にした（[a34accef](https://github.com/shuhei1101/mdmark/commit/a34accef)） |
