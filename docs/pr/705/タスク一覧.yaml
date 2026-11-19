@@ -85,4 +85,7 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T12:02:26.089303+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
+    note: mount.browser.test.ts に 2 件追加・1 件変更、table.story.test.ts に 1 件追加。表の範囲の 3 ファイルで全 pass
+    updated_by: planner
+    updated_at: '2026-11-19T12:36:55.209473+00:00'
