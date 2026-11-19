@@ -150,6 +150,60 @@ settings:
     reload: immediate
     status: planned
     visibility: user
+  - key: global.parts.row_detail
+    title: 行の詳細の部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、表の行の開閉の Button を描かず、詳細の中身を表の後ろに Claude Code の Markdown 部品の描き方で描く'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.steps
+    title: ステップの部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、ステップの番号付きリストを Claude Code の Markdown 部品の描き方に任せる'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.tree
+    title: ファイルツリーの部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、言語 `tree` のコードブロックをコードブロックとして描く（`parts.code` が `false` なら Claude Code の Markdown 部品の描き方）'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.inline
+    title: 行内の記法の部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、バッジ・文字の色・蛍光ペン・キーの記法を描き換えず、記載した文字のまま Claude Code の Markdown 部品の描き方で描く'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.stack
+    title: 縦に並べる範囲の部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、タブ・段組み・カードの格子・wide・ビューの範囲と言語 `csv` のコードブロックを描き換えず、マーカーの行を除いた中身を Claude Code の Markdown 部品の描き方で描く'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.figure
+    title: 図と表の番号
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、番号を付けた表の上に `表 {番号}` を描かない'
+    reload: immediate
+    status: planned
+    visibility: user
 notes:
   読み直し: 設定ファイルと用語集は `ui.render`・`classic.SessionStart` のたびに読み直す。読んだ値をプロセスの中に持ち越さないため、反映は `immediate`（次に描く返答・発言から効く）
 tags:
