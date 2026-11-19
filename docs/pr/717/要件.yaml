@@ -1,0 +1,7 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: map のクラス図を描く流れと期待結果は変わらない。折り返したノートの文がノードに収まるようになるだけ
+    depends_on: []
+scope_out: []
