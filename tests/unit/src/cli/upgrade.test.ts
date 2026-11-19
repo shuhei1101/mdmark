@@ -888,3 +888,19 @@ test("test_run_upgrade_when_document_outside_config_dir", async () => {
   );
   expect(existsSync(join(work, ".mdmark"))).toBe(false);
 });
+
+// include がフォルダに該当してもファイルだけを集める（正常系）
+test("test_collect_script_documents_when_include_matches_folder", async () => {
+  // 準備
+  const { collectScriptDocuments } = await loadModule();
+  const work = await createTempDir();
+  await writeFiles(work, {
+    "docs/a.md": "# A\n",
+    "docs/sub/c.md": "# C\n",
+  });
+  const raw = { build: { include: ["docs/**"] } };
+  // 実行
+  const paths = await collectScriptDocuments(work, raw);
+  // 検証
+  expect(relativeSorted(work, paths)).toEqual(["docs/a.md", "docs/sub/c.md"]);
+});
