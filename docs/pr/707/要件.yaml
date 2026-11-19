@@ -55,7 +55,7 @@ docs:
     updated_at: '2026-11-19T13:56:15.117886+00:00'
   - page: docs/module/MOD-472-228.ts.yaml
     new: false
-    change: 変更は無い（ピン止めとの組み合わせの期待は、留めた列が見える幅に収まっている状態か、`clampColumnWidth` で上限以下に収めた状態で、上限が今の幅以上のため補う分岐を通らない）
+    change: 単体テスト test_attach_tables_when_resized_with_unpinned の期待を、今の幅が上限より大きい 3 列目の aria-valuemax が今の幅と同じになる形に合わせる
     status: done
     updated_by: planner
     updated_at: '2026-11-19T14:00:40.140318+00:00'
