@@ -167,7 +167,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 本文の段落が表示されている
-      - mermaid のコードブロックがコードブロックのまま表示されている
+      - mermaid のコードブロックの場所に、読み込めなかった旨の通知ブロックとコードブロックが表示されている
       - ページが外部へ要求した URL は設定の `mermaid.url` の 1 件だけ
       - ブラウザのコンソールに mermaid を読み込めなかったエラーが出る
     test: test_error_when_mermaid_not_embedded
