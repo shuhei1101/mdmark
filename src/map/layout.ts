@@ -164,7 +164,7 @@ const isWide = (char: string): boolean => {
 };
 
 /** 全角を文字の大きさ、半角を 0.6 倍の幅として、幅に収まるように行に分ける */
-const splitLines = (
+export const splitLines = (
   text: string,
   fontSize: number,
   width: number,
@@ -189,7 +189,7 @@ const splitLines = (
 };
 
 /** 文字の見積もりの幅 */
-const textWidth = (text: string, fontSize: number): number =>
+export const textWidth = (text: string, fontSize: number): number =>
   Math.max(
     ...text
       .split("\n")
@@ -205,6 +205,12 @@ const textWidth = (text: string, fontSize: number): number =>
 export const wrapLabel = (text: string, width: number): string[] =>
   splitLines(text, LABEL_METRICS.nameSize, width - LABEL_METRICS.padX * 2);
 
+/** 種類の行と名前の行の数から見積もるノードの高さ */
+export const leafHeight = (lines: number): number => {
+  const { nameSize, kindSize, lineHeight, padY } = LABEL_METRICS;
+  return Math.ceil((kindSize + lines * nameSize) * lineHeight) + padY * 2 + 16;
+};
+
 const sizeLeaf = (
   label: string,
   fit: {
@@ -214,7 +220,7 @@ const sizeLeaf = (
   },
 ): { w: number; h: number; lines: string[] } => {
   const { maxWidth, width, size } = fit;
-  const { nameSize, kindSize, lineHeight, padX, padY } = LABEL_METRICS;
+  const { nameSize, padX } = LABEL_METRICS;
   if (size)
     return {
       w: size.w,
@@ -231,10 +237,7 @@ const sizeLeaf = (
       ),
     );
   const lines = splitLines(label, nameSize, w - padX * 2);
-  const count = lines.length;
-  const h =
-    Math.ceil((kindSize + count * nameSize) * lineHeight) + padY * 2 + 16;
-  return { w, h, lines };
+  return { w, h: leafHeight(lines.length), lines };
 };
 
 /** 描く木を作るときに繰り返し引く値 */
