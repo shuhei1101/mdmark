@@ -38,18 +38,39 @@ function timelineSubject(table: HTMLTableElement): HTMLElement {
 /** 縦にスクロールする要素として扱う `overflow-y` の計算値 */
 const SCROLLING_OVERFLOW = new Set(["auto", "scroll", "hidden"]);
 
-/** 留める要素の親から祖先へたどって、最初に縦にスクロールする要素を返却する。無ければ画面（`null`） */
-function scrollContainerOf(subject: HTMLElement): HTMLElement | null {
+/** 留める要素の親から祖先へたどって、最初に条件を満たす要素を返却する。無ければ画面（`null`） */
+function closestAncestor(
+  subject: HTMLElement,
+  matches: (element: HTMLElement) => boolean,
+): HTMLElement | null {
   for (
     let element = subject.parentElement;
     element !== null && element !== document.body;
     element = element.parentElement
   ) {
-    if (SCROLLING_OVERFLOW.has(getComputedStyle(element).overflowY)) {
+    if (matches(element)) {
       return element;
     }
   }
   return null;
+}
+
+/** スクロールする場所: 縦にはみ出していて縦にスクロールする最も近い祖先（横にだけスクロールする要素は選ばない）。無ければ画面（`null`） */
+function scrollContainerOf(subject: HTMLElement): HTMLElement | null {
+  return closestAncestor(
+    subject,
+    (element) =>
+      SCROLLING_OVERFLOW.has(getComputedStyle(element).overflowY) &&
+      element.scrollHeight > element.clientHeight,
+  );
+}
+
+/** `view-timeline` が従う、最も近いスクロールコンテナ。無ければ画面（`null`） */
+function timelineContainerOf(subject: HTMLElement): HTMLElement | null {
+  return closestAncestor(subject, (element) => {
+    const overflow = getComputedStyle(element).overflowY;
+    return overflow !== "visible" && overflow !== "clip";
+  });
 }
 
 /** スクロールする場所の上端と下端の、画面の中の位置 */
@@ -78,6 +99,18 @@ function measure(table: HTMLTableElement) {
     body,
     foot,
   };
+}
+
+/** 表ごとの留め方 */
+type StickyMode = "timeline" | "script";
+
+/** 留め方の CSS 変数を表から取り除く */
+function clearVariables(table: HTMLTableElement, mode: StickyMode): void {
+  for (const name of mode === "timeline"
+    ? TIMELINE_VARIABLES
+    : SCRIPT_VARIABLES) {
+    table.style.removeProperty(name);
+  }
 }
 
 /** 受け取りの `px` の文字にする */
@@ -139,39 +172,48 @@ function updateShift(table: HTMLTableElement): void {
 
 /** `root` の中の本文の行を持つ全ての表の見出し行をスクロールする場所の上端（`--mdmark-sticky-top`）に、集計の行をその下端に、表がスクロールする場所にかかっている間だけ留める。受け取りと `ResizeObserver` を削除し、属性と CSS 変数を取り除く関数を返却する */
 export function attachStickyRows(root: HTMLElement): () => void {
-  const timeline = CSS.supports(TIMELINE_SUPPORT);
-  const update = timeline ? updateTimelineRange : updateShift;
-  const variables = timeline ? TIMELINE_VARIABLES : SCRIPT_VARIABLES;
+  const timelineSupported = CSS.supports(TIMELINE_SUPPORT);
   const tables = [...root.querySelectorAll<HTMLTableElement>("table")].filter(
     (table) => table.tHead !== null && (table.tBodies[0]?.rows.length ?? 0) > 0,
   );
-  const subjects = tables.map(timelineSubject);
-  for (const subject of subjects) {
-    subject.setAttribute(
-      STICKY_MODE_ATTRIBUTE,
-      timeline ? "timeline" : "script",
-    );
-  }
+  /** 表ごとの留め方。スクロールする場所が変わると選び直す */
+  const modes = new Map<HTMLTableElement, StickyMode>();
+  const observer = new ResizeObserver(() => updateAll());
+  const observed = new Set<Element>();
+  /** 表の留め方とスクロールする場所を選び直し、留め方が変わった表は前の留め方の CSS 変数を取り除く */
+  const chooseMode = (table: HTMLTableElement): StickyMode => {
+    const subject = timelineSubject(table);
+    const container = scrollContainerOf(subject);
+    if (container !== null && !observed.has(container)) {
+      // 区画の高さが変わると留める下端が変わるため、スクロールする場所の要素も監視する
+      observed.add(container);
+      observer.observe(container);
+    }
+    const mode: StickyMode =
+      timelineSupported && timelineContainerOf(subject) === container
+        ? "timeline"
+        : "script";
+    const previous = modes.get(table);
+    if (previous !== mode) {
+      if (previous !== undefined) {
+        clearVariables(table, previous);
+      }
+      modes.set(table, mode);
+      subject.setAttribute(STICKY_MODE_ATTRIBUTE, mode);
+    }
+    return mode;
+  };
   const updateAll = (): void => {
     for (const table of tables) {
-      update(table);
+      const mode = chooseMode(table);
+      (mode === "timeline" ? updateTimelineRange : updateShift)(table);
     }
   };
-  const observer = new ResizeObserver(updateAll);
   for (const table of tables) {
     observer.observe(table);
   }
-  if (!timeline) {
-    // 区画の高さが変わると留める下端が変わるため、スクロールする場所の要素も監視する
-    const containers = new Set(subjects.map(scrollContainerOf));
-    for (const container of containers) {
-      if (container !== null) {
-        observer.observe(container);
-      }
-    }
-  }
   updateAll();
-  // 動かすのが JS のときは、スクロールのたびに 1 フレームに 1 回だけもう一度求める
+  // 動かすのが JS の表は、スクロールのたびに 1 フレームに 1 回だけもう一度求める
   let frame: number | undefined;
   const onScroll = (): void => {
     if (frame !== undefined) {
@@ -179,16 +221,15 @@ export function attachStickyRows(root: HTMLElement): () => void {
     }
     frame = requestAnimationFrame(() => {
       frame = undefined;
-      updateAll();
+      for (const [table, mode] of modes) {
+        if (mode === "script") {
+          updateShift(table);
+        }
+      }
     });
   };
-  if (!timeline) {
-    window.addEventListener("scroll", onScroll, {
-      capture: true,
-      passive: true,
-    });
-    window.addEventListener("resize", onScroll);
-  }
+  window.addEventListener("scroll", onScroll, { capture: true, passive: true });
+  window.addEventListener("resize", onScroll);
   return () => {
     observer.disconnect();
     window.removeEventListener("scroll", onScroll, { capture: true });
@@ -196,13 +237,10 @@ export function attachStickyRows(root: HTMLElement): () => void {
     if (frame !== undefined) {
       cancelAnimationFrame(frame);
     }
-    for (const subject of subjects) {
-      subject.removeAttribute(STICKY_MODE_ATTRIBUTE);
+    for (const [table, mode] of modes) {
+      timelineSubject(table).removeAttribute(STICKY_MODE_ATTRIBUTE);
+      clearVariables(table, mode);
     }
-    for (const table of tables) {
-      for (const name of variables) {
-        table.style.removeProperty(name);
-      }
-    }
+    modes.clear();
   };
 }
