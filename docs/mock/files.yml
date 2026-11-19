@@ -1389,6 +1389,22 @@ files:
     visibility: internal
     description: '部品『map-dim-contrast』のモック: map の図の再生・選択・中へ入る操作で薄くした要素の文字のコントラストを 4.5:1 以上に保つ薄め方を、案 A（opacity を上げる）と案 B（文字の色を変え、面と枠を背景と混ぜる）で、C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダークに並べる。薄くした要素の外観を決めるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: refs/709/index.md
+    visibility: internal
+    description: '#709（map の手順の再生で倍率を変えない・言語が markdown のコードブロックでソースと描いた結果を切り替える）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/709/assets/markdown-preview.js
+    visibility: internal
+    description: '#709 のモックの見本: 配布物の mount で言語 markdown のコードブロックを描き、帯に切り替えのボタンの案を差し込んで、案・言語・タイトル・機能・幅ごとに並べる処理。このモックの見本の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン, topic:コードブロック]
+  - path: refs/709/assets/markdown-preview.css
+    visibility: internal
+    description: '#709 のモックの案の外観: コードブロックの帯の切り替えのボタン・セグメント・描いた結果の入れ物の規則。このモックのボタンの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン, topic:コードブロック]
+  - path: components/markdown-preview/index.html
+    visibility: internal
+    description: '部品『markdown-preview』のモック: 言語 markdown・md のコードブロックの帯に配置するソースと描いた結果の切り替えのボタンの案（アイコンと文字のボタン・セグメント・アイコンだけのボタン）と、押す前・ホバー・フォーカス・押した後、言語・タイトル・コピー・機能をオフにした文書・狭い幅の見え方。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:ボタン, topic:コードブロック]
   - path: refs/707/assets/dim-contrast.css
     visibility: internal
     description: '#707 のモックの薄め方の案 A・B の規則: 案の囲みの中だけで、map の図の map-dim・map-focus・map-faded の要素の文字のコントラストを保つ。このモックの外観を変えるときに参照する。'

@@ -1,0 +1,177 @@
+/* #709 の markdown のコードブロックのプレビューの案。
+   実装では src/index.css の mdmark の層の、コードブロックの帯の規則に追加する */
+
+@layer mdmark {
+  .mdmark {
+    /* 案 A・C の切り替えのボタン: コピーのボタンと同じ寸法・同じ枠を持たない見た目にする */
+    .mock-preview-toggle {
+      display: inline-flex;
+      gap: 0.3em;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.75rem;
+      min-height: 1.75rem;
+      padding: 0 0.5em;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      font-family: var(--mdmark-font-body);
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &[data-icon-only] {
+        padding: 0;
+      }
+
+      &:hover,
+      &.is-hover {
+        border-color: var(--mdmark-color-border);
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
+      }
+
+      &:focus-visible,
+      &.is-focus {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      /* 押した後: 押す前と別物に見えるよう、リンクの色の文字と今の場所の面にする */
+      &[aria-pressed="true"] {
+        border-color: color-mix(in oklab, var(--mdmark-color-link) 40%, transparent);
+        background: var(--mdmark-color-current-bg);
+        color: var(--mdmark-color-link);
+      }
+    }
+
+    /* 案 B のソースとプレビューの切り替え: 2 つの区画を 1 つの枠に並べ、選んだ区画を面で示す */
+    .mock-preview-segment {
+      display: inline-flex;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      overflow: hidden;
+
+      button {
+        min-height: 1.625rem;
+        padding: 0 0.6em;
+        border: 0;
+        background: none;
+        color: var(--mdmark-color-muted);
+        font-family: var(--mdmark-font-body);
+        font-size: 0.75rem;
+        white-space: nowrap;
+        cursor: pointer;
+
+        & + button {
+          border-inline-start: 1px solid var(--mdmark-color-border);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: -2px;
+        }
+
+        &[aria-pressed="true"] {
+          background: var(--mdmark-color-current-bg);
+          color: var(--mdmark-color-link);
+        }
+      }
+    }
+
+    /* アイコン: コピーのボタンのアイコンと同じ線で描く */
+    .mock-preview-icon {
+      width: 1.1em;
+      height: 1.1em;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* 描いた結果: 帯の下の pre と同じ枠に入れ、本文と同じ背景色で描く */
+    .mock-preview-body {
+      padding: var(--mdmark-space);
+      border: 1px solid var(--mdmark-color-border);
+      border-block-start: 0;
+      border-end-start-radius: var(--mdmark-radius);
+      border-end-end-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      overflow-x: auto;
+
+      /* 描いた結果の中の文書: 外側の文書の余白と格子を持ち込まない */
+      .mdmark {
+        display: block;
+        container-type: normal;
+        padding: 0;
+        background: transparent;
+      }
+
+      /* 中の文書の最初と最後の要素の外側の余白を削除し、枠の余白だけにする */
+      &.mdmark > :first-child,
+      .mdmark > :first-child {
+        margin-block-start: 0;
+      }
+
+      &.mdmark > :last-child,
+      .mdmark > :last-child {
+        margin-block-end: 0;
+      }
+    }
+
+    /* 描いた結果を出している間はソースの pre を隠す */
+    .mdmark-code[data-preview="on"] > pre,
+    .mdmark-code:not([data-preview="on"]) > .mock-preview-body {
+      display: none;
+    }
+  }
+}
+
+/* カタログの並びと 1 つの状態: 狭い幅では見本を画面の幅に収める */
+.catalog,
+.catalog > section,
+.catalog-state {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* カタログの見本: 文書の並びの格子を使用せず、見本を並びの中に配置する（mdmark の層の外） */
+.catalog-sample {
+  width: 34rem;
+  max-width: 100%;
+
+  &.mdmark,
+  > .mdmark {
+    display: block;
+    container-type: normal;
+    padding: 0;
+    background: transparent;
+  }
+}
+
+/* 狭い幅の見本: スマホの本文の幅に見立てる */
+.catalog-sample[data-narrow] {
+  width: 20rem;
+}
+
+/* モックの操作列の「ダーク」: OS の設定によらず、既定のテーマのダークの値を当てる（#700 の markdown-export.css と同じ値） */
+:root[data-scheme="dark"] {
+  --mdmark-color-bg: #131316;
+  --mdmark-color-text: #ededef;
+  --mdmark-color-heading: #ededef;
+  --mdmark-color-muted: #b4b4bc;
+  --mdmark-color-link: #2dd4bf;
+  --mdmark-color-border: #26262b;
+  --mdmark-color-surface: #1b1b1f;
+  --mdmark-color-current-bg: #10302c;
+  color-scheme: dark;
+}
+
+/* カタログの本文: 背景色の上に配置する */
+.catalog-page {
+  padding: 16px 24px 48px;
+  background: var(--mdmark-color-bg);
+}
