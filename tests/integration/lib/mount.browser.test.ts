@@ -8,6 +8,7 @@ import type {
   MdmarkReferences,
   MountHandle,
 } from "../../../src/index.ts";
+import { leafHeight } from "../../../src/map/layout.ts";
 import { VIEW_ICON_PATHS } from "../../../src/views/view.part.ts";
 import {
   ADDED_CHART_DEFINITIONS,
@@ -21883,7 +21884,7 @@ test("test_normal_when_map_wrapped_node_names_drawn", async () => {
   // 準備・実行
   const flow = mapRange({
     mermaid:
-      'flowchart LR\n  total["注文の明細を月ごとに集計する"]:::step --> save["集計を保存する"]:::step\n',
+      'flowchart LR\n  total["注文の明細を月ごとに集計する"]:::step --> save["集計を保存する"]:::step --> notify["結果を通知する"]\n',
   });
   const state = mapRange({
     mermaid:
@@ -21916,6 +21917,20 @@ test("test_normal_when_map_wrapped_node_names_drawn", async () => {
       expect(fit.lines).toBeGreaterThanOrEqual(2);
       expect(fit.fits).toBe(true);
     }
+  });
+  // 検証: 種類を持たないノードは種類の行を描かず、高さが名前 1 行の見積もりのままで、名前が下の余白より上にある
+  const notify = mapNode(flowFigure, "notify");
+  expect(
+    getComputedStyle(find<HTMLElement>(notify, ".mdmark-diagram-node-kind"))
+      .display,
+  ).toBe("none");
+  await vi.waitFor(() => {
+    expect(
+      Math.abs(notify.getBoundingClientRect().height - leafHeight(1)),
+    ).toBeLessThanOrEqual(1);
+    const fit = nameFitsAboveBottomPadding(notify);
+    expect(fit.lines).toBe(1);
+    expect(fit.fits).toBe(true);
   });
 });
 
