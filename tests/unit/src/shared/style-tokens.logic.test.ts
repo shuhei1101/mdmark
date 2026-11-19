@@ -88,8 +88,6 @@ test("test_style_color_accent", async () => {
   // 準備
   const { styleColor } = await loadTokens();
   // 実行・検証
-  expect(styleColor({ name: "accentGreenBg", theme: "light" })).toBe(
-    "#cbf2d2",
-  );
+  expect(styleColor({ name: "accentGreenBg", theme: "light" })).toBe("#cbf2d2");
   expect(styleColor({ name: "accentGreenBg", theme: "dark" })).toBe("#1a3821");
 });

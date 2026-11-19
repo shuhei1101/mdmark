@@ -195,7 +195,10 @@ test("test_render_stack_columns", async () => {
     line: 1,
     stack: {
       kind: "columns" as const,
-      sections: [{ body: [paragraph("左の列")] }, { body: [paragraph("右の列")] }],
+      sections: [
+        { body: [paragraph("左の列")] },
+        { body: [paragraph("右の列")] },
+      ],
     },
   };
   // 実行

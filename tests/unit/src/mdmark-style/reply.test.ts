@@ -380,10 +380,7 @@ test("test_count_tree_when_deep", async () => {
 });
 
 /** 2 列の表のブロック */
-const tableOf = (
-  rows: string[][],
-  extra: Record<string, unknown> = {},
-) => ({
+const tableOf = (rows: string[][], extra: Record<string, unknown> = {}) => ({
   kind: "table" as const,
   line: 1,
   table: {

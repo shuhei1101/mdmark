@@ -1,8 +1,7 @@
 import { expect, test } from "vitest";
 
 /** 行内の記法を分けるモジュール（実装が無い間は各テストが個別に失敗する） */
-const loadInline = () =>
-  import("../../../../src/mdmark-style/inline-marks.ts");
+const loadInline = () => import("../../../../src/mdmark-style/inline-marks.ts");
 
 // 4 種類の記法を分ける（正常系）
 test("test_split_inline_marks", async () => {

@@ -317,20 +317,25 @@ test("test_split_blocks_when_stack", async () => {
   // 実行
   const blocks = splitBlocks({ text, parts: ALL_PARTS });
   // 検証
-  expect(blocks.map((block) => block.kind)).toEqual([
-    "stack",
-    "stack",
-    "table",
+  expect(blocks).toMatchObject([
+    {
+      kind: "stack",
+      stack: {
+        kind: "tabs",
+        sections: [{ title: "macOS" }, { title: "Windows" }],
+      },
+    },
+    { kind: "stack", stack: { kind: "columns", sections: [{}, {}] } },
+    {
+      kind: "table",
+      table: {
+        header: ["名前", "拠点", "金額"],
+        rows: [["北山", "東京, 本社", "1200"]],
+      },
+    },
   ]);
-  expect(blocks[0]?.stack?.kind).toBe("tabs");
-  expect(blocks[0]?.stack?.sections.map((section) => section.title)).toEqual([
-    "macOS",
-    "Windows",
-  ]);
-  expect(blocks[1]?.stack?.kind).toBe("columns");
+  expect(blocks).toHaveLength(3);
   expect(blocks[1]?.stack?.sections).toHaveLength(2);
-  expect(blocks[2]?.table?.header).toEqual(["名前", "拠点", "金額"]);
-  expect(blocks[2]?.table?.rows).toEqual([["北山", "東京, 本社", "1200"]]);
 });
 
 // オフにした部品は飾りだけ除外する（正常系）
@@ -436,8 +441,5 @@ test("test_split_blocks_when_tree_note_escaped", async () => {
   // 検証
   expect(block?.kind).toBe("tree");
   expect(block?.tree?.lines.map((line) => line.note)).toContain("a < b & c");
-  expect(block?.tree?.lines.map((line) => line.rule)).toEqual([
-    "├── ",
-    "└── ",
-  ]);
+  expect(block?.tree?.lines.map((line) => line.rule)).toEqual(["├── ", "└── "]);
 });
