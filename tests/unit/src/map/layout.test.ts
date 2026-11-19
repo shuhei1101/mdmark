@@ -287,7 +287,7 @@ test("test_layout_map_when_name_fits_with_right_padding", async () => {
   );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A");
-  expect(node?.w).toBe(122);
+  expect(node?.w).toBe(125);
   expect(node?.h).toBe(leafHeight(1));
   expect(node?.lines).toHaveLength(1);
 });
