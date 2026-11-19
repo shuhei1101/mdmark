@@ -463,13 +463,10 @@ const labelAsides = (diagram: ClassDiagram): Map<string, number> => {
   return asides;
 };
 
-/** map のノードが右上の i と開閉の山形の分だけ右に空ける幅（CSS の map のノードの padding-right と同じ値） */
-export const MAP_NODE_PAD_RIGHT = 28;
-
 /** ノートのノードの大きさ（文の幅と左右の余白が収まる幅を minWidth から maxWidth の間で決め、その幅で折り返した行が全て入る高さ） */
 const noteSize = (text: string, maxWidth: number): { w: number; h: number } => {
-  const { nameSize, padX } = LABEL_METRICS;
-  const inset = padX + MAP_NODE_PAD_RIGHT;
+  const { nameSize, padX, padRight } = LABEL_METRICS;
+  const inset = padX + padRight;
   const w = Math.min(
     maxWidth,
     Math.max(MAP_LAYOUT.minWidth, Math.ceil(textWidth(text, nameSize)) + inset),

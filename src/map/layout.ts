@@ -1,7 +1,7 @@
 import type { MapSide } from "./data.ts";
 import type { Direction, FlowArrow, Flowchart } from "./flowchart.ts";
 
-/** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。CSS を修正したときは合わせて修正する */
+/** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。`padRight` は map のノードが右上の i と開閉の山形の分だけ右に空ける幅。CSS を修正したときは合わせて修正する */
 export const LABEL_METRICS = {
   kindSize: 11,
   nameSize: 14,
@@ -9,6 +9,7 @@ export const LABEL_METRICS = {
   lineHeight: 1.4,
   padY: 6,
   padX: 10,
+  padRight: 28,
 };
 
 /** 配置の寸法（px）と経路の重み */
@@ -201,10 +202,6 @@ export const textWidth = (text: string, fontSize: number): number =>
       ),
   );
 
-/** 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行を返す */
-export const wrapLabel = (text: string, width: number): string[] =>
-  splitLines(text, LABEL_METRICS.nameSize, width - LABEL_METRICS.padX * 2);
-
 /** 種類の行と名前の行の数から見積もるノードの高さ */
 export const leafHeight = (lines: number): number => {
   const { nameSize, kindSize, lineHeight, padY } = LABEL_METRICS;
@@ -220,12 +217,13 @@ const sizeLeaf = (
   },
 ): { w: number; h: number; lines: string[] } => {
   const { maxWidth, width, size } = fit;
-  const { nameSize, padX } = LABEL_METRICS;
+  const { nameSize, padX, padRight } = LABEL_METRICS;
+  const inset = padX + padRight;
   if (size)
     return {
       w: size.w,
       h: size.h,
-      lines: splitLines(label, nameSize, size.w - padX * 2),
+      lines: splitLines(label, nameSize, size.w - inset),
     };
   const w =
     width ??
@@ -233,10 +231,10 @@ const sizeLeaf = (
       maxWidth,
       Math.max(
         MAP_LAYOUT.minWidth,
-        Math.ceil(textWidth(label, nameSize)) + padX * 2,
+        Math.ceil(textWidth(label, nameSize)) + inset,
       ),
     );
-  const lines = splitLines(label, nameSize, w - padX * 2);
+  const lines = splitLines(label, nameSize, w - inset);
   return { w, h: leafHeight(lines.length), lines };
 };
 
