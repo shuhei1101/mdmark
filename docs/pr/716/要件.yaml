@@ -1,0 +1,33 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-97.yaml
+    impact: changed
+    detail: 返答の行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブなどの縦並び・図と表の番号を共通スタイルで描き、部品ごとに設定でオフにできる期待を加える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-99.yaml
+    impact: changed
+    detail: セッションの開始に渡すマーカーの記載方法の説明に、新しく描く部品のマーカーの書き方を加える（加える範囲は単一ユースケース設計で決める）
+    depends_on:
+      - docs/scenario/SC-472-97.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-98.yaml
+    impact: run_only
+    detail: 返答の描き換えを変えるため、返答の用語の下線・カード・脚注が変わらないことを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/ClaudeCodeで使用する-画面を共通スタイルで描く.md
+    new: false
+    change: 冒頭の説明と `## 描き換えるもの` の表に、行の詳細・ステップ・ファイルツリー・バッジと文字の色・蛍光ペン・キー・タブなどの縦並び・図と表の番号の描き方を追加する
+    status: todo
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: '`画面を描く mod の設定` の表に、追加する `parts` のキーと既定を追加する'
+    status: todo
+scope_out:
+  - item: リンクと添付のカード・目次・先頭へ戻るボタン・画像・ギャラリー・動画と音声・図の部品・mermaid・埋め込んだ HTML・アイコン・ルビの描き換え
+    reason: '#699 の『mdmark の機能との対応』で描かない（—）と決めた機能で、端末の文字では描けないか Claude Code の標準の描き方のままにする'
+    plan: none
+  - item: ファイルツリーの開閉とアイコン、タブ・段組み・カードの格子の切り替えと横並び
+    reason: Issue の要望で描かないと決めている（縦に並べる）
+    plan: none
