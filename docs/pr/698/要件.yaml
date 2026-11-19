@@ -12,8 +12,10 @@ use_cases:
 docs:
   - page: docs/library/LIB-472-29.yaml
     new: false
-    change: verification を、手元の tmux サーバーから分けたサーバー（`tmux -L {一時のソケット名}` など）で取り直す
-    status: todo
+    change: verification を、手元の tmux サーバーから分けたサーバー（`TMUX`・`TMUX_PANE` を除外し `tmux -L {一時のソケット名}`）で取り直す。実測で分かった `default-shell` の既定（`SHELL` が無ければログインシェル）を limitations にも合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T07:11:39.697438+00:00'
 scope_out:
   - item: '`docs/pr/354/`・`docs/pr/444/` の PR ドキュメントの `TMUX_TMPDIR` の記載'
     reason: マージ済みの作業 PR の記録で、書き換えない
