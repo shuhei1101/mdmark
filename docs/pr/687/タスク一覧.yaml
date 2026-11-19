@@ -65,7 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T01:17:27.822060+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: 準拠バージョン・docs/_theme/ の取り込み・目次 3 件の印・LAY-472-1 の修正と、v0.4.0..v0.5.0 で変わった規約・テンプレート・判定の参照し直し
+    updated_by: planner
+    updated_at: '2026-11-19T01:20:14.202091+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: ソースコードを変えない
