@@ -183,6 +183,41 @@ const dimExceptMessage = (
   }
 };
 
+/** 指している参加者の、選んだときと同じ要素のほかを薄くする（指している間だけの class も付ける） */
+const dimExceptParticipant = (
+  figure: HTMLElement,
+  participant: { id: string; messages: Sequence["messages"] },
+): void => {
+  const { id, messages } = participant;
+  const kept = (element: Element): boolean => {
+    const own = element.getAttribute("data-message");
+    if (own !== null) {
+      const message = messages[Number(own)];
+      return message?.from === id || message?.to === id;
+    }
+    const name =
+      element.getAttribute("data-participant") ??
+      element.getAttribute("data-lifeline");
+    return name === id;
+  };
+  for (const element of figure.querySelectorAll(
+    ".mdmark-diagram-stage :is(.mdmark-diagram-wire[data-message], .mdmark-diagram-label[data-message], .map-participant, .mdmark-diagram-lifeline)",
+  )) {
+    if (kept(element) || element.classList.contains("map-dim")) continue;
+    element.classList.add("map-dim", HOVER_DIM_CLASS);
+  }
+};
+
+/** 要素が属する参加者（参加者の箱の中か、ライフラインの判定の線） */
+const participantAt = (node: EventTarget | null): string | undefined => {
+  if (!(node instanceof Element)) return undefined;
+  return (
+    node.closest<HTMLElement>(".map-participant")?.dataset.participant ??
+    node.closest(".map-lifeline-hit")?.getAttribute("data-lifeline") ??
+    undefined
+  );
+};
+
 /** 設定の `map.kinds.actor` が無いときの actor の種類（lucide の人のアイコンだけ） */
 const DEFAULT_ACTOR_KIND = { icon: "user" } as const;
 
@@ -343,7 +378,13 @@ export const attachMapSequence = (
       if (button) button.disabled = item.disabled === true;
     }
   };
+  /** ポインターがいる参加者（選択中・再生中も記録する） */
+  let pointed: string | undefined;
+  /** 選択を解いたときにポインターがいた参加者（外へ出るまで強調しない） */
+  let suppressed: string | undefined;
   const change = (next: MapState) => {
+    if (state.selected.length > 0 && next.selected.length === 0)
+      suppressed = pointed;
     state = next;
     save();
     refresh();
@@ -367,6 +408,8 @@ export const attachMapSequence = (
   };
   /** 並べ替えのドラッグを離した直後の click で選ばない */
   let suppressClick = false;
+  /** 並べ替えのドラッグの間はポインターの強調を出さない */
+  let reordering = false;
   /** ブロックを開閉する（Shift を押すと中のブロックも） */
   const toggleFragment = (at: number, all: boolean) => {
     const targets = all ? fragmentsUnder(at) : [String(at)];
@@ -500,6 +543,8 @@ export const attachMapSequence = (
         marker.hidden = true;
         container.append(marker);
         head.classList.add("is-dragging");
+        reordering = true;
+        clearHover();
       }
       head.style.translate = `${move.clientX - startX}px 0`;
       to = nearestColumn(rects, move.clientX);
@@ -513,6 +558,7 @@ export const attachMapSequence = (
       head.style.translate = "";
       head.classList.remove("is-dragging");
       marker?.remove();
+      reordering = false;
     };
     // ブラウザが指のドラッグを文書のスクロールに切り替えたときは、並び順を変えずに戻す
     const onCancel = () => release();
@@ -530,9 +576,44 @@ export const attachMapSequence = (
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onCancel);
   };
+  /** 指している間だけの強調を外す */
+  const clearHover = () => {
+    for (const layer of figure.querySelectorAll(".map-packets-hover"))
+      layer.remove();
+    for (const element of figure.querySelectorAll(`.${HOVER_DIM_CLASS}`))
+      element.classList.remove("map-dim", HOVER_DIM_CLASS);
+  };
+  /** 参加者を指している間は、その参加者を 1 人選んだときと同じ強調にする（選択・再生の強調があるときは出さない） */
+  const hoverParticipant = (id: string, pointerType: string) => {
+    if (pointerType === "touch" || pointed === id) return;
+    pointed = id;
+    if (reordering || state.selected.length > 0 || current !== undefined)
+      return;
+    if (suppressed === id) return;
+    clearHover();
+    dimExceptParticipant(figure, { id, messages: sequence.messages });
+    for (const hit of figure.querySelectorAll<SVGPathElement>(
+      ".map-wire-hit[data-message]",
+    )) {
+      const at = Number(hit.dataset.message);
+      const message = sequence.messages[at];
+      if (!message || (message.from !== id && message.to !== id)) continue;
+      hit.ownerSVGElement?.append(
+        hoverPacketLayer(hit, {
+          at,
+          both: SEQ_ARROW_STYLES[message.arrow].both,
+        }),
+      );
+    }
+  };
   // メッセージの線を指している間は、その線にデータの印を流す（選択・再生で流している線には重ねない）
   const onPointerOver = (event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
+    const participant = participantAt(target ?? null);
+    if (participant !== undefined) {
+      hoverParticipant(participant, event.pointerType);
+      return;
+    }
     const hit = target?.closest<SVGPathElement>(".map-wire-hit[data-message]");
     const at = Number(hit?.dataset.message);
     const message = sequence.messages[at];
@@ -548,11 +629,17 @@ export const attachMapSequence = (
   };
   const onPointerOut = (event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
+    const participant = participantAt(target ?? null);
+    if (participant !== undefined) {
+      // 同じ参加者の箱の中・判定の線の間を動いたときは解かない
+      if (participantAt(event.relatedTarget) === participant) return;
+      pointed = undefined;
+      if (suppressed === participant) suppressed = undefined;
+      clearHover();
+      return;
+    }
     if (!target?.closest(".map-wire-hit")) return;
-    for (const layer of figure.querySelectorAll(".map-packets-hover"))
-      layer.remove();
-    for (const element of figure.querySelectorAll(`.${HOVER_DIM_CLASS}`))
-      element.classList.remove("map-dim", HOVER_DIM_CLASS);
+    clearHover();
   };
   figure.addEventListener("click", onClick);
   figure.addEventListener("pointerdown", onPointerDown);

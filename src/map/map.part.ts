@@ -1061,11 +1061,18 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
         `<line class="mdmark-diagram-lifeline${seqParticipantDim(context, name)}" data-lifeline="${escapeHtml(name)}" x1="${context.x.get(name)}" y1="${MAP_SEQ.headTop + MAP_SEQ.headH}" x2="${context.x.get(name)}" y2="${height - 12}"></line>`,
     )
     .join("");
+  // ポインターを合わせる判定の線（ライフラインと同じ座標。メッセージの線の判定より下に描く）
+  const lifelineHits = participants
+    .map(
+      (name) =>
+        `<line class="map-lifeline-hit" data-lifeline="${escapeHtml(name)}" x1="${context.x.get(name)}" y1="${MAP_SEQ.headTop + MAP_SEQ.headH}" x2="${context.x.get(name)}" y2="${height - 12}"></line>`,
+    )
+    .join("");
   const heads = participants
     .map((name) => renderSeqHead(context, name))
     .join("");
   const html = [
-    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${renderSeqMarkers(context.id)}</defs><g class="map-seq-under">${under}</g>${lifelines}${wires}<g class="map-seq-above">${above}</g><g class="map-packets" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
+    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${renderSeqMarkers(context.id)}</defs><g class="map-seq-under">${under}</g>${lifelineHits}${lifelines}${wires}<g class="map-seq-above">${above}</g><g class="map-packets" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
     labels,
     overlay,
     `<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${MAP_SEQ.headTop + MAP_SEQ.headH + 8}px">${heads}</div>`,
