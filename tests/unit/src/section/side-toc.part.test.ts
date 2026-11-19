@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { findTag, findTags, innerHtml } from "../../helpers/html.ts";
+import { iconSvg } from "../../../../src/shared/icons.part.ts";
+import { findTag, findTags, innerHtml, outerHtml } from "../../helpers/html.ts";
 
 /** 右側の目次の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSideToc = () => import("../../../../src/section/side-toc.part.ts");
@@ -148,4 +149,69 @@ test("test_render_side_toc_when_changed", async () => {
     false,
     true,
   ]);
+});
+
+// 頭の並びに Markdown のボタンを入れる（正常系）
+test("test_render_side_toc_when_markdown_buttons", async () => {
+  // 準備
+  const { renderSideToc } = await loadSideToc();
+  // 実行
+  const html = renderSideToc({
+    headings: [...HEADINGS],
+    sections: true,
+    markdownButtons: true,
+  });
+  // 検証
+  expect(innerHtml(html, "mdmark-side-toc-head")).toMatch(
+    /^<div class="mdmark-side-toc-actions">[\s\S]*<\/div><div class="mdmark-side-toc-markdown"[\s\S]*<\/div><button class="mdmark-side-toc-pin"[\s\S]*<\/button>$/,
+  );
+  const group = findTag(html, "mdmark-side-toc-markdown");
+  expect(group).toContain('role="group"');
+  expect(group).toContain('aria-label="Markdown"');
+  const buttons = findTags(html, 'class="mdmark-markdown-button"');
+  expect(buttons).toHaveLength(2);
+  expect(buttons[0]).toContain('aria-label="Markdown でコピー"');
+  expect(buttons[0]).toContain('title="Markdown でコピー"');
+  expect(buttons[0]).toContain('data-markdown="copy"');
+  expect(buttons[1]).toContain('aria-label="Markdown でエクスポート"');
+  expect(buttons[1]).toContain('data-markdown="export"');
+  expect(findTag(html, 'role="status"')).toContain("mdmark-visually-hidden");
+  expect(html).not.toContain("mdmark-copy-panel");
+});
+
+// コピーできなかったときのアイコンとパネル（正常系）
+test("test_render_side_toc_when_markdown_copy_failed", async () => {
+  // 準備
+  const { renderSideToc } = await loadSideToc();
+  // 実行
+  const html = renderSideToc({
+    headings: [...HEADINGS],
+    markdownButtons: true,
+    markdownCopy: "failed",
+    markdownCopyReason: "許可されていません",
+    markdownText: "# 見出し",
+  });
+  // 検証
+  const copy = outerHtml(html, 'data-markdown="copy"');
+  expect(copy).toContain(iconSvg("circle-alert"));
+  const afterHead = html.slice(html.indexOf("mdmark-side-toc-head"));
+  const panel = afterHead.slice(afterHead.indexOf("mdmark-copy-panel"));
+  expect(panel).toContain(
+    "クリップボードにコピーできませんでした（許可されていません）",
+  );
+  expect(innerHtml(html, "<textarea")).toBe("# 見出し");
+});
+
+// オフのときは配置しない（正常系）
+test("test_render_side_toc_when_markdown_buttons_off", async () => {
+  // 準備
+  const { renderSideToc } = await loadSideToc();
+  // 実行
+  const html = renderSideToc({
+    headings: [...HEADINGS],
+    markdownButtons: false,
+  });
+  // 検証
+  expect(html).not.toContain("mdmark-side-toc-markdown");
+  expect(html).not.toContain("mdmark-markdown-button");
 });
