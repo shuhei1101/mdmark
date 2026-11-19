@@ -934,8 +934,19 @@ export function renderTotalRows(options: {
   return `<tfoot>${rows.join("")}</tfoot>`;
 }
 
-/** 手でコピーさせるパネルの形式。`tree` はファイルツリーの元の罫線のテキスト */
-export type CopyPanelFormat = CopyFormat | "tree";
+/** 手でコピーさせるパネルの形式。`tree` はファイルツリーの元の罫線のテキスト、`document` は文書を変換した純粋な Markdown */
+export type CopyPanelFormat = CopyFormat | "tree" | "document";
+
+/** 形式ごとの、パネルの案内で選択している中身の名前 */
+function copyPanelTarget(format: CopyPanelFormat): string {
+  if (format === "tree") {
+    return "ツリーのテキスト";
+  }
+  if (format === "document") {
+    return "Markdown ";
+  }
+  return `「${COPY_FORMATS[format].name}」の中身`;
+}
 
 /** クリップボードに書き込めなかったときに、帯の直後へ配置する手でコピーさせるパネルの HTML を返却する */
 export function renderCopyPanel(options: {
@@ -945,15 +956,16 @@ export function renderCopyPanel(options: {
   format: CopyPanelFormat;
   /** コピーする文字 */
   text: string;
+  /** タイトルに添える理由 */
+  reason?: string | undefined;
 }): string {
-  const { id, format, text } = options;
+  const { id, format, text, reason } = options;
   const titleId = `${id}-title`;
   const noteId = `${id}-note`;
-  const target =
-    format === "tree"
-      ? "ツリーのテキスト"
-      : `「${COPY_FORMATS[format].name}」の中身`;
-  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">${target}を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
+  const target = copyPanelTarget(format);
+  const because =
+    reason === undefined || reason === "" ? "" : `（${escapeHtml(reason)}）`;
+  return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした${because}</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">${target}を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
 }
 
 /** 行へのリンクのマーカーを持つ先頭のセルの HTML を返却する。`content` は先頭のセルの中身（`SLOT_MARKER` を指定して前後に分けられる）。`notice` を指定すると、URL をコピーした結果をマーカーの横の通知に出す */

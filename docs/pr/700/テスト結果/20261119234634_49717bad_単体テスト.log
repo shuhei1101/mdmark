@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-pure-markdown
+
+
+ Test Files  322 passed (322)
+      Tests  2555 passed (2555)
+   Start at  23:45:39
+   Duration  31.04s (worker 79%, tests 12%, import 6%, transform 3%)
+
+exit=0

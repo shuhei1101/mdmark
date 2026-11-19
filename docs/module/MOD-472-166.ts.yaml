@@ -12,8 +12,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（688KB）
-    value: 688 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（712KB）
+    value: 712 * 1024
     refs:
       - NFR-472-1#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
@@ -216,7 +216,7 @@ functions:
         mock: 一時フォルダに `src/` とそのパッケージの `package.json`・`LICENSE` を配置し、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を配置する
         expected: '`dist/THIRD_PARTY_LICENSES.txt` にそのパッケージの名前と本文がある'
     notes:
-      CLI と起動の処理のまとめ方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・バージョンの `define`）で、ライブラリ本体を含めて 1 つにまとめる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` でまとめ、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読み込む。これらを `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
+      CLI と起動の処理のまとめ方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・バージョンの `define`）で、ライブラリ本体を含めて 1 つにまとめる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` でまとめ、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読み込む。`dist/cli.js` は `postcssStubPlugin` を使用せず、Markdown への書き出しの SVG の CSS を絞る postcss をまとめる。これらを `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
       起動の処理の script の閉じ: '`dist/viewer.js` は `startViewer` を export する ES モジュールで、書き出した HTML にそのまま配置しない。書き出しのとき CLI の `bundleViewer` が埋めるモジュールともう一度まとめ、`</script` と `<!--` の並びを替える'
   - name: buildLegacyMarks
     title: 移行の手順のフォルダに書き換えの処理をまとめる

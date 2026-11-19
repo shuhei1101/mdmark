@@ -1,0 +1,156 @@
+id: MOD-472-364
+visibility: internal
+title: ライブラリ本体 / CLI / export-markdown.ts
+lead: '`mdmark export-markdown` の引数・出力のフォルダの決め方・全て作ってから書き込む順を受け持ち、Markdown への書き出しのコマンドを変えるときに参照する。'
+test_files:
+  - tests/unit/src/cli/export-markdown.test.ts
+functions:
+  - name: runExportMarkdown
+    title: 文書を Markdown に書き出す
+    container: src/cli/export-markdown.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: '設定と文書を読み込み、`exportMarkdownFiles` で作った Markdown と SVG を `writeMarkdownFiles` で書き込み、警告と `書き出した: {Markdown} （SVG {数} 件）` を出す'
+    description: 設定の読み込み・誤りは `runExport` と同じ。`--out` が無ければ `markdownOutDir` で決める
+    args:
+      - name: options
+        type: '{ file: string; out?: string; config?: string; distDir: string }'
+        required: true
+        description: 文書・`--out`・`--config`・`dist/` の場所
+      - name: io
+        type: CliIo
+        required: true
+        description: 今のフォルダと出力の先
+    returns:
+      type: Promise<0>
+      description: 書き出したら 0
+    exceptions:
+      - name: CliError
+        condition: 設定の誤り・文書が無い・出力先へ書き込めない
+        message: '文書が無い: {パス} が見つかりません。文書のパスを修正してください。／書き込めない: {出力のフォルダ} に書き込めません（{理由}）。--out で別のフォルダを指定してください。'
+    side_effects: 出力のフォルダに Markdown と `images/` の SVG を書き込む
+    callees:
+      - '#functions[markdownOutDir]'
+      - '#functions[exportMarkdownFiles]'
+      - '#functions[writeMarkdownFiles]'
+    refs:
+      - IF-472-49#
+    status: planned
+    unit_tests:
+      - name: test_run_export_markdown
+        case: 正常
+        summary: 既定の出力のフォルダに書き込む
+        condition: '`file: guide.mark.md`（`chart` 1 つ）、`--out` 無し'
+        mock: 一時フォルダと、中身を短くした `dist/index.css`
+        expected: '0 を返却し、`guide-markdown/guide.md` と `guide-markdown/images/figure-1.svg` があり、標準出力が `書き出した: guide-markdown/guide.md （SVG 1 件）`'
+      - name: test_run_export_markdown_when_document_missing
+        case: 異常
+        summary: 無い文書は CliError
+        condition: '`file: missing.md`'
+        mock: 一時フォルダ
+        exception: CliError
+        expected: '`CliError` を投げ、`missing-markdown/` が無い'
+      - name: test_run_export_markdown_when_output_unwritable
+        case: 異常
+        summary: 出力のフォルダがファイルを指す
+        condition: '`out: blocked` で `blocked` がファイル'
+        mock: 一時フォルダ
+        exception: CliError
+        expected: '`CliError` を投げ、メッセージに `blocked` と `--out` が入り、`.md`・`.svg` がどこにも無い'
+  - name: markdownOutDir
+    title: 既定の出力のフォルダを決める
+    container: src/cli/export-markdown.ts
+    kind: 関数
+    scope: internal
+    summary: 文書のファイル名から `.mark.md`・`.md` を除いた名前を返却し、文書と同じフォルダの `{名前}-markdown` を出力のフォルダにする
+    args:
+      - name: file
+        type: string
+        required: true
+        description: 文書の絶対パス
+    returns:
+      type: '{ name: string; dir: string }'
+      description: 名前と出力のフォルダの絶対パス
+    status: planned
+    unit_tests:
+      - name: test_markdown_out_dir
+        case: 正常
+        summary: 拡張子ごとの名前
+        condition: '`/d/guide.mark.md` と `/d/notes.md`'
+        mock: なし
+        expected: '`{ name: "guide", dir: "/d/guide-markdown" }` と `{ name: "notes", dir: "/d/notes-markdown" }`'
+  - name: exportMarkdownFiles
+    title: 書き出す Markdown と SVG を作る
+    container: src/cli/export-markdown.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 設定の `extensions` を登録してから `toPureMarkdown` を呼び、`opts.figure` で `figureToSvg` の SVG を集めて図の場所の Markdown を返却し、書き込まずにファイルの中身を返却する（MCP の `export_markdown` と共有する）
+    description: 図の場所は `chart`・`param` が `**{タイトル}**`・`![{タイトル}](images/figure-{n}.svg)`・系列が 2 つ以上のときの `- {系列}` の行、埋め込んだ HTML は画像のリンクだけ（代替の文字はタイトルか `図 {n}`）。拡張の登録は `mdmark check` と同じく Node で登録する側のモジュールを読み込む。読み込めない拡張は警告にして続ける
+    args:
+      - name: options
+        type: '{ file: string; loaded: LoadedConfig; distDir: string }'
+        required: true
+        description: 文書の絶対パス・読み込んだ設定・`dist/` の場所
+    returns:
+      type: 'Promise<{ markdown: string; images: Array<{ name: string; svg: string }>; warnings: string[] }>'
+      description: Markdown と `images/` に置く SVG の名前と中身と警告
+    callees:
+      - MOD-472-361#functions[toPureMarkdown]
+      - MOD-472-365#functions[figureToSvg]
+      - MOD-472-120#functions[readDistAssets]
+    status: planned
+    unit_tests:
+      - name: test_export_markdown_files_figure_lines
+        case: 正常
+        summary: chart の場所をタイトル・画像・系列の行にする
+        condition: タイトル `件数`・系列 2 つの `chart` を持つ文書
+        mock: 一時フォルダと短くした `dist/index.css`
+        expected: '`markdown` に `**件数**`・`![件数](images/figure-1.svg)`・系列の 2 行があり、`images` が `figure-1.svg` 1 件'
+      - name: test_export_markdown_files_when_extension_unloadable
+        case: 正常
+        summary: 読み込めない拡張は警告にして続ける
+        condition: '`extensions` に無いファイルを指す設定'
+        mock: 一時フォルダ
+        expected: reject されず、`warnings` にそのパスが入る
+  - name: writeMarkdownFiles
+    title: Markdown と SVG を書き込む
+    container: src/cli/export-markdown.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 出力のフォルダがファイルを指すか作れないときは何も書き込まずに `CliError`。書けるときは `images/` を空にしてから SVG を、最後に Markdown を書き込む
+    args:
+      - name: options
+        type: '{ dir: string; name: string; markdown: string; images: Array<{ name: string; svg: string }> }'
+        required: true
+        description: 出力のフォルダ・名前・中身
+    returns:
+      type: 'Promise<{ markdown: string; images: string[] }>'
+      description: 書き込んだ Markdown と SVG の絶対パス
+    exceptions:
+      - name: CliError
+        condition: 出力のフォルダがファイルを指す・作れない・書き込めない
+        message: '書き込めない: {出力のフォルダ} に書き込めません（{理由}）。--out で別のフォルダを指定してください。'
+    side_effects: 出力のフォルダを作り、`images/` の古いファイルを削除して SVG と Markdown を書き込む
+    status: planned
+    unit_tests:
+      - name: test_write_markdown_files_replaces_images
+        case: 正常
+        summary: 前の書き出しの SVG を残さない
+        condition: '`images/figure-2.svg` があるフォルダに `figure-1.svg` だけを書き込む'
+        mock: 一時フォルダ
+        expected: '`images/` に `figure-1.svg` だけがある'
+      - name: test_write_markdown_files_when_dir_is_file
+        case: 異常
+        summary: ファイルを指す出力先は何も書き込まない
+        condition: '`dir` が既にあるファイル'
+        mock: 一時フォルダ
+        exception: CliError
+        expected: '`CliError` を投げ、一時フォルダに `.md`・`.svg` が無い'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:cli
+  - name: topic:markdown

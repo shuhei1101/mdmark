@@ -114,3 +114,52 @@ export const LongHeadingChanged: Story = {
     open: true,
   },
 };
+
+export const MarkdownButtons: Story = {
+  name: "MarkdownButtons",
+  parameters: { server: { id: "side-toc" } },
+  args: {
+    headings:
+      '[{"level":1,"id":"手引き","text":"手引き"},{"level":2,"id":"前提","text":"前提"},{"level":2,"id":"使用方法","text":"使用方法"},{"level":3,"id":"注意","text":"注意"}]',
+    mode: "fixed",
+    open: true,
+  },
+};
+
+export const MarkdownCopied: Story = {
+  name: "MarkdownCopied",
+  parameters: { server: { id: "side-toc" } },
+  args: {
+    headings:
+      '[{"level":1,"id":"手引き","text":"手引き"},{"level":2,"id":"前提","text":"前提"},{"level":2,"id":"使用方法","text":"使用方法"},{"level":3,"id":"注意","text":"注意"}]',
+    mode: "fixed",
+    open: true,
+    markdownCopy: "copied",
+  },
+};
+
+export const MarkdownCopyFailed: Story = {
+  name: "MarkdownCopyFailed",
+  parameters: { server: { id: "side-toc" } },
+  args: {
+    headings:
+      '[{"level":1,"id":"手引き","text":"手引き"},{"level":2,"id":"前提","text":"前提"},{"level":2,"id":"使用方法","text":"使用方法"},{"level":3,"id":"注意","text":"注意"}]',
+    mode: "fixed",
+    open: true,
+    markdownCopy: "failed",
+    markdownCopyReason: "クリップボードへのアクセスが許可されていません",
+    markdownText: "# 問い合わせ窓口の見直し",
+  },
+};
+
+export const WithoutMarkdownButtons: Story = {
+  name: "WithoutMarkdownButtons",
+  parameters: { server: { id: "side-toc" } },
+  args: {
+    headings:
+      '[{"level":1,"id":"手引き","text":"手引き"},{"level":2,"id":"前提","text":"前提"},{"level":2,"id":"使用方法","text":"使用方法"},{"level":3,"id":"注意","text":"注意"}]',
+    mode: "fixed",
+    open: true,
+    markdownButtons: false,
+  },
+};

@@ -58,6 +58,16 @@ items:
   summary: ライブラリ本体 / CLI / errors.ts
 - page: MOD-472-120.ts.yaml
   summary: ライブラリ本体 / CLI / export.ts
+- page: MOD-472-364.ts.yaml
+  summary: ライブラリ本体 / CLI / export-markdown.ts
+- page: MOD-472-365.ts.yaml
+  summary: ライブラリ本体 / CLI / figure-svg.ts
+- page: MOD-472-361.ts.yaml
+  summary: ライブラリ本体 / 純粋な Markdown / pure-markdown.ts
+- page: MOD-472-362.ts.yaml
+  summary: ライブラリ本体 / 純粋な Markdown / pure-blocks.logic.ts
+- page: MOD-472-363.ts.yaml
+  summary: ライブラリ本体 / 純粋な Markdown / pure-inline.logic.ts
 - page: MOD-472-122.ts.yaml
   summary: ライブラリ本体 / CLI / git.ts
 - page: MOD-472-111.ts.yaml

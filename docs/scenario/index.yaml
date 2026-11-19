@@ -62,6 +62,10 @@ items:
   summary: 文書の作成者が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを指定し、描いたときの記載の警告と同じずれを受け取る
 - page: SC-472-56.yaml
   summary: 文書の作成者が `mdmark export` で 1 文書を、外を読み込まない 1 枚の HTML に書き出す
+- page: SC-472-101.yaml
+  summary: 文書の作成者が CLI で文書を純粋な Markdown と SVG の画像に書き出し、mdmark の無い表示で読めるようにする
+- page: SC-472-102.yaml
+  summary: 読者が描いた文書とまとめた HTML のボタンで、開いている文書を純粋な Markdown にしてコピー・保存する
 - page: SC-472-76.yaml
   summary: 文書の作成者が `mdmark build` で、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる
 - page: SC-472-13.yaml
@@ -200,6 +204,8 @@ items:
   summary: 文書の作成者が端末の設定と上のフォルダの設定を重ね、VS Code のプレビュー・CLI の書き出し・Claude Code から呼んだ書き出しを同じ外観にそろえる
 - page: SC-472-91.yaml
   summary: 文書の作成者がプラグインを入れ、global-setup で端末の設定と常駐サーバーを、setup で文書のフォルダの設定を用意して、MCP のツールで点検と書き出しを呼ぶ
+- page: SC-472-103.yaml
+  summary: 文書の作成者が点検してから Markdown に書き出し、mdmark の無い表示で読める Markdown と画像を得る
 - page: SC-472-84.yaml
   summary: 文書の作成者が CSS を端末の設定のフォルダのテンプレートに登録し、別のリポジトリで一覧から選んで配置し、theme に記載して書き出した HTML に適用する
 - page: SC-472-87.yaml

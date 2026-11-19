@@ -11,6 +11,8 @@ functions:
     summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返却する
     description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base`・`--text`・`--file`・`--key` は文字列、`--js`・`--plan`・`--yes`・`--keep-traces` は真偽値、位置引数を許す）で読み込む。
 
+      `export-markdown` は位置引数・`--out`・`--config` を `runExportMarkdown` に指定する。
+
       `export`・`build` は `--keep-traces` を `keepTraces` にして `runExport`・`runBuild` に指定する。
 
       `upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に指定する。
@@ -76,6 +78,12 @@ functions:
         condition: 設定の `version` がパッケージと同じ一時フォルダで `["upgrade", "--plan"]`
         mock: 出力を配列に貯める `CliIo`、呼ばれたら失敗にする `Prompter`
         expected: 0 を返却し、標準出力に `適用する手順はありません` が出る
+      - name: test_main_when_export_markdown
+        case: 正常
+        summary: export-markdown を runExportMarkdown に振り分ける
+        condition: '`["export-markdown", "guide.md", "--out", "out"]`'
+        mock: '`runExportMarkdown` を記録する関数に差し替える'
+        expected: '`{ file: "guide.md", out: "out" }` で呼ばれ、0 を返却する'
     status: planned
 lead: '引数の読み取りとコマンドの振り分けを受け持ち、CLI のコマンドや引数を追加・変更するときに参照する。'
 tags:

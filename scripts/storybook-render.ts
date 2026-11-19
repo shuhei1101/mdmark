@@ -150,6 +150,7 @@ import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 import { renderBackToTop } from "../src/section/back-to-top.part.ts";
 import { renderSection } from "../src/section/section.part.ts";
 import {
+  type MarkdownCopyState,
   renderSideToc,
   type SideTocHeading,
 } from "../src/section/side-toc.part.ts";
@@ -2091,6 +2092,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       headings: args.headings as SideTocHeading[],
       mode: args.mode as SideTocMode | undefined,
       sections: args.sections as boolean | undefined,
+      markdownButtons: args.markdownButtons as boolean | undefined,
+      markdownCopy: args.markdownCopy as MarkdownCopyState | undefined,
+      markdownCopyReason: args.markdownCopyReason as string | undefined,
+      markdownText: args.markdownText as string | undefined,
       open: args.open as boolean | undefined,
       pinned: args.pinned as boolean | undefined,
       current: args.current as string | undefined,

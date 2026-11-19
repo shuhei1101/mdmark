@@ -26,6 +26,7 @@ test("test_normal", async () => {
     "build_site",
     "check",
     "export_html",
+    "export_markdown",
     "list_templates",
   ]);
   for (const tool of tools) {
@@ -60,7 +61,7 @@ test("test_normal_when_port_overridden", async () => {
   const { tools } = await client.listTools();
   // 検証
   expect(serve.stdout()).toContain("http://127.0.0.1:18782/mcp");
-  expect(tools).toHaveLength(6);
+  expect(tools).toHaveLength(7);
 });
 
 // SIGINT を受けて待ち受けを閉じ、終了コード 0 で終わる（正常系（止める））

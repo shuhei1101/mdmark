@@ -97,3 +97,31 @@ test("test_main_when_upgrade", async () => {
   expect(code).toBe(0);
   expect(stdout.join("\n")).toContain("適用する手順はありません");
 });
+
+// export-markdown を runExportMarkdown に振り分ける（正常系）
+test("test_main_when_export_markdown", async () => {
+  // 準備
+  const runExportMarkdown = vi.fn(async (_options: unknown) => 0 as const);
+  vi.resetModules();
+  vi.doMock("../../../../src/cli/export-markdown.ts", () => ({
+    runExportMarkdown,
+  }));
+  const { main } = await loadMain();
+  const dir = await createTempDir();
+  const { io } = createIo(dir);
+  // 実行
+  const code = await main(
+    ["export-markdown", "guide.md", "--out", "out"],
+    io,
+    failingAsk,
+  );
+  // 検証
+  expect(code).toBe(0);
+  expect(runExportMarkdown).toHaveBeenCalledTimes(1);
+  expect(runExportMarkdown.mock.calls[0]?.[0]).toMatchObject({
+    file: "guide.md",
+    out: "out",
+  });
+  vi.doUnmock("../../../../src/cli/export-markdown.ts");
+  vi.resetModules();
+});

@@ -101,6 +101,7 @@ test("test_run_pre_tool_use_when_matcher", async () => {
     "build_site",
     "check",
     "export_html",
+    "export_markdown",
     "list_templates",
   ]);
   expect([...PROJECT_DIR_TOOLS].sort()).toEqual(
