@@ -1,0 +1,13 @@
+docs:
+  - page: docs/er/ER-472-3.yaml
+    new: false
+    change: er.relations[0]（エイリアスの元の行 → エイリアス）に from_column・to_column を追加する
+    status: todo
+  - page: docs/er/ER-472-6.yaml
+    new: false
+    change: er.relations[0]（文書 → 文書の related）に from_column・to_column を追加する
+    status: todo
+scope_out:
+  - item: ER 図以外の設計書の Schema の違反
+    reason: 要望は ER-472-3・ER-472-6 の relations の必須のキーに限る。docs/er/ の他の ER 図に同じ型の違反は無い
+    plan: none
