@@ -1,0 +1,22 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: none
+    detail: map のシーケンス図を描く流れと期待結果は変わらない。自分へのメッセージのラベルの位置だけが変わる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: none
+    detail: 再生で流すデータの印の道筋（自分へのメッセージの折り返しの線）は変わらない
+    depends_on: []
+scope_out:
+  - item: シーケンス図のヒントとノードが透ける見た目
+    reason: 同じ報告（TH-1251）から起票した別の不具合で、地の色を扱う
+    plan: '#679'
+  - item: ノードとライフラインにカーソルを当てたときの表示
+    reason: 同じ報告（TH-1251）から起票した別の要望で、操作を扱う
+    plan: '#681'
+  - item: MindStella の画面の CSS の修正
+    reason: 原因はラベルの位置を決める mdmark の描画（src/map/map.part.ts）にあり、MindStella の側は直さない
+    plan: none
+docs: []
