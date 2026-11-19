@@ -41,6 +41,13 @@ files:
     related:
       - to: TP-472-1
         type: see_also
+  - path: mdmark.config.yaml
+    visibility: internal
+    description: このリポジトリの文書を描く mdmark の設定（AI Monitor が生成する図のノードの種類と線の種類）を受け持つ。生成した設計書の図の見た目を変えるときに参照する。
+    tags: [topic:設定, topic:図, tool:ai-monitor]
+    related:
+      - to: LAY-472-1
+        type: see_also
   - path: package.json
     visibility: internal
     description: ライブラリ本体と CLI の依存・npm のスクリプト・配布物のエントリーポイントを受け持つ。依存の追加・更新や開発のコマンドを変えるときに参照する。

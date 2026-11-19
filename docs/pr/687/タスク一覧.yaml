@@ -1,0 +1,86 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書は揃っており、棚卸しは要らない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めの依頼ではない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 未検証の技術機構に依存しない（配布物の取り込みと反映作業の実行）
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れは変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を作らない（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を作らない（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 利用者の操作と期待値は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を作らない（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: 公開関数・CLI・MCP の入出力は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品を変えない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない（判定フローチャート『画面設計要否』）
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: ソースコードのモジュールを変えない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: 準拠バージョン・docs/_theme/ の取り込み・目次 3 件の印・LAY-472-1 の修正と、v0.4.0..v0.5.0 で変わった規約・テンプレート・判定の参照し直し
+    updated_by: planner
+    updated_at: '2026-11-19T01:20:14.202091+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: ソースコードを変えない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
+  - process: 実装
+    status: done
+    note: 反映作業のスクリプトの対象のリポジトリを省略できる形にし、dry-run と lint を流す
+    updated_by: planner
+    updated_at: '2026-11-19T01:21:33.907194+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    reason: ソースコードを変えない
+    updated_by: planner
+    updated_at: '2026-11-19T01:17:27.822060+00:00'
