@@ -149,9 +149,15 @@ async function scriptBuildDocuments(
 ): Promise<string[]> {
   const settings = isRecord(build) ? build : {};
   const excluded = new Set(await globPaths(dir, stringsOf(settings.exclude)));
-  return (await globPaths(dir, stringsOf(settings.include)))
-    .filter((path) => !excluded.has(path))
-    .map((path) => resolve(dir, path));
+  const found: string[] = [];
+  for (const path of await globPaths(dir, stringsOf(settings.include))) {
+    const absolute = resolve(dir, path);
+    // glob はフォルダも返却するため、ファイルだけを残す
+    if (!excluded.has(path) && (await isFile(absolute))) {
+      found.push(absolute);
+    }
+  }
+  return found;
 }
 
 /** 索引の YAML を読み込む。読み込めなければ `undefined`（`call` のスクリプトが移行の報告に挙げる） */
