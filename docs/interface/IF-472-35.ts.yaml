@@ -10387,6 +10387,39 @@ flows:
     refs:
       - '#constraints[map の図]'
       - '#constraints[map の状態遷移図]'
+  - name: 正常系（map の構成図で名前の幅と形状の余白からノードの大きさを決めて描く）
+    summary: 半角を含む名前のノードと `pill` の形状のノードを持つ構成図を、描いたフォントの名前の幅と形状ごとの左の余白で見積もった大きさで、見積もりと同じ行の数で描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ。幅 1280px・描く先の `div` の幅は 1200px
+      - name: 半角を含む名前と pill の形状のノードを持つ構成図の map を持つ Markdown
+        description: 「文書の Markdown」のノードに `:::step` を付け、「利用側のページ」のノードに `:::outside` を付けてつないだ flowchart の範囲を持つ文書
+        notes: 修正前の Chromium では、「文書の Markdown」は名前の見積もりの幅が 117.6px（半角を文字の大きさの 0.6 倍）で、描いた幅は 129px。「利用側のページ」は描いた名前の幅が 93px で、見積もりは左の余白を 10px とするが、`pill` の形状の左の余白は 16px。どちらも見積もった幅では名前が 1 行に収まらない
+      - name: 設定
+        description: '`opts.config.map.kinds` に `step`（`label: 処理`・`icon: cog`）と `outside`（`label: 外部`・`shape: pill`）。`map.node_fit` は既定（`height`）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: ノードの名前の幅を描くフォントで測り、形状ごとの左の余白でノードの大きさを見積もって配置する
+        M-->>U: 図の枠に入れた map の構成図
+      ```
+
+      <!-- /map -->
+    expected:
+      - 「文書の Markdown」と「利用側のページ」のノードは、どちらも名前が 1 行で、名前の文字の矩形の高さが名前 1 行の高さ（19.6px）以下
+      - 「文書の Markdown」のノードの幅は、名前の文字の矩形の幅に左右の余白（10px・28px）と左右の枠線（1.5px ずつ）を加えた幅から 1px 以内
+      - 「利用側のページ」のノードの幅は、名前の文字の矩形の幅に左右の余白（16px・28px）と左右の枠線（1.5px ずつ）を加えた幅から 1px 以内で、名前の文字の矩形の左端がノードの左端から 17px 以上右にある
+      - どちらのノードも、名前の最後の行の文字の矩形の下端からノードの下の余白（`padding-bottom`）の上端までの空きが名前 1 行の高さ（19.6px）より小さい（見積もりが描画より多く折り返して、下に 1 行分の空きを残さない）
+    test: test_normal_when_map_node_size_from_measured_name
+    refs:
+      - '#constraints[map の図]'
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
