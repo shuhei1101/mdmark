@@ -92,9 +92,10 @@ test("test_hover_shown", async () => {
   await expect(
     page.locator(".mdmark-side-toc-bar[data-current]").count(),
   ).resolves.toBe(1);
-  // 目次の頭: タイトルを配置せず、まとめて開閉するボタンの並び → ピン止めの順。ピン止めは押す前のアイコンを出す
+  // 目次の頭: タイトルを配置せず、まとめて開閉するボタンの並び → Markdown のボタンの並び → ピン止めの順。ピン止めは押す前のアイコンを出す
   await expect(headChildren(page)).resolves.toEqual([
     "mdmark-side-toc-actions",
+    "mdmark-side-toc-markdown",
     "mdmark-side-toc-pin",
   ]);
   await expect(page.locator(".mdmark-side-toc-title").count()).resolves.toBe(0);
@@ -189,7 +190,10 @@ test("test_without_sections", async () => {
   const page = await holder.openStory("parts-sidetoc--without-sections", WIDE);
   // 検証
   await expect(page.locator("[data-fold-all]").count()).resolves.toBe(0);
-  await expect(headChildren(page)).resolves.toEqual(["mdmark-side-toc-pin"]);
+  await expect(headChildren(page)).resolves.toEqual([
+    "mdmark-side-toc-markdown",
+    "mdmark-side-toc-pin",
+  ]);
   await expect(page.locator(".mdmark-side-toc-list a").count()).resolves.toBe(
     4,
   );
@@ -306,4 +310,102 @@ test("test_long_heading_changed", async () => {
   expect(overlap).toBe(false);
   await expect(pageOverflows(page)).resolves.toBe(false);
   await expect(panelInViewport(page)).resolves.toBe(true);
+});
+
+/** Markdown のボタンの `aria-label` を並びの順に返却する */
+function markdownButtonLabels(page: Page): Promise<(string | null)[]> {
+  return page
+    .locator(".mdmark-markdown-button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.getAttribute("aria-label")),
+    );
+}
+
+/** コピーのボタンのアイコンの svg の中身 */
+function copyIcon(page: Page): Promise<string> {
+  return page
+    .locator('.mdmark-markdown-button[data-markdown="copy"] svg')
+    .evaluate((svg) => svg.innerHTML);
+}
+
+// 頭にすべて展開・すべて折りたたむ・Markdown でコピー・Markdown でエクスポートを並べ、線で囲んだ正方形のボタンにする（MarkdownButtons）
+test("test_markdown_buttons", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-sidetoc--markdown-buttons", WIDE);
+  // 検証
+  await expect(headChildren(page)).resolves.toEqual([
+    "mdmark-side-toc-actions",
+    "mdmark-side-toc-markdown",
+    "mdmark-side-toc-pin",
+  ]);
+  await expect(markdownButtonLabels(page)).resolves.toEqual([
+    "Markdown でコピー",
+    "Markdown でエクスポート",
+  ]);
+  const box = await page
+    .locator('.mdmark-markdown-button[data-markdown="copy"]')
+    .boundingBox();
+  expect(box?.width).toBe(box?.height);
+  await expect(
+    styleOf(page, ".mdmark-markdown-button", "border-top-style"),
+  ).resolves.toBe("solid");
+  await expect(
+    styleOf(page, '.mdmark-side-toc-markdown [role="status"]', "position"),
+  ).resolves.toBe("absolute");
+  await expect(page.locator(".mdmark-copy-panel").count()).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// コピーした後はアイコンだけを変え、見える通知を出さない（MarkdownCopied）
+test("test_markdown_copied", async () => {
+  // 準備
+  const idle = await holder.openStory("parts-sidetoc--markdown-buttons", WIDE);
+  const idleIcon = await copyIcon(idle);
+  // 実行
+  const page = await holder.openStory("parts-sidetoc--markdown-copied", WIDE);
+  // 検証
+  await expect(copyIcon(page)).resolves.not.toBe(idleIcon);
+  await expect(page.locator(".mdmark-copy-panel").count()).resolves.toBe(0);
+  await expect(markdownButtonLabels(page)).resolves.toEqual([
+    "Markdown でコピー",
+    "Markdown でエクスポート",
+  ]);
+});
+
+// コピーできなかった後は、頭の下に理由と Markdown のパネルを出す（MarkdownCopyFailed）
+test("test_markdown_copy_failed", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-sidetoc--markdown-copy-failed",
+    WIDE,
+  );
+  // 検証
+  await expect(
+    page
+      .locator(".mdmark-side-toc-head")
+      .evaluate((head) => head.nextElementSibling?.className),
+  ).resolves.toBe("mdmark-copy-panel");
+  await expect(
+    page.locator(".mdmark-copy-panel-title").textContent(),
+  ).resolves.toContain("クリップボードへのアクセスが許可されていません");
+  await expect(
+    page.locator(".mdmark-copy-panel textarea").inputValue(),
+  ).resolves.toBe("# 問い合わせ窓口の見直し");
+  await expect(panelInViewport(page)).resolves.toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// markdown-buttons がオフなら、頭に Markdown のボタンが無い（WithoutMarkdownButtons）
+test("test_without_markdown_buttons", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-sidetoc--without-markdown-buttons",
+    WIDE,
+  );
+  // 検証
+  await expect(headChildren(page)).resolves.toEqual([
+    "mdmark-side-toc-actions",
+    "mdmark-side-toc-pin",
+  ]);
+  await expect(page.locator("[data-markdown]").count()).resolves.toBe(0);
 });
