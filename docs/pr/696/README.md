@@ -1,0 +1,1 @@
+# map のストーリーの結合テスト 7 ファイルの Box・overlaps を tests/integration/story.ts の共用のものへ寄せ替える
