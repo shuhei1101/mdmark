@@ -10337,7 +10337,7 @@ flows:
         M->>P: resolveIdLink(参照)
         P-->>M: URL か undefined
         M->>M: 返却された URL を本文のリンクと同じ許可で確認する
-        M-->>U: クラスのリンクと書き方の警告
+        M-->>U: クラスのリンク
         U->>M: 受付を動かさずに押して離す
         M-->>U: 変えた URL を開く
       ```
@@ -10346,7 +10346,7 @@ flows:
     expected:
       - '`resolveIdLink` が `id:SC-1#scenarios[正常シナリオ]`・`id:SC-2`・`id:unknown` を受け取る'
       - '`受付`・`台帳` のノードが class `has-link` と、`href` が `https://docs.example.com/SC-1#scenarios[正常シナリオ]`・`https://docs.example.com/SC-2` の `a.mdmark-diagram-node-link` を持ち、`受付` を押すと `https://docs.example.com/SC-1#scenarios[正常シナリオ]` が開く'
-      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たず、図の枠の前の書き方の警告に `不明` と `id:unknown` が記載される'
+      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たない。範囲の外の map の図のため、`不明` の `id:unknown` は書き方の警告にしない（制約『範囲の外の map の図を mermaid の図に戻す』）'
     test: test_normal_when_class_node_id_link_resolved
     refs:
       - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
