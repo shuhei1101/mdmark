@@ -1,6 +1,6 @@
 import type { ResolvedConfig } from "../config.ts";
-import type { ResolveIdLink } from "../render/sanitize.ts";
 import { DIAGRAM_REDRAW_EVENT } from "../diagram/diagram.interact.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import { parseMapData } from "./data.ts";
 import {
   erColumnNotes,
