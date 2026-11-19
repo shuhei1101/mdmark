@@ -227,6 +227,7 @@ body.vscode-light .ms-code .num {
 }
 
 .ms-term:hover .ms-term-card,
+.ms-term:focus-visible .ms-term-card,
 .ms-term.is-open .ms-term-card {
   display: block;
 }
