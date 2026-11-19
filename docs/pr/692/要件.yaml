@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-27.yaml
     impact: changed
-    detail: 設定の `build` がスキーマに合わないフォルダでも、移行の手順が書き換えた文書が点検のずれの後にコピーから元に戻る
+    detail: 設定の `build` がスキーマに合わないフォルダや、索引が索引のフォルダの外の文書を指すフォルダでも、移行の手順が書き換えた文書が、手順の失敗・点検のずれの後にコピーから元に戻る
     depends_on: []
 scope_out:
   - item: 点検がスキーマに合わない `build`（`build.out` が無い）をずれにして、バージョンを上げずに戻す振る舞いの変更
