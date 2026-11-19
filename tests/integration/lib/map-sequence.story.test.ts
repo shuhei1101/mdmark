@@ -3,6 +3,9 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import {
   contrastRatio,
   createBrowserHolder,
+  expectTargetSize,
+  MIN_TARGET_SIZE,
+  overlaps,
   pageOverflows,
   resolveColorIn,
 } from "../story.ts";
@@ -211,6 +214,49 @@ test("test_block_collapsed", async () => {
   expect(activation.y).toBeLessThanOrEqual(row.y);
   expect(activation.y + activation.height).toBeGreaterThan(row.y);
 });
+
+// ブロックのタブの開閉のボタンは押せる大きさ 24px 四方以上で、名前のボタンは高さ 24px 以上で重ならずに並ぶ（Default・BlockCollapsed）
+test.each(["default", "block-collapsed"])(
+  "test_block_tab_target_size_%s",
+  async (id) => {
+    // 準備・実行
+    const page = await openSequence(id);
+    // 検証
+    await expectTargetSize(page, ".map-seq-fragment-tab button.map-disclosure");
+    const tabs = await page
+      .locator(".map-seq-fragment-tab")
+      .evaluateAll((elements) =>
+        elements.map((tab) => {
+          const box = (selector: string) => {
+            const rect = tab.querySelector(selector)?.getBoundingClientRect();
+            return rect
+              ? {
+                  left: rect.left,
+                  top: rect.top,
+                  right: rect.right,
+                  bottom: rect.bottom,
+                }
+              : null;
+          };
+          return {
+            kind: tab.getAttribute("data-kind"),
+            toggle: box("button.map-disclosure"),
+            enter: box("button.map-seq-fragment-title"),
+          };
+        }),
+      );
+    expect(tabs.length).toBeGreaterThan(0);
+    for (const tab of tabs) {
+      if (!tab.toggle || !tab.enter)
+        throw new Error(`${tab.kind} のタブに開閉か名前のボタンが無い`);
+      expect(
+        tab.enter.bottom - tab.enter.top,
+        tab.kind ?? "",
+      ).toBeGreaterThanOrEqual(MIN_TARGET_SIZE);
+      expect(overlaps(tab.toggle, tab.enter), tab.kind ?? "").toBe(false);
+    }
+  },
+);
 
 // loop の中だけを描くと、loop の枠とタブを残し、タブの名前を押せず山形も無く、関わる参加者だけを並べる（BlockEntered）
 test("test_block_entered", async () => {
