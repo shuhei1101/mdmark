@@ -80,6 +80,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T11:58:19.632066+00:00'
   - process: 実装
-    status: todo
+    status: done
+    note: src/table/table-sticky.interact.ts・src/interact.ts・src/index.css
+    updated_by: planner
+    updated_at: '2026-11-19T12:02:26.089303+00:00'
   - process: 結合テスト作成
     status: todo
