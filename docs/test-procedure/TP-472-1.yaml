@@ -41,6 +41,8 @@ layers:
       Claude Code の mod の結合テスト: |-
         `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の mod のプラグイン mdmark-style の結合テストは Vitest でなく、`claude plugin test` で別に実行する。`scripts/test-mdmark-style.ts` が、ビルドした `mdmark-style/` を一時フォルダにコピーしてテストを並べ、`claude plugin validate` と `claude plugin test` を実行する（`claude-code/testing` の `$.ui.mount`・`$.classic` でエンジンが読み込んだ mod を通して描く。Claude Code のセッションは起動しない）。
 
+        ランナーでは回せず、手元で実行する（`.github/workflows/test.yml` は Vitest の結合テストだけを実行し、`claude plugin test` に要る Claude Code の CLI をランナーに入れていない）。
+
         前提: `npm run build` で `mdmark-style/hooks/mod/mod.js` をビルドしてあり、Claude Code の CLI（`claude`）を PATH に入れてある。
 
         ```bash
