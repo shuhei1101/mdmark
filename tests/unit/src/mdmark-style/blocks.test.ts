@@ -70,13 +70,14 @@ test("test_split_blocks_when_code_marked", async () => {
   // 実行
   const [block] = splitBlocks({ text, parts: ALL_PARTS });
   // 検証
-  expect(block?.kind).toBe("code");
-  expect(block?.code?.title).toBe("a.ts");
-  expect(block?.code?.lineNumbers).toBe(true);
-  expect(block?.code?.lines[0]?.mark).toBe("++");
-  expect(block?.code?.lines[0]?.text).not.toContain("[!code");
-  expect(block?.code?.lines[0]?.text).not.toContain("//");
-  expect(block?.code?.lines[1]?.mark).toBe("highlight");
+  expect(block).toMatchObject({
+    kind: "code",
+    code: {
+      title: "a.ts",
+      lineNumbers: true,
+      lines: [{ text: "const a = 1", mark: "++" }, { mark: "highlight" }, {}],
+    },
+  });
 });
 
 // 開閉の範囲をまとめる（正常系）
@@ -98,13 +99,11 @@ test("test_split_blocks_when_fold", async () => {
   // 実行
   const blocks = splitBlocks({ text, parts: ALL_PARTS });
   // 検証
+  expect(blocks).toMatchObject([
+    { kind: "fold", fold: { title: "用語", index: 0, body: [{}, {}] } },
+    { kind: "callout", callout: { closed: true } },
+  ]);
   expect(blocks).toHaveLength(2);
-  expect(blocks[0]?.kind).toBe("fold");
-  expect(blocks[0]?.fold?.title).toBe("用語");
-  expect(blocks[0]?.fold?.index).toBe(0);
-  expect(blocks[0]?.fold?.body).toHaveLength(2);
-  expect(blocks[1]?.kind).toBe("callout");
-  expect(blocks[1]?.callout?.closed).toBe(true);
 });
 
 // オフにした種類は markdown にする（正常系）
