@@ -1,0 +1,58 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-class-diagram-note-size
+
+ ❯ |unit| tests/unit/src/map/layout.test.ts (25 tests | 1 failed) 536ms
+   × test_leaf_height 10ms
+ ❯ |unit| tests/unit/src/map/class-diagram.test.ts (13 tests | 2 failed) 2792ms
+   × test_class_part_inputs_when_long_note 9ms
+   × test_class_part_inputs_when_short_note 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_class_part_inputs_when_long_note
+TypeError: leafHeight is not a function
+ ❯ tests/unit/src/map/class-diagram.test.ts:311:62
+    309|   });
+    310|   // 検証
+    311|   expect(inputs.overrides.note_1?.size).toEqual({ w: 220, h: leafHeigh…
+       |                                                              ^
+    312| });
+    313|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_class_part_inputs_when_short_note
+TypeError: leafHeight is not a function
+ ❯ tests/unit/src/map/class-diagram.test.ts:332:8
+    330|   expect(inputs.overrides.note_1?.size).toEqual({
+    331|     w: MAP_LAYOUT.minWidth,
+    332|     h: leafHeight(1),
+       |        ^
+    333|   });
+    334| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_leaf_height
+TypeError: leafHeight is not a function
+ ❯ tests/unit/src/map/layout.test.ts:296:20
+    294|   const { leafHeight } = await loadLayout();
+    295|   // 実行
+    296|   const heights = [leafHeight(1), leafHeight(2)];
+       |                    ^
+    297|   // 検証
+    298|   expect(heights).toEqual([63, 83]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 320 passed (322)
+      Tests  3 failed | 2568 passed (2571)
+   Start at  04:37:20
+   Duration  31.43s (worker 82%, tests 13%, import 5%, transform 1%)
+
