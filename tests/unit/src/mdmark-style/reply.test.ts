@@ -109,15 +109,16 @@ test("test_render_reply_when_over_limit", async () => {
 test("test_render_reply_when_settings_broken", async () => {
   // 準備
   const { renderReply } = await loadReply();
-  const { SettingsError } = await import(
-    "../../../../src/mdmark-style/settings.ts"
-  );
   const $ = createFakeEngine({ files: { [CONFIG]: "global: [" } });
   const next = vi.fn(async () => ENGINE_NODE);
-  // 実行・検証
-  await expect(renderReply($, replyEvent("## a"), next)).rejects.toThrow(
-    SettingsError,
-  );
+  // 実行
+  const node = await renderReply($, replyEvent("## a"), next);
+  // 検証
+  expect(node).toBe(ENGINE_NODE);
+  expect($.ui.log).toHaveBeenCalledTimes(1);
+  expect($.ui.log).toHaveBeenCalledWith(expect.stringContaining(CONFIG), {
+    to: "debug",
+  });
 });
 
 // 狭い端末ではセルを折り返す（正常系）

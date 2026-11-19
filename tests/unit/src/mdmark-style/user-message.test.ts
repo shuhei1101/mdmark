@@ -127,6 +127,22 @@ test("test_render_user_message_when_glossary_unreadable", async () => {
   expect($.ui.log).toHaveBeenCalledWith(expect.any(String), { to: "debug" });
 });
 
+// 設定ファイルを読めない（異常系）
+test("test_render_user_message_when_settings_broken", async () => {
+  // 準備
+  const { renderUserMessage } = await loadUser();
+  const $ = createFakeEngine({ files: { [CONFIG]: "global: [" } });
+  const next = vi.fn(async () => ENGINE_NODE);
+  // 実行
+  const node = await renderUserMessage($, userEvent("WS を作る"), next);
+  // 検証
+  expect(node).toBe(ENGINE_NODE);
+  expect($.ui.log).toHaveBeenCalledTimes(1);
+  expect($.ui.log).toHaveBeenCalledWith(expect.stringContaining(CONFIG), {
+    to: "debug",
+  });
+});
+
 // 行の用語ごとにカードを分ける（正常系）
 test("test_render_term_text", async () => {
   // 準備
