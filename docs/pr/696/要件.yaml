@@ -1,0 +1,9 @@
+use_cases: []
+docs: []
+scope_out:
+  - item: '`tests/integration/lib/mount.browser.test.ts` の先頭へ戻るボタンの確認の中の矩形の重なりの式'
+    reason: 辺の接触を除く 0.5 の幅を持たない別の判定で、共用の `overlaps` に置き換えると確認内容が変わる
+    plan: none
+  - item: 単体テスト `tests/unit/src/map/layout.test.ts` の `Rect`・`overlaps`
+    reason: 単体テストで、矩形の型（x・y・w・h）も結合テストの `Box` と違う。結合テストの共用のファイルを単体テストから読ませない
+    plan: none
