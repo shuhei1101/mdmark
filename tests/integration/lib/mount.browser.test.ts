@@ -21803,6 +21803,20 @@ test("test_normal_when_map_class_long_members_drawn", async () => {
     320,
     0,
   );
+  // 検証: ノートの文は 2 行以上に折り返し、最後の行がノードの下の余白より上に収まる
+  const note = mapNode(figure, "note_1");
+  const noteRange = document.createRange();
+  noteRange.selectNodeContents(
+    find<HTMLElement>(note, ".mdmark-diagram-node-name"),
+  );
+  const noteLines = [...noteRange.getClientRects()];
+  expect(
+    new Set(noteLines.map((line) => Math.round(line.top))).size,
+  ).toBeGreaterThanOrEqual(2);
+  const noteBox = note.getBoundingClientRect();
+  expect(Math.max(...noteLines.map((line) => line.bottom))).toBeLessThanOrEqual(
+    noteBox.bottom - Number.parseFloat(getComputedStyle(note).paddingBottom),
+  );
   // 検証: ラベルはクラス・ノート・namespace のタイトル・他のラベルと重ならない
   const avoid = [
     ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-node[data-node]"),
