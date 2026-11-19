@@ -125,4 +125,14 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 
 ## テスト結果
 
+単体テストの Red: [20261119213541_904d912b_単体テスト.log](テスト結果/20261119213541_904d912b_単体テスト.log)（53 件が実装の無いことだけで fail）。
+
+実装で直したテスト（9d0af17f。実装と別の commit）:
+
+| テスト | 理由 |
+| --- | --- |
+| `tests/unit/src/mdmark-style/terms.test.ts` | `loadGlossary` の引数を、`claude plugin validate` が求める `$` を先頭にした形（`loadGlossary($, { configPath })`）に合わせた |
+| `tests/unit/src/mdmark-style/reply.test.ts` の `test_render_block_table_when_desktop` | 表の行の Text の中にセルの Text を入れ子にするため、同じ文字列を持つ Text が 2 つ数えられた。最も長い行に全てのセルの文字があることを確かめる形にした |
+| `tests/unit/src/mdmark-style/fake-engine.ts`・`reply.test.ts` | Button の `onPress` を呼ぶ補助 `pressButton` を足し、biome の `noUnsafeOptionalChaining` を解消した |
+
 ドキュメント修正（アーキテクチャ図 ARCH-472-1・フォルダ構成 LAY-472-1・外部ライブラリ LIB-472-1）では、規約『V字モデル』の対応表で関係する単体・結合テストが無い（設計書の YAML だけを変え、コードを変えない）ため、テストを回していない。
