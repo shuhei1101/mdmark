@@ -10354,6 +10354,8 @@
   }
   .map-class-text {
     overflow-wrap: anywhere;
+    /* 行の数の見積もり（1 文字ずつ詰める）と同じく、単語の途中でも折り返す */
+    word-break: break-all;
     line-height: 16px;
     user-select: text;
     font-family: var(--mdmark-font-mono, monospace);
