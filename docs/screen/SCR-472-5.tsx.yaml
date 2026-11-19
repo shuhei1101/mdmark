@@ -1,8 +1,8 @@
 id: SCR-472-5
 visibility: internal
 title: ClaudeCodeの返答と発言
-lead: mod のプラグイン mdmark-style が描き換える Claude Code の返答と利用者の発言。返答の表・見出し・注意書き・コードブロック・開閉の範囲と、発言と返答の用語の下線・カード・脚注を、Claude Code の Box・Text・Button で描く。
-mock: docs/mock/pages/claude-code-terminal/699/mdmark-style/
+lead: mod のプラグイン mdmark-style が描き換える Claude Code の返答と利用者の発言。返答の表・見出し・注意書き・コードブロック・開閉の範囲・行の詳細・ステップなどの本文の部品と、発言と返答の用語の下線・カード・脚注を、Claude Code の Box・Text・Button で描く。
+mock: docs/mock/pages/claude-code-terminal/716/document-parts/
 screen: src/mdmark-style/mod.tsx
 test_file: tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx
 elements:
@@ -135,6 +135,101 @@ elements:
     refs:
       - IF-472-46#constraints[背景の帯]
     status: planned
+  - name: 行の詳細のボタン
+    id: reply-row-detail-toggle
+    kind: button
+    io: 入力
+    position: 返答 > 表 > 詳細を持つ行の先頭のセル
+    description: '`<!-- row-detail -->` の詳細を持つ行の開閉の状態'
+    label: 閉じているとき `[ ▸ ]`、開いているとき `[ ▾ ]`
+    initial_value: 閉じた状態
+    visible_when: '`parts.row_detail` が `true` のとき'
+    action: 押すと開閉の状態を反転して返答を描き直す。開いているときは行の下に詳細の中身を 2 桁字下げして描く
+    action_ref: IF-472-45#constraints[行の詳細]
+    refs:
+      - CMP-472-60#
+    status: planned
+  - name: ステップ
+    id: reply-steps
+    kind: label
+    io: 表示
+    position: 返答
+    description: '`<!-- steps -->` の番号付きリスト。見出しの色の太字の番号と項目の中身を並べ、項目の間を罫線の色の `│` でつなぐ'
+    visible_when: '`parts.steps` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[ステップ]
+      - CMP-472-20#
+    status: planned
+  - name: ファイルツリー
+    id: reply-tree
+    kind: label
+    io: 表示
+    position: 返答
+    description: 言語 `tree` のコードブロック。罫線を薄い色、名前を本文の色で等幅のまま描き、注釈を同じ桁にそろえて薄い色で描く
+    visible_when: '`parts.tree` が `true` で、罫線を解釈できるとき'
+    constraints: 罫線を解釈できないときは、コードブロック（`reply-code`）で描く
+    refs:
+      - IF-472-45#constraints[ファイルツリー]
+      - CMP-472-26#
+    status: planned
+  - name: バッジ
+    id: reply-badge
+    kind: label
+    io: 表示
+    position: 返答の段落・箇条書き・表のセルの中
+    description: '`badge:` の文言。前後に 1 桁の空白を付け、色の名前の背景色と文字色（色が無いときは面の色と本文の色）で描く'
+    visible_when: '`parts.inline` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[行内の記法]
+      - CMP-472-23#
+    status: planned
+  - name: 文字の色・蛍光ペン
+    id: reply-text-color
+    kind: label
+    io: 表示
+    position: 返答の段落・箇条書き・表のセルの中
+    description: '`[文字]{color=色}` を色の名前の文字色の太字、`==文字==` を色の名前の背景色（既定は `yellow`）で描く'
+    visible_when: '`parts.inline` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[行内の記法]
+      - CMP-472-48#
+      - CMP-472-59#
+    status: planned
+  - name: キー
+    id: reply-kbd
+    kind: label
+    io: 表示
+    position: 返答の段落・箇条書き・表のセルの中
+    description: '`kbd:` のキーを `+` で区切り、キーごとに `[Ctrl]` の太字と薄い色の `+` で描く'
+    label: '`[{キー}]`'
+    visible_when: '`parts.inline` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[行内の記法]
+      - CMP-472-11#
+    status: planned
+  - name: タブ名の見出し
+    id: reply-stack-heading
+    kind: label
+    io: 表示
+    position: 返答 > タブの範囲
+    description: タブ名を見出し（`reply-heading`）と同じ描き方で描き、中身を 2 桁字下げして縦に並べる。段組み・カードの格子・wide は見出しを付けずに縦に並べ、ビュー・CSV は表（`reply-table`）で描く
+    visible_when: '`parts.stack` が `true` のとき'
+    refs:
+      - IF-472-45#constraints[縦に並べる範囲]
+      - CMP-472-22#
+    status: planned
+  - name: 表の番号
+    id: reply-figure-label
+    kind: label
+    io: 表示
+    position: 返答 > 番号を付けた表の上
+    description: 返答のブロックの頭から数えた表の通し番号を薄い色で描く
+    label: '`表 {番号}`'
+    visible_when: '`parts.figure` が `true` で、表の直前に `<!-- fig -->` があるとき'
+    refs:
+      - IF-472-45#constraints[図と表の番号]
+      - CMP-472-40#
+    status: planned
 refs:
   - IF-472-45#
   - IF-472-46#
@@ -148,3 +243,9 @@ tags:
   - name: topic:コードブロック
   - name: topic:用語
   - name: topic:脚注
+  - name: topic:ステップ
+  - name: topic:ファイルツリー
+  - name: topic:バッジ
+  - name: topic:タブ
+  - name: topic:色
+  - name: topic:図表の番号
