@@ -66,8 +66,42 @@ VS Code 拡張機能の結合テストは TL-3 の補足「VS Code 拡張機能�
 
 | 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
 | --- | --- | --- | --- |
-| `vscode/package.json`・`vscode/package-lock.json` | R7（`version` を `release.test.ts` が、`mdmark.version` の値を `preview-open.test.ts` が確かめる） | `vscode/tests/integration/release.test.ts`・`vscode/tests/integration/preview-open.test.ts`（IF-472-22 の `正常系（develop を読み込む）` を結合テスト作成で追加する） | - |
-| `vscode/tests/integration/release.test.ts` | R2 | `vscode/tests/integration/release.test.ts` | - |
+| `docs/config/CFG-472-2.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/dev-command/CMD-472-1.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/guide/VSCodeで確認する-プレビューを開く.md` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/guide/VSCode拡張機能.mark.md` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/interface/IF-472-22.ts.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/interface/IF-472-23.ts.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/interface/IF-472-41.ts.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/module/MOD-472-166.ts.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/module/MOD-472-168.ts.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/module/MOD-472-22.ts.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/module/MOD-472-84.json.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/README.md` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/VS Code 拡張機能.md` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/タスク一覧.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/テスト結果/20261119093735_1297cb8b_単体テスト.log` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/テスト結果/20261119094226_4806fa23_lint.log` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/テスト結果/20261119094827_195cdb0b_単体テスト.log` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/ライブラリ本体.md` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/確認ログ.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/要件.md` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/pr/684/要件.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/scenario/SC-472-10.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/scenario/SC-472-50.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `docs/scenario/SC-472-82.yaml` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `migrations/v0.11.0/THIRD_PARTY_LICENSES.txt` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `migrations/v0.11.0/legacy-marks.js` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `migrations/v0.13.0/retired-diagrams.js` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `migrations/v0.14.0/retired-diagrams.js` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `scripts/build.ts` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `scripts/migrations.ts` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `tests/unit/scripts/build.test.ts` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `tests/unit/scripts/migrations.test.ts` | R7（拡張機能の結合テストが参照しない） | - | - |
+| `tests/unit/vscode/src/version.test.ts` | R7（拡張機能の結合テストが参照しない） | - | - |
 | `vscode/README.md` | R7（.vsix に入る。`release.test.ts` が .vsix を作る） | `vscode/tests/integration/release.test.ts` | - |
+| `vscode/package-lock.json` | R7（`version` を `release.test.ts` が作る .vsix が持つ） | `vscode/tests/integration/release.test.ts` | - |
+| `vscode/package.json` | R7（`version` を `release.test.ts` が、`mdmark.version` の値を `preview-open.test.ts` が確かめる） | `vscode/tests/integration/release.test.ts`・`vscode/tests/integration/preview-open.test.ts` | - |
+| `vscode/tests/integration/release.test.ts` | R2 | `vscode/tests/integration/release.test.ts` | - |
 
 `vscode/tests/integration/` の他のファイルは `mdmark.version` を `latest`・`v{X}.{Y}.{Z}` で使い、今回の変更で振る舞いが変わらないため実行しない。
