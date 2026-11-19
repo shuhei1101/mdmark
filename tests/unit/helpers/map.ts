@@ -278,9 +278,6 @@ export const CLASS_DATA = `{
 
 /** 長いメンバー・型の引数・長いラベル・namespace・ノートを持つクラス図（インターフェース定義の正常系（map のクラス図で長いメンバーとラベルを重ねずに描く）と同じ） */
 export const LONG_CLASS = `classDiagram
-  検索 ..> 応答変換 : 応答の変換
-  検索 ..> 時間範囲 : 期間の解決
-  検索 ..> 設定 : ASGI アプリの生成
   namespace 変換 {
     class 応答変換
     class 時間範囲 {
@@ -294,6 +291,9 @@ export const LONG_CLASS = `classDiagram
     +エージェント: str | None
     +対応: dict~str, list~int~~
   }
+  検索 ..> 応答変換 : 応答の変換
+  検索 ..> 時間範囲 : 期間の解決
+  検索 ..> 設定 : ASGI アプリの生成
   note for 検索 "絞り込みと期間から結果を返す"
 `;
 
