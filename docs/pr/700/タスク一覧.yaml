@@ -59,7 +59,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T13:13:30.748279+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:27:45.798314+00:00'
   - process: ドキュメント修正
     status: todo
     note: docs/guide の CLI・MCP・API・用語集・書き出すの手順・コアコンセプト
