@@ -1,0 +1,49 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: changed
+    detail: メッセージを移したときに、図の倍率を変えず、全体が収まる倍率のときは位置も変えず、それより大きい倍率のときは送り手と受け手を表示する枠の中央へ移す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: 案内の手順を移したときに、図の倍率を変えず、全体が収まる倍率のときは位置も変えず、それより大きい倍率のときは強調するノードを表示する枠の中央へ移す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: changed
+    detail: 言語が markdown（md）のコードブロックで、読者がソースの表示と描いた結果の表示を切り替えて見比べる流れを追加する（新しい単一 UC に分けるかは単一ユースケース設計で決める）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: 読者が変えた図の倍率と位置を、手順の再生が上書きしない前提になるため、拡大・縮小・移動の操作が壊れないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 443 行目の「強調するノードが収まる位置と倍率へ図がなめらかに移動する」を、倍率を変えず、拡大しているときだけ強調するノードを中央へ移す動きに修正する
+    status: todo
+  - page: docs/guide/記載する-本文を部品で組む.mark.md
+    new: false
+    change: コードブロックの節に、言語が markdown（md）のコードブロックでソースと描いた結果を切り替える手順と、812 行目の確かめ方に切り替えのボタンを追加する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 684 行目のコードブロックの帯の説明に、言語が markdown（md）のときの切り替えのボタンと、描く中身の範囲（mdmark の記法を含めるか）を追加する
+    status: todo
+  - page: docs/guide/カスタマイズ-印刷する.mark.md
+    new: false
+    change: 27 行目のコードブロックの行に、切り替えのボタンと描いた結果を印刷でどう出すかを追加する（印刷の扱いは部品設計で決める）
+    status: todo
+  - page: docs/mock/components/map-band/index.html
+    new: false
+    change: 31 行目の状態の説明となめらかな移動の実演を、倍率を変えない動きに修正する
+    status: todo
+scope_out:
+  - item: mdmark-style（Claude Code の返答と発言の描き換え）のコードブロックで、言語が markdown のときにソースと描いた結果を切り替える
+    reason: '#697 の要望は mdmark の文書の中のコードブロックが対象。mdmark-style は部品の木へ描き換える別のサブシステムで、含めるかは部品設計のレビューで確定する（今の判断は含めない）'
+    plan: none
+  - item: 手順の再生を止めたときに、始めたときの倍率と位置へ戻す動き（stop の focusRect）の変更
+    reason: 倍率を変えない動きにすると、戻すのは中央へ移した位置だけになる。位置を戻すかを変えることは要望に含まれないため、今のとおり止めたときは始めたときの位置へ戻す（インターフェース定義設計のレビューで確定する）
+    plan: none
