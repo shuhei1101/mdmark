@@ -161,7 +161,8 @@ scenarios:
         participant M as mdmark-style
         U->>C: 固定の Markdown を返答させる発言
         C->>M: ui.render（AssistantMessage と返答の本文）
-        M->>M: 設定ファイルを読めず例外を投げる
+        M->>M: 設定ファイルを読めず、デバッグログに理由を出す
+        M-->>C: next(e) の戻り値
         C-->>U: Claude Code の元の描画の返答
       ```
 

@@ -41,7 +41,7 @@ functions:
       type: Promise<UiNode>
       description: 描いた部品の木か `next(e)` の戻り値
     process: |-
-      1. 設定を読み込む（設定を読み込む）
+      1. 設定を読み込む（設定を読み込む）。`SettingsError` なら `$.ui.log(理由, { to: "debug" })` を記載して `next(e)` を返却する
       2. `enabled`・`targets` の `user`・`parts.terms`・`glossary`・`origin.kind` が `composer` のどれかを満たさなければ `next(e)` を返却する
       3. 用語集を集めて照合し（用語集を集める・用語を照合する）、用語が無ければ `next(e)` を返却する。`GlossaryError` なら `$.ui.log` でデバッグログに理由を書いて `next(e)` を返却する
       4. 行ごとに用語のマーカー付きの Text を作り（用語付きの行を描く）、`parts.footnote` が真なら本文の後ろに `[n] {名前}: {意味}` の行を薄い色で並べる
@@ -72,6 +72,12 @@ functions:
         mock: 上と同じと `$.ui.log`
         expected: '`next(e)` の戻り値を返却し、`$.ui.log` を `to: "debug"` で 1 回呼ぶ'
         exception: '`configPath` か索引が無いか YAML として読めない'
+      - name: test_render_user_message_when_settings_broken
+        case: 異常
+        summary: 設定ファイルを読めない
+        condition: '設定ファイルの本文が `global: [`'
+        mock: '`$.fs`・`$.env`・`$.session`・`$.ui.log`・`next`'
+        expected: '`next(e)` の戻り値を返却し、`$.ui.log` を設定ファイルのパスを含む文と `to: "debug"` で 1 回呼ぶ'
     callees:
       - MOD-472-352#functions[readSettings]
       - MOD-472-356#functions[loadGlossary]

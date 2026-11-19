@@ -63,9 +63,9 @@ response_example: |-
 exceptions:
   - name: なし（正常終了）
     condition: 部品の木か `next(e)` の戻り値を返却する
-  - name: Error（設定ファイルを読めない）
+  - name: なし（設定ファイルを読めない）
     condition: 設定ファイルがあるが、YAML として読めない
-    notes: Claude Code が元の描画で発言を描き、デバッグログに mod の名前と理由を出す
+    notes: 部品の木を作らずに `next(e)` の戻り値を返却し、`$.ui.log` でデバッグログに mod の名前と理由を出す（外部ライブラリ LIB-472-1 の制限「mod のフックの例外」）
 constraints:
   - item: 描き換える条件
     constraint: '`enabled` が `true`、`targets` に `user`、`parts.terms` が `true`、`glossary` があり、`origin.kind` が `composer` で、本文に用語が 1 つ以上あるときだけ描き換える。そうでなければ `next(e)` を返却する'

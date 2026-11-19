@@ -254,6 +254,9 @@ limitations:
   - item: 標準の発言の背景の色
     content: テーマの `userMessageBackground` は、明るいテーマが `rgb(240, 240, 240)`、暗いテーマが `rgb(55, 55, 55)`（ターミナルでは 256 色の 237。`#3a3a3a`）。mod からは参照できない
     notes: 2.1.328 の配布物から取った（`docs/pr/699/テスト結果/20261119215519_73687ecc_発言の背景の色.log`）
+  - item: mod のフックの例外
+    content: フックが例外を投げると、Claude Code はそのフックを飛ばして元の描画で描くが、`claude plugin test` はテストを失敗にする。例外を投げる振る舞いを結合テストで確認できないため、読めない入力はフックの中で `$.ui.log` に理由を記載して `next(e)` を返却する
+    notes: 2.1.328 で確認した（`docs/pr/699/テスト結果/20261119224246_2956a6bf_フックの例外.log`）
 tags:
   - name: tool:claude-code
     main: true

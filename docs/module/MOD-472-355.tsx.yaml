@@ -41,16 +41,12 @@ functions:
       type: Promise<UiNode>
       description: 描いた部品の木か `next(e)` の戻り値
     process: |-
-      1. 設定を読み込む（設定を読み込む）。`SettingsError` は投げたままにする
+      1. 設定を読み込む（設定を読み込む）。`SettingsError` なら `$.ui.log(理由, { to: "debug" })` を記載して `next(e)` を返却する
       2. `enabled` が偽か `targets` に `assistant` が無ければ `next(e)` を返却する
       3. ブロックに分ける（ブロックに分ける）
       4. 本文の用語を照合する（本文の用語を照合する）。用語集を読み込めなければ用語のマーカーを付けずに続ける。文脈の `ui` は `$.ui.copy`・`$.ui.invalidate` を呼ぶアロー関数にする
       5. ブロックごとに部品の木を作り（ブロックを描く）、用語の脚注があれば本文の後ろに脚注の一覧を並べる
       6. 部品の木が `TREE_LIMITS` を超えれば `next(e)` を返却する（部品の木の大きさを数える）
-    exceptions:
-      - name: SettingsError
-        condition: 設定ファイルがあるが YAML として読めない
-        message: 'mdmark-style の設定ファイルを YAML として読めない: {パス}（{理由}）'
     unit_tests:
       - name: test_render_reply_when_disabled
         case: 正常
@@ -68,9 +64,8 @@ functions:
         case: 異常
         summary: 設定ファイルを読めない
         condition: '設定ファイルの本文が `global: [`'
-        mock: '`$.fs`・`$.env`・`$.session`・`next`'
-        expected: '`SettingsError` を投げる'
-        exception: 設定ファイルがあるが YAML として読めない
+        mock: '`$.fs`・`$.env`・`$.session`・`$.ui.log`・`next`'
+        expected: '`next(e)` の戻り値を返却し、`$.ui.log` を設定ファイルのパスを含む文と `to: "debug"` で 1 回呼ぶ'
     callees:
       - MOD-472-352#functions[readSettings]
       - MOD-472-353#functions[splitBlocks]

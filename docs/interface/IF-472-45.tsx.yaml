@@ -62,9 +62,9 @@ response_example: |-
 exceptions:
   - name: なし（正常終了）
     condition: 部品の木か `next(e)` の戻り値を返却する
-  - name: Error（設定ファイルを読めない）
+  - name: なし（設定ファイルを読めない）
     condition: '`MDMARK_STYLE_CONFIG` か既定のパスの設定ファイルがあるが、YAML として読めない'
-    notes: 例外を投げ、Claude Code が元の描画で返答を描き、デバッグログに mod の名前と理由を出す
+    notes: 部品の木を作らずに `next(e)` の戻り値を返却し、`$.ui.log` でデバッグログに mod の名前と理由を出す（外部ライブラリ LIB-472-1 の制限「mod のフックの例外」）
 constraints:
   - item: 描き換える条件
     constraint: '`enabled` が `true` で、`targets` に `assistant` があるときだけ描き換える。そうでなければ `next(e)` を返却する'
@@ -312,8 +312,8 @@ flows:
     test: test_error_when_glossary_unreadable
     refs:
       - SC-472-98#scenarios[異常シナリオ（用語集の設定ファイルを読めない）]
-  - name: 異常系（設定ファイルを読めない・Error）
-    summary: 設定ファイルを YAML として読めないとき、例外を投げて Claude Code の元の描画に任せる
+  - name: 異常系（設定ファイルを読めない・なし）
+    summary: 設定ファイルを YAML として読めないとき、`next(e)` を返却して Claude Code の元の描画に任せ、デバッグログに理由を出す
     setup:
       - name: Mock
         description: 正常系と同じ。`on("fs.read")` で YAML として読めない設定ファイルを返す
@@ -330,12 +330,14 @@ flows:
         C->>M: ui.render（AssistantMessage・本文）
         M->>F: 設定ファイルを読む
         F-->>M: YAML として読めない
-        M-->>C: Error
+        M->>C: $.ui.log（to: debug）
+        M-->>C: next(e) の戻り値
       ```
 
       <!-- /map -->
     expected:
-      - フックが、設定ファイルのパスと読めなかった理由を含む Error で終わる
+      - 戻り値が `next(e)` の戻り値と同じ
+      - '`$.ui.log` が `to: "debug"` で、`mdmark-style` と設定ファイルのパスを含む文で 1 回呼ばれる'
     test: test_error_when_config_unreadable
     refs:
       - SC-472-97#scenarios[異常シナリオ（設定ファイルを読めない）]
