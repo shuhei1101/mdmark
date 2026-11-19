@@ -10665,7 +10665,7 @@ request:
     required: false
     location: argument
     default: なし（`id:` のリンク先を許可しないリンク先として扱う）
-    description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）にも適用する。例外を投げたときも URL を返却しなかったものとして扱い（本文のリンクは `href` を落とし、map のノードは書き方の警告にする）、描画を続ける'
+    description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）と、クラス図の `click`・`link` のクラスのリンク（制約『map のクラス図』）にも適用する。例外を投げたときも URL を返却しなかったものとして扱い（本文のリンクは `href` を落とし、map のノードは書き方の警告にする）、描画を続ける'
     notes: '確認ログ『map の flowchart の click の id: をどこで URL に変えるか』'
     example: (ref) => `https://docs.example.com/${ref.slice(3)}`
 request_example: |-
