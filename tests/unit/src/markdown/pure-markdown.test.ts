@@ -222,9 +222,11 @@ test("test_figure_of_param", async () => {
   // 検証
   expect(figure.kind).toBe("param");
   expect(figure.title).toBe(parsed<{ title: string }>(STRENGTH_TEXT).title);
-  expect(figure.legend).toHaveLength(2);
-  expect(figure.legend[0]?.startsWith("今の値")).toBe(true);
-  expect(figure.legend[1]?.startsWith("既定の値")).toBe(true);
+  const { knob } = parsed<{ knob: { value: number } }>(STRENGTH_TEXT);
+  expect(figure.legend).toEqual([
+    `今の値（${knob.value}）`,
+    `既定の値（${knob.value}）`,
+  ]);
 });
 
 // 範囲のスクリプトを除いて警告を返却する（正常系）
