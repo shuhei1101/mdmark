@@ -1390,6 +1390,7 @@ const BASE_SHAPE = {
       method: false,
       isStatic: false,
       isAbstract: false,
+      lines: 1,
     },
     {
       visibility: "+",
@@ -1398,6 +1399,7 @@ const BASE_SHAPE = {
       method: true,
       isStatic: false,
       isAbstract: true,
+      lines: 1,
     },
     {
       visibility: "+",
@@ -1406,6 +1408,7 @@ const BASE_SHAPE = {
       method: false,
       isStatic: true,
       isAbstract: false,
+      lines: 1,
     },
   ],
 };
