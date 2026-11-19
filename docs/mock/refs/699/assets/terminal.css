@@ -227,7 +227,6 @@ body.vscode-light .ms-code .num {
 }
 
 .ms-term:hover .ms-term-card,
-.ms-term:focus-visible .ms-term-card,
 .ms-term.is-open .ms-term-card {
   display: block;
 }
@@ -255,11 +254,28 @@ body.vscode-light .ms-code .num {
   margin-top: 1lh;
 }
 
-/* デバッグログの 1 行（用語集を読めない場面で、ログの中身を見せる見本） */
+/* デバッグログの見本（用語集を読めない場面）: 端末の画面の外に、見出しつきで置く */
+.term-debug {
+  max-width: 100ch;
+  margin-top: 1.5rem;
+}
+
+.term-debug h2 {
+  font-size: 1rem;
+  margin-block: 0 0.5rem;
+}
+
 .term-log {
-  margin-top: 1lh;
-  padding: 0.5lh 1ch;
-  border: 1px dashed var(--term-rule);
-  color: var(--term-dim);
+  margin: 0;
+  padding: 0.5em 1ch;
+  border: 1px dashed currentColor;
+  border-radius: 4px;
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", "Menlo", monospace;
+  font-size: 14px;
   overflow-wrap: anywhere;
+}
+
+/* 場面の切り替え（hidden）を、端末の外の見本にも効かせる */
+.term-debug[hidden] {
+  display: none;
 }

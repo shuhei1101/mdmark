@@ -51,8 +51,8 @@
       <div class="term-row term-user" data-scene="styled hover">
         <span class="term-mark" aria-hidden="true">❯</span>
         <div class="term-body">
-          <p>mdmark<sup class="ms-footnote-ref">[1]</sup> の
-            <span class="ms-term" data-scene-open="hover" tabindex="0" aria-describedby="card-ws-user">WS<sup class="ms-footnote-ref">[2]</sup>
+          <p><span class="ms-term">mdmark<sup class="ms-footnote-ref">[1]</sup><span class="ms-term-card" role="tooltip"><span class="ms-term-card-name">mdmark</span>Markdown 文書の表示を各アプリで共通に使用するライブラリ</span></span> の
+            <span class="ms-term" data-scene-open="hover" aria-describedby="card-ws-user">WS<sup class="ms-footnote-ref">[2]</sup>
               <span class="ms-term-card" role="tooltip" id="card-ws-user">
                 <span class="ms-term-card-name">WS（ワークスペース）</span>
                 話し合いの記録を配置するフォルダ
@@ -84,13 +84,14 @@
         </div>
       </div>
 
-      <!-- 返答: mdmark-style あり（表・注意書き・見出し・コードを描き換え、段落と箇条書きは標準の描き方のまま） -->
+      <!-- 返答: mdmark-style あり（表・注意書き・見出し・コードを描き換え、段落と箇条書きは標準の描き方のまま）。
+           用語の下線はメッセージごとに最初の出現だけに付け、見出し・表・コードの中には付けない -->
       <div class="term-row" data-scene="styled hover table-off glossary-error">
         <span class="term-mark" aria-hidden="true">●</span>
         <div class="term-body">
           <p class="ms-heading">WS と WSL の違い</p>
           <!-- 用語集を読めない場面では用語のマーカーを付けない -->
-          <p data-scene="styled hover table-off"><b><span class="ms-term" tabindex="0" aria-describedby="card-ws-reply">WS<sup class="ms-footnote-ref">[1]</sup><span class="ms-term-card" role="tooltip" id="card-ws-reply"><span class="ms-term-card-name">WS（ワークスペース）</span>話し合いの記録を配置するフォルダ</span></span></b> は mdmark の用語で、<span class="ms-inline-code">WSL</span> は Windows の機能です。</p>
+          <p data-scene="styled hover table-off"><b><span class="ms-term" aria-describedby="card-ws-reply">WS<sup class="ms-footnote-ref">[1]</sup><span class="ms-term-card" role="tooltip" id="card-ws-reply"><span class="ms-term-card-name">WS（ワークスペース）</span>話し合いの記録を配置するフォルダ</span></span></b> は <span class="ms-term">mdmark<sup class="ms-footnote-ref">[2]</sup><span class="ms-term-card" role="tooltip"><span class="ms-term-card-name">mdmark</span>Markdown 文書の表示を各アプリで共通に使用するライブラリ</span></span> の用語で、<span class="ms-inline-code">WSL</span> は Windows の機能です。</p>
           <p data-scene="glossary-error"><b>WS</b> は mdmark の用語で、<span class="ms-inline-code">WSL</span> は Windows の機能です。</p>
           <ul class="ms-list">
             <li>WS: 用語集の用語</li>
@@ -111,16 +112,19 @@
             <p><span class="ms-callout-label">NOTE</span>用語は mdmark.config.yaml から取ります</p>
           </div>
           <pre class="ms-code"><span class="kw">const</span> answer = <span class="num">42</span></pre>
-          <p class="ms-footnotes" data-scene="styled hover table-off">[1] WS: 話し合いの記録を配置するフォルダ</p>
+          <p class="ms-footnotes" data-scene="styled hover table-off">[1] WS: 話し合いの記録を配置するフォルダ<br>[2] mdmark: Markdown 文書の表示を各アプリで共通に使用するライブラリ</p>
         </div>
       </div>
-
-      <!-- 用語集を読めない場面: Claude Code のデバッグログに残る 1 行の見本（画面には出ない） -->
-      <p class="term-log" data-scene="glossary-error">デバッグログ: mdmark-style: mdmark.config.yaml を読めません（/home/user/repo/docs/mdmark.config.yaml: ファイルがありません）。用語のマーカーを付けずに描きます</p>
 
       <!-- Claude Code 自身の入力欄（mdmark-style は描き換えない） -->
       <p class="term-prompt"><span class="term-dim">❯ </span></p>
     </div>
+
+    <!-- 用語集を読めない場面: Claude Code のデバッグログに残る 1 行の見本。端末の画面の外に置く -->
+    <section class="term-debug" data-scene="glossary-error" aria-labelledby="debug-log-title">
+      <h2 id="debug-log-title">デバッグログ（<code>claude --debug</code> のときだけ。画面には出ない）</h2>
+      <p class="term-log">mdmark-style: mdmark.config.yaml を読めません（/home/user/repo/docs/mdmark.config.yaml: ファイルがありません）。用語のマーカーを付けずに描きます</p>
+    </section>
   </main>
 
   <!-- 用語のカードを開いた場面: カードを開いた状態で見せる（モックだけの仕組み） -->

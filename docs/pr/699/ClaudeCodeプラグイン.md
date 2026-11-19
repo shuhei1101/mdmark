@@ -18,7 +18,7 @@
 | プラグインの配置先 | リポジトリの直下に mdmark-style のフォルダを作り、`marketplace.json` の `plugins` に行を追加する。`plugin.json`・`plugins[]` に `version` を持たせない | フォルダ名はモジュール構成設計で決める |
 | 返答の描き換え | `ui.render` の `AssistantMessage` で、返答の Markdown を解析して表・見出し・注意書き・コードを共通スタイルの部品の木にし、ほかのブロック（段落・箇条書き）は `Markdown` 部品で Claude Code の標準の返答と同じ描き方にする | 部品の木の上限（20,000 ノード・深さ 32・100,000 文字）を超えるときは元の描画に任せる |
 | マーカー | 返答の `<!-- ... -->` の mdmark のマーカーを参照して描き方（表の種類・注意書き 等）に使用し、マーカーの行と行内のマーカーを画面に出さない | 対応するマーカーの一覧は単一ユースケース設計で決める。`AssistantMessage.text` は画面が隠す部分を除いた本文のため、マーカーが残って届くかを PoC で確認する |
-| 用語のマーカー | `AssistantMessage`・`UserMessage` の本文の用語に下線を付け、hover で開くカードと、本文の後ろの脚注を出す。カードは背景色で後ろの行を隠し、枠線が欠けない位置に出す。発言は標準の描画の背景の帯を残す（`next(e)` の描画を包むか、同じ背景色で描く） | カードと脚注の状態と引数は部品設計・画面設計で決める |
+| 用語のマーカー | `AssistantMessage`・`UserMessage` の本文の用語に下線を付け、hover で開くカードと、本文の後ろの脚注を出す。下線はメッセージごとに最初の出現だけに付け、見出し・表・コードの中には付けない（Web の用語のツールチップと同じ規則）。カードは背景色で後ろの行を隠し、行の頭から行のすぐ下に出す。発言は標準の描画の背景の帯を残す（`next(e)` の描画を包むか、同じ背景色で描く） | カードと脚注の状態と引数は部品設計・画面設計で決める |
 | マーカーの記載方法の注入 | mod の `classic.SessionStart` の結果の `additionalContext` で、マーカーの記載方法の短い説明を注入する。SessionStart は起動・再開・`/clear`・圧縮の後に発火するため、発火ごとに 1 回注入する（`/clear`・圧縮でモデルの文脈から消えた説明を入れ直す） | `inject_marker_guide: false` で止める。`session.start` の戻り値は文脈を変えないため使用しない |
 | 設定 | `MDMARK_STYLE_CONFIG` が指す `settings.yaml`（無ければ `~/.config/mdmark-style/settings.yaml`）の `global`・`projects` を、knowledge の規約『Claude プラグインルール』の `## 設定ファイル` のとおりに重ねて参照する | 設定の設計書は新規の `docs/config/CFG-472-4.yaml` |
 | 描けない部品 | 図（mermaid・map）・埋め込んだ HTML は描き換えない | - |
