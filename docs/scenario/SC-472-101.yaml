@@ -1,4 +1,4 @@
-id: SC-472-97
+id: SC-472-101
 visibility: internal
 title: 文書をMarkdownに書き出す
 lead: 文書の作成者が CLI で mdmark の文書を純粋な Markdown（GFM と Mermaid）に書き出し、`chart`・`param`・埋め込んだ HTML を SVG の画像にして、mdmark の無い表示（GitHub・VS Code の標準のプレビュー）で読める Markdown と画像のファイルを得る。

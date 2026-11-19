@@ -1,4 +1,4 @@
-id: SC-472-98
+id: SC-472-102
 visibility: internal
 title: ビュワーからMarkdownでコピー・エクスポートする
 lead: 読者が、`mount` で描いた文書とまとめた HTML のボタンで、開いている文書を純粋な Markdown（GFM と Mermaid）にしてクリップボードへコピーし、`.md` のファイルとして保存する。
@@ -141,7 +141,7 @@ scenarios:
       - 描いた文書が変わっていない
     test: test_error_when_clipboard_denied
 refs:
-  - SC-472-97#
+  - SC-472-101#
   - SC-472-13#
 test_file: tests/e2e/単一ユースケース/ビュワーからMarkdownでコピー・エクスポートする.spec.ts
 tags:

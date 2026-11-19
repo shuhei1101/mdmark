@@ -1,4 +1,4 @@
-id: MOD-472-352
+id: MOD-472-362
 visibility: internal
 title: ライブラリ本体 / 純粋な Markdown / pure-blocks.logic.ts
 lead: 文書をマーカー・コードブロック・生の HTML・普通の行のブロックに分け、記法ごとのブロックの変換を受け持ち、記法の書き出しの形を変えるときに参照する。

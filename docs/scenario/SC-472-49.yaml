@@ -215,7 +215,7 @@ scenarios:
       - 描くためのモジュール（`load`）への要求が 0 件
     test: test_normal_when_markdown_export
     refs:
-      - SC-472-97#scenarios[正常シナリオ（拡張のマーカー）]
+      - SC-472-101#scenarios[正常シナリオ（拡張のマーカー）]
 lead: 利用側が `registerExtension({ name, directive, load, schema })` で自分のマーカーを追加する。mdmark は文書にそのマーカーがあるときだけ `load` でモジュールを読み込み、マーカーの JSON のオブジェクトを `options` に、部品の定義を `definition` にしてマーカーの場所に描かせる。
 primary_actor: 利用側のアプリの開発者
 stakeholders:

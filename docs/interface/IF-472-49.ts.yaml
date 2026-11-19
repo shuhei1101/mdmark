@@ -1,4 +1,4 @@
-id: IF-472-46
+id: IF-472-49
 visibility: internal
 title: 文書をMarkdownに書き出す
 lead: 文書の作成者が mdmark の文書を 1 つ、純粋な Markdown と、`chart`・`param`・埋め込んだ HTML ごとの SVG のファイルに書き出す。書き出したファイルはほかのファイル・URL を参照せず、mdmark の無い表示で読める。
@@ -8,8 +8,8 @@ entry:
 idempotent: true
 side_effects: 出力のフォルダに Markdown と `images/` の SVG を書き込む（同じ名前のファイルは上書きし、`images/` は書き出した SVG だけにする）
 callers:
-  - SC-472-97#scenarios[正常シナリオ]
-  - SC-472-99#scenarios[正常シナリオ（点検してから CLI で書き出す）]
+  - SC-472-101#scenarios[正常シナリオ]
+  - SC-472-103#scenarios[正常シナリオ（点検してから CLI で書き出す）]
 request:
   - name: '{文書}'
     type: string
@@ -205,7 +205,7 @@ flows:
       - Markdown と SVG のファイルがどこにも書き込まれていない
     test: test_error_when_output_unwritable
 refs:
-  - IF-472-45#
+  - IF-472-48#
   - IF-472-33#
 test_file: tests/integration/lib/export-markdown.test.ts
 tags:

@@ -1003,7 +1003,7 @@ settings:
     reload: reload
     refs:
       - IF-472-35#constraints[右側の目次]
-      - SC-472-98#
+      - SC-472-102#
     status: planned
     notes:
       実装: src/config.ts#DEFAULT_FEATURES

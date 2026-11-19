@@ -1,4 +1,4 @@
-id: IF-472-47
+id: IF-472-50
 visibility: internal
 title: 文書をMarkdownに書き出す
 lead: '`mdmark export-markdown` と同じ処理で、mdmark の文書を 1 つ、純粋な Markdown と SVG のファイルに書き出し、書き出したパスを返却する。'
@@ -139,7 +139,7 @@ flows:
       - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
     test: test_error_when_project_dir_missing
 refs:
-  - IF-472-46#
+  - IF-472-49#
   - IF-472-9#
 test_file: tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts
 tags:

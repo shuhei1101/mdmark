@@ -1,4 +1,4 @@
-id: IF-472-45
+id: IF-472-48
 visibility: internal
 title: 文書を純粋なMarkdownにする
 lead: 利用側（CLI・MCP の書き出しとビュワーのボタン）が、画面を持たずに mdmark の文書を純粋な Markdown（GFM と Mermaid）にする。`chart`・`param`・埋め込んだ HTML は、指定した関数が返す Markdown に置き換えるか取り除く。
@@ -8,8 +8,8 @@ entry:
 idempotent: true
 side_effects: なし（ファイル・画面・外部へ書き込まず、拡張のモジュール（`load`）も読み込まない）
 callers:
-  - SC-472-97#scenarios[正常シナリオ]
-  - SC-472-98#scenarios[正常シナリオ（コピーする）]
+  - SC-472-101#scenarios[正常シナリオ]
+  - SC-472-102#scenarios[正常シナリオ（コピーする）]
 request:
   - name: markdown
     type: string

@@ -1,4 +1,4 @@
-id: MOD-472-353
+id: MOD-472-363
 visibility: internal
 title: ライブラリ本体 / 純粋な Markdown / pure-inline.logic.ts
 lead: 1 行の中の mdmark だけの行内の書き方と生の HTML を、mdmark の無い表示で読める文字にする変換を受け持ち、行内の記法の書き出しの形を変えるときに参照する。

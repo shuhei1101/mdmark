@@ -1,4 +1,4 @@
-id: MOD-472-351
+id: MOD-472-361
 visibility: internal
 title: ライブラリ本体 / 純粋な Markdown / pure-markdown.ts
 lead: 公開関数 `toPureMarkdown` の引数の検査と、ブロックの変換・行内の変換・図と拡張のフックの呼び出しの順を受け持ち、純粋な Markdown への変換の入口を変えるときに参照する。
@@ -90,13 +90,13 @@ functions:
         condition: '`markdown` が文字列でない、または `opts.figure` が関数でない'
         message: 'toPureMarkdown: markdown は文字列で指定してください。／toPureMarkdown: opts.figure は関数で指定してください。'
     callees:
-      - MOD-472-352#functions[splitPureBlocks]
-      - MOD-472-352#functions[convertPureBlock]
-      - MOD-472-353#functions[convertPureInline]
+      - MOD-472-362#functions[splitPureBlocks]
+      - MOD-472-362#functions[convertPureBlock]
+      - MOD-472-363#functions[convertPureInline]
       - '#functions[figureOf]'
       - MOD-472-201#functions[extensionFor]
     refs:
-      - IF-472-45#
+      - IF-472-48#
     status: planned
     unit_tests:
       - name: test_to_pure_markdown

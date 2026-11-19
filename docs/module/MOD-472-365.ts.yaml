@@ -1,4 +1,4 @@
-id: MOD-472-355
+id: MOD-472-365
 visibility: internal
 title: ライブラリ本体 / CLI / figure-svg.ts
 lead: '`render` が返す図の HTML を、ほかのファイル・URL を参照しない 1 つの SVG にする処理を受け持ち、書き出す SVG の作り方を変えるときに参照する。'
@@ -24,7 +24,7 @@ functions:
     callees:
       - '#functions[pruneCss]'
     refs:
-      - IF-472-46#constraints[SVG の作り方]
+      - IF-472-49#constraints[SVG の作り方]
     status: planned
     unit_tests:
       - name: test_figure_to_svg_chart

@@ -37,11 +37,11 @@
 | [ライブラリ本体 / CLI / embed.ts](./MOD-472-112.ts.yaml) | ライブラリ本体 / CLI / embed.ts |
 | [ライブラリ本体 / CLI / errors.ts](./MOD-472-107.ts.yaml) | ライブラリ本体 / CLI / errors.ts |
 | [ライブラリ本体 / CLI / export.ts](./MOD-472-120.ts.yaml) | ライブラリ本体 / CLI / export.ts |
-| [ライブラリ本体 / CLI / export-markdown.ts](./MOD-472-354.ts.yaml) | ライブラリ本体 / CLI / export-markdown.ts |
-| [ライブラリ本体 / CLI / figure-svg.ts](./MOD-472-355.ts.yaml) | ライブラリ本体 / CLI / figure-svg.ts |
-| [ライブラリ本体 / 純粋な Markdown / pure-markdown.ts](./MOD-472-351.ts.yaml) | ライブラリ本体 / 純粋な Markdown / pure-markdown.ts |
-| [ライブラリ本体 / 純粋な Markdown / pure-blocks.logic.ts](./MOD-472-352.ts.yaml) | ライブラリ本体 / 純粋な Markdown / pure-blocks.logic.ts |
-| [ライブラリ本体 / 純粋な Markdown / pure-inline.logic.ts](./MOD-472-353.ts.yaml) | ライブラリ本体 / 純粋な Markdown / pure-inline.logic.ts |
+| [ライブラリ本体 / CLI / export-markdown.ts](./MOD-472-364.ts.yaml) | ライブラリ本体 / CLI / export-markdown.ts |
+| [ライブラリ本体 / CLI / figure-svg.ts](./MOD-472-365.ts.yaml) | ライブラリ本体 / CLI / figure-svg.ts |
+| [ライブラリ本体 / 純粋な Markdown / pure-markdown.ts](./MOD-472-361.ts.yaml) | ライブラリ本体 / 純粋な Markdown / pure-markdown.ts |
+| [ライブラリ本体 / 純粋な Markdown / pure-blocks.logic.ts](./MOD-472-362.ts.yaml) | ライブラリ本体 / 純粋な Markdown / pure-blocks.logic.ts |
+| [ライブラリ本体 / 純粋な Markdown / pure-inline.logic.ts](./MOD-472-363.ts.yaml) | ライブラリ本体 / 純粋な Markdown / pure-inline.logic.ts |
 | [ライブラリ本体 / CLI / git.ts](./MOD-472-122.ts.yaml) | ライブラリ本体 / CLI / git.ts |
 | [ライブラリ本体 / CLI / html.ts](./MOD-472-111.ts.yaml) | ライブラリ本体 / CLI / html.ts |
 | [ライブラリ本体 / CLI / icons.ts](./MOD-472-126.ts.yaml) | ライブラリ本体 / CLI / icons.ts |

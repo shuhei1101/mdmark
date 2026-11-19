@@ -1,4 +1,4 @@
-id: MOD-472-354
+id: MOD-472-364
 visibility: internal
 title: ライブラリ本体 / CLI / export-markdown.ts
 lead: '`mdmark export-markdown` の引数・出力のフォルダの決め方・全て作ってから書き込む順を受け持ち、Markdown への書き出しのコマンドを変えるときに参照する。'
@@ -35,7 +35,7 @@ functions:
       - '#functions[exportMarkdownFiles]'
       - '#functions[writeMarkdownFiles]'
     refs:
-      - IF-472-46#
+      - IF-472-49#
     status: planned
     unit_tests:
       - name: test_run_export_markdown
@@ -97,8 +97,8 @@ functions:
       type: 'Promise<{ markdown: string; images: Array<{ name: string; svg: string }>; warnings: string[] }>'
       description: Markdown と `images/` に置く SVG の名前と中身と警告
     callees:
-      - MOD-472-351#functions[toPureMarkdown]
-      - MOD-472-355#functions[figureToSvg]
+      - MOD-472-361#functions[toPureMarkdown]
+      - MOD-472-365#functions[figureToSvg]
       - MOD-472-120#functions[readDistAssets]
     status: planned
     unit_tests:

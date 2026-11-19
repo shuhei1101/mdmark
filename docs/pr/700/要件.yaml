@@ -1,32 +1,32 @@
 use_cases:
   - kind: single
-    scenario: docs/scenario/SC-472-97.yaml
+    scenario: docs/scenario/SC-472-101.yaml
     impact: new
     detail: 文書の作成者が CLI で mdmark の文書を純粋な Markdown に書き出し、図を Mermaid と SVG の画像にする
     depends_on: []
   - kind: single
-    scenario: docs/scenario/SC-472-98.yaml
+    scenario: docs/scenario/SC-472-102.yaml
     impact: new
     detail: 読者が描いた文書とまとめた HTML のボタンで、純粋な Markdown をクリップボードへコピーし、ファイルに保存する
     depends_on: []
   - kind: composite
-    scenario: docs/scenario/SC-472-99.yaml
+    scenario: docs/scenario/SC-472-103.yaml
     impact: new
     detail: 文書の作成者が書き出した Markdown を、GitHub などの mdmark の無い表示で、記法の文字が見えずに図を含めて読む
     depends_on:
-      - docs/scenario/SC-472-97.yaml
+      - docs/scenario/SC-472-101.yaml
   - kind: single
     scenario: docs/scenario/SC-472-3.yaml
     impact: changed
     detail: Claude Code から Markdown への書き出しを呼ぶ流れを追加する
     depends_on:
-      - docs/scenario/SC-472-97.yaml
+      - docs/scenario/SC-472-101.yaml
   - kind: single
     scenario: docs/scenario/SC-472-49.yaml
     impact: changed
     detail: 拡張が書き出しの形を持つときに、その形で Markdown に書き出す
     depends_on:
-      - docs/scenario/SC-472-97.yaml
+      - docs/scenario/SC-472-101.yaml
   - kind: composite
     scenario: docs/scenario/SC-472-91.yaml
     impact: following

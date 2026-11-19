@@ -1,4 +1,4 @@
-id: SC-472-99
+id: SC-472-103
 visibility: internal
 title: Markdownに書き出してmdmarkの無い表示で読む
 lead: 文書の作成者が mdmark の文書を点検してから純粋な Markdown に書き出し、mdmark の無い表示で記法の文字が見えずに読める Markdown と画像を得る。
@@ -25,7 +25,7 @@ scenarios:
       flowchart TD
         A[設定と索引を点検する:正常シナリオ] --> B[文書をMarkdownに書き出す:正常シナリオ]
         click A "id:SC-472-78#scenarios[正常シナリオ]"
-        click B "id:SC-472-97#scenarios[正常シナリオ]"
+        click B "id:SC-472-101#scenarios[正常シナリオ]"
       ```
 
       <!-- /map -->
@@ -37,7 +37,7 @@ scenarios:
     test: test_normal_when_check_then_export
     uses:
       - SC-472-78#scenarios[正常シナリオ]
-      - SC-472-97#scenarios[正常シナリオ]
+      - SC-472-101#scenarios[正常シナリオ]
 test_file: tests/e2e/複合ユースケース/Markdownに書き出してmdmarkの無い表示で読む.spec.ts
 tags:
   - name: topic:書き出し

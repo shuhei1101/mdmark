@@ -303,7 +303,7 @@ scenarios:
       - ツールの一覧で得た説明文に、純粋な Markdown に書き出すことが記載されている
     test: test_normal_when_markdown
     refs:
-      - SC-472-97#scenarios[正常シナリオ]
+      - SC-472-101#scenarios[正常シナリオ]
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
 primary_actor: Claude Code
 trigger: Claude Code が文書と索引を書き込み終え、点検してから配れる構造にしたくなる
@@ -315,7 +315,7 @@ refs:
   - SC-472-78#
   - SC-472-56#
   - SC-472-76#
-  - SC-472-97#
+  - SC-472-101#
 test_file: tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts
 tags:
   - name: tool:mcp

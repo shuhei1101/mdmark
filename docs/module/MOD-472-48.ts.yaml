@@ -466,10 +466,10 @@ functions:
       type: 'Promise<{ out: string; images: string[]; warnings: string[] }>'
       description: 書き出したパスと警告
     callees:
-      - MOD-472-354#functions[exportMarkdownFiles]
-      - MOD-472-354#functions[writeMarkdownFiles]
+      - MOD-472-364#functions[exportMarkdownFiles]
+      - MOD-472-364#functions[writeMarkdownFiles]
     refs:
-      - IF-472-47#
+      - IF-472-50#
     status: planned
     unit_tests:
       - name: test_run_export_markdown_tool

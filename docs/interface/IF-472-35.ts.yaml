@@ -10366,7 +10366,7 @@ callers:
   - SC-472-80#
   - SC-472-54#
   - SC-472-16#
-  - SC-472-98#
+  - SC-472-102#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
