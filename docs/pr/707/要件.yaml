@@ -33,7 +33,7 @@ docs:
     status: todo
   - page: docs/module/MOD-472-226.ts.yaml
     new: false
-    change: updateValues が aria-valuemin <= aria-valuenow <= aria-valuemax を満たす値を入れる形に変え、単体テストのケースを足す
+    change: updateValues が aria-valuemin <= aria-valuenow <= aria-valuemax を満たす値を入れる形に変え、上限が今の幅より狭い場合と、今の幅が最小幅より狭い場合（配置の前に付けて offsetWidth が 0 になる 等）の単体テストのケースを足す
     status: todo
   - page: docs/module/MOD-472-228.ts.yaml
     new: false
@@ -45,8 +45,8 @@ docs:
     status: todo
 scope_out:
   - item: 図の枠のリサイズハンドル（diagram-resize.interact.ts）と案内の帯の手順のバーの aria-valuemin・aria-valuenow・aria-valuemax の大小
-    reason: '同じ ARIA の値の型だが、子 Issue #686 の対象は表の列の幅のつまみだけ。不正な組み合わせになるかは設計で確かめ、該当すれば起票するかをレビューで確定する'
-    plan: to_file
+    reason: 同じ型の不具合は無い。図の枠のリサイズハンドルは aria-valuemax を最小・収まる高さ・今の高さの最大にし、手順のバーは 0 から手順の数の範囲に aria-valuenow が収まる
+    plan: none
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-73.yaml

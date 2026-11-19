@@ -2084,7 +2084,7 @@ scenarios:
       <!-- /map -->
     expected:
       - つまみにフォーカスが移るとつまみが出る
-      - つまみが `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` と、`名前` を含む `aria-label` を持ち、`aria-valuenow` が名前の列の今の幅（px）、`aria-valuemin` が列の最小幅（px。今の幅が最小幅より狭いときは今の幅）、`aria-valuemax` が名前の列を広げられる上限の幅（px。表の見える幅から、ほかの留めた列の幅の合計を引いた幅。上限が今の幅より狭いときは今の幅）、`aria-valuetext` が「{今の幅}px」
+      - つまみが `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` と、`名前` を含む `aria-label` を持ち、`aria-valuenow` が名前の列の今の幅（px）、`aria-valuemin` が列の最小幅（px）、`aria-valuemax` が名前の列を広げられる上限の幅（px。表の見える幅から、ほかの留めた列の幅の合計を引いた幅）、`aria-valuetext` が「{今の幅}px」
       - つまみを持つ見出しのセルの、並べ替え・ピン止め・絞り込みのボタンの Tab の順は、つまみより前
       - → キーを 2 回押した後、名前の列の幅が押す前より 32px 広く、`aria-valuenow` と `aria-valuetext` が広げた後の幅になり、説明・更新日の列の幅は押す前と同じ
       - ← キーを 1 回押した後、名前の列の幅が → キー 1 回分だけ狭まる
@@ -2271,6 +2271,36 @@ scenarios:
       - 1 つ目の表に、絞り込み・件数・テーブル設定・コピーのボタン、集計の行、行へのリンクが無い
       - '`plain` の種類の 2 つ目の表に、並べ替えのボタンが無い'
     test: test_normal_when_unmarked_table_sorted
+  - name: 正常シナリオ（見える幅より広い列のつまみにフォーカスする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: 長文の列を持つ Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・説明の 2 列 3 行の表を囲んだ文書'
+        notes: 説明はどの行も 20 文字以上で、説明の列が長文の列（最小の幅 45em）になり、表が描く先の要素からはみ出す
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 横にスクロールする表を描く
+        U->>P: Tab キーで説明の列のつまみにフォーカスする
+        P-->>U: 説明の列の今の幅と幅の範囲を示すつまみ
+      ```
+
+      <!-- /map -->
+    expected:
+      - 説明の列の今の幅が、表を包む要素の見える幅より広い
+      - 説明の列のつまみの `aria-valuemax` が `aria-valuenow`（今の幅）と同じ値で、`aria-valuemin` が `aria-valuenow` 以下
+      - どの列のつまみも `aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` で、axe の `aria-valid-attr-value` が出ない
+    test: test_normal_when_column_wider_than_visible_width
 lead: '文書の作成者が `<!-- table: {JSON のオブジェクト} -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 primary_actor: 読者
 stakeholders:
