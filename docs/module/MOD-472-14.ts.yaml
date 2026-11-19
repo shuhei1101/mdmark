@@ -68,7 +68,7 @@ constants:
     title: mdmark-style にまとめる入口
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
-    summary: 'mod のプラグイン mdmark-style の入口と記載する先。`PLUGIN_ENTRY_POINTS` と分け、`format: esm`・`platform: neutral`・`jsxFactory: h`・`external: ["claude-code"]` でまとめる'
+    summary: 'mod のプラグイン mdmark-style の入口と記載する先。`PLUGIN_ENTRY_POINTS` と分け、`format: esm`・`platform: neutral`・`mainFields: ["module", "main"]`・`external: ["claude-code"]`・`postcssStubPlugin` でまとめる'
     value: '{ from: "src/mdmark-style/mod.tsx", to: "mdmark-style/hooks/mod/mod.js" }'
     refs:
       - MOD-472-351#notes[ビルド]

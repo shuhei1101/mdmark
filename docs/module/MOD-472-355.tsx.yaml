@@ -44,7 +44,7 @@ functions:
       1. 設定を読み込む（設定を読み込む）。`SettingsError` は投げたままにする
       2. `enabled` が偽か `targets` に `assistant` が無ければ `next(e)` を返却する
       3. ブロックに分ける（ブロックに分ける）
-      4. `parts.terms` が真で `glossary` があれば用語集を集め、段落・箇条書き・注意書きの中の用語を照合する（用語集を集める・用語を照合する）。用語集を読めなければ `$.ui.log` でデバッグログに理由を書き、用語のマーカーを付けずに続ける
+      4. 本文の用語を照合する（本文の用語を照合する）。用語集を読み込めなければ用語のマーカーを付けずに続ける。文脈の `ui` は `$.ui.copy`・`$.ui.invalidate` を呼ぶアロー関数にする
       5. ブロックごとに部品の木を作り（ブロックを描く）、用語の脚注があれば本文の後ろに脚注の一覧を並べる
       6. 部品の木が `TREE_LIMITS` を超えれば `next(e)` を返却する（部品の木の大きさを数える）
     exceptions:
@@ -74,10 +74,10 @@ functions:
     callees:
       - MOD-472-352#functions[readSettings]
       - MOD-472-353#functions[splitBlocks]
-      - MOD-472-356#functions[loadGlossary]
-      - MOD-472-356#functions[matchTerms]
+      - MOD-472-357#functions[termMarksOf]
       - '#functions[renderBlock]'
       - '#functions[countTree]'
+      - MOD-472-357#functions[renderFootnotes]
     refs:
       - IF-472-45#
     status: planned

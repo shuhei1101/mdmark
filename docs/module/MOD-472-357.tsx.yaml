@@ -122,6 +122,60 @@ functions:
       - IF-472-46#constraints[脚注]
       - SCR-472-5#elements[用語のカード]
     status: planned
+  - name: termMarksOf
+    title: 本文の用語を照合する
+    kind: 関数
+    container: src/mdmark-style/user-message.tsx
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: '`parts.terms` が真で `glossary` があれば用語集を集めて本文と照合する。用語集を読み込めなければ `$.ui.log` でデバッグログに理由を記載して空を返却する'
+    description: 返答と発言の両方のフックが使用する
+    scope: public
+    is_async: true
+    args:
+      - name: $
+        type: RenderEngine
+        required: true
+        description: Claude Code のエンジンのインターフェース
+      - name: options
+        type: '{ settings: StyleSettings; text: string }'
+        required: true
+        description: 重ねた設定とメッセージの Markdown
+    returns:
+      type: Promise<TermMark[]>
+      description: 用語のマーカー。用語集が無い・読み込めないときは空
+    process: |-
+      1. `parts.terms` が偽か `glossary` が無ければ空を返却する
+      2. 用語集を集め、用語を照合する（用語集を集める・用語を照合する）
+      3. `GlossaryError` なら `$.ui.log(理由, { to: "debug" })` を呼んで空を返却する
+    callees:
+      - MOD-472-356#functions[loadGlossary]
+      - MOD-472-356#functions[matchTerms]
+    refs:
+      - IF-472-45#exceptions
+      - IF-472-46#exceptions
+    status: planned
+  - name: renderFootnotes
+    title: 脚注の一覧を描く
+    kind: 関数
+    container: src/mdmark-style/user-message.tsx
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: '用語のマーカーごとに `[n] {名前}: {意味}` の薄い色の Text を返却する'
+    description: 返答と発言の両方のフックが使用する
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ elements: Elements; marks: TermMark[] }'
+        required: true
+        description: '`$.ui.resolve(e)` の部品と用語のマーカー'
+    returns:
+      type: UiNode[]
+      description: 脚注の一覧の行
+    process: 1. マーカーごとに `dimColor` の Text を作る
+    refs:
+      - IF-472-46#constraints[脚注]
+      - SCR-472-5#elements[脚注の一覧]
+    status: planned
 tags:
   - name: topic:用語
     main: true

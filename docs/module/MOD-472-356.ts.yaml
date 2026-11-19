@@ -68,10 +68,14 @@ functions:
     scope: public
     is_async: true
     args:
-      - name: options
-        type: '{ $: Engine; configPath: string }'
+      - name: $
+        type: GlossaryEngine
         required: true
-        description: Claude Code のエンジンのインターフェースと `glossary` のパス
+        description: Claude Code のエンジンのインターフェース（`$.fs` を使用する）
+      - name: options
+        type: '{ configPath: string }'
+        required: true
+        description: '`glossary` のパス'
     returns:
       type: Promise<Glossary>
       description: 集めた用語集

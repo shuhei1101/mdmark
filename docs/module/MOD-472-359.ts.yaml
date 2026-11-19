@@ -21,13 +21,13 @@ constants:
         value: '`src/index.css` の既定のテーマの値'
         description: 用語の下線の色
       - key: border
-        value: '`src/index.css` の既定のテーマの値'
+        value: '`src/index.css` の既定のテーマの値（`css` は `--mdmark-color-muted`。`--mdmark-color-border` は暗い配色で端末の背景と見分けられない）'
         description: 表の罫線と用語のカードの枠の色
       - key: codeBackground
         value: 明るい配色 `#eef1f5`、暗い配色 `#2a2d33`
         description: コードブロックの背景の面。合意したモックの値
       - key: userBand
-        value: 暗い配色 `#3a3a3a`、明るい配色は実装で `tmux capture-pane -e` で測る
+        value: 暗い配色 `#3a3a3a`、明るい配色 `#f0f0f0`（Claude Code 2.1.328 の明るいテーマの `userMessageBackground` の `rgb(240, 240, 240)`）
         description: Claude Code の標準の発言の背景の帯の色。`css` を持たない
     refs:
       - IF-472-45#constraints[色]
