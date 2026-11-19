@@ -30,7 +30,9 @@ docs:
   - page: docs/interface/IF-472-35.ts.yaml
     new: false
     change: 列の幅のつまみの aria-valuemax の記載と結合テストの期待、map の図で薄くした要素のコントラストの記載を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:48:06.845769+00:00'
   - page: docs/module/MOD-472-226.ts.yaml
     new: false
     change: updateValues が aria-valuemin <= aria-valuenow <= aria-valuemax を満たす値を入れる形に変え、上限が今の幅より狭い場合と、今の幅が最小幅より狭い場合（配置の前に付けて offsetWidth が 0 になる 等）の単体テストのケースを足す
@@ -42,6 +44,14 @@ docs:
   - page: docs/screen/SCR-472-4.ts.yaml
     new: false
     change: 列の幅のつまみの制約の aria-valuemax の記載を合わせる
+    status: todo
+  - page: docs/component/CMP-649-1.ts.yaml
+    new: false
+    change: マインドマップで選んだときのほかの項目の opacity 0.25 の記載を、制約『map の強調』の薄い表示に合わせる
+    status: todo
+  - page: docs/component/CMP-653-1.ts.yaml
+    new: false
+    change: 軸と格子の配置の図で選んだときのほかの項目の opacity 0.25 の記載を、制約『map の強調』の薄い表示に合わせる
     status: todo
 scope_out:
   - item: 図の枠のリサイズハンドル（diagram-resize.interact.ts）と案内の帯の手順のバーの aria-valuemin・aria-valuenow・aria-valuemax の大小
