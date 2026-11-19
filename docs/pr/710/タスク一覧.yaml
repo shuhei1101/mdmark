@@ -64,7 +64,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T15:22:18.070857+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:09.096712+00:00'
   - process: ドキュメント修正
     status: todo
     note: docs/guide の resolveIdLink の説明（flowchart だけを挙げる記述）

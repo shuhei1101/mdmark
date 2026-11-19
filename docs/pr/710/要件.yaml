@@ -19,27 +19,39 @@ docs:
   - page: docs/module/MOD-472-128.ts.yaml
     new: false
     change: 'attachMap の手順 1 で、構成図の上で描く種類の図を付ける関数にも hooks.resolveIdLink を指定する。クラス図の id: のリンク先の単体テストを追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
   - page: docs/module/MOD-596-4.ts.yaml
     new: false
     change: 'attachMapClass の引数に resolveIdLink を追加し attachMapFlow へ渡す。id: のリンク先の単体テストを追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
   - page: docs/module/MOD-531-3.ts.yaml
     new: false
     change: attachMapEr の引数に resolveIdLink を追加し attachMapFlow へ渡す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
   - page: docs/module/MOD-531-4.ts.yaml
     new: false
     change: attachMapState の引数に resolveIdLink を追加し attachMapFlow へ渡す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
   - page: docs/module/MOD-596-5.ts.yaml
     new: false
     change: attachMapArchitecture の引数に resolveIdLink を追加し attachMapFlow へ渡す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
   - page: docs/module/MOD-596-6.ts.yaml
     new: false
     change: attachMapC4 の引数に resolveIdLink を追加し attachMapFlow へ渡す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
   - page: docs/guide/API.mark.md
     new: false
     change: opts.resolveIdLink の説明の適用先に、map の classDiagram の click・link のノードを追加する
