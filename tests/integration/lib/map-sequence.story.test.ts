@@ -111,9 +111,11 @@ test("test_lifeline_hits", async () => {
     .evaluateAll((lines) =>
       lines.map((line) => {
         const style = getComputedStyle(line);
-        const lifeline = line.ownerSVGElement?.querySelector(
-          `.mdmark-diagram-lifeline[data-lifeline="${line.getAttribute("data-lifeline")}"]`,
-        );
+        const lifeline = line
+          .closest("svg")
+          ?.querySelector(
+            `.mdmark-diagram-lifeline[data-lifeline="${line.getAttribute("data-lifeline")}"]`,
+          );
         return {
           id: line.getAttribute("data-lifeline"),
           width: style.strokeWidth,
