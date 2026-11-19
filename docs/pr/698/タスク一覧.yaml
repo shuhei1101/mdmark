@@ -65,17 +65,28 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T06:55:26.745170+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-12 の test_start_with_tmux の mock の記載を修正する
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
   - process: ドキュメント修正
     status: todo
     note: LIB-472-29 の verification を、手元の tmux サーバーから分けたサーバーで取り直す
   - process: 単体テスト作成
-    status: todo
+    status: skipped
     note: tests/unit/src/plugin/setup/server.test.ts を -L / -S へ書き換えるかは設計で決める。書き換えない設計なら skipped にする
+    reason: server.test.ts は環境を一時の端末の変数だけで組み立て、既に設計書の分け方で動いている
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
   - process: 実装
-    status: todo
+    status: skipped
     note: src は変えない見込み。テストの共通の準備（tests/integration/plugin.ts・terminal.ts）を書き換える設計なら対象にし、無ければ skipped にする
+    reason: src もテストの共通の準備も変えない分け方にした
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: skipped
     note: tests/integration/plugin.ts・terminal.ts を -L / -S へ書き換えるかは設計で決める。書き換えない設計なら skipped にする
+    reason: tests/integration/plugin.ts・terminal.ts は `TMUX`・`TMUX_PANE` を除外しており、既に設計書の分け方で動いている
+    updated_by: planner
+    updated_at: '2026-11-19T07:07:34.339325+00:00'
