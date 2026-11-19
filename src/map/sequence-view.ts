@@ -396,13 +396,9 @@ export const attachMapSequence = (
       if (button) button.disabled = item.disabled === true;
     }
   };
-  /** ポインターがいる参加者（選択中・再生中も記録する） */
+  /** ポインターがいる参加者（選択中・再生中も記録し、同じ参加者の外へ出るまで強調を付け直さない） */
   let pointed: string | undefined;
-  /** 選択を解いたときにポインターがいた参加者（外へ出るまで強調しない） */
-  let suppressed: string | undefined;
   const change = (next: MapState) => {
-    if (state.selected.length > 0 && next.selected.length === 0)
-      suppressed = pointed;
     state = next;
     save();
     refresh();
@@ -601,17 +597,14 @@ export const attachMapSequence = (
     for (const element of figure.querySelectorAll(`.${HOVER_DIM_CLASS}`))
       element.classList.remove("map-dim", HOVER_DIM_CLASS);
   };
+  /** 選択・再生・並べ替えの間は、ポインターの強調を出さない */
+  const hoverBlocked = () =>
+    reordering || state.selected.length > 0 || current !== undefined;
   /** 参加者を指している間は、その参加者を 1 人選んだときと同じ強調にする（選択・再生の強調があるときは出さない） */
-  /** 選択・再生・並べ替えの間と、選択を解いた直後の参加者は、ポインターの強調を出さない */
-  const hoverBlocked = (id: string) =>
-    reordering ||
-    state.selected.length > 0 ||
-    current !== undefined ||
-    suppressed === id;
   const hoverParticipant = (id: string, pointerType: string) => {
     if (pointerType === "touch" || pointed === id) return;
     pointed = id;
-    if (hoverBlocked(id)) return;
+    if (hoverBlocked()) return;
     clearHover();
     const participant = { id, messages: sequence.messages };
     dimExceptParticipant(figure, participant);
@@ -645,7 +638,6 @@ export const attachMapSequence = (
       // 同じ参加者の箱の中・判定の線の間を動いたときは解かない
       if (participantAt(event.relatedTarget) === participant) return;
       pointed = undefined;
-      if (suppressed === participant) suppressed = undefined;
       clearHover();
       return;
     }
