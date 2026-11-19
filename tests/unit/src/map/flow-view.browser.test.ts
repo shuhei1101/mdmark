@@ -433,12 +433,12 @@ const placeContent = (
         box.bottom -
         Number.parseFloat(nodeStyle.borderBottomWidth) -
         Number.parseFloat(nodeStyle.paddingBottom);
-      const top = first
-        ? innerTop - above + Number.parseFloat(style.marginTop)
-        : rect.top;
-      const bottom = last
-        ? innerBottom + below - Number.parseFloat(style.marginBottom)
-        : rect.bottom;
+      // 動かさない側の端は、動かした端を越えない位置に配置する（CSS を読み込まない環境では、子要素がノードの矩形の外に描かれることがある）
+      const placedTop = innerTop - above + Number.parseFloat(style.marginTop);
+      const placedBottom =
+        innerBottom + below - Number.parseFloat(style.marginBottom);
+      const top = first ? placedTop : Math.min(rect.top, placedBottom);
+      const bottom = last ? placedBottom : Math.max(rect.bottom, placedTop);
       return new DOMRect(rect.left, top, rect.width, bottom - top);
     },
   );
