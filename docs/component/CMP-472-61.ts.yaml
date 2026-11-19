@@ -1551,7 +1551,7 @@ css_properties:
   - name: --mdmark-sticky-top
     syntax: <length>
     default: 0px
-    description: 見出し行を留める位置の、スクロールする場所（表の横のスクロールの要素の外側で最も近い縦にスクロールする祖先。無ければ画面）の上端からのずれ。スクロールする場所の上端に固定したヘッダーを持つ利用側は、その高さを指定する
+    description: 見出し行を留める位置の、スクロールする場所（表の横のスクロールの要素の外側で最も近い、縦にはみ出していて縦にスクロールする祖先。無ければ画面）の上端からのずれ。スクロールする場所の上端に固定したヘッダーを持つ利用側は、その高さを指定する
   - name: --mdmark-color-accent-blue-bg
     syntax: <color>
     default: 値は [デザイン方針](../design-policy.md)
