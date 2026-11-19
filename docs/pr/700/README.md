@@ -1,0 +1,1 @@
+# mdmark の文書を MCP・CLI・ビュワーのボタンで純粋な Markdown（GFM と Mermaid）に書き出す
