@@ -1,0 +1,19 @@
+confirmations:
+  - topic: Markdown のコピーとエクスポートのボタンのモック
+    decision: 目次の頭にアイコンだけのボタンを 2 つ（推奨案 A）。コピーした後は通知を出さずアイコンをチェックに替えるだけ、コピーできなかったときは理由を出してよい（返信で修正）
+    decided_by: reply
+    approver: shuhei1101
+    commit: b80aa7a1
+    thread: https://github.com/shuhei1101/mdmark/pull/700#discussion_r4628702372
+  - topic: ボタンと通知の文言
+    decision: ボタンは「Markdown でコピー」「Markdown でエクスポート」（推奨案 A）。コピーした後の通知「Markdown をコピーしました」は出さない（モックの返信のとおり）
+    decided_by: reply
+    approver: shuhei1101
+    commit: b80aa7a1
+    thread: https://github.com/shuhei1101/mdmark/pull/700#discussion_r4628712119
+  - topic: 右側の目次が無い文書のボタン
+    decision: ボタンを出さない。その文書は CLI・MCP で書き出す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/700#discussion_r4628672061

@@ -104,22 +104,6 @@
   }
 }
 
-/* コピーした後の通知: 頭の下に 1 行で出す */
-.mock-md-status {
-  display: flex;
-  gap: 0.375rem;
-  align-items: center;
-  margin: 0;
-  padding: 0.25rem 0.5rem;
-  border-block-end: 1px solid var(--mdmark-color-border);
-  color: var(--mdmark-color-text);
-  font-size: 0.8125rem;
-
-  svg {
-    color: var(--mdmark-color-link);
-  }
-}
-
 /* コピーできなかったときのパネル: 目次の幅に合わせる */
 .mock-md-panel {
   margin: 0.375rem;

@@ -2,7 +2,7 @@
 // URL の ?state=（rail・open・copied・failed）で目次の開閉とコピーの状態を、?scheme= で配色を選ぶ
 
 import { mount } from "../../../../../dist/index.js";
-import { renderMarkdownButtons, COPIED_STATUS, FAILED_PANEL } from "./markdown-export-parts.js";
+import { renderMarkdownButtons, FAILED_PANEL } from "./markdown-export-parts.js";
 
 const SAMPLE = `# 問い合わせ窓口の見直し
 
@@ -37,7 +37,6 @@ requestAnimationFrame(() => {
   const head = host.querySelector(".mdmark-side-toc-head");
   const pin = head.querySelector(".mdmark-side-toc-pin");
   pin.insertAdjacentHTML("beforebegin", renderMarkdownButtons(state));
-  if (state === "copied") head.insertAdjacentHTML("afterend", COPIED_STATUS);
   if (state === "failed") head.insertAdjacentHTML("afterend", FAILED_PANEL);
   if (state === "rail") return;
   const toggle = host.querySelector(".mdmark-side-toc-toggle");

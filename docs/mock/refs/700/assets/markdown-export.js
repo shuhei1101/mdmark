@@ -1,7 +1,7 @@
 // Markdown のコピーとエクスポートのボタンのカタログ: 右側の目次の頭に置く案ごとに、ボタンの状態と頭の並びを並べる。
 // URL の ?scheme= で配色を選ぶ
 
-import { COPIED_STATUS, FAILED_PANEL, STATES, WORDS, iconSvg, markdownButton } from "./markdown-export-parts.js";
+import { FAILED_PANEL, STATES, WORDS, iconSvg, markdownButton } from "./markdown-export-parts.js";
 
 /** まとめて開閉するボタンの並び（配布物の renderSideToc と同じ HTML） */
 const ACTIONS =
@@ -64,8 +64,8 @@ catalog.insertAdjacentHTML(
     `<ul class="catalog-states">${statesA}<li class="catalog-state"><div class="mdmark catalog-button">${markdownButton({ kind: "export" })}</div>エクスポートのボタン・押す前</li></ul>` +
     '<ul class="catalog-states">' +
     `<li class="catalog-state">${panel({ head: headA(), name: "A・押す前" })}目次の頭（押す前）</li>` +
-    `<li class="catalog-state">${panel({ head: headA(STATES[3]), below: COPIED_STATUS, name: "A・コピーした後" })}コピーした後（2 秒で通知を消し、アイコンを戻す）</li>` +
-    `<li class="catalog-state">${panel({ head: headA(STATES[4]), below: FAILED_PANEL, name: "A・コピーできなかった" })}コピーできなかった（閉じるまで残す）</li>` +
+    `<li class="catalog-state">${panel({ head: headA(STATES[3]), name: "A・コピーした後" })}コピーした後（アイコンをチェックに替え、2 秒で戻す。通知は出さない）</li>` +
+    `<li class="catalog-state">${panel({ head: headA(STATES[4]), below: FAILED_PANEL, name: "A・コピーできなかった" })}コピーできなかった（理由を添え、閉じるまで残す）</li>` +
     "</ul></section>",
 );
 

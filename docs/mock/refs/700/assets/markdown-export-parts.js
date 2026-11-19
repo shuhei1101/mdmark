@@ -1,4 +1,4 @@
-// Markdown のコピーとエクスポートのボタンのモックで共有する部品: アイコン・文言・ボタン・コピーした後の通知・コピーできなかったときのパネル
+// Markdown のコピーとエクスポートのボタンのモックで共有する部品: アイコン・文言・ボタン・コピーできなかったときのパネル
 
 /** lucide のアイコンの線（lucide v1.59.0、ISC） */
 export const ICON_PATHS = {
@@ -18,7 +18,7 @@ export function iconSvg(name) {
   return `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name]}</svg>`;
 }
 
-/** 文言の案（ユーザーに確認する）。ボタンの名前とツールチップ、押した後の知らせ */
+/** 文言（ユーザーが案 A で決定）。ボタンの名前とツールチップ、押した後のボタンの名前。コピーした後は通知を出さず、アイコンを check に替える */
 export const WORDS = {
   copy: "Markdown でコピー",
   export: "Markdown でエクスポート",
@@ -43,13 +43,10 @@ export function markdownButton({ kind, state = STATES[0] }) {
   return `<button class="mock-md-button ${state.className}" type="button" data-markdown="${kind}" aria-label="${stateLabel}" title="${stateLabel}">${iconSvg(icon)}</button>`;
 }
 
-/** コピーした後の通知: 目次の頭の下に 1 行出し、支援技術にも伝える */
-export const COPIED_STATUS = `<p class="mock-md-status" role="status">${iconSvg("check")}${WORDS.copied}</p>`;
-
 /** コピーできなかったときのパネル（配布物の表のコピーのパネルと同じ HTML の組み立て） */
 export const FAILED_PANEL =
   '<div class="mdmark-copy-panel mock-md-panel" role="group" aria-labelledby="mock-md-failed-title mock-md-failed-note">' +
-  `<div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="mock-md-failed-title">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div>` +
+  `<div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="mock-md-failed-title">${iconSvg("circle-alert")}クリップボードにコピーできませんでした（クリップボードへのアクセスが許可されていません）</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div>` +
   '<p class="mdmark-copy-panel-note" id="mock-md-failed-note">Markdown を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p>' +
   '<textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="mock-md-failed-title mock-md-failed-note"># 問い合わせ窓口の見直し\n\n- [導入](#導入)\n  - [前提](#前提)\n- [窓口ごとの件数](#窓口ごとの件数)\n\n## 導入\n\n窓口を 3 つから 2 つにまとめる。</textarea>' +
   "</div>";
