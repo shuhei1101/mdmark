@@ -51,3 +51,9 @@ files:
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
   reviewed: []
+  - path: test-mdmark-style.ts
+    description: モジュール構成『ClaudeCodeプラグイン / mdmark-style / test-mdmark-style.ts』のうち「結合テストをビルドしたプラグインの横に並べて claude plugin test で実行する」を受け持つ。mdmark-style の結合テストの実行を変えるときに参照する。
+    tags: [topic:テスト, tool:claude-code]
+    related:
+      - to: MOD-472-360
+        type: implements

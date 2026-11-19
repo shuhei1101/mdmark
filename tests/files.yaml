@@ -2725,3 +2725,69 @@ files:
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
   reviewed: []
+  - path: unit/src/mdmark-style/mod.test.ts
+    description: src/mdmark-style/mod.tsx（「フックの登録」）を確認する単体テスト。mod.tsx を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/mod.tsx
+        type: tests
+  - path: unit/src/mdmark-style/settings.test.ts
+    description: src/mdmark-style/settings.ts（「設定の読み込み」）を確認する単体テスト。settings.ts を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/settings.ts
+        type: tests
+  - path: unit/src/mdmark-style/blocks.test.ts
+    description: src/mdmark-style/blocks.ts（「ブロックへの分け方」）を確認する単体テスト。blocks.ts を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/blocks.ts
+        type: tests
+  - path: unit/src/mdmark-style/table-layout.test.ts
+    description: src/mdmark-style/table-layout.ts（「表の列の幅と折り返し」）を確認する単体テスト。table-layout.ts を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/table-layout.ts
+        type: tests
+  - path: unit/src/mdmark-style/reply.test.ts
+    description: src/mdmark-style/reply.tsx（「返答の描き換え」）を確認する単体テスト。reply.tsx を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/reply.tsx
+        type: tests
+  - path: unit/src/mdmark-style/terms.test.ts
+    description: src/mdmark-style/terms.ts（「用語集の読み込みと照合」）を確認する単体テスト。terms.ts を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/terms.ts
+        type: tests
+  - path: unit/src/mdmark-style/user-message.test.ts
+    description: src/mdmark-style/user-message.tsx（「発言の用語のマーカー」）を確認する単体テスト。user-message.tsx を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/user-message.tsx
+        type: tests
+  - path: unit/src/mdmark-style/marker-guide.test.ts
+    description: src/mdmark-style/marker-guide.ts（「マーカーの記載方法の注入」）を確認する単体テスト。marker-guide.ts を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/mdmark-style/marker-guide.ts
+        type: tests
+  - path: unit/src/shared/style-tokens.logic.test.ts
+    description: src/shared/style-tokens.logic.ts（「共通スタイルの色」）を確認する単体テスト。style-tokens.logic.ts を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: src/shared/style-tokens.logic.ts
+        type: tests
+  - path: unit/scripts/test-mdmark-style.test.ts
+    description: scripts/test-mdmark-style.ts（「結合テストの並べ方」）を確認する単体テスト。test-mdmark-style.ts を変えたときに、合わせて修正するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: scripts/test-mdmark-style.ts
+        type: tests
+  - path: unit/src/mdmark-style/fake-engine.ts
+    description: mdmark-style の単体テストが使用するmod の `$` と `h` の代わりと、部品の木をたどる補助。テストの準備を変えるときに参照する。
+    tags: [topic:単体テスト, tool:claude-code]
+  - path: unit/src/mdmark-style/glossary-fixture.ts
+    description: mdmark-style の単体テストが使用する用語集の見本のファイル。テストの準備を変えるときに参照する。
+    tags: [topic:単体テスト, tool:claude-code]

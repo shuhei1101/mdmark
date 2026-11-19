@@ -2122,3 +2122,57 @@ files:
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
   reviewed: []
+  - path: mdmark-style/mod.tsx
+    description: モジュール構成『mdmark-style の入口』を受け持つ。フックの登録を変えるときに参照する。
+    tags: [topic:フック, tool:claude-code, topic:プラグイン]
+    related:
+      - to: MOD-472-351
+        type: implements
+  - path: mdmark-style/settings.ts
+    description: モジュール構成『mdmark-style の設定の読み込み』を受け持つ。設定のキーや重ね方を変えるときに参照する。
+    tags: [topic:設定, tool:claude-code]
+    related:
+      - to: MOD-472-352
+        type: implements
+  - path: mdmark-style/blocks.ts
+    description: モジュール構成『返答の Markdown のブロックへの分け方』を受け持つ。描き換えるブロックやマーカーの読み方を変えるときに参照する。
+    tags: [topic:マーカー, tool:claude-code, tool:markdown-it]
+    related:
+      - to: MOD-472-353
+        type: implements
+  - path: mdmark-style/table-layout.ts
+    description: モジュール構成『表の列の幅と折り返し』を受け持つ。表の幅の決め方を変えるときに参照する。
+    tags: [topic:テーブル, tool:claude-code]
+    related:
+      - to: MOD-472-354
+        type: implements
+  - path: mdmark-style/reply.tsx
+    description: モジュール構成『返答の描き換え』を受け持つ。返答の部品の描き方を変えるときに参照する。
+    tags: [action:描画, tool:claude-code]
+    related:
+      - to: MOD-472-355
+        type: implements
+  - path: mdmark-style/terms.ts
+    description: モジュール構成『用語集の読み込みと照合』を受け持つ。用語の集め方や照合を変えるときに参照する。
+    tags: [topic:用語, tool:claude-code]
+    related:
+      - to: MOD-472-356
+        type: implements
+  - path: mdmark-style/user-message.tsx
+    description: モジュール構成『発言の用語のマーカー』を受け持つ。発言の描き方や用語のカード・脚注を変えるときに参照する。
+    tags: [topic:用語, tool:claude-code]
+    related:
+      - to: MOD-472-357
+        type: implements
+  - path: mdmark-style/marker-guide.ts
+    description: モジュール構成『SessionStart のマーカーの記載方法の注入』を受け持つ。注入する説明の文を変えるときに参照する。
+    tags: [topic:マーカー, tool:claude-code]
+    related:
+      - to: MOD-472-358
+        type: implements
+  - path: shared/style-tokens.logic.ts
+    description: モジュール構成『共通スタイルの色』を受け持つ。共通スタイルの色を変えるときに参照する。
+    tags: [topic:色, topic:テーマ]
+    related:
+      - to: MOD-472-359
+        type: implements
