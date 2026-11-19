@@ -39,7 +39,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T14:38:53.972387+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T18:56:56.478311+00:00'
   - process: データ設計
     status: skipped
     reason: データの設計書・状態遷移・設定の構造は変わらない

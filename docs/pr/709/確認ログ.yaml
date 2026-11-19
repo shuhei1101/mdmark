@@ -14,3 +14,8 @@ confirmations:
     decided_by: reply
     approver: shuhei1101
     thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633530979
+  - topic: markdown-preview のモックの内容への合意
+    decision: 既定は描いた結果・帯のコピーボタンの左の Raw のボタン・マーカーで上書き、のモックで進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633244243
