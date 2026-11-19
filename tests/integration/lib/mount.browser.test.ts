@@ -7060,12 +7060,16 @@ test("test_normal_when_side_toc_hovered_and_pinned", async () => {
       actions.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(actions.querySelectorAll("[data-fold-all]")).toHaveLength(2);
-    // 目次の頭: タイトルを配置せず、まとめて開閉するボタンの並び → ピン止めの順
+    // 目次の頭: タイトルを配置せず、まとめて開閉するボタンの並び → Markdown のボタンの並び → ピン止めの順
     expect(
       [...find(panel, ".mdmark-side-toc-head").children].map(
         (child) => child.className,
       ),
-    ).toEqual(["mdmark-side-toc-actions", "mdmark-side-toc-pin"]);
+    ).toEqual([
+      "mdmark-side-toc-actions",
+      "mdmark-side-toc-markdown",
+      "mdmark-side-toc-pin",
+    ]);
     expect(panel.textContent).not.toContain("目次");
     // 開いた枠は画面に固定し、見えている枠（画面）の上端から --mdmark-space 下に出す
     const space =
