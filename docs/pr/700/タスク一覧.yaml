@@ -15,8 +15,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T07:26:55.894010+00:00'
   - process: PoC 検証
-    status: todo
+    status: done
     note: chart・param・埋め込んだ HTML を画面なしで SVG にする方法
+    updated_by: planner
+    updated_at: '2026-11-19T11:13:32.246608+00:00'
   - process: 複合ユースケース設計
     status: todo
   - process: デザインスタイル選定
