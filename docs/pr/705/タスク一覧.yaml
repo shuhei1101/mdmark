@@ -1,0 +1,67 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が揃っている既存の機能の不具合の修正のため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: view-timeline・transform で留める機構は develop で動いており、未検証の技術に依存しない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 単一ユースケースの連鎖は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 新しい画面・外観を作らない不具合の修正
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面と遷移は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: 単一ユースケース設計
+    status: todo
+  - process: モック作成
+    status: skipped
+    reason: '見出し行を留める外観はモック #151 で合意済みで、外観を変えない'
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: データ設計
+    status: skipped
+    reason: 利用者と決めるデータの構造は変わらない
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: インターフェース定義設計
+    status: todo
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: skipped
+    reason: 画面設計『文書』の項目は変わらず、見出し行の留め方は部品『表』とインターフェース定義『文書を描く』が持つ
+    updated_by: planner
+    updated_at: '2026-11-19T11:03:11.636772+00:00'
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: todo
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo

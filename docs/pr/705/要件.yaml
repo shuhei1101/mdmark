@@ -1,0 +1,66 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 表の種類・機能の指定・描き方によらず、全ての表の見出し行を留める。スクロールする区画の中に描いた文書では、どのブラウザでも区画の上端から決めた位置に留める
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-25.yaml
+    impact: changed
+    detail: 見出し行を留める位置のずれを、スクロールする区画の上端（画面全体のときは画面の上端）から測るものとして指定する
+    depends_on:
+      - docs/scenario/SC-472-73.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: run_only
+    detail: 利用側のページで描いた文書の表の見出し行が留まることを確かめ直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: run_only
+    detail: VS Code のプレビューで描いた表の見出し行が留まることを確かめ直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: run_only
+    detail: 書き出した HTML の表の見出し行が留まることを確かめ直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-13.yaml
+    impact: run_only
+    detail: まとめた HTML の狭い幅の帯の下に見出し行が留まることを確かめ直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-68.yaml
+    impact: run_only
+    detail: 右側の目次・狭い幅の帯が同じ留める位置のずれを使うため、留まる位置が変わらないことを確かめ直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: run_only
+    detail: 印刷では見出し行をずらさないことを確かめ直す
+    depends_on: []
+docs:
+  - page: docs/guide/API.mark.md
+    new: false
+    change: '`--mdmark-sticky-top` の説明を、スクロールする区画の上端（画面全体のときは画面の上端）からのずれに直す'
+    status: todo
+  - page: docs/guide/カスタマイズ-テーマを上書きする.md
+    new: false
+    change: 「固定ヘッダーの下に見出し行を留める」の節に、スクロールする区画の中に描くときの基準を書く
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 見出し行を留める位置の説明（173 行目）を、区画の上端からのずれに合わせる
+    status: todo
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 「見出し行を画面の上端に留める」の節を、種類・機能の指定・描き方によらず全ての表で留める記述に合わせる
+    status: todo
+scope_out:
+  - item: 右側の目次・狭い幅の帯・図の参加者の行が使う `--mdmark-sticky-top` の基準の見直し
+    reason: これらは既にスクロールする場所の上端を基準にしており（MOD-472-219・MOD-472-183）、不具合の報告も無い。表の見出し行を同じ基準に揃えるだけで足りると判断した。スコープに含めるかは設計のレビューで確定する
+    plan: none
+  - item: 本文の行が 1 つもない表の見出し行を留める
+    reason: 本文の行が無い表は見出し行だけの高さで、留めても動かせる範囲が無い
+    plan: none
