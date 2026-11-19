@@ -53,7 +53,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T17:41:50.404722+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T17:45:54.071227+00:00'
   - process: 画面設計
     status: skipped
     reason: 変わるのは部品『mapのシーケンス図』で、部品設計で扱う
