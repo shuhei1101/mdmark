@@ -63,7 +63,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T20:08:14.422365+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T20:31:39.157733+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 使い方・リファレンスにノードの大きさの見積もりの記述が無く、修正するページが無いため対象外
