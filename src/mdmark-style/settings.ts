@@ -17,7 +17,13 @@ export type PartName =
   | "fold"
   | "terms"
   | "hover_card"
-  | "footnote";
+  | "footnote"
+  | "row_detail"
+  | "steps"
+  | "tree"
+  | "inline"
+  | "stack"
+  | "figure";
 
 /** 描き換える場所 */
 export type Target = "assistant" | "user";
@@ -44,6 +50,12 @@ export const DEFAULT_SETTINGS: StyleSettings = {
     terms: true,
     hover_card: true,
     footnote: true,
+    row_detail: true,
+    steps: true,
+    tree: true,
+    inline: true,
+    stack: true,
+    figure: true,
   },
   glossary: undefined,
   inject_marker_guide: true,
