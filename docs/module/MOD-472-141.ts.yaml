@@ -398,6 +398,73 @@ functions:
         condition: 上のノードの下の辺から下へ 12px（`clearance`）進んで右へ折れる線と、下のノードの上の辺から上へ出て右へ折れる線の 2 本で、上の線の端点を含む長さ 12px の縦の区間が、下の線の縦の区間と同じ直線の上で重なる
         mock: なし
         expected: どの線にも長さ 0 の区間が無く、連続する 3 点が同じ直線の上で向きを戻さない（折り返さない）。端点は引数のままで、重なりが 0
+  - name: textWidth
+    title: 文の幅を見積もる
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、改行で分けた行のうち最も広い行の幅を返す。ノードの幅の既定の見積もりと、クラス図のノートの幅の見積もり（`classPartInputs`）が使用する
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 名前
+      - name: fontSize
+        type: number
+        required: true
+        description: 文字の大きさ（px）
+    returns:
+      type: number
+      description: 幅（px）
+  - name: splitLines
+    title: 文を行に分ける
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、改行と文字の列の幅で折り返した行を返す。`wrapLabel`・ノードの大きさの既定の見積もりと、クラス図のノートの行の数の見積もり（`classPartInputs`）が使用する
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 名前
+      - name: fontSize
+        type: number
+        required: true
+        description: 文字の大きさ（px）
+      - name: width
+        type: number
+        required: true
+        description: 文字の列の幅（px。ノードの左右の余白を含めない）
+    returns:
+      type: string[]
+      description: 行
+  - name: leafHeight
+    title: ノードの高さを見積もる
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 種類の行と名前の行の数から、`ceil((kindSize + 行の数 × nameSize) × lineHeight) + padY × 2 + 16` でノードの高さを返す。ノードの大きさの既定の見積もりと、クラス図のノートの高さの見積もり（`classPartInputs`）が使用する
+    scope: public
+    args:
+      - name: lines
+        type: number
+        required: true
+        description: 名前の行の数
+    returns:
+      type: number
+      description: 高さ（px）
+    unit_tests:
+      - name: test_leaf_height
+        case: 正常
+        summary: 行の数の高さ
+        condition: 行の数 1 と 2
+        mock: なし
+        expected: 1 行が 63、2 行が 83（`ceil((11 + 2 × 14) × 1.4) + 6 × 2 + 16`）
 lead: '入れ子のグループの自動配置と線の経路を受け持ち、構成図の配置を変えるときに参照する。'
 tags:
   - name: topic:map
