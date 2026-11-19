@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { CLASS } from "../../helpers/map.ts";
+import { CLASS, LONG_CLASS as MAP_LONG_CLASS } from "../../helpers/map.ts";
 
 /** classDiagram の読み取りを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadClass = () => import("../../../../src/map/class-diagram.ts");
@@ -293,4 +293,42 @@ test("test_class_part_inputs_when_labels", async () => {
       need("期間の解決"),
     );
   }
+});
+
+// 右の余白を引いた幅で折り返すノートを行の数の高さにする（正常系）
+test("test_class_part_inputs_when_long_note", async () => {
+  // 準備
+  const { parseClassDiagram, classPartInputs } = await loadClass();
+  const { leafHeight } = await import("../../../../src/map/layout.ts");
+  const diagram = parseClassDiagram(MAP_LONG_CLASS);
+  // 実行
+  const inputs = classPartInputs(diagram, {
+    collapsed: new Set(),
+    widths: {},
+    maxWidth: 220,
+  });
+  // 検証
+  expect(inputs.overrides.note_1?.size).toEqual({ w: 220, h: leafHeight(2) });
+});
+
+// 1 行に収まるノートの大きさを変えない（正常系）
+test("test_class_part_inputs_when_short_note", async () => {
+  // 準備
+  const { parseClassDiagram, classPartInputs } = await loadClass();
+  const { leafHeight } = await import("../../../../src/map/layout.ts");
+  const { MAP_LAYOUT } = await loadSizes();
+  const diagram = parseClassDiagram(
+    ["classDiagram", "  class 検索", '  note for 検索 "短い"'].join("\n"),
+  );
+  // 実行
+  const inputs = classPartInputs(diagram, {
+    collapsed: new Set(),
+    widths: {},
+    maxWidth: 220,
+  });
+  // 検証
+  expect(inputs.overrides.note_1?.size).toEqual({
+    w: MAP_LAYOUT.minWidth,
+    h: leafHeight(1),
+  });
 });
