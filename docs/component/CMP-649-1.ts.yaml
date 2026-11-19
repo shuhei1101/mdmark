@@ -33,7 +33,7 @@ args:
     type: 文字列
     required: false
     default: なし（薄くしない）
-    description: 選んだ項目のキー。根からその項目までの項目と線、その項目の子孫のほかを `opacity` 0.25 にする
+    description: 選んだ項目のキー。根からその項目までの項目と線、その項目の子孫のほかを薄い表示（部品設計『mapの構成図』の強調しない要素と同じ）にする
   - name: focus
     type: オブジェクト
     required: false
