@@ -21314,22 +21314,39 @@ test("test_normal_when_map_node_id_link_resolved", async () => {
 const boxesOverlap = (a: DOMRect, b: DOMRect): boolean =>
   a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
-/** クラスのメンバーの文字が、メンバーの行とクラスのノードの中に収まる */
+/** 矩形が外側の矩形の中に収まる */
+function expectBoxInside(box: DOMRect, outer: DOMRect): void {
+  expect(box.left).toBeGreaterThanOrEqual(outer.left - 0.5);
+  expect(box.top).toBeGreaterThanOrEqual(outer.top - 0.5);
+  expect(box.right).toBeLessThanOrEqual(outer.right + 0.5);
+  expect(box.bottom).toBeLessThanOrEqual(outer.bottom + 0.5);
+}
+
+/** クラスのメンバーの行が、名前の行・他の行と重ならずにノードの中に収まり、文字が行の中に収まる */
 function expectClassMembersInside(figure: HTMLElement, id: string): void {
-  const node = mapNode(figure, id).getBoundingClientRect();
-  const texts = [
-    ...mapNode(figure, id).querySelectorAll<HTMLElement>(".map-class-text"),
-  ];
-  expect(texts.length).toBeGreaterThan(0);
-  for (const text of texts) {
-    const box = text.getBoundingClientRect();
-    const row = (
-      text.closest(".map-class-member") as HTMLElement
-    ).getBoundingClientRect();
-    expect(box.bottom).toBeLessThanOrEqual(row.bottom + 0.5);
-    expect(box.bottom).toBeLessThanOrEqual(node.bottom + 0.5);
-    expect(box.right).toBeLessThanOrEqual(node.right + 0.5);
+  const element = mapNode(figure, id);
+  const node = element.getBoundingClientRect();
+  const name = find<HTMLElement>(
+    element,
+    ".mdmark-diagram-node-name",
+  ).getBoundingClientRect();
+  const rows = [
+    ...element.querySelectorAll<HTMLElement>(".map-class-member"),
+  ].map((row) => row.getBoundingClientRect());
+  expect(rows.length).toBeGreaterThan(0);
+  for (const [index, row] of rows.entries()) {
+    expectBoxInside(row, node);
+    expect(boxesOverlap(row, name)).toBe(false);
+    for (const other of rows.slice(index + 1))
+      expect(boxesOverlap(row, other)).toBe(false);
   }
+  for (const text of element.querySelectorAll<HTMLElement>(".map-class-text"))
+    expectBoxInside(
+      text.getBoundingClientRect(),
+      (
+        text.closest(".map-class-member") as HTMLElement
+      ).getBoundingClientRect(),
+    );
 }
 
 // 折り返すメンバー・型の引数・長いラベルを持つクラス図を、クラス・メンバーの行・ラベルを重ねずに描く（正常系）
@@ -21380,16 +21397,16 @@ test("test_normal_when_map_class_long_members_drawn", async () => {
   for (const [index, a] of nodes.entries())
     for (const b of nodes.slice(index + 1))
       expect(boxesOverlap(a, b)).toBe(false);
-  // 検証: 全てのクラスのノードが図の中身（スクロールで見られる範囲）に収まる
+  // 検証: 全てのクラスのノードが図の中身（配置で決めた stage の大きさ）に収まる
   const stage = find<HTMLElement>(figure, ".mdmark-diagram-stage");
   for (const node of figure.querySelectorAll<HTMLElement>(
     ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
   )) {
     expect(node.offsetLeft + node.offsetWidth).toBeLessThanOrEqual(
-      stage.scrollWidth,
+      stage.offsetWidth,
     );
     expect(node.offsetTop + node.offsetHeight).toBeLessThanOrEqual(
-      stage.scrollHeight,
+      stage.offsetHeight,
     );
   }
 });
