@@ -5,3 +5,21 @@ confirmations:
     approver: shuhei1101
     thread: https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626225053
     commit: 995d4086
+  - topic: モックへの合意（コードブロック・開閉の範囲・狭い端末の表の修正後）
+    decision: 修正後のモックの見た目で進める
+    decided_by: 👍
+    approver: shuhei1101
+    commit: '42631341'
+    thread: https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626704888
+  - topic: 狭い端末の表
+    decision: A（デスクトップ版は横スクロール、ターミナル版・VS Code はセルの中で折り返して端末の幅に収める）
+    decided_by: 👍
+    approver: shuhei1101
+    commit: '42631341'
+    thread: https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626704888
+  - topic: 要件に無い機能（mdmark の機能との対応の表の ➕）を入れる範囲
+    decision: B（開閉の範囲（details の範囲・セクションの開閉・注意書きの closed）とコードブロックの飾りをこの PR に入れ、残りの ➕ は別の Issue に切り出す）
+    decided_by: 👍
+    approver: shuhei1101
+    commit: '42631341'
+    thread: https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626704888

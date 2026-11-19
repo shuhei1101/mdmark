@@ -334,11 +334,3 @@ body.vscode-light .ms-code .num {
 .ms-table td {
   white-space: normal;
 }
-
-/* 要件に無い機能の見本の印（モックだけ。利用者の回答が出たら削除する） */
-.ms-proposal {
-  margin-top: 0.5lh;
-  border: 1px dashed var(--term-dim);
-  color: var(--term-dim);
-  padding-inline: 1ch;
-}
