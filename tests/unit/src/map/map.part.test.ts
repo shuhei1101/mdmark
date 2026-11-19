@@ -1355,6 +1355,25 @@ test("test_render_map_class_diagram_when_hints_off", async () => {
   expect(part.html).toMatch(/class="map-class-member[^"]*"[^>]*>[\s\S]*?描く/);
 });
 
+// リンク先を持つクラス（正常系）
+test("test_render_map_class_diagram_when_linked", async () => {
+  // 準備
+  const { renderMapClassDiagram } = await loadParts();
+  const args = { ...(await classArgs()), links: { 円: "./circle.md" } };
+  // 実行
+  const part = renderMapClassDiagram(args);
+  // 検証
+  const circle = outerHtml(part.html, 'data-node="円"');
+  expect(circle).toContain("has-link");
+  expect(circle).toMatch(
+    /<a class="mdmark-diagram-node-link" href="\.\/circle\.md"/,
+  );
+  expect(circle).toContain('class="map-class-members"');
+  expect(
+    matches(part.html, /<a class="mdmark-diagram-node-link"/g),
+  ).toHaveLength(1);
+});
+
 /** モックの「基本図形」 */
 const BASE_SHAPE = {
   id: "基本図形",
