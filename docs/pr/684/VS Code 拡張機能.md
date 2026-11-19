@@ -58,3 +58,15 @@
 | ファイル | 理由 |
 | --- | --- |
 | `vscode/tests/integration/release.test.ts` | 拡張機能のバージョンを 0.2.0 に上げたため、期待値のバージョンを 0.2.0 に、バージョンが違うときの確認のタグを `vscode-v0.3.0` にした（[a34accef](https://github.com/shuhei1101/mdmark/commit/a34accef)） |
+
+### 結合テストの実行範囲
+
+VS Code 拡張機能の結合テストは TL-3 の補足「VS Code 拡張機能」のコマンド（`xvfb-run -a npm --prefix vscode run test:integration`）で実行し、Vitest の `judge_integration_scope` の対象の外のため、変更したファイルを参照する結合テストを調べて決めた。
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
+| --- | --- | --- | --- |
+| `vscode/package.json`・`vscode/package-lock.json` | R7（`version` を `release.test.ts` が、`mdmark.version` の値を `preview-open.test.ts` が確かめる） | `vscode/tests/integration/release.test.ts`・`vscode/tests/integration/preview-open.test.ts`（IF-472-22 の `正常系（develop を読み込む）` を結合テスト作成で追加する） | - |
+| `vscode/tests/integration/release.test.ts` | R2 | `vscode/tests/integration/release.test.ts` | - |
+| `vscode/README.md` | R7（.vsix に入る。`release.test.ts` が .vsix を作る） | `vscode/tests/integration/release.test.ts` | - |
+
+`vscode/tests/integration/` の他のファイルは `mdmark.version` を `latest`・`v{X}.{Y}.{Z}` で使い、今回の変更で振る舞いが変わらないため実行しない。
