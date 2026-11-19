@@ -545,3 +545,29 @@ test("test_collect_map_problems_when_id_link", async () => {
     "A: id:SC-1",
   );
 });
+
+test("test_collect_map_problems_when_class_id_link", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const source =
+    'classDiagram\n  class A\n  class C\n  click A href "id:SC-1"\n  link C "javascript:alert(1)"\n';
+  // 実行
+  const skipped = collectMapProblems(range(source), CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: SKIP,
+  });
+  const resolved = collectMapProblems(range(source), CONFIG, {
+    includeUnknownKeys: true,
+    idLinks: { mode: "resolve", resolveIdLink: undefined },
+  });
+  // 検証
+  expect(skipped.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(skipped[0]?.message).toContain("C");
+  expect(resolved.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+    "map_invalid_value",
+  ]);
+  expect(resolved.map((problem) => problem.message).join("\n")).toContain(
+    "A: id:SC-1",
+  );
+});

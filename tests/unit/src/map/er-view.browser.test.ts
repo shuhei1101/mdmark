@@ -27,7 +27,9 @@ async function setUp() {
     renderDoc(mapRange({ mermaid: ER, data: ER_DATA })).html,
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
-  handles.push(attachMapEr(range, resolveConfig({}), parseMapArgs("").args));
+  handles.push(
+    attachMapEr(range, resolveConfig({}), { args: parseMapArgs("").args }),
+  );
   return root;
 }
 

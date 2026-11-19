@@ -218,9 +218,19 @@ const addEdgeIds = (found: MermaidIds, ids: Iterable<string>): void => {
 };
 
 /** クラス図の ID（クラス名・`{クラス名}.{メンバー名}`・namespace・関係） */
-const classIds = (mermaid: string, line: number | undefined): MermaidIds => {
+const classIds = (
+  mermaid: string,
+  line: number | undefined,
+  idLinks: MapIdLinks,
+): MermaidIds => {
   const diagram = parseClassDiagram(mermaid);
   const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  found.linkProblems.push(
+    ...shiftProblems(
+      mapLinkProblems({ links: diagram.links, idLinks }).problems,
+      line,
+    ),
+  );
   for (const item of diagram.classes) {
     found.ids.add(item.id);
     for (const member of item.members)
@@ -337,7 +347,7 @@ const mermaidIdsOf = (
     case "stateDiagram":
       return stateIds(mermaid, line);
     case "classDiagram":
-      return classIds(mermaid, line);
+      return classIds(mermaid, line, idLinks);
     case "architecture":
       return architectureIds(mermaid, line);
     case "mindmap":

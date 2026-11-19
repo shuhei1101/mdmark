@@ -1,0 +1,94 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: 設計書の参照を持つノードをリンクにする流れは変わらない。クラス図でも同じ流れになる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: mermaid のコードブロックのクラス図の click・link の行のリンクは記述が変わらないが、クラス図のリンク先を渡す経路を変えるため壊しうる
+    depends_on: []
+docs:
+  - page: docs/interface/IF-472-35.ts.yaml
+    new: false
+    change: 'クラス図の click・link の id: のリンク先を resolveIdLink で URL にする結合テストのケースを追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:25:32.321776+00:00'
+  - page: docs/module/MOD-472-128.ts.yaml
+    new: false
+    change: 'attachMap の手順 1 で、構成図の上で描く種類の図を付ける関数にも hooks.resolveIdLink を指定する。クラス図の id: のリンク先の単体テストを追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
+  - page: docs/module/MOD-596-4.ts.yaml
+    new: false
+    change: 'attachMapClass の引数に resolveIdLink を追加し attachMapFlow へ渡す。id: のリンク先の単体テストを追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
+  - page: docs/module/MOD-531-3.ts.yaml
+    new: false
+    change: attachMapEr の引数に resolveIdLink を追加し attachMapFlow へ渡す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
+  - page: docs/module/MOD-531-4.ts.yaml
+    new: false
+    change: attachMapState の引数に resolveIdLink を追加し attachMapFlow へ渡す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
+  - page: docs/module/MOD-596-5.ts.yaml
+    new: false
+    change: attachMapArchitecture の引数に resolveIdLink を追加し attachMapFlow へ渡す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
+  - page: docs/module/MOD-596-6.ts.yaml
+    new: false
+    change: attachMapC4 の引数に resolveIdLink を追加し attachMapFlow へ渡す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:35:07.664038+00:00'
+  - page: docs/guide/API.mark.md
+    new: false
+    change: opts.resolveIdLink の説明の適用先に、map の classDiagram の click・link のノードを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:42:53.111488+00:00'
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 'id: で始まる URL を resolveIdLink の URL にする種類に classDiagram を追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:42:53.111488+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 設計書の参照の click の書き方に、classDiagram の link {クラス} "id:..." も同じと加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:43:08.386312+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 'map の click のリンク先の説明に classDiagram の click・link の行も同じと加え、id: のリンク先の説明をクラス図にも当てる'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:47:01.719954+00:00'
+  - page: docs/module/MOD-472-135.ts.yaml
+    new: false
+    change: 'collectMapProblems の手順 6 で、クラス図の links も mapLinkProblems で確かめる。クラス図の id: のリンク先の単体テストを追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T16:00:40.104383+00:00'
+  - page: docs/interface/IF-472-39.ts.yaml
+    new: false
+    change: '制約『map の点検』で id: のリンク先をずれにしない対象に、classDiagram の click・link を加える'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T16:07:36.546832+00:00'
+scope_out:
+  - item: erDiagram・stateDiagram・architecture・C4* のノードにリンク先を持たせる記法
+    reason: Mermaid のこの 4 種類に click・link の行が無く、IF-472-35 もリンク先を定めていない。要望は resolveIdLink の受け渡しで、記法の追加を含まない
+    plan: none

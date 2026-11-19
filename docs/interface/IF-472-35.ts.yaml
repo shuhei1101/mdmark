@@ -10314,6 +10314,42 @@ flows:
     test: test_normal_when_column_wider_than_visible_width
     refs:
       - SC-472-73#scenarios[正常シナリオ（見える幅より広い列のつまみにフォーカスする）]
+  - name: '正常系（map のクラス図のクラスの id: のリンク先を URL に変える）'
+    summary: '`opts.resolveIdLink` で、言語 `mermaid` のコードブロックの `classDiagram` の `click`・`link` の行の `id:` を URL に変えてクラスをリンクにする'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 'id: のリンク先を持つクラス図の Markdown'
+        description: 言語 `mermaid` のコードブロック 1 つを持つ文書。`classDiagram` のクラス `受付` に `click 受付 href "id:SC-1#scenarios[正常シナリオ]"`、メンバーを持つクラス `台帳` に `link 台帳 "id:SC-2"`、`不明` に `click 不明 href "id:unknown"` の行を持ち、クラス `予約` は `click`・`link` の行を持たない
+      - name: 設定
+        description: '`opts.resolveIdLink` に、`id:SC-` で始まる値を `https://docs.example.com/{id: の後ろ}` に変え、ほかは `undefined` を返す関数'
+      - name: Mock
+        description: リンク先への遷移を Playwright の route で手元の応答に差し替え、開いた URL を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config, resolveIdLink })
+        M->>P: resolveIdLink(参照)
+        P-->>M: URL か undefined
+        M->>M: 返却された URL を本文のリンクと同じ許可で確認する
+        M-->>U: クラスのリンク
+        U->>M: 受付を動かさずに押して離す
+        M-->>U: 変えた URL を開く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`resolveIdLink` が `id:SC-1#scenarios[正常シナリオ]`・`id:SC-2`・`id:unknown` を受け取る'
+      - '`受付`・`台帳` のノードが class `has-link` と、`href` が `https://docs.example.com/SC-1#scenarios[正常シナリオ]`・`https://docs.example.com/SC-2` の `a.mdmark-diagram-node-link` を持ち、`受付` を押すと `https://docs.example.com/SC-1#scenarios[正常シナリオ]` が開く'
+      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たない。範囲の外の map の図のため、`不明` の `id:unknown` は書き方の警告にしない（制約『範囲の外の map の図を mermaid の図に戻す』）'
+    test: test_normal_when_class_node_id_link_resolved
+    refs:
+      - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -10661,7 +10697,7 @@ request:
     required: false
     location: argument
     default: なし（`id:` のリンク先を許可しないリンク先として扱う）
-    description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）にも適用する。例外を投げたときも URL を返却しなかったものとして扱い（本文のリンクは `href` を落とし、map のノードは書き方の警告にする）、描画を続ける'
+    description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）と、クラス図の `click`・`link` のクラスのリンク（制約『map のクラス図』）にも適用する。例外を投げたときも URL を返却しなかったものとして扱い（本文のリンクは `href` を落とし、map のノードは書き方の警告にする）、描画を続ける'
     notes: '確認ログ『map の flowchart の click の id: をどこで URL に変えるか』'
     example: (ref) => `https://docs.example.com/${ref.slice(3)}`
 request_example: |-

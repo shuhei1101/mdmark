@@ -56,7 +56,7 @@ flowchart LR
 リンクは本文のリンクと同じ色と下線で、押すか Tab でフォーカスして Enter を押すと同じタブで開く。
 後ろに記載した `_blank` などの開く先とツールチップは使用しない。
 URL は本文のリンクと同じく `http`・`https`・`mailto` と相対パスだけをリンクにし、`javascript:` などはリンクにしない。
-`flowchart` の `id:` で始まる URL は、`mount` の `resolveIdLink` が返却した URL のリンクにする（[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md#ノードにリンク先を持たせる)）。
+`flowchart` と `classDiagram` の `id:` で始まる URL は、`mount` の `resolveIdLink` が返却した URL のリンクにする（[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md#ノードにリンク先を持たせる)）。
 `click {ノード} call {関数}()` などの関数を呼ぶ行は動かさない。
 
 ### テーマを変える

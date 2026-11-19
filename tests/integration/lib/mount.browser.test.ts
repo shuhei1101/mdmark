@@ -21620,6 +21620,96 @@ test("test_normal_when_map_node_id_link_resolved", async () => {
     expect(warning).toContain(text);
 });
 
+// 正常系（map のクラス図のクラスの id: のリンク先を URL に変える）
+test("test_normal_when_class_node_id_link_resolved", async () => {
+  // 準備
+  const received: string[] = [];
+  const resolveIdLink = (href: string) => {
+    received.push(href);
+    return href.startsWith("id:SC-")
+      ? `https://docs.example.com/${href.slice("id:".length)}`
+      : undefined;
+  };
+  const markdown = [
+    "```mermaid",
+    "classDiagram",
+    "  class 受付",
+    "  class 台帳 {",
+    "    +番号 int",
+    "  }",
+    "  class 不明",
+    "  class 予約",
+    '  click 受付 href "id:SC-1#scenarios[正常シナリオ]"',
+    '  link 台帳 "id:SC-2"',
+    '  click 不明 href "id:unknown"',
+    "```",
+    "",
+  ].join("\n");
+  sessionStorage.clear();
+  clearMapQuery();
+  const el = createElement();
+  el.style.width = "1200px";
+  // 開いた URL を記録し、ページを移らせない（リンク先への遷移の代役）
+  const opened: string[] = [];
+  const record = (event: MouseEvent) => {
+    const anchor = (event.target as Element).closest("a");
+    if (anchor && !event.defaultPrevented) opened.push(anchor.href);
+    event.preventDefault();
+  };
+  window.addEventListener("click", record);
+  try {
+    // 実行
+    await mountTracked(el, {
+      markdown,
+      config: { map: MAP_CONFIG },
+      resolveIdLink,
+    } as Parameters<Built["mount"]>[1]);
+    const figure = await vi.waitFor(
+      () => find<HTMLElement>(el, 'figure.mdmark-diagram[data-diagram="map"]'),
+      { timeout: MAP_WAIT_MS },
+    );
+    // 検証: 関数が受け取る値は id: を含む
+    for (const value of [
+      "id:SC-1#scenarios[正常シナリオ]",
+      "id:SC-2",
+      "id:unknown",
+    ])
+      expect(received).toContain(value);
+    // 検証: 受付・台帳は変えた URL のリンクを持つ
+    for (const [id, href] of [
+      ["受付", "https://docs.example.com/SC-1#scenarios[正常シナリオ]"],
+      ["台帳", "https://docs.example.com/SC-2"],
+    ] as const) {
+      const node = mapNode(figure, id);
+      expect(node.classList.contains("has-link")).toBe(true);
+      const anchor = find<HTMLAnchorElement>(
+        node,
+        "a.mdmark-diagram-node-link",
+      );
+      expect(decodeURI(anchor.getAttribute("href") ?? "")).toBe(href);
+    }
+    // 検証: 不明・予約はリンクを持たず、範囲の外の map の図のため書き方の警告にしない
+    for (const id of ["不明", "予約"]) {
+      expect(mapNode(figure, id).classList.contains("has-link")).toBe(false);
+      expect(mapNode(figure, id).querySelector("a")).toBeNull();
+    }
+    expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+    // 実行: 受付を動かさずに押して離す
+    await userEvent.click(
+      find<HTMLAnchorElement>(
+        mapNode(figure, "受付"),
+        "a.mdmark-diagram-node-link",
+      ),
+    );
+    // 検証: 変えた URL を開く
+    expect(opened.map((url) => decodeURI(url))).toEqual([
+      "https://docs.example.com/SC-1#scenarios[正常シナリオ]",
+    ]);
+  } finally {
+    window.removeEventListener("click", record);
+  }
+});
+
 /** 文字の矩形が別の矩形と重なるか */
 const boxesOverlap = (a: DOMRect, b: DOMRect): boolean =>
   a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
