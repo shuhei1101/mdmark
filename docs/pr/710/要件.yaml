@@ -55,11 +55,21 @@ docs:
   - page: docs/guide/API.mark.md
     new: false
     change: opts.resolveIdLink の説明の適用先に、map の classDiagram の click・link のノードを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:42:53.111488+00:00'
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: 'id: で始まる URL を resolveIdLink の URL にする種類に classDiagram を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:42:53.111488+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 設計書の参照の click の書き方に、classDiagram の link {クラス} "id:..." も同じと加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:43:08.386312+00:00'
 scope_out:
   - item: erDiagram・stateDiagram・architecture・C4* のノードにリンク先を持たせる記法
     reason: Mermaid のこの 4 種類に click・link の行が無く、IF-472-35 もリンク先を定めていない。要望は resolveIdLink の受け渡しで、記法の追加を含まない
