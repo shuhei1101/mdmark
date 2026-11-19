@@ -191,7 +191,7 @@ settings:
     file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
     type: boolean
     default: 'true'
-    description: '`false` のとき、タブ・段組み・カードの格子・wide・ビューの範囲と言語 `csv` のコードブロックを描き換えず、マーカーの行を除いた中身を Claude Code の Markdown 部品の描き方で描く'
+    description: '`false` のとき、タブ・段組み・カードの格子・wide・ビューの範囲と言語 `csv` のコードブロックを縦に並べる描き方（タブ名の見出し・字下げ・カードの箇条書き・CSV の表）をしない。範囲の中のブロックは、それぞれの部品のオン・オフのとおりに描く'
     reload: immediate
     status: planned
     visibility: user
