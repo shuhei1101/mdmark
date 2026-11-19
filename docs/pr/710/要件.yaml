@@ -70,6 +70,12 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-19T15:43:08.386312+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 'map の click のリンク先の説明に classDiagram の click・link の行も同じと加え、id: のリンク先の説明をクラス図にも当てる'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:47:01.719954+00:00'
 scope_out:
   - item: erDiagram・stateDiagram・architecture・C4* のノードにリンク先を持たせる記法
     reason: Mermaid のこの 4 種類に click・link の行が無く、IF-472-35 もリンク先を定めていない。要望は resolveIdLink の受け渡しで、記法の追加を含まない
