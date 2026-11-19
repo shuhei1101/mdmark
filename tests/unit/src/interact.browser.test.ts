@@ -152,7 +152,7 @@ function hasStickyMode(root: HTMLElement): boolean {
   );
 }
 
-// code がオフならコードブロックにコピーのボタンを付けず、table がオフなら行を留めない（正常系）
+// code がオフならコードブロックにコピーのボタンを付けず、table がオフでも行を留める（正常系）
 test("test_attach_interactions_when_code_off", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();
@@ -188,9 +188,9 @@ test("test_attach_interactions_when_code_off", async () => {
   // 検証: オンではコピーのボタンを付け、行を留める
   expect(on.root.querySelector(".mdmark-code-copy")).not.toBeNull();
   expect(hasStickyMode(on.root)).toBe(true);
-  // 検証: オフではどちらも付けない
+  // 検証: オフではコピーのボタンを付けず、行は留める
   expect(off.root.querySelector(".mdmark-code-copy")).toBeNull();
-  expect(hasStickyMode(off.root)).toBe(false);
+  expect(hasStickyMode(off.root)).toBe(true);
 });
 
 // tree がオフならファイルツリーに開閉とコピーを付けない（正常系）
