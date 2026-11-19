@@ -9,6 +9,8 @@ er:
   relations:
     - from: エイリアスの元の行
       to: エイリアス
+      from_column: paths
+      to_column: id
       from_cardinality: '1'
       to_cardinality: 0..n
       label: paths と records から作る
