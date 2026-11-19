@@ -78,10 +78,16 @@ test("test_reply_elements", async ($, on) => {
   installWorld(on, { files: {} });
   for (const surface of SURFACES) {
     // 実行
-    const ui = await mount($, { component: "AssistantMessage", text: REPLY, surface });
+    const ui = await mount($, {
+      component: "AssistantMessage",
+      text: REPLY,
+      surface,
+    });
     // 検証
     expect(await ui.find({ type: "Box", key: "table-3" })).toBeDefined();
-    expect((await ui.find({ type: "Text", text: "見出し" }))?.props.bold).toBe(true);
+    expect((await ui.find({ type: "Text", text: "見出し" }))?.props.bold).toBe(
+      true,
+    );
     expect(await ui.find({ type: "Text", text: "WARNING" })).toBeDefined();
     expect(await ui.find({ type: "Code", text: "const a = 1;" })).toBeDefined();
     expect(await ui.find({ type: "Button", text: "コピー" })).toBeDefined();
@@ -99,16 +105,20 @@ test("test_reply_elements_when_parts_disabled", async ($, on) => {
   installWorld(on, { files: settingsFile(...PARTS_OFF) });
   for (const surface of SURFACES) {
     // 実行
-    const ui = await mount($, { component: "AssistantMessage", text: REPLY, surface });
+    const ui = await mount($, {
+      component: "AssistantMessage",
+      text: REPLY,
+      surface,
+    });
     // 検証
     expect(await ui.find({ type: "Box", key: "table-3" })).toBeUndefined();
     expect(await ui.find({ type: "Text", text: "WARNING" })).toBeUndefined();
     expect(await ui.find({ type: "Code" })).toBeUndefined();
     expect(await ui.find({ type: "Button" })).toBeUndefined();
-    const markdowns = (await ui.findAll({ type: "Markdown" })).map((n) => n.text);
-    expect(markdowns).toEqual(
-      expect.arrayContaining(["## 見出し", "中身"]),
+    const markdowns = (await ui.findAll({ type: "Markdown" })).map(
+      (n) => n.text,
     );
+    expect(markdowns).toEqual(expect.arrayContaining(["## 見出し", "中身"]));
     await ui.unmount();
   }
 });
@@ -135,7 +145,10 @@ test("test_term_elements", async ($, on) => {
       expect(
         nodesOf(tree, (node) => node.props?.underline === true).map(textOf),
       ).toEqual(ui === reply ? ["WS", "mdmark"] : ["WS"]);
-      const cards = nodesOf(tree, (node) => node.props?.position === "absolute");
+      const cards = nodesOf(
+        tree,
+        (node) => node.props?.position === "absolute",
+      );
       expect(cards.map((card) => card.hover)).toEqual(
         cards.map(() => ({ display: "flex" })),
       );
@@ -161,13 +174,19 @@ test("test_term_elements_when_footnote_and_card_disabled", async ($, on) => {
   });
   for (const surface of SURFACES) {
     // 実行
-    const ui = await mount($, { component: "UserMessage", text: "WS を作る", surface });
+    const ui = await mount($, {
+      component: "UserMessage",
+      text: "WS を作る",
+      surface,
+    });
     // 検証
     const tree = await ui.drawn();
     expect(
       nodesOf(tree, (node) => node.props?.underline === true).map(textOf),
     ).toEqual(["WS"]);
-    expect(nodesOf(tree, (node) => node.props?.position === "absolute")).toEqual([]);
+    expect(
+      nodesOf(tree, (node) => node.props?.position === "absolute"),
+    ).toEqual([]);
     expect(await ui.find({ type: "Text", text: /\[1\]/ })).toBeUndefined();
     await ui.unmount();
   }
@@ -178,7 +197,11 @@ test("test_user_band_when_light_theme", async ($, on) => {
   // 準備
   installWorld(on, { files: glossaryWorld(), theme: "light" });
   // 実行
-  const ui = await mount($, { component: "UserMessage", text: "WS を作る", surface: "terminal" });
+  const ui = await mount($, {
+    component: "UserMessage",
+    text: "WS を作る",
+    surface: "terminal",
+  });
   // 検証
   const band = (await ui.drawn()) as { props?: Record<string, unknown> };
   expect(band.props?.backgroundColor).toBe("#f0f0f0");

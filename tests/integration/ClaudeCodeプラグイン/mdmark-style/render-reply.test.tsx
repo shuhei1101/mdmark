@@ -1,10 +1,5 @@
 import { type Engine, expect, test } from "claude-code/testing";
-import {
-  CONFIG_PATH,
-  installWorld,
-  PLUGIN,
-  settingsFile,
-} from "./world.ts";
+import { CONFIG_PATH, installWorld, PLUGIN, settingsFile } from "./world.ts";
 
 /** 正常系の固定の返答 */
 const REPLY = [
@@ -94,7 +89,9 @@ test("test_normal", async ($, on) => {
   // 検証
   const dataHeader = await headerCells(ui, "table-9");
   expect(
-    dataHeader.filter((cell) => cell.props?.bold === true).map((c) => c.children),
+    dataHeader
+      .filter((cell) => cell.props?.bold === true)
+      .map((c) => c.children),
   ).toEqual([["名前"], ["種類"]]);
   const plainHeader = await headerCells(ui, "table-15");
   expect(plainHeader.some((cell) => cell.props?.bold === true)).toBe(false);
@@ -252,7 +249,10 @@ test("test_normal_when_fold_pressed", async ($, on) => {
 test("test_normal_when_tree_over_limit", async ($, on) => {
   // 準備
   installWorld(on, { files: {} });
-  const rows = Array.from({ length: 2000 }, (_, index) => `| ${index} | ${"x".repeat(60)} |`);
+  const rows = Array.from(
+    { length: 2000 },
+    (_, index) => `| ${index} | ${"x".repeat(60)} |`,
+  );
   const text = ["| 番号 | 値 |", "| --- | --- |", ...rows].join("\n");
   // 実行
   const ui = await mountReply($, { text });
@@ -271,9 +271,7 @@ test("test_error_when_glossary_unreadable", async ($, on) => {
   // 実行
   const ui = await mountReply($, { text: REPLY });
   // 検証
-  expect(
-    await ui.findAll({ type: "Text", text: /^\[\d+\]/ }),
-  ).toHaveLength(0);
+  expect(await ui.findAll({ type: "Text", text: /^\[\d+\]/ })).toHaveLength(0);
   expect(
     (await ui.findAll({ type: "Text" })).some(
       (node) => node.props.underline === true,

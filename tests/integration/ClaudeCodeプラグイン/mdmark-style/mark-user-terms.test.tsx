@@ -105,9 +105,7 @@ test("test_normal_when_hover_card_disabled", async ($, on) => {
   const ui = await mountMessage($, MESSAGE);
   // 検証
   expect(await underlined(ui)).toEqual(["mdmark", "WS", "エイリアス"]);
-  expect(
-    await ui.findAll({ type: "Text", text: /^\[\d\] / }),
-  ).toHaveLength(3);
+  expect(await ui.findAll({ type: "Text", text: /^\[\d\] / })).toHaveLength(3);
   expect(
     (await ui.findAll({ type: "Box" })).filter(
       (node) => node.props.position === "absolute",
