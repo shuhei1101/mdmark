@@ -10030,6 +10030,37 @@ flows:
     test: test_normal_when_map_c4_dynamic_played
     refs:
       - SC-472-41#scenarios[正常シナリオ（C4Dynamic の関係を再生する）]
+  - name: 正常系（mermaid のコードブロックのクラス図のリンク先を持つクラスを開く）
+    summary: 言語 `mermaid` のコードブロックの `classDiagram` を map で描き、`click`・`link` の行のリンク先を持つクラスを押してリンク先を開く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: クラス図の mermaid のコードブロックを持つ Markdown
+        description: 言語 `mermaid` のコードブロック 1 つを持つ文書。`classDiagram` のクラス `受付` に `click 受付 href "./doc-2"`、メンバーを持つクラス `台帳` に `link 台帳 "./doc-3"`、`危険` に `click 危険 href "javascript:alert(1)"` の行を持ち、クラス `予約` は `click`・`link` の行を持たない
+      - name: Mock
+        description: '`./doc-2` への遷移を Playwright の route で手元の応答に差し替え、開いた URL を記録する'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: map のクラス図を図の枠に描く
+        P->>M: 受付を動かさずに押して離す
+        M-->>P: リンク先へ移る
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、mermaid の図に戻していない'
+      - '`受付`・`台帳` のノードが class `has-link` と、記載した `href` を持つ `a.mdmark-diagram-node-link` を持ち、`a.mdmark-diagram-node-link` のスクリーンリーダー向けの名前がクラスの名前'
+      - '`危険`・`予約` のノードは `a` 要素と `has-link` を持たず、`el` の中に `href` が `javascript:` で始まる要素が無い'
+      - '`受付` を押した後、開いた URL が `./doc-2` を解決した URL の 1 件'
+    test: test_normal_when_plain_class_node_link_opened
+    refs:
+      - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。

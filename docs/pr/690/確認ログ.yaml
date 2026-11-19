@@ -1,0 +1,7 @@
+confirmations:
+  - topic: develop で既に直っている純粋な Mermaid のクラス図の click のリンクを、close するか再発防止を入れるか
+    decision: 実装は変えず、mount で描くクラス図の click のリンクの結合テストと、MOD-596-4・MOD-472-133 のリンクの記載とテストのケースを追加する（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/690#discussion_r4624569102

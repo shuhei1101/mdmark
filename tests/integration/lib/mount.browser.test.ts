@@ -11572,6 +11572,76 @@ test("test_normal_when_node_link_opened", async () => {
   }
 });
 
+/** `click`・`link` のリンク先を持つクラス `受付`・`台帳`（メンバーを持つ）と、許さないリンク先の `危険`、行を持たない `予約` の言語 `mermaid` のクラス図 */
+const LINKED_CLASS_MERMAID = [
+  "```mermaid",
+  "classDiagram",
+  "  class 受付",
+  "  class 台帳 {",
+  "    +番号 int",
+  "  }",
+  "  class 危険",
+  "  class 予約",
+  '  click 受付 href "./doc-2"',
+  '  link 台帳 "./doc-3"',
+  '  click 危険 href "javascript:alert(1)"',
+  "```",
+  "",
+].join("\n");
+
+// mermaid のコードブロックのクラス図の click・link のリンク先を持つクラスを押してリンク先を開く（正常系）
+test("test_normal_when_plain_class_node_link_opened", async () => {
+  // 準備
+  const { el, figures } = await mountMap(LINKED_CLASS_MERMAID);
+  await vi.waitFor(() => expect(figures()).toHaveLength(1));
+  const figure = figures()[0] as HTMLElement;
+  // 開いた URL を記録し、ページを移らせない（リンク先への遷移の代役）
+  const opened: string[] = [];
+  const record = (event: MouseEvent) => {
+    const anchor = (event.target as Element).closest("a");
+    if (anchor && !event.defaultPrevented) opened.push(anchor.href);
+    event.preventDefault();
+  };
+  window.addEventListener("click", record);
+  try {
+    // 検証: map の図で描き、mermaid の図に戻していない
+    expect(
+      el.querySelector('figure.mdmark-diagram[data-diagram="mermaid"]'),
+    ).toBeNull();
+    // 検証: 受付・台帳はクラスの全体を覆うリンクを持つ
+    for (const [id, href] of [
+      ["受付", "./doc-2"],
+      ["台帳", "./doc-3"],
+    ] as const) {
+      const node = mapNode(figure, id);
+      expect(node.classList.contains("has-link")).toBe(true);
+      const anchor = find<HTMLAnchorElement>(
+        node,
+        "a.mdmark-diagram-node-link",
+      );
+      expect(anchor.getAttribute("href")).toBe(href);
+      expect(anchor.getAttribute("aria-label")).toBe(id);
+    }
+    // 検証: 危険・予約はリンクを持たず、javascript: の要素が無い
+    for (const id of ["危険", "予約"]) {
+      expect(mapNode(figure, id).classList.contains("has-link")).toBe(false);
+      expect(mapNode(figure, id).querySelector("a")).toBeNull();
+    }
+    expect(el.querySelector('[href^="javascript:"]')).toBeNull();
+    // 実行: 受付を動かさずに押して離す
+    await userEvent.click(
+      find<HTMLAnchorElement>(
+        mapNode(figure, "受付"),
+        "a.mdmark-diagram-node-link",
+      ),
+    );
+    // 検証: リンク先へ移る
+    expect(opened).toEqual([new URL("./doc-2", location.href).href]);
+  } finally {
+    window.removeEventListener("click", record);
+  }
+});
+
 // map の click の許さないリンク先のノードをリンクにせず、図の前の書き方の警告に並べる（異常系）
 test("test_error_when_map_node_link_not_allowed", async () => {
   // 準備

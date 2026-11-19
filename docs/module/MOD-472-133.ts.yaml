@@ -640,7 +640,7 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのクラス図』。`renderMapFlow` のクラスのノードに、種類の行の注釈（`«…»`）と `renderMapClassMembers` の開閉のボタンとメンバーの区画を入れ、`renderMapClassEnds` の端の形・多重度・ラベルを重ねる。関係の線は矢じりを持たず（`..` は破線）、関係のラベルは `layout` の線から取って線の中ほどに描き、ノートのノード（`note_{番号}`）は種類の行「ノート」を持つ。クラスの大きさは `MAP_CLASS`（幅・名前の行・メンバーの行・区切り線）で決める
+    summary: 部品設計『mapのクラス図』。`renderMapFlow` のクラスのノードに、種類の行の注釈（`«…»`）と `renderMapClassMembers` の開閉のボタンとメンバーの区画を入れ、`renderMapClassEnds` の端の形・多重度・ラベルを重ねる。関係の線は矢じりを持たず（`..` は破線）、関係のラベルは `layout` の線から取って線の中ほどに描き、ノートのノード（`note_{番号}`）は種類の行「ノート」を持つ。`links` は `renderMapFlow` にそのまま渡し、リンク先を持つクラスを構成図のノードと同じ `a.mdmark-diagram-node-link` で描く。クラスの大きさは `MAP_CLASS`（幅・名前の行・メンバーの行・区切り線）で決める
     scope: public
     callees:
       - MOD-472-133#functions[renderMapFlow]
@@ -665,6 +665,12 @@ functions:
         condition: test_render_map_class_diagram と同じ引数で、`hints` が `false`
         mock: なし
         expected: '`button.map-class-note` が無く、ツールチップに `描く` の説明が無い。メンバーの行は描かれる'
+      - name: test_render_map_class_diagram_when_linked
+        case: 正常
+        summary: リンク先を持つクラス
+        condition: 'test_render_map_class_diagram と同じ引数で、`links` に `{円: "./circle.md"}` を指定する'
+        mock: なし
+        expected: 「円」のノードが `has-link` と `href="./circle.md"` の `a.mdmark-diagram-node-link` を持ち、メンバーの区画がそのまま描かれる。ほかのクラスは `a` 要素を持たない
   - name: renderMapClassMembers
     title: mapのクラス図のメンバーのHTML
     kind: 関数
