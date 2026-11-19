@@ -10354,6 +10354,7 @@
   }
   .map-class-text {
     overflow-wrap: anywhere;
+    line-height: 16px;
     user-select: text;
     font-family: var(--mdmark-font-mono, monospace);
   }

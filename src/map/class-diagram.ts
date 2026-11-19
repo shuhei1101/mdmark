@@ -1,15 +1,19 @@
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
-import type { MapOverride } from "./layout.ts";
+import { LABEL_METRICS, MAP_LAYOUT, type MapOverride } from "./layout.ts";
 import {
+  MAP_CLASS,
+  MAP_ER,
   type MapClassEnd,
   type MapClassNode,
+  mapClassMemberLines,
   mapClassNodeSize,
+  mapClassTextWidth,
   mapClosedGroupSize,
 } from "./map.part.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
 
 /** クラスのメンバー */
-export type ClassMember = MapClassNode["members"][number];
+export type ClassMember = Omit<MapClassNode["members"][number], "lines">;
 
 /** クラス（`generic` は `~T~` の中身。`id` に含めない） */
 export type ClassItem = {
@@ -119,6 +123,31 @@ const splitSign = (
   };
 };
 
+/**
+ * 型の `~` を左から順に組にする。直後が `~`・`,`・空白・`)`・文字列の終わりで閉じを待つ開きがある `~` を `>`、
+ * それ以外を開きにし、組になった開きを `<` にする（組にならない開きは `~` のまま）
+ */
+const genericText = (text: string): string => {
+  const chars = [...text];
+  const open: number[] = [];
+  for (const [at, char] of chars.entries()) {
+    if (char !== "~") continue;
+    const next = chars[at + 1];
+    const closes =
+      open.length > 0 &&
+      (next === undefined ||
+        next === "~" ||
+        next === "," ||
+        next === ")" ||
+        /\s/.test(next));
+    if (closes) {
+      chars[open.pop() as number] = "<";
+      chars[at] = ">";
+    } else open.push(at);
+  }
+  return chars.join("");
+};
+
 /** メンバーの 1 行を、可視性・名前・型・静的・抽象・メソッドに読む */
 const parseMember = (text: string): ClassMember => {
   const trimmed = text.trim();
@@ -133,7 +162,9 @@ const parseMember = (text: string): ClassMember => {
     return {
       visibility,
       name,
-      text: `${name}(${method[2] ?? ""})${type === "" ? "" : ` ${type}`}`,
+      text: genericText(
+        `${name}(${method[2] ?? ""})${type === "" ? "" : ` ${type}`}`,
+      ),
       method: true,
       isStatic,
       isAbstract,
@@ -141,8 +172,8 @@ const parseMember = (text: string): ClassMember => {
   }
   return {
     visibility,
-    name: body.split(/\s+/, 1)[0] ?? body,
-    text: body,
+    name: body.split(/\s+|:/, 1)[0] ?? body,
+    text: genericText(body),
     method: false,
     isStatic,
     isAbstract,
@@ -378,26 +409,86 @@ export const classToFlowchart = (diagram: ClassDiagram): Flowchart => {
   };
 };
 
-/** 部品に指定するクラスの中身・関係の端と、クラスの幅とメンバーの行の数と開閉で決まる大きさの上書き */
+/** 名前の行の文字の幅の見積もり（全角を文字の大きさ、半角を 0.6 倍） */
+const nameWidth = (name: string): number =>
+  [...name].reduce(
+    (sum, char) =>
+      sum +
+      ((char.codePointAt(0) ?? 0) <= 0x7e
+        ? LABEL_METRICS.nameSize * 0.6
+        : LABEL_METRICS.nameSize),
+    LABEL_METRICS.padX * 2,
+  );
+
+/** クラスの幅（補足の幅、無ければ名前とメンバーの行が 1 行に収まる幅を `MAP_CLASS.width` から `maxWidth` の間で） */
+const classWidth = (
+  item: ClassItem,
+  view: { widths: Record<string, number>; maxWidth: number },
+): number => {
+  const given = view.widths[item.id];
+  if (given !== undefined) return given;
+  const label =
+    item.generic === undefined ? item.id : `${item.id}<${item.generic}>`;
+  const needed = Math.max(
+    nameWidth(label),
+    ...item.members.map(
+      (member) => mapClassTextWidth(member.text) + MAP_CLASS.memberInset,
+    ),
+  );
+  return Math.min(
+    Math.max(MAP_CLASS.width, view.maxWidth),
+    Math.max(MAP_CLASS.width, Math.ceil(needed)),
+  );
+};
+
+/** ラベルを持つ関係がつながるクラスの左右に空ける幅（ラベルと前後の空きが、要素の間と両側の空きに収まる幅） */
+const labelAsides = (diagram: ClassDiagram): Map<string, number> => {
+  const gap = Math.min(MAP_LAYOUT.gapRank, MAP_LAYOUT.gapItem);
+  const asides = new Map<string, number>();
+  for (const relation of diagram.relations) {
+    if (relation.label === undefined || relation.label === "") continue;
+    const need =
+      relation.label.length * MAP_ER.labelChar + MAP_CLASS.labelGap * 2;
+    const aside = Math.ceil(Math.max(0, need - gap) / 2);
+    for (const id of [relation.from, relation.to])
+      asides.set(id, Math.max(asides.get(id) ?? 0, aside));
+  }
+  return asides;
+};
+
+/** 部品に指定するクラスの中身・関係の端と、クラスの幅とメンバーの行の数と開閉で決まる大きさ・左右に空ける幅の上書き */
 export const classPartInputs = (
   diagram: ClassDiagram,
-  collapsed: ReadonlySet<string>,
+  view: {
+    collapsed: ReadonlySet<string>;
+    widths: Record<string, number>;
+    maxWidth: number;
+  },
 ): {
   classes: MapClassNode[];
   ends: MapClassEnd[];
   overrides: Record<string, MapOverride>;
 } => {
   const overrides: Record<string, MapOverride> = {};
-  for (const item of diagram.classes) {
-    const methods = item.members.filter((member) => member.method).length;
+  const asides = labelAsides(diagram);
+  const classes: MapClassNode[] = diagram.classes.map((item) => {
+    const width = classWidth(item, view);
+    // メンバーごとの、クラスの幅で折り返した行の数
+    const members = item.members.map((member) => ({
+      ...member,
+      lines: mapClassMemberLines({ text: member.text, width }),
+    }));
+    const aside = asides.get(item.id) ?? 0;
     overrides[item.id] = {
       size: mapClassNodeSize({
-        attributes: item.members.length - methods,
-        methods,
-        collapsed: collapsed.has(item.id),
+        width,
+        lines: members.map((member) => member.lines),
+        collapsed: view.collapsed.has(item.id),
       }),
+      ...(aside > 0 ? { aside } : {}),
     };
-  }
+    return { id: item.id, annotation: item.annotation, members };
+  });
   // 閉じた namespace のノードは、タイトルと「クラス {数} 件」が収まる大きさにする
   for (const space of diagram.namespaces)
     overrides[space] = { size: mapClosedGroupSize(space) };
@@ -413,13 +504,5 @@ export const classPartInputs = (
         : [{ wire: relation.id, at, shape, card }],
     ),
   );
-  return {
-    classes: diagram.classes.map((item) => ({
-      id: item.id,
-      annotation: item.annotation,
-      members: item.members,
-    })),
-    ends,
-    overrides,
-  };
+  return { classes, ends, overrides };
 };
