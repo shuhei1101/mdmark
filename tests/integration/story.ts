@@ -145,6 +145,53 @@ export function contrastRatio(first: string, second: string): number {
   return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
 }
 
+/** `selector` に該当する HTML の要素のうち表示した文字を持つものごとの、文字の色と、その下の面（透明なら外側の要素の面）の色のコントラスト比 */
+export const textContrastsOf = async (
+  page: Page,
+  selector: string,
+): Promise<{ id: string; ratio: number }[]> => {
+  const pairs = await page.locator(selector).evaluateAll((elements) => {
+    // computed の色（`rgb()`・`rgba()`・`color(srgb …)`）を、`rgb(r, g, b)` と不透明度にする
+    const channels = (color: string): { rgb: string; alpha: number } => {
+      const values = (color.match(/[\d.]+/g) ?? []).map(Number);
+      const scale = color.startsWith("color(") ? 255 : 1;
+      const [r = 0, g = 0, b = 0] = values.map((value) => value * scale);
+      const translucent = color.includes("/") || color.startsWith("rgba");
+      return {
+        rgb: `rgb(${r}, ${g}, ${b})`,
+        alpha: translucent ? (values[3] ?? 1) : 1,
+      };
+    };
+    const named = elements.filter((element) => {
+      const text =
+        element.querySelector(".mdmark-diagram-node-name") ?? element;
+      return text.checkVisibility() && text.textContent?.trim() !== "";
+    });
+    return named.map((element) => {
+      const text =
+        element.querySelector(".mdmark-diagram-node-name") ?? element;
+      let surface: Element | null = element;
+      let background = channels(getComputedStyle(element).backgroundColor);
+      while (background.alpha === 0 && surface?.parentElement) {
+        surface = surface.parentElement;
+        background = channels(getComputedStyle(surface).backgroundColor);
+      }
+      return {
+        id:
+          element.getAttribute("data-node") ??
+          element.getAttribute("data-group") ??
+          "",
+        text: channels(getComputedStyle(text).color).rgb,
+        surface: background.alpha === 0 ? "rgb(255, 255, 255)" : background.rgb,
+      };
+    });
+  });
+  return pairs.map(({ id, text, surface }) => ({
+    id,
+    ratio: contrastRatio(text, surface),
+  }));
+};
+
 /** 色の式を、明るい配色の `.mdmark` の中で解決した computed の色の文字列にする */
 export function resolveLightColor(
   page: Page,

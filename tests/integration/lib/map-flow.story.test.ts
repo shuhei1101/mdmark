@@ -9,6 +9,7 @@ import {
   overlaps,
   pageOverflows,
   resolveColorIn,
+  textContrastsOf,
 } from "../story.ts";
 
 const holder = createBrowserHolder();
@@ -128,7 +129,13 @@ test("test_entered", async () => {
   const faded = marks.filter((mark) => mark.faded).map((mark) => mark.id);
   expect(faded.sort()).toEqual(["store", "user"]);
   for (const mark of marks.filter((item) => item.faded)) {
-    expect(mark.opacity).toBeLessThan(1);
+    expect(mark.opacity, mark.id).toBe(1);
+  }
+  for (const { id, ratio } of await textContrastsOf(
+    page,
+    ".mdmark-diagram-stage .map-faded",
+  )) {
+    expect(ratio, id).toBeGreaterThanOrEqual(4.5);
   }
   const lib = page.locator('.map-group[data-group="lib"]');
   await expect(lib.locator("button.map-group-title").count()).resolves.toBe(0);
@@ -188,10 +195,17 @@ test("test_selected_one", async () => {
     if (mark.id.includes("->")) {
       const touches = mark.id.split("->").includes("mount");
       expect(mark.dim, mark.id).toBe(!touches);
+      if (mark.dim) expect(mark.opacity, mark.id).toBeCloseTo(0.25, 2);
     } else if (!["lib", "read", "place", "store"].includes(mark.id)) {
       expect(mark.dim, mark.id).toBe(true);
-      expect(mark.opacity, mark.id).toBeCloseTo(0.25, 2);
+      expect(mark.opacity, mark.id).toBe(1);
     }
+  }
+  for (const { id, ratio } of await textContrastsOf(
+    page,
+    ".mdmark-diagram-stage .mdmark-diagram-node.map-dim[data-node]",
+  )) {
+    expect(ratio, id).toBeGreaterThanOrEqual(4.5);
   }
   expect((await packetWires(page)).sort()).toEqual(
     ["mount->marker", "user->mount"].sort(),
