@@ -11,6 +11,7 @@ import {
   neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
+import { MAP_LAYOUT } from "./layout.ts";
 import { renderMapClassDiagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
@@ -29,18 +30,30 @@ export const attachMapClass = (
   /** namespace の中のクラスの数 */
   const classesUnder = (space: string): number =>
     diagram.classes.filter((item) => item.namespace === space).length;
+  const maxWidth =
+    config.map.node_fit === "width"
+      ? MAP_LAYOUT.maxWidthWide
+      : MAP_LAYOUT.maxWidth;
+  /** 最後に配置したときの、補足の layout の幅（描くときも同じ幅でメンバーを折り返す） */
+  let widths: Record<string, number> = {};
   return attachMapFlow(range, config, {
     args,
     extension: {
       chart,
       kinds: MAP_CLASS_KINDS,
-      overrides: ({ collapsed }) =>
-        classPartInputs(diagram, collapsed).overrides,
+      overrides: (view) => {
+        widths = view.widths;
+        return classPartInputs(diagram, { ...view, maxWidth }).overrides;
+      },
       collapsibles: [...classIds],
       collapsedTag: (space) => `クラス ${classesUnder(space)} 件`,
       rewire: (layout) => spreadMapEnds(layout),
       render: (flowArgs) => {
-        const inputs = classPartInputs(diagram, new Set(flowArgs.collapsed));
+        const inputs = classPartInputs(diagram, {
+          collapsed: new Set(flowArgs.collapsed),
+          widths,
+          maxWidth,
+        });
         return renderMapClassDiagram({
           ...flowArgs,
           classes: inputs.classes,

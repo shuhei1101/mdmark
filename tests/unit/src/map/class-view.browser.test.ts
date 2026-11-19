@@ -1,5 +1,9 @@
 import { afterEach, expect, test } from "vitest";
-import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 import { CLASS, CLASS_DATA, mapRange } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
@@ -172,5 +176,63 @@ test("test_attach_map_class_when_linked", async () => {
   for (const id of ["危険", "予約"]) {
     expect(nodeOf(root, id).classList.contains("has-link")).toBe(false);
     expect(nodeOf(root, id).querySelector("a")).toBeNull();
+  }
+});
+
+/** 矩形どうしが重なるか */
+const overlaps = (a: DOMRect, b: DOMRect): boolean =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/** クラスのメンバーの文字が、メンバーの行とクラスのノードの中に収まる */
+const expectTextsInside = (root: HTMLElement, id: string) => {
+  const node = nodeOf(root, id).getBoundingClientRect();
+  const texts = [
+    ...nodeOf(root, id).querySelectorAll<HTMLElement>(".map-class-text"),
+  ];
+  expect(texts.length).toBeGreaterThan(0);
+  for (const text of texts) {
+    const box = text.getBoundingClientRect();
+    const row = text.closest(".map-class-member")?.getBoundingClientRect();
+    expect(box.top).toBeGreaterThanOrEqual(node.top - 0.5);
+    expect(box.bottom).toBeLessThanOrEqual(node.bottom + 0.5);
+    expect(box.right).toBeLessThanOrEqual(node.right + 0.5);
+    expect(box.bottom).toBeLessThanOrEqual((row?.bottom ?? 0) + 0.5);
+  }
+};
+
+// 長いメンバー・補足の幅・長いラベル（正常系）
+test("test_attach_map_class_when_long_members", async () => {
+  // 準備・実行
+  addStyles();
+  const root = await setUp(
+    [
+      "classDiagram",
+      "  class 検索 {",
+      "    +検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict",
+      "  }",
+      "  class 単語 {",
+      "    +aaaa bbbbbbbbbbbbbbbbbbbb cccccccccccccccccccc dd",
+      "  }",
+      "  class 設定 {",
+      "    +名前: str",
+      "  }",
+      "  検索 ..> 設定 : ASGI アプリの生成",
+      "",
+    ].join("\n"),
+    '{"version": 1, "layout": {"設定": {"width": 320}}}',
+  );
+  // 検証
+  for (const id of ["検索", "単語"]) expectTextsInside(root, id);
+  expect(nodeOf(root, "設定").getBoundingClientRect().width).toBeCloseTo(
+    320,
+    0,
+  );
+  const label = [
+    ...root.querySelectorAll<SVGTextElement>("text.map-class-label"),
+  ].find((item) => item.textContent === "ASGI アプリの生成");
+  expect(label).toBeDefined();
+  const box = label?.getBoundingClientRect() as DOMRect;
+  for (const node of root.querySelectorAll<HTMLElement>("[data-node]")) {
+    expect(overlaps(box, node.getBoundingClientRect())).toBe(false);
   }
 });

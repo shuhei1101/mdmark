@@ -2219,7 +2219,8 @@
     }
 
     /* 見出し行と集計の行のセル: 表の中で上端・下端に留める動きを削除し、ずらしたときに本文の行の前に出す（ピン止めした列は左端に留めたまま） */
-    .mdmark-table :is(thead th, tfoot td):not(.is-pinned-col) {
+    :is(.mdmark-table, [data-mdmark-sticky])
+      :is(thead th, tfoot td):not(.is-pinned-col) {
       position: relative;
       z-index: 3;
     }
@@ -2230,7 +2231,7 @@
     }
 
     /* ずらす集計の行のセル: 行の間の罫線を削除して面の色を隙間なくつなぎ、後ろの本文の行を透かさない（行の区切りは影の線で描く） */
-    &[data-mdmark-sticky] .mdmark-table tfoot td {
+    [data-mdmark-sticky] tfoot td {
       border-block-width: 0;
     }
 
@@ -2238,15 +2239,13 @@
     @supports (animation-timeline: view()) and (animation-range: 0% 100%) {
       /* animation-timeline: 表が画面の上端を過ぎる間を、見出し行と集計の行を動かすタイムラインにする（上端から留める位置のずれだけ内側を測る）。
          表を包む横のスクロールの要素があれば、ページのスクロールに従うよう包む要素に付ける */
-      &[data-mdmark-sticky="timeline"]
-        .mdmark-table
-        :is(.mdmark-table-scroll, :not(.mdmark-table-scroll) > table) {
+      [data-mdmark-sticky="timeline"] {
         view-timeline: --mdmark-table block;
         view-timeline-inset: var(--mdmark-sticky-top, 0px) 0px;
       }
 
       /* animation-timeline の見出し行: 表の上端が留める位置を過ぎた量だけ下げ、本文の最後の行で止める */
-      &[data-mdmark-sticky="timeline"] .mdmark-table thead th {
+      [data-mdmark-sticky="timeline"] thead th {
         animation: mdmark-table-head linear both;
         animation-timeline: --mdmark-table;
         animation-range: exit-crossing var(--mdmark-sticky-head-start)
@@ -2255,7 +2254,7 @@
       }
 
       /* animation-timeline の集計の行: 表の下端が画面の下端より下にある間は上げ、本文の最初の行で止める */
-      &[data-mdmark-sticky="timeline"] .mdmark-table tfoot td {
+      [data-mdmark-sticky="timeline"] tfoot td {
         animation: mdmark-table-foot linear both;
         animation-timeline: --mdmark-table;
         animation-range: entry-crossing
@@ -2269,12 +2268,12 @@
     }
 
     /* スクリプト の見出し行: スクロールに合わせて処理が求めたずれだけ下げる */
-    &[data-mdmark-sticky="script"] .mdmark-table thead th {
+    [data-mdmark-sticky="script"] thead th {
       transform: translateY(var(--mdmark-sticky-head-shift, 0px));
     }
 
     /* スクリプト の集計の行: スクロールに合わせて処理が求めたずれだけ上げる */
-    &[data-mdmark-sticky="script"] .mdmark-table tfoot td {
+    [data-mdmark-sticky="script"] tfoot td {
       transform: translateY(var(--mdmark-sticky-foot-shift, 0px));
     }
 
@@ -3987,7 +3986,7 @@
       }
 
       /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（`animation-timeline` のアニメーションとスクリプトのずれを削除する）。`docs/mock/refs/151/assets/table-print.css` から取る */
-      &[data-mdmark-sticky] .mdmark-table :is(thead th, tfoot td) {
+      [data-mdmark-sticky] :is(thead th, tfoot td) {
         --mdmark-sticky-foot-reach: 0px;
         animation: none;
         transform: none;
@@ -10354,6 +10353,9 @@
   }
   .map-class-text {
     overflow-wrap: anywhere;
+    /* 行の数の見積もり（1 文字ずつ詰める）と同じく、単語の途中でも折り返す */
+    word-break: break-all;
+    line-height: 16px;
     user-select: text;
     font-family: var(--mdmark-font-mono, monospace);
   }

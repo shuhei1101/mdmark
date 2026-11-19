@@ -655,6 +655,76 @@ scenarios:
       - 表の後の段落までスクロールした後、見出し行と集計の行が画面に見えていない
       - 見出し行は文書の中に 1 組だけで、Tab で見出し行の各ボタンと列の幅のつまみへ 1 回ずつ移る
     test: test_normal_when_header_stuck
+  - name: 正常シナリオ（スクロールする区画の中で見出し行を留める）
+    setup:
+      - name: スクロールする区画を持つページ
+        description: '画面の上端に高さ 48px の固定のヘッダーを配置し、その下に縦にスクロールする区画（`overflow: auto`）を配置して、区画の中の要素に文書を描く HTML'
+        notes: ページ全体はスクロールしない。画面の幅は 1280px
+      - name: 大きい表を持つ Markdown
+        description: 正常シナリオ（見出し行を画面の上端に留める）と同じ
+        notes: '-'
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 区画の中の要素に、設定と Markdown を指定して描かせる
+        M-->>P: 縦の高さに上限の無い表を描く
+        U->>P: 区画を縦にスクロールして表の途中を出す
+        P-->>U: 見出し行を区画の上端、集計の行を区画の下端に留めた表
+        U->>P: 表の後の段落まで区画をスクロールする
+        P-->>U: 見出し行と集計の行も区画の外に出た表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表の途中を出したとき、見出し行の上端が区画の上端（画面の上端から 48px）の位置にあり、固定のヘッダーに隠れていない
+      - 表の途中を出したとき、集計の行の下端が区画の下端の位置にある
+      - 表の後の段落までスクロールした後、見出し行と集計の行が区画に見えていない
+      - どのブラウザで開いても、見出し行と集計の行の位置が同じ
+    test: test_normal_when_header_stuck_in_scroller
+  - name: 正常シナリオ（どの表も見出し行を留める）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 高さは決めずページがスクロールする
+      - name: 種類の違う表を持つ Markdown
+        description: 'マーカーで囲まない表・`<!-- table: {"kind": "data"} -->` で囲んだ表・`<!-- table: {"kind": "plain"} -->` で囲んだ表・機能を全て解除した表を、長い段落を挟んで並べた文書'
+        notes: どの表も 3 列 60 行
+      - name: 表の機能をオフにした設定
+        description: 設定の `features.table` を `false` にした設定
+        notes: 同じ Markdown を、既定の設定と、この設定の 2 通りで描く
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 種類ごとの表を描く
+        loop 表ごと
+          U->>P: ページを縦にスクロールして表の途中を出す
+          P-->>U: 見出し行を画面の上端に留めた表
+        end
+      ```
+
+      <!-- /map -->
+    expected:
+      - 既定の設定で描いたとき、どの表も、表の途中を出すと見出し行が画面の上端に見えている
+      - '`features.table` を `false` にした設定で描いたときも、どの表も、表の途中を出すと見出し行が画面の上端に見えている'
+      - 見出し行は表ごとに 1 組だけ
+    test: test_normal_when_every_table_header_stuck
   - name: 正常シナリオ（狭い幅でも最終列を畳まない）
     setup:
       - name: mdmark を読み込むページ

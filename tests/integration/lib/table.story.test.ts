@@ -1349,6 +1349,26 @@ test("test_sticky_rows", async () => {
     .toBeLessThanOrEqual(1);
 });
 
+// plain の表も、ストーリーの枠を縦にスクロールすると見出し行が枠の上端に留まる（正常系）
+test("test_sticky_rows_plain", async () => {
+  // 準備
+  const page = await open("sticky-rows-plain");
+  const tableTop = await page
+    .locator(".mdmark-table table")
+    .evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+  const headTop = (): Promise<number> =>
+    page
+      .locator("#storybook-root thead th")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().top);
+  // 実行: 表の途中までスクロールする
+  await page.evaluate((top) => window.scrollTo(0, top), tableTop + 300);
+  // 検証
+  await expect
+    .poll(async () => Math.abs((await headTop()) - 0))
+    .toBeLessThanOrEqual(1);
+});
+
 /** 本文の行ごとの色の名前と、各セルの面の色・文字の色・下の罫線の色・上の線（box-shadow） */
 function rowColors(page: Page) {
   return page.evaluate(() =>

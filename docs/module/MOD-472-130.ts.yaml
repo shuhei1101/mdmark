@@ -37,8 +37,8 @@ data_models:
         type: Flowchart
         description: '`parseFlowchart` の代わりに配置するノード・グループ・線'
       - name: overrides
-        type: '(view: { collapsed: ReadonlySet<string> }) => Record<string, MapOverride>'
-        description: 補足の `layout` の前に重ねる配置の上書き（ノードの幅・大きさ・上と左右に空ける幅）。配置するたびに、閉じた ID で呼ぶ
+        type: '(view: { collapsed: ReadonlySet<string>; widths: Record<string, number> }) => Record<string, MapOverride>'
+        description: 補足の `layout` の前に重ねる配置の上書き（ノードの幅・大きさ・上と左右に空ける幅）。配置するたびに、閉じた ID と、補足の `layout` の `width` を持つ ID から幅への対応で呼ぶ（クラス図は、補足の幅でメンバーの折り返しと高さを決める）
       - name: collapsibles
         type: string[]
         description: 全て閉じるで閉じる、グループのほかの ID（ER 図のテーブル）

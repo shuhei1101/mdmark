@@ -54,6 +54,8 @@ import {
   GIT_GRAPH_DATA as MAP_GIT_GRAPH_DATA,
   JOURNEY as MAP_JOURNEY,
   JOURNEY_DATA as MAP_JOURNEY_DATA,
+  LONG_CLASS as MAP_LONG_CLASS,
+  LONG_CLASS_DATA as MAP_LONG_CLASS_DATA,
   MINDMAP as MAP_MINDMAP,
   MINDMAP_DATA as MAP_MINDMAP_DATA,
   MINDMAP_LAYOUT_DATA as MAP_MINDMAP_LAYOUT_DATA,
@@ -1735,7 +1737,11 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
   const tableTop = table.getBoundingClientRect().top + window.scrollY;
   try {
     await vi.waitFor(() => {
-      expect(el.getAttribute("data-mdmark-sticky")).toBe(mode);
+      expect(
+        find(wrapper, ".mdmark-table-scroll").getAttribute(
+          "data-mdmark-sticky",
+        ),
+      ).toBe(mode);
     });
     // 検証: 表は高さを抑えず、表の中で縦にスクロールしない
     expect(getComputedStyle(wrapper).maxHeight).toBe("none");
@@ -1843,6 +1849,206 @@ test("test_normal_when_table_header_stuck", async () => {
     await checkStickyRows("timeline");
     // 実行・検証: `animation-timeline` を持たないブラウザの留め方
     await checkStickyRows("script");
+  } finally {
+    await page.viewport(original.width, original.height);
+  }
+});
+
+/** `animation-timeline` を持たないブラウザの代わりに、その問い合わせだけを偽にする */
+function mockNoTimeline(): void {
+  const supports = CSS.supports.bind(CSS) as (...args: string[]) => boolean;
+  vi.spyOn(CSS, "supports").mockImplementation(((...args: string[]) =>
+    args[0]?.includes("animation-timeline")
+      ? false
+      : supports(...args)) as typeof CSS.supports);
+}
+
+/** 画面の上端に高さ 48px の固定のヘッダーを、その下に高さ 600px の縦にスクロールする区画を配置し、区画の中の描く先の要素を返却する */
+function createScroller(stickyTop?: string): {
+  scroller: HTMLElement;
+  el: HTMLElement;
+} {
+  const header = createElement();
+  header.style.cssText =
+    "position: fixed; top: 0; left: 0; right: 0; height: 48px; background: #fff; z-index: 10";
+  const scroller = createElement();
+  scroller.style.cssText =
+    "position: fixed; top: 48px; left: 0; width: 1000px; height: 600px; overflow: auto";
+  const el = document.createElement("div");
+  el.style.width = "600px";
+  if (stickyTop !== undefined) {
+    el.style.setProperty("--mdmark-sticky-top", stickyTop);
+  }
+  scroller.append(el);
+  return { scroller, el };
+}
+
+/** 区画の中に描いた表の見出し行と集計の行の位置を、区画を表の途中までと表の後までスクロールして測る */
+async function measureStickyInScroller(
+  mode: "timeline" | "script",
+  stickyTop: string | undefined,
+): Promise<{ head: number; foot: number; after: number }> {
+  if (mode === "script") {
+    mockNoTimeline();
+  }
+  const { scroller, el } = createScroller(stickyTop);
+  const handle = await mountTracked(el, { markdown: STICKY_MARKDOWN });
+  try {
+    const table = find<HTMLTableElement>(el, ".mdmark-table table");
+    await vi.waitFor(() => {
+      expect(
+        find(el, ".mdmark-table-scroll").getAttribute("data-mdmark-sticky"),
+      ).toBe(mode);
+    });
+    const tableTop =
+      table.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop;
+    scroller.scrollTop = tableTop + 600;
+    await nextFrames();
+    await nextFrames();
+    const headCell = find<HTMLElement>(table, "thead th");
+    const footCell = find<HTMLElement>(table, "tfoot td");
+    const head = headCell.getBoundingClientRect().top;
+    const foot = footCell.getBoundingClientRect().bottom;
+    scroller.scrollTop = tableTop + table.offsetHeight + 400;
+    await nextFrames();
+    await nextFrames();
+    const after = headCell.getBoundingClientRect().bottom;
+    return { head, foot, after };
+  } finally {
+    handle.destroy();
+    scroller.remove();
+    vi.restoreAllMocks();
+  }
+}
+
+// 縦にスクロールする区画の中に描いた文書で、見出し行を区画の上端からずれの分だけ下に、集計の行を区画の下端に、どのブラウザでも同じ位置に留める（正常系）
+test("test_normal_when_table_header_stuck_in_scroller", async () => {
+  // 準備
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(1280, 800);
+  try {
+    for (const [stickyTop, expectedTop] of [
+      [undefined, 48],
+      ["40px", 88],
+    ] as const) {
+      // 実行
+      const timeline = await measureStickyInScroller("timeline", stickyTop);
+      const script = await measureStickyInScroller("script", stickyTop);
+      // 検証: 見出し行は区画の上端 + ずれ、集計の行は区画の下端（画面の上端から 648px）に留まる
+      for (const measured of [timeline, script]) {
+        expect(Math.abs(measured.head - expectedTop)).toBeLessThanOrEqual(1);
+        expect(Math.abs(measured.foot - 648)).toBeLessThanOrEqual(1);
+        // 検証: 表の後までスクロールすると、見出し行も区画の外（区画の上端より上）へ出る
+        expect(measured.after).toBeLessThan(48);
+      }
+      // 検証: 2 つの留め方で位置が一致する
+      expect(Math.abs(timeline.head - script.head)).toBeLessThanOrEqual(1);
+      expect(Math.abs(timeline.foot - script.foot)).toBeLessThanOrEqual(1);
+    }
+  } finally {
+    await page.viewport(original.width, original.height);
+  }
+});
+
+/** 種類の違う 4 つの表（マーカー無し・data・plain・機能を全て解除した data）を、長い段落を挟んで並べた Markdown。どの表も 3 列 60 行 */
+const EVERY_TABLE_MARKDOWN = (() => {
+  const table = (label: string): string[] => [
+    `| ${label}の名前 | 数量 | 備考 |`,
+    "| --- | --- | --- |",
+    ...Array.from(
+      { length: 60 },
+      (_, row) => `| ${label}${row + 1} | ${row + 1} | 備考${row + 1} |`,
+    ),
+  ];
+  const paragraphs = (label: string): string[] =>
+    Array.from({ length: 30 }, (_, i) => `${label}の段落 ${i + 1}\n`);
+  return [
+    ...paragraphs("最初"),
+    ...table("無し"),
+    "",
+    ...paragraphs("data の前"),
+    '<!-- table: {"kind": "data"} -->',
+    "",
+    ...table("data"),
+    "",
+    "<!-- /table -->",
+    "",
+    ...paragraphs("plain の前"),
+    '<!-- table: {"kind": "plain"} -->',
+    "",
+    ...table("plain"),
+    "",
+    "<!-- /table -->",
+    "",
+    ...paragraphs("解除の前"),
+    '<!-- table: {"kind": "data", "features": {"sort": {"enabled": false}, "pin": {"enabled": false}, "filter": {"enabled": false}}} -->',
+    "",
+    ...table("解除"),
+    "",
+    "<!-- /table -->",
+    "",
+    ...paragraphs("最後"),
+  ].join("\n");
+})();
+
+/** 描いた文書の表ごとに、ページを表の途中までスクロールした後の見出し行の最初のセルの上端を返却する */
+async function stuckHeadTops(el: HTMLElement): Promise<number[]> {
+  const tops: number[] = [];
+  for (const table of el.querySelectorAll<HTMLTableElement>("table")) {
+    const tableTop = table.getBoundingClientRect().top + window.scrollY;
+    await scrollPageTo(tableTop + 300);
+    await nextFrames();
+    tops.push(find<HTMLElement>(table, "thead th").getBoundingClientRect().top);
+  }
+  window.scrollTo(0, 0);
+  return tops;
+}
+
+/** 留め方と features.table の組み合わせで描き、どの表も見出し行が画面の上端に留まることを確かめる */
+async function checkEveryTableStuck(
+  mode: "timeline" | "script",
+  table: boolean,
+): Promise<void> {
+  if (mode === "script") {
+    mockNoTimeline();
+  }
+  const el = createElement();
+  el.style.width = "600px";
+  const handle = await mountTracked(el, {
+    markdown: EVERY_TABLE_MARKDOWN,
+    config: { features: { table } },
+  });
+  try {
+    // 検証: features.table がオフなら、どの表も表の部品で包まない
+    expect(el.querySelectorAll(".mdmark-table").length).toBe(table ? 4 : 0);
+    expect(el.querySelectorAll("table")).toHaveLength(4);
+    // 実行
+    const tops = await stuckHeadTops(el);
+    // 検証: どの表も、見出し行が画面の上端に留まる
+    for (const top of tops) {
+      expect(Math.abs(top)).toBeLessThanOrEqual(1);
+    }
+    // 検証: 文書の中の thead は表ごとに 1 つだけ
+    expect(el.querySelectorAll("thead")).toHaveLength(4);
+  } finally {
+    handle.destroy();
+    el.remove();
+    vi.restoreAllMocks();
+  }
+}
+
+// 表の種類・+機能・-機能・設定の features.table によらず、本文の行を持つ全ての表の見出し行を留める（正常系）
+test("test_normal_when_every_table_header_stuck", async () => {
+  // 準備
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(1280, 800);
+  try {
+    for (const mode of ["timeline", "script"] as const) {
+      await checkEveryTableStuck(mode, true);
+      await checkEveryTableStuck(mode, false);
+    }
   } finally {
     await page.viewport(original.width, original.height);
   }
@@ -21306,4 +21512,105 @@ test("test_normal_when_map_node_id_link_resolved", async () => {
   const warning = find(el, ".mdmark-syntax-warning").textContent ?? "";
   for (const text of ["c: id:unknown", "d: id:bad", "e: id:boom"])
     expect(warning).toContain(text);
+});
+
+/** 文字の矩形が別の矩形と重なるか */
+const boxesOverlap = (a: DOMRect, b: DOMRect): boolean =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/** 矩形が外側の矩形の中に収まる */
+function expectBoxInside(box: DOMRect, outer: DOMRect): void {
+  expect(box.left).toBeGreaterThanOrEqual(outer.left - 0.5);
+  expect(box.top).toBeGreaterThanOrEqual(outer.top - 0.5);
+  expect(box.right).toBeLessThanOrEqual(outer.right + 0.5);
+  expect(box.bottom).toBeLessThanOrEqual(outer.bottom + 0.5);
+}
+
+/** クラスのメンバーの行が、名前の行・他の行と重ならずにノードの中に収まり、文字が行の中に収まる */
+function expectClassMembersInside(figure: HTMLElement, id: string): void {
+  const element = mapNode(figure, id);
+  const node = element.getBoundingClientRect();
+  const name = find<HTMLElement>(
+    element,
+    ".mdmark-diagram-node-name",
+  ).getBoundingClientRect();
+  const rows = [
+    ...element.querySelectorAll<HTMLElement>(".map-class-member"),
+  ].map((row) => row.getBoundingClientRect());
+  expect(rows.length).toBeGreaterThan(0);
+  for (const [index, row] of rows.entries()) {
+    expectBoxInside(row, node);
+    expect(boxesOverlap(row, name)).toBe(false);
+    for (const other of rows.slice(index + 1))
+      expect(boxesOverlap(row, other)).toBe(false);
+  }
+  for (const text of element.querySelectorAll<HTMLElement>(".map-class-text"))
+    expectBoxInside(
+      text.getBoundingClientRect(),
+      (
+        text.closest(".map-class-member") as HTMLElement
+      ).getBoundingClientRect(),
+    );
+}
+
+// 折り返すメンバー・型の引数・長いラベルを持つクラス図を、クラス・メンバーの行・ラベルを重ねずに描く（正常系）
+test("test_normal_when_map_class_long_members_drawn", async () => {
+  // 準備・実行
+  const { figures } = await mountMap(
+    mapRange({ mermaid: MAP_LONG_CLASS, data: MAP_LONG_CLASS_DATA }),
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(1));
+  const figure = figures()[0] as HTMLElement;
+  // 検証: メンバーの型の ~ は <> で描かれる
+  const texts = [...figure.querySelectorAll(".map-class-text")].map(
+    (text) => text.textContent ?? "",
+  );
+  expect(texts).toContain("時間範囲(期間) tuple<int, int>");
+  expect(texts).toContain("対応: dict<str, list<int>>");
+  expect(texts.some((text) => text.includes("~"))).toBe(false);
+  // 検証: メンバーの行の文字が行とクラスの中に収まる
+  for (const id of ["検索", "時間範囲", "設定"])
+    expectClassMembersInside(figure, id);
+  // 検証: 補足の幅
+  expect(mapNode(figure, "設定").getBoundingClientRect().width).toBeCloseTo(
+    320,
+    0,
+  );
+  // 検証: ラベルはクラス・ノート・namespace のタイトル・他のラベルと重ならない
+  const avoid = [
+    ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-node[data-node]"),
+    ...figure.querySelectorAll<HTMLElement>(
+      '[data-group="変換"] .map-group-head',
+    ),
+  ].map((element) => element.getBoundingClientRect());
+  const labels = [
+    ...figure.querySelectorAll<SVGTextElement>("text.map-class-label"),
+  ].map((label) => label.getBoundingClientRect());
+  expect(labels).toHaveLength(3);
+  for (const [index, label] of labels.entries()) {
+    for (const other of avoid) expect(boxesOverlap(label, other)).toBe(false);
+    for (const other of labels.slice(index + 1))
+      expect(boxesOverlap(label, other)).toBe(false);
+  }
+  // 検証: どの 2 つのクラスのノードも重ならない
+  const nodes = [
+    ...figure.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+    ),
+  ].map((node) => node.getBoundingClientRect());
+  for (const [index, a] of nodes.entries())
+    for (const b of nodes.slice(index + 1))
+      expect(boxesOverlap(a, b)).toBe(false);
+  // 検証: 全てのクラスのノードが図の中身（配置で決めた stage の大きさ）に収まる
+  const stage = find<HTMLElement>(figure, ".mdmark-diagram-stage");
+  for (const node of figure.querySelectorAll<HTMLElement>(
+    ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+  )) {
+    expect(node.offsetLeft + node.offsetWidth).toBeLessThanOrEqual(
+      stage.offsetWidth,
+    );
+    expect(node.offsetTop + node.offsetHeight).toBeLessThanOrEqual(
+      stage.offsetHeight,
+    );
+  }
 });
