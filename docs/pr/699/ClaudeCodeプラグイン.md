@@ -146,8 +146,8 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 
 | 対象 | 結果 | ログ |
 | --- | --- | --- |
-| `npm run test:unit`（全件） | 2,497 件 pass | [20261119225117_3fb139a7_単体テスト.log](テスト結果/20261119225117_3fb139a7_単体テスト.log) |
-| lint（biome・ESLint・tsc・vscode の tsc・actionlint） | 違反なし（biome の 1 件の警告は作業 PR が変えない `plugin/bin/setup.js` の大きさ） | [20261119225117_3fb139a7_lint.log](テスト結果/20261119225117_3fb139a7_lint.log) |
+| `npm run test:unit`（全件。develop を取り込んだ 8b65db5e。`style-tokens.logic.test.ts` の 3 件の結果もログの末尾に記載） | 2,509 件 pass | [20261119231156_8b65db5e_単体テスト.log](テスト結果/20261119231156_8b65db5e_単体テスト.log) |
+| lint（biome・ESLint・tsc・vscode の tsc・actionlint） | 違反なし（biome の 1 件の警告は作業 PR が変えない `plugin/bin/setup.js` の大きさ） | [20261119231156_8b65db5e_lint.log](テスト結果/20261119231156_8b65db5e_lint.log) |
 
 ### 結合テスト
 
@@ -211,6 +211,8 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `docs/module/index.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/ClaudeCodeプラグイン.md` | R7 | なし（実行するコードを変えない） | - |
 | `docs/nonfunctional/NFR-472-1.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119231156_8b65db5e_lint.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119231156_8b65db5e_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/README.md` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/タスク一覧.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119213541_904d912b_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |

@@ -1,0 +1,27 @@
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style
+
+
+ Test Files  317 passed (317)
+      Tests  2509 passed (2509)
+   Start at  23:11:56
+   Duration  34.06s (worker 82%, tests 13%, import 4%, transform 1%)
+
+
+$ npx vitest run --project unit tests/unit/src/shared/style-tokens.logic.test.ts --reporter verbose
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style
+
+ ✓ |unit| tests/unit/src/shared/style-tokens.logic.test.ts > test_style_color 5ms
+ ✓ |unit| tests/unit/src/shared/style-tokens.logic.test.ts > test_style_color_when_theme_override 0ms
+ ✓ |unit| tests/unit/src/shared/style-tokens.logic.test.ts > test_style_colors_match_css 3ms
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)
+   Start at  23:12:57
+   Duration  105ms (tests 38%, import 33%, transform 18%, worker 11%)
+
