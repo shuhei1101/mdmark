@@ -28,7 +28,7 @@ import {
   readEmbeddedLicenseBlock,
   readLicenseBlock,
 } from "./bundle.ts";
-import { checkMigrations } from "./migrations.ts";
+import { checkMigrations, versionTags } from "./migrations.ts";
 
 // 埋めるバージョンが合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
@@ -241,7 +241,27 @@ async function buildCli(
   };
 }
 
-/** `src/render/legacy-marks.ts` を、依存を含めて Node で動く 1 つのファイルにまとめ、`migrations/` の中の `marker-json.mjs` を持つフォルダごとに `legacy-marks.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `legacy-marks.js` のパスを返却する。ソースが無ければ何も書き込まない（今の書き方を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
+/** `migrations/` の直下のフォルダのうち、`scripts` のどれかを持ち、フォルダの名前が `versionTags` のタグに無い（出していないバージョンの）フォルダを、`migrations/{名前}` のパスで名前の順に返却する */
+export async function unreleasedMigrationFolders(options: {
+  root: string;
+  scripts: readonly string[];
+}): Promise<string[]> {
+  const migrations = join(options.root, "migrations");
+  const released = new Set(await versionTags(options.root));
+  return readdirSync(migrations, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        !released.has(entry.name) &&
+        options.scripts.some((script) =>
+          existsSync(join(migrations, entry.name, script)),
+        ),
+    )
+    .map((entry) => `migrations/${entry.name}`)
+    .sort();
+}
+
+/** `src/render/legacy-marks.ts` を、依存を含めて Node で動く 1 つのファイルにまとめ、`unreleasedMigrationFolders` が返却する `marker-json.mjs` を持つ出していないバージョンのフォルダごとに `legacy-marks.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `legacy-marks.js` のパスを返却する。ソースが無ければ何も書き込まない（今の書き方を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
 export async function buildLegacyMarks(
   version: string,
   root: string,
@@ -253,14 +273,10 @@ export async function buildLegacyMarks(
   ) {
     return [];
   }
-  const folders = readdirSync(migrations, { withFileTypes: true })
-    .filter(
-      (entry) =>
-        entry.isDirectory() &&
-        existsSync(join(migrations, entry.name, LEGACY_MIGRATION_SCRIPT)),
-    )
-    .map((entry) => `migrations/${entry.name}`)
-    .sort();
+  const folders = await unreleasedMigrationFolders({
+    root,
+    scripts: [LEGACY_MIGRATION_SCRIPT],
+  });
   for (const folder of folders) {
     const result = await build({
       absWorkingDir: root,
@@ -285,7 +301,7 @@ export async function buildLegacyMarks(
   return folders.map((folder) => `${folder}/${LEGACY_MARKS_FILE}`);
 }
 
-/** `src/map/convert.ts` の `convertRetiredDiagrams`・`convertRetiredEr` と、拡張の `directive` と設定を読み込む `loadExtensionDirectives`・`loadConfig` を、Node で動く 1 つのファイルにまとめ、`migrations/` の中の `retired-diagrams.mjs` か `retired-er.mjs` を持つフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `retired-diagrams.js` のパスを返却する。ソースが無ければ何も書き込まない（廃止の前の定義を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
+/** `src/map/convert.ts` の `convertRetiredDiagrams`・`convertRetiredEr` と、拡張の `directive` と設定を読み込む `loadExtensionDirectives`・`loadConfig` を、Node で動く 1 つのファイルにまとめ、`unreleasedMigrationFolders` が返却する `retired-diagrams.mjs` か `retired-er.mjs` を持つ出していないバージョンのフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `retired-diagrams.js` のパスを返却する。ソースが無ければ何も書き込まない（廃止の前の定義を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
 export async function buildRetiredDiagrams(
   version: string,
   root: string,
@@ -297,16 +313,10 @@ export async function buildRetiredDiagrams(
   ) {
     return [];
   }
-  const folders = readdirSync(migrations, { withFileTypes: true })
-    .filter(
-      (entry) =>
-        entry.isDirectory() &&
-        RETIRED_MIGRATION_SCRIPTS.some((script) =>
-          existsSync(join(migrations, entry.name, script)),
-        ),
-    )
-    .map((entry) => `migrations/${entry.name}`)
-    .sort();
+  const folders = await unreleasedMigrationFolders({
+    root,
+    scripts: RETIRED_MIGRATION_SCRIPTS,
+  });
   for (const folder of folders) {
     const result = await build({
       absWorkingDir: root,
