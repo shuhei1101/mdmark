@@ -70,8 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T07:07:34.339325+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: LIB-472-29 の verification を、手元の tmux サーバーから分けたサーバーで取り直す
+    updated_by: planner
+    updated_at: '2026-11-19T07:11:54.907111+00:00'
   - process: 単体テスト作成
     status: skipped
     note: tests/unit/src/plugin/setup/server.test.ts を -L / -S へ書き換えるかは設計で決める。書き換えない設計なら skipped にする
