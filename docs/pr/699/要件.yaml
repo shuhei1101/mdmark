@@ -89,3 +89,6 @@ scope_out:
   - item: 既存のプラグイン mdmark（plugin/）の MCP・フックの変更
     reason: mdmark-style は単独のプラグインと D-83 で決め、既存のプラグインは変えない
     plan: none
+  - item: 行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブ・段組み・カードの格子・wide の範囲・ビュー・CSV の表・図と表の番号を Claude Code の画面で描くこと
+    reason: 利用者が別の Issue に切り出す案 B を選んだ（確認ログ）
+    plan: '#702'

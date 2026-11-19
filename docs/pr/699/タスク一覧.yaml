@@ -39,7 +39,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T07:52:17.765515+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T09:32:58.292410+00:00'
   - process: データ設計
     status: skipped
     reason: 永続化するデータは無い。mdmark-style の settings.yaml のキーは設定の設計書（config）で持つ
