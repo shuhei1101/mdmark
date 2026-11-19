@@ -1,0 +1,19 @@
+## 見出しの確認
+
+本文 AAA <!-- inline-marker --> BBB
+
+<!-- table: {"kind": "data"} -->
+| 列1 | 列2 |
+| --- | --- |
+| x | y |
+
+| 列A | 列B |
+| --- | --- |
+| p | q |
+
+> [!NOTE]
+> 注意書きの本文
+
+```ts
+const answer = 42
+```
