@@ -65,7 +65,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T05:03:13.285012+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T05:23:07.925636+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 使い方・リファレンスの記述は変わらない
