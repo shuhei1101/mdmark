@@ -54,7 +54,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T06:11:35.044075+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T06:20:40.980185+00:00'
   - process: 画面設計
     status: skipped
     reason: 画面を持たないライブラリの部品の修正
