@@ -82,6 +82,12 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-19T16:00:40.104383+00:00'
+  - page: docs/interface/IF-472-39.ts.yaml
+    new: false
+    change: '制約『map の点検』で id: のリンク先をずれにしない対象に、classDiagram の click・link を加える'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T16:07:36.546832+00:00'
 scope_out:
   - item: erDiagram・stateDiagram・architecture・C4* のノードにリンク先を持たせる記法
     reason: Mermaid のこの 4 種類に click・link の行が無く、IF-472-35 もリンク先を定めていない。要望は resolveIdLink の受け渡しで、記法の追加を含まない
