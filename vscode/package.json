@@ -2,7 +2,7 @@
   "name": "mdmark-vscode",
   "displayName": "mdmark for VS Code",
   "description": "Markdown を mdmark で描いたプレビューを VS Code に出し、HTML への書き出しと PDF への印刷ができる",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "publisher": "ShuheiNishikawa",
   "icon": "icon.png",
   "license": "MIT",
@@ -136,10 +136,10 @@
         "mdmark.version": {
           "type": "string",
           "default": "latest",
-          "pattern": "^(latest|v\\d+\\.\\d+\\.\\d+)$",
-          "patternErrorMessage": "latest か v{X}.{Y}.{Z} の構造で記載してください",
+          "pattern": "^(latest|develop|v\\d+\\.\\d+\\.\\d+)$",
+          "patternErrorMessage": "latest・develop・v{X}.{Y}.{Z} のどれかで記載してください",
           "scope": "resource",
-          "description": "読み込む mdmark のバージョン。latest のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から最新の v{X}.{Y}.{Z} を選ぶ。バージョンを記載するとそのバージョンに固定する"
+          "description": "読み込む mdmark のバージョン。latest のときはプレビューを開くときとリロードしたときに GitHub のタグ一覧から最新の v{X}.{Y}.{Z} を選ぶ。develop のときは develop の最新の配布物を読み込む。バージョンを記載するとそのバージョンに固定する"
         },
         "mdmark.configPath": {
           "type": "string",
