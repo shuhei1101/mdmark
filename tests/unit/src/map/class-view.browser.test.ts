@@ -193,13 +193,17 @@ test("test_attach_map_class_when_long_members", async () => {
   );
   // 検証
   const search = nodeOf(root, "検索").getBoundingClientRect();
-  for (const row of nodeOf(root, "検索").querySelectorAll<HTMLElement>(
-    ".map-class-member",
-  )) {
-    const box = row.getBoundingClientRect();
+  const texts = [
+    ...nodeOf(root, "検索").querySelectorAll<HTMLElement>(".map-class-text"),
+  ];
+  expect(texts.length).toBeGreaterThan(0);
+  for (const text of texts) {
+    const box = text.getBoundingClientRect();
     expect(box.top).toBeGreaterThanOrEqual(search.top - 0.5);
     expect(box.bottom).toBeLessThanOrEqual(search.bottom + 0.5);
     expect(box.right).toBeLessThanOrEqual(search.right + 0.5);
+    const row = text.closest(".map-class-member")?.getBoundingClientRect();
+    expect(box.bottom).toBeLessThanOrEqual((row?.bottom ?? 0) + 0.5);
   }
   expect(nodeOf(root, "設定").getBoundingClientRect().width).toBeCloseTo(
     320,

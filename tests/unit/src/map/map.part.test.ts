@@ -2074,6 +2074,9 @@ test("test_map_class_node_size", async () => {
     collapsed: true,
   });
   // 検証
+  expect(plain.h).toBe(
+    MAP_CLASS.head + MAP_CLASS.row * 2 + MAP_CLASS.divider * 2 + MAP_CLASS.foot,
+  );
   expect(wrapped.h - plain.h).toBe(MAP_CLASS.line * 2);
   expect(wrapped.w).toBe(220);
   expect(plain.w).toBe(220);
