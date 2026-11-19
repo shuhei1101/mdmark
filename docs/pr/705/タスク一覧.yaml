@@ -75,7 +75,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T11:51:33.012492+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
+    note: table-sticky.interact.browser.test.ts に 2 件追加・3 件改修、interact.browser.test.ts の 1 件を改修。Red で 5 件 fail
+    updated_by: planner
+    updated_at: '2026-11-19T11:58:19.632066+00:00'
   - process: 実装
     status: todo
   - process: 結合テスト作成
