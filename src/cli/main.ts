@@ -6,6 +6,7 @@ import { runBuild } from "./build.ts";
 import { runCheck } from "./check.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { runExport } from "./export.ts";
+import { runExportMarkdown } from "./export-markdown.ts";
 import { runInit } from "./init.ts";
 import { createLinePrompter, type Prompter } from "./prompt.ts";
 import { runUpgrade } from "./upgrade.ts";
@@ -22,6 +23,7 @@ const USAGE = [
   "  check --text {Markdown か -} [--config {設定ファイル}]",
   "  check --file {YAML のファイル} --key {キーのパス} [--config {設定ファイル}]",
   "  export {文書} [--out {出力}] [--config {設定ファイル}]",
+  "  export-markdown {文書} [--out {出力のフォルダ}] [--config {設定ファイル}]",
   "  build [--config {設定ファイル}]",
   "  upgrade [--plan] [--yes] [--config {設定ファイル} | --settings]",
   "  serve",
@@ -135,6 +137,21 @@ const COMMANDS: Record<string, (context: CommandContext) => Promise<0 | 1>> = {
       io,
     );
   },
+  "export-markdown": ({ values, rest, root, io }) => {
+    const file = rest[0];
+    if (file === undefined) {
+      throw new CliError("export-markdown には書き出す文書のパスが要ります。");
+    }
+    return runExportMarkdown(
+      {
+        file,
+        out: values.out,
+        config: values.config,
+        distDir: join(root, "dist"),
+      },
+      io,
+    );
+  },
   build: ({ values, root, io }) =>
     runBuild(
       {
@@ -174,7 +191,7 @@ const COMMANDS: Record<string, (context: CommandContext) => Promise<0 | 1>> = {
   },
 };
 
-/** 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返却する */
+/** 最初の引数のコマンド名で `init`・`check`・`export`・`export-markdown`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返却する */
 export async function main(
   argv: string[],
   io: CliIo,
