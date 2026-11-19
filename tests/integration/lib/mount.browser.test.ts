@@ -15588,6 +15588,53 @@ test("test_normal_when_column_resized_by_keyboard", async () => {
   });
 });
 
+// 表の見えている幅より今の幅が広い列のつまみでも、aria-valuemin ≤ aria-valuenow ≤ aria-valuemax を保つ（正常系（見える幅より広い列のつまみの値））
+test("test_normal_when_column_wider_than_visible_width", async () => {
+  await withViewport(390, async () => {
+    // 準備: 説明の列が長文の列になり、表が描く先の要素からはみ出す 2 列 3 行の表
+    const el = createElement();
+    el.style.width = "390px";
+    const [wrapper] = (await mountAutoTables(
+      el,
+      markedTableMarkdown(
+        '{"kind": "data"}',
+        ["名前", "説明"],
+        [1, 2, 3].map((no) => [`名前${no}`, fullWidth(30)]),
+      ),
+    )) as [HTMLElement];
+    const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+    const { heads, handles } = resizeParts(wrapper);
+    const head = itemAt(heads, 1);
+    const handle = itemAt(handles, 1);
+    // 実行: 説明の列のつまみにフォーカスする
+    handle.focus();
+    // 検証: 説明の列は見えている幅より広く、上限は今の幅
+    expect(head.offsetWidth).toBeGreaterThan(scroller.clientWidth);
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(head.offsetWidth));
+    expect(handle.getAttribute("aria-valuemax")).toBe(
+      handle.getAttribute("aria-valuenow"),
+    );
+    expect(Number(handle.getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+      head.offsetWidth,
+    );
+    // 検証: どのつまみも min ≤ now ≤ max で、axe-core の aria-valid-attr-value の違反が無い
+    for (const each of handles) {
+      const now = Number(each.getAttribute("aria-valuenow"));
+      expect(Number(each.getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+        now,
+      );
+      expect(now).toBeLessThanOrEqual(
+        Number(each.getAttribute("aria-valuemax")),
+      );
+    }
+    const { default: axe } = await import("axe-core");
+    const result = await axe.run(wrapper, {
+      runOnly: { type: "rule", values: ["aria-valid-attr-value"] },
+    });
+    expect(result.violations).toEqual([]);
+  });
+});
+
 // 留めた列の幅を変えるたびに留める位置を計算し直し、留めた列の幅の合計が見えている幅に収まる幅で止める（正常系（留めた列の幅を変える））
 test("test_normal_when_pinned_column_resized", async () => {
   // 準備: 表がはみ出す幅に、10 列 30 行の既定の種類の表を描く
@@ -16134,6 +16181,30 @@ const mapNode = (figure: Element, id: string): HTMLElement =>
 const mapDimmed = (element: Element): boolean =>
   element.classList.contains("map-dim");
 
+/** computed の色（`rgb()`・`rgba()`・`color(srgb …)`）を、0〜255 の r・g・b と 0〜1 の不透明度にする */
+const colorChannels = (color: string): [number, number, number, number] => {
+  const values = (color.match(/[\d.]+/g) ?? []).map(Number);
+  const scale = color.startsWith("color(") ? 255 : 1;
+  const [r = 0, g = 0, b = 0] = values.map((value) => value * scale);
+  const translucent = color.includes("/") || color.startsWith("rgba");
+  return [r, g, b, translucent ? (values[3] ?? 1) : 1];
+};
+
+/** 薄い表示の要素の文字の色と、その下の面（透明なら外側の要素の面）の色のコントラスト比 */
+const dimmedTextContrast = (element: HTMLElement): number => {
+  const text =
+    element.querySelector<HTMLElement>(".mdmark-diagram-node-name") ?? element;
+  let surface: HTMLElement | null = element;
+  let background = colorChannels(getComputedStyle(element).backgroundColor);
+  while (background[3] === 0 && surface?.parentElement) {
+    surface = surface.parentElement;
+    background = colorChannels(getComputedStyle(surface).backgroundColor);
+  }
+  const [br, bg, bb] = background[3] === 0 ? [255, 255, 255] : background;
+  const [r, g, b] = colorChannels(getComputedStyle(text).color);
+  return contrastRatio(`rgb(${r}, ${g}, ${b})`, `rgb(${br}, ${bg}, ${bb})`);
+};
+
 /** 図の中の要素を、ポインターで押して離す（動かさない） */
 function pressMap(target: Element, dx = 0, dy = 0): void {
   const box = target.getBoundingClientRect();
@@ -16541,12 +16612,17 @@ test("test_normal_when_map_walkthrough_played", async () => {
     expect(mapDimmed(mapNode(figure(), "user"))).toBe(false);
     expect(mapDimmed(mapNode(figure(), "mount"))).toBe(false);
     expect(getComputedStyle(mapNode(figure(), "mount")).opacity).toBe("1");
-    expect(getComputedStyle(mapNode(figure(), "index")).opacity).toBe("0.25");
+    expect(getComputedStyle(mapNode(figure(), "index")).opacity).toBe("1");
+    expect(
+      dimmedTextContrast(mapNode(figure(), "index")),
+    ).toBeGreaterThanOrEqual(4.5);
     const label = find<HTMLElement>(
       figure(),
       '.mdmark-diagram-label[data-wire="marker->mermaid"]',
     );
     expect(mapDimmed(label)).toBe(true);
+    expect(getComputedStyle(label).opacity).toBe("1");
+    expect(dimmedTextContrast(label)).toBeGreaterThanOrEqual(4.5);
     expect(
       figure().querySelectorAll('.map-packet[data-wire="user->mount"]').length,
     ).toBeGreaterThan(0);
@@ -18054,7 +18130,17 @@ test("test_normal_when_map_er_path_selected", async () => {
     expect(mapDimmed(mapNode(figure(), id)), id).toBe(true);
   await vi.waitFor(() =>
     expect(
-      Number(getComputedStyle(mapNode(figure(), "支払い")).opacity),
+      dimmedTextContrast(mapNode(figure(), "支払い")),
+    ).toBeGreaterThanOrEqual(4.5),
+  );
+  expect(getComputedStyle(mapNode(figure(), "支払い")).opacity).toBe("1");
+  await vi.waitFor(() =>
+    expect(
+      Number(
+        getComputedStyle(
+          find(figure(), 'path.mdmark-diagram-wire[data-wire="r4"]'),
+        ).opacity,
+      ),
     ).toBeCloseTo(0.25, 2),
   );
   expect(wireDimmed(figure(), "r2")).toBe(false);
@@ -20550,7 +20636,10 @@ test("test_normal_when_map_mindmap_selected", async () => {
   const kept = ["root", "体制", "n5", "人手が足りない", "担当の割り当て"];
   for (const key of kept) expect(dimmedKeys(), key).not.toContain(key);
   expect(dimmedKeys()).toContain("a1");
-  expect(getComputedStyle(mapNode(figure(), "a1")).opacity).toBe("0.25");
+  expect(getComputedStyle(mapNode(figure(), "a1")).opacity).toBe("1");
+  expect(dimmedTextContrast(mapNode(figure(), "a1"))).toBeGreaterThanOrEqual(
+    4.5,
+  );
   // 実行・検証: 形状の指定の無い項目を押すと選択が移る
   mindmapHit(figure(), "利用者を増やす").click();
   expect(
@@ -21234,6 +21323,10 @@ test("test_normal_when_map_axis_items_selected", async () => {
       axisGridRange(MAP_GANTT, MAP_GANTT_DATA),
       axisGridRange(MAP_TIMELINE, MAP_TIMELINE_DATA),
       axisGridRange(MAP_JOURNEY, MAP_JOURNEY_DATA),
+      axisGridRange(
+        MAP_TIMELINE,
+        '{"version": 1, "layout": {"タブ": {"color": "purple"}}}',
+      ),
     ].join("\n"),
   );
   const figure = (index: number) => figures()[index] as HTMLElement;
@@ -21255,6 +21348,15 @@ test("test_normal_when_map_axis_items_selected", async () => {
   );
   axisHit(figure(1), "注意書き").click();
   expect(axisKept(figure(1))).toEqual(["2026-05", "注意書き"].sort());
+  // 検証: 薄くした項目の文字は、項目の面の色（色を付けた項目は付けた色の面）に対して 4.5:1 以上
+  expect(
+    dimmedTextContrast(axisItem(figure(1), "表のマーカー")),
+  ).toBeGreaterThanOrEqual(4.5);
+  axisHit(figure(3), "注意書き").click();
+  const filled = axisItem(figure(3), "タブ");
+  expect(filled.classList.contains("map-axis-filled")).toBe(true);
+  expect(mapDimmed(filled)).toBe(true);
+  expect(dimmedTextContrast(filled)).toBeGreaterThanOrEqual(4.5);
   pressIn(figure(1), "Escape");
   expect(axisKept(figure(1))).toHaveLength(15);
   // 実行・検証: 人を選ぶ

@@ -145,8 +145,9 @@
         const c = Number(handle.dataset.col);
         const width = Math.round(widthOf(c));
         handle.setAttribute("aria-valuenow", String(width));
-        handle.setAttribute("aria-valuemin", String(Math.floor(minWidthOf(c))));
-        handle.setAttribute("aria-valuemax", String(Math.floor(maxWidthOf(c))));
+        // 最小幅が今の幅を超えるときと、上限が今の幅を下回るときは今の幅にし、aria-valuemin ≤ aria-valuenow ≤ aria-valuemax を保つ
+        handle.setAttribute("aria-valuemin", String(Math.min(Math.floor(minWidthOf(c)), width)));
+        handle.setAttribute("aria-valuemax", String(Math.max(Math.floor(maxWidthOf(c)), width)));
         handle.setAttribute("aria-valuetext", `${width}px`);
       }
       markEdges();

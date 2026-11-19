@@ -145,6 +145,64 @@ export function contrastRatio(first: string, second: string): number {
   return ((light ?? 0) + 0.05) / ((dark ?? 0) + 0.05);
 }
 
+/** `selector` に該当する要素のうち表示した文字を持つものごとの、文字の色（SVG の文字は `fill`）と、その下の面（透明なら外側の要素の面）の色のコントラスト比 */
+export const textContrastsOf = async (
+  page: Page,
+  selector: string,
+): Promise<{ id: string; ratio: number }[]> => {
+  const pairs = await page.locator(selector).evaluateAll((elements) => {
+    // computed の色（`rgb()`・`rgba()`・`color(srgb …)`）を、`rgb(r, g, b)` と不透明度にする
+    const channels = (color: string): { rgb: string; alpha: number } => {
+      const values = (color.match(/[\d.]+/g) ?? []).map(Number);
+      const scale = color.startsWith("color(") ? 255 : 1;
+      const [r = 0, g = 0, b = 0] = values.map((value) => value * scale);
+      const translucent = color.includes("/") || color.startsWith("rgba");
+      return {
+        rgb: `rgb(${r}, ${g}, ${b})`,
+        alpha: translucent ? (values[3] ?? 1) : 1,
+      };
+    };
+    // 文字の要素（ノードは名前の要素、ほかは要素そのもの）
+    const textOf = (element: Element): Element =>
+      element.querySelector(".mdmark-diagram-node-name") ?? element;
+    // 文字の色（SVG の文字は fill）
+    const inkOf = (text: Element): string =>
+      channels(
+        text instanceof SVGElement
+          ? getComputedStyle(text).fill
+          : getComputedStyle(text).color,
+      ).rgb;
+    // 要素の下の面の色（透明なら外側の要素の面。全て透明なら白）
+    const surfaceOf = (element: Element): string => {
+      let surface: Element | null = element;
+      let background = channels(getComputedStyle(element).backgroundColor);
+      while (background.alpha === 0 && surface?.parentElement) {
+        surface = surface.parentElement;
+        background = channels(getComputedStyle(surface).backgroundColor);
+      }
+      return background.alpha === 0 ? "rgb(255, 255, 255)" : background.rgb;
+    };
+    const idOf = (element: Element): string =>
+      ["data-node", "data-group", "data-wire", "data-wire-mark"]
+        .map((name) => element.getAttribute(name))
+        .find((value) => value !== null) ?? "";
+    return elements
+      .filter((element) => {
+        const text = textOf(element);
+        return text.checkVisibility() && text.textContent?.trim() !== "";
+      })
+      .map((element) => ({
+        id: idOf(element),
+        text: inkOf(textOf(element)),
+        surface: surfaceOf(element),
+      }));
+  });
+  return pairs.map(({ id, text, surface }) => ({
+    id,
+    ratio: contrastRatio(text, surface),
+  }));
+};
+
 /** 色の式を、明るい配色の `.mdmark` の中で解決した computed の色の文字列にする */
 export function resolveLightColor(
   page: Page,

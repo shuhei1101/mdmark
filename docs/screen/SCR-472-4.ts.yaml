@@ -1696,7 +1696,7 @@ elements:
     visible_when: '`resize` の表（既定の種類と `data` の種類。`features.resize.enabled` を `false` にした表と `plain` の表には無い）'
     initial_value: 描いた直後の列の幅（`width.mode` が `nowrap` の列は値の長さの幅）。幅は覚えず、再描画すると戻る
     action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
-    constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す
+    constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ
     refs:
       - IF-472-35#constraints[列の幅]
     status: planned

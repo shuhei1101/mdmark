@@ -118,15 +118,36 @@
   background: var(--map-fill);
 }
 
-/* 中へ入ったグループの外は薄くする */
+/* 中へ入ったグループの外は破線の枠にし、下の薄い表示で薄くする */
 .map-figure .map-faded {
-  opacity: 0.4;
   border-style: dashed;
 }
-/* 強調: 強調する要素の表示は変えず、案内・再生・参加者の選択で強調しない要素と、線のホバーでほかの要素を薄くする */
-.map-figure .map-dim,
-.map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline):not(.map-keep) {
+/*
+ * 強調: 強調する要素の表示は変えず、案内・再生・参加者の選択で強調しない要素と、線のホバーでほかの要素を薄い表示にする。
+ * 文字を持たない線・ライフライン・SVG の図形は opacity で薄くする。
+ */
+.map-figure svg :is(.map-dim, .map-faded),
+.map-figure :is(.map-dim, .map-faded):is(.mdmark-diagram-wire, .mdmark-diagram-lifeline),
+.map-figure .map-focus :is(.mdmark-diagram-wire, .mdmark-diagram-lifeline):not(.map-keep) {
   opacity: 0.25;
+}
+/* 文字を持つ要素は opacity で薄くせず、文字を本文の文字色と背景の色を 68% : 32% で混ぜた色にする */
+.map-figure :is(.map-dim, .map-faded):not(svg *, .mdmark-diagram-wire, .mdmark-diagram-lifeline),
+.map-figure :is(.map-dim, .map-faded):not(svg *, .mdmark-diagram-wire, .mdmark-diagram-lifeline) *,
+.map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep),
+.map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) * {
+  color: color-mix(in srgb, var(--mdmark-color-text) 68%, var(--mdmark-color-bg));
+}
+/* ノード・グループ・線のラベル・多重度は、枠と面の色も背景の色と混ぜる */
+.map-figure :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group, .er-card):is(.map-dim, .map-faded),
+.map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) {
+  border-color: color-mix(in srgb, var(--map-ink, var(--node-color, var(--mdmark-color-border))) 35%, var(--mdmark-color-bg));
+  background: color-mix(in srgb, var(--map-fill, var(--mdmark-color-bg-opaque)) 20%, var(--mdmark-color-bg-opaque));
+}
+/* SVG の文字は opacity で薄くせず、塗りの色を変える */
+.map-figure svg :is(text.map-dim, .map-dim text) {
+  opacity: 1;
+  fill: color-mix(in srgb, var(--mdmark-color-text) 68%, var(--mdmark-color-bg));
 }
 .map-figure .map-focus .map-keep {
   opacity: 1;
