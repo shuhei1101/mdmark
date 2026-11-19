@@ -7,10 +7,12 @@ constants:
   - name: PART_SELECTORS
     title: 開閉を記録する部品のセレクタ
     container: src/shared/part-states.interact.ts
-    summary: '`partKey` の種類ごとに、セクションの中の何番目かを数える部品の要素のセレクタ'
+    summary: '`partKey` の種類ごとに、同じセクションの中の何番目かを数える部品の要素のセレクタ'
     description: |-
-      `details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ）。
-      `frontmatter` は class に `mdmark-frontmatter` を加えたフロントマターの折りたたみで、`details` には当たらない
+      | 種類 | 当たる要素 |
+      | --- | --- |
+      | `details` | class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ） |
+      | `frontmatter` | class に `mdmark-frontmatter` を加えたフロントマターの折りたたみ。`details` には当たらない |
     value: '`{ "row-detail": "table:has(tr.mdmark-row-detail)", details: "details[class=\"mdmark-collapsible\"]", callout: "details.markdown-alert", frontmatter: "details.mdmark-frontmatter", er: "figure.mdmark-diagram[data-diagram=\"er\"]", tree: "div.mdmark-tree", code: "pre:has([data-fold-lines])", "table-tree": "div.mdmark-table[data-tree]" }`'
     status: planned
 functions:

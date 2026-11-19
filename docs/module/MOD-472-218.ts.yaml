@@ -125,7 +125,11 @@ functions:
     scope: internal
     summary: '列のセルの文字を集計して表示する文字にする'
     description: |-
-      `sum`・`avg` は `parseNumberCell` で数として読み込めるセルだけ（空のセルと読み込めないセルを除く）、`count` は空でないセルを数える。
+      | 計算 | 数えるセル |
+      | --- | --- |
+      | `sum`・`avg` | `parseNumberCell` で数として読み込めるセルだけ（空のセルと読み込めないセルを除く） |
+      | `count` | 空でないセル |
+
       値は `Intl.NumberFormat`（`ja`、小数は 2 桁まで）で整え、平均する値が無いときは `—`。
       読み込めないセルを持つ列のセルを空にするのは呼ぶ側（`findUnreadableTotals`）
     args:

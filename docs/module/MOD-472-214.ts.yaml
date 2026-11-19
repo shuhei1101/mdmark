@@ -76,9 +76,13 @@ functions:
     summary: '`SANITIZE_OPTIONS` と `nonce` で HTML を sanitize し、mdmark が出した要素の記法の属性だけを残す'
     description: |-
       `SANITIZE_OPTIONS` に `nonce` を確認する `transformTags` を追加して sanitize-html を呼ぶ。
-      `data-mdmark-own` が `nonce` と等しい要素は記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを削除し（mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す）、それ以外の要素からは記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id`・`hidden`・`colspan`・`rowspan`・`scope` を落とす。
-      `data-source-line` は誰が出した要素でも、値が 0 以上の整数のときだけ残す。
-      `video`・`audio` は `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす
+
+      | 対象 | 扱い |
+      | --- | --- |
+      | `data-mdmark-own` が `nonce` と等しい要素 | 記法の class・`data-*`・`id`・`role`・`aria-*` を残して属性だけを削除する。mdmark が出した要素の `style` は、図の部品の位置・大きさ・余白・倍率（`DIAGRAM_STYLE_PATTERN`。余白は `padding` の 0 以上の px の値 1 つか 2 つ）か、コードブロックの `code` の行番号の桁の数（`--mdmark-code-digits: {数字}`）か、画像の幅（`--mdmark-image-width: {整数}px` か `{整数}%`）か、ギャラリーの列の数（`--mdmark-gallery-cols: {1〜6}`）か、埋め込んだ HTML の中の要素の `filterEmbeddedStyle` の宣言だけを残す |
+      | それ以外の要素 | 記法の class（`mdmark-` で始まる記法のものと `markdown-alert*`）・記法の `data-*`・`id`・`hidden`・`colspan`・`rowspan`・`scope` を落とす |
+      | `data-source-line` | 誰が出した要素でも、値が 0 以上の整数のときだけ残す |
+      | `video`・`audio` | `data-mdmark-own` が `nonce` と等しいときだけ残し、それ以外は中身ごと落とす |
     args:
       - name: html
         type: string

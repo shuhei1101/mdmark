@@ -194,7 +194,7 @@ functions:
     container: src/map/check.ts
     kind: 関数
     scope: internal
-    summary: '範囲の外の map の図を mermaid の図に戻すかを返却する'
+    summary: '範囲の外の map の図（`data-map-plain`）を mermaid の図に戻すかを返却する'
     description: |-
       図の種類の読み取りが返す Mermaid の書き方の項目（読めない行・閉じの無い `subgraph` と複合フラグメント）が 1 つでもあるか、map が読み捨てる見た目の指定（`classDef`・`style`・`linkStyle`・`cssClass` の行、flowchart と状態遷移図の `class` の行、ノードの `:::` のクラスの指定、マインドマップの `::icon()` の行）が 1 つでもあれば `true`。
       `collectMapProblems` と同じ図の種類ごとの読み取りで確かめ、補足と設定は確かめない。

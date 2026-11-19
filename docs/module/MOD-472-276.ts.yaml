@@ -53,7 +53,17 @@ functions:
     scope: internal
     summary: '`code` のマーカーの設定を、タイトル・行番号・強調・畳む行・折り返し・警告の指定に読み込む'
     description: |-
-      `code` のマーカーの設定（`validateMarkOptions` を経た値）を、タイトル（`title`。空白を含められる）・行番号の有無と最初の行の番号（`lines`・`lines.start`）・強調する行（`highlight`）・最初から畳む行（`fold`）・折り返すか（`wrap`）・罫線のフォルダ構成の記載の警告を出すか（`tree_warning`。`false` だけを止める指定にし、ほかは `true`）に読み込む。
+      `code` のマーカーの設定（`validateMarkOptions` を経た値）を、次の値に読み込む。
+
+      | キー | 読み込む値 |
+      | --- | --- |
+      | `title` | タイトル（空白を含められる） |
+      | `lines`・`lines.start` | 行番号の有無と最初の行の番号 |
+      | `highlight` | 強調する行 |
+      | `fold` | 最初から畳む行 |
+      | `wrap` | 折り返すか |
+      | `tree_warning` | 罫線のフォルダ構成の記載の警告を出すか（`false` だけを止める指定にし、ほかは `true`） |
+
       `highlight`・`fold` の要素は行の番号か行の範囲（`from`〜`to`。`to` を省くと `from` の 1 行）で、`lines.start` から数えた行の番号として読み、コードブロックの行に無い番号と `from` より小さい `to` は当てずに警告にする
     args:
       - name: options
