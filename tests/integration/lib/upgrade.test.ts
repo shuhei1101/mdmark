@@ -1259,3 +1259,173 @@ test("test_error_when_develop_build_has_unreleased_steps", async () => {
   );
   await expectUntouched(dir);
 });
+
+/** 文書のマーカー `<!-- note -->` を `<!-- callout -->` に書き換えた後、終了コードで終わる `call` のスクリプト（設定を Schema で検めずに読む移行のスクリプトの代わり） */
+function rewriteScript(paths: string[], exitCode: number): string {
+  return [
+    'import { readFile, writeFile } from "node:fs/promises";',
+    `for (const path of ${JSON.stringify(paths)}) {`,
+    '  const text = await readFile(path, "utf8");',
+    '  await writeFile(path, text.replace("<!-- note -->", "<!-- callout -->"));',
+    "}",
+    `process.exit(${exitCode});`,
+    "",
+  ].join("\n");
+}
+
+/** 文書を書き換える `call` の手順（`files: [documents]`） */
+const CALL_DOCUMENTS_STEPS = [
+  "steps:",
+  "  - op: call",
+  "    description: 文書をスクリプトで書き換える",
+  "    script: rewrite.mjs",
+  "    files: [documents]",
+  "",
+].join("\n");
+
+// 設定の build が Schema に合わなくても、build.include の文書をコピーに入れ、点検のずれで文書も戻す（異常系（設定の build が Schema に合わない点検のずれ））
+test("test_error_when_build_out_of_schema", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  await setMigrations(
+    pkg,
+    migrationFiles({
+      stepsV050: CALL_DOCUMENTS_STEPS,
+      extra: {
+        "migrations/v0.5.0/rewrite.mjs": rewriteScript(
+          ["docs/a.md", "docs/b.md"],
+          0,
+        ),
+      },
+    }),
+  );
+  const config = [
+    "version: v0.3.0",
+    "legacy: 1",
+    "build:",
+    '  include: ["docs/*.md"]',
+    "",
+  ].join("\n");
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": config,
+    "docs/a.md": WORK_FILES["docs/a.md"],
+    "docs/b.md": WORK_FILES["docs/b.md"],
+  });
+  // 実行
+  const result = await runUpgrade(pkg, { cwd: dir });
+  // 検証
+  expect(result.code).toBe(1);
+  expect(
+    linesOf(result.stderr).some(
+      (line) =>
+        line.startsWith("mdmark.config.yaml:build: schema:") &&
+        line.includes("build.out"),
+    ),
+  ).toBe(true);
+  const work = await readWork(dir);
+  expect(work.a).toBe(WORK_FILES["docs/a.md"]);
+  expect(work.b).toBe(WORK_FILES["docs/b.md"]);
+  expect(parse(work.config)).toMatchObject({ legacy: 1, version: "v0.3.0" });
+  const backups = await readdir(join(dir, ".mdmark", "backup"));
+  expect(backups).toHaveLength(1);
+  const backupDir = join(dir, ".mdmark", "backup", backups[0] ?? "");
+  expect(await readFile(join(backupDir, "mdmark.config.yaml"), "utf8")).toBe(
+    config,
+  );
+  expect(await readFile(join(backupDir, "docs", "a.md"), "utf8")).toBe(
+    WORK_FILES["docs/a.md"],
+  );
+  expect(await readFile(join(backupDir, "docs", "b.md"), "utf8")).toBe(
+    WORK_FILES["docs/b.md"],
+  );
+});
+
+// 索引の docs[].path が索引のフォルダの外を指す文書もコピーに入れ、手順の失敗で文書も戻す（異常系（索引が索引のフォルダの外の文書を指す手順の失敗））
+test("test_error_when_index_points_outside", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  await setMigrations(
+    pkg,
+    migrationFiles({
+      stepsV050: CALL_DOCUMENTS_STEPS,
+      extra: {
+        "migrations/v0.5.0/rewrite.mjs": rewriteScript(
+          ["docs/a.md", "docs/b.md", "notes/c.md"],
+          1,
+        ),
+      },
+    }),
+  );
+  const dir = await createWork();
+  const outside = "# C\n\n<!-- note -->\n";
+  await writeFiles(dir, {
+    "docs/index.yaml": [
+      WORK_FILES["docs/index.yaml"].trimEnd(),
+      "  - id: c",
+      "    path: ../notes/c.md",
+      "    title: C",
+      "",
+    ].join("\n"),
+    "notes/c.md": outside,
+  });
+  // 実行
+  const result = await runUpgrade(pkg, { cwd: dir });
+  // 検証
+  expect(result.code).toBe(1);
+  expect(await readFile(join(dir, "notes", "c.md"), "utf8")).toBe(outside);
+  const work = await readWork(dir);
+  expect(work.a).toBe(WORK_FILES["docs/a.md"]);
+  expect(work.b).toBe(WORK_FILES["docs/b.md"]);
+  expect(parse(work.config).version).toBe("v0.3.0");
+  const backups = await readdir(join(dir, ".mdmark", "backup"));
+  expect(backups).toHaveLength(1);
+  expect(
+    await readFile(
+      join(dir, ".mdmark", "backup", backups[0] ?? "", "notes", "c.md"),
+      "utf8",
+    ),
+  ).toBe(outside);
+});
+
+// 書き換える文書に設定ファイルのフォルダの外のものがあると、コピーを取る前に止め、何も書き換えない（異常系（索引が設定ファイルのフォルダの外の文書を指す））
+test("test_error_when_document_outside_config_dir", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  await setMigrations(
+    pkg,
+    migrationFiles({
+      stepsV050: CALL_DOCUMENTS_STEPS,
+      extra: {
+        "migrations/v0.5.0/rewrite.mjs": rewriteScript(["../outside.md"], 0),
+      },
+    }),
+  );
+  const root = await createTempDir();
+  const dir = join(root, "work");
+  const index = [
+    WORK_FILES["docs/index.yaml"].trimEnd(),
+    "  - id: outside",
+    "    path: ../../outside.md",
+    "    title: Outside",
+    "",
+  ].join("\n");
+  const outside = "# Outside\n\n<!-- note -->\n";
+  await writeFiles(root, {
+    "work/mdmark.config.yaml": OLD_CONFIG,
+    "work/docs/index.yaml": index,
+    "work/docs/a.md": WORK_FILES["docs/a.md"],
+    "work/docs/b.md": WORK_FILES["docs/b.md"],
+    "outside.md": outside,
+  });
+  // 実行
+  const result = await runUpgrade(pkg, { cwd: dir });
+  // 検証
+  expect(result.code).toBe(1);
+  expect(result.stderr).toContain("outside.md");
+  expect(result.stderr).toContain("設定ファイルのフォルダの外");
+  expect(result.stderr).toContain("何も書き換えていません");
+  await expectUntouched(dir);
+  expect(await readFile(join(dir, "docs", "index.yaml"), "utf8")).toBe(index);
+  expect(await readFile(join(root, "outside.md"), "utf8")).toBe(outside);
+});
