@@ -288,6 +288,16 @@ test("test_wrap_label", async () => {
   }
 });
 
+// 行の数の高さ（正常系）
+test("test_leaf_height", async () => {
+  // 準備
+  const { leafHeight } = await loadLayout();
+  // 実行
+  const heights = [leafHeight(1), leafHeight(2)];
+  // 検証
+  expect(heights).toEqual([63, 83]);
+});
+
 // 閉じたグループのノードの数（正常系）
 test("test_layout_map_when_collapsed_count", async () => {
   // 準備・実行
