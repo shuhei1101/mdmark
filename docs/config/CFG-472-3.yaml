@@ -993,6 +993,20 @@ settings:
     status: planned
     notes:
       実装: src/config.ts#resolveMapConfig
+  - key: features.markdown-export
+    title: Markdown のコピーとエクスポートのボタンの機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: "true"
+    description: 右側の目次の頭に、開いている文書を純粋な Markdown にしてクリップボードへコピーするボタンと、`.md` のファイルに保存するボタンを配置する。右側の目次が無い文書（見出しが無い・`side-toc` がオフ）には配置しない。文書の `features` のマーカーでその文書だけオン・オフできる
+    reload: reload
+    refs:
+      - IF-472-35#constraints[右側の目次]
+      - SC-472-98#
+    status: planned
+    notes:
+      実装: src/config.ts#DEFAULT_FEATURES
 refs:
   - IF-472-35#
 tags:
