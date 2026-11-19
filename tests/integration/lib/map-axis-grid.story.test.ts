@@ -1,10 +1,6 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
-import {
-  createBrowserHolder,
-  overlaps,
-  pageOverflows,
-} from "../story.ts";
+import { createBrowserHolder, overlaps, pageOverflows } from "../story.ts";
 
 const holder = createBrowserHolder();
 
