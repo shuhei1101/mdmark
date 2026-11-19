@@ -143,7 +143,11 @@ const collapseRange = (range: HTMLElement, args: MapArgs): void => {
 /** 構成図の上に描く種類ごとの、図を付ける関数 */
 const FLOW_BASED: Record<
   string,
-  (range: HTMLElement, config: ResolvedConfig, args: MapArgs) => MapFlowHandle
+  (
+    range: HTMLElement,
+    config: ResolvedConfig,
+    options: { args: MapArgs; resolveIdLink?: ResolveIdLink },
+  ) => MapFlowHandle
 > = {
   erDiagram: attachMapEr,
   stateDiagram: attachMapState,
@@ -186,7 +190,10 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
   } else if (AXIS_GRID_KINDS.has(kind)) {
     destroyers.push(attachMapAxisGrid(range, config, { args }).destroy);
   } else if (attach) {
-    destroyers.push(attach(range, config, args).destroy);
+    destroyers.push(
+      attach(range, config, { args, resolveIdLink: context.resolveIdLink })
+        .destroy,
+    );
   } else {
     attachFlowRange(context, { range, args, source });
   }

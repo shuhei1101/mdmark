@@ -1,4 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import {
   classPartInputs,
   classToFlowchart,
@@ -19,8 +20,9 @@ import type { MapArgs } from "./spec.ts";
 export const attachMapClass = (
   range: HTMLElement,
   config: ResolvedConfig,
-  args: MapArgs,
+  options: { args: MapArgs; resolveIdLink?: ResolveIdLink },
 ): MapFlowHandle => {
+  const { args, resolveIdLink } = options;
   const diagram = parseClassDiagram(
     range.querySelector("code")?.textContent ?? "",
   );
@@ -38,6 +40,7 @@ export const attachMapClass = (
   let widths: Record<string, number> = {};
   return attachMapFlow(range, config, {
     args,
+    resolveIdLink,
     extension: {
       chart,
       kinds: MAP_CLASS_KINDS,

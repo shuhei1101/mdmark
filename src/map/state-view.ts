@@ -1,4 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import { type MapStep, parseMapData } from "./data.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
 import {
@@ -20,8 +21,9 @@ const POINT_NAMES = { start: "開始", end: "終了" } as const;
 export const attachMapState = (
   range: HTMLElement,
   config: ResolvedConfig,
-  args: MapArgs,
+  options: { args: MapArgs; resolveIdLink?: ResolveIdLink },
 ): MapFlowHandle => {
+  const { args, resolveIdLink } = options;
   const diagram = parseStateDiagram(
     range.querySelector("code")?.textContent ?? "",
   );
@@ -70,6 +72,7 @@ export const attachMapState = (
     }).length;
   return attachMapFlow(range, config, {
     args,
+    resolveIdLink,
     extension: {
       chart,
       overrides: () => overrides,

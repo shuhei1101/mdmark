@@ -1,4 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import { DIAGRAM_REDRAW_EVENT } from "../diagram/diagram.interact.ts";
 import { parseMapData } from "./data.ts";
 import {
@@ -22,8 +23,9 @@ import type { MapArgs } from "./spec.ts";
 export const attachMapEr = (
   range: HTMLElement,
   config: ResolvedConfig,
-  args: MapArgs,
+  options: { args: MapArgs; resolveIdLink?: ResolveIdLink },
 ): MapFlowHandle => {
+  const { args, resolveIdLink } = options;
   const er = parseErDiagram(range.querySelector("code")?.textContent ?? "");
   const { data } = parseMapData(
     range.querySelector(".mdmark-map-data")?.textContent ?? undefined,
@@ -55,6 +57,7 @@ export const attachMapEr = (
   let fanouts: MapErFanout[] = [];
   return attachMapFlow(range, config, {
     args,
+    resolveIdLink,
     extension: {
       chart: erToFlowchart(er, data.groups),
       overrides: ({ collapsed }) => erOverrides(er, collapsed),

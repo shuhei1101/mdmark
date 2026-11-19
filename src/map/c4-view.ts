@@ -1,4 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import { type C4Diagram, c4ToFlowchart, MAP_C4_KINDS, parseC4 } from "./c4.ts";
 import { type MapNote, type MapStep, parseMapData } from "./data.ts";
 import {
@@ -120,8 +121,9 @@ const showPlayingLabel = (
 export const attachMapC4 = (
   range: HTMLElement,
   config: ResolvedConfig,
-  args: MapArgs,
+  options: { args: MapArgs; resolveIdLink?: ResolveIdLink },
 ): MapFlowHandle => {
+  const { args, resolveIdLink } = options;
   const diagram = parseC4(range.querySelector("code")?.textContent ?? "");
   const { chart, overrides, reversed, kinds } = c4ToFlowchart(diagram);
   const { data } = parseMapData(
@@ -153,6 +155,7 @@ export const attachMapC4 = (
     }).length;
   return attachMapFlow(range, config, {
     args,
+    resolveIdLink,
     extension: {
       chart,
       kinds: { ...MAP_C4_KINDS, ...kinds },

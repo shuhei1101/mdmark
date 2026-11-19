@@ -1,4 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
+import type { ResolveIdLink } from "../render/sanitize.ts";
 import {
   ARCH_LUCIDE_ICONS,
   architectureToFlowchart,
@@ -19,8 +20,9 @@ import type { MapArgs } from "./spec.ts";
 export const attachMapArchitecture = (
   range: HTMLElement,
   config: ResolvedConfig,
-  args: MapArgs,
+  options: { args: MapArgs; resolveIdLink?: ResolveIdLink },
 ): MapFlowHandle => {
+  const { args, resolveIdLink } = options;
   const diagram = parseArchitecture(
     range.querySelector("code")?.textContent ?? "",
   );
@@ -76,6 +78,7 @@ export const attachMapArchitecture = (
     }).length;
   return attachMapFlow(range, config, {
     args,
+    resolveIdLink,
     extension: {
       chart,
       kinds: MAP_ARCH_KINDS,
