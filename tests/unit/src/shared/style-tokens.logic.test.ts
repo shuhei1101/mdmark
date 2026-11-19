@@ -22,9 +22,13 @@ const readDefaultTheme = async () => {
   const light = declarationsOf(
     css.slice(lightStart, css.indexOf("}", lightStart)),
   );
-  const darkMedia = css.indexOf("@media screen and (prefers-color-scheme: dark)");
+  const darkMedia = css.indexOf(
+    "@media screen and (prefers-color-scheme: dark)",
+  );
   const darkStart = css.indexOf(":root {", darkMedia);
-  const dark = declarationsOf(css.slice(darkStart, css.indexOf("}", darkStart)));
+  const dark = declarationsOf(
+    css.slice(darkStart, css.indexOf("}", darkStart)),
+  );
   /** `var(--x)` を同じ配色の宣言、無ければ明るい配色の宣言でたどる */
   const resolve = (scheme: Map<string, string>, name: string): string => {
     const value = scheme.get(name) ?? light.get(name) ?? "";
@@ -54,13 +58,16 @@ test("test_style_colors_match_css", async () => {
   const { STYLE_COLORS } = await loadTokens();
   const theme = await readDefaultTheme();
   const withCss = Object.values(STYLE_COLORS).filter(
-    (color): color is (typeof color & { css: string }) =>
+    (color): color is typeof color & { css: string } =>
       "css" in color && typeof color.css === "string",
   );
   // 検証
   expect(withCss.length).toBeGreaterThan(0);
   for (const color of withCss) {
-    expect([color.css, color.light]).toEqual([color.css, theme.light(color.css)]);
+    expect([color.css, color.light]).toEqual([
+      color.css,
+      theme.light(color.css),
+    ]);
     expect([color.css, color.dark]).toEqual([color.css, theme.dark(color.css)]);
   }
 });

@@ -9,7 +9,7 @@ const loadTerms = () => import("../../../../src/mdmark-style/terms.ts");
 const loadFixtureGlossary = async () => {
   const { loadGlossary } = await loadTerms();
   const $ = createFakeEngine({ files: GLOSSARY_FILES });
-  return loadGlossary({ $, configPath: GLOSSARY_CONFIG });
+  return loadGlossary($, { configPath: GLOSSARY_CONFIG });
 };
 
 // 索引・文書・エイリアスを集める（正常系）
@@ -29,10 +29,10 @@ test("test_load_glossary_when_missing", async () => {
   const $ = createFakeEngine({ files: {} });
   // 実行・検証
   await expect(
-    loadGlossary({ $, configPath: GLOSSARY_CONFIG }),
+    loadGlossary($, { configPath: GLOSSARY_CONFIG }),
   ).rejects.toThrow(GlossaryError);
   await expect(
-    loadGlossary({ $, configPath: GLOSSARY_CONFIG }),
+    loadGlossary($, { configPath: GLOSSARY_CONFIG }),
   ).rejects.toThrow(GLOSSARY_CONFIG);
 });
 
@@ -44,12 +44,10 @@ test("test_match_terms", async () => {
   // 実行
   const marks = matchTerms({ glossary, text: "mdmark の WS と WS、WSL" });
   // 検証
-  expect(marks.map((mark) => [mark.title, mark.start, mark.footnote])).toEqual(
-    [
-      ["mdmark", 0, 1],
-      ["WS", 9, 2],
-    ],
-  );
+  expect(marks.map((mark) => [mark.title, mark.start, mark.footnote])).toEqual([
+    ["mdmark", 0, 1],
+    ["WS", 9, 2],
+  ]);
 });
 
 // 見出し・表・コード・リンクの中には付けない（正常系）

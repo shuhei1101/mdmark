@@ -17,7 +17,9 @@ export const fakeH = (
   props: props ?? {},
   children: children
     .flat(Number.POSITIVE_INFINITY)
-    .filter((child) => child !== undefined && child !== null && child !== false),
+    .filter(
+      (child) => child !== undefined && child !== null && child !== false,
+    ),
 });
 
 /** テストの間だけ、mod の環境の `h` を置き換える */
@@ -131,3 +133,14 @@ export const createFakeEngine = (options: FakeEngineOptions = {}) => {
 
 /** テストの engine の型 */
 export type FakeEngine = ReturnType<typeof createFakeEngine>;
+
+/** Button の `onPress` を呼ぶ。Button か `onPress` が無ければ失敗する */
+export const pressButton = async (
+  node: FakeNode | undefined,
+): Promise<void> => {
+  const onPress = node?.props.onPress;
+  if (typeof onPress !== "function") {
+    throw new Error("onPress を持つ Button がありません");
+  }
+  await onPress();
+};

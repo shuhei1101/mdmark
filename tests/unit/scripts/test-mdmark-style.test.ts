@@ -13,7 +13,10 @@ const createRoot = async (options: { built: boolean }) => {
   if (options.built) {
     await writeFile(join(root, "mdmark-style/hooks/mod/mod.js"), "export {}\n");
   }
-  const tests = join(root, "tests/integration/ClaudeCodeプラグイン/mdmark-style");
+  const tests = join(
+    root,
+    "tests/integration/ClaudeCodeプラグイン/mdmark-style",
+  );
   await mkdir(tests, { recursive: true });
   await writeFile(join(tests, "a.test.tsx"), "// test\n");
   return root;

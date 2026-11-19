@@ -6,6 +6,7 @@ import {
   fakeH,
   findNodes,
   installH,
+  pressButton,
   textOf,
 } from "./fake-engine.ts";
 
@@ -65,7 +66,9 @@ const WIDE_TABLE = {
   table: {
     kind: "default" as const,
     header: ["名前", "説明", "備考"],
-    rows: [["a".repeat(10), "word ".repeat(6).trim(), "note ".repeat(4).trim()]],
+    rows: [
+      ["a".repeat(10), "word ".repeat(6).trim(), "note ".repeat(4).trim()],
+    ],
     align: ["left" as const, "left" as const, "left" as const],
   },
 };
@@ -152,10 +155,12 @@ test("test_render_block_table_when_desktop", async () => {
   // 検証
   const scrolled = findNodes(node, (n) => n.props.overflowX === "scroll");
   expect(scrolled).toHaveLength(1);
-  const rowLines = findNodes(node, (n) => n.type === "Text")
+  const rowLine = findNodes(node, (n) => n.type === "Text")
     .map(textOf)
-    .filter((line) => line.includes("aaaaaaaaaa"));
-  expect(rowLines).toHaveLength(1);
+    .filter((line) => line.includes("aaaaaaaaaa"))
+    .sort((a, b) => b.length - a.length)[0];
+  expect(rowLine).toContain("word word word word word word");
+  expect(rowLine).toContain("note note note note");
 });
 
 // コードブロックを背景の面で描き、コピーボタンを付ける（正常系）
@@ -189,7 +194,7 @@ test("test_render_block_code", async () => {
     (n) => n.type === "Button" && n.props.label === "コピー",
   );
   expect(button).toBeDefined();
-  await (button?.props.onPress as () => Promise<void>)();
+  await pressButton(button);
   expect($.ui.copy).toHaveBeenCalledWith(
     expect.objectContaining({ text: "const a = 1\nconst b = 2" }),
   );
@@ -223,7 +228,9 @@ test("test_render_block_callout", async () => {
     node,
     (n) => n.type === "Text" && textOf(n) === "WARNING",
   );
-  expect(label[0]?.props).toEqual(expect.objectContaining({ bold: true, color }));
+  expect(label[0]?.props).toEqual(
+    expect.objectContaining({ bold: true, color }),
+  );
 });
 
 // 閉じた範囲を押すと開く（正常系）
@@ -238,7 +245,7 @@ test("test_render_fold", async () => {
   // 実行
   const closed = draw() as FakeNode;
   const [button] = findNodes(closed, (n) => n.type === "Button");
-  (button?.props.onPress as () => void)();
+  await pressButton(button);
   const opened = draw() as FakeNode;
   // 検証
   expect(button?.props.label).toBe("▸ 用語");
@@ -258,15 +265,19 @@ test("test_render_fold_when_other_block", async () => {
   const $ = createFakeEngine();
   const next = vi.fn(async () => ENGINE_NODE);
   const blockOf = (word: string) =>
-    [`<!-- details: ${word} -->`, "", `${word}の中身`, "", "<!-- /details -->"].join(
-      "\n",
-    );
+    [
+      `<!-- details: ${word} -->`,
+      "",
+      `${word}の中身`,
+      "",
+      "<!-- /details -->",
+    ].join("\n");
   const first = replyEvent(blockOf("一つ目"), "same");
   const second = replyEvent(blockOf("二つ目"), "same");
   // 実行
   const drawnFirst = await renderReply($, first, next);
   const [button] = findNodes(drawnFirst, (n) => n.type === "Button");
-  (button?.props.onPress as () => void)();
+  await pressButton(button);
   const againFirst = await renderReply($, first, next);
   const againSecond = await renderReply($, second, next);
   // 検証
@@ -278,9 +289,19 @@ test("test_render_fold_when_other_block", async () => {
 test("test_count_tree", async () => {
   // 準備
   const { countTree } = await loadReply();
-  const node = fakeH("Box", null, fakeH("Text", null, "ab"), fakeH("Text", null, "c"));
+  const node = fakeH(
+    "Box",
+    null,
+    fakeH("Text", null, "ab"),
+    fakeH("Text", null, "c"),
+  );
   // 実行・検証
-  expect(countTree(node)).toEqual({ nodes: 3, depth: 2, chars: 3, over: false });
+  expect(countTree(node)).toEqual({
+    nodes: 3,
+    depth: 2,
+    chars: 3,
+    over: false,
+  });
 });
 
 // 深さの上限を超える（正常系）

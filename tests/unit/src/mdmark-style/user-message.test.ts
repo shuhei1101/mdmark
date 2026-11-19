@@ -65,7 +65,8 @@ test("test_render_user_message", async () => {
     node,
     (n) =>
       n.type === "Box" &&
-      n.props.backgroundColor === styleColor({ name: "userBand", theme: "dark" }),
+      n.props.backgroundColor ===
+        styleColor({ name: "userBand", theme: "dark" }),
   );
   expect(band).toHaveLength(1);
   expect(textOf(node)).toContain("❯");
@@ -132,7 +133,14 @@ test("test_render_term_text", async () => {
   const { renderTermText } = await loadUser();
   const marks = [
     { line: 1, start: 0, end: 2, title: "WS", description: "a", footnote: 1 },
-    { line: 1, start: 5, end: 11, title: "mdmark", description: "b", footnote: 2 },
+    {
+      line: 1,
+      start: 5,
+      end: 11,
+      title: "mdmark",
+      description: "b",
+      footnote: 2,
+    },
   ];
   // 実行
   const node = renderTermText({
