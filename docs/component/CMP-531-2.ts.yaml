@@ -35,6 +35,10 @@ states:
         value: '["実行中"]'
   - name: Narrow
     description: 幅 390px の置き場所
+  - name: WrappedName
+    description: 設定の `map.kinds` の `state` で種類の行を持ち、名前（「支払いの確認を待っている状態」）がノードの幅で 2 行に折り返す状態。ノードは種類の行と折り返した名前の行が全て入る高さで、名前の最後の行がノードの下の余白（`padding-bottom`）より上にある
+    notes:
+      定義: インターフェース定義『文書を描く』の正常系（map の構成図・状態遷移図で折り返すノードの名前をノードに収めて描く）の状態遷移図
 lead: map の `stateDiagram-v2`・`stateDiagram` を、状態をノード、入れ子の状態をグループにして構成図の部品の上に描く。開始・終了・分岐の形状、同じ状態への遷移の線、ノートのノード、入れ子の状態の開始・終了の補いを持つ。
 args:
   - name: layout
