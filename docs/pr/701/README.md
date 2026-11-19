@@ -1,0 +1,1 @@
+# PoC: Claude Code の mod で返答・発言を描き換え、マーカーを受け取り、hover のカードと SessionStart の注入を確認する
