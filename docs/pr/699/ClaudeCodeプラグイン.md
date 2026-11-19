@@ -153,8 +153,8 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 
 | 対象 | 結果 | ログ |
 | --- | --- | --- |
-| `npm run test:mdmark-style`（新規作成した `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | 23 件 pass | [20261119225117_3fb139a7_結合テスト.log](テスト結果/20261119225117_3fb139a7_結合テスト.log) |
-| `npx vitest run --project 'integration*' tests/integration/lib/build.test.ts` | 10 件 pass | 同上 |
+| `npm run test:mdmark-style`（新規作成した `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`。手元で実行。ランナーの `test.yml` は Vitest の結合テストだけを実行し、Claude Code の CLI を入れていない） | 23 件 pass | [20261119230125_a3f354e2_結合テスト.log](テスト結果/20261119230125_a3f354e2_結合テスト.log) |
+| `tests/integration/lib/build.test.ts`（ランナーの `run_runner`。[実行](https://github.com/shuhei1101/mdmark/actions/runs/44538983442)） | 10 件 pass | 同上 |
 
 ### 結合テストの実行範囲
 
@@ -220,6 +220,7 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `docs/pr/699/テスト結果/20261119222738_e42f8bdb_lint.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119222738_e42f8bdb_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119224246_2956a6bf_フックの例外.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119230125_a3f354e2_結合テスト.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119225117_3fb139a7_lint.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119225117_3fb139a7_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119225117_3fb139a7_結合テスト.log` | R7 | なし（実行するコードを変えない） | - |
