@@ -1,0 +1,131 @@
+id: MOD-472-352
+visibility: internal
+title: ライブラリ本体 / 純粋な Markdown / pure-blocks.logic.ts
+lead: 文書をマーカー・コードブロック・生の HTML・普通の行のブロックに分け、記法ごとのブロックの変換を受け持ち、記法の書き出しの形を変えるときに参照する。
+test_files:
+  - tests/unit/src/markdown/pure-blocks.logic.test.ts
+data_models:
+  - name: PureBlock
+    title: ブロック
+    container: src/markdown/pure-blocks.logic.ts
+    usecase: 純粋な Markdown への変換
+    summary: 文書を分けた 1 つの範囲。`kind` で判別する union
+    description: '`text`（普通の行）・`fence`（コードブロック）・`html`（マーカーでない生の HTML のブロック）・`mark`（記法のマーカーとその範囲）・`figure`（`chart`・`param`・`html` の範囲）・`extension`（登録した拡張のマーカー）のどれか'
+    properties:
+      - name: kind
+        type: '"text" | "fence" | "html" | "mark" | "figure" | "extension"'
+        description: ブロックの種類
+      - name: lines
+        type: string[]
+        description: 範囲の元の行
+      - name: line
+        type: number
+        description: 範囲の最初の行の元の行番号（1 から）
+      - name: mark
+        type: '{ name: string; options: Record<string, unknown>; definition?: unknown } | undefined'
+        description: '`mark`・`figure`・`extension` のマーカーの名前と引数'
+functions:
+  - name: splitPureBlocks
+    title: 文書をブロックに分ける
+    container: src/markdown/pure-blocks.logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`render` と同じ設定の markdown-it でトークンに分け、行の範囲（`map`）で元の行を `PureBlock` の並びにする'
+    description: マーカーの取り出しは `findMarkTexts` と同じ規則。範囲を持つマーカー（`<!-- 名前 -->` 〜 `<!-- /名前 -->`）は閉じるマーカーまでを 1 つのブロックにする。範囲の最初の `json` のコードブロックは `definition` に読み込む。拡張の判定は `extensionFor`、機能がオフの記法のマーカーは元の文字のまま `text` にする
+    args:
+      - name: options
+        type: '{ markdown: string; features: Record<string, boolean> }'
+        required: true
+        description: 文書と機能のオン・オフ
+    returns:
+      type: PureBlock[]
+      description: 文書の順のブロック
+    callees:
+      - MOD-472-211#functions[findMarkTexts]
+      - MOD-472-201#functions[extensionFor]
+    status: planned
+    unit_tests:
+      - name: test_split_pure_blocks
+        case: 正常
+        summary: 記法ごとにブロックに分ける
+        condition: 段落・表のマーカーで囲んだ表・コードブロック・`chart`・`div` の生の HTML を持つ文書
+        mock: なし
+        expected: '`kind` が `text`・`mark`・`fence`・`figure`・`html` の順で、各 `line` が元の行番号'
+      - name: test_split_pure_blocks_when_feature_off
+        case: 正常
+        summary: 機能がオフのマーカーは普通の行にする
+        condition: '`features.table` が `false` で表のマーカーを持つ文書'
+        mock: なし
+        expected: 表のマーカーが `mark` にならず `html` になる
+  - name: convertPureBlock
+    title: ブロックを純粋な Markdown にする
+    container: src/markdown/pure-blocks.logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`text`・`fence`・`html`・`mark` のブロックを、インターフェース定義『文書を純粋なMarkdownにする』の制約の形の行にする'
+    description: '`html` は空にする。`fence` は飾りの引数と行末の `[!code …]` を取り除き、タイトルを直前の太字の行にし、言語 `tree` を外す。`mark` は名前で分ける: `toc` は `tocList`、`map` は Mermaid のコードブロックだけ、`features`・`page`・`map-data` は空、それ以外（`table`・`tabs`・`steps`・`section`・`row-detail`・`glossary`・`view`・`details`・`columns`・`wide`・`cards` など）はマーカーの行を除いた中身。`text`・中身の行は呼ぶ側が行内を変換する'
+    args:
+      - name: options
+        type: '{ block: PureBlock; headings: Array<{ level: number; text: string }> }'
+        required: true
+        description: ブロックと、目次に使用する文書の見出し
+    returns:
+      type: string[]
+      description: 変換した行（行内は未変換）
+    callees:
+      - '#functions[tocList]'
+    status: planned
+    unit_tests:
+      - name: test_convert_pure_block_marks_removed
+        case: 正常
+        summary: 範囲のマーカーの行を除き中身を残す
+        condition: '`<!-- table: {"kind": "data"} -->` と `<!-- /table -->` で囲んだ表'
+        mock: なし
+        expected: 表の行だけが残る
+      - name: test_convert_pure_block_map
+        case: 正常
+        summary: map は Mermaid のコードブロックだけを残す
+        condition: Mermaid と `map-data`・注記を持つ map の範囲
+        mock: なし
+        expected: '```mermaid のコードブロックだけ'
+      - name: test_convert_pure_block_code_decoration
+        case: 正常
+        summary: コードブロックの飾りを取り除く
+        condition: タイトル `main.ts` と行末の `// [!code ++]` を持つコードブロック
+        mock: なし
+        expected: '`**main.ts**` の行の後に、`[!code` を含まないコードブロック'
+      - name: test_convert_pure_block_raw_html
+        case: 正常
+        summary: 生の HTML のブロックを取り除く
+        condition: '`<div>…</div>` の `html` のブロック'
+        mock: なし
+        expected: 空の配列
+  - name: tocList
+    title: 目次の箇条書きを作る
+    container: src/markdown/pure-blocks.logic.ts
+    kind: 関数
+    scope: internal
+    summary: h2〜h3 の見出しを、`slugify` で作ったアンカーへのリンクの入れ子の箇条書きにする
+    args:
+      - name: headings
+        type: 'Array<{ level: number; text: string }>'
+        required: true
+        description: 文書の順の見出し（h1〜h6）
+    returns:
+      type: string[]
+      description: 箇条書きの行
+    callees:
+      - MOD-472-279#functions[slugify]
+    status: planned
+    unit_tests:
+      - name: test_toc_list
+        case: 正常
+        summary: 入れ子と重なる見出しのアンカー
+        condition: '`# 手引き`・`## 導入`・`### 前提`・`## 導入`'
+        mock: なし
+        expected: '`- [導入](#導入)`・`  - [前提](#前提)`・`- [導入](#導入-1)`'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:markdown
+  - name: action:変換

@@ -87,6 +87,9 @@ constants:
       - key: apply_template
         value: name（必須）・dir（文字列）・overwrite（真偽値）
         description: テンプレートの CSS を配置先へコピーし、`path`・`theme`（基準の設定ファイルが無ければ持たない）・`replaced` を返却する
+      - key: export_markdown
+        value: file（必須）・out・config（文字列）
+        description: '`mdmark export-markdown` と同じ処理で文書を純粋な Markdown と SVG に書き出し、`out`・`images`・`warnings` を返却する'
     status: planned
     description: どのツールも引数の `project_dir` を必須にし、`project_dir` は `inputSchema` に含めない
   - name: PROJECT_DIR_ARG
@@ -446,6 +449,35 @@ functions:
     refs:
       - IF-472-3#
     status: planned
+  - name: runExportMarkdown
+    title: Markdown に書き出すツールを実行する
+    container: src/plugin/tools.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: 作業のフォルダを基準に `exportMarkdownFiles` と `writeMarkdownFiles` を呼び、Markdown と SVG の絶対パスと警告を返却する
+    description: 設定の読み込みと `file`・`out` の解決は `runExportHtml` と同じ。`CliError` は `callTool` が `isError` にする
+    args:
+      - name: options
+        type: '{ projectDir: string; file: string; out?: string; config?: string; distDir: string }'
+        required: true
+        description: 作業のフォルダとツールの引数
+    returns:
+      type: 'Promise<{ out: string; images: string[]; warnings: string[] }>'
+      description: 書き出したパスと警告
+    callees:
+      - MOD-472-354#functions[exportMarkdownFiles]
+      - MOD-472-354#functions[writeMarkdownFiles]
+    refs:
+      - IF-472-47#
+    status: planned
+    unit_tests:
+      - name: test_run_export_markdown_tool
+        case: 正常
+        summary: CLI と同じ中身を書き出して絶対パスを返却する
+        condition: '`file: guide.mark.md`（`chart` 1 つ）'
+        mock: 一時フォルダと短くした `dist/index.css`
+        expected: '`out` が `guide-markdown/guide.md` の絶対パス、`images` が 1 件で、中身が `runExportMarkdown` の書き出しと同じ'
 lead: 'MCP のツールの定義と処理・結果への変換を受け持ち、MCP のツールの振る舞いを変えるときに参照する。'
 tags:
   - name: tool:mcp

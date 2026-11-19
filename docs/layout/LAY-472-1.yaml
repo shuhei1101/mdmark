@@ -1241,6 +1241,15 @@ entries:
           - '{name}.part.stories.ts'
           - '{name}.interact.ts'
           - '{name}.logic.ts'
+      - type: folder
+        name: markdown
+        contents: mdmark の文書を純粋な Markdown（GFM と Mermaid）にする変換（`toPureMarkdown` と、ブロック・行内の変換）
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+          - '{name}.logic.ts'
   - type: folder
     name: templates
     contents: mdmark init が配置する雛形

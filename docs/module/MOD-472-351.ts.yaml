@@ -1,0 +1,174 @@
+id: MOD-472-351
+visibility: internal
+title: ライブラリ本体 / 純粋な Markdown / pure-markdown.ts
+lead: 公開関数 `toPureMarkdown` の引数の検査と、ブロックの変換・行内の変換・図と拡張のフックの呼び出しの順を受け持ち、純粋な Markdown への変換の入口を変えるときに参照する。
+test_files:
+  - tests/unit/src/markdown/pure-markdown.test.ts
+data_models:
+  - name: MdmarkFigure
+    title: 図
+    container: src/markdown/pure-markdown.ts
+    usecase: 純粋な Markdown への変換
+    summary: '`opts.figure` が受ける `chart`・`param`・埋め込んだ HTML 1 つ（公開の型）'
+    properties:
+      - name: kind
+        type: '"chart" | "param" | "html"'
+        description: 図の種類
+      - name: index
+        type: number
+        description: 文書の中で何番目の図か（1 から）
+      - name: html
+        type: string
+        description: '`render` がその図の範囲に返す HTML。埋め込んだ HTML は範囲のスクリプトを除いた HTML'
+      - name: title
+        type: string | undefined
+        description: '`chart`・`param` のタイトル'
+      - name: legend
+        type: string[]
+        description: '`chart`・`param` の凡例の系列の名前。埋め込んだ HTML は空'
+  - name: PureMarkdownOptions
+    title: 純粋な Markdown への変換の指定
+    container: src/markdown/pure-markdown.ts
+    usecase: 純粋な Markdown への変換
+    summary: '`toPureMarkdown` の `opts`（公開の型）'
+    properties:
+      - name: config
+        type: MdmarkConfig | undefined
+        description: 設定。`features` だけを読み込む
+      - name: index
+        type: MdmarkIndex | undefined
+        description: 索引
+      - name: docId
+        type: string | undefined
+        description: 文書の ID
+      - name: includes
+        type: Record<string, string> | undefined
+        description: 取り込む文書の表
+      - name: figure
+        type: '((figure: MdmarkFigure) => string | undefined | Promise<string | undefined>) | undefined'
+        description: 図を Markdown にする関数
+  - name: PureMarkdownResult
+    title: 純粋な Markdown への変換の結果
+    container: src/markdown/pure-markdown.ts
+    usecase: 純粋な Markdown への変換
+    summary: '`toPureMarkdown` の戻り値（公開の型）'
+    properties:
+      - name: markdown
+        type: string
+        description: 純粋な Markdown
+      - name: warnings
+        type: string[]
+        description: 取り除いた中身と元の行番号の文
+functions:
+  - name: toPureMarkdown
+    title: 文書を純粋な Markdown にする
+    container: src/markdown/pure-markdown.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 引数を検査し、文書をブロックに分けて変換し、図と拡張のフックの戻り値を入れた純粋な Markdown と警告を返却する
+    description: |-
+      `markdown` が文字列でない、または `opts.figure` が関数でないときは `TypeError`。
+      `opts.includes` の取り込みを `render` と同じ規則で展開してから、`splitPureBlocks` でブロックに分ける。
+      ブロックごとに `convertPureBlock` を呼び、`figure` の要素は文書の順に番号を振って `figureOf` で `MdmarkFigure` にし、`opts.figure` の戻り値（無ければ取り除く）を入れる。`extension` の要素は `extensionFor` の `toMarkdown` を呼び、無い・例外・文字列でない戻り値のときは取り除いて警告を入れる。
+      残りの行は `convertPureInline` で行内を変換する。
+      ブロックの間の空行は 1 行にまとめ、末尾を改行 1 つにする
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: mdmark の文書
+      - name: opts
+        type: PureMarkdownOptions
+        required: false
+        description: 変換の指定
+    returns:
+      type: Promise<PureMarkdownResult>
+      description: 純粋な Markdown と警告
+    exceptions:
+      - name: TypeError
+        condition: '`markdown` が文字列でない、または `opts.figure` が関数でない'
+        message: 'toPureMarkdown: markdown は文字列で指定してください。／toPureMarkdown: opts.figure は関数で指定してください。'
+    callees:
+      - MOD-472-352#functions[splitPureBlocks]
+      - MOD-472-352#functions[convertPureBlock]
+      - MOD-472-353#functions[convertPureInline]
+      - '#functions[figureOf]'
+      - MOD-472-201#functions[extensionFor]
+    refs:
+      - IF-472-45#
+    status: planned
+    unit_tests:
+      - name: test_to_pure_markdown
+        case: 正常
+        summary: マーカーと生の HTML を取り除き、図を取り除く
+        condition: 目次・表のマーカー・`chart`・`div` の生の HTML を持つ文書、`opts` 無し
+        mock: なし
+        expected: '`markdown` に `<!--` と `<div` が無く、目次が見出しのリンクの箇条書きで、`warnings` が空'
+      - name: test_to_pure_markdown_when_figure_given
+        case: 正常
+        summary: '`opts.figure` の戻り値を図の場所に入れる'
+        condition: '`chart`・`param`・埋め込んだ HTML を 1 つずつ持つ文書'
+        mock: 受けた `kind` と `index` から `![k](f-{index}.svg)` を返す関数
+        expected: '`index` 1〜3 の順に 3 回呼ばれ、`markdown` に 3 つの画像のリンクがある'
+      - name: test_to_pure_markdown_when_extension_marks
+        case: 正常
+        summary: '`toMarkdown` を持つ拡張は戻り値を入れ、持たない拡張は取り除いて警告にする'
+        condition: '`toMarkdown` を持つ拡張と持たない拡張のマーカーを 1 つずつ持つ文書'
+        mock: '`registerExtension` で 2 つ登録する（各テストの前に `resetExtensions`）。`load` は呼ばれたら記録する'
+        expected: 1 つ目の場所にフックの戻り値、2 つ目のマーカーが無く `warnings` に 1 件、`load` は呼ばれていない
+      - name: test_to_pure_markdown_when_hook_throws
+        case: 異常
+        summary: フックの例外を外へ出さず、取り除いて警告にする
+        condition: '`toMarkdown` が例外を投げる拡張のマーカーを持つ文書'
+        mock: 例外を投げる `toMarkdown`
+        expected: reject されず、マーカーが無く、`warnings` に拡張の名前が入る
+      - name: test_to_pure_markdown_when_markdown_not_string
+        case: 異常
+        summary: 文字列でない文書は TypeError
+        condition: '`markdown` が `null`'
+        mock: なし
+        exception: TypeError
+        expected: '`TypeError` で reject される'
+  - name: figureOf
+    title: 図の範囲から図を作る
+    container: src/markdown/pure-markdown.ts
+    kind: 関数
+    scope: internal
+    summary: 図の範囲の Markdown を `render` で HTML にし、`chart`・`param` は定義からタイトルと凡例の系列の名前を取り出して `MdmarkFigure` にする
+    description: 埋め込んだ HTML は範囲の `ts`・`js` のコードブロックを除いてから `render` に渡し、除いたときは警告を返却する。`param` の凡例は `今の値（…）`・`既定の値（…）` の 2 つ
+    args:
+      - name: options
+        type: '{ block: PureFigureBlock; index: number; config?: MdmarkConfig }'
+        required: true
+        description: 図の範囲・番号・設定
+    returns:
+      type: '{ figure: MdmarkFigure; warnings: string[] }'
+      description: 図と警告
+    callees:
+      - MOD-472-212#functions[render]
+    status: planned
+    unit_tests:
+      - name: test_figure_of_chart
+        case: 正常
+        summary: chart のタイトルと系列の名前
+        condition: タイトル `件数`・系列 `電話`・`メール` の `chart`
+        mock: なし
+        expected: '`kind` が `chart`、`title` が `件数`、`legend` が `["電話","メール"]`、`html` が `mdmark-chart` を含む'
+      - name: test_figure_of_param
+        case: 正常
+        summary: param の凡例は今の値と既定の値
+        condition: '`param` 1 つ'
+        mock: なし
+        expected: '`legend` の 2 つが `今の値` と `既定の値` で始まる'
+      - name: test_figure_of_html_with_scripts
+        case: 正常
+        summary: 範囲のスクリプトを除いて警告を返却する
+        condition: '`ts` を持つ埋め込んだ HTML'
+        mock: なし
+        expected: '`html` に `script` が無く、`warnings` が 1 件'
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:markdown
+  - name: action:変換
