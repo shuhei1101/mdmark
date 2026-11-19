@@ -10354,6 +10354,39 @@ flows:
     test: test_normal_when_class_node_id_link_resolved
     refs:
       - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
+  - name: 正常系（map の構成図・状態遷移図で折り返すノードの名前をノードに収めて描く）
+    summary: 種類の行を持ち、名前がノードの幅で折り返すノードを持つ構成図・状態遷移図を、名前の最後の行をノードの下の余白に食い込ませずに描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ。幅 1280px・描く先の `div` の幅は 1200px
+      - name: 折り返す名前のノードを持つ構成図と状態遷移図の map を持つ Markdown
+        description: 「注文の明細を月ごとに集計する」（全角 14 文字）のノードに `:::step` を付け、種類を持たない「結果を通知する」のノードへつないだ flowchart と、「支払いの確認を待っている状態」（全角 14 文字）の状態を `[*]` から `[*]` へつないだ stateDiagram-v2 の 2 つの範囲を持つ文書
+        notes: どちらの名前も、名前の幅に左右 10px ずつの余白を加えた幅（216px）では 1 行に収まり、左右の余白（10px・28px）と左右の枠線（1px ずつ）を除いた幅（176px）では 2 行に折り返す。修正前の Chromium では、どちらのノードも幅 216px・高さ 66px で、名前の 2 行目の下端がノードの上端から 62.9px、下の余白の上端が 59px で、下の余白に食い込む
+      - name: 設定
+        description: '`opts.config.map.kinds` に `step`（`label: 処理`・`icon: cog`）と `state`（`label: 状態`）。`map.node_fit` は既定（`height`）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: 名前を描く幅で折り返した行の数からノードの大きさを見積もって配置する
+        M-->>U: 図の枠に入れた map の構成図と状態遷移図
+      ```
+
+      <!-- /map -->
+    expected:
+      - 「注文の明細を月ごとに集計する」のノードと「支払いの確認を待っている状態」の状態のノードが、どちらも種類の行（「処理」・「状態」）を持つ
+      - どちらのノードも幅が 220px 以下で、名前の最後の行の文字の矩形の下端がノードの下の余白（`padding-bottom`）より上にある（名前がノードの下の余白に食い込まない）
+      - '種類を持たない「結果を通知する」のノードは、種類の行を描かず（`display: none`）、高さが名前 1 行の見積もり（`leafHeight(1)` = 63px）から 1px 以内のままで、名前がノードの下の余白より上にある（描いた中身を測り直しても、隠した種類の行で高くならない）'
+    test: test_normal_when_map_wrapped_node_names_drawn
+    refs:
+      - '#constraints[map の図]'
+      - '#constraints[map の状態遷移図]'
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。

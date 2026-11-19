@@ -397,41 +397,149 @@ test("test_attach_map_flow_when_crowded", async () => {
   expect(hit?.getAttribute("d")).toBe("M3 3L3 7");
 });
 
+/** 絶対配置でない子要素 */
+const inFlowChildren = (element: Element): Element[] =>
+  [...element.children].filter((child) => {
+    const style = getComputedStyle(child);
+    return (
+      !["absolute", "fixed"].includes(style.position) &&
+      style.display !== "none"
+    );
+  });
+
+/**
+ * 選んだノードの中身の上端と下端を、上下の枠線と余白を除いた内側の上端・下端から、指定した量だけ外へずらした位置に描かれたことにする。
+ * 最初の子要素のマージンの上端が内側の上端より `above` 上、最後の子要素のマージンの下端が内側の下端より `below` 下になる
+ */
+const placeContent = (
+  selector: string,
+  { above, below }: { above: number; below: number },
+) => {
+  const original = Element.prototype.getBoundingClientRect;
+  vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: Element) {
+      const rect = original.call(this);
+      const node = this.parentElement;
+      if (!node?.matches(selector)) return rect;
+      const children = inFlowChildren(node);
+      const first = children[0] === this;
+      const last = children.at(-1) === this;
+      if (!first && !last) return rect;
+      const box = original.call(node);
+      const nodeStyle = getComputedStyle(node);
+      const style = getComputedStyle(this);
+      const innerTop =
+        box.top +
+        Number.parseFloat(nodeStyle.borderTopWidth) +
+        Number.parseFloat(nodeStyle.paddingTop);
+      const innerBottom =
+        box.bottom -
+        Number.parseFloat(nodeStyle.borderBottomWidth) -
+        Number.parseFloat(nodeStyle.paddingBottom);
+      // 動かさない側の端は、動かした端を越えない位置に配置する（CSS を読み込まない環境では、子要素がノードの矩形の外に描かれることがある）
+      const placedTop = innerTop - above + Number.parseFloat(style.marginTop);
+      const placedBottom =
+        innerBottom + below - Number.parseFloat(style.marginBottom);
+      const top = first ? placedTop : Math.min(rect.top, placedBottom);
+      const bottom = last ? placedBottom : Math.max(rect.bottom, placedTop);
+      return new DOMRect(rect.left, top, rect.width, bottom - top);
+    },
+  );
+};
+
+type Placed = Array<{ id: string; h: number }>;
+type Overrides = Record<string, { size?: { h: number } }>;
+
+/** 1 回目の配置の結果のノードかグループの高さと、2 回目の配置に指定した大きさの上書きの高さ */
+const measuredHeights = async (id: string) => {
+  const layout = await loadLayout();
+  const { results, calls } = vi.mocked(layout.layoutMap).mock;
+  const first = (results[0]?.value ?? { nodes: [], groups: [] }) as {
+    nodes: Placed;
+    groups: Placed;
+  };
+  const second = (calls[1]?.[2] ?? { overrides: {} }) as {
+    overrides: Overrides;
+  };
+  const placed = [...first.nodes, ...first.groups].find(
+    (item) => item.id === id,
+  );
+  return { before: placed?.h, after: second.overrides[id]?.size?.h };
+};
+
+/** 配置の呼び出しの記録を削除する */
+const clearLayoutCalls = async () => {
+  const layout = await loadLayout();
+  vi.mocked(layout.layoutMap).mockClear();
+};
+
 // 閉じたグループの中身を測る（正常系）
 test("test_attach_map_flow_when_closed_group_measured", async () => {
-  // 準備（store を閉じた状態を保ち、閉じたグループの中身を 10px あふれさせる）
-  const layout = await loadLayout();
-  const layoutMap = vi.mocked(layout.layoutMap);
-  layoutMap.mockClear();
+  // 準備（store を閉じた状態を保ち、閉じたグループの中身が入る高さをノードの高さより 10px 大きくする）
+  await clearLayoutCalls();
   sessionStorage.setItem(
     `mdmark-map:${location.pathname}#1`,
     JSON.stringify({ collapsed: ["store"] }),
   );
+  placeContent('.map-closed-group[data-group="store"]', {
+    above: 0,
+    below: 10,
+  });
+  // 実行
+  await setUp();
+  // 検証
+  const { before, after } = await measuredHeights("store");
+  expect(before).toBeDefined();
+  expect(after).toBe((before ?? 0) + 10);
+});
+
+// 中身が下の余白にかかるノードを高くする（正常系）
+test("test_attach_map_flow_when_content_in_bottom_padding", async () => {
+  // 準備（mount の名前の下端を下の余白へ 6px 食い込ませ、scrollHeight はあふれていない値にする）
+  await clearLayoutCalls();
+  placeContent('[data-node="mount"]', { above: 0, below: 6 });
   const original = Object.getOwnPropertyDescriptor(
     Element.prototype,
     "scrollHeight",
   ) as PropertyDescriptor;
   vi.spyOn(Element.prototype, "scrollHeight", "get").mockImplementation(
     function (this: Element) {
-      const height = original.get?.call(this) as number;
-      return this.classList.contains("map-closed-group")
-        ? (this as HTMLElement).clientHeight + 10
-        : height;
+      return this.matches('[data-node="mount"]')
+        ? (this as HTMLElement).clientHeight
+        : (original.get?.call(this) as number);
     },
   );
   // 実行
   await setUp();
   // 検証
-  const firstStore = (
-    layoutMap.mock.results[0]?.value as
-      | { groups: Array<{ id: string; h: number }> }
-      | undefined
-  )?.groups.find((group) => group.id === "store");
-  const second = layoutMap.mock.calls[1]?.[2] as
-    | { overrides: Record<string, { size?: { h: number } }> }
-    | undefined;
-  expect(firstStore).toBeDefined();
-  expect(second?.overrides.store?.size?.h).toBe((firstStore?.h ?? 0) + 10);
+  const { before, after } = await measuredHeights("mount");
+  expect(before).toBeDefined();
+  expect(after).toBe((before ?? 0) + 6);
+});
+
+// 中身が下の余白より上にあるノードは高くしない（正常系）
+test("test_attach_map_flow_when_content_above_bottom_padding", async () => {
+  // 準備（全てのノードの中身の下端を、内側の下端より 2px 上にする）
+  await clearLayoutCalls();
+  placeContent(".mdmark-diagram-node", { above: 0, below: -2 });
+  // 実行
+  await setUp();
+  // 検証
+  const layout = await loadLayout();
+  expect(vi.mocked(layout.layoutMap)).toHaveBeenCalledTimes(1);
+});
+
+// 中身を上下の中央に配置するノードを 1 回で高くする（正常系）
+test("test_attach_map_flow_when_centered_content_overflows", async () => {
+  // 準備（user の名前を、内側の上端と下端からそれぞれ 10px はみ出させる）
+  await clearLayoutCalls();
+  placeContent('[data-node="user"]', { above: 10, below: 10 });
+  // 実行
+  await setUp();
+  // 検証
+  const { before, after } = await measuredHeights("user");
+  expect(before).toBeDefined();
+  expect(after).toBe((before ?? 0) + 20);
 });
 
 // 閉じたグループの中のノードを指す手順（正常系）
@@ -480,4 +588,21 @@ test("test_attach_map_flow_when_walk_into_closed_group", async () => {
   expect(
     root.querySelectorAll('.map-packet[data-wire="store->data"]').length,
   ).toBeGreaterThan(0);
+});
+
+// 隠した種類の行を中身に数えない（正常系）
+test("test_attach_map_flow_when_kind_row_hidden", async () => {
+  // 準備（描いた文書の CSS と同じく押せる要素を絶対配置にして種類の行を隠し、表示している中身の下端を内側の下端より 2px 上にする）
+  await clearLayoutCalls();
+  const style = document.createElement("style");
+  style.textContent =
+    ".mdmark-diagram-node-hit { position: absolute; } .mdmark-diagram-node-kind { display: none; }";
+  document.head.append(style);
+  onTestFinished(() => style.remove());
+  placeContent(".mdmark-diagram-node", { above: 0, below: -2 });
+  // 実行
+  await setUp();
+  // 検証
+  const layout = await loadLayout();
+  expect(vi.mocked(layout.layoutMap)).toHaveBeenCalledTimes(1);
 });

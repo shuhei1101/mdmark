@@ -1,0 +1,51 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/flow-view.browser.test.ts
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-leaf-size-right-padding
+
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (16 tests | 1 failed) 430ms
+   × test_attach_map_flow_when_kind_row_hidden 135ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_kind_row_hidden
+AssertionError: expected "vi.fn()" to be called 1 times, but got 2 times
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_kind_row_hidden.png
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:607:39
+    605|   // 検証
+    606|   const layout = await loadLayout();
+    607|   expect(vi.mocked(layout.layoutMap)).toHaveBeenCalledTimes(1);
+       |                                       ^
+    608| });
+    609|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c77359ed:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 15 passed (16)
+   Start at  06:06:02
+   Duration  1.43s (import 49%, tests 42%, worker 8%)
+
+
+# 実装の修正の前の Red。fail した 1 件（test_attach_map_flow_when_kind_row_hidden）は、contentOverflow が display: none の種類の行を最初の子要素に数え、全て 0 の矩形を中身の上端にするため。

@@ -8,6 +8,7 @@ import type {
   MdmarkReferences,
   MountHandle,
 } from "../../../src/index.ts";
+import { leafHeight } from "../../../src/map/layout.ts";
 import { VIEW_ICON_PATHS } from "../../../src/views/view.part.ts";
 import {
   ADDED_CHART_DEFINITIONS,
@@ -21854,6 +21855,83 @@ test("test_normal_when_map_class_long_members_drawn", async () => {
       stage.offsetHeight,
     );
   }
+});
+
+/** ノードの名前の行の数と、名前の最後の行の下端がノードの下の余白より上にあるか */
+function nameFitsAboveBottomPadding(node: HTMLElement): {
+  lines: number;
+  fits: boolean;
+} {
+  const range = document.createRange();
+  range.selectNodeContents(
+    find<HTMLElement>(node, ".mdmark-diagram-node-name"),
+  );
+  const rects = [...range.getClientRects()];
+  const box = node.getBoundingClientRect();
+  const style = getComputedStyle(node);
+  const limit =
+    box.bottom -
+    Number.parseFloat(style.borderBottomWidth) -
+    Number.parseFloat(style.paddingBottom);
+  return {
+    lines: new Set(rects.map((rect) => Math.round(rect.top))).size,
+    fits: Math.max(...rects.map((rect) => rect.bottom)) <= limit + 0.5,
+  };
+}
+
+// map の構成図・状態遷移図で折り返すノードの名前をノードに収めて描く（正常系）
+test("test_normal_when_map_wrapped_node_names_drawn", async () => {
+  // 準備・実行
+  const flow = mapRange({
+    mermaid:
+      'flowchart LR\n  total["注文の明細を月ごとに集計する"]:::step --> save["集計を保存する"]:::step --> notify["結果を通知する"]\n',
+  });
+  const state = mapRange({
+    mermaid:
+      'stateDiagram-v2\n  [*] --> 支払い待ち\n  state "支払いの確認を待っている状態" as 支払い待ち\n  支払い待ち --> [*]\n',
+  });
+  const { figures } = await mountMap(`${flow}\n${state}`, {
+    map: {
+      ...MAP_CONFIG,
+      kinds: { ...MAP_CONFIG.kinds, state: { label: "状態" } },
+    },
+  });
+  await vi.waitFor(() => expect(figures()).toHaveLength(2));
+  const [flowFigure, stateFigure] = figures() as [HTMLElement, HTMLElement];
+  const nodes = [
+    mapNode(flowFigure, "total"),
+    mapNode(stateFigure, "支払い待ち"),
+  ];
+  // 検証: どちらのノードも種類の行を持つ
+  expect(
+    nodes.map(
+      (node) =>
+        find<HTMLElement>(node, ".mdmark-diagram-node-kind").textContent ?? "",
+    ),
+  ).toEqual([expect.stringContaining("処理"), expect.stringContaining("状態")]);
+  // 検証: 幅は 220px 以下で、名前は 2 行に折り返し、最後の行がノードの下の余白より上にある
+  await vi.waitFor(() => {
+    for (const node of nodes) {
+      expect(node.getBoundingClientRect().width).toBeLessThanOrEqual(220.5);
+      const fit = nameFitsAboveBottomPadding(node);
+      expect(fit.lines).toBeGreaterThanOrEqual(2);
+      expect(fit.fits).toBe(true);
+    }
+  });
+  // 検証: 種類を持たないノードは種類の行を描かず、高さが名前 1 行の見積もりのままで、名前が下の余白より上にある
+  const notify = mapNode(flowFigure, "notify");
+  expect(
+    getComputedStyle(find<HTMLElement>(notify, ".mdmark-diagram-node-kind"))
+      .display,
+  ).toBe("none");
+  await vi.waitFor(() => {
+    expect(
+      Math.abs(notify.getBoundingClientRect().height - leafHeight(1)),
+    ).toBeLessThanOrEqual(1);
+    const fit = nameFitsAboveBottomPadding(notify);
+    expect(fit.lines).toBe(1);
+    expect(fit.fits).toBe(true);
+  });
 });
 
 /** 見出し・目次のマーカー・chart・div の生の HTML を持つ文書（Markdown のボタンの試験） */

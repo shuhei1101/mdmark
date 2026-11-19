@@ -10647,7 +10647,7 @@
     .mdmark-diagram-stage
     > .mdmark-diagram-node {
     justify-content: flex-start;
-    /* src/map/class-diagram.ts の MAP_NODE_PAD_RIGHT と同じ値 */
+    /* src/map/layout.ts の LABEL_METRICS.padRight と同じ値 */
     padding-right: 28px;
   }
   /* 種類を持たないノードは種類の行を描かず、名前をノードの上下の中央に置く */

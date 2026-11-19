@@ -33,12 +33,6 @@ constants:
     usecase: Mermaidと補足で図を描く
     role: 定数
     summary: クラス（種類の行「クラス」）・注釈を持つクラス（種類の行は空。注釈は `renderMapClassDiagram` が出す）・ノート（種類の行「ノート」）の `MapKind`。キーは設定の `map.kinds` と重ならない `mdmark-class`・`mdmark-class-annotated`・`mdmark-memo`
-  - name: MAP_NODE_PAD_RIGHT
-    title: map のノードの右の余白
-    container: src/map/class-diagram.ts
-    usecase: Mermaidと補足で図を描く
-    role: 定数
-    summary: map のノードが右上の i と開閉の山形の分だけ右に空ける幅（28px。`src/index.css` の map のノードの `padding-right` と同じ値）。ノートの文を折り返す幅の見積もりに使用する
 functions:
   - name: parseClassDiagram
     title: classDiagramを読む
@@ -136,7 +130,7 @@ functions:
       ラベルを持つ関係がつながるクラスは、`aside` を、つながる関係の最も長いラベルの幅（文字数 × `MAP_ER.labelChar`）と前後の `MAP_CLASS.labelGap` が、要素の間（図の全体の LR の段の間 `MAP_LAYOUT.gapRank` と、namespace の TB の中で横に並ぶ要素の間 `MAP_LAYOUT.gapItem` の小さい方）と両側の `aside` に収まる幅（`ceil(max(0, ラベルの幅 + labelGap × 2 - min(gapRank, gapItem)) / 2)`）にする。
       `aside` はラベルをずらす量を小さくするためのもので、重なりの回避は `renderMapClassEnds` が行う。
       閉じた `namespace` のノードは、タイトルが収まる `mapClosedGroupSize` の大きさにする。
-      ノートのノードは、文の幅（`layout.ts` の `textWidth` に `LABEL_METRICS.nameSize`）に左の余白 `LABEL_METRICS.padX` と右の余白 `MAP_NODE_PAD_RIGHT` を加えた幅を、`MAP_LAYOUT.minWidth` から `maxWidth` までの間で幅にする。その幅から左右の余白を引いた幅で文を行に分け（`layout.ts` の `splitLines`）、行の数から構成図の既定の見積もりと同じ `layout.ts` の `leafHeight` で高さを決める
+      ノートのノードは、文の幅（`layout.ts` の `textWidth` に `LABEL_METRICS.nameSize`）に左の余白 `LABEL_METRICS.padX`・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅を、`MAP_LAYOUT.minWidth` から `maxWidth` までの間で幅にする。その幅から左右の余白と枠線を引いた幅で文を行に分け（`layout.ts` の `splitLines`）、行の数から構成図の既定の見積もりと同じ `layout.ts` の `leafHeight` で高さを決める
     scope: public
     args:
       - name: diagram

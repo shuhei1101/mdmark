@@ -934,6 +934,18 @@ const MAP_FLOW_LONG = MAP_FLOW.replace(
   'layout["入れ子のグループを内側から順に自動配置して、グループの大きさを決める"]',
 );
 
+/** map の構成図の、種類の行を持ち名前がノードの幅で 2 行に折り返すノードの見本 */
+const MAP_FLOW_WRAPPED = `flowchart LR
+  total["注文の明細を月ごとに集計する"]:::step --> save["集計を保存する"]:::step
+`;
+
+/** map の状態遷移図の、名前がノードの幅で 2 行に折り返す状態の見本（`map.kinds` の `state` で種類の行を持たせて描く） */
+const MAP_STATE_WRAPPED = `stateDiagram-v2
+  [*] --> 支払い待ち
+  state "支払いの確認を待っている状態" as 支払い待ち
+  支払い待ち --> [*]
+`;
+
 /** マインドマップの項目の大きさの見積もり（全角 14px・半角 8px の文字幅で、幅 200px までで折り返す） */
 const mindmapStorySize = (label: string, shape: string) => {
   const text = [...label].reduce(
@@ -1337,6 +1349,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const sources: Record<string, string> = {
       long: MAP_FLOW_LONG,
       plain: MAP_FLOW_PLAIN,
+      wrapped: MAP_FLOW_WRAPPED,
       parallel: MAP_FLOW_PARALLEL,
     };
     const placed = layoutMap(
@@ -1459,8 +1472,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       : frame;
   },
   "map-state": (args) => {
-    const diagram = parseStateDiagram(MAP_STATE);
-    const { data } = parseMapData(MAP_STATE_DATA);
+    // `sample` が `wrapped` なら、種類の行を持ち名前が折り返す状態の見本
+    const wrapped = args.sample === "wrapped";
+    const diagram = parseStateDiagram(wrapped ? MAP_STATE_WRAPPED : MAP_STATE);
+    const { data } = parseMapData(wrapped ? "{}" : MAP_STATE_DATA);
     const { chart, loops: selfLoops } = stateToFlowchart(diagram);
     const { shapes, loops, overrides } = statePartInputs(chart, selfLoops);
     const collapsed = jsonList(args.collapsed);
@@ -1472,7 +1487,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     );
     const part = renderMapStateDiagram({
       layout,
-      kinds: {},
+      kinds: wrapped ? { state: { label: "状態" } } : {},
       lines: { "-.->": { dash: "dashed", head: "none" } },
       notes: noteTexts(data.notes),
       collapsed,

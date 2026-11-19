@@ -83,8 +83,8 @@ constants:
   - name: LABEL_METRICS
     title: ノードの文字の大きさと余白
     container: src/map/layout.ts
-    summary: 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさと余白。名前を折り返す行の数とノードの大きさの見積もりに使用する。CSS を修正したときは合わせて修正する
-    value: 種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px
+    summary: 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさと余白。名前を折り返す行の数とノードの大きさの見積もりに使用する。右の余白 `padRight` は、map のノードが右上の i と開閉の山形の分だけ右に空ける幅（`src/index.css` の map のノードの `padding-right`）。`border` はノードの枠線の幅（`.mdmark-diagram-node` の `border`）。CSS を修正したときは合わせて修正する
+    value: 種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px・右の余白 28px・枠線 1.5px
   - name: MAP_LAYOUT
     title: 配置の寸法
     container: src/map/layout.ts
@@ -148,7 +148,6 @@ functions:
     scope: public
     callees:
       - MOD-472-141#functions[routeWires]
-      - MOD-472-141#functions[wrapLabel]
     args:
       - name: chart
         type: Flowchart
@@ -178,7 +177,7 @@ functions:
       type: MapLayout
       description: 配置の結果
     process: |-
-      1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ（表示する木を作る）
+      1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ。上書きの `size` を持たない葉は、上書きの `width` を持てばその幅、持たなければ名前の幅（`textWidth`）に左の余白 `LABEL_METRICS.padX`・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅（小数は切り上げる）を `MAP_LAYOUT.minWidth` から上限（`nodeFit` が `height` なら `maxWidth`、`width` なら `maxWidthWide`）までに収めた幅にし、その幅から左右の余白と枠線を引いた幅で名前を行に分けた（`splitLines`）行の数の `leafHeight` を高さにする。上書きの `size` を持つ葉は、その大きさにし、同じ幅で名前を行に分ける（表示する木を作る）
       2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める。段の中の間と段の間には `spread` を足す。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
       3. 外側から座標を足して図の座標にし、線の経路を引く（線の経路を引く）
     unit_tests:
@@ -254,6 +253,24 @@ functions:
         condition: '`flowchart LR` の `A --> B`・`A --> C`（`B` と `C` が同じ段）を `spread` なしと `spread: 16` で配置する'
         mock: なし
         expected: '`spread: 16` のほうが、同じ段の `B` と `C` の間と、隣の段の `A` と `B` の間がそれぞれ 16px 広い'
+      - name: test_layout_map_when_name_fits_with_right_padding
+        case: 正常
+        summary: 右の余白を加えた幅で 1 行に収まる名前
+        condition: 名前が「データベース」（全角 6 文字・見積もりの幅 84px）のノード 1 つ
+        mock: なし
+        expected: そのノードの `w` が 125（84 + 10 + 28 + 1.5 × 2）、`h` が `leafHeight(1)`、`lines` が 1 行
+      - name: test_layout_map_when_name_wraps_with_right_padding
+        case: 正常
+        summary: 右の余白を除いた幅で折り返す名前
+        condition: '名前が全角 14 文字（見積もりの幅 196px）のノード 1 つと `nodeFit: height`'
+        mock: なし
+        expected: そのノードの `w` が 220、`lines` が 2 行（220 - 41 = 179px で折り返す）、`h` が `leafHeight(2)`
+      - name: test_layout_map_when_width_with_right_padding
+        case: 正常
+        summary: 幅を指定したノードの折り返し
+        condition: '名前が全角 12 文字（見積もりの幅 168px）のノードに上書きの `width: 200`'
+        mock: なし
+        expected: そのノードの `w` が 200、`lines` が 2 行（200 - 41 = 159px で折り返す）、`h` が `leafHeight(2)`
   - name: routeWires
     title: 線の経路を引く
     kind: 関数
@@ -314,33 +331,6 @@ functions:
         condition: 同じグループの同じ列に並ぶ 3 つのノード `a1`・`a2`・`a3` から、別のグループの `b3`・`b1`・`b2` へ 1 本ずつ出る線
         mock: なし
         expected: 後に引いた線が、先に引いた線と同じ向きで同じ直線の上に重なる区間の長さの合計が、`usedCost` を 0 にしたときより短い
-  - name: wrapLabel
-    title: 名前を折り返す
-    kind: 関数
-    container: src/map/layout.ts
-    usecase: Mermaidと補足で図を描く
-    role: 処理
-    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行を返す
-    scope: public
-    args:
-      - name: text
-        type: string
-        required: true
-        description: 名前
-      - name: width
-        type: number
-        required: true
-        description: 折り返す幅（px）
-    returns:
-      type: string[]
-      description: 行
-    unit_tests:
-      - name: test_wrap_label
-        case: 正常
-        summary: 全角 30 文字
-        condition: 220px
-        mock: なし
-        expected: 2 行以上で、各行の見積もりの幅が 220 - 20 以下
   - name: separateWires
     title: 同じ区間の線を並べる
     kind: 関数
@@ -424,7 +414,7 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、改行と文字の列の幅で折り返した行を返す。`wrapLabel`・ノードの大きさの既定の見積もりと、クラス図のノートの行の数の見積もり（`classPartInputs`）が使用する
+    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、改行と文字の列の幅で折り返した行を返す。ノードの大きさの既定の見積もりと、クラス図のノートの行の数の見積もり（`classPartInputs`）が使用する
     scope: public
     args:
       - name: text
