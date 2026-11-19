@@ -108,7 +108,8 @@ function saveMarkdown(text: string, name: string): void {
   link.href = url;
   link.download = name;
   link.click();
-  URL.revokeObjectURL(url);
+  // 保存が始まる前に無効にしないよう、次のタスクで無効にする
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 /** パネルの ID に続ける通し番号 */
@@ -587,11 +588,12 @@ function attachMarkdownButtons(options: {
     }
     const action =
       event.target.closest<HTMLElement>("[data-markdown]")?.dataset.markdown;
-    if (action === "copy") {
-      void onCopy();
-    } else if (action === "export") {
-      void onExport();
-    }
+    const run =
+      action === "copy" ? onCopy : action === "export" ? onExport : undefined;
+    // 変換の失敗（図を描く処理の例外など）はページへ出さず、コンソールに出す
+    run?.().catch((error: unknown) => {
+      console.error("mdmark: 文書を Markdown に変換できません", error);
+    });
   };
 
   aside.addEventListener("click", onClick);

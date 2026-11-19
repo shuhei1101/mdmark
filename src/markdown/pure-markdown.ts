@@ -1,6 +1,8 @@
 import type { MarkdownIt as MarkdownItParser, Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
+import type { MdmarkParamDefinition } from "../diagram/definition.ts";
+import { paramChart } from "../diagram/param.part.ts";
 import { extensionFor } from "../extensions.ts";
 import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
@@ -233,6 +235,23 @@ function namesOf(value: unknown, key: string): string[] {
   });
 }
 
+/** `param` の定義から、描いたグラフの凡例と同じ系列の名前（今の値は既定の値で描く）を取り出す */
+function paramLegendOf(definition: unknown): string[] {
+  const param = definition as {
+    knob?: { value?: unknown };
+    table?: unknown;
+  } | null;
+  const value = param?.knob?.value;
+  if (typeof value !== "number" || typeof param?.table !== "object") {
+    return [];
+  }
+  const { series = [] } = paramChart(
+    definition as MdmarkParamDefinition,
+    value,
+  );
+  return series.map((item) => item.name);
+}
+
 /** `chart`・`param` の定義から凡例の系列の名前を取り出す */
 function legendOf(kind: MdmarkFigure["kind"], definition: unknown): string[] {
   if (kind === "chart") {
@@ -240,11 +259,7 @@ function legendOf(kind: MdmarkFigure["kind"], definition: unknown): string[] {
     return series.length > 0 ? series : namesOf(definition, "items");
   }
   if (kind === "param") {
-    const knob = (definition as { knob?: unknown } | null | undefined)?.knob;
-    const label = textOf(knob, "label") ?? "";
-    const value = (knob as { value?: unknown } | undefined)?.value;
-    const text = `${label} ${String(value ?? "")}`.trim();
-    return [`今の値（${text}）`, `既定の値（${text}）`];
+    return paramLegendOf(definition);
   }
   return [];
 }
