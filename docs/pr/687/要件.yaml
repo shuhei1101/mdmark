@@ -1,0 +1,39 @@
+docs:
+  - page: ai-monitor-version.ini
+    new: false
+    change: 準拠バージョンを `v0.5.0` にする
+    status: todo
+  - page: ai-monitor-theme.yaml
+    new: false
+    change: '`import-site` が書く控えの `version` を `v0.5.0` にする'
+    status: todo
+  - page: docs/_theme/_layouts/default.html
+    new: false
+    change: '`import-site --version v0.5.0` で `docs/_theme/` の共通の部品を v0.5.0 の内容にする（mdmark を jsDelivr から読み、`assets/vendor/mdmark/` が消える。`nav.project.yml` は変えない）'
+    status: todo
+  - page: docs/README.md
+    new: false
+    change: '目次の表の印を `<!-- table: {"kind": "data"} -->` にする'
+    status: todo
+  - page: docs/er/README.md
+    new: false
+    change: '目次の表の印を `<!-- table: {"kind": "data"} -->` にする'
+    status: todo
+  - page: docs/library/README.md
+    new: false
+    change: '目次の表の印を `<!-- table: {"kind": "data"} -->` にする'
+    status: todo
+  - page: mdmark.config.yaml
+    new: true
+    change: 反映作業『配布先の mdmark の設定へのノードの種類の記載』で作り、`map.kinds`・`map.lines` に AI Monitor が生成する図の種類を記載する
+    status: todo
+scope_out:
+  - item: 設計書（IF-472-33・IF-472-34・IF-472-39・MOD-472-210・MOD-472-350）とモック HTML（docs/mock/）に記載した旧記法の印
+    reason: 旧記法を読む機能の入力の例と、過去の案のモックで、規約『ドキュメント管理』の表の種類の印を付ける対象の表ではない
+    plan: none
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-33.yaml
+    impact: none
+    detail: このリポジトリの直下に文書を描く設定を置くが、利用者が設定で描き方を指定する流れと期待値は変わらない
+    depends_on: []
