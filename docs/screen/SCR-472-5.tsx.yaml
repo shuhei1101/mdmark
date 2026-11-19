@@ -96,7 +96,7 @@ elements:
     position: 用語の下線 > 用語の次の行
     description: 用語の名前（太字）と意味。罫線と背景色で後ろの行を隠して手前に出す
     width: 48 桁と行の幅の短い方
-    visible_when: '`parts.hover_card` が `true` で、ポインターを用語に乗せている間'
+    visible_when: '用語の下線が出ていて、`parts.hover_card` が `true` で、ポインターを用語に乗せている間'
     refs:
       - IF-472-46#constraints[カード]
       - CMP-472-53#
@@ -108,7 +108,7 @@ elements:
     position: 用語の下線の後ろ
     description: 用語の出た順の番号を薄い色で描く
     label: '`[{番号}]`'
-    visible_when: '`parts.footnote` が `true` のとき'
+    visible_when: '用語の下線が出ていて、`parts.footnote` が `true` のとき'
     refs:
       - IF-472-46#constraints[脚注]
       - CMP-472-58#
@@ -120,7 +120,7 @@ elements:
     position: 発言・返答の本文の後ろ
     description: 脚注の番号ごとの用語の名前と意味を薄い色で並べる
     label: '`[{番号}] {名前}: {意味}`'
-    visible_when: '`parts.footnote` が `true` のとき'
+    visible_when: '用語の下線が出ていて、`parts.footnote` が `true` のとき'
     refs:
       - IF-472-46#constraints[脚注]
       - CMP-472-57#
