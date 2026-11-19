@@ -10,6 +10,8 @@ er:
   relations:
     - from: 文書
       to: 文書
+      from_column: related
+      to_column: id
       from_cardinality: 0..n
       to_cardinality: 0..n
       label: related
