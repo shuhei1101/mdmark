@@ -137,24 +137,123 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `tests/unit/src/mdmark-style/fake-engine.ts`・`reply.test.ts` | Button の `onPress` を呼ぶ補助 `pressButton` を足し、biome の `noUnsafeOptionalChaining` を解消した |
 | `tests/unit/src/mdmark-style/blocks.test.ts`（bcb7ff1e） | ESLint の `complexity` の上限（10）を超えたため、`?.` の並びを `toMatchObject` にした。確かめる値は変えていない |
 | `tests/unit/src/shared/style-tokens.logic.test.ts`（206edd94） | レビューの細部で、`light-daltonized` の発言の背景が `rgb(220, 220, 220)` と分かったため、`test_style_color` を `light` で確かめる形にし、テーマごとの値の `test_style_color_when_theme_override` を足した（設計書 MOD-472-359 の `unit_tests` も同じ commit で修正） |
+| `tests/unit/src/mdmark-style/blocks.test.ts`・`reply.test.ts` | レビューの必須の指摘（注意書きの中と行内のマーカーの後ろの用語に下線が付かない）で、`test_split_blocks_when_callout_columns`・`test_split_blocks_when_inline_marker_columns`・`test_render_block_when_term_in_callout`・`test_render_block_when_term_after_inline_marker` を足した。修正の前の実装では 4 件とも fail する（設計書 MOD-472-353・355 の `unit_tests` も修正） |
 
 ### 単体テスト
 
 | 対象 | 結果 | ログ |
 | --- | --- | --- |
-| `npm run test:unit`（全件） | 2,492 件 pass | [20261119221300_f73f5649_単体テスト.log](テスト結果/20261119221300_f73f5649_単体テスト.log) |
-| lint（biome・ESLint・tsc・vscode の tsc・actionlint） | 違反なし（biome の 1 件の警告は作業 PR が変えない `plugin/bin/setup.js` の大きさ） | [20261119221300_f73f5649_lint.log](テスト結果/20261119221300_f73f5649_lint.log) |
+| `npm run test:unit`（全件） | 2,496 件 pass | [20261119222738_e42f8bdb_単体テスト.log](テスト結果/20261119222738_e42f8bdb_単体テスト.log) |
+| lint（biome・ESLint・tsc・vscode の tsc・actionlint） | 違反なし（biome の 1 件の警告は作業 PR が変えない `plugin/bin/setup.js` の大きさ） | [20261119222738_e42f8bdb_lint.log](テスト結果/20261119222738_e42f8bdb_lint.log) |
 
 ### 結合テストの実行範囲
 
 判定は `judge_integration_scope`（層 TL-3、結合テストのフォルダ `tests/integration`）。全てのファイルが R7（実行に影響しないパス・全件にするパス・フォルダの対応表のどれにも無い）。
 
+<!-- table: {"kind": "data"} -->
+
 | 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無い入口 |
 | --- | --- | --- | --- |
-| `src/mdmark-style/*`・`mdmark-style/*`・`src/shared/style-tokens.logic.ts` | R7 | 新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`（`npm run test:mdmark-style` で実行） | - |
+| `.claude-plugin/marketplace.json` | R7 | なし（参照する結合テストが無い） | - |
+| `.github/workflows/develop-dist.yml` | R7 | なし（参照する結合テストが無い） | - |
+| `biome.json` | R7 | なし（参照する結合テストが無い） | - |
+| `docs/architecture/ARCH-472-1.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/config/CFG-472-4.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/config/README.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/config/index.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/ClaudeCodeで使用する-プラグインを入れる.mark.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/ClaudeCodeで使用する-画面を共通スタイルで描く.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/README.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/files.yml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/index.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/コアコンセプト-共通の定義と固有の定義.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/用語集.mark.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/guide/設定.mark.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/interface/IF-472-45.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/interface/IF-472-46.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/interface/IF-472-47.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/interface/README.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/interface/index.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/layout/LAY-472-1.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/library/LIB-472-1.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/components/claude-code-term-card/index.html` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/components/index.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/files.yml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/pages/claude-code-terminal/699/index.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/pages/claude-code-terminal/699/mdmark-style/index.html` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/pages/claude-code-terminal/index.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/pages/index.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/refs/699/assets/terminal.css` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/refs/699/index.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/mock/refs/index.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-14.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-351.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-352.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-353.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-354.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-355.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-356.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-357.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-358.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-359.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/MOD-472-360.ts.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/README.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/module/index.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/ClaudeCodeプラグイン.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/README.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/タスク一覧.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119213541_904d912b_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119215435_73687ecc_validate.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119215519_73687ecc_発言の背景の色.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119221300_f73f5649_lint.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119221300_f73f5649_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/ライブラリ本体.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/確認ログ.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/要件.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/要件.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/scenario/README.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/scenario/SC-472-4.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/scenario/SC-472-97.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/scenario/SC-472-98.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/scenario/SC-472-99.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/scenario/index.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/screen/README.md` | R7 | なし（実行するコードを変えない） | - |
+| `docs/screen/SCR-472-5.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `docs/screen/index.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `mdmark-style/.claude-plugin/plugin.json` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/THIRD_PARTY_LICENSES.txt` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/hooks/hooks.json` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/hooks/mod/mod.js` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/settings.sample.yaml` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `package.json` | R7 | なし（足したのは `test:mdmark-style` の行で、上の mod の結合テストで実行する） | - |
 | `scripts/build-plugin.ts` | R7 | `tests/integration/lib/build.test.ts`（`scripts/build.ts` の `main` を実行し、プラグインのビルドを通る） | - |
-| `scripts/test-mdmark-style.ts` | R7 | 上の 4 ファイル（このスクリプトで実行する） | - |
-| `.claude-plugin/marketplace.json`・`.github/workflows/develop-dist.yml`・`package.json`・`vitest.config.ts`・`biome.json` | R7 | なし（参照する結合テストが無い。`vitest.config.ts` は mod の結合テストのフォルダを除いただけ） | - |
-| `src/files.yaml`・`tests/files.yaml`・`scripts/files.yaml`・`docs/**`・`tests/unit/**` | R7 | なし（実行するコードを変えない） | - |
+| `scripts/files.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `scripts/test-mdmark-style.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/files.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `src/mdmark-style/blocks.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/marker-guide.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/mod.tsx` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/reply.tsx` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/settings.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/table-layout.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/terms.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/user-message.tsx` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/shared/style-tokens.logic.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `tests/files.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/scripts/test-mdmark-style.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/fake-engine.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/glossary-fixture.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/marker-guide.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/mod.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/reply.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/settings.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/table-layout.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/terms.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/mdmark-style/user-message.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tests/unit/src/shared/style-tokens.logic.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `vitest.config.ts` | R7 | なし（mod の結合テストのフォルダを除いただけ） | - |
+
+<!-- /table -->
 
 ドキュメント修正（アーキテクチャ図 ARCH-472-1・フォルダ構成 LAY-472-1・外部ライブラリ LIB-472-1）では、規約『V字モデル』の対応表で関係する単体・結合テストが無い（設計書の YAML だけを変え、コードを変えない）ため、テストを回していない。
