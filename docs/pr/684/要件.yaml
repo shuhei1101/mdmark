@@ -42,3 +42,6 @@ scope_out:
   - item: jsDelivr の @develop が develop の push の直後に古い配布物を返す間（jsDelivr のブランチの参照のキャッシュ）を縮める仕組み
     reason: '要望は @develop を読み込めるようにすることで、@develop の更新の速さは #621 が決めた jsDelivr の扱いに従う。拡張機能だけで変えるものではない'
     plan: none
+  - item: VS Code 拡張機能の結合テスト `preview-open.test.ts` の `test_normal_when_mermaid` が fail し、1.141.0 の実行が fail で終わるため stable の VS Code の実行に進まない
+    reason: origin/develop でも同じエラーで fail する既知の事象で、この PR の変更によるものではない
+    plan: '#642'

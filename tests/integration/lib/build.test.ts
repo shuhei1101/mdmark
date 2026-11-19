@@ -431,6 +431,19 @@ test("test_normal_when_released_migrations_kept", {
 }, async () => {
   // 準備
   const root = await createWorkTree("v0.3.0\n");
+  // 移行の手順の点検が、フォルダのスクリプトを呼ぶ手順を求める
+  const migrationScriptSteps = [
+    "steps:",
+    "  - op: call",
+    "    description: マーカーの書き換え",
+    "    script: marker-json.mjs",
+    "    files: [documents]",
+    "  - op: call",
+    "    description: 廃止した図の書き換え",
+    "    script: retired-diagrams.mjs",
+    "    files: [config, documents]",
+    "",
+  ].join("\n");
   const released = join(root, "migrations", "v0.3.0");
   const next = join(root, "migrations", "next");
   const committed: Record<string, string> = {
@@ -440,6 +453,7 @@ test("test_normal_when_released_migrations_kept", {
   };
   await mkdir(released, { recursive: true });
   await writeFile(join(root, "migrations", "no-steps.yaml"), "entries: []\n");
+  await writeFile(join(released, "steps.yaml"), migrationScriptSteps);
   await writeFile(join(released, "marker-json.mjs"), "\n");
   await writeFile(join(released, "retired-diagrams.mjs"), "\n");
   for (const [name, text] of Object.entries(committed)) {
@@ -450,6 +464,7 @@ test("test_normal_when_released_migrations_kept", {
   await git(root, ["commit", "--quiet", "-m", "v0.3.0 を出す"]);
   await git(root, ["tag", "v0.3.0"]);
   await mkdir(next, { recursive: true });
+  await writeFile(join(next, "steps.yaml"), migrationScriptSteps);
   await writeFile(join(next, "marker-json.mjs"), "\n");
   await writeFile(join(next, "retired-diagrams.mjs"), "\n");
   for (const args of [["--develop"], []]) {
