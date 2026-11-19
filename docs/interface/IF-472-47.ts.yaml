@@ -1,0 +1,159 @@
+id: IF-472-47
+visibility: internal
+title: マーカーの記載方法を注入する
+lead: Claude Code の SessionStart（起動・再開・`/clear`・圧縮の後）ごとに、モデルが返答に mdmark のマーカーを記載できるよう、マーカーの記載方法の短い説明を `additionalContext` へ 1 つ追加する。
+entry:
+  kind: trigger
+  value: Claude Code の mod の `classic.SessionStart` のフック
+callers:
+  - SC-472-99#
+idempotent: true
+side_effects: なし（SessionStart の結果に説明を追加するだけ）
+request:
+  - name: e.source
+    type: "'startup' | 'resume' | 'clear' | 'compact'"
+    required: true
+    location: argument
+    description: SessionStart のきっかけ。どの値でも同じ説明を追加する
+  - name: settings.yaml
+    type: CFG-472-4 のキー
+    required: false
+    location: argument
+    description: '`inject_marker_guide` を読む設定'
+    default: なし（全てのキーを既定値にする）
+request_example: |-
+  ```json
+  {"source": "clear"}
+  ```
+response:
+  - name: additionalContext
+    type: string[]
+    description: '`next(e)` の結果の `additionalContext` の後ろに、制約「説明の文」の文を 1 つ追加した並び。ほかのフィールドは `next(e)` の結果のまま'
+response_example: |-
+  ```json
+  {"additionalContext": ["mdmark-style: 返答の表の直前に <!-- table: {\"kind\": \"data\"} --> を書くと …"]}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: '`next(e)` の結果、または説明を追加した結果を返却する'
+  - name: なし（設定ファイルを読めない）
+    condition: 設定ファイルがあるが、YAML として読めない
+    notes: 説明を追加せずに `next(e)` の結果を返却し、`$.ui.log` でデバッグログに理由を出す。セッションの開始と他のプラグインの `additionalContext` を止めない
+constraints:
+  - item: 注入する条件
+    constraint: '`inject_marker_guide` が `true` のときだけ追加する。`enabled` と `targets` には左右されない'
+  - item: 回数
+    constraint: 1 回の SessionStart で 1 つだけ追加する。セッションをまたいだ記録は持たず、`/clear`・圧縮の後の SessionStart でも追加する
+  - item: 説明の文
+    constraint: '`mdmark-style:` で始め、表の種類（`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->`）・注意書き（`> [!NOTE]` などの 5 種）・コードブロックの飾り（`<!-- code: title=... lines -->` と行末の `[!code ++]` など）・開閉の範囲（`<!-- details: タイトル -->` 〜 `<!-- /details -->`）の書き方を、それぞれ 1 行で示す。マーカーは画面に出ないことを 1 行で添える。合計 600 文字以内'
+  - item: 使用しないフック
+    constraint: '`session.start` の戻り値はモデルの文脈を変えないため使用しない'
+    decided_by: LIB-472-1#
+flows:
+  - name: 正常系
+    summary: 起動の SessionStart で、他の `additionalContext` の後ろに説明を 1 つ追加する
+    setup:
+      - name: Mock
+        description: 'Claude Code の代わりに `claude-code/testing` で `classic.SessionStart`（`source: startup`）を起こし、テストの `on` で別のプラグインの `additionalContext`（`other`）を返す。設定ファイルは無い'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: classic.SessionStart（source: startup）
+        M->>C: next(e)
+        C-->>M: additionalContext: [other]
+        M-->>C: additionalContext: [other, 説明]
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`additionalContext` が `other` と説明の 2 つで、説明は `mdmark-style:` で始まり `<!-- table: {"kind": "data"} -->` を含む'
+      - 説明が 600 文字以内
+    test: test_normal
+    refs:
+      - SC-472-99#scenarios[正常シナリオ]
+  - name: 正常系（/clear の後）
+    summary: '`source: clear` の SessionStart でも説明を 1 つ追加する'
+    setup:
+      - name: Mock
+        description: '正常系と同じ。正常系の後に `source: clear` でもう一度起こす'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: classic.SessionStart（source: clear）
+        M->>C: next(e)
+        C-->>M: additionalContext: [other]
+        M-->>C: additionalContext: [other, 説明]
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 回目の結果の `additionalContext` にも説明が 1 つだけある
+    test: test_normal_when_cleared
+    refs:
+      - SC-472-99#scenarios[正常シナリオ（/clear の後）]
+  - name: 正常系（注入をオフにしている）
+    summary: '`inject_marker_guide` が `false` のとき、`next(e)` の結果をそのまま返却する'
+    setup:
+      - name: Mock
+        description: '正常系と同じ。`on("fs.read")` で `global.inject_marker_guide: false` の設定ファイルを返す'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: classic.SessionStart（source: startup）
+        M->>C: next(e)
+        C-->>M: additionalContext: [other]
+        M-->>C: additionalContext: [other]
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`additionalContext` が `other` だけ'
+    test: test_normal_when_injection_disabled
+    refs:
+      - SC-472-99#scenarios[正常シナリオ（注入をオフにしている）]
+  - name: 異常系（設定ファイルを読めない・なし）
+    summary: 設定ファイルを読めないとき、説明を追加せずに結果を返却し、デバッグログに理由を出す
+    setup:
+      - name: Mock
+        description: 正常系と同じ。`on("fs.read")` で YAML として読めない設定ファイルを返す
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: classic.SessionStart（source: startup）
+        M->>C: next(e)
+        C-->>M: additionalContext: [other]
+        M->>C: $.ui.log（to: debug）
+        M-->>C: additionalContext: [other]
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`additionalContext` が `other` だけ'
+      - '`$.ui.log` が `to: "debug"` で、`mdmark-style` と設定ファイルのパスを含む文で 1 回呼ばれる'
+    test: test_error_when_config_unreadable
+refs:
+  - CFG-472-4#
+  - LIB-472-1#
+test_file: tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts
+tags:
+  - name: topic:マーカー
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: topic:フック

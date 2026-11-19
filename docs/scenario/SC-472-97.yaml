@@ -24,7 +24,7 @@ scenarios:
         description: ターミナル版の Claude Code を tmux の手元と別のソケットで起動し、ビルドしたこのリポジトリの mdmark-style を `--plugin-dir` で読み込む
         notes: 設定ファイルは配置せず、既定値で動かす
       - name: 固定の返答
-        description: '見出し・太字と行内のコードを含む段落・箇条書き・行内と単独の行のマーカー・`<!-- table: {"kind": "data"} -->` を付けた表・マーカーの無い表・`> [!NOTE]` の注意書き・言語 `ts` のコードブロックを持つ Markdown をファイルに配置し、その中身だけを返答させる発言'
+        description: '見出し・太字と行内のコードを含む段落・箇条書き・行内と単独の行のマーカー・`<!-- table: {"kind": "data"} -->` を付けた表・マーカーの無い表・`> [!NOTE]` の注意書き・`<!-- code: title=a.ts lines -->` を付けて行末に `[!code ++]` を持つ行を含む言語 `ts` のコードブロック・`<!-- details: 用語を読み込む場所 -->` 〜 `<!-- /details -->` の範囲を持つ Markdown をファイルに配置し、その中身だけを返答させる発言'
       - name: Mock
         description: なし（実際の Claude Code とモデルで、固定の Markdown をそのまま返答させる）
     flow: |-
@@ -52,6 +52,8 @@ scenarios:
       - 画面に `<!--` の文字が 0 件で、行内のマーカーの前後の文字が 1 つの空白でつながる
       - 色・罫線は共通スタイルの定義の値で描かれる
       - 表・注意書き・見出し・コードのほかのブロック（段落・箇条書き）と、その中の太字・行内のコード・リンクは、Claude Code の標準の返答と同じ描き方で描かれ、`**`・`- `・バッククォートの記号が画面に出ない
+      - コードブロックが背景の面で本文と分かれ、言語のラベル・タイトル `a.ts`・行番号が付き、`[!code ++]` の行は追加した行の色で描かれて `[!code ++]` の文字は出ない
+      - 開閉の範囲が `[ ▸ 用語を読み込む場所 ]` の Button で描かれ、押すと中身が開き、もう一度押すと閉じる
     test: test_normal
   - name: 正常シナリオ（部品をオフにしている）
     decisions:
@@ -114,6 +116,33 @@ scenarios:
     expected:
       - 返答が Claude Code の元の描画で描かれ、マーカーの文字も元の描画のとおりに出る
     test: test_normal_when_assistant_not_targeted
+  - name: 正常シナリオ（狭い端末）
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: 正常シナリオと同じ。tmux の端末の幅を 50 列にする
+      - name: 広い表の返答
+        description: 3 列で、3 列目のセルが 60 文字の表を持つ Markdown をファイルに配置し、その中身だけを返答させる発言
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: 広い表を返答させる発言
+        C->>M: ui.render（AssistantMessage・本文・描く幅）
+        M->>M: 列の幅を描く幅に収める
+        M-->>C: セルの中で折り返す表の部品の木
+        C-->>U: 端末の幅に収まった表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表の罫線が端末の幅の中に収まり、3 列目のセルの中身が複数の行に折り返されて全ての文字が画面に出る
+    test: test_normal_when_terminal_narrow
   - name: 異常シナリオ（設定ファイルを読めない）
     setup:
       - name: mdmark-style を入れた Claude Code

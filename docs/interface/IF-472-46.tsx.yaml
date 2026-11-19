@@ -1,0 +1,237 @@
+id: IF-472-46
+visibility: internal
+title: 発言の用語にマーカーを付ける
+lead: Claude Code が利用者の発言を描く前に、`mdmark.config.yaml` から集めた用語・エイリアスを発言の本文と照合し、用語に下線・ポインターで開くカード・本文の後ろの脚注を付けた部品の木を、標準の発言と同じ背景の帯で描く。
+entry:
+  kind: trigger
+  value: 'Claude Code の mod の `ui.render`（`component`: `UserMessage`）のフック'
+callers:
+  - SC-472-98#
+idempotent: true
+side_effects: なし（保存される発言の本文は変えない）。用語集を読めないときだけ Claude Code のデバッグログに 1 行を出す
+request:
+  - name: e.props.text
+    type: string
+    required: true
+    location: argument
+    description: 発言の本文
+  - name: e.props.origin.kind
+    type: string
+    required: true
+    location: argument
+    description: 発言の出どころ。`composer`（利用者が入力した発言）のときだけ描き換える
+  - name: e.surface
+    type: "'terminal' | 'desktop' | 'vscode' | 'mobile'"
+    required: true
+    location: argument
+    description: 描く画面の種類
+  - name: settings.yaml
+    type: CFG-472-4 のキー
+    required: false
+    location: argument
+    description: '`$.env.get("MDMARK_STYLE_CONFIG")` か既定のパスから `$.fs.read` で読む設定'
+    default: なし（全てのキーを既定値にする）
+  - name: mdmark.config.yaml
+    type: CFG-472-3 のキー
+    required: false
+    location: argument
+    description: 設定 `glossary` が指す設定ファイルと、その `index` の索引・`aliases` の行が指すファイル・用語集の表を持つ文書。`$.fs.read` で読む
+    default: なし（用語のマーカーを付けない）
+  - name: settings.json の theme
+    type: string
+    required: false
+    location: argument
+    description: '`$.settings.read()` で読む Claude Code の配色。背景の帯とカードの背景の色を決める'
+    default: なし（`dark` として扱う）
+request_example: |-
+  ```json
+  {"surface": "terminal", "component": "UserMessage", "requestId": "msg_02", "props": {"text": "mdmark の WS と WSL の違いを表で教えて", "origin": {"kind": "composer"}}}
+  ```
+response:
+  - name: (戻り値)
+    type: RenderElement
+    description: 背景の帯の Box の中に、行ごとの keyed Box（下線の Text とカードの Box）と脚注を持つ部品の木。描き換えないときは `next(e)` の戻り値
+response_example: |-
+  ```tsx
+  <Box key="user" flexDirection="column" backgroundColor="ansi256(237)">
+    <Box key="line-0"><Text>❯ </Text><Text underline>mdmark</Text><Text dimColor>[1]</Text><Text> の …</Text>
+      <Box position="absolute" top={1} left={0} display="none" hover={{ display: 'flex' }} borderStyle="round" backgroundColor="ansi256(236)">…</Box>
+    </Box>
+    <Text dimColor>[1] mdmark: Markdown 文書の表示を各アプリで共通に使用するライブラリ</Text>
+  </Box>
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 部品の木か `next(e)` の戻り値を返却する
+  - name: Error（設定ファイルを読めない）
+    condition: 設定ファイルがあるが、YAML として読めない
+    notes: Claude Code が元の描画で発言を描き、デバッグログに mod の名前と理由を出す
+constraints:
+  - item: 描き換える条件
+    constraint: '`enabled` が `true`、`targets` に `user`、`parts.terms` が `true`、`glossary` があり、`origin.kind` が `composer` で、本文に用語が 1 つ以上あるときだけ描き換える。そうでなければ `next(e)` を返却する'
+  - item: 用語の集め方
+    constraint: '`glossary` の `mdmark.config.yaml` を起点に、索引の `terms[]`・`aliases` の行が指すファイル・索引の文書の用語集の表から用語を集める。エイリアスはインターフェース定義『エイリアスを作る』、用語集の表は『参照の表を作る』の関数で作る。YAML の文書・MCP は参照しない'
+  - item: 用語の照合
+    constraint: インターフェース定義『本文の参照を取り出す』（`collectMatches`）と同じ辞書と照合（長い単語から、始まりと終わりが単語の区切りに合う一致）で照合する。`WS` は `WSL` の中に一致しない
+  - item: 下線
+    constraint: メッセージごとに、用語の最初の出現だけに下線を付ける。見出し・表・コード（行内のコードを含む）・リンクの中には付けない。下線の色は共通スタイルの用語の下線の色
+  - item: カード
+    constraint: '`parts.hover_card` が `true` のとき、用語を含む行の keyed Box の中に、`position: "absolute"`・`top: 1`・`left: 0`・`display: "none"`・`hover: { display: "flex" }` の Box を置き、用語の名前（太字）と意味を描く。カードは罫線（`round`）と背景色で後ろの行を隠し、幅は 48 桁と行の幅の短い方で折り返す。行に用語が複数あるときは用語ごとに keyed Box を分け、乗せた用語のカードだけを開く'
+  - item: 脚注
+    constraint: '`parts.footnote` が `true` のとき、下線の用語の後ろに出た順の番号 `[n]` を薄い色で付け、本文の後ろに `[n] {名前}: {意味}` の行を薄い色で並べる'
+  - item: 背景の帯
+    constraint: 発言の Box の `backgroundColor` を、Claude Code の標準の発言の帯と同じ色にする。色は `$.settings.read()` の `theme` が `light` で始まるときは明るい配色、それ以外は暗い配色の値（暗い配色は 256 色の 237）を共通スタイルの定義から取る。行頭の `❯` とその色も標準の発言と同じにする
+    notes: '`next(e)` の戻り値は中を読めない参照（`{type: "engine"}`）で、標準の発言の Text だけを書き換えられないため、帯ごと自分で描く。明るい配色の値は実装で同じ方法（`tmux capture-pane -e`）で測る'
+  - item: 読み直し
+    constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で読み直す
+flows:
+  - name: 正常系
+    summary: 索引・エイリアス・用語集の表の 3 つの用語に下線・カード・脚注を付け、背景の帯で描く
+    setup:
+      - name: Mock
+        description: 'Claude Code の代わりに `claude-code/testing` の `$.ui.mount` で `UserMessage` を `terminal` に描く。テストの `on("fs.read")` で設定ファイル・`mdmark.config.yaml`・用語集の表の文書を返し、`on("settings.read")` で `theme: dark` を返す'
+      - name: 用語を持つ mdmark.config.yaml
+        description: 索引の `terms[]` に `WS`、`aliases` に `mdmark`、用語集の表に `エイリアス` を持つ
+      - name: 発言
+        description: '`mdmark の WS にエイリアスを登録し、WS と WSL の違いを教えて`（`origin.kind` は `composer`）'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        participant F as ファイル
+        C->>M: ui.render（UserMessage・本文）
+        M->>F: 設定ファイル・mdmark.config.yaml・用語集を読む
+        F-->>M: 用語の辞書
+        M->>M: 本文の用語を照合する
+        M-->>C: 背景の帯の中に下線・カード・脚注を持つ部品の木
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`mdmark`・`WS`・`エイリアス` の最初の出現が `underline` の Text で、2 回目の `WS` と `WSL` は下線が無い'
+      - '用語ごとに `hover` で `display: "flex"` になるカードの Box があり、名前と意味を持ち、背景色と罫線を持つ'
+      - 本文の後ろに `[1]`〜`[3]` の脚注が出た順に並ぶ
+      - 発言の Box の `backgroundColor` が暗い配色の帯の色
+    test: test_normal
+    refs:
+      - SC-472-98#scenarios[正常シナリオ]
+  - name: 正常系（用語集を指定していない）
+    summary: '`glossary` が無いとき、`next(e)` を返却する'
+    setup:
+      - name: Mock
+        description: 正常系と同じ。`on("fs.read")` で設定ファイルが無いと返す
+      - name: 発言
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        participant F as ファイル
+        C->>M: ui.render（UserMessage・本文）
+        M->>F: 設定ファイルを読む
+        F-->>M: 無い
+        M-->>C: next(e) の戻り値
+      ```
+
+      <!-- /map -->
+    expected:
+      - 戻り値が `next(e)` の戻り値と同じ
+    test: test_normal_when_glossary_not_set
+    refs:
+      - SC-472-98#scenarios[正常シナリオ（用語集を指定していない）]
+  - name: 正常系（hover のカードをオフにしている）
+    summary: '`parts.hover_card` が `false` のとき、下線と脚注だけを付ける'
+    setup:
+      - name: Mock
+        description: 正常系と同じ。設定ファイルの `global.parts.hover_card` を `false` にする
+      - name: 発言
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: ui.render（UserMessage・本文）
+        M-->>C: 下線と脚注だけを持つ部品の木
+      ```
+
+      <!-- /map -->
+    expected:
+      - 下線の Text と脚注があり、カードの Box が無い
+    test: test_normal_when_hover_card_disabled
+    refs:
+      - SC-472-98#scenarios[正常シナリオ（hover のカードをオフにしている）]
+  - name: 正常系（用語が無い発言）
+    summary: 本文に用語が無いとき、`next(e)` を返却して標準の発言の描画を残す
+    setup:
+      - name: Mock
+        description: 正常系と同じ
+      - name: 発言
+        description: '`README を直して`'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: ui.render（UserMessage・本文）
+        M->>M: 一致する用語が無い
+        M-->>C: next(e) の戻り値
+      ```
+
+      <!-- /map -->
+    expected:
+      - 戻り値が `next(e)` の戻り値と同じ
+    test: test_normal_when_no_term
+  - name: 異常系（用語集を読めない・なし）
+    summary: '`glossary` のファイルを読めないとき、`next(e)` を返却し、デバッグログに理由を出す'
+    setup:
+      - name: Mock
+        description: '正常系と同じ。`global.glossary: missing.yaml` の設定ファイルを返し、`missing.yaml` は無いと返す'
+      - name: 発言
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        participant F as ファイル
+        C->>M: ui.render（UserMessage・本文）
+        M->>F: 用語集を読む
+        F-->>M: 無い
+        M->>C: $.ui.log（to: debug）
+        M-->>C: next(e) の戻り値
+      ```
+
+      <!-- /map -->
+    expected:
+      - 戻り値が `next(e)` の戻り値と同じ
+      - '`$.ui.log` が `to: "debug"` で、`mdmark-style` と `missing.yaml` を含む文で 1 回呼ばれる'
+    test: test_error_when_glossary_unreadable
+    refs:
+      - SC-472-98#scenarios[異常シナリオ（用語集の設定ファイルを読めない）]
+refs:
+  - CFG-472-4#
+  - IF-472-36#
+  - IF-472-26#
+  - IF-472-31#
+  - IF-472-45#
+test_file: tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx
+tags:
+  - name: topic:用語
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: topic:ツールチップ
+  - name: topic:脚注

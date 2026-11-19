@@ -1,0 +1,159 @@
+id: CFG-472-4
+visibility: internal
+title: '設定: mdmark-style'
+lead: mod のプラグイン mdmark-style が読み込む設定のキーの一覧。本体は `settings.yaml` で、キーの見本はプラグインの中の `settings.sample.yaml`。
+files:
+  - file: 環境変数
+    manages: 設定ファイルのパス
+  - file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    manages: 描き換えのオン・オフ・部品・対象・用語集・注入の設定
+    notes: '`MDMARK_STYLE_CONFIG` があればそのパスを読む。ファイルが無ければ全てのキーを既定値にする。最上位に `global` と `projects` を置き、`projects[].match` が起動したプロジェクトに該当した要素を並びの順に `global` へ重ねる（辞書はキーごと、並びは後ろに追加）'
+  - file: settings.sample.yaml
+    manages: 全てのキーと既定値の見本
+    notes: プラグインと一緒に配る。mdmark-style は読まない
+settings:
+  - key: MDMARK_STYLE_CONFIG
+    title: 設定ファイルのパス
+    file: 環境変数
+    type: string
+    default: '`${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml`'
+    description: mdmark-style が読む `settings.yaml` のパス。既定のパスと違う場所に置くときだけ `~/.claude/settings.json` の `env` に書く。先頭の `~` はホームに展開する
+    env_var: MDMARK_STYLE_CONFIG
+    reload: restart
+    status: planned
+    visibility: user
+  - key: global.enabled
+    title: 描き換えのオン・オフ
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、返答・発言を描き換えず、用語のマーカーも付けない（マーカーの記載方法の注入は `inject_marker_guide` で決める）'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.targets
+    title: 描き換える場所
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: ('assistant' | 'user')[]
+    default: '`[assistant, user]`'
+    description: '`assistant` はアシスタントの返答、`user` は利用者の発言。無い場所は Claude Code の元の描画のまま描く'
+    allowed: '`assistant`・`user` の並び。ほかの値は無視する'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.table
+    title: 表の部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、返答の表を Claude Code の Markdown 部品の描き方に任せる'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.heading
+    title: 見出しの部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、返答の見出しを Claude Code の Markdown 部品の描き方に任せる'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.callout
+    title: 注意書きの部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、返答の注意書き（`> [!NOTE]` など）を Claude Code の Markdown 部品の描き方に任せる'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.code
+    title: コードブロックの部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、返答のコードブロックを Claude Code の Markdown 部品の描き方に任せる（背景の面・言語のラベル・コードブロックの飾り・コピーの Button も付けない）'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.fold
+    title: 開閉の範囲の部品
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、details の範囲・セクションの開閉・注意書きの `closed` を開閉の Button にせず、中身を開いたまま描く'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.terms
+    title: 用語のマーカー
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、用語の下線・カード・脚注を付けない'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.hover_card
+    title: 用語のカード
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、用語にポインターを乗せても意味のカードを出さない（下線と脚注は `terms`・`footnote` で決める）'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.parts.footnote
+    title: 用語の脚注
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、発言と返答の後ろに用語の脚注を出さない'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.glossary
+    title: 用語集の設定ファイル
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: string
+    default: なし（用語のマーカーを付けない）
+    description: 用語を取る `mdmark.config.yaml` のパス。索引（`index`）の `terms[]`・`aliases`・用語集の表から用語を集める。相対パスは起動したプロジェクトの直下から解決する
+    allowed: 読める `mdmark.config.yaml` のパス。読めないときは用語のマーカーだけを付けず、理由を Claude Code のデバッグログに出す
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: global.inject_marker_guide
+    title: マーカーの記載方法の注入
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: boolean
+    default: 'true'
+    description: '`false` のとき、SessionStart でマーカーの記載方法の説明を注入しない'
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: projects[].match
+    title: プロジェクトの条件
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: string
+    required: true
+    description: 絶対パスなら、起動したプロジェクトの直下がそのパスかその配下のとき、プロジェクト名ならリポジトリのフォルダ名が一致したときに、要素のキーを `global` へ重ねる。`.claude/worktrees/` の下の worktree は本体のパス・フォルダ名で照合する
+    missing: その要素を重ねない
+    reload: immediate
+    status: planned
+    visibility: user
+  - key: projects[].{global と同じキー}
+    title: プロジェクトごとの値
+    file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    type: global と同じ型
+    description: 該当したプロジェクトで `global` に重ねる値。`enabled`・`targets`・`parts.*`・`glossary`・`inject_marker_guide` を持てる
+    reload: immediate
+    status: planned
+    visibility: user
+notes:
+  読み直し: 設定ファイルと用語集は `ui.render`・`classic.SessionStart` のたびに読み直す。読んだ値をプロセスの中に持ち越さないため、反映は `immediate`（次に描く返答・発言から効く）
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
