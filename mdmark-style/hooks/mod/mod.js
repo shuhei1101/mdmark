@@ -23126,7 +23126,16 @@ async function termMarksOf($, options) {
   }
 }
 async function renderUserMessage($, e, next) {
-  const settings = await readSettings($);
+  let settings;
+  try {
+    settings = await readSettings($);
+  } catch (error2) {
+    if (!(error2 instanceof SettingsError)) {
+      throw error2;
+    }
+    $.ui.log(error2.message, { to: "debug" });
+    return next(e);
+  }
   if (!settings.enabled || !settings.targets.includes("user") || !settings.parts.terms || settings.glossary === void 0 || e.props.origin?.kind !== "composer") {
     return next(e);
   }
@@ -23476,7 +23485,16 @@ var countTree = (node) => {
   return count;
 };
 async function renderReply($, e, next) {
-  const settings = await readSettings($);
+  let settings;
+  try {
+    settings = await readSettings($);
+  } catch (error2) {
+    if (!(error2 instanceof SettingsError)) {
+      throw error2;
+    }
+    $.ui.log(error2.message, { to: "debug" });
+    return next(e);
+  }
   if (!settings.enabled || !settings.targets.includes("assistant")) {
     return next(e);
   }
