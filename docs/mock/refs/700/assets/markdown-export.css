@@ -139,3 +139,17 @@
   color-scheme: dark;
 }
 
+
+/* mount で描いた文書の見本へのリンクの並び: 押す部品の高さを 24px 以上にし、行の間を空ける */
+.catalog-links {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding-inline-start: 1.25rem;
+
+  a {
+    display: inline-block;
+    min-height: 1.75rem;
+    line-height: 1.75rem;
+  }
+}
