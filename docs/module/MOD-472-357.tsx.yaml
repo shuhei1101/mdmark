@@ -1,0 +1,131 @@
+id: MOD-472-357
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / user-message.tsx
+lead: 発言の `ui.render` のフック。本文に用語があるとき、用語に下線・ポインターで開くカード・脚注を付けた部品の木を、標準の発言と同じ背景の帯で描く。
+test_files:
+  - tests/unit/src/mdmark-style/user-message.test.tsx
+constants:
+  - name: CARD_MAX_WIDTH
+    title: カードの最大の幅
+    container: src/mdmark-style/user-message.tsx
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: 用語のカードを折り返す桁数の上限（行の幅が狭いときは行の幅）
+    value: '48'
+    refs:
+      - IF-472-46#constraints[カード]
+    status: planned
+functions:
+  - name: renderUserMessage
+    title: 発言を描く
+    kind: 関数
+    container: src/mdmark-style/user-message.tsx
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    role: フック
+    summary: '`UserMessage` の `ui.render` で、描き換える条件を満たすときだけ、行頭の `❯` と用語のマーカー付きの本文を背景の帯の Box で描く'
+    scope: public
+    is_async: true
+    args:
+      - name: $
+        type: Engine
+        required: true
+        description: Claude Code のエンジンのインターフェース
+      - name: e
+        type: UiRenderEvent<"UserMessage">
+        required: true
+        description: '`props.text`・`props.origin` を持つ描画の入力'
+      - name: next
+        type: Next
+        required: true
+        description: Claude Code の元の描画へ進める関数
+    returns:
+      type: Promise<UiNode>
+      description: 描いた部品の木か `next(e)` の戻り値
+    process: |-
+      1. 設定を読み込む（設定を読み込む）
+      2. `enabled`・`targets` の `user`・`parts.terms`・`glossary`・`origin.kind` が `composer` のどれかを満たさなければ `next(e)` を返却する
+      3. 用語集を集めて照合し（用語集を集める・用語を照合する）、用語が無ければ `next(e)` を返却する。`GlossaryError` なら `$.ui.log` でデバッグログに理由を書いて `next(e)` を返却する
+      4. 行ごとに用語のマーカー付きの Text を作り（用語付きの行を描く）、`parts.footnote` が真なら本文の後ろに `[n] {名前}: {意味}` の行を薄い色で並べる
+      5. 全体を `backgroundColor` が `userBand` の色の Box で包む
+    unit_tests:
+      - name: test_render_user_message
+        case: 正常
+        summary: 用語に下線・カード・脚注を付ける
+        condition: 本文 `WS を作る`、用語 `WS`、全ての部品がオン、`origin.kind` が `composer`
+        mock: '`h`・ファイルを表で返却する `$.fs`・`$.env`・`$.session`・`$.settings`・`next`'
+        expected: '背景の帯の Box に `❯`、下線の `WS`、`[1]`、`display: "none"` と `hover: { display: "flex" }` のカード、`[1] WS: {意味}` の行がある'
+      - name: test_render_user_message_when_no_term
+        case: 正常
+        summary: 用語が無ければ元の描画
+        condition: 本文に用語が無い
+        mock: 上と同じ
+        expected: '`next(e)` の戻り値を返却する'
+      - name: test_render_user_message_when_not_composer
+        case: 正常
+        summary: 利用者が入力した発言でなければ元の描画
+        condition: '`origin.kind` が `composer` でない'
+        mock: 上と同じ
+        expected: '`next(e)` の戻り値を返却する'
+      - name: test_render_user_message_when_glossary_unreadable
+        case: 異常
+        summary: 用語集を読めない
+        condition: '`glossary` のファイルが無い'
+        mock: 上と同じと `$.ui.log`
+        expected: '`next(e)` の戻り値を返却し、`$.ui.log` を `to: "debug"` で 1 回呼ぶ'
+        exception: '`configPath` か索引が無いか YAML として読めない'
+    callees:
+      - MOD-472-352#functions[readSettings]
+      - MOD-472-356#functions[loadGlossary]
+      - MOD-472-356#functions[matchTerms]
+      - '#functions[renderTermText]'
+      - MOD-472-359#functions[styleColor]
+    refs:
+      - IF-472-46#
+    status: planned
+  - name: renderTermText
+    title: 用語付きの行を描く
+    kind: 関数
+    container: src/mdmark-style/user-message.tsx
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: 1 行の文字列を、用語ごとに keyed Box に分けた Text の並びにする。用語には下線・脚注の番号・カードを付ける
+    description: '返答の段落・箇条書き・注意書きもこの関数で描く。太字・行内のコード・リンクは Text の属性で描く。カードは `position: "absolute"`・`top: 1`・`left: 0`・`display: "none"`・`hover: { display: "flex" }` の Box で、罫線 `round` と背景色を持ち、幅は `CARD_MAX_WIDTH` と行の幅の短い方'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ line: string; marks: TermMark[]; parts: StyleSettings["parts"]; theme: string | undefined; width?: number }'
+        required: true
+        description: 行の文字列・その行の用語のマーカー・部品のオン・オフ・テーマ・行の幅
+    returns:
+      type: UiNode
+      description: 行の部品の木
+    process: |-
+      1. `marks` の範囲で行を区切る
+      2. 用語の区切りごとに keyed Box を作り、`termUnderline` の色の下線の Text、`parts.footnote` が真なら薄い色の `[n]`、`parts.hover_card` が真ならカードの Box を入れる
+      3. それ以外の区切りはそのままの Text にする
+    unit_tests:
+      - name: test_render_term_text
+        case: 正常
+        summary: 行の用語ごとにカードを分ける
+        condition: 行 `WS と mdmark`、マーカー 2 つ
+        mock: '`h`'
+        expected: 用語ごとに `key` の違う Box が 2 つあり、それぞれが自分の用語のカードだけを持つ
+      - name: test_render_term_text_when_card_off
+        case: 正常
+        summary: カードをオフにした
+        condition: '`parts.hover_card` が偽'
+        mock: '`h`'
+        expected: '下線と `[1]` はあり、`position: "absolute"` の Box が無い'
+    callees:
+      - MOD-472-359#functions[styleColor]
+    refs:
+      - IF-472-46#constraints[カード]
+      - IF-472-46#constraints[脚注]
+      - SCR-472-5#elements[用語のカード]
+    status: planned
+tags:
+  - name: topic:用語
+    main: true
+  - name: tool:claude-code
+  - name: topic:ツールチップ
+  - name: topic:脚注
+  - name: action:描画

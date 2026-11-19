@@ -99,6 +99,9 @@ content_types:
   - name: pages
     group: feature
     summary: 公開ドキュメントの GitHub Pages への配信
+  - name: mdmark_style
+    group: feature
+    summary: Claude Code の画面を共通スタイルで描く mod のプラグイン mdmark-style
 entries:
   - type: folder
     name: .claude-plugin
@@ -890,6 +893,12 @@ entries:
           - distribution
         naming:
           - '{package}.txt'
+      - type: file
+        name: test-mdmark-style.ts
+        contents: mdmark-style の結合テストをビルドしたプラグインの横に並べて `claude plugin test` で実行する
+        content_types:
+          - script
+          - mdmark_style
   - type: folder
     name: src
     contents: ライブラリ本体・CLI・Claude Code プラグインのフックのコード。記法は機能ごとのフォルダに分け、直下は公開関数の起点と、複数のフォルダが使用する処理
@@ -1241,6 +1250,15 @@ entries:
           - '{name}.part.stories.ts'
           - '{name}.interact.ts'
           - '{name}.logic.ts'
+      - type: folder
+        name: mdmark-style
+        contents: mod のプラグイン mdmark-style のフックと、返答・発言の描き換え
+        content_types:
+          - code
+          - mdmark_style
+        naming:
+          - '{module}.ts'
+          - '{module}.tsx'
   - type: folder
     name: templates
     contents: mdmark init が配置する雛形
@@ -1454,6 +1472,17 @@ entries:
               - claude_plugin
             naming:
               - '{interface}.test.ts'
+            children:
+              - type: folder
+                name: mdmark-style
+                contents: mdmark-style の結合テスト。`claude plugin test` で実行し、vitest は実行しない
+                content_types:
+                  - test
+                  - mdmark_style
+                naming:
+                  - '{interface}.test.ts'
+                  - '{interface}.test.tsx'
+                  - '{screen}.test.tsx'
           - type: folder
             name: vscode
             contents: VS Code 拡張機能の Webview の部品のストーリーの結合テスト
@@ -1702,6 +1731,58 @@ entries:
     contents: このリポジトリの文書を描く設定（AI Monitor が生成する図のノードの種類・線の種類）
     content_types:
       - tool_config
+  - type: folder
+    name: mdmark-style
+    contents: Claude Code の画面を共通スタイルで描く mod のプラグインの本体。手で記載する定義と、ビルドが書き込む mod を配置する
+    content_types:
+      - mdmark_style
+    children:
+      - type: folder
+        name: .claude-plugin
+        contents: プラグインの定義
+        content_types:
+          - plugin_manifest
+          - mdmark_style
+        children:
+          - type: file
+            name: plugin.json
+            contents: 名前と説明（`version` は持たない）
+      - type: folder
+        name: hooks
+        contents: mod の登録と本体
+        content_types:
+          - hook
+          - mdmark_style
+        children:
+          - type: file
+            name: hooks.json
+            contents: '`modules` に `./mod/mod.js` を記載した mod の登録'
+          - type: folder
+            name: mod
+            contents: mod の本体
+            content_types:
+              - hook
+              - mdmark_style
+            generated_from:
+              path: src/mdmark-style/
+              command: CMD-472-1#categories[ビルド・生成]
+              tracked: プラグインを git から入れたときに Claude Code が mod を読み込む
+      - type: file
+        name: settings.sample.yaml
+        contents: mdmark-style の設定の全てのキーと既定値の見本
+        content_types:
+          - init_template
+          - mdmark_style
+      - type: file
+        name: THIRD_PARTY_LICENSES.txt
+        contents: mod にまとめた依存のライセンス
+        content_types:
+          - distribution
+          - mdmark_style
+        generated_from:
+          path: src/mdmark-style/
+          command: CMD-472-1#categories[ビルド・生成]
+          tracked: まとめた依存のライセンスを mod と一緒に配る
 gitignore:
   - pattern: docs/generated/
     reason: AI Monitor が YAML の設計書から生成する Markdown（生成物）

@@ -29,7 +29,7 @@ constants:
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
     summary: ビルドの最初と失敗したときに削除する、`plugin/` の中の生成物
-    value: '["plugin/scripts", "plugin/bin", "plugin/templates", "plugin/THIRD_PARTY_LICENSES.txt"]'
+    value: '["plugin/scripts", "plugin/bin", "plugin/templates", "plugin/THIRD_PARTY_LICENSES.txt", "mdmark-style/hooks/mod", "mdmark-style/THIRD_PARTY_LICENSES.txt"]'
     status: planned
   - name: GUIDE_SOURCE
     title: ガイドの索引の原本
@@ -63,6 +63,15 @@ constants:
     usecase: 配布物をビルドして検査する
     summary: '`setup` のスキルが使用する `templates/mdmark.config.yaml` を `plugin/templates/mdmark.config.yaml` へ写す'
     value: '{ from: "templates/mdmark.config.yaml", to: "plugin/templates/mdmark.config.yaml" }'
+    status: planned
+  - name: MDMARK_STYLE_ENTRY
+    title: mdmark-style にまとめる入口
+    container: scripts/build-plugin.ts
+    usecase: 配布物をビルドして検査する
+    summary: 'mod のプラグイン mdmark-style の入口と記載する先。`PLUGIN_ENTRY_POINTS` と分け、`format: esm`・`platform: neutral`・`jsxFactory: h`・`external: ["claude-code"]` でまとめる'
+    value: '{ from: "src/mdmark-style/mod.tsx", to: "mdmark-style/hooks/mod/mod.js" }'
+    refs:
+      - MOD-472-351#notes[ビルド]
     status: planned
 functions:
   - name: checkGuideSource
@@ -264,7 +273,8 @@ functions:
       1. `src/plugin/pre-tool-use.ts` が無ければ空を返却する
       2. ガイドの索引を検査し、問題があれば返却する（ガイドの索引を検査する）
       3. `PLUGIN_ENTRY_POINTS` を esbuild でまとめる。`platform: node`・target は CLI と同じ Node・先頭に CLI と同じ行・バージョンを `__MDMARK_VERSION__` に埋める・`metafile` を取る
-      4. `CONFIG_TEMPLATE` をコピーし、ライセンスを記載して、空を返却する（プラグインの依存のライセンスを記載する）
+      4. `src/mdmark-style/mod.tsx` があれば `MDMARK_STYLE_ENTRY` を esbuild でまとめ、`metafile` を取る
+      5. `CONFIG_TEMPLATE` をコピーし、`plugin/` と `mdmark-style/` のそれぞれにまとめた依存のライセンスを記載して、空を返却する（プラグインの依存のライセンスを記載する）
     unit_tests:
       - name: test_build_plugin_when_source_missing
         case: 正常

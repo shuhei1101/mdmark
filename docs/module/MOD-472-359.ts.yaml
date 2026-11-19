@@ -1,0 +1,73 @@
+id: MOD-472-359
+visibility: internal
+title: ライブラリ本体 / 記法の共通 / style-tokens.logic.ts
+lead: 共通スタイルの色（見出し・注意書きの種類・用語の下線・罫線・コードブロックの背景・発言の背景）を、既定のテーマの明るい配色と暗い配色の 16 進で持つ。mod が描く色はここから取り、Web の CSS 変数と同じ値であることを単体テストで確かめる。
+test_files:
+  - tests/unit/src/shared/style-tokens.logic.test.ts
+constants:
+  - name: STYLE_COLORS
+    title: 共通スタイルの色
+    container: src/shared/style-tokens.logic.ts
+    usecase: 共通
+    summary: 色の名前から `{ light, dark }` の 16 進の色。`css` は同じ値を持つ既定のテーマの CSS 変数（無い色は持たない）
+    entries:
+      - key: calloutNote / calloutTip / calloutImportant / calloutWarning / calloutCaution
+        value: '`src/index.css` の既定のテーマの値'
+        description: 注意書きの種類の色。`css` は `--mdmark-color-callout-{種類}`
+      - key: heading
+        value: '`src/index.css` の既定のテーマの値'
+        description: 見出しの文字の色
+      - key: termUnderline
+        value: '`src/index.css` の既定のテーマの値'
+        description: 用語の下線の色
+      - key: border
+        value: '`src/index.css` の既定のテーマの値'
+        description: 表の罫線と用語のカードの枠の色
+      - key: codeBackground
+        value: 明るい配色 `#eef1f5`、暗い配色 `#2a2d33`
+        description: コードブロックの背景の面。合意したモックの値
+      - key: userBand
+        value: 暗い配色 `#3a3a3a`、明るい配色は実装で `tmux capture-pane -e` で測る
+        description: Claude Code の標準の発言の背景の帯の色。`css` を持たない
+    refs:
+      - IF-472-45#constraints[色]
+      - IF-472-46#constraints[背景の帯]
+    status: planned
+functions:
+  - name: styleColor
+    title: 配色の色を取る
+    kind: 関数
+    container: src/shared/style-tokens.logic.ts
+    usecase: 共通
+    summary: 色の名前と Claude Code のテーマの名前から、16 進の色を返却する。テーマが `light` で始まるときは明るい配色、それ以外は暗い配色
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ name: keyof typeof STYLE_COLORS; theme: string | undefined }'
+        required: true
+        description: 色の名前と `$.settings.read()` の `theme`
+    returns:
+      type: string
+      description: 16 進の色（`#rrggbb`）
+    process: 1. `theme` が `light` で始まれば `light`、それ以外は `dark` を返却する
+    unit_tests:
+      - name: test_style_color
+        case: 正常
+        summary: 明るいテーマと暗いテーマ
+        condition: '`userBand` を `theme` が `light-daltonized` と `dark` で取る'
+        mock: なし
+        expected: 明るい配色の値と `#3a3a3a`
+      - name: test_style_colors_match_css
+        case: 正常
+        summary: Web の CSS 変数と同じ値
+        condition: '`src/index.css` の既定のテーマの明るい配色と暗い配色の宣言を読み込む'
+        mock: なし
+        expected: '`css` を持つ色は全て、対応する CSS 変数の値と `light`・`dark` が等しい'
+    status: planned
+tags:
+  - name: topic:色
+    main: true
+  - name: topic:テーマ
+  - name: tool:claude-code
+  - name: topic:スタイル

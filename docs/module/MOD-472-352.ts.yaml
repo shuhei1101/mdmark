@@ -1,0 +1,207 @@
+id: MOD-472-352
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / settings.ts
+lead: mdmark-style の設定ファイルを `$.fs.read` で読み込み、起動したプロジェクトに該当した `projects` を `global` に重ねて、全てのキーを既定値で埋めた設定にする。
+test_files:
+  - tests/unit/src/mdmark-style/settings.test.ts
+constants:
+  - name: CONFIG_ENV
+    title: 設定ファイルのパスの環境変数
+    container: src/mdmark-style/settings.ts
+    usecase: 共通
+    summary: 設定ファイルを既定と違う場所に置くときにパスを記載する環境変数
+    value: MDMARK_STYLE_CONFIG
+    refs:
+      - CFG-472-4#
+    status: planned
+  - name: DEFAULT_CONFIG_PATH
+    title: 既定の設定ファイルのパス
+    container: src/mdmark-style/settings.ts
+    usecase: 共通
+    summary: '`XDG_CONFIG_HOME` があればその下、無ければ `~/.config` の下の設定ファイル'
+    value: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
+    refs:
+      - CFG-472-4#
+    status: planned
+  - name: DEFAULT_SETTINGS
+    title: 設定の既定値
+    container: src/mdmark-style/settings.ts
+    usecase: 共通
+    summary: 設定ファイルが無いときと、記載の無いキーに使う値
+    value: '{ enabled: true, targets: ["assistant", "user"], parts: { table: true, heading: true, callout: true, code: true, fold: true, terms: true, hover_card: true, footnote: true }, glossary: undefined, inject_marker_guide: true }'
+    refs:
+      - CFG-472-4#
+    status: planned
+data_models:
+  - name: StyleSettings
+    title: 重ねた後の設定
+    container: src/mdmark-style/settings.ts
+    usecase: 共通
+    summary: 全てのキーを埋めた mdmark-style の設定
+    properties:
+      - name: enabled
+        type: boolean
+        description: 描き換え全体のオン・オフ
+      - name: targets
+        type: ("assistant" | "user")[]
+        description: 描き換える場所
+      - name: parts
+        type: Record<"table" | "heading" | "callout" | "code" | "fold" | "terms" | "hover_card" | "footnote", boolean>
+        description: 部品ごとのオン・オフ
+      - name: glossary
+        type: string | undefined
+        description: 用語を取る `mdmark.config.yaml` の絶対パス（`~` と相対パスを解決した後）
+      - name: inject_marker_guide
+        type: boolean
+        description: SessionStart でマーカーの記載方法を注入するか
+    refs:
+      - CFG-472-4#
+    status: planned
+functions:
+  - name: settingsPath
+    title: 設定ファイルのパスを決める
+    kind: 関数
+    container: src/mdmark-style/settings.ts
+    usecase: 共通
+    summary: '`CONFIG_ENV` があればそのパス、無ければ `DEFAULT_CONFIG_PATH` を、先頭の `~` をホームに展開して返却する'
+    scope: public
+    is_async: true
+    args:
+      - name: $
+        type: Engine
+        required: true
+        description: Claude Code のエンジンのインターフェース（`$.env.get` を使う）
+    returns:
+      type: Promise<string>
+      description: 設定ファイルの絶対パス
+    process: |-
+      1. `$.env.get(CONFIG_ENV)` が空でなければそれを使う
+      2. 無ければ `$.env.get("XDG_CONFIG_HOME")` か `{HOME}/.config` の下の `mdmark-style/settings.yaml` を使う
+      3. 先頭の `~` を `$.env.get("HOME")` に置き換えて返却する
+    unit_tests:
+      - name: test_settings_path
+        case: 正常
+        summary: 環境変数のパスを使う
+        condition: '`MDMARK_STYLE_CONFIG=~/x/s.yaml`、`HOME=/home/u`'
+        mock: '`$.env.get`'
+        expected: '`/home/u/x/s.yaml`'
+      - name: test_settings_path_when_xdg
+        case: 正常
+        summary: XDG_CONFIG_HOME の下を使う
+        condition: '`MDMARK_STYLE_CONFIG` が無く、`XDG_CONFIG_HOME=/cfg`'
+        mock: '`$.env.get`'
+        expected: '`/cfg/mdmark-style/settings.yaml`'
+      - name: test_settings_path_when_default
+        case: 正常
+        summary: どちらも無ければ ~/.config の下
+        condition: '`HOME=/home/u` だけ'
+        mock: '`$.env.get`'
+        expected: '`/home/u/.config/mdmark-style/settings.yaml`'
+    status: planned
+  - name: mergeSettings
+    title: 設定を重ねる
+    kind: 関数
+    container: src/mdmark-style/settings.ts
+    usecase: 共通
+    summary: 読み込んだ YAML の `global` に、`match` が起動したプロジェクトに該当した `projects` の要素を並びの順に重ね、既定値で埋める
+    description: 辞書はキーごとに重ね、並び（`targets`）は後ろに追加して重なりを除く。`glossary` の相対パスは、`global` のものは設定ファイルのフォルダ、`projects` のものは起動したプロジェクトの直下から解決する
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ raw: unknown; projectRoot: string; configDir: string; home: string }'
+        required: true
+        description: 読み込んだ YAML・起動したプロジェクトの直下・設定ファイルのフォルダ・ホーム
+    returns:
+      type: StyleSettings
+      description: 重ねた後の設定
+    process: |-
+      1. `raw` が空なら `DEFAULT_SETTINGS` を返却する
+      2. `projects[].match` が絶対パスなら、`projectRoot`（`.claude/worktrees/` の下はその上の本体）がそのパスか配下のときに該当とし、それ以外は本体のフォルダ名と一致したときに該当とする
+      3. `DEFAULT_SETTINGS` に `global`、該当した `projects` の順に重ねる
+      4. `glossary` の `~` と相対パスを解決する
+    exceptions:
+      - name: SettingsError
+        condition: キーの型が合わない（`parts.table` が真偽値でない など）
+        message: 'mdmark-style の設定ファイルのキーが読めない: {キーのパス}（{期待した型}）'
+    unit_tests:
+      - name: test_merge_settings
+        case: 正常
+        summary: 空なら既定値
+        condition: '`raw` が `undefined`'
+        mock: なし
+        expected: '`DEFAULT_SETTINGS` と等しい'
+      - name: test_merge_settings_when_project_matched
+        case: 正常
+        summary: 該当したプロジェクトを重ねる
+        condition: '`global.parts.table: false`、`projects: [{ match: mdmark, parts: { code: false } }]`、`projectRoot` が `/r/mdmark/.claude/worktrees/w`'
+        mock: なし
+        expected: '`parts.table` と `parts.code` が `false`、ほかの部品が `true`'
+      - name: test_merge_settings_when_glossary_relative
+        case: 正常
+        summary: 相対パスを解決する
+        condition: '`global.glossary: ./docs/mdmark.config.yaml`、`configDir` が `/c`'
+        mock: なし
+        expected: '`glossary` が `/c/docs/mdmark.config.yaml`'
+      - name: test_merge_settings_when_invalid
+        case: 異常
+        summary: 型の合わないキー
+        condition: '`global.parts.table: "no"`'
+        mock: なし
+        expected: '`SettingsError` を投げ、メッセージに `global.parts.table` が入る'
+        exception: キーの型が合わない（`parts.table` が真偽値でない など）
+    refs:
+      - CFG-472-4#
+    status: planned
+  - name: readSettings
+    title: 設定を読み込む
+    kind: 関数
+    container: src/mdmark-style/settings.ts
+    usecase: 共通
+    summary: 設定ファイルを呼ばれるたびに `$.fs.read` で読み込み、重ねた設定を返却する
+    scope: public
+    is_async: true
+    args:
+      - name: $
+        type: Engine
+        required: true
+        description: Claude Code のエンジンのインターフェース（`$.env`・`$.fs`・`$.session.root` を使う）
+    returns:
+      type: Promise<StyleSettings>
+      description: 重ねた後の設定
+    process: |-
+      1. 設定ファイルのパスを決める（設定ファイルのパスを決める）
+      2. `$.fs.exists` が偽なら `DEFAULT_SETTINGS` を返却する
+      3. `$.fs.read` で読み込み、YAML として読み込む
+      4. `$.session.root()` を起動したプロジェクトの直下にして設定を重ねる（設定を重ねる）
+    exceptions:
+      - name: SettingsError
+        condition: 設定ファイルがあるが YAML として読めない
+        message: 'mdmark-style の設定ファイルを YAML として読めない: {パス}（{理由}）'
+    unit_tests:
+      - name: test_read_settings_when_missing
+        case: 正常
+        summary: ファイルが無ければ既定値
+        condition: '`$.fs.exists` が偽'
+        mock: '`$.fs`・`$.env`・`$.session`'
+        expected: '`DEFAULT_SETTINGS` と等しい'
+      - name: test_read_settings_when_broken
+        case: 異常
+        summary: YAML として読めない
+        condition: '本文が `global: [`'
+        mock: '`$.fs`・`$.env`・`$.session`'
+        expected: '`SettingsError` を投げ、メッセージに設定ファイルのパスが入る'
+        exception: 設定ファイルがあるが YAML として読めない
+    callees:
+      - '#functions[settingsPath]'
+      - '#functions[mergeSettings]'
+    refs:
+      - IF-472-45#constraints[読み直し]
+      - IF-472-46#constraints[読み直し]
+    status: planned
+tags:
+  - name: topic:設定
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: action:読み込み

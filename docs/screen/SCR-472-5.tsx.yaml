@@ -3,7 +3,7 @@ visibility: internal
 title: ClaudeCodeの返答と発言
 lead: mod のプラグイン mdmark-style が描き換える Claude Code の返答と利用者の発言。返答の表・見出し・注意書き・コードブロック・開閉の範囲と、発言と返答の用語の下線・カード・脚注を、Claude Code の Box・Text・Button で描く。
 mock: docs/mock/pages/claude-code-terminal/699/mdmark-style/
-screen: mdmark-style/hooks/mod.tsx
+screen: src/mdmark-style/mod.tsx
 test_file: tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx
 elements:
   - name: 表

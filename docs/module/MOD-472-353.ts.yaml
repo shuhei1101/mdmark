@@ -1,0 +1,128 @@
+id: MOD-472-353
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / blocks.ts
+lead: 返答のブロックの Markdown を markdown-it でブロックに分け、mdmark のマーカーをブロックの属性にして本文から取り除く。
+test_files:
+  - tests/unit/src/mdmark-style/blocks.test.ts
+constants:
+  - name: CALLOUT_TYPES
+    title: 注意書きの種類
+    container: src/mdmark-style/blocks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 引用の 1 行目の `[!種類]` として扱う値
+    value: '["NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"]'
+    refs:
+      - IF-472-45#constraints[描き換えるブロック]
+    status: planned
+  - name: CODE_LINE_MARKS
+    title: コードの行末のマーカー
+    container: src/mdmark-style/blocks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 行末の `[!code …]` として扱う値
+    value: '["++", "--", "highlight", "focus", "error", "warning"]'
+    refs:
+      - IF-472-45#constraints[コードブロック]
+    status: planned
+data_models:
+  - name: ReplyBlock
+    title: 返答のブロック
+    container: src/mdmark-style/blocks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`kind` で分けたブロック 1 つ。`line` はブロックの本文の先頭の行（1 から）'
+    properties:
+      - name: kind
+        type: '"table" | "callout" | "heading" | "code" | "fold" | "markdown"'
+        description: ブロックの種類
+      - name: line
+        type: number
+        description: ブロックの先頭の行
+      - name: table
+        type: '{ kind: "default" | "data" | "plain"; header: string[]; rows: string[][]; align: ("left" | "center" | "right")[] }'
+        description: '`kind` が `table` のとき。`kind` は直前の `table` のマーカーの種類'
+      - name: callout
+        type: '{ type: string; title?: string; closed: boolean; body: ReplyBlock[] }'
+        description: '`kind` が `callout` のとき。末尾に `-` を付けた種類は `closed` を真にする'
+      - name: heading
+        type: '{ level: 1 | 2 | 3 | 4 | 5 | 6; text: string }'
+        description: '`kind` が `heading` のとき'
+      - name: code
+        type: '{ lang: string; title?: string; lineNumbers: boolean; lines: { text: string; mark?: "++" | "--" | "highlight" | "focus" | "error" | "warning" }[] }'
+        description: '`kind` が `code` のとき。行末のマーカーと、マーカーだけを持つ行コメントの頭は `text` から除く。`code` のマーカーの `highlight` の行は `mark` を `highlight` にする'
+      - name: fold
+        type: '{ title: string; index: number; body: ReplyBlock[] }'
+        description: '`kind` が `fold` のとき。details の範囲と `section: closed` の見出しのセクション。`index` は本文の頭からの開閉の範囲の順番（注意書きの `closed` も数える）'
+      - name: markdown
+        type: string
+        description: '`kind` が `markdown` のとき。マーカーを除いた段落・箇条書き・引用の Markdown'
+    status: planned
+functions:
+  - name: splitBlocks
+    title: ブロックに分ける
+    kind: 関数
+    container: src/mdmark-style/blocks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 返答の Markdown を `ReplyBlock` の並びにする。`parts` でオフにした種類は `markdown` のブロックにする
+    description: 図（言語 `mermaid` のコードブロック・`map` の範囲）と埋め込んだ HTML（`html` の範囲）は `code` のブロックにする。知らないマーカー・引数は無視して本文から取り除く。行内のマーカーを除いた前後の文字は 1 つの空白でつなぐ
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ text: string; parts: StyleSettings["parts"] }'
+        required: true
+        description: 返答のブロックの Markdown と部品ごとのオン・オフ
+    returns:
+      type: ReplyBlock[]
+      description: 本文の順のブロック
+    process: |-
+      1. markdown-it でトークンにし、最上位のトークンを本文の行の範囲（`map`）ごとにまとめる
+      2. 単独の行の HTML コメントのマーカーを読み込み、`table`・`code` は直後のブロックの属性に、`details`〜`/details` と `section: closed` の見出しのセクションは `fold` のブロックにする
+      3. 表・見出し・コード・1 行目が `[!種類]` の引用を対応する `kind` にし、それ以外と `parts` でオフの種類は元の行からマーカーを除いた `markdown` にする
+      4. `parts.fold` が偽のときは `fold` を作らず、中身のブロックをその位置に並べる
+    unit_tests:
+      - name: test_split_blocks
+        case: 正常
+        summary: 種類ごとに分ける
+        condition: '見出し・段落・`<!-- table: {"kind": "data"} -->` で囲んだ表・`> [!NOTE]` の引用・`ts` のコードブロックを並べた本文、全ての部品がオン'
+        mock: なし
+        expected: '`kind` が `heading`・`markdown`・`table`（`table.kind` が `data`）・`callout`（`type` が `NOTE`）・`code` の順で、どのブロックにも `<!--` が残らない'
+      - name: test_split_blocks_when_code_marked
+        case: 正常
+        summary: コードブロックの飾りを読み込む
+        condition: '`<!-- code: title=a.ts lines highlight=2 -->` の直後の 3 行のコードで、1 行目の行末に `// [!code ++]`'
+        mock: なし
+        expected: '`title` が `a.ts`、`lineNumbers` が真、1 行目の `mark` が `++` で `text` に `[!code` と `//` が無く、2 行目の `mark` が `highlight`'
+      - name: test_split_blocks_when_fold
+        case: 正常
+        summary: 開閉の範囲をまとめる
+        condition: '`<!-- details: 用語 -->`〜`<!-- /details -->` の中に段落 2 つ、その後ろに `> [!TIP]-` の引用'
+        mock: なし
+        expected: '`fold`（`title` が `用語`、`index` が 0、`body` が 2 つ）と、`closed` が真の `callout` が並ぶ'
+      - name: test_split_blocks_when_part_disabled
+        case: 正常
+        summary: オフにした種類は markdown にする
+        condition: 表だけの本文、`parts.table` が偽
+        mock: なし
+        expected: '`kind` が `markdown` の 1 つのブロックで、本文に `<!-- table` が残らない'
+      - name: test_split_blocks_when_inline_marker
+        case: 正常
+        summary: 行内のマーカーを除いて 1 つの空白でつなぐ
+        condition: '段落 `a <!-- unknown: x --> b`'
+        mock: なし
+        expected: '`markdown` が `a b`'
+      - name: test_split_blocks_when_diagram
+        case: 正常
+        summary: 図はコードブロックにする
+        condition: 言語 `mermaid` のコードブロック
+        mock: なし
+        expected: '`kind` が `code`、`lang` が `mermaid`'
+    refs:
+      - IF-472-45#constraints[描き換えるブロック]
+      - IF-472-45#constraints[マーカー]
+      - IF-472-45#constraints[描かないブロック]
+    status: planned
+tags:
+  - name: topic:マーカー
+    main: true
+  - name: tool:claude-code
+  - name: tool:markdown-it
+  - name: topic:ブロック

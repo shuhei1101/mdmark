@@ -1,0 +1,156 @@
+id: MOD-472-356
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / terms.ts
+lead: '`glossary` の `mdmark.config.yaml` を起点に索引・エイリアス・用語集の表を `$.fs` で読み込み、メッセージの本文と照合して、下線を付ける用語と脚注の番号を決める。'
+test_files:
+  - tests/unit/src/mdmark-style/terms.test.ts
+constants:
+  - name: MESSAGE_DOC
+    title: メッセージの文書
+    container: src/mdmark-style/terms.ts
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: 照合のために索引に加える、メッセージの本文の文書の `id` と `path`
+    value: '{ id: "mdmark-style:message", path: "mdmark-style:message.md" }'
+    status: planned
+data_models:
+  - name: Glossary
+    title: 集めた用語集
+    container: src/mdmark-style/terms.ts
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: '`collectMatches` に渡す索引・文書の本文・設定・エイリアス'
+    properties:
+      - name: index
+        type: MdmarkIndex
+        description: '`mdmark.config.yaml` の `index` が指す索引'
+      - name: documents
+        type: Record<string, string>
+        description: 索引の文書のパスから本文。用語集の表を入れるために読み込む
+      - name: config
+        type: MdmarkConfig
+        description: '`mdmark.config.yaml` の中身'
+      - name: aliases
+        type: MdmarkAlias[]
+        description: '`aliases` の行から作ったエイリアス'
+    status: planned
+  - name: TermMark
+    title: 用語のマーカー
+    container: src/mdmark-style/terms.ts
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: 下線を付ける用語の出現 1 つ
+    properties:
+      - name: line
+        type: number
+        description: 本文の行（1 から）
+      - name: start
+        type: number
+        description: 行の中の始まり
+      - name: end
+        type: number
+        description: 行の中の終わり（含まない）
+      - name: title
+        type: string
+        description: カードと脚注に出す用語の名前
+      - name: description
+        type: string
+        description: カードと脚注に出す意味（無いときは空）
+      - name: footnote
+        type: number
+        description: 脚注の番号（1 から、出た順）
+    status: planned
+functions:
+  - name: loadGlossary
+    title: 用語集を集める
+    kind: 関数
+    container: src/mdmark-style/terms.ts
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: '`glossary` の `mdmark.config.yaml` と、その `index`・`aliases` の行が指すファイル・索引の文書を呼ばれるたびに `$.fs` で読み込む'
+    description: YAML の文書・MCP は参照しない。`aliases` の行の `paths` の glob は `$.fs.list` で展開する。使用できない行は除いて続ける（`buildAliases` の `problems` は描画に使わない）
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ $: Engine; configPath: string }'
+        required: true
+        description: Claude Code のエンジンのインターフェースと `glossary` のパス
+    returns:
+      type: Promise<Glossary>
+      description: 集めた用語集
+    process: |-
+      1. `configPath` を YAML として読み込み、`index` の索引を読み込む（相対パスは設定ファイルのフォルダから）
+      2. 索引の `docs[].path` の本文を読み込む。読めない文書は飛ばす
+      3. `aliases` の行の `paths` に該当する YAML を読み込み、エイリアスを作る（`buildAliases`）
+    exceptions:
+      - name: GlossaryError
+        condition: '`configPath` か索引が無いか YAML として読めない'
+        message: 'mdmark-style の用語集を読めない: {パス}（{理由}）'
+    unit_tests:
+      - name: test_load_glossary
+        case: 正常
+        summary: 索引・文書・エイリアスを集める
+        condition: '`mdmark.config.yaml` が `index: index.yaml` と `aliases` の行 1 つを持ち、索引に用語 1 つと文書 1 つ'
+        mock: ファイルを表で返却する `$.fs`
+        expected: '`index.terms` が 1 つ、`documents` に文書の本文、`aliases` に行のエイリアスが入る'
+      - name: test_load_glossary_when_missing
+        case: 異常
+        summary: 設定ファイルが無い
+        condition: '`configPath` が無い'
+        mock: ファイルを表で返却する `$.fs`
+        expected: '`GlossaryError` を投げ、メッセージにパスが入る'
+        exception: '`configPath` か索引が無いか YAML として読めない'
+    callees:
+      - IF-472-26#
+    refs:
+      - IF-472-46#constraints[用語の集め方]
+    status: planned
+  - name: matchTerms
+    title: 用語を照合する
+    kind: 関数
+    container: src/mdmark-style/terms.ts
+    usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
+    summary: メッセージの本文を `MESSAGE_DOC` として索引に加えて `collectMatches` で照合し、用語ごとの最初の出現だけを、出た順の脚注の番号を付けて返却する
+    description: 見出し・表・コード（行内のコードを含む）・リンクの中の一致は除く。文書の別名の一致（`kind` が `doc`）と、やめた言い方は除く
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ glossary: Glossary; text: string }'
+        required: true
+        description: 集めた用語集とメッセージの Markdown
+    returns:
+      type: TermMark[]
+      description: 本文の順の用語のマーカー
+    process: |-
+      1. `glossary.index.docs` に `MESSAGE_DOC` を加え、`documents` に本文を入れて `collectMatches` を呼ぶ
+      2. `byDocument[MESSAGE_DOC.id]` のうち、markdown-it で見出し・表・コード・行内のコード・リンクの範囲に入る一致と `kind` が `doc` の一致を除く
+      3. `kind` と `id` の組ごとに最初の 1 つを残し、出た順に `footnote` を 1 から振る
+    unit_tests:
+      - name: test_match_terms
+        case: 正常
+        summary: 最初の出現だけに付ける
+        condition: 用語 `WS` と `mdmark` を持つ用語集、本文 `mdmark の WS と WS、WSL`
+        mock: なし
+        expected: '`mdmark`（`footnote` 1）と 1 つ目の `WS`（`footnote` 2）の 2 つで、`WSL` の中に一致しない'
+      - name: test_match_terms_when_excluded
+        case: 正常
+        summary: 見出し・表・コード・リンクの中には付けない
+        condition: '`WS` を見出し・表のセル・行内のコード・リンクの文字にだけ書いた本文'
+        mock: なし
+        expected: 空
+      - name: test_match_terms_when_glossary_table
+        case: 正常
+        summary: 用語集の表の用語にも付ける
+        condition: 索引の文書の用語集の表に `配信元` があり、本文に `配信元`
+        mock: なし
+        expected: '`title` が `配信元` のマーカーが 1 つ'
+    callees:
+      - IF-472-36#
+    refs:
+      - IF-472-46#constraints[用語の照合]
+      - IF-472-46#constraints[下線]
+    status: planned
+tags:
+  - name: topic:用語
+    main: true
+  - name: tool:claude-code
+  - name: topic:用語集
+  - name: action:照合

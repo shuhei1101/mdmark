@@ -1,0 +1,69 @@
+id: MOD-472-351
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / mod.tsx
+lead: mod のプラグイン mdmark-style の入口。返答と発言の `ui.render` と `classic.SessionStart` にフックを登録する。
+test_files:
+  - tests/unit/src/mdmark-style/mod.test.ts
+functions:
+  - name: register
+    title: フックを登録する
+    kind: 関数
+    container: src/mdmark-style/mod.tsx
+    usecase: 共通
+    role: 入口
+    summary: '`ui.render` の `AssistantMessage`・`UserMessage` と `classic.SessionStart` に、各ファイルのフックを登録する'
+    description: Claude Code が読み込む名前のため `export function register(on)` で公開する（`claude plugin validate` が名前を検査する）
+    scope: public
+    is_async: false
+    args:
+      - name: on
+        type: On
+        required: true
+        description: Claude Code がフックの登録に渡す関数
+    returns:
+      type: void
+      description: なし
+    process: |-
+      1. `on("ui.render", { component: "AssistantMessage" }, renderReply)` を登録する
+      2. `on("ui.render", { component: "UserMessage" }, renderUserMessage)` を登録する
+      3. `on("classic.SessionStart", injectMarkerGuide)` を登録する
+    unit_tests:
+      - name: test_register
+        case: 正常
+        summary: 3 つのフックを登録する
+        condition: 呼び出しを配列に貯める `on`
+        mock: '`on`'
+        expected: '`ui.render` に `AssistantMessage`・`UserMessage` の matcher で 1 つずつ、`classic.SessionStart` に 1 つの、合わせて 3 つの登録がある'
+    callees:
+      - MOD-472-355#functions[renderReply]
+      - MOD-472-357#functions[renderUserMessage]
+      - MOD-472-358#functions[injectMarkerGuide]
+    refs:
+      - IF-472-45#
+      - IF-472-46#
+      - IF-472-47#
+    status: planned
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/mdmark-style/
+    ├── mod.tsx            # 入口。フックを登録する
+    ├── settings.ts        # 設定ファイルを読み込む
+    ├── blocks.ts          # 返答の Markdown をブロックに分ける
+    ├── table-layout.ts    # 表の列の幅と折り返し
+    ├── reply.tsx          # 返答を部品の木で描く
+    ├── terms.ts           # 用語集を集めて本文と照合する
+    ├── user-message.tsx   # 発言を用語のマーカー付きで描く
+    └── marker-guide.ts    # SessionStart でマーカーの記載方法を注入する
+    mdmark-style/          # 配るプラグイン（ビルドが hooks/mod/mod.js を書き込む）
+    ├── .claude-plugin/plugin.json
+    ├── hooks/hooks.json   # modules: ["./mod/mod.js"]
+    ├── hooks/mod/mod.js
+    └── settings.sample.yaml
+    ```
+  ビルド: '`src/mdmark-style/mod.tsx` を入口に、esbuild で ES モジュールの 1 ファイル `mdmark-style/hooks/mod/mod.js` にまとめる（プラグインのビルド MOD-472-14）。mod はプラグインの外のファイルを import できないため、`src/knowledge/` の照合とエイリアスの処理・markdown-it・yaml もまとめる。`claude-code` は外部にし、JSX は `h` を factory にする'
+tags:
+  - name: tool:claude-code
+    main: true
+  - name: topic:プラグイン
+  - name: action:登録

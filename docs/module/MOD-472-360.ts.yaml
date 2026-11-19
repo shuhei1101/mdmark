@@ -1,0 +1,98 @@
+id: MOD-472-360
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / test-mdmark-style.ts
+lead: mdmark-style の結合テストを実行する開発のコマンド。ビルドしたプラグインと `tests/integration/ClaudeCodeプラグイン/mdmark-style/` のテストを一時フォルダに並べて `claude plugin test` を実行する。
+test_files:
+  - tests/unit/scripts/test-mdmark-style.test.ts
+constants:
+  - name: INTEGRATION_TESTS_DIR
+    title: 結合テストのフォルダ
+    container: scripts/test-mdmark-style.ts
+    usecase: 共通
+    summary: リポジトリの直下からの mdmark-style の結合テストのフォルダ
+    value: tests/integration/ClaudeCodeプラグイン/mdmark-style
+    status: planned
+  - name: PLUGIN_DIR
+    title: ビルドしたプラグイン
+    container: scripts/test-mdmark-style.ts
+    usecase: 共通
+    summary: リポジトリの直下からの配るプラグインのフォルダ
+    value: mdmark-style
+    status: planned
+functions:
+  - name: stagePluginTests
+    title: テストをプラグインの横に並べる
+    kind: 関数
+    container: scripts/test-mdmark-style.ts
+    usecase: 共通
+    summary: 一時フォルダに `PLUGIN_DIR` をコピーし、その中の `tests/` に `INTEGRATION_TESTS_DIR` の `*.test.ts`・`*.test.tsx` と共通のファイルをコピーする
+    description: '`claude plugin test` はプラグインのフォルダの中の `*.test.ts(x)` だけを実行するため、テストを配るプラグインに入れずに一時フォルダで並べる。テストはビルドした `hooks/mod/mod.js` を `../hooks/mod/mod.js` で読み込む'
+    scope: public
+    is_async: true
+    side_effects: 一時フォルダを作る
+    args:
+      - name: options
+        type: '{ root: string; tmpDir: string }'
+        required: true
+        description: 作業ツリーの場所と並べる先の一時フォルダ
+    returns:
+      type: Promise<string>
+      description: 並べたプラグインのフォルダ
+    process: |-
+      1. `PLUGIN_DIR/hooks/mod/mod.js` が無ければ例外を投げる
+      2. `PLUGIN_DIR` を `{tmpDir}/mdmark-style` にコピーする
+      3. `INTEGRATION_TESTS_DIR` のファイルを `{tmpDir}/mdmark-style/tests/` にコピーする
+    exceptions:
+      - name: Error
+        condition: ビルドした mod が無い
+        message: mdmark-style/hooks/mod/mod.js が無い。npm run build を先に実行する
+    unit_tests:
+      - name: test_stage_plugin_tests
+        case: 正常
+        summary: プラグインとテストを並べる
+        condition: '`mdmark-style/` に `hooks/mod/mod.js`、結合テストのフォルダに `a.test.tsx`'
+        mock: なし（一時フォルダ）
+        expected: '`{tmpDir}/mdmark-style/hooks/mod/mod.js` と `{tmpDir}/mdmark-style/tests/a.test.tsx` があり、リポジトリの `mdmark-style/` に `tests/` が無い'
+      - name: test_stage_plugin_tests_when_not_built
+        case: 異常
+        summary: ビルドしていない
+        condition: '`mdmark-style/hooks/mod/mod.js` が無い'
+        mock: なし（一時フォルダ）
+        expected: '`Error` を投げ、メッセージに `npm run build` が入る'
+        exception: ビルドした mod が無い
+    status: planned
+  - name: main
+    title: 結合テストを実行する
+    kind: 関数
+    container: scripts/test-mdmark-style.ts
+    usecase: 共通
+    role: 入口
+    summary: テストをプラグインの横に並べ、`claude plugin validate` と `claude plugin test` を実行して、一時フォルダを削除する
+    description: '`npm run test:mdmark-style` が実行する。引数にテストのファイル名を並べると、そのファイルだけをコピーする（結合テストの実行範囲を絞る）'
+    scope: public
+    is_async: true
+    side_effects: '`claude` を子プロセスで実行する'
+    args:
+      - name: argv
+        type: string[]
+        required: true
+        description: 実行するテストのファイル名（空なら全て）
+    returns:
+      type: Promise<number>
+      description: '`claude plugin test` の終了コード。`validate` が失敗したらその終了コード'
+    process: |-
+      1. `mkdtemp` で一時フォルダを作り、テストをプラグインの横に並べる
+      2. `claude plugin validate {フォルダ}` を実行し、0 でなければその終了コードを返却する
+      3. `claude plugin test {フォルダ}` を実行し、標準出力と標準エラーをそのまま流す
+      4. 一時フォルダを削除して終了コードを返却する
+    callees:
+      - '#functions[stagePluginTests]'
+    status: planned
+notes:
+  実行する場所: 結合テストは `npm run build` の後に `npm run test:mdmark-style` で実行する。`claude plugin test` は Claude Code のエンジンを使うため vitest の結合テストとは分け、`vitest.config.ts` の対象から `tests/integration/ClaudeCodeプラグイン/mdmark-style/` を除く
+tags:
+  - name: topic:テスト
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: action:実行
