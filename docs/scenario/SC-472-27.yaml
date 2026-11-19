@@ -642,6 +642,39 @@ scenarios:
       - 設定の `version` が `v0.5.0`
       - 終了コードが 0
     test: test_normal_when_cli_built_from_develop
+  - name: 異常シナリオ（設定の build がスキーマに合わず、文書を書き換えた後の点検に合格しない）
+    setup:
+      - name: build がスキーマに合わない手元のバージョンが古いフォルダ
+        description: 正常シナリオのフォルダの設定の `build` から `out` を削除し、`include` だけを残したもの。設定の `build` は Schema に合わない
+      - name: Mock
+        description: 正常シナリオと同じ。加えて `v0.5.0` の手順を、`--config` の設定を検めずに読み込み、`build` の `include` に該当する文書のマーカーを書き換えるスクリプトの手順に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant S as スクリプト
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定・索引と、スクリプトが書き換える文書をコピーのフォルダへ写す
+        C->>F: v0.4.0 の手順を適用する
+        C->>S: v0.5.0 のスクリプトを実行する
+        S->>F: build の include に該当する文書のマーカーを書き換える
+        C->>C: 点検を実行する（build.out のずれがある）
+        C->>F: コピーから戻す
+        C-->>W: ずれの一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - 文書のマーカーが適用する前と同じ中身に戻っている
+      - 設定の `version` が `v0.3.0` のまま
+      - コピーのフォルダに、適用する前の設定と文書がある
+      - 出力に `build.out` を指す `schema` のずれの行が出る
+      - 終了コードが 0 以外
+    test: test_error_when_build_out_of_schema
 lead: 文書の作成者が `mdmark upgrade` を実行し、設定の手元のバージョンから目標のバージョンまでの移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換え、その範囲の変更履歴を受け取る。
 primary_actor: 文書の作成者
 trigger: 新しいバージョンが出て、文書の作成者がそのバージョンの CLI と配布物を使用したくなった
