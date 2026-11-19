@@ -74,8 +74,13 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T05:03:13.285012+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T05:32:14.574165+00:00'
   - process: 実装
-    status: todo
+    status: skipped
+    reason: 追加した単体テスト 2 件が実装の前から pass。src/map/class-view.ts の render が ...flowArgs（flow-view.ts の mapLinkProblems が許可した links を含む）を renderMapClassDiagram に指定し、src/map/map.part.ts の renderMapClassDiagram が ...args で renderMapFlow に links を指定する（develop 27f48163。730b1a5 の時点で既に同じ）
+    updated_by: planner
+    updated_at: '2026-11-19T05:32:14.574165+00:00'
   - process: 結合テスト作成
     status: todo
