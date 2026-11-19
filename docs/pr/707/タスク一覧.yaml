@@ -60,7 +60,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T13:52:28.253433+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:56:09.128033+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 設計書とモックのほかに更新するページが無い（CSS 変数 --mdmark-map-dim-opacity を記載するのは部品設計だけ）

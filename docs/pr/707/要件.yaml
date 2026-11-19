@@ -42,10 +42,12 @@ docs:
   - page: docs/module/MOD-472-226.ts.yaml
     new: false
     change: updateValues が aria-valuemin <= aria-valuenow <= aria-valuemax を満たす値を入れる形に変え、上限が今の幅より狭い場合と、今の幅が最小幅より狭い場合（配置の前に付けて offsetWidth が 0 になる 等）の単体テストのケースを足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:56:15.117886+00:00'
   - page: docs/module/MOD-472-228.ts.yaml
     new: false
-    change: ピン止めとの組み合わせの期待の aria-valuemax を、新しい決め方に合わせる
+    change: ピン止めとの組み合わせの期待の aria-valuemax（`clientWidth` から留めた列の幅を引いた値）が今の幅以上のままかを単体テストの実行で確かめ、今の幅を下回るケースがあれば期待を新しい決め方に合わせる
     status: todo
   - page: docs/screen/SCR-472-4.ts.yaml
     new: false
