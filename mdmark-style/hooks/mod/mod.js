@@ -17248,6 +17248,28 @@ var stripInlineMarkers = (line) => line.replace(
   INLINE_MARKER,
   (_match, offset) => offset === 0 ? "" : " "
 ).trimEnd();
+var stripWithColumns = (line, shift) => {
+  let text2 = "";
+  const columns = [];
+  let from = 0;
+  const keep = (end2) => {
+    for (let at = from; at < end2; at += 1) {
+      text2 += line[at];
+      columns.push(at + shift);
+    }
+  };
+  for (const match of line.matchAll(INLINE_MARKER)) {
+    keep(match.index);
+    if (match.index !== 0) {
+      text2 += " ";
+      columns.push(match.index + shift);
+    }
+    from = match.index + match[0].length;
+  }
+  keep(line.length);
+  const end = text2.trimEnd().length;
+  return { text: text2.slice(0, end), columns: columns.slice(0, end) };
+};
 var readMarker = (text2) => {
   const match = MARKER_LINE.exec(text2.trim());
   return match?.[1] === void 0 ? void 0 : { name: match[1], args: (match[2] ?? "").trim() };
@@ -17287,12 +17309,40 @@ var closeFrame = (state) => {
     fold: { title: frame.title, index: frame.index, body: frame.body }
   });
 };
-var rawOf = (state, chunk) => state.lines.slice(chunk.start, chunk.end).map(stripInlineMarkers).join("\n").trim();
-var pushMarkdown = (state, chunk) => {
-  const markdown = rawOf(state, chunk);
-  if (markdown !== "") {
-    push(state, { kind: "markdown", line: chunk.start + 1, markdown });
+var lineOf = (state, chunk) => state.lineBase + chunk.start + 1;
+var rawOf = (state, chunk) => {
+  const lines = state.lines.slice(chunk.start, chunk.end).map(
+    (line2, offset) => stripWithColumns(line2, state.prefixes[chunk.start + offset] ?? 0)
+  );
+  let line = lineOf(state, chunk);
+  while (lines[0] !== void 0 && lines[0].text.trim() === "") {
+    lines.shift();
+    line += 1;
   }
+  while (lines.at(-1) !== void 0 && lines.at(-1)?.text.trim() === "") {
+    lines.pop();
+  }
+  const first = lines[0];
+  if (first !== void 0) {
+    const lead = first.text.length - first.text.trimStart().length;
+    lines[0] = {
+      text: first.text.slice(lead),
+      columns: first.columns.slice(lead)
+    };
+  }
+  return { line, lines };
+};
+var pushMarkdown = (state, chunk) => {
+  const { line, lines } = rawOf(state, chunk);
+  if (lines.length === 0) {
+    return;
+  }
+  push(state, {
+    kind: "markdown",
+    line,
+    markdown: lines.map((item) => item.text).join("\n"),
+    columns: lines.map((item) => item.columns)
+  });
 };
 var tableKindOf = (args) => {
   try {
@@ -17403,7 +17453,7 @@ var handleHeading = (state, chunk) => {
   const text2 = stripInlineMarkers(chunk.tokens[1]?.content ?? "").trim();
   push(state, {
     kind: "heading",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     heading: { level, text: text2 }
   });
 };
@@ -17441,7 +17491,7 @@ var handleTable = (state, chunk) => {
   const [header = [], ...body] = rows;
   push(state, {
     kind: "table",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     table: { kind, header, rows: body, align }
   });
 };
@@ -17469,7 +17519,7 @@ var handleFence = (state, chunk) => {
   });
   push(state, {
     kind: "code",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     code: {
       lang,
       ...options.title === void 0 ? {} : { title: options.title },
@@ -17495,15 +17545,23 @@ var handleQuote = (state, chunk) => {
   }
   const { type, closed, title } = head;
   const index = closed ? state.foldCount.value++ : -1;
-  const inner = lines.slice(1).map((line) => line.replace(/^\s*>\s?/, "")).join("\n");
+  const inner = lines.slice(1).map((line, offset) => {
+    const prefix = /^\s*>\s?/.exec(line)?.[0].length ?? 0;
+    return {
+      text: line.slice(prefix),
+      prefix: prefix + (state.prefixes[chunk.start + 1 + offset] ?? 0)
+    };
+  });
   const body = splitInto({
-    text: inner,
+    text: inner.map((line) => line.text).join("\n"),
     parts: state.parts,
-    foldCount: state.foldCount
+    foldCount: state.foldCount,
+    lineBase: lineOf(state, chunk),
+    prefixes: inner.map((line) => line.prefix)
   });
   push(state, {
     kind: "callout",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     callout: { type, ...title === "" ? {} : { title }, closed, body },
     ...closed ? { fold: { title: title || type, index, body } } : {}
   });
@@ -17528,6 +17586,8 @@ var splitInto = (options) => {
   const lines = options.text.split("\n");
   const state = {
     lines,
+    lineBase: options.lineBase,
+    prefixes: options.prefixes,
     parts: options.parts,
     out: [],
     frames: [],
@@ -17544,7 +17604,9 @@ var splitInto = (options) => {
 var splitBlocks = (options) => splitInto({
   text: options.text,
   parts: options.parts,
-  foldCount: { value: 0 }
+  foldCount: { value: 0 },
+  lineBase: 0,
+  prefixes: []
 });
 
 // src/mdmark-style/table-layout.ts
@@ -23271,13 +23333,23 @@ var renderCode = (block2, context) => {
     })
   );
 };
+var markInLine = (mark, columns) => {
+  if (columns === void 0) {
+    return mark;
+  }
+  const start = columns.findIndex((column) => column >= mark.start);
+  const end = columns.filter((column) => column < mark.end).length;
+  return start < 0 || end <= start ? void 0 : { ...mark, start, end };
+};
+var marksByLine = (block2, lines, marks) => lines.map(
+  (_line, index) => marks.filter((mark) => mark.line === block2.line + index).map((mark) => markInLine(mark, block2.columns?.[index])).filter((mark) => mark !== void 0)
+);
 var renderMarkdown = (block2, context) => {
   const { Box, Markdown } = context.elements;
   const markdown = block2.markdown ?? "";
   const lines = markdown.split("\n");
-  const marks = context.marks.filter(
-    (mark) => mark.line >= block2.line && mark.line < block2.line + lines.length
-  );
+  const lineMarks = marksByLine(block2, lines, context.marks);
+  const marks = lineMarks.flat();
   if (marks.length === 0) {
     return h(Markdown, { key: `md-${block2.line}`, text: markdown });
   }
@@ -23288,7 +23360,7 @@ var renderMarkdown = (block2, context) => {
       (line, index) => renderTermText({
         elements: context.elements,
         line,
-        marks: marks.filter((mark) => mark.line === block2.line + index).map((mark) => ({ ...mark })),
+        marks: lineMarks[index] ?? [],
         parts: context.parts,
         theme: context.theme,
         ...context.columns === void 0 ? {} : { width: context.columns }
