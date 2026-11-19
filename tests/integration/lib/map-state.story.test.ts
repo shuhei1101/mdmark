@@ -1,9 +1,11 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import {
+  type Box,
   createBrowserHolder,
   expectCountBelowTitle,
   expectTargetSize,
+  overlaps,
   pageOverflows,
 } from "../story.ts";
 
@@ -19,15 +21,6 @@ const WIDE = { width: 1920, height: 900 };
 function openState(id: string, viewport = WIDE): Promise<Page> {
   return holder.openStory(`parts-mapstate--${id}`, viewport);
 }
-
-type Box = { left: number; top: number; right: number; bottom: number };
-
-/** 辺が接するだけは重ならない扱いで、2 つの矩形が重なるか */
-const overlaps = (a: Box, b: Box) =>
-  a.left < b.right - 0.5 &&
-  b.left < a.right - 0.5 &&
-  a.top < b.bottom - 0.5 &&
-  b.top < a.bottom - 0.5;
 
 /** 要素の矩形（ページの座標） */
 function rectOf(page: Page, selector: string): Promise<Box> {
