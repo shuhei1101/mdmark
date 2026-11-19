@@ -69,7 +69,7 @@ functions:
       2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`attachBand` の `onStep` で、シーケンス図の図を今のメッセージの線へ `createFollow` の `reveal` で移し、`follow` に手順のメッセージの番号を指定する
       3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない。`pointercancel` では並び順を変えず、縦の線と箱の移動を戻して、`window` の `pointermove`・`pointerup`・`pointercancel` の受け取りを削除する
       4. 参加者の箱の押せる要素（`span.mdmark-diagram-node-hit`）にフォーカスして Enter か Space を押すとその参加者を選び、Alt + 左右の矢印キーで 1 列ずつ移して、描き直した後に移した参加者の押せる要素へフォーカスを戻す（中だけを描いているときは移さない）
-      5. 参加者の箱の押せる要素かライフラインの判定の線（`.map-lifeline-hit`）の `pointerover` で、参加者を選んでおらず再生していないときだけ、その参加者が送る・受けるメッセージの線とラベル・その参加者の箱とライフラインのほかに `map-dim`（と指している間だけの class）を付け、そのメッセージの線に指している間のデータの印の層（`.map-packets-hover`）を追加する。`pointerout` でポインターが同じ参加者の箱と判定の線の外へ出たら解く。`writeMapState` は呼ばない。`pointerType` が `touch` のときと、並べ替えのドラッグの間は付けない。選択を解いたときにポインターがいた参加者を記録し、ポインターがその参加者の箱と判定の線の外へ出るまで、その参加者の強調を付けない
+      5. 参加者の箱（`div.map-participant`。名前の文字と種類の行の上を含む）かライフラインの判定の線（`.map-lifeline-hit`）の `pointerover` で、参加者を選んでおらず再生していないときだけ、その参加者が送る・受けるメッセージの線とラベル・その参加者の箱とライフラインのほかに `map-dim`（と指している間だけの class）を付け、そのメッセージの線に指している間のデータの印の層（`.map-packets-hover`）を追加する。`pointerout` でポインターが同じ参加者の箱と判定の線の外へ出たら解く。`writeMapState` は呼ばない。`pointerType` が `touch` のときと、並べ替えのドラッグの間は付けない。選択中・再生中もポインターがいる参加者を記録し、箱を押すか Esc で選択を解いたときにポインターがいた参加者は、ポインターがその参加者の箱と判定の線の外へ出るまで、その参加者の強調を付けない
     unit_tests:
       - name: test_attach_map_sequence_when_reorder_cancelled
         case: 正常
@@ -131,6 +131,18 @@ functions:
         condition: '`mount` の `.map-lifeline-hit` に `pointerType` が `touch` の `pointerover` を発火する'
         mock: なし
         expected: '`map-dim` を持つ要素と `.map-packets-hover` が無い'
+      - name: test_attach_map_sequence_when_hovered_on_name
+        case: 正常
+        summary: 名前の文字の上も箱に含める
+        condition: '`mount` の箱の `span.mdmark-diagram-node-name` に `pointerover` を発火する。次に `span.mdmark-diagram-node-hit` から名前の文字への `pointerout`（`relatedTarget` が名前の文字）を発火する'
+        mock: なし
+        expected: どちらの後も、`mount` を 1 人選んだときと同じ要素が `map-dim` を持つ
+      - name: test_attach_map_sequence_when_hovered_after_escape
+        case: 正常
+        summary: Esc で解いた直後は出さない
+        condition: '`mount` を選んだ状態で `mount` の箱に `pointerover` を発火し、Esc を押した後、同じ箱に `pointerover` を発火する'
+        mock: なし
+        expected: Esc の後は `map-dim` を持つ要素と `.map-packets-hover` が無い
 lead: 'map のシーケンス図の描画と操作を受け持ち、シーケンス図の描画と操作を変えるときに参照する。'
 tags:
   - name: topic:map
