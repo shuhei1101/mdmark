@@ -9,7 +9,7 @@ constants:
     title: 設定ファイルのパスの環境変数
     container: src/mdmark-style/settings.ts
     usecase: 共通
-    summary: 設定ファイルを既定と違う場所に置くときにパスを記載する環境変数
+    summary: 設定ファイルを既定と違う場所に置くときにパスを記載する環境変数の名前。名前を 1 か所で示すだけで `$.env.get` の引数には指定せず、`$.env.get` には文字列リテラルで記載する（`claude plugin validate` はソースに記載した名前だけを許す）
     value: MDMARK_STYLE_CONFIG
     refs:
       - CFG-472-4#
@@ -63,7 +63,7 @@ functions:
     kind: 関数
     container: src/mdmark-style/settings.ts
     usecase: 共通
-    summary: '`CONFIG_ENV` があればそのパス、無ければ `DEFAULT_CONFIG_PATH` を、先頭の `~` をホームに展開して返却する'
+    summary: '`MDMARK_STYLE_CONFIG` があればそのパス、無ければ `DEFAULT_CONFIG_PATH` を、先頭の `~` をホームに展開して返却する'
     scope: public
     is_async: true
     args:
@@ -75,7 +75,7 @@ functions:
       type: Promise<string>
       description: 設定ファイルの絶対パス
     process: |-
-      1. `$.env.get(CONFIG_ENV)` が空でなければそれを使う
+      1. `$.env.get("MDMARK_STYLE_CONFIG")`（文字列リテラルで記載する）が空でなければそれを使う
       2. 無ければ `$.env.get("XDG_CONFIG_HOME")` か `{HOME}/.config` の下の `mdmark-style/settings.yaml` を使う
       3. 先頭の `~` を `$.env.get("HOME")` に置き換えて返却する
     unit_tests:
@@ -84,7 +84,7 @@ functions:
         summary: 環境変数のパスを使う
         condition: '`MDMARK_STYLE_CONFIG=~/x/s.yaml`、`HOME=/home/u`'
         mock: '`$.env.get`'
-        expected: '`/home/u/x/s.yaml`'
+        expected: '`/home/u/x/s.yaml` を返却し、`$.env.get` が文字列 `MDMARK_STYLE_CONFIG` で呼ばれる'
       - name: test_settings_path_when_xdg
         case: 正常
         summary: XDG_CONFIG_HOME の下を使う

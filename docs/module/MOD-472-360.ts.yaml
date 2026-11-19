@@ -26,7 +26,7 @@ functions:
     container: scripts/test-mdmark-style.ts
     usecase: 共通
     summary: 一時フォルダに `PLUGIN_DIR` をコピーし、その中の `tests/` に `INTEGRATION_TESTS_DIR` の `*.test.ts`・`*.test.tsx` と共通のファイルをコピーする
-    description: '`claude plugin test` はプラグインのフォルダの中の `*.test.ts(x)` だけを実行するため、テストを配るプラグインに入れずに一時フォルダで並べる。テストはビルドした `hooks/mod/mod.js` を `../hooks/mod/mod.js` で読み込む'
+    description: '`claude plugin test` はプラグインのフォルダの中の `*.test.ts(x)` だけを実行するため、テストを配るプラグインに入れずに一時フォルダで並べる。テストは `claude-code/testing` の `$.ui.mount` に `plugin: "mdmark-style"` を指定し、並べたフォルダからエンジンが読み込んだ mod を通して描く（mod を import しない）'
     scope: public
     is_async: true
     side_effects: 一時フォルダを作る
