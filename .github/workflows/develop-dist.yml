@@ -33,7 +33,7 @@ jobs:
       # GITHUB_TOKEN の push は別のワークフローを起動しないため、この commit で再び動かない
       - name: 差分があれば commit して push する
         run: |
-          git add --all dist plugin migrations
+          git add --all dist plugin mdmark-style migrations
           if git diff --cached --quiet; then
             echo "配布物に差分がありません"
             exit 0

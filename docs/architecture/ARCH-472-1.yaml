@@ -40,6 +40,9 @@ overview:
     - id: devdocs
       label: dev-docs
       kind: external
+    - id: style
+      label: mdmark-style
+      kind: system
   edges:
     - from: dev
       to: lib
@@ -92,11 +95,15 @@ overview:
     - from: cc
       to: devdocs
       label: MCP（ガイドの参照）
+    - from: cc
+      to: style
+      label: mod（ui.render・SessionStart）
   frame:
     label: mdmark
     nodes:
       - lib
       - plugin
+      - style
 repository:
   style: モノレポ
   repositories:
@@ -122,6 +129,17 @@ subsystems:
     runtime: TypeScript 7（Node 24）
     runs_on: 文書の作成者の手元の Claude Code が、プラグインのキャッシュの `plugin/` から `node` で起動するフックと、`.mcp.json` の URL へ HTTP でつなぐ `mdmark serve` の MCP サーバー（文書の作成者が `npx github:shuhei1101/mdmark#v{バージョン} serve` で起動しておく）
     reason: Claude Code のバージョンと仕様に依る部分を、ブラウザと Node で動くライブラリ本体と分けて確認する
+    status: planned
+  - name: mdmark-style
+    scope: mdmark-style
+    role: Claude Code の返答と利用者の発言を、描く前に mdmark の共通スタイルの部品の木（表・注意書き・見出し・コードブロック・開閉の範囲・用語のマーカー）に描き換え、SessionStart でマーカーの記載方法をモデルに渡す。記法の解釈と用語の照合はライブラリ本体の関数をまとめて使用し、MCP は持たない
+    runtime: TypeScript 7（Claude Code の mod。Node・DOM は無く、`$` で画面・ファイル・設定を扱う）
+    runs_on: 文書の作成者の手元の Claude Code が、プラグインのキャッシュの `mdmark-style/hooks/mod/mod.js` を mod として読み込む。ターミナル版・デスクトップ版・VS Code の拡張機能で同じ mod が動く
+    reason: フックと MCP の Claude Code プラグインと分け、利用者が画面の描き換えだけを入れたり外したりできるようにする（規約『Claude プラグインルール』の機能ごとの単独）
+    refs:
+      - IF-472-45#
+      - IF-472-46#
+      - IF-472-47#
     status: planned
 lead: mdmark の配布物が、開発者のビルドから利用側のページへ届くまでの全体構成。
 external_systems:
@@ -216,10 +234,11 @@ notes:
     | `docs/` | 設計書（種類ごとのフォルダに `{ID}.yaml`）・公開ドキュメント（`guide/`）・PR ドキュメント（`pr/`）・モック（`mock/`）。公開範囲は各文書の `visibility` | `visibility` が `public` の文書を GitHub Pages で公開する（`_config.yml` の `exclude` で `internal` を除く） | [dev/ を廃止して文書を docs/ 1 つにまとめ、ai-monitor#3307 と同じ構成へ移す](https://github.com/shuhei1101/mdmark/issues/454) |
     | `migrations/` | バージョンごとの移行の手順とスクリプト（`v{バージョン}/`）、出していないバージョンの手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{バージョン}/` を読み込む（`next/` と `no-steps.yaml` は配布物のビルドだけが読み込む） | [版を上げるときに移行の手順を当てる upgrade を作る](https://github.com/shuhei1101/mdmark/issues/10) |
     | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する | [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11) |
-    | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` | [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11) |
+    | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` と `mdmark-style/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` | [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11) |
     | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じ時期にだけ commit する。`hooks.json` に行を追加する PR では、その行が起動するまとめたフックも入れる） | プラグインのマーケットプレイスから Claude Code が入れる。`plugin.json` は `version` を持たず、develop の commit がプラグインの更新で届く | [Claude Code のプラグインと MCP で、使い方集の索引と書き出し・点検を渡す](https://github.com/shuhei1101/mdmark/issues/11) |
     | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは develop の commit に打つ `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、タグのワークフローが公開する Visual Studio Marketplace（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | [VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/issues/22) |
-    | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添え、Marketplace へ公開するワークフローと、develop への push で `dist/`・`plugin/` の生成物を再作成して develop へ commit するワークフロー | 届けない | [VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/issues/22) |
+    | `mdmark-style/` | mod のプラグイン mdmark-style の定義（`plugin.json`・`hooks/hooks.json`・`settings.sample.yaml`）と、配布物のビルドが `src/mdmark-style/` から記載する mod の本体（`hooks/mod/mod.js`。`dist/` と同じ時期にだけ commit する。`src/mdmark-style/` を変える PR では、ビルドした `mod.js` も入れる） | プラグインのマーケットプレイスから Claude Code が入れる。`plugin.json` は `version` を持たず、develop の commit がプラグインの更新で届く | [Claude Code の画面を mdmark の共通スタイルで描く](https://github.com/shuhei1101/mdmark/issues/116) |
+    | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添え、Marketplace へ公開するワークフローと、develop への push で `dist/`・`plugin/`・`mdmark-style/` の生成物を再作成して develop へ commit するワークフロー | 届けない | [VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/issues/22) |
     | `project-index.yaml` | dev-docs・project-index の配信元の設定（設計書の種類ごとの行と、各フォルダの `files.yaml` の行と、dev-docs の画面のタブとサイドバーの構成） | 届けない | [mdmark の既存の文書を dev-docs.yaml に載せ、タグで引けるようにする](https://github.com/shuhei1101/mdmark/issues/178) |
     | 各フォルダの `files.yaml`（`docs/` の下は `files.yml`） | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは knowledge の `schemas/knowledge-files.schema.yaml`） | 届けない | [mdmark の既存の文書を dev-docs.yaml に載せ、タグで引けるようにする](https://github.com/shuhei1101/mdmark/issues/178) |
 

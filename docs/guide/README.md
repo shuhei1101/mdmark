@@ -51,6 +51,7 @@ mdmark の使い方（はじめに・使用方法・リファレンス）
 | 使用方法 | [VSCodeで確認する-差分をプレビューで確認する](./VSCodeで確認する-差分をプレビューで確認する.md) | VS Code の差分ビューで確認している Markdown の変更を、mdmark のプレビューで追加・削除の色分けにして読み込む手順 |
 | 使用方法 | [VSCodeで確認する-HTMLとPDFにする](./VSCodeで確認する-HTMLとPDFにする.md) | 開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する手順 |
 | 使用方法 | [ClaudeCodeで使用する-プラグインを入れる.mark](./ClaudeCodeで使用する-プラグインを入れる.mark.md) | マーケットプレイスを追加してプラグインを入れ、次のセッションからツールとガイドへの動線を受け取る手順 |
+| 使用方法 | [ClaudeCodeで使用する-画面を共通スタイルで描く](./ClaudeCodeで使用する-画面を共通スタイルで描く.md) | mod のプラグイン mdmark-style で、Claude Code の返答と発言を共通スタイルで描く |
 | 使用方法 | [ClaudeCodeで使用する-セットアップする.mark](./ClaudeCodeで使用する-セットアップする.mark.md) | プラグインのスキルで、端末の設定と常駐サーバー、文書のフォルダの設定を、項目ごとに確認しながら用意する手順 |
 | 使用方法 | [ClaudeCodeで使用する-MCPサーバーを起動する.mark](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md) | MCP の常駐サーバーを起動・停止し、待ち受けているポートを確認する手順 |
 | 使用方法 | [ClaudeCodeで使用する-MCPのツールを使用する](./ClaudeCodeで使用する-MCPのツールを使用する.md) | ガイドを dev-docs で参照させ、文書の書き出し・まとめ・点検を Claude Code から呼ぶ手順 |

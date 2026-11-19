@@ -1,0 +1,231 @@
+id: MOD-472-355
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / reply.tsx
+lead: 返答の `ui.render` のフック。ブロックごとに表・注意書き・見出し・コードブロック・開閉の範囲を Box・Text・Button の部品の木で描き、段落・箇条書きは Claude Code の `Markdown` 部品に任せる。
+test_files:
+  - tests/unit/src/mdmark-style/reply.test.ts
+constants:
+  - name: TREE_LIMITS
+    title: 部品の木の上限
+    container: src/mdmark-style/reply.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 超えると Claude Code が描かない部品の木の大きさ
+    value: '{ nodes: 20000, depth: 32, chars: 100000 }'
+    refs:
+      - IF-472-45#constraints[部品の木の上限]
+    status: planned
+functions:
+  - name: renderReply
+    title: 返答を描く
+    kind: 関数
+    container: src/mdmark-style/reply.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    role: フック
+    summary: '`AssistantMessage` の `ui.render` で、設定と用語集を読み込み、ブロックを部品の木にして返却する'
+    scope: public
+    is_async: true
+    args:
+      - name: $
+        type: Engine
+        required: true
+        description: Claude Code のエンジンのインターフェース
+      - name: e
+        type: UiRenderEvent<"AssistantMessage">
+        required: true
+        description: '`props.text`・`surface`・`viewport`・`requestId` を持つ描画の入力'
+      - name: next
+        type: Next
+        required: true
+        description: Claude Code の元の描画へ進める関数
+    returns:
+      type: Promise<UiNode>
+      description: 描いた部品の木か `next(e)` の戻り値
+    process: |-
+      1. 設定を読み込む（設定を読み込む）。`SettingsError` なら `$.ui.log(理由, { to: "debug" })` を記載して `next(e)` を返却する
+      2. `enabled` が偽か `targets` に `assistant` が無ければ `next(e)` を返却する
+      3. ブロックに分ける（ブロックに分ける）
+      4. 本文の用語を照合する（本文の用語を照合する）。用語集を読み込めなければ用語のマーカーを付けずに続ける。文脈の `ui` は `$.ui.copy`・`$.ui.invalidate` を呼ぶアロー関数にする
+      5. ブロックごとに部品の木を作り（ブロックを描く）、用語の脚注があれば本文の後ろに脚注の一覧を並べる
+      6. 部品の木が `TREE_LIMITS` を超えれば `next(e)` を返却する（部品の木の大きさを数える）
+    unit_tests:
+      - name: test_render_reply_when_disabled
+        case: 正常
+        summary: 返答を対象にしない設定
+        condition: '`global.targets: [user]`'
+        mock: '`$.fs`・`$.env`・`$.session`・`next`'
+        expected: '`next(e)` の戻り値を返却する'
+      - name: test_render_reply_when_over_limit
+        case: 正常
+        summary: 上限を超える木は元の描画に任せる
+        condition: 1 万行の表
+        mock: '`$.fs`・`$.env`・`$.session`・`next`'
+        expected: '`next(e)` の戻り値を返却する'
+      - name: test_render_reply_when_settings_broken
+        case: 異常
+        summary: 設定ファイルを読めない
+        condition: '設定ファイルの本文が `global: [`'
+        mock: '`$.fs`・`$.env`・`$.session`・`$.ui.log`・`next`'
+        expected: '`next(e)` の戻り値を返却し、`$.ui.log` を設定ファイルのパスを含む文と `to: "debug"` で 1 回呼ぶ'
+    callees:
+      - MOD-472-352#functions[readSettings]
+      - MOD-472-353#functions[splitBlocks]
+      - MOD-472-357#functions[termMarksOf]
+      - '#functions[renderBlock]'
+      - '#functions[countTree]'
+      - MOD-472-357#functions[renderFootnotes]
+    refs:
+      - IF-472-45#
+    status: planned
+  - name: renderBlock
+    title: ブロックを描く
+    kind: 関数
+    container: src/mdmark-style/reply.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`ReplyBlock` 1 つを部品の木にする'
+    description: 色は配色の色を取る（`$.settings.read()` の `theme`）。用語のマーカーを付けた `markdown` のブロックは `Markdown` 部品に任せず、太字・行内のコード・リンクを Text で描き、用語を用語の部品で描く
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ block: ReplyBlock; context: RenderContext }'
+        required: true
+        description: ブロックと、描き方の文脈（`surface`・`columns`・`theme`・開閉の状態の鍵の頭・用語の一致・`$.ui`）
+    returns:
+      type: UiNode
+      description: 部品の木
+    process: |-
+      1. `table`: 列の幅を決め（`wrap` は `surface` が `desktop` でないとき）、セルを折り返して罫線で囲む。`kind` が `data` なら見出しの行を太字にする。`surface` が `desktop` で表の幅が `columns` を超えれば表の Box を `overflowX: "scroll"` にする
+      2. `heading`: 太字と見出しの色の Text
+      3. `callout`: 種類の色の縦線（`┃`）と太字の種類のラベルの後ろに中身を描く。`closed` なら開閉のボタンで包む
+      4. `code`: 背景の面の Box の中に、タイトルと言語のラベルとコピーボタンの行、`Code` 部品で色分けした行（行番号・行の色）を並べる。コピーボタンは押すと `$.ui.copy` で各行の `text` を改行でつないでコピーする
+      5. `fold`: 開閉のボタンを描き、開いていれば下に中身を描く
+      6. `markdown`: 用語の一致の行と位置を、ブロックの `line` と `columns` でブロックの行の中の位置に修正する。修正した一致が無ければ `Markdown` 部品に渡す
+    unit_tests:
+      - name: test_render_block_table
+        case: 正常
+        summary: 狭い端末ではセルを折り返す
+        condition: 3 列で 1 行の幅が 60 の表、`surface` が `terminal`、`columns` が 40
+        mock: '`h` を要素のオブジェクトにする関数'
+        expected: 表のどの行も表示幅が 40 以下で、`overflowX` を持たない
+      - name: test_render_block_table_when_desktop
+        case: 正常
+        summary: デスクトップ版は横にスクロールする
+        condition: 上と同じ表で `surface` が `desktop`
+        mock: '`h` を要素のオブジェクトにする関数'
+        expected: '表の Box が `overflowX: "scroll"` を持ち、セルを折り返さない'
+      - name: test_render_block_code
+        case: 正常
+        summary: コードブロックを背景の面で描き、コピーボタンを付ける
+        condition: '`title` が `a.ts` で 2 行のコード、1 行目の `mark` が `++`'
+        mock: '`h`・`$.ui.copy`'
+        expected: Box が `backgroundColor` を持ち、`a.ts` と言語のラベルと `コピー` の Button がある。Button の `onPress` を呼ぶと `$.ui.copy` が 2 行のコードで呼ばれる
+      - name: test_render_block_callout
+        case: 正常
+        summary: 注意書きを縦線とラベルで描く
+        condition: '`type` が `WARNING` の注意書き'
+        mock: '`h`'
+        expected: '`┃` と太字の `WARNING` が `calloutWarning` の色で描かれる'
+      - name: test_render_block_when_term_in_callout
+        case: 正常
+        summary: 注意書きの中の用語に下線を付ける
+        condition: '`> [!NOTE]` と `> WS を作る` を分けた注意書き、用語の一致が `line` 2・`start` 2 の `WS`'
+        mock: '`h`'
+        expected: 下線の Text が `WS` の 1 つ
+      - name: test_render_block_when_term_after_inline_marker
+        case: 正常
+        summary: 行内のマーカーの後ろの用語に下線を付ける
+        condition: 段落 `a <!-- x --> WS` を分けたブロック、用語の一致が `line` 1・`start` 13 の `WS`
+        mock: '`h`'
+        expected: 下線の Text が `WS` の 1 つ
+    callees:
+      - MOD-472-354#functions[fitColumns]
+      - MOD-472-354#functions[wrapCell]
+      - MOD-472-359#functions[styleColor]
+      - '#functions[renderFold]'
+      - MOD-472-357#functions[renderTermText]
+    refs:
+      - SCR-472-5#elements[表]
+      - SCR-472-5#elements[見出し]
+      - SCR-472-5#elements[注意書き]
+      - SCR-472-5#elements[コードブロック]
+      - SCR-472-5#elements[コピーボタン]
+    status: planned
+  - name: renderFold
+    title: 開閉の範囲を描く
+    kind: 関数
+    container: src/mdmark-style/reply.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 開閉のボタンと、開いているときの中身を描く。押すと状態を反転して `$.ui.invalidate("ui.render")` で描き直す
+    description: 開閉の状態は `requestId`・ブロックの本文のハッシュ・範囲の `index` を鍵にした、モジュールの中の `Map` に持つ（初めは閉じた状態。Claude Code を閉じると消える）
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ key: string; title: string; body: () => UiNode; context: RenderContext }'
+        required: true
+        description: 開閉の状態の鍵・タイトル・中身を描く関数・描き方の文脈
+    returns:
+      type: UiNode
+      description: 部品の木
+    process: |-
+      1. `key` の状態を取る（無ければ閉じた状態）
+      2. 閉じていれば `▸ {タイトル}`、開いていれば `▾ {タイトル}` の Button を描き、開いていれば下に `body()` を描く
+      3. Button の `onPress` で状態を反転し、`$.ui.invalidate("ui.render")` を呼ぶ
+    unit_tests:
+      - name: test_render_fold
+        case: 正常
+        summary: 閉じた範囲を押すと開く
+        condition: 初めての `key` で描き、Button の `onPress` を呼んでからもう一度描く
+        mock: '`h`・`$.ui.invalidate`'
+        expected: 1 回目は `▸ 用語` の Button だけ、2 回目は `▾ 用語` と中身が描かれ、`$.ui.invalidate` が `ui.render` で 1 回呼ばれる
+      - name: test_render_fold_when_other_block
+        case: 正常
+        summary: 同じ返答の別のブロックの範囲は状態を共有しない
+        condition: 同じ `requestId` で本文の違う 2 つのブロックの `index` 0 の範囲、1 つ目だけを押す
+        mock: '`h`・`$.ui.invalidate`'
+        expected: 1 つ目だけが開く
+    refs:
+      - IF-472-45#constraints[開閉の範囲]
+      - SCR-472-5#elements[開閉のボタン]
+    status: planned
+  - name: countTree
+    title: 部品の木の大きさを数える
+    kind: 関数
+    container: src/mdmark-style/reply.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 部品の木のノードの数・深さ・文字数を数え、`TREE_LIMITS` を超えたらその時点で数えるのをやめる
+    scope: public
+    is_async: false
+    args:
+      - name: node
+        type: UiNode
+        required: true
+        description: 数える部品の木
+    returns:
+      type: '{ nodes: number; depth: number; chars: number; over: boolean }'
+      description: 数えた大きさと、上限を超えたか
+    process: 1. 木を深さ優先でたどり、ノードの数・最大の深さ・文字列の長さの合計を数える
+    unit_tests:
+      - name: test_count_tree
+        case: 正常
+        summary: 大きさを数える
+        condition: Box の中に Text 2 つ（`ab`・`c`）
+        mock: なし
+        expected: '`nodes` が 3、`depth` が 2、`chars` が 3、`over` が偽'
+      - name: test_count_tree_when_deep
+        case: 正常
+        summary: 深さの上限を超える
+        condition: Box を 33 段入れ子にした木
+        mock: なし
+        expected: '`over` が真'
+    refs:
+      - IF-472-45#constraints[部品の木の上限]
+    status: planned
+tags:
+  - name: action:描画
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: topic:テーブル
+  - name: topic:注意書き
+  - name: topic:コードブロック

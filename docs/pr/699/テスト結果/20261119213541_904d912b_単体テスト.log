@@ -1,0 +1,713 @@
+$ npx vitest run --project unit tests/unit/src/mdmark-style tests/unit/src/shared/style-tokens.logic.test.ts tests/unit/scripts/test-mdmark-style.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style
+
+ ❯ |unit| tests/unit/src/mdmark-style/settings.test.ts (9 tests | 9 failed) 61ms
+   × test_settings_path 11ms
+   × test_settings_path_when_xdg 12ms
+   × test_settings_path_when_default 10ms
+   × test_merge_settings 2ms
+   × test_merge_settings_when_project_matched 1ms
+   × test_merge_settings_when_glossary_relative 8ms
+   × test_merge_settings_when_invalid 6ms
+   × test_read_settings_when_missing 2ms
+   × test_read_settings_when_broken 7ms
+ ❯ |unit| tests/unit/src/mdmark-style/blocks.test.ts (6 tests | 6 failed) 72ms
+   × test_split_blocks 18ms
+   × test_split_blocks_when_code_marked 32ms
+   × test_split_blocks_when_fold 3ms
+   × test_split_blocks_when_part_disabled 10ms
+   × test_split_blocks_when_inline_marker 6ms
+   × test_split_blocks_when_diagram 1ms
+ ❯ |unit| tests/unit/src/mdmark-style/reply.test.ts (11 tests | 11 failed) 91ms
+   × test_render_reply_when_disabled 9ms
+   × test_render_reply_when_over_limit 8ms
+   × test_render_reply_when_settings_broken 4ms
+   × test_render_block_table 10ms
+   × test_render_block_table_when_desktop 24ms
+   × test_render_block_code 6ms
+   × test_render_block_callout 6ms
+   × test_render_fold 9ms
+   × test_render_fold_when_other_block 7ms
+   × test_count_tree 3ms
+   × test_count_tree_when_deep 3ms
+ ❯ |unit| tests/unit/src/shared/style-tokens.logic.test.ts (2 tests | 2 failed) 76ms
+   × test_style_color 23ms
+   × test_style_colors_match_css 52ms
+ ❯ |unit| tests/unit/src/mdmark-style/table-layout.test.ts (7 tests | 7 failed) 141ms
+   × test_display_width 41ms
+   × test_wrap_cell 11ms
+   × test_wrap_cell_when_long_word 2ms
+   × test_wrap_cell_when_wide 3ms
+   × test_fit_columns 42ms
+   × test_fit_columns_when_narrow 24ms
+   × test_fit_columns_when_desktop 15ms
+ ❯ |unit| tests/unit/src/mdmark-style/terms.test.ts (5 tests | 5 failed) 69ms
+   × test_load_glossary 32ms
+   × test_load_glossary_when_missing 6ms
+   × test_match_terms 1ms
+   × test_match_terms_when_excluded 16ms
+   × test_match_terms_when_glossary_table 12ms
+ ❯ |unit| tests/unit/src/mdmark-style/user-message.test.ts (6 tests | 6 failed) 134ms
+   × test_render_user_message 76ms
+   × test_render_user_message_when_no_term 10ms
+   × test_render_user_message_when_not_composer 18ms
+   × test_render_user_message_when_glossary_unreadable 7ms
+   × test_render_term_text 6ms
+   × test_render_term_text_when_card_off 16ms
+ ❯ |unit| tests/unit/src/mdmark-style/marker-guide.test.ts (4 tests | 4 failed) 34ms
+   × test_inject_marker_guide 13ms
+   × test_inject_marker_guide_when_disabled 9ms
+   × test_inject_marker_guide_when_settings_broken 4ms
+   × test_marker_guide_length 6ms
+ ❯ |unit| tests/unit/scripts/test-mdmark-style.test.ts (2 tests | 2 failed) 18ms
+   × test_stage_plugin_tests 8ms
+   × test_stage_plugin_tests_when_not_built 8ms
+ ❯ |unit| tests/unit/src/mdmark-style/mod.test.ts (1 test | 1 failed) 8ms
+   × test_register 7ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 53 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/test-mdmark-style.test.ts > test_stage_plugin_tests
+Error: Cannot find module '/scripts/test-mdmark-style.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/scripts/test-mdmark-style.test.ts
+ ❯ tests/unit/scripts/test-mdmark-style.test.ts:25:32
+     23| test("test_stage_plugin_tests", async () => {
+     24|   // 準備
+     25|   const { stagePluginTests } = await loadScript();
+       |                                ^
+     26|   const root = await createRoot({ built: true });
+     27|   const tmpDir = await mkdtemp(join(tmpdir(), "mdmark-style-stage-"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/53]⎯
+
+ FAIL  |unit| tests/unit/scripts/test-mdmark-style.test.ts > test_stage_plugin_tests_when_not_built
+Error: Cannot find module '/scripts/test-mdmark-style.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/scripts/test-mdmark-style.test.ts
+ ❯ tests/unit/scripts/test-mdmark-style.test.ts:40:32
+     38| test("test_stage_plugin_tests_when_not_built", async () => {
+     39|   // 準備
+     40|   const { stagePluginTests } = await loadScript();
+       |                                ^
+     41|   const root = await createRoot({ built: false });
+     42|   const tmpDir = await mkdtemp(join(tmpdir(), "mdmark-style-stage-"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/blocks.test.ts > test_split_blocks
+Error: Cannot find module '/src/mdmark-style/blocks.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/blocks.test.ts
+ ❯ tests/unit/src/mdmark-style/blocks.test.ts:21:27
+     19| test("test_split_blocks", async () => {
+     20|   // 準備
+     21|   const { splitBlocks } = await loadBlocks();
+       |                           ^
+     22|   const text = [
+     23|     "## 見出し",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/blocks.test.ts > test_split_blocks_when_code_marked
+Error: Cannot find module '/src/mdmark-style/blocks.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/blocks.test.ts
+ ❯ tests/unit/src/mdmark-style/blocks.test.ts:60:27
+     58| test("test_split_blocks_when_code_marked", async () => {
+     59|   // 準備
+     60|   const { splitBlocks } = await loadBlocks();
+       |                           ^
+     61|   const text = [
+     62|     "<!-- code: title=a.ts lines highlight=2 -->",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/blocks.test.ts > test_split_blocks_when_fold
+Error: Cannot find module '/src/mdmark-style/blocks.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/blocks.test.ts
+ ❯ tests/unit/src/mdmark-style/blocks.test.ts:85:27
+     83| test("test_split_blocks_when_fold", async () => {
+     84|   // 準備
+     85|   const { splitBlocks } = await loadBlocks();
+       |                           ^
+     86|   const text = [
+     87|     "<!-- details: 用語 -->",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/blocks.test.ts > test_split_blocks_when_part_disabled
+Error: Cannot find module '/src/mdmark-style/blocks.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/blocks.test.ts
+ ❯ tests/unit/src/mdmark-style/blocks.test.ts:113:27
+    111| test("test_split_blocks_when_part_disabled", async () => {
+    112|   // 準備
+    113|   const { splitBlocks } = await loadBlocks();
+       |                           ^
+    114|   const text = [
+    115|     '<!-- table: {"kind": "data"} -->',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/blocks.test.ts > test_split_blocks_when_inline_marker
+Error: Cannot find module '/src/mdmark-style/blocks.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/blocks.test.ts
+ ❯ tests/unit/src/mdmark-style/blocks.test.ts:134:27
+    132| test("test_split_blocks_when_inline_marker", async () => {
+    133|   // 準備
+    134|   const { splitBlocks } = await loadBlocks();
+       |                           ^
+    135|   // 実行
+    136|   const blocks = splitBlocks({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/blocks.test.ts > test_split_blocks_when_diagram
+Error: Cannot find module '/src/mdmark-style/blocks.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/blocks.test.ts
+ ❯ tests/unit/src/mdmark-style/blocks.test.ts:149:27
+    147| test("test_split_blocks_when_diagram", async () => {
+    148|   // 準備
+    149|   const { splitBlocks } = await loadBlocks();
+       |                           ^
+    150|   const text = ["```mermaid", "flowchart LR", "  a --> b", "```"].join…
+    151|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/marker-guide.test.ts > test_inject_marker_guide
+Error: Cannot find module '/src/mdmark-style/marker-guide.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/marker-guide.test.ts
+ ❯ tests/unit/src/mdmark-style/marker-guide.test.ts:17:47
+     15| test("test_inject_marker_guide", async () => {
+     16|   // 準備
+     17|   const { MARKER_GUIDE, injectMarkerGuide } = await loadGuide();
+       |                                               ^
+     18|   const $ = createFakeEngine();
+     19|   const next = nextWith(["a"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/marker-guide.test.ts > test_inject_marker_guide_when_disabled
+Error: Cannot find module '/src/mdmark-style/marker-guide.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/marker-guide.test.ts
+ ❯ tests/unit/src/mdmark-style/marker-guide.test.ts:29:33
+     27| test("test_inject_marker_guide_when_disabled", async () => {
+     28|   // 準備
+     29|   const { injectMarkerGuide } = await loadGuide();
+       |                                 ^
+     30|   const $ = createFakeEngine({
+     31|     files: { [CONFIG]: "global:\n  inject_marker_guide: false\n" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/marker-guide.test.ts > test_inject_marker_guide_when_settings_broken
+Error: Cannot find module '/src/mdmark-style/marker-guide.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/marker-guide.test.ts
+ ❯ tests/unit/src/mdmark-style/marker-guide.test.ts:43:33
+     41| test("test_inject_marker_guide_when_settings_broken", async () => {
+     42|   // 準備
+     43|   const { injectMarkerGuide } = await loadGuide();
+       |                                 ^
+     44|   const $ = createFakeEngine({ files: { [CONFIG]: "global: [" } });
+     45|   const next = nextWith(["a"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/marker-guide.test.ts > test_marker_guide_length
+Error: Cannot find module '/src/mdmark-style/marker-guide.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/marker-guide.test.ts
+ ❯ tests/unit/src/mdmark-style/marker-guide.test.ts:57:28
+     55| test("test_marker_guide_length", async () => {
+     56|   // 準備
+     57|   const { MARKER_GUIDE } = await loadGuide();
+       |                            ^
+     58|   // 検証
+     59|   expect(MARKER_GUIDE.startsWith("mdmark-style:")).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/mod.test.ts > test_register
+Error: Cannot find module '/src/mdmark-style/mod.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/mod.test.ts
+ ❯ tests/unit/src/mdmark-style/mod.test.ts:9:24
+      7| test("test_register", async () => {
+      8|   // 準備
+      9|   const { register } = await loadMod();
+       |                        ^
+     10|   const calls: unknown[][] = [];
+     11|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_reply_when_disabled
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:80:27
+     78| test("test_render_reply_when_disabled", async () => {
+     79|   // 準備
+     80|   const { renderReply } = await loadReply();
+       |                           ^
+     81|   const $ = createFakeEngine({
+     82|     files: { [CONFIG]: "global:\n  targets: [user]\n" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_reply_when_over_limit
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:94:27
+     92| test("test_render_reply_when_over_limit", async () => {
+     93|   // 準備
+     94|   const { renderReply } = await loadReply();
+       |                           ^
+     95|   const $ = createFakeEngine();
+     96|   const next = vi.fn(async () => ENGINE_NODE);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_reply_when_settings_broken
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:108:27
+    106| test("test_render_reply_when_settings_broken", async () => {
+    107|   // 準備
+    108|   const { renderReply } = await loadReply();
+       |                           ^
+    109|   const { SettingsError } = await import(
+    110|     "../../../../src/mdmark-style/settings.ts"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_block_table
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:123:27
+    121| test("test_render_block_table", async () => {
+    122|   // 準備
+    123|   const { renderBlock } = await loadReply();
+       |                           ^
+    124|   const { displayWidth } = await import(
+    125|     "../../../../src/mdmark-style/table-layout.ts"
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_block_table_when_desktop
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:145:27
+    143| test("test_render_block_table_when_desktop", async () => {
+    144|   // 準備
+    145|   const { renderBlock } = await loadReply();
+       |                           ^
+    146|   const $ = createFakeEngine();
+    147|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_block_code
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:164:27
+    162| test("test_render_block_code", async () => {
+    163|   // 準備
+    164|   const { renderBlock } = await loadReply();
+       |                           ^
+    165|   const $ = createFakeEngine();
+    166|   const block = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_block_callout
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:201:27
+    199| test("test_render_block_callout", async () => {
+    200|   // 準備
+    201|   const { renderBlock } = await loadReply();
+       |                           ^
+    202|   const { styleColor } = await loadTokens();
+    203|   const $ = createFakeEngine();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_fold
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:232:26
+    230| test("test_render_fold", async () => {
+    231|   // 準備
+    232|   const { renderFold } = await loadReply();
+       |                          ^
+    233|   const $ = createFakeEngine();
+    234|   const context = contextOf($);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_render_fold_when_other_block
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:257:27
+    255| test("test_render_fold_when_other_block", async () => {
+    256|   // 準備
+    257|   const { renderReply } = await loadReply();
+       |                           ^
+    258|   const $ = createFakeEngine();
+    259|   const next = vi.fn(async () => ENGINE_NODE);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_count_tree
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:280:25
+    278| test("test_count_tree", async () => {
+    279|   // 準備
+    280|   const { countTree } = await loadReply();
+       |                         ^
+    281|   const node = fakeH("Box", null, fakeH("Text", null, "ab"), fakeH("Te…
+    282|   // 実行・検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/reply.test.ts > test_count_tree_when_deep
+Error: Cannot find module '/src/mdmark-style/reply.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/reply.test.ts
+ ❯ tests/unit/src/mdmark-style/reply.test.ts:289:25
+    287| test("test_count_tree_when_deep", async () => {
+    288|   // 準備
+    289|   const { countTree } = await loadReply();
+       |                         ^
+    290|   let node: FakeNode = fakeH("Text", null, "x");
+    291|   for (let i = 0; i < 33; i += 1) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_settings_path
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:10:28
+      8| test("test_settings_path", async () => {
+      9|   // 準備
+     10|   const { settingsPath } = await loadSettings();
+       |                            ^
+     11|   const $ = createFakeEngine({
+     12|     env: { MDMARK_STYLE_CONFIG: "~/x/s.yaml", HOME: "/home/u" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_settings_path_when_xdg
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:24:28
+     22| test("test_settings_path_when_xdg", async () => {
+     23|   // 準備
+     24|   const { settingsPath } = await loadSettings();
+       |                            ^
+     25|   const $ = createFakeEngine({
+     26|     env: { XDG_CONFIG_HOME: "/cfg", HOME: "/home/u" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_settings_path_when_default
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:37:28
+     35| test("test_settings_path_when_default", async () => {
+     36|   // 準備
+     37|   const { settingsPath } = await loadSettings();
+       |                            ^
+     38|   const $ = createFakeEngine({ env: { HOME: "/home/u" } });
+     39|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_merge_settings
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:48:47
+     46| test("test_merge_settings", async () => {
+     47|   // 準備
+     48|   const { DEFAULT_SETTINGS, mergeSettings } = await loadSettings();
+       |                                               ^
+     49|   // 実行
+     50|   const settings = mergeSettings({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_merge_settings_when_project_matched
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:63:29
+     61| test("test_merge_settings_when_project_matched", async () => {
+     62|   // 準備
+     63|   const { mergeSettings } = await loadSettings();
+       |                             ^
+     64|   // 実行
+     65|   const settings = mergeSettings({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_merge_settings_when_glossary_relative
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:86:29
+     84| test("test_merge_settings_when_glossary_relative", async () => {
+     85|   // 準備
+     86|   const { mergeSettings } = await loadSettings();
+       |                             ^
+     87|   // 実行
+     88|   const settings = mergeSettings({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_merge_settings_when_invalid
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:101:44
+     99| test("test_merge_settings_when_invalid", async () => {
+    100|   // 準備
+    101|   const { SettingsError, mergeSettings } = await loadSettings();
+       |                                            ^
+    102|   // 実行・検証
+    103|   expect(() =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_read_settings_when_missing
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:124:46
+    122| test("test_read_settings_when_missing", async () => {
+    123|   // 準備
+    124|   const { DEFAULT_SETTINGS, readSettings } = await loadSettings();
+       |                                              ^
+    125|   const $ = createFakeEngine({ env: { HOME: "/home/u" } });
+    126|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/settings.test.ts > test_read_settings_when_broken
+Error: Cannot find module '/src/mdmark-style/settings.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/settings.test.ts
+ ❯ tests/unit/src/mdmark-style/settings.test.ts:135:43
+    133| test("test_read_settings_when_broken", async () => {
+    134|   // 準備
+    135|   const { SettingsError, readSettings } = await loadSettings();
+       |                                           ^
+    136|   const $ = createFakeEngine({
+    137|     env: { HOME: "/home/u" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/table-layout.test.ts > test_display_width
+Error: Cannot find module '/src/mdmark-style/table-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/table-layout.test.ts
+ ❯ tests/unit/src/mdmark-style/table-layout.test.ts:9:28
+      7| test("test_display_width", async () => {
+      8|   // 準備
+      9|   const { displayWidth } = await loadLayout();
+       |                            ^
+     10|   // 実行・検証
+     11|   expect(displayWidth("用語ab")).toBe(6);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/table-layout.test.ts > test_wrap_cell
+Error: Cannot find module '/src/mdmark-style/table-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/table-layout.test.ts
+ ❯ tests/unit/src/mdmark-style/table-layout.test.ts:17:24
+     15| test("test_wrap_cell", async () => {
+     16|   // 準備
+     17|   const { wrapCell } = await loadLayout();
+       |                        ^
+     18|   // 実行・検証
+     19|   expect(wrapCell({ text: "read the config file", width: 10 })).toEqua…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/table-layout.test.ts > test_wrap_cell_when_long_word
+Error: Cannot find module '/src/mdmark-style/table-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/table-layout.test.ts
+ ❯ tests/unit/src/mdmark-style/table-layout.test.ts:29:24
+     27| test("test_wrap_cell_when_long_word", async () => {
+     28|   // 準備
+     29|   const { wrapCell } = await loadLayout();
+       |                        ^
+     30|   // 実行・検証
+     31|   expect(wrapCell({ text: "a mdmark.config.yaml", width: 8 })).toEqual…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/table-layout.test.ts > test_wrap_cell_when_wide
+Error: Cannot find module '/src/mdmark-style/table-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/table-layout.test.ts
+ ❯ tests/unit/src/mdmark-style/table-layout.test.ts:42:24
+     40| test("test_wrap_cell_when_wide", async () => {
+     41|   // 準備
+     42|   const { wrapCell } = await loadLayout();
+       |                        ^
+     43|   // 実行・検証
+     44|   expect(wrapCell({ text: "用語を読み込む", width: 6 })).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/table-layout.test.ts > test_fit_columns
+Error: Cannot find module '/src/mdmark-style/table-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/table-layout.test.ts
+ ❯ tests/unit/src/mdmark-style/table-layout.test.ts:54:26
+     52| test("test_fit_columns", async () => {
+     53|   // 準備
+     54|   const { fitColumns } = await loadLayout();
+       |                          ^
+     55|   // 実行・検証
+     56|   expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/table-layout.test.ts > test_fit_columns_when_narrow
+Error: Cannot find module '/src/mdmark-style/table-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/table-layout.test.ts
+ ❯ tests/unit/src/mdmark-style/table-layout.test.ts:64:26
+     62| test("test_fit_columns_when_narrow", async () => {
+     63|   // 準備
+     64|   const { fitColumns } = await loadLayout();
+       |                          ^
+     65|   const cells = [["a".repeat(10), Array(8).fill("word").join(" ")]];
+     66|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/table-layout.test.ts > test_fit_columns_when_desktop
+Error: Cannot find module '/src/mdmark-style/table-layout.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/table-layout.test.ts
+ ❯ tests/unit/src/mdmark-style/table-layout.test.ts:76:26
+     74| test("test_fit_columns_when_desktop", async () => {
+     75|   // 準備
+     76|   const { fitColumns } = await loadLayout();
+       |                          ^
+     77|   const cells = [["a".repeat(10), "b".repeat(40)]];
+     78|   // 実行・検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/terms.test.ts > test_load_glossary
+Error: Cannot find module '/src/mdmark-style/terms.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/terms.test.ts
+ ❯ loadFixtureGlossary tests/unit/src/mdmark-style/terms.test.ts:10:28
+      8| /** 用語集を読み込む */
+      9| const loadFixtureGlossary = async () => {
+     10|   const { loadGlossary } = await loadTerms();
+       |                            ^
+     11|   const $ = createFakeEngine({ files: GLOSSARY_FILES });
+     12|   return loadGlossary({ $, configPath: GLOSSARY_CONFIG });
+ ❯ tests/unit/src/mdmark-style/terms.test.ts:18:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/terms.test.ts > test_load_glossary_when_missing
+Error: Cannot find module '/src/mdmark-style/terms.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/terms.test.ts
+ ❯ tests/unit/src/mdmark-style/terms.test.ts:28:43
+     26| test("test_load_glossary_when_missing", async () => {
+     27|   // 準備
+     28|   const { GlossaryError, loadGlossary } = await loadTerms();
+       |                                           ^
+     29|   const $ = createFakeEngine({ files: {} });
+     30|   // 実行・検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/terms.test.ts > test_match_terms
+Error: Cannot find module '/src/mdmark-style/terms.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/terms.test.ts
+ ❯ tests/unit/src/mdmark-style/terms.test.ts:42:26
+     40| test("test_match_terms", async () => {
+     41|   // 準備
+     42|   const { matchTerms } = await loadTerms();
+       |                          ^
+     43|   const glossary = await loadFixtureGlossary();
+     44|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/terms.test.ts > test_match_terms_when_excluded
+Error: Cannot find module '/src/mdmark-style/terms.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/terms.test.ts
+ ❯ tests/unit/src/mdmark-style/terms.test.ts:58:26
+     56| test("test_match_terms_when_excluded", async () => {
+     57|   // 準備
+     58|   const { matchTerms } = await loadTerms();
+       |                          ^
+     59|   const glossary = await loadFixtureGlossary();
+     60|   const text = [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/terms.test.ts > test_match_terms_when_glossary_table
+Error: Cannot find module '/src/mdmark-style/terms.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/terms.test.ts
+ ❯ tests/unit/src/mdmark-style/terms.test.ts:78:26
+     76| test("test_match_terms_when_glossary_table", async () => {
+     77|   // 準備
+     78|   const { matchTerms } = await loadTerms();
+       |                          ^
+     79|   const glossary = await loadFixtureGlossary();
+     80|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/user-message.test.ts > test_render_user_message
+Error: Cannot find module '/src/mdmark-style/user-message.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/user-message.test.ts
+ ❯ tests/unit/src/mdmark-style/user-message.test.ts:57:33
+     55| test("test_render_user_message", async () => {
+     56|   // 準備
+     57|   const { renderUserMessage } = await loadUser();
+       |                                 ^
+     58|   const { styleColor } = await loadTokens();
+     59|   const $ = createFakeEngine({ files: FILES });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/user-message.test.ts > test_render_user_message_when_no_term
+Error: Cannot find module '/src/mdmark-style/user-message.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/user-message.test.ts
+ ❯ tests/unit/src/mdmark-style/user-message.test.ts:92:33
+     90| test("test_render_user_message_when_no_term", async () => {
+     91|   // 準備
+     92|   const { renderUserMessage } = await loadUser();
+       |                                 ^
+     93|   const $ = createFakeEngine({ files: FILES });
+     94|   const next = vi.fn(async () => ENGINE_NODE);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/user-message.test.ts > test_render_user_message_when_not_composer
+Error: Cannot find module '/src/mdmark-style/user-message.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/user-message.test.ts
+ ❯ tests/unit/src/mdmark-style/user-message.test.ts:104:33
+    102| test("test_render_user_message_when_not_composer", async () => {
+    103|   // 準備
+    104|   const { renderUserMessage } = await loadUser();
+       |                                 ^
+    105|   const $ = createFakeEngine({ files: FILES });
+    106|   const next = vi.fn(async () => ENGINE_NODE);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/user-message.test.ts > test_render_user_message_when_glossary_unreadable
+Error: Cannot find module '/src/mdmark-style/user-message.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/user-message.test.ts
+ ❯ tests/unit/src/mdmark-style/user-message.test.ts:116:33
+    114| test("test_render_user_message_when_glossary_unreadable", async () => {
+    115|   // 準備
+    116|   const { renderUserMessage } = await loadUser();
+       |                                 ^
+    117|   const $ = createFakeEngine({
+    118|     files: { [CONFIG]: `global:\n  glossary: ${GLOSSARY_CONFIG}\n` },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/user-message.test.ts > test_render_term_text
+Error: Cannot find module '/src/mdmark-style/user-message.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/user-message.test.ts
+ ❯ tests/unit/src/mdmark-style/user-message.test.ts:132:30
+    130| test("test_render_term_text", async () => {
+    131|   // 準備
+    132|   const { renderTermText } = await loadUser();
+       |                              ^
+    133|   const marks = [
+    134|     { line: 1, start: 0, end: 2, title: "WS", description: "a", footno…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/53]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/user-message.test.ts > test_render_term_text_when_card_off
+Error: Cannot find module '/src/mdmark-style/user-message.tsx' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/mdmark-style/user-message.test.ts
+ ❯ tests/unit/src/mdmark-style/user-message.test.ts:158:30
+    156| test("test_render_term_text_when_card_off", async () => {
+    157|   // 準備
+    158|   const { renderTermText } = await loadUser();
+       |                              ^
+    159|   const marks = [
+    160|     { line: 1, start: 0, end: 2, title: "WS", description: "a", footno…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/53]⎯
+
+ FAIL  |unit| tests/unit/src/shared/style-tokens.logic.test.ts > test_style_color
+Error: Cannot find module '/src/shared/style-tokens.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/shared/style-tokens.logic.test.ts
+ ❯ tests/unit/src/shared/style-tokens.logic.test.ts:43:40
+     41| test("test_style_color", async () => {
+     42|   // 準備
+     43|   const { STYLE_COLORS, styleColor } = await loadTokens();
+       |                                        ^
+     44|   // 実行・検証
+     45|   expect(styleColor({ name: "userBand", theme: "light-daltonized" })).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/53]⎯
+
+ FAIL  |unit| tests/unit/src/shared/style-tokens.logic.test.ts > test_style_colors_match_css
+Error: Cannot find module '/src/shared/style-tokens.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style/tests/unit/src/shared/style-tokens.logic.test.ts
+ ❯ tests/unit/src/shared/style-tokens.logic.test.ts:54:28
+     52| test("test_style_colors_match_css", async () => {
+     53|   // 準備
+     54|   const { STYLE_COLORS } = await loadTokens();
+       |                            ^
+     55|   const theme = await readDefaultTheme();
+     56|   const withCss = Object.values(STYLE_COLORS).filter(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/53]⎯
+
+
+ Test Files  10 failed (10)
+      Tests  53 failed (53)
+   Start at  21:35:42
+   Duration  499ms (tests 65%, import 18%, transform 12%, worker 5%)
+

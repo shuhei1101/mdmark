@@ -1,0 +1,336 @@
+/* Claude Code のターミナル版の画面のモック（#699 で共有するアセット）
+   端末の等幅の文字の格子を、1 文字 = 1ch・1 行 = 1lh で再現する。
+   色・罫線の色は採用スタイルの変数（mdmark の共通スタイル）から取る。 */
+
+/* 場面の切り替え（preview.js が付ける hidden）を、行の display より優先する */
+.term [hidden] {
+  display: none !important;
+}
+
+/* ---- 端末の枠 ---- */
+.term {
+  /* 端末の配色: 地は暗い面、文字は明るい灰。明るい端末のテーマのときは反転する */
+  --term-bg: #1e1e1e;
+  --term-fg: #d4d4d4;
+  --term-dim: #a8a8a8;
+  --term-user-band: #373737;
+  --term-card-bg: #2b2b2b;
+  --term-rule: #5a5a5a;
+  /* 共通スタイルの暗い配色の値（assets/style.css の暗い配色と同じ値） */
+  --term-heading: #7aa2ff;
+  --term-link: #5eead4;
+  --term-code: #e5c07b;
+  --term-note: #7aa2ff;
+  --term-warning: #fbbf24;
+  --term-term-line: #c4a7ff;
+  --term-code-bg: #2a2d33;
+
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", "Menlo", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--term-bg);
+  color: var(--term-fg);
+  border-radius: 8px;
+  padding: 1lh 2ch;
+  max-width: 100ch;
+}
+
+body.vscode-light .term {
+  --term-bg: #fafafa;
+  --term-fg: #1f2328;
+  --term-dim: #57606a;
+  --term-user-band: #e8e8e8;
+  --term-card-bg: #ffffff;
+  --term-rule: #b0b7c0;
+  --term-heading: #1d4ed8;
+  --term-link: #0f766e;
+  --term-code: #9a6700;
+  --term-note: #1d4ed8;
+  --term-warning: #b45309;
+  --term-term-line: #6d28d9;
+  --term-code-bg: #eef1f5;
+}
+
+.term p,
+.term ul,
+.term pre {
+  margin: 0;
+}
+
+/* 画面の題: 読み上げにだけ渡す（見た目は端末の画面のまま） */
+.term-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- 行の種類 ---- */
+.term-row {
+  display: flex;
+  gap: 1ch;
+  margin-block: 0 1lh;
+}
+
+/* 行頭の記号（返答の ●・発言の ❯）は 2 桁ぶん取り、本文の頭をそろえる */
+.term-mark {
+  flex: none;
+  width: 1ch;
+  color: var(--term-fg);
+}
+
+.term-body {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+/* 自分の発言: 標準の描画と同じ背景の帯 */
+.term-user {
+  background: var(--term-user-band);
+  padding-inline: 1ch;
+  margin-inline: -1ch;
+}
+
+.term-dim {
+  color: var(--term-dim);
+}
+
+/* ---- 標準の描画（Claude Code の Markdown の描き方） ---- */
+.std-heading {
+  font-weight: 700;
+}
+
+.std-code {
+  color: var(--term-code);
+}
+
+/* ---- mdmark-style が描き換えた部品 ---- */
+.ms-heading {
+  font-weight: 700;
+  color: var(--term-heading);
+}
+
+.ms-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.ms-list li::before {
+  content: "• ";
+}
+
+.ms-inline-code {
+  color: var(--term-code);
+}
+
+/* 表: 罫線の文字と同じく 1 文字分の線で囲み、列の区切りも 1 文字分の線にする */
+.ms-table {
+  border-collapse: collapse;
+  border: 1px solid var(--term-rule);
+  margin-block: 0.5lh;
+}
+
+.ms-table th,
+.ms-table td {
+  border: 1px solid var(--term-rule);
+  padding: 0 1ch;
+  text-align: left;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* <!-- table: {"kind": "data"} --> の表: 見出しの行を強調する */
+.ms-table.is-data th {
+  font-weight: 700;
+  border-bottom-width: 2px;
+}
+
+/* 注意書き: 種類の色の縦線と、先頭の種類のラベル */
+.ms-callout {
+  display: flex;
+  gap: 1ch;
+  margin-block: 0.5lh;
+  color: var(--term-fg);
+}
+
+.ms-callout::before {
+  content: "┃";
+  color: var(--ms-callout-color);
+}
+
+.ms-callout.is-note {
+  --ms-callout-color: var(--term-note);
+}
+
+.ms-callout.is-warning {
+  --ms-callout-color: var(--term-warning);
+}
+
+.ms-callout-label {
+  display: block;
+  font-weight: 700;
+  color: var(--ms-callout-color);
+}
+
+/* コード: Code 部品の言語の色分けを模した 2 色 */
+.ms-code {
+  margin-block: 0.5lh;
+  padding-left: 2ch;
+}
+
+.ms-code .kw {
+  color: #569cd6;
+}
+
+.ms-code .num {
+  color: #b5cea8;
+}
+
+body.vscode-light .ms-code .kw {
+  color: #0550ae;
+}
+
+body.vscode-light .ms-code .num {
+  color: #116329;
+}
+
+/* ---- 用語のマーカー ---- */
+/* カードの起点は用語ではなく行（段落）の頭。行のすぐ下に出し、端末の右端を越えない */
+.term p {
+  position: relative;
+}
+
+.ms-term {
+  text-decoration: underline;
+  text-decoration-color: var(--term-term-line);
+  text-underline-offset: 0.2em;
+}
+
+/* hover で開くカード: 背景で後ろの行を隠し、いちばん手前に出す */
+.ms-term-card {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1;
+  display: none;
+  width: max-content;
+  /* カードの幅は 48 桁までで、行の幅（端末の幅）を超えない */
+  max-width: min(48ch, 100%);
+  padding: 0 1ch;
+  background: var(--term-card-bg);
+  border: 1px solid var(--term-rule);
+  border-radius: 4px;
+  color: var(--term-fg);
+  text-decoration: none;
+  white-space: normal;
+}
+
+.ms-term:hover .ms-term-card,
+.ms-term.is-open .ms-term-card {
+  display: block;
+}
+
+.ms-term-card-name {
+  display: block;
+  font-weight: 700;
+}
+
+/* 脚注: 本文の後ろに薄い色で、番号つきで並べる */
+.ms-footnotes {
+  margin-top: 0.5lh;
+  color: var(--term-dim);
+}
+
+.ms-footnote-ref {
+  color: var(--term-dim);
+  font-size: inherit;
+}
+
+/* 入力欄の帯（画面の下端の、Claude Code 自身の入力欄） */
+.term-prompt {
+  border-block: 1px solid var(--term-rule);
+  padding-block: 0;
+  margin-top: 1lh;
+}
+
+/* デバッグログの見本（用語集を読めない場面）: 端末の画面の外に、見出しつきで置く */
+.term-debug {
+  max-width: 100ch;
+  margin-top: 1.5rem;
+}
+
+.term-debug h2 {
+  font-size: 1rem;
+  margin-block: 0 0.5rem;
+}
+
+.term-log {
+  margin: 0;
+  padding: 0.5em 1ch;
+  border: 1px dashed currentColor;
+  border-radius: 4px;
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", "Menlo", monospace;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+/* 場面の切り替え（hidden）を、端末の外の見本にも効かせる */
+.term-debug[hidden] {
+  display: none;
+}
+
+/* コードブロック: 本文と分ける背景の面と、右上の言語のラベル（mod では Box の backgroundColor と Text） */
+.ms-code-block {
+  position: relative;
+  margin-block: 0.5lh;
+  background: var(--term-code-bg);
+}
+
+.ms-code-block .ms-code {
+  margin: 0;
+  padding: 0.5lh 2ch;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.ms-code-lang {
+  position: absolute;
+  top: 0;
+  right: 1ch;
+  color: var(--term-dim);
+}
+
+/* 開閉の範囲: 端末の Button の [ ▸ ラベル ] の見た目。押すと開き、▾ に変わる */
+.ms-fold {
+  margin-block: 0.5lh;
+}
+
+.ms-fold summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--term-link);
+}
+
+.ms-fold summary::-webkit-details-marker {
+  display: none;
+}
+
+.ms-fold-icon::before {
+  content: "▸";
+}
+
+.ms-fold[open] .ms-fold-icon::before {
+  content: "▾";
+}
+
+.ms-fold > p {
+  padding-left: 2ch;
+}
+
+/* 狭い端末の表: 列の幅を端末の幅に収め、セルの中で折り返す */
+.ms-table td {
+  white-space: normal;
+}

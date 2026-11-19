@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>claude-code-term-card（Claude Code の画面の用語のカードと脚注） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- Claude Code のターミナル版の画面（#699 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/699/assets/terminal.css">
+  <!-- 端末のテーマの切り替え（#69 で共有するアセット。モックだけの仕組み） -->
+  <script src="../../refs/69/assets/preview.js" defer></script>
+  <style>
+    /* カタログだけの規則: 状態ごとの見本の間隔と、開いたカードの高さぶんの余白 */
+    .catalog-item {
+      margin-block: 0 2rem;
+    }
+
+    .catalog-item h2 {
+      font-size: 1rem;
+      margin-block: 0 0.5rem;
+    }
+
+    .catalog-item .term {
+      padding-bottom: 6lh;
+    }
+  </style>
+</head>
+<body>
+  <!-- モック専用の操作列: 端末のテーマ -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="端末のテーマ">
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <h1 class="term-title">Claude Code の画面の用語のカードと脚注</h1>
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../index.md">components</a> / claude-code-term-card
+    </nav>
+
+    <section class="catalog-item" aria-labelledby="state-closed">
+      <h2 id="state-closed">閉じた状態（下線と脚注）</h2>
+      <div class="term">
+        <p><span class="ms-term">WS<sup class="ms-footnote-ref">[1]</sup></span> の記録を確認する</p>
+        <p class="ms-footnotes">[1] WS: 話し合いの記録を配置するフォルダ</p>
+      </div>
+    </section>
+
+    <section class="catalog-item" aria-labelledby="state-open">
+      <h2 id="state-open">ポインターを乗せた状態（カードが後ろの行を隠して手前に出る）</h2>
+      <div class="term">
+        <p><span class="ms-term is-open">WS<sup class="ms-footnote-ref">[1]</sup><span class="ms-term-card" role="tooltip"><span class="ms-term-card-name">WS（ワークスペース）</span>話し合いの記録を配置するフォルダ</span></span> の記録を確認する</p>
+        <p class="term-dim">⎿ Listed 1 directory</p>
+        <p class="ms-footnotes">[1] WS: 話し合いの記録を配置するフォルダ</p>
+      </div>
+    </section>
+
+    <section class="catalog-item" aria-labelledby="state-long">
+      <h2 id="state-long">意味が長い（カードの中で折り返す。最大 48 桁）</h2>
+      <div class="term">
+        <p><span class="ms-term is-open">エイリアス<sup class="ms-footnote-ref">[1]</sup><span class="ms-term-card" role="tooltip"><span class="ms-term-card-name">エイリアス</span>用語・文書の別名・コマンドなどを本文の語に当てるための語。mdmark.config.yaml の aliases に、documents の行と同じスキーマの元の行を並べて登録する</span></span> を登録する</p>
+      </div>
+    </section>
+
+    <section class="catalog-item" aria-labelledby="state-footnote-only">
+      <h2 id="state-footnote-only">hover のカードをオフにした状態・マウスを使用できない端末（脚注だけ）</h2>
+      <div class="term">
+        <p><span class="ms-term">WS<sup class="ms-footnote-ref">[1]</sup></span> の記録を確認する</p>
+        <p class="ms-footnotes">[1] WS: 話し合いの記録を配置するフォルダ</p>
+      </div>
+    </section>
+
+    <section class="catalog-item" aria-labelledby="state-many">
+      <h2 id="state-many">1 つの発言に用語が 3 つ（脚注は出た順の番号。下線はメッセージごとに最初の出現だけで、見出し・表・コードの中には付けない）</h2>
+      <div class="term">
+        <p><span class="ms-term">mdmark<sup class="ms-footnote-ref">[1]</sup></span> の <span class="ms-term">WS<sup class="ms-footnote-ref">[2]</sup></span> に <span class="ms-term">エイリアス<sup class="ms-footnote-ref">[3]</sup></span> を登録する</p>
+        <p class="ms-footnotes">[1] mdmark: Markdown 文書の表示を各アプリで共通に使用するライブラリ<br>[2] WS: 話し合いの記録を配置するフォルダ<br>[3] エイリアス: 用語・文書の別名・コマンドなどを本文の語に当てるための語</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

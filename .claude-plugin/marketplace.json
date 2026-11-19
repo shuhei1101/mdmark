@@ -6,6 +6,11 @@
       "name": "mdmark",
       "source": "./plugin",
       "description": "mdmark の記法・部品・図の描き方の索引と、書き出し・点検・索引の操作を Claude Code に提供する"
+    },
+    {
+      "name": "mdmark-style",
+      "source": "./mdmark-style",
+      "description": "Claude Code の返答と発言を、mdmark の共通スタイル（表・見出し・注意書き・コードブロック・開閉の範囲・用語のマーカー）で描く mod"
     }
   ]
 }
