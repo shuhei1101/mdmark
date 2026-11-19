@@ -993,7 +993,7 @@ settings:
     status: planned
     notes:
       実装: src/config.ts#resolveMapConfig
-  - key: features.markdown-export
+  - key: features.markdown-buttons
     title: Markdown のコピーとエクスポートのボタンの機能
     file: mdmark.config.yaml
     type: boolean

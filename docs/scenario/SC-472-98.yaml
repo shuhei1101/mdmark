@@ -97,7 +97,7 @@ scenarios:
   - name: 正常シナリオ（ボタンを消す）
     setup:
       - name: ボタンを消す設定で描いたページ
-        description: 設定の `features.markdown-export` を `false` にして、正常シナリオ（コピーする）と同じ文書を描いたページ
+        description: 設定の `features.markdown-buttons` を `false` にして、正常シナリオ（コピーする）と同じ文書を描いたページ
       - name: Mock
         description: 差し替える依存は無い
     flow: |-

@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/700#discussion_r4628672061
+  - topic: ボタンのオン・オフの設定のキー
+    decision: '`features.markdown-buttons`（真偽値、既定 `true`）を追加する（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 592f0484
+    thread: https://github.com/shuhei1101/mdmark/pull/700#discussion_r4628836109
