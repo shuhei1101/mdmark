@@ -1338,6 +1338,9 @@ type SeqMessagePart = {
   packet: PacketPath | undefined;
 };
 
+/** 自分へのメッセージの折り返しの寸法（px）。ラベルの札（高さ 20px）は折り返しの上の辺から `labelGap` だけ上に離す */
+const SEQ_SELF = { width: 40, rise: 8, labelGap: 6, labelHalf: 10 } as const;
+
 /** メッセージの線の形（自分へのメッセージは右へ折り返す） */
 type SeqGeometry = {
   y: number;
@@ -1363,7 +1366,7 @@ const seqMessageGeometry = (
       self: true,
       start: x1,
       end: x2,
-      d: `M${x1} ${y - 8}H${x1 + 40}V${y + 8}H${x1 + 4}`,
+      d: `M${x1} ${y - SEQ_SELF.rise}H${x1 + SEQ_SELF.width}V${y + SEQ_SELF.rise}H${x1 + 4}`,
     };
   }
   const { sequence } = context.args;
@@ -1466,7 +1469,14 @@ const seqMessageLabel = (
 ): string => {
   const { message, item, geometry, dim } = entry;
   const number = context.args.sequence.autonumber ? `${message + 1} ` : "";
-  return `<span class="mdmark-diagram-label${dim}" data-message="${message}" style="left:${(geometry.start + geometry.end) / 2}px;top:${geometry.y - 14}px">${escapeHtml(number)}${context.marker.render(item.text)}</span>`;
+  // 自分へのメッセージの札は、折り返しの左右の中央の上に、折り返しの線と重ねずに置く
+  const left = geometry.self
+    ? geometry.start + SEQ_SELF.width / 2
+    : (geometry.start + geometry.end) / 2;
+  const top = geometry.self
+    ? geometry.y - SEQ_SELF.rise - SEQ_SELF.labelGap - SEQ_SELF.labelHalf
+    : geometry.y - 14;
+  return `<span class="mdmark-diagram-label${dim}" data-message="${message}" style="left:${left}px;top:${top}px">${escapeHtml(number)}${context.marker.render(item.text)}</span>`;
 };
 
 /** メッセージの線に流すデータの印 */
