@@ -1,0 +1,28 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: changed
+    detail: 参加者のノードとライフラインにポインターを合わせている間、その参加者を選んだときと同じ強調を出し、外すと戻る期待結果を追加する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: 再生中の強調の上を通るポインターで、再生の表示が崩れないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: 読者ができることに、参加者のノードとライフラインにポインターを合わせたときの強調を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T17:58:58.245647+00:00'
+scope_out:
+  - item: 構成図（flowchart）のノードにポインターを合わせたときの強調
+    reason: 要望はシーケンス図の参加者とライフラインだけを挙げている
+    plan: none
+  - item: 薄くした要素のコントラスト
+    reason: 薄くする見せ方の色を扱う別の Issue
+    plan: '#678'
+  - item: MindStella の画面の CSS の修正
+    reason: 参加者とライフラインのポインターの処理が無いのは mdmark の src/map/sequence-view.ts で、MindStella の側は直さない
+    plan: none

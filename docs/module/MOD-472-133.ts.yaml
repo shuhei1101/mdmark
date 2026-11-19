@@ -390,7 +390,7 @@ functions:
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる
-    description: 寸法は `MAP_SEQ` で決める。参加者の行の背景は、CSS（`src/index.css`）で表示する枠の枠線とツールの行の線の内側に収める
+    description: 寸法は `MAP_SEQ` で決める。参加者の行の背景は、CSS（`src/index.css`）で表示する枠の枠線とツールの行の線の内側に収める。ライフラインごとに、同じ座標の透明な判定の線（`line.map-lifeline-hit[data-lifeline]`。幅と `pointer-events` は CSS で `.map-wire-hit` と同じ）を、メッセージの線より前（下）に描く
     scope: public
     args:
       - name: args
@@ -431,6 +431,12 @@ functions:
         condition: '部品の Default の引数に、`terms` が `{"mount": "意味"}`、`selected` が `["mount"]`'
         mock: なし
         expected: '`mount` の参加者の箱（`div.map-participant`）が `tabindex`・`role`・`aria-keyshortcuts`・`aria-label` を持たず `data-selected` を持ち、先頭の子の `span.mdmark-diagram-node-hit` が `role="button"`・`tabindex="0"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight"`・`aria-label="mount（選択中）"` を持つ。名前の中の `span.mdmark-term` は `span.mdmark-diagram-node-hit` の中に無い'
+      - name: test_render_map_sequence_when_lifeline_hits
+        case: 正常
+        summary: ライフラインの判定の線
+        condition: 部品の Default の引数
+        mock: なし
+        expected: 参加者ごとに `line.map-lifeline-hit` が 1 本あり、`data-lifeline`・`x1`・`y1`・`x2`・`y2` がその参加者の `line.mdmark-diagram-lifeline` と同じで、文書の順でどの `.map-wire-hit[data-message]` よりも前にある
   - name: renderMapErDiagram
     title: mapのER図のHTML
     kind: 関数
