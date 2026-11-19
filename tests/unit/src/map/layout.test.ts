@@ -275,17 +275,53 @@ test("test_route_wires_when_via", async () => {
   }
 });
 
-// 全角 30 文字（正常系）
-test("test_wrap_label", async () => {
+// 右の余白を加えた幅で 1 行に収まる名前（正常系）
+test("test_layout_map_when_name_fits_with_right_padding", async () => {
   // 準備
-  const { wrapLabel } = await loadLayout();
+  const { leafHeight } = await loadLayout();
   // 実行
-  const lines = wrapLabel("あ".repeat(30), 220);
+  const layout = await laid({}, {}, { source: "flowchart LR\n  A[データベース]\n" });
   // 検証
-  expect(lines.length).toBeGreaterThanOrEqual(2);
-  for (const line of lines) {
-    expect(line.length * 14).toBeLessThanOrEqual(200);
-  }
+  const node = layout.nodes.find((item) => item.id === "A");
+  expect(node?.w).toBe(122);
+  expect(node?.h).toBe(leafHeight(1));
+  expect(node?.lines).toHaveLength(1);
+});
+
+// 右の余白を除いた幅で折り返す名前（正常系）
+test("test_layout_map_when_name_wraps_with_right_padding", async () => {
+  // 準備
+  const { leafHeight } = await loadLayout();
+  const name = "あ".repeat(14);
+  // 実行
+  const layout = await laid(
+    {},
+    {},
+    { nodeFit: "height", source: `flowchart LR\n  A[${name}]\n` },
+  );
+  // 検証
+  const node = layout.nodes.find((item) => item.id === "A");
+  expect(node?.w).toBe(220);
+  expect(node?.lines).toHaveLength(2);
+  expect(node?.h).toBe(leafHeight(2));
+});
+
+// 幅を指定したノードの折り返し（正常系）
+test("test_layout_map_when_width_with_right_padding", async () => {
+  // 準備
+  const { leafHeight } = await loadLayout();
+  const name = "あ".repeat(12);
+  // 実行
+  const layout = await laid(
+    {},
+    { A: { width: 200 } },
+    { source: `flowchart LR\n  A[${name}]\n` },
+  );
+  // 検証
+  const node = layout.nodes.find((item) => item.id === "A");
+  expect(node?.w).toBe(200);
+  expect(node?.lines).toHaveLength(2);
+  expect(node?.h).toBe(leafHeight(2));
 });
 
 // 行の数の高さ（正常系）
