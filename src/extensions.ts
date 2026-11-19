@@ -25,6 +25,10 @@ export type MdmarkExtension = {
   load: () => Promise<MdmarkExtensionModule>;
   /** 引数を検査する Standard Schema */
   schema?: StandardSchemaV1<MdmarkMarkArgs> | undefined;
+  /** 書き出しのフック。`toPureMarkdown` だけが呼び、返却した Markdown をマーカーの場所に入れる */
+  toMarkdown?:
+    | ((value: MdmarkMarkArgs) => string | Promise<string>)
+    | undefined;
 };
 
 /** 記載の警告に並べる 1 項目 */
@@ -51,7 +55,7 @@ export const RESERVED_DIRECTIVES: ReadonlySet<string> = new Set([
 /** 拡張の登録表: `directive` から拡張を参照する。ページに 1 つ */
 const extensions = new Map<string, MdmarkExtension>();
 
-/** 拡張の `name`・`directive`・`load`・`schema` が型に合わなければ、合わないところの文言 */
+/** 拡張の `name`・`directive`・`load`・`schema`・`toMarkdown` が型に合わなければ、合わないところの文言 */
 function shapeError(extension: MdmarkExtension): string | undefined {
   if (typeof extension.name !== "string" || extension.name === "") {
     return "name が空";
@@ -65,11 +69,22 @@ function shapeError(extension: MdmarkExtension): string | undefined {
   if (typeof extension.load !== "function") {
     return "load が関数でない";
   }
+  return optionalShapeError(extension);
+}
+
+/** 省略できる `schema`・`toMarkdown` が型に合わなければ、合わないところの文言 */
+function optionalShapeError(extension: MdmarkExtension): string | undefined {
   if (
     extension.schema !== undefined &&
     typeof extension.schema["~standard"]?.validate !== "function"
   ) {
     return "schema が ~standard.validate を持たない";
+  }
+  if (
+    extension.toMarkdown !== undefined &&
+    typeof extension.toMarkdown !== "function"
+  ) {
+    return "toMarkdown が関数でない";
   }
   return undefined;
 }
