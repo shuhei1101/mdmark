@@ -49,14 +49,14 @@ styles:
         value: 表を行ごとに縦に並べ、見出し行を隠し、`td::before` に `attr(data-label)` で列名を出す。セルの統一は列の配置の class より強い指定で `start` に戻す
       - class_name: :root（記法）
         target: 記法の変数の既定
-        value: '`--mdmark-color-table-head`・`--mdmark-color-callout-note`・`-tip`・`-important`・`-warning`・`-caution`・`--mdmark-sticky-top`（`0px`。見出し行を留める画面の上端からのずれ）・`--mdmark-color-code-highlight-bg`（`#fef3c7`、ダーク `#5c4a12`）・`--mdmark-color-code-highlight-line`（`#b45309`、ダーク `#fbbf24`）・ファイルの種類のアイコンの色 `--mdmark-color-file-text`・`-code`・`-config`・`-image`・`-sheet`・`-archive`・`-script`（値とダークの値は `docs/mock/refs/225/assets/tree.css`）。値とダークの値は `docs/mock/assets/style.css`'
+        value: '`--mdmark-color-table-head`・`--mdmark-color-callout-note`・`-tip`・`-important`・`-warning`・`-caution`・`--mdmark-sticky-top`（`0px`。見出し行を留める、スクロールする場所の上端からのずれ）・`--mdmark-color-code-highlight-bg`（`#fef3c7`、ダーク `#5c4a12`）・`--mdmark-color-code-highlight-line`（`#b45309`、ダーク `#fbbf24`）・ファイルの種類のアイコンの色 `--mdmark-color-file-text`・`-code`・`-config`・`-image`・`-sheet`・`-archive`・`-script`（値とダークの値は `docs/mock/refs/225/assets/tree.css`）。値とダークの値は `docs/mock/assets/style.css`'
       - class_name: .mdmark .mdmark-table ほか記法の class
         target: 記法の部品
         value: '部品設計（表・注意書き・タブ・ステップ・ファイルツリー・バッジ・目次・セクション・行の詳細・図表の番号・記載の警告・コードブロック）の HTML に適用する規則。
 
-          表は縦の高さの上限を持たず（横にはみ出す表は表の中で横にスクロールする）、見出し行と集計の行はページのスクロールで留める。
+          表は縦の高さの上限を持たず（横にはみ出す表は表の中で横にスクロールする）、見出し行と集計の行はスクロールする場所のスクロールで留める。
 
-          留め方は `root` の `data-mdmark-sticky` で分け、`timeline` は `@supports (animation-timeline: view()) and (animation-range: 0% 100%)` の中で `view-timeline`（inset は `var(--mdmark-sticky-top, 0px) 0px`）と `--mdmark-sticky-head-start`・`-head-max`・`-foot-max`・`-foot-end` の `animation-range` で動かし、`script` は `--mdmark-sticky-head-shift`・`-foot-shift` の `transform: translateY()` で動かす。
+          留め方は、表ごとの留める要素（`attachStickyRows` が属性を付ける、表を包む `.mdmark-table-scroll` か `table`）の `data-mdmark-sticky` で分ける。留める規則は `.mdmark` の `&` を起点にせず `[data-mdmark-sticky]` を起点にし、`mount` の本文の列（`.mdmark-content`）の中でも、表の部品で包まない表にも当てる。`[data-mdmark-sticky]` の中の見出し行と集計の行のセルは、表の部品と同じく `position: relative`・`z-index: 3` と見出し行の面の色を持つ。`timeline` は `@supports (animation-timeline: view()) and (animation-range: 0% 100%)` の中で `view-timeline`（inset は `var(--mdmark-sticky-top, 0px) 0px`）と `--mdmark-sticky-head-start`・`-head-max`・`-foot-max`・`-foot-end` の `animation-range` で動かし、`script` は `--mdmark-sticky-head-shift`・`-foot-shift` の `transform: translateY()` で動かす。
 
           集計の行は計算ごとの行を面の色でつなぎ、`max-width: 768px` ではセルの上下の余白を `0.2em` に詰める。
 
