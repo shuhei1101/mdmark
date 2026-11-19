@@ -67,7 +67,7 @@ notes:
     `claude plugin validate` はまとめた後のファイルで `$` の渡り先をたどるため、次を守る。
 
 
-    - `register`・フック（`renderReply`・`renderUserMessage`・`injectMarkerGuide`）と、`$` を受け取る関数は `function` 宣言にする（esbuild は最上位の `const` を `var` にするため、`const` のアロー関数を読めない）
+    - `register`・フック（`renderReply`・`renderUserMessage`・`injectMarkerGuide`）と、`$` を受け取る関数は `function` 宣言にする（esbuild は最上位の `const` を `var` にするため、`var` に束ねた関数は渡り先として認められない。外部ライブラリ LIB-472-1 の制限「mod の `$` の渡り先」）
 
     - `$` は関数の先頭の引数で渡し、オブジェクトに入れない。`$` の機能を他の関数へ渡すときは、`$.ui.copy(args)` のように `$` を記載したアロー関数で包む'
 tags:

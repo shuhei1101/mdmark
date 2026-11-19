@@ -27,7 +27,7 @@ constants:
         value: 明るい配色 `#eef1f5`、暗い配色 `#2a2d33`
         description: コードブロックの背景の面。合意したモックの値
       - key: userBand
-        value: 暗い配色 `#3a3a3a`、明るい配色 `#f0f0f0`（Claude Code 2.1.328 の明るいテーマの `userMessageBackground` の `rgb(240, 240, 240)`）
+        value: 暗い配色 `#3a3a3a`、明るい配色 `#f0f0f0`（Claude Code 2.1.328 の配布物の明るいテーマの `userMessageBackground` の `rgb(240, 240, 240)`。取った箇所は `docs/pr/699/テスト結果/20261119215519_73687ecc_発言の背景の色.log`）
         description: Claude Code の標準の発言の背景の帯の色。`css` を持たない
     refs:
       - IF-472-45#constraints[色]

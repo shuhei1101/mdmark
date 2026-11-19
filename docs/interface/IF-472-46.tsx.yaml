@@ -81,7 +81,7 @@ constraints:
     constraint: '`parts.footnote` が `true` のとき、下線の用語の後ろに出た順の番号 `[n]` を薄い色で付け、本文の後ろに `[n] {名前}: {意味}` の行を薄い色で並べる'
   - item: 背景の帯
     constraint: 発言の Box の `backgroundColor` を、Claude Code の標準の発言の帯と同じ色にする。色は `$.settings.read()` の `theme` が `light` で始まるときは明るい配色、それ以外は暗い配色の値（暗い配色は `#3a3a3a`。256 色の 237 と同じ色）を、共通スタイルの定義に 16 進で持ち、そこから取る。行頭の `❯` とその色も標準の発言と同じにする
-    notes: '`next(e)` の戻り値は中を読めない参照（`{type: "engine"}`）で、標準の発言の Text だけを書き換えられないため、帯ごと自分で描く。明るい配色の値は実装で同じ方法（`tmux capture-pane -e`）で測る'
+    notes: '`next(e)` の戻り値は中を読めない参照（`{type: "engine"}`）で、標準の発言の Text だけを書き換えられないため、帯ごと自分で描く。明るい配色の値は、Claude Code の配布物の明るいテーマの `userMessageBackground` から取る（外部ライブラリ LIB-472-1 の制限「標準の発言の背景の色」）'
   - item: 読み直し
     constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で読み直す
 flows:

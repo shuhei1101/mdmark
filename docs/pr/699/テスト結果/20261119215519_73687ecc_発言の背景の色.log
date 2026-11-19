@@ -1,0 +1,14 @@
+# Claude Code の標準の発言の背景の色を、配布物から読んだ記録（2.1.328 (Claude Code)）
+
+配布物: $(readlink -f $(which claude)) = /home/shuhei2441/.local/share/claude/versions/2.1.328
+
+$ python3 で配布物から userMessageBackground:"..." を探し、その前の text:"..." の値と並べる
+offset 312573316: userMessageBackground=rgb(240, 240, 240)  直前の text=rgb(0,0,0)
+offset 312575670: userMessageBackground=ansi:white  直前の text=ansi:black
+offset 312578034: userMessageBackground=ansi:blackBright  直前の text=ansi:whiteBright
+offset 312580437: userMessageBackground=rgb(220, 220, 220)  直前の text=rgb(0,0,0)
+offset 312582924: userMessageBackground=rgb(55, 55, 55)  直前の text=rgb(255,255,255)
+offset 312585402: userMessageBackground=rgb(55, 55, 55)  直前の text=rgb(255,255,255)
+
+text が rgb(0,0,0) で userMessageBackground が rgb(240, 240, 240) の定義を明るいテーマ（light）、rgb(255,255,255) と rgb(55, 55, 55) の定義を暗いテーマとして読んだ。
+暗い配色の #3a3a3a は、ターミナルで tmux capture-pane -e が返した 256 色の 237（rgb(55, 55, 55) に最も近い 256 色）の値。明るい配色は rgb(240, 240, 240) を #f0f0f0 にした。
