@@ -87,6 +87,11 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-19T13:36:48.462720+00:00'
+  - page: docs/guide/記法.mark.md
+    change: 右側の目次のセクションに Markdown のボタンの並びと働きを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T13:40:37.250826+00:00'
 scope_out:
   - item: VS Code 拡張機能のコマンドからの Markdown への書き出し
     reason: 要望は MCP・CLI・ビュワーのボタンに限る。プレビューは mount で描くため、ボタンが出るかは画面設計で確かめる
