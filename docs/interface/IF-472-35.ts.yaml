@@ -10061,6 +10061,120 @@ flows:
     test: test_normal_when_plain_class_node_link_opened
     refs:
       - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
+  - name: 正常系（Markdown でコピーする）
+    summary: 右側の目次の頭のボタンで、描いた文書を純粋な Markdown にしてクリップボードへ書き込む
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: 描く先の要素の幅は 1280px
+      - name: 記法を持つ Markdown
+        description: 見出し・目次のマーカー・`chart` と、`div` の生の HTML を持つ文書
+      - name: Mock
+        description: クリップボードへの書き込みを許したブラウザーで開き、`navigator.clipboard.writeText` に渡った文字列を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 右側の目次を出して Markdown でコピーを押す
+        M->>M: toPureMarkdown
+        M->>P: クリップボードへ書き込み、アイコンを check に替える
+      ```
+
+      <!-- /map -->
+    expected:
+      - パネルの頭のボタンが、すべて展開・すべて折りたたむ・`Markdown でコピー`・`Markdown でエクスポート`・ピン止めの順に並ぶ
+      - 記録した文字列が、同じ Markdown を `toPureMarkdown` で変換した `markdown` と同じで、`<!--`・`div` のタグが 0 件
+      - 押した後、コピーのボタンのアイコンが `check` で、頭の下に見える通知が無い
+      - 2 秒後にアイコンが `copy` に戻る
+      - 押してから戻るまでの外への要求が 0 件
+    test: test_normal_when_markdown_copied
+  - name: 正常系（Markdown でエクスポートする）
+    summary: 右側の目次の頭のボタンで、最初の h1 を名前にした .md のファイルを保存させる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 見出しを持つ Markdown
+        description: 最初の h1 が `返信/の手順` の文書と、h1 を持たず h2 を持つ文書
+      - name: Mock
+        description: ブラウザーのダウンロードを受け取る
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: Markdown でエクスポートを押す
+        M->>M: toPureMarkdown
+        M->>P: .md のファイルを保存させる
+      ```
+
+      <!-- /map -->
+    expected:
+      - h1 を持つ文書のダウンロードの名前が `返信_の手順.md`
+      - h1 を持たない文書のダウンロードの名前が `document.md`
+      - ファイルの中身が、同じ Markdown を `toPureMarkdown` で変換した `markdown` と同じ
+    test: test_normal_when_markdown_exported
+  - name: 正常系（クリップボードへ書き込めない）
+    summary: クリップボードを拒まれたら、理由と選択した Markdown のパネルを出す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 見出しを持つ Markdown
+        description: 正常系（Markdown でコピーする）と同じ
+      - name: Mock
+        description: '`navigator.clipboard.writeText` が `NotAllowedError` で reject する'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: Markdown でコピーを押す
+        M->>P: クリップボードへ書き込む
+        P-->>M: 拒否
+        M->>P: 理由と選択した Markdown のパネルを出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - コピーのボタンのアイコンが `circle-alert`
+      - 頭の下のパネルの見出しに、アクセスが許可されていないことが出る
+      - パネルの入力欄が変換した Markdown の全文を選択している
+      - 閉じるボタンを押すとパネルが無くなり、本文は変わっていない
+      - 例外が外へ出ていない
+    test: test_normal_when_markdown_clipboard_denied
+  - name: 正常系（Markdown のボタンを配置しない）
+    summary: 機能がオフのときと右側の目次を配置しないときは、ボタンを配置しない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 描く文書
+        description: '`opts.config.features.markdown-buttons` を `false` にした見出しを持つ文書と、見出しを持たない文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>P: Markdown のボタンの無い文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - 機能をオフにした文書の右側の目次の頭に、`Markdown でコピー`・`Markdown でエクスポート` のボタンが無く、ほかのボタンはある
+      - 見出しを持たない文書の `el` の中に、どちらのボタンも無い
+    test: test_normal_when_markdown_buttons_off
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -10145,6 +10259,7 @@ callers:
   - SC-472-80#
   - SC-472-54#
   - SC-472-16#
+  - SC-472-98#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
@@ -11601,6 +11716,14 @@ constraints:
       | 引用 | - | 注意書きの開閉（`[!NOTE]` などの種類の末尾の `-`・`+`） |
 
       mermaid のコードブロックは制約『範囲の外の map の図に付く操作』に従う
+  - item: Markdown のコピーとエクスポートのボタン
+    constraint: |-
+      `markdown-buttons` がオンで右側の目次を配置するとき、パネルの頭のすべて展開・すべて折りたたむのボタンとピン止めのボタンの間に、アイコンだけの `Markdown でコピー`（lucide の `copy`）と `Markdown でエクスポート`（`download`）のボタン（`type="button"`。名前とツールチップはその文言）を配置する。右側の目次を配置しない文書には配置しない。
+      どちらも描いている Markdown（`update` の後は差し替えた Markdown）を `toPureMarkdown` で `opts.config`・`opts.index`・`opts.docId`・`opts.includes` を指定し、`opts.figure` を指定せずに変換する。
+      コピーは変換した文字列を `navigator.clipboard.writeText` に書き込み、書き込めたら通知を出さずにアイコンを `check` に替えて 2 秒で戻す。書き込めないとき（`navigator.clipboard` が無いか拒まれた）は、アイコンを `circle-alert` に替え、頭の下に表のコピーと同じパネルを、見出しに理由（拒まれたときはアクセスが許可されていないこと、`navigator.clipboard` が無いときはこのページでは使用できないこと）を添えて、変換した文字列を選択した状態で出し、閉じるまで残す。例外を外へ出さない。
+      エクスポートは変換した文字列を `text/markdown` の Blob にし、`a[download]` で保存させる。ファイルの名前は文書の最初の h1 の文字に `.md` を付けたもので、`/`・`\`・`:`・`*`・`?`・`"`・`<`・`>`・`|` と制御文字を `_` に置き換え、前後の空白と末尾の `.` を除く。h1 が無いか残る文字が空のときは `document.md`。
+      どちらのボタンも外へ要求しない。印刷ではボタンを出さない。`update` でもう一度付ける
+    notes: 見た目はピン止めのボタンと同じ。コピーした後に支援技術へ伝える方法は部品設計で決める
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画
