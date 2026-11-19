@@ -24,6 +24,56 @@
 | 描けない部品 | 図（mermaid・map）・埋め込んだ HTML は描き換えない | - |
 | 既存のプラグイン mdmark | 変えない | - |
 
+## PoC 結果
+
+Claude Code 2.1.328 のターミナル版（tmux の 160 列）に `--plugin-dir` で PoC の mod を読み込み、Haiku 5.5 に固定の Markdown を返答させて確認した（2026-11-19）。
+
+| 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
+| --- | --- | --- | --- | --- |
+| マーカーの受け取り | `AssistantMessage` の `e.props.text` に行内と単独の行の `<!-- ... -->` が元の文字のまま含まれる | ✅ 2 つとも含まれる | [#701](https://github.com/shuhei1101/mdmark/pull/701) | `evidence/assistant-text.txt` |
+| 返答の描き換え | 表が罫線、注意書きが左の縦線とラベル、見出しが太字、コードが Code 部品で描かれる | ✅ 4 つとも描かれる | 同上 | 見出しは太字と色、コードは言語の色分けつき（`evidence/screen-reply.ansi`） |
+| マーカーで描き方が変わる | `<!-- table: {"kind": "data"} -->` が有る表だけ先頭の行が太字になる | ✅ マーカーの有る表だけ太字 | 同上 | 同上 |
+| マーカーを画面に出さない | `<!--` の文字が画面に 0 件 | ✅ 0 件 | 同上 | 同上 |
+| 発言の描き換え | `UserMessage` の固定の 1 単語に下線が付く | ✅ 下線（`ESC[4m`） | 同上 | 脚注の行も描かれる |
+| hover のカード（tmux） | `ESC[?1003h` が有効で、用語の座標への移動でカードが出て、範囲外の座標への移動で消える | ✅ 出る・消える | 同上 | `evidence/mouse-modes.txt`・`hover-on.txt`・`hover-off.txt` |
+| hover のカード（利用者の端末） | WSL の Windows Terminal・VS Code の統合ターミナルでカードが出る | 未確認 | 同上 | 利用者の手元の確認を、設計の確認事項と合わせて依頼する |
+| マーカーの記載方法の注入 | `classic.SessionStart` の `additionalContext` の固定の単語を回答でき、`/clear` の後も回答できる | ✅ 2 回とも回答 | 同上 | SessionStart は `startup` と `clear` で 1 回ずつ発火（`evidence/session-start.txt`） |
+| 元の描画への切り替え | mod が例外を投げたとき、元の描画で返答が出る | ✅ 元の描画で出る | 同上 | 画面に `ui.render hook skipped: threw Error` の 1 行が出る（`--plugin-dir` で読み込んだとき） |
+
+結論は成立。
+`ui.render` の部品の木で返答・発言を描き換え、受け取った本文のマーカーで描き方を変え、マーカーを画面から削除できる。
+hover のカードは、マウスの移動を送信する端末で動く。
+設計で扱う点が 2 つ見つかった。
+
+- 表の列の幅を文字数で計算すると、全角の文字の列が狭くなる。列の幅は端末の表示幅（全角を 2 つ分）で計算する
+- 他の mod（alias-inject）が描く行と同じ返答の中に並ぶため、mod の描き換えは自分の受けた本文の範囲だけに留める
+
+最小再現コードの要点（[52e97244](https://github.com/shuhei1101/mdmark/commit/52e97244) の `poc/mdmark-style-mod/hooks/mod.tsx`）:
+
+```tsx
+on('classic.SessionStart', async ($, e, next) => {
+  const result = await next(e)
+  return { ...result, additionalContext: [...(result.additionalContext ?? []), GUIDE] }
+})
+
+on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
+  const { Box, Text, Code } = $.ui.resolve(e)
+  // e.props.text の Markdown をブロックに分け、マーカーの行は描かず、直後の表の描き方に使う
+  return <Box flexDirection="column">{parse(e.props.text).map(drawBlock)}</Box>
+})
+
+on('ui.render', { component: 'UserMessage' }, async ($, e, next) => (
+  <Box key="term">
+    <Text underline>{TERM}</Text>
+    <Box position="absolute" top={1} left={0} display="none" hover={{ display: 'flex' }} borderStyle="round">
+      <Text>CARD: {TERM_MEANING}</Text>
+    </Box>
+  </Box>
+))
+```
+
+PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直後の表の対応）と、`UserMessage` の keyed `Box` の中の非表示の `Box`（hover のカード）。
+
 ## テスト結果
 
 なし

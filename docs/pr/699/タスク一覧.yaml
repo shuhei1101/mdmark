@@ -15,7 +15,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T07:12:07.515075+00:00'
   - process: PoC 検証
-    status: todo
+    status: done
+    note: 成立。ターミナル版（tmux）で 8 観点を確認。利用者の端末の hover は未確認（設計の確認事項と合わせて依頼する）
+    updated_by: planner
+    updated_at: '2026-11-19T07:41:18.801369+00:00'
   - process: 複合ユースケース設計
     status: skipped
     reason: 足す単一 UC はそれぞれ Claude Code のフック 1 つで完結し、単一 UC の連鎖を変えない
