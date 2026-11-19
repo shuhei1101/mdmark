@@ -280,7 +280,11 @@ test("test_layout_map_when_name_fits_with_right_padding", async () => {
   // 準備
   const { leafHeight } = await loadLayout();
   // 実行
-  const layout = await laid({}, {}, { source: "flowchart LR\n  A[データベース]\n" });
+  const layout = await laid(
+    {},
+    {},
+    { source: "flowchart LR\n  A[データベース]\n" },
+  );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A");
   expect(node?.w).toBe(122);

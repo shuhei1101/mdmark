@@ -400,7 +400,8 @@ test("test_attach_map_flow_when_crowded", async () => {
 /** 絶対配置でない子要素 */
 const inFlowChildren = (element: Element): Element[] =>
   [...element.children].filter(
-    (child) => !["absolute", "fixed"].includes(getComputedStyle(child).position),
+    (child) =>
+      !["absolute", "fixed"].includes(getComputedStyle(child).position),
   );
 
 /**
@@ -443,23 +444,24 @@ const placeContent = (
   );
 };
 
+type Placed = Array<{ id: string; h: number }>;
+type Overrides = Record<string, { size?: { h: number } }>;
+
 /** 1 回目の配置の結果のノードかグループの高さと、2 回目の配置に指定した大きさの上書きの高さ */
 const measuredHeights = async (id: string) => {
   const layout = await loadLayout();
-  const layoutMap = vi.mocked(layout.layoutMap);
-  const first = layoutMap.mock.results[0]?.value as
-    | {
-        nodes: Array<{ id: string; h: number }>;
-        groups: Array<{ id: string; h: number }>;
-      }
-    | undefined;
-  const second = layoutMap.mock.calls[1]?.[2] as
-    | { overrides: Record<string, { size?: { h: number } }> }
-    | undefined;
-  const placed = [...(first?.nodes ?? []), ...(first?.groups ?? [])].find(
+  const { results, calls } = vi.mocked(layout.layoutMap).mock;
+  const first = (results[0]?.value ?? { nodes: [], groups: [] }) as {
+    nodes: Placed;
+    groups: Placed;
+  };
+  const second = (calls[1]?.[2] ?? { overrides: {} }) as {
+    overrides: Overrides;
+  };
+  const placed = [...first.nodes, ...first.groups].find(
     (item) => item.id === id,
   );
-  return { before: placed?.h, after: second?.overrides[id]?.size?.h };
+  return { before: placed?.h, after: second.overrides[id]?.size?.h };
 };
 
 /** 配置の呼び出しの記録を削除する */
@@ -476,7 +478,10 @@ test("test_attach_map_flow_when_closed_group_measured", async () => {
     `mdmark-map:${location.pathname}#1`,
     JSON.stringify({ collapsed: ["store"] }),
   );
-  placeContent('.map-closed-group[data-group="store"]', { above: 0, below: 10 });
+  placeContent('.map-closed-group[data-group="store"]', {
+    above: 0,
+    below: 10,
+  });
   // 実行
   await setUp();
   // 検証
