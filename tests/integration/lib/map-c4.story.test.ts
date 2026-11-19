@@ -1,7 +1,6 @@
 import type { Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import {
-  type Box,
   createBrowserHolder,
   expectCountBelowTitle,
   overlaps,
