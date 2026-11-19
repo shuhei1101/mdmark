@@ -1,4 +1,4 @@
-import { readFile, stat, writeFile } from "node:fs/promises";
+import { glob, readFile, stat, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { isMap, parse, parseDocument } from "yaml";
@@ -123,6 +123,85 @@ async function targetDocuments(loaded: LoadedConfig): Promise<string[]> {
   return [...documents];
 }
 
+/** 値を文字の並びにする（文字 1 つは並び 1 つ。並びの中の文字でない要素と、文字でも並びでもない値は飛ばす） */
+function stringsOf(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+  return typeof value === "string" ? [value] : [];
+}
+
+/** glob の並びに該当するパスを、フォルダからの相対パスで集める */
+async function globPaths(dir: string, patterns: string[]): Promise<string[]> {
+  const found: string[] = [];
+  for (const pattern of patterns) {
+    for await (const path of glob(pattern, { cwd: dir })) {
+      found.push(toPosix(path));
+    }
+  }
+  return found;
+}
+
+/** 検める前の設定の `build` の `include` に該当し `exclude` に該当しないファイルの絶対パス（`call` のスクリプトと同じく、`exclude` は集めたパスと一致するものだけを除く） */
+async function scriptBuildDocuments(
+  dir: string,
+  build: unknown,
+): Promise<string[]> {
+  const settings = isRecord(build) ? build : {};
+  const excluded = new Set(await globPaths(dir, stringsOf(settings.exclude)));
+  return (await globPaths(dir, stringsOf(settings.include)))
+    .filter((path) => !excluded.has(path))
+    .map((path) => resolve(dir, path));
+}
+
+/** 索引の YAML を読み込む。読み込めなければ `undefined`（`call` のスクリプトが移行の報告に挙げる） */
+async function readRawIndex(indexPath: string): Promise<unknown> {
+  try {
+    return parse(await readFile(indexPath, "utf8"));
+  } catch {
+    return undefined;
+  }
+}
+
+/** 検める前の設定の `index` が指す索引の `docs[].path` のうち、ファイルがあるものの絶対パス（索引を読み込めなければ空） */
+async function scriptIndexDocuments(
+  dir: string,
+  index: unknown,
+): Promise<string[]> {
+  if (typeof index !== "string") {
+    return [];
+  }
+  const indexPath = resolve(dir, index);
+  const read = await readRawIndex(indexPath);
+  const docs = isRecord(read) && Array.isArray(read.docs) ? read.docs : [];
+  const found: string[] = [];
+  for (const doc of docs) {
+    const path = isRecord(doc) ? doc.path : undefined;
+    if (typeof path !== "string") {
+      continue;
+    }
+    const absolute = resolve(dirname(indexPath), path);
+    if (await isFile(absolute)) {
+      found.push(absolute);
+    }
+  }
+  return found;
+}
+
+/** `call` のスクリプトと同じ集め方で、検める前の設定の `build` の対象と索引の `docs[].path` の文書の絶対パスを集める（重なりなし） */
+export async function collectScriptDocuments(
+  dir: string,
+  raw: unknown,
+): Promise<string[]> {
+  const settings = isRecord(raw) ? raw : {};
+  return [
+    ...new Set([
+      ...(await scriptBuildDocuments(dir, settings.build)),
+      ...(await scriptIndexDocuments(dir, settings.index)),
+    ]),
+  ];
+}
+
 /** 設定の `index` が指す、ある索引の絶対パス（無ければ `undefined`） */
 async function existingIndex(
   dir: string,
@@ -148,7 +227,13 @@ async function createTarget(options: {
   return {
     configPath,
     indexPath: await existingIndex(dir, config.index),
-    documents: await targetDocuments({ path: configPath, dir, config }),
+    // 手順のスクリプトは設定を検めずに読み込んで文書を集めるため、同じ集め方の文書も合わせる
+    documents: [
+      ...new Set([
+        ...(await targetDocuments({ path: configPath, dir, config })),
+        ...(await collectScriptDocuments(dir, raw)),
+      ]),
+    ],
     answers: new Map(),
   };
 }
