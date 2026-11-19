@@ -63,7 +63,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T05:09:52.635774+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T05:36:07.520646+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: ガイドは既に設定・索引・文書をコピーに取って戻すと記載しており、記載どおりの振る舞いへ修正するため、ガイドを変えない
