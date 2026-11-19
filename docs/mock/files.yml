@@ -1890,7 +1890,7 @@ files:
     tags: [topic:モック, tool:claude-code]
   - path: pages/claude-code-terminal/716/document-parts/index.html
     visibility: internal
-    description: '画面『claude-code-terminal』のモック: mdmark-style が返答の行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブ・段組み・カード・ビュー・wide・CSV・図表の番号を描いた画面と、行の詳細を開いた・ステップの部品をオフにした場面、mdmark-style なしの比較。画面の見え方を決めるときに参照する。'
+    description: '画面『claude-code-terminal』のモック: mdmark-style が返答の行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブ・段組み・カード・ビュー・wide・CSV・図表の番号を描いた画面と、行の詳細を開いた・ステップの部品をオフにした・ファイルツリーを解釈できない場面、mdmark-style なしの比較。画面の見え方を決めるときに参照する。'
     tags: [topic:モック, tool:claude-code, topic:ステップ, topic:ファイルツリー, topic:バッジ, topic:タブ]
   - path: refs/716/index.md
     visibility: internal

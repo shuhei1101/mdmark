@@ -29,6 +29,7 @@
       <a class="mock-bar-item" data-scene-value="styled">mdmark-style あり</a>
       <a class="mock-bar-item" data-scene-value="row-open">行の詳細を開いた</a>
       <a class="mock-bar-item" data-scene-value="steps-off">ステップの部品をオフ</a>
+      <a class="mock-bar-item" data-scene-value="tree-error">ファイルツリーを解釈できない</a>
       <a class="mock-bar-item" data-scene-value="standard">mdmark-style なし（比較）</a>
     </div>
   </div>
@@ -78,13 +79,13 @@
       </div>
 
       <!-- 返答: mdmark-style あり。本文の部品を描き換え、マーカーと記法の文字は出さない -->
-      <div class="term-row" data-scene="styled row-open steps-off">
+      <div class="term-row" data-scene="styled row-open steps-off tree-error">
         <span class="term-mark" aria-hidden="true">●</span>
         <div class="term-body">
           <p class="ms-heading">ビルドの手順</p>
 
           <!-- ステップ: 見出しの色の番号と、番号をつなぐ縦線 -->
-          <ol class="ms-steps" data-scene="styled row-open">
+          <ol class="ms-steps" data-scene="styled row-open tree-error">
             <li><span class="ms-step-num">1</span><span>依存を入れる</span></li>
             <li><span class="ms-step-line" aria-hidden="true">│</span></li>
             <li><span class="ms-step-num">2</span><span><span class="ms-kbd">[Ctrl]</span><span class="ms-kbd-join">+</span><span class="ms-kbd">[C]</span> で止めてから、もう一度ビルドする</span></li>
@@ -96,9 +97,17 @@
           </div>
 
           <!-- ファイルツリー: 罫線のまま等幅で描き、注釈を薄い色にする（# は出さない） -->
-          <pre class="ms-tree">mdmark/
+          <pre class="ms-tree" data-scene="styled row-open steps-off">mdmark/
 <span class="ms-tree-rule">├── </span>src/          <span class="ms-tree-note">ソース</span>
 <span class="ms-tree-rule">└── </span>README.md     <span class="ms-tree-note">説明</span></pre>
+          <!-- ファイルツリーを解釈できない場面（上の行より 2 階層以上深い行がある）: コードブロックの部品のまま描く -->
+          <div class="ms-code-block" data-scene="tree-error">
+            <span class="ms-code-lang">tree</span>
+            <pre class="ms-code">mdmark/
+├── src/ # ソース
+│   │   └── index.ts # 2 階層深い行
+└── README.md # 説明</pre>
+          </div>
 
           <!-- バッジ・文字の色・蛍光ペン -->
           <p>状態は <span class="ms-badge">完了</span> で、<span class="ms-text-red">注意</span> は <mark class="ms-highlight">決め手</mark> の 1 文だけです。</p>
@@ -107,7 +116,7 @@
           <p class="ms-figure-label">表 1</p>
           <table class="ms-table">
             <tr><th>名前</th><th>値</th></tr>
-            <tr><td><span class="ms-row-toggle" data-scene="styled steps-off">[ ▸ ]</span><span class="ms-row-toggle" data-scene="row-open">[ ▾ ]</span> りんご</td><td>10</td></tr>
+            <tr><td><span class="ms-row-toggle" data-scene="styled steps-off tree-error">[ ▸ ]</span><span class="ms-row-toggle" data-scene="row-open">[ ▾ ]</span> りんご</td><td>10</td></tr>
             <tr class="ms-row-detail" data-scene="row-open"><td colspan="2">りんごは青森県から届く。</td></tr>
             <tr><td>みかん</td><td>2</td></tr>
           </table>
