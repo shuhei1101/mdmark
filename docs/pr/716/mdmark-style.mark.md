@@ -67,9 +67,6 @@
 | --- | --- | --- | --- | --- |
 | `tests/unit/src/mdmark-style/inline-marks.test.ts` | 全実行 | 新規 | ✅ | 8 テスト pass<br>`テスト結果/20261120042208_30bc9d4d_単体テスト.log` |
 | `tests/unit/src/mdmark-style/document-parts.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass |
-| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
-| `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
-| `tests/integration/ClaudeCodeプラグイン/mdmark-style/world.ts` | R7（4 ファイルが読み込む共通の準備） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
 | `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 17 テスト pass |
 | `tests/unit/src/mdmark-style/reply.test.ts` | 全実行 | 変更 | ✅ | - |
 | `tests/unit/src/mdmark-style/user-message.test.ts` | 全実行 | 変更 | ✅ | - |
@@ -142,6 +139,9 @@ Vitest の結合テスト（`integration-*`）から読み込む変更は無い�
 | `src/mdmark-style/settings.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
 | `src/mdmark-style/user-message.tsx` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | - |
 | `src/shared/style-tokens.logic.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/world.ts` | R7（4 ファイルが読み込む共通の準備） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
 | `tests/unit/src/mdmark-style/blocks.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
 | `tests/unit/src/mdmark-style/document-parts.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
 | `tests/unit/src/mdmark-style/inline-marks.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
