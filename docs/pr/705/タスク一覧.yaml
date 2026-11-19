@@ -35,7 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T11:03:11.636772+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    note: SC-472-73 に正常シナリオ 2 件、SC-472-25 に正常シナリオ 1 件を追加
+    updated_by: planner
+    updated_at: '2026-11-19T11:21:40.109077+00:00'
   - process: モック作成
     status: skipped
     reason: '見出し行を留める外観はモック #151 で合意済みで、外観を変えない'
