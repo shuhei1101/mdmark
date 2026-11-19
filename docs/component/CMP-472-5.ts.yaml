@@ -70,7 +70,7 @@ args:
   - name: layout
     type: オブジェクト
     required: true
-    description: 自動配置の結果（`MapLayout`。`width`・`height`・`nodes`・`groups`・`wires`）。ノードと線を描き、グループは外側から順に面とタイトルの行を重ねる。ノードは、種類の行と、ノードの幅から左右の余白（左 10px・右 28px）と左右の枠線（1px ずつ）を除いた幅で折り返した名前の行が全て入り、名前の最後の行がノードの下の余白（`padding-bottom`）より上にある高さで描く
+    description: 自動配置の結果（`MapLayout`。`width`・`height`・`nodes`・`groups`・`wires`）。ノードと線を描き、グループは外側から順に面とタイトルの行を重ねる。ノードは、種類の行と、ノードの幅から左右の余白（左 10px・右 28px）と左右の枠線（1.5px ずつ）を除いた幅で折り返した名前の行が全て入り、名前の最後の行がノードの下の余白（`padding-bottom`）より上にある高さで描く
   - name: layout.groups[].id
     type: 文字列
     required: true
