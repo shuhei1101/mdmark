@@ -55,6 +55,86 @@ export const STYLE_COLORS = {
     dark: "#3a3a3a",
     themes: { "light-daltonized": "#dcdcdc" },
   },
+  accentBlueBg: {
+    light: "#cce2fe",
+    dark: "#1a314e",
+    css: "--mdmark-color-accent-blue-bg",
+  },
+  accentBlueText: {
+    light: "#1d4ed8",
+    dark: "#7aa2ff",
+    css: "--mdmark-color-accent-blue-text",
+  },
+  accentRedBg: {
+    light: "#ffd4d1",
+    dark: "#472020",
+    css: "--mdmark-color-accent-red-bg",
+  },
+  accentRedText: {
+    light: "#b91c1c",
+    dark: "#f87171",
+    css: "--mdmark-color-accent-red-text",
+  },
+  accentGreenBg: {
+    light: "#cbf2d2",
+    dark: "#1a3821",
+    css: "--mdmark-color-accent-green-bg",
+  },
+  accentGreenText: {
+    light: "#166534",
+    dark: "#4ade80",
+    css: "--mdmark-color-accent-green-text",
+  },
+  accentYellowBg: {
+    light: "#fff2af",
+    dark: "#40380e",
+    css: "--mdmark-color-accent-yellow-bg",
+  },
+  accentYellowText: {
+    light: "#854d0e",
+    dark: "#facc15",
+    css: "--mdmark-color-accent-yellow-text",
+  },
+  accentOrangeBg: {
+    light: "#fedbc4",
+    dark: "#4a2a12",
+    css: "--mdmark-color-accent-orange-bg",
+  },
+  accentOrangeText: {
+    light: "#b53a0a",
+    dark: "#fb923c",
+    css: "--mdmark-color-accent-orange-text",
+  },
+  accentPurpleBg: {
+    light: "#edd8fd",
+    dark: "#382446",
+    css: "--mdmark-color-accent-purple-bg",
+  },
+  accentPurpleText: {
+    light: "#6d28d9",
+    dark: "#c4a7ff",
+    css: "--mdmark-color-accent-purple-text",
+  },
+  accentGrayBg: {
+    light: "#e4e6ea",
+    dark: "#303033",
+    css: "--mdmark-color-accent-gray-bg",
+  },
+  accentGrayText: {
+    light: "#52525b",
+    dark: "#b4b4bc",
+    css: "--mdmark-color-accent-gray-text",
+  },
+  surface: {
+    light: "#f4f4f5",
+    dark: "#1b1b1f",
+    css: "--mdmark-color-surface",
+  },
+  text: {
+    light: "#18181b",
+    dark: "#ededef",
+    css: "--mdmark-color-text",
+  },
 } as const satisfies Record<string, StyleColor>;
 
 /** 共通スタイルの色の名前 */

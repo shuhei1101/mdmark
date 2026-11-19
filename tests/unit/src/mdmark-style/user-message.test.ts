@@ -30,6 +30,12 @@ const ALL_PARTS = {
   terms: true,
   hover_card: true,
   footnote: true,
+  row_detail: true,
+  steps: true,
+  tree: true,
+  inline: true,
+  stack: true,
+  figure: true,
 };
 
 /** 用語集を指定した設定と用語集のファイル */
@@ -198,4 +204,45 @@ test("test_render_term_text_when_card_off", async () => {
   ).toHaveLength(1);
   expect(textOf(node)).toContain("[1]");
   expect(findNodes(node, (n) => n.props.position === "absolute")).toEqual([]);
+});
+
+// 行内の記法を描く（正常系）
+test("test_render_term_text_when_inline_marks", async () => {
+  // 準備
+  const { renderTermText } = await loadUser();
+  const { styleColor } = await loadTokens();
+  const color = (name: Parameters<typeof styleColor>[0]["name"]) =>
+    styleColor({ name, theme: "dark" });
+  // 実行
+  const node = renderTermText({
+    elements: FAKE_ELEMENTS,
+    line: "`badge:green:完了` と `badge:v1` は ==決め手== で `kbd:Ctrl+C`",
+    marks: [],
+    parts: ALL_PARTS,
+    theme: "dark",
+    width: 80,
+  });
+  // 検証
+  const textNode = (text: string) =>
+    findNodes(node, (n) => n.type === "Text" && textOf(n) === text)[0];
+  expect(textNode(" 完了 ")?.props).toEqual(
+    expect.objectContaining({
+      backgroundColor: color("accentGreenBg"),
+      color: color("accentGreenText"),
+    }),
+  );
+  expect(textNode(" v1 ")?.props).toEqual(
+    expect.objectContaining({
+      backgroundColor: color("surface"),
+      color: color("text"),
+    }),
+  );
+  expect(textNode("決め手")?.props).toEqual(
+    expect.objectContaining({ backgroundColor: color("accentYellowBg") }),
+  );
+  expect(textNode("[Ctrl]")?.props.bold).toBe(true);
+  expect(textNode("[C]")?.props.bold).toBe(true);
+  expect(textNode("+")?.props.dimColor).toBe(true);
+  expect(textOf(node)).not.toContain("badge:");
+  expect(textOf(node)).not.toContain("==");
 });

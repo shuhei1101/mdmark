@@ -9,8 +9,8 @@ constants:
     title: マーカーの記載方法の説明の文
     container: src/mdmark-style/marker-guide.ts
     usecase: ClaudeCodeのセッションの開始でマーカーの記載方法を受け取る
-    summary: '`mdmark-style:` で始め、表の種類・注意書き・コードブロックの飾り・開閉の範囲の書き方を 1 行ずつと、マーカーが画面に出ないことを 1 行で示す 600 文字以内の文'
-    value: 'mdmark-style: 返答の Markdown に次のマーカーを記載すると、Claude Code の画面で mdmark の共通スタイルで描きます。マーカーは画面に出ません。\n- 表の種類: 表を <!-- table: {"kind": "data"} --> 〜 <!-- /table --> で囲む\n- 注意書き: 引用の 1 行目を > [!NOTE]・[!TIP]・[!IMPORTANT]・[!WARNING]・[!CAUTION] にする\n- コードブロックの飾り: 直前に <!-- code: title=ファイル名 lines --> を記載し、行末に // [!code ++] などを付ける\n- 開閉の範囲: <!-- details: タイトル --> 〜 <!-- /details --> で囲む'
+    summary: '`mdmark-style:` で始め、表の種類・注意書き・コードブロックの飾り・開閉の範囲・ステップ・ファイルツリー・バッジの書き方を 1 行ずつと、マーカーが画面に出ないことを 1 行で示す 600 文字以内の文'
+    value: 'mdmark-style: 返答の Markdown に次のマーカーを記載すると、Claude Code の画面で mdmark の共通スタイルで描きます。マーカーは画面に出ません。\n- 表の種類: 表を <!-- table: {"kind": "data"} --> 〜 <!-- /table --> で囲む\n- 注意書き: 引用の 1 行目を > [!NOTE]・[!TIP]・[!IMPORTANT]・[!WARNING]・[!CAUTION] にする\n- コードブロックの飾り: 直前に <!-- code: title=ファイル名 lines --> を記載し、行末に // [!code ++] などを付ける\n- 開閉の範囲: <!-- details: タイトル --> 〜 <!-- /details --> で囲む\n- ステップ: 番号付きリストを <!-- steps --> 〜 <!-- /steps --> で囲む\n- ファイルツリー: 言語 tree のコードブロックに ├── などの罫線で記載し、注釈は名前の後ろの 「 # 」に続ける\n- バッジ: 行内のコードを badge:green:完了 のように記載する'
     refs:
       - IF-472-47#constraints[説明の文]
     status: planned

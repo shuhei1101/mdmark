@@ -1,0 +1,148 @@
+id: MOD-472-367
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / document-parts.tsx
+lead: 返答のステップ・ファイルツリー・縦に並べる範囲・行の詳細を、Box・Text・Button の部品の木で描く。
+test_files:
+  - tests/unit/src/mdmark-style/document-parts.test.ts
+functions:
+  - name: renderSteps
+    title: ステップを描く
+    kind: 関数
+    container: src/mdmark-style/document-parts.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`steps` のブロックを、見出しの色の太字の番号と項目の中身の行と、項目の間の罫線の色の `│` の行で描く'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ block: Extract<ReplyBlock, { kind: "steps" }>; context: RenderContext; renderBody: (blocks: ReplyBlock[]) => UiNode }'
+        required: true
+        description: ステップのブロック・描き方の文脈・項目の中身を描く関数
+    returns:
+      type: UiNode
+      description: 部品の木
+    process: |-
+      1. 項目ごとに、`styleColor({ name: "heading" })` の太字の番号の Text と `renderBody(項目のブロック)` を横に並べる
+      2. 項目の間に `styleColor({ name: "border" })` の `│` の Text の行を入れる
+    unit_tests:
+      - name: test_render_steps
+        case: 正常
+        summary: 番号と縦線を描く
+        condition: 2 項目のステップ
+        mock: '`h`'
+        expected: '`1`・`2` が `heading` の色の太字の Textで、その間に `border` の色の `│` の Text が 1 つだけある'
+    callees:
+      - MOD-472-359#functions[styleColor]
+    refs:
+      - IF-472-45#constraints[ステップ]
+      - SCR-472-5#elements[ステップ]
+    status: planned
+  - name: renderTree
+    title: ファイルツリーを描く
+    kind: 関数
+    container: src/mdmark-style/document-parts.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`tree` のブロックを、行ごとに薄い色の罫線・本文の色の名前・同じ桁にそろえた薄い色の注釈の Text で描く'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ block: Extract<ReplyBlock, { kind: "tree" }>; context: RenderContext }'
+        required: true
+        description: ファイルツリーのブロックと描き方の文脈
+    returns:
+      type: UiNode
+      description: 部品の木
+    process: |-
+      1. 罫線と名前の表示幅（全角の文字を 2 つ分）の最大を数え、注釈を始める桁を決める
+      2. 行ごとに、`dimColor` の罫線、名前、桁までの空白、`dimColor` の注釈の Text を並べる
+    unit_tests:
+      - name: test_render_tree
+        case: 正常
+        summary: 注釈を同じ桁にそろえる
+        condition: '`src/` と `README.md` の 2 行で、注釈が `ソース`・`説明`'
+        mock: '`h`'
+        expected: 2 行の注釈の Text の前の表示幅が等しく、注釈と罫線が `dimColor`、`#` を含まない
+    callees:
+      - MOD-472-354#functions[displayWidth]
+    refs:
+      - IF-472-45#constraints[ファイルツリー]
+      - SCR-472-5#elements[ファイルツリー]
+    status: planned
+  - name: renderStack
+    title: 縦に並べる範囲を描く
+    kind: 関数
+    container: src/mdmark-style/document-parts.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`stack` のブロックの区切りを記載した順に縦に並べる。タブはタブ名を見出しで描き、中身を 2 桁字下げする'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ block: Extract<ReplyBlock, { kind: "stack" }>; context: RenderContext; renderBody: (blocks: ReplyBlock[]) => UiNode }'
+        required: true
+        description: 縦に並べる範囲のブロック・描き方の文脈・区切りの中身を描く関数
+    returns:
+      type: UiNode
+      description: 部品の木
+    process: |-
+      1. 区切りごとに、`title` があれば見出しと同じ太字と見出しの色の Text を描き、中身を `paddingLeft: 2` の Box で `renderBody` する
+      2. `title` が無ければ中身を字下げせずに `renderBody` する
+    unit_tests:
+      - name: test_render_stack_tabs
+        case: 正常
+        summary: タブ名の見出しと字下げ
+        condition: '`kind` が `tabs` で、`macOS`・`Windows` の 2 つの区切り'
+        mock: '`h`'
+        expected: '`macOS`・`Windows` が `heading` の色の太字の Text で、中身の Box が `paddingLeft: 2` を持ち、切り替えの Button が無い'
+      - name: test_render_stack_columns
+        case: 正常
+        summary: 段組みは見出しを付けない
+        condition: '`kind` が `columns` で 2 つの区切り'
+        mock: '`h`'
+        expected: 見出しの Text が無く、中身が記載した順に縦に並ぶ
+    callees:
+      - MOD-472-359#functions[styleColor]
+    refs:
+      - IF-472-45#constraints[縦に並べる範囲]
+      - SCR-472-5#elements[タブ名の見出し]
+    status: planned
+  - name: renderRowDetail
+    title: 行の詳細を描く
+    kind: 関数
+    container: src/mdmark-style/document-parts.tsx
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 詳細を持つ行の先頭のセルに置く開閉の Button と、開いているときの詳細の行を返却する。押すと状態を反転して `$.ui.invalidate("ui.render")` で描き直す
+    description: 開閉の状態は reply.tsx の `renderFold` が使用するモジュールの中の `Map` を、`requestId`・ブロックの本文のハッシュ・`row-detail:{表の順番}:{行}` の鍵で使用する
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ key: string; body: () => UiNode; context: RenderContext }'
+        required: true
+        description: 開閉の状態の鍵・詳細の中身を描く関数・描き方の文脈
+    returns:
+      type: '{ toggle: UiNode; detail?: UiNode }'
+      description: 先頭のセルに置く Button と、開いているときの 2 桁字下げした詳細
+    process: |-
+      1. `key` の状態を取る（無ければ閉じた状態）
+      2. 閉じていれば `[ ▸ ]`、開いていれば `[ ▾ ]` の Button を作り、開いていれば `paddingLeft: 2` の Box で `body()` を描く
+      3. Button の `onPress` で状態を反転し、`$.ui.invalidate("ui.render")` を呼ぶ
+    unit_tests:
+      - name: test_render_row_detail
+        case: 正常
+        summary: 押すと詳細が開く
+        condition: 初めての `key` で描き、Button の `onPress` を呼んでからもう一度描く
+        mock: '`h`・`$.ui.invalidate`'
+        expected: 1 回目は `[ ▸ ]` で `detail` が無く、2 回目は `[ ▾ ]` で `detail` があり、`$.ui.invalidate` が `ui.render` で 1 回呼ばれる
+    callees: []
+    refs:
+      - IF-472-45#constraints[行の詳細]
+      - SCR-472-5#elements[行の詳細のボタン]
+    status: planned
+tags:
+  - name: action:描画
+  - name: topic:ステップ
+  - name: topic:ファイルツリー
+  - name: topic:タブ
+  - name: tool:claude-code

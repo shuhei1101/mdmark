@@ -17,6 +17,18 @@ global:
     terms: true
     hover_card: true
     footnote: true
+    # false のとき、行の詳細を開閉にせず、表の後ろに描く
+    row_detail: true
+    # false のとき、ステップを番号付きリストのまま描く
+    steps: true
+    # false のとき、ファイルツリーをコードブロックのまま描く
+    tree: true
+    # false のとき、バッジ・文字の色・蛍光ペン・キーの記法を記載した文字のまま描く
+    inline: true
+    # false のとき、タブ・段組み・カードの格子・wide・ビューの範囲と CSV を縦に並べる描き方をしない
+    stack: true
+    # false のとき、番号を付けた表の上に「表 {番号}」を描かない
+    figure: true
   # 用語を取る mdmark.config.yaml のパス（無いときは用語のマーカーを付けない。相対パスはこのファイルのフォルダから）
   # glossary: ~/notes/mdmark.config.yaml
   # false のとき、セッションの開始でマーカーの記載方法を注入しない

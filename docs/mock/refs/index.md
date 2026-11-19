@@ -6,6 +6,7 @@ Issue / PR ごとのモックへのリンク集。
 
 | 番号 | 概要 |
 | --- | --- |
+| [716](./716/) | mdmark-style で、行の詳細・ステップ・ファイルツリー・バッジなど残りの mdmark の機能を Claude Code の画面に描く |
 | [707](./707/) | map の図で薄くした要素の文字のコントラストを 4.5:1 以上にし、表の列の幅のつまみの aria-valuenow を aria-valuemin 以上・aria-valuemax 以下にする |
 | [700](./700/) | mdmark の文書を MCP・CLI・ビュワーのボタンで純粋な Markdown（GFM と Mermaid）に書き出す |
 | [699](./699/) | Claude Code の画面を mdmark の共通スタイルで描く mod のプラグイン mdmark-style を配置する |
