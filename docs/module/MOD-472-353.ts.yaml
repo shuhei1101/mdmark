@@ -203,9 +203,9 @@ functions:
       - name: test_split_blocks_when_tree_note_escaped
         case: 正常
         summary: 注釈を HTML にしないで持つ
-        condition: 注釈が `a < b & c` の行と、ASCII の罫線 `|-- ` と `` `-- `` の 2 行の言語 `tree` のコードブロック
+        condition: ルートの行 `src/` の下に、注釈が `a < b & c` の行と、ASCII の罫線 `|-- ` と `` `-- `` の 2 行を持つ言語 `tree` のコードブロック
         mock: なし
-        expected: '`tree` の注釈が `a < b & c` のままで、`rule` が `├── `・`└── `'
+        expected: '`tree` の注釈が `a < b & c` のままで、`rule` が空・`├── `・`└── `'
     refs:
       - IF-472-45#constraints[描き換えるブロック]
       - IF-472-45#constraints[マーカー]

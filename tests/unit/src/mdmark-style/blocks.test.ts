@@ -433,13 +433,21 @@ test("test_split_blocks_when_tree_rule_missing", async () => {
 test("test_split_blocks_when_tree_note_escaped", async () => {
   // 準備
   const { splitBlocks } = await loadBlocks();
-  const text = ["```tree", "|-- a.ts # a < b & c", "`-- b.ts", "```"].join(
-    "\n",
-  );
+  const text = [
+    "```tree",
+    "src/",
+    "|-- a.ts # a < b & c",
+    "`-- b.ts",
+    "```",
+  ].join("\n");
   // 実行
   const [block] = splitBlocks({ text, parts: ALL_PARTS });
   // 検証
   expect(block?.kind).toBe("tree");
   expect(block?.tree?.lines.map((line) => line.note)).toContain("a < b & c");
-  expect(block?.tree?.lines.map((line) => line.rule)).toEqual(["├── ", "└── "]);
+  expect(block?.tree?.lines.map((line) => line.rule)).toEqual([
+    "",
+    "├── ",
+    "└── ",
+  ]);
 });
