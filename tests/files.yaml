@@ -2788,6 +2788,33 @@ files:
   - path: unit/src/mdmark-style/glossary-fixture.ts
     description: mdmark-style の単体テストが使用する用語集の見本のファイル。テストの準備を変えるときに参照する。
     tags: [topic:単体テスト, tool:claude-code]
+  - path: integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx
+    description: インターフェース定義『返答を共通スタイルで描く』の正常系と異常系のフローを、claude plugin test で mod を通して確認する結合テスト。返答の描き換えを変えたときに参照する。
+    tags: [topic:結合テスト, tool:claude-code, topic:プラグイン, action:描画]
+    related:
+      - to: IF-472-45
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx
+    description: インターフェース定義『発言の用語にマーカーを付ける』の正常系と異常系のフローを、claude plugin test で mod を通して確認する結合テスト。発言の用語のマーカーを変えたときに参照する。
+    tags: [topic:結合テスト, tool:claude-code, topic:プラグイン, topic:用語]
+    related:
+      - to: IF-472-46
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts
+    description: インターフェース定義『マーカーの記載方法を注入する』の正常系と異常系のフローを、claude plugin test で mod を通して確認する結合テスト。SessionStart の注入を変えたときに参照する。
+    tags: [topic:結合テスト, tool:claude-code, topic:プラグイン, topic:マーカー]
+    related:
+      - to: IF-472-47
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx
+    description: 画面設計『ClaudeCodeの返答と発言』の要素を、terminal と desktop の画面で claude plugin test で確認する結合テスト。返答と発言の画面の要素を変えたときに参照する。
+    tags: [topic:結合テスト, tool:claude-code, topic:プラグイン, topic:画面]
+    related:
+      - to: SCR-472-5
+        type: see_also
+  - path: integration/ClaudeCodeプラグイン/mdmark-style/world.ts
+    description: mdmark-style の結合テストで、Claude Code の代わりにファイル・環境変数・プロジェクト・設定・ログ・コピーを回答するフックと、用語集の fixture。結合テストの準備を変えたときに参照する。
+    tags: [topic:結合テスト, tool:claude-code, topic:フィクスチャ]
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
   reviewed: []
