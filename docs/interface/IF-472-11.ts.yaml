@@ -9,7 +9,7 @@ flows:
     summary: 空の端末で、端末の設定が無いこと・既定のセッション名・待ち受けていないことを返却する
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: 空いたポート
         description: '`MDMARK_PORT` に待ち受けるプロセスの無いポート'
       - name: Mock
@@ -39,7 +39,7 @@ flows:
     summary: 端末の設定のバージョン・セッション名・待ち受けていることを返却する
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: セットアップ済みの端末
         description: '`version` と `serve.tmuxSession: mdmark-test` を持つ端末の設定と、そのセッション名の tmux のセッションで待ち受けている常駐サーバー'
       - name: Mock
@@ -64,7 +64,7 @@ flows:
     summary: '`PATH` に `systemctl` が無いことと、`auto` が tmux になることを返却する'
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: systemctl の無い PATH
         description: '`PATH` から `systemctl` を削除する'
       - name: Mock
@@ -89,7 +89,7 @@ flows:
     summary: '`PATH` に tmux が無いことを返却する'
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: tmux の無い PATH
         description: '`PATH` から tmux を削除する'
       - name: Mock
@@ -114,7 +114,7 @@ flows:
     summary: 端末の設定が YAML として読み込めないとき、パスと行を出して終わる
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: 読み込めない端末の設定
         description: '`MDMARK_CONFIG` のパスに、3 行目が YAML として読み込めない端末の設定を配置する'
       - name: Mock
