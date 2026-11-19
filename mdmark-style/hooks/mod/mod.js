@@ -12379,10 +12379,18 @@ var STYLE_COLORS = {
     css: "--mdmark-color-muted"
   },
   codeBackground: { light: "#eef1f5", dark: "#2a2d33" },
-  userBand: { light: "#f0f0f0", dark: "#3a3a3a" }
+  userBand: {
+    light: "#f0f0f0",
+    dark: "#3a3a3a",
+    themes: { "light-daltonized": "#dcdcdc" }
+  }
 };
 var styleColor = (options) => {
   const color = STYLE_COLORS[options.name];
+  const own = options.theme === void 0 ? void 0 : color.themes?.[options.theme];
+  if (own !== void 0) {
+    return own;
+  }
   return options.theme?.startsWith("light") === true ? color.light : color.dark;
 };
 
@@ -17399,6 +17407,29 @@ var handleHeading = (state, chunk) => {
     heading: { level, text: text2 }
   });
 };
+var alignOf = (token) => {
+  const style = String(token.attrGet("style") ?? "");
+  if (style.includes("center")) {
+    return "center";
+  }
+  return style.includes("right") ? "right" : "left";
+};
+var readTable = (tokens) => {
+  const rows = [];
+  const align = [];
+  for (const [index, token] of tokens.entries()) {
+    if (token.type === "tr_open") {
+      rows.push([]);
+    } else if (token.type === "th_open" || token.type === "td_open") {
+      const cell = stripInlineMarkers(tokens[index + 1]?.content ?? "").trim();
+      rows.at(-1)?.push(cell);
+    }
+    if (token.type === "th_open") {
+      align.push(alignOf(token));
+    }
+  }
+  return { rows, align };
+};
 var handleTable = (state, chunk) => {
   const kind = state.pendingTable ?? "default";
   state.pendingTable = void 0;
@@ -17406,26 +17437,7 @@ var handleTable = (state, chunk) => {
     pushMarkdown(state, chunk);
     return;
   }
-  const rows = [];
-  const align = [];
-  let row = [];
-  for (const [index, token] of chunk.tokens.entries()) {
-    if (token.type === "tr_open") {
-      row = [];
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      row.push(
-        stripInlineMarkers(chunk.tokens[index + 1]?.content ?? "").trim()
-      );
-      if (token.type === "th_open") {
-        const style = String(token.attrGet("style") ?? "");
-        align.push(
-          style.includes("center") ? "center" : style.includes("right") ? "right" : "left"
-        );
-      }
-    } else if (token.type === "tr_close") {
-      rows.push(row);
-    }
-  }
+  const { rows, align } = readTable(chunk.tokens);
   const [header = [], ...body] = rows;
   push(state, {
     kind: "table",
@@ -17466,15 +17478,22 @@ var handleFence = (state, chunk) => {
     }
   });
 };
+var calloutHeadOf = (line, parts) => {
+  const [, rawType = "", sign = "", rawTitle = ""] = CALLOUT_HEAD.exec(line) ?? [];
+  const type = rawType.toUpperCase();
+  if (!parts.callout || !CALLOUT_TYPES.includes(type)) {
+    return void 0;
+  }
+  return { type, closed: sign === "-" && parts.fold, title: rawTitle.trim() };
+};
 var handleQuote = (state, chunk) => {
   const lines = state.lines.slice(chunk.start, chunk.end);
-  const head = CALLOUT_HEAD.exec(lines[0] ?? "");
-  const type = head?.[1]?.toUpperCase();
-  if (!state.parts.callout || type === void 0 || !CALLOUT_TYPES.includes(type)) {
+  const head = calloutHeadOf(lines[0] ?? "", state.parts);
+  if (head === void 0) {
     pushMarkdown(state, chunk);
     return;
   }
-  const closed = head?.[2] === "-" && state.parts.fold;
+  const { type, closed, title } = head;
   const index = closed ? state.foldCount.value++ : -1;
   const inner = lines.slice(1).map((line) => line.replace(/^\s*>\s?/, "")).join("\n");
   const body = splitInto({
@@ -17482,23 +17501,12 @@ var handleQuote = (state, chunk) => {
     parts: state.parts,
     foldCount: state.foldCount
   });
-  const title = head?.[3]?.trim();
   push(state, {
     kind: "callout",
     line: chunk.start + 1,
-    callout: {
-      type,
-      ...title === void 0 || title === "" ? {} : { title },
-      closed,
-      body
-    }
+    callout: { type, ...title === "" ? {} : { title }, closed, body },
+    ...closed ? { fold: { title: title || type, index, body } } : {}
   });
-  if (closed) {
-    const added = (state.frames.at(-1)?.body ?? state.out).at(-1);
-    if (added?.callout !== void 0) {
-      added.fold = { title: title || type, index, body };
-    }
-  }
 };
 var handleChunk = (state, chunk) => {
   const type = chunk.tokens[0]?.type;
@@ -17629,6 +17637,20 @@ var longestWord = (cells) => Math.max(
     (cell) => splitWords(cell).map((word) => displayWidth(word.trimEnd()))
   )
 );
+var shrinkWidest = (widths, floors) => {
+  let widest = -1;
+  for (const [index, width] of widths.entries()) {
+    const wider = widest < 0 || width > (widths[widest] ?? 0);
+    if (width > (floors[index] ?? 0) && wider) {
+      widest = index;
+    }
+  }
+  if (widest < 0) {
+    return false;
+  }
+  widths[widest] = (widths[widest] ?? 0) - 1;
+  return true;
+};
 var fitColumns = (options) => {
   const { cells, columns, wrap } = options;
   const count = Math.max(0, ...cells.map((row) => row.length));
@@ -17649,17 +17671,7 @@ var fitColumns = (options) => {
     )
   );
   const total = () => widths.reduce((sum, width) => sum + width, 0) + count * COLUMN_PADDING + 1;
-  while (total() > columns) {
-    let widest = -1;
-    for (const [index, width] of widths.entries()) {
-      if (width > (floors[index] ?? 0) && (widest < 0 || width > (widths[widest] ?? 0))) {
-        widest = index;
-      }
-    }
-    if (widest < 0) {
-      break;
-    }
-    widths[widest] = (widths[widest] ?? 0) - 1;
+  while (total() > columns && shrinkWidest(widths, floors)) {
   }
   return widths;
 };

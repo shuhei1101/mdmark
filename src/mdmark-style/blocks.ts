@@ -304,6 +304,33 @@ const handleHeading = (state: State, chunk: Chunk): void => {
   });
 };
 
+/** 見出しのセルの `style` から文字揃え */
+const alignOf = (token: Token): "left" | "center" | "right" => {
+  const style = String(token.attrGet("style") ?? "");
+  if (style.includes("center")) {
+    return "center";
+  }
+  return style.includes("right") ? "right" : "left";
+};
+
+/** 表のトークンから、行ごとのセルの文字と見出しの文字揃えを読み込む */
+const readTable = (tokens: Token[]) => {
+  const rows: string[][] = [];
+  const align: ("left" | "center" | "right")[] = [];
+  for (const [index, token] of tokens.entries()) {
+    if (token.type === "tr_open") {
+      rows.push([]);
+    } else if (token.type === "th_open" || token.type === "td_open") {
+      const cell = stripInlineMarkers(tokens[index + 1]?.content ?? "").trim();
+      rows.at(-1)?.push(cell);
+    }
+    if (token.type === "th_open") {
+      align.push(alignOf(token));
+    }
+  }
+  return { rows, align };
+};
+
 /** 表の塊 */
 const handleTable = (state: State, chunk: Chunk): void => {
   const kind = state.pendingTable ?? "default";
@@ -312,30 +339,7 @@ const handleTable = (state: State, chunk: Chunk): void => {
     pushMarkdown(state, chunk);
     return;
   }
-  const rows: string[][] = [];
-  const align: ("left" | "center" | "right")[] = [];
-  let row: string[] = [];
-  for (const [index, token] of chunk.tokens.entries()) {
-    if (token.type === "tr_open") {
-      row = [];
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      row.push(
-        stripInlineMarkers(chunk.tokens[index + 1]?.content ?? "").trim(),
-      );
-      if (token.type === "th_open") {
-        const style = String(token.attrGet("style") ?? "");
-        align.push(
-          style.includes("center")
-            ? "center"
-            : style.includes("right")
-              ? "right"
-              : "left",
-        );
-      }
-    } else if (token.type === "tr_close") {
-      rows.push(row);
-    }
-  }
+  const { rows, align } = readTable(chunk.tokens);
   const [header = [], ...body] = rows;
   push(state, {
     kind: "table",
@@ -381,20 +385,29 @@ const handleFence = (state: State, chunk: Chunk): void => {
   });
 };
 
+/** 引用の 1 行目が `[!種類]` の注意書きなら、種類・閉じるか・タイトルを返却する */
+const calloutHeadOf = (
+  line: string,
+  parts: Parts,
+): { type: string; closed: boolean; title: string } | undefined => {
+  const [, rawType = "", sign = "", rawTitle = ""] =
+    CALLOUT_HEAD.exec(line) ?? [];
+  const type = rawType.toUpperCase();
+  if (!parts.callout || !(CALLOUT_TYPES as readonly string[]).includes(type)) {
+    return undefined;
+  }
+  return { type, closed: sign === "-" && parts.fold, title: rawTitle.trim() };
+};
+
 /** 引用の塊。1 行目が `[!種類]` なら注意書きにする */
 const handleQuote = (state: State, chunk: Chunk): void => {
   const lines = state.lines.slice(chunk.start, chunk.end);
-  const head = CALLOUT_HEAD.exec(lines[0] ?? "");
-  const type = head?.[1]?.toUpperCase();
-  if (
-    !state.parts.callout ||
-    type === undefined ||
-    !(CALLOUT_TYPES as readonly string[]).includes(type)
-  ) {
+  const head = calloutHeadOf(lines[0] ?? "", state.parts);
+  if (head === undefined) {
     pushMarkdown(state, chunk);
     return;
   }
-  const closed = head?.[2] === "-" && state.parts.fold;
+  const { type, closed, title } = head;
   const index = closed ? state.foldCount.value++ : -1;
   const inner = lines
     .slice(1)
@@ -405,23 +418,12 @@ const handleQuote = (state: State, chunk: Chunk): void => {
     parts: state.parts,
     foldCount: state.foldCount,
   });
-  const title = head?.[3]?.trim();
   push(state, {
     kind: "callout",
     line: chunk.start + 1,
-    callout: {
-      type,
-      ...(title === undefined || title === "" ? {} : { title }),
-      closed,
-      body,
-    },
+    callout: { type, ...(title === "" ? {} : { title }), closed, body },
+    ...(closed ? { fold: { title: title || type, index, body } } : {}),
   });
-  if (closed) {
-    const added = (state.frames.at(-1)?.body ?? state.out).at(-1);
-    if (added?.callout !== undefined) {
-      added.fold = { title: title || type, index, body };
-    }
-  }
 };
 
 /** 塊の種類ごとにブロックへ分ける */

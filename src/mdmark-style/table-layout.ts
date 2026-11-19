@@ -113,6 +113,22 @@ const longestWord = (cells: string[]): number =>
     ),
   );
 
+/** 下限より広い列のうち最も広い列を 1 縮める。縮めた列が無ければ偽 */
+const shrinkWidest = (widths: number[], floors: number[]): boolean => {
+  let widest = -1;
+  for (const [index, width] of widths.entries()) {
+    const wider = widest < 0 || width > (widths[widest] ?? 0);
+    if (width > (floors[index] ?? 0) && wider) {
+      widest = index;
+    }
+  }
+  if (widest < 0) {
+    return false;
+  }
+  widths[widest] = (widths[widest] ?? 0) - 1;
+  return true;
+};
+
 /** 列ごとの中身の幅から列の幅を決める。罫線を含めた幅が `columns` を超えるときは、広い列から縮めて収める */
 export const fitColumns = (options: {
   cells: string[][];
@@ -139,20 +155,8 @@ export const fitColumns = (options: {
   );
   const total = () =>
     widths.reduce((sum, width) => sum + width, 0) + count * COLUMN_PADDING + 1;
-  while (total() > columns) {
-    let widest = -1;
-    for (const [index, width] of widths.entries()) {
-      if (
-        width > (floors[index] ?? 0) &&
-        (widest < 0 || width > (widths[widest] ?? 0))
-      ) {
-        widest = index;
-      }
-    }
-    if (widest < 0) {
-      break;
-    }
-    widths[widest] = (widths[widest] ?? 0) - 1;
+  while (total() > columns && shrinkWidest(widths, floors)) {
+    // 最も広い列を 1 ずつ縮め、どの列も縮められなくなったら止める
   }
   return widths;
 };
