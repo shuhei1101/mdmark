@@ -101,3 +101,8 @@ body.vscode-light .term {
 .ms-part-heading {
   margin-top: 0.5lh;
 }
+
+/* タブの中身: 2 桁字下げし、範囲の後ろの本文と分ける */
+.ms-part-body {
+  padding-left: 2ch;
+}
