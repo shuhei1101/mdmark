@@ -28,14 +28,14 @@ data_models:
     title: 返答のブロック
     container: src/mdmark-style/blocks.ts
     usecase: ClaudeCodeの返答を共通スタイルで描く
-    summary: '`kind` で分けたブロック 1 つ。`line` はブロックの本文の先頭の行（1 から）'
+    summary: '`kind` で分けたブロック 1 つ。`line` は返答の本文の頭からの、ブロックの本文の先頭の行（1 から。注意書きの中のブロックも返答の本文の頭から数える）'
     properties:
       - name: kind
         type: '"table" | "callout" | "heading" | "code" | "fold" | "markdown"'
         description: ブロックの種類
       - name: line
         type: number
-        description: ブロックの先頭の行
+        description: ブロックの先頭の、返答の本文の頭からの行
       - name: table
         type: '{ kind: "default" | "data" | "plain"; header: string[]; rows: string[][]; align: ("left" | "center" | "right")[] }'
         description: '`kind` が `table` のとき。`kind` は直前の `table` のマーカーの種類'
@@ -54,6 +54,9 @@ data_models:
       - name: markdown
         type: string
         description: '`kind` が `markdown` のとき。マーカーを除いた段落・箇条書き・引用の Markdown'
+      - name: columns
+        type: number[][]
+        description: '`kind` が `markdown` のとき。`markdown` の行ごとの、各文字の返答の本文の行での位置（行内のマーカーと注意書きの `> ` を除いた分のずれを戻す）'
     status: planned
 functions:
   - name: splitBlocks
@@ -76,7 +79,7 @@ functions:
     process: |-
       1. markdown-it でトークンにし、最上位のトークンを本文の行の範囲（`map`）ごとにまとめる
       2. 単独の行の HTML コメントのマーカーを読み込み、`table`・`code` は直後のブロックの属性に、`details`〜`/details` と `section: closed` の見出しのセクションは `fold` のブロックにする
-      3. 表・見出し・コード・1 行目が `[!種類]` の引用を対応する `kind` にし、それ以外と `parts` でオフの種類は元の行からマーカーを除いた `markdown` にする
+      3. 表・見出し・コード・1 行目が `[!種類]` の引用を対応する `kind` にし、それ以外と `parts` でオフの種類は元の行からマーカーを除いた `markdown` にし、各文字の返答の本文の行での位置を `columns` に持たせる。注意書きの中身は `> ` を除いて同じ手順で分け、行は返答の本文の頭から数える
       4. `parts.fold` が偽のときは `fold` を作らず、中身のブロックをその位置に並べる
     unit_tests:
       - name: test_split_blocks
@@ -115,6 +118,18 @@ functions:
         condition: 言語 `mermaid` のコードブロック
         mock: なし
         expected: '`kind` が `code`、`lang` が `mermaid`'
+      - name: test_split_blocks_when_callout_columns
+        case: 正常
+        summary: 注意書きの中のブロックの行と文字の位置を返答の本文に合わせる
+        condition: '`> [!NOTE]` と `> WS を作る` の 2 行'
+        mock: なし
+        expected: 注意書きの中の `markdown` のブロックの `line` が 2、`markdown` が `WS を作る`、`columns` の 1 行目が 2 から始まる
+      - name: test_split_blocks_when_inline_marker_columns
+        case: 正常
+        summary: 行内のマーカーの後ろの文字の位置を元の行に合わせる
+        condition: 段落 `a <!-- x --> WS`
+        mock: なし
+        expected: '`markdown` が `a WS`、`columns` が `[[0, 1, 13, 14]]`'
     refs:
       - IF-472-45#constraints[描き換えるブロック]
       - IF-472-45#constraints[マーカー]

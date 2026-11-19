@@ -104,7 +104,7 @@ functions:
       3. `callout`: 種類の色の縦線（`┃`）と太字の種類のラベルの後ろに中身を描く。`closed` なら開閉のボタンで包む
       4. `code`: 背景の面の Box の中に、タイトルと言語のラベルとコピーボタンの行、`Code` 部品で色分けした行（行番号・行の色）を並べる。コピーボタンは押すと `$.ui.copy` で各行の `text` を改行でつないでコピーする
       5. `fold`: 開閉のボタンを描き、開いていれば下に中身を描く
-      6. `markdown`: 用語の一致が無ければ `Markdown` 部品に渡す
+      6. `markdown`: 用語の一致の行と位置を、ブロックの `line` と `columns` でブロックの行の中の位置に修正する。修正した一致が無ければ `Markdown` 部品に渡す
     unit_tests:
       - name: test_render_block_table
         case: 正常
@@ -130,6 +130,18 @@ functions:
         condition: '`type` が `WARNING` の注意書き'
         mock: '`h`'
         expected: '`┃` と太字の `WARNING` が `calloutWarning` の色で描かれる'
+      - name: test_render_block_when_term_in_callout
+        case: 正常
+        summary: 注意書きの中の用語に下線を付ける
+        condition: '`> [!NOTE]` と `> WS を作る` を分けた注意書き、用語の一致が `line` 2・`start` 2 の `WS`'
+        mock: '`h`'
+        expected: 下線の Text が `WS` の 1 つ
+      - name: test_render_block_when_term_after_inline_marker
+        case: 正常
+        summary: 行内のマーカーの後ろの用語に下線を付ける
+        condition: 段落 `a <!-- x --> WS` を分けたブロック、用語の一致が `line` 1・`start` 13 の `WS`
+        mock: '`h`'
+        expected: 下線の Text が `WS` の 1 つ
     callees:
       - MOD-472-354#functions[fitColumns]
       - MOD-472-354#functions[wrapCell]
