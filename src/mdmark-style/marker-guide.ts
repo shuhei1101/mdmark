@@ -11,6 +11,9 @@ export const MARKER_GUIDE = [
   "- 注意書き: 引用の 1 行目を > [!NOTE]・[!TIP]・[!IMPORTANT]・[!WARNING]・[!CAUTION] にする",
   "- コードブロックの飾り: 直前に <!-- code: title=ファイル名 lines --> を記載し、行末に // [!code ++] などを付ける",
   "- 開閉の範囲: <!-- details: タイトル --> 〜 <!-- /details --> で囲む",
+  "- ステップ: 番号付きリストを <!-- steps --> 〜 <!-- /steps --> で囲む",
+  "- ファイルツリー: 言語 tree のコードブロックに ├── などの罫線で記載し、注釈は名前の後ろの 「 # 」に続ける",
+  "- バッジ: 行内のコードを badge:green:完了 のように記載する",
 ].join("\n");
 
 /** SessionStart で使用する `$` の機能 */

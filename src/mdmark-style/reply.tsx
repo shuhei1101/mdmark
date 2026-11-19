@@ -3,6 +3,13 @@ import {
   styleColor,
 } from "../shared/style-tokens.logic.ts";
 import { type ReplyBlock, splitBlocks } from "./blocks.ts";
+import {
+  renderRowDetail,
+  renderStack,
+  renderSteps,
+  renderTree,
+} from "./document-parts.tsx";
+import { inlinePlainText, splitInlineMarks } from "./inline-marks.ts";
 import { readSettings, SettingsError, type StyleSettings } from "./settings.ts";
 import { displayWidth, fitColumns, wrapCell } from "./table-layout.ts";
 import type { TermMark } from "./terms.ts";
@@ -41,7 +48,7 @@ export type RenderContext = {
 };
 
 /** 開閉の状態。Claude Code を閉じると消える */
-const foldStates = new Map<string, boolean>();
+export const foldStates = new Map<string, boolean>();
 
 /** 注意書きの種類から色の名前 */
 const CALLOUT_COLORS: Record<string, StyleColorName> = {
@@ -123,6 +130,18 @@ const rowLines = (options: {
   );
 };
 
+/** 行の詳細の開閉の Button の文字と、後ろの空白 */
+const ROW_TOGGLE_TEXT = "[ ▸ ] ";
+
+/** セルの文字が行内の記法を含めば真 */
+const hasInline = (cell: string, context: RenderContext): boolean =>
+  context.parts.inline &&
+  splitInlineMarks(cell).some((segment) => segment.kind !== "text");
+
+/** セルの、画面に描かれる文字 */
+const cellText = (cell: string, context: RenderContext): string =>
+  context.parts.inline ? inlinePlainText(splitInlineMarks(cell)) : cell;
+
 /** 表を罫線で囲んで描く */
 const renderTable = (block: ReplyBlock, context: RenderContext): UiNode => {
   const table = block.table;
@@ -130,7 +149,18 @@ const renderTable = (block: ReplyBlock, context: RenderContext): UiNode => {
   if (table === undefined) {
     return undefined;
   }
-  const cells = [table.header, ...table.rows];
+  const detailRows = new Set((table.details ?? []).map((detail) => detail.row));
+  const shown = (row: string[], rowIndex: number | undefined) =>
+    row.map((cell, index) => {
+      const text = cellText(cell, context);
+      return index === 0 && rowIndex !== undefined && detailRows.has(rowIndex)
+        ? `${ROW_TOGGLE_TEXT}${text}`
+        : text;
+    });
+  const cells = [
+    shown(table.header, undefined),
+    ...table.rows.map((row, index) => shown(row, index)),
+  ];
   const wrap = context.surface !== "desktop";
   const widths = fitColumns({
     cells,
@@ -138,28 +168,135 @@ const renderTable = (block: ReplyBlock, context: RenderContext): UiNode => {
     wrap,
   });
   const border = styleColor({ name: "border", theme: context.theme });
-  const lineNode = (key: string, columns: string[], bold: boolean) =>
-    h(
-      Text,
-      { key },
+  /** 1 行の、セルごとの部品。行内の記法と行の詳細の Button は 1 行に収まるセルだけに描く */
+  const cellNodes = (options: {
+    raw: string[] | undefined;
+    columns: string[];
+    bold: boolean;
+    toggle: UiNode | undefined;
+  }): { nodes: UiNode[]; rich: boolean } => {
+    let rich = false;
+    const nodes = options.columns.map((cell, index) => {
+      const raw = options.raw?.[index];
+      const toggle = index === 0 ? options.toggle : undefined;
+      if (
+        raw === undefined ||
+        (toggle === undefined && !hasInline(raw, context))
+      ) {
+        return h(Text, options.bold ? { bold: true } : null, cell);
+      }
+      rich = true;
+      const drawn = `${toggle === undefined ? "" : ROW_TOGGLE_TEXT}${cellText(raw, context)}`;
+      const pad = " ".repeat(
+        Math.max(0, (widths[index] ?? 0) - displayWidth(drawn)),
+      );
+      return [
+        toggle,
+        toggle === undefined ? undefined : h(Text, null, " "),
+        renderTermText({
+          elements: context.elements,
+          line: raw,
+          marks: [],
+          parts: context.parts,
+          theme: context.theme,
+          ...(options.bold ? { base: { bold: true } } : {}),
+        }),
+        h(Text, null, pad),
+      ];
+    });
+    return { nodes, rich };
+  };
+  const lineNode = (
+    key: string,
+    columns: string[],
+    options: {
+      bold: boolean;
+      raw?: string[];
+      toggle?: UiNode;
+    },
+  ) => {
+    const { nodes, rich } = cellNodes({
+      raw: options.raw,
+      columns,
+      bold: options.bold,
+      toggle: options.toggle,
+    });
+    const children = [
       h(Text, { color: border }, "│ "),
-      ...columns.flatMap((cell, index) => [
-        h(Text, bold ? { bold: true } : null, cell),
-        h(Text, { color: border }, index === columns.length - 1 ? " │" : " │ "),
+      ...nodes.flatMap((node, index) => [
+        node,
+        h(Text, { color: border }, index === nodes.length - 1 ? " │" : " │ "),
       ]),
+    ];
+    return rich
+      ? h(Box, { key, flexDirection: "row" }, ...children)
+      : h(Text, { key }, ...children);
+  };
+  /** 見出しか本文の 1 行を、折り返した行ごとの部品にする */
+  const rowNodes = (options: {
+    key: string;
+    raw: string[];
+    shownCells: string[];
+    bold: boolean;
+    toggle?: UiNode;
+  }): UiNode[] => {
+    const lines = rowLines({ cells: options.shownCells, widths, wrap });
+    const single = lines.length === 1;
+    return lines.map((columns, index) =>
+      lineNode(`${options.key}-${index}`, columns, {
+        bold: options.bold,
+        ...(single ? { raw: options.raw } : {}),
+        ...(single && options.toggle !== undefined
+          ? { toggle: options.toggle }
+          : {}),
+      }),
     );
+  };
   const bold = table.kind === "data";
+  const bodyLines = table.rows.flatMap((row, rowIndex) => {
+    const detail = table.details?.find((item) => item.row === rowIndex);
+    if (detail === undefined) {
+      return rowNodes({
+        key: `row-${rowIndex}`,
+        raw: row,
+        shownCells: shown(row, rowIndex),
+        bold: false,
+      });
+    }
+    const { toggle, detail: opened } = renderRowDetail({
+      key: `${context.blockKey}:row-detail:${block.line}:${rowIndex}`,
+      body: () =>
+        h(
+          Box,
+          { flexDirection: "column" },
+          ...detail.body.map((inner) => renderBlock({ block: inner, context })),
+        ),
+      context,
+    });
+    return [
+      ...rowNodes({
+        key: `row-${rowIndex}`,
+        raw: row,
+        shownCells: shown(row, rowIndex),
+        bold: false,
+        toggle,
+      }),
+      opened,
+    ];
+  });
   const lines: UiNode[] = [
+    table.figure === undefined
+      ? undefined
+      : h(Text, { key: "figure", dimColor: true }, `表 ${table.figure}`),
     h(Text, { key: "top", color: border }, ruleLine(widths, ["┌", "┬", "┐"])),
-    ...rowLines({ cells: table.header, widths, wrap }).map((columns, index) =>
-      lineNode(`head-${index}`, columns, bold),
-    ),
+    ...rowNodes({
+      key: "head",
+      raw: table.header,
+      shownCells: shown(table.header, undefined),
+      bold,
+    }),
     h(Text, { key: "sep", color: border }, ruleLine(widths, ["├", "┼", "┤"])),
-    ...table.rows.flatMap((row, rowIndex) =>
-      rowLines({ cells: row, widths, wrap }).map((columns, index) =>
-        lineNode(`row-${rowIndex}-${index}`, columns, false),
-      ),
-    ),
+    ...bodyLines,
     h(
       Text,
       { key: "bottom", color: border },
@@ -270,14 +407,14 @@ const marksByLine = (
       .filter((mark): mark is TermMark => mark !== undefined),
   );
 
-/** 段落・箇条書き。用語のマーカーがあれば行ごとに用語の部品で描き、無ければ `Markdown` 部品に任せる */
+/** 段落・箇条書き。用語のマーカーか行内の記法があれば行ごとに用語の部品で描き、無ければ `Markdown` 部品に任せる */
 const renderMarkdown = (block: ReplyBlock, context: RenderContext): UiNode => {
   const { Box, Markdown } = context.elements;
   const markdown = block.markdown ?? "";
   const lines = markdown.split("\n");
   const lineMarks = marksByLine(block, lines, context.marks);
   const marks = lineMarks.flat();
-  if (marks.length === 0) {
+  if (marks.length === 0 && !lines.some((line) => hasInline(line, context))) {
     return h(Markdown, { key: `md-${block.line}`, text: markdown });
   }
   return h(
@@ -331,6 +468,16 @@ const renderCallout = (block: ReplyBlock, context: RenderContext): UiNode => {
   });
 };
 
+/** 中身のブロックの並びを、縦に並べた部品の木にする関数 */
+const renderBlocks =
+  (context: RenderContext) =>
+  (blocks: ReplyBlock[]): UiNode =>
+    h(
+      context.elements.Box,
+      { flexDirection: "column" },
+      ...blocks.map((inner) => renderBlock({ block: inner, context })),
+    );
+
 /** `ReplyBlock` 1 つを部品の木にする */
 export const renderBlock = (options: {
   block: ReplyBlock;
@@ -341,16 +488,28 @@ export const renderBlock = (options: {
   switch (block.kind) {
     case "table":
       return renderTable(block, context);
-    case "heading":
-      return h(
-        Text,
-        {
-          key: `heading-${block.line}`,
-          bold: true,
-          color: styleColor({ name: "heading", theme: context.theme }),
-        },
-        block.heading?.text ?? "",
-      );
+    case "heading": {
+      const text = block.heading?.text ?? "";
+      const props = {
+        bold: true,
+        color: styleColor({ name: "heading", theme: context.theme }),
+      };
+      if (hasInline(text, context)) {
+        return h(
+          Box,
+          { key: `heading-${block.line}` },
+          renderTermText({
+            elements: context.elements,
+            line: text,
+            marks: [],
+            parts: context.parts,
+            theme: context.theme,
+            base: props,
+          }),
+        );
+      }
+      return h(Text, { key: `heading-${block.line}`, ...props }, text);
+    }
     case "callout":
       return renderCallout(block, context);
     case "code":
@@ -372,6 +531,12 @@ export const renderBlock = (options: {
         context,
       });
     }
+    case "steps":
+      return renderSteps({ block, context, renderBody: renderBlocks(context) });
+    case "tree":
+      return renderTree({ block, context });
+    case "stack":
+      return renderStack({ block, context, renderBody: renderBlocks(context) });
     case "markdown":
       return renderMarkdown(block, context);
     default: {

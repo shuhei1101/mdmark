@@ -243,7 +243,10 @@ const closeRowDetail = (state: State, frame: Frame): void => {
     at >= 1 &&
     at <= table.rows.length
   ) {
-    table.details = [...(table.details ?? []), { row: at - 1, body: frame.body }];
+    table.details = [
+      ...(table.details ?? []),
+      { row: at - 1, body: frame.body },
+    ];
     return;
   }
   for (const block of frame.body) {
@@ -285,9 +288,10 @@ const cardLine = (item: string): string => {
   if (link === null) {
     return text;
   }
-  const description = `${text.slice(0, link.index)} ${text.slice(link.index + link[0].length)}`
-    .replace(/\s+/g, " ")
-    .trim();
+  const description =
+    `${text.slice(0, link.index)} ${text.slice(link.index + link[0].length)}`
+      .replace(/\s+/g, " ")
+      .trim();
   const title = link[1] ?? "";
   return description === "" ? title : `${title} — ${description}`;
 };
@@ -469,70 +473,120 @@ const openFrame = (state: State, frame: Partial<Frame> & Pick<Frame, "kind">) =>
     ...frame,
   });
 
-/** 行の詳細・ステップ・縦に並べる範囲・図と表の番号のマーカーを読み込む。読み込んだら真 */
-const applyPartMarker = (state: State, marker: Marker): boolean => {
-  const { name } = marker;
-  const top = state.frames.at(-1);
-  if (name === "fig" && state.parts.figure) {
-    const id = argOf(marker.args, "id");
-    state.pendingFigure = typeof id === "string" ? id : "";
-  } else if (name === "row-detail") {
-    const last = currentList(state).at(-1);
-    const at = argOf(marker.args, "at");
-    openFrame(state, {
-      kind: "row-detail",
-      ...(typeof at === "number" ? { at } : {}),
-      ...(state.parts.row_detail && last?.kind === "table"
-        ? { table: last }
-        : {}),
-    });
-  } else if (name === "/row-detail" && top?.kind === "row-detail") {
-    closeFrame(state);
-  } else if (name === "steps" && state.parts.steps) {
-    state.inSteps = true;
-  } else if (name === "/steps") {
-    state.inSteps = false;
-  } else if (
-    state.parts.stack &&
-    (STACK_MARKERS as readonly string[]).includes(name)
-  ) {
-    openFrame(state, { kind: "stack", stack: name as StackKind, cuts: [] });
-  } else if (top?.kind === "stack" && name === `/${top.stack}`) {
-    closeFrame(state);
-  } else if (name === "column" && top?.stack === "columns") {
-    top.cuts?.push(top.body.length);
-  } else {
-    return false;
-  }
-  return true;
-};
+/** 単独の行のマーカー 1 つを読み込む処理 */
+type MarkerHandler = (state: State, marker: Marker) => void;
 
-/** 単独の行のマーカーを、次のブロックの属性・開閉の範囲にする */
+/** 今開いている範囲が `kind` なら閉じる */
+const closeIfTop =
+  (kind: Frame["kind"], stack?: StackKind): MarkerHandler =>
+  (state) => {
+    const top = state.frames.at(-1);
+    if (top?.kind === kind && (stack === undefined || top.stack === stack)) {
+      closeFrame(state);
+    }
+  };
+
+/** 縦に並べる範囲の開きと閉じのマーカーの処理 */
+const stackHandlers = STACK_MARKERS.flatMap(
+  (name): [string, MarkerHandler][] => [
+    [
+      name,
+      (state) => {
+        if (state.parts.stack) {
+          openFrame(state, { kind: "stack", stack: name, cuts: [] });
+        }
+      },
+    ],
+    [`/${name}`, closeIfTop("stack", name)],
+  ],
+);
+
+/** マーカーの名前ごとの処理。無い名前のマーカーは無視する */
+const MARKER_HANDLERS = new Map<string, MarkerHandler>([
+  [
+    "table",
+    (state, marker) => {
+      state.pendingTable = tableKindOf(marker.args);
+    },
+  ],
+  [
+    "code",
+    (state, marker) => {
+      state.pendingCode = codeOptionsOf(marker.args);
+    },
+  ],
+  [
+    "details",
+    (state, marker) => {
+      if (state.parts.fold) {
+        openFrame(state, {
+          kind: "details",
+          title: marker.args,
+          index: state.foldCount.value++,
+        });
+      }
+    },
+  ],
+  ["/details", closeIfTop("details")],
+  [
+    "section",
+    (state, marker) => {
+      if (state.parts.fold) {
+        openSection(state, marker.args);
+      }
+    },
+  ],
+  [
+    "fig",
+    (state, marker) => {
+      if (state.parts.figure) {
+        const id = argOf(marker.args, "id");
+        state.pendingFigure = typeof id === "string" ? id : "";
+      }
+    },
+  ],
+  [
+    "row-detail",
+    (state, marker) => {
+      const last = currentList(state).at(-1);
+      const at = argOf(marker.args, "at");
+      openFrame(state, {
+        kind: "row-detail",
+        ...(typeof at === "number" ? { at } : {}),
+        ...(state.parts.row_detail && last?.kind === "table"
+          ? { table: last }
+          : {}),
+      });
+    },
+  ],
+  ["/row-detail", closeIfTop("row-detail")],
+  [
+    "steps",
+    (state) => {
+      state.inSteps = state.parts.steps;
+    },
+  ],
+  [
+    "/steps",
+    (state) => {
+      state.inSteps = false;
+    },
+  ],
+  [
+    "column",
+    (state) => {
+      const top = state.frames.at(-1);
+      if (top?.stack === "columns") {
+        top.cuts?.push(top.body.length);
+      }
+    },
+  ],
+  ...stackHandlers,
+]);
+
+/** 単独の行のマーカーを、次のブロックの属性・開いている範囲にする */
 const applyMarker = (state: State, marker: Marker): void => {
-  if (applyPartMarker(state, marker)) {
-    return;
-  }
-  if (marker.name === "table") {
-    state.pendingTable = tableKindOf(marker.args);
-  } else if (marker.name === "code") {
-    state.pendingCode = codeOptionsOf(marker.args);
-  } else if (marker.name === "details" && state.parts.fold) {
-    state.frames.push({
-      kind: "details",
-      title: marker.args,
-      level: 0,
-      index: state.foldCount.value++,
-      line: 0,
-      body: [],
-    });
-  } else if (
-    marker.name === "/details" &&
-    state.frames.at(-1)?.kind === "details"
-  ) {
-    closeFrame(state);
-  } else if (marker.name === "section" && state.parts.fold) {
-    openSection(state, marker.args);
-  }
+  MARKER_HANDLERS.get(marker.name)?.(state, marker);
 };
 
 /** `section: closed` の付いた直前の見出しから、閉じたセクションを開く */
@@ -698,10 +752,7 @@ const treeLines = (
   });
 
 /** 言語 `tree` のコードブロックを `tree` のブロックにする。罫線を解釈できなければ返却しない */
-const treeBlockOf = (
-  source: string,
-  line: number,
-): ReplyBlock | undefined => {
+const treeBlockOf = (source: string, line: number): ReplyBlock | undefined => {
   if (hasBareIndent(source)) {
     return undefined;
   }
@@ -709,7 +760,11 @@ const treeBlockOf = (
   if (!("nodes" in result)) {
     return undefined;
   }
-  return { kind: "tree", line, tree: { lines: treeLines(result.nodes, "", 0) } };
+  return {
+    kind: "tree",
+    line,
+    tree: { lines: treeLines(result.nodes, "", 0) },
+  };
 };
 
 /** 言語 `csv` のコードブロックを、1 行目を見出しにした表にする */
@@ -727,6 +782,20 @@ const csvBlockOf = (source: string, line: number): ReplyBlock => {
   };
 };
 
+/** 言語 `tree`・`csv` のコードブロックを、ファイルツリーと表のブロックにする。どちらにもしなければ返却しない */
+const partBlockOf = (options: {
+  parts: Parts;
+  lang: string;
+  source: string;
+  line: number;
+}): ReplyBlock | undefined => {
+  const { parts, lang, source, line } = options;
+  if (lang === "tree" && parts.tree) {
+    return treeBlockOf(source, line);
+  }
+  return lang === "csv" && parts.stack ? csvBlockOf(source, line) : undefined;
+};
+
 /** コードブロックの塊 */
 const handleFence = (state: State, chunk: Chunk): void => {
   const options = state.pendingCode ?? {
@@ -737,12 +806,12 @@ const handleFence = (state: State, chunk: Chunk): void => {
   const token = chunk.tokens[0];
   const lang = (token?.info ?? "").trim().split(/\s+/)[0] ?? "";
   const source = (token?.content ?? "").replace(/\n$/, "");
-  const part =
-    lang === "tree" && state.parts.tree
-      ? treeBlockOf(source, lineOf(state, chunk))
-      : lang === "csv" && state.parts.stack
-        ? csvBlockOf(source, lineOf(state, chunk))
-        : undefined;
+  const part = partBlockOf({
+    parts: state.parts,
+    lang,
+    source,
+    line: lineOf(state, chunk),
+  });
   if (part !== undefined) {
     push(state, part);
     return;
@@ -862,27 +931,27 @@ const handleSteps = (state: State, chunk: Chunk): void => {
   push(state, { kind: "steps", line: lineOf(state, chunk), steps: { items } });
 };
 
+/** 塊の最初のトークンの種類ごとの処理。無い種類は `markdown` にする */
+const CHUNK_HANDLERS = new Map<string, (state: State, chunk: Chunk) => void>([
+  ["html_block", handleHtml],
+  ["heading_open", handleHeading],
+  ["table_open", handleTable],
+  ["fence", handleFence],
+  ["code_block", handleFence],
+  ["blockquote_open", handleQuote],
+]);
+
 /** 塊の種類ごとにブロックへ分ける */
 const handleChunk = (state: State, chunk: Chunk): void => {
-  const type = chunk.tokens[0]?.type;
+  const type = chunk.tokens[0]?.type ?? "";
   if (type !== "html_block" && type !== "table_open") {
     state.pendingFigure = undefined;
   }
-  if (type === "html_block") {
-    handleHtml(state, chunk);
-  } else if (type === "ordered_list_open" && state.inSteps === true) {
+  if (type === "ordered_list_open" && state.inSteps === true) {
     handleSteps(state, chunk);
-  } else if (type === "heading_open") {
-    handleHeading(state, chunk);
-  } else if (type === "table_open") {
-    handleTable(state, chunk);
-  } else if (type === "fence" || type === "code_block") {
-    handleFence(state, chunk);
-  } else if (type === "blockquote_open") {
-    handleQuote(state, chunk);
-  } else {
-    pushMarkdown(state, chunk);
+    return;
   }
+  (CHUNK_HANDLERS.get(type) ?? pushMarkdown)(state, chunk);
 };
 
 /** 開閉の範囲の数え方を共有して、本文をブロックに分ける */
@@ -953,34 +1022,54 @@ const replaceFigureLinks = (
   return { text: out, columns: columns === undefined ? undefined : mapped };
 };
 
+/** ブロックの中に持つブロック（注意書き・開閉の範囲・ステップ・縦に並べる範囲・行の詳細の中身） */
+const innerBlocks = (block: ReplyBlock): ReplyBlock[] => {
+  const { callout, fold, steps, stack, table } = block;
+  const lists: (ReplyBlock[] | undefined)[] = [
+    callout === undefined ? fold?.body : callout.body,
+    steps?.items.flat(),
+    stack?.sections.flatMap((section) => section.body),
+    table?.details?.flatMap((detail) => detail.body),
+  ];
+  return lists.flatMap((list) => list ?? []);
+};
+
+/** `markdown` のブロックの、図と表を指すリンクの文字を番号にする */
+const numberMarkdown = (block: ReplyBlock, ids: Map<string, number>): void => {
+  if (block.markdown === undefined) {
+    return;
+  }
+  const lines = block.markdown
+    .split("\n")
+    .map((line, index) =>
+      replaceFigureLinks(line, block.columns?.[index], ids),
+    );
+  block.markdown = lines.map((line) => line.text).join("\n");
+  if (block.columns !== undefined) {
+    block.columns = lines.map((line) => line.columns ?? []);
+  }
+};
+
+/** 表のセルの、図と表を指すリンクの文字を番号にする */
+const numberTable = (block: ReplyBlock, ids: Map<string, number>): void => {
+  const table = block.table;
+  if (table === undefined) {
+    return;
+  }
+  const cell = (text: string) => replaceFigureLinks(text, undefined, ids).text;
+  table.header = table.header.map(cell);
+  table.rows = table.rows.map((row) => row.map(cell));
+};
+
 /** ブロックの中の `markdown` と表のセルの、図と表を指すリンクの文字を番号にする */
 const numberFigureLinks = (
   blocks: ReplyBlock[],
   ids: Map<string, number>,
 ): void => {
   for (const block of blocks) {
-    if (block.markdown !== undefined) {
-      const lines = block.markdown.split("\n").map((line, index) =>
-        replaceFigureLinks(line, block.columns?.[index], ids),
-      );
-      block.markdown = lines.map((line) => line.text).join("\n");
-      if (block.columns !== undefined) {
-        block.columns = lines.map((line) => line.columns ?? []);
-      }
-    }
-    if (block.table !== undefined) {
-      const cell = (text: string) => replaceFigureLinks(text, undefined, ids).text;
-      block.table.header = block.table.header.map(cell);
-      block.table.rows = block.table.rows.map((row) => row.map(cell));
-    }
-    const inner = [
-      ...(block.callout?.body ?? []),
-      ...(block.callout === undefined ? (block.fold?.body ?? []) : []),
-      ...(block.steps?.items.flat() ?? []),
-      ...(block.stack?.sections.flatMap((section) => section.body) ?? []),
-      ...(block.table?.details?.flatMap((detail) => detail.body) ?? []),
-    ];
-    numberFigureLinks(inner, ids);
+    numberMarkdown(block, ids);
+    numberTable(block, ids);
+    numberFigureLinks(innerBlocks(block), ids);
   }
 };
 

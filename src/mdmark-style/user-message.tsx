@@ -1,4 +1,9 @@
-import { styleColor } from "../shared/style-tokens.logic.ts";
+import type { ColorName } from "../shared/colors.logic.ts";
+import {
+  type StyleColorName,
+  styleColor,
+} from "../shared/style-tokens.logic.ts";
+import { type InlineSegment, splitInlineMarks } from "./inline-marks.ts";
 import {
   readSettings,
   type SettingsEngine,
@@ -156,22 +161,95 @@ const styleProps = (
   ...(char.link ? { underline: true } : {}),
 });
 
-/** 1 行の文字列を、用語ごとに keyed Box に分けた Text の並びにする。用語には下線・脚注の番号・カードを付ける */
-export const renderTermText = (options: {
+/** 色の名前ごとの、背景色と文字色の共通スタイルの色の名前 */
+const ACCENT_COLORS = {
+  blue: { bg: "accentBlueBg", text: "accentBlueText" },
+  red: { bg: "accentRedBg", text: "accentRedText" },
+  green: { bg: "accentGreenBg", text: "accentGreenText" },
+  yellow: { bg: "accentYellowBg", text: "accentYellowText" },
+  orange: { bg: "accentOrangeBg", text: "accentOrangeText" },
+  purple: { bg: "accentPurpleBg", text: "accentPurpleText" },
+  gray: { bg: "accentGrayBg", text: "accentGrayText" },
+} as const satisfies Record<
+  ColorName,
+  { bg: StyleColorName; text: StyleColorName }
+>;
+
+/** 行内の記法 1 つ（バッジ・文字の色・蛍光ペン・キー）の Text の並び */
+const inlineNodes = (options: {
   elements: Elements;
-  line: string;
+  segment: InlineSegment;
+  theme: string | undefined;
+}): UiNode[] => {
+  const { elements, segment, theme } = options;
+  const { Text } = elements;
+  const color = (name: StyleColorName) => styleColor({ name, theme });
+  const accent =
+    segment.color === undefined ? undefined : ACCENT_COLORS[segment.color];
+  const key = `inline-${segment.start}`;
+  switch (segment.kind) {
+    case "badge":
+      return [
+        h(
+          Text,
+          {
+            key,
+            backgroundColor: color(accent?.bg ?? "surface"),
+            color: color(accent?.text ?? "text"),
+          },
+          ` ${segment.text} `,
+        ),
+      ];
+    case "color":
+      return [
+        h(
+          Text,
+          { key, bold: true, color: color(accent?.text ?? "text") },
+          segment.text,
+        ),
+      ];
+    case "highlight":
+      return [
+        h(
+          Text,
+          { key, backgroundColor: color(accent?.bg ?? "accentYellowBg") },
+          segment.text,
+        ),
+      ];
+    case "kbd":
+      return (segment.keys ?? []).flatMap((name, index) => [
+        index === 0
+          ? undefined
+          : h(Text, { key: `${key}-join-${index}`, dimColor: true }, "+"),
+        h(Text, { key: `${key}-key-${index}`, bold: true }, `[${name}]`),
+      ]);
+    case "text":
+      return [];
+    default: {
+      const unreachable: never = segment.kind;
+      return unreachable;
+    }
+  }
+};
+
+/** 記法の無い文字の区切りを、用語ごとの部品と装飾ごとの Text にする */
+const textRuns = (options: {
+  elements: Elements;
+  segment: InlineSegment;
   marks: TermMark[];
   parts: StyleSettings["parts"];
   theme: string | undefined;
-  width?: number;
-}): UiNode => {
-  const { elements, line, marks, parts, theme, width } = options;
-  const { Box, Text } = elements;
+  width: number | undefined;
+  base: Record<string, unknown>;
+}): UiNode[] => {
+  const { elements, segment, marks, parts, theme, width, base } = options;
+  const { Text } = elements;
   const markOf = (at: number) =>
     marks.find((mark) => at >= mark.start && at < mark.end);
   const runs: { text: string; char: StyledChar; mark: TermMark | undefined }[] =
     [];
-  for (const char of styledChars(line)) {
+  for (const raw of styledChars(segment.text)) {
+    const char = { ...raw, at: raw.at + segment.start };
     const mark = markOf(char.at);
     const last = runs.at(-1);
     const same =
@@ -186,9 +264,9 @@ export const renderTermText = (options: {
       runs.push({ text: char.char, char, mark });
     }
   }
-  const nodes = runs.map((run) =>
+  return runs.map((run) =>
     run.mark === undefined
-      ? h(Text, styleProps(run.char, theme), run.text)
+      ? h(Text, { ...base, ...styleProps(run.char, theme) }, run.text)
       : termNode({
           elements,
           mark: run.mark,
@@ -198,7 +276,29 @@ export const renderTermText = (options: {
           width,
         }),
   );
-  return h(Box, { flexDirection: "row", flexWrap: "wrap" }, ...nodes);
+};
+
+/** 1 行の文字列を、用語ごとに keyed Box に分けた Text の並びにする。用語には下線・脚注の番号・カードを付け、`parts.inline` が真のときは行内の記法を描く */
+export const renderTermText = (options: {
+  elements: Elements;
+  line: string;
+  marks: TermMark[];
+  parts: StyleSettings["parts"];
+  theme: string | undefined;
+  width?: number;
+  /** 記法と用語の無い文字の Text に付ける属性（見出しの太字と色） */
+  base?: Record<string, unknown>;
+}): UiNode => {
+  const { elements, line, marks, parts, theme, width, base = {} } = options;
+  const segments: InlineSegment[] = parts.inline
+    ? splitInlineMarks(line)
+    : [{ kind: "text", text: line, start: 0 }];
+  const nodes = segments.flatMap((segment) =>
+    segment.kind === "text"
+      ? textRuns({ elements, segment, marks, parts, theme, width, base })
+      : inlineNodes({ elements, segment, theme }),
+  );
+  return h(elements.Box, { flexDirection: "row", flexWrap: "wrap" }, ...nodes);
 };
 
 /** 脚注の一覧の行 */
@@ -274,7 +374,7 @@ export async function renderUserMessage(
       elements,
       line,
       marks: marks.filter((mark) => mark.line === index + 1),
-      parts: settings.parts,
+      parts: { ...settings.parts, inline: false },
       theme,
       ...(width === undefined ? {} : { width }),
     }),
