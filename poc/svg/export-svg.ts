@@ -172,6 +172,8 @@ const inventory = (root: AnyNode): { classes: Set<string>; tags: Set<string> } =
 /** XML として直列化する（SVG の属性の大文字小文字を戻す） */
 const toXml = (node: AnyNode): string => {
   walk(node, (element) => {
+    // foreignObject の中の XHTML から SVG に戻る要素には、SVG の名前空間を明示する
+    if (element.name === "svg") element.attribs.xmlns = "http://www.w3.org/2000/svg";
     for (const [lower, name] of Object.entries(SVG_ATTRIBUTES)) {
       if (lower in element.attribs) {
         element.attribs[name] = element.attribs[lower] as string;
