@@ -1,0 +1,84 @@
+id: MOD-472-358
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / marker-guide.ts
+lead: '`classic.SessionStart` で、`inject_marker_guide` が `true` のとき、mdmark のマーカーの記載方法の説明の文を `additionalContext` に 1 つ追加する。'
+test_files:
+  - tests/unit/src/mdmark-style/marker-guide.test.ts
+constants:
+  - name: MARKER_GUIDE
+    title: マーカーの記載方法の説明の文
+    container: src/mdmark-style/marker-guide.ts
+    usecase: ClaudeCodeのセッションの開始でマーカーの記載方法を受け取る
+    summary: '`mdmark-style:` で始め、表の種類・注意書き・コードブロックの飾り・開閉の範囲の書き方を 1 行ずつと、マーカーが画面に出ないことを 1 行で示す 600 文字以内の文'
+    value: 'mdmark-style: 返答の Markdown に次のマーカーを記載すると、Claude Code の画面で mdmark の共通スタイルで描きます。マーカーは画面に出ません。\n- 表の種類: 表を <!-- table: {"kind": "data"} --> 〜 <!-- /table --> で囲む\n- 注意書き: 引用の 1 行目を > [!NOTE]・[!TIP]・[!IMPORTANT]・[!WARNING]・[!CAUTION] にする\n- コードブロックの飾り: 直前に <!-- code: title=ファイル名 lines --> を記載し、行末に // [!code ++] などを付ける\n- 開閉の範囲: <!-- details: タイトル --> 〜 <!-- /details --> で囲む'
+    refs:
+      - IF-472-47#constraints[説明の文]
+    status: planned
+functions:
+  - name: injectMarkerGuide
+    title: マーカーの記載方法を注入する
+    kind: 関数
+    container: src/mdmark-style/marker-guide.ts
+    usecase: ClaudeCodeのセッションの開始でマーカーの記載方法を受け取る
+    role: フック
+    summary: '`next(e)` の結果の `additionalContext` の後ろに `MARKER_GUIDE` を追加して返却する'
+    scope: public
+    is_async: true
+    args:
+      - name: $
+        type: Engine
+        required: true
+        description: Claude Code のエンジンのインターフェース
+      - name: e
+        type: ClassicSessionStartInput
+        required: true
+        description: SessionStart の入力（`source` を持つ）
+      - name: next
+        type: Next
+        required: true
+        description: ほかのプラグインと Claude Code の処理へ進める関数
+    returns:
+      type: Promise<ClassicSessionStartResult>
+      description: '`next(e)` の結果か、説明を追加した結果'
+    process: |-
+      1. `next(e)` を待つ
+      2. 設定を読み込む（設定を読み込む）。`SettingsError` なら `$.ui.log(理由, { to: "debug" })` を書いて `next(e)` の結果を返却する
+      3. `inject_marker_guide` が偽なら `next(e)` の結果を返却する
+      4. `additionalContext` の後ろに `MARKER_GUIDE` を 1 つ追加して返却する
+    unit_tests:
+      - name: test_inject_marker_guide
+        case: 正常
+        summary: 説明の文を追加する
+        condition: '設定ファイルが無く、`next` が `additionalContext: ["a"]` を返却する、`source` が `clear`'
+        mock: '`$.fs`・`$.env`・`$.session`・`next`'
+        expected: '`additionalContext` が `["a", MARKER_GUIDE]`'
+      - name: test_inject_marker_guide_when_disabled
+        case: 正常
+        summary: 注入をオフにした
+        condition: '`global.inject_marker_guide: false`'
+        mock: '`$.fs`・`$.env`・`$.session`・`next`'
+        expected: '`next` の結果のまま'
+      - name: test_inject_marker_guide_when_settings_broken
+        case: 異常
+        summary: 設定ファイルを読めない
+        condition: '設定ファイルの本文が `global: [`'
+        mock: '`$.fs`・`$.env`・`$.session`・`$.ui.log`・`next`'
+        expected: '`next` の結果のまま返却し、`$.ui.log` を `to: "debug"` で 1 回呼ぶ'
+        exception: 設定ファイルがあるが YAML として読めない
+      - name: test_marker_guide_length
+        case: 正常
+        summary: 説明の文の長さと書き出し
+        condition: '`MARKER_GUIDE`'
+        mock: なし
+        expected: '`mdmark-style:` で始まり、600 文字以内'
+    callees:
+      - MOD-472-352#functions[readSettings]
+    refs:
+      - IF-472-47#
+    status: planned
+tags:
+  - name: topic:マーカー
+    main: true
+  - name: tool:claude-code
+  - name: topic:プラグイン
+  - name: action:注入

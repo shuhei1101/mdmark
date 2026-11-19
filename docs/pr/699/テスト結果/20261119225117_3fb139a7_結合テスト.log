@@ -1,0 +1,95 @@
+$ npm run test:mdmark-style
+
+> test:mdmark-style
+> node scripts/test-mdmark-style.ts
+
+Validating plugin manifest: /tmp/mdmark-style-test-sqhxkY/mdmark-style/.claude-plugin/plugin.json
+
+⚠ Found 2 warnings:
+
+  ❯ version: No version specified. Consider adding a version following semver (e.g., "1.0.0")
+  ❯ author: No author information provided. Consider adding author details for plugin attribution
+
+Validating hooks: /tmp/mdmark-style-test-sqhxkY/mdmark-style/hooks/hooks.json
+
+  ❯ ./mod/mod.js hooks: ui.render{component=AssistantMessage}, ui.render{component=UserMessage}, classic.SessionStart
+  ❯ ./mod/mod.js gating hook without .catch: classic.SessionStart
+  ❯ ./mod/mod.js calls: $.env.get (via readSettings, settingsPath), $.fs.exists (via readSettings), $.fs.list (via listFiles), $.fs.read (via loadAliases, loadGlossary, readSettings, readYaml), $.session.root (via readSettings), $.settings.read, $.ui.copy, $.ui.invalidate, $.ui.log, $.ui.resolve
+  ❯ ./mod/mod.js env writes: nothing
+  ❯ ./mod/mod.js env reads: HOME, MDMARK_STYLE_CONFIG, XDG_CONFIG_HOME
+
+Provides:
+
+  ❯ modules: hooks/mod/mod.js
+
+Plugin directory checks for /tmp/mdmark-style-test-sqhxkY/mdmark-style. The plugin directory is the catalog that plugins are submitted to; this is a subset of what it runs.
+
+✘ Found 2 problems the plugin directory refuses a submission for:
+
+  ❯ README.md: README missing (README_MISSING). This plugin has no README.md. People who install it and the directory's automated review read the README to learn what it does; the first line of a README in the plugin folder also stands in as the listing summary when plugin.json has no description.
+    Fix: Add a README.md to the plugin folder describing what the plugin does, how to use it, and any setup it needs, in at least 40 words. A README at the repository root also counts for a plugin in a sub-folder.
+  ❯ LICENSE: License missing (LICENSE_MISSING). This plugin has no LICENSE file and plugin.json has no `license`. The directory requires one of them.
+    Fix: Add a LICENSE file to the plugin folder, or set `license` (an SPDX id) in plugin.json. A LICENSE at the repository root also counts for a plugin in a sub-folder.
+
+⚠ Found 1 plugin directory warning:
+
+  ❯ .claude-plugin/plugin.json icon: No icon (ICON_MISSING). No icon found in the plugin. The validator looked for `icon` in plugin.json and for a file at .claude-plugin/icon.png or .svg, assets/icon.png or .svg, or a similar path.
+    Fix: Add a square PNG to the plugin folder at .claude-plugin/icon.png, or set `icon` in plugin.json to the path of a square PNG or JPEG in the plugin: 512 to 2048 px on each side, under 2 MB. SVG and WebP are not accepted. That file may become the listing icon only once: the first time the plugin is saved or submitted in the developer portal. Adding or changing it later does not change the icon.
+
+About these checks:
+
+  ❯ hooks/hooks.json names a hooks module (a code file listed under `modules`). The plugin directory has rules of its own for such code, and these checks apply none of them, so passing here does not mean the directory accepts the plugin. The developer portal's own validation applies those rules.
+
+These plugin directory checks do not change the result below. To fail on problems the directory refuses a submission for, run this command with --profile directory.
+
+The directory also runs a safety scan and a policy review that this command does not.
+
+✔ Validation passed with warnings
+
+tests/inject-marker-guide.test.ts:
+(pass) test_normal [737.90ms]
+(pass) test_normal_when_cleared [372.80ms]
+(pass) test_normal_when_injection_disabled [474.97ms]
+(pass) test_error_when_config_unreadable [428.95ms]
+
+tests/mark-user-terms.test.tsx:
+(pass) test_normal [714.63ms]
+(pass) test_normal_when_glossary_not_set [398.01ms]
+(pass) test_normal_when_hover_card_disabled [390.90ms]
+(pass) test_normal_when_no_term [334.97ms]
+(pass) test_error_when_glossary_unreadable [330.29ms]
+
+tests/render-reply.test.tsx:
+(pass) test_normal [858.86ms]
+(pass) test_normal_when_part_disabled [457.90ms]
+(pass) test_normal_when_assistant_not_targeted [410.36ms]
+(pass) test_normal_when_table_wider_than_viewport [409.51ms]
+(pass) test_normal_when_code_decorated [223.69ms]
+(pass) test_normal_when_fold_pressed [273.22ms]
+(pass) test_normal_when_tree_over_limit [550.62ms]
+(pass) test_error_when_glossary_unreadable [253.16ms]
+(pass) test_error_when_config_unreadable [222.68ms]
+
+tests/screen.test.tsx:
+(pass) test_reply_elements [762.09ms]
+(pass) test_reply_elements_when_parts_disabled [534.55ms]
+(pass) test_term_elements [539.88ms]
+(pass) test_term_elements_when_footnote_and_card_disabled [382.92ms]
+(pass) test_user_band_when_light_theme [254.78ms]
+
+ 23 pass
+ 0 fail
+Ran 23 tests across 4 files. [3.94s]
+exit=0
+
+$ npx vitest run --project 'integration*' tests/integration/lib/build.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-mdmark-style-claude-code-screen-style
+
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  22:51:24
+   Duration  49.00s (tests 99%, import 1%)
+
+exit=0

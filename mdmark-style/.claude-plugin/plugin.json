@@ -1,0 +1,4 @@
+{
+  "name": "mdmark-style",
+  "description": "Claude Code の返答と発言を、mdmark の共通スタイル（表・見出し・注意書き・コードブロック・開閉の範囲・用語のマーカー）で描く mod"
+}

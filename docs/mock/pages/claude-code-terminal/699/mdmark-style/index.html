@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>claude-code-terminal / mdmark-style（Claude Code の画面を共通スタイルで描く） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- Claude Code のターミナル版の画面（番号で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/699/assets/terminal.css">
+  <!-- 端末のテーマと場面の切り替え（#69 で共有するアセット。モックだけの仕組み） -->
+  <script src="../../../../refs/69/assets/preview.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 端末のテーマと、画面の場面 -->
+  <div class="mock-bar" data-mock-bar>
+    <!-- [data-theme-value]: preview.js が行き先の URL（?theme=）と今のテーマの aria-current を適用する -->
+    <div class="mock-bar-group" role="group" aria-label="端末のテーマ">
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+    </div>
+    <!-- [data-scene-value]: preview.js が行き先の URL（?scene=）と今の場面の aria-current を適用する -->
+    <div class="mock-bar-group" role="group" aria-label="画面の場面">
+      <a class="mock-bar-item" data-scene-value="styled">mdmark-style あり</a>
+      <a class="mock-bar-item" data-scene-value="hover">用語のカードを開いた</a>
+      <a class="mock-bar-item" data-scene-value="table-off">表の部品をオフ</a>
+      <a class="mock-bar-item" data-scene-value="glossary-error">用語集を読めない</a>
+      <a class="mock-bar-item" data-scene-value="standard">mdmark-style なし（比較）</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <h1 class="term-title">mdmark-style を入れた Claude Code のターミナル版の画面</h1>
+    <!-- パンくず -->
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">claude-code-terminal</a> / <a href="../index.md">699</a> / mdmark-style
+    </nav>
+
+    <div class="term" role="log" aria-label="Claude Code のターミナル版の画面">
+
+      <!-- 自分の発言: 標準の描画と同じ背景の帯。用語にマーカーを付ける場面と付けない場面 -->
+      <div class="term-row term-user" data-scene="standard table-off glossary-error">
+        <span class="term-mark" aria-hidden="true">❯</span>
+        <p class="term-body">mdmark の WS と WSL の違いを表で教えて</p>
+      </div>
+      <div class="term-row term-user" data-scene="styled hover">
+        <span class="term-mark" aria-hidden="true">❯</span>
+        <div class="term-body">
+          <p><span class="ms-term">mdmark<sup class="ms-footnote-ref">[1]</sup><span class="ms-term-card" role="tooltip"><span class="ms-term-card-name">mdmark</span>Markdown 文書の表示を各アプリで共通に使用するライブラリ</span></span> の
+            <span class="ms-term" data-scene-open="hover" aria-describedby="card-ws-user">WS<sup class="ms-footnote-ref">[2]</sup>
+              <span class="ms-term-card" role="tooltip" id="card-ws-user">
+                <span class="ms-term-card-name">WS（ワークスペース）</span>
+                話し合いの記録を配置するフォルダ
+              </span>
+            </span>
+            と WSL の違いを表で教えて</p>
+          <p class="ms-footnotes">[1] mdmark: Markdown 文書の表示を各アプリで共通に使用するライブラリ<br>[2] WS: 話し合いの記録を配置するフォルダ</p>
+        </div>
+      </div>
+
+      <!-- 返答: mdmark-style なし（Claude Code の標準の描画。マーカーの文字がそのまま出る） -->
+      <div class="term-row" data-scene="standard">
+        <span class="term-mark" aria-hidden="true">●</span>
+        <div class="term-body">
+          <p class="std-heading">WS と WSL の違い</p>
+          <p><b>WS</b> は mdmark の用語で、<span class="std-code">WSL</span> は Windows の機能です。</p>
+          <ul class="ms-list">
+            <li>WS: 用語集の用語</li>
+            <li>WSL: 用語集に無い単語</li>
+          </ul>
+          <p>&lt;!-- table: {"kind": "data"} --&gt;</p>
+          <table class="ms-table">
+            <tr><th>名前</th><th>種類</th><th>説明</th></tr>
+            <tr><td>WS</td><td>用語</td><td>話し合いの記録を配置するフォルダで、mdmark.config.yaml の用語集に登録されている</td></tr>
+            <tr><td>WSL</td><td>Windows の機能</td><td>Windows の上で Linux を動かす機能で、用語集には登録されていない</td></tr>
+          </table>
+          <p>&gt; [!NOTE]<br>&gt; 用語は mdmark.config.yaml から取ります</p>
+          <pre class="ms-code">const answer = 42</pre>
+        </div>
+      </div>
+
+      <!-- 返答: mdmark-style あり（表・注意書き・見出し・コードを描き換え、段落と箇条書きは標準の描き方のまま）。
+           用語の下線はメッセージごとに最初の出現だけに付け、見出し・表・コードの中には付けない -->
+      <div class="term-row" data-scene="styled hover table-off glossary-error">
+        <span class="term-mark" aria-hidden="true">●</span>
+        <div class="term-body">
+          <p class="ms-heading">WS と WSL の違い</p>
+          <!-- 用語集を読めない場面では用語のマーカーを付けない -->
+          <p data-scene="styled hover table-off"><b><span class="ms-term" aria-describedby="card-ws-reply">WS<sup class="ms-footnote-ref">[1]</sup><span class="ms-term-card" role="tooltip" id="card-ws-reply"><span class="ms-term-card-name">WS（ワークスペース）</span>話し合いの記録を配置するフォルダ</span></span></b> は <span class="ms-term">mdmark<sup class="ms-footnote-ref">[2]</sup><span class="ms-term-card" role="tooltip"><span class="ms-term-card-name">mdmark</span>Markdown 文書の表示を各アプリで共通に使用するライブラリ</span></span> の用語で、<span class="ms-inline-code">WSL</span> は Windows の機能です。</p>
+          <p data-scene="glossary-error"><b>WS</b> は mdmark の用語で、<span class="ms-inline-code">WSL</span> は Windows の機能です。</p>
+          <ul class="ms-list">
+            <li>WS: 用語集の用語</li>
+            <li>WSL: 用語集に無い単語</li>
+          </ul>
+          <!-- 表の部品をオフにした場面: Claude Code の標準の表（マーカーの行は出さない） -->
+          <table class="ms-table" data-scene="table-off">
+            <tr><th>名前</th><th>種類</th><th>説明</th></tr>
+            <tr><td>WS</td><td>用語</td><td>話し合いの記録を配置するフォルダで、mdmark.config.yaml の用語集に登録されている</td></tr>
+            <tr><td>WSL</td><td>Windows の機能</td><td>Windows の上で Linux を動かす機能で、用語集には登録されていない</td></tr>
+          </table>
+          <table class="ms-table is-data" data-scene="styled hover glossary-error">
+            <tr><th>名前</th><th>種類</th><th>説明</th></tr>
+            <tr><td>WS</td><td>用語</td><td>話し合いの記録を配置するフォルダで、mdmark.config.yaml の用語集に登録されている</td></tr>
+            <tr><td>WSL</td><td>Windows の機能</td><td>Windows の上で Linux を動かす機能で、用語集には登録されていない</td></tr>
+          </table>
+          <div class="ms-callout is-note" role="note">
+            <p><span class="ms-callout-label">NOTE</span>用語は mdmark.config.yaml から取ります</p>
+          </div>
+          <!-- コードブロック: 背景の面と言語のラベルで本文と分ける -->
+          <div class="ms-code-block">
+            <span class="ms-code-lang">ts</span>
+            <pre class="ms-code"><span class="kw">const</span> answer = <span class="num">42</span></pre>
+          </div>
+          <!-- 開閉の範囲（details の範囲・セクションの開閉・注意書きの closed）: 押すと開く Button -->
+          <details class="ms-fold">
+            <summary>[ <span class="ms-fold-icon" aria-hidden="true"></span> 用語を読み込む場所 ]</summary>
+            <p>mdmark.config.yaml の index・aliases と、用語集の表から読み込みます。</p>
+          </details>
+          <p class="ms-footnotes" data-scene="styled hover table-off">[1] WS: 話し合いの記録を配置するフォルダ<br>[2] mdmark: Markdown 文書の表示を各アプリで共通に使用するライブラリ</p>
+        </div>
+      </div>
+
+      <!-- Claude Code 自身の入力欄（mdmark-style は描き換えない） -->
+      <p class="term-prompt"><span class="term-dim">❯ </span></p>
+    </div>
+
+    <!-- 用語集を読めない場面: Claude Code のデバッグログに残る 1 行の見本。端末の画面の外に置く -->
+    <section class="term-debug" data-scene="glossary-error" aria-labelledby="debug-log-title">
+      <h2 id="debug-log-title">デバッグログ（<code>claude --debug</code> のときだけ。画面には出ない）</h2>
+      <p class="term-log">mdmark-style: mdmark.config.yaml を読めません（/home/user/repo/docs/mdmark.config.yaml: ファイルがありません）。用語のマーカーを付けずに描きます</p>
+    </section>
+  </main>
+
+  <!-- 用語のカードを開いた場面: カードを開いた状態で見せる（モックだけの仕組み） -->
+  <script>
+    if (new URLSearchParams(location.search).get("scene") === "hover") {
+      for (const term of document.querySelectorAll("[data-scene-open='hover']")) {
+        term.classList.add("is-open");
+      }
+    }
+  </script>
+</body>
+</html>

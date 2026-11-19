@@ -1,0 +1,50 @@
+# claude plugin validate で $ の渡り先の書き方を確かめた記録（2.1.328 (Claude Code)）
+
+esbuild はまとめるときに最上位の const を var にするため、var の形も確かめた。
+
+## const: /tmp/validate-699/const
+```js
+const readTheme = async ($) => $.settings.read({ key: "theme" });
+const renderReply = async ($, e, next) => { await readTheme($); return next(e); };
+export function register(on) { on("ui.render", { component: "AssistantMessage" }, renderReply); }
+```
+$ claude plugin validate /tmp/validate-699/const
+  ❯ modules: hooks/mod.js
+✔ Validation passed with warnings
+
+## var: /tmp/validate-699/var
+```js
+var readTheme = async ($) => $.settings.read({ key: "theme" });
+var renderReply = async ($, e, next) => { await readTheme($); return next(e); };
+export function register(on) { on("ui.render", { component: "AssistantMessage" }, renderReply); }
+```
+$ claude plugin validate /tmp/validate-699/var
+✘ Found 1 error:
+  ❯ modules../mod.js: var: /tmp/validate-699/var/hooks/mod.js:3: the hook "renderReply" is not a function declared at the top of this file (a function declaration, or a const bound to a function), nor imported from one of the module's own files; $ is always spelled $.noun.event(...) at the call site, on is always on("<event>", hook), and next.to always next.to(e, "<tier>")
+✘ Validation failed
+
+## object: /tmp/validate-699/object
+```js
+async function readTheme(options) { return options.$.settings.read({ key: "theme" }); }
+async function renderReply($, e, next) { await readTheme({ $ }); return next(e); }
+export function register(on) { on("ui.render", { component: "AssistantMessage" }, renderReply); }
+```
+$ claude plugin validate /tmp/validate-699/object
+✘ Found 1 error:
+  ❯ modules../mod.js: object: /tmp/validate-699/object/hooks/mod.js:2: $ itself is put in an object (bound, passed, spread, returned or read); $ is always spelled $.noun.event(...) at the call site, on is always on("<event>", hook), and next.to always next.to(e, "<tier>")
+✘ Validation failed
+
+## current: /tmp/validate-699/current
+```js
+async function readTheme($) { return $.settings.read({ key: "theme" }); }
+async function renderReply($, e, next) { await readTheme($); return next(e); }
+export function register(on) { on("ui.render", { component: "AssistantMessage" }, renderReply); }
+```
+$ claude plugin validate /tmp/validate-699/current
+  ❯ modules: hooks/mod.js
+✔ Validation passed with warnings
+
+## mod: mdmark-style
+$ claude plugin validate mdmark-style
+  ❯ modules: hooks/mod/mod.js
+✔ Validation passed with warnings

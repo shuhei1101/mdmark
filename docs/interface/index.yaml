@@ -74,6 +74,12 @@ items:
   summary: SessionStart で常駐サーバーのポートを確認し、待ち受けていないときだけ global-setup での起動の仕方を 1 行で指定する
 - page: IF-472-43.ts.yaml
   summary: .mark.md への Write・Edit と語 mdmark を含む発言で、記法のルールの参照を 1 セッションに 1 回案内する
+- page: IF-472-45.tsx.yaml
+  summary: Claude Code の返答の表・注意書き・見出し・コード・開閉の範囲を共通スタイルの部品の木で描く（mdmark-style の ui.render AssistantMessage）
+- page: IF-472-46.tsx.yaml
+  summary: Claude Code の発言の用語に下線・カード・脚注を付け、標準の発言と同じ背景の帯で描く（mdmark-style の ui.render UserMessage）
+- page: IF-472-47.ts.yaml
+  summary: SessionStart ごとにマーカーの記載方法の説明を additionalContext へ追加する（mdmark-style の classic.SessionStart）
 - page: IF-472-11.ts.yaml
   summary: 端末の設定のパスとバージョン・tmux のセッション名・待ち受けているか・ログの場所を返却する（setup.js status）
 - page: IF-472-14.ts.yaml

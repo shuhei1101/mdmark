@@ -27,5 +27,6 @@
     "src",
     "tests",
     "vitest.config.ts"
-  ]
+  ],
+  "exclude": ["tests/integration/ClaudeCodeプラグイン/mdmark-style"]
 }

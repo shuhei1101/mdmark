@@ -26,7 +26,7 @@ Claude Code で mdmark の文書を記載し始める前に実行する。
 ターミナルからは `claude plugin marketplace add shuhei1101/mdmark` で追加できる。
 タグを記載しないと develop の最新を読み込み、develop に入った変更がプラグインの更新で届く。
 バージョンを固定するときは `shuhei1101/mdmark#v{バージョン}` と、develop に打ったタグを記載する。
-リポジトリの直下の `.claude-plugin/marketplace.json` を読み込み、プラグイン `mdmark` を記載する。
+リポジトリの直下の `.claude-plugin/marketplace.json` を読み込み、プラグイン `mdmark` と `mdmark-style` を記載する。
 
 ### プラグインを入れる
 
@@ -40,6 +40,16 @@ Claude Code で mdmark の文書を記載し始める前に実行する。
 Claude Code が `plugin/` をキャッシュへ写す。
 プラグインはまとめたフック・スクリプトとスキル（`global-setup`・`setup`）だけを持ち、依存を入れない。
 フックは、MCP のツールの呼び出しの前に作業のフォルダを引数に入れ、`.mark.md` のファイルへの Write・Edit と語 mdmark を含む発言で、ガイドを参照してから記載するよう 1 つのセッションに 1 回案内する。
+
+### 画面の描き換えを入れる
+
+Claude Code の返答と発言を mdmark の共通スタイルで描くときだけ、同じマーケットプレイスから mod のプラグイン mdmark-style も入れる。
+
+```text
+/plugin install mdmark-style@mdmark
+```
+
+mdmark とは別に入れ、別に外せる（[画面を共通スタイルで描く](./ClaudeCodeで使用する-画面を共通スタイルで描く.md)）。
 
 ### 次のセッションを開く
 
