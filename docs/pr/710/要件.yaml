@@ -13,7 +13,9 @@ docs:
   - page: docs/interface/IF-472-35.ts.yaml
     new: false
     change: 'クラス図の click・link の id: のリンク先を resolveIdLink で URL にする結合テストのケースを追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T15:25:32.321776+00:00'
   - page: docs/module/MOD-472-128.ts.yaml
     new: false
     change: 'attachMap の手順 1 で、構成図の上で描く種類の図を付ける関数にも hooks.resolveIdLink を指定する。クラス図の id: のリンク先の単体テストを追加する'
