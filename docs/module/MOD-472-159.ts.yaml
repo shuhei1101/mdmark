@@ -12,14 +12,24 @@ constants:
   - name: partModuleLoaders
     title: 部品のモジュールの読み込みの差し替え
     container: src/part-modules.ts
-    summary: '`setPartModuleLoader` で、部品のモジュールを返却する関数を入れる（書き出した HTML の起動の処理と利用側のページが呼ぶ）。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む'
-    value: 'new Map<PartName, () => Promise<Record<string, unknown>>>()'
+    summary: '`setPartModuleLoader` で、部品と mermaid のモジュールを返却する関数を入れる（書き出した HTML の起動の処理と利用側のページが呼ぶ）。無い部品の名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む。無い `mermaid` は mermaid.ts がまとめた mermaid か `mermaid.url` から読み込む'
+    value: 'new Map<PartLoaderName, () => Promise<Record<string, unknown>>>()'
     status: implemented
   - name: partModules
     title: 読み込んだ部品のモジュール
     container: src/part-modules.ts
     summary: 部品の名前から読み込みの Promise を参照する。ページの中で 1 回だけ読み込む（失敗も記録し、再読み込みしない）
     value: new Map<PartName, Promise<unknown>>()
+  - name: PART_LOADER_NAMES
+    title: 読み込みを差し替えられる名前
+    container: src/part-modules.ts
+    summary: '`setPartModuleLoader` が受け付ける名前。`PART_MODULE_FILES` のキーと `mermaid`（`PartLoaderName` は `PartName | "mermaid"`）'
+    value: '["view", "comments", "map", "mermaid"] as const'
+  - name: mermaidByLoader
+    title: 関数で読み込んだ mermaid
+    container: src/part-modules.ts
+    summary: '`mermaid` の名前から、`loader` を呼んだ Promise を参照する。ページの中で 1 回だけ呼ぶ（失敗も記録し、呼び直さない）。`mount` ごとに記録する URL の mermaid と分けて持ち、`partModules` と同じく export して単体テストが `clear()` で空にする'
+    value: 'new Map<"mermaid", Promise<Record<string, unknown>>>()'
 functions:
   - name: loadPartModule
     title: 部品のモジュールを読み込む
@@ -90,27 +100,27 @@ functions:
   - name: setPartModuleLoader
     title: 部品のモジュールの読み込みを差し替える
     container: src/part-modules.ts
-    summary: 引数を検め、`partModuleLoaders` に部品の名前とモジュールを返却する関数を入れる。`dist/index.js` の公開関数で、書き出した HTML の起動の処理も呼ぶ
+    summary: 引数を検め、`partModuleLoaders` に部品か `mermaid` の名前とモジュールを返却する関数を入れる。`dist/index.js` の公開関数で、書き出した HTML の起動の処理も呼ぶ
     kind: 関数
     scope: public
     args:
       - name: name
-        type: PartName
+        type: PartLoaderName
         required: true
-        description: 部品の名前。`PART_MODULE_FILES` のキーのどれか
+        description: 部品の名前か `mermaid`。`PART_LOADER_NAMES` のどれか
       - name: loader
         type: () => Promise<Record<string, unknown>>
         required: true
-        description: 部品のモジュールを返却する関数。書き出した HTML の起動の処理は、埋めなかった部品に拒否する関数を入れる
+        description: 部品か mermaid のモジュールを返却する関数。書き出した HTML の起動の処理は、埋めなかった部品に拒否する関数を入れる（`mermaid` は入れない）
     returns:
       type: void
       description: '-'
     exceptions:
       - name: TypeError
-        condition: '`name` が `PART_MODULE_FILES` のキーに無いか、`loader` が関数でない。メッセージに誤った引数の名前（`name`・`loader`）を含め、`partModuleLoaders` を変えない'
+        condition: '`name` が `PART_LOADER_NAMES` に無いか、`loader` が関数でない。メッセージに誤った引数の名前（`name`・`loader`）を含め、`partModuleLoaders` を変えない'
     process: |-
-      1. `name` が `PART_MODULE_FILES` の自身のキーか、`loader` が関数かを確認し、合わなければ `TypeError` を投げる
-      2. `partModuleLoaders` に `name` → `loader` を入れる（既にあれば置き換える。`partModules` に記録済みの名前は、読み込み済みの Promise を使用し続ける）
+      1. `name` が `PART_LOADER_NAMES` のどれかか、`loader` が関数かを確認し、合わなければ `TypeError` を投げる
+      2. `partModuleLoaders` に `name` → `loader` を入れる（既にあれば置き換える。`partModules`・`mermaidByLoader` に記録済みの名前は、読み込み済みの Promise を使用し続ける）
     unit_tests:
       - name: test_set_part_module_loader_when_args_invalid
         case: 異常
@@ -124,9 +134,51 @@ functions:
         condition: '`map` に関数 A、次に関数 B を指定してから `map` を読み込む'
         mock: A・B は呼ばれた回数を数え、`attachMap` を持つオブジェクトを返却する
         expected: B が 1 回呼ばれ、A は呼ばれない
+      - name: test_set_part_module_loader_when_mermaid
+        case: 正常
+        summary: '`mermaid` の名前を受け付ける'
+        condition: '`setPartModuleLoader("mermaid", 関数)` を呼ぶ'
+        mock: '関数は `{ default: {} }` を返却する'
+        expected: 例外を投げず、`partModuleLoaders` に `mermaid` が入る
     refs:
       - IF-655-1#
-lead: '部品のモジュールのファイル名・URL の差し替え・読み込みを受け持ち、部品のモジュールの読み込み方を変えるときに参照する。'
+  - name: loadMermaidByLoader
+    title: 関数で mermaid を読み込む
+    container: src/part-modules.ts
+    summary: '`setPartModuleLoader` で `mermaid` に指定した関数をページの中で 1 回だけ呼び、その Promise を返却する。指定が無ければ `undefined` を返却する'
+    kind: 関数
+    scope: internal
+    args: []
+    returns:
+      type: Promise<Record<string, unknown>> | undefined
+      description: 関数が返却したモジュールを待つ Promise。関数が拒否するか同期で投げたときは元のエラーで reject する。構造の確認は呼ぶ側（mermaid.ts）がする
+    process: |-
+      1. `mermaidByLoader` に `mermaid` があればその Promise を返却する
+      2. `partModuleLoaders` に `mermaid` が無ければ `undefined` を返却する（記録しない）
+      3. その関数を Promise の中で呼ぶ（同期で投げた例外も reject にする）。その Promise を `mermaidByLoader` に `mermaid` の名前で記録して返却する
+    unit_tests:
+      - name: test_load_mermaid_by_loader
+        case: 正常
+        summary: 指定した関数を 1 回だけ呼ぶ
+        condition: '`setPartModuleLoader("mermaid", 関数)` の後に 2 回呼ぶ'
+        mock: '関数は呼ばれた回数を数え、`{ default: {} }` を返却する'
+        expected: '関数が 1 回だけ呼ばれ、2 回とも同じ Promise が `{ default: {} }` で解決する'
+      - name: test_load_mermaid_by_loader_when_not_set
+        case: 正常
+        summary: 指定が無ければ undefined を返却する
+        condition: '`mermaidByLoader`・`partModuleLoaders` を `clear()` してから、`mermaid` を指定せずに呼ぶ。その後 `setPartModuleLoader("mermaid", 関数)` してもう一度呼ぶ'
+        mock: '関数は `{ default: {} }` を返却する'
+        expected: 1 回目は `undefined`、2 回目は関数の Promise を返却する
+      - name: test_load_mermaid_by_loader_when_rejected
+        case: 異常
+        summary: 拒否した関数は元のエラーで reject し、呼び直さない
+        condition: 拒否する関数と、同期で投げる関数をそれぞれ指定して 2 回ずつ呼ぶ。それぞれの前に `mermaidByLoader`・`partModuleLoaders` を `clear()` する
+        mock: 関数は呼ばれた回数を数え、`Error("missing")` で拒否するか投げる
+        expected: どちらも例外を投げずに Promise を返却し、2 回とも `missing` のエラーで reject する。それぞれの関数は 1 回だけ呼ばれる
+    refs:
+      - IF-655-1#flows[正常系（mermaid のモジュールを指定する）]
+      - IF-655-1#flows[異常系（mermaid のモジュールを読み込めない・console.error）]
+lead: '部品のモジュールのファイル名・URL の差し替え・読み込みと、関数で指定した mermaid の読み込みを受け持ち、部品のモジュールの読み込み方を変えるときに参照する。'
 tags:
   - name: topic:ビュー
     main: true
