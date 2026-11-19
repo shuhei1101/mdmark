@@ -131,7 +131,13 @@ test("test_layout_map_when_overrides", async () => {
   expect(byId.get("frame")?.y).toBe(lib.y + 60);
   const marker = byId.get("marker") as Rect;
   const mermaid = byId.get("mermaid") as Rect;
-  expect(mermaid.x === marker.x || mermaid.y === marker.y).toBe(true);
+  // 同じ段のノードは段の中で中心を揃えるので、どちらかの軸の中心が一致する
+  const centerX = (rect: Rect) => rect.x + rect.w / 2;
+  const centerY = (rect: Rect) => rect.y + rect.h / 2;
+  expect(
+    centerX(mermaid) === centerX(marker) ||
+      centerY(mermaid) === centerY(marker),
+  ).toBe(true);
 });
 
 // 測った大きさ（正常系）
