@@ -9,7 +9,7 @@ flows:
     summary: バージョンが合うとき、.vsix を作り、ワークフローが Release に添えた後に Marketplace へ公開する構成になっている
     setup:
       - name: バージョンを合わせたリポジトリ
-        description: '`vscode/package.json` の `version` が `0.1.4` で、最上位の `icon` にアイコンの PNG を記載した作業ツリー'
+        description: '`vscode/package.json` の `version` が `0.2.0` で、最上位の `icon` にアイコンの PNG を記載した作業ツリー'
       - name: Mock
         description: GitHub と Marketplace へは送信しない。`release:check` と `package` を手元で実行し、ワークフローの YAML を読む
     flow: |-
@@ -19,16 +19,16 @@ flows:
       sequenceDiagram
         participant D as 開発者
         participant GA as ワークフロー
-        D->>GA: release:check vscode-v0.1.4
+        D->>GA: release:check vscode-v0.2.0
         GA-->>D: 終了コード 0
         D->>GA: package
-        GA-->>D: mdmark-0.1.4.vsix
+        GA-->>D: mdmark-0.2.0.vsix
       ```
 
       <!-- /map -->
     expected:
       - '`release:check` が終了コード 0'
-      - '`mdmark-0.1.4.vsix` が記載され、中の `extension/package.json` の `version` が `0.1.4`、`extension/dist/` にまとめた拡張機能があり `node_modules/` が無い'
+      - '`mdmark-0.2.0.vsix` が記載され、中の `extension/package.json` の `version` が `0.2.0`、`extension/dist/` にまとめた拡張機能があり `node_modules/` が無い'
       - '`.vsix` に `extension/package.json` の `icon` が指す PNG があり、`extension.vsixmanifest` に `Type` が `Microsoft.VisualStudio.Services.Icons.Default` でその PNG を指す `Asset` がある。アイコンの原本の SVG は .vsix に無い'
       - ワークフローの YAML の `on.push.tags` が `vscode-v*` だけで、`permissions.contents` が `write`、`permissions.id-token` が `write`
       - ワークフローの最後の工程が `npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix` で、Release に添える工程より後にあり、`--skip-duplicate` を持たない
@@ -38,7 +38,7 @@ flows:
     summary: タグと `vscode/package.json` のバージョンが違うとき、バージョンの比較で止める
     setup:
       - name: バージョンがずれたリポジトリ
-        description: '`vscode/package.json` の `version` が `0.1.4` のまま'
+        description: '`vscode/package.json` の `version` が `0.2.0` のまま'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -48,14 +48,14 @@ flows:
       sequenceDiagram
         participant D as 開発者
         participant GA as ワークフロー
-        D->>GA: release:check vscode-v0.2.0
+        D->>GA: release:check vscode-v0.3.0
         GA-->>D: 終了コード 1 と 2 つのバージョン
       ```
 
       <!-- /map -->
     expected:
-      - 終了コードが 1 で、標準エラーに `0.2.0` と `0.1.4` が出る
-      - '`release:check vscode-0.1.4`（構造に合わないタグ）も終了コード 1'
+      - 終了コードが 1 で、標準エラーに `0.3.0` と `0.2.0` が出る
+      - '`release:check vscode-0.2.0`（構造に合わないタグ）も終了コード 1'
     test: test_error_when_version_mismatch
 lead: 拡張機能のタグを受けて、タグと `vscode/package.json` のバージョンを比べ、.vsix を作ってそのタグの GitHub Release に添え、同じ .vsix を Visual Studio Marketplace へ公開する。
 idempotent: false
