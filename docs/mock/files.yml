@@ -1387,7 +1387,7 @@ files:
     tags: [topic:モック]
   - path: components/map-dim-contrast/index.html
     visibility: internal
-    description: '部品『map-dim-contrast』のモック: map の図の再生・中へ入る操作で薄くした要素の文字のコントラストを 4.5:1 以上に保つ薄め方を、案 A（opacity を上げる）と案 B（文字の色を変え、面と枠を背景と混ぜる）で、C4Dynamic の再生・ER 図とクラス図の中へ入った状態・状態遷移図の再生・狭い幅に並べる。薄くした要素の外観を決めるときに参照する。'
+    description: '部品『map-dim-contrast』のモック: map の図の再生・選択・中へ入る操作で薄くした要素の文字のコントラストを 4.5:1 以上に保つ薄め方を、案 A（opacity を上げる）と案 B（文字の色を変え、面と枠を背景と混ぜる）で、C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダークに並べる。薄くした要素の外観を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: refs/707/assets/dim-contrast.css
     visibility: internal

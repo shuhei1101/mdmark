@@ -4,7 +4,7 @@
  * 囲みの外は #445・#531・#596 の今の薄め方（opacity 0.25・0.4）のまま。
  */
 
-/* 案 A: opacity を残し、薄くした要素の文字（--mdmark-color-muted）が背景に対して 4.5:1 以上になる 0.8 まで上げる */
+/* 案 A: opacity を残し、既定のライトの背景で薄くした要素の文字（--mdmark-color-muted）が 4.5:1 以上になる 0.8 まで上げる */
 .dim-a .map-figure .map-dim,
 .dim-a .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline):not(.map-keep),
 .dim-a .map-figure .map-faded,
@@ -13,26 +13,28 @@
 }
 
 /*
- * 案 B: 文字を持つ要素（ノード・グループ・線のラベル・多重度・関連のラベル）は opacity で薄くせず、
- * 文字を本文の文字色と背景の色を 62% : 38% で混ぜた色（背景に対して 4.9:1 前後）にし、枠と面の色も背景の色と混ぜて薄く見せる。
- * 文字を持たない線・ライフライン・関係の端の形状は、今の opacity 0.25 のまま薄くする。
+ * 案 B: 文字を持つ要素は opacity で薄くせず、文字を本文の文字色と背景の色を 68% : 32% で混ぜた色
+ * （既定・紙・slate のライトとダークで背景に対して 5.1:1 以上）にする。
+ * ノード・グループ・線のラベル・多重度は、枠と面の色も背景の色と混ぜて薄く見せる。
+ * 文字を持たない線・ライフライン・関係の端の形状（SVG の図形）は、今の opacity 0.25 のまま薄くする。
  */
-.dim-b .map-figure :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group, .er-card).map-dim,
-.dim-b .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep),
-.dim-b .map-figure :is(.mdmark-diagram-node, .map-group).map-faded {
+.dim-b .map-figure :is(.map-dim, .map-faded):not(svg *, .mdmark-diagram-wire, .mdmark-diagram-lifeline),
+.dim-b .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) {
   opacity: 1;
-  color: color-mix(in srgb, var(--mdmark-color-text) 62%, var(--mdmark-color-bg));
+  color: color-mix(in srgb, var(--mdmark-color-text) 68%, var(--mdmark-color-bg));
+}
+.dim-b .map-figure :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group, .er-card):is(.map-dim, .map-faded),
+.dim-b .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) {
   border-color: color-mix(in srgb, var(--map-ink, var(--node-color, var(--mdmark-color-border))) 35%, var(--mdmark-color-bg));
-  background: color-mix(in srgb, var(--map-fill, var(--mdmark-color-bg-opaque)) 30%, var(--mdmark-color-bg-opaque));
+  background: color-mix(in srgb, var(--map-fill, var(--mdmark-color-bg-opaque)) 20%, var(--mdmark-color-bg-opaque));
 }
 /* 中の名前・種類の行・説明の文字も、薄くした要素の文字の色にそろえる */
-.dim-b .map-figure :is(.mdmark-diagram-node, .mdmark-diagram-label, .map-group, .er-card).map-dim *,
-.dim-b .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) *,
-.dim-b .map-figure :is(.mdmark-diagram-node, .map-group).map-faded * {
-  color: color-mix(in srgb, var(--mdmark-color-text) 62%, var(--mdmark-color-bg));
+.dim-b .map-figure :is(.map-dim, .map-faded):not(svg *, .mdmark-diagram-wire, .mdmark-diagram-lifeline) *,
+.dim-b .map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-label):not(.map-keep) * {
+  color: color-mix(in srgb, var(--mdmark-color-text) 68%, var(--mdmark-color-bg));
 }
-/* SVG の文字（ER 図の関連のラベル）は塗りの色を変える */
-.dim-b .map-figure .er-label.map-dim {
+/* SVG の文字（ER 図の関連のラベル・シーケンス図のメッセージ）は塗りの色を変える */
+.dim-b .map-figure :is(text.map-dim, .map-dim text, .er-label.map-dim) {
   opacity: 1;
-  fill: color-mix(in srgb, var(--mdmark-color-text) 62%, var(--mdmark-color-bg));
+  fill: color-mix(in srgb, var(--mdmark-color-text) 68%, var(--mdmark-color-bg));
 }

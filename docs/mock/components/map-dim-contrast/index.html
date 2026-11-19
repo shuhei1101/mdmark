@@ -25,6 +25,10 @@
     .map-catalog h3 { font-size: 18px; margin: 32px 0 4px; }
     .map-catalog p.state-note { margin: 0 0 4px; color: var(--mdmark-color-muted); font-size: 13px; }
     .narrow { max-width: 390px; }
+    /* 紙のテーマの場面: テーマの配色の値（dist/index.css の theme-paper のライトとダーク）を、囲みの中だけに与える */
+    .paper-light { --mdmark-color-bg: #fbf8f1; --mdmark-color-text: #2a2520; --mdmark-color-heading: #1f1a15; --mdmark-color-muted: #5c5247; --mdmark-color-link: #9b2c2c; --mdmark-color-border: #e3dacb; --mdmark-color-surface: #f2ece1; }
+    .paper-dark { --mdmark-color-bg: #1c1915; --mdmark-color-text: #e8e0d2; --mdmark-color-heading: #f1eadc; --mdmark-color-muted: #b8ad9c; --mdmark-color-link: #f0a39a; --mdmark-color-border: #36302a; --mdmark-color-surface: #25211c; color-scheme: dark; }
+    :is(.paper-light, .paper-dark) { --mdmark-color-bg-opaque: var(--mdmark-color-bg); padding: 8px 16px 16px; background: var(--mdmark-color-bg); color: var(--mdmark-color-text); }
     /* #445 のモックの帯は、#660 の手順のバーの帯に置き換えたため出さない */
     .map-catalog .map-band { display: none; }
   </style>
@@ -36,7 +40,7 @@
   </nav>
   <main class="map-catalog" id="catalog">
     <h1>map-dim-contrast</h1>
-    <p class="state-note">案内・再生・選択で強調しない要素（map-dim・map-focus）と、中へ入ったときにグループの外側に残す要素（map-faded）の薄め方を、案ごとに同じ状態で並べる。どの案も、薄くした要素の文字は背景に対して 4.5:1 以上のコントラストを保つ</p>
+    <p class="state-note">案内・再生・選択で強調しない要素（map-dim・map-focus）と、中へ入ったときにグループの外側に残す要素（map-faded）の薄め方を、案ごとに同じ状態で並べる</p>
   </main>
   <script type="module">
     import { createC4DynamicStill, DYNAMIC, DYNAMIC_DATA } from "../../refs/677/assets/c4-dynamic-play.js";
@@ -44,11 +48,23 @@
     import { ER, ER_DATA, STATE, STATE_DATA } from "../../refs/531/assets/samples.js";
     import { createClassMap } from "../../refs/596/assets/class-arch-c4.js";
     import { CLASS, CLASS_DATA } from "../../refs/596/assets/samples.js";
+    import { createSequence } from "../../refs/445/assets/map-mock.js";
+    import { CONFIG, SEQUENCE } from "../../refs/445/assets/samples.js";
+    import { createC4KindMap } from "../../refs/660/assets/c4-kinds.js";
+    import { DEPLOYMENT, DEPLOYMENT_DATA } from "../../refs/660/assets/samples.js";
+
+    const SEQUENCE_KINDS = { user: CONFIG.kinds.outside, mount: CONFIG.kinds.step, marker: CONFIG.kinds.step, mermaid: CONFIG.kinds.step, layout: CONFIG.kinds.step };
+    /** シーケンス図を描き、参加者を選ぶか、指定の番号のメッセージの再生を始めた状態にする */
+    const drawSequence = (host, id, { select, play }) => {
+      const view = createSequence(host, { ...SEQUENCE, id, queryKey: `${id}-seq` }, SEQUENCE_KINDS, () => {});
+      if (select) host.querySelector(`.map-participant[data-node="${select}"]`)?.click();
+      if (play !== undefined) view.start(play);
+    };
 
     /** 案の囲みの class・見出し・補足 */
     const VARIANTS = [
-      ["dim-a", "案 A: opacity を 0.8 まで上げる", "薄くした要素を、文字のコントラストが 4.5:1 以上になる opacity 0.8 で描く。線・ライフラインも同じ濃さになり、強調する要素との差は小さい"],
-      ["dim-b", "案 B: 文字は薄めず、色を変える（推奨）", "文字を持つ要素は opacity で薄くせず、文字を本文の文字色と背景の色を混ぜた色（背景に対して 4.5:1 以上）にし、枠と面も背景の色と混ぜる。文字を持たない線・ライフライン・関係の端は今の opacity 0.25 のまま薄くする"],
+      ["dim-a", "案 A: opacity を 0.8 まで上げる", "薄くした要素を opacity 0.8 で描く。既定のライトの背景では文字が 4.6:1 だが、紙のライトの背景と色を指定したノードの面では 4.5:1 を下回る。線・ライフラインも同じ濃さになり、強調する要素との差は小さい"],
+      ["dim-b", "案 B: 文字は薄めず、色を変える（推奨）", "文字を持つ要素は opacity で薄くせず、文字を本文の文字色と背景の色を 68% : 32% で混ぜた色（既定・紙・slate のライトとダークで背景に対して 5.1:1 以上）にし、枠と面も背景の色と混ぜる。文字を持たない線・ライフライン・関係の端は今の opacity 0.25 のまま薄くする"],
     ];
     /** 状態の見出し・補足・描く関数 */
     const STATES = [
@@ -56,6 +72,9 @@
       ["ER 図（分類の中）", "分類の箱の外のテーブルを薄く残す（map-faded）", (host, id) => createErMap(host, { id, title: "記録の構造（分類の中）", source: ER, data: ER_DATA }, { enter: "記録" })],
       ["状態遷移図（再生）", "6 本目の遷移のほかを薄くする（map-dim）", (host, id) => createStateMap(host, { id, title: "作業の状態（再生）", source: STATE, data: STATE_DATA }, { step: 5 })],
       ["クラス図（namespace の中）", "namespace の外のクラスを薄く残す（map-faded）", (host, id) => createClassMap(host, { id, title: "図形（namespace の中）", source: CLASS, data: CLASS_DATA }, { enter: "形状" })],
+      ["シーケンス図（参加者の選択）", "選んだ参加者が送る・受けるメッセージのほかと、選ばない参加者の見出し・ライフラインを薄くする（map-dim）", (host, id) => drawSequence(host, id, { select: "mount" })],
+      ["シーケンス図（再生）", "3 番目のメッセージの送り手・受け手のほかの見出し・ライフラインと、ほかのメッセージを薄くする（map-dim）", (host, id) => drawSequence(host, id, { play: 2 })],
+      ["C4 の配置図（配置先のノードの中）", "配置先のノードの外の要素を薄く残す（map-faded）", (host, id) => createC4KindMap(host, { id, source: DEPLOYMENT, data: DEPLOYMENT_DATA }, { enter: "region" })],
     ];
     const catalog = document.getElementById("catalog");
     const add = (parent, tag, text, className) => parent.append(Object.assign(document.createElement(tag), { textContent: text, ...(className ? { className } : {}) }));
@@ -78,6 +97,14 @@
       narrow.className = "narrow";
       section.append(narrow);
       STATES[0][2](narrow, `${variant}-narrow`);
+      for (const [theme, label] of [["paper-light", "紙のテーマ（ライト）"], ["paper-dark", "紙のテーマ（ダーク）"]]) {
+        add(section, "h3", label);
+        add(section, "p", "C4Dynamic の再生（番号 2 の関係）を、紙のテーマの配色で描く", "state-note");
+        const themed = document.createElement("div");
+        themed.className = theme;
+        section.append(themed);
+        STATES[0][2](themed, `${variant}-${theme}`);
+      }
     });
     // 選択で薄くする状態（ER 図・クラス図のテーブル・クラスを押す、線にポインターを乗せる）はモックの初期状態では持たないため、図の操作で再現する
     add(catalog, "p", "選択: ER 図のテーブル・クラス図のクラスの見出しの余白を押すか、線にポインターを乗せると、関係しない要素を同じ薄め方で薄くする", "state-note");
