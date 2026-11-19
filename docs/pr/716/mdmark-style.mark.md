@@ -58,4 +58,93 @@
 
 ## テスト結果
 
-なし
+### 単体
+
+<!-- table: {"kind": "data"} -->
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/mdmark-style/inline-marks.test.ts` | 全実行 | 新規 | ✅ | 6 テスト pass<br>`テスト結果/20261120041311_d3c3aa83_単体テスト.log` |
+| `tests/unit/src/mdmark-style/document-parts.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 17 テスト pass |
+| `tests/unit/src/mdmark-style/reply.test.ts` | 全実行 | 変更 | ✅ | - |
+| `tests/unit/src/mdmark-style/user-message.test.ts` | 全実行 | 変更 | ✅ | - |
+| `tests/unit/src/mdmark-style/settings.test.ts` | 全実行 | 変更 | ✅ | - |
+| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | 2586 テスト pass（ランナー） |
+
+<!-- /table -->
+
+直したテスト: `test_split_blocks_when_tree_note_escaped`（[a2ec5860](https://github.com/shuhei1101/mdmark/commit/a2ec5860)）。
+ライブラリ本体の `parseTree` はルートの行が無いツリー（1 行目から `|-- ` で始まる）を「上の行より 2 階層深い」と返し、設計書（MOD-472-353 の手順 6）はそのときコードブロックにするため、テストの入力にルートの行 `src/` を足し、`rule` の期待値に空のルートの行を加えた。
+設計書のテストの行も同じ内容に直した。
+
+### 結合テストの実行範囲
+
+`judge_integration_scope` の判定では、全てのファイルが一覧と対応表に無く R7 になる。
+mdmark-style の結合テストはランナーでは回せず、手元の `npm run test:mdmark-style -- {ファイル名}` で回す（テスト実行方法 TL-3 の補足）。
+Vitest の結合テスト（`integration-*`）から読み込む変更は無い（`style-tokens.logic.ts` を読み込むのは mdmark-style だけ）。
+
+<!-- table: {"kind": "data"} -->
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
+| --- | --- | --- | --- |
+| `docs/config/CFG-472-4.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/guide/ClaudeCodeで使用する-画面を共通スタイルで描く.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/guide/設定.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/interface/IF-472-45.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/interface/IF-472-47.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/files.yml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/pages/claude-code-terminal/716/document-parts/index.html` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/pages/claude-code-terminal/716/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/pages/claude-code-terminal/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/refs/716/assets/parts.css` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/refs/716/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/refs/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-352.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-353.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-355.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-357.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-358.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-359.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-366.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-367.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/index.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/README.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/mdmark-style.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/タスク一覧.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120035724_16e7deae_lint.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120035821_16e7deae_単体テスト.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120041106_d3c3aa83_lint.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120041311_d3c3aa83_単体テスト.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/ライブラリ本体.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/確認ログ.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/要件.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/要件.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/scenario/SC-472-97.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/scenario/SC-472-99.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/screen/SCR-472-5.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `mdmark-style/settings.sample.yaml` | R7（見本のファイルで、プラグインは読み込まない） | - | - |
+| `src/mdmark-style/blocks.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/document-parts.tsx` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/inline-marks.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/marker-guide.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
+| `src/mdmark-style/reply.tsx` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/settings.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
+| `src/mdmark-style/user-message.tsx` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | - |
+| `src/shared/style-tokens.logic.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | - |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/document-parts.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/inline-marks.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/reply.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/settings.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/user-message.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/shared/style-tokens.logic.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+
+<!-- /table -->
+
+実行する結合テスト（合わせた範囲）: `render-reply.test.tsx`・`screen.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`（`tests/integration/ClaudeCodeプラグイン/mdmark-style/` の 4 ファイル。それぞれ変更したモジュールを読み込むため）。
+`render-reply.test.tsx` の追加のフロー（`test_normal_when_document_parts`・`test_normal_when_row_detail_pressed`・`test_normal_when_document_part_disabled`・`test_normal_when_tree_unreadable`）と、`screen.test.tsx` の追加の要素のテストは、結合テスト作成の工程で作る。
+
+### 結合
+
+なし（結合テスト作成の工程で実行する）
