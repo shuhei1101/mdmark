@@ -1,0 +1,13 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: map の構成図・状態遷移図を描く流れと期待結果は変わらない。ノードが名前の行の数に合った幅と高さで描かれるようになるだけ
+    depends_on: []
+scope_out:
+  - item: '`pill` のノードの左右の余白（`src/index.css` の `padding-inline: 16px`）そのものを変えること'
+    reason: 要望は見積もりを描画に合わせることで、丸い端の余白の見た目は変えない
+    plan: none
+  - item: map 以外の図（`src/cli/figure-svg.ts` の `textWidth`）の文字の幅の見積もり
+    reason: CLI で図の HTML を SVG にする処理で、map のノードの大きさの見積もりとは別の処理。要望に含まれない
+    plan: none
