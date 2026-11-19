@@ -1737,7 +1737,11 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
   const tableTop = table.getBoundingClientRect().top + window.scrollY;
   try {
     await vi.waitFor(() => {
-      expect(el.getAttribute("data-mdmark-sticky")).toBe(mode);
+      expect(
+        find(wrapper, ".mdmark-table-scroll").getAttribute(
+          "data-mdmark-sticky",
+        ),
+      ).toBe(mode);
     });
     // 検証: 表は高さを抑えず、表の中で縦にスクロールしない
     expect(getComputedStyle(wrapper).maxHeight).toBe("none");
@@ -1845,6 +1849,201 @@ test("test_normal_when_table_header_stuck", async () => {
     await checkStickyRows("timeline");
     // 実行・検証: `animation-timeline` を持たないブラウザの留め方
     await checkStickyRows("script");
+  } finally {
+    await page.viewport(original.width, original.height);
+  }
+});
+
+/** `animation-timeline` を持たないブラウザの代わりに、その問い合わせだけを偽にする */
+function mockNoTimeline(): void {
+  const supports = CSS.supports.bind(CSS) as (...args: string[]) => boolean;
+  vi.spyOn(CSS, "supports").mockImplementation(((...args: string[]) =>
+    args[0]?.includes("animation-timeline")
+      ? false
+      : supports(...args)) as typeof CSS.supports);
+}
+
+/** 画面の上端に高さ 48px の固定のヘッダーを、その下に高さ 600px の縦にスクロールする区画を配置し、区画の中の描く先の要素を返却する */
+function createScroller(stickyTop?: string): {
+  scroller: HTMLElement;
+  el: HTMLElement;
+} {
+  const header = createElement();
+  header.style.cssText =
+    "position: fixed; top: 0; left: 0; right: 0; height: 48px; background: #fff; z-index: 10";
+  const scroller = createElement();
+  scroller.style.cssText =
+    "position: fixed; top: 48px; left: 0; width: 1000px; height: 600px; overflow: auto";
+  const el = document.createElement("div");
+  el.style.width = "600px";
+  if (stickyTop !== undefined) {
+    el.style.setProperty("--mdmark-sticky-top", stickyTop);
+  }
+  scroller.append(el);
+  return { scroller, el };
+}
+
+/** 区画の中に描いた表の見出し行と集計の行の位置を、区画を表の途中までと表の後までスクロールして測る */
+async function measureStickyInScroller(
+  mode: "timeline" | "script",
+  stickyTop: string | undefined,
+): Promise<{ head: number; foot: number; after: number }> {
+  if (mode === "script") {
+    mockNoTimeline();
+  }
+  const { scroller, el } = createScroller(stickyTop);
+  const handle = await mountTracked(el, { markdown: STICKY_MARKDOWN });
+  try {
+    const table = find<HTMLTableElement>(el, ".mdmark-table table");
+    await vi.waitFor(() => {
+      expect(
+        find(el, ".mdmark-table-scroll").getAttribute("data-mdmark-sticky"),
+      ).toBe(mode);
+    });
+    const tableTop =
+      table.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop;
+    scroller.scrollTop = tableTop + 600;
+    await nextFrames();
+    await nextFrames();
+    const headCell = find<HTMLElement>(table, "thead th");
+    const footCell = find<HTMLElement>(table, "tfoot td");
+    const head = headCell.getBoundingClientRect().top;
+    const foot = footCell.getBoundingClientRect().bottom;
+    scroller.scrollTop = tableTop + table.offsetHeight + 400;
+    await nextFrames();
+    await nextFrames();
+    const after = headCell.getBoundingClientRect().bottom;
+    return { head, foot, after };
+  } finally {
+    handle.destroy();
+    scroller.remove();
+    vi.restoreAllMocks();
+  }
+}
+
+// 縦にスクロールする区画の中に描いた文書で、見出し行を区画の上端からずれの分だけ下に、集計の行を区画の下端に、どのブラウザでも同じ位置に留める（正常系）
+test("test_normal_when_table_header_stuck_in_scroller", async () => {
+  // 準備
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(1280, 800);
+  try {
+    for (const [stickyTop, expectedTop] of [
+      [undefined, 48],
+      ["40px", 88],
+    ] as const) {
+      // 実行
+      const timeline = await measureStickyInScroller("timeline", stickyTop);
+      const script = await measureStickyInScroller("script", stickyTop);
+      // 検証: 見出し行は区画の上端 + ずれ、集計の行は区画の下端（画面の上端から 648px）に留まる
+      for (const measured of [timeline, script]) {
+        expect(Math.abs(measured.head - expectedTop)).toBeLessThanOrEqual(1);
+        expect(Math.abs(measured.foot - 648)).toBeLessThanOrEqual(1);
+        // 検証: 表の後までスクロールすると、見出し行も区画の外（区画の上端より上）へ出る
+        expect(measured.after).toBeLessThan(48);
+      }
+      // 検証: 2 つの留め方で位置が一致する
+      expect(Math.abs(timeline.head - script.head)).toBeLessThanOrEqual(1);
+      expect(Math.abs(timeline.foot - script.foot)).toBeLessThanOrEqual(1);
+    }
+  } finally {
+    await page.viewport(original.width, original.height);
+  }
+});
+
+/** 種類の違う 4 つの表（マーカー無し・data・plain・機能を全て解除した data）を、長い段落を挟んで並べた Markdown。どの表も 3 列 60 行 */
+const EVERY_TABLE_MARKDOWN = (() => {
+  const table = (label: string): string[] => [
+    `| ${label}の名前 | 数量 | 備考 |`,
+    "| --- | --- | --- |",
+    ...Array.from(
+      { length: 60 },
+      (_, row) => `| ${label}${row + 1} | ${row + 1} | 備考${row + 1} |`,
+    ),
+  ];
+  const paragraphs = (label: string): string[] =>
+    Array.from({ length: 30 }, (_, i) => `${label}の段落 ${i + 1}\n`);
+  return [
+    ...paragraphs("最初"),
+    ...table("無し"),
+    "",
+    ...paragraphs("data の前"),
+    '<!-- table: {"kind": "data"} -->',
+    "",
+    ...table("data"),
+    "",
+    "<!-- /table -->",
+    "",
+    ...paragraphs("plain の前"),
+    '<!-- table: {"kind": "plain"} -->',
+    "",
+    ...table("plain"),
+    "",
+    "<!-- /table -->",
+    "",
+    ...paragraphs("解除の前"),
+    '<!-- table: {"kind": "data", "features": {"sort": {"enabled": false}, "pin": {"enabled": false}, "filter": {"enabled": false}}} -->',
+    "",
+    ...table("解除"),
+    "",
+    "<!-- /table -->",
+    "",
+    ...paragraphs("最後"),
+  ].join("\n");
+})();
+
+/** 描いた文書の表ごとに、ページを表の途中までスクロールした後の見出し行の最初のセルの上端を返却する */
+async function stuckHeadTops(el: HTMLElement): Promise<number[]> {
+  const tops: number[] = [];
+  for (const table of el.querySelectorAll<HTMLTableElement>("table")) {
+    const tableTop = table.getBoundingClientRect().top + window.scrollY;
+    await scrollPageTo(tableTop + 300);
+    await nextFrames();
+    tops.push(find<HTMLElement>(table, "thead th").getBoundingClientRect().top);
+  }
+  window.scrollTo(0, 0);
+  return tops;
+}
+
+// 表の種類・+機能・-機能・設定の features.table によらず、本文の行を持つ全ての表の見出し行を留める（正常系）
+test("test_normal_when_every_table_header_stuck", async () => {
+  // 準備
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(1280, 800);
+  try {
+    for (const mode of ["timeline", "script"] as const) {
+      for (const table of [true, false]) {
+        if (mode === "script") {
+          mockNoTimeline();
+        }
+        const el = createElement();
+        el.style.width = "600px";
+        const handle = await mountTracked(el, {
+          markdown: EVERY_TABLE_MARKDOWN,
+          config: { features: { table } },
+        });
+        try {
+          // 検証: features.table がオフなら、どの表も表の部品で包まない
+          expect(el.querySelectorAll(".mdmark-table").length).toBe(
+            table ? 4 : 0,
+          );
+          expect(el.querySelectorAll("table")).toHaveLength(4);
+          // 実行
+          const tops = await stuckHeadTops(el);
+          // 検証: どの表も、見出し行が画面の上端に留まる
+          for (const top of tops) {
+            expect(Math.abs(top)).toBeLessThanOrEqual(1);
+          }
+          // 検証: 文書の中の thead は表ごとに 1 つだけ
+          expect(el.querySelectorAll("thead")).toHaveLength(4);
+        } finally {
+          handle.destroy();
+          el.remove();
+          vi.restoreAllMocks();
+        }
+      }
+    }
   } finally {
     await page.viewport(original.width, original.height);
   }
