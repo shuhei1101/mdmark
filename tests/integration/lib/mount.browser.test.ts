@@ -2006,6 +2006,39 @@ async function stuckHeadTops(el: HTMLElement): Promise<number[]> {
   return tops;
 }
 
+/** 留め方と features.table の組み合わせで描き、どの表も見出し行が画面の上端に留まることを確かめる */
+async function checkEveryTableStuck(
+  mode: "timeline" | "script",
+  table: boolean,
+): Promise<void> {
+  if (mode === "script") {
+    mockNoTimeline();
+  }
+  const el = createElement();
+  el.style.width = "600px";
+  const handle = await mountTracked(el, {
+    markdown: EVERY_TABLE_MARKDOWN,
+    config: { features: { table } },
+  });
+  try {
+    // 検証: features.table がオフなら、どの表も表の部品で包まない
+    expect(el.querySelectorAll(".mdmark-table").length).toBe(table ? 4 : 0);
+    expect(el.querySelectorAll("table")).toHaveLength(4);
+    // 実行
+    const tops = await stuckHeadTops(el);
+    // 検証: どの表も、見出し行が画面の上端に留まる
+    for (const top of tops) {
+      expect(Math.abs(top)).toBeLessThanOrEqual(1);
+    }
+    // 検証: 文書の中の thead は表ごとに 1 つだけ
+    expect(el.querySelectorAll("thead")).toHaveLength(4);
+  } finally {
+    handle.destroy();
+    el.remove();
+    vi.restoreAllMocks();
+  }
+}
+
 // 表の種類・+機能・-機能・設定の features.table によらず、本文の行を持つ全ての表の見出し行を留める（正常系）
 test("test_normal_when_every_table_header_stuck", async () => {
   // 準備
@@ -2013,36 +2046,8 @@ test("test_normal_when_every_table_header_stuck", async () => {
   await page.viewport(1280, 800);
   try {
     for (const mode of ["timeline", "script"] as const) {
-      for (const table of [true, false]) {
-        if (mode === "script") {
-          mockNoTimeline();
-        }
-        const el = createElement();
-        el.style.width = "600px";
-        const handle = await mountTracked(el, {
-          markdown: EVERY_TABLE_MARKDOWN,
-          config: { features: { table } },
-        });
-        try {
-          // 検証: features.table がオフなら、どの表も表の部品で包まない
-          expect(el.querySelectorAll(".mdmark-table").length).toBe(
-            table ? 4 : 0,
-          );
-          expect(el.querySelectorAll("table")).toHaveLength(4);
-          // 実行
-          const tops = await stuckHeadTops(el);
-          // 検証: どの表も、見出し行が画面の上端に留まる
-          for (const top of tops) {
-            expect(Math.abs(top)).toBeLessThanOrEqual(1);
-          }
-          // 検証: 文書の中の thead は表ごとに 1 つだけ
-          expect(el.querySelectorAll("thead")).toHaveLength(4);
-        } finally {
-          handle.destroy();
-          el.remove();
-          vi.restoreAllMocks();
-        }
-      }
+      await checkEveryTableStuck(mode, true);
+      await checkEveryTableStuck(mode, false);
     }
   } finally {
     await page.viewport(original.width, original.height);
