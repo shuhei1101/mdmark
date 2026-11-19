@@ -1,0 +1,1 @@
+# ER 図 ER-472-3・ER-472-6 の relations に from_column・to_column を追加して設計書の検査に合格させる
