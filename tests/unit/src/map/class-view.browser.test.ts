@@ -143,3 +143,34 @@ test("test_attach_map_class_when_note_pressed", async () => {
   expect(root.querySelectorAll("[data-node][data-selected]")).toHaveLength(0);
   expect(root.querySelectorAll("[data-node].map-dim")).toHaveLength(0);
 });
+
+// click・link の行のクラスをリンクにする（正常系）
+test("test_attach_map_class_when_linked", async () => {
+  // 準備
+  const source = [
+    "classDiagram",
+    "  class 受付",
+    "  class 台帳 {",
+    "    +番号 int",
+    "  }",
+    "  class 危険",
+    "  class 予約",
+    '  click 受付 href "./doc-2"',
+    '  link 台帳 "./doc-3"',
+    '  click 危険 href "javascript:alert(1)"',
+    "",
+  ].join("\n");
+  // 実行
+  const root = await setUp(source, JSON.stringify({ version: 1 }));
+  // 検証
+  const linkOf = (id: string) =>
+    nodeOf(root, id).querySelector("a.mdmark-diagram-node-link");
+  expect(nodeOf(root, "受付").classList.contains("has-link")).toBe(true);
+  expect(linkOf("受付")?.getAttribute("href")).toBe("./doc-2");
+  expect(nodeOf(root, "台帳").classList.contains("has-link")).toBe(true);
+  expect(linkOf("台帳")?.getAttribute("href")).toBe("./doc-3");
+  for (const id of ["危険", "予約"]) {
+    expect(nodeOf(root, id).classList.contains("has-link")).toBe(false);
+    expect(nodeOf(root, id).querySelector("a")).toBeNull();
+  }
+});

@@ -1,0 +1,520 @@
+$ gh workflow run test.yml --ref fix/map/sequence-fragment-disclosure-target-size -f layer=integration -f paths="tests/integration/lib/map-sequence.story.test.ts" （実行 44464717668）
+test	Set up job	﻿2026-11-19T05:22:32.6284078Z Current runner version: '2.338.2'
+test	Set up job	2026-11-19T05:22:32.6301748Z ##[group]Runner Image Provisioner
+test	Set up job	2026-11-19T05:22:32.6302302Z Hosted Compute Agent
+test	Set up job	2026-11-19T05:22:32.6302755Z Version: 20261103.629
+test	Set up job	2026-11-19T05:22:32.6303140Z Commit: 15dbd9ccb5dbf34fae002b6ed1a2670f52df37bc
+test	Set up job	2026-11-19T05:22:32.6303648Z Build Date: 2026-11-03T17:26:59Z
+test	Set up job	2026-11-19T05:22:32.6304060Z Worker ID: {2f4e8344-7757-40c0-b86d-9bf60a49b0b0}
+test	Set up job	2026-11-19T05:22:32.6304473Z Region: centralus
+test	Set up job	2026-11-19T05:22:32.6304849Z Cloud: Azure
+test	Set up job	2026-11-19T05:22:32.6305185Z ##[endgroup]
+test	Set up job	2026-11-19T05:22:32.6305993Z ##[group]Operating System
+test	Set up job	2026-11-19T05:22:32.6306373Z Ubuntu
+test	Set up job	2026-11-19T05:22:32.6306691Z 26.04.1
+test	Set up job	2026-11-19T05:22:32.6307066Z LTS
+test	Set up job	2026-11-19T05:22:32.6307380Z ##[endgroup]
+test	Set up job	2026-11-19T05:22:32.6307765Z ##[group]Runner Image
+test	Set up job	2026-11-19T05:22:32.6308145Z Image: ubuntu-26.04
+test	Set up job	2026-11-19T05:22:32.6308493Z Version: 20261111.196.1
+test	Set up job	2026-11-19T05:22:32.6309642Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261111.196/images/ubuntu/Ubuntu2604-Readme.md
+test	Set up job	2026-11-19T05:22:32.6310729Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261111.196
+test	Set up job	2026-11-19T05:22:32.6311303Z ##[endgroup]
+test	Set up job	2026-11-19T05:22:32.6311991Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2026-11-19T05:22:32.6313318Z Contents: read
+test	Set up job	2026-11-19T05:22:32.6313704Z Metadata: read
+test	Set up job	2026-11-19T05:22:32.6314092Z ##[endgroup]
+test	Set up job	2026-11-19T05:22:32.6315390Z Secret source: Actions
+test	Set up job	2026-11-19T05:22:32.6316005Z Cache mode: write
+test	Set up job	2026-11-19T05:22:32.6316496Z Prepare workflow directory
+test	Set up job	2026-11-19T05:22:32.6640080Z Prepare all required actions
+test	Set up job	2026-11-19T05:22:32.6670833Z Getting action download info
+test	Set up job	2026-11-19T05:22:32.9049869Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+test	Set up job	2026-11-19T05:22:33.0441656Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+test	Set up job	2026-11-19T05:22:33.1473929Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+test	Set up job	2026-11-19T05:22:33.3168179Z Complete job name: test
+test	ブランチを取得する	﻿2026-11-19T05:22:33.3650374Z ##[group]Run actions/checkout@v4
+test	ブランチを取得する	2026-11-19T05:22:33.3650816Z with:
+test	ブランチを取得する	2026-11-19T05:22:33.3651063Z   repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T05:22:33.3653070Z   token: ***
+test	ブランチを取得する	2026-11-19T05:22:33.3653306Z   ssh-strict: true
+test	ブランチを取得する	2026-11-19T05:22:33.3653553Z   ssh-user: git
+test	ブランチを取得する	2026-11-19T05:22:33.3653805Z   persist-credentials: true
+test	ブランチを取得する	2026-11-19T05:22:33.3654077Z   clean: true
+test	ブランチを取得する	2026-11-19T05:22:33.3654336Z   sparse-checkout-cone-mode: true
+test	ブランチを取得する	2026-11-19T05:22:33.3654625Z   fetch-depth: 1
+test	ブランチを取得する	2026-11-19T05:22:33.3654869Z   fetch-tags: false
+test	ブランチを取得する	2026-11-19T05:22:33.3655117Z   show-progress: true
+test	ブランチを取得する	2026-11-19T05:22:33.3655367Z   lfs: false
+test	ブランチを取得する	2026-11-19T05:22:33.3655655Z   submodules: false
+test	ブランチを取得する	2026-11-19T05:22:33.3655911Z   set-safe-directory: true
+test	ブランチを取得する	2026-11-19T05:22:33.3656198Z   allow-unsafe-pr-checkout: false
+test	ブランチを取得する	2026-11-19T05:22:33.3656554Z env:
+test	ブランチを取得する	2026-11-19T05:22:33.3656780Z   LAYER: integration
+test	ブランチを取得する	2026-11-19T05:22:33.3657088Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+test	ブランチを取得する	2026-11-19T05:22:33.3657464Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:33.6400359Z Syncing repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T05:22:33.6401574Z ##[group]Getting Git version info
+test	ブランチを取得する	2026-11-19T05:22:33.6401994Z Working directory is '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-19T05:22:33.6402597Z [command]/usr/bin/git version
+test	ブランチを取得する	2026-11-19T05:22:33.6417870Z git version 2.56.1
+test	ブランチを取得する	2026-11-19T05:22:33.6433605Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:33.6437891Z Temporarily overriding HOME='/home/runner/work/_temp/37e0c269-c90f-4692-ac80-9e1d18271569' before making global git config changes
+test	ブランチを取得する	2026-11-19T05:22:33.6439574Z Adding repository directory to the temporary git global config as a safe directory
+test	ブランチを取得する	2026-11-19T05:22:33.6441228Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-19T05:22:33.6499069Z Deleting the contents of '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-19T05:22:33.6501333Z ##[group]Initializing the repository
+test	ブランチを取得する	2026-11-19T05:22:33.6503729Z [command]/usr/bin/git init /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-19T05:22:33.6586163Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	ブランチを取得する	2026-11-19T05:22:33.6587037Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test	ブランチを取得する	2026-11-19T05:22:33.6587619Z hint: to use in all of your new repositories, which will suppress this warning,
+test	ブランチを取得する	2026-11-19T05:22:33.6588105Z hint: call:
+test	ブランチを取得する	2026-11-19T05:22:33.6588367Z hint:
+test	ブランチを取得する	2026-11-19T05:22:33.6589005Z hint: 	git config --global init.defaultBranch <name>
+test	ブランチを取得する	2026-11-19T05:22:33.6589448Z hint:
+test	ブランチを取得する	2026-11-19T05:22:33.6589820Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	ブランチを取得する	2026-11-19T05:22:33.6590396Z hint: 'development'. The just-created branch can be renamed via this command:
+test	ブランチを取得する	2026-11-19T05:22:33.6590861Z hint:
+test	ブランチを取得する	2026-11-19T05:22:33.6591126Z hint: 	git branch -m <name>
+test	ブランチを取得する	2026-11-19T05:22:33.6591436Z hint:
+test	ブランチを取得する	2026-11-19T05:22:33.6591848Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	ブランチを取得する	2026-11-19T05:22:33.6599585Z Initialized empty Git repository in /home/runner/work/mdmark/mdmark/.git/
+test	ブランチを取得する	2026-11-19T05:22:33.6607768Z [command]/usr/bin/git remote add origin https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T05:22:33.6652381Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:33.6656564Z ##[group]Disabling automatic garbage collection
+test	ブランチを取得する	2026-11-19T05:22:33.6657007Z [command]/usr/bin/git config --local gc.auto 0
+test	ブランチを取得する	2026-11-19T05:22:33.6683881Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:33.6684352Z ##[group]Setting up auth
+test	ブランチを取得する	2026-11-19T05:22:33.6689912Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	ブランチを取得する	2026-11-19T05:22:33.6718266Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	ブランチを取得する	2026-11-19T05:22:33.7119283Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	ブランチを取得する	2026-11-19T05:22:33.7146198Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	ブランチを取得する	2026-11-19T05:22:33.7364062Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	ブランチを取得する	2026-11-19T05:22:33.7390619Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	ブランチを取得する	2026-11-19T05:22:33.7603115Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	ブランチを取得する	2026-11-19T05:22:33.7634789Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:33.7635457Z ##[group]Fetching the repository
+test	ブランチを取得する	2026-11-19T05:22:33.7643424Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +fad7070a4abdd8988ed9256eca020986984bc015:refs/remotes/origin/fix/map/sequence-fragment-disclosure-target-size
+test	ブランチを取得する	2026-11-19T05:22:35.7977070Z From https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-19T05:22:35.7979527Z  * [new ref]         fad7070a4abdd8988ed9256eca020986984bc015 -> origin/fix/map/sequence-fragment-disclosure-target-size
+test	ブランチを取得する	2026-11-19T05:22:35.7984038Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:35.7985305Z ##[group]Determining the checkout info
+test	ブランチを取得する	2026-11-19T05:22:35.7986676Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:35.7987565Z [command]/usr/bin/git sparse-checkout disable
+test	ブランチを取得する	2026-11-19T05:22:35.8031171Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	ブランチを取得する	2026-11-19T05:22:35.8054331Z ##[group]Checking out the ref
+test	ブランチを取得する	2026-11-19T05:22:35.8057424Z [command]/usr/bin/git checkout --progress --force -B fix/map/sequence-fragment-disclosure-target-size refs/remotes/origin/fix/map/sequence-fragment-disclosure-target-size
+test	ブランチを取得する	2026-11-19T05:22:36.1026892Z Switched to a new branch 'fix/map/sequence-fragment-disclosure-target-size'
+test	ブランチを取得する	2026-11-19T05:22:36.1050187Z branch 'fix/map/sequence-fragment-disclosure-target-size' set up to track 'origin/fix/map/sequence-fragment-disclosure-target-size'.
+test	ブランチを取得する	2026-11-19T05:22:36.1051630Z ##[endgroup]
+test	ブランチを取得する	2026-11-19T05:22:36.1095388Z [command]/usr/bin/git log -1 --format=%H
+test	ブランチを取得する	2026-11-19T05:22:36.1116559Z fad7070a4abdd8988ed9256eca020986984bc015
+test	Node をインストールする	﻿2026-11-19T05:22:36.1401251Z ##[group]Run actions/setup-node@v4
+test	Node をインストールする	2026-11-19T05:22:36.1401469Z with:
+test	Node をインストールする	2026-11-19T05:22:36.1401595Z   node-version: 24
+test	Node をインストールする	2026-11-19T05:22:36.1401727Z   always-auth: false
+test	Node をインストールする	2026-11-19T05:22:36.1401872Z   check-latest: false
+test	Node をインストールする	2026-11-19T05:22:36.1403366Z   token: ***
+test	Node をインストールする	2026-11-19T05:22:36.1403495Z env:
+test	Node をインストールする	2026-11-19T05:22:36.1403616Z   LAYER: integration
+test	Node をインストールする	2026-11-19T05:22:36.1403798Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+test	Node をインストールする	2026-11-19T05:22:36.1403994Z ##[endgroup]
+test	Node をインストールする	2026-11-19T05:22:36.2317729Z (node:2196) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Node をインストールする	2026-11-19T05:22:36.2318694Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Node をインストールする	2026-11-19T05:22:36.2319049Z Found in cache @ /opt/hostedtoolcache/node/24.22.2/x64
+test	Node をインストールする	2026-11-19T05:22:36.2319583Z ##[group]Environment details
+test	Node をインストールする	2026-11-19T05:22:36.6243625Z node: v24.22.2
+test	Node をインストールする	2026-11-19T05:22:36.6244006Z npm: 11.19.1
+test	Node をインストールする	2026-11-19T05:22:36.6244246Z yarn: 1.22.22
+test	Node をインストールする	2026-11-19T05:22:36.6244852Z ##[endgroup]
+test	依存をインストールする	﻿2026-11-19T05:22:36.6385879Z ##[group]Run npm ci
+test	依存をインストールする	2026-11-19T05:22:36.6386091Z npm ci
+test	依存をインストールする	2026-11-19T05:22:36.6386234Z npm --prefix vscode ci
+test	依存をインストールする	2026-11-19T05:22:36.6435635Z shell: /usr/bin/bash -e {0}
+test	依存をインストールする	2026-11-19T05:22:36.6435811Z env:
+test	依存をインストールする	2026-11-19T05:22:36.6435940Z   LAYER: integration
+test	依存をインストールする	2026-11-19T05:22:36.6436119Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+test	依存をインストールする	2026-11-19T05:22:36.6436321Z ##[endgroup]
+test	依存をインストールする	2026-11-19T05:22:44.4453100Z 
+test	依存をインストールする	2026-11-19T05:22:44.4459132Z added 550 packages, and audited 557 packages in 8s
+test	依存をインストールする	2026-11-19T05:22:44.4459368Z 
+test	依存をインストールする	2026-11-19T05:22:44.4459505Z 109 packages are looking for funding
+test	依存をインストールする	2026-11-19T05:22:44.4459716Z   run `npm fund` for details
+test	依存をインストールする	2026-11-19T05:22:44.4712486Z 
+test	依存をインストールする	2026-11-19T05:22:44.4713177Z 11 moderate severity vulnerabilities
+test	依存をインストールする	2026-11-19T05:22:44.4713429Z 
+test	依存をインストールする	2026-11-19T05:22:44.4713606Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-19T05:22:44.4713822Z   npm audit fix
+test	依存をインストールする	2026-11-19T05:22:44.4713906Z 
+test	依存をインストールする	2026-11-19T05:22:44.4714041Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-19T05:22:44.4714327Z   npm audit fix --force
+test	依存をインストールする	2026-11-19T05:22:44.4714415Z 
+test	依存をインストールする	2026-11-19T05:22:44.4714503Z Run `npm audit` for details.
+test	依存をインストールする	2026-11-19T05:22:44.4718982Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-19T05:22:44.4719462Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-19T05:22:44.4719705Z npm warn install-scripts
+test	依存をインストールする	2026-11-19T05:22:44.4720048Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-19T05:22:48.6293403Z 
+test	依存をインストールする	2026-11-19T05:22:48.6295095Z added 307 packages, and audited 314 packages in 4s
+test	依存をインストールする	2026-11-19T05:22:48.6295438Z 
+test	依存をインストールする	2026-11-19T05:22:48.6295618Z 93 packages are looking for funding
+test	依存をインストールする	2026-11-19T05:22:48.6295897Z   run `npm fund` for details
+test	依存をインストールする	2026-11-19T05:22:48.6392308Z 
+test	依存をインストールする	2026-11-19T05:22:48.6393227Z 6 vulnerabilities (4 moderate, 2 high)
+test	依存をインストールする	2026-11-19T05:22:48.6393668Z 
+test	依存をインストールする	2026-11-19T05:22:48.6394151Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-19T05:22:48.6394543Z   npm audit fix
+test	依存をインストールする	2026-11-19T05:22:48.6394820Z 
+test	依存をインストールする	2026-11-19T05:22:48.6395030Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-19T05:22:48.6395352Z   npm audit fix --force
+test	依存をインストールする	2026-11-19T05:22:48.6395482Z 
+test	依存をインストールする	2026-11-19T05:22:48.6395598Z Run `npm audit` for details.
+test	依存をインストールする	2026-11-19T05:22:48.6400431Z npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-19T05:22:48.6401016Z npm warn install-scripts   @vscode/vsce-sign@2.1.1 (postinstall: node ./src/postinstall.js)
+test	依存をインストールする	2026-11-19T05:22:48.6401386Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-19T05:22:48.6401621Z npm warn install-scripts
+test	依存をインストールする	2026-11-19T05:22:48.6401991Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	Chromium をインストールする	﻿2026-11-19T05:22:48.6888438Z ##[group]Run npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-19T05:22:48.6888975Z npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-19T05:22:48.6933353Z shell: /usr/bin/bash -e {0}
+test	Chromium をインストールする	2026-11-19T05:22:48.6933511Z env:
+test	Chromium をインストールする	2026-11-19T05:22:48.6933629Z   LAYER: integration
+test	Chromium をインストールする	2026-11-19T05:22:48.6933797Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+test	Chromium をインストールする	2026-11-19T05:22:48.6933992Z ##[endgroup]
+test	Chromium をインストールする	2026-11-19T05:22:49.2050093Z Installing dependencies...
+test	Chromium をインストールする	2026-11-19T05:22:49.2116337Z Switching to root user to install dependencies...
+test	Chromium をインストールする	2026-11-19T05:22:49.2881702Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-19T05:22:49.3303583Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	Chromium をインストールする	2026-11-19T05:22:49.3324303Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease [137 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.3363448Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease [137 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.3373991Z Get:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease [3964 B]
+test	Chromium をインストールする	2026-11-19T05:22:49.3379643Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease [137 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.3790475Z Get:7 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main amd64v3 Packages [875 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.3811187Z Get:11 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main amd64 Packages [165 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.3968739Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main Translation-en [196 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.3982228Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe amd64v3 Packages [393 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4027037Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe Translation-en [124 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4028098Z Get:18 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main arm64 Packages [151 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4029633Z Get:12 http://azure.archive.ubuntu.com/ubuntu resolute-security/main amd64v3 Packages [721 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4120404Z Get:13 http://azure.archive.ubuntu.com/ubuntu resolute-security/main Translation-en [158 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4143996Z Get:14 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe amd64v3 Packages [222 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4159339Z Get:15 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe Translation-en [72.7 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4169671Z Get:16 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted amd64v3 Packages [590 kB]
+test	Chromium をインストールする	2026-11-19T05:22:49.4196875Z Get:17 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted Translation-en [122 kB]
+test	Chromium をインストールする	2026-11-19T05:22:51.5696768Z Fetched 4206 kB in 0s (14.1 MB/s)
+test	Chromium をインストールする	2026-11-19T05:22:52.0060602Z Reading package lists...
+test	Chromium をインストールする	2026-11-19T05:22:52.0285877Z Reading package lists...
+test	Chromium をインストールする	2026-11-19T05:22:52.1612996Z Building dependency tree...
+test	Chromium をインストールする	2026-11-19T05:22:52.1619264Z Reading state information...
+test	Chromium をインストールする	2026-11-19T05:22:52.1886780Z libasound2t64 is already the newest version (1.2.15.3-1ubuntu1.1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1887330Z libasound2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1887750Z libatk-bridge2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1888179Z libatk-bridge2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1888792Z libatk1.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1889157Z libatk1.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1889532Z libatspi2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1889934Z libatspi2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1890266Z libcairo2 is already the newest version (1.18.4-3).
+test	Chromium をインストールする	2026-11-19T05:22:52.1890584Z libcairo2 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1890948Z libcups2t64 is already the newest version (2.4.16-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-19T05:22:52.1891299Z libcups2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1891649Z libdbus-1-3 is already the newest version (1.16.2-2ubuntu4).
+test	Chromium をインストールする	2026-11-19T05:22:52.1892531Z libdbus-1-3 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1893335Z libdrm2 is already the newest version (2.4.131-1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1893642Z libdrm2 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1893978Z libgbm1 is already the newest version (26.0.8-1ubuntu0.3).
+test	Chromium をインストールする	2026-11-19T05:22:52.1894305Z libgbm1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1894654Z libglib2.0-0t64 is already the newest version (2.88.0-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1895022Z libglib2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1895481Z libnspr4 is already the newest version (2:4.38.2-1ubuntu1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1895818Z libnspr4 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1896157Z libnss3 is already the newest version (2:3.120-1ubuntu2.2).
+test	Chromium をインストールする	2026-11-19T05:22:52.1896491Z libnss3 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1896825Z libpango-1.0-0 is already the newest version (1.57.0-1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1897177Z libpango-1.0-0 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1897554Z libx11-6 is already the newest version (2:1.8.13-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1897897Z libx11-6 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1898217Z libxcb1 is already the newest version (1.17.0-2ubuntu1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1898645Z libxcb1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1898995Z libxcomposite1 is already the newest version (1:0.4.6-1build1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1899348Z libxcomposite1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1899685Z libxdamage1 is already the newest version (1:1.1.7-1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1900002Z libxdamage1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1900339Z libxext6 is already the newest version (2:1.3.4-1build3).
+test	Chromium をインストールする	2026-11-19T05:22:52.1900657Z libxext6 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1901003Z libxfixes3 is already the newest version (1:6.0.0-2build2).
+test	Chromium をインストールする	2026-11-19T05:22:52.1901337Z libxfixes3 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1901674Z libxkbcommon0 is already the newest version (1.13.1-1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1902006Z libxkbcommon0 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1902373Z libxrandr2 is already the newest version (2:1.5.4-1build1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1902712Z libxrandr2 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1903064Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-19T05:22:52.1903492Z fonts-noto-color-emoji is already the newest version (2.051-1build1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1903945Z libfontconfig1 is already the newest version (2.17.1-3ubuntu1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1904303Z libfontconfig1 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1904690Z libfreetype6 is already the newest version (2.14.2+dfsg-1ubuntu0.2).
+test	Chromium をインストールする	2026-11-19T05:22:52.1905057Z libfreetype6 set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.1905442Z fonts-liberation is already the newest version (1:2.1.5-3build1).
+test	Chromium をインストールする	2026-11-19T05:22:52.1905809Z fonts-liberation set to manually installed.
+test	Chromium をインストールする	2026-11-19T05:22:52.2288193Z Solving dependencies...
+test	Chromium をインストールする	2026-11-19T05:22:52.2968341Z The following additional packages will be installed:
+test	Chromium をインストールする	2026-11-19T05:22:52.2969133Z   xfonts-encodings xfonts-utils
+test	Chromium をインストールする	2026-11-19T05:22:52.2975243Z Recommended packages:
+test	Chromium をインストールする	2026-11-19T05:22:52.2975726Z   fonts-ipafont-mincho fonts-tlwg-loma
+test	Chromium をインストールする	2026-11-19T05:22:52.3148785Z The following NEW packages will be installed:
+test	Chromium をインストールする	2026-11-19T05:22:52.3149165Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+test	Chromium をインストールする	2026-11-19T05:22:52.3152201Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+test	Chromium をインストールする	2026-11-19T05:22:52.3152415Z   xfonts-utils
+test	Chromium をインストールする	2026-11-19T05:22:52.3321888Z 0 upgraded, 9 newly installed, 0 to remove and 32 not upgraded.
+test	Chromium をインストールする	2026-11-19T05:22:52.3322281Z Need to get 21.9 MB of archives.
+test	Chromium をインストールする	2026-11-19T05:22:52.3322524Z After this operation, 80.2 MB of additional disk space will be used.
+test	Chromium をインストールする	2026-11-19T05:22:52.3322801Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-19T05:22:52.3932441Z Get:2 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-ipafont-gothic all 00303-23ubuntu1 [3703 kB]
+test	Chromium をインストールする	2026-11-19T05:22:52.4597223Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 fonts-freefont-ttf all 20211204+svn4273-4build1 [5656 kB]
+test	Chromium をインストールする	2026-11-19T05:22:52.5564782Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-tlwg-loma-otf all 1:0.7.3-1build1 [106 kB]
+test	Chromium をインストールする	2026-11-19T05:22:52.5902630Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-unifont all 1:16.0.04-1build1 [3169 kB]
+test	Chromium をインストールする	2026-11-19T05:22:52.6567812Z Get:6 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-wqy-zenhei all 0.9.45-8build1 [7863 kB]
+test	Chromium をインストールする	2026-11-19T05:22:52.7681179Z Get:7 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-encodings all 1:1.0.5-0ubuntu3 [576 kB]
+test	Chromium をインストールする	2026-11-19T05:22:52.8031807Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-utils amd64 1:7.7+7build1 [97.3 kB]
+test	Chromium をインストールする	2026-11-19T05:22:52.8875660Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-cyrillic all 1:1.0.5+nmu1build1 [384 kB]
+test	Chromium をインストールする	2026-11-19T05:22:53.1345761Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-scalable all 1:1.0.3-1.3build1 [304 kB]
+test	Chromium をインストールする	2026-11-19T05:22:53.4657138Z Fetched 21.9 MB in 1s (26.8 MB/s)
+test	Chromium をインストールする	2026-11-19T05:22:53.8452136Z Selecting previously unselected package fonts-ipafont-gothic.
+test	Chromium をインストールする	2026-11-19T05:22:53.8827015Z (Reading database ... 
+test	Chromium をインストールする	2026-11-19T05:22:53.8827223Z (Reading database ... 5%
+test	Chromium をインストールする	2026-11-19T05:22:53.8827388Z (Reading database ... 10%
+test	Chromium をインストールする	2026-11-19T05:22:53.8827538Z (Reading database ... 15%
+test	Chromium をインストールする	2026-11-19T05:22:53.8827686Z (Reading database ... 20%
+test	Chromium をインストールする	2026-11-19T05:22:53.8827828Z (Reading database ... 25%
+test	Chromium をインストールする	2026-11-19T05:22:53.8827978Z (Reading database ... 30%
+test	Chromium をインストールする	2026-11-19T05:22:53.8828413Z (Reading database ... 35%
+test	Chromium をインストールする	2026-11-19T05:22:53.8828747Z (Reading database ... 40%
+test	Chromium をインストールする	2026-11-19T05:22:53.8828893Z (Reading database ... 45%
+test	Chromium をインストールする	2026-11-19T05:22:53.8829034Z (Reading database ... 50%
+test	Chromium をインストールする	2026-11-19T05:22:53.9631446Z (Reading database ... 55%
+test	Chromium をインストールする	2026-11-19T05:22:54.1624379Z (Reading database ... 60%
+test	Chromium をインストールする	2026-11-19T05:22:54.3443741Z (Reading database ... 65%
+test	Chromium をインストールする	2026-11-19T05:22:54.5481517Z (Reading database ... 70%
+test	Chromium をインストールする	2026-11-19T05:22:54.7182109Z (Reading database ... 75%
+test	Chromium をインストールする	2026-11-19T05:22:54.9162578Z (Reading database ... 80%
+test	Chromium をインストールする	2026-11-19T05:22:55.1118765Z (Reading database ... 85%
+test	Chromium をインストールする	2026-11-19T05:22:55.3161426Z (Reading database ... 90%
+test	Chromium をインストールする	2026-11-19T05:22:55.4764219Z (Reading database ... 95%
+test	Chromium をインストールする	2026-11-19T05:22:55.4764500Z (Reading database ... 100%
+test	Chromium をインストールする	2026-11-19T05:22:55.4764753Z (Reading database ... 213946 files and directories currently installed.)
+test	Chromium をインストールする	2026-11-19T05:22:55.4802217Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-23ubuntu1_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:55.5267244Z Unpacking fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-19T05:22:55.7508732Z Selecting previously unselected package fonts-freefont-ttf.
+test	Chromium をインストールする	2026-11-19T05:22:55.7621985Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-4build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:55.7791245Z Unpacking fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:55.9559334Z Selecting previously unselected package fonts-tlwg-loma-otf.
+test	Chromium をインストールする	2026-11-19T05:22:55.9668462Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:55.9750158Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:56.0393994Z Selecting previously unselected package fonts-unifont.
+test	Chromium をインストールする	2026-11-19T05:22:56.0503751Z Preparing to unpack .../3-fonts-unifont_1%3a16.0.04-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:56.0530665Z Unpacking fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:56.3641291Z Selecting previously unselected package fonts-wqy-zenhei.
+test	Chromium をインストールする	2026-11-19T05:22:56.3756712Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:56.3901651Z Unpacking fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:56.5683738Z Selecting previously unselected package xfonts-encodings.
+test	Chromium をインストールする	2026-11-19T05:22:56.5798454Z Preparing to unpack .../5-xfonts-encodings_1%3a1.0.5-0ubuntu3_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:56.5860593Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-19T05:22:56.6904345Z Selecting previously unselected package xfonts-utils.
+test	Chromium をインストールする	2026-11-19T05:22:56.7013188Z Preparing to unpack .../6-xfonts-utils_1%3a7.7+7build1_amd64v3.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:56.7201750Z Unpacking xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:56.8375962Z Selecting previously unselected package xfonts-cyrillic.
+test	Chromium をインストールする	2026-11-19T05:22:56.8488344Z Preparing to unpack .../7-xfonts-cyrillic_1%3a1.0.5+nmu1build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:56.8561142Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:56.9603380Z Selecting previously unselected package xfonts-scalable.
+test	Chromium をインストールする	2026-11-19T05:22:56.9725931Z Preparing to unpack .../8-xfonts-scalable_1%3a1.0.3-1.3build1_all.deb ...
+test	Chromium をインストールする	2026-11-19T05:22:56.9951536Z Unpacking xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.1686232Z Setting up fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.2863415Z Setting up fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.2924660Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.2952404Z Setting up xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.2971811Z Setting up fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.3291229Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+test	Chromium をインストールする	2026-11-19T05:22:57.3755485Z Setting up fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.3824570Z Setting up xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.3965324Z Setting up xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.4926602Z Setting up xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.5371765Z Processing triggers for man-db (2.13.1-1build1) ...
+test	Chromium をインストールする	2026-11-19T05:22:57.5471601Z Not building database; man-db/auto-update is not 'true'.
+test	Chromium をインストールする	2026-11-19T05:22:57.5556876Z Processing triggers for fontconfig (2.17.1-3ubuntu1) ...
+test	Chromium をインストールする	2026-11-19T05:22:58.2146775Z 
+test	Chromium をインストールする	2026-11-19T05:22:58.2147469Z Running kernel seems to be up-to-date.
+test	Chromium をインストールする	2026-11-19T05:22:58.2147777Z 
+test	Chromium をインストールする	2026-11-19T05:22:58.2147898Z Restarting services...
+test	Chromium をインストールする	2026-11-19T05:22:58.2221503Z 
+test	Chromium をインストールする	2026-11-19T05:22:58.2221795Z Service restarts being deferred:
+test	Chromium をインストールする	2026-11-19T05:22:58.2224436Z  systemctl restart hosted-compute-agent.service
+test	Chromium をインストールする	2026-11-19T05:22:58.2224670Z 
+test	Chromium をインストールする	2026-11-19T05:22:58.2225193Z No containers need to be restarted.
+test	Chromium をインストールする	2026-11-19T05:22:58.2225405Z 
+test	Chromium をインストールする	2026-11-19T05:22:58.2225649Z No user sessions are running outdated binaries.
+test	Chromium をインストールする	2026-11-19T05:22:58.2225868Z 
+test	Chromium をインストールする	2026-11-19T05:22:58.2226036Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+test	Chromium をインストールする	2026-11-19T05:22:59.0254260Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+test	Chromium をインストールする	2026-11-19T05:22:59.3810160Z |                                                                                |   0% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.6338113Z |■■■■■■■■                                                                        |  10% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.6736285Z |■■■■■■■■■■■■■■■■                                                                |  20% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.7217306Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.7505683Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.7949391Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.8398348Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.8722621Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.9396949Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:22:59.9823074Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:23:00.0450229Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 191.1 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.0616905Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+test	Chromium をインストールする	2026-11-19T05:23:02.0620181Z Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+test	Chromium をインストールする	2026-11-19T05:23:02.3535644Z |                                                                                |   0% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.3807477Z |■■■■■■■■                                                                        |  10% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.3908959Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.3986016Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4014331Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4041099Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4097327Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4115653Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4129374Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4145286Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4156599Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+test	Chromium をインストールする	2026-11-19T05:23:02.4557197Z FFmpeg (playwright ffmpeg v1013) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1013
+test	Chromium をインストールする	2026-11-19T05:23:02.4559434Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+test	Chromium をインストールする	2026-11-19T05:23:02.7855703Z |                                                                                |   0% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.0350559Z |■■■■■■■■                                                                        |  10% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.0651889Z |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.0967377Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.1472742Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.1799220Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.2140373Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.2591639Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.2925953Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.3479795Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:03.3683502Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+test	Chromium をインストールする	2026-11-19T05:23:04.8981547Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+test	結合テストの道具を用意する	﻿2026-11-19T05:23:04.9285413Z ##[group]Run sudo apt-get update
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9285641Z sudo apt-get update
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9285802Z sudo apt-get install -y tmux xvfb
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9285985Z sudo loginctl enable-linger "$USER"
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9286175Z uid=$(id -u)
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9286353Z # ランナーの実測（待たずにソケットがあった。1 秒の刻みで 1 回未満）の 10 倍
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9286525Z n=0
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9286658Z until [ -S "/run/user/$uid/bus" ]; do
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9286826Z   n=$((n+1))
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9286958Z   if [ "$n" -ge 10 ]; then
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9287130Z     echo "systemd のユーザーのマネージャーが 10 秒で起動しません" >&2
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9287304Z     exit 1
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9287420Z   fi
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9287535Z   sleep 1
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9287650Z done
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9287810Z echo "XDG_RUNTIME_DIR=/run/user/$uid" >> "$GITHUB_ENV"
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9288118Z echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" >> "$GITHUB_ENV"
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9329163Z shell: /usr/bin/bash -e {0}
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9329318Z env:
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9329439Z   LAYER: integration
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9329618Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9329806Z ##[endgroup]
+test	結合テストの道具を用意する	2026-11-19T05:23:04.9860009Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	結合テストの道具を用意する	2026-11-19T05:23:05.0294042Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	結合テストの道具を用意する	2026-11-19T05:23:05.0321618Z Hit:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease
+test	結合テストの道具を用意する	2026-11-19T05:23:05.0358650Z Hit:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease
+test	結合テストの道具を用意する	2026-11-19T05:23:05.0359994Z Hit:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease
+test	結合テストの道具を用意する	2026-11-19T05:23:05.0413058Z Hit:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease
+test	結合テストの道具を用意する	2026-11-19T05:23:05.5927346Z Reading package lists...
+test	結合テストの道具を用意する	2026-11-19T05:23:05.6205356Z Reading package lists...
+test	結合テストの道具を用意する	2026-11-19T05:23:05.7535128Z Building dependency tree...
+test	結合テストの道具を用意する	2026-11-19T05:23:05.7540430Z Reading state information...
+test	結合テストの道具を用意する	2026-11-19T05:23:05.7775115Z tmux is already the newest version (3.6a-2ubuntu0.2).
+test	結合テストの道具を用意する	2026-11-19T05:23:05.7776073Z tmux set to manually installed.
+test	結合テストの道具を用意する	2026-11-19T05:23:05.8181635Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	結合テストの道具を用意する	2026-11-19T05:23:05.8182022Z Solving dependencies...
+test	結合テストの道具を用意する	2026-11-19T05:23:05.9197676Z 0 upgraded, 0 newly installed, 0 to remove and 32 not upgraded.
+test	結合テストを回す	﻿2026-11-19T05:23:05.9372804Z ##[group]Run if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-19T05:23:05.9373021Z if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-19T05:23:05.9373200Z   npm run test:integration 2>&1 | tee test.log
+test	結合テストを回す	2026-11-19T05:23:05.9373378Z else
+test	結合テストを回す	2026-11-19T05:23:05.9373513Z   # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+test	結合テストを回す	2026-11-19T05:23:05.9373688Z   # shellcheck disable=SC2086
+test	結合テストを回す	2026-11-19T05:23:05.9373906Z   npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+test	結合テストを回す	2026-11-19T05:23:05.9374116Z fi
+test	結合テストを回す	2026-11-19T05:23:05.9416109Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	結合テストを回す	2026-11-19T05:23:05.9416316Z env:
+test	結合テストを回す	2026-11-19T05:23:05.9416437Z   LAYER: integration
+test	結合テストを回す	2026-11-19T05:23:05.9416624Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+test	結合テストを回す	2026-11-19T05:23:05.9416827Z   XDG_RUNTIME_DIR: /run/user/1001
+test	結合テストを回す	2026-11-19T05:23:05.9417007Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	結合テストを回す	2026-11-19T05:23:05.9417188Z   XDG_CONFIG_HOME: 
+test	結合テストを回す	2026-11-19T05:23:05.9417318Z ##[endgroup]
+test	結合テストを回す	2026-11-19T05:23:06.5469066Z 
+test	結合テストを回す	2026-11-19T05:23:06.5470258Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+test	結合テストを回す	2026-11-19T05:23:06.5470594Z 
+test	結合テストを回す	2026-11-19T05:23:19.2463203Z  ✓  integration-storybook  tests/integration/lib/map-sequence.story.test.ts (15 tests) 8263ms
+test	結合テストを回す	2026-11-19T05:23:19.2464445Z    ✓ test_default 573ms
+test	結合テストを回す	2026-11-19T05:23:19.2471268Z    ✓ test_arrows 494ms
+test	結合テストを回す	2026-11-19T05:23:19.2471940Z    ✓ test_tall_participants 541ms
+test	結合テストを回す	2026-11-19T05:23:19.2472550Z    ✓ test_block_collapsed 546ms
+test	結合テストを回す	2026-11-19T05:23:19.2474379Z    ✓ test_block_tab_target_size_default 540ms
+test	結合テストを回す	2026-11-19T05:23:19.2475559Z    ✓ test_block_tab_target_size_block-collapsed 511ms
+test	結合テストを回す	2026-11-19T05:23:19.2476178Z    ✓ test_block_entered 510ms
+test	結合テストを回す	2026-11-19T05:23:19.2476737Z    ✓ test_participant_selected 551ms
+test	結合テストを回す	2026-11-19T05:23:19.2477277Z    ✓ test_playing 570ms
+test	結合テストを回す	2026-11-19T05:23:19.2477769Z    ✓ test_reordering 556ms
+test	結合テストを回す	2026-11-19T05:23:19.2478256Z    ✓ test_hints_off 566ms
+test	結合テストを回す	2026-11-19T05:23:19.2478916Z    ✓ test_accessibility 529ms
+test	結合テストを回す	2026-11-19T05:23:19.2479472Z    ✓ test_participant_terms 588ms
+test	結合テストを回す	2026-11-19T05:23:19.2480004Z    ✓ test_actor_icon 527ms
+test	結合テストを回す	2026-11-19T05:23:19.2480508Z    ✓ test_plain 637ms
+test	結合テストを回す	2026-11-19T05:23:19.2554371Z 
+test	結合テストを回す	2026-11-19T05:23:19.2569642Z  Test Files  1 passed (1)
+test	結合テストを回す	2026-11-19T05:23:19.2570302Z       Tests  15 passed (15)
+test	結合テストを回す	2026-11-19T05:23:19.2570765Z    Start at  05:23:06
+test	結合テストを回す	2026-11-19T05:23:19.2571120Z    Duration  12.68s (tests 97%, import 2%)
+test	結合テストを回す	2026-11-19T05:23:19.2571453Z 
+test	ログを成果物に上げる	﻿2026-11-19T05:23:19.4507023Z ##[group]Run actions/upload-artifact@v4
+test	ログを成果物に上げる	2026-11-19T05:23:19.4507212Z with:
+test	ログを成果物に上げる	2026-11-19T05:23:19.4507330Z   name: test-log
+test	ログを成果物に上げる	2026-11-19T05:23:19.4507447Z   path: test.log
+test	ログを成果物に上げる	2026-11-19T05:23:19.4507573Z   if-no-files-found: ignore
+test	ログを成果物に上げる	2026-11-19T05:23:19.4507715Z   compression-level: 6
+test	ログを成果物に上げる	2026-11-19T05:23:19.4507842Z   overwrite: false
+test	ログを成果物に上げる	2026-11-19T05:23:19.4507972Z   include-hidden-files: false
+test	ログを成果物に上げる	2026-11-19T05:23:19.4508113Z env:
+test	ログを成果物に上げる	2026-11-19T05:23:19.4508232Z   LAYER: integration
+test	ログを成果物に上げる	2026-11-19T05:23:19.4508708Z   PATHS: tests/integration/lib/map-sequence.story.test.ts
+test	ログを成果物に上げる	2026-11-19T05:23:19.4508910Z   XDG_RUNTIME_DIR: /run/user/1001
+test	ログを成果物に上げる	2026-11-19T05:23:19.4509082Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	ログを成果物に上げる	2026-11-19T05:23:19.4509260Z ##[endgroup]
+test	ログを成果物に上げる	2026-11-19T05:23:19.5645313Z (node:3461) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	ログを成果物に上げる	2026-11-19T05:23:19.5646315Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	ログを成果物に上げる	2026-11-19T05:23:19.5679074Z With the provided path, there will be 1 file uploaded
+test	ログを成果物に上げる	2026-11-19T05:23:19.5681940Z Artifact name is valid!
+test	ログを成果物に上げる	2026-11-19T05:23:19.5682504Z Root directory input is valid!
+test	ログを成果物に上げる	2026-11-19T05:23:19.8513701Z Beginning upload of artifact content to blob storage
+test	ログを成果物に上げる	2026-11-19T05:23:19.8676683Z (node:3461) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+test	ログを成果物に上げる	2026-11-19T05:23:20.0400496Z Uploaded bytes 592
+test	ログを成果物に上げる	2026-11-19T05:23:20.1137349Z Finished uploading artifact content to blob storage!
+test	ログを成果物に上げる	2026-11-19T05:23:20.1138019Z SHA256 digest of uploaded artifact zip is 130eb8ec013e54c96d234b992ef45866acd487ba9f87edc4d38ac8206197232a
+test	ログを成果物に上げる	2026-11-19T05:23:20.1139483Z Finalizing artifact upload
+test	ログを成果物に上げる	2026-11-19T05:23:20.4626599Z Artifact test-log.zip successfully finalized. Artifact ID 14501666595
+test	ログを成果物に上げる	2026-11-19T05:23:20.4627424Z Artifact test-log has been successfully uploaded! Final size is 592 bytes. Artifact ID is 14501666595
+test	ログを成果物に上げる	2026-11-19T05:23:20.4628357Z Artifact download URL: https://github.com/shuhei1101/mdmark/actions/runs/44464717668/artifacts/14501666595
+test	Post Node をインストールする	﻿2026-11-19T05:23:20.4830652Z Post job cleanup.
+test	Post Node をインストールする	2026-11-19T05:23:20.5716136Z (node:3473) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Post Node をインストールする	2026-11-19T05:23:20.5719460Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Post ブランチを取得する	﻿2026-11-19T05:23:20.6093318Z Post job cleanup.
+test	Post ブランチを取得する	2026-11-19T05:23:20.6746845Z [command]/usr/bin/git version
+test	Post ブランチを取得する	2026-11-19T05:23:20.6781524Z git version 2.56.1
+test	Post ブランチを取得する	2026-11-19T05:23:20.6806387Z Temporarily overriding HOME='/home/runner/work/_temp/58640324-ea19-474c-bae5-031858e3b3b9' before making global git config changes
+test	Post ブランチを取得する	2026-11-19T05:23:20.6807208Z Adding repository directory to the temporary git global config as a safe directory
+test	Post ブランチを取得する	2026-11-19T05:23:20.6808439Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	Post ブランチを取得する	2026-11-19T05:23:20.7095416Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post ブランチを取得する	2026-11-19T05:23:20.7131289Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post ブランチを取得する	2026-11-19T05:23:20.7388194Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post ブランチを取得する	2026-11-19T05:23:20.7412436Z http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-19T05:23:20.7422262Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-19T05:23:20.7474786Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Post ブランチを取得する	2026-11-19T05:23:20.7779996Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Post ブランチを取得する	2026-11-19T05:23:20.7847076Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Complete job	﻿2026-11-19T05:23:20.8341594Z Cleaning up orphan processes
+test	Complete job	2026-11-19T05:23:20.8632963Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
