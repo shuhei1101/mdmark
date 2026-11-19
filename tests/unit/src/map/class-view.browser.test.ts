@@ -179,6 +179,27 @@ test("test_attach_map_class_when_linked", async () => {
   }
 });
 
+/** 矩形どうしが重なるか */
+const overlaps = (a: DOMRect, b: DOMRect): boolean =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/** クラスのメンバーの文字が、メンバーの行とクラスのノードの中に収まる */
+const expectTextsInside = (root: HTMLElement, id: string) => {
+  const node = nodeOf(root, id).getBoundingClientRect();
+  const texts = [
+    ...nodeOf(root, id).querySelectorAll<HTMLElement>(".map-class-text"),
+  ];
+  expect(texts.length).toBeGreaterThan(0);
+  for (const text of texts) {
+    const box = text.getBoundingClientRect();
+    const row = text.closest(".map-class-member")?.getBoundingClientRect();
+    expect(box.top).toBeGreaterThanOrEqual(node.top - 0.5);
+    expect(box.bottom).toBeLessThanOrEqual(node.bottom + 0.5);
+    expect(box.right).toBeLessThanOrEqual(node.right + 0.5);
+    expect(box.bottom).toBeLessThanOrEqual((row?.bottom ?? 0) + 0.5);
+  }
+};
+
 // 長いメンバー・補足の幅・長いラベル（正常系）
 test("test_attach_map_class_when_long_members", async () => {
   // 準備・実行
@@ -201,21 +222,7 @@ test("test_attach_map_class_when_long_members", async () => {
     '{"version": 1, "layout": {"設定": {"width": 320}}}',
   );
   // 検証
-  for (const id of ["検索", "単語"]) {
-    const node = nodeOf(root, id).getBoundingClientRect();
-    const texts = [
-      ...nodeOf(root, id).querySelectorAll<HTMLElement>(".map-class-text"),
-    ];
-    expect(texts.length).toBeGreaterThan(0);
-    for (const text of texts) {
-      const box = text.getBoundingClientRect();
-      expect(box.top).toBeGreaterThanOrEqual(node.top - 0.5);
-      expect(box.bottom).toBeLessThanOrEqual(node.bottom + 0.5);
-      expect(box.right).toBeLessThanOrEqual(node.right + 0.5);
-      const row = text.closest(".map-class-member")?.getBoundingClientRect();
-      expect(box.bottom).toBeLessThanOrEqual((row?.bottom ?? 0) + 0.5);
-    }
-  }
+  for (const id of ["検索", "単語"]) expectTextsInside(root, id);
   expect(nodeOf(root, "設定").getBoundingClientRect().width).toBeCloseTo(
     320,
     0,
@@ -226,12 +233,6 @@ test("test_attach_map_class_when_long_members", async () => {
   expect(label).toBeDefined();
   const box = label?.getBoundingClientRect() as DOMRect;
   for (const node of root.querySelectorAll<HTMLElement>("[data-node]")) {
-    const other = node.getBoundingClientRect();
-    const overlaps =
-      box.left < other.right &&
-      other.left < box.right &&
-      box.top < other.bottom &&
-      other.top < box.bottom;
-    expect(overlaps).toBe(false);
+    expect(overlaps(box, node.getBoundingClientRect())).toBe(false);
   }
 });
