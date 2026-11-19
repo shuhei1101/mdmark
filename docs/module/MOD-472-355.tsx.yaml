@@ -3,7 +3,7 @@ visibility: internal
 title: ClaudeCodeプラグイン / mdmark-style / reply.tsx
 lead: 返答の `ui.render` のフック。ブロックごとに表・注意書き・見出し・コードブロック・開閉の範囲を Box・Text・Button の部品の木で描き、段落・箇条書きは Claude Code の `Markdown` 部品に任せる。
 test_files:
-  - tests/unit/src/mdmark-style/reply.test.tsx
+  - tests/unit/src/mdmark-style/reply.test.ts
 constants:
   - name: TREE_LIMITS
     title: 部品の木の上限

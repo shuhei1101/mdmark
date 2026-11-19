@@ -3,7 +3,7 @@ visibility: internal
 title: ClaudeCodeプラグイン / mdmark-style / user-message.tsx
 lead: 発言の `ui.render` のフック。本文に用語があるとき、用語に下線・ポインターで開くカード・脚注を付けた部品の木を、標準の発言と同じ背景の帯で描く。
 test_files:
-  - tests/unit/src/mdmark-style/user-message.test.tsx
+  - tests/unit/src/mdmark-style/user-message.test.ts
 constants:
   - name: CARD_MAX_WIDTH
     title: カードの最大の幅
@@ -92,9 +92,9 @@ functions:
     is_async: false
     args:
       - name: options
-        type: '{ line: string; marks: TermMark[]; parts: StyleSettings["parts"]; theme: string | undefined; width?: number }'
+        type: '{ elements: Elements; line: string; marks: TermMark[]; parts: StyleSettings["parts"]; theme: string | undefined; width?: number }'
         required: true
-        description: 行の文字列・その行の用語のマーカー・部品のオン・オフ・テーマ・行の幅
+        description: '`$.ui.resolve(e)` の部品・行の文字列・その行の用語のマーカー・部品のオン・オフ・テーマ・行の幅'
     returns:
       type: UiNode
       description: 行の部品の木
