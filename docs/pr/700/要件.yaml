@@ -77,6 +77,12 @@ docs:
     new: false
     change: 同じ記法の読み取りから HTML と純粋な Markdown を作る流れを追加する
     status: todo
+  - page: docs/guide/設定.mark.md
+    change: '`features.markdown-export` の行を追加する'
+    status: todo
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    change: Markdown のコピーとエクスポートのボタンをオフにする例を追加する
+    status: todo
 scope_out:
   - item: VS Code 拡張機能のコマンドからの Markdown への書き出し
     reason: 要望は MCP・CLI・ビュワーのボタンに限る。プレビューは mount で描くため、ボタンが出るかは画面設計で確かめる
