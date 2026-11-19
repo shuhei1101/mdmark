@@ -10,14 +10,14 @@ use_cases:
     detail: 案内の手順を移したときに、図の倍率を変えず、全体が収まる倍率のときは位置も変えず、それより大きい倍率のときは強調するノードを表示する枠の中央へ移す
     depends_on: []
   - kind: single
-    scenario: docs/scenario/SC-472-17.yaml
-    impact: changed
-    detail: 言語が markdown（md）のコードブロックで、読者がソースの表示と描いた結果の表示を切り替えて見比べる流れを追加する（新しい単一 UC に分けるかは単一ユースケース設計で決める）
-    depends_on: []
-  - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: run_only
     detail: 読者が変えた図の倍率と位置を、手順の再生が上書きしない前提になるため、拡大・縮小・移動の操作が壊れないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-100.yaml
+    impact: new
+    detail: 読者が、言語が markdown（md）のコードブロックでソースの表示と描いた結果の表示を切り替えて見比べる（作成者がコードブロックを飾る『コードブロックを飾る』とは主アクターと操作が違うため分ける）
     depends_on: []
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
