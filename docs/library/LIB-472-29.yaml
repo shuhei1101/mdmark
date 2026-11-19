@@ -68,8 +68,8 @@ used_in:
 upstream: tmux/tmux
 verification:
   state: 済
-  date: '2026-11-07'
-  detail: tmux 3.4 で、`TMUX_TMPDIR` を一時フォルダにして別のセッションで tmux サーバーを先に起動した後、`MDMARK_PORT=9999 tmux new-session -d -s t1 -e MDMARK_PORT=9999 sh -c '…'` ではセッションの中の `MDMARK_PORT` が `9999` になり、`-e` を付けないと空だった。`has-session -t =t1` は 0、`has-session -t =t` はセッション `t1` に該当しなかった。`default-shell` の既定は `/bin/sh`（この端末では dash）
+  date: '2026-11-19'
+  detail: tmux 3.4 で、`TMUX`・`TMUX_PANE` を除外し、`TMUX_TMPDIR` を空の一時フォルダにして `tmux -L {一時のソケット名}` で手元と別の tmux サーバーを別のセッションで先に起動した後、`MDMARK_PORT=9999 tmux new-session -d -s t1 -e MDMARK_PORT=9999 sh -c '…'` ではセッションの中の `MDMARK_PORT` が `9999` になり、`-e` を付けないと空だった。`has-session -t =t1` は 0、`has-session -t =t` はセッション `t1` に該当しなかった。`default-shell` の既定は、tmux サーバーを起動したときの `SHELL` が `/bin/sh` なら `/bin/sh`（この端末では dash）、`SHELL` が無ければログインシェル（この端末では `/bin/bash`）だった。実測の前後で、手元の tmux サーバーの `default-shell` とセッションの一覧が変わっていないことを `show-options -gv default-shell` と `list-sessions` で確認した
 license: ISC
 official_url: https://github.com/tmux/tmux
 docs_url: https://man7.org/linux/man-pages/man1/tmux.1.html
@@ -77,7 +77,7 @@ limitations:
   - item: 環境変数の渡り方
     content: tmux サーバーが既に動いていると、`new-session` を呼んだ側の環境変数は新しいセッションに渡らない。指定する値は `-e` で明示する
   - item: コマンドを実行するシェル
-    content: 1 つの文字列で指定したコマンドは `default-shell`（既定は tmux サーバーを起動したときの `$SHELL`、無ければ `/bin/sh`）の `-c` で実行される。dash・fish は `set -o pipefail` を受けずセッションがすぐ閉じるため、`sh -c '…'` を引数として指定して POSIX の記載方法だけを使用する
+    content: 1 つの文字列で指定したコマンドは `default-shell`（既定は tmux サーバーを起動したときの `$SHELL`、無ければログインシェル）の `-c` で実行される。dash・fish は `set -o pipefail` を受けずセッションがすぐ閉じるため、`sh -c '…'` を引数として指定して POSIX の記載方法だけを使用する
   - item: 下限のバージョン
     content: 確認したのは 3.4。それより前のバージョンで `new-session -e` があるかは確認していない
   - item: Windows
