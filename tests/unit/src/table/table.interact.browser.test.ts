@@ -2039,12 +2039,19 @@ test("test_attach_tables_when_resized_with_unpinned", async () => {
   pins[2].click();
   pins[8].click();
   handles[2].focus();
-  // 検証: 狭める前は 3 列の合計が見えている幅を超え、9 列目は留まらず、上限は 1 列目の幅だけを引く
+  // 検証: 狭める前は 3 列の合計が見えている幅を超え、9 列目は留まらず、3 列目の今の幅が上限を超えるため aria-valuemax は今の幅
+  const limit = Math.floor(scroller.clientWidth - heads[0].offsetWidth);
   expect(headWidths(table, [0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
   expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+  expect(heads[2].offsetWidth).toBeGreaterThan(limit);
   expect(handles[2].getAttribute("aria-valuemax")).toBe(
-    String(Math.floor(scroller.clientWidth - heads[0].offsetWidth)),
+    handles[2].getAttribute("aria-valuenow"),
   );
+  // 実行: ← キーを 1 回押す
+  pressResizeKey(handles[2], "ArrowLeft");
+  // 検証: 3 列目は上限に収まり、上限は 1 列目の幅だけを引く（9 列目の幅は引かない）
+  expect(heads[2].offsetWidth).toBe(limit);
+  expect(handles[2].getAttribute("aria-valuemax")).toBe(String(limit));
   // 実行: 3 列目を列の最小幅まで狭める
   for (let i = 0; i < 200; i += 1) {
     if (
