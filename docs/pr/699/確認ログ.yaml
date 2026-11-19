@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 利用者の端末で hover のカードが出るか
+    decision: A（手元で確認して返信）。VS Code の統合ターミナルでカードは出る。カードは後ろの行を隠して手前に出し、発言の背景の帯と返答の太字・箇条書きなど標準のスタイルは残す
+    decided_by: 返信
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/699#discussion_r4626225053
+    commit: 995d4086
