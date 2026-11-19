@@ -65,7 +65,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T16:59:49.495961+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T17:07:29.033767+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: モジュール構成設計の工程で直す以外のページは無い
