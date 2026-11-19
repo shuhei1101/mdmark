@@ -39,7 +39,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T17:43:19.310019+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T18:12:13.729179+00:00'
   - process: データ設計
     status: skipped
     reason: 永続化するデータは無い。追加する parts のキーは設定の設計書（CFG-472-4）で持つ

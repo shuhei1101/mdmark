@@ -1,0 +1,25 @@
+confirmations:
+  - topic: モックへの合意（返答の本文の部品）
+    decision: A（このモックのとおりに進める）
+    decided_by: 👍
+    approver: shuhei1101
+    commit: c014b0dd
+    thread: https://github.com/shuhei1101/mdmark/pull/716#discussion_r4633017715
+  - topic: ステップの番号の描き方
+    decision: A（見出しの色の太字の番号と、番号の間をつなぐ `│`）
+    decided_by: 👍
+    approver: shuhei1101
+    commit: c014b0dd
+    thread: https://github.com/shuhei1101/mdmark/pull/716#discussion_r4633019393
+  - topic: バッジの描き方
+    decision: A（色の名前の背景色と文字色）
+    decided_by: 👍
+    approver: shuhei1101
+    commit: c014b0dd
+    thread: https://github.com/shuhei1101/mdmark/pull/716#discussion_r4633019843
+  - topic: 段組みとカードの格子の区切り
+    decision: A（見出しを付けずに縦に並べる）
+    decided_by: 👍
+    approver: shuhei1101
+    commit: c014b0dd
+    thread: https://github.com/shuhei1101/mdmark/pull/716#discussion_r4633020556
