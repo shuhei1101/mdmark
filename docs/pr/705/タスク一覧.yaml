@@ -65,7 +65,10 @@ tasks:
     updated_at: '2026-11-19T11:40:21.858849+00:00'
     note: SCR-472-4 の要素 table を修正
   - process: モジュール構成設計
-    status: todo
+    status: done
+    note: MOD-472-221・MOD-472-227・MOD-472-170・MOD-472-218 を修正
+    updated_by: planner
+    updated_at: '2026-11-19T11:44:57.331179+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成
