@@ -27,7 +27,7 @@ export type CodeLineMark = (typeof CODE_LINE_MARKS)[number];
 /** 表の種類 */
 export type TableKind = "default" | "data" | "plain";
 
-/** 返答のブロック 1 つ。`line` はブロックの本文の先頭の行（1 から） */
+/** 返答のブロック 1 つ。`line` は返答の本文の頭からの、ブロックの先頭の行（1 から。注意書きの中のブロックも返答の本文の頭から数える） */
 export type ReplyBlock = {
   kind: "table" | "callout" | "heading" | "code" | "fold" | "markdown";
   line: number;
@@ -52,6 +52,8 @@ export type ReplyBlock = {
   };
   fold?: { title: string; index: number; body: ReplyBlock[] };
   markdown?: string;
+  /** `markdown` の行ごとの、各文字の返答の本文の行での位置（行内のマーカーと注意書きの `> ` を除いた分のずれを戻す） */
+  columns?: number[][];
 };
 
 /** 部品ごとのオン・オフ */
@@ -76,6 +78,10 @@ type Frame = {
 /** 分けている途中の状態 */
 type State = {
   lines: string[];
+  /** 本文の 1 行目の、返答の本文の頭からの行のずれ */
+  lineBase: number;
+  /** 行ごとの、返答の本文の行の頭から除いた文字数 */
+  prefixes: number[];
   parts: Parts;
   out: ReplyBlock[];
   frames: Frame[];
@@ -106,6 +112,33 @@ const stripInlineMarkers = (line: string): string =>
       offset === 0 ? "" : " ",
     )
     .trimEnd();
+
+/** 文字列と、各文字の元の行での位置 */
+type MappedLine = { text: string; columns: number[] };
+
+/** `stripInlineMarkers` と同じく行内のマーカーを除き、残した文字ごとに元の行での位置を添える */
+const stripWithColumns = (line: string, shift: number): MappedLine => {
+  let text = "";
+  const columns: number[] = [];
+  let from = 0;
+  const keep = (end: number) => {
+    for (let at = from; at < end; at += 1) {
+      text += line[at];
+      columns.push(at + shift);
+    }
+  };
+  for (const match of line.matchAll(INLINE_MARKER)) {
+    keep(match.index);
+    if (match.index !== 0) {
+      text += " ";
+      columns.push(match.index + shift);
+    }
+    from = match.index + match[0].length;
+  }
+  keep(line.length);
+  const end = text.trimEnd().length;
+  return { text: text.slice(0, end), columns: columns.slice(0, end) };
+};
 
 /** 行が単独の行のマーカーだけなら、名前と引数を返却する */
 const readMarker = (text: string): Marker | undefined => {
@@ -156,20 +189,51 @@ const closeFrame = (state: State): void => {
   });
 };
 
-/** 塊の元の行を、行内のマーカーを除いて返却する */
-const rawOf = (state: State, chunk: Chunk): string =>
-  state.lines
+/** 塊の先頭の、返答の本文の頭からの行 */
+const lineOf = (state: State, chunk: Chunk): number =>
+  state.lineBase + chunk.start + 1;
+
+/** 塊の元の行を、行内のマーカーと前後の空の行・空白を除き、各文字の返答の本文の行での位置を添えて返却する */
+const rawOf = (
+  state: State,
+  chunk: Chunk,
+): { line: number; lines: MappedLine[] } => {
+  const lines = state.lines
     .slice(chunk.start, chunk.end)
-    .map(stripInlineMarkers)
-    .join("\n")
-    .trim();
+    .map((line, offset) =>
+      stripWithColumns(line, state.prefixes[chunk.start + offset] ?? 0),
+    );
+  let line = lineOf(state, chunk);
+  while (lines[0] !== undefined && lines[0].text.trim() === "") {
+    lines.shift();
+    line += 1;
+  }
+  while (lines.at(-1) !== undefined && lines.at(-1)?.text.trim() === "") {
+    lines.pop();
+  }
+  const first = lines[0];
+  if (first !== undefined) {
+    const lead = first.text.length - first.text.trimStart().length;
+    lines[0] = {
+      text: first.text.slice(lead),
+      columns: first.columns.slice(lead),
+    };
+  }
+  return { line, lines };
+};
 
 /** `markdown` のブロックを追加する（空なら追加しない） */
 const pushMarkdown = (state: State, chunk: Chunk): void => {
-  const markdown = rawOf(state, chunk);
-  if (markdown !== "") {
-    push(state, { kind: "markdown", line: chunk.start + 1, markdown });
+  const { line, lines } = rawOf(state, chunk);
+  if (lines.length === 0) {
+    return;
   }
+  push(state, {
+    kind: "markdown",
+    line,
+    markdown: lines.map((item) => item.text).join("\n"),
+    columns: lines.map((item) => item.columns),
+  });
 };
 
 /** `table` のマーカーの JSON の引数から種類を読む。読めなければ既定 */
@@ -299,7 +363,7 @@ const handleHeading = (state: State, chunk: Chunk): void => {
   const text = stripInlineMarkers(chunk.tokens[1]?.content ?? "").trim();
   push(state, {
     kind: "heading",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     heading: { level, text },
   });
 };
@@ -343,7 +407,7 @@ const handleTable = (state: State, chunk: Chunk): void => {
   const [header = [], ...body] = rows;
   push(state, {
     kind: "table",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     table: { kind, header, rows: body, align },
   });
 };
@@ -375,7 +439,7 @@ const handleFence = (state: State, chunk: Chunk): void => {
   });
   push(state, {
     kind: "code",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     code: {
       lang,
       ...(options.title === undefined ? {} : { title: options.title }),
@@ -409,18 +473,23 @@ const handleQuote = (state: State, chunk: Chunk): void => {
   }
   const { type, closed, title } = head;
   const index = closed ? state.foldCount.value++ : -1;
-  const inner = lines
-    .slice(1)
-    .map((line) => line.replace(/^\s*>\s?/, ""))
-    .join("\n");
+  const inner = lines.slice(1).map((line, offset) => {
+    const prefix = /^\s*>\s?/.exec(line)?.[0].length ?? 0;
+    return {
+      text: line.slice(prefix),
+      prefix: prefix + (state.prefixes[chunk.start + 1 + offset] ?? 0),
+    };
+  });
   const body = splitInto({
-    text: inner,
+    text: inner.map((line) => line.text).join("\n"),
     parts: state.parts,
     foldCount: state.foldCount,
+    lineBase: lineOf(state, chunk),
+    prefixes: inner.map((line) => line.prefix),
   });
   push(state, {
     kind: "callout",
-    line: chunk.start + 1,
+    line: lineOf(state, chunk),
     callout: { type, ...(title === "" ? {} : { title }), closed, body },
     ...(closed ? { fold: { title: title || type, index, body } } : {}),
   });
@@ -449,10 +518,14 @@ const splitInto = (options: {
   text: string;
   parts: Parts;
   foldCount: { value: number };
+  lineBase: number;
+  prefixes: number[];
 }): ReplyBlock[] => {
   const lines = options.text.split("\n");
   const state: State = {
     lines,
+    lineBase: options.lineBase,
+    prefixes: options.prefixes,
     parts: options.parts,
     out: [],
     frames: [],
@@ -476,4 +549,6 @@ export const splitBlocks = (options: {
     text: options.text,
     parts: options.parts,
     foldCount: { value: 0 },
+    lineBase: 0,
+    prefixes: [],
   });

@@ -244,14 +244,39 @@ const renderCode = (block: ReplyBlock, context: RenderContext): UiNode => {
   );
 };
 
+/** 返答の本文の行での用語の位置を、ブロックの行の中の位置に修正する。ブロックの行に用語の文字が無ければ返却しない */
+const markInLine = (
+  mark: TermMark,
+  columns: number[] | undefined,
+): TermMark | undefined => {
+  if (columns === undefined) {
+    return mark;
+  }
+  const start = columns.findIndex((column) => column >= mark.start);
+  const end = columns.filter((column) => column < mark.end).length;
+  return start < 0 || end <= start ? undefined : { ...mark, start, end };
+};
+
+/** ブロックの行ごとの、行の中の位置に修正した用語の一致 */
+const marksByLine = (
+  block: ReplyBlock,
+  lines: string[],
+  marks: TermMark[],
+): TermMark[][] =>
+  lines.map((_line, index) =>
+    marks
+      .filter((mark) => mark.line === block.line + index)
+      .map((mark) => markInLine(mark, block.columns?.[index]))
+      .filter((mark): mark is TermMark => mark !== undefined),
+  );
+
 /** 段落・箇条書き。用語のマーカーがあれば行ごとに用語の部品で描き、無ければ `Markdown` 部品に任せる */
 const renderMarkdown = (block: ReplyBlock, context: RenderContext): UiNode => {
   const { Box, Markdown } = context.elements;
   const markdown = block.markdown ?? "";
   const lines = markdown.split("\n");
-  const marks = context.marks.filter(
-    (mark) => mark.line >= block.line && mark.line < block.line + lines.length,
-  );
+  const lineMarks = marksByLine(block, lines, context.marks);
+  const marks = lineMarks.flat();
   if (marks.length === 0) {
     return h(Markdown, { key: `md-${block.line}`, text: markdown });
   }
@@ -262,9 +287,7 @@ const renderMarkdown = (block: ReplyBlock, context: RenderContext): UiNode => {
       renderTermText({
         elements: context.elements,
         line,
-        marks: marks
-          .filter((mark) => mark.line === block.line + index)
-          .map((mark) => ({ ...mark })),
+        marks: lineMarks[index] ?? [],
         parts: context.parts,
         theme: context.theme,
         ...(context.columns === undefined ? {} : { width: context.columns }),
