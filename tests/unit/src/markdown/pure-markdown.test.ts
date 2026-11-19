@@ -209,7 +209,7 @@ test("test_figure_of_chart", async () => {
   expect(figure.index).toBe(1);
   expect(figure.title).toBe(definition.title);
   expect(figure.legend).toEqual(definition.series.map((item) => item.name));
-  expect(figure.html).toContain("mdmark-chart");
+  expect(figure.html).toContain('data-diagram="chart"');
 });
 
 // param の凡例は今の値と既定の値（正常系）

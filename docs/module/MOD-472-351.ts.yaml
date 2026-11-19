@@ -154,7 +154,7 @@ functions:
         summary: chart のタイトルと系列の名前
         condition: タイトル `件数`・系列 `電話`・`メール` の `chart`
         mock: なし
-        expected: '`kind` が `chart`、`title` が `件数`、`legend` が `["電話","メール"]`、`html` が `mdmark-chart` を含む'
+        expected: '`kind` が `chart`、`title` が `件数`、`legend` が `["電話","メール"]`、`html` が `data-diagram="chart"` を含む'
       - name: test_figure_of_param
         case: 正常
         summary: param の凡例は今の値と既定の値
