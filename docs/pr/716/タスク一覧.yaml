@@ -48,7 +48,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T17:35:16.448902+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T18:15:44.399592+00:00'
   - process: 部品設計
     status: skipped
     reason: '#699 と同じく、mod の部品は Claude Code の Box・Text・Button で組み、ほかの画面で使い回さない。外観は既存の部品設計に合わせ、Claude Code で描ける範囲は画面設計 SCR-472-5 の要素とインターフェース定義 IF-472-45 の制約に持つ'
