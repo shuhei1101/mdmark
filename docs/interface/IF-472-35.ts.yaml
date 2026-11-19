@@ -10382,6 +10382,7 @@ flows:
       - Raw のボタンを押すと、そのコードブロックだけ `pre` が見えて `div.mdmark-code-preview` が隠れ、ボタンが `aria-pressed="true"` になる。もう一度押すと元に戻る。Tab でフォーカスして Enter・Space でも同じ
       - 切り替えの前と後で、文書のスクロールの位置が変わらない
       - どちらの表示でもコピーのボタンで書き込む文字が、コードブロックに記載した Markdown と同じ
+      - 描いた結果の中に `aside.mdmark-side-toc`・`button.mdmark-back-to-top`・Markdown のコピーとエクスポートのボタン・被参照の一覧が無く、文書の右側の目次は 1 つだけ
     test: test_normal_when_markdown_code_previewed
   - name: 正常系（code のマーカーで既定を元の Markdown にする）
     summary: code のマーカーの `raw` を持つ言語 markdown のコードブロックを元の Markdown で出し、Raw のボタンで初めて描いた結果を描く
@@ -11983,7 +11984,7 @@ constraints:
     notes: 見た目はピン止めのボタンと同じ。コピーした後に支援技術へ伝える方法は部品設計で決める
   - item: 言語 markdown のコードブロックの描いた結果
     constraint: |-
-      `render` が `div.mdmark-code` に `data-mdmark-markdown` を付けたコードブロック（文書をHTML文字列にする.ts の制約『コードブロック』）は、`pre` の後ろに `<div class="mdmark-code-preview">` を配置し、コピーのボタンが書き込む文字（制約『コードブロックのコピー』）を、外の文書と同じ設定と機能（mdmark の記法・図を含む）で描く。帯の右の塊のコピーのボタンの左に、コードのアイコン `code-xml` と文字 `Raw` を持つ `<button class="mdmark-code-raw" type="button" aria-pressed="false">` を配置する。
+      `render` が `div.mdmark-code` に `data-mdmark-markdown` を付けたコードブロック（文書をHTML文字列にする.ts の制約『コードブロック』）は、`pre` の後ろに `<div class="mdmark-code-preview">` を配置し、コピーのボタンが書き込む文字（制約『コードブロックのコピー』）を、外の文書と同じ設定で、外の文書でオンの機能（mdmark の記法・表・図・コードブロックを含む）から、文書の単位で付くか外の文書の操作と重なる機能 `side-toc`・`back-to-top`・`markdown-buttons`・`backlinks`・`comments`・`print` を切って描く。帯の右の塊のコピーのボタンの左に、コードのアイコン `code-xml` と文字 `Raw` を持つ `<button class="mdmark-code-raw" type="button" aria-pressed="false">` を配置する。
 
       - 既定は描いた結果を出し、`pre` を `hidden` にする。`data-mdmark-raw` を持つコードブロックは `pre` を出し、ボタンを `aria-pressed="true"` にして、初めて描いた結果へ切り替えたときに描く
       - ボタンを押す（Enter・Space を含む）たびに、描いた結果と `pre` の表示を入れ替え、`aria-pressed` を元の Markdown を出しているかに合わせる。ほかのコードブロックの表示と文書のスクロールの位置は変えない

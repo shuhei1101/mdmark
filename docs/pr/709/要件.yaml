@@ -22,23 +22,51 @@ use_cases:
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
-    change: 443 行目の「強調するノードが収まる位置と倍率へ図がなめらかに移動する」を、倍率を変えず、拡大しているときだけ強調するノードを中央へ移す動きに修正する
+    change: '443 行目の「強調するノードが収まる位置と倍率へ図がなめらかに移動する」を、倍率を変えず、拡大しているときだけ強調するノードを中央へ移す動きに修正する。記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
     status: todo
   - page: docs/guide/記載する-本文を部品で組む.mark.md
     new: false
-    change: コードブロックの節に、言語が markdown（md）のコードブロックでソースと描いた結果を切り替える手順と、812 行目の確かめ方に切り替えのボタンを追加する
+    change: 'コードブロックの節に、言語が markdown（md）のコードブロックを既定で描いた結果にし Raw のボタンで元の Markdown に切り替える手順と code のマーカーの `raw` を追加し、812 行目の確かめ方に Raw のボタンを追加する。記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
     status: todo
   - page: docs/guide/記法.mark.md
     new: false
-    change: 684 行目のコードブロックの帯の説明に、言語が markdown（md）のときの切り替えのボタンと、描く中身の範囲（mdmark の記法を含めるか）を追加する
+    change: '684 行目のコードブロックの帯の説明に、言語が markdown（md）のときの描いた結果と Raw のボタン、描く中身の範囲、code のマーカーの `raw` を追加する。記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
     status: todo
   - page: docs/guide/カスタマイズ-印刷する.mark.md
     new: false
-    change: 27 行目のコードブロックの行に、切り替えのボタンと描いた結果を印刷でどう出すかを追加する（印刷の扱いは部品設計で決める）
+    change: 27 行目のコードブロックの行に、Raw のボタンと描いた結果を印刷でどう出すかを追加する（印刷の扱いは部品設計で決める）
     status: todo
   - page: docs/mock/components/map-band/index.html
     new: false
     change: 31 行目の状態の説明となめらかな移動の実演を、倍率を変えない動きに修正する
+    status: todo
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: todo
+  - page: docs/guide/記載する-画像と動画を配置する.md
+    new: false
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: todo
+  - page: docs/guide/記載する-図と表に番号を付ける.md
+    new: false
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: todo
+  - page: docs/guide/記載する-ビューとコメントを使用する.mark.md
+    new: false
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: todo
+  - page: docs/guide/図を描く-コードブロックのHTMLを描く.md
+    new: false
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: todo
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: todo
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
     status: todo
 scope_out:
   - item: mdmark-style（Claude Code の返答と発言の描き換え）のコードブロックで、言語が markdown のときにソースと描いた結果を切り替える

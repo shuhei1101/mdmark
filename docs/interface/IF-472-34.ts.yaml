@@ -3369,7 +3369,6 @@ constraints:
 
       コピーのボタンは `mount` が帯の右端に付ける。
 
-
       言語（`:` の前）が `markdown`・`md` のコードブロックは、囲む `div.mdmark-code`（タイトルを持てば `figure.mdmark-code`）に属性 `data-mdmark-markdown` を付け、マーカーの `raw` が `true` なら `data-mdmark-raw` も付ける。`render` は中身を描かず、描いた結果と Raw のボタンは `mount` が付ける（文書を描く.ts の制約『言語 markdown のコードブロックの描いた結果』）。
 
       行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。
