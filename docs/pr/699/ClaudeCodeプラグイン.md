@@ -140,13 +140,21 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `tests/unit/src/mdmark-style/blocks.test.ts`（bcb7ff1e） | ESLint の `complexity` の上限（10）を超えたため、`?.` の並びを `toMatchObject` にした。確かめる値は変えていない |
 | `tests/unit/src/shared/style-tokens.logic.test.ts`（206edd94） | レビューの細部で、`light-daltonized` の発言の背景が `rgb(220, 220, 220)` と分かったため、`test_style_color` を `light` で確かめる形にし、テーマごとの値の `test_style_color_when_theme_override` を足した（設計書 MOD-472-359 の `unit_tests` も同じ commit で修正） |
 | `tests/unit/src/mdmark-style/blocks.test.ts`・`reply.test.ts` | レビューの必須の指摘（注意書きの中と行内のマーカーの後ろの用語に下線が付かない）で、`test_split_blocks_when_callout_columns`・`test_split_blocks_when_inline_marker_columns`・`test_render_block_when_term_in_callout`・`test_render_block_when_term_after_inline_marker` を足した。修正の前の実装では 4 件とも fail する（設計書 MOD-472-353・355 の `unit_tests` も修正） |
+| `tests/unit/src/mdmark-style/reply.test.ts`・`user-message.test.ts`（baa3a30e） | 結合テスト作成で見つけた構造問題の設計の修正（設定ファイルを読めないとき、例外を投げずに `next(e)` を返却する。a7626bb5）に合わせ、`test_render_reply_when_settings_broken` の期待値を修正し、`test_render_user_message_when_settings_broken` を追加した |
 
 ### 単体テスト
 
 | 対象 | 結果 | ログ |
 | --- | --- | --- |
-| `npm run test:unit`（全件） | 2,496 件 pass | [20261119222738_e42f8bdb_単体テスト.log](テスト結果/20261119222738_e42f8bdb_単体テスト.log) |
-| lint（biome・ESLint・tsc・vscode の tsc・actionlint） | 違反なし（biome の 1 件の警告は作業 PR が変えない `plugin/bin/setup.js` の大きさ） | [20261119222738_e42f8bdb_lint.log](テスト結果/20261119222738_e42f8bdb_lint.log) |
+| `npm run test:unit`（全件） | 2,497 件 pass | [20261119225117_3fb139a7_単体テスト.log](テスト結果/20261119225117_3fb139a7_単体テスト.log) |
+| lint（biome・ESLint・tsc・vscode の tsc・actionlint） | 違反なし（biome の 1 件の警告は作業 PR が変えない `plugin/bin/setup.js` の大きさ） | [20261119225117_3fb139a7_lint.log](テスト結果/20261119225117_3fb139a7_lint.log) |
+
+### 結合テスト
+
+| 対象 | 結果 | ログ |
+| --- | --- | --- |
+| `npm run test:mdmark-style`（新規作成した `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | 23 件 pass | [20261119225117_3fb139a7_結合テスト.log](テスト結果/20261119225117_3fb139a7_結合テスト.log) |
+| `npx vitest run --project 'integration*' tests/integration/lib/build.test.ts` | 10 件 pass | 同上 |
 
 ### 結合テストの実行範囲
 
@@ -211,6 +219,10 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `docs/pr/699/テスト結果/20261119221300_f73f5649_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119222738_e42f8bdb_lint.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/テスト結果/20261119222738_e42f8bdb_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119224246_2956a6bf_フックの例外.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119225117_3fb139a7_lint.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119225117_3fb139a7_単体テスト.log` | R7 | なし（実行するコードを変えない） | - |
+| `docs/pr/699/テスト結果/20261119225117_3fb139a7_結合テスト.log` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/ライブラリ本体.md` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/確認ログ.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/pr/699/要件.md` | R7 | なし（実行するコードを変えない） | - |
@@ -224,26 +236,31 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `docs/screen/README.md` | R7 | なし（実行するコードを変えない） | - |
 | `docs/screen/SCR-472-5.tsx.yaml` | R7 | なし（実行するコードを変えない） | - |
 | `docs/screen/index.yaml` | R7 | なし（実行するコードを変えない） | - |
-| `mdmark-style/.claude-plugin/plugin.json` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `mdmark-style/THIRD_PARTY_LICENSES.txt` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `mdmark-style/hooks/hooks.json` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `mdmark-style/hooks/mod/mod.js` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `mdmark-style/settings.sample.yaml` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/.claude-plugin/plugin.json` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/THIRD_PARTY_LICENSES.txt` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/hooks/hooks.json` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/hooks/mod/mod.js` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `mdmark-style/settings.sample.yaml` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
 | `package.json` | R7 | なし（足したのは `test:mdmark-style` の行で、上の mod の結合テストで実行する） | - |
 | `scripts/build-plugin.ts` | R7 | `tests/integration/lib/build.test.ts`（`scripts/build.ts` の `main` を実行し、プラグインのビルドを通る） | - |
 | `scripts/files.yaml` | R7 | なし（実行するコードを変えない） | - |
-| `scripts/test-mdmark-style.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `scripts/test-mdmark-style.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
 | `src/files.yaml` | R7 | なし（実行するコードを変えない） | - |
-| `src/mdmark-style/blocks.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/mdmark-style/marker-guide.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/mdmark-style/mod.tsx` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/mdmark-style/reply.tsx` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/mdmark-style/settings.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/mdmark-style/table-layout.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/mdmark-style/terms.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/mdmark-style/user-message.tsx` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
-| `src/shared/style-tokens.logic.ts` | R7 | `npm run test:mdmark-style`（新規作成する `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/blocks.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/marker-guide.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/mod.tsx` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/reply.tsx` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/settings.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/table-layout.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/terms.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/mdmark-style/user-message.tsx` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `src/shared/style-tokens.logic.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
 | `tests/files.yaml` | R7 | なし（実行するコードを変えない） | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/world.ts` | R7 | `npm run test:mdmark-style`（新規作成した `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の `render-reply.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`・`screen.test.tsx`） | - |
 | `tests/unit/scripts/test-mdmark-style.test.ts` | R7 | なし（実行するコードを変えない） | - |
 | `tests/unit/src/mdmark-style/blocks.test.ts` | R7 | なし（実行するコードを変えない） | - |
 | `tests/unit/src/mdmark-style/fake-engine.ts` | R7 | なし（実行するコードを変えない） | - |
@@ -256,6 +273,7 @@ PoC PR の見どころは `hooks/mod.tsx` の `parse`（マーカーの行と直
 | `tests/unit/src/mdmark-style/terms.test.ts` | R7 | なし（実行するコードを変えない） | - |
 | `tests/unit/src/mdmark-style/user-message.test.ts` | R7 | なし（実行するコードを変えない） | - |
 | `tests/unit/src/shared/style-tokens.logic.test.ts` | R7 | なし（実行するコードを変えない） | - |
+| `tsconfig.json` | R7 | なし（`tsc` の対象から mod の結合テストのフォルダを除いただけ） | - |
 | `vitest.config.ts` | R7 | なし（mod の結合テストのフォルダを除いただけ） | - |
 
 <!-- /table -->
