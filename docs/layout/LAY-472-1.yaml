@@ -105,14 +105,14 @@ content_types:
 entries:
   - type: folder
     name: .claude-plugin
-    contents: リポジトリを Claude Code のマーケットプレイスにする定義（プラグインの本体は `plugin/`）
+    contents: リポジトリを Claude Code のマーケットプレイスにする定義（プラグインの本体は `plugin/` と `mdmark-style/`）
     content_types:
       - plugin_manifest
       - claude_plugin
     children:
       - type: file
         name: marketplace.json
-        contents: プラグイン mdmark を `plugin/` から配るマーケットプレイスの定義
+        contents: プラグイン mdmark を `plugin/` から、mdmark-style を `mdmark-style/` から配るマーケットプレイスの定義
   - type: folder
     name: .github
     contents: GitHub の設定と、その管理用の YAML

@@ -39,15 +39,21 @@ docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: mdmark-style（Claude Code の画面を描く mod のプラグイン）をサブシステムと構成図に加え、Claude Code との境界（ui.render・session.start）を書き足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T12:22:29.635880+00:00'
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: mdmark-style のフォルダと、共通スタイルの定義の TypeScript のモジュール、marketplace.json の行を書き足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T12:22:29.635880+00:00'
   - page: docs/library/LIB-472-1.yaml
     new: false
     change: mod の API（ui.render の AssistantMessage・UserMessage、session.start）と部品・上限、HTML コメントの表示（R-35）を記録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T12:22:29.635880+00:00'
   - page: docs/nonfunctional/NFR-472-1.yaml
     new: false
     change: 「確かめた Claude Code のバージョン」を mod が動くバージョンの確認で見直す
