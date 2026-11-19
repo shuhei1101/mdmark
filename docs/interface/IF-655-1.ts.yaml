@@ -1,27 +1,28 @@
 id: IF-655-1
 visibility: internal
 title: 部品のモジュールを指定する
-lead: 利用側のページが、map・ビュー・コメントの部品のモジュールを返却する関数を mdmark に指定する。指定した部品は配布物の隣へ要求せず、その関数で読み込む。配布物を 1 枚の HTML に埋めて、アドレスを持たない場所から読み込むページで使用する。
+lead: 利用側のページが、map・ビュー・コメントの部品と mermaid のモジュールを返却する関数を mdmark に指定する。指定した部品は配布物の隣へ、指定した mermaid は設定の `mermaid.url` へ要求せず、その関数で読み込む。配布物を 1 枚の HTML に埋めて、アドレスを持たない場所から読み込むページで使用する。
 entry:
   kind: operation
   value: '`setPartModuleLoader(name, loader)`（配布物 `dist/index.js` の公開関数）'
 callers:
   - SC-472-28#scenarios[正常シナリオ（埋めた配布物から読み込む）]
   - SC-472-28#scenarios[異常シナリオ（埋めていない部品のマーカーがある）]
+  - SC-472-28#scenarios[異常シナリオ（mermaid のモジュールを指定していない）]
 request:
   - name: name
     location: argument
-    type: '"map" | "view" | "comments"'
+    type: '"map" | "view" | "comments" | "mermaid"'
     required: true
-    description: 部品の名前
-    constraints: 3 つの名前のどれか
+    description: 部品の名前か `mermaid`
+    constraints: 4 つの名前のどれか
   - name: loader
     location: argument
     type: () => Promise<Record<string, unknown>>
     required: true
-    description: 部品のモジュールを返却する関数。利用側が埋めた部品の配布ファイル（`dist/map.js`・`dist/view.js`・`dist/comments.js`）を `import()` した結果を返却する
+    description: 部品のモジュールを返却する関数。利用側が埋めた部品の配布ファイル（`dist/map.js`・`dist/view.js`・`dist/comments.js`）を `import()` した結果を返却する。`mermaid` は、利用側が 1 つのモジュールにまとめて埋めた mermaid を `import()` した結果を返却する
     constraints: 関数
-    notes: 部品を初めて使用するときに 1 回だけ呼ぶ。指定しない部品は今と同じく `dist/index.js` の隣から読み込む
+    notes: 部品を初めて使用するときに 1 回だけ呼ぶ。指定しない部品は今と同じく `dist/index.js` の隣から読み込む。`mermaid` は mermaid で描くコードブロックがある文書を初めて描くときに 1 回だけ呼ぶ。指定しない `mermaid` は、書き出した HTML の起動の処理がまとめた mermaid か、設定の `mermaid.url` から読み込む
 request_example: |-
   ```js
   const map = await import(URL.createObjectURL(new Blob([mapSource], { type: "text/javascript" })));
@@ -38,22 +39,25 @@ exceptions:
   - name: なし（正常終了）
     condition: 名前と関数が正しい
   - name: TypeError
-    condition: '`name` が 3 つの名前のどれでもないか、`loader` が関数でない'
+    condition: '`name` が 4 つの名前のどれでもないか、`loader` が関数でない'
     notes: 記録を変えずに同期で投げる
   - name: なし（読み込みの失敗）
-    condition: '`loader` が拒否するか、返却したモジュールが部品の関数を export していないか、指定しなかった部品の隣の URL を作れない'
-    notes: '`setPartModuleLoader` は投げない。部品を使用する `mount` は `console.error` に部品の名前と元のエラーを出して描画を続け、`mountView`・`mountComments` は戻り値の Promise を拒否する'
+    condition: '`loader` が拒否するか、返却したモジュールが部品の関数を export していないか（`mermaid` は既定の export が `initialize`・`render` を持たないか）、指定しなかった部品の隣の URL を作れない'
+    notes: '`setPartModuleLoader` は投げない。部品を使用する `mount` は `console.error` に部品の名前と元のエラーを出して描画を続け、`mountView`・`mountComments` は戻り値の Promise を拒否する。`mermaid` を読み込めないときは、インターフェース定義『文書を描く』の mermaid を読み込めないときと同じく描き、`mermaid.url` へ要求し直さない'
 constraints:
   - item: 呼ぶ時期
     constraint: 部品を使用する `mount`・`mountView`・`mountComments` を呼ぶ前に呼ぶ
   - item: モジュールの構造
-    constraint: 返却したモジュールは、`map` は `attachMap`、`view` は `drawView`・`attachView`、`comments` は `attachComments` を関数として export する
-    notes: 隣から読み込むときと同じ確認
+    constraint: 返却したモジュールは、`map` は `attachMap`、`view` は `drawView`・`attachView`、`comments` は `attachComments` を関数として export する。`mermaid` は既定の export が `initialize`・`render` を関数として持つ
+    notes: 隣から読み込むときと同じ確認。`mermaid` は `mermaid.url` から読み込むときと同じ確認
   - item: 配布ファイルのサイズ
-    constraint: '`dist/index.js` に部品のモジュールを含めない'
+    constraint: '`dist/index.js` に部品と mermaid のモジュールを含めない'
     notes: 非機能要件『配布ファイル 1 つのサイズ』
   - item: 型の配布
     constraint: '`setPartModuleLoader` を `dist/index.d.ts` に書き出す'
+  - item: mermaid の読み込み先の優先
+    constraint: '`mermaid` は、この関数で指定した `loader`、書き出した HTML の起動の処理が指定したまとめた mermaid、設定の `mermaid.url` の順に、最初にあるものから読み込む'
+    notes: 書き出した HTML の起動の処理はこの関数で `mermaid` を指定しないため、書き出した HTML の描き方は変わらない
 flows:
   - name: 正常系
     summary: 指定した関数で部品を読み込み、配布物の隣へ要求せずに map・ビュー・コメントを描く
@@ -229,6 +233,67 @@ flows:
     test: test_error_when_url_unresolvable
     refs:
       - SC-472-28#scenarios[異常シナリオ（埋めていない部品のマーカーがある）]
+  - name: 正常系（mermaid のモジュールを指定する）
+    summary: 指定した関数で mermaid を読み込み、`mermaid.url` へ要求せずに mermaid の図を描く
+    setup:
+      - name: 配布物を埋めたページ
+        description: 正常系と同じで、利用側が 1 つのモジュールにまとめた mermaid も Blob の URL から `import()` するもの
+      - name: mermaid のコードブロックを持つ Markdown
+        description: map が描けない種類（`pie`）の mermaid のコードブロックと段落を 1 つずつ持つ文書
+      - name: Mock
+        description: ページの外部への要求を全て拒否して記録する。`mermaid` の `loader` は呼ばれた回数を数える関数で包む
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: setPartModuleLoader("mermaid", loader)
+        P->>M: mount(el, { markdown })
+        M->>P: loader()
+        P-->>M: mermaid のモジュール
+        M->>P: mermaid の図を描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - mermaid のコードブロックが図として描かれている
+      - '`mermaid` の `loader` が 1 回だけ呼ばれる'
+      - ページが外部へ要求した URL が無い
+    test: test_normal_when_mermaid_set
+    refs:
+      - SC-472-28#scenarios[正常シナリオ（埋めた配布物から読み込む）]
+  - name: 異常系（mermaid のモジュールを読み込めない・console.error）
+    summary: '`mermaid` の `loader` が拒否するか構造が合わないときは、mermaid を読み込めないときと同じく描き、`mermaid.url` へ要求しない'
+    setup:
+      - name: 配布物を埋めたページ
+        description: 正常系と同じ
+      - name: mermaid のコードブロックを持つ Markdown
+        description: 正常系（mermaid のモジュールを指定する）と同じ
+      - name: Mock
+        description: 'ページの外部への要求を全て拒否して記録する。`mermaid` の `loader` は 1 つ目のページで `Error("missing")` で拒否し、2 つ目のページで `{ default: {} }` を返却する。`console.error` を、呼ばれた引数を記録する関数で包む'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: setPartModuleLoader("mermaid", loader)
+        P->>M: mount(el, { markdown })
+        M->>P: loader()
+        P-->>M: 拒否か、initialize・render を持たないモジュール
+        M->>P: 段落と通知ブロックとコードブロックを描き、console.error に出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 段落が描かれ、`mount` が例外を投げない
+      - mermaid のコードブロックの場所に通知ブロックとコードブロックが描かれている
+      - '`console.error` が呼ばれ、引数に `mermaid` を含む'
+      - ページが外部へ要求した URL が無い
+    test: test_error_when_mermaid_loader_fails
 test_file: tests/integration/lib/set-part-module-loader.browser.test.ts
 refs:
   - SC-472-28#

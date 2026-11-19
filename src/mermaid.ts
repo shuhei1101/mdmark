@@ -10,6 +10,7 @@ import {
   mermaidKindName,
   splitMermaidTitle,
 } from "./mermaid-source.ts";
+import { loadMermaidByLoader } from "./part-modules.ts";
 import { isAllowedUrl } from "./render/sanitize.ts";
 import { renderEmbed } from "./shared/embed.part.ts";
 import { bundledIconNode } from "./shared/icons.part.ts";
@@ -428,6 +429,23 @@ export const attachMermaid = (options: {
 
   /** mermaid のモジュールを決める。読み込めなければ `undefined` */
   const loadMermaid = async (): Promise<MermaidModule | undefined> => {
+    const byLoader = loadMermaidByLoader();
+    if (byLoader !== undefined) {
+      try {
+        const loaded = (await byLoader).default;
+        if (isMermaidModule(loaded)) {
+          return loaded;
+        }
+        console.error(
+          "mermaid を読み込めません:",
+          "mermaid",
+          new Error("既定のエクスポートが initialize と render を持ちません"),
+        );
+      } catch (error) {
+        console.error("mermaid を読み込めません:", "mermaid", error);
+      }
+      return undefined;
+    }
     if (embeddedMermaid !== undefined) {
       const embedded = embeddedMermaid.default;
       return isMermaidModule(embedded) ? embedded : undefined;

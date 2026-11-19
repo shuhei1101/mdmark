@@ -47,7 +47,7 @@ functions:
     scope: internal
     usecase: mermaidの図を描く
     summary: '`root` の中の `[data-mdmark-mermaid]` のコードブロックが 1 つ以上あれば、読み込み中のブロックに替えて mermaid を読み込み、ソースを SVG にして図の枠に置き換え、図の操作を付ける。配色の明暗が変わったら再描画する'
-    description: 読み込み先は、`embeddedMermaid` があればそのモジュール（URL を読み込まない。`default` に `render` が無ければ読み込めないときと同じ扱いにし、`console.error` に出さない）、無ければ `url` を `document.baseURI` を基準に解決した URL。読み込みの Promise は `modules` に記録し、同じ `mount` の再描画では再読み込みしない。待ちに時間の上限は配置しない
+    description: 読み込み先は、`loadMermaidByLoader()` が Promise を返却すればその結果（URL も `embeddedMermaid` も読み込まない。拒否するか `default` に `initialize`・`render` が無ければ読み込めないときと同じ扱いにし、`console.error` に `mermaid` と元のエラーを出す。結果は part-modules.ts がページで 1 回だけ記録する）、次に `embeddedMermaid` があればそのモジュール（URL を読み込まない。`default` に `render` が無ければ読み込めないときと同じ扱いにし、`console.error` に出さない）、無ければ `url` を `document.baseURI` を基準に解決した URL。URL の読み込みの Promise は `modules` に記録し、同じ `mount` の再描画では再読み込みしない。待ちに時間の上限は配置しない
     is_async: false
     side_effects: '`root` の中の mermaid のコードブロックに `hidden` を付けて前後に要素を配置する。mermaid の `initialize` を呼ぶ。読み込めないモジュールを `console.error` に出す。祖先の `class` を `MutationObserver` で、OS の配色を `matchMedia("(prefers-color-scheme: dark)")` の `change` で確認する'
     args:
@@ -75,10 +75,12 @@ functions:
       - MOD-472-310#functions[renderNotice]
       - MOD-472-314#functions[renderSyntaxWarning]
       - MOD-472-183#functions[attachDiagrams]
+      - MOD-472-159#functions[loadMermaidByLoader]
     refs:
       - IF-472-35#constraints[mermaid の対象]
       - IF-472-35#constraints[mermaid の読み込み]
       - IF-472-35#constraints[mermaid を読み込めないとき]
+      - IF-655-1#constraints[mermaid の読み込み先の優先]
     test_setup:
       - name: mermaid のコードブロック
         description: '`render` で、front matter の `title` を持つ flowchart と `actor` を持つ sequenceDiagram の 2 つの mermaid のコードブロックを描いた要素（`src/index.css` を適用した Chromium のページ）'
@@ -151,6 +153,18 @@ functions:
         condition: '`[data-mdmark-mermaid]` のコードブロック 2 つを持つ要素で、`blocks` に 2 つ目だけを指定する'
         mock: mermaid のモジュール（`render` が固定の SVG を返す）
         expected: 図の枠が 1 つで 2 つ目の場所にあり、1 つ目は `hidden` を持たないコードブロックのまま
+      - name: test_attach_mermaid_when_loader_set
+        case: 正常
+        summary: 関数で指定した mermaid で描き、URL もまとめたモジュールも読み込まない
+        condition: '`setEmbeddedMermaid({})` と `setPartModuleLoader("mermaid", 関数)` の後に mermaid のコードブロックの要素。終えたら `setEmbeddedMermaid(undefined)` と、`partModuleLoaders`・`mermaidByLoader` の `clear()` で戻す'
+        mock: 関数は呼ばれた回数を数え、mermaid のモジュールを返却する。`importModule` を見張る
+        expected: '`ready` の後に各対象が SVG の図の枠になり、関数は 1 回だけ呼ばれ、`importModule` は呼ばれない'
+      - name: test_attach_mermaid_when_loader_fails
+        case: 異常
+        summary: 関数が拒否するか構造が合わないときは通知ブロックにし、URL へ要求しない
+        condition: '`setPartModuleLoader("mermaid", 関数)` の後に mermaid のコードブロックの要素。関数を拒否するものと `{ default: {} }` を返却するもので 1 回ずつ。それぞれの前と終えた後に `partModuleLoaders`・`mermaidByLoader` を `clear()` する'
+        mock: '`importModule` を見張る。`console.error` を記録する関数で包む'
+        expected: どちらも各読み込み中のブロックが通知ブロックになり、コードブロックが表示に戻る。`console.error` の引数に `mermaid` を含み、`importModule` は呼ばれない
   - name: drawMermaidDiagram
     title: mermaid の図を描く
     container: src/mermaid.ts
