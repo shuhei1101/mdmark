@@ -10000,7 +10000,8 @@
   .mdmark-diagram[data-diagram="map"] .map-colored-wire path {
     stroke: var(--map-wire);
   }
-  .map-wire-hit {
+  .map-wire-hit,
+  .map-lifeline-hit {
     fill: none;
     stroke: transparent;
     stroke-width: 14;
