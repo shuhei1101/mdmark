@@ -174,3 +174,49 @@ test("test_attach_map_class_when_linked", async () => {
     expect(nodeOf(root, id).querySelector("a")).toBeNull();
   }
 });
+
+// 長いメンバー・補足の幅・長いラベル（正常系）
+test("test_attach_map_class_when_long_members", async () => {
+  // 準備・実行
+  const root = await setUp(
+    [
+      "classDiagram",
+      "  class 検索 {",
+      "    +検索(絞り込み条件, 期間, 件数, 詳細度, 件数のみ) dict",
+      "  }",
+      "  class 設定 {",
+      "    +名前: str",
+      "  }",
+      "  検索 ..> 設定 : ASGI アプリの生成",
+    ].join("\n"),
+    '{"version": 1, "layout": {"設定": {"width": 320}}}',
+  );
+  // 検証
+  const search = nodeOf(root, "検索").getBoundingClientRect();
+  for (const row of nodeOf(root, "検索").querySelectorAll<HTMLElement>(
+    ".map-class-member",
+  )) {
+    const box = row.getBoundingClientRect();
+    expect(box.top).toBeGreaterThanOrEqual(search.top - 0.5);
+    expect(box.bottom).toBeLessThanOrEqual(search.bottom + 0.5);
+    expect(box.right).toBeLessThanOrEqual(search.right + 0.5);
+  }
+  expect(nodeOf(root, "設定").getBoundingClientRect().width).toBeCloseTo(
+    320,
+    0,
+  );
+  const label = [
+    ...root.querySelectorAll<SVGTextElement>("text.map-class-label"),
+  ].find((item) => item.textContent === "ASGI アプリの生成");
+  expect(label).toBeDefined();
+  const box = label?.getBoundingClientRect() as DOMRect;
+  for (const node of root.querySelectorAll<HTMLElement>("[data-node]")) {
+    const other = node.getBoundingClientRect();
+    const overlaps =
+      box.left < other.right &&
+      other.left < box.right &&
+      box.top < other.bottom &&
+      other.top < box.bottom;
+    expect(overlaps).toBe(false);
+  }
+});
