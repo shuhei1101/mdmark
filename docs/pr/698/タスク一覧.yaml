@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-19T06:55:26.745170+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: SC-472-22・SC-472-69 の前提（setup）の tmux サーバーの分け方を修正する
+    updated_by: planner
+    updated_at: '2026-11-19T06:58:38.833019+00:00'
   - process: モック作成
     status: skipped
     reason: 画面を持たない変更
