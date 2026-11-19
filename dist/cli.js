@@ -63092,7 +63092,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.0532262";
+  return "v0.14.0+develop.5fffa77";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -91890,7 +91890,7 @@ async function prepareHtml(root2, baseDir) {
   }
   return warnings;
 }
-function textWidth(text2) {
+function textWidth2(text2) {
   let width = 0;
   for (const char of text2.replace(/\s+/g, " ")) {
     width += (char.codePointAt(0) ?? 0) <= LATIN1_LAST ? FONT * HALF_WIDTH_RATIO : FONT;
@@ -91903,7 +91903,7 @@ function estimateTable(table2) {
   for (const row2 of rows) {
     row2.children.filter(isTag2).forEach((cell, index) => {
       const bold = cell.name === "th" ? 1.05 : 1;
-      const width = Math.max(FONT * 6, textWidth(textOf3(cell).trim()) * bold) + FONT * 1.8 + 1;
+      const width = Math.max(FONT * 6, textWidth2(textOf3(cell).trim()) * bold) + FONT * 1.8 + 1;
       columns[index] = Math.max(columns[index] ?? 0, width);
     });
   }
@@ -91958,7 +91958,7 @@ function estimateDiagram(figure, maxWidth) {
 }
 function leafSize(node2, maxWidth) {
   if (isText(node2)) {
-    const w = textWidth(node2.data.trim());
+    const w = textWidth2(node2.data.trim());
     return w === 0 ? { w: 0, h: 0 } : { w: Math.min(w, maxWidth), h: Math.ceil(w / maxWidth) * LINE };
   }
   if (!isTag2(node2)) {
