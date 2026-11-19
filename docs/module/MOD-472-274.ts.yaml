@@ -24,7 +24,11 @@ functions:
     container: src/footnote/footnote.syntax.ts
     kind: 関数
     scope: internal
-    summary: 解析器に、block の `mdmark_footnote_def`（`reference` の前。`alt` は `paragraph`・`reference`）、inline の `mdmark_footnote_inline`（`image` の後）と `mdmark_footnote_ref`（その後。`link` より後なので `[^x](url)` はリンクを優先する）を登録し、`mdmark_footnote_ref`（番号とツールチップ）と `mdmark_footnote_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に配置する。どちらも全てのコアルールの後に、`footnoteBodies` で描いた中身の外にだけ `markOwn` を掛けて描く。コアルールの `collectFootnotes`（文書の機能の後）・`buildFootnoteList`（関連文書の一覧の前）・`takeFootnoteDefinitions`（最後）は `createParser` が登録する
+    summary: '脚注の block と inline のルールとトークンの描き方を解析器に登録する'
+    description: |-
+      解析器に、block の `mdmark_footnote_def`（`reference` の前。`alt` は `paragraph`・`reference`）、inline の `mdmark_footnote_inline`（`image` の後）と `mdmark_footnote_ref`（その後。`link` より後なので `[^x](url)` はリンクを優先する）を登録し、`mdmark_footnote_ref`（番号とツールチップ）と `mdmark_footnote_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に配置する。
+      どちらも全てのコアルールの後に、`footnoteBodies` で描いた中身の外にだけ `markOwn` を掛けて描く。
+      コアルールの `collectFootnotes`（文書の機能の後）・`buildFootnoteList`（関連文書の一覧の前）・`takeFootnoteDefinitions`（最後）は `createParser` が登録する
     args:
       - name: parser
         type: MarkdownIt
@@ -109,7 +113,11 @@ functions:
     container: src/footnote/footnote.syntax.ts
     kind: 関数
     scope: internal
-    summary: inline のルール。`[^ラベル]` のラベルを正規化し、`FootnoteState.definitions` にあるときだけ `mdmark_footnote_ref` のトークン（`meta.id`・`meta.refIndex`・`meta.source`）にする。初めてのラベルは `notes` の末尾に追加して番号を振り、同じラベルは同じ番号で `refCount` を増やす。定義の無いラベルは当てず、記載した文字のまま残す
+    summary: 'inline のルール。定義のある `[^ラベル]` を脚注の番号のトークンにする'
+    description: |-
+      `[^ラベル]` のラベルを正規化し、`FootnoteState.definitions` にあるときだけ `mdmark_footnote_ref` のトークン（`meta.id`・`meta.refIndex`・`meta.source`）にする。
+      初めてのラベルは `notes` の末尾に追加して番号を振り、同じラベルは同じ番号で `refCount` を増やす。
+      定義の無いラベルは当てず、記載した文字のまま残す
     args:
       - name: state
         type: StateInline
@@ -167,7 +175,11 @@ functions:
     container: src/footnote/footnote.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール（文書の機能 `resolveDocumentFeatures` の直後、見出し `assignHeadingIds` の前）。`env.features.footnotes` で脚注の機能を判定し、マーカーは読み込まない。オンなら、定義は本文に残したまま後のコアルールを本文と同じく経由し、行内の脚注の中身を 1 段落の定義の囲み（キーは制御文字で始める `\u0000inline:{位置}`）にして文書の末尾に追加し、脚注の `key` をそのキーにする。オフなら、`mdmark_footnote_ref` を `meta.source` の `text` のトークンに戻し、定義の囲みを削除して最初の段落の頭に `meta.source` を戻し、記載した位置に残し、`env.mdmarkFootnotes` を削除する
+    summary: 'コアルール（文書の機能 `resolveDocumentFeatures` の直後、見出し `assignHeadingIds` の前）。脚注の機能のオン・オフで脚注のトークンを整える'
+    description: |-
+      `env.features.footnotes` で脚注の機能を判定し、マーカーは読み込まない。
+      オンなら、定義は本文に残したまま後のコアルールを本文と同じく経由し、行内の脚注の中身を 1 段落の定義の囲み（キーは制御文字で始める `\u0000inline:{位置}`）にして文書の末尾に追加し、脚注の `key` をそのキーにする。
+      オフなら、`mdmark_footnote_ref` を `meta.source` の `text` のトークンに戻し、定義の囲みを削除して最初の段落の頭に `meta.source` を戻し、記載した位置に残し、`env.mdmarkFootnotes` を削除する
     args:
       - name: state
         type: StateCore
@@ -204,7 +216,11 @@ functions:
     container: src/footnote/footnote.syntax.ts
     kind: 関数
     scope: internal
-    summary: 脚注 1 つの中身を、部品『脚注の番号』のツールチップに入れる段落ごとの行内の HTML（`p` を削除したもの）と、一覧に入れるブロックの HTML にして返却する。段落の `inline` は `renderer.renderInline`、段落でないブロックは描いた HTML から要素を除いた文字を 1 段落にする。中身は `takeFootnoteDefinitions` が記録した定義のトークン（行内の脚注も同じ）
+    summary: '脚注 1 つの中身を、ツールチップの行内の HTML と一覧のブロックの HTML にして返却する'
+    description: |-
+      脚注 1 つの中身を、部品『脚注の番号』のツールチップに入れる段落ごとの行内の HTML（`p` を削除したもの）と、一覧に入れるブロックの HTML にして返却する。
+      段落の `inline` は `renderer.renderInline`、段落でないブロックは描いた HTML から要素を除いた文字を 1 段落にする。
+      中身は `takeFootnoteDefinitions` が記録した定義のトークン（行内の脚注も同じ）
     args:
       - name: options
         type: '{ md: MarkdownIt; env: RenderEnv; note: FootnoteState["notes"][number] }'
@@ -227,7 +243,10 @@ functions:
     container: src/footnote/footnote.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール（セクション・目次の後、関連文書の一覧の前）。`env.mdmarkFootnotes` の `notes` が 1 つ以上あれば、`mdmark_footnote_list` のトークンを末尾に追加する（セクションの外に配置され、関連文書の一覧はその後ろに追加される）。中身は描くときに、部品『脚注の一覧』に中身を差し込みインターフェース（`SLOT_MARKER`。最後の段落の閉じの前後）で指定して描く
+    summary: 'コアルール（セクション・目次の後、関連文書の一覧の前）。脚注があれば末尾に脚注の一覧のトークンを追加する'
+    description: |-
+      `env.mdmarkFootnotes` の `notes` が 1 つ以上あれば、`mdmark_footnote_list` のトークンを末尾に追加する（セクションの外に配置され、関連文書の一覧はその後ろに追加される）。
+      中身は描くときに、部品『脚注の一覧』に中身を差し込みインターフェース（`SLOT_MARKER`。最後の段落の閉じの前後）で指定して描く
     args:
       - name: state
         type: StateCore

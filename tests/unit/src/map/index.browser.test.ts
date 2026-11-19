@@ -293,3 +293,38 @@ test("test_attach_map_when_id_link", async () => {
   expect(warning?.textContent).toContain("B");
   expect(warning?.textContent).toContain("id:unknown");
 });
+
+test("test_attach_map_when_class_id_link", async () => {
+  // 準備
+  const { attachMap } = await loadMap();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(
+      mapRange({
+        mermaid:
+          'classDiagram\n  class A\n  class B\n  click A href "id:SC-1"\n  click B href "id:unknown"\n',
+      }),
+    ).html,
+  );
+  // 実行
+  detachers.push(
+    attachMap(root, resolveConfig({ config: { map: CONFIG } }), {
+      resolveIdLink: (href) =>
+        href.startsWith("id:SC-")
+          ? `https://docs.example.com/${href.slice("id:".length)}`
+          : undefined,
+    }),
+  );
+  // 検証
+  expect(
+    root
+      .querySelector('[data-node="A"] a.mdmark-diagram-node-link')
+      ?.getAttribute("href"),
+  ).toBe("https://docs.example.com/SC-1");
+  expect(
+    root.querySelector('[data-node="B"] a.mdmark-diagram-node-link'),
+  ).toBeNull();
+  const warning = root.querySelector(".mdmark-syntax-warning");
+  expect(warning?.textContent).toContain("B");
+  expect(warning?.textContent).toContain("id:unknown");
+});

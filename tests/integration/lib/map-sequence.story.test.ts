@@ -352,6 +352,45 @@ test("test_reordering", async () => {
   ]);
 });
 
+// 自分へのメッセージのラベルの札は、折り返しの線と重ならず、折り返しの上の辺から 6px 上に描く（SelfMessage）
+test("test_self_message", async () => {
+  // 準備・実行
+  const page = await openSequence("self-message");
+  // 検証
+  /** セレクタの要素のページの矩形 */
+  const boxOf = (selector: string) =>
+    page.locator(selector).evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+      };
+    });
+  const label = await boxOf('.mdmark-diagram-label[data-message="2"]');
+  const wire = await boxOf('path.mdmark-diagram-wire[data-message="2"]');
+  expect(overlaps(label, wire)).toBe(false);
+  expect(wire.top - label.bottom).toBeCloseTo(6, 0);
+  expect((label.left + label.right) / 2).toBeCloseTo(
+    (wire.left + wire.right) / 2,
+    0,
+  );
+  // ほかの参加者へのメッセージの札は、従来どおり札の中心を線の 14px 上に置く
+  const otherLabel = await boxOf('.mdmark-diagram-label[data-message="3"]');
+  const otherWire = await boxOf('path.mdmark-diagram-wire[data-message="3"]');
+  expect((otherLabel.top + otherLabel.bottom) / 2).toBeCloseTo(
+    (otherWire.top + otherWire.bottom) / 2 - 14,
+    0,
+  );
+  // 説明を持つ自分へのメッセージの線の押せる帯は、ツールチップの持ち主になる
+  await expect(
+    page
+      .locator('.map-wire-hit[data-message="2"]')
+      .getAttribute("data-tip-owner"),
+  ).resolves.toBe("message:2");
+});
+
 // hints が false なら、説明を持つメッセージの線の押せる帯がツールチップを持たず、メッセージのラベルは描く（HintsOff）
 test("test_hints_off", async () => {
   // 準備・実行

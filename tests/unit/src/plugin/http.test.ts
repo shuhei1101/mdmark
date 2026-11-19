@@ -200,7 +200,7 @@ test("test_run_serve", async () => {
   controller.abort();
   const code = await serving;
   // 検証
-  expect(tools).toHaveLength(6);
+  expect(tools).toHaveLength(7);
   expect(code).toBe(0);
   await expect(fetch(url)).rejects.toThrow();
 });

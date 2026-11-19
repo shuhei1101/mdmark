@@ -277,7 +277,10 @@ functions:
     container: src/render/parser.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`link_open` の `href` が `id:` で始まるものを markdown-it の URL エンコードを `normalizeLinkText` で戻してから `resolveIdHref`（`env.resolveIdLink`）で URL に置き換える。`undefined` のときはそのままにし、`sanitize` がほかの許可しないスキームと同じく `href` を落とす
+    summary: 'コアルール。`id:` で始まるリンクの `href` を `resolveIdHref` で URL に置き換える'
+    description: |-
+      `link_open` の `href` が `id:` で始まるものを markdown-it の URL エンコードを `normalizeLinkText` で戻してから `resolveIdHref`（`env.resolveIdLink`）で URL に置き換える。
+      `undefined` のときはそのままにし、`sanitize` がほかの許可しないスキームと同じく `href` を落とす
     args:
       - name: state
         type: StateCore

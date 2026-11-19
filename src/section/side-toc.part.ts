@@ -1,6 +1,7 @@
 import type { SideTocMode } from "../config.ts";
 import { escapeHtml } from "../shared/escape.logic.ts";
 import { iconSvg } from "../shared/icons.part.ts";
+import { renderCopyPanel } from "../table/table.part.ts";
 
 /** 右側の目次に並べる見出し 1 つ */
 export type SideTocHeading = {
@@ -95,15 +96,77 @@ function renderBars(headings: SideTocHeading[], current: string | undefined) {
     .join("");
 }
 
-/** パネルの頭（すべて展開・すべて折りたたむのボタンとピン止めのボタン）の HTML を返却する */
-function renderHead(options: { sections: boolean; pinned: boolean }): string {
-  const { sections, pinned } = options;
+/** Markdown でコピーの状態 */
+export type MarkdownCopyState = "idle" | "copied" | "failed";
+
+/** コピーの状態ごとの、コピーのボタンのアイコン */
+const MARKDOWN_COPY_ICONS = {
+  idle: "copy",
+  copied: "check",
+  failed: "circle-alert",
+} as const satisfies Record<MarkdownCopyState, string>;
+
+/** Markdown でコピー・Markdown でエクスポートのボタンと、読み上げの文を入れる要素の HTML を返却する */
+function renderMarkdownButtons(copy: MarkdownCopyState): string {
+  const button = (name: string, label: string, icon: string): string =>
+    `<button class="mdmark-markdown-button" type="button" data-markdown="${name}" aria-label="${label}" title="${label}">${icon}</button>`;
+  return `<div class="mdmark-side-toc-markdown" role="group" aria-label="Markdown">${button("copy", "Markdown でコピー", iconSvg(MARKDOWN_COPY_ICONS[copy]))}${button("export", "Markdown でエクスポート", iconSvg("download"))}<span class="mdmark-visually-hidden" role="status"></span></div>`;
+}
+
+/** パネルの頭（すべて展開・すべて折りたたむのボタン、Markdown のボタン、ピン止めのボタン）の HTML を返却する */
+function renderHead(options: {
+  sections: boolean;
+  pinned: boolean;
+  markdownButtons: boolean;
+  markdownCopy: MarkdownCopyState;
+}): string {
+  const { sections, pinned, markdownButtons, markdownCopy } = options;
   const actions = sections
     ? `<div class="mdmark-side-toc-actions">${renderFoldAll()}</div>`
     : "";
+  const markdown = markdownButtons ? renderMarkdownButtons(markdownCopy) : "";
   // ピン止めのボタン: 押す前と押した後のアイコンを両方置き、CSS が aria-pressed で片方を出す
   const pin = `<button class="mdmark-side-toc-pin" type="button" aria-pressed="${pinned}" aria-label="目次をピン止め" title="目次をピン止め"><span class="mdmark-side-toc-pin-off">${iconSvg("panel-right-dashed")}</span><span class="mdmark-side-toc-pin-on">${iconSvg("panel-right")}</span></button>`;
-  return `<div class="mdmark-side-toc-head">${actions}${pin}</div>`;
+  return `<div class="mdmark-side-toc-head">${actions}${markdown}${pin}</div>`;
+}
+
+/** Markdown のボタンの指定に既定を適用する */
+function markdownOptionsOf(options: {
+  markdownButtons?: boolean;
+  markdownCopy?: MarkdownCopyState;
+  markdownCopyReason?: string;
+  markdownText?: string;
+}): {
+  markdownButtons: boolean;
+  markdownCopy: MarkdownCopyState;
+  markdownCopyReason: string | undefined;
+  markdownText: string;
+} {
+  return {
+    markdownButtons: options.markdownButtons ?? true,
+    markdownCopy: options.markdownCopy ?? "idle",
+    markdownCopyReason: options.markdownCopyReason,
+    markdownText: options.markdownText ?? "",
+  };
+}
+
+/** コピーできなかったときに頭の後ろへ配置する、手でコピーさせるパネルの HTML。コピーできなかったとき以外は空 */
+function renderMarkdownPanel(options: {
+  markdownButtons: boolean;
+  markdownCopy: MarkdownCopyState;
+  markdownCopyReason: string | undefined;
+  markdownText: string;
+  panelId: string;
+}): string {
+  if (!options.markdownButtons || options.markdownCopy !== "failed") {
+    return "";
+  }
+  return renderCopyPanel({
+    id: `${options.panelId}-markdown`,
+    format: "document",
+    text: options.markdownText,
+    reason: options.markdownCopyReason,
+  });
 }
 
 /** 右側の目次の HTML を返却する。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる */
@@ -114,6 +177,14 @@ export function renderSideToc(options: {
   mode?: SideTocMode;
   /** すべて展開・すべて折りたたむのボタンを配置するか（既定 `true`） */
   sections?: boolean;
+  /** Markdown でコピー・Markdown でエクスポートのボタンを配置するか（既定 `true`） */
+  markdownButtons?: boolean;
+  /** Markdown でコピーの状態（既定 `idle`） */
+  markdownCopy?: MarkdownCopyState;
+  /** コピーできなかった理由 */
+  markdownCopyReason?: string;
+  /** コピーできなかったときにパネルへ入れる Markdown */
+  markdownText?: string;
   /** 目次を出しているか（既定 `false`） */
   open?: boolean;
   /** ピン止めしているか（既定 `false`） */
@@ -135,7 +206,9 @@ export function renderSideToc(options: {
   const escapedPanelId = escapeHtml(panelId);
   const currentText = headings.find((heading) => heading.id === current)?.text;
   const bars = renderBars(headings, current);
-  const head = renderHead({ sections, pinned });
+  const markdown = markdownOptionsOf(options);
+  const head = renderHead({ sections, pinned, ...markdown });
+  const panel = renderMarkdownPanel({ ...markdown, panelId });
   const flags = `${open ? " data-open" : ""}${pinned ? " data-pinned" : ""}`;
-  return `<aside class="mdmark-side-toc" data-mode="${mode}"${flags}><button class="mdmark-side-toc-toggle" type="button" aria-expanded="${open}" aria-controls="${escapedPanelId}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">${escapeHtml(currentText ?? "")}</span>${iconSvg("ellipsis")}</button><div class="mdmark-side-toc-rail" aria-hidden="true">${bars}</div><nav class="mdmark-side-toc-panel" id="${escapedPanelId}" aria-label="右側の目次">${head}<ul class="mdmark-side-toc-list">${renderItems(nestHeadings(headings), current)}</ul></nav></aside>`;
+  return `<aside class="mdmark-side-toc" data-mode="${mode}"${flags}><button class="mdmark-side-toc-toggle" type="button" aria-expanded="${open}" aria-controls="${escapedPanelId}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">${escapeHtml(currentText ?? "")}</span>${iconSvg("ellipsis")}</button><div class="mdmark-side-toc-rail" aria-hidden="true">${bars}</div><nav class="mdmark-side-toc-panel" id="${escapedPanelId}" aria-label="右側の目次">${head}${panel}<ul class="mdmark-side-toc-list">${renderItems(nestHeadings(headings), current)}</ul></nav></aside>`;
 }

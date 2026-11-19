@@ -87,8 +87,11 @@ functions:
     container: src/render/mark-schema.ts
     kind: 関数
     scope: internal
-    summary: 描くときは画面に出さず点検だけがずれにする注記を作る。今の書き方の引数は `legacy_mark` の 1 つ、`unknownKeys` は 1 つにつき `unknown_mark_arg`、表のマーカーの `features.{機能}.enabled` が `false` の機能の列の設定（`filter`・`hidden`・`pinned`・`total`）と、`rows.colors` の `column` と `value` の片方だけの要素・`column`・`at` のどちらも無い要素は 1 つにつき `mark_option_unapplied` にする
-    description: 文はインターフェース定義『設定と索引を点検する』の制約「マーカーの設定の点検」の内容（使用できるキーは `MARK_SCHEMAS` の、そのパスの場所のキー）。拡張・`libraries` のマーカーは `legacy_mark` だけを作る
+    summary: '描くときは画面に出さず点検だけがずれにする注記を作る'
+    description: |-
+      今の書き方の引数は `legacy_mark` の 1 つ、`unknownKeys` は 1 つにつき `unknown_mark_arg`、表のマーカーの `features.{機能}.enabled` が `false` の機能の列の設定（`filter`・`hidden`・`pinned`・`total`）と、`rows.colors` の `column` と `value` の片方だけの要素・`column`・`at` のどちらも無い要素は 1 つにつき `mark_option_unapplied` にする。
+      文はインターフェース定義『設定と索引を点検する』の制約「マーカーの設定の点検」の内容（使用できるキーは `MARK_SCHEMAS` の、そのパスの場所のキー）。
+      拡張・`libraries` のマーカーは `legacy_mark` だけを作る
     args:
       - name: options
         type: '{ name: string; source: Mark["source"]; options: MarkOptions; unknownKeys: string[]; isExtension: boolean }'

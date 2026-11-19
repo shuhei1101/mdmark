@@ -8,6 +8,7 @@ export const TOOL_NAME_PREFIX = "mcp__plugin_mdmark_mdmark__";
 export const PROJECT_DIR_TOOLS = [
   "check",
   "export_html",
+  "export_markdown",
   "build_site",
   "list_templates",
   "add_template",

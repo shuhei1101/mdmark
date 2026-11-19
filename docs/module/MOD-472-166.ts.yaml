@@ -12,8 +12,8 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（688KB）
-    value: 688 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（712KB）
+    value: 712 * 1024
     refs:
       - NFR-472-1#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
@@ -168,8 +168,12 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks`・`buildRetiredDiagrams` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
-    description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
+    summary: 'esbuild で配布物・書き出しの起動の処理・CLI・移行の手順の書き換えをまとめ、型定義とライセンスを書き込む'
+    description: |-
+      esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。
+      続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks`・`buildRetiredDiagrams` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む。
+      `format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。
+      続けて `metafile` を指定してまとめた依存のライセンスを記載する。
     side_effects: '`dist/` と、`migrations/` の中の出していないバージョンのフォルダのうち、`marker-json.mjs` を持つフォルダの `legacy-marks.js`・`retired-diagrams.mjs` か `retired-er.mjs` を持つフォルダの `retired-diagrams.js` と、それぞれの `THIRD_PARTY_LICENSES.txt` を書き換える'
     args:
       - name: version
@@ -216,7 +220,7 @@ functions:
         mock: 一時フォルダに `src/` とそのパッケージの `package.json`・`LICENSE` を配置し、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を配置する
         expected: '`dist/THIRD_PARTY_LICENSES.txt` にそのパッケージの名前と本文がある'
     notes:
-      CLI と起動の処理のまとめ方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・バージョンの `define`）で、ライブラリ本体を含めて 1 つにまとめる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` でまとめ、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読み込む。これらを `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
+      CLI と起動の処理のまとめ方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・バージョンの `define`）で、ライブラリ本体を含めて 1 つにまとめる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` でまとめ、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読み込む。`dist/cli.js` は `postcssStubPlugin` を使用せず、Markdown への書き出しの SVG の CSS を絞る postcss をまとめる。これらを `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
       起動の処理の script の閉じ: '`dist/viewer.js` は `startViewer` を export する ES モジュールで、書き出した HTML にそのまま配置しない。書き出しのとき CLI の `bundleViewer` が埋めるモジュールともう一度まとめ、`</script` と `<!--` の並びを替える'
   - name: buildLegacyMarks
     title: 移行の手順のフォルダに書き換えの処理をまとめる

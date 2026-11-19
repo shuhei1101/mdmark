@@ -12,7 +12,11 @@ constants:
   - name: partModuleLoaders
     title: 部品のモジュールの読み込みの差し替え
     container: src/part-modules.ts
-    summary: '`setPartModuleLoader` で、部品と mermaid のモジュールを返却する関数を入れる（書き出した HTML の起動の処理と利用側のページが呼ぶ）。無い部品の名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む。無い `mermaid` は mermaid.ts がまとめた mermaid か `mermaid.url` から読み込む'
+    summary: '部品と mermaid のモジュールを返却する関数の表。無い名前は配布物の URL から読み込む'
+    description: |-
+      `setPartModuleLoader` で、部品と mermaid のモジュールを返却する関数を入れる（書き出した HTML の起動の処理と利用側のページが呼ぶ）。
+      無い部品の名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む。
+      無い `mermaid` は mermaid.ts がまとめた mermaid か `mermaid.url` から読み込む
     value: 'new Map<PartLoaderName, () => Promise<Record<string, unknown>>>()'
     status: implemented
   - name: partModules

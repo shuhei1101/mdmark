@@ -1,0 +1,45 @@
+id: SC-472-103
+visibility: internal
+title: Markdownに書き出してmdmarkの無い表示で読む
+lead: 文書の作成者が mdmark の文書を点検してから純粋な Markdown に書き出し、mdmark の無い表示で記法の文字が見えずに読める Markdown と画像を得る。
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 文書の作成者
+    interest: 書き出す前に文書のずれを修正してから、mdmark の無い表示で読める Markdown と画像をそろえられる
+trigger: 文書の作成者が、mdmark の文書を mdmark の無い表示で読ませたくなる
+preconditions:
+  - 文書の作成者の手元に Node 24 以降と、ビルドしたこのリポジトリの mdmark の CLI がある
+success_guarantee: 書き出した Markdown に HTML のコメントが無く、mdmark の無い表示で画像を含めて内容が読める。
+minimal_guarantee: 点検でずれが見つかっても、設定・索引・文書は書き換えられない。
+scenarios:
+  - name: 正常シナリオ（点検してから CLI で書き出す）
+    setup:
+      - name: 記法を持つ文書のあるフォルダ
+        description: 設定・索引と、『文書をMarkdownに書き出す』の正常シナリオと同じ文書を持ち、索引と文書にずれが無いフォルダ
+      - name: Mock
+        description: 差し替える依存は無い。外へのネットワークの要求を記録する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        A[設定と索引を点検する:正常シナリオ] --> B[文書をMarkdownに書き出す:正常シナリオ]
+        click A "id:SC-472-78#scenarios[正常シナリオ]"
+        click B "id:SC-472-101#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
+    expected:
+      - 点検が空のずれの一覧を返却し、続けて書き出しが終了コード 0 で終わる
+      - 書き出した Markdown に `<!--` が 0 件で、画像のリンクが全て出力のフォルダの SVG のファイルを指す
+      - 書き出した Markdown を mdmark を読み込まない Markdown の変換で HTML にして Chromium で開くと、全ての `img` の `naturalWidth` が 0 より大きく、外への要求が 0 件
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_check_then_export
+    uses:
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-101#scenarios[正常シナリオ]
+test_file: tests/e2e/複合ユースケース/Markdownに書き出してmdmarkの無い表示で読む.spec.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:markdown

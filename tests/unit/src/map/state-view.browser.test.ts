@@ -29,11 +29,9 @@ async function setUp(data = STATE_DATA) {
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
   handles.push(
-    attachMapState(
-      range,
-      resolveConfig({}),
-      parseMapArgs('{"title": "作業の状態"}').args,
-    ),
+    attachMapState(range, resolveConfig({}), {
+      args: parseMapArgs('{"title": "作業の状態"}').args,
+    }),
   );
   return root;
 }

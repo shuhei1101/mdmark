@@ -1,0 +1,154 @@
+id: SC-472-102
+visibility: internal
+title: ビュワーからMarkdownでコピー・エクスポートする
+lead: 読者が、`mount` で描いた文書とまとめた HTML のボタンで、開いている文書を純粋な Markdown（GFM と Mermaid）にしてクリップボードへコピーし、`.md` のファイルとして保存する。
+primary_actor: 読者
+stakeholders:
+  - name: 読者
+    interest: 描いた文書の中身を、マーカーや定義の JSON を手で削除せずに、ほかのツール（チャット・Issue・別のエディタ）へ貼り付けられる
+  - name: 利用側のページ
+    interest: ボタンを出したくない画面では、設定で消せる
+trigger: 読者が、描いた文書の Markdown でコピーするボタンか、Markdown でエクスポートするボタンを押す
+preconditions:
+  - ページが mdmark の配布物を読み込み、`mount` で文書を描いているか、`mdmark build` でまとめた HTML を開いている
+success_guarantee: クリップボードか保存したファイルに、HTML のコメントと生の HTML を含まない純粋な Markdown が入る。`chart`・`param`・埋め込んだ HTML は取り除いている。
+minimal_guarantee: クリップボードへ書き込めないときは、書き込めなかったことをボタンのそばに出し、描いた文書は変わらない。
+scenarios:
+  - name: 正常シナリオ（コピーする）
+    setup:
+      - name: 記法を持つ文書を描いたページ
+        description: 『文書をMarkdownに書き出す』の正常シナリオと同じ文書と、`script` 要素・`div` の生の HTML を持つ段落を `mount` で描いたページ
+      - name: Mock
+        description: クリップボードへの書き込みを許したブラウザーで開く
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor R as 読者
+        participant P as 描いた文書
+        participant B as クリップボード
+        R->>P: Markdown でコピーするボタンを押す
+        P->>P: 描いた文書の Markdown を純粋な Markdown に変換し、画像にするものと生の HTML を取り除く
+        P->>B: 変換した Markdown を書き込む
+        P-->>R: コピーしたことをボタンのそばに出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - クリップボードの文字列に `<!--` が 0 件で、`script`・`div` のタグが残っていない
+      - 目次・番号を出すリンク・map の範囲は、『文書をMarkdownに書き出す』の正常シナリオと同じ形で入っている
+      - '`chart`・`param`・埋め込んだ HTML の場所に、画像のリンクも定義の JSON も残っていない'
+      - ボタンのそばにコピーしたことが出る
+    test: test_normal_when_copy
+  - name: 正常シナリオ（エクスポートする）
+    setup:
+      - name: 記法を持つ文書を描いたページ
+        description: 正常シナリオ（コピーする）と同じ。文書の最初の見出し 1 は `返信の手順`
+      - name: Mock
+        description: ブラウザーのダウンロードを受け取る
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor R as 読者
+        participant P as 描いた文書
+        participant D as ブラウザーの保存
+        R->>P: Markdown でエクスポートするボタンを押す
+        P->>P: 描いた文書の Markdown を純粋な Markdown に変換する
+        P->>D: 文書のタイトルを名前にした .md のファイルを渡す
+        D-->>R: ファイルを保存する
+      ```
+
+      <!-- /map -->
+    expected:
+      - ダウンロードが 1 件あり、ファイルの名前が `返信の手順.md`
+      - ファイルの中身が、正常シナリオ（コピーする）でクリップボードに入る文字列と同じ
+    test: test_normal_when_export
+  - name: 正常シナリオ（まとめた HTML）
+    setup:
+      - name: まとめた HTML
+        description: 文書 2 つを `mdmark build` でまとめた HTML を file:// で開き、2 つ目の文書を開いている
+      - name: Mock
+        description: 正常シナリオ（コピーする）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor R as 読者
+        participant H as まとめた HTML
+        participant B as クリップボード
+        R->>H: 開いている文書で Markdown でコピーするボタンを押す
+        H->>H: 開いている文書の Markdown を純粋な Markdown に変換する
+        H->>B: 変換した Markdown を書き込む
+        H-->>R: コピーしたことをボタンのそばに出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - クリップボードに、開いている 2 つ目の文書だけの純粋な Markdown が入る
+      - ボタンを押してからコピーしたことが出るまでの外への要求が 0 件
+      - クリップボードの Markdown は、同じ文書を CLI で書き出した Markdown から `chart`・`param`・埋め込んだ HTML の場所を取り除いたものと同じ
+    test: test_normal_when_bundle
+  - name: 正常シナリオ（ボタンを消す）
+    setup:
+      - name: ボタンを消す設定で描いたページ
+        description: 設定の `features.markdown-buttons` を `false` にして、正常シナリオ（コピーする）と同じ文書を描いたページ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor R as 読者
+        participant P as 描いた文書
+        R->>P: ページを開く
+        P-->>R: Markdown のコピーとエクスポートのボタンの無い文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - Markdown でコピーするボタンと Markdown でエクスポートするボタンが無い
+      - 文書のほかの部分は、ボタンを出す設定で描いたときと同じ
+    test: test_normal_when_disabled
+  - name: 異常シナリオ（クリップボードへ書き込めない）
+    setup:
+      - name: 記法を持つ文書を描いたページ
+        description: 正常シナリオ（コピーする）と同じ
+      - name: Mock
+        description: クリップボードへの書き込みを拒むブラウザーで開く
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor R as 読者
+        participant P as 描いた文書
+        participant B as クリップボード
+        R->>P: Markdown でコピーするボタンを押す
+        P->>B: 変換した Markdown を書き込む
+        B-->>P: 拒否
+        P-->>R: コピーできなかったことと、手でコピーできる変換した Markdown を出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - ボタンのそばにコピーできなかったことが出る
+      - 変換した Markdown を選択した状態で出し、手でコピーできる
+      - 描いた文書が変わっていない
+    test: test_error_when_clipboard_denied
+refs:
+  - SC-472-101#
+  - SC-472-13#
+test_file: tests/e2e/単一ユースケース/ビュワーからMarkdownでコピー・エクスポートする.spec.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: topic:markdown
+  - name: action:コピー
+  - name: topic:クリップボード
+  - name: topic:ボタン
+  - name: action:保存

@@ -9,7 +9,11 @@ functions:
     container: src/diagram/diagram.syntax.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール。登録した拡張に無い `RETIRED_DIAGRAM_DIRECTIVES` のマーカーの範囲は、機能 `diagrams` のオン・オフによらず、範囲のトークンを廃止した図の記載の警告（画面設計『文書』の文言。`env.warnings` の種類は `retired_diagram`）に置き換える。`diagrams` がオンのとき、登録した拡張に無い図の部品のマーカーの範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読み込めたら部品の HTML（`renderDiagramFrame` に機能 `diagram-resize` のオン・オフを `resizable` に指定し、`renderParam` に `env.labels?.paramCopy` を指定する）（`markOwn` を掛けた `html_block`）、読み込めなければ記載の警告に範囲のトークンを置き換える。オフのときはマーカーだけを取り除く
+    summary: 'markdown-it のコアルール。図の部品のマーカーの範囲を部品の HTML か記載の警告に置き換える'
+    description: |-
+      登録した拡張に無い `RETIRED_DIAGRAM_DIRECTIVES` のマーカーの範囲は、機能 `diagrams` のオン・オフによらず、範囲のトークンを廃止した図の記載の警告（画面設計『文書』の文言。`env.warnings` の種類は `retired_diagram`）に置き換える。
+      `diagrams` がオンのとき、登録した拡張に無い図の部品のマーカーの範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読み込めたら部品の HTML（`renderDiagramFrame` に機能 `diagram-resize` のオン・オフを `resizable` に指定し、`renderParam` に `env.labels?.paramCopy` を指定する）（`markOwn` を掛けた `html_block`）、読み込めなければ記載の警告に範囲のトークンを置き換える。
+      オフのときはマーカーだけを取り除く
     args:
       - name: state
         type: StateCore

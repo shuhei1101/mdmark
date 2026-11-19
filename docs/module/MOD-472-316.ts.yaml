@@ -9,7 +9,12 @@ functions:
     container: src/tabs/tabs.part.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『タブ』の HTML を返却する。`group` を指定すると `mdmark-tabs` に `data-group` を付ける。`selected` を指定するとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、`mdmark-tabs` を `renderCollapsible` の折り畳み（見出しは `title` か `タブ（{タブ名を・で並べたもの}）`）に入れる。タブ名は行内の HTML（エスケープ済み）としてそのまま配置し、折り畳みの見出しの既定にはタグを除いた文字を使用する
+    summary: '部品設計『タブ』の HTML を返却する'
+    description: |-
+      `group` を指定すると `mdmark-tabs` に `data-group` を付ける。
+      `selected` を指定するとタブの並びを付け、選んだもの以外の中身を `hidden` にする。
+      `collapse` が `closed`・`open` なら、`mdmark-tabs` を `renderCollapsible` の折り畳み（見出しは `title` か `タブ（{タブ名を・で並べたもの}）`）に入れる。
+      タブ名は行内の HTML（エスケープ済み）としてそのまま配置し、折り畳みの見出しの既定にはタグを除いた文字を使用する
     args:
       - name: options
         type: '{ id: string; titles: string[]; panels: string[]; selected?: number; group?: string; collapse?: "none" | "closed" | "open"; title?: string }'

@@ -66,7 +66,7 @@ functions:
       type: () => void
       description: 付けた操作と観察を外す関数
     process: |-
-      1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind`（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram`・`classDiagram`・`architecture`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block`）で `attachMapFlow`（`hooks.resolveIdLink` も指定する）・`attachMapSequence`・`attachMapEr`・`attachMapState`・`attachMapClass`・`attachMapArchitecture`・`attachMapC4`・`attachMapMindmap`・`attachMapAxisGrid` のどれかに引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
+      1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind`（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram`・`classDiagram`・`architecture`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block`）で `attachMapFlow`・`attachMapSequence`・`attachMapEr`・`attachMapState`・`attachMapClass`・`attachMapArchitecture`・`attachMapC4`・`attachMapMindmap`・`attachMapAxisGrid` のどれかに引数と一緒に指定する（`attachMapFlow`・`attachMapEr`・`attachMapState`・`attachMapClass`・`attachMapArchitecture`・`attachMapC4` には `hooks.resolveIdLink` も指定する）。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
       2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`、`idLinks` は `resolve` と `hooks.resolveIdLink`。範囲が `data-map-annotations` を持てば、そのキーを定義のある注記の ID として指定する）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に足すか、無ければ図の枠の前に部品『書き方の警告』を配置する
       3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く。再生でメッセージへ移ったら構成図の `resumeFollow` と `follow` で、送り手と受け手のノードが収まる倍率と位置へ構成図を移す（構成図に無い相手のメッセージでは移さない）
       4. `data-map-plain` を持つ範囲は、`needsMermaidFallback` が `true` なら図を付けず、`data-map-front-matter` と中のコードブロックのソースをつないだ元の文字を `renderCodeBlock`（`mermaid: true`）の mermaid のコードブロックにして範囲と置き換え、置き換えた要素を全てまとめて `hooks.restoreMermaid` に指定する。`false` なら手順 1 のとおり図を付け、手順 2 の記載の警告を出さない（許可しないリンク先はリンクを持たないノードで描く）
@@ -135,6 +135,12 @@ functions:
         case: 正常
         summary: 'id: のノードのリンク先'
         condition: '`click A "id:SC-1"`・`click B "id:unknown"` の flowchart の範囲に、`id:SC-` だけを URL に変える `hooks.resolveIdLink` を指定する'
+        mock: なし（jsdom）
+        expected: A が `href` が URL の `a.mdmark-diagram-node-link` を持ち、B は持たず、図の枠の前の記載の警告に `B` と `id:unknown` がある
+      - name: test_attach_map_when_class_id_link
+        case: 正常
+        summary: 'クラス図の id: のリンク先'
+        condition: '`click A href "id:SC-1"`・`click B href "id:unknown"` の classDiagram の範囲に、`id:SC-` だけを URL に変える `hooks.resolveIdLink` を指定する'
         mock: なし（jsdom）
         expected: A が `href` が URL の `a.mdmark-diagram-node-link` を持ち、B は持たず、図の枠の前の記載の警告に `B` と `id:unknown` がある
     refs:

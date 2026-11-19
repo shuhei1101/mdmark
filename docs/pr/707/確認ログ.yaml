@@ -1,0 +1,13 @@
+confirmations:
+  - topic: map の図で薄くした要素の文字のコントラストを 4.5:1 以上にする薄め方
+    decision: '文字は opacity で薄くせず、本文の文字色と背景の色を 68% : 32% で混ぜた色にし、ノードの枠と面も背景の色と混ぜる。線・ライフラインは opacity 0.25 のまま（推奨案 B）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/707#discussion_r4629470732
+  - topic: map-dim-contrast・table のモックの内容への合意
+    decision: このモックの内容で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/707#discussion_r4629472750

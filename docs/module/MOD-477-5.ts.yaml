@@ -223,7 +223,10 @@ functions:
     usecase: バージョンを上げる
     kind: 関数
     scope: internal
-    summary: 範囲の `json` のコードブロックが 1 つかを確かめ、`parseDefinitionJson` で読み、`RetiredFlowDefinition`・`RetiredSequenceDefinition` の必須の項目（ノード・線・相手・メッセージの `id`・`from`・`to`・`name`・`label`）と線の端の `id` を確かめる。読めないときは、廃止の前のバージョンの記載の警告と同じ文を返却する
+    summary: '廃止した図の部品の範囲の定義を読み込んで確かめる'
+    description: |-
+      範囲の `json` のコードブロックが 1 つかを確かめ、`parseDefinitionJson` で読み、`RetiredFlowDefinition`・`RetiredSequenceDefinition` の必須の項目（ノード・線・相手・メッセージの `id`・`from`・`to`・`name`・`label`）と線の端の `id` を確かめる。
+      読めないときは、廃止の前のバージョンの記載の警告と同じ文を返却する
     args:
       - name: directive
         type: '"flow" | "sequence"'
@@ -416,7 +419,13 @@ functions:
     usecase: バージョンを上げる
     kind: 関数
     scope: internal
-    summary: '`RetiredErDefinition` を `<!-- map: {"title": "{題名}"} -->`、`erDiagram` の `mermaid` のブロック、補足 `<!-- map-data: {"version": 1, …} -->`、`<!-- /map -->` の行にする。テーブルは物理名、列は `{型} {名前}` と `PK`・`FK`、関係は `id` が指すテーブルの物理名と両端の多重度の記号とラベルにする。テーブルの論理名と `desc` を `notes` のテーブルの説明（論理名を先頭に置く）、列の `desc` を `notes` の `{テーブル}.{列}` の説明、`folded` を `layout` の `collapsed: true` にし、名前の `{{単語}}` を `単語` にする。`kind`・`color`・`nn`・`scope`・`updated` は報告の行にする。map の ER 図の記法で記載できない値か、物理名が重なるテーブルを持つときは、書き換えずに理由を返却する'
+    summary: '`RetiredErDefinition` を map の ER 図の範囲の行にする'
+    description: |-
+      `RetiredErDefinition` を `<!-- map: {"title": "{題名}"} -->`、`erDiagram` の `mermaid` のブロック、補足 `<!-- map-data: {"version": 1, …} -->`、`<!-- /map -->` の行にする。
+      テーブルは物理名、列は `{型} {名前}` と `PK`・`FK`、関係は `id` が指すテーブルの物理名と両端の多重度の記号とラベルにする。
+      テーブルの論理名と `desc` を `notes` のテーブルの説明（論理名を先頭に置く）、列の `desc` を `notes` の `{テーブル}.{列}` の説明、`folded` を `layout` の `collapsed: true` にし、名前の `{{単語}}` を `単語` にする。
+      `kind`・`color`・`nn`・`scope`・`updated` は報告の行にする。
+      map の ER 図の記法で記載できない値か、物理名が重なるテーブルを持つときは、書き換えずに理由を返却する
     args:
       - name: definition
         type: RetiredErDefinition

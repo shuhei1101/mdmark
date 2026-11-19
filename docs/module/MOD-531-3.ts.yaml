@@ -31,15 +31,15 @@ functions:
         type: ResolvedConfig
         required: true
         description: 既定を当てた設定
-      - name: args
-        type: MapArgs
+      - name: options
+        type: '{ args: MapArgs; resolveIdLink?: ResolveIdLink }'
         required: true
-        description: '`parseMapArgs` の結果'
+        description: '`args` は `parseMapArgs` の結果、`resolveIdLink` は `attachMap` の `hooks.resolveIdLink`'
     returns:
       type: MapFlowHandle
       description: 構成図と同じ操作の口
     process: |-
-      1. `parseErDiagram` と `erToFlowchart` で `Flowchart` を作り、`erPartRelations` で関連の端をつなぐ列を選び、`attachMapFlow` に `extension` と一緒に指定する
+      1. `parseErDiagram` と `erToFlowchart` で `Flowchart` を作り、`erPartRelations` で関連の端をつなぐ列を選び、`attachMapFlow` に `extension` と `options.resolveIdLink` と一緒に指定する
       2. `extension.overrides` に `erOverrides`（テーブルの幅・列の数と開閉で決まる大きさ・左右に空ける幅）、`extension.rewire` に `rewireMapEr`（`layout` の `r{番号}.ends` を指定する）、`extension.render` に `renderMapErDiagram` を指定する（列を閉じた状態は `collapsed` に持つ）
       3. `extension.selectionOf` で、1 つ選べばその関連と相手、2 つ選べば `erFanouts` の経路を残す
       4. `extension.afterRender` で、前の行が増える関連のマーカーとツールチップを削除し、2 つ選んでいれば `renderMapErFanouts` に関連（`erPartRelations` の結果）を指定して描き直し、図のツールチップを付け替える

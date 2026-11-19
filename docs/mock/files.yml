@@ -1385,6 +1385,18 @@ files:
     visibility: internal
     description: '#630（map の範囲の外の mermaid のコードブロックにも map の図の操作を付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: components/map-dim-contrast/index.html
+    visibility: internal
+    description: '部品『map-dim-contrast』のモック: map の図の再生・選択・中へ入る操作で薄くした要素の文字のコントラストを 4.5:1 以上に保つ薄め方を、案 A（opacity を上げる）と案 B（文字の色を変え、面と枠を背景と混ぜる）で、C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダークに並べる。薄くした要素の外観を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/707/assets/dim-contrast.css
+    visibility: internal
+    description: '#707 のモックの薄め方の案 A・B の規則: 案の囲みの中だけで、map の図の map-dim・map-focus・map-faded の要素の文字のコントラストを保つ。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/707/index.md
+    visibility: internal
+    description: '#707（map の図で薄くした要素の文字のコントラスト・表の列の幅のつまみの ARIA の値）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: components/map-c4-dynamic-play/index.html
     visibility: internal
     description: '部品『map-c4-dynamic-play』のモック: map の C4Dynamic の番号つきの関係を番号の順に再生の帯で再生する実演と、始める前・説明を持つ関係・閉じた境界の中の要素・両向きの関係・案内の手順を持つ図・帯を出さないコンテナ図・狭い幅。部品の外観や状態を決めるときに参照する。'
@@ -1393,6 +1405,34 @@ files:
     visibility: internal
     description: '#677 のモックの C4Dynamic の再生: 番号つきの関係を番号の順の手順にし、#660 の再生の帯で選んだ関係の線と両端の要素のほかを薄くしてその線だけにデータのマーカーを流す処理と見本の Mermaid・補足。このモックの振る舞いを変えるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: refs/700/index.md
+    visibility: internal
+    description: '#700（mdmark の文書を MCP・CLI・ビュワーのボタンで純粋な Markdown に書き出す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/700/assets/markdown-export.js
+    visibility: internal
+    description: '#700 のモックの見本: Markdown のコピーとエクスポートのボタンを、右側の目次の頭に配置する案ごとに状態と頭の並びで並べる処理。このモックの見本の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
+  - path: refs/700/assets/markdown-export.css
+    visibility: internal
+    description: '#700 のモックの案の外観: Markdown のコピーとエクスポートのボタン・メニュー・コピーした後の通知の規則。このモックのボタンの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
+  - path: components/markdown-export/index.html
+    visibility: internal
+    description: '部品『markdown-export』のモック: Markdown のコピーとエクスポートのボタンを右側の目次の頭に配置する案と 1 つのメニューのボタンの案の、ボタンの状態・頭の並び・コピーした後とコピーできなかったときの表示。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
+  - path: refs/700/assets/markdown-export-parts.js
+    visibility: internal
+    description: '#700 のモックで共有する部品: Markdown のコピーとエクスポートのボタン・文言・コピーした後の通知・コピーできなかったときのパネル。このモックのボタンや文言を変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
+  - path: refs/700/assets/rendered.js
+    visibility: internal
+    description: '#700 のモックの見本: 配布物の mount で文書を画面いっぱいに描き、右側の目次の頭に Markdown のボタンを差し込む処理。画面の幅による目次の出し方とボタンの並びを変えるときに参照する。'
+    tags: [topic:モック, topic:ボタン]
+  - path: components/markdown-export/rendered.html
+    visibility: internal
+    description: '部品『markdown-export』のモックの、配布物の mount で描いた文書: 狭い幅の帯と 48rem 以上の右端の線で、右側の目次の頭に Markdown のボタンを並べた場面。画面の幅によるボタンの見え方を確認するときに参照する。'
+    tags: [topic:モック, topic:ボタン]
   - path: refs/677/index.md
     visibility: internal
     description: '#677（map の C4Dynamic の関係の再生）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'

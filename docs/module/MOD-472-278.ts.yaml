@@ -15,7 +15,11 @@ functions:
     container: src/inline/inline-icon.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`icon` がオンなら、頭が `icon:` の `code_inline` のうち名前が `ICON_NAME_PATTERN` に合うものを部品『アイコン』にし、まとめた名前と `opts.icons` の名前は IconNode を指定する。合わない名前はコードのまま残して段落の前に記載の警告を差し込む。`icon\:` は `\` を削除したコード、後ろが空か空白だけのものはコードのまま
+    summary: 'コアルール。`icon:` の行内のコードを部品『アイコン』にする'
+    description: |-
+      `icon` がオンなら、頭が `icon:` の `code_inline` のうち名前が `ICON_NAME_PATTERN` に合うものを部品『アイコン』にし、まとめた名前と `opts.icons` の名前は IconNode を指定する。
+      合わない名前はコードのまま残して段落の前に記載の警告を差し込む。
+      `icon\:` は `\` を削除したコード、後ろが空か空白だけのものはコードのまま
     args:
       - name: state
         type: StateCore

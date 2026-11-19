@@ -189,6 +189,12 @@
           "type": "boolean",
           "default": true
         },
+        "markdown-buttons": {
+          "title": "Markdown のボタンの機能",
+          "description": "右側の目次の頭に、描いている文書を純粋な Markdown（GFM と Mermaid）にしてコピーするボタンと、ファイルに保存するボタンを配置する。右側の目次の機能がオフのとき・見出しが無い文書には配置しない。文書の `<!-- features: +機能 -機能 -->` でその文書だけオン・オフできる。",
+          "type": "boolean",
+          "default": true
+        },
         "text-color": {
           "title": "本文の文字の色の機能",
           "description": "`[文字]{color=色}` の文字に名前の色を付ける。オフのときは記載した文字のまま描く。",
@@ -274,6 +280,7 @@
         "comments": false,
         "side-toc": true,
         "back-to-top": true,
+        "markdown-buttons": true,
         "text-color": true,
         "images": true,
         "gallery": true,

@@ -27,7 +27,11 @@ functions:
     usecase: 共通
     kind: 関数
     scope: internal
-    summary: markdown-it のトークン（`image`・`link_open` と `html_inline`・`html_block` の `img` の `src`）と画像の属性の `poster=` から、相対パスの参照を `AssetRef` で返却する。絶対 URL・`data:`・`#` で始まるもの、コードブロックとインラインコードの中は取得しない。リンクは拡張子が `ATTACHMENT_KINDS` にあるものだけを `attachment` で取得する
+    summary: 'markdown-it のトークンから、相対パスの画像・動画・音声・添付の参照を返却する'
+    description: |-
+      markdown-it のトークン（`image`・`link_open` と `html_inline`・`html_block` の `img` の `src`）と画像の属性の `poster=` から、相対パスの参照を `AssetRef` で返却する。
+      絶対 URL・`data:`・`#` で始まるもの、コードブロックとインラインコードの中は取得しない。
+      リンクは拡張子が `ATTACHMENT_KINDS` にあるものだけを `attachment` で取得する
     args:
       - name: markdown
         type: string
@@ -88,7 +92,12 @@ functions:
     usecase: 共通
     kind: 関数
     scope: internal
-    summary: '`collectAssetRefs` の `video`・`audio` を `resolveAssetFile` で探し、`{出力のファイル名から拡張子を除いた名前}_files/` の下へコピーして、Markdown の `src` を HTML からの相対パス（クエリとフラグメントは残す）に替える。コピー先の中のパスは `baseDir` からの相対パスにし、`baseDir` の外のファイルは `external/{ファイル名}`（重なれば `-1`・`-2`）にする。`copied` に入っているファイルはコピーせず同じパスを使用する。見つからないものは記載したまま残して警告にする'
+    summary: '動画と音声を出力の HTML の隣のフォルダへコピーし、`src` をそのパスに替える'
+    description: |-
+      `collectAssetRefs` の `video`・`audio` を `resolveAssetFile` で探し、`{出力のファイル名から拡張子を除いた名前}_files/` の下へコピーして、Markdown の `src` を HTML からの相対パス（クエリとフラグメントは残す）に替える。
+      コピー先の中のパスは `baseDir` からの相対パスにし、`baseDir` の外のファイルは `external/{ファイル名}`（重なれば `-1`・`-2`）にする。
+      `copied` に入っているファイルはコピーせず同じパスを使用する。
+      見つからないものは記載したまま残して警告にする
     is_async: true
     side_effects: '`_files/` を作り、ファイルをコピーする'
     args:

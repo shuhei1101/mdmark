@@ -7,7 +7,10 @@ functions:
   - name: findScrollContainer
     title: スクロールする場所を見つける
     container: src/shared/scroller.interact.ts
-    summary: 要素の祖先を `document.body` の手前までたどり、`overflow-y` が `auto` か `scroll` で `scrollHeight` が `clientHeight` より大きい一番近い要素を返却する。無ければ `document.scrollingElement`（無ければ `document.documentElement`）を返却し、`page` を `true` にする
+    summary: '要素を縦にスクロールする一番近い祖先の要素を返却する'
+    description: |-
+      要素の祖先を `document.body` の手前までたどり、`overflow-y` が `auto` か `scroll` で `scrollHeight` が `clientHeight` より大きい一番近い要素を返却する。
+      無ければ `document.scrollingElement`（無ければ `document.documentElement`）を返却し、`page` を `true` にする
     kind: 関数
     scope: internal
     args:

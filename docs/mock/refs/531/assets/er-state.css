@@ -49,7 +49,8 @@
 
 /* ER 図: 関連のラベル（引き直した線の横） */
 .map-figure .er-label { font-size: 12px; fill: var(--mdmark-color-text); paint-order: stroke; stroke: var(--mdmark-color-bg); stroke-width: 4px; }
-.map-figure :is(.er-card, .er-label).map-dim { opacity: 0.25; }
+/* 薄い表示: 多重度は map-mock.css の文字を持つ要素の規則で薄くし、関連のラベル（SVG の文字）は塗りの色を変える */
+.map-figure .er-label.map-dim { opacity: 1; fill: color-mix(in srgb, var(--mdmark-color-text) 68%, var(--mdmark-color-bg)); }
 
 /* 状態遷移図: 同じ状態への遷移の線と、再生で今の遷移のとき */
 .map-figure .er-self { fill: none; stroke: var(--mdmark-color-muted); stroke-width: 1.5; }

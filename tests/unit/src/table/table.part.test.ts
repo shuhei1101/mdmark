@@ -1172,3 +1172,22 @@ test("test_render_table_when_resized", async () => {
   expect(handles[0]).toContain("is-dragging");
   expect(handles[1]).not.toContain("is-dragging");
 });
+
+// 文書の Markdown のパネルのタイトルに理由を添える（正常系）
+test("test_render_copy_panel_when_document_with_reason", async () => {
+  // 準備
+  const { renderCopyPanel } = await loadTable();
+  // 実行
+  const html = renderCopyPanel({
+    id: "p1",
+    format: "document",
+    reason: "許可されていません",
+    text: "# a",
+  });
+  // 検証
+  expect(plainText(html)).toContain(
+    "クリップボードにコピーできませんでした（許可されていません）",
+  );
+  expect(plainText(html)).toContain("Markdown を選択しています。");
+  expect(innerHtml(html, "<textarea")).toBe("# a");
+});

@@ -14993,6 +14993,12 @@ var mdmark_config_schema_default = {
           type: "boolean",
           default: true
         },
+        "markdown-buttons": {
+          title: "Markdown \u306E\u30DC\u30BF\u30F3\u306E\u6A5F\u80FD",
+          description: "\u53F3\u5074\u306E\u76EE\u6B21\u306E\u982D\u306B\u3001\u63CF\u3044\u3066\u3044\u308B\u6587\u66F8\u3092\u7D14\u7C8B\u306A Markdown\uFF08GFM \u3068 Mermaid\uFF09\u306B\u3057\u3066\u30B3\u30D4\u30FC\u3059\u308B\u30DC\u30BF\u30F3\u3068\u3001\u30D5\u30A1\u30A4\u30EB\u306B\u4FDD\u5B58\u3059\u308B\u30DC\u30BF\u30F3\u3092\u914D\u7F6E\u3059\u308B\u3002\u53F3\u5074\u306E\u76EE\u6B21\u306E\u6A5F\u80FD\u304C\u30AA\u30D5\u306E\u3068\u304D\u30FB\u898B\u51FA\u3057\u304C\u7121\u3044\u6587\u66F8\u306B\u306F\u914D\u7F6E\u3057\u306A\u3044\u3002\u6587\u66F8\u306E `<!-- features: +\u6A5F\u80FD -\u6A5F\u80FD -->` \u3067\u305D\u306E\u6587\u66F8\u3060\u3051\u30AA\u30F3\u30FB\u30AA\u30D5\u3067\u304D\u308B\u3002",
+          type: "boolean",
+          default: true
+        },
         "text-color": {
           title: "\u672C\u6587\u306E\u6587\u5B57\u306E\u8272\u306E\u6A5F\u80FD",
           description: "`[\u6587\u5B57]{color=\u8272}` \u306E\u6587\u5B57\u306B\u540D\u524D\u306E\u8272\u3092\u4ED8\u3051\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
@@ -15078,6 +15084,7 @@ var mdmark_config_schema_default = {
         comments: false,
         "side-toc": true,
         "back-to-top": true,
+        "markdown-buttons": true,
         "text-color": true,
         images: true,
         gallery: true,
@@ -41037,7 +41044,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: localVersionOf("v0.14.0+develop.fac379a"),
+    version: localVersionOf("v0.14.0+develop.89ab356"),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

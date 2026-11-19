@@ -150,6 +150,7 @@ import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 import { renderBackToTop } from "../src/section/back-to-top.part.ts";
 import { renderSection } from "../src/section/section.part.ts";
 import {
+  type MarkdownCopyState,
   renderSideToc,
   type SideTocHeading,
 } from "../src/section/side-toc.part.ts";
@@ -865,6 +866,16 @@ const MAP_SEQUENCE_TALL = `sequenceDiagram
   B-->>A: 描いた文書
 `;
 
+/** map のシーケンス図の、自分へのメッセージを持つ見本 */
+const MAP_SEQUENCE_SELF = `sequenceDiagram
+  participant node as 動画作成ノード
+  participant am as aituber の MCP
+  node->>am: request_job
+  am-->>node: ジョブ ID
+  node->>node: 完了ファイルを上限の時間まで待つ
+  node->>am: get（ジョブ）
+`;
+
 /** map のシーケンス図の、`actor` の参加者を持つ見本 */
 const MAP_SEQUENCE_ACTOR = `sequenceDiagram
   actor U as 読者
@@ -1136,6 +1147,7 @@ const SEQUENCE_SOURCES: Record<string, string> = {
   arrows: MAP_SEQUENCE_ARROWS,
   tall: MAP_SEQUENCE_TALL,
   actor: MAP_SEQUENCE_ACTOR,
+  self: MAP_SEQUENCE_SELF,
 };
 
 /** ストーリーの引数 `source` からシーケンス図の見本を選ぶ（知らない値と無いときは既定の見本） */
@@ -2091,6 +2103,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       headings: args.headings as SideTocHeading[],
       mode: args.mode as SideTocMode | undefined,
       sections: args.sections as boolean | undefined,
+      markdownButtons: args.markdownButtons as boolean | undefined,
+      markdownCopy: args.markdownCopy as MarkdownCopyState | undefined,
+      markdownCopyReason: args.markdownCopyReason as string | undefined,
+      markdownText: args.markdownText as string | undefined,
       open: args.open as boolean | undefined,
       pinned: args.pinned as boolean | undefined,
       current: args.current as string | undefined,

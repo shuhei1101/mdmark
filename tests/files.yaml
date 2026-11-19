@@ -18,6 +18,12 @@ files:
     related:
       - to: IF-472-9
         type: see_also
+  - path: integration/ClaudeCodeプラグイン/export-markdown.test.ts
+    description: インターフェース定義『文書をMarkdownに書き出す』（MCP の export_markdown）の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
+    tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:書き出し, topic:markdown]
+    related:
+      - to: IF-472-50
+        type: see_also
   - path: integration/ClaudeCodeプラグイン/guide-notice.test.ts
     description: インターフェース定義『記法のルールの参照を案内する』の正常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, tool:claude-code]
@@ -297,6 +303,12 @@ files:
     related:
       - to: IF-472-33
         type: see_also
+  - path: integration/lib/export-markdown.test.ts
+    description: インターフェース定義『文書をMarkdownに書き出す』（mdmark export-markdown）の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
+    tags: [topic:結合テスト, tool:vitest, topic:cli, topic:書き出し, topic:markdown]
+    related:
+      - to: IF-472-49
+        type: see_also
   - path: integration/lib/figure.story.test.ts
     description: 部品設計『図表の番号』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
     tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図表の番号]
@@ -473,6 +485,12 @@ files:
       - to: src/section/toc.part.ts
         type: tests
       - to: CMP-472-55
+        type: see_also
+  - path: integration/lib/to-pure-markdown.test.ts
+    description: インターフェース定義『文書を純粋なMarkdownにする』（toPureMarkdown）の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
+    tags: [topic:結合テスト, tool:vitest, topic:api, topic:書き出し, topic:markdown]
+    related:
+      - to: IF-472-48
         type: see_also
   - path: integration/lib/tree.story.test.ts
     description: 部品設計『ファイルツリー』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -712,6 +730,36 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:cli, topic:書き出し]
     related:
       - to: src/cli/export.ts
+        type: tests
+  - path: unit/src/cli/export-markdown.test.ts
+    description: src/cli/export-markdown.ts（「mdmark export-markdown」）を確認する単体テスト。export-markdown.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:書き出し, topic:markdown]
+    related:
+      - to: src/cli/export-markdown.ts
+        type: tests
+  - path: unit/src/cli/figure-svg.test.ts
+    description: src/cli/figure-svg.ts（図の SVG への変換）を確認する単体テスト。figure-svg.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, topic:書き出し, tool:svg]
+    related:
+      - to: src/cli/figure-svg.ts
+        type: tests
+  - path: unit/src/markdown/pure-markdown.test.ts
+    description: src/markdown/pure-markdown.ts（toPureMarkdown）を確認する単体テスト。pure-markdown.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:書き出し, topic:markdown]
+    related:
+      - to: src/markdown/pure-markdown.ts
+        type: tests
+  - path: unit/src/markdown/pure-blocks.logic.test.ts
+    description: src/markdown/pure-blocks.logic.ts（ブロックの変換）を確認する単体テスト。pure-blocks.logic.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:書き出し, topic:markdown]
+    related:
+      - to: src/markdown/pure-blocks.logic.ts
+        type: tests
+  - path: unit/src/markdown/pure-inline.logic.test.ts
+    description: src/markdown/pure-inline.logic.ts（行内の変換）を確認する単体テスト。pure-inline.logic.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:書き出し, topic:markdown]
+    related:
+      - to: src/markdown/pure-inline.logic.ts
         type: tests
   - path: unit/src/cli/git.test.ts
     description: src/cli/git.ts（「比べる基準から変わったファイルの引き出し」）を確認する単体テスト。git.ts を変えたときに、合わせて再確認するケースを探すときに参照する。

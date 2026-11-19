@@ -245,7 +245,11 @@ functions:
     kind: 関数
     scope: internal
     usecase: mermaidの図を描く
-    summary: 'テーマ `mdmark` なら、描く先の要素の計算済みの CSS 変数から `MERMAID_THEME_COLORS` の変数を hex で作り、`fontFamily`（`--mdmark-font-body`）・`fontSize`（描く先の `font-size`）・`pieOpacity: "1"` を追加する。ほかのテーマは空から始める。設定の `themeVariables` の値が文字列のキーを重ね、最後に `MERMAID_FIXED_THEME_VARIABLES` を重ねる'
+    summary: 'mermaid に指定する `themeVariables` を、テーマ・描く先の CSS 変数・設定から作る'
+    description: |-
+      テーマ `mdmark` なら、描く先の要素の計算済みの CSS 変数から `MERMAID_THEME_COLORS` の変数を hex で作り、`fontFamily`（`--mdmark-font-body`）・`fontSize`（描く先の `font-size`）・`pieOpacity: "1"` を追加する。
+      ほかのテーマは空から始める。
+      設定の `themeVariables` の値が文字列のキーを重ね、最後に `MERMAID_FIXED_THEME_VARIABLES` を重ねる
     side_effects: 試しの要素を `scope` に配置して削除する
     args:
       - name: options
@@ -276,7 +280,11 @@ functions:
     kind: 関数
     scope: internal
     usecase: mermaidの図を描く
-    summary: '`scope` の中に `color: var({name})` の試しの要素を配置して計算済みの `color` を読み込み、sRGB の hex にして試しの要素を削除する。`rgb()`・`rgba()` は値を読み込み、ほかの記載方法（`oklab()`・`color()`）は 1×1 の canvas（`colorSpace: "srgb"`）に塗って `getImageData` で読み込む。透明度が 1 なら `#rrggbb`、それ以外は `#rrggbbaa`'
+    summary: 'CSS 変数の色を、計算済みの値から sRGB の hex にする'
+    description: |-
+      `scope` の中に `color: var({name})` の試しの要素を配置して計算済みの `color` を読み込み、sRGB の hex にして試しの要素を削除する。
+      `rgb()`・`rgba()` は値を読み込み、ほかの記載方法（`oklab()`・`color()`）は 1×1 の canvas（`colorSpace: "srgb"`）に塗って `getImageData` で読み込む。
+      透明度が 1 なら `#rrggbb`、それ以外は `#rrggbbaa`
     args:
       - name: options
         type: '{ scope: HTMLElement; name: string }'

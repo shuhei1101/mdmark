@@ -1,4 +1,5 @@
 import type { SideTocMode } from "../config.ts";
+import type { PureMarkdownResult } from "../markdown/pure-markdown.ts";
 import { type SideTocHeading } from "./side-toc.part.ts";
 /** `mount` ごとに 1 つ作り、`update` で再描画しても保つ右側の目次の状態 */
 export type SideTocState = {
@@ -7,6 +8,8 @@ export type SideTocState = {
     /** ピン止めしているか */
     pinned: boolean;
 };
+/** 最初の h1 の文字から、エクスポートのファイルの名前を作る */
+export declare function markdownFileName(heading: string | undefined): string;
 /** 本文の中の色分けしたブロックごとに、そのブロックが含む見出しか前にある最後の見出しと、その祖先の見出しを集め、`id` を持つ見出しの ID を返却する */
 export declare function findChangedHeadings(content: HTMLElement): Set<string>;
 /** 本文の中の右側の目次に並べる見出しを文書の順に集め、変わったセクションの見出しに `changed` を付ける */
@@ -31,6 +34,10 @@ export declare function attachSideToc(options: {
     mode: SideTocMode;
     /** すべて展開とすべて折りたたむを出すか */
     sections: boolean;
+    /** Markdown でコピー・Markdown でエクスポートのボタンを出すか（`pureMarkdown` が無ければ出さない） */
+    markdownButtons?: boolean;
+    /** 描いている Markdown を純粋な Markdown に変換する関数 */
+    pureMarkdown?: () => Promise<PureMarkdownResult>;
     /** `mount` が保つ状態 */
     state: SideTocState;
 }): {

@@ -35,7 +35,11 @@ constants:
     container: src/map/c4.ts
     usecase: Mermaidと補足で図を描く
     role: 定数
-    summary: '要素の種類と `_Ext` ごとの `MapKind`（種類の行 `[Person]`・`[Software System]`・`[Container]`・`[Component]` と `External` を付けた行、人は `user`・`*Db` は `database` のアイコン、`*Queue` は形状 `pill`、`_Ext` は色 `gray`）。キーは `mdmark-c4-{種類}`・`mdmark-c4-{種類}-ext`。技術の引数を持つ要素の種類の行（`[Container: {技術}]`）は `c4ToFlowchart` がノードごとに作る'
+    summary: 'C4 図の要素の種類と `_Ext` ごとの `MapKind`'
+    description: |-
+      要素の種類と `_Ext` ごとの `MapKind`（種類の行 `[Person]`・`[Software System]`・`[Container]`・`[Component]` と `External` を付けた行、人は `user`・`*Db` は `database` のアイコン、`*Queue` は形状 `pill`、`_Ext` は色 `gray`）。
+      キーは `mdmark-c4-{種類}`・`mdmark-c4-{種類}-ext`。
+      技術の引数を持つ要素の種類の行（`[Container: {技術}]`）は `c4ToFlowchart` がノードごとに作る
 functions:
   - name: parseC4
     title: C4図を読む

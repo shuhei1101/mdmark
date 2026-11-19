@@ -1297,6 +1297,10 @@ elements:
         value: 文書の page のマーカーの `toc`、無ければ 文書を描く.request.opts.config.side-toc.mode（hover・fixed 以外は hover）
       - name: sections
         value: '`sections` の機能がオンで、文書にセクションが 1 つ以上あるか'
+      - name: markdownButtons
+        value: 文書を描く.request.opts.config.features.markdown-buttons（文書の `features` のマーカーが上書きする。既定 `true`）
+      - name: markdownCopy
+        value: Markdown でコピーのボタンを押した結果（描いた直後は idle）
     position: 描く先の要素 > 本文の列の右（hover でピン止めしていない間の右端の線と重ねて出す枠は、スクロールする場所の右端。狭い幅では本文の列の上の帯）
     description: |-
       本文の列の右に配置し、画面に留める目次。
@@ -1692,7 +1696,7 @@ elements:
     visible_when: '`resize` の表（既定の種類と `data` の種類。`features.resize.enabled` を `false` にした表と `plain` の表には無い）'
     initial_value: 描いた直後の列の幅（`width.mode` が `nowrap` の列は値の長さの幅）。幅は覚えず、再描画すると戻る
     action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
-    constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す
+    constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ
     refs:
       - IF-472-35#constraints[列の幅]
     status: planned
@@ -1997,6 +2001,43 @@ elements:
       - IF-472-35#constraints[map の section の開閉と中へ入る]
       - IF-472-35#constraints[map の時系列の図の再生]
       - IF-472-35#constraints[map の状態の保存]
+    status: planned
+  - name: Markdown でコピーのボタン
+    id: markdown-copy
+    kind: button
+    position: 描く先の要素 > 右側の目次 > 上端（すべて展開・すべて折りたたむのボタンとピン止めのボタンの間）
+    description: lucide の `copy` のアイコンだけのボタン。コピーした後は `check`、コピーできなかった後は `circle-alert` にする
+    label: Markdown でコピー（`aria-label`・`title`）
+    visible_when: 右側の目次を出していて、`markdown-buttons` がオンのとき。印刷では出さない
+    initial_state: 活性
+    action: 描いている Markdown を純粋な Markdown にしてクリップボードへ書き込む。書き込めたらアイコンを 2 秒 `check` にし、見えない `role="status"` で「Markdown をコピーしました」を伝える。書き込めないときはコピーできなかったときのパネルを出す
+    reason: 配置・文言・コピーした後に見える通知を出さないのは確認ログの決定
+    refs:
+      - IF-472-35#constraints[Markdown のコピーとエクスポートのボタン]
+    status: planned
+  - name: Markdown でエクスポートのボタン
+    id: markdown-export
+    kind: button
+    position: 描く先の要素 > 右側の目次 > 上端（Markdown でコピーのボタンの右）
+    description: lucide の `download` のアイコンだけのボタン
+    label: Markdown でエクスポート（`aria-label`・`title`）
+    visible_when: Markdown でコピーのボタンと同じ
+    initial_state: 活性
+    action: 純粋な Markdown を、最初の h1 を名前にした `.md` のファイル（h1 が無ければ `document.md`）として保存させる
+    reason: 配置と文言は確認ログの決定
+    refs:
+      - IF-472-35#constraints[Markdown のコピーとエクスポートのボタン]
+    status: planned
+  - name: Markdown をコピーできなかったときのパネル
+    id: markdown-copy-panel
+    kind: region
+    position: 描く先の要素 > 右側の目次 > 上端の下
+    description: 表のコピーと同じパネル。見出し「クリップボードにコピーできませんでした」に理由を括弧で添え、説明・変換した Markdown を全て選択した読み取り専用の入力欄・閉じるボタンを並べる
+    visible_when: Markdown でコピーのボタンでクリップボードへ書き込めなかったとき
+    initial_value: '`hidden`'
+    action: 出したときに入力欄へフォーカスを移す。閉じるボタンで削除し、コピーのボタンへフォーカスを戻す
+    refs:
+      - IF-472-35#constraints[Markdown のコピーとエクスポートのボタン]
     status: planned
 mock: docs/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が追加する UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張のマーカーの場所・拡張記法の部品・記載の警告）を持つ。

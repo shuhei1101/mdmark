@@ -49,7 +49,7 @@ functions:
       3. 種類ごとに `parseFlowchart`・`parseSequence`・`parseErDiagram`・`parseStateDiagram`・`parseClassDiagram`・`parseArchitecture`・`parseC4`（C4 の 5 種類）・`parseMindmap`・`parseAxisGrid` のどれかと `parseMapData` の項目を合わせる
       4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする。`notes.{ID}.annotations` が指す注記の ID のうち、文書に定義が無いもの（呼び出し元が指定する、文書の注記の定義の ID の集合に無いもの）を `annotation_undefined` にする。`ends`・`via` を持つノード・グループの ID は `map_invalid_value` にする（`notes` はノード・線・`subgraph` の ID を指せる）
       5. ER 図は、補足の `notes` のキーのうちテーブル名・`{テーブル}.{列}`・関連の `r{番号}`・分類の ID に無いものと、`groups` の `tables` に無いテーブルと `parent` に無い分類を `map_unknown_ref`、2 つの分類に入るテーブル・テーブル名と同じ分類の ID・`r{番号}` と同じテーブル名を `map_invalid_value` にする。状態遷移図は、`notes` のキーのうち状態の ID・遷移の `t{番号}` に無いものを `map_unknown_ref`、`t{番号}` と同じ状態の ID を `map_invalid_value` にする。クラス図は、`notes` のキーのうちクラス名・`{クラス名}.{メンバー名}`・関係の `r{番号}`・`namespace` の ID に無いものを、アーキテクチャ図は service・group・junction の ID・線の `r{番号}` に無いものを、C4 図は要素・境界の別名・関係の `r{番号}` に無いものを `map_unknown_ref` にする。マインドマップは、補足のキーのうち項目の ID と ID を持たない項目の表示する文字に無いものを `map_unknown_ref`、補足とマーカーの引数の `focus` のキーのうち `parseMindmap` の `ambiguous` にあるものを `map_ambiguous_ref`（その項目に ID を記載して ID で指す修正の方法を添える）、`layout` の `color`・`collapsed` のほかのキーを `map_invalid_value`（並び順は Mermaid の行の順で変える旨を添える）にする。ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図は、補足とマーカーの引数の `focus` のキーを `axisGridItemOf` で照らし、`missing` を `map_unknown_ref`、`ambiguous` を `map_ambiguous_ref`（項目に ID を記載して ID で指すか、section の名前を分ける修正の方法を添える）、`layout` の `color`・`collapsed` のほかのキーをマインドマップと同じく `map_invalid_value` にする
-      6. `flowchart` の `links` を `mapLinkProblems`（`idLinks` は引数の `idLinks`）で確かめ、許さないリンク先を `map_invalid_value` にする
+      6. `flowchart` とクラス図（`parseClassDiagram`）の `links` を `mapLinkProblems`（`idLinks` は引数の `idLinks`）で確かめ、許さないリンク先を `map_invalid_value` にする
       7. ノードのクラスが `config.kinds` に無いものを `map_unknown_class`、`layout` の `line` が `config.lines` に無いものを `map_unknown_line` にする（同じ名前は 1 件）
     unit_tests:
       - name: test_collect_map_problems
@@ -154,6 +154,12 @@ functions:
         condition: '`click A "id:SC-1"`・`click C "javascript:alert(1)"` の flowchart を `idLinks` が `skip` と、関数を持たない `resolve` で集める'
         mock: なし
         expected: '`skip` は `map_invalid_value` が `C` の 1 件だけ。`resolve` は `A` と `C` の 2 件'
+      - name: test_collect_map_problems_when_class_id_link
+        case: 正常
+        summary: 'クラス図の id: のリンク先'
+        condition: '`click A href "id:SC-1"`・`link C "javascript:alert(1)"` の classDiagram を `idLinks` が `skip` と、関数を持たない `resolve` で集める'
+        mock: なし
+        expected: '`skip` は `map_invalid_value` が `C` の 1 件だけ。`resolve` は `A` と `C` の 2 件'
   - name: checkMapConfig
     title: map の設定を点検する
     kind: 関数
@@ -188,8 +194,11 @@ functions:
     container: src/map/check.ts
     kind: 関数
     scope: internal
-    summary: 範囲の外の map の図（`data-map-plain`）を mermaid の図に戻すかを返却する。図の種類の読み取りが返す Mermaid の書き方の項目（読めない行・閉じの無い `subgraph` と複合フラグメント）が 1 つでもあるか、map が読み捨てる見た目の指定（`classDef`・`style`・`linkStyle`・`cssClass` の行、flowchart と状態遷移図の `class` の行、ノードの `:::` のクラスの指定、マインドマップの `::icon()` の行）が 1 つでもあれば `true`
-    description: '`collectMapProblems` と同じ図の種類ごとの読み取りで確かめ、補足と設定は確かめない。`dist/map.js` の `attachMap` と CLI の `usesMermaid` が同じ判定に使用する'
+    summary: '範囲の外の map の図（`data-map-plain`）を mermaid の図に戻すかを返却する'
+    description: |-
+      図の種類の読み取りが返す Mermaid の書き方の項目（読めない行・閉じの無い `subgraph` と複合フラグメント）が 1 つでもあるか、map が読み捨てる見た目の指定（`classDef`・`style`・`linkStyle`・`cssClass` の行、flowchart と状態遷移図の `class` の行、ノードの `:::` のクラスの指定、マインドマップの `::icon()` の行）が 1 つでもあれば `true`。
+      `collectMapProblems` と同じ図の種類ごとの読み取りで確かめ、補足と設定は確かめない。
+      `dist/map.js` の `attachMap` と CLI の `usesMermaid` が同じ判定に使用する
     args:
       - name: options
         type: '{ kind: MapKindName; mermaid: string }'

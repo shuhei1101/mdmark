@@ -79,6 +79,44 @@ states:
         value: 'true'
       - name: headings
         value: '[{"level":2,"id":"long","text":"読み込みに失敗したときに通知ブロックが出る箇所と、ほかの本文の扱い","changed":true}]'
+  - name: MarkdownButtons
+    description: fixed の出し方で目次を開き、頭にすべて展開・すべて折りたたむ・Markdown でコピー・Markdown でエクスポート・ピン止めを並べている（ピン止めは fixed では隠す）
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+  - name: MarkdownCopied
+    description: Markdown でコピーした後。アイコンを check にし、見える通知は出さない
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: markdownCopy
+        value: copied
+  - name: MarkdownCopyFailed
+    description: Markdown でコピーできなかった後。アイコンを circle-alert にし、頭の下に理由と選択した Markdown のパネルを出している
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: markdownCopy
+        value: failed
+      - name: markdownCopyReason
+        value: クリップボードへのアクセスが許可されていません
+      - name: markdownText
+        value: '# 問い合わせ窓口の見直し'
+  - name: WithoutMarkdownButtons
+    description: '`markdown-buttons` がオフで、頭に Markdown のボタンが無い'
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: markdownButtons
+        value: 'false'
 lead: |-
   描いた文書の右側に配置し、h1〜h3 を入れ子にした目次・右端の線・目次を出すボタン・ピン止め・すべて展開とすべて折りたたむを持つ。
   出し方（hover・fixed）と、描く先の要素の幅 48rem 未満の狭い幅の帯を CSS で切り替える。
@@ -113,6 +151,28 @@ args:
     type: 文字列
     required: false
     description: 今いるセクションの見出しの ID。その項目に `aria-current="location"`、右端の線の対応する線に `data-current` を付け、狭い幅の帯にその見出しの文字を出す。省くと付けない
+  - name: markdownButtons
+    type: 真偽値
+    required: false
+    default: 'true'
+    description: 頭に Markdown でコピー・Markdown でエクスポートのボタンを配置するか（`markdown-buttons` の機能）
+  - name: markdownCopy
+    type: 列挙
+    required: false
+    default: idle
+    choices: idle / copied / failed
+    enabled_when: '`markdownButtons` が `true` のとき'
+    description: Markdown でコピーのボタンの状態。copied はアイコンを check、failed は circle-alert にし、failed のときは頭の下にコピーできなかったときのパネルを配置する。`mount` は idle で描き、押した結果で書き換える
+  - name: markdownCopyReason
+    type: 文字列
+    required: false
+    enabled_when: '`markdownCopy` が `failed` のとき'
+    description: コピーできなかった理由。パネルの見出しの `クリップボードにコピーできませんでした` の後ろに括弧で添える。省くと添えない
+  - name: markdownText
+    type: 文字列
+    required: false
+    enabled_when: '`markdownCopy` が `failed` のとき'
+    description: パネルの入力欄に入れる変換した Markdown
 events:
   - name: 目次を出す・隠す
     when: 目次を出すボタン（三点リーダー）を押す、または出している目次の中で Esc を押す
@@ -130,6 +190,18 @@ events:
     when: すべて展開・すべて折りたたむのボタンを押す
     value: ボタンの `data-fold-all`（`open` / `close`）
     description: '`mount` が文書の全てのセクションを開く。折りたたむときは h1 のセクションを開き、h2〜h4 のセクションを閉じる'
+  - name: Markdown でコピーする
+    when: Markdown でコピーのボタンを押す
+    value: ボタンの `data-markdown="copy"`
+    description: '`mount` が描いている Markdown を `toPureMarkdown` で変換してクリップボードへ書き込み、`markdownCopy` を copied（2 秒で idle）か failed にする'
+  - name: Markdown でエクスポートする
+    when: Markdown でエクスポートのボタンを押す
+    value: ボタンの `data-markdown="export"`
+    description: '`mount` が変換した Markdown を `.md` のファイルとして保存させる'
+  - name: コピーできなかったときのパネルを閉じる
+    when: パネルの閉じるボタンを押す
+    value: なし
+    description: '`mount` がパネルを削除し、`markdownCopy` を idle に戻してコピーのボタンへフォーカスを戻す'
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -172,6 +244,9 @@ accessibility:
   - 右端の線は `aria-hidden="true"` でスクリーンリーダーに伝えない。hover の出し方でも、キーボードのフォーカス（`:focus-visible` の要素）が目次の中に入れば目次を出す。ポインターで押したボタンに残るフォーカスでは出し続けない
   - 出している目次の中で Esc を押すと目次を隠し、目次を出すボタンへフォーカスを戻す
   - 変更のマーカーの付いた項目は、リンクの `aria-label` を `{見出しの文字}（変更）` にして読み上げで伝え、マーカーの円は `aria-hidden="true"` にする。リンクの文字には足さない（目次を出すボタンの今いる見出しの文字に写さないため）。マーカーは色のほかに円の有無で示す
+  - Markdown のボタンは文字を持たず、`aria-label`・`title` を「Markdown でコピー」「Markdown でエクスポート」にする。2 つは `role="group"`・`aria-label="Markdown"` の並びに入れる
+  - コピーした後は見える通知を出さず、頭の中の見えない `role="status"` の要素（`mdmark-visually-hidden`）に「Markdown をコピーしました」を入れて読み上げで伝え、2 秒で空に戻す。アイコンの形状（copy から check）でも示し、色だけで示さない
+  - コピーできなかったときのパネルは表のコピーのパネルと同じ構造（`role="group"`・見出しと説明で名前を付ける）で、出したときに入力欄へフォーカスを移して全文を選択する
 refs:
   - IF-472-35#constraints[右側の目次]
   - IF-472-35#constraints[右側の目次の出し方]
@@ -180,14 +255,17 @@ refs:
   - IF-472-35#constraints[すべて展開・すべて折りたたむ]
   - IF-472-35#constraints[右側の目次の重なりと留める位置]
   - IF-472-35#constraints[右側の目次の変更のマーカー]
+  - IF-472-35#constraints[Markdown のコピーとエクスポートのボタン]
 status: planned
 aliases:
   - サイドの目次
   - side-toc
 notes:
-  補足: '`<aside class="mdmark-side-toc" data-mode="{mode}"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="{open}" aria-controls="{パネルの ID}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">{今いるセクションの見出し}</span>{三点リーダーのアイコン}</button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="{level}"></span>…</div><nav class="mdmark-side-toc-panel" id="{パネルの ID}" aria-label="右側の目次"><div class="mdmark-side-toc-head"><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">…</button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">…</button></div><button class="mdmark-side-toc-pin" type="button" aria-pressed="{pinned}" aria-label="目次をピン止め" title="目次をピン止め">{ピン止めのアイコン}</button></div><ul class="mdmark-side-toc-list"><li><a href="#{id}" data-heading-id="{id}">{text}</a><ul>…</ul></li>（`changed` の項目は `<a href="#{id}" data-heading-id="{id}" data-changed aria-label="{text}（変更）">{text}<span class="mdmark-side-toc-changed" aria-hidden="true"></span></a>`）</ul></nav></aside>`。
+  補足: '`<aside class="mdmark-side-toc" data-mode="{mode}"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="{open}" aria-controls="{パネルの ID}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">{今いるセクションの見出し}</span>{三点リーダーのアイコン}</button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="{level}"></span>…</div><nav class="mdmark-side-toc-panel" id="{パネルの ID}" aria-label="右側の目次"><div class="mdmark-side-toc-head"><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">…</button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">…</button></div><div class="mdmark-side-toc-markdown" role="group" aria-label="Markdown"><button class="mdmark-markdown-button" type="button" data-markdown="copy" aria-label="Markdown でコピー" title="Markdown でコピー">{copy・check・circle-alert のアイコン}</button><button class="mdmark-markdown-button" type="button" data-markdown="export" aria-label="Markdown でエクスポート" title="Markdown でエクスポート">{download のアイコン}</button><span class="mdmark-visually-hidden" role="status"></span></div><button class="mdmark-side-toc-pin" type="button" aria-pressed="{pinned}" aria-label="目次をピン止め" title="目次をピン止め">{ピン止めのアイコン}</button></div><ul class="mdmark-side-toc-list"><li><a href="#{id}" data-heading-id="{id}">{text}</a><ul>…</ul></li>（`changed` の項目は `<a href="#{id}" data-heading-id="{id}" data-changed aria-label="{text}（変更）">{text}<span class="mdmark-side-toc-changed" aria-hidden="true"></span></a>`）</ul></nav></aside>`。
 
     アイコンは lucide の ellipsis・panel-right-dashed（ピン止めを押す前）・panel-right（ピン止めを押した後）・chevrons-up-down・chevrons-down-up。
+
+    Markdown のボタンの並びは `markdownButtons` が `false` のとき配置せず、`markdownCopy` が failed のときは頭の下に表のコピーと同じ `div.mdmark-copy-panel`（見出し・説明・選択した `textarea`・閉じるボタン）を配置する。ボタンの大きさ・枠・色はピン止めのボタンと同じ。印刷では配置しない。モックは `docs/mock/components/markdown-export/`・`docs/mock/refs/700/assets/`。
 
     まとめて開閉するボタンの並びは `sections` がオフのとき配置せず、ピン止めのボタンは fixed の出し方では CSS で隠す。
 

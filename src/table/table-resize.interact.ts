@@ -151,11 +151,14 @@ export const attachColumnResize = (
     if (!cell || !handle) {
       return;
     }
-    const width = String(cell.offsetWidth);
-    handle.setAttribute("aria-valuenow", width);
+    const width = cell.offsetWidth;
+    // 最小が今の幅より大きいとき・上限が今の幅より小さいときは今の幅にし、min ≤ now ≤ max を保つ
+    const min = Math.min(Math.ceil(minWidthOf(cell)), width);
+    const max = Math.max(Math.floor(maxWidth(column)), width);
+    handle.setAttribute("aria-valuenow", String(width));
     handle.setAttribute("aria-valuetext", `${width}px`);
-    handle.setAttribute("aria-valuemin", String(Math.ceil(minWidthOf(cell))));
-    handle.setAttribute("aria-valuemax", String(Math.floor(maxWidth(column))));
+    handle.setAttribute("aria-valuemin", String(min));
+    handle.setAttribute("aria-valuemax", String(max));
   };
   /** 最初に幅を指定するとき、表が残りの幅を列に配り直さないよう、ほかの列を今の幅で止める */
   const freezeOthers = (column: number): Array<[HTMLElement, number]> => {

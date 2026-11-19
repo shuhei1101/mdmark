@@ -1,4 +1,5 @@
 import { statSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, resolve } from "node:path";
 import type { CallToolResult } from "@modelcontextprotocol/server";
@@ -8,9 +9,14 @@ import {
   importBundledCode,
   validateSourceArgs,
 } from "../cli/check.ts";
-import { findConfigFile } from "../cli/config.ts";
+import { findConfigFile, requireConfig } from "../cli/config.ts";
 import { CliError } from "../cli/errors.ts";
 import { exportDocument } from "../cli/export.ts";
+import {
+  exportMarkdownFiles,
+  markdownOutDir,
+  writeMarkdownFiles,
+} from "../cli/export-markdown.ts";
 import { checkMarkdownSource } from "../cli/markdown-check.ts";
 import { checkArguments, type ToolInputSchema } from "./arguments.ts";
 import {
@@ -42,6 +48,7 @@ export type ToolOutput = {
 export type ToolDefinition = {
   name:
     | "export_html"
+    | "export_markdown"
     | "build_site"
     | "check"
     | "list_templates"
@@ -89,6 +96,40 @@ export async function runExportHtml(
     keepTraces: args.keep_traces,
   });
   return { json: { out, warnings } };
+}
+
+/** 文書を Markdown に書き出す: 作業のフォルダを基準に `mdmark export-markdown` と同じ処理で書き出し、Markdown と SVG の絶対パスと警告を返却する */
+export async function runExportMarkdown(
+  args: { file: string; out?: string; config?: string },
+  context: ToolContext,
+): Promise<ToolOutput> {
+  const loaded = await requireConfig(context.projectDir, args.config);
+  const file = resolve(context.projectDir, args.file);
+  try {
+    await readFile(file);
+  } catch {
+    throw new CliError(
+      `文書が無い: ${args.file} が見つかりません。文書のパスを修正してください。`,
+    );
+  }
+  const defaults = markdownOutDir(file);
+  const { markdown, images, warnings } = await exportMarkdownFiles({
+    file,
+    loaded,
+    distDir: context.distDir,
+  });
+  const written = await writeMarkdownFiles({
+    dir:
+      args.out === undefined
+        ? defaults.dir
+        : resolve(context.projectDir, args.out),
+    name: defaults.name,
+    markdown,
+    images,
+  });
+  return {
+    json: { out: written.markdown, images: written.images, warnings },
+  };
 }
 
 /** 複数の文書を 1 枚にまとめる: 作業のフォルダを基準に `mdmark build` と同じ処理でまとめ、絶対パス・文書の数・警告を返却する */
@@ -217,6 +258,30 @@ export const TOOLS: ToolDefinition[] = [
           config?: string;
           keep_traces?: boolean;
         },
+        context,
+      ),
+  },
+  {
+    name: "export_markdown",
+    description:
+      "mdmark の文書を 1 つ、純粋な Markdown（GFM と Mermaid）と、chart・param・埋め込んだ HTML の SVG に書き出す（mdmark export-markdown と同じ処理）。引数 file は書き出す文書、out は出力のフォルダ（省くと文書と同じフォルダの {名前}-markdown）。書き出した Markdown の絶対パス out・SVG の絶対パスの並び images・警告 warnings を JSON で返却する。",
+    inputSchema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          minLength: 1,
+          description: "書き出す Markdown のパス",
+        },
+        out: { type: "string", description: "出力のフォルダのパス" },
+        config: { type: "string", description: CONFIG_DESCRIPTION },
+      },
+      required: ["file"],
+      additionalProperties: false,
+    },
+    run: (args, context) =>
+      runExportMarkdown(
+        args as { file: string; out?: string; config?: string },
         context,
       ),
   },

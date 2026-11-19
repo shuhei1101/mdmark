@@ -1251,6 +1251,15 @@ entries:
           - '{name}.interact.ts'
           - '{name}.logic.ts'
       - type: folder
+        name: markdown
+        contents: mdmark の文書を純粋な Markdown（GFM と Mermaid）にする変換（`toPureMarkdown` と、ブロック・行内の変換）
+        content_types:
+          - code
+          - library
+        naming:
+          - '{module}.ts'
+          - '{name}.logic.ts'
+      - type: folder
         name: mdmark-style
         contents: mod のプラグイン mdmark-style のフックと、返答・発言の描き換え
         content_types:

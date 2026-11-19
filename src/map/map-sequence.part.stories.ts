@@ -56,6 +56,15 @@ export const Reordering: Story = {
   args: { order: '["user", "layout", "mount", "marker", "mermaid"]' },
 };
 
+export const SelfMessage: Story = {
+  name: "SelfMessage",
+  parameters: { server: { id: "map-sequence" } },
+  args: {
+    source: "self",
+    notes: '{"3": "待つ上限の時間は、進め方の文書で決定する"}',
+  },
+};
+
 export const HintsOff: Story = {
   name: "HintsOff",
   parameters: { server: { id: "map-sequence" } },

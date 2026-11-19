@@ -1302,7 +1302,7 @@ constraints:
 
       内容は書き方の警告の項目と同じ文。
 
-      flowchart の `click` の `id:` で始まるリンク先は、`opts.resolveIdLink` が利用側にあるためずれにしない。
+      flowchart の `click` と classDiagram の `click`・`link` の `id:` で始まるリンク先は、`opts.resolveIdLink` が利用側にあるためずれにしない。
 
 
       配置は点検しない。

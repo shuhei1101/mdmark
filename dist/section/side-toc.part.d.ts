@@ -10,6 +10,8 @@ export type SideTocHeading = {
     /** 比較元から変わったセクションか。`true` なら項目と右端の線に変更のマーカーを付ける */
     changed?: boolean;
 };
+/** Markdown でコピーの状態 */
+export type MarkdownCopyState = "idle" | "copied" | "failed";
 /** 右側の目次の HTML を返却する。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる */
 export declare function renderSideToc(options: {
     /** 文書の頭からの h1・h2・h3 */
@@ -18,6 +20,14 @@ export declare function renderSideToc(options: {
     mode?: SideTocMode;
     /** すべて展開・すべて折りたたむのボタンを配置するか（既定 `true`） */
     sections?: boolean;
+    /** Markdown でコピー・Markdown でエクスポートのボタンを配置するか（既定 `true`） */
+    markdownButtons?: boolean;
+    /** Markdown でコピーの状態（既定 `idle`） */
+    markdownCopy?: MarkdownCopyState;
+    /** コピーできなかった理由 */
+    markdownCopyReason?: string;
+    /** コピーできなかったときにパネルへ入れる Markdown */
+    markdownText?: string;
     /** 目次を出しているか（既定 `false`） */
     open?: boolean;
     /** ピン止めしているか（既定 `false`） */

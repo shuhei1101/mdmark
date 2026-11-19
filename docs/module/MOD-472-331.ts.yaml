@@ -35,7 +35,11 @@ functions:
     container: src/media/gif.part.ts
     kind: 関数
     scope: internal
-    summary: '部品設計『GIF』の HTML を返却する（Storybook が使用する。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。`lightbox` が `false` でなければ `img` を `renderImageOpener`（`icon: false`）で包む。`paused` のときは `canvas` の `hidden` を削除し、`img` を `visibility: hidden` にする'
+    summary: '部品設計『GIF』の HTML を返却する（Storybook が使用する）'
+    description: |-
+      部品設計『GIF』の HTML を返却する（Storybook が使用する。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。
+      `lightbox` が `false` でなければ `img` を `renderImageOpener`（`icon: false`）で包む。
+      `paused` のときは `canvas` の `hidden` を削除し、`img` を `visibility: hidden` にする
     args:
       - name: options
         type: '{ src: string; alt: string; paused?: boolean; lightbox?: boolean }'

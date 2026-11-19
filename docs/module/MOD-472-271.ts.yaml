@@ -128,8 +128,13 @@ functions:
     container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。`inline` の子の `image` のトークンごとに、`mediaKindOf` の種類と、`images` がオンなら直後の `text` の頭の `{…}` を `readImageAttributes` で読み込んだ属性を `meta.mdmarkImage` に配置し、`{…}` を `text` から除外する。`gif` の画像に `data-gif` を、文の中の画像の `width` を `img` の `style` の `--mdmark-image-width` に付ける。読み込めない属性は段落の前に 1 つの記載の警告を差し込む
-    description: '`media` がオフのときは動画・音声も `image` として扱う。リンクの中の画像は種類と属性を読み込むが、図にしない'
+    summary: 'コアルール。画像のトークンに種類と属性を読み込み、読み込めない属性を記載の警告にする'
+    description: |-
+      `inline` の子の `image` のトークンごとに、`mediaKindOf` の種類と、`images` がオンなら直後の `text` の頭の `{…}` を `readImageAttributes` で読み込んだ属性を `meta.mdmarkImage` に配置し、`{…}` を `text` から除外する。
+      `gif` の画像に `data-gif` を、文の中の画像の `width` を `img` の `style` の `--mdmark-image-width` に付ける。
+      読み込めない属性は段落の前に 1 つの記載の警告を差し込む。
+      `media` がオフのときは動画・音声も `image` として扱う。
+      リンクの中の画像は種類と属性を読み込むが、図にしない
     args:
       - name: state
         type: StateCore
@@ -174,8 +179,13 @@ functions:
     container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`images` がオンなら、画像 1 つだけの段落（前後の空白を除く。図表の番号とギャラリーが図にしたもの・リンクの中の画像を除く）を部品『画像の図』（`opener: false`）の `html_block` に置き換える。`media` がオンなら、`video`・`audio` の画像を部品『動画と音声』の `html_block` にし、画像 1 つだけの段落は段落ごと置き換え、文の中のものは段落の後ろに配置する'
-    description: 部品へは `meta.mdmarkImage` の属性・`src`・`alt`（子のトークンの文字）・title を指定する。`#only-dark`・`#only-light` のフラグメントは `only` にする。文の中の `#only-*` の画像は `img` に class `mdmark-only-*` を付ける
+    summary: 'コアルール。画像だけの段落と動画・音声を、部品『画像の図』と部品『動画と音声』にする'
+    description: |-
+      `images` がオンなら、画像 1 つだけの段落（前後の空白を除く。図表の番号とギャラリーが図にしたもの・リンクの中の画像を除く）を部品『画像の図』（`opener: false`）の `html_block` に置き換える。
+      `media` がオンなら、`video`・`audio` の画像を部品『動画と音声』の `html_block` にし、画像 1 つだけの段落は段落ごと置き換え、文の中のものは段落の後ろに配置する。
+      部品へは `meta.mdmarkImage` の属性・`src`・`alt`（子のトークンの文字）・title を指定する。
+      `#only-dark`・`#only-light` のフラグメントは `only` にする。
+      文の中の `#only-*` の画像は `img` に class `mdmark-only-*` を付ける
     args:
       - name: state
         type: StateCore
