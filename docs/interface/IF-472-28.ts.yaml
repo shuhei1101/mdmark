@@ -747,6 +747,71 @@ flows:
       - 標準エラーに `npx github:shuhei1101/mdmark#v0.5.0 upgrade` が出る
       - 設定・索引・文書が変わっておらず、コピーのフォルダが無い
     test: test_error_when_develop_build_has_unreleased_steps
+  - name: 異常系（設定の build が Schema に合わない点検のずれ・終了コード 1）
+    summary: 設定の `build` が Schema に合わなくても、`build.include` の文書をコピーに入れ、点検のずれで文書も戻す
+    setup:
+      - name: build が Schema に合わない手元のバージョンが古いフォルダ
+        description: '正常系のフォルダから索引と設定の `index` を削除し、設定の `build` を `include: ["docs/*.md"]` だけにしたもの（`out` が無い）'
+      - name: Mock
+        description: '正常系と同じ。`v0.5.0` の手順を、`--config` の設定を YAML として読み込み `build.include` に該当する文書の `<!-- note -->` を `<!-- callout -->` に書き換えて終了コード 0 で終わるスクリプトを実行する `call`（`files: [documents]`）に差し替える'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant S as スクリプト
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定と build.include の文書 2 つを .mdmark/backup/{日時}/ へ写す
+        C->>F: v0.4.0 の rename_key を適用する
+        C->>S: node {スクリプト} --config {設定ファイル}
+        S->>F: 文書 2 つのマーカーを書き換える
+        C->>C: 点検（build の schema のずれ）
+        C->>F: コピーから戻す
+        C-->>W: ずれの行・終了コード 1
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 1
+      - '標準エラーに `mdmark.config.yaml:build: schema:` で始まり `build.out` が無いことを示す行がある'
+      - '文書 2 つが `<!-- note -->` のままで、設定の `legacy` と `version: v0.3.0` が適用する前のまま'
+      - '`.mdmark/backup/{日時}/` に適用する前の設定と文書 2 つがある'
+    test: test_error_when_build_out_of_schema
+  - name: 異常系（索引が索引のフォルダの外の文書を指す手順の失敗・終了コード 1）
+    summary: 索引の `docs[].path` が索引のフォルダの外を指す文書もコピーに入れ、手順の失敗で文書も戻す
+    setup:
+      - name: 索引が索引のフォルダの外の文書を指す手元のバージョンが古いフォルダ
+        description: '正常系のフォルダに `<!-- note -->` を持つ `notes/c.md` を配置し、索引の `docs` に `path: ../notes/c.md` の行を追加したもの。`notes/c.md` は設定の `build.include`（`docs/*.md`）に該当しない'
+      - name: Mock
+        description: '正常系と同じ。`v0.5.0` の手順を、索引の `docs[].path` の文書の `<!-- note -->` を `<!-- callout -->` に書き換えた後に終了コード 1 で終わるスクリプトを実行する `call`（`files: [documents]`）に差し替える'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant S as スクリプト
+        participant F as フォルダ
+        W->>C: mdmark upgrade
+        C->>F: 設定・索引と文書 3 つ（notes/c.md を含む）を .mdmark/backup/{日時}/ へ写す
+        C->>F: v0.4.0 の rename_key を適用する
+        C->>S: node {スクリプト} --config {設定ファイル}
+        S->>F: 文書 3 つのマーカーを書き換える
+        S-->>C: 終了コード 1
+        C->>F: コピーから戻す
+        C-->>W: 失敗したバージョン・手順・理由・終了コード 1
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 1
+      - '`notes/c.md`・`docs/a.md`・`docs/b.md` が `<!-- note -->` のままで、設定の `version` が `v0.3.0`'
+      - '`.mdmark/backup/{日時}/` に適用する前の `notes/c.md` がある'
+    test: test_error_when_index_points_outside
 lead: 文書の作成者が、設定の手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に設定・索引・文書へ当て、`mdmark check` と同じ点検が通ったら設定の `version` を呼んだ CLI のバージョンにする。適用する前にコピーを取り、失敗したらコピーから戻す。
 idempotent: true
 side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` にコピーを配置する。`--plan` は何も書き換えない
@@ -876,7 +941,7 @@ constraints:
     constraint: 設定と索引はコメント・キーの並び・触らないキーの記載方法を残して書き換える
     decided_by: LIB-472-36#
   - item: 文書
-    constraint: '`replace_mark` と `files` の `documents` が指す文書は、設定の `build` の対象（`include` に該当し `exclude` に該当しないもの）と索引の文書。同じ文書は 1 回だけ扱う'
+    constraint: '`replace_mark` と `files` の `documents` が指す文書は、次を合わせたもの（同じ文書は 1 回だけ扱う）。① 設定の `build` の対象（`include` に該当し `exclude` に該当しないもの）。`build` が Schema に合わなくても、設定を Schema で検める前の `build.include`・`build.exclude` の文字の値（文字 1 つか文字の並び。並びの中の文字でない要素は飛ばす）で集める。② 索引のフォルダの下の Markdown（`mdmark check` と同じ集め方）。③ 索引の `docs[].path` が指す文書（索引のファイルのフォルダからの相対パス。索引のフォルダの外を指すものも含む。`path` が文字でない行は飛ばす）。①と③は `call` のスクリプトが書き換える文書の集め方と同じ。索引を YAML として読み込めないときは②と③を集めない'
   - item: スクリプトの呼び方
     constraint: '`node {スクリプト} --config {設定ファイルの絶対パス}` を設定ファイルのあるフォルダで実行し、終了コード 0 以外を失敗にする。スクリプトが標準出力に書き込んだ行は、適用した手順の行の下に字下げして標準出力へ出し、失敗したときに標準エラーへ書き込んだ行は失敗の理由の後ろに標準エラーへ出す。スクリプトの拡張子は `.js` か `.mjs`。待ち時間は制限なし'
     notes: スクリプトは同じバージョンの mdmark の開発者が記載し、利用者が Ctrl-C で止められる。`npx` が入れたパッケージは `node_modules` の下にあり、Node はそこの `.ts` の型を落とさない（`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`）ため `.ts` は受けない
