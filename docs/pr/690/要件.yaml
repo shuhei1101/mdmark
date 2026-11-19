@@ -14,6 +14,6 @@ scope_out:
   - item: クラス図の線のラベル・メンバーの行の重なり
     reason: 'リンクとは別の事象で、計画で #650 の後ろに置かれている'
     plan: '#622'
-  - item: 'click・link のリンク先に id: を記載したクラス図（FLOW_BASED の種類へ resolveIdLink を渡すか）'
-    reason: '要望は相対パス・URL のリンク。id: をクラス図で扱うかは設計書が定めておらず、リンクが落ちる箇所を特定してから含めるかをレビューで決める'
-    plan: to_file
+  - item: 'click・link のリンク先に id: を記載した FLOW_BASED の種類（クラス図など）のノードのリンク'
+    reason: 'IF-472-35 の制約『map のクラス図』は id: を『map のノードのリンク』と同じく resolveIdLink で置き換えると定めるが、attachRange が FLOW_BASED の種類へ resolveIdLink を渡さず落ちている。実装を変えない決着のため別の Issue で修正する'
+    plan: '#693'
