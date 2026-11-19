@@ -33,7 +33,7 @@ scenarios:
   - name: 正常シナリオ（tmux のセッションで動いている）
     setup:
       - name: tmux のセッションで起動した常駐サーバー
-        description: 手元と別の tmux サーバー（`TMUX_TMPDIR` を空の一時フォルダにする）の、端末の設定のセッション名のセッションで、`MDMARK_PORT` に空いたポートを指定して `mdmark serve` を起動している
+        description: 手元と別の tmux サーバー（`TMUX`・`TMUX_PANE` を除外した環境で、`TMUX_TMPDIR` を空の一時フォルダにする）の、端末の設定のセッション名のセッションで、`MDMARK_PORT` に空いたポートを指定して `mdmark serve` を起動している
         notes: 手元の常駐サーバーが使用する 8782 と手元の tmux のセッションを回避する
       - name: Mock
         description: 正常シナリオと同じ
