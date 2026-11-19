@@ -2,6 +2,7 @@ import { styleColor } from "../shared/style-tokens.logic.ts";
 import {
   readSettings,
   type SettingsEngine,
+  SettingsError,
   type StyleSettings,
 } from "./settings.ts";
 import {
@@ -240,7 +241,16 @@ export async function renderUserMessage(
   e: RenderEvent,
   next: (e: RenderEvent) => Promise<UiNode>,
 ): Promise<UiNode> {
-  const settings = await readSettings($);
+  let settings: StyleSettings;
+  try {
+    settings = await readSettings($);
+  } catch (error) {
+    if (!(error instanceof SettingsError)) {
+      throw error;
+    }
+    $.ui.log(error.message, { to: "debug" });
+    return next(e);
+  }
   if (
     !settings.enabled ||
     !settings.targets.includes("user") ||

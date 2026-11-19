@@ -3,7 +3,7 @@ import {
   styleColor,
 } from "../shared/style-tokens.logic.ts";
 import { type ReplyBlock, splitBlocks } from "./blocks.ts";
-import { readSettings, type StyleSettings } from "./settings.ts";
+import { readSettings, SettingsError, type StyleSettings } from "./settings.ts";
 import { displayWidth, fitColumns, wrapCell } from "./table-layout.ts";
 import type { TermMark } from "./terms.ts";
 import {
@@ -432,7 +432,16 @@ export async function renderReply(
   e: RenderEvent,
   next: (e: RenderEvent) => Promise<UiNode>,
 ): Promise<UiNode> {
-  const settings = await readSettings($);
+  let settings: StyleSettings;
+  try {
+    settings = await readSettings($);
+  } catch (error) {
+    if (!(error instanceof SettingsError)) {
+      throw error;
+    }
+    $.ui.log(error.message, { to: "debug" });
+    return next(e);
+  }
   if (!settings.enabled || !settings.targets.includes("assistant")) {
     return next(e);
   }
