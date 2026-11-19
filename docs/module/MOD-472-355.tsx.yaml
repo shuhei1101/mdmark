@@ -94,8 +94,8 @@ functions:
       type: UiNode
       description: 部品の木
     process: |-
-      1. `table`: `figure` があれば表の上に `dimColor` の `表 {figure}` の Text を描く。列の幅を決め（`wrap` は `surface` が `desktop` でないとき）、セルを折り返して罫線で囲む。`kind` が `data` なら見出しの行を太字にする。`details` の行は先頭のセルに行の詳細の Button を置き、開いていればその行の下に全ての列をまたぐ詳細を描く（行の詳細を描く）。`surface` が `desktop` で表の幅が `columns` を超えれば表の Box を `overflowX: "scroll"` にする
-      2. `heading`: 太字と見出しの色の Text
+      1. `table`: `figure` があれば表の上に `dimColor` の `表 {figure}` の Text を描く。`parts.inline` が真のときは各セルの文字を行内の記法を分けるで分け、列の幅と折り返しの位置は行内の記法を描いた文字にするで得た文字の表示幅で数える。列の幅を決め（`wrap` は `surface` が `desktop` でないとき）、セルを折り返して罫線で囲む。行内の記法を含むセルは用語付きの行を描くで描く。`kind` が `data` なら見出しの行を太字にする。`details` の行は先頭のセルに行の詳細の Button を置き、開いていればその行の下に全ての列をまたぐ詳細を描く（行の詳細を描く）。`surface` が `desktop` で表の幅が `columns` を超えれば表の Box を `overflowX: "scroll"` にする
+      2. `heading`: 太字と見出しの色の Text。`parts.inline` が真で行内の記法があれば、見出しの色と太字を保ったまま用語付きの行を描くで描く
       3. `callout`: 種類の色の縦線（`┃`）と太字の種類のラベルの後ろに中身を描く。`closed` なら開閉のボタンで包む
       4. `code`: 背景の面の Box の中に、タイトルと言語のラベルとコピーボタンの行、`Code` 部品で色分けした行（行番号・行の色）を並べる。コピーボタンは押すと `$.ui.copy` で各行の `text` を改行でつないでコピーする
       5. `fold`: 開閉のボタンを描き、開いていれば下に中身を描く
@@ -150,6 +150,12 @@ functions:
         condition: 行内のコード `badge:green:完了` を含む `markdown` のブロック、用語の一致は無い
         mock: '`h`'
         expected: '`Markdown` 部品を使用せず、`green` の背景色の `完了` の Text がある'
+      - name: test_render_block_table_when_inline_marks
+        case: 正常
+        summary: 表のセルと見出しの行内の記法を描く
+        condition: セルに行内のコード `badge:green:完了` を持つ 2 列の表と、行内のコード `kbd:Ctrl+C` を含む見出し、`parts.inline` が真
+        mock: '`h`'
+        expected: セルに `green` の背景色の ` 完了 ` の Text があり、その列の幅が ` 完了 ` の表示幅で数えられ、見出しに太字の `[Ctrl]` の Text がある
     callees:
       - MOD-472-354#functions[fitColumns]
       - MOD-472-354#functions[wrapCell]
@@ -161,6 +167,8 @@ functions:
       - MOD-472-367#functions[renderTree]
       - MOD-472-367#functions[renderStack]
       - MOD-472-367#functions[renderRowDetail]
+      - MOD-472-366#functions[inlinePlainText]
+      - MOD-472-357#functions[renderTermText]
     refs:
       - SCR-472-5#elements[表]
       - SCR-472-5#elements[見出し]

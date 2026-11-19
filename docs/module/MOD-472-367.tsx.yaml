@@ -113,7 +113,7 @@ functions:
     container: src/mdmark-style/document-parts.tsx
     usecase: ClaudeCodeの返答を共通スタイルで描く
     summary: 詳細を持つ行の先頭のセルに置く開閉の Button と、開いているときの詳細の行を返却する。押すと状態を反転して `$.ui.invalidate("ui.render")` で描き直す
-    description: 開閉の状態は reply.tsx の `renderFold` と同じモジュールの中の `Map` を、`requestId`・ブロックの本文のハッシュ・`row-detail:{表の順番}:{行}` の鍵で使用する
+    description: 開閉の状態は reply.tsx の `renderFold` が使用するモジュールの中の `Map` を、`requestId`・ブロックの本文のハッシュ・`row-detail:{表の順番}:{行}` の鍵で使用する
     scope: public
     is_async: false
     args:
@@ -135,8 +135,7 @@ functions:
         condition: 初めての `key` で描き、Button の `onPress` を呼んでからもう一度描く
         mock: '`h`・`$.ui.invalidate`'
         expected: 1 回目は `[ ▸ ]` で `detail` が無く、2 回目は `[ ▾ ]` で `detail` があり、`$.ui.invalidate` が `ui.render` で 1 回呼ばれる
-    callees:
-      - MOD-472-355#functions[renderFold]
+    callees: []
     refs:
       - IF-472-45#constraints[行の詳細]
       - SCR-472-5#elements[行の詳細のボタン]

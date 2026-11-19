@@ -87,6 +87,33 @@ functions:
     refs:
       - IF-472-45#constraints[行内の記法]
     status: planned
+  - name: inlinePlainText
+    title: 行内の記法を描いた文字にする
+    kind: 関数
+    container: src/mdmark-style/inline-marks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`InlineSegment` の並びを、画面に描かれる文字の列にする。表のセルの幅と折り返しの位置を数えるために使用する'
+    scope: public
+    is_async: false
+    args:
+      - name: segments
+        type: InlineSegment[]
+        required: true
+        description: 行内の区切り
+    returns:
+      type: string
+      description: バッジは前後に空白を付けたラベル、キーは `[キー]` を `+` でつないだ文字、ほかは `text` をつないだ文字
+    process: 1. 区切りごとに描かれる文字にしてつなぐ
+    unit_tests:
+      - name: test_inline_plain_text
+        case: 正常
+        summary: 描かれる文字にする
+        condition: '`badge`（`完了`）・`text`（` と `）・`kbd`（`["Ctrl", "C"]`）の区切り'
+        mock: なし
+        expected: '` 完了  と [Ctrl]+[C]`'
+    refs:
+      - IF-472-45#constraints[行内の記法]
+    status: planned
 tags:
   - name: topic:バッジ
   - name: topic:色
