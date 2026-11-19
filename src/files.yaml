@@ -2119,9 +2119,6 @@ files:
     related:
       - to: MOD-472-348
         type: implements
-checkpoint:
-  commit: c8628addc2098383b1d95215547ac435a55ac166
-  reviewed: []
   - path: mdmark-style/mod.tsx
     description: モジュール構成『mdmark-style の入口』を受け持つ。フックの登録を変えるときに参照する。
     tags: [topic:フック, tool:claude-code, topic:プラグイン]
@@ -2176,3 +2173,6 @@ checkpoint:
     related:
       - to: MOD-472-359
         type: implements
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []

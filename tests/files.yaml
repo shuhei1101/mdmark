@@ -2722,9 +2722,6 @@ files:
     related:
       - to: src/shared/icon-node.logic.ts
         type: tests
-checkpoint:
-  commit: c8628addc2098383b1d95215547ac435a55ac166
-  reviewed: []
   - path: unit/src/mdmark-style/mod.test.ts
     description: src/mdmark-style/mod.tsx（「フックの登録」）を確認する単体テスト。mod.tsx を変えたときに、合わせて修正するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, tool:claude-code]
@@ -2791,3 +2788,6 @@ checkpoint:
   - path: unit/src/mdmark-style/glossary-fixture.ts
     description: mdmark-style の単体テストが使用する用語集の見本のファイル。テストの準備を変えるときに参照する。
     tags: [topic:単体テスト, tool:claude-code]
+checkpoint:
+  commit: c8628addc2098383b1d95215547ac435a55ac166
+  reviewed: []
