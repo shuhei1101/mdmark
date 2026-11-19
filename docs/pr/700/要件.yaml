@@ -15,7 +15,6 @@ use_cases:
     detail: 文書の作成者が書き出した Markdown を、GitHub などの mdmark の無い表示で、記法の文字が見えずに図を含めて読む
     depends_on:
       - docs/scenario/SC-472-97.yaml
-      - docs/scenario/SC-472-98.yaml
   - kind: single
     scenario: docs/scenario/SC-472-3.yaml
     impact: changed
