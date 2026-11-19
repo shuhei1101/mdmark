@@ -3619,7 +3619,7 @@ function appendChild(parent, child) {
     child.prev = null;
   }
 }
-function append(element, next) {
+function append2(element, next) {
   removeElement(next);
   const { parent } = element;
   const currentNext = element.next;
@@ -3725,7 +3725,7 @@ var init_traversal = __esm({
 var dist_exports3 = {};
 __export(dist_exports3, {
   DocumentPosition: () => DocumentPosition,
-  append: () => append,
+  append: () => append2,
   appendChild: () => appendChild,
   compareDocumentPosition: () => compareDocumentPosition,
   existsOne: () => existsOne,
@@ -12134,7 +12134,13 @@ var DEFAULT_SETTINGS = {
     fold: true,
     terms: true,
     hover_card: true,
-    footnote: true
+    footnote: true,
+    row_detail: true,
+    steps: true,
+    tree: true,
+    inline: true,
+    stack: true,
+    figure: true
   },
   glossary: void 0,
   inject_marker_guide: true
@@ -12313,7 +12319,10 @@ var MARKER_GUIDE = [
   '- \u8868\u306E\u7A2E\u985E: \u8868\u3092 <!-- table: {"kind": "data"} --> \u301C <!-- /table --> \u3067\u56F2\u3080',
   "- \u6CE8\u610F\u66F8\u304D: \u5F15\u7528\u306E 1 \u884C\u76EE\u3092 > [!NOTE]\u30FB[!TIP]\u30FB[!IMPORTANT]\u30FB[!WARNING]\u30FB[!CAUTION] \u306B\u3059\u308B",
   "- \u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u98FE\u308A: \u76F4\u524D\u306B <!-- code: title=\u30D5\u30A1\u30A4\u30EB\u540D lines --> \u3092\u8A18\u8F09\u3057\u3001\u884C\u672B\u306B // [!code ++] \u306A\u3069\u3092\u4ED8\u3051\u308B",
-  "- \u958B\u9589\u306E\u7BC4\u56F2: <!-- details: \u30BF\u30A4\u30C8\u30EB --> \u301C <!-- /details --> \u3067\u56F2\u3080"
+  "- \u958B\u9589\u306E\u7BC4\u56F2: <!-- details: \u30BF\u30A4\u30C8\u30EB --> \u301C <!-- /details --> \u3067\u56F2\u3080",
+  "- \u30B9\u30C6\u30C3\u30D7: \u756A\u53F7\u4ED8\u304D\u30EA\u30B9\u30C8\u3092 <!-- steps --> \u301C <!-- /steps --> \u3067\u56F2\u3080",
+  "- \u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC: \u8A00\u8A9E tree \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306B \u251C\u2500\u2500 \u306A\u3069\u306E\u7F6B\u7DDA\u3067\u8A18\u8F09\u3057\u3001\u6CE8\u91C8\u306F\u540D\u524D\u306E\u5F8C\u308D\u306E \u300C # \u300D\u306B\u7D9A\u3051\u308B",
+  "- \u30D0\u30C3\u30B8: \u884C\u5185\u306E\u30B3\u30FC\u30C9\u3092 badge:green:\u5B8C\u4E86 \u306E\u3088\u3046\u306B\u8A18\u8F09\u3059\u308B"
 ].join("\n");
 async function injectMarkerGuide($, e, next) {
   const result = await next(e);
@@ -12383,6 +12392,86 @@ var STYLE_COLORS = {
     light: "#f0f0f0",
     dark: "#3a3a3a",
     themes: { "light-daltonized": "#dcdcdc" }
+  },
+  accentBlueBg: {
+    light: "#cce2fe",
+    dark: "#1a314e",
+    css: "--mdmark-color-accent-blue-bg"
+  },
+  accentBlueText: {
+    light: "#1d4ed8",
+    dark: "#7aa2ff",
+    css: "--mdmark-color-accent-blue-text"
+  },
+  accentRedBg: {
+    light: "#ffd4d1",
+    dark: "#472020",
+    css: "--mdmark-color-accent-red-bg"
+  },
+  accentRedText: {
+    light: "#b91c1c",
+    dark: "#f87171",
+    css: "--mdmark-color-accent-red-text"
+  },
+  accentGreenBg: {
+    light: "#cbf2d2",
+    dark: "#1a3821",
+    css: "--mdmark-color-accent-green-bg"
+  },
+  accentGreenText: {
+    light: "#166534",
+    dark: "#4ade80",
+    css: "--mdmark-color-accent-green-text"
+  },
+  accentYellowBg: {
+    light: "#fff2af",
+    dark: "#40380e",
+    css: "--mdmark-color-accent-yellow-bg"
+  },
+  accentYellowText: {
+    light: "#854d0e",
+    dark: "#facc15",
+    css: "--mdmark-color-accent-yellow-text"
+  },
+  accentOrangeBg: {
+    light: "#fedbc4",
+    dark: "#4a2a12",
+    css: "--mdmark-color-accent-orange-bg"
+  },
+  accentOrangeText: {
+    light: "#b53a0a",
+    dark: "#fb923c",
+    css: "--mdmark-color-accent-orange-text"
+  },
+  accentPurpleBg: {
+    light: "#edd8fd",
+    dark: "#382446",
+    css: "--mdmark-color-accent-purple-bg"
+  },
+  accentPurpleText: {
+    light: "#6d28d9",
+    dark: "#c4a7ff",
+    css: "--mdmark-color-accent-purple-text"
+  },
+  accentGrayBg: {
+    light: "#e4e6ea",
+    dark: "#303033",
+    css: "--mdmark-color-accent-gray-bg"
+  },
+  accentGrayText: {
+    light: "#52525b",
+    dark: "#b4b4bc",
+    css: "--mdmark-color-accent-gray-text"
+  },
+  surface: {
+    light: "#f4f4f5",
+    dark: "#1b1b1f",
+    css: "--mdmark-color-surface"
+  },
+  text: {
+    light: "#18181b",
+    dark: "#ededef",
+    css: "--mdmark-color-text"
   }
 };
 var styleColor = (options) => {
@@ -15305,8 +15394,8 @@ function list(state, startLine, endLine, silent) {
     const indent = initial + indentAfterMarker;
     token = state.push("list_item_open", "li", 1);
     token.markup = String.fromCharCode(markerCharCode);
-    const itemLines = [nextLine, 0];
-    token.map = itemLines;
+    const itemLines2 = [nextLine, 0];
+    token.map = itemLines2;
     if (isOrdered) token.info = state.src.slice(start, posAfterMarker - 1);
     const oldTight = state.tight;
     const oldTShift = state.tShift[nextLine];
@@ -15329,7 +15418,7 @@ function list(state, startLine, endLine, silent) {
     token = state.push("list_item_close", "li", -1);
     token.markup = String.fromCharCode(markerCharCode);
     nextLine = state.line;
-    itemLines[1] = nextLine;
+    itemLines2[1] = nextLine;
     if (nextLine >= endLine) break;
     if (state.sCount[nextLine] < state.blkIndent) break;
     if (state.sCount[nextLine] - state.blkIndent >= 4) break;
@@ -17231,881 +17320,85 @@ _defineProperty(MarkdownIt, "ParserInline", ParserInline);
 _defineProperty(MarkdownIt, "StateInline", StateInline);
 var MarkdownItCallable = callable(MarkdownIt);
 
-// src/mdmark-style/blocks.ts
-var CALLOUT_TYPES = [
-  "NOTE",
-  "TIP",
-  "IMPORTANT",
-  "WARNING",
-  "CAUTION"
+// src/shared/escape.logic.ts
+function escapeHtml2(text2) {
+  return text2.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
+
+// src/shared/syntax-warning.part.ts
+var WARNING_TITLE = "\u8A18\u8F09\u306E\u8B66\u544A";
+function renderInline(text2) {
+  return text2.split("`").map(
+    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
+  ).join("");
+}
+function renderSyntaxWarning(options) {
+  const { mark = "", message, items = [], id } = options;
+  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
+  const list2 = items.length ? `<ul>${items.map(
+    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
+  ).join("")}</ul>` : "";
+  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
+  return `<div class="mdmark-syntax-warning" role="note"${idAttribute}><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list2}</div>`;
+}
+
+// src/diagram/definition.ts
+var RETIRED_DIAGRAM_DIRECTIVES = [
+  "flow",
+  "sequence",
+  "er"
 ];
-var MD = new MarkdownItCallable({ html: true });
-var MARKER_LINE = /^<!--\s*(\/?[\w-]+)\s*(?::\s*([\s\S]*?))?\s*-->$/;
-var INLINE_MARKER = /[ \t]*<!--.*?-->[ \t]*/g;
-var CALLOUT_HEAD = /^\s*>\s*\[!(\w+)\]([-+]?)\s*(.*)$/;
-var CODE_MARK = /\s*(?:\/\/|#|--|;|<!--|\/\*)?\s*\[!code (\+\+|--|highlight|focus|error|warning)\]\s*(?:-->|\*\/)?\s*$/;
-var stripInlineMarkers = (line) => line.replace(
-  INLINE_MARKER,
-  (_match, offset) => offset === 0 ? "" : " "
-).trimEnd();
-var stripWithColumns = (line, shift) => {
-  let text2 = "";
-  const columns = [];
-  let from = 0;
-  const keep = (end2) => {
-    for (let at = from; at < end2; at += 1) {
-      text2 += line[at];
-      columns.push(at + shift);
+var DIAGRAM_DIRECTIVES = {
+  chart: { name: "\u30B0\u30E9\u30D5", call: "\u3053\u306E\u30B0\u30E9\u30D5" },
+  param: { name: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1", call: "\u3053\u306E\u90E8\u54C1" }
+};
+function missingSymbols(text2) {
+  const stack = [];
+  let inString = false;
+  for (let index = 0; index < text2.length; index++) {
+    const char = text2[index];
+    if (inString) {
+      if (char === "\\") {
+        index += 1;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
     }
-  };
-  for (const match of line.matchAll(INLINE_MARKER)) {
-    keep(match.index);
-    if (match.index !== 0) {
-      text2 += " ";
-      columns.push(match.index + shift);
-    }
-    from = match.index + match[0].length;
+    inString = char === '"';
+    trackBracket(stack, char);
   }
-  keep(line.length);
-  const end = text2.trimEnd().length;
-  return { text: text2.slice(0, end), columns: columns.slice(0, end) };
-};
-var readMarker = (text2) => {
-  const match = MARKER_LINE.exec(text2.trim());
-  return match?.[1] === void 0 ? void 0 : { name: match[1], args: (match[2] ?? "").trim() };
-};
-var chunksOf = (tokens) => {
-  const chunks = [];
-  let current = [];
-  let depth = 0;
-  for (const token of tokens) {
-    current.push(token);
-    depth += token.nesting;
-    if (depth === 0) {
-      const first = current[0];
-      const map3 = first?.map ?? current.find((item) => item.map)?.map;
-      chunks.push({
-        tokens: current,
-        start: map3?.[0] ?? 0,
-        end: map3?.[1] ?? 0
-      });
-      current = [];
-    }
+  return `${inString ? '"' : ""}${stack.reverse().join("")}`;
+}
+function trackBracket(stack, char) {
+  if (char === "{") {
+    stack.push("}");
+  } else if (char === "[") {
+    stack.push("]");
+  } else if (char === "}" || char === "]") {
+    stack.pop();
   }
-  return chunks;
-};
-var push = (state, block2) => {
-  const frame = state.frames.at(-1);
-  (frame === void 0 ? state.out : frame.body).push(block2);
-};
-var closeFrame = (state) => {
-  const frame = state.frames.pop();
-  if (frame === void 0) {
-    return;
-  }
-  push(state, {
-    kind: "fold",
-    line: frame.line,
-    fold: { title: frame.title, index: frame.index, body: frame.body }
-  });
-};
-var lineOf = (state, chunk) => state.lineBase + chunk.start + 1;
-var rawOf = (state, chunk) => {
-  const lines = state.lines.slice(chunk.start, chunk.end).map(
-    (line2, offset) => stripWithColumns(line2, state.prefixes[chunk.start + offset] ?? 0)
-  );
-  let line = lineOf(state, chunk);
-  while (lines[0] !== void 0 && lines[0].text.trim() === "") {
-    lines.shift();
-    line += 1;
-  }
-  while (lines.at(-1) !== void 0 && lines.at(-1)?.text.trim() === "") {
-    lines.pop();
-  }
-  const first = lines[0];
-  if (first !== void 0) {
-    const lead = first.text.length - first.text.trimStart().length;
-    lines[0] = {
-      text: first.text.slice(lead),
-      columns: first.columns.slice(lead)
-    };
-  }
-  return { line, lines };
-};
-var pushMarkdown = (state, chunk) => {
-  const { line, lines } = rawOf(state, chunk);
-  if (lines.length === 0) {
-    return;
-  }
-  push(state, {
-    kind: "markdown",
-    line,
-    markdown: lines.map((item) => item.text).join("\n"),
-    columns: lines.map((item) => item.columns)
-  });
-};
-var tableKindOf = (args) => {
+}
+function errorPosition(error2, length) {
+  const message = error2 instanceof Error ? error2.message : "";
+  const position = /position (\d+)/.exec(message)?.[1];
+  return position === void 0 ? length : Math.min(Number(position), length);
+}
+function parseDefinitionJson(text2) {
   try {
-    const kind = JSON.parse(args)?.kind;
-    return kind === "data" || kind === "plain" ? kind : "default";
-  } catch {
-    return "default";
-  }
-};
-var highlightLines = (value) => {
-  const lines = /* @__PURE__ */ new Set();
-  for (const part of value.split(",")) {
-    const [from, to] = part.split("-").map((item) => Number(item.trim()));
-    if (from === void 0 || !Number.isInteger(from)) {
-      continue;
-    }
-    const last = to !== void 0 && Number.isInteger(to) ? to : from;
-    for (let line = from; line <= last; line += 1) {
-      lines.add(line);
-    }
-  }
-  return lines;
-};
-var codeOptionsOf = (args) => {
-  const options = {
-    lineNumbers: false,
-    highlight: /* @__PURE__ */ new Set()
-  };
-  for (const match of args.matchAll(/(\w+)(?:=("[^"]*"|\S+))?/g)) {
-    const [, key, raw] = match;
-    const value = raw?.replace(/^"|"$/g, "");
-    if (key === "title" && value !== void 0) {
-      options.title = value;
-    } else if (key === "lines") {
-      options.lineNumbers = true;
-    } else if (key === "highlight" && value !== void 0) {
-      options.highlight = highlightLines(value);
-    }
-  }
-  return options;
-};
-var applyMarker = (state, marker) => {
-  if (marker.name === "table") {
-    state.pendingTable = tableKindOf(marker.args);
-  } else if (marker.name === "code") {
-    state.pendingCode = codeOptionsOf(marker.args);
-  } else if (marker.name === "details" && state.parts.fold) {
-    state.frames.push({
-      kind: "details",
-      title: marker.args,
-      level: 0,
-      index: state.foldCount.value++,
-      line: 0,
-      body: []
-    });
-  } else if (marker.name === "/details" && state.frames.at(-1)?.kind === "details") {
-    closeFrame(state);
-  } else if (marker.name === "section" && state.parts.fold) {
-    openSection(state, marker.args);
-  }
-};
-var openSection = (state, args) => {
-  const closed = args === "closed" || /"open"\s*:\s*false/.test(args);
-  const frame = state.frames.at(-1);
-  const list2 = frame === void 0 ? state.out : frame.body;
-  const heading2 = list2.at(-1);
-  if (!closed || heading2?.kind !== "heading" || heading2.heading === void 0) {
-    return;
-  }
-  list2.pop();
-  state.frames.push({
-    kind: "section",
-    title: heading2.heading.text,
-    level: heading2.heading.level,
-    index: state.foldCount.value++,
-    line: heading2.line,
-    body: []
-  });
-};
-var closeSections = (state, level) => {
-  while (true) {
-    const frame = state.frames.at(-1);
-    if (frame?.kind !== "section" || frame.level < level) {
-      return;
-    }
-    closeFrame(state);
-  }
-};
-var handleHtml = (state, chunk) => {
-  const text2 = chunk.tokens[0]?.content ?? "";
-  const lines = text2.split("\n").filter((line) => line.trim() !== "");
-  const markers = lines.map(readMarker);
-  if (markers.every((marker) => marker !== void 0)) {
-    for (const marker of markers) {
-      applyMarker(state, marker);
-    }
-    return;
-  }
-  pushMarkdown(state, chunk);
-};
-var handleHeading = (state, chunk) => {
-  const level = Number(chunk.tokens[0]?.tag.slice(1));
-  closeSections(state, level);
-  if (!state.parts.heading) {
-    pushMarkdown(state, chunk);
-    return;
-  }
-  const text2 = stripInlineMarkers(chunk.tokens[1]?.content ?? "").trim();
-  push(state, {
-    kind: "heading",
-    line: lineOf(state, chunk),
-    heading: { level, text: text2 }
-  });
-};
-var alignOf = (token) => {
-  const style = String(token.attrGet("style") ?? "");
-  if (style.includes("center")) {
-    return "center";
-  }
-  return style.includes("right") ? "right" : "left";
-};
-var readTable = (tokens) => {
-  const rows = [];
-  const align = [];
-  for (const [index, token] of tokens.entries()) {
-    if (token.type === "tr_open") {
-      rows.push([]);
-    } else if (token.type === "th_open" || token.type === "td_open") {
-      const cell = stripInlineMarkers(tokens[index + 1]?.content ?? "").trim();
-      rows.at(-1)?.push(cell);
-    }
-    if (token.type === "th_open") {
-      align.push(alignOf(token));
-    }
-  }
-  return { rows, align };
-};
-var handleTable = (state, chunk) => {
-  const kind = state.pendingTable ?? "default";
-  state.pendingTable = void 0;
-  if (!state.parts.table) {
-    pushMarkdown(state, chunk);
-    return;
-  }
-  const { rows, align } = readTable(chunk.tokens);
-  const [header = [], ...body] = rows;
-  push(state, {
-    kind: "table",
-    line: lineOf(state, chunk),
-    table: { kind, header, rows: body, align }
-  });
-};
-var handleFence = (state, chunk) => {
-  const options = state.pendingCode ?? {
-    lineNumbers: false,
-    highlight: /* @__PURE__ */ new Set()
-  };
-  state.pendingCode = void 0;
-  if (!state.parts.code) {
-    pushMarkdown(state, chunk);
-    return;
-  }
-  const token = chunk.tokens[0];
-  const lang = (token?.info ?? "").trim().split(/\s+/)[0] ?? "";
-  const source = (token?.content ?? "").replace(/\n$/, "");
-  const lines = source.split("\n").map((text2, index) => {
-    const match = CODE_MARK.exec(text2);
-    const mark = match?.[1];
-    const line = { text: match === null ? text2 : text2.slice(0, match.index) };
-    if (mark !== void 0) {
-      return { ...line, mark };
-    }
-    return options.highlight.has(index + 1) ? { ...line, mark: "highlight" } : line;
-  });
-  push(state, {
-    kind: "code",
-    line: lineOf(state, chunk),
-    code: {
-      lang,
-      ...options.title === void 0 ? {} : { title: options.title },
-      lineNumbers: options.lineNumbers,
-      lines
-    }
-  });
-};
-var calloutHeadOf = (line, parts) => {
-  const [, rawType = "", sign = "", rawTitle = ""] = CALLOUT_HEAD.exec(line) ?? [];
-  const type = rawType.toUpperCase();
-  if (!parts.callout || !CALLOUT_TYPES.includes(type)) {
-    return void 0;
-  }
-  return { type, closed: sign === "-" && parts.fold, title: rawTitle.trim() };
-};
-var handleQuote = (state, chunk) => {
-  const lines = state.lines.slice(chunk.start, chunk.end);
-  const head = calloutHeadOf(lines[0] ?? "", state.parts);
-  if (head === void 0) {
-    pushMarkdown(state, chunk);
-    return;
-  }
-  const { type, closed, title } = head;
-  const index = closed ? state.foldCount.value++ : -1;
-  const inner = lines.slice(1).map((line, offset) => {
-    const prefix = /^\s*>\s?/.exec(line)?.[0].length ?? 0;
+    return { ok: true, value: JSON.parse(text2) };
+  } catch (error2) {
+    const position = errorPosition(error2, text2.length);
+    const readable = text2.slice(0, position).trimEnd();
+    const lines = readable.split("\n");
+    const atEnd = text2.slice(position).trim() === "";
     return {
-      text: line.slice(prefix),
-      prefix: prefix + (state.prefixes[chunk.start + 1 + offset] ?? 0)
+      ok: false,
+      line: lines.length,
+      after: (lines.at(-1) ?? "").trim(),
+      missing: atEnd ? missingSymbols(readable) : ""
     };
-  });
-  const body = splitInto({
-    text: inner.map((line) => line.text).join("\n"),
-    parts: state.parts,
-    foldCount: state.foldCount,
-    lineBase: lineOf(state, chunk),
-    prefixes: inner.map((line) => line.prefix)
-  });
-  push(state, {
-    kind: "callout",
-    line: lineOf(state, chunk),
-    callout: { type, ...title === "" ? {} : { title }, closed, body },
-    ...closed ? { fold: { title: title || type, index, body } } : {}
-  });
-};
-var handleChunk = (state, chunk) => {
-  const type = chunk.tokens[0]?.type;
-  if (type === "html_block") {
-    handleHtml(state, chunk);
-  } else if (type === "heading_open") {
-    handleHeading(state, chunk);
-  } else if (type === "table_open") {
-    handleTable(state, chunk);
-  } else if (type === "fence" || type === "code_block") {
-    handleFence(state, chunk);
-  } else if (type === "blockquote_open") {
-    handleQuote(state, chunk);
-  } else {
-    pushMarkdown(state, chunk);
   }
-};
-var splitInto = (options) => {
-  const lines = options.text.split("\n");
-  const state = {
-    lines,
-    lineBase: options.lineBase,
-    prefixes: options.prefixes,
-    parts: options.parts,
-    out: [],
-    frames: [],
-    foldCount: options.foldCount
-  };
-  for (const chunk of chunksOf(MD.parse(options.text, {}))) {
-    handleChunk(state, chunk);
-  }
-  while (state.frames.length > 0) {
-    closeFrame(state);
-  }
-  return state.out;
-};
-var splitBlocks = (options) => splitInto({
-  text: options.text,
-  parts: options.parts,
-  foldCount: { value: 0 },
-  lineBase: 0,
-  prefixes: []
-});
-
-// src/mdmark-style/table-layout.ts
-var COLUMN_PADDING = 3;
-var MIN_COLUMN_WIDTH = 4;
-var SEGMENTER = new Intl.Segmenter(void 0, { granularity: "grapheme" });
-var WIDE = /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꀀ-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]|\p{Extended_Pictographic}/u;
-var ZERO_WIDTH = /^[\p{Mn}\p{Me}​-‏]+$/u;
-var graphemeWidth = (grapheme) => {
-  if (ZERO_WIDTH.test(grapheme)) {
-    return 0;
-  }
-  return WIDE.test(grapheme) ? 2 : 1;
-};
-var displayWidth = (text2) => {
-  let width = 0;
-  for (const { segment } of SEGMENTER.segment(text2)) {
-    width += graphemeWidth(segment);
-  }
-  return width;
-};
-var splitWords = (text2) => {
-  const words = [];
-  let current = "";
-  for (const { segment } of SEGMENTER.segment(text2)) {
-    const wide = graphemeWidth(segment) === 2;
-    if (wide) {
-      if (current !== "") {
-        words.push(current);
-      }
-      words.push(segment);
-      current = "";
-    } else if (segment === " ") {
-      words.push(`${current} `);
-      current = "";
-    } else {
-      current += segment;
-    }
-  }
-  if (current !== "") {
-    words.push(current);
-  }
-  return words;
-};
-var breakWord = (word, width) => {
-  const pieces = [];
-  let current = "";
-  for (const { segment } of SEGMENTER.segment(word)) {
-    if (current !== "" && displayWidth(current + segment) > width) {
-      pieces.push(current);
-      current = "";
-    }
-    current += segment;
-  }
-  if (current !== "") {
-    pieces.push(current);
-  }
-  return pieces;
-};
-var wrapCell = (options) => {
-  const { text: text2, width } = options;
-  const lines = [];
-  let current = "";
-  for (const word of splitWords(text2)) {
-    const trimmed = word.trimEnd();
-    if (displayWidth(current + trimmed) <= width) {
-      current += word;
-      continue;
-    }
-    if (current.trimEnd() !== "") {
-      lines.push(current.trimEnd());
-    }
-    current = "";
-    if (displayWidth(trimmed) <= width) {
-      current = word;
-      continue;
-    }
-    const pieces = breakWord(trimmed, width);
-    lines.push(...pieces.slice(0, -1));
-    current = `${pieces.at(-1) ?? ""}${word.endsWith(" ") ? " " : ""}`;
-  }
-  if (current.trimEnd() !== "") {
-    lines.push(current.trimEnd());
-  }
-  return lines.length > 0 ? lines : [""];
-};
-var longestWord = (cells) => Math.max(
-  0,
-  ...cells.flatMap(
-    (cell) => splitWords(cell).map((word) => displayWidth(word.trimEnd()))
-  )
-);
-var shrinkWidest = (widths, floors) => {
-  let widest = -1;
-  for (const [index, width] of widths.entries()) {
-    const wider = widest < 0 || width > (widths[widest] ?? 0);
-    if (width > (floors[index] ?? 0) && wider) {
-      widest = index;
-    }
-  }
-  if (widest < 0) {
-    return false;
-  }
-  widths[widest] = (widths[widest] ?? 0) - 1;
-  return true;
-};
-var fitColumns = (options) => {
-  const { cells, columns, wrap } = options;
-  const count = Math.max(0, ...cells.map((row) => row.length));
-  const columnCells = Array.from(
-    { length: count },
-    (_, column) => cells.map((row) => row[column] ?? "")
-  );
-  const widths = columnCells.map(
-    (column) => Math.max(0, ...column.map(displayWidth))
-  );
-  if (!wrap || columns === void 0) {
-    return widths;
-  }
-  const floors = columnCells.map(
-    (column, index) => Math.min(
-      widths[index] ?? 0,
-      Math.max(1, Math.min(longestWord(column), MIN_COLUMN_WIDTH))
-    )
-  );
-  const total = () => widths.reduce((sum, width) => sum + width, 0) + count * COLUMN_PADDING + 1;
-  while (total() > columns && shrinkWidest(widths, floors)) {
-  }
-  return widths;
-};
-
-// src/knowledge/aliases.ts
-var ALIAS_TYPES = [
-  "term",
-  "doc",
-  "command",
-  "url",
-  "skill",
-  "tool",
-  "path",
-  "env",
-  "avoid"
-];
-var ALIAS_KEYS = [
-  "id",
-  "name",
-  "aliases",
-  "description",
-  "related",
-  "command",
-  "cwd",
-  "url",
-  "avoid",
-  "skill",
-  "tool",
-  "path",
-  "port",
-  "replacement"
-];
-var ALIAS_REQUIRED_KEYS = {
-  term: ["description"],
-  doc: ["description"],
-  command: ["command"],
-  url: ["url"],
-  skill: ["skill"],
-  tool: ["tool"],
-  path: ["path"],
-  avoid: ["replacement"],
-  env: []
-};
-var ALIAS_KEY_LABELS = {
-  id: "ID",
-  name: "\u540D\u524D",
-  description: "\u8AAC\u660E",
-  command: "\u30B3\u30DE\u30F3\u30C9",
-  url: "URL",
-  skill: "\u30B9\u30AD\u30EB\u540D",
-  tool: "\u30C4\u30FC\u30EB\u540D",
-  path: "\u30D1\u30B9",
-  replacement: "\u7F6E\u304D\u63DB\u3048\u5148"
-};
-var LIST_KEYS = /* @__PURE__ */ new Set(["aliases", "avoid", "related"]);
-var DEFAULT_CONFIG_FILE = "mdmark.config.yaml";
-function isRecord2(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-function isFilled(value) {
-  return typeof value === "string" && value !== "";
-}
-function toText(value) {
-  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
-    return void 0;
-  }
-  const text2 = String(value).trim();
-  return text2 === "" ? void 0 : text2;
-}
-function toList(value) {
-  if (typeof value === "string") {
-    const text2 = value.trim();
-    return text2 === "" ? void 0 : [text2];
-  }
-  if (Array.isArray(value)) {
-    return value.filter((item) => typeof item === "string").map((item) => item.trim()).filter((item) => item !== "");
-  }
-  return void 0;
-}
-function readColumn(record, column) {
-  let current = record;
-  for (const part of column.split(".")) {
-    if (!isRecord2(current) || !Object.hasOwn(current, part)) {
-      return { found: false, value: void 0 };
-    }
-    current = current[part];
-  }
-  return { found: true, value: current };
-}
-function readAliasKey(options) {
-  const { record, column, key } = options;
-  if (isFilled(column)) {
-    const read = readColumn(record, column);
-    return read.found ? { present: true, raw: read.value } : { present: false, missing: column };
-  }
-  return Object.hasOwn(record, key) ? { present: true, raw: record[key] } : { present: false };
-}
-function toAliasValue(key, raw) {
-  return LIST_KEYS.has(key) ? toList(raw) : toText(raw);
-}
-function nameOf(options) {
-  const { record, bodyFile, fallbackName } = options;
-  const bodyPath = bodyFile === void 0 ? void 0 : toText(readColumn(record, bodyFile).value);
-  return bodyPath === void 0 ? fallbackName : baseName(bodyPath);
-}
-function readAliasRecord(options) {
-  const { record, metadata, bodyFile, fallbackName } = options;
-  const values = {};
-  const missing = [];
-  for (const key of ALIAS_KEYS) {
-    const read = readAliasKey({ record, column: metadata[key], key });
-    if (read.missing !== void 0) {
-      missing.push({ key, field: read.missing });
-    }
-    const value = read.present ? toAliasValue(key, read.raw) : void 0;
-    if (value !== void 0) {
-      values[key] = value;
-    }
-  }
-  if (values.name === void 0) {
-    const name = nameOf({ record, bodyFile, fallbackName });
-    if (name !== "") {
-      values.name = name;
-    }
-  }
-  return { values, missing };
-}
-function checkAliasFields(options) {
-  const { aliasType, values } = options;
-  const keys = [
-    "id",
-    "name",
-    ...ALIAS_REQUIRED_KEYS[aliasType]
-  ].filter((key) => !isFilled(values[key]));
-  if (aliasType === "env" && !isFilled(values.url) && !isFilled(values.port)) {
-    keys.push("url");
-  }
-  return keys.length === 0 ? void 0 : { kind: "alias_required_empty", keys };
-}
-function usableType(item, seen) {
-  const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
-  if (type === void 0 || type === "env") {
-    return void 0;
-  }
-  if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
-    return void 0;
-  }
-  return ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key])) ? type : void 0;
-}
-function toUsableAlias(item, type) {
-  const list2 = (value) => Array.isArray(value) ? value.filter(isFilled) : [];
-  const alias = {
-    alias_type: type,
-    id: item.id,
-    name: item.name,
-    aliases: list2(item.aliases),
-    avoid: list2(item.avoid)
-  };
-  for (const key of [
-    "description",
-    "command",
-    "cwd",
-    "url",
-    "skill",
-    "tool",
-    "path",
-    "replacement"
-  ]) {
-    const value = item[key];
-    if (typeof value === "string") {
-      alias[key] = value;
-    }
-  }
-  if (Array.isArray(item.related)) {
-    alias.related = list2(item.related);
-  }
-  return alias;
-}
-function usableAliases(aliases) {
-  const seen = /* @__PURE__ */ new Set();
-  const usable = [];
-  for (const item of aliases) {
-    const type = isRecord2(item) ? usableType(item, seen) : void 0;
-    if (!isRecord2(item) || type === void 0) {
-      continue;
-    }
-    const row = item;
-    seen.add(row.id);
-    usable.push(toUsableAlias(row, type));
-  }
-  return usable;
-}
-function toAlias(values, aliasType) {
-  const text2 = (key) => typeof values[key] === "string" ? values[key] : void 0;
-  const list2 = (key) => Array.isArray(values[key]) ? values[key] : void 0;
-  const alias = {
-    alias_type: aliasType,
-    id: values.id,
-    name: values.name,
-    aliases: list2("aliases") ?? []
-  };
-  for (const key of [
-    "description",
-    "command",
-    "cwd",
-    "url",
-    "skill",
-    "tool",
-    "path",
-    "replacement"
-  ]) {
-    const value = text2(key);
-    if (value !== void 0) {
-      alias[key] = value;
-    }
-  }
-  const related = list2("related");
-  if (related !== void 0) {
-    alias.related = related;
-  }
-  const avoid = list2("avoid");
-  if (avoid !== void 0) {
-    alias.avoid = avoid;
-  }
-  return alias;
-}
-function baseName(path) {
-  const name = path.split("/").pop() ?? path;
-  const dot = name.lastIndexOf(".");
-  return dot > 0 ? name.slice(0, dot) : name;
-}
-function joinWhere(recordPath, key) {
-  return recordPath === "" ? key : `${recordPath}.${key}`;
-}
-function columnOf(row, key) {
-  const column = row.metadata[key];
-  return isFilled(column) ? column : key;
-}
-function isEnabledRow(row) {
-  return isRecord2(row) && isFilled(row.id) && Array.isArray(row.paths) && typeof row.alias_type === "string" && row.enabled !== false;
-}
-function acceptRow(build, row, rowPosition) {
-  if (!isEnabledRow(row)) {
-    return void 0;
-  }
-  if (build.rowIds.has(row.id)) {
-    build.problems.push({
-      file: build.configFile,
-      where: `aliases[${rowPosition}].id`,
-      kind: "duplicate_alias_row_id",
-      message: `\u884C\u306E \`id\` \`${row.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return void 0;
-  }
-  build.rowIds.add(row.id);
-  const aliasType = ALIAS_TYPES.find(
-    (candidate) => candidate === row.alias_type
-  );
-  if (aliasType === void 0) {
-    build.problems.push({
-      file: build.configFile,
-      where: `aliases[${rowPosition}].alias_type`,
-      kind: "alias_unknown_type",
-      message: `\`alias_type\` \u306E \`${row.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return void 0;
-  }
-  return {
-    id: row.id,
-    aliasType,
-    metadata: isRecord2(row.metadata) ? row.metadata : {},
-    recordsKey: isFilled(row.records) ? row.records : void 0,
-    bodyFile: isFilled(row.body_file) ? row.body_file : void 0
-  };
-}
-function recordsOf(build, row, source) {
-  const { recordsKey } = row;
-  if (recordsKey === void 0) {
-    return [{ record: source.data, path: "" }];
-  }
-  const list2 = isRecord2(source.data) ? source.data[recordsKey] : void 0;
-  if (!Array.isArray(list2)) {
-    build.problems.push({
-      file: source.path,
-      where: "",
-      kind: "alias_records_missing",
-      message: `\`${recordsKey}\` \u306E\u914D\u5217\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D5\u30A1\u30A4\u30EB\u306B \`${recordsKey}\` \u306E\u914D\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`records\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return void 0;
-  }
-  return list2.map((record, position) => ({
-    record,
-    path: `${recordsKey}[${position}]`
-  }));
-}
-function pushRequiredProblems(build, row, at) {
-  const { source, path, keys } = at;
-  const head = path === "" ? `\`${source.path}\`` : `\`${source.path}\` \u306E \`${path}\``;
-  for (const key of keys) {
-    const column = columnOf(row, key);
-    const sentence = key === "url" && row.aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    build.problems.push({
-      file: source.path,
-      where: joinWhere(path, column),
-      kind: "alias_required_empty",
-      message: sentence
-    });
-  }
-}
-function takeRecord(build, row, at) {
-  const { source, record, path } = at;
-  const fallbackName = row.recordsKey === void 0 ? baseName(source.path) : toText(record.id) ?? "";
-  const { values, missing } = readAliasRecord({
-    record,
-    metadata: row.metadata,
-    bodyFile: row.bodyFile,
-    fallbackName
-  });
-  for (const { key, field } of missing) {
-    build.problems.push({
-      file: source.path,
-      where: joinWhere(path, field),
-      kind: "alias_field_missing",
-      message: `\`metadata.${key}\` \u304C\u6307\u3059\u5217 \`${field}\` \u304C\u30EC\u30B3\u30FC\u30C9\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`metadata.${key}\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-  }
-  if (missing.length > 0) {
-    return;
-  }
-  const checked = checkAliasFields({ aliasType: row.aliasType, values });
-  if (checked !== void 0) {
-    pushRequiredProblems(build, row, { source, path, keys: checked.keys });
-    return;
-  }
-  const id = values.id;
-  if (build.aliasIds.has(id)) {
-    build.problems.push({
-      file: source.path,
-      where: joinWhere(path, columnOf(row, "id")),
-      kind: "duplicate_alias_id",
-      message: `\u30A8\u30A4\u30EA\u30A2\u30B9\u306E \`id\` \`${id}\` \u304C\u524D\u306E\u30A8\u30A4\u30EA\u30A2\u30B9\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return;
-  }
-  build.aliasIds.add(id);
-  if (row.aliasType !== "env") {
-    build.aliases.push(toAlias(values, row.aliasType));
-  }
-}
-function buildAliases(input) {
-  const { rows, sources, configFile = DEFAULT_CONFIG_FILE } = input;
-  const build = {
-    aliases: [],
-    problems: [],
-    rowIds: /* @__PURE__ */ new Set(),
-    aliasIds: /* @__PURE__ */ new Set(),
-    configFile
-  };
-  rows.forEach((item, rowPosition) => {
-    const row = acceptRow(build, item, rowPosition);
-    if (!row) {
-      return;
-    }
-    for (const source of sources.filter((entry) => entry.rowId === row.id)) {
-      for (const { record, path } of recordsOf(build, row, source) ?? []) {
-        if (isRecord2(record)) {
-          takeRecord(build, row, { source, record, path });
-        }
-      }
-    }
-  });
-  return { aliases: build.aliases, problems: build.problems };
 }
 
 // src/table/table.logic.ts
@@ -18287,9 +17580,9 @@ var MAP_DASHES = [
 ];
 var MAP_WIDTHS = ["thin", "normal", "thick"];
 var MAP_HEADS = ["filled", "open", "none"];
-var isRecord3 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+var isRecord2 = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var oneOf = (list2, value) => typeof value === "string" && list2.includes(value) ? value : void 0;
-var recordEntries = (value) => Object.entries(isRecord3(value) ? value : {});
+var recordEntries = (value) => Object.entries(isRecord2(value) ? value : {});
 var resolveMapKind = (kind) => {
   const entry = {};
   if (typeof kind.label === "string") entry.label = kind.label;
@@ -18311,14 +17604,14 @@ var resolveMapLine = (line) => {
   return entry;
 };
 var resolveMapConfig = (value) => {
-  const map3 = isRecord3(value) ? value : {};
+  const map3 = isRecord2(value) ? value : {};
   const kinds = {};
   for (const [name, kind] of recordEntries(map3.kinds)) {
-    if (isRecord3(kind)) kinds[name] = resolveMapKind(kind);
+    if (isRecord2(kind)) kinds[name] = resolveMapKind(kind);
   }
   const lines = {};
   for (const [name, line] of recordEntries(map3.lines)) {
-    if (isRecord3(line)) lines[name] = resolveMapLine(line);
+    if (isRecord2(line)) lines[name] = resolveMapLine(line);
   }
   return {
     node_fit: map3.node_fit === "width" ? "width" : "height",
@@ -18327,65 +17620,6 @@ var resolveMapConfig = (value) => {
     lines
   };
 };
-
-// src/diagram/definition.ts
-var RETIRED_DIAGRAM_DIRECTIVES = [
-  "flow",
-  "sequence",
-  "er"
-];
-var DIAGRAM_DIRECTIVES = {
-  chart: { name: "\u30B0\u30E9\u30D5", call: "\u3053\u306E\u30B0\u30E9\u30D5" },
-  param: { name: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1", call: "\u3053\u306E\u90E8\u54C1" }
-};
-function missingSymbols(text2) {
-  const stack = [];
-  let inString = false;
-  for (let index = 0; index < text2.length; index++) {
-    const char = text2[index];
-    if (inString) {
-      if (char === "\\") {
-        index += 1;
-      } else if (char === '"') {
-        inString = false;
-      }
-      continue;
-    }
-    inString = char === '"';
-    trackBracket(stack, char);
-  }
-  return `${inString ? '"' : ""}${stack.reverse().join("")}`;
-}
-function trackBracket(stack, char) {
-  if (char === "{") {
-    stack.push("}");
-  } else if (char === "[") {
-    stack.push("]");
-  } else if (char === "}" || char === "]") {
-    stack.pop();
-  }
-}
-function errorPosition(error2, length) {
-  const message = error2 instanceof Error ? error2.message : "";
-  const position = /position (\d+)/.exec(message)?.[1];
-  return position === void 0 ? length : Math.min(Number(position), length);
-}
-function parseDefinitionJson(text2) {
-  try {
-    return { ok: true, value: JSON.parse(text2) };
-  } catch (error2) {
-    const position = errorPosition(error2, text2.length);
-    const readable = text2.slice(0, position).trimEnd();
-    const lines = readable.split("\n");
-    const atEnd = text2.slice(position).trim() === "";
-    return {
-      ok: false,
-      line: lines.length,
-      after: (lines.at(-1) ?? "").trim(),
-      missing: atEnd ? missingSymbols(readable) : ""
-    };
-  }
-}
 
 // src/extensions.ts
 var extensions = /* @__PURE__ */ new Map();
@@ -18406,11 +17640,6 @@ function resolveFeatures2(options) {
   return features;
 }
 
-// src/shared/escape.logic.ts
-function escapeHtml2(text2) {
-  return text2.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
-}
-
 // src/shared/embed.part.ts
 var LOADING_TEXT = "\u56F3\u3092\u8AAD\u307F\u8FBC\u3093\u3067\u3044\u307E\u3059";
 function renderEmbed(options) {
@@ -18425,96 +17654,6 @@ function markOwn(html, nonce) {
     /<([a-zA-Z][a-zA-Z0-9-]*)/g,
     `<$1 data-mdmark-own="${nonce}"`
   );
-}
-
-// src/shared/syntax-warning.part.ts
-var WARNING_TITLE = "\u8A18\u8F09\u306E\u8B66\u544A";
-function renderInline(text2) {
-  return text2.split("`").map(
-    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
-  ).join("");
-}
-function renderSyntaxWarning(options) {
-  const { mark = "", message, items = [], id } = options;
-  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
-  const list2 = items.length ? `<ul>${items.map(
-    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
-  ).join("")}</ul>` : "";
-  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
-  return `<div class="mdmark-syntax-warning" role="note"${idAttribute}><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list2}</div>`;
-}
-
-// src/shared/tokens.syntax.ts
-function envOf(state) {
-  return state.env;
-}
-function featureOn(state, name) {
-  return envOf(state).features[name] === true;
-}
-function ownBlock(state, html, source) {
-  const token = new state.Token("html_block", "", 0);
-  token.block = true;
-  if (source?.map) {
-    token.map = [...source.map];
-  }
-  token.content = markOwn(html, envOf(state).nonce);
-  return token;
-}
-function markOf(token) {
-  return token?.type === MARK_TOKEN ? token.meta : void 0;
-}
-function findClose(tokens, openIndex, name) {
-  const level = tokens[openIndex]?.level;
-  for (let index = openIndex + 1; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    if (mark?.closing && mark.name === name && token?.level === level) {
-      return index;
-    }
-  }
-  return -1;
-}
-function textOf(token) {
-  return (token.children ?? []).filter((child) => child.type === "text" || child.type === "code_inline").map((child) => child.content).join("");
-}
-
-// src/shared/syntax-warning.syntax.ts
-function plainMessage(warning) {
-  const strip = (text2) => text2.replaceAll("`", "");
-  return [
-    `${warning.mark ?? ""}${strip(warning.message)}`,
-    ...(warning.items ?? []).map(
-      (item) => `${item.label ? `${item.label}: ` : ""}${strip(item.message)}`
-    )
-  ].join(" ");
-}
-function makeWarningToken(state, warning, source) {
-  const { kind = "syntax_warning", includeTarget, ...view } = warning;
-  delete view.line;
-  const line = warning.line ?? source?.map?.[0];
-  const token = ownBlock(state, renderSyntaxWarning(view));
-  const meta = {
-    kind,
-    message: plainMessage(warning),
-    ...line === void 0 ? {} : { line },
-    ...includeTarget ? { includeTarget } : {}
-  };
-  token.meta = { ...token.meta ?? {}, warning: meta };
-  return token;
-}
-function warningBlock(state, warning, source) {
-  return makeWarningToken(state, warning, source);
-}
-function recordMarkNotes(env, options) {
-  for (const note of options.notes) {
-    env.markNotes.push({ ...note, line: options.line });
-  }
-}
-function unclosedWarning(mark) {
-  return {
-    mark: mark.raw,
-    message: `\u306E\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC \`<!-- /${mark.name} -->\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u7D42\u308F\u308A\u306B\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30DE\u30FC\u30AB\u30FC\u304B\u3089\u6587\u66F8\u306E\u7D42\u308F\u308A\u307E\u3067\u3092\u7BC4\u56F2\u306B\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
-  };
 }
 
 // src/shared/collapse.logic.ts
@@ -18533,6 +17672,9 @@ var COLOR_NAMES = [
   "purple",
   "gray"
 ];
+function isColorName(value) {
+  return COLOR_NAMES.includes(value);
+}
 
 // src/footnote/footnote.syntax.ts
 var DEF_OPEN = "mdmark_footnote_def_open";
@@ -18694,11 +17836,11 @@ var readTotalKey = (conv, entry) => {
     settings.total = [...settings.total ?? [], { calc }];
   }
 };
-var isColorName = (color) => COLOR_NAMES.includes(color);
+var isColorName2 = (color) => COLOR_NAMES.includes(color);
 var readHighlightKey = (conv, entry) => {
   for (const item of entry.value.split(",")) {
     const [name = "", color] = item.split(":");
-    if (color !== void 0 && !isColorName(color)) {
+    if (color !== void 0 && !isColorName2(color)) {
       conv.dropped.push({
         text: `highlight=${item}`,
         reason: `\u8272\u306E\u540D\u524D ${color} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
@@ -18712,7 +17854,7 @@ var readRowColorKey = (conv, entry) => {
   const [name = "", pairs2 = ""] = entry.value.split(/:(.*)/s);
   for (const pair of pairs2.split(",")) {
     const [cell = "", color = ""] = pair.split("=");
-    if (!isColorName(color)) {
+    if (!isColorName2(color)) {
       conv.dropped.push({
         text: `row-color=${name}:${pair}`,
         reason: `\u8272\u306E\u540D\u524D ${color} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093`
@@ -18733,7 +17875,7 @@ var readRowAtKey = (conv, entry) => {
   for (const pair of entry.value.split(",")) {
     const [position = "", color = ""] = pair.split("=");
     const at = rowAtOf(position);
-    if (at === void 0 || !isColorName(color)) {
+    if (at === void 0 || !isColorName2(color)) {
       conv.dropped.push({
         text: `row-at=${pair}`,
         reason: "\u884C\u306E\u4F4D\u7F6E\u304B\u8272\u306E\u540D\u524D\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093"
@@ -20831,6 +19973,1716 @@ function resolveDocumentFeatures(state) {
     defaults: env.defaults,
     marks: env.featureOptions
   });
+}
+
+// src/shared/tokens.syntax.ts
+function envOf(state) {
+  return state.env;
+}
+function featureOn(state, name) {
+  return envOf(state).features[name] === true;
+}
+function ownBlock(state, html, source) {
+  const token = new state.Token("html_block", "", 0);
+  token.block = true;
+  if (source?.map) {
+    token.map = [...source.map];
+  }
+  token.content = markOwn(html, envOf(state).nonce);
+  return token;
+}
+function markOf(token) {
+  return token?.type === MARK_TOKEN ? token.meta : void 0;
+}
+function findClose(tokens, openIndex, name) {
+  const level = tokens[openIndex]?.level;
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const token = tokens[index];
+    const mark = markOf(token);
+    if (mark?.closing && mark.name === name && token?.level === level) {
+      return index;
+    }
+  }
+  return -1;
+}
+function textOf(token) {
+  return (token.children ?? []).filter((child) => child.type === "text" || child.type === "code_inline").map((child) => child.content).join("");
+}
+
+// src/shared/syntax-warning.syntax.ts
+function plainMessage(warning) {
+  const strip = (text2) => text2.replaceAll("`", "");
+  return [
+    `${warning.mark ?? ""}${strip(warning.message)}`,
+    ...(warning.items ?? []).map(
+      (item) => `${item.label ? `${item.label}: ` : ""}${strip(item.message)}`
+    )
+  ].join(" ");
+}
+function makeWarningToken(state, warning, source) {
+  const { kind = "syntax_warning", includeTarget, ...view } = warning;
+  delete view.line;
+  const line = warning.line ?? source?.map?.[0];
+  const token = ownBlock(state, renderSyntaxWarning(view));
+  const meta = {
+    kind,
+    message: plainMessage(warning),
+    ...line === void 0 ? {} : { line },
+    ...includeTarget ? { includeTarget } : {}
+  };
+  token.meta = { ...token.meta ?? {}, warning: meta };
+  return token;
+}
+function warningBlock(state, warning, source) {
+  return makeWarningToken(state, warning, source);
+}
+function recordMarkNotes(env, options) {
+  for (const note of options.notes) {
+    env.markNotes.push({ ...note, line: options.line });
+  }
+}
+function unclosedWarning(mark) {
+  return {
+    mark: mark.raw,
+    message: `\u306E\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC \`<!-- /${mark.name} -->\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u7D42\u308F\u308A\u306B\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30DE\u30FC\u30AB\u30FC\u304B\u3089\u6587\u66F8\u306E\u7D42\u308F\u308A\u307E\u3067\u3092\u7BC4\u56F2\u306B\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+  };
+}
+
+// src/table/csv.syntax.ts
+var endRow = (reader) => {
+  reader.row.push(reader.value);
+  reader.rows.push(reader.row);
+  reader.row = [];
+  reader.value = "";
+};
+var readQuoted = (reader) => {
+  const char = reader.text[reader.at];
+  if (char === '"' && reader.text[reader.at + 1] === '"') {
+    reader.value += '"';
+    reader.at += 2;
+    return;
+  }
+  if (char === '"') {
+    reader.quoted = false;
+  } else {
+    reader.value += char;
+  }
+  reader.at += 1;
+};
+var readPlain = (reader) => {
+  const char = reader.text[reader.at];
+  if (char === '"') {
+    reader.quoted = true;
+  } else if (char === ",") {
+    reader.row.push(reader.value);
+    reader.value = "";
+  } else if (char === "\r" && reader.text[reader.at + 1] === "\n") {
+  } else if (char === "\n") {
+    endRow(reader);
+  } else {
+    reader.value += char;
+  }
+  reader.at += 1;
+};
+var parseCsv = (text2) => {
+  const reader = {
+    text: text2,
+    at: 0,
+    rows: [],
+    row: [],
+    value: "",
+    quoted: false
+  };
+  while (reader.at < text2.length) {
+    if (reader.quoted) {
+      readQuoted(reader);
+    } else {
+      readPlain(reader);
+    }
+  }
+  if (reader.value !== "" || reader.row.length > 0) {
+    endRow(reader);
+  }
+  return reader.rows;
+};
+
+// src/tree/tree.part.ts
+var EXTENSIONS_BY_ICON = {
+  "file-text": ["md", "mdx", "txt", "rst"],
+  "file-code": [
+    "ts",
+    "tsx",
+    "mts",
+    "cts",
+    "js",
+    "jsx",
+    "mjs",
+    "cjs",
+    "py",
+    "rb",
+    "go",
+    "rs",
+    "java",
+    "kt",
+    "swift",
+    "c",
+    "h",
+    "cpp",
+    "cs",
+    "php",
+    "css",
+    "scss",
+    "html",
+    "vue",
+    "svelte"
+  ],
+  "file-json": [
+    "json",
+    "jsonc",
+    "yaml",
+    "yml",
+    "toml",
+    "xml",
+    "ini",
+    "env",
+    "lock"
+  ],
+  "file-image": ["png", "jpg", "jpeg", "gif", "svg", "webp", "avif", "ico"],
+  "file-spreadsheet": ["csv", "tsv", "xlsx"],
+  "file-archive": ["zip", "gz", "tgz", "tar", "vsix"],
+  "file-terminal": ["sh", "bash", "zsh", "ps1", "bat"]
+};
+var ICON_BY_EXTENSION = new Map(
+  Object.entries(EXTENSIONS_BY_ICON).flatMap(
+    ([icon, extensions2]) => extensions2.map((extension) => [
+      extension,
+      icon
+    ])
+  )
+);
+
+// src/tree/tree.syntax.ts
+var INDENT_UNITS = ["\u2502   ", "|   ", "    "];
+var CONNECTORS = ["\u251C\u2500\u2500 ", "\u2514\u2500\u2500 ", "|-- ", "`-- "];
+var RULE_WIDTH = 4;
+var NOTE_SEPARATOR = /\s#/;
+function readLine(line) {
+  let depth = 0;
+  let position = 0;
+  while (INDENT_UNITS.some((unit) => line.startsWith(unit, position))) {
+    position += RULE_WIDTH;
+    depth += 1;
+  }
+  if (CONNECTORS.some((connector) => line.startsWith(connector, position))) {
+    position += RULE_WIDTH;
+    depth += 1;
+  }
+  return { depth, text: line.slice(position) };
+}
+function splitNote(text2, renderNote) {
+  const separator = NOTE_SEPARATOR.exec(text2);
+  if (!separator) {
+    return { name: text2.trim() };
+  }
+  const name = text2.slice(0, separator.index).trim();
+  const note = text2.slice(separator.index + separator[0].length).trim();
+  return note === "" ? { name } : { name, note: renderNote(note) };
+}
+function parseTree(source, renderNote = escapeHtml2) {
+  const nodes = [];
+  const stack = [];
+  const lines = source.split("\n").filter((line) => line.trim() !== "");
+  let previous = -1;
+  for (const [index, line] of lines.entries()) {
+    const { depth, text: text2 } = readLine(line);
+    if (depth > previous + 1) {
+      return { line: index + 1, depth: depth - previous };
+    }
+    const node = splitNote(text2, renderNote);
+    stack.length = depth;
+    const parent = stack[depth - 1];
+    if (parent) {
+      parent.children = [...parent.children ?? [], node];
+    } else {
+      nodes.push(node);
+    }
+    stack[depth] = node;
+    previous = depth;
+  }
+  return { nodes };
+}
+
+// src/mdmark-style/blocks.ts
+var CALLOUT_TYPES = [
+  "NOTE",
+  "TIP",
+  "IMPORTANT",
+  "WARNING",
+  "CAUTION"
+];
+var STACK_MARKERS = [
+  "tabs",
+  "columns",
+  "cards",
+  "wide",
+  "view"
+];
+var MD = new MarkdownItCallable({ html: true });
+var MARKER_LINE = /^<!--\s*(\/?[\w-]+)\s*(?::\s*([\s\S]*?))?\s*-->$/;
+var INLINE_MARKER = /[ \t]*<!--.*?-->[ \t]*/g;
+var CALLOUT_HEAD = /^\s*>\s*\[!(\w+)\]([-+]?)\s*(.*)$/;
+var CODE_MARK = /\s*(?:\/\/|#|--|;|<!--|\/\*)?\s*\[!code (\+\+|--|highlight|focus|error|warning)\]\s*(?:-->|\*\/)?\s*$/;
+var stripInlineMarkers = (line) => line.replace(
+  INLINE_MARKER,
+  (_match, offset) => offset === 0 ? "" : " "
+).trimEnd();
+var stripWithColumns = (line, shift) => {
+  let text2 = "";
+  const columns = [];
+  let from = 0;
+  const keep = (end2) => {
+    for (let at = from; at < end2; at += 1) {
+      text2 += line[at];
+      columns.push(at + shift);
+    }
+  };
+  for (const match of line.matchAll(INLINE_MARKER)) {
+    keep(match.index);
+    if (match.index !== 0) {
+      text2 += " ";
+      columns.push(match.index + shift);
+    }
+    from = match.index + match[0].length;
+  }
+  keep(line.length);
+  const end = text2.trimEnd().length;
+  return { text: text2.slice(0, end), columns: columns.slice(0, end) };
+};
+var readMarker = (text2) => {
+  const match = MARKER_LINE.exec(text2.trim());
+  return match?.[1] === void 0 ? void 0 : { name: match[1], args: (match[2] ?? "").trim() };
+};
+var chunksOf = (tokens) => {
+  const chunks = [];
+  let current = [];
+  let depth = 0;
+  for (const token of tokens) {
+    current.push(token);
+    depth += token.nesting;
+    if (depth === 0) {
+      const first = current[0];
+      const map3 = first?.map ?? current.find((item) => item.map)?.map;
+      chunks.push({
+        tokens: current,
+        start: map3?.[0] ?? 0,
+        end: map3?.[1] ?? 0
+      });
+      current = [];
+    }
+  }
+  return chunks;
+};
+var push = (state, block2) => {
+  const frame = state.frames.at(-1);
+  (frame === void 0 ? state.out : frame.body).push(block2);
+};
+var currentList = (state) => state.frames.at(-1)?.body ?? state.out;
+var closeRowDetail = (state, frame) => {
+  const table2 = frame.table?.table;
+  const at = frame.at;
+  if (table2 !== void 0 && at !== void 0 && Number.isInteger(at) && at >= 1 && at <= table2.rows.length) {
+    table2.details = [
+      ...table2.details ?? [],
+      { row: at - 1, body: frame.body }
+    ];
+    return;
+  }
+  for (const block2 of frame.body) {
+    push(state, block2);
+  }
+};
+var tabSections = (body) => {
+  const level = body.find((block2) => block2.kind === "heading")?.heading?.level;
+  const sections = [{ body: [] }];
+  for (const block2 of body) {
+    if (block2.heading !== void 0 && block2.heading.level === level) {
+      sections.push({ title: block2.heading.text, body: [] });
+    } else {
+      sections.at(-1)?.body.push(block2);
+    }
+  }
+  return sections.filter(
+    (section) => section.title !== void 0 || section.body.length > 0
+  );
+};
+var columnSections = (body, cuts) => [0, ...cuts].map((from, index) => ({
+  body: body.slice(from, cuts[index] ?? body.length)
+}));
+var cardLine = (item) => {
+  const text2 = item.replace(/`icon:[^`]*`\s*/g, "").trim();
+  const link2 = /\[([^\]]*)\]\([^)]*\)/.exec(text2);
+  if (link2 === null) {
+    return text2;
+  }
+  const description = `${text2.slice(0, link2.index)} ${text2.slice(link2.index + link2[0].length)}`.replace(/\s+/g, " ").trim();
+  const title = link2[1] ?? "";
+  return description === "" ? title : `${title} \u2014 ${description}`;
+};
+var cardBlock = (block2) => {
+  if (block2.kind !== "markdown" || block2.markdown === void 0) {
+    return block2;
+  }
+  const items = [];
+  for (const line of block2.markdown.split("\n")) {
+    const head = /^\s*[-*+]\s+(.*)$/.exec(line);
+    if (head !== null) {
+      items.push(head[1] ?? "");
+    } else if (items.length > 0) {
+      items[items.length - 1] = `${items.at(-1)} ${line.trim()}`;
+    }
+  }
+  if (items.length === 0) {
+    return block2;
+  }
+  return {
+    kind: "markdown",
+    line: block2.line,
+    markdown: items.map((item) => `- ${cardLine(item)}`).join("\n")
+  };
+};
+var closeStack = (state, frame) => {
+  const kind = frame.stack ?? "wide";
+  const sections = kind === "tabs" ? tabSections(frame.body) : kind === "columns" ? columnSections(frame.body, frame.cuts ?? []) : [{ body: kind === "cards" ? frame.body.map(cardBlock) : frame.body }];
+  push(state, {
+    kind: "stack",
+    line: frame.body[0]?.line ?? 0,
+    stack: { kind, sections }
+  });
+};
+var closeFrame = (state) => {
+  const frame = state.frames.pop();
+  if (frame === void 0) {
+    return;
+  }
+  if (frame.kind === "row-detail") {
+    closeRowDetail(state, frame);
+    return;
+  }
+  if (frame.kind === "stack") {
+    closeStack(state, frame);
+    return;
+  }
+  push(state, {
+    kind: "fold",
+    line: frame.line,
+    fold: { title: frame.title, index: frame.index, body: frame.body }
+  });
+};
+var lineOf = (state, chunk) => state.lineBase + chunk.start + 1;
+var rawOf = (state, chunk) => {
+  const lines = state.lines.slice(chunk.start, chunk.end).map(
+    (line2, offset) => stripWithColumns(line2, state.prefixes[chunk.start + offset] ?? 0)
+  );
+  let line = lineOf(state, chunk);
+  while (lines[0] !== void 0 && lines[0].text.trim() === "") {
+    lines.shift();
+    line += 1;
+  }
+  while (lines.at(-1) !== void 0 && lines.at(-1)?.text.trim() === "") {
+    lines.pop();
+  }
+  const first = lines[0];
+  if (first !== void 0) {
+    const lead = first.text.length - first.text.trimStart().length;
+    lines[0] = {
+      text: first.text.slice(lead),
+      columns: first.columns.slice(lead)
+    };
+  }
+  return { line, lines };
+};
+var pushMarkdown = (state, chunk) => {
+  const { line, lines } = rawOf(state, chunk);
+  if (lines.length === 0) {
+    return;
+  }
+  push(state, {
+    kind: "markdown",
+    line,
+    markdown: lines.map((item) => item.text).join("\n"),
+    columns: lines.map((item) => item.columns)
+  });
+};
+var tableKindOf = (args) => {
+  try {
+    const kind = JSON.parse(args)?.kind;
+    return kind === "data" || kind === "plain" ? kind : "default";
+  } catch {
+    return "default";
+  }
+};
+var highlightLines = (value) => {
+  const lines = /* @__PURE__ */ new Set();
+  for (const part of value.split(",")) {
+    const [from, to] = part.split("-").map((item) => Number(item.trim()));
+    if (from === void 0 || !Number.isInteger(from)) {
+      continue;
+    }
+    const last = to !== void 0 && Number.isInteger(to) ? to : from;
+    for (let line = from; line <= last; line += 1) {
+      lines.add(line);
+    }
+  }
+  return lines;
+};
+var codeOptionsOf = (args) => {
+  const options = {
+    lineNumbers: false,
+    highlight: /* @__PURE__ */ new Set()
+  };
+  for (const match of args.matchAll(/(\w+)(?:=("[^"]*"|\S+))?/g)) {
+    const [, key, raw] = match;
+    const value = raw?.replace(/^"|"$/g, "");
+    if (key === "title" && value !== void 0) {
+      options.title = value;
+    } else if (key === "lines") {
+      options.lineNumbers = true;
+    } else if (key === "highlight" && value !== void 0) {
+      options.highlight = highlightLines(value);
+    }
+  }
+  return options;
+};
+var argOf = (args, key) => {
+  try {
+    const value = JSON.parse(args);
+    return typeof value === "object" && value !== null ? value[key] : void 0;
+  } catch {
+    return void 0;
+  }
+};
+var openFrame = (state, frame) => state.frames.push({
+  title: "",
+  level: 0,
+  index: -1,
+  line: 0,
+  body: [],
+  ...frame
+});
+var closeIfTop = (kind, stack) => (state) => {
+  const top = state.frames.at(-1);
+  if (top?.kind === kind && (stack === void 0 || top.stack === stack)) {
+    closeFrame(state);
+  }
+};
+var stackHandlers = STACK_MARKERS.flatMap(
+  (name) => [
+    [
+      name,
+      (state) => {
+        if (state.parts.stack) {
+          openFrame(state, { kind: "stack", stack: name, cuts: [] });
+        }
+      }
+    ],
+    [`/${name}`, closeIfTop("stack", name)]
+  ]
+);
+var MARKER_HANDLERS = new Map([
+  [
+    "table",
+    (state, marker) => {
+      state.pendingTable = tableKindOf(marker.args);
+    }
+  ],
+  [
+    "code",
+    (state, marker) => {
+      state.pendingCode = codeOptionsOf(marker.args);
+    }
+  ],
+  [
+    "details",
+    (state, marker) => {
+      if (state.parts.fold) {
+        openFrame(state, {
+          kind: "details",
+          title: marker.args,
+          index: state.foldCount.value++
+        });
+      }
+    }
+  ],
+  ["/details", closeIfTop("details")],
+  [
+    "section",
+    (state, marker) => {
+      if (state.parts.fold) {
+        openSection(state, marker.args);
+      }
+    }
+  ],
+  [
+    "fig",
+    (state, marker) => {
+      if (state.parts.figure) {
+        const id = argOf(marker.args, "id");
+        state.pendingFigure = typeof id === "string" ? id : "";
+      }
+    }
+  ],
+  [
+    "row-detail",
+    (state, marker) => {
+      const last = currentList(state).at(-1);
+      const at = argOf(marker.args, "at");
+      openFrame(state, {
+        kind: "row-detail",
+        ...typeof at === "number" ? { at } : {},
+        ...state.parts.row_detail && last?.kind === "table" ? { table: last } : {}
+      });
+    }
+  ],
+  ["/row-detail", closeIfTop("row-detail")],
+  [
+    "steps",
+    (state) => {
+      state.inSteps = state.parts.steps;
+    }
+  ],
+  [
+    "/steps",
+    (state) => {
+      state.inSteps = false;
+    }
+  ],
+  [
+    "column",
+    (state) => {
+      const top = state.frames.at(-1);
+      if (top?.stack === "columns") {
+        top.cuts?.push(top.body.length);
+      }
+    }
+  ],
+  ...stackHandlers
+]);
+var applyMarker = (state, marker) => {
+  MARKER_HANDLERS.get(marker.name)?.(state, marker);
+};
+var openSection = (state, args) => {
+  const closed = args === "closed" || /"open"\s*:\s*false/.test(args);
+  const list2 = currentList(state);
+  const heading2 = list2.at(-1);
+  if (!closed || heading2?.kind !== "heading" || heading2.heading === void 0) {
+    return;
+  }
+  list2.pop();
+  state.frames.push({
+    kind: "section",
+    title: heading2.heading.text,
+    level: heading2.heading.level,
+    index: state.foldCount.value++,
+    line: heading2.line,
+    body: []
+  });
+};
+var closeSections = (state, level) => {
+  while (true) {
+    const frame = state.frames.at(-1);
+    if (frame?.kind !== "section" || frame.level < level) {
+      return;
+    }
+    closeFrame(state);
+  }
+};
+var handleHtml = (state, chunk) => {
+  const text2 = chunk.tokens[0]?.content ?? "";
+  const lines = text2.split("\n").filter((line) => line.trim() !== "");
+  const markers = lines.map(readMarker);
+  if (markers.every((marker) => marker !== void 0)) {
+    for (const marker of markers) {
+      applyMarker(state, marker);
+    }
+    return;
+  }
+  pushMarkdown(state, chunk);
+};
+var handleHeading = (state, chunk) => {
+  const level = Number(chunk.tokens[0]?.tag.slice(1));
+  closeSections(state, level);
+  if (!state.parts.heading) {
+    pushMarkdown(state, chunk);
+    return;
+  }
+  const text2 = stripInlineMarkers(chunk.tokens[1]?.content ?? "").trim();
+  push(state, {
+    kind: "heading",
+    line: lineOf(state, chunk),
+    heading: { level, text: text2 }
+  });
+};
+var alignOf = (token) => {
+  const style = String(token.attrGet("style") ?? "");
+  if (style.includes("center")) {
+    return "center";
+  }
+  return style.includes("right") ? "right" : "left";
+};
+var readTable = (tokens) => {
+  const rows = [];
+  const align = [];
+  for (const [index, token] of tokens.entries()) {
+    if (token.type === "tr_open") {
+      rows.push([]);
+    } else if (token.type === "th_open" || token.type === "td_open") {
+      const cell = stripInlineMarkers(tokens[index + 1]?.content ?? "").trim();
+      rows.at(-1)?.push(cell);
+    }
+    if (token.type === "th_open") {
+      align.push(alignOf(token));
+    }
+  }
+  return { rows, align };
+};
+var handleTable = (state, chunk) => {
+  const kind = state.pendingTable ?? "default";
+  state.pendingTable = void 0;
+  if (!state.parts.table) {
+    pushMarkdown(state, chunk);
+    return;
+  }
+  const { rows, align } = readTable(chunk.tokens);
+  const [header = [], ...body] = rows;
+  const id = state.pendingFigure;
+  state.pendingFigure = void 0;
+  let figure;
+  if (id !== void 0) {
+    state.figures.count += 1;
+    figure = state.figures.count;
+    if (id !== "") {
+      state.figures.ids.set(id, figure);
+    }
+  }
+  push(state, {
+    kind: "table",
+    line: lineOf(state, chunk),
+    table: {
+      kind,
+      header,
+      rows: body,
+      align,
+      ...figure === void 0 ? {} : { figure }
+    }
+  });
+};
+var TREE_INDENTS = ["\u2502   ", "|   ", "    "];
+var TREE_CONNECTORS = ["\u251C\u2500\u2500 ", "\u2514\u2500\u2500 ", "|-- ", "`-- "];
+var hasBareIndent = (source) => source.split("\n").filter((line) => line.trim() !== "").some((line) => {
+  let at = 0;
+  while (TREE_INDENTS.some((unit) => line.startsWith(unit, at))) {
+    at += 4;
+  }
+  return at > 0 && !TREE_CONNECTORS.some((connector) => line.startsWith(connector, at));
+});
+var treeLines = (nodes, prefix, depth) => nodes.flatMap((node, index) => {
+  const last = index === nodes.length - 1;
+  const rule = depth === 0 ? "" : `${prefix}${last ? "\u2514\u2500\u2500 " : "\u251C\u2500\u2500 "}`;
+  const childPrefix = depth === 0 ? "" : `${prefix}${last ? "    " : "\u2502   "}`;
+  return [
+    {
+      rule,
+      name: node.name,
+      ...node.note === void 0 ? {} : { note: node.note }
+    },
+    ...treeLines(node.children ?? [], childPrefix, depth + 1)
+  ];
+});
+var treeBlockOf = (source, line) => {
+  if (hasBareIndent(source)) {
+    return void 0;
+  }
+  const result = parseTree(source, (note) => note);
+  if (!("nodes" in result)) {
+    return void 0;
+  }
+  return {
+    kind: "tree",
+    line,
+    tree: { lines: treeLines(result.nodes, "", 0) }
+  };
+};
+var csvBlockOf = (source, line) => {
+  const [header = [], ...rows] = parseCsv(source);
+  return {
+    kind: "table",
+    line,
+    table: {
+      kind: "default",
+      header,
+      rows,
+      align: header.map(() => "left")
+    }
+  };
+};
+var partBlockOf = (options) => {
+  const { parts, lang, source, line } = options;
+  if (lang === "tree" && parts.tree) {
+    return treeBlockOf(source, line);
+  }
+  return lang === "csv" && parts.stack ? csvBlockOf(source, line) : void 0;
+};
+var handleFence = (state, chunk) => {
+  const options = state.pendingCode ?? {
+    lineNumbers: false,
+    highlight: /* @__PURE__ */ new Set()
+  };
+  state.pendingCode = void 0;
+  const token = chunk.tokens[0];
+  const lang = (token?.info ?? "").trim().split(/\s+/)[0] ?? "";
+  const source = (token?.content ?? "").replace(/\n$/, "");
+  const part = partBlockOf({
+    parts: state.parts,
+    lang,
+    source,
+    line: lineOf(state, chunk)
+  });
+  if (part !== void 0) {
+    push(state, part);
+    return;
+  }
+  if (!state.parts.code) {
+    pushMarkdown(state, chunk);
+    return;
+  }
+  const lines = source.split("\n").map((text2, index) => {
+    const match = CODE_MARK.exec(text2);
+    const mark = match?.[1];
+    const line = { text: match === null ? text2 : text2.slice(0, match.index) };
+    if (mark !== void 0) {
+      return { ...line, mark };
+    }
+    return options.highlight.has(index + 1) ? { ...line, mark: "highlight" } : line;
+  });
+  push(state, {
+    kind: "code",
+    line: lineOf(state, chunk),
+    code: {
+      lang,
+      ...options.title === void 0 ? {} : { title: options.title },
+      lineNumbers: options.lineNumbers,
+      lines
+    }
+  });
+};
+var calloutHeadOf = (line, parts) => {
+  const [, rawType = "", sign = "", rawTitle = ""] = CALLOUT_HEAD.exec(line) ?? [];
+  const type = rawType.toUpperCase();
+  if (!parts.callout || !CALLOUT_TYPES.includes(type)) {
+    return void 0;
+  }
+  return { type, closed: sign === "-" && parts.fold, title: rawTitle.trim() };
+};
+var handleQuote = (state, chunk) => {
+  const lines = state.lines.slice(chunk.start, chunk.end);
+  const head = calloutHeadOf(lines[0] ?? "", state.parts);
+  if (head === void 0) {
+    pushMarkdown(state, chunk);
+    return;
+  }
+  const { type, closed, title } = head;
+  const index = closed ? state.foldCount.value++ : -1;
+  const inner = lines.slice(1).map((line, offset) => {
+    const prefix = /^\s*>\s?/.exec(line)?.[0].length ?? 0;
+    return {
+      text: line.slice(prefix),
+      prefix: prefix + (state.prefixes[chunk.start + 1 + offset] ?? 0)
+    };
+  });
+  const body = splitInto({
+    text: inner.map((line) => line.text).join("\n"),
+    parts: state.parts,
+    foldCount: state.foldCount,
+    figures: state.figures,
+    lineBase: lineOf(state, chunk),
+    prefixes: inner.map((line) => line.prefix)
+  });
+  push(state, {
+    kind: "callout",
+    line: lineOf(state, chunk),
+    callout: { type, ...title === "" ? {} : { title }, closed, body },
+    ...closed ? { fold: { title: title || type, index, body } } : {}
+  });
+};
+var itemLines = (state, from, to) => {
+  const lines = state.lines.slice(from, to);
+  const width = /^\s*\d+[.)]\s*/.exec(lines[0] ?? "")?.[0].length ?? 0;
+  return lines.map((line, offset) => {
+    const removed = offset === 0 ? width : Math.min(width, line.length - line.trimStart().length);
+    return {
+      text: line.slice(removed),
+      prefix: removed + (state.prefixes[from + offset] ?? 0)
+    };
+  });
+};
+var handleSteps = (state, chunk) => {
+  state.inSteps = false;
+  const level = (chunk.tokens[0]?.level ?? 0) + 1;
+  const items = chunk.tokens.filter((token) => token.type === "list_item_open" && token.level === level).map((token) => {
+    const [from = 0, to = from] = token.map ?? [];
+    const inner = itemLines(state, from, to);
+    return splitInto({
+      text: inner.map((line) => line.text).join("\n"),
+      parts: state.parts,
+      foldCount: state.foldCount,
+      figures: state.figures,
+      lineBase: state.lineBase + from,
+      prefixes: inner.map((line) => line.prefix)
+    });
+  });
+  push(state, { kind: "steps", line: lineOf(state, chunk), steps: { items } });
+};
+var CHUNK_HANDLERS = /* @__PURE__ */ new Map([
+  ["html_block", handleHtml],
+  ["heading_open", handleHeading],
+  ["table_open", handleTable],
+  ["fence", handleFence],
+  ["code_block", handleFence],
+  ["blockquote_open", handleQuote]
+]);
+var handleChunk = (state, chunk) => {
+  const type = chunk.tokens[0]?.type ?? "";
+  if (type !== "html_block" && type !== "table_open") {
+    state.pendingFigure = void 0;
+  }
+  if (type === "ordered_list_open" && state.inSteps === true) {
+    handleSteps(state, chunk);
+    return;
+  }
+  (CHUNK_HANDLERS.get(type) ?? pushMarkdown)(state, chunk);
+};
+var splitInto = (options) => {
+  const lines = options.text.split("\n");
+  const state = {
+    lines,
+    lineBase: options.lineBase,
+    prefixes: options.prefixes,
+    parts: options.parts,
+    out: [],
+    frames: [],
+    foldCount: options.foldCount,
+    figures: options.figures
+  };
+  for (const chunk of chunksOf(MD.parse(options.text, {}))) {
+    handleChunk(state, chunk);
+  }
+  while (state.frames.length > 0) {
+    closeFrame(state);
+  }
+  return state.out;
+};
+var FIGURE_LINK = /\[([^\]]*)\]\(#fig-([^)\s]+)\)/g;
+var replaceFigureLinks = (text2, columns, ids) => {
+  let out = "";
+  const mapped = [];
+  let from = 0;
+  const keep = (end) => {
+    out += text2.slice(from, end);
+    for (let at = from; at < end; at += 1) {
+      mapped.push(columns?.[at] ?? at);
+    }
+  };
+  for (const match of text2.matchAll(FIGURE_LINK)) {
+    const figure = ids.get(match[2] ?? "");
+    if (figure === void 0) {
+      continue;
+    }
+    const labelAt = match.index + 1;
+    keep(labelAt);
+    const label = `\u8868 ${figure}`;
+    out += label;
+    for (let at = 0; at < label.length; at += 1) {
+      mapped.push(columns?.[labelAt] ?? labelAt);
+    }
+    from = labelAt + (match[1] ?? "").length;
+  }
+  if (from === 0) {
+    return { text: text2, columns };
+  }
+  keep(text2.length);
+  return { text: out, columns: columns === void 0 ? void 0 : mapped };
+};
+var innerBlocks = (block2) => {
+  const { callout, fold, steps, stack, table: table2 } = block2;
+  const lists = [
+    callout === void 0 ? fold?.body : callout.body,
+    steps?.items.flat(),
+    stack?.sections.flatMap((section) => section.body),
+    table2?.details?.flatMap((detail) => detail.body)
+  ];
+  return lists.flatMap((list2) => list2 ?? []);
+};
+var numberMarkdown = (block2, ids) => {
+  if (block2.markdown === void 0) {
+    return;
+  }
+  const lines = block2.markdown.split("\n").map(
+    (line, index) => replaceFigureLinks(line, block2.columns?.[index], ids)
+  );
+  block2.markdown = lines.map((line) => line.text).join("\n");
+  if (block2.columns !== void 0) {
+    block2.columns = lines.map((line) => line.columns ?? []);
+  }
+};
+var numberTable = (block2, ids) => {
+  const table2 = block2.table;
+  if (table2 === void 0) {
+    return;
+  }
+  const cell = (text2) => replaceFigureLinks(text2, void 0, ids).text;
+  table2.header = table2.header.map(cell);
+  table2.rows = table2.rows.map((row) => row.map(cell));
+};
+var numberFigureLinks = (blocks, ids) => {
+  for (const block2 of blocks) {
+    numberMarkdown(block2, ids);
+    numberTable(block2, ids);
+    numberFigureLinks(innerBlocks(block2), ids);
+  }
+};
+var splitBlocks = (options) => {
+  const figures = { count: 0, ids: /* @__PURE__ */ new Map() };
+  const blocks = splitInto({
+    text: options.text,
+    parts: options.parts,
+    foldCount: { value: 0 },
+    figures,
+    lineBase: 0,
+    prefixes: []
+  });
+  if (options.parts.figure && figures.ids.size > 0) {
+    numberFigureLinks(blocks, figures.ids);
+  }
+  return blocks;
+};
+
+// src/mdmark-style/table-layout.ts
+var COLUMN_PADDING = 3;
+var MIN_COLUMN_WIDTH = 4;
+var SEGMENTER = new Intl.Segmenter(void 0, { granularity: "grapheme" });
+var WIDE = /[ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꀀ-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]|\p{Extended_Pictographic}/u;
+var ZERO_WIDTH = /^[\p{Mn}\p{Me}​-‏]+$/u;
+var graphemeWidth = (grapheme) => {
+  if (ZERO_WIDTH.test(grapheme)) {
+    return 0;
+  }
+  return WIDE.test(grapheme) ? 2 : 1;
+};
+var displayWidth = (text2) => {
+  let width = 0;
+  for (const { segment } of SEGMENTER.segment(text2)) {
+    width += graphemeWidth(segment);
+  }
+  return width;
+};
+var splitWords = (text2) => {
+  const words = [];
+  let current = "";
+  for (const { segment } of SEGMENTER.segment(text2)) {
+    const wide = graphemeWidth(segment) === 2;
+    if (wide) {
+      if (current !== "") {
+        words.push(current);
+      }
+      words.push(segment);
+      current = "";
+    } else if (segment === " ") {
+      words.push(`${current} `);
+      current = "";
+    } else {
+      current += segment;
+    }
+  }
+  if (current !== "") {
+    words.push(current);
+  }
+  return words;
+};
+var breakWord = (word, width) => {
+  const pieces = [];
+  let current = "";
+  for (const { segment } of SEGMENTER.segment(word)) {
+    if (current !== "" && displayWidth(current + segment) > width) {
+      pieces.push(current);
+      current = "";
+    }
+    current += segment;
+  }
+  if (current !== "") {
+    pieces.push(current);
+  }
+  return pieces;
+};
+var wrapCell = (options) => {
+  const { text: text2, width } = options;
+  const lines = [];
+  let current = "";
+  for (const word of splitWords(text2)) {
+    const trimmed = word.trimEnd();
+    if (displayWidth(current + trimmed) <= width) {
+      current += word;
+      continue;
+    }
+    if (current.trimEnd() !== "") {
+      lines.push(current.trimEnd());
+    }
+    current = "";
+    if (displayWidth(trimmed) <= width) {
+      current = word;
+      continue;
+    }
+    const pieces = breakWord(trimmed, width);
+    lines.push(...pieces.slice(0, -1));
+    current = `${pieces.at(-1) ?? ""}${word.endsWith(" ") ? " " : ""}`;
+  }
+  if (current.trimEnd() !== "") {
+    lines.push(current.trimEnd());
+  }
+  return lines.length > 0 ? lines : [""];
+};
+var longestWord = (cells) => Math.max(
+  0,
+  ...cells.flatMap(
+    (cell) => splitWords(cell).map((word) => displayWidth(word.trimEnd()))
+  )
+);
+var shrinkWidest = (widths, floors) => {
+  let widest = -1;
+  for (const [index, width] of widths.entries()) {
+    const wider = widest < 0 || width > (widths[widest] ?? 0);
+    if (width > (floors[index] ?? 0) && wider) {
+      widest = index;
+    }
+  }
+  if (widest < 0) {
+    return false;
+  }
+  widths[widest] = (widths[widest] ?? 0) - 1;
+  return true;
+};
+var fitColumns = (options) => {
+  const { cells, columns, wrap } = options;
+  const count = Math.max(0, ...cells.map((row) => row.length));
+  const columnCells = Array.from(
+    { length: count },
+    (_, column) => cells.map((row) => row[column] ?? "")
+  );
+  const widths = columnCells.map(
+    (column) => Math.max(0, ...column.map(displayWidth))
+  );
+  if (!wrap || columns === void 0) {
+    return widths;
+  }
+  const floors = columnCells.map(
+    (column, index) => Math.min(
+      widths[index] ?? 0,
+      Math.max(1, Math.min(longestWord(column), MIN_COLUMN_WIDTH))
+    )
+  );
+  const total = () => widths.reduce((sum, width) => sum + width, 0) + count * COLUMN_PADDING + 1;
+  while (total() > columns && shrinkWidest(widths, floors)) {
+  }
+  return widths;
+};
+
+// src/mdmark-style/document-parts.tsx
+var TREE_NOTE_GAP = 2;
+var renderSteps = (options) => {
+  const { block: block2, context, renderBody } = options;
+  const { Box, Text: Text3 } = context.elements;
+  const items = block2.steps?.items ?? [];
+  const heading2 = styleColor({ name: "heading", theme: context.theme });
+  const border = styleColor({ name: "border", theme: context.theme });
+  return h(
+    Box,
+    { key: `steps-${block2.line}`, flexDirection: "column" },
+    ...items.flatMap((item, index) => [
+      h(
+        Box,
+        { key: `step-${index}`, flexDirection: "row" },
+        h(Text3, { bold: true, color: heading2 }, String(index + 1)),
+        h(Text3, null, " "),
+        h(Box, { flexDirection: "column" }, renderBody(item))
+      ),
+      index < items.length - 1 ? h(Text3, { key: `step-line-${index}`, color: border }, "\u2502") : void 0
+    ])
+  );
+};
+var renderTree2 = (options) => {
+  const { block: block2, context } = options;
+  const { Box, Text: Text3 } = context.elements;
+  const lines = block2.tree?.lines ?? [];
+  const noteAt = Math.max(
+    0,
+    ...lines.map((line) => displayWidth(`${line.rule}${line.name}`))
+  );
+  return h(
+    Box,
+    { key: `tree-${block2.line}`, flexDirection: "column" },
+    ...lines.map((line, index) => {
+      const pad = noteAt - displayWidth(`${line.rule}${line.name}`) + TREE_NOTE_GAP;
+      return h(
+        Box,
+        { key: `tree-line-${index}`, flexDirection: "row" },
+        h(Text3, { dimColor: true }, line.rule),
+        h(Text3, null, line.name),
+        line.note === void 0 ? void 0 : h(Text3, null, " ".repeat(pad)),
+        line.note === void 0 ? void 0 : h(Text3, { dimColor: true }, line.note)
+      );
+    })
+  );
+};
+var renderStack = (options) => {
+  const { block: block2, context, renderBody } = options;
+  const { Box, Text: Text3 } = context.elements;
+  const heading2 = styleColor({ name: "heading", theme: context.theme });
+  return h(
+    Box,
+    { key: `stack-${block2.line}`, flexDirection: "column" },
+    ...(block2.stack?.sections ?? []).map(
+      (section, index) => section.title === void 0 ? h(
+        Box,
+        { key: `section-${index}`, flexDirection: "column" },
+        renderBody(section.body)
+      ) : h(
+        Box,
+        { key: `section-${index}`, flexDirection: "column" },
+        h(Text3, { bold: true, color: heading2 }, section.title),
+        h(
+          Box,
+          { flexDirection: "column", paddingLeft: 2 },
+          renderBody(section.body)
+        )
+      )
+    )
+  );
+};
+var renderRowDetail = (options) => {
+  const { key, body, context } = options;
+  const { Box, Button } = context.elements;
+  const open = foldStates.get(key) ?? false;
+  const toggle = h(Button, {
+    key: `${key}:button`,
+    label: open ? "[ \u25BE ]" : "[ \u25B8 ]",
+    onPress: () => {
+      foldStates.set(key, !(foldStates.get(key) ?? false));
+      context.ui.invalidate("ui.render");
+    }
+  });
+  if (!open) {
+    return { toggle };
+  }
+  return {
+    toggle,
+    detail: h(
+      Box,
+      { key: `${key}:detail`, flexDirection: "column", paddingLeft: 2 },
+      body()
+    )
+  };
+};
+
+// src/inline/badge.syntax.ts
+function splitBadgeColor(text2) {
+  const at = text2.indexOf(":");
+  const head = text2.slice(0, at);
+  if (at < 0 || !isColorName(head)) {
+    return { label: text2 };
+  }
+  return { color: head, label: text2.slice(at + 1) };
+}
+
+// src/inline/kbd.syntax.ts
+var splitKeys = (text2) => {
+  const keys = [];
+  let current = "";
+  for (let at = 0; at < text2.length; at++) {
+    const char = text2[at];
+    if (char !== "+") {
+      current += char;
+      continue;
+    }
+    if (current.trim() === "" && (at === 0 || text2[at - 1] === "+")) {
+      current = "+";
+      keys.push(current);
+      current = "";
+      continue;
+    }
+    keys.push(current);
+    current = "";
+  }
+  keys.push(current);
+  return keys.map((key) => key.trim()).filter((key) => key !== "");
+};
+
+// src/mdmark-style/inline-marks.ts
+var CODE_SPAN = /(`+)([\s\S]*?[^`])\1(?!`)/g;
+var TEXT_MARK = /\[([^\]]*)\]\{color=([^}]*)\}|==(?!\s)([^=]*[^=\s])==(?:\{color=([^}]*)\})?/g;
+var HIGHLIGHT_COLOR = "yellow";
+var append = (segments, segment) => {
+  const last = segments.at(-1);
+  if (segment.kind === "text" && last?.kind === "text") {
+    last.text += segment.text;
+    return;
+  }
+  if (segment.kind !== "text" || segment.text !== "") {
+    segments.push(segment);
+  }
+};
+var codeSegment = (options) => {
+  const { raw, content, start } = options;
+  if (content.startsWith("badge:")) {
+    const { color, label } = splitBadgeColor(content.slice("badge:".length));
+    if (label.trim() !== "") {
+      return { kind: "badge", text: label, color, start };
+    }
+  }
+  if (content.startsWith("kbd:")) {
+    const keys = splitKeys(content.slice("kbd:".length));
+    if (keys.length > 0) {
+      return { kind: "kbd", text: "", keys, start };
+    }
+  }
+  return { kind: "text", text: raw, start };
+};
+var textSegments = (segments, text2, offset) => {
+  let from = 0;
+  for (const match of text2.matchAll(TEXT_MARK)) {
+    append(segments, {
+      kind: "text",
+      text: text2.slice(from, match.index),
+      start: offset + from
+    });
+    const start = offset + match.index;
+    const [, colored, colorName, highlighted, highlightName] = match;
+    if (colored !== void 0) {
+      append(
+        segments,
+        colorName !== void 0 && isColorName(colorName) ? { kind: "color", text: colored, color: colorName, start } : { kind: "text", text: colored, start }
+      );
+    } else {
+      append(segments, {
+        kind: "highlight",
+        text: highlighted ?? "",
+        color: highlightName !== void 0 && isColorName(highlightName) ? highlightName : HIGHLIGHT_COLOR,
+        start
+      });
+    }
+    from = match.index + match[0].length;
+  }
+  append(segments, {
+    kind: "text",
+    text: text2.slice(from),
+    start: offset + from
+  });
+};
+var splitInlineMarks = (line) => {
+  const segments = [];
+  let from = 0;
+  for (const match of line.matchAll(CODE_SPAN)) {
+    textSegments(segments, line.slice(from, match.index), from);
+    append(
+      segments,
+      codeSegment({
+        raw: match[0],
+        content: match[2] ?? "",
+        start: match.index
+      })
+    );
+    from = match.index + match[0].length;
+  }
+  textSegments(segments, line.slice(from), from);
+  return segments.length === 0 ? [{ kind: "text", text: "", start: 0 }] : segments;
+};
+var segmentText = (segment) => {
+  if (segment.kind === "badge") {
+    return ` ${segment.text} `;
+  }
+  if (segment.kind === "kbd") {
+    return (segment.keys ?? []).map((key) => `[${key}]`).join("+");
+  }
+  return segment.text;
+};
+var inlinePlainText = (segments) => segments.map(segmentText).join("");
+
+// src/knowledge/aliases.ts
+var ALIAS_TYPES = [
+  "term",
+  "doc",
+  "command",
+  "url",
+  "skill",
+  "tool",
+  "path",
+  "env",
+  "avoid"
+];
+var ALIAS_KEYS = [
+  "id",
+  "name",
+  "aliases",
+  "description",
+  "related",
+  "command",
+  "cwd",
+  "url",
+  "avoid",
+  "skill",
+  "tool",
+  "path",
+  "port",
+  "replacement"
+];
+var ALIAS_REQUIRED_KEYS = {
+  term: ["description"],
+  doc: ["description"],
+  command: ["command"],
+  url: ["url"],
+  skill: ["skill"],
+  tool: ["tool"],
+  path: ["path"],
+  avoid: ["replacement"],
+  env: []
+};
+var ALIAS_KEY_LABELS = {
+  id: "ID",
+  name: "\u540D\u524D",
+  description: "\u8AAC\u660E",
+  command: "\u30B3\u30DE\u30F3\u30C9",
+  url: "URL",
+  skill: "\u30B9\u30AD\u30EB\u540D",
+  tool: "\u30C4\u30FC\u30EB\u540D",
+  path: "\u30D1\u30B9",
+  replacement: "\u7F6E\u304D\u63DB\u3048\u5148"
+};
+var LIST_KEYS = /* @__PURE__ */ new Set(["aliases", "avoid", "related"]);
+var DEFAULT_CONFIG_FILE = "mdmark.config.yaml";
+function isRecord3(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isFilled(value) {
+  return typeof value === "string" && value !== "";
+}
+function toText(value) {
+  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
+    return void 0;
+  }
+  const text2 = String(value).trim();
+  return text2 === "" ? void 0 : text2;
+}
+function toList(value) {
+  if (typeof value === "string") {
+    const text2 = value.trim();
+    return text2 === "" ? void 0 : [text2];
+  }
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === "string").map((item) => item.trim()).filter((item) => item !== "");
+  }
+  return void 0;
+}
+function readColumn(record, column) {
+  let current = record;
+  for (const part of column.split(".")) {
+    if (!isRecord3(current) || !Object.hasOwn(current, part)) {
+      return { found: false, value: void 0 };
+    }
+    current = current[part];
+  }
+  return { found: true, value: current };
+}
+function readAliasKey(options) {
+  const { record, column, key } = options;
+  if (isFilled(column)) {
+    const read = readColumn(record, column);
+    return read.found ? { present: true, raw: read.value } : { present: false, missing: column };
+  }
+  return Object.hasOwn(record, key) ? { present: true, raw: record[key] } : { present: false };
+}
+function toAliasValue(key, raw) {
+  return LIST_KEYS.has(key) ? toList(raw) : toText(raw);
+}
+function nameOf(options) {
+  const { record, bodyFile, fallbackName } = options;
+  const bodyPath = bodyFile === void 0 ? void 0 : toText(readColumn(record, bodyFile).value);
+  return bodyPath === void 0 ? fallbackName : baseName(bodyPath);
+}
+function readAliasRecord(options) {
+  const { record, metadata, bodyFile, fallbackName } = options;
+  const values = {};
+  const missing = [];
+  for (const key of ALIAS_KEYS) {
+    const read = readAliasKey({ record, column: metadata[key], key });
+    if (read.missing !== void 0) {
+      missing.push({ key, field: read.missing });
+    }
+    const value = read.present ? toAliasValue(key, read.raw) : void 0;
+    if (value !== void 0) {
+      values[key] = value;
+    }
+  }
+  if (values.name === void 0) {
+    const name = nameOf({ record, bodyFile, fallbackName });
+    if (name !== "") {
+      values.name = name;
+    }
+  }
+  return { values, missing };
+}
+function checkAliasFields(options) {
+  const { aliasType, values } = options;
+  const keys = [
+    "id",
+    "name",
+    ...ALIAS_REQUIRED_KEYS[aliasType]
+  ].filter((key) => !isFilled(values[key]));
+  if (aliasType === "env" && !isFilled(values.url) && !isFilled(values.port)) {
+    keys.push("url");
+  }
+  return keys.length === 0 ? void 0 : { kind: "alias_required_empty", keys };
+}
+function usableType(item, seen) {
+  const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
+  if (type === void 0 || type === "env") {
+    return void 0;
+  }
+  if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
+    return void 0;
+  }
+  return ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key])) ? type : void 0;
+}
+function toUsableAlias(item, type) {
+  const list2 = (value) => Array.isArray(value) ? value.filter(isFilled) : [];
+  const alias = {
+    alias_type: type,
+    id: item.id,
+    name: item.name,
+    aliases: list2(item.aliases),
+    avoid: list2(item.avoid)
+  };
+  for (const key of [
+    "description",
+    "command",
+    "cwd",
+    "url",
+    "skill",
+    "tool",
+    "path",
+    "replacement"
+  ]) {
+    const value = item[key];
+    if (typeof value === "string") {
+      alias[key] = value;
+    }
+  }
+  if (Array.isArray(item.related)) {
+    alias.related = list2(item.related);
+  }
+  return alias;
+}
+function usableAliases(aliases) {
+  const seen = /* @__PURE__ */ new Set();
+  const usable = [];
+  for (const item of aliases) {
+    const type = isRecord3(item) ? usableType(item, seen) : void 0;
+    if (!isRecord3(item) || type === void 0) {
+      continue;
+    }
+    const row = item;
+    seen.add(row.id);
+    usable.push(toUsableAlias(row, type));
+  }
+  return usable;
+}
+function toAlias(values, aliasType) {
+  const text2 = (key) => typeof values[key] === "string" ? values[key] : void 0;
+  const list2 = (key) => Array.isArray(values[key]) ? values[key] : void 0;
+  const alias = {
+    alias_type: aliasType,
+    id: values.id,
+    name: values.name,
+    aliases: list2("aliases") ?? []
+  };
+  for (const key of [
+    "description",
+    "command",
+    "cwd",
+    "url",
+    "skill",
+    "tool",
+    "path",
+    "replacement"
+  ]) {
+    const value = text2(key);
+    if (value !== void 0) {
+      alias[key] = value;
+    }
+  }
+  const related = list2("related");
+  if (related !== void 0) {
+    alias.related = related;
+  }
+  const avoid = list2("avoid");
+  if (avoid !== void 0) {
+    alias.avoid = avoid;
+  }
+  return alias;
+}
+function baseName(path) {
+  const name = path.split("/").pop() ?? path;
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(0, dot) : name;
+}
+function joinWhere(recordPath, key) {
+  return recordPath === "" ? key : `${recordPath}.${key}`;
+}
+function columnOf(row, key) {
+  const column = row.metadata[key];
+  return isFilled(column) ? column : key;
+}
+function isEnabledRow(row) {
+  return isRecord3(row) && isFilled(row.id) && Array.isArray(row.paths) && typeof row.alias_type === "string" && row.enabled !== false;
+}
+function acceptRow(build, row, rowPosition) {
+  if (!isEnabledRow(row)) {
+    return void 0;
+  }
+  if (build.rowIds.has(row.id)) {
+    build.problems.push({
+      file: build.configFile,
+      where: `aliases[${rowPosition}].id`,
+      kind: "duplicate_alias_row_id",
+      message: `\u884C\u306E \`id\` \`${row.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  build.rowIds.add(row.id);
+  const aliasType = ALIAS_TYPES.find(
+    (candidate) => candidate === row.alias_type
+  );
+  if (aliasType === void 0) {
+    build.problems.push({
+      file: build.configFile,
+      where: `aliases[${rowPosition}].alias_type`,
+      kind: "alias_unknown_type",
+      message: `\`alias_type\` \u306E \`${row.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return {
+    id: row.id,
+    aliasType,
+    metadata: isRecord3(row.metadata) ? row.metadata : {},
+    recordsKey: isFilled(row.records) ? row.records : void 0,
+    bodyFile: isFilled(row.body_file) ? row.body_file : void 0
+  };
+}
+function recordsOf(build, row, source) {
+  const { recordsKey } = row;
+  if (recordsKey === void 0) {
+    return [{ record: source.data, path: "" }];
+  }
+  const list2 = isRecord3(source.data) ? source.data[recordsKey] : void 0;
+  if (!Array.isArray(list2)) {
+    build.problems.push({
+      file: source.path,
+      where: "",
+      kind: "alias_records_missing",
+      message: `\`${recordsKey}\` \u306E\u914D\u5217\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D5\u30A1\u30A4\u30EB\u306B \`${recordsKey}\` \u306E\u914D\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`records\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return list2.map((record, position) => ({
+    record,
+    path: `${recordsKey}[${position}]`
+  }));
+}
+function pushRequiredProblems(build, row, at) {
+  const { source, path, keys } = at;
+  const head = path === "" ? `\`${source.path}\`` : `\`${source.path}\` \u306E \`${path}\``;
+  for (const key of keys) {
+    const column = columnOf(row, key);
+    const sentence = key === "url" && row.aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    build.problems.push({
+      file: source.path,
+      where: joinWhere(path, column),
+      kind: "alias_required_empty",
+      message: sentence
+    });
+  }
+}
+function takeRecord(build, row, at) {
+  const { source, record, path } = at;
+  const fallbackName = row.recordsKey === void 0 ? baseName(source.path) : toText(record.id) ?? "";
+  const { values, missing } = readAliasRecord({
+    record,
+    metadata: row.metadata,
+    bodyFile: row.bodyFile,
+    fallbackName
+  });
+  for (const { key, field } of missing) {
+    build.problems.push({
+      file: source.path,
+      where: joinWhere(path, field),
+      kind: "alias_field_missing",
+      message: `\`metadata.${key}\` \u304C\u6307\u3059\u5217 \`${field}\` \u304C\u30EC\u30B3\u30FC\u30C9\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`metadata.${key}\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  if (missing.length > 0) {
+    return;
+  }
+  const checked = checkAliasFields({ aliasType: row.aliasType, values });
+  if (checked !== void 0) {
+    pushRequiredProblems(build, row, { source, path, keys: checked.keys });
+    return;
+  }
+  const id = values.id;
+  if (build.aliasIds.has(id)) {
+    build.problems.push({
+      file: source.path,
+      where: joinWhere(path, columnOf(row, "id")),
+      kind: "duplicate_alias_id",
+      message: `\u30A8\u30A4\u30EA\u30A2\u30B9\u306E \`id\` \`${id}\` \u304C\u524D\u306E\u30A8\u30A4\u30EA\u30A2\u30B9\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return;
+  }
+  build.aliasIds.add(id);
+  if (row.aliasType !== "env") {
+    build.aliases.push(toAlias(values, row.aliasType));
+  }
+}
+function buildAliases(input) {
+  const { rows, sources, configFile = DEFAULT_CONFIG_FILE } = input;
+  const build = {
+    aliases: [],
+    problems: [],
+    rowIds: /* @__PURE__ */ new Set(),
+    aliasIds: /* @__PURE__ */ new Set(),
+    configFile
+  };
+  rows.forEach((item, rowPosition) => {
+    const row = acceptRow(build, item, rowPosition);
+    if (!row) {
+      return;
+    }
+    for (const source of sources.filter((entry) => entry.rowId === row.id)) {
+      for (const { record, path } of recordsOf(build, row, source) ?? []) {
+        if (isRecord3(record)) {
+          takeRecord(build, row, { source, record, path });
+        }
+      }
+    }
+  });
+  return { aliases: build.aliases, problems: build.problems };
 }
 
 // src/diagram/diagram.syntax.ts
@@ -23076,12 +23928,70 @@ var styleProps = (char, theme) => ({
   ...char.code ? { color: styleColor({ name: "heading", theme }), mono: true } : {},
   ...char.link ? { underline: true } : {}
 });
-var renderTermText = (options) => {
-  const { elements, line, marks, parts, theme, width } = options;
-  const { Box, Text: Text3 } = elements;
+var ACCENT_COLORS = {
+  blue: { bg: "accentBlueBg", text: "accentBlueText" },
+  red: { bg: "accentRedBg", text: "accentRedText" },
+  green: { bg: "accentGreenBg", text: "accentGreenText" },
+  yellow: { bg: "accentYellowBg", text: "accentYellowText" },
+  orange: { bg: "accentOrangeBg", text: "accentOrangeText" },
+  purple: { bg: "accentPurpleBg", text: "accentPurpleText" },
+  gray: { bg: "accentGrayBg", text: "accentGrayText" }
+};
+var inlineNodes = (options) => {
+  const { elements, segment, theme } = options;
+  const { Text: Text3 } = elements;
+  const color = (name) => styleColor({ name, theme });
+  const accent = segment.color === void 0 ? void 0 : ACCENT_COLORS[segment.color];
+  const key = `inline-${segment.start}`;
+  switch (segment.kind) {
+    case "badge":
+      return [
+        h(
+          Text3,
+          {
+            key,
+            backgroundColor: color(accent?.bg ?? "surface"),
+            color: color(accent?.text ?? "text")
+          },
+          ` ${segment.text} `
+        )
+      ];
+    case "color":
+      return [
+        h(
+          Text3,
+          { key, bold: true, color: color(accent?.text ?? "text") },
+          segment.text
+        )
+      ];
+    case "highlight":
+      return [
+        h(
+          Text3,
+          { key, backgroundColor: color(accent?.bg ?? "accentYellowBg") },
+          segment.text
+        )
+      ];
+    case "kbd":
+      return (segment.keys ?? []).flatMap((name, index) => [
+        index === 0 ? void 0 : h(Text3, { key: `${key}-join-${index}`, dimColor: true }, "+"),
+        h(Text3, { key: `${key}-key-${index}`, bold: true }, `[${name}]`)
+      ]);
+    case "text":
+      return [];
+    default: {
+      const unreachable = segment.kind;
+      return unreachable;
+    }
+  }
+};
+var textRuns = (options) => {
+  const { elements, segment, marks, parts, theme, width, base: base2 } = options;
+  const { Text: Text3 } = elements;
   const markOf2 = (at) => marks.find((mark) => at >= mark.start && at < mark.end);
   const runs = [];
-  for (const char of styledChars(line)) {
+  for (const raw of styledChars(segment.text)) {
+    const char = { ...raw, at: raw.at + segment.start };
     const mark = markOf2(char.at);
     const last = runs.at(-1);
     const same = last !== void 0 && last.mark === mark && last.char.bold === char.bold && last.char.code === char.code && last.char.link === char.link;
@@ -23091,8 +24001,8 @@ var renderTermText = (options) => {
       runs.push({ text: char.char, char, mark });
     }
   }
-  const nodes = runs.map(
-    (run) => run.mark === void 0 ? h(Text3, styleProps(run.char, theme), run.text) : termNode({
+  return runs.map(
+    (run) => run.mark === void 0 ? h(Text3, { ...base2, ...styleProps(run.char, theme) }, run.text) : termNode({
       elements,
       mark: run.mark,
       text: run.text,
@@ -23101,7 +24011,14 @@ var renderTermText = (options) => {
       width
     })
   );
-  return h(Box, { flexDirection: "row", flexWrap: "wrap" }, ...nodes);
+};
+var renderTermText = (options) => {
+  const { elements, line, marks, parts, theme, width, base: base2 = {} } = options;
+  const segments = parts.inline ? splitInlineMarks(line) : [{ kind: "text", text: line, start: 0 }];
+  const nodes = segments.flatMap(
+    (segment) => segment.kind === "text" ? textRuns({ elements, segment, marks, parts, theme, width, base: base2 }) : inlineNodes({ elements, segment, theme })
+  );
+  return h(elements.Box, { flexDirection: "row", flexWrap: "wrap" }, ...nodes);
 };
 var renderFootnotes2 = (options) => options.marks.map(
   (mark) => h(
@@ -23154,7 +24071,7 @@ async function renderUserMessage($, e, next) {
       elements,
       line,
       marks: marks.filter((mark) => mark.line === index + 1),
-      parts: settings.parts,
+      parts: { ...settings.parts, inline: false },
       theme,
       ...width === void 0 ? {} : { width }
     })
@@ -23237,13 +24154,24 @@ var rowLines = (options) => {
     })
   );
 };
+var ROW_TOGGLE_TEXT = "[ \u25B8 ] ";
+var hasInline = (cell, context) => context.parts.inline && splitInlineMarks(cell).some((segment) => segment.kind !== "text");
+var cellText = (cell, context) => context.parts.inline ? inlinePlainText(splitInlineMarks(cell)) : cell;
 var renderTable2 = (block2, context) => {
   const table2 = block2.table;
   const { Box, Text: Text3 } = context.elements;
   if (table2 === void 0) {
     return void 0;
   }
-  const cells = [table2.header, ...table2.rows];
+  const detailRows = new Set((table2.details ?? []).map((detail) => detail.row));
+  const shown = (row, rowIndex) => row.map((cell, index) => {
+    const text2 = cellText(cell, context);
+    return index === 0 && rowIndex !== void 0 && detailRows.has(rowIndex) ? `${ROW_TOGGLE_TEXT}${text2}` : text2;
+  });
+  const cells = [
+    shown(table2.header, void 0),
+    ...table2.rows.map((row, index) => shown(row, index))
+  ];
   const wrap = context.surface !== "desktop";
   const widths = fitColumns({
     cells,
@@ -23251,27 +24179,113 @@ var renderTable2 = (block2, context) => {
     wrap
   });
   const border = styleColor({ name: "border", theme: context.theme });
-  const lineNode = (key, columns, bold2) => h(
-    Text3,
-    { key },
-    h(Text3, { color: border }, "\u2502 "),
-    ...columns.flatMap((cell, index) => [
-      h(Text3, bold2 ? { bold: true } : null, cell),
-      h(Text3, { color: border }, index === columns.length - 1 ? " \u2502" : " \u2502 ")
-    ])
-  );
+  const cellNodes = (options) => {
+    let rich = false;
+    const nodes = options.columns.map((cell, index) => {
+      const raw = options.raw?.[index];
+      const toggle = index === 0 ? options.toggle : void 0;
+      if (raw === void 0 && toggle !== void 0) {
+        rich = true;
+        const rest = cell.startsWith(ROW_TOGGLE_TEXT) ? cell.slice(ROW_TOGGLE_TEXT.length) : cell;
+        return [
+          toggle,
+          h(Text3, null, " "),
+          h(Text3, options.bold ? { bold: true } : null, rest)
+        ];
+      }
+      if (raw === void 0 || toggle === void 0 && !hasInline(raw, context)) {
+        return h(Text3, options.bold ? { bold: true } : null, cell);
+      }
+      rich = true;
+      const drawn = `${toggle === void 0 ? "" : ROW_TOGGLE_TEXT}${cellText(raw, context)}`;
+      const pad = " ".repeat(
+        Math.max(0, (widths[index] ?? 0) - displayWidth(drawn))
+      );
+      return [
+        toggle,
+        toggle === void 0 ? void 0 : h(Text3, null, " "),
+        renderTermText({
+          elements: context.elements,
+          line: raw,
+          marks: [],
+          parts: context.parts,
+          theme: context.theme,
+          ...options.bold ? { base: { bold: true } } : {}
+        }),
+        h(Text3, null, pad)
+      ];
+    });
+    return { nodes, rich };
+  };
+  const lineNode = (key, columns, options) => {
+    const { nodes, rich } = cellNodes({
+      raw: options.raw,
+      columns,
+      bold: options.bold,
+      toggle: options.toggle
+    });
+    const children = [
+      h(Text3, { color: border }, "\u2502 "),
+      ...nodes.flatMap((node, index) => [
+        node,
+        h(Text3, { color: border }, index === nodes.length - 1 ? " \u2502" : " \u2502 ")
+      ])
+    ];
+    return rich ? h(Box, { key, flexDirection: "row" }, ...children) : h(Text3, { key }, ...children);
+  };
+  const rowNodes = (options) => {
+    const lines2 = rowLines({ cells: options.shownCells, widths, wrap });
+    const single = lines2.length === 1;
+    return lines2.map(
+      (columns, index) => lineNode(`${options.key}-${index}`, columns, {
+        bold: options.bold,
+        ...single ? { raw: options.raw } : {},
+        ...index === 0 && options.toggle !== void 0 ? { toggle: options.toggle } : {}
+      })
+    );
+  };
   const bold = table2.kind === "data";
+  const bodyLines = table2.rows.flatMap((row, rowIndex) => {
+    const detail = table2.details?.find((item) => item.row === rowIndex);
+    if (detail === void 0) {
+      return rowNodes({
+        key: `row-${rowIndex}`,
+        raw: row,
+        shownCells: shown(row, rowIndex),
+        bold: false
+      });
+    }
+    const { toggle, detail: opened } = renderRowDetail({
+      key: `${context.blockKey}:row-detail:${block2.line}:${rowIndex}`,
+      body: () => h(
+        Box,
+        { flexDirection: "column" },
+        ...detail.body.map((inner) => renderBlock({ block: inner, context }))
+      ),
+      context
+    });
+    return [
+      ...rowNodes({
+        key: `row-${rowIndex}`,
+        raw: row,
+        shownCells: shown(row, rowIndex),
+        bold: false,
+        toggle
+      }),
+      opened
+    ];
+  });
   const lines = [
+    table2.figure === void 0 ? void 0 : h(Text3, { key: "figure", dimColor: true }, `\u8868 ${table2.figure}`),
     h(Text3, { key: "top", color: border }, ruleLine(widths, ["\u250C", "\u252C", "\u2510"])),
-    ...rowLines({ cells: table2.header, widths, wrap }).map(
-      (columns, index) => lineNode(`head-${index}`, columns, bold)
-    ),
+    ...rowNodes({
+      key: "head",
+      raw: table2.header,
+      shownCells: shown(table2.header, void 0),
+      bold
+    }),
     h(Text3, { key: "sep", color: border }, ruleLine(widths, ["\u251C", "\u253C", "\u2524"])),
-    ...table2.rows.flatMap(
-      (row, rowIndex) => rowLines({ cells: row, widths, wrap }).map(
-        (columns, index) => lineNode(`row-${rowIndex}-${index}`, columns, false)
-      )
-    ),
+    ...bodyLines,
     h(
       Text3,
       { key: "bottom", color: border },
@@ -23360,7 +24374,7 @@ var renderMarkdown = (block2, context) => {
   const lines = markdown.split("\n");
   const lineMarks = marksByLine(block2, lines, context.marks);
   const marks = lineMarks.flat();
-  if (marks.length === 0) {
+  if (marks.length === 0 && !lines.some((line) => hasInline(line, context))) {
     return h(Markdown, { key: `md-${block2.line}`, text: markdown });
   }
   return h(
@@ -23410,22 +24424,39 @@ var renderCallout = (block2, context) => {
     context
   });
 };
+var renderBlocks = (context) => (blocks) => h(
+  context.elements.Box,
+  { flexDirection: "column" },
+  ...blocks.map((inner) => renderBlock({ block: inner, context }))
+);
 var renderBlock = (options) => {
   const { block: block2, context } = options;
   const { Box, Text: Text3 } = context.elements;
   switch (block2.kind) {
     case "table":
       return renderTable2(block2, context);
-    case "heading":
-      return h(
-        Text3,
-        {
-          key: `heading-${block2.line}`,
-          bold: true,
-          color: styleColor({ name: "heading", theme: context.theme })
-        },
-        block2.heading?.text ?? ""
-      );
+    case "heading": {
+      const text2 = block2.heading?.text ?? "";
+      const props = {
+        bold: true,
+        color: styleColor({ name: "heading", theme: context.theme })
+      };
+      if (hasInline(text2, context)) {
+        return h(
+          Box,
+          { key: `heading-${block2.line}` },
+          renderTermText({
+            elements: context.elements,
+            line: text2,
+            marks: [],
+            parts: context.parts,
+            theme: context.theme,
+            base: props
+          })
+        );
+      }
+      return h(Text3, { key: `heading-${block2.line}`, ...props }, text2);
+    }
     case "callout":
       return renderCallout(block2, context);
     case "code":
@@ -23446,6 +24477,12 @@ var renderBlock = (options) => {
         context
       });
     }
+    case "steps":
+      return renderSteps({ block: block2, context, renderBody: renderBlocks(context) });
+    case "tree":
+      return renderTree2({ block: block2, context });
+    case "stack":
+      return renderStack({ block: block2, context, renderBody: renderBlocks(context) });
     case "markdown":
       return renderMarkdown(block2, context);
     default: {
