@@ -28,4 +28,22 @@
 
 ## テスト結果
 
-未実行
+### 結合テストの実行範囲
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
+| --- | --- | --- | --- |
+| `docs/interface/IF-472-15.ts.yaml` | R7（一覧・対応表に無い。テストのフィクスチャの説明だけの変更で、実行時に読む結合テストが無い） | - | - |
+| `docs/interface/IF-472-22.ts.yaml` | R7（同上） | - | - |
+| `docs/pr/688/README.md` | R7（PR ドキュメントで、実行時に読む結合テストが無い） | - | - |
+| `docs/pr/688/VS Code 拡張機能.md` | R7（同上） | - | - |
+| `docs/pr/688/タスク一覧.yaml` | R7（同上） | - | - |
+| `docs/pr/688/要件.md` | R7（同上） | - | - |
+| `docs/pr/688/要件.yaml` | R7（同上） | - | - |
+| `vscode/tests/integration/export.test.ts` | R2 | `vscode/tests/integration/export.test.ts` | - |
+| `vscode/tests/integration/preview-open.test.ts` | R2 | `vscode/tests/integration/preview-open.test.ts` | - |
+
+実行のしかた: VS Code 拡張機能の結合テストは、ランナーの workflow（`test.yml`）が `paths` を指定したときに回さないため、手元で TL-3 の補足「VS Code 拡張機能」のコマンドを、ビルドした `vscode/out/test/` から上の 2 ファイル以外のテストを除いて実行する（[#684](https://github.com/shuhei1101/mdmark/pull/684) と同じ）。VS Code 1.141.0 と stable の両方で回る。並列数は 1（`parallelism` を持たない層）。
+
+```bash
+cd vscode && node scripts/build.ts --tests && find out/test -name "*.test.mjs" ! -name "export.test.mjs" ! -name "preview-open.test.mjs" -delete && xvfb-run -a node tests/integration/run.ts
+```
