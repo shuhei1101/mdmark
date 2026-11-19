@@ -9,7 +9,7 @@ flows:
     summary: 端末の設定のキーごとに、今の値・既定・説明を返却する
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: 端末の設定
         description: '`features.table: false` を持つ端末の設定'
       - name: Mock
@@ -35,7 +35,7 @@ flows:
     summary: '`mdmark.config.yaml` のキーを、端末の設定で重なる値つきで返却し、端末の設定だけのキーを含めない'
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: 端末の設定と文書のフォルダ
         description: '`features.table: false` を持つ端末の設定と、`mdmark.config.yaml` の無い文書のフォルダ'
       - name: Mock

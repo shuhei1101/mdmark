@@ -1,0 +1,25 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-22.yaml
+    impact: changed
+    detail: 確かめる前提の「手元と別の tmux サーバー」の分け方を、手元の tmux のセッションの中で確かめても手元のサーバーにつながらない分け方に直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-69.yaml
+    impact: changed
+    detail: セットアップを確かめる前提の「手元と別の tmux サーバー」の分け方を、手元の tmux のセッションの中で確かめても手元のサーバーにつながらない分け方に直す
+    depends_on: []
+docs:
+  - page: docs/library/LIB-472-29.yaml
+    new: false
+    change: verification を、手元の tmux サーバーから分けたサーバー（`TMUX`・`TMUX_PANE` を除外し `tmux -L {一時のソケット名}`）で取り直す。実測で分かった `default-shell` の既定（`SHELL` が無ければログインシェル）を limitations にも合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T07:11:39.697438+00:00'
+scope_out:
+  - item: '`docs/pr/354/`・`docs/pr/444/` の PR ドキュメントの `TMUX_TMPDIR` の記載'
+    reason: マージ済みの作業 PR の記録で、書き換えない
+    plan: none
+  - item: '`src/plugin/setup/` の常駐サーバーの起動（利用者の tmux サーバーでセッションを作る）'
+    reason: 利用者の手元の tmux サーバーを使うのが正しい動作で、分け方の誤りはテストと設計書の前提・実測だけにある
+    plan: none

@@ -161,7 +161,7 @@ scenarios:
     setup:
       - name: tmux のセッションで動く常駐サーバー
         description: 端末の設定のセッション名の tmux のセッションで `mdmark serve` が `MDMARK_PORT` のポートを待ち受け、unit は無い
-        notes: '`TMUX_TMPDIR` を空の一時フォルダにして、手元と別の tmux サーバーで動かす'
+        notes: '`TMUX`・`TMUX_PANE` を除外した環境で `TMUX_TMPDIR` を空の一時フォルダにして、手元と別の tmux サーバーで動かす'
       - name: systemd --user が使える端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
@@ -202,7 +202,7 @@ scenarios:
       - name: systemctl の無い PATH
         description: '`PATH` から `systemctl` を削除する'
       - name: 手元と別の tmux サーバーと空いたポート
-        description: '`TMUX_TMPDIR` を空の一時フォルダにして手元と別の tmux サーバーを先に起動しておき、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
+        description: '`TMUX`・`TMUX_PANE` を除外した環境で `TMUX_TMPDIR` を空の一時フォルダにして手元と別の tmux サーバーを先に起動しておき、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
         notes: 手元の常駐サーバーが使用する 8782 と手元の tmux のセッションを回避する。tmux サーバーを先に起動しておくと、`MDMARK_PORT` がセッションへ渡る経路を確認できる
       - name: Mock
         description: 正常シナリオと同じ

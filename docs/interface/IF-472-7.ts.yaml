@@ -9,7 +9,7 @@ flows:
     summary: systemd --user が使える端末で、unit を記載して enable して起動し、待ち受けを待って `tools/list` を確認する
     setup:
       - name: 一時の端末
-        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
       - name: テスト専用の unit の名前と空いたポート
         description: 端末の設定の `serve.systemdUnit` を `mdmark-test-{乱数}` にし、`MDMARK_PORT` に空いたポートを指定する
         notes: テストの後に `systemctl --user disable --now {unit の名前}` を呼び、unit のファイルを削除して `daemon-reload` する。手元の `mdmark-mcp` と 8782 には触れない
@@ -137,7 +137,7 @@ flows:
       - name: 一時の端末
         description: 正常系と同じ
       - name: tmux のセッションで動く常駐サーバー
-        description: '`TMUX_TMPDIR` の tmux サーバーの、端末の設定のセッション名のセッションで、`MDMARK_PORT` のポートを待ち受ける `mdmark serve` を動かしてある'
+        description: '一時の端末の `TMUX_TMPDIR` の tmux サーバーの、端末の設定のセッション名のセッションで、`MDMARK_PORT` のポートを待ち受ける `mdmark serve` を動かしてある'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -170,7 +170,7 @@ flows:
       - name: systemctl の無い PATH
         description: '`PATH` から `systemctl` を削除する'
       - name: 先に起動した tmux サーバーと空いたポート
-        description: '`TMUX_TMPDIR` の tmux サーバーを別のセッションで先に起動しておき、`MDMARK_PORT` に空いたポートを指定する'
+        description: '一時の端末の `TMUX_TMPDIR` の tmux サーバーを別のセッションで先に起動しておき、`MDMARK_PORT` に空いたポートを指定する'
       - name: Mock
         description: 正常系と同じ
     flow: |-
