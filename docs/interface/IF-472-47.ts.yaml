@@ -11,7 +11,7 @@ idempotent: true
 side_effects: なし（SessionStart の結果に説明を追加するだけ）
 request:
   - name: e.source
-    type: "'startup' | 'resume' | 'clear' | 'compact'"
+    type: "'startup' | 'resume' | 'clear' | 'compact' | 'fork'"
     required: true
     location: argument
     description: SessionStart のきっかけ。どの値でも同じ説明を追加する

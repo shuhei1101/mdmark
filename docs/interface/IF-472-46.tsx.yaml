@@ -53,9 +53,9 @@ response:
     description: 背景の帯の Box の中に、行ごとの keyed Box（下線の Text とカードの Box）と脚注を持つ部品の木。描き換えないときは `next(e)` の戻り値
 response_example: |-
   ```tsx
-  <Box key="user" flexDirection="column" backgroundColor="ansi256(237)">
+  <Box key="user" flexDirection="column" backgroundColor="#3a3a3a">
     <Box key="line-0"><Text>❯ </Text><Text underline>mdmark</Text><Text dimColor>[1]</Text><Text> の …</Text>
-      <Box position="absolute" top={1} left={0} display="none" hover={{ display: 'flex' }} borderStyle="round" backgroundColor="ansi256(236)">…</Box>
+      <Box position="absolute" top={1} left={0} display="none" hover={{ display: 'flex' }} borderStyle="round" backgroundColor="#303030">…</Box>
     </Box>
     <Text dimColor>[1] mdmark: Markdown 文書の表示を各アプリで共通に使用するライブラリ</Text>
   </Box>
@@ -80,7 +80,7 @@ constraints:
   - item: 脚注
     constraint: '`parts.footnote` が `true` のとき、下線の用語の後ろに出た順の番号 `[n]` を薄い色で付け、本文の後ろに `[n] {名前}: {意味}` の行を薄い色で並べる'
   - item: 背景の帯
-    constraint: 発言の Box の `backgroundColor` を、Claude Code の標準の発言の帯と同じ色にする。色は `$.settings.read()` の `theme` が `light` で始まるときは明るい配色、それ以外は暗い配色の値（暗い配色は 256 色の 237）を共通スタイルの定義から取る。行頭の `❯` とその色も標準の発言と同じにする
+    constraint: 発言の Box の `backgroundColor` を、Claude Code の標準の発言の帯と同じ色にする。色は `$.settings.read()` の `theme` が `light` で始まるときは明るい配色、それ以外は暗い配色の値（暗い配色は `#3a3a3a`。256 色の 237 と同じ色）を、共通スタイルの定義に 16 進で持ち、そこから取る。行頭の `❯` とその色も標準の発言と同じにする
     notes: '`next(e)` の戻り値は中を読めない参照（`{type: "engine"}`）で、標準の発言の Text だけを書き換えられないため、帯ごと自分で描く。明るい配色の値は実装で同じ方法（`tmux capture-pane -e`）で測る'
   - item: 読み直し
     constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で読み直す

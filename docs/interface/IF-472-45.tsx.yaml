@@ -36,7 +36,7 @@ request:
     type: string
     required: true
     location: argument
-    description: 返答のブロックの ID。開閉の範囲の開閉の状態を、ブロックと範囲の順番ごとに持つ鍵にする
+    description: 返答のブロックの ID。開閉の範囲の開閉の状態を、ブロックの本文のハッシュと範囲の順番と合わせて持つ鍵にする
   - name: settings.yaml
     type: CFG-472-4 のキー
     required: false
@@ -83,7 +83,7 @@ constraints:
   - item: コードブロック
     constraint: 背景の面（Box の `backgroundColor`）の中に `Code` 部品で言語の色分けつきで描き、右上に言語のラベルを薄い色で描く。`code` のマーカーの `title` はコードの上の行、`lines` は行番号、`highlight` と行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` は行の色で描き、行末のマーカーの文字は描かない。コードの上の行の右端にコピーの Button を描き、押すと `$.ui.copy` でマーカーを除いたコードを写す
   - item: 開閉の範囲
-    constraint: 閉じた範囲は Button（ラベル `▸ {タイトル}`）だけを描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で描き直す。開いた範囲は Button（ラベル `▾ {タイトル}`）の下に中身を描く。開閉の状態は `requestId` と範囲の順番を鍵にして mod のモジュールの中に持ち、Claude Code を閉じると消える
+    constraint: 閉じた範囲は Button（ラベル `▸ {タイトル}`）だけを描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で描き直す。開いた範囲は Button（ラベル `▾ {タイトル}`）の下に中身を描く。開閉の状態は `requestId`・ブロックの本文（`e.props.text`）のハッシュ・範囲の順番を鍵にして（1 つの返答の複数のブロックが同じ `requestId` を持っても鍵が重ならない） mod のモジュールの中に持ち、Claude Code を閉じると消える
   - item: 色
     constraint: 見出し・注意書きの種類・用語の下線・罫線の色は、共通スタイルの定義のモジュールの値を使用する
   - item: 部品の木の上限
