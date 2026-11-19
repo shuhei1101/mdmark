@@ -1,0 +1,84 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 対象の設計書（IF-472-15・IF-472-22・MOD-472-102）が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めの依頼ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 未検証の技術機構に依存しない不具合の修正のため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れを変えない不具合の修正のため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 書き出し・プレビューのシナリオの振る舞いは変えず、テストか実装を設計書の期待に合わせる修正のため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: インターフェース定義設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品を変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: '原因は結合テストのフィクスチャが #630 の仕様に追従していないことで、実装とモジュール構成は変えないため対象外'
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
+  - process: ドキュメント修正
+    status: skipped
+    reason: 利用者の操作・設定・用語を変えず、設計書のほかに更新するページが無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:49:31.919575+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: 実装を変えず、単体テストの対象が無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
+  - process: 実装
+    status: skipped
+    reason: 原因は結合テストのフィクスチャで、実装のコードは変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-19T01:56:45.532042+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-19T02:06:17.254935+00:00'
