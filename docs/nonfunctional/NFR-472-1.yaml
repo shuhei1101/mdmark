@@ -179,11 +179,11 @@ requirements:
     overflow: 上限を超えても列の幅は決め終える。結合テストが失敗し、タグを打つ前に測り方を見直す
     status: planned
     verification:
-      device: WSL2（8 コア、負荷の平均 9〜12）の vitest のブラウザモードで Playwright 同梱の Chromium・幅 1280px
+      device: WSL2（8 コア、負荷の平均 5〜7）の vitest のブラウザモードで Playwright 同梱の Chromium・幅 1280px
       version: Chromium 156.0.8078.4（HeadlessChrome）
       date: '2026-11-20'
-      result: 不合格
-      detail: 今の実装（develop の e4aa77ce）で 3 回× 6 回描き、mount から全ての表が data-auto-width を持つまでが 1,879・2,225・1,971・1,678・1,813・1,693 / 1,842・1,742・1,600・1,601・1,860・1,751 / 1,996・2,133・2,130・2,444・2,174・1,880 ms。参考に、計測用の要素をまとめて配置してから幅をまとめて取得する試作（commit していない）は 739・613・603・575・645・684 / 624・580・638・542・517・593 ms、列の幅を決めない場合は 221・165・143・162・152・187 / 221・156・167・138・149・142 ms。修正した後に同じ手順で測り直す
+      result: 合格
+      detail: 修正した後（commit 5393daaa）に 2 回× 6 回描き、mount から全ての表が data-auto-width を持つまでが 356・345・325・348・299・267 / 432・419・537・309・413・522 ms。修正する前（develop の e4aa77ce、負荷の平均 9〜12）は 1,600〜2,444 ms（3 回× 6 回）で、結合テスト test_normal_when_many_tables_column_widths は修正する前の実装で失敗する
 tags:
   - name: topic:要件
     main: true
