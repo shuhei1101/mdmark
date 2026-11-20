@@ -1,5 +1,6 @@
 import type { ResolvedConfig } from "../config.ts";
 import {
+  type AttachModal,
   attachDiagrams,
   DIAGRAM_REDRAW_EVENT,
 } from "../diagram/diagram.interact.ts";
@@ -126,6 +127,14 @@ export type MapFlowExtension = {
   selectable?: ((id: string) => boolean) | undefined;
   /** 線ごとのデータの印の向き（undefined なら線の元から先。both の線は両向き） */
   packetDirection?: ((wireId: string) => "forward" | "backward") | undefined;
+};
+
+/** 全画面のモーダルに複製した図と、元の図で読み取った定義 */
+type ModalFlow = {
+  figure: HTMLElement;
+  index: number;
+  chart: Flowchart;
+  data: MapData;
 };
 
 /** 1 つのノードと、そのノードの線と相手のノード */
@@ -690,10 +699,12 @@ export const attachMapFlow = (
     onWalk?: () => void;
     extension?: MapFlowExtension;
     resolveIdLink?: ResolveIdLink;
+    /** 全画面のモーダルに複製した図と、元の図で読み取った定義（付け直すとき） */
+    modal?: ModalFlow;
   },
 ): MapFlowHandle => {
-  const { args, onWalk, extension, resolveIdLink } = options;
-  const { index, chart, data } = readFlowRange(range, extension);
+  const { args, onWalk, extension, resolveIdLink, modal } = options;
+  const { index, chart, data } = modal ?? readFlowRange(range, extension);
   const kinds = { ...config.map.kinds, ...extension?.kinds };
   const lines = { ...config.map.lines, ...extension?.lines };
   const ids = new Set([
@@ -825,7 +836,8 @@ export const attachMapFlow = (
       tips: part.tips,
     };
   };
-  range.innerHTML = renderDiagramFrame(
+  if (!modal)
+    range.innerHTML = renderDiagramFrame(
     {
       kind: "map",
       title: args.title ?? extension?.title ?? "",
@@ -840,24 +852,42 @@ export const attachMapFlow = (
     },
     body(),
   );
-  const detachList = attachMapList(range, {
-    label: () =>
-      `${range.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の一覧`,
-    items: () =>
-      flowListItems({
-        chart,
-        notes,
-        changes,
-        kindLabel: (id) => kindLabelOf(chart, { id, kinds }),
-      }),
-  });
-  linkAnnotationOwners(range);
-  const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
-  const detachDiagrams = attachDiagrams({
-    root: range,
-    placement: config.tooltips.diagramPlacement,
-    figures: [figure],
-  });
+  const detachList = modal
+    ? () => undefined
+    : attachMapList(range, {
+        label: () =>
+          `${range.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の一覧`,
+        items: () =>
+          flowListItems({
+            chart,
+            notes,
+            changes,
+            kindLabel: (id) => kindLabelOf(chart, { id, kinds }),
+          }),
+      });
+  if (!modal) linkAnnotationOwners(range);
+  const figure =
+    modal?.figure ??
+    (range.querySelector<HTMLElement>("figure") as HTMLElement);
+  /** 全画面のモーダルの図に操作を付け直し、閉じたら元の図を共有する状態から再配置する */
+  const attachModal: AttachModal = (modalFigure) => {
+    const handle = attachMapFlow(range, config, {
+      ...options,
+      modal: { figure: modalFigure, index, chart, data },
+    });
+    return () => {
+      handle.destroy();
+      reloadShared();
+    };
+  };
+  const detachDiagrams = modal
+    ? () => undefined
+    : attachDiagrams({
+        root: range,
+        placement: config.tooltips.diagramPlacement,
+        figures: [figure],
+        attachModal,
+      });
   // シーケンス図の再生を自動で進めている間に、送り手と受け手のノードへ表示する枠をスクロールする
   const follower = createFollow(figure, prefersReducedMotion());
 
@@ -869,7 +899,28 @@ export const attachMapFlow = (
       storage,
       history,
       location,
+      scope: modal ? "modal" : "page",
     });
+  /** sessionStorage から元の図と共有する状態を読み直して再配置する（全画面を閉じた後） */
+  const reloadShared = () => {
+    const fresh = readMapState({
+      index,
+      ids,
+      urlState: false,
+      focus: undefined,
+      collapsed: state.collapsed,
+      storage,
+      location,
+    });
+    change({
+      ...state,
+      collapsed: fresh.collapsed,
+      positions: fresh.positions,
+      wireShifts: fresh.wireShifts,
+      attachments: fresh.attachments,
+      groupSizes: fresh.groupSizes,
+    });
+  };
   /** 図の中身を描き直す */
   const drawStage = () => {
     const part = body();
@@ -896,7 +947,7 @@ export const attachMapFlow = (
       sizer.style.height = `${part.height}px`;
     }
     replaceTips(figure, part.tips);
-    linkAnnotationOwners(range);
+    if (!modal) linkAnnotationOwners(range);
   };
   /** 状態から配置し直して、図の中身とツールを描き直す */
   const refresh = (relayout = true) => {
@@ -1235,11 +1286,16 @@ export const attachMapFlow = (
     figure.querySelector<HTMLElement>(keyTarget.selector)?.focus();
   };
   /** Escape で選択を外し、選んでいなければ外へ戻る */
-  const escapeWithKey = () => {
+  const escapeWithKey = (): boolean => {
     if (state.selected.length > 0) changeSelection([]);
     else if (state.entered !== undefined)
       change({ ...state, entered: parentOf(chart, state.entered) });
+    else return false;
+    return true;
   };
+  /** 全画面のモーダルで、開いているツールチップがあるか（ツールチップを先に閉じる） */
+  const tipOpen = () =>
+    figure.querySelector(".mdmark-diagram-tip:not([hidden])") !== null;
   const onKeyDown = (event: KeyboardEvent) => {
     const element = event.target instanceof Element ? event.target : undefined;
     const keyTarget = keyTargetOf(element);
@@ -1259,7 +1315,9 @@ export const attachMapFlow = (
       return;
     }
     if (keyTarget && selectWithKey(keyTarget, event)) return;
-    if (event.key === "Escape") escapeWithKey();
+    if (event.key !== "Escape" || (modal && tipOpen())) return;
+    // 全画面では解いたときだけ close request を止め、解くものが無ければモーダルに任せる
+    if (escapeWithKey() && modal) event.preventDefault();
   };
   // 線の区間の上では、区間を動かせる向きのポインターにする（横の区間は上下、縦の区間は左右）
   const onPointerMove = (event: PointerEvent) => {
