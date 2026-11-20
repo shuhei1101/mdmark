@@ -1,0 +1,349 @@
+$ gh workflow run test.yml --ref feat/export/glossary-yaml-and-prerendered-html -f layer=integration -f paths="tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/build.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/render.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/collect-references.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/build-aliases.test.ts"
+# https://github.com/shuhei1101/mdmark/actions/runs/44750014755 (commit a4a588e4)
+
+
+ RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+
+2:06:03 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+89 |  `);return t.at(-1)===""&&t.pop(),t};function UW(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+90 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+91 |  ...:n,ignoreIllegals:!0});return xj(o)}var yj;var wj=e=>import(e);function oT(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+92 |  ${t}
+93 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+2:06:03 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+89 |  `);return t.at(-1)===""&&t.pop(),t};function UW(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+90 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+91 |  ...3066\u3044\u307E\u3059\u3002</p></div>',Aj;var Rj=e=>import(e);function Lj(e){let{cache:t,importModule:n}=e,r=new ...
+   |                                                                 ^
+92 |  ${t}
+93 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+2:06:03 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+92 |  ${t}
+93 |  });
+94 |  ...:l});f&&d.push(f)}return qj(d)}var jj="1.59.0",zj=e=>import(e),Uj=e=>fetch(e,{method:"HEAD"}),Ef=e=>`https://cdn.j...
+   |                                                                 ^
+95 |  `):(t.textContent??"").replace(/\n$/,"")}function Af(e,t){let n=document.createElement("template");n.innerHTML=Zi({st...
+96 |  `)return;let v=document.createElement("span");return v.className="mdmark-code-break",w.replaceWith(v),v.append(w),v})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+2:06:03 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+97 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+98 |  `);return(t.textContent??"").split(`
+99 |  ...verse())r()}}var Dz="data-mdmark-drawn",Qf;var Iz=e=>import(e);async function zv(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+100|  `)[0]?.trim()??"",nU=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+101|  `),s=ra({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+2:06:03 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+97 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+98 |  `);return(t.textContent??"").split(`
+99 |  ..."attachMap"]},tm=new Map,Kv=new Map,Vv=new Map,Nz=e=>import(e);function Jv(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+100|  `)[0]?.trim()??"",nU=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+101|  `),s=ra({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+2:06:03 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+97 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+98 |  `);return(t.textContent??"").split(`
+99 |  ...-theme-light",Zv;var Qv=Promise.resolve(),om=0,Uz=e=>import(e),sm=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+   |                                                                 ^
+100|  `)[0]?.trim()??"",nU=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+101|  `),s=ra({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-S4B9Df/dist/index.js
+2:06:04 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+89 |  `);return t.at(-1)===""&&t.pop(),t};function UW(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+90 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+91 |  ...:n,ignoreIllegals:!0});return xj(o)}var yj;var wj=e=>import(e);function oT(e,t,n){console.error(`${e}\u3092\u8AAD\...
+   |                                                                 ^
+92 |  ${t}
+93 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+2:06:04 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+89 |  `);return t.at(-1)===""&&t.pop(),t};function UW(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+90 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+91 |  ...3066\u3044\u307E\u3059\u3002</p></div>',Aj;var Rj=e=>import(e);function Lj(e){let{cache:t,importModule:n}=e,r=new ...
+   |                                                                 ^
+92 |  ${t}
+93 |  });
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+2:06:04 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+92 |  ${t}
+93 |  });
+94 |  ...:l});f&&d.push(f)}return qj(d)}var jj="1.59.0",zj=e=>import(e),Uj=e=>fetch(e,{method:"HEAD"}),Ef=e=>`https://cdn.j...
+   |                                                                 ^
+95 |  `):(t.textContent??"").replace(/\n$/,"")}function Af(e,t){let n=document.createElement("template");n.innerHTML=Zi({st...
+96 |  `)return;let v=document.createElement("span");return v.className="mdmark-code-break",w.replaceWith(v),v.append(w),v})...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+2:06:04 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+97 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+98 |  `);return(t.textContent??"").split(`
+99 |  ...verse())r()}}var Dz="data-mdmark-drawn",Qf;var Iz=e=>import(e);async function zv(e){let{root:t,libraries:n,isCurre...
+   |                                                                 ^
+100|  `)[0]?.trim()??"",nU=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+101|  `),s=ra({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+2:06:04 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+97 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+98 |  `);return(t.textContent??"").split(`
+99 |  ..."attachMap"]},tm=new Map,Kv=new Map,Vv=new Map,Nz=e=>import(e);function Jv(e,t){return e instanceof Error?(e.cause...
+   |                                                                 ^
+100|  `)[0]?.trim()??"",nU=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+101|  `),s=ra({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+2:06:04 PM [vite] (client) warning: 
+/tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+97 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+98 |  `);return(t.textContent??"").split(`
+99 |  ...-theme-light",Zv;var Qv=Promise.resolve(),om=0,Uz=e=>import(e),sm=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+   |                                                                 ^
+100|  `)[0]?.trim()??"",nU=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+101|  `),s=ra({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+The above dynamic import cannot be analyzed by Vite.
+See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+
+  Plugin: vite:import-analysis
+  File: /tmp/mdmark-integration-dist-l3jbMA/dist/index.js
+ ✓  integration-browser-touch (chromium)  tests/integration/lib/mount.browser.test.ts (337 tests | 335 skipped) 2107ms
+   ✓ test_normal_when_unmarked_table_sorted_by_touch 1505ms
+   ✓ test_normal_when_column_resized_by_touch 386ms
+ ✓  integration-node  tests/integration/lib/render.test.ts (106 tests) 7304ms
+   ✓ test_normal 2749ms
+   ✓ test_normal_when_table_feature_errors 582ms
+   ✓ test_normal_when_view_sort_columns 566ms
+   ✓ test_normal_when_no_intl_segmenter 719ms
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_zoomed
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_panned
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ✓  integration-node  tests/integration/lib/check-config.test.ts (41 tests) 37262ms
+   ✓ test_normal 701ms
+   ✓ test_normal_when_drift 951ms
+   ✓ test_normal_when_no_documents 915ms
+   ✓ test_error_when_config_missing 452ms
+   ✓ test_normal_when_unknown_mark 839ms
+   ✓ test_normal_when_plain_md_has_marks 831ms
+   ✓ test_normal_when_extension_hint_disabled 912ms
+   ✓ test_normal_when_known_extension_and_ignored_mark 954ms
+   ✓ test_normal_when_extension_unloadable 862ms
+   ✓ test_normal_when_base_given 1497ms
+   ✓ test_error_when_base_unknown 863ms
+   ✓ test_normal_when_alias_drift 814ms
+   ✓ test_normal_when_unknown_color_theme 1494ms
+   ✓ test_normal_when_unknown_color_scheme 1428ms
+   ✓ test_normal_when_files_missing 454ms
+   ✓ test_normal_when_diagram_drift 1008ms
+   ✓ test_normal_when_retired_diagram 933ms
+   ✓ test_normal_when_text 854ms
+   ✓ test_normal_when_text_warnings 973ms
+   ✓ test_normal_when_text_unknown_mark_args 737ms
+   ✓ test_normal_when_yaml_key 1287ms
+   ✓ test_normal_when_text_extension_mark 874ms
+   ✓ test_error_when_key_missing 677ms
+   ✓ test_normal_when_include_targets_missing 361ms
+   ✓ test_normal_when_include_circular_or_outside 369ms
+   ✓ test_normal_when_diagram_placement_invalid 2590ms
+   ✓ test_normal_when_map_data_drift 828ms
+   ✓ test_normal_when_map_er_state_data_drift 889ms
+   ✓ test_normal_when_map_class_arch_c4_data_drift 809ms
+   ✓ test_normal_when_text_map_warnings 808ms
+   ✓ test_normal_when_map_config_drift 842ms
+   ✓ test_normal_when_legacy_mark 891ms
+   ✓ test_normal_when_mark_options_drift 807ms
+   ✓ test_normal_when_text_legacy_mark 841ms
+   ✓ test_normal_when_text_mark_args_not_json 1009ms
+   ✓ test_normal_when_map_mindmap_data_drift 1064ms
+   ✓ test_normal_when_map_axis_grid_data_drift 885ms
+   ✓ test_normal_when_map_node_id_link_checked 753ms
+   ✓ test_normal_when_map_changes_drift 901ms
+   ✓ test_normal_when_glossary_alias_row_missing 1003ms
+ ✓  integration-node  tests/integration/lib/bundle.test.ts (22 tests) 41740ms
+   ✓ test_normal 1230ms
+   ✓ test_normal_when_link_outside_bundle 1063ms
+   ✓ test_error_when_build_missing 348ms
+   ✓ test_error_when_no_documents 350ms
+   ✓ test_error_when_output_unwritable 685ms
+   ✓ test_normal_when_aliases 913ms
+   ✓ test_normal_when_color_theme 775ms
+   ✓ test_normal_when_page_settings_per_document 933ms
+   ✓ test_normal_when_media_embedded 1375ms
+   ✓ test_error_when_media_copy_unwritable 441ms
+   ✓ test_normal_when_blob_and_dynamic_import_blocked 1264ms
+   ✓ test_normal_when_includes_and_icons 831ms
+   ✓ test_normal_when_range_scripts 928ms
+   ✓ test_normal_when_mermaid_embedded 4546ms
+   ✓ test_normal_when_back_forward_restore_scroll 1566ms
+   ✓ test_normal_when_reload_restore_scroll 1216ms
+   ✓ test_normal_when_back_restore_folds_and_tabs 1407ms
+   ✓ test_normal_when_session_storage_unavailable 1257ms
+   ✓ test_normal_when_switch_clears_map_query 1389ms
+   ✓ test_normal_when_map_config 1068ms
+   ✓ test_normal_when_traces_hidden 10138ms
+   ✓ test_normal_when_traces_kept 7889ms
+ ✓  integration-browser (chromium)  tests/integration/lib/mount.browser.test.ts (337 tests | 2 skipped) 81870ms
+   ✓ test_normal 1127ms
+   ✓ test_error_when_library_not_found 407ms
+   ✓ test_normal_when_table_header_stuck 2344ms
+   ✓ test_normal_when_table_header_stuck_in_scroller 1379ms
+   ✓ test_normal_when_every_table_header_stuck 1694ms
+   ✓ test_normal_when_code_copied 2097ms
+   ✓ test_normal_when_glossary 433ms
+   ✓ test_normal_when_diagram_zoomed 1018ms
+   ✓ test_normal_when_diagram_panned 1262ms
+   ✓ test_normal_when_diagram_fullscreen 535ms
+   ✓ test_normal_when_diagram_tooltip 659ms
+   ✓ test_normal_when_diagram_tooltip_touch 487ms
+   ✓ test_normal_when_diagram_pinched 604ms
+   ✓ test_normal_when_destroyed_while_waiting 1110ms
+   ✓ test_normal_when_diff_blocks_updated 944ms
+   ✓ test_normal_when_comment_added 322ms
+   ✓ test_error_when_part_module_unavailable 374ms
+   ✓ test_normal_when_tooltip_placement_bottom 448ms
+   ✓ test_normal_when_bg_transparent_with_opaque 373ms
+   ✓ test_normal_when_no_syntax_target 312ms
+   ✓ test_normal_when_side_toc_hovered_and_pinned 400ms
+   ✓ test_normal_when_side_toc_focused 450ms
+   ✓ test_normal_when_back_to_top_pressed 666ms
+   ✓ test_normal_when_back_to_top_in_scroll_container 727ms
+   ✓ test_normal_when_back_to_top_avoids_side_parts 737ms
+   ✓ test_normal_when_lightbox_opened 446ms
+   ✓ test_normal_when_lightbox_zoomed 334ms
+   ✓ test_normal_when_lightbox_pinched 526ms
+   ✓ test_normal_when_gif_toggled 2205ms
+   ✓ test_normal_when_gif_reduced_motion 702ms
+   ✓ test_normal_when_jumped_from_margin_marker 365ms
+   ✓ test_normal_when_code_fold_column_hovered 302ms
+   ✓ test_normal_when_footnote_tooltip 326ms
+   ✓ test_normal_when_side_toc_over_table 516ms
+   ✓ test_normal_when_side_toc_scrolled_to_end 412ms
+   ✓ test_normal_when_side_toc_at_scroll_edge 831ms
+   ✓ test_normal_when_node_link_opened 303ms
+   ✓ test_normal_when_wide_toggled 417ms
+   ✓ test_normal_when_wide_with_side_toc 406ms
+   ✓ test_normal_when_glossary_touch 484ms
+   ✓ test_normal_when_columns_reordered 397ms
+   ✓ test_normal_when_reordered_within_groups 381ms
+   ✓ test_normal_when_diagram_placement_top 975ms
+   ✓ test_normal_when_chart_item_tooltip 1203ms
+   ✓ test_normal_when_diagram_resized 1680ms
+   ✓ test_normal_when_range_scripts 325ms
+   ✓ test_error_when_range_script_invalid 373ms
+   ✓ test_normal_when_block_spacing 1452ms
+   ✓ test_normal_when_mermaid_drawn 1065ms
+   ✓ test_normal_when_mermaid_scheme_changed 1068ms
+   ✓ test_normal_when_mermaid_printed 1579ms
+   ✓ test_normal_when_mermaid_theme_configured 902ms
+   ✓ test_normal_when_no_mermaid_target 306ms
+   ✓ test_error_when_mermaid_syntax_invalid 918ms
+   ✓ test_normal_when_mermaid_node_link 2296ms
+   ✓ test_normal_when_column_wider_than_visible_width 469ms
+   ✓ test_normal_when_pinned_column_resized 317ms
+   ✓ test_normal_when_map_walkthrough_played 1363ms
+   ✓ test_normal_when_diagram_and_frontmatter_kept_on_update 332ms
+   ✓ test_normal_when_many_tables_column_widths 1349ms
+   ✓ test_normal_when_map_hints_off 626ms
+   ✓ test_normal_when_plain_mermaid_map 524ms
+   ✓ test_error_when_plain_map_cannot_read 1007ms
+   ✓ test_normal_when_map_axis_grid_layout 431ms
+   ✓ test_normal_when_map_exported 4000ms
+   ✓ test_normal_when_map_list_view 835ms
+   ✓ test_error_when_map_png_unavailable 2179ms
+   ✓ test_normal_when_rendered 1437ms
+ ✓  integration-node  tests/integration/lib/export.test.ts (21 tests) 46746ms
+   ✓ test_normal 1246ms
+   ✓ test_normal_when_unreadable_assets 1120ms
+   ✓ test_error_when_config_invalid 530ms
+   ✓ test_error_when_document_missing 463ms
+   ✓ test_error_when_output_unwritable 873ms
+   ✓ test_normal_when_tooltip_placement 1980ms
+   ✓ test_normal_when_syntax_highlighted 1311ms
+   ✓ test_normal_when_aliases 1391ms
+   ✓ test_normal_when_color_theme 1262ms
+   ✓ test_normal_when_param_copy_label 1355ms
+   ✓ test_normal_when_media_embedded 2139ms
+   ✓ test_error_when_media_copy_unwritable 500ms
+   ✓ test_normal_when_blob_and_dynamic_import_blocked 1674ms
+   ✓ test_normal_when_includes_and_icons 1589ms
+   ✓ test_normal_when_range_scripts 1163ms
+   ✓ test_normal_when_cascaded 1206ms
+   ✓ test_error_when_settings_unreadable 433ms
+   ✓ test_normal_when_mermaid_embedded 5643ms
+   ✓ test_normal_when_map_config 1207ms
+   ✓ test_normal_when_traces_hidden 11752ms
+   ✓ test_normal_when_traces_kept 7797ms
+ ✓  integration-node  tests/integration/lib/collect-matches.test.ts (9 tests) 315ms
+ ✓  integration-node  tests/integration/lib/collect-references.test.ts (7 tests) 329ms
+ ✓  integration-node  tests/integration/lib/build-aliases.test.ts (3 tests) 278ms
+ ✓  integration-node  tests/integration/lib/build.test.ts (10 tests) 64505ms
+   ✓ test_normal 15030ms
+   ✓ test_normal_when_version_given 13882ms
+   ✓ test_error_when_version_format_invalid 915ms
+   ✓ test_error_when_dist_file_too_large 4301ms
+   ✓ test_error_when_api_missing_in_baseline_browser 7308ms
+   ✓ test_error_when_schema_changed_without_steps 659ms
+   ✓ test_error_when_next_steps_left_in_release 652ms
+   ✓ test_error_when_steps_invalid 653ms
+   ✓ test_normal_when_released_migrations_kept 13643ms
+   ✓ test_normal_when_develop 7171ms
+
+ Test Files  10 passed (10)
+      Tests  556 passed | 337 skipped (893)
+   Start at  14:05:39
+   Duration  135.83s (tests 98%, import 1%, transform 1%, worker 1%)
+

@@ -56,7 +56,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`glossary` のマーカーの範囲を取り除き、中の表を普通の表として残し、読み込んだ用語を `env.ownGlossary` に追加する'
-    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines` に `env.ownGlossary` と同じ並びで追加する（やめた言い方は用語の `avoid` が持つ）。表の中のテキストのトークンに照合しないマーカー（`meta.mdmarkNoTerms`）を付ける。警告は表の前に記載の警告を差し込む。`glossary` がオフのときはマーカーを取り除くだけで用語を追加せず、警告も出さない'
+    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines` に `env.ownGlossary` と同じ並びで追加する（やめた言い方は用語の `avoid` が持つ）。表の中のテキストのトークンに照合しないマーカー（`meta.mdmarkNoTerms`）を付ける。警告は表の前に記載の警告を差し込む。`glossary` がオフのときはマーカーを取り除くだけで用語を追加せず、警告も出さない。マーカーの設定が `alias_row` を持つときは、閉じのマーカーを探さず、マーカーのトークンを `aliasGlossaryTokens` が返却するトークンに置き換え、`env.ownGlossary` には追加しない（`glossary` がオフでも表は描く）'
     args:
       - name: state
         type: StateCore
@@ -67,6 +67,7 @@ functions:
       description: トークンの並びと `env` を書き換える
     callees:
       - '#functions[readGlossaryTable]'
+      - '#functions[aliasGlossaryTokens]'
     unit_tests:
       - name: test_glossary_rule
         case: 正常
@@ -86,6 +87,12 @@ functions:
         condition: シナリオ『表から用語集に用語を入れる』の「正常シナリオ（やめた言い方の列がある）」の Markdown
         mock: なし
         expected: '`env.ownGlossary` の `ワークスペース` の `avoid` が `["作業場", "ワーク場"]`'
+      - name: test_glossary_rule_with_alias_row
+        case: 正常
+        summary: '`alias_row` のマーカーを、閉じのマーカーを探さず表に置き換え、`env.ownGlossary` に追加しない'
+        condition: '`<!-- glossary: {"alias_row": "terms"} -->` と後の段落、`env.aliases` に行 `terms` の term が 2 件。`glossary` がオフの文書も同じに描く'
+        mock: なし
+        expected: HTML に `table` があり後の段落もある、`env.ownGlossary` が空、オフの文書も `table` がある
   - name: readGlossaryRows
     title: 用語集の表の行を読み込む
     container: src/knowledge/glossary.syntax.ts
@@ -120,6 +127,40 @@ functions:
         condition: '`{"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "旧称"}}`、列が `用語`・`意味`'
         mock: なし
         expected: '`rows` が空、`warning` に `avoid.column` と `旧称` と列の並び `用語`・`意味`'
+  - name: aliasGlossaryTokens
+    title: エイリアスの行から用語集の表のトークンを作る
+    container: src/knowledge/glossary.syntax.ts
+    kind: 関数
+    scope: internal
+    summary: '`env.aliases` のうち `alias_type` が `term` で `row` が `alias_row` のエイリアスから、用語・別名・使用しない言い方・意味・詳細の列の表のトークンと記載の警告を作る'
+    description: 表のトークンは表のマーカーの `data` を当てた表と同じにし、テキストのトークンに `meta.mdmarkNoTerms` を付ける。別名・使用しない言い方は「、」でつなぐ。詳細は `details` の並びの順にリンクのトークンにし「・」でつなぐ。リンク先は、URL か `#` で始まるときはそのまま、それ以外は `env.path` のフォルダからの相対パスにする（`env.path` が無ければそのまま）。該当するエイリアスが無いときは表のトークンを返却せず、記載の警告だけを返却する。`term`・`meaning`・`aliases`・`avoid` を一緒に記載したマーカーは、表のトークンと記載の警告の両方を返却する。警告の文言は画面設計『文書』の「用語集の表」のエラーメッセージ
+    args:
+      - name: options
+        type: '{ options: MarkOptions; mark: string; state: StateCore }'
+        required: true
+        description: マーカーの設定・マーカーの文字・markdown-it のコアの状態（`state.env` の `aliases`・`path` を読む）
+    returns:
+      type: '{ tokens: Token[]; warning?: string }'
+      description: マーカーの場所に入れる表のトークンと、記載の警告の本文
+    unit_tests:
+      - name: test_alias_glossary_tokens
+        case: 正常
+        summary: 行の term のエイリアスだけを 5 列の表にし、詳細のリンク先を描く文書からの相対パスにする
+        condition: インターフェース定義『文書をHTML文字列にする』の正常系（エイリアスの行から用語集の表を描く）のエイリアスと `env.path`
+        mock: なし
+        expected: 見出しが 5 列で行が `マーカー`・`機能` の 2 行、リンクの `href` が `コアコンセプト-文書を描く仕組み.md`、`warning` が無い
+      - name: test_alias_glossary_tokens_when_row_missing
+        case: 異常
+        summary: 行の term のエイリアスが無いとき、表を作らず警告を返却する
+        condition: '`alias_row` が `glossary-terms`、`env.aliases` にその行のエイリアスが無い'
+        mock: なし
+        expected: '`tokens` が空、`warning` に `glossary-terms`'
+      - name: test_alias_glossary_tokens_when_mixed
+        case: 異常
+        summary: 列の指定と一緒に記載したとき、表と警告の両方を返却する
+        condition: '`{"alias_row": "terms", "term": {"column": "用語"}}`'
+        mock: なし
+        expected: 表のトークンがあり、`warning` に `term`
 lead: '用語集の表の読み取りを受け持ち、表から用語集に入れる用語の扱いを変えるときに参照する。'
 tags:
   - name: topic:索引

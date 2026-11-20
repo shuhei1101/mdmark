@@ -7,8 +7,8 @@ fields:
 - key: term
   title: 用語の列
   type: object
-  description: 用語の列
-  required: true
+  description: 用語の列。`alias_row` が無いとき必須で、`alias_row` と一緒に記載しない
+  required: false
   example: '{"column": "用語"}'
 - key: term.column
   title: 列の見出しの文字
@@ -19,8 +19,8 @@ fields:
 - key: meaning
   title: 意味の列
   type: object
-  description: 意味の列
-  required: true
+  description: 意味の列。`alias_row` が無いとき必須で、`alias_row` と一緒に記載しない
+  required: false
   example: '{"column": "意味"}'
 - key: meaning.column
   title: 列の見出しの文字
@@ -31,7 +31,7 @@ fields:
 - key: aliases
   title: 別名の列
   type: object
-  description: 別名の列
+  description: 別名の列。`alias_row` と一緒に記載しない
   example: '{"column": "別名"}'
 - key: aliases.column
   title: 列の見出しの文字
@@ -42,7 +42,7 @@ fields:
 - key: avoid
   title: やめた言い方の列
   type: object
-  description: やめた言い方の列
+  description: やめた言い方の列。`alias_row` と一緒に記載しない
   example: '{"column": "やめた言い方"}'
 - key: avoid.column
   title: 列の見出しの文字
@@ -50,5 +50,11 @@ fields:
   description: 列の見出しの文字
   required: true
   example: やめた言い方
+- key: alias_row
+  title: エイリアスの元の行
+  type: ref
+  ref: DATA-472-6#fields[id]
+  description: 表を囲まず、この行から作った `term` のエイリアスで用語集の表を描くときの、設定の `aliases` の行の `id`。記載したマーカーは閉じのマーカーを持たず、`term`・`meaning`・`aliases`・`avoid` と一緒に記載しない。描く表の列は `用語`・`別名`・`使用しない言い方`・`意味`・`詳細` に固定する
+  example: terms
 refs:
 - ER-477-16#tables[glossary]

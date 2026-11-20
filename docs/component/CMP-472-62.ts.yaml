@@ -138,6 +138,20 @@ states:
     args:
       - name: message
         value: CSV の 2 行目・3 行目の列の数が、見出しの行の 3 列と違います。見出しの列の数にそろえて表示しています。
+  - name: GlossaryAliasRowMissing
+    description: 用語集の表のマーカーの `alias_row` が指す行の `term` のエイリアスが無い。表の代わりにこの枠だけを出す
+    args:
+      - name: mark
+        value: '<!-- glossary: {"alias_row": "glossary-terms"} -->'
+      - name: message
+        value: の `alias_row` の行 `glossary-terms` から作った用語がありません。設定の `aliases` に `alias_type` が `term` の行 `glossary-terms` を記載するか、`alias_row` を行の `id` に修正してください。用語集の表を描いていません。
+  - name: GlossaryAliasRowMixed
+    description: 用語集の表のマーカーに `alias_row` と列の指定を一緒に記載した。警告の後に `alias_row` の行の用語で表を描く
+    args:
+      - name: mark
+        value: '<!-- glossary: {"alias_row": "terms", "term": {"column": "用語"}} -->'
+      - name: message
+        value: は `alias_row` と `term` を一緒に記載しています。`alias_row` を使用するときは `term` を削除してください。`alias_row` の行の用語で表を描いています。
 lead: 記法のマーカーや拡張の引数に読み込めない指定がある箇所に配置し、作成者へ読み込めない指定と修正方法を通知する枠。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
 args:
   - name: mark

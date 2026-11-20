@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import { renderedDoc } from "../../helpers/rendered.ts";
 
 /** まとめた HTML の起動の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadBundle = () => import("../../../../src/viewer/bundle.ts");
@@ -11,8 +12,8 @@ const PAYLOAD = {
   kind: "bundle" as const,
   config: {},
   docs: [
-    { path: "a.md", title: "A", markdown: "# 文書A\n" },
-    { path: "b.md", title: "B", markdown: "# 文書B\n" },
+    await renderedDoc({ path: "a.md", title: "A", markdown: "# 文書A\n" }),
+    await renderedDoc({ path: "b.md", title: "B", markdown: "# 文書B\n" }),
   ],
   entry: "a.md",
 };
@@ -23,7 +24,7 @@ const ORIGINAL_URL = `${location.pathname}${location.search}`;
 const LONG_PAYLOAD = {
   ...PAYLOAD,
   docs: [
-    {
+    await renderedDoc({
       path: "a.md",
       title: "A",
       markdown: [
@@ -33,13 +34,13 @@ const LONG_PAYLOAD = {
           index === 99 ? "[B へ](b.md)\n" : `段落 ${index + 1}\n`,
         ),
       ].join("\n"),
-    },
-    {
+    }),
+    await renderedDoc({
       path: "b.md",
       title: "B",
       markdown:
         "# 文書B\n\n<!-- toc -->\n\n## 一つ目\n\n本文\n\n## 二つ目\n\n本文\n",
-    },
+    }),
   ],
 };
 
@@ -133,13 +134,13 @@ test("test_start_bundle_when_side_toc_link_into_closed_section", async () => {
   const payload = {
     ...PAYLOAD,
     docs: [
-      { path: "a.md", title: "A", markdown: "# 文書A\n" },
-      {
+      await renderedDoc({ path: "a.md", title: "A", markdown: "# 文書A\n" }),
+      await renderedDoc({
         path: "b.md",
         title: "B",
         markdown:
           '## 導入\n\n<!-- section: {"open": false} -->\n\n### 注意\n\n本文\n',
-      },
+      }),
     ],
   };
   history.replaceState(null, "", "#/b.md");
@@ -190,13 +191,13 @@ test("test_start_bundle_when_back_focuses_title", async () => {
   const payload = {
     ...PAYLOAD,
     docs: [
-      {
+      await renderedDoc({
         path: "a.md",
         title: "A",
         markdown:
           "# 文書A\n\n<!-- tabs -->\n\n## 一つ目\n\n本文\n\n## 二つ目\n\n[B へ](b.md)\n\n<!-- /tabs -->\n",
-      },
-      { path: "b.md", title: "B", markdown: "# 文書B\n" },
+      }),
+      await renderedDoc({ path: "b.md", title: "B", markdown: "# 文書B\n" }),
     ],
   };
   history.replaceState(null, "", "#/a.md");
@@ -339,4 +340,31 @@ test("test_start_bundle_when_switch_clears_map_query", async () => {
   history.back();
   await new Promise((resolve) => setTimeout(resolve, 100));
   expect(location.search).toBe("?map-1=place&x=1");
+});
+
+// 開いた文書を埋めた描いた結果で描き、page の値で明暗を決める（正常系）
+test("test_start_bundle_with_rendered", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  const payload = {
+    ...PAYLOAD,
+    docs: [
+      await renderedDoc({ path: "a.md", title: "A", markdown: "# 文書A\n" }),
+      await renderedDoc({
+        path: "b.md",
+        title: "B",
+        markdown: '<!-- page: {"scheme": "dark"} -->\n\n# 文書B\n',
+      }),
+    ],
+  };
+  history.replaceState(null, "", "#/b.md");
+  // 実行
+  startBundle(document, payload, {});
+  // 検証
+  const view = document.querySelector<HTMLElement>(
+    ".mdmark-bundle-main .mdmark",
+  );
+  expect(view?.querySelector("h1")?.textContent).toContain("文書B");
+  expect(view?.classList.contains("mdmark-theme-dark")).toBe(true);
 });

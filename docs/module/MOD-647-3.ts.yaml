@@ -1,31 +1,12 @@
 id: MOD-647-3
 visibility: internal
-title: ライブラリ本体 / 書き出したHTMLの起動 / includes.ts
-lead: 書き出しの中身からの取り込む文書の表と `mount` の索引・参照の引数の組み立てを受け持ち、まとめた HTML で文書を開くときに指定する値を変えるときに参照する。
+title: ライブラリ本体 / 書き出したHTMLの起動 / options.ts
+lead: 書き出しの中身から `mount` の索引・参照の引数と描いた結果の引数を組み立てることを受け持ち、まとめた HTML で文書を開くときに指定する値を変えるときに参照する。
 functions:
-  - name: includesOf
-    title: 取り込む文書の表を作る
-    kind: 関数
-    container: src/viewer/includes.ts
-    role: 変換
-    scope: public
-    summary: 書き出しの中身から、文書のフォルダからのパスをキーにした取り込む文書の表を作る
-    args:
-      - name: payload
-        type: ExportPayload
-        required: true
-        description: 書き出しの中身
-      - name: doc
-        type: ExportPayload["docs"][number]
-        required: true
-        description: 開く文書
-    returns:
-      type: Record<string, string>
-      description: 文書の `includes` のキーごとに、`payload.includes` の中身を値にした表。中身が無いキーは空文字列
   - name: knowledgeOptions
     title: 索引と参照をmountの引数にする
     kind: 関数
-    container: src/viewer/includes.ts
+    container: src/viewer/options.ts
     role: 変換
     scope: public
     summary: 書き出しの中身が持つ索引・文書の ID・参照の表・用語を、`mount` の引数にする
@@ -41,8 +22,33 @@ functions:
     returns:
       type: Pick<MountOptions, "index" | "docId" | "references" | "aliases">
       description: '`payload` と `docId` が持つものだけを入れた引数（持たないキーは入れない）'
+  - name: renderedOptions
+    title: 描いた結果の引数を組み立てる
+    container: src/viewer/options.ts
+    kind: 関数
+    scope: internal
+    summary: 書き出しの中身の文書 1 つから、`mount` の `rendered`・`pureMarkdown`・`path` を作る。`bundle` では `rendered.html` と `pureMarkdown` の `mdmark-asset:{キー}` を `assets` の `data:` URL に替える
+    args:
+      - name: options
+        type: '{ payload: ExportPayload; doc: ExportPayload["docs"][number] }'
+        required: true
+        description: 書き出しの中身と、開く文書
+    returns:
+      type: '{ rendered: MdmarkRendered; pureMarkdown: string; path: string }'
+      description: '`mount` に指定する引数'
+    callees:
+      - MOD-472-247#functions[restoreAssets]
+    unit_tests:
+      - name: test_rendered_options
+        case: 正常
+        summary: '描いた結果の画像のキーを data: URL に替え、純粋な Markdown とパスをそのまま渡す'
+        condition: '`kind: bundle`、`rendered.html` に `<img src="mdmark-asset:a">`、`assets` に `a`'
+        mock: なし
+        expected: '`rendered.html` の `src` が `assets.a` の `data:` URL、`pureMarkdown`・`path` が文書の値'
 tags:
   - name: tool:html
     main: true
   - name: topic:書き出し
   - name: action:起動
+test_files:
+  - tests/unit/src/viewer/options.test.ts

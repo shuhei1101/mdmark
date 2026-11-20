@@ -23,7 +23,7 @@ data_models:
         type: MdmarkReferences | undefined
         description: '`collectReferences` の参照の表'
       - name: docs
-        type: 'Array<{ path: string; title: string; markdown: string; docId?: string }>'
+        type: 'Array<{ path: string; title: string; rendered: MdmarkRendered; pureMarkdown: string; docId?: string }>'
         description: 埋める文書。`markdown` は画像を `data:` URL に替え、動画・音声の `src` をコピーへの相対パスに替えたもの（`bundle` では画像を `mdmark-asset:{キー}` に替える）
       - name: entry
         type: string
@@ -90,6 +90,12 @@ functions:
         condition: '`hideTraces: true`、`kind: bundle`、起点の文書のタイトルが `mdmark の紹介`、`icons` を 1 つ持つ中身と、`:root{--mdmark-version:"v0.12.0"}` を持つ配布物の CSS'
         mock: なし
         expected: '`<title>mdmark の紹介</title>` があり、それ以外の HTML の文字列（埋め込みの JSON の利用者が記載した値を除く）に `mdmark`・`v0.12.0`・`<!--` が無く、`id="zq-payload"`・`.zq-bundle` と、`/*! lucide` で始まるスクリプトがある'
+      - name: test_assemble_html_without_markdown
+        case: 正常
+        summary: 書き出しの中身に元の Markdown と取り込む文書の表を持たず、描いた結果と純粋な Markdown を埋める
+        condition: '`docs` が `rendered`（`html` に `<h1>タイトル</h1>`）と `pureMarkdown`（`# タイトル`）を持つ中身'
+        mock: なし
+        expected: 埋めた JSON の `docs[0]` が `markdown` を持たず `rendered.html`・`pureMarkdown` を持ち、最上位に `includes` が無い
     status: planned
     callees:
       - MOD-472-350#functions[hidePayload]

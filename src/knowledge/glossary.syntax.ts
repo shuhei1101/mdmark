@@ -1,6 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
 import type { MarkOptions } from "../render/mark-options.ts";
-import type { Mark } from "../render/marks.ts";
+import { MARK_TOKEN, type Mark } from "../render/marks.ts";
 import {
   unclosedWarning,
   warningBlock,
@@ -12,6 +12,7 @@ import {
   markOf,
   textOf,
 } from "../shared/tokens.syntax.ts";
+import { type MdmarkAlias, usableAliases } from "./aliases.ts";
 import type { MdmarkGlossaryEntry } from "./references.ts";
 
 /** 用語集の表の 1 行から読み込んだ用語と、その行の文書の中の行番号（1 から） */
@@ -241,6 +242,169 @@ function collectGlossary(
   return out;
 }
 
+/** エイリアスの行から描く用語集の表の列 */
+const ALIAS_TABLE_COLUMNS = [
+  "用語",
+  "別名",
+  "使用しない言い方",
+  "意味",
+  "詳細",
+];
+
+/** `alias_row` と一緒に記載できない列の指定のキー */
+const COLUMN_KEYS = ["term", "meaning", "aliases", "avoid"];
+
+/** スキームで始まる URL か */
+const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+
+/** 表のセルに入れる文字にする（`|` と改行を打ち消す） */
+function cellOf(text: string): string {
+  return text.replaceAll("|", "\\|").replaceAll(/\r?\n/g, " ");
+}
+
+/** 設定ファイルのフォルダからの相対パス `to` を、文書 `from` のフォルダからの相対パスにする */
+function relativeFrom(from: string, to: string): string {
+  const fromParts = from.split("/").slice(0, -1);
+  const toParts = to.split("/");
+  let common = 0;
+  while (
+    common < fromParts.length &&
+    common < toParts.length - 1 &&
+    fromParts[common] === toParts[common]
+  ) {
+    common++;
+  }
+  return [
+    ...fromParts.slice(common).map(() => ".."),
+    ...toParts.slice(common),
+  ].join("/");
+}
+
+/** 詳細のページのリンク先を、描く文書からのリンク先にする */
+function detailHref(href: string, path: string | undefined): string {
+  if (path === undefined || SCHEME.test(href) || href.startsWith("#")) {
+    return href;
+  }
+  const hash = href.indexOf("#");
+  const target = hash === -1 ? href : href.slice(0, hash);
+  const anchor = hash === -1 ? "" : href.slice(hash);
+  return `${relativeFrom(path, target)}${anchor}`;
+}
+
+/** エイリアス 1 件を表の 1 行の Markdown にする */
+function aliasRowLine(alias: MdmarkAlias, path: string | undefined): string {
+  const details = (alias.details ?? [])
+    .map(
+      ({ title, href }) =>
+        `[${cellOf(title).replaceAll(/[[\]]/g, "\\$&")}](<${detailHref(href, path).replaceAll(">", "%3E")}>)`,
+    )
+    .join("・");
+  const cells = [
+    cellOf(alias.name),
+    cellOf(alias.aliases.join("、")),
+    cellOf((alias.avoid ?? []).join("、")),
+    cellOf(alias.description ?? ""),
+    details,
+  ];
+  return `| ${cells.join(" | ")} |`;
+}
+
+/** 同じ位置・行に置く、表のマーカーの開きと閉じのトークン */
+function tableMarkTokens(state: StateCore, source: Token): [Token, Token] {
+  const make = (closing: boolean): Token => {
+    const token = new state.Token(MARK_TOKEN, "", 0);
+    token.block = true;
+    token.level = source.level;
+    token.map = source.map;
+    const raw = closing
+      ? "<!-- /table -->"
+      : '<!-- table: {"kind": "data"} -->';
+    const mark: Mark = {
+      name: "table",
+      options: closing ? {} : { kind: "data" },
+      source: closing ? "none" : "json",
+      problems: [],
+      unknownKeys: [],
+      raw,
+      closing,
+    };
+    token.meta = mark;
+    return token;
+  };
+  return [make(false), make(true)];
+}
+
+/** `env.aliases` のうち `alias_type` が `term` で `row` が `alias_row` のエイリアスから、用語・別名・使用しない言い方・意味・詳細の列の表のトークンと記載の警告を作る */
+export function aliasGlossaryTokens(options: {
+  /** マーカーの設定 */
+  options: MarkOptions;
+  /** マーカーの文字 */
+  mark: string;
+  /** markdown-it のコアの状態 */
+  state: StateCore;
+}): { tokens: Token[]; warning?: string } {
+  const { options: spec, state } = options;
+  const env = envOf(state);
+  const row = String(spec.alias_row);
+  const mixed = COLUMN_KEYS.filter((key) => Object.hasOwn(spec, key));
+  const aliases = usableAliases(env.aliases ?? []).filter(
+    (alias) => alias.alias_type === "term" && alias.row === row,
+  );
+  if (aliases.length === 0) {
+    return {
+      tokens: [],
+      warning: `の \`alias_row\` の行 \`${row}\` から作った用語がありません。設定の \`aliases\` に \`alias_type\` が \`term\` の行 \`${row}\` を記載するか、\`alias_row\` を行の \`id\` に修正してください。用語集の表を描いていません。`,
+    };
+  }
+  const markdown = [
+    `| ${ALIAS_TABLE_COLUMNS.join(" | ")} |`,
+    `| ${ALIAS_TABLE_COLUMNS.map(() => "---").join(" | ")} |`,
+    ...aliases.map((alias) => aliasRowLine(alias, env.path)),
+    "",
+  ].join("\n");
+  const parsed: Token[] = [];
+  state.md.block.parse(markdown, state.md, state.env, parsed);
+  for (const token of parsed) {
+    if (token.type === "inline") {
+      token.children = [];
+      state.md.inline.parse(token.content, state.md, state.env, token.children);
+      for (const child of token.children) {
+        child.meta = { ...child.meta, mdmarkNoTerms: true };
+      }
+    }
+  }
+  const tokens = parsed;
+  const keys = mixed.map((key) => `\`${key}\``).join("・");
+  return mixed.length === 0
+    ? { tokens }
+    : {
+        tokens,
+        warning: `は \`alias_row\` と ${keys} を一緒に記載しています。\`alias_row\` を使用するときは ${keys} を削除してください。\`alias_row\` の行の用語で表を描いています。`,
+      };
+}
+
+/** `alias_row` のマーカーのトークンを、表のマーカーで囲んだ表のトークンと記載の警告に置き換える */
+function aliasGlossary(state: StateCore, token: Token, mark: Mark): Token[] {
+  const { tokens, warning } = aliasGlossaryTokens({
+    options: mark.options,
+    mark: mark.raw,
+    state,
+  });
+  for (const item of tokens) {
+    item.map = token.map;
+    item.level += token.level;
+  }
+  const out: Token[] = [];
+  if (warning !== undefined) {
+    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
+  }
+  if (tokens.length > 0) {
+    const [open, close] = tableMarkTokens(state, token);
+    out.push(open, ...tokens, close);
+  }
+  return out;
+}
+
 /** `glossary` のマーカーの範囲を取り除き、中の表を普通の表として残し、読み込んだ用語を `env.ownGlossary` に追加する（行番号は `env.glossaryLines` に同じ並びで追加する） */
 export function glossaryRule(state: StateCore): void {
   const enabled = featureOn(state, "glossary");
@@ -256,6 +420,10 @@ export function glossaryRule(state: StateCore): void {
       continue;
     }
     if (mark.closing) {
+      continue;
+    }
+    if (Object.hasOwn(mark.options, "alias_row")) {
+      out.push(...aliasGlossary(state, token, mark));
       continue;
     }
     const close = findClose(tokens, position, "glossary");

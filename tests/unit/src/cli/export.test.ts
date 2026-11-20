@@ -8,6 +8,7 @@ import {
   writeDist,
   writeFiles,
 } from "../../helpers/cli.ts";
+import { STRENGTH_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
 
 /** 書き出しの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadExport = () => import("../../../../src/cli/export.ts");
@@ -699,10 +700,10 @@ test("test_prepare_embeds_when_media", async () => {
   // 検証
   const copied = await readdir(join(dir, "guide_files"), { recursive: true });
   expect(copied.some((path) => path.endsWith("demo.mp4"))).toBe(true);
-  const markdown = result.payload.docs[0]?.markdown ?? "";
-  expect(markdown).toMatch(/\]\(guide_files\/[^)\s]*demo\.mp4\)/);
-  expect(markdown).toMatch(/\{poster=data:image\/png;base64,[^}\s]+\}/);
-  expect(markdown).toMatch(/!\[図\]\(data:image\/png;base64,[^)\s]+\)/);
+  const html = result.payload.docs[0]?.rendered.html ?? "";
+  expect(html).toMatch(/src="guide_files\/[^"\s]*demo\.mp4"/);
+  expect(html).toMatch(/poster="data:image\/png;base64,[^"\s]+"/);
+  expect(html).toMatch(/<img[^>]*src="data:image\/png;base64,[^"\s]+"/);
 });
 
 // 動画のコピー先へ書き込めなければ HTML を書き込まずに CliError（異常系）
@@ -748,4 +749,103 @@ test("test_prepare_embeds_when_diagram_placement", async () => {
     placement: "bottom",
     diagramPlacement: "top",
   });
+});
+
+// 書き出しの中身に元の Markdown と取り込む文書の表を入れず、renderPayloadDoc の結果を入れる（正常系）
+test("test_prepare_embeds_without_markdown", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "guide.mark.md": [
+      "# Guide",
+      "",
+      "![図](a.png)",
+      "",
+      '<!-- include: {"path": "part.md"} -->',
+      "",
+    ].join("\n"),
+    "part.md": "取り込んだ文。\n",
+    "a.png": PNG_BYTES,
+  });
+  // 実行
+  const result = await prepareEmbeds({
+    fetchText: NO_FETCH,
+    loaded: createLoaded(dir, {}),
+    docs: [{ path: "guide.mark.md", file: join(dir, "guide.mark.md") }],
+    kind: "document",
+    entry: "guide.mark.md",
+    out: join(dir, "guide.html"),
+  });
+  // 検証
+  const doc = result.payload.docs[0] as unknown as Record<string, unknown> & {
+    rendered: { html: string };
+  };
+  expect(doc).not.toHaveProperty("markdown");
+  expect(doc.rendered.html).toMatch(/src="data:image\/png;base64,[^"\s]+"/);
+  expect(doc.rendered.html).toContain("取り込んだ文。");
+  expect(result.payload).not.toHaveProperty("includes");
+});
+
+// 本文の HTML と純粋な Markdown を作り、元の Markdown のマーカーをどちらにも残さない（正常系）
+test("test_render_payload_doc", async () => {
+  // 準備
+  const { renderPayloadDoc } = await loadExport();
+  const markdown = [
+    "# 文書",
+    "",
+    "<!-- 原本だけの目印 -->",
+    "",
+    '<!-- table: {"kind": "data"} -->',
+    "",
+    "| a | b |",
+    "| --- | --- |",
+    "| 1 | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+    wrapDirective("param", STRENGTH_TEXT),
+    "",
+  ].join("\n");
+  // 実行
+  const { rendered, pureMarkdown } = await renderPayloadDoc({
+    markdown,
+    config: {},
+    path: "guide.mark.md",
+  });
+  // 検証
+  for (const text of [rendered.html, pureMarkdown]) {
+    expect(text).not.toContain("原本だけの目印");
+    expect(text).not.toContain("<!-- table");
+  }
+  expect(rendered.html).toContain("<table");
+  expect(rendered.paramDefinitions).toHaveLength(1);
+});
+
+// 取り込む文書の表で取り込んだ見出しの中だけを描き、取り込まない文を持たない（正常系）
+test("test_render_payload_doc_with_includes", async () => {
+  // 準備
+  const { renderPayloadDoc } = await loadExport();
+  const includes = {
+    "共通/手順.md": [
+      "## 準備",
+      "",
+      "取り込まない文。",
+      "",
+      "## 実行",
+      "",
+      "取り込む文。",
+      "",
+    ].join("\n"),
+  };
+  // 実行
+  const { rendered } = await renderPayloadDoc({
+    markdown: '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->\n',
+    config: {},
+    includes,
+    path: "guide.mark.md",
+  });
+  // 検証
+  expect(rendered.html).toContain("取り込む文。");
+  expect(rendered.html).not.toContain("取り込まない文。");
 });

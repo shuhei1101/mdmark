@@ -39,3 +39,8 @@ map:
       head: open
     ==>:
       width: thick
+aliases:
+  - id: terms
+    paths: [docs/guide/用語集.yaml]
+    alias_type: term
+    records: terms

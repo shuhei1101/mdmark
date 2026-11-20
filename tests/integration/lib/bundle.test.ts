@@ -1155,8 +1155,7 @@ test("test_normal_when_traces_hidden", async () => {
   expect(report.generated).toBe(0);
   expect(report.markdownNames).toBe(0);
   expect(report.comments).toBe(0);
-  expect(report.markdown).not.toContain("<!-- todo -->");
-  expect(report.markdown).toContain("<!-- /table -->");
+  expect(report.markdown).not.toContain("<!--");
   expect(html).not.toMatch(/-version:"v/);
   expect(html).toMatch(/\/\*! lucide /);
   const hiddenPage = await openBundleTraces(

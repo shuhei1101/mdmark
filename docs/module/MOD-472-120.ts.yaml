@@ -30,7 +30,7 @@ functions:
       埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。
       設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。
       警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す。
-      `hideTraces` が `true` のときは、`collectMarkNames` の名前で `payload.docs[].markdown` と `payload.includes` の値に `hideMarkdown` を適用し、`compileHtmlScripts` には元の文書に `hideMarkdown` を適用した Markdown を指定する（`usedParts`・`usesMap` は元の文書で判定する）
+      `bundle` では、画像のキーを `data:` URL に戻した Markdown を `renderPayloadDoc` にかけ、描いた HTML と純粋な Markdown の `data:` URL をキー（`mdmark-asset:{キー}`）に戻して同じ画像を 1 回だけ埋める（サニタイズが `mdmark-asset:` の URL を落とすため）。`hideTraces` が `true` のときは、`hidePayload` が `payload.docs[].rendered.html` に `hideRenderedHtml` を適用する。`compileHtmlScripts` には元の文書を指定する（`usedParts`・`usesMap` も元の文書で判定する）
     kind: 関数
     scope: internal
     is_async: true
@@ -158,6 +158,12 @@ functions:
         condition: '`table.pin: through` を持つ設定と、`table` を持たない設定'
         mock: 一時フォルダ
         expected: '前者の `payload.config.table` が `{ pin: "through" }`、後者は `payload.config` が `table` を持たない'
+      - name: test_prepare_embeds_without_markdown
+        case: 正常
+        summary: 書き出しの中身に元の Markdown と取り込む文書の表を入れず、`renderPayloadDoc` の結果を入れる
+        condition: 画像と include のマーカーを持つ文書
+        mock: なし（一時フォルダの実ファイル）
+        expected: 中身の `docs[0]` が `markdown` を持たず `rendered.html` に画像の `data:` URL がある。中身に `includes` が無い
     callees:
       - 'MOD-472-118#functions[usedLibraryMarks]'
       - 'MOD-472-112#functions[usedParts]'
@@ -171,6 +177,7 @@ functions:
       - 'MOD-472-113#functions[copyMedia]'
       - 'MOD-472-112#functions[inlineImages]'
       - MOD-472-117#functions[readFrontmatterValues]
+      - '#functions[renderPayloadDoc]'
     status: planned
   - name: runExport
     title: 文書を HTML に書き出す
@@ -335,6 +342,38 @@ functions:
       - IF-472-33#
       - IF-472-9#
     status: planned
+  - name: renderPayloadDoc
+    title: 書き出す文書を描く
+    container: src/cli/export.ts
+    kind: 関数
+    scope: internal
+    summary: 画像・動画・音声を置き換えた文書の Markdown を、開いたときに `mount` に指定する値と同じ値で `renderDocument` と `toPureMarkdown` にかけ、書き出しの中身の文書 1 つの `rendered`・`pureMarkdown` を作る
+    description: '`rendered` は `renderDocument` の戻り値のうち `html`・`features`・`page`・`paramDefinitions`・`extensionDefinitions` だけを持つ。`export`・`build` の両方が文書ごとに呼ぶ'
+    args:
+      - name: options
+        type: '{ markdown: string; config: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode>; path: string }'
+        required: true
+        description: 置き換えた Markdown と、開いたときに `mount` に指定する値（`path` は設定ファイルのフォルダからの相対パス）
+    returns:
+      type: 'Promise<{ rendered: MdmarkRendered; pureMarkdown: string }>'
+      description: 埋める描いた結果と純粋な Markdown
+    callees:
+      - MOD-472-212#functions[renderDocument]
+      - MOD-472-361#functions[toPureMarkdown]
+    unit_tests:
+      - name: test_render_payload_doc
+        case: 正常
+        summary: 本文の HTML と純粋な Markdown を作り、元の Markdown のマーカーをどちらにも残さない
+        condition: '`<!-- 原本だけの目印 -->`・表のマーカー・`param` の範囲を持つ Markdown'
+        mock: なし
+        expected: '`rendered.html` と `pureMarkdown` に `原本だけの目印`・`<!-- table` が無い。`rendered.paramDefinitions` が 1 件'
+      - name: test_render_payload_doc_with_includes
+        case: 正常
+        summary: 取り込む文書の表で取り込んだ中身だけを描き、取り込まない文を持たない
+        condition: include のマーカーで別の文書の見出しの中だけを取り込む Markdown と取り込む文書の表
+        mock: なし
+        expected: '`rendered.html` に取り込んだ見出しの中の文があり、取り込まない文が無い'
+    is_async: true
 lead: '文書を 1 枚の HTML に書き出すコマンドを受け持ち、書き出しの流れを変えるときに参照する。'
 tags:
   - name: topic:書き出し

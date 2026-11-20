@@ -1064,16 +1064,9 @@ test("test_normal_when_traces_hidden", async () => {
   expect(report.outside).toBe(0);
   expect(report.generated).toBe(0);
   expect(report.markdownNames).toBe(0);
-  expect(report.markdown).toContain("mdmark は Markdown を描きます");
   expect(report.comments).toBe(0);
-  expect(report.markdown).not.toContain("<!-- todo -->");
-  for (const marker of [
-    "<!-- html -->",
-    "<!-- table: data -->",
-    "<!-- /table -->",
-  ]) {
-    expect(report.markdown).toContain(marker);
-  }
+  expect(report.markdown).not.toContain("<!--");
+  expect(report.pureMarkdown).toContain("mdmark は Markdown を描きます");
   expect(html).not.toMatch(/-version:"v/);
   expect(html).toMatch(/\/\*! lucide /);
   expect(html).not.toContain("<!-- lucide");
@@ -1121,12 +1114,15 @@ test("test_normal_when_traces_kept", async () => {
   expect(html).toContain(":root{--mdmark-version:");
   expect(html).toContain('id="mdmark-payload"');
   expect(html).toContain("<!-- lucide");
-  const markdown = (
+  const doc = (
     JSON.parse(
       /<script type="application\/json" id="mdmark-payload">([\s\S]*?)<\/script>/.exec(
         html,
       )?.[1] ?? "{}",
-    ) as { docs: Array<{ markdown: string }> }
-  ).docs[0]?.markdown;
-  expect(markdown).toBe(TRACES_FILES["mdmark-intro.md"]);
+    ) as {
+      docs: Array<Record<string, unknown> & { rendered: { html: string } }>;
+    }
+  ).docs[0];
+  expect(doc).not.toHaveProperty("markdown");
+  expect(doc?.rendered.html).toMatch(/class="[^"]*\bmdmark-/);
 }, 240_000);

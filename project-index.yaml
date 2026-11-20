@@ -258,7 +258,7 @@ documents:
     schema:
       source: knowledge
       path: schemas/terms.schema.yaml
-      ref: design-schemas/v8.4.0
+      ref: design-schemas/v9.7.0
     records: terms
     alias_type: term
   - id: docs

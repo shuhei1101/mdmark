@@ -185,6 +185,18 @@ tables:
         type: string
         description: '`avoid` の種類の置き換え先の単語'
         example: ワークスペース
+      - name: row
+        title: 元の行
+        source: DATA-472-7#fields[row]
+        type: string
+        description: このエイリアスを作った元の行の `id`。`buildAliases` が入れる。用語集の表のマーカーの `alias_row` がこの値で絞る
+        example: terms
+      - name: details
+        title: 詳細のページ
+        source: DATA-472-7#fields[details[]]
+        type: array
+        description: '`term` の種類の、用語を説明するページの `{ title, href }` の並び。`href` は設定ファイルのフォルダからの相対パスか URL。無ければ持たない'
+        example: '[{"title": "文書を描く仕組み", "href": "docs/guide/コアコンセプト-文書を描く仕組み.md"}]'
     refs:
       - IF-472-26#response[aliases]
     notes:

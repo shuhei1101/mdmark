@@ -10,7 +10,7 @@ stakeholders:
     interest: ボタンを出したくない画面では、設定で非表示にできる
 trigger: 読者が、描いた文書の Markdown でコピーするボタンか、Markdown でエクスポートするボタンを押す
 preconditions:
-  - ページが mdmark の配布物を読み込み、`mount` で文書を描いているか、`mdmark build` でまとめた HTML を開いている
+  - ページが mdmark の配布物を読み込み、`mount` で文書を描いているか、`mdmark export` で書き出した HTML か `mdmark build` でまとめた HTML を開いている
 success_guarantee: クリップボードか保存したファイルに、HTML のコメントと生の HTML を含まない純粋な Markdown が入る。`chart`・`param`・埋め込んだ HTML は取り除いている。
 minimal_guarantee: クリップボードへ書き込めないときは、書き込めなかったことをボタンのそばに出し、描いた文書は変わらない。
 scenarios:
@@ -81,7 +81,7 @@ scenarios:
         participant H as まとめた HTML
         participant B as クリップボード
         R->>H: 開いている文書で Markdown でコピーするボタンを押す
-        H->>H: 開いている文書の Markdown を純粋な Markdown に変換する
+        H->>H: 書き出すときに埋めた、開いている文書の純粋な Markdown を取り出す
         H->>B: 変換した Markdown を書き込む
         H-->>R: コピーしたことをボタンのそばに出す
       ```
@@ -140,6 +140,32 @@ scenarios:
       - 変換した Markdown を選択した状態で出し、手でコピーできる
       - 描いた文書が変わっていない
     test: test_error_when_clipboard_denied
+  - name: 正常シナリオ（書き出した HTML）
+    setup:
+      - name: 書き出した HTML
+        description: 正常シナリオ（コピーする）と同じ文書を `mdmark export` で書き出した HTML を file:// で開いている
+      - name: Mock
+        description: 正常シナリオ（コピーする）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor R as 読者
+        participant H as 書き出した HTML
+        participant B as クリップボード
+        R->>H: Markdown でコピーするボタンを押す
+        H->>H: 書き出すときに埋めた純粋な Markdown を取り出す
+        H->>B: 純粋な Markdown を書き込む
+        H-->>R: コピーしたことをボタンのそばに出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - クリップボードの文字列が、正常シナリオ（コピーする）でクリップボードに入る文字列と同じ
+      - 書き出した HTML のソースに `<!--` で始まるマーカーの文字が 0 件
+      - ボタンを押してからコピーしたことが出るまでの外への要求が 0 件
+    test: test_normal_when_exported_html
 refs:
   - SC-472-101#
   - SC-472-13#

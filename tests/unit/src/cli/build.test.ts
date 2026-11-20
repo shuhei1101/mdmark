@@ -281,3 +281,39 @@ test("test_build_site_when_shared_image", async () => {
   expect(html.match(/data:image\/png;base64,/g) ?? []).toHaveLength(1);
   expect(Object.keys(readPayload(html).assets ?? {})).toHaveLength(1);
 });
+
+// まとめる文書ごとに描いた結果と純粋な Markdown を埋め、元の Markdown を埋めない。page のマーカーの値を rendered.page に持つ（正常系）
+test("test_build_site_without_markdown", async () => {
+  // 準備
+  const { buildSite } = await loadBuild();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": createConfig([
+      '  include: ["*.mark.md"]',
+      "  out: dist/docs.html",
+      "  entry: a.mark.md",
+    ]),
+    "a.mark.md": '<!-- page: {"scheme": "dark"} -->\n\n# A\n',
+    "b.mark.md": "# B\n",
+  });
+  const distDir = await writeDist(dir);
+  // 実行
+  const result = await buildSite({ cwd: dir, distDir });
+  // 検証
+  const payload = readPayload(await readFile(result.out, "utf8"));
+  const docs = payload.docs as unknown as Array<
+    Record<string, unknown> & {
+      path: string;
+      rendered: { html: string; page: { scheme?: string } };
+      pureMarkdown: string;
+    }
+  >;
+  expect(docs).toHaveLength(2);
+  for (const doc of docs) {
+    expect(doc).not.toHaveProperty("markdown");
+    expect(typeof doc.pureMarkdown).toBe("string");
+  }
+  const first = docs.find((doc) => doc.path === "a.mark.md");
+  expect(first?.rendered.page.scheme).toBe("dark");
+  expect(payload).not.toHaveProperty("includes");
+});

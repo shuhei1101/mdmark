@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-glossary-yaml-and-prerendered-html
+
+
+ Test Files  329 passed (329)
+      Tests  2731 passed (2731)
+   Start at  23:09:03
+   Duration  26.04s (worker 83%, tests 12%, import 5%, transform 1%)
+

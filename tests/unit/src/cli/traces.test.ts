@@ -16,58 +16,6 @@ test("test_hide_names", async () => {
   expect(hidden).toBe(".zq-table{} __zqHtmlScript ZQ Zq @layer zq");
 });
 
-// 部品の要素名・CSS 変数・class の値だけを置き換える（正常系）
-test("test_hide_markdown", async () => {
-  // 準備
-  const { hideMarkdown } = await loadTraces();
-  const markdown =
-    'mdmark は描く。<mdmark-chart>{}</mdmark-chart> <p class="mdmark-align-center">x</p> [紹介](./mdmark-intro.md) var(--mdmark-color-fg)';
-  // 実行
-  const hidden = hideMarkdown({ markdown, markNames: new Set<string>() });
-  // 検証
-  expect(hidden).toBe(
-    'mdmark は描く。<zq-chart>{}</zq-chart> <p class="zq-align-center">x</p> [紹介](./mdmark-intro.md) var(--zq-color-fg)',
-  );
-});
-
-// マーカーの名前でないコメントだけを削除する（正常系）
-test("test_hide_markdown_when_comments", async () => {
-  // 準備
-  const { hideMarkdown } = await loadTraces();
-  const markdown = [
-    "<!-- todo -->",
-    "",
-    "<!-- 補足: あとで -->",
-    "",
-    "<!-- table: data -->",
-    "",
-    "| a |",
-    "| --- |",
-    "| 1 |",
-    "",
-    "<!-- /table -->",
-    "",
-    "<!-- greet -->",
-    "",
-    "```md",
-    "<!-- todo -->",
-    "```",
-    "",
-  ].join("\n");
-  // 実行
-  const hidden = hideMarkdown({
-    markdown,
-    markNames: new Set(["table", "greet"]),
-  });
-  // 検証
-  expect(hidden).not.toContain("補足: あとで");
-  expect(hidden.match(/<!-- todo -->/g)).toHaveLength(1);
-  expect(hidden).toContain("```md\n<!-- todo -->\n```");
-  expect(hidden).toContain("<!-- table: data -->");
-  expect(hidden).toContain("<!-- /table -->");
-  expect(hidden).toContain("<!-- greet -->");
-});
-
 // 設定の値だけを置き換え、利用者が記載した値を残す（正常系）
 test("test_hide_payload", async () => {
   // 準備
@@ -84,7 +32,14 @@ test("test_hide_payload", async () => {
       {
         path: "mdmark-intro.md",
         title: "mdmark の紹介",
-        markdown: "mdmark は描く。\n",
+        rendered: {
+          html: "<p>mdmark は描く。</p>",
+          features: {},
+          page: {},
+          paramDefinitions: [],
+          extensionDefinitions: [],
+        },
+        pureMarkdown: "mdmark は描く。\n",
       },
     ],
     entry: "mdmark-intro.md",
@@ -152,4 +107,115 @@ test("test_hide_script_when_license", async () => {
   // 検証
   expect(hidden).toContain(extensionLicense);
   expect(hidden).toContain(bundledLicense);
+});
+
+// docs[].rendered.html に hideRenderedHtml を適用し、docs[].pureMarkdown は置き換えない（正常系）
+test("test_hide_payload_with_rendered", async () => {
+  // 準備
+  const { hidePayload } = await loadTraces();
+  const payload: PayloadView = {
+    kind: "document",
+    config: {},
+    docs: [
+      {
+        path: "a.md",
+        title: "A",
+        rendered: {
+          html: '<div class="mdmark-table" data-mdmark-kind="data"><p>mdmark は描く。</p></div>',
+          features: {},
+          page: {},
+          paramDefinitions: [],
+          extensionDefinitions: [],
+        },
+        pureMarkdown: "mdmark は描く。\n",
+      },
+    ],
+    entry: "a.md",
+  };
+  // 実行
+  const hidden = hidePayload(payload);
+  // 検証
+  expect(hidden.docs[0]?.rendered.html).toBe(
+    '<div class="zq-table" data-zq-kind="data"><p>mdmark は描く。</p></div>',
+  );
+  expect(hidden.docs[0]?.pureMarkdown).toBe("mdmark は描く。\n");
+});
+
+// タグと属性の mdmark を置き換え、本文の文字とリンク先は残し、HTML のコメントを削除する（正常系）
+test("test_hide_rendered_html", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html =
+    '<mdmark-chart class="mdmark-x" data-mdmark-mermaid style="color:var(--mdmark-fg)"><a href="mdmark-intro.md">mdmark</a></mdmark-chart><!-- c --><img src="mdmark-asset:1">';
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  expect(hidden).toBe(
+    '<zq-chart class="zq-x" data-zq-mermaid style="color:var(--zq-fg)"><a href="mdmark-intro.md">mdmark</a></zq-chart><img src="zq-asset:1">',
+  );
+});
+
+// コードの例の部品の要素名を置き換え、ほかの文字と範囲のスクリプトのコードは残す（正常系）
+test("test_hide_rendered_html_with_code_example", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html =
+    '<pre><code>&lt;mdmark-chart&gt;{}&lt;/mdmark-chart&gt; mdmark</code></pre><template class="mdmark-html-script" data-lang="ts">"&lt;mdmark-x&gt;"</template>';
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  expect(hidden).toContain(
+    "<code>&lt;zq-chart&gt;{}&lt;/zq-chart&gt; mdmark</code>",
+  );
+  expect(hidden).toContain('data-lang="ts">"&lt;mdmark-x&gt;"</template>');
+});
+
+// 文書の中の id を指す href="#…"・aria-*・for・headers も id と同じく置き換え、指す先の id と一致させる（正常系）
+test("test_hide_rendered_html_keeps_id_references", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html = [
+    '<sup><a id="mdmark-fnref-1-0" href="#mdmark-fn-1" aria-describedby="mdmark-fn-tip-1-0 mdmark-note-1">[1]</a></sup>',
+    '<span role="tooltip" id="mdmark-fn-tip-1-0">脚注</span>',
+    '<label for="mdmark-input-1">a</label><td headers="mdmark-th-1">b</td>',
+    '<a href="mdmark-intro.md#mdmark">外のリンク</a>',
+    '<video aria-label="mdmark の紹介" controls></video>',
+    '<ol><li id="mdmark-fn-1">脚注の一覧</li></ol>',
+  ].join("");
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  const ids = new Set(
+    [...hidden.matchAll(/\sid="([^"]*)"/g)].map((match) => match[1]),
+  );
+  const href = /href="#([^"]*)"/.exec(hidden)?.[1];
+  const described = /aria-describedby="([^"]*)"/.exec(hidden)?.[1] ?? "";
+  expect(ids.has(href ?? "")).toBe(true);
+  expect(ids.has(described.split(" ")[0])).toBe(true);
+  expect(described).toBe("zq-fn-tip-1-0 zq-note-1");
+  expect(hidden).toContain('for="zq-input-1"');
+  expect(hidden).toContain('headers="zq-th-1"');
+  expect(hidden).toContain('href="mdmark-intro.md#mdmark"');
+  expect(hidden).toContain('aria-label="mdmark の紹介"');
+});
+
+// 範囲の CSS の style 要素の中は CSS として名前を置き換え、範囲のスクリプトの template の中のコードは置き換えない（正常系）
+test("test_hide_rendered_html_with_range_style", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html = [
+    '<div class="mdmark-html" data-html-scope="0">',
+    '<style class="mdmark-html-style">.mdmark-html[data-html-scope="0"] .box{color:var(--mdmark-fg)}</style>',
+    '<div class="box">mdmark</div>',
+    '<template class="mdmark-html-script" data-lang="ts">root.querySelector(".mdmark-x")</template>',
+    "</div>",
+  ].join("");
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  expect(hidden).toContain(
+    '<style class="zq-html-style">.zq-html[data-html-scope="0"] .box{color:var(--zq-fg)}</style>',
+  );
+  expect(hidden).toContain('<div class="box">mdmark</div>');
+  expect(hidden).toContain('root.querySelector(".mdmark-x")</template>');
 });
