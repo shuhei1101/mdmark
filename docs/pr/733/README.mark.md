@@ -1,0 +1,1 @@
+# map のマーカーの引数 mode（boxes・layers・list の見せ方の切り替え）を追加するかを決める
