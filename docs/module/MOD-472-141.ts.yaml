@@ -146,6 +146,9 @@ constants:
       - key: closedCount
         value: '17'
         description: 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ）
+      - key: closedBorder
+        value: '6'
+        description: '閉じたグループの二重の枠線の上下の幅の和（CSS の `.map-closed-group` の `border: 3px double`）'
 functions:
   - name: layoutMap
     title: 入れ子を配置する
@@ -191,7 +194,7 @@ functions:
       description: 配置の結果
     process: |-
       1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ。上書きの `size` を持たない葉は、上書きの `width` を持てばその幅、持たなければ `measureText` で測った名前の幅（`textWidth`）に左の余白（上書きの `padLeft`、無ければ `LABEL_METRICS.padX`）・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅（小数は切り上げる）を `MAP_LAYOUT.minWidth` から上限（`nodeFit` が `height` なら `maxWidth`、`width` なら `maxWidthWide`）までに収めた幅にし、その幅から左右の余白と枠線を引いた幅で、名前を `measureText` で測って行に分けた（`splitLines`）行の数の `leafHeight` を高さにする。上書きの `size` を持つ葉は、その大きさにし、同じ幅で名前を行に分ける（表示する木を作る）
-      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを解除した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を適用して大きさを決める。段の中の間と段の間には `spread` を追加する。線の `length` が 2 以上の線は、先のノードを元のノードから `length` 段離して段を決める。`invisible` の線は段と並びを決めるのに使用し、線の経路を引かず `wires` に含めない。アーキテクチャ図の `align` は、並べた ID を同じ段（`row`）か同じ列（`column`）にそろえる上書きにする。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
+      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを解除した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を適用して大きさを決める。段の中の間と段の間には `spread` を追加する。線の `length` が 2 以上の線は、先のノードを元のノードから `length` 段離して段を決める。`invisible` の線は段と並びを決めるのに使用し、線の経路を引かず `wires` に含めない。アーキテクチャ図の `align` は、並べた ID を同じ段（`row`）か同じ列（`column`）にそろえる上書きにする。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px + `closedBorder` の大きいほうにする（グループの中を配置する）
       3. 外側から座標を追加して図の座標にし、線の経路を引く。線の端が開いたグループの ID（Mermaid の `subgraph` を指す線）なら、そのグループの枠につなぐ（線の経路を引く）
     unit_tests:
       - name: test_layout_map_when_length_and_invisible
@@ -263,9 +266,9 @@ functions:
       - name: test_layout_map_when_collapsed_height
         case: 正常
         summary: 閉じたグループの高さ
-        condition: '`collapsed: [store]` と、`store` に測った大きさ `size: { w: 120, h: 30 }`（見積もりの高さが 59px に満たない）'
+        condition: '`collapsed: [store]` と、`store` に測った大きさ `size: { w: 120, h: 30 }`（見積もりの高さが 65px に満たない）'
         mock: なし
-        expected: 閉じた `store` の `h` が `groupTitle` + `closedCount` + 余白 上下 6px（59）以上
+        expected: 閉じた `store` の `h` が `groupTitle` + `closedCount` + 余白 上下 6px + `closedBorder`（65）以上
       - name: test_layout_map_when_spread
         case: 正常
         summary: 間を広げる
