@@ -11848,7 +11848,7 @@ constraints:
 
       読者が図の枠の中をホイール・ドラッグ・キー・拡大と縮小で動かしたら、次にバーか矢印のボタンで手順へ移るまで、その図の枠の中を移さない。`prefers-reduced-motion: reduce` では時間をかけずに移す。補足の `plays_over` の構成図に無い参加者のメッセージでは、構成図の図の枠の中を移さない'
     decided_by: SC-472-41#scenarios[正常シナリオ]
-    notes: 時間はモジュール構成で決める。100% で収まらない図の扱いは要件.md の推奨案 B
+    notes: 時間はモジュール構成で決める。100% で収まらない図の扱いはユーザーと決めた（確認ログ）
   - item: map の ER 図
     constraint: '`erDiagram` のテーブルを、テーブル名の行と、列ごとにキー（`PK`・`FK`・`UK`）・名前・型と説明のボタンの行を持つノードにし、補足の `groups`（モデリング『map の補足』）の分類を入れ子のグループにして、構成図と同じ自動配置で配置する。
 
@@ -12021,7 +12021,7 @@ constraints:
     notes: 見た目はピン止めのボタンと同じ。コピーした後に支援技術へ伝える方法は部品設計で決める
   - item: 言語 markdown のコードブロックの描いた結果
     constraint: |-
-      `render` が `div.mdmark-code` に `data-mdmark-markdown` を付けたコードブロック（文書をHTML文字列にする.ts の制約『コードブロック』）は、`pre` の後ろに `<div class="mdmark-code-preview">` を配置し、コピーのボタンが書き込む文字（制約『コードブロックのコピー』）を、外の文書と同じ設定で、外の文書でオンの機能（mdmark の記法・表・図・コードブロックを含む）から、文書の単位で付くか外の文書の操作と重なる機能 `side-toc`・`back-to-top`・`markdown-buttons`・`backlinks`・`comments`・`print` を切って描く。帯の右の塊のコピーのボタンの左に、コードのアイコン `code-xml` と文字 `Raw` を持つ `<button class="mdmark-code-raw" type="button" aria-pressed="false">` を配置する。
+      `render` が `div.mdmark-code` に `data-mdmark-markdown` を付けたコードブロック（文書をHTML文字列にする.ts の制約『コードブロック』）は、`pre` の後ろに `<div class="mdmark-code-preview">` を配置し、コピーのボタンが書き込む文字（制約『コードブロックのコピー』）を、外の文書と同じ設定で、外の文書でオンの機能（mdmark の記法・表・図・コードブロックを含む）から、文書の単位で付くか外の文書の操作と重なる機能 `side-toc`・`back-to-top`・`markdown-buttons`・`backlinks`・`comments`・`print` を切って描く。帯の右の塊のコピーのボタンの左に、コードのアイコン `code-xml` と文字 `Raw` とスクリーンリーダー向けの `（元の Markdown を表示）` を持つ `<button class="mdmark-code-raw" type="button" aria-pressed="false">` を配置する。
 
       - 既定は描いた結果を出し、`pre` を `hidden` にする。`data-mdmark-raw` を持つコードブロックは `pre` を出し、ボタンを `aria-pressed="true"` にして、初めて描いた結果へ切り替えたときに描く
       - ボタンを押す（Enter・Space を含む）たびに、描いた結果と `pre` の表示を入れ替え、`aria-pressed` を元の Markdown を出しているかに合わせる。ほかのコードブロックの表示と文書のスクロールの位置は変えない
@@ -12030,7 +12030,7 @@ constraints:
       - 描いた結果の中の言語 markdown のコードブロックにも同じ切り替えを付ける
       - 描くときに例外が出たら、`pre` を出したままにし、Raw のボタンを配置しない
       - `update` でもう一度付け、`destroy` で取り除く
-    notes: 外観はモック `docs/mock/components/markdown-preview/`。描く中身に mdmark の記法を含めるのは要件.md の推奨案 A。印刷の見え方とボタンのスクリーンリーダー向けの名前は部品設計
+    notes: 外観はモック `docs/mock/components/markdown-preview/`。描く中身に mdmark の記法を含めるのはユーザーと決めた（確認ログ）。印刷の見え方とボタンのスクリーンリーダー向けの名前は部品設計『コードブロック』
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

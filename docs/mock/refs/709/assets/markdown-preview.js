@@ -51,7 +51,7 @@ function icon(name) {
 
 /** Raw のボタンの HTML: 押した状態が元の Markdown を出している状態 */
 function rawButton(pressed) {
-  return `<button class="mock-preview-toggle" type="button" aria-pressed="${pressed}">${icon("code")}Raw</button>`;
+  return `<button class="mock-preview-toggle" type="button" aria-pressed="${pressed}">${icon("code")}Raw<span class="mdmark-visually-hidden">（元の Markdown を表示）</span></button>`;
 }
 
 const params = new URLSearchParams(location.search);
