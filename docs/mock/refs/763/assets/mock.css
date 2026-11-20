@@ -84,3 +84,67 @@
 .mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-right { inset: 36px 0 16px auto; width: 8px; }
 .mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-bottom { inset: auto 16px 0 8px; height: 8px; }
 .mock-763 .mock-group-edge:hover { background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent); }
+
+/* ER 図の列の説明のマーカー（.map-er-note）の案。押せる範囲は 24px 四方を保ち、見た目だけを変える */
+/* 案 A: 枠の丸を無くし、14px の線の i のアイコンだけを薄い色で出す */
+.mock-763.note-a .map-er-note {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mdmark-radius);
+  background: transparent;
+  color: var(--mdmark-color-muted);
+  font-size: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.mock-763.note-a .map-er-note::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.mock-763.note-a .map-er-note:hover { color: var(--mdmark-color-text); background: var(--mdmark-color-surface); }
+/* 案 B: マーカーを出さず、列の名前に点線の下線を引く。名前にポインターを重ねると説明が出る（ボタンはキーボードのフォーカスのときだけ見える） */
+.mock-763.note-b .map-er-note {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  font-size: 0;
+}
+.mock-763.note-b .map-er-note:focus-visible { outline: 2px solid var(--mdmark-color-link); outline-offset: -4px; }
+.mock-763.note-b .map-er-column:has(.map-er-note) .map-er-name {
+  text-decoration: underline dotted var(--mdmark-color-muted);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  cursor: help;
+}
+/* 案 C: 名前の右上に 6px の小さい点（通知の点）を付ける。押せる範囲は点の周りの 24px 四方 */
+.mock-763.note-c .map-er-note {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.mock-763.note-c .map-er-note::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mdmark-color-link);
+}
+.mock-763.note-c .map-er-note:hover { background: var(--mdmark-color-surface); }

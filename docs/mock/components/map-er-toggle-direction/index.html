@@ -26,13 +26,13 @@
   </nav>
   <main class="map-catalog" id="catalog">
     <h1>map-er-toggle-direction</h1>
-    <p class="state-note">配布物の mount で描いた実物の図に、#763 で変える見た目（開閉のボタン・テーブル名の行の高さ）と振る舞い（データの印の向き）だけを重ねている。テーブル名・クラス名の行は、空の種類の行を無くした 1 行（36px）にし、開閉のボタンを同じ行の右端に置く</p>
+    <p class="state-note">配布物の mount で描いた実物の図に、#763 で変える見た目（開閉のボタン・テーブル名の行の高さ）と振る舞い（データの印の向き）だけを重ねている。テーブル名・クラス名の行は、空の種類の行を無くした 1 行（36px）にし、開閉のボタンを同じ行の右端に置く。後半に、列の説明のマーカーの案 A・B・C を並べる</p>
   </main>
   <script type="module">
     // テーブル名の行を 1 行にした寸法で描く（ユーザーの指摘: 見出しの空白が広い）
     import { useOneRowHead } from "../../refs/763/assets/head-row.js";
     await useOneRowHead();
-    const { drawMap, patchToggles, patchDirection } = await import("../../refs/763/assets/mock.js");
+    const { drawMap, patchToggles, patchDirection, patchNoteUnderline } = await import("../../refs/763/assets/mock.js");
 
     const ER = (title, layout = {}) => `<!-- map: {"title": "${title}"} -->
 
@@ -132,6 +132,20 @@ classDiagram
       }
     };
     STATES.forEach(([title, note, markdown, select]) => add(title, note, markdown, select));
+    // 列の説明のマーカーの案（ユーザーの指摘: 丸の i が大きく、図に溶け込んでいない）
+    const NOTE_VARIANTS = [
+      ["note-a", "説明のマーカーの案 A: 丸の枠を無くした小さい i のアイコン（推奨）", "枠の丸を無くし、14px の線の i のアイコンを薄い色で出す。ポインターを重ねると濃くなり、面が付く。押せる範囲は 24px 四方のまま"],
+      ["note-b", "説明のマーカーの案 B: 列の名前に点線の下線", "マーカーを出さず、説明を持つ列の名前に点線の下線を引く。名前にポインターを重ねると説明が出る。キーボードでは名前の右の見えないボタンにフォーカスすると枠と説明が出る"],
+      ["note-c", "説明のマーカーの案 C: 小さい点（通知の点）", "名前の右に 6px の点を出す。ポインターを重ねると点の周りに面が付き、説明が出る。押せる範囲は点の周りの 24px 四方"],
+    ];
+    for (const [variant, title, note] of NOTE_VARIANTS) {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      host.classList.add(variant);
+      catalog.append(host);
+      drawMap(host, ER(`記録の構造（${title.split(":")[0]}）`), (h) => { both(h); if (variant === "note-b") patchNoteUnderline(h); });
+    }
     add("狭い幅（390px）", "列を閉じたテーブルの開閉のボタンは 24px 四方の押せる範囲を保つ", ER("記録の構造（狭い幅）", { "顧客": { collapsed: true } }), [], true);
   </script>
 </body>

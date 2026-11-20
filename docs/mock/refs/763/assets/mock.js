@@ -91,3 +91,18 @@ export function patchCorners(host) {
     });
   }
 }
+
+/** 案 B の説明のマーカー: 列の名前にポインターを重ねたら、説明のボタンにポインターを重ねたのと同じにツールチップを出す */
+export function patchNoteUnderline(host) {
+  for (const button of host.querySelectorAll(".map-er-column .map-er-note")) {
+    const name = button.closest(".map-er-column")?.querySelector(".map-er-name");
+    if (!name || name.dataset.mockNote) continue;
+    name.dataset.mockNote = "1";
+    for (const type of ["pointerenter", "pointerleave"]) {
+      name.addEventListener(type, (event) => {
+        if (event.pointerType === "touch") return;
+        button.dispatchEvent(new PointerEvent(type, { pointerType: event.pointerType }));
+      });
+    }
+  }
+}
