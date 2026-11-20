@@ -21934,6 +21934,108 @@ test("test_normal_when_map_wrapped_node_names_drawn", async () => {
   });
 });
 
+/** ノードの名前（ノートは文）の文字の矩形と、ノードの矩形・下の余白の上端・右の余白の左端 */
+function nameBox(node: HTMLElement) {
+  const range = document.createRange();
+  range.selectNodeContents(
+    find<HTMLElement>(node, ".mdmark-diagram-node-name"),
+  );
+  const rects = [...range.getClientRects()];
+  const text = range.getBoundingClientRect();
+  const box = node.getBoundingClientRect();
+  const style = getComputedStyle(node);
+  return {
+    text,
+    box,
+    lines: new Set(rects.map((rect) => Math.round(rect.top))).size,
+    lastBottom: Math.max(...rects.map((rect) => rect.bottom)),
+    paddingTop:
+      box.bottom -
+      Number.parseFloat(style.borderBottomWidth) -
+      Number.parseFloat(style.paddingBottom),
+    paddingRightLeft:
+      box.right -
+      Number.parseFloat(style.borderRightWidth) -
+      Number.parseFloat(style.paddingRight),
+  };
+}
+
+// map の構成図・状態遷移図・クラス図で名前の幅と形状の余白からノードの大きさを決めて描く（正常系）
+test("test_normal_when_map_node_size_from_measured_name", async () => {
+  // 準備・実行
+  const flow = mapRange({
+    mermaid:
+      'flowchart LR\n  doc["文書の Markdown"]:::step --> user(["利用側のページ"]):::outside\n',
+  });
+  const state = mapRange({
+    mermaid:
+      'stateDiagram-v2\n  [*] --> 読み込み\n  state "Markdown を読んでいる" as 読み込み\n  読み込み --> [*]\n',
+  });
+  const klass = mapRange({
+    mermaid:
+      'classDiagram\n  class MarkdownDocumentRenderer\n  note for MarkdownDocumentRenderer "Markdown を描く"\n',
+  });
+  const { figures } = await mountMap(`${flow}\n${state}\n${klass}`, {
+    map: {
+      ...MAP_CONFIG,
+      node_fit: "width",
+      kinds: { ...MAP_CONFIG.kinds, state: { label: "状態" } },
+    },
+  });
+  await vi.waitFor(() => expect(figures()).toHaveLength(3));
+  const [flowFigure, stateFigure, classFigure] = figures() as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  const lineHeight = 14 * 1.35;
+  /** 左の余白・右の余白 28px・左右の枠線 1.5px ずつ */
+  const widthOf = (node: HTMLElement, padLeft: number) =>
+    nameBox(node).text.width + padLeft + 28 + 3;
+  const doc = mapNode(flowFigure, "doc");
+  const user = mapNode(flowFigure, "user");
+  const reading = mapNode(stateFigure, "読み込み");
+  const renderer = mapNode(classFigure, "MarkdownDocumentRenderer");
+  const note = mapNode(classFigure, "note_1");
+  await vi.waitFor(() => {
+    // 検証: どのノードも名前（ノートは文）が 1 行で、文字の矩形の高さが描いた 1 行の高さ以下
+    for (const node of [doc, user, reading, renderer, note]) {
+      const name = nameBox(node);
+      expect(name.lines, node.dataset.node).toBe(1);
+      expect(name.text.height, node.dataset.node).toBeLessThanOrEqual(
+        lineHeight + 0.5,
+      );
+    }
+    // 検証: 左の余白 10px のノードの幅は、名前の幅に左右の余白と枠線を加えた幅から 1px 以内
+    for (const node of [doc, reading, note])
+      expect(
+        Math.abs(node.getBoundingClientRect().width - widthOf(node, 10)),
+        node.dataset.node,
+      ).toBeLessThanOrEqual(1);
+    // 検証: pill のノードは左の余白 16px で見積もり、名前の左端がノードの左端から 17px 以上右にある
+    expect(
+      Math.abs(user.getBoundingClientRect().width - widthOf(user, 16)),
+    ).toBeLessThanOrEqual(1);
+    const userName = nameBox(user);
+    expect(userName.text.left - userName.box.left).toBeGreaterThanOrEqual(17);
+    // 検証: クラスの幅は名前の幅に左右の余白と枠線を加えた幅から 1px 以内で、名前が右の余白より左にある
+    expect(
+      Math.abs(renderer.getBoundingClientRect().width - widthOf(renderer, 10)),
+    ).toBeLessThanOrEqual(1);
+    const rendererName = nameBox(renderer);
+    expect(rendererName.text.right).toBeLessThanOrEqual(
+      rendererName.paddingRightLeft + 0.5,
+    );
+    // 検証: 名前（ノートは文）の最後の行の下から下の余白までの空きが、1 行の高さより小さい
+    for (const node of [doc, user, reading, note]) {
+      const name = nameBox(node);
+      expect(name.paddingTop - name.lastBottom, node.dataset.node).toBeLessThan(
+        lineHeight,
+      );
+    }
+  });
+});
+
 /** 見出し・目次のマーカー・chart・div の生の HTML を持つ文書（Markdown のボタンの試験） */
 const MARKDOWN_BUTTON_DOCUMENT = [
   "# 手引き",
