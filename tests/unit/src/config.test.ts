@@ -262,6 +262,24 @@ test("test_resolve_config_when_long_column_min_given", async () => {
   expect(result).toEqual([30, 45, 45, 45, 45]);
 });
 
+// table.pin_default は true のときだけ pinDefault を true にし、無い値・他の値は false にする（正常系）
+test("test_resolve_config_when_pin_default_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { table: { pin_default: true } },
+    { table: { pin_default: "yes" } },
+    { table: { pin_default: false } },
+    {},
+  ] as unknown as MdmarkConfig[];
+  // 実行
+  const result = configs.map(
+    (config) => resolveConfig({ config }).table.pinDefault,
+  );
+  // 検証
+  expect(result).toEqual([true, false, false, false]);
+});
+
 // COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）
 test("test_resolve_config_when_color_theme_given", async () => {
   // 準備

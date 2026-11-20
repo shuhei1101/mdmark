@@ -525,6 +525,107 @@ test("test_color_diff_blocks_when_same", async () => {
   expect(htmlOf(after)).toBe(htmlBefore);
 });
 
+/** Markdown を機能 frontmatter をオンにした設定で描いた中身を、画面に配置する前の断片として返却する */
+function renderFrontmatterFragment(markdown: string): DocumentFragment {
+  const config = resolveConfig({ config: { features: { frontmatter: true } } });
+  const template = document.createElement("template");
+  template.innerHTML = renderDocument({ markdown, config }).html;
+  return template.content;
+}
+
+/** 機能 frontmatter をオンにして前と後を描き、元の機能のオン・オフを指定して色分けした後の断片を返却する */
+async function colorFrontmatterBlocks(options: {
+  before: string;
+  after: string;
+  frontmatter: boolean;
+}): Promise<DocumentFragment> {
+  const { colorDiffBlocks } = await loadBlocks();
+  const before = renderFrontmatterFragment(options.before);
+  const after = renderFrontmatterFragment(options.after);
+  colorDiffBlocks({
+    before: { root: before, markdown: options.before },
+    after: { root: after, markdown: options.after },
+    segmenter: createSegmenter(),
+    frontmatter: options.frontmatter,
+  });
+  return after;
+}
+
+// 機能 frontmatter がオフのとき、書き換えたフロントマターを開いた折りたたみで追加の色にして本文の先頭に配置し、削除したフロントマターは削除の色で差し込む（正常系）
+test("test_color_diff_blocks_when_frontmatter_changed", async () => {
+  // 準備
+  const original = "---\ntitle: A\n---\n\n段落 P\n";
+  const rewritten = "---\ntitle: B\n---\n\n段落 P\n";
+  const removed = "段落 P\n";
+  // 実行
+  const changed = await colorFrontmatterBlocks({
+    before: original,
+    after: rewritten,
+    frontmatter: false,
+  });
+  const deleted = await colorFrontmatterBlocks({
+    before: original,
+    after: removed,
+    frontmatter: false,
+  });
+  // 検証
+  const changedFirst = changed.firstElementChild;
+  expect(changedFirst?.classList.contains("mdmark-diff-block")).toBe(true);
+  expect(changedFirst?.getAttribute("data-kind")).toBe("add");
+  const changedDetails = changedFirst?.querySelector(
+    "details.mdmark-frontmatter",
+  );
+  expect(changedDetails?.hasAttribute("open")).toBe(true);
+  expect(changedFirst?.textContent).not.toContain("段落 P");
+  const deletedFirst = deleted.firstElementChild;
+  expect(deletedFirst?.classList.contains("mdmark-diff-block")).toBe(true);
+  expect(deletedFirst?.getAttribute("data-kind")).toBe("del");
+  expect(deletedFirst?.textContent).toContain("title: A");
+  expect(deletedFirst?.textContent).not.toContain("段落 P");
+});
+
+// フロントマターが同じとき、機能 frontmatter がオフなら折りたたみを取り除き、オンなら色を適用せずに残す（正常系）
+test("test_color_diff_blocks_when_frontmatter_same", async () => {
+  // 準備
+  const before = "---\ntitle: A\n---\n\n前の段落\n";
+  const after = "---\ntitle: A\n---\n\n後の段落\n";
+  // 実行
+  const hidden = await colorFrontmatterBlocks({
+    before,
+    after,
+    frontmatter: false,
+  });
+  const shown = await colorFrontmatterBlocks({
+    before,
+    after,
+    frontmatter: true,
+  });
+  // 検証
+  expect(hidden.querySelector("details.mdmark-frontmatter")).toBeNull();
+  const shownFirst = shown.firstElementChild;
+  expect(shownFirst?.matches("details.mdmark-frontmatter")).toBe(true);
+  expect(shownFirst?.closest(".mdmark-diff-block")).toBeNull();
+});
+
+// 機能 frontmatter がオンのとき、書き換えたフロントマターは既にある折りたたみを 1 つだけ追加の色で包む（正常系）
+test("test_color_diff_blocks_when_frontmatter_shown_and_changed", async () => {
+  // 準備
+  const before = "---\ntitle: A\n---\n\n段落 P\n";
+  const after = "---\ntitle: B\n---\n\n段落 P\n";
+  // 実行
+  const result = await colorFrontmatterBlocks({
+    before,
+    after,
+    frontmatter: true,
+  });
+  // 検証
+  const details = result.querySelectorAll("details.mdmark-frontmatter");
+  expect(details).toHaveLength(1);
+  const block = details[0]?.closest(".mdmark-diff-block");
+  expect(block?.getAttribute("data-kind")).toBe("add");
+  expect(details[0]?.hasAttribute("open")).toBe(false);
+});
+
 // 単語を 1 つ書き換えた文は書き換え（正常系）
 test("test_is_rewrite", async () => {
   // 準備

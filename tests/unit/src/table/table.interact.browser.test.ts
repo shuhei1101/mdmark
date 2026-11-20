@@ -2132,17 +2132,56 @@ test("test_initial_pinned_columns", async () => {
   const { initialPinnedColumns } = await loadLogic();
   // 実行・検証
   expect(
-    initialPinnedColumns({ pin: [0, 2], rowHeadCount: 0, mode: "each" }),
+    initialPinnedColumns({ pin: [0, 2], rowHeadCount: 0, mode: "each", pinDefault: true }),
   ).toEqual([0, 2]);
   expect(
-    initialPinnedColumns({ pin: [], rowHeadCount: 2, mode: "each" }),
+    initialPinnedColumns({ pin: [], rowHeadCount: 2, mode: "each", pinDefault: true }),
   ).toEqual([0, 1]);
   expect(
-    initialPinnedColumns({ pin: [], rowHeadCount: 0, mode: "each" }),
+    initialPinnedColumns({ pin: [], rowHeadCount: 0, mode: "each", pinDefault: true }),
   ).toEqual([0]);
   expect(
-    initialPinnedColumns({ pin: [2], rowHeadCount: 0, mode: "through" }),
+    initialPinnedColumns({ pin: [2], rowHeadCount: 0, mode: "through", pinDefault: true }),
   ).toEqual([0, 1, 2]);
+});
+
+// pinDefault が false なら pin の列だけを留め、pin が無ければ空にする（正常系）
+test("test_initial_pinned_columns_when_not_pin_default", async () => {
+  // 準備
+  const { initialPinnedColumns } = await loadLogic();
+  // 実行・検証
+  expect(
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 2,
+      mode: "each",
+      pinDefault: false,
+    }),
+  ).toEqual([]);
+  expect(
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 0,
+      mode: "through",
+      pinDefault: false,
+    }),
+  ).toEqual([]);
+  expect(
+    initialPinnedColumns({
+      pin: [1],
+      rowHeadCount: 0,
+      mode: "each",
+      pinDefault: false,
+    }),
+  ).toEqual([1]);
+  expect(
+    initialPinnedColumns({
+      pin: [1],
+      rowHeadCount: 0,
+      mode: "through",
+      pinDefault: false,
+    }),
+  ).toEqual([0, 1]);
 });
 
 // each は押した列だけを出し入れし、through は押した列までにするか解除する（正常系）
