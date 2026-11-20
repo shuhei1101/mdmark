@@ -102,7 +102,7 @@ import {
   MAP_CLASS_KINDS,
   parseClassDiagram,
 } from "../src/map/class-diagram.ts";
-import { noteTexts, parseMapData } from "../src/map/data.ts";
+import { type MapChange, noteTexts, parseMapData } from "../src/map/data.ts";
 import {
   erColumnNotes,
   erFanouts,
@@ -112,13 +112,15 @@ import {
   parseErDiagram,
 } from "../src/map/er.ts";
 import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
-import { parseFlowchart } from "../src/map/flowchart.ts";
+import { type Flowchart, parseFlowchart } from "../src/map/flowchart.ts";
 import {
   estimateTextWidth,
   layoutMap,
   MAP_LAYOUT,
   separateWires,
 } from "../src/map/layout.ts";
+import { type MapListItem, renderMapList } from "../src/map/list.part.ts";
+import { flowListItems, sequenceListItems } from "../src/map/list.ts";
 import {
   type MapBandUnit,
   type MapErFanout,
@@ -1135,7 +1137,11 @@ function mapAxisGridStory(args: PartArgs): string {
     id: "story-map-axis-grid",
     terms: undefined,
   });
-  const html = mapFrame(sample.title, part, placed);
+  const html = mapFrame(sample.title, part, {
+    width: placed.width,
+    height: placed.height,
+    ...mapStoryPanel(args, false),
+  });
   return kind === "journey"
     ? html.replace(
         /<ul class="mdmark-diagram-legend" aria-label="凡例" hidden="hidden"><\/ul>/,
@@ -1143,6 +1149,47 @@ function mapAxisGridStory(args: PartArgs): string {
       )
     : html;
 }
+
+/** 計画した変更のストーリーの構成図（見本の構成図に、削除する予定の「旧版の読み取り」とそこへの線を足す） */
+const MAP_FLOW_CHANGES = MAP_FLOW.replace(
+  '      data["補足の検査"]:::step\n',
+  '      data["補足の検査"]:::step\n      legacy["旧版の読み取り"]:::step\n',
+).replace("  mount --> marker\n", "  mount --> marker\n  mount --> legacy\n");
+
+/** 計画した変更のストーリーの補足の changes */
+const MAP_STORY_CHANGES: Record<string, MapChange> = {
+  user: "added",
+  "user->mount": "added",
+  mount: "changed",
+  legacy: "removed",
+  "mount->legacy": "removed",
+};
+
+/** 構成図のノードの種類の名前（見本の設定の map.kinds） */
+const storyKindLabel = (chart: Flowchart, id: string): string | undefined => {
+  const name = chart.nodes.find((node) => node.id === id)?.classes[0];
+  return name === undefined
+    ? undefined
+    : (MAP_CONFIG.kinds as Record<string, { label?: string }>)[name]?.label;
+};
+
+/** ストーリーの引数 `list` から部品『mapの一覧』の項目を作る（`changes` は計画した変更を持つ構成図、`sequence` はシーケンス図、それ以外は構成図） */
+const mapStoryListItems = (list: unknown): MapListItem[] => {
+  if (list === "sequence")
+    return sequenceListItems(parseSequence(MAP_SEQUENCE));
+  const withChanges = list === "changes";
+  const chart = parseFlowchart(withChanges ? MAP_FLOW_CHANGES : MAP_FLOW);
+  return flowListItems({
+    chart,
+    notes: noteTexts(parseMapData(MAP_DATA).data.notes),
+    changes: withChanges ? MAP_STORY_CHANGES : {},
+    kindLabel: (id) => storyKindLabel(chart, id),
+  });
+};
+
+/** ストーリーの引数 `narrow` があれば、幅 390px の置き場所に入れる */
+const narrowed = (html: string, args: PartArgs): string =>
+  args.narrow === true ? `<div style="inline-size:390px">${html}</div>` : html;
 
 /** map の部品を図の枠に入れる（`frame` は部品の大きさと、パネルのツール・開いているか） */
 const mapFrame = (
@@ -1153,9 +1200,9 @@ const mapFrame = (
     height: number;
     tools?: Array<{ name: string; label: string; disabled?: boolean }>;
     panelOpen?: boolean;
-  },
-): string =>
-  renderDiagramFrame(
+  } & MapStoryExtras,
+): string => {
+  const html = renderDiagramFrame(
     {
       kind: "map",
       title,
@@ -1163,10 +1210,63 @@ const mapFrame = (
       wide: true,
       tools: frame.tools ?? [],
       ...(frame.panelOpen === true ? { panelOpen: true } : {}),
+      ...(frame.exportable === true ? { exportable: true } : {}),
+      ...(frame.exportOpen === true ? { exportOpen: true } : {}),
+      ...(frame.listable === true ? { listable: true } : {}),
+      ...(frame.listView === true ? { listView: true } : {}),
       id: "story-map",
     },
     { ...part, width: frame.width, height: frame.height },
   );
+  const withStatus =
+    frame.exportStatus === undefined
+      ? html
+      : html.replace(
+          '<p class="mdmark-diagram-export-status" role="status"></p>',
+          `<p class="mdmark-diagram-export-status" role="status">${frame.exportStatus}</p>`,
+        );
+  // 一覧の表示は attachMapList と同じく、表示する枠の中の図の後ろに一覧を入れる
+  return frame.list === undefined
+    ? withStatus
+    : withStatus.replace(
+        /(<div class="mdmark-diagram-sizer"[^>]*\shidden>[\s\S]*?<\/div><\/div>)/,
+        `$1${frame.list}`,
+      );
+};
+
+/** 図の枠のストーリーの、書き出すボタン・一覧の表示のボタンと一覧 */
+type MapStoryExtras = {
+  exportable?: boolean;
+  exportOpen?: boolean;
+  /** 書き出せなかったときに「SVG」「PNG」の要素に出す文 */
+  exportStatus?: string;
+  listable?: boolean;
+  listView?: boolean;
+  /** 一覧の表示で表示する枠に入れる部品『mapの一覧』の HTML */
+  list?: string;
+};
+
+/** ストーリーの引数 `exportable`・`exportOpen`・`exportFailed`・`listable`・`listView`・`list` から、図の枠の書き出しと一覧の表示を決める */
+const mapStoryExtras = (args: PartArgs): MapStoryExtras => ({
+  ...(args.exportable === true ? { exportable: true } : {}),
+  ...(args.exportOpen === true ? { exportOpen: true } : {}),
+  ...(args.exportFailed === true
+    ? {
+        exportStatus:
+          "この大きさの図は PNG にできません。SVG で書き出してください。",
+      }
+    : {}),
+  ...(args.listable === true ? { listable: true } : {}),
+  ...(args.listView === true
+    ? {
+        listView: true,
+        list: renderMapList({
+          label: "全体の構成の一覧",
+          items: mapStoryListItems(args.list),
+        }),
+      }
+    : {}),
+});
 
 /** 図の枠のストーリーの map の図のツール（`entered` のときは外へ戻るを押せる） */
 const mapStoryTools = (
@@ -1245,9 +1345,10 @@ const mapStoryPanel = (
 ): {
   tools?: Array<{ name: string; label: string; disabled?: boolean }>;
   panelOpen?: boolean;
-} => ({
+} & MapStoryExtras => ({
   ...(args.mapTools === true ? { tools: mapStoryTools(entered) } : {}),
   ...(args.panelOpen === true ? { panelOpen: true } : {}),
+  ...mapStoryExtras(args),
 });
 
 /** 見本のグラフの部品の定義を、引数の見本・種類・系列の数から選ぶ */
@@ -1376,9 +1477,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       wrapped: MAP_FLOW_WRAPPED,
       measured: MAP_FLOW_MEASURED,
       parallel: MAP_FLOW_PARALLEL,
+      changes: MAP_FLOW_CHANGES,
     };
+    const changes = jsonObject<Record<string, MapChange>>(args.changes);
     const placed = layoutMap(
-      parseFlowchart(sources[String(args.source)] ?? MAP_FLOW),
+      parseFlowchart(
+        sources[changes === undefined ? String(args.source) : "changes"] ??
+          MAP_FLOW,
+      ),
       { collapsed, entered },
       {
         overrides:
@@ -1429,15 +1535,24 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           color: data.layout[wire]?.packet?.color,
           shape: data.layout[wire]?.packet?.shape ?? "circle",
         })),
-        colors: Object.fromEntries(
-          Object.entries(data.layout).flatMap(([id, entry]) =>
-            entry.color === undefined ? [] : [[id, entry.color]],
+        colors: {
+          ...Object.fromEntries(
+            Object.entries(data.layout).flatMap(([id, entry]) =>
+              entry.color === undefined ? [] : [[id, entry.color]],
+            ),
           ),
-        ),
+          // 計画した変更の色が補足の layout の color より優先されることを見せる
+          ...(changes === undefined ? {} : { mount: "blue" }),
+        },
         dragging: undefined,
         id: "story-map",
+        changes,
       }),
-      layout,
+      {
+        width: layout.width,
+        height: layout.height,
+        ...mapStoryPanel(args, entered !== undefined),
+      },
     );
   },
   "map-er": (args) => {
@@ -1735,6 +1850,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return mapFrame(diagram.title ?? "", part, layout);
   },
   "map-sequence": (args) => mapSequenceStory(args),
+  "map-list": (args) =>
+    narrowed(
+      renderMapList({
+        label: "全体の構成の一覧",
+        items: mapStoryListItems(args.list),
+        collapsed: jsonList(args.collapsed),
+        focused: typeof args.focused === "string" ? args.focused : undefined,
+      }),
+      args,
+    ),
   "map-mindmap": (args) => {
     const mindmap = parseMindmap(MAP_MINDMAP);
     const { data } = parseMapData(
@@ -2206,7 +2331,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     }),
   "diagram-frame": (args) => {
     if (args.kind === "map") {
-      return mapSequenceStory(args);
+      const story =
+        args.source === "flow"
+          ? (PART_RENDERERS["map-flow"] as (args: PartArgs) => string)({
+              ...args,
+              source: undefined,
+            })
+          : args.source === "gantt"
+            ? mapAxisGridStory({ ...args, kind: "gantt" })
+            : mapSequenceStory(args);
+      return narrowed(story, args);
     }
     if (args.kind === "mermaid") {
       return fitted(

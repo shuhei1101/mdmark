@@ -1213,6 +1213,12 @@ files:
     related:
       - to: CMP-472-5
         type: implements
+  - path: map/map-list.part.stories.ts
+    description: 部品設計『mapの一覧』の状態ごとの Storybook のストーリーを並べる。一覧の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:map, topic:一覧]
+    related:
+      - to: CMP-740-1
+        type: implements
   - path: map/map-sequence.part.stories.ts
     description: 部品設計『mapのシーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]

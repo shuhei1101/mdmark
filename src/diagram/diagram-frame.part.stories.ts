@@ -102,3 +102,72 @@ export const SequenceHeadsStuck: Story = {
   parameters: { server: { id: "diagram-frame" } },
   args: { kind: "map" },
 };
+
+export const MapExportOpen: Story = {
+  name: "MapExportOpen",
+  parameters: { server: { id: "diagram-frame" } },
+  args: {
+    kind: "map",
+    source: "flow",
+    mapTools: true,
+    panelOpen: true,
+    exportable: true,
+    exportOpen: true,
+    listable: true,
+  },
+};
+
+export const MapListView: Story = {
+  name: "MapListView",
+  parameters: { server: { id: "diagram-frame" } },
+  args: {
+    kind: "map",
+    source: "flow",
+    mapTools: true,
+    exportable: true,
+    listable: true,
+    listView: true,
+  },
+};
+
+export const MapListViewNarrow: Story = {
+  name: "MapListViewNarrow",
+  parameters: { server: { id: "diagram-frame" } },
+  args: {
+    kind: "map",
+    source: "flow",
+    mapTools: true,
+    exportable: true,
+    listable: true,
+    listView: true,
+    list: "changes",
+    narrow: true,
+  },
+};
+
+export const MapNoList: Story = {
+  name: "MapNoList",
+  parameters: { server: { id: "diagram-frame" } },
+  args: {
+    kind: "map",
+    source: "gantt",
+    mapTools: true,
+    panelOpen: true,
+    exportable: true,
+  },
+};
+
+export const MapExportFailed: Story = {
+  name: "MapExportFailed",
+  parameters: { server: { id: "diagram-frame" } },
+  args: {
+    kind: "map",
+    source: "flow",
+    mapTools: true,
+    panelOpen: true,
+    exportable: true,
+    exportOpen: true,
+    exportFailed: true,
+    listable: true,
+  },
+};

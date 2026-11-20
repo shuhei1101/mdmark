@@ -58,7 +58,7 @@ functions:
       1. `stage` の大きさを倍率を含まない等倍で求める
       2. `stage` を複製し、元の要素と複製の要素を同じ順で対応させる
       3. 選択の強調（`data-selected` とその強調の class）を複製から除き、パネル・リサイズハンドル・ツールチップとそのマーカー・記載の警告・当たり判定（`.map-wire-hit`・`.mdmark-diagram-node-hit`）・データの印・`display: none` の要素を除く
-      4. 残った要素ごとに、親から順に、元の要素の `getComputedStyle` のプロパティを比べ、異なるものだけを複製の `style` 属性へ書き写す。継承するプロパティ（`color`・`font-*`・`line-height` など）は、元の親の計算値（複製の親に書き写した値と同じ）と比べる。継承しないプロパティは、ページの CSS が当たらない、画面に出さない `iframe`（`about:blank`）の `contentDocument` に置いた同じ要素名の要素の計算値と比べる（要素名ごとに 1 度だけ求め、書き出しの後に `iframe` を取り除く）。根（`stage` の複製）は継承するプロパティもこの文書の値と比べる。`::before`・`::after` の `content` が `none` でない要素は、疑似要素の計算したスタイルを書き写した `span` を先頭・末尾に入れる
+      4. 残った要素ごとに、計算した値の `url()` のうち図の中の `#` を指すものは `url("#…")` に戻し、外を指す `url()` を持つプロパティは書き写さずに、親から順に、元の要素の `getComputedStyle` のプロパティを比べ、異なるものだけを複製の `style` 属性へ書き写す。継承するプロパティ（`color`・`font-*`・`line-height` など）は、元の親の計算値（複製の親に書き写した値と同じ）と比べる。継承しないプロパティは、ページの CSS が当たらない、画面に出さない `iframe`（`about:blank`）の `contentDocument` に置いた同じ要素名の要素の計算値と比べる（要素名ごとに 1 度だけ求め、書き出しの後に `iframe` を取り除く）。根（`stage` の複製）は継承するプロパティもこの文書の値と比べる。`::before`・`::after` の `content` が `none` でない要素は、疑似要素の計算したスタイルを書き写した `span` を先頭・末尾に入れる
       5. 全ての要素から `class`・`data-*`・`aria-*`・`role`・`tabindex`・`title`・値に `var(` を持つ属性と、図の中の `#` と `data:` のほかを指す `href`・`src` を除く（矢じりの `marker-end` など図の中の `#` を指す `url(` は残す）
       6. 図の枠の背景の計算した色の `rect` と、XHTML の名前空間を付けて `XMLSerializer` で文字にした複製を入れた `foreignObject` を、`width`・`height` を等倍の大きさにした `svg` で包む
     unit_tests:
@@ -148,7 +148,7 @@ functions:
       - name: test_attach_map_export_when_escape
         case: 正常
         summary: Esc で閉じる
-        condition: 開いて Esc
+        condition: パネルを開き、書き出すボタンで要素を開いて Esc
         mock: なし（Chromium）
         expected: 要素が `hidden` で、書き出すボタンにフォーカスがある
       - name: test_attach_map_export_when_png_unavailable

@@ -117,7 +117,26 @@ const createDefaultStyles = (): DefaultStyles => {
   return { of, dispose: () => frame.remove() };
 };
 
-/** 元の計算したスタイルのうち、比べる値と異なるものを `style` 属性の文字にする */
+/** 計算した値の `url()` を、図の中の `#` を指すものは `url("#…")` に戻し、外を指すものがあれば undefined にする */
+const localUrls = (value: string): string | undefined => {
+  if (!value.includes("url(")) return value;
+  let external = false;
+  const out = value.replace(
+    /url\(\s*(["']?)([^"')]*)\1\s*\)/g,
+    (_all, _quote, target: string) => {
+      const hash = target.indexOf("#");
+      if (target.startsWith("data:")) return `url("${target}")`;
+      if (hash < 0) {
+        external = true;
+        return "";
+      }
+      return `url("${target.slice(hash)}")`;
+    },
+  );
+  return external ? undefined : out;
+};
+
+/** 元の計算したスタイルのうち、比べる値と異なるものを `style` 属性の文字にする（外を指す `url()` を持つプロパティは書き写さない） */
 const differingStyle = (
   style: CSSStyleDeclaration,
   compare: (name: string) => string,
@@ -127,7 +146,9 @@ const differingStyle = (
     const name = style.item(i);
     if (name.startsWith("--")) continue;
     const value = style.getPropertyValue(name);
-    if (value !== compare(name)) out.push(`${name}:${value}`);
+    if (value === compare(name)) continue;
+    const local = localUrls(value);
+    if (local !== undefined) out.push(`${name}:${local}`);
   }
   return out.join(";");
 };

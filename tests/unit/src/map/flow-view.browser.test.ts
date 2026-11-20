@@ -802,7 +802,7 @@ test("test_attach_map_flow_when_changes", async () => {
   expect(node("data")?.querySelector(".mdmark-map-change")).toBeNull();
   const warnings = [...root.querySelectorAll(".mdmark-syntax-warning li")];
   expect(
-    warnings.filter((item) => item.textContent?.includes("moved")),
+    warnings.filter((item) => item.textContent?.includes("changes.data")),
   ).toHaveLength(1);
   const name = node("frame")?.querySelector<HTMLElement>(
     ".mdmark-diagram-node-name",

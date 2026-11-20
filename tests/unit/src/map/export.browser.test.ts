@@ -243,6 +243,7 @@ test("test_attach_map_export_when_escape", async () => {
   detachers.push(
     attachMapExport(range, { index: 1, title: () => "全体の構成" }),
   );
+  range.querySelector<HTMLButtonElement>('[data-tool="more"]')?.click();
   const button = range.querySelector<HTMLButtonElement>(
     '[data-tool="export"]',
   ) as HTMLButtonElement;
