@@ -15,9 +15,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T06:25:14.165821+00:00'
   - process: PoC 検証
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T06:54:55.686608+00:00'
+    updated_at: '2026-11-20T07:23:53.801595+00:00'
     note: 'No 16: HTML のノードと SVG の線を重ねた map の図を、ブラウザだけで外部の資源を持たない SVG と 2 倍の PNG にできるか'
   - process: 複合ユースケース設計
     status: done
