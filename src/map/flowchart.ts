@@ -3,6 +3,7 @@ import {
   type ResolveIdLink,
   resolveIdHref,
 } from "../render/sanitize.ts";
+import { type MermaidStyles, readMermaidStyles } from "./mermaid-style.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** グループとノードを並べる向き */
@@ -18,7 +19,16 @@ export type FlowShape =
   | "rhombus"
   | "hexagon"
   | "subroutine"
-  | "flag";
+  | "flag"
+  | "lean-right"
+  | "lean-left"
+  | "trapezoid"
+  | "trapezoid-alt"
+  | "double-circle"
+  | "doc";
+
+/** 線の端に付ける印 */
+export type FlowEnd = "circle" | "cross";
 
 /** Mermaid の矢印の種類（設定の map.lines のキー） */
 export type FlowArrow = "-->" | "-.->" | "==>" | "---";
@@ -47,6 +57,12 @@ export type FlowEdge = {
   /** 両向きの矢印（`<-->`）か */
   both: boolean;
   label: string | undefined;
+  /** 端に付ける丸・×（`--o`・`x--x` など。無い端は持たない） */
+  ends?: { from?: FlowEnd; to?: FlowEnd };
+  /** 見えない線（`~~~`）。段と並びを決めるのに使用し、描かない */
+  invisible?: true;
+  /** 記号の数で指定した線の長さ（2 以上のときだけ持つ） */
+  length?: number;
 };
 
 /** parseFlowchart の戻り値 */
@@ -59,6 +75,10 @@ export type Flowchart = {
   links: Record<string, string>;
   /** `click` の行のノードの ID から、ソースの行（0 から） */
   linkLines: Record<string, number>;
+  /** `readMermaidStyles` が読み取ったノードと線の色 */
+  styles: MermaidStyles;
+  /** `{ID}@{ view: collapsed }` で閉じて始めるグループの ID */
+  collapsed: string[];
   problems: MapProblem[];
 };
 
@@ -125,6 +145,7 @@ export const mapLinkProblems = (options: {
 
 /** 形状ごとの開きと閉じ。長い開きから順に試す */
 const SHAPES: Array<{ open: string; close: string; shape: FlowShape }> = [
+  { open: "(((", close: ")))", shape: "double-circle" },
   { open: "([", close: "])", shape: "stadium" },
   { open: "((", close: "))", shape: "circle" },
   { open: "[(", close: ")]", shape: "cylinder" },
@@ -136,25 +157,85 @@ const SHAPES: Array<{ open: string; close: string; shape: FlowShape }> = [
   { open: ">", close: "]", shape: "flag" },
 ];
 
-/** 線の書き方。ラベルを矢印の中に記載する書き方を先に試す */
-const ARROWS: Array<{ re: RegExp; arrow: FlowArrow; both?: boolean }> = [
-  { re: /^<-->/, arrow: "-->", both: true },
-  { re: /^<-\.->/, arrow: "-.->", both: true },
-  { re: /^<==>/, arrow: "==>", both: true },
-  { re: /^--\s+(.+?)\s+-->/, arrow: "-->" },
-  { re: /^--\s+(.+?)\s+---/, arrow: "---" },
-  { re: /^-\.\s+(.+?)\s+\.->/, arrow: "-.->" },
-  { re: /^==\s+(.+?)\s+==>/, arrow: "==>" },
-  { re: /^-->/, arrow: "-->" },
-  { re: /^---/, arrow: "---" },
-  { re: /^-\.->/, arrow: "-.->" },
-  { re: /^-\.-/, arrow: "-.->" },
-  { re: /^==>/, arrow: "==>" },
-  { re: /^===/, arrow: "---" },
-];
+/** `{ID}@{ shape: … }` の形状の名前と別名（mermaid の名前）から形状 */
+const FLOW_SHAPE_NAMES: Record<string, FlowShape> = {
+  rect: "rect",
+  rectangle: "rect",
+  proc: "rect",
+  process: "rect",
+  rounded: "round",
+  event: "round",
+  stadium: "stadium",
+  pill: "stadium",
+  terminal: "stadium",
+  subroutine: "subroutine",
+  subproc: "subroutine",
+  "fr-rect": "subroutine",
+  framed: "subroutine",
+  cyl: "cylinder",
+  cylinder: "cylinder",
+  database: "cylinder",
+  db: "cylinder",
+  circle: "circle",
+  circ: "circle",
+  odd: "flag",
+  diamond: "rhombus",
+  diam: "rhombus",
+  decision: "rhombus",
+  question: "rhombus",
+  hex: "hexagon",
+  hexagon: "hexagon",
+  prepare: "hexagon",
+  "lean-r": "lean-right",
+  "lean-right": "lean-right",
+  "in-out": "lean-right",
+  "lean-l": "lean-left",
+  "lean-left": "lean-left",
+  "out-in": "lean-left",
+  "trap-b": "trapezoid",
+  trapezoid: "trapezoid",
+  priority: "trapezoid",
+  "trap-t": "trapezoid-alt",
+  "inv-trapezoid": "trapezoid-alt",
+  manual: "trapezoid-alt",
+  "dbl-circ": "double-circle",
+  "double-circle": "double-circle",
+  doc: "doc",
+  document: "doc",
+};
+
+/** 線の属性の行（`{ID}@{ animate: … }` など）だけが持つキー */
+const EDGE_ATTRIBUTE_KEYS = ["animate", "animation", "curve"];
+
+/** `@{ key: value, … }` の中身をキーと値にする（引用符の中の `,` は区切りにしない） */
+const readAttributes = (body: string): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const part of body.match(/(?:[^,"]|"[^"]*")+/g) ?? []) {
+    const at = part.indexOf(":");
+    if (at < 0) continue;
+    const key = part.slice(0, at).trim();
+    const value = part
+      .slice(at + 1)
+      .trim()
+      .replace(/^"(.*)"$/s, "$1");
+    if (key !== "") out[key] = value;
+  }
+  return out;
+};
+
+/** Markdown の文字（`"`…`"` の中身）から、強調の記号と囲みのバッククォートを除いた文字 */
+const plainMarkdownLabel = (label: string): string => {
+  const inner = /^`([\s\S]*)`$/.exec(label);
+  if (!inner) return label;
+  return (inner[1] ?? "")
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/(^|\s)_(.+?)_(?=\s|$)/g, "$1$2");
+};
 
 const ID_RE = /^[A-Za-z0-9_\u0080-￿]+/;
-const EDGE_ID_RE = /^([A-Za-z0-9_]+)@(?=[-=<])/;
+const EDGE_ID_RE = /^([A-Za-z0-9_]+)@(?=[-=<ox~])/;
 /** 読んで捨てる行 */
 const IGNORED_RE = /^(classDef|style|linkStyle|click|accTitle|accDescr)\b/;
 /** `click {ID} "{リンク先}"`・`click {ID} href "{リンク先}"`（後ろのツールチップと `_blank` などは読まない） */
@@ -178,6 +259,24 @@ const readShape = (
   cursor: Cursor,
 ): { label: string; shape: FlowShape } | undefined => {
   const tail = rest(cursor);
+  const slanted = readSlanted(tail);
+  if (slanted) {
+    cursor.pos += slanted.consumed;
+    return { label: slanted.label, shape: slanted.shape };
+  }
+  const attributes = /^@\{([^}]*)\}/.exec(tail);
+  if (attributes) {
+    cursor.pos += attributes[0].length;
+    const values = readAttributes(attributes[1] ?? "");
+    const named = FLOW_SHAPE_NAMES[values.shape ?? ""];
+    const pictured = values.icon !== undefined || values.img !== undefined;
+    return {
+      label: decodeEntities(
+        plainMarkdownLabel(values.label ?? "").replace(/<br\s*\/?>/g, "\n"),
+      ),
+      shape: pictured ? "rect" : (named ?? "rect"),
+    };
+  }
   for (const { open, close, shape } of SHAPES) {
     if (!tail.startsWith(open)) continue;
     let body = tail.slice(open.length);
@@ -198,11 +297,36 @@ const readShape = (
     }
     cursor.pos += consumed + close.length;
     return {
-      label: decodeEntities(label.replace(/<br\s*\/?>/g, "\n")),
+      label: decodeEntities(
+        plainMarkdownLabel(label).replace(/<br\s*\/?>/g, "\n"),
+      ),
       shape,
     };
   }
   return undefined;
+};
+
+/** `[/ /]`・`[\ \]`・`[/ \]`・`[\ /]` の斜めの辺を持つ形状 */
+const readSlanted = (
+  tail: string,
+): { label: string; shape: FlowShape; consumed: number } | undefined => {
+  const match = /^\[([/\\])([^\]]*?)([/\\])\]/.exec(tail);
+  if (!match?.[1] || !match[3]) return undefined;
+  const key = `${match[1]}${match[3]}`;
+  const shape: FlowShape =
+    key === "//"
+      ? "lean-right"
+      : key === "\\\\"
+        ? "lean-left"
+        : key === "/\\"
+          ? "trapezoid"
+          : "trapezoid-alt";
+  const label = (match[2] ?? "").replace(/^"(.*)"$/s, "$1");
+  return {
+    label: decodeEntities(label.replace(/<br\s*\/?>/g, "\n")),
+    shape,
+    consumed: match[0].length,
+  };
 };
 
 type NodeRef = {
@@ -248,6 +372,59 @@ type Arrow = {
   arrow: FlowArrow;
   both: boolean;
   label: string | undefined;
+  ends: { from?: FlowEnd; to?: FlowEnd };
+  invisible: boolean;
+  length: number;
+};
+
+/** 線の記号（端の印・線・頭）。`~~~` は見えない線 */
+const LINK_RE = /^([<ox])?(-{2,}|={2,}|-\.+-?|~{3,})([>ox])?/;
+/** ラベルを線の中に記載する書き方（`-- 文 -->`・`-. 文 .->`・`== 文 ==>`） */
+const LABELED_LINK_RE =
+  /^([<ox])?(--|==|-\.)\s+(.+?)\s+(-{2,}|={2,}|\.+-)([>ox])?(?=\s|$|[A-Za-z0-9_\u0080-￿])/;
+const END_OF: Record<string, FlowEnd> = { o: "circle", x: "cross" };
+
+/** 線の記号から、線の種類・長さ・端を求める */
+const linkOf = (options: {
+  start: string | undefined;
+  body: string;
+  head: string | undefined;
+}): Omit<Arrow, "id" | "label"> => {
+  const { start, body, head } = options;
+  const ends: { from?: FlowEnd; to?: FlowEnd } = {};
+  const fromEnd = start ? END_OF[start] : undefined;
+  const toEnd = head ? END_OF[head] : undefined;
+  if (fromEnd) ends.from = fromEnd;
+  if (toEnd) ends.to = toEnd;
+  const both = start === "<" && head === ">";
+  if (body.startsWith("~"))
+    return {
+      arrow: "---",
+      both: false,
+      ends: {},
+      invisible: true,
+      length: Math.max(1, body.length - 2),
+    };
+  if (body.includes(".")) {
+    return {
+      arrow: "-.->",
+      both,
+      ends,
+      invisible: false,
+      length: Math.max(1, body.split(".").length - 1),
+    };
+  }
+  const headed = head !== undefined;
+  const length = Math.max(1, body.length - (headed ? 1 : 2));
+  if (body.startsWith("="))
+    return { arrow: headed ? "==>" : "---", both, ends, invisible: false, length };
+  return {
+    arrow: head === ">" ? "-->" : "---",
+    both,
+    ends,
+    invisible: false,
+    length,
+  };
 };
 
 const readArrow = (cursor: Cursor): Arrow | undefined => {
@@ -258,27 +435,38 @@ const readArrow = (cursor: Cursor): Arrow | undefined => {
     id = idMatch[1];
     cursor.pos += idMatch[0].length;
   }
-  for (const { re, arrow, both = false } of ARROWS) {
-    const match = re.exec(rest(cursor));
-    if (!match) continue;
+  const labeled = LABELED_LINK_RE.exec(rest(cursor));
+  const plain = labeled ? undefined : LINK_RE.exec(rest(cursor));
+  if (!labeled && !plain) return undefined;
+  let label: string | undefined;
+  let link: Omit<Arrow, "id" | "label">;
+  if (labeled) {
+    cursor.pos += labeled[0].length;
+    label = labeled[3];
+    const close = labeled[4] ?? "";
+    link = linkOf({
+      start: labeled[1],
+      body: labeled[2] === "-." ? `-${close}` : close,
+      head: labeled[5],
+    });
+  } else {
+    const match = plain as RegExpExecArray;
     cursor.pos += match[0].length;
-    let label = match[1];
-    const pipe = /^\|([^|]*)\|/.exec(rest(cursor));
-    if (pipe) {
-      label = pipe[1];
-      cursor.pos += pipe[0].length;
-    }
-    return {
-      id,
-      arrow,
-      both,
-      label:
-        label === undefined
-          ? undefined
-          : decodeEntities(label.replace(/^"|"$/g, "")),
-    };
+    link = linkOf({ start: match[1], body: match[2] ?? "", head: match[3] });
   }
-  return undefined;
+  const pipe = /^\|([^|]*)\|/.exec(rest(cursor));
+  if (pipe) {
+    label = pipe[1];
+    cursor.pos += pipe[0].length;
+  }
+  return {
+    id,
+    ...link,
+    label:
+      label === undefined
+        ? undefined
+        : decodeEntities(label.replace(/^"|"$/g, "")),
+  };
 };
 
 /** 1 行の文（ノードの定義か、連ねた線）を読む。読めないときは undefined */
@@ -335,6 +523,7 @@ export const parseFlowchart = (source: string): Flowchart => {
   const stack: FlowGroup[] = [];
   const groupIds = new Set<string>();
   const edgeIds = new Map<string, number>();
+  const collapsed: string[] = [];
 
   const touch = (ref: NodeRef): void => {
     if (groupIds.has(ref.id)) return;
@@ -440,10 +629,30 @@ export const parseFlowchart = (source: string): Flowchart => {
             arrow: arrow.arrow,
             both: arrow.both,
             label: arrow.label,
+            ...(Object.keys(arrow.ends).length > 0
+              ? { ends: { ...arrow.ends } }
+              : {}),
+            ...(arrow.invisible ? { invisible: true as const } : {}),
+            ...(arrow.length >= 2 ? { length: arrow.length } : {}),
           });
         }
       }
     });
+  };
+
+  /** `{ID}@{ … }` だけの行のうち、線の属性と `view: collapsed` の行を読む（ノードの定義の行は false） */
+  const readAttributeLine = (text: string): boolean => {
+    const match = /^([A-Za-z0-9_\u0080-￿]+)@\{([^}]*)\}$/.exec(text);
+    if (!match?.[1]) return false;
+    const values = readAttributes(match[2] ?? "");
+    const keys = Object.keys(values);
+    if (values.view === "collapsed" && groupIds.has(match[1])) {
+      collapsed.push(match[1]);
+      return true;
+    }
+    return (
+      keys.length > 0 && keys.every((key) => EDGE_ATTRIBUTE_KEYS.includes(key))
+    );
   };
 
   lines.slice(1).forEach((raw, index) => {
@@ -451,6 +660,7 @@ export const parseFlowchart = (source: string): Flowchart => {
     const text = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
     if (text === "") return;
     if (
+      readAttributeLine(text) ||
       readSubgraph(text) ||
       readEnd(text, line) ||
       readDirection(text, { line, raw }) ||
@@ -478,6 +688,8 @@ export const parseFlowchart = (source: string): Flowchart => {
     edges,
     links,
     linkLines,
+    styles: readMermaidStyles({ lines: lines.slice(1), classTarget: "class" }),
+    collapsed,
     problems,
   };
 };
