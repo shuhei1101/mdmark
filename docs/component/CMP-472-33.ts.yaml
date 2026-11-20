@@ -85,7 +85,7 @@ refs:
 status: planned
 notes:
   HTML: '`<button class="mdmark-comment-marker" type="button" aria-label="…" title="…" data-closed="…" data-current>{アイコン}<span>{count}</span></button>`。縦の位置（`style` の `top`）は `mount` が入れる。モックは `docs/mock/components/comment-margin-marker/`'
-  色: 線・地・文字は `--mdmark-color-comment-line`・`--mdmark-color-comment-bg` を使用し、新しい色の変数を持たない
+  色: 線・地・文字は `--mdmark-color-comment-line`・`--mdmark-color-comment-bg` を使用し、新規の色の変数を持たない
   印刷: 余白の列ごと出さない
 test_file: tests/integration/lib/comment-marker.story.test.ts
 tags:

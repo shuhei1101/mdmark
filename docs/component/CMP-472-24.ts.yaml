@@ -43,7 +43,7 @@ args:
     type: 列挙
     required: true
     choices: '`block`（右上のマーカー）・`inline`（要素そのものに下線）'
-    description: 要素の種類から決まるマーカーの付け方（インターフェース定義『文書をHTML文字列にする』の制約「ヒント」）
+    description: 要素の種類から決定するマーカーの付け方（インターフェース定義『文書をHTML文字列にする』の制約「ヒント」）
   - name: open
     type: 真偽値
     required: false

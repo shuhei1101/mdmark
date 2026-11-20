@@ -295,7 +295,7 @@ args:
   - name: foldColumnHovered
     type: 真偽値
     default: 'false'
-    description: ポインターが開閉のボタンの列（行番号の右の `--mdmark-code-fold-width` の幅。行番号を持たないときは行の頭の同じ幅）に乗っているか（`mount` が付けた状態）。`true` のとき `pre` に `data-fold-hover` を付け、畳める全ての行の開閉のボタンを出す。`mount` は `pre` の `pointermove`（ポインターの横の位置が列にあるか）と `pointerleave` で付け外しする
+    description: ポインターが開閉のボタンの列（行番号の右の `--mdmark-code-fold-width` の幅。行番号を持たないときは行の頭の同じ幅）に乗っているか（`mount` が付けた状態）。`true` のとき `pre` に `data-fold-hover` を付け、畳める全ての行の開閉のボタンを出す。`mount` は `pre` の `pointermove`（ポインターの横の位置が列にあるか）と `pointerleave` で付与・解除する
   - name: highlight
     type: 真偽値
     default: 'false'
@@ -458,7 +458,7 @@ events:
   - name: 行を畳む・開く
     when: 開閉のボタンか `⋯` のボタンを押す（Enter・Space を含む）
     value: ボタンの `aria-expanded`
-    description: '`mount` が行の後ろの `foldLines` の行を `hidden` にして `⋯` を配置するか、`hidden` を削除して `⋯` を削除する。開いたとき、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。畳んだ状態は再読み込みでは覚えず `folded` のとおりに戻し、`update` で描き直すと読者が手で変えた畳みを保つ'
+    description: '`mount` が行の後ろの `foldLines` の行を `hidden` にして `⋯` を配置するか、`hidden` を削除して `⋯` を削除する。開いたとき、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。畳んだ状態は再読み込みでは覚えず `folded` のとおりに戻し、`update` で再描画すると読者が手で変えた畳みを保つ'
   - name: 描いた結果と元の Markdown を切り替える
     when: '`Raw` のボタンを押す（Enter・Space を含む）'
     value: ボタンの `aria-pressed`

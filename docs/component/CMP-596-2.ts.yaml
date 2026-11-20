@@ -30,7 +30,7 @@ args:
   - name: layout
     type: オブジェクト
     required: true
-    description: 自動配置の結果（`MapLayout`）。service と junction はノード、group はグループ。線の経路は辺の指定から引き直した点の並び
+    description: 自動配置の結果（`MapLayout`）。service と junction はノード、group はグループ。線の経路は辺の指定から再計算した点の並び
   - name: layout.nodes[].archIcon
     type: 列挙
     required: false

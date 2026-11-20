@@ -106,11 +106,11 @@ events:
   - name: ブロックを開閉する
     when: ブロックのタブの山形のボタンを押す（Shift を押しながら押すと中のブロックも）
     value: ブロックの番号と Shift の有無
-    description: '`mount` が `collapsed` を切り替えて描き直し、再生のメッセージの数を決め直す'
+    description: '`mount` が `collapsed` を切り替えて再描画し、再生のメッセージの数を再計算する'
   - name: ブロックの中だけを描く
     when: ブロックのタブの名前のボタンを押す
     value: ブロックの番号
-    description: '`mount` が `entered` をそのブロックにして描き直し、クエリ文字列と sessionStorage に保つ'
+    description: '`mount` が `entered` をそのブロックにして再描画し、クエリ文字列と sessionStorage に保つ'
   - name: 参加者を選ぶ
     when: 参加者の箱の名前の文字の外を押すか、箱にフォーカスして Enter か Space を押す。メッセージの線を押す
     value: 参加者の ID（線は送り手と受け手）
@@ -118,7 +118,7 @@ events:
   - name: 並べ替える
     when: 参加者の箱を名前の文字の外からドラッグする。箱にフォーカスして Alt + 左右の矢印キーを押す（1 列ずつ）
     value: 参加者の ID と移す先の位置
-    description: '`mount` が `order` を変えて描き直し、sessionStorage に保つ'
+    description: '`mount` が `order` を変えて再描画し、sessionStorage に保つ'
 uses:
   - component: CMP-472-8#
     how: ブロックのタブの開閉の山形
