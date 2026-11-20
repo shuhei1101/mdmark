@@ -1,0 +1,107 @@
+# 単体テスト（Red）
+
+commit: 1a2d4047（テストコードの末尾）
+実行場所: ランナー（https://github.com/shuhei1101/mdmark/actions/runs/44725602434）
+
+## コマンド
+
+run_url=$(gh workflow run test.yml --ref "$(git branch --show-current)" -f layer=unit | grep -o 'https://[^ ]*/actions/runs/[0-9]*') && run_id=${run_url##*/} && ... && gh run view "$run_id" --log
+
+## 判定
+
+- この PR で追加・変更した単体テスト 17 件（2 ファイルは読み込みの失敗）の fail は、全て実装が無いこと（モジュール `src/map/list.part.ts`・`src/map/list.ts`・`src/map/export.ts` が無い、`changes` のキー・`exportable`・`listable` を扱わない）による
+- 実装の前から pass したテストは無い
+- この PR が触れていないブラウザのテスト 7 件（lightbox.interact・vscode/src/webview の 6 件）が locator.click の時間切れで fail した。develop の最新の実行（#761 の 44720934731）では pass しており、この PR は src/ を変えていないため、実装の無いモジュールを読み込む export.browser.test.ts・list.browser.test.ts の読み込みの失敗が、同じブラウザで後に動くテストに影響したと判断した。実装を入れた後の全件の実行で pass することを確かめる
+
+## 出力（集計と fail の行）
+
+[mdmark] resolveIdLink が例外を投げました Error: boom
+[Error: ResizeObserver loop completed with undelivered notifications.]
+[Error: ResizeObserver loop completed with undelivered notifications.]
+[Error: ResizeObserver loop completed with undelivered notifications.]
+   ✓ test_preview_status_when_unexpected 3ms
+ FAIL   unit-browser (chromium)  tests/unit/src/map/export.browser.test.ts [ tests/unit/src/map/export.browser.test.ts ]
+Error: Failed to import test file /home/runner/work/mdmark/mdmark/tests/unit/src/map/export.browser.test.ts
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=fe2c1b98:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=fe2c1b98:6503:17
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/home/runner/work/mdmark/mdmark/tests/unit/src/map/export.browser.test.ts?import&browserv=1795173211019
+ FAIL   unit-browser (chromium)  tests/unit/src/map/list.browser.test.ts [ tests/unit/src/map/list.browser.test.ts ]
+Error: Failed to import test file /home/runner/work/mdmark/mdmark/tests/unit/src/map/list.browser.test.ts
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=fe2c1b98:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=fe2c1b98:6503:17
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/home/runner/work/mdmark/mdmark/tests/unit/src/map/list.browser.test.ts?import&browserv=1795173219190
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL   unit  tests/unit/src/diagram/diagram.part.test.ts > test_render_diagram_frame_when_exportable
+Error: 開始タグが無い: data-tool="export"
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+ FAIL   unit  tests/unit/src/diagram/diagram.part.test.ts > test_render_diagram_frame_when_listable
+Error: 開始タグが無い: data-tool="list"
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+ FAIL   unit  tests/unit/src/map/check.test.ts > test_collect_map_problems_when_changes
+AssertionError: expected [ 'map_unknown_key' ] to deeply equal [ 'map_unknown_ref' ]
+ FAIL   unit  tests/unit/src/map/check.test.ts > test_collect_map_problems_when_changes_unsupported_kind
+AssertionError: expected [ 'map_unknown_key' ] to deeply equal [ 'map_invalid_value' ]
+ FAIL   unit  tests/unit/src/map/data.test.ts > test_parse_map_data_when_empty
+AssertionError: expected { version: 1, notes: {}, …(4) } to deeply equal { version: 1, notes: {}, …(5) }
+ FAIL   unit  tests/unit/src/map/data.test.ts > test_parse_map_data_when_changes
+AssertionError: expected [ { kind: 'map_unknown_key', …(2) } ] to deeply equal []
+ FAIL   unit  tests/unit/src/map/data.test.ts > test_parse_map_data_when_changes_invalid_type
+AssertionError: expected [ 'map_unknown_key' ] to deeply equal [ 'map_invalid_value', …(1) ]
+ FAIL   unit  tests/unit/src/map/list.part.test.ts > test_render_map_list
+Error: Cannot find module '/src/map/list.part.ts' imported from /home/runner/work/mdmark/mdmark/tests/unit/src/map/list.part.test.ts
+ FAIL   unit  tests/unit/src/map/list.part.test.ts > test_render_map_list_when_changes
+Error: Cannot find module '/src/map/list.part.ts' imported from /home/runner/work/mdmark/mdmark/tests/unit/src/map/list.part.test.ts
+ FAIL   unit  tests/unit/src/map/list.part.test.ts > test_render_map_list_when_collapsed
+Error: Cannot find module '/src/map/list.part.ts' imported from /home/runner/work/mdmark/mdmark/tests/unit/src/map/list.part.test.ts
+ FAIL   unit  tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_changes
+AssertionError: expected '<div class="mdmark-diagram-node map-k…' to contain 'map-change-added'
+ FAIL   unit-browser (chromium)  tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_changes
+AssertionError: expected false to be true // Object.is equality
+ FAIL   unit-browser (chromium)  tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_list
+AssertionError: expected undefined to be 'false' // Object.is equality
+ FAIL   unit-browser (chromium)  tests/unit/src/map/index.browser.test.ts > test_attach_map_when_export
+AssertionError: expected null not to be null
+ FAIL   unit-browser (chromium)  tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_list
+AssertionError: expected [] to deeply equal [ …(4) ]
+ FAIL   unit-browser (chromium)  tests/unit/src/media/lightbox.interact.browser.test.ts > test_attach_lightbox_when_closed
+TimeoutError: locator.click: Timeout 14820ms exceeded.
+    196|     throw new Error("画像の場所が無い");
+ FAIL   unit-browser (chromium)  tests/unit/vscode/src/webview/app/app.browser.test.tsx > test_app_when_render_error
+TimeoutError: locator.click: Timeout 14805ms exceeded.
+ FAIL   unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band_when_clicked
+TimeoutError: locator.click: Timeout 14895ms exceeded.
+ FAIL   unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx > test_preview_status_when_reload_clicked
+TimeoutError: locator.click: Timeout 14891ms exceeded.
+ FAIL   unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks
+TimeoutError: locator.click: Timeout 14886ms exceeded.
+ FAIL   unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_side_toc
+TimeoutError: locator.click: Timeout 14897ms exceeded.
+ FAIL   unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_open_asset
+TimeoutError: locator.click: Timeout 14898ms exceeded.
+ Test Files  15 failed | 313 passed (328)
+      Tests  22 failed | 2670 passed (2692)
+##[error]Error: 開始タグが無い: data-tool="export"
+##[error]Error: 開始タグが無い: data-tool="list"
+##[error]AssertionError: expected [ 'map_unknown_key' ] to deeply equal [ 'map_unknown_ref' ]
+##[error]AssertionError: expected [ 'map_unknown_key' ] to deeply equal [ 'map_invalid_value' ]
+##[error]AssertionError: expected { version: 1, notes: {}, …(4) } to deeply equal { version: 1, notes: {}, …(5) }
+##[error]AssertionError: expected [ { kind: 'map_unknown_key', …(2) } ] to deeply equal []
+##[error]AssertionError: expected [ 'map_unknown_key' ] to deeply equal [ 'map_invalid_value', …(1) ]
+##[error]Error: Cannot find module '/src/map/list.part.ts' imported from /home/runner/work/mdmark/mdmark/tests/unit/src/map/list.part.test.ts
+test	単体テストを回す	Serialized Error: { code: 'ERR_MODULE_NOT_FOUND' }
+##[error]Error: Cannot find module '/src/map/list.part.ts' imported from /home/runner/work/mdmark/mdmark/tests/unit/src/map/list.part.test.ts
+test	単体テストを回す	Serialized Error: { code: 'ERR_MODULE_NOT_FOUND' }
+##[error]Error: Cannot find module '/src/map/list.part.ts' imported from /home/runner/work/mdmark/mdmark/tests/unit/src/map/list.part.test.ts
+test	単体テストを回す	Serialized Error: { code: 'ERR_MODULE_NOT_FOUND' }
+##[error]AssertionError: expected '<div class="mdmark-diagram-node map-k…' to contain 'map-change-added'
+##[error]AssertionError: expected false to be true // Object.is equality
+##[error]AssertionError: expected undefined to be 'false' // Object.is equality
+##[error]AssertionError: expected null not to be null
+##[error]AssertionError: expected [] to deeply equal [ …(4) ]
+##[error]TimeoutError: locator.click: Timeout 14820ms exceeded.
+##[error]TimeoutError: locator.click: Timeout 14805ms exceeded.
+##[error]TimeoutError: locator.click: Timeout 14895ms exceeded.
+##[error]TimeoutError: locator.click: Timeout 14891ms exceeded.
+##[error]TimeoutError: locator.click: Timeout 14886ms exceeded.
+##[error]TimeoutError: locator.click: Timeout 14897ms exceeded.
+##[error]TimeoutError: locator.click: Timeout 14898ms exceeded.

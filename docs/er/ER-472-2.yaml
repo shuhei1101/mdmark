@@ -2,13 +2,14 @@ id: ER-472-2
 visibility: internal
 title: 'ER 図: map の補足'
 lead: 'map の範囲の `<!-- map-data: {JSON のオブジェクト} -->` に記載する補足の構造。'
-overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`・`groups`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値は、HTML コメントの中に `--` をそのまま記載しない（HTML コメントを閉じてしまう）。`--` を値に持つときは、2 つ目の `-` を JSON の Unicode エスケープで記載する
+overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`・`groups`・`changes`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値は、HTML コメントの中に `--` をそのまま記載しない（HTML コメントを閉じてしまう）。`--` を値に持つときは、2 つ目の `-` を JSON の Unicode エスケープで記載する
 er:
   entities:
     - name: 補足
     - name: 案内の手順
     - name: 配置の上書き
     - name: 分類
+    - name: 計画した変更
   relations:
     - from: 補足
       to: 案内の手順
@@ -31,6 +32,13 @@ er:
       to_column: id
       to_cardinality: 0..n
       label: groups
+    - from: 補足
+      to: 計画した変更
+      from_cardinality: '1'
+      from_column: changes
+      to_column: id
+      to_cardinality: 0..n
+      label: changes
 tables:
   - name: map_data
     title: 補足
@@ -220,6 +228,23 @@ tables:
         default: '`false`'
         description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界と配置先のノード）の ID と、ER 図のテーブル名・クラス図のクラス名・マインドマップの子を持つ項目のキー（`notes` と同じ）・ガントチャートとタイムラインとジャーニーの section の名前・ブロック図の入れ子のブロックの ID のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを、マインドマップの項目は子孫を閉じて描き、section と入れ子のブロックは「{名前}（{種類} {数} 件）」の 1 つの項目にして描く
         example: 'true'
+  - name: changes
+    title: 計画した変更
+    source: DATA-472-34#
+    summary: 構成図の部品の上に描く図の、ノード・グループ・線 1 つに計画した変更（キーが ID）
+    datastore: JSON
+    access: 全件
+    scale: ~100
+    columns:
+      - name: type
+        title: 変更の種類
+        source: DATA-472-34#fields[type]
+        type: string
+        not_null: true
+        check: '`added`・`changed`・`removed`'
+        description: '`added` は差分の追加の色、`changed` は色の名前 `orange`、`removed` は差分の削除の色の破線と取り消し線の名前で描き、変更の名前のバッジを付ける。`removed` のノード・線も配置に含める'
+        example: added
+        notes: キーは `notes` と同じ ID のうち、flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図のノード・グループ・線の ID。無い ID は `map_unknown_ref`、知らない値と列・メンバーのキー（`{テーブル名}.{列名}`・`{クラス名}.{メンバー名}`）は `map_invalid_value`。シーケンス図・マインドマップ・軸と格子の配置の図の補足が `changes` を持つときは `map_invalid_value` を 1 件にして描かない。変更の色は、同じ ID の `layout` の `color` と設定の `map.kinds` の種類の色より優先して枠線と線に適用する。種類のアイコンと名前の行の色は種類の色のまま
 refs:
   - IF-472-34#constraints[map の範囲]
   - MOD-472-139#data_models[MapData]

@@ -41,7 +41,7 @@ functions:
       `id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
-        type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; wide?: boolean; panelOpen?: boolean; tools?: Array<{ name: string; label: string; disabled?: boolean }>; id: string }'
+        type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; wide?: boolean; panelOpen?: boolean; tools?: Array<{ name: string; label: string; disabled?: boolean }>; exportable?: boolean; exportOpen?: boolean; listable?: boolean; listView?: boolean; id: string }'
         required: true
         description: 部品設計の引数（`panelOpen` はパネルを開いた状態で描く。ストーリーの状態が指定する）と、開いたときの倍率の下限（`fitMin`。mermaid の図が指定する。map の図は `1`）と、タイトル・ツールチップに使用する `id` の頭。`wide` は本文の幅との切り替えのボタンを出さず、`tools` はパネルの先頭に並べるボタン（外へ戻るは `data-tool="back"`）。リサイズハンドルは表示する枠の下端（横のスクロールバーの下）の帯にし、アイコンを `iconSvg("equal")` にする
       - name: body
@@ -112,6 +112,20 @@ functions:
         condition: '`fit: 1` で `zoom` が `0.25`・`1.25`・`5` の枚'
         mock: なし
         expected: '`0.25` は縮小が `disabled` で表示する枠が `data-at-fit` を持ち、`1.25` はどちらも押せて `data-at-fit` を持たず、`5` は拡大が `disabled`'
+      - name: test_render_diagram_frame_when_exportable
+        case: 正常
+        summary: 書き出すボタン
+        condition: '`kind: map`・`exportable: true`・`exportOpen: false`'
+        mock: なし
+        expected: 全画面のボタンの隣に `data-tool="export"` のボタン（`aria-expanded="false"`・`aria-controls` が要素の `id`・`aria-haspopup` 無し）があり、`div.mdmark-diagram-export` が `hidden` で `popover` 属性を持たない
+      - name: test_render_diagram_frame_when_listable
+        case: 正常
+        summary: 一覧の表示のボタン
+        condition: '`kind: map`・`listable: true`・`listView: true`・`panelOpen: true`'
+        mock: なし
+        expected: 'map のグループの先頭に `data-tool="list"`（`aria-pressed="true"`）のボタンがあり、図の要素が `hidden`。`listable: false` ではボタンが無い'
+    notes:
+      書き出すボタンと一覧の表示のボタン: '`exportable` のとき、画面のグループ（`data-group="screen"`）の全画面のボタンの隣に `button[data-tool="export"]`（`iconSvg("download")`、`aria-label="図を書き出す"`、`aria-expanded`、`aria-controls`）と、表示する枠の中に絶対配置する `div.mdmark-diagram-export`（`exportOpen` でなければ `hidden`。`button[data-export="svg"]`・`button[data-export="png"]` と空の `p[role="status"]`）を配置する。`listable` のとき、map のグループの先頭に `button[data-tool="list"]`（`iconSvg("list-tree")`、`aria-label="一覧で表示"`、`aria-pressed`）を配置し、`listView` のときは図を `hidden` にする。一覧は呼び出し側が入れる'
   - name: renderFlow
     title: map の構成図のノードと線を描く
     container: src/diagram/diagram.part.ts

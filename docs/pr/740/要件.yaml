@@ -1,0 +1,55 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 追加すると決めた項目（計画した変更・図の SVG・PNG への書き出し・一覧の表示）の正常シナリオを追加する。追加しないと決めた項目のシナリオは戻す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: none
+    detail: 書き出しと一覧の表示は map の図だけの操作で、『Mermaidと補足で図を描く』に記載する。共通の拡大・縮小・移動の操作は変わらない
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: following
+    detail: 読者が図を辿って読む流れに、計画した変更を一覧の表示で辿る正常シナリオを追加して追随させる
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+scope_out:
+  - item: map の範囲の外の mermaid のコードブロックを map で描き、mermaid のライブラリで描く経路をなくすこと
+    reason: No 13〜17 の追加とは別の要望で、同じ内容の open の Issue がある
+    plan: '#738'
+  - item: 文書を純粋な Markdown に書き出すときの map の変換
+    reason: No 16 は図を SVG・PNG に書き出す操作で、文書の Markdown への書き出し（SC-472-101）とは書き出す対象が別
+    plan: '#313'
+  - item: SC-472-8 の既存の期待値の「ポインターを適用する」（#731 の置き換え）を「ポインターを重ねる」に直すこと
+    reason: 規約『文章の書き方』の「同じものを別の言葉で呼んでいないか」から外れる既存の行で、今回の要望（A-35 の No 13〜17）に含まれない
+    plan: '#749'
+  - item: ER-472-2 の補足の関連（walkthroughs・layout・groups・changes）の from_column・to_column が、列を持たない補足の実体のため設計書の検証（ai_monitor.design_docs validate）の違反になること
+    reason: 設計書の検証の規則と、列を持たない JSON の補足の ER 図の書き方が食い違っている。既存の 3 本の関連から続く検出で、map に計画した変更などを追加する今回の要望に含まれない
+    plan: '#768'
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    status: done
+    change: 補足の `changes`（計画した変更を示す節）と、読者ができることに図の書き出し・一覧の表示を追加
+    updated_by: planner
+    updated_at: '2026-11-20T10:56:24.217028+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    status: done
+    change: 補足のキーの表に `changes` を追加
+    updated_by: planner
+    updated_at: '2026-11-20T10:56:24.217028+00:00'
+  - page: docs/guide/用語集.mark.md
+    new: false
+    status: done
+    change: 補足の説明に `changes`、用語に計画した変更・図の書き出し・一覧の表示を追加
+    updated_by: planner
+    updated_at: '2026-11-20T10:56:24.217028+00:00'
+  - page: docs/guide/用語集.yaml
+    new: false
+    status: done
+    change: 用語集.mark.md と同じ用語を追加
+    updated_by: planner
+    updated_at: '2026-11-20T10:56:24.217028+00:00'

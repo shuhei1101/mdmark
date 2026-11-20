@@ -74,6 +74,14 @@ export type DiagramFrame = {
   panelOpen?: boolean;
   /** 右上のパネルの先頭に並べるボタン（map の図）。`name` は `MAP_TOOL_ICONS` のキー */
   tools?: Array<{ name: string; label: string; disabled?: boolean }>;
+  /** 全画面のボタンの隣に書き出すボタンを配置するか（map の図） */
+  exportable?: boolean;
+  /** 書き出すボタンの「SVG」「PNG」の要素を開いた状態で描くか（ストーリーの状態だけが指定する） */
+  exportOpen?: boolean;
+  /** パネルの map のグループの先頭に一覧の表示のボタンを配置するか（map の構成図の部品の上に描く図とシーケンス図） */
+  listable?: boolean;
+  /** 表示する枠の中を図から一覧に替えた状態で描くか（一覧は呼び出し側が入れる） */
+  listView?: boolean;
   /** ツールチップと矢じりの `id` の頭 */
   id: string;
 };
@@ -711,18 +719,20 @@ function renderTools(frame: DiagramFrame): string {
     disabled = false,
   ): string =>
     `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${face.label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(face.icon)}</button>`;
+  const list = frame.listable
+    ? `<button class="mdmark-diagram-tool" type="button" data-tool="list" aria-label="一覧で表示" title="一覧で表示" aria-pressed="${frame.listView === true}">${iconSvg("list-tree")}</button>`
+    : "";
+  const tools = frame.tools ?? [];
   const extra =
-    frame.tools === undefined || frame.tools.length === 0
+    tools.length === 0 && list === ""
       ? ""
-      : `<div class="mdmark-diagram-tools-group" data-group="map">${frame.tools
+      : `<div class="mdmark-diagram-tools-group" data-group="map">${list}${tools
           .map(
             (item) =>
               `<button class="mdmark-diagram-tool" type="button" data-tool="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.label)}" title="${escapeHtml(item.label)}"${item.disabled ? ' disabled="disabled"' : ""}>${iconSvg(MAP_TOOL_ICONS[item.name] ?? "ellipsis")}</button>`,
           )
           .join("")}</div>`;
-  const screen = frame.modal
-    ? tool("close", { label: "全画面を閉じる", icon: "x" })
-    : tool("fullscreen", { label: "全画面で開く", icon: "expand" });
+  const screen = `${frame.modal ? tool("close", { label: "全画面を閉じる", icon: "x" }) : tool("fullscreen", { label: "全画面で開く", icon: "expand" })}${exportButton(frame)}`;
   const percent = `${Math.round((zoom / fit) * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="倍率 ${percent}。全体が収まる倍率に戻す">${percent}</button>`;
   const open = frame.panelOpen === true;
@@ -730,6 +740,22 @@ function renderTools(frame: DiagramFrame): string {
   const atMin = zoom <= fit * ZOOM.minRatio + ZOOM_EPSILON;
   const atMax = zoom >= fit * ZOOM.maxRatio - ZOOM_EPSILON;
   return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"${open ? " data-open" : ""}>${extra}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "縮小", icon: "minus" }, atMin)}${zoomButton}${tool("in", { label: "拡大", icon: "plus" }, atMax)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div><div class="mdmark-diagram-tools-group" data-group="more">${more}</div></div>`;
+}
+
+/** 書き出すボタンが開く要素の `id` */
+const exportPanelId = (frame: DiagramFrame): string =>
+  `${escapeHtml(frame.id)}-export`;
+
+/** 全画面のボタンの隣の書き出すボタン（書き出せない図は空） */
+function exportButton(frame: DiagramFrame): string {
+  if (frame.exportable !== true) return "";
+  return `<button class="mdmark-diagram-tool" type="button" data-tool="export" aria-label="図を書き出す" title="図を書き出す" aria-expanded="${frame.exportOpen === true}" aria-controls="${exportPanelId(frame)}">${iconSvg("download")}</button>`;
+}
+
+/** 書き出すボタンが開く「SVG」「PNG」の要素（書き出せない図は空） */
+function exportPanel(frame: DiagramFrame): string {
+  if (frame.exportable !== true) return "";
+  return `<div class="mdmark-diagram-export" id="${exportPanelId(frame)}"${frame.exportOpen === true ? "" : " hidden"}><button class="mdmark-diagram-export-item" type="button" data-export="svg">SVG</button><button class="mdmark-diagram-export-item" type="button" data-export="png">PNG</button><p class="mdmark-diagram-export-status" role="status"></p></div>`;
 }
 
 /** 図の枠の高さを変えるつまみ（変えられないかモーダルの中なら空）。高さの値は `mount` が測って書き換えるまでの初めの値 */
@@ -765,7 +791,7 @@ export function renderDiagramFrame(
   const stage = `width:${num(body.width)}px;height:${num(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
   const atFit = zoom <= (frame.fit ?? 1) + ZOOM_EPSILON ? " data-at-fit" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport"${atFit} tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}${exportPanel(frame)}<div class="mdmark-diagram-viewport"${atFit} tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"${frame.listView === true ? " hidden" : ""}><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 
 /** 図の種類 */

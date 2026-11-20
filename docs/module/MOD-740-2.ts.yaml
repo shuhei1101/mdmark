@@ -1,0 +1,78 @@
+id: MOD-740-2
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / list.part.ts
+lead: 部品『mapの一覧』の HTML を受け持ち、一覧の表示の項目の描き方を変えるときに参照する。
+data_models:
+  - name: MapListItem
+    title: 一覧の項目
+    container: src/map/list.part.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品『mapの一覧』の `items` の 1 項目
+    properties:
+      - name: id
+        type: string
+        description: ノード・グループの ID かメッセージの番号
+      - name: name
+        type: string
+        description: 名前かメッセージの項目の文字
+      - name: kind
+        type: string | undefined
+        description: 種類の名前
+      - name: note
+        type: string | undefined
+        description: 補足の `notes` の説明
+      - name: out
+        type: string[]
+        description: 出る線の文字
+      - name: change
+        type: '"added" | "changed" | "removed" | undefined'
+        description: 計画した変更
+      - name: children
+        type: MapListItem[] | undefined
+        description: グループの中の項目
+functions:
+  - name: renderMapList
+    title: 一覧の HTML を返す
+    kind: 関数
+    container: src/map/list.part.ts
+    usecase: Mermaidと補足で図を描く
+    role: 部品
+    scope: public
+    summary: 部品設計『mapの一覧』の HTML を返却する
+    description: DOM を使用せず文字で組み、Node でも動く（部品の描画のサーバーが呼ぶ）。項目は `li[role="treeitem"][data-id]` で、名前の行に山形・名前・変更のバッジ（`aria-hidden`）・種類・説明、その下に出る線を並べ、`aria-label` を「{名前}、{変更の名前}、{種類}、{説明}、出る線 {数} 本」にする
+    args:
+      - name: args
+        type: '{ label: string; items: MapListItem[]; collapsed?: string[]; focused?: string }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`ul.mdmark-map-list[role="tree"]` の HTML'
+    unit_tests:
+      - name: test_render_map_list
+        case: 正常
+        summary: 入れ子の一覧
+        condition: 部品設計の Flow の `items`
+        mock: なし
+        expected: '`role="tree"` の中に `aria-level` 1・2・3 の項目があり、グループの項目が `aria-expanded="true"` と子の `role="group"` を持ち、`tabindex="0"` は最初の項目だけ'
+      - name: test_render_map_list_when_changes
+        case: 正常
+        summary: 計画した変更
+        condition: 部品設計の WithChanges の `items`
+        mock: なし
+        expected: '`removed` の項目が `data-change="removed"` で、`aria-label` が「旧版の読み取り、削除、処理」で始まり、バッジが `aria-hidden`'
+      - name: test_render_map_list_when_collapsed
+        case: 正常
+        summary: 閉じた項目と ID での指定
+        condition: '`collapsed: ["read"]`・`focused: "read"`'
+        mock: なし
+        expected: '`data-id="read"` の項目が `aria-expanded="false"` と `tabindex="0"` を持ち、子の `role="group"` が `hidden`'
+refs:
+  - CMP-740-1#
+tags:
+  - name: topic:map
+  - name: topic:一覧
+  - name: topic:アクセシビリティ
+test_files:
+  - tests/unit/src/map/list.part.test.ts

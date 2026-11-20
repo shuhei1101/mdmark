@@ -297,6 +297,7 @@ export const attachMapMindmap = (
       title: args.title ?? "",
       legend: [],
       wide: true,
+      exportable: true,
       fitMin: 1,
       tools: toolsOf(state),
       id: source.frameId,

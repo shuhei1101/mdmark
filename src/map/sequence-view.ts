@@ -11,6 +11,7 @@ import {
   sessionStorageOf,
   termsOf,
 } from "./flow-view.ts";
+import { attachMapList, sequenceListItems } from "./list.ts";
 import { renderMapSequence, renderPackets } from "./map.part.ts";
 import { parseSequence, SEQ_ARROW_STYLES, type Sequence } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
@@ -340,10 +341,17 @@ export const attachMapSequence = (
       // 等倍より縮めず、収まらない分は図の枠の中で横にスクロールする
       fitMin: 1,
       tools: tools(),
+      exportable: true,
+      listable: true,
       id: frameId,
     },
     { html: first.html, ...sizeOf(first.html), tips: first.tips },
   );
+  const detachList = attachMapList(range, {
+    label: () =>
+      `${range.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の一覧`,
+    items: () => sequenceListItems(sequence),
+  });
   linkAnnotationOwners(range);
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
   const follower = createFollow(figure, prefersReducedMotion());
@@ -700,6 +708,7 @@ export const attachMapSequence = (
     playsOver: data.plays_over,
     clear: () => band?.stop(),
     destroy: () => {
+      detachList();
       band?.destroy();
       follower.destroy();
       detachDiagrams();
