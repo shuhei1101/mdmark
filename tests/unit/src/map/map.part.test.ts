@@ -2454,8 +2454,10 @@ const STYLED = [
 
 /** ノードの開きのタグ */
 const nodeTag = (html: string, id: string) =>
-  matches(html, new RegExp(`<div class="[^"]*"[^>]*data-node="${id}"[^>]*>`))[0] ??
-  "";
+  matches(
+    html,
+    new RegExp(`<div class="[^"]*"[^>]*data-node="${id}"[^>]*>`),
+  )[0] ?? "";
 
 // style・classDef・linkStyle の色をノードと線に適用し、文字の色をコントラストで決める（正常系）
 test("test_render_map_flow_when_styles", async () => {
@@ -2476,7 +2478,9 @@ test("test_render_map_flow_when_styles", async () => {
     expect(nodeTag(html, id)).toContain("--map-node-fill: #ffe08a");
     expect(nodeTag(html, id)).toContain("--map-node-text: #000000");
   }
-  expect(html).toMatch(/data-wire="B->C"[^>]*stroke: #d33|stroke: #d33[^>]*data-wire="B->C"/);
+  expect(html).toMatch(
+    /data-wire="B->C"[^>]*stroke: #d33|stroke: #d33[^>]*data-wire="B->C"/,
+  );
   const changedD = nodeTag(changed, "D");
   expect(changedD).toContain("--map-node-fill: #ffe08a");
   expect(changedD).not.toContain("--map-node-stroke");

@@ -191,9 +191,12 @@ test("test_parse_axis_grid_when_mermaid_gantt", async () => {
     "  Initial milestone : milestone, m1, 17:49, 2m",
     "  Task A : 10m",
   ].join("\n");
-  const numbers = ["gantt", "  dateFormat X", "  section S", "  71 : 0, 71"].join(
-    "\n",
-  );
+  const numbers = [
+    "gantt",
+    "  dateFormat X",
+    "  section S",
+    "  71 : 0, 71",
+  ].join("\n");
   // 実行
   const grid = parseAxisGrid({ kind: "gantt", source: dates });
   const timeGrid = parseAxisGrid({ kind: "gantt", source: times });

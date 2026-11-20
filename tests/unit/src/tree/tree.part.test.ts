@@ -215,7 +215,9 @@ test("test_render_tree_bar", async () => {
   const copied = renderTreeBar({ language: "text", copyState: "copied" });
   const noLanguage = renderTreeBar({ language: "" });
   // 検証
-  expect(idle).toContain('<span class="mdmark-code-lang-name" aria-hidden="true">tree</span>');
+  expect(idle).toContain(
+    '<span class="mdmark-code-lang-name" aria-hidden="true">tree</span>',
+  );
   expect(idle).toContain(
     '<button class="mdmark-code-copy" type="button" data-state="idle">',
   );
@@ -227,7 +229,9 @@ test("test_render_tree_bar", async () => {
   expect(noLanguage).not.toContain("mdmark-code-lang");
   for (const html of [idle, copied, noLanguage]) {
     expect(html.startsWith('<div class="mdmark-code-bar"')).toBe(true);
-    expect(html).toContain('class="mdmark-visually-hidden mdmark-code-status" role="status"');
+    expect(html).toContain(
+      'class="mdmark-visually-hidden mdmark-code-status" role="status"',
+    );
     expect(html).not.toContain("mdmark-tree-bar");
   }
 });

@@ -112,7 +112,9 @@ test("test_attach_file_trees", async () => {
   detachers.push(attachFileTrees(root));
   // 検証
   const tree = treeOf(root);
-  expect(tree.querySelector(":scope > .mdmark-code-bar")?.textContent).toContain("tree");
+  expect(
+    tree.querySelector(":scope > .mdmark-code-bar")?.textContent,
+  ).toContain("tree");
   expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "true"]);
   expect(nestedListOf(toggleOf(tree, "src/")).hasAttribute("hidden")).toBe(
     false,

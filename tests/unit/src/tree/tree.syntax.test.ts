@@ -238,7 +238,12 @@ test("test_count_tree_lines_when_not_tree", async () => {
 const PLAIN_TREE = ["mdmark/", "├── src/", "│   └── index.ts", "└── README.md"];
 
 /** 1 行目と同じ罫線の index.ts の行を、上の行より 2 階層深くした行 */
-const PLAIN_TOO_DEEP = ["mdmark/", "├── src/", "│   │   └── index.ts", "└── README.md"];
+const PLAIN_TOO_DEEP = [
+  "mdmark/",
+  "├── src/",
+  "│   │   └── index.ts",
+  "└── README.md",
+];
 
 /** 言語と中身からコードブロックの行を作る */
 const fence = (language: string, lines: string[]) => [
@@ -293,7 +298,11 @@ test("test_build_plain_file_trees_when_excluded", () => {
     ...fence("csv", PLAIN_TREE),
     "<!-- map -->",
     "",
-    ...fence("mermaid", ["flowchart LR", ...PLAIN_TREE.map((line) => `%% ${line}`), "  A --> B"]),
+    ...fence("mermaid", [
+      "flowchart LR",
+      ...PLAIN_TREE.map((line) => `%% ${line}`),
+      "  A --> B",
+    ]),
     "<!-- /map -->",
     "",
   ].join("\n");

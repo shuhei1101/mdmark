@@ -163,9 +163,7 @@ test("test_parse_er_diagram_when_mermaid_syntax", async () => {
   const diagram = parseErDiagram(source);
   // 検証
   expect(diagram.problems).toEqual([]);
-  expect(diagram.tables.map((table) => table.name)).toContain(
-    "This ❤ Unicode",
-  );
+  expect(diagram.tables.map((table) => table.name)).toContain("This ❤ Unicode");
   const allows = diagram.relations.find(
     (relation) => relation.label === "allows",
   );

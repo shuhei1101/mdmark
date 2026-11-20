@@ -570,4 +570,3 @@ test("test_render_code_bar", async () => {
   expect(none).not.toContain("mdmark-code-lang");
   expect(none).toContain("mdmark-code-copy");
 });
-

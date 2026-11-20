@@ -613,7 +613,8 @@ test("test_collect_plain_map_problems_when_mermaid_samples", async () => {
     samplesOf(readFileSync(new URL(name, SAMPLES_DIR), "utf8")).flatMap(
       (source, index) => {
         const plain = plainMapSourceOf(source);
-        if (plain === undefined) return [`${name}#${index + 1}: map の図にならない`];
+        if (plain === undefined)
+          return [`${name}#${index + 1}: map の図にならない`];
         return collectPlainMapProblems({
           kind: plain.kind,
           mermaid: plain.body,

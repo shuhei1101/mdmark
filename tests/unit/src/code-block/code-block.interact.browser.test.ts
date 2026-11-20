@@ -199,9 +199,14 @@ test("test_attach_code_copy_when_folded", async () => {
 test("test_attach_code_copy_when_file_tree", async () => {
   // 準備
   const { attachCodeCopy } = await loadCodeBlocks();
-  const treeBlock = ["```text", "src/", "├── index.ts", "└── parts/", "```", ""].join(
-    "\n",
-  );
+  const treeBlock = [
+    "```text",
+    "src/",
+    "├── index.ts",
+    "└── parts/",
+    "```",
+    "",
+  ].join("\n");
   const { root } = createRoot(`${treeBlock}\n${tsBlock(["const a = 1;"])}`);
   const { attachFileTrees } = await import(
     /* @vite-ignore */ new URL(

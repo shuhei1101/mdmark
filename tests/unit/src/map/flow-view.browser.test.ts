@@ -868,6 +868,8 @@ test("test_attach_map_flow_when_mermaid_styles", async () => {
   );
   expect(wire?.style.stroke).toBe("rgb(221, 51, 51)");
   expect(
-    root.querySelector('[data-group="g"]')?.classList.contains("map-closed-group"),
+    root
+      .querySelector('[data-group="g"]')
+      ?.classList.contains("map-closed-group"),
   ).toBe(true);
 });
