@@ -23,7 +23,7 @@ flows:
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 各文書の related・本文のリンク・別名の出現を取得する
-        M-->>C: { backlinks, glossary }
+        M-->>C: { backlinks, glossary, docs }
       ```
 
       <!-- /map -->
@@ -278,7 +278,12 @@ response_example: |-
   ```json
   {
     "backlinks": { "arch": ["api", "guide"], "api": ["arch"], "guide": [] },
-    "glossary": []
+    "glossary": [],
+    "docs": [
+      { "id": "arch", "path": "設計/arch.md", "title": "アーキテクチャ" },
+      { "id": "api", "path": "api.md", "title": "API", "aliases": ["公開関数"], "related": ["arch"] },
+      { "id": "guide", "path": "使い方/guide.md", "title": "使用方法" }
+    ]
   }
   ```
 exceptions:

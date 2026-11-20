@@ -415,7 +415,12 @@ const references = collectReferences({
 ```json
 {
   "backlinks": { "arch": ["api", "guide"], "api": ["arch"], "guide": [] },
-  "glossary": []
+  "glossary": [],
+  "docs": [
+    { "id": "arch", "path": "設計/arch.md", "title": "アーキテクチャ" },
+    { "id": "api", "path": "api.md", "title": "API", "aliases": ["公開関数"], "related": ["arch"] },
+    { "id": "guide", "path": "使い方/guide.md", "title": "使用方法" }
+  ]
 }
 ```
 
