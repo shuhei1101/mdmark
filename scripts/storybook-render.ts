@@ -1225,12 +1225,12 @@ const mapFrame = (
           '<p class="mdmark-diagram-export-status" role="status"></p>',
           `<p class="mdmark-diagram-export-status" role="status">${frame.exportStatus}</p>`,
         );
-  // 一覧の表示は attachMapList と同じく、表示する枠の中の図の後ろに一覧を入れる
+  // 一覧の表示は、表示する枠の中の隠した図の前に一覧を入れる
   return frame.list === undefined
     ? withStatus
     : withStatus.replace(
-        /(<div class="mdmark-diagram-sizer"[^>]*\shidden>[\s\S]*?<\/div><\/div>)/,
-        `$1${frame.list}`,
+        /(<div class="mdmark-diagram-sizer"[^>]*\shidden>)/,
+        `${frame.list}$1`,
       );
 };
 

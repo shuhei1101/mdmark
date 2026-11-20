@@ -117,7 +117,7 @@ test("test_export_map_svg", async () => {
   expect(image.svg).toContain(`width="${width}"`);
   expect(image.svg).toContain(`height="${height}"`);
   expect(image.svg).not.toMatch(/href="https?:/);
-  expect(image.svg).not.toMatch(/url\(\s*["']?(?!#)/);
+  expect(image.svg).not.toMatch(/url\((?!\s*["']?#)/);
   expect(image.svg).not.toContain("var(");
   expect(image.svg).not.toContain("class=");
   expect(image.svg).not.toContain("data-selected");

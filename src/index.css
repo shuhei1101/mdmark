@@ -11728,17 +11728,17 @@
     }
 
     /* 計画した変更の線: 経路の全ての区間の色を変え、削除は破線にする */
-    path.map-change-added {
+    .mdmark-diagram-wires path.map-change-added {
       /* biome-ignore lint/complexity/noImportantStyles: インラインの style の線の色より強くする */
       stroke: var(--mdmark-color-diff-add-sign) !important;
     }
 
-    path.map-change-changed {
+    .mdmark-diagram-wires path.map-change-changed {
       /* biome-ignore lint/complexity/noImportantStyles: インラインの style の線の色より強くする */
       stroke: var(--mdmark-color-accent-orange-text) !important;
     }
 
-    path.map-change-removed {
+    .mdmark-diagram-wires path.map-change-removed {
       /* biome-ignore lint/complexity/noImportantStyles: インラインの style の線の色より強くする */
       stroke: var(--mdmark-color-diff-del-sign) !important;
       stroke-dasharray: 6 4;

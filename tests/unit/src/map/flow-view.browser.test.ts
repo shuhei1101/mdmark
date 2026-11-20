@@ -751,20 +751,14 @@ test("test_attach_map_flow_when_fonts_ready", async () => {
   expect(nodeBox(destroyed.root, "short").width).toBe(before);
 });
 
-/** 補足を指定して構成図を描いて付ける */
+/** 補足を指定して構成図を描き、文書と同じく記載の警告とともに付ける */
 async function setUpWithData(data: string, mermaid = FLOW) {
   addStyles();
-  const { attachMapFlow } = await loadFlowView();
-  const { parseMapArgs } = await loadSpec();
+  const { attachMap } = await import("../../../../src/map/index.ts");
   const { resolveConfig } = await loadConfig();
   const root = createRootFromHtml(renderDoc(mapRange({ mermaid, data })).html);
-  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
-  const handle = attachMapFlow(
-    range,
-    resolveConfig({ config: { map: CONFIG } }),
-    { args: parseMapArgs("").args },
-  );
-  handles.push(handle);
+  const detach = attachMap(root, resolveConfig({ config: { map: CONFIG } }));
+  handles.push({ destroy: detach });
   return root;
 }
 

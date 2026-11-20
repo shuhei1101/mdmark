@@ -117,7 +117,7 @@ const createDefaultStyles = (): DefaultStyles => {
   return { of, dispose: () => frame.remove() };
 };
 
-/** 計算した値の `url()` を、図の中の `#` を指すものは `url("#…")` に戻し、外を指すものがあれば undefined にする */
+/** 計算した値の `url()` を、図の中の `#` を指すものは `url('#…')`（属性の中で逃がされない引用符）に戻し、外を指すものがあれば undefined にする */
 const localUrls = (value: string): string | undefined => {
   if (!value.includes("url(")) return value;
   let external = false;
@@ -125,12 +125,12 @@ const localUrls = (value: string): string | undefined => {
     /url\(\s*(["']?)([^"')]*)\1\s*\)/g,
     (_all, _quote, target: string) => {
       const hash = target.indexOf("#");
-      if (target.startsWith("data:")) return `url("${target}")`;
+      if (target.startsWith("data:")) return `url('${target}')`;
       if (hash < 0) {
         external = true;
         return "";
       }
-      return `url("${target.slice(hash)}")`;
+      return `url('${target.slice(hash)}')`;
     },
   );
   return external ? undefined : out;
