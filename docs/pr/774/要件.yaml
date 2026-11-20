@@ -1,0 +1,13 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: run_only
+    detail: 相対パスの mermaid の読み込み先を書き出した HTML に埋めるケースが期待どおりに動くよう、テストのフィクスチャを修正する。シナリオの記述は変えない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: run_only
+    detail: mermaid の図をプレビューで描くケースが期待どおりに動くよう、テストのフィクスチャを修正する。シナリオの記述は変えない
+    depends_on: []
+docs: []
+scope_out: []
