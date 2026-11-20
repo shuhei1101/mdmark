@@ -3,7 +3,7 @@ import type { MdmarkConfig } from "../config.ts";
 import { MAP_QUERY_PREFIX } from "../map/state.ts";
 import { type MountHandle, mount } from "../mount.ts";
 import { renderDocList } from "./doc-list.part.ts";
-import { includesOf, knowledgeOptions } from "./includes.ts";
+import { knowledgeOptions, renderedOptions } from "./options.ts";
 import { DOC_HASH_PREFIX, resolveRoute, rewriteLinks } from "./route.ts";
 import {
   applyViewState,
@@ -131,10 +131,9 @@ export function startBundle(
     stopRestore = undefined;
     handle?.destroy();
     handle = mount(view, {
-      markdown: restoreAssets(item.markdown, payload.assets),
+      ...renderedOptions({ payload, doc: item }),
       config,
       ...knowledgeOptions(payload, item.docId),
-      includes: includesOf(payload, item),
       ...(payload.icons ? { icons: payload.icons } : {}),
     });
     rewriteLinks(view, path, paths);

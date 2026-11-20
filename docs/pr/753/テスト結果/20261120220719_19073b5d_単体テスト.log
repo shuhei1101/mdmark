@@ -1,0 +1,762 @@
+# 単体テスト（Red）: テストコードの commit 19073b5d
+
+## 実装の前から pass した追加・改修のテスト
+
+- test_assemble_html_without_markdown: src/cli/html.ts の encodePayload（JSON.stringify で中身をそのまま埋める。commit 4c455f92）
+- test_load_glossary_skips_alias_row: src/knowledge/references.ts の用語集の表の読み取りが、表を囲まないマーカーから用語を入れない（commit 481d4ed2）。エイリアスは src/mdmark-style/terms.ts の loadGlossary が設定の aliases から集める（commit fac379aa）
+- test_assemble_html・test_assemble_html_when_script_in_markdown・test_assemble_html_when_bundle・test_assemble_html_when_traces_hidden・test_hide_payload（中身の構造を描いた結果に合わせて改修）: 同じ encodePayload と src/cli/traces.ts の hidePayload が文書の値をそのまま残す
+
+## fail（35 件。全て実装が無いことによる）
+
+- test_mark_schemas_match_er: schemas/marks/glossary.schema.json に alias_row が無い（ER 図『用語集の表のマーカーの設定』に合わせる変更は実装で行う）
+- test_start_viewer・test_start_bundle* ほか viewer の既存テスト: 起動の処理が中身の markdown を mount に渡しており、描いた結果を読まない
+- そのほか: 追加した関数・引数（checkGlossaryAliasRows・renderPayloadDoc・hideRenderedHtml・readAliasDetails・aliasGlossaryTokens・renderedOptions・mount の rendered）が無い
+
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-glossary-yaml-and-prerendered-html
+
+ ❯ |unit| tests/unit/src/knowledge/aliases.test.ts (15 tests | 3 failed) 291ms
+   × test_build_aliases_with_row_and_details 21ms
+   × test_read_alias_details 6ms
+   × test_read_alias_details_when_invalid 18ms
+ ❯ |unit| tests/unit/src/cli/traces.test.ts (7 tests | 2 failed) 328ms
+   × test_hide_payload_with_rendered 5ms
+   × test_hide_rendered_html 1ms
+ ❯ |unit| tests/unit/src/render/mark-schema.test.ts (8 tests | 1 failed) 2277ms
+   × test_mark_schemas_match_er 146ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts (3 tests | 3 failed) 4464ms
+   × test_start_viewer 3715ms
+   × test_start_viewer_when_aliases 417ms
+   × test_start_viewer_with_rendered 331ms
+ ❯ |unit| tests/unit/src/knowledge/glossary.syntax.test.ts (13 tests | 4 failed) 7282ms
+   × test_glossary_rule_with_alias_row 17ms
+   × test_alias_glossary_tokens 1ms
+   × test_alias_glossary_tokens_when_row_missing 1ms
+   × test_alias_glossary_tokens_when_mixed 0ms
+ ❯ |unit| tests/unit/src/render/index.test.ts (13 tests | 1 failed) 7481ms
+   × test_render_document_with_path 26ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts (12 tests | 10 failed) 6290ms
+   × test_start_bundle 3674ms
+   × test_start_bundle_when_missing_document 484ms
+   × test_start_bundle_when_side_toc_link_into_closed_section 394ms
+   × test_start_bundle_when_back_restores_view_state 322ms
+   × test_start_bundle_when_back_focuses_title 264ms
+   × test_start_bundle_when_heading_link_keeps_entry_id 183ms
+   × test_start_bundle_when_session_storage_unavailable 166ms
+   × test_start_bundle_when_back_to_entry_without_hash 245ms
+   × test_start_bundle_when_switch_clears_map_query 361ms
+   × test_start_bundle_with_rendered 187ms
+ ❯ |unit| tests/unit/src/cli/build.test.ts (11 tests | 1 failed) 9173ms
+   × test_build_site_without_markdown 121ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (38 tests | 1 failed) 9282ms
+   × test_check_glossary_alias_rows 15ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (29 tests | 4 failed) 9353ms
+   × test_prepare_embeds_when_media 15ms
+   × test_prepare_embeds_without_markdown 56ms
+   × test_render_payload_doc 1ms
+   × test_render_payload_doc_with_includes 0ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (54 tests | 4 failed) 10209ms
+   × test_mount_with_rendered 943ms
+   × test_mount_with_rendered_param 638ms
+   × test_mount_when_rendered_without_pure_markdown 476ms
+   × test_mount_when_rendered_invalid 812ms
+ ❯ |unit| tests/unit/src/viewer/options.test.ts (1 test | 1 failed) 44ms
+   × test_rendered_options 43ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 35 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/build.test.ts > test_build_site_without_markdown
+AssertionError: expected { path: 'a.mark.md', title: 'A', …(1) } to not have property "markdown"
+
+- Expected:
+undefined
+
++ Received:
+"<!-- page: {\"scheme\": \"dark\"} -->
+
+# A
+"
+
+ ❯ tests/unit/src/cli/build.test.ts:313:21
+    311|   expect(docs).toHaveLength(2);
+    312|   for (const doc of docs) {
+    313|     expect(doc).not.toHaveProperty("markdown");
+       |                     ^
+    314|     expect(typeof doc.pureMarkdown).toBe("string");
+    315|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/35]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_glossary_alias_rows
+TypeError: checkGlossaryAliasRows is not a function
+ ❯ tests/unit/src/cli/check.test.ts:1088:18
+    1086|   ];
+    1087|   // 実行
+    1088|   const issues = checkGlossaryAliasRows({ documents, aliasRows });
+       |                  ^
+    1089|   // 検証
+    1090|   expect(issues.map((issue) => [issue.file, issue.where])).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/35]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_media
+TypeError: Cannot read properties of undefined (reading 'html')
+ ❯ tests/unit/src/cli/export.test.ts:703:40
+    701|   const copied = await readdir(join(dir, "guide_files"), { recursive: …
+    702|   expect(copied.some((path) => path.endsWith("demo.mp4"))).toBe(true);
+    703|   const html = result.payload.docs[0]?.rendered.html ?? "";
+       |                                        ^
+    704|   expect(html).toMatch(/src="guide_files\/[^"\s]*demo\.mp4"/);
+    705|   expect(html).toMatch(/poster="data:image\/png;base64,[^"\s]+"/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/35]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_without_markdown
+AssertionError: expected { path: 'guide.mark.md', …(4) } to not have property "markdown"
+
+- Expected:
+undefined
+
++ Received:
+"# Guide
+
+![図](data:image/png;base64,iVBORw==)
+
+<!-- include: {\"path\": \"part.md\"} -->
+"
+
+ ❯ tests/unit/src/cli/export.test.ts:784:19
+    782|     rendered: { html: string };
+    783|   };
+    784|   expect(doc).not.toHaveProperty("markdown");
+       |                   ^
+    785|   expect(doc.rendered.html).toMatch(/src="data:image\/png;base64,[^"\s…
+    786|   expect(doc.rendered.html).toContain("取り込んだ文。");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/35]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_render_payload_doc
+TypeError: renderPayloadDoc is not a function
+ ❯ tests/unit/src/cli/export.test.ts:811:44
+    809|   ].join("\n");
+    810|   // 実行
+    811|   const { rendered, pureMarkdown } = await renderPayloadDoc({
+       |                                            ^
+    812|     markdown,
+    813|     config: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/35]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_render_payload_doc_with_includes
+TypeError: renderPayloadDoc is not a function
+ ❯ tests/unit/src/cli/export.test.ts:842:30
+    840|   };
+    841|   // 実行
+    842|   const { rendered } = await renderPayloadDoc({
+       |                              ^
+    843|     markdown: '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->…
+    844|     config: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/35]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_payload_with_rendered
+AssertionError: expected '<div class="mdmark-table" data-mdmark…' to be '<div class="zq-table" data-zq-kind="d…' // Object.is equality
+
+Expected: "<div class="zq-table" data-zq-kind="data"><p>mdmark は描く。</p></div>"
+Received: "<div class="mdmark-table" data-mdmark-kind="data"><p>mdmark は描く。</p></div>"
+
+ ❯ tests/unit/src/cli/traces.test.ts:138:41
+    136|   const hidden = hidePayload(payload);
+    137|   // 検証
+    138|   expect(hidden.docs[0]?.rendered.html).toBe(
+       |                                         ^
+    139|     '<div class="zq-table" data-zq-kind="data"><p>mdmark は描く。</p></div…
+    140|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/35]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_rendered_html
+TypeError: hideRenderedHtml is not a function
+ ❯ tests/unit/src/cli/traces.test.ts:151:18
+    149|     '<mdmark-chart class="mdmark-x" data-mdmark-mermaid style="color:v…
+    150|   // 実行
+    151|   const hidden = hideRenderedHtml(html);
+       |                  ^
+    152|   // 検証
+    153|   expect(hidden).toBe(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/35]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_build_aliases_with_row_and_details
+AssertionError: expected undefined to be 'terms' // Object.is equality
+
+- Expected:
+"terms"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/knowledge/aliases.test.ts:496:34
+    494|   expect(result.problems).toEqual([]);
+    495|   expect(result.aliases).toHaveLength(1);
+    496|   expect(result.aliases[0]?.row).toBe("terms");
+       |                                  ^
+    497|   expect(result.aliases[0]?.details).toEqual([
+    498|     {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/35]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_read_alias_details
+TypeError: readAliasDetails is not a function
+ ❯ tests/unit/src/knowledge/aliases.test.ts:517:19
+    515|   ];
+    516|   // 実行
+    517|   const details = readAliasDetails({
+       |                   ^
+    518|     value,
+    519|     sourcePath: "docs/guide/用語集.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/35]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/aliases.test.ts > test_read_alias_details_when_invalid
+TypeError: readAliasDetails is not a function
+ ❯ tests/unit/src/knowledge/aliases.test.ts:541:19
+    539|   const { readAliasDetails } = await loadAliases();
+    540|   // 実行
+    541|   const missing = readAliasDetails({
+       |                   ^
+    542|     value: [{ title: "a" }, { href: "b.md" }],
+    543|     sourcePath: "docs/guide/用語集.yaml",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/35]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/glossary.syntax.test.ts > test_glossary_rule_with_alias_row
+AssertionError: expected '<div data-mdmark-own="test-nonce" cla…' to contain '<table'
+
+- Expected
++ Received
+
+- <table
++ <div data-mdmark-own="test-nonce" class="mdmark-syntax-warning" role="note"><p data-mdmark-own="test-nonce" class="mdmark-syntax-warning-title">記載の警告</p><p data-mdmark-own="test-nonce"><code data-mdmark-own="test-nonce">&lt;!-- glossary: {&quot;alias_row&quot;: &quot;terms&quot;} --&gt;</code>の読み込めない指定を当てずに描いています。</p><ul data-mdmark-own="test-nonce"><li data-mdmark-own="test-nonce"><code data-mdmark-own="test-nonce">term</code>: 必須の <code data-mdmark-own="test-nonce">term</code> がありません。 <code data-mdmark-own="test-nonce">{&quot;term&quot;:{&quot;column&quot;:&quot;文字&quot;}}</code> のように記載してください。この設定を当てずに描いています。</li><li data-mdmark-own="test-nonce"><code data-mdmark-own="test-nonce">meaning</code>: 必須の <code data-mdmark-own="test-nonce">meaning</code> がありません。 <code data-mdmark-own="test-nonce">{&quot;meaning&quot;:{&quot;column&quot;:&quot;文字&quot;}}</code> のように記載してください。この設定を当てずに描いています。</li></ul></div><div data-mdmark-own="test-nonce" class="mdmark-syntax-warning" role="note"><p data-mdmark-own="test-nonce" class="mdmark-syntax-warning-title">記載の警告</p><p data-mdmark-own="test-nonce"><code data-mdmark-own="test-nonce">&lt;!-- glossary: {&quot;alias_row&quot;: &quot;terms&quot;} --&gt;</code>の閉じのマーカー <code data-mdmark-own="test-nonce">&lt;!-- /glossary --&gt;</code> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。</p></div><p data-source-line="2">マークを記載する。</p>
++
+
+ ❯ tests/unit/src/knowledge/glossary.syntax.test.ts:331:16
+    329|   const offHtml = parser.render(offMarkdown, offEnv);
+    330|   // 検証
+    331|   expect(html).toContain("<table");
+       |                ^
+    332|   expect(html).toContain("マークを記載する。");
+    333|   expect(env.ownGlossary).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/35]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/glossary.syntax.test.ts > test_alias_glossary_tokens
+TypeError: aliasGlossaryTokens is not a function
+ ❯ tests/unit/src/knowledge/glossary.syntax.test.ts:344:31
+    342|   const { parser, env, state } = await aliasRowState();
+    343|   // 実行
+    344|   const { tokens, warning } = aliasGlossaryTokens({
+       |                               ^
+    345|     options: { alias_row: "terms" },
+    346|     mark: '<!-- glossary: {"alias_row": "terms"} -->',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/35]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/glossary.syntax.test.ts > test_alias_glossary_tokens_when_row_missing
+TypeError: aliasGlossaryTokens is not a function
+ ❯ tests/unit/src/knowledge/glossary.syntax.test.ts:377:31
+    375|   const { state } = await aliasRowState();
+    376|   // 実行
+    377|   const { tokens, warning } = aliasGlossaryTokens({
+       |                               ^
+    378|     options: { alias_row: "glossary-terms" },
+    379|     mark: '<!-- glossary: {"alias_row": "glossary-terms"} -->',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/35]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/glossary.syntax.test.ts > test_alias_glossary_tokens_when_mixed
+TypeError: aliasGlossaryTokens is not a function
+ ❯ tests/unit/src/knowledge/glossary.syntax.test.ts:393:31
+    391|   const { state } = await aliasRowState();
+    392|   // 実行
+    393|   const { tokens, warning } = aliasGlossaryTokens({
+       |                               ^
+    394|     options: { alias_row: "terms", term: { column: "用語" } },
+    395|     mark: '<!-- glossary: {"alias_row": "terms", "term": {"column": "用…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/35]⎯
+
+ FAIL  |unit| tests/unit/src/render/index.test.ts > test_render_document_with_path
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' to contain '<table'
+
+Expected: "<table"
+Received: "<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">記載の警告</p><p><code>&lt;!-- glossary: {"alias_row": "terms"} --&gt;</code>の読み込めない指定を当てずに描いています。</p><ul><li><code>term</code>: 必須の <code>term</code> がありません。 <code>{"term":{"column":"文字"}}</code> のように記載してください。この設定を当てずに描いています。</li><li><code>meaning</code>: 必須の <code>meaning</code> がありません。 <code>{"meaning":{"column":"文字"}}</code> のように記載してください。この設定を当てずに描いています。</li></ul></div>"
+
+ ❯ tests/unit/src/render/index.test.ts:321:16
+    319|   });
+    320|   // 検証
+    321|   expect(html).toContain("<table");
+       |                ^
+    322|   expect(html).toContain('href="a.md"');
+    323| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/35]⎯
+
+ FAIL  |unit| tests/unit/src/render/mark-schema.test.ts > test_mark_schemas_match_er
+AssertionError: expected [ …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "glossary: term の必須 true と ER 図の false",
++   "glossary: meaning の必須 true と ER 図の false",
++   "glossary: alias_row がスキーマにありません",
++ ]
+
+ ❯ tests/unit/src/render/mark-schema.test.ts:319:22
+    317|   // 検証
+    318|   expect(Object.keys(schemas).length).toBeGreaterThan(0);
+    319|   expect(mismatches).toEqual([]);
+       |                      ^
+    320|   expect(unknownKeywords).toEqual([]);
+    321| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/35]⎯
+
+ FAIL  |unit| tests/unit/src/viewer/options.test.ts > test_rendered_options
+Error: Cannot find module 'file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-glossary-yaml-and-prerendered-html/src/viewer/options.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-export-glossary-yaml-and-prerendered-html/tests/unit/src/viewer/options.test.ts
+ ❯ tests/unit/src/viewer/options.test.ts:17:31
+     15| test("test_rendered_options", async () => {
+     16|   // 準備
+     17|   const { renderedOptions } = await loadOptions();
+       |                               ^
+     18|   const doc = {
+     19|     path: "guide/a.md",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_with_rendered
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_with_rendered.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ mountTracked tests/unit/src/mount.browser.test.ts:62:18
+ ❯ tests/unit/src/mount.browser.test.ts:1688:5
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_with_rendered_param
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_with_rendered_param.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ mountTracked tests/unit/src/mount.browser.test.ts:62:18
+ ❯ tests/unit/src/mount.browser.test.ts:1717:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_rendered_without_pure_markdown
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_rendered_without_pure_markdown.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ mountTracked tests/unit/src/mount.browser.test.ts:62:18
+ ❯ tests/unit/src/mount.browser.test.ts:1737:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_rendered_invalid
+AssertionError: expected 'Cannot read properties of undefined (…' to match /markdown/
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_rendered_invalid.png
+
+[32m- Expected:[39m
+/markdown/
+
+[31m+ Received:[39m
+"Cannot read properties of undefined (reading 'startsWith')"
+
+ ❯ tests/unit/src/mount.browser.test.ts:1764:41
+    1762|   );
+    1763|   expect(emptyError).toBeInstanceOf(TypeError);
+    1764|   expect((emptyError as Error).message).toMatch(/markdown/);
+       |                                         ^
+    1765|   expect((emptyError as Error).message).toMatch(/rendered/);
+    1766|   expect(mixedError).toBeInstanceOf(TypeError);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:100:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_missing_document
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_missing_document.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:121:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_side_toc_link_into_closed_section
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_side_toc_link_into_closed_section.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:147:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_back_restores_view_state
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_back_restores_view_state.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:170:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_back_focuses_title
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_back_focuses_title.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:204:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_heading_link_keeps_entry_id
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_heading_link_keeps_entry_id.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:235:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_session_storage_unavailable
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_session_storage_unavailable.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:260:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_back_to_entry_without_hash
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_back_to_entry_without_hash.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:304:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_switch_clears_map_query
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_switch_clears_map_query.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:328:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_with_rendered
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_with_rendered.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ showDocument src/viewer/bundle.ts:133:14
+ ❯ route src/viewer/bundle.ts:195:7
+ ❯ startBundle src/viewer/bundle.ts:284:3
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:363:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ startViewer src/viewer/index.ts:36:3
+ ❯ tests/unit/src/viewer/index.browser.test.ts:39:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer_when_aliases
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer_when_aliases.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ startViewer src/viewer/index.ts:36:3
+ ❯ tests/unit/src/viewer/index.browser.test.ts:80:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/35]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer_with_rendered
+TypeError: Cannot read properties of undefined (reading 'startsWith')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer_with_rendered.png
+
+ ❯ splitFrontmatter src/frontmatter/frontmatter.logic.ts:30:25
+     28|     endLine: undefined,
+     29|   };
+     30|   const text = markdown.startsWith(BOM) ? markdown.slice(BOM.length) :…
+       |                         ^
+     31|   // 改行を残して行に分ける（CR は行末に残し、判定の前に除く）
+     32|   const lines = text.split("\n");
+ ❯ renderDocument src/render/index.ts:117:38
+ ❯ renderMarkdown src/mount.ts:339:5
+ ❯ draw src/mount.ts:551:22
+ ❯ mount src/mount.ts:625:3
+ ❯ startViewer src/viewer/index.ts:36:3
+ ❯ tests/unit/src/viewer/index.browser.test.ts:124:5
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=ad98f040:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/35]⎯
+
+
+ Test Files  12 failed | 317 passed (329)
+      Tests  35 failed | 2694 passed (2729)
+   Start at  22:06:24
+   Duration  35.81s (worker 82%, tests 13%, import 5%, transform 1%)
+
+done

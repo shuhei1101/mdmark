@@ -44,6 +44,8 @@ export declare function renderDocument(options: {
     icons?: Record<string, MdmarkIconNode> | undefined;
     /** `id:` で始まるリンク先を URL に変える関数 */
     resolveIdLink?: ResolveIdLink | undefined;
+    /** 描く文書の、設定ファイルのフォルダからの相対パス。エイリアスの行から描く用語集の表の詳細のリンク先を解くのに使用する */
+    path?: string | undefined;
 }): RenderedDocument;
 /** `render` と同じ設定の当て方で描き、描いたときに配置する記載の警告を HTML にせずに返却する */
 export declare function collectWarnings(markdown: string, opts?: {
@@ -64,4 +66,6 @@ export declare function render(markdown: string, opts?: {
     icons?: Record<string, MdmarkIconNode>;
     /** `id:` で始まるリンク先（`id:` を含む値）を開く URL に変える関数。省くと、`id:` のリンク先を許可しないリンク先として扱う */
     resolveIdLink?: ResolveIdLink;
+    /** 描く文書の、設定ファイルのフォルダからの相対パス。エイリアスの行から描く用語集の表の詳細のリンク先を解くのに使用する */
+    path?: string;
 }): string;

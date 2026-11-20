@@ -67,6 +67,35 @@ flows:
       - '`duplicate_alias_row_id` の `file` が `mdmark.config.yaml`、`where` が後の行の `aliases[5].id`'
       - '`alias_required_empty` の `file` がレコードのファイルのパス、`where` が `command` を指し、`message` に修正方法がある'
     test: test_normal_when_invalid_rows
+  - name: 正常系（元の行と詳細のページ）
+    summary: エイリアスに元の行の id を入れ、詳細のページのリンク先を設定ファイルのフォルダからの相対パスに書き換える
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常系と同じ
+      - name: 詳細のページを持つ用語の行
+        description: '`metadata` に `details: pages` を記載した `alias_type` が `term` の行 `terms` と、`docs/guide/用語集.yaml` の 1 件の用語 `marker`。`pages` は `{ title: 文書を描く仕組み, href: ./コアコンセプト-文書を描く仕組み.md#流れ }`・`{ title: 仕様, href: https://example.com/spec }`・`{ title: リンク先の無い要素 }` の 3 件'
+        notes: リンク先の無い要素で、使用しない要素を決定的に発生させる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: buildAliases({ rows, sources })
+        M->>M: 元の行の id を入れ、details のリンク先を設定ファイルのフォルダからの相対パスにする
+        M-->>C: { aliases, problems }
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`marker` の `row` が `terms`'
+      - '`marker` の `details` が 2 件で、1 件目の `href` が `docs/guide/コアコンセプト-文書を描く仕組み.md#流れ`、2 件目の `href` が `https://example.com/spec`'
+      - リンク先の無い要素が `details` に入っていない
+      - '`problems` が空'
+    test: test_normal_when_row_and_details
 lead: 利用側の処理（`mdmark export`・`build`・`check` と dev-docs）が、設定の `aliases` の行と、行の `paths` に該当した YAML を読み込んだ中身を指定し、`metadata` を適用したエイリアスの配列と、使用できない行・レコードのずれの一覧を受け取る。ファイルを読み込むのは呼ぶ側で、mdmark は指定された値だけからエイリアスを作る。
 identifier: buildAliases
 idempotent: true
@@ -168,8 +197,8 @@ response_example: |-
   ```json
   {
     "aliases": [
-      { "alias_type": "term", "id": "ws", "name": "ワークスペース", "aliases": ["WS"], "description": "話し合いの記録を配置するフォルダ" },
-      { "alias_type": "command", "id": "unit-test", "name": "unit-test", "aliases": [], "description": "ライブラリ本体の単体テストを実行する", "command": "npm run test:unit" }
+      { "alias_type": "term", "row": "terms", "id": "ws", "name": "ワークスペース", "aliases": ["WS"], "description": "話し合いの記録を配置するフォルダ" },
+      { "alias_type": "command", "row": "commands", "id": "unit-test", "name": "unit-test", "aliases": [], "description": "ライブラリ本体の単体テストを実行する", "command": "npm run test:unit" }
     ],
     "problems": []
   }
@@ -190,9 +219,9 @@ constraints:
     notes: キーが無いか配列でないファイルは `alias_records_missing`
   - item: metadata の当て方
     constraint: エイリアスのキーごとに、`metadata` に記載した列名の列の値を取る。列名の `.` は入れ子の列をたどる（`meta.summary` は `meta` の中の `summary`）。`metadata` に無いキーと、値が文字列でないキーは、レコードの同じ名前の列の値を取る（列が無ければ持たない）。`metadata` に記載した列がレコードに無いときは、無い列ごとに `alias_field_missing` にし、そのレコードは必須のキーを確認せずに使用しない。`alias_type` は行の `alias_type` を取り、レコードからは取らない
-    notes: キーは ER 図『エイリアス』の列と `port`。ほかのキーは取らない
+    notes: キーは ER 図『エイリアス』の列（`row` を除く）と `port`。ほかのキーは取らない
   - item: 値の構造
-    constraint: 文字列のキーは、文字列・数・真偽値を文字列にし、前後の空白を除く。それ以外の値は空として扱う。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びにし、並びなら文字列の要素だけを残す
+    constraint: 文字列のキーは、文字列・数・真偽値を文字列にし、前後の空白を除く。それ以外の値は空として扱う。`aliases`・`avoid`・`related` は、文字列なら 1 件の並びにし、並びなら文字列の要素だけを残す。`details` は並びの要素のうち、空でない文字列の `title` と `href` を持つオブジェクトだけを残し、並びでない値は空として扱う（残った要素が無ければ持たない）
   - item: 名前の既定
     constraint: '`name` が空のとき、行が `body_file` を持ちレコードのその列が空でなければ、その値のパスの最後の名前から拡張子を除いたものにする。それも空のとき、`records` を持つ行はレコードの `id`、持たない行はファイルのパスの最後の名前から拡張子を除いたものにする'
   - item: 種類と必須のキー
@@ -205,6 +234,12 @@ constraints:
     constraint: 行の `id` が前の行と同じときは、後の行を読み込まず `duplicate_alias_row_id` にする。エイリアスの `id` が前のエイリアス（`env` を含む）と同じときは、後のレコードを使用せず `duplicate_alias_id` にする
   - item: 上限
     constraint: 制限なし（指定された全ての行とファイルを使用する）
+  - item: 元の行
+    constraint: 作ったエイリアスの `row` に、そのレコードを読み込んだ行の `id` を入れる。レコードの列からは取らない
+  - item: 詳細のページのリンク先
+    constraint: '`details[].href` が URL（`http:`・`https:` などのスキームで始まる）か `#` で始まるときはそのまま入れる。それ以外は、そのレコードのファイルの `path` のフォルダからの相対パスとして解き、設定ファイルのフォルダからの相対パス（区切りは `/`、先頭の `./` を持たない）に書き換える。見出しのアンカー（`#` 以降）はそのまま残す'
+    notes: 設定ファイルのフォルダの外を指すパスは `../` で始まる値になる
+test_file: tests/integration/lib/build-aliases.test.ts
 refs:
   - ER-472-3#
   - CFG-472-3#settings[aliases]

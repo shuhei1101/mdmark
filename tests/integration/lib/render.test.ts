@@ -75,6 +75,7 @@ type Built = {
       includes?: Record<string, string>;
       icons?: Record<string, Array<[string, Record<string, string>]>>;
       resolveIdLink?: (ref: string) => string | undefined;
+      path?: string;
     },
   ) => string;
   registerExtension: (extension: MdmarkExtension) => void;
@@ -4994,4 +4995,95 @@ test("test_normal_when_id_link_resolved", async () => {
   expect(anchor(html, "不明")).not.toContain("href=");
   for (const text of ["一覧", "設計書", "不明"])
     expect(anchor(without, text)).not.toContain("href=");
+});
+
+/** 行 `terms` の term のエイリアス 2 件（マーカー・機能）と、行 `docs` の doc のエイリアス 1 件 */
+const ALIAS_ROW_ALIASES = [
+  {
+    alias_type: "term",
+    row: "terms",
+    id: "marker",
+    name: "マーカー",
+    aliases: ["マーク"],
+    avoid: ["印"],
+    description: "HTML コメントで記載する指定",
+    details: [
+      {
+        title: "文書を描く仕組み",
+        href: "docs/guide/コアコンセプト-文書を描く仕組み.md",
+      },
+    ],
+  },
+  {
+    alias_type: "term",
+    row: "terms",
+    id: "feature",
+    name: "機能",
+    aliases: [],
+    description: "オン・オフを決められる働き",
+  },
+  {
+    alias_type: "doc",
+    row: "docs",
+    id: "usage",
+    name: "使用方法",
+    aliases: [],
+    description: "使用方法の文書",
+  },
+] as MdmarkAlias[];
+
+// alias_row のマーカーの場所に、その行の term のエイリアスから用語集の表を描く（正常系）
+test("test_normal_when_glossary_alias_row", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown =
+    '<!-- glossary: {"alias_row": "terms"} -->\n\nマークを記載する。\n';
+  // 実行
+  const html = render(markdown, {
+    aliases: ALIAS_ROW_ALIASES,
+    path: "docs/guide/用語集.mark.md",
+  });
+  // 検証
+  expect(findTags(html, "<table")).toHaveLength(1);
+  const table = html.slice(html.indexOf("<table"), html.indexOf("</table>"));
+  const headings = [...table.matchAll(/<th[^>]*>([\s\S]*?)<\/th>/g)].map(
+    (match) => plainText(match[1] ?? "").trim(),
+  );
+  expect(headings).toEqual([
+    "用語",
+    "別名",
+    "使用しない言い方",
+    "意味",
+    "詳細",
+  ]);
+  const rows = table.split("<tbody>")[1]?.split("<tr").slice(1) ?? [];
+  expect(
+    rows.map((row) =>
+      plainText(/<td[^>]*>([\s\S]*?)<\/td>/.exec(row)?.[1] ?? "").trim(),
+    ),
+  ).toEqual(["マーカー", "機能"]);
+  expect(table).not.toContain("使用方法");
+  const link = /<a[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/.exec(rows[0] ?? "");
+  expect(decodeURI(link?.[1] ?? "")).toBe("コアコンセプト-文書を描く仕組み.md");
+  expect(link?.[2]).toBe("文書を描く仕組み");
+  expect(table).not.toContain("mdmark-term");
+  const after = html.slice(html.indexOf("</table>"));
+  expect(after).toMatch(/<span class="mdmark-term"[^>]*>マーク<\/span>/);
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 指した行の term のエイリアスが無いとき、表の代わりに記載の警告を描く（正常系）
+test("test_normal_when_glossary_alias_row_missing", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown =
+    '<!-- glossary: {"alias_row": "glossary-terms"} -->\n\n後の段落。\n';
+  // 実行
+  const html = render(markdown, { aliases: ALIAS_ROW_ALIASES });
+  // 検証
+  expect(html).not.toContain("<table");
+  const warnings = warningBodies(html);
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]).toContain("glossary-terms");
+  expect(html).toContain("後の段落。");
 });

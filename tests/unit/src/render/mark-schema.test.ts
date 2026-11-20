@@ -227,7 +227,8 @@ test("test_validate_mark_options_when_required_missing", async () => {
   // 検証
   expect(table.options).toEqual({});
   expect(table.problems.map((problem) => problem.path)).toEqual(["tree.key"]);
-  expect(glossary.problems.map((problem) => problem.path)).toEqual(["meaning"]);
+  // 用語集の表の term・meaning は alias_row が無いときだけ必須で、スキーマでは必須にせず表の読み取りが確かめる（ER 図『用語集の表のマーカーの設定』）
+  expect(glossary.problems).toEqual([]);
 });
 
 // スキーマの無い名前は確かめない（正常系）

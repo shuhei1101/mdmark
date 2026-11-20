@@ -4,12 +4,21 @@ import { type DiffMode, type DiffSource } from "./diff/source.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
+import { renderDocument } from "./render/index.ts";
 import type { ResolveIdLink } from "./render/sanitize.ts";
 import type { MdmarkIconNode } from "./shared/icon-node.logic.ts";
+/** `mount` の `rendered` に指定する、`renderDocument` の戻り値のうち `mount` が使用する項目 */
+export type MdmarkRendered = Pick<RenderedDocument, "html" | "features" | "page" | "paramDefinitions" | "extensionDefinitions">;
 /** `mount` の第 2 引数 */
 export type MountOptions = {
-    /** 描く Markdown */
-    markdown: string;
+    /** 描く Markdown。`rendered` を指定しないとき必須 */
+    markdown?: string;
+    /** 書き出しが `render` と同じ処理で描いた結果。指定すると Markdown を描かず、その HTML を要素に入れて操作を付ける。`html` はもう一度サニタイズしない */
+    rendered?: MdmarkRendered;
+    /** `rendered` で描いた文書の Markdown のコピーとエクスポートのボタンが使用する純粋な Markdown。省くとボタンを配置しない */
+    pureMarkdown?: string;
+    /** 描く文書の、設定ファイルのフォルダからの相対パス（`render` の `path` と同じ） */
+    path?: string;
     /** 利用側の設定。省いたキーには既定を適用する */
     config?: MdmarkConfig;
     /** 索引。省くと索引の用語と関連文書を出さない */
@@ -58,7 +67,10 @@ export type MountHandle = {
     /** その `id` のコメントのマーカーへ移って強調する。マーカーが無い `id` と `destroy` の後は何もしない */
     focusComment: (id: string) => void;
 };
+/** Markdown を描いた結果 */
+type RenderedDocument = ReturnType<typeof renderDocument>;
 /** 比較元が文字列か `null` か `undefined` かを確認し、違えば `baseMarkdown` を含む `TypeError` を投げる */
 export declare function checkBaseMarkdown(value: unknown): asserts value is string | null | undefined;
 /** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張のマーカーを描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、再描画と片付けの関数を返却する。`diffSource` か `commentStore` を指定して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
 export declare function mount(el: HTMLElement, opts: MountOptions): MountHandle;
+export {};

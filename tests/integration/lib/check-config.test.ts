@@ -1899,3 +1899,50 @@ test("test_normal_when_map_changes_drift", async () => {
   expect(lines.at(-1)).toBe("ずれ 3 件");
   expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
 });
+
+// glossary のマーカーの alias_row が設定の term の行に無いとき、glossary_alias_row_missing のずれを返却する（正常系（用語集の表が無いエイリアスの行を指す））
+test("test_normal_when_glossary_alias_row_missing", async () => {
+  // 準備
+  const dir = await createCleanDir();
+  const config = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  const index = await readFile(join(dir, "index.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${config}${[
+      "aliases:",
+      "  - id: terms",
+      "    paths: [aliases/terms.yaml]",
+      "    alias_type: term",
+      "    records: terms",
+      "",
+    ].join("\n")}`,
+    "aliases/terms.yaml": [
+      "terms:",
+      "  - id: marker",
+      "    name: マーカー",
+      "    description: HTML コメントで記載する指定",
+      "",
+    ].join("\n"),
+    "a.mark.md": '# A\n\n<!-- glossary: {"alias_row": "terms"} -->\n',
+    "guide.mark.md":
+      '# ガイド\n\n<!-- glossary: {"alias_row": "glossary-terms"} -->\n',
+    "index.yaml": `${index}${[
+      "  - id: guide",
+      "    path: guide.mark.md",
+      "    title: ガイド",
+      "",
+    ].join("\n")}`,
+  });
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout).filter((line) =>
+    line.includes("glossary_alias_row_missing"),
+  );
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toMatch(/^guide\.mark\.md:3: glossary_alias_row_missing: /);
+  expect(lines[0]).toContain("glossary-terms");
+  expect(
+    linesOf(result.stdout).some((line) => line.startsWith("a.mark.md:")),
+  ).toBe(false);
+});

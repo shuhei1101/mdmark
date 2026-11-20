@@ -2103,8 +2103,8 @@ files:
     related:
       - to: MOD-472-247
         type: implements
-  - path: viewer/includes.ts
-    description: モジュール構成『ライブラリ本体 / 書き出したHTMLの起動 / includes.ts』の、書き出しの中身からの取り込む文書の表と mount の索引・参照の引数の組み立てを受け持つ。まとめた HTML で文書を開くときに指定する値を変えるときに参照する。
+  - path: viewer/options.ts
+    description: モジュール構成『ライブラリ本体 / 書き出したHTMLの起動 / options.ts』の、書き出しの中身から mount の索引・参照の引数と描いた結果の引数を組み立てることを受け持つ。まとめた HTML で文書を開くときに指定する値を変えるときに参照する。
     tags: [tool:html]
     related:
       - to: MOD-647-3

@@ -10,6 +10,8 @@ side_effects: なし（ファイル・画面・外部へ書き込まず、拡張
 callers:
   - SC-472-101#scenarios[正常シナリオ]
   - SC-472-102#scenarios[正常シナリオ（コピーする）]
+  - IF-472-33#
+  - IF-472-38#
 request:
   - name: markdown
     type: string

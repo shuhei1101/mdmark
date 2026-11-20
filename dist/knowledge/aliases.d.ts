@@ -8,6 +8,13 @@ export declare const ALIAS_KEYS: readonly ["id", "name", "aliases", "description
 export declare const ALIAS_REQUIRED_KEYS: Record<(typeof ALIAS_TYPES)[number], readonly (typeof ALIAS_KEYS)[number][]>;
 /** `alias_required_empty` の `message` の修正方法に出すキーの名前 */
 export declare const ALIAS_KEY_LABELS: Record<string, string>;
+/** エイリアスの用語を説明するページ 1 つ */
+export type MdmarkAliasDetail = {
+    /** リンクに出すページの名前 */
+    title: string;
+    /** 設定ファイルのフォルダからの相対パス（区切りは `/`、先頭の `./` を持たない）か URL。`#` 以降のアンカーを持てる */
+    href: string;
+};
 /** 設定の行の `metadata` を適用して作ったエイリアス 1 件。値の無いキーは持たない（`aliases` だけは空の並びでも持つ） */
 export type MdmarkAlias = {
     /** エイリアスの種類。ツールチップの区分と照合したときの扱いを決める */
@@ -38,6 +45,10 @@ export type MdmarkAlias = {
     avoid?: string[];
     /** `avoid` の種類の置き換え先の単語 */
     replacement?: string;
+    /** このエイリアスを作った元の行の `id`。`buildAliases` が入れる */
+    row?: string;
+    /** `term` の種類の、用語を説明するページ */
+    details?: MdmarkAliasDetail[];
 };
 /** 行の `paths` に該当したファイルを YAML として読み込んだ中身 1 つ */
 export type MdmarkAliasSource = {
@@ -88,6 +99,13 @@ export declare function checkAliasFields(options: {
     kind: "alias_required_empty";
     keys: string[];
 } | undefined;
+/** レコードの `details` の列の値から、空でない `title` と `href` を持つ要素だけを残し、`href` を設定ファイルのフォルダからの相対パスに書き換える。並びでない値と、残った要素が無いときは `undefined` */
+export declare function readAliasDetails(options: {
+    /** レコードの `details` の列の値 */
+    value: unknown;
+    /** レコードのファイルの `path`（設定ファイルのフォルダからの相対パス） */
+    sourcePath: string;
+}): MdmarkAliasDetail[] | undefined;
 /** 照合に使用できるエイリアスだけを並びの順に返却する（`env`・知らない種類・必須のキーが空・前と同じ `id` を除く） */
 export declare function usableAliases(aliases: readonly unknown[]): MdmarkAlias[];
 /** 設定の `aliases` の行と、行の `paths` に該当した YAML を読み込んだ中身から、`metadata` を適用したエイリアスの並びと、使用できない行・レコードのずれの一覧を返却する */

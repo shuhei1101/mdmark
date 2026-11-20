@@ -116,7 +116,15 @@ handle.destroy();
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素。class `mdmark` が付く |
-| `opts.markdown` | 必須 | 描く Markdown |
+| `opts.markdown` | 任意 | 描く Markdown。`opts.rendered` を指定しないとき必須 |
+| `opts.rendered` | 任意 | 書き出しが [`render`](#文書を-html-文字列にする) と同じ処理で描いた結果（`MdmarkRendered`）。指定すると Markdown を描かず、`html` を要素に入れて Markdown から描いたときと同じ操作を付ける。`html` はもう一度サニタイズしないため、`render` と同じ処理が返却した値だけを指定する。`opts.markdown` と一緒に指定したときは `opts.rendered` を使用する。`update` を呼ぶと、その後は差し替えた Markdown を描く |
+| `opts.rendered.html` | 必須 | 描いた本文の HTML 文字列 |
+| `opts.rendered.features` | 必須 | その文書で決定した機能のオン・オフ（設定の `features` に文書のマーカーを重ねた値） |
+| `opts.rendered.page` | 必須 | その文書の page のマーカーから読み取った配色の明暗・テーマ・右側の目次の出し方（`MdmarkPageSettings`）。マーカーが無ければ空のオブジェクト |
+| `opts.rendered.paramDefinitions` | 必須 | 描いた操作できる部品の定義（`MdmarkParamDefinition[]`）。文書の中の並びの順 |
+| `opts.rendered.extensionDefinitions` | 必須 | 範囲で記載した拡張のマーカーから読み込んだ部品の定義。マーカーの場所の `data-mdmark-definition` の番号で参照する |
+| `opts.pureMarkdown` | 任意 | `opts.rendered` で描いた文書の「Markdown でコピー」「Markdown でエクスポート」が使用する純粋な Markdown。省くと、`opts.rendered` で描いたときはボタンを配置しない |
+| `opts.path` | 任意 | `render` の `opts.path` と同じ |
 | `opts.config` | 任意 | 利用側のサーバーが `mdmark.config.yaml` を読み込んだオブジェクト。省いたキーには既定を適用する。キーは [設定](./設定.mark.md) |
 | `opts.index` | 任意 | 利用側のサーバーが、設定の `index` のパスの索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.mark.md)。Schema に合わない文書・用語の項目は除いて使用する。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使用する。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を指定するときは必須で、コメントの読み込みと保存の関数に指定する対象の ID にもなる |
@@ -179,7 +187,7 @@ handle.destroy();
 | `body` | `string` | コメントの本文 |
 
 `MdmarkComment` は、`MdmarkCommentDraft` に空でない文字列の `id` を加えたもの。
-型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkColumnsChange` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+型 `MdmarkCommentStore`・`MdmarkComment`・`MdmarkCommentDraft`・`MdmarkColumnsChange`・`MdmarkRendered`・`MdmarkPageSettings` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 `load` が配列でない・要素の構造が合わないとき、`save` が構造の合わない値を返却するときは、reject と同じに扱う。
 mdmark はコメントを保存せず、保存先は利用側の関数に任せる。
 
@@ -197,8 +205,8 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 
 ### エラー
 
-`opts.diffSource` を指定して `opts.docId` を指定しないとき、`opts.commentStore` を指定して `opts.docId` を指定しないか `opts.commentStore` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つとき、`opts.baseMarkdown` が文字列でも `null` でもないとき、`opts.onColumnsChange` が関数でないときだけ、何も描かずに `TypeError` を投げる。
-メッセージに `docId`・`commentStore`・`baseMarkdown`・`onColumnsChange` のどれかを含める。
+`opts.markdown` も `opts.rendered` も無いとき、`opts.rendered` を `opts.diffSource`・`opts.baseMarkdown`・`opts.commentStore` と一緒に指定したとき、`opts.diffSource` を指定して `opts.docId` を指定しないとき、`opts.commentStore` を指定して `opts.docId` を指定しないか `opts.commentStore` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つとき、`opts.baseMarkdown` が文字列でも `null` でもないとき、`opts.onColumnsChange` が関数でないときだけ、何も描かずに `TypeError` を投げる。
+メッセージに `markdown`・`rendered`・`docId`・`commentStore`・`baseMarkdown`・`onColumnsChange` のどれかを含める。
 `update` の `options.baseMarkdown` が文字列でも `null` でもないときは、前の本文を残して `TypeError` を投げる。
 それ以外は例外を投げない。
 取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したときは、差分の場所を [通知ブロック](./用語集.mark.md) に替え、文書の本文は描いたまま残す。
@@ -277,6 +285,7 @@ const html = render("# 見出し\n\n本文");
 | `opts.includes` | 任意 | `mount` の `opts.includes` と同じ |
 | `opts.icons` | 任意 | `mount` の `opts.icons` と同じ。表に無いまとめていない名前は中が空の要素にする |
 | `opts.resolveIdLink` | 任意 | `mount` の `opts.resolveIdLink` と同じ。本文のリンクに適用する |
+| `opts.path` | 任意 | 描く文書の、設定ファイルのフォルダからの相対パス（区切りは `/`）。`alias_row` の用語集の表の `詳細` のリンク先を、描く文書からの相対パスに解くのに使用する。省くと、設定ファイルのフォルダからの相対パスのまま出す |
 
 <!-- /table -->
 
@@ -693,6 +702,8 @@ const { aliases, problems } = buildAliases({
 | `avoid` | `string[]` | `term` の種類の、使用しないことにした言い方 |
 | `replacement` | `string` | `avoid` の種類の置き換え先の単語 |
 | `related` | `string[]` | `term` の関連する単語。受け取るだけで、使用しない |
+| `row` | `string` | エイリアスを作った設定の `aliases` の行の `id`。`buildAliases` が入れる。用語集の表のマーカーの `alias_row` が指す |
+| `details` | `MdmarkAliasDetail[]` | `term` の種類の、用語を説明するページ（`title`・`href`）。`href` は設定ファイルのフォルダからの相対パスか URL か `#` で始まるアンカー。`buildAliases` が YAML のフォルダからの相対パスを書き換える。`alias_row` の用語集の表の `詳細` の列に出す |
 
 <!-- /table -->
 
@@ -706,7 +717,7 @@ const { aliases, problems } = buildAliases({
 | `message` | `string` | ずれの内容と修正方法を記載した日本語の 1 文 |
 
 ずれの並びは `aliases` と同じ順で、同じ行・レコードの中は `metadata` のキーの順。
-型 `MdmarkAlias`・`MdmarkAliasType`・`MdmarkAliasSource`・`MdmarkAliasProblem` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+型 `MdmarkAlias`・`MdmarkAliasType`・`MdmarkAliasDetail`・`MdmarkAliasSource`・`MdmarkAliasProblem` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 
 ```json
 {

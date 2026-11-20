@@ -47,6 +47,8 @@ export type RenderEnv = {
     mdmarkReferences?: MdmarkReferences | undefined;
     /** 利用側が指定したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に指定する */
     aliases?: readonly unknown[] | undefined;
+    /** 描く文書の、設定ファイルのフォルダからの相対パス（`render`・`mount` の `path`）。エイリアスの行から描く用語集の表が詳細のリンク先を解く */
+    path?: string | undefined;
     /** 描く文書の用語集の表から読み込んだ用語（`glossaryRule` が追加する） */
     ownGlossary: MdmarkGlossaryEntry[];
     /** `ownGlossary` の各用語の行番号。点検が行を示すために指定したときだけ、`glossaryRule` が追加する */

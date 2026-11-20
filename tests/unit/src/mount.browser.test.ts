@@ -4,6 +4,8 @@ import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { MountHandle, MountOptions } from "../../../src/mount.ts";
 import type { PartName } from "../../../src/part-modules.ts";
 import { INQUIRY_COUNT_TEXT, wrapHtml } from "../helpers/charts.ts";
+import { restoreClipboard, stubClipboard } from "../helpers/clipboard.ts";
+import { STRENGTH_TEXT, wrapDirective } from "../helpers/diagrams.ts";
 import { addStyles } from "../helpers/dom.ts";
 
 /** 描く処理を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -1633,4 +1635,140 @@ test("test_mount_when_markdown_preview_hash", async () => {
   const preview = el.querySelector(".mdmark-code-preview") as HTMLElement;
   expect(preview.querySelector("h2")).not.toBeNull();
   expect(scrolled.filter((element) => preview.contains(element))).toEqual([]);
+});
+
+/** 書き出しと同じ処理で、Markdown を描いた結果と純粋な Markdown を作る */
+async function renderedOf(
+  markdown: string,
+  config: MountOptions["config"] = {},
+) {
+  const { renderDocument } = await import("../../../src/render/index.ts");
+  const { resolveConfig } = await import("../../../src/config.ts");
+  const { toPureMarkdown } = await import(
+    "../../../src/markdown/pure-markdown.ts"
+  );
+  const result = renderDocument({
+    markdown,
+    config: resolveConfig({ config }),
+  });
+  const rendered = {
+    html: result.html,
+    features: result.features,
+    page: result.page,
+    paramDefinitions: result.paramDefinitions,
+    extensionDefinitions: result.extensionDefinitions,
+  };
+  const pure = await toPureMarkdown(markdown, { config });
+  return { rendered, pureMarkdown: pure.markdown };
+}
+
+// 描いた結果から描くページの設定・表・タブを持つ文書
+const RENDERED_MARKDOWN = [
+  '<!-- page: {"scheme": "dark"} -->',
+  "",
+  "# 手引き",
+  "",
+  TABLE_MARKDOWN,
+  TABS_MARKDOWN,
+].join("\n");
+
+// 描いた結果を要素に入れ、Markdown から描いたときと同じ HTML と操作にする（正常系）
+test("test_mount_with_rendered", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const fromMarkdown = createElement();
+  const fromRendered = createElement();
+  const { rendered, pureMarkdown } = await renderedOf(RENDERED_MARKDOWN);
+  try {
+    // 実行
+    await mountTracked(fromMarkdown, { markdown: RENDERED_MARKDOWN });
+    await mountTracked(fromRendered, { rendered, pureMarkdown });
+    // 検証
+    // 表とタブの要素の id はページの中の通し番号を持つため、番号を除いて比べる
+    const content = (el: HTMLElement) =>
+      el
+        .querySelector(".mdmark-content")
+        ?.innerHTML.replaceAll(/(mdmark-(?:table|tabs))-\d+/g, "$1-n");
+    expect(content(fromRendered)).toBeDefined();
+    expect(content(fromRendered)).toBe(content(fromMarkdown));
+    expect(fromRendered.classList.contains("mdmark-theme-dark")).toBe(true);
+    const sortButton =
+      fromRendered.querySelector<HTMLButtonElement>("thead th button");
+    expect(sortButton).not.toBeNull();
+    const copy = fromRendered.querySelector<HTMLButtonElement>(
+      'button[data-markdown="copy"]',
+    );
+    copy?.click();
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+    expect(writeText).toHaveBeenCalledWith(pureMarkdown);
+  } finally {
+    restoreClipboard();
+  }
+});
+
+// 描いた結果の paramDefinitions で操作できる部品を付ける（正常系）
+test("test_mount_with_rendered_param", async () => {
+  // 準備
+  const el = createElement();
+  const { rendered, pureMarkdown } = await renderedOf(
+    wrapDirective("param", STRENGTH_TEXT),
+  );
+  // 実行
+  await mountTracked(el, { rendered, pureMarkdown });
+  const slider = el.querySelector<HTMLInputElement>('input[type="range"]');
+  const before = el.querySelector("output")?.textContent;
+  if (!slider) {
+    throw new Error("スライダーが描かれていない");
+  }
+  slider.value = String(Number(slider.max));
+  slider.dispatchEvent(new Event("input", { bubbles: true }));
+  // 検証
+  expect(rendered.paramDefinitions).toHaveLength(1);
+  expect(el.querySelector("output")?.textContent).not.toBe(before);
+});
+
+// pureMarkdown が無いとき、Markdown のコピーとエクスポートのボタンを配置しない（正常系）
+test("test_mount_when_rendered_without_pure_markdown", async () => {
+  // 準備
+  const el = createElement();
+  const config = { features: { "markdown-buttons": true } };
+  const { rendered } = await renderedOf("# 手引き\n\n## 導入\n", config);
+  // 実行
+  await mountTracked(el, { rendered, config });
+  // 検証
+  expect(el.querySelector(".mdmark-side-toc")).not.toBeNull();
+  expect(el.querySelector('button[data-markdown="copy"]')).toBeNull();
+});
+
+// markdown も rendered も無いときと、rendered を baseMarkdown と一緒に指定したときに TypeError を投げる（異常系）
+test("test_mount_when_rendered_invalid", async () => {
+  // 準備
+  const { mount } = await loadMount();
+  const empty = createElement();
+  const mixed = createElement();
+  const { rendered } = await renderedOf("# 手引き\n");
+  // 実行・検証
+  const errorOf = (run: () => unknown): unknown => {
+    try {
+      run();
+    } catch (error) {
+      return error;
+    }
+    return undefined;
+  };
+  const emptyError = errorOf(() => mount(empty, {} as MountOptions));
+  const mixedError = errorOf(() =>
+    mount(mixed, { rendered, baseMarkdown: "# 前\n" } as MountOptions),
+  );
+  expect(emptyError).toBeInstanceOf(TypeError);
+  expect((emptyError as Error).message).toMatch(/markdown/);
+  expect((emptyError as Error).message).toMatch(/rendered/);
+  expect(mixedError).toBeInstanceOf(TypeError);
+  expect((mixedError as Error).message).toMatch(/rendered/);
+  expect((mixedError as Error).message).toMatch(/baseMarkdown/);
+  expect(empty.innerHTML).toBe("");
+  expect(mixed.innerHTML).toBe("");
 });

@@ -10,7 +10,13 @@ import {
 } from "node:path";
 import { build } from "esbuild";
 import { bundleModule } from "../bundle-module.ts";
-import { COLOR_THEMES, DEFAULT_COLOR_THEME, resolveConfig } from "../config.ts";
+import {
+  COLOR_THEMES,
+  DEFAULT_COLOR_THEME,
+  type MdmarkConfig,
+  resolveConfig,
+} from "../config.ts";
+import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import { normalizePath } from "../knowledge/paths.ts";
 import {
@@ -18,10 +24,13 @@ import {
   type MdmarkReferences,
   readFrontmatterMetadata,
 } from "../knowledge/references.ts";
+import { toPureMarkdown } from "../markdown/pure-markdown.ts";
+import type { MdmarkRendered } from "../mount.ts";
+import { renderDocument } from "../render/index.ts";
 import { usedLibraryMarks } from "../render/used.ts";
+import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
 import { loadAliases } from "./aliases.ts";
 import { copyMedia } from "./assets.ts";
-import { collectMarkNames } from "./check.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import {
   documentTitle,
@@ -43,11 +52,12 @@ import {
   type ViewerEmbeds,
 } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
+import { registerConfigExtensions } from "./export-markdown.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
 import { collectIconNodes } from "./icons.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
 import { formatCheckIssue } from "./issues.ts";
-import { hideMarkdown, hideNames } from "./traces.ts";
+import { hideNames } from "./traces.ts";
 
 /** 索引に追加する、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
@@ -479,39 +489,82 @@ function whenFilled<K extends string, V extends object>(
     : {};
 }
 
-/** 隠すときは埋め込みの Markdown を隠す関数（隠さないときは何もしない関数） */
-async function markdownHider(
-  options: EmbedOptions,
-): Promise<((markdown: string) => string) | undefined> {
-  if (!options.hideTraces) {
-    return undefined;
-  }
-  const markNames = await collectMarkNames(options.loaded);
-  return (markdown) => hideMarkdown({ markdown, markNames });
+/** `bundle` で 1 回だけ埋めた画像を指す `src` の頭 */
+const ASSET_PREFIX = "mdmark-asset:";
+
+/** 画像・動画・音声を置き換えた文書の Markdown を、開いたときに `mount` に指定する値と同じ値で `renderDocument` と `toPureMarkdown` にかけ、書き出しの中身の文書 1 つの描いた結果と純粋な Markdown を作る */
+export async function renderPayloadDoc(options: {
+  /** 画像・動画・音声を置き換えた文書の Markdown */
+  markdown: string;
+  /** 利用側の設定 */
+  config: MdmarkConfig;
+  /** 索引 */
+  index?: MdmarkIndex | undefined;
+  /** 文書の索引の `id` */
+  docId?: string | undefined;
+  /** 参照の表 */
+  references?: MdmarkReferences | undefined;
+  /** エイリアス */
+  aliases?: MdmarkAlias[] | undefined;
+  /** 取り込む文書の表。キーは文書のフォルダからのパス */
+  includes?: Record<string, string> | undefined;
+  /** まとめていない名前のアイコンの形状の表 */
+  icons?: Record<string, MdmarkIconNode> | undefined;
+  /** 文書の、設定ファイルのフォルダからの相対パス */
+  path: string;
+}): Promise<{ rendered: MdmarkRendered; pureMarkdown: string }> {
+  const { markdown, config, index, docId, includes } = options;
+  const result = renderDocument({
+    markdown,
+    config: resolveConfig({ config }),
+    index,
+    docId,
+    references: options.references,
+    aliases: options.aliases,
+    includes,
+    icons: options.icons,
+    path: options.path,
+  });
+  const pure = await toPureMarkdown(markdown, {
+    config,
+    index,
+    docId,
+    includes,
+  });
+  return {
+    rendered: {
+      html: result.html,
+      features: result.features,
+      page: result.page,
+      paramDefinitions: result.paramDefinitions,
+      extensionDefinitions: result.extensionDefinitions,
+    },
+    pureMarkdown: pure.markdown,
+  };
 }
 
-/** 埋める中身の文書と取り込む文書の Markdown を隠す */
-function hidePayloadText(
-  shown: ExportPayload,
-  hideText: (markdown: string) => string,
-): ExportPayload {
-  return {
-    ...shown,
-    docs: shown.docs.map((doc) => ({
-      ...doc,
-      markdown: hideText(doc.markdown),
-    })),
-    ...whenFilled(
-      "includes",
-      shown.includes &&
-        Object.fromEntries(
-          Object.entries(shown.includes).map(([key, text]) => [
-            key,
-            hideText(text),
-          ]),
-        ),
-    ),
-  };
+/** `bundle` の画像のキーを `data:` URL に戻した Markdown（`assets` が無ければそのまま） */
+function withAssetUrls(
+  markdown: string,
+  assets: Map<string, { key: string; url: string }> | undefined,
+): string {
+  let restored = markdown;
+  for (const asset of assets?.values() ?? []) {
+    restored = restored.replaceAll(`${ASSET_PREFIX}${asset.key}`, asset.url);
+  }
+  return restored;
+}
+
+/** 描いた HTML の `data:` URL を、`bundle` の画像のキーに戻す（同じ画像を 1 回だけ埋めるため） */
+function withAssetKeys(
+  html: string,
+  assets: Map<string, { key: string; url: string }> | undefined,
+): string {
+  let keyed = html;
+  for (const asset of assets?.values() ?? []) {
+    keyed = keyed.replaceAll(asset.url, `${ASSET_PREFIX}${asset.key}`);
+  }
+  return keyed;
 }
 
 /** 文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する */
@@ -598,29 +651,44 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   warnings.push(...colorThemeWarnings(loaded));
 
   const refs = await prepareReferences({ ...options, markdowns: originals });
-  const shown: ExportPayload = {
+  // 拡張のマーカーをマーカーの場所として描くため、設定の拡張を Node で登録してから描く（読み込めない拡張の警告は bundleExtensions が出す）
+  await registerConfigExtensions(loaded);
+  const payloadDocs: ExportPayload["docs"] = [];
+  for (const doc of docs) {
+    const markdown = inlined.get(doc.path) ?? "";
+    const docId = refs.docIdOf(doc.path);
+    const { rendered, pureMarkdown } = await renderPayloadDoc({
+      markdown: withAssetUrls(markdown, assets),
+      config: loaded.config,
+      index: refs.index,
+      docId,
+      references: refs.references,
+      aliases: aliasResult.aliases,
+      includes: includesOf(doc.path),
+      icons: iconResult.icons,
+      path: doc.path,
+    });
+    payloadDocs.push({
+      path: doc.path,
+      title: documentTitle({
+        path: doc.path,
+        markdown,
+        indexTitle: refs.titleOf(doc.path),
+        frontmatterTitle: readFrontmatterMetadata(
+          readFrontmatterValues({ [doc.path]: markdown })[doc.path],
+        ).title,
+      }),
+      rendered: { ...rendered, html: withAssetKeys(rendered.html, assets) },
+      pureMarkdown: withAssetKeys(pureMarkdown, assets),
+      docId,
+    });
+  }
+  const payload: ExportPayload = {
     kind,
     config: payloadConfig(loaded.config, Object.keys(libraries)),
     index: refs.index,
     references: refs.references,
-    docs: docs.map((doc) => {
-      const markdown = inlined.get(doc.path) ?? "";
-      return {
-        path: doc.path,
-        title: documentTitle({
-          path: doc.path,
-          markdown,
-          indexTitle: refs.titleOf(doc.path),
-          frontmatterTitle: readFrontmatterMetadata(
-            readFrontmatterValues({ [doc.path]: markdown })[doc.path],
-          ).title,
-        }),
-        markdown,
-        docId: refs.docIdOf(doc.path),
-        ...whenFilled("includes", includeKeys.get(doc.path)),
-      };
-    }),
-    ...whenFilled("includes", includeTexts),
+    docs: payloadDocs,
     ...whenFilled("icons", iconResult.icons),
     entry,
     ...(aliasResult.aliases ? { aliases: aliasResult.aliases } : {}),
@@ -632,15 +700,11 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         }
       : {}),
   };
-  // 隠すときは埋め込みの Markdown を隠し、範囲のスクリプトの鍵も隠した Markdown から取り出す
-  const hider = await markdownHider(options);
-  const hideText = hider ?? ((markdown: string): string => markdown);
-  const payload = hider ? hidePayloadText(shown, hider) : shown;
   // `html-scripts` がオンの文書の範囲の `ts`・`js` を、開いたときに変換のライブラリを読み込まずに動かせるよう変えておく
   const compiled = await compileHtmlScripts({
     documents: [...originals.entries()].map(([path, markdown]) => ({
       path,
-      markdown: hideText(markdown),
+      markdown,
     })),
     config: loaded.config,
   });

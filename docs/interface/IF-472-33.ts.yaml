@@ -672,7 +672,7 @@ response:
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
   - name: 出力の HTML
     type: ファイル
-    description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・まとめたモジュールと拡張・画像を替えた文書の Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。起動の処理と埋めるモジュール・拡張をまとめた 1 つのスクリプトを `script` 要素で直接動かす。開くと、読み込み済みのモジュールを外部ライブラリ・部品・色分けの読み込みに指定し、埋めた拡張を `registerExtension` で登録してから `mount` で文書を描く。`blob:` URL と動的 `import()` を使用しない。`--keep-traces` が無ければ、制約「mdmark の痕跡」のとおり隠す
+    description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・まとめたモジュールと拡張・書き出すときに描いた文書の結果と純粋な Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。元の Markdown と取り込む文書の本文は埋めない。起動の処理と埋めるモジュール・拡張をまとめた 1 つのスクリプトを `script` 要素で直接動かす。開くと、読み込み済みのモジュールを外部ライブラリ・部品・色分けの読み込みに指定し、埋めた拡張を `registerExtension` で登録してから、埋めた描いた結果を `mount` の `opts.rendered`、純粋な Markdown を `opts.pureMarkdown` に指定して文書を描く。`blob:` URL と動的 `import()` を使用しない。`--keep-traces` が無ければ、制約「mdmark の痕跡」のとおり隠す
 response_example: |-
   ```text
   書き出した: docs/使用方法/guide.html
@@ -770,7 +770,7 @@ constraints:
     constraint: 設定と文書のマーカーで `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を削除する）、範囲のコードの文字から既定のエクスポートの関数を参照する表として制約「まとめるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に指定し、変換のライブラリ（`html-scripts.url`）を読み込まずに動かす。esbuild が変換できない範囲はまとめずに警告に出し、開いたときその範囲の前に記載の警告を出す。`blob:` URL と動的 `import()` は使用しない
     notes: '変換は CLI の今の依存の esbuild。PoC 検証（[PoC: コードブロックの HTML の範囲の ts・js を CSP の下で動かす](https://github.com/shuhei1101/mdmark/pull/306)）でまとめた 1 つのスクリプトから呼ぶ経路を確認した'
   - item: 埋める取り込み
-    constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: {"include": false} -->` の文書は読み込まない'
+    constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を、制約「埋める本文」の描画と純粋な Markdown への変換の `opts.includes` に指定する（表は埋めない）。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: {"include": false} -->` の文書は読み込まない'
   - item: 埋めるアイコン
     constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない。隠す書き出しでは、同じ文をまとめたスクリプトの先頭の `/*! … */` に配置する）
     notes: ライセンスの表示を残すことは外部ライブラリ『lucide』の `license`
@@ -784,11 +784,11 @@ constraints:
 
       まとめたスクリプトの `/*! … */` のライセンスの注釈は残す。
 
-      (2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`・画像の `data:` URL の `assets`）を除く値で、単語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。
+      (2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].rendered.html`・`docs[].pureMarkdown`・`index`・`references`・`aliases`・`entry`・画像の `data:` URL の `assets`）を除く値で、単語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。
 
-      (3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読み取るマーカーの名前でない HTML のコメントを削除する。
+      (3) 埋める本文の HTML（`docs[].rendered.html`）では、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby`・`aria-details`・`aria-controls`・`aria-labelledby`・`aria-owns`・`aria-flowto`・`aria-activedescendant`・`aria-errormessage`。`aria-label` などの文字の `aria-*` は置き換えない）・`for`・`headers` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` と、テキストのノードのうちコードの例の部品の要素名（`&lt;mdmark-`・`&lt;/mdmark-`）の `mdmark` だけを別名へ置き換え、ほかのテキストのノードと、それ以外の `href`・`src`・`alt`・`title` の属性の値は置き換えない。HTML のコメントは削除する。純粋な Markdown（`docs[].pureMarkdown`）は置き換えない。
 
-      範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を適用した後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を適用する。
+      範囲のスクリプトの表の鍵（範囲のコードの文字）は元の文書から取り出し、鍵から変換したコードには (2) を適用する。範囲のスクリプトの `template` の中のテキストは置き換えないため、開いたときに描いた範囲のコードと一致する。
 
       開いた文書の DOM にコメントのノードを残さない。
 
@@ -804,6 +804,14 @@ constraints:
       `--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確認する（「無い」を確認する行も別名で確認する）。'
   - item: ページのタイトル
     constraint: '`<title>` は、参照の表の `docs` に書き出す文書があればその `title`、無ければ文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名'
+  - item: 埋める本文
+    constraint: |-
+      書き出す文書を、開いたときに `mount` に指定する設定・索引・`docId`・参照の表・エイリアス・取り込む文書の表・アイコン・文書のパス（`opts.path`。設定ファイルのフォルダからの相対パス）と同じ値で `render` と同じ処理にかけ、本文の HTML・機能のオン・オフ・ページの設定・操作できる部品の定義（`paramDefinitions`）・範囲の拡張のマーカーの部品の定義（`extensionDefinitions`）を `docs[].rendered` として埋める（記載の警告の一覧と注記の ID は埋めない）。
+      同じ文書を `toPureMarkdown` に `opts.config`・`opts.index`・`opts.docId`・`opts.includes` を指定して変換した純粋な Markdown を `docs[].pureMarkdown` として埋める。
+      元の Markdown（`docs[].markdown`）と取り込む文書の表（`includes`）は埋めない。
+      描く前に、画像の `data:` URL への置き換えと動画・音声の `src` のコピーへの置き換えを Markdown に適用する。
+      外部ライブラリと拡張のマーカーは、`render` が描くマーカーの場所の要素（引数を属性に持つ）のまま埋め、開いたときに埋めたモジュールで描く
+    notes: 書き出すときに `render` を呼ぶのは Node で、DOM に頼らない。描いた結果の型はインターフェース定義『文書を描く』の `opts.rendered`
 test_file: tests/integration/lib/export.test.ts
 tags:
   - name: topic:書き出し

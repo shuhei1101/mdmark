@@ -18664,10 +18664,13 @@ var glossary_schema_default = {
     },
     avoid: {
       $ref: "common.schema.json#/$defs/column_ref"
+    },
+    alias_row: {
+      type: "string",
+      minLength: 1
     }
   },
-  additionalProperties: false,
-  required: ["term", "meaning"]
+  additionalProperties: false
 };
 
 // schemas/marks/include.schema.json
@@ -21491,7 +21494,50 @@ function toUsableAlias(item, type) {
   if (Array.isArray(item.related)) {
     alias.related = list2(item.related);
   }
+  if (typeof item.row === "string") {
+    alias.row = item.row;
+  }
+  const details = Array.isArray(item.details) ? item.details.filter(isDetail) : [];
+  if (details.length > 0) {
+    alias.details = details;
+  }
   return alias;
+}
+function isDetail(value) {
+  return isRecord3(value) && isFilled(value.title) && isFilled(value.href);
+}
+var SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+function normalizePath(path) {
+  const parts = [];
+  for (const part of path.split("/")) {
+    if (part === "" || part === ".") {
+      continue;
+    }
+    if (part === ".." && parts.length > 0 && parts.at(-1) !== "..") {
+      parts.pop();
+    } else {
+      parts.push(part);
+    }
+  }
+  return parts.join("/");
+}
+function readAliasDetails(options) {
+  const { value, sourcePath } = options;
+  if (!Array.isArray(value)) {
+    return void 0;
+  }
+  const folder = sourcePath.includes("/") ? sourcePath.slice(0, sourcePath.lastIndexOf("/")) : "";
+  const details = value.filter(isDetail).map(({ title, href }) => {
+    if (SCHEME.test(href) || href.startsWith("#")) {
+      return { title, href };
+    }
+    const hash = href.indexOf("#");
+    const path = hash === -1 ? href : href.slice(0, hash);
+    const anchor = hash === -1 ? "" : href.slice(hash);
+    const joined = folder === "" ? path : `${folder}/${path}`;
+    return { title, href: `${normalizePath(joined)}${anchor}` };
+  });
+  return details.length > 0 ? details : void 0;
 }
 function usableAliases(aliases) {
   const seen = /* @__PURE__ */ new Set();
@@ -21507,7 +21553,7 @@ function usableAliases(aliases) {
   }
   return usable;
 }
-function toAlias(values, aliasType) {
+function toAlias(values, aliasType, extra) {
   const text2 = (key) => typeof values[key] === "string" ? values[key] : void 0;
   const list2 = (key) => Array.isArray(values[key]) ? values[key] : void 0;
   const alias = {
@@ -21538,6 +21584,10 @@ function toAlias(values, aliasType) {
   const avoid = list2("avoid");
   if (avoid !== void 0) {
     alias.avoid = avoid;
+  }
+  alias.row = extra.row;
+  if (extra.details !== void 0) {
+    alias.details = extra.details;
   }
   return alias;
 }
@@ -21661,7 +21711,13 @@ function takeRecord(build, row, at) {
   }
   build.aliasIds.add(id);
   if (row.aliasType !== "env") {
-    build.aliases.push(toAlias(values, row.aliasType));
+    const details = readAliasDetails({
+      value: readColumn(record, columnOf(row, "details")).value,
+      sourcePath: source.path
+    });
+    build.aliases.push(
+      toAlias(values, row.aliasType, { row: row.id, details })
+    );
   }
 }
 function buildAliases(input) {
@@ -21938,11 +21994,11 @@ function matchableChildren(inline2) {
 }
 
 // src/knowledge/paths.ts
-function normalizePath(path) {
+function normalizePath2(path) {
   return path.split("/").filter((segment) => segment !== "" && segment !== ".").join("/");
 }
 function fileTitle(path) {
-  const name = normalizePath(path).split("/").at(-1) ?? "";
+  const name = normalizePath2(path).split("/").at(-1) ?? "";
   const dot = name.lastIndexOf(".");
   return dot > 0 ? name.slice(0, dot) : name;
 }
@@ -22998,10 +23054,10 @@ function columnPositions(spec, columns) {
   return problem === void 0 ? { positions } : { problem };
 }
 function tableRows(table2, positions, docId) {
-  const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
+  const cellOf2 = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
   return table2.rows.flatMap((row) => {
-    const term = cellOf(row.cells, "term");
-    const meaning = cellOf(row.cells, "meaning");
+    const term = cellOf2(row.cells, "term");
+    const meaning = cellOf2(row.cells, "meaning");
     if (term === "" || meaning === "") {
       return [];
     }
@@ -23009,10 +23065,10 @@ function tableRows(table2, positions, docId) {
       {
         entry: {
           term,
-          aliases: splitCell(cellOf(row.cells, "aliases")),
+          aliases: splitCell(cellOf2(row.cells, "aliases")),
           meaning,
           docId,
-          avoid: splitCell(cellOf(row.cells, "avoid"))
+          avoid: splitCell(cellOf2(row.cells, "avoid"))
         },
         line: row.line
       }
@@ -23061,6 +23117,131 @@ function collectGlossary(state, range) {
   }
   return out;
 }
+var ALIAS_TABLE_COLUMNS = [
+  "\u7528\u8A9E",
+  "\u5225\u540D",
+  "\u4F7F\u7528\u3057\u306A\u3044\u8A00\u3044\u65B9",
+  "\u610F\u5473",
+  "\u8A73\u7D30"
+];
+var COLUMN_KEYS = ["term", "meaning", "aliases", "avoid"];
+var SCHEME2 = /^[a-z][a-z0-9+.-]*:/i;
+function cellOf(text2) {
+  return text2.replaceAll("|", "\\|").replaceAll(/\r?\n/g, " ");
+}
+function relativeFrom(from, to) {
+  const fromParts = from.split("/").slice(0, -1);
+  const toParts = to.split("/");
+  let common = 0;
+  while (common < fromParts.length && common < toParts.length - 1 && fromParts[common] === toParts[common]) {
+    common++;
+  }
+  return [
+    ...fromParts.slice(common).map(() => ".."),
+    ...toParts.slice(common)
+  ].join("/");
+}
+function detailHref(href, path) {
+  if (path === void 0 || SCHEME2.test(href) || href.startsWith("#")) {
+    return href;
+  }
+  const hash = href.indexOf("#");
+  const target = hash === -1 ? href : href.slice(0, hash);
+  const anchor = hash === -1 ? "" : href.slice(hash);
+  return `${relativeFrom(path, target)}${anchor}`;
+}
+function aliasRowLine(alias, path) {
+  const details = (alias.details ?? []).map(
+    ({ title, href }) => `[${cellOf(title).replaceAll(/[[\]]/g, "\\$&")}](<${detailHref(href, path).replaceAll(">", "%3E")}>)`
+  ).join("\u30FB");
+  const cells = [
+    cellOf(alias.name),
+    cellOf(alias.aliases.join("\u3001")),
+    cellOf((alias.avoid ?? []).join("\u3001")),
+    cellOf(alias.description ?? ""),
+    details
+  ];
+  return `| ${cells.join(" | ")} |`;
+}
+function tableMarkTokens(state, source) {
+  const make = (closing) => {
+    const token = new state.Token(MARK_TOKEN, "", 0);
+    token.block = true;
+    token.level = source.level;
+    token.map = source.map;
+    const raw = closing ? "<!-- /table -->" : '<!-- table: {"kind": "data"} -->';
+    const mark = {
+      name: "table",
+      options: closing ? {} : { kind: "data" },
+      source: closing ? "none" : "json",
+      problems: [],
+      unknownKeys: [],
+      raw,
+      closing
+    };
+    token.meta = mark;
+    return token;
+  };
+  return [make(false), make(true)];
+}
+function aliasGlossaryTokens(options) {
+  const { options: spec, state } = options;
+  const env = envOf(state);
+  const row = String(spec.alias_row);
+  const mixed = COLUMN_KEYS.filter((key) => Object.hasOwn(spec, key));
+  const aliases = usableAliases(env.aliases ?? []).filter(
+    (alias) => alias.alias_type === "term" && alias.row === row
+  );
+  if (aliases.length === 0) {
+    return {
+      tokens: [],
+      warning: `\u306E \`alias_row\` \u306E\u884C \`${row}\` \u304B\u3089\u4F5C\u3063\u305F\u7528\u8A9E\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E \`aliases\` \u306B \`alias_type\` \u304C \`term\` \u306E\u884C \`${row}\` \u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`alias_row\` \u3092\u884C\u306E \`id\` \u306B\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7528\u8A9E\u96C6\u306E\u8868\u3092\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
+    };
+  }
+  const markdown = [
+    `| ${ALIAS_TABLE_COLUMNS.join(" | ")} |`,
+    `| ${ALIAS_TABLE_COLUMNS.map(() => "---").join(" | ")} |`,
+    ...aliases.map((alias) => aliasRowLine(alias, env.path)),
+    ""
+  ].join("\n");
+  const parsed = [];
+  state.md.block.parse(markdown, state.md, state.env, parsed);
+  for (const token of parsed) {
+    if (token.type === "inline") {
+      token.children = [];
+      state.md.inline.parse(token.content, state.md, state.env, token.children);
+      for (const child of token.children) {
+        child.meta = { ...child.meta, mdmarkNoTerms: true };
+      }
+    }
+  }
+  const tokens = parsed;
+  const keys = mixed.map((key) => `\`${key}\``).join("\u30FB");
+  return mixed.length === 0 ? { tokens } : {
+    tokens,
+    warning: `\u306F \`alias_row\` \u3068 ${keys} \u3092\u4E00\u7DD2\u306B\u8A18\u8F09\u3057\u3066\u3044\u307E\u3059\u3002\`alias_row\` \u3092\u4F7F\u7528\u3059\u308B\u3068\u304D\u306F ${keys} \u3092\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002\`alias_row\` \u306E\u884C\u306E\u7528\u8A9E\u3067\u8868\u3092\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+  };
+}
+function aliasGlossary(state, token, mark) {
+  const { tokens, warning } = aliasGlossaryTokens({
+    options: mark.options,
+    mark: mark.raw,
+    state
+  });
+  for (const item of tokens) {
+    item.map = token.map;
+    item.level += token.level;
+  }
+  const out = [];
+  if (warning !== void 0) {
+    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
+  }
+  if (tokens.length > 0) {
+    const [open, close] = tableMarkTokens(state, token);
+    out.push(open, ...tokens, close);
+  }
+  return out;
+}
 function glossaryRule(state) {
   const enabled = featureOn(state, "glossary");
   const tokens = state.tokens;
@@ -23075,6 +23256,10 @@ function glossaryRule(state) {
       continue;
     }
     if (mark.closing) {
+      continue;
+    }
+    if (Object.hasOwn(mark.options, "alias_row")) {
+      out.push(...aliasGlossary(state, token, mark));
       continue;
     }
     const close = findClose(tokens, position, "glossary");
@@ -23147,18 +23332,18 @@ function resolveDocTitle(doc) {
 function supplementIndexDocs(input) {
   const bodies = new Map(
     Object.entries(input.documents).map(([path, body]) => [
-      normalizePath(path),
+      normalizePath2(path),
       body
     ])
   );
   const metadata = new Map(
     Object.entries(input.frontmatter ?? {}).map(([path, value]) => [
-      normalizePath(path),
+      normalizePath2(path),
       readFrontmatterMetadata(value)
     ])
   );
   const docs = input.index.docs.map((doc) => {
-    const path = normalizePath(doc.path);
+    const path = normalizePath2(doc.path);
     const found = metadata.get(path) ?? {};
     const filled = { ...doc };
     for (const key of FRONTMATTER_KEYS) {
@@ -23172,7 +23357,7 @@ function supplementIndexDocs(input) {
     });
     return filled;
   });
-  const indexedPaths = new Set(docs.map((doc) => normalizePath(doc.path)));
+  const indexedPaths = new Set(docs.map((doc) => normalizePath2(doc.path)));
   const ids = new Set(docs.map((doc) => doc.id));
   const added = /* @__PURE__ */ new Set();
   for (const path of bodies.keys()) {
@@ -23736,12 +23921,12 @@ function collectMatches(input) {
   const defaults = resolveConfig({ config: input.config }).features;
   const bodies = new Map(
     Object.entries(input.documents).map(([path, body]) => [
-      normalizePath(path),
+      normalizePath2(path),
       body
     ])
   );
   const scanned = index.docs.flatMap((doc) => {
-    const body = bodies.get(normalizePath(doc.path));
+    const body = bodies.get(normalizePath2(doc.path));
     return body === void 0 ? [] : [
       {
         doc,

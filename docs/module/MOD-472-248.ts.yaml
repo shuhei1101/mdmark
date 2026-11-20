@@ -9,7 +9,7 @@ functions:
     container: src/viewer/index.ts
     usecase: 共通
     summary: '`#mdmark-payload` の JSON を読み込み、埋めたモジュールを `prepareModules` に指定して用意してから、`kind` が `document` なら描く先の要素に `mount` で描き、`bundle` なら `startBundle` を呼ぶ'
-    description: '`src/viewer/index.ts` は `startViewer` を export するだけで自分では呼ばない。CLI がまとめるエントリーポイントのモジュールが `startViewer(document, 埋めたモジュール)` を呼ぶ。`document` のときは `opts.docId` に文書の `docId`、`opts.references` に参照の表、`opts.aliases` に `payload.aliases` を指定する'
+    description: '`src/viewer/index.ts` は `startViewer` を export するだけで自分では呼ばない。CLI がまとめるエントリーポイントのモジュールが `startViewer(document, 埋めたモジュール)` を呼ぶ。`document` のときは `opts.docId` に文書の `docId`、`opts.references` に参照の表、`opts.aliases` に `payload.aliases` を指定し、`renderedOptions` の `rendered`・`pureMarkdown`・`path` で描く（`opts.markdown`・`opts.includes` は指定しない）'
     kind: 関数
     scope: public
     is_async: true
@@ -39,9 +39,16 @@ functions:
         condition: '`kind: document`、文書が `単体テストを実行する。`、`aliases` に `command` の `単体テスト`。`embedded` は `{ parts: {}, libraries: {}, extensions: [] }`'
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に中身の `script` と `article.mdmark` を配置する
         expected: '`article` の `単体テスト` が `mdmark-term` の要素で、ツールチップにコマンドがある'
+      - name: test_start_viewer_with_rendered
+        case: 正常
+        summary: 埋めた描いた結果を描き、Markdown でコピーで埋めた純粋な Markdown を書き込む
+        condition: '`kind: document`、`docs[0].rendered.html` が `<h1>タイトル</h1>`、`pureMarkdown` が `# タイトル`。`embedded` は `{ parts: {}, libraries: {}, extensions: [] }`'
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）とクリップボードの書き込み
+        expected: '`article` に `h1` の `タイトル` が描かれ、Markdown でコピーで `# タイトル` が書き込まれる'
     callees:
       - 'MOD-472-244#functions[prepareModules]'
       - 'MOD-472-247#functions[startBundle]'
+      - MOD-647-3#functions[renderedOptions]
     status: planned
 lead: '埋めた中身を読み込んで書き出した HTML を起動する処理を受け持ち、書き出した HTML を開いたときの振る舞いを変えるときに参照する。'
 tags:

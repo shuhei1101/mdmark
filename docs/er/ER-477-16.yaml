@@ -15,8 +15,8 @@ tables:
         title: 用語の列
         source: DATA-472-22#fields[term]
         type: object
-        description: 用語の列
-        not_null: true
+        description: 用語の列。`alias_row` が無いとき必須で、`alias_row` と一緒に記載しない
+        not_null: false
         example: '{"column": "用語"}'
       - name: term.column
         title: 列の見出しの文字
@@ -29,8 +29,8 @@ tables:
         title: 意味の列
         source: DATA-472-22#fields[meaning]
         type: object
-        description: 意味の列
-        not_null: true
+        description: 意味の列。`alias_row` が無いとき必須で、`alias_row` と一緒に記載しない
+        not_null: false
         example: '{"column": "意味"}'
       - name: meaning.column
         title: 列の見出しの文字
@@ -65,10 +65,18 @@ tables:
         description: 列の見出しの文字
         not_null: true
         example: '"やめた言い方"'
+      - name: alias_row
+        title: エイリアスの元の行
+        source: DATA-472-22#fields[alias_row]
+        type: string
+        check: 空でない
+        description: 表を囲まず、この行から作った `term` のエイリアスで用語集の表を描くときの、設定の `aliases` の行の `id`。記載したマーカーは閉じのマーカーを持たない
+        example: '"terms"'
 notes:
   見本: |-
     ```html
     <!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "aliases": {"column": "別名"}} -->
+    <!-- glossary: {"alias_row": "terms"} -->
     ```
   今の引数との対応: |-
     | 今の引数 | JSON のキー |

@@ -1,4 +1,3 @@
-import MarkdownIt from "markdown-it";
 import type { ExportPayload } from "./html.ts";
 
 /** 隠す書き出しで、単語の一部として出る `mdmark` を置き換える別名 */
@@ -19,13 +18,6 @@ const VERSION_DECLARATION_PATTERN = /:root\{--mdmark-version:"[^"]*"\}\n?/g;
 /** HTML のコメント */
 const COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
 
-/** マーカー（`<!-- 名前 -->`・`<!-- 名前: 引数 -->`・`<!-- /名前 -->`）の全体 */
-const MARK_COMMENT_PATTERN =
-  /^<!--\s*\/?([a-z][a-z0-9-]*)(?::[\s\S]*?)?\s*-->$/;
-
-/** 行内のコード（同じ数のバッククォートで囲んだ範囲） */
-const INLINE_CODE_PATTERN = /(`+)[\s\S]*?\1/g;
-
 /** 単語の一部として出る `mdmark` を、大文字・小文字の構成を保って `TRACE_ALIAS` へ置き換える */
 export const hideNames = (text: string): string =>
   text.replace(/mdmark/gi, (found) => {
@@ -38,92 +30,103 @@ export const hideNames = (text: string): string =>
     return TRACE_ALIAS;
   });
 
-/** 行内のコードの外にある、マーカーでない HTML のコメントを削除する */
-const dropCommentsOutsideCode = (
-  text: string,
-  markNames: ReadonlySet<string>,
-): string => {
-  const drop = (part: string): string =>
-    part.replace(COMMENT_PATTERN, (comment) => {
-      const name = MARK_COMMENT_PATTERN.exec(comment)?.[1];
-      return name !== undefined && markNames.has(name) ? comment : "";
-    });
-  let result = "";
-  let last = 0;
-  for (const match of text.matchAll(INLINE_CODE_PATTERN)) {
-    result += drop(text.slice(last, match.index)) + match[0];
-    last = match.index + match[0].length;
+/** `style` 要素の開きタグと中身 */
+const STYLE_PATTERN = /(<style\b[^>]*>)([\s\S]*?)<\/style>/g;
+
+/** 開きタグ・閉じタグ（属性の値の `>` はサニタイズで `&gt;` になっている） */
+const TAG_PATTERN = /<(\/?)([^\s/>]+)([^>]*)>/g;
+
+/** タグの中の属性（名前と、あれば値） */
+const ATTRIBUTE_PATTERN = /([^\s=/]+)(\s*=\s*)?("[^"]*"|'[^']*'|[^\s"'>]+)?/g;
+
+/** 文書の中の `id`（の並び）を値に持つ属性。`aria-label` などの文字の `aria-*` は含めない */
+const ID_REFERENCE_ATTRIBUTES = new Set([
+  "for",
+  "headers",
+  "aria-describedby",
+  "aria-details",
+  "aria-controls",
+  "aria-labelledby",
+  "aria-owns",
+  "aria-flowto",
+  "aria-activedescendant",
+  "aria-errormessage",
+]);
+
+/** 名前を置き換える属性の値か（`class`・`id`・`data-*` と、文書の中の `id` を指す属性） */
+const isNameValue = (name: string): boolean =>
+  name === "class" ||
+  name === "id" ||
+  name.startsWith("data-") ||
+  ID_REFERENCE_ATTRIBUTES.has(name);
+
+/** 属性の値の `mdmark` を、属性の種類に合わせて置き換える */
+const hideAttributeValue = (name: string, value: string): string => {
+  if (isNameValue(name)) {
+    return hideNames(value);
   }
-  return result + drop(text.slice(last));
+  // 文書の中の id を指す `href="#…"` は、指す先の id と同じく置き換える
+  const quote = value[0] === '"' || value[0] === "'" ? value[0] : "";
+  if (name === "href" && value.slice(quote.length).startsWith("#")) {
+    return hideNames(value);
+  }
+  const assets = value.replace(/\bmdmark-asset:/g, `${TRACE_ALIAS}-asset:`);
+  return name === "style"
+    ? assets.replace(/--mdmark-/g, `--${TRACE_ALIAS}-`)
+    : assets;
 };
 
-/** 生の HTML のブロックと行内の HTML を持つ行の番号（0 から）を集める */
-const htmlLines = (markdown: string): Set<number> => {
-  const tokens = new MarkdownIt({ html: true, linkify: true }).parse(
-    markdown,
-    {},
+/** 範囲のスクリプトの `template` 要素・タグ・タグの間のテキストのいずれか */
+const TEXT_PIECE_PATTERN =
+  /<template\b[^>]*>[\s\S]*?<\/template>|<[^>]*>|[^<]+/g;
+
+/** テキストのうち、コードの例の部品の要素名（`&lt;mdmark-`・`&lt;/mdmark-`）の `mdmark` だけを別名へ置き換える。範囲のスクリプトの `template` の中は置き換えない */
+const hideCodeElementNames = (html: string): string =>
+  html.replace(TEXT_PIECE_PATTERN, (piece) =>
+    piece.startsWith("<")
+      ? piece
+      : piece.replace(
+          /&lt;(\/?)mdmark-/gi,
+          (found, slash: string) =>
+            `&lt;${slash}${hideNames(found.slice(4 + slash.length, -1))}-`,
+        ),
   );
-  const lines = new Set<number>();
-  for (const token of tokens) {
-    const hasHtml =
-      token.type === "html_block" ||
-      (token.type === "inline" &&
-        (token.children ?? []).some((child) => child.type === "html_inline"));
-    if (hasHtml && token.map) {
-      for (let line = token.map[0]; line < token.map[1]; line++) {
-        lines.add(line);
-      }
-    }
-  }
-  return lines;
-};
 
-/** 埋め込みの Markdown で、部品の要素名・CSS 変数・`class` の値・アセットの頭の `mdmark` を別名へ置き換え、マーカーでない HTML のコメントを削除する */
-export const hideMarkdown = (options: {
-  markdown: string;
-  markNames: ReadonlySet<string>;
-}): string => {
-  const { markdown, markNames } = options;
-  const targets = htmlLines(markdown);
-  const lines = markdown.split("\n");
-  const kept: string[] = [];
-  // 生の HTML の連続した行をまとめて扱い、複数行のコメントも削除する
-  for (let line = 0; line < lines.length; ) {
-    if (!targets.has(line)) {
-      kept.push(lines[line] ?? "");
-      line++;
-      continue;
-    }
-    let end = line;
-    while (targets.has(end)) {
-      end++;
-    }
-    kept.push(
-      dropCommentsOutsideCode(lines.slice(line, end).join("\n"), markNames),
-    );
-    line = end;
-  }
-  return kept
-    .join("\n")
-    .replace(/(<\/?)mdmark-/gi, `$1${TRACE_ALIAS}-`)
-    .replace(/--mdmark-/g, `--${TRACE_ALIAS}-`)
-    .replace(
-      /(\bclass\s*=\s*["'])([^"']*)/gi,
-      (_, head: string, value: string) =>
-        head + value.replace(/\bmdmark-/g, `${TRACE_ALIAS}-`),
-    )
-    .replace(/\bmdmark-asset:/g, `${TRACE_ALIAS}-asset:`);
-};
+/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby` など）・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` と、範囲の CSS の `style` の中の名前と、コードの例の部品の要素名だけを別名へ置き換え、HTML のコメントを削除する。ほかのテキストのノード（範囲のスクリプトの `template` の中は部品の要素名も含む）と、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
+export const hideRenderedHtml = (html: string): string =>
+  hideCodeElementNames(html.replace(COMMENT_PATTERN, ""))
+    // 範囲の CSS は mdmark が根の要素の class で範囲に限るため、CSS として名前を置き換える
+    .replace(STYLE_PATTERN, (...style: string[]) => {
+      const [, open = "", css = ""] = style;
+      return `${open}${hideNames(css)}</style>`;
+    })
+    .replace(TAG_PATTERN, (...tag: string[]) => {
+      const [, slash = "", name = "", rest = ""] = tag;
+      const attributes = rest.replace(ATTRIBUTE_PATTERN, (...attribute) => {
+        const [, attr = "", equals = "", value = ""] = attribute as string[];
+        const hidden =
+          value === "" ? "" : hideAttributeValue(attr.toLowerCase(), value);
+        return `${hideNames(attr)}${equals ?? ""}${hidden}`;
+      });
+      return `<${slash}${hideNames(name)}${attributes}>`;
+    });
 
 /** 値を JSON にして名前を置き換え、元の構造に戻す */
 const hideValue = <T>(value: T): T =>
   JSON.parse(hideNames(JSON.stringify(value))) as T;
 
-/** 利用者が記載した値を除く項目（`config`・`icons`）の名前を置き換えた書き出しの中身を返却する */
+/** 利用者が記載した値を除く項目（`config`・`icons`・`docs[].rendered` の HTML 以外）の名前を置き換え、描いた本文の HTML に `hideRenderedHtml` を適用した書き出しの中身を返却する。`docs[].pureMarkdown` は置き換えない */
 export const hidePayload = (payload: ExportPayload): ExportPayload => ({
   ...payload,
   config: hideValue(payload.config),
   ...(payload.icons ? { icons: hideValue(payload.icons) } : {}),
+  docs: payload.docs.map((doc) => {
+    const { html, ...others } = doc.rendered;
+    return {
+      ...doc,
+      rendered: { ...hideValue(others), html: hideRenderedHtml(html) },
+    };
+  }),
 });
 
 /** CSS からバージョンの宣言を削除し、名前を置き換える */

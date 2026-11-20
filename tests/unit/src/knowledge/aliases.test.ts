@@ -448,3 +448,105 @@ test("test_usable_aliases", async () => {
   expect(result[0]).toMatchObject(unitTest);
   expect(result[0]?.aliases).toEqual([]);
 });
+
+/** 詳細のページを `pages` の列に持つ用語の行 */
+const DETAIL_TERMS_ROW = {
+  id: "terms",
+  paths: ["docs/guide/用語集.yaml"],
+  alias_type: "term",
+  records: "terms",
+  metadata: { details: "pages" },
+};
+
+/** `DETAIL_TERMS_ROW` が読み込む用語集の YAML。3 件目のページはリンク先を持たない */
+const DETAIL_TERMS_SOURCE = {
+  rowId: "terms",
+  path: "docs/guide/用語集.yaml",
+  data: {
+    terms: [
+      {
+        id: "marker",
+        name: "マーカー",
+        description: "HTML コメントで記載する指定",
+        pages: [
+          {
+            title: "文書を描く仕組み",
+            href: "./コアコンセプト-文書を描く仕組み.md#流れ",
+          },
+          { title: "仕様", href: "https://example.com/spec" },
+          { title: "リンク先の無い要素" },
+        ],
+      },
+    ],
+  },
+};
+
+// エイリアスに元の行の id と、設定ファイルのフォルダからのパスにした詳細のページを入れる（正常系）
+test("test_build_aliases_with_row_and_details", async () => {
+  // 準備
+  const { buildAliases } = await loadAliases();
+  // 実行
+  const result = buildAliases({
+    rows: [DETAIL_TERMS_ROW],
+    sources: [DETAIL_TERMS_SOURCE],
+  });
+  // 検証
+  expect(result.problems).toEqual([]);
+  expect(result.aliases).toHaveLength(1);
+  expect(result.aliases[0]?.row).toBe("terms");
+  expect(result.aliases[0]?.details).toEqual([
+    {
+      title: "文書を描く仕組み",
+      href: "docs/guide/コアコンセプト-文書を描く仕組み.md#流れ",
+    },
+    { title: "仕様", href: "https://example.com/spec" },
+  ]);
+});
+
+// 詳細のページの相対パスを設定ファイルのフォルダからのパスにし、URL と # で始まるリンクはそのままにする（正常系）
+test("test_read_alias_details", async () => {
+  // 準備
+  const { readAliasDetails } = await loadAliases();
+  const value = [
+    { title: "a", href: "./a.md#流れ" },
+    { title: "b", href: "../b.md" },
+    { title: "x", href: "https://example.com/x" },
+    { title: "top", href: "#top" },
+  ];
+  // 実行
+  const details = readAliasDetails({
+    value,
+    sourcePath: "docs/guide/用語集.yaml",
+  });
+  // 検証
+  expect(details?.map((detail) => detail.href)).toEqual([
+    "docs/guide/a.md#流れ",
+    "docs/b.md",
+    "https://example.com/x",
+    "#top",
+  ]);
+  expect(details?.map((detail) => detail.title)).toEqual([
+    "a",
+    "b",
+    "x",
+    "top",
+  ]);
+});
+
+// title か href が空の要素と、並びでない値は使用しない（異常系）
+test("test_read_alias_details_when_invalid", async () => {
+  // 準備
+  const { readAliasDetails } = await loadAliases();
+  // 実行
+  const missing = readAliasDetails({
+    value: [{ title: "a" }, { href: "b.md" }],
+    sourcePath: "docs/guide/用語集.yaml",
+  });
+  const notList = readAliasDetails({
+    value: "x",
+    sourcePath: "docs/guide/用語集.yaml",
+  });
+  // 検証
+  expect(missing).toBeUndefined();
+  expect(notList).toBeUndefined();
+});
