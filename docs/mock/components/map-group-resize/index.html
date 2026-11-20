@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-group-resize（map の図のグループの角のハンドル） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #763 で変える見た目 -->
+  <link rel="stylesheet" href="../../refs/763/assets/mock.css">
+  <style>
+    /* カタログの並び: 案ごとに状態の見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 24px; margin: 48px 0 8px; }
+    .map-catalog h3 { font-size: 18px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-group-resize
+  </nav>
+  <main class="map-catalog" id="catalog">
+    <h1>map-group-resize</h1>
+    <p class="state-note">配布物の mount で描いた実物の図に、グループの右下の角のハンドルだけを重ねている。モックでは、広げたグループの外のグループ・線・ほかのノードとの 16px の間隔は追随しない（実装ではシナリオのとおり外のグループが広がり、16px の手前で止まる）</p>
+  </main>
+  <script type="module">
+    import { drawMap, patchCorners, patchToggles } from "../../refs/763/assets/mock.js";
+
+    const FLOW = (title) => `<!-- map: {"title": "${title}"} -->
+
+\`\`\`mermaid
+flowchart LR
+  subgraph app[利用側のアプリ]
+    direction LR
+    subgraph page[ページ]
+      direction TB
+      md[Markdown] --> mount[mount]
+      config[設定] --> mount
+    end
+    store[(保存先)]
+  end
+  mount --> store
+  mount --> cdn[配布物の CDN]
+\`\`\`
+
+<!-- map-data: {"version": 1} -->
+
+<!-- /map -->
+`;
+    const ER = (title) => `<!-- map: {"title": "${title}"} -->
+
+\`\`\`mermaid
+erDiagram
+  顧客 {
+    int id PK
+    string 名前
+  }
+  注文 {
+    int id PK
+    int 顧客ID FK "参照: 顧客.id"
+  }
+  明細 {
+    int id PK
+    int 注文ID FK "参照: 注文.id"
+  }
+  顧客 ||--o{ 注文 : "注文する"
+  注文 ||--|{ 明細 : "含む"
+\`\`\`
+
+<!-- map-data: {"version": 1, "groups": {"記録": {"title": "記録", "tables": ["注文", "明細"]}}} -->
+
+<!-- /map -->
+`;
+    const patch = (host) => { patchCorners(host); patchToggles(host); };
+
+    /** 案の囲みの class・見出し・補足 */
+    const VARIANTS = [
+      ["", "案 A: 角のハンドルを常に出す（推奨）", "グループの右下の角に 2 本の斜線を常に出す。ポインターを重ねると濃くなり、カーソルが斜めの大きさを変える形状になる。タッチの端末でも見つけられる"],
+      ["corner-hover", "案 B: ポインターを重ねたときとフォーカスしたときだけ出す", "グループにポインターを重ねるか、Tab でハンドルにフォーカスしたときだけ角の斜線を出す。普段の見た目は今と同じ。タッチの端末では見つけにくい"],
+    ];
+    /** 状態の見出し・補足・Markdown */
+    const STATES = [
+      ["構成図（入れ子 2 レイヤーのグループ）", "外のグループ「利用側のアプリ」と中のグループ「ページ」の右下に角がある。角をドラッグするか、角にフォーカスして矢印キー（Shift で大きい刻み）を押すと大きさが変わる。中のノードを囲む大きさより小さくはならない", FLOW("描く流れ")],
+      ["ER 図（分類の箱）", "分類の箱「記録」の右下にも、構成図のグループと同じ角がある", ER("記録の構造")],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (parent, tag, text, className) => parent.append(Object.assign(document.createElement(tag), { textContent: text, ...(className ? { className } : {}) }));
+    VARIANTS.forEach(([variant, heading, note], v) => {
+      add(catalog, "h2", heading);
+      add(catalog, "p", note, "state-note");
+      STATES.forEach(([title, stateNote, markdown]) => {
+        add(catalog, "h3", title);
+        add(catalog, "p", stateNote, "state-note");
+        const host = document.createElement("div");
+        if (variant) host.classList.add(variant);
+        catalog.append(host);
+        drawMap(host, markdown, patch);
+      });
+      if (v === 0) {
+        add(catalog, "h3", "狭い幅（390px）");
+        add(catalog, "p", "表示する枠の中で横にスクロールしても、角は 16px 四方の当たりを保つ", "state-note");
+        const host = document.createElement("div");
+        host.classList.add("narrow");
+        catalog.append(host);
+        drawMap(host, FLOW("描く流れ（狭い幅）"), patch);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+/* #763 のモックの規則: 配布物（dist/index.css）の上に、変える見た目だけを重ねる */
+
+/* ER 図・クラス図の開閉のボタン: 枠線と面を外し、グループの開閉のボタン（.map-disclosure）と同じ山形だけにする */
+.mock-763 :is(.map-er-toggle, .map-class-toggle) {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mdmark-radius);
+  background: transparent;
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.mock-763 :is(.map-er-toggle, .map-class-toggle):hover {
+  color: var(--mdmark-color-text);
+  background: var(--mdmark-color-surface);
+}
+.mock-763 :is(.map-er-toggle, .map-class-toggle):focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 1px;
+}
+
+/* グループの右下の角のハンドル: 角の内側に 16px 四方の当たり、見た目は 2 本の斜線 */
+.mock-763 .mock-group-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--mdmark-color-muted);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.mock-763 .mock-group-corner svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+.mock-763 .mock-group-corner:hover,
+.mock-763 .mock-group-corner.is-dragging {
+  color: var(--mdmark-color-text);
+}
+.mock-763 .mock-group-corner:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: -2px;
+}
+/* 案 B: 角のハンドルをポインターを重ねたときとフォーカスしたときだけ出す */
+.mock-763.corner-hover .mock-group-corner { opacity: 0; }
+.mock-763.corner-hover :is(.map-group, [data-group]):hover > .mock-group-corner,
+.mock-763.corner-hover .mock-group-corner:focus-visible,
+.mock-763.corner-hover .mock-group-corner.is-dragging { opacity: 1; }
