@@ -927,6 +927,16 @@ const MAP_FLOW_WIRE_ENDS = `flowchart LR
   N[/台形\\] --> O(((終了)))
   P@{ shape: doc, label: "文書" } --> L`;
 
+/** 構成図の SharedSide: 1 つのノードの下の辺から 4 本、上の辺に 2 本の線が出入りする（モック `docs/mock/components/map-wire-ports/` の `FAN`） */
+const MAP_FLOW_SHARED_SIDE = `flowchart TB
+  hub[mount] --> a[表]
+  hub --> b[図]
+  hub --> c[注意書き]
+  hub --> d[コードブロック]
+  x[設定] --> hub
+  y[索引] --> hub
+`;
+
 const MAP_FLOW_PARALLEL = `flowchart LR
   subgraph A [A]
     a1
@@ -1226,6 +1236,7 @@ const mapFlowStorySource = (
     wrapped: MAP_FLOW_WRAPPED,
     measured: MAP_FLOW_MEASURED,
     parallel: MAP_FLOW_PARALLEL,
+    "shared-side": MAP_FLOW_SHARED_SIDE,
     styled: MAP_FLOW_STYLED,
     "wire-ends": MAP_FLOW_WIRE_ENDS,
   };

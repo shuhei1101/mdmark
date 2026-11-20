@@ -1501,7 +1501,8 @@ type SeqMessagePart = {
 };
 
 /** 自分へのメッセージの折り返しの寸法（px）。ラベルの札（高さ 20px）は折り返しの上の辺から `labelGap` だけ上に離す */
-const SEQ_SELF = { width: 40, rise: 8, labelGap: 6, labelHalf: 10 } as const;
+/** 自分へのメッセージの折り返しの幅と高さ、札の下端と線の間、札の高さの半分（線のラベルの文字 11px × 行の高さ 1.5 と上下の枠線 1px の半分） */
+const SEQ_SELF = { width: 40, rise: 8, labelGap: 6, labelHalf: 9.25 } as const;
 
 /** メッセージの線の形（自分へのメッセージは右へ折り返す） */
 type SeqGeometry = {

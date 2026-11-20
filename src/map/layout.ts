@@ -45,6 +45,8 @@ export const MAP_LAYOUT = {
   wireGap: 16,
   /** 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ） */
   closedCount: 17,
+  /** 閉じたグループの二重の枠線の上下の幅の和（CSS の `.map-closed-group` の `border: 3px double`） */
+  closedBorder: 6,
 };
 
 /** 見せ方（中へ入る・閉じる） */
@@ -400,11 +402,14 @@ const fadedIdsOf = (
   return fadedIds;
 };
 
-/** 閉じたグループの高さ（タイトルの行の下に数の行が収まる高さ以上） */
+/** 閉じたグループの高さ（タイトルの行の下に数の行が、二重の枠線の内側に収まる高さ以上） */
 const closedGroupHeight = (estimated: number): number =>
   Math.max(
     estimated,
-    MAP_LAYOUT.groupTitle + MAP_LAYOUT.closedCount + LABEL_METRICS.padY,
+    MAP_LAYOUT.groupTitle +
+      MAP_LAYOUT.closedCount +
+      LABEL_METRICS.padY +
+      MAP_LAYOUT.closedBorder,
   );
 
 /** 描く木の葉（ノードか閉じたグループ） */
