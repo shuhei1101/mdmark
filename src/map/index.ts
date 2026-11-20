@@ -8,6 +8,7 @@ import { attachMapC4 } from "./c4-view.ts";
 import { collectMapProblems, needsMermaidFallback } from "./check.ts";
 import { attachMapClass } from "./class-view.ts";
 import { attachMapEr } from "./er-view.ts";
+import { attachMapExport } from "./export.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
 import { parseFlowchart } from "./flowchart.ts";
 import { attachMapMindmap } from "./mindmap-view.ts";
@@ -197,6 +198,13 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
   } else {
     attachFlowRange(context, { range, args, source });
   }
+  destroyers.push(
+    attachMapExport(range, {
+      index: Number(range.dataset.map ?? "0"),
+      title: () =>
+        range.querySelector(".mdmark-diagram-title")?.textContent ?? undefined,
+    }),
+  );
 };
 
 /** シーケンス図の範囲を、構成図を付け終えた後に付ける項目にする */

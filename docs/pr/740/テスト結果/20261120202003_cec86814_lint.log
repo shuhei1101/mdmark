@@ -1,0 +1,38 @@
+# lint（単体テスト作成）
+
+commit: cec86814
+
+## コマンド
+
+(rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+
+## 判定
+
+- Biome: 作業 PR の変更ファイル（tests/）の違反 0 件（npx biome check で確認）。npm run lint の残りの違反は、作業 PR に含めない tmp/review/（reviewer の一時ファイル、git 管理外）だけ
+- ESLint: 違反 0 件
+- tsc（ルート）: 違反は全て実装が無いことによるもの（src/map/export.ts・list.ts・list.part.ts が無い、MapData.changes・DiagramFrame の exportable・listable・MapFlowArgs.changes が無い）。単体テスト作成の工程では残してよい
+- vscode の tsc・actionlint: 違反 0 件
+
+## 出力（npm run typecheck）
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/diagram/diagram.part.test.ts(708,36): error TS2353: Object literal may only specify known properties, and 'exportable' does not exist in type 'DiagramFrame'.
+tests/unit/src/diagram/diagram.part.test.ts(739,41): error TS2353: Object literal may only specify known properties, and 'listable' does not exist in type 'DiagramFrame'.
+tests/unit/src/map/data.test.ts(178,15): error TS2339: Property 'changes' does not exist on type 'MapData'.
+tests/unit/src/map/data.test.ts(200,15): error TS2339: Property 'changes' does not exist on type 'MapData'.
+tests/unit/src/map/export.browser.test.ts(11,33): error TS2307: Cannot find module '../../../../src/map/export.ts' or its corresponding type declarations.
+tests/unit/src/map/list.browser.test.ts(11,31): error TS2307: Cannot find module '../../../../src/map/list.ts' or its corresponding type declarations.
+tests/unit/src/map/list.browser.test.ts(133,17): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/list.browser.test.ts(163,21): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/list.part.test.ts(5,31): error TS2307: Cannot find module '../../../../src/map/list.part.ts' or its corresponding type declarations.
+tests/unit/src/map/map.part.test.ts(2376,5): error TS2353: Object literal may only specify known properties, and 'changes' does not exist in type 'MapFlowArgs'.
+
+## 出力（npm run lint:eslint）
+
+
+> lint:eslint
+> node scripts/eslint.ts
+

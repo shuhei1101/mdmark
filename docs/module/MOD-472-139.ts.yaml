@@ -29,6 +29,9 @@ data_models:
       - name: groups
         type: 'Record<string, { title: string; tables: string[]; parent?: string }>'
         description: ER 図の分類（分類の ID ごとのタイトル・テーブル名・親の分類）
+      - name: changes
+        type: 'Record<string, { type: "added" | "changed" | "removed" }>'
+        description: ノード・グループ・線の ID ごとの計画した変更（ER 図『map の補足』の `changes`）
 functions:
   - name: parseMapData
     title: 補足を読み取る
@@ -48,7 +51,7 @@ functions:
       description: 読み込んだ補足と項目
     process: |-
       1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する修正方法。読み取れないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返却する
-      2. トップレベル・`walkthroughs` の手順・`layout` の値・`groups` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
+      2. トップレベル・`walkthroughs` の手順・`layout` の値・`groups` の値・`changes` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる。`changes` の `type` が `added`・`changed`・`removed` のどれでもない値は `map_invalid_value`（使用できる値の一覧を含む）にしてその ID を捨てる
       3. 補足の文字の中で `--` をそのまま記載した文字の値は `map_invalid_value`（HTML コメントを閉じてしまうため、`--` をそのまま記載せずに 2 つ目の `-` を JSON の Unicode エスケープで記載する修正方法）にする。値の `--` は、`jsonPaths` が返却する元の文字に `--` をそのまま記載したパスで判定し、JSON の Unicode エスケープで記載した `--` はずれにしない
     unit_tests:
       - name: test_parse_map_data
@@ -99,6 +102,18 @@ functions:
         condition: '`notes.a.text` の元の文字が、2 つ目の `-` を Unicode エスケープで記載した `a --b`'
         mock: なし
         expected: '`notes.a.text` が `a --b` で読み取れ、`problems` が空'
+      - name: test_parse_map_data_when_changes
+        case: 正常
+        summary: 計画した変更
+        condition: '`{"version": 1, "changes": {"a": {"type": "added"}, "b": {"type": "removed"}}}`'
+        mock: なし
+        expected: '`changes` に `a`・`b` が読み取れ、`problems` が空'
+      - name: test_parse_map_data_when_changes_invalid_type
+        case: 異常
+        summary: 知らない変更の種類
+        condition: '`changes.a.type` が `moved`、`changes.b` が文字 `added`'
+        mock: なし
+        expected: '`map_invalid_value` が 2 件で、1 件目は `added`・`changed`・`removed` を含み、`changes` に `a`・`b` が無い'
   - name: jsonPaths
     title: 補足のパスを走査する
     kind: 関数

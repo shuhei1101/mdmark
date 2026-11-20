@@ -43,6 +43,14 @@ export type DiagramFrame = {
         label: string;
         disabled?: boolean;
     }>;
+    /** 全画面のボタンの隣に書き出すボタンを配置するか（map の図） */
+    exportable?: boolean;
+    /** 書き出すボタンの「SVG」「PNG」の要素を開いた状態で描くか（ストーリーの状態だけが指定する） */
+    exportOpen?: boolean;
+    /** パネルの map のグループの先頭に一覧の表示のボタンを配置するか（map の構成図の部品の上に描く図とシーケンス図） */
+    listable?: boolean;
+    /** 表示する枠の中を図から一覧に替えた状態で描くか（一覧は呼び出し側が入れる） */
+    listView?: boolean;
     /** ツールチップと矢じりの `id` の頭 */
     id: string;
 };

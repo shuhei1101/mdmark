@@ -1213,6 +1213,12 @@ files:
     related:
       - to: CMP-472-5
         type: implements
+  - path: map/map-list.part.stories.ts
+    description: 部品設計『mapの一覧』の状態ごとの Storybook のストーリーを並べる。一覧の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:map, topic:一覧]
+    related:
+      - to: CMP-740-1
+        type: implements
   - path: map/map-sequence.part.stories.ts
     description: 部品設計『mapのシーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品]
@@ -1224,6 +1230,26 @@ files:
     tags: [topic:部品, topic:map, tool:html]
     related:
       - to: MOD-472-133
+        type: implements
+  - path: map/export.ts
+    description: モジュール構成『ライブラリ本体 / map / 書き出し』の書き出すボタンの開閉と、図の SVG・PNG への書き出しを受け持つ。図の書き出しを変えるときに参照する。
+    tags: [topic:map, topic:書き出し, tool:svg]
+    related:
+      - to: MOD-740-1
+        type: implements
+  - path: map/list.part.ts
+    description: モジュール構成『ライブラリ本体 / map / 一覧の部品』の部品『mapの一覧』の HTML を受け持つ。一覧の項目の HTML を変えるときに参照する。
+    tags: [topic:部品, topic:map, topic:一覧, tool:html]
+    related:
+      - to: MOD-740-2
+        type: implements
+      - to: CMP-740-1
+        type: implements
+  - path: map/list.ts
+    description: モジュール構成『ライブラリ本体 / map / 一覧の表示』の一覧の項目の組み立てと、図と一覧の切り替え・キー操作を受け持つ。一覧の表示の動きを変えるときに参照する。
+    tags: [topic:map, topic:一覧, action:操作]
+    related:
+      - to: MOD-740-3
         type: implements
   - path: media/media.part.stories.ts
     description: 部品設計『動画と音声』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。

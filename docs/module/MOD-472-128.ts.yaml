@@ -143,9 +143,17 @@ functions:
         condition: '`click A href "id:SC-1"`・`click B href "id:unknown"` の classDiagram の範囲に、`id:SC-` だけを URL に変える `hooks.resolveIdLink` を指定する'
         mock: なし（jsdom）
         expected: A が `href` が URL の `a.mdmark-diagram-node-link` を持ち、B は持たず、図の枠の前の記載の警告に `B` と `id:unknown` がある
+      - name: test_attach_map_when_export
+        case: 正常
+        summary: 全ての種類に書き出すボタン
+        condition: 構成図・シーケンス図・ガントチャートの範囲を持つ文書
+        mock: なし（Chromium）
+        expected: 3 つの範囲に `[data-tool="export"]` があり、`[data-tool="list"]` は構成図とシーケンス図だけにある。片付けた後は書き出すボタンを押しても `aria-expanded` が変わらない
     refs:
       - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
       - IF-472-35#constraints[範囲の外の map の図に付く操作]
+    notes:
+      書き出し: '範囲ごとに `attachMapExport` を文書の中の map の番号（`data-map`）と今の図の枠のタイトル（`figcaption` の題名。プレーンの map の図の種類の名前はタイトルとして扱う）で付け、片付ける関数を返却する片付けで呼ぶ。全ての種類の map の図が `renderDiagramFrame` に `exportable: true` を指定する'
 lead: 'map の部品のモジュールのエントリーポイントを受け持ち、map の図の付け方を変えるときに参照する。'
 tags:
   - name: topic:map

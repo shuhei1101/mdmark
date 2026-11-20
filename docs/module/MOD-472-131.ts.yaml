@@ -143,6 +143,14 @@ functions:
         condition: '`mount` を選んだ状態で `mount` の箱に `pointerover` を発火し、Esc を押した後、同じ箱に `pointerover` を発火する'
         mock: なし
         expected: Esc の後は `map-dim` を持つ要素と `.map-packets-hover` が無い
+      - name: test_attach_map_sequence_when_list
+        case: 正常
+        summary: シーケンス図の一覧の表示
+        condition: メッセージ 4 つのシーケンス図で一覧の表示のボタンを押す
+        mock: なし（Chromium）
+        expected: '一覧の項目が記載順の「{送信元} → {送信先}: {メッセージ}」の 4 つで、子を持つ項目が無い'
+    notes:
+      書き出し・一覧の表示: '`renderDiagramFrame` に `exportable: true`・`listable: true` を指定し、`attachMapList` を `sequenceListItems`（今のシーケンス図）で付け、片付ける関数を片付けのときに呼ぶ'
 lead: 'map のシーケンス図の描画と操作を受け持ち、シーケンス図の描画と操作を変えるときに参照する。'
 tags:
   - name: topic:map

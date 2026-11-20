@@ -144,6 +144,40 @@ scenarios:
       - SC-472-78#scenarios[正常シナリオ]
       - SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]
       - SC-472-8#scenarios[正常シナリオ]
+  - name: 正常シナリオ（計画した変更を一覧で辿る）
+    setup:
+      - name: 空のフォルダ
+        description: 正常シナリオと同じ
+      - name: 計画した変更を持つ文書
+        description: 正常シナリオの構成図の文書の補足に、ノード 1 つの `changes`（`added`）とノード 1 つの `changes`（`removed`）を追加したもの。索引に文書を記載する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ]
+        B --> D[Mermaidと補足で図を描く:正常シナリオ（計画した変更を示す）]
+        D --> E[Mermaidと補足で図を描く:正常シナリオ（一覧の表示で読む）]
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ]"
+        click D "id:SC-472-8#scenarios[正常シナリオ（計画した変更を示す）]"
+        click E "id:SC-472-8#scenarios[正常シナリオ（一覧の表示で読む）]"
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`mdmark check` が `changes` を含めてずれ 0 件で、終了コード 0 を返却する'
+      - 構成図の `added` のノードに「追加」、`removed` のノードに「削除」のバッジがある
+      - 一覧の表示に切り替えると、`added` のノードの項目は「追加」を、`removed` のノードの項目は「削除」と取り消し線の名前を持ち、スクリーンリーダーで名前の後ろに「追加」「削除」と読み上げられる
+      - 図の表示に戻すと、バッジと図の倍率・位置は切り替える前と同じ
+    test: test_normal_when_planned_changes_listed
+    uses:
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-8#scenarios[正常シナリオ（計画した変更を示す）]
+      - SC-472-8#scenarios[正常シナリオ（一覧の表示で読む）]
 tags:
   - name: topic:map
     main: true

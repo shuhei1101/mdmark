@@ -55,7 +55,12 @@ export function renumberIds(
   if (scope.id) {
     scope.id = swap(scope.id);
   }
-  for (const name of ["aria-describedby", "aria-labelledby", "for"]) {
+  for (const name of [
+    "aria-describedby",
+    "aria-labelledby",
+    "aria-controls",
+    "for",
+  ]) {
     for (const element of [scope, ...scope.querySelectorAll(`[${name}]`)]) {
       const value = element.getAttribute(name);
       if (value !== null) {
