@@ -611,3 +611,29 @@ test("test_attach_diagrams_when_panel_toggled", async () => {
   expect(more.getAttribute("aria-expanded")).toBe("false");
   expect(more.getAttribute("aria-label")).toBe("表示の操作を開く");
 });
+
+// id と、それを指す属性・矢じりと端の記号の参照を付け替える（正常系）
+test("test_renumber_ids", async () => {
+  // 準備
+  const { renumberIds } = await loadDiagrams();
+  const scope = document.createElement("div");
+  scope.innerHTML = [
+    '<svg><defs><marker id="map-1-head-0"></marker><marker id="map-1-head-0-from-circle"></marker></defs>',
+    '<path marker-start="url(#map-1-head-0-from-circle)" marker-end="url(#map-1-head-0)"></path></svg>',
+    '<span aria-describedby="map-1-tip-0"></span>',
+  ].join("");
+  // 実行
+  renumberIds(scope, "map-1", "map-1-modal");
+  // 検証
+  expect(
+    [...scope.querySelectorAll("marker")].map((marker) => marker.id),
+  ).toEqual(["map-1-modal-head-0", "map-1-modal-head-0-from-circle"]);
+  const path = scope.querySelector("path");
+  expect(path?.getAttribute("marker-start")).toBe(
+    "url(#map-1-modal-head-0-from-circle)",
+  );
+  expect(path?.getAttribute("marker-end")).toBe("url(#map-1-modal-head-0)");
+  expect(scope.querySelector("span")?.getAttribute("aria-describedby")).toBe(
+    "map-1-modal-tip-0",
+  );
+});

@@ -197,3 +197,36 @@ test("test_er_packet_direction", async () => {
   // 検証
   expect(directions).toEqual(["backward", "forward", "forward", "forward"]);
 });
+
+// subgraph の ID を指す関連はテーブルにしない（正常系）
+test("test_parse_er_diagram_when_subgraph_relation", async () => {
+  // 準備
+  const { parseErDiagram } = await loadEr();
+  const source = [
+    "erDiagram",
+    "  subgraph g",
+    "    A ||--|| B : r1",
+    "  end",
+    "  g ||--|| C : r2",
+    "  C ||--|| h : r3",
+    "  subgraph h",
+    "    D",
+    "  end",
+  ].join("\n");
+  // 実行
+  const diagram = parseErDiagram(source);
+  // 検証
+  expect(diagram.problems).toEqual([]);
+  expect(diagram.tables.map((table) => table.name)).toEqual([
+    "A",
+    "B",
+    "C",
+    "D",
+  ]);
+  expect(
+    diagram.relations.find((relation) => relation.label === "r2")?.from,
+  ).toBe("g");
+  expect(
+    diagram.relations.find((relation) => relation.label === "r3")?.to,
+  ).toBe("h");
+});

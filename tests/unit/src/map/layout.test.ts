@@ -1120,3 +1120,29 @@ test("test_layout_map_when_length_and_invisible", async () => {
   expect(top("D")).toBeGreaterThan(top("B"));
   expect(layout.wires.map((wire) => wire.id)).not.toContain("B->D");
 });
+
+// subgraph を指す線をグループの枠につなぐ（正常系）
+test("test_layout_map_when_wire_to_group", async () => {
+  // 準備
+  const { layoutMap, estimateTextWidth } = await loadLayout();
+  const { parseFlowchart } = await loadFlowchart();
+  const chart = parseFlowchart(
+    ["flowchart LR", "  subgraph g", "    B --> C", "  end", "  A --> g"].join(
+      "\n",
+    ),
+  );
+  // 実行
+  const layout = layoutMap(
+    chart,
+    { collapsed: [], entered: undefined },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
+  );
+  // 検証
+  const wire = layout.wires.find((item) => item.id === "A->g");
+  const group = layout.groups.find((item) => item.id === "g");
+  if (!wire || !group) throw new Error("線かグループが無い");
+  const [x, y] = wire.points.at(-1) ?? [Number.NaN, Number.NaN];
+  expect(x).toBe(group.x);
+  expect(y).toBeGreaterThanOrEqual(group.y);
+  expect(y).toBeLessThanOrEqual(group.y + group.h);
+});
