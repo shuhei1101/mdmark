@@ -168,7 +168,7 @@ constants:
   - name: DEFAULT_LIBRARIES
     title: 既定の対応表
     container: src/config.ts
-    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表。この Issue では空で、外部ライブラリを使用する機能を作る Issue（[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6)）がバージョンを固定した URL の行を追加する
+    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表で、行を持たない
     value: '{}'
   - name: MARK_NAME_PATTERN
     title: マーカーの名前の書式
