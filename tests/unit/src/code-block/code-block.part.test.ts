@@ -453,3 +453,93 @@ test("test_render_code_block_when_wrap", async () => {
     expect(findTags(html, 'class="mdmark-code-line"')).toHaveLength(3);
   }
 });
+
+// 言語 markdown のコードブロックの印（正常系）
+test("test_render_code_block_when_markdown", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  const base = {
+    language: "markdown",
+    title: "",
+    lineNumbers: false,
+    lines: [{ text: "# a" }],
+  };
+  // 実行
+  const rendered = renderCodeBlock({ ...base, markdown: true });
+  const raw = renderCodeBlock({ ...base, markdown: true, raw: true });
+  // 検証
+  const renderedWrapper = findTag(rendered, "mdmark-code");
+  const rawWrapper = findTag(raw, "mdmark-code");
+  expect(renderedWrapper).toContain("data-mdmark-markdown");
+  expect(renderedWrapper).not.toContain("data-mdmark-raw");
+  expect(rawWrapper).toContain("data-mdmark-markdown");
+  expect(rawWrapper).toContain("data-mdmark-raw");
+  for (const html of [rendered, raw]) {
+    expect(html).not.toContain("mdmark-code-raw");
+    expect(html).not.toContain("mdmark-code-preview");
+  }
+});
+
+// Raw のボタンと描いた結果の外観（正常系）
+test("test_render_code_block_when_preview", async () => {
+  // 準備
+  const { renderCodeBlock } = await loadCodeBlock();
+  const base = {
+    language: "markdown",
+    title: "",
+    lineNumbers: false,
+    lines: [{ text: "# 見出し" }],
+    copyState: "idle" as const,
+    markdown: true,
+    previewHtml: "<h1>見出し</h1>",
+  };
+  // 実行
+  const rendered = renderCodeBlock({ ...base, preview: "rendered" });
+  const raw = renderCodeBlock({ ...base, preview: "raw" });
+  // 検証: どちらも帯の右の塊の先頭に Raw のボタンがあり、pre の後ろの描いた結果が見出しを持つ
+  for (const html of [rendered, raw]) {
+    const meta = innerHtml(html, "mdmark-code-meta");
+    expect(meta.indexOf("mdmark-code-raw")).toBeGreaterThanOrEqual(0);
+    expect(meta.indexOf("mdmark-code-raw")).toBeLessThan(
+      meta.indexOf("mdmark-code-copy"),
+    );
+    expect(html.indexOf("mdmark-code-preview")).toBeGreaterThan(
+      html.indexOf("<pre"),
+    );
+    expect(innerHtml(html, "mdmark-code-preview")).toContain("<h1>見出し</h1>");
+  }
+  // 検証: rendered は pre を、raw は描いた結果を隠す
+  expect(findTag(rendered, "<pre")).toContain("hidden");
+  expect(findTag(rendered, "mdmark-code-preview")).not.toContain("hidden");
+  expect(findTag(rendered, "mdmark-code-raw")).toContain(
+    'aria-pressed="false"',
+  );
+  expect(findTag(raw, "<pre")).not.toContain("hidden");
+  expect(findTag(raw, "mdmark-code-preview")).toContain("hidden");
+  expect(findTag(raw, "mdmark-code-raw")).toContain('aria-pressed="true"');
+});
+
+// 押した状態とスクリーンリーダー向けの名前（正常系）
+test("test_render_code_raw", async () => {
+  // 準備
+  const { renderCodeRaw } = await loadCodeBlock();
+  // 実行
+  const off = renderCodeRaw({ pressed: false });
+  const on = renderCodeRaw({ pressed: true });
+  // 検証
+  for (const [html, pressed] of [
+    [off, "false"],
+    [on, "true"],
+  ] as const) {
+    expect(html.startsWith('<button class="mdmark-code-raw"')).toBe(true);
+    expect(html).toContain('type="button"');
+    expect(html).toContain(`aria-pressed="${pressed}"`);
+    // 文字: タグを除いた中身
+    const text = html.replace(/<[^>]*>/g, "");
+    expect(text).toBe("Raw（元の Markdown を表示）");
+    expect(innerHtml(html, "mdmark-visually-hidden")).toBe(
+      "（元の Markdown を表示）",
+    );
+    expect(findTag(html, "<svg")).toContain('aria-hidden="true"');
+  }
+});

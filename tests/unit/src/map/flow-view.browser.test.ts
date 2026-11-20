@@ -188,6 +188,38 @@ test("test_attach_map_flow_when_walk_leaves_group", async () => {
   expect(root.querySelector(".map-group-title.is-current")).toBeNull();
 });
 
+// 案内でグループに入る・出るときも倍率の文字を保つ（正常系）
+test("test_attach_map_flow_when_walk_keeps_zoom", async () => {
+  // 準備
+  const root = await setUp();
+  const viewport = root.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
+  const zoomText = () =>
+    root.querySelector('[data-tool="fit"]')?.textContent ?? "";
+  const tool = (name: string) =>
+    root.querySelector<HTMLButtonElement>(`[data-tool="${name}"]`);
+  const walk = () => {
+    const texts: string[] = [];
+    for (const index of [0, 2, 0]) {
+      root.querySelectorAll<HTMLElement>(".map-band-seg")[index]?.click();
+      texts.push(zoomText());
+    }
+    return texts;
+  };
+  for (let i = 0; i < 5; i++) tool("in")?.click();
+  const zoomed = zoomText();
+  // 実行
+  const zoomedTexts = walk();
+  tool("fit")?.click();
+  const fitTexts = walk();
+  // 検証
+  expect(zoomed).not.toBe("100%");
+  expect(zoomedTexts).toEqual([zoomed, zoomed, zoomed]);
+  expect(fitTexts).toEqual(["100%", "100%", "100%"]);
+  expect(viewport.hasAttribute("data-at-fit")).toBe(true);
+});
+
 // 外から図を移す（正常系）
 test("test_attach_map_flow_when_follow", async () => {
   // 準備
