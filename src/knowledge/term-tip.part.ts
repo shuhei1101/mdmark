@@ -115,7 +115,7 @@ function renderWordTip(options: {
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const termClass = replacement === undefined ? "" : " mdmark-term-avoided";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
-  return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
+  return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}><span class="mdmark-term-tip-frame">${sections.join("")}</span></span></span>`;
 }
 
 /** 関連文書を持つツールチップの名前を返却する */
@@ -216,7 +216,7 @@ function renderAliasTip(options: {
       : ` aria-describedby="${tipId}"`;
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
-  return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}>${renderSection(heading, body)}</span></span>`;
+  return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}><span class="mdmark-term-tip-frame">${renderSection(heading, body)}</span></span></span>`;
 }
 
 /** 種類の項目の HTML と、ツールチップの名前（中へ Tab で移れる `group` にするときだけ。それ以外は空）の組 */
