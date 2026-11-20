@@ -27,4 +27,12 @@ docs:
   - page: docs/module/MOD-472-347.ts.yaml
     new: false
     change: measureColumns の行の分け方に、複製したセルからツールチップとスクリーンリーダー用の文字を除いてから文字を取ることと、その単体テストを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:38:35.159984+00:00'
+  - page: docs/module/MOD-472-229.ts.yaml
+    new: false
+    change: セルの中で幅を取らない文字の要素の定数 HIDDEN_TEXT_SELECTOR と、複製した要素からその要素を取り除く removeHiddenText とその単体テストを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:38:35.159984+00:00'

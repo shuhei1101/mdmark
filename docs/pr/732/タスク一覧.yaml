@@ -63,7 +63,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T04:13:11.104355+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:38:21.266974+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 公開ドキュメントの記載（列の幅を中身から決める）は変わらない
