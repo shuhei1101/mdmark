@@ -78,7 +78,7 @@ docs:
     status: todo
   - page: docs/guide/用語集.yaml
     new: false
-    change: items の概要の「描く表は用語集.mark.md が持つ」を、YAML が原本で用語集.mark.md はマーカーで描くことに修正する。用語集の表・書き出しの用語の description を変更に合わせる
+    change: '`$schema` を `design-schemas/v9.7.0` へ上げ、各用語の `details` に今の用語集の表の `詳細` の列のリンクを記入する。items の概要の「描く表は用語集.mark.md が持つ」を、YAML が原本で用語集.mark.md はマーカーで描くことに修正する。用語集の表・書き出しの用語の description を変更に合わせる'
     status: todo
   - page: docs/guide/記法.mark.md
     new: false
@@ -123,6 +123,10 @@ docs:
   - page: mdmark.config.yaml
     new: false
     change: 'docs/guide/用語集.yaml を alias_type: term で読み込む aliases の行を追加する'
+    status: todo
+  - page: project-index.yaml
+    new: false
+    change: 行 `terms` の `schema.ref` を `design-schemas/v9.7.0` へ上げる
     status: todo
 scope_out:
   - item: VS Code 拡張機能の HTML への書き出し（インターフェース定義『HTMLに書き出す』IF-472-15）で、元の Markdown を埋め込まない
