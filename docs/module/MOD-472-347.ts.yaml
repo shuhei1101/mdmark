@@ -142,7 +142,7 @@ functions:
       - name: test_attach_auto_column_widths_when_batched
         case: 正常
         summary: 描いたときの 1 回の決定で、計測用の要素の配置と幅の取得を交互にしない
-        condition: 幅 1280px の要素に `data-features="sort pin resize"` の `test_attach_auto_column_widths` の表を付ける。`Element.prototype.append`・`HTMLElement.prototype.getBoundingClientRect`・`CSSStyleDeclaration.prototype.setProperty` の呼び出しの順を記録する
+        condition: '`test_attach_auto_column_widths_when_head_tools_wider` と同じく、幅 320px の要素に `data-features="sort pin resize"` の、列名 `列 1`〜`列 10`・値が 2 文字の 10 列の表（ピン止めのボタンを出した状態）を付ける（列が見出しの中身より広いと `.mdmark-th` がセルいっぱいに伸び、`scrollWidth` が中身の幅を表さないため、列が最小の幅になる幅で描く）。`Element.prototype.append`・`HTMLElement.prototype.getBoundingClientRect`・`CSSStyleDeclaration.prototype.setProperty` の呼び出しの順を記録する'
         mock: 3 つのメソッドを、元の処理を呼んだうえで呼び出しの順を記録する spy にする
         expected: 計測用の要素の `append` が全て最初の `getBoundingClientRect` より前で、`--mdmark-column-head-width` の `setProperty` が全て最後の `getBoundingClientRect` より後。各列の `--mdmark-column-head-width` は `test_attach_auto_column_widths_when_head_tools_wider` と同じく、`.mdmark-th` の `scrollWidth` に左右の余白と罫線を加えた幅以上
     status: planned
