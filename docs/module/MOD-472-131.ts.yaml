@@ -5,7 +5,7 @@ test_files:
   - tests/unit/src/map/sequence-view.browser.test.ts
 data_models:
   - name: MapSequenceHandle
-    title: シーケンス図の操作の口
+    title: シーケンス図の操作のインターフェース
     container: src/map/sequence-view.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
@@ -19,7 +19,7 @@ data_models:
         description: 再生を止めて強調を解く（構成図の案内を始めたとき）
       - name: destroy
         type: () => void
-        description: 時計と操作を外す
+        description: 時計と操作を解除する
 functions:
   - name: attachMapSequence
     title: シーケンス図を付ける
@@ -27,7 +27,7 @@ functions:
     container: src/map/sequence-view.ts
     usecase: シーケンス図の参加者を選んで強調する
     role: 処理
-    summary: シーケンス図を読み取り、状態を読んで表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける。`actor` の参加者の種類は設定の `map.kinds.actor`、無ければ lucide の `user` のアイコンだけを持つ種類にする
+    summary: シーケンス図を読み取り、状態を読み取って表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける。`actor` の参加者の種類は設定の `map.kinds.actor`、無ければ lucide の `user` のアイコンだけを持つ種類にする
     scope: public
     callees:
       - MOD-472-138#functions[parseSequence]
@@ -44,7 +44,7 @@ functions:
       - name: config
         type: ResolvedConfig
         required: true
-        description: 既定を当てた設定
+        description: 既定を適用した設定
       - name: options
         type: '{ args: MapArgs; onStep?: (message: number | undefined) => void; follow?: (message: number) => void }'
         required: true
@@ -60,16 +60,16 @@ functions:
       - name: options.follow
         type: '(message: number) => void'
         required: false
-        description: 再生でメッセージへ移ったときに呼ぶ関数（メッセージの番号）。構成図の図を送り手と受け手へ移すのに使う
+        description: 再生でメッセージへ移ったときに呼ぶ関数（メッセージの番号）。構成図の図を送り手と受け手へ移すのに使用する
     returns:
       type: MapSequenceHandle
       description: 再生の強調を外から受け取る関数と片付ける関数
     process: |-
-      1. `parseSequence`・`parseMapData` で読み、`readMapState` で状態を読んで `sequenceRows` で表示する行を決め、`renderMapSequence`（`readMapAnnotations` で読み込んだメッセージの番号ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける
+      1. `parseSequence`・`parseMapData` で読み取り、`readMapState` で状態を読み取って `sequenceRows` で表示する行を決め、`renderMapSequence`（`readMapAnnotations` で読み込んだメッセージの番号ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける
       2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`attachBand` の `onStep` で、シーケンス図の図を今のメッセージの線へ `createFollow` の `reveal` で移し、`follow` に手順のメッセージの番号を指定する
       3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない。`pointercancel` では並び順を変えず、縦の線と箱の移動を戻して、`window` の `pointermove`・`pointerup`・`pointercancel` の受け取りを削除する
-      4. 参加者の箱の押せる要素（`span.mdmark-diagram-node-hit`）にフォーカスして Enter か Space を押すとその参加者を選び、Alt + 左右の矢印キーで 1 列ずつ移して、描き直した後に移した参加者の押せる要素へフォーカスを戻す（中だけを描いているときは移さない）
-      5. 参加者の箱（`div.map-participant`。名前の文字と種類の行の上を含む）かライフラインの判定の線（`.map-lifeline-hit`）の `pointerover` で、参加者を選んでおらず再生していないときだけ、その参加者が送る・受けるメッセージの線とラベル・その参加者の箱とライフラインのほかに `map-dim`（と指している間だけの class）を付け、そのメッセージの線に指している間のデータの印の層（`.map-packets-hover`）を追加する。`pointerout` でポインターが同じ参加者の箱と判定の線の外へ出たら解く。`writeMapState` は呼ばない。`pointerType` が `touch` のときと、並べ替えのドラッグの間は付けない。選択中・再生中もポインターがいる参加者を記録し、箱を押すか Esc で選択を解いたときにポインターがいた参加者は、ポインターがその参加者の箱と判定の線の外へ出るまで、その参加者の強調を付けない
+      4. 参加者の箱の押せる要素（`span.mdmark-diagram-node-hit`）にフォーカスして Enter か Space を押すとその参加者を選び、Alt + 左右の矢印キーで 1 列ずつ移して、再描画した後に移した参加者の押せる要素へフォーカスを戻す（中だけを描いているときは移さない）
+      5. 参加者の箱（`div.map-participant`。名前の文字と種類の行の上を含む）かライフラインの判定の線（`.map-lifeline-hit`）の `pointerover` で、参加者を選んでおらず再生していないときだけ、その参加者が送信する・受けるメッセージの線とラベル・その参加者の箱とライフラインのほかに `map-dim`（と指している間だけの class）を付け、そのメッセージの線に指している間のデータの印の層（`.map-packets-hover`）を追加する。`pointerout` でポインターが同じ参加者の箱と判定の線の外へ出たら解く。`writeMapState` は呼ばない。`pointerType` が `touch` のときと、並べ替えのドラッグの間は付けない。選択中・再生中もポインターがいる参加者を記録し、箱を押すか Esc で選択を解いたときにポインターがいた参加者は、ポインターがその参加者の箱と判定の線の外へ出るまで、その参加者の強調を付けない
     unit_tests:
       - name: test_attach_map_sequence_when_reorder_cancelled
         case: 正常
@@ -82,7 +82,7 @@ functions:
         summary: Alt + →
         condition: 1 人目の参加者の箱の `span.mdmark-diagram-node-hit` にフォーカスして Alt + →
         mock: '`writeMapState`'
-        expected: '`order` の 1 人目と 2 人目が入れ替わり、描き直した後の `document.activeElement` が、移した参加者の箱の `span.mdmark-diagram-node-hit`'
+        expected: '`order` の 1 人目と 2 人目が入れ替わり、再描画した後の `document.activeElement` が、移した参加者の箱の `span.mdmark-diagram-node-hit`'
       - name: test_attach_map_sequence_when_select_by_key
         case: 正常
         summary: Enter で参加者を選ぶ
@@ -100,7 +100,7 @@ functions:
         summary: 選んだ参加者の印
         condition: '`mount` の参加者の箱の名前の外を押す'
         mock: なし
-        expected: '`mount` が送る・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'
+        expected: '`mount` が送信する・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'
       - name: test_attach_map_sequence_when_actor_default
         case: 正常
         summary: 設定に無くても actor に人のアイコンを付ける
@@ -112,7 +112,7 @@ functions:
         summary: ライフラインのポインターの強調
         condition: '`mount` の `.map-lifeline-hit` に `pointerType` が `mouse` の `pointerover` を発火し、次に図の外への `pointerout` を発火する'
         mock: '`writeMapState`'
-        expected: 最初は `mount` を `selected` の 1 人にして描いたときと同じ要素が `map-dim` を持ち、`mount` が送る・受けるメッセージの線の数だけ `.map-packets-hover` がある。次は `map-dim` と `.map-packets-hover` が無い。`writeMapState` は呼ばれない
+        expected: 最初は `mount` を `selected` の 1 人にして描いたときと同じ要素が `map-dim` を持ち、`mount` が送信する・受けるメッセージの線の数だけ `.map-packets-hover` がある。次は `map-dim` と `.map-packets-hover` が無い。`writeMapState` は呼ばれない
       - name: test_attach_map_sequence_when_hovered_while_selected
         case: 正常
         summary: 選んでいる間はポインターで変えない

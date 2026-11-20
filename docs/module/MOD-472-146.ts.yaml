@@ -28,7 +28,7 @@ data_models:
         description: '`rename_key` の元のキーのパス、`replace_mark` の書き換える前のマーカー'
       - name: to
         type: string
-        description: '`rename_key` の新しいキーのパス、`replace_mark` の書き換えた後のマーカー'
+        description: '`rename_key` の変更後のキーのパス、`replace_mark` の書き換えた後のマーカー'
       - name: key
         type: string
         description: '`set_default`・`map_values` のキーのパス'
@@ -99,7 +99,7 @@ constants:
   - name: SCRIPT_EXTENSIONS
     title: スクリプトの拡張子
     container: src/cli/migrations.ts
-    summary: '`call` のスクリプトに許す拡張子（`node_modules` の下で実行できるものだけ）'
+    summary: '`call` のスクリプトに許可する拡張子（`node_modules` の下で実行できるものだけ）'
     value: '`[".js", ".mjs"]`'
 functions:
   - name: validateSteps
@@ -107,7 +107,7 @@ functions:
     container: src/cli/migrations.ts
     usecase: 共通
     summary: 読み込んだ `steps.yaml` を `schemas/mdmark.steps.schema.json` と同じ構造で検め、手順の並びと合わないところを返却する
-    description: 検めるのは、最上位が `steps`（配列）だけを持つこと・各手順の `op` が 5 つのどれかで `description` が空でないこと・`op` ごとの必須のプロパティ・`set_default` が `value` か `ask` のどちらか 1 つだけを持つこと・`replace_mark` の `to` が `from` を含まないこと・`map_values` の解釈しの表の新しい値が元の値に無いこと・`call` の `script` の拡張子が `SCRIPT_EXTENSIONS` のどれかで `files` が 1 つ以上。構造の検査は `validateConfig` と同じく手書きで、ライブラリを追加しない。配布物のビルドもこの関数で検める
+    description: 検めるのは、最上位が `steps`（配列）だけを持つこと・各手順の `op` が 5 つのどれかで `description` が空でないこと・`op` ごとの必須のプロパティ・`set_default` が `value` か `ask` のどちらか 1 つだけを持つこと・`replace_mark` の `to` が `from` を含まないこと・`map_values` の解釈しの表の変更後の値が元の値に無いこと・`call` の `script` の拡張子が `SCRIPT_EXTENSIONS` のどれかで `files` が 1 つ以上。構造の検査は `validateConfig` と同じく手書きで、ライブラリを追加しない。配布物のビルドもこの関数で検める
     kind: 関数
     scope: public
     is_async: false
@@ -139,7 +139,7 @@ functions:
       - name: test_validate_steps_when_not_reapplicable
         case: 異常
         summary: もう一度適用すると結果が変わる手順を拒む
-        condition: '`to` が `from` を含む `replace_mark` と、新しい値が元の値にある `map_values`'
+        condition: '`to` が `from` を含む `replace_mark` と、変更後の値が元の値にある `map_values`'
         mock: なし
         expected: '`problems` が 2 つ'
       - name: test_validate_steps_when_script_ts
@@ -197,8 +197,8 @@ functions:
     title: キーの名前を変える
     container: src/cli/migrations.ts
     usecase: バージョンを上げる
-    summary: YAML の Document で、元のキーがあり新しいキーが無いときだけ、値とコメントを保って新しいキーへ移す
-    description: キーのパスは `.` で区切る。新しいキーが同じ親の下なら元のキーの位置で名前だけを替え、親が違えば新しい親の末尾に移す（無い親は作る）
+    summary: YAML の Document で、元のキーがあり変更後のキーが無いときだけ、値とコメントを保って変更後のキーへ移す
+    description: キーのパスは `.` で区切る。変更後のキーが同じ親の下なら元のキーの位置で名前だけを替え、親が違えば変更先の親の末尾に移す（無い親は作る）
     kind: 関数
     scope: public
     is_async: false
@@ -215,7 +215,7 @@ functions:
       - name: to
         type: string
         required: true
-        description: 新しいキーのパス
+        description: 変更後のキーのパス
     returns:
       type: boolean
       description: 書き換えたら `true`
@@ -228,7 +228,7 @@ functions:
         expected: '`true` を返却し、文字列にすると `output` が `out` の位置にありコメントが残る'
       - name: test_rename_key_when_already_renamed
         case: 正常
-        summary: 新しいキーがあれば何もしない
+        summary: 変更後のキーがあれば何もしない
         condition: '`build.output` だけがある'
         mock: なし
         expected: '`false` を返却し、文字列が変わらない'
@@ -276,7 +276,7 @@ functions:
     title: 値を解釈する
     container: src/cli/migrations.ts
     usecase: バージョンを上げる
-    summary: キーの値が解釈しの表の元の値のときだけ新しい値に替える
+    summary: キーの値が解釈しの表の元の値のときだけ変更後の値に替える
     description: 値が配列のときは要素ごとに替える。比べるのは YAML の値としての一致
     kind: 関数
     scope: public
@@ -294,7 +294,7 @@ functions:
       - name: mapping
         type: Record<string, unknown>
         required: true
-        description: 元の値から新しい値への表
+        description: 元の値から変更後の値への表
     returns:
       type: boolean
       description: 替えたら `true`

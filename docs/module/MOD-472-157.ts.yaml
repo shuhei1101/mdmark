@@ -33,7 +33,7 @@ constants:
   - name: COMMENT_BLOCKS
     title: コメントを付けられるブロック
     container: src/comments/index.ts
-    summary: 選んだ文字の始まりと終わりが同じ 1 つに入っていればボタンを出すブロック
+    summary: 選んだ文字の開始と終了が同じ 1 つに入っていればボタンを出すブロック
     value: '"p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote"'
   - name: COMMENT_EXCLUDED
     title: コメントを付けない場所
@@ -80,7 +80,7 @@ functions:
     process: |-
       1. `store.load({ docId })` を待つ。reject するか、配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、コメントを空にする
       2. `commentText(root)` と `locateComments` で箇所を探し、箇所ごとに文字のセクションを分けて `renderCommentMark` の構造の `mark` で包み、付いたコメントを記録する。見つからないコメントがあれば `root` の末尾に `renderCommentOrphans` を配置する。スクリーンリーダーの説明 `コメントが付いた箇所` を `document.body` に 1 つ配置する
-      3. `selectionchange` を受け、選びの始まりと終わりが `root` の中の同じ `COMMENT_BLOCKS` に入り、`COMMENT_EXCLUDED` に入らず、文字が空白だけでないときに、`renderCommentButton` をそのブロックの直後（ブロックが `td`・`th` のときは、そのセルに最も近い `table` の直後。`table` が `root` の外でも同じ）に配置し、選んだ文字の終わりの下（収まらなければ上）に配置する。条件を削除されたらボタンを隠す（フォーカス中は隠さない）
+      3. `selectionchange` を受け、選びの開始と終了が `root` の中の同じ `COMMENT_BLOCKS` に入り、`COMMENT_EXCLUDED` に入らず、文字が空白だけでないときに、`renderCommentButton` をそのブロックの直後（ブロックが `td`・`th` のときは、そのセルに最も近い `table` の直後。`table` が `root` の外でも同じ）に配置し、選んだ文字の末尾の下（収まらなければ上）に配置する。条件を削除されたらボタンを隠す（フォーカス中は隠さない）
       4. ボタンを押すと、`renderCommentForm` の入力欄を `document.body` に配置して選んだ範囲の下に配置し、本文の欄へフォーカスを移し、`CSS.highlights` があれば範囲を `PENDING_HIGHLIGHT` に入れる
       5. 保存のボタンで、本文が空なら `state: empty` の通知を出す。空でなければ `state: saving` にして `store.save({ docId, comment: draftFromRange(...) })` を待つ。reject するか `isComment` でなければ `save`・`docId`・元のエラーを `console.error` に出して `state: failed` にし、本文を残す。保存できたら入力欄を閉じ、範囲をマーカーで包んでマーカーへフォーカスを移す
       6. キャンセルと Esc で入力欄を閉じる。本文があれば `window.confirm(DISCARD_MESSAGE)` で確認し、捨てないときは残す。閉じたらボタンへフォーカスを戻す。外側の押下では閉じない
@@ -118,7 +118,7 @@ functions:
         expected: 入力欄と本文が残り、`role="alert"` に失敗の通知。`console.error` に `save` と `docId`
       - name: test_attach_comments_when_load_rejected
         case: 異常
-        summary: 読み込めないとマーカーを付けずに新しいコメントは付けられる
+        summary: 読み込めないとマーカーを付けずに新規のコメントは付けられる
         condition: '`load` が reject する'
         mock: '`console.error` を記録する'
         expected: マーカーが無く、`console.error` に `load`。文字を選ぶとボタンが出る

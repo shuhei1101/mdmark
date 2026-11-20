@@ -41,7 +41,7 @@ diagrams:
 
       <!-- /map -->
 notes:
-  配布ファイルの分け方: '`src/views/index.ts` と `src/comments/index.ts` は別の esbuild の入口で、使用する関数（表の部品・表の操作・通知ブロックなど）をそれぞれのファイルにまとめる（`dist/index.js` を `import` しない）。`dist/index.js` は `src/part-modules.ts`・`src/mount-parts.ts`・2 つの `spec.ts` だけを持ち、部品の HTML と操作を持たない。部品の CSS は `src/index.css` に入れる'
+  配布ファイルの分け方: '`src/views/index.ts` と `src/comments/index.ts` は別の esbuild のエントリーポイントで、使用する関数（表の部品・表の操作・通知ブロックなど）をそれぞれのファイルにまとめる（`dist/index.js` を `import` しない）。`dist/index.js` は `src/part-modules.ts`・`src/mount-parts.ts`・2 つの `spec.ts` だけを持ち、部品の HTML と操作を持たない。部品の CSS は `src/index.css` に入れる'
   ディレクトリ: |-
     ```tree
     src/
@@ -50,7 +50,7 @@ notes:
     ├── views/
     │   ├── view.syntax.ts   # ビューのマーカーの囲み（dist/index.js）
     │   ├── spec.ts          # 公開の型 MdmarkViewOptions・MdmarkViewHandle、使用できるアイコンと既定の対応、引数の検査（dist/index.js）
-    │   ├── index.ts         # dist/view.js の入口。drawView・attachView
+    │   ├── index.ts         # dist/view.js のエントリーポイント。drawView・attachView
     │   ├── view.part.ts     # ビューの HTML とアイコンの形状（dist/view.js）
     │   └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー
     └── comments/
@@ -58,7 +58,7 @@ notes:
         ├── anchor.ts        # 選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）
         ├── bubble.ts        # 吹き出しのコメントの修正と削除の操作（dist/comments.js）
         ├── margin.ts        # 本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを配置する（dist/comments.js）
-        ├── index.ts         # dist/comments.js の入口。attachComments
+        ├── index.ts         # dist/comments.js のエントリーポイント。attachComments
         ├── comment.part.ts  # コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧・余白のマーカーの HTML（dist/comments.js）
         └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー
     ```

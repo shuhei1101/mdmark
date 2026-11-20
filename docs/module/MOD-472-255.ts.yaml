@@ -92,7 +92,7 @@ functions:
     refs:
       - IF-472-31#
   - name: parseDocument
-    title: 文書の本文を読む
+    title: 文書の本文を読み取る
     container: src/knowledge/references.ts
     kind: 関数
     scope: internal

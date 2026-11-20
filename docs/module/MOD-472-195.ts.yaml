@@ -17,7 +17,7 @@ functions:
         description: 部品設計の引数と、`label` と `select` を結ぶ `id` の頭
     returns:
       type: string
-      description: 2 つの `select` と数の文（`role="status"`）の HTML。前の欄の一番新しい項目と、後の欄の `before` 以前の項目は `disabled`
+      description: 2 つの `select` と数の文（`role="status"`）の HTML。前の欄の一番新規の項目と、後の欄の `before` 以前の項目は `disabled`
     unit_tests:
       - name: test_render_revision_picker
         case: 正常

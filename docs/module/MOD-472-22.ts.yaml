@@ -14,7 +14,7 @@ data_models:
     properties:
       - name: kind
         type: '"decided" | "undecidable"'
-        description: 決まったか
+        description: 決定したか
       - name: version
         type: string
         description: '`v{X}.{Y}.{Z}` のバージョン（`decided` のときだけ）'

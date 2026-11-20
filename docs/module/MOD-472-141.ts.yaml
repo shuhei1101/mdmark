@@ -26,7 +26,7 @@ data_models:
     properties:
       - name: align
         type: string | undefined
-        description: 同じ段に置く相手の ID
+        description: 同じ段に配置する相手の ID
       - name: order
         type: number | undefined
         description: 段の中の並び順
@@ -47,7 +47,7 @@ data_models:
         description: 線の経由点（両端の共通の祖先の中身の左上からの座標）
       - name: size
         type: '{ w: number; h: number } | undefined'
-        description: 描いて測ったノードの大きさ。見積もりの代わりに使う
+        description: 描いて測ったノードの大きさ。見積もりの代わりに使用する
       - name: above
         type: number | undefined
         description: ノードの上に空ける高さ（同じ状態への遷移の線とラベルの置き場所）。ほかのノードを重ねず、線も通さない
@@ -56,7 +56,7 @@ data_models:
         description: ノードの左右それぞれに空ける幅（ER 図の関連の端と多重度の置き場所）。ほかのノードを重ねず、線は通す
       - name: rankless
         type: boolean | undefined
-        description: 線の ID に指定すると、段を決める処理でその線を使わない（アーキテクチャ図の上下の辺でつなぐ線・C4 図の `Rel_L`・`Rel_R`）。経路は引く
+        description: 線の ID に指定すると、段を決める処理でその線を使用しない（アーキテクチャ図の上下の辺でつなぐ線・C4 図の `Rel_L`・`Rel_R`）。経路は引く
       - name: padLeft
         type: number | undefined
         description: ノードの左の余白（px）。種類の形状が `pill` のノードは `LABEL_METRICS.padPill`。無ければ `LABEL_METRICS.padX`
@@ -147,7 +147,7 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 構成図と見せ方と上書きから、ノード・グループ・線の配置を返す
+    summary: 構成図と見せ方と上書きから、ノード・グループ・線の配置を返却する
     scope: public
     callees:
       - MOD-472-141#functions[routeWires]
@@ -175,18 +175,18 @@ functions:
       - name: options.spread
         type: number | undefined
         required: false
-        description: 段の中の間（`gapItem`）と段の間（`gapRank`）に足す幅（px）。`separateWires` が返した `crowded` を指定する。省くと 0
+        description: 段の中の間（`gapItem`）と段の間（`gapRank`）に追加する幅（px）。`separateWires` が返却した `crowded` を指定する。省くと 0
       - name: options.measureText
         type: '(text: string) => number'
         required: true
-        description: ノードの名前の文字（`LABEL_METRICS.nameSize`・太字）の 1 行の幅（px）を返す関数。ブラウザで描く `attachMapFlow` は描くフォントで測る関数、DOM を持たない呼び出し（部品の描画のサーバー・単体テスト）は `estimateTextWidth` を指定する
+        description: ノードの名前の文字（`LABEL_METRICS.nameSize`・太字）の 1 行の幅（px）を返却する関数。ブラウザで描く `attachMapFlow` は描くフォントで測る関数、DOM を持たない呼び出し（部品の描画のサーバー・単体テスト）は `estimateTextWidth` を指定する
     returns:
       type: MapLayout
       description: 配置の結果
     process: |-
       1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ。上書きの `size` を持たない葉は、上書きの `width` を持てばその幅、持たなければ `measureText` で測った名前の幅（`textWidth`）に左の余白（上書きの `padLeft`、無ければ `LABEL_METRICS.padX`）・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅（小数は切り上げる）を `MAP_LAYOUT.minWidth` から上限（`nodeFit` が `height` なら `maxWidth`、`width` なら `maxWidthWide`）までに収めた幅にし、その幅から左右の余白と枠線を引いた幅で、名前を `measureText` で測って行に分けた（`splitLines`）行の数の `leafHeight` を高さにする。上書きの `size` を持つ葉は、その大きさにし、同じ幅で名前を行に分ける（表示する木を作る）
-      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める。段の中の間と段の間には `spread` を足す。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
-      3. 外側から座標を足して図の座標にし、線の経路を引く（線の経路を引く）
+      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを解除した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を適用して大きさを決める。段の中の間と段の間には `spread` を追加する。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
+      3. 外側から座標を追加して図の座標にし、線の経路を引く（線の経路を引く）
     unit_tests:
       - name: test_layout_map
         case: 正常
@@ -226,7 +226,7 @@ functions:
         expected: '`mount` の高さは空けないときと同じで、`mount` の上 40px を含めた矩形にほかのノードが重ならない'
       - name: test_layout_map_when_rankless
         case: 正常
-        summary: 段を決める処理で使わない線
+        summary: 段を決める処理で使用しない線
         condition: 'ノード `a`・`b` を結ぶ線に `rankless: true`、`a` に `order: 0`、`b` に `align: a` と `order: 1`'
         mock: なし
         expected: '`a` と `b` が同じ段で `b` が `a` の後に並び、線の経路が引かれる'
@@ -322,13 +322,13 @@ functions:
       description: '`points` を持つ線'
     process: |-
       1. 端点とその祖先以外の矩形の内側の格子点を通れない点にする
-      2. 線を記載順に 1 本ずつ引き、片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost`、先に引いた線が通った同じ向きの格子の区間に `usedCost` を足し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
+      2. 線を記載順に 1 本ずつ引き、片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost`、先に引いた線が通った同じ向きの格子の区間に `usedCost` を追加し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
       3. 一直線に並ぶ点を除く（経由点は除かない）
-      4. 引いた線が通った格子の区間を、向きごとに次の線の重みへ渡す
+      4. 引いた線が通った格子の区間を、向きごとに次の線の重みへ指定する
     unit_tests:
       - name: test_route_wires
         case: 正常
-        summary: 矩形を避ける
+        summary: 矩形を回避する
         condition: 間にノードを 1 つ挟む 2 つのノードの線
         mock: なし
         expected: 線の点が挟んだノードの矩形の外
@@ -352,7 +352,7 @@ functions:
         expected: 線の点に図の座標にした経由点があり、矩形を横切らない
       - name: test_route_wires_when_used
         case: 正常
-        summary: 先に引いた線の区間を避ける
+        summary: 先に引いた線の区間を回避する
         condition: 同じグループの同じ列に並ぶ 3 つのノード `a1`・`a2`・`a3` から、別のグループの `b3`・`b1`・`b2` へ 1 本ずつ出る線
         mock: なし
         expected: 後に引いた線が、先に引いた線と同じ向きで同じ直線の上に重なる区間の長さの合計が、`usedCost` を 0 にしたときより短い
@@ -362,20 +362,20 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 同じ向きで同じ直線の上に重なる区間を持つ線を、区間と直角の向きに `wireGap` ずつずらして並べ、両側の矩形の間に収まらないときに広げる幅を返す
+    summary: 同じ向きで同じ直線の上に重なる区間を持つ線を、区間と直角の向きに `wireGap` ずつずらして並べ、両側の矩形の間に収まらないときに広げる幅を返却する
     scope: public
     args:
       - name: layout
         type: MapLayout
         required: true
-        description: 配置の結果（アーキテクチャ図は `rewireMapArchitecture` で引き直した線）
+        description: 配置の結果（アーキテクチャ図は `rewireMapArchitecture` で再計算した線）
     returns:
       type: '{ wires: PlacedWire[]; crowded: number }'
       description: 並べた線と、並べた線が端点とその祖先以外の矩形に入る区間があるときに `layoutMap` の `spread` に指定する幅（入らなければ 0）
     process: |-
       1. 全ての線の縦と横の区間を、向きと直線の座標ごとに集め、範囲が重なる区間の束を作る（同じ点から出る・入る線の端の区間は束に入れない）
       2. 束ごとに、束の範囲で両側にある矩形（端点とその祖先を除く。`clearance` を含める）の間を通り道にし、中の n 本を記載順に、束の中ほどが通り道の中ほどになるように `wireGap` ずつ並べる（片側に矩形が無ければ、矩形のある側から遠ざかる向きへ並べ、両側に無ければ束の中ほどを元の直線にする）。ずらした区間の前後の区間の端も同じ量だけ動かす。線の端点は ER 図の列の行の高さ・同じ点から出る線の端の 16px ずらしなど、図の種類ごとの決まりで置かれているため動かさず、端点を含む区間は、端点から区間の向きへ `clearance` の長さだけ進んだ点で折り、そこから先をずらす（区間の長さが `clearance` 以下のときは、区間の中ほどで折る）
-      3. 通り道の幅が束の幅（`wireGap` × (n − 1)）に足りない束があれば、足りない幅の最大を `crowded` にする（`spread` でこの幅だけ間を広げると、通り道の中ほどに束が収まる）。幅が足りない束も、通り道の中ほどに並べたまま返す
+      3. 通り道の幅が束の幅（`wireGap` × (n − 1)）に足りない束があれば、足りない幅の最大を `crowded` にする（`spread` でこの幅だけ間を広げると、通り道の中ほどに束が収まる）。幅が足りない束も、通り道の中ほどに並べたまま返却する
     unit_tests:
       - name: test_separate_wires
         case: 正常
@@ -400,7 +400,7 @@ functions:
         summary: 通り道の幅が足りない
         condition: test_separate_wires_when_grid_line の 5 本と、右のノードの左の辺が左のノードの右の辺から 40px
         mock: なし
-        expected: '`crowded` が 16（束の幅 32px に対して通り道 12〜28px の幅が 16px）で、`layoutMap` に `spread: 16` を指定して配置し直した後の線を並べると `crowded` が 0'
+        expected: '`crowded` が 16（束の幅 32px に対して通り道 12〜28px の幅が 16px）で、`layoutMap` に `spread: 16` を指定して再配置した後の線を並べると `crowded` が 0'
       - name: test_separate_wires_when_end_segment
         case: 正常
         summary: 端点を含む区間は端点を動かさずに並べる
@@ -419,7 +419,7 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 改行で分けた行ごとに `measure` で幅を測り、最も広い行の幅を返す。ノードの幅の既定の見積もりと、クラス図のノートの幅の見積もり（`classPartInputs`）が使用する
+    summary: 改行で分けた行ごとに `measure` で幅を測り、最も広い行の幅を返却する。ノードの幅の既定の見積もりと、クラス図のノートの幅の見積もり（`classPartInputs`）が使用する
     scope: public
     args:
       - name: text
@@ -429,7 +429,7 @@ functions:
       - name: measure
         type: '(text: string) => number'
         required: true
-        description: 1 行の幅（px）を返す関数（`layoutMap` の `measureText`）
+        description: 1 行の幅（px）を返却する関数（`layoutMap` の `measureText`）
     returns:
       type: number
       description: 幅（px）
@@ -439,7 +439,7 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 改行で分けた段落ごとに、先頭から 1 文字ずつ足した行の幅を `measure` で測り、`width` を超える文字の手前で折り返した行を返す（行の先頭の 1 文字は幅を超えてもその行に入れる）。ノードの大きさの既定の見積もりと、クラス図のノートの行の数の見積もり（`classPartInputs`）が使用する
+    summary: 改行で分けた段落ごとに、先頭から 1 文字ずつ追加した行の幅を `measure` で測り、`width` を超える文字の手前で折り返した行を返却する（行の先頭の 1 文字は幅を超えてもその行に入れる）。ノードの大きさの既定の見積もりと、クラス図のノートの行の数の見積もり（`classPartInputs`）が使用する
     scope: public
     args:
       - name: text
@@ -453,7 +453,7 @@ functions:
       - name: measure
         type: '(text: string) => number'
         required: true
-        description: 1 行の幅（px）を返す関数（`layoutMap` の `measureText`）
+        description: 1 行の幅（px）を返却する関数（`layoutMap` の `measureText`）
     returns:
       type: string[]
       description: 行
@@ -470,7 +470,7 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 種類の行と名前の行の数から、`ceil((kindSize + 行の数 × nameSize) × lineHeight) + padY × 2 + 16` でノードの高さを返す。ノードの大きさの既定の見積もりと、クラス図のノートの高さの見積もり（`classPartInputs`）が使用する
+    summary: 種類の行と名前の行の数から、`ceil((kindSize + 行の数 × nameSize) × lineHeight) + padY × 2 + 16` でノードの高さを返却する。ノードの大きさの既定の見積もりと、クラス図のノートの高さの見積もり（`classPartInputs`）が使用する
     scope: public
     args:
       - name: lines
@@ -493,7 +493,7 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 全角の文字を `LABEL_METRICS.nameSize`、半角の文字（U+007E 以下と半角カナ）をその 0.6 倍の幅とみなした 1 行の幅を返す。DOM を持たず描くフォントを測れない呼び出し（部品の描画のサーバー・単体テスト）が `layoutMap` の `measureText` に指定する
+    summary: 全角の文字を `LABEL_METRICS.nameSize`、半角の文字（U+007E 以下と半角カナ）をその 0.6 倍の幅とみなした 1 行の幅を返却する。DOM を持たず描くフォントを測れない呼び出し（部品の描画のサーバー・単体テスト）が `layoutMap` の `measureText` に指定する
     scope: public
     args:
       - name: text

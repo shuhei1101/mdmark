@@ -8,8 +8,8 @@ functions:
     title: エイリアスの行を Schema で検める
     container: src/cli/alias-schema.ts
     usecase: 共通
-    summary: 設定の `aliases` の配列に、取り込んだ alias-inject の `aliases.schema.json` を ajv で当て、ずれを日本語の 1 文の `schema` のずれにする
-    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.3.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使用しない）。
+    summary: 設定の `aliases` の配列に、取り込んだ alias-inject の `aliases.schema.json` を ajv で適用し、ずれを日本語の 1 文の `schema` のずれにする
+    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.3.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って再利用する（`$data` は使用しない）。
 
       この Schema は alias-inject v0.3.0 の `aliases.schema.yaml` を内容を変えず JSON にして配置し（他の `schemas/` と同じく JSON で持ち、esbuild がそのまままとめる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。
 
@@ -74,7 +74,7 @@ functions:
         expected: '`where` が `aliases[0]`、`message` に `alias_type` と `引用の種類` が入り、`rows[0]` が `null`'
       - name: test_validate_alias_rows_when_alias_type_unknown
         case: 異常
-        summary: 9 つの種類に無い alias_type を、許す値を並べた 1 文にする
+        summary: 9 つの種類に無い alias_type を、許可する値を並べた 1 文にする
         condition: '`alias_type` が `memo` の行'
         mock: なし
         expected: ずれが 1 件で `where` が `aliases[0].alias_type`、`message` に `term` と `avoid` が入る

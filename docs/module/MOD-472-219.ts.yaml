@@ -119,7 +119,7 @@ functions:
         expected: '`文書` だけを持ち、`A`・`A1`・`C` を持たない'
       - name: test_find_changed_headings_when_heading_rewritten
         case: 正常
-        summary: 見出しの文字を書き換えたときは新しい見出しに付ける
+        summary: 見出しの文字を書き換えたときは変更後の見出しに付ける
         condition: '`# 文書` の後ろに、`renderDiffBlock` で包んだ、`id` を持たない `## 古い名前` の `data-kind="del"` の `.mdmark-diff-block` と、`## 新しい名前` の `data-kind="add"` の `.mdmark-diff-block`を持つ本文'
         mock: なし
         expected: '`文書`・`新しい名前` を持つ'
@@ -192,7 +192,7 @@ functions:
 
       IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いるセクションをもう一度決める。
       もう一度決めるときは、祖先に `hidden` を持つ見出し（閉じたセクションの中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に指定する。
-      決まった見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を配置する。
+      決定した見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を配置する。
 
       hover の出し方では、次のたびに、hover で開く目次の枠の位置と右端の線の位置を aside の CSS 変数に px で入れる。
 

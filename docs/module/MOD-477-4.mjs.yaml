@@ -14,9 +14,9 @@ functions:
     summary: 文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える移行の手順のスクリプトの処理
     description: '`steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える（書き出さない記載と拡張・`libraries` のマーカーは移行の報告に挙げる）``）が実行する。
 
-      スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parse` で読み込み、同じフォルダの `legacy-marks.js`（`buildLegacyMarks` がまとめて commit したファイル）を動的に import して、その `rewriteLegacyMarks` を `rewrite` に渡してこの関数を呼ぶ。
+      スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parse` で読み込み、同じフォルダの `legacy-marks.js`（`buildLegacyMarks` がまとめて commit したファイル）を動的に import して、その `rewriteLegacyMarks` を `rewrite` に指定してこの関数を呼ぶ。
 
-      今の書き方を読む処理を本体から消した後も、このフォルダだけで動く。
+      今の書き方を読み取る処理を本体から削除した後も、このフォルダだけで動く。
 
       文書はインターフェース定義『バージョンを上げる』の制約「文書」のとおり、設定の `build.include` に該当し `build.exclude` に該当しないファイル（設定ファイルのフォルダから `node:fs/promises` の `glob` で参照する）と、設定の `index` の索引の文書の `path` を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。
 
@@ -57,9 +57,9 @@ functions:
       - name: test_migrate_document_marks_when_bundled
         case: 正常
         summary: 移行の手順のフォルダにまとめた書き換えの処理で、ソースの処理と同じに書き換える
-        condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `rewriteLegacyMarks`、もう片方にスクリプトと同じフォルダの `legacy-marks.js` の `rewriteLegacyMarks` を渡す
+        condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `rewriteLegacyMarks`、もう片方にスクリプトと同じフォルダの `legacy-marks.js` の `rewriteLegacyMarks` を指定する
         mock: 一時フォルダ
-        expected: 戻り値と書き換えた文書が同じ（まとめたファイルが無い・古いときは失敗する）
+        expected: 戻り値と書き換えた文書が同じ（まとめたファイルが無い・要更新のときは失敗する）
 lead: '文書のマーカーの今の記載方法を JSON の記載に書き換える移行のスクリプトを受け持ち、マーカーの移行を変えるときに参照する。'
 tags:
   - name: topic:マーカー

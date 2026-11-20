@@ -16,7 +16,7 @@ functions:
     description: |-
       `steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書の廃止した `er` の範囲を map の ER 図の範囲へ書き換える（写さない値と書き換えない範囲は移行の報告に挙げる）``）が実行する。
 
-      スクリプトとして呼ばれると、同じフォルダの `retired-diagrams.js`（`buildRetiredDiagrams` がまとめて commit したファイル）を動的に import し、その `loadConfig` で `--config` の設定を読み、`loadExtensionDirectives` で拡張の `directive` を取り、`convertRetiredEr` を `convert` に渡してこの関数を呼ぶ。
+      スクリプトとして呼ばれると、同じフォルダの `retired-diagrams.js`（`buildRetiredDiagrams` がまとめて commit したファイル）を動的に import し、その `loadConfig` で `--config` の設定を読み込み、`loadExtensionDirectives` で拡張の `directive` を取り、`convertRetiredEr` を `convert` に指定してこの関数を呼ぶ。
 
       文書は `migrateRetiredDiagrams` と同じく、設定の `build` の対象と索引の文書を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに `convert` で書き換え、変わった文書だけを書き込む。設定は書き換えない。
 
@@ -60,9 +60,9 @@ functions:
       - name: test_migrate_retired_er_when_bundled
         case: 正常
         summary: 移行の手順のフォルダにまとめた書き換えの処理で、ソースの処理と同じに書き換える
-        condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `convertRetiredEr`、もう片方にスクリプトと同じフォルダの `retired-diagrams.js` の `convertRetiredEr` を渡す
+        condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `convertRetiredEr`、もう片方にスクリプトと同じフォルダの `retired-diagrams.js` の `convertRetiredEr` を指定する
         mock: 一時フォルダ
-        expected: 戻り値と書き換えた文書が同じ（まとめたファイルが無い・古いときは失敗する）
+        expected: 戻り値と書き換えた文書が同じ（まとめたファイルが無い・要更新のときは失敗する）
 tags:
   - name: topic:バージョン
     main: true

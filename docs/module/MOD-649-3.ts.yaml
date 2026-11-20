@@ -5,7 +5,7 @@ test_files:
   - tests/unit/src/map/mindmap-view.browser.test.ts
 data_models:
   - name: MapMindmapHandle
-    title: マインドマップの操作の口
+    title: マインドマップの操作のインターフェース
     container: src/map/mindmap-view.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
@@ -13,7 +13,7 @@ data_models:
     properties:
       - name: destroy
         type: () => void
-        description: 時計と操作を外す
+        description: 時計と操作を解除する
 functions:
   - name: attachMapMindmap
     title: マインドマップを付ける
@@ -42,7 +42,7 @@ functions:
       - name: config
         type: ResolvedConfig
         required: true
-        description: 既定を当てた設定
+        description: 既定を適用した設定
       - name: args
         type: MapArgs
         required: true
@@ -54,11 +54,11 @@ functions:
       1. `parseMindmap`・`parseMapData` で参照し、補足の `notes`・`layout`・`walkthroughs` の `nodes` と `enter`・マーカーの引数の `focus` のキーを `mindmapItemOf` で項目の `stateKey` にする。`ambiguous`・`missing` のキーはどの項目にも適用しない。`layout` は `color` と `collapsed` だけを使用する
       2. `readMapState` に、全ての項目の `stateKey`・引数の `focus` の `stateKey`・`layout` の `collapsed` が `true` の `stateKey` を指定して状態を参照する
       3. `layoutMindmap`（`top` は `entered`）で配置し、`renderMapMindmap`（`readMapAnnotations` の注記、`hints` は `config.features.hints`）を部品『図の枠』（種類 `map`・凡例無し・`wide`・`fitMin` 1）に入れる。ツールのボタンは「枝の外へ戻る」（中へ入っているときだけ押せる）・「全ての枝を開く」・「全ての枝を閉じる」・「配置と選択を元に戻す」（選んだときだけ押せる）。図のツールチップと拡大と縮小・ドラッグでのスクロールは `attachDiagrams` で付け、描くたびに `linkAnnotationOwners` で注記の持ち主を合わせる。項目にはドラッグの操作を付けない（項目の上のドラッグは図の枠の中のスクロールになる）
-      4. 描いた項目の大きさ（配置の幅を外した中身の幅。丸は幅と高さの大きいほうの正方形）を測り、`layoutMindmap` に指定した大きさと違う項目があれば、測った大きさで配置し直して描き直す。最初に描いたときは、今の図の根の中心が表示する枠の中央に来るように表示する枠の中をスクロールする
+      4. 描いた項目の大きさ（配置の幅を解除した中身の幅。丸は幅と高さの大きいほうの正方形）を測り、`layoutMindmap` に指定した大きさと違う項目があれば、測った大きさで再配置して再描画する。最初に描いたときは、今の図の根の中心が表示する枠の中央に来るように表示する枠の中をスクロールする
       5. 持ち手の開閉のボタン（`data-mindmap-toggle`）で `collapsed` を切り替え、中へ入るボタン（`data-mindmap-enter`）で `entered` をその項目にして `collapsed` から除外する。「枝の外へ戻る」で `entered` を親（親が全体の根なら無し）にする。「全ての枝を閉じる」は、構成図の入れ子のグループと同じく、今の図の子を持つ全ての項目（今の図の根を除く）を閉じる
       6. 項目の名前の周りの余白と枠線（押せる要素）を押すと、その項目だけを `selected` にする（選んだ項目を押すと選択を解除する）。名前の文字・説明のマーカー・持ち手のボタンでは選ばない。押せる要素にフォーカスして Enter か Space でも選ぶ。Esc は構成図と同じく、選んでいれば選択を解除し、選んでいなければ 1 つ外へ戻る
-      7. 描き直した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
-      8. 補足の `walkthroughs` があれば `attachBand`（モード `walkthrough`）の手順にし、手順を進めるたびに手順の `enter` を `entered` にして、手順の `nodes` を `focus` にして描き直す
+      7. 再描画した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
+      8. 補足の `walkthroughs` があれば `attachBand`（モード `walkthrough`）の手順にし、手順を進めるたびに手順の `enter` を `entered` にして、手順の `nodes` を `focus` にして再描画する
     unit_tests:
       - name: test_attach_map_mindmap
         case: 正常
@@ -71,7 +71,7 @@ functions:
         summary: 枝を閉じる
         condition: 「体制」の開閉のボタンを押す
         mock: '`writeMapState`'
-        expected: '`writeMapState` の `collapsed` が `["体制"]` で、「人手が足りない」が無く、描き直した後の `document.activeElement` が「体制」の開閉のボタン'
+        expected: '`writeMapState` の `collapsed` が `["体制"]` で、「人手が足りない」が無く、再描画した後の `document.activeElement` が「体制」の開閉のボタン'
       - name: test_attach_map_mindmap_when_entered
         case: 正常
         summary: 枝の中へ入って戻る

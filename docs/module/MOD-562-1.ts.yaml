@@ -150,7 +150,7 @@ functions:
     container: src/footnote/annotations.syntax.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。注記の参照に番号を振り、定義の無い参照・使われない定義・重なる定義を記載の警告にする'
+    summary: 'コアルール。注記の参照に番号を振り、定義の無い参照・使用されない定義・重なる定義を記載の警告にする'
     description: |-
       本文の参照のトークンを文書の順にたどり、定義のある ID に最初に参照した順の番号を振って `meta.number`・`meta.refIndex` を入れ、`refs` に戻り先を追加する。
       文字を挟まずに脚注か注記の参照の直後に続く参照は `meta.afterRef` を `true` にする。
@@ -186,7 +186,7 @@ functions:
     container: src/footnote/annotations.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。番号のある注記が 1 つ以上あれば、脚注の一覧の後ろ・関連文書の一覧の前に `mdmark_annotation_list` のトークンを追加する。描き方は `renderFootnotes` に `kind` `annotation` と、番号の順の `{ number, html, refCount, refs }` を渡す
+    summary: コアルール。番号のある注記が 1 つ以上あれば、脚注の一覧の後ろ・関連文書の一覧の前に `mdmark_annotation_list` のトークンを追加する。描き方は `renderFootnotes` に `kind` `annotation` と、番号の順の `{ number, html, refCount, refs }` を指定する
     args:
       - name: state
         type: StateCore

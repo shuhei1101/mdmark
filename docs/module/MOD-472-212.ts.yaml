@@ -7,7 +7,7 @@ data_models:
   - name: RenderedDocument
     title: 描いた文書
     container: src/render/index.ts
-    summary: 本文の HTML と、文書のマーカーで決まった機能のオン・オフ
+    summary: 本文の HTML と、文書のマーカーで決定した機能のオン・オフ
     properties:
       - name: html
         type: string
@@ -101,7 +101,7 @@ functions:
         expected: '`features` が `{ print: false }`、`html` に `<!--` が無い'
       - name: test_render_document_when_same_input
         case: 正常
-        summary: 同じ入力には同じ文字列を返却する（解析器を使い回しても前の呼び出しのマーカーが残らない）
+        summary: 同じ入力には同じ文字列を返却する（解析器を再利用しても前の呼び出しのマーカーが残らない）
         condition: マーカーを持つ文書を 2 回描く
         mock: なし
         expected: 2 回の `html` と `features` が等しい

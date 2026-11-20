@@ -9,7 +9,7 @@ functions:
     container: src/diagram/param.interact.ts
     kind: 関数
     scope: internal
-    summary: 'スライダーで値とグラフを描き直し、写すボタンで値の JSON をクリップボードに書き込む'
+    summary: 'スライダーで値とグラフを再描画し、写すボタンで値の JSON をクリップボードに書き込む'
     description: |-
       スライダーの `input` で今の値とグラフの系列を再描画し、写すボタンで `paramJson` を `navigator.clipboard.writeText` で書き込み、結果を `role="status"` に出す。
       拒まれたら `pre` を出す。

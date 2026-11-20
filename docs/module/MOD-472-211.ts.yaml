@@ -62,7 +62,7 @@ data_models:
         description: 読み込んだ注記の定義と参照（`readAnnotationDefinition` が作り、機能がオフなら `collectAnnotations` が削除する）
       - name: frontmatter
         type: '{ content: string; endLine: number } | undefined'
-        description: 文書の先頭のフロントマターの中身と閉じる行の 0 始まりの行番号（`renderDocument` が `splitFrontmatter` の結果を入れ、`insertFrontmatter` が読む）
+        description: 文書の先頭のフロントマターの中身と閉じる行の 0 始まりの行番号（`renderDocument` が `splitFrontmatter` の結果を入れ、`insertFrontmatter` が読み取る）
       - name: warnings
         type: CollectedWarning[]
         description: 記載の警告（`collectWarningsRule` が最後に集める）
@@ -221,7 +221,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`findMarks` と同じマーカーを、マーカーの文字・閉じか・引数の文字と一緒に返却する'
-    description: '`findMarks` と同じ解析で取得する。点検（`checkMarkOptions`）が文書ごとのマーカーの引数を読むときに使用する'
+    description: '`findMarks` と同じ解析で取得する。点検（`checkMarkOptions`）が文書ごとのマーカーの引数を読み取るときに使用する'
     args:
       - name: markdown
         type: string

@@ -18,7 +18,7 @@ functions:
         description: '`defaults` は既定を適用した設定の `features`、`marks` は文書の `features` のマーカーの JSON のオブジェクトを記載した順に並べたもの'
     returns:
       type: Record<string, boolean>
-      description: 決まったオン・オフ（`defaults` は書き換えない）
+      description: 決定したオン・オフ（`defaults` は書き換えない）
     unit_tests:
       - name: test_resolve_features
         case: 正常

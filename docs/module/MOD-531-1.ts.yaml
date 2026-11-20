@@ -19,7 +19,7 @@ data_models:
         description: 関連（`id`・`from`・`to`・`fromCardinality`・`toCardinality`・`dashed`・`label`）。`id` は記載順の `r{番号}`（1 から）。多重度は `1`・`0..1`・`1..n`・`0..n`
       - name: problems
         type: MapProblem[]
-        description: 読めない行と閉じの無いテーブル
+        description: 読み取れない行と閉じの無いテーブル
   - name: ErFanout
     title: 行が増える関連
     container: src/map/er.ts
@@ -38,12 +38,12 @@ data_models:
         description: たどる先のテーブル名（多の側）
 functions:
   - name: parseErDiagram
-    title: erDiagramを読む
+    title: erDiagramを読み取る
     kind: 関数
     container: src/map/er.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`erDiagram` の Mermaid を、テーブル・列・関連と読めない行の項目に読む'
+    summary: '`erDiagram` の Mermaid を、テーブル・列・関連と読み取れない行の項目に読み取る'
     scope: public
     args:
       - name: source
@@ -54,10 +54,10 @@ functions:
       type: ErDiagram
       description: 読み取り結果
     process: |-
-      1. 行ごとに、`{テーブル} {` で始まるテーブルの区間（`}` まで）・関連の行（`{元} {左の記号}{--|..}{右の記号} {先} : {ラベル}`）・`%%`・空の行に分けて読む
-      2. テーブルの区間の行は `{型} {名前} [PK|FK|UK[, …]] ["{コメント}"]` として列に読む
+      1. 行ごとに、`{テーブル} {` で始まるテーブルの区間（`}` まで）・関連の行（`{元} {左の記号}{--|..}{右の記号} {先} : {ラベル}`）・`%%`・空の行に分けて読み取る
+      2. テーブルの区間の行は `{型} {名前} [PK|FK|UK[, …]] ["{コメント}"]` として列に読み取る
       3. 関連の左右の記号（`||`・`|o`・`o|`・`}|`・`|{`・`}o`・`o{`）を多重度にし、`..` を破線にする
-         - 読めない行・閉じの無いテーブルは `map_invalid` の項目（行番号・行の文字・直し方）にする
+         - 読み取れない行・閉じの無いテーブルは `map_invalid` の項目（行番号・行の文字・修正方法）にする
     unit_tests:
       - name: test_parse_er_diagram
         case: 正常
@@ -67,10 +67,10 @@ functions:
         expected: テーブル 5・関連 5（`r1`〜`r5`）で、「注文」の列が 8 つ、「顧客」の列 `メール` が `UK` とコメント `ログインに使う` を持ち、`r4` が破線、`r2` の多重度が `1`・`1..n`
       - name: test_parse_er_diagram_when_unreadable
         case: 異常
-        summary: 読めない行
+        summary: 読み取れない行
         condition: '関連の行 `顧客 -> 注文`'
         mock: なし
-        expected: '`map_invalid` が 1 件で、行番号と `||--o{` の記載例を含み、ほかのテーブルと関連は読める'
+        expected: '`map_invalid` が 1 件で、行番号と `||--o{` の記載例を含み、ほかのテーブルと関連は読み取れる'
       - name: test_parse_er_diagram_when_unclosed
         case: 異常
         summary: 閉じの無いテーブル
@@ -83,7 +83,7 @@ functions:
     container: src/map/er.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: テーブルが相手のテーブルとの関連の端をつなぐ列を返す
+    summary: テーブルが相手のテーブルとの関連の端をつなぐ列を返却する
     scope: public
     args:
       - name: table
@@ -114,7 +114,7 @@ functions:
     container: src/map/er.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 2 つのテーブルをつなぐ最短の経路に乗る全ての関連と、1 の側から多の側へたどる関連を返す
+    summary: 2 つのテーブルをつなぐ最短の経路に乗る全ての関連と、1 の側から多の側へたどる関連を返却する
     scope: public
     args:
       - name: relations

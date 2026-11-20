@@ -10,7 +10,7 @@ functions:
     kind: 関数
     scope: internal
     summary: Markdown の先頭のフロントマターを判定し、その範囲の改行以外の文字を空白に置き換えた本文と、フロントマターの中身（開く行と閉じる行を除いた行）を返却する。フロントマターが無ければ、本文はそのままで中身は `undefined`
-    description: 判定はインターフェース定義『文書をHTML文字列にする』の制約「フロントマター」のとおり（1 行目が `---`、2 行目以降の最初の `---` か `...` の行まで。行末の空白と CR を許し、先頭の BOM は判定の前に除く）。改行以外を空白にするため、後ろの行の行番号と文字の位置は元の Markdown と同じになり、空白だけの行は markdown-it が段落にしない。描く処理（`renderDocument`・`expandIncludes`）と、本文を読む `parseDocument`（参照の表・本文の参照の取り出し・索引の点検）が共通で呼ぶ
+    description: 判定はインターフェース定義『文書をHTML文字列にする』の制約「フロントマター」のとおり（1 行目が `---`、2 行目以降の最初の `---` か `...` の行まで。行末の空白と CR を許可し、先頭の BOM は判定の前に除く）。改行以外を空白にするため、後ろの行の行番号と文字の位置は元の Markdown と同じになり、空白だけの行は markdown-it が段落にしない。描く処理（`renderDocument`・`expandIncludes`）と、本文を読み取る `parseDocument`（参照の表・本文の参照の取り出し・索引の点検）が共通で呼ぶ
     args:
       - name: markdown
         type: string
@@ -36,7 +36,7 @@ functions:
         expected: '`content` が `title: a`、`body` の 4 行目が `本文`'
       - name: test_split_frontmatter_when_crlf_and_bom
         case: 正常
-        summary: CRLF と先頭の BOM と行末の空白を許す
+        summary: CRLF と先頭の BOM と行末の空白を許可する
         condition: '`\uFEFF---  \r\ntitle: a\r\n--- \r\n本文`'
         mock: なし
         expected: '`content` が `title: a`、`body` の長さが元と同じで、`本文` の位置が元と同じ'

@@ -125,7 +125,7 @@ functions:
         expected: '`click` の後、`sup.mdmark-fn-ref` が `is-open` を持たず、`details` が `open` を持ち、項目がフォーカスを持つ'
       - name: test_attach_footnotes_when_doc_path_in_href
         case: 正常
-        summary: まとめた HTML が `href` に文書のパスを足しても、番号と戻るリンクで移る
+        summary: まとめた HTML が `href` に文書のパスを追加しても、番号と戻るリンクで移る
         condition: 脚注 1 つの番号と閉じた一覧を描いた要素に付けた後、番号のリンクと戻るリンクの `href` を `#/doc.md#{id}` に書き換え、番号を押し、次に戻るリンクを押す
         mock: なし（Chromium）
         expected: 番号の `click` の `defaultPrevented` が `true` で、`details` が `open` を持ち、項目がフォーカスを持つ。戻るリンクの `click` の `defaultPrevented` が `true` で、番号のリンクがフォーカスを持つ

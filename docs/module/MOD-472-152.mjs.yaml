@@ -5,7 +5,7 @@ test_files:
   - tests/unit/migrations/alias-rows.test.ts
 functions:
   - name: migrateAliasRows
-    title: エイリアスの元の行を新しい構造へ書き換える
+    title: エイリアスの元の行を変更後の構造へ書き換える
     container: migrations/next/alias-rows.mjs
     usecase: バージョンを上げる
     kind: 関数

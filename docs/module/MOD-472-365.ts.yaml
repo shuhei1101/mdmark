@@ -1,7 +1,7 @@
 id: MOD-472-365
 visibility: internal
 title: ライブラリ本体 / CLI / figure-svg.ts
-lead: '`render` が返す図の HTML を、ほかのファイル・URL を参照しない 1 つの SVG にする処理を受け持ち、書き出す SVG の作り方を変えるときに参照する。'
+lead: '`render` が返却する図の HTML を、ほかのファイル・URL を参照しない 1 つの SVG にする処理を受け持ち、書き出す SVG の作り方を変えるときに参照する。'
 test_files:
   - tests/unit/src/cli/figure-svg.test.ts
 functions:
@@ -11,7 +11,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: '`chart`・`param` は HTML の中の図の部品の `svg` を取り出し、埋め込んだ HTML は文字の幅の見積もりで大きさを決めて `foreignObject` に包み、`pruneCss` の CSS と不透明の背景を置いた SVG の文字列を返却する'
+    summary: '`chart`・`param` は HTML の中の図の部品の `svg` を取り出し、埋め込んだ HTML は文字の幅の見積もりで大きさを決めて `foreignObject` に包み、`pruneCss` の CSS と不透明の背景を配置した SVG の文字列を返却する'
     description: HTML の読み取りは htmlparser2・dom-serializer（sanitize-html の依存）。sanitize が小文字にした `viewBox`・`patternUnits` を戻し、`foreignObject` の中の入れ子の `svg` に `xmlns` を付ける。図のパネルのボタンと高さのハンドルは除く。相対パスの画像は文書のフォルダから読み込んで `data:` の URL にし、`https` の画像は除いて警告を返却する。1 行のブロックは折り返さず、見積もりの幅に 1 文字分の余白を加える
     args:
       - name: options
@@ -46,11 +46,11 @@ functions:
         mock: なし
         expected: '`viewBox`・`patternUnits` になっている'
   - name: pruneCss
-    title: 図に当たる CSS だけを残す
+    title: 図に該当する CSS だけを残す
     container: src/cli/figure-svg.ts
     kind: 関数
     scope: internal
-    summary: 配布物の CSS を postcss で読み、入れ子の `&` を親のセレクタに展開して、図の中にあるクラスとタグに当たる規則と、明るい配色の CSS 変数だけを残す
+    summary: 配布物の CSS を postcss で読み取り、入れ子の `&` を親のセレクタに展開して、図の中にあるクラスとタグに該当する規則と、明るい配色の CSS 変数だけを残す
     description: ダークの配色・テーマ・`vscode` のセレクタと `@media print` は除く
     args:
       - name: options
