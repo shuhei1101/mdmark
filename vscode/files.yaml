@@ -77,6 +77,12 @@ files:
     related:
       - to: MOD-472-102
         type: implements
+  - path: src/export/dist.ts
+    description: モジュール構成『VS Code 拡張機能 / 書き出し / dist.ts』のうち「書き出しで描く配布物の取得・保存・読み込み（vscode を import しない）」を受け持つ。書き出しで描く配布物の読み込み方を変えるときに参照する。
+    tags: [tool:vscode, topic:書き出し, action:読み込み]
+    related:
+      - to: MOD-472-369
+        type: implements
   - path: src/export/html.ts
     description: モジュール構成『VS Code 拡張機能 / 書き出し』のうち「書き出す先のパスと HTML の組み立て（vscode を import しない）」を受け持つ。HTML への書き出しや PDF への印刷を変えるときに参照する。
     tags: [tool:vscode, tool:html, topic:書き出し]
