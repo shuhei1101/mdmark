@@ -1,0 +1,18 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 図の線が相手のノードに近い辺につながり、ほかのノードの上を通らないことを期待結果に加える
+    depends_on: []
+docs:
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 配置の流れの 5（格子の経路探索で線を引く）に、指定の無い端を相手のノードに近い辺から出入りさせることを記載する
+    status: todo
+scope_out:
+  - item: ER 図の線の、多い側から少ない側へ流れるアニメーション
+    reason: 線の見せ方の要望で、つながる辺と経路の不具合とは別の要望
+    plan: '#755'
+  - item: 構成図の部品を使用しない図（シーケンス図・マインドマップ・軸と格子の配置の図）の線
+    reason: 構成図の格子の経路探索を使用せず、要望の現象（遠い辺につながる・ノードの上を通る）が起きる経路を持たない
+    plan: none
