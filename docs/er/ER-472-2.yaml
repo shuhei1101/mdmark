@@ -179,6 +179,7 @@ tables:
         type: integer
         description: 補足の `walkthroughs` の配列の中の位置（0 から）。JSON のキーには持たない
         example: '0'
+        primary_key: true
   - name: layout
     title: 配置の上書き
     source: DATA-472-5#
