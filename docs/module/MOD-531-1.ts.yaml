@@ -218,7 +218,7 @@ functions:
     container: src/map/er.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: テーブルごとに、幅 `MAP_ER.width`・`mapErNodeSize` の大きさ・左右に空ける幅 `MAP_ER.aside` の上書きを作る
+    summary: 'テーブルごとに、幅 `MAP_ER.width`・`mapErNodeSize` の大きさ・左右に空ける幅 `MAP_ER.aside`・線の端を左右の辺だけにつなぐ `sides: horizontal` の上書きを作る'
     scope: public
     args:
       - name: er

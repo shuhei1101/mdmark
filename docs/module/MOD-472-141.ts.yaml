@@ -57,6 +57,9 @@ data_models:
       - name: rankless
         type: boolean | undefined
         description: 線の ID に指定すると、段を決める処理でその線を使用しない（アーキテクチャ図の上下の辺でつなぐ線・C4 図の `Rel_L`・`Rel_R`）。経路は引く
+      - name: sides
+        type: '"horizontal" | undefined'
+        description: ノードの ID に指定すると、そのノードの線の端を左右の辺だけにつなぐ（ER 図のテーブル。端を列の行の高さへ付け替えるため）
       - name: padLeft
         type: number | undefined
         description: ノードの左の余白（px）。種類の形状が `pill` のノードは `LABEL_METRICS.padPill`。無ければ `LABEL_METRICS.padX`
@@ -128,6 +131,9 @@ constants:
       - key: borderCost
         value: '100000'
         description: 祖先でないグループの枠の出入り 1 回の重み
+      - key: sideCost
+        value: '1000'
+        description: 線の端を、相手のノードに向いた辺でない辺から出入りさせる 1 回の重み。向いた辺へ回るときの曲がりと遠回り（ノード 1 つ分の回り込み）より大きくし、向いた辺の出入り口が通れないとき・向いた辺へ回る経路がこの重みより長いときだけほかの辺を選ばせる
       - key: minGap
         value: '16'
         description: ドラッグで近づけられる間の下限
@@ -322,7 +328,9 @@ functions:
       description: '`points` を持つ線'
     process: |-
       1. 端点とその祖先以外の矩形の内側の格子点を通れない点にする
-      2. 線を記載順に 1 本ずつ引き、片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost`、先に引いた線が通った同じ向きの格子の区間に `usedCost` を追加し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
+      2. 線を記載順に 1 本ずつ引き、片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost`、先に引いた線が通った同じ向きの格子の区間に `usedCost` を追加し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。上書きの `sides` が `horizontal` のノードの端は、左右の辺の出入り口だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
+         - `ends` の無い端の、相手のノードに向いた辺（2 つのノードの中心を結ぶ向きのうち、縦と横で差が大きい方の辺。`sides` が `horizontal` のノードは相手の中心が右か左かで決め、横の中心の差が無いときは右）でない辺の出入り口には、始点では始めの重み、終点では着いたときの重みとして `sideCost` を追加する。向いた辺の出入り口が端点とその祖先以外の矩形の内側にあって通れないときは、残りの辺の出入り口を同じ重みで比べる
+         - 終点の出入り口へ、辺と直角にノードへ入る向き以外の向きで着いたときは、着いたときの重みに `bendCost` を追加する（辺へ入るときの曲がりを数える）
       3. 一直線に並ぶ点を除く（経由点は除かない）
       4. 引いた線が通った格子の区間を、向きごとに次の線の重みへ指定する
     unit_tests:
@@ -350,6 +358,24 @@ functions:
         condition: '線に `via: [{ x: 240, y: 300 }]`'
         mock: なし
         expected: 線の点に図の座標にした経由点があり、矩形を横切らない
+      - name: test_route_wires_when_facing_side
+        case: 正常
+        summary: 向いた辺につなぐ
+        condition: 幅 120 の 1 つのノードから、下の段に横に並ぶ幅 120 の 2 つのノードへ出る線 2 本
+        mock: なし
+        expected: 2 本とも、最初の点が元のノードの下の辺、最後の点が先のノードの上の辺にある
+      - name: test_route_wires_when_facing_side_blocked
+        case: 正常
+        summary: 向いた辺の出入り口が通れない
+        condition: 先のノードの上の辺の出入り口に、ほかのノードの矩形が重なる配置で、上の段のノードから引く線
+        mock: なし
+        expected: 最後の点が先のノードの左右の辺のうち、経路の短い方の辺にあり、線がほかのノードの矩形を横切らない
+      - name: test_route_wires_when_sides_horizontal
+        case: 正常
+        summary: 左右の辺だけにつなぐ
+        condition: '上下に並ぶ 2 つのノード（横の中心の差が無い）と、斜めに並ぶ 2 つのノードに `sides: horizontal` を指定した線'
+        mock: なし
+        expected: 上下に並ぶ 2 つのノードの線は両端とも右の辺にあり、斜めに並ぶ 2 つのノードの線は両端が左右の辺のうち相手の中心に近い方の辺にある
       - name: test_route_wires_when_used
         case: 正常
         summary: 先に引いた線の区間を回避する
