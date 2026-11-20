@@ -82,7 +82,7 @@ issues:
 license: MIT（商用利用可）
 docs_url: https://esbuild.github.io/api/
 selection:
-  candidates: esbuild-wasm・`@rollup/wasm-node` と sucrase・`@rollup/browser` と sucrase・`@rolldown/browser` を比べた（[設定ファイルをグローバルの設定と上のフォルダから重ねて読み込み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) の案のレビュー）。ネイティブの esbuild は .vsix に入らないため削除した。
+  candidates: esbuild-wasm・`@rollup/wasm-node` と sucrase・`@rollup/browser` と sucrase・`@rolldown/browser` を比べた（[設定ファイルをグローバルの設定と上のフォルダから重ねて読み、CLI・MCP・VS Code 拡張機能で共通にする](https://github.com/shuhei1101/mdmark/pull/347) の案のレビュー）。ネイティブの esbuild は .vsix に入らないため削除した。
   decision: CLI と同じ esbuild のバージョン・プラグイン・`minify`・`target` でまとめられ、`mdmark export` と同じ出力になる。依存が自身だけで、今の配布（`dist/extension.cjs` 1 つ・`--no-dependencies`）に入る。
   consequences: .vsix が約 3.6MB 増える。`lib/browser.js` を読み込み、`self` を追加するビルドのプラグインが要る。
 install: |-
