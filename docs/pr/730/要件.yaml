@@ -1,0 +1,15 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-65.yaml
+    impact: run_only
+    detail: 用語の意味をツールチップで読む流れは変わらないが、ツールチップの重なりの順か置き場所を変えるため、本文の用語のツールチップが今のとおり開閉・配置されることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: 表の操作は変わらないが、ピン止めした列・見出し行とツールチップの重なりを直すため、見出し行を留める・列をピン止めする振る舞いが壊れていないことを確かめる
+    depends_on: []
+scope_out:
+  - item: 表の列の幅の計測がツールチップの中の文字まで数え、用語を含む列の幅が広がりすぎる不具合
+    reason: 列の幅の計測の不具合で、ツールチップの重なりとは別の事象のため。同じ内容の open の Issue がある
+    plan: '#728'
