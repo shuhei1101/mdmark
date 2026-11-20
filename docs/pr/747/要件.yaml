@@ -47,14 +47,6 @@ docs:
     new: false
     change: 用語「ファイルツリー」「mermaid の図」の意味を、言語 tree 以外の罫線と map が描けない種類に合わせて修正する
     status: todo
-  - page: schemas/marks/code.schema.json
-    new: false
-    change: tree_warning の説明の文を、罫線のフォルダ構成をファイルツリーで描くかの指定に合わせて修正する（キーと型は変えない）
-    status: todo
-  - page: migrations/no-steps.yaml
-    new: false
-    change: code.schema.json の tree_warning の説明の文だけの変更で移行の手順が要らない行を追加する
-    status: todo
 scope_out:
   - item: ファイルツリーのファイルとフォルダの種類ごとのアイコンと色（#739 の本文の 3 つ目）
     reason: 'develop の src/tree/tree.part.ts の fileIconOf と src/index.css の --mdmark-color-file-* で #137 により入っている。利用者がアイコンを確認できなかったのは言語が tree でなくコードブロックのまま描かれたためで、罫線の検知で解消する'
