@@ -4,6 +4,7 @@ import {
   leafHeight,
   MAP_LAYOUT,
   type MapOverride,
+  type MeasureText,
   splitLines,
   textWidth,
 } from "./layout.ts";
@@ -416,28 +417,27 @@ export const classToFlowchart = (diagram: ClassDiagram): Flowchart => {
   };
 };
 
-/** 名前の行の文字の幅の見積もり（全角を文字の大きさ、半角を 0.6 倍） */
-const nameWidth = (name: string): number =>
-  [...name].reduce(
-    (sum, char) =>
-      sum +
-      ((char.codePointAt(0) ?? 0) <= 0x7e
-        ? LABEL_METRICS.nameSize * 0.6
-        : LABEL_METRICS.nameSize),
-    LABEL_METRICS.padX * 2,
-  );
+/** 名前の行の幅（測った名前の幅に、構成図のノードと同じ左右の余白と枠線を加えた幅） */
+const nameWidth = (name: string, measureText: MeasureText): number => {
+  const { padX, padRight, border } = LABEL_METRICS;
+  return measureText(name) + padX + padRight + border * 2;
+};
 
 /** クラスの幅（補足の幅、無ければ名前とメンバーの行が 1 行に収まる幅を `MAP_CLASS.width` から `maxWidth` の間で） */
 const classWidth = (
   item: ClassItem,
-  view: { widths: Record<string, number>; maxWidth: number },
+  view: {
+    widths: Record<string, number>;
+    maxWidth: number;
+    measureText: MeasureText;
+  },
 ): number => {
   const given = view.widths[item.id];
   if (given !== undefined) return given;
   const label =
     item.generic === undefined ? item.id : `${item.id}<${item.generic}>`;
   const needed = Math.max(
-    nameWidth(label),
+    nameWidth(label, view.measureText),
     ...item.members.map(
       (member) => mapClassTextWidth(member.text) + MAP_CLASS.memberInset,
     ),
@@ -464,14 +464,24 @@ const labelAsides = (diagram: ClassDiagram): Map<string, number> => {
 };
 
 /** ノートのノードの大きさ（文の幅と左右の余白が収まる幅を minWidth から maxWidth の間で決め、その幅で折り返した行が全て入る高さ） */
-const noteSize = (text: string, maxWidth: number): { w: number; h: number } => {
-  const { nameSize, padX, padRight, border } = LABEL_METRICS;
+const noteSize = (
+  text: string,
+  fit: { maxWidth: number; measureText: MeasureText },
+): { w: number; h: number } => {
+  const { padX, padRight, border } = LABEL_METRICS;
+  const { maxWidth, measureText } = fit;
   const inset = padX + padRight + border * 2;
   const w = Math.min(
     maxWidth,
-    Math.max(MAP_LAYOUT.minWidth, Math.ceil(textWidth(text, nameSize) + inset)),
+    Math.max(
+      MAP_LAYOUT.minWidth,
+      Math.ceil(textWidth(text, measureText) + inset),
+    ),
   );
-  return { w, h: leafHeight(splitLines(text, nameSize, w - inset).length) };
+  return {
+    w,
+    h: leafHeight(splitLines(text, w - inset, measureText).length),
+  };
 };
 
 /** 部品に指定するクラスの中身・関係の端と、クラスの幅とメンバーの行の数と開閉で決まる大きさ・左右に空ける幅・ノートの大きさの上書き */
@@ -481,6 +491,8 @@ export const classPartInputs = (
     collapsed: ReadonlySet<string>;
     widths: Record<string, number>;
     maxWidth: number;
+    /** クラスの名前とノートの文の 1 行の幅を測る関数（layoutMap の measureText と同じ） */
+    measureText: MeasureText;
   },
 ): {
   classes: MapClassNode[];
@@ -512,7 +524,7 @@ export const classPartInputs = (
     overrides[space] = { size: mapClosedGroupSize(space) };
   // ノートのノードは、右の余白を除いた幅で折り返した文の行が全て入る大きさにする
   for (const note of diagram.notes)
-    overrides[note.id] = { size: noteSize(note.text, view.maxWidth) };
+    overrides[note.id] = { size: noteSize(note.text, view) };
   const ends: MapClassEnd[] = diagram.relations.flatMap((relation) =>
     (
       [

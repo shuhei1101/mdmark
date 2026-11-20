@@ -10387,6 +10387,42 @@ flows:
     refs:
       - '#constraints[map の図]'
       - '#constraints[map の状態遷移図]'
+  - name: 正常系（map の構成図・状態遷移図・クラス図で名前の幅と形状の余白からノードの大きさを決めて描く）
+    summary: '半角を含む名前のノードと `pill` の形状のノードを持つ構成図、半角を含む名前の状態を持つ状態遷移図、半角の名前のクラスと半角を含むノートを持つクラス図を、`map.node_fit: width` で、描いたフォントの名前の幅と形状ごとの左の余白で見積もった大きさで、見積もりと同じ行の数で描く'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ。幅 1280px・描く先の `div` の幅は 1200px
+      - name: 半角を含む名前と pill の形状のノードを持つ構成図・状態遷移図・クラス図の map を持つ Markdown
+        description: 次の 3 つの範囲を持つ文書。「文書の Markdown」のノードに `:::step` を付け、「利用側のページ」のノードに `:::outside` を付けてつないだ flowchart。「Markdown を読んでいる」の状態を `[*]` から `[*]` へつないだ stateDiagram-v2。メンバーを持たないクラス `MarkdownDocumentRenderer` と、そのクラスへのノート「Markdown を描く」（`note for MarkdownDocumentRenderer`）を持つ classDiagram
+        notes: '修正前の Chromium では、「文書の Markdown」は名前の見積もりの幅が 117.6px（半角を文字の大きさの 0.6 倍）で、描いた幅は 129px。「利用側のページ」は描いた名前の幅が 93px で、見積もりは左の余白を 10px とするが、`pill` の形状の左の余白は 16px。どちらも見積もった幅では名前が 1 行に収まらない。状態遷移図の状態は構成図のノードと同じ見積もり（`sizeLeaf`）、クラスの幅は `nameWidth`、ノートの大きさは `noteSize` で、どれも半角を文字の大きさの 0.6 倍と見積もる。クラスの幅は、既定の `map.node_fit: height` では上限も `MAP_CLASS.width`（220px）で名前によらず 220px になるため、上限が 360px になる `width` で描く。`MarkdownDocumentRenderer`（半角 24 文字）は、見積もりの幅（201.6px）に左右 10px を加えると 220px を超え、描いた名前の幅は見積もりより広い。ノート「Markdown を描く」は見積もりの幅が 117.6px で、見積もった幅では 1 行に収まらない'
+      - name: 設定
+        description: '`opts.config.map.kinds` に `step`（`label: 処理`・`icon: cog`）、`outside`（`label: 外部`・`shape: pill`）、`state`（`label: 状態`）。`map.node_fit` は `width`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: ノードの名前の幅を描くフォントで測り、形状ごとの左の余白でノードの大きさを見積もって配置する
+        M-->>U: 図の枠に入れた map の構成図・状態遷移図・クラス図
+      ```
+
+      <!-- /map -->
+    expected:
+      - 構成図の「文書の Markdown」と「利用側のページ」、状態遷移図の「Markdown を読んでいる」、クラス図の `MarkdownDocumentRenderer` とノート「Markdown を描く」のノードは、どれも名前（ノートは文）が 1 行で、文字の矩形の高さが描いた名前 1 行の高さ（14px × `line-height` 1.35 = 18.9px）以下
+      - 「文書の Markdown」「Markdown を読んでいる」とノート「Markdown を描く」のノードの幅は、名前（ノートは文）の文字の矩形の幅に左右の余白（10px・28px）と左右の枠線（1.5px ずつ）を加えた幅から 1px 以内
+      - 「利用側のページ」のノードの幅は、名前の文字の矩形の幅に左右の余白（16px・28px）と左右の枠線（1.5px ずつ）を加えた幅から 1px 以内で、名前の文字の矩形の左端がノードの左端から 17px 以上右にある
+      - クラス `MarkdownDocumentRenderer` のノードの幅は、名前の文字の矩形の幅に左右の余白（10px・28px）と左右の枠線（1.5px ずつ）を加えた幅から 1px 以内で、名前の文字の矩形の右端がノードの右の余白（`padding-right`）より左にある
+      - 構成図・状態遷移図の 3 つのノードとノートは、名前（ノートは文）の最後の行の文字の矩形の下端からノードの下の余白（`padding-bottom`）の上端までの空きが、描いた 1 行の高さ（18.9px）より小さい（見積もりが描画より多く折り返して、下に 1 行分の空きを残さない）
+    test: test_normal_when_map_node_size_from_measured_name
+    refs:
+      - '#constraints[map の図]'
+      - '#constraints[map の状態遷移図]'
+      - '#constraints[map のクラス図]'
   - name: 正常系（言語 markdown のコードブロックを描いた結果で出す）
     summary: 言語 markdown・md のコードブロックの中身を描いた結果で出し、Raw のボタンで元の Markdown と切り替える
     setup:

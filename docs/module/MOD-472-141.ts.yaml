@@ -22,7 +22,7 @@ data_models:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
-    summary: 補足の `layout`・動かした位置・測った大きさを合わせた 1 つの ID の制約
+    summary: 補足の `layout`・動かした位置・測った大きさ・種類の形状の余白を合わせた 1 つの ID の制約
     properties:
       - name: align
         type: string | undefined
@@ -57,6 +57,9 @@ data_models:
       - name: rankless
         type: boolean | undefined
         description: 線の ID に指定すると、段を決める処理でその線を使わない（アーキテクチャ図の上下の辺でつなぐ線・C4 図の `Rel_L`・`Rel_R`）。経路は引く
+      - name: padLeft
+        type: number | undefined
+        description: ノードの左の余白（px）。種類の形状が `pill` のノードは `LABEL_METRICS.padPill`。無ければ `LABEL_METRICS.padX`
   - name: MapLayout
     title: 配置の結果
     container: src/map/layout.ts
@@ -83,8 +86,8 @@ constants:
   - name: LABEL_METRICS
     title: ノードの文字の大きさと余白
     container: src/map/layout.ts
-    summary: 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさと余白。名前を折り返す行の数とノードの大きさの見積もりに使用する。右の余白 `padRight` は、map のノードが右上の i と開閉の山形の分だけ右に空ける幅（`src/index.css` の map のノードの `padding-right`）。`border` はノードの枠線の幅（`.mdmark-diagram-node` の `border`）。CSS を修正したときは合わせて修正する
-    value: 種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px・右の余白 28px・枠線 1.5px
+    summary: 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさと余白。名前を折り返す行の数とノードの大きさの見積もりに使用する。右の余白 `padRight` は、map のノードが右上の i と開閉の山形の分だけ右に空ける幅（`src/index.css` の map のノードの `padding-right`）。`padPill` は種類の形状が `pill` のノードの左の余白（`src/index.css` の `pill` のノードの `padding-inline`。右は後に記載した `padding-right` が優先される）。`border` はノードの枠線の幅（`.mdmark-diagram-node` の `border`）。CSS を修正したときは合わせて修正する
+    value: 種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px・右の余白 28px・pill の左の余白 16px・枠線 1.5px
   - name: MAP_LAYOUT
     title: 配置の寸法
     container: src/map/layout.ts
@@ -158,9 +161,9 @@ functions:
         required: true
         description: 見せ方
       - name: options
-        type: '{ overrides: Record<string, MapOverride>; nodeFit: "height" | "width" }'
+        type: '{ overrides: Record<string, MapOverride>; nodeFit: "height" | "width"; spread?: number; measureText: (text: string) => number }'
         required: true
-        description: ID ごとの上書きと、ノードの大きさの合わせ方
+        description: ID ごとの上書きと、ノードの大きさの合わせ方と、名前の幅の測り方
       - name: options.overrides
         type: Record<string, MapOverride>
         required: true
@@ -173,11 +176,15 @@ functions:
         type: number | undefined
         required: false
         description: 段の中の間（`gapItem`）と段の間（`gapRank`）に足す幅（px）。`separateWires` が返した `crowded` を指定する。省くと 0
+      - name: options.measureText
+        type: '(text: string) => number'
+        required: true
+        description: ノードの名前の文字（`LABEL_METRICS.nameSize`・太字）の 1 行の幅（px）を返す関数。ブラウザで描く `attachMapFlow` は描くフォントで測る関数、DOM を持たない呼び出し（部品の描画のサーバー・単体テスト）は `estimateTextWidth` を指定する
     returns:
       type: MapLayout
       description: 配置の結果
     process: |-
-      1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ。上書きの `size` を持たない葉は、上書きの `width` を持てばその幅、持たなければ名前の幅（`textWidth`）に左の余白 `LABEL_METRICS.padX`・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅（小数は切り上げる）を `MAP_LAYOUT.minWidth` から上限（`nodeFit` が `height` なら `maxWidth`、`width` なら `maxWidthWide`）までに収めた幅にし、その幅から左右の余白と枠線を引いた幅で名前を行に分けた（`splitLines`）行の数の `leafHeight` を高さにする。上書きの `size` を持つ葉は、その大きさにし、同じ幅で名前を行に分ける（表示する木を作る）
+      1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ。上書きの `size` を持たない葉は、上書きの `width` を持てばその幅、持たなければ `measureText` で測った名前の幅（`textWidth`）に左の余白（上書きの `padLeft`、無ければ `LABEL_METRICS.padX`）・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅（小数は切り上げる）を `MAP_LAYOUT.minWidth` から上限（`nodeFit` が `height` なら `maxWidth`、`width` なら `maxWidthWide`）までに収めた幅にし、その幅から左右の余白と枠線を引いた幅で、名前を `measureText` で測って行に分けた（`splitLines`）行の数の `leafHeight` を高さにする。上書きの `size` を持つ葉は、その大きさにし、同じ幅で名前を行に分ける（表示する木を作る）
       2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める。段の中の間と段の間には `spread` を足す。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
       3. 外側から座標を足して図の座標にし、線の経路を引く（線の経路を引く）
     unit_tests:
@@ -271,6 +278,24 @@ functions:
         condition: '名前が全角 12 文字（見積もりの幅 168px）のノードに上書きの `width: 200`'
         mock: なし
         expected: そのノードの `w` が 200、`lines` が 2 行（200 - 41 = 159px で折り返す）、`h` が `leafHeight(2)`
+      - name: test_layout_map_when_measured_text_width
+        case: 正常
+        summary: 測った名前の幅で大きさを決める
+        condition: 名前が `Markdown`（半角 8 文字）のノード 1 つと、1 文字を 12px と測る `measureText`（見積もりの 8.4px より広い）
+        mock: '`measureText`'
+        expected: そのノードの `w` が 137（96 + 10 + 28 + 1.5 × 2）、`lines` が 1 行、`h` が `leafHeight(1)`
+      - name: test_layout_map_when_measured_text_wraps
+        case: 正常
+        summary: 測った幅で折り返す
+        condition: '名前が半角 20 文字のノード 1 つ、1 文字を 12px と測る `measureText`、`nodeFit: height`'
+        mock: '`measureText`'
+        expected: そのノードの `w` が 220、`lines` が 2 行（1 行目が 14 文字。220 - 41 = 179px に 12px の文字が 14 文字収まる）、`h` が `leafHeight(2)`
+      - name: test_layout_map_when_pill_padding
+        case: 正常
+        summary: pill の左の余白
+        condition: '名前が「利用側のページ」（全角 7 文字・見積もりの幅 98px）のノードに `padLeft: 16` の上書き、`measureText` は `estimateTextWidth`'
+        mock: なし
+        expected: そのノードの `w` が 145（98 + 16 + 28 + 1.5 × 2）、`lines` が 1 行
   - name: routeWires
     title: 線の経路を引く
     kind: 関数
@@ -389,22 +414,22 @@ functions:
         mock: なし
         expected: どの線にも長さ 0 の区間が無く、連続する 3 点が同じ直線の上で向きを戻さない（折り返さない）。端点は引数のままで、重なりが 0
   - name: textWidth
-    title: 文の幅を見積もる
+    title: 文の幅を測る
     kind: 関数
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、改行で分けた行のうち最も広い行の幅を返す。ノードの幅の既定の見積もりと、クラス図のノートの幅の見積もり（`classPartInputs`）が使用する
+    summary: 改行で分けた行ごとに `measure` で幅を測り、最も広い行の幅を返す。ノードの幅の既定の見積もりと、クラス図のノートの幅の見積もり（`classPartInputs`）が使用する
     scope: public
     args:
       - name: text
         type: string
         required: true
         description: 名前・ノートの文
-      - name: fontSize
-        type: number
+      - name: measure
+        type: '(text: string) => number'
         required: true
-        description: 文字の大きさ（px）
+        description: 1 行の幅（px）を返す関数（`layoutMap` の `measureText`）
     returns:
       type: number
       description: 幅（px）
@@ -414,24 +439,31 @@ functions:
     container: src/map/layout.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、改行と文字の列の幅で折り返した行を返す。ノードの大きさの既定の見積もりと、クラス図のノートの行の数の見積もり（`classPartInputs`）が使用する
+    summary: 改行で分けた段落ごとに、先頭から 1 文字ずつ足した行の幅を `measure` で測り、`width` を超える文字の手前で折り返した行を返す（行の先頭の 1 文字は幅を超えてもその行に入れる）。ノードの大きさの既定の見積もりと、クラス図のノートの行の数の見積もり（`classPartInputs`）が使用する
     scope: public
     args:
       - name: text
         type: string
         required: true
         description: 名前・ノートの文
-      - name: fontSize
-        type: number
-        required: true
-        description: 文字の大きさ（px）
       - name: width
         type: number
         required: true
         description: 文字の列の幅（px。ノードの左右の余白を含めない）
+      - name: measure
+        type: '(text: string) => number'
+        required: true
+        description: 1 行の幅（px）を返す関数（`layoutMap` の `measureText`）
     returns:
       type: string[]
       description: 行
+    unit_tests:
+      - name: test_split_lines_when_measure
+        case: 正常
+        summary: 測った幅で折り返す
+        condition: 文 `abcdef`、幅 30、1 文字を 10px と測る `measure`
+        mock: '`measure`'
+        expected: '`["abc", "def"]`'
   - name: leafHeight
     title: ノードの高さを見積もる
     kind: 関数
@@ -455,6 +487,29 @@ functions:
         condition: 行の数 1 と 2
         mock: なし
         expected: 1 行が 63、2 行が 83（`ceil((11 + 2 × 14) × 1.4) + 6 × 2 + 16`）
+  - name: estimateTextWidth
+    title: 名前の幅を見積もる
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 全角の文字を `LABEL_METRICS.nameSize`、半角の文字（U+007E 以下と半角カナ）をその 0.6 倍の幅とみなした 1 行の幅を返す。DOM を持たず描くフォントを測れない呼び出し（部品の描画のサーバー・単体テスト）が `layoutMap` の `measureText` に指定する
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 1 行の文字
+    returns:
+      type: number
+      description: 幅（px）
+    unit_tests:
+      - name: test_estimate_text_width
+        case: 正常
+        summary: 全角と半角の見積もり
+        condition: 「文書の Markdown」
+        mock: なし
+        expected: 117.6（全角 3 文字 × 14 + 半角 9 文字 × 8.4）
 lead: '入れ子のグループの自動配置と線の経路を受け持ち、構成図の配置を変えるときに参照する。'
 tags:
   - name: topic:map

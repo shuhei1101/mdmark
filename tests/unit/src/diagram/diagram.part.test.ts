@@ -20,12 +20,14 @@ const loadDiagram = () => import("../../../../src/diagram/diagram.part.ts");
 /** 部品設計『mapの構成図』の Default（`FLOW` と補足 `DATA`）の自動配置の結果から作ったノードと線 */
 const defaultFlow = async (): Promise<MdmarkFlowDefinition> => {
   const { parseFlowchart } = await import("../../../../src/map/flowchart.ts");
-  const { layoutMap } = await import("../../../../src/map/layout.ts");
+  const { layoutMap, estimateTextWidth } = await import(
+    "../../../../src/map/layout.ts"
+  );
   const notes = parsed<{ notes: Record<string, { text: string }> }>(DATA).notes;
   const layout = layoutMap(
     parseFlowchart(FLOW),
     { collapsed: [], entered: undefined },
-    { overrides: {}, nodeFit: "height" },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
   );
   const kinds: Record<string, { label?: string; icon?: string }> = CONFIG.kinds;
   return {

@@ -113,7 +113,12 @@ import {
 } from "../src/map/er.ts";
 import { neighborKept, shortestPathKept } from "../src/map/flow-view.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
-import { layoutMap, MAP_LAYOUT, separateWires } from "../src/map/layout.ts";
+import {
+  estimateTextWidth,
+  layoutMap,
+  MAP_LAYOUT,
+  separateWires,
+} from "../src/map/layout.ts";
 import {
   type MapBandUnit,
   type MapErFanout,
@@ -939,6 +944,24 @@ const MAP_FLOW_WRAPPED = `flowchart LR
   total["注文の明細を月ごとに集計する"]:::step --> save["集計を保存する"]:::step
 `;
 
+/** map の構成図の、半角を含む名前のノードと pill の形状の種類のノードの見本（部品設計の状態 MeasuredName。ストーリーは今の見積もりで配置する） */
+const MAP_FLOW_MEASURED = `flowchart LR
+  doc["文書の Markdown"]:::step --> user(["利用側のページ"]):::outside
+`;
+
+/** map の状態遷移図の、半角を含む名前の状態の見本（部品設計の状態 MeasuredName。`map.kinds` の `state` で種類の行を持たせて描く） */
+const MAP_STATE_MEASURED = `stateDiagram-v2
+  [*] --> 読み込み
+  state "Markdown を読んでいる" as 読み込み
+  読み込み --> [*]
+`;
+
+/** map のクラス図の、メンバーを持たない半角の名前のクラスとノートの見本（部品設計の状態 MeasuredName。`map.node_fit` が `width` で描く） */
+const MAP_CLASS_MEASURED = `classDiagram
+  class MarkdownDocumentRenderer
+  note for MarkdownDocumentRenderer "Markdown を描く"
+`;
+
 /** map の状態遷移図の、名前がノードの幅で 2 行に折り返す状態の見本（`map.kinds` の `state` で種類の行を持たせて描く） */
 const MAP_STATE_WRAPPED = `stateDiagram-v2
   [*] --> 支払い待ち
@@ -1350,6 +1373,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       long: MAP_FLOW_LONG,
       plain: MAP_FLOW_PLAIN,
       wrapped: MAP_FLOW_WRAPPED,
+      measured: MAP_FLOW_MEASURED,
       parallel: MAP_FLOW_PARALLEL,
     };
     const placed = layoutMap(
@@ -1361,6 +1385,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
             ? {}
             : { "mount->marker": { ends: jsonObject(args.ends) } },
         nodeFit: args.node_fit === "width" ? "width" : "height",
+        measureText: estimateTextWidth,
       },
     );
     // 図に描くときと同じく、同じ区間を通る線を並べる
@@ -1430,7 +1455,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const placed = layoutMap(
       erToFlowchart(er, data.groups),
       { collapsed, entered },
-      { overrides: erOverrides(er, new Set(collapsed)), nodeFit: "height" },
+      {
+        overrides: erOverrides(er, new Set(collapsed)),
+        nodeFit: "height",
+        measureText: estimateTextWidth,
+      },
     );
     const layout = {
       ...placed,
@@ -1472,9 +1501,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       : frame;
   },
   "map-state": (args) => {
-    // `sample` が `wrapped` なら、種類の行を持ち名前が折り返す状態の見本
-    const wrapped = args.sample === "wrapped";
-    const diagram = parseStateDiagram(wrapped ? MAP_STATE_WRAPPED : MAP_STATE);
+    // `sample` が `wrapped` なら種類の行を持ち名前が折り返す状態、`measured` なら種類の行を持ち半角を含む名前の状態の見本
+    const samples: Record<string, string> = {
+      wrapped: MAP_STATE_WRAPPED,
+      measured: MAP_STATE_MEASURED,
+    };
+    const sample = samples[String(args.sample)];
+    const wrapped = sample !== undefined;
+    const diagram = parseStateDiagram(sample ?? MAP_STATE);
     const { data } = parseMapData(wrapped ? "{}" : MAP_STATE_DATA);
     const { chart, loops: selfLoops } = stateToFlowchart(diagram);
     const { shapes, loops, overrides } = statePartInputs(chart, selfLoops);
@@ -1483,7 +1517,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = layoutMap(
       chart,
       { collapsed, entered },
-      { overrides, nodeFit: "height" },
+      { overrides, nodeFit: "height", measureText: estimateTextWidth },
     );
     const part = renderMapStateDiagram({
       layout,
@@ -1505,10 +1539,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     return mapFrame("作業の状態", part, layout);
   },
   "map-class": (args) => {
-    // `sample` が `long` なら、長いメンバーとラベルのクラス図
+    // `sample` が `long` なら長いメンバーとラベルのクラス図、`measured` なら `map.node_fit` が `width` の半角の名前のクラスとノート
     const long = args.sample === "long";
-    const diagram = parseClassDiagram(long ? MAP_LONG_CLASS : MAP_CLASS);
-    const { data } = parseMapData(long ? MAP_LONG_CLASS_DATA : MAP_CLASS_DATA);
+    const measured = args.sample === "measured";
+    const diagram = parseClassDiagram(
+      measured ? MAP_CLASS_MEASURED : long ? MAP_LONG_CLASS : MAP_CLASS,
+    );
+    const { data } = parseMapData(
+      measured ? "{}" : long ? MAP_LONG_CLASS_DATA : MAP_CLASS_DATA,
+    );
+    const nodeFit = measured ? "width" : "height";
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
     const widths = Object.fromEntries(
@@ -1519,7 +1559,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const inputs = classPartInputs(diagram, {
       collapsed: new Set(collapsed),
       widths,
-      maxWidth: MAP_LAYOUT.maxWidth,
+      maxWidth: measured ? MAP_LAYOUT.maxWidthWide : MAP_LAYOUT.maxWidth,
+      measureText: estimateTextWidth,
     });
     const chart = classToFlowchart(diagram);
     const selected = jsonList(args.selected);
@@ -1534,7 +1575,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const placed = layoutMap(
       chart,
       { collapsed, entered },
-      { overrides: inputs.overrides, nodeFit: "height" },
+      { overrides: inputs.overrides, nodeFit, measureText: estimateTextWidth },
     );
     const layout = { ...placed, wires: spreadMapEnds(placed) };
     const part = renderMapClassDiagram({
@@ -1571,7 +1612,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const placed = layoutMap(
       chart,
       { collapsed, entered },
-      { overrides, nodeFit: "height" },
+      { overrides, nodeFit: "height", measureText: estimateTextWidth },
     );
     const ends = Object.fromEntries(
       Object.entries(data.layout).flatMap(([id, entry]) =>
@@ -1637,7 +1678,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const placed = layoutMap(
       chart,
       { collapsed, entered },
-      { overrides, nodeFit: "height" },
+      { overrides, nodeFit: "height", measureText: estimateTextWidth },
     );
     const layout = { ...placed, wires: spreadMapEnds(placed) };
     // 閉じた境界の中の要素への関係は、境界へまとめた線に付け替える（mount の attachMapFlow と同じ）

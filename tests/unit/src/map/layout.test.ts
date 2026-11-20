@@ -32,14 +32,19 @@ async function laid(
   {
     nodeFit = "height",
     source = FLOW,
-  }: { nodeFit?: "height" | "width"; source?: string } = {},
+    measureText,
+  }: {
+    nodeFit?: "height" | "width";
+    source?: string;
+    measureText?: (text: string) => number;
+  } = {},
 ) {
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const { parseFlowchart } = await loadFlowchart();
   return layoutMap(
     parseFlowchart(source),
     { collapsed: [], ...view },
-    { overrides, nodeFit },
+    { overrides, nodeFit, measureText: measureText ?? estimateTextWidth },
   );
 }
 
@@ -344,6 +349,82 @@ test("test_leaf_height", async () => {
   expect(heights).toEqual([63, 83]);
 });
 
+/** 1 文字を決まった幅と測る関数 */
+const perChar = (width: number) => (text: string) => [...text].length * width;
+
+// 測った名前の幅で大きさを決める（正常系）
+test("test_layout_map_when_measured_text_width", async () => {
+  // 準備
+  const { leafHeight } = await loadLayout();
+  // 実行
+  const layout = await laid(
+    {},
+    {},
+    { source: "flowchart LR\n  A[Markdown]\n", measureText: perChar(12) },
+  );
+  // 検証
+  const node = layout.nodes.find((item) => item.id === "A");
+  expect(node?.w).toBe(137);
+  expect(node?.lines).toHaveLength(1);
+  expect(node?.h).toBe(leafHeight(1));
+});
+
+// 測った幅で折り返す（正常系）
+test("test_layout_map_when_measured_text_wraps", async () => {
+  // 準備
+  const { leafHeight } = await loadLayout();
+  const name = "a".repeat(20);
+  // 実行
+  const layout = await laid(
+    {},
+    {},
+    {
+      nodeFit: "height",
+      source: `flowchart LR\n  A[${name}]\n`,
+      measureText: perChar(12),
+    },
+  );
+  // 検証
+  const node = layout.nodes.find((item) => item.id === "A");
+  expect(node?.w).toBe(220);
+  expect(node?.lines).toEqual(["a".repeat(14), "a".repeat(6)]);
+  expect(node?.h).toBe(leafHeight(2));
+});
+
+// pill の左の余白（正常系）
+test("test_layout_map_when_pill_padding", async () => {
+  // 準備・実行
+  const layout = await laid(
+    {},
+    { A: { padLeft: 16 } },
+    { source: "flowchart LR\n  A[利用側のページ]\n" },
+  );
+  // 検証
+  const node = layout.nodes.find((item) => item.id === "A");
+  expect(node?.w).toBe(145);
+  expect(node?.lines).toHaveLength(1);
+});
+
+// 測った幅で折り返す（正常系）
+test("test_split_lines_when_measure", async () => {
+  // 準備
+  const { splitLines } = await loadLayout();
+  // 実行
+  const lines = splitLines("abcdef", 30, perChar(10));
+  // 検証
+  expect(lines).toEqual(["abc", "def"]);
+});
+
+// 全角と半角の見積もり（正常系）
+test("test_estimate_text_width", async () => {
+  // 準備
+  const { estimateTextWidth } = await loadLayout();
+  // 実行
+  const width = estimateTextWidth("文書の Markdown");
+  // 検証
+  expect(width).toBeCloseTo(117.6, 5);
+});
+
 // 閉じたグループのノードの数（正常系）
 test("test_layout_map_when_collapsed_count", async () => {
   // 準備・実行
@@ -414,14 +495,19 @@ test("test_layout_map_when_collapsed_height", async () => {
 // 間を広げる（正常系）
 test("test_layout_map_when_spread", async () => {
   // 準備
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const { parseFlowchart } = await loadFlowchart();
   const chart = parseFlowchart("flowchart LR\n  A --> B\n  A --> C\n");
   const place = (spread?: number) =>
     layoutMap(
       chart,
       { collapsed: [] },
-      { overrides: {}, nodeFit: "height", spread },
+      {
+        overrides: {},
+        nodeFit: "height",
+        spread,
+        measureText: estimateTextWidth,
+      },
     );
   // 実行
   const plain = place();

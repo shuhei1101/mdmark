@@ -12,7 +12,7 @@ import {
   neighborKept,
   shortestPathKept,
 } from "./flow-view.ts";
-import { MAP_LAYOUT } from "./layout.ts";
+import { estimateTextWidth, MAP_LAYOUT, type MeasureText } from "./layout.ts";
 import { renderMapClassDiagram, spreadMapEnds } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
@@ -36,8 +36,9 @@ export const attachMapClass = (
     config.map.node_fit === "width"
       ? MAP_LAYOUT.maxWidthWide
       : MAP_LAYOUT.maxWidth;
-  /** 最後に配置したときの、補足の layout の幅（描くときも同じ幅でメンバーを折り返す） */
+  /** 最後に配置したときの、補足の layout の幅と名前の幅を測る関数（描くときも同じ幅でメンバーを折り返す。描くのは配置の後なので、初めの値は使わない） */
   let widths: Record<string, number> = {};
+  let measureText: MeasureText = estimateTextWidth;
   return attachMapFlow(range, config, {
     args,
     resolveIdLink,
@@ -46,6 +47,7 @@ export const attachMapClass = (
       kinds: MAP_CLASS_KINDS,
       overrides: (view) => {
         widths = view.widths;
+        measureText = view.measureText;
         return classPartInputs(diagram, { ...view, maxWidth }).overrides;
       },
       collapsibles: [...classIds],
@@ -56,6 +58,7 @@ export const attachMapClass = (
           collapsed: new Set(flowArgs.collapsed),
           widths,
           maxWidth,
+          measureText,
         });
         return renderMapClassDiagram({
           ...flowArgs,
