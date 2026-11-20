@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-er-toggle-fullscreen-cardinality-group-resize
+
+
+ Test Files  328 passed (328)
+      Tests  2716 passed (2716)
+   Start at  22:41:07
+   Duration  27.37s (worker 82%, tests 13%, import 5%)
+
+rc=0
