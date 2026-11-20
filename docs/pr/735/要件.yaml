@@ -55,7 +55,9 @@ docs:
   - page: migrations/no-steps.yaml
     new: false
     change: 設定の JSON Schema の変更に、移行の手順が要らない行を追加する（手順が要るとデータ設計で決めたときは `migrations/next/` に手順を配置する）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:41:18.284165+00:00'
   - page: docs/guide/用語集.mark.md
     change: 用語「行見出し」の、横にスクロールしても左端に残る説明を、ピン止めしたときと `table.pin_default` に合わせて修正する
     status: done
