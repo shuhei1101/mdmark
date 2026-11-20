@@ -1,0 +1,26 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: 用語を含む列の幅が、見えている文字の幅で決まるようになる。列の幅を中身から決める流れの記述は変わらない
+    depends_on: []
+scope_out:
+  - item: docs/mock/refs/505/assets/table-width.js の linesOf の同じ処理
+    reason: 参照用のモックで、文書の描画に使用しない
+    plan: none
+  - item: ピン止めした列の用語のツールチップが見出し行の下に隠れる事象
+    reason: 要望に含まれない（ツールチップの重なりで、列の幅の計測と別の事象）
+    plan: '#729'
+docs:
+  - page: docs/component/CMP-472-61.ts.yaml
+    new: false
+    change: 注記「列の幅」に、列の幅を決める中身はセルに見えている文字だけで、開いていないツールチップなど表示していない要素の文字を数えないことを記載する
+    status: todo
+  - page: docs/interface/IF-472-35.ts.yaml
+    new: false
+    change: 用語を含む列の幅が見えている文字の幅で決まる結合テストの期待を記載する
+    status: todo
+  - page: docs/module/MOD-472-347.ts.yaml
+    new: false
+    change: measureColumns の行の分け方に、複製したセルから表示していない要素を除いてから文字を取ることと、その単体テストを記載する
+    status: todo
