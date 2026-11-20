@@ -10,8 +10,10 @@ export type ColumnMeasure = {
     longestWord: number;
     /** 見出しのセルの文字の大きさ（px） */
     em: number;
+    /** 見出しのセルの中身（列名とボタン）が収まる外側の幅（px。セルの余白と罫線を含む） */
+    head: number;
 };
-/** 表示している列ごとに、最も長い行の幅と最も長い半角の単語の幅を測って返却する */
+/** 表示している列ごとに、最も長い行の幅と最も長い半角の単語の幅と見出しの中身が収まる幅を測って返却する */
 export declare const measureColumns: (table: HTMLTableElement, headCells: HTMLTableCellElement[]) => ColumnMeasure[];
 /** 列の幅を自動で決める処理の引数 */
 export type AutoColumnWidthsOptions = {
