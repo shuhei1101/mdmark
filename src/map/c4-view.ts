@@ -10,7 +10,7 @@ import {
 } from "./flow-view.ts";
 import type { Flowchart } from "./flowchart.ts";
 import type { MapLayout } from "./layout.ts";
-import { renderMapC4Diagram, spreadMapEnds } from "./map.part.ts";
+import { renderMapC4Diagram } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
 /** 再生している関係のために出したラベルと、隠したラベルの印 */
@@ -188,7 +188,6 @@ export const attachMapC4 = (
               );
             },
           }),
-      rewire: (layout) => spreadMapEnds(layout),
       render: (flowArgs) =>
         renderMapC4Diagram({
           ...flowArgs,

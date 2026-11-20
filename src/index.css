@@ -10045,12 +10045,24 @@
   .mdmark-diagram[data-diagram="map"] .map-colored-wire path {
     stroke: var(--map-wire);
   }
-  .map-wire-hit,
+  path.map-wire-hit,
   .map-lifeline-hit {
     fill: none;
     stroke: transparent;
     stroke-width: 14;
     pointer-events: stroke;
+  }
+  /* 線の押せる範囲: 線ごとの g に並べた区間ごとの帯。ポインターの形状は区間を動かせる向き（縦の区間は左右、横の区間は上下） */
+  .map-wire-hit-segment {
+    fill: transparent;
+    pointer-events: all;
+
+    &[data-axis="y"] {
+      cursor: ew-resize;
+    }
+    &[data-axis="x"] {
+      cursor: ns-resize;
+    }
   }
   .map-wire-tip {
     position: absolute;
@@ -10188,6 +10200,27 @@
   .mdmark-diagram[data-diagram="map"] .map-wire-hit:focus-visible {
     outline: none;
     stroke: color-mix(in srgb, var(--mdmark-color-link) 40%, transparent);
+  }
+  /* 帯にフォーカスがあるときは、線の全ての区間の帯に色を付ける（帯そのものの枠は出さない） */
+  .mdmark-diagram[data-diagram="map"] .map-wire-hit-segment:focus-visible {
+    outline: none;
+  }
+  .mdmark-diagram[data-diagram="map"]
+    g.map-wire-hit:focus-within
+    .map-wire-hit-segment {
+    fill: color-mix(in srgb, var(--mdmark-color-link) 40%, transparent);
+  }
+  /* map の図の文字: 名前 13px、種類の行と線のラベル 11px。どれも太字にしない（src/map/layout.ts の LABEL_METRICS と合わせる） */
+  .mdmark-diagram[data-diagram="map"] {
+    & .mdmark-diagram-node-name {
+      font-size: 13px;
+      font-weight: 400;
+    }
+    & .mdmark-diagram-node-kind,
+    & .mdmark-diagram-label {
+      font-size: 11px;
+      font-weight: 400;
+    }
   }
 
   /* 案内と再生の帯: 図の枠の下。1 行目は左右の矢印のボタンと手順のバー、2 行目に手順のタイトル、3 行目から説明の文。始める前はバーと矢印だけで枠線と面を出さない */
@@ -10427,7 +10460,7 @@
     border-radius: var(--mdmark-radius);
     background: transparent;
     color: var(--mdmark-color-muted);
-    cursor: help;
+    cursor: pointer;
   }
   .map-er-note svg {
     width: 14px;
@@ -10623,7 +10656,7 @@
   .map-class-note {
     border-radius: 50%;
     padding: 0;
-    cursor: help;
+    cursor: pointer;
   }
   .mdmark-diagram-node-kind:has(:is(.map-class-toggle, .map-class-annotation)) {
     display: flex;
@@ -11092,7 +11125,8 @@
     max-width: 200px;
     padding: 8px 28px 8px 20px;
     text-align: center;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    word-break: keep-all;
     cursor: pointer;
 
     &:not(:has(.mdmark-diagram-info)) {
@@ -11109,8 +11143,9 @@
       inset-inline-end: 4px;
       translate: 0 -50%;
     }
+    /* 名前の文字の上を押しても選ぶ（文字は選べる） */
     & .mdmark-diagram-node-name {
-      cursor: text;
+      cursor: pointer;
       user-select: text;
     }
     /* 押せる要素は項目の全体を覆い、フォーカスの枠を項目の外側に出す */
@@ -11130,13 +11165,16 @@
   .mdmark-diagram[data-diagram="map"] .map-mindmap-item.map-mindmap-filled {
     background: var(--map-mindmap-fill);
   }
-  /* 根: 文字を大きく太く */
+  /* 根: 文字を 15px の 600 にする（項目の名前は 13px の 400） */
   .mdmark-diagram[data-diagram="map"] .map-mindmap-root {
     border-width: 2px;
-    font-size: 16px;
-    font-weight: 700;
+
+    & .mdmark-diagram-node-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
   }
-  /* 形状: 四角・角の丸い四角・丸・バン・雲・六角形。形状の指定の無い項目は枠線の無い文字に下線 */
+  /* 形状: 四角・角の丸い四角・丸・バン・雲・六角形。形状の指定の無い項目は枝の色の 1px の枠線の角の丸い四角 */
   .mdmark-diagram[data-diagram="map"] .map-mindmap-item {
     &[data-shape="square"] {
       border-radius: 0;
@@ -11189,10 +11227,24 @@
       padding-inline: 36px;
     }
     &[data-shape="plain"] {
-      border: 0;
-      border-bottom: 2px solid var(--node-color);
-      border-radius: 0;
-      background: transparent;
+      border: 1px solid var(--node-color);
+      border-radius: 6px;
+      background: var(--mdmark-color-bg-opaque);
+    }
+    /* 押せる範囲を示す: ポインターを重ねた項目の面に枝の色をうっすら敷き、選んだ項目は外側の枠線に加えて面に枝の色を敷く（形状の面より後に置く） */
+    &:hover {
+      background: color-mix(
+        in srgb,
+        var(--node-color) 10%,
+        var(--mdmark-color-bg-opaque)
+      );
+    }
+    &[data-selected] {
+      background: color-mix(
+        in srgb,
+        var(--node-color) 18%,
+        var(--mdmark-color-bg-opaque)
+      );
     }
     /* 切り抜く形状は説明のマーカーが角で欠けるため、内側へ寄せる */
     &:is([data-shape="bang"], [data-shape="hexagon"], [data-shape="circle"])

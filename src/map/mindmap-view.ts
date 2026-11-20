@@ -426,7 +426,12 @@ export const attachMapMindmap = (
     pressed = target?.closest("button") ?? null;
     if (clickControl(target)) return;
     pressed = null;
-    if (!target?.matches(".mdmark-diagram-node-hit")) return;
+    // 名前の文字は、ドラッグで文字を選んだときは選ばない
+    const onName =
+      target?.closest(".map-mindmap-item .mdmark-diagram-node-name") !== null &&
+      target !== undefined &&
+      String(getSelection() ?? "") === "";
+    if (!target?.matches(".mdmark-diagram-node-hit") && !onName) return;
     const key = target.closest<HTMLElement>(".map-mindmap-item")?.dataset.node;
     if (key !== undefined) toggleSelected(key);
   };

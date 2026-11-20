@@ -312,6 +312,8 @@ const pressedOf = (
   group: string | undefined;
   corner: string | undefined;
   hit: Element | null | undefined;
+  /** 押した線の押せる範囲の帯の区間の番号 */
+  segment: string | null | undefined;
 } => {
   const target = event.target instanceof Element ? event.target : undefined;
   return {
@@ -320,6 +322,7 @@ const pressedOf = (
       target?.closest("[data-node]")?.getAttribute("data-node") ?? undefined,
     group: groupAt(target, ".map-group-bar, .map-group-head"),
     hit: target?.closest(".map-wire-hit"),
+    segment: target?.closest("[data-segment]")?.getAttribute("data-segment"),
   };
 };
 
@@ -342,13 +345,13 @@ const dragTargetOf = (
   },
 ): DragTarget => {
   const { event, pointOf } = context;
-  const { node, group, corner, hit } = pressedOf(event);
+  const { node, group, corner, hit, segment } = pressedOf(event);
   const wireId = hit?.getAttribute("data-wire") ?? undefined;
   const wire =
     wireId === undefined
       ? undefined
       : layout.wires.find((item) => item.id === wireId);
-  const given = hit?.getAttribute("data-segment");
+  const given = segment ?? hit?.getAttribute("data-segment");
   return {
     item: itemOf(layout, { node, group }),
     resize:

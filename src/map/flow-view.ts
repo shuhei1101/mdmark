@@ -650,7 +650,10 @@ const groupKeyTarget = (
 const wireKeyTarget = (element: Element | undefined): KeyTarget | undefined => {
   const wire = element?.closest(".map-wire-hit")?.getAttribute("data-wire");
   if (!wire) return undefined;
-  return { wire, selector: `.map-wire-hit[data-wire="${CSS.escape(wire)}"]` };
+  return {
+    wire,
+    selector: `.map-wire-hit[data-wire="${CSS.escape(wire)}"] [tabindex]`,
+  };
 };
 
 /** キーで操作する要素 */

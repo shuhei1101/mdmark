@@ -13,7 +13,7 @@ import {
   shortestPathKept,
 } from "./flow-view.ts";
 import { estimateTextWidth, MAP_LAYOUT, type MeasureText } from "./layout.ts";
-import { renderMapClassDiagram, spreadMapEnds } from "./map.part.ts";
+import { renderMapClassDiagram } from "./map.part.ts";
 import type { MapArgs } from "./spec.ts";
 
 /** `classDiagram` を構成図の入力にし、構成図と同じ配置と操作に、メンバーの区画・注釈・関係の端の形と多重度・メンバーの開閉を追加する */
@@ -52,7 +52,6 @@ export const attachMapClass = (
       },
       collapsibles: [...classIds],
       collapsedTag: (space) => `クラス ${classesUnder(space)} 件`,
-      rewire: (layout) => spreadMapEnds(layout),
       render: (flowArgs) => {
         const inputs = classPartInputs(diagram, {
           collapsed: new Set(flowArgs.collapsed),

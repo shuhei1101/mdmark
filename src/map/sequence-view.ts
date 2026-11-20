@@ -144,7 +144,7 @@ const placeInsertLine = (
 
 /** 指している線に流すデータの印の層 */
 const hoverPacketLayer = (
-  hit: SVGPathElement,
+  wire: SVGPathElement,
   message: { at: number; both: boolean },
 ): SVGGElement => {
   const { at, both } = message;
@@ -153,8 +153,8 @@ const hoverPacketLayer = (
   layer.innerHTML = renderPackets([
     {
       owner: `data-message="${at}"`,
-      d: hit.getAttribute("d") ?? "",
-      length: hit.getTotalLength(),
+      d: wire.getAttribute("d") ?? "",
+      length: wire.getTotalLength(),
       fill: "var(--mdmark-color-diagram-line)",
       shape: "circle",
       direction: both ? "both" : "forward",
@@ -215,14 +215,17 @@ const addParticipantPackets = (
   participant: { id: string; messages: Sequence["messages"] },
 ): void => {
   const { id, messages } = participant;
-  for (const hit of figure.querySelectorAll<SVGPathElement>(
-    ".map-wire-hit[data-message]",
+  for (const wire of figure.querySelectorAll<SVGPathElement>(
+    "path.mdmark-diagram-wire[data-message]",
   )) {
-    const at = Number(hit.dataset.message);
+    const at = Number(wire.dataset.message);
     const message = messages[at];
     if (message?.from !== id && message?.to !== id) continue;
-    hit.ownerSVGElement?.append(
-      hoverPacketLayer(hit, { at, both: SEQ_ARROW_STYLES[message.arrow].both }),
+    wire.ownerSVGElement?.append(
+      hoverPacketLayer(wire, {
+        at,
+        both: SEQ_ARROW_STYLES[message.arrow].both,
+      }),
     );
   }
 };
@@ -635,14 +638,20 @@ export const attachMapSequence = (
   };
   // メッセージの線を指している間は、その線にデータの印を流す（選択・再生で流している線には重ねない）
   const hoverMessage = (target: Element | undefined) => {
-    const hit = target?.closest<SVGPathElement>(".map-wire-hit[data-message]");
+    const hit = target?.closest<SVGGElement>(".map-wire-hit[data-message]");
     const at = Number(hit?.dataset.message);
     const message = sequence.messages[at];
-    if (!hit || !message) return;
-    const svg = hit.ownerSVGElement;
+    const wire = figure.querySelector<SVGPathElement>(
+      `path.mdmark-diagram-wire[data-message="${at}"]`,
+    );
+    if (!hit || !message || !wire) return;
+    const svg = wire.ownerSVGElement;
     if (!svg || svg.querySelector(`.map-packet[data-message="${at}"]`)) return;
     svg.append(
-      hoverPacketLayer(hit, { at, both: SEQ_ARROW_STYLES[message.arrow].both }),
+      hoverPacketLayer(wire, {
+        at,
+        both: SEQ_ARROW_STYLES[message.arrow].both,
+      }),
     );
     // 選択と再生の強調が無いときは、その線と送り手・受け手のほかを薄くする
     if (state.selected.length > 0 || current !== undefined) return;
