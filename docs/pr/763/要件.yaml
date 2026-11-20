@@ -23,11 +23,15 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: グループの角をドラッグして大きさを変える操作と、ER 図の関連の線の 1 対多の向きの見え方を追加する。操作の表の ER 図のテーブル・クラス図のクラスの開閉の 2 行から、列・メンバーの数の表示の記述を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:18:13.343918+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: データの印・開閉など、1 対多の向きの見せ方・テーブルの開閉・グループの大きさの変更で意味が変わった用語の説明を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:18:13.343918+00:00'
 scope_out:
   - item: map の図のグループ以外（ノード・ER 図のテーブル）の大きさをドラッグで変える操作
     reason: 要望はグループの角のドラッグだけで、ノードの大きさの変更を含まない
