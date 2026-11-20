@@ -17,3 +17,15 @@ confirmations:
     approver: shuhei1101
     commit: a15afef0739e65f08c57e4e12cfe1661e4a4ca9c
     thread: https://github.com/shuhei1101/mdmark/pull/753#discussion_r4640732442
+  - topic: '記載の警告の文言: 指した行の用語が無い'
+    decision: SCR-472-4 の文言で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 6f3052c308c57e55e5d74cb5cc17656ac6a02fd1
+    thread: https://github.com/shuhei1101/mdmark/pull/753#discussion_r4641058456
+  - topic: '記載の警告の文言: alias_row と列の指定を一緒に記載した'
+    decision: SCR-472-4 の文言で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 6f3052c308c57e55e5d74cb5cc17656ac6a02fd1
+    thread: https://github.com/shuhei1101/mdmark/pull/753#discussion_r4641059410
