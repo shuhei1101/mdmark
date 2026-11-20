@@ -99,6 +99,73 @@ scenarios:
       - SC-472-78#scenarios[正常シナリオ（ずれがある）]
       - SC-472-78#scenarios[正常シナリオ]
       - SC-472-76#scenarios[正常シナリオ]
+  - name: 正常シナリオ（フロントマターにメタデータを記載する）
+    setup:
+      - name: 空のフォルダ
+        description: 正常シナリオと同じ
+      - name: フロントマターを持つ文書群
+        description: 正常シナリオの見本の文書群のうち 1 つの文書の先頭に、`title`・`description`・`tags` を記載したフロントマターを配置し、索引のその文書の行からは `title`・`description`・`tags` を削除したもの
+      - name: Mock
+        description: 正常シナリオと同じく、外部ライブラリは手元のファイル
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（フロントマターのメタデータ）]
+        B --> C[複数の文書を1枚のHTMLにまとめる:正常シナリオ（フロントマターのメタデータ）]
+        C --> D[まとめたHTMLで文書を行き来する:正常シナリオ]
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ（フロントマターのメタデータ）]"
+        click C "id:SC-472-76#scenarios[正常シナリオ（フロントマターのメタデータ）]"
+        click D "id:SC-472-13#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`mdmark check` がずれ 0 件で終了コード 0 を返却する'
+      - '`mdmark build` が `build.out` に 1 枚の HTML を書き込み、終了コード 0 を返却する'
+      - 書き出した HTML の文書の一覧と、その文書を開いたときの帯のタイトル・ページのタイトルに、フロントマターの `title` が出る
+      - その文書を参照している文書の関連文書の一覧に、フロントマターの `title` のリンクが出る
+    test: test_normal_when_frontmatter_metadata
+    uses:
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ（フロントマターのメタデータ）]
+      - SC-472-76#scenarios[正常シナリオ（フロントマターのメタデータ）]
+      - SC-472-13#scenarios[正常シナリオ]
+  - name: 異常シナリオ（索引とフロントマターの値が違う）
+    setup:
+      - name: 値が違う文書群
+        description: 正常シナリオの見本の文書群のうち 1 つの文書の先頭に、索引のその文書の行の `title` と違う `title` を記載したフロントマターを配置したもの
+      - name: 値をそろえた文書
+        description: 1 回目の点検の後に、文書の作成者がフロントマターの `title` を索引の `title` と同じ値に手で修正した文書
+      - name: Mock
+        description: 正常シナリオと同じく、外部ライブラリは手元のファイル
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（索引とフロントマターの値が違う）]
+        B --> C[設定と索引を点検する:正常シナリオ]
+        C --> D[複数の文書を1枚のHTMLにまとめる:正常シナリオ]
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ（索引とフロントマターの値が違う）]"
+        click C "id:SC-472-78#scenarios[正常シナリオ]"
+        click D "id:SC-472-76#scenarios[正常シナリオ]"
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 回目の `mdmark check` が、値の違う文書の `title` のずれを出し、終了コード 0 以外を返却する
+      - 値をそろえた文書での 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返却する
+      - その後の `mdmark build` が 1 枚の HTML を書き込む
+    test: test_error_when_frontmatter_mismatch
+    uses:
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ（索引とフロントマターの値が違う）]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-76#scenarios[正常シナリオ]
 lead: 文書の作成者が、サーバーを持たずに CLI で雛形を配置し、文書と索引を書き込んで点検し、1 枚の HTML にまとめて配る。読者は受け取った HTML を file:// で開き、外を読み込まずに文書を行き来する。
 primary_actor: 文書の作成者
 stakeholders:
@@ -121,3 +188,5 @@ tags:
   - name: tool:html
   - name: action:まとめ
   - name: action:配布
+  - name: topic:フロントマター
+  - name: topic:索引
