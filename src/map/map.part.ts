@@ -1579,8 +1579,6 @@ export const MAP_ER = {
   /** 多重度の文字の 1 文字の幅と、文字の高さ（重なりの見積もり） */
   cardinalityChar: 7,
   cardinalityLine: 13,
-  /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
-  crowd: 120,
   /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
   labelChar: 12,
   labelLine: 16,
@@ -1710,8 +1708,6 @@ type ReanchorArgs = {
   side: "left" | "right" | undefined;
   /** 辺ごとに、その辺から出す長さを返す */
   outOf: (side: "left" | "right") => number;
-  /** 辺ごとの、高さ y で隣のノードまでの空き */
-  freeOf: (side: "left" | "right") => number;
   /** 辺ごとに、同じ高さから出る端をずらす量を返す */
   shiftOf: (side: "left" | "right") => number;
 };
@@ -1719,26 +1715,20 @@ type ReanchorArgs = {
 /** ノードの左右の辺 */
 type ReanchorSide = "left" | "right";
 
-/** 付け替える辺を選ぶ: 補足の指定 → 元の辺（空きが `MAP_ER.crowd` 以上）→ 空きが広い側 → 元の辺 → 次の点がある側 */
+/** 付け替える辺を選ぶ: 補足の指定 → 元の辺（自動配置が左右のうち相手に近い方から引いた辺）→ 次の点がある側 */
 const chooseSide = (
   args: ReanchorArgs,
   ends: { p1: Point; original: ReanchorSide | undefined },
 ): ReanchorSide => {
   const { rect, side } = args;
   const { p1, original } = ends;
-  if (side !== undefined) return side;
-  if (original !== undefined && args.freeOf(original) >= MAP_ER.crowd)
-    return original;
-  const left = args.freeOf("left");
-  const right = args.freeOf("right");
-  const wider = left > right ? "left" : right > left ? "right" : undefined;
-  return wider ?? original ?? (p1[0] >= rect.x + rect.w / 2 ? "right" : "left");
+  return side ?? original ?? (p1[0] >= rect.x + rect.w / 2 ? "right" : "left");
 };
 
 /**
  * 自動配置の経路の元の端を、高さ y の左右の辺へ付け替える。経路の残りは自動配置のまま使い、ノードを横切らない。
- * 辺は、補足の指定 → 元の辺（隣のノードまでの空きが `MAP_ER.crowd` 以上のとき）→ 空きが広い側 → 次の点がある側の順に選ぶ。
- * 元の辺と反対の辺から出すときは、ノードの上を回って元の経路へ戻す
+ * 辺は、補足の指定 → 元の辺 → 次の点がある側の順に選ぶ。
+ * 元の辺と反対の辺から出すとき（補足の指定が元の辺と違うとき）は、ノードの上を回って元の経路へ戻す
  */
 const reanchor = (args: ReanchorArgs): Point[] => {
   const { points, rect, side } = args;
@@ -1795,24 +1785,6 @@ export const rewireMapEr = (args: {
     used.set(key, count + 1);
     return MAP_ER.endOut + count * MAP_ER.step;
   };
-  /** 高さ y で、ノードの辺から同じ高さにある隣のノードまでの空き（無ければ Infinity） */
-  const freeOf =
-    (node: { id: string; x: number; w: number }, y: number) =>
-    (side: "left" | "right"): number =>
-      Math.min(
-        Number.POSITIVE_INFINITY,
-        ...args.layout.nodes
-          .filter(
-            (other) =>
-              other.id !== node.id && other.y <= y && y <= other.y + other.h,
-          )
-          .map((other) =>
-            side === "right"
-              ? other.x - (node.x + node.w)
-              : node.x - (other.x + other.w),
-          )
-          .filter((gap) => gap >= 0),
-      );
   return args.layout.wires.map((wire) => {
     const relation = relations.get(wire.id);
     const from = args.layout.nodes.find((node) => node.id === wire.from);
@@ -1842,7 +1814,6 @@ export const rewireMapEr = (args: {
       y: fromY,
       side: sideOf(ends?.from),
       outOf: outFor(from.id),
-      freeOf: freeOf(from, fromY),
       shiftOf: shiftFor(from.id, fromY),
     });
     const toY = yOf(to, toColumn);
@@ -1852,7 +1823,6 @@ export const rewireMapEr = (args: {
       y: toY,
       side: sideOf(ends?.to),
       outOf: outFor(to.id),
-      freeOf: freeOf(to, toY),
       shiftOf: shiftFor(to.id, toY),
     }).reverse();
     return { ...wire, points };

@@ -1,0 +1,48 @@
+# 重みを入れる前の実装（e926caa3 の src/map/layout.ts）で、追加したテストを回した
+$ git checkout e926caa3 -- src/map/layout.ts
+$ npx vitest run --project 'unit*' tests/unit/src/map/layout.test.ts -t test_route_wires_when_foreign_port
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-edge-near-side-routing
+
+ ❯ |unit| tests/unit/src/map/layout.test.ts (37 tests | 1 failed | 36 skipped) 54ms
+   × test_route_wires_when_foreign_port 52ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_foreign_port
+AssertionError: D の出入り口の点 (180,155.5): expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/map/layout.test.ts:1097:62
+    1095|   const points = layout.wires.find((wire) => wire.id === "M->B")?.poin…
+    1096|   for (const port of ports) {
+    1097|     expect(passesPoint(points, port), `D の出入り口の点 (${port})`).toBe(fals…
+       |                                                              ^
+    1098|   }
+    1099| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 36 skipped (37)
+   Start at  19:37:29
+   Duration  209ms (tests 70%, import 17%, transform 9%, worker 5%)
+
+
+# 重みを入れた実装（814082f5）で回した
+$ npx vitest run --project 'unit*' tests/unit/src/map/layout.test.ts -t test_route_wires_when_foreign_port
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-edge-near-side-routing
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 36 skipped (37)
+   Start at  19:37:31
+   Duration  158ms (tests 69%, import 16%, transform 11%, worker 4%)
+
