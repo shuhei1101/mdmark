@@ -1687,11 +1687,11 @@ test("test_mount_with_rendered", async () => {
     await mountTracked(fromMarkdown, { markdown: RENDERED_MARKDOWN });
     await mountTracked(fromRendered, { rendered, pureMarkdown });
     // 検証
-    // 表の絞り込みの引き出しの id は mount ごとの通し番号を持つため、番号を除いて比べる
+    // 表とタブの要素の id はページの中の通し番号を持つため、番号を除いて比べる
     const content = (el: HTMLElement) =>
       el
         .querySelector(".mdmark-content")
-        ?.innerHTML.replaceAll(/mdmark-table-\d+/g, "mdmark-table-n");
+        ?.innerHTML.replaceAll(/(mdmark-(?:table|tabs))-\d+/g, "$1-n");
     expect(content(fromRendered)).toBeDefined();
     expect(content(fromRendered)).toBe(content(fromMarkdown));
     expect(fromRendered.classList.contains("mdmark-theme-dark")).toBe(true);
