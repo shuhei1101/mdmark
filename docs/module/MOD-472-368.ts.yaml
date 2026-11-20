@@ -9,7 +9,7 @@ constants:
     title: 描いた結果の ID の頭
     container: src/code-block/code-preview.interact.ts
     usecase: markdownのコードブロックを描いた結果と見比べる
-    summary: 描いた結果の中の `id` と、それを指す属性の値の頭に付ける文字。`{n}` に文書の頭からの通し番号を入れて `mdmark-preview-{n}-` にし、外の文書の `id` と重ねない
+    summary: 描いた結果の中の `id` と、それを指す属性の値の頭に付ける文字。`{n}` にページで 1 つ持つ通し番号（描いた結果を描くたびに 1 増やすモジュールの変数）を入れて `mdmark-preview-{n}-` にし、外の文書・ほかの描いた結果・入れ子を遅れて描いた結果の `id` と重ねない
     value: "'mdmark-preview-'"
   - name: PREVIEW_CUT_FEATURES
     title: 描いた結果で切る機能
@@ -29,7 +29,7 @@ functions:
       付けた時点で `root` の中にある `.mdmark-code[data-mdmark-markdown]` を集め（描いた結果の中のコードブロックは、描いた結果の `mount` が付けるため除く）、文書の順に次の処理をする。
 
       1. `pre` の後ろに `<div class="mdmark-code-preview">` を配置し、`mdmark-code-meta`（`attachCodeCopy` が付けた帯の右の塊）の先頭に `renderCodeRaw` のボタンを配置する
-      2. `data-mdmark-raw` を持たなければ、`renderPreview` に描いた結果の要素とコピーのボタンが書き込む文字（`code` の文字から末尾の改行を 1 つ除いたもの）を指定して描き、`prefixPreviewIds` で `id` の頭を付けて、`pre` を `hidden` にする。`data-mdmark-raw` を持てば描かずに、描いた結果の要素を `hidden` にしてボタンを押した状態にする
+      2. `data-mdmark-raw` を持たなければ、`renderPreview` に描いた結果の要素とコピーのボタンが書き込む文字（`code` の文字から末尾の改行を 1 つ除いたもの）を指定して描き、ページで 1 つ持つ通し番号を 1 増やした値で `prefixPreviewIds` を呼んで `id` の頭を付けて、`pre` を `hidden` にする。`data-mdmark-raw` を持てば描かずに、描いた結果の要素を `hidden` にしてボタンを押した状態にする
       3. ボタンを押すと、描いた結果と `pre` の `hidden` を入れ替え、`aria-pressed` を元の Markdown を出しているかに合わせる。まだ描いていなければ、描いた結果を出す前に手順 2 と同じく描く
       4. 描くときに例外が出たら、描いた結果の要素とボタンを取り除き、`pre` を出す（例外は投げ直さない）
 
@@ -42,7 +42,7 @@ functions:
       - name: renderPreview
         type: '(el: HTMLElement, markdown: string) => () => void'
         required: true
-        description: 描いた結果の要素に Markdown を描き、片付ける関数を返却する関数（`mount` が `attachInteractions` に指定する）
+        description: 描いた結果の要素に Markdown を描き、片付ける関数を返却する関数（`mount` が外の文書の操作を付け終えた後に呼ぶときに指定する）
     returns:
       type: () => void
       description: 描いた結果とボタンを取り除き、`renderPreview` が返した片付ける関数を呼び、`pre` の `hidden` を外す関数
@@ -56,7 +56,7 @@ functions:
         summary: 既定で描いた結果を出し、押すと元の Markdown に切り替える
         condition: '`data-mdmark-markdown` を持つコードブロック（中身 `# 見出し`）と、持たない `ts` のコードブロック。描いた結果の要素に `<h1 id="a">見出し</h1>` を入れる `renderPreview` を指定し、Raw のボタンを 2 回押す'
         mock: '`renderPreview` を、呼ばれた Markdown を記録する関数に差し替える'
-        expected: '`renderPreview` が `# 見出し` で 1 回だけ呼ばれる。付けた直後は `pre` が `hidden` で、描いた結果の見出しの `id` が `mdmark-preview-1-a`、ボタンが `aria-pressed="false"`。1 回目の後は描いた結果が `hidden` で `aria-pressed="true"`、2 回目の後は元に戻る。`ts` のコードブロックにはボタンも描いた結果も無い'
+        expected: '`renderPreview` が `# 見出し` で 1 回だけ呼ばれる。付けた直後は `pre` が `hidden` で、描いた結果の見出しの `id` が `mdmark-preview-{n}-a`（`{n}` は付ける前の通し番号より大きい整数）、ボタンが `aria-pressed="false"`。1 回目の後は描いた結果が `hidden` で `aria-pressed="true"`、2 回目の後は元に戻る。`ts` のコードブロックにはボタンも描いた結果も無い'
       - name: test_attach_code_previews_when_raw
         case: 正常
         summary: '`data-mdmark-raw` のコードブロックは初めて描いた結果へ切り替えたときに描く'
@@ -75,6 +75,12 @@ functions:
         condition: 描いた結果を出したコードブロックで、戻りの関数を呼ぶ
         mock: '`renderPreview` を、片付ける関数の呼び出しを記録する関数を返す関数に差し替える'
         expected: 片付ける関数が 1 回呼ばれ、ボタンと描いた結果の要素が無く、`pre` が `hidden` を持たない
+      - name: test_attach_code_previews_when_nested_raw
+        case: 正常
+        summary: 入れ子の `raw` を遅れて描いても `id` が重ならない
+        condition: '`data-mdmark-markdown` を持つコードブロックを 2 つ。`renderPreview` は描いた結果の要素に `<h2 id="x">` と、中身 `## x` の `data-mdmark-markdown`・`data-mdmark-raw` を持つコードブロックを入れ、その要素に `attachCodePreviews` を呼ぶ。付けた後に、入れ子の Raw のボタンを 2 つとも押す'
+        mock: '`renderPreview` を、上の要素を入れて入れ子に `attachCodePreviews` を呼ぶ関数に差し替える'
+        expected: '`root` の中の `id` が全て異なり、入れ子の描いた結果の `id` も `mdmark-preview-` で始まる'
     status: planned
   - name: prefixPreviewIds
     title: 描いた結果の ID に頭を付ける
@@ -92,7 +98,7 @@ functions:
       - name: n
         type: number
         required: true
-        description: 文書の頭からの通し番号（1 から）
+        description: ページで 1 つ持つ通し番号（1 から）
     returns:
       type: void
       description: なし

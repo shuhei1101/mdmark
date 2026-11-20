@@ -17,7 +17,7 @@ functions:
       | --- | --- |
       | 記法の機能 | `attachSections`・`attachTables`・`attachTabs` の順 |
       | `table` | `attachTables`。`attachStickyRows` は `table` のオン・オフによらず、`attachTables` の後（オフなら `attachTables` を呼ばずに）呼ぶ |
-      | `code` | `attachCodeCopy` と `attachCodeFolds`。`renderPreview` を指定したときは、`attachCodeCopy` の後に `attachCodePreviews` |
+      | `code` | `attachCodeCopy` と `attachCodeFolds` |
       | `tree` | `attachFileTrees` |
       | `footnotes` か `annotations` | `attachFootnotes` |
       | `glossary` か `backlinks` | `attachTermTips` |
@@ -31,9 +31,9 @@ functions:
       `partStates` を指定したときは、`attachSections`・`attachTables`・`attachCodeFolds`・`attachFileTrees`・`attachDiagrams` にも指定し、`attachDetailsStates` を呼ぶ
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; longColumnMin?: number; onColumnsChange?: (event: MdmarkColumnsChange) => void; sectionStates?: SectionStates; partStates?: PartStates; revealHash?: boolean; renderPreview?: (el: HTMLElement, markdown: string) => () => void }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; longColumnMin?: number; onColumnsChange?: (event: MdmarkColumnsChange) => void; sectionStates?: SectionStates; partStates?: PartStates; revealHash?: boolean }'
         required: true
-        description: 描いた要素と文書で決まった機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と長文の列の最小の幅（既定を適用した設定の `table.longColumnMin`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）と、`attachSections` に `states` として指定するセクションの開閉の記録（`SectionStates` は `src/section/section.interact.ts` から型だけを読み込む）と、部品の開閉の記録（`partStates`。`PartStates` は `src/shared/part-states.interact.ts` から型だけを読み込む。省くと記録しない）と、付けたときに URL の `#ID` で開くか（`revealHash`。既定 `true`）と、言語 markdown のコードブロックの描いた結果を描く関数（`renderPreview`。省くと描いた結果を付けない）
+        description: 描いた要素と文書で決まった機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と長文の列の最小の幅（既定を適用した設定の `table.longColumnMin`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）と、`attachSections` に `states` として指定するセクションの開閉の記録（`SectionStates` は `src/section/section.interact.ts` から型だけを読み込む）と、部品の開閉の記録（`partStates`。`PartStates` は `src/shared/part-states.interact.ts` から型だけを読み込む。省くと記録しない）と、付けたときに URL の `#ID` で開くか（`revealHash`。既定 `true`）
     returns:
       type: () => void
       description: 付けた操作を削除する関数
@@ -50,7 +50,6 @@ functions:
       - 'MOD-472-225#functions[attachCodeFolds]'
       - 'MOD-472-238#functions[attachFootnotes]'
       - MOD-472-348#functions[attachDetailsStates]
-      - MOD-472-368#functions[attachCodePreviews]
     unit_tests:
       - name: test_attach_interactions
         case: 正常
