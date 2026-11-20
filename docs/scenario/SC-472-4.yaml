@@ -102,7 +102,7 @@ scenarios:
       <!-- /map -->
     expected:
       - '`claude plugin update mdmark@mdmark` が終了コード 0 で終わり、`claude plugin list --json` の `mdmark@mdmark` のバージョンが追加した commit の短縮 SHA になる'
-      - 新しい `installPath` のスキルが、追加した commit の内容になる
+      - 変更後の `installPath` のスキルが、追加した commit の内容になる
       - '`claude plugin marketplace update mdmark` だけでは、入れたプラグインのバージョンは変わらない'
     test: test_normal_when_commit_added
   - name: 正常シナリオ（mdmark-style を入れる）
