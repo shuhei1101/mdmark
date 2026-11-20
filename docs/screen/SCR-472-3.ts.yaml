@@ -8,7 +8,7 @@ elements:
     component: CMP-472-49#
     args:
       - name: docs
-        value: まとめた文書の `{ path, title }`（`build.include` の並び。タイトルは索引の `title`、無ければ文書の最初の h1、無ければファイル名）
+        value: まとめた文書の `{ path, title }`（`build.include` の並び。タイトルは索引の `title`、無ければ文書の先頭のフロントマターの `title`、無ければ文書の最初の h1、無ければファイル名。インターフェース定義『複数の文書を1枚のHTMLにまとめる』の制約「文書のタイトル」）
       - name: current
         value: 開いている文書のパス
     position: 画面の左
