@@ -20,7 +20,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T05:08:34.168371+00:00'
   - process: 複合ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T05:15:50.166118+00:00'
   - process: デザインスタイル選定
     status: skipped
     reason: 画面の要素・配置・色は変わらず、表示するタイトルの取得元だけが変わるため（判定フローチャート『モック要否』の※1 が NO）
