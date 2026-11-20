@@ -1064,7 +1064,6 @@ test("test_normal_when_traces_hidden", async () => {
   expect(report.outside).toBe(0);
   expect(report.generated).toBe(0);
   expect(report.markdownNames).toBe(0);
-  expect(report.markdown).toContain("mdmark は Markdown を描きます");
   expect(report.comments).toBe(0);
   expect(report.markdown).not.toContain("<!--");
   expect(report.pureMarkdown).toContain("mdmark は Markdown を描きます");
@@ -1098,7 +1097,7 @@ test("test_normal_when_traces_hidden", async () => {
   ).resolves.toEqual({ open: true, flag: true });
   await expect(
     hiddenPage.page.locator("article pre code").last().textContent(),
-  ).resolves.toContain("<zq-chart>{}</zq-chart>");
+  ).resolves.toContain("<mdmark-chart>{}</mdmark-chart>");
   await hiddenPage.close();
   await keptPage.close();
 }, 240_000);

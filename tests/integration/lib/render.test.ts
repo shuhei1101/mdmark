@@ -5058,8 +5058,8 @@ test("test_normal_when_glossary_alias_row", async () => {
   ]);
   const rows = table.split("<tbody>")[1]?.split("<tr").slice(1) ?? [];
   expect(
-    rows.map(
-      (row) => plainText(row.slice(row.indexOf(">") + 1)).split(/\s+/)[0],
+    rows.map((row) =>
+      plainText(/<td[^>]*>([\s\S]*?)<\/td>/.exec(row)?.[1] ?? "").trim(),
     ),
   ).toEqual(["マーカー", "機能"]);
   expect(table).not.toContain("使用方法");
