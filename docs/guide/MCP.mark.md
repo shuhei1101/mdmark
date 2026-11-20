@@ -7,7 +7,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 ツールの結果のテキストは JSON の文字列 1 つ。
 エラーは結果の `isError` を `true` にし、内容のテキストに、何が合わないかと修正方法を日本語の 1 文で記載する。
 `config` を省くと、端末の設定と、Claude Code のセッションのフォルダから上のフォルダの `mdmark.config.yaml` を重ねて読み込む（[設定を重ねて読み込む仕組み](./コアコンセプト-設定を重ねて読み込む仕組み.mark.md)）。
-端末の設定の場所は、`mdmark serve` のプロセスの環境変数 `MDMARK_CONFIG` で決まる。
+端末の設定の場所は、`mdmark serve` のプロセスの環境変数 `MDMARK_CONFIG` で決定する。
 相対パスの引数は、セッションのフォルダからの相対パス。
 設定のキーは [設定](./設定.mark.md)、索引のキーは [索引](./索引.mark.md)。
 
@@ -38,7 +38,7 @@ MCP サーバーは、`mdmark serve` が起動する常駐サーバー。
 
 接続したときの `instructions` は、mdmark の文書を記載する前に dev-docs の `search_docs` で配信元 `mdmark` のガイド（`docs` の行をタグ `topic:ガイド` で絞る）を参照し、記載した後に `check` で点検する順序を記載する。
 mdmark の記法で記載する文書の拡張子が `.mark.md` で、利用者の指示が無い限り純粋な `.md` には記法を使用しないことも記載する。
-プラグインのフックは、`.mark.md` のファイルへの Write・Edit と、語 mdmark を含む利用者の発言で、ガイドを参照してから記載するよう 1 つのセッションに 1 回案内する（[Claude Code に使用方法を提供する仕組み](./コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md)）。
+プラグインのフックは、`.mark.md` のファイルへの Write・Edit と、単語 mdmark を含む利用者の発言で、ガイドを参照してから記載するよう 1 つのセッションに 1 回案内する（[Claude Code に使用方法を提供する仕組み](./コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md)）。
 dev-docs が無い、または配信元 `mdmark` が登録されていないときは、ガイドが見つからないことも記載する。
 利用側の CSS を探すときは `list_templates` で一覧を引き、`apply_template` で配置して返った値を設定の `theme` に記載し、作った CSS は `add_template` で登録する順序も記載する。
 常駐サーバーが動いている場所（unit で動いているときは unit の名前（[`serve.systemdUnit`](./設定.mark.md#常駐サーバーの-unit-の名前)、既定 `mdmark-mcp`）とログを確認する `journalctl --user -u {unit の名前}`、ほかは tmux のセッション名（[`serve.tmuxSession`](./設定.mark.md#常駐サーバーの-tmux-のセッション名)、既定 `mdmark-mcp`））と、止まったときは `/mdmark:global-setup` でもう一度起動できることも記載する。
@@ -217,7 +217,7 @@ dev-docs が無い、または配信元 `mdmark` が登録されていないと�
 ## CSS のテンプレートの一覧を返却する
 
 端末の設定のフォルダの `templates/css/` の索引 `templates.yaml` を読み込み、テンプレートの一覧を返却する。
-テンプレートのフォルダの場所は、端末の設定のファイル（`mdmark serve` のプロセスの `MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）と同じフォルダで決まる。
+テンプレートのフォルダの場所は、端末の設定のファイル（`mdmark serve` のプロセスの `MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）と同じフォルダで決定する。
 フォルダと索引は書き換えない。
 手順は [MCP のツールを使用する](./ClaudeCodeで使用する-MCPのツールを使用する.md#css-のテンプレートを使用する)。
 

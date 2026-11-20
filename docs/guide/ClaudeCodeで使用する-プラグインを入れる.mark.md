@@ -39,7 +39,7 @@ Claude Code で mdmark の文書を記載し始める前に実行する。
 ターミナルからは `claude plugin install mdmark@mdmark` で入れられる。
 Claude Code が `plugin/` をキャッシュへ写す。
 プラグインはまとめたフック・スクリプトとスキル（`global-setup`・`setup`）だけを持ち、依存を入れない。
-フックは、MCP のツールの呼び出しの前に作業のフォルダを引数に入れ、`.mark.md` のファイルへの Write・Edit と語 mdmark を含む発言で、ガイドを参照してから記載するよう 1 つのセッションに 1 回案内する。
+フックは、MCP のツールの呼び出しの前に作業のフォルダを引数に入れ、`.mark.md` のファイルへの Write・Edit と単語 mdmark を含む発言で、ガイドを参照してから記載するよう 1 つのセッションに 1 回案内する。
 
 ### 画面の描き換えを入れる
 
@@ -77,7 +77,7 @@ claude plugin list
 
 #### MCP サーバーがつながっている
 
-新しいセッションで `/mcp` を開く。
+新規のセッションで `/mcp` を開く。
 `plugin:mdmark:mdmark` がつながっていて、ツールが並ぶ（[MCP](./MCP.mark.md)）。
 接続に失敗しているときは、`/mdmark:global-setup` で常駐サーバーを起動してから、`/mcp` でもう一度接続する（[MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md)）。
 
@@ -97,8 +97,8 @@ claude plugin update mdmark@mdmark
 ```
 
 `plugin.json` はバージョンを持たず、プラグインのバージョンは commit の短縮 SHA になる。
-マーケットプレイスの更新だけではプラグインは変わらず、`claude plugin update` で新しい commit に上がる。
-Claude Code を起動し直すと反映される。
+マーケットプレイスの更新だけではプラグインは変わらず、`claude plugin update` で新規の commit に上がる。
+Claude Code を再起動すると反映される。
 
 ## 子プロセスで起動していたプラグインからの移行
 

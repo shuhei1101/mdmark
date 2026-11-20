@@ -41,12 +41,12 @@ Claude Code が次の順に進め、書き換える前に内容を示して確�
 
 <!-- /steps -->
 
-常駐サーバーを起動する方法は、端末の設定の `serve.launcher`（既定 `auto`）で決まる。
+常駐サーバーを起動する方法は、端末の設定の `serve.launcher`（既定 `auto`）で決定する。
 
 | 端末 | 起動の方法 | ログ | 止め方 |
 | --- | --- | --- | --- |
-| systemd --user が使える（systemd を有効にした WSL・Linux） | unit `mdmark-mcp`（`serve.systemdUnit` で変える）。端末を起動し直しても自動で起動する | `journalctl --user -u mdmark-mcp` | `systemctl --user disable --now mdmark-mcp` |
-| systemd --user が使えない（macOS など）か、`serve.launcher` を `tmux` にした | tmux のセッション `mdmark-mcp`（`serve.tmuxSession` で変える） | `${XDG_STATE_HOME:-~/.local/state}/mdmark/serve.log`（`MDMARK_STATE_DIR` で変える） | `tmux kill-session -t =mdmark-mcp` |
+| systemd --user が使用できる（systemd を有効にした WSL・Linux） | unit `mdmark-mcp`（`serve.systemdUnit` で変える）。端末を再起動しても自動で起動する | `journalctl --user -u mdmark-mcp` | `systemctl --user disable --now mdmark-mcp` |
+| systemd --user が使用できない（macOS など）か、`serve.launcher` を `tmux` にした | tmux のセッション `mdmark-mcp`（`serve.tmuxSession` で変える） | `${XDG_STATE_HOME:-~/.local/state}/mdmark/serve.log`（`MDMARK_STATE_DIR` で変える） | `tmux kill-session -t =mdmark-mcp` |
 
 起動の方法を変えると、前の方法で動いている常駐サーバーを止めてから起動する。
 書き込むことを断ると、端末の設定と `settings.json` は書き換えない。
@@ -97,7 +97,7 @@ tmux has-session -t =mdmark-mcp && tail -n 20 ~/.local/state/mdmark/serve.log
 
 #### セッションの開始で通知が出ない
 
-新しいセッションを開いても、常駐サーバーが待ち受けていないことの通知が出ない。
+新規のセッションを開いても、常駐サーバーが待ち受けていないことの通知が出ない。
 
 ## 元に戻す
 
