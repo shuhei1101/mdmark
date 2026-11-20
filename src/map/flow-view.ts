@@ -447,9 +447,11 @@ const emphasizeNodes = (
       element.toggleAttribute("data-selected", selected.has(id));
       const name =
         element.querySelector(".mdmark-diagram-node-name")?.textContent ?? "";
+      // 計画した変更のノードは、名前の末尾に変更の名前（バッジの文字）を保つ
+      const change = element.querySelector(":scope > .mdmark-map-change");
       focusable.setAttribute(
         "aria-label",
-        selectableName(name, selected.has(id)),
+        `${selectableName(name, selected.has(id))}${change === null ? "" : `、${change.textContent ?? ""}`}`,
       );
     }
     element.classList.toggle(
