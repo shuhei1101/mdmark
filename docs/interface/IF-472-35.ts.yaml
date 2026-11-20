@@ -10708,6 +10708,142 @@ flows:
       - どちらの引数も `TypeError` を投げる
       - 要素の中が空のまま
     test: test_error_when_rendered_invalid
+  - name: 正常系（map の計画した変更を描く）
+    summary: 補足の `changes` の追加・変更・削除を、色・破線・取り消し線・バッジで描き、使用できない種類と知らない値を記載の警告にする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 計画した変更を持つ map の Markdown
+        description: 'map の範囲を 2 つ持つ文書。1 つ目は正常系（map の構成図を描く）の範囲の補足に、種類の色 `green` を持つノード 1 つと線 1 本への `added`、`layout` で `color: blue` を持つノード 1 つへの `changed`、ノード 1 つと線 1 本への `removed`、ノード 1 つへの知らない値 `moved` を追加した範囲。2 つ目は正常系（map のシーケンス図を描いて再生する）の範囲の補足に、メッセージ `1` への `added` を追加した範囲'
+      - name: Mock
+        description: 正常系（map の構成図を描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: changes の ID・値・図の種類を確認する
+        M->>M: 削除のノード・線も含めて配置し、変更の色とバッジを付ける
+        M-->>U: 計画した変更を描いた図と記載の警告
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目の図の `added` のノードの枠線と線の色が `--mdmark-color-diff-add-sign` の計算した値で、種類のアイコンは種類の色 `green` のまま
+      - '`changed` のノードの枠線の色が色の名前 `orange` の計算した値（`layout` の `blue` ではない）'
+      - '`removed` のノードの枠線と線が `--mdmark-color-diff-del-sign` の破線で、名前の `text-decoration-line` が `line-through`・`word-break` が `normal`。`removed` のノードはほかのノードと重ならない'
+      - 変更を持つ 3 つのノードに「追加」「変更」「削除」のバッジがあり、ノードのスクリーンリーダー向けの名前が「{名前}、{変更の名前}」で終わる
+      - 1 つ目の図の前の記載の警告に `moved` の `map_invalid_value`（`added`・`changed`・`removed` を含む）が 1 件あり、そのノードはバッジを持たない
+      - 2 つ目のシーケンス図の前の記載の警告に、`changes` を使用できない図の種類である旨の `map_invalid_value` が 1 件あり、メッセージに色とバッジが無い
+    test: test_normal_when_map_planned_changes
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（計画した変更を示す）]
+  - name: 正常系（map の図を SVG・PNG に書き出す）
+    summary: パネルの書き出すボタンのメニューで、今の開閉のまま等倍の図の全体を、外部の資源を持たない SVG と 2 倍の PNG にして保存させる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図の map の Markdown
+        description: 正常系（map の構成図を描く）と同じ範囲（タイトル「全体の構成」）と、タイトルを持たない 2 つ目の構成図の範囲。描いた後、グループを 1 つ閉じ、ノードを 1 つ選び、倍率を 150% にする
+      - name: Mock
+        description: 正常系（map の構成図を描く）と同じ。ブラウザのダウンロードを受け取る。`devicePixelRatio` は 1
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        participant B as ブラウザ
+        U->>M: パネルの書き出すボタンを押して SVG を選ぶ
+        M->>M: 図を複製して計算したスタイルを書き写し、foreignObject の SVG にする
+        M->>B: download のリンクで SVG を保存させる
+        U->>M: PNG を選ぶ
+        M->>M: SVG を 2 倍の canvas に描く
+        M->>B: PNG を保存させる
+      ```
+
+      <!-- /map -->
+    expected:
+      - パネルの全画面のボタンの隣に、スクリーンリーダー向けの名前「図を書き出す」と `aria-expanded="false"` を持つボタンがあり、`aria-haspopup` を持たない。押すと `aria-expanded="true"` になり、`aria-controls` が指す要素に「SVG」「PNG」の 2 つのボタンが表示され、`popover` 属性を持たない
+      - 保存されたファイル名が `全体の構成.svg`・`全体の構成.png`、2 つ目の図は `図 2.svg`
+      - SVG の `width`・`height` が倍率 100% の図の全体の大きさで、閉じたグループの名前を持ち、その中のノードの名前を持たない
+      - SVG が外部への `href`・`url(`・`var(` と `class` 属性を持たず、選択の強調・パネル・リサイズハンドル・ツールチップのマーカー・記載の警告の要素を持たない
+      - PNG の幅・高さが SVG の `width`・`height` の 2 倍
+      - 開いて Tab で「SVG」から「PNG」へ移れ、Esc で閉じて `aria-expanded="false"` になり、書き出すボタンへフォーカスが戻る。要素の外側のクリックでも閉じる。書き出しの前後で図の倍率・位置・選択が変わらない
+      - 書き出しの間にページの外への要求が 0 件
+    test: test_normal_when_map_exported
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（図を SVG・PNG に書き出す）]
+  - name: 正常系（map の一覧の表示に切り替える）
+    summary: パネルの一覧の表示のボタンで、構成図とシーケンス図をキーボードと読み上げで辿れる一覧に切り替え、図の表示に戻す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図・シーケンス図・ガントチャートの map の Markdown
+        description: map の範囲を 3 つ持つ文書。1 つ目は正常系（map の構成図を描く）の範囲に、ノード 1 つの `changes`（`added`）とノード 1 つの `notes` の説明を追加した範囲。2 つ目は正常系（map のシーケンス図を描いて再生する）の範囲。3 つ目は正常系（map のガントチャートを描く）の範囲
+      - name: Mock
+        description: 正常系（map の構成図を描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 構成図のパネルの一覧の表示のボタンを押す
+        M-->>U: グループとノードの入れ子の一覧
+        U->>M: ↓・→・← を押す
+        M-->>U: 項目を移り、グループの項目を開閉する
+        U->>M: もう一度ボタンを押す
+        M-->>U: 切り替える前の倍率・位置・開閉の図
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目と2 つ目のパネルに、スクリーンリーダー向けの名前「一覧で表示」と `aria-pressed="false"` を持つボタンがあり、3 つ目のガントチャートのパネルには無い
+      - 1 つ目のボタンを押すと `aria-pressed="true"` になり、表示する枠の中に `role="tree"` の一覧があって図が非表示になる。グループは `aria-expanded` を持つ項目で、ノードの項目は名前・種類の名前・説明・「→ {相手の名前}」を持ち、`added` のノードの項目は「追加」のバッジを持つ
+      - 一覧の最初の項目の矩形がパネルの矩形と重ならない
+      - ↓ で次の項目へフォーカスが移り、グループの項目で ← を押すと `aria-expanded="false"` になって子の項目が隠れ、→ で開く。`tabindex="0"` の項目は常に 1 つ
+      - '2 つ目の一覧の項目がメッセージの記載順の「{送信元} → {送信先}: {メッセージ}」'
+      - 文書の目次の見出しの数が切り替える前と同じ
+      - もう一度押すと一覧が無くなって図が表示され、図の倍率・位置・開閉が切り替える前と同じ
+    test: test_normal_when_map_list_view
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（一覧の表示で読む）]
+  - name: 異常系（map の図を PNG にできない）
+    summary: PNG の canvas を作れないときに保存せず、SVG での書き出しを案内する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図の map の Markdown
+        description: 正常系（map の図を SVG・PNG に書き出す）の 1 つ目の範囲
+      - name: Mock
+        description: '`HTMLCanvasElement.prototype.toBlob` を、コールバックに `null` を渡す関数に差し替える。ブラウザのダウンロードを受け取る'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 書き出すボタンを押して PNG を選ぶ
+        M->>M: SVG を 2 倍の canvas に描き、toBlob が null を渡す
+        M-->>U: 要素を開いたまま PNG にできない旨を出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - ダウンロードが 0 件
+      - '書き出すボタンが `aria-expanded="true"` のままで、開いた要素の中に `role="status"` の「この大きさの図は PNG にできません。SVG で書き出してください。」がある'
+      - 続けて SVG を押すと `全体の構成.svg` が保存され、要素が閉じる
+      - 例外がページの外へ投げられず、図の倍率・位置・選択が変わらない
+    test: test_error_when_map_png_unavailable
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（図を SVG・PNG に書き出す）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -12119,7 +12255,7 @@ constraints:
     constraint: 印の引数は shuhei1101/mdmark#451 の資料 A-128 の構成の JSON のオブジェクトで、`title`（図の枠と折りたたみの見出し）・`focus`（最初に入るグループの ID）・`collapse`（A-128 の共通の折り畳み。`open`・`title`）だけを読み取る。廃止した `play`・`interval` は読み取らない（書き方の警告は文書をHTML文字列にする.ts の制約『map の書き方の誤り』）。知らないキーは無視し、型の合わない値は既定にする（どちらも点検が通知する。型の合わない値は書き方の警告にもする）。最初に入るグループは、クエリ文字列の `map-{図の番号}` → sessionStorage → `focus` の順で決める（無いグループの ID は飛ばす）
     notes: 記載の警告は文書をHTML文字列にする.ts の制約『map の書き方の誤り』。`play`・`interval` の廃止は確認ログ『連続再生の廃止に、今ある自動で進める機能とマーカーの引数 play・interval を含めるか』
   - item: map の書き方の警告
-    constraint: Mermaid の読み取れない行（行番号・行の文字・修正方法）・閉じの無い `subgraph` と複合フラグメント・補足の JSON の読み取れない箇所（行と原因）・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・HTML コメントの中にそのまま記載した `--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前・マインドマップの 2 つ目の根の行と適用しない `layout` のキー（並び順は Mermaid の行の順で変える旨を添える）・ID を持たない同じ文字の 2 つ以上の項目と同じ名前の 2 つ以上の section を指す補足のキー（項目は ID を記載して ID で指す、section は名前を分ける修正の方法を添える）・軸と格子の配置の図で適用しない `layout` のキー（制約『map の軸と格子の配置の図の補足』）・`opts.resolveIdLink` が URL を返さなかった `id:` のリンク先を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を追加する
+    constraint: Mermaid の読み取れない行（行番号・行の文字・修正方法）・閉じの無い `subgraph` と複合フラグメント・補足の JSON の読み取れない箇所（行と原因）・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・HTML コメントの中にそのまま記載した `--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前・マインドマップの 2 つ目の根の行と適用しない `layout` のキー（並び順は Mermaid の行の順で変える旨を添える）・ID を持たない同じ文字の 2 つ以上の項目と同じ名前の 2 つ以上の section を指す補足のキー（項目は ID を記載して ID で指す、section は名前を分ける修正の方法を添える）・軸と格子の配置の図で適用しない `layout` のキー（制約『map の軸と格子の配置の図の補足』）・使用できない図の種類の `changes` と列・メンバーを指す `changes` のキー（制約『map の計画した変更』）・`opts.resolveIdLink` が URL を返さなかった `id:` のリンク先を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を追加する
     notes: '`render` が確認する範囲の形は文書をHTML文字列にする.ts の制約『map の書き方の誤り』'
   - item: map の用語の下線
     constraint: 文書をHTML文字列にする.ts の制約『map の範囲』の `data-map-terms` の用語を、構成図のノードの名前と、シーケンス図の参加者の名前・メッセージの文・ノートの文の中で見つけ、今の図のノードの用語と同じく `span.mdmark-term`（フォーカスでき、図のツールチップに意味を出す）にする。用語の文字は、文字を逃がした名前の中に配置し、名前の文字の選択とコピーを妨げない。構成図のツールチップ（ノード・線・グループの補足の `notes` の説明）の文の中の用語は、フォーカスを持たない下線（`tabindex` とツールチップの持ち主を持たない `span.mdmark-term`）にし、そのツールチップの末尾に用語ごとに「{用語}：{意味}」の行を並べる。押せる要素の中の文字（グループのタイトルのボタン・ツールチップを持つ線のラベル）と、案内と再生の帯の文には付けない（今の図と同じく、押せる要素とツールチップの中に、フォーカスできる用語を入れ子にしない）。同じ図の構成図のノードの説明（補足の `notes`）のツールチップも、図の枠のツールチップの層に配置する
@@ -12366,6 +12502,35 @@ constraints:
       `opts.diffSource`・`opts.baseMarkdown`・`opts.commentStore` と一緒には指定できない（TypeError）。
       `update(markdown)` を呼ぶと、その後は差し替えた Markdown を描く
     notes: 書き出した HTML の起動の処理が使用する。`opts.rendered.html` はもう一度サニタイズせずに入れるため、利用側は `render` と同じ処理が返却した値だけを指定する
+  - item: map の計画した変更
+    constraint: |-
+      補足の `changes`（ER 図『map の補足』の表 `changes`）を、flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図のノード・グループ・線に描く。
+
+      `added` は `--mdmark-color-diff-add-sign`、`changed` は色の名前 `orange`、`removed` は `--mdmark-color-diff-del-sign` の色を、ノード・グループの枠線と線に適用する。`removed` は枠線と線を破線にし、ノードの名前に 2px の取り消し線を引く（名前の `word-break` を `normal` にする。`auto-phrase` の文字には Edge が `text-decoration` を描かないため）。変更の色は同じ ID の `layout` の `color` と設定の `map.kinds` の種類の色より優先し、種類のアイコンと名前の行は種類の色のままにする。
+
+      ノードとグループのタイトルの右上に、枠線をまたいで「追加」「変更」「削除」のバッジ（`removed` は破線の枠線）を配置し、ノードのスクリーンリーダー向けの名前の後ろに「、{変更の名前}」を追加する。`removed` のノード・線も配置に含める。
+
+      シーケンス図・マインドマップ・軸と格子の配置の図の補足の `changes` と、列・メンバーを指すキー（`{テーブル名}.{列名}`・`{クラス名}.{メンバー名}`）は描かず、制約『map の書き方の警告』の項目（`map_invalid_value`。使用できる図の種類を添える）にする。知らない値は使用できる値の一覧を添えた項目にし、その ID は色とバッジを付けずに描く
+    decided_by: SC-472-8#scenarios[正常シナリオ（計画した変更を示す）]
+  - item: map の図の書き出し
+    constraint: |-
+      全ての map の図のパネルの全画面のボタンの隣に、lucide の `download` のアイコンの書き出すボタン（スクリーンリーダー向けの名前「図を書き出す」、`aria-expanded` と、開く要素を指す `aria-controls`）を配置する。押すと、「SVG」「PNG」の 2 つのボタンを並べた要素を、表示する枠の中に絶対配置で書き出すボタンの下に表示する（Popover API は使用せず、コメントの吹き出しと同じく表示・非表示を切り替える）。項目の間は Tab で移る。Esc・要素の外側のクリック・もう一度の書き出すボタンで閉じ、Esc で閉じたときは書き出すボタンへフォーカスを戻す。項目を選んだら閉じる。
+
+      項目を選ぶと、図の表示する内容（グループの開閉・中へ入った状態・計画した変更）を今のまま、倍率と表示する位置に依らず等倍の図の全体を、図の要素を複製して計算したスタイルを `style` 属性へ書き写した DOM を `foreignObject` に入れた SVG にする。書き写すのは既定値と異なるプロパティだけにし、疑似要素（`::before`・`::after`）で描いた表示は要素に置き換えて含める。選択の強調・パネル・リサイズハンドル・ツールチップとそのマーカー・記載の警告・当たり判定・データの印・非表示の要素は含めず、`class` と値に `var(` を持つ属性を除く。背景は図の枠の背景の色の `rect` にする。
+
+      PNG はその SVG を `data:` の URL の画像にして、端末の `devicePixelRatio` に依らず幅・高さが 2 倍の canvas に描き、`toBlob` で作る。ファイル名は `{図の枠のタイトル}.svg`・`{図の枠のタイトル}.png`（タイトルが無い図は `図 {図の番号}`。ファイル名に使用できない文字 `\ / : * ? " < > |` は `_` にする）で、`download` 属性を持つリンクで保存させ、使用したオブジェクト URL を解放する。canvas の `getContext` が `null` を返す、`toBlob` が `null` を渡す、画像の読み込みか描画が例外になるとき（ブラウザの canvas の大きさの上限を超えた図）は、PNG を保存せず、要素を開いたまま「この大きさの図は PNG にできません。SVG で書き出してください。」を `role="status"` で出す。上限はブラウザごとに違うため大きさで先に判定せず、結果で判定する。外部への要求はしない
+    decided_by: SC-472-8#scenarios[正常シナリオ（図を SVG・PNG に書き出す）]
+    notes: 方式は PoC（#745）で Chromium・Firefox・WebKit の外部の資源 0 件・2 倍の PNG が汚染されないことを確認した foreignObject の方式（PR ドキュメントの PoC 結果）
+  - item: map の一覧の表示
+    constraint: |-
+      flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図とシーケンス図のパネルの map のグループの先頭に、lucide の `list-tree` のアイコンの一覧の表示のボタン（スクリーンリーダー向けの名前「一覧で表示」と `aria-pressed`）を配置する。マインドマップと軸と格子の配置の図には配置しない。
+
+      押すと、図を非表示にして表示する枠の中に `role="tree"` の一覧を出す。構成図の一覧は、グループを子を持つ項目、ノードを項目にした入れ子で、ノードの項目は名前・種類の名前・補足の `notes` の説明・出る線（「→ {相手の名前}」と線のラベル）を持ち、計画した変更を持つノードは名前の後ろに図と同じ変更のバッジ（`removed` は名前に取り消し線）を持つ。シーケンス図の一覧は、メッセージを記載順に「{送信元} → {送信先}: {メッセージ}」の項目で並べる。項目の並びは Mermaid の記載順にする。
+
+      一覧はフォーカスを 1 つの項目にだけ持たせ（roving tabindex）、↑・↓ で項目を移り、→ で子を持つ項目を開き、← で閉じる。項目はスクリーンリーダーで名前・変更の名前・種類・説明・出る線の数の順に読み上げる。一覧の項目は文書の目次に見出しを追加しない。一覧の上の余白はパネルの高さ分とり、項目をパネルの下に入れない。
+
+      もう一度押すと一覧を破棄して図の表示に戻し、図の倍率・位置・開閉は切り替える前のままにする。一覧の表示かどうかは保存しない
+    decided_by: SC-472-8#scenarios[正常シナリオ（一覧の表示で読む）]
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

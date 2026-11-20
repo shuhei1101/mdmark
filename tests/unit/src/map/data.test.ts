@@ -63,6 +63,7 @@ test("test_parse_map_data_when_empty", async () => {
     layout: {},
     plays_over: undefined,
     groups: {},
+    changes: {},
   });
   expect(problems).toEqual([]);
 });
@@ -162,4 +163,39 @@ test("test_parse_map_data_when_note_is_string", async () => {
     "map_invalid_value",
   ]);
   expect(data.notes.mount).toBeUndefined();
+});
+
+// 計画した変更（正常系）
+test("test_parse_map_data_when_changes", async () => {
+  // 準備
+  const { parseMapData } = await loadData();
+  // 実行
+  const { data, problems } = parseMapData(
+    '{"version": 1, "changes": {"a": {"type": "added"}, "b": {"type": "removed"}}}',
+  );
+  // 検証
+  expect(problems).toEqual([]);
+  expect(data.changes).toEqual({
+    a: { type: "added" },
+    b: { type: "removed" },
+  });
+});
+
+// 知らない変更の種類（異常系）
+test("test_parse_map_data_when_changes_invalid_type", async () => {
+  // 準備
+  const { parseMapData } = await loadData();
+  // 実行
+  const { data, problems } = parseMapData(
+    '{"version": 1, "changes": {"a": {"type": "moved"}, "b": "added"}}',
+  );
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+    "map_invalid_value",
+  ]);
+  expect(problems[0]?.message).toContain("`added`");
+  expect(problems[0]?.message).toContain("`changed`");
+  expect(problems[0]?.message).toContain("`removed`");
+  expect(data.changes).toEqual({});
 });

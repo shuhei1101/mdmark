@@ -422,3 +422,130 @@ test("test_plain_map", async () => {
       .innerText(),
   ).resolves.toBe("シーケンス図");
 });
+
+/** 要素の矩形（ページの座標） */
+function boxOf(page: Page, selector: string) {
+  return page
+    .locator(selector)
+    .first()
+    .evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+      };
+    });
+}
+
+/** 2 つの矩形が重なるか */
+function boxesOverlap(
+  a: { left: number; top: number; right: number; bottom: number },
+  b: { left: number; top: number; right: number; bottom: number },
+): boolean {
+  return (
+    a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+  );
+}
+
+// 種類 map で書き出すボタンを押した状態は、全画面のボタンの隣に開いた書き出すボタンと「SVG」「PNG」の要素を出す（MapExportOpen）
+test("test_map_export_open", async () => {
+  // 準備・実行
+  const page = await openFrame("map-export-open", false);
+  // 検証
+  const names = (await visibleTools(page)).map((item) => item.name);
+  expect(names[0]).toBe("一覧で表示");
+  expect(names[names.indexOf("全画面で開く") + 1]).toBe("図を書き出す");
+  const button = tool(page, "図を書き出す");
+  await expect(button.getAttribute("aria-expanded")).resolves.toBe("true");
+  await expect(button.getAttribute("aria-haspopup")).resolves.toBeNull();
+  const panel = page.locator(".mdmark-diagram-export");
+  await expect(panel.isVisible()).resolves.toBe(true);
+  await expect(panel.getAttribute("popover")).resolves.toBeNull();
+  await expect(panel.locator("button").allInnerTexts()).resolves.toEqual([
+    "SVG",
+    "PNG",
+  ]);
+  const panelBox = await boxOf(page, ".mdmark-diagram-export");
+  const viewportBox = await boxOf(page, ".mdmark-diagram-viewport");
+  expect(panelBox.top).toBeGreaterThanOrEqual(viewportBox.top);
+  expect(panelBox.right).toBeLessThanOrEqual(viewportBox.right + 1);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 種類 map で一覧の表示にした状態は、押したボタンと一覧を出し、図を隠す（MapListView）
+test("test_map_list_view", async () => {
+  // 準備・実行
+  const page = await openFrame("map-list-view", false);
+  // 検証
+  await expect(
+    tool(page, "一覧で表示").getAttribute("aria-pressed"),
+  ).resolves.toBe("true");
+  await expect(tool(page, "一覧で表示").isVisible()).resolves.toBe(true);
+  await expect(
+    page.locator(".mdmark-diagram-viewport [role=tree]").count(),
+  ).resolves.toBe(1);
+  await expect(page.locator(".mdmark-diagram-sizer").isVisible()).resolves.toBe(
+    false,
+  );
+  const first = await boxOf(page, '[role="treeitem"]');
+  const tools = await boxOf(page, ".mdmark-diagram-tools");
+  expect(boxesOverlap(first, tools)).toBe(false);
+});
+
+// 幅 390px で一覧の表示にした状態は、変更のバッジを持つ最初の項目がパネルと重ならず、横にはみ出さない（MapListViewNarrow）
+test("test_map_list_view_narrow", async () => {
+  // 準備・実行
+  // 幅 390px の置き場所（ストーリーの枠）とページの余白が収まる画面で開く
+  const page = await holder.openStory(
+    "parts-diagramframe--map-list-view-narrow",
+    {
+      width: 480,
+      height: 844,
+    },
+  );
+  // 検証
+  const first = await boxOf(page, '[role="treeitem"]');
+  const tools = await boxOf(page, ".mdmark-diagram-tools");
+  expect(boxesOverlap(first, tools)).toBe(false);
+  await expect(
+    page
+      .locator('[role="treeitem"]')
+      .first()
+      .locator(".mdmark-map-change")
+      .innerText(),
+  ).resolves.toBe("追加");
+  const tree = await page
+    .locator('[role="tree"]')
+    .evaluate((element) => element.scrollWidth <= element.clientWidth + 1);
+  expect(tree).toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 種類 map のガントチャートは、書き出すボタンがあり、一覧の表示のボタンが無い（MapNoList）
+test("test_map_no_list", async () => {
+  // 準備・実行
+  const page = await openFrame("map-no-list", false);
+  // 検証
+  const names = (await visibleTools(page)).map((item) => item.name);
+  expect(names).toContain("図を書き出す");
+  expect(names).not.toContain("一覧で表示");
+});
+
+// PNG にできなかった後の状態は、要素を開いたまま「SVG」「PNG」の下に案内の文を出す（MapExportFailed）
+test("test_map_export_failed", async () => {
+  // 準備・実行
+  const page = await openFrame("map-export-failed", false);
+  // 検証
+  await expect(
+    tool(page, "図を書き出す").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+  const status = page.locator('.mdmark-diagram-export [role="status"]');
+  await expect(status.innerText()).resolves.toBe(
+    "この大きさの図は PNG にできません。SVG で書き出してください。",
+  );
+  const png = await boxOf(page, '[data-export="png"]');
+  const text = await boxOf(page, '.mdmark-diagram-export [role="status"]');
+  expect(text.top).toBeGreaterThanOrEqual(png.bottom - 1);
+});

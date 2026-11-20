@@ -824,3 +824,9 @@ items:
   summary: ライブラリ本体 / 記法の共通 / style-tokens.logic.ts
 - page: MOD-472-360.ts.yaml
   summary: ClaudeCodeプラグイン / mdmark-style / test-mdmark-style.ts
+- page: MOD-740-1.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / export.ts
+- page: MOD-740-2.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / list.part.ts
+- page: MOD-740-3.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / list.ts

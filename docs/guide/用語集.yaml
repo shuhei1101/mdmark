@@ -927,9 +927,27 @@ terms:
     href: ./記法.mark.md#map
 - id: map-data
   name: 補足
-  description: 'map の範囲に `<!-- map-data: {…} -->` の HTML コメントで記載する JSON のオブジェクト。ノード・線の説明（`notes`）・案内の手順（`walkthroughs`）・配置と外観の上書き（`layout`）・再生を重ねる構成図（`plays_over`）・ER 図の分類（`groups`）を持つ'
+  description: 'map の範囲に `<!-- map-data: {…} -->` の HTML コメントで記載する JSON のオブジェクト。ノード・線の説明（`notes`）・案内の手順（`walkthroughs`）・配置と外観の上書き（`layout`）・再生を重ねる構成図（`plays_over`）・ER 図の分類（`groups`）・計画した変更（`changes`）を持つ'
   aliases:
   - map-data
+  details:
+  - title: map
+    href: ./記法.mark.md#map
+- id: planned-changes
+  name: 計画した変更
+  description: map の補足の `changes` で、ノード・グループ・線に示す追加・変更・削除。追加と削除は差分の色、変更は色の名前 `orange` の枠線とバッジで描き、削除の要素も配置したまま描く
+  details:
+  - title: map
+    href: ./記法.mark.md#map
+- id: diagram-export
+  name: 図の書き出し
+  description: map の図の右上のパネルの書き出すボタンで、今の開閉のまま等倍の図の全体を SVG か 2 倍の画素数の PNG のファイルにすること。CLI の書き出しとは別のもの
+  details:
+  - title: map
+    href: ./記法.mark.md#map
+- id: list-view
+  name: 一覧の表示
+  description: map の構成図とシーケンス図の右上のパネルのボタンで、図の代わりに、グループとノードの入れ子かメッセージの並びの一覧を出し、キーボードと読み上げで辿れるようにすること
   details:
   - title: map
     href: ./記法.mark.md#map

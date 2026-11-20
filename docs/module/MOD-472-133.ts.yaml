@@ -53,6 +53,9 @@ data_models:
       - name: nodeParts
         type: 'Record<string, { head: string; body: string; tips: string }> | undefined'
         description: ノードの ID ごとに、種類の行の末尾（`head`）とノードの末尾（`body`）へ入れる HTML と、そのツールチップ（ER 図の列の開閉のボタンと列の行）
+      - name: changes
+        type: Record<string, "added" | "changed" | "removed"> | undefined
+        description: 部品設計『mapの構成図』の `changes`。ノード・グループに class `map-change-{値}` と右上のバッジ `span.mdmark-map-change`（`data-change`、`aria-hidden`）を付け、押せる要素のスクリーンリーダー向けの名前の末尾に「、{変更の名前}」を追加する。線は線の `path` に class `map-change-{値}` を付ける。色・破線・取り消し線は CSS が持ち、`layout` の `color` と種類の色のインラインの値より優先する
   - name: MapSequenceArgs
     title: mapのシーケンス図の引数
     container: src/map/map.part.ts
@@ -383,6 +386,12 @@ functions:
         condition: 種類を持つノード A と種類を持たないノード B の配置
         mock: なし
         expected: B の `.mdmark-diagram-node-kind` が `is-empty` を持ち、A は持たない（`is-empty` の行は CSS で描かず、名前をノードの上下の中央に配置する）
+      - name: test_render_map_flow_when_changes
+        case: 正常
+        summary: 計画した変更
+        condition: 部品設計の PlannedChanges の `changes`
+        mock: なし
+        expected: '`user` のノードが class `map-change-added` と `data-change="added"` のバッジ「追加」を持ち、押せる要素の `aria-label` が「利用側のページ、追加」で終わる。`mount->legacy` の線の `path` が class `map-change-removed` を持つ。`changes` を持たないノードはバッジを持たない'
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数

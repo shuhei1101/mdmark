@@ -140,3 +140,5 @@ items:
   summary: 文書の先頭の YAML のフロントマターを、本文の先頭の閉じた折りたたみに yaml のコードブロックで出す
 - page: CMP-472-7.ts.yaml
   summary: 本文の幅を越えて広げ、本文の幅と切り替える範囲
+- page: CMP-740-1.ts.yaml
+  summary: mapの一覧

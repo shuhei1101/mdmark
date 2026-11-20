@@ -1150,6 +1150,37 @@ flows:
       - '`terms` を指すマーカーはずれにならない'
       - 終了コードが 0 以外
     test: test_normal_when_glossary_alias_row_missing
+  - name: 正常系（map の計画した変更の補足にずれがある）
+    summary: 補足の `changes` が指す無い ID・知らない値・使用できない図の種類をずれにする
+    setup:
+      - name: 計画した変更の補足にずれを持つフォルダ
+        description: '`build.include` が該当する `docs/a.mark.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、`flowchart` と 10 行目の 1 行の補足（`changes` のキー `ghost`（Mermaid に無いノード）と、`mount` の `type` の知らない値 `moved`）を持ち、20 行目の `<!-- map -->` の範囲に、`sequenceDiagram` と 27 行目の 1 行の補足（`changes` のキー `1`）を持ち、40 行目にずれの無い `changes`（`added`・`changed`・`removed`）を持つ `flowchart` の範囲を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: map の範囲の Mermaid と補足を読み込む
+        C->>C: changes の ID・値・図の種類を確認する
+        C-->>W: map のずれの 3 行・終了コード 1
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 1
+      - '`docs/a.mark.md:10:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `changes.ghost`）と、`map_invalid_value` が 1 つ（内容に `changes.mount.type` の `moved` と使用できる値 `added`・`changed`・`removed`）ある'
+      - '`docs/a.mark.md:27:` で始まる行に、`map_invalid_value` が 1 つ（内容に、`changes` はシーケンス図では使用できず、使用できるのは flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図である旨）ある'
+      - 40 行目からの範囲を指す行が無い
+      - 最後の行が `ずれ 3 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_map_changes_drift
+    refs:
+      - SC-472-87#scenarios[正常シナリオ（計画した変更を一覧で辿る）]
 lead: 文書の作成者が、設定ファイルの構造・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らないマーカー・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を指定したときは、設定と索引の点検の代わりに、指定した Markdown を描いたときの記載の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -1320,7 +1351,7 @@ constraints:
   - item: map の点検
     constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。
 
-      Mermaid の読み取れない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID（軸と格子の配置の図は、どの項目の ID・表示する文字・commit の記載順の `c{番号}`・section の名前にも一致しないキー）は `map_unknown_ref`、マインドマップと軸と格子の配置の図で ID を持たない 2 つ以上の項目が同じ文字を持つか 2 つ以上の section が同じ名前を持ち、補足のキーと印の `focus` がその文字・名前のものは `map_ambiguous_ref`（内容に、その項目に ID を記載して ID で指すか、section の名前を分ける修正の方法）、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、印の廃止したキー `play`・`interval` は `map_retired_key`（内容に廃止したキーと `mdmark upgrade` で削除できる旨）、補足のスキーマに合わない値・マインドマップと軸と格子の配置の図に適用しない `layout` のキー（`color`・`collapsed` のほか）・許可しないノードのリンク先・HTML コメントの中にそのまま記載した `--` を含む値（JSON の Unicode エスケープで記載した `--` は含めない）・JSON として読み取れない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。
+      Mermaid の読み取れない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID（軸と格子の配置の図は、どの項目の ID・表示する文字・commit の記載順の `c{番号}`・section の名前にも一致しないキー）は `map_unknown_ref`、マインドマップと軸と格子の配置の図で ID を持たない 2 つ以上の項目が同じ文字を持つか 2 つ以上の section が同じ名前を持ち、補足のキーと印の `focus` がその文字・名前のものは `map_ambiguous_ref`（内容に、その項目に ID を記載して ID で指すか、section の名前を分ける修正の方法）、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、印の廃止したキー `play`・`interval` は `map_retired_key`（内容に廃止したキーと `mdmark upgrade` で削除できる旨）、補足のスキーマに合わない値・シーケンス図とマインドマップと軸と格子の配置の図の補足の `changes`（内容に使用できる図の種類）・ER 図の列とクラス図のメンバーを指す `changes` のキー・マインドマップと軸と格子の配置の図に適用しない `layout` のキー（`color`・`collapsed` のほか）・許可しないノードのリンク先・HTML コメントの中にそのまま記載した `--` を含む値（JSON の Unicode エスケープで記載した `--` は含めない）・JSON として読み取れない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。
 
       ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。
 

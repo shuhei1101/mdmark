@@ -426,6 +426,7 @@ export const attachMapAxisGrid = (
       title: args.title ?? grid.title ?? mermaidKindName(grid.firstWord),
       legend: [],
       wide: true,
+      exportable: true,
       fitMin: 1,
       tools: toolsOf(grid, state),
       id: source.frameId,
