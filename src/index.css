@@ -10347,6 +10347,8 @@
   ) {
     padding-inline: 20px;
     border-radius: 0;
+    /* 斜めの辺は枠線を切るため、面の色で形を見せる */
+    background: var(--map-node-fill, var(--mdmark-color-surface));
   }
   .mdmark-diagram[data-diagram="map"]
     .mdmark-diagram-node[data-shape="lean-right"] {

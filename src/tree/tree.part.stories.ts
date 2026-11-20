@@ -160,3 +160,27 @@ export const Wrap: Story = {
     wrap: true,
   },
 };
+
+export const PlainLanguage: Story = {
+  name: "PlainLanguage",
+  parameters: { server: { id: "tree" } },
+  args: {
+    nodes:
+      '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"README.md"}]}]',
+    source: "mdmark/\n├── src/\n│   └── index.ts\n└── README.md",
+    interactive: true,
+    language: "text",
+  },
+};
+
+export const PlainNoLanguage: Story = {
+  name: "PlainNoLanguage",
+  parameters: { server: { id: "tree" } },
+  args: {
+    nodes:
+      '[{"name":"src/","children":[{"name":"index.ts"},{"name":"parts/"}]}]',
+    source: "src/\n|-- index.ts\n`-- parts/",
+    interactive: true,
+    language: '""',
+  },
+};
