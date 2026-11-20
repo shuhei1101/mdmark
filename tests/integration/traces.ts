@@ -3,7 +3,7 @@ import { GREET_SOURCE } from "./cli.ts";
 
 /** タイトル・本文・索引の用語に mdmark を持ち、隠す書き出しの全ての置き換えと削除を通る文書 */
 const INTRO = [
-  '<!-- features: {"html-scripts": true} -->',
+  '<!-- features: {"html-scripts": true, "map": false} -->',
   "",
   "# mdmark の紹介",
   "",
@@ -35,7 +35,6 @@ const INTRO = [
   "<!-- /table -->",
   "",
   "```mermaid",
-  "%%{init: {}}%%",
   "flowchart LR",
   "  A[書く] --> B[書き出す]",
   "```",

@@ -183,9 +183,6 @@ files:
   - path: fixtures/mermaid-svg/flowchart-link.svg
     description: 'scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-link）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。'
     tags: [topic:ストーリー, tool:storybook, topic:図]
-  - path: fixtures/mermaid-svg/flowchart-styled.svg
-    description: 'scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-styled）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。'
-    tags: [topic:ストーリー, tool:storybook, topic:図]
   - path: integration/fixtures-plugin.ts
     description: 結合テストが使用する外部ライブラリと拡張のモジュールの代役を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:拡張, topic:モック]

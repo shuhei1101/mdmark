@@ -953,10 +953,11 @@ test("test_normal_when_mermaid_embedded", async () => {
     "mdmark.config.yaml":
       "mermaid:\n  url: vendor/mermaid/mermaid.esm.min.mjs\n",
     "guide.md": [
+      '<!-- features: {"map": false} -->',
+      "",
       "# ガイド",
       "",
       "```mermaid",
-      "%%{init: {}}%%",
       "flowchart LR",
       "  A[受付] --> B[回答]",
       "```",

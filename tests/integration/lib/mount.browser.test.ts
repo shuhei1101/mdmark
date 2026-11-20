@@ -2099,7 +2099,12 @@ const CODE_COPY_MARKDOWN = [
 
 /** コードブロックのコピーのボタンを、文書の順に返却する */
 function codeCopyButtons(el: Element): HTMLButtonElement[] {
-  return [...el.querySelectorAll<HTMLButtonElement>("button.mdmark-code-copy")];
+  // ファイルツリーの帯もコードブロックと同じコピーのボタンを持つため、コードブロックの中に絞る
+  return [
+    ...el.querySelectorAll<HTMLButtonElement>(
+      ".mdmark-code button.mdmark-code-copy",
+    ),
+  ];
 }
 
 // コピーボタンで、削除した行を含めない変更後のコードをクリップボードへ書き込み、ボタンで通知する（正常系）
@@ -2122,7 +2127,7 @@ test("test_normal_when_code_copied", async () => {
   expect(codeCopyButtons(el)).toHaveLength(2);
   expect(find(el, ".mdmark-tree").closest(".mdmark-code")).toBeNull();
   expect(
-    el.querySelectorAll(".mdmark-tree button.mdmark-tree-copy"),
+    el.querySelectorAll(".mdmark-tree button.mdmark-code-copy"),
   ).toHaveLength(1);
   // 実行: Tab でフォーカスして Enter で押す
   await userEvent.tab();
@@ -3132,7 +3137,7 @@ test("test_normal_when_printed_with_syntax", async () => {
   await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
   try {
     await vi.waitFor(() => {
-      expect(isShown(find(el, ".mdmark-tree-copy"))).toBe(false);
+      expect(isShown(find(el, ".mdmark-tree .mdmark-code-copy"))).toBe(false);
     });
   } finally {
     await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
@@ -3582,8 +3587,9 @@ test("test_normal_when_index_in_browser", async () => {
 
 /** ノード 12 個を横につなぎ、6 つ目から 4 つの分岐を縦に並べ、描くと幅が 1100px を超える flowchart の mermaid のコードブロック */
 const WIDE_MERMAID = [
+  '<!-- features: {"map": false} -->',
+  "",
   "```mermaid",
-  "%%{init: {}}%%",
   "flowchart LR",
   ...Array.from(
     { length: 11 },
@@ -8824,9 +8830,9 @@ test("test_normal_when_tree_copied", async () => {
     markdown: ["```tree", ...COPY_TREE_LINES, "```", ""].join("\n"),
   });
   const tree = find<HTMLElement>(el, ".mdmark-tree");
-  const bar = find(tree, ".mdmark-tree-bar");
-  const button = find<HTMLButtonElement>(bar, "button.mdmark-tree-copy");
-  expect(find(bar, ".mdmark-tree-kind").textContent).toBe("tree");
+  const bar = find(tree, ":scope > .mdmark-code-bar");
+  const button = find<HTMLButtonElement>(bar, "button.mdmark-code-copy");
+  expect(find(bar, ".mdmark-code-lang-name").textContent).toBe("tree");
   expect(button.type).toBe("button");
   expect(button.textContent).toBe("コピー");
   // 実行: src/ を閉じてから押す
@@ -8866,7 +8872,7 @@ test("test_normal_when_tree_copy_denied", async () => {
     markdown: ["```tree", ...COPY_TREE_LINES, "```", ""].join("\n"),
   });
   const tree = find<HTMLElement>(el, ".mdmark-tree");
-  const button = find<HTMLButtonElement>(tree, "button.mdmark-tree-copy");
+  const button = find<HTMLButtonElement>(tree, "button.mdmark-code-copy");
   try {
     // 実行
     button.click();
@@ -13853,11 +13859,12 @@ test("test_normal_when_drag_on_chart_item", async () => {
 
 /** ノード 20 個を縦につなぎ、描くと幅が 600px より狭く高さが 1600px を超える flowchart の mermaid のコードブロック（タイトルは `縦に長いデータ`） */
 const TALL_MERMAID = [
+  '<!-- features: {"map": false} -->',
+  "",
   "```mermaid",
   "---",
   "title: 縦に長いデータ",
   "---",
-  "%%{init: {}}%%",
   "flowchart TD",
   ...Array.from(
     { length: 19 },
@@ -15172,18 +15179,18 @@ function mermaidUrl(name: string): string {
 
 /** front matter の `title` を持つ flowchart と、`actor` を持つ sequenceDiagram の mermaid のコードブロックを持つ文書 */
 const MERMAID_MARKDOWN = [
+  '<!-- features: {"map": false} -->',
+  "",
   "```mermaid",
   "---",
   "title: 問い合わせの受付",
   "---",
-  "%%{init: {}}%%",
   "flowchart LR",
   "  A[問い合わせを受ける] --> B{担当がいるか}",
   "  B -->|いる| C[担当へ回す]",
   "```",
   "",
   "```mermaid",
-  "%%{init: {}}%%",
   "sequenceDiagram",
   "  actor U as 読者",
   "  participant M as mdmark",
@@ -15194,8 +15201,9 @@ const MERMAID_MARKDOWN = [
 
 /** flowchart の mermaid のコードブロックを 1 つ持つ文書 */
 const MERMAID_FLOWCHART = [
+  '<!-- features: {"map": false} -->',
+  "",
   "```mermaid",
-  "%%{init: {}}%%",
   "flowchart LR",
   "  A[受付] --> B[回答]",
   "```",
@@ -15560,8 +15568,9 @@ test(
 
 /** click・link の URL の行・関数を呼ぶ行を持つ flowchart と classDiagram の mermaid のコードブロックを持つ文書 */
 const MERMAID_LINKED = [
+  '<!-- features: {"map": false} -->',
+  "",
   "```mermaid",
-  "%%{init: {}}%%",
   "flowchart LR",
   "  A[設計] --> B[実装] --> C[外部] --> D[危険] --> E[関数] --> F[無し]",
   '  click A href "./a.md"',
@@ -15572,7 +15581,6 @@ const MERMAID_LINKED = [
   "```",
   "",
   "```mermaid",
-  "%%{init: {}}%%",
   "classDiagram",
   "  class A",
   "  class B",
@@ -21142,45 +21150,321 @@ test(
   MERMAID_WAIT_MS + 30_000,
 );
 
-// map で同じ図にできない純粋な Mermaid は、警告を出さずに mermaid の図で描く（異常系（map が読めない行を持つ））
+/** 範囲の外の map の図の、`style`・`classDef`・`linkStyle` の行を持つ flowchart の Mermaid の行 */
+const PLAIN_STYLED_LINES = [
+  "flowchart LR",
+  "  A[要望を受ける] --> B{対応するか}",
+  "  B -->|する| C[計画へ記載する]",
+  "  B -->|しない| D[理由を返却する]",
+  "  B -->|保留| E[後で決める]",
+];
+
+/** mermaid のコードブロックにする */
+const mermaidBlock = (lines: string[]): string[] => [
+  "```mermaid",
+  ...lines,
+  "```",
+  "",
+];
+
+/** map の図の項目の名前の並び */
+function mindmapLabels(figure: Element): string[] {
+  return [...figure.querySelectorAll(".map-mindmap-item")].map(
+    (item) => item.textContent?.trim() ?? "",
+  );
+}
+
+// 設定の行・見た目を指定する行を持つ純粋な Mermaid も map の図で描き、style・classDef・linkStyle の色を適用する（正常系（範囲の外の map の図の設定の行と見た目を指定する行））
+test(
+  "test_normal_when_plain_map_styled",
+  async () => {
+    // 準備
+    await loadStylesheet();
+    const name = "plain-styled";
+    const mindmap = ["mindmap", "  root((mdmark))", "    記法", "    図"];
+    const markdown = [
+      ...mermaidBlock([
+        '%%{init: {"theme": "forest"}}%%',
+        ...PLAIN_STYLED_LINES,
+      ]),
+      ...mermaidBlock([
+        "---",
+        "config:",
+        "  theme: forest",
+        "---",
+        ...PLAIN_STYLED_LINES,
+      ]),
+      ...mermaidBlock([
+        ...PLAIN_STYLED_LINES,
+        "  style A fill:#ff99ff,stroke:#cc33cc",
+        "  classDef warn fill:#ffe08a,stroke:#b8860b",
+        "  class D warn",
+        "  E:::warn",
+        "  linkStyle 1 stroke:#dd3333",
+      ]),
+      ...mermaidBlock([
+        "mindmap",
+        "  root((mdmark))",
+        "    記法",
+        "      ::icon(fa fa-book)",
+        "    図:::urgent",
+      ]),
+    ].join("\n");
+    const reference = [
+      ...mermaidBlock(PLAIN_STYLED_LINES),
+      ...mermaidBlock(mindmap),
+    ].join("\n");
+    const el = createElement();
+    const plain = createElement();
+    try {
+      // 実行
+      await mountTracked(el, {
+        markdown,
+        config: { mermaid: { url: mermaidUrl(name) } },
+      });
+      await mountTracked(plain, { markdown: reference });
+      const figures = await vi.waitFor(
+        () => {
+          const found = [
+            ...el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+          ];
+          expect(found).toHaveLength(4);
+          expect(
+            plain.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+          ).toHaveLength(2);
+          expect(found[3]?.querySelector(".map-mindmap-item")).not.toBeNull();
+          return found;
+        },
+        { timeout: MAP_WAIT_MS },
+      );
+      // 検証
+      const [first, second, styled, mind] = figures;
+      const [plainFlow, plainMind] = [
+        ...plain.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+      ];
+      if (!first || !second || !styled || !mind || !plainFlow || !plainMind)
+        throw new Error("map の図が足りない");
+      expect(
+        el.querySelector('figure.mdmark-diagram[data-diagram="mermaid"]'),
+      ).toBeNull();
+      expect(countRequests(mermaidUrl(name))).toBe(0);
+      expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+      const bg = (node: HTMLElement) => getComputedStyle(node).backgroundColor;
+      for (const figure of [first, second])
+        expect(bg(mapNode(figure, "A"))).toBe(bg(mapNode(plainFlow, "A")));
+      const expectStyled = () => {
+        expect(bg(mapNode(styled, "A"))).toBe("rgb(255, 153, 255)");
+        expect(getComputedStyle(mapNode(styled, "A")).borderTopColor).toBe(
+          "rgb(204, 51, 204)",
+        );
+        for (const id of ["D", "E"])
+          expect(bg(mapNode(styled, id))).toBe("rgb(255, 224, 138)");
+        for (const id of ["A", "D", "E"])
+          expect(
+            getComputedStyle(
+              find(mapNode(styled, id), ".mdmark-diagram-node-name"),
+            ).color,
+          ).toBe("rgb(0, 0, 0)");
+      };
+      expectStyled();
+      for (const id of ["B", "C"])
+        expect(bg(mapNode(styled, id))).toBe(bg(mapNode(plainFlow, id)));
+      const wires = [
+        ...styled.querySelectorAll<SVGPathElement>("path.mdmark-diagram-wire"),
+      ];
+      expect(
+        getComputedStyle(
+          find<SVGPathElement>(
+            styled,
+            'path.mdmark-diagram-wire[data-wire="B->C"]',
+          ),
+        ).stroke,
+      ).toBe("rgb(221, 51, 51)");
+      expect(
+        wires.filter(
+          (wire) => getComputedStyle(wire).stroke === "rgb(221, 51, 51)",
+        ),
+      ).toHaveLength(1);
+      expect(mindmapLabels(mind)).toEqual(mindmapLabels(plainMind));
+      // 検証: 暗い配色に切り替えても色を変えない
+      await emulateMermaidMedia("dark");
+      el.classList.add("dark");
+      expectStyled();
+    } finally {
+      await cdp().send("Emulation.setEmulatedMedia", {
+        media: "",
+        features: [],
+      });
+    }
+  },
+  MAP_WAIT_MS + 30_000,
+);
+
+// GitHub の Mermaid でも読み取れない行を持つ純粋な Mermaid は、記載の警告と、読み取れた部分の map の図を描く（異常系（範囲の外の map の図が読み取れない行を持つ））
 test(
   "test_error_when_plain_map_cannot_read",
   async () => {
     // 準備
     const el = createElement();
-    const markdown = [
-      "```mermaid",
+    const name = "plain-unreadable";
+    const markdown = mermaidBlock([
       "flowchart LR",
       "  A --> B",
-      "  style A fill:#f9f",
-      "```",
-      "",
-      "```mermaid",
-      "flowchart LR",
-      "  C --> D",
-      "```",
-      "",
-    ].join("\n");
+      "  A -> ->",
+    ]).join("\n");
     // 実行
     await mountTracked(el, {
       markdown,
-      config: { mermaid: { url: mermaidUrl("fallback") } },
+      config: { mermaid: { url: mermaidUrl(name) } },
     });
-    await vi.waitFor(
-      () => {
-        expect(
-          el.querySelectorAll('figure.mdmark-diagram[data-diagram="mermaid"]'),
-        ).toHaveLength(1);
-        expect(
-          el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
-        ).toHaveLength(1);
-      },
-      { timeout: MERMAID_WAIT_MS },
+    const figure = await vi.waitFor(
+      () =>
+        find<HTMLElement>(
+          el,
+          'figure.mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-node="B"]',
+        ).closest<HTMLElement>("figure") as HTMLElement,
+      { timeout: MAP_WAIT_MS },
+    );
+    // 検証
+    const warning = find(el, ".mdmark-syntax-warning");
+    expect(
+      warning.compareDocumentPosition(figure) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(warning.textContent).toContain("3 行目");
+    expect(warning.textContent).toContain("A -> ->");
+    expect(
+      el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+    ).toHaveLength(1);
+    expect(mapNode(figure, "A")).toBeTruthy();
+    expect(
+      figure.querySelector('path.mdmark-diagram-wire[data-wire="A->B"]'),
+    ).not.toBeNull();
+    expect(countRequests(mermaidUrl(name))).toBe(0);
+  },
+  MAP_WAIT_MS + 30_000,
+);
+
+// 端に丸・×を付ける線・見えない線・長さを指定した線・形状の指定を持つ flowchart を、記載の警告を出さずに map の図で描く（正常系（flowchart の線の端・見えない線・線の長さ・形状の指定））
+test(
+  "test_normal_when_flowchart_mermaid_syntax",
+  async () => {
+    // 準備
+    const el = createElement();
+    const name = "plain-flow-syntax";
+    const markdown = mermaidBlock([
+      "flowchart TB",
+      "  A --o B",
+      "  A --x C",
+      "  D o--o E",
+      "  F x--x G",
+      "  H ~~~ I",
+      "  J ---> K",
+      "  Q --> R",
+      "  L[/入力/]",
+      "  M[\\出力\\]",
+      "  N[/台形\\]",
+      "  O(((終了)))",
+      '  P@{ shape: doc, label: "文書" }',
+    ]).join("\n");
+    // 実行
+    await mountTracked(el, {
+      markdown,
+      config: { mermaid: { url: mermaidUrl(name) } },
+    });
+    const figure = await vi.waitFor(
+      () =>
+        find<HTMLElement>(
+          el,
+          'figure.mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-node="P"]',
+        ).closest<HTMLElement>("figure") as HTMLElement,
+      { timeout: MAP_WAIT_MS },
     );
     // 検証
     expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+    expect(
+      el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+    ).toHaveLength(1);
+    expect(countRequests(mermaidUrl(name))).toBe(0);
+    const endOf = (wire: string, side: "start" | "end") => {
+      const path = find<SVGPathElement>(
+        figure,
+        `path.mdmark-diagram-wire[data-wire="${wire}"]`,
+      );
+      const id = /url\(#([^)]+)\)/.exec(
+        path.getAttribute(`marker-${side}`) ?? "",
+      )?.[1];
+      return id === undefined
+        ? undefined
+        : figure.querySelector(`marker[id="${id}"]`)?.getAttribute("data-end");
+    };
+    expect(endOf("A->B", "end")).toBe("circle");
+    expect(endOf("A->C", "end")).toBe("cross");
+    expect([endOf("D->E", "start"), endOf("D->E", "end")]).toEqual([
+      "circle",
+      "circle",
+    ]);
+    expect([endOf("F->G", "start"), endOf("F->G", "end")]).toEqual([
+      "cross",
+      "cross",
+    ]);
+    expect(figure.querySelector('[data-wire="H->I"]')).toBeNull();
+    const top = (id: string) => mapNode(figure, id).getBoundingClientRect().top;
+    expect(top("I")).toBeGreaterThan(top("H"));
+    expect(top("K") - top("J")).toBeGreaterThan((top("R") - top("Q")) * 1.5);
+    expect(
+      ["L", "M", "N", "O", "P"].map((id) => mapNode(figure, id).dataset.shape),
+    ).toEqual(["lean-right", "lean-left", "trapezoid", "double-circle", "doc"]);
   },
-  MERMAID_WAIT_MS + 30_000,
+  MAP_WAIT_MS + 30_000,
+);
+
+/** mermaid の公式ドキュメントの記法の例を、図の種類ごとに集めた見本（`tests/fixtures/mermaid-syntax/`） */
+const MERMAID_SYNTAX_SAMPLES = import.meta.glob<string>(
+  "../../fixtures/mermaid-syntax/*.md",
+  { query: "?raw", import: "default", eager: true },
+);
+
+// map が描く 17 種類それぞれの、mermaid の公式ドキュメントの記法の例を集めた見本を、記載の警告を出さずに map の図で描く（正常系（mermaid の公式の記法の例を map の図で描く））
+test(
+  "test_normal_when_mermaid_syntax_samples",
+  async () => {
+    // 準備
+    const name = "syntax-samples";
+    const samples = Object.entries(MERMAID_SYNTAX_SAMPLES);
+    expect(samples).toHaveLength(17);
+    for (const [path, markdown] of samples) {
+      const el = createElement();
+      const blocks = markdown.match(/^```mermaid$/gm)?.length ?? 0;
+      // 実行
+      await mountTracked(el, {
+        markdown,
+        config: { mermaid: { url: mermaidUrl(name) } },
+      });
+      await vi.waitFor(
+        () =>
+          expect(
+            el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+            path,
+          ).toHaveLength(blocks),
+        { timeout: MAP_WAIT_MS * 3 },
+      );
+      // 検証
+      expect(
+        [...el.querySelectorAll(".mdmark-syntax-warning")].map(
+          (warning) => warning.textContent,
+        ),
+        path,
+      ).toEqual([]);
+      if (path.endsWith("/gitGraph.md")) {
+        expect(el.textContent).toContain("MetroLine1");
+        expect(el.textContent).not.toContain("checkout MetroLine1");
+      }
+      el.remove();
+    }
+    expect(countRequests(mermaidUrl(name))).toBe(0);
+  },
+  MAP_WAIT_MS * 3 * 17 + 60_000,
 );
 
 // 範囲の外のシーケンス図の参加者の行を、文書をスクロールしたときも画面の上端（--mdmark-sticky-top）に留める（正常系（参加者の行を留める））

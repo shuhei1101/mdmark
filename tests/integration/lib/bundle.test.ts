@@ -702,10 +702,11 @@ test("test_normal_when_mermaid_embedded", async () => {
     "mdmark.config.yaml": config('"*.md"'),
     "a.md": "# A\n\n[B へ](b.md)\n",
     "b.md": [
+      '<!-- features: {"map": false} -->',
+      "",
       "# B",
       "",
       "```mermaid",
-      "%%{init: {}}%%",
       "flowchart LR",
       "  A[受付] --> B[回答]",
       "```",

@@ -4324,8 +4324,9 @@ test("test_normal_when_mermaid_code_block", async () => {
   // 準備
   const render = await loadRender();
   const block = [
+    '<!-- features: {"map": false} -->',
+    "",
     "```mermaid",
-    "%%{init: {}}%%",
     "flowchart LR",
     "  A --> B",
     "```",
@@ -4892,11 +4893,17 @@ test("test_normal_when_board_value_icons", async () => {
   expect(box).toContain("完了");
 });
 
-// 罫線の行を 2 行以上持つ言語が tree でないコードブロックの前に記載の警告を配置し、tree_warning が false のコードブロックには配置しない（正常系）
+// 罫線の行を 2 行以上持つ言語が tree でないコードブロックをファイルツリーにし、tree_warning が false のコードブロックは記載した言語のまま描く（正常系（罫線のフォルダ構成の言語が tree でないコードブロック））
 test("test_normal_when_tree_lines_without_tree_language", async () => {
   // 準備
   const render = await loadRender();
   const tree = ["mdmark/", "├── src/", "│   └── index.ts", "└── README.md"];
+  const tooDeep = [
+    "mdmark/",
+    "├── src/",
+    "│   │   └── index.ts",
+    "└── README.md",
+  ];
   const markdown = [
     "```text",
     ...tree,
@@ -4918,8 +4925,8 @@ test("test_normal_when_tree_lines_without_tree_language", async () => {
     ...tree,
     "```",
     "",
-    "```tree",
-    ...tree,
+    "```text",
+    ...tooDeep,
     "```",
     "",
     '<!-- code: {"tree_warning": "no"} -->',
@@ -4934,38 +4941,48 @@ test("test_normal_when_tree_lines_without_tree_language", async () => {
   // 検証: 警告とコードブロック・ファイルツリーを出る順に並べる
   const order = [
     ...html.matchAll(
-      /<div class="mdmark-syntax-warning"[^>]*>[\s\S]*?<\/div>|<pre[^>]*>|<div class="mdmark-tree"/g,
+      /<div class="mdmark-syntax-warning"[^>]*>[\s\S]*?<\/div>|<pre[^>]*>|<div class="mdmark-tree"[^>]*>/g,
     ),
-  ].map((match) =>
-    match[0].startsWith('<div class="mdmark-syntax-warning"')
-      ? match[0].includes("罫線のフォルダ構成があります")
-        ? match[0].includes("言語の無いコードブロック")
-          ? "tree-warning-none"
-          : "tree-warning-text"
-        : "warning"
-      : match[0].startsWith("<pre")
-        ? "pre"
-        : "tree",
-  );
+  ].map((match) => {
+    if (match[0].startsWith('<div class="mdmark-syntax-warning"'))
+      return match[0].includes("tree_warning")
+        ? "warning-option"
+        : "warning-line";
+    if (match[0].startsWith("<pre")) return "pre";
+    return /data-tree-language="text"/.test(match[0])
+      ? "tree-text"
+      : /data-tree-language(="")?[\s>]/.test(match[0])
+        ? "tree-none"
+        : "tree";
+  });
   expect(order).toEqual([
-    "tree-warning-text",
-    "pre",
-    "tree-warning-none",
-    "pre",
+    "tree-text",
+    "tree-none",
     "pre",
     "pre",
-    "tree",
-    "warning",
-    "tree-warning-text",
+    "warning-line",
     "pre",
+    "warning-option",
+    "tree-text",
   ]);
-  expect(html).toContain(
-    "言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。",
+  const trees = [
+    ...html.matchAll(/<div class="mdmark-tree"[\s\S]*?<\/ul><\/div>/g),
+  ].map((match) => match[0]);
+  expect(trees[0]).toMatch(
+    /mdmark-tree-folder[\s\S]*src\/[\s\S]*mdmark-tree-file[\s\S]*index\.ts/,
   );
-  expect(html).toContain('&lt;!-- code: {"tree_warning": false} --&gt;');
+  expect(trees[1]).toContain("index.ts");
+  expect(trees[1]).toContain("parts/");
+  const lineWarning = [
+    ...html.matchAll(
+      /<div class="mdmark-syntax-warning"[^>]*>[\s\S]*?<\/div>/g,
+    ),
+  ].find((match) => !match[0].includes("tree_warning"))?.[0];
+  expect(lineWarning).toContain("3 行目");
+  expect(html).toContain('"no"');
   expect(
     startTags(html, "code").filter((tag) => tag.includes("language-text")),
-  ).toHaveLength(4);
+  ).toHaveLength(3);
 });
 
 // id: のリンク先を利用側の関数で URL に変え、変えられないリンクと関数の無いときは href を持たせない（正常系（id: のリンク先を URL に変える関数を指定する））
