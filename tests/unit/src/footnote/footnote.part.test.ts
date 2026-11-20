@@ -30,6 +30,11 @@ test("test_render_footnote_ref", async () => {
   expect(innerHtml(html, "mdmark-fn-tip-body")).toBe(
     "CSS 変数と層の外の CSS で上書きする。",
   );
+  // タイトルと中身がツールチップの直下の枠（mdmark-fn-tip-frame）の中にある
+  expect(html).toMatch(
+    /<span class="mdmark-fn-tip"[^>]*><span class="mdmark-fn-tip-frame"><span class="mdmark-fn-tip-title">/,
+  );
+  expect(html.endsWith("</span></span></sup>")).toBe(true);
 });
 
 // 中身がリンクを持つと role group にする（正常系）
