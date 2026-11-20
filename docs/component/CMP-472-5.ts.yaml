@@ -70,6 +70,14 @@ states:
     notes:
       定義: インターフェース定義『文書を描く』の正常系（map の構成図・状態遷移図・クラス図で名前の幅と形状の余白からノードの大きさを決めて描く）の構成図
       ストーリー: '`mount` で描いた結果を定義にする。Storybook のストーリーは部品の描画のサーバーが今の見積もり（半角を文字の大きさの 0.6 倍）で配置するため、フォントによって名前が 2 行に折り返し、この状態の大きさにならない'
+  - name: Styled
+    description: '`style`・`classDef`・`linkStyle` の色を適用した。ノード A の面と枠線が指定の色、D・E の面が classDef の色で文字が黒、2 本目の線が赤。ほかは map の配色'
+    notes:
+      定義: モック `docs/mock/components/plain-mermaid-style/` の「style と classDef を持つ flowchart」の案 B
+  - name: WireEndsAndShapes
+    description: 端に丸・×を付けた線・見えない線でつないだノード・長さを指定した線と、平行四辺形・台形・二重の円・文書の形状のノード
+    notes:
+      定義: インターフェース定義『文書を描く』の正常系（flowchart の線の端・見えない線・線の長さ・形状の指定）の Mermaid
 lead: map の `flowchart` を自動配置した結果のノードと線（線の交差の飛び越えを含む）を描き、その上に入れ子のグループの面を重ねる。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
 args:
   - name: layout
@@ -153,6 +161,32 @@ args:
     required: false
     default: なし（下線を付けない）
     description: 用語から意味への対応（`data-map-terms`）。ノードの名前の中の用語を `span.mdmark-term` にし、意味を図のツールチップにする。説明のツールチップの文の中の用語はフォーカスを持たない下線にし、末尾に「{用語}：{意味}」の行を並べる。グループのタイトルと線のラベルには付けない
+  - name: layout.nodes[].style
+    type: オブジェクト
+    required: false
+    default: なし（map の配色）
+    description: Mermaid の `style`・`classDef`（`class` の行・`:::` で当てたもの）から読み取った色（`{ fill, stroke, color }`）。ノードの面・枠線・名前の文字の色にする。`color` が無く `fill` があるときの文字の色は、面に対するコントラスト比が高い方の `#000000` か `#ffffff`。明るい配色と暗い配色で変えない
+  - name: layout.nodes[].shape
+    type: 列挙
+    required: false
+    default: '`rect`'
+    choices: '今の形状（`rect`・`round`・`stadium`・`circle`・`cylinder`・`subroutine`・`hexagon`・`rhombus`・`flag`）に加え `lean-right`（`[/ /]`）・`lean-left`（`[\ \]`）・`trapezoid`（`[/ \]`）・`trapezoid-alt`（`[\ /]`）・`double-circle`（`(((`　`)))`）と、`@{ shape: … }` の mermaid の形状の名前'
+    description: ノードの形状。面と枠線をその形状で描き、名前は形状の内側に収める
+  - name: layout.wires[].style
+    type: オブジェクト
+    required: false
+    default: なし（map の配色）
+    description: Mermaid の `linkStyle` から読み取った色（`{ stroke, color }`）。線と矢じりと線のラベルの文字の色にする
+  - name: layout.wires[].ends
+    type: オブジェクト
+    required: false
+    default: なし（矢印のとおり）
+    description: 線の端の記号（`{ from, to }`。値は `circle`・`cross`）。`--o`・`--x`・`o--o`・`x--x` の端に丸・×を線の色で描く
+  - name: layout.wires[].invisible
+    type: 真偽値
+    required: false
+    default: '`false`'
+    description: '`~~~` の見えない線。`true` の線は配置にだけ使用し、線・ラベル・押せる帯を描かない'
 events:
   - name: 開閉する
     when: グループの左上の山形のボタンか、閉じたグループの開くボタンを押す（Shift を押しながら押すと中のグループも）

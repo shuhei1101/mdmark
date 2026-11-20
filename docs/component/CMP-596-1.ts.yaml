@@ -110,6 +110,11 @@ args:
     required: false
     default: '{}'
     description: Mermaid の `click`・`link` の行のクラスの ID からリンク先への対応（許可したものだけ）。構成図の部品の `links` と同じ
+  - name: layout.nodes[].style
+    type: オブジェクト
+    required: false
+    default: なし（map の配色）
+    description: Mermaid の `style` と、`cssClass` で当てた `classDef` から読み取った色（`{ fill, stroke, color }`）。部品設計『mapの構成図』の `layout.nodes[].style` と同じく、クラスのノードの面・枠線・文字の色にする
 events:
   - name: 開閉する・中へ入る
     when: namespace の山形・タイトルのボタン、クラスの開閉のボタンを押す

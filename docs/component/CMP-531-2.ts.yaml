@@ -89,6 +89,11 @@ args:
     required: false
     default: なし（下線を付けない）
     description: 用語から意味への対応。状態の名前とノートの文の中の用語を `span.mdmark-term` にする
+  - name: layout.nodes[].style
+    type: オブジェクト
+    required: false
+    default: なし（map の配色）
+    description: Mermaid の `style` と、`class` の行・`:::` で当てた `classDef` から読み取った色（`{ fill, stroke, color }`）。部品設計『mapの構成図』の `layout.nodes[].style` と同じく、状態のノードの面・枠線・文字の色にする
 events:
   - name: 開閉する・中へ入る
     when: 入れ子の状態の山形・タイトルのボタンを押す
