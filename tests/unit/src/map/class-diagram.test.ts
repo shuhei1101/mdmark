@@ -4,6 +4,10 @@ import { CLASS, LONG_CLASS as MAP_LONG_CLASS } from "../../helpers/map.ts";
 /** classDiagram の読み取りを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadClass = () => import("../../../../src/map/class-diagram.ts");
 
+/** 今の見積もり（全角を文字の大きさ、半角を 0.6 倍）で名前の幅を測る関数を読み込む */
+const estimate = async () =>
+  (await import("../../../../src/map/layout.ts")).estimateTextWidth;
+
 // モックのクラス図（正常系）
 test("test_parse_class_diagram", async () => {
   // 準備
@@ -100,7 +104,7 @@ test("test_class_part_inputs", async () => {
   const { parseClassDiagram, classPartInputs } = await loadClass();
   const diagram = parseClassDiagram(CLASS);
   // 実行
-  const view = { widths: {}, maxWidth: 220 };
+  const view = { widths: {}, maxWidth: 220, measureText: await estimate() };
   const open = classPartInputs(diagram, { ...view, collapsed: new Set() });
   const closed = classPartInputs(diagram, {
     ...view,
@@ -218,6 +222,7 @@ test("test_class_part_inputs_when_long_members", async () => {
     collapsed: new Set(),
     widths: {},
     maxWidth: 220,
+    measureText: await estimate(),
   });
   // 検証
   const lines = inputs.classes[0]?.members[0]?.lines ?? 0;
@@ -239,11 +244,13 @@ test("test_class_part_inputs_when_width", async () => {
     collapsed: new Set(),
     widths: { 検索: 480 },
     maxWidth: 220,
+    measureText: await estimate(),
   });
   const wide = classPartInputs(diagram, {
     collapsed: new Set(),
     widths: {},
     maxWidth: 360,
+    measureText: await estimate(),
   });
   // 検証
   expect(given.overrides.検索?.size?.w).toBe(480);
@@ -258,7 +265,12 @@ test("test_class_part_inputs_when_labels", async () => {
   // 準備
   const { parseClassDiagram, classPartInputs } = await loadClass();
   const { MAP_CLASS, MAP_ER, MAP_LAYOUT } = await loadSizes();
-  const view = { collapsed: new Set<string>(), widths: {}, maxWidth: 220 };
+  const view = {
+    collapsed: new Set<string>(),
+    widths: {},
+    maxWidth: 220,
+    measureText: await estimate(),
+  };
   const outside = parseClassDiagram(
     [
       "classDiagram",
@@ -306,6 +318,7 @@ test("test_class_part_inputs_when_long_note", async () => {
     collapsed: new Set(),
     widths: {},
     maxWidth: 220,
+    measureText: await estimate(),
   });
   // 検証
   expect(inputs.overrides.note_1?.size).toEqual({ w: 220, h: leafHeight(2) });
@@ -325,10 +338,35 @@ test("test_class_part_inputs_when_short_note", async () => {
     collapsed: new Set(),
     widths: {},
     maxWidth: 220,
+    measureText: await estimate(),
   });
   // 検証
   expect(inputs.overrides.note_1?.size).toEqual({
     w: MAP_LAYOUT.minWidth,
     h: leafHeight(1),
   });
+});
+
+// 測った名前の幅でクラスの幅を決める（正常系）
+test("test_class_part_inputs_when_measured_name", async () => {
+  // 準備
+  const { parseClassDiagram, classPartInputs } = await loadClass();
+  const { leafHeight } = await import("../../../../src/map/layout.ts");
+  const diagram = parseClassDiagram(
+    [
+      "classDiagram",
+      "  class MarkdownDocumentRenderer",
+      '  note for MarkdownDocumentRenderer "Markdown を描く"',
+    ].join("\n"),
+  );
+  // 実行
+  const inputs = classPartInputs(diagram, {
+    collapsed: new Set(),
+    widths: {},
+    maxWidth: 360,
+    measureText: (text: string) => [...text].length * 10,
+  });
+  // 検証
+  expect(inputs.overrides.MarkdownDocumentRenderer?.size?.w).toBe(281);
+  expect(inputs.overrides.note_1?.size).toEqual({ w: 161, h: leafHeight(1) });
 });

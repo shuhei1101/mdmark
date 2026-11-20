@@ -10260,6 +10260,7 @@
   }
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-shape="pill"] {
     border-radius: 999px;
+    /* 左の余白は、ノードの大きさの見積もりの LABEL_METRICS.padPill（src/map/layout.ts）と同じ値にする */
     padding-inline: 16px;
   }
   .mdmark-diagram[data-diagram="map"]

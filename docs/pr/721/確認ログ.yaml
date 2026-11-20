@@ -1,0 +1,7 @@
+confirmations:
+  - topic: Storybook のストーリーで map のノードの名前の幅をどう扱うか
+    decision: ストーリーは今の見積もりのまま配置し、ストーリーの名前の下の空きはスコープ外にする。状態 MeasuredName は mount で描いたものを定義にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 451d7702
+    thread: https://github.com/shuhei1101/mdmark/pull/721#discussion_r4635860758

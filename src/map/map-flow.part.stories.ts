@@ -98,3 +98,9 @@ export const WrappedName: Story = {
   parameters: { server: { id: "map-flow" } },
   args: { source: "wrapped" },
 };
+
+export const MeasuredName: Story = {
+  name: "MeasuredName",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "measured" },
+};
