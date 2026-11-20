@@ -221,7 +221,7 @@ test("test_default", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 「注文」の列を閉じると、テーブル名と「列 8」のボタンの 1 行になり、関連はノードの辺の中ほどにつながる（ColumnsCollapsed）
+// 「注文」の列を閉じると、テーブル名と山形だけの開閉のボタンの 1 行になり、関連はノードの辺の中ほどにつながる（ColumnsCollapsed）
 test("test_columns_collapsed", async () => {
   // 準備・実行
   const page = await openEr("columns-collapsed");
@@ -229,7 +229,8 @@ test("test_columns_collapsed", async () => {
   const order = page.locator('.mdmark-diagram-node[data-node="注文"]');
   await expect(order.locator(".map-er-column").count()).resolves.toBe(0);
   const toggle = order.locator("button.map-er-toggle");
-  await expect(toggle.innerText()).resolves.toBe("列 8");
+  await expect(toggle.innerText()).resolves.toBe("");
+  await expect(toggle.locator("svg").count()).resolves.toBe(1);
   await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("false");
   await expect(toggle.getAttribute("aria-label")).resolves.toBe(
     "注文の列を開く",

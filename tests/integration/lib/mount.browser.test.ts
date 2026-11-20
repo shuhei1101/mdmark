@@ -23409,3 +23409,217 @@ test("test_error_when_map_png_unavailable", async () => {
   expect(errors).toEqual([]);
   expect(mapViewState(figure)).toBe(before);
 });
+
+/** 構成図・ER 図・クラス図の 3 つの map を持つ Markdown（グループの大きさを変える・全画面で操作する） */
+const MAP_GROUP_SIZES = `${mapRange({ args: '{"title": "全体の構成"}', mermaid: MAP_FLOW, data: MAP_DATA })}\n${MAP_ER_MARKDOWN}\n${MAP_CLASS_MARKDOWN}`;
+
+/** グループの要素の配置の座標と大きさ（px。図の中身の座標） */
+const groupRect = (figure: Element, id: string) => {
+  const style = find<HTMLElement>(
+    figure,
+    `.map-group[data-group="${id}"]`,
+  ).style;
+  return {
+    x: Number.parseFloat(style.left),
+    y: Number.parseFloat(style.top),
+    w: Number.parseFloat(style.width),
+    h: Number.parseFloat(style.height),
+  };
+};
+
+/** グループの右下の角の大きさを変えるボタン */
+const groupCorner = (figure: Element, id: string): HTMLButtonElement =>
+  find<HTMLButtonElement>(
+    figure,
+    `.map-group[data-group="${id}"] > .map-group-resize`,
+  );
+
+/** ノードの要素の配置の座標（px。図の中身の座標） */
+const nodeAt = (figure: Element, id: string) => {
+  const style = mapNode(figure, id).style;
+  return {
+    x: Number.parseFloat(style.left),
+    y: Number.parseFloat(style.top),
+  };
+};
+
+// map のグループの大きさを変える（正常系）
+test("test_normal_when_map_group_resized", async () => {
+  // 準備
+  const { el, figures } = await mountMap(MAP_GROUP_SIZES);
+  await vi.waitFor(() => expect(figures()).toHaveLength(3), {
+    timeout: MAP_WAIT_MS,
+  });
+  const flow = () => figures()[0] as HTMLElement;
+  const place = groupRect(flow(), "place");
+  const lib = groupRect(flow(), "lib");
+  const route = nodeAt(flow(), "route");
+  // 検証: 開いたグループの右下に 24px 四方の角のボタンがある
+  const corner = groupCorner(flow(), "place");
+  const box = corner.getBoundingClientRect();
+  expect(Math.round(box.width)).toBe(24);
+  expect(Math.round(box.height)).toBe(24);
+  expect(corner.getAttribute("aria-label")).toBe("配置の大きさを変える");
+  expect(getComputedStyle(corner).cursor).toBe("nwse-resize");
+  corner.focus();
+  expect(document.activeElement).toBe(corner);
+  // 実行: 中のグループの角を右下へ 40px ドラッグする
+  pressMap(corner, 40, 40);
+  // 検証: 右端と下端だけが動き、中のノードは動かず、外のグループが広がる
+  const grown = groupRect(flow(), "place");
+  expect(grown.x).toBe(place.x);
+  expect(grown.y).toBe(place.y);
+  expect(Math.abs(grown.w - place.w - 40)).toBeLessThanOrEqual(1);
+  expect(Math.abs(grown.h - place.h - 40)).toBeLessThanOrEqual(1);
+  expect(nodeAt(flow(), "route")).toEqual(route);
+  expect(groupRect(flow(), "lib").h).toBeGreaterThan(lib.h);
+  // 実行・検証: 4px 未満の動きは押した扱いで大きさを変えない
+  pressMap(groupCorner(flow(), "place"), 3, 0);
+  expect(groupRect(flow(), "place").w).toBe(grown.w);
+  // 実行: 右のノード（frame）に重なる位置まで右へドラッグする
+  pressMap(groupCorner(flow(), "place"), 200, 0);
+  // 検証: frame との間が 16px になる手前で止まる
+  const frame = nodeAt(flow(), "frame");
+  const blocked = groupRect(flow(), "place");
+  expect(Math.abs(frame.x - (blocked.x + blocked.w) - 16)).toBeLessThanOrEqual(
+    1,
+  );
+  // 実行・検証: 角にフォーカスして → で 8px、Shift + ← で 32px 狭まる
+  const keyed = () => groupCorner(flow(), "place");
+  keyed().focus();
+  await userEvent.keyboard("{ArrowDown}");
+  expect(groupRect(flow(), "place").h).toBe(blocked.h + 8);
+  await userEvent.keyboard("{Shift>}{ArrowLeft}{/Shift}");
+  expect(groupRect(flow(), "place").w).toBe(blocked.w - 32);
+  // 実行: ← と ↑ を中のノードより内側まで押す
+  for (let index = 0; index < 20; index += 1) {
+    keyed().focus();
+    await userEvent.keyboard("{Shift>}{ArrowLeft}{ArrowUp}{/Shift}");
+  }
+  // 検証: 中のノードを囲む大きさ（自動配置の大きさ）で止まる
+  const least = groupRect(flow(), "place");
+  expect(least.w).toBe(place.w);
+  expect(least.h).toBe(place.h);
+  // 実行: 中のグループの左の縁を右へ 30px ドラッグする
+  const edge = find<HTMLElement>(
+    flow(),
+    '.map-group[data-group="place"] > .map-group-bar.is-left',
+  );
+  expect(getComputedStyle(edge).cursor).toBe("grab");
+  pressMap(edge, 30, 0);
+  // 検証: グループが中身ごと動く
+  expect(groupRect(flow(), "place").x).toBe(least.x + 30);
+  expect(nodeAt(flow(), "route").x).toBe(route.x + 30);
+  // 実行・検証: ER 図の分類「記録」とクラス図の namespace「形状」も角で大きさを変えられる
+  for (const [index, id] of [
+    [1, "記録"],
+    [2, "形状"],
+  ] as const) {
+    const figure = () => figures()[index] as HTMLElement;
+    const before = groupRect(figure(), id);
+    pressMap(groupCorner(figure(), id), 40, 40);
+    const after = groupRect(figure(), id);
+    expect(Math.abs(after.w - before.w - 40)).toBeLessThanOrEqual(1);
+    expect(Math.abs(after.h - before.h - 40)).toBeLessThanOrEqual(1);
+  }
+  // 実行: もう一度 mount する
+  const kept = groupRect(flow(), "place");
+  await remountMap(el, MAP_GROUP_SIZES);
+  await vi.waitFor(() => expect(figures()).toHaveLength(3), {
+    timeout: MAP_WAIT_MS,
+  });
+  // 検証: 変えた大きさと動かした位置のまま描く
+  expect(groupRect(flow(), "place")).toEqual(kept);
+  // 実行: 「配置と選択を元に戻す」を押す
+  const reset = find<HTMLButtonElement>(flow(), '[data-tool="reset"]');
+  expect(reset.disabled).toBe(false);
+  reset.click();
+  // 検証: 自動配置の大きさに戻る
+  expect(groupRect(flow(), "place")).toEqual(place);
+  // 実行・検証: 閉じたグループには角のボタンが無い
+  find<HTMLButtonElement>(flow(), '[data-group-toggle="store"]').click();
+  expect(
+    flow().querySelector('[data-group="store"] .map-group-resize'),
+  ).toBeNull();
+});
+
+// map の図を全画面で操作する（正常系）
+test("test_normal_when_map_fullscreen", async () => {
+  // 準備
+  const { el, figures } = await mountMap(MAP_GROUP_SIZES);
+  await vi.waitFor(() => expect(figures()).toHaveLength(3), {
+    timeout: MAP_WAIT_MS,
+  });
+  const flow = () => figures()[0] as HTMLElement;
+  const er = () => figures()[1] as HTMLElement;
+  const route = nodeAt(flow(), "route");
+  const search = location.search;
+  // 実行: 構成図の全画面のボタンを押す
+  buttonOf(flow(), "全画面で開く").click();
+  const dialog = find<HTMLDialogElement>(el, "dialog");
+  const modal = find<HTMLElement>(dialog, "figure.mdmark-diagram");
+  // 検証: 線にポインターを乗せると、ほかが薄くなりデータの印が進む
+  const hit = find<SVGPathElement>(modal, ".map-wire-hit[data-wire]");
+  hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+  expect(modal.querySelectorAll(".map-dim").length).toBeGreaterThan(0);
+  expect(
+    modal.querySelectorAll(`.map-packet[data-wire="${hit.dataset.wire}"]`)
+      .length,
+  ).toBeGreaterThan(0);
+  hit.dispatchEvent(new PointerEvent("pointerout", { bubbles: true }));
+  // 実行: ノードを押して選ぶ
+  const kind = () =>
+    find<HTMLElement>(mapNode(modal, "route"), ".mdmark-diagram-node-kind");
+  pressMap(kind());
+  expect(mapNode(modal, "route").classList.contains("is-selected")).toBe(true);
+  // 実行: ノードを下へ 40px 動かし、グループの角で大きさを変え、グループを閉じる
+  pressMap(kind(), 0, 40);
+  expect(nodeAt(modal, "route").y).toBe(route.y + 40);
+  const store = groupRect(modal, "store");
+  pressMap(groupCorner(modal, "store"), 0, 24);
+  expect(groupRect(modal, "store").h).toBe(store.h + 24);
+  find<HTMLButtonElement>(modal, '[data-group-toggle="read"]').click();
+  expect(modal.querySelector('.map-closed-group[data-group="read"]')).not.toBe(
+    null,
+  );
+  // 実行: ノードを選んだまま、図の中にフォーカスして Esc を 2 回押す
+  if (!mapNode(modal, "route").classList.contains("is-selected"))
+    pressMap(kind());
+  expect(mapNode(modal, "route").classList.contains("is-selected")).toBe(true);
+  find<HTMLElement>(modal, ".mdmark-diagram-viewport").focus();
+  await userEvent.keyboard("{Escape}");
+  // 検証: 1 回目は選択を解き、モーダルは開いたまま
+  expect(mapNode(modal, "route").classList.contains("is-selected")).toBe(false);
+  expect(dialog.open).toBe(true);
+  await userEvent.keyboard("{Escape}");
+  // 検証: 2 回目でモーダルを閉じ、変えた位置・大きさ・開閉を元の図へ反映する（選択とクエリ文字列は反映しない）
+  await vi.waitFor(() => expect(el.querySelector("dialog")).toBeNull());
+  expect(nodeAt(flow(), "route").y).toBe(route.y + 40);
+  expect(groupRect(flow(), "store").h).toBe(store.h + 24);
+  expect(
+    flow().querySelector('.map-closed-group[data-group="read"]'),
+  ).not.toBeNull();
+  expect(flow().querySelectorAll(".is-selected")).toHaveLength(0);
+  expect(location.search).toBe(search);
+  // 検証: 元の図の操作は開く前と同じに動く
+  pressMap(
+    find<HTMLElement>(mapNode(flow(), "route"), ".mdmark-diagram-node-kind"),
+  );
+  expect(mapNode(flow(), "route").classList.contains("is-selected")).toBe(true);
+  // 実行・検証: ER 図の全画面でも、データの印が多い側（注文）から少ない側（顧客）へ進む
+  buttonOf(er(), "全画面で開く").click();
+  const erModal = find<HTMLElement>(
+    find<HTMLDialogElement>(el, "dialog"),
+    "figure.mdmark-diagram",
+  );
+  find<SVGPathElement>(erModal, '.map-wire-hit[data-wire="r1"]').dispatchEvent(
+    new PointerEvent("pointerover", { bubbles: true }),
+  );
+  const packets = [
+    ...erModal.querySelectorAll('.map-packet[data-wire="r1"] animateMotion'),
+  ];
+  expect(packets.length).toBeGreaterThan(0);
+  for (const motion of packets)
+    expect(motion.getAttribute("keyPoints")).toBe("1;0");
+  await userEvent.keyboard("{Escape}");
+});
