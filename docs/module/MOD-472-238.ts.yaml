@@ -19,7 +19,7 @@ functions:
       開閉は `sup.mdmark-fn-ref` の class で表す: ポインターを乗せたとき・フォーカスしたときにほかの脚注のツールチップを閉じて `is-open` を付け、画面に対して配置する。
 
 
-      `sup.mdmark-fn-ref` が表のセル（`th`・`td`）の中にあれば、開いている間そのセルに `is-tip-open` を付け、閉じたときに削除する（`attachTermTips` と同じ。重なりの順は `index.css`）。
+      `sup.mdmark-fn-ref` が表のセル（`th`・`td`）の中にあれば、開いている間そのセルに `is-tip-open` を付け、閉じた後にそのセルの中に開いたツールチップ（`.mdmark-term-wrap.is-open`・`.mdmark-fn-ref.is-open`）が無ければ削除する（`attachTermTips` と同じ。重なりの順は `index.css`）。
 
       配置する側は `chooseTipSide`（`placement` を指定する）で決め、下なら `is-below` も付け、画面の端からはみ出さないよう左右を統一する。
 

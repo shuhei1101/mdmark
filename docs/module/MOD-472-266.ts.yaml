@@ -15,7 +15,7 @@ functions:
       開閉は `mdmark-term-wrap` の class で表す（モック `docs/mock/refs/27/assets/glossary.js` のとおり）: ポインターを乗せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して配置する。
 
 
-      `mdmark-term-wrap` が表のセル（`th`・`td`）の中にあれば、開いている間そのセルに `is-tip-open` を付け、閉じたときに削除する（ピン止めした列・見出し行の留めたセルの中のツールチップを、見出し行・集計の行・ピン止めした列より手前に描く。重なりの順は `index.css`）。
+      `mdmark-term-wrap` が表のセル（`th`・`td`）の中にあれば、開いている間そのセルに `is-tip-open` を付け、閉じた後にそのセルの中に開いたツールチップ（`.mdmark-term-wrap.is-open`・`.mdmark-fn-ref.is-open`）が無ければ削除する（ピン止めした列・見出し行の留めたセルの中のツールチップを、見出し行・集計の行・ピン止めした列より手前に描く。重なりの順は `index.css`）。
 
       配置する側は `chooseTipSide`（単語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に配置して `is-below` も付ける。
 
@@ -108,6 +108,18 @@ functions:
         condition: '`index.css` を読み込んだページに、見出し行が `position: sticky` で上端に留まり、先頭の列のセルが `is-pinned-col` を持つ表を配置し、先頭の列の本文のセルに用語の単語とツールチップの組を入れる。単語が見出し行の下端のすぐ下に来るようにスクロールし、単語にフォーカスして上に開き、次に Esc で閉じる'
         mock: なし（Chromium）
         expected: 開いた後はセルが `is-tip-open` を持ち、ツールチップの上端から 10px 内側の点の `document.elementFromPoint` がツールチップの中の要素。閉じた後はセルが `is-tip-open` を持たない
+      - name: test_attach_term_tips_when_in_sticky_head_cell
+        case: 正常
+        summary: 見出し行のセルの中のツールチップを、ピン止めした列の見出しより手前に描く
+        condition: '`index.css` を読み込んだページに、見出し行が `position: sticky` で上端に留まり、先頭の列のセルが `is-pinned-col` を持つ表を配置し、ピン止めした列の見出しのセルと、ピン止めしていない 2 列目の見出しのセルに、用語の単語とツールチップの組を 1 つずつ入れる。それぞれの単語に順にフォーカスして開く'
+        mock: なし（Chromium）
+        expected: 開いている間、その見出しのセルが `is-tip-open` を持ち、`getComputedStyle` の `z-index` がどちらのセルでも `10`（見出し行の `3`・ピン止めした列の見出しの `4` の規則に勝つ）
+      - name: test_attach_term_tips_when_footnote_open_in_same_cell
+        case: 正常
+        summary: 同じセルの脚注のツールチップが開いていれば、用語が閉じてもセルの `is-tip-open` を残す
+        condition: 表の本文の 1 つのセルに用語の単語とツールチップの組と脚注の番号を入れ、`attachTermTips` と `attachFootnotes` を付ける。単語に `pointerType` が `mouse` の `pointerenter` を送信して開き、単語に `pointerleave`、脚注の番号に `pointerenter` を送信して 150 ミリ秒進める
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 用語の `mdmark-term-wrap` が `is-open` を持たず、脚注の `sup.mdmark-fn-ref` が `is-open` を持ち、セルが `is-tip-open` を持つ
     callees:
       - MOD-472-232#functions[copyText]
       - 'MOD-472-261#functions[renderTermTipCopy]'
