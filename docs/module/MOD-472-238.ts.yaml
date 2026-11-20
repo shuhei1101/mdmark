@@ -18,6 +18,9 @@ functions:
 
       開閉は `sup.mdmark-fn-ref` の class で表す: ポインターを乗せたとき・フォーカスしたときにほかの脚注のツールチップを閉じて `is-open` を付け、画面に対して配置する。
 
+
+      `sup.mdmark-fn-ref` が表のセル（`th`・`td`）の中にあれば、開いている間そのセルに `is-tip-open` を付け、閉じたときに削除する（`attachTermTips` と同じ。重なりの順は `index.css`）。
+
       配置する側は `chooseTipSide`（`placement` を指定する）で決め、下なら `is-below` も付け、画面の端からはみ出さないよう左右を統一する。
 
       ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を削除する。
@@ -132,6 +135,12 @@ functions:
         condition: 脚注 1 つの番号と閉じた一覧を描いた要素に、`defaultPrevented` でなければ `history.replaceState` でリンクの `href` へ URL を置き換えるバブリングフェーズの `click` を先に付け、次に `attachFootnotes` を付けて、番号を押し、次に戻るリンクを押す
         mock: なし（Chromium）
         expected: どちらの後も `location.hash` が変わらず、番号の後は項目が、戻るリンクの後は番号のリンクがフォーカスを持つ
+      - name: test_attach_footnotes_when_in_pinned_cell
+        case: 正常
+        summary: ピン止めした列のセルの中の脚注のツールチップを、上に開いたときに留めた見出し行より手前に描く
+        condition: '`index.css` を読み込んだページに、見出し行が `position: sticky` で上端に留まり、先頭の列のセルが `is-pinned-col` を持つ表を配置し、先頭の列の本文のセルに脚注の番号を入れる。番号が見出し行の下端のすぐ下に来るようにスクロールし、番号のリンクにフォーカスして上に開き、次に Esc で閉じる'
+        mock: なし（Chromium）
+        expected: 開いた後はセルが `is-tip-open` を持ち、ツールチップの上端から 10px 内側の点の `document.elementFromPoint` がツールチップの中の要素。閉じた後はセルが `is-tip-open` を持たない
 lead: '脚注のツールチップの開閉と、番号と末尾の一覧の行き来を受け持ち、脚注の操作を変えるときに参照する。'
 tags:
   - name: topic:ツールチップ

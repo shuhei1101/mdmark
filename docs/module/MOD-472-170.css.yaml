@@ -339,6 +339,10 @@ styles:
       - class_name: .mdmark .mdmark-code-raw・.mdmark .mdmark-code-preview
         target: 言語 markdown のコードブロックの Raw のボタンと描いた結果
         value: 部品設計『コードブロック』の注記「描いた結果の表示」の外観を、モック `docs/mock/refs/709/assets/markdown-preview.css` の `.mock-preview-toggle`・`.mock-preview-icon`・`.mock-preview-body` から写す（`.mock-preview-toggle` は `.mdmark-code-raw`、`.mock-preview-body` は `.mdmark-code-preview` にする）。`hidden` を持つ `pre` と描いた結果の要素は出さない。印刷では `.mdmark-code-raw` を出さない
+      - class_name: .mdmark :is(.mdmark-table, [data-mdmark-sticky]) :is(th, td).is-tip-open
+        target: 開いた用語・脚注のツールチップを持つ表のセル
+        value: '`z-index: 10`（ツールチップとメニューと同じ値）。`position: sticky` のセル（ピン止めした列・見出し行・集計の行）は重なりのまとまりを作り、中の `position: fixed` のツールチップもセルの `z-index` の高さで描かれるため、開いている間だけセルを見出し行と集計の行（`3`）・ピン止めした列（`4`）・右側の目次（`5`）より手前に出す。見出し行と集計の行の親の規則（`z-index: 3`・`4`）より後ろに配置して優先させる'
+        notes: class は `attachTermTips`・`attachFootnotes` が付け、閉じたときに削除する。対応ブラウザの下限（非機能要件 NFR-2）は Popover API に対応するバージョンより前のため、トップレイヤーには出さない
     refs:
       - SCR-472-4#
       - CMP-472-65#
