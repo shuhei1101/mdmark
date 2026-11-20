@@ -806,7 +806,7 @@ constraints:
     constraint: '`<title>` は、参照の表の `docs` に書き出す文書があればその `title`、無ければ文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名'
   - item: 埋める本文
     constraint: |-
-      書き出す文書を、開いたときに `mount` に指定する設定・索引・`docId`・参照の表・エイリアス・取り込む文書の表・アイコン・文書のパス（`opts.path`。設定ファイルのフォルダからの相対パス）と同じ値で `render` と同じ処理にかけ、本文の HTML・機能のオン・オフ・ページの設定を `docs[].rendered` として埋める。
+      書き出す文書を、開いたときに `mount` に指定する設定・索引・`docId`・参照の表・エイリアス・取り込む文書の表・アイコン・文書のパス（`opts.path`。設定ファイルのフォルダからの相対パス）と同じ値で `render` と同じ処理にかけ、本文の HTML・機能のオン・オフ・ページの設定・操作できる部品の定義（`paramDefinitions`）・範囲の拡張のマーカーの部品の定義（`extensionDefinitions`）を `docs[].rendered` として埋める（記載の警告の一覧と注記の ID は埋めない）。
       同じ文書を `toPureMarkdown` に `opts.config`・`opts.index`・`opts.docId`・`opts.includes` を指定して変換した純粋な Markdown を `docs[].pureMarkdown` として埋める。
       元の Markdown（`docs[].markdown`）と取り込む文書の表（`includes`）は埋めない。
       描く前に、画像の `data:` URL への置き換えと動画・音声の `src` のコピーへの置き換えを Markdown に適用する。

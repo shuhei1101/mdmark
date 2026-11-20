@@ -11100,6 +11100,18 @@ request:
     default: なし
     location: argument
     description: '`render` の `opts.path` と同じ'
+  - name: opts.rendered.paramDefinitions
+    type: MdmarkParamDefinition[]
+    required: true
+    location: argument
+    description: 描いた操作できる部品（`param`）の定義。文書の中の並びの順。`opts.rendered.html` には含まれない
+    notes: 操作できる部品を持たない文書は空の並び
+  - name: opts.rendered.extensionDefinitions
+    type: unknown[]
+    required: true
+    location: argument
+    description: 範囲で記載した拡張のマーカーから読み込んだ部品の定義。マーカーの場所の `data-mdmark-definition` の番号で参照する。`opts.rendered.html` には含まれない
+    notes: 範囲の拡張のマーカーを持たない文書は空の並び
 request_example: |-
   ```json
   {
@@ -12344,7 +12356,7 @@ constraints:
     notes: '示し方と読み上げの名前は確認ログの決定（案 C・`追加:`）。モックは docs/mock/components/diff-blocks/index.html の #735 のセクション'
   - item: 描いた結果から描く
     constraint: |-
-      `opts.rendered` を指定したときは、Markdown を描く処理を飛ばし、`opts.rendered.html` を要素に入れて、`opts.rendered.features` と `opts.rendered.page` を Markdown から描いたときの機能のオン・オフとページの設定として扱い、Markdown から描いたときと同じ操作（外部ライブラリと拡張のマーカーの場所の描画・色分け・mermaid・アイコン・範囲のスクリプト・右側の目次・記法の操作・ツールチップ・ビュー）を付ける。
+      `opts.rendered` を指定したときは、Markdown を描く処理を飛ばし、`opts.rendered.html` を要素に入れて、`opts.rendered.features`・`opts.rendered.page`・`opts.rendered.paramDefinitions`・`opts.rendered.extensionDefinitions` を Markdown から描いたときの機能のオン・オフ・ページの設定・操作できる部品の定義・範囲の拡張のマーカーの部品の定義として、それぞれ同じ処理に指定し、Markdown から描いたときと同じ操作（外部ライブラリと拡張のマーカーの場所の描画・色分け・mermaid・アイコン・範囲のスクリプト・右側の目次・記法の操作・ツールチップ・ビュー）を付ける。
       同じ文書を同じ引数で Markdown から描いたときと、要素の中の DOM と付いた操作が同じになる。
       `opts.diffSource`・`opts.baseMarkdown`・`opts.commentStore` と一緒には指定できない（TypeError）。
       `update(markdown)` を呼ぶと、その後は差し替えた Markdown を描く
