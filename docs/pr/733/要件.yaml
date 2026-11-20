@@ -2,20 +2,18 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
     impact: changed
-    detail: 文書の作成者がマーカーの引数 mode で図の見せ方（入れ子のグループ・層の帯）を選べるようにする（追加すると決めた場合）
+    detail: 文書の作成者がマーカーの引数 mode で図の見せ方（入れ子のグループ・層のレーン）を選べるようにする（追加すると決めた場合）
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-87.yaml
-    impact: following
-    detail: 層の帯で描いた図でも、グループの中へ入る・開閉で辿って読めることを追随して記載する（追加すると決めた場合）
-    depends_on:
-      - docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: グループの中へ入る・開閉は見せ方によらず同じで、流れの記載は変わらない（layers でも同じく動くことは SC-472-8 に記載した）
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-78.yaml
-    impact: following
-    detail: mode に知らない値を記載したときのずれを、点検の一覧に追随して載せる（追加すると決めた場合）
-    depends_on:
-      - docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: 正常シナリオ（マーカーの設定にずれがある）がマーカーごとの JSON Schema での検証として記載してあり、mode の値は Schema に追加すれば同じ流れで点検される
+    depends_on: []
 docs:
   - page: docs/guide/記法.mark.md
     new: false
