@@ -95,8 +95,8 @@ fields:
 - key: details[].href
   title: リンク先
   type: string
-  description: 用語の YAML のあるフォルダからの相対パスか URL。見出しのアンカーを付けられる
+  description: 設定ファイルのフォルダからの相対パス（区切りは `/`）か URL。見出しのアンカーを付けられる。用語の YAML には YAML のあるフォルダからの相対パスで記載し、`buildAliases` が設定ファイルのフォルダからの相対パスに書き換える（URL は書き換えない）。表を描く側は、描く文書のパスからの相対パスに解いてリンクにする
   required: true
-  example: ./コアコンセプト-文書を描く仕組み.md
+  example: docs/guide/コアコンセプト-文書を描く仕組み.md
 refs:
 - ER-472-3#tables[MdmarkAlias]
