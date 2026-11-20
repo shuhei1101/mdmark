@@ -1176,7 +1176,7 @@ type Routing = {
   edgeId: string;
   used: UsedSteps;
   /** 両端以外のノードの出入り口の点（通ると usedCost の重み。そのノードに入る線と重ねない） */
-  foreignPorts?: Set<number>;
+  foreignPorts: Set<number>;
 };
 
 /** 先に引いた線が通った格子の区間（点から右へ・下へ進む区間を、その点の番号で持つ） */
@@ -1221,6 +1221,14 @@ const heuristicOf = (
   };
 };
 
+/** 1 つ進む区間の重み（先に引いた線が通った区間と、両端以外のノードの出入り口の点） */
+const reuseCost = (
+  routing: Routing,
+  step: { point: number; next: number; d: number },
+): number =>
+  (isUsed(routing.used, step) ? MAP_LAYOUT.usedCost : 0) +
+  (routing.foreignPorts.has(step.next) ? MAP_LAYOUT.usedCost : 0);
+
 /** 状態（点 × 向き）から、戻らずに 1 つ進める状態ごとに `visit` を呼ぶ（曲がると重み、片方だけの祖先の枠を出入りすると重み） */
 const visitSteps = (
   routing: Routing,
@@ -1254,9 +1262,7 @@ const visitSteps = (
       bitCount(
         (cells.maskAt[point] as number) ^ (cells.maskAt[next] as number),
       ) * MAP_LAYOUT.borderCost;
-    const reuse =
-      (isUsed(routing.used, { point, next, d }) ? MAP_LAYOUT.usedCost : 0) +
-      (routing.foreignPorts?.has(next) ? MAP_LAYOUT.usedCost : 0);
+    const reuse = reuseCost(routing, { point, next, d });
     visit(
       next * 4 + d,
       length + (d === dir ? 0 : MAP_LAYOUT.bendCost) + cross + reuse,
