@@ -490,7 +490,7 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 関連の線の両端を、つなぐ列の行の縦の中ほど（ノードの上端 + `MAP_ER.head` + 行の番号 × `MAP_ER.row` + `MAP_ER.row` の半分）の左右の辺へ付け替える。列を閉じたテーブルと列の無い端は、ノードの縦の中ほどにつなぐ
+    summary: 関連の線の両端を、自動配置の経路がつないだ左右の辺のまま、つなぐ列の行の縦の中ほど（ノードの上端 + `MAP_ER.head` + 行の番号 × `MAP_ER.row` + `MAP_ER.row` の半分）の高さへ付け替える。列を閉じたテーブルと列の無い端は、ノードの縦の中ほどにつなぐ
     scope: public
     args:
       - name: args
@@ -501,8 +501,8 @@ functions:
       type: MapLayout["wires"]
       description: 付け替えた線
     process: |-
-      1. 辺を、補足の `ends` → 元の辺（同じ高さの隣のノードまでの空きが `MAP_ER.crowd` 以上のとき）→ 空きが広い側 → 次の点がある側の順に選ぶ
-      2. 同じ列の行から同じ辺へ出る 2 本目からの端は `MAP_ER.shift` ずつ下へずらし、辺から `MAP_ER.endOut`（同じ辺から出る 2 本目からは `MAP_ER.step`（構成図の線どうしの間隔 `MAP_LAYOUT.clearance`）ずつ延ばす）出て元の経路へ戻す。元の辺と反対の辺から出すときは、ノードの上を回って戻す
+      1. 辺を、補足の `ends` → 自動配置の経路の端の辺の順に選ぶ。経路は `erOverrides` の `sides: horizontal` で左右の辺のうち相手のテーブルに近い方から引いてあるため、辺を選び直さない
+      2. 同じ列の行から同じ辺へ出る 2 本目からの端は `MAP_ER.shift` ずつ下へずらし、辺から `MAP_ER.endOut`（同じ辺から出る 2 本目からは `MAP_ER.step`（構成図の線どうしの間隔 `MAP_LAYOUT.clearance`）ずつ延ばす）出て、辺に沿った縦の区間で元の経路の端の区間へ戻す。戻す縦の区間は、その辺から `MAP_ER.aside` の幅の中を通り、ほかのテーブルの矩形に入らない
     unit_tests:
       - name: test_rewire_map_er
         case: 正常
@@ -510,6 +510,12 @@ functions:
         condition: モックの `ER` を配置する
         mock: なし
         expected: '`r1` の「注文」の側の端の y が列 `顧客ID` の行の縦の中ほどで、x が「注文」の左右の辺'
+      - name: test_rewire_map_er_when_near_side
+        case: 正常
+        summary: 経路の辺のまま付け替え、ほかのテーブルを横切らない
+        condition: モックの `ER` と `ER_DATA` の分類を、`erOverrides` の上書きで配置する
+        mock: なし
+        expected: 「注文」→「明細」の線の「注文」の側の端が「注文」の左の辺、「明細」の側の端が「明細」の右の辺にあり、どの線の区間も両端以外のテーブルの矩形に入らない
   - name: renderMapErMarks
     title: ER図の多重度とラベルのHTML
     kind: 関数

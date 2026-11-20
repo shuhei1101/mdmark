@@ -1,0 +1,32 @@
+$ npm run check
+
+> check
+> npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode
+
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 970 files in 1055ms. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+
+> typecheck:vscode
+> tsc --noEmit -p vscode
+
+exit: 0
+
+警告 1 件（plugin/bin/setup.js のファイルの大きさ）は、作業 PR が変えていないファイルで、develop でも同じ警告が出る。
