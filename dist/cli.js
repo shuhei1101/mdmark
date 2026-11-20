@@ -16973,7 +16973,7 @@ var require_lucide = __commonJS({
       ["path", { d: "m3 17 2 2 4-4" }],
       ["rect", { x: "3", y: "4", width: "6", height: "6", rx: "1" }]
     ];
-    var ListTree = [
+    var ListTree2 = [
       ["path", { d: "M8 5h13" }],
       ["path", { d: "M13 12h8" }],
       ["path", { d: "M13 19h8" }],
@@ -25459,7 +25459,7 @@ var require_lucide = __commonJS({
       ListSortDescending,
       ListStart,
       ListTodo,
-      ListTree,
+      ListTree: ListTree2,
       ListVideo,
       ListX,
       Loader,
@@ -27656,7 +27656,7 @@ var require_lucide = __commonJS({
     exports.ListSortDescending = ListSortDescending;
     exports.ListStart = ListStart;
     exports.ListTodo = ListTodo;
-    exports.ListTree = ListTree;
+    exports.ListTree = ListTree2;
     exports.ListVideo = ListVideo;
     exports.ListX = ListX;
     exports.Loader = Loader;
@@ -63097,7 +63097,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.0991591";
+  return "v0.14.0+develop.2ff6489";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -69895,6 +69895,7 @@ var ICONS = {
   "arrow-right": import_lucide.ArrowRight,
   funnel: import_lucide.Funnel,
   link: import_lucide.Link,
+  "list-tree": import_lucide.ListTree,
   file: import_lucide.File,
   "file-diff": import_lucide.FileDiff,
   folder: import_lucide.Folder,
@@ -81031,10 +81032,12 @@ function renderTools(frame) {
   const zoom = frame.zoom ?? 1;
   const fit = frame.fit ?? 1;
   const tool = (name, face, disabled = false) => `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${face.label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(face.icon)}</button>`;
-  const extra = frame.tools === void 0 || frame.tools.length === 0 ? "" : `<div class="mdmark-diagram-tools-group" data-group="map">${frame.tools.map(
+  const list3 = frame.listable ? `<button class="mdmark-diagram-tool" type="button" data-tool="list" aria-label="\u4E00\u89A7\u3067\u8868\u793A" title="\u4E00\u89A7\u3067\u8868\u793A" aria-pressed="${frame.listView === true}">${iconSvg("list-tree")}</button>` : "";
+  const tools = frame.tools ?? [];
+  const extra = tools.length === 0 && list3 === "" ? "" : `<div class="mdmark-diagram-tools-group" data-group="map">${list3}${tools.map(
     (item) => `<button class="mdmark-diagram-tool" type="button" data-tool="${escapeHtml2(item.name)}" aria-label="${escapeHtml2(item.label)}" title="${escapeHtml2(item.label)}"${item.disabled ? ' disabled="disabled"' : ""}>${iconSvg(MAP_TOOL_ICONS[item.name] ?? "ellipsis")}</button>`
   ).join("")}</div>`;
-  const screen = frame.modal ? tool("close", { label: "\u5168\u753B\u9762\u3092\u9589\u3058\u308B", icon: "x" }) : tool("fullscreen", { label: "\u5168\u753B\u9762\u3067\u958B\u304F", icon: "expand" });
+  const screen = `${frame.modal ? tool("close", { label: "\u5168\u753B\u9762\u3092\u9589\u3058\u308B", icon: "x" }) : tool("fullscreen", { label: "\u5168\u753B\u9762\u3067\u958B\u304F", icon: "expand" })}${exportButton(frame)}`;
   const percent = `${Math.round(zoom / fit * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="\u500D\u7387 ${percent}\u3002\u5168\u4F53\u304C\u53CE\u307E\u308B\u500D\u7387\u306B\u623B\u3059">${percent}</button>`;
   const open2 = frame.panelOpen === true;
@@ -81042,6 +81045,15 @@ function renderTools(frame) {
   const atMin = zoom <= fit * ZOOM.minRatio + ZOOM_EPSILON;
   const atMax = zoom >= fit * ZOOM.maxRatio - ZOOM_EPSILON;
   return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A"${open2 ? " data-open" : ""}>${extra}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "\u7E2E\u5C0F", icon: "minus" }, atMin)}${zoomButton}${tool("in", { label: "\u62E1\u5927", icon: "plus" }, atMax)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div><div class="mdmark-diagram-tools-group" data-group="more">${more}</div></div>`;
+}
+var exportPanelId = (frame) => `${escapeHtml2(frame.id)}-export`;
+function exportButton(frame) {
+  if (frame.exportable !== true) return "";
+  return `<button class="mdmark-diagram-tool" type="button" data-tool="export" aria-label="\u56F3\u3092\u66F8\u304D\u51FA\u3059" title="\u56F3\u3092\u66F8\u304D\u51FA\u3059" aria-expanded="${frame.exportOpen === true}" aria-controls="${exportPanelId(frame)}">${iconSvg("download")}</button>`;
+}
+function exportPanel(frame) {
+  if (frame.exportable !== true) return "";
+  return `<div class="mdmark-diagram-export" id="${exportPanelId(frame)}"${frame.exportOpen === true ? "" : " hidden"}><button class="mdmark-diagram-export-item" type="button" data-export="svg">SVG</button><button class="mdmark-diagram-export-item" type="button" data-export="png">PNG</button><p class="mdmark-diagram-export-status" role="status"></p></div>`;
 }
 function resizeHandle(frame, fitHeight) {
   if (frame.resizable === false || frame.modal === true) return "";
@@ -81063,7 +81075,7 @@ function renderDiagramFrame(frame, body) {
   const stage = `width:${num2(body.width)}px;height:${num2(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num2(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
   const atFit = zoom <= (frame.fit ?? 1) + ZOOM_EPSILON ? " data-at-fit" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport"${atFit} tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}${exportPanel(frame)}<div class="mdmark-diagram-viewport"${atFit} tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"${frame.listView === true ? " hidden" : ""}><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame, body.height * zoom)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 function renderDiagram(options) {
   const {
@@ -86755,15 +86767,22 @@ var parseClassDiagram = (source) => {
 };
 
 // src/map/data.ts
+var MAP_CHANGES = [
+  "added",
+  "changed",
+  "removed"
+];
 var MAP_DATA_KEYS = [
   "version",
   "notes",
   "walkthroughs",
   "layout",
   "plays_over",
-  "groups"
+  "groups",
+  "changes"
 ];
 var GROUP_KEYS = ["title", "tables", "parent"];
+var CHANGE_KEYS = ["type"];
 var STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
 var LAYOUT_KEYS = [
   "align",
@@ -86787,7 +86806,8 @@ var emptyMapData = () => ({
   walkthroughs: [],
   layout: {},
   plays_over: void 0,
-  groups: {}
+  groups: {},
+  changes: {}
 });
 var jsonPaths = (source) => {
   const lines = /* @__PURE__ */ new Map();
@@ -87131,6 +87151,38 @@ var readGroups = (reader, value, data) => {
     if (parsed !== void 0) data.groups[id] = parsed;
   }
 };
+var readChange = (reader, value, path) => {
+  if (!isObject4(value)) {
+    invalid2(reader, path, ' `{"type": \u5909\u66F4\u306E\u7A2E\u985E}` ');
+    return void 0;
+  }
+  let type;
+  for (const [name, field] of Object.entries(value)) {
+    if (name === "type")
+      type = readChoice(reader, field, {
+        path: `${path}.type`,
+        choices: MAP_CHANGES
+      });
+    else unknownKey(reader, { path, key: name, keys: CHANGE_KEYS });
+  }
+  if (type === void 0 && value.type === void 0)
+    invalid2(
+      reader,
+      `${path}.type`,
+      ` ${MAP_CHANGES.map((name) => `\`${name}\``).join("\u30FB")} `
+    );
+  return type === void 0 ? void 0 : { type };
+};
+var readChanges = (reader, value, data) => {
+  if (!isObject4(value)) {
+    invalid2(reader, "changes", ' ID \u3054\u3068\u306E `{"type"}` ');
+    return;
+  }
+  for (const [id, change] of Object.entries(value)) {
+    const parsed = readChange(reader, change, `changes.${id}`);
+    if (parsed !== void 0) data.changes[id] = parsed;
+  }
+};
 var readRootKey = (reader, data, item) => {
   const { key, value } = item;
   switch (key) {
@@ -87153,6 +87205,9 @@ var readRootKey = (reader, data, item) => {
     }
     case "groups":
       readGroups(reader, value, data);
+      return;
+    case "changes":
+      readChanges(reader, value, data);
       return;
     default:
       unknownKey(reader, { path: "", key, keys: MAP_DATA_KEYS });
@@ -87848,6 +87903,44 @@ var edgeOnlyProblems = (item) => {
     message: `\u88DC\u8DB3\u306E \`layout.${id}.${key}\` \u306F\u7DDA\u306E ID \u306E\u3068\u304D\u3060\u3051\u8A18\u8F09\u3067\u304D\u307E\u3059\u3002\`${id}\` \u306F\u30CE\u30FC\u30C9\u304B\u30B0\u30EB\u30FC\u30D7\u3067\u3059\u3002`
   }));
 };
+var MAP_CHANGE_KINDS = [
+  "flowchart",
+  "erDiagram",
+  "stateDiagram",
+  "classDiagram",
+  "architecture",
+  "C4Context",
+  "C4Container",
+  "C4Component",
+  "C4Dynamic",
+  "C4Deployment"
+];
+var CHANGE_KIND_NAMES = "flowchart\u30FBER \u56F3\u30FB\u72B6\u614B\u9077\u79FB\u56F3\u30FB\u30AF\u30E9\u30B9\u56F3\u30FB\u30A2\u30FC\u30AD\u30C6\u30AF\u30C1\u30E3\u56F3\u30FBC4 \u56F3";
+var isMemberKey = (kind, id, found) => (kind === "erDiagram" || kind === "classDiagram") && id.includes(".") && found.ids.has(id) && !found.tables.has(id);
+var changeProblems = (context) => {
+  const { kind, found, data, lineOf, ref } = context;
+  const ids = Object.keys(data.changes);
+  if (ids.length === 0) return [];
+  if (!MAP_CHANGE_KINDS.includes(kind))
+    return [
+      {
+        kind: "map_invalid_value",
+        line: lineOf("changes"),
+        message: `\u88DC\u8DB3\u306E \`changes\` \u306F\u3001\u3053\u306E\u56F3\u306E\u7A2E\u985E\u3067\u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u306E\u306F ${CHANGE_KIND_NAMES} \u3067\u3059\u3002`
+      }
+    ];
+  const out = [];
+  for (const id of ids) {
+    if (isMemberKey(kind, id, found))
+      out.push({
+        kind: "map_invalid_value",
+        line: lineOf(`changes.${id}`),
+        message: `\u88DC\u8DB3\u306E \`changes.${id}\` \u306F\u5217\u30FB\u30E1\u30F3\u30D0\u30FC\u3092\u6307\u3057\u3066\u3044\u307E\u3059\u3002\`changes\` \u306F\u30CE\u30FC\u30C9\u30FB\u30B0\u30EB\u30FC\u30D7\u30FB\u7DDA\u306E ID \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    else ref(`changes.${id}`, id);
+  }
+  return out;
+};
 var collectMapProblems = (range, config3, options) => {
   const { includeUnknownKeys, idLinks } = options;
   const structure = collectMapStructure(range);
@@ -87914,6 +88007,7 @@ var collectMapProblems = (range, config3, options) => {
     for (const id of step2.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
     ref(`walkthroughs[${index}].enter`, step2.enter);
   });
+  problems.push(...changeProblems(context));
   checkLayout(context);
   problems.push(...colorLayoutKindProblems(context, structure.args.args.focus));
   problems.push(...found.linkProblems);

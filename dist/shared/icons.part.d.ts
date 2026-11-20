@@ -55,6 +55,7 @@ declare const ICONS: {
     "arrow-right": IconNode;
     funnel: IconNode;
     link: IconNode;
+    "list-tree": IconNode;
     file: IconNode;
     "file-diff": IconNode;
     folder: IconNode;
