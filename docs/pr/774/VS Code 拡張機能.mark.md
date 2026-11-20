@@ -41,3 +41,18 @@
 ```bash
 cd vscode && node scripts/build.ts --tests && find out/test -name "*.test.mjs" ! -name "export.test.mjs" ! -name "preview-open.test.mjs" -delete && xvfb-run -a node tests/integration/run.ts
 ```
+
+### 単体
+
+なし（実装を変えず、対応する単体テストが無い）
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `vscode/tests/integration/export.test.ts` | 全実行 | 変更 | ✅ | `test_normal_when_relative_mermaid` のフィクスチャを変更。VS Code 1.141.0 と stable（1.147.0）で、2 ファイル合わせて 37 テスト pass<br>`テスト結果/20261121055702_4d861459_結合テスト_VSCode拡張機能.log` |
+| `vscode/tests/integration/preview-open.test.ts` | 全実行 | 変更 | ✅ | `test_normal_when_mermaid` のフィクスチャを変更。同じ実行で pass<br>`テスト結果/20261121055702_4d861459_結合テスト_VSCode拡張機能.log` |
+
+### lint
+
+✅ `テスト結果/20261121055702_4d861459_lint.log`（警告 1 件は作業 PR が変えていない `plugin/bin/setup.js` のファイルの大きさ、info 1 件は作業 PR が変えていない `tests/unit/src/tree/tree.syntax.test.ts`）
