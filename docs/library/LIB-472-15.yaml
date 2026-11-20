@@ -22,7 +22,7 @@ catalogs:
         kind: アイコン
         purpose: 図を全体が収まる倍率に戻すボタン
         status: removed
-        reason: 図の枠の戻すのボタンを倍率のボタンにまとめ、使用しなくなった（[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログ）
+        reason: 図の枠の戻すのボタンを倍率のボタンにまとめ、使用しなくなった
       - name: expand
         kind: アイコン
         purpose: 図を全画面のモーダルで開くボタン

@@ -58,7 +58,7 @@ flows:
       - 保存すると `render` が 1 回送られ、Webview の見出しが書き換えた文字
     test: test_normal_when_live_update_off
   - name: 正常系（設定ファイルを保存する）
-    summary: 設定ファイルの保存で、新しい features で再描画する
+    summary: 設定ファイルの保存で、変更後の features で再描画する
     setup:
       - name: プレビューを開いたワークスペース
         description: 正常系と同じ。`mdmark.config.yaml` は `features` を持たず、`guide.md` は注意書きを持つ
@@ -74,7 +74,7 @@ flows:
         participant PV as Webview
         U->>EX: mdmark.config.yaml に features.callout: false を記載して保存
         EX->>EX: features・libraries を取り出す
-        EX->>PV: render（新しい config）
+        EX->>PV: render（変更後の config）
         PV->>PV: destroy して mount
         PV->>EX: rendered
       ```
@@ -101,7 +101,7 @@ flows:
         participant PV as Webview
         U->>EX: mdmark.config.yaml に labels.paramCopy: コピー を記載して保存
         EX->>EX: features・libraries・labels などを取り出す
-        EX->>PV: render（新しい config）
+        EX->>PV: render（変更後の config）
         PV->>PV: destroy して mount
         PV->>EX: rendered
       ```
@@ -193,7 +193,7 @@ flows:
       - Webview のマーカーの場所が `data-mdmark-drawn` を持ち、通知ブロックが無い
     test: test_normal_when_relative_library
   - name: 正常系（設定ファイルを修正する）
-    summary: 読み込めない設定ファイルを修正して保存すると、新しい設定で描き帯を削除する
+    summary: 読み込めない設定ファイルを修正して保存すると、変更後の設定で描き帯を削除する
     setup:
       - name: 設定ファイルを読み込めないプレビュー
         description: 異常系（設定ファイルを読み込めない）の後
@@ -208,7 +208,7 @@ flows:
         participant EX as 拡張機能
         participant PV as Webview
         U->>EX: 括弧を閉じて features.callout: false で保存
-        EX->>PV: render（新しい config）
+        EX->>PV: render（変更後の config）
         EX->>PV: configOk
       ```
 
@@ -245,7 +245,7 @@ flows:
       - Webview の文書は描いたまま（注意書きは `blockquote` のまま）で、文書の先頭に設定ファイルを読み込めない帯と「設定ファイルを開く」がある
       - 帯を出したパネルの `auditPreview()` の axe の違反が 0 件
     test: test_error_when_config_unreadable
-  - name: 正常系（設定ファイルに新しい配信元の libraries を追加する）
+  - name: 正常系（設定ファイルに新規の配信元の libraries を追加する）
     summary: 開いたまま設定ファイルにまだ CSP に無い origin の `libraries` を追加して保存すると、HTML をもう一度入れてそのモジュールを読み込む
     setup:
       - name: 見本のワークスペース
@@ -263,9 +263,9 @@ flows:
         participant LIB as 別の配信元
         U->>EX: mdmark.config.yaml に libraries.my-chart を追加して保存
         EX->>EX: libraries の origin が CSP に入れたものと違う
-        EX->>PV: 新しい CSP の HTML をもう一度入れる
+        EX->>PV: 変更後の CSP の HTML をもう一度入れる
         PV->>EX: ready
-        EX->>PV: render（全文・新しい設定）
+        EX->>PV: render（全文・変更後の設定）
         PV-->>LIB: my-chart.js
         PV->>EX: rendered
       ```
@@ -303,7 +303,7 @@ flows:
 
       <!-- /map -->
     expected:
-      - '`mdmark.colorTheme` を `theme-slate` にした後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-slate`（地の色の計算値はライブラリ本体の『文書を描く』の結合テストが確認する）'
+      - '`mdmark.colorTheme` を `theme-slate` にした後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-slate`（背景色の計算値はライブラリ本体の『文書を描く』の結合テストが確認する）'
       - 空に戻した後の `render` の `config.colorTheme` と Webview の文書の `data-mdmark-color-theme` が `theme-paper`
       - 設定ファイルの中身が変わっていない
     test: test_normal_when_color_theme_changed
@@ -409,7 +409,7 @@ flows:
         participant PV as Webview
         U->>EX: glossary.yaml の描画の意味を書き換えて保存する
         EX->>EX: エイリアスを再作成する
-        EX->>PV: render（guide.md の全文・新しい aliases）
+        EX->>PV: render（guide.md の全文・変更後の aliases）
         PV->>PV: destroy して mount
         PV->>EX: rendered
       ```
@@ -439,7 +439,7 @@ flows:
         participant PV as Webview
         U->>EX: mdmark.config.yaml に map.kinds.store と map.lines の -.-> を記載して保存
         EX->>EX: features・libraries・map などを取り出す
-        EX->>PV: render（新しい config）
+        EX->>PV: render（変更後の config）
         PV->>PV: destroy して mount
         PV->>EX: rendered
       ```
@@ -464,7 +464,7 @@ exceptions:
     notes: 例外を投げず、前に使用した設定（無ければそのファイルを除いた残りの設定）で描いたまま、`configError` で読み込めないファイルと行かキーを通知する
 constraints:
   - item: 再描画するきっかけ
-    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から再描画する。重ねた設定ファイル（ワークスペースの外の端末の設定を含む）・`theme` の CSS・`extensions` のファイル・前回 `aliases` を作るときに読み込んだ YAML のファイル（`paths` の glob に該当する新しいファイルは、設定を再読み込みするまで取得しない）の作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも再描画する。保存と設定ファイルは待たずに送信する'
+    constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から再描画する。重ねた設定ファイル（ワークスペースの外の端末の設定を含む）・`theme` の CSS・`extensions` のファイル・前回 `aliases` を作るときに読み込んだ YAML のファイル（`paths` の glob に該当する新規のファイルは、設定を再読み込みするまで取得しない）の作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも再描画する。保存と設定ファイルは待たずに送信する'
   - item: 再描画するまでの待ち
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送信する。範囲の外の値は既定の値として扱う
     decided_by: NFR-472-1#requirements[再描画するまでの待ち]
@@ -499,7 +499,7 @@ constraints:
 
       再読み込みした `libraries` と `html-scripts.url`・`mermaid.url`・`syntax.url`（`html-scripts.url`・`mermaid.url`・`syntax.url` を記載しないときは既定の jsDelivr）の `http:`・`https:` の origin の集まりが今の HTML の CSP に入れた集まりと違うときは、`render` でなく Webview の HTML をもう一度入れる（`ready` を受けて全文を送信する）'
   - item: 設定ファイルを読み込めないとき
-    constraint: '重ねた設定ファイルのどれかを YAML として読み込めないときは `YAMLParseError` の `linePos[0].line`（1 始まり）を `line` に、設定の構造に合わないときは最初のずれのキーを `settingKey` に入れ、そのファイルのパス（『設定を重ねて読み込む』の制約「パスの表示」）を `path` に入れて `configError` を送信する。前に使用した設定があれば残し、無ければそのファイルを除いた残りの設定で描く。読み込めるようになったら、新しい設定の `render` と `configOk` を送信する'
+    constraint: '重ねた設定ファイルのどれかを YAML として読み込めないときは `YAMLParseError` の `linePos[0].line`（1 始まり）を `line` に、設定の構造に合わないときは最初のずれのキーを `settingKey` に入れ、そのファイルのパス（『設定を重ねて読み込む』の制約「パスの表示」）を `path` に入れて `configError` を送信する。前に使用した設定があれば残し、無ければそのファイルを除いた残りの設定で描く。読み込めるようになったら、変更後の設定の `render` と `configOk` を送信する'
   - item: 設定が変わったときの描き方
     constraint: Webview は `config` と `aliases` が前と同じときは `update`、どちらかが違うときは `destroy` してから `mount` で描く。スクロールの位置は再描画する前の位置を保つ
     notes: '`update` は `mount` に指定した設定を使用する（文書を描く.ts のレスポンス）'

@@ -32,7 +32,7 @@ catalogs:
             description: 要素ごとに残す class。`language-*` のように末尾の `*` で前方一致を記載できる
           - name: options.allowedSchemes
             type: string[]
-            description: '`href`・`src` に許す URL のスキーム。`javascript:` は入れない'
+            description: '`href`・`src` に許可する URL のスキーム。`javascript:` は入れない'
           - name: options.parseStyleAttributes
             type: boolean
             default: 'true'
@@ -44,8 +44,8 @@ catalogs:
           - name: options.allowedSchemesByTag
             type: Record<string, string[]>
             required: false
-            description: 要素ごとに許す URL のスキーム。記載した要素では `allowedSchemes` の代わりに使用される
-            notes: '`data` を許すと構造を問わず通るため、残す構造は `transformTags` で絞る'
+            description: 要素ごとに許可する URL のスキーム。記載した要素では `allowedSchemes` の代わりに使用される
+            notes: '`data` を許可すると構造を問わず通るため、残す構造は `transformTags` で絞る'
         returns:
           - name: '-'
             type: string

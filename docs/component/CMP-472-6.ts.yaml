@@ -45,14 +45,14 @@ states:
       - name: svg
         value: '`click A href "./a.md"` の行を持つ Flowchart と同じ図を描いた SVG'
     notes:
-      定義: 部品設計『mapの構成図』の LinkedNode と同じ見た目（モック作成は skipped。作業 PR #618 のタスク一覧）
+      定義: 部品設計『mapの構成図』の LinkedNode と同じ外観（モック作成は skipped。作業 PR #618 のタスク一覧）
   - name: StyledFallback
     description: map の範囲の外の flowchart のうち、`style` の行を持ち map で同じ図にできないものを mermaid で描いた。ノードの塗りが `style` の行で指定した色
     args:
       - name: svg
         value: '`style A fill:#f9f` の行を持つ Flowchart と同じ図を描いた SVG'
     notes:
-      定義: 単一 UC『mermaidの図を描く』の異常シナリオ（map が読めない行を持つ）の 4 つ目のコードブロック
+      定義: 単一 UC『mermaidの図を描く』の異常シナリオ（map が読み取れない行を持つ）の 4 つ目のコードブロック
 lead: 図の枠の表示する枠に入れる、mermaid で描いた SVG。SVG は mdmark の CSS 変数から作ったテーマで描かれる。
 args:
   - name: svg

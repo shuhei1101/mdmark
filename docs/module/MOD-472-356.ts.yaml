@@ -17,7 +17,7 @@ data_models:
     title: 集めた用語集
     container: src/mdmark-style/terms.ts
     usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
-    summary: '`collectMatches` に渡す索引・文書の本文・設定・エイリアス'
+    summary: '`collectMatches` に指定する索引・文書の本文・設定・エイリアス'
     properties:
       - name: index
         type: MdmarkIndex
@@ -64,7 +64,7 @@ functions:
     container: src/mdmark-style/terms.ts
     usecase: ClaudeCodeの発言と返答の用語にマーカーを付ける
     summary: '`glossary` の `mdmark.config.yaml` と、その `index`・`aliases` の行が指すファイル・索引の文書を呼ばれるたびに `$.fs` で読み込む'
-    description: YAML の文書・MCP は参照しない。`aliases` の行の `paths` の glob は `$.fs.list` で展開する。使用できない行は除いて続ける（`buildAliases` の `problems` は描画に使わない）
+    description: YAML の文書・MCP は参照しない。`aliases` の行の `paths` の glob は `$.fs.list` で展開する。使用できない行は除いて続ける（`buildAliases` の `problems` は描画に使用しない）
     scope: public
     is_async: true
     args:
@@ -81,12 +81,12 @@ functions:
       description: 集めた用語集
     process: |-
       1. `configPath` を YAML として読み込み、`index` の索引を読み込む（相対パスは設定ファイルのフォルダから）
-      2. 索引の `docs[].path` の本文を読み込む。読めない文書は飛ばす
+      2. 索引の `docs[].path` の本文を読み込む。読み取れない文書は飛ばす
       3. `aliases` の行の `paths` に該当する YAML を読み込み、エイリアスを作る（`buildAliases`）
     exceptions:
       - name: GlossaryError
-        condition: '`configPath` か索引が無いか YAML として読めない'
-        message: 'mdmark-style の用語集を読めない: {パス}（{理由}）'
+        condition: '`configPath` か索引が無いか YAML として読み取れない'
+        message: 'mdmark-style の用語集を読み取れない: {パス}（{理由}）'
     unit_tests:
       - name: test_load_glossary
         case: 正常
@@ -100,7 +100,7 @@ functions:
         condition: '`configPath` が無い'
         mock: ファイルを表で返却する `$.fs`
         expected: '`GlossaryError` を投げ、メッセージにパスが入る'
-        exception: '`configPath` か索引が無いか YAML として読めない'
+        exception: '`configPath` か索引が無いか YAML として読み取れない'
     callees:
       - IF-472-26#
     refs:
@@ -137,7 +137,7 @@ functions:
       - name: test_match_terms_when_excluded
         case: 正常
         summary: 見出し・表・コード・リンクの中には付けない
-        condition: '`WS` を見出し・表のセル・行内のコード・リンクの文字にだけ書いた本文'
+        condition: '`WS` を見出し・表のセル・行内のコード・リンクの文字にだけ記載した本文'
         mock: なし
         expected: 空
       - name: test_match_terms_when_glossary_table

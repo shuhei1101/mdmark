@@ -29,22 +29,22 @@ functions:
       - name: config
         type: ResolvedConfig
         required: true
-        description: 既定を当てた設定
+        description: 既定を適用した設定
       - name: options
         type: '{ args: MapArgs; resolveIdLink?: ResolveIdLink }'
         required: true
         description: '`args` は `parseMapArgs` の結果、`resolveIdLink` は `attachMap` の `hooks.resolveIdLink`'
     returns:
       type: MapFlowHandle
-      description: 構成図と同じ操作の口
+      description: 構成図と同じ操作のインターフェース
     process: |-
       1. `parseC4` と `c4ToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と `options.resolveIdLink` と一緒に指定する
       2. `extension.title` に `title` の行、`extension.kinds` に `MAP_C4_KINDS`、`extension.overrides` に `c4ToFlowchart` の上書きを指定する
       3. `extension.rewire` に `spreadMapEnds`、`extension.render` に要素の説明・外部の要素・境界の種類・`reversed` を指定した `renderMapC4Diagram`（配置先のノードは `c4Boundary` が `deployment`、要素は `technology`）を指定する
       4. `extension.selectionOf` で、要素を 1 つ選べば `neighborKept` の関係と相手、2 つ選べば `shortestPathKept` の経路を残す
       5. `extension.collapsedTag` で、閉じた境界と配置先のノードに、中（入れ子の配置先のノードの中を含む）の要素の数の「要素 {数} 件」を返却する
-      6. 図が `C4Dynamic` で、`parseMapData` で読んだ補足が `walkthroughs` を持たなければ、線にした関係を番号の順の手順（`title` は「{番号}: {元の要素} → {先の要素}：{ラベル}」で `BiRel` は `↔`、`text` は補足の `r{番号}` の説明、`nodes` は元と先の要素、`edges` はその関係）にして `extension.walkthroughs` に指定し、`bandMode` を `playback`、`bandUnit` を `relation` にする。`walkthroughs` を持つ図とほかの種類の図は、手順を指定しない
-      7. `extension.afterRender` で、再生している関係の線のラベルの要素（`.mdmark-diagram-label[data-wire]`）が無ければ（閉じた境界への線にまとめてラベルを描いていない）、描いた線の中ほどにその関係のラベル（`c4ToFlowchart` の線の `label`）を出し、その矩形と重なる `map-dim` のラベルを隠す。手順を止めたら、出したラベルを外して隠したラベルを戻す
+      6. 図が `C4Dynamic` で、`parseMapData` で読み取った補足が `walkthroughs` を持たなければ、線にした関係を番号の順の手順（`title` は「{番号}: {元の要素} → {先の要素}：{ラベル}」で `BiRel` は `↔`、`text` は補足の `r{番号}` の説明、`nodes` は元と先の要素、`edges` はその関係）にして `extension.walkthroughs` に指定し、`bandMode` を `playback`、`bandUnit` を `relation` にする。`walkthroughs` を持つ図とほかの種類の図は、手順を指定しない
+      7. `extension.afterRender` で、再生している関係の線のラベルの要素（`.mdmark-diagram-label[data-wire]`）が無ければ（閉じた境界への線にまとめてラベルを描いていない）、描いた線の中ほどにその関係のラベル（`c4ToFlowchart` の線の `label`）を出し、その矩形と重なる `map-dim` のラベルを隠す。手順を止めたら、出したラベルを解除して隠したラベルを戻す
     unit_tests:
       - name: test_attach_map_c4
         case: 正常

@@ -231,7 +231,7 @@ functions:
         description: 本文・本文のトークン・辞書
     returns:
       type: 'Array<{ word: string; offset: number; end: number }>'
-      description: 一致した単語と、本文の頭からの始まりと終わり
+      description: 一致した単語と、本文の頭からの開始と終了
     callees:
       - 'MOD-472-257#functions[findWords]'
       - 'MOD-472-267#functions[maskEmbeddedHtml]'
@@ -262,7 +262,7 @@ functions:
         description: 本文・本文のトークン・辞書・埋め込んだ HTML の機能がオンか
     returns:
       type: 'Array<{ word: string; offset: number; end: number }>'
-      description: 一致した単語と、本文の頭からの始まりと終わり
+      description: 一致した単語と、本文の頭からの開始と終了
     unit_tests:
       - name: test_diagram_term_matches
         case: 正常
@@ -290,7 +290,7 @@ functions:
         description: 本文・本文のトークン・辞書
     returns:
       type: 'Array<{ word: string; offset: number; end: number }>'
-      description: 一致した単語と、本文の頭からの始まりと終わり
+      description: 一致した単語と、本文の頭からの開始と終了
     callees:
       - MOD-472-257#functions[findWords]
     refs:

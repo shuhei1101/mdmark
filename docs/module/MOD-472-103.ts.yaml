@@ -70,7 +70,7 @@ constants:
   - name: UPDATE_DELAY_RANGE
     title: 再描画するまでの待ちの範囲
     container: vscode/src/settings.ts
-    summary: '`mdmark.preview.updateDelayMs` に許すミリ秒の最小と最大'
+    summary: '`mdmark.preview.updateDelayMs` に許可するミリ秒の最小と最大'
     value: '{ min: 0, max: 5000 }'
     refs:
       - NFR-472-1#requirements[再描画するまでの待ち]

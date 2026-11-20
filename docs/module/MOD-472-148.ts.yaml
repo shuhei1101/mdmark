@@ -12,7 +12,7 @@ constants:
   - name: DEVELOP_VERSION
     title: develop の最新を表す手元のバージョン
     container: src/cli/versions.ts
-    summary: 設定・端末の設定の `version` と、develop のビルドの常駐サーバーの取り出し元に書く値
+    summary: 設定・端末の設定の `version` と、develop のビルドの常駐サーバーの取り出し元に記載する値
     value: '`"develop"`'
   - name: DEVELOP_BUILD_PATTERN
     title: develop のビルドのバージョンの書式
@@ -131,7 +131,7 @@ functions:
     container: src/cli/versions.ts
     usecase: バージョンを上げる
     summary: develop のビルドは `+` より前を、それ以外はそのまま返却する
-    description: upgrade の目標のバージョンと、`next/` に手順があるときに案内するタグに使う
+    description: upgrade の目標のバージョンと、`next/` に手順があるときに案内するタグに使用する
     kind: 関数
     scope: public
     is_async: false
@@ -152,11 +152,11 @@ functions:
         expected: どちらも `v0.5.0`
     status: planned
   - name: localVersionOf
-    title: 設定に書く手元のバージョン
+    title: 設定に記載する手元のバージョン
     container: src/cli/versions.ts
     usecase: 共通
     summary: develop のビルドは `DEVELOP_VERSION`、それ以外はそのまま返却する
-    description: '`init` が配置する設定・セットアップが作る端末の設定の `version`、状態の `target_version`、常駐サーバーの取り出し元に使う'
+    description: '`init` が配置する設定・セットアップが作る端末の設定の `version`、状態の `target_version`、常駐サーバーの取り出し元に使用する'
     kind: 関数
     scope: public
     is_async: false
@@ -181,7 +181,7 @@ functions:
     container: src/cli/versions.ts
     usecase: 共通
     summary: '`VERSION_PATTERN` に合うか `DEVELOP_VERSION` と等しいか'
-    description: 端末の設定の `version` の検査（`config-files.ts`）に使う
+    description: 端末の設定の `version` の検査（`config-files.ts`）に使用する
     kind: 関数
     scope: public
     is_async: false

@@ -68,7 +68,7 @@ verification:
 
     リポジトリの直下の `npm ci` と `npm --prefix vscode ci` の後の `npm --prefix vscode run package` が `mdmark-0.1.2.vsix` を作る（直下の依存が無いと `yaml`・`ajv`・`lucide` を解決できず失敗する）。
 
-    [PoC: GitHub Actions の OIDC トークンを Marketplace のトークンに交換する](https://github.com/shuhei1101/mdmark/pull/555)（run 43542400400）で、`id-token: write` のワークフローから `out/oidc.js` の `getOIDCCredential(''ShuheiNishikawa'')` が公開用のトークン（長さ 942）を返した。
+    [PoC: GitHub Actions の OIDC トークンを Marketplace のトークンに交換する](https://github.com/shuhei1101/mdmark/pull/555)（run 43542400400）で、`id-token: write` のワークフローから `out/oidc.js` の `getOIDCCredential(''ShuheiNishikawa'')` が公開用のトークン（長さ 942）を返却した。
 
     公開（`vsce publish --oidc`）は Marketplace へ書き込むため走らせておらず、マージの後の最初のタグで確認する'
 license: MIT（商用利用可）

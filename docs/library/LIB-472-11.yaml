@@ -65,7 +65,7 @@ verification:
 
     20 回で RSS が 12.1MB 増え、`stop()` では戻らない'
 limitations:
-  - item: 入口
+  - item: エントリーポイント
     content: '`main` の `lib/main.js` はまとめると例外を投げ、PATH の `node` を子プロセスで起動するため、拡張機能ホストでは使用できない。`lib/browser.js` を読み込む'
     notes: '[PoC: esbuild-wasm](https://github.com/shuhei1101/mdmark/pull/349)'
 issues:

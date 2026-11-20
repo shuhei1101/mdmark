@@ -99,7 +99,6 @@ scenarios:
         description: 正常シナリオと同じ
       - name: Mock
         description: ページを開く前に `Intl.Segmenter` を削除する（対応ブラウザの Firefox 98〜124 の代わり）。ほかは正常シナリオと同じ
-        notes: '配布物の読み込みが例外になる不具合（[配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50)）で修正されていることが前提。[文書の変更を行と文字で色分けする差分表示を作る](https://github.com/shuhei1101/mdmark/issues/7) は [配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50) に依存し、[配布物の読み込み時に Intl.Segmenter を作り、対応ブラウザの Firefox 98〜124 で mdmark が動かない](https://github.com/shuhei1101/mdmark/issues/50) が develop に入ってからマージする'
     flow: |-
       <!-- map -->
 

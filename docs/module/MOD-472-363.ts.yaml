@@ -1,7 +1,7 @@
 id: MOD-472-363
 visibility: internal
 title: ライブラリ本体 / 純粋な Markdown / pure-inline.logic.ts
-lead: 1 行の中の mdmark だけの行内の書き方と生の HTML を、mdmark の無い表示で読める文字にする変換を受け持ち、行内の記法の書き出しの形を変えるときに参照する。
+lead: 1 行の中の mdmark だけの行内の書き方と生の HTML を、mdmark の無い表示で読み取れる文字にする変換を受け持ち、行内の記法の書き出しの形を変えるときに参照する。
 test_files:
   - tests/unit/src/markdown/pure-inline.logic.test.ts
 functions:
@@ -10,12 +10,12 @@ functions:
     container: src/markdown/pure-inline.logic.ts
     kind: 関数
     scope: internal
-    summary: 行内のコードの外で、HTML のコメント・行内の生の HTML のタグを取り除き、バッジ・ルビ・キー・アイコン・色の名前・蛍光ペン・注記・行内の脚注・画像の属性・図と表の番号を出すリンクを読める文字にする
+    summary: 行内のコードの外で、HTML のコメント・行内の生の HTML のタグを取り除き、バッジ・ルビ・キー・アイコン・色の名前・蛍光ペン・注記・行内の脚注・画像の属性・図と表の番号を出すリンクを読み取れる文字にする
     description: |-
       バッジは頭の `badge:` を除いた行内のコード、ルビは親文字、キーはキーの名前の行内のコード、アイコンは取り除き、色の名前と蛍光ペンは内側の文字だけを残す。
       注記は GFM の脚注にし、参照の `※[ID]` を `[^note-ID]`、行頭の定義 `※[ID]: 本文` を `[^note-ID]: 本文` にする（脚注のラベルと重ならないように `note-` を付ける）。
       GFM の脚注（`[^ラベル]` とその定義）はそのまま残し、行内の脚注 `^[中身]` は `（中身）` にする。
-      画像の直後の属性 `{…}` は取り除く。図と表の番号を出すリンクは `numbers` の番号で文字を `図 {n}`・`表 {n}` にする。打ち消した書き方（`\`）は `\` を外した文字にする
+      画像の直後の属性 `{…}` は取り除く。図と表の番号を出すリンクは `numbers` の番号で文字を `図 {n}`・`表 {n}` にする。打ち消した書き方（`\`）は `\` を解除した文字にする
     args:
       - name: options
         type: '{ line: string; numbers: Map<string, string>; features: Record<string, boolean> }'

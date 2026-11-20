@@ -1,7 +1,7 @@
 id: MOD-477-1
 visibility: internal
 title: ライブラリ本体 / 描画 / mark-options.ts
-lead: マーカーの名前の後ろの引数の文字を、JSON のオブジェクト・今の書き方・読めない引数に分けて読み、読めない理由を記載の警告の文にする。
+lead: マーカーの名前の後ろの引数の文字を、JSON のオブジェクト・今の書き方・読み取れない引数に分けて読み取り、読み取れない理由を記載の警告の文にする。
 test_files:
   - tests/unit/src/render/mark-options.test.ts
 data_models:
@@ -11,14 +11,14 @@ data_models:
     usecase: 共通
     summary: マーカーの引数の JSON のオブジェクト（`Record<string, unknown>`）
   - name: MarkArgs
-    title: 読んだマーカーの引数
+    title: 読み取ったマーカーの引数
     container: src/render/mark-options.ts
     usecase: 共通
     summary: '引数の記載方法ごとの判別できる union。`{ kind: "none" }`・`{ kind: "json"; options: MarkOptions }`・`{ kind: "legacy"; text: string }`・`{ kind: "invalid"; message: string }`'
     properties:
       - name: kind
         type: '"none" | "json" | "legacy" | "invalid"'
-        description: '`none` は引数が無い、`json` は `{` で始まり JSON のオブジェクトとして読めた、`legacy` は `{` で始まらない（今の書き方）、`invalid` は `{` で始まるのに JSON として読めないかオブジェクトでない'
+        description: '`none` は引数が無い、`json` は `{` で始まり JSON のオブジェクトとして読み取れた、`legacy` は `{` で始まらない（今の書き方）、`invalid` は `{` で始まるのに JSON として読み取れないかオブジェクトでない'
       - name: options
         type: MarkOptions
         description: '`kind` が `json` のときの JSON のオブジェクト'
@@ -30,7 +30,7 @@ data_models:
         description: '`kind` が `invalid` のときの記載の警告の本文（`jsonErrorMessage` の文）'
 functions:
   - name: readMarkArgs
-    title: マーカーの引数を読む
+    title: マーカーの引数を読み取る
     container: src/render/mark-options.ts
     kind: 関数
     scope: internal
@@ -42,19 +42,19 @@ functions:
         description: マーカーの `:` の後ろから `-->` の前までの文字（無ければ空）
     returns:
       type: MarkArgs
-      description: 読んだ引数
+      description: 読み取った引数
     callees:
       - '#functions[jsonErrorMessage]'
     unit_tests:
       - name: test_read_mark_args
         case: 正常
-        summary: JSON のオブジェクトを型を保って読む
+        summary: JSON のオブジェクトを型を保って読み取る
         condition: '`{"kind": "data", "header": {"rows": 2}, "closed": true}`'
         mock: なし
         expected: '`{ kind: "json", options: { kind: "data", header: { rows: 2 }, closed: true } }`'
       - name: test_read_mark_args_when_multiline
         case: 正常
-        summary: 改行を含む JSON のオブジェクトを 1 つとして読む
+        summary: 改行を含む JSON のオブジェクトを 1 つとして読み取る
         condition: '`{\n  "kind": "data",\n  "collapse": {"open": false}\n}`'
         mock: なし
         expected: '`{ kind: "json", options: { kind: "data", collapse: { open: false } } }`'
@@ -72,17 +72,17 @@ functions:
         expected: '`{ kind: "legacy", text: "data +total total=数量:sum" }`'
       - name: test_read_mark_args_when_invalid
         case: 異常
-        summary: 読めない JSON とオブジェクトでない値は invalid
+        summary: 読み取れない JSON とオブジェクトでない値は invalid
         condition: '`{"title": 補足}` と `{"a": 1,}`'
         mock: なし
-        expected: どちらも `kind` が `invalid` で、`message` に読めない位置（何文字目）と理由がある
+        expected: どちらも `kind` が `invalid` で、`message` に読み取れない位置（何文字目）と理由がある
   - name: jsonErrorMessage
-    title: 読めない JSON の警告の文を作る
+    title: 読み取れない JSON の警告の文を作る
     container: src/render/mark-options.ts
     kind: 関数
     scope: internal
     summary: '`JSON.parse` が投げたエラーの位置と、引数の文字から、記載の警告の本文（部品設計『記載の警告』の `InvalidJson`・`CommentEndInValue` の文言）を作る'
-    description: '位置は 1 から数えた文字の位置。原因を言い当てられるもの（引用符で囲んでいない文字・末尾のカンマ・閉じていない文字の値）は原因と直し方を添え、言い当てられないものは位置と文字だけにする。閉じていない文字の値のときは、値に `-->` を記載するとコメントがそこで閉じることと `-->` の記載方法を添える'
+    description: '位置は 1 から数えた文字の位置。原因を特定できるもの（引用符で囲んでいない文字・末尾のカンマ・閉じていない文字の値）は原因と修正方法を添え、特定できないものは位置と文字だけにする。閉じていない文字の値のときは、値に `-->` を記載するとコメントがそこで閉じることと `-->` の記載方法を添える'
     args:
       - name: options
         type: '{ text: string; error: unknown }'
@@ -94,10 +94,10 @@ functions:
     unit_tests:
       - name: test_json_error_message
         case: 正常
-        summary: 引用符で囲んでいない文字の位置と直し方を出す
+        summary: 引用符で囲んでいない文字の位置と修正方法を出す
         condition: '`{"title": 補足}`'
         mock: なし
-        expected: '`11 文字目の `補`` と、値の文字を `"` で囲む直し方を含む'
+        expected: '`11 文字目の `補`` と、値の文字を `"` で囲む修正方法を含む'
       - name: test_json_error_message_when_comment_end
         case: 正常
         summary: 閉じていない文字の値は、値の `-->` で閉じたことと記載方法を出す

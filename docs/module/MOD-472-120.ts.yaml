@@ -288,7 +288,7 @@ functions:
       1. 設定を読み込む（設定を読み込んで構造を検める）
       2. 文書が無ければ例外にする
       3. 出力のパスを決める。`out` が無ければ文書と同じフォルダの拡張子を `.html` にしたパス
-      4. URL を読み込む関数を `cacheFetchText` で作って埋めるものを用意し、配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を組み立てて記載する（埋めるものを用意する・配布物を読み込む・起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる・HTML を書き込む）。`keepTraces` が `true` でなければ、`prepareEmbeds`・`createViewerEntry`・`assembleHtml` に `hideTraces: true`、`bundleViewer` に `hideTraces: { keys }`（`embeds.htmlScripts` の `source` の並び）を指定する
+      4. URL を読み込む関数を `cacheFetchText` で作って埋めるものを用意し、配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を組み立てて記載する（埋めるものを用意する・配布物を読み込む・起動の処理のエントリーポイントを作る・起動の処理と埋めるモジュールをまとめる・HTML を書き込む）。`keepTraces` が `true` でなければ、`prepareEmbeds`・`createViewerEntry`・`assembleHtml` に `hideTraces: true`、`bundleViewer` に `hideTraces: { keys }`（`embeds.htmlScripts` の `source` の並び）を指定する
       5. 絶対パス・見せるパス・警告を返却する
     exceptions:
       - name: CliError

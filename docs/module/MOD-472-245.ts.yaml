@@ -12,7 +12,7 @@ data_models:
     properties:
       - name: path
         type: string
-        description: 状態を取り出した文書のパス。戻した文書のパスと違うときは状態を使わない
+        description: 状態を取り出した文書のパス。戻した文書のパスと違うときは状態を使用しない
       - name: x
         type: number
         description: '`scrollX`'
@@ -21,7 +21,7 @@ data_models:
         description: '`scrollY`'
       - name: folds
         type: boolean[]
-        description: '`RESTORABLE_FOLDS` に当たる要素の、文書の中の出現順の開閉（`details` は `open`、ボタンは `aria-expanded` が `"true"`）'
+        description: '`RESTORABLE_FOLDS` に該当する要素の、文書の中の出現順の開閉（`details` は `open`、ボタンは `aria-expanded` が `"true"`）'
       - name: tabs
         type: number[]
         description: '`data-group` を持たない `.mdmark-tabs` の、文書の中の出現順の選んだタブの番号（0 から）'
@@ -58,7 +58,7 @@ functions:
     title: 履歴の項目の ID を取る
     container: src/viewer/view-state.ts
     usecase: まとめたHTMLで文書を行き来する
-    summary: '`history.state` の `HISTORY_ENTRY_FIELD` を返し、無ければ新しい ID を振って今の `history.state` に加えて `replaceState` する'
+    summary: '`history.state` の `HISTORY_ENTRY_FIELD` を返却し、無ければ新規の ID を振って今の `history.state` に加えて `replaceState` する'
     kind: 関数
     scope: public
     side_effects: 'ID が無いとき `history.replaceState` を呼ぶ（URL は変えない）'
@@ -73,10 +73,10 @@ functions:
     unit_tests:
       - name: test_ensure_entry_id
         case: 正常
-        summary: ID が無ければ振り、2 回目は同じ ID を返す
+        summary: ID が無ければ振り、2 回目は同じ ID を返却する
         condition: '`history.replaceState({ other: 1 }, "")` の後に 2 回呼ぶ'
         mock: Chromium の `window`（`.browser.test.ts` で実行する）
-        expected: '2 回とも同じ空でない文字を返し、`history.state` が `{ other: 1, mdmarkEntry: その文字 }`'
+        expected: '2 回とも同じ空でない文字を返却し、`history.state` が `{ other: 1, mdmarkEntry: その文字 }`'
     status: planned
   - name: captureViewState
     title: 表示の状態を取り出す
@@ -105,8 +105,8 @@ functions:
     title: 表示の状態を戻す
     container: src/viewer/view-state.ts
     usecase: まとめたHTMLで文書を行き来する
-    summary: 開閉を戻し、タブを選び直してから、位置へスクロールする。描いた後に高さが変わって位置がずれたら、読む人がスクロールの操作をするまで位置へ合わせ直す
-    description: '開閉は今の状態と違う要素だけ、`details` は `open` を変え、ボタンは `click()` で切り替える。タブは選ぶ番号のタブのボタンを `click()` する。数が合わない要素とタブ群は飛ばす。`keepFocus` が `true` のときは、`click()` で移ったフォーカスを、戻す前の `document.activeElement` へ `preventScroll` で戻す。合わせ直しは描く先の要素の `ResizeObserver` で行い、`wheel`・`touchstart`・`keydown`・`pointerdown` のどれかが起きたら止める'
+    summary: 開閉を戻し、タブを再選択してから、位置へスクロールする。描いた後に高さが変わって位置がずれたら、読み取る人がスクロールの操作をするまで位置へ再調整する
+    description: '開閉は今の状態と違う要素だけ、`details` は `open` を変え、ボタンは `click()` で切り替える。タブは選ぶ番号のタブのボタンを `click()` する。数が合わない要素とタブ群は飛ばす。`keepFocus` が `true` のときは、`click()` で移ったフォーカスを、戻す前の `document.activeElement` へ `preventScroll` で戻す。再調整は描く先の要素の `ResizeObserver` で行い、`wheel`・`touchstart`・`keydown`・`pointerdown` のどれかが起きたら止める'
     kind: 関数
     scope: public
     side_effects: 描いた文書の開閉・タブ・ページのスクロール位置を変える
@@ -117,12 +117,12 @@ functions:
         description: 描く先の要素・戻す表示の状態・開閉を戻した後にフォーカスを元の要素へ戻すか（`startBundle` は、部品のボタンへ移ったフォーカスを残さないよう常に `true` で呼ぶ）
     returns:
       type: () => void
-      description: 合わせ直しを止める関数（文書を差し替える前に呼ぶ）
+      description: 再調整を止める関数（文書を差し替える前に呼ぶ）
     unit_tests:
       - name: test_apply_view_state
         case: 正常
         summary: 開閉とタブを戻してから位置へスクロールする
-        condition: 'test_capture_view_state と同じ文書を新しく描き、そこで取り出した状態と `y: 1200` を戻す'
+        condition: 'test_capture_view_state と同じ文書を新規に描き、そこで取り出した状態と `y: 1200` を戻す'
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
         expected: '`details` が `open` を持たず、セクションの `aria-expanded` が `true`、2 つ目のタブの `aria-selected` が `true`、`scrollY` が 1200（±1px）'
       - name: test_apply_view_state_when_counts_differ
@@ -142,7 +142,7 @@ functions:
     title: 保存した表示の状態を読み込む
     container: src/viewer/view-state.ts
     usecase: まとめたHTMLで文書を行き来する
-    summary: sessionStorage の `{VIEW_STATE_KEY_PREFIX}{ID}` を読み込み、`ViewState` の構造なら返す
+    summary: sessionStorage の `{VIEW_STATE_KEY_PREFIX}{ID}` を読み込み、`ViewState` の構造なら返却する
     description: 値が無い・JSON でない・構造が合わないときは `undefined`。sessionStorage を取り出せない・読み込めないときは `console.warn` に出して `undefined`
     kind: 関数
     scope: public
@@ -157,16 +157,16 @@ functions:
     unit_tests:
       - name: test_read_view_state_when_broken
         case: 異常
-        summary: 壊れた値は使わない
+        summary: 壊れた値は使用しない
         condition: キーに `"{"` を入れておく
         mock: Chromium の `window`（`.browser.test.ts` で実行する）
-        expected: '`undefined` を返し、例外が出ない'
+        expected: '`undefined` を返却し、例外が出ない'
       - name: test_read_view_state_when_storage_unavailable
         case: 異常
-        summary: sessionStorage を取り出せないと警告して使わない
-        condition: '`window.sessionStorage` を読むと `SecurityError` を投げる'
+        summary: sessionStorage を取り出せないと警告して使用しない
+        condition: '`window.sessionStorage` を読み取ると `SecurityError` を投げる'
         mock: '`window` の `sessionStorage` の getter を差し替える'
-        expected: '`undefined` を返し、`console.warn` が 1 回呼ばれる'
+        expected: '`undefined` を返却し、`console.warn` が 1 回呼ばれる'
     status: planned
   - name: writeViewState
     title: 表示の状態を保存する

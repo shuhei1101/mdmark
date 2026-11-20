@@ -23,7 +23,7 @@ mdmark の記法で記載する文書の拡張子は `.mark.md` で、`instructi
 
 ## 記載するときに 1 回だけ案内する
 
-プラグインのフックは、`.mark.md` のファイルへの Write・Edit（PreToolUse）と、語 mdmark を含む利用者の発言（UserPromptSubmit）で、ガイドを参照してから記載し、記載した後に `check` で点検するよう Claude Code に案内する。
+プラグインのフックは、`.mark.md` のファイルへの Write・Edit（PreToolUse）と、単語 mdmark を含む利用者の発言（UserPromptSubmit）で、ガイドを参照してから記載し、記載した後に `check` で点検するよう Claude Code に案内する。
 案内したセッションは `session_id` で記録し、同じセッションでは 2 回目から案内しない。
 会話を圧縮する前（PreCompact）に記録を削除し、圧縮の後の最初の記載でもう一度案内する。
 案内はツールの呼び出しと発言を止めない。
@@ -44,7 +44,7 @@ MCP サーバーは、文書の作成者が `mdmark serve` で起動する常駐
 127.0.0.1 の Streamable HTTP で待ち受け、プラグインの `.mcp.json` がその URL へつなぐ。
 並行して開いたセッションが同じプロセスを共有するため、サーバーはセッションごとの状態を持たず、呼び出しごとに処理する。
 起動の手順は [MCPサーバーを起動する](./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md)。
-プラグインのスキル `global-setup` は、systemd --user が使える端末では unit、使えない端末では tmux のセッションの中で `mdmark serve` を起動する（[セットアップする](./ClaudeCodeで使用する-セットアップする.mark.md)）。
+プラグインのスキル `global-setup` は、systemd --user が使用できる端末では unit、使用できない端末では tmux のセッションの中で `mdmark serve` を起動する（[セットアップする](./ClaudeCodeで使用する-セットアップする.mark.md)）。
 
 サーバーが起動していないと、そのセッションでは MCP サーバーだけが接続に失敗する。
 起動してから `/mcp` でもう一度接続すると、セッションをもう一度開かずにツールを呼べる。

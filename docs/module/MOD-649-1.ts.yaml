@@ -19,10 +19,10 @@ data_models:
         description: 項目（記載の順。根が先頭）
       - name: ambiguous
         type: ReadonlySet<string>
-        description: ID を持たない 2 つ以上の項目が使う表示する文字（補足とマーカーの引数の `focus` で指すと、どの項目にも適用しない）
+        description: ID を持たない 2 つ以上の項目が使用する表示する文字（補足とマーカーの引数の `focus` で指すと、どの項目にも適用しない）
       - name: problems
         type: MapProblem[]
-        description: 読めない行（2 つ目の根）の `map_invalid`
+        description: 読み取れない行（2 つ目の根）の `map_invalid`
   - name: MindmapItem
     title: マインドマップの項目
     container: src/map/mindmap.ts
@@ -85,12 +85,12 @@ enums:
         description: 形状の記号を持たない項目
 functions:
   - name: parseMindmap
-    title: mindmapを読む
+    title: mindmapを読み取る
     kind: 関数
     container: src/map/mindmap.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`mindmap` の Mermaid を、字下げで親子を決めた項目の木と、ID を持たない同じ表示する文字の集合と、読めない行の項目に読む'
+    summary: '`mindmap` の Mermaid を、字下げで親子を決めた項目の木と、ID を持たない同じ表示する文字の集合と、読み取れない行の項目に読み取る'
     scope: public
     args:
       - name: source
@@ -102,7 +102,7 @@ functions:
       description: 読み取り結果
     process: |-
       1. 1 行目（`mindmap`）・空の行・`%%` で始まる行・`::icon(` で始まる行・`:::` で始まる行を飛ばす（`::icon()` と `:::` は描かず、書き方の警告にもしない）
-      2. 最初の項目の行を根にする。根より浅いか同じ字下げの行は `map_invalid` の項目（行番号・行の文字・根を 1 つにする直し方）にして読み飛ばす
+      2. 最初の項目の行を根にする。根より浅いか同じ字下げの行は `map_invalid` の項目（行番号・行の文字・根を 1 つにする修正方法）にしてスキップする
       3. 行の文字を、外側の記号から `(( ))`・`)) ((`・`) (`・`{{ }}`・`( )`・`[ ]` の順に照らして形状と内側の文字にし、記号の前の文字を `id` にする。どれにも一致しなければ `plain` で行の文字を `label` にする
       4. 直前までの項目のうち、字下げがその行より浅い最も近い項目を親にする（親より浅く戻る行は、その深さの直前の項目の兄弟になる）
       5. ID を持たない項目の `label` を数え、2 つ以上の `label` を `ambiguous` に入れ、その項目の `stateKey` を `n{order}` にする

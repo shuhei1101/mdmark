@@ -158,7 +158,7 @@ functions:
       description: 終了コード
     process: |-
       1. ポートを読み込む（`CliError` は呼び出し元の CLI が終了コード 1 にする）
-      2. `{packageDir}/dist` でサーバーの読み込む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.systemdUnit`・`serve.tmuxSession`（無ければどちらも `mdmark-mcp`）と `MDMARK_LAUNCHER` を `describeServerLocation` に渡して、常駐サーバーが動いている場所の文にする。端末の設定を読み込めなければ既定の名前にする
+      2. `{packageDir}/dist` でサーバーの読み込む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.systemdUnit`・`serve.tmuxSession`（無ければどちらも `mdmark-mcp`）と `MDMARK_LAUNCHER` を `describeServerLocation` に指定して、常駐サーバーが動いている場所の文にする。端末の設定を読み込めなければ既定の名前にする
       3. `createMcpHandler` に、要求ごとに MCP サーバーを作る関数を指定してハンドラーを作る
       4. `node:http` のサーバーで、要求ごとに要求を変換し、要求を振り分け、応答を記載する
       5. `LISTEN_HOST` とポートで待ち受ける。`EADDRINUSE` なら `PORT_IN_USE_MESSAGE` を標準エラーに書き込んで 1 を返却する

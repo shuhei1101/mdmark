@@ -25,8 +25,8 @@ fields:
 - key: reason
   title: 理由
   type: string
-  description: 手順が要らない理由。広げたキーと、古い設定・索引がそのまま新しい Schema に合うこと
+  description: 手順が要らない理由。広げたキーと、更新前の設定・索引がそのまま更新後の Schema に合うこと
   required: true
-  example: 省いてよい `version` を追加しただけで、古い設定も合う
+  example: 省いてよい `version` を追加しただけで、更新前の設定も合う
 refs:
 - ER-472-5#tables[migrations/no-steps.yaml]

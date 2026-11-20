@@ -1703,7 +1703,7 @@ entries:
       - tool_config
   - type: file
     name: rules.yaml
-    contents: プロジェクトのルール索引（rule-inject が読む）
+    contents: プロジェクトのルール索引（rule-inject が参照する）
     content_types:
       - tool_config
   - type: file
@@ -1796,13 +1796,13 @@ gitignore:
   - pattern: docs/generated/
     reason: AI Monitor が YAML の設計書から生成する Markdown（生成物）
   - pattern: node_modules/
-    reason: npm の依存（ロックから入れ直せる）
+    reason: npm の依存（ロックから再インストールできる）
   - pattern: .vitest/
     reason: Vitest のキャッシュ
   - pattern: debug-storybook.log
     reason: Storybook のデバッグのログ
   - pattern: vscode/node_modules/
-    reason: VS Code 拡張機能の npm の依存（ロックから入れ直せる）
+    reason: VS Code 拡張機能の npm の依存（ロックから再インストールできる）
   - pattern: vscode/dist/
     reason: VS Code 拡張機能の本体をまとめたファイル（生成物）
   - pattern: vscode/media/
@@ -1838,7 +1838,7 @@ notes:
     | 計算 | `{name}.logic.ts` | DOM もトークンも使用しない計算・定数 | ブラウザと Node |
 
     持ち主の機能が無い助け（どの機能の記法・部品・操作でもない関数・定数）は `shared/` に配置する。
-    ある機能の記法・部品・操作を別の機能が組み込むときは、持ち主の機能のフォルダに置いたまま import する。
+    ある機能の記法・部品・操作を別の機能が組み込むときは、持ち主の機能のフォルダに配置したまま import する。
   配信しないファイル: |-
     project-index の検索の対象はリポジトリの全てのファイルで、次のファイルだけを配信しない（`project-index.yaml` の `files_top` の行の `exclude`）。
 

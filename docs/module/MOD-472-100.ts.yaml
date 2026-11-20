@@ -109,13 +109,13 @@ functions:
         summary: import map を type=module の script より前に埋める
         condition: '`importMap` が `{ "file:///ws/hljs/core.min.js": "data:text/javascript;charset=utf-8,a" }` のときと空のとき'
         mock: なし
-        expected: '前者は `<script type="importmap">` が `type="module"` の `script` より前にあり、中身を JSON として読むと `{ imports: importMap }`。後者は `importmap` を含まない'
+        expected: '前者は `<script type="importmap">` が `type="module"` の `script` より前にあり、中身を JSON として読み取ると `{ imports: importMap }`。後者は `importmap` を含まない'
       - name: test_build_export_html_when_aliases
         case: 正常
         summary: エイリアスを JSON に埋め、mount の opts.aliases に指定する
         condition: '`aliases` が `alias_type` `term`・`name` `描画`・`aliases` `["レンダリング"]` の 1 件のときと、`aliases` を指定しないとき'
         mock: なし
-        expected: '前者は `type="application/json"` の `script` の中身を JSON として読むと `aliases` が指定した配列で、`type="module"` の `script` が `mount` に `aliases: data.aliases` を指定する。後者は JSON が `aliases` を持たず、`mount` に `aliases` を指定しない'
+        expected: '前者は `type="application/json"` の `script` の中身を JSON として読み取ると `aliases` が指定した配列で、`type="module"` の `script` が `mount` に `aliases: data.aliases` を指定する。後者は JSON が `aliases` を持たず、`mount` に `aliases` を指定しない'
     callees:
       - '#functions[escapeScriptJson]'
     refs:

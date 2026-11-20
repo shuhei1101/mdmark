@@ -27,9 +27,9 @@ data_models:
         description: eslint-plugin-compat の報告の文（`Intl.Segmenter() is not supported in Firefox 98` など。無い下限のブラウザとバージョンを含む）
 constants:
   - name: BASELINE_ENTRIES
-    title: 下限と照らす入口
+    title: 下限と照らすエントリーポイント
     container: scripts/baseline.ts
-    summary: 対応ブラウザの下限と照らす、利用側のブラウザが読み込む JS の入口と、照らした結果に出す配布ファイルの名前
+    summary: 対応ブラウザの下限と照らす、利用側のブラウザが読み込む JS のエントリーポイントと、照らした結果に出す配布ファイルの名前
     entries:
       - key: '0'
         value: '{ in: "src/index.ts", out: "index" }'
@@ -56,7 +56,7 @@ functions:
     scope: public
     is_async: true
     summary: 利用側のブラウザが読み込む JS を minify せずにまとめ、対応ブラウザの下限に無い API の使用を返却する
-    description: '`BASELINE_ENTRIES` のうち作業ツリーにある入口を、`buildDist` と同じ `target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で、`minify: false`・`write: false` にしてまとめる。まとめた JS ごとに `lintBundle` を呼ぶ。ネットワークに接続しない'
+    description: '`BASELINE_ENTRIES` のうち作業ツリーにあるエントリーポイントを、`buildDist` と同じ `target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で、`minify: false`・`write: false` にしてまとめる。まとめた JS ごとに `lintBundle` を呼ぶ。ネットワークに接続しない'
     side_effects: なし（まとめた JS はメモリに配置し、ファイルに書き込まない）
     args:
       - name: options
@@ -65,11 +65,11 @@ functions:
         description: 作業ツリーの場所と、`define` に埋めるバージョン
     returns:
       type: Promise<BaselineViolation[]>
-      description: 下限に無い API の使用（無ければ空）。入口の順、まとめた JS の中の位置の順
+      description: 下限に無い API の使用（無ければ空）。エントリーポイントの順、まとめた JS の中の位置の順
     process: |-
-      1. 作業ツリーにある入口を minify せずにまとめる（esbuild）
+      1. 作業ツリーにあるエントリーポイントを minify せずにまとめる（esbuild）
       2. まとめた JS ごとに、下限に無い API の使用を取得する（まとめた JS を下限のバージョンと照らす）
-      3. 取得したものを入口の順につないで返却する
+      3. 取得したものをエントリーポイントの順につないで返却する
     unit_tests:
       - name: test_find_baseline_violations
         case: 正常
@@ -97,7 +97,7 @@ functions:
         expected: 1 件で、`api` が `Intl.Segmenter`
       - name: test_find_baseline_violations_when_entry_missing
         case: 正常
-        summary: 作業ツリーに無い入口は飛ばす
+        summary: 作業ツリーに無いエントリーポイントは飛ばす
         condition: '`src/index.ts` だけがあり、`src/views/`・`src/comments/`・`src/viewer/` が無い'
         mock: 一時フォルダに `src/` を配置し、作業ツリーの `node_modules` へのリンクを配置する
         expected: 例外を投げず、空

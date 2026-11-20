@@ -138,7 +138,7 @@ functions:
     container: src/knowledge/dictionary.ts
     kind: 関数
     scope: internal
-    summary: 文字列の中で、始まりと終わりが単語の区切り（`wordStarts`）に一致する辞書の単語の位置を、重ならないよう長い単語を先に返却する
+    summary: 文字列の中で、開始と終了が単語の区切り（`wordStarts`）に一致する辞書の単語の位置を、重ならないよう長い単語を先に返却する
     description: 区切り方は実行環境の辞書に依るため、要件とシナリオの単語の区切りを Node と対応ブラウザの単体テストで確認する。元の文字列を `wordStarts` の区切りごとに NFKC と英字の小文字化をかけてつなぎ、`normalizeWord` で正規化した辞書の単語が区切りの境目から境目までに一致する箇所を、元の文字列の位置に戻して返却する。区切りごとに正規化するため、NFKC で長さが変わる文字があっても位置は元の区切りに一致する。`word` は `words` に指定したままの単語で、正規化した後に同じになる単語が複数あるときは `words` で先の単語
     args:
       - name: text
@@ -167,9 +167,9 @@ functions:
         expected: '`オン・オフのマーカー` が 1 つだけ'
       - name: test_find_words_without_intl_segmenter
         case: 正常
-        summary: '`Intl.Segmenter` を持たない環境で、英数字の単語の一部を照合しない'
+        summary: '`Intl.Segmenter` を持たない環境で、英数字の単単語の一部を照合しない'
         condition: 単語 `ワークスペース`・`WS`。文字列 `ワークスペースをWSLに配置する`
-        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
+        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新規のモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
         expected: 読み込みが例外を出さず、`ワークスペース` が 1 つだけ（`WSL` の中の `WS` は入らない）
       - name: test_find_words_when_notation_differs
         case: 正常
@@ -183,7 +183,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 文字列を単語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返却する
-    description: '`Intl.Segmenter` があれば `ja`・`word` で区切る。`Intl.Segmenter` は初めて呼ばれたときに 1 つだけ作り、以降は使い回す（モジュールを読み込んだ時点では作らない）。`Intl.Segmenter` が無い環境では、英数字（`A-Z`・`a-z`・`0-9` と全角の英数字）の連なりを 1 単語とし、それ以外の文字を 1 文字（コードポイント）ずつ区切る'
+    description: '`Intl.Segmenter` があれば `ja`・`word` で区切る。`Intl.Segmenter` は初めて呼ばれたときに 1 つだけ作り、以降は再利用する（モジュールを読み込んだ時点では作らない）。`Intl.Segmenter` が無い環境では、英数字（`A-Z`・`a-z`・`0-9` と全角の英数字）の連なりを 1 単語とし、それ以外の文字を 1 文字（コードポイント）ずつ区切る'
     args:
       - name: text
         type: string
@@ -197,7 +197,7 @@ functions:
         case: 正常
         summary: '`Intl.Segmenter` を持たない環境で、英数字の連なりを 1 単語、それ以外を 1 文字ずつ区切る'
         condition: 文字列 `印刷をWSL2で😀確認する`
-        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
+        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新規のモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
         expected: '`[0, 1, 2, 3, 7, 8, 10, 11]`（`WSL2` は 1 単語、サロゲートペアの絵文字は 1 文字）'
       - name: test_word_starts_without_intl_segmenter_when_fullwidth
         case: 正常

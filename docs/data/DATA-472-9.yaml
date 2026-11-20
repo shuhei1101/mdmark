@@ -32,9 +32,9 @@ fields:
   description: '`rename_key` は元のキーのパス（`.` でつなぐ）、`replace_mark` は書き換える前のマーカーの文字列'
   example: build.out
 - key: to
-  title: 新しいキー・マーカー
+  title: 変更後のキー・マーカー
   type: string
-  description: '`rename_key` は新しいキーのパス、`replace_mark` は書き換えた後のマーカーの文字列'
+  description: '`rename_key` は変更後のキーのパス、`replace_mark` は書き換えた後のマーカーの文字列'
   example: build.output
 - key: key
   title: キー
@@ -54,7 +54,7 @@ fields:
 - key: mapping
   title: 解釈しの表
   type: object
-  description: '`map_values` の元の値から新しい値への表。表に無い値は変えない'
+  description: '`map_values` の元の値から変更後の値への表。表に無い値は変えない'
   example: '{ "dist/docs.html": "dist/index.html" }'
 - key: script
   title: スクリプト

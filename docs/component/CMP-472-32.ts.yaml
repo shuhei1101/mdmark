@@ -5,7 +5,7 @@ implementation: "src/diff/revision-picker.part.ts#renderRevisionPicker"
 story: "Parts/RevisionPicker"
 states:
   - name: Normal
-    description: 3 つのリビジョンを新しい順に並べ、一番新しいものとその 1 つ前を選ぶ。前の欄の r3 と後の欄の r2・r1 を選べない
+    description: 3 つのリビジョンを新しい順に並べ、最新のものとその 1 つ前を選ぶ。前の欄の r3 と後の欄の r2・r1 を選べない
     args:
       - name: revisions
         value: '[{"id":"r3","at":"2026-10-20T02:05:00Z","label":"見出しを書き換える","author":"田中"},{"id":"r2","at":"2026-10-19T07:40:00Z","label":"件数を修正する","author":"鈴木"},{"id":"r1","at":"2026-10-18T00:12:00Z","label":"初版","author":"佐藤"}]'

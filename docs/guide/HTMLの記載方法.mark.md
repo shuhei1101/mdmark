@@ -42,7 +42,7 @@ AI が HTML を作るときの記載方法の決まり
 
 ## mdmark の文書に記載した HTML で残るもの
 
-文書に記載した HTML は、描く前に許した要素・属性・URL だけを残す。
+文書に記載した HTML は、描く前に許可した要素・属性・URL だけを残す。
 
 | 項目 | 残るもの |
 | --- | --- |
@@ -66,7 +66,7 @@ AI が HTML を作るときの記載方法の決まり
 | `button` | 残る。`type="button"` に固定し、`form` で始まる属性は落とす。範囲の `ts`・`js` が操作を付けない限り、押しても何も起きない |
 | `style` | 下の宣言だけが残る |
 | `data-hint` | 任意の要素に記載でき、値の文がツールチップで出る。値は Markdown として読み込まず、文字として出す |
-| 図の部品 | `<mdmark-chart>`・`<mdmark-param>` の中の JSON を、図の部品の定義として描く。要素の属性は読み込まない。廃止した `<mdmark-flow>`・`<mdmark-sequence>` は描かずに、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すよう警告を出す（`mdmark upgrade` は書き換えない） |
+| 図の部品 | `<mdmark-chart>`・`<mdmark-param>` の中の JSON を、図の部品の定義として描く。要素の属性は読み込まない。廃止した `<mdmark-flow>`・`<mdmark-sequence>` は描かずに、埋め込んだ HTML の外に `<!-- map -->` の範囲で修正するよう警告を出す（`mdmark upgrade` は書き換えない） |
 | `id`・`data-*`（`data-hint` を除く） | 残さない |
 
 <!-- /table -->

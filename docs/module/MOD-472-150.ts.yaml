@@ -50,7 +50,7 @@ functions:
     title: バージョンを上げる
     container: src/cli/upgrade.ts
     usecase: バージョンを上げる
-    summary: 手元のバージョンから呼んだ CLI のバージョンまでの移行の手順を当て、点検が通ったら設定のバージョンを書き換える
+    summary: 手元のバージョンから呼んだ CLI のバージョンまでの移行の手順を適用し、点検が通ったら設定のバージョンを書き換える
     description: '順に、設定を探して読み込む（`findConfigFile`・`loadConfig`）→ 手元のバージョン（設定の `version`、無ければ `ask`）→ 手元のバージョンが `DEVELOP_VERSION` なら `CliError`（固定したバージョンを記載してから呼ぶ案内）→ `isDevelopBuild(options.cliVersion)` のとき、`packageDir` の `migrations/next/steps.yaml` が手順を 1 つ以上持てば `CliError`（`npx github:shuhei1101/mdmark#{releaseVersionOf(cliVersion)} upgrade` の案内）→ 目標のバージョン（`releaseVersionOf(options.cliVersion)`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書に、検める前の設定で集めた `collectScriptDocuments` の文書を合わせる。設定ファイルのフォルダの外の文書は `takeBackup` が何も写さずに `CliError` にする）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を適用する順に聞く → 壊すマーカーがあり `--yes` が無ければ確認し、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ バージョンの順に `applyStep`（返った行があれば、`{バージョン} の手順「{説明}」:` の行に続けて 2 字下げて標準出力へ出す） → `collectCheckIssues`（`unknownMarks: false`）→ `legacy_mark` を除いたずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → コピーの場所とバージョンを出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してからもう一度投げる。質問に回答が無い（`undefined`）ときは、書き換えの前に `CliError` を投げる。`settings` が真のときは、設定を探す代わりに `resolveSettingsPath` の端末の設定を読み込み、`file: config` 以外の手順（`files` が `[config]` だけの `call` は残す）と索引・文書の当て先を飛ばし、点検は `validateConfig`（`settings: true`）だけにする。`config` と一緒なら `CliError`'
     kind: 関数
     scope: public
@@ -194,7 +194,7 @@ functions:
       - name: test_run_upgrade_when_build_out_of_schema
         case: 異常
         summary: build が Schema に合わない設定でも、点検のずれで文書を戻す
-        condition: '`index` が無く `build` が `include: ["docs/*.md"]` だけの設定、`v0.5.0` が `--config` の設定を検めずに読み `build.include` の文書のマーカーを書き換える `call`（`files: [documents]`）'
+        condition: '`index` が無く `build` が `include: ["docs/*.md"]` だけの設定、`v0.5.0` が `--config` の設定を検めずに読み取り `build.include` の文書のマーカーを書き換える `call`（`files: [documents]`）'
         mock: test_run_upgrade と同じ
         expected: 1 を返却し、標準エラーに `build` の `schema` の行があり、文書が適用する前の中身で、コピーのフォルダに文書がある
       - name: test_run_upgrade_when_document_outside_config_dir
@@ -263,8 +263,8 @@ functions:
         expected: 戻り値に `missing.md` が無い
       - name: test_collect_script_documents_when_index_unreadable
         case: 正常
-        summary: YAML として読めない索引は飛ばし、build の文書だけを集める
-        condition: '`index` が YAML として読めないファイルを指し、`build.include` が `docs/*.md`'
+        summary: YAML として読み取れない索引は飛ばし、build の文書だけを集める
+        condition: '`index` が YAML として読み取れないファイルを指し、`build.include` が `docs/*.md`'
         mock: 一時フォルダ
         expected: '`docs/a.md`・`docs/b.md` の絶対パスだけで、例外を投げない'
       - name: test_collect_script_documents_when_include_matches_folder

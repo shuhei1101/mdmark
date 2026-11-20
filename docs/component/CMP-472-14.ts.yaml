@@ -6,7 +6,7 @@ story: "Parts/CommentButton"
 states:
   - name: Default
     description: 文字を選んだときに出したボタン
-lead: 本文の文字を選んだときに、選んだ文字の終わりの下に出す「コメント」のボタン。HTML 文字列を返却する。出す・配置する・押したときの入力欄の開き方は `mount` と `mountComments` の操作が付ける。
+lead: 本文の文字を選んだときに、選んだ文字の末尾の下に出す「コメント」のボタン。HTML 文字列を返却する。出す・配置する・押したときの入力欄の開き方は `mount` と `mountComments` の操作が付ける。
 events:
   - name: 入力欄を開く
     when: ボタンを押す

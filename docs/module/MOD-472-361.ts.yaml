@@ -1,7 +1,7 @@
 id: MOD-472-361
 visibility: internal
 title: ライブラリ本体 / 純粋な Markdown / pure-markdown.ts
-lead: 公開関数 `toPureMarkdown` の引数の検査と、ブロックの変換・行内の変換・図と拡張のフックの呼び出しの順を受け持ち、純粋な Markdown への変換の入口を変えるときに参照する。
+lead: 公開関数 `toPureMarkdown` の引数の検査と、ブロックの変換・行内の変換・図と拡張のフックの呼び出しの順を受け持ち、純粋な Markdown への変換のエントリーポイントを変えるときに参照する。
 test_files:
   - tests/unit/src/markdown/pure-markdown.test.ts
 data_models:
@@ -19,7 +19,7 @@ data_models:
         description: 文書の中で何番目の図か（1 から）
       - name: html
         type: string
-        description: '`render` がその図の範囲に返す HTML。埋め込んだ HTML は範囲のスクリプトを除いた HTML'
+        description: '`render` がその図の範囲に返却する HTML。埋め込んだ HTML は範囲のスクリプトを除いた HTML'
       - name: title
         type: string | undefined
         description: '`chart`・`param` のタイトル'
@@ -109,7 +109,7 @@ functions:
         case: 正常
         summary: '`opts.figure` の戻り値を図の場所に入れる'
         condition: '`chart`・`param`・埋め込んだ HTML を 1 つずつ持つ文書'
-        mock: 受けた `kind` と `index` から `![k](f-{index}.svg)` を返す関数
+        mock: 受けた `kind` と `index` から `![k](f-{index}.svg)` を返却する関数
         expected: '`index` 1〜3 の順に 3 回呼ばれ、`markdown` に 3 つの画像のリンクがある'
       - name: test_to_pure_markdown_when_extension_marks
         case: 正常
@@ -136,7 +136,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 図の範囲の Markdown を `render` で HTML にし、`chart`・`param` は定義からタイトルと凡例の系列の名前を取り出して `MdmarkFigure` にする
-    description: 埋め込んだ HTML は範囲の `ts`・`js` のコードブロックを除いてから `render` に渡し、除いたときは警告を返却する。`param` の凡例は、描く側の `paramChart`（今の値は既定の値）の系列の名前 `今の値（{既定の値}）`・`既定の値（{既定の値}）` の 2 つ
+    description: 埋め込んだ HTML は範囲の `ts`・`js` のコードブロックを除いてから `render` に指定し、除いたときは警告を返却する。`param` の凡例は、描く側の `paramChart`（今の値は既定の値）の系列の名前 `今の値（{既定の値}）`・`既定の値（{既定の値}）` の 2 つ
     args:
       - name: options
         type: '{ block: PureFigureBlock; index: number; config?: MdmarkConfig }'

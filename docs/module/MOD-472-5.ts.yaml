@@ -9,7 +9,7 @@ data_models:
     title: unit の状態
     container: src/plugin/setup/systemd.ts
     usecase: 常駐サーバーを起動する
-    summary: '`systemctl --user show` から読んだ unit の状態'
+    summary: '`systemctl --user show` から読み取った unit の状態'
     properties:
       - name: activeState
         type: string
@@ -40,17 +40,17 @@ constants:
       - IF-472-7#constraints[unit のファイル]
     status: planned
   - name: SYSTEMD_USABLE_STATES
-    title: systemd --user が使える状態
+    title: systemd --user が使用できる状態
     container: src/plugin/setup/systemd.ts
     usecase: 端末の状態を調べる
     summary: '`is-system-running` の標準出力のうち、user のマネージャーが動いている値'
     value: '["running", "degraded", "starting"]'
     refs:
-      - IF-472-7#constraints[systemd --user が使えるか]
+      - IF-472-7#constraints[systemd --user が使用できるか]
     status: planned
 functions:
   - name: hasSystemd
-    title: systemd --user が使えるか
+    title: systemd --user が使用できるか
     kind: 関数
     container: src/plugin/setup/systemd.ts
     usecase: 端末の状態を調べる
@@ -65,18 +65,18 @@ functions:
         description: コマンドの実行
     returns:
       type: Promise<boolean>
-      description: 使えるか
+      description: 使用できるか
     process: 1. `run("systemctl", ["--user", "is-system-running"])` の標準出力の前後の空白を除いた値が `SYSTEMD_USABLE_STATES` に含まれるかを返却する。終了コードは見ない（`systemctl` が無いと 127 で標準出力が空）
     unit_tests:
       - name: test_has_systemd
         case: 正常
-        summary: degraded でも使える
+        summary: degraded でも使用できる
         condition: 終了コード 1・標準出力 `degraded\n` を返却する `run`
         mock: 差し替えた `run`
         expected: '`true`'
       - name: test_has_systemd_when_offline
         case: 正常
-        summary: offline・コマンドが無いときは使えない
+        summary: offline・コマンドが無いときは使用できない
         condition: 標準出力 `offline\n` を返却する `run` と、終了コード 127・標準出力が空の `run`
         mock: 差し替えた `run`
         expected: どちらも `false`
@@ -153,14 +153,14 @@ functions:
     usecase: 常駐サーバーを起動する
     role: 処理
     summary: 呼んだ側の `PATH` から `node`・`npx` のあるフォルダだけを取り、`UNIT_BASE_PATH` を続けた値を作る
-    description: セッションや worktree によって変わる `PATH` をそのまま unit に記載すると、呼ぶたびに中身が変わって unit を起動し直すため、セッションによらず決まる値にする
+    description: セッションや worktree によって変わる `PATH` をそのまま unit に記載すると、呼ぶたびに中身が変わって unit を再起動するため、セッションによらず決定する値にする
     scope: public
     is_async: false
     args:
       - name: options
         type: '{ path: string | undefined; isExecutable: (file: string) => boolean }'
         required: true
-        description: 呼んだ側の `PATH` と、ファイルが実行できるかを返す関数
+        description: 呼んだ側の `PATH` と、ファイルが実行できるかを返却する関数
     returns:
       type: string
       description: unit に記載する `PATH`
@@ -177,7 +177,7 @@ functions:
       - name: test_build_unit_path_env_when_same_input
         case: 正常
         summary: 関係の無いフォルダの並びが変わっても同じ値
-        condition: 上の `PATH` と、`/w/.venv/bin` を除いて `/x/bin` を先頭に足した `PATH`
+        condition: 上の `PATH` と、`/w/.venv/bin` を除いて `/x/bin` を先頭に追加した `PATH`
         mock: 差し替えた `isExecutable`
         expected: どちらも同じ値
     refs:
@@ -185,7 +185,7 @@ functions:
       - LIB-472-25#limitations
     status: planned
   - name: readUnitState
-    title: unit の状態を読む
+    title: unit の状態を読み取る
     kind: 関数
     container: src/plugin/setup/systemd.ts
     usecase: 常駐サーバーを起動する
@@ -201,11 +201,11 @@ functions:
     returns:
       type: Promise<UnitState>
       description: unit の状態
-    process: 1. `run("systemctl", ["--user", "show", "-p", "ActiveState", "-p", "SubState", "-p", "NRestarts", "-p", "MainPID", "-p", "UnitFileState", "{unit}.service"])` の `Key=Value` の行を読み、無い値は空・0 にする。`--value` は使用しない（行の順が `-p` の順にならない）
+    process: 1. `run("systemctl", ["--user", "show", "-p", "ActiveState", "-p", "SubState", "-p", "NRestarts", "-p", "MainPID", "-p", "UnitFileState", "{unit}.service"])` の `Key=Value` の行を読み取り、無い値は空・0 にする。`--value` は使用しない（行の順が `-p` の順にならない）
     unit_tests:
       - name: test_read_unit_state
         case: 正常
-        summary: Key=Value の行を順によらず読む
+        summary: Key=Value の行を順によらず読み取る
         condition: '`NRestarts=2`・`ActiveState=activating`・`MainPID=0`・`SubState=auto-restart`・`UnitFileState=enabled` を返却する `run`'
         mock: 差し替えた `run`
         expected: '`{ activeState: "activating", subState: "auto-restart", nRestarts: 2, mainPid: 0, enabled: true }`'
@@ -233,7 +233,7 @@ functions:
     unit_tests:
       - name: test_has_unit_exited
         case: 正常
-        summary: 起動し直した・起動し直す前・failed を終わったとする
+        summary: 再起動した・再起動する前・failed を終わったとする
         condition: '`nRestarts: 1` の状態、`subState: "auto-restart"` の状態、`activeState: "failed"` の状態、`active`・`running`・`nRestarts: 0` の状態'
         mock: なし
         expected: 前の 3 つが `true`、最後が `false`

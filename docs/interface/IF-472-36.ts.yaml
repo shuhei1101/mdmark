@@ -117,7 +117,7 @@ flows:
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
-        M->>M: 行内のトークンを頭から本文へ当て、エスケープと実体参照を数えて位置を戻す
+        M->>M: 行内のトークンを頭から本文へ適用し、エスケープと実体参照を数えて位置を戻す
         M-->>C: { byDocument, avoided, targets }
       ```
 
@@ -144,7 +144,7 @@ flows:
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: collectMatches({ index, documents })
-        M->>M: 文書のマーカーで決まった機能のオン・オフで照合する単語を選ぶ
+        M->>M: 文書のマーカーで決定した機能のオン・オフで照合する単語を選ぶ
         M-->>C: { byDocument, avoided, targets }
       ```
 
@@ -370,7 +370,7 @@ response:
     constraints: 0 から数える UTF-16 の位置
   - name: byDocument[].end
     type: number
-    description: その行の中の終わりの位置（含まない）
+    description: その行の中の末尾の位置（含まない）
     constraints: UTF-16 の位置
     notes: 本文の文字が実体参照やエスケープで記載されているときは、本文に記載したままの範囲を指す（`A&amp;B` に一致した `A&B` は `A&amp;B` の範囲）
   - name: targets
@@ -454,7 +454,7 @@ exceptions:
     notes: 例外を投げず、合わない項目を除いて照合する。合わないことを知るには `checkIndex` を呼ぶ
 constraints:
   - item: 実行する環境
-    constraint: Node とブラウザで動き、DOM に頼らない。単語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返却する
+    constraint: Node とブラウザで動き、DOM に頼らない。単語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決定する）ため、同じ実行環境で描いた文書の下線と同じ一致を返却する
   - item: 照合の規則
     constraint: 用語のツールチップと同じ辞書（索引の `terms` → `input.aliases` → 照合する文書の用語集の表 → ほかの文書の表。文書の別名は照合する文書自身の別名を除く）と、始まりと終わりが単語の区切りと合う一致を長い単語から取る照合を使用する。照合の前に、単語と本文の文字の両方を用語のツールチップと同じく正規化する
     notes: セクションごとの最初の 1 回の制限は下線のもので、取り出しには有効にならない
@@ -471,7 +471,7 @@ constraints:
     constraint: 照合の辞書のやめた言い方（索引の `terms[].avoid` と、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`。用語の単語・別名と同じ単語は除く）を用語・文書の別名の単語に加えて照合し、やめた言い方の単語に該当したところを `avoided` に入れる。照合する範囲は地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{単語}}` は照合しない
     notes: 長い単語から取るため、用語・別名の一部として出たやめた言い方は返却しない。`byDocument` はやめた言い方を加えない照合のまま変えない
   - item: フロントマター
-    constraint: 本文の先頭のフロントマターは、インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じ判定で除外してから照合する。フロントマターの中の用語・文書の別名は一致として返さない。一致の位置は、除外する前の元の本文で数える（制約「位置の数え方」）
+    constraint: 本文の先頭のフロントマターは、インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じ判定で除外してから照合する。フロントマターの中の用語・文書の別名は一致として返却しない。一致の位置は、除外する前の元の本文で数える（制約「位置の数え方」）
 refs:
   - SC-472-60#
   - IF-472-31#

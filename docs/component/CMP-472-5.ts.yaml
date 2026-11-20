@@ -60,7 +60,7 @@ states:
   - name: ParallelWires
     description: 同じグループの同じ列に並ぶ 3 つのノードから、別のグループのノードへ 1 本ずつ出る線。3 本の線が同じ区間を重ならず、区間と直角の向きにずらして並ぶ。線は配置の結果の点の並びのとおりに描き、ずらすのは配置（インターフェース定義の制約『map の線の通り道』）が持つ
     notes:
-      定義: ストーリーの中で書く Mermaid。`flowchart LR` で、`subgraph A` の中の縦に並ぶ 3 つのノード（`a1`・`a2`・`a3`）から、`subgraph B` の中の 3 つのノード（`b1`・`b2`・`b3`）へ `a1 --> b3`・`a2 --> b1`・`a3 --> b2` の 3 本の線を引く
+      定義: ストーリーの中で記載する Mermaid。`flowchart LR` で、`subgraph A` の中の縦に並ぶ 3 つのノード（`a1`・`a2`・`a3`）から、`subgraph B` の中の 3 つのノード（`b1`・`b2`・`b3`）へ `a1 --> b3`・`a2 --> b1`・`a3 --> b2` の 3 本の線を引く
   - name: WrappedName
     description: 種類の行を持ち、名前（「注文の明細を月ごとに集計する」）がノードの幅で 2 行に折り返すノード。ノードは種類の行と折り返した名前の行が全て入る高さで、名前の最後の行がノードの下の余白（`padding-bottom`）より上にある
     notes:
@@ -93,12 +93,12 @@ args:
     type: オブジェクト
     required: false
     default: なし（種類の行を空にし、角の丸い四角で描く）
-    description: 設定の `map.kinds` のそのノードのクラスの値（`{ label, icon, shape, color }`）。ノードの種類の行・形・色に使う
+    description: 設定の `map.kinds` のそのノードのクラスの値（`{ label, icon, shape, color }`）。ノードの種類の行・形・色に使用する
   - name: layout.wires[].line
     type: オブジェクト
     required: false
     default: なし（実線・太さ normal・塗りの矢じり）
-    description: 設定の `map.lines` のその線の矢印か名前の値（`{ dash, width, head, color }`）。線の模様・太さ・矢じり・色に使う
+    description: 設定の `map.lines` のその線の矢印か名前の値（`{ dash, width, head, color }`）。線の模様・太さ・矢じり・色に使用する
   - name: layout.wires[].merged
     type: オブジェクトの配列
     required: false
@@ -157,11 +157,11 @@ events:
   - name: 開閉する
     when: グループの左上の山形のボタンか、閉じたグループの開くボタンを押す（Shift を押しながら押すと中のグループも）
     value: グループの ID（`data-group`）と Shift の有無
-    description: '`mount` が `collapsed` を切り替えて配置し直し、図の倍率と表示する枠の高さを保つ'
+    description: '`mount` が `collapsed` を切り替えて再配置し、図の倍率と表示する枠の高さを保つ'
   - name: 中へ入る
     when: グループのタイトルのボタンを押す
     value: グループの ID
-    description: '`mount` が `entered` をそのグループにして中だけを配置し直す'
+    description: '`mount` が `entered` をそのグループにして中だけを再配置する'
   - name: 選ぶ
     when: ノードの名前の文字の外を押す（ポインターが 4px 動くまで）か、ノードにフォーカスして Enter か Space を押す。線を押す（4px 未満の動き）か、線にフォーカスして Enter を押す
     value: ノードの ID（`data-node`）か、線の両端の ID
@@ -169,7 +169,7 @@ events:
   - name: 動かす
     when: ノード・グループのタイトルの行（上端から 36px。ボタンの外）・線の区間を 4px 以上ドラッグする。フォーカスして Alt + 矢印キーを押す（8px ずつ。Shift も押すと 32px ずつ。線は真ん中の区間を動かす）
     value: 動かした要素の ID と動いた量（px）
-    description: '`mount` が位置を固定して配置し直し、sessionStorage に保つ。ほかのノード・グループとの間が 16px より狭くなる位置と、グループの左端・上端より外へは動かさない'
+    description: '`mount` が位置を固定して再配置し、sessionStorage に保つ。ほかのノード・グループとの間が 16px より狭くなる位置と、グループの左端・上端より外へは動かさない'
   - name: 線を指す
     when: 線にポインターを乗せるかフォーカスする。離す
     value: 線の ID
@@ -194,7 +194,7 @@ accessibility:
   - 押せる要素は、ノードの中の種類の行・名前の文字・説明のマーカー・ノードの中に入れた部品（ER 図の列の行と、列の開閉・列の説明のボタン）の下に重ね、それらを押せる要素の中に入れない。名前の中の用語・説明のマーカー・ノードの中に入れた部品のボタンは、押せる要素とは別にフォーカスできる（Tab の順は押せる要素、ノードの中の並び）。名前の文字と ER 図の列の名前の文字は、押せる要素の上で選んでコピーできる
   - 線は押せる帯（`map-wire-hit`）が `tabindex="0"` と `aria-label="{元}から{先}への線"`（ラベルがあれば末尾に `「{ラベル}」`）を持ち、ポインターの形状は区間の向きで `ns-resize` か `ew-resize`
   - 'ノードの名前の文字は選んでコピーでき（ポインターの形状は `text`）、種類の行の文字は選べない（`user-select: none`）。ドラッグできる場所のポインターの形状は `grab`'
-  - '強調しない要素（`map-dim`、`map-focus` の中の `map-keep` でない要素、中へ入ったときに外側に残す `map-faded`）のうち文字を持つ要素は、`opacity` で薄くせず、文字を本文の文字色と背景の色を 68% : 32% で混ぜた色にし、ノード・グループ・線のラベル・多重度の枠と面も背景の色と混ぜる（mdmark のテーマのライトとダークで、文字の背景に対するコントラスト 4.5:1 以上）。文字を持たない線・ライフライン・関係の端は `--mdmark-map-dim-opacity` の `opacity` で薄くする。データの印は `aria-hidden`。読者が始めた印は `prefers-reduced-motion` でも流し、配置し直したときのノードとグループの移動は止める'
+  - '強調しない要素（`map-dim`、`map-focus` の中の `map-keep` でない要素、中へ入ったときに外側に残す `map-faded`）のうち文字を持つ要素は、`opacity` で薄くせず、文字を本文の文字色と背景の色を 68% : 32% で混ぜた色にし、ノード・グループ・線のラベル・多重度の枠と面も背景の色と混ぜる（mdmark のテーマのライトとダークで、文字の背景に対するコントラスト 4.5:1 以上）。文字を持たない線・ライフライン・関係の端は `--mdmark-map-dim-opacity` の `opacity` で薄くする。データの印は `aria-hidden`。読者が始めた印は `prefers-reduced-motion` でも流し、再配置したときのノードとグループの移動は止める'
   - 色を持たないグループの枠線は背景とのコントラスト比 3:1 以上
   - リンク先を持つノードは、ノードの `div` がフォーカスを受けず、`a.mdmark-diagram-node-link` がノードの代わりにフォーカスを受ける（ノードの中にフォーカスできる要素を入れ子にしない）。リンクはスクリーンリーダー向けの名前がノードの名前（選んでいれば `（選択中）`）で、`aria-roledescription="ノード"`・`aria-keyshortcuts="Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` を持ち、Enter でリンク先を開き、Space で選び、Alt + 矢印キーで動かす。説明のマーカーとは別にフォーカスできる（Tab の順はリンク、マーカー）。グループの説明のマーカーはタイトルのボタンの外にあり、`aria-describedby` で説明のツールチップを指す
   - ノードの右上とグループのタイトルの右の説明のマーカーは、押せる大きさを 24px 四方以上にする（閉じたグループのタイトルの行と、ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図のノードも同じ）。ノードの種類の行は、マーカーと重ならないよう右にマーカーの幅の余白を取る

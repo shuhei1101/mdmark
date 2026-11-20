@@ -87,7 +87,7 @@ response:
     description: 呼び出しの許可。権限の確認を省く（plan mode の読み取りだけでない呼び出しと、どのモードでも自動で許可しない操作を除く）
   - name: hookSpecificOutput.permissionDecisionReason
     type: string
-    description: 許可した理由。Claude Code はデバッグのログにだけ書く
+    description: 許可した理由。Claude Code はデバッグのログにだけ記載する
   - name: hookSpecificOutput.updatedInput
     type: Record<string, unknown>
     description: '`tool_input` に `project_dir` を入れた引数。エージェントが `project_dir` を記載していても `CLAUDE_PROJECT_DIR` の値で置き換える。ほかの引数はそのまま'

@@ -19,7 +19,7 @@ request:
     type: CFG-472-4 のキー
     required: false
     location: argument
-    description: '`inject_marker_guide` を読む設定'
+    description: '`inject_marker_guide` を読み取る設定'
     default: なし（全てのキーを既定値にする）
 request_example: |-
   ```json
@@ -31,13 +31,13 @@ response:
     description: '`next(e)` の結果の `additionalContext` の後ろに、制約「説明の文」の文を 1 つ追加した並び。ほかのフィールドは `next(e)` の結果のまま'
 response_example: |-
   ```json
-  {"additionalContext": ["mdmark-style: 返答の表の直前に <!-- table: {\"kind\": \"data\"} --> を書くと …"]}
+  {"additionalContext": ["mdmark-style: 返答の表の直前に <!-- table: {\"kind\": \"data\"} --> を記載すると …"]}
   ```
 exceptions:
   - name: なし（正常終了）
     condition: '`next(e)` の結果、または説明を追加した結果を返却する'
-  - name: なし（設定ファイルを読めない）
-    condition: 設定ファイルがあるが、YAML として読めない
+  - name: なし（設定ファイルを読み取れない）
+    condition: 設定ファイルがあるが、YAML として読み取れない
     notes: 説明を追加せずに `next(e)` の結果を返却し、`$.ui.log` でデバッグログに理由を出す。セッションの開始と他のプラグインの `additionalContext` を止めない
 constraints:
   - item: 注入する条件
@@ -54,7 +54,7 @@ flows:
     summary: 起動の SessionStart で、他の `additionalContext` の後ろに説明を 1 つ追加する
     setup:
       - name: Mock
-        description: 'Claude Code の代わりに `claude-code/testing` で `classic.SessionStart`（`source: startup`）を起こし、テストの `on` で別のプラグインの `additionalContext`（`other`）を返す。設定ファイルは無い'
+        description: 'Claude Code の代わりに `claude-code/testing` で `classic.SessionStart`（`source: startup`）を発生させ、テストの `on` で別のプラグインの `additionalContext`（`other`）を返却する。設定ファイルは無い'
     flow: |-
       <!-- map -->
 
@@ -103,7 +103,7 @@ flows:
     summary: '`inject_marker_guide` が `false` のとき、`next(e)` の結果をそのまま返却する'
     setup:
       - name: Mock
-        description: '正常系と同じ。`on("fs.read")` で `global.inject_marker_guide: false` の設定ファイルを返す'
+        description: '正常系と同じ。`on("fs.read")` で `global.inject_marker_guide: false` の設定ファイルを返却する'
     flow: |-
       <!-- map -->
 
@@ -123,11 +123,11 @@ flows:
     test: test_normal_when_injection_disabled
     refs:
       - SC-472-99#scenarios[正常シナリオ（注入をオフにしている）]
-  - name: 異常系（設定ファイルを読めない・なし）
-    summary: 設定ファイルを読めないとき、説明を追加せずに結果を返却し、デバッグログに理由を出す
+  - name: 異常系（設定ファイルを読み取れない・なし）
+    summary: 設定ファイルを読み取れないとき、説明を追加せずに結果を返却し、デバッグログに理由を出す
     setup:
       - name: Mock
-        description: 正常系と同じ。`on("fs.read")` で YAML として読めない設定ファイルを返す
+        description: 正常系と同じ。`on("fs.read")` で YAML として読み取れない設定ファイルを返却する
     flow: |-
       <!-- map -->
 

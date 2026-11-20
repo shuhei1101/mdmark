@@ -15,7 +15,7 @@
 | [文書を描く](#文書を描く) | `mount(el, opts)` | 要素の中に Markdown を HTML として描く |
 | [差分の出し方を読み込む](#差分の出し方を読み込む) | `diffModes` | `mount` の `opts.diffMode` に指定できる差分の出し方の一覧を持つ |
 | [文書を HTML 文字列にする](#文書を-html-文字列にする) | `render(markdown, opts)` | 画面を持たずに Markdown を HTML 文字列にする |
-| [文書を純粋な Markdown にする](#文書を純粋な-markdown-にする) | `toPureMarkdown(markdown, opts)` | 画面を持たずに mdmark の文書を、mdmark の無い表示で読める純粋な Markdown（GFM と Mermaid）にする |
+| [文書を純粋な Markdown にする](#文書を純粋な-markdown-にする) | `toPureMarkdown(markdown, opts)` | 画面を持たずに mdmark の文書を、mdmark の無い表示で読み取れる純粋な Markdown（GFM と Mermaid）にする |
 | [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返却する |
 | [本文の参照を取り出す](#本文の参照を取り出す) | `collectMatches(input)` | 索引と文書の本文から、本文に出た用語・文書の別名の一致を、参照先と本文の位置つきで返却する |
 | [索引を点検する](#索引を点検する) | `checkIndex(input)` | 索引と文書のずれの一覧を返却する |
@@ -139,7 +139,7 @@ handle.destroy();
 | --- | --- |
 | `button` | 読者が「変更表示」を押してから、2 つのリビジョンの差分の行を出す |
 | `open` | 描いた時点で「変更表示」を押した状態にして、差分の行を出す。もう一度押すと閉じ、`update` の後も開いた状態で再描画して取り出し元をもう一度呼ぶ |
-| `blocks` | 「変更表示」と差分の場所・ミニマップを配置せず、描いた文書のブロックを追加・変更は追加の色、削除は削除の色で塗り分ける。本文を描いた後に `revisions` を 1 回呼び、2 つ以上あれば 2 番目を前、1 番目を後として `content` を 1 回ずつ呼ぶ。待つ間・リビジョンが 1 つのとき・2 つの本文が同じときは、`opts.markdown` を色を当てずに描いたままにする。`update` のたびに取り出し元をもう一度呼ぶ |
+| `blocks` | 「変更表示」と差分の場所・ミニマップを配置せず、描いた文書のブロックを追加・変更は追加の色、削除は削除の色で塗り分ける。本文を描いた後に `revisions` を 1 回呼び、2 つ以上あれば 2 番目を前、1 番目を後として `content` を 1 回ずつ呼ぶ。待つ間・リビジョンが 1 つのとき・2 つの本文が同じときは、`opts.markdown` を色を適用せずに描いたままにする。`update` のたびに取り出し元をもう一度呼ぶ |
 
 `opts.diffSource` の構造。
 
@@ -190,7 +190,7 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
-| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null; includes?: Record<string, string> }) => void` | 本文だけを再描画し、記法の操作をもう一度付ける。読者が開閉したセクションは、見出しと開閉のマーカーが変わっていなければその開閉のまま描き、読者が開閉した表の行の詳細・details の範囲・折りたたみの注意書き・フロントマターの折りたたみ・ファイルツリーのフォルダ・コードの折りたたみ・表のキーの階層も開閉のマーカーが変わっていなければその開閉のまま描き、読者が開閉した図のグループ・シーケンス図のブロックもその開閉のまま描き、URL の `#ID` のセクションを開き直さない。設定は `mount` に指定したものを使用する。`options.baseMarkdown` を指定すると比較元を差し替え、`null` で比較元を解除する。省くと前の比較元のまま描く。`options.includes` を指定すると取り込む文書の表を差し替え、省くと前の表のまま描く。`destroy` の後は何もしない |
+| `update` | `(markdown: string, options?: { baseMarkdown?: string \| null; includes?: Record<string, string> }) => void` | 本文だけを再描画し、記法の操作をもう一度付ける。読者が開閉したセクションは、見出しと開閉のマーカーが変わっていなければその開閉のまま描き、読者が開閉した表の行の詳細・details の範囲・折りたたみの注意書き・フロントマターの折りたたみ・ファイルツリーのフォルダ・コードの折りたたみ・表のキーの階層も開閉のマーカーが変わっていなければその開閉のまま描き、読者が開閉した図のグループ・シーケンス図のブロックもその開閉のまま描き、URL の `#ID` のセクションを再度開かない。設定は `mount` に指定したものを使用する。`options.baseMarkdown` を指定すると比較元を差し替え、`null` で比較元を解除する。省くと前の比較元のまま描く。`options.includes` を指定すると取り込む文書の表を差し替え、省くと前の表のまま描く。`destroy` の後は何もしない |
 | `reloadComments` | `() => Promise<void>` | 本文を再描画せずに `opts.commentStore.load` をもう一度呼び、コメントのマーカーと「箇所が見つからないコメント」の一覧をもう一度付けてから解決する。記法の操作の状態（並べ替え・絞り込み・開閉）は変えない。開いている吹き出しは閉じ、記載している入力欄は残す。コメントを付けていないとき（`comments` がオフ・`opts.commentStore` が無い・コメントの部品のモジュールを読み込めない）と `destroy` の後は、`load` を呼ばずに解決する |
 | `focusComment` | `(id: string) => void` | その `id` のコメントのマーカーを、閉じたセクション・行の詳細の中なら開いてから画面に入れ、フォーカスを移して強調する（背景を濃くし、線で囲む）。強調は次の `focusComment` と、マーカーをもう一度付ける（再描画し・再読み込み）まで残す。吹き出しは開かない。マーカーが無い `id` と `destroy` の後は何もしない |
 | `destroy` | `() => void` | `el` の中を空にして class `mdmark` を削除し、記法の操作と、印刷・`hashchange`・`document` の受け取りを解除する。コメントのボタン・入力欄・吹き出しも削除する。2 回目以降は何もしない |
@@ -203,10 +203,10 @@ mdmark はコメントを保存せず、保存先は利用側の関数に任せ�
 それ以外は例外を投げない。
 取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したときは、差分の場所を [通知ブロック](./用語集.mark.md) に替え、文書の本文は描いたまま残す。
 取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーが `console.error` に出る。
-`opts.diffMode` が `blocks` のときに取り出し元が同じように失敗したときは、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に `変更を表示できません` の [通知ブロック](./用語集.mark.md) を配置する。
+`opts.diffMode` が `blocks` のときに取り出し元が同じように失敗したときは、`opts.markdown` を色を適用せずに描いた本文を残し、本文の先頭に `変更を表示できません` の [通知ブロック](./用語集.mark.md) を配置する。
 `console.error` に出す内容は同じ。
 コメントの `save` が reject するか、構造に合わない値を返却したときは、入力欄に記載した本文を残して `role="alert"` の通知を出し、マーカーを付けない。
-`load` が reject するか、構造に合わない値を返却したときは、マーカーを付けずに続け、新しいコメントは付けられる。
+`load` が reject するか、構造に合わない値を返却したときは、マーカーを付けずに続け、新規のコメントは付けられる。
 どちらも読み込みと保存の関数の名前・文書の `id`・元のエラーが `console.error` に出る。
 コメントの `update`・`remove` が reject したときは、修正は入力欄と書き換えた本文を残し、削除はコメントとマーカーを残して削除の確認を開いたまま、`role="alert"` の通知を出す。
 関数の名前・文書の `id`・コメントの `id`・元のエラーが `console.error` に出る。
@@ -312,7 +312,7 @@ VS Code のエディタの行番号（0 始まり）とそのまま比べられ�
 
 ## 文書を純粋な Markdown にする
 
-画面を持たずに mdmark の文書を、GitHub・VS Code の標準のプレビューなど mdmark の無い表示で読める純粋な Markdown（GFM と Mermaid）にする。
+画面を持たずに mdmark の文書を、GitHub・VS Code の標準のプレビューなど mdmark の無い表示で読み取れる純粋な Markdown（GFM と Mermaid）にする。
 DOM を使用しないため、Node の処理でも同じ文字列を返却する。
 `mdmark export-markdown`・MCP の `export_markdown`・右側の目次の Markdown のボタンが使用する。
 記法ごとの書き出しの形は [Markdown に書き出す](./書き出す-文書を書き出す.mark.md#markdown-に書き出す)。
@@ -473,7 +473,7 @@ const { byDocument, avoided, targets } = collectMatches({
 | `text` | `string` | 一致した文字列。照合した辞書の単語で、別名で一致したときはその別名。索引・用語集の表に記載した表記で返却し、本文の表記は `line`・`start`・`end` から参照する |
 | `line` | `number` | 一致した本文の Markdown の行。1 から数える |
 | `start` | `number` | その行の中の始まりの位置。0 から数える UTF-16 の位置 |
-| `end` | `number` | その行の中の終わりの位置（含まない）。UTF-16 の位置 |
+| `end` | `number` | その行の中の末尾の位置（含まない）。UTF-16 の位置 |
 
 <!-- /table -->
 
@@ -523,8 +523,8 @@ const { byDocument, avoided, targets } = collectMatches({
 
 - 辞書は、索引の `terms`、`input.aliases`（並びの順）、照合する文書の用語集の表、ほかの文書の表の順に優先する。
   文書の別名は、照合する文書自身の別名を除く
-- 単語の始まりと終わりが本文の単語の区切りに一致するところだけを取り、重なるときは長い単語を先に取る。
-  単語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決まる）ため、同じ実行環境で描いた文書の下線と同じ一致を返却する
+- 単語の開始と終了が本文の単語の区切りに一致するところだけを取り、重なるときは長い単語を先に取る。
+  単語の区切りは実行環境に依る（`Intl.Segmenter` の有無と辞書で決定する）ため、同じ実行環境で描いた文書の下線と同じ一致を返却する
 - 照合の前に、辞書の単語と本文の文字の両方を、NFKC・英字の小文字化・前後の空白の除去で正規化する。
   正規化した後に同じになる単語は 1 つの単語として扱い、優先の順で先の用語を使用する。
   `line`・`start`・`end` は、正規化する前の本文の位置を指す
@@ -876,7 +876,7 @@ handle.destroy();
 | 起きたこと | 動き |
 | --- | --- |
 | `el` が要素でない、`opts.store` が `load`・`save` の関数を持たないか `update`・`remove` を関数でない値で持つ、`opts.docId` が空か文字列でない | `TypeError` を同期で投げる（`Promise` は返却しない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
-| `load` が reject する、または返却した値がコメントの構造に合わない | 例外を投げず、マーカーを付けずに解決する。新しいコメントは付けられる。`load`・`docId`・元のエラーか合わなかった値を `console.error` に出す |
+| `load` が reject する、または返却した値がコメントの構造に合わない | 例外を投げず、マーカーを付けずに解決する。新規のコメントは付けられる。`load`・`docId`・元のエラーか合わなかった値を `console.error` に出す |
 | `save` が reject する、または返却した値がコメントの構造に合わない | 例外を投げず、入力欄に記載した本文を残して通知を出し、マーカーを付けない。`save`・`docId`・元のエラーを `console.error` に出す |
 | `update`・`remove` が reject する | 例外を投げず、修正は入力欄と書き換えた本文を残し、削除はコメントとマーカーを残して削除の確認を開いたまま通知を出す。関数の名前・`docId`・コメントの `id`・元のエラーを `console.error` に出す |
 | コメントの部品のモジュールを読み込めない | `el` を書き換えず、`load` を呼ばずに、`Promise` を元のエラーで reject する |
@@ -995,9 +995,9 @@ mdmark.mount(document.querySelector("#doc"), { markdown });
 
 | 変数 | 明るい配色 | ダークの配色 | 使用する場所 |
 | --- | --- | --- | --- |
-| `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素とまとめた HTML の地 |
-| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行・留める見出し・選んだタブの地、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
-| `--mdmark-color-text` | `#18181b` | `#ededef` | 本文の文字と、コメントの入力欄の「コメントを保存」のボタンの地と線 |
+| `--mdmark-color-bg` | `#ffffff` | `#131316` | 描く先の要素とまとめた HTML の背景 |
+| `--mdmark-color-bg-opaque` | `var(--mdmark-color-bg)` | `var(--mdmark-color-bg)` | ツールチップ・メニュー・全画面の図などの浮く部品、表の本文の行・留める見出し・選んだタブの背景、注意書き・図・バッジで色を混ぜる先の色、「コメントを保存」のボタンの文字。`--mdmark-color-bg` を透明にするときは、周りの面の色を指定する |
+| `--mdmark-color-text` | `#18181b` | `#ededef` | 本文の文字と、コメントの入力欄の「コメントを保存」のボタンの背景と線 |
 | `--mdmark-color-heading` | `#18181b` | `#ededef` | 見出しの文字 |
 | `--mdmark-color-muted` | `#52525b` | `#b4b4bc` | 引用・読み込み中のブロックの文字 |
 | `--mdmark-color-link` | `#0f766e` | `#2dd4bf` | リンクとフォーカスの枠 |
@@ -1005,7 +1005,7 @@ mdmark.mount(document.querySelector("#doc"), { markdown });
 | `--mdmark-color-border-muted` | `color-mix(in oklab, var(--mdmark-color-border) 70%, var(--mdmark-color-bg))` | 同じ | 見出し 1・見出し 2 の下の線。テーマの `--mdmark-color-border` と `--mdmark-color-bg` から作るため、テーマごとの値を持たない。`.mdmark` で宣言するため、上書きは `:root` ではなく `.mdmark` に記載する |
 | `--mdmark-color-surface` | `#f4f4f5` | `#1b1b1f` | コード・引用の面 |
 | `--mdmark-color-scroll-shadow` | `rgb(24 24 27 / 0.14)` | `rgb(0 0 0 / 0.6)` | コードブロックに横の続きがあることを示す影 |
-| `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 通知ブロックの地 |
+| `--mdmark-color-notice-bg` | `#f9eee8` | `#2a251d` | 通知ブロックの背景 |
 | `--mdmark-color-notice-border` | `#b45309` | `#fbbf24` | 通知ブロックの線・記載の警告の枠の破線 |
 | `--mdmark-color-notice-text` | `#18181b` | `#ededef` | 通知ブロックの文字・記載の警告の文字 |
 | `--mdmark-color-table-head` | `#f4f4f5` | `#1b1b1f` | 表の見出し行の面 |
@@ -1043,34 +1043,34 @@ mdmark.mount(document.querySelector("#doc"), { markdown });
 | `--mdmark-color-diff-add-bg` | `#e1ede2` | `#1e2b24` | 差分の追加した行の背景と、コードの行のマーカーの追加した行の背景 |
 | `--mdmark-color-diff-add-word` | `#a9ccaf` | `#2f5c3e` | 差分の追加した行で変わった単語の背景 |
 | `--mdmark-color-diff-add-sign` | `#15803d` | `#4ade80` | 追加した行の行頭の `+` と、ミニマップの追加した行のマーカーの色。コードの行のマーカーの追加した行の行頭の `+` と左端の線にも使用する |
-| `--mdmark-color-comment-bg` | `#f2effe` | `#25222d` | コメントのマーカーの地の色と、入力欄を開いている間の選んだ文字の色 |
+| `--mdmark-color-comment-bg` | `#f2effe` | `#25222d` | コメントのマーカーの背景色と、入力欄を開いている間の選んだ文字の色 |
 | `--mdmark-color-comment-line` | `#6d28d9` | `#c4a7ff` | コメントのマーカーの下線の色 |
 | `--mdmark-color-error` | `#b91c1c` | `#f87171` | コメントの入力欄の通知の文字とアイコン、誤りのある本文の欄の枠の色。コードブロックのエラーの行の左端の線と行頭の `×` の色 |
-| `--mdmark-color-accent-blue-bg` | `#cce2fe` | `#1a314e` | 色の名前 `blue` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-blue-bg` | `#cce2fe` | `#1a314e` | 色の名前 `blue` の面の薄い色。強調した列・色を付けた行・バッジの背景 |
 | `--mdmark-color-accent-blue-text` | `#1d4ed8` | `#7aa2ff` | 色の名前 `blue` の文字の色。バッジと本文の文字の色 |
-| `--mdmark-color-accent-red-bg` | `#ffd4d1` | `#472020` | 色の名前 `red` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-red-bg` | `#ffd4d1` | `#472020` | 色の名前 `red` の面の薄い色。強調した列・色を付けた行・バッジの背景 |
 | `--mdmark-color-accent-red-text` | `#b91c1c` | `#f87171` | 色の名前 `red` の文字の色。バッジと本文の文字の色 |
-| `--mdmark-color-accent-green-bg` | `#cbf2d2` | `#1a3821` | 色の名前 `green` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-green-bg` | `#cbf2d2` | `#1a3821` | 色の名前 `green` の面の薄い色。強調した列・色を付けた行・バッジの背景 |
 | `--mdmark-color-accent-green-text` | `#166534` | `#4ade80` | 色の名前 `green` の文字の色。バッジと本文の文字の色 |
-| `--mdmark-color-accent-yellow-bg` | `#fff2af` | `#40380e` | 色の名前 `yellow` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-yellow-bg` | `#fff2af` | `#40380e` | 色の名前 `yellow` の面の薄い色。強調した列・色を付けた行・バッジの背景 |
 | `--mdmark-color-accent-yellow-text` | `#854d0e` | `#facc15` | 色の名前 `yellow` の文字の色。バッジと本文の文字の色 |
-| `--mdmark-color-accent-orange-bg` | `#fedbc4` | `#4a2a12` | 色の名前 `orange` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-orange-bg` | `#fedbc4` | `#4a2a12` | 色の名前 `orange` の面の薄い色。強調した列・色を付けた行・バッジの背景 |
 | `--mdmark-color-accent-orange-text` | `#b53a0a` | `#fb923c` | 色の名前 `orange` の文字の色。バッジと本文の文字の色 |
-| `--mdmark-color-accent-purple-bg` | `#edd8fd` | `#382446` | 色の名前 `purple` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-purple-bg` | `#edd8fd` | `#382446` | 色の名前 `purple` の面の薄い色。強調した列・色を付けた行・バッジの背景 |
 | `--mdmark-color-accent-purple-text` | `#6d28d9` | `#c4a7ff` | 色の名前 `purple` の文字の色。バッジと本文の文字の色 |
-| `--mdmark-color-accent-gray-bg` | `#e4e6ea` | `#303033` | 色の名前 `gray` の面の薄い色。強調した列・色を付けた行・バッジの地 |
+| `--mdmark-color-accent-gray-bg` | `#e4e6ea` | `#303033` | 色の名前 `gray` の面の薄い色。強調した列・色を付けた行・バッジの背景 |
 | `--mdmark-color-accent-gray-text` | `#52525b` | `#b4b4bc` | 色の名前 `gray` の文字の色。バッジと本文の文字の色 |
 
 <!-- /table -->
 
-注意書きの面は種類の色を地の色に 7%、枠の線は 40% 混ぜた色で、混ぜる割合の変数は持たない。
+注意書きの面は種類の色を背景色に 7%、枠の線は 40% 混ぜた色で、混ぜる割合の変数は持たない。
 色のプリセット（`--mdmark-color-accent-*`）は、どの組も文字と面のコントラストを 4.5:1 以上にしている。
 色の名前の記載方法は [記法](./記法.mark.md#色の名前)。
 
 #### 配色を切り替える class
 
-描く先の要素かその祖先が次の class を持つとき、配色は上から順に決まる。
-どれも無ければ、`prefers-color-scheme`（OS の設定）で決まる。
+描く先の要素かその祖先が次の class を持つとき、配色は上から順に決定する。
+どれも無ければ、`prefers-color-scheme`（OS の設定）で決定する。
 
 <!-- table: {"kind": "data"} -->
 
@@ -1084,7 +1084,7 @@ mdmark.mount(document.querySelector("#doc"), { markdown });
 <!-- /table -->
 
 同じ優先の class が両方あるときは、描く先に近い祖先の class に従う。
-ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決まる。
+ダークの値は `prefers-color-scheme: dark` のときと同じ変数の値で、差分のミニマップの色も同じ規則で決定する。
 印刷では、class によらず明るい配色にする。
 利用側が層の外で上書きした変数は、どの配色でも層の中の値に勝つ。
 
@@ -1100,9 +1100,9 @@ mdmark.mount(document.querySelector("#doc"), { markdown });
 | テーマ | 内容 |
 | --- | --- |
 | `dev-swiss` | 既定。上の表の値で、属性が付いても値の組を追加しない |
-| `theme-paper` | 紙。生成りの地に墨色の文字と臙脂のリンク。ダークの配色は焦げ茶の地に生成りの文字 |
-| `theme-slate` | 青灰。青みの灰の地と面に青のリンク。ダークの配色は紺の地に青みの白の文字 |
-| `theme-contrast` | 高コントラスト。白と黒の地に濃い文字・濃い罫線・濃い青のリンク |
+| `theme-paper` | 紙。生成りの背景に墨色の文字と臙脂のリンク。ダークの配色は焦げ茶の背景に生成りの文字 |
+| `theme-slate` | 青灰。青みの灰の背景と面に青のリンク。ダークの配色は紺の背景に青みの白の文字 |
+| `theme-contrast` | 高コントラスト。白と黒の背景に濃い文字・濃い罫線・濃い青のリンク |
 
 <!-- /table -->
 

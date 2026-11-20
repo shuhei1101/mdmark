@@ -84,7 +84,7 @@ functions:
       - name: test_attach_file_trees_when_states
         case: 正常
         summary: 記録した開閉で始め、押した開閉を記録する
-        condition: '`app/` の下に `src/`（その下に `parts/`）を持つツリーに空の `states` を指定して付け、`src/` のボタンを押してから削除し、同じ HTML を描き直した要素に同じ `states` でもう一度付ける。続けて `data-open` を `1` に変えた HTML に同じ `states` で付ける'
+        condition: '`app/` の下に `src/`（その下に `parts/`）を持つツリーに空の `states` を指定して付け、`src/` のボタンを押してから削除し、同じ HTML を再描画した要素に同じ `states` でもう一度付ける。続けて `data-open` を `1` に変えた HTML に同じ `states` で付ける'
         mock: なし
         expected: 2 回目に付けた後、`src/` のボタンが `aria-expanded="false"` で入れ子の `ul` が `hidden="until-found"`。`data-open` を変えた後は `src/` がマーカーのとおり閉じ、`app/` は開いている
     callees:

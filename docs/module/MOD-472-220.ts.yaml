@@ -123,7 +123,7 @@ functions:
       - name: test_attach_tabs_when_cannot_restore
         case: 正常
         summary: 文書が縮んで戻しきれないときはスクロール位置の上限で止まる
-        condition: 画面全体の末尾に `長文`・`短文` のタブを置き、タブのボタンが画面の上端から 300px の位置までスクロールしてから `短文` を押す
+        condition: 画面全体の末尾に `長文`・`短文` のタブを配置し、タブのボタンが画面の上端から 300px の位置までスクロールしてから `短文` を押す
         mock: なし
         expected: '`scrollY` と `document.documentElement.scrollHeight - innerHeight` の差が 1px 以内で、押したボタンが画面の中にある'
       - name: test_attach_tabs_when_position_kept_with_anchoring

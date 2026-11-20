@@ -45,7 +45,7 @@ functions:
     process: |-
       1. 押した要素からノード・グループ・線の区間を決める（グループの面と余白は図の移動に任せて何もしない）
       2. 4px 動くまでは待ち、離したら `onClick` を呼ぶ
-      3. 動いたら全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは動いた分を足し、線の区間は `wireShifts` に足す。ほかとの間が `minGap` より狭くなる位置と、グループの左端・上端より外へは進めない
+      3. 動いたら全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは動いた分を追加し、線の区間は `wireShifts` に追加する。ほかとの間が `minGap` より狭くなる位置と、グループの左端・上端より外へは進めない
       4. 線の端の区間がノードの辺の端を越えたら、越えた側の辺へつなぎ替える
       5. `pointerup` か `pointercancel` で `window` の `pointermove`・`pointerup`・`pointercancel` の受け取りを削除する。`pointercancel`（指のドラッグをブラウザが文書のスクロールに切り替えたとき）では、動かしていれば `onMove` を押した時点の状態で呼んで動かした分を戻し、`onClick` は呼ばない
     unit_tests:
@@ -85,7 +85,7 @@ functions:
     container: src/map/drag.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: フォーカスしたノード・グループを指定した量だけ、線は真ん中の区間を区間と直角の向きへ動かした状態を返す。動かせないときは `undefined`
+    summary: フォーカスしたノード・グループを指定した量だけ、線は真ん中の区間を区間と直角の向きへ動かした状態を返却する。動かせないときは `undefined`
     scope: public
     args:
       - name: options
@@ -97,7 +97,7 @@ functions:
       description: 動かした後の状態
     process: |-
       1. 全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは `startDrag` と同じく、ほかとの間が `minGap` より狭くなる位置とグループの左端・上端より外へは進めない
-      2. 線は真ん中の区間のずらしに、横の区間なら `dy`、縦の区間なら `dx` を足し、端のつなぎ替えを `attachments` に入れる。区間と同じ向きの矢印では動かさない
+      2. 線は真ん中の区間のずらしに、横の区間なら `dy`、縦の区間なら `dx` を追加し、端のつなぎ替えを `attachments` に入れる。区間と同じ向きの矢印では動かさない
     unit_tests:
       - name: test_move_by_key_when_node
         case: 正常

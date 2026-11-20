@@ -55,7 +55,7 @@ functions:
         condition: '`import` と `HEAD` が失敗し、読み込みの間に `isCurrent` が偽になる'
         expected: 通知ブロックと記載の警告が無く、空の要素がそのまま残る
         mock: '`importModule` と `fetchHead` を指定する'
-        summary: 古い描画の結果を書き込まない
+        summary: 更新前の描画の結果を書き込まない
   - name: lucideIconUrl
     title: アイコンの URL を作る
     container: src/inline-icons.ts

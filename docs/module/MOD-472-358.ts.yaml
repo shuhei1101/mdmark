@@ -42,7 +42,7 @@ functions:
       description: '`next(e)` の結果か、説明を追加した結果'
     process: |-
       1. `next(e)` を待つ
-      2. 設定を読み込む（設定を読み込む）。`SettingsError` なら `$.ui.log(理由, { to: "debug" })` を書いて `next(e)` の結果を返却する
+      2. 設定を読み込む（設定を読み込む）。`SettingsError` なら `$.ui.log(理由, { to: "debug" })` を記載して `next(e)` の結果を返却する
       3. `inject_marker_guide` が偽なら `next(e)` の結果を返却する
       4. `additionalContext` の後ろに `MARKER_GUIDE` を 1 つ追加して返却する
     unit_tests:
@@ -60,11 +60,11 @@ functions:
         expected: '`next` の結果のまま'
       - name: test_inject_marker_guide_when_settings_broken
         case: 異常
-        summary: 設定ファイルを読めない
+        summary: 設定ファイルを読み取れない
         condition: '設定ファイルの本文が `global: [`'
         mock: '`$.fs`・`$.env`・`$.session`・`$.ui.log`・`next`'
         expected: '`next` の結果のまま返却し、`$.ui.log` を `to: "debug"` で 1 回呼ぶ'
-        exception: 設定ファイルがあるが YAML として読めない
+        exception: 設定ファイルがあるが YAML として読み取れない
       - name: test_marker_guide_length
         case: 正常
         summary: 説明の文の長さと書き出し

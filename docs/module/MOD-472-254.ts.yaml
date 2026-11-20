@@ -124,7 +124,7 @@ functions:
       必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキー（v0.9.0 までの最上位の `tags` を含む）を合わない場所にする。
       重なった要素は先の 1 つを残す。
       `schema` が `CURRENT_SCHEMA`（`2`）でない整数のときは、`message` に `mdmark upgrade` で移す修正方法を記載し、文書・用語はそのまま検査して使用する。
-      `docs[].related` の要素は `doc_related` で検査し、合わない要素を持つ文書を除く（`where` は `docs[0].related[1].when` の構造。`type` が `MdmarkRelationType` の値でないときは、`message` に許す 5 つの値を並べる）
+      `docs[].related` の要素は `doc_related` で検査し、合わない要素を持つ文書を除く（`where` は `docs[0].related[1].when` の構造。`type` が `MdmarkRelationType` の値でないときは、`message` に許可する 5 つの値を並べる）
     args:
       - name: value
         type: unknown

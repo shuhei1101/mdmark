@@ -9,7 +9,7 @@ functions:
     container: src/viewer/index.ts
     usecase: 共通
     summary: '`#mdmark-payload` の JSON を読み込み、埋めたモジュールを `prepareModules` に指定して用意してから、`kind` が `document` なら描く先の要素に `mount` で描き、`bundle` なら `startBundle` を呼ぶ'
-    description: '`src/viewer/index.ts` は `startViewer` を export するだけで自分では呼ばない。CLI がまとめる入口のモジュールが `startViewer(document, 埋めたモジュール)` を呼ぶ。`document` のときは `opts.docId` に文書の `docId`、`opts.references` に参照の表、`opts.aliases` に `payload.aliases` を指定する'
+    description: '`src/viewer/index.ts` は `startViewer` を export するだけで自分では呼ばない。CLI がまとめるエントリーポイントのモジュールが `startViewer(document, 埋めたモジュール)` を呼ぶ。`document` のときは `opts.docId` に文書の `docId`、`opts.references` に参照の表、`opts.aliases` に `payload.aliases` を指定する'
     kind: 関数
     scope: public
     is_async: true

@@ -8,7 +8,7 @@ data_models:
     title: パネルの始め方
     container: vscode/src/webview/features/preview/panel/boot.ts
     usecase: VSCodeでプレビューを開く
-    summary: 拡張機能が HTML の描く先を包む要素（`#mdmark-preview`）の `data-*` に配置し、入口が読み込む値
+    summary: 拡張機能が HTML の描く先を包む要素（`#mdmark-preview`）の `data-*` に配置し、エントリーポイントが読み込む値
     properties:
       - name: root
         type: HTMLElement

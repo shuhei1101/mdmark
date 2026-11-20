@@ -8,7 +8,7 @@ version:
   checked_on: '2026-10-24'
   source: 既定の対応表の jsDelivr の URL（`https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/`）
   pinning: 完全一致。11.12.0 で xml の ReDoS が修正されているため 11.12.0 未満にしない。上げるときは色分けの結合テストとスクリーンショットで崩れを確認する
-  support_until: 11.x がサポートの対象（SECURITY.md）。終わりの日は公開されていない
+  support_until: 11.x がサポートの対象（SECURITY.md）。終了日は公開されていない
 catalogs:
   - name: API
     version: 11.12.0

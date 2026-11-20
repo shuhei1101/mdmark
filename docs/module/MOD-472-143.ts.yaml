@@ -66,7 +66,7 @@ functions:
       4. 待った後に `isCurrent()` が `false` なら何もせずに終える
       5. 対象を文書の順に描く（mermaid の図を描く）。描けた対象は、読み込み中のブロックと要素を図の枠に置き換える。解釈できない対象は、読み込み中のブロックを `renderSyntaxWarning` の記載の警告（本文は画面設計『文書』の mermaid の行。`{mermaid のエラーの 1 行目}` は例外の `message` の 1 行目）に替え、要素の `hidden` を削除する
       6. 置き換えた図の枠に図の操作を付ける（図の拡大・縮小・移動・全画面を付ける。`root` と、置き換えた `figure` の並びを `figures` に指定する）。削除する関数を記録する
-      7. 描き終えたときのテーマの変数を記録し、明暗の監視を付ける。`scope` の祖先の要素の `class` の変更（`scope` 自身は見ない）と `prefers-color-scheme` の `change` で、テーマの変数を再作成し（テーマの変数を作る）、記録した値と違えば、記録したソースから手順 5・6 をもう一度実行する（前の図の操作を削除し、図の枠を新しい図の枠に置き換える）
+      7. 描き終えたときのテーマの変数を記録し、明暗の監視を付ける。`scope` の祖先の要素の `class` の変更（`scope` 自身は見ない）と `prefers-color-scheme` の `change` で、テーマの変数を再作成し（テーマの変数を作る）、記録した値と違えば、記録したソースから手順 5・6 をもう一度実行する（前の図の操作を削除し、図の枠を変更後の図の枠に置き換える）
       8. `detach` は監視と図の操作を削除する。`mount` は再描画する前・`destroy`・同じ要素への 2 回目の `mount` で呼ぶ
     callees:
       - '#functions[drawMermaidDiagram]'
@@ -151,7 +151,7 @@ functions:
         case: 正常
         summary: 指定したコードブロックだけを図にする
         condition: '`[data-mdmark-mermaid]` のコードブロック 2 つを持つ要素で、`blocks` に 2 つ目だけを指定する'
-        mock: mermaid のモジュール（`render` が固定の SVG を返す）
+        mock: mermaid のモジュール（`render` が固定の SVG を返却する）
         expected: 図の枠が 1 つで 2 つ目の場所にあり、1 つ目は `hidden` を持たないコードブロックのまま
       - name: test_attach_mermaid_when_loader_set
         case: 正常
@@ -178,14 +178,14 @@ functions:
       - name: options
         type: '{ mermaid: MermaidModule; source: string; root: HTMLElement; scope: HTMLElement; config: ResolvedConfig["mermaid"]; id: string; frameId: string; resizable?: boolean }'
         required: true
-        description: '読み込んだ mermaid・ソース・描いた要素・描く先の要素・設定の `mermaid`・`render` に指定する id（`mdmark-mermaid-{mountId}-{通し番号}`。描くたびに新しい値にする。mermaid の `render` は同じ id の要素を文書から削除するため）・図の枠の `id` の頭・リサイズハンドルを配置するか（既定 `true`。`attachMermaid` は機能 `diagram-resize` を指定する）'
+        description: '読み込んだ mermaid・ソース・描いた要素・描く先の要素・設定の `mermaid`・`render` に指定する id（`mdmark-mermaid-{mountId}-{通し番号}`。描くたびに新規の値にする。mermaid の `render` は同じ id の要素を文書から削除するため）・図の枠の `id` の頭・リサイズハンドルを配置するか（既定 `true`。`attachMermaid` は機能 `diagram-resize` を指定する）'
     returns:
       type: 'Promise<{ html: string } | { error: string }>'
       description: '`html` は図の枠の HTML、`error` は mermaid の例外の `message` の 1 行目'
     process: |-
       1. ソースのタイトルを取り出す（タイトルを取り出す）。タイトルが無ければ図の種類の名前を参照する（図の種類の名前を参照する）
       2. 今の配色のテーマの変数を作る（テーマの変数を作る。`scope` を指定する）
-      3. 描く先が暗い配色か（`--mdmark-color-bg` の明るさが 0.5 未満か）を確認する。暗い配色なら、同じタスクの中で `scope` の `mdmark-theme-dark` を削除して `mdmark-theme-light` を付け、明るい配色のテーマの変数を作り、`scope` の class を元に戻す（`:root` に該当する配色の値は描く先の明暗の class で決まり、描画を挟まないため画面は変わらない）
+      3. 描く先が暗い配色か（`--mdmark-color-bg` の明るさが 0.5 未満か）を確認する。暗い配色なら、同じタスクの中で `scope` の `mdmark-theme-dark` を削除して `mdmark-theme-light` を付け、明るい配色のテーマの変数を作り、`scope` の class を元に戻す（`:root` に該当する配色の値は描く先の明暗の class で決定し、描画を挟まないため画面は変わらない）
       4. `renderQueue` につないで、`initialize({ startOnLoad: false, securityLevel: "strict", theme, themeVariables, gantt: { useWidth: max(root.clientWidth, MERMAID_GANTT_MIN_WIDTH) } })` と `render(id, body)` を順に呼ぶ。`theme` は設定の `theme` が `mdmark` なら `base`、それ以外はその名前。暗い配色なら明るい配色のテーマの変数でも `initialize` と `render(id + "-print", body)` を呼ぶ
          - `render` が例外を投げた場合、`document.getElementById("d" + id)` を削除し、`{ error }` を返却する
       5. SVG を要素にして、actor のアイコンを替え（actor のアイコンを替える）、ノードのリンクを整え（ノードのリンクを整える）、`width`・`height` の属性を `viewBox` の幅と高さにし、`style` を削除する。画面用と印刷用の SVG の両方に適用する
@@ -235,7 +235,7 @@ functions:
         expected: '`initialize` の `gantt.useWidth` が `720`、図の枠の `figure` が `data-fit-min="0.75"`'
       - name: test_draw_mermaid_diagram_when_end_in_name
         case: 正常
-        summary: 名前に _end を含むノードと状態に終了のマーカーの規則を当てず、状態遷移図の終了のマーカーだけを本文の色にする
+        summary: 名前に _end を含むノードと状態に終了のマーカーの規則を適用せず、状態遷移図の終了のマーカーだけを本文の色にする
         condition: '`flowchart LR` の円柱のノード `job_end[(記録)]` と、状態 `受付_end` を持つ `stateDiagram-v2` を `src/index.css` を適用した描く先に描く'
         mock: mermaid のモジュール
         expected: 'ページの CSS のセレクタに `_end` を含む規則（入れ子の親のセレクタを重ねた構造）が、`job_end` のノードと `受付_end` の状態の構造に該当せず、それらの塗りが本文の色でない。状態遷移図の終了のマーカーの内側の塗りが `--mdmark-color-text` の計算済みの色'
@@ -334,7 +334,7 @@ functions:
     kind: 関数
     scope: internal
     usecase: mermaidの図を描く
-    summary: 'SVG の `a` ごとに、`xlink:href` の値が許す URL（許す URL かを確認する）なら同じ文字の `href` と class `mdmark-diagram-node-link` を付けて `target` を削除し、`xlink:href` を持たないか許さない URL なら、子を `a` の位置へ移して `a` を削除する'
+    summary: 'SVG の `a` ごとに、`xlink:href` の値が許可する URL（許可する URL かを確認する）なら同じ文字の `href` と class `mdmark-diagram-node-link` を付けて `target` を削除し、`xlink:href` を持たないか許可しない URL なら、子を `a` の位置へ移して `a` を削除する'
     description: '`securityLevel: "strict"` の mermaid は、`click`・`link` の URL の行のノードを `xlink:href` だけを持つ `a` で囲み、`javascript:` などは `xlink:href` を除外した `a` にする（作業 PR #618 の計画書の実測）。図のドラッグとリンクのクリックの押し分けは、`zoom.ts` が class `mdmark-diagram-node-link` の要素の上で始めたドラッグを扱う既存の処理に任せる'
     side_effects: '`svg` を書き換える'
     args:
@@ -352,13 +352,13 @@ functions:
     unit_tests:
       - name: test_finish_mermaid_node_links
         case: 正常
-        summary: 許す URL の a に href と class を付け、target を削除する
+        summary: 許可する URL の a に href と class を付け、target を削除する
         condition: '`xlink:href="./a.md"`・`xlink:href="../b.md#c"`・`xlink:href="https://example.com/"` と `target="_blank"` の `a` で `g.node` を囲んだ SVG'
         mock: なし
         expected: 3 つの `a` が `xlink:href` と同じ文字の `href` と class `mdmark-diagram-node-link` を持ち、`target` を持たない
       - name: test_finish_mermaid_node_links_when_not_allowed
         case: 異常
-        summary: xlink:href を持たない a と許さない URL の a を削除し、ノードを残す
+        summary: xlink:href を持たない a と許可しない URL の a を削除し、ノードを残す
         condition: '`xlink:href` を持たない `a` と、`xlink:href="data:text/html,x"` の `a` で、それぞれ `g.node` を囲んだ SVG'
         mock: なし
         expected: SVG に `a` が無く、2 つの `g.node` が元の `a` の位置（同じ親・同じ順）にある

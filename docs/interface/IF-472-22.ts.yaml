@@ -757,7 +757,7 @@ callers:
   - SC-472-10#
   - SC-472-32#
   - SC-472-31#
-exclusivity: 1 つの Markdown に 1 つのパネルと、変更前と変更後の URI の組ごとに 1 つの差分のパネル。同じ Markdown のパネルが開いていれば、新しく作らずにそのパネルを今の列のまま表に出す
+exclusivity: 1 つの Markdown に 1 つのパネルと、変更前と変更後の URI の組ごとに 1 つの差分のパネル。同じ Markdown のパネルが開いていれば、新規作成せずにそのパネルを今の列のまま表に出す
 request:
   - name: uri
     type: vscode.Uri
@@ -769,7 +769,7 @@ request:
 response:
   - name: '-'
     type: Promise<void>
-    description: パネルを開き、Webview に描かせる HTML を入れたら解決する（描き終わりを待たない）
+    description: パネルを開き、Webview に描かせる HTML を入れたら解決する（描画の完了を待たない）
 exceptions:
   - name: なし（正常終了）
     condition: パネルを開き、決めたバージョンの mdmark で文書を描く
@@ -820,7 +820,7 @@ constraints:
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確認する。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ通知し、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読み込まない HTML で理由を出す
   - item: 配色
-    constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、設定ファイルの `colorScheme` を `config` で指定し、無ければ VS Code が `body` に付ける class に任せる。`light`・`dark` のときは `config` から `colorScheme` を除く。明暗は、文書の page のマーカー → `mdmark.preview.theme`（`auto` 以外）→ 設定ファイルの `colorScheme` → VS Code のテーマの順に決まる（確認ログ）。設定を変えると開いているパネルへ `render` をもう一度送信する'
+    constraint: '`mdmark.preview.theme` が `light`・`dark` のときは、Webview の描く先の要素を包む要素に `mdmark-theme-light`・`mdmark-theme-dark` を付ける。`auto` のときは付けず、設定ファイルの `colorScheme` を `config` で指定し、無ければ VS Code が `body` に付ける class に任せる。`light`・`dark` のときは `config` から `colorScheme` を除く。明暗は、文書の page のマーカー → `mdmark.preview.theme`（`auto` 以外）→ 設定ファイルの `colorScheme` → VS Code のテーマの順に決定する（確認ログ）。設定を変えると開いているパネルへ `render` をもう一度送信する'
     notes: docs/interface/IF-472-35.ts の制約「配色の切り替え」
   - item: テストのときの差し替え
     constraint: '`ExtensionContext.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`（配布物の配信元）と `MDMARK_VSCODE_TAGS_URL`（タグ一覧の取得先）を読み込む。
