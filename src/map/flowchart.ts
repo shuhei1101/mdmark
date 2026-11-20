@@ -224,7 +224,7 @@ const readAttributes = (body: string): Record<string, string> => {
 };
 
 /** Markdown の文字（`"`…`"` の中身）から、強調の記号と囲みのバッククォートを除いた文字 */
-const plainMarkdownLabel = (label: string): string => {
+export const plainMarkdownLabel = (label: string): string => {
   const inner = /^`([\s\S]*)`$/.exec(label);
   if (!inner) return label;
   return (inner[1] ?? "")
@@ -232,6 +232,29 @@ const plainMarkdownLabel = (label: string): string => {
     .replace(/__(.+?)__/g, "$1")
     .replace(/\*(.+?)\*/g, "$1")
     .replace(/(^|\s)_(.+?)_(?=\s|$)/g, "$1$2");
+};
+
+/** 次の行へ続く Markdown の文字（`"` の後に開き、閉じの `` `" `` が同じ行に無い）を、閉じの行までつないだ 1 行にする。つないだ後の行は空にし、行の番号を保つ */
+export const joinMarkdownStrings = (lines: string[]): string[] => {
+  const out = [...lines];
+  for (let index = 0; index < out.length; index++) {
+    let text = out[index] ?? "";
+    let next = index + 1;
+    while (isMarkdownStringOpen(text) && next < out.length) {
+      text = `${text}\n${out[next] ?? ""}`;
+      out[next] = "";
+      next += 1;
+    }
+    out[index] = text;
+    index = next - 1;
+  }
+  return out;
+};
+
+/** 行の最後の Markdown の文字の開き（`"` とバッククォート）が閉じていないか */
+const isMarkdownStringOpen = (text: string): boolean => {
+  const open = text.lastIndexOf('"`');
+  return open >= 0 && text.indexOf('`"', open + 2) < 0;
 };
 
 const ID_RE = /^[A-Za-z0-9_\u0080-￿]+/;
@@ -471,7 +494,7 @@ const readArrow = (cursor: Cursor): Arrow | undefined => {
     label:
       label === undefined
         ? undefined
-        : decodeEntities(label.replace(/^"|"$/g, "")),
+        : decodeEntities(plainMarkdownLabel(label.replace(/^"|"$/g, ""))),
   };
 };
 
@@ -517,7 +540,7 @@ const unreadable = (line: number, raw: string): MapProblem => {
 
 /** `flowchart` の Mermaid を、ノード・グループ・線と、読めない行の項目に読む */
 export const parseFlowchart = (source: string): Flowchart => {
-  const lines = source.split("\n");
+  const lines = joinMarkdownStrings(source.split("\n"));
   const header = /^\s*(flowchart|graph)\s+(\w+)/.exec(lines[0] ?? "");
   const direction = toDirection(header?.[2] ?? "TB") ?? "TB";
   const nodes = new Map<string, FlowNode>();

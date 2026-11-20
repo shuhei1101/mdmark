@@ -153,28 +153,12 @@ type ParseState = {
 /** 1 日のミリ秒 */
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** 日付（`YYYY-MM-DD`）の正規表現 */
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-/** 期間（`{数}d`）の正規表現 */
-const DURATION_RE = /^(\d+)d$/;
-
-/** ガントチャートのタスクのタグ */
-const GANTT_TAGS = new Set(["done", "active", "crit", "milestone"]);
-
 /** 読めない行の項目 */
 const unreadable = (line: number, text: string, fix: string): MapProblem => ({
   kind: "map_invalid",
   line,
   message: `${line + 1} 行目 \`${text}\` を読めないため、この行を読み飛ばしました。${fix}`,
 });
-
-/** 日付の文字を UTC の日付にする（読めなければ undefined） */
-const toDate = (text: string): Date | undefined => {
-  if (!DATE_RE.test(text)) return undefined;
-  const date = new Date(`${text}T00:00:00Z`);
-  return Number.isNaN(date.getTime()) ? undefined : date;
-};
 
 /** UTC の日付を `YYYY-MM-DD` にする */
 export const dateText = (date: Date): string => date.toISOString().slice(0, 10);
@@ -249,129 +233,268 @@ const addItem = (
 
 /* ---------- ガントチャート ---------- */
 
+/** ガントチャートのタスクのタグ */
+const GANTT_TAG_NAMES = new Set([
+  "done",
+  "active",
+  "crit",
+  "milestone",
+  "vert",
+]);
+
+/** 期間（`{数}{単位}`）の正規表現 */
+const GANTT_DURATION_RE = /^(\d+(?:\.\d+)?)\s*(ms|s|m|h|d|w|M|y)$/;
+
+/** 期間の単位のミリ秒（`M` は 30 日、`y` は 365 日） */
+const DURATION_MS: Record<string, number> = {
+  ms: 1,
+  s: 1000,
+  m: 60 * 1000,
+  h: 60 * 60 * 1000,
+  d: DAY_MS,
+  w: 7 * DAY_MS,
+  M: 30 * DAY_MS,
+  y: 365 * DAY_MS,
+};
+
+/** `dateFormat` の記号（dayjs の書式）から、読み取る正規表現の部品と値の入れ先 */
+const DATE_TOKENS: ReadonlyArray<readonly [string, string, string]> = [
+  ["YYYY", "(\\d{4})", "year"],
+  ["YY", "(\\d{2})", "year2"],
+  ["MM", "(\\d{2})", "month"],
+  ["M", "(\\d{1,2})", "month"],
+  ["DD", "(\\d{2})", "day"],
+  ["D", "(\\d{1,2})", "day"],
+  ["HH", "(\\d{2})", "hour"],
+  ["H", "(\\d{1,2})", "hour"],
+  ["hh", "(\\d{2})", "hour"],
+  ["h", "(\\d{1,2})", "hour"],
+  ["mm", "(\\d{2})", "minute"],
+  ["m", "(\\d{1,2})", "minute"],
+  ["ss", "(\\d{2})", "second"],
+  ["s", "(\\d{1,2})", "second"],
+  ["SSS", "(\\d{3})", "ms"],
+  ["X", "(-?\\d+(?:\\.\\d+)?)", "unix"],
+  ["x", "(-?\\d+)", "unixMs"],
+];
+
+/** `dateFormat` の書式で日時を読み取る（読み取れなければ undefined） */
+const parseGanttDate = (text: string, format: string): Date | undefined => {
+  const fields: string[] = [];
+  let pattern = "";
+  for (let at = 0; at < format.length; ) {
+    const token = DATE_TOKENS.find(([name]) => format.startsWith(name, at));
+    if (token) {
+      pattern += token[1];
+      fields.push(token[2]);
+      at += token[0].length;
+    } else {
+      pattern += (format[at] ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      at += 1;
+    }
+  }
+  const match = new RegExp(`^${pattern}$`).exec(text.trim());
+  if (!match) return undefined;
+  const value: Record<string, number> = {};
+  fields.forEach((field, index) => {
+    value[field] = Number(match[index + 1]);
+  });
+  if (value.unix !== undefined) return new Date(value.unix * 1000);
+  if (value.unixMs !== undefined) return new Date(value.unixMs);
+  const year =
+    value.year ?? (value.year2 === undefined ? 1970 : 2000 + value.year2);
+  const date = new Date(
+    Date.UTC(
+      year,
+      (value.month ?? 1) - 1,
+      value.day ?? 1,
+      value.hour ?? 0,
+      value.minute ?? 0,
+      value.second ?? 0,
+      value.ms ?? 0,
+    ),
+  );
+  date.setUTCFullYear(year);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+/** 期間の文字のミリ秒（期間でなければ undefined） */
+const durationMs = (text: string): number | undefined => {
+  const match = GANTT_DURATION_RE.exec(text.trim());
+  return match
+    ? Number(match[1]) * (DURATION_MS[match[2] ?? "d"] ?? DAY_MS)
+    : undefined;
+};
+
 /** ガントチャートのタスクの行の読み取り結果 */
 type GanttTask = {
   label: string;
   id: string | undefined;
   tags: string[];
-  start: string;
+  /** 開始（省くと直前のタスクの終了） */
+  start: string | undefined;
   end: string;
+  /** 行番号と行の文字 */
+  line: { text: string; index: number };
+  sectionOrder: number | undefined;
 };
 
 /** タスクの行を、名前・タグ・ID・開始・終了に分ける（読めなければ undefined） */
-const readGanttTask = (text: string): GanttTask | undefined => {
-  const match = /^(.+?)\s*:(.+)$/.exec(text);
+const readGanttTask = (
+  text: string,
+): Omit<GanttTask, "line" | "sectionOrder"> | undefined => {
+  const match = /^(.+?)\s*:(.*)$/.exec(text);
   if (!match) return undefined;
   const parts = (match[2] ?? "").split(",").map((part) => part.trim());
-  const tags = parts.filter((part) => GANTT_TAGS.has(part));
-  const rest = parts.filter((part) => !GANTT_TAGS.has(part));
-  if (rest.length < 2 || rest.length > 3) return undefined;
+  const tags: string[] = [];
+  while (parts.length > 1 && GANTT_TAG_NAMES.has(parts[0] ?? "")) {
+    tags.push(parts.shift() ?? "");
+  }
+  if (parts.length === 1 && GANTT_TAG_NAMES.has(parts[0] ?? ""))
+    return undefined;
+  if (parts.length < 1 || parts.length > 3 || parts.some((part) => part === ""))
+    return undefined;
   return {
     label: (match[1] ?? "").trim(),
-    id: rest.length === 3 ? rest[0] : undefined,
+    id: parts.length === 3 ? parts[0] : undefined,
     tags,
-    start: rest.at(-2) ?? "",
-    end: rest.at(-1) ?? "",
+    start: parts.length >= 2 ? parts.at(-2) : undefined,
+    end: parts.at(-1) ?? "",
   };
-};
-
-/** タスクの開始日（`after {ID}` はそのタスクの終了日。読めなければ undefined） */
-const ganttStart = (
-  start: string,
-  ends: ReadonlyMap<string, Date>,
-): Date | undefined =>
-  start.startsWith("after ")
-    ? ends.get(start.slice("after ".length).trim())
-    : toDate(start);
-
-/** タスクの終了日（この日を含まない。読めなければ undefined） */
-const ganttEnd = (
-  from: Date,
-  end: string,
-  excludesWeekends: boolean,
-): Date | undefined => {
-  const duration = DURATION_RE.exec(end);
-  if (duration) return addDays(from, Number(duration[1]), excludesWeekends);
-  const date = toDate(end);
-  return date === undefined ? undefined : new Date(date.getTime() + DAY_MS);
 };
 
 /** ガントチャートの読み取りの途中の値 */
 type GanttContext = {
   state: ParseState;
   section: number | undefined;
-  /** タスクの ID から終了日と `order` */
-  ends: Map<string, Date>;
-  orders: Map<string, number>;
+  tasks: GanttTask[];
 };
 
-/** タスクの開始日と終了日（読めなければ undefined） */
-const ganttSpan = (
-  context: GanttContext,
-  task: GanttTask,
-): { from: Date; to: Date } | undefined => {
-  const from = ganttStart(task.start, context.ends);
-  if (from === undefined) return undefined;
-  const to = ganttEnd(
-    from,
-    task.end,
-    context.state.grid.options.excludesWeekends,
+/** タスクの開始と終了を、前のタスクと `after`・`until` の ID から決める（決まらないタスクは undefined） */
+const ganttSpans = (
+  tasks: GanttTask[],
+  options: { format: string; excludesWeekends: boolean },
+): Array<{ from: Date; to: Date } | undefined> => {
+  const spans: Array<{ from: Date; to: Date } | undefined> = tasks.map(
+    () => undefined,
   );
-  return to === undefined ? undefined : { from, to };
-};
-
-/** `after {ID}` のつながりを入れる */
-const addAfterLink = (
-  context: GanttContext,
-  link: { start: string; order: number },
-): void => {
-  if (!link.start.startsWith("after ")) return;
-  const target = context.orders.get(link.start.slice("after ".length).trim());
-  if (target !== undefined)
-    context.state.links.push({
-      from: target,
-      to: link.order,
-      kind: "after",
-      label: undefined,
-    });
-};
-
-/** タスクの行を項目にする（読めなければ項目を足す） */
-const readGanttTaskLine = (
-  context: GanttContext,
-  line: { text: string; index: number },
-): void => {
-  const { state } = context;
-  const task = readGanttTask(line.text);
-  const span = task === undefined ? undefined : ganttSpan(context, task);
-  if (task === undefined || span === undefined) {
-    state.grid.problems.push(
-      unreadable(
-        line.index,
-        line.text,
-        "タスクは `{名前} :{タグ,}{ID,}{開始},{終了か期間}` で記載し、開始は `YYYY-MM-DD` か `after {ID}`、終了は `YYYY-MM-DD` か `{数}d` にしてください。",
-      ),
-    );
-    return;
-  }
-  const item = addItem(state, {
-    id: task.id,
-    label: task.label,
-    shape: task.tags.includes("milestone") ? "milestone" : "bar",
-    sectionOrder: context.section,
-    parent: undefined,
-    detail: {
-      kind: "gantt",
-      start: dateText(span.from),
-      end: dateText(span.to),
-      tags: task.tags,
-    },
+  const byId = new Map<string, number>();
+  tasks.forEach((task, index) => {
+    if (task.id !== undefined) byId.set(task.id, index);
   });
-  if (task.id !== undefined) {
-    context.ends.set(task.id, span.to);
-    context.orders.set(task.id, item.order);
+  const refs = (
+    text: string,
+    word: string,
+  ): Array<{ from: Date; to: Date } | undefined> =>
+    text
+      .slice(word.length)
+      .trim()
+      .split(/\s+/)
+      .map((id) => spans[byId.get(id) ?? -1]);
+  const startOf = (task: GanttTask, index: number): Date | undefined => {
+    if (task.start === undefined) return spans[index - 1]?.to;
+    if (task.start.startsWith("after ")) {
+      const found = refs(task.start, "after ");
+      if (found.some((span) => span === undefined)) return undefined;
+      return new Date(
+        Math.max(...found.map((span) => span?.to.getTime() ?? 0)),
+      );
+    }
+    return parseGanttDate(task.start, options.format);
+  };
+  const endOf = (task: GanttTask, from: Date): Date | undefined => {
+    if (task.end.startsWith("until ")) {
+      const found = refs(task.end, "until ");
+      if (found.some((span) => span === undefined)) return undefined;
+      return new Date(
+        Math.min(...found.map((span) => span?.from.getTime() ?? 0)),
+      );
+    }
+    const ms = durationMs(task.end);
+    if (ms !== undefined)
+      return ms % DAY_MS === 0 && ms > 0
+        ? addDays(from, ms / DAY_MS, options.excludesWeekends)
+        : new Date(from.getTime() + ms);
+    const date = parseGanttDate(task.end, options.format);
+    // 日付だけの書式の終了日はその日を含める
+    return date === undefined
+      ? undefined
+      : /[Hhms]/.test(options.format)
+        ? date
+        : new Date(date.getTime() + DAY_MS);
+  };
+  // 後ろのタスクを指す `after`・`until` のため、決まるまで繰り返す
+  for (let pass = 0; pass <= tasks.length; pass++) {
+    let changed = false;
+    tasks.forEach((task, index) => {
+      if (spans[index] !== undefined) return;
+      const from = startOf(task, index);
+      const to = from === undefined ? undefined : endOf(task, from);
+      if (from !== undefined && to !== undefined) {
+        spans[index] = { from, to };
+        changed = true;
+      }
+    });
+    if (!changed) break;
   }
-  addAfterLink(context, { start: task.start, order: item.order });
+  return spans;
+};
+
+/** 開始と終了の日付の文字（同じ日に収まるタスクは翌日までの 1 日にする） */
+const ganttDays = (span: {
+  from: Date;
+  to: Date;
+}): { start: string; end: string } => {
+  const start = dateText(span.from);
+  const end = dateText(span.to);
+  return {
+    start,
+    end: end <= start ? dateText(new Date(span.from.getTime() + DAY_MS)) : end,
+  };
+};
+
+/** 集めたタスクを項目にする（開始と終了が決まらないタスクは読めない行の項目にする） */
+const addGanttTasks = (context: GanttContext): void => {
+  const { state, tasks } = context;
+  const spans = ganttSpans(tasks, {
+    format: state.grid.options.dateFormat ?? "YYYY-MM-DD",
+    excludesWeekends: state.grid.options.excludesWeekends,
+  });
+  const orders = new Map<string, number>();
+  tasks.forEach((task, index) => {
+    const span = spans[index];
+    if (span === undefined) {
+      state.grid.problems.push(
+        unreadable(
+          task.line.index,
+          task.line.text,
+          "タスクは `{名前} :{タグ,}{ID,}{開始,}{終了か期間}` で記載し、開始は `dateFormat` の日時か `after {ID}`、終了は日時か期間（`3d`・`20h` など）か `until {ID}` にしてください。",
+        ),
+      );
+      return;
+    }
+    const item = addItem(state, {
+      id: task.id,
+      label: task.label,
+      shape: task.tags.includes("milestone") ? "milestone" : "bar",
+      sectionOrder: task.sectionOrder,
+      parent: undefined,
+      detail: { kind: "gantt", ...ganttDays(span), tags: task.tags },
+    });
+    if (task.id !== undefined) orders.set(task.id, item.order);
+    if (task.start?.startsWith("after ")) {
+      for (const id of task.start.slice(6).trim().split(/\s+/)) {
+        const target = orders.get(id);
+        if (target !== undefined)
+          state.links.push({
+            from: target,
+            to: item.order,
+            kind: "after",
+            label: undefined,
+          });
+      }
+    }
+  });
 };
 
 /** ガントチャートの 1 行 */
@@ -379,7 +502,7 @@ const readGanttLine = (
   context: GanttContext,
   line: { text: string; index: number },
 ): void => {
-  const { text } = line;
+  const text = line.text.replace(/\s+%%.*$/, "").replace(/\s+/g, " ");
   const options = context.state.grid.options;
   if (text.startsWith("dateFormat "))
     options.dateFormat = text.slice(11).trim();
@@ -387,13 +510,33 @@ const readGanttLine = (
     options.axisFormat = text.slice(11).trim();
   else if (text === "excludes weekends") options.excludesWeekends = true;
   else if (text === "todayMarker off") options.todayMarker = false;
-  else if (/^(excludes|includes|todayMarker|tickInterval|weekday)\b/.test(text))
+  else if (
+    /^(excludes|includes|todayMarker|tickInterval|weekday|weekend|topAxis|inclusiveEndDates|displayMode|click)\b/.test(
+      text,
+    )
+  )
     return;
   else if (text.startsWith("section "))
     context.section = addSection(context.state, {
       label: text.slice(8).trim(),
     });
-  else readGanttTaskLine(context, line);
+  else {
+    const task = readGanttTask(text);
+    if (task === undefined)
+      context.state.grid.problems.push(
+        unreadable(
+          line.index,
+          line.text,
+          "タスクは `{名前} :{タグ,}{ID,}{開始,}{終了か期間}` で記載してください。",
+        ),
+      );
+    else
+      context.tasks.push({
+        ...task,
+        line: { text: line.text, index: line.index },
+        sectionOrder: context.section,
+      });
+  }
 };
 
 /* ---------- タイムライン ---------- */
@@ -793,13 +936,14 @@ const readKind = (
 ): string => {
   switch (kind) {
     case "gantt": {
-      const context = {
+      const context: GanttContext = { state, section: undefined, tasks: [] };
+      const firstWord = eachLine(
+        source,
+        (line) => readGanttLine(context, line),
         state,
-        section: undefined,
-        ends: new Map(),
-        orders: new Map(),
-      };
-      return eachLine(source, (line) => readGanttLine(context, line), state);
+      );
+      addGanttTasks(context);
+      return firstWord;
     }
     case "timeline": {
       const context = { state, section: undefined, period: undefined };
