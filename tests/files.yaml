@@ -2712,6 +2712,12 @@ files:
     related:
       - to: src/map/mindmap-view.ts
         type: tests
+  - path: unit/src/map/mermaid-style.test.ts
+    description: モジュール構成『mermaid-style.ts』の Mermaid の色の指定の読み取りと文字の色の決め方を確認する単体テスト。map の図に適用する色の読み取りを変えたときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:map, tool:mermaid]
+    related:
+      - to: MOD-747-1
+        type: see_also
   - path: unit/src/map/mindmap.test.ts
     description: 'src/map/mindmap.ts を確認する単体テスト。mindmap.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
     tags: [topic:単体テスト, tool:vitest]

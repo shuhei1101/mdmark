@@ -76,7 +76,7 @@ function shiftClick(button: HTMLElement): void {
 /** ツリーのコピーのボタンを返却する */
 function copyButtonOf(tree: HTMLElement): HTMLButtonElement {
   const button = tree.querySelector<HTMLButtonElement>(
-    "button.mdmark-tree-copy",
+    ".mdmark-tree > .mdmark-code-bar button.mdmark-code-copy",
   );
   if (!button) {
     throw new Error("コピーのボタンが無い");
@@ -112,7 +112,7 @@ test("test_attach_file_trees", async () => {
   detachers.push(attachFileTrees(root));
   // 検証
   const tree = treeOf(root);
-  expect(tree.querySelector(".mdmark-tree-bar")).not.toBeNull();
+  expect(tree.querySelector(":scope > .mdmark-code-bar")?.textContent).toContain("tree");
   expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "true"]);
   expect(nestedListOf(toggleOf(tree, "src/")).hasAttribute("hidden")).toBe(
     false,
@@ -215,7 +215,7 @@ test("test_attach_file_trees_when_copied", async () => {
   expect(writeText).toHaveBeenCalledWith(COPY_SOURCE);
   expect(button.dataset.state).toBe("copied");
   expect(button.textContent).toContain("コピーしました");
-  expect(tree.querySelector(".mdmark-tree-status")?.textContent).toContain(
+  expect(tree.querySelector(".mdmark-code-status")?.textContent).toContain(
     "コピーしました",
   );
   // 実行・検証: 2 秒たつとボタンが戻る
@@ -287,7 +287,7 @@ test("test_attach_file_trees_when_detached", async () => {
   detach();
   await vi.advanceTimersByTimeAsync(2000);
   // 検証
-  expect(tree.querySelector(".mdmark-tree-bar")).toBeNull();
+  expect(tree.querySelector(":scope > .mdmark-code-bar")).toBeNull();
   expect(tree.querySelector(".mdmark-tree-toggle")).toBeNull();
   expect(tree.querySelector("ul[hidden]")).toBeNull();
 });

@@ -1,6 +1,8 @@
 id: MOD-747-1
 visibility: internal
 title: ライブラリ本体 / map / 読み取り / mermaid-style.ts
+test_files:
+  - tests/unit/src/map/mermaid-style.test.ts
 lead: Mermaid の外観を指定する行（`style`・`classDef`・`class`・`:::`・`cssClass`・`linkStyle`）からノードと線の色を読み取り、面に対する文字の色を決める処理を受け持ち、map の図に適用する色の読み取りを変えるときに参照する。
 data_models:
   - name: MermaidStyles

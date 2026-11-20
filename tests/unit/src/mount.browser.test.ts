@@ -1366,16 +1366,21 @@ test("test_mount_when_range_scripts", async () => {
   }
 });
 
-// map の図から戻したコードブロックを mermaid の図にする（正常系）
+// 外観の指定を持つ範囲の外の図も map の図で描き、mermaid を読み込まない（正常系）
 test(
-  "test_mount_when_plain_mermaid_fallback",
+  "test_mount_when_plain_mermaid_styled",
   async () => {
-    // 準備: map の部品のモジュールはソースから読み込む
+    // 準備: map の部品のモジュールはソースから読み込み、mermaid のモジュールの読み込みを記録する
     addStyles();
     const { partModules, partModuleLoaders, setPartModuleLoader } =
       await import("../../../src/part-modules.ts");
     partModules.clear();
     setPartModuleLoader("map", () => import("../../../src/map/index.ts"));
+    const mermaidLoads: string[] = [];
+    setPartModuleLoader("mermaid", () => {
+      mermaidLoads.push("mermaid");
+      return import(/* @vite-ignore */ MERMAID_URL);
+    });
     const el = createElement();
     const markdown = [
       "```mermaid",
@@ -1398,15 +1403,16 @@ test(
     ];
     // 実行
     const handle = await mountTracked(el, { markdown, config });
-    await vi.waitFor(() => expect(counts()).toEqual([1, 1]), {
+    await vi.waitFor(() => expect(counts()).toEqual([0, 2]), {
       timeout: MERMAID_WAIT_MS,
     });
     handle.update(markdown);
-    await vi.waitFor(() => expect(counts()).toEqual([1, 1]), {
+    await vi.waitFor(() => expect(counts()).toEqual([0, 2]), {
       timeout: MERMAID_WAIT_MS,
     });
     // 検証
-    expect(counts()).toEqual([1, 1]);
+    expect(counts()).toEqual([0, 2]);
+    expect(mermaidLoads).toEqual([]);
     handle.destroy();
     expect(counts()).toEqual([0, 0]);
     partModules.clear();

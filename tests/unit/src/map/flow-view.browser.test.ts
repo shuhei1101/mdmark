@@ -833,3 +833,41 @@ test("test_attach_map_flow_when_list", async () => {
     root.querySelector('.mdmark-diagram-viewport [role="tree"]'),
   ).not.toBeNull();
 });
+
+// Mermaid の色の指定と view: collapsed を図に適用する（正常系）
+test("test_attach_map_flow_when_mermaid_styles", async () => {
+  // 準備
+  const { attachMapFlow } = await loadFlowView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const mermaid = [
+    "flowchart LR",
+    "  A --> B",
+    "  subgraph g [まとめ]",
+    "    C --> D",
+    "  end",
+    "  style A fill:#f9f",
+    "  linkStyle 0 stroke:#d33",
+    "  g@{ view: collapsed }",
+  ].join("\n");
+  const root = createRootFromHtml(
+    renderDoc(`\`\`\`mermaid\n${mermaid}\n\`\`\`\n`).html,
+  );
+  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+  // 実行
+  handles.push(
+    attachMapFlow(range, resolveConfig({ config: { map: CONFIG } }), {
+      args: parseMapArgs("").args,
+    }),
+  );
+  // 検証
+  const nodeA = root.querySelector<HTMLElement>('[data-node="A"]');
+  expect(nodeA?.style.getPropertyValue("--map-node-fill").trim()).toBe("#f9f");
+  const wire = root.querySelector<SVGPathElement>(
+    'path.mdmark-diagram-wire[data-wire="A->B"]',
+  );
+  expect(wire?.style.stroke).toBe("rgb(221, 51, 51)");
+  expect(
+    root.querySelector('[data-group="g"]')?.classList.contains("map-closed-group"),
+  ).toBe(true);
+});
