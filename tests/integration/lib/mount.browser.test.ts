@@ -20266,6 +20266,70 @@ test("test_normal_when_long_column_min_configured", async () => {
   });
 });
 
+/** 表の多い文書を描いて全ての表の列の幅を決定するまでの時間の上限（ミリ秒） */
+const TABLE_HEAVY_DOCUMENT_COLUMN_WIDTH_MS = 1000;
+
+/** 列の幅を中身から決める確認の 6 列の表を 5 行にし、手順の列に半角の単語を混ぜた表を 16 個並べた Markdown（本文のセルは 480 個） */
+function tableHeavyMarkdown(): string {
+  const table = (index: number): string =>
+    [
+      `## 表 ${index + 1}`,
+      "",
+      '<!-- table: {"kind": "data"} -->',
+      "",
+      "| No | 状態 | 更新日 | 名前 | 手順 | 説明 |",
+      "| --- | --- | --- | --- | --- | --- |",
+      ...[1, 2, 3, 4, 5].map(
+        (no) =>
+          `| ${index * 10 + no} | \`badge:対応中\` | 2026-11-0${no} | ${fullWidth(6)} | ${fullWidth(10)} run-step-${no}<br>${fullWidth(8)} npm test<br>${fullWidth(6)} | ${fullWidth(120)} |`,
+      ),
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n");
+  return Array.from({ length: 16 }, (_, index) => table(index)).join("\n");
+}
+
+// 表の多い文書を描いても、全ての表の列の幅を上限の時間の中で決める（正常系（表の多い文書の列の幅を決める））
+test("test_normal_when_many_tables_column_widths", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await loadBuilt();
+    // 実行
+    const start = performance.now();
+    await mountTracked(el, {
+      markdown: `本文の段落。\n\n${tableHeavyMarkdown()}`,
+      config: { features: { "side-toc": false } },
+    });
+    const tables = [...el.querySelectorAll<HTMLTableElement>("table")];
+    await vi.waitFor(
+      () => {
+        for (const table of tables) {
+          expect(table.hasAttribute("data-auto-width")).toBe(true);
+        }
+      },
+      { timeout: 30_000, interval: 5 },
+    );
+    const elapsed = performance.now() - start;
+    // 検証
+    expect(tables).toHaveLength(16);
+    expect(el.querySelectorAll("tbody td")).toHaveLength(480);
+    expect(elapsed).toBeLessThanOrEqual(TABLE_HEAVY_DOCUMENT_COLUMN_WIDTH_MS);
+    for (const wrapper of el.querySelectorAll<HTMLElement>(".mdmark-table")) {
+      for (const column of [0, 1, 2, 3]) {
+        for (const cell of columnCells(wrapper, column)) {
+          expect(textLineCount(cell)).toBe(1);
+        }
+      }
+      for (const cell of columnCells(wrapper, 5).slice(1)) {
+        expect(textLineCount(cell)).toBeGreaterThan(1);
+      }
+    }
+    expect(el.querySelector("table span[style*='visibility']")).toBeNull();
+  });
+});
+
 // 狭い幅でも最終列を畳まず、表の中で横にスクロールして全ての列を出す（正常系（狭い幅でも最終列を畳まない））
 test("test_normal_when_last_column_not_collapsed", async () => {
   await withViewport(390, async () => {
