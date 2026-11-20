@@ -135,11 +135,21 @@ test("test_attach_map_mindmap_when_selected", async () => {
   expect(
     root.querySelector<HTMLButtonElement>('[data-tool="reset"]')?.disabled,
   ).toBe(false);
-  // 実行・検証: 名前の文字では変わらない
-  itemOf(root, "体制")
-    ?.querySelector<HTMLElement>(".mdmark-diagram-node-name")
-    ?.click();
-  expect(saved().selected).toEqual(["体制"]);
+  // 実行・検証: 選んだ項目の名前の文字で選択を解除する
+  const nameOf = (key: string) =>
+    itemOf(root, key)?.querySelector<HTMLElement>(".mdmark-diagram-node-name");
+  nameOf("体制")?.click();
+  expect(saved().selected).toEqual([]);
+  // 実行・検証: 名前の文字で選ぶ
+  nameOf("目的")?.click();
+  expect(saved().selected).toEqual(["目的"]);
+  // 実行・検証: 文字を選んだ状態の名前の文字では選ばない
+  const purposeName = nameOf("目的") as HTMLElement;
+  getSelection()?.selectAllChildren(purposeName);
+  expect(String(getSelection())).not.toBe("");
+  nameOf("体制")?.click();
+  expect(saved().selected).toEqual(["目的"]);
+  getSelection()?.removeAllRanges();
   // 実行・検証: Enter で選ぶ
   const hit = hitOf(root, "利用者を増やす");
   hit?.focus();

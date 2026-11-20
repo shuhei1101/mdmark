@@ -120,7 +120,7 @@ test("test_layout_mindmap_when_curves", async () => {
     purpose.x + purpose.width + MINDMAP_LAYOUT.gripWidth,
   );
   expect(second.end[0]).toBeCloseTo(grow.x);
-  expect(second.end[1]).toBeCloseTo(grow.y + grow.height);
+  expect(second.end[1]).toBeCloseTo(middle(grow));
 });
 
 // 枝ごとの色（正常系）
