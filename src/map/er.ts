@@ -1,7 +1,14 @@
 import type { MapGroup } from "./data.ts";
-import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
+import type {
+  Direction,
+  Flowchart,
+  FlowEdge,
+  FlowGroup,
+  FlowNode,
+} from "./flowchart.ts";
 import type { MapOverride } from "./layout.ts";
 import { MAP_ER, type MapErRelation, mapErNodeSize } from "./map.part.ts";
+import { type MermaidStyles, readMermaidStyles } from "./mermaid-style.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** 関連の片端の多重度 */
@@ -17,7 +24,22 @@ export type ErColumn = {
 };
 
 /** テーブル */
-export type ErTable = { name: string; columns: ErColumn[] };
+export type ErTable = {
+  name: string;
+  /** 別名のテーブル（`{ID}["{名前}"]`）の名前 */
+  label?: string;
+  columns: ErColumn[];
+};
+
+/** `subgraph` のグループ */
+export type ErGroup = {
+  id: string;
+  title: string;
+  parent: string | undefined;
+  direction: Direction | undefined;
+  /** 中で宣言したテーブルの名前 */
+  tables: string[];
+};
 
 /** 関連（id は記載順の `r{番号}`） */
 export type ErRelation = {
@@ -34,6 +56,12 @@ export type ErRelation = {
 export type ErDiagram = {
   tables: ErTable[];
   relations: ErRelation[];
+  /** `subgraph` のグループ */
+  groups?: ErGroup[];
+  /** `direction` の向き */
+  direction?: Direction;
+  /** `readMermaidStyles` が読み取ったテーブルとグループの色 */
+  styles?: MermaidStyles;
   problems: MapProblem[];
 };
 
@@ -54,13 +82,43 @@ const CARDINALITY: Record<string, ErCardinality> = {
 /** 多の側の多重度 */
 const MANY = new Set<ErCardinality>(["1..n", "0..n"]);
 
-const NAME = '[^\\s{}:"|]+';
-const TABLE_OPEN_RE = new RegExp(`^(${NAME})\\s*\\{$`);
+/** テーブル名（引用符で囲んだ名前か、空白・記号を持たない名前） */
+const TABLE = '(?:"([^"]*)"|([^\\s{}:"|\\[\\]]+))';
+/** テーブル名の後ろの `:::{クラス}` */
+const CLASS_SUFFIX = "(?::::[\\w-]+)?";
+const TABLE_RE = new RegExp(
+  `^${TABLE}(?:\\[(?:"([^"]*)"|([^\\]"]*))\\])?${CLASS_SUFFIX}\\s*(\\{)?$`,
+);
 const COLUMN_RE =
   /^(\S+)\s+(\S+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?(?:\s+"([^"]*)")?$/;
-const RELATION_RE = new RegExp(
-  `^(${NAME})\\s+([|}o][|o])(--|\\.\\.)([|o][|{o])\\s+(${NAME})\\s*:\\s*(?:"([^"]*)"|(.*))$`,
+const SYMBOL_RELATION_RE = new RegExp(
+  `^${TABLE}${CLASS_SUFFIX}\\s*([|}o][|o{])(--|\\.\\.)([|o][|{o])\\s*${TABLE}${CLASS_SUFFIX}$`,
 );
+/** 単語で記載した多重度 */
+const WORD_CARDINALITY: Record<string, ErCardinality> = {
+  "only one": "1",
+  "1": "1",
+  "zero or one": "0..1",
+  "one or more": "1..n",
+  "one or many": "1..n",
+  "many(1)": "1..n",
+  "1+": "1..n",
+  "zero or more": "0..n",
+  "zero or many": "0..n",
+  "many(0)": "0..n",
+  "0+": "0..n",
+};
+const WORDS = `(${Object.keys(WORD_CARDINALITY)
+  .sort((a, b) => b.length - a.length)
+  .map((word) => word.replace(/[()+]/g, "\\$&"))
+  .join("|")})`;
+const WORD_RELATION_RE = new RegExp(
+  `^${TABLE}${CLASS_SUFFIX}\\s+${WORDS}\\s+(to|optionally to)\\s+${WORDS}\\s+${TABLE}${CLASS_SUFFIX}$`,
+);
+const SUBGRAPH_RE = /^subgraph\s+(?:"([^"]*)"|([^\s[]+))(?:\s*\[([^\]]*)\])?$/;
+const DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
+/** 色を指定する行（`readMermaidStyles` が読む） */
+const STYLE_RE = /^(classDef|class|style)\s/;
 /** 参照先のコメント（`参照: {テーブル}.{列}`） */
 const REFERENCE_RE = /^参照:\s*([^.\s]+)\./;
 
@@ -89,19 +147,50 @@ const cardinalityOf = (mark: string | undefined) =>
 
 /** 関連の行を読む（読めなければ `undefined`。`id` は付けない） */
 const readRelation = (text: string): Omit<ErRelation, "id"> | undefined => {
-  const relation = RELATION_RE.exec(text);
-  if (!relation?.[1] || !relation[5]) return undefined;
-  const left = cardinalityOf(relation[2]);
-  const right = cardinalityOf(relation[4]);
-  if (!left || !right) return undefined;
-  const label = (relation[6] ?? relation[7] ?? "").trim();
+  // `:::{クラス}` の `:` はラベルの区切りにしない
+  const split =
+    /^((?:"[^"]*"|:::[\w-]+|[^:"])*)\s*:\s*(?:"([^"]*)"|(.*))$/.exec(text);
+  if (!split?.[1]) return undefined;
+  const label = (split[2] ?? split[3] ?? "").trim();
+  const ends = relationEnds(split[1].trim());
+  if (!ends) return undefined;
+  return { ...ends, label: label === "" ? undefined : label };
+};
+
+/** 関連の記号か単語の多重度の部分を、両端のテーブルと多重度に読む */
+const relationEnds = (
+  text: string,
+): Omit<ErRelation, "id" | "label"> | undefined => {
+  const symbol = SYMBOL_RELATION_RE.exec(text);
+  if (symbol) {
+    const left = cardinalityOf(symbol[3]);
+    const right = cardinalityOf(symbol[5]);
+    const from = symbol[1] ?? symbol[2];
+    const to = symbol[6] ?? symbol[7];
+    if (!left || !right || from === undefined || to === undefined)
+      return undefined;
+    return {
+      from,
+      to,
+      fromCardinality: left,
+      toCardinality: right,
+      dashed: symbol[4] === "..",
+    };
+  }
+  const word = WORD_RELATION_RE.exec(text);
+  if (!word) return undefined;
+  const from = word[1] ?? word[2];
+  const to = word[6] ?? word[7];
+  const left = WORD_CARDINALITY[word[3] ?? ""];
+  const right = WORD_CARDINALITY[word[5] ?? ""];
+  if (!left || !right || from === undefined || to === undefined)
+    return undefined;
   return {
-    from: relation[1],
-    to: relation[5],
+    from,
+    to,
     fromCardinality: left,
     toCardinality: right,
-    dashed: relation[3] === "..",
-    label: label === "" ? undefined : label,
+    dashed: word[4] === "optionally to",
   };
 };
 
@@ -125,12 +214,44 @@ export const parseErDiagram = (source: string): ErDiagram => {
   const tables = new Map<string, ErTable>();
   const relations: ErRelation[] = [];
   const problems: MapProblem[] = [];
+  const groups: ErGroup[] = [];
+  const stack: ErGroup[] = [];
+  let direction: Direction | undefined;
   const tableOf = (name: string): ErTable => {
     const found = tables.get(name);
     if (found) return found;
     const table: ErTable = { name, columns: [] };
     tables.set(name, table);
+    stack.at(-1)?.tables.push(name);
     return table;
+  };
+  /** `subgraph`・`end`・`direction` の行（読んだら true） */
+  const readStructure = (text: string): boolean => {
+    const subgraph = SUBGRAPH_RE.exec(text);
+    if (subgraph) {
+      const id = subgraph[1] ?? subgraph[2] ?? "";
+      const group: ErGroup = {
+        id,
+        title: subgraph[3]?.trim() ?? id,
+        parent: stack.at(-1)?.id,
+        direction: undefined,
+        tables: [],
+      };
+      groups.push(group);
+      stack.push(group);
+      return true;
+    }
+    if (text === "end" && stack.length > 0) {
+      stack.pop();
+      return true;
+    }
+    const dir = DIRECTION_RE.exec(text);
+    if (!dir?.[1]) return false;
+    const value: Direction = dir[1] === "LR" || dir[1] === "RL" ? "LR" : "TB";
+    const current = stack.at(-1);
+    if (current) current.direction = value;
+    else direction = value;
+    return true;
   };
   let current: OpenTable | undefined;
   for (const [line, raw] of source.split("\n").entries()) {
@@ -141,9 +262,13 @@ export const parseErDiagram = (source: string): ErDiagram => {
       current = readInTable(current, at);
       continue;
     }
-    const open = TABLE_OPEN_RE.exec(text);
-    if (open?.[1]) {
-      current = { table: tableOf(open[1]), line };
+    if (STYLE_RE.test(text) || readStructure(text)) continue;
+    const table = TABLE_RE.exec(text);
+    if (table) {
+      const found = tableOf(table[1] ?? table[2] ?? "");
+      const label = table[3] ?? table[4];
+      if (label !== undefined) found.label = label.trim();
+      if (table[5] !== undefined) current = { table: found, line };
       continue;
     }
     const relation = readRelation(text);
@@ -162,7 +287,17 @@ export const parseErDiagram = (source: string): ErDiagram => {
       message: `テーブル \`${current.table.name}\` の \`{\` に対応する \`}\` がありません。テーブルの最後の行の後に \`}\` を記載してください。`,
     });
   }
-  return { tables: [...tables.values()], relations, problems };
+  return {
+    tables: [...tables.values()],
+    relations,
+    groups,
+    ...(direction === undefined ? {} : { direction }),
+    styles: readMermaidStyles({
+      lines: source.split("\n").slice(1),
+      classTarget: "class",
+    }),
+    problems,
+  };
 };
 
 /** テーブルが相手のテーブルとの関連の端をつなぐ列（参照のコメントの FK → 名前が相手で始まる FK → PK） */
@@ -255,18 +390,31 @@ export const erToFlowchart = (
   const owner = new Map<string, string>();
   for (const [id, group] of Object.entries(groups))
     for (const name of group.tables) if (!owner.has(name)) owner.set(name, id);
-  const flowGroups: FlowGroup[] = Object.entries(groups).map(([id, group]) => ({
-    id,
-    title: group.title,
-    parent:
-      group.parent !== undefined && group.parent in groups
-        ? group.parent
-        : undefined,
-    direction: "TB",
-  }));
+  // Mermaid の `subgraph` のグループ（補足の分類と同じ ID は補足を優先する）
+  const subgraphs = (er.groups ?? []).filter((group) => !(group.id in groups));
+  for (const group of subgraphs)
+    for (const name of group.tables)
+      if (!owner.has(name)) owner.set(name, group.id);
+  const flowGroups: FlowGroup[] = [
+    ...Object.entries(groups).map(([id, group]) => ({
+      id,
+      title: group.title,
+      parent:
+        group.parent !== undefined && group.parent in groups
+          ? group.parent
+          : undefined,
+      direction: "TB" as const,
+    })),
+    ...subgraphs.map((group) => ({
+      id: group.id,
+      title: group.title,
+      parent: group.parent,
+      direction: group.direction ?? ("TB" as const),
+    })),
+  ];
   const nodes: FlowNode[] = er.tables.map((table) => ({
     id: table.name,
-    label: table.name,
+    label: table.label ?? table.name,
     shape: "rect",
     classes: [],
     parent: owner.get(table.name),
@@ -280,12 +428,13 @@ export const erToFlowchart = (
     label: undefined,
   }));
   return {
-    direction: "LR",
+    direction: er.direction ?? "LR",
     nodes,
     groups: flowGroups,
     edges,
     links: {},
     linkLines: {},
+    ...(er.styles === undefined ? {} : { styles: er.styles }),
     problems: er.problems,
   };
 };

@@ -193,6 +193,7 @@ const erIds = (
     found.edgeIds.add(relation.id);
   }
   for (const id of Object.keys(data.groups)) found.ids.add(id);
+  for (const group of er.groups ?? []) found.ids.add(group.id);
   return found;
 };
 
