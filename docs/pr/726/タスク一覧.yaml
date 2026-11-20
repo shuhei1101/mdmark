@@ -62,7 +62,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T02:03:40.458670+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T02:07:46.321528+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 公開ドキュメントにボタンの DOM の配置先の記述は無く、直す設計書は設計の工程で扱う
