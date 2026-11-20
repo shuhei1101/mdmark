@@ -63097,7 +63097,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.fa2609d";
+  return "v0.14.0+develop.0991591";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -85581,6 +85581,8 @@ var MAP_LAYOUT = {
   bendCost: 30,
   /** 祖先でないグループの枠を出入りする 1 回の重み。最短より出入りを増やさないために大きくする */
   borderCost: 1e5,
+  /** 線の端を、相手のノードに向いた辺でない辺から出入りさせる 1 回の重み。向いた辺へ回る曲がりとノード 1 つ分の回り込みより大きくする */
+  sideCost: 1e3,
   /** ドラッグで近づけられる間の下限 */
   minGap: 16,
   /** 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる） */
@@ -86167,8 +86169,6 @@ var MAP_ER = {
   /** 多重度の文字の 1 文字の幅と、文字の高さ（重なりの見積もり） */
   cardinalityChar: 7,
   cardinalityLine: 13,
-  /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
-  crowd: 120,
   /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
   labelChar: 12,
   labelLine: 16,

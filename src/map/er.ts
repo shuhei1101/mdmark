@@ -328,6 +328,7 @@ export const erOverrides = (
       {
         width: MAP_ER.width,
         aside: MAP_ER.aside,
+        sides: "horizontal",
         size: mapErNodeSize({
           columns: table.columns.length,
           collapsed: collapsed.has(table.name),

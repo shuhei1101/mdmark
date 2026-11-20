@@ -1,0 +1,90 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/layout.test.ts tests/unit/src/map/map.part.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-edge-near-side-routing
+
+ ❯ |unit| tests/unit/src/map/layout.test.ts (36 tests | 3 failed) 139ms
+   × test_route_wires_when_facing_side 7ms
+   × test_route_wires_when_sides_horizontal 2ms
+   × test_route_wires_when_placement_patterns 3ms
+ ❯ |unit| tests/unit/src/map/map.part.test.ts (62 tests | 1 failed) 342ms
+   × test_rewire_map_er_when_near_side 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_facing_side
+AssertionError: B: expected 'left' to be 'bottom' // Object.is equality
+
+Expected: "bottom"
+Received: "left"
+
+ ❯ tests/unit/src/map/layout.test.ts:981:58
+    979|     const wire = layout.wires.find((item) => item.to === id);
+    980|     const points = wire?.points ?? [];
+    981|     expect(sideAt(a, points[0] as [number, number]), id).toBe("bottom"…
+       |                                                          ^
+    982|     expect(sideAt(target, points.at(-1) as [number, number]), id).toBe…
+    983|   }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_sides_horizontal
+AssertionError: expected 'bottom' to be 'right' // Object.is equality
+
+Expected: "right"
+Received: "bottom"
+
+ ❯ tests/unit/src/map/layout.test.ts:1028:52
+    1026|   const b = stacked.nodes.find((node) => node.id === "B") as Rect;
+    1027|   const points = stacked.wires[0]?.points ?? [];
+    1028|   expect(sideAt(a, points[0] as [number, number])).toBe("right");
+       |                                                    ^
+    1029|   expect(sideAt(b, points.at(-1) as [number, number])).toBe("right");
+    1030|   // 検証（斜めに並ぶ 2 つは左右のうち相手の中心に近い方の辺）
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_placement_patterns
+AssertionError: 斜め A→B: expected 'left' to be 'bottom' // Object.is equality
+
+Expected: "bottom"
+Received: "left"
+
+ ❯ expectFacingEnds tests/unit/src/map/layout.test.ts:943:73
+    941|       const blocked = obstacles.some((rect) => strictlyInside(px, py, …
+    942|       if (!blocked) {
+    943|         expect(sideAt(self, point), `${label} ${wire.from}→${wire.to}`…
+       |                                                                         ^
+    944|           side,
+    945|         );
+ ❯ tests/unit/src/map/layout.test.ts:1059:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_rewire_map_er_when_near_side
+AssertionError: expected 496 to be 256 // Object.is equality
+
+- Expected
++ Received
+
+- 256
++ 496
+
+ ❯ tests/unit/src/map/map.part.test.ts:2337:22
+    2335|   const first = wire?.points[0];
+    2336|   const last = wire?.points.at(-1);
+    2337|   expect(first?.[0]).toBe(order.x);
+       |                      ^
+    2338|   expect(last?.[0]).toBe(detail.x + detail.w);
+    2339|   // 検証（どの線の区間も両端以外のテーブルの矩形に入らない）
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 94 passed (98)
+   Start at  19:00:34
+   Duration  565ms (tests 67%, transform 27%, import 5%, worker 1%)
+
+
+実装の前から pass したテスト:
+- test_route_wires_when_facing_side_blocked: src/map/layout.ts の portsOf が、端点とその祖先以外の矩形の内側にある出入り口を除く（cells.blockedAt）。この除外を入れた commit は 8659c279（#569）
