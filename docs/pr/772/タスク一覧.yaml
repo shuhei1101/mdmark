@@ -35,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T16:29:17.931882+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T16:41:18.704843+00:00'
   - process: モック作成
     status: todo
     note: '変わる部品だけ作る: map の図の文字（#766）・マインドマップの項目（#765）・線の出る位置と間隔（#767）'
