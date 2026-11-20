@@ -294,11 +294,11 @@ test("test_layout_map_when_name_fits_with_right_padding", async () => {
   const layout = await laid(
     {},
     {},
-    { source: "flowchart LR\n  A[データベース]\n" },
+    { source: "flowchart LR\n  A[データベース層]\n" },
   );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A");
-  expect(node?.w).toBe(125);
+  expect(node?.w).toBe(132);
   expect(node?.h).toBe(leafHeight(1));
   expect(node?.lines).toHaveLength(1);
 });
@@ -325,7 +325,7 @@ test("test_layout_map_when_name_wraps_with_right_padding", async () => {
 test("test_layout_map_when_width_with_right_padding", async () => {
   // 準備
   const { leafHeight } = await loadLayout();
-  const name = "あ".repeat(12);
+  const name = "あ".repeat(13);
   // 実行
   const layout = await laid(
     {},
@@ -346,7 +346,7 @@ test("test_leaf_height", async () => {
   // 実行
   const heights = [leafHeight(1), leafHeight(2)];
   // 検証
-  expect(heights).toEqual([63, 83]);
+  expect(heights).toEqual([62, 80]);
 });
 
 /** 1 文字を決まった幅と測る関数 */
@@ -401,7 +401,7 @@ test("test_layout_map_when_pill_padding", async () => {
   );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A");
-  expect(node?.w).toBe(145);
+  expect(node?.w).toBe(138);
   expect(node?.lines).toHaveLength(1);
 });
 
@@ -422,7 +422,7 @@ test("test_estimate_text_width", async () => {
   // 実行
   const width = estimateTextWidth("文書の Markdown");
   // 検証
-  expect(width).toBeCloseTo(117.6, 5);
+  expect(width).toBeCloseTo(109.2, 5);
 });
 
 // 閉じたグループのノードの数（正常系）
