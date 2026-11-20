@@ -155,6 +155,21 @@ test("test_hide_rendered_html", async () => {
   );
 });
 
+// コードの例の部品の要素名を置き換え、ほかの文字と範囲のスクリプトのコードは残す（正常系）
+test("test_hide_rendered_html_with_code_example", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html =
+    '<pre><code>&lt;mdmark-chart&gt;{}&lt;/mdmark-chart&gt; mdmark</code></pre><template class="mdmark-html-script" data-lang="ts">"&lt;mdmark-x&gt;"</template>';
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  expect(hidden).toContain(
+    "<code>&lt;zq-chart&gt;{}&lt;/zq-chart&gt; mdmark</code>",
+  );
+  expect(hidden).toContain('data-lang="ts">"&lt;mdmark-x&gt;"</template>');
+});
+
 // 文書の中の id を指す href="#…"・aria-*・for・headers も id と同じく置き換え、指す先の id と一致させる（正常系）
 test("test_hide_rendered_html_keeps_id_references", async () => {
   // 準備

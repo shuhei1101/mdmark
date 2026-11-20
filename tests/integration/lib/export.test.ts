@@ -1097,7 +1097,7 @@ test("test_normal_when_traces_hidden", async () => {
   ).resolves.toEqual({ open: true, flag: true });
   await expect(
     hiddenPage.page.locator("article pre code").last().textContent(),
-  ).resolves.toContain("<mdmark-chart>{}</mdmark-chart>");
+  ).resolves.toContain("<zq-chart>{}</zq-chart>");
   await hiddenPage.close();
   await keptPage.close();
 }, 240_000);
