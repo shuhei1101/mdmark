@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 資料 A-35 の No 13〜17 のうち map にどれを追加するか
+    decision: 推奨案 A。No 13（確信度のマーカー）・No 16（図の SVG・PNG への書き出し）・No 17（一覧の表示）を追加し、No 14 は補足で示す計画した変更だけを追加する。No 15 は追加しない
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 34e0315f
+    thread: https://github.com/shuhei1101/mdmark/pull/740#discussion_r4639383599
