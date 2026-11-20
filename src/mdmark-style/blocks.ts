@@ -1,7 +1,13 @@
 import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { parseCsv } from "../table/csv.syntax.ts";
-import { parseTree, type TreeNode } from "../tree/tree.syntax.ts";
+import {
+  countTreeLines,
+  PLAIN_TREE_EXCLUDED_LANGUAGES,
+  PLAIN_TREE_MIN_LINES,
+  parseTree,
+  type TreeNode,
+} from "../tree/tree.syntax.ts";
 import type { StyleSettings } from "./settings.ts";
 
 /** 引用の 1 行目の `[!種類]` として扱う値 */
@@ -143,6 +149,8 @@ type State = {
     title?: string;
     lineNumbers: boolean;
     highlight: Set<number>;
+    /** `tree_warning: false` の指定（罫線のコードブロックもファイルツリーにしない） */
+    plainTree?: false;
   };
 };
 
@@ -447,6 +455,7 @@ const codeOptionsOf = (args: string): NonNullable<State["pendingCode"]> => {
       options.highlight = highlightLines(value);
     }
   }
+  if (argOf(args, "tree_warning") === false) options.plainTree = false;
   return options;
 };
 
@@ -788,10 +797,22 @@ const partBlockOf = (options: {
   lang: string;
   source: string;
   line: number;
+  plainTree: boolean;
 }): ReplyBlock | undefined => {
   const { parts, lang, source, line } = options;
   if (lang === "tree" && parts.tree) {
     return treeBlockOf(source, line);
+  }
+  // 言語が tree でなくても、罫線の行を持つコードブロックはファイルツリーにする
+  if (
+    options.plainTree &&
+    parts.tree &&
+    parts.code &&
+    !PLAIN_TREE_EXCLUDED_LANGUAGES.includes(lang) &&
+    countTreeLines(source) >= PLAIN_TREE_MIN_LINES
+  ) {
+    const tree = treeBlockOf(source, line);
+    if (tree) return tree;
   }
   return lang === "csv" && parts.stack ? csvBlockOf(source, line) : undefined;
 };
@@ -811,6 +832,7 @@ const handleFence = (state: State, chunk: Chunk): void => {
     lang,
     source,
     line: lineOf(state, chunk),
+    plainTree: options.plainTree !== false,
   });
   if (part !== undefined) {
     push(state, part);
