@@ -1,0 +1,13 @@
+confirmations:
+  - topic: ER 図の 1 対多の向きの見せ方
+    decision: データの印を多い側のテーブルから少ない側へ流す（推奨案 A）。あわせて、テーブル名の行の空白が広い指摘を受け、テーブル名・クラス名の行を種類の行を持たない 1 行（36px）にする
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/763#discussion_r4641929685
+  - topic: グループの大きさを変える角のハンドルの出し方
+    decision: 右下の角に斜線を常に出す（推奨案 A）。あわせて、グループの左・右・下の縁を掴んでもグループを動かせるようにする
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/763#discussion_r4641930506
