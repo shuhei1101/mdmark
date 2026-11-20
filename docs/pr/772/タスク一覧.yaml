@@ -62,7 +62,9 @@ tasks:
     updated_at: '2026-11-20T17:35:08.025906+00:00'
     note: VS Code の書き出しで、配布物を取得できないときと描いた HTML から起動できないバージョンのときの通知が SCR-472-1 に増える（インターフェース定義設計で判明）
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:27:01.670022+00:00'
   - process: ドキュメント修正
     status: todo
     note: '#749 の「ポインターを適用する」「フォーカスを適用した」の修正と、公開ドキュメント（VS Code の書き出しのガイド・リファレンス）の追随'
