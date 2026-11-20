@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-20T02:01:09.072601+00:00'
   - process: PoC 検証
     status: skipped
-    reason: 計測をまとめて読む・余白を列ごとに読むなど、ブラウザの標準の API だけで済み、未検証の技術機構に依存しないため
+    reason: 計測用の要素をまとめて配置してから幅をまとめて取得するなど、ブラウザの標準の API だけで済み、未検証の技術機構に依存しないため
     updated_by: planner
     updated_at: '2026-11-20T02:01:09.072601+00:00'
   - process: 複合ユースケース設計
@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T02:01:09.072601+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-347 の measureColumns・attachAutoColumnWidths の測り方（書き換えと読み取りを交互にしない）と単体テストを直す
+    updated_by: planner
+    updated_at: '2026-11-20T03:24:18.120647+00:00'
   - process: ドキュメント修正
     status: todo
     note: NFR-472-1 に列の幅を決める処理の所要時間の決定値を加える
