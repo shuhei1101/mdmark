@@ -17,7 +17,7 @@ functions:
     summary: 横の一覧とパネルに `renderDocList` を配置し、URL の `#` が指す文書を `mount` で描いて、`hashchange` と `popstate` で文書を行き来する
     description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を指定する。
 
-      文書の一覧と文書間のリンクで別の文書へ移ったときは、移った先の項目の URL のクエリ文字列から `map-` で始まるキーを `history.replaceState` で消してから描く（戻る・進む・再読み込みでは消さない）。
+      文書の一覧と文書間のリンクで別の文書へ移ったときは、移った先の項目の URL のクエリ文字列から `map-` で始まるキーを `history.replaceState` で削除してから描く（戻る・進む・再読み込みでは削除しない）。
 
       文書の `#` の無い項目（開いた直後の `entry`）へ戻ったときは `hashchange` が来ないため、`popstate` で文書を出す（同じ URL を続けて 2 回は出さない）。
 
@@ -37,7 +37,7 @@ functions:
 
       `popstate`・文書の一覧と描いた文書のリンクの `click`・`pagehide`・`SCROLL_SAVE_INTERVAL_MS` ごとに間引いた `scroll` のときに、メモリの ID へ `captureViewState` の値を `writeViewState` で保存する。
 
-      `hashchange` のときと起動したとき（再読み込み）は、移り先の項目の ID を `ensureEntryId` で取り（リンクで新しく積んだ項目には新しい ID が振られる）、その ID の `readViewState` の値が描いた文書と同じパスを持つかで分ける。
+      `hashchange` のときと起動したとき（再読み込み）は、移り先の項目の ID を `ensureEntryId` で取り（リンクで新規に積んだ項目には新規の ID が振られる）、その ID の `readViewState` の値が描いた文書と同じパスを持つかで分ける。
 
       持つときは、描いた後に `applyViewState`（`keepFocus: true`）で開閉とタブと位置を戻し、その後に `hashchange` のときだけフォーカスを h1 へ `preventScroll` で移す（起動したときは移さない）。
 
@@ -68,7 +68,7 @@ functions:
     unit_tests:
       - name: test_start_bundle_when_switch_clears_map_query
         case: 正常
-        summary: 文書を切り替えると map のクエリ文字列を消す
+        summary: 文書を切り替えると map のクエリ文字列を削除する
         condition: '`?map-1=place&x=1#/a.md` で開き、文書の一覧で `b.md` を押す'
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に画面の骨組みを配置する
         expected: '`location.search` が `?x=1` で、`b.md` が描かれる。戻ると `?map-1=place&x=1` の項目に戻る'
@@ -116,8 +116,8 @@ functions:
         expected: リンクを押す前と後で `history.state.mdmarkEntry` が同じ
       - name: test_start_bundle_when_session_storage_unavailable
         case: 異常
-        summary: sessionStorage が使えないと、戻るで文書の頭から描き例外を出さない
-        condition: '`window.sessionStorage` を読むと `SecurityError` を投げるように差し替え、test_start_bundle_when_back_restores_view_state と同じ操作をする'
+        summary: sessionStorage が使用できないと、戻るで文書の頭から描き例外を出さない
+        condition: '`window.sessionStorage` を読み取ると `SecurityError` を投げるように差し替え、test_start_bundle_when_back_restores_view_state と同じ操作をする'
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に画面の骨組みを配置する
         expected: 戻った後の `scrollY` が 0、例外が出ず、`console.warn` が呼ばれる
     callees:

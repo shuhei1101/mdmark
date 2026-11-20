@@ -29,7 +29,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 折り畳み（`details`）が開いている
-      - 描く先の要素の `--mdmark-color-bg` の計算値が明るい配色の値（ダークの配色が解除される）で、地の色は削除される
+      - 描く先の要素の `--mdmark-color-bg` の計算値が明るい配色の値（ダークの配色が解除される）で、背景色は削除される
       - リンクの後ろに URL の文字が出ている
       - '表に改ページを回避する指定（`break-inside: avoid`）が該当している'
     test: test_normal
@@ -271,7 +271,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 描く先の要素のリンクの色の計算値が、theme-slate の明るい配色の `--mdmark-color-link` の値（既定のテーマに戻らない）
-      - 地の色は正常シナリオと同じく削除される
+      - 背景色は正常シナリオと同じく削除される
     test: test_normal_when_theme_selected
     refs:
       - SC-472-26#scenarios[正常シナリオ（ダークの配色）]

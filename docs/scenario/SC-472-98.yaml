@@ -1,7 +1,7 @@
 id: SC-472-98
 visibility: internal
 title: ClaudeCodeの発言と返答の用語にマーカーを付ける
-lead: Claude Code を使用する人が、mdmark-style を入れた Claude Code の画面で、自分の発言とアシスタントの返答に出た用語・エイリアスの下線を見て、ポインターを乗せて意味のカードを開くか、末尾の脚注で意味を確認する。
+lead: Claude Code を使用する人が、mdmark-style を入れた Claude Code の画面で、自分の発言とアシスタントの返答に出た用語・エイリアスの下線を確認して、ポインターを乗せて意味のカードを開くか、末尾の脚注で意味を確認する。
 primary_actor: Claude Code を使用する人
 trigger: 利用者の発言かアシスタントの返答が Claude Code の画面に描かれる
 preconditions:
@@ -9,7 +9,7 @@ preconditions:
   - mdmark-style の設定の `glossary` が、索引・`aliases`・用語集の表を持つ `mdmark.config.yaml` を指す
 stakeholders:
   - name: Claude Code を使用する人
-    interest: 発言と返答の用語の意味を、別の画面を開かずに読める。マウスを使えない端末でも意味を確認できる
+    interest: 発言と返答の用語の意味を、別の画面を開かずに読み取れる。マウスを使用できない端末でも意味を確認できる
 scenarios:
   - name: 正常シナリオ
     decisions:
@@ -105,7 +105,7 @@ scenarios:
     expected:
       - 用語に下線と脚注が付き、ポインターを乗せてもカードが出ない
     test: test_normal_when_hover_card_disabled
-  - name: 異常シナリオ（用語集の設定ファイルを読めない）
+  - name: 異常シナリオ（用語集の設定ファイルを読み取れない）
     setup:
       - name: mdmark-style を入れた Claude Code
         description: 正常シナリオと同じ
@@ -122,7 +122,7 @@ scenarios:
         participant M as mdmark-style
         U->>C: 用語を含む発言
         C->>M: ui.render（UserMessage と発言の本文）
-        M->>M: mdmark.config.yaml を読めず、用語のマーカーだけを付けない
+        M->>M: mdmark.config.yaml を読み取れず、用語のマーカーだけを付けない
         M-->>C: 用語のマーカーの無い部品の木
         C-->>U: 用語のマーカーの無い発言と、共通スタイルで描き換えた返答
       ```
@@ -130,7 +130,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 発言と返答に用語の下線・カード・脚注が出ず、返答の表・注意書き・見出し・コードは共通スタイルで描き換えられる
-      - Claude Code のデバッグログに、mdmark-style の名前と `mdmark.config.yaml` を読めなかった理由の行がある
+      - Claude Code のデバッグログに、mdmark-style の名前と `mdmark.config.yaml` を読み取れなかった理由の行がある
     test: test_error_when_glossary_unreadable
 success_guarantee: 発言と返答に出た用語・エイリアスに下線が付き、ポインターで意味のカードを開け、末尾の脚注でも意味を確認できる。用語は `mdmark.config.yaml` の索引・`aliases`・用語集の表から取り、YAML の文書・MCP は参照しない。
 minimal_guarantee: 用語を取れないときも、用語のマーカーだけを付けずに発言と返答を描き、返答のそのほかの描き換えは続ける。セッションは続く。

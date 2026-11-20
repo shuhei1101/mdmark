@@ -238,7 +238,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 説明の列に並べ替えを付け、タイトルの列から並べ替えを外した表形式のビュー
+        M-->>P: 説明の列に並べ替えを付け、タイトルの列から並べ替えを解除した表形式のビュー
       ```
 
       <!-- /map -->

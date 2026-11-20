@@ -36,7 +36,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '範囲の中の `id` が `mdmark-note-owner-` で始まる持ち主ごとに、範囲を含む `.mdmark` の要素の中で `data-note-owner` がその `id` の戻るリンクを引き、リンクの `href` の `#` の後ろを持ち主の `id` にする'
-    description: '`attachFootnotes` が戻るリンクの `href` をページの中で一意な値に振り替え、持ち主は図を描くたびに新しく作るため、描くたびに呼ぶ。リンクが無ければ `id` を変えない'
+    description: '`attachFootnotes` が戻るリンクの `href` をページの中で一意な値に振り替え、持ち主は図を描くたびに新規作成するため、描くたびに呼ぶ。リンクが無ければ `id` を変えない'
     args:
       - name: range
         type: HTMLElement

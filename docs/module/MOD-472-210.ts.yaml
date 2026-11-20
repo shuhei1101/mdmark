@@ -15,13 +15,13 @@ data_models:
         description: マーカーの名前
       - name: options
         type: MarkOptions
-        description: 引数の JSON のオブジェクト。今の書き方の引数は `convertLegacyArgs` で同じオブジェクトにしたもの。引数が無い・読めないときは `{}`
+        description: 引数の JSON のオブジェクト。今の書き方の引数は `convertLegacyArgs` で同じオブジェクトにしたもの。引数が無い・読み取れないときは `{}`
       - name: source
         type: '"none" | "json" | "legacy" | "invalid"'
         description: 引数の記載方法（`readMarkArgs` の `kind`）。点検の `legacy_mark` と、拡張・`libraries` のマーカーの今の書き方の記載の警告に使用する
       - name: problems
         type: MarkProblem[]
-        description: 引数を読んで検証したときの、JSON として読めない・型と選べる値と必須に合わない値（記載の警告にする）と、今の書き方の中の読めない単語（今の実装のとおりの記載の警告にする）
+        description: 引数を読み取って検証したときの、JSON として読み取れない・型と選べる値と必須に合わない値（記載の警告にする）と、今の書き方の中の読み取れない単語（今の実装のとおりの記載の警告にする）
       - name: unknownKeys
         type: string[]
         description: 無視した知らないキーのパス（`features.unknown` など。点検の `unknown_mark_arg`）
@@ -110,7 +110,7 @@ functions:
     scope: internal
     summary: コアルール。`html_block`・`html_inline` のトークンのマーカーを取得し、マーカーの種類ごとに置き換える
     description: |-
-      引数を `readMarkArgs` で読み、記法のマーカーは `validateMarkOptions` でマーカーの JSON Schema に通して `Mark` にする（`map`・`map-data` は検証せず、今の `src/map/map.syntax.ts` の読み方のまま）。
+      引数を `readMarkArgs` で読み取り、記法のマーカーは `validateMarkOptions` でマーカーの JSON Schema に通して `Mark` にする（`map`・`map-data` は検証せず、今の `src/map/map.syntax.ts` の解釈のまま）。
 
       | マーカー | 扱い |
       | --- | --- |
@@ -176,10 +176,10 @@ functions:
         expected: '`meta` が `{ name: "table", source: "legacy", options: { kind: "data", columns: { 数量: { total: [{ calc: "sum" }] } }, collapse: { open: false } } }` で、記載の警告が無い'
       - name: test_take_marks_when_invalid_options
         case: 異常
-        summary: JSON として読めない引数と型の合わない値を記載の警告にし、知らないキーを空のトークンにする
+        summary: JSON として読み取れない引数と型の合わない値を記載の警告にし、知らないキーを空のトークンにする
         condition: '`<!-- details: {"title": 補足} -->` 〜 `<!-- /details -->`、`<!-- section: {"open": "no", "size": 1} -->`'
         mock: なし
-        expected: 'details の前に読めない位置を記載した記載の警告、section の前に `open` の型の誤りの記載の警告、`env.markNotes` に `size` の `unknown_mark_arg` が 1 つ。section の `options` は `{}`'
+        expected: 'details の前に読み取れない位置を記載した記載の警告、section の前に `open` の型の誤りの記載の警告、`env.markNotes` に `size` の `unknown_mark_arg` が 1 つ。section の `options` は `{}`'
       - name: test_take_marks_when_extension_mark
         case: 正常
         summary: 登録した拡張のマーカーをマーカーの場所の要素にする

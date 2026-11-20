@@ -27,7 +27,7 @@ data_models:
         type: string | undefined
         description: その手順で中へ入るグループ
   - name: BandHandle
-    title: 帯の操作の口
+    title: 帯の操作のインターフェース
     container: src/map/band.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
@@ -38,12 +38,12 @@ data_models:
         description: 強調を解いて始める前に戻す
       - name: update
         type: '(steps: BandStep[]) => void'
-        description: 進める手順を差し替え、始める前の状態に戻す（強調は当て直さない）
+        description: 進める手順を差し替え、始める前の状態に戻す（強調は再適用しない）
       - name: destroy
         type: () => void
-        description: 時計と操作を外す
+        description: 時計と操作を解除する
   - name: FollowHandle
-    title: 表示する枠のスクロールの操作の口
+    title: 表示する枠のスクロールの操作のインターフェース
     container: src/map/band.ts
     usecase: 図を巡回する
     role: データモデル
@@ -57,13 +57,13 @@ data_models:
         description: 読者が触って止めた移動を再開する
       - name: destroy
         type: () => void
-        description: 表示する枠のイベントを外す
+        description: 表示する枠のイベントを解除する
 constants:
   - name: STEP_MS
     title: 手順の 1 周の時間
     container: src/map/band.ts
     usecase: 図を巡回する
-    summary: 手順を繰り返すときの 1 周の時間（ミリ秒）。今の区切りをこの時間で塗り、塗り終えたら最初から塗り直す
+    summary: 手順を繰り返すときの 1 周の時間（ミリ秒）。今の区切りをこの時間で塗り、塗り終えたら最初から再描画する
     value: '2000'
   - name: BAND_DENSE_PX
     title: 細い区切りの幅
@@ -90,14 +90,14 @@ functions:
       - name: options
         type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; unit?: "message" | "transition" | "task" | "period" | "commit"; steps: BandStep[]; apply: (step: BandStep | undefined) => void; onStep?: (step: BandStep, index: number) => void }'
         required: true
-        description: 図の枠・モード・再生で進める単位（既定 `message`。`renderMapBand` の `unit` に渡す）・手順・強調を当てる関数・手順へ移ったときに呼ぶ関数（図の移動に使う）
+        description: 図の枠・モード・再生で進める単位（既定 `message`。`renderMapBand` の `unit` に指定する）・手順・強調を適用する関数・手順へ移ったときに呼ぶ関数（図の移動に使用する）
     returns:
       type: BandHandle
       description: 止める関数と片付ける関数
     process: |-
       1. `renderMapBand`（`titles` は手順の `title`）で帯を描き、手順のバーの幅を `ResizeObserver` で見て、区切りの幅（バーの幅から区切りの間を引いて手順の数で割った幅）が `BAND_DENSE_PX` より細いときだけバーに `is-dense` を付ける
-      2. 区切りの押下・左右の矢印のボタン・バーの ← → Home End で手順へ移る（矢印のボタンと ← → は端で反対の端へ回し、始める前の左は最後、右は最初）。移ったら `apply` で強調を当てて `onStep` を呼び、`requestAnimationFrame` で今の区切りを `STEP_MS` の 1 周で塗り、塗り終えたら最初から塗り直す（次の手順へは進めない）。今の手順の区切りを押したときは、塗りを最初からにして `apply` を呼び直す
-      3. 描き直す前にフォーカスが帯の中にあれば、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへ、描き直した後にフォーカスを戻す
+      2. 区切りの押下・左右の矢印のボタン・バーの ← → Home End で手順へ移る（矢印のボタンと ← → は端で反対の端へ回し、始める前の左は最後、右は最初）。移ったら `apply` で強調を適用して `onStep` を呼び、`requestAnimationFrame` で今の区切りを `STEP_MS` の 1 周で塗り、塗り終えたら最初から再描画する（次の手順へは進めない）。今の手順の区切りを押したときは、塗りを最初からにして `apply` を再度呼び出す
+      3. 再描画する前にフォーカスが帯の中にあれば、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへ、再描画した後にフォーカスを戻す
       4. 帯の中のバーと矢印のボタンの外の押下・バーの Esc・図の枠の表示する枠の中でノード（`[data-node]`・`[data-participant]`）・線の押せる帯（`.map-wire-hit`）・ボタン・リンクの外を押して `DRAG_THRESHOLD` 未満の動きで離したときに停止する。停止で塗りを止め、`apply(undefined)` を呼び、始めた段に戻して帯をバーと矢印のボタンだけにし、始めたときに表示する枠に見えていた範囲へ `zoomControlOf` の `focusRect`（余白 0・時間 0）で倍率と位置を戻す
       5. `update` で手順を差し替えたときは、塗りを止めて番号を無しに戻す（`apply` は呼ばない）
     unit_tests:
@@ -124,13 +124,13 @@ functions:
         summary: 左右の矢印のボタン
         condition: 4 手順で、始める前に左の矢印のボタンを押し、次に右の矢印のボタンを押す
         mock: '`apply`'
-        expected: '`apply` に手順 3・0 が渡り、描き直した後もフォーカスが右の矢印のボタンにある'
+        expected: '`apply` に手順 3・0 が渡り、再描画した後もフォーカスが右の矢印のボタンにある'
       - name: test_attach_band_when_keys
         case: 正常
         summary: バーのキー
         condition: バーにフォーカスして → を 2 回、Home、Esc を押す
         mock: '`apply`'
-        expected: '`apply` に手順 0・1・0 と `undefined` が渡り、描き直した後もフォーカスがバーにある'
+        expected: '`apply` に手順 0・1・0 と `undefined` が渡り、再描画した後もフォーカスがバーにある'
       - name: test_attach_band_when_stopped_outside
         case: 正常
         summary: バーの外と図の枠の空いた場所で停止する
@@ -177,7 +177,7 @@ functions:
         case: 正常
         summary: 読者が触る
         condition: '`reveal` を呼び、表示する枠でホイールを回して `reveal`、`resume` の後に `reveal` を呼ぶ'
-        mock: '`zoomControlOf` が返す `centerRect`'
+        mock: '`zoomControlOf` が返却する `centerRect`'
         expected: '`centerRect` を 1 回目と 3 回目だけ呼び、`focusRect` は呼ばない'
       - name: test_create_follow_when_reduced_motion
         case: 正常

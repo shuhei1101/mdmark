@@ -35,7 +35,7 @@ catalogs:
           - name: env
             type: object
             required: true
-            description: ルールの間で受け渡す値
+            description: ルールの間で共有する値
         returns:
           - name: '-'
             type: Token[]

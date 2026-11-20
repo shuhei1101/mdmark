@@ -20,7 +20,7 @@ notes:
     scripts/
     └── storybook-render.ts  # 描画のインターフェース（部品の HTML と CSS を返却する HTTP サーバー）
     .storybook/
-    ├── main.ts              # Storybook の設定（@storybook/react-vite・addon-a11y・ストーリーの場所・/render の中継・許すホスト）
+    ├── main.ts              # Storybook の設定（@storybook/react-vite・addon-a11y・ストーリーの場所・/render の中継・許可するホスト）
     ├── preview.tsx          # デコレーター・MSW の読み込み・描いた後に付ける操作
     ├── server-html.tsx      # 描画のインターフェースの HTML を描くデコレーター
     ├── vscode-theme.tsx     # VSCode/* のストーリーに --vscode-* を与えるデコレーター

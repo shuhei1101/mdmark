@@ -86,7 +86,7 @@ functions:
     container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
-    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。読み込めない属性は当てずに `items` に入れる'
+    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。読み込めない属性は適用せずに `items` に入れる'
     args:
       - name: text
         type: string

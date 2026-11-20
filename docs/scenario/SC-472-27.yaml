@@ -347,7 +347,7 @@ scenarios:
       - '`docs/` の `mdmark.config.yaml` の `version` が目標のバージョンになる'
       - 上のフォルダの `mdmark.config.yaml` と端末の設定は書き換わらない
     test: test_normal_when_parent_config_exists
-  - name: 正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）
+  - name: 正常シナリオ（エイリアスの元の行を変更後の構造へ書き換える）
     setup:
       - name: v0.2.0 の構造のエイリアスの元の行を持つフォルダ
         description: '`version: v0.9.0` の設定の `aliases` に、次の 3 行とその YAML を持つフォルダ。`alias_type` を `{type: custom, value: term}`、`name`・`description` を `{type: ref, field}` で取る行 `terms`。`alias_type` を `{type: ref, field: alias_type}` で取り、レコードの `alias_type` が全て `command` の行 `commands`。`cwd` を `{type: custom, value: リポジトリの直下}` で取る `command` の行 `tests`'
@@ -364,7 +364,7 @@ scenarios:
         participant F as フォルダ
         W->>C: mdmark upgrade --yes
         C->>F: 書き換えうるファイルをコピーのフォルダへ写す
-        C->>F: aliases の行の paths の YAML を参照し、行を新しい構造へ書き換える
+        C->>F: aliases の行の paths の YAML を参照し、行を変更後の構造へ書き換える
         C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 適用した手順・除外したキーと値・コピーのフォルダの場所・終了コード 0
@@ -448,9 +448,9 @@ scenarios:
       - コードブロックの中の印・閉じのマーカー・マーカーの外の本文が変わっていない
       - 設定の `version` が目標のバージョンで、終了コードが 0
     test: test_normal_when_retired_map_options
-  - name: 正常シナリオ（座標で書いた図を map へ書き換える）
+  - name: 正常シナリオ（座標で記載した図を map へ書き換える）
     setup:
-      - name: 座標で書いた図を持つフォルダ
+      - name: 座標で記載した図を持つフォルダ
         description: |-
           手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 1 つを持つフォルダ。
           文書は `<!-- flow -->` の範囲 2 つと `<!-- sequence -->` の範囲 1 つを持つ。
@@ -472,7 +472,7 @@ scenarios:
         W->>C: mdmark upgrade --yes
         C->>F: 書き換えうるファイルをコピーのフォルダへ写す
         C->>F: flow・sequence の範囲を、Mermaid のブロックと補足を持つ map の範囲へ書き換える
-        C->>F: 文書が使っていたノードと線の種類を、設定の map.kinds・map.lines へ書き足す
+        C->>F: 文書が使用していたノードと線の種類を、設定の map.kinds・map.lines へ追記する
         C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
         C->>F: 設定の version を目標のバージョンにする
         C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
@@ -485,18 +485,18 @@ scenarios:
       - 判定フローチャートの Mermaid のノードが、開始・質問・アクション・結果ごとに異なる形とクラスで記載され、`YES`・`NO` が線のラベルになっている
       - シーケンス図の Mermaid が `sequenceDiagram` で、参加者が元の順、メッセージが元の順と向きで、loop の範囲が `loop` 〜 `end` になっている
       - 元の `hint`・`io`・`tip` の文が、補足の `notes` の、対応するノード・グループ・線・メッセージの説明になっている
-      - 設定の `map.kinds`・`map.lines` に、文書が使っていたノードの種類と線の種類の名前・アイコン・形・模様が書き足され、ほかの設定のキーは変わっていない
+      - 設定の `map.kinds`・`map.lines` に、文書が使用していたノードの種類と線の種類の名前・アイコン・形・模様が追記され、ほかの設定のキーは変わっていない
       - 出力の移行の報告に、書き換えた範囲ごとの範囲・更新日と、`stickyTitles` を記載したフロー図の `stickyTitles` が、文書のファイルと行と項目つきで挙がる。座標と大きさは挙がらない
       - 設定の `version` が目標のバージョンで、終了コードが 0
       - 元の `sub` の `--` が、補足の `notes` の説明に Unicode エスケープで記載され、適用した後の点検が `map_invalid_value` を出さない
     test: test_normal_when_retired_diagrams
-  - name: 正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）
+  - name: 正常シナリオ（部品の定義で記載した ER 図を map へ書き換える）
     setup:
-      - name: 部品の定義で書いた ER 図を持つフォルダ
+      - name: 部品の定義で記載した ER 図を持つフォルダ
         description: |-
           手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 1 つを持つフォルダ。
           文書は `<!-- er -->` の範囲 1 つを持つ。
-          ER 図は題・範囲・更新日と、物理名と論理名を持つテーブル 3 つ（種類 `master` のテーブル 1 つ、種類 `transaction` で `color` を持つテーブル 1 つ、説明を持つテーブル 1 つ）を持つ。
+          ER 図はタイトル・範囲・更新日と、物理名と論理名を持つテーブル 3 つ（種類 `master` のテーブル 1 つ、種類 `transaction` で `color` を持つテーブル 1 つ、説明を持つテーブル 1 つ）を持つ。
           列は主キー・外部キー・NOT NULL・説明を持つものを含み、列の多いテーブル 1 つに `folded` を記載する。
           関係は多重度（`1`・`0..n`）とラベルを持つ 1 対多の 2 本
       - name: Mock
@@ -522,7 +522,7 @@ scenarios:
     expected:
       - '`er` の範囲が、`<!-- map: {"title": "{元の題}"} -->` 〜 `<!-- /map -->` の範囲（`mermaid` のブロック 1 つと補足 `<!-- map-data: {"version": 1, …} -->`）に書き換わり、範囲の外の本文は変わっていない'
       - Mermaid が `erDiagram` で、テーブルが元の物理名、列が元の型・名前と主キー（`PK`）・外部キー（`FK`）のマーカーで、関係が元の両端の多重度とラベルで記載されている
-      - 補足の `notes` に、テーブルの説明（論理名を先頭に置き、元の説明を続ける）と、説明を持つ列の説明がある
+      - 補足の `notes` に、テーブルの説明（論理名を先頭に配置し、元の説明を続ける）と、説明を持つ列の説明がある
       - '`folded` を記載していたテーブルが、補足の `layout` で列を最初に閉じる指定になっている'
       - 出力の移行の報告に、テーブルの種類 `kind`・テーブルの `color`・列の `nn`・範囲 `scope`・更新日 `updated` が、文書のファイルと行と項目つきで挙がる。座標と大きさは挙がらない
       - 設定の `version` が目標のバージョンで、終了コードが 0
@@ -532,7 +532,7 @@ scenarios:
       - name: 書き換えない記載を持つフォルダ
         description: |-
           手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 1 つを持つフォルダ。
-          文書は、拡張のマーカーの今の書き方の記載 `<!-- greet: world -->`、設定の `libraries` のマーカーの今の書き方の記載、読み込めない記載 `<!-- table: data filter=名前:range -->` 〜 `<!-- /table -->`、今の書き方の `<!-- section: closed -->`、JSON として読めない部品の定義を持つ `<!-- flow -->` の範囲、定義に無いテーブルを関係の先に指定した `<!-- er -->` の範囲を持つ。設定の `extensions` と `libraries` にそれぞれのマーカーを記載する
+          文書は、拡張のマーカーの今の書き方の記載 `<!-- greet: world -->`、設定の `libraries` のマーカーの今の書き方の記載、読み込めない記載 `<!-- table: data filter=名前:range -->` 〜 `<!-- /table -->`、今の書き方の `<!-- section: closed -->`、JSON として読み取れない部品の定義を持つ `<!-- flow -->` の範囲、定義に無いテーブルを関係の先に指定した `<!-- er -->` の範囲を持つ。設定の `extensions` と `libraries` にそれぞれのマーカーを記載する
       - name: Mock
         description: 正常シナリオ（文書のマーカーを JSON の記載へ書き換える）と同じ
         notes: '`--yes` を付ける'
@@ -556,17 +556,17 @@ scenarios:
     expected:
       - '`<!-- section: closed -->` が `<!-- section: {"open": false} -->` に書き換わっている'
       - '表のマーカーが `<!-- table: {"kind": "data"} -->` になり、読み込めない `filter=名前:range` を持たない'
-      - 拡張のマーカーと `libraries` のマーカーと、読めない定義の `flow` の範囲と、定義に無いテーブルを指す `er` の範囲は書き換わっていない
+      - 拡張のマーカーと `libraries` のマーカーと、読み取れない定義の `flow` の範囲と、定義に無いテーブルを指す `er` の範囲は書き換わっていない
       - 出力の移行の報告に、拡張のマーカーと `libraries` のマーカーが引数をキーへ移す対応を持たない理由で、`filter=名前:range` と `flow` の範囲の定義が読み込めない理由で、`er` の範囲が関係の先のテーブルが定義に無い理由で、それぞれ文書のファイルと行つきで挙がる
       - 適用した後の点検は、移行の報告に挙げた今の書き方のマーカーと `flow`・`er` の範囲を失敗に数えず、ほかのずれが 0 件で通る
       - 設定の `version` が目標のバージョンで、終了コードが 0
     test: test_normal_when_unconverted_marks
-  - name: 異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない）
+  - name: 異常シナリオ（エイリアスの元の行の種類が 1 つに決定しない）
     setup:
       - name: 種類を混ぜた行を持つフォルダ
         description: '`version: v0.9.0` の設定の `aliases` に、`alias_type` を `{type: ref, field: alias_type}` で取り、レコードの `alias_type` に `term` と `command` が混ざる行 `mixed` を持つフォルダ'
       - name: Mock
-        description: 正常シナリオ（エイリアスの元の行を新しい構造へ書き換える）と同じ
+        description: 正常シナリオ（エイリアスの元の行を変更後の構造へ書き換える）と同じ
     flow: |-
       <!-- map -->
 
@@ -707,7 +707,7 @@ scenarios:
       - コピーのフォルダに、適用する前の `notes/c.md` がある
       - 終了コードが 0 以外
     test: test_error_when_index_points_outside
-lead: 文書の作成者が `mdmark upgrade` を実行し、設定の手元のバージョンから目標のバージョンまでの移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換え、その範囲の変更履歴を受け取る。
+lead: 文書の作成者が `mdmark upgrade` を実行し、設定の手元のバージョンから目標のバージョンまでの移行の手順をバージョンの順に適用し、点検に合格してから設定のバージョンを書き換え、その範囲の変更履歴を受け取る。
 primary_actor: 文書の作成者
 trigger: 新しいバージョンが出て、文書の作成者がそのバージョンの CLI と配布物を使用したくなった
 preconditions:

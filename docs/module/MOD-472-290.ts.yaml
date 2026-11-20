@@ -7,7 +7,7 @@ functions:
   - name: buildViews
     title: ビューのマーカーを囲みにする
     container: src/views/view.syntax.ts
-    summary: 'コアルール。`views` がオンのとき、`<!-- view: {JSON のオブジェクト} -->` の範囲を `div.mdmark-view` の囲みにし、範囲の最初の表に表の部品の指定を当て、記載方法の誤りを警告にする。オフのときは何もしない（マーカーは `dropMarks` が取り除き、表は囲まない表として描く）'
+    summary: 'コアルール。`views` がオンのとき、`<!-- view: {JSON のオブジェクト} -->` の範囲を `div.mdmark-view` の囲みにし、範囲の最初の表に表の部品の指定を適用し、記載方法の誤りを警告にする。オフのときは何もしない（マーカーは `dropMarks` が取り除き、表は囲まない表として描く）'
     kind: 関数
     scope: internal
     side_effects: '`state.tokens` を書き換える'
@@ -20,7 +20,7 @@ functions:
       1. `view` のマーカーごとに閉じのマーカーを探す。無ければ文書の終わりまでを範囲にし、閉じのマーカーが無い警告を `pushWarning` で差し込む
       2. マーカーの設定（`validateMarkOptions` を経た値。キーは `board.group.column`・`board.values.{値}.icon`・`initial`・`columns.{列名}.filter.type`・`columns.{列名}.sort`）を読み込む
       3. 範囲に表が無ければ、範囲に表が無い警告を差し込み、中身はそのまま残す
-      4. 最初の表の見出しの行の文字を列名にして、`board.group.column`・`columns` のキーの列名を位置にする（絞り込みの種類は `FILTER_KINDS`、アイコンの名前は `VIEW_ICON_NAMES` に `validateMarkOptions` が照らしてある）。表に無い `board.group.column` の列は `boardDisabled` に警告の `id` を入れ、表に無い `columns` の列と、`board.group.column` の列に無い `board.values` の値は、その設定だけを当てずに警告にする（文言は画面設計『文書』の記載の警告）
+      4. 最初の表の見出しの行の文字を列名にして、`board.group.column`・`columns` のキーの列名を位置にする（絞り込みの種類は `FILTER_KINDS`、アイコンの名前は `VIEW_ICON_NAMES` に `validateMarkOptions` が照らしてある）。表に無い `board.group.column` の列は `boardDisabled` に警告の `id` を入れ、表に無い `columns` の列と、`board.group.column` の列に無い `board.values` の値は、その設定だけを適用せずに警告にする（文言は画面設計『文書』の記載の警告）
       5. 表の `table_open` に、`data` の種類・`sort` と読み込めた `columns.{列名}.filter` の列と、`columns.{列名}.sort` の列と真偽値の `sorts` を持ち、`hide`・`totals` を空にした `TableSpec` を適用する（ビューの表に件数・テーブル設定・集計は付けない）（`decorateTables` が表の部品にする）
       6. 範囲を `<div class="mdmark-view" data-view="{ViewSpec の JSON}">` の開きと閉じの `html_block`（`markOwn`）で挟む。`mode` は `initial`、無ければ `board.group.column` が該当すれば `board`、それ以外は `table`。`initial` の `board` で `board.group.column` が該当しないときは `table`
     unit_tests:
@@ -44,7 +44,7 @@ functions:
         expected: '`の範囲に、項目にする表がありません` の警告と段落があり、`div.mdmark-view` が無い'
       - name: test_build_views_when_unknown_icon
         case: 正常
-        summary: 使用できないアイコンと列に無い値は当てずに警告にする
+        summary: 使用できないアイコンと列に無い値は適用せずに警告にする
         condition: '`{"board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "rocket"}, "保留": {"icon": "inbox"}}}}`、状態の列の値が `完了`・`未着手`'
         mock: なし
         expected: '`icon` の `rocket` の型と選べる値の警告と、状態の列に無い値 `保留` と列の値を記載した警告があり、`data-view` の `icons` が `{}`'
@@ -65,7 +65,7 @@ functions:
         summary: columns.{列名}.sort の列を表の指定の sorts に入れる
         condition: '`{"board": {"group": {"column": "状態"}}, "columns": {"説明": {"sort": true}, "タイトル": {"sort": false}, "優先度": {"sort": true}}}` とタイトル・状態・説明の表（優先度の列は表に無い）'
         mock: なし
-        expected: '表に無い `優先度` の列の記載の警告だけがあり、表の `TableSpec` の `sorts` が `[{ column: 2, sort: true }, { column: 0, sort: false }]` で、それを写した表の囲みが `data-no-sort="0"` を持つ（`render` の HTML で確かめる）'
+        expected: '表に無い `優先度` の列の記載の警告だけがあり、表の `TableSpec` の `sorts` が `[{ column: 2, sort: true }, { column: 0, sort: false }]` で、それをコピーした表の囲みが `data-no-sort="0"` を持つ（`render` の HTML で確認する）'
     refs:
       - IF-472-34#
       - MOD-472-154#data_models[ViewSpec]

@@ -97,7 +97,7 @@ functions:
         expected: '`kind` と `doc か term` を含む文'
       - name: test_check_arguments_when_null_allowed
         case: 正常
-        summary: null を許す引数
+        summary: null を許可する引数
         condition: 'テストの構造（`item` が `type: ["object", "null"]`）に `item: null`'
         mock: なし
         expected: '`undefined`'

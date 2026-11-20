@@ -108,7 +108,7 @@ scenarios:
         C->>H: PreToolUse（Edit・a.mark.md・セッション 1）
         H-->>C: 案内なし
         C->>H: PreCompact（セッション 1）
-        H->>H: セッション 1 の記録を消す
+        H->>H: セッション 1 の記録を削除する
         C->>H: PreToolUse（Edit・a.mark.md・セッション 1）
         H-->>C: additionalContext（記法のルールを MCP で参照し、記載した後に check で点検する）
         C->>H: PreToolUse（Write・b.md・セッション 2）
@@ -120,10 +120,10 @@ scenarios:
       <!-- /map -->
     expected:
       - セッション 1 の `a.mark.md` への Write で、`additionalContext` に記法のルールを MCP で参照することと、記載した後に `check` で点検することが記載されている
-      - セッション 1 の 2 回目の Edit と、セッション 2 の `b.md` への Write では `additionalContext` を返さない
-      - セッション 1 で会話を圧縮した（PreCompact）後の `a.mark.md` への Edit では、もう一度案内を返す
-      - セッション 2 の `a.mark.md` への Write では、もう一度案内を返す
-      - どの呼び出しも、ツールの呼び出しを止めない（終了コード 0 で、拒否の判定を返さない）
+      - セッション 1 の 2 回目の Edit と、セッション 2 の `b.md` への Write では `additionalContext` を返却しない
+      - セッション 1 で会話を圧縮した（PreCompact）後の `a.mark.md` への Edit では、もう一度案内を返却する
+      - セッション 2 の `a.mark.md` への Write では、もう一度案内を返却する
+      - どの呼び出しも、ツールの呼び出しを止めない（終了コード 0 で、拒否の判定を返却しない）
     test: test_normal_when_mark_md_written
   - name: 正常シナリオ（mdmark で記載するよう指示する）
     setup:
@@ -150,9 +150,9 @@ scenarios:
       <!-- /map -->
     expected:
       - 「設計メモを mdmark で書いて」の UserPromptSubmit で、`additionalContext` に記法のルールを MCP で参照することと、記載した後に `check` で点検することが記載されている
-      - 同じセッションのその後の `a.mark.md` への Write では `additionalContext` を返さない
-      - mdmark で記載する指示を含まない発言では `additionalContext` を返さない
-      - 'どの呼び出しも、発言を止めない（終了コード 0 で、`decision: block` を返さない）'
+      - 同じセッションのその後の `a.mark.md` への Write では `additionalContext` を返却しない
+      - mdmark で記載する指示を含まない発言では `additionalContext` を返却しない
+      - 'どの呼び出しも、発言を止めない（終了コード 0 で、`decision: block` を返却しない）'
     test: test_normal_when_prompt_asks_mdmark
 lead: Claude Code が、mdmark のプラグインのフックの案内と MCP の instructions に沿って、dev-docs の `search_docs` で mdmark の配信元からガイドのページを受け取る。
 primary_actor: Claude Code

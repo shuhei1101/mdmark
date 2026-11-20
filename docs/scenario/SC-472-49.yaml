@@ -68,7 +68,7 @@ scenarios:
     setup:
       - name: 拡張を登録するページ
         description: 正常シナリオと同じ
-        notes: '`schema` は `options` の `target` を英小文字の文字列だけで許す'
+        notes: '`schema` は `options` の `target` を英小文字の文字列だけで許可する'
       - name: 合わない引数のマーカーを持つ Markdown
         description: '段落の間に `<!-- greet: {"target": 2} -->` を持つ文書'
       - name: Mock
@@ -119,7 +119,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - マーカーの場所に、拡張のマーカーの引数は JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられることを記載した記載の警告がある
+      - マーカーの場所に、拡張のマーカーの引数は JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で修正する箇所を確認できることを記載した記載の警告がある
       - 拡張の代役への要求が 0 件で、マーカーの場所に `world` が描かれていない
       - マーカーの前後の段落が描かれている
     test: test_error_when_legacy_args

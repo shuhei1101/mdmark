@@ -59,7 +59,7 @@ functions:
     kind: 関数
     container: migrations/next/drop-tag-vocabulary.mjs
     usecase: バージョンを上げる
-    summary: '`call` のスクリプトの入口。`--config` の設定ファイルの `index` が指す索引を `dropTagVocabulary` で書き換えて書き込んで戻す'
+    summary: '`call` のスクリプトのエントリーポイント。`--config` の設定ファイルの `index` が指す索引を `dropTagVocabulary` で書き換えて書き込んで戻す'
     description: '`applyStep` が `[{スクリプト}, "--config", {設定ファイル}]` で実行する。
 
       ファイルを直接流したとき（`import.meta.url` が `process.argv[1]` の `pathToFileURL` の `href`）だけ `process.argv.slice(2)` で呼ぶ。

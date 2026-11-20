@@ -118,7 +118,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: '設定を重ねて読み込み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の構造のずれを先に、続けて `mdmark check` と同じ並びのずれを返却する。ずれの `file` は設定ファイルのパスを表示の構造にしたパス（`base` は今のフォルダ）'
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ マーカーの設定のずれ（`checkMarkOptions`。`unknownMarks` が `false` のときは拡張のマーカーを点検しない）→ 図の点検のずれ（`checkDiagrams` に `loadExtensionDirectives` の `directive` を指定する。`diagram_invalid` は `unknownMarks` によらず点検し、`unknownMarks` が `false` のとき（`runUpgrade`）は拡張を読み込まないため `retired_diagram` を除く。移行の手順が書き換えずに残す廃止した図の範囲は、移行の報告に挙げた読めない定義と、拡張のマーカーだけ）→ map のずれ（`checkMaps`）→ `plain_md_with_marks`（`checkPlainMarkdown`。`unknownMarks` が `false` のときと、設定の `check.suggestMarkExtension` が `false` のときは点検しない）。
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ マーカーの設定のずれ（`checkMarkOptions`。`unknownMarks` が `false` のときは拡張のマーカーを点検しない）→ 図の点検のずれ（`checkDiagrams` に `loadExtensionDirectives` の `directive` を指定する。`diagram_invalid` は `unknownMarks` によらず点検し、`unknownMarks` が `false` のとき（`runUpgrade`）は拡張を読み込まないため `retired_diagram` を除く。移行の手順が書き換えずに残す廃止した図の範囲は、移行の報告に挙げた読み取れない定義と、拡張のマーカーだけ）→ map のずれ（`checkMaps`）→ `plain_md_with_marks`（`checkPlainMarkdown`。`unknownMarks` が `false` のときと、設定の `check.suggestMarkExtension` が `false` のときは点検しない）。
 
       設定の `map` の値のうち `schemas/mdmark.config.schema.json` の記載できる値に無いもの（`node_fit`・`url_state`・`kinds` の `shape`・`lines` の `dash`・`width`・`head`）は、`where` が値のキー（`map.kinds.store.shape` など）で、記載できる値を「・」で結んで並べた `schema` のずれにし、`map_unknown_icon`（`checkMapConfig`）と合わせて設定の `schema` の並びの後ろに配置する。
 
@@ -518,8 +518,8 @@ functions:
     usecase: 設定と索引を点検する
     kind: 関数
     scope: internal
-    summary: '文書ごとに map の範囲を読み、`collectMapProblems`（`includeUnknownKeys: true`、`idLinks` は `skip`）の項目を 1 つにつき 1 件のずれにする。`features: -map` の文書は点検しない'
-    description: ずれの `file` は文書のパス、`where` は範囲の開きのマーカーの行に項目の `line` を足した行の番号の文字（項目が `line` を持たなければ開きのマーカーの行）、`message` は項目の文
+    summary: '文書ごとに map の範囲を読み取り、`collectMapProblems`（`includeUnknownKeys: true`、`idLinks` は `skip`）の項目を 1 つにつき 1 件のずれにする。`features: -map` の文書は点検しない'
+    description: ずれの `file` は文書のパス、`where` は範囲の開きのマーカーの行に項目の `line` を追加した行の番号の文字（項目が `line` を持たなければ開きのマーカーの行）、`message` は項目の文
     args:
       - name: documents
         type: '{ path: string; markdown: string }[]'
@@ -528,7 +528,7 @@ functions:
       - name: config
         type: ResolvedConfig
         required: true
-        description: 既定を当てた設定
+        description: 既定を適用した設定
     returns:
       type: CheckIssue[]
       description: '`map_*` のずれ'
@@ -543,7 +543,7 @@ functions:
         expected: '`map_unknown_ref`・`map_unknown_key`・`map_invalid_value` が 1 件ずつで、`where` が補足のその行、20 行目の範囲のずれが無い'
       - name: test_check_maps_when_map_disabled
         case: 正常
-        summary: 機能を外した文書
+        summary: 機能を解除した文書
         condition: '`<!-- features: {"map": false} -->` とずれを持つ範囲'
         mock: なし
         expected: 空
@@ -551,7 +551,7 @@ functions:
     title: マーカーの設定をずれにする
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
-    summary: '文書ごとに `findMarks` で取得した記法のマーカー（`map`・`map-data` と閉じのマーカーを除く）と、拡張・`libraries` のマーカーの引数を `readMarkArgs` で読み、記法のマーカーは `validateMarkOptions` に通して、`problems` と読めない引数を 1 つにつき 1 件の `mark_option_invalid`、`markOptionNotes` の注記を 1 つにつき 1 件のその種類のずれにする'
+    summary: '文書ごとに `findMarks` で取得した記法のマーカー（`map`・`map-data` と閉じのマーカーを除く）と、拡張・`libraries` のマーカーの引数を `readMarkArgs` で読み取り、記法のマーカーは `validateMarkOptions` に通して、`problems` と読み取れない引数を 1 つにつき 1 件の `mark_option_invalid`、`markOptionNotes` の注記を 1 つにつき 1 件のその種類のずれにする'
     description: 'ずれの `file` は文書のパス、`where` はマーカーの行の番号の文字、`message` は `mark_option_invalid` は描いたときの記載の警告の本文（HTML のタグと `` ` `` を除いた文字）、ほかは注記の文。並びは文書の並び、同じ文書の中は行の順（同じ行は `mark_option_invalid`・注記の順）。文書の `features` のマーカーで記法をオフにしても点検する'
     kind: 関数
     scope: internal

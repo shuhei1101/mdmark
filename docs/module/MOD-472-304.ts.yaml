@@ -97,7 +97,7 @@ data_models:
         description: '`url` は設定の `mermaid.url` が文字列ならその値、それ以外は `DEFAULT_MERMAID_URL`。`theme` は `MERMAID_THEMES` にあればその値、それ以外は `mdmark`。`themeVariables` は設定の `mermaid.themeVariables` のうち値が文字列のキーだけ（`useGradient`・`dropShadow` を除く）'
       - name: map
         type: '{ node_fit: "height" | "width"; url_state: boolean; kinds: Record<string, MapKind>; lines: Record<string, MapLine> }'
-        description: '`resolveMapConfig` で既定を当てた設定の `map`'
+        description: '`resolveMapConfig` で既定を適用した設定の `map`'
       - name: table
         type: '{ pin: TablePinMode; pinDefault: boolean; longColumnMin: number }'
         description: '`pin` は設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`。`pinDefault` は設定の `table.pin_default` が `true` のときだけ `true`、それ以外は `false`。`longColumnMin` は設定の `table.long_column_min` が 0 より大きい有限の数ならその値、それ以外は `DEFAULT_LONG_COLUMN_MIN_EM`'
@@ -168,7 +168,7 @@ constants:
   - name: DEFAULT_LIBRARIES
     title: 既定の対応表
     container: src/config.ts
-    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表。この Issue では空で、外部ライブラリを使用する機能を作る Issue（[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6)）がバージョンを固定した URL の行を追加する
+    summary: マーカーの名前から `LibraryEntry` を参照する既定の対応表で、行を持たない
     value: '{}'
   - name: MARK_NAME_PATTERN
     title: マーカーの名前の書式
@@ -275,7 +275,7 @@ functions:
     container: src/config.ts
     kind: 関数
     scope: public
-    summary: 利用側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返却する
+    summary: 利用側の設定に既定を適用し、型の合わない値を落とした `ResolvedConfig` を返却する
     description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。
 
       `libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。
@@ -436,12 +436,12 @@ functions:
       - IF-472-35#constraints[ページの設定のマーカー]
     status: planned
   - name: resolveMapConfig
-    title: mapの設定に既定を当てる
+    title: mapの設定に既定を適用する
     kind: 関数
     container: src/config.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 設定の `map` に既定を当て、知らない値を既定にした `ResolvedConfig["map"]` を返す。`resolveConfig` が呼ぶ
+    summary: 設定の `map` に既定を適用し、知らない値を既定にした `ResolvedConfig["map"]` を返却する。`resolveConfig` が呼ぶ
     scope: internal
     args:
       - name: value
@@ -450,7 +450,7 @@ functions:
         description: 利用側の `config.map`
     returns:
       type: '{ node_fit: "height" | "width"; url_state: boolean; kinds: Record<string, MapKind>; lines: Record<string, MapLine> }'
-      description: 既定を当てた設定
+      description: 既定を適用した設定
     process: |-
       1. `node_fit` が `height`・`width` でなければ `height`、`url_state` が真偽値でなければ `true` にする
       2. `kinds`・`lines` のオブジェクトの値ごとに、`MAP_SHAPES`・`MAP_DASHES`・`MAP_WIDTHS`・`MAP_HEADS`・色の名前に無い値のキーを捨てる（`icon` は文字列ならそのまま残し、描くときに無い名前を捨てる）

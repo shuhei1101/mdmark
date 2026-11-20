@@ -9,7 +9,7 @@ functions:
     kind: 関数
     container: vscode/src/webview/main.tsx
     usecase: VSCodeでプレビューを開く
-    summary: Webview の入口。描く先を包む要素から始め方と保存した状態を読み込み、その要素に React の木（`App`）を描く。描く先を包む要素が無いページでは何もしない
+    summary: Webview のエントリーポイント。描く先を包む要素から始め方と保存した状態を読み込み、その要素に React の木（`App`）を描く。描く先を包む要素が無いページでは何もしない
     description: ファイルの末尾で呼ぶ
     scope: public
     process: |-

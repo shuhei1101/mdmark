@@ -119,7 +119,7 @@ constraints:
     constraint: コメント・キーの並び・触らないキーの記載方法を残す
     decided_by: LIB-472-36#
   - item: version
-    constraint: 新しく作るときだけ `version` をプラグインのビルドで埋めた mdmark のバージョンにする
+    constraint: 新規作成するときだけ `version` をプラグインのビルドで埋めた mdmark のバージョンにする
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン

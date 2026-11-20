@@ -127,7 +127,7 @@ settings:
     reload: immediate
     refs:
       - CFG-472-3#settings[libraries]
-    reason: Webview で読み込める URL への修正方法（`asWebviewUri`）は拡張機能にしかできず、mdmark に基準を指定するインターフェースを追加しても拡張機能が URL を修正する処理を持つことは変わらないため（要件.md の推奨案 B）
+    reason: Webview で読み込める URL への修正方法（`asWebviewUri`）は拡張機能にしかできず、mdmark に基準を指定するインターフェースを追加しても拡張機能が URL を修正する処理を持つことは変わらないため
     status: planned
     visibility: user
   - key: MDMARK_VSCODE_DIST_BASE
@@ -190,7 +190,7 @@ settings:
     refs:
       - IF-472-21#constraints[設定の取り出し方]
       - CFG-472-3#settings[colorTheme]
-    reason: 選んだテーマは書き出す HTML にも該当するため、`mdmark.preview.*` の下に配置しない（確認ログ「テーマの設定のキーと設定画面の表示名」）
+    reason: 選んだテーマは書き出す HTML にも該当するため、`mdmark.preview.*` の下に配置しない
     status: planned
     visibility: user
   - key: colorTheme

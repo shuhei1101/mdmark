@@ -56,7 +56,7 @@ functions:
       - name: options
         type: TableOptions
         required: true
-        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`unpin`（`data-unpin` に写す、既定で留める列から除く列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`widths`（`{ column, width }` の並び。指定した列の見出しのセルの `width`・`min-width`・`--mdmark-column-min-width` に入れ、セルに `is-resized` を付ける）・`resizing`（つまみの線を出したままにする列の位置）・`long`（`data-long` に写す長文の列の位置の並び）・`noSort`（`data-no-sort` に写す並べ替えを付けない列の位置の並び。空なら属性を付けない）・`widthRanges`（`{ column, min?, max? }` の並び。`data-width` に `{位置}:{min}-{max}` を空白で区切って写し、記載しない側は空にする）・`autoWidths`（`{ column, width }` の並び。表に `data-auto-width` と `--mdmark-auto-table-width`（幅の合計）、見出しのセルに `--mdmark-auto-width` を入れる）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`unpin`（`data-unpin` に写す、既定で留める列から除く列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`widths`（`{ column, width }` の並び。指定した列の見出しのセルの `width`・`min-width`・`--mdmark-column-min-width` に入れ、セルに `is-resized` を付ける）・`resizing`（つまみの線を出したままにする列の位置）・`long`（`data-long` に写す長文の列の位置の並び）・`noSort`（`data-no-sort` に写す並べ替えを付けない列の位置の並び。空なら属性を付けない）・`widthRanges`（`{ column, min?, max? }` の並び。`data-width` に `{位置}:{min}-{max}` を空白で区切ってコピーし、記載しない側は空にする）・`autoWidths`（`{ column, width }` の並び。表に `data-auto-width` と `--mdmark-auto-table-width`（幅の合計）、見出しのセルに `--mdmark-auto-width` を入れる）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
     returns:
       type: string
       description: '`<div class="mdmark-table"` で始まる HTML'
@@ -132,7 +132,7 @@ functions:
         expected: 1 つ目が `<details class="mdmark-table-details" open><summary>リリースの一覧</summary>`、2 つ目の `summary` が `a&lt;b`
       - name: test_render_table_when_long_columns
         case: 正常
-        summary: 長文の列と列の幅の範囲を囲みに写し、自動の列の幅を入れる
+        summary: 長文の列と列の幅の範囲を囲みにコピーし、自動の列の幅を入れる
         condition: '`body: SLOT_MARKER`・`long: [1, 3]`・`widthRanges: [{1, min: 20, max: 30}, {3, max: 12}]` と、部品設計の `AutoWidth`'
         mock: なし
         expected: 1 つ目の囲みが `data-long="1 3"`・`data-width="1:20-30 3:-12"` を持つ。部品設計の `LongColumnNotSortable` の囲みが `data-no-sort="2"` を持ち、説明の列の見出しが `mdmark-sort` を持たない。`AutoWidth` の表が `data-auto-width` と `--mdmark-auto-table-width:1145px` を持ち、6 列の見出しのセルが `autoWidths` の幅の `--mdmark-auto-width` を持つ

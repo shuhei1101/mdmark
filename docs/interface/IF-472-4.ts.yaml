@@ -154,7 +154,7 @@ request:
     type: string
     required: false
     default: '8782'
-    description: 待ち受けるポート。プラグインの `.mcp.json` の url も同じ環境変数で決まる
+    description: 待ち受けるポート。プラグインの `.mcp.json` の url も同じ環境変数で決定する
     constraints: 1〜65535 の整数
   - name: MDMARK_LAUNCHER
     type: '"systemd" | "tmux"'

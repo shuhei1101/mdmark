@@ -11,7 +11,7 @@ flows:
       - name: バージョンを合わせたリポジトリ
         description: '`vscode/package.json` の `version` が `0.2.0` で、最上位の `icon` にアイコンの PNG を記載した作業ツリー'
       - name: Mock
-        description: GitHub と Marketplace へは送信しない。`release:check` と `package` を手元で実行し、ワークフローの YAML を読む
+        description: GitHub と Marketplace へは送信しない。`release:check` と `package` を手元で実行し、ワークフローの YAML を読み取る
     flow: |-
       <!-- map -->
 

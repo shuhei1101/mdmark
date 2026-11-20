@@ -53,7 +53,7 @@ css_properties:
     description: 文字の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ
 accessibility:
   - '文字の色に加えて太字（`font-weight: 700`）にし、色だけで意味を伝えない'
-  - 文字と地の色のコントラストを 4.5:1 以上にする
+  - 文字と背景色のコントラストを 4.5:1 以上にする
 refs:
   - IF-472-34#constraints[本文の文字の色]
   - IF-472-35#constraints[色のプリセット]

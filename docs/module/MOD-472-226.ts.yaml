@@ -36,9 +36,9 @@ functions:
     scope: internal
     summary: 表の最下段の見出しのつまみ（`span.mdmark-col-resize`）に、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける
     description: |-
-      つまみの `pointerdown` で既定の動作を止めて伝わりを止め、`setPointerCapture` でポインターを捕まえ、つまみに `is-dragging` を付ける。`pointermove` では押した位置からの横の移動量を押したときの幅に足し、`setColumnWidth` で入れる。`pointerup`・`pointercancel` で `is-dragging` を外す。`pointerType` が `touch` で、`pointerdown` からの移動が `TAP_MOVE_TOLERANCE_PX` 以内の `pointerup` だけをタップとして数え、タップが前のタップから `DOUBLE_TAP_MS` 以内なら幅を戻す（動かしたドラッグの終わりはタップに数えず、前のタップの記録も消す）。`dblclick` でも幅を戻す。`keydown` の → は `COLUMN_RESIZE_STEP_PX` 広げ、← は狭め、Enter は幅を戻す（どれも既定の動作を止める）。
+      つまみの `pointerdown` で既定の動作を止めて伝わりを止め、`setPointerCapture` でポインターを捕まえ、つまみに `is-dragging` を付ける。`pointermove` では押した位置からの横の移動量を押したときの幅に追加し、`setColumnWidth` で入れる。`pointerup`・`pointercancel` で `is-dragging` を解除する。`pointerType` が `touch` で、`pointerdown` からの移動が `TAP_MOVE_TOLERANCE_PX` 以内の `pointerup` だけをタップとして数え、タップが前のタップから `DOUBLE_TAP_MS` 以内なら幅を戻す（動かしたドラッグの終わりはタップに数えず、前のタップの記録も削除する）。`dblclick` でも幅を戻す。`keydown` の → は `COLUMN_RESIZE_STEP_PX` 広げ、← は狭め、Enter は幅を戻す（どれも既定の動作を止める）。
 
-      `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を外して測った、その変数の計算値（既定 `6em`）に左右の余白と罫線を足した外側の幅と、`attachAutoColumnWidths` が入れたインラインの `--mdmark-column-head-width`（見出しの中身が収まる外側の幅）の大きい方）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後、測る前に `onWidthWritten` を呼び、測った外側の幅が指定した幅と違えば、差を足して入れ直す。`data-auto-width` の表では、ほかの列の幅を止めない（ほかの列は `--mdmark-auto-width` が保つ）。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を外し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を外す（`attachAutoColumnWidths` の `--mdmark-auto-width` の幅に戻る）。入れた後と戻した後に `onResize(column)` を呼ぶ。列の最小幅は自動の列の幅の最小の幅（長文の列の `45em` など）と分け、読者は長文の列も 6em と見出しの中身が収まる幅まで狭められる。`data-auto-width` の表のセルは `min-width` が `0` のため、`min-width` ではなく変数の値を測る。付けたとき・つまみにフォーカスしたとき・入れた後と戻した後に、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小は切り上げ、上限は切り捨て）。最小が今の幅（見出しのセルの `offsetWidth`）より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を常に保つ
+      `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を解除して測った、その変数の計算値（既定 `6em`）に左右の余白と罫線を追加した外側の幅と、`attachAutoColumnWidths` が入れたインラインの `--mdmark-column-head-width`（見出しの中身が収まる外側の幅）の大きい方）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後、測る前に `onWidthWritten` を呼び、測った外側の幅が指定した幅と違えば、差を追加して再設定する。`data-auto-width` の表では、ほかの列の幅を止めない（ほかの列は `--mdmark-auto-width` が保つ）。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を解除し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を解除する（`attachAutoColumnWidths` の `--mdmark-auto-width` の幅に戻る）。入れた後と戻した後に `onResize(column)` を呼ぶ。列の最小幅は自動の列の幅の最小の幅（長文の列の `45em` など）と分け、読者は長文の列も 6em と見出しの中身が収まる幅まで狭められる。`data-auto-width` の表のセルは `min-width` が `0` のため、`min-width` ではなく変数の値を測る。付けたとき・つまみにフォーカスしたとき・入れた後と戻した後に、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小は切り上げ、上限は切り捨て）。最小が今の幅（見出しのセルの `offsetWidth`）より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を常に保つ
     args:
       - name: table
         type: HTMLTableElement
@@ -47,7 +47,7 @@ functions:
       - name: options
         type: '{ headCells: HTMLTableCellElement[]; maxWidth: (column: number) => number; onResize: (column: number) => void; onWidthWritten?: () => void }'
         required: true
-        description: 列ごとの最下段の見出しのセル、列の幅の上限を返す関数、幅を変えた後と戻した後に呼ぶ関数、見出しのセルに幅を入れた後・外側の幅を測る前に呼ぶ関数（表の幅を列の幅の合計に合わせる）
+        description: 列ごとの最下段の見出しのセル、列の幅の上限を返却する関数、幅を変えた後と戻した後に呼ぶ関数、見出しのセルに幅を入れた後・外側の幅を測る前に呼ぶ関数（表の幅を列の幅の合計に合わせる）
     returns:
       type: () => void
       description: 受け取りを削除し、幅の指定を全て戻す関数
@@ -64,7 +64,7 @@ functions:
       - name: test_attach_column_resize_when_auto_width
         case: 正常
         summary: 自動で列の幅を決めた表では、ほかの列の幅を止めず、幅を入れた後・測る前に onWidthWritten を呼ぶ
-        condition: '`data-auto-width` を付けた 3 列の表に `onWidthWritten` と `onResize` を渡して付け、1 列目のつまみを右へ 80px ドラッグする'
+        condition: '`data-auto-width` を付けた 3 列の表に `onWidthWritten` と `onResize` を指定して付け、1 列目のつまみを右へ 80px ドラッグする'
         mock: なし
         expected: 2・3 列目の見出しのセルにインラインの `width` が無く、`onWidthWritten` が `onResize` より前に呼ばれる
       - name: test_attach_column_resize_when_key
@@ -76,9 +76,9 @@ functions:
       - name: test_attach_column_resize_when_clamped
         case: 正常
         summary: 列の最小幅と上限で止める
-        condition: '`maxWidth` が `200` を返し、見出しのセルの `--mdmark-column-head-width` に、6em より広い、列名・並べ替え・ピン止めのボタンが収まる外側の幅を入れた表で、1 列目のつまみを 2000px 右へ、続けて 2000px 左へドラッグする'
+        condition: '`maxWidth` が `200` を返却し、見出しのセルの `--mdmark-column-head-width` に、6em より広い、列名・並べ替え・ピン止めのボタンが収まる外側の幅を入れた表で、1 列目のつまみを 2000px 右へ、続けて 2000px 左へドラッグする'
         mock: なし
-        expected: 右へ動かした後の `offsetWidth` が 200、左へ動かした後の `offsetWidth` が `aria-valuemin` で、その値が見出しの `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上
+        expected: 右へ動かした後の `offsetWidth` が 200、左へ動かした後の `offsetWidth` が `aria-valuemin` で、その値が見出しの `.mdmark-th` の `scrollWidth` に左右の余白と罫線を追加した幅以上
       - name: test_attach_column_resize_when_double_tap
         case: 正常
         summary: タッチの 2 回のタップの間隔でダブルタップを見分ける
@@ -87,20 +87,20 @@ functions:
         expected: 100ms の間隔では幅が付けた直後に戻り、400ms の間隔では戻らず、ドラッグの直後の 1 回のタップでも戻らない
       - name: test_attach_column_resize_when_detached
         case: 正常
-        summary: 削除する関数で受け取りと幅の指定を外す
+        summary: 削除する関数で受け取りと幅の指定を解除する
         condition: 幅を変えた後に戻り値の関数を呼び、つまみで → を押す
         mock: なし
         expected: 見出しのセルの `width`・`min-width` が空で、→ の後も幅が変わらない
       - name: test_attach_column_resize_when_max_below_width
         case: 正常
         summary: 上限が今の幅より小さい列でも、aria-valuemax を今の幅にして大小の順を保つ
-        condition: '`maxWidth` が 1 列目の見出しのセルの `offsetWidth` より 40 小さい値を返す 3 列の表に付ける'
+        condition: '`maxWidth` が 1 列目の見出しのセルの `offsetWidth` より 40 小さい値を返却する 3 列の表に付ける'
         mock: なし
         expected: 1 列目のつまみの `aria-valuemax` が `aria-valuenow`（見出しのセルの `offsetWidth`）と同じで、`aria-valuemin` が `aria-valuenow` 以下
       - name: test_attach_column_resize_when_not_laid_out
         case: 正常
         summary: 配置の前で今の幅が 0 のときも、aria-valuemin を今の幅にして大小の順を保つ
-        condition: '`display: none` の要素の中に置いた 3 列の表に付ける（見出しのセルの `offsetWidth` が 0）'
+        condition: '`display: none` の要素の中に配置した 3 列の表に付ける（見出しのセルの `offsetWidth` が 0）'
         mock: なし
         expected: どの列のつまみも `aria-valuenow` が `0` で、`aria-valuemin` が `0`、`aria-valuemax` が `0` 以上
     status: planned

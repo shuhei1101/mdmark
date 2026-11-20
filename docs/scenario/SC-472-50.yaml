@@ -101,7 +101,7 @@ lead: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Ac
 primary_actor: mdmark の開発者
 stakeholders:
   - name: mdmark の開発者
-    interest: 手で .vsix を作って公開せずに、決まったバージョンの拡張機能を配れる
+    interest: 手で .vsix を作って公開せずに、決定したバージョンの拡張機能を配れる
   - name: 文書の作成者
     interest: Marketplace から拡張機能の更新を受け取れる。GitHub Release から .vsix を落として入れることもできる
 trigger: 開発者がスプリントの区切りに、develop の commit に `vscode-v{バージョン}` のタグを打って push する

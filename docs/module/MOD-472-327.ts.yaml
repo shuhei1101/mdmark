@@ -68,7 +68,7 @@ functions:
     unit_tests:
       - name: test_render_image_figure
         case: 正常
-        summary: 幅・配置・キャプションを当て、拡大のボタンで包む
+        summary: 幅・配置・キャプションを適用し、拡大のボタンで包む
         condition: '部品設計の `Caption` に `width: "300px"`、`align: center`'
         mock: なし
         expected: '`<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">` の中に `button.mdmark-image-open` と `figcaption`'

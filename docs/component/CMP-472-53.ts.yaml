@@ -270,7 +270,7 @@ css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: ツールチップの地の色
+    description: ツールチップの背景色
   - name: --mdmark-color-term-underline
     syntax: <color>
     default: var(--mdmark-color-muted)

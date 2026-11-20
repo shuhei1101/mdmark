@@ -202,11 +202,11 @@ scenarios:
       - 6 つの系列の色・点のマーカー・塗りの模様の組が互いに異なる
       - ライトとダークのどちらの配色でも、系列の色が背景と見分けられる
     test: test_normal_when_many_series
-  - name: 正常シナリオ（座標で書いた図の範囲）
+  - name: 正常シナリオ（座標で記載した図の範囲）
     setup:
       - name: 図を描くページ
         description: 正常シナリオと同じ
-      - name: 座標で書いた図を持つ Markdown
+      - name: 座標で記載した図を持つ Markdown
         description: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- er -->` の範囲 1 つずつに、廃止の前のバージョンで描けた部品の定義を記載し、その間と後に段落とグラフの定義 1 つを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
@@ -219,7 +219,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: flow・sequence・er の範囲を図として読まずに、廃止した記載方法として扱う
+        M->>M: flow・sequence・er の範囲を図として読み取らずに、廃止した記載方法として扱う
         M-->>P: 範囲ごとに、map へ変換できる旨の書き方の警告と、本文とグラフ
         P-->>U: 警告と本文とグラフを表示
       ```

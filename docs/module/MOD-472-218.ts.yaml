@@ -387,7 +387,7 @@ functions:
     container: src/table/table.logic.ts
     kind: 関数
     scope: internal
-    summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返却する。`each` の表は呼ぶ側が全ての列の `pinned` を `false` にして渡し、ピン止めの側で分けない
+    summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返却する。`each` の表は呼ぶ側が全ての列の `pinned` を `false` にして指定し、ピン止めの側で分けない
     args:
       - name: options
         type: '{ from: ColumnPlace; to: ColumnPlace }'
@@ -399,7 +399,7 @@ functions:
     unit_tests:
       - name: test_can_move_column
         case: 正常
-        summary: 同じ範囲と同じピン止めの側だけを許す
+        summary: 同じ範囲と同じピン止めの側だけを許可する
         condition: '`{ group: "0:1", pinned: false }` 同士、`"0:1"` と `undefined`、`pinned` が `true` と `false`'
         mock: なし
         expected: '`true`・`false`・`false`'
@@ -409,7 +409,7 @@ functions:
     container: src/table/table.logic.ts
     kind: 関数
     scope: internal
-    summary: 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返却する
+    summary: 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした変更後の並びを返却する
     args:
       - name: options
         type: '{ order: number[]; column: number; target: number; side: "before" | "after" }'
@@ -417,7 +417,7 @@ functions:
         description: '`column`・`target` は元の列の位置'
     returns:
       type: number[]
-      description: 新しい列の順（指定した配列は書き換えない）
+      description: 変更後の列の順（指定した配列は書き換えない）
     unit_tests:
       - name: test_move_column
         case: 正常
@@ -460,7 +460,7 @@ functions:
     container: src/table/table.logic.ts
     kind: 関数
     scope: internal
-    summary: ピン止めのボタンを押した列と今の留める列から、新しい留める列の位置を小さい順に返却する
+    summary: ピン止めのボタンを押した列と今の留める列から、変更後の留める列の位置を小さい順に返却する
     description: '`each` は押した列が留める列にあれば除き、無ければ加える。`through` は押した列が留める列の最も右なら空にし、それ以外は先頭から押した列までの全ての列にする。指定された配列は書き換えない'
     args:
       - name: options
@@ -469,7 +469,7 @@ functions:
         description: 今の留める列、押した列の位置、ピン止めの動き
     returns:
       type: number[]
-      description: 新しい留める列の位置
+      description: 変更後の留める列の位置
     unit_tests:
       - name: test_toggle_pinned_column
         case: 正常
@@ -484,7 +484,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 列ごとの幅と留める列から、留める列ごとにそれより左で留めた列の幅の合計（`start`）と右で留めた列の幅の合計（`end`）を返却する
-    description: 幅は整数（`offsetWidth`）をそのまま足し合わせ、留めた列の間に隙間を出さない。留めない列の位置には値を入れない
+    description: 幅は整数（`offsetWidth`）をそのまま合算し、留めた列の間に隙間を出さない。留めない列の位置には値を入れない
     args:
       - name: options
         type: '{ widths: number[]; pinned: number[] }'
@@ -496,7 +496,7 @@ functions:
     unit_tests:
       - name: test_pin_offsets
         case: 正常
-        summary: 左右で留めた列の幅だけを足し合わせる
+        summary: 左右で留めた列の幅だけを合算する
         condition: '`widths` が `[100, 80, 60, 40, 30]`、`pinned` が `[0, 2, 4]`'
         mock: なし
         expected: '0 が `{ start: 0, end: 90 }`、2 が `{ start: 100, end: 30 }`、4 が `{ start: 160, end: 0 }`、1・3 は値を持たない'
@@ -506,8 +506,8 @@ functions:
     container: src/table/table.logic.ts
     kind: 関数
     scope: internal
-    summary: 選んだ列を左から順に幅を足し、表の見えている幅に収まる列（`fitted`）と、見えている幅を超える列から右の列（`unpinned`）に分けて返却する
-    description: 幅は整数（`offsetWidth`）のまま足し合わせ、合計が見えている幅と等しい列までを収まる列にする。超えた列より右の列は、幅が小さくても収まる列に入れない
+    summary: 選んだ列を左から順に幅を追加し、表の見えている幅に収まる列（`fitted`）と、見えている幅を超える列から右の列（`unpinned`）に分けて返却する
+    description: 幅は整数（`offsetWidth`）のまま合算し、合計が見えている幅と等しい列までを収まる列にする。超えた列より右の列は、幅が小さくても収まる列に入れない
     args:
       - name: options
         type: '{ widths: number[]; pinned: number[]; visibleWidth: number }'
@@ -536,7 +536,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 列の幅を、列の最小幅から上限までに収めた値を返却する
-    description: 上限が最小幅より小さいときは最小幅を返す
+    description: 上限が最小幅より小さいときは最小幅を返却する
     args:
       - name: options
         type: '{ width: number; min: number; max: number }'
@@ -559,7 +559,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 表の見えている幅から、ほかに留めている列の幅の合計を引いた幅を返却する
-    description: 表がはみ出していないときは、留める列を当てていないので表の見えている幅をそのまま返す
+    description: 表がはみ出していないときは、留める列を適用していないので表の見えている幅をそのまま返却する
     args:
       - name: options
         type: '{ visibleWidth: number; overflowing: boolean; widths: number[]; pinned: number[]; column: number }'
@@ -604,7 +604,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 列ごとに、本文のセルが全て短い値でなく、見出しか本文のセルの改行で分けた行のどれかが `LONG_COLUMN_CHARS` 文字以上の列の位置を、小さい順に返却する
-    description: セルの `compact` は呼ぶ側が決める（`render` は `isCompactCellText` に加えて、中身が行内のコードだけのセル（`badge:` のバッジを含む）を `true` にする）。見出しのセルは `compact` を見ずに行の文字数だけで数える
+    description: セルの `compact` は呼ぶ側が決める（`render` は `isCompactCellText` に加えて、中身が行内のコードだけのセル（`badge:` のバッジを含む）を `true` にする）。見出しのセルは `compact` を参照せずに行の文字数だけで数える
     args:
       - name: columns
         type: '{ head: string[]; cells: { lines: string[]; compact: boolean }[] }[]'
@@ -644,7 +644,7 @@ functions:
     unit_tests:
       - name: test_find_no_sort_columns
         case: 正常
-        summary: 長文の列に並べ替えを付けず、列ごとの指定で付け外しする
+        summary: 長文の列に並べ替えを付けず、列ごとの指定で付与・解除する
         condition: '`long: [1, 3]`・`sorts: [{column: 1, sort: true}, {column: 0, sort: false}, {column: 2, sort: true}]`'
         mock: なし
         expected: '`[0, 3]`'
@@ -712,7 +712,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 部品設計『表』の注記「列の幅」の 2 つ目の図で、列ごとの最小の幅・望む幅と表の見える幅から、列の幅（px）と横にスクロールするかを返却する
-    description: 最小の幅の合計が `available` を超えるときは各列を最小の幅にして `overflow` を `true` にする。望む幅の合計が `available` 以下なら望む幅にする。どちらでもなければ、`available` から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分け、最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りをほかの列へ分け直す（止める列が出なくなるまで繰り返す）。`fixed` の列（読者がつまみで幅を変えた列）は `wanted` の幅のまま分けない
+    description: 最小の幅の合計が `available` を超えるときは各列を最小の幅にして `overflow` を `true` にする。望む幅の合計が `available` 以下なら望む幅にする。どちらでもなければ、`available` から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分け、最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りをほかの列へ再配分する（止める列が出なくなるまで繰り返す）。`fixed` の列（読者がつまみで幅を変えた列）は `wanted` の幅のまま分けない
     args:
       - name: columns
         type: '{ wraps: boolean; min: number; wanted: number; fixed?: boolean }[]'
@@ -728,7 +728,7 @@ functions:
     unit_tests:
       - name: test_distribute_column_widths
         case: 正常
-        summary: 収まる・分ける・最小の幅で止めて分け直す・はみ出す
+        summary: 収まる・分ける・最小の幅で止めて再配分する・はみ出す
         condition: '(a) `[{false, 80, 80}, {true, 323, 323}]`・`available: 1000`、(b) `[{false, 388, 388}, {true, 630, 1700}]`・`available: 1145`、(c) `[{false, 67, 67}, {true, 630, 1700}, {true, 323, 323}]`・`available: 1145`、(d) `[{false, 67, 67}, {true, 630, 1700}, {true, 630, 1100}]`・`available: 390`'
         mock: なし
         expected: (a) `{[80, 323], false}`、(b) `{[388, 757], false}`、(c) `{[67, 755, 323], false}`、(d) `{[67, 630, 630], true}`

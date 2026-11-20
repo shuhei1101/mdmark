@@ -14,7 +14,7 @@ fields:
   type: string
   description: 帯の説明の文（改行はそのまま）
   required: true
-  example: map のマーカーを読み、範囲を 1 つの図にする
+  example: map のマーカーを読み取り、範囲を 1 つの図にする
 - key: nodes
   title: 強調するノード
   type: array

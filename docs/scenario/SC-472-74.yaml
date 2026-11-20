@@ -86,7 +86,7 @@ scenarios:
       - 範囲の上に、`columns.担当.filter.type` の `range` が選べる値に無いことと、選べる値（`select`・`text`・`date`）を記載した記載の警告がある
       - 担当の列に絞り込みのボタンが無く、ビューと切り替えは描かれる
     test: test_error_when_filter_kind_unknown
-lead: 文書の作成者がビューのマーカーの `columns.{列名}.filter` に絞り込みの種類を記載し、読者が表形式のビューの列の見出しの絞り込みで項目を絞る。ボード表示には絞り込みを当てず、常に全ての項目を出す。
+lead: 文書の作成者がビューのマーカーの `columns.{列名}.filter` に絞り込みの種類を記載し、読者が表形式のビューの列の見出しの絞り込みで項目を絞る。ボード表示には絞り込みを適用せず、常に全ての項目を出す。
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者

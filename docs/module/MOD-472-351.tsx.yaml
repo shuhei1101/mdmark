@@ -1,7 +1,7 @@
 id: MOD-472-351
 visibility: internal
 title: ClaudeCodeプラグイン / mdmark-style / mod.tsx
-lead: mod のプラグイン mdmark-style の入口。返答と発言の `ui.render` と `classic.SessionStart` にフックを登録する。
+lead: mod のプラグイン mdmark-style のエントリーポイント。返答と発言の `ui.render` と `classic.SessionStart` にフックを登録する。
 test_files:
   - tests/unit/src/mdmark-style/mod.test.ts
 functions:
@@ -10,7 +10,7 @@ functions:
     kind: 関数
     container: src/mdmark-style/mod.tsx
     usecase: 共通
-    role: 入口
+    role: エントリーポイント
     summary: '`ui.render` の `AssistantMessage`・`UserMessage` と `classic.SessionStart` に、各ファイルのフックを登録する'
     description: Claude Code が読み込む名前のため `export function register(on)` で公開する（`claude plugin validate` が名前を検査する）
     scope: public
@@ -19,7 +19,7 @@ functions:
       - name: on
         type: On
         required: true
-        description: Claude Code がフックの登録に渡す関数
+        description: Claude Code がフックの登録に指定する関数
     returns:
       type: void
       description: なし
@@ -47,7 +47,7 @@ notes:
   ディレクトリ: |-
     ```tree
     src/mdmark-style/
-    ├── mod.tsx            # 入口。フックを登録する
+    ├── mod.tsx            # エントリーポイント。フックを登録する
     ├── settings.ts        # 設定ファイルを読み込む
     ├── blocks.ts          # 返答の Markdown をブロックに分ける
     ├── table-layout.ts    # 表の列の幅と折り返し
@@ -61,7 +61,7 @@ notes:
     ├── hooks/mod/mod.js
     └── settings.sample.yaml
     ```
-  ビルド: '`src/mdmark-style/mod.tsx` を入口に、esbuild で ES モジュールの 1 ファイル `mdmark-style/hooks/mod/mod.js` にまとめる（プラグインのビルド MOD-472-14）。mod はプラグインの外のファイルを import できないため、`src/knowledge/` の照合とエイリアスの処理・markdown-it・yaml もまとめる。`claude-code` は外部にし、部品の木は mod の環境の `h` を直接呼んで作る。用語の照合が読み込む sanitize-html の postcss は、配布物と同じく空の部品（`postcssStubPlugin`）にする。
+  ビルド: '`src/mdmark-style/mod.tsx` をエントリーポイントに、esbuild で ES モジュールの 1 ファイル `mdmark-style/hooks/mod/mod.js` にまとめる（プラグインのビルド MOD-472-14）。mod はプラグインの外のファイルを import できないため、`src/knowledge/` の照合とエイリアスの処理・markdown-it・yaml もまとめる。`claude-code` は外部にし、部品の木は mod の環境の `h` を直接呼んで作る。用語の照合が読み込む sanitize-html の postcss は、配布物と同じく空の部品（`postcssStubPlugin`）にする。
 
 
     `claude plugin validate` はまとめた後のファイルで `$` の渡り先をたどるため、次を守る。
@@ -69,7 +69,7 @@ notes:
 
     - `register`・フック（`renderReply`・`renderUserMessage`・`injectMarkerGuide`）と、`$` を受け取る関数は `function` 宣言にする（esbuild は最上位の `const` を `var` にするため、`var` に束ねた関数は渡り先として認められない。外部ライブラリ LIB-472-1 の制限「mod の `$` の渡り先」）
 
-    - `$` は関数の先頭の引数で渡し、オブジェクトに入れない。`$` の機能を他の関数へ渡すときは、`$.ui.copy(args)` のように `$` を記載したアロー関数で包む'
+    - `$` は関数の先頭の引数で指定し、オブジェクトに入れない。`$` の機能を他の関数へ指定するときは、`$.ui.copy(args)` のように `$` を記載したアロー関数で包む'
 tags:
   - name: tool:claude-code
     main: true

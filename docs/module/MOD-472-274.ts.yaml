@@ -117,7 +117,7 @@ functions:
     description: |-
       `[^ラベル]` のラベルを正規化し、`FootnoteState.definitions` にあるときだけ `mdmark_footnote_ref` のトークン（`meta.id`・`meta.refIndex`・`meta.source`）にする。
       初めてのラベルは `notes` の末尾に追加して番号を振り、同じラベルは同じ番号で `refCount` を増やす。
-      定義の無いラベルは当てず、記載した文字のまま残す
+      定義の無いラベルは適用せず、記載した文字のまま残す
     args:
       - name: state
         type: StateInline

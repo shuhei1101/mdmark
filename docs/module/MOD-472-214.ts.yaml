@@ -14,8 +14,8 @@ constants:
     container: src/render/sanitize.ts
     summary: sanitize-html に指定する設定
     description: |-
-      記法の要素と属性を許し、誰が出したかは `sanitize` の `transformTags` が見分ける。
-      許す要素と属性は、mdmark が出した `style.mdmark-html-style` と `template.mdmark-html-script`・`data-html-scope`・`data-lang` を含む。
+      記法の要素と属性を許可し、誰が出したかは `sanitize` の `transformTags` が見分ける。
+      許可する要素と属性は、mdmark が出した `style.mdmark-html-style` と `template.mdmark-html-script`・`data-html-scope`・`data-lang` を含む。
       文書に記載した `style`・`template` は落とす。
 
       | 設定 | 追加する値 |
@@ -24,7 +24,7 @@ constants:
       | `allowedAttributes`・`allowedClasses` | 記法が出す class（部品設計の HTML）・`data-kind`・`data-features`・`data-filter`・`data-section`・`data-row`・`data-mdmark-own`・見出しと `figure`・`div` の `id`・`colspan`・`rowspan`・`scope`・`aria-label`・`role`（`note`・`status`） |
 
       今の値は下の entries。
-      記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許す。
+      記法が出す `video`・`audio` と、`controls`・`autoplay`・`muted`・`loop`・`playsinline`・`preload`・`poster`・`data-color`・`data-align`・`data-nolightbox`・`data-gif`・`data-card`・`data-file-kind` も許可する。
       文書に記載した `video`・`audio`・`source` は `sanitize` が落とす
     value: 下の entries
     entries:
@@ -35,7 +35,7 @@ constants:
       - key: allowedClasses
         value: '`code`: `language-*` / `li`: `task-list-item` / `th`・`td`: `mdmark-align-*` / `div`: `mdmark-embed`。ここに無い要素は class を持てない（`allowedAttributes` に `class` を記載しない）'
       - key: allowedSchemes
-        value: '`http`・`https`・`mailto`（相対 URL は既定で許す）'
+        value: '`http`・`https`・`mailto`（相対 URL は既定で許可する）'
       - key: parseStyleAttributes
         value: '`false`（postcss を呼ばない）'
       - key: transformTags
@@ -116,7 +116,7 @@ functions:
         expected: '`<input type="checkbox" disabled />` と `<input type="checkbox" disabled checked />`'
       - name: test_sanitize_when_classes
         case: 正常
-        summary: 許した要素の許した class だけを残し、`role` は `status` だけを残す
+        summary: 許可した要素の許可した class だけを残し、`role` は `status` だけを残す
         condition: '`<code class="language-ts evil">`・`<div class="mdmark-embed other" data-mdmark-slot="x" role="status">`・`<p class="x">`・`<div class="mdmark-embed" role="alert">`'
         mock: なし
         expected: '`class="language-ts"` と `class="mdmark-embed"`。`data-mdmark-slot` と `role="status"` は残る。`<p>` は class を持たず、`role="alert"` が無い（値の無い `role` 属性は残る）'
@@ -134,7 +134,7 @@ functions:
         expected: 1 つ目の `img` だけが `src` を持ち、2 つ目と3 つ目の `img` は `src` を持たず、`a` は `href` を持たない
       - name: test_sanitize_when_own_style
         case: 正常
-        summary: 自分が出した要素の style は図の部品と埋め込んだ HTML の許した宣言だけ残し、記載した要素の style は落とす
+        summary: 自分が出した要素の style は図の部品と埋め込んだ HTML の許可した宣言だけ残し、記載した要素の style は落とす
         condition: '`data-mdmark-own` が `nonce` と等しい図のノードの `<div class="mdmark-diagram-node" style="left:10px;top:20px">` と、`div.mdmark-html` の中の `<div style="display:flex;position:fixed">`、持たない `<div style="display:flex">`'
         mock: なし
         expected: 図のノードが `style="left:10px;top:20px"`、埋め込んだ HTML の要素が `style="display:flex"`、記載した要素は `style` を持たない
@@ -246,7 +246,7 @@ functions:
     unit_tests:
       - name: test_filter_embedded_style
         case: 正常
-        summary: 許した宣言だけを残す
+        summary: 許可した宣言だけを残す
         condition: '`display: flex; gap: 12px; position: fixed; background-image: url(https://example.com/a.png); width: 100vw; color: var(--mdmark-color-accent); margin-top: -9999px; padding: 4px`'
         mock: なし
         expected: '`display:flex;gap:12px;color:var(--mdmark-color-accent);padding:4px`（負の `margin-top` は落ちる）'
@@ -260,7 +260,7 @@ functions:
       - '#constants[EMBED_STYLES]'
     status: planned
   - name: isAllowedUrl
-    title: 許す URL かを確認する
+    title: 許可する URL かを確認する
     container: src/render/sanitize.ts
     kind: 関数
     scope: internal
@@ -272,11 +272,11 @@ functions:
         description: 確認する URL
     returns:
       type: boolean
-      description: 本文のリンクで許すか
+      description: 本文のリンクで許可するか
     unit_tests:
       - name: test_is_allowed_url
         case: 正常
-        summary: 本文のリンクと同じスキームを許す
+        summary: 本文のリンクと同じスキームを許可する
         condition: '`https://example.com`・`mailto:a@example.com`・`./other.md`・`#top`・`javascript:alert(1)`・` JavaScript:alert(1)`・`id:spec#items`'
         mock: なし
         expected: 前の 4 つが `true`、後ろの 3 つが `false`
@@ -286,7 +286,7 @@ functions:
     container: src/render/sanitize.ts
     kind: 関数
     scope: public
-    summary: '`id:` で始まるリンク先を `resolveIdLink`（`id:` を含む値を渡す）で URL に変え、`isAllowedUrl` で許可する URL だけを返却する。関数が無い・文字を返却しない・例外を投げる・許可しない URL を返却するときは `undefined`（例外は捕まえて描画を止めない）'
+    summary: '`id:` で始まるリンク先を `resolveIdLink`（`id:` を含む値を指定する）で URL に変え、`isAllowedUrl` で許可する URL だけを返却する。関数が無い・文字を返却しない・例外を投げる・許可しない URL を返却するときは `undefined`（例外は捕まえて描画を止めない）'
     description: 本文のリンク（コアルール `resolveIdLinks`）と map のノードのリンク（`mapLinkProblems`）が同じ変え方を使用する
     args:
       - name: options

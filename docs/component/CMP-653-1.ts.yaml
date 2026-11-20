@@ -64,11 +64,11 @@ events:
   - name: 開閉する
     when: section か入れ子のブロックの開閉のボタンを押す
     value: section か入れ子のブロックのキー
-    description: '`mount` が `collapsed` を切り替え、配置し直す'
+    description: '`mount` が `collapsed` を切り替え、再配置する'
   - name: 中へ入る
     when: section か入れ子のブロックの中へ入るボタンを押す
     value: section か入れ子のブロックのキー
-    description: '`mount` が `entered` をそのキーにし、その中だけを配置し直す。戻るボタンと Esc は構成図の部品と同じ'
+    description: '`mount` が `entered` をそのキーにし、その中だけを再配置する。戻るボタンと Esc は構成図の部品と同じ'
   - name: 選ぶ
     when: 項目・ガントチャートのタスク名・Git グラフのブランチ名のボタン・ジャーニーの人の凡例のボタンを押す。押せる要素にフォーカスして Enter か Space を押す
     value: '`{ kind, key }`'
@@ -185,7 +185,7 @@ states:
       - name: kind
         value: gantt
     notes:
-      定義: モックの `GANTT_LAYOUT_DATA`。座標の書き方の警告は `mount` が図の枠の前に出すため、この部品の状態には含めない
+      定義: モックの `GANTT_LAYOUT_DATA`。座標の記載の警告は `mount` が図の枠の前に出すため、この部品の状態には含めない
   - name: HintsOff
     description: ヒントをオフにした。説明のマーカーが無い
     args:

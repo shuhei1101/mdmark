@@ -46,7 +46,7 @@ css_properties:
     description: 開いている間のボタンの線の色
   - name: --mdmark-color-current-bg
     syntax: <color>
-    description: 開いている間のボタンの地の色
+    description: 開いている間のボタンの背景色
   - name: --mdmark-radius
     syntax: <length>
     default: 4px

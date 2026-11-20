@@ -11,15 +11,15 @@ functions:
     scope: internal
     summary: 'コアルール（機能を決めた後、取り込みの後、コードブロックの飾りより前）。フロントマターの表示のトークンを先頭に入れる'
     description: |-
-      `frontmatter` がオンで `env.frontmatter` の中身が空白だけでないとき、中身を持つ `fence` のトークン（`info` は `yaml`、`map` はフロントマターの 2 行目から閉じる行まで）を作り、その前後に `renderFrontmatter` の HTML を `SLOT_MARKER` で分けた `ownBlock` を置いて、`state.tokens` の先頭に入れる。
-      コードブロックの描き方（言語のラベル・コピーのボタン・色分け）は、差し込んだ `fence` に後のコアルールと `renderer.rules.fence` がそのまま当てる。
+      `frontmatter` がオンで `env.frontmatter` の中身が空白だけでないとき、中身を持つ `fence` のトークン（`info` は `yaml`、`map` はフロントマターの 2 行目から閉じる行まで）を作り、その前後に `renderFrontmatter` の HTML を `SLOT_MARKER` で分けた `ownBlock` を配置して、`state.tokens` の先頭に入れる。
+      コードブロックの描き方（言語のラベル・コピーのボタン・色分け）は、差し込んだ `fence` に後のコアルールと `renderer.rules.fence` がそのまま適用する。
       `ownBlock` が `nonce` の印を付けるため、`sanitize` の後も折りたたみの class が残る。
       取り込んだ文書（`expandIncludes`）はこのルールを通らず、表示を持たない
     args:
       - name: state
         type: StateCore
         required: true
-        description: markdown-it の状態。`state.env.frontmatter` を読む
+        description: markdown-it の状態。`state.env.frontmatter` を読み取る
     side_effects: '`state.tokens` の先頭に 3 つのトークンを入れる'
     callees:
       - MOD-472-339#functions[renderFrontmatter]

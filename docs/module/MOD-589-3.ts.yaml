@@ -59,7 +59,7 @@ functions:
         condition: '`[["path",{d:"M1 1"}],["script",{}],["circle",{cx:"1",onclick:"x"}]]`'
         expected: '`path` と `cx` だけを持つ `circle` を持つ svg で、`script`・`onclick` が無い'
         mock: なし
-        summary: 許す要素と属性だけを残す
+        summary: 許可する要素と属性だけを残す
 tags:
   - name: tool:lucide
     main: true

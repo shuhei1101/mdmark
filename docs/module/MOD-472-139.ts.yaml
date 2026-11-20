@@ -31,7 +31,7 @@ data_models:
         description: ER 図の分類（分類の ID ごとのタイトル・テーブル名・親の分類）
 functions:
   - name: parseMapData
-    title: 補足を読む
+    title: 補足を読み取る
     kind: 関数
     container: src/map/data.ts
     usecase: Mermaidと補足で図を描く
@@ -47,16 +47,16 @@ functions:
       type: '{ data: MapData; problems: MapProblem[] }'
       description: 読み込んだ補足と項目
     process: |-
-      1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方。読めないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返す
+      1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する修正方法。読み取れないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返却する
       2. トップレベル・`walkthroughs` の手順・`layout` の値・`groups` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
-      3. 補足の文字の中で `--` をそのまま記載した文字の値は `map_invalid_value`（HTML コメントを閉じてしまうため、`--` をそのまま記載せずに 2 つ目の `-` を JSON の Unicode エスケープで記載する直し方）にする。値の `--` は、`jsonPaths` が返す元の文字に `--` をそのまま記載したパスで判定し、JSON の Unicode エスケープで記載した `--` はずれにしない
+      3. 補足の文字の中で `--` をそのまま記載した文字の値は `map_invalid_value`（HTML コメントを閉じてしまうため、`--` をそのまま記載せずに 2 つ目の `-` を JSON の Unicode エスケープで記載する修正方法）にする。値の `--` は、`jsonPaths` が返却する元の文字に `--` をそのまま記載したパスで判定し、JSON の Unicode エスケープで記載した `--` はずれにしない
     unit_tests:
       - name: test_parse_map_data
         case: 正常
         summary: モックの補足
         condition: モックの `DATA`
         mock: なし
-        expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`justify`・`ends`・`via`・`collapsed` を含む）・`plays_over` が読め、`problems` が空'
+        expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`justify`・`ends`・`via`・`collapsed` を含む）・`plays_over` が読み取れ、`problems` が空'
       - name: test_parse_map_data_when_empty
         case: 正常
         summary: 補足が無い
@@ -77,7 +77,7 @@ functions:
         expected: '`map_invalid_value` が 1 件'
       - name: test_parse_map_data_when_unreadable
         case: 異常
-        summary: JSON のオブジェクトとして読めない
+        summary: JSON のオブジェクトとして読み取れない
         condition: '`{"notes": [` と `[1]`'
         mock: なし
         expected: どちらも `map_invalid_value` が 1 件で、補足は空
@@ -98,14 +98,14 @@ functions:
         summary: Unicode エスケープで記載した -- を含む値
         condition: '`notes.a.text` の元の文字が、2 つ目の `-` を Unicode エスケープで記載した `a --b`'
         mock: なし
-        expected: '`notes.a.text` が `a --b` で読め、`problems` が空'
+        expected: '`notes.a.text` が `a --b` で読み取れ、`problems` が空'
   - name: jsonPaths
     title: 補足のパスを走査する
     kind: 関数
     container: src/map/data.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 補足の JSON の文字を走査し、オブジェクトのキーと配列の要素のパスごとの始まる行と、元の文字に `--` をそのまま記載した文字列の値のパスを返す
+    summary: 補足の JSON の文字を走査し、オブジェクトのキーと配列の要素のパスごとの始まる行と、元の文字に `--` をそのまま記載した文字列の値のパスを返却する
     scope: public
     args:
       - name: source

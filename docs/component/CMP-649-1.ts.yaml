@@ -53,11 +53,11 @@ events:
   - name: 開閉する
     when: 子を持つ項目の持ち手の開閉のボタンを押す
     value: 項目のキー
-    description: '`mount` が `collapsed` を切り替え、詰めて配置し直す'
+    description: '`mount` が `collapsed` を切り替え、詰めて再配置する'
   - name: 中へ入る
     when: 子を持つ項目の持ち手の中へ入るボタンを押す
     value: 項目のキー
-    description: '`mount` が `entered` をその項目にし、その項目を根に描き直す。戻るボタンと Esc は構成図の部品と同じ'
+    description: '`mount` が `entered` をその項目にし、その項目を根に再描画する。戻るボタンと Esc は構成図の部品と同じ'
   - name: 選ぶ
     when: 項目の名前の周りの余白と枠線（形状の指定の無い項目は下線）を押す。項目の押せる要素にフォーカスして Enter か Space を押す
     value: 項目のキー
@@ -90,7 +90,7 @@ states:
   - name: Colored
     description: 補足の `layout` で「目的」に `purple`、「予算」に `collapsed` を持つ。「目的」は purple の面と縁、「予算」は閉じて描かれる
     notes:
-      定義: モックの `MINDMAP_LAYOUT_DATA`。座標と並び順の書き方の警告は `mount` が図の枠の前に出すため、この部品の状態には含めない
+      定義: モックの `MINDMAP_LAYOUT_DATA`。座標と並び順の記載の警告は `mount` が図の枠の前に出すため、この部品の状態には含めない
   - name: Walked
     description: 案内の手順 2。「体制」の中で「人手が足りない」とそこまでの道筋のほかが薄い
     args:

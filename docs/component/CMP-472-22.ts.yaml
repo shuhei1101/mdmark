@@ -128,7 +128,7 @@ css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: 選んだタブと中身の地の色
+    description: 選んだタブと中身の背景色
   - name: --mdmark-color-heading
     syntax: <color>
     default: '#18181b（ダーク #ededef）'
@@ -144,7 +144,7 @@ css_properties:
 accessibility:
   - WAI-ARIA のタブの作法に従う。並びは `role="tablist"`、タブは `role="tab"` と `aria-selected`・`aria-controls`、中身は `role="tabpanel"` と `aria-labelledby`
   - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ。入れ子のタブはそれぞれ別の `tablist` で、矢印・Home・End はフォーカスのある並びの中だけで移り、内側を選んでも外側の選択を変えない
-  - 選んだタブは線で囲んで中身の地とつなぎ、形状と地の色でも示し、色だけに頼らない
+  - 選んだタブは線で囲んで中身の背景とつなぎ、形状と背景色でも示し、色だけに頼らない
 refs:
   - IF-472-34#constraints[タブ]
   - IF-472-35#constraints[タブの操作]

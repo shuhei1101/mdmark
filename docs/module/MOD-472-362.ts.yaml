@@ -66,7 +66,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`text`・`fence`・`html`・`mark` のブロックを、インターフェース定義『文書を純粋なMarkdownにする』の制約の形の行にする'
-    description: '`html` は空にする。`fence` は飾りの引数と行末の `[!code …]` を取り除き、タイトルを直前の太字の行にし、言語 `tree` を外す。`off` が `true` の `mark` は、名前によらずマーカーの行を除いた中身をそのまま返却する（マーカーの HTML のコメントは取り除き、記法の変換はしない）。それ以外の `mark` は名前で分ける: `toc` は `tocList`、`map` は Mermaid のコードブロックだけ、`features`・`page`・`map-data` は空、それ以外（`table`・`tabs`・`steps`・`section`・`row-detail`・`glossary`・`view`・`details`・`columns`・`wide`・`cards` など）はマーカーの行を除いた中身。`text`・中身の行は呼ぶ側が行内を変換する'
+    description: '`html` は空にする。`fence` は飾りの引数と行末の `[!code …]` を取り除き、タイトルを直前の太字の行にし、言語 `tree` を解除する。`off` が `true` の `mark` は、名前によらずマーカーの行を除いた中身をそのまま返却する（マーカーの HTML のコメントは取り除き、記法の変換はしない）。それ以外の `mark` は名前で分ける: `toc` は `tocList`、`map` は Mermaid のコードブロックだけ、`features`・`page`・`map-data` は空、それ以外（`table`・`tabs`・`steps`・`section`・`row-detail`・`glossary`・`view`・`details`・`columns`・`wide`・`cards` など）はマーカーの行を除いた中身。`text`・中身の行は呼ぶ側が行内を変換する'
     args:
       - name: options
         type: '{ block: PureBlock; headings: Array<{ level: number; text: string }> }'

@@ -8,7 +8,7 @@ files:
     notes: 利用側のリポジトリに配置する（`mdmark init` が雛形を配置する）。ブラウザの mdmark は YAML を読み込まず、利用側のサーバーか CLI が読み込んだオブジェクトを受け取る
   - file: schemas/mdmark.config.schema.json
     manages: '`mdmark.config.yaml` のこの一覧の全てのキーの JSON Schema（draft 2020-12）。CLI の設定の検めと、配布物のビルドの移行の手順の点検がこの Schema を正にする'
-    notes: 他の Issue が追加するキーを拒まないよう、最上位の `additionalProperties` は許す。構造を変えるときは `migrations/next/` に移行の手順か `migrations/no-steps.yaml` の行を配置する
+    notes: 他の Issue が追加するキーを拒まないよう、最上位の `additionalProperties` は許可する。構造を変えるときは `migrations/next/` に移行の手順か `migrations/no-steps.yaml` の行を配置する
   - file: ${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml
     manages: 端末の設定。`mdmark.config.yaml` と同じキーと、重ね方の切り替えの `config.*` を持ち、重ねる最初の層になる
     notes: 環境変数 `MDMARK_CONFIG` があればそのパスを読み込む。無ければ空の設定として扱う。重ね方はインターフェース定義『設定を重ねて読み込む』
@@ -43,7 +43,7 @@ settings:
     type: Record<string, string>
     required: false
     default: '`{}`'
-    description: マーカーの名前から外部ライブラリのモジュールの URL を参照する。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は追加する。モジュールの `draw(slot, options)` には、マーカーの名前の後ろの JSON のオブジェクト（引数の無いマーカーは `{}`）を渡す
+    description: マーカーの名前から外部ライブラリのモジュールの URL を参照する。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は追加する。モジュールの `draw(slot, options)` には、マーカーの名前の後ろの JSON のオブジェクト（引数の無いマーカーは `{}`）を指定する
     allowed: キーは英小文字で始まり英小文字・数字・`-` だけを持つマーカーの名前。値は URL（相対 URL はページの `document.baseURI` を基準に解決する）。文字列でない値は無視する
     reload: reload
     refs:
@@ -594,7 +594,7 @@ settings:
     missing: 文書のフォルダからの相対パスだけで探す
     reload: reload
     allowed: フォルダのパス。無いフォルダは `mdmark check` が `schema` のずれにし、書き出しは警告に出して文書のフォルダだけで探す
-    reason: 画像・動画を文書ごとのフォルダに配置せず、リポジトリの 1 か所にまとめて配置する使用方法に合わせるため（[画像・動画・GIF・音声・リンクと添付のカードを描けるようにする](https://github.com/shuhei1101/mdmark/issues/199)）
+    reason: 画像・動画を文書ごとのフォルダに配置せず、リポジトリの 1 か所にまとめて配置する使用方法に合わせるため
     refs:
       - IF-472-33#constraints[アセットのルート]
       - IF-472-39#constraints[見つからないファイルの点検]
@@ -626,7 +626,7 @@ settings:
     required: false
     default: 'false'
     description: '`<!-- html -->` の範囲に配置した `css` を範囲の HTML にだけ当て、`ts`・`js` の既定のエクスポートの関数を範囲の根の要素で呼ぶ。オフのときは範囲の `html` だけを描き、`css`・`ts`・`js` をコードのまま出す。文書の `features` のマーカーでその文書だけオン・オフできる'
-    reason: 文書に記載したコードを動かすため、利用側が許したときだけ動かす。範囲ごとには許さない（シナリオ『コードブロックのHTMLを描く』）
+    reason: 文書に記載したコードを動かすため、利用側が許可したときだけ動かす。範囲ごとには許可しない（シナリオ『コードブロックのHTMLを描く』）
     reload: reload
     refs:
       - IF-472-35#constraints[範囲のスクリプト]
@@ -799,7 +799,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: 図の部品の表示する枠の右下に、高さを変えるリサイズハンドルを配置する。オフのときは配置せず、表示する枠は定義から決まる高さのままにする
+    description: 図の部品の表示する枠の右下に、高さを変えるリサイズハンドルを配置する。オフのときは配置せず、表示する枠は定義から決定する高さのままにする
     reload: reload
     refs:
       - IF-472-35#constraints[図の高さのリサイズハンドル]
@@ -868,7 +868,7 @@ settings:
     file: settings.yaml
     type: '"auto" | "systemd" | "tmux"'
     default: auto
-    description: '`global-setup` が常駐サーバー（`mdmark serve`）を起動する方法。`auto` は systemd --user が使えれば unit、使えなければ tmux のセッションで起動する'
+    description: '`global-setup` が常駐サーバー（`mdmark serve`）を起動する方法。`auto` は systemd --user が使用できれば unit、使用できなければ tmux のセッションで起動する'
     allowed: '`auto`・`systemd`・`tmux`。端末の設定だけが持ち、`mdmark.config.yaml` に書き込んでも読み込まない'
     reload: restart
     required: false
@@ -893,7 +893,7 @@ settings:
     type: '"each" | "through"'
     required: false
     default: '`each`'
-    description: 表のピン止めの動き。`each` は押した列だけを留め、留めた列より左を表示している間は表の右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める。どちらも、留める列を左から順に足して表の見えている幅を超える列から右は留めず、その列のボタン（`through` は押した列のボタン）を押したまま留まっていない状態にする。マーカーの `pin=` もこの動きに従う
+    description: 表のピン止めの動き。`each` は押した列だけを留め、留めた列より左を表示している間は表の右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める。どちらも、留める列を左から順に追加して表の見えている幅を超える列から右は留めず、その列のボタン（`through` は押した列のボタン）を押したまま留まっていない状態にする。マーカーの `pin=` もこの動きに従う
     reload: reload
     allowed: '`each` / `through`。`mount` は他の値を無視して `each` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:

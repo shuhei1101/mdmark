@@ -8,7 +8,7 @@ constants:
     title: mdmark の名前の別名
     container: src/cli/traces.ts
     usecase: 共通
-    summary: 隠す書き出しで、単語の一部として出る `mdmark` を置き換える別名
+    summary: 隠す書き出しで、単単語の一部として出る `mdmark` を置き換える別名
     value: zq
     refs:
       - IF-472-33#constraints[mdmark の痕跡]
@@ -25,7 +25,7 @@ functions:
     title: mdmark の名前を別名へ置き換える
     container: src/cli/traces.ts
     usecase: 共通
-    summary: 単語の一部として出る `mdmark`（大文字・小文字を区別しない）を、大文字・小文字の構成を保って `TRACE_ALIAS` へ置き換える
+    summary: 単単語の一部として出る `mdmark`（大文字・小文字を区別しない）を、大文字・小文字の構成を保って `TRACE_ALIAS` へ置き換える
     description: '`MDMARK` は `ZQ`、先頭だけ大文字の `Mdmark` は `Zq`、それ以外は `zq` にする。制約「mdmark の痕跡」の (2)'
     kind: 関数
     scope: internal
@@ -148,7 +148,7 @@ functions:
       - name: test_hide_script_when_license
         case: 正常
         summary: ライセンスの注釈をそのまま残す
-        condition: '計画書の実測と同じ形の、`/*! greet-ext (c) user - MIT */` と、`is-plain-object/dist/is-plain-object.js:` の入口の下に `(*! … *)` の注釈を持つ `/*! Bundled license information: … */` を含むコード'
+        condition: '計画書の実測と同じ形の、`/*! greet-ext (c) user - MIT */` と、`is-plain-object/dist/is-plain-object.js:` のエントリーポイントの下に `(*! … *)` の注釈を持つ `/*! Bundled license information: … */` を含むコード'
         mock: なし
         expected: 2 つの `/*!` の注釈が元の文字のまま残る
     status: planned

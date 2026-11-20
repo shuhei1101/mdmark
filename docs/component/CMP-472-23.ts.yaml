@@ -49,7 +49,7 @@ args:
     required: false
     default: なし（色を付けない札）
     choices: '`blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`'
-    description: '`data-color` に入れる色の名前。札の地を `--mdmark-color-accent-{色}-bg`、文字を `--mdmark-color-accent-{色}-text` にする'
+    description: '`data-color` に入れる色の名前。札の背景を `--mdmark-color-accent-{色}-bg`、文字を `--mdmark-color-accent-{色}-text` にする'
     status: planned
 css_properties:
   - name: --mdmark-color-bg-opaque
@@ -59,7 +59,7 @@ css_properties:
   - name: --mdmark-color-surface
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
-    description: 札の地の色
+    description: 札の背景色
   - name: --mdmark-color-border
     syntax: <color>
     default: '#e4e4e7（ダーク #26262b）'
@@ -67,11 +67,11 @@ css_properties:
   - name: --mdmark-color-accent-blue-bg
     syntax: <color>
     default: 値は [デザイン方針](../design-policy.md)
-    description: 色のバッジの地の色。ほかの色の名前も `--mdmark-color-accent-{色}-bg` で同じ
+    description: 色のバッジの背景色。ほかの色の名前も `--mdmark-color-accent-{色}-bg` で同じ
   - name: --mdmark-color-accent-blue-text
     syntax: <color>
     default: 値は [デザイン方針](../design-policy.md)
-    description: 色のバッジの文字の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ。地の色とのコントラストを 4.5:1 以上にする
+    description: 色のバッジの文字の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ。背景色とのコントラストを 4.5:1 以上にする
 accessibility:
   - 札は文言をそのままスクリーンリーダーに伝える `span` で、色だけで意味を持たせない
 refs:

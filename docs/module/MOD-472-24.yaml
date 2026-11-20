@@ -11,20 +11,20 @@ diagrams:
       flowchart LR
         n1["mapのマーカーのコアルール"]
         n2["書き方の誤りを集める"]
-        n3["flowchartを読む"]
-        n4["sequenceDiagramを読む"]
-        n5["補足を読む"]
+        n3["flowchartを読み取る"]
+        n4["sequenceDiagramを読み取る"]
+        n5["補足を読み取る"]
         n6["mapを付ける"]
         n7["構成図を付ける"]
         n8["シーケンス図を付ける"]
         n9["入れ子を配置する"]
         n10["案内と再生を進める"]
-        n11["状態を読み書きする"]
+        n11["状態を読み取り・書き込みする"]
         n12["点検のずれにする"]
-        n13["mindmapを読む"]
+        n13["mindmapを読み取る"]
         n14["マインドマップを付ける"]
         n15["マインドマップを配置する"]
-        n16["軸と格子の配置の図を読む"]
+        n16["軸と格子の配置の図を読み取る"]
         n17["軸と格子の配置の図を付ける"]
         n18["軸と格子の配置の図を配置する"]
         n1 -.-> n2
@@ -55,7 +55,7 @@ diagrams:
 
       <!-- /map -->
 notes:
-  配布ファイルの分け方: '`src/map/index.ts` は別の esbuild の入口で、`dist/map.js` にまとめる（`dist/index.js` を `import` しない）。`dist/index.js` はコアルール・`spec.ts`・`check.ts` の `collectMapStructure` だけを持ち、Mermaid と補足の読み取り・配置・描画・操作を持たない（配布ファイル 1 つのサイズの上限のため）。Mermaid と補足の中身の書き方の警告は `dist/map.js` が `mount` の後に足す。`mount` は `attachParts` が `div.mdmark-map` を見つけたときだけ `loadPartModule("map")` で読み込む。部品の CSS は `src/index.css` に入れる'
+  配布ファイルの分け方: '`src/map/index.ts` は別の esbuild のエントリーポイントで、`dist/map.js` にまとめる（`dist/index.js` を `import` しない）。`dist/index.js` はコアルール・`spec.ts`・`check.ts` の `collectMapStructure` だけを持ち、Mermaid と補足の読み取り・配置・描画・操作を持たない（配布ファイル 1 つのサイズの上限のため）。Mermaid と補足の中身の書き方の警告は `dist/map.js` が `mount` の後に追加する。`mount` は `attachParts` が `div.mdmark-map` を見つけたときだけ `loadPartModule("map")` で読み込む。部品の CSS は `src/index.css` に入れる'
   配置の方式: 計画書の `## PoC 結果` の方式（内側からの配置・段と重心の掃引・格子の A* の線の経路）。PoC の `poc/map/layout.ts` を元にする
   ディレクトリ: |-
     ```tree
@@ -83,16 +83,16 @@ notes:
         ├── state.ts           # sessionStorage とクエリ文字列の状態（dist/map.js）
         ├── flow-view.ts       # 構成図を描いて操作を付ける（dist/map.js）
         ├── sequence-view.ts   # シーケンス図を描いて操作を付ける（dist/map.js）
-        ├── er-view.ts         # ER 図を構成図の上に描いて固有の操作を足す（dist/map.js）
-        ├── state-view.ts      # 状態遷移図を構成図の上に描いて固有の操作を足す（dist/map.js）
-        ├── class-view.ts      # クラス図を構成図の上に描いて固有の操作を足す（dist/map.js）
-        ├── architecture-view.ts # アーキテクチャ図を構成図の上に描いて固有の操作を足す（dist/map.js）
-        ├── c4-view.ts         # C4 図を構成図の上に描いて固有の操作を足す（dist/map.js）
+        ├── er-view.ts         # ER 図を構成図の上に描いて固有の操作を追加する（dist/map.js）
+        ├── state-view.ts      # 状態遷移図を構成図の上に描いて固有の操作を追加する（dist/map.js）
+        ├── class-view.ts      # クラス図を構成図の上に描いて固有の操作を追加する（dist/map.js）
+        ├── architecture-view.ts # アーキテクチャ図を構成図の上に描いて固有の操作を追加する（dist/map.js）
+        ├── c4-view.ts         # C4 図を構成図の上に描いて固有の操作を追加する（dist/map.js）
         ├── mindmap-view.ts    # マインドマップを木の配置で描いて操作を付ける（dist/map.js）
         ├── axis-grid-view.ts  # 軸と格子の配置の図を描いて操作を付ける（dist/map.js）
         ├── drag.ts            # ノード・グループ・線の区間のドラッグ（dist/map.js）
         ├── band.ts            # 案内と再生の進め方（dist/map.js）
-        ├── index.ts           # dist/map.js の入口。attachMap
+        ├── index.ts           # dist/map.js のエントリーポイント。attachMap
         ├── convert.ts         # 廃止した flow・sequence の範囲を map の範囲へ書き換える（移行の手順のスクリプトがまとめて読み込む）
         ├── map.part.ts        # 部品『mapの構成図』『mapのシーケンス図』『mapのER図』『mapの状態遷移図』『mapのクラス図』『mapのアーキテクチャ図』『mapのC4図』『mapのマインドマップ』『mapの軸と格子の配置の図』『案内の帯』の HTML（dist/map.js）
         └── {部品}.part.stories.ts # 部品設計の states ごとのストーリー

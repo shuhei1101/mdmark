@@ -131,7 +131,7 @@ functions:
     container: src/extensions.ts
     kind: 関数
     scope: internal
-    summary: 単体テストの前に登録表を空にする。公開の入口からは export しない
+    summary: 単体テストの前に登録表を空にする。公開のエントリーポイントからは export しない
     returns:
       type: void
       description: 戻り値は無い

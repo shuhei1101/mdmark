@@ -206,7 +206,7 @@ css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: 目次を出すボタンと目次のパネル（狭い幅の目次を含む）の地の色
+    description: 目次を出すボタンと目次のパネル（狭い幅の目次を含む）の背景色
   - name: --mdmark-color-link
     syntax: <color>
     default: '#0f766e（ダーク #2dd4bf）'
@@ -243,7 +243,7 @@ accessibility:
   - 今いるセクションの項目は `aria-current="location"` を持ち、背景と文字の色で示す（太さは変えない）
   - 右端の線は `aria-hidden="true"` でスクリーンリーダーに伝えない。hover の出し方でも、キーボードのフォーカス（`:focus-visible` の要素）が目次の中に入れば目次を出す。ポインターで押したボタンに残るフォーカスでは出し続けない
   - 出している目次の中で Esc を押すと目次を隠し、目次を出すボタンへフォーカスを戻す
-  - 変更のマーカーの付いた項目は、リンクの `aria-label` を `{見出しの文字}（変更）` にして読み上げで伝え、マーカーの円は `aria-hidden="true"` にする。リンクの文字には足さない（目次を出すボタンの今いる見出しの文字に写さないため）。マーカーは色のほかに円の有無で示す
+  - 変更のマーカーの付いた項目は、リンクの `aria-label` を `{見出しの文字}（変更）` にして読み上げで伝え、マーカーの円は `aria-hidden="true"` にする。リンクの文字には追加しない（目次を出すボタンの今いる見出しの文字に写さないため）。マーカーは色のほかに円の有無で示す
   - Markdown のボタンは文字を持たず、`aria-label`・`title` を「Markdown でコピー」「Markdown でエクスポート」にする。2 つは `role="group"`・`aria-label="Markdown"` の並びに入れる
   - コピーした後は見える通知を出さず、頭の中の見えない `role="status"` の要素（`mdmark-visually-hidden`）に「Markdown をコピーしました」を入れて読み上げで伝え、2 秒で空に戻す。アイコンの形状（copy から check）でも示し、色だけで示さない
   - コピーできなかったときのパネルは表のコピーのパネルと同じ構造（`role="group"`・見出しと説明で名前を付ける）で、出したときに入力欄へフォーカスを移して全文を選択する

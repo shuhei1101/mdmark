@@ -113,13 +113,13 @@ functions:
       1. 先頭の空白を除いた最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram`、`classDiagram`・`classDiagram-v2` なら `classDiagram`、`architecture-beta` なら `architecture`、`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment` ならそのまま、`mindmap` なら `mindmap`、`gantt`・`timeline`・`gitGraph`・`journey` ならそのまま、`block-beta` なら `block` を返却する
       2. ほかは無しを返却する
   - name: collectMapStructure
-    title: 範囲の形を確かめる
+    title: 範囲の形を確認する
     kind: 関数
     container: src/map/structure.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     scope: public
-    summary: 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめ、`MapProblem` を返す。Mermaid と補足の中身は読まない（`dist/index.js` に Mermaid と補足の読み取りを入れない）
+    summary: 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確認し、`MapProblem` を返却する。Mermaid と補足の中身は読み取らない（`dist/index.js` に Mermaid と補足の読み取りを入れない）
     args:
       - name: range
         type: MapRangeSource
@@ -162,7 +162,7 @@ functions:
         expected: '`map_invalid` が 1 件で、`kind` が無い'
       - name: test_collect_map_structure_when_bad_args
         case: 異常
-        summary: 読めない引数
+        summary: 読み取れない引数
         condition: '引数 `{title: 全体}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、`kind` が `flowchart`'
@@ -179,7 +179,7 @@ functions:
         mock: なし
         expected: 項目が空で、`kind` が `gantt`・`timeline`・`gitGraph`・`journey`・`block`
   - name: plainMapSourceOf
-    title: 範囲の外のmapの図にするかを確かめる
+    title: 範囲の外のmapの図にするかを確認する
     container: src/map/structure.ts
     kind: 関数
     scope: internal
