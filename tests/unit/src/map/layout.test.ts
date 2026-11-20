@@ -870,3 +870,193 @@ test("test_separate_wires_when_short_end", async () => {
   }
   expect(totalOverlap(result.wires)).toBe(0);
 });
+
+type Side = "top" | "right" | "bottom" | "left";
+
+/** 線の端の点がノードのどの辺にあるか */
+const sideAt = (rect: Rect, [x, y]: [number, number]): Side | undefined => {
+  if (y === rect.y) return "top";
+  if (y === rect.y + rect.h) return "bottom";
+  if (x === rect.x) return "left";
+  if (x === rect.x + rect.w) return "right";
+  return undefined;
+};
+
+/** 相手のノードに向いた辺（中心を結ぶ向きのうち縦と横で差が大きい方。`horizontal` は左右だけで、横の差が無いときは右） */
+const facingSide = (self: Rect, other: Rect, horizontal = false): Side => {
+  const dx = other.x + other.w / 2 - (self.x + self.w / 2);
+  const dy = other.y + other.h / 2 - (self.y + self.h / 2);
+  if (horizontal) return dx < 0 ? "left" : "right";
+  if (Math.abs(dx) >= Math.abs(dy)) return dx < 0 ? "left" : "right";
+  return dy < 0 ? "top" : "bottom";
+};
+
+/** 線の通り道の矩形からの離れ（MAP_LAYOUT.clearance） */
+const CLEARANCE = 12;
+
+/** 辺の中央から外へ離れの分だけ出た、出入り口の点 */
+const portOf = (rect: Rect, side: Side): [number, number] => {
+  const cx = rect.x + rect.w / 2;
+  const cy = rect.y + rect.h / 2;
+  if (side === "top") return [cx, rect.y - CLEARANCE];
+  if (side === "bottom") return [cx, rect.y + rect.h + CLEARANCE];
+  if (side === "left") return [rect.x - CLEARANCE, cy];
+  return [rect.x + rect.w + CLEARANCE, cy];
+};
+
+type Laid = Awaited<ReturnType<typeof laid>>;
+
+/** 線の両端とその祖先の ID */
+const allowedOf = (layout: Laid, wire: { from: string; to: string }) => {
+  const ends = new Set([wire.from, wire.to]);
+  return new Set([
+    ...ends,
+    ...layout.nodes
+      .filter((node) => ends.has(node.id))
+      .flatMap((node) => node.ancestors),
+  ]);
+};
+
+/** 両端とその祖先以外の矩形 */
+const obstaclesOf = (layout: Laid, wire: { from: string; to: string }) => {
+  const allowed = allowedOf(layout, wire);
+  return [...layout.nodes, ...layout.groups].filter(
+    (item) => !allowed.has(item.id),
+  );
+};
+
+/** 向いた辺につながる（向いた辺の出入り口が両端とその祖先以外の矩形の内側にあるときは問わない） */
+const expectFacingEnds = (layout: Laid, label: string) => {
+  for (const wire of layout.wires) {
+    const from = layout.nodes.find((node) => node.id === wire.from) as Rect;
+    const to = layout.nodes.find((node) => node.id === wire.to) as Rect;
+    const obstacles = obstaclesOf(layout, wire);
+    const ends: Array<[Rect, Rect, [number, number]]> = [
+      [from, to, wire.points[0] as [number, number]],
+      [to, from, wire.points.at(-1) as [number, number]],
+    ];
+    for (const [self, other, point] of ends) {
+      const side = facingSide(self, other);
+      const [px, py] = portOf(self, side);
+      const blocked = obstacles.some((rect) => strictlyInside(px, py, rect));
+      if (!blocked) {
+        expect(sideAt(self, point), `${label} ${wire.from}→${wire.to}`).toBe(
+          side,
+        );
+      }
+    }
+  }
+};
+
+/** どの線の区間も両端とその祖先以外の矩形の内側を通らない */
+const expectNoCrossing = (layout: Laid, label: string) => {
+  for (const wire of layout.wires) {
+    const obstacles = obstaclesOf(layout, wire);
+    for (const [k, point] of wire.points.slice(1).entries()) {
+      const previous = wire.points[k] as [number, number];
+      for (const rect of obstacles) {
+        expect(
+          segmentCrosses(previous, point, rect),
+          `${label} ${wire.from}→${wire.to} が ${rect.id} を横切る`,
+        ).toBe(false);
+      }
+    }
+  }
+};
+
+// 向いた辺につなぐ（正常系）
+test("test_route_wires_when_facing_side", async () => {
+  // 準備・実行（ラベルが 1 文字のノードは幅の下限 120）
+  const layout = await laid(
+    {},
+    {},
+    { nodeFit: "height", source: "flowchart TB\n  A --> B\n  A --> C\n" },
+  );
+  // 検証
+  const a = layout.nodes.find((node) => node.id === "A") as Rect;
+  for (const id of ["B", "C"]) {
+    const target = layout.nodes.find((node) => node.id === id) as Rect;
+    const wire = layout.wires.find((item) => item.to === id);
+    const points = wire?.points ?? [];
+    expect(sideAt(a, points[0] as [number, number]), id).toBe("bottom");
+    expect(sideAt(target, points.at(-1) as [number, number]), id).toBe("top");
+  }
+});
+
+// 向いた辺の出入り口が通れない（正常系）
+test("test_route_wires_when_facing_side_blocked", async () => {
+  // 準備・実行（B の上に空けた場所が、B の上の辺の出入り口をふさぐ）
+  const layout = await laid(
+    {},
+    { B: { above: 40 } },
+    { nodeFit: "height", source: "flowchart TB\n  A --> B\n" },
+  );
+  // 検証
+  const b = layout.nodes.find((node) => node.id === "B") as Rect;
+  const wire = layout.wires[0];
+  const points = wire?.points ?? [];
+  expect(["left", "right"]).toContain(
+    sideAt(b, points.at(-1) as [number, number]),
+  );
+  const reserved = { x: b.x, y: b.y - 40, w: b.w, h: 40 };
+  for (const [k, point] of points.slice(1).entries()) {
+    expect(segmentCrosses(points[k] as [number, number], point, reserved)).toBe(
+      false,
+    );
+  }
+});
+
+// 左右の辺だけにつなぐ（正常系）
+test("test_route_wires_when_sides_horizontal", async () => {
+  // 準備
+  const sides = { sides: "horizontal" as const };
+  // 実行
+  const stacked = await laid(
+    {},
+    { A: sides, B: sides },
+    { nodeFit: "height", source: "flowchart TB\n  A --> B\n" },
+  );
+  const diagonal = await laid(
+    {},
+    { A: sides, B: sides, C: sides },
+    { nodeFit: "height", source: "flowchart TB\n  A --> B\n  A --> C\n" },
+  );
+  // 検証（上下に並ぶ 2 つは両端とも右の辺）
+  const a = stacked.nodes.find((node) => node.id === "A") as Rect;
+  const b = stacked.nodes.find((node) => node.id === "B") as Rect;
+  const points = stacked.wires[0]?.points ?? [];
+  expect(sideAt(a, points[0] as [number, number])).toBe("right");
+  expect(sideAt(b, points.at(-1) as [number, number])).toBe("right");
+  // 検証（斜めに並ぶ 2 つは左右のうち相手の中心に近い方の辺）
+  for (const wire of diagonal.wires) {
+    const from = diagonal.nodes.find((node) => node.id === wire.from) as Rect;
+    const to = diagonal.nodes.find((node) => node.id === wire.to) as Rect;
+    expect(sideAt(from, wire.points[0] as [number, number]), wire.to).toBe(
+      facingSide(from, to, true),
+    );
+    expect(sideAt(to, wire.points.at(-1) as [number, number]), wire.to).toBe(
+      facingSide(to, from, true),
+    );
+  }
+});
+
+// 配置のパターンごとに向いた辺につなぎ、ノードを横切らない（正常系）
+test("test_route_wires_when_placement_patterns", async () => {
+  // 準備
+  const patterns: Record<string, string> = {
+    縦: "flowchart TB\n  A --> B --> C\n",
+    横: "flowchart LR\n  A --> B --> C\n",
+    斜め: "flowchart TB\n  A --> B\n  A --> C\n  B --> D\n  C --> D\n",
+    グループをまたぐ:
+      "flowchart LR\n  subgraph g [g]\n    A --> B\n  end\n  subgraph h [h]\n    C --> D\n  end\n  A --> D\n  B --> C\n  D --> A\n",
+    集まる:
+      "flowchart TB\n  A --> H\n  B --> H\n  C --> H\n  D --> H\n  E --> H\n",
+  };
+  for (const [label, source] of Object.entries(patterns)) {
+    // 実行
+    const layout = await laid({}, {}, { nodeFit: "height", source });
+    // 検証
+    expectFacingEnds(layout, label);
+    expectNoCrossing(layout, label);
+  }
+});

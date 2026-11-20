@@ -2292,3 +2292,66 @@ test("test_render_map_class_ends_when_label_near_nodes", async () => {
   const near = Math.abs(left - 132) <= w + MAP_ER.labelChar;
   expect(near).toBe(true);
 });
+
+// 経路の辺のまま付け替え、ほかのテーブルを横切らない（正常系）
+test("test_rewire_map_er_when_near_side", async () => {
+  // 準備
+  const { parseErDiagram, erToFlowchart, erOverrides, erPartRelations } =
+    await import("../../../../src/map/er.ts");
+  const { layoutMap, estimateTextWidth } = await loadLayout();
+  const { rewireMapEr } = await loadParts();
+  const { ER, ER_DATA } = await import("../../helpers/map.ts");
+  const er = parseErDiagram(ER);
+  const groups = JSON.parse(ER_DATA).groups;
+  const tables = er.tables.map((table) => ({
+    name: table.name,
+    columns: table.columns,
+  }));
+  // 実行
+  const placed = layoutMap(
+    erToFlowchart(er, groups),
+    { collapsed: [] },
+    {
+      overrides: erOverrides(er, new Set()),
+      nodeFit: "height",
+      measureText: estimateTextWidth,
+    },
+  );
+  const wires = rewireMapEr({
+    layout: placed,
+    tables,
+    relations: erPartRelations(er),
+    collapsed: [],
+  });
+  // 検証（「注文」→「明細」の端の辺）
+  const nodeOf = (id: string) => {
+    const node = placed.nodes.find((item) => item.id === id);
+    if (!node) throw new Error(`${id} の表がありません`);
+    return node;
+  };
+  const order = nodeOf("注文");
+  const detail = nodeOf("明細");
+  const wire = wires.find((item) => item.from === "注文" && item.to === "明細");
+  const first = wire?.points[0];
+  const last = wire?.points.at(-1);
+  expect(first?.[0]).toBe(order.x);
+  expect(last?.[0]).toBe(detail.x + detail.w);
+  // 検証（どの線の区間も両端以外のテーブルの矩形に入らない）
+  const inside = (x: number, y: number, r: (typeof placed.nodes)[number]) =>
+    x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h;
+  for (const item of wires) {
+    for (const [k, point] of item.points.slice(1).entries()) {
+      const previous = item.points[k] as [number, number];
+      for (const node of placed.nodes) {
+        if (node.id === item.from || node.id === item.to) continue;
+        for (let step = 0; step <= 20; step += 1) {
+          const x = previous[0] + ((point[0] - previous[0]) * step) / 20;
+          const y = previous[1] + ((point[1] - previous[1]) * step) / 20;
+          expect(inside(x, y, node), `${item.id} が ${node.id} を横切る`).toBe(
+            false,
+          );
+        }
+      }
+    }
+  }
+});
