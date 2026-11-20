@@ -1438,13 +1438,14 @@ test("test_normal_when_table_pinned", async () => {
   expect(widePins[0]?.getAttribute("aria-label")).toBe(
     "「列の名前1」の列をピン止め",
   );
-  // 検証: 描いた直後は 1 列目だけを留める
-  expect(widePins[0]?.getAttribute("aria-pressed")).toBe("true");
-  expect(positions().slice(0, 2)).toEqual(["sticky", "static"]);
-  // 実行・検証: 3 列目のピン止めを押すと、1・3 列目だけを留める
+  // 検証: 描いた直後はどの列も留めない
   const pressed = () =>
     [...widePins].map((pin) => pin.getAttribute("aria-pressed"));
+  expect(pressed()).toEqual(Array(10).fill("false"));
+  expect(positions()).not.toContain("sticky");
+  // 実行・検証: 1 列目と 3 列目のピン止めを押すと、1・3 列目だけを留める
   const third = widePins[2] as HTMLButtonElement;
+  (widePins[0] as HTMLButtonElement).click();
   third.click();
   expect(pressed().slice(0, 3)).toEqual(["true", "false", "true"]);
   expect(positions().slice(0, 3)).toEqual(["sticky", "static", "sticky"]);
@@ -1761,11 +1762,12 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
         ).toBeLessThanOrEqual(1);
       }
     });
-    // 実行・検証: 2 列目までを留めて、表を横にスクロールする
+    // 実行・検証: 1 列目と 2 列目を留めて、表を横にスクロールする
     const pins = table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
     await vi.waitFor(() => {
       expect(pins[1]?.hasAttribute("hidden")).toBe(false);
     });
+    pins[0]?.click();
     pins[1]?.click();
     find<HTMLElement>(wrapper, ".mdmark-table-scroll").scrollLeft = 200;
     await nextFrames();
@@ -9971,6 +9973,69 @@ test("test_normal_when_base_replaced", async () => {
   expect(el.innerHTML).toBe(plain.innerHTML);
 });
 
+/** 先頭に `title: A` のフロントマターと段落 1 つを持つ比較元 */
+const FRONTMATTER_R1 = "---\ntitle: A\n---\n\n段落 P です。\n";
+/** r1 の title を B に書き換えた本文 */
+const FRONTMATTER_R2 = "---\ntitle: B\n---\n\n段落 P です。\n";
+/** r2 からフロントマターを削除した本文 */
+const FRONTMATTER_R3 = "段落 P です。\n";
+
+/** 本文の最初の要素（描く先の直下の本文の列の最初の子） */
+function firstBodyElement(el: HTMLElement): Element {
+  const block = el.querySelector(".mdmark-diff-block, p, details");
+  const body = block?.parentElement;
+  if (!body?.firstElementChild) {
+    throw new Error("本文の要素が無い");
+  }
+  return body.firstElementChild;
+}
+
+// 比較元と本文の先頭のフロントマターが違うとき、機能 frontmatter がオフなら変更・削除したフロントマターを本文の先頭に差し込み、オンなら既にある表示を差分のブロックで包む（正常系）
+test("test_normal_when_base_markdown_frontmatter_changed", async () => {
+  // 準備
+  const el = createElement();
+  // 実行: オフで r1 と r2 を比べる
+  const handle = await mountTracked(el, {
+    markdown: FRONTMATTER_R2,
+    baseMarkdown: FRONTMATTER_R1,
+  });
+  // 検証: 書き換えたフロントマターを開いた折りたたみで、追加の色で本文の先頭に差し込む
+  const added = firstBodyElement(el);
+  expect(added.matches('div.mdmark-diff-block[data-kind="add"]')).toBe(true);
+  expect(find(added, "details.mdmark-frontmatter").hasAttribute("open")).toBe(
+    true,
+  );
+  expect(added.textContent).toContain("title: B");
+  expect(marksOf(added).name).toBe("追加:");
+  expect(paragraphWith(el, "段落 P").closest(".mdmark-diff-block")).toBeNull();
+  // 実行: オフで r2 と r3 を比べる
+  handle.update(FRONTMATTER_R3, { baseMarkdown: FRONTMATTER_R2 });
+  // 検証: 削除したフロントマターを、削除の色で本文の先頭に差し込む
+  const deleted = firstBodyElement(el);
+  expect(deleted.matches('div.mdmark-diff-block[data-kind="del"]')).toBe(true);
+  expect(deleted.textContent).toContain("title: B");
+  expect(marksOf(deleted).name).toBe("削除:");
+  // 実行: オンで r1 と r2 を比べる
+  const shown = createElement();
+  const shownHandle = await mountTracked(shown, {
+    markdown: FRONTMATTER_R2,
+    baseMarkdown: FRONTMATTER_R1,
+    config: { features: { frontmatter: true } },
+  });
+  // 検証: 既にあるフロントマターの折りたたみを 1 つだけ、追加の色で包む
+  const shownDetails = shown.querySelectorAll("details.mdmark-frontmatter");
+  expect(shownDetails).toHaveLength(1);
+  expect(
+    shownDetails[0]?.closest('div.mdmark-diff-block[data-kind="add"]'),
+  ).not.toBeNull();
+  // 実行: オンで比較元と本文のフロントマターを同じにする
+  shownHandle.update(FRONTMATTER_R2, { baseMarkdown: FRONTMATTER_R2 });
+  // 検証: 差分のブロックが無く、フロントマターの折りたたみは差分のブロックに包まれない
+  expect(shown.querySelector(".mdmark-diff-block")).toBeNull();
+  const sameDetails = find(shown, "details.mdmark-frontmatter");
+  expect(sameDetails.closest(".mdmark-diff-block")).toBeNull();
+});
+
 // 取り出し元と比較元を両方渡すと、本文の強調は比較元で行い、取り出し元は差分を開く UI にだけ使用する（正常系）
 test("test_normal_when_base_with_diff_source", async () => {
   // 準備
@@ -10793,7 +10858,10 @@ test("test_normal_when_row_header_pinned", async () => {
     "",
   ].join("\n");
   // 実行
-  await mountTracked(el, { markdown });
+  await mountTracked(el, {
+    markdown,
+    config: { table: { pin_default: true } },
+  });
   // 検証: 1・2 列目のピン止めが押した状態で、1・2 列目のセルを留める
   const pins = el.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
   await vi.waitFor(() => {
@@ -13299,7 +13367,8 @@ test("test_normal_when_pinned_under_merged_header", async () => {
   await vi.waitFor(() => {
     expect(pinOf(2).hasAttribute("hidden")).toBe(false);
   });
-  // 実行: 2 行目の既定のピン止めを押し、右端までスクロールする
+  // 実行: 2 行目の名前と既定のピン止めを押し、右端までスクロールする
+  pinOf(0).click();
   pinOf(2).click();
   const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
   scroller.scrollLeft = scroller.scrollWidth;
@@ -13326,10 +13395,87 @@ test("test_normal_when_pinned_under_merged_header", async () => {
   expect(getComputedStyle(groupHead as HTMLElement).position).not.toBe(
     "sticky",
   );
-  // 検証: 既定のボタンだけが押され、型・必須は押していない
+  // 検証: 名前と既定のボタンが押され、型・必須は押していない
+  expect(pinOf(0).getAttribute("aria-pressed")).toBe("true");
   expect(pinOf(2).getAttribute("aria-pressed")).toBe("true");
   expect(pinOf(1).getAttribute("aria-pressed")).toBe("false");
   expect(pinOf(3).getAttribute("aria-pressed")).toBe("false");
+});
+
+// opts.config.table.pin_default を指定しないとき、data-pin の無いはみ出す表は描いた直後にどの列も留めず、data-pin のある表はその列だけを留める（正常系）
+test("test_normal_when_table_not_pinned_by_default", async () => {
+  // 準備
+  const el = createElement();
+  setElementWidth(el, 320);
+  const headers = Array.from({ length: 10 }, (_, i) => `列の名前${i + 1}`);
+  const rows = (count: number, columns: string[]) =>
+    Array.from(
+      { length: count },
+      (_, row) =>
+        `| ${columns.map((_c, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+    );
+  const pinnedColumns = [
+    "No",
+    "物理名",
+    "説明",
+    "型",
+    "必須",
+    "既定",
+    "単位",
+    "備考",
+  ];
+  const markdown = [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows(5, headers),
+    "",
+    '<!-- table: {"kind": "data", "header": {"columns": 2}} -->',
+    "",
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows(5, headers),
+    "",
+    "<!-- /table -->",
+    "",
+    '<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}}} -->',
+    "",
+    `| ${pinnedColumns.join(" | ")} |`,
+    `| ${pinnedColumns.map(() => "---").join(" | ")} |`,
+    ...rows(3, pinnedColumns),
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(el, { markdown });
+  // 検証
+  const tables = [...el.querySelectorAll<HTMLElement>(".mdmark-table")];
+  expect(tables).toHaveLength(3);
+  const pinsOf = (table: HTMLElement) => [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => {
+    for (const table of tables) {
+      expect(itemAt(pinsOf(table), 1).hidden).toBe(false);
+    }
+  });
+  const positionsOf = (table: HTMLElement) =>
+    [...find<HTMLTableRowElement>(table, "tbody tr").cells].map(
+      (cell) => getComputedStyle(cell).position,
+    );
+  for (const table of tables.slice(0, 2)) {
+    expect(
+      pinsOf(table).map((pin) => pin.getAttribute("aria-pressed")),
+    ).toEqual(Array(10).fill("false"));
+    expect(positionsOf(table)).not.toContain("sticky");
+  }
+  const third = itemAt(tables, 2);
+  expect(pinsOf(third).map((pin) => pin.getAttribute("aria-pressed"))).toEqual([
+    "false",
+    "true",
+    ...Array(6).fill("false"),
+  ]);
+  expect(positionsOf(third).slice(0, 2)).toEqual(["static", "sticky"]);
 });
 
 /** 階層の表の行（キー・型・必須・既定・説明） */
@@ -15888,7 +16034,8 @@ test("test_normal_when_pinned_column_resized", async () => {
   await vi.waitFor(() => expect(itemAt(pins, 2).hidden).toBe(false));
   const { heads, handles } = resizeParts(table);
   const firstRow = find<HTMLTableRowElement>(table, "tbody tr");
-  // 実行: 3 列目と 9 列目を留め、1 列目のつまみを右へ 60px ドラッグして、右端までスクロールする
+  // 実行: 1 列目・3 列目・9 列目を留め、1 列目のつまみを右へ 60px ドラッグして、右端までスクロールする
+  itemAt(pins, 0).click();
   itemAt(pins, 2).click();
   itemAt(pins, 8).click();
   dragResizeHandle(itemAt(handles, 0), 60);
@@ -15969,7 +16116,8 @@ test("test_normal_when_pinned_columns_exceed_visible_width", async () => {
     );
   expect(sum([0, 2])).toBeLessThanOrEqual(scroller.clientWidth);
   expect(sum([0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
-  // 実行: 3 列目と 9 列目のピン止めを押し、右端までスクロールする
+  // 実行: 1 列目・3 列目・9 列目のピン止めを押し、右端までスクロールする
+  itemAt(pins, 0).click();
   itemAt(pins, 2).click();
   itemAt(pins, 8).click();
   scroller.scrollLeft = scroller.scrollWidth;
@@ -16129,12 +16277,12 @@ test("test_normal_when_unmarked_table_sorted", async () => {
   ).toBe(true);
   expect(table.querySelector(".mdmark-filter")).toBeNull();
   expect(table.querySelector(".mdmark-table-bar")).toBeNull();
-  // 検証: 押していないピンは見えないが、タブの順に残り、押した 1 列目のピンは見える
+  // 検証: どの列も留めず、押していないピンは見えないが、タブの順に残る
   const third = itemAt(pins, 2);
-  expect(itemAt(pins, 0).getAttribute("aria-pressed")).toBe("true");
-  expect(pinShown(itemAt(pins, 0))).toBe(true);
-  expect(third.getAttribute("aria-pressed")).toBe("false");
-  expect(pinShown(third)).toBe(false);
+  for (const pin of pins) {
+    expect(pin.getAttribute("aria-pressed")).toBe("false");
+    expect(pinShown(pin)).toBe(false);
+  }
   expect(getComputedStyle(third).visibility).toBe("visible");
   expect(getComputedStyle(third).display).not.toBe("none");
   // 検証: 見出しのセルは中身が収まる幅以上で、ピンがセルの右端を越えない
