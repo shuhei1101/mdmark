@@ -32,6 +32,11 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-20T13:18:13.343918+00:00'
+  - page: docs/guide/用語集.mark.md
+    change: 「ER 図」「データの印」の説明を用語集.yaml と同じ文にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:22:37.596755+00:00'
 scope_out:
   - item: map の図のグループ以外（ノード・ER 図のテーブル）の大きさをドラッグで変える操作
     reason: 要望はグループの角のドラッグだけで、ノードの大きさの変更を含まない
