@@ -12,7 +12,7 @@ functions:
     summary: 決めたバージョンの jsDelivr の `dist/index.js` を拡張機能の保存先に保存して読み込み、`renderForMount` を返却する
     scope: public
     is_async: true
-    side_effects: '`storageDir` の `dist/{バージョン}/index.js` に書き込む（無いときだけ）'
+    side_effects: 'バージョンが `v{X}.{Y}.{Z}` のときは `storageDir` の `dist/{バージョン}/index.js` に書き込む（無いときだけ）。それ以外（`develop`）は `dist/{バージョン}/{内容の SHA-256 の先頭 16 桁}.js` に書き込み、同じフォルダのほかの `.js` を削除する'
     args:
       - name: options
         type: '{ version: string; storageDir: string; distBase: string; fetchText?: (url: string) => Promise<string> }'
@@ -22,7 +22,7 @@ functions:
       type: 'Promise<{ kind: "ok"; renderForMount: (markdown: string, opts?: object) => Promise<{ rendered: MdmarkRendered; pureMarkdown: string }> } | { kind: "unavailable"; reason: string } | { kind: "unsupported" }>'
       description: 書き出す文書を描く公開関数か、取得できない理由か、描いた HTML から起動できないバージョンであること
     process: |-
-      1. 保存先の `dist/{バージョン}/index.js` が無ければ、`distUrl`（`base` は `distBase`、`file` は `index.js`）の内容を取得して書き込む。取得できないときは `unavailable`（`reason` は誤りの文）を返却する
+      1. バージョンが `v{X}.{Y}.{Z}` のときは、保存先の `dist/{バージョン}/index.js` が無ければ `distUrl`（`base` は `distBase`、`file` は `index.js`）の内容を取得して書き込み、あれば取得しない。それ以外（`develop`）は内容が更新されるため、呼ぶたびに取得し、`dist/{バージョン}/{内容の SHA-256 の先頭 16 桁}.js` に書き込んで同じフォルダのほかの `.js` を削除する（内容ごとにファイルを分け、`import()` が前に読み込んだモジュールを返さないようにする）。取得できないときは、保存したものへ戻らず `unavailable`（`reason` は誤りの文）を返却する
       2. 保存したファイルを `import(pathToFileURL(ファイル).href)` で読み込む。拡張機能の本体は CJS のため、指定子を変数にして esbuild が `import()` を `require` に置き換えないようにする
       3. 読み込んだモジュールの `renderForMount` が関数でないときは `unsupported` を返却する（`version()` の文字列は比べない）
       4. `ok` と `renderForMount` を返却する
@@ -51,6 +51,12 @@ functions:
         condition: 拡張機能をビルドした `dist/extension.cjs`
         mock: なし
         expected: '`loadDistRenderer` の読み込みが `import(` のままで、`require(` に置き換わっていない'
+      - name: test_load_dist_renderer_when_develop
+        case: 正常
+        summary: develop は呼ぶたびに取得し、更新された内容を読み込む
+        condition: '`version` が `develop`。`fetchText` は 1 回目に `renderForMount` を公開しない ES モジュール、2 回目に公開する ES モジュールの文字列を返却する'
+        mock: '`fetchText`・一時フォルダの `storageDir`'
+        expected: '`fetchText` が 2 回呼ばれ、1 回目は `unsupported`、2 回目は `ok`。`dist/develop/` の `.js` は 1 つだけ'
     refs:
       - IF-472-51#constraints[対応の判定]
     callees:

@@ -419,7 +419,7 @@ constraints:
   - item: ページのタイトル
     constraint: 書き出す HTML の `<title>` は、文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）、無ければ Markdown のファイル名。索引は参照しない
   - item: バージョンと描く処理
-    constraint: バージョンはプレビューを開く.ts の制約「バージョンの決め方」で決める。書き出すときに、そのバージョンの jsDelivr の `dist/index.js` を取得し、拡張機能のホストで ES モジュールとして読み込んで `renderForMount` を呼ぶ（`dist/index.js` は外部ライブラリのほかへ import しない 1 つのファイル）。取得した `dist/index.js` はバージョンごとに拡張機能の保存先（`ExtensionContext.globalStorageUri`）に保存し、次の書き出しは保存したものを読み込む。拡張機能に同梱した `src/` の描く処理は使用しない
+    constraint: バージョンはプレビューを開く.ts の制約「バージョンの決め方」で決める。書き出すときに、そのバージョンの jsDelivr の `dist/index.js` を取得し、拡張機能のホストで ES モジュールとして読み込んで `renderForMount` を呼ぶ（`dist/index.js` は外部ライブラリのほかへ import しない 1 つのファイル）。取得した `dist/index.js` はバージョンごとに拡張機能の保存先（`ExtensionContext.globalStorageUri`）に保存し、バージョンが `v{X}.{Y}.{Z}` のときは次の書き出しで保存したものを読み込む。`develop` は内容が更新されるため書き出すたびに取得し、取得できないときは保存したものへ戻らず例外「配布物を取得できない」にする。拡張機能に同梱した `src/` の描く処理は使用しない
     notes: '開いたときに読み込む配布物のバージョンと、描いたバージョンを一致させるため（要件の #769 の案 A）。描いた HTML の class と操作の付け方はバージョンごとに変わりうる'
 tags:
   - name: topic:書き出し
