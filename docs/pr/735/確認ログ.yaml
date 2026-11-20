@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/735#discussion_r4638922072
+  - topic: はみ出す表を既定で留めるかを選ぶ設定のキーの名前と持ち方（#711）
+    decision: '`table` に真偽値のキー `table.pin_default`（既定 `false`）を追加する（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 27e0388ee21224585a7b673111846626097c7999
+    thread: https://github.com/shuhei1101/mdmark/pull/735#discussion_r4639235344
