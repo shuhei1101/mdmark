@@ -14,6 +14,8 @@ mermaid のコードブロックを記載して mdmark の外観の図にし、�
 
 ### mermaid のコードブロックを記載する
 
+<!-- code: {"raw": true} -->
+
 ````markdown
 ```mermaid
 ---
@@ -42,6 +44,8 @@ front matter の `title` が図の枠のタイトルになり、図の中には�
 記載方法の一覧は [mermaid のコードブロック](./記法.mark.md#mermaid-のコードブロック)。
 
 ### ノードをリンクにする
+
+<!-- code: {"raw": true} -->
 
 ````markdown
 ```mermaid

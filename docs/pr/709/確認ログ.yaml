@@ -1,0 +1,36 @@
+confirmations:
+  - topic: 言語 markdown のコードブロックの切り替えのボタンの置き場所
+    decision: 帯のコピーボタンの左に、アイコンと文字のボタンを配置する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633060613
+  - topic: 言語 markdown のコードブロックの既定の表示と切り替えのボタンの文言
+    decision: 既定は描いた結果の表示にし、ボタンは「Raw」で押すと元の Markdown を出す。マーカーでコードブロックごとに既定を元の Markdown にできる（ユーザーの返信による変更。既定をソースの表示にしていた要件 No.2 を置き換える）
+    decided_by: reply
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633098912
+  - topic: 既存の文書の言語 markdown・md のコードブロックの見え方
+    decision: このリポジトリの docs/guide/ の書き方の例にだけ、既定を元の Markdown にする code のマーカーを追加する。利用者の文書の移行の手順は追加しない（案 B。推奨案 C ではない）
+    decided_by: reply
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633530979
+  - topic: markdown-preview のモックの内容への合意
+    decision: 既定は描いた結果・帯のコピーボタンの左の Raw のボタン・マーカーで上書き、のモックで進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633244243
+  - topic: 倍率が 100 % でも図の全体が表示する枠に収まらないときの手順の移動
+    decision: 強調するノードが表示する枠に見えているときは位置を変えず、見えていない部分があるときだけ倍率を変えずに中央へ移す（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633686688
+  - topic: 言語 markdown のコードブロックを描いた結果に mdmark の記法を含めるか
+    decision: 文書と同じ mdmark の描き方で描き、目次・先頭へ戻る・Markdown のエクスポート・被参照・コメント・印刷の処理は中に付けない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633687386
+  - topic: 既定を元の Markdown にする code のマーカーのキー
+    decision: キー raw（真偽値・既定 false）（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633688267

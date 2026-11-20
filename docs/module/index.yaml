@@ -148,6 +148,8 @@ items:
   summary: ライブラリ本体 / 記法の共通 / clipboard.interact.ts
 - page: MOD-472-233.ts.yaml
   summary: ライブラリ本体 / コードブロック / code-block.interact.ts
+- page: MOD-472-368.ts.yaml
+  summary: ライブラリ本体 / コードブロック / code-preview.interact.ts
 - page: MOD-472-225.ts.yaml
   summary: ライブラリ本体 / コードブロック / code-fold.interact.ts
 - page: MOD-472-243.ts.yaml

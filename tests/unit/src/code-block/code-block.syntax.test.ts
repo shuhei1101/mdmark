@@ -843,3 +843,70 @@ test("test_build_code_blocks_when_tree_lines_in_mermaid", () => {
   expect(withMermaid).not.toContain("mdmark-syntax-warning");
   expect(withoutCode).not.toContain("mdmark-syntax-warning");
 });
+
+// raw を読み込む（正常系）
+test("test_read_code_spec_when_raw", async () => {
+  // 準備
+  const { readCodeSpec } = await loadCodeBlocks();
+  // 実行
+  const raw = readCodeSpec({ options: { raw: true }, lineCount: 1 });
+  const rendered = readCodeSpec({ options: { raw: false }, lineCount: 1 });
+  const plain = readCodeSpec({ options: {}, lineCount: 1 });
+  // 検証
+  expect(raw.raw).toBe(true);
+  expect(rendered.raw).toBe(false);
+  expect(plain.raw).toBe(false);
+  expect(raw.warnings).toEqual([]);
+});
+
+// 言語 markdown・md のコードブロックに印を付ける（正常系）
+test("test_build_code_blocks_when_markdown", () => {
+  // 準備
+  const markdown = [
+    "```markdown",
+    "# a",
+    "```",
+    "",
+    "```MD",
+    "# b",
+    "```",
+    "",
+    "```md:README.md",
+    "# c",
+    "```",
+    "",
+    "```ts",
+    "const d = 1;",
+    "```",
+    "",
+    '<!-- code: {"raw": true} -->',
+    "",
+    "```markdown",
+    "# e",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  const { html: off } = renderDoc(markdown, { code: false, syntax: false });
+  // 検証: code がオンなら markdown・md の包む要素だけが印を持ち、マーカーの後のものだけが raw の印も持つ
+  const wrappers = findTags(html, '<div class="mdmark-code"');
+  expect(wrappers).toHaveLength(5);
+  expect(wrappers.map((tag) => tag.includes("data-mdmark-markdown"))).toEqual([
+    true,
+    true,
+    true,
+    false,
+    true,
+  ]);
+  expect(wrappers.map((tag) => tag.includes("data-mdmark-raw"))).toEqual([
+    false,
+    false,
+    false,
+    false,
+    true,
+  ]);
+  // 検証: code がオフならどれも印を持たない
+  expect(off).not.toContain("data-mdmark-markdown");
+  expect(off).not.toContain("data-mdmark-raw");
+});

@@ -242,6 +242,28 @@ states:
         value: 'true'
       - name: lines
         value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く"},{"text":"mount(document.querySelector(\"#doc\"), markdown);"}]'
+  - name: MarkdownPreview
+    description: 言語 `markdown` のコードブロックの既定。帯のコピーのボタンの左に `Raw` のボタン（`aria-pressed="false"`）、帯の下に中身を描いた結果を出し、`pre` は隠れている（合意したモック `docs/mock/components/markdown-preview/`）
+    args:
+      - name: language
+        value: markdown
+      - name: copyState
+        value: idle
+      - name: preview
+        value: rendered
+      - name: lines
+        value: '[{"text":"# 在庫の点検"},{"text":""},{"text":"> [!NOTE]"},{"text":"> 点検は毎朝 9 時までに済ませる。"}]'
+  - name: MarkdownRaw
+    description: '`Raw` のボタンを押した後、または `<!-- code: {"raw": true} -->` を持つ言語 `markdown` のコードブロック。ボタンが `aria-pressed="true"` で、リンクの色の文字と `--mdmark-color-current-bg` の地になり、帯の下に元の Markdown の `pre` を出す'
+    args:
+      - name: language
+        value: markdown
+      - name: copyState
+        value: idle
+      - name: preview
+        value: raw
+      - name: lines
+        value: '[{"text":"# 在庫の点検"},{"text":""},{"text":"> [!NOTE]"},{"text":"> 点検は毎朝 9 時までに済ませる。"}]'
 lead: 左端に言語のラベルとタイトル、右端にコピーのボタンを配置した帯と、行番号・行の強調・追加した行と削除した行・注目する行・エラーと警告の行と、インデントの縦線・行の開閉と、言語に応じた色分けを付けたコードブロック。
 args:
   - name: language
@@ -300,6 +322,12 @@ args:
     required: false
     default: 'false'
     description: '`<!-- code: {"wrap": true} -->` を持つか。`true` のとき `pre` に class `mdmark-code-lines mdmark-code-wrap` を付け、長い行を枠の幅で折り返す。行番号と行頭の `+`・`-` は折り返した行の 1 行目にだけ出す。`false` のときは折り返さず、利用側の `pre` への汎用の CSS でも折り返さない'
+  - name: preview
+    type: 列挙
+    default: なし（`Raw` のボタンと描いた結果を持たない）
+    enabled_when: '`language` が `markdown` か `md` のとき'
+    choices: '`rendered`（描いた結果を出す）・`raw`（元の Markdown を出す）'
+    description: 言語 `markdown`・`md` のコードブロックの表示（`mount` が付けた状態）。指定すると帯の右の塊のコピーのボタンの左に `Raw` のボタンを、`pre` の後ろに `div.mdmark-code-preview` を配置し、`rendered` では `pre` を、`raw` では `div.mdmark-code-preview` を `hidden` にする。ボタンの `aria-pressed` は `raw` のとき `true`
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>
@@ -371,12 +399,15 @@ accessibility:
   - '注目する行を持つコードブロックは、ほかの行を不透明度 0.45 にし、ポインターを乗せるかフォーカスがあるときは全ての行を戻す（`prefers-reduced-motion: reduce` では移り変わりを付けない）。エラーと警告の行は、色に加えて左端の線と行頭の `×`・`!` で分け、行頭の文字は代わりの文字で `エラーの行`・`警告の行` とスクリーンリーダーに伝える'
   - '開閉のボタンは `aria-expanded`・`aria-controls` と `{n} 行目から {m} 行目` のスクリーンリーダー向けの名前を持ち、Enter・Space で開閉する。`⋯` のボタンは `{n} 行目から {m} 行目を展開` をスクリーンリーダー向けの名前に持つ。ポインターで乗せられない端末（`hover: none`）では開閉のボタンを常に出す'
   - インデントの縦線は CSS で引き、スクリーンリーダーと選んで写す中身に入れない
-  - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。タイトル・言語のラベル・行番号・強調・行の色と `+`・`-` はそのまま出し、コピーのボタンは出さない。畳んだ行は開いて出し、開閉のボタンと `⋯` は出さず、注目する行のほかの行も薄くしない
+  - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。タイトル・言語のラベル・行番号・強調・行の色と `+`・`-` はそのまま出し、コピーのボタンと `Raw` のボタンは出さない。畳んだ行は開いて出し、開閉のボタンと `⋯` は出さず、注目する行のほかの行も薄くしない
   - 色分けは外観だけで、スクリーンリーダー向けの名前とコードの文字は変わらない。コメントは色に加えて斜体でも示す。色分けの 6 色は、地（`--mdmark-color-surface` と、追加した行・削除した行・強調した行の半透明の地を混ぜた色）に対して明るい配色で 5.21〜7.03、ダークで 6.56〜10.64（WCAG の相対輝度で計算）
   - '印刷ではダークを解除した明るい配色の色分けの色を、`print-color-adjust: exact` で色を省くブラウザの設定でも紙に出す'
+  - '`Raw` のボタンは、アイコン（`aria-hidden="true"`）・見える文字 `Raw`・`mdmark-visually-hidden` の `（元の Markdown を表示）` を持ち、スクリーンリーダー向けの名前を `Raw（元の Markdown を表示）` にする（見える文字で始まる名前）。名前は押した状態で変えず、元の Markdown を出しているかを `aria-pressed` で伝える。押した状態は文字・地・枠線の色で示す'
+  - 描いた結果の `div.mdmark-code-preview` は見出し・表・図をそのまま読み込ませ、中の見出しは右側の目次と被参照に入れない。`Raw` のボタンで隠した側は `hidden` でスクリーンリーダーにも伝えない
 refs:
   - IF-472-34#constraints[コードブロック]
   - IF-472-35#constraints[色分けの当て方]
+  - IF-472-35#constraints[言語 markdown のコードブロックの描いた結果]
 status: planned
 notes:
   出す HTML: '構造はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。
@@ -412,6 +443,12 @@ notes:
     帯の言語のラベルは後ろのファイルのアイコンとの間に `0.6em` を空ける。
     モックは `docs/mock/components/code-block/` と `docs/mock/refs/275/assets/`
   色分けの種類: '色分けのライブラリが付ける `hljs-*` の class を 6 つの CSS 変数へ統一する。キーワード: `hljs-keyword`・`hljs-meta`・`hljs-variable.language_`・`hljs-doctag`／文字列: `hljs-string`・`hljs-regexp`・`hljs-char`・`hljs-link`／数値: `hljs-number`・`hljs-literal`・`hljs-symbol`・`hljs-bullet`／型: `hljs-type`・`hljs-title.class_`・`hljs-built_in`・`hljs-name`・`hljs-selector-*`／名前: `hljs-title`・`hljs-attr`・`hljs-attribute`・`hljs-property`・`hljs-section`／コメント: `hljs-comment`・`hljs-quote`。テンプレート文字列に埋めた式 `hljs-subst` は本文の色に戻し、Markdown の `hljs-strong` は太字、`hljs-emphasis` は斜体にする。ここに無い class（変数名・引数・記号）は本文の色のまま。モックは `docs/mock/components/code-block/` と `docs/mock/refs/97/assets/syntax-highlight.css`'
+  描いた結果の表示: |-
+    構造と描き方はインターフェース定義『文書を描く』の制約「言語 markdown のコードブロックの描いた結果」。
+    `Raw` のボタンは `<button class="mdmark-code-raw" type="button" aria-pressed="{preview が raw か}">{code-xml のアイコン}Raw<span class="mdmark-visually-hidden">（元の Markdown を表示）</span></button>` で、`mdmark-code-meta` の先頭に配置する。寸法はコピーのボタンと同じで、押す前は枠線を持たない `--mdmark-color-muted` の文字、ホバーで枠線と `--mdmark-color-surface` の地、押した後は `color-mix(in oklab, var(--mdmark-color-link) 40%, transparent)` の枠線・`--mdmark-color-current-bg` の地・`--mdmark-color-link` の文字にする。
+    `div.mdmark-code-preview` は帯に続く `pre` と同じ外側の枠線と下の角丸を持ち、`--mdmark-space` の余白と `--mdmark-color-bg` の地で描く。中の文書の最初と最後の要素の外側の余白は削除する。
+    印刷では `Raw` のボタンを出さず、印刷した時点で出している側（描いた結果か元の Markdown）をそのまま出す。
+    モックは `docs/mock/components/markdown-preview/` と `docs/mock/refs/709/assets/markdown-preview.css`
 test_file: tests/integration/lib/code-block.story.test.ts
 events:
   - name: コードをコピーする
@@ -422,6 +459,10 @@ events:
     when: 開閉のボタンか `⋯` のボタンを押す（Enter・Space を含む）
     value: ボタンの `aria-expanded`
     description: '`mount` が行の後ろの `foldLines` の行を `hidden` にして `⋯` を配置するか、`hidden` を削除して `⋯` を削除する。開いたとき、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。畳んだ状態は再読み込みでは覚えず `folded` のとおりに戻し、`update` で描き直すと読者が手で変えた畳みを保つ'
+  - name: 描いた結果と元の Markdown を切り替える
+    when: '`Raw` のボタンを押す（Enter・Space を含む）'
+    value: ボタンの `aria-pressed`
+    description: '`mount` が `pre` と `div.mdmark-code-preview` の `hidden` を入れ替え、`aria-pressed` を元の Markdown を出しているかに合わせる。`data-mdmark-raw` のコードブロックは、初めて描いた結果へ切り替えたときに描く。ほかのコードブロックの表示と文書のスクロールの位置は変えない'
 tags:
   - name: topic:コードブロック
     main: true

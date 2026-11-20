@@ -146,6 +146,7 @@ functions:
       - MOD-562-2#functions[readMapAnnotations]
       - MOD-562-2#functions[linkAnnotationOwners]
       - MOD-472-141#functions[separateWires]
+      - MOD-472-177#functions[zoomControlOf]
     args:
       - name: range
         type: HTMLElement
@@ -176,7 +177,7 @@ functions:
       description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
     process: |-
       1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み、`extension.kinds`・`extension.lines` を設定の `map.kinds`・`map.lines` に重ね、印に `title` が無ければ `extension.title` を図の枠のタイトルにし、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
-      2. 名前の幅を測る関数を作る。範囲の要素の計算値の `font-family` と `LABEL_METRICS.nameSize`・太字（700）のフォントで、canvas の 2D の文脈の `measureText` で 1 行の幅を測り、同じ文字の列の幅は覚えて使い回す。この関数を `layoutMap` の `measureText` と `extension.overrides` の `measureText` に指定する。`document.fonts` があれば、`document.fonts.ready` の後に覚えた文字の列の幅を測り直し、幅が 1 つでも変わっていれば測った大きさを捨てて「配置する」をやり直す（書体を読み込み終える前は代わりの書体で測るため。描く前に読み込み終えていれば幅は変わらず、配置し直さない）。`destroy` の後に `ready` が解決したときは配置し直さない。上書きには、ノードの種類（`classes` のうち重ねた `map.kinds` にある最初の種類）の形状が `pill` のノードに `padLeft`（`LABEL_METRICS.padPill`）を加える。`extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を引き直し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・引き直し・並べるを 1 回だけやり直す（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」をやり直すことを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確かめた `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
+      2. 名前の幅を測る関数を作る。範囲の要素の計算値の `font-family` と `LABEL_METRICS.nameSize`・太字（700）のフォントで、canvas の 2D の文脈の `measureText` で 1 行の幅を測り、同じ文字の列の幅は覚えて使い回す。この関数を `layoutMap` の `measureText` と `extension.overrides` の `measureText` に指定する。`document.fonts` があれば、`document.fonts.ready` の後に覚えた文字の列の幅を測り直し、幅が 1 つでも変わっていれば測った大きさを捨てて「配置する」をやり直す（書体を読み込み終える前は代わりの書体で測るため。描く前に読み込み終えていれば幅は変わらず、配置し直さない）。`destroy` の後に `ready` が解決したときは配置し直さない。上書きには、ノードの種類（`classes` のうち重ねた `map.kinds` にある最初の種類）の形状が `pill` のノードに `padLeft`（`LABEL_METRICS.padPill`）を加える。`extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を引き直し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・引き直し・並べるを 1 回だけやり直す（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」をやり直すことを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確かめた `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。描き直して図の中身の大きさが変わったら（グループに入る・出る、開閉、測り直し、書体の読み込み後の配置し直し）、表示する枠の `zoomControlOf` の `resize` に大きさを指定し、倍率の文字を保つ。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
       3. ノードと閉じたグループ（`.map-closed-group[data-group]`）の中身を測り、中身が入る高さ（絶対配置でなく、`display` が `none` でない子要素の、最初の子要素の上端から `margin-top` を引いた位置から、最後の子要素の下端に `margin-bottom` を加えた位置までの高さに、上下の余白と上下の枠線を加えた高さ）が、ノードの高さを 1px より大きく越えるノードを、越えた分を高さに加えた `size` にして配置し直す。中身を上寄せにするノードも上下の中央に配置するノードも、1 回の測り直しで中身が上下の余白の内側に入る。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
       4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順へ移るたびに `onWalk` を呼び、`onStep` で `resumeFollow` と手順の `nodes` の `follow` を呼んで図を移し、停止で案内を始めたときに中へ入っていたグループと倍率に戻す。手順の `nodes` のうち閉じたグループの中のノードはそのグループに、`edges` のうち描いていない線（閉じたグループへの線にまとめた線）は、両端を同じく付け替えた描いた線に置き換えて、強調とデータの印を当てる
       4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ（`pointerType` が `touch` の押下ではノード・グループ・線の区間を動かさず、指の移動を表示する枠のスクロールに任せる）、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）
@@ -233,8 +234,8 @@ functions:
         case: 正常
         summary: 外から図を移す
         condition: '`follow([mount, marker])` を呼ぶ。表示する枠でホイールを回してからもう一度呼ぶ。`resumeFollow` の後にもう一度呼ぶ'
-        mock: 表示する枠の `zoomControlOf` の `focusRect`
-        expected: '`focusRect` を 1 回目と 3 回目だけ呼ぶ'
+        mock: 表示する枠の `zoomControlOf` の `centerRect`
+        expected: '`centerRect` を 1 回目と 3 回目だけ呼ぶ'
       - name: test_attach_map_flow_when_crowded
         case: 正常
         summary: 並べた線が矩形に入るときは間を広げて配置し直す
@@ -295,6 +296,12 @@ functions:
         condition: 種類 `step`（形状 `rounded`）・`outside`（形状 `pill`）の順に持つ「利用側のページ」のノードを持つ範囲を描く
         mock: なし
         expected: ノードの幅が、名前の文字の範囲の幅に左の余白 10px・右の余白 28px・枠線 3px を加えた幅から 1px 以内
+      - name: test_attach_map_flow_when_walk_keeps_zoom
+        case: 正常
+        summary: 案内でグループに入る・出るときも倍率の文字を保つ
+        condition: 手順 1 がグループの外、手順 2 が `enter` でグループに入る案内を持つ構成図。倍率を 300% にして手順 1・2・1 と移る。続けて倍率を全体が収まる倍率に戻して同じように移る
+        mock: なし
+        expected: 300% のときはどの手順の後も倍率のボタンの文字が `300%`。全体が収まる倍率のときはどの手順の後も `100%` で、表示する枠が `data-at-fit` を持つ
 lead: 'map の構成図の描画と、選んだノードの線と経路の強調を受け持ち、構成図の描画と操作を変えるときに参照する。'
 tags:
   - name: topic:map

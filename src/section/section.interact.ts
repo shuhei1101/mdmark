@@ -349,6 +349,8 @@ export function attachSections(options: {
   partStates?: PartStates;
   /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
   revealHash?: boolean;
+  /** URL の `#ID` を追うか。`false` なら付けたときも `hashchange` でも開かない（既定 `true`） */
+  followHash?: boolean;
 }): () => void {
   const {
     root,
@@ -357,6 +359,7 @@ export function attachSections(options: {
     states,
     partStates,
     revealHash = true,
+    followHash = true,
   } = options;
   const cleanups: Array<() => void> = [];
   if (sections) {
@@ -368,11 +371,15 @@ export function attachSections(options: {
         cleanups.push(attachSection(heading, body, states));
       }
     }
-    const onHashChange = (): void => revealHashTarget(root);
-    window.addEventListener("hashchange", onHashChange);
-    cleanups.push(() => window.removeEventListener("hashchange", onHashChange));
-    if (revealHash) {
-      revealHashTarget(root);
+    if (followHash) {
+      const onHashChange = (): void => revealHashTarget(root);
+      window.addEventListener("hashchange", onHashChange);
+      cleanups.push(() =>
+        window.removeEventListener("hashchange", onHashChange),
+      );
+      if (revealHash) {
+        revealHashTarget(root);
+      }
     }
   }
   if (rowDetails) {

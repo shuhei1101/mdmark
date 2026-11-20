@@ -32,7 +32,7 @@ constants:
   - name: SIDE_TOC_HEADING_SELECTOR
     title: 右側の目次に並べる見出し
     container: src/section/side-toc.interact.ts
-    summary: 右側の目次に並べる見出しのセレクタ。埋め込んだ HTML（`.mdmark-html`）の中の見出しは除く
+    summary: 右側の目次に並べる見出しのセレクタ。埋め込んだ HTML（`.mdmark-html`）と、言語 markdown のコードブロックの描いた結果（`.mdmark-code-preview`）の中の見出しは除く
     value: '"h1[id], h2[id], h3[id]"'
     status: planned
   - name: SIDE_TOC_RAIL_COVER_REM

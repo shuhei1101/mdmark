@@ -139,6 +139,8 @@ VS Code のプレビューも同じ設定の `theme` と `extensions` を適用�
 
 #### 文書にマーカーと定義を記載する
 
+<!-- code: {"raw": true} -->
+
 ````markdown
 <!-- milestones -->
 

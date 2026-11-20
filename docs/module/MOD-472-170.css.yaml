@@ -336,6 +336,9 @@ styles:
       - class_name: .mdmark .mdmark-table thead th .mdmark-pin[aria-pressed="false"]
         target: ポインターを乗せられる端末の押していないピン止めのボタン
         value: '`@media (hover: hover)` の中で `opacity: 0` にし、見出しのセルが `:hover` か `:focus-within` の間だけ `opacity: 1` にする。`visibility`・`display` は変えず、タブの順に残す。`(hover: none)` の端末と印刷では当てない'
+      - class_name: .mdmark .mdmark-code-raw・.mdmark .mdmark-code-preview
+        target: 言語 markdown のコードブロックの Raw のボタンと描いた結果
+        value: 部品設計『コードブロック』の注記「描いた結果の表示」の外観を、モック `docs/mock/refs/709/assets/markdown-preview.css` の `.mock-preview-toggle`・`.mock-preview-icon`・`.mock-preview-body` から写す（`.mock-preview-toggle` は `.mdmark-code-raw`、`.mock-preview-body` は `.mdmark-code-preview` にする）。`hidden` を持つ `pre` と描いた結果の要素は出さない。印刷では `.mdmark-code-raw` を出さない
     refs:
       - SCR-472-4#
       - CMP-472-65#

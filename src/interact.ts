@@ -39,6 +39,7 @@ type InteractionContext = {
   sectionStates: SectionStates | undefined;
   partStates: PartStates | undefined;
   revealHash: boolean | undefined;
+  followHash: boolean;
 };
 
 /** セクションと行の詳細・表・CSV・wide・タブの操作を付ける */
@@ -57,6 +58,7 @@ function attachLayouts(context: InteractionContext): Array<() => void> {
         states: context.sectionStates,
         partStates,
         revealHash: context.revealHash,
+        followHash: context.followHash,
       }),
     );
   }
@@ -67,6 +69,7 @@ function attachLayouts(context: InteractionContext): Array<() => void> {
         pinMode: context.pinMode,
         longColumnMin: context.longColumnMin,
         partStates,
+        followHash: context.followHash,
       }),
     );
   }
@@ -80,7 +83,7 @@ function attachLayouts(context: InteractionContext): Array<() => void> {
     detachers.push(attachWideToggles(root));
   }
   if (features.tabs === true) {
-    detachers.push(attachTabs(root));
+    detachers.push(attachTabs(root, { followHash: context.followHash }));
   }
   return detachers;
 }
@@ -171,6 +174,8 @@ export function attachInteractions(options: {
   partStates?: PartStates;
   /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
   revealHash?: boolean;
+  /** URL の `#ID` を追うか。`false` ならセクション・タブ・表の行を `#ID` で開かない（既定 `true`） */
+  followHash?: boolean;
 }): () => void {
   const context: InteractionContext = {
     root: options.root,
@@ -184,6 +189,7 @@ export function attachInteractions(options: {
     sectionStates: options.sectionStates,
     partStates: options.partStates,
     revealHash: options.revealHash,
+    followHash: options.followHash !== false,
   };
   const detachers = [
     ...attachLayouts(context),

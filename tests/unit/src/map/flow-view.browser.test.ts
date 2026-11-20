@@ -1,4 +1,5 @@
 import { afterEach, expect, onTestFinished, test, vi } from "vitest";
+import { FOCUS_MS } from "../../../../src/map/band.ts";
 import {
   addStyles,
   createRootFromHtml,
@@ -188,6 +189,40 @@ test("test_attach_map_flow_when_walk_leaves_group", async () => {
   expect(root.querySelector(".map-group-title.is-current")).toBeNull();
 });
 
+// 案内でグループに入る・出るときも倍率の文字を保つ（正常系）
+test("test_attach_map_flow_when_walk_keeps_zoom", async () => {
+  // 準備
+  const root = await setUp();
+  const viewport = root.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
+  const zoomText = () =>
+    root.querySelector('[data-tool="fit"]')?.textContent ?? "";
+  const tool = (name: string) =>
+    root.querySelector<HTMLButtonElement>(`[data-tool="${name}"]`);
+  // 手順へ移った後、図を移す時間（FOCUS_MS）より長く待ってから倍率の文字を読む
+  const walk = async () => {
+    const texts: string[] = [];
+    for (const index of [0, 2, 0]) {
+      root.querySelectorAll<HTMLElement>(".map-band-seg")[index]?.click();
+      await new Promise((resolve) => setTimeout(resolve, FOCUS_MS + 100));
+      texts.push(zoomText());
+    }
+    return texts;
+  };
+  for (let i = 0; i < 5; i++) tool("in")?.click();
+  const zoomed = zoomText();
+  // 実行
+  const zoomedTexts = await walk();
+  tool("fit")?.click();
+  const fitTexts = await walk();
+  // 検証
+  expect(zoomed).not.toBe("100%");
+  expect(zoomedTexts).toEqual([zoomed, zoomed, zoomed]);
+  expect(fitTexts).toEqual(["100%", "100%", "100%"]);
+  expect(viewport.hasAttribute("data-at-fit")).toBe(true);
+});
+
 // 外から図を移す（正常系）
 test("test_attach_map_flow_when_follow", async () => {
   // 準備
@@ -206,7 +241,7 @@ test("test_attach_map_flow_when_follow", async () => {
   if (!zoom) {
     throw new Error("拡大・縮小が付いていない");
   }
-  const focusRect = vi.spyOn(zoom, "focusRect").mockImplementation(() => {});
+  const centerRect = vi.spyOn(zoom, "centerRect").mockImplementation(() => {});
   // 実行
   handle.follow(["mount", "marker"]);
   viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
@@ -214,7 +249,7 @@ test("test_attach_map_flow_when_follow", async () => {
   handle.resumeFollow();
   handle.follow(["mount", "marker"]);
   // 検証
-  expect(focusRect).toHaveBeenCalledTimes(2);
+  expect(centerRect).toHaveBeenCalledTimes(2);
 });
 
 // 指の押下ではノードを動かさず、受け取りを残さない（正常系）

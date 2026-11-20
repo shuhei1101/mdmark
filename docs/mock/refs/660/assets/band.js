@@ -122,15 +122,12 @@ export const createBand = (host, options, figure) => {
   return { play, stop };
 };
 
-/** 実演の図: 手順で強調するノードを囲む範囲が表示する枠に収まる倍率と位置へ、図をなめらかに移す */
+/** 実演の図: 倍率を変えずに、手順で強調するノードを囲む範囲が見えていなければ（拡大しているときは常に）その範囲が中央に来るように図をなめらかに移す（#709） */
 export const createFigure = (host, { title, nodes }) => {
   host.innerHTML = `<div class="pb-figure"><div class="pb-figure-title">${escape(title)}</div><div class="pb-viewport"><div class="pb-content is-animated">${nodes.map((node) => `<div class="pb-node" data-node="${node.id}" style="left:${node.x}px;top:${node.y}px">${escape(node.label)}</div>`).join("")}</div><span class="pb-zoom"></span></div></div>`;
   const viewport = host.querySelector(".pb-viewport");
   const content = host.querySelector(".pb-content");
   const zoom = host.querySelector(".pb-zoom");
-  const MARGIN = 32;
-  // 倍率の上限は読者の拡大の上限（src/diagram/geometry.ts の ZOOM.max）と同じ絶対の倍率
-  const MAX = 3;
   const fitScale = () => Math.min(viewport.clientWidth / 960, viewport.clientHeight / 560);
   let touched = false;
   let down;
@@ -144,7 +141,10 @@ export const createFigure = (host, { title, nodes }) => {
     if (down?.blank && Math.hypot(event.clientX - down.x, event.clientY - down.y) < 4) for (const handler of blankHandlers) handler();
     down = undefined;
   });
+  // 今の倍率と位置
+  const view = { scale: 1, x: 0, y: 0 };
   const apply = (scale, x, y) => {
+    Object.assign(view, { scale, x, y });
     content.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
     zoom.textContent = `${Math.round((scale / fitScale()) * 100)}%`;
   };
@@ -161,11 +161,15 @@ export const createFigure = (host, { title, nodes }) => {
     }
     if (touched) return;
     const boxes = nodes.filter((node) => ids.has(node.id));
-    const left = Math.min(...boxes.map((n) => n.x)) - MARGIN;
-    const top = Math.min(...boxes.map((n) => n.y)) - MARGIN;
-    const right = Math.max(...boxes.map((n) => n.x + 156)) + MARGIN;
-    const bottom = Math.max(...boxes.map((n) => n.y + 40)) + MARGIN;
-    const scale = Math.max(fitScale(), Math.min(MAX, viewport.clientWidth / (right - left), viewport.clientHeight / (bottom - top)));
+    const left = Math.min(...boxes.map((n) => n.x));
+    const top = Math.min(...boxes.map((n) => n.y));
+    const right = Math.max(...boxes.map((n) => n.x + 156));
+    const bottom = Math.max(...boxes.map((n) => n.y + 40));
+    const { scale } = view;
+    const atFit = Math.abs(scale - fitScale()) < 0.001;
+    // 全体が収まる倍率で、範囲が表示する枠に見えていれば移さない
+    const visible = left * scale + view.x >= 0 && top * scale + view.y >= 0 && right * scale + view.x <= viewport.clientWidth && bottom * scale + view.y <= viewport.clientHeight;
+    if (atFit && visible) return;
     apply(scale, viewport.clientWidth / 2 - ((left + right) / 2) * scale, viewport.clientHeight / 2 - ((top + bottom) / 2) * scale);
   };
   reset();

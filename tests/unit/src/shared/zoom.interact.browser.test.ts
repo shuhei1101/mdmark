@@ -327,7 +327,9 @@ test("test_attach_zoom_when_refit", async () => {
 });
 
 /** 幅 600px・高さ 400px の表示する枠に、幅 1200・高さ 800 の中身を配置して拡大・縮小を付ける */
-async function setUpFocus() {
+async function setUpFocus(
+  extra: { fitMin?: number; percentBase?: "fit" | "content" } = {},
+) {
   const { attachZoom } = await loadZoom();
   const root = createRootFromHtml(
     `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 400px; overflow: auto"><div class="sizer"><div class="content" style="width: 1200px; height: 800px"></div></div></div>`,
@@ -340,11 +342,12 @@ async function setUpFocus() {
     content,
     size: { width: 1200, height: 800 },
     tools,
+    ...extra,
   });
   detachers.push(() => zoom.detach());
   const scale = () =>
     Number(/scale\(([^)]+)\)/.exec(content.style.transform)?.[1] ?? "1");
-  return { viewport, zoom, scale };
+  return { root, viewport, zoom, scale };
 }
 
 // 矩形が収まる倍率と位置へ移す（正常系）
@@ -708,4 +711,85 @@ test("test_scroll_parent_of", async () => {
   // 実行・検証
   expect(scrollParentOf(inner)).toBe(root.querySelector(".scroller"));
   expect(scrollParentOf(outer)).toBe(document.scrollingElement);
+});
+
+/** 余白 32 で幅 536・高さ 336 の矩形へ移し、倍率を 1 にする */
+function zoomToOne(zoom: {
+  focusRect: (
+    rect: { x: number; y: number; width: number; height: number },
+    options: { margin: number; duration: number },
+  ) => void;
+}): void {
+  zoom.focusRect(
+    { x: 0, y: 0, width: 536, height: 336 },
+    { margin: 32, duration: 0 },
+  );
+}
+
+// 倍率を変えずに矩形を中央へ移す（正常系）
+test("test_attach_zoom_when_center_rect", async () => {
+  // 準備
+  const { viewport, zoom, scale } = await setUpFocus();
+  zoomToOne(zoom);
+  // 実行
+  zoom.centerRect({ x: 550, y: 350, width: 100, height: 100 }, { duration: 0 });
+  // 検証
+  expect(scale()).toBeCloseTo(1, 3);
+  expect(viewport.scrollLeft).toBeCloseTo(600 - viewport.clientWidth / 2, 0);
+  expect(viewport.scrollTop).toBeCloseTo(400 - viewport.clientHeight / 2, 0);
+});
+
+// 全体が収まる倍率で矩形が見えていれば移さない（正常系）
+test("test_attach_zoom_when_center_rect_at_fit", async () => {
+  // 準備
+  const { viewport, zoom, scale } = await setUpFocus();
+  // 実行
+  zoom.centerRect({ x: 900, y: 600, width: 100, height: 100 }, { duration: 0 });
+  // 検証
+  expect(scale()).toBeCloseTo(0.5, 3);
+  expect(viewport.scrollLeft).toBe(0);
+  expect(viewport.scrollTop).toBe(0);
+});
+
+// 全体が収まらない下限の倍率では、見えていない矩形だけを中央へ移す（正常系）
+test("test_attach_zoom_when_center_rect_at_fit_hidden", async () => {
+  // 準備
+  const { viewport, zoom, scale } = await setUpFocus({ fitMin: 1 });
+  // 実行
+  zoom.centerRect({ x: 100, y: 100, width: 100, height: 100 }, { duration: 0 });
+  const first = { left: viewport.scrollLeft, top: viewport.scrollTop };
+  zoom.centerRect({ x: 900, y: 600, width: 100, height: 100 }, { duration: 0 });
+  // 検証
+  expect(first).toEqual({ left: 0, top: 0 });
+  expect(scale()).toBeCloseTo(1, 3);
+  expect(viewport.scrollLeft).toBeCloseTo(1200 - viewport.clientWidth, 0);
+  expect(viewport.scrollTop).toBeCloseTo(800 - viewport.clientHeight, 0);
+});
+
+// 中身の大きさを差し替えても倍率の文字を保つ（正常系）
+test("test_attach_zoom_when_resize", async () => {
+  // 準備
+  const { root, zoom, scale } = await setUpFocus({ percentBase: "fit" });
+  zoomToOne(zoom);
+  // 実行
+  zoom.resize({ width: 600, height: 400 });
+  // 検証
+  expect(zoom.fit()).toBeCloseTo(1, 1);
+  expect(scale() / zoom.fit()).toBeCloseTo(2, 3);
+  expect(zoomText(root)).toBe("200%");
+});
+
+// 全体が収まる倍率では新しい中身の全体が収まる倍率にする（正常系）
+test("test_attach_zoom_when_resize_at_fit", async () => {
+  // 準備
+  const { root, viewport, zoom, scale } = await setUpFocus({
+    percentBase: "fit",
+  });
+  // 実行
+  zoom.resize({ width: 2400, height: 800 });
+  // 検証
+  expect(scale()).toBeCloseTo(0.25, 3);
+  expect(zoomText(root)).toBe("100%");
+  expect(viewport.scrollLeft).toBe(0);
+  expect(viewport.scrollTop).toBe(0);
 });
