@@ -27,10 +27,13 @@
   </nav>
   <main class="map-catalog" id="catalog">
     <h1>map-group-resize</h1>
-    <p class="state-note">配布物の mount で描いた実物の図に、グループの右下の角のハンドルだけを重ねている。モックでは、広げたグループの外のグループ・線・ほかのノードとの 16px の間隔は追随しない（実装ではシナリオのとおり外のグループが広がり、16px の手前で止まる）</p>
+    <p class="state-note">配布物の mount で描いた実物の図に、グループの右下の角のハンドルと、グループを掴んで動かす左・右・下の縁の帯を重ねている。モックでは、広げたグループの外のグループ・線・ほかのノードとの 16px の間隔は追随しない（実装ではシナリオのとおり外のグループが広がり、16px の手前で止まる）</p>
   </main>
   <script type="module">
-    import { drawMap, patchCorners, patchToggles } from "../../refs/763/assets/mock.js";
+    // テーブル名の行を 1 行にした寸法で描く（ユーザーの指摘: 見出しの空白が広い）
+    import { useOneRowHead } from "../../refs/763/assets/head-row.js";
+    await useOneRowHead();
+    const { drawMap, patchCorners, patchToggles } = await import("../../refs/763/assets/mock.js");
 
     const FLOW = (title) => `<!-- map: {"title": "${title}"} -->
 
@@ -86,7 +89,7 @@ erDiagram
     ];
     /** 状態の見出し・補足・Markdown */
     const STATES = [
-      ["構成図（入れ子 2 レイヤーのグループ）", "外のグループ「利用側のアプリ」と中のグループ「ページ」の右下に角がある。角をドラッグするか、角にフォーカスして矢印キー（Shift で大きい刻み）を押すと大きさが変わる。中のノードを囲む大きさより小さくはならない", FLOW("描く流れ")],
+      ["構成図（入れ子 2 レイヤーのグループ）", "外のグループ「利用側のアプリ」と中のグループ「ページ」の右下に角がある。角をドラッグするか、角にフォーカスして矢印キー（Shift で大きい刻み）を押すと大きさが変わる。中のノードを囲む大きさより小さくはならない。グループの動かし方は、タイトルの行に加えて左・右・下の縁（8px の帯。ポインターを重ねると色が付く）を掴んでも動かせる", FLOW("描く流れ")],
       ["ER 図（分類の箱）", "分類の箱「記録」の右下にも、構成図のグループと同じ角がある", ER("記録の構造")],
     ];
     const catalog = document.getElementById("catalog");

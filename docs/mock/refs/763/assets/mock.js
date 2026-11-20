@@ -11,7 +11,7 @@ const CORNER = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M14 6 6 14M
 
 /** 図を 1 つ描く。描いた後の再描画のたびに `patch` を当て直す */
 export function drawMap(host, markdown, patch) {
-  host.classList.add("mock-763");
+  host.classList.add("mock-763", "one-row-head");
   mount(host, { markdown });
   const apply = () => patch?.(host);
   new MutationObserver(apply).observe(host, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-expanded"] });
@@ -54,6 +54,13 @@ export function patchCorners(host) {
     });
     corner.setAttribute("aria-label", `${title}の大きさを変える`);
     group.append(corner);
+    // 縁（左・右・下。上はタイトルの行の帯）を掴んでもグループを動かせるようにする。
+    // 実物の移動の処理は、押した要素が .map-group-bar の中ならグループを動かすので、同じクラスの細い帯を置く
+    for (const side of ["left", "right", "bottom"]) {
+      const edge = Object.assign(document.createElement("div"), { className: `map-group-bar mock-group-edge is-${side}`, title: "ドラッグでグループを動かす" });
+      edge.setAttribute("aria-hidden", "true");
+      group.insertBefore(edge, corner);
+    }
     const min = { w: group.offsetWidth, h: group.offsetHeight };
     const resize = (w, h) => {
       group.style.width = `${Math.max(min.w, w)}px`;

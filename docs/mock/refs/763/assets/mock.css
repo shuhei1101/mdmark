@@ -53,3 +53,33 @@
 .mock-763.corner-hover :is(.map-group, [data-group]):hover > .mock-group-corner,
 .mock-763.corner-hover .mock-group-corner:focus-visible,
 .mock-763.corner-hover .mock-group-corner.is-dragging { opacity: 1; }
+
+/* テーブル名の行を 1 行にする（見出しの高さ 36px）: 空の種類の行を無くし、開閉のボタンをテーブル名・クラス名の行の右端へ置く */
+.mock-763.one-row-head .mdmark-diagram-node-kind:has(:is(.map-er-toggle, .map-class-toggle)) {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin: 0;
+  padding: 0;
+}
+.mock-763.one-row-head .mdmark-diagram-node:has(:is(.map-er-toggle, .map-class-toggle)) > .mdmark-diagram-node-name {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  right: 34px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+/* グループの縁（左・右・下）の 8px の帯: 掴むとグループを動かす（上の縁はタイトルの行の帯が受け持つ）。角のハンドルの下には重ねない */
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge {
+  inset: auto;
+  height: auto;
+  cursor: grab;
+}
+.mock-763 .mock-group-edge.is-left { left: 0; top: 36px; bottom: 16px; width: 8px; }
+.mock-763 .mock-group-edge.is-right { right: 0; top: 36px; bottom: 16px; width: 8px; }
+.mock-763 .mock-group-edge.is-bottom { left: 8px; right: 16px; bottom: 0; height: 8px; }
+.mock-763 .mock-group-edge:hover { background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent); }
