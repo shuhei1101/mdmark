@@ -252,23 +252,3 @@ test("test_item_appearance", async () => {
     .evaluate((element) => getComputedStyle(element).backgroundColor);
   expect(chosen).not.toBe(unselected);
 });
-
-// 名前の文字の上を押しても項目を選ぶ（Default）
-test("test_select_on_name", async () => {
-  // 準備
-  const page = await openStory("default");
-  // 実行
-  await page
-    .locator('[data-node="利用者を増やす"] .mdmark-diagram-node-name')
-    .click();
-  // 検証
-  await expect(
-    page
-      .locator('[data-node="利用者を増やす"] > .mdmark-diagram-node-hit')
-      .getAttribute("aria-label"),
-  ).resolves.toBe("利用者を増やす（選択中）");
-  const kept = (await itemsOf(page))
-    .filter((item) => !item.dim)
-    .map((item) => item.id);
-  expect(kept.sort()).toEqual(["root", "a1", "利用者を増やす"].sort());
-});

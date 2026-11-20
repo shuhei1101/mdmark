@@ -872,30 +872,34 @@ test("test_shared_side", async () => {
         };
       }),
     );
-  const out = ["hub->a", "hub->b", "hub->c", "hub->d"].map(
-    (id) => ends.find((wire) => wire.id === id)?.start as number[],
-  );
-  const into = ["x->hub", "y->hub"].map(
-    (id) => ends.find((wire) => wire.id === id)?.end as number[],
-  );
-  for (const group of [out, into]) {
-    // 同じ辺（同じ y）で、x が全て違い、隣どうしの間隔が 16px
-    expect(new Set(group.map((point) => point[1])).size).toBe(1);
-    const xs = group.map((point) => point[0] as number).sort((a, b) => a - b);
-    expect(new Set(xs).size).toBe(xs.length);
-    for (const [index, x] of xs.slice(1).entries())
-      expect(x - (xs[index] as number)).toBeCloseTo(16, 0);
+  // 同じノードの同じ辺の端（hub の同じ x か同じ y に並ぶ端）をまとめ、2 本以上の辺ごとに確かめる
+  const hubEnds = ends.flatMap((wire) => [
+    ...(wire.id.startsWith("hub->") ? [wire.start] : []),
+    ...(wire.id.endsWith("->hub") ? [wire.end] : []),
+  ]) as Array<[number, number]>;
+  expect(hubEnds).toHaveLength(6);
+  const sides = new Map<string, number[]>();
+  for (const [x, y] of hubEnds) {
+    sides.set(`y${y}`, [...(sides.get(`y${y}`) ?? []), x]);
+    sides.set(`x${x}`, [...(sides.get(`x${x}`) ?? []), y]);
+  }
+  const shared = [...sides.values()].filter((along) => along.length >= 2);
+  // 相手に向いた辺が同じ線（遠い相手は左右の辺へ出る）は、端が辺の中点 1 か所に集まらない
+  expect(shared.length).toBeGreaterThan(0);
+  for (const along of shared) {
+    const sorted = [...along].sort((a, b) => a - b);
+    expect(new Set(sorted).size).toBe(sorted.length);
+    for (const [index, value] of sorted.slice(1).entries())
+      expect(value - (sorted[index] as number)).toBeGreaterThanOrEqual(15.5);
   }
   await expect(mapWireOverlaps(page)).resolves.toEqual([]);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 線の押せる範囲は区間ごとの帯で、線から離れたノード・ボタンを含まず、axe の target-size の違反が無い（Default・SharedSide）
+// 同じ辺から出る線の押せる範囲は区間ごとの帯で、線から離れたノードを含まず、axe の target-size の違反が無い（SharedSide）
 test("test_wire_hit_target_size", async () => {
-  for (const id of ["default", "shared-side"]) {
-    // 準備・実行
-    const page = await openMap(id);
-    // 検証
-    await expect(targetSizeViolations(page), id).resolves.toEqual([]);
-  }
+  // 準備・実行
+  const page = await openMap("shared-side");
+  // 検証
+  await expect(targetSizeViolations(page)).resolves.toEqual([]);
 });

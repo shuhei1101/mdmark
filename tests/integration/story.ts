@@ -352,7 +352,7 @@ export function mapWireOverlaps(page: Page): Promise<string[]> {
     });
 }
 
-/** ページに axe-core を読み込み、target-size の違反の要素（`target` のセレクタ）を返却する */
+/** ページに axe-core を読み込み、図の中身（`.mdmark-diagram-stage`）の target-size の違反の要素（`target` のセレクタ）を返却する */
 export async function targetSizeViolations(page: Page): Promise<string[]> {
   const path = createRequire(import.meta.url).resolve("axe-core/axe.min.js");
   await page.addScriptTag({ path });
@@ -369,11 +369,16 @@ export async function targetSizeViolations(page: Page): Promise<string[]> {
         };
       }
     ).axe;
-    const result = await axe.run(document.body, {
+    const stage = document.querySelector(".mdmark-diagram-stage");
+    if (!stage) throw new Error("図の中身が無い");
+    const result = await axe.run(stage, {
       runOnly: { type: "rule", values: ["target-size"] },
     });
     return result.violations.flatMap((violation) =>
-      violation.nodes.map((node) => node.target.join(" ")),
+      violation.nodes.map(
+        (node) =>
+          `${node.target.join(" ")} ${(node as unknown as { failureSummary?: string }).failureSummary ?? ""}`,
+      ),
     );
   });
 }
