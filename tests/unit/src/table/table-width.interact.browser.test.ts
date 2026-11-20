@@ -157,6 +157,16 @@ test("test_measure_columns_when_rows_limited", async () => {
   expect(column?.longest).toBeLessThan(longLine);
 });
 
+/** セルの並びを返却する。足りないセルがあればテストを止める */
+const requireCells = (
+  cells: Array<HTMLTableCellElement | undefined>,
+): HTMLTableCellElement[] => {
+  if (cells.some((cell) => !cell)) {
+    throw new Error("セルが無い");
+  }
+  return cells as HTMLTableCellElement[];
+};
+
 /** 用語の単語と、その意味を持つツールチップの HTML */
 const termHtml = (word: string, meaning: string, open = false): string =>
   `<span class="mdmark-term-wrap"><span class="mdmark-term">${word}</span><span class="mdmark-term-tip${open ? " is-open" : ""}">${meaning}</span></span>`;
@@ -171,11 +181,10 @@ test("test_measure_columns_when_hidden_text", async () => {
   );
   root.style.font = "14px/1.5 monospace";
   const { table, headCells } = tableParts(root);
-  const [head0, head1] = headCells;
-  const [cell0, cell1] = [...(table.tBodies[0]?.rows[0]?.cells ?? [])];
-  if (!head0 || !head1 || !cell0 || !cell1) {
-    throw new Error("セルが無い");
-  }
+  const [head0, head1, cell0, cell1] = requireCells([
+    ...headCells,
+    ...(table.tBodies[0]?.rows[0]?.cells ?? []),
+  ]);
   const meaning = "a".repeat(40);
   head0.innerHTML = `<span class="mdmark-th">${termHtml("名前", meaning)}</span>`;
   cell0.innerHTML = termHtml("ab", meaning, true);
@@ -190,10 +199,11 @@ test("test_measure_columns_when_hidden_text", async () => {
   // 実行
   const columns = measureColumns(table, headCells);
   // 検証
-  expect(columns[0]?.head).toBe(head);
-  expect(columns[0]?.longest).toBe(longest0);
-  expect(columns[0]?.longest).toBeLessThan(meaningWidth);
-  expect(columns[1]?.longest).toBe(longest1);
+  expect(columns.map(({ head, longest }) => ({ head, longest }))).toEqual([
+    { head, longest: longest0 },
+    expect.objectContaining({ longest: longest1 }),
+  ]);
+  expect(longest0).toBeLessThan(meaningWidth);
   expect(table.querySelectorAll(".mdmark-term-tip")).toHaveLength(2);
   expect(table.querySelectorAll(".mdmark-fn-tip")).toHaveLength(1);
   expect(table.querySelectorAll(".mdmark-visually-hidden")).toHaveLength(1);
