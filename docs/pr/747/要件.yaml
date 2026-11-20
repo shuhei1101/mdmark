@@ -30,23 +30,33 @@ docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: notes.フォルダ役割 の表の guide/ の行を、plugin/guide-index.yaml（guides[]）を指す記述へ修正する（#741）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: ファイルツリーの記法に、言語が tree でない罫線のコードブロックもファイルツリーになることと tree_warning の意味を記載し、mermaid のコードブロックの描かれ方を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
   - page: docs/guide/記載する-本文を部品で組む.mark.md
     new: false
     change: ファイルツリーの書き方に、言語を指定しない罫線もファイルツリーになることを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: テーマの指定・見た目を指定する行を持つ mermaid のコードブロックも map の図になることと、map が描けない種類の描かれ方を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: 用語「ファイルツリー」「mermaid の図」の意味を、言語 tree 以外の罫線と map が描けない種類に合わせて修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
 scope_out:
   - item: ファイルツリーのファイルとフォルダの種類ごとのアイコンと色（#739 の本文の 3 つ目）
     reason: 'develop の src/tree/tree.part.ts の fileIconOf と src/index.css の --mdmark-color-file-* で #137 により入っている。利用者がアイコンを確認できなかったのは言語が tree でなくコードブロックのまま描かれたためで、罫線の検知で解消する'

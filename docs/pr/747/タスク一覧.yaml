@@ -64,8 +64,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T13:36:44.202740+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: アーキテクチャ図 ARCH-472-1 の guide/ の行（#741）と、ガイドの記法・本文を部品で組む・mermaidの図を描く
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:46.153661+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
