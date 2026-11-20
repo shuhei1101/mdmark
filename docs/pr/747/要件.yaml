@@ -57,6 +57,11 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-20T13:45:42.004616+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    change: 範囲の外のコードブロックも読み取れない行を記載の警告にし、mermaid の図に戻さないことを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:48:06.805823+00:00'
 scope_out:
   - item: ファイルツリーのファイルとフォルダの種類ごとのアイコンと色（#739 の本文の 3 つ目）
     reason: 'develop の src/tree/tree.part.ts の fileIconOf と src/index.css の --mdmark-color-file-* で #137 により入っている。利用者がアイコンを確認できなかったのは言語が tree でなくコードブロックのまま描かれたためで、罫線の検知で解消する'
