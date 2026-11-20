@@ -33,7 +33,6 @@ documents:
   # 設計書は種類ごとの行。index.yaml は目次なので exclude で除く
   - id: architecture
     title: アーキテクチャ図
-    alias_type: doc
     paths: ["docs/architecture/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -48,7 +47,6 @@ documents:
       main_tags: tags[main].name
   - id: scenario
     title: シナリオ
-    alias_type: doc
     paths: ["docs/scenario/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -63,7 +61,6 @@ documents:
       main_tags: tags[main].name
   - id: interface
     title: インターフェース定義
-    alias_type: doc
     paths: ["docs/interface/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -78,7 +75,6 @@ documents:
       main_tags: tags[main].name
   - id: module
     title: モジュール構成
-    alias_type: doc
     paths: ["docs/module/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -93,7 +89,6 @@ documents:
       main_tags: tags[main].name
   - id: component
     title: 部品設計
-    alias_type: doc
     paths: ["docs/component/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -108,7 +103,6 @@ documents:
       main_tags: tags[main].name
   - id: screen
     title: 画面設計
-    alias_type: doc
     paths: ["docs/screen/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -150,7 +144,6 @@ documents:
       visibility: visibility
   - id: external_api
     title: 外部 API
-    alias_type: doc
     paths: ["docs/external-api/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -165,7 +158,6 @@ documents:
       main_tags: tags[main].name
   - id: library
     title: 外部ライブラリ
-    alias_type: doc
     paths: ["docs/library/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -180,7 +172,6 @@ documents:
       main_tags: tags[main].name
   - id: test_procedure
     title: テスト実行方法
-    alias_type: doc
     paths: ["docs/test-procedure/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -195,7 +186,6 @@ documents:
       main_tags: tags[main].name
   - id: dev_command
     title: 開発コマンド
-    alias_type: doc
     paths: ["docs/dev-command/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -210,7 +200,6 @@ documents:
       main_tags: tags[main].name
   - id: nonfunctional
     title: 非機能要件
-    alias_type: doc
     paths: ["docs/nonfunctional/*.yaml"]
     exclude: [index.yaml]
     schema:
@@ -225,7 +214,6 @@ documents:
       main_tags: tags[main].name
   - id: layout
     title: フォルダ構成
-    alias_type: doc
     paths: ["docs/layout/*.yaml"]
     exclude: [index.yaml]
     schema:
