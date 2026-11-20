@@ -1,0 +1,88 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 計測用の要素をまとめて配置してから幅をまとめて取得するなど、ブラウザの標準の API だけで済み、未検証の技術機構に依存しないため
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れは変わらないため
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面の外観を変えないため（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面と遷移を変えないため（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 表を描く・操作する流れと結果は変わらず、シナリオの記述は変わらないため
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面の外観を変えないため（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: データ設計
+    status: skipped
+    reason: 設定・索引・データの構造を変えないため
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: インターフェース定義設計
+    status: done
+    note: IF-472-35 の制約「列の幅」に、表の多い文書でも列の幅を決める処理で画面を止めない所要時間の制約と、その結合テストの期待を加える
+    updated_by: planner
+    updated_at: '2026-11-20T02:06:37.997221+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品設計『表』の注記「列の幅」が定める列の幅の決め方（結果）は変えず、測り方はモジュール構成設計が持つため
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を持たないライブラリの内部の処理の修正のため（判定フローチャート『画面設計要否』）
+    updated_by: planner
+    updated_at: '2026-11-20T02:01:09.072601+00:00'
+  - process: モジュール構成設計
+    status: done
+    note: MOD-472-347 の measureColumns・attachAutoColumnWidths の測り方（書き換えと読み取りを交互にしない）と単体テストを直す
+    updated_by: planner
+    updated_at: '2026-11-20T03:24:18.120647+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: NFR-472-1 に列の幅を決める処理の所要時間の決定値を加える
+    updated_by: planner
+    updated_at: '2026-11-20T03:31:25.249235+00:00'
+  - process: 単体テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T03:43:29.723965+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T03:47:27.850842+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T03:56:05.202326+00:00'

@@ -1,0 +1,25 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: 描いた表の列の幅は変わらないが、列の幅を決める処理の測り方を変えるため、表の列の幅・並べ替え・ピン止め・列の幅のつまみが壊れていないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: run_only
+    detail: 表を含む文書を描く・本文を差し替える流れは変わらないが、表を描いた直後の処理の測り方を変えるため、表を含む文書が描けることを確かめる
+    depends_on: []
+docs:
+  - page: docs/nonfunctional/NFR-472-1.yaml
+    new: false
+    change: 表の多い文書（表 16 個・本文のセル 480 個）で `mount` を呼んでから全ての表の列の幅を決定するまでの時間の上限（NFR-13、1,000 ミリ秒）と、今の実装での実測を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T02:06:33.502653+00:00'
+scope_out:
+  - item: 列の幅を決める処理以外の、描いたときの部品の計測（ピン止めの位置・見出し行を留める位置など）の所要時間の見直し
+    reason: Issue の計測では、長いタスクの時間の大半が列の幅の計測（textWidth・paddingOf・headWidth）で、ほかの部品の計測は挙がっていないため。列の幅の計測を直した後に、ほかの計測が 1 秒の目安を超えると分かったときは、その時点で要望に含めるかをレビューで決める
+    plan: none
+  - item: MindStella の側の、資料を切り替えるときの描き直しの回数の見直し
+    reason: 別のリポジトリ（shuhei1101/mindstella）の処理で、元の報告 shuhei1101/mindstella#627 が扱うため
+    plan: none
