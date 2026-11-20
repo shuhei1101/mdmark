@@ -76,5 +76,27 @@ fields:
   type: string
   description: '`avoid` の種類の置き換え先の単語'
   example: ワークスペース
+- key: row
+  title: 元の行
+  type: ref
+  ref: DATA-472-6#fields[id]
+  description: このエイリアスを作った設定の `aliases` の行の `id`。`buildAliases` が入れる。用語集の表のマーカーの `alias_row` がこの値でエイリアスを絞り、この値を持たないエイリアスは表に入らない
+  example: terms
+- key: details[]
+  title: 詳細のページ
+  type: array
+  description: '`term` の種類の、用語を説明するページ。行の `metadata` で列を指して取り込む。用語集の表の `詳細` の列にリンクで出し、ツールチップには出さない。用語の YAML のキーの名前は knowledge#525 で決める'
+- key: details[].title
+  title: 表示名
+  type: string
+  description: リンクに出すページの名前
+  required: true
+  example: 文書を描く仕組み
+- key: details[].href
+  title: リンク先
+  type: string
+  description: 用語の YAML のあるフォルダからの相対パスか URL。見出しのアンカーを付けられる
+  required: true
+  example: ./コアコンセプト-文書を描く仕組み.md
 refs:
 - ER-472-3#tables[MdmarkAlias]
