@@ -179,16 +179,14 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
       config,
       resolveIdLink: context.resolveIdLink,
     });
-  // 範囲の外の map の図は、Mermaid の読み取れない行だけを警告にし、読み取れた部分を描く
-  else
-    addWarnings(
-      range,
-      collectPlainMapProblems({
-        kind: (range.dataset.mapKind ?? "") as MapKindName,
-        mermaid: source.mermaid ?? "",
-        line: undefined,
-      }).map((item) => item.message),
-    );
+  const plainProblems =
+    range.dataset.mapPlain === undefined
+      ? []
+      : collectPlainMapProblems({
+          kind: (range.dataset.mapKind ?? "") as MapKindName,
+          mermaid: source.mermaid ?? "",
+          line: undefined,
+        }).map((item) => item.message);
   const { args } = parseMapArgs(range.dataset.mapArgs ?? "");
   collapseRange(range, args);
   const kind = range.dataset.mapKind ?? "";
@@ -207,6 +205,17 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
   } else {
     attachFlowRange(context, { range, args, source });
   }
+  // 範囲の外の map の図は、Mermaid の読み取れない行だけを図の上の警告にし、読み取れた部分を描く
+  if (plainProblems.length > 0)
+    range.insertAdjacentHTML(
+      "afterbegin",
+      renderSyntaxWarning({
+        mark: "mermaid",
+        message:
+          "の図に読み取れない行があります。読み取れた部分で描いています。",
+        items: plainProblems.map((message) => ({ label: "", message })),
+      }),
+    );
   destroyers.push(
     attachMapExport(range, {
       index: Number(range.dataset.map ?? "0"),
