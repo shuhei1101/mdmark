@@ -121,7 +121,7 @@ functions:
         summary: mermaid の形状の記法を読み取る
         condition: '`L[/入力/]`・`M[\出力\]`・`N[/台形\]`・`O(((終了)))`・`P@{ shape: doc, label: "文書" }`・`Q@{ shape: cyl, label: "DB" }`・`R@{ icon: "fa:user", form: "square", label: "User", pos: "t", h: 60 }`・`S["`太字 **cat**`"]`'
         mock: なし
-        expected: '`problems` が空。`shape` が `lean-right`・`lean-left`・`trapezoid`・`double-circle`・`doc`・`cylinder`・`rect`、`P` のラベルが `文書`、`R` のラベルが `User`'
+        expected: '`problems` が空。`shape` が順に `lean-right`・`lean-left`・`trapezoid`・`double-circle`・`doc`・`cylinder`・`rect`・`rect`、`P` のラベルが `文書`、`R` のラベルが `User`'
       - name: test_parse_flowchart_when_mermaid_edges
         case: 正常
         summary: 線の端・見えない線・線の長さ・線の属性の行を読み取る
