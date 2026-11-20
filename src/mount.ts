@@ -25,6 +25,10 @@ import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { embeddedLibraries, loadLibraries } from "./libraries.ts";
 import { toPureMarkdown } from "./markdown/pure-markdown.ts";
+import {
+  attachCodePreviews,
+  PREVIEW_CUT_FEATURES,
+} from "./code-block/code-preview.interact.ts";
 import { attachMermaid } from "./mermaid.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import { attachPrint } from "./print.ts";
@@ -164,6 +168,7 @@ function createDiffHtmlRenderer(options: {
 
 /** 描くたびに付け直すものを、片付ける順に並べた名前（範囲のスクリプト・mermaid の図・先頭へ戻るボタン・記法の操作・右側の目次・包んだ本文の列・差分・ビューとコメントの部品） */
 const DETACH_ORDER = [
+  "previews",
   "scripts",
   "mermaid",
   "mermaidRestored",
@@ -177,6 +182,31 @@ const DETACH_ORDER = [
 
 /** 今の文書に付けたものを片付ける関数 */
 type Detachers = Partial<Record<(typeof DETACH_ORDER)[number], () => void>>;
+
+/** 言語 markdown のコードブロックの描いた結果を描く mount に、外の文書から引き継ぐ引数 */
+function previewOptionsOf(
+  opts: MountOptions,
+): Omit<MountOptions, "markdown" | "config" | "includes"> {
+  const { index, references, aliases, icons, resolveIdLink } = opts;
+  return {
+    ...(index ? { index } : {}),
+    ...(references ? { references } : {}),
+    ...(aliases ? { aliases } : {}),
+    ...(icons ? { icons } : {}),
+    ...(resolveIdLink ? { resolveIdLink } : {}),
+  };
+}
+
+/** 外の文書の設定の機能に、描いた結果で切る機能を `false` で重ねた設定 */
+function previewConfigOf(config: MdmarkConfig | undefined): MdmarkConfig {
+  return {
+    ...config,
+    features: {
+      ...config?.features,
+      ...Object.fromEntries(PREVIEW_CUT_FEATURES.map((name) => [name, false])),
+    },
+  };
+}
 
 /** 片付ける順に全て片付け、空にする */
 function detachAll(detachers: Detachers): void {
@@ -260,6 +290,9 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let base = opts.baseMarkdown ?? undefined;
   // 取り込む文書の表（`update` で差し替える）
   let includes = opts.includes;
+  // 言語 markdown のコードブロックの描いた結果を描く mount に指定する引数と設定
+  const previewOptions = previewOptionsOf(opts);
+  const previewConfig = previewConfigOf(opts.config);
   // 同じ要素へ 2 回目の mount を呼ぶと、前の描画を先に片付ける
   mounted.get(el)?.destroy();
   mountCount += 1;
@@ -554,6 +587,18 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     });
     parts = attached;
     detachers.parts = () => attached.detach();
+    // 外の文書の操作を付け終えた後に付け、描いた結果の中には入れ子の mount の操作だけが付く
+    if (features.code === true) {
+      detachers.previews = attachCodePreviews(body, (target, source) => {
+        const nested = mount(target, {
+          ...previewOptions,
+          markdown: source,
+          config: previewConfig,
+          ...(includes ? { includes } : {}),
+        });
+        return () => nested.destroy();
+      });
+    }
     startDiff({ body, aside, from, fromUpdate, isCurrent });
     // 描くたびにもう一度付け、スクロールする場所をもう一度決める
     if (features["back-to-top"] === true) {

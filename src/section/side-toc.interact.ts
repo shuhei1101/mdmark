@@ -25,11 +25,11 @@ const CURRENT_LINE_RATIO = 0.25;
 /** 描く先の要素の幅がこの値（rem）未満のとき、右側の目次を狭い幅の帯で出す。CSS のコンテナクエリと同じ値 */
 const NARROW_WIDTH_REM = 48;
 
-/** 右側の目次に並べる見出し。埋め込んだ HTML の中の見出しは除く */
+/** 右側の目次に並べる見出し。埋め込んだ HTML と言語 markdown のコードブロックの描いた結果の中の見出しは除く */
 const SIDE_TOC_HEADING_SELECTOR = "h1[id], h2[id], h3[id]";
 
-/** 埋め込んだ HTML の枠 */
-const EMBEDDED_HTML_SELECTOR = ".mdmark-html";
+/** 中の見出しを右側の目次に入れない、埋め込んだ HTML と言語 markdown のコードブロックの描いた結果 */
+const EMBEDDED_HTML_SELECTOR = ".mdmark-html, .mdmark-code-preview";
 
 /** hover で開く目次の枠が、右端の線の上端から届かせる高さ（rem）。線 3 本分で、線から枠へポインターを動かしても hover が切れない */
 const SIDE_TOC_RAIL_COVER_REM = 2;
