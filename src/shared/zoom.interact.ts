@@ -82,6 +82,10 @@ export type ZoomControl = {
     rect: FocusRect,
     options: { margin: number; duration: number },
   ): void;
+  /** 倍率を変えずに、中身の座標の矩形の中心が表示する枠の中央に来る位置へ `duration` ミリ秒かけて移す。全体が収まる倍率で矩形が見えていれば移さない */
+  centerRect(rect: FocusRect, options: { duration: number }): void;
+  /** 中身の大きさを差し替え、全体が収まる倍率に対する今の倍率の比（倍率の文字）を保つ */
+  resize(next: { width: number; height: number }): void;
   /** 付けた操作と監視を解除する */
   detach(): void;
 };
@@ -596,7 +600,21 @@ export function attachZoom(options: {
       (viewport.clientHeight - margin * 2) / Math.max(rect.height, 1),
     );
     const target = Math.min(ceil(), Math.max(state.fit, fit));
-    const to = { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
+    moveTo(target, centerOf(rect), duration);
+  };
+
+  /** 中身の座標の矩形の中心 */
+  const centerOf = (rect: FocusRect): { x: number; y: number } => ({
+    x: rect.x + rect.width / 2,
+    y: rect.y + rect.height / 2,
+  });
+
+  /** 倍率 `target` と、表示する枠の中央に来る中身の座標 `to` へ、`duration` ミリ秒かけて移す */
+  const moveTo = (
+    target: number,
+    to: { x: number; y: number },
+    duration: number,
+  ): void => {
     if (duration <= 0) {
       place(target, to.x, to.y);
       return;
@@ -622,11 +640,55 @@ export function attachZoom(options: {
     moving = requestAnimationFrame(step);
   };
 
+  /** 中身の座標の矩形の全体が表示する枠に見えているか */
+  const isVisible = (rect: FocusRect): boolean => {
+    const left = viewport.scrollLeft / state.scale;
+    const top = viewport.scrollTop / state.scale;
+    const right = (viewport.scrollLeft + viewport.clientWidth) / state.scale;
+    const bottom = (viewport.scrollTop + viewport.clientHeight) / state.scale;
+    return (
+      rect.x >= left - ZOOM_EPSILON &&
+      rect.y >= top - ZOOM_EPSILON &&
+      rect.x + rect.width <= right + ZOOM_EPSILON &&
+      rect.y + rect.height <= bottom + ZOOM_EPSILON
+    );
+  };
+
+  const centerRect = (
+    rect: FocusRect,
+    { duration }: { duration: number },
+  ): void => {
+    stopMoving();
+    if (state.atFit && isVisible(rect)) {
+      return;
+    }
+    moveTo(state.scale, centerOf(rect), duration);
+  };
+
+  const resize = (next: { width: number; height: number }): void => {
+    stopMoving();
+    const ratio = state.scale / state.fit;
+    const center = {
+      x: (viewport.scrollLeft + viewport.clientWidth / 2) / state.scale,
+      y: (viewport.scrollTop + viewport.clientHeight / 2) / state.scale,
+    };
+    size.width = next.width;
+    size.height = next.height;
+    if (state.atFit) {
+      reset();
+      return;
+    }
+    state.fit = computeFit();
+    place(clamp(ratio * state.fit), center.x, center.y);
+  };
+
   const control: ZoomControl = {
     reset,
     fit: () => state.fit,
     refit,
     focusRect,
+    centerRect,
+    resize,
     detach: () => {
       stopMoving();
       releaseClick?.();

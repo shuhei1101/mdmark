@@ -5,7 +5,7 @@ import {
 } from "../diagram/diagram.interact.ts";
 import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import type { ResolveIdLink } from "../render/sanitize.ts";
-import { DRAG_THRESHOLD } from "../shared/zoom.interact.ts";
+import { DRAG_THRESHOLD, zoomControlOf } from "../shared/zoom.interact.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
   attachBand,
@@ -812,12 +812,23 @@ export const attachMapFlow = (
     const part = body();
     const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
     const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+    const viewport = figure.querySelector<HTMLElement>(
+      ".mdmark-diagram-viewport",
+    );
+    const zoom = viewport ? zoomControlOf(viewport) : undefined;
+    const resized =
+      stage !== null &&
+      (stage.style.width !== `${part.width}px` ||
+        stage.style.height !== `${part.height}px`);
     if (stage) {
       stage.innerHTML = part.html;
       stage.style.width = `${part.width}px`;
       stage.style.height = `${part.height}px`;
     }
-    if (sizer) {
+    if (zoom) {
+      // 中身の大きさが変わったら、倍率の文字を保って倍率と大きさのノードを合わせる
+      if (resized) zoom.resize({ width: part.width, height: part.height });
+    } else if (sizer) {
       sizer.style.width = `${part.width}px`;
       sizer.style.height = `${part.height}px`;
     }
