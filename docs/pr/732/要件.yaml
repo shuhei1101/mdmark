@@ -19,7 +19,9 @@ docs:
   - page: docs/interface/IF-472-35.ts.yaml
     new: false
     change: 用語を含む列の幅が見えている文字の幅で決まる結合テストの期待を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:20:15.531310+00:00'
   - page: docs/module/MOD-472-347.ts.yaml
     new: false
     change: measureColumns の行の分け方に、複製したセルから表示していない要素を除いてから文字を取ることと、その単体テストを記載する
