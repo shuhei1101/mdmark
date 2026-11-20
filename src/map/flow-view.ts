@@ -44,6 +44,7 @@ import {
 import { attachMapList, flowListItems } from "./list.ts";
 import {
   type MapFlowArgs,
+  type MapMermaidStyles,
   type MapPacketMark,
   type MapPart,
   renderMapFlow,
@@ -357,6 +358,22 @@ export const prefersReducedMotion = (): boolean =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** 範囲の図の番号・Mermaid・補足を読む（拡張が読んだ図があればそれを使う） */
+/** Mermaid の色の線の番号を、記載順の線の ID に置き換える */
+const mapStylesOf = (chart: Flowchart): MapMermaidStyles | undefined => {
+  if (chart.styles === undefined) return undefined;
+  const ids = chart.edges.map((edge) => edge.id);
+  const wires: MapMermaidStyles["wires"] = {};
+  for (const [index, style] of Object.entries(chart.styles.wires)) {
+    const id = ids[Number(index)];
+    if (id !== undefined) wires[id] = style;
+  }
+  return {
+    nodes: chart.styles.nodes,
+    wires,
+    defaultWire: chart.styles.defaultWire,
+  };
+};
+
 const readFlowRange = (
   range: HTMLElement,
   extension: MapFlowExtension | undefined,
@@ -700,14 +717,21 @@ export const attachMapFlow = (
       ids,
       urlState: config.map.url_state,
       focus: args.focus,
-      collapsed: Object.entries(data.layout)
-        .filter(([, entry]) => entry.collapsed === true)
-        .map(([id]) => id),
+      // 補足の layout の collapsed と、Mermaid の `{ID}@{ view: collapsed }` のグループを閉じて始める
+      collapsed: [
+        ...new Set([
+          ...Object.entries(data.layout)
+            .filter(([, entry]) => entry.collapsed === true)
+            .map(([id]) => id),
+          ...(chart.collapsed ?? []),
+        ]),
+      ],
       storage,
       location,
     }),
   };
   const notes = noteTexts(data.notes);
+  const styles = mapStylesOf(chart);
   const annotations = readMapAnnotations({ range, notes: data.notes });
   const links = mapLinkProblems({
     links: chart.links,
@@ -809,6 +833,7 @@ export const attachMapFlow = (
       terms,
       collapsedTag: extension?.collapsedTag,
       changes,
+      styles,
     });
     return {
       html: part.html,

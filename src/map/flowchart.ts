@@ -417,7 +417,13 @@ const linkOf = (options: {
   const headed = head !== undefined;
   const length = Math.max(1, body.length - (headed ? 1 : 2));
   if (body.startsWith("="))
-    return { arrow: headed ? "==>" : "---", both, ends, invisible: false, length };
+    return {
+      arrow: headed ? "==>" : "---",
+      both,
+      ends,
+      invisible: false,
+      length,
+    };
   return {
     arrow: head === ">" ? "-->" : "---",
     both,

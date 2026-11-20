@@ -172,7 +172,6 @@ const DETACH_ORDER = [
   "previews",
   "scripts",
   "mermaid",
-  "mermaidRestored",
   "backToTop",
   "interactions",
   "sideToc",
@@ -580,25 +579,6 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       warned,
       config: drawn,
       resolveIdLink: opts.resolveIdLink,
-      // map の図から戻したコードブロックだけを mermaid の図にし、片付けを足していく
-      restoreMermaid: (blocks) => {
-        if (features.mermaid !== true) return;
-        const previous = detachers.mermaidRestored;
-        const { detach } = attachMermaid({
-          root: body,
-          scope: el,
-          config: drawn,
-          mountId,
-          isCurrent,
-          modules: mermaidModules,
-          placement: config.tooltips.diagramPlacement,
-          blocks,
-        });
-        detachers.mermaidRestored = () => {
-          previous?.();
-          detach();
-        };
-      },
     });
     parts = attached;
     detachers.parts = () => attached.detach();

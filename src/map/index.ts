@@ -1,11 +1,10 @@
-import { MERMAID_ATTRIBUTE } from "../code-block/code-block.part.ts";
 import type { ResolvedConfig } from "../config.ts";
 import type { ResolveIdLink } from "../render/sanitize.ts";
 import { renderSyntaxWarning } from "../shared/syntax-warning.part.ts";
 import { attachMapArchitecture } from "./architecture-view.ts";
 import { attachMapAxisGrid } from "./axis-grid-view.ts";
 import { attachMapC4 } from "./c4-view.ts";
-import { collectMapProblems, needsMermaidFallback } from "./check.ts";
+import { collectMapProblems, collectPlainMapProblems } from "./check.ts";
 import { attachMapClass } from "./class-view.ts";
 import { attachMapEr } from "./er-view.ts";
 import { attachMapExport } from "./export.ts";
@@ -180,6 +179,16 @@ const attachRange = (context: AttachContext, range: HTMLElement): void => {
       config,
       resolveIdLink: context.resolveIdLink,
     });
+  // 範囲の外の map の図は、Mermaid の読み取れない行だけを警告にし、読み取れた部分を描く
+  else
+    addWarnings(
+      range,
+      collectPlainMapProblems({
+        kind: (range.dataset.mapKind ?? "") as MapKindName,
+        mermaid: source.mermaid ?? "",
+        line: undefined,
+      }).map((item) => item.message),
+    );
   const { args } = parseMapArgs(range.dataset.mapArgs ?? "");
   collapseRange(range, args);
   const kind = range.dataset.mapKind ?? "";
@@ -317,25 +326,8 @@ const linkSequence = (context: AttachContext, entry: SequenceEntry): void => {
 
 /** map の図を付けるときに利用側から受け取る関数 */
 export type MapHooks = {
-  /** 戻した mermaid のコードブロック（`data-mdmark-mermaid` を持つ要素）を指定して呼ぶ */
-  restoreMermaid?: (blocks: HTMLElement[]) => void;
   /** `mount` の `resolveIdLink`。構成図のノードの `id:` のリンク先を URL に変える */
   resolveIdLink?: ResolveIdLink;
-};
-
-/** 範囲の外の map の図を、front matter を含む元のソースの mermaid のコードブロックに戻す。戻さない図は `undefined` */
-const restorePlain = (range: HTMLElement): HTMLElement | undefined => {
-  const code = range.querySelector("code");
-  const block = code?.closest<HTMLElement>(".mdmark-code, pre");
-  if (!code || !block) return undefined;
-  const mermaid = code.textContent ?? "";
-  const kind = (range.dataset.mapKind ?? "") as MapKindName;
-  if (!needsMermaidFallback({ kind, mermaid })) return undefined;
-  const front = range.dataset.mapFrontMatter;
-  code.textContent = front === undefined ? mermaid : `${front}\n${mermaid}`;
-  block.setAttribute(MERMAID_ATTRIBUTE, "");
-  range.replaceWith(block);
-  return block;
 };
 
 /** `root` の中の `div.mdmark-map` ごとに、種類で構成図かシーケンス図を付け、案内と再生をつなぎ、片付ける関数を返す */
@@ -352,14 +344,8 @@ export const attachMap = (
     flowIds: new Map(),
     resolveIdLink: hooks.resolveIdLink,
   };
-  const restored: HTMLElement[] = [];
-  for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map")) {
-    const block =
-      range.dataset.mapPlain === undefined ? undefined : restorePlain(range);
-    if (block) restored.push(block);
-    else attachRange(context, range);
-  }
-  if (restored.length > 0) hooks.restoreMermaid?.(restored);
+  for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map"))
+    attachRange(context, range);
   for (const entry of context.sequences) linkSequence(context, entry);
   return () => {
     for (const destroy of context.destroyers.splice(0)) destroy();
