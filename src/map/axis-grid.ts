@@ -1,4 +1,6 @@
+import { type MermaidStyles, readMermaidStyles } from "./mermaid-style.ts";
 import type { MapProblem } from "./spec.ts";
+import { mermaidMainBranchOf } from "./structure.ts";
 
 /** 軸と格子の配置の図の種類 */
 export type AxisGridKind =
@@ -24,6 +26,22 @@ export type AxisGridShape =
   | "rounded"
   | "circle"
   | "cylinder"
+  | "stadium"
+  | "subroutine"
+  | "flag"
+  | "rhombus"
+  | "hexagon"
+  | "lean-right"
+  | "lean-left"
+  | "trapezoid"
+  | "trapezoid-alt"
+  | "double-circle"
+  | "arrow-right"
+  | "arrow-left"
+  | "arrow-up"
+  | "arrow-down"
+  | "arrow-x"
+  | "arrow-y"
   | "space";
 
 /** 種類に固有の項目の値 */
@@ -118,6 +136,8 @@ export type AxisGrid = {
   problems: MapProblem[];
   /** Mermaid の 1 行目の最初の単語 */
   firstWord: string;
+  /** `readMermaidStyles` が読み取った項目の色（ブロック図の `classDef`・`class`・`style`） */
+  styles: MermaidStyles;
 };
 
 /** 読み取りの途中の項目（`key`・`stateKey` は最後に決める） */
@@ -143,7 +163,13 @@ type DraftLink = {
 type ParseState = {
   grid: Omit<
     AxisGrid,
-    "items" | "sections" | "links" | "ambiguous" | "kind" | "firstWord"
+    | "items"
+    | "sections"
+    | "links"
+    | "ambiguous"
+    | "kind"
+    | "firstWord"
+    | "styles"
   >;
   items: DraftItem[];
   sections: DraftSection[];
@@ -618,6 +644,8 @@ const readTimelineLine = (
 type GitContext = {
   state: ParseState;
   current: string;
+  /** 最初のブランチの名前を指定されていない（最初の知らない `checkout` の名前を最初のブランチの名前にする） */
+  inferMain: boolean;
   /** ブランチ名から先頭の commit の `order` */
   heads: Map<string, number | undefined>;
   /** commit の `id:` から `order` */
@@ -691,14 +719,26 @@ const readGitBranchLine = (
     context.current = name;
     return true;
   }
-  if (
-    (command === "checkout" || command === "switch") &&
-    context.heads.has(name)
-  ) {
-    context.current = name;
-    return true;
-  }
-  return false;
+  if (command !== "checkout" && command !== "switch") return false;
+  if (!context.heads.has(name) && context.inferMain) renameMain(context, name);
+  if (!context.heads.has(name)) return false;
+  context.current = name;
+  return true;
+};
+
+/** 最初のブランチの名前を、front matter などで指定した名前に付け替える */
+const renameMain = (context: GitContext, name: string): void => {
+  context.inferMain = false;
+  const branches = context.state.grid.branches;
+  const old = branches[0];
+  if (old === undefined || name === "") return;
+  branches[0] = name;
+  context.heads.set(name, context.heads.get(old));
+  context.heads.delete(old);
+  if (context.current === old) context.current = name;
+  for (const item of context.state.items)
+    if (item.detail.kind === "gitGraph" && item.detail.branch === old)
+      item.detail.branch = name;
 };
 
 /** commit・merge・cherry-pick の行（読んだら true） */
@@ -784,60 +824,179 @@ const readJourneyLine = (
 
 /* ---------- ブロック図 ---------- */
 
-/** ブロックの形状の記号（外側の記号から順に照らす） */
-const BLOCK_SHAPES: ReadonlyArray<readonly [AxisGridShape, RegExp]> = [
-  ["cylinder", /^([\w-]+)\[\("(.*)"\)\]$/],
-  ["circle", /^([\w-]+)\(\("(.*)"\)\)$/],
-  ["square", /^([\w-]+)\["(.*)"\]$/],
-  ["rounded", /^([\w-]+)\("(.*)"\)$/],
-  ["square", /^([\w-]+)$/],
+/** ブロックの形状の開きと閉じ（長い開きから順に照らす） */
+const BLOCK_SHAPES: ReadonlyArray<readonly [AxisGridShape, string, string]> = [
+  ["double-circle", "(((", ")))"],
+  ["stadium", "([", "])"],
+  ["subroutine", "[[", "]]"],
+  ["cylinder", "[(", ")]"],
+  ["circle", "((", "))"],
+  ["hexagon", "{{", "}}"],
+  ["lean-right", "[/", "/]"],
+  ["lean-left", "[\\", "\\]"],
+  ["trapezoid", "[/", "\\]"],
+  ["trapezoid-alt", "[\\", "/]"],
+  ["flag", ">", "]"],
+  ["rhombus", "{", "}"],
+  ["square", "[", "]"],
+  ["rounded", "(", ")"],
 ];
 
-/** 1 行の中のブロックの記載 */
-const BLOCK_TOKEN_RE =
-  /[\w-]+(?:\[\(".*?"\)\]|\(\(".*?"\)\)|\[".*?"\]|\(".*?"\))?(?::\d+)?/g;
+/** ブロックの矢印の向きから形状 */
+const ARROW_SHAPES: Record<string, AxisGridShape> = {
+  right: "arrow-right",
+  left: "arrow-left",
+  up: "arrow-up",
+  down: "arrow-down",
+  x: "arrow-x",
+  y: "arrow-y",
+};
 
-/** ブロックの線の行 */
-const BLOCK_LINK_RE = /^([\w-]+)\s*(?:--\s*"([^"]*)"\s*)?-->\s*([\w-]+)$/;
+/** ブロックの ID */
+const BLOCK_ID_RE = /^[\w\u0080-\uffff]+(?:-(?!-)[\w\u0080-\uffff]+)*/u;
+
+/** ブロックの間の線（`-->`・`---`・`-- "{ラベル}" -->`） */
+const BLOCK_ARROW_RE = /^(?:--\s*"([^"]*)"\s*-->|-->|---)/;
+
+/** 1 つのブロックの記載の読み取り結果 */
+type BlockToken = {
+  id: string;
+  label: string;
+  shape: AxisGridShape;
+  width: number;
+  consumed: number;
+};
+
+/** 形状の中の文字（引用符で囲んだ文字は閉じの記号を含んでよい） */
+const shapeLabel = (
+  body: string,
+  close: string,
+): { label: string; length: number } | undefined => {
+  const quoted = /^"([^"]*)"/.exec(body);
+  if (quoted) {
+    return body.startsWith(close, quoted[0].length)
+      ? { label: quoted[1] ?? "", length: quoted[0].length + close.length }
+      : undefined;
+  }
+  const end = body.indexOf(close);
+  return end < 0
+    ? undefined
+    : { label: body.slice(0, end).trim(), length: end + close.length };
+};
+
+/** 行の先頭の 1 つのブロック（`{ID}{形状}:{幅}`・`space:{幅}`・矢印のブロック）を読む */
+const readBlockAt = (text: string): BlockToken | undefined => {
+  const idMatch = BLOCK_ID_RE.exec(text);
+  if (!idMatch) return undefined;
+  const id = idMatch[0];
+  let rest = text.slice(id.length);
+  let consumed = id.length;
+  let label = id;
+  let shape: AxisGridShape = id === "space" ? "space" : "square";
+  const arrow = /^<\["([^"]*)"\]>\(([\w\s,]+)\)/.exec(rest);
+  if (arrow) {
+    label = (arrow[1] ?? "").replaceAll("&nbsp;", " ");
+    shape =
+      ARROW_SHAPES[(arrow[2] ?? "").split(",")[0]?.trim() ?? ""] ??
+      "arrow-right";
+    consumed += arrow[0].length;
+    rest = rest.slice(arrow[0].length);
+  } else {
+    for (const [name, open, close] of BLOCK_SHAPES) {
+      if (!rest.startsWith(open)) continue;
+      const found = shapeLabel(rest.slice(open.length), close);
+      if (!found) continue;
+      label = found.label;
+      shape = name;
+      consumed += open.length + found.length;
+      rest = rest.slice(open.length + found.length);
+      break;
+    }
+  }
+  const width = /^:(\d+)/.exec(rest);
+  if (width) consumed += width[0].length;
+  return {
+    id,
+    label: id === "space" ? "" : label,
+    shape,
+    width: Number(width?.[1] ?? "1"),
+    consumed,
+  };
+};
 
 /** ブロック図の読み取りの途中の値 */
 type BlockContext = {
   state: ParseState;
   /** 開いている入れ子のブロックの `order` の並び */
   stack: number[];
+  /** ID から項目（同じ ID の 2 つ目の記載は線の端だけにする） */
+  seen: Set<string>;
 };
 
-/** 1 つのブロックの記載を項目にする（読めなければ false） */
-const readBlockToken = (context: BlockContext, token: string): boolean => {
-  const [body = "", widthText] = token.split(/:(?=\d+$)/);
-  const width = Number(widthText ?? "1");
-  const section = context.stack.at(-1);
-  if (body === "space") {
-    addItem(context.state, {
-      id: undefined,
-      label: "",
-      shape: "space",
-      sectionOrder: section,
-      parent: undefined,
-      detail: { kind: "block", width },
-    });
-    return true;
+/** 読んだブロックを項目にする（既にある ID は足さない） */
+const addBlock = (context: BlockContext, token: BlockToken): void => {
+  if (token.shape !== "space") {
+    if (context.seen.has(token.id)) return;
+    context.seen.add(token.id);
   }
-  for (const [shape, pattern] of BLOCK_SHAPES) {
-    const match = pattern.exec(body);
-    if (!match) continue;
-    addItem(context.state, {
-      id: match[1],
-      label: match[2] ?? match[1] ?? "",
-      shape,
-      sectionOrder: section,
-      parent: undefined,
-      detail: { kind: "block", width },
-    });
-    return true;
-  }
-  return false;
+  addItem(context.state, {
+    id: token.shape === "space" ? undefined : token.id,
+    label: token.label,
+    shape: token.shape,
+    sectionOrder: context.stack.at(-1),
+    parent: undefined,
+    detail: { kind: "block", width: token.width },
+  });
 };
+
+/** 1 行のブロックと線を左から読む（読めない記載があれば false） */
+const readBlockTokens = (context: BlockContext, text: string): boolean => {
+  const tokens: BlockToken[] = [];
+  const links: DraftLink[] = [];
+  let rest = text.trim();
+  let pending: { label: string | undefined } | undefined;
+  while (rest !== "") {
+    const token = readBlockAt(rest);
+    if (!token) return false;
+    if (pending) {
+      const from = tokens.at(-1);
+      if (from)
+        links.push({
+          from: from.id,
+          to: token.id,
+          kind: "arrow",
+          label: pending.label,
+        });
+      pending = undefined;
+    }
+    tokens.push(token);
+    rest = rest.slice(token.consumed).trimStart();
+    const arrow = BLOCK_ARROW_RE.exec(rest);
+    if (arrow) {
+      pending = { label: arrow[1] };
+      rest = rest.slice(arrow[0].length).trimStart();
+      if (rest === "") return false;
+    }
+  }
+  // 線の両端だけに出た既にあるブロック・入れ子のブロックの ID は項目にしない
+  const sectionLabels = new Set(context.state.sections.map((one) => one.label));
+  const linked = links.length > 0;
+  for (const token of tokens)
+    if (
+      !(
+        linked &&
+        token.label === token.id &&
+        token.shape === "square" &&
+        (context.seen.has(token.id) || sectionLabels.has(token.id))
+      )
+    )
+      addBlock(context, token);
+  context.state.links.push(...links);
+  return true;
+};
+
+/** 色を指定する行（`readMermaidStyles` が読む） */
+const BLOCK_STYLE_RE = /^(classDef|class|style)\s/;
 
 /** `columns`・入れ子の開きと閉じ・線の行（読んだら true） */
 const readBlockStructureLine = (
@@ -876,33 +1035,18 @@ const readBlockLine = (
   context: BlockContext,
   line: { text: string; index: number },
 ): void => {
-  const { text } = line;
-  const link = BLOCK_LINK_RE.exec(text);
+  const text = line.text.replace(/;\s*$/, "");
+  if (BLOCK_STYLE_RE.test(text)) return;
   if (readBlockStructureLine(context, text)) return;
-  if (link) {
-    context.state.links.push({
-      from: link[1] ?? "",
-      to: link[3] ?? "",
-      kind: "arrow",
-      label: link[2],
-    });
-  } else if (!readBlockTokens(context, text)) {
+  if (!readBlockTokens(context, text)) {
     context.state.grid.problems.push(
       unreadable(
         line.index,
-        text,
+        line.text,
         '`columns {数}`・`{ID}["名前"]` などのブロック・`space`・`block:{ID}` と `end`・`{ID} --> {ID}` の行にしてください。',
       ),
     );
   }
-};
-
-/** 1 行の全てのブロックの記載を項目にする（読めないものがあれば false） */
-const readBlockTokens = (context: BlockContext, text: string): boolean => {
-  const tokens = text.match(BLOCK_TOKEN_RE) ?? [];
-  if (tokens.join(" ").replace(/\s+/g, "") !== text.replace(/\s+/g, ""))
-    return false;
-  return tokens.every((token) => readBlockToken(context, token));
 };
 
 /* ---------- 共通 ---------- */
@@ -933,6 +1077,7 @@ const readKind = (
   kind: AxisGridKind,
   source: string,
   state: ParseState,
+  mainBranchName: string | undefined,
 ): string => {
   switch (kind) {
     case "gantt": {
@@ -950,11 +1095,14 @@ const readKind = (
       return eachLine(source, (line) => readTimelineLine(context, line), state);
     }
     case "gitGraph": {
-      state.grid.branches.push("main");
-      const context = {
+      const given = mainBranchName ?? mermaidMainBranchOf(source);
+      const main = given ?? "main";
+      state.grid.branches.push(main);
+      const context: GitContext = {
         state,
-        current: "main",
-        heads: new Map([["main", undefined]]),
+        current: main,
+        inferMain: given === undefined,
+        heads: new Map([[main, undefined]]),
         ids: new Map(),
       };
       return eachLine(source, (line) => readGitLine(context, line), state);
@@ -977,7 +1125,7 @@ const assertNever = (value: never): never => {
 
 /** ブロック図を読み、閉じの無い入れ子を最後の行で閉じる */
 const readBlock = (source: string, state: ParseState): string => {
-  const context: BlockContext = { state, stack: [] };
+  const context: BlockContext = { state, stack: [], seen: new Set() };
   const firstWord = eachLine(
     source,
     (line) => readBlockLine(context, line),
@@ -1013,7 +1161,7 @@ const finish = (
   kind: AxisGridKind,
   state: ParseState,
   firstWord: string,
-): AxisGrid => {
+): Omit<AxisGrid, "styles"> => {
   const unnamed = state.items.filter(
     (item) => item.id === undefined && item.label !== "",
   );
@@ -1070,10 +1218,21 @@ const finish = (
 export const parseAxisGrid = (options: {
   kind: AxisGridKind;
   source: string;
+  /** Git グラフの最初のブランチの名前（省くと `source` の front matter と `%%{init}` から読み取り、無ければ `main`） */
+  mainBranchName?: string | undefined;
 }): AxisGrid => {
   const state = emptyState();
-  const firstWord = readKind(options.kind, options.source, state);
-  return finish(options.kind, state, firstWord);
+  const firstWord = readKind(
+    options.kind,
+    options.source,
+    state,
+    options.mainBranchName,
+  );
+  const styles = readMermaidStyles({
+    lines: options.kind === "block" ? options.source.split(/\r?\n/) : [],
+    classTarget: "class",
+  });
+  return { ...finish(options.kind, state, firstWord), styles };
 };
 
 /** `axisGridItemOf` の戻り値 */
