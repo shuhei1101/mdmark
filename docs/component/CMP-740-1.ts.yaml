@@ -19,6 +19,10 @@ args:
     type: 文字列
     required: true
     description: ノード・グループの名前か、メッセージの項目の文字
+  - name: items[].id
+    type: 文字列
+    required: true
+    description: 項目を一意に指す ID。構成図はノード・グループの ID（補足の `notes` と同じキー）、シーケンス図はメッセージの番号。項目の `data-id` に入れる
   - name: items[].kind
     type: 文字列
     required: false
@@ -49,12 +53,12 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 閉じた子を持つ項目の名前。`aria-expanded="false"` にし、子の項目を隠す
+    description: 閉じた子を持つ項目の ID（`items[].id`）。`aria-expanded="false"` にし、子の項目を隠す
   - name: focused
     type: 文字列
     required: false
     default: 最初の項目
-    description: '`tabindex="0"` を持たせる項目の名前（ほかの項目は `tabindex="-1"`）'
+    description: '`tabindex="0"` を持たせる項目の ID（`items[].id`。ほかの項目は `tabindex="-1"`）'
 states:
   - name: Flow
     description: 構成図の一覧。外部のノードと、「mdmark」グループの中の入れ子の「記法の読み取り」グループ。ノードの項目は名前・種類・説明・出る線を持つ
@@ -72,9 +76,9 @@ states:
     description: 「記法の読み取り」を閉じた。その項目が `aria-expanded="false"` で、中の 2 つのノードの項目が隠れる
     args:
       - name: collapsed
-        value: '["記法の読み取り"]'
+        value: '["read"]'
       - name: focused
-        value: 記法の読み取り
+        value: read
   - name: Narrow
     description: 幅 390px。項目の名前・バッジ・種類が折り返し、横にはみ出さない
     notes:

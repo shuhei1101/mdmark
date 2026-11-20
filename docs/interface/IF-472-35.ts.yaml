@@ -10757,6 +10757,36 @@ flows:
     test: test_normal_when_map_list_view
     refs:
       - SC-472-8#scenarios[正常シナリオ（一覧の表示で読む）]
+  - name: 異常系（map の図を PNG にできない）
+    summary: PNG の canvas を作れないときに保存せず、SVG での書き出しを案内する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図の map の Markdown
+        description: 正常系（map の図を SVG・PNG に書き出す）の 1 つ目の範囲
+      - name: Mock
+        description: '`HTMLCanvasElement.prototype.toBlob` を、コールバックに `null` を渡す関数に差し替える。ブラウザのダウンロードを受け取る'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 書き出すボタンを押して PNG を選ぶ
+        M->>M: SVG を 2 倍の canvas に描き、toBlob が null を渡す
+        M-->>U: 要素を開いたまま PNG にできない旨を出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - ダウンロードが 0 件
+      - '書き出すボタンが `aria-expanded="true"` のままで、開いた要素の中に `role="status"` の「この大きさの図は PNG にできません。SVG で書き出してください。」がある'
+      - 続けて SVG を押すと `全体の構成.svg` が保存され、要素が閉じる
+      - 例外がページの外へ投げられず、図の倍率・位置・選択が変わらない
+    test: test_error_when_map_png_unavailable
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（図を SVG・PNG に書き出す）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -12371,7 +12401,7 @@ constraints:
 
       項目を選ぶと、図の表示する内容（グループの開閉・中へ入った状態・計画した変更）を今のまま、倍率と表示する位置に依らず等倍の図の全体を、図の要素を複製して計算したスタイルを `style` 属性へ書き写した DOM を `foreignObject` に入れた SVG にする。書き写すのは既定値と異なるプロパティだけにし、疑似要素（`::before`・`::after`）で描いた表示は要素に置き換えて含める。選択の強調・パネル・リサイズハンドル・ツールチップとそのマーカー・記載の警告・当たり判定・データの印・非表示の要素は含めず、`class` と値に `var(` を持つ属性を除く。背景は図の枠の背景の色の `rect` にする。
 
-      PNG はその SVG を `data:` の URL の画像にして、端末の `devicePixelRatio` に依らず幅・高さが 2 倍の canvas に描き、`toBlob` で作る。ファイル名は `{図の枠のタイトル}.svg`・`{図の枠のタイトル}.png`（タイトルが無い図は `図 {図の番号}`。ファイル名に使用できない文字 `\ / : * ? " < > |` は `_` にする）で、`download` 属性を持つリンクで保存させ、使用したオブジェクト URL を解放する。外部への要求はしない
+      PNG はその SVG を `data:` の URL の画像にして、端末の `devicePixelRatio` に依らず幅・高さが 2 倍の canvas に描き、`toBlob` で作る。ファイル名は `{図の枠のタイトル}.svg`・`{図の枠のタイトル}.png`（タイトルが無い図は `図 {図の番号}`。ファイル名に使用できない文字 `\ / : * ? " < > |` は `_` にする）で、`download` 属性を持つリンクで保存させ、使用したオブジェクト URL を解放する。canvas の `getContext` が `null` を返す、`toBlob` が `null` を渡す、画像の読み込みか描画が例外になるとき（ブラウザの canvas の大きさの上限を超えた図）は、PNG を保存せず、要素を開いたまま「この大きさの図は PNG にできません。SVG で書き出してください。」を `role="status"` で出す。上限はブラウザごとに違うため大きさで先に判定せず、結果で判定する。外部への要求はしない
     decided_by: SC-472-8#scenarios[正常シナリオ（図を SVG・PNG に書き出す）]
     notes: 方式は PoC（#745）で Chromium・Firefox・WebKit の外部の資源 0 件・2 倍の PNG が汚染されないことを確認した foreignObject の方式（PR ドキュメントの PoC 結果）
   - item: map の一覧の表示
