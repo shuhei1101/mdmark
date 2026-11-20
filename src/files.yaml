@@ -462,7 +462,7 @@ files:
       - to: MOD-472-266
         type: implements
   - path: shared/text.interact.ts
-    description: 要素の文字から用語のツールチップの文字を除いて取り出す処理を受け持つ。コピーや見出しの文字の取り出し方を変えるときに参照する。
+    description: 要素の文字から用語のツールチップと脚注・注記の参照の文字を除いて取り出す処理を受け持つ。コピーや見出しの文字の取り出し方を変えるときに参照する。
     tags: [topic:dom, topic:用語]
     related:
       - to: MOD-472-229

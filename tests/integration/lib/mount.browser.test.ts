@@ -20401,6 +20401,77 @@ test("test_normal_when_column_width_ignores_hidden_tips", async () => {
   });
 });
 
+// 脚注の参照を持つセルの値を、脚注の参照を除いた文字にして、並べ替え・絞り込み・コピーに使用する（正常系（脚注を含むセルの並べ替え・絞り込み・コピー））
+test("test_normal_when_table_values_ignore_footnotes", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  const markdown = [
+    '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"用語": {"filter": {}}}} -->',
+    "",
+    "| 用語 | 値 |",
+    "| --- | --- |",
+    "| 承認[^1] | 1 |",
+    "| 確認 | 2 |",
+    "| 確認[^2] | 3 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "[^1]: あとで差し戻す",
+    "[^2]: いまは保留する",
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const rows = () =>
+    [
+      ...table.querySelectorAll<HTMLTableRowElement>(
+        "tbody tr:not(.mdmark-table-empty)",
+      ),
+    ].filter((row) => !row.hidden);
+  // 検証: 承認と 3 行目の確認の後ろに脚注の参照がある
+  const termCells = rows().map((row) => row.cells[0] as HTMLElement);
+  expect(
+    termCells.map((cell) => cell.querySelector(".mdmark-fn-ref") !== null),
+  ).toEqual([true, false, true]);
+  // 実行・検証: 用語の列の見出しを押して降順に並べ替える
+  const header = table.querySelectorAll("thead th")[0] as HTMLElement;
+  find<HTMLButtonElement>(header, "button.mdmark-sort").click();
+  expect(rows().map((row) => row.cells[1]?.textContent)).toEqual([
+    "1",
+    "2",
+    "3",
+  ]);
+  // 実行・検証: Markdown の表でコピーする
+  chooseCopyFormat(el, "markdown");
+  await vi.waitFor(() => {
+    expect(writeText).toHaveBeenCalledTimes(1);
+  });
+  expect(writeText).toHaveBeenCalledWith(
+    "| 用語 | 値 |\n| --- | --- |\n| 承認 | 1 |\n| 確認 | 2 |\n| 確認 | 3 |",
+  );
+  // 実行・検証: 絞り込みの候補は脚注の参照を含まない
+  find<HTMLButtonElement>(header, "button.mdmark-filter").click();
+  const drawer = find<HTMLElement>(el, ".mdmark-filter-drawer:not([hidden])");
+  const candidates = [
+    ...drawer.querySelectorAll<HTMLInputElement>(
+      ".mdmark-filter-options input",
+    ),
+  ];
+  expect(candidates.map((input) => input.value).sort()).toEqual(
+    ["承認", "確認"].sort(),
+  );
+  for (const input of candidates) {
+    expect(input.value).not.toMatch(/脚注|あとで差し戻す|いまは保留する|\d/);
+  }
+  // 実行・検証: 候補の確認を選ぶ
+  candidates.find((input) => input.value === "確認")?.click();
+  expect(rows().map((row) => row.cells[1]?.textContent)).toEqual(["2", "3"]);
+});
+
 // 狭い幅でも最終列を畳まず、表の中で横にスクロールして全ての列を出す（正常系（狭い幅でも最終列を畳まない））
 test("test_normal_when_last_column_not_collapsed", async () => {
   await withViewport(390, async () => {

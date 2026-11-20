@@ -9,8 +9,8 @@ functions:
     container: src/shared/text.interact.ts
     kind: 関数
     scope: internal
-    summary: 要素の `textContent` から、用語のツールチップ（`.mdmark-term-tip`）の文字を除いて前後の空白を落とした文字を返却する
-    description: 表の並べ替え・絞り込み・ピン止めのセルの値、見出しのボタンの名前、行の詳細の開閉ボタンの名前は、この関数で読み込む。要素は書き換えない
+    summary: 要素の `textContent` から、用語のツールチップ（`.mdmark-term-tip`）と脚注・注記の参照（`.mdmark-fn-ref`。番号・スクリーンリーダー用の文字・ツールチップ）の文字を除いて前後の空白を落とした文字を返却する
+    description: 表の並べ替え・絞り込み・ピン止めのセルの値、見出しのボタンの名前、行の詳細の開閉ボタンの名前は、この関数で読み込む。脚注・注記の参照の外にあるスクリーンリーダー用の文字（`.mdmark-visually-hidden`）は残す。要素は書き換えない
     args:
       - name: element
         type: Element
@@ -18,7 +18,7 @@ functions:
         description: 読み込む要素
     returns:
       type: string
-      description: ツールチップを除いた文字
+      description: ツールチップと脚注・注記の参照を除いた文字
     unit_tests:
       - name: test_visible_text
         case: 正常
@@ -26,6 +26,12 @@ functions:
         condition: '`<td>本文の<span class="mdmark-term-wrap"><span class="mdmark-term">マーカー</span><span class="mdmark-term-tip">用語HTML コメントで記載する指定</span></span></td>`'
         mock: なし（Chromium）
         expected: '`本文のマーカー`、`td` の中身が変わらない'
+      - name: test_visible_text_when_footnote_ref
+        case: 正常
+        summary: 脚注・注記の参照の番号・スクリーンリーダー用の文字・ツールチップを除く
+        condition: '`<td>確認<sup class="mdmark-fn-ref"><a class="mdmark-fn-link"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip">脚注定義</span></sup></td>` と `<td>承認<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link"><span class="mdmark-visually-hidden">注記 </span>1</a><span class="mdmark-fn-tip">注記定義</span></sup></td>`'
+        mock: なし（Chromium）
+        expected: '`確認` と `承認`、`td` の中身が変わらない'
   - name: cellValue
     title: 表のセルの値を読み込む
     container: src/shared/text.interact.ts
