@@ -8,12 +8,12 @@ args:
   - name: tree
     type: オブジェクト
     required: true
-    description: 木の配置の結果。項目ごとの位置と大きさ・形状・側（`left`・`right`・`root`）・枝の色・子を持つか・子孫の数と、親から子への曲線の始点と終点（親の持ち手の先から、子の内側の辺へ。形状の指定の無い子は下線の高さへ）
+    description: 木の配置の結果。項目ごとの位置と大きさ・形状・側（`left`・`right`・`root`）・枝の色・子を持つか・子孫の数と、親から子への曲線の始点と終点（親の持ち手の先から、子の内側の辺へ）。項目の幅は、描くフォントで測った名前の幅に左右の余白と枠線を加えた幅（上限 200px。上限を超える名前だけを文節の切れ目で折り返し、高さを行の数に合わせる）
   - name: tree.items[].shape
     type: 列挙
     required: true
     choices: square・rounded・circle・bang・cloud・hexagon・plain
-    description: 項目の形状。`plain` は枠線の無い文字に下線、`bang`・`hexagon` は切り抜いて枝の色を薄く混ぜた面で描く
+    description: 項目の形状。`plain` は枝の色の 1px の枠線を持つ角の丸い四角（角の半径 6px）、`bang`・`hexagon` は切り抜いて枝の色を薄く混ぜた面で描く
   - name: tree.items[].color
     type: 文字列
     required: false
@@ -59,7 +59,7 @@ events:
     value: 項目のキー
     description: '`mount` が `entered` をその項目にし、その項目を根に再描画する。戻るボタンと Esc は構成図の部品と同じ'
   - name: 選ぶ
-    when: 項目の名前の周りの余白と枠線（形状の指定の無い項目は下線）を押す。項目の押せる要素にフォーカスして Enter か Space を押す
+    when: 名前の文字の上を含む項目の全体を押す（名前の文字をドラッグして選んだときは選ばない）。項目の押せる要素にフォーカスして Enter か Space を押す
     value: 項目のキー
     description: '`mount` が `selected` を切り替える。名前の文字の上・説明のマーカー・持ち手のボタンでは選ばない'
 states:
@@ -116,6 +116,7 @@ accessibility:
   - 開閉のボタンは `aria-expanded` と、「{名前}の子孫を閉じる」「{名前}の子孫 {数} 件を開く」の名前を持ち、中へ入るボタンは「{名前}の中へ入る」の名前を持つ。どちらも 28px 以上で、間を 4px 空ける
   - 枝の曲線と中へ入ったときの道筋の区切りの `›` は飾りとして `aria-hidden`、道筋は `aria-label="根からの道筋"` を持つ
   - 枝の色だけで枝を区別させず、線で親子を示す
+  - 項目の名前は 13px・標準の太さ（400）、根の名前は 15px・600 にする（構成図のノードの名前と同じ大きさ。確認ログ）。ポインターを重ねた項目は面に枝の色を 10%、選んだ項目は 18% 敷き、名前の文字の上のポインターの形状も `pointer` にする（選んだ項目は今の外側の枠線も保つ）
 refs:
   - IF-472-35#constraints[map のマインドマップ]
 status: planned

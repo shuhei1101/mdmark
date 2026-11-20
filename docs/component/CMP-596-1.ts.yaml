@@ -138,6 +138,7 @@ accessibility:
   - メンバーの区画は `role="list"`、行は `role="listitem"` を持ち、可視性の記号も読み上げの対象にする。メンバーの説明のボタンは `aria-label="{メンバー名}の説明"` を持つ
   - クラスの開閉のボタンは `aria-expanded` と、「{クラス名}のメンバーを開く」「…を閉じる」の名前を持つ
   - 関係の端の形状と多重度は飾りとして `aria-hidden`、関係の押せる帯は `aria-label="{元}から{先}への{関係の種類}"`（継承・実現・合成・集約・関連・依存・リンク）を持つ
+  - メンバーの説明のボタン（`.map-class-note`）の上のポインターの形状は、ほかのボタンと同じ `pointer` にし、`help` にしない
 refs:
   - IF-472-35#constraints[map のクラス図]
 status: planned
