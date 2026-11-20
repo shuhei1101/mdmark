@@ -294,7 +294,10 @@ function prepareModalFigure(figure: HTMLElement): HTMLElement {
 }
 
 /** 全画面のモーダルに複製した図（modal）に、元の図（source）の部品の操作を付け直し、解除する関数を返す */
-export type AttachModal = (modal: HTMLElement, source: HTMLElement) => () => void;
+export type AttachModal = (
+  modal: HTMLElement,
+  source: HTMLElement,
+) => () => void;
 
 /** 図を全画面のモーダルで開き、開いた全画面を閉じる関数を返却する。閉じるボタンか Esc で閉じたら、付けた操作と監視を解除して `dialog` を削除し、フォーカスを全画面のボタンへ戻す */
 export function openDiagramDialog(options: {

@@ -10997,7 +10997,8 @@
     cursor: grab;
   }
   /* グループの左・右・下の縁の 8px の帯: 掴むとグループを動かす。右下の角はボタンに譲る */
-  .mdmark-diagram[data-diagram="map"] .map-group-bar:is(.is-left, .is-right, .is-bottom) {
+  .mdmark-diagram[data-diagram="map"]
+  .map-group-bar:is(.is-left, .is-right, .is-bottom) {
     height: auto;
   }
   .mdmark-diagram[data-diagram="map"] .map-group-bar.is-left {

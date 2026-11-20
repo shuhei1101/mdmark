@@ -1,4 +1,4 @@
-import type { ResolvedConfig } from "../config.ts";
+import type { ResolvedConfig, TooltipPlacement } from "../config.ts";
 import {
   type AttachModal,
   attachDiagrams,
@@ -26,8 +26,8 @@ import {
   KEY_MOVE_PX,
   KEY_MOVE_PX_LARGE,
   moveByKey,
-  resizeByKey,
   nearestSegment,
+  resizeByKey,
   startDrag,
 } from "./drag.ts";
 import {
@@ -385,6 +385,63 @@ const readFlowRange = (
   };
 };
 
+/** 元の図の範囲か、全画面のモーダルに付け直すときは元の図で読み取った定義 */
+const flowSourceOf = (
+  range: HTMLElement,
+  context: {
+    extension: MapFlowExtension | undefined;
+    modal: ModalFlow | undefined;
+  },
+): { index: number; chart: Flowchart; data: MapData } =>
+  context.modal ?? readFlowRange(range, context.extension);
+
+/** 図の枠を描いて一覧の表示と拡大・縮小・全画面を付ける。全画面のモーダルに付け直すときは、複製した図をそのまま使う */
+const mountFlowFrame = (
+  range: HTMLElement,
+  context: {
+    modal: ModalFlow | undefined;
+    frame: Parameters<typeof renderDiagramFrame>[0];
+    body: () => Parameters<typeof renderDiagramFrame>[1];
+    listItems: Parameters<typeof attachMapList>[1]["items"];
+    placement: TooltipPlacement;
+    attachModal: AttachModal;
+  },
+): {
+  figure: HTMLElement;
+  detachList: () => void;
+  detachDiagrams: () => void;
+  linkOwners: () => void;
+} => {
+  const none = () => undefined;
+  if (context.modal)
+    return {
+      figure: context.modal.figure,
+      detachList: none,
+      detachDiagrams: none,
+      linkOwners: none,
+    };
+  range.innerHTML = renderDiagramFrame(context.frame, context.body());
+  const detachList = attachMapList(range, {
+    label: () =>
+      `${range.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の一覧`,
+    items: context.listItems,
+  });
+  linkAnnotationOwners(range);
+  const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
+  const detachDiagrams = attachDiagrams({
+    root: range,
+    placement: context.placement,
+    figures: [figure],
+    attachModal: context.attachModal,
+  });
+  return {
+    figure,
+    detachList,
+    detachDiagrams,
+    linkOwners: () => linkAnnotationOwners(range),
+  };
+};
+
 /** 補足の layout の ID ごとの値（値を持たない ID は除く） */
 const layoutValues = (
   data: MapData,
@@ -555,21 +612,22 @@ const dragStartOf = (
   | { node: string | null | undefined; wire: string | null | undefined }
   | undefined => {
   const target = event.target instanceof Element ? event.target : undefined;
-  if (!target) return undefined;
-  const corner = target.closest(".map-group-resize");
-  if (
-    !corner &&
-    target.closest(
-      "button, .mdmark-diagram-node-name, .map-er-columns, .map-class-members",
-    )
-  )
-    return undefined;
+  if (!target || !draggable(target)) return undefined;
   const node = target.closest("[data-node]")?.getAttribute("data-node");
   const wire = target.closest(".map-wire-hit")?.getAttribute("data-wire");
-  const head = target.closest(".map-group-head, .map-group-bar");
-  if (!node && !wire && !head && !corner) return undefined;
+  const grip = target.closest(
+    ".map-group-head, .map-group-bar, .map-group-resize",
+  );
+  if (!node && !wire && !grip) return undefined;
   return { node, wire };
 };
+
+/** ドラッグを始められる要素か（グループの角のほかのボタンと、名前と列の上では始めない） */
+const draggable = (target: Element): boolean =>
+  target.closest(".map-group-resize") !== null ||
+  target.closest(
+    "button, .mdmark-diagram-node-name, .map-er-columns, .map-class-members",
+  ) === null;
 
 /** 動かしたノードの上の次の click を止める（動かさずに押したときだけリンクを開く） */
 const suppressNextClick = (node: string): void => {
@@ -704,7 +762,7 @@ export const attachMapFlow = (
   },
 ): MapFlowHandle => {
   const { args, onWalk, extension, resolveIdLink, modal } = options;
-  const { index, chart, data } = modal ?? readFlowRange(range, extension);
+  const { index, chart, data } = flowSourceOf(range, { extension, modal });
   const kinds = { ...config.map.kinds, ...extension?.kinds };
   const lines = { ...config.map.lines, ...extension?.lines };
   const ids = new Set([
@@ -836,39 +894,6 @@ export const attachMapFlow = (
       tips: part.tips,
     };
   };
-  if (!modal)
-    range.innerHTML = renderDiagramFrame(
-    {
-      kind: "map",
-      title: args.title ?? extension?.title ?? "",
-      legend: [],
-      wide: true,
-      // 等倍より縮めず、収まらない分は図の枠の中で横にスクロールする
-      fitMin: 1,
-      tools: tools(),
-      exportable: true,
-      listable: true,
-      id: frameId,
-    },
-    body(),
-  );
-  const detachList = modal
-    ? () => undefined
-    : attachMapList(range, {
-        label: () =>
-          `${range.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の一覧`,
-        items: () =>
-          flowListItems({
-            chart,
-            notes,
-            changes,
-            kindLabel: (id) => kindLabelOf(chart, { id, kinds }),
-          }),
-      });
-  if (!modal) linkAnnotationOwners(range);
-  const figure =
-    modal?.figure ??
-    (range.querySelector<HTMLElement>("figure") as HTMLElement);
   /** 全画面のモーダルの図に操作を付け直し、閉じたら元の図を共有する状態から再配置する */
   const attachModal: AttachModal = (modalFigure) => {
     const handle = attachMapFlow(range, config, {
@@ -880,14 +905,32 @@ export const attachMapFlow = (
       reloadShared();
     };
   };
-  const detachDiagrams = modal
-    ? () => undefined
-    : attachDiagrams({
-        root: range,
-        placement: config.tooltips.diagramPlacement,
-        figures: [figure],
-        attachModal,
-      });
+  const mounted = mountFlowFrame(range, {
+    modal,
+    frame: {
+      kind: "map",
+      title: args.title ?? extension?.title ?? "",
+      legend: [],
+      wide: true,
+      // 等倍より縮めず、収まらない分は図の枠の中で横にスクロールする
+      fitMin: 1,
+      tools: tools(),
+      exportable: true,
+      listable: true,
+      id: frameId,
+    },
+    body,
+    listItems: () =>
+      flowListItems({
+        chart,
+        notes,
+        changes,
+        kindLabel: (id) => kindLabelOf(chart, { id, kinds }),
+      }),
+    placement: config.tooltips.diagramPlacement,
+    attachModal,
+  });
+  const { figure, detachList, detachDiagrams } = mounted;
   // シーケンス図の再生を自動で進めている間に、送り手と受け手のノードへ表示する枠をスクロールする
   const follower = createFollow(figure, prefersReducedMotion());
 
@@ -947,7 +990,7 @@ export const attachMapFlow = (
       sizer.style.height = `${part.height}px`;
     }
     replaceTips(figure, part.tips);
-    if (!modal) linkAnnotationOwners(range);
+    mounted.linkOwners();
   };
   /** 状態から配置し直して、図の中身とツールを描き直す */
   const refresh = (relayout = true) => {
@@ -1296,28 +1339,36 @@ export const attachMapFlow = (
   /** 全画面のモーダルで、開いているツールチップがあるか（ツールチップを先に閉じる） */
   const tipOpen = () =>
     figure.querySelector(".mdmark-diagram-tip:not([hidden])") !== null;
-  const onKeyDown = (event: KeyboardEvent) => {
-    const element = event.target instanceof Element ? event.target : undefined;
-    const keyTarget = keyTargetOf(element);
+  /** 矢印キーでグループの大きさを変えるか、Alt + 矢印キーで動かす。扱ったら `true` を返却する */
+  const arrowWithKey = (
+    element: Element | undefined,
+    event: KeyboardEvent,
+  ): boolean => {
     const arrow = ARROWS[event.key];
+    if (!arrow) return false;
+    const key = { arrow, large: event.shiftKey };
     const corner = element
       ?.closest(".map-group-resize")
       ?.closest("[data-group]")
       ?.getAttribute("data-group");
-    if (corner && arrow) {
-      event.preventDefault();
-      resizeWithKey(corner, { arrow, large: event.shiftKey });
-      return;
-    }
-    if (keyTarget && arrow && event.altKey) {
-      event.preventDefault();
-      moveWithKey(keyTarget, { arrow, large: event.shiftKey });
-      return;
-    }
-    if (keyTarget && selectWithKey(keyTarget, event)) return;
+    const keyTarget = keyTargetOf(element);
+    if (corner) resizeWithKey(corner, key);
+    else if (keyTarget && event.altKey) moveWithKey(keyTarget, key);
+    else return false;
+    event.preventDefault();
+    return true;
+  };
+  /** Esc で選択を外すか外へ戻る。全画面では解いたときだけ close request を止め、ツールチップが開いていれば先に閉じさせる */
+  const escapeKey = (event: KeyboardEvent) => {
     if (event.key !== "Escape" || (modal && tipOpen())) return;
-    // 全画面では解いたときだけ close request を止め、解くものが無ければモーダルに任せる
     if (escapeWithKey() && modal) event.preventDefault();
+  };
+  const onKeyDown = (event: KeyboardEvent) => {
+    const element = event.target instanceof Element ? event.target : undefined;
+    if (arrowWithKey(element, event)) return;
+    const keyTarget = keyTargetOf(element);
+    if (keyTarget && selectWithKey(keyTarget, event)) return;
+    escapeKey(event);
   };
   // 線の区間の上では、区間を動かせる向きのポインターにする（横の区間は上下、縦の区間は左右）
   const onPointerMove = (event: PointerEvent) => {

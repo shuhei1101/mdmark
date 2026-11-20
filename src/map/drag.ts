@@ -315,21 +315,23 @@ const pressedOf = (
 } => {
   const target = event.target instanceof Element ? event.target : undefined;
   return {
-    corner:
-      target
-        ?.closest(".map-group-resize")
-        ?.closest("[data-group]")
-        ?.getAttribute("data-group") ?? undefined,
+    corner: groupAt(target, ".map-group-resize"),
     node:
       target?.closest("[data-node]")?.getAttribute("data-node") ?? undefined,
-    group:
-      target
-        ?.closest(".map-group-bar, .map-group-head")
-        ?.closest("[data-group]")
-        ?.getAttribute("data-group") ?? undefined,
+    group: groupAt(target, ".map-group-bar, .map-group-head"),
     hit: target?.closest(".map-wire-hit"),
   };
 };
+
+/** 要素が selector の中にあれば、それを持つグループの ID */
+const groupAt = (
+  target: Element | undefined,
+  selector: string,
+): string | undefined =>
+  target
+    ?.closest(selector)
+    ?.closest("[data-group]")
+    ?.getAttribute("data-group") ?? undefined;
 
 /** 押した場所から、動かすノード・グループか、線と区間を決める */
 const dragTargetOf = (
