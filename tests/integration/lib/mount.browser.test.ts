@@ -23502,14 +23502,20 @@ test("test_normal_when_rendered", async () => {
       .replaceAll(/(mdmark-(?:table|tabs|term))-\d+/g, "$1-n")
       .replace(/<div[^>]*data-mdmark-slot[\s\S]*$/, "");
   expect(content(fromRendered)).toBe(content(fromMarkdown));
-  find<HTMLButtonElement>(fromRendered, "thead th button.mdmark-sort").click();
+  // 1 回目は降順、2 回目は昇順に並べ替える
+  const sortButton = find<HTMLButtonElement>(
+    fromRendered,
+    "thead th button.mdmark-sort",
+  );
+  sortButton.click();
+  sortButton.click();
   await expect
     .poll(() =>
       [...fromRendered.querySelectorAll("tbody td:first-child")].map(
         (cell) => cell.textContent,
       ),
     )
-    .not.toEqual(["b", "a"]);
+    .toEqual(["a", "b"]);
   const tabs = fromRendered.querySelectorAll<HTMLButtonElement>(".mdmark-tab");
   tabs[1]?.click();
   expect(tabs[1]?.getAttribute("aria-selected")).toBe("true");
