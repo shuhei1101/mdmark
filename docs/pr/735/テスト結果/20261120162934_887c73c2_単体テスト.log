@@ -1,0 +1,186 @@
+$ npx vitest run --project 'unit*' tests/unit/src/table/table.interact.browser.test.ts tests/unit/src/config.test.ts tests/unit/src/config-files.test.ts tests/unit/src/diff/blocks.browser.test.ts
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-document-table-unpin-default-frontmatter-diff
+
+ ❯ |unit| tests/unit/src/config.test.ts (19 tests | 1 failed) 653ms
+   × test_resolve_config_when_pin_default_given 6ms
+ ❯ |unit| tests/unit/src/config-files.test.ts (45 tests | 1 failed) 783ms
+   × test_validate_config_when_table_pin_default_invalid 8ms
+ ❯ |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts (21 tests | 2 failed) 293ms
+   × test_color_diff_blocks_when_frontmatter_changed 107ms
+   × test_color_diff_blocks_when_frontmatter_same 75ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts (80 tests | 1 failed) 1306ms
+   × test_initial_pinned_columns_when_not_pin_default 105ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_validate_config_when_table_pin_default_invalid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/config-files.test.ts:690:26
+    688|   );
+    689|   // 検証
+    690|   expect(invalid.issues).toHaveLength(1);
+       |                          ^
+    691|   expect(invalid.issues[0]).toMatchObject({
+    692|     where: "table.pin_default",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_pin_default_given
+AssertionError: expected [ undefined, undefined, …(2) ] to deeply equal [ true, false, false, false ]
+
+- Expected
++ Received
+
+  [
+-   true,
+-   false,
+-   false,
+-   false,
++   undefined,
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+ ❯ tests/unit/src/config.test.ts:280:18
+    278|   );
+    279|   // 検証
+    280|   expect(result).toEqual([true, false, false, false]);
+       |                  ^
+    281| });
+    282|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts > test_color_diff_blocks_when_frontmatter_changed
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/blocks.browser.test.ts/test_color_diff_blocks_when_frontmatter_changed.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ tests/unit/src/diff/blocks.browser.test.ts:578:48
+    576|     "details.mdmark-frontmatter",
+    577|   );
+    578|   expect(changedDetails?.hasAttribute("open")).toBe(true);
+       |                                                ^
+    579|   expect(changedFirst?.textContent).not.toContain("段落 P");
+    580|   const deletedFirst = deleted.firstElementChild;
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=265f3c5b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/diff/blocks.browser.test.ts > test_color_diff_blocks_when_frontmatter_same
+AssertionError: expected <details …(1)>…(2)</details> to be null
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/blocks.browser.test.ts/test_color_diff_blocks_when_frontmatter_same.png
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<details
+  class="mdmark-collapsible mdmark-frontmatter"
+>
+  <summary>
+    フロントマター
+  </summary>
+  <div
+    class="mdmark-code"
+    data-source-line="1"
+  >
+    <div
+      class="mdmark-code-bar"
+    >
+      <span
+        class="mdmark-code-lang"
+      >
+        <span
+          aria-hidden="true"
+          class="mdmark-code-lang-name"
+        >
+          yaml
+        </span>
+      </span>
+    </div>
+    <pre
+      aria-label="コード: yaml"
+      tabindex="0"
+    >
+      <code
+        class="language-yaml"
+        data-mdmark-syntax="yaml"
+      >
+        title: A
+
+      </code>
+    </pre>
+  </div>
+</details>
+
+ ❯ tests/unit/src/diff/blocks.browser.test.ts:604:62
+    602|   });
+    603|   // 検証
+    604|   expect(hidden.querySelector("details.mdmark-frontmatter")).toBeNull(…
+       |                                                              ^
+    605|   const shownFirst = shown.firstElementChild;
+    606|   expect(shownFirst?.matches("details.mdmark-frontmatter")).toBe(true);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=265f3c5b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_initial_pinned_columns_when_not_pin_default
+AssertionError: expected [ +0, 1 ] to deeply equal []
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_initial_pinned_columns_when_not_pin_default.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   0,[39m
+[31m+   1,[39m
+[31m+ ][39m
+
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2160:5
+    2158|       pinDefault: false,
+    2159|     }),
+    2160|   ).toEqual([]);
+       |     ^
+    2161|   expect(
+    2162|     initialPinnedColumns({
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=265f3c5b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  5 failed | 160 passed (165)
+   Start at  16:29:12
+   Duration  4.30s (worker 42%, tests 38%, transform 10%, import 10%)
+
+
+## 実装の前から pass したテスト
+
+- test_color_diff_blocks_when_frontmatter_shown_and_changed: 機能 frontmatter がオンのとき、フロントマターの折りたたみの中の yaml の fence が元の行番号 [1, 終わりの行 + 1) を持ち（src/frontmatter/frontmatter.syntax.ts の `fence.map = [1, frontmatter.endLine + 1]`）、src/diff/blocks.ts の collectBlockRanges が折りたたみをブロックとして分けて書き換えた行を追加の色で包むため、既にある振る舞いで pass する。どちらも 4c455f92（#657）より前から作業ブランチにある
+
+## fail の原因
+
+- 5 件とも、pinDefault・pin_default・frontmatter の扱いがまだ実装に無いことによる
