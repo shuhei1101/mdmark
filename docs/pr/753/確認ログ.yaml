@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 用語の YAML から描く用語集の表に `詳細` の列を出すか
+    decision: knowledge の用語のスキーマに詳細のページを指す任意のキーを追加し、エイリアスで受け取って `詳細` の列を出す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/753#discussion_r4640374456
