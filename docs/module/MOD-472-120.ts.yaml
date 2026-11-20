@@ -30,7 +30,7 @@ functions:
       埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。
       設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。
       警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す。
-      `hideTraces` が `true` のときは、`hidePayload` が `payload.docs[].rendered.html` に `hideRenderedHtml` を適用する。`compileHtmlScripts` には元の文書を指定する（`usedParts`・`usesMap` も元の文書で判定する）
+      `bundle` では、画像のキーを `data:` URL に戻した Markdown を `renderPayloadDoc` にかけ、描いた HTML と純粋な Markdown の `data:` URL をキー（`mdmark-asset:{キー}`）に戻して同じ画像を 1 回だけ埋める（サニタイズが `mdmark-asset:` の URL を落とすため）。`hideTraces` が `true` のときは、`hidePayload` が `payload.docs[].rendered.html` に `hideRenderedHtml` を適用する。`compileHtmlScripts` には元の文書を指定する（`usedParts`・`usesMap` も元の文書で判定する）
     kind: 関数
     scope: internal
     is_async: true

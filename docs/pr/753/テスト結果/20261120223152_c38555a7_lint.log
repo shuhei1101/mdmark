@@ -1,0 +1,9 @@
+$ npm run lint
+
+Checked 980 files in 1303ms. No fixes applied.
+Found 1 warning.
+$ npm run lint:eslint
+$ npm run typecheck
+exit=0
+$ npm run typecheck:vscode
+exit=0

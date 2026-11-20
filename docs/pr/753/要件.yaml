@@ -75,7 +75,9 @@ docs:
   - page: docs/guide/用語集.mark.md
     new: false
     change: 表を削除し、docs/guide/用語集.yaml を読み込むエイリアスの行を指す glossary のマーカーに置き換える。#532 で増える用語があれば 用語集.yaml に追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:33:34.102445+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: '`$schema` を `design-schemas/v9.7.0` へ上げ、各用語の `details` に今の用語集の表の `詳細` の列のリンクを記入する。items の概要の「描く表は用語集.mark.md が持つ」を、YAML が原本で用語集.mark.md はマーカーで描くことに修正する。用語集の表・書き出しの用語の description を変更に合わせる'
@@ -145,7 +147,9 @@ docs:
   - page: mdmark.config.yaml
     new: false
     change: 'docs/guide/用語集.yaml を alias_type: term で読み込む aliases の行を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:33:34.102445+00:00'
   - page: project-index.yaml
     new: false
     change: 行 `terms` の `schema.ref` を `design-schemas/v9.7.0` へ上げる

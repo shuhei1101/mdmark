@@ -27,7 +27,7 @@ functions:
     container: src/viewer/options.ts
     kind: 関数
     scope: internal
-    summary: 書き出しの中身の文書 1 つから、`mount` の `rendered`・`pureMarkdown`・`path` を作る。`bundle` では `rendered.html` の `mdmark-asset:{キー}` を `assets` の `data:` URL に替える
+    summary: 書き出しの中身の文書 1 つから、`mount` の `rendered`・`pureMarkdown`・`path` を作る。`bundle` では `rendered.html` と `pureMarkdown` の `mdmark-asset:{キー}` を `assets` の `data:` URL に替える
     args:
       - name: options
         type: '{ payload: ExportPayload; doc: ExportPayload["docs"][number] }'
