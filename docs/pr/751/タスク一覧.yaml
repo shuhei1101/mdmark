@@ -70,8 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T07:53:10.942339+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: 開発コマンドの配布ファイルの上限、docs/guide/files.yml の行の id・aliases、project-index.yaml の docs の行の alias_type
+    updated_by: planner
+    updated_at: '2026-11-20T08:00:48.564287+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えない
