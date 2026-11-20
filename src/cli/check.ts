@@ -80,6 +80,7 @@ export type CheckIssue = {
     | "mark_option_unapplied"
     | "mark_option_invalid"
     | "plain_md_with_marks"
+    | "glossary_alias_row_missing"
     | "annotation_undefined"
     | "annotation_unused"
     | "annotation_duplicate"
@@ -617,6 +618,54 @@ function markIssues(
   return [...found, ...notes];
 }
 
+/** 設定の `aliases` の、`alias_type` が `term` で `enabled` が `false` でない行の `id` */
+function termRowIds(aliasRows: unknown[]): Set<string> {
+  const ids = new Set<string>();
+  for (const row of aliasRows) {
+    if (
+      typeof row === "object" &&
+      row !== null &&
+      !Array.isArray(row) &&
+      (row as Record<string, unknown>).alias_type === "term" &&
+      (row as Record<string, unknown>).enabled !== false &&
+      typeof (row as Record<string, unknown>).id === "string"
+    ) {
+      ids.add((row as Record<string, string>).id as string);
+    }
+  }
+  return ids;
+}
+
+/** 文書ごとに、`glossary` のマーカーの `alias_row` が設定の `term` の行の `id` のどれでもないとき、1 つのマーカーにつき 1 件の `glossary_alias_row_missing` のずれにする */
+export function checkGlossaryAliasRows(options: {
+  /** 点検する文書 */
+  documents: Array<{ path: string; markdown: string }>;
+  /** 設定の `aliases` の行 */
+  aliasRows: unknown[];
+}): CheckIssue[] {
+  const ids = termRowIds(options.aliasRows);
+  const issues: CheckIssue[] = [];
+  for (const document of options.documents) {
+    for (const mark of findMarkTexts(document.markdown)) {
+      if (mark.name !== "glossary" || mark.closing) {
+        continue;
+      }
+      const read = readMarkArgs(mark.args);
+      const row = read.kind === "json" ? read.options.alias_row : undefined;
+      if (typeof row !== "string" || ids.has(row)) {
+        continue;
+      }
+      issues.push({
+        file: document.path,
+        where: String(mark.line),
+        kind: "glossary_alias_row_missing",
+        message: `用語集の表のマーカーの \`alias_row\` が指す行 \`${row}\` が、設定の \`aliases\` の \`alias_type\` が \`term\` の行にありません。設定の \`aliases\` に \`term\` の行 \`${row}\` を記載するか、\`alias_row\` を修正してください。`,
+      });
+    }
+  }
+  return issues;
+}
+
 /** 文書ごとに取得した記法のマーカーと、拡張・`libraries` のマーカーの引数を読み、引数の誤りを `mark_option_invalid`、注記をその種類のずれにする */
 export function checkMarkOptions(
   documents: Array<{ path: string; markdown: string }>,
@@ -914,6 +963,10 @@ export async function collectCheckIssues(
     (issue) => checkMarks || issue.kind !== "retired_diagram",
   );
   const maps = checkMaps(documents, resolveConfig({ config }));
+  const glossaryRows = checkGlossaryAliasRows({
+    documents,
+    aliasRows: Array.isArray(config.aliases) ? config.aliases : [],
+  });
   const plainMarkdown =
     checkMarks && config.check?.suggestMarkExtension !== false
       ? checkPlainMarkdown(
@@ -946,6 +999,7 @@ export async function collectCheckIssues(
     ...diagrams,
     ...maps,
     ...plainMarkdown,
+    ...glossaryRows,
   ];
 }
 
