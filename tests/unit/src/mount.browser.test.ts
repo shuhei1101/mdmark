@@ -1692,9 +1692,8 @@ test("test_mount_with_rendered", async () => {
     expect(content(fromRendered)).toBeDefined();
     expect(content(fromRendered)).toBe(content(fromMarkdown));
     expect(fromRendered.classList.contains("mdmark-theme-dark")).toBe(true);
-    const sortButton = fromRendered.querySelector<HTMLButtonElement>(
-      "thead th button",
-    );
+    const sortButton =
+      fromRendered.querySelector<HTMLButtonElement>("thead th button");
     expect(sortButton).not.toBeNull();
     const copy = fromRendered.querySelector<HTMLButtonElement>(
       'button[data-markdown="copy"]',

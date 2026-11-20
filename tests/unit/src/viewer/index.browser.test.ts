@@ -19,7 +19,11 @@ test("test_start_viewer", async () => {
     kind: "document",
     config: {},
     docs: [
-      await renderedDoc({ path: "a.md", title: "タイトル", markdown: "# タイトル\n" }),
+      await renderedDoc({
+        path: "a.md",
+        title: "タイトル",
+        markdown: "# タイトル\n",
+      }),
     ],
     entry: "a.md",
   };

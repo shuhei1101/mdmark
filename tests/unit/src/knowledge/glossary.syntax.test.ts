@@ -352,7 +352,13 @@ test("test_alias_glossary_tokens", async () => {
   const headings = [...html.matchAll(/<th[^>]*>([^<]*)<\/th>/g)].map(
     (match) => match[1],
   );
-  expect(headings).toEqual(["用語", "別名", "使用しない言い方", "意味", "詳細"]);
+  expect(headings).toEqual([
+    "用語",
+    "別名",
+    "使用しない言い方",
+    "意味",
+    "詳細",
+  ]);
   const bodyRows = html.split("<tbody>")[1]?.split("<tr").slice(1) ?? [];
   expect(bodyRows).toHaveLength(2);
   expect(bodyRows[0]).toContain("マーカー");

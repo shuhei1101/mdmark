@@ -1066,7 +1066,10 @@ test("test_check_glossary_alias_rows", async () => {
     { id: "docs", paths: ["docs/guide/files.yml"], alias_type: "doc" },
   ];
   const documents = [
-    { path: "docs/guide/用語集.mark.md", markdown: '<!-- glossary: {"alias_row": "terms"} -->\n' },
+    {
+      path: "docs/guide/用語集.mark.md",
+      markdown: '<!-- glossary: {"alias_row": "terms"} -->\n',
+    },
     {
       path: "guide.mark.md",
       markdown: [

@@ -362,7 +362,9 @@ test("test_start_bundle_with_rendered", async () => {
   // 実行
   startBundle(document, payload, {});
   // 検証
-  const view = document.querySelector<HTMLElement>(".mdmark-bundle-main .mdmark");
+  const view = document.querySelector<HTMLElement>(
+    ".mdmark-bundle-main .mdmark",
+  );
   expect(view?.querySelector("h1")?.textContent).toContain("文書B");
   expect(view?.classList.contains("mdmark-theme-dark")).toBe(true);
 });
