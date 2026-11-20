@@ -40,26 +40,53 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T04:26:54.408076+00:00'
   - process: モック作成
-    status: todo
+    status: skipped
     note: mode を追加すると決めた場合だけ、layers の見せ方のモックを作る。追加しない場合は skipped にする
+    reason: mode を追加しないと決めた（確認ログ）ため、見せ方が増えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: データ設計
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、マーカーの設定のキーが増えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、入出力が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: 部品設計
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、構成図の部品が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: 画面設計
     status: skipped
     reason: 画面を持たないライブラリで、描画は部品設計（CMP-472-5）で扱う
     updated_by: planner
     updated_at: '2026-11-20T04:23:00.719971+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、モジュールが変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、記法とコアコンセプトのページが変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、実装が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: 実装
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、実装を変えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: skipped
+    reason: mode を追加しないと決めたため、実装が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
