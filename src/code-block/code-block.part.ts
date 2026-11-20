@@ -8,6 +8,12 @@ export const SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
 /** mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使用する */
 export const MERMAID_ATTRIBUTE = "data-mdmark-mermaid";
 
+/** 言語 markdown のコードブロックの包む要素に付ける属性。`mount` が描いた結果を付ける対象を見つけるのに使用する */
+export const MARKDOWN_ATTRIBUTE = "data-mdmark-markdown";
+
+/** 既定で元の Markdown を出す言語 markdown のコードブロックの包む要素に付ける属性 */
+export const RAW_ATTRIBUTE = "data-mdmark-raw";
+
 /** コードの行 1 つ */
 export type CodeLine = {
   /** コードの行のマーカーを削除した行の文字（エスケープ前） */
@@ -106,6 +112,11 @@ export function renderCodeCopy(options: { state: CodeCopyState }): string {
   const { text, icon } = COPY_LABELS[state];
   const status = state === "idle" ? "" : `コードを${text}`;
   return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}">${iconSvg(icon)}${text}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
+}
+
+/** 言語 markdown のコードブロックの帯のコピーのボタンの左に配置する、描いた結果と元の Markdown を切り替える Raw のボタン。押した状態は元の Markdown を出している状態 */
+export function renderCodeRaw(options: { pressed: boolean }): string {
+  return `<button class="mdmark-code-raw" type="button" aria-pressed="${options.pressed}">${iconSvg("code-xml")}Raw<span class="mdmark-visually-hidden">（元の Markdown を表示）</span></button>`;
 }
 
 /** スクリーンリーダー向けの名前: タイトルがあればタイトル、無ければファイル名、無ければ言語、どれも無ければ `コード` */
@@ -248,19 +259,38 @@ function wrapWithBar(options: {
   fileName: string;
   title: string;
   copyState: CodeCopyState | undefined;
-  mermaidAttribute: string;
+  attributes: string;
+  preview: CodePreview | undefined;
 }): string {
-  const { pre, language, fileName, title, copyState, mermaidAttribute } =
+  const { language, fileName, title, copyState, attributes, preview } =
     options;
+  const raw = preview?.view === "raw";
+  const pre =
+    preview?.view === "rendered"
+      ? options.pre.replace(/^<pre/, "<pre hidden")
+      : options.pre;
+  const meta =
+    copyState === undefined
+      ? ""
+      : renderCodeCopy({ state: copyState }).replace(
+          '<span class="mdmark-code-meta">',
+          `<span class="mdmark-code-meta">${preview ? renderCodeRaw({ pressed: raw }) : ""}`,
+        );
   const barContent =
     renderLanguageLabel({ language, fileName }) +
     (title ? escapeHtml(title) : "") +
-    (copyState === undefined ? "" : renderCodeCopy({ state: copyState }));
+    meta;
+  const previewHtml = preview
+    ? `<div class="mdmark-code-preview"${raw ? " hidden" : ""}>${preview.html}</div>`
+    : "";
   if (title) {
-    return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
+    return `<figure class="mdmark-code"${attributes}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}${previewHtml}</figure>`;
   }
-  return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
+  return `<div class="mdmark-code"${attributes}><div class="mdmark-code-bar">${barContent}</div>${pre}${previewHtml}</div>`;
 }
+
+/** Storybook が指定する、Raw のボタンと描いた結果の外観 */
+type CodePreview = { view: "rendered" | "raw"; html: string };
 
 /** コードブロックの `pre` の HTML を返却する */
 function renderPre(options: {
@@ -325,6 +355,14 @@ export function renderCodeBlock(options: {
   foldButtons?: boolean | undefined;
   /** ポインターが開閉のボタンの列に乗っているか。`true` なら `pre` に `data-fold-hover` を付ける（既定 `false`） */
   foldColumnHovered?: boolean | undefined;
+  /** 言語 markdown のコードブロックか。`true` なら包む要素に `data-mdmark-markdown` を付ける（既定 `false`） */
+  markdown?: boolean | undefined;
+  /** 既定で元の Markdown を出すか。`markdown` も `true` なら包む要素に `data-mdmark-raw` を付ける（既定 `false`） */
+  raw?: boolean | undefined;
+  /** 指定すると、帯に Raw のボタンと `pre` の後ろに描いた結果を配置する（Storybook が指定する） */
+  preview?: "rendered" | "raw" | undefined;
+  /** 描いた結果の中身の HTML（`preview` を指定したときに使用する） */
+  previewHtml?: string | undefined;
 }): string {
   const { language, title } = options;
   const { fileName = "", bar = true, copyState } = options;
@@ -334,12 +372,18 @@ export function renderCodeBlock(options: {
   if (!bar) {
     return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
   }
+  const markdown = options.markdown === true;
+  const attributes = `${mermaidAttribute}${markdown ? ` ${MARKDOWN_ATTRIBUTE}` : ""}${markdown && options.raw === true ? ` ${RAW_ATTRIBUTE}` : ""}`;
   return wrapWithBar({
     pre,
     language,
     fileName,
     title,
     copyState,
-    mermaidAttribute,
+    attributes,
+    preview:
+      options.preview === undefined
+        ? undefined
+        : { view: options.preview, html: options.previewHtml ?? "" },
   });
 }

@@ -95,7 +95,7 @@ function readLineNumbers(options: {
   return numbers;
 }
 
-/** `code` のマーカーの設定を、タイトル・行番号の有無と最初の行の番号・強調する行・最初から畳む行・折り返すかに読み込む */
+/** `code` のマーカーの設定を、タイトル・行番号の有無と最初の行の番号・強調する行・最初から畳む行・折り返すか・既定で元の Markdown を出すかに読み込む */
 export function readCodeSpec(options: {
   options: MarkOptions;
   lineCount: number;
@@ -104,6 +104,7 @@ export function readCodeSpec(options: {
   lineNumbers: boolean;
   lineStart: number;
   wrap: boolean;
+  raw: boolean;
   treeWarning: boolean;
   highlights: Set<number>;
   folds: Set<number>;
@@ -132,6 +133,7 @@ export function readCodeSpec(options: {
     lineNumbers: lines !== undefined,
     lineStart,
     wrap: spec.wrap === true,
+    raw: spec.raw === true,
     treeWarning: spec.tree_warning !== false,
     highlights,
     folds,
@@ -288,6 +290,9 @@ function keepLanguageOnly(token: Token, language: string): void {
   token.info = [language, ...rest].filter(Boolean).join(" ");
 }
 
+/** 情報文字列の言語（小文字）がこれに含まれるコードブロックに、描いた結果と Raw のボタンを付ける */
+export const MARKDOWN_LANGUAGES: readonly string[] = ["markdown", "md"];
+
 /** 色分けの言語の対応表: 情報文字列の最初の単語（小文字）から、highlight.js の言語のモジュール名を参照する。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に該当する */
 export const SYNTAX_LANGUAGES: Readonly<Record<string, string>> = {
   typescript: "typescript",
@@ -430,7 +435,7 @@ function readWarnings(
   return out;
 }
 
-/** 情報文字列から、言語・ファイル名と、mermaid の対象か・色分けの言語・罫線の行を確かめるかを決める */
+/** 情報文字列から、言語・ファイル名と、mermaid の対象か・描いた結果を付けるか・色分けの言語・罫線の行を確かめるかを決める */
 function fenceKind(
   token: Token,
   target: { features: CodeFeatures; treeWarning: boolean },
@@ -438,6 +443,7 @@ function fenceKind(
   language: string;
   fileName: string;
   mermaid: boolean;
+  markdown: boolean;
   syntax: string | undefined;
   checkTree: boolean;
 } {
@@ -450,6 +456,11 @@ function fenceKind(
     language,
     fileName,
     mermaid,
+    markdown:
+      codeOn &&
+      !isMermaid &&
+      !mapSource &&
+      MARKDOWN_LANGUAGES.includes(language.toLowerCase()),
     syntax: syntaxOn && !mermaid ? syntaxLanguageOf(language) : undefined,
     checkTree: codeOn && !isMermaid && !mapSource && target.treeWarning,
   };
@@ -476,6 +487,8 @@ function codeBlockToken(
       lineNumbers: spec?.lineNumbers ?? false,
       lineStart: spec?.lineStart ?? 1,
       wrap: spec?.wrap ?? false,
+      markdown: kind.markdown,
+      raw: kind.markdown && (spec?.raw ?? false),
       lines,
       syntax: kind.syntax,
       mermaid: kind.mermaid,

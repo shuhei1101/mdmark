@@ -48,6 +48,9 @@
     },
     "tree_warning": {
       "type": "boolean"
+    },
+    "raw": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
