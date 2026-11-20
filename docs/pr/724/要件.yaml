@@ -1,0 +1,15 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-65.yaml
+    impact: run_only
+    detail: 用語の意味のツールチップの枠線と、単語からツールチップへポインターを移す間の開閉が変わる。シナリオの記述は変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-71.yaml
+    impact: run_only
+    detail: 脚注の番号のツールチップの枠線と、番号からツールチップへポインターを移す間の開閉が変わる。シナリオの記述は変わらない
+    depends_on: []
+scope_out:
+  - item: 過去の Issue のモック（docs/mock/refs/27/assets/glossary.css・docs/mock/components/term-tooltip・docs/mock/components/footnote など）の透明な線
+    reason: 採用済みの案の記録で、描いた文書の表示には使われない
+    plan: none
