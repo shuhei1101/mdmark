@@ -62,6 +62,12 @@ docs:
     updated_by: planner
     updated_at: '2026-11-20T07:16:06.346082+00:00'
     new: false
+  - page: docs/guide/用語集.yaml
+    change: 用語 `row-header`（行見出し）の説明を、`用語集.mark.md` の「行見出し」と同じ文に修正する
+    new: false
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:26:47.768506+00:00'
 scope_out:
   - item: mdmark を読み込むアプリ（mindstella・dev-docs）の、表の既定のピン止めの変更への追従（設定で今の動きを選ぶか）
     reason: 別のリポジトリの変更で、この作業 PR の変更を前提にする。#711 の本文のとおり、完了後に後続に着手できる旨をコメントする
