@@ -16914,13 +16914,14 @@ test("test_normal_when_map_flowchart_drawn", async () => {
     ),
   ];
   expect(tools.map((tool) => tool.dataset.tool)).toEqual([
+    "list",
     "back",
     "expandAll",
     "collapseAll",
     "reset",
   ]);
-  expect(tools[0]?.disabled).toBe(true);
-  expect(tools[3]?.disabled).toBe(true);
+  expect(tools[1]?.disabled).toBe(true);
+  expect(tools[4]?.disabled).toBe(true);
   expect(
     figure.querySelector('.mdmark-diagram-tools-group[data-group="pan"]'),
   ).toBeNull();
@@ -22994,4 +22995,418 @@ test("test_normal_when_markdown_buttons_off", async () => {
   expect(off.aside.querySelectorAll(".mdmark-fold-all")).toHaveLength(2);
   expect(off.aside.querySelector(".mdmark-side-toc-pin")).not.toBeNull();
   expect(plain.querySelector("[data-markdown]")).toBeNull();
+});
+
+/** 構成図の補足（`DATA`）に、キーを足した補足の JSON */
+function mapDataWith(extra: Record<string, unknown>): string {
+  const data = JSON.parse(MAP_DATA) as Record<string, unknown>;
+  const layout = (data.layout ?? {}) as Record<string, unknown>;
+  const extraLayout = (extra.layout ?? {}) as Record<string, unknown>;
+  return JSON.stringify({
+    ...data,
+    ...extra,
+    layout: { ...layout, ...extraLayout },
+  });
+}
+
+/** CSS の値を、描いた文書の中で計算した色にする */
+function mapResolvedColor(el: HTMLElement, value: string): string {
+  const probe = document.createElement("span");
+  probe.style.color = value;
+  el.append(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+}
+
+/** 書き出しの保存を受け取る（`a` の `click` を止めて、ファイル名と Blob を記録する） */
+function captureMapDownloads(): Array<{ name: string; blob: Blob }> {
+  const saved: Array<{ name: string; blob: Blob }> = [];
+  const blobs = new Map<string, Blob>();
+  const create = URL.createObjectURL.bind(URL);
+  vi.spyOn(URL, "createObjectURL").mockImplementation((object) => {
+    const url = create(object as Blob);
+    blobs.set(url, object as Blob);
+    return url;
+  });
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement,
+  ) {
+    const blob = blobs.get(this.href);
+    if (this.download !== "" && blob !== undefined)
+      saved.push({ name: this.download, blob });
+  });
+  return saved;
+}
+
+/** 図の倍率の文字・表示する枠の位置・選んだノード */
+function mapViewState(figure: HTMLElement): string {
+  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
+  return JSON.stringify({
+    zoom: find(figure, '[data-tool="fit"]').textContent,
+    left: viewport.scrollLeft,
+    top: viewport.scrollTop,
+    selected: [...figure.querySelectorAll("[data-selected]")].map(
+      (node) => (node as HTMLElement).dataset.node,
+    ),
+  });
+}
+
+/** パネルを開き、書き出すボタンを押して「SVG」「PNG」の要素を開く */
+async function openMapExport(figure: HTMLElement): Promise<HTMLButtonElement> {
+  const more = find<HTMLButtonElement>(figure, '[data-tool="more"]');
+  if (more.getAttribute("aria-expanded") !== "true")
+    await userEvent.click(more);
+  const button = find<HTMLButtonElement>(figure, '[data-tool="export"]');
+  await userEvent.click(button);
+  return button;
+}
+
+// map の計画した変更を描く（正常系）
+test("test_normal_when_map_planned_changes", async () => {
+  // 準備
+  const data = mapDataWith({
+    layout: { mount: { color: "blue" } },
+    changes: {
+      user: { type: "added" },
+      "user->mount": { type: "added" },
+      mount: { type: "changed" },
+      frame: { type: "removed" },
+      "mount->marker": { type: "removed" },
+      data: { type: "moved" },
+    },
+  });
+  const sequenceData = JSON.stringify({
+    version: 1,
+    changes: { "1": { type: "added" } },
+  });
+  // 実行
+  const { el, figures } = await mountMap(
+    `${mapRange({ mermaid: MAP_FLOW, data })}\n${mapRange({ mermaid: MAP_SEQUENCE, data: sequenceData })}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+    timeout: MAP_WAIT_MS,
+  });
+  const [flow, sequence] = figures() as [HTMLElement, HTMLElement];
+  const node = (id: string) =>
+    find<HTMLElement>(flow, `.mdmark-diagram-node[data-node="${id}"]`);
+  const added = mapResolvedColor(el, "var(--mdmark-color-diff-add-sign)");
+  const removed = mapResolvedColor(el, "var(--mdmark-color-diff-del-sign)");
+  const orange = mapResolvedColor(el, "var(--mdmark-color-accent-orange-text)");
+  const green = mapResolvedColor(el, "var(--mdmark-color-accent-green-text)");
+  // 検証: 追加のノードと線が追加の色で、種類のアイコンは種類の色のまま
+  expect(getComputedStyle(node("user")).borderTopColor).toBe(added);
+  for (const path of flow.querySelectorAll<SVGPathElement>(
+    '.mdmark-diagram-wires path[data-wire="user->mount"]',
+  ))
+    expect(getComputedStyle(path).stroke).toBe(added);
+  expect(
+    getComputedStyle(find(node("user"), ".mdmark-diagram-node-kind svg")).color,
+  ).toBe(green);
+  // 検証: 変更のノードは layout の blue ではなく orange
+  expect(getComputedStyle(node("mount")).borderTopColor).toBe(orange);
+  // 検証: 削除のノードと線は削除の色の破線で、名前に取り消し線
+  const frame = node("frame");
+  expect(getComputedStyle(frame).borderTopColor).toBe(removed);
+  expect(getComputedStyle(frame).borderTopStyle).toBe("dashed");
+  const name = find<HTMLElement>(frame, ".mdmark-diagram-node-name");
+  expect(getComputedStyle(name).textDecorationLine).toContain("line-through");
+  expect(getComputedStyle(name).wordBreak).toBe("normal");
+  const removedPaths = [
+    ...flow.querySelectorAll<SVGPathElement>(
+      '.mdmark-diagram-wires path[data-wire="mount->marker"]',
+    ),
+  ];
+  expect(removedPaths.length).toBeGreaterThan(0);
+  for (const path of removedPaths) {
+    expect(getComputedStyle(path).stroke).toBe(removed);
+    expect(getComputedStyle(path).strokeDasharray).not.toBe("none");
+  }
+  // 検証: 削除のノードはほかのノードと重ならない
+  for (const other of flow.querySelectorAll<HTMLElement>(
+    ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+  )) {
+    if (other === frame) continue;
+    expect(
+      mapOverlaps(frame.getBoundingClientRect(), other.getBoundingClientRect()),
+      other.dataset.node,
+    ).toBe(false);
+  }
+  // 検証: バッジとスクリーンリーダー向けの名前
+  const badges = [
+    ["user", "追加"],
+    ["mount", "変更"],
+    ["frame", "削除"],
+  ] as const;
+  for (const [id, label] of badges) {
+    expect(find(node(id), ".mdmark-map-change").textContent).toBe(label);
+    expect(
+      find(node(id), ".mdmark-diagram-node-hit").getAttribute("aria-label"),
+    ).toMatch(new RegExp(`、${label}$`));
+  }
+  // 検証: 知らない値は記載の警告になり、バッジを持たない
+  const flowWarnings = [
+    ...(flow
+      .closest(".mdmark-map")
+      ?.previousElementSibling?.querySelectorAll("li") ?? []),
+  ].map((item) => item.textContent ?? "");
+  const moved = flowWarnings.filter((text) => text.includes("changes.data"));
+  expect(moved).toHaveLength(1);
+  for (const value of ["added", "changed", "removed"])
+    expect(moved[0]).toContain(value);
+  expect(node("data").querySelector(".mdmark-map-change")).toBeNull();
+  // 検証: シーケンス図では使用できない旨の警告で、色とバッジが無い
+  const sequenceWarnings = [
+    ...(sequence
+      .closest(".mdmark-map")
+      ?.previousElementSibling?.querySelectorAll("li") ?? []),
+  ].map((item) => item.textContent ?? "");
+  expect(
+    sequenceWarnings.filter(
+      (text) => text.includes("`changes`") || text.includes("changes"),
+    ),
+  ).toHaveLength(1);
+  expect(sequence.querySelector(".mdmark-map-change")).toBeNull();
+  expect(sequence.querySelector('[class*="map-change-"]')).toBeNull();
+});
+
+// map の図を SVG・PNG に書き出す（正常系）
+test("test_normal_when_map_exported", async () => {
+  // 準備
+  const saved = captureMapDownloads();
+  const { figures } = await mountMap(
+    `${mapRange({ args: '{"title": "全体の構成"}', mermaid: MAP_FLOW, data: MAP_DATA })}\n${mapRange({ mermaid: MAP_FLOW, data: MAP_DATA })}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+    timeout: MAP_WAIT_MS,
+  });
+  const figure = () => figures()[0] as HTMLElement;
+  const stage = () => find<HTMLElement>(figure(), ".mdmark-diagram-stage");
+  const width = stage().offsetWidth;
+  await userEvent.click(find(figure(), 'button[aria-label="データを閉じる"]'));
+  find<HTMLElement>(
+    figure(),
+    '[data-node="mount"] .mdmark-diagram-node-hit',
+  ).click();
+  await userEvent.click(find(figure(), '[data-tool="more"]'));
+  await userEvent.click(find(figure(), '[data-tool="in"]'));
+  await userEvent.click(find(figure(), '[data-tool="in"]'));
+  const size = { width: stage().offsetWidth, height: stage().offsetHeight };
+  const before = mapViewState(figure());
+  const requests = performance.getEntriesByType("resource").length;
+  // 検証: 全画面のボタンの隣の書き出すボタン
+  const button = find<HTMLButtonElement>(figure(), '[data-tool="export"]');
+  expect(button.previousElementSibling?.getAttribute("data-tool")).toBe(
+    "fullscreen",
+  );
+  expect(button.getAttribute("aria-label")).toBe("図を書き出す");
+  expect(button.getAttribute("aria-expanded")).toBe("false");
+  expect(button.hasAttribute("aria-haspopup")).toBe(false);
+  // 実行: 開いて Tab で移り、Esc で閉じる
+  await userEvent.click(button);
+  const panel = find<HTMLElement>(
+    figure(),
+    `#${button.getAttribute("aria-controls")}`,
+  );
+  expect(button.getAttribute("aria-expanded")).toBe("true");
+  expect(panel.hidden).toBe(false);
+  expect(panel.hasAttribute("popover")).toBe(false);
+  expect(
+    [...panel.querySelectorAll("button")].map((item) => item.textContent),
+  ).toEqual(["SVG", "PNG"]);
+  find<HTMLButtonElement>(panel, '[data-export="svg"]').focus();
+  await userEvent.keyboard("{Tab}");
+  expect(document.activeElement).toBe(find(panel, '[data-export="png"]'));
+  await userEvent.keyboard("{Escape}");
+  expect(button.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(button);
+  // 実行: 外側のクリックで閉じる
+  await userEvent.click(button);
+  await userEvent.click(find(figure(), ".mdmark-diagram-title"));
+  expect(button.getAttribute("aria-expanded")).toBe("false");
+  // 実行: SVG と PNG を書き出す
+  await userEvent.click(button);
+  await userEvent.click(find(figure(), '[data-export="svg"]'));
+  await vi.waitFor(() => expect(saved).toHaveLength(1));
+  await userEvent.click(button);
+  await userEvent.click(find(figure(), '[data-export="png"]'));
+  await vi.waitFor(() => expect(saved).toHaveLength(2), { timeout: 5000 });
+  const second = figures()[1] as HTMLElement;
+  await openMapExport(second);
+  await userEvent.click(find(second, '[data-export="svg"]'));
+  await vi.waitFor(() => expect(saved).toHaveLength(3));
+  // 検証: ファイル名
+  expect(saved.map((item) => item.name)).toEqual([
+    "全体の構成.svg",
+    "全体の構成.png",
+    "図 2.svg",
+  ]);
+  // 検証: SVG の大きさと中身
+  const svg = await (saved[0] as { blob: Blob }).blob.text();
+  expect(width).toBeGreaterThan(0);
+  expect(svg).toContain(`width="${size.width}"`);
+  expect(svg).toContain(`height="${size.height}"`);
+  expect(svg).toContain("データ");
+  expect(svg).not.toContain("文書の Markdown");
+  expect(svg).not.toMatch(/href="https?:/);
+  expect(svg).not.toMatch(/url\((?!\s*["']?#)/);
+  expect(svg).not.toContain("var(");
+  expect(svg).not.toContain("class=");
+  expect(svg).not.toContain("data-selected");
+  expect(svg).not.toContain("図を書き出す");
+  expect(svg).not.toContain("記載の警告");
+  // 検証: PNG は 2 倍の大きさ
+  const png = await createImageBitmap((saved[1] as { blob: Blob }).blob);
+  expect([png.width, png.height]).toEqual([size.width * 2, size.height * 2]);
+  // 検証: 倍率・位置・選択が変わらず、ページの外へ要求しない
+  expect(mapViewState(figure())).toBe(before);
+  expect(performance.getEntriesByType("resource").length).toBe(requests);
+});
+
+// map の一覧の表示に切り替える（正常系）
+test("test_normal_when_map_list_view", async () => {
+  // 準備
+  fixToday();
+  const data = mapDataWith({
+    changes: { mount: { type: "added" } },
+    notes: {
+      ...(JSON.parse(MAP_DATA) as { notes: Record<string, unknown> }).notes,
+      mount: { text: "設定と Markdown を受け取る" },
+    },
+  });
+  const { el, figures } = await mountMap(
+    `# 見出し\n\n${mapRange({ mermaid: MAP_FLOW, data })}\n${mapRange({ mermaid: MAP_SEQUENCE })}\n${axisGridRange(MAP_GANTT, MAP_GANTT_DATA)}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(3), {
+    timeout: MAP_WAIT_MS,
+  });
+  const [flow, sequence, gantt] = figures() as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  const headings = el.querySelectorAll("h1, h2, h3, h4, h5, h6").length;
+  // 検証: 構成図とシーケンス図にだけ一覧の表示のボタン
+  for (const figure of [flow, sequence]) {
+    const list = find<HTMLButtonElement>(figure, '[data-tool="list"]');
+    expect(list.getAttribute("aria-label")).toBe("一覧で表示");
+    expect(list.getAttribute("aria-pressed")).toBe("false");
+  }
+  expect(gantt.querySelector('[data-tool="list"]')).toBeNull();
+  // 実行: 構成図を一覧にする
+  await userEvent.click(find(flow, '[data-tool="more"]'));
+  await userEvent.click(find(flow, '[data-tool="in"]'));
+  const before = mapViewState(flow);
+  const viewport = find<HTMLElement>(flow, ".mdmark-diagram-viewport");
+  const left = viewport.scrollLeft;
+  const top = viewport.scrollTop;
+  const button = find<HTMLButtonElement>(flow, '[data-tool="list"]');
+  await userEvent.click(button);
+  // 検証: 一覧と、隠れた図
+  expect(button.getAttribute("aria-pressed")).toBe("true");
+  const tree = find<HTMLElement>(
+    flow,
+    '.mdmark-diagram-viewport [role="tree"]',
+  );
+  expect(find<HTMLElement>(flow, ".mdmark-diagram-sizer").hidden).toBe(true);
+  const item = (id: string) =>
+    find<HTMLElement>(tree, `[role="treeitem"][data-id="${id}"]`);
+  expect(item("lib").getAttribute("aria-expanded")).toBe("true");
+  const mount = item("mount");
+  expect(mount.textContent).toContain("mount");
+  expect(mount.textContent).toContain("処理");
+  expect(mount.textContent).toContain("設定と Markdown を受け取る");
+  expect(mount.textContent).toContain("→ map のマーカーの読み取り");
+  expect(find(mount, ".mdmark-map-change").textContent).toBe("追加");
+  // 検証: 最初の項目がパネルと重ならない
+  const first = find<HTMLElement>(tree, '[role="treeitem"]');
+  expect(
+    mapOverlaps(
+      first.getBoundingClientRect(),
+      find(flow, ".mdmark-diagram-tools").getBoundingClientRect(),
+    ),
+  ).toBe(false);
+  // 実行・検証: ↓・←・→
+  const focusable = () => tree.querySelectorAll('[tabindex="0"]').length;
+  first.focus();
+  await userEvent.keyboard("{ArrowDown}");
+  expect(document.activeElement).not.toBe(first);
+  expect(focusable()).toBe(1);
+  const lib = item("lib");
+  lib.focus();
+  await userEvent.keyboard("{ArrowLeft}");
+  expect(lib.getAttribute("aria-expanded")).toBe("false");
+  expect(isShown(item("mount"))).toBe(false);
+  await userEvent.keyboard("{ArrowRight}");
+  expect(lib.getAttribute("aria-expanded")).toBe("true");
+  expect(focusable()).toBe(1);
+  // 検証: シーケンス図の一覧はメッセージの記載順
+  await userEvent.click(find(sequence, '[data-tool="more"]'));
+  await userEvent.click(find(sequence, '[data-tool="list"]'));
+  const messages = [
+    ...sequence.querySelectorAll<HTMLElement>(
+      '[role="tree"] [role="treeitem"] .mdmark-map-list-name',
+    ),
+  ].map((name) => name.textContent);
+  expect(messages[0]).toBe("利用側のページ → mount: 設定と Markdown");
+  expect(messages[1]).toBe("mount → map のマーカーの読み取り: map の範囲");
+  expect(messages).toHaveLength(7);
+  // 検証: 見出しは増えない
+  expect(el.querySelectorAll("h1, h2, h3, h4, h5, h6").length).toBe(headings);
+  // 実行: 構成図を図に戻す
+  await userEvent.click(button);
+  // 検証: 一覧が無くなり、倍率・位置・開閉が切り替える前と同じ
+  expect(flow.querySelector('[role="tree"]')).toBeNull();
+  expect(find<HTMLElement>(flow, ".mdmark-diagram-sizer").hidden).toBe(false);
+  expect(viewport.scrollLeft).toBe(left);
+  expect(viewport.scrollTop).toBe(top);
+  expect(mapViewState(flow)).toBe(before);
+  expect(flow.querySelector('.map-group[data-group="read"]')).not.toBeNull();
+});
+
+// map の図を PNG にできない（異常系）
+test("test_error_when_map_png_unavailable", async () => {
+  // 準備
+  const saved = captureMapDownloads();
+  vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(
+    (callback: BlobCallback) => callback(null),
+  );
+  const errors: unknown[] = [];
+  const onError = (event: ErrorEvent) => errors.push(event.error);
+  const onRejection = (event: PromiseRejectionEvent) =>
+    errors.push(event.reason);
+  window.addEventListener("error", onError);
+  window.addEventListener("unhandledrejection", onRejection);
+  const { figures } = await mountMap(
+    mapRange({
+      args: '{"title": "全体の構成"}',
+      mermaid: MAP_FLOW,
+      data: MAP_DATA,
+    }),
+  );
+  const figure = figures()[0] as HTMLElement;
+  const before = mapViewState(figure);
+  // 実行: PNG を選ぶ
+  const button = await openMapExport(figure);
+  await userEvent.click(find(figure, '[data-export="png"]'));
+  const status = () =>
+    find<HTMLElement>(figure, '.mdmark-diagram-export [role="status"]')
+      .textContent ?? "";
+  await vi.waitFor(() => expect(status()).not.toBe(""));
+  // 検証: 保存せず、開いたまま案内する
+  expect(saved).toHaveLength(0);
+  expect(button.getAttribute("aria-expanded")).toBe("true");
+  expect(status()).toBe(
+    "この大きさの図は PNG にできません。SVG で書き出してください。",
+  );
+  // 実行・検証: 続けて SVG を選ぶと保存して閉じる
+  await userEvent.click(find(figure, '[data-export="svg"]'));
+  await vi.waitFor(() => expect(saved).toHaveLength(1));
+  expect(saved[0]?.name).toBe("全体の構成.svg");
+  expect(button.getAttribute("aria-expanded")).toBe("false");
+  // 検証: 例外を投げず、図が変わらない
+  window.removeEventListener("error", onError);
+  window.removeEventListener("unhandledrejection", onRejection);
+  expect(errors).toEqual([]);
+  expect(mapViewState(figure)).toBe(before);
 });
