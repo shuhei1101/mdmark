@@ -32,7 +32,7 @@ functions:
       2. `class {ID,…} {クラス}`・行の中の `{ID}:::{クラス}`・`cssClass "{ID,…}" {クラス}` でノードにクラスを当て、`classDef` の色をそのノードに入れる（`classDef` を持たないクラスは当てない）
       3. `style {ID} {属性}` の色をノードに重ねる（`classDef` より優先）
       4. `linkStyle {番号,…|default} {属性}` の `stroke`・`color` を線の番号か `defaultWire` に入れる
-      5. 色は記載した文字のまま持つ（`#f9f`・`#ffe08a`・`red`・`rgb(…)`）
+      5. 属性は `\,` で逃がしていない `,` で区切り、`\,` を `,` に戻す（mermaid と同じく、`rgb(255\,0\,0)` のように色の中の `,` は `\,` で記載する）。色は記載した文字のまま持つ（`#f9f`・`#ffe08a`・`red`・`rgb(255,0,0)`）
     args:
       - name: options
         type: '{ lines: string[]; classTarget: "class" | "cssClass" }'
@@ -45,9 +45,9 @@ functions:
       - name: test_read_mermaid_styles
         case: 正常
         summary: style・classDef・class・:::・linkStyle を読み取り、style を優先する
-        condition: モック `docs/mock/components/plain-mermaid-style/` の「style と classDef を持つ flowchart」の行に `class A warn` を足したもの、`classTarget` が `class`
+        condition: モック `docs/mock/components/plain-mermaid-style/` の「style と classDef を持つ flowchart」の行に `class A warn` と `style B fill:rgb(255\,0\,0)` を足したもの、`classTarget` が `class`
         mock: なし
-        expected: '`nodes.A` が `{ fill: "#f9f", stroke: "#c3c" }`、`nodes.D`・`nodes.E` が `{ fill: "#ffe08a", stroke: "#b8860b" }`、`wires[1]` が `{ stroke: "#d33" }`'
+        expected: '`nodes.A` が `{ fill: "#f9f", stroke: "#c3c" }`、`nodes.D`・`nodes.E` が `{ fill: "#ffe08a", stroke: "#b8860b" }`、`nodes.B` が `{ fill: "rgb(255,0,0)" }`、`wires[1]` が `{ stroke: "#d33" }`'
       - name: test_read_mermaid_styles_when_ignored
         case: 正常
         summary: 色でない属性と classDef を持たないクラスを当てず、default を既定にする
