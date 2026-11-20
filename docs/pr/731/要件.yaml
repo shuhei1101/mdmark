@@ -1,7 +1,7 @@
 docs:
   - page: project-index.yaml
     new: false
-    change: 用語集を alias_type の行で配信する行を追加し、設計書の行の metadata に aliases の列を対応させる
+    change: '設計書の種類の行に alias_type: doc を付け、名前と aliases を照合の語にする（済）。用語集を alias_type: term の行で配信する行を追加する（要件の未確定が決まってから）'
     status: todo
   - page: docs/guide/用語集.mark.md
     new: false
@@ -10,7 +10,9 @@ docs:
   - page: docs/architecture/index.yaml
     new: false
     change: docs/architecture/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:21:30.289437+00:00'
   - page: docs/component/index.yaml
     new: false
     change: docs/component/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -26,7 +28,9 @@ docs:
   - page: docs/dev-command/index.yaml
     new: false
     change: docs/dev-command/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:21:30.289437+00:00'
   - page: docs/er/index.yaml
     new: false
     change: docs/er/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -34,7 +38,9 @@ docs:
   - page: docs/external-api/index.yaml
     new: false
     change: docs/external-api/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:21:30.289437+00:00'
   - page: docs/interface/index.yaml
     new: false
     change: docs/interface/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -54,7 +60,9 @@ docs:
   - page: docs/nonfunctional/index.yaml
     new: false
     change: docs/nonfunctional/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:21:30.289437+00:00'
   - page: docs/scenario/index.yaml
     new: false
     change: docs/scenario/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -66,7 +74,9 @@ docs:
   - page: docs/test-procedure/index.yaml
     new: false
     change: docs/test-procedure/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:21:30.289437+00:00'
   - page: docs/guide/index.yaml
     new: false
     change: docs/guide/ のガイドの文を削り『文章の書き方』で点検する
@@ -87,4 +97,10 @@ scope_out:
     plan: none
   - item: mdmark に YAML から用語集の表を描く機能を追加する（要件の未確定の案 C）
     reason: コードの設計と実装が要り、要望の対象（文書）に含まれない。案 A を採ったときの 2 か所の用語を 1 か所にする後続
+    plan: to_file
+  - item: アーキテクチャ図のフォルダの役割の表に、リポジトリの直下に無い `guide/` の行が残っている
+    reason: 記述と実体のずれの修正で、文の削除とエイリアスの登録の要望に含まれない
+    plan: to_file
+  - item: 開発コマンドのビルドの effects が配布ファイルの上限を 688KB と記載し、非機能要件の 712KB と食い違う
+    reason: 記述どうしのずれの修正で、文の削除とエイリアスの登録の要望に含まれない
     plan: to_file
